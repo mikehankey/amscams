@@ -37,7 +37,7 @@ def start_capture(cam_num):
    cams_id = json_conf['cameras'][cam_key]['cams_id']
    running = check_running(cam_num, "HD")
    if running == 0:
-      cmd = "/usr/bin/ffmpeg -i rtsp://" + cam_ip + hd_url + " -c copy -map 0 -f segment -strftime 1 -segment_time 60 -segment_format mp4 \"" + video_dir + "/HD/" + "%Y_%m_%d_%H_%M_%S_000_" + cams_id + ".mp4\" 2>&1 > /dev/null & "
+      cmd = "/usr/bin/ffmpeg -i 'rtsp://" + cam_ip + hd_url + "' -c copy -map 0 -f segment -strftime 1 -segment_time 60 -segment_format mp4 \"" + video_dir + "/HD/" + "%Y_%m_%d_%H_%M_%S_000_" + cams_id + ".mp4\" 2>&1 > /dev/null & "
       print(cmd)
    
       os.system(cmd)
@@ -47,7 +47,7 @@ def start_capture(cam_num):
 
    running = check_running(cam_num, "SD")
    if running == 0:
-      cmd = "/usr/bin/ffmpeg -i rtsp://" + cam_ip + sd_url + " -c copy -map 0 -f segment -strftime 1 -segment_time 60 -segment_format mp4 \"" + video_dir + "/SD/" + "%Y_%m_%d_%H_%M_%S_000_" + cams_id + ".mp4\" 2>&1 > /dev/null & "
+      cmd = "/usr/bin/ffmpeg -i 'rtsp://" + cam_ip + sd_url + "' -c copy -map 0 -f segment -strftime 1 -segment_time 60 -segment_format mp4 \"" + video_dir + "/SD/" + "%Y_%m_%d_%H_%M_%S_000_" + cams_id + ".mp4\" 2>&1 > /dev/null & "
       print(cmd)
       os.system(cmd)
       time.sleep(2)

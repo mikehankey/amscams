@@ -41,56 +41,44 @@
       "cam1" : {
          "cams_id" : "010001",
          "cam_version" : "1",
-         "ip" : "192.168.176.71",
-         "sd_url_new" : "/user=admin&password=&channel=1&stream=1.sdp",
-         "hd_url_new" : "/user=admin&password=&channel=1&stream=0.sdp",
-         "sd_url" : "/av0_1",
-         "hd_url" : "/av0_0"
+         "ip" : "192.168.76.71",
+         "sd_url" : "/user=admin&password=&channel=1&stream=1.sdp",
+         "hd_url" : "/user=admin&password=&channel=1&stream=0.sdp"
       },
       "cam2" : {
          "cams_id" : "010002",
          "cam_version" : "1",
-         "ip" : "192.168.176.72",
-         "sd_url_new" : "/user=admin&password=&channel=1&stream=1.sdp",
-         "hd_url_new" : "/user=admin&password=&channel=1&stream=0.sdp",
-         "sd_url" : "/av0_1",
-         "hd_url" : "/av0_0"
+         "ip" : "192.168.76.72",
+         "sd_url" : "/user=admin&password=&channel=1&stream=1.sdp",
+         "hd_url" : "/user=admin&password=&channel=1&stream=0.sdp"
       },
       "cam3" : {
          "cams_id" : "010003",
          "cam_version" : "1",
-         "ip" : "192.168.176.73",
-         "sd_url_new" : "/user=admin&password=&channel=1&stream=1.sdp",
-         "hd_url_new" : "/user=admin&password=&channel=1&stream=0.sdp",
-         "sd_url" : "/av0_1",
-         "hd_url" : "/av0_0"
+         "ip" : "192.168.76.73",
+         "sd_url" : "/user=admin&password=&channel=1&stream=1.sdp",
+         "hd_url" : "/user=admin&password=&channel=1&stream=0.sdp"
       },
       "cam4" : {
          "cams_id" : "010004",
          "cam_version" : "1",
-         "ip" : "192.168.176.74",
-         "sd_url_new" : "/user=admin&password=&channel=1&stream=1.sdp",
-         "hd_url_new" : "/user=admin&password=&channel=1&stream=0.sdp",
-         "sd_url" : "/av0_1",
-         "hd_url" : "/av0_0"
+         "ip" : "192.168.76.74",
+         "sd_url" : "/user=admin&password=&channel=1&stream=1.sdp",
+         "hd_url" : "/user=admin&password=&channel=1&stream=0.sdp"
       },
       "cam5" : {
          "cams_id" : "010005",
          "cam_version" : "1",
-         "ip" : "192.168.176.75",
-         "sd_url_new" : "/user=admin&password=&channel=1&stream=1.sdp",
-         "hd_url_new" : "/user=admin&password=&channel=1&stream=0.sdp",
-         "sd_url" : "/av0_1",
-         "hd_url" : "/av0_0"
+         "ip" : "192.168.76.75",
+         "sd_url" : "/user=admin&password=&channel=1&stream=1.sdp",
+         "hd_url" : "/user=admin&password=&channel=1&stream=0.sdp"
       },
       "cam6" : {
          "cam_version" : "1",
          "cams_id" : "010006",
-         "ip" : "192.168.176.76",
-         "sd_url_new" : "/user=admin&password=&channel=1&stream=1.sdp",
-         "hd_url_new" : "/user=admin&password=&channel=1&stream=0.sdp",
-         "sd_url" : "/av0_1",
-         "hd_url" : "/av0_0"
+         "ip" : "192.168.76.76",
+         "sd_url" : "/user=admin&password=&channel=1&stream=1.sdp",
+         "hd_url" : "/user=admin&password=&channel=1&stream=0.sdp"
       }
    }
 }
