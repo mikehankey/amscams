@@ -1,0 +1,76 @@
+Read file version number                   = 102
+----------  PATHS & FILES ----------------
+FFMPEG path                                = /home/ams/bin/ffmpeg
+FFPROBE path                               = /home/ams/bin/ffprobe
+--------- PIXEL processing --------------- 
+Max #Frames in a compression block         = 256
+-------- CLUSTER processing --------------
+Max number of clusters per frame           = 30
+Cluster blocksize in pixels                = 16
+Interleave 0-none, 1-even/odd, 2-odd/even  = 0
+#Pixels for blob ntuplet (neighbors+self)  = 4
+Imagery data type                          = 1
+Smallest variance per pixel                = 0.01
+Saturation level per pixel                 = 76.0
+Std dev multiplier factor for threshold    = 2
+MF signal^2 to noise variance ratio (dB)   = 0
+-------- TRACKER processing --------------
+Max number of active tracks                = 200
+Max number of measurements per meteor      = 100
+#Measurements for N of M FIRM track     N  = 3
+#Measurements for N of M FIRM track     M  = 4
+#Measurements for K of L DROPPED track  K  = 3
+#Measurements for K of L DROPPED track  L  = 4
+#Measurements to declare TROUBLED track    = 2
+-------- POST-DETECT processing ----------
+Minimum number of frames in track          = 6
+Frame rate Hz (-1 use MP4 file metadata)   = 25.0
+Lower angle rate limit (arcmin/sec)        = 70.0
+Upper angle rate limit (arcmin/sec)        = 3600.0
+Flag for FOV based angle rate (0-NO,1-TBD) = 0 
+Max deviation from straight line (pixels)  = 5.0
+Max deviation from even spacing (pixels)   = 900.0
+Max RMSE error from model fit re vel in %  = 900.0
+Time between astrometry file saves (min)   = 30.0
+
+
+------------------------- NOTES -----------------------------------
+
+Imagery data types
+   1  =  Single byte integer = [ 0, 255 ] 
+   2  =  Two byte positive integers = [ 0, 65535 ]
+   3  =  Two byte signed integers = [-32768, +32767 ]
+   4  =  Four byte signed integers = [ -2147483648, +2147483647 ]
+   5  =  Four byte floats ~7 significant decimal diits
+   6  =  Eight byte doubles ~16 significant decimal digits
+
+
+cluster blocksize > 51.6 * 60.0 / framerateHz / arcminperpixel
+
+Signal^2 to noise variance ratio is the clustered blob detection threshold
+
+//===================================================================================
+//   Find clusters defined by a neighborhood + self exceedance pixel count that
+//      is greater than or equal to the user defined "ntuplet" value. The 5x5 
+//      neighborhood pixels that are checked as being exceedance pixels, are
+//      spatially located as shown in the diagrams below and labeled as "o" 
+//      relative to the center test exceedance pixel "t". Those not checked as
+//      being exceedance pixels to form the cluster are labeled "x". 
+//      
+//                Interleaved Fields            Progressive Scan
+//                ------------------            ----------------
+//     "top"           x o o o x                    x o o o x
+//     "upp"           x x x x x                    o o o o o
+//     "cen"           o o t o o                    o o t o o
+//     "dwn"           x x x x x                    o o o o o
+//     "bot"           x o o o x                    x o o o x 
+//
+//====================================================================================
+
+Angle rate limits:  w(arcmin/second) = V(km/sec) * sin(Dradiant) / q(km)
+                    q = sqrt[ R^2 sin(Elev)^2 + 2 R h(km) + h(km)^2 ] - R sin(Elev)
+                    R = 6378 km,  Elev = angle above horizon,  h = meteor height
+   w(min) = 15'/sec meteor near horizon 10deg, h=100km, Drad=10deg, q=480km, V=12kms/sec
+   w(max) = 3600'/sec meteor at zenith 90deg, h=70km, Drad=90deg, q=70km, V=72kms/sec
+
+   w(max) = 60'/sec satellite at zenith, q=400 km, V=7km/sec 

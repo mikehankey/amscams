@@ -1,0 +1,962 @@
+//%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+//%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%                                  %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+//%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%    HCAMS Meteor Detector 1.00    %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+//%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%                                  %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+//%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+//
+//  Version 1.00 reads H.264 MP4 files and uses MTP compression to generate mean and sigma as an effective
+//  thresholding. Clustering (blob detection) and tracking (alpha-beta tracker) are used for detection
+//  and reporting of meteor centroid positions in CAMS standard Detectinfo format.
+//
+//  MP4 assumed naming convention is a 34 character string:   YYYY_MM_DD_HH_MM_SS_MSC_CAMERA.mp4
+//                                                     e.g.   2018_11_18_04_23_16_000_010005.mp4
+//
+//  This meteor detection app is for processing H.264 (YUV420p) imagery on a per frame basis. The app 
+//  assumes multiple frames of imagery exist per file with no file-to-file spanning meteor detection
+//  being performed. The primary detector is a clustering and tracking algorithm which has a sensitivity
+//  limit from the high threshold (SNR ~3) of the Maximum Temporal Pixel (MTP) compression and a limit
+//  to the length of streak detectable per frame given by the angular pixel resolution and frame rate. 
+//  No decimation is applied. Thus the maximum meteor streak length per frame is ~51 pixels/frame 
+//  (72 km/sec at 70 km range, 25 fps, 2.8'/pixel).
+//
+//  The app is launched from a CAMS/RunFolder with an argument list containing:
+//      Folder pathname containing the H.264 video MP4 files to be processed
+//      
+//  Note that the pathname of the configuration parameter file is assumed to be located
+//      in the .../CAMS/RunFolder and named:  HCAMS_Config_Parameters.txt
+//
+//  Detectinfo of the detections and generated FF bin files are written to a local midnight
+//      time stamped folder YYYY_MM_DD_HH_MM_SS in the .../CAMS/ArchivedFiles folder. 
+//
+//  The configuration parameter file controls the processing settings for the various components
+//  of the detection algorithm. This version of the application follows these steps:
+//      1) Parameter ingest and setup of various processing structures
+//      2) MTP compression of a block of N frames for mean, sigma, and maxpixel exceedances per frame
+//           a) Image ingest using an FFMPEG pipe (H.264 -> YUV420p -> 8 bit image)
+//           b) Internal store into an N frame sequence
+//           c) Incremental compression build up
+//      3) Compression products for the block of N frames
+//      4) Clustering/tracking detection on the block of N frames
+//           a) Cluster the exceedances per frame
+//           b) Refine the cluster centroids and identify cluster level detections
+//           c) Feed the "detected" clusters to the trackers per frame
+//           d) Identify tracks that are CLOSED and ready for post-processing
+//               - Check final detection constraints and perform de-duplication of similar tracks
+//               - Report detected tracks to the Detectinfo and log files
+//      5) Repeat steps 2 through 4 for the next block of N frames
+//      6) Close files and clean up memory
+//
+//
+//  Date         Description
+//  ----------   ----------------------------------------------------------------------------------------
+//  2016-06-24   Initial implementation based on EMCCD detection driver 2.07
+//
+//%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+#pragma warning(disable: 4996)  // disable warning on strcpy, fopen, ...
+
+
+//%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+#ifdef _WIN32 /************* WINDOWS ******************************/
+
+    #include <windows.h>    // string fncts, malloc/free, system
+    #include <WinBase.h>
+
+    #include <stdio.h>
+    #include <stdlib.h>
+    #include <string.h>
+    #include <math.h>
+    #include <time.h>
+
+    #include "TimeFunctions.h"
+    #include "SystemFileFunctions.h"
+    #include "CoordinateFunctions.h"
+    #include "DynamicArrayAllocation.h"
+    #include "MTPcompression_Uchar.h"
+    #include "AttributeStructure.h"
+    #include "ClusteringFunctions.h"
+    #include "TrackingFunctions.h"
+    #include "FFMPEG_IOFunctions.h"
+    #include "HCAMS_IOFunctions.h"
+    #include "CAMS_IOFunctions.h"
+    #include "PolynomialAstrometryFitting.h"
+
+
+
+#else  /********************  LINUX  ******************************/
+
+    #include <stdio.h>
+    #include <stdlib.h>
+    #include <string.h>
+    #include <math.h>
+    #include <time.h>
+    #include <unistd.h>
+
+    #include "../common/TimeFunctions.h"
+    #include "../common/SystemFileFunctions.h"
+    #include "../common/CoordinateFunctions.h"
+    #include "../common/DynamicArrayAllocation.h"
+    #include "../common/MTPcompression_Uchar.h"
+    #include "../common/AttributeStructure.h"
+    #include "../common/ClusteringFunctions.h"
+    #include "../common/TrackingFunctions.h"
+    #include "../common/FFMPEG_IOFunctions.h"
+    #include "../common/HCAMS_IOFunctions.h"
+    #include "../common/CAMS_IOFunctions.h"
+    #include "../common/PolynomialAstrometryFitting.h"
+
+#endif /***********************************************************/
+
+
+
+//%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+//%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+//%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+int main( int argc, char *argv[] )
+{
+int              nrows, ncols, status, CALexists, ndetected_file, nframes_file;
+long             cameranumber, totalmeteors, file_to_process;
+long             block_had_detection, file_had_detection;
+long             kframe, kindex, kmeas, kcam, nframes_compress, nbytes;
+
+float            framerateHz;
+double           version;
+double           jdt_firstframe, jdt_frame, jdt_localmidnight;
+double           file_time_sec, start_time_sec, duration_sec;
+double           sample_time_sec, pixelsperframe_min, pixelsperframe_max;
+double           rho, phideg, deltad, LST_deg, Vspeed, frametime, pi;
+double           RA, DEC, Azim, Elev, RAperday, RAperframe, RAdiff, Xstd, Ystd;
+
+#define          MAX_UNIQUE_CAMERAS   128
+long             n_unique_cameras, duplicate;
+long             unique_camera_numbers[MAX_UNIQUE_CAMERAS];
+double           jdt_lastFFwrite[MAX_UNIQUE_CAMERAS];
+
+FILE            *FileDirListing;
+FILE            *logfile;
+FILE            *listfile;
+
+char                   CAMS_pathname[256];
+char              CALfolder_pathname[256];
+char                CALfile_pathname[256];
+char                  sites_pathname[256];
+char            calibration_filename[256];
+char         Archivedfolder_pathname[256];
+char      Archivedsubfolder_pathname[256];
+char                listing_pathname[256];
+char         parametersfile_pathname[256];
+char                imagery_filename[256];
+char          imageryfolder_pathname[256];
+char            imageryfile_pathname[256];
+char            snippetfile_pathname[256];
+char                logfile_pathname[256];
+char             detectlist_pathname[256];
+char             detectinfo_pathname[256];
+char                  system_command[512];
+char                CALfile_firstpart[20];
+
+
+unsigned short   *dummyframe = NULL;
+unsigned char   **imageseq   = NULL;
+
+
+struct DateAndTime         ut, folder_ut;
+
+struct MTP_UC_compressor   cmp;
+
+struct clusterinfo         cluster;
+
+struct trackerinfo        *tracksave = NULL;
+struct trackerinfo        *trackers  = NULL;
+
+struct trackseqinfo        mtrack;
+
+struct camerasiteinfo      camerasite;
+
+struct polycal_parameters  calinfo;
+
+struct HCAMSparameters     params;
+
+
+
+
+    //################ Software version number
+
+    version = 1.00;
+
+
+	//################ Constants
+
+	pi = 4.0 * atan(1.0);
+
+	RAperday = 1.00273785 * 2.0 * pi;  //... right ascension shift per day in radians
+
+
+	//############### Get the user's CAMS directory for building default configuration pathnames
+   
+    GetCAMSbaselineFolder(CAMS_pathname);    //   *\...\CAMS\  
+
+
+    //################ Get the location of the mp4 video files
+
+    if( argc < 2 )  GetMP4_Folder(imageryfolder_pathname);
+
+	else            strcpy(imageryfolder_pathname, argv[1]);
+
+	EndsInSlash(imageryfolder_pathname);
+
+
+	//############### Build the Cal folder pathname
+
+	strcpy(CALfolder_pathname, CAMS_pathname);
+
+	strcat(CALfolder_pathname, "Cal");
+
+	EndsInSlash(CALfolder_pathname);       //  .../CAMS/Cal/
+
+
+	//############### Build the camera sites information full pathname
+
+	strcpy(sites_pathname, CALfolder_pathname);
+
+	strcat(sites_pathname, "CameraSites.txt");      //  .../CAMS/Cal/CameraSites.txt
+											   											   
+											   
+	//################  Read the configuration parameters, must know nrows and ncols
+
+	strcpy(parametersfile_pathname, "HCAMS_Config_Parameters.txt");
+
+	ReadConfigFile_HCAMSparameters(parametersfile_pathname, &params);
+
+
+	//################  Get the listing of all the MP4 files in the imagery folder and open the listing file
+
+    strcpy( listing_pathname, "MP4FileListing.txt"  );
+
+	GenerateExtensionBasedFileListing(imageryfolder_pathname, "mp4", listing_pathname );
+
+    if( ( FileDirListing = fopen( listing_pathname, "rt" ) ) == NULL )  {
+        fprintf( stdout, " File directory listing %s not found (or not generated)\n\n", listing_pathname );
+        fprintf( stderr, " File directory listing %s not found (or not generated)\n\n", listing_pathname );
+        Delay_msec(15000);
+        exit(1);
+    }
+
+
+	//################ Get a list of the unique camera numbers for periodic FF write timing
+
+	n_unique_cameras = 0;
+
+	while (fgets(imagery_filename, 256, FileDirListing) != NULL) {
+
+		imagery_filename[34] = '\0';
+
+		sscanf(imagery_filename, "%4d_%2d_%2d_%2d_%2d_%2d_%3d_%6ld.",
+			                      &ut.year, &ut.month, &ut.day, &ut.hour, &ut.minute, &ut.second, &ut.msec, &cameranumber);
+
+
+		//------- identify new or previously found camera numbers
+
+		duplicate = 0;
+
+		for (kcam = 0; kcam < n_unique_cameras; kcam++) {
+
+			if (cameranumber == unique_camera_numbers[kcam]) {
+				duplicate = 1;
+				break;
+			}
+
+		} //... end of loop for camera number search within unique list
+
+
+		if (duplicate == 0) { //... found a new unique camera number
+
+			if (n_unique_cameras == MAX_UNIQUE_CAMERAS) {
+				printf("Increase MAX_UNIQUE_CAMERAS in HCAMS_Detection_Driver.c \n");
+				Delay_msec(20000);
+				exit(1);
+			}
+
+			unique_camera_numbers[n_unique_cameras] = cameranumber;
+			n_unique_cameras++;
+
+		} //... end if a new camera number
+
+	} //... end of loop over imagery files
+
+	fseek(FileDirListing, 0, SEEK_SET);  //...rewind imagery file list to beginning
+
+
+    //################  Read the header of the first imagery file to set some parameters 
+	//                       such as nrows, ncols, fps, camera number and jdt.
+
+
+	fgets(imagery_filename, 256, FileDirListing);
+
+	//--------- Ensure we have a null character at the end of the filename string
+	//             Convention is 30 characters  YYYY_MM_DD_HH_MM_SS_CAMERA.mp4 
+
+	imagery_filename[34] = '\0';
+
+	strcpy(imageryfile_pathname, imageryfolder_pathname);
+
+	strcat(imageryfile_pathname, imagery_filename);
+
+
+	//--------- Open the pipe to the H.264 file, read metadata, get Julian date
+
+	Read_FFMPEG_Pipe_Open(params.FFMPEGpath, params.FFPROBEpath, 2, imageryfile_pathname, &nrows, &ncols, &nframes_file, &framerateHz);
+
+	printf("FFMPEG rowcol = %i  %i  nframes = %i at ~%f fps\n", nrows, ncols, nframes_file, framerateHz );
+
+	SetDimensions_HCAMSparameters(nrows, ncols, &params);
+
+	sscanf(imagery_filename, "%4d_%2d_%2d_%2d_%2d_%2d_%3d_%6ld.", 
+			                     &ut.year, &ut.month, &ut.day, &ut.hour, &ut.minute, &ut.second, &ut.msec, &cameranumber);
+
+    jdt_firstframe = JulianDateAndTime( &ut );
+
+	for( kcam=0; kcam<n_unique_cameras; kcam++ )  jdt_lastFFwrite[kcam] = 0.0;
+
+
+	//################  Get the nearest local midnight
+
+	NearestLocalMidnight(jdt_firstframe, &jdt_localmidnight);
+
+	Calendar_DateAndTime(jdt_localmidnight, &folder_ut);
+
+
+	//################  Adjust frame rate if user selected an override value
+
+	if (params.framerateHz_override > 0.0)  framerateHz = (float)params.framerateHz_override;
+
+	sample_time_sec = 1.0 / (double)framerateHz;
+
+	RAperframe = RAperday / 86400.0 / (double)framerateHz;  //... right ascension shift per frame
+
+	printf("Frame rate %f Hz\n", framerateHz);
+
+
+	//################  Get the pathname for the Archived folder and subfolder
+
+	strcpy(Archivedfolder_pathname, CAMS_pathname);
+
+	strcat(Archivedfolder_pathname, "ArchivedFiles");
+
+	EndsInSlash(Archivedfolder_pathname);   //  .../CAMS/ArchivedFiles/
+
+
+	sprintf(Archivedsubfolder_pathname, "%s%04i_%02i_%02i_%02i_%02i_%02i", Archivedfolder_pathname, 
+		folder_ut.year, folder_ut.month, folder_ut.day, folder_ut.hour, folder_ut.minute, folder_ut.second);
+
+	EndsInSlash(Archivedsubfolder_pathname);   //  .../CAMS/ArchivedFiles/YYYY_MM_DD_HH_MM_SS/
+
+
+	//################  Create Archived subfolder with a system call
+
+	strcpy(system_command, "mkdir \"");
+
+	strcat(system_command, Archivedsubfolder_pathname);
+
+	strcat(system_command, "\"");
+
+	system(system_command);
+
+
+    //################  Set up the log file
+
+	strcpy(logfile_pathname, Archivedfolder_pathname);
+
+	sprintf(logfile_pathname, "%sLog_%04i%02i%02i_%02i%02i%02i.txt", Archivedsubfolder_pathname, 
+		folder_ut.year, folder_ut.month, folder_ut.day, folder_ut.hour, folder_ut.minute, folder_ut.second);
+	
+    fprintf( stdout, "Log file pathname is:\n    %s\n\n", logfile_pathname );
+    fprintf( stderr, "Log file pathname is:\n    %s\n\n", logfile_pathname );
+
+	if ((logfile = fopen(logfile_pathname, "wt")) == NULL) {
+		printf(" Cannot open log file %s for writing \n", logfile_pathname);
+		Delay_msec(15000);
+		exit(1);
+	}
+
+
+	//################  Set the detection list file of MP4s
+
+	strcpy(detectlist_pathname, Archivedfolder_pathname);
+
+	sprintf(detectlist_pathname, "%sDetectedMP4List_%04i%02i%02i_%02i%02i%02i.txt", Archivedsubfolder_pathname,
+		folder_ut.year, folder_ut.month, folder_ut.day, folder_ut.hour, folder_ut.minute, folder_ut.second);
+
+	fprintf(stdout, "Detected MP4 list file pathname is:\n    %s\n\n", detectlist_pathname);
+	fprintf(stderr, "Detected MP4 list file pathname is:\n    %s\n\n", detectlist_pathname);
+
+	if ((listfile = fopen(detectlist_pathname, "wt")) == NULL) {
+		printf(" Cannot open detected MP4 list file %s for writing \n", detectlist_pathname);
+		Delay_msec(15000);
+		exit(1);
+	}
+
+
+
+    //################  Open a Detectinfo file and write its header info
+
+	sprintf(detectinfo_pathname, "%sFTPdetectinfo_%06li_%04i_%02i_%02i_%02i_%02i_%02i.txt",
+		Archivedsubfolder_pathname, cameranumber,
+		folder_ut.year, folder_ut.month, folder_ut.day, folder_ut.hour, folder_ut.minute, folder_ut.second);
+
+	OpenFTPdetectinfo(1, detectinfo_pathname, Archivedsubfolder_pathname, CALfolder_pathname, version);
+
+
+    //################  Setup the compression structures for NO decimation
+
+    MTPcompression_UChar_NullPointers( &cmp );
+
+    MTPcompression_UChar_MemSetup( (long)nrows, (long)ncols, params.max_nframes_compress, cameranumber, 1L, params.interleaved, (double)framerateHz, imageryfolder_pathname, &cmp );
+
+
+    //################  Setup the clustering structure
+
+	ClusteringInitialization( (long)params.maxclusters, (long)params.nrows, (long)params.ncols, (long)params.ncols, (long)params.datatype,
+		                      params.interleaved, params.blocksize, params.ntuplet, params.tiny_var, params.saturation, 
+		                      params.sfactor, params.SsqNdB_threshold,
+                              &cluster );
+
+
+    //################  Setup the tracking structures
+
+	trackers  = TrackingInitialization(params.maxtracks, params.maxhistory, params.mfirm, params.nfirm, params.mdrop, params.ndrop, params.ndown);
+
+	tracksave = TrackingInitialization(               1, params.maxhistory, params.mfirm, params.nfirm, params.mdrop, params.ndrop, params.ndown);
+
+
+	//################  Allocate memory for the imagery frames and their sequence buffer
+
+	imageseq = (unsigned char**)allocate_2d_array(params.max_nframes_compress, nrows * ncols, sizeof(unsigned char));
+
+	if (imageseq == NULL) {
+		fprintf(stdout, " ERROR ===> Various arrays memory not allocated\n");
+		fprintf(stderr, " ERROR ===> Various arrays memory not allocated\n");
+		Delay_msec(15000);
+		exit(1);
+	}
+
+
+    //##########################################################################################################
+    //    Loop over blocks of frames for the compression processing which will also be contiguous
+    //    across block boundaries in the cluster/tracker detection processing within a file.
+    //             1) Feed the compressor with "nframes_compress" number of frames (block definition)
+    //             2) Run cluster and detection for the same "nframes_compress" (tracks span compressed blocks)
+    //             3) Check for any closed tracks and report successful detections
+    //##########################################################################################################
+
+	printf(          "  Working on file %s\n", imagery_filename);
+	fprintf(logfile, "  Working on file %s\n", imagery_filename);
+
+	totalmeteors = 0;
+
+	file_to_process =  1;
+
+	file_had_detection = 0;
+
+	file_time_sec = 0.0;  //... First frame of file is time zero
+
+	ndetected_file = 0;
+
+    while(file_to_process)  {   //... Loop through the available MP4 files
+
+
+        //@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
+        //    Loop to extract frames and CAMS compress an imagery block sequence of up to max_nframes_compress
+        //@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
+
+		block_had_detection = 0;
+
+		nframes_compress = 0;
+
+		cmp.totalframes = params.max_nframes_compress; //...set to max compression frame count in case it was changed last block
+
+        for( kframe=0; kframe<params.max_nframes_compress; kframe++ )  {
+
+            //======== Read the next image frame and get the actual time
+            //             Break out of the loop if we run short of frames
+
+
+		    status = Read_FFMPEG_Pipe_Image(&imageseq[kframe][0], dummyframe);
+
+		    if (status > 0) {    //... EOF reached or file error (pipe was closed for status > 0)
+
+				file_to_process = 0;
+
+				break;
+
+			}
+
+			nframes_compress++;
+
+
+            //======== Feed the compressor with the latest image
+
+			MTPcompression_UChar_Compress( kframe, &imageseq[kframe][0], nrows, ncols, &cmp );
+
+
+        } //... end of loop encompassing nframes_compress for performing compression
+
+
+
+        //@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
+        //                      Final compression product generation
+        //@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
+
+        //======== Set FFpathname for FF writing which will get copied to cmp.WritFFpathname in *_Products.
+		//         Set the actual number of compressed frames for proper mean and sigma calculation.
+
+		Calendar_DateAndTime(jdt_firstframe,&ut);
+
+		MTPcompression_UChar_FFpathname( 0, cameranumber,
+			                             ut.year, ut.month, ut.day, ut.hour, ut.minute, ut.second, ut.msec,
+			                             Archivedsubfolder_pathname, cmp.FFfilename, cmp.FFpathname);
+
+
+			//======== Compute/fill the compression products maxpixel, maxframe, avepixel, and stdpixel
+
+			cmp.totalframes = nframes_compress;   //... reset totalframes to actual frames compressed
+
+			MTPcompression_UChar_Products(&cmp);
+
+
+			//======== Build the exceedance pixel list (maxpixel positions per frame) from the compressed products
+
+			MTPcompression_UChar_PrepBuild(&cmp);
+
+
+			//@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
+			//    Get the astrometric CAL file associated with the current processed camera number
+			//@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
+
+			//--------- Find the most recent CAL file or set to UNCALIBRATED
+
+			sprintf(CALfile_firstpart, "CAL_%06li", cameranumber);
+
+			CALexists = GetMostRecentFile(CALfolder_pathname, CALfile_firstpart, jdt_firstframe, calibration_filename);
+
+			if (CALexists == 2) {
+
+				printf(" No Cal files - Using UNCALIBRATED cal info for camera # %li\n", cameranumber);
+
+				ReadSiteInfo4Camera(cameranumber, sites_pathname, &camerasite);
+
+				Polycal_SetUncalibrated(&calinfo);
+
+				strcpy(calibration_filename, "UNCALIBRATED.txt");
+
+				calinfo.arcminperpixel = 2.8;
+
+			}
+			else {  //... calibration file exists - check cal file size 
+
+				strcpy(CALfile_pathname, CALfolder_pathname);
+
+				strcat(CALfile_pathname, calibration_filename);
+
+				nbytes = GetFileSizeBytes(CALfile_pathname);
+
+				if (nbytes > 0)  {
+
+					if (nbytes < 2448L) {
+
+						printf(" Cal file size incorrect - Using UNCALIBRATED cal info for camera # %li\n", cameranumber);
+
+						ReadSiteInfo4Camera(cameranumber, sites_pathname, &camerasite);
+
+						Polycal_SetUncalibrated(&calinfo);
+
+						strcpy(calibration_filename, "UNCALIBRATED.txt");
+
+						calinfo.arcminperpixel = 2.8;
+
+					}
+
+					else {
+
+						Polycal_ReadCALfile(CALfile_pathname, &calinfo, &camerasite);
+
+						////printf(" Cal file found for camera # %li\n", cameranumber);
+
+						ReadSiteInfo4Camera(cameranumber, sites_pathname, &camerasite);
+
+					}
+				}
+			}
+
+
+			//@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
+			//      Loop to reconstruct each frame from the CAMS compression (effectively thresholding), cluster, 
+			//           and track with detection reporting. This loops over the same set of frames used in the 
+			//           multi-frame compression stage above.
+			//@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
+
+
+			TrackingResetAllTracks(trackers);   //... CURRENTLY DETECTION PROCESSING DOES NOT SPAN BLOCKS
+
+
+			for (kframe = 0; kframe < nframes_compress; kframe++) {
+
+				//======== Get the index to the maxpixel offset list "starting" pointer for this frame = kframe_modulo
+				//            The pointers to the maxpixel locations were generated in MTPcompression_UShort_PrepBuild
+
+				kindex = cmp.mpcumcnt_ptr[kframe];
+
+
+				//======== Apply the clustering algorithm where the maxpixel of a given frame is
+				//            interpreted as a binary exceedance pixel. Note that framecnt_ptr is 
+				//            the number of maxpixel exceedances for the given kframe_modulo and
+				//            mpoffset_ptr is the pointer offset to the exceedance pixel in the image. 
+
+				ClusteringExceedances(cmp.framecnt_ptr[kframe], &cmp.mpoffset_ptr[kindex], &cluster);
+
+
+				//======== Refine the exceedance-only pixel centroids given the gray level pixel image with mean removal
+				//            and whitening. Use the raw imagery frame (could use the compressed reconstruction instead)
+
+				ClusteringCentroids(&imageseq[kframe][0], cmp.avepixel_ptr, cmp.stdpixel_ptr, &cluster);
+
+				////MTPcompression_UChar_FrameBuild(kframe, &cmp);  // --> cmp.imgframe_ptr (compressed reconstruction)
+
+				////ClusteringCentroids(cmp.imgframe_ptr, cmp.avepixel_ptr, cmp.stdpixel_ptr, &cluster);
+
+
+				//======== Run the clustering detector and measurement product generator
+
+				ClusteringDetector(&imageseq[kframe][0], cmp.avepixel_ptr, cmp.stdpixel_ptr, &cluster);
+
+				////ClusteringDetector(cmp.imgframe_ptr, cmp.avepixel_ptr, cmp.stdpixel_ptr, &cluster); (compressed recon)
+
+
+				//======== Apply the tracking algorithm to the latest set of cluster measurements at each decimation level
+
+				TrackingAllMeasurements(cluster.nclusters_full, cluster.measurements_full, (double)kframe, (double)cluster.blocksize, trackers);
+
+
+				//======================================================================================================
+				//     Extract CLOSED tracks and perform final detection tests
+				//              Check on speed and linearity constraints per track
+				//              Report final detections
+				//======================================================================================================
+
+
+				//======== If this is the last frame processed, close all tracks prior to calling TrackingSaver
+
+				if (kframe == nframes_compress - 1)  TrackingCloseTracks(trackers);
+
+
+				//======== Check for any CLOSED tracks
+
+				while (TrackingSaver(trackers, tracksave) == 1) {
+
+					//============================================================
+					//==============   False alarm mitigation   ==================
+					//============================================================
+					//          Minimum track measurement count
+					//          Uniform spacing along track
+					//          Within total velocity constraints
+					//          Within linearity constraints
+					//============================================================
+
+					//...... Test for minimum track measurement count
+
+					if (tracksave->nummeas < params.nframesMin)  continue;
+
+
+					//...... Spacing along track within uniform spacing constraint
+
+					if (tracksave->multi_modelerr > params.modelfit_threshold)  continue;
+
+
+					//...... RMSE spacing less than 50% of speed
+
+					Vspeed = sqrt(tracksave->multi_rowspeed * tracksave->multi_rowspeed +
+						tracksave->multi_colspeed * tracksave->multi_colspeed);
+
+					if (tracksave->multi_modelerr > Vspeed * params.modelfit_percentage / 100.0)  continue;
+
+
+					//...... Speed within min and max velocity constraints. Params anglerate in arcmin/sec.
+					//          Note that speed is measured herein as pixels per frame.
+
+					pixelsperframe_min = params.anglerate_lowerlimit / calinfo.arcminperpixel / (double)framerateHz;
+					pixelsperframe_max = params.anglerate_upperlimit / calinfo.arcminperpixel / (double)framerateHz;
+
+					if (Vspeed < pixelsperframe_min)  continue;
+
+					if (Vspeed > pixelsperframe_max)  continue;
+
+
+					//...... Gnomic projected linearity within straight line constraint
+
+					if (tracksave->multi_linearity > params.linearity_threshold)  continue;
+
+
+					//============================================================
+					//==============     Detection Reporting    ==================
+					//============================================================
+
+					totalmeteors++;
+
+					//...... Compute some Hough parameters for the track
+
+					ComputeHoughParameters(nrows, tracksave->multi_rowstart, tracksave->multi_rowspeed,
+						ncols, tracksave->multi_colstart, tracksave->multi_colspeed,
+						&rho, &phideg, &deltad);
+
+
+					//...... Fill in the trackseqinfo structure with the detection's trackinfo
+
+					strcpy(mtrack.proc_filename, cmp.FFfilename);
+
+					strcpy(mtrack.cal_filename, calinfo.CALnameonly);
+
+					mtrack.cameranumber = cameranumber;
+					mtrack.meteornumber = totalmeteors;
+					mtrack.nsegments = tracksave->nummeas;
+					mtrack.framerate = framerateHz;
+					mtrack.hnr = tracksave->multi_SNRdB;
+					mtrack.mle = tracksave->multi_SNRdB;
+					mtrack.bin = tracksave->multi_BNRdB;
+					mtrack.halfdeltad = deltad / 2.0;
+					mtrack.houghrho = rho;
+					mtrack.houghphi = phideg;
+
+
+					for (kmeas = 0; kmeas < tracksave->nummeas; kmeas++) {
+
+						frametime = tracksave->detected[kmeas].time;   //... time is given in frame numbers
+
+						jdt_frame = jdt_firstframe + frametime * sample_time_sec / 86400.0;
+
+						LST_deg = LocalSiderealTimeDegrees(jdt_frame, camerasite.longitude);
+
+						RAdiff = (jdt_frame - calinfo.jdtcal) * RAperday;  //... right ascension adjust to move cal to processing time
+
+
+						//........ Apply astrometric calibration to focal plane row and column, compute Ra/Dec, compute Az/El
+
+						Polycal_rowcol2std(&calinfo,
+							tracksave->detected[kmeas].rowcentroid,
+							tracksave->detected[kmeas].colcentroid,
+							&Xstd, &Ystd);
+
+						Standard_to_RADec(Xstd, Ystd,
+							calinfo.RAcenter_deg  * pi / 180.0 + RAdiff,
+							calinfo.DECcenter_deg * pi / 180.0,
+							&RA, &DEC);
+
+						RADec_to_AzimElev(RA, DEC,
+							calinfo.latitude_deg * pi / 180.0,
+							LST_deg * pi / 180.0,
+							&Azim, &Elev);
+
+
+						mtrack.framenumber[kmeas] = tracksave->detected[kmeas].time;   //... frame number stored in "time"
+						mtrack.colcentroid[kmeas] = tracksave->detected[kmeas].colcentroid;
+						mtrack.rowcentroid[kmeas] = tracksave->detected[kmeas].rowcentroid;
+						mtrack.RA_deg[kmeas] = RA * 180.0 / pi;
+						mtrack.DEC_deg[kmeas] = DEC * 180.0 / pi;
+						mtrack.AZ_deg[kmeas] = Azim * 180.0 / pi;
+						mtrack.EL_deg[kmeas] = Elev * 180.0 / pi;
+						mtrack.integratedcount[kmeas] = (long)tracksave->detected[kmeas].sumdemean;
+
+					}
+
+
+					//...... Write out the track to the detectinfo file
+
+					WriteFTPdetectinfo(1, &mtrack);
+
+					printf(          "       Writing Detection\n");
+					fprintf(logfile, "       Writing Detection\n");
+
+					fflush(logfile);
+
+
+					//...... Write a video snippet of the detection with leading and trailing 1 second of video
+
+					ndetected_file++;
+
+					start_time_sec = fmax( 0.0, file_time_sec + mtrack.framenumber[0] * sample_time_sec - 1.0 );
+
+					duration_sec = fmin( mtrack.nsegments * sample_time_sec + 2.0, (double)(nframes_file-1) * sample_time_sec - start_time_sec );
+
+
+					jdt_frame = jdt_firstframe + mtrack.framenumber[0] * sample_time_sec / 86400.0;
+
+					Calendar_DateAndTime(jdt_frame, &ut);
+
+					sprintf(snippetfile_pathname, "%s%04i_%02i_%02i_%02i_%02i_%02i_%03i_%06li_M%03i.mp4", 
+						    Archivedsubfolder_pathname, 
+						    ut.year, ut.month, ut.day, ut.hour, ut.minute, ut.second, ut.msec,
+						    cameranumber, ndetected_file);
+
+
+					WriteVideoSnippet(params.FFMPEGpath, imageryfile_pathname, snippetfile_pathname, start_time_sec, duration_sec);
+
+
+					//...... Indicate that there was a detection written to the Detectinfo 
+					//          and thus a FF file should be generated.
+
+					block_had_detection = 1;
+
+					file_had_detection = 1;
+
+
+				}  //... end of while loop searching for CLOSED tracks of a given decimation
+
+
+			} //... end of loop encompassing nframes_compress for the exceedance thresholding, clustering, tracking, reporting
+
+			  
+	    //########## Get the unique camera index "kcam"
+
+		for (kcam = 0; kcam < n_unique_cameras; kcam++) {
+
+			if (cameranumber == unique_camera_numbers[kcam])  break;
+
+		}
+
+
+		//########## If there was a potential detected track, write the FF file  OR  if it has been
+		//              more than a user specified time since the last FF file write for astrometry...
+
+		if (block_had_detection == 1  ||  jdt_firstframe - jdt_lastFFwrite[kcam] > params.astrometry_filetime / 60.0 / 24.0 ) {
+
+			MTPcompression_UChar_FileWrite(&cmp);
+
+			jdt_lastFFwrite[kcam] = jdt_firstframe;
+
+		}
+
+
+ 		//########## Check if there are still frames left in the MP4 file to process
+
+		if (file_to_process == 1) {   //======== Increment the 1st frame Julian date/time for next compressed block 
+
+			jdt_firstframe += (double)nframes_compress * sample_time_sec / 86400.0;
+
+			file_time_sec += (double)nframes_compress * sample_time_sec;
+
+		}
+
+		else  {   //======== If reached the EOF of the last MP4 file, get next MP4 filename or exit the processing loop
+
+			//-------- Check if we had a detection in the last mp4 file and report it to the list file
+
+			if (file_had_detection == 1)  fprintf(listfile, "%s\n", imageryfile_pathname);
+
+			file_had_detection = 0;
+
+
+			//-------- Get the next mp4 file name
+
+			if (fgets(imagery_filename, 256, FileDirListing) == NULL)  break;
+
+
+			//--------- Ensure we have a null character at the end of the filename string
+			//             Convention is 30 characters  YYYY_MM_DD_HH_MM_SS_CAMERA.mp4 
+
+			imagery_filename[34] = '\0';
+
+			printf(          "  Working on file %s\n", imagery_filename);
+			fprintf(logfile, "  Working on file %s\n", imagery_filename);
+
+
+			//--------- Open the MP4 imagery video file using an FFMPEG pipe
+
+			strcpy(imageryfile_pathname, imageryfolder_pathname);
+
+			strcat(imageryfile_pathname, imagery_filename);
+
+			Read_FFMPEG_Pipe_Open(params.FFMPEGpath, params.FFPROBEpath, 2, imageryfile_pathname, &nrows, &ncols, &nframes_file, &framerateHz);
+
+
+			//--------- Get the date and time info by parsing the imagery filename
+
+			sscanf(imagery_filename, "%4d_%2d_%2d_%2d_%2d_%2d_%3d_%6ld.",
+				&ut.year, &ut.month, &ut.day, &ut.hour, &ut.minute, &ut.second, &ut.msec, &cameranumber);
+
+			jdt_firstframe = JulianDateAndTime(&ut);
+
+			ndetected_file = 0;
+
+			file_time_sec = 0.0;  //... first frame of file is time zero
+
+			file_to_process = 1;
+
+		} //... end of if there was an EOF for an imagery file
+		  
+
+    } //... end of file_to_process loop
+
+
+
+    //######################################################################################################################
+
+	printf(          "\n Halting Meteor detection Processing, Closing Files\n\n");
+
+	fprintf(logfile, "\n Halting Meteor detection Processing, Closing Files\n\n");
+
+	fflush(logfile);
+
+	//................
+
+	fprintf(logfile, "CloseFTPdetectinfo\n");
+	fflush(logfile);
+
+	CloseFTPdetectinfo(1);
+
+	//................
+
+	fprintf(logfile, "ClusteringFreeMemory\n");
+	fflush(logfile);
+
+	ClusteringFreeMemory(&cluster);
+
+	//................
+
+	fprintf(logfile, "TrackingFreeMemory\n");
+	fflush(logfile);
+
+    TrackingFreeMemory( trackers );
+    TrackingFreeMemory( tracksave );
+
+	//................
+
+	fprintf(logfile, "MTPcompression_UChar_MemCleanup\n");
+	fflush(logfile);
+
+    MTPcompression_UChar_MemCleanup( &cmp );
+
+	//................
+
+	fprintf(logfile, "Free2Darray\n");
+	fflush(logfile);
+
+	free(imageseq);
+
+	//................
+
+	fclose(listfile);
+	fclose(logfile);
+
+    fprintf( stdout, "\nProcessing Complete\n");
+    fprintf( stderr, "\nProcessing Complete\n");
+
+    Delay_msec(2000);
+
+}
+
+
+//%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+
+

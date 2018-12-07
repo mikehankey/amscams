@@ -1,0 +1,96 @@
+{
+   "site"  : {
+      "ams_id" : "ams1",
+      "mac_addr" : "00:0e:c4:d3:e1:15",
+      "sd_video_dir" : "/mnt/ams2/SD/",
+      "hd_video_dir" : "/mnt/ams2/HD/",
+      "cams_queue_dir" : "/mnt/ams2/CAMS/queue/",
+      "cams_dir" : "/home/ams/amscams/",
+      "proc_dir" : "/mnt/ams2/SD/proc2/",
+      "obs_name" : "Starlight Farm",
+      "operator_name" : "Mike Hankey",
+      "operator_email" : "mike.hankey@gmail.com",
+      "operator_city" : "Monkton",
+      "operator_state" : "MD",
+      "device_lng" : "-76.58425183",
+      "device_lat" : "39.58909497",
+      "device_alt" : "145",
+      "cams_pwd" : "xrp23q"
+   },
+   "camera_settingsv1" : {
+      "night" : {
+         "brightness" : "60",
+         "contrast" : "150",
+         "gamma" : "30",
+         "BLC" : "20"
+      },
+      "day" : {
+         "brightness" : "50",
+         "contrast" : "50",
+         "gamma" : "50",
+         "BLC" : "50"
+      },
+      "calib" : {
+         "brightness" : "50",
+         "contrast" : "50",
+         "gamma" : "50",
+         "BLC" : "50"
+      }
+   },
+   "cameras" : {
+      "cam1" : {
+         "cams_id" : "010001",
+         "cam_version" : "1",
+         "ip" : "192.168.176.71",
+         "sd_url_new" : "/user=admin&password=&channel=1&stream=1.sdp",
+         "hd_url_new" : "/user=admin&password=&channel=1&stream=0.sdp",
+         "sd_url" : "/av0_1",
+         "hd_url" : "/av0_0"
+      },
+      "cam2" : {
+         "cams_id" : "010002",
+         "cam_version" : "1",
+         "ip" : "192.168.176.72",
+         "sd_url_new" : "/user=admin&password=&channel=1&stream=1.sdp",
+         "hd_url_new" : "/user=admin&password=&channel=1&stream=0.sdp",
+         "sd_url" : "/av0_1",
+         "hd_url" : "/av0_0"
+      },
+      "cam3" : {
+         "cams_id" : "010003",
+         "cam_version" : "1",
+         "ip" : "192.168.176.73",
+         "sd_url_new" : "/user=admin&password=&channel=1&stream=1.sdp",
+         "hd_url_new" : "/user=admin&password=&channel=1&stream=0.sdp",
+         "sd_url" : "/av0_1",
+         "hd_url" : "/av0_0"
+      },
+      "cam4" : {
+         "cams_id" : "010004",
+         "cam_version" : "1",
+         "ip" : "192.168.176.74",
+         "sd_url_new" : "/user=admin&password=&channel=1&stream=1.sdp",
+         "hd_url_new" : "/user=admin&password=&channel=1&stream=0.sdp",
+         "sd_url" : "/av0_1",
+         "hd_url" : "/av0_0"
+      },
+      "cam5" : {
+         "cams_id" : "010005",
+         "cam_version" : "1",
+         "ip" : "192.168.176.75",
+         "sd_url_new" : "/user=admin&password=&channel=1&stream=1.sdp",
+         "hd_url_new" : "/user=admin&password=&channel=1&stream=0.sdp",
+         "sd_url" : "/av0_1",
+         "hd_url" : "/av0_0"
+      },
+      "cam6" : {
+         "cam_version" : "1",
+         "cams_id" : "010006",
+         "ip" : "192.168.176.76",
+         "sd_url_new" : "/user=admin&password=&channel=1&stream=1.sdp",
+         "hd_url_new" : "/user=admin&password=&channel=1&stream=0.sdp",
+         "sd_url" : "/av0_1",
+         "hd_url" : "/av0_0"
+      }
+   }
+}

@@ -1,0 +1,4 @@
+width=640
+height=480
+avg_frame_rate=300000/11987
+nb_frames=1500

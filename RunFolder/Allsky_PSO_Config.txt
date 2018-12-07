@@ -1,0 +1,38 @@
+Read version                        = 0.10	
+Number of particles in the swarm    = 500
+Max number of iterations            = 2000
+Boundary handling flag              = 1
+Boundary limits changing flag       = 1
+Initial particle distribution       = 0
+Weight for inertia                  = 0.8
+Weight for stubborness              = 1.0
+Weight for group pressure           = 2.0
+Cost function cnvergence criteria   = 1.0e-13
+
+====================================================================================
+
+Pass 1 uses a pre PSF convolved image array and hypothesizes line segment templates,  
+   so it is computationally fast and lots of particles can be used. 
+
+Pass 2 uses a line segment template that is convolved with the PSF per hypothesis, 
+   so it is computationally slow and fewer particles should be used. 
+
+====================================================================================
+
+//------ "boundary handling" options
+
+BOUNDARY_PERIODIC        0  // Parameter values wrap around upper/lower limits
+BOUNDARY_REFLECTIVE      1  // Parameter values reverse velocity at limits
+
+
+//------ "boundary limits" options
+
+LIMITS_ARE_STRICT        0  // No changes allowed to the boundary limits
+LIMITS_ARE_LOOSE         1  // Limits can change based on "best" parameter's proximity to boundary
+
+
+//------ "particle distribution" options
+
+PARTICLEDISTRO_RANDOM    0  // Uniformly random distribution of particles around initial guess
+PARTICLEDISTRO_GAUSS     1  // Normal (Gaussian) distribution of particles around initial guess
+
