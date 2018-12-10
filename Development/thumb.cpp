@@ -55,12 +55,13 @@
 
 #else  /********************  LINUX  ******************************/
 
-
+/*
 #include <opencv2/opencv.hpp>
 #include <opencv2/tracking.hpp>
 #include <opencv2/core/ocl.hpp>
 #include <unistd.h>
 using namespace cv;
+*/
 using namespace std;
 
 
@@ -120,8 +121,8 @@ struct DateAndTime         ut;
 struct HCAMSparameters     params;
 
 // opencv vars
-Mat frame, gray, frameDelta, thresh, firstFrame;
-vector<vector<Point> > cnts;
+//Mat frame, gray, frameDelta, thresh, firstFrame;
+//vector<vector<Point> > cnts;
 
 
 
@@ -203,19 +204,23 @@ vector<vector<Point> > cnts;
 
 			memset(maxpixel, 0, npixels);
 // main video loop here
-Mat firstFrame = Mat(480,640, CV_8UC1);
-Mat new_frame = Mat(480,640, CV_8UC1);
+//Mat firstFrame = Mat(480,640, CV_8UC1);
+//Mat new_frame = Mat(480,640, CV_8UC1);
 int frame_count;
 int ffset;
 ffset = 0;
 frame_count = 0;
 int motion;
 motion = 0;
+int no_motion;
+no_motion = 0;
 int frame_motion;
 frame_motion = 0;
 int motion_frames[2000]; 
 int px_frames[2000]; 
 int cons_frames[2000]; 
+int px_diff_frames[2000]; 
+int px_diff_val_frames[2000]; 
 int max_cons_px;
 int highest_max_cons_px;
 
@@ -223,6 +228,11 @@ int bp_total;
 int this_bp_total;
 int bp_avg;
 int this_bp_factor;
+int px_diff;
+int px_diff_count;
+int px_diff_total;
+int px_diff_val_total;
+int px_diff_pp;
 
 highest_max_cons_px = 0;
 max_cons_px = 0;
@@ -230,6 +240,12 @@ this_bp_factor = 0;
 this_bp_total = 0;
 bp_total = 0;
 bp_avg = 0;
+
+px_diff = 0;
+px_diff_count = 0;
+px_diff_total = 0;
+px_diff_val_total = 0;
+px_diff_pp = 0;
 
 status = Read_FFMPEG_Pipe_Image(imagefrm, dummyframe);
 
@@ -247,36 +263,54 @@ status = Read_FFMPEG_Pipe_Image(imagefrm, dummyframe);
                                    Read_FFMPEG_Pipe_Close();
                                    break;
                                 }
-
+                                px_diff = 0;
+                                px_diff_total = 0;
+                                px_diff_val_total = 0;
+                                px_diff_pp = 0;
 				for (kpixel = 0; kpixel < npixels; kpixel++) {
-                                        
-
+                                  
 					if (maxpixel[kpixel] < imagefrm[kpixel])  {
+                                           px_diff = imagefrm[kpixel] - maxpixel[kpixel];
                                            maxpixel[kpixel] = imagefrm[kpixel];
-                                             if (frame_count > 3 ) {
-                                                if (imagefrm[kpixel] >= 50) {
-                                                   bp_total = bp_total + 1;
-                                                   this_bp_total = this_bp_total + 1;
+                                            
+                                           if (px_diff > 5) {
+                                                if (frame_count > 3) {
+                                                   px_diff_total = px_diff_total + 1;
+                                                   px_diff_val_total = px_diff_val_total + px_diff;
+                                                   px_diff_pp = (int)px_diff_val_total / px_diff;
                                                 }
-                                             }
-                                        }
-
-	 			}
+                                                if (frame_count > 3 ) {
+                                                   if (imagefrm[kpixel] >= 50) {
+                                                      bp_total = bp_total + 1;
+                                                      this_bp_total = this_bp_total + 1;
+                                                   }
+                                                }
+                                           }
+	 			       }
+                                }
                                 if (frame_count > 3) {
                                    bp_avg = bp_total / (frame_count -3);
                                 }
                                 if (bp_avg > 0) {
+                                   //this_bp_factor = (int)(this_bp_total / bp_avg);
                                    this_bp_factor = (int)(this_bp_total / bp_avg);
                                 } 
                                 else {
-                                   this_bp_factor = 0;
+                                   this_bp_factor = this_bp_total;
                                 }
-                                if (this_bp_factor >= 1) {
+                                if ((this_bp_factor >= 1 and px_diff_pp >= 20) or (px_diff_val_total > 400 ))  {
                                    max_cons_px = max_cons_px + 1; 
-                                   //printf("PX:%d,%d,%d,%d,X%d,%d\n", frame_count, bp_total, bp_avg, this_bp_total,this_bp_factor, max_cons_px);
+                                   no_motion = 0;
                                 }
                                 else {
-                                   max_cons_px = 0; 
+                                   if (no_motion > 0 ) {
+                                      max_cons_px = 0; 
+                                   }
+                                   if (max_cons_px <= 3) {
+                                      max_cons_px = 0; 
+                                   }
+                                   no_motion = no_motion + 1;
+                                   
                                 }
                                 if (max_cons_px > highest_max_cons_px) {
                                    highest_max_cons_px = max_cons_px;
@@ -284,7 +318,10 @@ status = Read_FFMPEG_Pipe_Image(imagefrm, dummyframe);
                                 
                                 px_frames[frame_count] = this_bp_factor;
                                 cons_frames[frame_count] = max_cons_px;
-                                   this_bp_total = 0;
+                                //printf("FRAME:%d,BPAT:%d,BP_AVG:%d,BPT:%d,X%d,CM=%d,PXDIFFT:%d,PX_DIFF_VAL:%d,PX_DIFF_PP,%d,nm=%d\n", frame_count, bp_total, bp_avg, this_bp_total,this_bp_factor, max_cons_px,px_diff_total, px_diff_val_total,px_diff_pp,no_motion);
+                                //printf("PX DIFF: %d %d ", px_diff_total, px_diff_val_total);
+
+                                this_bp_total = 0;
                                
 
 			}  //... end of loop reading all frames from the mp4 file
@@ -308,7 +345,7 @@ status = Read_FFMPEG_Pipe_Image(imagefrm, dummyframe);
 
                     //write motion file
                     printf("Highest max cons: %d", highest_max_cons_px);
-                    if (highest_max_cons_px > 9) {
+                    if (highest_max_cons_px >= 3) {
                        FILE * mfp;
                        mfp = fopen(motion_filename, "w");
                        for (int i = 0; i <= frame_count -1; i++) {
@@ -340,8 +377,8 @@ status = Read_FFMPEG_Pipe_Image(imagefrm, dummyframe);
                     printf("SYSTEM: %s\n", system_command);
                     system(system_command);
 
-                    if (highest_max_cons_px > 9) {
-                    strcpy(system_command, "/home/ams/CAMS/python/parse-motion.py ");
+                    if (highest_max_cons_px >= 3) {
+                    strcpy(system_command, "/home/ams/amscams/python/parse-motion.py ");
                     strcat(system_command, new_motion_filename);
                     printf("SYSTEM: %s\n", system_command);
                     system(system_command);

@@ -65,7 +65,7 @@ def get_files(dir, cams_id):
          magic = float(magic)
          print ("Mean Image Brightness:", magic)
 
-         if magic > 0 and magic < 12000:
+         if magic > 0 and magic < 30000:
             print(filename,motion_file)
             pic1 = Image.open(str(filename))
             if master_stack is None:

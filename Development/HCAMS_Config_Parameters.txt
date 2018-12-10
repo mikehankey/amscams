@@ -1,7 +1,7 @@
 Read file version number                   = 102
 ----------  PATHS & FILES ----------------
-FFMPEG path                                = /home/ams/bin/ffmpeg
-FFPROBE path                               = /home/ams/bin/ffprobe
+FFMPEG path                                = /usr/bin/ffmpeg
+FFPROBE path                               = /usr/bin/ffprobe
 --------- PIXEL processing --------------- 
 Max #Frames in a compression block         = 256
 -------- CLUSTER processing --------------

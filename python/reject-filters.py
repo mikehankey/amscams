@@ -130,12 +130,18 @@ def load_video_frames(trim_file):
 def confirm_motion(trim_file,frame_data): 
    fel = trim_file.split("-trim")
    base_file = fel[0]
-   confirm_file = base_file + "-confirm.txt"
+   main_confirm_file = base_file + "-confirm.txt"
+ 
+   confirm_file = trim_file.replace(".mp4",  "-confirm.txt")
+   print ("CONFIRMED:", confirm_file)
    out = open(confirm_file, "w")
    out.write(str(frame_data))
    out.close() 
+   out = open(main_confirm_file, "w")
+   out.write(str(frame_data))
+   out.close() 
 
-def move_rejects(trim_file,frame_data):
+def move_rejects(trim_file, frame_data):
    proc_dir = json_conf['site']['proc_dir']
 
    fel = trim_file.split("-trim")
@@ -148,12 +154,12 @@ def move_rejects(trim_file,frame_data):
    out.close() 
 
 
-
+ 
    cmd = "mv " + motion_file + " " + proc_dir + "rejects/"
    print(cmd)
-   os.system(cmd)
+#   os.system(cmd)
    cmd = "mv " + trim_file + " " + proc_dir + "rejects/"
-   os.system(cmd)
+#   os.system(cmd)
    print(cmd)
 
 def check_frame_rate(trim_file):
@@ -163,16 +169,19 @@ def check_frame_rate(trim_file):
    efp = open("checks.txt")
    #Stream #0:0(und): Video: h264 (Main) (avc1 / 0x31637661), yuvj420p(pc, bt709), 640x480, 649 kb/s, 18.66 fps, 25 tbr, 90k tbn, 180k tbc (default)
    stream_found = 0
-   for line in efp:
-      if "Stream" in line:
-         el = line.split(",")
-         fps = el[5]
-         fps = fps.replace(" fps", "")
-         fps = fps.replace(" ", "")
-         stream_found = 1
-   if stream_found == 0:
+   try:
+      for line in efp:
+         if "Stream" in line:
+            el = line.split(",")
+            fps = el[5]
+            fps = fps.replace(" fps", "")
+            fps = fps.replace(" ", "")
+            stream_found = 1
+      if stream_found == 0:
+         fps = 0
+      print(fps)
+   except:
       fps = 0
-   print(fps)
    return(fps)
 
 def apply_reject_filters(trim_file):
@@ -182,7 +191,7 @@ def apply_reject_filters(trim_file):
    mf = el[0]
    print(el)
    clip_file = mf + ".mp4"
-   confirm_file = mf + "-confirm.txt"
+   confirm_file = trim_file.replace(".mp4", "-confirm.txt")
 
    file_exists = Path(confirm_file)
    if (file_exists.is_file() is True):
@@ -204,9 +213,10 @@ def apply_reject_filters(trim_file):
          reject_reason = "no frames/bad file."
    else:
       print("SKIPPING FOR LOW FPS")
+      frame_data = []
       max_cons_motion = 0
-   if (max_cons_motion < 7) :
-       print ("REJECTED")
+   if (max_cons_motion < 3) :
+       print ("REJECTED not enough consectutive motion...")
        move_rejects(trim_file, frame_data)
    else:
        print ("PASSED")

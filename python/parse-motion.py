@@ -22,7 +22,7 @@ def ffmpeg_cat (file1, file2, outfile):
    fp.write("file '" + file1 + "'\n")
    fp.write("file '" + file2 + "'\n")
    fp.close()
-   cmd = "ffmpeg -y -f concat -safe 0 -i " + cat_file + " -c copy " + outfile
+   cmd = "/usr/bin/ffmpeg -y -f concat -safe 0 -i " + cat_file + " -c copy " + outfile
    print(cmd)
    os.system(cmd)
 
@@ -72,23 +72,22 @@ def find_hd_file(sd_file):
 
    # trim the next HD file from the start to the original offset
    hd_file2 = ffmpeg_trim(next_hd_file, str(0), str(int(tos_ts)), "-sd_linked")
-   hd_outfile = hd_video_dir + "/" + str(sd_date) + "_" + sd_h + "-" + sd_m + "-" + sd_s + "-" + sd_cam + "-HD-sync.mp4"
+   hd_outfile = hd_video_dir + "/" + str(sd_date) + "_" + sd_h + "_" + sd_m + "_" + sd_s + "_000_" + sd_cam + "-HD-sync.mp4"
    ffmpeg_cat(hd_file1, hd_file2, hd_outfile)
 
    cmd = "cp " +hd_outfile + " " + proc_dir + sd_date + "/" 
    print(cmd)
    os.system(cmd)
-   final_hd_outfile = proc_dir + "/" + str(sd_date) + "/" + str(sd_date) + "_" + sd_h + "-" + sd_m + "-" + sd_s + "-" + sd_cam + "-HD-sync.mp4"
+   final_hd_outfile = proc_dir + "/" + str(sd_date) + "/" + str(sd_date) + "_" + sd_h + "_" + sd_m + "_" + sd_s + "_000_" + sd_cam + "-HD-sync.mp4"
    return(final_hd_outfile)
-#sd_file = sys.argv[1]
-#hd_file = find_hd_file(sd_file)
+
 
 
 def ffmpeg_trim (filename, trim_start_sec, dur_sec, out_file_suffix):
    #ffmpeg -i /mnt/ams2/meteors/2018-09-20/2018-09-20_22-20-05-cam5-hd.mp4 -ss 00:00:46 -t 00:00:06 -c copy /mnt/ams2/meteors/2018-09-20/2018-09-20_22-20-05-cam5-hd-trim.mp4
 
    outfile = filename.replace(".mp4", out_file_suffix + ".mp4")
-   cmd = "ffmpeg -i " + filename + " -y -ss 00:00:" + str(trim_start_sec) + " -t 00:00:" + str(dur_sec) + " -c copy " + outfile
+   cmd = "/usr/bin/ffmpeg -i " + filename + " -y -ss 00:00:" + str(trim_start_sec) + " -t 00:00:" + str(dur_sec) + " -c copy " + outfile
    print (cmd)
    os.system(cmd)
    return(outfile)
@@ -104,19 +103,27 @@ trim_base = filename.replace("-motion.txt", "-trim-");
 mp4_file = filename.replace("-motion.txt", ".mp4");
 
 hd_file = find_hd_file(mp4_file)
-print("HD FILE:", hd_file)
+#print("HD FILE:", hd_file)
+
+last_cons_mo = 0
+no_motion = 0
 
 for line in file:
    line = line.replace("\n", "")
    (frameno, mo, bpf, cons_mo) = line.split(","); 
-   if (int(cons_mo) > 0):
+   if int(cons_mo) > 0:
       #print ("Cons:", cons_mo);
-      event.append([frameno,mo,bpf,cons_mo])
+      print (frameno,mo,bpf,cons_mo,no_motion)
+      if int(cons_mo) != int(last_cons_mo):
+         event.append([frameno,mo,bpf,cons_mo])
+         no_motion = 0
    else:
-      #print ("Event Len:", len(event)   )
-      if len(event) > 10:
-         events.append(event)
-      event = []
+      if len(event) >= 3 or no_motion >2:
+         if len(event) > 2:
+            events.append(event)
+         event = []
+      no_motion = no_motion +1
+   last_cons_mo = cons_mo
 
 event_count = 1
 for event in events:
@@ -124,17 +131,22 @@ for event in events:
    start_frame = int(event[0][0])
    end_frame = int(event[-1][0])
    frame_elp = int(end_frame) - int(start_frame)
-   start_sec = int(start_frame / 25) - 5
+   start_sec = int(start_frame / 25) - 3 
    if start_sec <= 0:
       start_sec = 0
-   dur = int(frame_elp / 25) + 5 + 3
+   dur = int(frame_elp / 25) + 3 + 2
    outfile = ffmpeg_trim(mp4_file, start_sec, dur, "-trim" + str(event_count))
-   
-   hd_outfile = ffmpeg_trim(hd_file, start_sec, dur, "-trim" + str(event_count))
+   #hd_outfile = ffmpeg_trim(hd_file, start_sec, dur, "-trim" + str(event_count))
    event_count = event_count + 1;
    print ("EVENT Start frame: ", start_frame, start_sec)
    print ("EVENT End frame: ", end_frame, start_sec + dur)
    print ("Total frames: ", frame_elp, dur)
-   print(hd_outfile)
+   #print(hd_outfile)
    #reject_filters(outfile)
-   
+  
+ec = 0; 
+for event in events:
+   print("EVENT: ", ec, event[0][0], len(event), outfile)
+   ec = ec + 1
+
+print ("MIKE TOTAL EVENTS",ec )

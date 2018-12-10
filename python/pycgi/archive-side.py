@@ -29,34 +29,28 @@ def get_bp_motion(motion_file):
    event = []
    events = []
 
+
+   last_cons_mo = 0
+   no_motion = 0
+
    for line in file:
       line = line.replace("\n", "")
       (frameno, mo, bpf, cons_mo) = line.split(",");
-      if (int(cons_mo) > 0):
+      if int(cons_mo) > 0:
          #print ("Cons:", cons_mo);
-         event.append([frameno,mo,bpf,cons_mo])
+         #print (frameno,mo,bpf,cons_mo,no_motion)
+         if int(cons_mo) != int(last_cons_mo):
+            event.append([frameno,mo,bpf,cons_mo])
+            no_motion = 0
       else:
-         #print ("Event Len:", len(event)   )
-         if len(event) > 10:
-            events.append(event)
-         event = []
+         if len(event) >= 3 or no_motion >2:
+            if len(event) > 2:
+               events.append(event)
+            event = []
+         no_motion = no_motion +1
+      last_cons_mo = cons_mo
 
-   #event_count = 1
-   #for event in events:
-      #print ("Event:", event)
-      #start_frame = int(event[0][0])
-      #end_frame = int(event[-1][0])
-      #frame_elp = int(end_frame) - int(start_frame)
-      #start_sec = int(start_frame / 25) - 5
-      #if start_sec <= 0:
-      #   start_sec = 0
-      #dur = int(frame_elp / 25) + 5 + 3
-      #outfile = ffmpeg_trim(mp4_file, start_sec, dur, "-trim" + str(event_count))
-      #event_count = event_count + 1;
-      #print ("EVENT Start frame: ", start_frame, start_sec)
-   #   print ("EVENT End frame: ", end_frame, start_sec + dur)
-   #   print ("Total frames: ", frame_elp, dur)
-      #reject_filters(outfile)
+
    return(events)
 
 
@@ -65,14 +59,13 @@ def examine_video_clip(video_file):
    (motion, reject, confirm) = get_motion_file(video_file)
    stack_file = video_file.replace(".mp4", "-stacked.png")
    motion_file = video_file.replace(".mp4", "-motion.txt")
-   confirm_file = video_file.replace(".mp4", "-confirm.txt")
    cams_detect = 0
    frame_file_base = video_file.replace(".mp4", "")
    print("Detection Details: <UL>")
+   print("SD 1-Minute Clip: <BR><a href=" + video_file + ">" + video_file + "</a><UL>")
    if (motion == 1):
       print ("<LI>Motion detected " )
       if confirm == 1:
-         frame_data = get_frame_data(confirm_file)
          print("and confirmed.</li>")
       if reject == 1:
          print("but rejected.")
@@ -85,9 +78,16 @@ def examine_video_clip(video_file):
    trim_files = get_trim_clips(video_file)
    print("<h2>Trimmed Clips</h2>")
    clips = 1
+   frame_data_sets = {}
    for trim_file in trim_files:
+
+      confirm_file = trim_file.replace(".mp4", "-confirm.txt")
+      print("CONF: ", confirm_file)
+      frame_data_sets[clips] = get_frame_data(confirm_file)
+
       print ("SD Clip " + str(clips) + "<p><iframe width=640 height=480 src=" + trim_file + "></iframe></p>")
       print ("HD Clip " + str(clips))
+      clips = clips + 1
 
    if motion == 1:
       # print out the motion details from CV2 motion detector
@@ -97,19 +97,38 @@ def examine_video_clip(video_file):
       for event in events:
          print("Event " + str(ec))
          print ("<table border=1>")  
-         print("<tr><td>Main Clip Frame #</td><td>Factor</td><td>Consectuive Frame</td><td>Frame Image</td></tr>")
+         print("<tr><td>Main Clip Frame #</td><td>Factor</td><td>Consectuive Frame</td></tr>")
          
          for mf in event:
             print ("<tr><td>" + str(mf[0]) + "</td><td>" + str(mf[2]) + "</td><td>" + str(mf[3]) + "</td></tr>")
          ec = ec + 1
          print ("</table>")
 
-      if len(frame_data) > 0:
+      if len(frame_data_sets) > 0:
          print ("<h2>Motion Details</h2>") 
          #print ("<table border=1>")  
-         #print("<tr><td>Trim Clip</td><td>Frame #</td><td>Contours (x,y,w,h)</td><td>Consectuive Frame</td><td>Frame Image</td></tr>")
+         frame_data = frame_data_sets[1]
         
          fc = 1
+         print("<table border=1>")
+         print("<tr><td>Trim Clip</td><td>Frame #</td><td>Contours (x,y,w,h)</td><td>Consectuive Frame</td></tr>")
+         for fd in frame_data:
+            print ("<tr>") 
+            print ("<td>" + str(fd[0]) + "</td><td>" + str(fd[1]) + "</td>" )
+            print ("<td>")
+
+            fd_temp = sorted(fd[2], key=lambda x: x[3], reverse=True)
+            if len(fd_temp) > 0:
+               print("<table border=1 cellpadding=3 cellspacing=3>")
+               print ("<tr><td>X</td><td>Y</td><td>W</td><td>H</td></tr>")
+               for x,y,w,h in fd_temp:
+                  print ("<tr><td>" + str(x) + "</td><td>" + str(y) + "</td><td>" + str(w) + "</td><td>" + str(h) + "</td></tr>")
+               print("</table>") 
+
+            print ("</td><td>" + str(fd[3]) + "</td></tr>" )
+         print ("</table>")
+
+
          for fd in frame_data:
             #print ("<tr><td>" + str(fd[0]) + "</td><td>" + str(fd[1]) + "</td><td>" )
             tc = fd[0]
@@ -200,8 +219,6 @@ def load_scan_file(day, cam_num):
          if int(hit) == 1:
             od = od + 1
           
-   else:
-      print ("Scan file does not exists.", scan_file)
    
    return(img_dict, od)
 
@@ -280,7 +297,7 @@ def browse_day(day, cam):
    files = get_files_for_day_cam(day, cams_id)
    file_dict = defaultdict()
    print(str(len(files)) + " total files <BR>")
-   print(str(od) + " objects auto detected<BR>")
+   #print(str(od) + " objects auto detected<BR>")
    print ("<form action=archive-side.py>")
    print ("<input type=submit value='Show Detections Only'>")
    print ("<input type=hidden name=day value='" + day + "'>")
@@ -295,6 +312,7 @@ def browse_day(day, cam):
    tag_file = proc_dir + str(day) + "/" + "tags-cam" + str(cam) + ".txt"
    file_exists = Path(tag_file)
    if (file_exists.is_file()):
+      print ("OPEN TAG FILE")
       file_dict = parse_tags(tag_file, file_dict) 
    count = 0
    for file in files:
@@ -302,12 +320,13 @@ def browse_day(day, cam):
       blend = file.replace(".mp4", "-blend.jpg") 
       #diff = file.replace(".mp4", "-diff.jpg") 
       diff = file.replace(".mp4", "-objects.jpg") 
-      if jpg in img_dict:
-         hit = int(img_dict[jpg]['hit'])
-         status_desc = img_dict[jpg]['status_desc']   
-      else: 
-         hit = 0 
-         status_desc = "rejected for brightness" 
+      confirm_file = file.replace(".mp4", "-confirm.txt") 
+      fe = Path(confirm_file)
+      if (fe.is_file()):
+         hit = 1
+      else:
+         hit = 0
+      status_desc = "" 
       if (detect_only == 1 and hit == 1) or (detect_only == 0):
          tags = file_dict[file]['tags']
          print ("<div class='divTable'>")
