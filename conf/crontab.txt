@@ -1,7 +1,7 @@
 
-* * * * * cd /home/ams/CAMS/python/; ./ffmpeg_record.py start_all > /dev/null
-*/10 * * * * cd /home/ams/CAMS/python/; ./as6-settings.py > /dev/null
-10 * * * * cd /home/ams/CAMS/python/; ./move-files.py > /dev/null
-* * * * * cd /home/ams/CAMS/python/; ./process_data.py > /tmp/pd.txt
-* * * * * cd /home/ams/CAMS/python/; ./reject-filters.py do_batch> /tmp/rj.txt
+* * * * * cd /home/ams/amscams/python/; ./ffmpeg_record.py start_all > /dev/null
+*/10 * * * * cd /home/ams/amscams/python/; ./as6-settings.py > /dev/null
+10 * * * * cd /home/ams/amscams/python/; ./move-files.py > /dev/null
+* * * * * cd /home/ams/amscams/python/; ./process_data.py > /tmp/pd.txt
+* * * * * cd /home/ams/amscams/python/; ./reject-filters.py do_batch> /tmp/rj.txt
 
