@@ -1,4 +1,6 @@
 #!/usr/bin/python3
+import math
+import numpy as np
 import json
 from collections import defaultdict
 #from random import *
@@ -22,6 +24,27 @@ cgitb.enable()
 print ("Content-type: text/html\n\n")
 print (" <style> .active { background: #ff0000; } .inactive { background: #ffffff; } body { background-color: #000000; color: #ffffff } </style>")
 
+
+
+def calc_dist(p1,p2):
+   x1,y1 = p1
+   x2,y2 = p2
+   dist = math.sqrt((x2 - x1)**2 + (y2 - y1)**2)
+   print ("<HR>DIST: ", x1,y1,x2,y2,dist,"<HR>")
+   return dist
+
+
+def find_slope(p1,p2):
+   (x1,y1) = p1
+   (x2,y2) = p2
+   top = y2 - y1
+   bottom = x2 - y2
+   if bottom > 0:
+      slope = top / bottom
+   else:
+      slope = "na"
+   #print(x1,y1,x2,y2,slope)
+   return(slope)
 
 def get_bp_motion(motion_file):
 
@@ -53,7 +76,133 @@ def get_bp_motion(motion_file):
 
    return(events)
 
+def slope_match(pts, hist):
+   slopes = []
+   x,y = pts
+   sm = 0
+   print ("<BR> MATCHING SLOPE FOR X,Y: ", x,y, "<BR>")
+   print ("<BR> HIST: ", hist, "<BR>")
+   for hx,hy in hist:
+      slope = find_slope((x,y),(hx,hy))
+      print ("SLOPE:", x,y,hx,hy,slope,"<BR>")
+      if slope != "na":
+         slopes.append(slope)
+   slope_avg = float(sum(slopes) / len(slopes))
+   for sl in slopes:
+      if slope_avg - .1 <= sl <= slope_avg + .1:
+         sm = sm + 1
+   if len(slopes) > 0:
+      smp = sm / len(slopes)
+   return(smp, sm)
 
+def check_hist(x,y,hist):
+   #print("<HR>LEN HIST: ", len(hist), "<HR>")
+   for (fn,hx,hy) in hist:
+      if hx - 20 <= x <= hx + 20 and hy - 20 <= y <= hy +20:
+         return(1)
+   return(0)
+
+def find_object(fn, pt, moving_objects):
+   x,y = pt
+   prox_match = 0
+   if moving_objects is None:
+      lenstr = "0"
+   else:
+      lenstr = str(len(moving_objects))
+
+   print ("<h4>Current Known Objects that could match x,y " + str(x) + "," + str(y) + " " + lenstr + "</h4>")
+   if moving_objects is None:
+      # there are no objects yet, so just add this one and return. 
+      oid = 0
+      mo = []
+      moving_objects = np.array([ [[oid],[x],[y],[[fn,x,y],[fn,x,y]] ]])
+      #print("NP SIZE & SHAPE:", np.size(moving_objects,0),np.size(moving_objects,1))
+      return(oid, moving_objects)
+   else:
+      # match based on proximity to pixel history of each object 
+      #print("NP SIZE & SHAPE:", np.size(moving_objects,0),np.size(moving_objects,1))
+      #print("MOVING OBJECTS:", moving_objects[0])
+      rowc = 0
+      match_id = None
+      for (oid,ox,oy,hist) in moving_objects:
+         found_in_hist = check_hist(x,y,hist)
+         #print("<BR>FOUND IN HIST?" , found_in_hist, "<BR>")
+         if found_in_hist == 1:
+            prox_match = 1
+            match_id = oid
+
+   #can't find match so make new one
+   if prox_match == 0:
+      oid = new_obj_id((x,y), moving_objects) 
+      moving_objects = np.append(moving_objects, [ [[oid],[x],[y],[[fn,x,y],[fn,x,y]]] ], axis=0)
+   else:
+      oid,ox,oy,hist = moving_objects[match_id][0]
+      hist.append([fn,x,y])
+      moving_objects[match_id][0] = [ [[oid],[ox],[oy],[hist]] ]
+      
+   return(oid, moving_objects)
+
+def new_obj_id(pt, moving_objects):
+   x,y = pt
+   #print ("<BR> MOVING OBJS : ", moving_objects)
+   #np_mo = np.array([[[1],[44],[55],[1,44,55]],[[2],[33],[22],[2,33,22]]])
+   max_id = np.max(moving_objects, axis=0)
+   #print ("MAX:", max_id)
+   new_id = max_id[0][0] + 1
+   #print ("MAX ID IS : ", max_id)
+   #print ("NEW ID IS : ", new_id)
+   return(new_id) 
+
+def track_objects(pts,moving_objects):
+   x,y = pts
+   found_object = 0
+   idx = 0
+   slope = 0 
+   slope_obj_found = 0 
+   smp = 0
+   for (id,ox,oy,hist) in moving_objects:
+      slope_obj_found = 0 
+      smp = 0
+      hc = 0
+      for (hx,hy) in hist:
+         if hx - 5 <= x <= hx + 5 and hy - 5 <= y <= hy +5:
+            found_object = idx
+         if hc > 0:
+            slope = find_slope((hx,hy),(last_hx,last_hy))
+
+         last_hx = hx
+         last_hy = hy
+         hc = hc + 1
+      if len(hist) > 3:
+         smp,smt = slope_match((x,y),hist)
+      else:
+         smp = 0
+         smt = 0
+    
+      if smp >= .95 and smt > 10:
+         print ("ID:", x,y, idx, "SMP:", smp, smt, "<BR>")
+         slope_obj_found = idx
+      idx = idx + 1
+      
+   if found_object == 0:
+      print ("<BR>OBJECT NOT FOUND : ", found_object, slope_obj_found)
+      if slope_obj_found != 0:
+         found_object = slope_obj_found
+      else:
+         found_object = idx 
+      object = (found_object, x, y, [[x,y]])
+      moving_objects.append(object)
+   else:
+      #if slope_obj_found != 0 and (slope_obj_found != found_object):
+      #   found_object = slope_obj_found
+      print ("<BR>FOUND OBJECT IS : ", found_object)
+      id, ox, oy, hist = moving_objects[found_object]
+      hist.append(([x,y]))
+      moving_objects[found_object] = (id,ox,oy,(hist))
+   return(found_object, moving_objects)
+      
+      
+   
 
 def examine_video_clip(video_file):
    (motion, reject, confirm) = get_motion_file(video_file)
@@ -77,76 +226,92 @@ def examine_video_clip(video_file):
 
    trim_files = get_trim_clips(video_file)
    print("<h2>Trimmed Clips</h2>")
-   clips = 1
+   clips = 1 
    frame_data_sets = {}
+   if motion == 1:
+      events = get_bp_motion(motion_file)
+
+
+   moving_objects = None
+   tfc = 1
    for trim_file in trim_files:
 
       confirm_file = trim_file.replace(".mp4", "-confirm.txt")
-      print("CONF: ", confirm_file)
       frame_data_sets[clips] = get_frame_data(confirm_file)
-
+      #print("CONF: ", clips, confirm_file, "<BR>")
       print ("SD Clip " + str(clips) + "<p><iframe width=640 height=480 src=" + trim_file + "></iframe></p>")
-      print ("HD Clip " + str(clips))
+      print ("HD Clip " + str(clips) + "<BR>")
+      #print("BP DETECT DATA:", events[clips], "<BR>")
+      #print("MOTION FRAME DATA:", frame_data_sets[clips], "<BR>")
+      print ("<table border=1>")  
+      print("<tr><td>Main Clip Frame #</td><td>Factor</td><td>Consectuive Frame</td></tr>")
+      for mf in events[clips-1]:
+         print ("<tr><td>" + str(mf[0]) + "</td><td>" + str(mf[2]) + "</td><td>" + str(mf[3]) + "</td></tr>")
+      print ("</table>")
+      fc = 1
+      frame_data = frame_data_sets[clips]
+      print("<table border=1>")
+      print("<tr><td>Trim Clip</td><td>Frame #</td><td>Contours (x,y,w,h)</td><td>Consectuive Frame</td><td>Image</td></tr>")
+      fc =1 
+      for fd in frame_data:
+         print ("<tr>") 
+         print ("<td>" + str(fd[0]) + "</td><td>" + str(fd[1]) + "</td>" )
+         print ("<td>")
+
+         fd_temp = sorted(fd[2], key=lambda x: x[3], reverse=True)
+         if len(fd_temp) > 0 and len(fd_temp) < 8:
+            print("<table border=1 cellpadding=3 cellspacing=3>")
+            print ("<tr><td>X</td><td>Y</td><td>W</td><td>H</td><td>OBJ ID</td></tr>")
+            for x,y,w,h in fd_temp:
+               #object, moving_objects = track_objects((x,y), moving_objects)
+               object, moving_objects = find_object(tfc, (x,y), moving_objects)
+               print ("<tr><td>" + str(x) + "</td><td>" + str(y) + "</td><td>" + str(w) + "</td><td>" + str(h) + "</td><td>" + str(object) + "</td> </tr>")
+            print("</table>") 
+         print ("</td><td>" + str(fd[3]) + "</td>" )
+         frame_file_base = trim_file.replace(".mp4", "")
+         frame_image = frame_file_base + "-fr" + str(fc) + "-tn.png"
+         print("<td><img src=" + frame_image + "></td></tr>")
+         fc = fc + 1
+         tfc = tfc + 1
+      print ("</table>")
       clips = clips + 1
 
-   if motion == 1:
-      # print out the motion details from CV2 motion detector
-      print ("<h2>Bright Pixel Detection Details</h2>") 
-      events = get_bp_motion(motion_file)
-      ec = 1
-      for event in events:
-         print("Event " + str(ec))
-         print ("<table border=1>")  
-         print("<tr><td>Main Clip Frame #</td><td>Factor</td><td>Consectuive Frame</td></tr>")
-         
-         for mf in event:
-            print ("<tr><td>" + str(mf[0]) + "</td><td>" + str(mf[2]) + "</td><td>" + str(mf[3]) + "</td></tr>")
-         ec = ec + 1
-         print ("</table>")
+   
 
-      if len(frame_data_sets) > 0:
-         print ("<h2>Motion Details</h2>") 
-         #print ("<table border=1>")  
-         frame_data = frame_data_sets[1]
-        
-         fc = 1
-         print("<table border=1>")
-         print("<tr><td>Trim Clip</td><td>Frame #</td><td>Contours (x,y,w,h)</td><td>Consectuive Frame</td></tr>")
-         for fd in frame_data:
-            print ("<tr>") 
-            print ("<td>" + str(fd[0]) + "</td><td>" + str(fd[1]) + "</td>" )
-            print ("<td>")
+   print ("<H1>Object Report</h1>")
+   print ("<table border=1>")
+   print ("<tr><td>Obj ID</td><td>Count</td><td>First</td><td>Last</td><td>Slope</td><td>Dist</td><td>Elapsed Frames</td><td>PX Dist/Frame</td><td>Status</td></tr>")
+   for object in moving_objects:
+      status = []
+      hist = object[3]
+      first = hist[0]
+      last = hist[-1]
+      p1 = first[1], first[2]
+      p2 = last[1], last[2]
+      hist_len = len(object[3]) - 1
+      elp_frms = last[0] - first[0]  
+ 
+      if hist_len > 3:
+         slope = find_slope(p1,p2)
+         dist = calc_dist(p1,p2)
+      else:
+         slope = "na"
+         dist = 0
+      if elp_frms > 0 and dist != "na":
+         px_per_frame =dist / elp_frms 
+      else:
+         px_per_frame = 0
+      if elp_frms > 200:
+         status.append(('reject', 'object exists for too long to be a meteor.'))
+      if px_per_frame < 1: 
+         status.append(('reject', 'object does not move fast enough to be a meteor.'))
+      if dist < 5:
+         status.append(('reject', 'object does not move far enough to be a meteor.'))
+      if hist_len < 3:
+         status.append(('reject', 'object does not exist long enough.'))
 
-            fd_temp = sorted(fd[2], key=lambda x: x[3], reverse=True)
-            if len(fd_temp) > 0:
-               print("<table border=1 cellpadding=3 cellspacing=3>")
-               print ("<tr><td>X</td><td>Y</td><td>W</td><td>H</td></tr>")
-               for x,y,w,h in fd_temp:
-                  print ("<tr><td>" + str(x) + "</td><td>" + str(y) + "</td><td>" + str(w) + "</td><td>" + str(h) + "</td></tr>")
-               print("</table>") 
-
-            print ("</td><td>" + str(fd[3]) + "</td></tr>" )
-         print ("</table>")
-
-
-         for fd in frame_data:
-            #print ("<tr><td>" + str(fd[0]) + "</td><td>" + str(fd[1]) + "</td><td>" )
-            tc = fd[0]
-            #print(fd[2])
-            #for x,y,w,h in fd[2]:
-            #   print (x,y,w,h,"<BR>") 
-            frame_image = frame_file_base + "-trim" + str(tc) + "-fr" + str(fc) + "-tn.png"
-            #print( "</td><td>" + str(fd[3]) + "</td><td><img src=" + frame_image + "></tr>")
-            print("<div style='float: left'><img src=" + frame_image + "><br><caption>" + str(tc) + "-" + str(fc) )
-            fd_temp = sorted(fd[2], key=lambda x: x[3], reverse=True)
-            if len(fd_temp) > 0:
-               x,y,w,h = fd_temp[0]
-               print (x,y,w,h,"<BR>") 
-
-            print(" </caption></div>")
-            fc = fc + 1
-            
-
+      print ("<tr><td>" + str(object[0]) + "</td><td>" + str(hist_len) + "</td><td>" + str(first) + "</td><td>" + str(last) + "</td><td>" + str(slope) + "</td><td>" + str(dist) + "</td><td>" + str(elp_frms) + "</td><td>" + str(px_per_frame) + "</td><td>" + str(status) + "<td></tr>")
+   print ("</table>")
    if cams_detect == 1:
       print ("<h2>Cams detection info</h2>") 
 
@@ -157,6 +322,7 @@ def get_trim_clips(video_file):
    return(trim_files)
 
 def get_frame_data(frame_data_file):
+   print(frame_data_file)
    fdf = open(frame_data_file)
    d = {}
    code = "frame_data = "

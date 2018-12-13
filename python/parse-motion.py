@@ -102,7 +102,7 @@ file = open(filename, "r")
 trim_base = filename.replace("-motion.txt", "-trim-");
 mp4_file = filename.replace("-motion.txt", ".mp4");
 
-hd_file = find_hd_file(mp4_file)
+#hd_file = find_hd_file(mp4_file)
 #print("HD FILE:", hd_file)
 
 last_cons_mo = 0
@@ -126,27 +126,58 @@ for line in file:
    last_cons_mo = cons_mo
 
 event_count = 1
-for event in events:
-   print ("Event:", event)
-   start_frame = int(event[0][0])
-   end_frame = int(event[-1][0])
+
+low_start = 0
+high_end = 0
+if len(events) > 5:
+   for event in events:
+      start_frame = int(event[0][0])
+      end_frame = int(event[-1][0])
+      if low_start == 0:
+         low_start = start_frame
+      if start_frame < low_start:
+         low_start = start_frame
+      if end_frame > high_end:
+         high_end = end_frame
+   # just make 1 trim file
+
+   print ("START/END:", low_start,high_end)
+   exit()
+   start_frame = int(low_start)
+   end_frame = int(high_end)
    frame_elp = int(end_frame) - int(start_frame)
    start_sec = int(start_frame / 25) - 3 
    if start_sec <= 0:
       start_sec = 0
    dur = int(frame_elp / 25) + 3 + 2
-   outfile = ffmpeg_trim(mp4_file, start_sec, dur, "-trim" + str(event_count))
-   #hd_outfile = ffmpeg_trim(hd_file, start_sec, dur, "-trim" + str(event_count))
-   event_count = event_count + 1;
-   print ("EVENT Start frame: ", start_frame, start_sec)
-   print ("EVENT End frame: ", end_frame, start_sec + dur)
-   print ("Total frames: ", frame_elp, dur)
-   #print(hd_outfile)
-   #reject_filters(outfile)
+
+   outfile = ffmpeg_trim(mp4_file, start_sec, dur, "-trim1")
+     
+
+else:
+
+   for event in events:
+      print ("Event:", event)
+      start_frame = int(event[0][0])
+      end_frame = int(event[-1][0])
+      frame_elp = int(end_frame) - int(start_frame)
+      start_sec = int(start_frame / 25) - 3 
+      if start_sec <= 0:
+         start_sec = 0
+      dur = int(frame_elp / 25) + 3 + 2
+      outfile = ffmpeg_trim(mp4_file, start_sec, dur, "-trim" + str(event_count))
+
+      #hd_outfile = ffmpeg_trim(hd_file, start_sec, dur, "-trim" + str(event_count))
+      event_count = event_count + 1;
+      print ("EVENT Start frame: ", start_frame, start_sec)
+      print ("EVENT End frame: ", end_frame, start_sec + dur)
+      print ("Total frames: ", frame_elp, dur)
+   #  print(hd_outfile)
+   #  reject_filters(outfile)
   
 ec = 0; 
 for event in events:
-   print("EVENT: ", ec, event[0][0], len(event), outfile)
+   print("EVENT: ", ec, event[0][0], len(event) )
    ec = ec + 1
 
 print ("MIKE TOTAL EVENTS",ec )

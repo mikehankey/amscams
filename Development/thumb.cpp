@@ -298,7 +298,7 @@ status = Read_FFMPEG_Pipe_Image(imagefrm, dummyframe);
                                 else {
                                    this_bp_factor = this_bp_total;
                                 }
-                                if ((this_bp_factor >= 1 and px_diff_pp >= 20) or (px_diff_val_total > 400 ))  {
+                                if ((this_bp_factor >= 1 and px_diff_pp >= 5) or (px_diff_val_total > 400 ))  {
                                    max_cons_px = max_cons_px + 1; 
                                    no_motion = 0;
                                 }
@@ -318,7 +318,7 @@ status = Read_FFMPEG_Pipe_Image(imagefrm, dummyframe);
                                 
                                 px_frames[frame_count] = this_bp_factor;
                                 cons_frames[frame_count] = max_cons_px;
-                                //printf("FRAME:%d,BPAT:%d,BP_AVG:%d,BPT:%d,X%d,CM=%d,PXDIFFT:%d,PX_DIFF_VAL:%d,PX_DIFF_PP,%d,nm=%d\n", frame_count, bp_total, bp_avg, this_bp_total,this_bp_factor, max_cons_px,px_diff_total, px_diff_val_total,px_diff_pp,no_motion);
+                                printf("FRAME:%d,BPAT:%d,BP_AVG:%d,BPT:%d,X%d,CM=%d,PXDIFFT:%d,PX_DIFF_VAL:%d,PX_DIFF_PP,%d,nm=%d\n", frame_count, bp_total, bp_avg, this_bp_total,this_bp_factor, max_cons_px,px_diff_total, px_diff_val_total,px_diff_pp,no_motion);
                                 //printf("PX DIFF: %d %d ", px_diff_total, px_diff_val_total);
 
                                 this_bp_total = 0;

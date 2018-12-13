@@ -1,5 +1,6 @@
 #!/usr/bin/python3 
 
+import math
 from pathlib import Path
 import os
 import glob
@@ -15,6 +16,154 @@ json_str = json_file.read()
 json_conf = json.loads(json_str)
 proc_dir = json_conf['site']['proc_dir']
 
+
+def calc_dist(p1,p2):
+   x1,y1 = p1
+   x2,y2 = p2
+   dist = math.sqrt((x2 - x1)**2 + (y2 - y1)**2)
+   return dist
+
+
+def find_slope(p1,p2):
+   (x1,y1) = p1
+   (x2,y2) = p2
+   top = y2 - y1
+   bottom = x2 - y2
+   if bottom > 0:
+      slope = top / bottom
+   else:
+      slope = "na"
+   #print(x1,y1,x2,y2,slope)
+   return(slope)
+
+
+def new_obj_id(pt, moving_objects):
+   x,y = pt
+   #print ("<BR> MOVING OBJS : ", moving_objects)
+   #np_mo = np.array([[[1],[44],[55],[1,44,55]],[[2],[33],[22],[2,33,22]]])
+   max_id = np.max(moving_objects, axis=0)
+   #print ("MAX:", max_id)
+   new_id = max_id[0][0] + 1
+   #print ("MAX ID IS : ", max_id)
+   #print ("NEW ID IS : ", new_id)
+   return(new_id)
+
+
+def check_hist(x,y,hist):
+   #print("<HR>LEN HIST: ", len(hist), "<HR>")
+   for (fn,hx,hy) in hist:
+      if hx - 20 <= x <= hx + 20 and hy - 20 <= y <= hy +20:
+         return(1)
+   return(0)
+
+
+def get_frame_data(frame_data_file):
+   print(frame_data_file)
+   fdf = open(frame_data_file)
+   d = {}
+   code = "frame_data = "
+   for line in fdf:
+      code = code + line
+   exec (code,  d)
+
+   return(d['frame_data'])
+
+
+def object_report (trim_file, frame_data):
+   fc =1
+   tfc =1
+   moving_objects = None
+   found_objects = []
+   for fd in frame_data:
+      print (str(fd[0]) + "," + str(fd[1]) + "," )
+
+      fd_temp = sorted(fd[2], key=lambda x: x[3], reverse=True)
+      if len(fd_temp) > 0 and len(fd_temp) < 8:
+         for x,y,w,h in fd_temp:
+            object, moving_objects = find_object(tfc, (x,y), moving_objects)
+      fc = fc + 1
+      tfc = tfc + 1
+   try: 
+      if moving_objects is None:
+         moving_objects = []
+   except:
+      moving_objects = []
+ 
+
+   for object in moving_objects:
+      status = []
+      hist = object[3]
+      first = hist[0]
+      last = hist[-1]
+      p1 = first[1], first[2]
+      p2 = last[1], last[2]
+      hist_len = len(object[3]) - 1
+      elp_frms = last[0] - first[0]
+
+      if hist_len > 3:
+         slope = find_slope(p1,p2)
+         dist = calc_dist(p1,p2)
+      else:
+         slope = "na"
+         dist = 0
+      if elp_frms > 0 and dist != "na":
+         px_per_frame =dist / elp_frms
+      else:
+         px_per_frame = 0
+      if elp_frms > 200:
+         status.append(('reject', 'object exists for too long to be a meteor.'))
+      if px_per_frame < 1:
+         status.append(('reject', 'object does not move fast enough to be a meteor.'))
+      if dist < 5:
+         status.append(('reject', 'object does not move far enough to be a meteor.'))
+      if hist_len < 3:
+         status.append(('reject', 'object does not exist long enough.'))
+      # (frame_num, count, first_frame, last_frame, slope, distance, elapsed_frames, px_per_frames, status)
+      obj_data = (object[0],  hist_len,  first, last,  slope, dist,  elp_frms,  px_per_frame,  status)
+      found_objects.append(obj_data) 
+   return(found_objects)
+
+
+
+def find_object(fn, pt, moving_objects):
+   x,y = pt
+   prox_match = 0
+   if moving_objects is None:
+      lenstr = "0"
+   else:
+      lenstr = str(len(moving_objects))
+
+   print ("<h4>Current Known Objects that could match x,y " + str(x) + "," + str(y) + " " + lenstr + "</h4>")
+   if moving_objects is None:
+      # there are no objects yet, so just add this one and return.
+      oid = 0
+      mo = []
+      moving_objects = np.array([ [[oid],[x],[y],[[fn,x,y],[fn,x,y]] ]])
+      #print("NP SIZE & SHAPE:", np.size(moving_objects,0),np.size(moving_objects,1))
+      return(oid, moving_objects)
+   else:
+      # match based on proximity to pixel history of each object
+      #print("NP SIZE & SHAPE:", np.size(moving_objects,0),np.size(moving_objects,1))
+      #print("MOVING OBJECTS:", moving_objects[0])
+      rowc = 0
+      match_id = None
+      for (oid,ox,oy,hist) in moving_objects:
+         found_in_hist = check_hist(x,y,hist)
+         #print("<BR>FOUND IN HIST?" , found_in_hist, "<BR>")
+         if found_in_hist == 1:
+            prox_match = 1
+            match_id = oid
+
+   #can't find match so make new one
+   if prox_match == 0:
+      oid = new_obj_id((x,y), moving_objects)
+      moving_objects = np.append(moving_objects, [ [[oid],[x],[y],[[fn,x,y],[fn,x,y]]] ], axis=0)
+   else:
+      oid,ox,oy,hist = moving_objects[match_id][0]
+      hist.append([fn,x,y])
+      moving_objects[match_id][0] = [ [[oid],[ox],[oy],[hist]] ]
+
+   return(oid, moving_objects)
 
 
 def check_running():
@@ -84,10 +233,10 @@ def check_for_motion(frames, video_file):
          print ("NOISE!", frame_count, len(good_cnts))
          #noisy cnt group don't count it. 
          good_cnts = []
-      cv2.imwrite(frame_file, nice_frame)
-      frame_file_tn = frame_file.replace(".png", "-tn.png")
-      thumbnail = cv2.resize(nice_frame, (0,0), fx=0.5, fy=0.5)
-      cv2.imwrite(frame_file_tn, thumbnail)
+      #cv2.imwrite(frame_file, nice_frame)
+      #frame_file_tn = frame_file.replace(".png", "-tn.png")
+      #thumbnail = cv2.resize(nice_frame, (0,0), fx=0.5, fy=0.5)
+      #cv2.imwrite(frame_file_tn, thumbnail)
 
       data_str.append(good_cnts)
       data_str.append(cons_motion)
@@ -148,7 +297,7 @@ def move_rejects(trim_file, frame_data):
    base_file = fel[0]
    motion_file = base_file + "-motion.txt"
 
-   reject_file = base_file + "-rejected.txt"
+   reject_file = trim_file + "-rejected.txt"
    out = open(reject_file, "w")
    out.write(str(frame_data))
    out.close() 
@@ -192,22 +341,49 @@ def apply_reject_filters(trim_file):
    print(el)
    clip_file = mf + ".mp4"
    confirm_file = trim_file.replace(".mp4", "-confirm.txt")
+   meteor_file = trim_file.replace(".mp4", "-meteor.txt")
+   obj_fail = trim_file.replace(".mp4", "-objfail.txt")
+
 
    file_exists = Path(confirm_file)
    if (file_exists.is_file() is True):
       print("DONE ALREADY!")
-      return()
+   #   return()
 
   
    trim_fps = check_frame_rate(trim_file)
    clip_fps = check_frame_rate(clip_file)
    print ("Trim FPS: ", trim_fps)
    print ("Clip FPS: ", clip_fps)
+   meteor_found = 0
    if int(float(trim_fps)) >= 20: 
       frames = load_video_frames(trim_file)
+
+
       if len(frames) > 5:
          max_cons_motion, frame_data = check_for_motion(frames, trim_file)
          print ("Max Cons Motion: ", max_cons_motion)
+
+         found_objects = object_report(trim_file, frame_data)
+         print ("FOUND:", found_objects)
+         for obj in found_objects:
+            (frame_num, count, first_frame, last_frame, slope, distance, elapsed_frames, px_per_frames, status) = obj
+            print(status, len(status))
+            if len(status) == 0:
+               meteor_found = 1
+               print ("METEOR FOUND.")
+
+         if meteor_found == 1: 
+            print ("METEOR")
+            mt = open(meteor_file, "w")
+            mt.write(str(found_objects))
+            mt.close()
+         else:
+            print ("NO METEOR")
+            mt = open(obj_fail, "w")
+            mt.write(str(found_objects))
+            mt.close()
+
       else:
          max_cons_motion = 0
          reject_reason = "no frames/bad file."
