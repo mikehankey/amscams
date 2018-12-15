@@ -26,6 +26,22 @@ print (" <style> .active { background: #ff0000; } .inactive { background: #fffff
 
 
 
+def object_report (moving_objects, type):
+   if len(moving_objects) > 0:
+      print ("<table>")
+      print("<TR><TD>Object ID</td><td>Count</td><td>Frist Frame</td><td>Last Frame</td><td>Slope</td><td>Distance</td><td>Elapsed Frames</td><td> px_per_frames</td><td> status</td></tr>")
+   for object in moving_objects:
+      (obj_id, count, first_frame, last_frame, slope, distance, elapsed_frames, px_per_frames, status) = object
+      if type == 'meteor' and len(status) == 0:
+         print ("<TR><TD>" + str(obj_id) + "</td><td>" + str(count) + "</td><td>" + str(first_frame) + "</td><td>" + str(last_frame) + "</td><td>" + str(slope) + "</td><td>" + str(distance) + "</td><td>" + str(elapsed_frames) + "</td><td>" + str(px_per_frames) + "</td><td>" +  str(status) + "</td></tr>") 
+      else:
+         if count >= 3:
+            print ("<TR><TD>" + str(obj_id) + "</td><td>" + str(count) + "</td><td>" + str(first_frame) + "</td><td>" + str(last_frame) + "</td><td>" + str(slope) + "</td><td>" + str(distance) + "</td><td>" + str(elapsed_frames) + "</td><td>" + str(px_per_frames) + "</td><td>" +  str(status) + "</td></tr>") 
+   if len(moving_objects) > 0:
+      print ("</table>")
+   return("", "")
+
+
 def calc_dist(p1,p2):
    x1,y1 = p1
    x2,y2 = p2
@@ -45,6 +61,7 @@ def find_slope(p1,p2):
       slope = "na"
    #print(x1,y1,x2,y2,slope)
    return(slope)
+
 
 def get_bp_motion(motion_file):
 
@@ -332,7 +349,18 @@ def get_frame_data(frame_data_file):
 
    return(d['frame_data'])
 
-   
+
+def get_code(code_file):
+   print(code_file)
+   fdf = open(code_file)
+   d = {}
+   code = "data = "
+   for line in fdf:
+      code = code + line
+   exec (code,  d)
+
+   return(d['data'])  
+ 
 
 def get_motion_file(video_file):
    motion_found = 0
@@ -406,7 +434,9 @@ def make_archive_links():
          rand_num = random.randint(1,10000)
          cam_key = 'cam' + str(cn)
          cams_id = json_conf['cameras'][cam_key]['cams_id']
-         master_stack_file = proc_dir + day + "/"  + cams_id + "-night-stack.png?" + str(rand_num)
+
+
+         master_stack_file = proc_dir + day + "/images/"  + cams_id + "-night-stack.png?" + str(rand_num)
          #master_stack_img = "<img alt='cam" + str(cn) + "' onmouseover='bigImg(this)' onmouseout='normalImg(this)' width=320 height=240 src='" + master_stack_file + "'>"
          #master_stack_img = "<img alt='cam" + str(cn) + "' onmouseover='normalImg(this)' onmouseout='normalImg(this)' width=320 height=240 src='" + master_stack_file + "'>"
          master_stack_img = "<img alt='cam" + str(cn) + "' width=320 height=240 src='" + master_stack_file + "'>"
@@ -414,6 +444,25 @@ def make_archive_links():
       html = html + "<P>"
       d = d + 1
    return(html)
+
+def get_detection_files_for_day(day):
+   glob_dir = proc_dir + day + "/data/*motion.txt" 
+   motion_files = sorted(glob.glob(glob_dir), reverse=True)
+
+   glob_dir = proc_dir + day + "/data/*trim*confirm.txt" 
+   confirm_files = glob.glob(glob_dir)
+
+   glob_dir = proc_dir + day + "/data/*meteor.txt" 
+   meteor_files = sorted(glob.glob(glob_dir), reverse=True)
+
+   glob_dir = proc_dir + day + "/data/*objfail.txt" 
+   objfail_files = glob.glob(glob_dir)
+
+   glob_dir = proc_dir + day + "/data/*rejected.txt" 
+   reject_files = glob.glob(glob_dir)
+
+   return(motion_files, confirm_files, meteor_files, objfail_files, reject_files)
+
 
 def get_files_for_day_cam(day, cams_id):
       
@@ -433,11 +482,117 @@ def mark_tag(word, tags):
       return("inactive")
 
 def browse_rejects():
-   form = cgi.FieldStorage()
    debug = form.getvalue('debug')
    files = sorted(get_rejects(), reverse=True)
    for file in files:
       print("<img src=" + file + ">")
+
+def browse_detections(day, cam):
+   (motion_files, confirm_files, meteor_files, objfail_files, reject_files) = get_detection_files_for_day(day)
+   type= form.getvalue('type')
+   base_file_info = {}
+   for file in meteor_files:
+      el = file.split("-trim")
+      base = el[0]
+      base_file = base + ".mp4" 
+      base_file_info[base_file] = "Meteor" 
+
+   print ("<PRE><a href=archive-side.py?cmd=browse_detect&day=" + str(day) + "&type=motion>BRIGHT PIXEL DETECTIONS:" + str(len(motion_files)) + "</a>")
+   print ("<PRE><a href=archive-side.py?cmd=browse_detect&day=" + str(day) + "&type=confirm>MOTION DETECTIONS:" + str(len(confirm_files)) + "</a>")
+   print ("<PRE><a href=archive-side.py?cmd=browse_detect&day=" + str(day) + "&type=meteor>METEOR DETECTIONS:" + str(len(meteor_files)) + "</a>")
+   print ("<PRE><a href=archive-side.py?cmd=browse_detect&day=" + str(day) + "&type=objfail>NON METEOR DETECTIONS:" + str(len(objfail_files)) + "</a>")
+   print ("<PRE><a href=archive-side.py?cmd=browse_detect&day=" + str(day) + "&type=reject>NON MOTION REJECTED DETECTIONS :" + str(len(reject_files)) + "</a>")
+   #print ("<PRE><a href=archive-side.py?cmd=browse_detect&day=" + str(day) + "&type=fps_fail>TRIM FPS FAILS:" + str(len(fps_fail_files)) + "</a>")
+   #print ("<PRE>CONFIRM FILES:", len(confirm_files))
+   #print ("<PRE>METEOR FILES:", len(meteor_files))
+   #print ("<PRE>OBJ FAIL FILES:", len(objfail_files))
+   #print ("<PRE>REJECT FILES:", len(reject_files))
+
+   if type == 'meteor': 
+      print ("<h1>Meteor Detections</h1>")
+      for file in meteor_files:
+         el = file.split("-trim")
+         base = el[0]
+         base = base.replace("data", "images") 
+         img = base + "-stacked.png" 
+         trim_file = file.replace("-meteor.txt", ".mp4") 
+         trim_file = trim_file.replace("data/", "") 
+         print("<img src=" + img + ">" )
+         moving_objects = get_code(file)
+         #print("<BR><a href=" + file + ">Meteor File</a><br>")
+         print("<BR><a href=" + trim_file + ">Trim</a><br>")
+         data, status = object_report(moving_objects, "meteor")  
+
+   if type == "confirm":
+      print ("<h1>Motion Confirmations</h1>")
+      for file in confirm_files:
+         objfile = file.replace("-confirm.txt", "-objfail.txt")
+         file_exists = Path(objfile)
+         if file_exists.is_file():
+            moving_objects = get_code(objfile)
+         else:
+            moving_objects = []
+
+         meteor_file = file.replace("-confirm.txt", "-meteor.txt")
+         file_exists = Path(meteor_file)
+         if file_exists.is_file():
+            meteor = 1
+            moving_objects = get_code(meteor_file)
+         else:
+            meteor = 0
+
+         el = file.split("-trim")
+         base = el[0]
+         base = base.replace("data", "images") 
+         img = base + "-stacked.png" 
+         if meteor == 1:
+            desc = "<B>METEOR</B>"
+         else:
+            desc = "<B>non-meteor</B>"
+         if len(moving_objects) == 0:
+            desc = desc + "; No objects detected"
+
+         print("<img src=" + img + "><br>" + desc + "<BR>")
+         trim_file = file.replace("-confirm.txt", ".mp4") 
+         trim_file = trim_file.replace("data/", "") 
+         print("<BR><a target=_blank href=" + trim_file + ">Video Clip</a><br>")
+         if meteor == 0:
+            object_report(moving_objects, "objfail")
+         else:
+            object_report(moving_objects, "meteor")
+         
+ 
+   # BRIGHT PIXEL DETECTS
+   if type == "motion":
+      print ("<h1>All Bright Pixel Detections</h1>")
+      for file in motion_files:
+         el = file.split("-motion")
+         base = el[0]
+         base_file = base + ".mp4"
+         base = base.replace("data", "images") 
+         img = base + "-stacked.png" 
+         if base_file in base_file_info:
+            file_info = base_file_info[base_file]
+         else:
+            file_info = ""
+         print("<img src=" + img + "><BR>" + file_info)
+
+   if type == "objfail":
+      print ("<h1>Object Detection Failures (no meteors detected)</h1>")
+      for file in objfail_files: 
+         print(file)
+         el = file.split("-trim")
+         base = el[0]
+         base_file = base + ".mp4"
+         base = base.replace("data", "images") 
+         img = base + "-stacked.png" 
+         if base_file in base_file_info:
+            file_info = base_file_info[base_file]
+         else:
+            file_info = ""
+         print("<img src=" + img + "><BR>" + file_info)
+
+   
 
 def browse_day(day, cam):
    form = cgi.FieldStorage()
@@ -483,6 +638,14 @@ def browse_day(day, cam):
    count = 0
    for file in files:
       jpg = file.replace(".mp4", "-stacked.png") 
+
+      el = jpg.split("/")
+      fn = el[-1]
+    
+      base = jpg.replace(fn, "")
+      jpg = base + "/images/" + fn
+
+
       blend = file.replace(".mp4", "-blend.jpg") 
       #diff = file.replace(".mp4", "-diff.jpg") 
       diff = file.replace(".mp4", "-objects.jpg") 
@@ -589,6 +752,8 @@ def main():
       print("Select a day and camera to browse.<P>")
       make_main_page()
       print(archive_links)
+   if cmd == "browse_detect":
+      browse_detections(day, cam_num)  
    if cmd == "browse_day":
       browse_day(day, cam_num)  
    if cmd == "browse_rejects":
@@ -608,6 +773,7 @@ def parse_tags(tag_file, file_dict):
          file_dict[file]['tags'] = file_dict[file]['tags'].replace(tag, "")
    return(file_dict)   
 
+form = cgi.FieldStorage()
 main()
 
 

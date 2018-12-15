@@ -1,5 +1,6 @@
 #!/usr/bin/python3
 
+from pathlib import Path
 import json
 import sys
 import os
@@ -97,10 +98,27 @@ filename = sys.argv[1]
 
 events = []
 event = []
-
+print ("FILENAME: ", filename)
 file = open(filename, "r")
 trim_base = filename.replace("-motion.txt", "-trim-");
 mp4_file = filename.replace("-motion.txt", ".mp4");
+
+el = filename.split("/")
+fn = el[-1]
+working_dir = filename.replace(fn, "")
+
+data_dir = working_dir + "/data/"
+images_dir = working_dir + "/image/"
+file_exists = Path(data_dir)
+if file_exists.is_dir() == False:
+   print("Make the dir.")
+   os.system("mkdir " + data_dir)
+
+file_exists = Path(images_dir)
+if file_exists.is_dir() == False:
+   print("Make the dir.")
+   os.system("mkdir " + images_dir)
+
 
 #hd_file = find_hd_file(mp4_file)
 #print("HD FILE:", hd_file)
@@ -129,7 +147,7 @@ event_count = 1
 
 low_start = 0
 high_end = 0
-if len(events) > 5:
+if len(events) > 1:
    for event in events:
       start_frame = int(event[0][0])
       end_frame = int(event[-1][0])
@@ -142,7 +160,6 @@ if len(events) > 5:
    # just make 1 trim file
 
    print ("START/END:", low_start,high_end)
-   exit()
    start_frame = int(low_start)
    end_frame = int(high_end)
    frame_elp = int(end_frame) - int(start_frame)
@@ -179,5 +196,11 @@ ec = 0;
 for event in events:
    print("EVENT: ", ec, event[0][0], len(event) )
    ec = ec + 1
+el = filename.split("/")
+fn = el[-1]
+dir = filename.replace(fn, "")
+cmd = "mv " + filename + " " + dir + "data/"
+print(cmd)
+#os.system(cmd)
 
 print ("MIKE TOTAL EVENTS",ec )

@@ -370,6 +370,9 @@ status = Read_FFMPEG_Pipe_Image(imagefrm, dummyframe);
                     printf("SYSTEM: %s\n", system_command);
                     system(system_command);
 
+
+
+
                     strcpy(system_command, "mv ");
                     strcat(system_command, files_wildcard);
                     strcat(system_command, " " );

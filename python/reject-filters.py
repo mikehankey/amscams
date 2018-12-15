@@ -100,6 +100,12 @@ def object_report (trim_file, frame_data):
       hist_len = len(object[3]) - 1
       elp_frms = last[0] - first[0]
 
+
+      if elp_frms > 0:
+         len_test = hist_len / elp_frms
+      else:
+         len_test = 0
+
       if hist_len > 3:
          slope = find_slope(p1,p2)
          dist = calc_dist(p1,p2)
@@ -110,6 +116,8 @@ def object_report (trim_file, frame_data):
          px_per_frame =dist / elp_frms
       else:
          px_per_frame = 0
+      if len_test < .8:
+         status.append(('reject', 'object flickers like a plane.'))
       if elp_frms > 200:
          status.append(('reject', 'object exists for too long to be a meteor.'))
       if px_per_frame < 1:
@@ -200,6 +208,7 @@ def check_for_motion(frames, video_file):
       nice_frame = frame.copy()
       if len(frame.shape) == 3:
          frame = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
+      gray_frame = frame
       frame_file = frame_file_base + "-fr" + str(frame_count) + ".png"
       frame[440:480, 0:360] = 0
 
@@ -218,6 +227,7 @@ def check_for_motion(frames, video_file):
       thresh= cv2.dilate(threshold, None , iterations=4)
       (_, cnts, xx) = cv2.findContours(thresh.copy(), cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
       good_cnts = []
+      cnt_cnt = 0
       for (i,c) in enumerate(cnts):
          bad_cnt = 0
          x,y,w,h = cv2.boundingRect(cnts[i])
@@ -226,9 +236,18 @@ def check_for_motion(frames, video_file):
          if w >= 630 or h >= 400:
             bad_cnt = 1
          if bad_cnt == 0:
+            x2 = x + w
+            y2 = y + h
+            print("IMG: ", y,y2,x,x2)
+            cnt_img = gray_frame[y:y2,x:x2]            
+            flux_status = test_cnt_flux(cnt_img)
+            cv2.imwrite("/mnt/ams2/tests/cnt" + str(frame_count) + "-" + str(cnt_cnt) + ".png", cnt_img)
+
+
             #print("CNTS: ", frame_count, x,y,w,h)
             good_cnts.append((x,y,w,h)) 
             cv2.rectangle(nice_frame, (x, y), (x + w, y + w), (255, 0, 0), 2)
+            cnt_cnt = cnt_cnt + 1
       if len(good_cnts) > 10:
          print ("NOISE!", frame_count, len(good_cnts))
          #noisy cnt group don't count it. 
@@ -253,6 +272,17 @@ def check_for_motion(frames, video_file):
       #cv2.waitKey(1)
       print(frame_count, len(good_cnts), cons_motion)
    return(max_cons_motion, frame_data)
+
+
+def test_cnt_flux(cnt_img):
+   img_min = cnt_img.min()
+   img_max = cnt_img.max()
+   print("TEST Countour Flux, should be light in center and dark on edges all around.", img_min,img_max)
+   lc = cnt_img[0,0]
+   brc = cnt_img[-1,-1]
+   rc = cnt_img[0,-1]
+   blc = cnt_img[-1,0]
+   print("4 CORNERS:", lc, brc, rc, blc)
 
 def load_video_frames(trim_file):
    cap = cv2.VideoCapture(trim_file)
@@ -336,19 +366,31 @@ def check_frame_rate(trim_file):
 def apply_reject_filters(trim_file):
    frames = []
    print ("Apply reject filters for : ", trim_file)
+   el = trim_file.split("/")
+   fn = el[-1]
+   base_dir = trim_file.replace(fn,"")
+   confirm_file = base_dir + "/data/" + fn
+   confirm_file = confirm_file.replace(".mp4", "-confirm.txt")
+   meteor_file = confirm_file.replace("-confirm.txt", "-meteor.txt")
+   obj_fail = confirm_file.replace("-confirm.txt", "-objfail.txt")
+
    el = trim_file.split("-trim")
    mf = el[0]
-   print(el)
    clip_file = mf + ".mp4"
-   confirm_file = trim_file.replace(".mp4", "-confirm.txt")
-   meteor_file = trim_file.replace(".mp4", "-meteor.txt")
-   obj_fail = trim_file.replace(".mp4", "-objfail.txt")
+
+   motion_file = clip_file.replace(".mp4", "-motion.txt")
+   el = motion_file.split("/")
+   fn = el[-1]
+   base = motion_file.replace(fn, "")
+   new_motion_file = base + "/data/"  + fn
+   
+
 
 
    file_exists = Path(confirm_file)
    if (file_exists.is_file() is True):
       print("DONE ALREADY!")
-   #   return()
+      #return()
 
   
    trim_fps = check_frame_rate(trim_file)
@@ -375,11 +417,13 @@ def apply_reject_filters(trim_file):
 
          if meteor_found == 1: 
             print ("METEOR")
+            print (meteor_file)
             mt = open(meteor_file, "w")
             mt.write(str(found_objects))
             mt.close()
          else:
             print ("NO METEOR")
+            print (obj_fail)
             mt = open(obj_fail, "w")
             mt.write(str(found_objects))
             mt.close()
@@ -397,6 +441,10 @@ def apply_reject_filters(trim_file):
    else:
        print ("PASSED")
        confirm_motion(trim_file, frame_data)
+      
+   # move motion file to data dir
+   cmd = "mv " + motion_file + " " + new_motion_file
+   os.system(cmd)
 
 def do_batch():
    for filename in (glob.glob(proc_dir + "/*")):
@@ -433,3 +481,4 @@ if cmd == 'motion_check':
    frames = load_video_frames(file)
    max_cons_motion = check_for_motion(frames, video_file)
    print(max_cons_motion)
+
