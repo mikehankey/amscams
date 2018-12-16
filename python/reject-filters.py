@@ -17,6 +17,7 @@ json_conf = json.loads(json_str)
 proc_dir = json_conf['site']['proc_dir']
 
 
+
 def calc_dist(p1,p2):
    x1,y1 = p1
    x2,y2 = p2
@@ -116,7 +117,7 @@ def object_report (trim_file, frame_data):
          px_per_frame =dist / elp_frms
       else:
          px_per_frame = 0
-      if len_test < .8:
+      if len_test < .8 or len_test > 2:
          status.append(('reject', 'object flickers like a plane.'))
       if elp_frms > 200:
          status.append(('reject', 'object exists for too long to be a meteor.'))
@@ -241,8 +242,12 @@ def check_for_motion(frames, video_file):
             print("IMG: ", y,y2,x,x2)
             cnt_img = gray_frame[y:y2,x:x2]            
             flux_status = test_cnt_flux(cnt_img)
-            cv2.imwrite("/mnt/ams2/tests/cnt" + str(frame_count) + "-" + str(cnt_cnt) + ".png", cnt_img)
+            print ("FLUX", flux_status)
+            if flux_status == 0:
+               bad_cnt = 1 
+            #cv2.imwrite("/mnt/ams2/tests/cnt" + str(frame_count) + "-" + str(cnt_cnt) + ".png", cnt_img)
 
+         if bad_cnt == 0:
 
             #print("CNTS: ", frame_count, x,y,w,h)
             good_cnts.append((x,y,w,h)) 
@@ -282,7 +287,13 @@ def test_cnt_flux(cnt_img):
    brc = cnt_img[-1,-1]
    rc = cnt_img[0,-1]
    blc = cnt_img[-1,0]
-   print("4 CORNERS:", lc, brc, rc, blc)
+   total = lc + brc + rc + blc 
+   avg = total / 4
+   passed = 0
+   if (avg - 5 < lc < avg + 5) and (avg - 5 < brc < avg + 5) and (avg - 5 < rc < avg + 5) and (avg - 5 < blc < avg + 5):
+      passed = 1
+   return(passed)      
+   
 
 def load_video_frames(trim_file):
    cap = cv2.VideoCapture(trim_file)
@@ -340,6 +351,25 @@ def move_rejects(trim_file, frame_data):
    cmd = "mv " + trim_file + " " + proc_dir + "rejects/"
 #   os.system(cmd)
    print(cmd)
+
+def check_duration(trim_file):
+   cmd = "/usr/bin/ffprobe " + trim_file + ">checks.txt 2>&1"
+   output = subprocess.check_output(cmd, shell=True).decode("utf-8")
+   efp = open("checks.txt")
+   stream_found = 0
+   try:
+      for line in efp:
+         if "Duration" in line:
+            el = line.split(" ")
+            dur_str = el[3]
+            dur, rest = dur_str.split(".")
+            h,m,s = dur.split(":") 
+            print(int(s))
+   except:
+      s = 0
+   return(s)
+
+
 
 def check_frame_rate(trim_file):
    cmd = "/usr/bin/ffprobe " + trim_file + ">checks.txt 2>&1"
@@ -447,14 +477,86 @@ def apply_reject_filters(trim_file):
    os.system(cmd)
 
 def do_batch():
+   print("proc_dir:", proc_dir)
    for filename in (glob.glob(proc_dir + "/*")):
       if 'daytime' not in filename and 'rejects' not in filename:
+         print(filename)
          scan_dir(filename)
 
 def scan_dir(dir):
+   
+   print(dir + '/*trim*.mp4')   
    for filename in (glob.glob(dir + '/*trim*.mp4')):   
       print(filename)
       apply_reject_filters(filename)
+   meteor_trims(dir)
+
+def meteor_trims(dir):
+   for filename in (glob.glob(dir + '/data/*meteor.txt')):   
+      print(filename)
+      trim_meteor(filename)
+
+def trim_meteor(meteor_file):
+   trim_file = meteor_file.replace("-meteor.txt", ".mp4")
+   trim_file = trim_file.replace("data/", "")
+   meteor_video_file = meteor_file.replace(".txt", ".mp4")
+   meteor_video_file = meteor_video_file.replace("data/", "")
+
+   dur = check_duration(trim_file)
+   if int(dur) < 5:
+      cmd = "cp " + trim_file + " " + meteor_video_file
+      print(cmd)
+      os.system(cmd)
+      return()   
+
+   fdf = open(meteor_file)
+   d = {}
+   code = "object_data= "
+   for line in fdf:
+      code = code + line
+   exec (code,  d)
+   for object in d['object_data']:
+      #print(object[0], object[1], object[2],object[3],object[8])
+      if len(object[8]) == 0:
+         # meteor found
+         print("meteor found", object[2], object[3])
+         start_frame = object[2][0]
+         end_frame = object[3][0]
+         elp_frames = end_frame - start_frame
+         if start_frame > 25:
+            start_frame = start_frame - 25
+            elp_frames = elp_frames + 25
+         else:
+            start_frame = 0
+            elp_frames = elp_frames + 25
+         start_sec = int(start_frame / 25)
+         elp_sec = int(elp_frames/25)
+         print ("START FRAME: ", start_frame)
+         print ("END FRAME: ", end_frame)
+         print ("DUR FRAMES: ", elp_frames)
+         print ("START SEC: ", start_sec)
+         print ("DUR SEC: ", elp_sec)
+         if elp_sec <= 2:
+            elp_sec = 3 
+         ffmpeg_trim(trim_file, start_sec, elp_sec, meteor_video_file) 
+   
+
+
+
+
+def ffmpeg_trim (filename, trim_start_sec, dur_sec, outfile):
+
+   if int(trim_start_sec) < 10:
+      trim_start_sec = "0" + str(trim_start_sec)
+   if int(dur_sec) < 10:
+      dur_sec = "0" + str(dur_sec)
+
+   #outfile = filename.replace(".mp4", out_file_suffix + ".mp4")
+   cmd = "/usr/bin/ffmpeg -i " + filename + " -y -ss 00:00:" + str(trim_start_sec) + " -t 00:00:" + str(dur_sec) + " -c copy " + outfile
+   print (cmd)
+   os.system(cmd)
+   return(outfile)
+
 
 
 running = check_running()
@@ -481,4 +583,11 @@ if cmd == 'motion_check':
    frames = load_video_frames(file)
    max_cons_motion = check_for_motion(frames, video_file)
    print(max_cons_motion)
-
+if cmd == "trim_meteor":
+   file = sys.argv[2]
+   trim_meteor(file) 
+if cmd == "meteor_trims":
+ 
+   dir = sys.argv[2]
+   print ("TRIM:", dir)
+   meteor_trims(dir) 

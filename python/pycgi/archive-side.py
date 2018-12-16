@@ -517,10 +517,12 @@ def browse_detections(day, cam):
          img = base + "-stacked.png" 
          trim_file = file.replace("-meteor.txt", ".mp4") 
          trim_file = trim_file.replace("data/", "") 
+         meteor_video_file = trim_file.replace(".mp4", "-meteor.mp4") 
          print("<img src=" + img + ">" )
          moving_objects = get_code(file)
          #print("<BR><a href=" + file + ">Meteor File</a><br>")
-         print("<BR><a href=" + trim_file + ">Trim</a><br>")
+         print("<BR><a href=" + trim_file + ">Trim</a> - ")
+         print("<BR><a href=" + meteor_video_file + ">Meteor</a><br>")
          data, status = object_report(moving_objects, "meteor")  
 
    if type == "confirm":

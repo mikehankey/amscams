@@ -85,7 +85,6 @@ def find_hd_file(sd_file):
 
 
 def ffmpeg_trim (filename, trim_start_sec, dur_sec, out_file_suffix):
-   #ffmpeg -i /mnt/ams2/meteors/2018-09-20/2018-09-20_22-20-05-cam5-hd.mp4 -ss 00:00:46 -t 00:00:06 -c copy /mnt/ams2/meteors/2018-09-20/2018-09-20_22-20-05-cam5-hd-trim.mp4
 
    outfile = filename.replace(".mp4", out_file_suffix + ".mp4")
    cmd = "/usr/bin/ffmpeg -i " + filename + " -y -ss 00:00:" + str(trim_start_sec) + " -t 00:00:" + str(dur_sec) + " -c copy " + outfile
@@ -108,7 +107,7 @@ fn = el[-1]
 working_dir = filename.replace(fn, "")
 
 data_dir = working_dir + "/data/"
-images_dir = working_dir + "/image/"
+images_dir = working_dir + "/images/"
 file_exists = Path(data_dir)
 if file_exists.is_dir() == False:
    print("Make the dir.")
@@ -167,6 +166,8 @@ if len(events) > 1:
    if start_sec <= 0:
       start_sec = 0
    dur = int(frame_elp / 25) + 3 + 2
+   if dur > 60:
+      dur = 59 
 
    outfile = ffmpeg_trim(mp4_file, start_sec, dur, "-trim1")
      
@@ -182,6 +183,8 @@ else:
       if start_sec <= 0:
          start_sec = 0
       dur = int(frame_elp / 25) + 3 + 2
+      if dur > 60:
+         dur = 59
       outfile = ffmpeg_trim(mp4_file, start_sec, dur, "-trim" + str(event_count))
 
       #hd_outfile = ffmpeg_trim(hd_file, start_sec, dur, "-trim" + str(event_count))
