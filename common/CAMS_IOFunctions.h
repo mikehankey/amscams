@@ -285,8 +285,8 @@ char   exe_runfolder[256];
 		printf("   It should be ...\\...\\CAMS\\  on Windows\n");
 		printf("   It should be ...//...//CAMS//  on Linux\n");
 		printf("   Actually is %s \n", camsbaseline_folder);
-		Delay_msec(30000);
-		exit(1);
+		//Delay_msec(30000);
+		//exit(1);
 	}
 
 

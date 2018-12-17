@@ -8,11 +8,11 @@ Max #Frames in a compression block         = 256
 Max number of clusters per frame           = 30
 Cluster blocksize in pixels                = 16
 Interleave 0-none, 1-even/odd, 2-odd/even  = 0
-#Pixels for blob ntuplet (neighbors+self)  = 4
+Pixels for blob ntuplet (neighbors+self)   = 4
 Imagery data type                          = 1
 Smallest variance per pixel                = 0.01
-Saturation level per pixel                 = 76.0
-Std dev multiplier factor for threshold    = 2
+Saturation level per pixel                 = 255.0
+Std dev multiplier factor for threshold    = 1.25
 MF signal^2 to noise variance ratio (dB)   = 0
 -------- TRACKER processing --------------
 Max number of active tracks                = 200

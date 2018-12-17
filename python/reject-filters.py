@@ -1,5 +1,5 @@
 #!/usr/bin/python3 
-
+import datetime
 import math
 from pathlib import Path
 import os
@@ -16,6 +16,18 @@ json_str = json_file.read()
 json_conf = json.loads(json_str)
 proc_dir = json_conf['site']['proc_dir']
 
+
+def convert_filename_to_date_cam(file):
+   el = file.split("/")
+   filename = el[-1]
+   filename = filename.replace(".mp4" ,"")
+   if "-" in filename:
+      xxx = filename.split("-")
+      filename = xxx[0]
+   fy,fm,fd,fh,fmin,fs,fms,cam = filename.split("_")
+   f_date_str = fy + "-" + fm + "-" + fd + " " + fh + ":" + fmin + ":" + fs
+   f_datetime = datetime.datetime.strptime(f_date_str, "%Y-%m-%d %H:%M:%S")
+   return(f_datetime, cam, f_date_str,fy,fm,fd, fh, fmin, fs)
 
 
 def calc_dist(p1,p2):
@@ -51,8 +63,8 @@ def new_obj_id(pt, moving_objects):
 
 
 def check_hist(x,y,hist):
-   #print("<HR>LEN HIST: ", len(hist), "<HR>")
-   for (fn,hx,hy) in hist:
+   
+   for (fn,hx,hy,hw,hh,hf) in hist:
       if hx - 20 <= x <= hx + 20 and hy - 20 <= y <= hy +20:
          return(1)
    return(0)
@@ -76,12 +88,13 @@ def object_report (trim_file, frame_data):
    moving_objects = None
    found_objects = []
    for fd in frame_data:
-      print (str(fd[0]) + "," + str(fd[1]) + "," )
+      #print (str(fd[0]) + "," + str(fd[1]) + "," )
 
       fd_temp = sorted(fd[2], key=lambda x: x[3], reverse=True)
       if len(fd_temp) > 0 and len(fd_temp) < 8:
-         for x,y,w,h in fd_temp:
-            object, moving_objects = find_object(tfc, (x,y), moving_objects)
+         #print("FDTEMP:", fd_temp)
+         for fn,x,y,w,h,fx in fd_temp:
+            object, moving_objects = find_object(tfc, (x,y,w,h,fx), moving_objects)
       fc = fc + 1
       tfc = tfc + 1
    try: 
@@ -135,19 +148,19 @@ def object_report (trim_file, frame_data):
 
 
 def find_object(fn, pt, moving_objects):
-   x,y = pt
+   x,y,w,h,fx = pt
    prox_match = 0
    if moving_objects is None:
       lenstr = "0"
    else:
       lenstr = str(len(moving_objects))
 
-   print ("<h4>Current Known Objects that could match x,y " + str(x) + "," + str(y) + " " + lenstr + "</h4>")
+   #print ("<h4>Current Known Objects that could match x,y " + str(x) + "," + str(y) + " " + lenstr + "</h4>")
    if moving_objects is None:
       # there are no objects yet, so just add this one and return.
       oid = 0
       mo = []
-      moving_objects = np.array([ [[oid],[x],[y],[[fn,x,y],[fn,x,y]] ]])
+      moving_objects = np.array([ [[oid],[x],[y],[[fn,x,y,w,h,fx],[fn,x,y,w,h,fx]] ]])
       #print("NP SIZE & SHAPE:", np.size(moving_objects,0),np.size(moving_objects,1))
       return(oid, moving_objects)
    else:
@@ -166,10 +179,10 @@ def find_object(fn, pt, moving_objects):
    #can't find match so make new one
    if prox_match == 0:
       oid = new_obj_id((x,y), moving_objects)
-      moving_objects = np.append(moving_objects, [ [[oid],[x],[y],[[fn,x,y],[fn,x,y]]] ], axis=0)
+      moving_objects = np.append(moving_objects, [ [[oid],[x],[y],[[fn,x,y,w,h,fx],[fn,x,y,w,h,fx]]] ], axis=0)
    else:
       oid,ox,oy,hist = moving_objects[match_id][0]
-      hist.append([fn,x,y])
+      hist.append([fn,x,y,w,h,fx])
       moving_objects[match_id][0] = [ [[oid],[ox],[oy],[hist]] ]
 
    return(oid, moving_objects)
@@ -239,18 +252,19 @@ def check_for_motion(frames, video_file):
          if bad_cnt == 0:
             x2 = x + w
             y2 = y + h
-            print("IMG: ", y,y2,x,x2)
+            #print("IMG: ", y,y2,x,x2)
             cnt_img = gray_frame[y:y2,x:x2]            
-            flux_status = test_cnt_flux(cnt_img)
-            print ("FLUX", flux_status)
-            if flux_status == 0:
-               bad_cnt = 1 
+            fx = test_cnt_flux(cnt_img)
+            #print ("FLUX", fx)
+            #if flux_status == 0:
+            #   bad_cnt = 1 
             #cv2.imwrite("/mnt/ams2/tests/cnt" + str(frame_count) + "-" + str(cnt_cnt) + ".png", cnt_img)
 
          if bad_cnt == 0:
 
             #print("CNTS: ", frame_count, x,y,w,h)
-            good_cnts.append((x,y,w,h)) 
+
+            good_cnts.append((frame_count,x,y,w,h,fx)) 
             cv2.rectangle(nice_frame, (x, y), (x + w, y + w), (255, 0, 0), 2)
             cnt_cnt = cnt_cnt + 1
       if len(good_cnts) > 10:
@@ -275,19 +289,19 @@ def check_for_motion(frames, video_file):
       frame_count = frame_count + 1
       #cv2.imshow('pepe', frame)
       #cv2.waitKey(1)
-      print(frame_count, len(good_cnts), cons_motion)
+      #print(frame_count, len(good_cnts), cons_motion)
    return(max_cons_motion, frame_data)
 
 
 def test_cnt_flux(cnt_img):
    img_min = cnt_img.min()
    img_max = cnt_img.max()
-   print("TEST Countour Flux, should be light in center and dark on edges all around.", img_min,img_max)
+   #print("TEST Countour Flux, should be light in center and dark on edges all around.", img_min,img_max)
    lc = cnt_img[0,0]
    brc = cnt_img[-1,-1]
    rc = cnt_img[0,-1]
    blc = cnt_img[-1,0]
-   total = lc + brc + rc + blc 
+   total = int(lc) + int(brc) + int(rc) + int(blc)
    avg = total / 4
    passed = 0
    if (avg - 5 < lc < avg + 5) and (avg - 5 < brc < avg + 5) and (avg - 5 < rc < avg + 5) and (avg - 5 < blc < avg + 5):
@@ -296,6 +310,11 @@ def test_cnt_flux(cnt_img):
    
 
 def load_video_frames(trim_file):
+
+   (f_datetime, cam, f_date_str,fy,fm,fd, fh, fmin, fs) = convert_filename_to_date_cam(trim_file)
+   masks = get_masks(cam)
+     # img[y1:
+
    cap = cv2.VideoCapture(trim_file)
 
    frames = []
@@ -313,16 +332,34 @@ def load_video_frames(trim_file):
       else:
          if len(frame.shape) == 3:
             frame = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
+         # apply masks for frame detection
+         for mask in masks:
+            print("Mask:", mask)
+            mx,my,mw,mh = mask.split(",")
+            frame[int(my):int(my)+int(mh),int(mx):int(mx)+int(mw)] = 0
+
          frames.append(frame)
          frame_count = frame_count + 1
+   cv2.imwrite("/mnt/ams2/tests/test.png", frames[0])
+
    return(frames)
 
 def confirm_motion(trim_file,frame_data): 
    fel = trim_file.split("-trim")
-   base_file = fel[0]
-   main_confirm_file = base_file + "-confirm.txt"
+   el = fel[0].split("/")
+   base_file = el[-1]
+   base_dir = fel[0].replace(base_file, "")
+   main_confirm_file = base_dir + "/data/"  + base_file + "-confirm.txt"
+   main_confirm_file= main_confirm_file.replace(".mp4", "");
  
    confirm_file = trim_file.replace(".mp4",  "-confirm.txt")
+
+   fel = trim_file.split("/")
+   base_file = fel[-1]
+   base_dir = trim_file.replace(base_file, "")
+   base_file = base_file.replace(".mp4", "")
+   confirm_file = base_dir + "/data/"  + base_file + "-confirm.txt"
+
    print ("CONFIRMED:", confirm_file)
    out = open(confirm_file, "w")
    out.write(str(frame_data))
@@ -334,11 +371,19 @@ def confirm_motion(trim_file,frame_data):
 def move_rejects(trim_file, frame_data):
    proc_dir = json_conf['site']['proc_dir']
 
+   fel = trim_file.split("/")
+   base_file = fel[-1]
+   base_dir = trim_file.replace(base_file, "")
+   base_file = base_file.replace(".mp4", "")
+   reject_file = base_dir + "/data/"  + base_file + "-rejected.txt"
+
+
    fel = trim_file.split("-trim")
    base_file = fel[0]
    motion_file = base_file + "-motion.txt"
 
-   reject_file = trim_file + "-rejected.txt"
+   print("REJECT:", reject_file)
+
    out = open(reject_file, "w")
    out.write(str(frame_data))
    out.close() 
@@ -393,7 +438,23 @@ def check_frame_rate(trim_file):
       fps = 0
    return(fps)
 
+def get_masks(this_cams_id):
+   my_masks = []
+   cameras = json_conf['cameras']
+   for camera in cameras:
+      if str(cameras[camera]['cams_id']) == str(this_cams_id):
+         masks = cameras[camera]['masks']
+         for key in masks: 
+            my_masks.append((masks[key]))
+   return(my_masks)
+            
+
+
 def apply_reject_filters(trim_file):
+
+
+ 
+
    frames = []
    print ("Apply reject filters for : ", trim_file)
    el = trim_file.split("/")
@@ -434,26 +495,26 @@ def apply_reject_filters(trim_file):
 
       if len(frames) > 5:
          max_cons_motion, frame_data = check_for_motion(frames, trim_file)
-         print ("Max Cons Motion: ", max_cons_motion)
+         #print ("Max Cons Motion: ", max_cons_motion)
 
          found_objects = object_report(trim_file, frame_data)
          print ("FOUND:", found_objects)
          for obj in found_objects:
             (frame_num, count, first_frame, last_frame, slope, distance, elapsed_frames, px_per_frames, status) = obj
-            print(status, len(status))
+            #print(status, len(status))
             if len(status) == 0:
                meteor_found = 1
                print ("METEOR FOUND.")
 
          if meteor_found == 1: 
             print ("METEOR")
-            print (meteor_file)
+            #print (meteor_file)
             mt = open(meteor_file, "w")
             mt.write(str(found_objects))
             mt.close()
          else:
             print ("NO METEOR")
-            print (obj_fail)
+            #print (obj_fail)
             mt = open(obj_fail, "w")
             mt.write(str(found_objects))
             mt.close()
@@ -524,13 +585,13 @@ def trim_meteor(meteor_file):
          end_frame = object[3][0]
          elp_frames = end_frame - start_frame
          if start_frame > 25:
-            start_frame = start_frame - 25
-            elp_frames = elp_frames + 25
+            start_frame = start_frame - 50
+            elp_frames = elp_frames + 75
          else:
             start_frame = 0
-            elp_frames = elp_frames + 25
-         start_sec = int(start_frame / 25)
-         elp_sec = int(elp_frames/25)
+            elp_frames = elp_frames + 75
+         start_sec = start_frame / 25
+         elp_sec = elp_frames/25
          print ("START FRAME: ", start_frame)
          print ("END FRAME: ", end_frame)
          print ("DUR FRAMES: ", elp_frames)
@@ -545,7 +606,7 @@ def trim_meteor(meteor_file):
 
 
 def ffmpeg_trim (filename, trim_start_sec, dur_sec, outfile):
-
+   print ("TRIMMING METEOR!")
    if int(trim_start_sec) < 10:
       trim_start_sec = "0" + str(trim_start_sec)
    if int(dur_sec) < 10:

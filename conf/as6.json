@@ -43,42 +43,61 @@
          "cam_version" : "1",
          "ip" : "192.168.76.71",
          "sd_url" : "/user=admin&password=&channel=1&stream=1.sdp",
-         "hd_url" : "/user=admin&password=&channel=1&stream=0.sdp"
+         "hd_url" : "/user=admin&password=&channel=1&stream=0.sdp",
+         "masks" : { 
+             "mask1" : "0,476,704,100"
+          }
       },
       "cam2" : {
          "cams_id" : "010002",
          "cam_version" : "1",
          "ip" : "192.168.76.72",
          "sd_url" : "/user=admin&password=&channel=1&stream=1.sdp",
-         "hd_url" : "/user=admin&password=&channel=1&stream=0.sdp"
+         "hd_url" : "/user=admin&password=&channel=1&stream=0.sdp",
+         "masks" : { 
+             "mask1" : "0,476,704,100"
+          }
       },
       "cam3" : {
          "cams_id" : "010003",
          "cam_version" : "1",
          "ip" : "192.168.76.73",
          "sd_url" : "/user=admin&password=&channel=1&stream=1.sdp",
-         "hd_url" : "/user=admin&password=&channel=1&stream=0.sdp"
+         "hd_url" : "/user=admin&password=&channel=1&stream=0.sdp",
+         "masks" : { 
+             "mask1" : "0,476,704,100"
+          }
       },
       "cam4" : {
          "cams_id" : "010004",
          "cam_version" : "1",
          "ip" : "192.168.76.74",
          "sd_url" : "/user=admin&password=&channel=1&stream=1.sdp",
-         "hd_url" : "/user=admin&password=&channel=1&stream=0.sdp"
+         "hd_url" : "/user=admin&password=&channel=1&stream=0.sdp",
+         "masks" : { 
+             "mask1" : "0,476,704,100",
+             "mask2" : "0,380,200,100"
+          }
       },
       "cam5" : {
          "cams_id" : "010005",
          "cam_version" : "1",
          "ip" : "192.168.76.75",
          "sd_url" : "/user=admin&password=&channel=1&stream=1.sdp",
-         "hd_url" : "/user=admin&password=&channel=1&stream=0.sdp"
+         "hd_url" : "/user=admin&password=&channel=1&stream=0.sdp",
+         "masks" : { 
+             "mask1" : "0,476,704,100"
+          }
       },
       "cam6" : {
          "cam_version" : "1",
          "cams_id" : "010006",
          "ip" : "192.168.76.76",
          "sd_url" : "/user=admin&password=&channel=1&stream=1.sdp",
-         "hd_url" : "/user=admin&password=&channel=1&stream=0.sdp"
+         "hd_url" : "/user=admin&password=&channel=1&stream=0.sdp",
+         "masks" : { 
+             "mask1" : "0,476,704,100"
+          }
       }
    }
 }

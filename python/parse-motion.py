@@ -169,7 +169,7 @@ if len(events) > 1:
    if dur > 60:
       dur = 59 
 
-   outfile = ffmpeg_trim(mp4_file, start_sec, dur, "-trim1")
+   outfile = ffmpeg_trim(mp4_file, start_sec, dur, "-trim" + str(start_frame))
      
 
 else:
@@ -178,16 +178,16 @@ else:
       print ("Event:", event)
       start_frame = int(event[0][0])
       end_frame = int(event[-1][0])
-      frame_elp = int(end_frame) - int(start_frame)
-      start_sec = int(start_frame / 25) - 3 
+      frame_elp = end_frame - start_frame
+      start_sec = (start_frame / 25) - 3 
       if start_sec <= 0:
          start_sec = 0
-      dur = int(frame_elp / 25) + 3 + 2
+      dur = frame_elp / 25 + 3 + 2
       if dur > 60:
          dur = 59
-      outfile = ffmpeg_trim(mp4_file, start_sec, dur, "-trim" + str(event_count))
+      outfile = ffmpeg_trim(mp4_file, start_sec, dur, "-trim" + str(start_frame))
 
-      #hd_outfile = ffmpeg_trim(hd_file, start_sec, dur, "-trim" + str(event_count))
+      #hd_outfile = ffmpeg_trim(hd_file, start_sec, dur, "-trim" + str(start_frame))
       event_count = event_count + 1;
       print ("EVENT Start frame: ", start_frame, start_sec)
       print ("EVENT End frame: ", end_frame, start_sec + dur)
