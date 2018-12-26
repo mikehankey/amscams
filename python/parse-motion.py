@@ -92,61 +92,299 @@ def ffmpeg_trim (filename, trim_start_sec, dur_sec, out_file_suffix):
    os.system(cmd)
    return(outfile)
 
+def setup_dirs(filename):
+   el = filename.split("/")
+   fn = el[-1]
+   working_dir = filename.replace(fn, "")
+   data_dir = working_dir + "/data/"
+   images_dir = working_dir + "/images/"
+   file_exists = Path(data_dir)
+   if file_exists.is_dir() == False:
+      print("Make the dir.")
+      os.system("mkdir " + data_dir)
+
+   file_exists = Path(images_dir)
+   if file_exists.is_dir() == False:
+      print("Make the dir.")
+      os.system("mkdir " + images_dir)
+
+def get_frame_data(filename):
+   bpt_total = 0
+   bptv_total = 0
+   bc = 0
+   file = open(filename, "r")
+   frame_data = []
+   for line in file:
+      line = line.replace("\n", "")
+      frame_data.append(line)
+      (frameno, mo, bpf, bpt,bptv,cons_mo) = line.split(","); 
+      bpt_total = int(bpt_total) + int(bpt)
+      bptv_total = int(bptv_total) + int(bptv)
+      bc = bc + 1
+   bpt_avg = int(bpt_total / bc)
+   bptv_avg = int(bptv_total / bc)
+   return(frame_data, bpt_avg, bptv_avg)
+
+def eval_event(event):
+   first = int(event[0][0])
+   last = int(event[-1][0])
+   event_len = len(event)
+   fdiff = last - first +1
+   if event_len > 0:
+      perc = fdiff / event_len
+   return(fdiff, perc)
+
+def get_events(frame_data, bpt_avg, bptv_avg):
+   nm = 0
+   event = []
+   events = []
+
+   for line in frame_data:
+      (frameno, mo, bpf, bpt,bptv,cons_mo) = line.split(","); 
+      if int(cons_mo) >= 1:
+      #if (int(bpt) > int(bpt_avg) or int(bptv) > int(bptv_avg)) or int(cons_mo) >= 1: 
+         cns = cns + 1
+         nm = 0
+      else:
+         cns = 0
+         nm = nm + 1
+      if cns >= 1 or int(cons_mo) >= 1:
+      #   print("LAST BPT/BPTV vs BPT/BPTV", frameno, bpf, bpt_avg, bptv_avg, last_bpt, last_bptv, bpt, bptv, cons_mo, cns, nm)
+         data = (frameno, mo, bpf, bpt,bptv,cons_mo) 
+         event.append(data)
+      if (len(event) >= 2 ) and nm >=3:
+         events.append(event)
+         event = []
+      #   print ("ADD EVENT", len(event), nm)
+      elif nm >3 and len(event) > 0:
+         event = []
+      #   print ("CLEAR EVENT", len(event), nm)
+      #print("DEBUG:", frameno, len(event), cns, cons_mo, nm)
+
+   return(events)
+
+def join_arr(arr1, arr2):
+   new_arr = []
+   for x in arr1:
+      new_arr.append(x)
+   for x in arr2:
+      new_arr.append(x)
+   return(new_arr)
+
+def merge_events(valid_events):
+   print("VALID EVENTS", len(valid_events))
+   for event in valid_events:
+      print("VALID:", event)
+   merged_events = []
+   non_merged_events = []
+   max_events = len(valid_events)
+   # more than one event, lets merge them if they are close in frame start / overlapping
+   ec = 0
+   track = {}
+   last_merged_frame = 0
+
+
+   for ec in range (0, len(valid_events)): 
+    
+      event = valid_events[ec]
+      #print("TRACK (last/current):", last_merged_frame, event[0][0])
+      if last_merged_frame < int(event[0][0]):
+         if ec + 1 < max_events:
+            print ("EC NOT DONE YET:", ec)
+            s1 = int(valid_events[ec][-1][0])
+            s2 = int(valid_events[ec+1][0][0])
+            if s2 - s1 < 75:
+               new = join_arr(valid_events[ec], valid_events[ec+1])
+               merged_events.append(new)
+               last_merged_frame = int(new[-1][0])
+               track[ec] = 1
+               track[ec+1] = 1
+               ec = ec + 1
+            else:
+               non_merged_events.append(event)
+         else:
+      #      print ("SOLO", event)
+            non_merged_events.append(event)
+      else:
+         print("SKIP! This frame was already merged.")
+            #merged_events.append(event)
+      ec = ec + 1
+   print("MERGED EVENTS:", len(merged_events))
+   for event in merged_events:
+      print("     EV", event)
+   print("NON MERGED EVENTS:", len(non_merged_events))
+   for event in non_merged_events:
+      print("     EV", event)
+
+   new_arr = join_arr(merged_events, non_merged_events)   
+
+   return(new_arr)
+
+cns = 0
+nm = 0
+
+def trim_event(event):
+   low_start = 0
+   high_end = 0
+   start_frame = int(event[0][0])
+   end_frame = int(event[-1][0])
+   if low_start == 0:
+      low_start = start_frame
+   if start_frame < low_start:
+      low_start = start_frame
+   if end_frame > high_end:
+      high_end = end_frame
+
+   start_frame = int(low_start)
+   end_frame = int(high_end)
+   frame_elp = int(end_frame) - int(start_frame)
+   start_sec = int(start_frame / 25) - 3
+   if start_sec <= 0:
+      start_sec = 0
+   dur = int(frame_elp / 25) + 3 + 2
+   if dur >= 60:
+      dur = 59
+   if dur < 1:
+      dur = 2
+
+   pad_start = '{:04d}'.format(start_frame)
+   outfile = ffmpeg_trim(mp4_file, start_sec, dur, "-trim" + str(pad_start))
 
 filename = sys.argv[1]
 
-events = []
-event = []
-print ("FILENAME: ", filename)
-file = open(filename, "r")
 trim_base = filename.replace("-motion.txt", "-trim-");
 mp4_file = filename.replace("-motion.txt", ".mp4");
+setup_dirs(filename)
+(frame_data, bpt_avg, bptv_avg) = get_frame_data(filename)
 
-el = filename.split("/")
-fn = el[-1]
-working_dir = filename.replace(fn, "")
 
-data_dir = working_dir + "/data/"
-images_dir = working_dir + "/images/"
-file_exists = Path(data_dir)
-if file_exists.is_dir() == False:
-   print("Make the dir.")
-   os.system("mkdir " + data_dir)
+print("FRAMES: ", len(frame_data))
 
-file_exists = Path(images_dir)
-if file_exists.is_dir() == False:
-   print("Make the dir.")
-   os.system("mkdir " + images_dir)
+events = get_events(frame_data, bpt_avg, bptv_avg)
+print ("EVENTS", len(events))
+for event in events:
+   print("EV: ", event)
+valid_events = []
+for event in events:
+   fdiff, fperc = eval_event(event)
+   if .8 < fperc < 1.8:
+      print("EVENT:", fdiff, fperc, event)
+      if len(event) > 2:
+         valid_events.append(event)
+   else:
+      print ("REJECT:", fdiff, fperc,event)
 
+print ("VALID EVENTS", len(valid_events))
+
+if len(valid_events) > 1:
+   merged_events = merge_events(valid_events)
+   #if len(valid_events) > 1:
+   #   merged_events = merge_events(merged_events)
+else:
+   merged_events = valid_events
+#merged_events = valid_events
+
+
+print ("FINAL MERGED EVENTS", len(merged_events))
+
+for event in merged_events:
+   print("TRIM:", event)
+   trim_event(event)
+
+# END NEW LOGIC
+exit()
 
 #hd_file = find_hd_file(mp4_file)
 #print("HD FILE:", hd_file)
 
+events = []
+event = []
 last_cons_mo = 0
 no_motion = 0
+ncm = 0
+last_bpt = 0
+last_bptv = 0
+bpt_total = 0
+bptv_total = 0
+bc = 0
 
-for line in file:
-   line = line.replace("\n", "")
-   (frameno, mo, bpf, cons_mo) = line.split(","); 
-   if int(cons_mo) > 0:
-      #print ("Cons:", cons_mo);
-      print (frameno,mo,bpf,cons_mo,no_motion)
-      if int(cons_mo) != int(last_cons_mo):
-         event.append([frameno,mo,bpf,cons_mo])
-         no_motion = 0
+
+
+for line in frame_data:
+   (frameno, mo, bpf, bpt,bptv,cons_mo) = line.split(","); 
+   if int(bpt) > int(bpt_avg) or int(bptv) > int(bptv_avg): 
+      cns = cns + 1
+      nm = 0
    else:
-      if len(event) >= 3 or no_motion >2:
-         if len(event) > 2:
-            events.append(event)
-         event = []
-      no_motion = no_motion +1
-   last_cons_mo = cons_mo
+      cns = 0
+      nm = nm + 1
+   if cns >= 1 or int(cons_mo) >= 1:
+   #   print("LAST BPT/BPTV vs BPT/BPTV", frameno, bpf, bpt_avg, bptv_avg, last_bpt, last_bptv, bpt, bptv, cons_mo, cns, nm)
+      data = (frameno, mo, bpf, bpt,bptv,cons_mo) 
+      event.append(data)
+   if (len(event) >= 2 ) and nm >=3:
+      events.append(event)
+      event = []
+   #   print ("ADD EVENT", len(event), nm)
+   elif nm >3 and len(event) > 0:
+      event = []
+   #   print ("CLEAR EVENT", len(event), nm)
+   #print("DEBUG:", frameno, len(event), cns, cons_mo, nm)
 
-event_count = 1
+final_events = []
+for event in events:
+   ft = len(event)
+   first = int(event[0][0])
+   last = int(event[-1][0])
+   fdiff = last - first + 1
+   perc = fdiff / ft
+   if perc == 1:
+      print ("EV:", first, last, ft, fdiff, perc)
+      if fdiff > 2:
+         final_events.append(event)
+ 
+
+events = final_events 
+ 
+max_events = len(events)
+clean_events = events
+
+if max_events > 1:
+   merged_events = []
+   # more than one event, lets merge them if they are close in frame start / overlapping 
+   ec = 0
+   for event in clean_events:
+      if ec + 1 < max_events:
+         s1 = int(clean_events[ec][0][0])
+         s2 = int(clean_events[ec+1][0][0])
+         if s2 - s1 < 75:
+            print ("MERGE EVENTS", s1, s2)
+            new = clean_events[ec] + clean_events[ec+1]
+            merged_events.append(new)
+            ec = ec + 1
+         else:
+            merged_events.append(event)
+      else: 
+            merged_events.append(event)
+      ec = ec + 1   
+   events = merged_events
+
+   ec = 0
+   for event in events:
+      if len(event) > 1:
+         fdiff = int(event[-1][0]) - int(event[0][0]) + 1
+         perc = fdiff / len(event)
+      else:
+         perc = 0
+      if .8 < perc < 1.2 and len(event) > 3:
+         print ("EVENT START/END/LEN/PERC", event[0][0], event[-1][0], len(event), perc)
+      ec = ec + 1   
+
+print(" FINAL EVENTS:", len(events), events)
 
 low_start = 0
 high_end = 0
-if len(events) > 1:
+if len(events) > 5:
    for event in events:
       start_frame = int(event[0][0])
       end_frame = int(event[-1][0])
@@ -166,10 +404,13 @@ if len(events) > 1:
    if start_sec <= 0:
       start_sec = 0
    dur = int(frame_elp / 25) + 3 + 2
-   if dur > 60:
+   if dur >= 60:
       dur = 59 
+   if dur < 1:
+      dur = 2 
 
-   outfile = ffmpeg_trim(mp4_file, start_sec, dur, "-trim" + str(start_frame))
+   pad_start = '{:04d}'.format(start_frame)
+   outfile = ffmpeg_trim(mp4_file, start_sec, dur, "-trim" + str(pad_start))
      
 
 else:
@@ -185,7 +426,8 @@ else:
       dur = frame_elp / 25 + 3 + 2
       if dur > 60:
          dur = 59
-      outfile = ffmpeg_trim(mp4_file, start_sec, dur, "-trim" + str(start_frame))
+      pad_start = '{:04d}'.format(start_frame)
+      outfile = ffmpeg_trim(mp4_file, start_sec, dur, "-trim" + str(pad_start))
 
       #hd_outfile = ffmpeg_trim(hd_file, start_sec, dur, "-trim" + str(start_frame))
       event_count = event_count + 1;
@@ -202,8 +444,13 @@ for event in events:
 el = filename.split("/")
 fn = el[-1]
 dir = filename.replace(fn, "")
+stack_file = dir + fn 
+stack_file = stack_file.replace("-motion.txt", "-stacked.png")
 cmd = "mv " + filename + " " + dir + "data/"
 print(cmd)
 #os.system(cmd)
+cmd = "mv " + stack_file + " " + dir + "images/"
+print(cmd)
+os.system(cmd)
 
 print ("MIKE TOTAL EVENTS",ec )

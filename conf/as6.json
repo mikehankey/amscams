@@ -45,7 +45,7 @@
          "sd_url" : "/user=admin&password=&channel=1&stream=1.sdp",
          "hd_url" : "/user=admin&password=&channel=1&stream=0.sdp",
          "masks" : { 
-             "mask1" : "0,476,704,100"
+             "mask1" : "0,496,704,100"
           }
       },
       "cam2" : {
@@ -55,7 +55,7 @@
          "sd_url" : "/user=admin&password=&channel=1&stream=1.sdp",
          "hd_url" : "/user=admin&password=&channel=1&stream=0.sdp",
          "masks" : { 
-             "mask1" : "0,476,704,100"
+             "mask1" : "0,456,120,120"
           }
       },
       "cam3" : {
@@ -65,7 +65,7 @@
          "sd_url" : "/user=admin&password=&channel=1&stream=1.sdp",
          "hd_url" : "/user=admin&password=&channel=1&stream=0.sdp",
          "masks" : { 
-             "mask1" : "0,476,704,100"
+             "mask1" : "0,476,70,100"
           }
       },
       "cam4" : {

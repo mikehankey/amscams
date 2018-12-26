@@ -74,23 +74,41 @@ def get_bp_motion(motion_file):
    last_cons_mo = 0
    no_motion = 0
 
+#   for line in file:
+#      line = line.replace("\n", "")
+#      (frameno, mo, bpf, cons_mo) = line.split(",");
+#      if int(cons_mo) > 0:
+#         #print ("Cons:", cons_mo);
+#         #print (frameno,mo,bpf,cons_mo,no_motion)
+#         if int(cons_mo) != int(last_cons_mo):
+#            event.append([frameno,mo,bpf,cons_mo])
+#            no_motion = 0
+#      else:
+#         if len(event) >= 3 or no_motion >2:
+#            if len(event) > 2:
+#               events.append(event)
+#            event = []
+#         no_motion = no_motion +1
+#      last_cons_mo = cons_mo
+
+
    for line in file:
       line = line.replace("\n", "")
-      (frameno, mo, bpf, cons_mo) = line.split(",");
+      (frameno, mo, bpf, bpt,bptv,cons_mo) = line.split(",");
       if int(cons_mo) > 0:
-         #print ("Cons:", cons_mo);
          #print (frameno,mo,bpf,cons_mo,no_motion)
-         if int(cons_mo) != int(last_cons_mo):
+         #print("DEBUG frame,len,cons,last_cons,no_mo:", frameno, len(event), cons_mo, last_cons_mo, no_motion)
+         # if True:
+         if int(cons_mo) != int(last_cons_mo) :
             event.append([frameno,mo,bpf,cons_mo])
             no_motion = 0
       else:
-         if len(event) >= 3 or no_motion >2:
+         if len(event) >= 3 or no_motion > 2:
             if len(event) > 2:
                events.append(event)
             event = []
          no_motion = no_motion +1
       last_cons_mo = cons_mo
-
 
    return(events)
 
@@ -219,13 +237,27 @@ def track_objects(pts,moving_objects):
       moving_objects[found_object] = (id,ox,oy,(hist))
    return(found_object, moving_objects)
       
+def find_object_file(video_file):
+   el = video_file.split("/")
+   fn = el[-1]
+   fn_base = fn.replace(".mp4", "")
+   dir_base = video_file.replace(fn, "")
+   reject_file = dir_base + "data/" + fn_base + "-objfail.txt"
+   confirm_file = dir_base + "data/" + fn_base + "-meteor.txt"
+   file_exists = Path(reject_file)
+   if file_exists.is_file() == True:
+      return("non-meteor", reject_file)
+   file_exists = Path(confirm_file)
+   if file_exists.is_file() == True:
+      return("meteor", confirm_file)
+   return("notfound", "")
       
 def find_frame_data_file(video_file):
    el = video_file.split("/")
    fn = el[-1]
    fn_base = fn.replace(".mp4", "")
    dir_base = video_file.replace(fn, "")
-   reject_file = dir_base + "data/" + fn_base + ".mp4-rejected.txt"
+   reject_file = dir_base + "data/" + fn_base + "-rejected.txt"
    confirm_file = dir_base + "data/" + fn_base + "-confirm.txt"
    file_exists = Path(reject_file)
    if file_exists.is_file() == True:
@@ -258,7 +290,7 @@ def get_motion_events(frame_data):
             event.append([frame_no,hist,cons_mo])
             no_motion = 0
       else:
-         if len(event) >= 3 and no_motion >2:
+         if len(event) >= 3 :
             if len(event) > 2:
                events.append(event)
             event = []
@@ -266,9 +298,75 @@ def get_motion_events(frame_data):
       last_cons_mo = cons_mo
    return(events)   
 
+def get_bp_events(motion_file):
+   events = []
+   event = []
+   no_motion = 0
+   file = open(motion_file, "r")
+
+#   for line in file:
+#      line = line.replace("\n", "")
+#      (frameno, mo, bpf, cons_mo) = line.split(",");
+#      if int(cons_mo) > 0:
+#         if int(cons_mo) != int(last_cons_mo) != 0:
+#            event.append([frameno,mo,bpf,cons_mo])
+#            no_motion = 0
+#      else:
+#         if len(event) >= 3 or no_motion > 2:
+#            if len(event) > 2:
+#               events.append(event)
+#            event = []
+#         no_motion = no_motion +1
+#      last_cons_mo = cons_mo
+
+
+   for line in file:
+      line = line.replace("\n", "")
+      #print("YO")
+      (frameno, mo, bpf, bpt, bptv,cons_mo) = line.split(",");
+      if int(cons_mo) > 0:
+         #print (frameno,mo,bpf,cons_mo,no_motion)
+         #print("DEBUG frame,len,cons,last_cons,no_mo:", frameno, len(event), cons_mo, last_cons_mo, no_motion)
+         # if True:
+         if int(cons_mo) != int(last_cons_mo) :
+            event.append([frameno,mo,bpf,cons_mo])
+            no_motion = 0
+      else:
+         if len(event) >= 3 or no_motion > 2:
+            if len(event) > 2:
+               events.append(event)
+            event = []
+         no_motion = no_motion +1
+      last_cons_mo = cons_mo
+
+
+   return(events)
+
+
 
 def examine_video_clip(video_file):
-   (motion, reject, confirm) = get_motion_file(video_file)
+   print ("<script src=\"/pycgi/show-hide-div.js\"></script>")
+   (motion, motion_proc, motion_not_proc) = get_motion_file(video_file)
+   print(motion,motion_proc,motion_not_proc)
+   meteor_trims, trim_files  = get_trim_clips(video_file)
+   print ("<h1>Examine Video</h1>")
+   motion_file = video_file.replace(".mp4", "-motion.txt")
+   print("<a href=" + str(motion_file) + ">Motion File</a><br>")
+   if len(meteor_trims) >= 1:
+      print("<h3><font color=red>Meteor Detected</font></h3>")
+      for meteor_video_file in meteor_trims:
+
+         png = meteor_video_file.replace(".mp4", "-stacked.png")
+         el = png.split("/")
+         fn = el[-1]
+         base = png.replace(fn, "")
+         stack_file = base + "/images/" + fn
+
+         print("METEOR CLIP: <a href=" + str(meteor_video_file) + ">" + str(meteor_video_file) + "</a><BR>")
+         print ("<P><a href=" + meteor_video_file + "><img src=" + stack_file + "></a></P>")
+   else:
+      print("<h3>No Meteor Detected</h3>")
+
    jpg = video_file.replace(".mp4", "-stacked.png")
    el = jpg.split("/")
    fn = el[-1]
@@ -281,48 +379,70 @@ def examine_video_clip(video_file):
 
    
    (f_datetime, cam, f_date_str,fy,fm,fd, fh, fmin, fs) = convert_filename_to_date_cam(video_file)
-   print("1-MIN VIDEO START TIME: ", f_datetime, "<BR>")
+   print ("<h1>1 Minute Clip</h1>")
+   print("CLIP START TIME: ", f_datetime, "<BR>")
    print("CAM NO: ", cam, "<BR>")
-   print("1-MIN VIDEO FILE: <A target=_blank href=" + str(video_file) +  ">" + str(video_file) + "</a><br>")
+   #print("1-MIN VIDEO FILE: <A target=_blank href=" + str(video_file) +  ">" + str(video_file) + "</a><br>")
    #print("STACK FILE: ", stack_file, "<BR>")
-   print("MOTION FILE: ", motion_file, "<BR>")
-   print("1-MIN STACK FILE:<BR><img src=" + stack_file + "><BR>")
+   #print("MOTION FILE: ", motion_file, "<BR>")
+   print ("<BR><a href=/pycgi/reprocess.py?video_file=" + video_file + ">Reprocess Video</a><BR>")
+   print("<A target=_blank href=" + str(video_file) +">")
+   print("<img src=" + stack_file + "><br>" + video_file + "</a><BR>")
+
+   msg = ""
+   if motion == 1:
+      msg = "Some bright pixel motion detected,"
+   if motion_not_proc == 1:
+      msg = msg + "but the motion file has not been processed yet."
+   if motion_proc == 1:
+      msg = msg + "and the motion file has been processed."
+
+   print(msg)
+   if motion_not_proc == 1:
+      exit()
    fp = open(motion_file, "r")
-   print("<h1>Bright Pixel Detection in 1-MIN Clip</h1>")
-   print ("<table border=1>")
-   print("<TR><TD>Frame</td><td>BPF</td><td>Motion</td><td>Frame Time</td></tr>")
-   for line in fp: 
-      (frameno, mo, bpf, cons_mo) = line.split(",");
-       
-      if int(cons_mo) > 0:
+   bp_events = get_bp_events(motion_file) 
+
+
+
+   print("<h2>" + str(len(trim_files)) + " Trim Files Found " + str(len(bp_events)) + " BP Events Detected</h2>") 
+   tc = 0
+   for trim_file in trim_files:
+      png = trim_file.replace(".mp4", "-stacked.png")
+      el = png.split("/")
+      fn = el[-1]
+      base = png.replace(fn, "")
+      stack_file = base + "/images/" + fn
+ 
+      status, frame_data_file = find_frame_data_file(trim_file)
+      frame_data = get_frame_data(frame_data_file)
+      events = get_motion_events(frame_data)
+
+      print ("<P><a href=" + trim_file + "><img src=" + stack_file + "></a></P>")
+      print(frame_data_file)
+      print("<h2>Bright Pixel Details", tc, len(bp_events),"</h2> ")
+      print("<a href=\"javascript:show_hide_div('bp_details" + str(tc) + "')\">Show / Hide</a>")
+      print("<div id='bp_details" + str(tc) + "' style='display: none'>")
+      print ("<table border=1>")
+      print("<TR><TD>Frame</td><td>BPF</td><td>Motion</td><td>Frame Time</td></tr>")
+      for line in bp_events[tc]:
+         (frameno, mo, bpf, cons_mo) = line
          extra_sec = int(frameno) / 25 
          frame_time = f_datetime + datetime.timedelta(0,extra_sec)
          print("<TR><TD>" + str(frameno) + "</td><td>" + str(bpf) + "</td><td>" + str(cons_mo) + "</td><td>" + str(frame_time.time()) + "</td></tr>")
+      tc = tc + 1
+      print ("</table>")
+      print("</div>")
 
-   print ("</table>")
-   print ("<h1>Trimmed Clips</h1>")
-   trim_files = get_trim_clips(video_file)
-   for trim_file in trim_files:
+      print("<h2>Motion Details</h2>")
+      print("<a href=\"javascript:show_hide_div('m_details" + str(tc) + "')\">Show / Hide</a>")
+      print("<div id='m_details" + str(tc) + "' style='display: none'>")
       status, frame_data_file = find_frame_data_file(trim_file)
-      print("TRIM VIDEO FILE : <a target=_blank href=" + str(trim_file) + ">" + str(trim_file) + "</a><BR>")
-      meteor_video_file = trim_file.replace(".mp4", "-meteor.mp4")
-      el = meteor_video_file.split("/")
-      mvfn = el[-1]
- 
-      meteor_data_file = base + "/data/" + mvfn 
-      meteor_data_file = meteor_data_file.replace(".mp4", ".txt")
-
-      file_exists = Path(meteor_video_file)
-      if file_exists.is_file() == True:
-         print("METEOR VIDEO FILE : <a target=_blank href=" + str(meteor_video_file) + ">" + str(meteor_video_file) + "</a><BR>")
-         
-         moving_objects = get_code(meteor_data_file)
-      print("FRAME DATA FILE: ", frame_data_file, "<BR>")
       frame_data = get_frame_data(frame_data_file)
-      events = get_motion_events(frame_data)
-      ec = 1
-      print("<h1>Events</h1>")
-      for event in events: 
+      motion_events = get_motion_events(frame_data)
+
+      ec = 0
+      for event in motion_events:
          print ("<h2>Event #: " + str(ec) + " " + str(len(event)) + "</h2>")
          print("<table border=1>")
          print("<tr><td>Frame No</td><td>CNTs</td><Td>Cons Mo</td></tr>")
@@ -334,18 +454,22 @@ def examine_video_clip(video_file):
             print("</td><td>" + str(cons_mo) + "</td></tr>")
          ec = ec + 1
          print("</table>")
-      
-      #print ("<h1>Motion Detected Frames in Trimmed Clip</h1>")
-      #print ("<table border=1>")
-      #print("<TR><TD>Frame</td><td>Objects</td><td>Motion</td></tr>")
-      #for (na, frame_no, hist, cons_mo) in frame_data:
-      #   if len(hist) > 0 and int(cons_mo) > 0:
-      #      print("<tr><td>" + str(frame_no) + "</td><td>" + str(hist) + "</td><td>" +  str(cons_mo) + "</td></tr>")
-      #print ("</table>")
-#
-      print("<h1>Object Report</h1>")
-      moving_objects = get_code(meteor_data_file)
-      data, status = object_report(moving_objects, "meteor")  
+
+      print("</div>")
+
+      status, obj_file = find_object_file(trim_file)
+      print("<h1>Object Report:</h1>")
+
+      print("<a href=\"javascript:show_hide_div('o_details" + str(tc) + "')\">Show / Hide</a>")
+      print("<div id='o_details" + str(tc) + "' style='display: none'>")
+
+      moving_objects = get_code(obj_file)
+
+     
+      data, stat = object_report(moving_objects, status)  
+      print("</div>")
+
+
  
 
    exit()
@@ -457,17 +581,32 @@ def examine_video_clip(video_file):
    if cams_detect == 1:
       print ("<h2>Cams detection info</h2>") 
 
+def get_data_files(video_file):
+   data_files = []
+   el = video_file.split("/")
+   fn = el[-1]
+   bd = video_file.replace(fn, "")
+   data_wildcard = bd + "data/" + fn
+   data_wildcard = data_wildcard.replace(".mp4", "*.txt")
+   print (data_wildcard)
+   data_files = sorted(glob.glob(data_wildcard))
+   return(data_files)
 
 def get_trim_clips(video_file):
    trims = []
    trim_wildcard = video_file.replace(".mp4", "-trim*.mp4")
-   trim_files = glob.glob(trim_wildcard)
+   trim_files = sorted(glob.glob(trim_wildcard))
+   meteors = []
    for trim in trim_files:
       if "meteor" not in trim:
          trims.append(trim)
-   return(trims)
+      else:
+         meteors.append(trim)
+   return(meteors, trims)
 
 def get_frame_data(frame_data_file):
+   if frame_data_file == "":
+      return([])
    fdf = open(frame_data_file)
    d = {}
    code = "frame_data = "
@@ -492,29 +631,29 @@ def get_code(code_file):
 
 def get_motion_file(video_file):
    motion_found = 0
-   reject = 0
-   confirm = 0
+   motion_proc = 0
+   motion_not_proc = 0
    el = video_file.split("/")
    motion_check = video_file.replace(".mp4", "-motion.txt")
    motion_fn = el[-1]
-   motion_reject = proc_dir + "rejects/" + motion_fn
+   motion_processed = proc_dir + "data/" + motion_fn
    # first check for motion file in proc2 dir
    file_exists = Path(motion_check)
    if file_exists.is_file() == True:
       # motion file still exists in proc2 dir, it must have been confirmed?
       motion_found = 1
-      confirm = 1
+      motion_not_proc = 1
    else:
-      # motion file doesn't exists in proc2 dir, lets check_reject dir
-      file_exists = Path(motion_reject)
+      # motion file doesn't exists in proc2 dir, lets data dir
+      file_exists = Path(motion_processed)
       if file_exists.is_file() == True:
          # motion file found in reject dir
          motion_found = 1
-         reject = 1
+         motion_proc = 1
       else:
          # motion file not found. 
          motion_found = 0
-   return(motion_found, reject, confirm)
+   return(motion_found, motion_proc, motion_not_proc)
 
 
 def get_days():
@@ -625,19 +764,15 @@ def browse_detections(day, cam):
       base_file = base + ".mp4" 
       base_file_info[base_file] = "Meteor" 
 
-   print ("<PRE><a href=archive-side.py?cmd=browse_detect&day=" + str(day) + "&type=motion>BRIGHT PIXEL DETECTIONS:" + str(len(motion_files)) + "</a>")
-   print ("<PRE><a href=archive-side.py?cmd=browse_detect&day=" + str(day) + "&type=confirm>MOTION DETECTIONS:" + str(len(confirm_files)) + "</a>")
-   print ("<PRE><a href=archive-side.py?cmd=browse_detect&day=" + str(day) + "&type=meteor>METEOR DETECTIONS:" + str(len(meteor_files)) + "</a>")
-   print ("<PRE><a href=archive-side.py?cmd=browse_detect&day=" + str(day) + "&type=objfail>NON METEOR DETECTIONS:" + str(len(objfail_files)) + "</a>")
-   print ("<PRE><a href=archive-side.py?cmd=browse_detect&day=" + str(day) + "&type=reject>NON MOTION REJECTED DETECTIONS :" + str(len(reject_files)) + "</a>")
-   #print ("<PRE><a href=archive-side.py?cmd=browse_detect&day=" + str(day) + "&type=fps_fail>TRIM FPS FAILS:" + str(len(fps_fail_files)) + "</a>")
-   #print ("<PRE>CONFIRM FILES:", len(confirm_files))
-   #print ("<PRE>METEOR FILES:", len(meteor_files))
-   #print ("<PRE>OBJ FAIL FILES:", len(objfail_files))
-   #print ("<PRE>REJECT FILES:", len(reject_files))
+   print ("<a href=archive-side.py?cmd=browse_detect&day=" + str(day) + "&type=motion>BRIGHT PIXEL DETECTIONS:" + str(len(motion_files)) + "</a>")
+   print ("<a href=archive-side.py?cmd=browse_detect&day=" + str(day) + "&type=confirm>MOTION DETECTIONS:" + str(len(confirm_files)) + "</a>")
+   print ("<a href=archive-side.py?cmd=browse_detect&day=" + str(day) + "&type=meteor>METEOR DETECTIONS:" + str(len(meteor_files)) + "</a>")
+   print ("<a href=archive-side.py?cmd=browse_detect&day=" + str(day) + "&type=objfail>NON METEOR DETECTIONS:" + str(len(objfail_files)) + "</a>")
+   print ("<a href=archive-side.py?cmd=browse_detect&day=" + str(day) + "&type=reject>NON MOTION REJECTED DETECTIONS :" + str(len(reject_files)) + "</a>")
 
    if type == 'meteor': 
       print ("<h1>Meteor Detections</h1>")
+      #print(meteor_files)
       for file in meteor_files:
          el = file.split("-trim")
          base = el[0]
@@ -650,11 +785,11 @@ def browse_detections(day, cam):
          meteor_video_file = trim_file.replace(".mp4", "-meteor.mp4") 
          print("<img src=" + img + ">" )
          moving_objects = get_code(file)
-         #print("<BR><a href=" + file + ">Meteor File</a><br>")
          print("<BR><a href=" + trim_file + ">Trim</a> - ")
-         print("<BR><a href=" + meteor_video_file + ">Meteor</a><br>")
-         print("<BR><a href=archive-side.py?cmd=examine&video_file=" + video_file + ">Examine</a><br>")
-         data, status = object_report(moving_objects, "meteor")  
+         print("<a href=" + meteor_video_file + ">Meteor</a> - ")
+         print("<a href=archive-side.py?cmd=examine&video_file=" + video_file + ">Examine</a> -")
+         print("<a href=archive-side.py?cmd=reject_detect&video_file=" + video_file + ">Reject Detection</a><br>")
+         #data, status = object_report(moving_objects, "meteor")  
 
    if type == "confirm":
       print ("<h1>Motion Confirmations</h1>")
@@ -708,23 +843,68 @@ def browse_detections(day, cam):
             file_info = base_file_info[base_file]
          else:
             file_info = ""
-         print("<img src=" + img + "><BR>" + file_info)
+         print("<img src=" + img + "><BR>" + file_info + "")
+         video_file = img.replace("images/", "") 
+         video_file = video_file.replace("-stacked.png", ".mp4") 
+         print("<a href=archive-side.py?cmd=examine&video_file=" + video_file + ">Examine</a> <BR>")
 
    if type == "objfail":
       print ("<h1>Object Detection Failures (no meteors detected)</h1>")
       for file in objfail_files: 
-         print(file)
          el = file.split("-trim")
          base = el[0]
          base_file = base + ".mp4"
          base = base.replace("data", "images") 
+         video_file = base + ".mp4"
+         video_file = video_file.replace("images/", "")
+
          img = base + "-stacked.png" 
          if base_file in base_file_info:
             file_info = base_file_info[base_file]
          else:
             file_info = ""
-         print("<img src=" + img + "><BR>" + file_info)
+         print("<img src=" + img + "><BR>" )
+         print("<BR><a href=archive-side.py?cmd=examine&video_file=" + video_file + ">Examine</a><br>")
 
+def make_file_vars(video_file):
+   el = video_file.split("/")
+   fn = el[-1]
+   base_dir = video_file.replace(fn,"")
+   base_fn = fn.replace(".mp4", "")
+   meteor_trims, trim_files  = get_trim_clips(video_file)
+   data_files = get_data_files(video_file)    
+   return(base_dir, base_fn, meteor_trims, trim_files, data_files)
+
+def reject_detect():
+   print("<h1>Detection Rejected</h1>")
+   video_file = form.getvalue('video_file')
+   (base_dir, base_fn, meteor_trims, trim_files, data_files) = make_file_vars(video_file)
+   print ("<PRE>")
+   print ("BASE FILE: ", base_dir, base_fn)
+   print ("Meteor Trims: ", meteor_trims )
+   print ("Trim Files: ", trim_files)
+   print ("Data Files: ", data_files) 
+   #  To reject a detection delete the meteor trim video file. 
+   #  then move the meteor.txt to objfail.txt and confirm.txt to rejected.txt
+   #  then create a manual-reject.txt to signal the manual override and prevent a later re-detection (if reprocessing occurs)
+   for meteor_trim in meteor_trims: 
+      cmd = "rm " + meteor_trim
+      os.system(cmd)
+      print(cmd) 
+   for data_file in data_files:
+      if "meteor" in data_file:
+         objfail_file = data_file.replace("-meteor.txt", "-objfail.txt")
+         cmd = "mv " + data_file + " " + objfail_file
+         os.system(cmd)
+         print(cmd)
+      if "confirm" in data_file:
+         reject_file = data_file.replace("-confirm.txt", "-rejected.txt")
+         cmd = "mv " + data_file + " " + reject_file 
+         os.system(cmd)
+         print(cmd)
+  
+   
+   
    
 
 def browse_day(day, cam):
@@ -799,7 +979,7 @@ def browse_day(day, cam):
          else:
             print ("<div class='divTableCell'>")
          #print ("<a href=" + file + " onmouseover=\"document.img" + str(count) + ".src='" + diff + "'\" onmouseout=\"document.img" + str(count) + ".src='" + jpg + "'\"><img name='img" + str(count) + "' src=" + jpg + "></a></div>")
-         print ("<a href=archive-side.py?cmd=examine&video_file=" + file + " ><img name='img" + str(count) + "' src=" + jpg + "></a></div>")
+         print ("<a href=archive-side.py?cmd=examine&video_file=" + file + " ><img name='img" + str(count) + "' src=" + jpg + "></a><BR>" + jpg + "</div>")
          print ("<div class='divTableCell'>") 
 
          # start the button area here
@@ -891,6 +1071,8 @@ def main():
       browse_day(day, cam_num)  
    if cmd == "browse_rejects":
       browse_rejects()  
+   if cmd == "reject_detect":
+      reject_detect()  
    if cmd == "examine":
       video_file = form.getvalue('video_file')
       examine_video_clip(video_file)  

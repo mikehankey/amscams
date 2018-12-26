@@ -221,6 +221,7 @@ int px_frames[2000];
 int cons_frames[2000]; 
 int px_diff_frames[2000]; 
 int px_diff_val_frames[2000]; 
+
 int max_cons_px;
 int highest_max_cons_px;
 
@@ -318,8 +319,10 @@ status = Read_FFMPEG_Pipe_Image(imagefrm, dummyframe);
                                 
                                 px_frames[frame_count] = this_bp_factor;
                                 cons_frames[frame_count] = max_cons_px;
-                                printf("FRAME:%d,BPAT:%d,BP_AVG:%d,BPT:%d,X%d,CM=%d,PXDIFFT:%d,PX_DIFF_VAL:%d,PX_DIFF_PP,%d,nm=%d\n", frame_count, bp_total, bp_avg, this_bp_total,this_bp_factor, max_cons_px,px_diff_total, px_diff_val_total,px_diff_pp,no_motion);
+                                //printf("FRAME:%d,BPAT:%d,BP_AVG:%d,BPT:%d,X%d,CM=%d,PXDIFFT:%d,PX_DIFF_VAL:%d,PX_DIFF_PP,%d,nm=%d\n", frame_count, bp_total, bp_avg, this_bp_total,this_bp_factor, max_cons_px,px_diff_total, px_diff_val_total,px_diff_pp,no_motion);
                                 //printf("PX DIFF: %d %d ", px_diff_total, px_diff_val_total);
+                                px_diff_frames[frame_count] = px_diff_total;
+                                px_diff_val_frames[frame_count] = px_diff_val_total;
 
                                 this_bp_total = 0;
                                
@@ -349,7 +352,7 @@ status = Read_FFMPEG_Pipe_Image(imagefrm, dummyframe);
                        FILE * mfp;
                        mfp = fopen(motion_filename, "w");
                        for (int i = 0; i <= frame_count -1; i++) {
-                          fprintf(mfp, "%d,%d,%d,%d\n",i,motion_frames[i],px_frames[i],cons_frames[i]);
+                          fprintf(mfp, "%d,%d,%d,%d,%d,%d\n",i,motion_frames[i],px_frames[i],px_diff_frames[i],px_diff_val_frames[i], cons_frames[i]);
               
                        }
                        fclose(mfp);

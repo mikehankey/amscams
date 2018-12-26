@@ -1,5 +1,6 @@
 #!/usr/bin/python3 
 
+import os
 import cv2
 import subprocess
 import json
@@ -54,6 +55,7 @@ def get_files(dir, cams_id):
    print(glob_dir)
    for filename in (glob.glob(glob_dir)):
       motion_file = filename.replace("-stacked.png", "-motion.txt") 
+      motion_file = motion_file.replace("images", "data")
       file_exists = Path(motion_file)
       if file_exists.is_file():
 
@@ -107,6 +109,7 @@ def stack_video(video_file):
       print ("Saved: ", stacked_file)
    else:
       print("bad file:", video_file)
+
 cmd = sys.argv[1]
 
 
@@ -117,5 +120,14 @@ if cmd == 'stack_night':
 if cmd == 'stack_vid':
    file = sys.argv[2]
    stack_video(file)
+   if len(sys.argv) > 3:
+      if sys.argv[3] == "mv":
+         el = file.split("/")
+         file_name = el[-1]
+         base_dir = file.replace(file_name, "")
+         png = file_name.replace(".mp4", "-stacked.png")
+         cmd = "mv " + base_dir + png + " " + base_dir + "images/" 
+         print(cmd)
+         os.system(cmd)
 if cmd == 'stack_rejects':
    stack_rejects()

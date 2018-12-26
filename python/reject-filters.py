@@ -1,4 +1,5 @@
 #!/usr/bin/python3 
+import time
 import datetime
 import math
 from pathlib import Path
@@ -15,6 +16,45 @@ json_file = open('../conf/as6.json')
 json_str = json_file.read()
 json_conf = json.loads(json_str)
 proc_dir = json_conf['site']['proc_dir']
+
+def check_if_done(video_file):
+   el = video_file.split("/")
+   fn = el[-1]
+   bd = video_file.replace(fn, "")
+   fn = fn.replace(".mp4", "")
+   meteor_file = bd + "data/" + fn + "-meteor.txt"
+   objfail = bd + "data/" + fn + "-objfail.txt"
+   confirm = bd + "data/" + fn + "-confirm.txt"
+   reject = bd + "data/" + fn + "-reject.txt"
+   file_exists = Path(meteor_file)
+   if file_exists.is_file() is True:
+      return(1)
+   file_exists = Path(objfail)
+   if file_exists.is_file() is True:
+      return(1)
+   file_exists = Path(confirm)
+   if file_exists.is_file() is True:
+      return(1)
+   file_exists = Path(reject)
+   if file_exists.is_file() is True:
+      return(1)
+   print(meteor_file)
+   print(objfail)
+   print(confirm)
+   print(reject)
+   return(0)
+   
+
+def get_data_files(video_file):
+   data_files = []
+   el = video_file.split("/")
+   fn = el[-1]
+   bd = video_file.replace(fn, "")
+   data_wildcard = bd + "data/" + fn
+   data_wildcard = data_wildcard.replace(".mp4", "*.txt")
+   print (data_wildcard)
+   data_files = sorted(glob.glob(data_wildcard))
+   return(data_files)
 
 
 def convert_filename_to_date_cam(file):
@@ -130,20 +170,20 @@ def object_report (trim_file, frame_data):
          px_per_frame =dist / elp_frms
       else:
          px_per_frame = 0
-      if len_test < .8 or len_test > 2:
+      if len_test < .5 or len_test > 2:
          status.append(('reject', 'object flickers like a plane.'))
       if elp_frms > 200:
          status.append(('reject', 'object exists for too long to be a meteor.'))
-      if px_per_frame < 1:
+      if px_per_frame <= .59:
          status.append(('reject', 'object does not move fast enough to be a meteor.'))
-      if dist < 5:
+      if dist < 4:
          status.append(('reject', 'object does not move far enough to be a meteor.'))
       if hist_len < 3:
          status.append(('reject', 'object does not exist long enough.'))
       # (frame_num, count, first_frame, last_frame, slope, distance, elapsed_frames, px_per_frames, status)
       obj_data = (object[0],  hist_len,  first, last,  slope, dist,  elp_frms,  px_per_frame,  status)
       found_objects.append(obj_data) 
-   return(found_objects)
+   return(found_objects, moving_objects)
 
 
 
@@ -224,7 +264,6 @@ def check_for_motion(frames, video_file):
          frame = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
       gray_frame = frame
       frame_file = frame_file_base + "-fr" + str(frame_count) + ".png"
-      frame[440:480, 0:360] = 0
 
       frame = cv2.GaussianBlur(frame, (7, 7), 0)
 
@@ -242,6 +281,7 @@ def check_for_motion(frames, video_file):
       (_, cnts, xx) = cv2.findContours(thresh.copy(), cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
       good_cnts = []
       cnt_cnt = 0
+      print("CNT:", frame_count, len(cnts))
       for (i,c) in enumerate(cnts):
          bad_cnt = 0
          x,y,w,h = cv2.boundingRect(cnts[i])
@@ -254,10 +294,17 @@ def check_for_motion(frames, video_file):
             y2 = y + h
             #print("IMG: ", y,y2,x,x2)
             cnt_img = gray_frame[y:y2,x:x2]            
-            fx = test_cnt_flux(cnt_img)
+            print("CNT SHAPE: ", cnt_img.shape[0], cnt_img.shape[1])
+            if cnt_img.shape[0] > 0 and cnt_img.shape[1] > 0:
+               fx = test_cnt_flux(cnt_img, frame_count, cnt_cnt)
+            else:
+               fx = 0
+            if fx == None:
+               print("BAD FX: ", frame_count, cnt_cnt)
             #print ("FLUX", fx)
-            #if flux_status == 0:
-            #   bad_cnt = 1 
+            if fx == 0:
+               bad_cnt = 1 
+           
             #cv2.imwrite("/mnt/ams2/tests/cnt" + str(frame_count) + "-" + str(cnt_cnt) + ".png", cnt_img)
 
          if bad_cnt == 0:
@@ -268,7 +315,7 @@ def check_for_motion(frames, video_file):
             cv2.rectangle(nice_frame, (x, y), (x + w, y + w), (255, 0, 0), 2)
             cnt_cnt = cnt_cnt + 1
       if len(good_cnts) > 10:
-         print ("NOISE!", frame_count, len(good_cnts))
+         print ("NOISE!", video_file,frame_count, len(good_cnts))
          #noisy cnt group don't count it. 
          good_cnts = []
       #cv2.imwrite(frame_file, nice_frame)
@@ -288,15 +335,29 @@ def check_for_motion(frames, video_file):
          cons_motion = 0
       frame_count = frame_count + 1
       #cv2.imshow('pepe', frame)
-      #cv2.waitKey(1)
+      #cv2.waitKey(100)
       #print(frame_count, len(good_cnts), cons_motion)
    return(max_cons_motion, frame_data)
 
 
-def test_cnt_flux(cnt_img):
+def test_cnt_flux(cnt_img, frame_count,cnt_cnt):
+   hull = 0
+   brightness_passed = 0
+   corner_passed = 0
    img_min = cnt_img.min()
    img_max = cnt_img.max()
-   #print("TEST Countour Flux, should be light in center and dark on edges all around.", img_min,img_max)
+   img_avg = cnt_img.mean()
+   img_diff = img_max - img_avg
+   thresh = int(img_avg + (img_diff / 2))
+   thresh = img_avg 
+   img_avg_diff = img_max - img_min
+   if img_max / img_avg < 1.5:
+      # Failed brightness check
+      print("Failed brightness check.")
+     
+      return(0)
+   print("TEST Countour Flux, should be light in center and dark on edges all around.", img_min,img_max,img_avg)
+  
    lc = cnt_img[0,0]
    brc = cnt_img[-1,-1]
    rc = cnt_img[0,-1]
@@ -304,16 +365,68 @@ def test_cnt_flux(cnt_img):
    total = int(lc) + int(brc) + int(rc) + int(blc)
    avg = total / 4
    passed = 0
-   if (avg - 5 < lc < avg + 5) and (avg - 5 < brc < avg + 5) and (avg - 5 < rc < avg + 5) and (avg - 5 < blc < avg + 5):
-      passed = 1
-   return(passed)      
-   
+   if img_min > 0:
+      if img_max / img_min > 1.5:
+         print ("FLUX TEST: ", frame_count, cnt_cnt, avg, lc)
+         print ("FLUX TEST: ", frame_count, cnt_cnt, avg, brc)
+         print ("FLUX TEST: ", frame_count, cnt_cnt, avg, rc)
+         print ("FLUX TEST: ", frame_count, cnt_cnt, avg, blc)
+         brightness_passed = 1
+      else:
+         brightness_passed = 0
+
+   # cnt in cnt test
+   _, threshold = cv2.threshold(cnt_img, thresh, 255, cv2.THRESH_BINARY)
+   thresh_obj = cv2.dilate(threshold, None , iterations=4)
+   (_, cnts, xx) = cv2.findContours(thresh_obj.copy(), cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
+   if len(cnts) == 1:
+      #BLOB DETECT INSIDE CNT
+      params = cv2.SimpleBlobDetector_Params()
+      params.filterByArea = True
+      params.filterByInertia = False
+      #params.filterByConvexity = False
+      params.filterByCircularity = True
+      params.minCircularity= .5
+      params.minArea = 1
+ 
+      params.minThreshold = img_min + 5
+      params.maxThreshold = 255
+      params.filterByConvexity = True
+      params.minConvexity = .95
+      detector = cv2.SimpleBlobDetector_create(params)
+      keypoints = detector.detect(cnt_img)
+      hull = len(keypoints)
+      print("KEY:", len(keypoints))
+      cnt_found = 1
+   else:
+      hull = 999
+      cnt_found = 0
+    
+
+   # corner test
+   if (avg - 10 < lc < avg + 10) and (avg - 10 < brc < avg + 10) and (avg - 10 < rc < avg + 10) and (avg - 10 < blc < avg + 10):
+      print("PASSED")
+      corner_passed = 1
+   else:
+      print("FAILED")
+      corner_passed = 0
+   if hull == 1:
+      shull = 1
+   else:
+      shull = 0
+   score = brightness_passed + corner_passed + cnt_found + shull
+   if score >= 3:
+      cv2.imwrite("/mnt/ams2/tests/cnt" + str(frame_count) + "_" + str(cnt_cnt) + "-" + str(brightness_passed) + "-" + str(corner_passed) + "-" + str(cnt_found) + "-" + str(hull) + ".png", cnt_img)
+
+   if score >= 3:
+      return(1)
+   else:
+      return(0) 
 
 def load_video_frames(trim_file):
 
    (f_datetime, cam, f_date_str,fy,fm,fd, fh, fmin, fs) = convert_filename_to_date_cam(trim_file)
    masks = get_masks(cam)
-     # img[y1:
 
    cap = cv2.VideoCapture(trim_file)
 
@@ -334,14 +447,13 @@ def load_video_frames(trim_file):
             frame = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
          # apply masks for frame detection
          for mask in masks:
-            print("Mask:", mask)
             mx,my,mw,mh = mask.split(",")
             frame[int(my):int(my)+int(mh),int(mx):int(mx)+int(mw)] = 0
 
          frames.append(frame)
          frame_count = frame_count + 1
-   cv2.imwrite("/mnt/ams2/tests/test.png", frames[0])
-
+   #cv2.imwrite("/mnt/ams2/tests/test" + str(frame_count) + ".png", frames[0])
+   cap.release()
    return(frames)
 
 def confirm_motion(trim_file,frame_data): 
@@ -399,10 +511,12 @@ def move_rejects(trim_file, frame_data):
 
 def check_duration(trim_file):
    cmd = "/usr/bin/ffprobe " + trim_file + ">checks.txt 2>&1"
-   output = subprocess.check_output(cmd, shell=True).decode("utf-8")
-   efp = open("checks.txt")
-   stream_found = 0
+   print (cmd)
+   s= 0
    try:
+      output = subprocess.check_output(cmd, shell=True).decode("utf-8")
+      efp = open("checks.txt")
+      stream_found = 0
       for line in efp:
          if "Duration" in line:
             el = line.split(" ")
@@ -446,14 +560,14 @@ def get_masks(this_cams_id):
          masks = cameras[camera]['masks']
          for key in masks: 
             my_masks.append((masks[key]))
+
+#   print(my_masks)
+
    return(my_masks)
             
 
 
 def apply_reject_filters(trim_file):
-
-
- 
 
    frames = []
    print ("Apply reject filters for : ", trim_file)
@@ -475,13 +589,15 @@ def apply_reject_filters(trim_file):
    base = motion_file.replace(fn, "")
    new_motion_file = base + "/data/"  + fn
    
+   #data_files = get_data_files(trim_file)
 
 
-
-   file_exists = Path(confirm_file)
-   if (file_exists.is_file() is True):
-      print("DONE ALREADY!")
+   done_already = check_if_done(trim_file)
+   if done_already == 1:
+      #print("DONE ALREADY!")
       #return()
+      if sys.argv[1] != 'scan_file':
+         return()
 
   
    trim_fps = check_frame_rate(trim_file)
@@ -492,26 +608,47 @@ def apply_reject_filters(trim_file):
    if int(float(trim_fps)) >= 20: 
       frames = load_video_frames(trim_file)
 
-
+   if int(len(frames)) >= 20: 
       if len(frames) > 5:
          max_cons_motion, frame_data = check_for_motion(frames, trim_file)
          #print ("Max Cons Motion: ", max_cons_motion)
 
-         found_objects = object_report(trim_file, frame_data)
+         found_objects, moving_objects = object_report(trim_file, frame_data)
          print ("FOUND:", found_objects)
          for obj in found_objects:
             (frame_num, count, first_frame, last_frame, slope, distance, elapsed_frames, px_per_frames, status) = obj
-            #print(status, len(status))
+            print(status, len(status))
             if len(status) == 0:
-               meteor_found = 1
-               print ("METEOR FOUND.")
 
-         if meteor_found == 1: 
+               print ("MIKE METEOR FOUND.")
+               # make sure this is not a false cloud check
+               (meteor_check) = last_meteor_check(obj, moving_objects, frame_data, frames)
+               print("METEOR CHECK:", meteor_check)
+
+               if meteor_check == 1:
+                  print ("YAS! Meteor passed flux test, must be good?", meteor_found) 
+                  meteor_found = meteor_found + 1
+               else:
+                  meteor_found = 0
+
+               if meteor_found == 0:
+                  mt = open(obj_fail, "w")
+                  mt.write(str(found_objects))
+                  mt.close()
+               else:
+                  print ("METEOR FOUND.", meteor_found)
+                  #meteor_file = meteor_file.replace(".txt", str(meteor_found) + ".txt")
+                  mt = open(meteor_file, "w")
+                  mt.write(str(found_objects))
+                  mt.close()
+
+         if meteor_found >= 1: 
             print ("METEOR")
             #print (meteor_file)
             mt = open(meteor_file, "w")
             mt.write(str(found_objects))
             mt.close()
+            trim_meteor(meteor_file)
          else:
             print ("NO METEOR")
             #print (obj_fail)
@@ -537,19 +674,131 @@ def apply_reject_filters(trim_file):
    cmd = "mv " + motion_file + " " + new_motion_file
    os.system(cmd)
 
+def last_meteor_check (obj, moving_objects, frame_data, frames): 
+   print("LAST METEOR CHECK!")
+   object_id = obj[0][0]
+   print("OBJ ID: ", object_id)
+   print("OBJ : ", obj)
+   #print("MOVING OBJECTS: ", moving_objects)
+
+   flx_check_total = 0
+   fx_pass = 0
+   avg_tbf = 0
+   obj_hist = []
+   for object in moving_objects:
+      #print("MV OBJECT: ", object)
+      this_object_id = object[0][0]
+      #print ("THIS OBJECT ID: ", this_object_id, object_id)
+      if object_id == this_object_id:
+         #print("OBJ MATCH:", object)
+         this_hist = object[3]
+         #print("HIST", this_hist)
+         for hist in this_hist:
+            fn, x,y,w,h,fx = hist
+            print("HIST: ", fn, x,y,w,h,fx)
+            flx_check_total = flx_check_total + fx
+         if len(hist) > 1:
+            fx_perc = flx_check_total / len(this_hist)
+         if fx_perc > .6:
+            fx_pass = 1
+            obj_hist = this_hist
+         #print ("FX PERC?:", flx_check_total, len(hist) ,fx_perc)
+
+   # Examine each cnt to tell if it has a bright centroid or streak
+   # or is more anomolous
+
+   tbf = 0
+   if fx_pass == 1:
+      # make cnts images for each cnt (so we can examine/debug)
+      for fn,x,y,w,h,fx in obj_hist:
+         image = frames[fn]
+         x2 = x + w + 5
+         y2 = y + h + 5
+         x1 = x  - 5
+         y1 = y  - 5
+         if x1 < 0:
+            x1 = 0
+         if y1 < 0:
+            y1 = 0
+         if x2 > image.shape[1]:
+            x2 = image.shape[1]
+         if y2 > image.shape[0]:
+            y2 = image.shape[0]
+         #print("IMG: ", y,y2,x,x2)
+         if w > 1 and h > 1:
+            print ("XY12: ", y1, y2, x1, x2)
+            cnt_img = image[y1:y2,x1:x2]            
+            brightness_factor = examine_cnt(cnt_img)
+            tbf = tbf + brightness_factor
+         cv2.imwrite("/mnt/ams2/tests/cnt" + str(fn) + ".jpg", cnt_img)
+
+      if len(obj_hist) > 0:
+         avg_tbf = tbf / len(obj_hist)
+
+   print("AVG TBF: ", avg_tbf)
+   if avg_tbf > 1.7:
+      print ("YES passed the cnt brightness tests")
+      fx_pass = 1
+   else:
+      fx_pass = 0
+
+
+   return(fx_pass)
+   #for frame in frame_data:
+   #   trim_num, obj_id , cnts, cns_no = frame
+   #   if obj_id == object_id:
+   #      print("OBJECT T CHECK:", obj_id, len(cnts), cnts)
+
+   #exit()
+
+def examine_cnt(cnt_img):
+   print("SHAPE", cnt_img.shape)
+   max_px = np.max(cnt_img)
+   avg_px = np.mean(cnt_img)
+   print("AVG/MAX:", avg_px, max_px)
+   if avg_px > 0:
+      brightness_factor = max_px / avg_px 
+   return(brightness_factor)
+
 def do_batch():
    print("proc_dir:", proc_dir)
    for filename in (glob.glob(proc_dir + "/*")):
       if 'daytime' not in filename and 'rejects' not in filename:
          print(filename)
-         scan_dir(filename)
+         scan_dir2(filename)
+
+def scan_dir2(dir):
+   cmd = "mv " + dir + "*.png " + dir + "images/"
+   os.system(cmd)
+
+   cmd = "mv " + dir + "*-motion.txt " + dir + "data/"
+   print(cmd)
+   os.system(cmd)
+
+   for motion_filename in (glob.glob(dir + '/data/*motion.txt')):   
+      video_filename = motion_filename.replace("-motion.txt",".mp4")
+      video_filename = video_filename.replace("data/", "")
+      cmd = "./redo.py " + video_filename
+      os.system(cmd)
 
 def scan_dir(dir):
+   cmd = "mv " + dir + "*.png " + dir + "images/"
+   os.system(cmd)
+
    
    print(dir + '/*trim*.mp4')   
    for filename in (glob.glob(dir + '/*trim*.mp4')):   
       print(filename)
-      apply_reject_filters(filename)
+      if "meteor" not in filename:
+         apply_reject_filters(filename)
+         #time.sleep(1)
+
+   cameras = json_conf['cameras']
+   for camera in cameras:
+      cams_id = cameras[camera]['cams_id']
+      cmd = "./stack-stack.py stack_night " + dir + "images/ " + cams_id
+      print(cmd)
+      os.system(cmd)
    meteor_trims(dir)
 
 def meteor_trims(dir):
@@ -558,17 +807,35 @@ def meteor_trims(dir):
       trim_meteor(filename)
 
 def trim_meteor(meteor_file):
-   trim_file = meteor_file.replace("-meteor.txt", ".mp4")
-   trim_file = trim_file.replace("data/", "")
+   print ("TRIM METEOR", meteor_file)
+   #el = meteor_file.split("/")
+   eld = meteor_file.split("-meteor")
+   base = eld[0]
+   trim_file = base.replace("data/", "")
+   trim_file = trim_file + ".mp4"
+
+
+
+   #trim_file = meteor_file.replace("-meteor.txt", ".mp4")
+   #trim_file = trim_file.replace("data/", "")
+
    meteor_video_file = meteor_file.replace(".txt", ".mp4")
    meteor_video_file = meteor_video_file.replace("data/", "")
-
+   file_exists = Path(meteor_video_file)
+   if file_exists.is_file() == True:
+      print ("DONE.")
+      return() 
+  
+   print ("TRIM FILE:", trim_file)
    dur = check_duration(trim_file)
    if int(dur) < 5:
+      print ("Duration is", dur)
       cmd = "cp " + trim_file + " " + meteor_video_file
       print(cmd)
       os.system(cmd)
       return()   
+   else:
+      print ("Duration is", dur)
 
    fdf = open(meteor_file)
    d = {}
@@ -576,6 +843,7 @@ def trim_meteor(meteor_file):
    for line in fdf:
       code = code + line
    exec (code,  d)
+   print(d['object_data'])
    for object in d['object_data']:
       #print(object[0], object[1], object[2],object[3],object[8])
       if len(object[8]) == 0:
@@ -597,6 +865,8 @@ def trim_meteor(meteor_file):
          print ("DUR FRAMES: ", elp_frames)
          print ("START SEC: ", start_sec)
          print ("DUR SEC: ", elp_sec)
+         if start_sec <= 0:
+            start_sec = 0
          if elp_sec <= 2:
             elp_sec = 3 
          ffmpeg_trim(trim_file, start_sec, elp_sec, meteor_video_file) 
@@ -619,14 +889,15 @@ def ffmpeg_trim (filename, trim_start_sec, dur_sec, outfile):
    return(outfile)
 
 
-
+cmd = sys.argv[1]
+#print("DISABLED")
+#exit()
 running = check_running()
-if running > 3:
+if running > 3 and cmd != 'scan_file':
    print(running)
    print ("Already running.")
    exit()
 
-cmd = sys.argv[1]
 
 #apply_reject_filters(trim_file)
 
@@ -634,7 +905,7 @@ if cmd == 'do_batch':
    do_batch()
 if cmd == 'scan_dir':
    file = sys.argv[2]
-   scan_dir(file)
+   scan_dir2(file)
 if cmd == 'scan_file':
    file = sys.argv[2]
    apply_reject_filters(file)
