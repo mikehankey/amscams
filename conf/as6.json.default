@@ -1,21 +1,21 @@
 {
    "site"  : {
-      "ams_id" : "ams1",
+      "ams_id" : "ams23",
       "mac_addr" : "00:0e:c4:d3:e1:15",
       "sd_video_dir" : "/mnt/ams2/SD/",
       "hd_video_dir" : "/mnt/ams2/HD/",
       "cams_queue_dir" : "/mnt/ams2/CAMS/queue/",
       "cams_dir" : "/home/ams/amscams/",
       "proc_dir" : "/mnt/ams2/SD/proc2/",
-      "obs_name" : "Starlight Farm",
-      "operator_name" : "Mike Hankey",
+      "obs_name" : "UoA",
+      "operator_name" : "Vishnu Reddy",
       "operator_email" : "mike.hankey@gmail.com",
-      "operator_city" : "Monkton",
-      "operator_state" : "MD",
+      "operator_city" : "Tucson",
+      "operator_state" : "AZ",
       "device_lng" : "-76.58425183",
       "device_lat" : "39.58909497",
       "device_alt" : "145",
-      "cams_pwd" : "xrp23q"
+      "cams_pwd" : ""
    },
    "camera_settingsv1" : {
       "night" : {
