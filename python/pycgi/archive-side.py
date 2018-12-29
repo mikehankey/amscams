@@ -685,7 +685,35 @@ def load_scan_file(day, cam_num):
 
 def make_main_page():
    days = get_days()
-   print(days)
+   #print(days)
+
+def get_stats(day):
+   # find total trim files
+   # find total meteor files
+   # find total objfail files
+   meteor_trims = []
+   all_trims = []
+   trim_files = glob.glob(proc_dir + "/" + day + "/*trim*.mp4")
+   for file in trim_files:
+      if "meteor" in file:
+         meteor_trims.append(file)
+      else:
+         all_trims.append(file)
+
+   objfail = glob.glob(proc_dir + "/" + day + "/data/*objfail*.txt")
+
+   total_meteors = len(meteor_trims)
+   total_trims = len(all_trims)
+   total_non_meteors = len(objfail)
+
+   stats = [total_trims, total_meteors, total_non_meteors]
+
+   #print("TOTAL BRIGHT PIXEL DETECTIONS:", total_trims, "<BR>")
+   #print("TOTAL METEOR DETECTIONS:", total_meteors, "<BR>")
+   #print("TOTAL NON-METEOR DETECTIONS:", total_non_meteors, "<BR>")
+
+   return(stats)
+       
 
 def make_archive_links():
 
@@ -695,6 +723,14 @@ def make_archive_links():
    html = ""
    for day in days:
       html = html + "<h2>" + day + "</h2> "
+      total_detects, total_meteors, total_non_meteors = get_stats(day)
+      html = html + "Total Bright Pixel Detections: " + str(total_detects) + "<BR>"
+      html = html + "<a href=archive-side.py?cmd=browse_detect&type=meteor&day=" + day + ">Total METEOR Detections: " + str(total_meteors) + "</a><BR>"
+      html = html + "<a href=archive-side.py?cmd=browse_detect&type=objfail&day=" + day + ">Total NON-METEOR Detections: " + str(total_non_meteors) + "</a><BR>"
+
+
+
+      
       for cn in range(1,7):
          #if cn != 1:
          #   html = html + " - "
@@ -704,8 +740,6 @@ def make_archive_links():
 
 
          master_stack_file = proc_dir + day + "/images/"  + cams_id + "-night-stack.png?" + str(rand_num)
-         #master_stack_img = "<img alt='cam" + str(cn) + "' onmouseover='bigImg(this)' onmouseout='normalImg(this)' width=320 height=240 src='" + master_stack_file + "'>"
-         #master_stack_img = "<img alt='cam" + str(cn) + "' onmouseover='normalImg(this)' onmouseout='normalImg(this)' width=320 height=240 src='" + master_stack_file + "'>"
          master_stack_img = "<img alt='cam" + str(cn) + "' width=320 height=240 src='" + master_stack_file + "'>"
          html = html + "<a href=archive-side.py?cmd=browse_day&day=" + day + "&cam_num=" + str(cn) + ">" + master_stack_img + "</a>" + "\n"
       html = html + "<P>"
@@ -774,6 +808,9 @@ def browse_detections(day, cam):
       print ("<h1>Meteor Detections</h1>")
       #print(meteor_files)
       for file in meteor_files:
+         trim_stack = file.replace(".txt", "-stacked.png")
+         trim_stack = trim_stack.replace("data", "images")
+
          el = file.split("-trim")
          base = el[0]
          base = base.replace("data", "images") 
@@ -783,7 +820,7 @@ def browse_detections(day, cam):
          trim_file = file.replace("-meteor.txt", ".mp4") 
          trim_file = trim_file.replace("data/", "") 
          meteor_video_file = trim_file.replace(".mp4", "-meteor.mp4") 
-         print("<img src=" + img + ">" )
+         print("<img src=" + trim_stack + ">" )
          moving_objects = get_code(file)
          print("<BR><a href=" + trim_file + ">Trim</a> - ")
          print("<a href=" + meteor_video_file + ">Meteor</a> - ")
@@ -851,6 +888,10 @@ def browse_detections(day, cam):
    if type == "objfail":
       print ("<h1>Object Detection Failures (no meteors detected)</h1>")
       for file in objfail_files: 
+
+         trim_stack = file.replace("-objfail.txt", "-stacked.png")
+         trim_stack = trim_stack.replace("data", "images")
+
          el = file.split("-trim")
          base = el[0]
          base_file = base + ".mp4"
@@ -863,7 +904,7 @@ def browse_detections(day, cam):
             file_info = base_file_info[base_file]
          else:
             file_info = ""
-         print("<img src=" + img + "><BR>" )
+         print("<img src=" + trim_stack + "><BR>" )
          print("<BR><a href=archive-side.py?cmd=examine&video_file=" + video_file + ">Examine</a><br>")
 
 def make_file_vars(video_file):

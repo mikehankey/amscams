@@ -12,6 +12,7 @@ json_file = open('../conf/as6.json')
 json_str = json_file.read()
 json_conf = json.loads(json_str)
 sd_video_dir = json_conf['site']['sd_video_dir']
+proc_dir = json_conf['site']['proc_dir']
 
 
 def load_video_frames(trim_file):
@@ -51,8 +52,16 @@ def stack_stack(pic1, pic2):
 
 def get_files(dir, cams_id):
    master_stack = None
-   glob_dir = dir + "/*" + str(cams_id) + "-stacked.png"
+   cmd = "mv " + dir  + "/*motion* " + dir + "/data/"
+   os.system(cmd)
+   print(cmd)
+   cmd = "mv " + dir + "/*stacked* " + dir + "/images/"
+   os.system(cmd)
+   print(cmd)
+
+   glob_dir = dir + "/images/*" + str(cams_id) + "-stacked.png"
    print(glob_dir)
+   image_dir = dir + "/images/"
    for filename in (glob.glob(glob_dir)):
       motion_file = filename.replace("-stacked.png", "-motion.txt") 
       motion_file = motion_file.replace("images", "data")
@@ -67,18 +76,19 @@ def get_files(dir, cams_id):
          magic = float(magic)
          print ("Mean Image Brightness:", magic)
 
-         if magic > 0 and magic < 30000:
+         if magic > 0 and magic < 20000:
             print(filename,motion_file)
             pic1 = Image.open(str(filename))
             if master_stack is None:
                master_stack = stack_stack(pic1, pic1)
             else:
                master_stack = stack_stack(master_stack, pic1)
-   stacked_file = dir + "/" + cams_id + "-night-stack.png"
+   stacked_file = dir + "/images/" + cams_id + "-night-stack.png"
    if master_stack is None:
       print("No detections worth stacking :(")
       # make alternative stack here
    else:
+      print(stacked_file)
       master_stack.save(stacked_file)   
 
 def stack_rejects():
@@ -110,8 +120,28 @@ def stack_video(video_file):
    else:
       print("bad file:", video_file)
 
+def batch_night():
+  
+   dirs = glob.glob(proc_dir + "/*")  
+   for dir in dirs:
+      for cam_num in range(1,7):
+         cam_key = 'cam' + str(cam_num)
+         cams_id = json_conf['cameras'][cam_key]['cams_id']
+         master_stack = dir + "/images/" + cams_id + "-night-stack.png"
+         exists = Path(master_stack)
+         if exists.is_file():
+            print("SKIP:", master_stack)
+         else:
+            print(dir, cams_id)
+            get_files(dir, cams_id)
+
+
+
+
 cmd = sys.argv[1]
 
+if cmd == 'batch_night':
+   batch_night()
 
 if cmd == 'stack_night':
    dir = sys.argv[2]

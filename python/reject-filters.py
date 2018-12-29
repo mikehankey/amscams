@@ -594,9 +594,8 @@ def apply_reject_filters(trim_file):
 
    done_already = check_if_done(trim_file)
    if done_already == 1:
-      #print("DONE ALREADY!")
-      #return()
       if sys.argv[1] != 'scan_file':
+         print("DONE ALREADY!")
          return()
 
   
