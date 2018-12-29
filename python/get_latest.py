@@ -31,8 +31,9 @@ def get_latest_pic(cam_num):
    cams_id = json_conf['cameras'][cam_key]['cams_id']
 
 
-   outfile = sd_video_dir + str(cams_id) + ".jpg"
+   outfile = sd_video_dir + "../latest/" + str(cams_id) + ".jpg"
 
+   print("rtsp://" + cam_ip + hd_url)
    cap = cv2.VideoCapture("rtsp://" + cam_ip + hd_url)
 
 
@@ -41,6 +42,7 @@ def get_latest_pic(cam_num):
    _ , frame = cap.read()
    #frame = cv2.resize(frame, (0,0), fx=1, fy=.75)
 
+   print(outfile)
    cv2.imwrite(outfile, frame)  
 
 

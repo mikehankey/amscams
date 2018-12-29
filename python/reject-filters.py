@@ -813,8 +813,6 @@ def trim_meteor(meteor_file):
    trim_file = base.replace("data/", "")
    trim_file = trim_file + ".mp4"
 
-
-
    #trim_file = meteor_file.replace("-meteor.txt", ".mp4")
    #trim_file = trim_file.replace("data/", "")
 
