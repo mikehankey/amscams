@@ -244,6 +244,7 @@ def find_object_file(video_file):
    dir_base = video_file.replace(fn, "")
    reject_file = dir_base + "data/" + fn_base + "-objfail.txt"
    confirm_file = dir_base + "data/" + fn_base + "-meteor.txt"
+
    file_exists = Path(reject_file)
    if file_exists.is_file() == True:
       return("non-meteor", reject_file)
@@ -322,7 +323,6 @@ def get_bp_events(motion_file):
 
    for line in file:
       line = line.replace("\n", "")
-      #print("YO")
       (frameno, mo, bpf, bpt, bptv,cons_mo) = line.split(",");
       if int(cons_mo) > 0:
          #print (frameno,mo,bpf,cons_mo,no_motion)
@@ -581,6 +581,18 @@ def examine_video_clip(video_file):
    if cams_detect == 1:
       print ("<h2>Cams detection info</h2>") 
 
+
+def get_stack_files(video_file):
+   data_files = []
+   el = video_file.split("/")
+   fn = el[-1]
+   bd = video_file.replace(fn, "")
+   data_wildcard = bd + "images/" + fn
+   data_wildcard = data_wildcard.replace(".mp4", "*-meteor*")
+   print ("<H2>Stack Files", data_wildcard, "</h2>")
+   img_files = sorted(glob.glob(data_wildcard))
+   return(img_files)
+
 def get_data_files(video_file):
    data_files = []
    el = video_file.split("/")
@@ -717,11 +729,11 @@ def get_stats(day):
 
 def make_archive_links():
 
-
    days = get_days()
    d = 0
    html = ""
    for day in days:
+
       html = html + "<h2>" + day + "</h2> "
       total_detects, total_meteors, total_non_meteors = get_stats(day)
       html = html + "Total Bright Pixel Detections: " + str(total_detects) + "<BR>"
@@ -792,17 +804,20 @@ def browse_detections(day, cam):
    (motion_files, confirm_files, meteor_files, objfail_files, reject_files) = get_detection_files_for_day(day)
    type= form.getvalue('type')
    base_file_info = {}
+   total_detects, total_meteors, total_non_meteors = get_stats(day)
+
    for file in meteor_files:
       el = file.split("-trim")
       base = el[0]
       base_file = base + ".mp4" 
       base_file_info[base_file] = "Meteor" 
 
-   print ("<a href=archive-side.py?cmd=browse_detect&day=" + str(day) + "&type=motion>BRIGHT PIXEL DETECTIONS:" + str(len(motion_files)) + "</a>")
-   print ("<a href=archive-side.py?cmd=browse_detect&day=" + str(day) + "&type=confirm>MOTION DETECTIONS:" + str(len(confirm_files)) + "</a>")
+   #print ("<a href=archive-side.py?cmd=browse_detect&day=" + str(day) + "&type=motion>BRIGHT PIXEL DETECTIONS:" + str(len(motion_files)) + "</a>")
+   print ("<a href=archive-side.py?cmd=browse_detect&day=" + str(day) + "&type=confirm>TOTAL DETECTIONS:" + str(total_detects) + "</a>")
+
    print ("<a href=archive-side.py?cmd=browse_detect&day=" + str(day) + "&type=meteor>METEOR DETECTIONS:" + str(len(meteor_files)) + "</a>")
    print ("<a href=archive-side.py?cmd=browse_detect&day=" + str(day) + "&type=objfail>NON METEOR DETECTIONS:" + str(len(objfail_files)) + "</a>")
-   print ("<a href=archive-side.py?cmd=browse_detect&day=" + str(day) + "&type=reject>NON MOTION REJECTED DETECTIONS :" + str(len(reject_files)) + "</a>")
+   #print ("<a href=archive-side.py?cmd=browse_detect&day=" + str(day) + "&type=reject>NON MOTION REJECTED DETECTIONS :" + str(len(reject_files)) + "</a>")
 
    if type == 'meteor': 
       print ("<h1>Meteor Detections</h1>")
@@ -914,20 +929,28 @@ def make_file_vars(video_file):
    base_fn = fn.replace(".mp4", "")
    meteor_trims, trim_files  = get_trim_clips(video_file)
    data_files = get_data_files(video_file)    
-   return(base_dir, base_fn, meteor_trims, trim_files, data_files)
+   stack_files = get_stack_files(video_file)    
+   return(base_dir, base_fn, meteor_trims, trim_files, data_files, stack_files)
 
 def reject_detect():
    print("<h1>Detection Rejected</h1>")
    video_file = form.getvalue('video_file')
-   (base_dir, base_fn, meteor_trims, trim_files, data_files) = make_file_vars(video_file)
+   (base_dir, base_fn, meteor_trims, trim_files, data_files,stack_files) = make_file_vars(video_file)
    print ("<PRE>")
    print ("BASE FILE: ", base_dir, base_fn)
    print ("Meteor Trims: ", meteor_trims )
    print ("Trim Files: ", trim_files)
    print ("Data Files: ", data_files) 
+   print ("Stack Files: ", stack_files) 
    #  To reject a detection delete the meteor trim video file. 
    #  then move the meteor.txt to objfail.txt and confirm.txt to rejected.txt
    #  then create a manual-reject.txt to signal the manual override and prevent a later re-detection (if reprocessing occurs)
+
+   for meteor_stack in stack_files :
+      cmd = "rm " + meteor_stack
+     # os.system(cmd)
+      print(cmd) 
+
    for meteor_trim in meteor_trims: 
       cmd = "rm " + meteor_trim
       os.system(cmd)

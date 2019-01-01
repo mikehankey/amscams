@@ -1,10 +1,14 @@
 #!/usr/bin/python3 
+import subprocess
 import math
 from PIL import Image, ImageChops
 import numpy as np
 import datetime
 import json
 import cv2
+from pathlib import Path
+import os
+from scipy import signal
 # Library for detect function
 
 
@@ -12,6 +16,23 @@ json_file = open('../conf/as6.json')
 json_str = json_file.read()
 json_conf = json.loads(json_str)
 proc_dir = json_conf['site']['proc_dir']
+
+def setup_dirs(filename):
+   el = filename.split("/")
+   fn = el[-1]
+   working_dir = filename.replace(fn, "")
+   data_dir = working_dir + "/data/"
+   images_dir = working_dir + "/images/"
+   file_exists = Path(data_dir)
+   if file_exists.is_dir() == False:
+      print("Make the dir.")
+      os.system("mkdir " + data_dir)
+
+   file_exists = Path(images_dir)
+   if file_exists.is_dir() == False:
+      print("Make the dir.")
+      os.system("mkdir " + images_dir)
+
 
 def get_image(image_file):
    open_cv_image = cv2.imread(image_file,1)   
@@ -77,6 +98,12 @@ def load_video_frames(trim_file):
    cap.release()
    return(frames)
 
+def mask_frame(frame, mp):
+   for x,y in mp:
+      #print ("MASK", x,y)
+      frame[y-3:y+3,x-3:x+3] = 0
+   return(frame)
+
 def check_for_motion(frames, video_file):
    cv2.namedWindow('pepe')
    # find trim number
@@ -85,6 +112,36 @@ def check_for_motion(frames, video_file):
    st = fn.split("trim")
    print("ST:", st)
    stf = st[1].split(".")
+
+   if len(frames) > 200:
+      med_stack_all = cv2.convertScaleAbs(np.median(np.array(frames[0:199]), axis=0))
+   else:
+      med_stack_all = cv2.convertScaleAbs(np.median(np.array(frames), axis=0))
+   star_bg = 255 - cv2.adaptiveThreshold(med_stack_all, 255, cv2.ADAPTIVE_THRESH_GAUSSIAN_C, cv2.THRESH_BINARY, 11, 5)
+   
+   #_, star_bg = cv2.threshold(med_stack_all, 75, 255, cv2.THRESH_BINARY)
+   star_bg = cv2.GaussianBlur(star_bg, (7, 7), 0)
+   thresh_obj = cv2.dilate(star_bg, None , iterations=4)
+   (_, cnts, xx) = cv2.findContours(thresh_obj.copy(), cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
+   masked_pixels = []
+   for (i,c) in enumerate(cnts):
+      x,y,w,h = cv2.boundingRect(cnts[i])
+      cx = int(x + (w/2))
+      cy = int(y + (h/2))
+      masked_pixels.append((cx,cy))
+      #cv2.rectangle(star_bg, (x, y), (x + w, y + w), (255, 0, 0), 2)
+   #med_stack_all = np.median(np.array(frames), axis=0)
+
+   #print("SHAPE:", med_stack_all.shape)
+
+   #med_stack_all = cv2.cvtColor(med_stack_all, cv2.COLOR_BGR2GRAY)
+
+
+   cv2.imshow('pepe', med_stack_all)
+   cv2.waitKey(1)
+   cv2.imshow('pepe', star_bg)
+   cv2.waitKey(1)
+   #exit()
 
    trim_num = int(stf[0])
    print("TRIM NUM: ", trim_num)
@@ -102,6 +159,15 @@ def check_for_motion(frames, video_file):
    stacked_image = None
 
    for frame in frames:
+      if len(frame.shape) == 3:
+         frame = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
+      #thresh_obj = cv2.dilate(star_bg, None , iterations=4)
+      blur_frame = cv2.GaussianBlur(frame, (7, 7), 0)
+      #image_diff = cv2.absdiff(star_bg.astype(frame.dtype), blur_frame,)
+      frame = mask_frame(frame, masked_pixels)
+
+      #frame = image_diff 
+      #frame = image_diff
       data_str = []
       data_str.append(trim_num)
       data_str.append(frame_count)
@@ -111,8 +177,6 @@ def check_for_motion(frames, video_file):
       stacked_image = stack_image_PIL(nice_frame, stacked_image)
       stacked_image_np = np.asarray(stacked_image)
 
-      if len(frame.shape) == 3:
-         frame = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
       gray_frame = frame
       frame_file = frame_file_base + "-fr" + str(frame_count) + ".png"
 
@@ -125,14 +189,15 @@ def check_for_motion(frames, video_file):
          image_acc = np.empty(np.shape(frame))
 
       image_diff = cv2.absdiff(image_acc.astype(frame.dtype), frame,)
-      alpha = .4
+      alpha = .25
       hello = cv2.accumulateWeighted(frame, image_acc, alpha)
       _, threshold = cv2.threshold(image_diff, 5, 255, cv2.THRESH_BINARY)
       thresh_obj = cv2.dilate(threshold, None , iterations=4)
       (_, cnts, xx) = cv2.findContours(thresh_obj.copy(), cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
       good_cnts = []
       cnt_cnt = 0
-      #print("CNT:", frame_count, len(cnts))
+      if len(cnts) > 0:
+         print("CNT:", frame_count, len(cnts))
       # START CNT LOOP
       for (i,c) in enumerate(cnts):
          bad_cnt = 0
@@ -151,7 +216,8 @@ def check_for_motion(frames, video_file):
             cnt_x, cnt_y,cnt_w,cnt_h =  find_center(cnt_img) 
             adj_x = x + cnt_x
             adj_y = y + cnt_y
-            print("XY/CENTER XY", x,y,cnt_x,cnt_y, adj_x,adj_y)
+            #print("XY/CENTER XY", x,y,cnt_x,cnt_y, adj_x,adj_y)
+            print("FRAME: ", frame_count)
             fx = test_cnt_flux(cnt_img, frame_count, cnt_cnt)
             bf = examine_cnt(cnt_img)
             if fx == 0 or bf < 1.5:
@@ -184,8 +250,11 @@ def check_for_motion(frames, video_file):
 
 
                good_cnts.append((frame_count,adj_x,adj_y,w,h,fx))
-               #cv2.rectangle(nice_frame, (x, y), (x + w, y + w), (255, 0, 0), 2)
-               #cv2.putText(nice_frame, str(object),  (x,y), cv2.FONT_HERSHEY_SIMPLEX, .4, (255, 255, 255), 1)
+               cv2.rectangle(nice_frame, (x, y), (x + w, y + w), (255, 0, 0), 2)
+               cv2.putText(nice_frame, str(object),  (x,y), cv2.FONT_HERSHEY_SIMPLEX, .4, (255, 255, 255), 1)
+               cv2.imshow('pepe', nice_frame)
+               cv2.waitKey(1)
+
 
                #cv2.rectangle(stacked_image_np, (x, y), (x + w, y + w), (255, 0, 0), 2)
                #cv2.putText(stacked_image_np, str(object),  (x,y), cv2.FONT_HERSHEY_SIMPLEX, .4, (255, 255, 255), 1)
@@ -213,15 +282,28 @@ def check_for_motion(frames, video_file):
          cons_motion = 0
       frame_count = frame_count + 1
       tfc = tfc + 1
-      cv2.imshow('pepe', nice_frame)
-      cv2.waitKey(1)
-      #print(frame_count, len(good_cnts), cons_motion)
 
 
-   cv2.imshow('pepe', stacked_image_np)
-   cv2.waitKey(0)
+   #cv2.imshow('pepe', stacked_image_np)
+   #cv2.waitKey(3)
 
    return(max_cons_motion, frame_data, moving_objects, stacked_image)
+
+def clean_hist(hist):
+   new_hist = []
+   last_fn = 0
+   for h in hist:
+      fn,hx,hy,hw,hh,hf = h
+      print("CLEAN:", fn, last_fn)
+      #if fn -1 == last_fn or fn -2 == last_fn :
+      if fn > 15 :
+         new_hist.append(h)
+      last_fn = fn
+   if len(new_hist) > 2:
+      return(new_hist)
+   else:
+      return(hist)
+      
 
 def object_report (trim_file, frame_data):
    fc =1
@@ -289,11 +371,16 @@ def find_center(cnt_img):
    max_px = np.max(cnt_img)
    mean_px = np.mean(cnt_img)
    max_diff = max_px - mean_px
+   x = 0
+   y = 0
+   w = 0
+   h = 0
    thresh = max_diff / 2
    _, threshold = cv2.threshold(cnt_img, thresh, 255, cv2.THRESH_BINARY)
    thresh_obj = cv2.dilate(threshold, None , iterations=4)
    (_, cnts, xx) = cv2.findContours(thresh_obj.copy(), cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
    # START CNT LOOP
+   bad_cnt = 0
    for (i,c) in enumerate(cnts):
       bad_cnt = 0
       x,y,w,h = cv2.boundingRect(cnts[i])
@@ -302,10 +389,13 @@ def find_center(cnt_img):
          bad_cnt = 1
       if w >= 630 or h >= 400:
          bad_cnt = 1
-
-   nx = x + (w /2)
-   ny = y + (h /2)
-   print("CENTER X,Y", nx,ny)
+   if bad_cnt == 0 and len(cnts) > 0:
+      nx = x + (w /2)
+      ny = y + (h /2)
+      #print("CENTER X,Y", nx,ny)
+   else:
+      nx = 0
+      ny = 0
    return(int(nx),int(ny),w,h)
    
 
@@ -403,7 +493,7 @@ def last_meteor_check (obj, moving_objects, frame_data, frames):
             cnt_img = image[y1:y2,x1:x2]
             brightness_factor = examine_cnt(cnt_img)
             tbf = tbf + brightness_factor
-         cv2.imwrite("/mnt/ams2/tests/cnt" + str(fn) + ".jpg", cnt_img)
+         #cv2.imwrite("/mnt/ams2/tests/cnt" + str(fn) + ".jpg", cnt_img)
 
       if len(obj_hist) > 0:
          avg_tbf = tbf / len(obj_hist)
@@ -423,6 +513,8 @@ def examine_cnt(cnt_img):
    avg_px = np.mean(cnt_img)
    if avg_px > 0:
       brightness_factor = max_px / avg_px
+   else:
+      brightness_factor = 0
    return(brightness_factor)
 
 
@@ -440,6 +532,9 @@ def ffmpeg_trim (filename, trim_start_sec, dur_sec, outfile):
    return(outfile)
 
 def test_cnt_flux(cnt_img, frame_count,cnt_cnt):
+
+   cnt_show = cnt_img.copy()
+   cnt_h, cnt_w = cnt_img.shape
    hull = 0
    brightness_passed = 0
    corner_passed = 0
@@ -449,13 +544,7 @@ def test_cnt_flux(cnt_img, frame_count,cnt_cnt):
    img_diff = img_max - img_avg
    thresh = int(img_avg + (img_diff / 2))
    thresh = img_avg
-   img_avg_diff = img_max - img_min
-   if img_max / img_avg < 1.5:
-      # Failed brightness check
-      print("Failed brightness check.", img_max, img_avg)
 
-      return(0)
-   #print("TEST Countour Flux, should be light in center and dark on edges all around.", img_min,img_max,img_avg)
 
    lc = cnt_img[0,0]
    brc = cnt_img[-1,-1]
@@ -472,8 +561,14 @@ def test_cnt_flux(cnt_img, frame_count,cnt_cnt):
          brightness_passed = 0
 
    # cnt in cnt test
-   _, threshold = cv2.threshold(cnt_img, thresh, 255, cv2.THRESH_BINARY)
-   thresh_obj = cv2.dilate(threshold, None , iterations=4)
+   #_, threshold = cv2.threshold(cnt_img.copy(), thresh, 255, cv2.THRESH_BINARY)
+   if cnt_w % 2 == 0:
+      cnt_w = cnt_w + 1
+   print("CNT_W:", cnt_w)
+
+   thresh_obj = 255 - cv2.adaptiveThreshold(cnt_img.copy(), 255, cv2.ADAPTIVE_THRESH_GAUSSIAN_C, cv2.THRESH_BINARY, cnt_w, 3)
+   thresh_obj = cv2.dilate(thresh_obj, None , iterations=4)
+
    (_, cnts, xx) = cv2.findContours(thresh_obj.copy(), cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
    if len(cnts) == 1:
       #BLOB DETECT INSIDE CNT
@@ -507,9 +602,49 @@ def test_cnt_flux(cnt_img, frame_count,cnt_cnt):
       shull = 1
    else:
       shull = 0
+   mean_px_all = np.mean(cnt_img)
+   mean_px_in = 0
+   tmp_cnt = cnt_img.copy()
+
+   if len(cnts) > 0:
+      for (i,c) in enumerate(cnts):
+            
+         x,y,w,h = cv2.boundingRect(cnts[i])
+         nx = int(x + (w/2))
+         ny = int(y + (h/2))
+         print("RECT", x,y,w,h)
+         cv2.rectangle(cnt_show , (nx - 3, ny - 3), (nx + 3, ny + 3), (255, 255, 255), 1)
+         bpt_img = cnt_img[ny-3:ny+3,nx-3:nx+3]
+            
+         mean_px_in = np.mean(bpt_img)
+         tmp_cnt[ny-3:ny+3,nx-3:nx+3] = mean_px_all
+
+
+   mean_px_all = np.mean(tmp_cnt)
+
+   if mean_px_all > 0 and img_avg > 0:
+      #or img_max / img_avg < 1.2:
+      if mean_px_in / mean_px_all < 1.01 :
+         # Failed brightness check
+         print("Failed brightness check.", mean_px_in , mean_px_all, mean_px_in / mean_px_all)
+         brightness_passed = 0
+      else:
+         brightness_passed = 1
+   else:
+      brightness_passed = 0
+
    score = brightness_passed + corner_passed + cnt_found + shull
-   if score >= 3:
-      cv2.imwrite("/mnt/ams2/tests/cnt" + str(frame_count) + "_" + str(cnt_cnt) + "-" + str(brightness_passed) + "-" + str(corner_passed) + "-" + str(cnt_found) + "-" + str(hull) + ".png", cnt_img)
+   print ("BP:", brightness_passed)
+   print ("CP:", corner_passed)
+   print ("CNTF:", cnt_found)
+   print ("SHULL:", shull)
+   print ("BP ALL/IN:", mean_px_all, mean_px_in)
+
+   #cv2.imshow("pepe", cnt_show)
+   #cv2.waitKey(0)
+
+   #if score >= 3:
+      #cv2.imwrite("/mnt/ams2/tests/cnt" + str(frame_count) + "_" + str(cnt_cnt) + "-" + str(brightness_passed) + "-" + str(corner_passed) + "-" + str(cnt_found) + "-" + str(hull) + ".png", cnt_img)
 
    if score >= 3:
       return(1)
@@ -531,7 +666,7 @@ def new_obj_id(pt, moving_objects):
 def check_hist(x,y,hist):
 
    for (fn,hx,hy,hw,hh,hf) in hist:
-      if hx - 20 <= x <= hx + 20 and hy - 20 <= y <= hy +20:
+      if hx - 35 <= x <= hx + 35 and hy - 35 <= y <= hy +35:
          return(1)
    return(0)
 
@@ -581,6 +716,8 @@ def find_color(oc):
       colors = 255,255,0
    if oc == 4: 
       colors = 255,255,255
+   if oc >= 5:
+      colors = 100,100,255
    
    return(colors)
 
@@ -592,19 +729,34 @@ def test_object(object):
    # straight line -- do 3 or more points fit a line
 
    oid, start_x, start_y, hist = object
+   hist = clean_hist(hist)
+
    straight_line = 99
    slope = 0
    dist = 0
+   last_x = 0
+   last_y = 0
    hist = object[3]
+   print ("HIST: ", hist)
    first = hist[0]
    last = hist[-1]
    p1 = first[1], first[2]
    p2 = last[1], last[2]
-   hist_len = len(object[3]) - 1
+   #hist_len = len(object[3]) - 1
+   hist_len = len(hist)
    elp_frms = last[0] - first[0]
    cns_mo = 0
    max_cns_mo = 0
+   peaks = 0
    last_fn = None
+   size_frame_test = 0
+   max_size = 0
+
+   if elp_frms > 0:
+      elp_time = elp_frms / 25
+   else:
+      elp_time = 0
+
 
    # length test
    if hist_len < 2:
@@ -617,22 +769,42 @@ def test_object(object):
       cm_test = (hist_len-1) / elp_frms
    else:
       cm_test = 0
+ 
 
-   if hist_len > 3:
+   if hist_len > 2:
       slope = find_slope(p1,p2)
+      print("DIST: ", p1,p2)
       dist = calc_dist(p1,p2)
 
+   sizes = []
    if hist_len > 2:
       if hist_len > 3:
          ix = int(hist_len/2)
       else:
          ix = 1
-      straight_line = compute_straight_line(hist[0][0],hist[0][1],hist[ix][0],hist[ix][1],hist[-1][0],hist[-1][1])
+      straight_line = compute_straight_line2(hist[0][1],hist[0][2],hist[ix][1],hist[ix][2],hist[-1][1],hist[-1][2])
+      peaks = 0
+      max_size = 0
+      last_size = 0
+      bigger = 0
       for line in hist:
          fn, x,y,w,h,fx = line 
-         #find_center(x,y,w,h,img_cnt)
+         print("WIDTH,HEIGHT:", w,h)
+         if last_x > 0 and last_y > 0:
+            seg_dist = calc_dist((last_x,last_y),(x,y))
+            print ("SEG DIST:", oid, seg_dist)
+         size = w * h
+         sizes.append(size)
+         if w * h > max_size:
+            max_size = w * h
+         if size > last_size and bigger == 0:
+            bigger = 1
+         else:
+            bigger = 0
+
+            
          if last_fn is not None:
-            if fn - 1 == last_fn:
+            if fn - 1 == last_fn or fn -2 == last_fn:
                cns_mo = cns_mo + 1
                if cns_mo > max_cns_mo:
                   max_cns_mo = cns_mo
@@ -640,43 +812,127 @@ def test_object(object):
                if cns_mo > max_cns_mo:
                   max_cns_mo = cns_mo
                cns_mo = 0
+
+         last_x = x
+         last_y = y
          print(line)
          last_fn = fn
+         last_size = size
 
    if max_cns_mo > 0:
       max_cns_mo = max_cns_mo + 1
+
+   #if max_cns_mo > 10:
+   #   cm_test = 1
+
+  
+   if len(sizes) > 1:
+      sci_peaks = signal.find_peaks(sizes)
+      peaks = len(sci_peaks[0])
+      print("SCI:", sci_peaks)
+ 
+   if peaks > 0 and max_cns_mo > 0:
+      peaks_to_frame_ratio = peaks / max_cns_mo
+   else:
+      peaks_to_frame_ratio = 0
+
+   if peaks > 0 and dist > 0:
+      peaks_to_dist_ratio = peaks / dist 
+   else:
+      peaks_to_dist_ratio = 0
+   if max_size > 0 and peaks > 0:
+      size_to_peak_ratio = max_size/ peaks
+   else:
+      size_to_peak_ratio = 0
+     
+ 
+   if elp_frms < 7 and max_size > 1500:
+      print("Too big for too short of frames")
+      size_frame_test = 0
+   else:
+      size_frame_test = 1
+
    if max_cns_mo > 0:
       px_per_frame = dist / max_cns_mo 
    else:
       px_per_frame = 0
-     
+   if max_cns_mo > 10:
+      px_per_frame = dist / max_cns_mo
+    
+   meteor_yn = 0
+   if first[0] > 20 and cm_test > .5 and max_cns_mo >= 3 and px_per_frame >= .6 and dist >= 4 and straight_line < 5 and elp_time < 7 and peaks_to_frame_ratio <= .4 and peaks_to_dist_ratio <.4 and size_frame_test == 1:
+      print("METEOR")
+      meteor_yn = 1
 
+   meteor_data = {}
+   meteor_data['oid'] = oid
+   meteor_data['cm_test'] = cm_test
+   meteor_data['max_cns_mo'] = max_cns_mo
+   meteor_data['len_test'] = len_test
+   meteor_data['len_hist'] = len(hist)
+   meteor_data['elp_time'] = elp_time
+   meteor_data['elp_frms'] = elp_frms
+   meteor_data['dist'] = dist
+   meteor_data['peaks'] = peaks
+   meteor_data['peaks_to_frame_ratio'] = peaks_to_frame_ratio
+   meteor_data['peaks_to_dist_ratio'] = peaks_to_dist_ratio
+   meteor_data['size_to_peak'] = size_to_peak_ratio
+   meteor_data['first'] = first
+   meteor_data['last'] = last
+   meteor_data['hist'] = hist
+   meteor_data['max_size'] = max_size 
+   meteor_data['size_frame_test'] = size_frame_test
+   meteor_data['straight_line'] = straight_line
+   meteor_data['px_per_frame'] = px_per_frame
+   meteor_data['meteor_yn'] = meteor_yn
+   print("\n-----------------")
    print ("Object ID: ", oid)
    print("-----------------")
    print ("CM Test: ", cm_test)
    print ("Cons Mo: ", max_cns_mo)
-   print ("LEN Test: ", len_test)
+   print ("LEN Test: ", len_test, len(hist))
+   print ("Elapsed Time: ", elp_time)
+   print ("Elapsed Frames: ", elp_frms)
    print ("Dist: ", dist)
+   print ("Peaks: ", peaks)
+   print ("Peak To Frame Ratio: ", peaks_to_frame_ratio, peaks, "/", max_cns_mo, )
+   print ("Peak To Dist Ratio: ", peaks_to_dist_ratio)
+   print ("Size To Peak: ", size_to_peak_ratio)
+   print ("First: ", first)
+   print ("Last: ", last)
+   print ("History:")
+   for h  in hist:
+      print("HIST:", h)
    print ("Slope: ", slope)
+   print ("Max Size: ", max_size)
+   print ("Size Frame Test: ", size_frame_test)
    print ("Straight: ", straight_line)
    print ("PX Per Frame: ", px_per_frame)
+   print ("Meteor Y/N: ", meteor_yn)
    print("")
-   meteor_yn = 0
-   if cm_test > .5 and max_cns_mo >= 3 and px_per_frame >= .6 and dist > 5 and straight_line < 1:
-      print("METEOR")
-      meteor_yn = 1
-   return(meteor_yn)
+   return(meteor_yn, meteor_data)
+
+
+def compute_straight_line2(x1,y1,x2,y2,x3,y3):
+   if x1 - x2 == 0 :
+      x1 = x1 + 1
+   if x3 - x2 == 0 :
+      x3 = x3 + 1
+   print("X", x1,x2,x3)
+   print("Y", y1,y2,y3)
+   diff = math.atan((y2-y1)/(x2-x1)) - math.atan((y3-y2)/(x3-x2))
+   return(diff)
 
 def compute_straight_line(x1,y1,x2,y2,x3,y3):
    print ("COMP STRAIGHT", x1,y1,x2,y2,x3,y3)
    if x1 - x2 != 0:
       a = (y1 - y2) / (x1 - x2)
    else:
-      a = 0
+      a = (y1 - y2) / 1
    if x1 - x3 != 0:
       b = (y1 - y3) / (x1 - x3)
    else:
-      b = 0
+      b = (y1 - y3) / 1 
    straight_line = a - b
    if (straight_line < 1):
       straight = "Y"
@@ -707,7 +963,7 @@ def find_slope(p1,p2):
 def meteor_in_trim(frames, moving_objects, trim_file):
    for object in moving_objects:
       oid, start_x, start_y, hist = object
-      meteor_yn = test_object(object, frames)
+      meteor_yn,meteor_data = test_object(object, frames)
       if meteor_yn == 1:
          save_meteor()
       else:
@@ -747,6 +1003,46 @@ def object_box(object, stacked_image_np):
       min_y = 0
    return(int(min_x), int(min_y), int(max_x),int(max_y))
 
+def test_objects(moving_objects):
+   all_objects = []
+   passed = 0
+   for object in moving_objects:
+      meteor_yn,meteor_data = test_object(object)
+      if meteor_yn == 1:
+         passed = 1
+      all_objects.append(meteor_data)
+   return(passed, all_objects)
+   
+
+def complete_scan(trim_file, meteor_found, found_objects):
+   setup_dirs(trim_file)
+   el = trim_file.split("/")
+   fn = el[-1]
+   base_dir = trim_file.replace(fn,"")
+   confirm_file = base_dir + "/data/" + fn
+   confirm_file = confirm_file.replace(".mp4", "-confirm.txt")
+   meteor_file = confirm_file.replace("-confirm.txt", "-meteor.txt")
+   obj_fail = confirm_file.replace("-confirm.txt", "-objfail.txt")
+
+
+
+   if meteor_found >= 1:
+      print ("METEOR")
+      mt = open(meteor_file, "w")
+      mt.write(str(found_objects))
+      mt.close()
+      trim_meteor(meteor_file)
+   else:
+      print ("NO METEOR")
+      mt = open(obj_fail, "w")
+      mt.write(str(found_objects))
+      mt.close()
+
+      cmd = "./stack-stack.py stack_vid " + trim_file + " mv"
+      os.system(cmd)
+
+
+
 def draw_obj_image(stacked_image_np, moving_objects):
    colors = None
    stacked_image_np_gray = stacked_image_np
@@ -754,7 +1050,7 @@ def draw_obj_image(stacked_image_np, moving_objects):
    oc = 0
    for object in moving_objects:
     
-      meteor_yn = test_object(object)
+      meteor_yn,meteor_data = test_object(object)
       oid, start_x, start_y, hist = object
       if len(hist) - 1 > 1:
          colors = find_color(oc)
@@ -764,12 +1060,180 @@ def draw_obj_image(stacked_image_np, moving_objects):
          for line in hist:
             fn, x,y,w,h,fx = line 
             print(x,y)
-            dd = int(w + h / 2)
+            dd = int(w / 2)
             #cv2.rectangle(stacked_image_np, (x, y), (x + 3, y + 3), (colors), 2)
             cv2.circle(stacked_image_np, (x,y), dd, (255), 1)
             #cv2.putText(stacked_image_np, str(oid),  (x,y), cv2.FONT_HERSHEY_SIMPLEX, .4, (colors), 1)
+            if min_y < 100:
+               cv2.putText(stacked_image_np, str(oid),  (min_x,min_y+15), cv2.FONT_HERSHEY_SIMPLEX, .4, (0,0,255), 1)
+            else:
+               cv2.putText(stacked_image_np, str(oid),  (min_x,min_y- 15), cv2.FONT_HERSHEY_SIMPLEX, .4, (0,0,255), 1)
          if meteor_yn == 1:
-            cv2.putText(stacked_image_np, str("Meteor"),  (min_x,min_y- 5), cv2.FONT_HERSHEY_SIMPLEX, .4, (0,0,255), 1)
+            print ("XYMETEOR:", min_x, min_y)
+            if min_y < 100:
+               cv2.putText(stacked_image_np, str("Meteor"),  (min_x,min_y+ 15), cv2.FONT_HERSHEY_SIMPLEX, .4, (0,0,255), 1)
+            else:
+               cv2.putText(stacked_image_np, str("Meteor"),  (min_x,min_y- 5), cv2.FONT_HERSHEY_SIMPLEX, .4, (0,0,255), 1)
          oc = oc + 1
  
    return(stacked_image_np)
+
+
+def trim_meteor(trim_file, start_frame, end_frame):
+   meteor_video_file = trim_file.replace(".mp4", "-meteor.mp4")
+   # buffer start / end time
+   # adjust meteor trim number for exact time computations? Needed to support more than 1 meteor per trim file...
+   start_frame = int(start_frame)
+   end_frame = int(end_frame)
+   elp_frames = end_frame - start_frame 
+   if start_frame > 25:
+      start_frame = start_frame - 50
+      elp_frames = elp_frames + 75
+   else:
+      start_frame = 0
+      elp_frames = elp_frames + 75
+   start_sec = start_frame / 25
+   elp_sec = elp_frames/25
+   print ("START FRAME: ", start_frame)
+   print ("END FRAME: ", end_frame)
+   print ("DUR FRAMES: ", elp_frames)
+   print ("START SEC: ", start_sec)
+   print ("DUR SEC: ", elp_sec)
+   if start_sec <= 0:
+      start_sec = 0
+   if elp_sec <= 2:
+      elp_sec = 3
+   ffmpeg_trim(trim_file, start_sec, elp_sec, meteor_video_file)
+   cmd = "./stack-stack.py stack_vid " + meteor_video_file + " mv"
+   os.system(cmd)
+   print("STACK", cmd)
+
+
+
+def trim_meteor_old(meteor_file):
+   print ("TRIM METEOR", meteor_file)
+   #el = meteor_file.split("/")
+   eld = meteor_file.split("-meteor")
+   base = eld[0]
+   trim_file = base.replace("data/", "")
+   trim_file = trim_file + ".mp4"
+
+   #trim_file = meteor_file.replace("-meteor.txt", ".mp4")
+   #trim_file = trim_file.replace("data/", "")
+
+   meteor_video_file = meteor_file.replace(".txt", ".mp4")
+   meteor_video_file = meteor_video_file.replace("data/", "")
+   file_exists = Path(meteor_video_file)
+   if file_exists.is_file() == True:
+      print ("ALREADY DONE.")
+      return()
+
+   print ("TRIM FILE:", trim_file)
+   dur = check_duration(trim_file)
+   print ("DUR: ", dur)
+   if int(dur) < 5:
+      print ("Duration is less than 5.", dur)
+      cmd = "cp " + trim_file + " " + meteor_video_file
+      print(cmd)
+      os.system(cmd)
+
+      cmd = "./stack-stack.py stack_vid " + trim_file + " mv"
+      os.system(cmd)
+      print("STACK", cmd)
+      cmd = "./stack-stack.py stack_vid " + meteor_video_file + " mv"
+      os.system(cmd)
+      print("STACK", cmd)
+
+      return()
+   else:
+      print ("Duration is more than 5 sec", dur)
+   fdf = open(meteor_file)
+   d = {}
+   code = "object_data= "
+   for line in fdf:
+      code = code + line
+   exec (code,  d)
+   print(d['object_data'])
+   for object in d['object_data']:
+      #print(object[0], object[1], object[2],object[3],object[8])
+      print("OBJ8:", object[8])
+      if len(object[8]) == 0:
+         # meteor found
+         print("meteor found", object[2], object[3])
+         start_frame = object[2][0]
+         end_frame = object[3][0]
+         elp_frames = end_frame - start_frame
+         if start_frame > 25:
+            start_frame = start_frame - 50
+            elp_frames = elp_frames + 75
+         else:
+            start_frame = 0
+            elp_frames = elp_frames + 75
+         start_sec = start_frame / 25
+         elp_sec = elp_frames/25
+         print ("START FRAME: ", start_frame)
+         print ("END FRAME: ", end_frame)
+         print ("DUR FRAMES: ", elp_frames)
+         print ("START SEC: ", start_sec)
+         print ("DUR SEC: ", elp_sec)
+         if start_sec <= 0:
+            start_sec = 0
+         if elp_sec <= 2:
+            elp_sec = 3
+         ffmpeg_trim(trim_file, start_sec, elp_sec, meteor_video_file)
+         cmd = "./stack-stack.py stack_vid " + trim_file + " mv"
+         os.system(cmd)
+         print("STACK", cmd)
+         cmd = "./stack-stack.py stack_vid " + meteor_video_file + " mv"
+         os.system(cmd)
+         print(cmd)
+         exit()
+
+
+def check_duration(trim_file):
+   cmd = "/usr/bin/ffprobe " + trim_file + ">checks.txt 2>&1"
+   print (cmd)
+   s= 0
+   try:
+      output = subprocess.check_output(cmd, shell=True).decode("utf-8")
+      efp = open("checks.txt")
+      stream_found = 0
+      for line in efp:
+         if "Duration" in line:
+            el = line.split(" ")
+            dur_str = el[3]
+            dur, rest = dur_str.split(".")
+            h,m,s = dur.split(":")
+            print(int(s))
+   except:
+      print("DUR CHECK FAILED")
+      s = 0
+   return(s)
+
+def check_if_done(video_file):
+   el = video_file.split("/")
+   fn = el[-1]
+   bd = video_file.replace(fn, "")
+   fn = fn.replace(".mp4", "")
+   meteor_file = bd + "data/" + fn + "-meteor.txt"
+   objfail = bd + "data/" + fn + "-objfail.txt"
+   confirm = bd + "data/" + fn + "-confirm.txt"
+   reject = bd + "data/" + fn + "-reject.txt"
+   file_exists = Path(meteor_file)
+   if file_exists.is_file() is True:
+      return(1)
+   file_exists = Path(objfail)
+   if file_exists.is_file() is True:
+      return(1)
+   file_exists = Path(confirm)
+   if file_exists.is_file() is True:
+      return(1)
+   file_exists = Path(reject)
+   if file_exists.is_file() is True:
+      return(1)
+   print(meteor_file)
+   print(objfail)
+   print(confirm)
+   print(reject)
+   return(0)
+

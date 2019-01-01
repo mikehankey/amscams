@@ -50,6 +50,31 @@ def stack_stack(pic1, pic2):
    stacked_image=ImageChops.lighter(pic1,pic2)
    return(stacked_image)
 
+def stack_meteors(dir, cams_id):
+   master_stack = None
+   glob_dir = dir + "/data/*" + str(cams_id) + "*meteor.txt"
+   image_dir = dir + "/images/"
+
+   print("GLOB", glob_dir)
+   for filename in (glob.glob(glob_dir)):
+      filename = filename.replace("data", "images")
+      filename = filename.replace(".txt", "-stacked.png")
+      print(filename)
+      pic1 = Image.open(str(filename))
+      if master_stack is None:
+         master_stack = stack_stack(pic1, pic1)
+      else:
+         master_stack = stack_stack(master_stack, pic1)
+
+   stacked_file = dir + "/images/" + cams_id + "-meteor-stacked.png"
+   if master_stack is None:
+      print("No detections worth stacking :(")
+      # make alternative stack here
+   else:
+      print(stacked_file)
+      master_stack.save(stacked_file)   
+   
+
 def get_files(dir, cams_id):
    master_stack = None
    cmd = "mv " + dir  + "/*motion* " + dir + "/data/"
@@ -142,6 +167,12 @@ cmd = sys.argv[1]
 
 if cmd == 'batch_night':
    batch_night()
+
+
+if cmd == 'stack_meteors':
+   dir = sys.argv[2]
+   cams_id = sys.argv[3]
+   stack_meteors(dir, cams_id)
 
 if cmd == 'stack_night':
    dir = sys.argv[2]

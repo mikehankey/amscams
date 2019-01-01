@@ -171,6 +171,57 @@ def join_arr(arr1, arr2):
       new_arr.append(x)
    return(new_arr)
 
+
+def merge_events_new(valid_events):
+   chain_on = 0
+   temp_arr = []
+   merged_events = []
+   ec = 0
+   for event in valid_events:
+      first_frame = event[0][0]
+      last_frame = event[-1][0]
+      print ("VALID EVENT:", ec, first_frame, last_frame)
+
+      if ec > 0:
+         # there is an event following this one, see if it is 
+         # close enough to merge
+         prev_end = valid_events[ec-1][-1][0] 
+      
+         print ("PREV END / THIS FRAME", ec, prev_end, first_frame) 
+         if int(first_frame) - int(prev_end) <= 100:
+            chain_on = 1
+            print ("These events should be merged.", ec-1, ec, chain_on)
+            temp_arr = temp_arr + event
+         else:
+            if len(temp_arr) > 0:
+               # there are already some merged events so save those.
+               merged_events.append(temp_arr)
+               temp_arr = event
+            else:
+               # there are not any merged events already so start up a new
+               # list
+               temp_arr = event
+            chain_on = 0  
+      else:
+         temp_arr = event
+
+        
+     
+      ec = ec + 1
+     
+   if len(temp_arr) > 0:  
+      merged_events.append(temp_arr)
+      temp_arr = [] 
+
+
+   print("TOTAL VALID EVENTS:", len(valid_events))
+   for event in valid_events:
+      print("VALID:", event[0][0], event[-1][0])
+   print("TOTAL MERGED EVENTS:", len(merged_events))
+   for event in merged_events:
+      print("MERGED:", event[0][0], event[-1][0])
+   return(merged_events)
+
 def merge_events(valid_events):
    print("VALID EVENTS", len(valid_events))
    for event in valid_events:
@@ -193,7 +244,7 @@ def merge_events(valid_events):
             print ("EC NOT DONE YET:", ec)
             s1 = int(valid_events[ec][-1][0])
             s2 = int(valid_events[ec+1][0][0])
-            if s2 - s1 < 75:
+            if s2 - s1 < 100:
                new = join_arr(valid_events[ec], valid_events[ec+1])
                merged_events.append(new)
                last_merged_frame = int(new[-1][0])
@@ -218,6 +269,14 @@ def merge_events(valid_events):
 
    new_arr = join_arr(merged_events, non_merged_events)   
 
+   for event in merged_events:
+      print("ME:", event)
+   for event in non_merged_events:
+      print("NONME:", event)
+   for event in new_arr:
+      print("NEW:", event)
+
+   exit()
    return(new_arr)
 
 cns = 0
@@ -277,7 +336,7 @@ for event in events:
 print ("VALID EVENTS", len(valid_events))
 
 if len(valid_events) > 1:
-   merged_events = merge_events(valid_events)
+   merged_events = merge_events_new(valid_events)
    #if len(valid_events) > 1:
    #   merged_events = merge_events(merged_events)
 else:
