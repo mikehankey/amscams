@@ -95,13 +95,16 @@ def get_files(dir, cams_id):
 
 
          cmd = "convert " + filename + " -colorspace Gray -format \"%[mean]\" info: "
-         magic = str(subprocess.check_output(cmd, shell=True))
-         magic = magic.replace("b", "")
-         magic = magic.replace("'", "")
-         magic = float(magic)
-         print ("Mean Image Brightness:", magic)
+         try:
+            magic = str(subprocess.check_output(cmd, shell=True))
+            magic = magic.replace("b", "")
+            magic = magic.replace("'", "")
+            magic = float(magic)
+            print ("Mean Image Brightness:", magic)
+         except:
+            magic = 30000
 
-         if magic > 0 and magic < 20000:
+         if magic > 0 and magic < 24000:
             print(filename,motion_file)
             pic1 = Image.open(str(filename))
             if master_stack is None:
