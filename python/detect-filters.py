@@ -27,6 +27,8 @@ def scan_trim_file(trim_file):
    
    meteor_file = base_dir + "/data/" + base_file + "-meteor.txt"
    objfail_file = base_dir + "/data/" + base_file + "-objfail.txt"
+   
+   trim_stack_file = base_dir + "/images/" + base_file + "-stacked.png"
 
    data_wildcard = base_dir + "/data/" + base_file + "*"
    vid_wildcard = base_dir + "/" + base_file + "*meteor*"
@@ -48,32 +50,46 @@ def scan_trim_file(trim_file):
 
    frames = load_video_frames(trim_file)
    print("FRAMES: ", len(frames))
+
+   height, width = frames[0].shape
+
    max_cons_motion, frame_data, moving_objects, trim_stack = check_for_motion(frames, trim_file)
    stacked_image_np = np.asarray(trim_stack)
    found_objects, moving_objects = object_report(trim_file, frame_data)
 
-   stacked_image = draw_obj_image(stacked_image_np, moving_objects)
+   stacked_image = draw_obj_image(stacked_image_np, moving_objects,trim_file, stacked_image_np)
 
    if sys.argv[1] == 'sf':
       cv2.namedWindow('pepe')
       cv2.imshow('pepe', stacked_image)
       cv2.waitKey(1)
-   passed,all_objects = test_objects(moving_objects)
+   passed,all_objects = test_objects(moving_objects, trim_file, stacked_image_np)
 
-   print("ALL OBJECTS", all_objects)
    meteor_found = 0
+   meteor_objects = []
    for object in all_objects:
-      print("OID:", object['oid'])
-      print("METEOR YN:", object['meteor_yn'])
+      #print("OID:", object['oid'])
+      #print("METEOR YN:", object['meteor_yn'])
       if object['meteor_yn'] == 1:
          print("START: ", object['first']) 
          print("END: ", object['last']) 
          trim_meteor(trim_file, object['first'][0], object['last'][0])
          meteor_found = 1
+         meteor_objects.append(object)
+
 
    cmd = "./stack-stack.py stack_vid " + trim_file + " mv"
    os.system(cmd)
    print("STACK", cmd)
+
+   for object in meteor_objects:
+      check_final_stack(trim_stack,object)
+
+   for object in meteor_objects:
+      if object['meteor_yn'] == 1:
+         for key in object:
+            print(key,object[key])
+
 
    if meteor_found >= 1:
       print ("METEOR")
@@ -101,6 +117,7 @@ def scan_dir(dir):
 cmd = sys.argv[1]
 if cmd == 'sf':
    trim_file = sys.argv[2]
+   trim_file = trim_file.replace("-meteor.mp4", ".mp4")
    scan_trim_file(trim_file)
 if cmd == 'scan_dir':
    sdir = sys.argv[2]

@@ -25,12 +25,10 @@ def setup_dirs(filename):
    images_dir = working_dir + "/images/"
    file_exists = Path(data_dir)
    if file_exists.is_dir() == False:
-      print("Make the dir.")
       os.system("mkdir " + data_dir)
 
    file_exists = Path(images_dir)
    if file_exists.is_dir() == False:
-      print("Make the dir.")
       os.system("mkdir " + images_dir)
 
 
@@ -47,7 +45,6 @@ def get_masks(this_cams_id):
          for key in masks:
             my_masks.append((masks[key]))
 
-#   print(my_masks)
 
    return(my_masks)
 
@@ -80,7 +77,6 @@ def load_video_frames(trim_file):
       if frame is None:
          if frame_count <= 1:
             cap.release()
-            print("Bad file.")
             return(frames)
          else:
             go = 0
@@ -100,7 +96,6 @@ def load_video_frames(trim_file):
 
 def mask_frame(frame, mp):
    for x,y in mp:
-      #print ("MASK", x,y)
       frame[y-3:y+3,x-3:x+3] = 0
    return(frame)
 
@@ -110,18 +105,23 @@ def check_for_motion(frames, video_file):
    el = video_file.split("/")
    fn = el[-1]
    st = fn.split("trim")
-   print("ST:", st)
    stf = st[1].split(".")
 
    if len(frames) > 200:
       med_stack_all = cv2.convertScaleAbs(np.median(np.array(frames[0:199]), axis=0))
    else:
       med_stack_all = cv2.convertScaleAbs(np.median(np.array(frames), axis=0))
-   star_bg = 255 - cv2.adaptiveThreshold(med_stack_all, 255, cv2.ADAPTIVE_THRESH_GAUSSIAN_C, cv2.THRESH_BINARY, 11, 5)
-   
-   #_, star_bg = cv2.threshold(med_stack_all, 75, 255, cv2.THRESH_BINARY)
-   star_bg = cv2.GaussianBlur(star_bg, (7, 7), 0)
-   thresh_obj = cv2.dilate(star_bg, None , iterations=4)
+
+   max_px = np.max(med_stack_all)
+   avg_px = np.mean(med_stack_all)
+   pdif = max_px - avg_px
+   pdif = int(pdif / 10) + avg_px
+   #star_bg = 255 - cv2.adaptiveThreshold(med_stack_all, 255, cv2.ADAPTIVE_THRESH_GAUSSIAN_C, cv2.THRESH_BINARY, 31, 3)
+    
+   _, star_bg = cv2.threshold(med_stack_all, pdif, 255, cv2.THRESH_BINARY)
+   #star_bg = cv2.GaussianBlur(star_bg, (7, 7), 0)
+   #thresh_obj = cv2.dilate(star_bg, None , iterations=1)
+   thresh_obj= cv2.convertScaleAbs(star_bg)
    (_, cnts, xx) = cv2.findContours(thresh_obj.copy(), cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
    masked_pixels = []
    for (i,c) in enumerate(cnts):
@@ -129,10 +129,9 @@ def check_for_motion(frames, video_file):
       cx = int(x + (w/2))
       cy = int(y + (h/2))
       masked_pixels.append((cx,cy))
-      #cv2.rectangle(star_bg, (x, y), (x + w, y + w), (255, 0, 0), 2)
+      cv2.rectangle(star_bg, (x, y), (x + w, y + w), (255, 0, 0), 2)
    #med_stack_all = np.median(np.array(frames), axis=0)
 
-   #print("SHAPE:", med_stack_all.shape)
 
    #med_stack_all = cv2.cvtColor(med_stack_all, cv2.COLOR_BGR2GRAY)
 
@@ -141,15 +140,14 @@ def check_for_motion(frames, video_file):
    cv2.waitKey(1)
    cv2.imshow('pepe', star_bg)
    cv2.waitKey(1)
-   #exit()
 
    trim_num = int(stf[0])
-   print("TRIM NUM: ", trim_num)
    tfc = trim_num
    frame_file_base = video_file.replace(".mp4", "")
    frame_data = []
    last_frame = None
    image_acc = None
+   image_acc2 = None
    frame_count = 1
    good_cnts = []
    max_cons_motion = 0
@@ -185,19 +183,50 @@ def check_for_motion(frames, video_file):
       # setup image accumulation
       if last_frame is None:
          last_frame = frame
+        
       if image_acc is None:
          image_acc = np.empty(np.shape(frame))
+         alpha = .1
+         xend = len(frames)
+         xstart = xend - 30
+         for i in range(xstart,xend):
+            hello = cv2.accumulateWeighted(frames[i], image_acc, alpha)
+            image_diff = cv2.absdiff(image_acc.astype(frame.dtype), frames[0],)
+            _, threshold = cv2.threshold(image_diff, 5, 255, cv2.THRESH_BINARY)
+            thresh_obj = cv2.dilate(threshold, None , iterations=4)
+            (_, cnts, xx) = cv2.findContours(thresh_obj.copy(), cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
+            for (i,c) in enumerate(cnts):
+               bad_cnt = 0
+               x,y,w,h = cv2.boundingRect(cnts[i])
+               #masked_pixels.append((x,y))
+            frame = mask_frame(frame, masked_pixels)
+
+      if image_acc2 is None:
+         image_acc2 = np.empty(np.shape(frame))
 
       image_diff = cv2.absdiff(image_acc.astype(frame.dtype), frame,)
-      alpha = .25
+      image_diff2 = cv2.absdiff(image_acc2.astype(frame.dtype), frame,)
+      alpha = .1
+      alpha2 = .33
       hello = cv2.accumulateWeighted(frame, image_acc, alpha)
+      hello = cv2.accumulateWeighted(frame, image_acc2, alpha2)
       _, threshold = cv2.threshold(image_diff, 5, 255, cv2.THRESH_BINARY)
+      _, threshold2 = cv2.threshold(image_diff2, 5, 255, cv2.THRESH_BINARY)
       thresh_obj = cv2.dilate(threshold, None , iterations=4)
+      thresh_obj2 = cv2.dilate(threshold2, None , iterations=4)
       (_, cnts, xx) = cv2.findContours(thresh_obj.copy(), cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
+      (_, cnts2, xx) = cv2.findContours(thresh_obj2.copy(), cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
+
+      #cv2.imshow('pepe', image_diff)
+      #cv2.waitKey(0)
+      #cv2.imshow('pepe', image_diff2)
+      #cv2.waitKey(0)
       good_cnts = []
+      #if len(cnts2) > len(cnts):
+      #   cnts = cnts2
       cnt_cnt = 0
-      if len(cnts) > 0:
-         print("CNT:", frame_count, len(cnts))
+      #if len(cnts) > 0:
+      #   print("CNT:", frame_count, len(cnts))
       # START CNT LOOP
       for (i,c) in enumerate(cnts):
          bad_cnt = 0
@@ -205,8 +234,10 @@ def check_for_motion(frames, video_file):
 
          if w <= 1 and h <= 1:
             bad_cnt = 1
+            continue
          if w >= 630 or h >= 400:
             bad_cnt = 1
+            continue
 
 
          if bad_cnt == 0:
@@ -216,31 +247,29 @@ def check_for_motion(frames, video_file):
             cnt_x, cnt_y,cnt_w,cnt_h =  find_center(cnt_img) 
             adj_x = x + cnt_x
             adj_y = y + cnt_y
-            #print("XY/CENTER XY", x,y,cnt_x,cnt_y, adj_x,adj_y)
-            print("FRAME: ", frame_count)
             fx = test_cnt_flux(cnt_img, frame_count, cnt_cnt)
             bf = examine_cnt(cnt_img)
             if fx == 0 or bf < 1.5:
                bad_cnt = 1 
+               #masked_pixels.append((x,y))
 
          if bad_cnt == 0:
 
 
-            if frame_count > 15 and fx == 1 and bf >= 1.5:
+            if frame_count > 5 and fx == 1 and bf >= 1.5:
                object, moving_objects = find_object(tfc,(adj_x,adj_y,cnt_w,cnt_h,fx), moving_objects)
+            else:
+               object, masked_objects = find_object(tfc,(adj_x,adj_y,cnt_w,cnt_h,fx), moving_objects)
             
 
             if object != None and bad_cnt == 0:
 
                x2 = x + w
                y2 = y + h
-               #print("CNT SHAPE: ", cnt_img.shape[0], cnt_img.shape[1])
                if cnt_img.shape[0] > 0 and cnt_img.shape[1] > 0:
                   fx = test_cnt_flux(cnt_img, frame_count, cnt_cnt)
                else:
                   fx = 0
-               if fx == None:
-                  print("BAD FX: ", frame_count, cnt_cnt)
                if fx == 0:
                   bad_cnt = 1
 
@@ -263,7 +292,7 @@ def check_for_motion(frames, video_file):
                cnt_cnt = cnt_cnt + 1
       # END CNT LOOP!
       if len(good_cnts) > 10:
-         print ("NOISE!", video_file,frame_count, len(good_cnts))
+         #print ("NOISE!", video_file,frame_count, len(good_cnts))
          good_cnts = []
          #cv2.imwrite(frame_file, nice_frame)
          #frame_file_tn = frame_file.replace(".png", "-tn.png")
@@ -277,7 +306,6 @@ def check_for_motion(frames, video_file):
          max_cons_motion = cons_motion
       if len(good_cnts) >= 1:
          cons_motion = cons_motion + 1
-         #print ("CNT: ", frame_count, x,y,w,h,cons_motion)
       else:
          cons_motion = 0
       frame_count = frame_count + 1
@@ -290,19 +318,44 @@ def check_for_motion(frames, video_file):
    return(max_cons_motion, frame_data, moving_objects, stacked_image)
 
 def clean_hist(hist):
+   print("CLEAN HIST")
    new_hist = []
    last_fn = 0
+   last_hx = 0
+   last_hy = 0
+   last_h = None
+
+   # remove duplicate points
+   points = []
+   new_hist = []
    for h in hist:
       fn,hx,hy,hw,hh,hf = h
-      print("CLEAN:", fn, last_fn)
-      #if fn -1 == last_fn or fn -2 == last_fn :
-      if fn > 15 :
-         new_hist.append(h)
-      last_fn = fn
+      passed = 1 
+      for point in points:
+         px, py = point
+         if px - 1 <= hx <= px + 1 and py -1 <= hy <= py + 1:
+            # dupe
+            passed = 0
+         
+      if len(new_hist) == 0:
+         points.append((hx,hy))
+      if passed == 1:
+         new_hist.append((h))
+      points.append((hx,hy))
+     
+
+   print ("NO DUPE HIST:", new_hist, len(new_hist)) 
    if len(new_hist) > 2:
-      return(new_hist)
+      print ("HIST is subset of hist")
+      hist = new_hist[1:-1] 
    else:
-      return(hist)
+      print ("HIST is HIST")
+      hist = new_hist
+
+   #hist = new_hist
+
+
+   return(hist)
       
 
 def object_report (trim_file, frame_data):
@@ -311,11 +364,9 @@ def object_report (trim_file, frame_data):
    moving_objects = None
    found_objects = []
    for fd in frame_data:
-      #print (str(fd[0]) + "," + str(fd[1]) + "," )
 
       fd_temp = sorted(fd[2], key=lambda x: x[3], reverse=True)
       if len(fd_temp) > 0 and len(fd_temp) < 8:
-         #print("FDTEMP:", fd_temp)
          for fn,x,y,w,h,fx in fd_temp:
             object, moving_objects = find_object(tfc, (x,y,w,h,fx), moving_objects)
       fc = fc + 1
@@ -392,7 +443,6 @@ def find_center(cnt_img):
    if bad_cnt == 0 and len(cnts) > 0:
       nx = x + (w /2)
       ny = y + (h /2)
-      #print("CENTER X,Y", nx,ny)
    else:
       nx = 0
       ny = 0
@@ -407,7 +457,6 @@ def find_object(fn, pt, moving_objects):
    else:
       lenstr = str(len(moving_objects))
 
-   #print ("<h4>Current Known Objects that could match x,y " + str(x) + "," + str(y) + " " + lenstr + "</h4>")
    if moving_objects is None:
       # there are no objects yet, so just add this one and return.
       oid = 0
@@ -416,12 +465,10 @@ def find_object(fn, pt, moving_objects):
       return(oid, moving_objects)
    else:
       # match based on proximity to pixel history of each object
-      #print("MOVING OBJECTS:", moving_objects[0])
       rowc = 0
       match_id = None
       for (oid,ox,oy,hist) in moving_objects:
          found_in_hist = check_hist(x,y,hist)
-         #print("<BR>FOUND IN HIST?" , found_in_hist, "<BR>")
          if found_in_hist == 1:
             prox_match = 1
             match_id = oid
@@ -438,34 +485,25 @@ def find_object(fn, pt, moving_objects):
    return(oid, moving_objects)
 
 def last_meteor_check (obj, moving_objects, frame_data, frames):
-   print("LAST METEOR CHECK!")
+   #print("LAST METEOR CHECK!")
    object_id = obj[0][0]
-   print("OBJ ID: ", object_id)
-   print("OBJ : ", obj)
-   #print("MOVING OBJECTS: ", moving_objects)
 
    flx_check_total = 0
    fx_pass = 0
    avg_tbf = 0
    obj_hist = []
    for object in moving_objects:
-      #print("MV OBJECT: ", object)
       this_object_id = object[0][0]
-      #print ("THIS OBJECT ID: ", this_object_id, object_id)
       if object_id == this_object_id:
-         #print("OBJ MATCH:", object)
          this_hist = object[3]
-         #print("HIST", this_hist)
          for hist in this_hist:
             fn, x,y,w,h,fx = hist
-            print("HIST: ", fn, x,y,w,h,fx)
             flx_check_total = flx_check_total + fx
          if len(hist) > 1:
             fx_perc = flx_check_total / len(this_hist)
          if fx_perc > .6:
             fx_pass = 1
             obj_hist = this_hist
-         #print ("FX PERC?:", flx_check_total, len(hist) ,fx_perc)
 
    # Examine each cnt to tell if it has a bright centroid or streak
    # or is more anomolous
@@ -487,9 +525,7 @@ def last_meteor_check (obj, moving_objects, frame_data, frames):
             x2 = image.shape[1]
          if y2 > image.shape[0]:
             y2 = image.shape[0]
-         #print("IMG: ", y,y2,x,x2)
          if w > 1 and h > 1:
-            print ("XY12: ", y1, y2, x1, x2)
             cnt_img = image[y1:y2,x1:x2]
             brightness_factor = examine_cnt(cnt_img)
             tbf = tbf + brightness_factor
@@ -499,7 +535,6 @@ def last_meteor_check (obj, moving_objects, frame_data, frames):
          avg_tbf = tbf / len(obj_hist)
 
    if avg_tbf > 1.7:
-      print ("YES passed the cnt brightness tests")
       fx_pass = 1
    else:
       fx_pass = 0
@@ -519,15 +554,13 @@ def examine_cnt(cnt_img):
 
 
 def ffmpeg_trim (filename, trim_start_sec, dur_sec, outfile):
-   print ("TRIMMING METEOR!")
    if int(trim_start_sec) < 10:
       trim_start_sec = "0" + str(trim_start_sec)
    if int(dur_sec) < 10:
       dur_sec = "0" + str(dur_sec)
 
    #outfile = filename.replace(".mp4", out_file_suffix + ".mp4")
-   cmd = "/usr/bin/ffmpeg -i " + filename + " -y -ss 00:00:" + str(trim_start_sec) + " -t 00:00:" + str(dur_sec) + " -c copy " + outfile
-   print (cmd)
+   cmd = "/usr/bin/ffmpeg -i " + filename + " -y -ss 00:00:" + str(trim_start_sec) + " -t 00:00:" + str(dur_sec) + " -c copy " + outfile + ">/tmp/x 2>&1"
    os.system(cmd)
    return(outfile)
 
@@ -555,7 +588,6 @@ def test_cnt_flux(cnt_img, frame_count,cnt_cnt):
    passed = 0
    if img_min > 0:
       if img_max / img_min > 1.5:
-         #print ("FLUX TEST: ", frame_count, cnt_cnt, avg, lc)
          brightness_passed = 1
       else:
          brightness_passed = 0
@@ -564,7 +596,6 @@ def test_cnt_flux(cnt_img, frame_count,cnt_cnt):
    #_, threshold = cv2.threshold(cnt_img.copy(), thresh, 255, cv2.THRESH_BINARY)
    if cnt_w % 2 == 0:
       cnt_w = cnt_w + 1
-   print("CNT_W:", cnt_w)
 
    thresh_obj = 255 - cv2.adaptiveThreshold(cnt_img.copy(), 255, cv2.ADAPTIVE_THRESH_GAUSSIAN_C, cv2.THRESH_BINARY, cnt_w, 3)
    thresh_obj = cv2.dilate(thresh_obj, None , iterations=4)
@@ -612,7 +643,6 @@ def test_cnt_flux(cnt_img, frame_count,cnt_cnt):
          x,y,w,h = cv2.boundingRect(cnts[i])
          nx = int(x + (w/2))
          ny = int(y + (h/2))
-         print("RECT", x,y,w,h)
          cv2.rectangle(cnt_show , (nx - 3, ny - 3), (nx + 3, ny + 3), (255, 255, 255), 1)
          bpt_img = cnt_img[ny-3:ny+3,nx-3:nx+3]
             
@@ -626,7 +656,6 @@ def test_cnt_flux(cnt_img, frame_count,cnt_cnt):
       #or img_max / img_avg < 1.2:
       if mean_px_in / mean_px_all < 1.01 :
          # Failed brightness check
-         print("Failed brightness check.", mean_px_in , mean_px_all, mean_px_in / mean_px_all)
          brightness_passed = 0
       else:
          brightness_passed = 1
@@ -634,11 +663,6 @@ def test_cnt_flux(cnt_img, frame_count,cnt_cnt):
       brightness_passed = 0
 
    score = brightness_passed + corner_passed + cnt_found + shull
-   print ("BP:", brightness_passed)
-   print ("CP:", corner_passed)
-   print ("CNTF:", cnt_found)
-   print ("SHULL:", shull)
-   print ("BP ALL/IN:", mean_px_all, mean_px_in)
 
    #cv2.imshow("pepe", cnt_show)
    #cv2.waitKey(0)
@@ -654,7 +678,6 @@ def test_cnt_flux(cnt_img, frame_count,cnt_cnt):
 
 def new_obj_id(pt, moving_objects):
    x,y = pt
-   print ("<BR> MOVING OBJS : ", moving_objects)
    if len(moving_objects) > 0:
       max_id = np.max(moving_objects, axis=0)
       new_id = max_id[0][0] + 1
@@ -672,7 +695,6 @@ def check_hist(x,y,hist):
 
 def stack_stack(image, stacked_image):
    h,w = image.shape
-   print(w,h)
    for x in range(0,w-1):
       for y in range(0,h-1):
          sp = stacked_image[y,x]
@@ -685,7 +707,6 @@ def stack_frames(frames):
    stacked_image = None   
    fc = 1
    for frame in frames:
-      print("Stacking trim...", fc)
       if stacked_image == None:
          stacked_image = frame
       stacked_image = stack_stack(frame, stacked_image)
@@ -721,7 +742,68 @@ def find_color(oc):
    
    return(colors)
 
-def test_object(object):
+def slope_test(hist, trim_file):
+   slopes = []
+   cc = 0
+
+   #overall slope and dist for first and last
+   first = hist[0][1], hist[0][2]
+   last = hist[-2][1], hist[-1][2]
+
+   o_slope = find_slope(first, last)
+   o_dist = calc_dist(first, last)
+   o_ang = find_angle(first, last)
+
+
+ 
+   if len(hist) > 0:
+      e_dist = o_dist / len(hist) 
+   else:
+      e_dist = 0
+   spass = 0
+   dpass = 0
+
+   for line in hist:
+      fn, x,y,w,h,fx = line 
+      if cc > 0:
+         slope = find_slope((last_x,last_y), (x,y))
+         dist = calc_dist((last_x,last_y), (x,y))
+         ang = find_angle((last_x,last_y), (x,y))
+         if o_ang - 10 < ang < o_ang + 10:
+            spass = spass + 1
+         if e_dist - 5 < dist < e_dist+ 5:
+            dpass = dpass + 1
+         #print("SLOPE:", cc, slope,dist,ang,last_x,last_y,x,y)
+         #print("SLOPE/DIST:", cc, slope, dist, dpass, spass)
+         slopes.append(slope)
+      last_x = x
+      last_y = y
+
+      cc = cc + 1
+   hl = len(hist)
+   hl = hl - 1
+   if hl > 0:
+      d_perc = dpass / hl
+      s_perc = spass / hl
+   else:
+      d_perc = 0
+      s_perc = 0
+
+   if s_perc < .5 or d_perc < .5:
+      print("FINAL SLOPE DIST TEST FAILED: ", trim_file)
+      print("FINAL SLOPE DIST TEST FAILED: ", s_perc, d_perc)
+      print("FINAL SLOPE DIST TEST FAILED: ", len(hist) - 1, spass, dpass)
+      s_test = 0
+   else:
+      s_test = 1
+      print("FINAL SLOPE DIST TEST PASSED: ", trim_file)
+      print("FINAL SLOPE DIST TEST PASSED: ", s_perc, d_perc)
+      print("FINAL SLOPE DIST TEST PASSED: ", len(hist) - 1, spass, dpass)
+
+   return(s_test)
+
+def test_object(object, trim_file, stacked_np):
+   w,h = stacked_np.shape
    status = []
    # distance of object
    # object speed / pixels per frame
@@ -729,15 +811,21 @@ def test_object(object):
    # straight line -- do 3 or more points fit a line
 
    oid, start_x, start_y, hist = object
+   print("HIST:", hist)
    hist = clean_hist(hist)
-
+   print("CLEANHIST:", hist)
+   
+   sl_test = 0
    straight_line = 99
    slope = 0
    dist = 0
    last_x = 0
    last_y = 0
-   hist = object[3]
-   print ("HIST: ", hist)
+   min_x = w
+   min_y = h
+   max_x = 0  
+   max_y = 0
+   print ("HIST0:", hist)
    first = hist[0]
    last = hist[-1]
    p1 = first[1], first[2]
@@ -769,7 +857,10 @@ def test_object(object):
       cm_test = (hist_len-1) / elp_frms
    else:
       cm_test = 0
- 
+
+   if hist_len < 5:
+      cm_test = 1
+
 
    if hist_len > 2:
       slope = find_slope(p1,p2)
@@ -789,10 +880,10 @@ def test_object(object):
       bigger = 0
       for line in hist:
          fn, x,y,w,h,fx = line 
-         print("WIDTH,HEIGHT:", w,h)
+         #print("WIDTH,HEIGHT:", w,h)
          if last_x > 0 and last_y > 0:
             seg_dist = calc_dist((last_x,last_y),(x,y))
-            print ("SEG DIST:", oid, seg_dist)
+            #print ("SEG DIST:", oid, seg_dist)
          size = w * h
          sizes.append(size)
          if w * h > max_size:
@@ -801,6 +892,15 @@ def test_object(object):
             bigger = 1
          else:
             bigger = 0
+         if x > max_x:
+            max_x = x 
+         if y > max_y:
+            max_y = y  
+         if x < min_x:
+            min_x = x 
+         if y < min_y:
+            min_y = y
+    
 
             
          if last_fn is not None:
@@ -822,8 +922,8 @@ def test_object(object):
    if max_cns_mo > 0:
       max_cns_mo = max_cns_mo + 1
 
-   #if max_cns_mo > 10:
-   #   cm_test = 1
+   if max_cns_mo > 5:
+      cm_test = 1
 
   
    if len(sizes) > 1:
@@ -858,21 +958,29 @@ def test_object(object):
       px_per_frame = 0
    if max_cns_mo > 10:
       px_per_frame = dist / max_cns_mo
+
     
    meteor_yn = 0
-   if first[0] > 20 and cm_test > .5 and max_cns_mo >= 3 and px_per_frame >= .6 and dist >= 4 and straight_line < 5 and elp_time < 7 and peaks_to_frame_ratio <= .4 and peaks_to_dist_ratio <.4 and size_frame_test == 1:
+   if cm_test > .5 and max_cns_mo >= 3 and px_per_frame >= .6 and dist >= 4 and straight_line < 5 and elp_time < 7 and peaks_to_frame_ratio <= .5 and peaks_to_dist_ratio < .45 and size_frame_test == 1:
       print("METEOR")
       meteor_yn = 1
-
+      sl_test =slope_test(hist, trim_file)
+   else:
+      print("METEOR TEST FAILED.")
+      print("SLOPE TEST: ", sl_test)
+      #if sl_test == 0:
+      #   meteor_yn = 0
    meteor_data = {}
-   meteor_data['oid'] = oid
+   meteor_data['oid'] = oid[0]
    meteor_data['cm_test'] = cm_test
-   meteor_data['max_cns_mo'] = max_cns_mo
+   meteor_data['max_cns_mo'] = max_cns_mo 
    meteor_data['len_test'] = len_test
    meteor_data['len_hist'] = len(hist)
    meteor_data['elp_time'] = elp_time
    meteor_data['elp_frms'] = elp_frms
+   meteor_data['box'] = [min_x,min_y,max_x,max_y]
    meteor_data['dist'] = dist
+   meteor_data['sl_test'] = sl_test
    meteor_data['peaks'] = peaks
    meteor_data['peaks_to_frame_ratio'] = peaks_to_frame_ratio
    meteor_data['peaks_to_dist_ratio'] = peaks_to_dist_ratio
@@ -885,6 +993,50 @@ def test_object(object):
    meteor_data['straight_line'] = straight_line
    meteor_data['px_per_frame'] = px_per_frame
    meteor_data['meteor_yn'] = meteor_yn
+   meteor_data['tests'] = {} 
+
+   #if first[0] > 20 and cm_test > .5 and max_cns_mo >= 3 and px_per_frame >= .6 and dist >= 4 and straight_line < 5 and elp_time < 7 and peaks_to_frame_ratio <= .4 and peaks_to_dist_ratio <.4 and size_frame_test == 1:
+
+   if first[0] > 20:
+      meteor_data['tests']['early_frame'] = 1
+   else:
+      meteor_data['tests']['early_frame'] = 0
+   if cm_test > .5:
+      meteor_data['tests']['cm'] = 1
+   else:
+      meteor_data['tests']['cm'] = 0
+   if max_cns_mo >= 3:
+      meteor_data['tests']['max_cns_mo'] = 1
+   else:
+      meteor_data['tests']['max_cns_mo'] = 0
+   if px_per_frame >= .6:
+      meteor_data['tests']['px_per_frame'] = 1
+   else:
+      meteor_data['tests']['px_per_frame'] = 0
+   if dist >= .6:
+      meteor_data['tests']['dist'] = 1
+   else:
+      meteor_data['tests']['dist'] = 0
+   if straight_line <= 5 :
+      meteor_data['tests']['straight_line'] = 1
+   else:
+      meteor_data['tests']['straight_line'] = 0
+   if elp_time < 7  :
+      meteor_data['tests']['elp_time'] = 1
+   else:
+      meteor_data['tests']['elp_time'] = 0
+   if peaks_to_frame_ratio <= .5 :
+      meteor_data['tests']['peaks_to_frame_ratio'] = 1
+   else:
+      meteor_data['tests']['peaks_to_frame_ratio'] = 0
+   if peaks_to_dist_ratio < .4 :
+      meteor_data['tests']['peaks_to_dist_ratio'] = 1
+   else:
+      meteor_data['tests']['peaks_to_dist_ratio'] = 0
+   meteor_data['tests']['size_frame_test'] = 1
+   meteor_data['tests']['sl_test'] = sl_test
+
+
    print("\n-----------------")
    print ("Object ID: ", oid)
    print("-----------------")
@@ -910,6 +1062,9 @@ def test_object(object):
    print ("PX Per Frame: ", px_per_frame)
    print ("Meteor Y/N: ", meteor_yn)
    print("")
+   for test in meteor_data['tests']:
+      print("TEST:", test, meteor_data['tests'][test])
+      #print(test, meteor_data[test])
    return(meteor_yn, meteor_data)
 
 
@@ -947,27 +1102,24 @@ def calc_dist(p1,p2):
    dist = math.sqrt((x2 - x1)**2 + (y2 - y1)**2)
    return dist
 
+def find_angle(p1,p2):
+   myrad = math.atan2(p1[1]-p2[1],p1[0]-p2[0]) 
+   mydeg = math.degrees(myrad)
+   return(mydeg)
 
 def find_slope(p1,p2):
    (x1,y1) = p1
    (x2,y2) = p2
    top = y2 - y1
    bottom = x2 - y2
-   if bottom > 0:
+   if bottom != 0:
       slope = top / bottom
    else:
-      slope = "na"
+      slope = 0
+   #print("SLOPE: TOP/BOTTOM ", top, bottom)
    #print(x1,y1,x2,y2,slope)
    return(slope)
 
-def meteor_in_trim(frames, moving_objects, trim_file):
-   for object in moving_objects:
-      oid, start_x, start_y, hist = object
-      meteor_yn,meteor_data = test_object(object, frames)
-      if meteor_yn == 1:
-         save_meteor()
-      else:
-         reject_meteor()
     
 def object_box(object, stacked_image_np):
    oid, start_x, start_y, hist = object
@@ -1003,11 +1155,11 @@ def object_box(object, stacked_image_np):
       min_y = 0
    return(int(min_x), int(min_y), int(max_x),int(max_y))
 
-def test_objects(moving_objects):
+def test_objects(moving_objects, trim_file, stacked_np):
    all_objects = []
    passed = 0
    for object in moving_objects:
-      meteor_yn,meteor_data = test_object(object)
+      meteor_yn,meteor_data = test_object(object, trim_file, stacked_np)
       if meteor_yn == 1:
          passed = 1
       all_objects.append(meteor_data)
@@ -1043,23 +1195,23 @@ def complete_scan(trim_file, meteor_found, found_objects):
 
 
 
-def draw_obj_image(stacked_image_np, moving_objects):
+def draw_obj_image(stacked_image_np, moving_objects,trim_file, stacked_np):
    colors = None
    stacked_image_np_gray = stacked_image_np
    stacked_image_np = cv2.cvtColor(stacked_image_np, cv2.COLOR_GRAY2RGB)
    oc = 0
    for object in moving_objects:
     
-      meteor_yn,meteor_data = test_object(object)
+      meteor_yn,meteor_data = test_object(object,trim_file, stacked_np)
       oid, start_x, start_y, hist = object
       if len(hist) - 1 > 1:
          colors = find_color(oc)
-         print("HIST:", oid, hist)
+         #print("HIST:", oid, hist)
          min_x, min_y, max_x, max_y = object_box(object, stacked_image_np_gray) 
          cv2.rectangle(stacked_image_np, (min_x, min_y), (max_x, max_y), (255,255,255), 2)
          for line in hist:
             fn, x,y,w,h,fx = line 
-            print(x,y)
+            #print(x,y)
             dd = int(w / 2)
             #cv2.rectangle(stacked_image_np, (x, y), (x + 3, y + 3), (colors), 2)
             cv2.circle(stacked_image_np, (x,y), dd, (255), 1)
@@ -1187,7 +1339,6 @@ def trim_meteor_old(meteor_file):
          cmd = "./stack-stack.py stack_vid " + meteor_video_file + " mv"
          os.system(cmd)
          print(cmd)
-         exit()
 
 
 def check_duration(trim_file):
@@ -1237,3 +1388,22 @@ def check_if_done(video_file):
    print(reject)
    return(0)
 
+def check_final_stack(trim_stack, object):
+   min_x, min_y, max_x, max_y = object['box']
+   print("MIN/MAX:",min_x,min_y,max_x,max_y)
+   trim_stack_np = np.asarray(trim_stack)
+   crop_img = trim_stack_np[min_y:max_y,min_x:max_x] 
+
+   max_px = np.max(crop_img)
+   mean_px = np.mean(crop_img)
+   max_diff = max_px - mean_px
+   thresh = max_px - (max_diff/2)
+
+   _, thresh_img = cv2.threshold(crop_img, thresh, 255, cv2.THRESH_BINARY)
+   #thresh_obj = cv2.dilate(thresh_img.copy(), None , iterations=1)
+   #(_, cnts, xx) = cv2.findContours(thresh_obj.copy(), cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
+   #print("LEN CNTS:", len(cnts))
+   cv2.imshow("pepe", crop_img)
+   cv2.waitKey(1)
+   cv2.imshow("pepe", thresh_img)
+   cv2.waitKey(1)
