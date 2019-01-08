@@ -14,6 +14,21 @@ json_conf = json.loads(json_str)
 sd_video_dir = json_conf['site']['sd_video_dir']
 proc_dir = json_conf['site']['proc_dir']
 
+def stack_dir(dir, cams_id):
+   master_stack = None
+      #filename = filename.replace(".txt", "-stacked.png")
+   glob_dir = dir + "*" + cams_id +"*.png"
+   out_file = dir + cams_id + "-meteors.png"
+   files = glob.glob(glob_dir)
+   print(len(files), glob_dir)
+   for file in files:
+      pic1 = Image.open(str(file))
+      if master_stack is None:
+         master_stack = stack_stack(pic1, pic1)
+      else:
+         master_stack = stack_stack(master_stack, pic1)
+   master_stack.save(out_file)   
+   
 
 def load_video_frames(trim_file):
    cap = cv2.VideoCapture(trim_file)
@@ -195,3 +210,7 @@ if cmd == 'stack_vid':
          os.system(cmd)
 if cmd == 'stack_rejects':
    stack_rejects()
+if cmd == 'stack_dir':
+   dir = sys.argv[2] 
+   cams_id = sys.argv[3] 
+   stack_dir(dir, cams_id)
