@@ -140,7 +140,7 @@ start_y = 0
 #print("convert -crop " + str(crop_height) + "x" + str(crop_width) + "+" + str(start_x) + "+" + str(start_y) + " " + jpg_file + " " + quarter_file)
 #exit()
 
-print("/usr/local/astrometry/bin/solve-field " + jpg_file + " --verbose --no-delete-temp --overwrite --width=" + str(width) + " --height=" + str(height) + " --scale-low 60 --scale-high 120 > " + astr_out)
+print("/usr/local/astrometry/bin/solve-field " + jpg_file + " --verbose --no-delete-temp --overwrite --width=" + str(width) + " --height=" + str(height) + " --scale-low 10 --scale-high 120 > " + astr_out)
 os.system("/usr/local/astrometry/bin/solve-field " + jpg_file + " --verbose --no-delete-temp --overwrite --width=" + str(width) + " --height=" + str(height) + " --scale-low 50 --scale-high 110 > " + astr_out + " 2>&1")
 os.system("grep Mike " + astr_out + " >" +star_data_file + " 2>&1" )
 
@@ -154,8 +154,8 @@ os.system(cmd)
 bright_star_data = parse_astr_star_file(star_data_file)
 plot_bright_stars(jpg_file, image, bright_star_data)
 
-cmd = "./calibrate_image_step2.py " + jpg_file
-os.system(cmd)
+#cmd = "./calibrate_image_step2.py " + jpg_file
+#os.system(cmd)
 
 #cmd = "./fisheye-test.py " + jpg_file
 #os.system(cmd)
@@ -166,11 +166,26 @@ os.system(cmd)
 el = jpg_file.split("/") 
 temp = el[-1]
 cal_dir = temp.replace(".jpg", "")
-if os.path.exists("/mnt/ams2/cal/solved/" + cal_dir):
-   print ("already done.")
-else:
-   os.mkdir("/mnt/ams2/cal/solved/" + cal_dir)
+grid_file = jpg_file.replace(".jpg", "-grid.png")
+file_exists = Path(grid_file)
+if file_exists.is_file() is True:
+   # success
+   if os.path.exists("/mnt/ams2/cal/solved/" + cal_dir):
+      print ("success dir already exists.")
+   else:
+      os.mkdir("/mnt/ams2/cal/solved/" + cal_dir)
+   cmd = "mv /mnt/ams2/cal/" + cal_dir + "* /mnt/ams2/cal/solved/" + cal_dir + "/"
+   print (cmd)
+   os.system(cmd)
 
-cmd = "mv /mnt/ams2/cal/" + cal_dir + "* /mnt/ams2/cal/solved/" + cal_dir + "/"
-print (cmd)
-os.system(cmd)
+else:
+
+   if os.path.exists("/mnt/ams2/cal/failed/" + cal_dir):
+      print ("failed dir already exists.")
+   else:
+      os.mkdir("/mnt/ams2/cal/failed/" + cal_dir)
+
+   cmd = "mv /mnt/ams2/cal/" + cal_dir + "* /mnt/ams2/cal/failed/" + cal_dir + "/"
+   print (cmd)
+   os.system(cmd)
+   print("MIKE FAILE")
