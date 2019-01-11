@@ -1,5 +1,6 @@
 #!/usr/bin/python3
 
+import ephem
 import datetime
 import glob
 import math
@@ -13,22 +14,108 @@ from PIL import ImageDraw
 from PIL import ImageFont
 import json
 
+import brightstardata as bsd
+mybsd = bsd.brightstardata()
+bright_stars = mybsd.bright_stars
+
 
 json_file = open('../conf/as6.json')
 json_str = json_file.read()
 json_conf = json.loads(json_str)
 proc_dir = json_conf['site']['proc_dir']
-
+lon = json_conf['site']['device_lng']
+lat = json_conf['site']['device_lat']
+alt = json_conf['site']['device_alt']
 
 from detectlib import load_video_frames, median_frames, convert_filename_to_date_cam
-from caliblib import find_bright_pixels, load_stars, find_stars, save_json_file, load_json_file
+from caliblib import find_bright_pixels, load_stars, find_stars, save_json_file, load_json_file, parse_astr_star_file, find_star_by_name, calc_dist
+
+R = 6378.1
+
+def Decdeg2DMS( Decin ):
+   Decin = float(Decin)
+   if(Decin<0):
+      sign = -1
+      dec  = -Decin
+   else:
+      sign = 1
+      dec  = Decin
+
+   d = int( dec )
+   dec -= d
+   dec *= 100.
+   m = int( dec*3./5. )
+   dec -= m*5./3.
+   s = dec*180./5.
+
+   if(sign == -1):
+      out = '-%02d:%02d:%06.3f'%(d,m,s)
+   else: out = '+%02d:%02d:%06.3f'%(d,m,s)
+
+   return out
+
+
+def RAdeg2HMS( RAin ):
+   RAin = float(RAin)
+   if(RAin<0):
+      sign = -1
+      ra   = -RAin
+   else:
+      sign = 1
+      ra   = RAin
+
+   h = int( ra/15. )
+   ra -= h*15.
+   m = int( ra*4.)
+   ra -= m/4.
+   s = ra*240.
+
+   if(sign == -1):
+      out = '-%02d:%02d:%06.3f'%(h,m,s)
+   else: out = '+%02d:%02d:%06.3f'%(h,m,s)
+
+   return out
+
+
+
+def radec_to_azel(ra,dec,lat,lon,alt, caldate):
+   body = ephem.FixedBody()
+   print ("BODY: ", ra, dec)
+   #body._epoch=ephem.J2000
+
+   rah = RAdeg2HMS(ra)
+   dech= Decdeg2DMS(dec)
+
+   body._ra = rah
+   body._dec = dech
+
+   obs = ephem.Observer()
+   obs.lat = ephem.degrees(lat)
+   obs.lon = ephem.degrees(lon)
+   obs.date = caldate
+   obs.elevation=float(alt)
+   body.compute(obs)
+   az = str(body.az)
+   el = str(body.alt)
+   (d,m,s) = az.split(":")
+   dd = float(d) + float(m)/60 + float(s)/(60*60)
+   az = dd
+
+   (d,m,s) = el.split(":")
+   dd = float(d) + float(m)/60 + float(s)/(60*60)
+   el = dd
+   #az = ephem.degrees(body.az)
+   return(az,el)
+
 
 def distort_xy(x,y,img_w,img_h):
    strength = 1.8
    zoom = 1
+   x_adj = 0
+   y_adj = 0
    correctionRadius = math.sqrt(img_w ** 2 + img_h ** 2) / strength
-   half_w = int(img_w/2)
-   half_h = int(img_h/2)
+   half_w = int(img_w/2) 
+   half_h = int(img_h/2) 
    newX = x - half_w
    newY = y - half_h
 
@@ -53,9 +140,6 @@ def distort_xy(x,y,img_w,img_h):
       sourceY = img_h-1
    if sourceX > img_w-1:
       sourceX = img_w-1
-   if newX % 1000 == 0:
-      print ("NEW X,Y", x,y)
-      print ("SOURCEX,Y", sourceX,sourceY)
    return(sourceX,sourceY)
 
 def make_med_stack(file, cal_file):
@@ -68,11 +152,15 @@ def make_med_stack(file, cal_file):
 def set_filenames(file):
    el = file.split("/")
    filename = el[-1]
-   filename_base = filename.replace(".mp4", "")
+   if ".mp4" in file:
+      filename_base = filename.replace(".mp4", "")
+   elif ".jpg" in file:
+      filename_base = filename.replace(".jpg", "")
 
    cal_file = "/mnt/ams2/cal/" + filename
 
-   cal_file = cal_file.replace(".mp4", ".jpg")
+   if ".mp4" in cal_file:
+      cal_file = cal_file.replace(".mp4", ".jpg")
 
 
 
@@ -83,7 +171,6 @@ def set_filenames(file):
    return(cal_file, med_stack_file, stars_file, solved_file)
 
 def check_if_solved(solved_file):
-   print(solved_file)
    file_exists = Path(solved_file)
    if file_exists.is_file() is True:
       return(1)
@@ -91,50 +178,126 @@ def check_if_solved(solved_file):
       return(0)
 
 def get_image(file):
-   #print("GET:", file)
-   #exit()
    img = cv2.imread(file, 0 )
    return(img)
 
-def draw_star_image(med_stack, star_px, astr_stars):
+def draw_star_image(med_stack, star_px, astr_stars, grid_image, star_data_file,cal_date):
+  
+   mapped_star_file = star_data_file.replace("-stars.txt", "-mapped-stars.json") 
    med_stack_pil = Image.fromarray(med_stack)
    img_h,img_w = med_stack.shape
-   
+   med_stack_pil = med_stack_pil.convert("RGBA") 
+   grid_image = grid_image.convert("RGBA") 
    draw = ImageDraw.Draw(med_stack_pil)
    font = ImageFont.truetype("/usr/share/fonts/truetype/freefont/FreeSans.ttf", 12, encoding="unic" )
 
+   bright_stars_found,not_found = parse_astr_star_file(star_data_file, -10, 3)
+   mag3_stars = pair_stars(star_px, bright_stars_found,img_w,img_h,20,med_stack)
 
-   for mx,my in star_px:
-      my_star = (mx,my)
-      #if img_w - 500 < mx < img_w + 500: 
-      if True:
-         matches = pair_star(my_star, astr_stars,img_w,img_h)
-            
-         if len(matches) == 1:
-            star_name, x,y = matches[0]
-            x = int(float(x))
-            y = int(float(y))
-            print ("MY STAR: ", mx,my,star_name, x,y)
-            draw.rectangle((mx-7, my-7, mx+7, my+7),  outline ="orange")
-            draw.ellipse((x-7, y-7, x+7, y+7),  outline ="orange")
-            draw.text((x-10, y+10), str(star_name), font = font, fill=(255))
-            draw.line((x-7,y-7, mx-7,my-7), fill="white")
+   bright_stars_found,not_found = parse_astr_star_file(star_data_file, 3.1, 4)
+   mag4_stars = pair_stars(star_px, bright_stars_found,img_w,img_h,20,med_stack)
 
-   for star in astr_stars:
-      star_name, x, y = star
-      x = int(float(x))
-      y = int(float(y))
-      dx,dy = distort_xy(x,y,img_w,img_h)
-      print(star_name, x,y) 
-      #draw.ellipse((dx-3, dy-3, dx+3, dy+3),  outline ="orange")
-      #draw.rectangle((x-2, y-2, x+2, y+2),  outline ="orange")
-      #draw.line((x,y, dx,dy), fill="white")
-    #  draw.rectangle((dx-5, dy-5, dx+5, dy+5),  outline ="orange")
+   mapped_stars = []
+   for good_star in mag3_stars:
+      star_name, common_name, ra, dec, mag, sx, sy, mx, my = good_star
+      (az, el) = radec_to_azel(ra,dec,lat,lon,alt, cal_date)
+      azel = str('{0:.2f}'.format(az)) + " " + str( '{0:.2f}'.format(el))
 
+
+      #azel = azel + str(ra) + " " + str(dec)
+      print ("MAPPED STAR:", star_name, common_name, ra, dec, mag, sx,sy,mx,my, az,el)
+      sx = float(sx)
+      sy = float(sy)
+      draw.rectangle((mx-10, my-10, mx + 10, my + 10), outline="blue")
+      draw.ellipse((mx-5, my-5, mx+5, my+5),  outline ="blue")
+      draw.ellipse((sx-5, sy-5, sx+5, sy+5),  outline ="green")
+      draw.line((mx,my, sx,sy), fill=255)
+      draw.text((sx-10, sy-20), str(common_name + "(" + str(star_name) + ")"), font = font, fill=(255,255,255))
+      draw.text((sx-10, sy-30), azel , font = font, fill=(255,255,255))
+      mapped_stars.append((star_name, common_name, ra, dec, mag, sx, sy, mx, my,az,el)) 
+   cv2.imshow('pepe', np.asarray(med_stack_pil))
+   cv2.waitKey(10)
+
+   for good_star in mag4_stars:
+      star_name, common_name, ra, dec, mag, sx, sy, mx, my = good_star
+      (az, el) = radec_to_azel(ra,dec,lat,lon,alt, cal_date)
+      azel = str('{0:.2f}'.format(az)) + " " + str( '{0:.2f}'.format(el))
+      #azel = azel + str(ra) + " " + str(dec)
+      sx = float(sx)
+      sy = float(sy)
+      draw.rectangle((mx-10, my-10, mx + 10, my + 10), outline="blue")
+      draw.ellipse((mx-5, my-5, mx+5, my+5),  outline ="blue")
+      draw.ellipse((sx-5, sy-5, sx+5, sy+5),  outline ="green")
+      draw.line((mx,my, sx,sy), fill=255)
+      draw.text((sx-10, sy-20), str(common_name + "(" + str(star_name) + ")"), font = font, fill=(255,255,255))
+      draw.text((sx-10, sy-30), azel , font = font, fill=(255,255,255))
+      mapped_stars.append((star_name, common_name, ra, dec, mag, sx, sy, mx, my,az,el))
+   cv2.imshow('pepe', np.asarray(med_stack_pil))
+   cv2.waitKey(10)
+
+
+   save_json_file(mapped_star_file, mapped_stars)
+   print(mapped_star_file)
+   show_img = np.asarray(med_stack_pil)
+   cv2.imshow('pepe', show_img)
+   cv2.waitKey(10)
    
-   return(np.asarray(med_stack_pil))
+   alpha = Image.blend(med_stack_pil, grid_image, .4)
+   return(np.asarray(alpha))
 
-def pair_star(my_star, astr_stars,img_w,img_h):
+def pair_stars(my_stars, cat_stars, img_w,img_h,px_limit,image):
+   px_limit_s = px_limit
+   img_cpy = image.copy()
+   hw = int(img_w / 2)
+   hh = int(img_h / 2)
+   cv2.imshow('pepe', image)
+   cv2.waitKey(40)
+   px_limit = float(px_limit)
+   cat_stars = list(set(cat_stars))
+   good_stars = []
+   for cat_star in cat_stars:
+      image = img_cpy.copy() 
+      matches = []
+      name, common_name, ra, dec, mag, astr_x,astr_y = cat_star
+      name = cat_star[0] + " " + cat_star[1]
+      cx = int(float(cat_star[5]))
+      cy = int(float(cat_star[6]))
+      dx,dy = distort_xy(cx,cy,img_w,img_h)
+      dx = int(dx)
+      dy = int(dy)
+      cv2.rectangle(image, (cx, cy), (cx + 20, cy + 20), (255, 0, 0), 2)
+      cv2.rectangle(image, (dx, dy), (dx + 10, dy + 10), (255, 0, 0), 2)
+      cv2.putText(image, str(name),  (cx,cy+15), cv2.FONT_HERSHEY_SIMPLEX, .4, (0,0,255), 1)
+      cv2.line(image, (cx,cy), (dx,dy), (255), 1)
+      cv2.imshow('pepe', image)
+      cv2.waitKey(10)
+
+      dx = float(dx)
+      dy = float(dy)
+      center_dist = calc_dist((hw,hh), (dx,dy))
+      if center_dist > 600:
+         px_limit = px_limit_s + 20
+      if center_dist < 300:
+         px_limit = px_limit_s - 10
+      if 300 < center_dist < 600:
+         px_limit = px_limit_s - 5 
+
+      for mx,my in star_px:
+ 
+         if mx - px_limit <= dx <= mx + px_limit and my - px_limit <= dy <= my  + px_limit:
+            matches.append((name,common_name,ra,dec,mag,astr_x,astr_y,mx,my))
+            cv2.line(image, (int(float(astr_x)),int(float(astr_y))), (int(float(mx)),int(float(my))), (255), 1)
+            cv2.circle(image, (mx,my), 10, (255), 1)
+            cv2.imshow('pepe', image)
+            cv2.waitKey(10)
+      if len(matches) == 1:
+         good_stars.append(matches[0])
+         matches = []   
+            
+   return(good_stars)
+
+
+def pair_star(my_star, astr_stars,img_w,img_h,px_limit = 20, distort = 0):
    matches = []
    failed_matches = []
    mx, my = my_star
@@ -142,10 +305,11 @@ def pair_star(my_star, astr_stars,img_w,img_h):
       star_name, x, y = star
       x = int(float(x))
       y = int(float(y))
-      x,y = distort_xy(x,y,img_w,img_h)
-      if (x - 20 < mx < x + 20 and y - 20 < my < y + 20) :
+      if distort == 1:
+         x,y = distort_xy(x,y,img_w,img_h)
+      if (x - px_limit < mx < x + px_limit and y - px_limit < my < y + px_limit) :
          matches.append(star)
-      elif (x - 25 < mx < x + 25 and y - 25 < my < y + 25) :
+      elif (x - px_limit + 5 < mx < x + px_limit + 5 and y - px_limit +5 < my < y + px_limit +5) :
          matches.append(star)
       else:
          failed_matches.append(star)
@@ -163,11 +327,9 @@ def find_non_cloudy_times(cal_date,cam_num):
       files = sorted(files)
       for file in files:
          if "trim" not in file:
-            print("FILE:", file)
             status, stars, non_stars, cloudy_areas = check_for_stars(file)
             weather_data.append((file, status, stars, non_stars, cloudy_areas))
 
-      print("JSON FILE:", json_file)
       save_json_file(json_file, weather_data)
    else:
       weather_data = load_json_file(json_file)
@@ -185,7 +347,6 @@ def find_non_cloudy_times(cal_date,cam_num):
    return(wmin_data)
 
 def check_for_stars(file):
-   print("CHECK IN ", file)
    image = cv2.imread(file, 0)
    status, stars, non_stars, cloudy_areas = find_stars(image)
 
@@ -194,14 +355,11 @@ def check_for_stars(file):
 def deep_cal(cal_date, cam_num):
    weather = find_non_cloudy_times(cal_date, cam_num)
    #for wmin in weather:
-   #   print(wmin, weather[wmin])
 
    glob_dir = "/mnt/ams2/HD/" + cal_date + "*" + cam_num + "*.mp4"
-   print(glob_dir)
    files = glob.glob(glob_dir)
    for file in files:
       if "trim" not in file and "meteor" not in file and "sync" and "linked" not in file:
-         print("FILE:", file)
          (f_datetime, cam, f_date_str,fy,fm,fd, fh, fmin, fs) = convert_filename_to_date_cam(file)    
       #   f_date_str = str(fy) + "-" + str(fm) + "-" + str(fd) + " " + str(fh) + ":" + fmin + ":00"
          f_date_str = str(fy) + "-" + str(fm) + "-" + str(fd) + "-" + str(fh) + "-" + fmin + "-00"
@@ -209,10 +367,8 @@ def deep_cal(cal_date, cam_num):
          if f_date_str in weather:
             status = weather[f_date_str]
             if status == 'clear':
-               print(status, cam, file)
                cal_file, med_stack, plate_image = make_cal_images(file)
                status, stars, non_stars, cloudy_areas = find_stars(med_stack)
-               print("MIKE STARS:", len(stars))
                for sx,sy in stars:
                   cv2.circle(med_stack, (sx,sy), 3, (255), 1)
 
@@ -230,7 +386,37 @@ def deep_cal(cal_date, cam_num):
                #cv2.imshow('pepe', plate_image) 
                #cv2.waitKey(40)
          #else:
-         #   print("weather data missing for this time:", f_date_str)
+
+def remove_close_stars(star_px):
+   no_dupe_stars = [] 
+   for star in star_px:
+      exists = 0
+      if len(star) == 5:
+         star_name,sx,sy,x,y = star
+      if len(star) == 2:
+         sx,sy = star
+      for star in no_dupe_stars:
+         if len(star) == 5:
+            ostar_name,ssx,ssy,ox,oy = star
+         if len(star) == 2:
+            ssx,ssy= star
+         sx = int(sx)
+         sy = int(sy)
+         ssx = int(ssx)
+         ssy = int(ssy)
+         if ssx - 25 <= sx <= ssx + 25 and ssy - 25 <= sy <= ssy + 25 :
+            exists = exists + 1
+
+      if exists == 0:
+         if len(star) == 5:
+            no_dupe_stars.append((star_name,sx,sy,x,y))
+         if len(star) == 2:
+            no_dupe_stars.append((sx,sy))
+
+
+   return(no_dupe_stars)
+     
+      
 
 def make_cal_images(file):
 
@@ -247,7 +433,6 @@ def make_cal_images(file):
       med_stack = cv2.imread(med_stack_file, 0)
       plate_image = cv2.imread(cal_file, 0)
       return(cal_file, med_stack, plate_image)
-   print("done with ", cal_file)
 
 #or (dx - 10 < mx < dx + 10 and dy - 10 < my < dy + 10):
 
@@ -263,8 +448,8 @@ if cmd == 'deep_cal':
 
 if cmd == 'cal':
    cal_file, med_stack_file, stars_file, solved_file = set_filenames(file)
+   (cal_date, cam, f_date_str,fy,fm,fd, fh, fmin, fs) = convert_filename_to_date_cam(file)    
    solved = check_if_solved(med_stack_file)
-   print ("SOLVED:", solved)
    if solved == 0:
       med_stack = make_med_stack(file, cal_file)
       star_px, plate_image = find_bright_pixels(med_stack, solved_file)
@@ -282,12 +467,10 @@ if cmd == 'cal':
    
 
       astr_stars = load_stars(stars_file)
-      print("MY STAR PX:", star_px)
-      print("STARS:", astr_stars)
 
-      cv2.imshow('pepe', med_stack)
-      cv2.waitKey(0)
-      star_image = draw_star_image(med_stack, star_px, astr_stars)
+      grid_file = stars_file.replace("-stars.txt", "-grid.png")
+      grid_image = Image.open(grid_file)
+      star_image = draw_star_image(med_stack, star_px, astr_stars, grid_image, stars_file,cal_date)
 
       cv2.imshow('pepe', star_image)
       cv2.waitKey(0)

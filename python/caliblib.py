@@ -1,3 +1,4 @@
+import math
 import cv2
 import random
 import numpy as np
@@ -7,13 +8,23 @@ from scipy.interpolate import splrep, sproot, splev
 from pathlib import Path
 import json
 
+import brightstardata as bsd
+mybsd = bsd.brightstardata()
+bright_stars = mybsd.bright_stars
+
+def calc_dist(p1,p2):
+   x1,y1 = p1
+   x2,y2 = p2
+   dist = math.sqrt((x2 - x1)**2 + (y2 - y1)**2)
+   return dist
+
+
 def save_json_file(json_file, json_data):
    with open(json_file, 'w') as outfile:
       json.dump(json_data, outfile)
    outfile.close()
 
 def load_json_file(json_file):
-   print("OPEN JSON:", json_file)
    with open(json_file, 'r') as infile:
       json_data = json.load(infile)
    return(json_data)
@@ -146,6 +157,7 @@ def find_bright_pixels(med_stack_all, solved_file):
    avg_px = np.mean(med_stack_all)
    pdif = max_px - avg_px
    pdif = int(pdif / 15) + avg_px
+   pdif = avg_px + 10 
    #star_bg = 255 - cv2.adaptiveThreshold(med_stack_all, 255, cv2.ADAPTIVE_THRESH_GAUSSIAN_C, cv2.THRESH_BINARY, 31, 3)
   
    _, star_bg = cv2.threshold(med_stack_all, pdif, 255, cv2.THRESH_BINARY)
@@ -154,8 +166,8 @@ def find_bright_pixels(med_stack_all, solved_file):
    #cv2.waitKey(0)
 
    #star_bg = cv2.GaussianBlur(star_bg, (7, 7), 0)
-   #thresh_obj = cv2.dilate(star_bg, None , iterations=4)
-   thresh_obj= cv2.convertScaleAbs(star_bg)
+   thresh_obj = cv2.dilate(star_bg, None , iterations=4)
+   #thresh_obj= cv2.convertScaleAbs(star_bg)
    (_, cnts, xx) = cv2.findContours(thresh_obj.copy(), cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
    masked_pixels = []
 
@@ -245,7 +257,6 @@ def star_test(cnt_img):
    xs_peaks = signal.find_peaks(PX)
    x_peaks = len(xs_peaks[0])
 
-   #print("STAR TEST:", x_peaks, y_peaks, px_diff)
 
    #cv2.imshow('pepe', cnt_img)
    #cv2.waitKey(0)
@@ -255,3 +266,68 @@ def star_test(cnt_img):
       is_star = 0
 
    return(is_star)
+
+def astr_line(line):
+   line = line.replace("\n", "")
+   line = line.replace("  Mike Star: ", "")
+   el = line.split("at")
+   if "at" not in line:
+      exit()
+
+   if len(el) == 2:
+      cname,num = el 
+   else:
+      print("fuck:", line)
+      exit()
+   num = num.replace(" ","")
+   num = num.replace("(","")
+   num = num.replace(")","")
+   fields = line.split(" ")
+   if "(" in cname:
+      common_name, cat_name = cname.split("(")
+      cname = cat_name
+      cname = cname.replace(")", "")
+      #cname.replace(cat_name, "")
+   else:
+      common_name = ""
+   cname = cname.rstrip()
+   common_name = common_name.rstrip()
+
+   ast_x,ast_y = num.split(",")
+   return(cname,common_name,ast_x,ast_y)
+
+def parse_astr_star_file(star_data_file, limit_mag_start = -10, limit_mag_end = 3):
+   bright_stars_found = []
+   bright_stars_notfound = []
+   fp = open(star_data_file, "r")
+   for line in fp:
+      status = 0
+      bname = ""
+      common_name = ""
+      star_name, common_name, ast_x, ast_y = astr_line(line)
+
+      (status, bname, cons, ra,dec,mag) = find_star_by_name(star_name, common_name)
+
+      if int(status) == 1:
+         data = bname + "," + cons + "," + str(ra) + "," + str(dec) + "," + str(mag) + "," + str(ast_x) + "," + str(ast_y)
+         data = (bname, cons,ra,dec,mag,ast_x,ast_y)
+         if limit_mag_start <= float(mag) <= limit_mag_end:
+            bright_stars_found.append(data)
+      else:
+         data = (star_name,0,0,0,ast_x,ast_y)
+         bright_stars_notfound.append(data)
+
+   return(bright_stars_found, bright_stars_notfound)
+
+def find_star_by_name(star_name, common_name, debug = 1):
+   for bname, cname, ra, dec, mag in bright_stars:
+      dbname = bname.decode("utf-8")
+      dcname = cname.decode("utf-8")
+      if star_name in dbname and star_name != "" and dbname != "":  
+         return(1,dbname, dcname, ra,dec,mag)
+      if common_name in dcname and common_name != "" and dcname != "":
+         return(1,dbname, dcname, ra,dec,mag)
+   print("Could not find", star_name, common_name, "in catalog!")
+   exit()
+   return(0,0,0,0,0,0)
+
