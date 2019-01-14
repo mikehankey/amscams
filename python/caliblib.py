@@ -5,12 +5,77 @@ import numpy as np
 from detectlib import eval_cnt
 from scipy import signal
 from scipy.interpolate import splrep, sproot, splev
+from detectlib import mask_frame
 from pathlib import Path
 import json
 
 import brightstardata as bsd
 mybsd = bsd.brightstardata()
 bright_stars = mybsd.bright_stars
+
+json_file = open('../conf/as6.json')
+json_str = json_file.read()
+json_conf = json.loads(json_str)
+
+def brightness(image, brightness_value):
+   # Convert BGR to HSV
+   hsv = image
+   #hsv = cv2.cvtColor(image, cv2.COLOR_BGR2HSV)
+   #height, width, channels = hsv.shape	
+   height, width = hsv.shape	
+   for x in range(height):
+      for y in range(width):
+         if hsv[x,y] + brightness_value > 255:
+            hsv[x,y] = 255
+         elif hsv[x,y] + brightness_value < 0:
+            hsv[x,y] = 0
+         else:
+            hsv[x,y] += brightness_value
+	# Write new pixel channel value
+   #edit_img = cv2.cvtColor(hsv, cv2.COLOR_HSV2BGR)
+   return hsv 
+
+# Edit contrast
+def contrast(image, contrast_value):	
+   hsv = cv2.cvtColor(image, cv2.COLOR_BGR2HSV)
+   height, width, channels = image.shape	
+   for x in range(height):
+      for y in range(width):
+         for c in range(channels):
+            if image[x,y,c] + contrast_value > 255:
+               image[x,y,c] = 255
+            elif image[x,y,c] + contrast_value < 0:
+               image[x,y,c] = 0
+            else:
+               image[x,y,c] += contrast_value
+   return image
+
+def get_masks(this_cams_id, hd = 0):
+   hdm_x = 2.7272
+   hdm_y = 1.875
+   my_masks = []
+   cameras = json_conf['cameras']
+   for camera in cameras:
+      if str(cameras[camera]['cams_id']) == str(this_cams_id):
+         if hd == 1:
+            masks = cameras[camera]['hd_masks']
+         else:
+            masks = cameras[camera]['masks']
+         for key in masks:
+            mask_el = masks[key].split(',')
+            (mx, my, mw, mh) = mask_el
+               #mx = mx * hdm_x
+               #my = my * hdm_y
+               #mw = mw * hdm_x
+               #mh = mh * hdm_y
+            masks[key] = str(mx) + "," + str(my) + "," + str(mw) + "," + str(mh)
+            my_masks.append((masks[key]))
+
+   return(my_masks)
+
+
+
+
 
 def calc_dist(p1,p2):
    x1,y1 = p1
@@ -79,19 +144,32 @@ def clean_star_bg(cnt_img, bg_avg):
       for y in range(0,cnt_img.shape[0]):
          px_val = cnt_img[y,x]
          if px_val < bg_avg:
-            cnt_img[y,x] = random.randint(int(bg_avg - 3),int(bg_avg+3))
+            #cnt_img[y,x] = random.randint(int(bg_avg - 3),int(bg_avg+3))
+            cnt_img[y,x] = 0
    return(cnt_img)
  
 
-def find_stars(med_stack_all): 
+def find_stars(med_stack_all, cam_num, center = 0, center_limit = 200, pdif_factor = 10):   
+
+   masks = get_masks(cam_num, hd = 0)
+#   med_stack_all = mask_frame(med_stack_all, masks)
+
    img_height, img_width= med_stack_all.shape
+   hh = img_height / 2
+   hw = img_width / 2
    max_px = np.max(med_stack_all)
    avg_px = np.mean(med_stack_all)
    med_cpy = med_stack_all.copy()
+   
    pdif = max_px - avg_px
-   pdif = int(pdif / 4) + avg_px
+   pdif = int(pdif / pdif_factor) + avg_px
    bg_avg = 0
-   _, star_bg = cv2.threshold(med_stack_all, pdif, 255, cv2.THRESH_BINARY)
+
+   if avg_px > 60:
+      return(0,[],[], [], [])
+
+   best_thresh = find_best_thresh(med_stack_all, pdif)
+   _, star_bg = cv2.threshold(med_stack_all, best_thresh, 255, cv2.THRESH_BINARY)
    thresh_obj= cv2.convertScaleAbs(star_bg)
    (_, cnts, xx) = cv2.findContours(thresh_obj.copy(), cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
    star_pixels = []
@@ -109,20 +187,27 @@ def find_stars(med_stack_all):
          mnx,mny,mxx,mxy = bound_cnt(cx,cy,img_width,img_height)
          cnt_img = med_stack_all[mny:mxy,mnx:mxx]
          cnt_w,cnt_h = cnt_img.shape
+
+
+
          if cnt_w > 0 and cnt_h > 0:
             is_star = star_test(cnt_img)
             if is_star == 1:
                bg_avg = bg_avg + np.mean(cnt_img)
                star_pixels.append((cx,cy))
                cv2.circle(med_cpy, (int(cx),int(cy)), 5, (255,255,255), 1)
-               #cv2.imshow('pepe', cnt_img)
-               #cv2.waitKey(0)
             else:
                cv2.rectangle(med_cpy, (cx-5, cy-5), (cx + 5, cy + 5), (255, 0, 0), 1)
                non_star_pixels.append((cx,cy))
       else:
          cloudy_areas.append((x,y,w,h))
          cv2.rectangle(med_cpy, (x, y), (x + w, y + w), (255, 0, 0), 3)
+
+   center_stars = []
+   for sx,sy in star_pixels:
+      center_dist = calc_dist((hw,hh), (sx,sy))
+      if abs(center_dist) < center_limit:
+         center_stars.append((sx,sy))
 
    if len(non_star_pixels) > 0 and len(star_pixels) > 0:
       perc_cloudy = int(len(non_star_pixels) / len(star_pixels))  * 100
@@ -145,37 +230,49 @@ def find_stars(med_stack_all):
        status = "partly cloudy "
 
    cv2.putText(med_cpy, str(status),  (10,300), cv2.FONT_HERSHEY_SIMPLEX, 1, (0,0,255), 2)  
-   cv2.imshow('pepe', med_cpy)
-   cv2.waitKey(10)
-   return(status,star_pixels, non_star_pixels, cloudy_areas)
+   return(status,star_pixels, center_stars, non_star_pixels, cloudy_areas)
 
-def find_bright_pixels(med_stack_all, solved_file):
+def find_best_thresh(image, start_thresh):
+   go = 1
+   while go == 1:
+      _, star_bg = cv2.threshold(image, start_thresh, 255, cv2.THRESH_BINARY)
+
+      thresh_obj = cv2.dilate(star_bg, None , iterations=4)
+      (_, cnts, xx) = cv2.findContours(thresh_obj.copy(), cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
+      print("CNTS:", len(cnts), start_thresh)
+      if len(cnts) > 50:
+         start_thresh = start_thresh + 1
+      else: 
+         go = 0
+   return(start_thresh)
+
+
+def find_bright_pixels(med_stack_all, solved_file, cam_num):
+
+   print("MAKE PLATE MED STACKED", med_stack_all.shape)
    img_height,img_width = med_stack_all.shape
    med_cpy = med_stack_all.copy()
    star_pixels = []
    max_px = np.max(med_stack_all)
    avg_px = np.mean(med_stack_all)
    pdif = max_px - avg_px
-   pdif = int(pdif / 15) + avg_px
-   pdif = avg_px + 10 
-   #star_bg = 255 - cv2.adaptiveThreshold(med_stack_all, 255, cv2.ADAPTIVE_THRESH_GAUSSIAN_C, cv2.THRESH_BINARY, 31, 3)
-  
-   _, star_bg = cv2.threshold(med_stack_all, pdif, 255, cv2.THRESH_BINARY)
+   pdif = int(pdif / 20) + avg_px
+ 
+   best_thresh = find_best_thresh(med_stack_all, pdif)
+   _, star_bg = cv2.threshold(med_stack_all, best_thresh, 255, cv2.THRESH_BINARY)
 
-   #cv2.imshow('pepe', star_bg)
-   #cv2.waitKey(0)
 
+   cv2.imshow('pepe', star_bg)
+   cv2.waitKey(10)
    #star_bg = cv2.GaussianBlur(star_bg, (7, 7), 0)
    thresh_obj = cv2.dilate(star_bg, None , iterations=4)
    #thresh_obj= cv2.convertScaleAbs(star_bg)
    (_, cnts, xx) = cv2.findContours(thresh_obj.copy(), cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
    masked_pixels = []
 
-   for (i,c) in enumerate(cnts):
-      x,y,w,h = cv2.boundingRect(cnts[i])
-      cv2.rectangle(star_bg, (x, y), (x + w+5, y + h+5), (255, 0, 0), 1)
-   #cv2.imshow('pepe', star_bg)
-   #cv2.waitKey(1)
+   #for (i,c) in enumerate(cnts):
+   #   x,y,w,h = cv2.boundingRect(cnts[i])
+   #   cv2.rectangle(star_bg, (x, y), (x + w+5, y + h+5), (255, 0, 0), 1)
 
    bg_avg = 0
 
@@ -193,43 +290,56 @@ def find_bright_pixels(med_stack_all, solved_file):
          cnt_w,cnt_h = cnt_img.shape
          if cnt_w > 0 and cnt_h > 0:
             is_star = star_test(cnt_img)
-            if is_star == 1:
+            if is_star >= 0:
                bg_avg = bg_avg + np.mean(cnt_img)
                star_pixels.append((cx,cy))
                cv2.circle(med_cpy, (int(cx),int(cy)), 5, (255,255,255), 1)
-               #cv2.imshow('pepe', cnt_img)
-               #cv2.waitKey(0)
             else:
                cv2.rectangle(med_cpy, (cx-5, cy-5), (cx + 5, cy + 5), (255, 0, 0), 1)
          else:
                cv2.rectangle(med_cpy, (cx-15, cy-15), (cx + 15, cy + 15), (255, 0, 0), 1)
 
    if len(star_pixels) > 0:
-      bg_avg = bg_avg / len(star_pixels) 
+      bg_avg = bg_avg / len(star_pixels)  
    else:
       bg_avg = 35
 
    file_exists = Path(solved_file)
    if file_exists.is_file() is False:
-      # if plate image does not exist! 
-      plate_image = med_stack_all.copy()
-      for x in range(0,plate_image.shape[1]):
-         for y in range(0,plate_image.shape[0]):
-            plate_image[y,x] = random.randint(int(0),int(10))
+   #   print("MAKE PLATE ", solved_file)
+   #   # if plate image does not exist! 
+   #   plate_image = med_stack_all.copy()
+   #   print("PLATE SHAPE", plate_image.shape)
+   #   for x in range(0,plate_image.shape[1]):
+   #      for y in range(0,plate_image.shape[0]):
+   #         plate_image[y,x] = random.randint(int(0),int(5))
+   #   plate_image = cv2.GaussianBlur(plate_image, (7, 7), 0) 
 
+      plate_image= star_bg
       star_sz = 10
       for star in star_pixels:
          sx,sy = star
          mnx,mny,mxx,mxy = bound_cnt(sx,sy,img_width,img_height) 
          star_cnt = med_stack_all[mny:mxy,mnx:mxx]
-         star_cnt = clean_star_bg(star_cnt, bg_avg)
+         star_cnt = clean_star_bg(star_cnt, bg_avg+7)
          plate_image[mny:mxy,mnx:mxx] = star_cnt
 
    else:
-      plate_image = cv2.imread(solved_file, 0)
+      print("PLATE ALREADY SOLVED HERE! FIX", solved_file)
+      plate_file = solved_file.replace("-grind.png", ".jpg")
+      plate_image = cv2.imread(plate_file, 0)
  
 
 
+
+   masks = get_masks(cam_num, 1)
+   print("MASKS:",  masks)
+   for mask in masks:
+      msx,msy,msw,msh = mask.split(",")
+      plate_image[int(msy):int(msy)+int(msh),int(msx):int(msx)+int(msw)] = 0
+
+   plate_image[0:1080,0:200] = 0
+   plate_image[0:1080,1720:1920] = 0
 
    return(star_pixels, plate_image)
 
@@ -258,9 +368,7 @@ def star_test(cnt_img):
    x_peaks = len(xs_peaks[0])
 
 
-   #cv2.imshow('pepe', cnt_img)
-   #cv2.waitKey(0)
-   if px_diff > 10:
+   if px_diff > 20:
       is_star = 1 
    else:
       is_star = 0
@@ -270,7 +378,7 @@ def star_test(cnt_img):
 def astr_line(line):
    line = line.replace("\n", "")
    line = line.replace("  Mike Star: ", "")
-   el = line.split("at")
+   el = line.split(" at ")
    if "at" not in line:
       exit()
 

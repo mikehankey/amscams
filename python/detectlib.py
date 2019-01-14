@@ -122,10 +122,12 @@ def load_video_frames(trim_file, limit=0):
    cap.release()
    return(frames)
 
-def mask_frame(frame, mp):
+def mask_frame(frame, mp, size=3):
    px_val = np.mean(frame)
+   print("FRAME SHAPE:", frame.shape)
+   
    for x,y in mp:
-      frame[y-3:y+3,x-3:x+3] = px_val
+      frame[y-size:y+size,x-size:x+size] = px_val
    return(frame)
 
 def median_frames(frames):

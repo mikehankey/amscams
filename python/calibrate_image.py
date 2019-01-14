@@ -121,7 +121,6 @@ quarter_file = jpg_file.replace(".jpg", "-1.jpg")
 
 
 image = cv2.imread(jpg_file)
-print(image.shape)
 if len(image.shape) > 2:
    gray = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
 else:
@@ -129,20 +128,14 @@ else:
 height = gray.shape[0] 
 width = gray.shape[1] 
 
-print (width, height)
 
-crop_height = int(height / 2)
-crop_width = int(width / 2)
-start_x = 0
-start_y = 0
 
-#os.system("convert -crop " + str(crop_width) + "x" + str(crop_height) + "+" + str(start_x) + "+" + str(start_y) + " " + jpg_file + " " + quarter_file)
-#print("convert -crop " + str(crop_height) + "x" + str(crop_width) + "+" + str(start_x) + "+" + str(start_y) + " " + jpg_file + " " + quarter_file)
-#exit()
-
-print("/usr/local/astrometry/bin/solve-field " + jpg_file + " --verbose --no-delete-temp --overwrite --width=" + str(width) + " --height=" + str(height) + " --scale-low 10 --scale-high 120 > " + astr_out)
-os.system("/usr/local/astrometry/bin/solve-field " + jpg_file + " --verbose --no-delete-temp --overwrite --width=" + str(width) + " --height=" + str(height) + " --scale-low 50 --scale-high 110 > " + astr_out + " 2>&1")
+cmd = "/usr/local/astrometry/bin/solve-field " + jpg_file + " --cpulimit=30 --verbose --no-delete-temp --overwrite --width=" + str(width) + " --height=" + str(height) + " --scale-low 50 --scale-high 90 > " + astr_out + " 2>&1"
+print(cmd)
+os.system(cmd)
 os.system("grep Mike " + astr_out + " >" +star_data_file + " 2>&1" )
+
+#os.system("/usr/local/astrometry/bin/solve-field " + jpg_file + " --cpulimit=30 --verbose --no-delete-temp --overwrite --width=" + str(width) + " --height=" + str(height) + " --scale-low 50 --scale-high 90 > " + astr_out + " 2>&1")
 
 cmd = "/usr/bin/jpegtopnm " + jpg_file + "|/usr/local/astrometry/bin/plot-constellations -w " + wcs_file + " -o " + grid_file + " -i - -N -C -G 600"
 print (cmd)
@@ -154,38 +147,34 @@ os.system(cmd)
 bright_star_data = parse_astr_star_file(star_data_file)
 plot_bright_stars(jpg_file, image, bright_star_data)
 
-#cmd = "./calibrate_image_step2.py " + jpg_file
-#os.system(cmd)
-
-#cmd = "./fisheye-test.py " + jpg_file
-#os.system(cmd)
 
 
 
-# cleanup and move all extra files
-el = jpg_file.split("/") 
-temp = el[-1]
-cal_dir = temp.replace(".jpg", "")
-grid_file = jpg_file.replace(".jpg", "-grid.png")
-file_exists = Path(grid_file)
-if file_exists.is_file() is True:
-   # success
-   if os.path.exists("/mnt/ams2/cal/solved/" + cal_dir):
-      print ("success dir already exists.")
-   else:
-      os.mkdir("/mnt/ams2/cal/solved/" + cal_dir)
-   cmd = "mv /mnt/ams2/cal/" + cal_dir + "* /mnt/ams2/cal/solved/" + cal_dir + "/"
-   print (cmd)
-   os.system(cmd)
-
-else:
-
-   if os.path.exists("/mnt/ams2/cal/failed/" + cal_dir):
-      print ("failed dir already exists.")
-   else:
-      os.mkdir("/mnt/ams2/cal/failed/" + cal_dir)
-
-   cmd = "mv /mnt/ams2/cal/" + cal_dir + "* /mnt/ams2/cal/failed/" + cal_dir + "/"
-   print (cmd)
-   os.system(cmd)
-   print("MIKE FAILE")
+## cleanup and move all extra files
+#el = jpg_file.split("/") 
+#temp = el[-1]
+#cal_dir = temp.replace(".jpg", "")
+#cal_dir = cal_dir.replace("-plate", "")
+#grid_file = jpg_file.replace(".jpg", "-grid.png")
+#file_exists = Path(grid_file)
+#if file_exists.is_file() is True:
+#   # success
+#   if os.path.exists("/mnt/ams2/cal/solved/" + cal_dir):
+#      print ("success dir already exists.")
+#   else:
+#      os.mkdir("/mnt/ams2/cal/solved/" + cal_dir)
+#   cmd = "mv /mnt/ams2/cal/" + cal_dir + "* /mnt/ams2/cal/solved/" + cal_dir + "/"
+#   print (cmd)
+#   os.system(cmd)
+#
+#else:
+#
+#   if os.path.exists("/mnt/ams2/cal/failed/" + cal_dir):
+#      print ("failed dir already exists.")
+#   else:
+#      os.mkdir("/mnt/ams2/cal/failed/" + cal_dir)
+#
+#   cmd = "mv /mnt/ams2/cal/" + cal_dir + "* /mnt/ams2/cal/failed/" + cal_dir + "/"
+#   print (cmd)
+#   os.system(cmd)
+#   print("MIKE FAILE")
