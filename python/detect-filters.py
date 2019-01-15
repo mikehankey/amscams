@@ -307,7 +307,7 @@ def scan_trim_file(trim_file):
 
    stacked_image = draw_obj_image(stacked_image_np, moving_objects,trim_file, stacked_image_np)
 
-   if sys.argv[1] == 'sf':
+   #if sys.argv[1] == 'sf':
       #cv2.namedWindow('pepe')
       #cv2.imshow('pepe', stacked_image)
       #cv2.waitKey(30)
