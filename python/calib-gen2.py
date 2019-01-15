@@ -29,7 +29,7 @@ alt = json_conf['site']['device_alt']
 base_cal_dir = json_conf['site']['cal_dir']
 
 from detectlib import load_video_frames, median_frames, convert_filename_to_date_cam, mask_frame
-from caliblib import find_bright_pixels, load_stars, find_stars, save_json_file, load_json_file, parse_astr_star_file, find_star_by_name, calc_dist, get_masks, brightness, contrast
+from caliblib import find_bright_pixels, load_stars, find_stars, save_json_file, load_json_file, parse_astr_star_file, find_star_by_name, calc_dist, get_masks, brightness, contrast, find_non_cloudy_times, summarize_weather
 
 R = 6378.1
 
@@ -835,37 +835,18 @@ def pair_star(my_star, astr_stars,img_w,img_h,px_limit = 20, distort = 0):
        
    return(matches)
 
-def find_non_cloudy_times(cal_date,cam_num):
-   
-   json_file = proc_dir + cal_date + "/" + "data/" + cal_date + "-weather-" + cam_num + ".json"
-   found = check_if_solved(json_file)
-   found = 0
-   if found == 0: 
-      glob_dir = proc_dir + cal_date + "/" + "images/*" + cal_date + "*" + cam_num + "*.png"
-      files = glob.glob(glob_dir)
-      weather_data = []
-      files = sorted(files)
-      fc = 0
-      for file in files:
-         if "trim" not in file:
-            if fc % 10 == 0:
-               status, stars, center_stars, non_stars, cloudy_areas = check_for_stars(file)
-               weather_data.append((file, status, stars, center_stars, non_stars, cloudy_areas))
-            fc = fc + 1
 
-      save_json_file(json_file, weather_data)
-   else:
-      weather_data = load_json_file(json_file)
-
-   return(weather_data)
-
-def check_for_stars(file):
+def check_for_stars(file, cam_num, hd=0):
 
    image = cv2.imread(file, 0)
    image = magic_contrast(image) 
-   cam_num  = "010004"
+   #cam_num  = "010004"
 
    hd_file = find_hd_file(file)
+
+   masks = get_masks(cam_num, hd)
+   image = apply_masks(image, masks)
+
 
    status, stars, center_stars, non_stars, cloudy_areas = find_stars(image, cam_num, 1, 200, 10)
    image= mask_frame(image, non_stars, 25) 
@@ -1082,7 +1063,13 @@ def find_hd_file(sd_file):
       return(hdfiles[0])
    else:
       return(0)
-  
+ 
+def apply_masks(image, masks):
+   for mask in masks:
+      msx,msy,msw,msh = mask.split(",")
+      image[int(msy):int(msy)+int(msh),int(msx):int(msx)+int(msw)] = 0
+   return(image)
+ 
 def calibrate_image(cal_file, cal_date,cam_num):
    print("CAlibrate:", cal_file)
    masks = get_masks(cam_num)
@@ -1425,6 +1412,16 @@ for one night
 
 """
    print(text)
+
+def get_time_for_file(file):
+   el = file.split("/")
+   last = el[-1]
+   extra = last.split("-")
+   fn = extra[0]
+   
+   hel = fn.split("_")
+   return(hel[0],hel[1],hel[2],hel[3],hel[4],hel[5],hel[7])
+
    
 
 cv2.namedWindow('pepe')
@@ -1465,10 +1462,11 @@ if cmd == 'weather':
    cal_date = sys.argv[2] 
    cam_num = sys.argv[3] 
    weather = find_non_cloudy_times(cal_date, cam_num)
-   for wdata in weather:
-      (file, status, stars, center_stars, non_stars, cloudy_areas) = wdata
-      print(file,status)
-   batch_cal(weather, cal_date, cam_num)
+   summarize_weather(weather)
+   #for wdata in weather:
+   #   (file, status, stars, center_stars, non_stars, cloudy_areas) = wdata
+   #   print(file,status)
+   #batch_cal(weather, cal_date, cam_num)
 
 if cmd == 'night_tracker':
    cal_date = sys.argv[2] 

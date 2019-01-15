@@ -52,17 +52,19 @@ def find_hd_file_new(sd_file, trim_num, dur = 5):
    hd_files = sorted(glob.glob(hd_glob))
    for hd_file in hd_files:
       el = hd_file.split("_")
-      if len(el) == 8 and "meteor" not in hd_file:
+      if len(el) == 8 and "meteor" not in hd_file and "crop" not in hd_file:
          hd_datetime, hd_cam, hd_date, hd_h, hd_m, hd_s = convert_filename_to_date_cam(hd_file)
          time_diff = meteor_datetime - hd_datetime
          time_diff_sec = time_diff.total_seconds() 
          if 0 < time_diff_sec < 60:
             print("TIME DIFF:", hd_file, meteor_datetime, hd_datetime, time_diff_sec)
-            time_diff_sec = time_diff_sec - 2
+            time_diff_sec = time_diff_sec - 3
+            dur = int(dur) + 1
             if time_diff_sec < 0:
                time_diff_sec = 0
-            hd_trim = ffmpeg_trim(hd_file, str(time_diff_sec), str(dur), "-HD-meteor")
+            hd_trim = ffmpeg_trim(hd_file, str(time_diff_sec), str(dur), "-trim-" + str(trim_num) + "-HD-meteor")
             print("HD TRIM:", hd_trim)
+            return(hd_file, hd_trim)
       #else:
       #   print("LEN EL:", len(el), hd_file)
 
@@ -233,35 +235,90 @@ def check_hd_motion(frames, trim_file):
 
 #'box': [612, 187, 653, 303]
 
+def crop_hd(hd_file,box_str):
+   x,y,mx,my = box_str.split(",")
+
+   hd_mx = 2.727
+   hd_my = 1.875
+   x = float(x) * hd_mx
+   y = float(y) * hd_my
+   mx = float(mx) * hd_mx
+   my = float(my) * hd_my
+
+   w = float(mx) - float(x)
+   h = float(my) - float(y)
+
+   x = int(x)
+   y = int(y)
+   w = int(w)
+   h = int(h)
+
+   print("XY: ",x,y,mx,my,w,h)
+
+   crop = "crop=" + str(w) + ":" + str(h) + ":" + str(x) + ":" + str(y)
+   print("CROP: ", crop)
+   crop_out_file = hd_file.replace(".mp4", "-crop.mp4")
+   cmd = "/usr/bin/ffmpeg -y -i " + hd_file + " -filter:v \"" + crop + "\" " + crop_out_file
+   print(cmd)
+   os.system(cmd)
+
 meteor_file = sys.argv[1]
 dur_sec = sys.argv[2]
-if int(float(dur_sec)) < 3:
+if int(float(dur_sec)) < 1:
    dur_sec = 3
-#box = sys.argv[3]
+elif 1 < int(float(dur_sec)) < 2 :
+   dur_sec = 5
+else:
+   dur_sec = int(dur_sec) + 1
+
+box = sys.argv[3]
+trim_adj = sys.argv[4]
+if int(trim_adj) < 50:
+   trim_adj = 0
+else: 
+   trim_adj = int(trim_adj) - 50
+meteor_day_dir = sys.argv[5]
 
 el = meteor_file.split("-trim") 
 base = el[0]
 trim = el[-1]
 num,trash = trim.split("-")
 print("TRIM NUM:", int(num))
+print("TRIM ADJ:", int(trim_adj))
+
+num = int(num) + int(trim_adj)
+
+print("TRIM NUM:", int(num))
+
 min_file = base + ".mp4"
 
 meteor_suffix = "-trim" + str(num) + "-meteor"
 
 trim_start_sec = int(num) / 25 
-if trim_start_sec > 1:
-   trim_start_sec = trim_start_sec - 3 
-else:
-   trim_start_sec = 0
+if trim_start_sec < 0:
+   trim_star_sec = 0
+
+#if trim_start_sec > 1:
+#   trim_start_sec = trim_start_sec - 3 
+#else:
+#   trim_start_sec = 0
 
 print("METEOR FILE : ", meteor_file)
 print("BASE MIN FILE : ", min_file)
-hd_file = find_hd_file_new(min_file, int(num), dur_sec)
+hd_file,hd_trim = find_hd_file_new(min_file, int(num), dur_sec)
 #hd_file = find_hd_file(min_file)
 
-print("HD FILE : ", hd_file)
-meteor_file_hd = hd_file.replace(".mp4", meteor_suffix + ".mp4")
-ffmpeg_trim (hd_file, trim_start_sec, dur_sec, meteor_suffix)
+print("HD FILE : ", hd_trim)
+print("BOX: ", box)
+crop_hd(hd_trim, box)
+
+hd_trim_crop = hd_trim.replace(".mp4", "-crop.mp4")
+
+cmd = "mv " + hd_trim + " " + meteor_day_dir
+os.system(cmd)
+cmd = "mv " + hd_trim_crop + " " + meteor_day_dir
+os.system(cmd)
+
 exit()
 
 #print(hd_file, trim_start_sec, dur_sec, "-meteor")
@@ -343,13 +400,6 @@ cv2.rectangle(stacked_hd, (min_x, min_y), (min_x+w,min_y+h), (255, 0, 0), 2)
 cv2.imshow('pepe', stacked_hd)
 cv2.waitKey(0)
 
-crop = "crop=" + str(w) + ":" + str(h) + ":" + str(min_x) + ":" + str(min_y)
-print("CROP: ", crop)
-
-crop_out_file = meteor_file_hd.replace(".mp4", "-crop.mp4")
-cmd = "/usr/bin/ffmpeg -y -i " + meteor_file_hd + " -filter:v \"" + crop + "\" " + crop_out_file
-print(cmd)
-os.system(cmd)
 
 exit()
 crop_out_file = trim_file.replace(".mp4", "-crop.mp4")

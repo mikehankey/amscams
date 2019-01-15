@@ -17,6 +17,51 @@ json_file = open('../conf/as6.json')
 json_str = json_file.read()
 json_conf = json.loads(json_str)
 
+def summarize_weather(weather_data):
+
+
+   hourly_weather = {}
+   for wdata in weather:
+      (file, status, stars, center_stars, non_stars, cloudy_areas) = wdata
+      (fy,fm,fd,fh,fmin,fsec,cam_num) = get_time_for_file(file)
+      key = fy + "_" + fm + "_" + fd + "_" + fh + "_" + cam_num
+      if key not in hourly_weather:
+         hourly_weather[key] = []
+         hourly_weather[key].append(status)
+      else:
+         hourly_weather[key].append(status)
+
+
+   for key in hourly_weather:
+      print(key,hourly_weather[key])
+
+
+def find_non_cloudy_times(cal_date,cam_num):
+  
+   json_file = proc_dir + cal_date + "/" + "data/" + cal_date + "-weather-" + cam_num + ".json"
+   found = check_if_solved(json_file)
+   found = 0
+   if found == 0:
+      glob_dir = proc_dir + cal_date + "/" + "images/*" + cal_date + "*" + cam_num + "*.png"
+      print("GOB:", glob_dir)
+      files = glob.glob(glob_dir)
+      weather_data = []
+      files = sorted(files)
+      fc = 0
+      for file in files:
+         if "trim" not in file:
+            if fc % 10 == 0:
+               status, stars, center_stars, non_stars, cloudy_areas = check_for_stars(file, cam_num, 0)
+               weather_data.append((file, status, stars, center_stars, non_stars, cloudy_areas))
+            fc = fc + 1
+
+      save_json_file(json_file, weather_data)
+   else:
+      weather_data = load_json_file(json_file)
+
+   return(weather_data)
+
+
 def brightness(image, brightness_value):
    # Convert BGR to HSV
    hsv = image

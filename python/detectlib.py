@@ -22,6 +22,20 @@ json_str = json_file.read()
 json_conf = json.loads(json_str)
 proc_dir = json_conf['site']['proc_dir']
 
+def cfe(file,dir = 0):
+   if dir == 0:
+      file_exists = Path(file)
+      if file_exists.is_file() is True:
+         return(1)
+      else:
+         return(0)
+   if dir == 1:
+      file_exists = Path(file)
+      if file_exists.is_dir() is True:
+         return(1)
+      else:
+         return(0)
+
 def setup_dirs(filename):
    el = filename.split("/")
    fn = el[-1]
@@ -124,7 +138,6 @@ def load_video_frames(trim_file, limit=0):
 
 def mask_frame(frame, mp, size=3):
    px_val = np.mean(frame)
-   print("FRAME SHAPE:", frame.shape)
    
    for x,y in mp:
       frame[y-size:y+size,x-size:x+size] = px_val
@@ -218,7 +231,7 @@ def find_fwhm(mx,my, gray_frame):
 
    #if fwhm <= 5:
    #   cv2.imshow('pepe', fwhm_img)
-   #   cv2.waitKey(0)
+   #   cv2.waitKey(30)
    return(fwhm)
 
 
@@ -229,11 +242,12 @@ def eval_cnt(cnt_img):
    px_diff = max_px - avg_px
    min_val, max_val, min_loc, max_loc = cv2.minMaxLoc(cnt_img)
    mx, my = max_loc
-
-   
-   #cv2.imshow('pepe', fwhm_img)
-   #cv2.waitKey(0)
-   return(max_px, avg_px,px_diff,max_loc) 
+   mx = mx - 5
+   my = my - 5
+   #cv2.circle(cnt_img, (mx,my), 5, (255), 1)
+   #cv2.imshow('pepe', cnt_img)
+   #cv2.waitKey(30)
+   return(max_px, avg_px,px_diff,(mx,my)) 
 
 def FWHM(X,Y):
    d = Y - (max(Y) / 2)
@@ -273,12 +287,7 @@ def find_in_hist(object,x,y,object_hist, hd = 0):
    for fc,ox,oy,w,h,mx,my in object_hist:
       cox = ox + mx
       coy = oy + my
-      #cox,coy = center_point(ox,oy,w,h)
-      #print("\t\tFIND IN HIST:", object['oid'], fc, x,y,cox,coy,x-cox,y-coy)
-      #print("XY HIST: ", x,y,mx,my)
       if cox - md <= x <= cox + md and coy -md <= y <= coy + md:
-      #   print("\t\tFOUND IN HIST:", object['oid'], fc, x,y,cox,coy,x-cox,y-coy)
-         
          found = 1
          return(1)
    return(found)
@@ -320,10 +329,8 @@ def id_object(cnt, objects, fc,max_loc):
       by = y + my
       found = find_in_hist(obj,bx,by,object_hist, is_hd)
       if found == 1:
-         #print("POTENTIAL HIST MATCH FOUND:", bx,by,oid)
          matches.append(obj)
       #else:
-      #   print("X,Y NOT FOUND IN OID HIST:", oid,bx,by)
    
    if len(matches) == 0:
       # NOT FOUND MAKE NEW 
@@ -358,8 +365,6 @@ def id_object(cnt, objects, fc,max_loc):
          last_hist = match_hist[-1]
          match_x = last_hist[1]
          match_y = last_hist[2]
-      #   print("LAST HIST: ", last_hist)
-      #   print("ALL HIST: ", match_hist)
          dist_to_obj = calc_dist((bx,by),(match_x,match_y))
          if dist_to_obj < min_dist:
             best_dist_obj = match
@@ -484,7 +489,7 @@ def find_bright_pixels(med_stack_all):
 
 
 def check_for_motion(frames, video_file):
-   cv2.namedWindow('pepe')
+   #cv2.namedWindow('pepe')
 
    image_acc = np.empty(np.shape(frames[0]))
 
@@ -626,7 +631,7 @@ def check_for_motion(frames, video_file):
       #if 0 < frame_count < 1000:
          #print("LEN CNTS:", len(cnts))
          #cv2.imshow('pepe', thresh_obj)
-         #cv2.waitKey(0)
+         #cv2.waitKey(30)
          ##cv2.imshow('pepe', nice_frame)
          #cv2.waitKey(1)
       #else:
@@ -698,7 +703,7 @@ def check_for_motion(frames, video_file):
                cv2.rectangle(nice_frame, (x, y), (x + w, y + w), (255, 0, 0), 2)
                cv2.putText(nice_frame, str(object),  (x,y), cv2.FONT_HERSHEY_SIMPLEX, .4, (255, 255, 255), 1)
                #cv2.imshow('pepe', nice_frame)
-               #cv2.waitKey(0)
+               #cv2.waitKey(30)
 
 
                #cv2.rectangle(stacked_image_np, (x, y), (x + w, y + w), (255, 0, 0), 2)
@@ -734,7 +739,6 @@ def check_for_motion(frames, video_file):
    return(max_cons_motion, frame_data, moving_objects, stacked_image)
 
 def clean_hist(hist):
-   print("CLEAN HIST")
    new_hist = []
    last_fn = 0
    last_hx = 0
@@ -767,10 +771,7 @@ def clean_hist(hist):
       past_frames.append(fn)
      
 
-   print ("NO DUPE HIST:", new_hist, len(new_hist)) 
    if len(new_hist) > 2:
-      print ("HIST is subset of hist", hist)
-      print ("NEW HIST is subset of hist", new_hist)
       if new_hist[1][0] - 1 <= new_hist[0][0] <= new_hist[1][0] + 1:
          hist = new_hist
       else:
@@ -1247,55 +1248,68 @@ def three_point_test(hist):
 
    passed = 0
    if (dt2 -2 < dt1 < dt2 + 2) or (dt2 -2 < (dt1 * 2) < dt2 + 2) :
-      #print("Distance test passed")
+      print("Distance test passed")
       passed = passed + 1
-   #else:
-      #print("Distance test failed.", dt1, dt2)
+   else:
+      print("Distance test failed.", dt1, dt2)
    if oa2 -20 <= oa1 <= oa2 + 20:
       #print("Angle 1 test passed")
       passed = passed + 1
-   #else:
-      #print("Angle 1 test failed.", oa1, oa2)
+   else:
+      print("Angle 1 test failed.", oa1, oa2)
    if oa3 -20 <= oa1 <= oa3 + 20:
-   #   print("Angle 2 test passed")
+      print("Angle 2 test passed")
       passed = passed + 1
-   #else:
-   #   print("Angle 2 test failed.", oa1, oa3)
+   else:
+      print("Angle 2 test failed.", oa1, oa3)
    if oa3 -20 <= oa2 <= oa3 + 20:
-   #   print("Angle 3 test passed")
+      print("Angle 3 test passed")
       passed = passed + 1
-   #else:
-   #   print("Angle 3 test failed.", oa2, oa3)
+   else:
+      print("Angle 3 test failed.", oa2, oa3)
 
-   #print("DT1/2:", dt1, dt2)
-   #print("OA1/2/3:", oa1, oa2, oa3)
+   print("DT1/2:", dt1, dt2)
+   print("OA1/2/3:", oa1, oa2, oa3)
    if passed >= 3:
       return(1)
    else:
       return(0)
 
 def hist_cm_events(hist):
+   max_cm = 0
    last_fc = 0
    motion_on = 0
    cm = 0
    event = []
    events = []
+   hc = 0
    for fc, x, y, w, h,mx,my in hist:
-      if (last_fc -1 <= fc <= last_fc + 1) or last_fc == 0 : 
+      if (last_fc -1 <= fc <= last_fc + 1) and last_fc > 0 and last_fc != fc: 
          cm = cm + 1
          motion_on = 1
+         if len(event) == 0:
+            event.append(hist[hc-1])
+
          event.append([fc,x,y,w,h,mx,my])
       else:
-         if len(event) > 0:
+         if len(event) > 1:
             events.append(event)
          event = []
          motion_on = 0
          cm = 0
          # event ended
+      if cm > max_cm:
+         max_cm = cm
       last_fc = fc 
-   if len(event) > 0:
+      hc = hc + 1
+
+   if len(event) > 1:
       events.append(event)
-   return(events)   
+
+   for ev in events:
+      print("EV:", ev)
+
+   return(events, max_cm)   
 
 def hist_eq_dist(hist):
    c = 0
@@ -1348,7 +1362,6 @@ def straight_hist(hist):
    points = []
    sizes = []
    for fn,x,y,w,h,mx,my in hist:   
-      print("HIST:", fn,x,y,w,h)
       size  = w * h
       sizes.append(size)
       point = x+mx,y+my
@@ -1404,7 +1417,7 @@ def test_object2(object):
    if hist_len > 200:
       return(0, "FAILED: object history is more than 200 frame.", obj_data)
    if hist_len < 3:
-      return(0, "FAILED: object history is less than 3 frames.", obj_data)
+      return(0, "FAILED: object history is less than 3 frames." + str(hist_len), obj_data)
    dist = calc_dist((min_x,min_y),(max_x,max_y))
    if dist < 5:
       return(0, "FAILED: object moves less than 5 pixels total.", obj_data)
@@ -1422,7 +1435,10 @@ def test_object2(object):
    if px_per_frame < .3:
       return(0, "FAILED: px per frame is too low: " + str(px_per_frame), obj_data)
    
-   cme = hist_cm_events(hist)
+   cme,max_cm = hist_cm_events(hist)
+   print("CME LEN:", len(cme))
+   print("CME:", cme)
+
    if len(cme) > 10:
       return(0, "FAILED: object has too many distinct CM Events: ", len(cme))
    obj_data['min_max_xy'] = [min_x,min_y,max_x,max_y]
@@ -1439,12 +1455,14 @@ def test_object2(object):
             ev_max_x, ev_max_y,ev_min_x,ev_min_y = max_xy(x,y,w,h,ev_max_x,ev_max_y,ev_min_x,ev_min_y)
 
          cme_dist = calc_dist((ev_min_x,ev_min_y), (ev_max_x,ev_max_y))
-         #print("EV:", ev, ev_min_x, ev_min_y, ev_max_x, ev_max_y, cme_dist)
+         print("EV:", ev, ev_min_x, ev_min_y, ev_max_x, ev_max_y, cme_dist)
          if len(ev) <= 5:
             tpt = three_point_test(ev)
          if cme_dist > 5 and tpt == 1:
             good_cmes.append(ev)
 
+   for gcme in good_cmes:
+      print("CME:", gcme)
 
    if len(good_cmes) == 0:
       return(0, "FAILED: No good CMEs longer than 5 px: " + str(px_per_frame), obj_data)
@@ -1453,13 +1471,33 @@ def test_object2(object):
    if hist_ok == 0:
       return(0, "FAILED: Straight Hist Tests: " + reason, obj_data)
 
-   #print("\tHist Len: ", hist_len)
-   #print("\tHist : ", hist)
-   #print("\tMIN/MAX X/Y : ", min_x,min_y,max_x,max_y)
-   #print("\tMAX/MIN DISTANCE:", dist)
-   #print("\tPX PER FRAME:", px_per_frame)
-   #print("\tTotal Possible CMEs: ", len(cme))
-   #print("\tTotal Good CMEs: ", len(good_cmes))
+   print("CME LEN:", len(cme))
+   if len(cme) > 0:
+      good_bad_cme = len(good_cmes) / len(cme)
+
+
+
+
+
+   print("\tHist Len: ", hist_len)
+   print("\tHist : ", hist)
+   print("\tMIN/MAX X/Y : ", min_x,min_y,max_x,max_y)
+   print("\tMAX/MIN DISTANCE:", dist)
+   print("\tPX PER FRAME:", px_per_frame)
+
+   print("\tTotal Possible CMEs: ", len(cme))
+   print("\tTotal Good CMEs: ", len(good_cmes))
+   print("\t Good/Bad CMEs: ", good_bad_cme)
+   print("\t MAX CM: ", max_cm)
+
+   if good_bad_cme < .4:
+      return(0, "FAILED: Good Bad CME too high: " + str(good_bad_cme), obj_data)
+
+
+   #if good_bad_cme < .5:
+   #   return(0, "FAILED: Good/BAD CME Ratio too low. " + str(good_bad_cme), obj_data)
+
+   
    
 
 
@@ -1553,7 +1591,6 @@ def test_object(object, trim_file, stacked_np):
          #print("WIDTH,HEIGHT:", w,h)
          if last_x > 0 and last_y > 0:
             seg_dist = calc_dist((last_x,last_y),(x,y))
-            #print ("SEG DIST:", oid, seg_dist)
          size = w * h
          sizes.append(size)
          if w * h > max_size:
@@ -1762,7 +1799,6 @@ def test_points(points):
          if first_last_angle -10 <= angle <= first_last_angle + 10:
             ap = ap + 1
 
-         print("SEG DIST/Angle:", seg_dist, angle, dist_from_first)
       pc = pc + 1
    app = ap / len(points)
    if app < .5:

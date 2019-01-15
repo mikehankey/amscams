@@ -13,6 +13,133 @@ json_str = json_file.read()
 json_conf = json.loads(json_str)
 proc_dir = json_conf['site']['proc_dir']
 
+from caliblib import find_non_cloudy_times, summarize_weather
+#   weather = find_non_cloudy_times(cal_date, cam_num)
+
+
+def obj_box(hist,img_w,img_h):
+   sizes= []
+   points= []
+   for fn,x,y,w,h,mx,my in hist:
+      size  = w * h
+      sizes.append(size)
+      point = x+mx,y+my
+      points.append(point)
+
+   max_x = max(map(lambda x: x[0], points))
+   max_y = max(map(lambda x: x[1], points))
+   min_x = min(map(lambda x: x[0], points))
+   min_y = min(map(lambda x: x[1], points))
+
+   ow = max_x - min_x
+   oh = max_y - min_y
+   ow = ow + (ow * 1.2)
+   oh = oh + (oh * 1.2)
+   if oh > ow:
+      ow = oh
+   else:
+      oh = ow
+   cx = (min_x + max_x) / 2
+   cy = (min_y + max_y) / 2
+
+
+
+   min_x = int(cx - (ow / 2 ))
+   min_y = int(cy - (oh / 2 ))
+   max_x = int(cx + (ow /2))
+   max_y = int(cy + (oh /2))
+
+   if min_x < 0:
+      min_x = 0
+   if min_y < 0:
+      min_y = 0
+   return(min_x,min_y,max_x,max_y)
+
+def plot_object(objects, video_file):
+   el = video_file.split("/")
+   fn = el[-1]
+   base_dir = video_file.replace(fn, "")
+   stack_file = fn.replace(".mp4", "-stacked.png")
+   stack_file = base_dir + "/images/" + stack_file
+   obj_stack_file = stack_file.replace("-stacked.png", "-obj_stacked.png")
+   print("ST", stack_file)
+   image = cv2.imread(stack_file)
+   ih,iw,xx = image.shape
+   for object in objects:
+
+      if 'meteor_found' in object:
+         bmin_x,bmin_y,bmax_x,bmax_y = object['box']
+   
+         cv2.putText(image, "[" + str(object['oid']) + "] Meteor " ,  (int(bmin_x+8),int(bmin_y+15)), cv2.FONT_HERSHEY_SIMPLEX, .4, (0,0,255), 1)
+
+         for hist in object['history']:
+            fn,x,y,w,h,mx,my = hist
+            cox = x + mx
+            coy = y + my
+            cv2.circle(image, (int(cox),int(coy)), 1, (0,255,0), 1)
+
+         cv2.rectangle(image, (bmin_x, bmin_y), (bmax_x, bmax_y), (255,255,255), 2) 
+      else:
+         print("OBJECT", object['oid'])
+         bmin_x,bmin_y,bmax_x,bmax_y = obj_box(object['history'],iw,ih)
+         cv2.rectangle(image, (bmin_x, bmin_y), (bmax_x, bmax_y), (123,0,0), 2) 
+         #for hist in object['history']:
+         #   fn,x,y,w,h,mx,my = hist
+         #   cv2.rectangle(image, (x, y), (x+w, y+h), (255,100,100), 1) 
+                
+
+
+   #cv2.imshow('pepe', image)
+   #cv2.imwrite(obj_stack_file, image)
+   #cv2.waitKey(30)
+
+
+def save_meteor(meteor_video_file, object):
+   print("SAVE METEOR")
+   el =meteor_video_file.split("/") 
+   fn = el[-1]
+   base_dir = meteor_video_file.replace(fn, "")
+
+   dd = fn.split("_")
+   YY = dd[0]
+   MM = dd[1]
+   DD = dd[2]
+  
+   meteor_base_dir = "/mnt/ams2/SD/proc2/meteors/"
+   meteor_day_dir = "/mnt/ams2/SD/proc2/meteors/" + YY + "_" + MM + "_" + DD + "/"
+
+   if cfe(meteor_base_dir,1) == 0:
+      print("METEOR BASE DIR DOESNT EXIST:", meteor_base_dir)
+      os.system("mkdir " + meteor_base_dir)
+   if cfe(meteor_day_dir,1) == 0:
+      os.system("mkdir " + meteor_day_dir)
+
+   # for SD stuff
+   # copy trim video files (normal trim and meteor trim) 
+
+   sdv_wild = meteor_video_file.replace(".mp4", "*.mp4") 
+   img_wild = fn.replace(".mp4", "*.png") 
+   img_wild = base_dir + "/images/" + img_wild
+
+   cmd = "cp " + sdv_wild + " " + meteor_day_dir 
+   os.system(cmd)
+
+   cmd = "cp " + img_wild + " " + meteor_day_dir 
+   os.system(cmd)
+
+
+
+   # stack pic and stack-obj pics
+   # meteor data.txt files ( or object.json)
+   # for HD stuff
+   # HD TRIM clip
+   # HD TRIM CROP
+   # HD meteor.json reduction file
+
+
+   return(meteor_day_dir) 
+   
+
 
 
 def scan_trim_file(trim_file):
@@ -42,7 +169,7 @@ def scan_trim_file(trim_file):
          return()
       else:
          print ("SKIP! Already done.")
-         return()
+         #return()
 
    cmd = "rm " + data_wildcard
    print(cmd)
@@ -78,7 +205,9 @@ def scan_trim_file(trim_file):
       status, reason, obj_data = test_object2(object)
       #print("TRIM FILE TESTS:", trim_file)
       print("Object Test Result: ", object['oid'], status, reason)
+
       if status == 1:
+         print("OBJ MIKE: ", object)
          min_x,min_y,max_x,max_y = obj_data['min_max_xy']
          ow = max_x - min_x
          oh = max_y - min_y
@@ -100,7 +229,14 @@ def scan_trim_file(trim_file):
          cv2.putText(stacked_frame, str(oid),  (int(cx+5),int(cy+5)), cv2.FONT_HERSHEY_SIMPLEX, .4, (0,0,255), 1)
          cv2.circle(stacked_frame, (int(cx),int(cy)), 1, (255), 1)
          cv2.rectangle(stacked_frame, (bmin_x, bmin_y), (bmax_x, bmax_y), (255,255,255), 2) 
-         box = [bmin_x,bmin_y,bmax_x,bmax_y]
+         if bmin_x < 0:
+           bmin_x = 0
+         if bmin_y < 0:
+           bmin_y = 0
+         box = (bmin_x,bmin_y,bmax_x,bmax_y)
+         box_str = str(bmin_x) + "," + str(bmin_y) + "," + str(bmax_x) + "," + str(bmax_y) 
+         object['box'] = box
+         object['meteor_found'] = 1
          for hist in object['history']:
             fn,x,y,w,h,mx,my = hist
             cox = x + mx
@@ -112,26 +248,51 @@ def scan_trim_file(trim_file):
          start= hist[0][0] 
          end= hist[-1][0]
          elp_time = (end - start) / 25
-         if elp_time < 2:
-            elp_time = 2
+         if elp_time < 3:
+            elp_time = 3 
+         if 3 < elp_time < 4:
+            elp_time = 4
+         if 4 < elp_time < 5:
+            elp_time = 5
 
-         cmd = "./doHD.py " + meteor_video_file + " " + str(elp_time) + " " + str(box)
+         if start - 25 > 0: 
+            trim_adj = start - 25
+         else:
+            trim_adj = 0
+         # METEOR FOUND!
+
+         trim_meteor(trim_file, start, end)
+         cmd = "./stack-stack.py stack_vid " + meteor_video_file + " mv"
+         os.system(cmd)
+
+         meteor_day_dir = save_meteor(meteor_video_file, object)
+
+         cmd = "./doHD.py " + meteor_video_file + " " + str(elp_time) + " " + str(box_str) + " " + str(trim_adj) + " " + meteor_day_dir
          print("DOHD:", cmd)
          meteor_found = 1
-         #os.system(cmd)
+         os.system(cmd)
 
 
-   meteor_objects = merge_meteor_objects(meteor_objects) 
+   #meteor_objects = merge_meteor_objects(meteor_objects) 
    #cv2.imshow('pepe', stacked_frame)
-   #cv2.waitKey(100)
+   #cv2.waitKey(30)
 
    if meteor_found >= 1:
       print ("METEOR", meteor_file)
+      meteor_plot = plot_object(meteor_objects, meteor_video_file)
       mt = open(meteor_file, "w")
       mt.write(str(objects))
       mt.close()
+
+      #print("OBJ:", object)
+      #print("START: ", object['first']) 
+      #print("END: ", object['last']) 
+      #trim_meteor(trim_file, object['first'][0], object['last'][0])
+
    else:
       print ("NO METEOR", objfail_file)
+      
+      meteor_plot = plot_object(objects, trim_file)
       mt = open(objfail_file, "w")
       mt.write(str(objects))
       mt.close()
@@ -139,17 +300,17 @@ def scan_trim_file(trim_file):
 
 
 
+   return()
 
-   exit()
    stacked_image_np = np.asarray(trim_stack)
    found_objects, moving_objects = object_report(trim_file, frame_data)
 
    stacked_image = draw_obj_image(stacked_image_np, moving_objects,trim_file, stacked_image_np)
 
    if sys.argv[1] == 'sf':
-      cv2.namedWindow('pepe')
-      cv2.imshow('pepe', stacked_image)
-      cv2.waitKey(0)
+      #cv2.namedWindow('pepe')
+      #cv2.imshow('pepe', stacked_image)
+      #cv2.waitKey(30)
    passed,all_objects = test_objects(moving_objects, trim_file, stacked_image_np)
 
    meteor_found = 0
@@ -183,7 +344,7 @@ def scan_trim_file(trim_file):
          box = box.replace(" ", "")
          box = box.replace("[", "")
          box = box.replace("]", "")
-         cmd = "./doHD.py " + meteor_video_file + " " + str(elp_time) + " " + str(box)
+         cmd = "./doHD.py " + meteor_video_file + " " + str(elp_time) + " " + str(box_str)
          print("DOHD:", cmd)
          os.system(cmd)
          meteor_found = 1
@@ -193,7 +354,6 @@ def scan_trim_file(trim_file):
 
 
 
-   #complete_scan(trim_file, passed, found_objects)
 
 def merge_meteor_objects(meteor_objects):
    print(meteor_objects)
