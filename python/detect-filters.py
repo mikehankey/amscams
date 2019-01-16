@@ -16,6 +16,48 @@ proc_dir = json_conf['site']['proc_dir']
 from caliblib import find_non_cloudy_times, summarize_weather
 #   weather = find_non_cloudy_times(cal_date, cam_num)
 
+def direction(hist):
+   fx,fy = hist[0][1],hist[0][2]
+   lx,ly = hist[-1][1],hist[-1][2]
+   if fx < lx:
+     x_dir = 1
+     x_dir_txt = "right"
+   else:
+     x_dir = -1
+     x_dir_txt = "left"
+   if fy < ly:
+     y_dir = 1
+     y_dir_txt = "down"
+   else:
+     y_dir = -1
+     y_dir_txt = "up"
+   return(x_dir,y_dir,x_dir_txt,y_dir_txt)
+
+def calc_angle(pointA, pointB):
+  changeInX = pointB[0] - pointA[0]
+  changeInY = pointB[1] - pointA[1]
+  ang = math.degrees(math.atan2(changeInY,changeInX)) #remove degrees if you want your answer in radians
+  if ang < 0 :
+     ang = ang + 360
+  return(ang)
+
+def min_max_hist(hist):
+   points = []
+   sizes = []
+   for fn,x,y,w,h,mx,my in hist:
+      size  = w * h
+      sizes.append(size)
+      point = x+mx,y+my
+      points.append(point)
+
+   max_x = max(map(lambda x: x[0], points))
+   max_y = max(map(lambda x: x[1], points))
+   min_x = min(map(lambda x: x[0], points))
+   min_y = min(map(lambda x: x[1], points))
+   minmax_dist = calc_dist((min_x,min_y),(max_x,max_y))
+   minmax_ang = calc_angle((min_x,min_y),(max_x,max_y))
+   return(min_x, min_y, max_x, max_y, minmax_dist, minmax_ang)
+
 
 def obj_box(hist,img_w,img_h):
    sizes= []
@@ -122,9 +164,11 @@ def save_meteor(meteor_video_file, object):
    img_wild = base_dir + "/images/" + img_wild
 
    cmd = "cp " + sdv_wild + " " + meteor_day_dir 
+   print(cmd)
    os.system(cmd)
 
    cmd = "cp " + img_wild + " " + meteor_day_dir 
+   print(cmd)
    os.system(cmd)
 
 
@@ -186,7 +230,6 @@ def scan_trim_file(trim_file):
 
 
    frames = load_video_frames(trim_file)
-   print("FRAMES: ", len(frames))
 
    height, width = frames[0].shape
 
@@ -349,10 +392,209 @@ def scan_trim_file(trim_file):
          os.system(cmd)
          meteor_found = 1
 
+def reduce_hd_crop(trim_file, hd_crop):
+
+   objects = []
+   bp_objects = []
+   print("REDUCE FILE:", trim_file, hd_crop)
+   frames = load_video_frames(hd_crop)
+   ih,iw = frames[0].shape 
+
+   image_acc = np.empty(np.shape(frames[0]))
+   crop_stack_file = hd_crop.replace(".mp4", "-stacked.png")
+
+   crop_stack = cv2.imread(crop_stack_file)
+
+   el = trim_file.split("/")
+   fn = el[-1]
+
+   nel = trim_file.split("-trim")
+   xxx = nel[-1]
+   yyy = xxx.split("-")
+   trim_num = int(yyy[0])
+   print("XXX:", xxx)
+   print("TRIM FILE:", trim_file)
+   print("TRIM NUM:", trim_num)
+
+   dd = fn.split("_")
+   YY = dd[0]
+   MM = dd[1]
+   DD = dd[2]
+   HH = dd[3]
+   MN = dd[4]
+   SS = dd[5]
+   EX = dd[6]
+
+   f_date_str = YY + "-" + MM + "-" + DD + " " + HH + ":" + MN + ":" + SS
+   f_datetime = datetime.datetime.strptime(f_date_str, "%Y-%m-%d %H:%M:%S")
+
+   extra_sec = int(trim_num) / 25
+   print("FDATE Time:", f_datetime)
+   print("Extra:", extra_sec)
+   start_frame_time = f_datetime + datetime.timedelta(0,extra_sec)
+
+   start_frame_num = trim_num
+
+   cv2.namedWindow('pepe')
+   frame_height, frame_width = frames[0].shape
+   fc = 0
+
+   last_frame = None
+   frame_data = []
+
+   med_frames = median_frames(frames)
+   masked_pixels = []
+   thresh = np.mean(med_frames) + 20
+   _, threshold = cv2.threshold(med_frames.copy(), thresh, 255, cv2.THRESH_BINARY)
+   thresh_obj = cv2.convertScaleAbs(threshold)
+   (_, cnts, xx) = cv2.findContours(thresh_obj.copy(), cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
+   for (i,c) in enumerate(cnts):
+      x,y,w,h = cv2.boundingRect(cnts[i])
+      cv2.rectangle(med_frames, (x, y), (x+w, y+h), (255,255,255), 1) 
+      x = int(x + (w/2))
+      y = int(y + (h/2))
+      masked_pixels.append((x,y))
+
+
+   #cv2.imshow("pepe", med_frames)
+   #cv2.waitKey(0)
+
+   thresh = np.mean(frames[0]) + 10
+   next_thresh = thresh + 20
+
+   for frame in frames:
+      frame = mask_frame(frame, masked_pixels)
+      extra_sec = (start_frame_num + fc) /  25
+      frame_time = f_datetime + datetime.timedelta(0,extra_sec)
+    
+
+      #BP Threshold      
+      frame = cv2.GaussianBlur(frame, (7, 7), 0)
+      _, threshold = cv2.threshold(frame.copy(), thresh, 255, cv2.THRESH_BINARY)
+      threshold = cv2.convertScaleAbs(threshold)
+      (_, bp_cnts, xx) = cv2.findContours(threshold.copy(), cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
+      #cv2.imshow('pepe', threshold) 
+      #cv2.waitKey(0)
+
+      alpha = .33
+      hello = cv2.accumulateWeighted(frame, image_acc, alpha)
+
+
+      # IMG DIFF THRESHOLD
+      image_diff = cv2.absdiff(image_acc.astype(frame.dtype), frame,)
+      _, threshold = cv2.threshold(image_diff.copy(), next_thresh, 255, cv2.THRESH_BINARY)
+      thresh_obj = cv2.convertScaleAbs(threshold)
+      (_, cnts, xx) = cv2.findContours(thresh_obj.copy(), cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
+
+      if len(bp_cnts) >  0:
+         for (i,c) in enumerate(bp_cnts):
+            x,y,w,h = cv2.boundingRect(bp_cnts[i])
+            y2 = y + h
+            x2 = x + w
+            mx = int(x + (w/2))
+            my = int(y + (w/2))
+            cnt_img = frame[y:y2,x:x2]
+            max_px, avg_px, px_diff,max_loc = eval_cnt(cnt_img)
+            bp_object, bp_objects = id_object(bp_cnts[i], bp_objects,fc, (mx,my), 1)
+            #cv2.circle(thresh_obj, (int(mx),int(my)), 1, (0,0,0), 1)
 
 
 
 
+      if len(cnts) >  0:
+         for (i,c) in enumerate(cnts):
+            x,y,w,h = cv2.boundingRect(cnts[i])
+            y2 = y + h
+            x2 = x + w
+            mx = int(x + (w/2))
+            my = int(y + (w/2))
+            cnt_img = frame[y:y2,x:x2]
+            max_px, avg_px, px_diff,max_loc = eval_cnt(cnt_img)
+            object, objects = id_object(cnts[i], objects,fc, (mx,my), 1)
+
+            cv2.putText(thresh_obj, str(object['oid']), (x,y), cv2.FONT_HERSHEY_SIMPLEX, .4, (255,255,255), 1)
+            cv2.rectangle(thresh_obj, (x, y), (x2, y2), (255,255,255), 1) 
+            cv2.circle(thresh_obj, (int(mx),int(my)), 1, (0,0,0), 1)
+#cv2.line(image, (x1,y1), (x2,y2), (255), 1)
+
+
+      frame_time_str = frame_time.strftime('%Y-%m-%d %H:%M:%S.%f')[:-3]
+      cv2.putText(thresh_obj, str(fc), (5,ih-5), cv2.FONT_HERSHEY_SIMPLEX, .4, (255,255,255), 1)
+
+      cv2.putText(thresh_obj, str(frame_time_str), (25,ih-5), cv2.FONT_HERSHEY_SIMPLEX, .4, (255,255,255), 1)
+      cv2.imshow('pepe', thresh_obj)
+      cv2.waitKey(40)
+      fc = fc + 1
+      last_frame = frame
+
+   meteor_objects = []
+   for object in objects:
+      min_x,min_y,max_x,max_y,minmax_dist,minmax_ang = min_max_hist(object['history'])
+      oid = object['oid']
+      if minmax_dist > 10:
+         meteor_objects.append(object)
+
+   if len(meteor_objects) == 1:
+      object = meteor_objects[0]
+
+      print(object)
+      x_dir,y_dir,x_dir_txt,y_dir_txt = direction(object['history'])
+      print(x_dir,y_dir,x_dir_txt,y_dir_txt)
+
+      print("CROP STACK FILE:", crop_stack_file)
+  
+ 
+      for hs in object['history']:
+         fn,x,y,w,h,mx,my = hs
+         cx,cy = moving_cnt(hs,x_dir,y_dir)
+         cv2.rectangle(crop_stack, (x, y), (x+w, y+w), (255,255,255), 1) 
+         cv2.circle(crop_stack, (int(cx),int(cy)), 1, (255,0,0), 1)
+
+      cv2.putText(crop_stack, "METEOR!", (10,10), cv2.FONT_HERSHEY_SIMPLEX, .4, (255,0,255), 1)
+
+
+
+
+   else:
+      cv2.putText(crop_stack, "FAILED.", (10,10), cv2.FONT_HERSHEY_SIMPLEX, .4, (0,0,255), 1)
+      print("Meteor failed cropping test. :(", len(meteor_objects))
+      print(meteor_objects)
+
+   print("BP OBJ", len(bp_objects))
+   #for object in bp_objects:
+   #   for hs in object['history']:
+   #      fn,x,y,w,h,mx,my = hs
+   #      cv2.circle(crop_stack, (int(x),int(y)), 5, (255,255,0), 1)
+
+   for object in objects:
+      for hs in object['history']:
+         fn,x,y,w,h,mx,my = hs
+         cv2.circle(crop_stack, (int(x),int(y)), 10, (255,255,0), 1)
+         cv2.putText(crop_stack, str(object['oid']), (x,y), cv2.FONT_HERSHEY_SIMPLEX, .4, (255,255,255), 1)
+
+   cv2.imshow('pepe', crop_stack)
+   cv2.waitKey(0)
+
+def moving_cnt(hs,x_dir,y_dir):
+   print("HIST:", hs)
+   fn,x,y,w,h,mx,my = hs
+   print("DIR", x_dir,y_dir)
+   if x_dir == 1 and y_dir == 1:
+      x = x 
+      y = y 
+   if x_dir == -1 and y_dir == 1:
+      x = x + w
+      y = y 
+   if x_dir == 1 and y_dir == -1:
+      x = x 
+      y = y 
+   if x_dir == -1 and y_dir == -1:
+      x = x + w
+      y = y + h
+
+
+
+   return(x,y)
 
 
 def merge_meteor_objects(meteor_objects):
@@ -366,6 +608,11 @@ def scan_dir(dir):
         scan_trim_file(file) 
 
 cmd = sys.argv[1]
+if cmd == 'reduce' or cmd == 'reduce_hd_crop':
+   trim_file = sys.argv[2]
+   hd_crop_file = sys.argv[3]
+   reduce_hd_crop(trim_file, hd_crop_file)
+
 if cmd == 'sf':
    trim_file = sys.argv[2]
    trim_file = trim_file.replace("-meteor.mp4", ".mp4")

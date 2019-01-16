@@ -137,10 +137,41 @@ def load_video_frames(trim_file, limit=0):
    return(frames)
 
 def mask_frame(frame, mp, size=3):
+   ih,iw = frame.shape
    px_val = np.mean(frame)
-   
+   px_val = 0 
    for x,y in mp:
-      frame[y-size:y+size,x-size:x+size] = px_val
+
+      if int(y + size) > ih:
+         print("MAX X HIT")
+         y2 = int(ih - 1)
+      else:
+         y2 = int(y + size)
+      if int(x + size) > iw:
+         print("MAX X HIT")
+         x2 = int(iw - 1)
+      else:
+         x2 = int(x + size)
+
+      if y - size < 0:
+         print("MIN Y HIT")
+         y1 = 0
+      else:
+         y1 = int(y - size)
+      if int(x - size) < 0:
+         print("MIN X HIT")
+         x1 = 0
+      else:
+         x1 = int(x - size)
+
+      x1 = int(x1)
+      x2 = int(x2)
+      y1 = int(y1)
+      y2 = int(y2)
+
+      frame[y1:y2,x1:x2] = px_val
+      #frame[y-3:y+3,x-3:x+3] = px_val
+
    return(frame)
 
 def median_frames(frames):
@@ -281,7 +312,7 @@ def save_object(object,objects):
 def find_in_hist(object,x,y,object_hist, hd = 0):
    found = 0
    if hd == 1:
-      md = 50
+      md = 40
    else:
       md = 20
    for fc,ox,oy,w,h,mx,my in object_hist:
@@ -297,7 +328,7 @@ def center_point(x,y,w,h):
    cy = y + (h/2)
    return(cx,cy)
 
-def id_object(cnt, objects, fc,max_loc):
+def id_object(cnt, objects, fc,max_loc, is_hd=0):
    mx,my= max_loc
    mx = mx - 1
    my = my - 1
@@ -312,13 +343,9 @@ def id_object(cnt, objects, fc,max_loc):
 
    
    # Find object or make new one
-   is_hd = 0
    obj_found = 0
    matches = []
   
-   #print("TOTAL OBJECTS: ", len(objects))
-   #for obj in objects:
-   #   print(obj)
  
    for obj in objects:
       oid = obj['oid']
@@ -460,8 +487,8 @@ def check_for_motion2(frames, video_file):
                #    print("FAILED PIX DIFF! ", fc, x,y,w,h) 
   
 
-         #cv2.imshow('pepe', nice_frame) 
-         #cv2.waitKey(1)
+         cv2.imshow('pepe', nice_frame) 
+         cv2.waitKey(40)
       fc = fc + 1
    return(objects)
 

@@ -261,6 +261,7 @@ def crop_hd(hd_file,box_str):
    cmd = "/usr/bin/ffmpeg -y -i " + hd_file + " -filter:v \"" + crop + "\" " + crop_out_file
    print(cmd)
    os.system(cmd)
+   return(crop_out_file)
 
 meteor_file = sys.argv[1]
 dur_sec = sys.argv[2]
@@ -314,9 +315,29 @@ crop_hd(hd_trim, box)
 
 hd_trim_crop = hd_trim.replace(".mp4", "-crop.mp4")
 
+
+el = hd_trim_crop.split("/")
+hdtc = meteor_day_dir + el[-1]
+
+el = hd_trim.split("/")
+hdt = meteor_day_dir + el[-1]
+
 cmd = "mv " + hd_trim + " " + meteor_day_dir
 os.system(cmd)
 cmd = "mv " + hd_trim_crop + " " + meteor_day_dir
+os.system(cmd)
+
+cmd = "./stack-stack.py stack_vid " + hdtc 
+os.system(cmd)
+
+cmd = "./stack-stack.py stack_vid " + hdt
+os.system(cmd)
+
+print("REDUCE")
+trim_crop_file = el[-1]
+trim_crop_file = trim_crop_file.replace(".mp4", "-crop.mp4")
+cmd = "./detect-filters.py reduce_hd_crop " + meteor_file + " " + meteor_day_dir + trim_crop_file
+print(cmd)
 os.system(cmd)
 
 exit()

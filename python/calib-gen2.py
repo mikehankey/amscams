@@ -422,9 +422,6 @@ def draw_stars_on_img(image_np, json_data, color="white", track_type="box")  :
 
    
 
-def calc_angle(pointA, pointB):
-  changeInX = pointB[0] - pointA[0]
-  changeInY = pointB[1] - pointA[1]
 
    
 

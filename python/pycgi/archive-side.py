@@ -13,7 +13,7 @@ import cgitb
 import os
 video_dir = "/mnt/ams2/SD/"
 from pathlib import Path
-
+import json
 
 json_file = open('../../conf/as6.json')
 json_str = json_file.read()
@@ -25,6 +25,26 @@ cgitb.enable()
 print ("Content-type: text/html\n\n")
 print (" <style> .active { background: #ff0000; } .inactive { background: #ffffff; } body { background-color: #000000; color: #ffffff } </style>")
 
+
+def cfe(file,dir = 0):
+   if dir == 0:
+      file_exists = Path(file)
+      if file_exists.is_file() is True:
+         return(1)
+      else:
+         return(0)
+   if dir == 1:
+      file_exists = Path(file)
+      if file_exists.is_dir() is True:
+         return(1)
+      else:
+         return(0)
+
+
+def load_json_file(json_file):
+   with open(json_file, 'r') as infile:
+      json_data = json.load(infile)
+   return(json_data)
 
 
 def object_report (moving_objects, type):
@@ -342,7 +362,97 @@ def get_bp_events(motion_file):
 
    return(events)
 
+def get_files(dir):
+   files = glob.glob(dir)
+   return(files) 
 
+
+def get_clip_info(video_file):
+   el =video_file.split("/")
+   fn = el[-1]
+   base_dir = video_file.replace(fn, "")
+
+   dd = fn.split("_")
+   YY = dd[0]
+   MM = dd[1]
+   DD = dd[2]
+   HH = dd[3]
+   MN = dd[4]
+   SS = dd[5]
+   MSS = dd[6]
+   CC = dd[7]
+   cam_num,ext = CC.split(".")
+
+   meteor_base_dir = "/mnt/ams2/SD/proc2/meteors/"
+   meteor_day_dir = "/mnt/ams2/SD/proc2/meteors/" + YY + "_" + MM + "_" + DD + "/"
+ 
+   this_proc_dir = proc_dir + YY + "_" + MM + "_" + DD + "/"
+   this_image_dir = proc_dir + YY + "_" + MM + "_" + DD + "/images/"
+   this_data_dir = proc_dir + YY + "_" + MM + "_" + DD + "/data/"
+
+   if "trim" in video_file:
+      trim_file = video_file 
+      trim_file = trim_file.replace("-meteor", "") 
+
+   trim_files = get_files(this_proc_dir + YY + "_" + MM + "_" + DD + "_" + HH + "_" + MN + "*" + cam_num + "*" )
+   saved_meteor_files = get_files(meteor_day_dir + YY + "_" + MM + "_" + DD + "_" + HH + "_" + MN + "*" + cam_num + "*" )
+   stacked_files = get_files(meteor_day_dir + YY + "_" + MM + "_" + DD + "_" + HH + "_" + MN + "*" + cam_num + "*" )
+   data_files = get_files(this_data_dir + YY + "_" + MM + "_" + DD + "_" + HH + "_" + MN + "*" + cam_num + "*" )
+   image_files = get_files(this_image_dir + YY + "_" + MM + "_" + DD + "_" + HH + "_" + MN + "*" + cam_num + "*" )
+
+   return(trim_files, saved_meteor_files, stacked_files, data_files, image_files)
+
+def examine_new(video_file):
+   file_info = {}
+
+   (file_info['trim_files'], file_info['saved_meteor_files'], file_info['stacked_files'], file_info['data_files'], file_info['image_files']) = get_clip_info(video_file)
+
+   if len(file_info['saved_meteor_files']) > 0:
+      meteor_page(video_file, file_info)
+   else:
+      print("<h1 style=\"color: red\">METEOR NOT FOUND</h1>")
+
+
+def meteor_page(video_file, data_files):
+   meteor_stack_file = None
+   meteor_obj_stack_file = None
+   hd_video_trim_file  = None
+   hd_video_crop_file = None
+   sd_video_trim_file = None 
+   hd_crop_stack_file = None 
+   hd_stack_file = None 
+   
+   print("<h1 style=\"color:red\">Meteor FOUND</h1>")
+   for file in data_files['saved_meteor_files']:
+      if "meteor-stacked.png" in file:
+         meteor_stack_file = file
+      if "meteor-obj_stacked.png" in file:
+         meteor_obj_stack_file = file
+      if "HD-meteor-crop.mp4" in file:
+         hd_video_crop_file = file
+      if "HD-meteor-crop-stacked.png" in file:
+         hd_crop_stack_file = file
+      if "HD-meteor-stacked.png" in file:
+         hd_stack_file = file
+      if "HD-meteor.mp4" in file:
+         hd_video_trim_file = file
+      if "meteor.mp4" in file and "HD" not in file:
+         sd_video_trim_file = file
+      #print(file)
+   print("<BR>")
+   print ("<div><a href=" + sd_video_trim_file + " onmouseover=\"document.img_meteor.src='" + meteor_obj_stack_file + "'\" onmouseout=\"document.img_meteor.src='" + meteor_stack_file + "'\"><img name='img_meteor' src=" + meteor_stack_file+ "></a></div>")
+   print("<B>VIDEO FILES:</B> ")
+   print("<a href=" + hd_video_crop_file + ">HD CROP</a> -")
+   print("<a href=" + hd_video_trim_file + ">HD TRIM</a> - ")
+   print("<a href=" + sd_video_trim_file + ">SD TRIM</a><BR>")
+   print("<B>IMAGE FILES:</B> ")
+   print("<a href=" + meteor_stack_file + ">SD STACK</a> -")
+   print("<a href=" + meteor_obj_stack_file + ">SD OBJECT STACK</a> -")
+   if hd_crop_stack_file is not None:
+      print("<a href=" + hd_crop_stack_file + ">HD CROP STACK</a> -")
+   if hd_stack_file is not None:
+      print("<a href=" + hd_stack_file  + ">HD STACK</a> -")
+   #print("<a href=" + "" + ">HD OBJECT STACK</a> -")
 
 def examine_video_clip(video_file):
    print ("<script src=\"/pycgi/show-hide-div.js\"></script>")
@@ -695,6 +805,7 @@ def load_scan_file(day, cam_num):
    
    return(img_dict, od)
 
+
 def make_main_page():
    days = get_days()
    #print(days)
@@ -725,17 +836,24 @@ def get_stats(day):
    #print("TOTAL NON-METEOR DETECTIONS:", total_non_meteors, "<BR>")
 
    return(stats)
-       
+     
+  
 
 def make_archive_links():
 
    days = get_days()
+
+   json_file = proc_dir + "json/" + "main-index.json"
+   stats_data = load_json_file(json_file)
+
    d = 0
    html = ""
    for day in days:
 
       html = html + "<h2>" + day + "</h2> "
-      total_detects, total_meteors, total_non_meteors = get_stats(day)
+      total_detects = stats_data[day]['total_detects']
+      total_meteors = stats_data[day]['total_meteors']
+      total_non_meteors = stats_data[day]['total_non_meteors']
       html = html + "Total Bright Pixel Detections: " + str(total_detects) + "<BR>"
       html = html + "<a href=archive-side.py?cmd=browse_detect&type=meteor&day=" + day + ">Total METEOR Detections: " + str(total_meteors) + "</a><BR>"
       html = html + "<a href=archive-side.py?cmd=browse_detect&type=objfail&day=" + day + ">Total NON-METEOR Detections: " + str(total_non_meteors) + "</a><BR>"
@@ -1139,7 +1257,8 @@ def main():
       reject_detect()  
    if cmd == "examine":
       video_file = form.getvalue('video_file')
-      examine_video_clip(video_file)  
+      #examine_video_clip(video_file)  
+      examine_new(video_file)  
 
 def parse_tags(tag_file, file_dict):
    fp = open(tag_file, "r");
