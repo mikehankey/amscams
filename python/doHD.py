@@ -439,8 +439,8 @@ max_y = int(max_y)
 cv2.rectangle(hd_stack_img, (min_x, min_y), (max_x,max_y), (255, 0, 0), 2)
 #cv2.rectangle(hd_frames[0], (10, 10), (20, 20), (255, 0, 0), 2)
 
-cv2.imshow('pepe', hd_stack_img)
-cv2.waitKey(10)
+#cv2.imshow('pepe', hd_stack_img)
+#cv2.waitKey(10)
 
 
 exit()

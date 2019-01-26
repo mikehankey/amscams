@@ -127,8 +127,8 @@ def optics(cal_date, cam_num):
    lcx, lcy = find_optical_center(lines)
    cv2.circle(image, (int(lcx),int(lcy)), 10, (255), 1)
    print("LENS CENTER X,Y:", lcx,lcy, (img_w/2) - lcx, (img_h/2) - lcy)
-   cv2.imshow('pepe', image)
-   cv2.waitKey(0)
+   #cv2.imshow('pepe', image)
+   #cv2.waitKey(0)
       
 
 def find_optical_center(lines):
@@ -184,8 +184,8 @@ def play_night(cal_date, cam_num, reverse = False):
    for tfile, tdate in sorted(tracker, key=lambda x: x[1], reverse=reverse):
       img_file = tfile 
       img = cv2.imread(img_file, 0)
-      cv2.imshow('pepe', img)
-      cv2.waitKey(10)
+      #cv2.imshow('pepe', img)
+      #cv2.waitKey(10)
 
 
 
@@ -271,8 +271,8 @@ def night_tracker(cal_date, cam_num, reverse=False):
          first_image_np = draw_stars_on_img(master_image, json_data, "white")  
          image_np = first_image_np
          #cv2.putText(first_image_np, "FIRST IMAGE",  (100,100), cv2.FONT_HERSHEY_SIMPLEX, .4, (255,255,255), 1)
-         cv2.imshow('pepe', master_image)
-         cv2.waitKey(40)
+         #cv2.imshow('pepe', master_image)
+         #cv2.waitKey(40)
       elif "solved" in tfile :
          print ("************************ NEW SOLVE FILE! *****************************8")
          json_file = tfile.replace(".jpg", "-mapped-stars.json")
@@ -326,11 +326,11 @@ def night_tracker(cal_date, cam_num, reverse=False):
 
 
          #cv2.putText(first_image_np, "NEXT IMAGE",  (150,150), cv2.FONT_HERSHEY_SIMPLEX, .4, (255,255,255), 1)
-         if lc % 2 == 0:
-            cv2.imshow('pepe', image_np)
-         else:
-            cv2.imshow('pepe', master_image)
-         cv2.waitKey(40)
+         #if lc % 2 == 0:
+         #   cv2.imshow('pepe', image_np)
+         #else:
+         #   cv2.imshow('pepe', master_image)
+         #cv2.waitKey(40)
 
       last_tfile = tfile 
       last_tdate = tdate
@@ -647,8 +647,8 @@ def draw_star_image(med_stack, star_px, astr_stars, grid_image, star_data_file,c
       draw.text((sx-10, sy-20), str(common_name + "(" + str(star_name) + ")"), font = font, fill=(255,255,255))
       draw.text((sx-10, sy-30), azel , font = font, fill=(255,255,255))
       mapped_stars.append((star_name, common_name, ra, dec, mag, sx, sy, mx, my,az,el)) 
-   cv2.imshow('pepe', np.asarray(med_stack_pil))
-   cv2.waitKey(10)
+   #cv2.imshow('pepe', np.asarray(med_stack_pil))
+   #cv2.waitKey(10)
 
    for good_star in mag4_stars:
       star_name, common_name, ra, dec, mag, sx, sy, mx, my = good_star
@@ -664,15 +664,15 @@ def draw_star_image(med_stack, star_px, astr_stars, grid_image, star_data_file,c
       draw.text((sx-10, sy-20), str(common_name + "(" + str(star_name) + ")"), font = font, fill=(255,255,255))
       draw.text((sx-10, sy-30), azel , font = font, fill=(255,255,255))
       mapped_stars.append((star_name, common_name, ra, dec, mag, sx, sy, mx, my,az,el))
-   cv2.imshow('pepe', np.asarray(med_stack_pil))
-   cv2.waitKey(10)
+   #cv2.imshow('pepe', np.asarray(med_stack_pil))
+   #cv2.waitKey(10)
 
 
    save_json_file(mapped_star_file, mapped_stars)
    print(mapped_star_file)
    show_img = np.asarray(med_stack_pil)
-   cv2.imshow('pepe', show_img)
-   cv2.waitKey(10)
+   #cv2.imshow('pepe', show_img)
+   #cv2.waitKey(10)
    
    alpha = Image.blend(med_stack_pil, grid_image, .4)
    return(np.asarray(alpha))
@@ -1310,7 +1310,7 @@ for one night
 
    
 
-cv2.namedWindow('pepe')
+#cv2.namedWindow('pepe')
 cmd = sys.argv[1]
 
 if cmd == "help":

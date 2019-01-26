@@ -507,6 +507,7 @@ def check_for_motion2(frames, video_file):
    thresh = 25
    fc = 0
    for frame in frames:
+      print(fc)
       nice_frame = frame.copy()
       if len(frame.shape) == 3:
          frame = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
@@ -524,11 +525,13 @@ def check_for_motion2(frames, video_file):
       thresh_obj = cv2.dilate(threshold.copy(), None , iterations=4)
       (_, cnts, xx) = cv2.findContours(thresh_obj.copy(), cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
 
-      while len(cnts) >= 50 and thresh <= 150:
+      while len(cnts) >= 50 :
          print("LEN:", len(cnts), thresh)
          (_, cnts, xx) = cv2.findContours(thresh_obj.copy(), cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
          thresh = thresh + 5
          _, threshold = cv2.threshold(image_diff.copy(), thresh, 255, cv2.THRESH_BINARY)
+         if thresh > 150:
+            break
 
       #print("FRAME: ", fc, "Contours:", len(cnts))
       if len(cnts) < 50:
@@ -1634,12 +1637,12 @@ def meteor_test_fit_line(object):
    print("LINE FIT good", good)
    print("METEOR TEST: LINE FIT %", match_perc)
 
-   import matplotlib.pyplot as plt
-   from matplotlib import style
-   style.use('ggplot')
+   #import matplotlib.pyplot as plt
+   #from matplotlib import style
+   #style.use('ggplot')
 
-   plt.scatter(xs,ys,color='#003F72')
-   plt.plot(xs, regression_line)
+   #plt.scatter(xs,ys,color='#003F72')
+   #plt.plot(xs, regression_line)
    #plt.show()
 
    return(match_perc)

@@ -381,7 +381,6 @@ def get_clip_info(video_file):
    fn = el[-1]
    base_dir = video_file.replace(fn, "")
    json_file = fn.replace(".mp4",".json")
-
    dd = fn.split("_")
    YY = dd[0]
    MM = dd[1]
@@ -402,6 +401,7 @@ def get_clip_info(video_file):
    this_image_dir = proc_dir + YY + "_" + MM + "_" + DD + "/images/"
    this_data_dir = proc_dir + YY + "_" + MM + "_" + DD + "/data/"
 
+
    if "trim" in video_file:
       trim_file = video_file 
       trim_file = trim_file.replace("-meteor", "") 
@@ -416,11 +416,19 @@ def get_clip_info(video_file):
    #return(trim_files, saved_meteor_files, stacked_files, data_files, image_files)
 
 def examine_new(video_file):
-
    file_info = {}
+
    meteor_day_dir,meteor_json_file = get_clip_info(video_file)
-   meteor_json = load_json_file(meteor_json_file)
-   plate_crop_solve = meteor_json['plate_crop_solve']
+   if cfe(meteor_json_file) == 1:
+      meteor_json = load_json_file(meteor_json_file)
+   else:
+      print("No meteor json file.", meteor_json_file)
+      exit()
+   if 'plate_crop_solve' in meteor_json:
+      plate_crop_solve = meteor_json['plate_crop_solve']
+   else:
+      plate_crop_solve = 0
+
    if plate_crop_solve == 0:
       print("<h1>METEOR NOT SOLVED YET</h1>")
    print(meteor_json_file)
