@@ -23,6 +23,89 @@ json_str = json_file.read()
 json_conf = json.loads(json_str)
 proc_dir = json_conf['site']['proc_dir']
 
+
+def adjustLevels(img_array, minv, gamma, maxv, nbits=None):
+    """ Adjusts levels on image with given parameters.
+    Arguments:
+        img_array: [ndarray] Input image array.
+        minv: [int] Minimum level.
+        gamma: [float] gamma value
+        Mmaxv: [int] maximum level.
+    Keyword arguments:
+        nbits: [int] Image bit depth.
+    Return:
+        [ndarray] Image with adjusted levels.
+    """
+
+    if nbits is None:
+
+        # Get the bit depth from the image type
+        nbits = 8*img_array.itemsize
+
+
+    input_type = img_array.dtype
+
+    # Calculate maximum image level
+    max_lvl = 2**nbits - 1.0
+
+    # Limit the maximum level
+    if maxv > max_lvl:
+        maxv = max_lvl
+
+    # Check that the image adjustment values are in fact given
+    if (minv is None) or (gamma is None) or (maxv is None):
+        return img_array
+
+    minv = minv/max_lvl
+    maxv = maxv/max_lvl
+    interval = maxv - minv
+    invgamma = 1.0/gamma
+
+    # Make sure the interval is at least 10 levels of difference
+    if interval*max_lvl < 10:
+
+        minv *= 0.9
+        maxv *= 1.1
+
+        interval = maxv - minv
+
+
+
+    # Make sure the minimum and maximum levels are in the correct range
+    if minv < 0:
+        minv = 0
+
+    if maxv*max_lvl > max_lvl:
+        maxv = 1.0
+
+
+    img_array = img_array.astype(np.float64)
+
+    # Reduce array to 0-1 values
+    img_array = np.divide(img_array, max_lvl)
+
+    # Calculate new levels
+    img_array = np.divide((img_array - minv), interval)
+
+    # Cut values lower than 0
+    img_array[img_array < 0] = 0
+
+    img_array = np.power(img_array, invgamma)
+
+    img_array = np.multiply(img_array, max_lvl)
+
+    # Convert back to 0-maxval values
+    img_array = np.clip(img_array, 0, max_lvl)
+
+
+    # Convert the image back to input type
+    img_array.astype(input_type)
+
+
+    return img_array
+
+
+
 def magic_contrast(image):
    cv2.imwrite("/mnt/ams2/cal/tmp/temp.png", image)
    os.system("convert /mnt/ams2/cal/tmp/temp.png -sigmoidal-contrast 8 /mnt/ams2/cal/tmp/temp2.png")
@@ -448,7 +531,7 @@ def id_object(cnt, objects, fc,max_loc, is_hd=0):
       object = matches[0]
       object_hist = object['history']
       this_hist = [fc,x,y,w,h,mx,my]
-      if len(object_hist) <= 150:
+      if len(object_hist) <= 500:
          object_hist.append(this_hist)
       object['history'] = object_hist
       objects = save_object(object,objects)
@@ -490,10 +573,11 @@ def id_object(cnt, objects, fc,max_loc, is_hd=0):
     
 
 
-def check_for_motion2(frames, video_file):
+def check_for_motion2(frames, video_file, show = 0):
 
    objects = []
-   #cv2.namedWindow('pepe')
+   if show == 1:
+      cv2.namedWindow('pepe')
    med_stack_all = median_frames(frames[0:25])
    masked_pixels, marked_med_stack = find_bright_pixels(med_stack_all)
    frame_height, frame_width = frames[0].shape
@@ -507,7 +591,10 @@ def check_for_motion2(frames, video_file):
    thresh = 25
    fc = 0
    for frame in frames:
-      print(fc)
+      frame = adjustLevels(frame, 10,1,255)
+      frame = cv2.convertScaleAbs(frame)
+
+      #print(fc)
       nice_frame = frame.copy()
       if len(frame.shape) == 3:
          frame = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
@@ -525,13 +612,13 @@ def check_for_motion2(frames, video_file):
       thresh_obj = cv2.dilate(threshold.copy(), None , iterations=4)
       (_, cnts, xx) = cv2.findContours(thresh_obj.copy(), cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
 
-      while len(cnts) >= 50 :
-         print("LEN:", len(cnts), thresh)
-         (_, cnts, xx) = cv2.findContours(thresh_obj.copy(), cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
-         thresh = thresh + 5
-         _, threshold = cv2.threshold(image_diff.copy(), thresh, 255, cv2.THRESH_BINARY)
-         if thresh > 150:
-            break
+      #while len(cnts) >= 50 :
+      #   print("LEN:", len(cnts), thresh)
+      #   (_, cnts, xx) = cv2.findContours(thresh_obj.copy(), cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
+      #   thresh = thresh + 5
+      #   _, threshold = cv2.threshold(image_diff.copy(), thresh, 255, cv2.THRESH_BINARY)
+      #   if thresh > 150:
+      #      break
 
       #print("FRAME: ", fc, "Contours:", len(cnts))
       if len(cnts) < 50:
@@ -566,9 +653,9 @@ def check_for_motion2(frames, video_file):
                #else:
                #    print("FAILED PIX DIFF! ", fc, x,y,w,h) 
   
-
-         #cv2.imshow('pepe', nice_frame) 
-         #cv2.waitKey(40)
+         if show == 1:
+            cv2.imshow('pepe', nice_frame) 
+            cv2.waitKey(40)
       fc = fc + 1
    return(objects)
 
@@ -1414,8 +1501,8 @@ def hist_cm_events(hist):
    if len(event) > 1:
       events.append(event)
 
-   for ev in events:
-      print("EV:", ev)
+   #for ev in events:
+   #   print("EV:", ev)
 
    return(events, max_cm)   
 
@@ -1475,7 +1562,7 @@ def straight_hist(hist):
       point = x+mx,y+my
       points.append(point)
   
-   print ("POINTS:", points)
+   #print ("POINTS:", points)
 
 
 
@@ -1503,7 +1590,7 @@ def straight_hist(hist):
    else:
       peaks_per_px = 0
    
-   #print("SCI:", sci_peaks)
+   print("SCI:", sci_peaks)
    print("PEAKS:", peaks)
    print("HIST LEN :", len(hist))
    print("PEAKS PER FRAME:", peaks_per_frame)
@@ -1520,7 +1607,7 @@ def straight_hist(hist):
    return(1, "Passed straight hist tests.")
 
 def meteor_three_point_test(object):
-   print("Designed for short objects of 3 points or less.")
+   #print("Designed for short objects of 3 points or less.")
    print("Confirm all 3 points fall on .")
 
 def best_fit_slope_and_intercept(xs,ys):
@@ -1548,7 +1635,7 @@ def meteor_test_noise(hist):
    if len(objs_per_frame) > 0:
       perc = total_obf / len(objs_per_frame)
    
-   print("NOISETEST:" + str(perc), objs_per_frame)
+   #print("NOISETEST:" + str(perc), objs_per_frame)
    if perc > 2.5 and len(hist) > 7:
 
       return(0, "NOISE TEST FAILED:" + str(perc))
@@ -1615,7 +1702,7 @@ def meteor_test_fit_line(object):
       safe_dist = 5 
    if safe_dist > 10:
       safe_dist = 10 
-   print("SAFE DISTANCE: ", safe_dist) 
+   #print("SAFE DISTANCE: ", safe_dist) 
    regression_line = []
    for x in xs: 
       regression_line.append((m*x)+b)
@@ -1628,14 +1715,14 @@ def meteor_test_fit_line(object):
       cy = int(y+ (h/2))
       ry = regression_line[i]
       dist = calc_dist((cx,cy),(cx,ry))
-      print("REG:", dist)
+      #print("REG:", dist)
       if dist < safe_dist:
          good = good + 1
 
    match_perc = good / len(regression_line)
-   print("LINE FIT total", len(regression_line))
-   print("LINE FIT good", good)
-   print("METEOR TEST: LINE FIT %", match_perc)
+   #print("LINE FIT total", len(regression_line))
+   #print("LINE FIT good", good)
+   #print("METEOR TEST: LINE FIT %", match_perc)
 
    #import matplotlib.pyplot as plt
    #from matplotlib import style
@@ -1673,10 +1760,26 @@ def meteor_test_peaks(object):
       points.append(point)
  
 
-   sci_peaks = signal.find_peaks(sizes)
-   peaks = len(sci_peaks[0])
+   sci_peaks = signal.find_peaks(sizes,threshold=3)
+   total_peaks = len(sci_peaks[0])
+   total_frames = len(points) 
+   if total_frames > 0:
+      peak_to_frame = total_peaks / total_frames
+
    print("SCI:", sci_peaks)
+   print("PEAKS:", total_peaks)
+   print("FRAMES:", total_frames)
+   print("PEAK TO FRAME:", peak_to_frame)
+   if total_peaks > 30:
+      status = 0
+      reason = "PEAK TEST FAILED: too many peaks:" + str(total_peaks)
+   if peak_to_frame > .50:
+      status = 0
+      reason = "PEAK TEST FAILED: peaks/to frame is to high:" + str(peak_to_frame)
+   
    reason = reason + str(sci_peaks[0])
+
+
    return(status, reason)
 
 def meteor_test_distance(object):
@@ -1833,8 +1936,8 @@ def test_object2(object):
       return(0, "FAILED: px per frame is too low: " + str(px_per_frame), obj_data)
    
    cme,max_cm = hist_cm_events(hist)
-   print("CME LEN:", len(cme))
-   print("CME:", cme)
+   #print("CME LEN:", len(cme))
+   #print("CME:", cme)
 
    if len(cme) > 10:
       return(0, "FAILED: object has too many distinct CM Events: ", len(cme))
@@ -1858,8 +1961,8 @@ def test_object2(object):
          if cme_dist > 5 and tpt == 1:
             good_cmes.append(ev)
 
-   for gcme in good_cmes:
-      print("CME:", gcme)
+   #for gcme in good_cmes:
+   #   print("CME:", gcme)
 
    if len(good_cmes) == 0:
       return(0, "FAILED: No good CMEs longer than 5 px: " + str(px_per_frame), obj_data)
@@ -1868,7 +1971,7 @@ def test_object2(object):
    if hist_ok == 0:
       return(0, "FAILED: Straight Hist Tests: " + reason, obj_data)
 
-   print("CME LEN:", len(cme))
+   #print("CME LEN:", len(cme))
    if len(cme) > 0:
       good_bad_cme = len(good_cmes) / len(cme)
 

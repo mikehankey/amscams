@@ -8,7 +8,7 @@ import os
 import glob
 import datetime
 from detectlib import *
-from caliblib import save_json_file
+from caliblib import save_json_file, adjustLevels
 
 json_file = open('../conf/as6.json')
 json_str = json_file.read()
@@ -26,7 +26,7 @@ def ffmpeg_cat (file1, file2, outfile):
    fp.write("file '" + file1 + "'\n")
    fp.write("file '" + file2 + "'\n")
    fp.close()
-   cmd = "/usr/bin/ffmpeg -y -f concat -safe 0 -i " + cat_file + " -c copy " + outfile
+   cmd = "/usr/bin/ffmpeg -y -f concat -safe 0 -i " + cat_file + " -c copy " + outfile + " >/dev/null 2>&1"
    print(cmd)
    os.system(cmd)
 
@@ -75,23 +75,25 @@ def eof_processing(sd_file, trim_num, dur):
  
    ffmpeg_cat(hd_trim1, hd_trim2, new_hd_outfile)
    hd_trim = new_hd_outfile.replace(".mp4", "-trim0-HD-trim.mp4")
-   os.system("cp " + new_hd_outfile + " " + hd_trim)
+   cmd = "cp " + new_hd_outfile + " " + hd_trim
+   print(cmd)
+   os.system(cmd)
 
    return(new_hd_outfile, hd_trim)
 
 
 def find_hd_file_new(sd_file, trim_num, dur = 5):
    sd_datetime, sd_cam, sd_date, sd_h, sd_m, sd_s = convert_filename_to_date_cam(sd_file)
-   print("SD FILE: ", sd_file)
-   print("TRIM NUM: ", trim_num)
+   #print("SD FILE: ", sd_file)
+   #print("TRIM NUM: ", trim_num)
    if trim_num > 1400:
       print("END OF FILE PROCESSING NEEDED!")
       hd_file, hd_trim = eof_processing(sd_file, trim_num, dur)
       return(hd_file, hd_trim) 
    offset = int(trim_num) / 25
-   print("TRIM SEC OFFSET: ", offset)
+   #print("TRIM SEC OFFSET: ", offset)
    meteor_datetime = sd_datetime + datetime.timedelta(seconds=offset)
-   print("METEOR CLIP START DATETIME:", meteor_datetime) 
+   #print("METEOR CLIP START DATETIME:", meteor_datetime) 
    hd_glob = "/mnt/ams2/HD/" + sd_date + "_*" + sd_cam + "*"
    hd_files = sorted(glob.glob(hd_glob))
    for hd_file in hd_files:
@@ -101,13 +103,13 @@ def find_hd_file_new(sd_file, trim_num, dur = 5):
          time_diff = meteor_datetime - hd_datetime
          time_diff_sec = time_diff.total_seconds() 
          if 0 < time_diff_sec < 60:
-            print("TIME DIFF:", hd_file, meteor_datetime, hd_datetime, time_diff_sec)
+            #print("TIME DIFF:", hd_file, meteor_datetime, hd_datetime, time_diff_sec)
             time_diff_sec = time_diff_sec - 3
             dur = int(dur) + 1
             if time_diff_sec < 0:
                time_diff_sec = 0
             hd_trim = ffmpeg_trim(hd_file, str(time_diff_sec), str(dur), "-trim-" + str(trim_num) + "-HD-meteor")
-            print("HD TRIM:", hd_trim)
+            #print("HD TRIM:", hd_trim)
             return(hd_file, hd_trim)
       #else:
       #   print("LEN EL:", len(el), hd_file)
@@ -118,37 +120,37 @@ def find_hd_file(sd_file):
    el_f = el[-1]
    hd_datetime = ""
    meteor_dir = sd_file.replace(el_f, "")
-   print ("SD File", sd_file)
-   print ("SD Datetime ", sd_datetime)
-   print ("SD Cam", sd_cam)
+   #print ("SD File", sd_file)
+   #print ("SD Datetime ", sd_datetime)
+   #print ("SD Cam", sd_cam)
 
    hd_wild_card = hd_video_dir + sd_date + "_" + sd_h + "_" + sd_m + "*" + sd_cam + ".mp4"
-   print ("HD Wildcard: ", hd_wild_card)
+   #print ("HD Wildcard: ", hd_wild_card)
 
    hd_files = glob.glob(hd_wild_card) 
    for hd_file in (hd_files):
-      print("HD FILE", hd_file)
+      #print("HD FILE", hd_file)
       hd_datetime, hd_cam, hd_date, hd_h, hd_m, hd_s = convert_filename_to_date_cam(hd_file)
    if len(hd_files) == 0:
-      print("No HD file found.", hd_wild_card)
+      #print("No HD file found.", hd_wild_card)
       exit()
-   print("HD FILE?:", hd_file)
-   print("TIMEOFF?:", sd_datetime, hd_datetime)
+   #print("HD FILE?:", hd_file)
+   #print("TIMEOFF?:", sd_datetime, hd_datetime)
    time_offset = sd_datetime - hd_datetime
-   print ("Time offset: ", sd_datetime - hd_datetime)
+   #print ("Time offset: ", sd_datetime - hd_datetime)
    tos_ts = time_offset.total_seconds()
 
    # trim the hd file ss= time offset to end of file (60 - time offset) and put in temp1
    if int(tos_ts) >= 0:
       hd_file1 = ffmpeg_trim(hd_file, str(tos_ts), str(60 - int(tos_ts)), "-sd_linked.mp4")
    else:
-      print("TOS_TS = ", tos_ts)
+      #print("TOS_TS = ", tos_ts)
       exit()
 
    # then find the next hd_file (increment datetime + 1 minute, determine/find filename and then trim from beginning of file with duration of time offset into temp2
    next_hd_datetime = hd_datetime + datetime.timedelta(0,60)
    next_hd_wildcard = hd_video_dir + "/" + next_hd_datetime.strftime("%Y_%m_%d_%H_%M") + "*" + hd_cam + ".mp4"
-   print ("NEXT HD WILDCARD", next_hd_wildcard)
+   #print ("NEXT HD WILDCARD", next_hd_wildcard)
    # cat temp1 and temp2 to get the sd_mirrored HD file.
    next_hd_files =  glob.glob(next_hd_wildcard)
 
@@ -157,7 +159,7 @@ def find_hd_file(sd_file):
       exit()
 
    for next_hd_file in (glob.glob(next_hd_wildcard)):
-      print("NEXT HD FILE", hd_file)
+      #print("NEXT HD FILE", hd_file)
       next_hd_datetime, next_hd_cam, next_hd_date, next_hd_h, next_hd_m, next_hd_s = convert_filename_to_date_cam(next_hd_file)
 
    # trim the next HD file from the start to the original offset
@@ -176,7 +178,7 @@ def find_hd_file(sd_file):
 def ffmpeg_trim (filename, trim_start_sec, dur_sec, out_file_suffix):
 
    outfile = filename.replace(".mp4", out_file_suffix + ".mp4")
-   cmd = "/usr/bin/ffmpeg -y -i " + filename + " -y -ss 00:00:" + str(trim_start_sec) + " -t 00:00:" + str(dur_sec) + " -c copy " + outfile
+   cmd = "/usr/bin/ffmpeg -y -i " + filename + " -y -ss 00:00:" + str(trim_start_sec) + " -t 00:00:" + str(dur_sec) + " -c copy " + outfile+ " >/dev/null 2>&1"
    print (cmd)
    os.system(cmd)
    return(outfile)
@@ -265,7 +267,7 @@ def check_hd_motion(frames, trim_file):
             crop_out_file = trim_file.replace(".mp4", "-crop.mp4")
             scaled_out_file = trim_file.replace(".mp4", "-scaled.mp4")
             pip_out_file = trim_file.replace(".mp4", "-pip.mp4")
-            cmd = "ffmpeg -y -i " + trim_file + " -filter:v \"" + crop + "\" " + crop_out_file
+            cmd = "ffmpeg -y -i " + trim_file + " -filter:v \"" + crop + "\" " + crop_out_file+ " >/dev/null 2>&1" 
             print(cmd)
             os.system(cmd)
     
@@ -273,7 +275,7 @@ def check_hd_motion(frames, trim_file):
             print(cmd)
             os.system(cmd)
 
-            cmd = "/usr/bin/ffmpeg -y -i " + scaled_out_file + " -i " + crop_out_file + " -filter_complex \"[1]scale=iw/1:ih/1 [pip];[0][pip] overlay=main_w-overlay_w-10:main_h-overlay_h-10\" -profile:v main -level 3.1 -b:v 440k -ar 44100 -ab 128k -s 1920x1080 -vcodec h264 -acodec libfaac " + pip_out_file
+            cmd = "/usr/bin/ffmpeg -y -i " + scaled_out_file + " -i " + crop_out_file + " -filter_complex \"[1]scale=iw/1:ih/1 [pip];[0][pip] overlay=main_w-overlay_w-10:main_h-overlay_h-10\" -profile:v main -level 3.1 -b:v 440k -ar 44100 -ab 128k -s 1920x1080 -vcodec h264 -acodec libfaac " + pip_out_file + " >/dev/null 2>&1" 
             print(cmd)
             os.system(cmd)
 
@@ -303,7 +305,7 @@ def crop_hd(hd_file,box_str):
    crop = "crop=" + str(w) + ":" + str(h) + ":" + str(x) + ":" + str(y)
    print("CROP: ", crop)
    crop_out_file = hd_file.replace(".mp4", "-crop.mp4")
-   cmd = "/usr/bin/ffmpeg -y -i " + hd_file + " -filter:v \"" + crop + "\" " + crop_out_file
+   cmd = "/usr/bin/ffmpeg -y -i " + hd_file + " -filter:v \"" + crop + "\" " + crop_out_file + " >/dev/null 2>&1"
    print(cmd)
    os.system(cmd)
    return(crop_out_file)
@@ -341,16 +343,13 @@ if trim_start_sec < 0:
    trim_star_sec = 0
 
 
-print("METEOR FILE : ", meteor_file)
-print("BASE MIN FILE : ", min_file)
+#print("METEOR FILE : ", meteor_file)
+#print("BASE MIN FILE : ", min_file)
 hd_file,hd_trim = find_hd_file_new(min_file, int(num), dur_sec)
 
 el = hd_trim.split("/")
 hdt = meteor_day_dir + el[-1]
 
-cmd = "./stack-stack.py stack_vid " + hdt
-print(cmd)
-os.system(cmd)
 
 hd_trim_crop = hd_trim.replace(".mp4", "-crop.mp4")
 
@@ -359,16 +358,28 @@ hdtc = meteor_day_dir + el[-1]
 
 
 
-print("HD FILE : ", hd_trim)
-print("BOX: ", box)
+#print("HD FILE : ", hd_trim)
+#print("BOX: ", box)
+
+cmd = "./stack-stack.py stack_vid " + hd_trim
+print(cmd)
+os.system(cmd)
+
+hd_trim_stack = hd_trim.replace(".mp4", "-stacked.png")
+hdt_stack = hdt.replace(".mp4", "-stacked.png")
+cmd = "mv " + hd_trim_stack + " " + hdt_stack
+print(cmd)
+os.system(cmd)
+
 
 # make bigger box for plate solving...
 hd_stack = hdt.replace(".mp4", "-stacked.png")
 hd_stack_img = cv2.imread(hd_stack, 0)
-print(hd_stack)
+#print(hd_stack)
 
-print("IMAGES:", hd_stack)
+#print("IMAGES:", hd_stack)
 bigger_crop,plate_box = bigger_box(box, hd_stack, hd_stack_img)
+
 meteor_json = {}
 meteor_json_file =meteor_file.replace(".mp4", ".json")
 el = meteor_json_file.split("/")
@@ -383,7 +394,7 @@ meteor_json['bigger_box'] = plate_box
 
 
 
-print("JSON: ", meteor_json_file)
+#print("JSON: ", meteor_json_file)
 save_json_file(meteor_json_file, meteor_json)
 
 
@@ -393,9 +404,14 @@ crop_hd(hd_trim, plate_box)
 
 
 cmd = "mv " + hd_trim + " " + meteor_day_dir
+print(cmd)
 os.system(cmd)
+
+
 cmd = "mv " + hd_trim_crop + " " + meteor_day_dir
+print(cmd)
 os.system(cmd)
+
 
 el = hd_trim_crop.split("/")
 hdtc_fn = el[-1]
@@ -407,7 +423,7 @@ os.system(cmd)
 
 #hd_trim_crop = cv2.imread(hdtc)
 
-print("REDUCE")
+#print("REDUCE")
 trim_crop_file = el[-1]
 #trim_crop_file = trim_crop_file.replace(".mp4", "-crop.mp4")
 cmd = "./detect-filters.py reduce_hd_crop " + meteor_file + " " + meteor_day_dir + trim_crop_file
@@ -418,7 +434,7 @@ os.system(cmd)
 #print(hd_file, trim_start_sec, dur_sec, "-meteor")
 meteor_file_hd = hd_file.replace(".mp4", meteor_suffix + ".mp4")
 ffmpeg_trim (hd_file, trim_start_sec, dur_sec, meteor_suffix)
-print("METEOR HD:", meteor_file_hd)
+#print("METEOR HD:", meteor_file_hd)
 hd_frames = load_video_frames(meteor_file_hd)
 
 
@@ -426,7 +442,7 @@ hd_frames = load_video_frames(meteor_file_hd)
 
 
 
-print("NBOX: ", plate_box)
+#print("NBOX: ", plate_box)
 
 min_x,min_y,max_x,max_y = plate_box
 
@@ -447,7 +463,7 @@ exit()
 crop_out_file = trim_file.replace(".mp4", "-crop.mp4")
 scaled_out_file = trim_file.replace(".mp4", "-scaled.mp4")
 pip_out_file = trim_file.replace(".mp4", "-pip.mp4")
-cmd = "ffmpeg -y -i " + trim_file + " -filter:v \"" + crop + "\" " + crop_out_file
+cmd = "ffmpeg -y -i " + trim_file + " -filter:v \"" + crop + "\" " + crop_out_file 
 print(cmd)
 os.system(cmd)
 

@@ -21,6 +21,114 @@ json_conf = json.loads(json_str)
 proc_dir = json_conf['site']['proc_dir']
 base_cal_dir = json_conf['site']['cal_dir']
 
+def adjustLevels(img_array, minv, gamma, maxv, nbits=None):
+    """ Adjusts levels on image with given parameters.
+    Arguments:
+        img_array: [ndarray] Input image array.
+        minv: [int] Minimum level.
+        gamma: [float] gamma value
+        Mmaxv: [int] maximum level.
+    Keyword arguments:
+        nbits: [int] Image bit depth.
+    Return:
+        [ndarray] Image with adjusted levels.
+    """
+
+    if nbits is None:
+        
+        # Get the bit depth from the image type
+        nbits = 8*img_array.itemsize
+
+
+    input_type = img_array.dtype
+
+    # Calculate maximum image level
+    max_lvl = 2**nbits - 1.0
+
+    # Limit the maximum level
+    if maxv > max_lvl:
+        maxv = max_lvl
+
+    # Check that the image adjustment values are in fact given
+    if (minv is None) or (gamma is None) or (maxv is None):
+        return img_array
+
+    minv = minv/max_lvl
+    maxv = maxv/max_lvl
+    interval = maxv - minv
+    invgamma = 1.0/gamma
+
+    # Make sure the interval is at least 10 levels of difference
+    if interval*max_lvl < 10:
+
+        minv *= 0.9
+        maxv *= 1.1
+
+        interval = maxv - minv
+        
+
+
+    # Make sure the minimum and maximum levels are in the correct range
+    if minv < 0:
+        minv = 0
+
+    if maxv*max_lvl > max_lvl:
+        maxv = 1.0
+    
+
+    img_array = img_array.astype(np.float64)
+
+    # Reduce array to 0-1 values
+    img_array = np.divide(img_array, max_lvl)
+
+    # Calculate new levels
+    img_array = np.divide((img_array - minv), interval)
+
+    # Cut values lower than 0
+    img_array[img_array < 0] = 0
+
+    img_array = np.power(img_array, invgamma)
+
+    img_array = np.multiply(img_array, max_lvl)
+
+    # Convert back to 0-maxval values
+    img_array = np.clip(img_array, 0, max_lvl)
+
+
+    # Convert the image back to input type
+    img_array.astype(input_type)
+        
+
+    return img_array
+
+def gammaCorrection(intensity, gamma, bp=0, wp=255):
+    # TAKEN FROM RMS/DENIS VIDA 
+    """ Correct the given intensity for gamma. 
+        
+    Arguments:
+        intensity: [int] Pixel intensity
+        gamma: [float] Gamma.
+    Keyword arguments:
+        bp: [int] Black point.
+        wp: [int] White point.
+    Return:
+        [float] Gamma corrected image intensity.
+    """
+
+    if intensity < 0:
+        intensity = 0
+
+    x = (intensity - bp)/(wp - bp)
+
+    if x > 0:
+
+        # Compute the corrected intensity
+        return bp + (wp - bp)*(x**(1.0/gamma))
+
+    else:
+        return bp
+
+
 def find_image_stars(cal_img):
    if cal_img.shape == 3:
       cal_img= cv2.cvtColor(cal_img, cv2.COLOR_BGR2GRAY)
@@ -592,16 +700,22 @@ def find_stars(med_stack_all, cam_num, center = 0, center_limit = 200, pdif_fact
 
 def find_best_thresh(image, start_thresh):
    go = 1
+   tries = 0
    while go == 1:
       _, star_bg = cv2.threshold(image, start_thresh, 255, cv2.THRESH_BINARY)
 
       thresh_obj = cv2.dilate(star_bg, None , iterations=4)
       (_, cnts, xx) = cv2.findContours(thresh_obj.copy(), cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
-      print("CNTS:", len(cnts), start_thresh)
-      if len(cnts) > 70 or len(cnts) == 0:
+      #print("CNTS:", len(cnts), start_thresh)
+      if len(cnts) > 70: 
          start_thresh = start_thresh + 1
+      elif len(cnts) < 3:
+         start_thresh = start_thresh - 1
       else: 
          go = 0
+      if tries > 10:
+         go = 0
+      tries = tries + 1
    return(start_thresh)
 
 

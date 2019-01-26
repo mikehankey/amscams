@@ -406,23 +406,48 @@ def get_clip_info(video_file):
       trim_file = video_file 
       trim_file = trim_file.replace("-meteor", "") 
 
-   #trim_files = get_files(this_proc_dir + YY + "_" + MM + "_" + DD + "_" + HH + "_" + MN + "*" + cam_num + "*" )
+   trim_files = get_files(this_proc_dir + YY + "_" + MM + "_" + DD + "_" + HH + "_" + MN + "*" + cam_num + "*" )
    #saved_meteor_files = get_files(meteor_day_dir + YY + "_" + MM + "_" + DD + "_" + HH + "_" + MN + "*" + cam_num + "*" )
    #stacked_files = get_files(meteor_day_dir + YY + "_" + MM + "_" + DD + "_" + HH + "_" + MN + "*" + cam_num + "*" )
    #data_files = get_files(this_data_dir + YY + "_" + MM + "_" + DD + "_" + HH + "_" + MN + "*" + cam_num + "*" )
    #image_files = get_files(this_image_dir + YY + "_" + MM + "_" + DD + "_" + HH + "_" + MN + "*" + cam_num + "*" )
 
-   return(meteor_day_dir, meteor_json_file)
+   return(meteor_day_dir, meteor_json_file, trim_files)
    #return(trim_files, saved_meteor_files, stacked_files, data_files, image_files)
+
+def vid2stack_fn(video_file):
+   el = video_file.split("/")
+   fn = el[-1]
+   vdir = video_file.replace(fn, "")
+   idir = vdir + "images/"
+   stack_file =  idir + fn
+   stack_file = stack_file.replace('.mp4', '-stacked.png') 
+   return(stack_file)
 
 def examine_new(video_file):
    file_info = {}
 
-   meteor_day_dir,meteor_json_file = get_clip_info(video_file)
+   meteor_day_dir,meteor_json_file,trim_files = get_clip_info(video_file)
    if cfe(meteor_json_file) == 1:
       meteor_json = load_json_file(meteor_json_file)
    else:
-      print("No meteor json file.", meteor_json_file)
+      print("<B>No meteor detected.</B>")
+      #print("<P><a href=/pycgi/reprocess.py?video_file=" + video_file + ">Reprocess</a></P>")
+
+      sf = video_file.replace(".mp4", "-stacked.png")
+      el = sf.split("/")
+      fn = el[-1]
+      fdir = sf.replace(fn, "")
+      stack = fdir + "images/" + fn
+      print("<h2>One Minute Clip</h2>")
+      print("<a href=" + video_file + ">" + "<img src=" +stack + "></a><br>")
+      print("<a href=" + video_file + ">" + video_file + "</a><br>")
+      print("<h2>Trimmed Clips</h2>")
+      for trim_file in trim_files:
+         stack_img = vid2stack_fn(trim_file)
+         print("<A href=" + trim_file + "><img src=" + stack_img + "></a><br>")
+         print("<a href=" + trim_file + ">" + trim_file+ "</a><br>")
+
       exit()
    if 'plate_crop_solve' in meteor_json:
       plate_crop_solve = meteor_json['plate_crop_solve']
@@ -431,7 +456,9 @@ def examine_new(video_file):
 
    if plate_crop_solve == 0:
       print("<h1>METEOR NOT SOLVED YET</h1>")
-   print(meteor_json_file)
+      print("<a href=/pycgi/reprocess.py?video_file=" + video_file + ">Reprocess</a>")
+      
+   print("<a href="+meteor_json_file+">" + meteor_json_file + "</a>")
 #   print("Y", str(meteor_json))
    (f_datetime, cam, f_date_str,fy,fm,fd, fh, fmin, fs) = convert_filename_to_date_cam(video_file)
 
@@ -1062,6 +1089,7 @@ def browse_detections(day, cam):
    type= form.getvalue('type')
    base_file_info = {}
    total_detects, total_meteors, total_non_meteors = get_stats(day)
+   print("meteor files", len(meteor_files))
 
    for file in meteor_files:
       el = file.split("-trim")
@@ -1097,8 +1125,12 @@ def browse_detections(day, cam):
          trim_file = trim_file.replace("data/", "") 
          meteor_video_file = trim_file.replace(".mp4", "-meteor.mp4") 
          meteor_json = get_json_file(meteor_video_file)
-         if len(meteor_json) > 0:
+         if len(meteor_json) > 0 and 'hd_crop_stack' in meteor_json:
             trim_stack = meteor_json['hd_crop_stack']
+         else:
+            ts = file.replace("data", "images")
+            ts = ts.replace(".txt", "-stacked.png")
+            trim_stack = ts
          meteors = meteors + "<li><a href=archive-side.py?cmd=examine&video_file=" + meteor_video_file + ">"
 
          meteors = meteors + "<img src=" + trim_stack + "></a><li>" 
@@ -1111,7 +1143,6 @@ def browse_detections(day, cam):
 
       meteors_template = meteors_template.replace("%METEORS%", meteors)
       print(meteors_template)
-
    if type == "confirm":
       print ("<h1>Motion Confirmations</h1>")
       for file in confirm_files:
@@ -1170,7 +1201,8 @@ def browse_detections(day, cam):
          print("<a href=archive-side.py?cmd=examine&video_file=" + video_file + ">Examine</a> <BR>")
 
    if type == "objfail":
-      print ("<h1>Object Detection Failures (no meteors detected)</h1>")
+      print ("<h1>Object Detection Failures (no meteors detected). " + str(len(objfail_files)) + "Bright Objects</h1>")
+      oc = 0
       for file in objfail_files: 
 
          trim_stack = file.replace("-objfail.txt", "-stacked.png")
@@ -1188,8 +1220,18 @@ def browse_detections(day, cam):
             file_info = base_file_info[base_file]
          else:
             file_info = ""
-         print("<img src=" + trim_stack + "><BR>" )
-         print("<BR><a href=archive-side.py?cmd=examine&video_file=" + video_file + ">Examine</a><br>")
+
+         mf = video_file.split("-trim")
+         min_file = mf[0]
+         mf = min_file.split("/")
+         min_dir = min_file.replace(mf[-1], "")
+         min_stack = min_dir + "images/" + mf[-1] + "-stacked.png"
+         min_stack = min_stack.replace(".mp4", "")
+         print ("<a href=archive-side.py?cmd=examine&video_file=" + video_file + " onmouseover=\"document.img" + str(oc) + ".src='" + min_stack + "'\" onmouseout=\"document.img" + str(oc) + ".src='" + trim_stack + "'\"><img name='img" + str(oc) + "' src=" + trim_stack + "></a>")
+
+
+         #print(str(oc) + "<img  name='img" + str(oc) + "' src=" + trim_stack + "></a><BR>" + trim_stack + "<BR>" + min_stack +"<BR>")
+         oc = oc + 1
 
 def make_file_vars(video_file):
    el = video_file.split("/")

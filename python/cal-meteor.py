@@ -8,6 +8,7 @@ import calmeteorlib
 import sys
 from PIL import Image, ImageChops, ImageDraw, ImageFont
 
+show = 0
 
 from calmeteorlib import xy_to_radec, radec_to_azel
 from caliblib import load_json_file, save_json_file, calc_dist, find_bright_pixels
@@ -131,7 +132,8 @@ def decode_points(plate_crop, meteor_json,wcs_file):
 
      
       #cv2.circle(plate_crop, (cx,cy), 1, (255), 1)
-   cv2.imshow('pepe', plate_crop) 
+   if show == 1:
+      cv2.imshow('pepe', plate_crop) 
 
    if "." in end_time:
       dt_end_time = datetime.datetime.strptime(end_time, "%Y-%m-%d %H:%M:%S.%f")
@@ -211,9 +213,10 @@ for key in meteor_json['frames']:
 cv2.imwrite(cal_file, plate_crop)
 print("PLATECROP:", plate_crop.shape)
 
-cv2.namedWindow('pepe')
-cv2.imshow('pepe', plate_crop)
-cv2.waitKey(0)
+if show == 1:
+   cv2.namedWindow('pepe')
+   cv2.imshow('pepe', plate_crop)
+   cv2.waitKey(0)
 
 
 print("./calibrate_image.py " + cal_file)

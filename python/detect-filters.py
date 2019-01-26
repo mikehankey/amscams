@@ -6,7 +6,7 @@ from detectlib import *
 import sys
 import datetime
 import json
-
+from caliblib import find_best_thresh
 
 json_file = open('../conf/as6.json')
 json_str = json_file.read()
@@ -186,7 +186,7 @@ def save_meteor(meteor_video_file, object):
 
 
 
-def scan_trim_file(trim_file):
+def scan_trim_file(trim_file, show = 0):
 
    el = trim_file.split("/")
    base_trim_file = el[-1]
@@ -231,7 +231,7 @@ def scan_trim_file(trim_file):
 
    height, width = frames[0].shape
 
-   #max_cons_motion, frame_data, moving_objects, trim_stack = check_for_motion2(frames, trim_file)
+   #max_cons_motion, frame_data, moving_objects, trim_stack = check_for_motion2(frames, trim_file, show)
    objects = check_for_motion2(frames, trim_file)
    print("Stacking...")
    cmd = "./stack-stack.py stack_vid " + trim_file + " mv"
@@ -241,6 +241,7 @@ def scan_trim_file(trim_file):
    print("DOne Stacking...")
    meteor_objects = []
    meteor_found = 0
+   print("OBJECTS:", len(objects))
    for object in objects:
       status, reason, obj_data = test_object2(object)
       #print("TRIM FILE TESTS:", trim_file)
@@ -395,7 +396,9 @@ def scan_trim_file(trim_file):
          os.system(cmd)
          meteor_found = 1
 
-def reduce_hd_crop(trim_file, hd_crop):
+def reduce_hd_crop(trim_file, hd_crop, show = 0):
+   if show == 1:
+      cv2.namedWindow('pepe')
 
    objects = []
    bp_objects = []
@@ -453,8 +456,8 @@ def reduce_hd_crop(trim_file, hd_crop):
 
 
    extra_sec = int(trim_num) / 25
-   print("FDATE Time:", f_datetime)
-   print("Extra:", extra_sec)
+   #print("FDATE Time:", f_datetime)
+   #print("Extra:", extra_sec)
    start_frame_time = f_datetime + datetime.timedelta(0,extra_sec)
 
    start_frame_num = trim_num
@@ -468,7 +471,8 @@ def reduce_hd_crop(trim_file, hd_crop):
 
    med_frames = median_frames(frames)
    masked_pixels = []
-   thresh = np.mean(med_frames) + 20
+   thresh = np.mean(med_frames) 
+   thresh = find_best_thresh(med_frames[0], thresh+ 5)
    _, threshold = cv2.threshold(med_frames.copy(), thresh, 255, cv2.THRESH_BINARY)
    thresh_obj = cv2.convertScaleAbs(threshold)
    (_, cnts, xx) = cv2.findContours(thresh_obj.copy(), cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
@@ -479,14 +483,20 @@ def reduce_hd_crop(trim_file, hd_crop):
       y = int(y + (h/2))
       masked_pixels.append((x,y))
 
-
-   #cv2.imshow("pepe", med_frames)
-   #cv2.waitKey(10)
+   if show == 1:
+      cv2.imshow("pepe", med_frames)
+      cv2.waitKey(10)
 
    thresh = np.mean(frames[0]) + 15
    next_thresh = thresh + 10
 
    for frame in frames:
+      frame = adjustLevels(frame, 10,1,254)
+      frame = cv2.convertScaleAbs(frame)
+      if show == 1:
+         cv2.imshow('pepe', frame) 
+         cv2.waitKey(10)
+      #print(frame.shape)
       frame = mask_frame(frame, masked_pixels,5)
       extra_sec = (start_frame_num + fc) /  25
       frame_time = f_datetime + datetime.timedelta(0,extra_sec)
@@ -497,8 +507,9 @@ def reduce_hd_crop(trim_file, hd_crop):
       _, threshold = cv2.threshold(frame.copy(), thresh, 255, cv2.THRESH_BINARY)
       threshold = cv2.convertScaleAbs(threshold)
       (_, bp_cnts, xx) = cv2.findContours(threshold.copy(), cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
-      #cv2.imshow('pepe', threshold) 
-      #cv2.waitKey(10)
+      #if show == 1:
+      #   cv2.imshow('pepe', threshold) 
+      #   cv2.waitKey(10)
 
       alpha = .33
       #hello = cv2.accumulateWeighted(frame, image_acc, alpha)
@@ -564,7 +575,8 @@ def reduce_hd_crop(trim_file, hd_crop):
       object['box'] = [min_x,min_y,max_x,max_y]
       oid = object['oid']
       status, reason = meteor_test_distance(object)
-      print("TEST:",oid, status, reason)
+      print("\n\nTEST OBJECT:",oid)
+      print("-----------------------------")
       if status == 0:
          tests_passed = 0 
          print("DIST TEST FAILED", object['oid'], reason)
@@ -607,9 +619,23 @@ def reduce_hd_crop(trim_file, hd_crop):
          else:
             print("FIT TEST PASSED", object['oid'], match_perc)
 
+      if tests_passed == 1:
+         status, reason = meteor_test_peaks(object)
+         print("PEAKS:", status, reason)
+         if status == 0:
+            print("PEAK TEST FAILED", object['oid'], reason)
+            tests_passed = 0 
+         else:
+            print("PEAK TEST PASSED", object['oid'], reason)
+
 
       if tests_passed == 1:
          meteor_objects.append(object)
+         print("\nMETEOR TESTS PASSED FOR:",oid)
+         print("-----------------------------\n\n")
+      else:
+         print("\nMETEOR TESTS FAILED FOR :",oid)
+         print("-----------------------------\n\n")
 
    if len(meteor_objects) == 1:
       object = meteor_objects[0]
@@ -652,7 +678,8 @@ def reduce_hd_crop(trim_file, hd_crop):
       clog.close()
       cv2.putText(crop_stack, "FAILED.", (10,10), cv2.FONT_HERSHEY_SIMPLEX, .4, (0,0,255), 1)
       print("Meteor failed cropping test. :(", len(meteor_objects))
-      print(meteor_objects)
+      for obj in meteor_objects:
+         print(obj)
       exit()
 
    print("BP OBJ", len(bp_objects))
@@ -709,14 +736,22 @@ def scan_dir(dir):
 
 cmd = sys.argv[1]
 if cmd == 'reduce' or cmd == 'reduce_hd_crop':
+   if len(sys.argv) == 4:
+      show = sys.argv[3]
+   else: 
+      show = 0
    trim_file = sys.argv[2]
    hd_crop_file = sys.argv[3]
-   reduce_hd_crop(trim_file, hd_crop_file)
+   reduce_hd_crop(trim_file, hd_crop_file, show)
 
 if cmd == 'sf':
    trim_file = sys.argv[2]
+   if len(sys.argv) == 4:
+      show = sys.argv[3]
+   else: 
+      show = 0
    trim_file = trim_file.replace("-meteor.mp4", ".mp4")
-   scan_trim_file(trim_file)
+   scan_trim_file(trim_file, show)
 if cmd == 'scan_dir':
    sdir = sys.argv[2]
    scan_dir(sdir)
