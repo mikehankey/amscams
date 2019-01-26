@@ -493,7 +493,7 @@ def id_object(cnt, objects, fc,max_loc, is_hd=0):
 def check_for_motion2(frames, video_file):
 
    objects = []
-   #cv2.namedWindow('pepe')
+   cv2.namedWindow('pepe')
    med_stack_all = median_frames(frames[0:25])
    masked_pixels, marked_med_stack = find_bright_pixels(med_stack_all)
    frame_height, frame_width = frames[0].shape
@@ -564,8 +564,8 @@ def check_for_motion2(frames, video_file):
                #    print("FAILED PIX DIFF! ", fc, x,y,w,h) 
   
 
-         #cv2.imshow('pepe', nice_frame) 
-         #cv2.waitKey(40)
+         cv2.imshow('pepe', nice_frame) 
+         cv2.waitKey(40)
       fc = fc + 1
    return(objects)
 

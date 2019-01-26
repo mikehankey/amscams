@@ -188,8 +188,6 @@ def save_meteor(meteor_video_file, object):
 
 def scan_trim_file(trim_file):
 
-
-
    el = trim_file.split("/")
    base_trim_file = el[-1]
    base_dir = trim_file.replace(base_trim_file, "")
