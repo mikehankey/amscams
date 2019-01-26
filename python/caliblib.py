@@ -50,8 +50,8 @@ def find_image_stars_thresh(cal_img):
    (_, cnts, xx) = cv2.findContours(thresh_img.copy(), cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
 
    thresh_obj= cv2.convertScaleAbs(thresh_img)
-   cv2.imshow('pepe', thresh_img)
-   cv2.waitKey(0)
+   #cv2.imshow('pepe', thresh_img)
+   #cv2.waitKey(0)
 
    #(_, cnts, xx) = cv2.findContours(cal_img.copy(), cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
    star_pixels = []
@@ -312,8 +312,8 @@ def check_for_stars(file, cam_num, hd=0):
       status = "bad"
 
 
-   cv2.imshow('pepe', image)
-   cv2.waitKey(10)
+   #cv2.imshow('pepe', image)
+   #cv2.waitKey(10)
    return(status,stars,center_stars,non_stars,cloudy_areas)
 
 
@@ -620,8 +620,8 @@ def find_bright_pixels(med_stack_all, solved_file, cam_num):
    _, star_bg = cv2.threshold(med_stack_all, best_thresh, 255, cv2.THRESH_BINARY)
 
 
-   cv2.imshow('pepe', star_bg)
-   cv2.waitKey(10)
+   #cv2.imshow('pepe', star_bg)
+   #cv2.waitKey(10)
    #star_bg = cv2.GaussianBlur(star_bg, (7, 7), 0)
    thresh_obj = cv2.dilate(star_bg, None , iterations=4)
    #thresh_obj= cv2.convertScaleAbs(star_bg)
@@ -699,8 +699,8 @@ def find_bright_pixels(med_stack_all, solved_file, cam_num):
    plate_image[0:1080,0:200] = 0
    plate_image[0:1080,1720:1920] = 0
 
-   cv2.imshow('pepe', plate_image)
-   cv2.waitKey(10)
+   #cv2.imshow('pepe', plate_image)
+   #cv2.waitKey(10)
 
    return(star_pixels, plate_image)
 

@@ -314,8 +314,8 @@ def scan_trim_file(trim_file):
 
          meteor_day_dir = save_meteor(meteor_video_file, object)
          cv2.rectangle(stacked_frame, (bmin_x, bmin_y), (bmax_x, bmax_y), (255,255,255), 2) 
-         cv2.imshow('pepe', stacked_frame)
-         cv2.waitKey(10)
+         #cv2.imshow('pepe', stacked_frame)
+         #cv2.waitKey(10)
 
          cmd = "./doHD.py " + meteor_video_file + " " + str(elp_time) + " " + str(box_str) + " " + str(trim_adj) + " " + meteor_day_dir
          print("DOHD:", cmd)
@@ -461,7 +461,7 @@ def reduce_hd_crop(trim_file, hd_crop):
 
    start_frame_num = trim_num
 
-   cv2.namedWindow('pepe')
+   #cv2.namedWindow('pepe')
    frame_height, frame_width = frames[0].shape
    fc = 0
 
@@ -499,8 +499,8 @@ def reduce_hd_crop(trim_file, hd_crop):
       _, threshold = cv2.threshold(frame.copy(), thresh, 255, cv2.THRESH_BINARY)
       threshold = cv2.convertScaleAbs(threshold)
       (_, bp_cnts, xx) = cv2.findContours(threshold.copy(), cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
-      cv2.imshow('pepe', threshold) 
-      cv2.waitKey(10)
+      #cv2.imshow('pepe', threshold) 
+      #cv2.waitKey(10)
 
       alpha = .33
       #hello = cv2.accumulateWeighted(frame, image_acc, alpha)
@@ -551,8 +551,8 @@ def reduce_hd_crop(trim_file, hd_crop):
       cv2.putText(thresh_obj, str(fc), (5,ih-5), cv2.FONT_HERSHEY_SIMPLEX, .4, (255,255,255), 1)
 
       cv2.putText(thresh_obj, str(frame_time_str), (25,ih-5), cv2.FONT_HERSHEY_SIMPLEX, .4, (255,255,255), 1)
-      cv2.imshow('pepe', thresh_obj)
-      cv2.waitKey(10)
+      #cv2.imshow('pepe', thresh_obj)
+      #cv2.waitKey(10)
       fc = fc + 1
       last_frame = frame
 
@@ -676,8 +676,8 @@ def reduce_hd_crop(trim_file, hd_crop):
    cmd = "./cal-meteor.py " + meteor_json_file
    print(cmd)
    os.system(cmd)
-   cv2.imshow('pepe', crop_stack)
-   cv2.waitKey(10)
+   #cv2.imshow('pepe', crop_stack)
+   #cv2.waitKey(10)
 
 def moving_cnt(hs,x_dir,y_dir):
    fn,x,y,w,h,mx,my = hs

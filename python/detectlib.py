@@ -564,8 +564,8 @@ def check_for_motion2(frames, video_file):
                #    print("FAILED PIX DIFF! ", fc, x,y,w,h) 
   
 
-         cv2.imshow('pepe', nice_frame) 
-         cv2.waitKey(40)
+         #cv2.imshow('pepe', nice_frame) 
+         #cv2.waitKey(40)
       fc = fc + 1
    return(objects)
 
