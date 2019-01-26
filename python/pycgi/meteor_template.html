@@ -1,0 +1,107 @@
+<link rel="stylesheet" href="meteor_template.css">
+
+
+<h2>Media Files</h2>
+<div class="divTable" style="border: 1px solid #000;" >
+<div class="divTableBody">
+<div class="divTableRow">
+
+<div class="divTableCell">
+HD CROP<BR>
+<a href=%HD_CROP%><img src=%HD_CROP_STACK% width=200></a>
+</div>
+
+<div class="divTableCell">
+HD CLIP<BR>
+<a href=%HD_TRIM_FILE%><img src=%HD_TRIM_STACK% width=200></a><!--HD TRIM_STACK_OBJ-->
+</div>
+
+<div class="divTableCell">
+SD CLIP<BR>
+<a href=%TRIM_FILE%><img src=%TRIM_STACK% width=200></a><!--TRIM_STACK_OBJ-->
+</div>
+
+</div>
+</div>
+</div>
+
+<h2>Calibration Plate</h2>
+<a href=%TRIM_FILE%><img src=%BLEND_FILE%></a><!--TRIM_STACK_OBJ-->
+<!--
+<a href=%TRIM_FILE%><img src=%CAL_FILE% width=200></a>
+<a href=%GRID_FILE%><img src=%GRID_FILE% width=200></a>
+-->
+
+
+<h2>Event Data</h2>
+<div class="divTable" style="border: 1px solid #000;" >
+<div class="divTableBody">
+
+<div class="divTableRow">
+<div class="divTableCell">Cam ID:</div>
+<div class="divTableCell">%CAM_NUM%</div>
+</div>
+<div class="divTableRow">
+<div class="divTableCell">Site Latitude, Longitude, Altitude:</div>
+<div class="divTableCell">%LAT%, %LNG%, %ALT%</div>
+</div>
+
+<div class="divTableRow">
+<div class="divTableCell">Start Time:</div>
+<div class="divTableCell">%START_TIME%</div>
+</div>
+
+<div class="divTableRow">
+<div class="divTableCell">End Time:</div>
+<div class="divTableCell">%END_TIME%</div>
+</div>
+<div class="divTableRow">
+<div class="divTableCell">Elapsed Time:</div>
+<div class="divTableCell">%ELP_TIME% seconds</div>
+</div>
+<div class="divTableRow">
+<div class="divTableCell">Total Frames:</div>
+<div class="divTableCell">%TOTAL_FRAMES%</div>
+</div>
+<div class="divTableRow">
+<div class="divTableCell">Start X,Y,W,H:</div>
+<div class="divTableCell">%START_XY%</div>
+</div>
+<div class="divTableRow">
+<div class="divTableCell">End X,Y,W,H:</div>
+<div class="divTableCell">%END_XY%</div>
+</div>
+<div class="divTableRow">
+<div class="divTableCell">Start RA/DEC:</div>
+<div class="divTableCell">%START_RA_DEC%</div>
+</div>
+
+<div class="divTableRow">
+<div class="divTableCell">End RA/DEC:</div>
+<div class="divTableCell">%END_RA_DEC%</div>
+</div>
+
+<div class="divTableRow">
+<div class="divTableCell">Start Azimulth and Elevation:</div>
+<div class="divTableCell">%START_AZ_EL%</div>
+</div>
+<div class="divTableRow">
+<div class="divTableCell">End Azimulth and Elevation:</div>
+<div class="divTableCell">%END_AZ_EL%</div>
+</div>
+
+
+</div>
+</div>
+</div>
+
+<h2>Frame Data</h2>
+<div class="divTable" style="border: 1px solid #000;" >
+<div class="divTableBody">
+<div class="divTableRow">
+
+<!--FrameLoop--><div class="divTableRow"><div class="divTableCell">MOVING NO</div><div class="divTableCell">TIME</div><div class="divTableCell">X,Y,W,H</div><div class="divTableCell">MX,MY</div><div class="divTableCell">CX,CY</div><div class="divTableCell">RA/DEC</div><div class="divTableCell">AZ/EL</div></div><!--EndFrameLoop-->
+
+</div>
+</div>
+</div>
