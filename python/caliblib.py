@@ -1,3 +1,5 @@
+import datetime
+import os
 import math
 import cv2
 import random
@@ -8,7 +10,7 @@ from scipy.interpolate import splrep, sproot, splev
 from detectlib import mask_frame
 from pathlib import Path
 import json
-
+import glob
 import brightstardata as bsd
 mybsd = bsd.brightstardata()
 bright_stars = mybsd.bright_stars
@@ -16,12 +18,318 @@ bright_stars = mybsd.bright_stars
 json_file = open('../conf/as6.json')
 json_str = json_file.read()
 json_conf = json.loads(json_str)
+proc_dir = json_conf['site']['proc_dir']
+base_cal_dir = json_conf['site']['cal_dir']
+
+def find_image_stars(cal_img):
+   if cal_img.shape == 3:
+      cal_img= cv2.cvtColor(cal_img, cv2.COLOR_BGR2GRAY)
+   cal_img = cv2.GaussianBlur(cal_img, (7, 7), 0)
+   #cal_img= cv2.convertScaleAbs(cal_img)
+   cal_img = cv2.dilate(cal_img, None , iterations=4)
+   (_, cnts, xx) = cv2.findContours(cal_img.copy(), cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
+   star_pixels = []
+   non_star_pixels = []
+   cloudy_areas = []
+   for (i,c) in enumerate(cnts):
+      x,y,w,h= cv2.boundingRect(cnts[i])
+      if w > 1 and h > 1:
+         star_pixels.append((x,y,w,h))
+   return(star_pixels)
+
+def find_image_stars_thresh(cal_img):
+   if cal_img.shape == 3:
+      cal_img= cv2.cvtColor(cal_img, cv2.COLOR_BGR2GRAY)
+   cal_img = cv2.GaussianBlur(cal_img, (7, 7), 0)
+   #cal_img= cv2.convertScaleAbs(cal_img)
+   #cal_img = cv2.dilate(cal_img, None , iterations=4)
+   avg_pix = np.mean(cal_img)
+
+   best_thresh = find_best_thresh(cal_img, avg_pix)
+   _, thresh_img = cv2.threshold(cal_img, best_thresh, 255, cv2.THRESH_BINARY)
+   (_, cnts, xx) = cv2.findContours(thresh_img.copy(), cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
+
+   thresh_obj= cv2.convertScaleAbs(thresh_img)
+   cv2.imshow('pepe', thresh_img)
+   cv2.waitKey(0)
+
+   #(_, cnts, xx) = cv2.findContours(cal_img.copy(), cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
+   star_pixels = []
+   non_star_pixels = []
+   cloudy_areas = []
+   for (i,c) in enumerate(cnts):
+      x,y,w,h= cv2.boundingRect(cnts[i])
+      if w > 1 and h > 1:
+         star_pixels.append((x,y,w,h))
+   return(star_pixels)
+
+
+
+def distort_xy_new(sx,sy,ra,dec,RA_center, dec_center, x_poly, y_poly, x_res, y_res, pos_angle_ref,F_scale=1):
+
+   #print("INPUT", sx,sy,ra,dec,RA_center,dec_center,pos_angle_ref,F_scale)
+   ra_star = ra
+   dec_star = dec
+
+   #F_scale = F_scale/10
+   w_pix = 50*F_scale/3600
+   #F_scale = 158 * 2
+   #F_scale = 155
+   #F_scale = 3600/16
+   #F_scale = 3600/F_scale 
+   #F_scale = 1
+
+   RA_center = RA_center + (x_poly[12] * 100)
+   RA_center = RA_center + (y_poly[12] * 100)
+
+   dec_center = dec_center + (x_poly[13] * 100)
+   dec_center = dec_center + (y_poly[13] * 100)
+
+   # Gnomonization of star coordinates to image coordinates
+   ra1 = math.radians(float(RA_center))
+   dec1 = math.radians(float(dec_center))
+   ra2 = math.radians(float(ra_star))
+   dec2 = math.radians(float(dec_star))
+   ad = math.acos(math.sin(dec1)*math.sin(dec2) + math.cos(dec1)*math.cos(dec2)*math.cos(ra2 - ra1))
+   radius = math.degrees(ad)
+   sinA = math.cos(dec2)*math.sin(ra2 - ra1)/math.sin(ad)
+   cosA = (math.sin(dec2) - math.sin(dec1)*math.cos(ad))/(math.cos(dec1)*math.sin(ad))
+   theta = -math.degrees(math.atan2(sinA, cosA))
+   #theta = theta + pos_angle_ref - 90.0
+   theta = theta + pos_angle_ref - 90 + x_poly[14]
+   #theta = theta + pos_angle_ref - 90 
+  
+
+   dist = np.degrees(math.acos(math.sin(dec1)*math.sin(dec2) + math.cos(dec1)*math.cos(dec2)*math.cos(ra1 - ra2)))
+
+   # Calculate the image coordinates (scale the F_scale from CIF resolution)
+   X1 = radius*math.cos(math.radians(theta))*F_scale
+   Y1 = radius*math.sin(math.radians(theta))*F_scale
+
+   # Calculate distortion in X direction
+   dX = (x_poly[0]
+      + x_poly[1]*X1
+      + x_poly[2]*Y1
+      + x_poly[3]*X1**2
+      + x_poly[4]*X1*Y1
+      + x_poly[5]*Y1**2
+      + x_poly[6]*X1**3
+      + x_poly[7]*X1**2*Y1
+      + x_poly[8]*X1*Y1**2
+      + x_poly[9]*Y1**3
+      + x_poly[10]*X1*math.sqrt(X1**2 + Y1**2)
+      + x_poly[11]*Y1*math.sqrt(X1**2 + Y1**2))
+
+   # Add the distortion correction and calculate X image coordinates
+   #x_array[i] = (X1 - dX)*x_res/384.0 + x_res/2.0
+   new_x = X1 - dX + x_res/2.0
+
+   # Calculate distortion in Y direction
+   dY = (y_poly[0]
+      + y_poly[1]*X1
+      + y_poly[2]*Y1
+      + y_poly[3]*X1**2
+      + y_poly[4]*X1*Y1
+      + y_poly[5]*Y1**2
+      + y_poly[6]*X1**3
+      + y_poly[7]*X1**2*Y1
+      + y_poly[8]*X1*Y1**2
+      + y_poly[9]*Y1**3
+      + y_poly[10]*Y1*math.sqrt(X1**2 + Y1**2)
+      + y_poly[11]*X1*math.sqrt(X1**2 + Y1**2))
+
+   # Add the distortion correction and calculate Y image coordinates
+   #y_array[i] = (Y1 - dY)*y_res/288.0 + y_res/2.0
+   new_y = Y1 - dY + y_res/2.0
+   #print("DENIS RA:", X1, Y1, sx, sy, F_scale, w_pix, dist)
+   #print("DENIS:", X1, Y1, dX, dY, sx, sy, F_scale, w_pix, dist)
+   #print("THETA:",theta)
+   #print("DENIS:", sx,sy,new_x,new_y, sx-new_x, sy-new_y) 
+   return(new_x,new_y)
+
+
+def distort_xy(x,y,img_w,img_h,center_off_x=0,center_off_y=0,undistort=0, strength=1):
+   #print ("CENTER OFF: ", center_off_x, center_off_y)
+   zoom = 1
+   x_adj = 0
+   y_adj = 0
+   half_w = int(img_w/2) + center_off_x
+   half_h = int(img_h/2) + center_off_y
+   newX = x - half_w
+   newY = y - half_h
+   dist_to_center = calc_dist((x,y),(half_w,half_h))
+   #print(dist_to_center)
+   if 0 < dist_to_center <= 100:
+      strength = strength * .01
+   if 100 < dist_to_center <= 200:
+      strength = strength * 1
+   if 200 < dist_to_center <= 300:
+      strength = strength * 1
+   if 300 < dist_to_center <= 400:
+      strength = strength * 1
+   if 400 < dist_to_center <= 500:
+      strength = strength * 1.1
+   if 500 < dist_to_center <= 550:
+      strength = strength * 1.5
+   if 550 < dist_to_center <= 600:
+      strength = strength * 1.6
+   if 600 < dist_to_center <= 700:
+      strength = strength * 1.3
+   if 700 < dist_to_center <= 800 :
+      strength = strength * 2.0
+   if 800 < dist_to_center <= 875:
+      strength = strength * 1.8
+   if 875 < dist_to_center <= 900 :
+      strength = strength * 1.6
+   if 900 < dist_to_center <= 2000 :
+      strength = strength * 1.7
+   correctionRadius = math.sqrt(img_w ** 2 + img_h ** 2) / strength
+   distance = math.sqrt(newX ** 2 + newY ** 2)
+   r = distance / correctionRadius
+   if r == 0:
+      theta = 1
+   else:
+      theta = math.atan(r) / r
+   if undistort == 1:
+      sourceX = newX
+      sourceY = newY
+   if undistort == 0:
+      sourceX = half_w + theta * newX * zoom
+      sourceY = half_h + theta * newY * zoom
+   else:
+      newX = half_w + (sourceX / theta)
+      newY = half_h + (sourceY / theta)
+   sourceX = int(float(sourceX))
+   sourceY = int(float(sourceY))
+   newX = int(float(newX))
+   newY = int(float(newY))
+   if sourceY > img_h-1:
+      sourceY = img_h-1
+   if sourceX > img_w-1:
+      sourceX = img_w-1
+   if newY > img_h-1:
+      newY = img_h-1
+   if newX > img_w-1:
+      newX = img_w-1
+   return(sourceX,sourceY,newX,newY)
+
+
+def get_time_for_file(file):
+   el = file.split("/")
+   last = el[-1]
+   extra = last.split("-")
+   fn = extra[0]
+
+   hel = fn.split("_")
+   return(hel[0],hel[1],hel[2],hel[3],hel[4],hel[5],hel[7])
+
+
+def apply_masks(image, masks):
+   for mask in masks:
+      msx,msy,msw,msh = mask.split(",")
+      image[int(msy):int(msy)+int(msh),int(msx):int(msx)+int(msw)] = 0
+   return(image)
+
+
+def convert_filename_to_date_cam(file):
+   el = file.split("/")
+   filename = el[-1]
+   filename = filename.replace(".mp4" ,"")
+   if "-" in filename:
+      xxx = filename.split("-")
+      filename = xxx[0]
+   fy,fm,fd,fh,fmin,fs,fms,cam = filename.split("_")
+   f_date_str = fy + "-" + fm + "-" + fd + " " + fh + ":" + fmin + ":" + fs
+   f_datetime = datetime.datetime.strptime(f_date_str, "%Y-%m-%d %H:%M:%S")
+   return(f_datetime, cam, f_date_str,fy,fm,fd, fh, fmin, fs)
+
+
+def find_hd_file(sd_file):
+   if "png" in sd_file:
+      sd_file = sd_file.replace("-stacked.png", ".mp4")
+      sd_file = sd_file.replace("/images", "")
+   print("SD FILE: ", sd_file)
+   (f_datetime, cam, f_date_str,fy,fm,fd, fh, fmin, fs) = convert_filename_to_date_cam(sd_file)
+
+   glob_dir = "/mnt/ams2/HD/" + str(fy) + "_" + str(fm) + "_" + str(fd) + "_" + str(fh) + "_" + fmin + "*" + cam + "*.mp4"
+   print(glob_dir)
+   hdfiles = glob.glob(glob_dir)
+   print(hdfiles)
+   if len(hdfiles) > 0:
+      return(hdfiles[0])
+   else:
+      return(0)
+
+
+def magic_contrast(image):
+   cv2.imwrite("/mnt/ams2/cal/tmp/temp.png", image)
+   os.system("convert /mnt/ams2/cal/tmp/temp.png -sigmoidal-contrast 8 /mnt/ams2/cal/tmp/temp2.png")
+   new_image = cv2.imread("/mnt/ams2/cal/tmp/temp2.png", 0)
+   os.system("rm /mnt/ams2/cal/tmp/temp.png ")
+   os.system("rm /mnt/ams2/cal/tmp/temp2.png ")
+   #cv2.imshow('pepe', new_image)
+   #cv2.waitKey(10)
+   return(new_image)
+
+
+
+def check_for_stars(file, cam_num, hd=0):
+
+   image = cv2.imread(file, 0)
+   image = magic_contrast(image)
+   #cam_num  = "010004"
+
+   hd_file = find_hd_file(file)
+
+   masks = get_masks(cam_num, hd)
+   image = apply_masks(image, masks)
+
+
+   status, stars, center_stars, non_stars, cloudy_areas = find_stars(image, cam_num, 1, 200, 10)
+   image= mask_frame(image, non_stars, 25)
+   status, stars, center_stars, non_stars, cloudy_areas = find_stars(image, cam_num, 1, 200, 10)
+   for (x,y) in stars:
+      cv2.circle(image, (x,y), 3, (255), 1)
+   for (x,y) in center_stars:
+      cv2.circle(image, (x,y), 6, (255), 1)
+   #for (x,y) in non_stars:
+   #   cv2.rectangle(image, (x-5, y-5), (x+5, y+5), (128, 128, 128), 2)
+   for (x,y,w,h) in cloudy_areas:
+      cv2.rectangle(image, (x, y), (w, h), (200, 200, 200), 2)
+
+   if len(center_stars) > 10 or len(stars) > 30:
+      print("CALIBRATE?: YES")
+      print("STARS:", len(stars))
+      print("CENTER STARS:", len(center_stars))
+      cv2.putText(image, str("CALIBRATE"),  (100,120), cv2.FONT_HERSHEY_SIMPLEX, .8, (255,255,255), 1)
+      status = "calibrate"
+   elif len(stars) > 10:
+
+      status = "clear"
+      print("STATUS: CLEAR")
+      cv2.putText(image, str("CLEAR"),  (100,100), cv2.FONT_HERSHEY_SIMPLEX, .8, (255,255,255), 1)
+   else:
+      status = "bad"
+
+
+   cv2.imshow('pepe', image)
+   cv2.waitKey(10)
+   return(status,stars,center_stars,non_stars,cloudy_areas)
+
+
+def check_if_solved(solved_file):
+   file_exists = Path(solved_file)
+   if file_exists.is_file() is True:
+      return(1)
+   else:
+      return(0)
+
 
 def summarize_weather(weather_data):
 
 
    hourly_weather = {}
-   for wdata in weather:
+   for wdata in weather_data:
       (file, status, stars, center_stars, non_stars, cloudy_areas) = wdata
       (fy,fm,fd,fh,fmin,fsec,cam_num) = get_time_for_file(file)
       key = fy + "_" + fm + "_" + fd + "_" + fh + "_" + cam_num
@@ -38,14 +346,15 @@ def summarize_weather(weather_data):
 
 def find_non_cloudy_times(cal_date,cam_num):
   
+   weather_data = []
    json_file = proc_dir + cal_date + "/" + "data/" + cal_date + "-weather-" + cam_num + ".json"
    found = check_if_solved(json_file)
    found = 0
+   print ("FOUND:", found, json_file)
    if found == 0:
       glob_dir = proc_dir + cal_date + "/" + "images/*" + cal_date + "*" + cam_num + "*.png"
       print("GOB:", glob_dir)
       files = glob.glob(glob_dir)
-      weather_data = []
       files = sorted(files)
       fc = 0
       for file in files:
@@ -58,6 +367,9 @@ def find_non_cloudy_times(cal_date,cam_num):
       save_json_file(json_file, weather_data)
    else:
       weather_data = load_json_file(json_file)
+
+   print("WEATHER DATA: ", weather_data)
+   print("WEATHER JSON: ", json_file)
 
    return(weather_data)
 
@@ -185,6 +497,7 @@ def bound_cnt(x,y,img_w,img_h):
 
 
 def clean_star_bg(cnt_img, bg_avg):
+   cnt_img.setflags(write=1)
    for x in range(0,cnt_img.shape[1]):
       for y in range(0,cnt_img.shape[0]):
          px_val = cnt_img[y,x]
@@ -213,7 +526,7 @@ def find_stars(med_stack_all, cam_num, center = 0, center_limit = 200, pdif_fact
    if avg_px > 60:
       return(0,[],[], [], [])
 
-   best_thresh = find_best_thresh(med_stack_all, pdif)
+   best_thresh = find_best_thresh(med_stack_all, avg_px+5)
    _, star_bg = cv2.threshold(med_stack_all, best_thresh, 255, cv2.THRESH_BINARY)
    thresh_obj= cv2.convertScaleAbs(star_bg)
    (_, cnts, xx) = cv2.findContours(thresh_obj.copy(), cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
@@ -227,8 +540,8 @@ def find_stars(med_stack_all, cam_num, center = 0, center_limit = 200, pdif_fact
          (max_px, avg_px,px_diff,max_loc) = eval_cnt(cnt_img)
 
          mx,my = max_loc
-         cx = x + mx
-         cy = y + my
+         cx = x + int(w/2) 
+         cy = y + int(h/2)
          mnx,mny,mxx,mxy = bound_cnt(cx,cy,img_width,img_height)
          cnt_img = med_stack_all[mny:mxy,mnx:mxx]
          cnt_w,cnt_h = cnt_img.shape
@@ -285,7 +598,7 @@ def find_best_thresh(image, start_thresh):
       thresh_obj = cv2.dilate(star_bg, None , iterations=4)
       (_, cnts, xx) = cv2.findContours(thresh_obj.copy(), cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
       print("CNTS:", len(cnts), start_thresh)
-      if len(cnts) > 50:
+      if len(cnts) > 70 or len(cnts) == 0:
          start_thresh = start_thresh + 1
       else: 
          go = 0
@@ -323,7 +636,7 @@ def find_bright_pixels(med_stack_all, solved_file, cam_num):
 
    for (i,c) in enumerate(cnts):
       x,y,w,h = cv2.boundingRect(cnts[i])
-      if True:
+      if True and w < 10 and h < 10:
          cnt_img = med_stack_all[y:y+h,x:x+w]
          (max_px, avg_px,px_diff,max_loc) = eval_cnt(cnt_img)
 
@@ -385,6 +698,9 @@ def find_bright_pixels(med_stack_all, solved_file, cam_num):
 
    plate_image[0:1080,0:200] = 0
    plate_image[0:1080,1720:1920] = 0
+
+   cv2.imshow('pepe', plate_image)
+   cv2.waitKey(10)
 
    return(star_pixels, plate_image)
 

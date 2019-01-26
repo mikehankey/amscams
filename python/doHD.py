@@ -8,6 +8,7 @@ import os
 import glob
 import datetime
 from detectlib import *
+from caliblib import save_json_file
 
 json_file = open('../conf/as6.json')
 json_str = json_file.read()
@@ -17,6 +18,7 @@ crop_on = 0
 sd_video_dir = json_conf['site']['sd_video_dir']
 hd_video_dir = json_conf['site']['hd_video_dir']
 proc_dir = json_conf['site']['proc_dir']
+
 
 def ffmpeg_cat (file1, file2, outfile):
    cat_file = "/tmp/cat_files.txt"
@@ -39,11 +41,53 @@ def convert_filename_to_date_cam(file):
    f_datetime = datetime.datetime.strptime(f_datetime_str, "%Y-%m-%d %H:%M:%S")
    return(f_datetime, cam, f_date_str, fh, fmin, fs)
 
+def eof_processing(sd_file, trim_num, dur):
+   merge_files = []
+   sd_datetime, sd_cam, sd_date, sd_h, sd_m, sd_s = convert_filename_to_date_cam(sd_file)
+   offset = int(trim_num) / 25
+   print("TRIM SEC OFFSET: ", offset)
+   meteor_datetime = sd_datetime + datetime.timedelta(seconds=offset)
+   print("METEOR CLIP START DATETIME:", meteor_datetime) 
+   hd_glob = "/mnt/ams2/HD/" + sd_date + "_*" + sd_cam + "*"
+   hd_files = sorted(glob.glob(hd_glob))
+   for hd_file in hd_files:
+      el = hd_file.split("_")
+      if len(el) == 8 and "meteor" not in hd_file and "crop" not in hd_file:
+         hd_datetime, hd_cam, hd_date, hd_h, hd_m, hd_s = convert_filename_to_date_cam(hd_file)
+         time_diff = meteor_datetime - hd_datetime
+         time_diff_sec = time_diff.total_seconds() 
+         if 0 < time_diff_sec < 90:
+            print("HERE ARE THE 2 FILES:", hd_file)
+            merge_files.append(hd_file)
+   # take the last 5 seconds of file 1
+   # take the first 5 seconds of file 2 
+   # merge them together to make file 3
+   hd_trim1 = ffmpeg_trim(merge_files[0], str(55), str(5), "-temp-" + str(trim_num) + "-HD-meteor")
+   hd_trim2 = ffmpeg_trim(merge_files[1], str(0), str(5), "-temp-" + str(trim_num) + "-HD-meteor")
+   print(hd_trim1)
+   print(hd_trim2)
+   # cat them together
+
+   hd_datetime, sd_cam, sd_date, sd_h, sd_m, sd_s = convert_filename_to_date_cam(merge_files[0])
+   new_clip_datetime = hd_datetime + datetime.timedelta(seconds=55)
+   new_hd_outfile = new_clip_datetime.strftime("%Y_%m_%d_%H_%M_%S" + "_" + "000" + "_" + sd_cam + ".mp4")
+
+ 
+   ffmpeg_cat(hd_trim1, hd_trim2, new_hd_outfile)
+   hd_trim = new_hd_outfile.replace(".mp4", "-trim0-HD-trim.mp4")
+   os.system("cp " + new_hd_outfile + " " + hd_trim)
+
+   return(new_hd_outfile, hd_trim)
+
 
 def find_hd_file_new(sd_file, trim_num, dur = 5):
    sd_datetime, sd_cam, sd_date, sd_h, sd_m, sd_s = convert_filename_to_date_cam(sd_file)
    print("SD FILE: ", sd_file)
    print("TRIM NUM: ", trim_num)
+   if trim_num > 1400:
+      print("END OF FILE PROCESSING NEEDED!")
+      hd_file, hd_trim = eof_processing(sd_file, trim_num, dur)
+      return(hd_file, hd_trim) 
    offset = int(trim_num) / 25
    print("TRIM SEC OFFSET: ", offset)
    meteor_datetime = sd_datetime + datetime.timedelta(seconds=offset)
@@ -236,14 +280,15 @@ def check_hd_motion(frames, trim_file):
 #'box': [612, 187, 653, 303]
 
 def crop_hd(hd_file,box_str):
-   x,y,mx,my = box_str.split(",")
+   #x,y,mx,my = box_str.split(",")
+   x,y,mx,my = box_str
 
-   hd_mx = 2.727
-   hd_my = 1.875
-   x = float(x) * hd_mx
-   y = float(y) * hd_my
-   mx = float(mx) * hd_mx
-   my = float(my) * hd_my
+   #hd_mx = 1
+   #hd_my = 1
+   #x = float(x) * hd_mx
+   #y = float(y) * hd_my
+   #mx = float(mx) * hd_mx
+   #my = float(my) * hd_my
 
    w = float(mx) - float(x)
    h = float(my) - float(y)
@@ -284,12 +329,8 @@ el = meteor_file.split("-trim")
 base = el[0]
 trim = el[-1]
 num,trash = trim.split("-")
-print("TRIM NUM:", int(num))
-print("TRIM ADJ:", int(trim_adj))
 
 num = int(num) + int(trim_adj)
-
-print("TRIM NUM:", int(num))
 
 min_file = base + ".mp4"
 
@@ -299,48 +340,80 @@ trim_start_sec = int(num) / 25
 if trim_start_sec < 0:
    trim_star_sec = 0
 
-#if trim_start_sec > 1:
-#   trim_start_sec = trim_start_sec - 3 
-#else:
-#   trim_start_sec = 0
 
 print("METEOR FILE : ", meteor_file)
 print("BASE MIN FILE : ", min_file)
 hd_file,hd_trim = find_hd_file_new(min_file, int(num), dur_sec)
-#hd_file = find_hd_file(min_file)
 
-print("HD FILE : ", hd_trim)
-print("BOX: ", box)
-crop_hd(hd_trim, box)
+el = hd_trim.split("/")
+hdt = meteor_day_dir + el[-1]
+
+cmd = "./stack-stack.py stack_vid " + hdt
+print(cmd)
+os.system(cmd)
 
 hd_trim_crop = hd_trim.replace(".mp4", "-crop.mp4")
-
 
 el = hd_trim_crop.split("/")
 hdtc = meteor_day_dir + el[-1]
 
-el = hd_trim.split("/")
-hdt = meteor_day_dir + el[-1]
+
+
+print("HD FILE : ", hd_trim)
+print("BOX: ", box)
+
+# make bigger box for plate solving...
+hd_stack = hdt.replace(".mp4", "-stacked.png")
+hd_stack_img = cv2.imread(hd_stack, 0)
+print(hd_stack)
+
+print("IMAGES:", hd_stack)
+bigger_crop,plate_box = bigger_box(box, hd_stack, hd_stack_img)
+meteor_json = {}
+meteor_json_file =meteor_file.replace(".mp4", ".json")
+el = meteor_json_file.split("/")
+mf = el[-1]
+meteor_json_file = meteor_day_dir + mf
+
+a,b,c,d = box.split(",")
+nbox = [int(a),int(b),int(c),int(d)]
+meteor_json['box'] = nbox
+meteor_json['bigger_box'] = plate_box
+
+
+
+
+print("JSON: ", meteor_json_file)
+save_json_file(meteor_json_file, meteor_json)
+
+
+crop_hd(hd_trim, plate_box)
+
+
+
 
 cmd = "mv " + hd_trim + " " + meteor_day_dir
 os.system(cmd)
 cmd = "mv " + hd_trim_crop + " " + meteor_day_dir
 os.system(cmd)
 
-cmd = "./stack-stack.py stack_vid " + hdtc 
+el = hd_trim_crop.split("/")
+hdtc_fn = el[-1]
+new_hd_trim_crop = meteor_day_dir + hdtc_fn
+
+cmd = "./stack-stack.py stack_vid " + new_hd_trim_crop
 os.system(cmd)
 
-cmd = "./stack-stack.py stack_vid " + hdt
-os.system(cmd)
+
+#hd_trim_crop = cv2.imread(hdtc)
 
 print("REDUCE")
 trim_crop_file = el[-1]
-trim_crop_file = trim_crop_file.replace(".mp4", "-crop.mp4")
+#trim_crop_file = trim_crop_file.replace(".mp4", "-crop.mp4")
 cmd = "./detect-filters.py reduce_hd_crop " + meteor_file + " " + meteor_day_dir + trim_crop_file
 print(cmd)
 os.system(cmd)
 
-exit()
 
 #print(hd_file, trim_start_sec, dur_sec, "-meteor")
 meteor_file_hd = hd_file.replace(".mp4", meteor_suffix + ".mp4")
@@ -349,77 +422,25 @@ print("METEOR HD:", meteor_file_hd)
 hd_frames = load_video_frames(meteor_file_hd)
 
 
-stacked_hd = stack_frames(hd_frames)
-
-
-time.sleep(1)
-print(len(hd_frames))
-
-height, width = hd_frames[0].shape
-
-#check_hd_motion(hd_frames, meteor_file_hd)
-
-print("OBOX: ", box)
-
-min_x,min_y,max_x,max_y = box.split(",")
-min_x = int(min_x) * 2.72
-max_x = int(max_x) * 2.72
-min_y = int(min_y) * 1.875
-max_y = int(max_y) * 1.875
-
-w = int(max_x) - int(min_x) 
-h = int(max_y) - int(min_y)
+#stacked_hd = stack_frames(hd_frames)
 
 
 
+print("NBOX: ", plate_box)
 
-w = int(max_x) - int(min_x) 
-h = int(max_y) - int(min_y)
-
-w = int(w * 1.5)
-h = int(h * 1.5)
-
-
-if w > h:
-   h = w
-else:
-   w = h
-
-min_x = int(min_x - (w/2)) 
-min_y = int(min_y - (h/2)) 
-
-h = int(h + (h/2))
-
-#if min_y < 200:
-#   h = int(h + min_y)
-#   min_y = 0
-#if min_x < 200:
-#   w = int(w + min_x)
-#   min_x = 0
-#if max_y >= height:
-#   max_y = height
-   #h = int(w - max_x)
-   #min_y = 0
-#if max_x >= width:
-#   max_x = width
-
-
-print("W,H: ", w,h)
-
-print("NBOX: ", min_x,min_y,max_x,max_y)
-
-
+min_x,min_y,max_x,max_y = plate_box
 
 min_x = int(min_x)
-#max_x = int(max_x)
+max_x = int(max_x)
 min_y = int(min_y)
-#max_y = int(max_y)
+max_y = int(max_y)
 
 
-cv2.rectangle(stacked_hd, (min_x, min_y), (min_x+w,min_y+h), (255, 0, 0), 2)
+cv2.rectangle(hd_stack_img, (min_x, min_y), (max_x,max_y), (255, 0, 0), 2)
 #cv2.rectangle(hd_frames[0], (10, 10), (20, 20), (255, 0, 0), 2)
-cv2.imshow('pepe', stacked_hd)
-cv2.waitKey(0)
+
+cv2.imshow('pepe', hd_stack_img)
+cv2.waitKey(10)
 
 
 exit()

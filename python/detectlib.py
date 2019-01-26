@@ -1,4 +1,5 @@
 #!/usr/bin/python3 
+from statistics import mean
 import subprocess
 import math
 from PIL import Image, ImageChops
@@ -21,6 +22,68 @@ json_file = open('../conf/as6.json')
 json_str = json_file.read()
 json_conf = json.loads(json_str)
 proc_dir = json_conf['site']['proc_dir']
+
+def magic_contrast(image):
+   cv2.imwrite("/mnt/ams2/cal/tmp/temp.png", image)
+   os.system("convert /mnt/ams2/cal/tmp/temp.png -sigmoidal-contrast 8 /mnt/ams2/cal/tmp/temp2.png")
+   new_image = cv2.imread("/mnt/ams2/cal/tmp/temp2.png", 0)
+   os.system("rm /mnt/ams2/cal/tmp/temp.png ")
+   os.system("rm /mnt/ams2/cal/tmp/temp2.png ")
+   #cv2.imshow('pepe', new_image)
+   #cv2.waitKey(10)
+   return(new_image)
+
+
+def bigger_box(box, hd_stack, hd_stack_img):
+   hd_mx = 2.727
+   hd_my = 1.875
+   img_h, img_w = hd_stack_img.shape
+
+   if len(box) != 4:
+      min_x,min_y,max_x,max_y = box.split(",")
+   else:
+      min_x,min_y,max_x,max_y = box
+   min_x, min_y, max_x, max_y = int(min_x)*hd_mx, int(min_y)*hd_my, int(max_x)*hd_mx, int(max_y)*hd_my
+   min_x, min_y, max_x, max_y = int(min_x), int(min_y), int(max_x), int(max_y)
+   print(min_x,min_y,max_x,max_y)
+   img_h, img_w = hd_stack_img.shape
+   crop_h = int(max_y) - int(min_y)
+   crop_w = int(max_x) - int(min_x)
+   print("IMG W,H", img_w, img_h)
+   if crop_h < 500 or crop_w < 500:
+      print ("MAKE 300x300")
+      # make the box 250x250
+      center_x = int(crop_w / 2) + min_x
+      center_y = int(crop_h / 2) + min_y
+      min_x = center_x - 250
+      min_y = center_y - 250
+      max_x = center_x + 250
+      max_y = center_y + 250
+   else:
+      print("KEEP BOX SIZE as is")
+
+   if min_x <= 0:
+      min_x = 1 
+      max_x = 500
+   if min_y <= 0:
+      min_y = 1
+      max_y = 500
+   if max_x > img_w:
+      max_x = img_w
+      min_x = img_w - 500
+   if max_y > img_h:
+      max_y = img_h
+      min_y = img_h - 500
+
+
+   print("MX", min_x,min_y,max_x,max_y)
+   new_crop_image = hd_stack_img[min_y:max_y,min_x:max_y]
+   cv2.rectangle(hd_stack_img, (min_x, min_y), (max_x,max_y), (255, 0, 0), 2)
+   #cv2.imshow('pepe', hd_stack_img)
+   #cv2.waitKey(0)
+   return(hd_stack_img, (min_x,min_y,max_x,max_y))
+
+
 
 def cfe(file,dir = 0):
    if dir == 0:
@@ -143,23 +206,19 @@ def mask_frame(frame, mp, size=3):
    for x,y in mp:
 
       if int(y + size) > ih:
-         print("MAX X HIT")
          y2 = int(ih - 1)
       else:
          y2 = int(y + size)
       if int(x + size) > iw:
-         print("MAX X HIT")
          x2 = int(iw - 1)
       else:
          x2 = int(x + size)
 
       if y - size < 0:
-         print("MIN Y HIT")
          y1 = 0
       else:
          y1 = int(y - size)
       if int(x - size) < 0:
-         print("MIN X HIT")
          x1 = 0
       else:
          x1 = int(x - size)
@@ -315,12 +374,28 @@ def find_in_hist(object,x,y,object_hist, hd = 0):
       md = 40
    else:
       md = 20
+
+   # check if this object_hist is stationary already.
+   if len(object_hist) > 1:
+      moving = meteor_test_moving(object_hist)
+      #print("MOVING: ", moving)
+
    for fc,ox,oy,w,h,mx,my in object_hist:
       cox = ox + mx
       coy = oy + my
       if cox - md <= x <= cox + md and coy -md <= y <= coy + md:
          found = 1
          return(1)
+
+   # if not found double distance and try again
+   md = md * 2
+   for fc,ox,oy,w,h,mx,my in object_hist:
+      cox = ox + mx
+      coy = oy + my
+      if cox - md <= x <= cox + md and coy -md <= y <= coy + md:
+         found = 1
+         return(1)
+
    return(found)
 
 def center_point(x,y,w,h):
@@ -429,7 +504,7 @@ def check_for_motion2(frames, video_file):
       fc = fc + 1
 
    image_acc = preload_image_acc(frames)
-
+   thresh = 25
    fc = 0
    for frame in frames:
       nice_frame = frame.copy()
@@ -442,16 +517,18 @@ def check_for_motion2(frames, video_file):
       image_diff = cv2.absdiff(image_acc.astype(frame.dtype), frame,)
       alpha = .5
       hello = cv2.accumulateWeighted(frame, image_acc, alpha)
-      _, threshold = cv2.threshold(image_diff.copy(), 25, 255, cv2.THRESH_BINARY)
+      _, threshold = cv2.threshold(image_diff.copy(), thresh, 255, cv2.THRESH_BINARY)
 
 
       #thresh_obj = cv2.convertScaleAbs(threshold)
       thresh_obj = cv2.dilate(threshold.copy(), None , iterations=4)
       (_, cnts, xx) = cv2.findContours(thresh_obj.copy(), cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
 
-      #if len(cnts) == 0:
-      #   thresh_obj = cv2.dilate(threshold.copy(), None , iterations=4)
-      #   (_, cnts, xx) = cv2.findContours(thresh_obj.copy(), cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
+      while len(cnts) >= 50 or thresh >= 200:
+         print("LEN:", len(cnts), thresh)
+         (_, cnts, xx) = cv2.findContours(thresh_obj.copy(), cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
+         thresh = thresh + 5
+         _, threshold = cv2.threshold(image_diff.copy(), thresh, 255, cv2.THRESH_BINARY)
 
       #print("FRAME: ", fc, "Contours:", len(cnts))
       if len(cnts) < 50:
@@ -477,7 +554,7 @@ def check_for_motion2(frames, video_file):
                #if px_diff > 10:
                #   fwhm = find_fwhm(x+mx,y+my, gray_frame)
  
-               if px_diff > 10 :
+               if px_diff > 10 and fc > 5 :
                   object, objects = id_object(cnts[i], objects,fc, max_loc)
 
                   cv2.putText(nice_frame, str(object['oid']),  (x-5,y-5), cv2.FONT_HERSHEY_SIMPLEX, .4, (255, 255, 255), 1)
@@ -1148,6 +1225,7 @@ def check_hist(x,y,hist):
    return(0)
 
 def stack_stack(image, stacked_image):
+   print("STACK STACK ROUTINE")
    h,w = image.shape
    for x in range(0,w-1):
       for y in range(0,h-1):
@@ -1311,7 +1389,7 @@ def hist_cm_events(hist):
    events = []
    hc = 0
    for fc, x, y, w, h,mx,my in hist:
-      if (last_fc -1 <= fc <= last_fc + 1) and last_fc > 0 and last_fc != fc: 
+      if (last_fc -1 < fc <= last_fc + 1) and last_fc > 0 : 
          cm = cm + 1
          motion_on = 1
          if len(event) == 0:
@@ -1395,9 +1473,13 @@ def straight_hist(hist):
       points.append(point)
   
    print ("POINTS:", points)
-   point_test = test_points(points)
-   if point_test == 0:
-      return(0, "FAILED: point test failed.")
+
+
+
+
+   #point_test = test_points(points)
+   #if point_test == 0:
+   #   return(0, "FAILED: point test failed.")
    
 
    max_x = max(map(lambda x: x[0], points))
@@ -1428,16 +1510,301 @@ def straight_hist(hist):
    if dist < 5:
       return(0, "FAILED: too short. " + str(dist))
 
-   if peaks > 20:
+   if peaks > 25:
       return(0, "FAILED: too many peaks. " + str(peaks))
 
  
    return(1, "Passed straight hist tests.")
 
+def meteor_three_point_test(object):
+   print("Designed for short objects of 3 points or less.")
+   print("Confirm all 3 points fall on .")
+
+def best_fit_slope_and_intercept(xs,ys):
+    xs = np.array(xs, dtype=np.float64)
+    ys = np.array(ys, dtype=np.float64)
+    m = (((mean(xs)*mean(ys)) - mean(xs*ys)) /
+         ((mean(xs)*mean(xs)) - mean(xs*xs)))
+
+    b = mean(ys) - m*mean(xs)
+
+    return m, b
+
+def meteor_test_noise(hist):
+   
+   objs_per_frame = {}
+   for fn,x,y,w,h,mx,my in hist:
+      if fn not in objs_per_frame.keys():
+         objs_per_frame[fn] = 1
+      else:
+         objs_per_frame[fn] = objs_per_frame[fn] + 1
+   total_obf = 0
+   for obf in objs_per_frame:
+      total_obf = total_obf + objs_per_frame[obf]
+
+   if len(objs_per_frame) > 0:
+      perc = total_obf / len(objs_per_frame)
+   
+   print("NOISETEST:" + str(perc), objs_per_frame)
+   if perc > 2.5 and len(hist) > 7:
+
+      return(0, "NOISE TEST FAILED:" + str(perc))
+   else:
+      return(1, "NOISE TESTS PASSED:" + str(perc))
+
+def meteor_test_moving(hist):
+
+   (max_x,max_y,min_x,min_y) = find_min_max_dist(hist)
+   dist = calc_dist((min_x,min_y),(max_x,max_y))
+   if dist < 3:
+      return 0
+   else:
+      return 1
+
+
+def meteor_test_dupe_px(object):
+   status = 1
+   reason = "DUPE PIXEL TEST PASSED"
+   hist = object['history']
+   xs = []
+   ys = []
+   for fn,x,y,w,h,mx,my in hist:
+      cx = int(x+ (w/2))
+      cy = int(y+ (h/2))
+      xs.append((cx,cy))
+   ux = list(set(xs))
+   ul = len(ux)
+   tl = len(hist)
+
+   if tl > 0:
+      uperc = ul / tl
+   else:
+      uperc = 0
+
+   if uperc < .4:
+      status = 0
+      reason = "DUPE PIXEL TEST FAILED: Percentage of unique pixels to total pixels is too low. " 
+
+   reason = reason + str(uperc)
+
+
+   return(status,reason)
+
+def meteor_test_fit_line(object):
+   hist = object['history']
+   xs = []
+   ys = []
+   for fn,x,y,w,h,mx,my in hist:
+      cx = int(x+ (w/2))
+      cy = int(y+ (h/2))
+      xs.append(cx)
+      ys.append(cy)
+   m,b = best_fit_slope_and_intercept(xs,ys)
+
+   max_x = max(xs)
+   max_y = max(ys)
+   min_x = min(xs)
+   min_y = min(ys)
+   line_dist = calc_dist((min_x,min_y),(max_x,max_y))
+   safe_dist = line_dist / 12 
+
+   if safe_dist < 5:
+      safe_dist = 5 
+   if safe_dist > 10:
+      safe_dist = 10 
+   print("SAFE DISTANCE: ", safe_dist) 
+   regression_line = []
+   for x in xs: 
+      regression_line.append((m*x)+b)
+
+
+   good = 0
+   for i in range(0,len(regression_line)):
+      fn,x,y,w,h,mx,my = hist[i]
+      cx = int(x+ (w/2))
+      cy = int(y+ (h/2))
+      ry = regression_line[i]
+      dist = calc_dist((cx,cy),(cx,ry))
+      print("REG:", dist)
+      if dist < safe_dist:
+         good = good + 1
+
+   match_perc = good / len(regression_line)
+   print("LINE FIT total", len(regression_line))
+   print("LINE FIT good", good)
+   print("METEOR TEST: LINE FIT %", match_perc)
+
+   import matplotlib.pyplot as plt
+   from matplotlib import style
+   style.use('ggplot')
+
+   plt.scatter(xs,ys,color='#003F72')
+   plt.plot(xs, regression_line)
+   #plt.show()
+
+   return(match_perc)
+
+def meteor_test_straight(object):
+   t = 1
+   #print("Test if/which meteor points fall on straight line")
+   #print("Fail if less than 80% of points fall on line.")
+   #print("Remove non-matching points from history") 
+   #print("Return: 0 or 1 and 'cleaned' history.")
+
+def meteor_test_peaks(object):
+   status = 1
+   oid = object['oid']
+   reason = "PEAK TEST PASSED: " + str(oid) + ": Peak test passed."
+   #print("Test how many max pixel peaks exist in history.")
+   #print("Try to identify a plane, by noting repeating peaks.")
+   #print("Disqualify object if too many peaks exist / repeat.")
+
+
+   points = []
+   sizes = []
+   hist = object['history']
+   for fn,x,y,w,h,mx,my in hist:
+      size  = w * h
+      sizes.append(size)
+      point = x+mx,y+my
+      points.append(point)
+ 
+
+   sci_peaks = signal.find_peaks(sizes)
+   peaks = len(sci_peaks[0])
+   print("SCI:", sci_peaks)
+   reason = reason + str(sci_peaks[0])
+   return(status, reason)
+
+def meteor_test_distance(object):
+   oid = object['oid']
+   status = 1
+   reason = "DISTANCE TEST PASSED: " + str(oid) + ": Distance test passed. "
+   hist = object['history']
+   (max_x,max_y,min_x,min_y) = find_min_max_dist(hist)
+
+   dist = calc_dist((min_x,min_y),(max_x,max_y))
+   if dist < 5:
+      status = 0 
+      reason = "DISTANCE TEST FAILED: " + str(oid) + ": Distance test failed. Max distance is < 5 "
+
+   reason = reason + " dist = " + str(dist)
+
+   #print("Determine the max from min and max. ")
+   #print("Determine pixel movement per frame.")
+   #print("Determine distance between object segments.")
+   #print("Fail if distance is too short. < 5px")
+   #print("Fail if px per frame is too little (object moving too slow).  ")
+
+   return(status, reason)
+
+def meteor_test_if_star(object):
+   t = 1
+   #print("Designed to identify stars.")
+   #print("Test to see if there is no/small movement over time, indicating a stationary object.")
+   #print("Return 1 if the object is a star, else 0 for non-star.")
+   #print("Clean history to remove non-moving objects and return cleaned history too.")
+
+def meteor_test_hist_len(object):
+   t = 1
+   #print("Return 0 if the length is too short or too long.")
+   #print("Return 0 if there are multiple gaps in the history. (blinking lights)")
+   #print("Return 0 if there are multiple gaps in the history. (blinking lights)")
+
+   oid = object['oid']
+   status = 1
+   reason = "HISTORY LENGTH TEST PASSED: " + str(oid) 
+
+   hist = object['history']
+   hist_len = len(hist)
+
+   if hist_len > 200:
+      status = 0
+      reason = "HISTORY LENGTH TEST FAILED" + str(oid) + ": Hist length of object is too long > 200."
+   if hist_len < 3:
+      status = 0
+      reason = "HISTORY LENGTH TEST FAILED: " + str(oid) + " Hist length of object is too short < 3."
+
+
+   first_frame = hist[0][0]
+   last_frame = hist[-1][0]
+   elp_frames = last_frame - first_frame
+
+   cm = 0
+   max_cm = 0
+   gaps = 0
+   max_gaps = 0
+   gap_events = 0
+   last_frame = 0
+   for fn,x,y,w,h,mx,my in hist:
+      #print ("METEOR TEST: ", last_frame, fn, max_cm, cm, max_gaps, gaps)
+      if last_frame + 1 == fn and last_frame > 0:
+         cm = cm + 1
+      else:
+         cm = 0
+         if last_frame > 5 :
+            gaps = gaps + (fn - last_frame)
+            if fn - last_frame > 5:
+               gap_events = gap_events + 1
+      if cm > max_cm:
+         max_cm = cm 
+      if gaps > max_gaps:
+         max_gaps = gaps 
+      last_frame = fn
+
+   # max cm per hist len 1 is best score. < .5 is fail.
+   if max_cm > 0:
+      cm_hist_len_ratio = max_cm / len(hist) 
+   else:
+      cm_hist_len_ratio = 0
+
+   if max_gaps > 25:
+      status = 0
+      reason = "GAP TEST FAILED: " + str(oid) + " Gap test failed. Max gapped frames > 25 / " + str(max_gaps)
+   if gap_events > 1:
+      status = 0
+      reason = "GAP TEST FAILED: " + str(oid) + " Gap test failed. Too many gap events > 2 / " + str(gap_events)
+
+   return(status, reason)
+
+def meteor_test_cons_motion(object):
+   print("Determine the consectutive motion inside each history block.")
+   print("Return 0 if the cons_motion is too slow.") 
+   print("Return 0 if the cons_motion exists but is separated by more than 3 blocks of dead space.") 
+
+
+
+
+
 def test_object2(object):
+   obj_data = {}
    #print("TEST OBJECT: ", object['oid'])
    #print(object)
-   obj_data = {}
+
+   # NEW TESTS# 
+
+   status, reason = meteor_test_hist_len(object)
+   print("METEOR TEST HIST LEN:", status, reason)
+   if status == 0:
+      return(0, reason, obj_data)
+
+   status, reason = meteor_test_peaks(object)
+   print("METEOR TEST PEAKS:", status, reason)
+   if status == 0:
+      return(0, reason, obj_data)
+
+   status, reason = meteor_test_distance(object)
+   print("METEOR TEST HIST LEN:", status, reason)
+   if status == 0:
+      return(0, reason, obj_data)
+
+   match_perc = meteor_test_fit_line(object)
+   if match_perc < .5:
+      tests_passed = 0
+      return(0, "Line fit test failed:" + str(match_perc), obj_data)
+
+
+
    hist = object['history']
    (max_x,max_y,min_x,min_y) = find_min_max_dist(hist)
    hist_len = len(hist)
@@ -1713,6 +2080,7 @@ def test_object(object, trim_file, stacked_np):
    meteor_data['elp_time'] = elp_time
    meteor_data['elp_frms'] = elp_frms
    meteor_data['box'] = [min_x,min_y,max_x,max_y]
+
    meteor_data['dist'] = dist
    meteor_data['sl_test'] = sl_test
    meteor_data['peaks'] = peaks

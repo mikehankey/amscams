@@ -1,4 +1,6 @@
 #!/usr/bin/python3
+import re
+from statistics import mean
 import datetime
 import math
 import numpy as np
@@ -9,7 +11,7 @@ import random
 import glob
 import subprocess 
 import cgi
-import cgitb
+#import cgitb
 import os
 video_dir = "/mnt/ams2/SD/"
 from pathlib import Path
@@ -20,10 +22,16 @@ json_str = json_file.read()
 json_conf = json.loads(json_str)
 proc_dir = json_conf['site']['proc_dir']
 
+lon = json_conf['site']['device_lng']
+lat = json_conf['site']['device_lat']
+alt = json_conf['site']['device_alt']
+base_cal_dir = json_conf['site']['cal_dir']
 
-cgitb.enable()
+
+
+#cgitb.enable()
 print ("Content-type: text/html\n\n")
-print (" <style> .active { background: #ff0000; } .inactive { background: #ffffff; } body { background-color: #000000; color: #ffffff } </style>")
+#print (" <style> .active { background: #ff0000; } .inactive { background: #ffffff; } body { background-color: #000000; color: #ffffff } </style>")
 
 
 def cfe(file,dir = 0):
@@ -363,6 +371,7 @@ def get_bp_events(motion_file):
    return(events)
 
 def get_files(dir):
+   #print(dir, "<BR>")      
    files = glob.glob(dir)
    return(files) 
 
@@ -371,6 +380,7 @@ def get_clip_info(video_file):
    el =video_file.split("/")
    fn = el[-1]
    base_dir = video_file.replace(fn, "")
+   json_file = fn.replace(".mp4",".json")
 
    dd = fn.split("_")
    YY = dd[0]
@@ -385,6 +395,8 @@ def get_clip_info(video_file):
 
    meteor_base_dir = "/mnt/ams2/SD/proc2/meteors/"
    meteor_day_dir = "/mnt/ams2/SD/proc2/meteors/" + YY + "_" + MM + "_" + DD + "/"
+
+   meteor_json_file = meteor_day_dir + json_file
  
    this_proc_dir = proc_dir + YY + "_" + MM + "_" + DD + "/"
    this_image_dir = proc_dir + YY + "_" + MM + "_" + DD + "/images/"
@@ -394,24 +406,117 @@ def get_clip_info(video_file):
       trim_file = video_file 
       trim_file = trim_file.replace("-meteor", "") 
 
-   trim_files = get_files(this_proc_dir + YY + "_" + MM + "_" + DD + "_" + HH + "_" + MN + "*" + cam_num + "*" )
-   saved_meteor_files = get_files(meteor_day_dir + YY + "_" + MM + "_" + DD + "_" + HH + "_" + MN + "*" + cam_num + "*" )
-   stacked_files = get_files(meteor_day_dir + YY + "_" + MM + "_" + DD + "_" + HH + "_" + MN + "*" + cam_num + "*" )
-   data_files = get_files(this_data_dir + YY + "_" + MM + "_" + DD + "_" + HH + "_" + MN + "*" + cam_num + "*" )
-   image_files = get_files(this_image_dir + YY + "_" + MM + "_" + DD + "_" + HH + "_" + MN + "*" + cam_num + "*" )
+   #trim_files = get_files(this_proc_dir + YY + "_" + MM + "_" + DD + "_" + HH + "_" + MN + "*" + cam_num + "*" )
+   #saved_meteor_files = get_files(meteor_day_dir + YY + "_" + MM + "_" + DD + "_" + HH + "_" + MN + "*" + cam_num + "*" )
+   #stacked_files = get_files(meteor_day_dir + YY + "_" + MM + "_" + DD + "_" + HH + "_" + MN + "*" + cam_num + "*" )
+   #data_files = get_files(this_data_dir + YY + "_" + MM + "_" + DD + "_" + HH + "_" + MN + "*" + cam_num + "*" )
+   #image_files = get_files(this_image_dir + YY + "_" + MM + "_" + DD + "_" + HH + "_" + MN + "*" + cam_num + "*" )
 
-   return(trim_files, saved_meteor_files, stacked_files, data_files, image_files)
+   return(meteor_day_dir, meteor_json_file)
+   #return(trim_files, saved_meteor_files, stacked_files, data_files, image_files)
 
 def examine_new(video_file):
+
    file_info = {}
+   meteor_day_dir,meteor_json_file = get_clip_info(video_file)
+   meteor_json = load_json_file(meteor_json_file)
+   plate_crop_solve = meteor_json['plate_crop_solve']
+   if plate_crop_solve == 0:
+      print("<h1>METEOR NOT SOLVED YET</h1>")
+   print(meteor_json_file)
+#   print("Y", str(meteor_json))
+   (f_datetime, cam, f_date_str,fy,fm,fd, fh, fmin, fs) = convert_filename_to_date_cam(video_file)
 
-   (file_info['trim_files'], file_info['saved_meteor_files'], file_info['stacked_files'], file_info['data_files'], file_info['image_files']) = get_clip_info(video_file)
+   print("<PRE>")
+#   print(meteor_json)
+   meteor_template = ""
+   mtf = open("meteor_template.html", "r")
+   for line in mtf:
+      line = line.replace("\n", "")
+      meteor_template = meteor_template + str(line) 
 
-   if len(file_info['saved_meteor_files']) > 0:
-      meteor_page(video_file, file_info)
-   else:
-      print("<h1 style=\"color: red\">METEOR NOT FOUND</h1>")
+   #loop_temp = str(re.findall("<!--FrameLoop-->(.*?)<!--EndFrameLoop>", meteor_template))
+   trash, trash2 = meteor_template.split("<!--FrameLoop-->")
+   loop_temp, trash = trash2.split("<!--EndFrameLoop-->")
 
+   table = ""
+   #print("FRAMES:", meteor_json['frames'] )
+   #if len (meteor_json['frames']) > 0: 
+   #   print("NO FRAMES ANLAYZED.", len(meteor_json['frames']))
+
+   for key in meteor_json:
+      #print(key, meteor_json[key])
+      if key == 'frames':
+         fc = 0
+         for fkey in meteor_json['frames']: 
+            if "." not in meteor_json['frames'][fkey]['frame_time']:
+               meteor_json['frames'][fkey]['frame_time'] = meteor_json['frames'][fkey]['frame_time']  + ".0"
+        
+            row = loop_temp
+            row = row.replace("NO", fkey)
+            
+            if 'moving' in meteor_json['frames'][fkey]:
+               if meteor_json['frames'][fkey]['moving'] == 1:
+                  row = row.replace("MOVING", "*")
+               else:
+                  row = row.replace("MOVING", "-")
+
+            row = row.replace("TIME", meteor_json['frames'][fkey]['frame_time'])
+            row = row.replace("X,Y,W,H", str(meteor_json['frames'][fkey]['xywh']))
+            row = row.replace("MX,MY", str(meteor_json['frames'][fkey]['mxmy']))
+            row = row.replace("CX,CY", str(meteor_json['frames'][fkey]['cxcy']))
+            if 'radec' in meteor_json['frames'][fkey]:
+               row = row.replace("RA/DEC", str(meteor_json['frames'][fkey]['radec']))
+               row = row.replace("AZ/EL", str(meteor_json['frames'][fkey]['azel']))
+            
+            if fc == 0:
+               start_xywh = meteor_json['frames'][fkey]['xywh']
+               start_time = meteor_json['frames'][fkey]['frame_time']
+            fc = fc + 1
+            table = table + row
+            end_time = meteor_json['frames'][fkey]['frame_time']
+
+         meteor_template = meteor_template.replace("<!--EndFrameLoop-->", table)
+
+         end_xywh = meteor_json['frames'][fkey]['xywh']
+
+         dt_end_time = datetime.datetime.strptime(end_time, "%Y-%m-%d %H:%M:%S.%f")
+         dt_start_time = datetime.datetime.strptime(start_time, "%Y-%m-%d %H:%M:%S.%f")
+         elp_time = (dt_end_time-dt_start_time).total_seconds()
+
+   meteor_template = meteor_template.replace("%CAM_NUM%", cam)
+   meteor_template = meteor_template.replace("%LAT%", lat)
+   meteor_template = meteor_template.replace("%LNG%", lon)
+   meteor_template = meteor_template.replace("%ALT%", alt)
+
+   if plate_crop_solve == 1:
+      meteor_template = meteor_template.replace("%BLEND_FILE%", meteor_json['blend_file'])
+      meteor_template = meteor_template.replace("%GRID_FILE%", meteor_json['grid_file'])
+      meteor_template = meteor_template.replace("%START_RA_DEC%", str(meteor_json['start_radec']))
+      meteor_template = meteor_template.replace("%END_RA_DEC%", str(meteor_json['end_radec']))
+      meteor_template = meteor_template.replace("%START_AZ_EL%", str(meteor_json['start_azel']))
+      meteor_template = meteor_template.replace("%END_AZ_EL%", str(meteor_json['end_azel']))
+      meteor_template = meteor_template.replace("%CAL_FILE%", meteor_json['cal_file'])
+      meteor_template = meteor_template.replace("%START_TIME%", meteor_json['start_time'])
+      meteor_template = meteor_template.replace("%END_TIME%", meteor_json['end_time'])
+      meteor_template = meteor_template.replace("%ELP_TIME%", str(meteor_json['elp_time']))
+      meteor_template = meteor_template.replace("%TOTAL_FRAMES%", str(len(meteor_json['frames'])))
+      meteor_template = meteor_template.replace("%START_XY%", str(start_xywh))
+      meteor_template = meteor_template.replace("%END_XY%", str(end_xywh))
+   #print("YYY")
+   
+   # MEDIA FILES
+   meteor_template = meteor_template.replace("%TRIM_FILE%", meteor_json['trim_file'])
+   meteor_template = meteor_template.replace("%TRIM_STACK%", meteor_json['trim_stack'])
+   meteor_template = meteor_template.replace("%TRIM_STACK_OBJ%", meteor_json['trim_stack_obj'])
+   meteor_template = meteor_template.replace("%HD_TRIM_FILE%", meteor_json['hd_trim'])
+   meteor_template = meteor_template.replace("%HD_TRIM_STACK%", meteor_json['hd_trim_stack'])
+   meteor_template = meteor_template.replace("%HD_CROP%", meteor_json['hd_crop'])
+   meteor_template = meteor_template.replace("%HD_CROP_STACK%", meteor_json['hd_crop_stack'])
+
+
+
+   print(meteor_template)
 
 def meteor_page(video_file, data_files):
    meteor_stack_file = None
@@ -442,8 +547,14 @@ def meteor_page(video_file, data_files):
    print("<BR>")
    print ("<div><a href=" + sd_video_trim_file + " onmouseover=\"document.img_meteor.src='" + meteor_obj_stack_file + "'\" onmouseout=\"document.img_meteor.src='" + meteor_stack_file + "'\"><img name='img_meteor' src=" + meteor_stack_file+ "></a></div>")
    print("<B>VIDEO FILES:</B> ")
-   print("<a href=" + hd_video_crop_file + ">HD CROP</a> -")
-   print("<a href=" + hd_video_trim_file + ">HD TRIM</a> - ")
+   if hd_video_crop_file is None:
+      print("HD CROP FILE MISSING")
+   else:
+      print("<a href=" + hd_video_crop_file + ">HD CROP</a> -")
+   if hd_video_crop_file is None:
+      print("HD TRIM FILE MISSING")
+   else:
+      print("<a href=" + hd_video_trim_file + ">HD TRIM</a> - ")
    print("<a href=" + sd_video_trim_file + ">SD TRIM</a><BR>")
    print("<B>IMAGE FILES:</B> ")
    print("<a href=" + meteor_stack_file + ">SD STACK</a> -")
@@ -453,6 +564,16 @@ def meteor_page(video_file, data_files):
    if hd_stack_file is not None:
       print("<a href=" + hd_stack_file  + ">HD STACK</a> -")
    #print("<a href=" + "" + ">HD OBJECT STACK</a> -")
+
+   if hd_video_crop_file is not None:
+      print("<div><a href=" + hd_video_crop_file + "><img src=" + hd_crop_stack_file + "></a></div>")
+
+def examine_video_clip(video_file):
+   print ("<script src=\"/pycgi/show-hide-div.js\"></script>")
+   (motion, motion_proc, motion_not_proc) = get_motion_file(video_file)
+   print(motion,motion_proc,motion_not_proc)
+
+   
 
 def examine_video_clip(video_file):
    print ("<script src=\"/pycgi/show-hide-div.js\"></script>")
@@ -896,7 +1017,6 @@ def get_detection_files_for_day(day):
 
 
 def get_files_for_day_cam(day, cams_id):
-      
    glob_dir = proc_dir + day + "/*" + str(cams_id) + ".mp4"
    files = glob.glob(glob_dir)
    return(sorted(files))
@@ -911,6 +1031,17 @@ def mark_tag(word, tags):
       return("active")
    else:
       return("inactive")
+
+def get_json_file(meteor_video_file):
+   el = meteor_video_file.split("/")   
+   json_file = meteor_video_file.replace("proc2/", "proc2/meteors/")
+   json_file = json_file.replace(".mp4", ".json")
+   ex = cfe(json_file)
+   if ex == 1:
+      json_data = load_json_file(json_file)
+   else:
+      json_data = []
+   return(json_data)
 
 def browse_rejects():
    debug = form.getvalue('debug')
@@ -931,14 +1062,18 @@ def browse_detections(day, cam):
       base_file_info[base_file] = "Meteor" 
 
    #print ("<a href=archive-side.py?cmd=browse_detect&day=" + str(day) + "&type=motion>BRIGHT PIXEL DETECTIONS:" + str(len(motion_files)) + "</a>")
-   print ("<a href=archive-side.py?cmd=browse_detect&day=" + str(day) + "&type=confirm>TOTAL DETECTIONS:" + str(total_detects) + "</a>")
+   #print ("<a href=archive-side.py?cmd=browse_detect&day=" + str(day) + "&type=confirm>TOTAL DETECTIONS:" + str(total_detects) + "</a>")
 
-   print ("<a href=archive-side.py?cmd=browse_detect&day=" + str(day) + "&type=meteor>METEOR DETECTIONS:" + str(len(meteor_files)) + "</a>")
-   print ("<a href=archive-side.py?cmd=browse_detect&day=" + str(day) + "&type=objfail>NON METEOR DETECTIONS:" + str(len(objfail_files)) + "</a>")
+   #print ("<a href=archive-side.py?cmd=browse_detect&day=" + str(day) + "&type=meteor>METEOR DETECTIONS:" + str(len(meteor_files)) + "</a>")
+   #print ("<a href=archive-side.py?cmd=browse_detect&day=" + str(day) + "&type=objfail>NON METEOR DETECTIONS:" + str(len(objfail_files)) + "</a>")
    #print ("<a href=archive-side.py?cmd=browse_detect&day=" + str(day) + "&type=reject>NON MOTION REJECTED DETECTIONS :" + str(len(reject_files)) + "</a>")
 
    if type == 'meteor': 
-      print ("<h1>Meteor Detections</h1>")
+      meteors = ""
+      mt = open("meteors.html", "r")
+      meteors_template = ""
+      for line in mt:
+         meteors_template = meteors_template + line
       #print(meteor_files)
       for file in meteor_files:
          trim_stack = file.replace(".txt", "-stacked.png")
@@ -953,13 +1088,21 @@ def browse_detections(day, cam):
          trim_file = file.replace("-meteor.txt", ".mp4") 
          trim_file = trim_file.replace("data/", "") 
          meteor_video_file = trim_file.replace(".mp4", "-meteor.mp4") 
-         print("<img src=" + trim_stack + ">" )
+         meteor_json = get_json_file(meteor_video_file)
+         if len(meteor_json) > 0:
+            trim_stack = meteor_json['hd_crop_stack']
+         meteors = meteors + "<li><a href=archive-side.py?cmd=examine&video_file=" + meteor_video_file + ">"
+
+         meteors = meteors + "<img src=" + trim_stack + "></a><li>" 
          moving_objects = get_code(file)
-         print("<BR><a href=" + trim_file + ">Trim</a> - ")
-         print("<a href=" + meteor_video_file + ">Meteor</a> - ")
-         print("<a href=archive-side.py?cmd=examine&video_file=" + video_file + ">Examine</a> -")
-         print("<a href=archive-side.py?cmd=reject_detect&video_file=" + video_file + ">Reject Detection</a><br>")
+         #print("<BR><a href=" + trim_file + ">Trim</a> - ")
+         #print("<a href=" + meteor_video_file + ">Meteor</a> - ")
+         #print("<a href=archive-side.py?cmd=examine&video_file=" + meteor_video_file + ">Examine</a> -")
+         #print("<a href=archive-side.py?cmd=reject_detect&video_file=" + video_file + ">Reject Detection</a><br>")
          #data, status = object_report(moving_objects, "meteor")  
+
+      meteors_template = meteors_template.replace("%METEORS%", meteors)
+      print(meteors_template)
 
    if type == "confirm":
       print ("<h1>Motion Confirmations</h1>")
@@ -1225,9 +1368,10 @@ def browse_day(day, cam):
 
 
 def main():
+
    rand_num = random.randint(1,10000)
-   print ("<link rel='stylesheet' href='div_table.css?" + str(rand_num) + "'>")
-   print("<script src='big-little-image.js'></script>")
+   #print ("<link rel='stylesheet' href='div_table.css?" + str(rand_num) + "'>")
+   #print("<script src='big-little-image.js'></script>")
 
    form = cgi.FieldStorage()
    cam_num = form.getvalue('cam_num')
@@ -1238,7 +1382,6 @@ def main():
    #cmd = "browse_day"
    #day = "2018-05-10"
    #cam_num = 5
-
 
    archive_links = make_archive_links()
 
@@ -1257,6 +1400,7 @@ def main():
       reject_detect()  
    if cmd == "examine":
       video_file = form.getvalue('video_file')
+      #video_file="/mnt/ams2/SD/proc2/2019_01_11/2019_01_11_11_37_04_000_010006-trim1169-meteor.mp4"
       #examine_video_clip(video_file)  
       examine_new(video_file)  
 
