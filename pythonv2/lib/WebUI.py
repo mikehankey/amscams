@@ -37,7 +37,6 @@ def controller(json_conf):
       reset(video_file, type)
    if cmd == 'examine':
       video_file = form.getvalue('video_file')
-#      video_file = "/mnt/ams2/SD/proc2/2019_01_28//passed/2019_01_28_01_56_16_000_010002-trim0545.mp4"
       examine(video_file)
    if cmd == '' or cmd is None:
       main_page(json_conf)   
@@ -157,7 +156,6 @@ def browse_day(day,cams_id,json_conf):
       </style>
    </head>
    """)
-   #failed_files, meteor_files, pending_files = get_day_stats("/mnt/ams2/SD/proc2/" + day + "/", json_conf)
    day_files = get_day_files(day,cams_id,json_conf)
    for base_file in day_files:
       video_file = base_file + ".mp4"
@@ -180,7 +178,8 @@ def browse_day(day,cams_id,json_conf):
       print("<img id=" + base_js_name + " class='" + htclass + "' width=300 src=" + stack_file + "></img></a>")
 
 def browse_detects(day,type,json_conf):
-   failed_files, meteor_files, pending_files = get_day_stats("/mnt/ams2/SD/proc2/" + day + "/", json_conf)
+   proc_dir = json_conf['site']['proc_dir']
+   failed_files, meteor_files, pending_files = get_day_stats(proc_dir + day + "/", json_conf)
    if type == 'meteor':
       files = meteor_files
    else:
