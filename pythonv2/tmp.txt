@@ -1,0 +1,37 @@
+SHOW: 0
+Meteor Test Passed.
+Saved:  /mnt/ams2/SD/proc2/2019_01_26//2019_01_26_08_02_41_000_010006-trim0980-stacked.png
+mv /mnt/ams2/SD/proc2/2019_01_26//2019_01_26_08_02_41_000_010006-trim0980.mp4 /mnt/ams2/SD/proc2/2019_01_26///passed/
+mv /mnt/ams2/SD/proc2/2019_01_26//2019_01_26_08_02_41_000_010006-trim0980-stacked.png /mnt/ams2/SD/proc2/2019_01_26///passed/
+OBJECT REPORT
+-------------
+Object:		1
+Clip Len:		125
+Hist Length:	6
+First/Last:	[82, 87]
+Meteor Y/N:	1
+Test Results:
+   Distance	1	74.09453421137081
+   Trailer	1	Good trailer ending. 125 87 38
+   Hist Len	1	History length test passed: 6
+   Elp Frames	1	3
+   Big CNT	1	0.666667 big/frame , 4 big contours 
+   CM/Gaps	1	5 cons motion, 0 gap frames 0 gap events 0.83 cm/hist
+   PX/Frame	1	24.70 px/frame
+   Moving	1	Object is moving.
+   Dupe Px	1	100 percent unique. 6 of 6 
+   Noise	1	1:1 object to frame ratio.
+   Line Fit	1	100% of points fit line.
+   Peaks	1	1 Peaks 16.67% of frames.[4]
+
+History
+   82	64	2
+   83	59	2
+   84	53	12
+   85	48	22
+   86	43	30
+   87	43	41
+
+Meteor Test Passed.
+mv /mnt/ams2/SD/proc2/2019_01_26//failed/2019_01_26_08_02_41_000_010006-trim0980.mp4 /mnt/ams2/SD/proc2/2019_01_26//2019_01_26_08_02_41_000_010006-trim0980.mp4
+cd /home/ams/amscams/pythonv2/; ./detectMeteors.py sf /mnt/ams2/SD/proc2/2019_01_26//2019_01_26_08_02_41_000_010006-trim0980.mp4 > tmp.txt
