@@ -123,6 +123,8 @@ def examine(video_file):
       for test in key['test_results']:
          tname, status, desc = test
          print(tname, status, desc, "<BR>")
+      for hist in key['history']:
+         print(hist, "<BR>")
   
 def stack_file_from_video(video_file):
    el = video_file.split("/")

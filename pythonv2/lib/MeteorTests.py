@@ -87,7 +87,8 @@ def test_objects(objects,frames):
 def test_object(object, total_frames):
    status = 1
    results = []
-
+   first_frame = object['history'][0][0]
+   last_frame = object['history'][-1][0]
    # Dist test
    dist = meteor_test_distance(object) 
    results.append(('Distance', 1, dist))
@@ -132,6 +133,11 @@ def test_object(object, total_frames):
    if gaps > 10 and gap_events > 1: 
       cm_gap_test = 0
       status = 0
+   if first_frame > 10 and gap_events >= 1 and gaps > 10:
+      cm_gap_test = 0
+      status = 0
+      
+
    desc = "{:d} cons motion, {:d} gap frames {:d} gap events {:2.2f} cm/hist".format(cm,gaps,gap_events,cm_hist_len_ratio) 
    if gaps >= cm and gap_events > 1:
       cm_gap_test = 0
@@ -390,14 +396,13 @@ def meteor_test_cm_gaps(object):
    gap_events = 0
    last_frame = 0
    for fn,x,y,w,h,mx,my in hist:
-      #print("HIST:", fn,x,y,w,h)
-      if (last_frame + 1 == fn or last_frame + 2 == fn or last_frame + 3 == fn) and last_frame > 0:
+      if (last_frame + 1 == fn) and last_frame > 0:
          cm = cm + 1
       else:
          cm = 0
          if last_frame > 5 :
             gaps = gaps + (fn - last_frame)
-            if fn - last_frame > 3:
+            if fn - last_frame > 1:
                gap_events = gap_events + 1
       if cm > max_cm:
          max_cm = cm
