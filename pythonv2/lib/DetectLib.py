@@ -309,7 +309,12 @@ def find_bright_pixels(med_stack_all):
    #star_bg = cv2.GaussianBlur(star_bg, (7, 7), 0)
    #thresh_obj = cv2.dilate(star_bg, None , iterations=4)
    thresh_obj= cv2.convertScaleAbs(star_bg)
-   (_, cnts, xx) = cv2.findContours(thresh_obj.copy(), cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
+   (cnt_res) = cv2.findContours(thresh_obj.copy(), cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
+   if len(cnt_res) == 3:
+      (_, cnts, xx) = cnt_res
+   elif len(cnt_res) == 2:
+      (cnts, xx) = cnt_res
+
    masked_pixels = []
    for (i,c) in enumerate(cnts):
       x,y,w,h = cv2.boundingRect(cnts[i])
