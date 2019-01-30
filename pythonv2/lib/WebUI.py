@@ -115,16 +115,32 @@ def examine(video_file):
    json_file = video_file.replace(".mp4", ".json")
    #print(json_file)
    json_data= load_json_file(json_file)
-   print("<h2>Detection Test Results</h2>")
+   print("<h2>Detection Test Results</h2>")   
+   print("{:d} Object Detections <BR>".format(len(json_data)))
+
+   meteor_output = ""
+   non_meteor_output = ""
    for key in json_data:
-      print("<HR>", "Object ID: ", key['oid'], "<BR>")
-      print("Meteor Y/N: ", key['meteor'], "<BR>")
-      print("Test Results <BR>")
-      for test in key['test_results']:
-         tname, status, desc = test
-         print(tname, status, desc, "<BR>")
-      for hist in key['history']:
-         print(hist, "<BR>")
+      if key['meteor'] == 1:
+         meteor_output = meteor_output + "<HR>Object ID: {:d}<BR>".format(key['oid'])
+         meteor_output = meteor_output + "Meteor Y/N:    {:d}<BR>".format(key['meteor'])
+         meteor_output = meteor_output + "Meteor Object <BR>"
+         for test in key['test_results']:
+            tname, status, desc = test
+            meteor_output = meteor_output + "{:s} {:f} {:s}<BR>".format(tname,status,str(desc))
+         for hist in key['history']:
+            meteor_output = meteor_output + "{:s} <BR>".format(str(hist))
+      else:
+         non_meteor_output = non_meteor_output + "<HR>Object ID: {:d}<BR>".format(key['oid'])
+         non_meteor_output = non_meteor_output + "Meteor Y/N:    {:d}<BR>".format(key['meteor'])
+         non_meteor_output = non_meteor_output + "Meteor Object <BR>"
+         for test in key['test_results']:
+            tname, status, desc = test
+            non_meteor_output = non_meteor_output + "{:s} {:f} {:s}<BR>".format(tname,status,str(desc))
+         for hist in key['history']:
+            non_meteor_output = non_meteor_output + "{:s} <BR>".format(str(hist))
+   print(meteor_output)
+   print(non_meteor_output)
   
 def stack_file_from_video(video_file):
    el = video_file.split("/")
@@ -134,10 +150,20 @@ def stack_file_from_video(video_file):
    stack_file = stack_file.replace(".mp4", "-stacked.png")
    return(stack_file)
 
-def browse_day(day,cams_id,json_conf):
+
+def print_css():
    print ("""
    <head>
       <style> 
+         figure {
+            text-align: center;
+            font-size: smaller;
+            float: left;
+            border: thin silver solid;
+            margin: 0.1em;
+            padding: 0.1em;
+         }
+
          img.meteor {
             border: thin red solid;
             background-color: red;
@@ -152,14 +178,19 @@ def browse_day(day,cams_id,json_conf):
          }
          img.none {
             border: thin silver solid;
-            margin: 0.3em;
-            padding: 0.3em;
+            width: 300px;
+            margin: 0.2em;
+            padding: 0.2em;
          }
       </style>
    </head>
    """)
+
+
+def browse_day(day,cams_id,json_conf):
+   print_css()
    day_files = get_day_files(day,cams_id,json_conf)
-   for base_file in day_files:
+   for base_file in sorted(day_files,reverse=True):
       video_file = base_file + ".mp4"
       stack_file = stack_file_from_video(video_file)
       #stack_file = stack_file.replace(day, day + "/images/")
@@ -180,16 +211,28 @@ def browse_day(day,cams_id,json_conf):
       print("<img id=" + base_js_name + " class='" + htclass + "' width=300 src=" + stack_file + "></img></a>")
 
 def browse_detects(day,type,json_conf):
+   print_css()
    proc_dir = json_conf['site']['proc_dir']
    failed_files, meteor_files, pending_files = get_day_stats(proc_dir + day + "/", json_conf)
    if type == 'meteor':
       files = meteor_files
+      show_day = day.replace("_", "/")
+      print("<h1>Meteor Detections on {:s}</h1>".format(show_day))
+      print("{:d} Meteors Detected<br>".format(len(files)))
    else:
       files = failed_files
-   for file in files:
+   for file in sorted(files, reverse=True):
       stack_img = file.replace(".mp4", "-stacked.png")
+      el = stack_img.split("/")
+      short = el[-1].replace("-stacked.png", "")
+      xxx = short.split("-trim")
+      short_name = xxx[0]
+    
       print("<a href=webUI.py?cmd=examine&video_file=" + file + ">")
-      print("<img src=" + stack_img + " width=400></a>")
+      #print("<img src=" + stack_img + " width=400></a>{:s}".format(short_name))
+      base_js_name="yo"
+      htclass = "none"
+      print("<figure><img id=" + base_js_name + " class='" + htclass + "' width=300 src=" + stack_img + "></img></a><figcaption>" + short_name + "</figcaption></figure>")
 
 
 def main_page(json_conf):

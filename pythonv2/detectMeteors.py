@@ -9,7 +9,7 @@ from lib.DetectLib import check_for_motion2, id_object, object_report
 from lib.MeteorTests import test_objects
 from lib.FileIO import load_json_file 
 from lib.VideoLib import load_video_frames 
-from lib.ImageLib import stack_frames
+from lib.ImageLib import stack_frames, draw_stack
 from lib.UtilLib import convert_filename_to_date_cam
 
 
@@ -54,17 +54,19 @@ def scan_file(video_file, show):
       objects = []
       meteor_found = 0
 
+
    if meteor_found == 1:
       print("Meteor Test Passed.")
-      stack_frames(frames, video_file)
+      stack_file,stack_img = stack_frames(frames, video_file)
       save_meteor(video_file,objects)
       # hd_meteor_processing(video_file,objects)
       # reduce meteor / solve meteor
       # upload meteor
    else:
       print("Meteor Test Failed.")
-      stack_frames(frames, video_file)
+      stack_file, stack_img = stack_frames(frames, video_file)
       save_failed_detection(video_file,objects)
+   draw_stack(objects,stack_img,stack_file)
    obj_report = object_report(objects)
    print(obj_report)
    if meteor_found == 1:

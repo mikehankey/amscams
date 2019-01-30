@@ -1,6 +1,8 @@
 #!/usr/bin/python3
 
+
 from PIL import Image
+import glob
 import numpy as np
 import cv2
 import os
@@ -11,8 +13,29 @@ import json
 from lib.VideoLib import load_video_frames
 from lib.ImageLib import stack_frames , stack_glob, stack_stack
 from lib.FileIO import load_json_file , cfe
+from lib.BatchLib import batch_obj_stacks
 
 json_conf = load_json_file("../conf/as6.json")
+
+
+def stack_all():
+   proc_dir = json_conf['site']['proc_dir']
+   cameras = json_conf['cameras']
+   cam_ids = []
+   for camera in cameras:
+      cam_ids.append((cameras[camera]['cams_id']))
+
+   temp_dirs = glob.glob(proc_dir + "/*")
+   proc_days = []
+   for proc_day in temp_dirs :
+      if "daytime" not in proc_day and "json" not in proc_day and "meteors" not in proc_day and cfe(proc_day, 1) == 1:
+         proc_days.append(proc_day+"/")
+   for proc_day in sorted(proc_days,reverse=True):
+      for cams_id in cam_ids:
+         print("STACK NIGHT:", proc_day, cams_id)
+         cmd = "./stackVideo.py sn " + proc_day + " " + cams_id
+         os.system(cmd)
+
 
 
 cmd = sys.argv[1]
@@ -31,6 +54,12 @@ if cmd == 'sm':
    out_file = img_dir + cams_id + "-meteors-stack.png"
    print(glob_dir, out_file)
    stack_glob(glob_dir, out_file)
+
+if cmd == 'bos':
+   batch_obj_stacks(json_conf)
+
+if cmd == 'sa':
+   stack_all()
 
 if cmd == 'sn':
    print ("stacking failures")

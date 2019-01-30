@@ -3,6 +3,35 @@ import glob
 import numpy as np
 from PIL import Image, ImageChops
 from lib.FileIO import cfe
+#from lib.DetectLib import 
+from lib.MeteorTests import find_min_max_dist, max_xy
+
+def bigger_box(min_x,min_y,max_x,max_y,iw,ih,fac=5):
+   if min_x - fac < 0:
+      min_x = 0 
+   if min_y - fac < 0:
+      min_y = 0 
+   if max_x + fac > iw-1:
+      max_x = iw-1
+   if max_y + fac > ih-1:
+      max_y = ih-1
+   return(min_x-fac,min_y-fac,max_x+fac,max_y+fac)
+
+
+def draw_stack(objects,stack_img,stack_file):
+   ih,iw=stack_img.shape
+   for obj in objects:
+      hist = obj['history'] 
+      (max_x,max_y,min_x,min_y) = find_min_max_dist(hist)
+      (min_x,min_y,max_x,max_y) = bigger_box(min_x,min_y,max_x,max_y,iw,ih,25) 
+      cv2.rectangle(stack_img, (min_x, min_y), (max_x , max_y), (255, 0, 0,.02), 1)
+      if obj['meteor'] == 1:
+         cv2.putText(stack_img, str(obj['oid']) + " Meteor",  (min_x,min_y-3), cv2.FONT_HERSHEY_SIMPLEX, .4, (255, 255, 255), 1)
+      else:
+         cv2.putText(stack_img, str(obj['oid']) ,  (min_x-5,min_y-12), cv2.FONT_HERSHEY_SIMPLEX, .4, (255, 255, 255), 1)
+   stack_file=stack_file.replace("-stacked.png", "-stacked-obj.png")
+   print("WROTE:", stack_file)
+   cv2.imwrite(stack_file,stack_img)
 
 def stack_stack(pic1, pic2):
    stacked_image=ImageChops.lighter(pic1,pic2)
@@ -43,6 +72,7 @@ def stack_frames(frames,video_file):
       print ("Saved: ", stacked_file)
    else:
       print("bad file:", video_file)
+   return(stacked_file,np.asarray(stacked_image))
 
 
 def adjustLevels(img_array, minv, gamma, maxv, nbits=None):

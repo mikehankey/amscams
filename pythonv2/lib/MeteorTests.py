@@ -1,6 +1,7 @@
 from scipy import signal
 import numpy as np
 from lib.UtilLib import calc_dist
+import math
 
 def best_fit_slope_and_intercept(xs,ys):
     xs = np.array(xs, dtype=np.float64)
@@ -12,7 +13,11 @@ def best_fit_slope_and_intercept(xs,ys):
 
     return m, b
 
-def max_xy(x,y,w,h,max_x,max_y,min_x,min_y):
+def max_xy(x,y,w,h,max_x,max_y,min_x,min_y,mute_wh=0):
+   # ignore w,h
+   if mute_wh == 1:
+      w = 0
+      h = 0
 
    if x + w > max_x:
       max_x = x + w
@@ -40,6 +45,7 @@ def test_objects(objects,frames):
    meteor_found = 0
    meteors = 0
    new_objects = []
+   total_objects = len(objects)
    for object in objects:
       status, test_results = test_object(object, total_frames)
       object['total_frames'] = total_frames
@@ -73,7 +79,7 @@ def test_objects(objects,frames):
                if stuff[1] != "":
                   big_cnt = int(stuff[1])
                   big_cnts = big_cnts + big_cnt
-      if big_cnts > 100:
+      if big_cnts > 100 and total_objects > 10:
          for object in objects:
             object['meteor'] = 0
             object['test_results'].append(('Big CNTs', 0,'Too many big CNTs:' + str(big_cnts)))
@@ -91,7 +97,11 @@ def test_object(object, total_frames):
    last_frame = object['history'][-1][0]
    # Dist test
    dist = meteor_test_distance(object) 
-   results.append(('Distance', 1, dist))
+   if float(dist) <= 1:
+      results.append(('Distance', 0, dist))
+      status = 0
+   else:
+      results.append(('Distance', 1, dist))
 
    # Trailer Test
    trailer_test, desc = meteor_test_trailer(object,total_frames)
@@ -108,6 +118,14 @@ def test_object(object, total_frames):
    # ELP Frames test
    elp_frames = meteor_test_elp_frames(object) 
    results.append(('Elp Frames', 1, elp_frames))
+
+   (perc_pass,avg_avl,avl_segs) = meteor_test_direction(object)
+   avl_test = 1
+   if perc_pass < .5 and avg_avl > .9: 
+      avl_test = 0
+      status = 0
+   desc = "{}/f ratio AVL test {} {}".format(perc_pass,avg_avl,str(avl_segs))
+   results.append(('AVL', avl_test, desc))
 
    # BIG contour test
    big,big_perc = meteor_test_big(object) 
@@ -130,13 +148,17 @@ def test_object(object, total_frames):
    if cm_hist_len_ratio < .5 and gap_events > 1: 
       cm_gap_test = 0
       status = 0
-   if gaps > 10 and gap_events > 1: 
+   if gaps > 10 and gap_events > 1 and cm_hist_len_ratio < .5: 
       cm_gap_test = 0
       status = 0
-   if first_frame > 10 and gap_events >= 1 and gaps > 10:
+   if first_frame > 10 and gap_events >= 1 and gaps > 10 and cm_hist_len_ratio < .5:
       cm_gap_test = 0
       status = 0
-      
+   
+   if big >= cm:   
+      status = 0
+      desc = "More big cnts ({:d}) than cm ({:d})".format(big,cm)
+      results.append(('Big/CM', 0, desc))
 
    desc = "{:d} cons motion, {:d} gap frames {:d} gap events {:2.2f} cm/hist".format(cm,gaps,gap_events,cm_hist_len_ratio) 
    if gaps >= cm and gap_events > 1:
@@ -215,6 +237,57 @@ def test_object(object, total_frames):
    return(status, results)
 
 
+def meteor_test_direction(object):
+   # test direction and distance between frames determine consistency
+   hist = object['history']
+   last_dist = 0
+   fc = 0
+   segs = []
+   st_segs = []
+   avl_segs = []
+   for fn,x,y,w,h,mx,my in hist:
+      x = x  
+      y = y  
+      if fc > 0:
+         dist = calc_dist((lx,ly),(x,y))
+         st_dist = calc_dist((fx,fy),(x,y))
+         avl = st_dist / fc
+         segs.append(dist)
+         st_segs.append(st_dist)
+         avl_segs.append(avl)
+      else:
+         fx = x 
+         fy = y
+
+      lx = x
+      ly = y 
+      fc = fc + 1 
+
+   avg_avl = np.mean(avl_segs)
+   std_d = std_dev(avl_segs)
+   tpass = 0
+   vdiff = avg_avl * .2
+   for avl in avl_segs:
+      if avg_avl - vdiff <= avl <= avg_avl + vdiff:
+         tpass = tpass + 1
+
+   if len(avl_segs) > 0:
+      perc_pass = tpass / len(avl_segs)
+   else:
+      perc_pass = 0
+
+   return(perc_pass,avg_avl,avl_segs)
+
+def std_dev(data):
+   avg = np.mean(data)
+   new_data = []
+   for n in data:
+      d = (avg - n)**2
+      new_data.append(d)
+   new_avg = np.mean(new_data)
+   std_d = math.sqrt(new_avg)
+   return(std_d)
+
 def meteor_test_trailer(object,total_frames):
    last_frame = object['history'][-1][0]
    fdiff = total_frames - last_frame 
@@ -227,7 +300,7 @@ def meteor_test_moving(hist):
 
    (max_x,max_y,min_x,min_y) = find_min_max_dist(hist)
    dist = calc_dist((min_x,min_y),(max_x,max_y))
-   if dist < 3:
+   if dist <= 1:
       return 0, "Object is NOT moving."
    else:
       return 1, "Object is moving."
@@ -251,7 +324,7 @@ def meteor_test_dupe_px(object):
    for fn,x,y,w,h,mx,my in hist:
       cx = int(x+ (w/2))
       cy = int(y+ (h/2))
-      xs.append((cx,cy))
+      xs.append((x,y))
    ux = list(set(xs))
    ul = len(ux)
    tl = len(hist)

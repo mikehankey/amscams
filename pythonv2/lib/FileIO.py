@@ -77,8 +77,33 @@ def save_meteor(video_file, objects):
    cmd = "mv " + base_dir + base_fn + "-stacked.png "  + passed_dir
    print(cmd) 
    os.system(cmd)
+   cmd = "mv " + base_dir + base_fn + "-stacked-obj.png "  + passed_dir
+   print(cmd) 
+   os.system(cmd)
+
    video_json_file = passed_dir + base_fn + ".json"
    save_json_file(video_json_file, objects)
+
+
+
+
+def save_failed_detection(video_file, objects):
+   (base_fn, base_dir, image_dir, data_dir,failed_dir,passed_dir) = setup_dirs(video_file)
+   cmd = "mv " + base_dir + base_fn + ".mp4 "  + failed_dir
+   print(cmd) 
+   os.system(cmd)
+   cmd = "mv " + base_dir + base_fn + "-stacked.png "  + failed_dir
+   print(cmd) 
+   os.system(cmd)
+
+   cmd = "mv " + base_dir + base_fn + "-stacked-obj.png "  + passed_dir
+   print(cmd) 
+   os.system(cmd)
+
+   video_json_file = failed_dir + base_fn + ".json"
+   save_json_file(video_json_file, objects)
+
+
 
 
 

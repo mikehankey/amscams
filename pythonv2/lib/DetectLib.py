@@ -3,7 +3,7 @@ import cv2
 import numpy as np
 from lib.MeteorTests import meteor_test_moving, find_min_max_dist, max_xy
 from lib.ImageLib import median_frames, mask_frame, preload_image_acc, adjustLevels
-from lib.UtilLib import calc_dist
+from lib.UtilLib import calc_dist,find_slope
 from lib.VideoLib import get_masks
 
 
@@ -26,7 +26,7 @@ def object_report(objects):
          object_report = object_report + "\nHistory\n"
          for hist in object['history']:
              
-            object_report = object_report + "   {:d}\t{:d}\t{:d}\n".format(hist[0],hist[1],hist[2])
+            object_report = object_report + "   {:d}\t{:d}\t{:d}\t{:d}\t{:d}\n".format(hist[0],hist[1],hist[2],hist[3],hist[4])
    return(object_report)
 
 
@@ -63,6 +63,7 @@ def save_object(object,objects):
    return(new_objects)
 
 def find_in_hist(object,x,y,object_hist, hd = 0):
+   oid = object['oid']
    found = 0
    if hd == 1:
       md = 40
@@ -75,16 +76,38 @@ def find_in_hist(object,x,y,object_hist, hd = 0):
    else:
       moving = 0
 
+   if moving == 1:
+      fx = object_hist[0][1]
+      fy = object_hist[0][2]
+      lx = object_hist[-1][1]
+      ly = object_hist[-1][2]
+      first_last_slope = find_slope((fx,fy), (lx,ly))
+      first_this_slope = find_slope((fx,fy), (x,y))
+      last_this_slope = find_slope((lx,ly), (x,y))
+      if int(oid) == 3:
+         slope_diff = abs(abs(first_last_slope) - abs(first_this_slope))
+         if slope_diff > 1:
+            #print("SLOPE FAILED: ", first_last_slope, first_this_slope, slope_diff)
+            return(0)
+         #else:
+         #   print("SLOPE PASSED: ", first_last_slope, first_this_slope, slope_diff)
+ 
+   if len(object_hist) >=4:
+      object_hist = object_hist[-3:]
+
    for fc,ox,oy,w,h,mx,my in object_hist:
-      cox = ox + mx
-      coy = oy + my
-      if cox - md <= x <= cox + md and coy -md <= y <= coy + md:
+      
+      #if int(oid) == 3:
+      #   print("MATCHING OID 3 X,Y", x,y," to ",ox,oy)
+      cox = ox + int(w/2)
+      coy = oy + int(h/w)
+      if ox - md <= x <= ox + md and oy -md <= y <= oy + md:
          found = 1
          return(1)
 
    # if not found double distance and try again but only if moving!
    if moving == 1:
-      md = md * 2
+      md = md * 1.1
       for fc,ox,oy,w,h,mx,my in object_hist:
          cox = ox + mx
          coy = oy + my
@@ -194,11 +217,15 @@ def check_for_motion2(frames, video_file, cams_id, json_conf, show = 0):
    return(objects)
 
 def id_object(cnt, objects, fc,max_loc, is_hd=0):
+
    mx,my= max_loc
    mx = mx - 1
    my = my - 1
    x,y,w,h = cv2.boundingRect(cnt)
    cx,cy = center_point(x,y,w,h)
+   #print("ID OBJECT NEAR POINT:", cx,cy)
+   #print("\tLEN OBJECTS:", len(objects))
+
    if len(objects) == 0:
       oid = 1
       object = make_new_object(oid, fc,x,y,w,h,mx,my)
@@ -212,13 +239,14 @@ def id_object(cnt, objects, fc,max_loc, is_hd=0):
 
 
    for obj in objects:
+      moid = obj['oid']
       oid = obj['oid']
       ox = obj['x']
       oy = obj['y']
       object_hist = obj['history']
       bx = x + mx
       by = y + my
-      found = find_in_hist(obj,cx,cy,object_hist, is_hd)
+      found = find_in_hist(obj,x,y,object_hist, is_hd)
       if found == 1:
          matches.append(obj)
       #else:
@@ -242,7 +270,10 @@ def id_object(cnt, objects, fc,max_loc, is_hd=0):
       return(object, objects)
 
    if len(matches) > 1:
-
+      #print(fc, "MORE THAN ONE MATCH for",x,y, len(matches))
+      #print("--------------------")
+      #print(matches)
+      #print("--------------------")
       min_dist = 1000
       match_total_hist = 0
       for match in matches:
