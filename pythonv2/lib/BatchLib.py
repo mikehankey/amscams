@@ -1,7 +1,22 @@
+import os
 import cv2
 import glob
 from lib.FileIO import get_day_stats, load_json_file, cfe, get_days, save_json_file,load_json_file
 from lib.ImageLib import draw_stack, thumb
+
+
+def move_images(json_conf):
+ 
+   proc_dir = json_conf['site']['proc_dir']
+   days = get_days(json_conf)
+   for day in days:
+      cmd = "mv " + proc_dir + day + "/*.png " + proc_dir + day + "/images/"
+      print(cmd)
+      os.system(cmd)
+      cmd = "mv " + proc_dir + day + "/*.txt " + proc_dir + day + "/data/"
+      print(cmd)
+      os.system(cmd)
+   
 
 def make_file_index(json_conf):
    proc_dir = json_conf['site']['proc_dir']

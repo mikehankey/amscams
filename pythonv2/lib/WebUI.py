@@ -6,8 +6,11 @@ from lib.FileIO import get_proc_days, get_day_stats, get_day_files , load_json_f
 def make_day_preview(day_dir, json_conf):
    el = day_dir.split("/")
    day = el[-1]
+   if day == "":
+      day = el[-2]
    day_str = day
    html_out = ""
+
    for cam in json_conf['cameras']:
       cams_id = json_conf['cameras'][cam]['cams_id']
       obj_stack = day_dir + "/" + "images/"+ cams_id + "-night-stack.png"
@@ -188,7 +191,10 @@ def print_css():
 
 
 def browse_day(day,cams_id,json_conf):
+
+
    print_css()
+
    day_files = get_day_files(day,cams_id,json_conf)
    for base_file in sorted(day_files,reverse=True):
       video_file = base_file + ".mp4"
@@ -239,17 +245,25 @@ def browse_detects(day,type,json_conf):
 def main_page(json_conf):
    print("<h1>AllSky6 Control Panel</h1>")    
    days = sorted(get_proc_days(json_conf),reverse=True)
-   for day_dir in days:
-      if "meteor" not in day_dir and "daytime" not in day_dir and "json" not in day_dir:
-         failed_files, meteor_files, pending_files = get_day_stats(day_dir, json_conf)
 
-         html_row, day = make_day_preview(day_dir,json_conf)
+   json_file = json_conf['site']['proc_dir'] + "json/" + "main-index.json"
+   stats_data = load_json_file(json_file)
+
+   for day in stats_data: 
+      day_str = day
+      day_dir = json_conf['site']['proc_dir'] + day + "/" 
+      if "meteor" not in day_dir and "daytime" not in day_dir and "json" not in day_dir:
+         failed_files = stats_data[day]['failed_files']
+         meteor_files = stats_data[day]['meteor_files']
+         pending_files = stats_data[day]['pending_files']
+
+         html_row, day_x = make_day_preview(day_dir,json_conf)
          day_str = day.replace("_", "/")
          print("<h2>" + day_str + "</h2>")
          print("<a href=webUI.py?cmd=browse_detects&type=meteor&day=" + day + ">" \
-            + str(len(meteor_files)) + " Meteor Detections</a> - ")
+            + str(meteor_files) + " Meteor Detections</a> - ")
          print("<a href=webUI.py?cmd=browse_detects&type=failed&day=" + day + ">" \
-            + str(len(failed_files)) + " Rejected Detections</a> - ")
-         print(str(len(pending_files)) + " Files Pending</a> ")
+            + str(failed_files) + " Rejected Detections</a> - ")
+         print(str(pending_files) + " Files Pending</a> ")
          print("<P>")
          print(html_row)
