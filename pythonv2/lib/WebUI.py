@@ -193,6 +193,7 @@ def browse_day(day,cams_id,json_conf):
    for base_file in sorted(day_files,reverse=True):
       video_file = base_file + ".mp4"
       stack_file = stack_file_from_video(video_file)
+      stack_file_tn = stack_file.replace(".png", "-tn.png")
       #stack_file = stack_file.replace(day, day + "/images/")
       #print(day_files[base_file])
       if day_files[base_file] == 'meteor':
@@ -208,7 +209,7 @@ def browse_day(day,cams_id,json_conf):
          #+ " onmouseover=\"document.getElementById('" + base_js_name + "').width=705\" " \
          #+ " onmouseout=\"document.getElementById('" + base_js_name + "').width=300\" " +  ">"
       print(link)  
-      print("<img id=" + base_js_name + " class='" + htclass + "' width=300 src=" + stack_file + "></img></a>")
+      print("<img id=" + base_js_name + " class='" + htclass + "' width=300 src=" + stack_file_tn + "></img></a>")
 
 def browse_detects(day,type,json_conf):
    print_css()

@@ -6,6 +6,23 @@ from lib.FileIO import cfe
 #from lib.DetectLib import 
 from lib.MeteorTests import find_min_max_dist, max_xy
 
+
+def thumb(image_file = "", image = ""):
+   print("THUMB!", image_file)
+   if image_file != "":
+      thumb_file = image_file.replace(".png", "-tn.png")
+      image = cv2.imread(image_file)
+   try:
+      print(image.shape)
+   except:
+      return()
+   thumb_img = cv2.resize(image, (0,0),fx=.4, fy=.4)
+   if image_file != "":
+      cv2.imwrite(thumb_file,thumb_img)
+   
+   return(image)
+
+
 def bigger_box(min_x,min_y,max_x,max_y,iw,ih,fac=5):
    if min_x - fac < 0:
       min_x = 0 

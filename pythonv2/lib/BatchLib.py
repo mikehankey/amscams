@@ -1,7 +1,27 @@
 import cv2
 import glob
 from lib.FileIO import get_day_stats, load_json_file, cfe
-from lib.ImageLib import draw_stack
+from lib.ImageLib import draw_stack, thumb
+
+def batch_thumb(json_conf):
+   print("BATCH THUMB")
+   proc_dir = json_conf['site']['proc_dir']
+   temp_dirs = glob.glob(proc_dir + "/*")
+   proc_days = []
+   for proc_day in temp_dirs :
+      if "daytime" not in proc_day and "json" not in proc_day and "meteors" not in proc_day and cfe(proc_day, 1) == 1:
+         proc_days.append(proc_day+"/")
+
+   for proc_day in sorted(proc_days,reverse=True):
+      folder = proc_day + "/images/"
+      print("FOLDER", folder)
+      glob_dir = folder + "*-stacked.png"
+      image_files = glob.glob(glob_dir) 
+      for file in image_files:
+         tn_file = file.replace(".png", "-tn.png")
+         if cfe(tn_file) == 0:
+            print(file)
+            thumb(file)
 
 def batch_obj_stacks(json_conf):
    proc_dir = json_conf['site']['proc_dir']
