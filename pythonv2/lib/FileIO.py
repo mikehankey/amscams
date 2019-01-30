@@ -4,6 +4,17 @@ import os
 import glob
 from pathlib import Path
 
+def get_days(json_conf):
+   proc_dir = json_conf['site']['proc_dir']
+   days = []
+   files = os.listdir(proc_dir)
+   for file in files:
+      if file[0] == "2":
+         # the above line will stop working in 980 years i.e. y3k
+         days.append(file)
+   return(sorted(days, reverse=True))
+
+
 def get_trims_for_file(video_file):
    el = video_file.split("/")
    base_dir = video_file.replace(el[-1], "")

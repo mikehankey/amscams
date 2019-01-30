@@ -1,7 +1,31 @@
 import cv2
 import glob
-from lib.FileIO import get_day_stats, load_json_file, cfe
+from lib.FileIO import get_day_stats, load_json_file, cfe, get_days, save_json_file,load_json_file
 from lib.ImageLib import draw_stack, thumb
+
+def make_file_index(json_conf):
+   proc_dir = json_conf['site']['proc_dir']
+   data_dir = proc_dir + "/json/"
+   days = get_days(json_conf)
+   d = 0
+   html = ""
+   stats = {}
+
+   json_file = data_dir + "main-index.json"
+
+   for day in days:
+
+      (failed_files, meteor_files,pending_files) = get_day_stats(proc_dir + day + "/", json_conf)
+
+      stats[day] = {}
+      stats[day]['failed_files'] = len(failed_files)
+      stats[day]['meteor_files'] = len(meteor_files)
+      stats[day]['pending_files'] = len(pending_files)
+      print(day)
+   json_file = data_dir + "main-index.json"
+   save_json_file(json_file, stats)
+   print(json_file)
+
 
 def batch_thumb(json_conf):
    print("BATCH THUMB")
