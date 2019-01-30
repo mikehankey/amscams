@@ -30,13 +30,13 @@ def max_xy(x,y,w,h,max_x,max_y,min_x,min_y,mute_wh=0):
    return(max_x,max_y,min_x,min_y)
 
 
-def find_min_max_dist(hist):
+def find_min_max_dist(hist,mute_wh=0):
    max_x = 0
    max_y = 0
    min_x = 10000
    min_y = 10000
    for fn,x,y,w,h,mx,my in hist:
-      max_x, max_y,min_x,min_y = max_xy(x,y,w,h,max_x,max_y,min_x,min_y)
+      max_x, max_y,min_x,min_y = max_xy(x,y,w,h,max_x,max_y,min_x,min_y,mute_wh)
 
    return(max_x,max_y,min_x,min_y)
 
@@ -97,7 +97,7 @@ def test_object(object, total_frames):
    last_frame = object['history'][-1][0]
    # Dist test
    dist = meteor_test_distance(object) 
-   if float(dist) <= 1:
+   if float(dist) <= 2:
       results.append(('Distance', 0, dist))
       status = 0
    else:
@@ -427,7 +427,7 @@ def meteor_test_distance(object):
    status = 1
    reason = "DISTANCE TEST PASSED: " + str(oid) + ": Distance test passed. "
    hist = object['history']
-   (max_x,max_y,min_x,min_y) = find_min_max_dist(hist)
+   (max_x,max_y,min_x,min_y) = find_min_max_dist(hist,1)
 
    dist = calc_dist((min_x,min_y),(max_x,max_y))
 

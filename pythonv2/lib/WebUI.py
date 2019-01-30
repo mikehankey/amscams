@@ -26,6 +26,9 @@ def controller(json_conf):
    
    form = cgi.FieldStorage()
    cmd = form.getvalue('cmd')
+   if cmd == 'override_detect':
+      video_file = form.getvalue('video_file')
+      override_detect(video_file,json_conf)
 
    if cmd == 'examine_min':
       video_file = form.getvalue('video_file')
@@ -109,14 +112,49 @@ def examine_min(video_file,json_conf):
       print("<h2>No Detections</h2>")
    #print(failed_files,meteor_files)
 
+def override_detect(video_file,json_conf):
+   base = video_file.replace(".mp4", "")
+   el = base.split("/")
+   base_dir = base.replace(el[-1], "")
+   
+   if "passed" in base:
+      new_dir = base_dir.replace("passed", "failed")
+      cmd = "mv " + base + "* " + new_dir
+      os.system(cmd)
+      print("Files moved to failed dir.")
+
+   if "failed" in base: 
+      new_dir = base_dir.replace("failed", "passed")
+      cmd = "mv " + base + "* " + new_dir
+      os.system(cmd)
+      print("Files moved to meteor dir.")
+
 def examine(video_file):
+   print_css()
    stack_img = video_file.replace(".mp4", "-stacked.png")
+   stack_obj_img = video_file.replace(".mp4", "-stacked-obj.png")
+   base_js_name = "123"
+   htclass='norm'
    print("<a href=" + video_file + ">")
-   print("<p><img src=" + stack_img + " ></a></p>")
-   print("<a href=webUI.py?cmd=reject&type=meteor&video_file=" + video_file + " >Reject Meteor Detection</a> - ")
-   print("<a href=webUI.py?cmd=reset&type=meteor&video_file=" + video_file + " >Re-run Meteor Detection</a>")
+   #print("<p><img src=" + stack_img + " ></a></p>")
+   html_out = ""
+   html_out = html_out + "<a href=\"" + video_file + "\"" \
+         + " onmouseover=\"document.getElementById('" + base_js_name + "').src='" + stack_obj_img \
+         + "'\" onmouseout=\"document.getElementById('" + base_js_name + "').src='" + stack_img+ "'\">"
+   html_out = html_out + "<img class=\"" + htclass + "\" id=\"" + base_js_name + "\" src='" + stack_img+ "'></a><br>\n"
+   print("<figure>")
+   print(html_out)
+   if "passed" in video_file:
+      print("<a href=webUI.py?cmd=override_detect&video_file=" + video_file + " >Reject Meteor</a> - ")
+   else:
+      print("<a href=webUI.py?cmd=override_detect&video_file=" + video_file + " >Tag as Meteor</a> - ")
+
+   print("<a href=webUI.py?cmd=reset&type=meteor&video_file=" + video_file + " >Re-run Detection</a>")
+
+   print("</figure>")
+   print("<p style='clear: both'></p>")
    json_file = video_file.replace(".mp4", ".json")
-   #print(json_file)
+
    json_data= load_json_file(json_file)
    print("<h2>Detection Test Results</h2>")   
    print("{:d} Object Detections <BR>".format(len(json_data)))
@@ -185,6 +223,11 @@ def print_css():
             margin: 0.2em;
             padding: 0.2em;
          }
+         img.norm {
+            border: thin silver solid;
+            margin: 0.2em;
+            padding: 0.2em;
+         }
       </style>
    </head>
    """)
@@ -230,16 +273,25 @@ def browse_detects(day,type,json_conf):
       files = failed_files
    for file in sorted(files, reverse=True):
       stack_img = file.replace(".mp4", "-stacked.png")
+      stack_obj_img = file.replace(".mp4", "-stacked-obj.png")
       el = stack_img.split("/")
       short = el[-1].replace("-stacked.png", "")
       xxx = short.split("-trim")
       short_name = xxx[0]
     
-      print("<a href=webUI.py?cmd=examine&video_file=" + file + ">")
+      #print("<a href=webUI.py?cmd=examine&video_file=" + file + ">")
       #print("<img src=" + stack_img + " width=400></a>{:s}".format(short_name))
-      base_js_name="yo"
+      base_js_name=short_name.replace("_", "")
       htclass = "none"
-      print("<figure><img id=" + base_js_name + " class='" + htclass + "' width=300 src=" + stack_img + "></img></a><figcaption>" + short_name + "</figcaption></figure>")
+
+      html_out = ""
+      html_out = html_out + "<a href=\"webUI.py?cmd=examine&video_file=" + file + "\"" \
+         + " onmouseover=\"document.getElementById('" + base_js_name + "').src='" + stack_obj_img \
+         + "'\" onmouseout=\"document.getElementById('" + base_js_name + "').src='" + stack_img+ "'\">"
+      html_out = html_out + "<img class=\"" + htclass + "\" id=\"" + base_js_name + "\" width='200' src='" + stack_img+ "'></a>\n"
+
+      #print("<figure><img id=" + base_js_name + " class='" + htclass + "' width=300 src=" + stack_img + "></img></a><figcaption>" + short_name + "</figcaption></figure>")
+      print("<figure>" + html_out + "<figcaption>" + short_name + "</figcaption></figure>")
 
 
 def main_page(json_conf):
