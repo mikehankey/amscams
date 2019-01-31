@@ -1,8 +1,83 @@
 import os
+import numpy as np
 import cv2
 import glob
 from lib.FileIO import get_day_stats, load_json_file, cfe, get_days, save_json_file,load_json_file
-from lib.ImageLib import draw_stack, thumb
+from lib.ImageLib import draw_stack, thumb, stack_glob, stack_stack
+from PIL import Image
+
+def stack_night(json_conf, limit=0, tday = None):
+   proc_dir = json_conf['site']['proc_dir']
+   all_days = get_days(json_conf)
+   if limit > 0:
+      days = all_days[0:limit]
+   else:
+      days = all_days
+
+   if tday is not None:
+      for cam in json_conf['cameras']:
+         cams_id = json_conf['cameras'][cam]['cams_id']
+         glob_dir = proc_dir + tday + "/" 
+         print(glob_dir,cams_id)
+         stack_day_cam(json_conf, glob_dir, cams_id)
+   else:
+      for day in sorted(days,reverse=True):
+         for cam in json_conf['cameras']:
+            cams_id = json_conf['cameras'][cam]['cams_id']
+            glob_dir = proc_dir + day + "/" 
+            print(glob_dir,cams_id)
+            stack_day_cam(json_conf, glob_dir, cams_id)
+
+   
+
+def stack_day_cam(json_conf, glob_dir, cams_id ):
+   print ("stacking failures")
+   # stack failed captures
+   img_dir = glob_dir + "/images/"
+   f_glob_dir = glob_dir + "/failed/*" + cams_id + "*-stacked.png"
+   out_file = img_dir + cams_id + "-failed-stack.png"
+   stack_glob(f_glob_dir, out_file)
+
+   print ("stacking meteors")
+   # then stack meteors, then join together
+   glob_dir = f_glob_dir.replace("failed", "passed")
+   print("GLOB:", glob_dir)
+   meteor_out_file = img_dir + cams_id + "-meteors-stack.png"
+   stack_glob(glob_dir, meteor_out_file)
+
+   # now join the two together (if both exist)
+   if cfe(out_file) == 1 and cfe(meteor_out_file) == 1:
+      print ("Both files exist")
+      im1 = cv2.imread(out_file, 0)
+      im2 = cv2.imread(meteor_out_file, 0)
+      im1p = Image.fromarray(im1)
+      im2p = Image.fromarray(im2)
+
+      print(out_file, meteor_out_file)
+      final_stack = stack_stack(im1p,im2p)
+      night_out_file = img_dir + cams_id + "-night-stack.png"
+      final_stack_np = np.asarray(final_stack)
+      cv2.imwrite(night_out_file, final_stack_np)
+      print(night_out_file)
+   elif cfe(out_file) == 1 and cfe(meteor_out_file) == 0:
+      im1 = cv2.imread(out_file, 0)
+      ih,iw = im1.shape
+      empty = np.zeros((ih,iw),dtype=np.uint8)
+      cv2.imwrite(meteor_out_file, empty)
+      night_out_file = img_dir + cams_id + "-night-stack.png"
+      print ("Only fails and no meteors exist")
+      os.system("cp " + out_file + " " + night_out_file)
+      print(night_out_file)
+   elif cfe(out_file) == 0 and cfe(meteor_out_file) == 0:
+      ih,iw = 576,704
+      empty = np.zeros((ih,iw),dtype=np.uint8)
+      night_out_file = img_dir + cams_id + "-night-stack.png"
+      cv2.imwrite(meteor_out_file, empty)
+      cv2.imwrite(out_file, empty)
+      cv2.imwrite(night_out_file, empty)
+      print(meteor_out_file)
+      print(out_file)
+      print(night_out_file)
 
 
 def move_images(json_conf):
