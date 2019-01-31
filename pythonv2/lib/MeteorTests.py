@@ -79,7 +79,7 @@ def test_objects(objects,frames):
                if stuff[1] != "":
                   big_cnt = int(stuff[1])
                   big_cnts = big_cnts + big_cnt
-      if big_cnts > 100 and total_objects > 10:
+      if big_cnts > 200 and total_objects > 20:
          for object in objects:
             object['meteor'] = 0
             object['test_results'].append(('Big CNTs', 0,'Too many big CNTs:' + str(big_cnts)))

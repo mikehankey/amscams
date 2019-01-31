@@ -58,6 +58,7 @@ def scan_file(video_file, show):
    if meteor_found == 1:
       print("Meteor Test Passed.")
       stack_file,stack_img = stack_frames(frames, video_file)
+      draw_stack(objects,stack_img,stack_file)
       save_meteor(video_file,objects)
       # hd_meteor_processing(video_file,objects)
       # reduce meteor / solve meteor
@@ -65,8 +66,10 @@ def scan_file(video_file, show):
    else:
       print("Meteor Test Failed.")
       stack_file, stack_img = stack_frames(frames, video_file)
+      draw_stack(objects,stack_img,stack_file)
+      print("SAVE FAILED")
       save_failed_detection(video_file,objects)
-   draw_stack(objects,stack_img,stack_file)
+      print("MIKE")
    obj_report = object_report(objects)
    print(obj_report)
    if meteor_found == 1:

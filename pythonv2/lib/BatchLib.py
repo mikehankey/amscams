@@ -16,12 +16,35 @@ def move_images(json_conf):
       cmd = "mv " + proc_dir + day + "/*.txt " + proc_dir + day + "/data/"
       print(cmd)
       os.system(cmd)
-   
+  
+def update_file_index(json_conf):
+   proc_dir = json_conf['site']['proc_dir']
+   data_dir = proc_dir + "/json/"
+ 
+   stats = {}
 
-def make_file_index(json_conf):
+   json_file = data_dir + "main-index.json"
+   stats = load_json_file(json_file) 
+   days = get_days(json_conf)
+   days = sorted(days, reverse=True)
+   days = days[0:1]
+
+   for day in days:
+      (failed_files, meteor_files,pending_files) = get_day_stats(proc_dir + day + "/", json_conf)
+
+      stats[day] = {}
+      stats[day]['failed_files'] = len(failed_files)
+      stats[day]['meteor_files'] = len(meteor_files)
+      stats[day]['pending_files'] = len(pending_files)
+      print(day)
+   save_json_file(json_file, stats)
+   print(json_file)
+
+def make_file_index(json_conf ):
    proc_dir = json_conf['site']['proc_dir']
    data_dir = proc_dir + "/json/"
    days = get_days(json_conf)
+   
    d = 0
    html = ""
    stats = {}
