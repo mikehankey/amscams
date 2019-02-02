@@ -5,10 +5,10 @@ import sys
 import glob
 
 from lib.FileIO import setup_dirs, cfe, save_failed_detection, save_meteor
-from lib.DetectLib import check_for_motion2, id_object, object_report
+from lib.DetectLib import check_for_motion2, id_object, object_report, parse_motion 
 from lib.MeteorTests import test_objects
 from lib.FileIO import load_json_file 
-from lib.VideoLib import load_video_frames 
+from lib.VideoLib import load_video_frames , doHD
 from lib.ImageLib import stack_frames, draw_stack
 from lib.UtilLib import convert_filename_to_date_cam
 
@@ -104,3 +104,8 @@ if __name__ == "__main__":
       scan_dir(dir, show)
    if cmd == 'do_all':
       do_all(json_conf)
+   if cmd == 'pm':
+      parse_motion(video_file, json_conf)
+   if cmd == 'dohd' or cmd == 'doHD':
+      video_file = sys.argv[2] 
+      doHD(video_file, json_conf)

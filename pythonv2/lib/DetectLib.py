@@ -3,11 +3,33 @@ import cv2
 import numpy as np
 from lib.MeteorTests import meteor_test_moving, find_min_max_dist, max_xy
 from lib.ImageLib import median_frames, mask_frame, preload_image_acc, adjustLevels
-from lib.UtilLib import calc_dist,find_slope
+from lib.UtilLib import calc_dist,find_slope, convert_filename_to_date_cam
 from lib.VideoLib import get_masks
 
+def parse_motion(video_file, json_conf):
+   print(video_file)
+   motion_file = video_file.replace(".mp4", "-motion.txt")
+   cord_file = video_file.replace(".mp4", "-cords.txt")
+   (f_datetime, cam, f_date_str,fy,fm,fd, fh, fmin, fs) = convert_filename_to_date_cam(video_file)
 
-
+   # first load masks 
+   masks = get_masks(cam,json_conf)
+   print(masks)
+  
+   fp = open(cord_file, "r")
+   for line in fp:
+      line = line.replace("\n", "")
+      fn,x,y,pv = line.split(",")
+      fn,x,y,pv = int(fn),int(x),int(y),int(pv)
+      skip = 0
+      for mask in masks:
+         mx,my,mw,mh = mask.split(",")
+         mx,my,mw,mh = int(mx),int(my),int(mw),int(mh)
+         if mx <= x <= mx + mw and my <= y <= my + mh:
+            print("MASK AREA!", fn,x,y,pv) 
+            skip = 1
+      if skip == 0:
+         print(fn,x,y,pv) 
 
 def object_report(objects):
    object_report = "OBJECT REPORT\n"

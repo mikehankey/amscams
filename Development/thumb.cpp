@@ -88,8 +88,18 @@ using namespace std;
 //%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 //%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
+
+typedef struct mymask {
+int mask_x;
+int mask_y;
+int mask_w;
+int mask_h;
+};
+
 int main( int argc, char *argv[] )
 {
+
+
 int              nrows, ncols, npixels, status, nframes_file;
 long             cameranumber, kpixel;
 
@@ -116,6 +126,13 @@ unsigned char    *imagefrm   = NULL;
 unsigned char    *maxpixel   = NULL;
 
 
+char line[64] ;
+struct mymask masks[20];
+char mask_filename[256];
+int total_masks;
+int mc;
+int parsed_data;
+
 struct DateAndTime         ut;
 
 struct HCAMSparameters     params;
@@ -127,6 +144,7 @@ struct HCAMSparameters     params;
 
 
 
+total_masks = 0;
     //################ Software version number
 
     version = 1.00;
@@ -174,7 +192,27 @@ struct HCAMSparameters     params;
 				&ut.year, &ut.month, &ut.day, &ut.hour, &ut.minute, &ut.second, &ut.msec, &cameranumber);
 
 			printf("Thumbnailing  %s%s\n", imageryfolder_pathname,imagery_filename);
+                        //-------- load mask file
+			sprintf(mask_filename, "/home/ams/amscams/conf/mask-%06li.txt", cameranumber);
+                        FILE* mask_ptr = fopen(mask_filename, "r");
+                        if (mask_ptr==NULL) {
+                          printf("no mask file");
+                        }
+                        printf("\nMASK FILENAME: %s\n",mask_filename);
+                        mc = 0;
+                        while(fgets(line,sizeof(line),mask_ptr) != NULL && mc < 10) {
+                           parsed_data = sscanf(line,"%d %d %d %d",&masks[mc].mask_x,&masks[mc].mask_y,&masks[mc].mask_w,&masks[mc].mask_h);
+                           printf("\nloading masks\n");
+                           mc++;
+                        }
+                        total_masks = mc;
 
+			for (mc= 0; mc < total_masks; mc++) {
+                           printf("\nMASK: %d %d %d %d\n", masks[mc].mask_x, masks[mc].mask_y, masks[mc].mask_w, masks[mc].mask_h);
+                        }
+
+                        /*
+                        */
 
 			//-------- Open the mp4 file for reading
 
@@ -247,6 +285,12 @@ px_diff_count = 0;
 px_diff_total = 0;
 px_diff_val_total = 0;
 px_diff_pp = 0;
+int mcx;
+int inmask;
+int mcy;
+mcy = 0;
+mcx = 0;
+
 
 status = Read_FFMPEG_Pipe_Image(imagefrm, dummyframe);
 
@@ -273,6 +317,16 @@ status = Read_FFMPEG_Pipe_Image(imagefrm, dummyframe);
 					if (maxpixel[kpixel] < imagefrm[kpixel])  {
                                            px_diff = imagefrm[kpixel] - maxpixel[kpixel];
                                            maxpixel[kpixel] = imagefrm[kpixel];
+
+                                           mcy = kpixel / ncols;
+                                           mcx = kpixel % ncols;
+                                           inmask = 0;
+			                   for (mc= 0; mc < total_masks; mc++) {
+                                              if (mcx >= masks[mc].mask_x && mcx <= (masks[mc].mask_x + masks[mc].mask_w) && (mcy >= masks[mc].mask_y && mcy <= (masks[mc].mask_y + masks[mc].mask_h))) {
+                                                       px_diff = 0 ;
+                                                    }
+                                           }
+
                                             
                                            if (px_diff > 5) {
                                                 if (frame_count > 3) {
@@ -280,7 +334,11 @@ status = Read_FFMPEG_Pipe_Image(imagefrm, dummyframe);
                                                    px_diff_val_total = px_diff_val_total + px_diff;
                                                    px_diff_pp = (int)px_diff_val_total / px_diff;
                                                 }
+                             
                                                 if (frame_count > 3 ) {
+
+
+
                                                    if (imagefrm[kpixel] >= 50) {
                                                       bp_total = bp_total + 1;
                                                       this_bp_total = this_bp_total + 1;

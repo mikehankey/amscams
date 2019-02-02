@@ -102,17 +102,23 @@ def update_file_index(json_conf):
    stats = load_json_file(json_file) 
    days = get_days(json_conf)
    days = sorted(days, reverse=True)
+   new_stats = {}
    days = days[0:1]
 
    for day in days:
       (failed_files, meteor_files,pending_files) = get_day_stats(proc_dir + day + "/", json_conf)
 
-      stats[day] = {}
-      stats[day]['failed_files'] = len(failed_files)
-      stats[day]['meteor_files'] = len(meteor_files)
-      stats[day]['pending_files'] = len(pending_files)
-      print(day)
-   save_json_file(json_file, stats)
+      new_stats[day] = {}
+      new_stats[day]['failed_files'] = len(failed_files)
+      new_stats[day]['meteor_files'] = len(meteor_files)
+      new_stats[day]['pending_files'] = len(pending_files)
+
+   new_stats_copy = new_stats.copy()
+   for day in stats:
+      new_stats[day] = stats[day]
+   for day in new_stats_copy:
+      new_stats[day] = new_stats_copy[day]
+   save_json_file(json_file, new_stats)
    print(json_file)
 
 def make_file_index(json_conf ):
