@@ -44,7 +44,8 @@ def controller(json_conf):
    if cmd == 'examine':
       video_file = form.getvalue('video_file')
       examine(video_file)
-   if cmd == '' or cmd is None:
+   if cmd == '' or cmd is None or cmd == 'home':
+      print("YO")
       main_page(json_conf)   
    if cmd == 'browse_detects':
       day = form.getvalue('day')
