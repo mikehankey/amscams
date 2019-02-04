@@ -1,10 +1,36 @@
 import os
+import subprocess
 import numpy as np
 import cv2
 import glob
-from lib.FileIO import get_day_stats, load_json_file, cfe, get_days, save_json_file,load_json_file
+from lib.FileIO import get_day_stats, load_json_file, cfe, get_days, save_json_file,load_json_file, purge_hd_files, purge_sd_daytime_files
 from lib.ImageLib import draw_stack, thumb, stack_glob, stack_stack
 from PIL import Image
+
+def purge_data(json_conf):
+   proc_dir = json_conf['site']['proc_dir']
+   hd_video_dir = json_conf['site']['hd_video_dir']
+   disk_thresh = 80   
+
+
+   cmd = "df -h | grep ams2"
+   output = subprocess.check_output(cmd, shell=True).decode("utf-8")
+   stuff = output.split(" ")
+   disk_perc = int(stuff[13].replace("%", ""))
+   if disk_perc > disk_thresh:
+      print("DELETE some stuff...")
+      # delete HD Daytime Files older than 1 day
+      # delete HD Nighttime Files older than 3 days
+      # delete SD Daytime Files older than 3 days
+      # delete NON Trim SD Nighttime Files (and stacks) older than 15 days
+      # delete NON Meteor SD Nighttime Files older than 30 days
+      # Keep all dirs in the proc2 dir (for archive browsing), but after time delete everything
+      # except the passed dir and its contents. *?refine maybe?*
+   print(disk_perc)
+   purge_hd_files(hd_video_dir,json_conf)
+   purge_sd_daytime_files(proc_dir,json_conf)
+
+
 
 def stack_night(json_conf, limit=0, tday = None):
    proc_dir = json_conf['site']['proc_dir']
@@ -103,7 +129,7 @@ def update_file_index(json_conf):
    days = get_days(json_conf)
    days = sorted(days, reverse=True)
    new_stats = {}
-   days = days[0:1]
+   days = days[0:3]
 
    for day in days:
       (failed_files, meteor_files,pending_files) = get_day_stats(proc_dir + day + "/", json_conf)

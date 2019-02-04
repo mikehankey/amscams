@@ -1,13 +1,22 @@
-
+import datetime
+import glob
 import cv2
+import os
 #import time
 from lib.UtilLib import convert_filename_to_date_cam
 from lib.FileIO import load_json_file
-
+from lib.ImageLib import find_min_max_dist,bigger_box
 
 
 
 def doHD(sd_video_file, json_conf):
+   sd_w = 704
+   sd_h = 576
+   hd_w = 1920
+   hd_h = 1080
+
+   hdm_x = 2.7272
+   hdm_y = 1.875
 
    # All steps to find and reduce HD file and save in archive and cloud
    # find HD file
@@ -30,24 +39,49 @@ def doHD(sd_video_file, json_conf):
 
          el = sd_video_file.split("-trim")
          min_file = el[0] + ".mp4"
+         ttt = el[1].split(".")
+         trim_num = int(ttt[0])
   
          start_frame = object['history'][0][0]
          end_frame = object['history'][-1][0]
          frame_dur = end_frame - start_frame  
-   
-         start_sec = (start_frame / 25) + 1
+
+         start_sec = (start_frame / 25) 
          frame_dur_sec = frame_dur / 25
+
+         print("SF:", start_frame, end_frame, frame_dur) 
+
          if start_sec - 1 < 0:
             start_sec = 0
          else:
             start_sec = start_sec - 1
-         if frame_dur_sec + start_sec + 1 < 59:
+
+         if frame_dur_sec + start_sec + 1 >= 59:
             frame_dur_sec = 59 - start_sec
          else:
             frame_dur_sec = frame_dur_sec + 1
+         if frame_dur_sec < 5:
+            frame_dur_sec = 5
+         print("SS:", start_sec, frame_dur_sec) 
 
-      print(min_file,start_sec,dur_sec)
-   #hd_file,hd_trim = find_hd_file_new(min_file, start_sec, dur_sec)
+         print(min_file,start_sec,frame_dur_sec)
+         hd_file, hd_trim = find_hd_file_new(min_file, trim_num, frame_dur_sec)
+         print("HD:", hd_file, hd_trim)
+         (max_x,max_y,min_x,min_y) = find_min_max_dist(object['history'])
+         (min_x,min_y,max_x,max_y) = bigger_box(min_x,min_y,max_x,max_y,sd_w,sd_h,25)
+         hd_min_x = min_x * hdm_x
+         hd_max_x = max_x * hdm_x
+         hd_min_y = min_y * hdm_y
+         hd_max_y = max_y * hdm_y
+
+         sd_box= (min_x,min_y,max_x,max_y)
+         hd_box= (hd_min_x,hd_min_y,hd_max_x,hd_max_y)
+         crop_out_file = crop_hd(hd_trim,hd_box)
+
+         return(hd_file,hd_trim,crop_out_file,hd_box)
+
+def archive_meteor (sd_video_file,hd_file,hd_trim,crop_out_file,hd_box,hd_objects,json_conf):
+   print(archive_meteor)
 
 def crop_hd(hd_file,box_str):
    #x,y,mx,my = box_str.split(",")
@@ -142,23 +176,27 @@ def check_hd_motion(frames, trim_file):
 
 
 def find_hd_file_new(sd_file, trim_num, dur = 5):
-   sd_datetime, sd_cam, sd_date, sd_h, sd_m, sd_s = convert_filename_to_date_cam(sd_file)
-   #print("SD FILE: ", sd_file)
-   #print("TRIM NUM: ", trim_num)
+   #(f_datetime, cam, f_date_str,fy,fm,fd, fh, fmin, fs)
+
+   sd_datetime, sd_cam, sd_date, sd_y, sd_m, sd_d, sd_h, sd_M, sd_s = convert_filename_to_date_cam(sd_file)
+   print("SD FILE: ", sd_file)
+   print("TRIM NUM: ", trim_num)
    if trim_num > 1400:
       print("END OF FILE PROCESSING NEEDED!")
       hd_file, hd_trim = eof_processing(sd_file, trim_num, dur)
       return(hd_file, hd_trim)
    offset = int(trim_num) / 25
-   #print("TRIM SEC OFFSET: ", offset)
+   print("TRIM SEC OFFSET: ", offset)
    meteor_datetime = sd_datetime + datetime.timedelta(seconds=offset)
-   #print("METEOR CLIP START DATETIME:", meteor_datetime)
-   hd_glob = "/mnt/ams2/HD/" + sd_date + "_*" + sd_cam + "*"
+   print("METEOR CLIP START DATETIME:", meteor_datetime)
+   hd_glob = "/mnt/ams2/HD/" + sd_y + "_" + sd_m + "_" + sd_d + "_*" + sd_cam + "*"
+   print("HD GLOB", hd_glob)
    hd_files = sorted(glob.glob(hd_glob))
    for hd_file in hd_files:
       el = hd_file.split("_")
       if len(el) == 8 and "meteor" not in hd_file and "crop" not in hd_file:
-         hd_datetime, hd_cam, hd_date, hd_h, hd_m, hd_s = convert_filename_to_date_cam(hd_file)
+         #hd_datetime, hd_cam, hd_date, hd_h, hd_m, hd_s = convert_filename_to_date_cam(hd_file)
+         hd_datetime, hd_cam, hd_date, hd_y, hd_m, hd_d, hd_h, hd_M, hd_s = convert_filename_to_date_cam(hd_file)
          time_diff = meteor_datetime - hd_datetime
          time_diff_sec = time_diff.total_seconds()
          if 0 < time_diff_sec < 60:
@@ -169,6 +207,7 @@ def find_hd_file_new(sd_file, trim_num, dur = 5):
                time_diff_sec = 0
             hd_trim = ffmpeg_trim(hd_file, str(time_diff_sec), str(dur), "-trim-" + str(trim_num) + "-HD-meteor")
             return(hd_file, hd_trim)
+   return(None,None)
 
 
 def eof_processing(sd_file, trim_num, dur):

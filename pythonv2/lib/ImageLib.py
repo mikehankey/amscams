@@ -77,7 +77,8 @@ def stack_frames(frames,video_file):
    stacked_file= video_file.replace(".mp4", "-stacked.png")
    if cfe(stacked_file) == 1:
       print("SKIP - Stack already done.") 
-      return()
+      stacked_image = cv2.imread(stacked_file,0)
+      return(stacked_file,stacked_image)
    for frame in frames:
       frame_pil = Image.fromarray(frame)
       if stacked_image is None:

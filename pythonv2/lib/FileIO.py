@@ -1,8 +1,81 @@
-
+import time
 import json
 import os
 import glob
 from pathlib import Path
+from lib.UtilLib import convert_filename_to_date_cam, get_sun_info
+
+
+def purge_sd_daytime_files(proc_dir,json_conf):
+   files = glob.glob(proc_dir + "daytime/*")
+   for file in files:
+      (f_datetime, cam, f_date_str,fy,fm,fd, fh, fmin, fs) = convert_filename_to_date_cam(file)
+      sun_status,sun_az,sun_el = get_sun_info(f_date_str,json_conf)
+      st = os.stat(file)
+      cur_time = int(time.time())
+      mtime = st.st_mtime
+      tdiff = cur_time - mtime
+      tdiff = tdiff / 60 / 60 / 24
+      if sun_status == 'day' and tdiff > 1:
+         print ("File is daytime and this many days old", tdiff, file)
+         #os.system("rm " + file)
+
+
+def purge_hd_files(hd_video_dir,json_conf):
+   files = glob.glob(hd_video_dir + "*")
+   for file in files:
+      (f_datetime, cam, f_date_str,fy,fm,fd, fh, fmin, fs) = convert_filename_to_date_cam(file)
+      sun_status,sun_az,sun_el = get_sun_info(f_date_str, json_conf)
+      st = os.stat(file)
+      cur_time = int(time.time())
+      mtime = st.st_mtime
+      tdiff = cur_time - mtime
+      tdiff = tdiff / 60 / 60 / 24
+      if sun_status == 'day' and tdiff > 1:
+         print ("File is daytime and this many days old", tdiff, file)
+         print("rm " + file)
+         #os.system("rm " + file)
+      elif tdiff > 5:
+         print ("File is nighttime and this many days old will be purged.", tdiff, file)
+         print("rm " + file)
+         #os.system("rm " + file)
+
+
+
+def archive_meteor (sd_video_file,hd_file,hd_trim,hd_crop_file,hd_box,hd_objects,json_conf):
+   el = sd_video_file.split("/")
+   fn_base = el[-1] 
+   fn_base = fn_base.replace(".mp4", "")
+
+   print("ARCHIVE METEOR:", sd_video_file)
+   # make / determine archive dir and then
+   # copy SD trim, SD stack
+   # HD trim, HD crop, HD trim stack & HD crop stack
+   # to meteor dir (make stacks if needed)
+   meteor_dir = make_meteor_dir(sd_video_file, json_conf) 
+
+   meteor_json_file =  meteor_dir + fn_base + ".json"
+
+   os.system("cp " + sd_video_file + " " + meteor_dir)
+   os.system("cp " + hd_trim + " " + meteor_dir)
+   os.system("cp " + hd_crop_file+ " " + meteor_dir)
+   meteor_json = {}
+   meteor_json['sd_video_file'] = sd_video_file
+   meteor_json['hd_file'] = hd_file
+   meteor_json['hd_trim'] = hd_trim
+   meteor_json['hd_crop_file'] = hd_crop_file
+   meteor_json['hd_objects'] = hd_objects
+
+   save_json_file(meteor_json_file, meteor_json )
+   
+
+
+def make_meteor_dir(sd_video_file, json_conf):
+   (f_datetime, cam, f_date_str,fy,fm,fd, fh, fmin, fs) = convert_filename_to_date_cam(sd_video_file)
+   meteor_dir = "/mnt/ams2/meteors/" + fy + "_" + fm + "_" + fd + "/" 
+   if cfe(meteor_dir, 1) == 0:
+      os.system("mkdir " + meteor_dir)
+   return(meteor_dir)
 
 def get_days(json_conf):
    proc_dir = json_conf['site']['proc_dir']
