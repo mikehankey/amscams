@@ -33,6 +33,7 @@ def make_day_preview(day_dir, json_conf):
          + "'\" onmouseout=\"document.getElementById(" + day + cams_id + ").src='" + obj_stack + "'\">"
       html_out = html_out + "<img id=\"" + day+ cams_id + "\" width='200' src='" + obj_stack + "'></a>\n"
    return(html_out, day_str)
+
 def controller(json_conf):
    
    form = cgi.FieldStorage()
@@ -291,8 +292,12 @@ def nav_links(json_conf, cmd):
       if nav != "":
          #nav = nav + " - "
          bot_nav = bot_nav + " - "
-      temp = nav_item.replace("{LINK}", "webUI.py?cmd=" + link) 
-      temp = temp.replace("{DESC}", nav_links[link]) 
+      if cmd != link:
+         temp = nav_item.replace("{LINK}", "webUI.py?cmd=" + link) 
+         temp = temp.replace("{DESC}", nav_links[link]) 
+      else:
+         temp = nav_item_active.replace("{LINK}", "webUI.py?cmd=" + link) 
+         temp = temp.replace("{DESC}", nav_links[link]) 
       nav = nav + temp 
       bot_nav = bot_nav + "<a href=webUI.py?cmd=" + link + ">" + nav_links[link] + "</a>"
    
