@@ -166,7 +166,7 @@ def load_config(json_file):
 
 def save_json_file(json_file, json_data):
    with open(json_file, 'w') as outfile:
-      json.dump(json_data, outfile)
+      json.dump(json_data, outfile, indent=4)
    outfile.close()
 
 def load_json_file(json_file):
