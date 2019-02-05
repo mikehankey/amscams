@@ -12,6 +12,7 @@ from lib.CalibLib import distort_xy_new
 from lib.FileIO import load_json_file, save_json_file, cfe
 from lib.UtilLib import calc_dist 
 import lib.brightstardata as bsd
+from lib.DetectLib import eval_cnt
 
 mybsd = bsd.brightstardata()
 bright_stars = mybsd.bright_stars
@@ -53,8 +54,7 @@ def calc_dist_residuals(mapped_stars_file, img_w=1920, img_h=1080, center_off_x=
    return(avg_x, avg_y)
 
 
-def get_fov_stars(params, mapped_stars_file, dimension, other_poly, info_only = 0):
-   show = 0
+def get_fov_stars(params, mapped_stars_file, dimension, other_poly, info_only = 0, show= 1):
    if dimension == 'x':
       x_poly = params
       y_poly = other_poly
@@ -67,6 +67,10 @@ def get_fov_stars(params, mapped_stars_file, dimension, other_poly, info_only = 
    #msj = load_json_file(mapped_stars_file)
    cal_params = load_json_file(cal_params_file)
    cal_img = cv2.imread(cal_img_file)
+   if show == 1:
+      cv2.namedWindow('pepe')
+      cv2.imshow('pepe', cal_img)
+      cv2.waitKey(0)
 
    img_w = int(cal_params['imagew'])
    img_h = int(cal_params['imageh'])
@@ -85,11 +89,15 @@ def get_fov_stars(params, mapped_stars_file, dimension, other_poly, info_only = 
    center_x = int(x_res / 2)
    center_y = int(x_res / 2)
 
-   dist_thresh_base = 35 
+   dist_thresh_base = 35
 
    image_stars = find_image_stars(cal_img)
-   #for x,y,w,h in image_stars:
-   #   cv2.circle(cal_img, (int(x+(w/2)),int(y+(h/2))), 10, (255,255,0), 1)
+   print("STARS:", len(image_stars))
+   for x,y,w,h in image_stars:
+      cv2.circle(cal_img, (int(x+(w/2)),int(y+(h/2))), 10, (255,255,255), 1)
+   if show == 1:
+      cv2.imshow('pepe', cal_img)
+      cv2.waitKey(0)
    lines = []
    matched_stars = 0
    possible_stars = 0
@@ -127,13 +135,13 @@ def get_fov_stars(params, mapped_stars_file, dimension, other_poly, info_only = 
                line = calc_dist( (new_cat_x,new_cat_y), (int(sx+(sw/2)),int(sy+(sh/2)) ))
                lines.append(line)
  
-   #if show == 0:
-   #   cv2.namedWindow('pepe')
-   #   cv2.imshow('pepe', cal_img)
-   #   if info_only == 1:
-   #      cv2.waitKey(0)
-   #   else:
-   #      cv2.waitKey(1)
+   if show == 1:
+      cv2.namedWindow('pepe')
+      cv2.imshow('pepe', cal_img)
+      if info_only == 1:
+         cv2.waitKey(0)
+      else:
+         cv2.waitKey(1)
    if len(lines) > 0:
       avg_lines = np.mean(lines)
 
@@ -179,9 +187,13 @@ def find_image_stars(cal_img):
    star_pixels = []
    non_star_pixels = []
    cloudy_areas = []
-   for (i,c) in enumerate(cnts):
+   for (i,c) in enumerate(cnts): 
+       
       x,y,w,h= cv2.boundingRect(cnts[i])
-      if w > 1 and h > 1:
+      cnt_img = cal_img[y:y+h,x:x+w]
+      (max_px, avg_px,px_diff,(mx,my)) = eval_cnt(cnt_img)
+      print("STAR:", x,y,max_px,avg_px,px_diff)
+      if w > 1 and h > 1 and px_diff > 4:
          star_pixels.append((x,y,w,h))
    return(star_pixels)
 
@@ -236,14 +248,13 @@ def denis(mapped_stars_file):
       y_err = y_err + y_diff
       #cv2.circle(cal_img, (int(cat_x),int(cat_y)), 10, (0,255,0), 1)
       cv2.circle(cal_img, (int(new_cat_x),int(new_cat_y)), 10, (0,0,255), 1)
-   #if show == 0:
-   #   cv2.namedWindow('pepe')
-   #   cv2.imshow('pepe', cal_img)
-   #   cv2.waitKey(0)
+   if show == 1:
+      cv2.namedWindow('pepe')
+      cv2.imshow('pepe', cal_img)
+      cv2.waitKey(0)
 
 
-def plot_stars(maped_stars_file, center_off_x=0, center_off_y = 0):
-   show = 0
+def plot_stars(maped_stars_file, center_off_x=0, center_off_y = 0, show = 1):
    cal_params_file = mapped_stars_file.replace("-mapped-stars.json", "-calparams.json")
    cal_img_file = mapped_stars_file.replace("-mapped-stars.json", ".jpg")
    #calc_dist_residuals(mapped_stars_file)
@@ -279,13 +290,12 @@ def plot_stars(maped_stars_file, center_off_x=0, center_off_y = 0):
       cv2.circle(cal_img, (int(img_w/2),int(img_h/2)), 800, (128,128,128), 1)
       cv2.circle(cal_img, (int(img_w/2),int(img_h/2)), 900, (128,128,128), 1)
       cv2.circle(cal_img, (int(img_w/2),int(img_h/2)), 1000, (128,128,128), 1)
-   #if show == 0: 
-   #   cv2.namedWindow('pepe')
-   #   cv2.imshow('pepe', cal_img)
+   if show == 1: 
+      cv2.namedWindow('pepe')
+      cv2.imshow('pepe', cal_img)
       cv2.waitKey(0)
 
-def minimize_poly(mapped_stars_file):
-   show = 0
+def minimize_poly(mapped_stars_file,show=1):
    cal_params_file = mapped_stars_file.replace("-mapped-stars.json", "-calparams.json")
    fit_image_file = mapped_stars_file.replace("-mapped-stars.json", "-calfit.jpg")
    cal_params = load_json_file(cal_params_file)
@@ -316,6 +326,10 @@ def minimize_poly(mapped_stars_file):
   # x_poly = res['x']
    
    nmatched, avg_dist, cost, possible_stars,fit_image = get_fov_stars(x_poly, mapped_stars_file,"x",y_poly, 1)
+
+   #for x,y,w,h in matched:
+   #   cv2.circle(fit_img, (int(x+(w/2)),int(y+(h/2))), 10, (255,255,255), 1)
+
    cv2.imwrite(fit_image_file, fit_image)
    cal_params['x_poly'] = x_poly.tolist()
    cal_params['y_poly'] = y_poly.tolist()
