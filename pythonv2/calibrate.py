@@ -1,7 +1,7 @@
 #!/usr/bin/python3 
 
 #from lib.CalMeteorLib import 
-from lib.CalibLib import calibrate_camera
+from lib.CalibLib import calibrate_camera, distort_xy_new
 from lib.FileIO import load_json_file
 
 import sys
