@@ -3,7 +3,7 @@ import cgi
 import time
 import glob
 import os
-from lib.FileIO import get_proc_days, get_day_stats, get_day_files , load_json_file, get_trims_for_file, get_days, save_json_file
+from lib.FileIO import get_proc_days, get_day_stats, get_day_files , load_json_file, get_trims_for_file, get_days, save_json_file, cfe
 from lib.VideoLib import get_masks
 from lib.ImageLib import mask_frame 
 
@@ -14,27 +14,32 @@ def get_template(json_conf):
       template = template + line
    return(template) 
 
-def make_day_preview(day_dir, json_conf):
+def make_day_preview(day_dir, stats_data, json_conf):
    el = day_dir.split("/")
    day = el[-1]
    if day == "":
       day = el[-2]
    day_str = day
    html_out = ""
-
    for cam in json_conf['cameras']:
       cams_id = json_conf['cameras'][cam]['cams_id']
+      min_total = stats_data[cams_id] 
       obj_stack = day_dir + "/" + "images/"+ cams_id + "-night-stack.png"
       meteor_stack = day_dir + "/" + "images/" + cams_id + "-meteors-stack.png"
+      if cfe(obj_stack) == 0:
+         obj_stack = "/mnt/ams2/blank.jpg"
+      if cfe(meteor_stack) == 0:
+         meteor_stack = "/mnt/ams2/blank.jpg"
 
       day=day.replace("_","")
-      html_out = html_out + "<a href=\"webUI.py?cmd=browse_day&day=" + day_str + "&cams_id=" + cams_id \
+      html_out = html_out + "<figure><a href=\"webUI.py?cmd=browse_day&day=" + day_str + "&cams_id=" + cams_id \
          + "\" onmouseover=\"document.getElementById(" + day + cams_id + ").src='" + meteor_stack \
          + "'\" onmouseout=\"document.getElementById(" + day + cams_id + ").src='" + obj_stack + "'\">"
-      html_out = html_out + "<img id=\"" + day+ cams_id + "\" width='200' src='" + obj_stack + "'></a>\n"
+      html_out = html_out + "<img id=\"" + day+ cams_id + "\" width='200' src='" + obj_stack + "'></a><br><figurecaption>" + str(min_total) + " Minutes</figurecaption></figure>"
    return(html_out, day_str)
 
 def controller(json_conf):
+   print_css()
    
    form = cgi.FieldStorage()
    cmd = form.getvalue('cmd')
@@ -551,7 +556,6 @@ def browse_detects(day,type,json_conf):
    print("<div style=\"clear: both\"></div>")
 
 def main_page(json_conf):
-
    print("<h1>AllSky6 Control Panel</h1>")    
    days = sorted(get_proc_days(json_conf),reverse=True)
 
@@ -566,7 +570,7 @@ def main_page(json_conf):
          meteor_files = stats_data[day]['meteor_files']
          pending_files = stats_data[day]['pending_files']
 
-         html_row, day_x = make_day_preview(day_dir,json_conf)
+         html_row, day_x = make_day_preview(day_dir,stats_data[day], json_conf)
          day_str = day.replace("_", "/")
          print("<h2>" + day_str + "</h2>")
          print("<a href=webUI.py?cmd=browse_detects&type=meteor&day=" + day + ">" \
@@ -576,4 +580,5 @@ def main_page(json_conf):
          print(str(pending_files) + " Files Pending</a> ")
          print("<P>")
          print(html_row)
+         print("</P><div style='clear: both'></div>")
 

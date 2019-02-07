@@ -160,12 +160,17 @@ def update_file_index(json_conf):
    days = days[0:3]
 
    for day in days:
-      (failed_files, meteor_files,pending_files) = get_day_stats(proc_dir + day + "/", json_conf)
+      (failed_files, meteor_files,pending_files,min_files) = get_day_stats(proc_dir + day + "/", json_conf)
 
       new_stats[day] = {}
       new_stats[day]['failed_files'] = len(failed_files)
       new_stats[day]['meteor_files'] = len(meteor_files)
       new_stats[day]['pending_files'] = len(pending_files)
+      new_min_files, cam_counts = count_min_files(min_files,json_conf)
+      stats[day]['min_files'] = len(new_min_files)
+      for key in cam_counts:
+         new_stats[day][key] = cam_counts[key]
+
 
    new_stats_copy = new_stats.copy()
    for day in stats:
