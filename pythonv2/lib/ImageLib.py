@@ -1,3 +1,4 @@
+import os
 import cv2
 import glob
 import numpy as np
@@ -56,10 +57,21 @@ def stack_stack(pic1, pic2):
 
 def stack_glob(glob_dir, out_file):
    stacked_image = None
+   print("GLOBDIR: ", glob_dir)
    img_files = glob.glob(glob_dir)
    for file in img_files:
       print(file)
       img = cv2.imread(file, 0)
+      try:
+         h,w = img.shape
+      except:
+         os.system("rm " + file)
+         continue 
+      avg_px = np.mean(img)
+      print("AG:", avg_px)
+      if avg_px > 80 or avg_px == 0:
+         os.system("rm " + file)
+         continue
       img_pil = Image.fromarray(img)
       if stacked_image is None:
          stacked_image = stack_stack(img_pil, img_pil)
@@ -67,7 +79,7 @@ def stack_glob(glob_dir, out_file):
          stacked_image = stack_stack(stacked_image, img_pil)
    if stacked_image is not None:
       stacked_image_np = np.asarray(stacked_image)
-      print(out_file)
+      print("SAVED STACK:",out_file)
       cv2.imwrite(out_file, stacked_image_np)
 
 

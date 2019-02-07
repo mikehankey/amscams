@@ -66,3 +66,29 @@ def convert_filename_to_date_cam(file):
    f_datetime = datetime.datetime.strptime(f_date_str, "%Y-%m-%d %H:%M:%S")
    return(f_datetime, cam, f_date_str,fy,fm,fd, fh, fmin, fs)
 
+
+def bound_cnt(x,y,img_w,img_h):
+   sz = 10
+
+   if x - sz < 0:
+      mnx = 0
+   else:
+      mnx = x - sz
+
+   if y - sz < 0:
+      mny = 0
+   else:
+      mny = y - sz
+
+   if x + sz > img_w - 1:
+      mxx = img_w - 1
+   else:
+      mxx = x + sz
+
+   if y + sz > img_h -1:
+      mxy = img_h - 1
+   else:
+      mxy = y + sz
+   return(mnx,mny,mxx,mxy)
+
+

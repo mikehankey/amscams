@@ -159,8 +159,8 @@ def eval_cnt(cnt_img):
    px_diff = max_px - avg_px
    min_val, max_val, min_loc, max_loc = cv2.minMaxLoc(cnt_img)
    mx, my = max_loc
-   mx = mx - 5
-   my = my - 5
+   #mx = mx - 5
+   #my = my - 5
    return(max_px, avg_px,px_diff,(mx,my))
 
 

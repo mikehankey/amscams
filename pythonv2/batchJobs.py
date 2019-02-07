@@ -1,6 +1,6 @@
 #!/usr/bin/python3
 
-from lib.BatchLib import batch_thumb, make_file_index, move_images, update_file_index, stack_night, purge_data
+from lib.BatchLib import batch_thumb, make_file_index, move_images, update_file_index, stack_night, purge_data, stack_night_all
 from lib.FileIO import load_json_file 
 import sys
 
@@ -15,6 +15,21 @@ if sys.argv[1] == 'ufi':
 if sys.argv[1] == 'mi':
    move_images(json_conf)
 if sys.argv[1] == 'sn':
-   stack_night(json_conf)
+   limit = 0
+   if len(sys.argv) == 3:
+      limit = int(sys.argv[2])
+      stack_night(json_conf, limit)
+   elif len(sys.argv) >= 4:
+      tday = int(sys.argv[3])
+      stack_night(json_conf, limit, tday)
+   else:
+      stack_night(json_conf)
+
+if sys.argv[1] == 'sna':
+   limit = 0
+   if len(sys.argv) == 3:
+      limit = int(sys.argv[2])
+      stack_night_all(json_conf, limit)
+
 if sys.argv[1] == 'pd':
    purge_data(json_conf)

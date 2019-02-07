@@ -18,7 +18,7 @@ def purge_sd_daytime_files(proc_dir,json_conf):
       tdiff = tdiff / 60 / 60 / 24
       if sun_status == 'day' and tdiff > 1:
          print ("File is daytime and this many days old", tdiff, file)
-         #os.system("rm " + file)
+         os.system("rm " + file)
 
 
 def purge_hd_files(hd_video_dir,json_conf):
@@ -34,11 +34,11 @@ def purge_hd_files(hd_video_dir,json_conf):
       if sun_status == 'day' and tdiff > 1:
          print ("File is daytime and this many days old", tdiff, file)
          print("rm " + file)
-         #os.system("rm " + file)
+         os.system("rm " + file)
       elif tdiff > 5:
          print ("File is nighttime and this many days old will be purged.", tdiff, file)
          print("rm " + file)
-         #os.system("rm " + file)
+         os.system("rm " + file)
 
 
 
@@ -103,7 +103,7 @@ def get_day_files(day, cams_id, json_conf):
   
    file_info = {} 
    proc_dir = json_conf['site']['proc_dir']
-   [failed_files, meteor_files,pending_files] = get_day_stats(proc_dir + day + "/", json_conf)
+   [failed_files, meteor_files,pending_files,min_files] = get_day_stats(proc_dir + day + "/", json_conf)
    day_dir = proc_dir + day + "/" + "*" + cams_id + "*.mp4"
    temp_files = glob.glob(day_dir)
    for file in sorted(temp_files, reverse=True):
@@ -130,7 +130,6 @@ def get_day_files(day, cams_id, json_conf):
          base_file = junk[0]
          if base_file != '/':
             file_info[base_file] = "pending"
-     
 
    return(file_info)
 
@@ -139,10 +138,12 @@ def get_day_stats(day, json_conf):
    failed_dir = day + "/failed/*trim*.mp4"
    meteor_dir = day + "/passed/*trim*.mp4"
    pending_dir = day + "/*trim*.mp4"
+   min_files = day + "/*.mp4"
    failed_files = glob.glob(failed_dir)
    meteor_files = glob.glob(meteor_dir)
    pending_files = glob.glob(pending_dir)
-   detect_files = [failed_files, meteor_files,pending_files]
+   min_files = glob.glob(min_files)
+   detect_files = [failed_files, meteor_files,pending_files,min_files]
 
    return(detect_files)
 
