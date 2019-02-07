@@ -1,5 +1,6 @@
 #!/usr/bin/python3 
 
+import os
 import math
 import cv2
 import math
@@ -40,7 +41,6 @@ def calc_dist_residuals(mapped_stars_file, img_w=1920, img_h=1080, center_off_x=
 
       x_res.append(dist_xdiff) 
       y_res.append(dist_ydiff) 
-      #print("DISTORTION RES X,Y: ", dist_xdiff, dist_ydiff)
 
    x_total = abs(sum(x_res))
    y_total = abs(sum(y_res))
@@ -67,10 +67,12 @@ def get_fov_stars(params, mapped_stars_file, dimension, other_poly, info_only = 
    #msj = load_json_file(mapped_stars_file)
    cal_params = load_json_file(cal_params_file)
    cal_img = cv2.imread(cal_img_file)
-   if show == 1:
-      cv2.namedWindow('pepe')
-      cv2.imshow('pepe', cal_img)
-      cv2.waitKey(0)
+   #if show == 1:
+   #   show_img = cv2.resize(cal_img, (0,0),fx=.4, fy=.4)
+
+   #   cv2.namedWindow('pepe')
+   #   cv2.imshow('pepe', show_img)
+      #cv2.waitKey(10)
 
    img_w = int(cal_params['imagew'])
    img_h = int(cal_params['imageh'])
@@ -90,19 +92,18 @@ def get_fov_stars(params, mapped_stars_file, dimension, other_poly, info_only = 
    center_y = int(x_res / 2)
 
    dist_thresh_base = 35
+   dist_thresh = 35
 
    image_stars = find_image_stars(cal_img)
-   print("STARS:", len(image_stars))
    for x,y,w,h in image_stars:
       cv2.circle(cal_img, (int(x+(w/2)),int(y+(h/2))), 10, (255,255,255), 1)
-   if show == 1:
-      cv2.imshow('pepe', cal_img)
-      cv2.waitKey(0)
+
    lines = []
    matched_stars = 0
    possible_stars = 0
 
-   bright_stars_sorted = sorted(bright_stars, key=lambda x: x[4], reverse=True) 
+   bright_stars_sorted = sorted(bright_stars, key=lambda x: x[4], reverse=False) 
+   #pair_stars_new(image_stars,bright_stars_sorted,fov_radius,RA_center,dec_center)
 
    for bname, cname, ra, dec, mag in bright_stars_sorted:
       dcname = cname.decode("utf-8")
@@ -113,22 +114,25 @@ def get_fov_stars(params, mapped_stars_file, dimension, other_poly, info_only = 
          name = dcname
 
       ang_sep = angularSeparation(ra,dec,RA_center,dec_center)
-      if ang_sep < fov_radius and float(mag) < 4:
+      if ang_sep < fov_radius-(fov_radius * 0) and float(mag) < 4.5:
          possible_stars = possible_stars + 1
-         if ang_sep < fov_radius * .5:
+         if ang_sep < fov_radius * .25:
             dist_thresh = dist_thresh_base - 20 
          else:
             dist_thresh = dist_thresh_base 
-         if ang_sep > fov_radius * .76:
-            dist_thresh = dist_thresh_base + 15
+         #if ang_sep > fov_radius * .76:
+         #   dist_thresh = dist_thresh_base + 15
          new_cat_x, new_cat_y = distort_xy_new (0,0,ra,dec,RA_center, dec_center, x_poly, y_poly, x_res, y_res, pos_angle_ref,F_scale)
-         if (new_cat_x > 0 and new_cat_y > 0) and (new_cat_x < x_res and new_cat_y < y_res):
+         # all catalog stars
+         #cv2.circle(cal_img, (int(new_cat_x),int(new_cat_y)), 10, (122,255,255), 1)
+         cv2.putText(cal_img, dcname,  (int(new_cat_x-5),int(new_cat_y-12)), cv2.FONT_HERSHEY_SIMPLEX, .4, (255, 255, 255), 1)
+         if (new_cat_x > -50 and new_cat_y > -50) and (new_cat_x < x_res+50 and new_cat_y < y_res+50):
             match_star, image_stars = pair_star(image_stars,new_cat_x,new_cat_y, dist_thresh) 
             if len(match_star) == 5:
                matched_stars = matched_stars + 1
                sx,sy,sw,sh,dis = match_star
                cv2.circle(cal_img, (int(new_cat_x),int(new_cat_y)), 10, (0,255,0), 1)
-               cv2.circle(cal_img, (int(sx+(sw/2)),int(sy+(sh/2))), 10, (0,0,255), 1)
+               cv2.circle(cal_img, (int(sx+(sw/2)),int(sy+(sh/2))), 8, (0,0,255), 1)
                cv2.line(cal_img, (int(sx+(sw/2)),int(sy+(sh/2))), (int(new_cat_x),int(new_cat_y)), (255), 2) 
                cv2.putText(cal_img, str(name),  (int(new_cat_x-10),int(new_cat_y+15)), cv2.FONT_HERSHEY_SIMPLEX, .4, (255,255,255), 1)
 
@@ -136,10 +140,11 @@ def get_fov_stars(params, mapped_stars_file, dimension, other_poly, info_only = 
                lines.append(line)
  
    if show == 1:
+      show_img = cv2.resize(cal_img, (0,0),fx=.4, fy=.4)
       cv2.namedWindow('pepe')
-      cv2.imshow('pepe', cal_img)
+      cv2.imshow('pepe', show_img)
       if info_only == 1:
-         cv2.waitKey(0)
+         cv2.waitKey(10)
       else:
          cv2.waitKey(1)
    if len(lines) > 0:
@@ -157,6 +162,26 @@ def get_fov_stars(params, mapped_stars_file, dimension, other_poly, info_only = 
          return(cost)
       else:
          return(cost)
+
+
+def pair_stars_new(image_stars, bright_stars_sorted, fov_radius, RA_center, dec_center):
+   fov_stars = []
+   for bname, cname, ra, dec, mag in bright_stars_sorted:
+      ang_sep = angularSeparation(ra,dec,RA_center,dec_center)
+      if ang_sep < fov_radius-(fov_radius * 0) and float(mag) < 4.2:
+         fov_stars.append((bname, cname, ra, dec, mag))
+
+   print("TOTAL CATALOG STARS IN FOV", len(fov_stars)) 
+   for bname, cname, ra, dec, mag in fov_stars:
+      print(cname, mag)
+   
+   exit()
+
+         #new_cat_x, new_cat_y = distort_xy_new (0,0,ra,dec,RA_center, dec_center, x_poly, y_poly, x_res, y_res, pos_angle_ref,F_scale)
+         #if (new_cat_x > -50 and new_cat_y > -50) and (new_cat_x < x_res+50 and new_cat_y < y_res+50):
+         #   match_star, image_stars = pair_star(image_stars,new_cat_x,new_cat_y, dist_thresh)
+
+
 
 def pair_star(image_stars, cat_x,cat_y, dist_thresh):
    non_matched_stars = []
@@ -180,10 +205,13 @@ def pair_star(image_stars, cat_x,cat_y, dist_thresh):
 def find_image_stars(cal_img):
    if len(cal_img.shape) > 2:
       cal_img= cv2.cvtColor(cal_img, cv2.COLOR_BGR2GRAY)
+   bgavg = np.mean(cal_img)
+   thresh = bgavg + 2
    cal_img = cv2.GaussianBlur(cal_img, (7, 7), 0)
    #cal_img= cv2.convertScaleAbs(cal_img)
-   cal_img = cv2.dilate(cal_img, None , iterations=4)
-   (_, cnts, xx) = cv2.findContours(cal_img.copy(), cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
+   _, threshold = cv2.threshold(cal_img.copy(), thresh, 255, cv2.THRESH_BINARY)
+   #cal_img = cv2.dilate(cal_img, None , iterations=4)
+   (_, cnts, xx) = cv2.findContours(threshold.copy(), cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
    star_pixels = []
    non_star_pixels = []
    cloudy_areas = []
@@ -192,8 +220,7 @@ def find_image_stars(cal_img):
       x,y,w,h= cv2.boundingRect(cnts[i])
       cnt_img = cal_img[y:y+h,x:x+w]
       (max_px, avg_px,px_diff,(mx,my)) = eval_cnt(cnt_img)
-      print("STAR:", x,y,max_px,avg_px,px_diff)
-      if w > 1 and h > 1 and px_diff > 4:
+      if w > 1 and h > 1 and px_diff > 2:
          star_pixels.append((x,y,w,h))
    return(star_pixels)
 
@@ -249,9 +276,10 @@ def denis(mapped_stars_file):
       #cv2.circle(cal_img, (int(cat_x),int(cat_y)), 10, (0,255,0), 1)
       cv2.circle(cal_img, (int(new_cat_x),int(new_cat_y)), 10, (0,0,255), 1)
    if show == 1:
+      show_img = cv2.resize(cal_img, (0,0),fx=.4, fy=.4)
       cv2.namedWindow('pepe')
-      cv2.imshow('pepe', cal_img)
-      cv2.waitKey(0)
+      cv2.imshow('pepe', show_img)
+      cv2.waitKey(10)
 
 
 def plot_stars(maped_stars_file, center_off_x=0, center_off_y = 0, show = 1):
@@ -293,7 +321,7 @@ def plot_stars(maped_stars_file, center_off_x=0, center_off_y = 0, show = 1):
    if show == 1: 
       cv2.namedWindow('pepe')
       cv2.imshow('pepe', cal_img)
-      cv2.waitKey(0)
+      cv2.waitKey(10)
 
 def minimize_poly(mapped_stars_file,show=1):
    cal_params_file = mapped_stars_file.replace("-mapped-stars.json", "-calparams.json")
@@ -336,6 +364,20 @@ def minimize_poly(mapped_stars_file,show=1):
    cal_params['x_fun'] = x_fun
    cal_params['y_fun'] = y_fun
    save_json_file(cal_params_file, cal_params) 
+   grid_file = cal_params_file.replace("-calparams.json", "-grid.png")
+   cal_file = cal_params_file.replace("-calparams.json", ".jpg")
+   wcs_file = cal_params_file.replace("-calparams.json", ".wcs")
+   fit_file = cal_params_file.replace("-calparams.json", "-calfit.jpg")
+   cmd = "cp " + cal_params_file + " /mnt/ams2/cal/solved/"
+   os.system(cmd)
+   cmd = "cp " + cal_file + " /mnt/ams2/cal/solved/"
+   os.system(cmd)
+   cmd = "cp " + wcs_file + " /mnt/ams2/cal/solved/"
+   os.system(cmd)
+   cmd = "cp " + grid_file + " /mnt/ams2/cal/solved/"
+   os.system(cmd)
+   cmd = "cp " + fit_file + " /mnt/ams2/cal/solved/"
+   os.system(cmd)
 
 #cmd = sys.argv[1]
 mapped_stars_file = sys.argv[1]

@@ -31,6 +31,26 @@ def purge_data(json_conf):
    purge_sd_daytime_files(proc_dir,json_conf)
 
 
+def stack_night_all(json_conf, limit=0, tday = None):
+   proc_dir = json_conf['site']['proc_dir']
+   all_days = get_days(json_conf)
+   if limit > 0:
+      days = all_days[0:limit]
+   else:
+      days = all_days
+   if tday is not None:
+      for cam in json_conf['cameras']:
+         cams_id = json_conf['cameras'][cam]['cams_id']
+         glob_dir = proc_dir + tday + "/" 
+         print(glob_dir,cams_id)
+         stack_day_cam_trim(json_conf, glob_dir, cams_id)
+   else:
+      for day in sorted(days,reverse=True):
+         for cam in json_conf['cameras']:
+            cams_id = json_conf['cameras'][cam]['cams_id']
+            glob_dir = proc_dir + day + "/" 
+            print(glob_dir,cams_id)
+            stack_day_cam_all(json_conf, glob_dir, cams_id)
 
 def stack_night(json_conf, limit=0, tday = None):
    proc_dir = json_conf['site']['proc_dir']
@@ -55,6 +75,14 @@ def stack_night(json_conf, limit=0, tday = None):
             stack_day_cam(json_conf, glob_dir, cams_id)
 
    
+def stack_day_cam_all(json_conf, glob_dir, cams_id ):
+   print ("stacking failures")
+   # stack failed captures
+   img_dir = glob_dir + "/images/"
+   f_glob_dir = glob_dir + "/images/*" + cams_id + "*-stacked.png"
+   out_file = img_dir + cams_id + "-night-stack.png"
+   stack_glob(f_glob_dir, out_file)
+
 
 def stack_day_cam(json_conf, glob_dir, cams_id ):
    print ("stacking failures")
@@ -132,12 +160,17 @@ def update_file_index(json_conf):
    days = days[0:3]
 
    for day in days:
-      (failed_files, meteor_files,pending_files) = get_day_stats(proc_dir + day + "/", json_conf)
+      (failed_files, meteor_files,pending_files,min_files) = get_day_stats(proc_dir + day + "/", json_conf)
 
       new_stats[day] = {}
       new_stats[day]['failed_files'] = len(failed_files)
       new_stats[day]['meteor_files'] = len(meteor_files)
       new_stats[day]['pending_files'] = len(pending_files)
+      new_min_files, cam_counts = count_min_files(min_files,json_conf)
+      stats[day]['min_files'] = len(new_min_files)
+      for key in cam_counts:
+         new_stats[day][key] = cam_counts[key]
+
 
    new_stats_copy = new_stats.copy()
    for day in stats:
@@ -146,6 +179,26 @@ def update_file_index(json_conf):
       new_stats[day] = new_stats_copy[day]
    save_json_file(json_file, new_stats)
    print(json_file)
+
+def count_min_files(min_files,json_conf):
+   new_min_files = []
+   cam_counts = {}
+   for camera in json_conf['cameras']:
+      cams_id = json_conf['cameras'][camera]['cams_id']
+      cam_counts[cams_id] = 0
+   
+   for file in min_files:
+      el = file.split("_")
+      if "trim" in file or len(el) <=9:
+         skip = 1
+      else:
+         print("CAMSID", file, cams_id)
+         cams_id = el[9].replace(".mp4","")
+         cam_counts[cams_id] = cam_counts[cams_id] + 1
+         new_min_files.append(file)
+   return(new_min_files, cam_counts)
+
+
 
 def make_file_index(json_conf ):
    proc_dir = json_conf['site']['proc_dir']
@@ -160,12 +213,17 @@ def make_file_index(json_conf ):
 
    for day in days:
 
-      (failed_files, meteor_files,pending_files) = get_day_stats(proc_dir + day + "/", json_conf)
+      (failed_files, meteor_files,pending_files,min_files) = get_day_stats(proc_dir + day + "/", json_conf)
 
       stats[day] = {}
       stats[day]['failed_files'] = len(failed_files)
       stats[day]['meteor_files'] = len(meteor_files)
       stats[day]['pending_files'] = len(pending_files)
+      new_min_files, cam_counts = count_min_files(min_files,json_conf)
+      stats[day]['min_files'] = len(new_min_files)
+      for key in cam_counts:
+         stats[day][key] = cam_counts[key]
+      
       print(day)
    json_file = data_dir + "main-index.json"
    save_json_file(json_file, stats)
