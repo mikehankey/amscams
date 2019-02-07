@@ -192,7 +192,6 @@ def count_min_files(min_files,json_conf):
       if "trim" in file or len(el) <=9:
          skip = 1
       else:
-         print("CAMSID", file, cams_id)
          cams_id = el[9].replace(".mp4","")
          cam_counts[cams_id] = cam_counts[cams_id] + 1
          new_min_files.append(file)
