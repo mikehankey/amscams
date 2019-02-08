@@ -5,6 +5,31 @@ import glob
 from pathlib import Path
 from lib.UtilLib import convert_filename_to_date_cam, get_sun_info
 
+def purge_sd_nighttime_files(sd_dir,json_conf):
+   days = sorted(get_days(json_conf), reverse=True)
+   dc = 0 
+   for day in days:
+      if dc > 38:
+         print(day)
+         files = glob.glob(sd_dir + day + "/*.mp4")
+         for file in files:
+            el = file.split("/")
+            if len(el) != 9:
+               continue
+            (f_datetime, cam, f_date_str,fy,fm,fd, fh, fmin, fs) = convert_filename_to_date_cam(file)
+            sun_status,sun_az,sun_el = get_sun_info(f_date_str,json_conf)
+            st = os.stat(file)
+            cur_time = int(time.time())
+            mtime = st.st_mtime
+            tdiff = cur_time - mtime
+            tdiff = tdiff / 60 / 60 / 24
+            if tdiff > 30:
+               if dc % 100 == 0:
+                  print ("Deleted 100 files from ", day)
+               cmd = "rm " + file
+               if "trim" not in file:
+                  os.system("rm " + file)
+      dc = dc + 1
 
 def purge_sd_daytime_files(proc_dir,json_conf):
    files = glob.glob(proc_dir + "daytime/*")

@@ -1,7 +1,21 @@
 
+import subprocess
 import datetime
 import math
 import ephem
+
+def check_running(progname):
+   cmd = "ps -aux |grep " + progname + " | grep -v grep |wc -l"
+   #cmd = "ps -aux |grep solve-field "
+   output = subprocess.check_output(cmd, shell=True).decode("utf-8")
+   output = int(output.replace("\n", ""))
+   print("RUNNING:", output)
+   if int(output) > 0:
+      return(output)
+   else:
+      return(0)
+
+
 
 
 def get_sun_info(capture_date, json_conf):

@@ -29,7 +29,11 @@ if sys.argv[1] == 'sna':
    limit = 0
    if len(sys.argv) == 3:
       limit = int(sys.argv[2])
-      stack_night_all(json_conf, limit)
+      stack_night_all(json_conf, limit )
+   if len(sys.argv) == 4:
+      tday = sys.argv[3]
+      print("MIKE", tday)
+      stack_night_all(json_conf, 0, tday)
 
 if sys.argv[1] == 'pd':
    purge_data(json_conf)

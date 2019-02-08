@@ -10,21 +10,11 @@ import glob
 import os
 from lib.VideoLib import load_video_frames, get_masks
 from lib.ImageLib import stack_frames, median_frames, adjustLevels, mask_frame
-from lib.UtilLib import convert_filename_to_date_cam, bound_cnt
+from lib.UtilLib import convert_filename_to_date_cam, bound_cnt, check_running
 from lib.FileIO import cfe, save_json_file
 from lib.DetectLib import eval_cnt
 from scipy import signal
 
-def check_running():
-   cmd = "ps -aux |grep solve-field | grep -v grep |wc -l"
-   #cmd = "ps -aux |grep solve-field "
-   output = subprocess.check_output(cmd, shell=True).decode("utf-8")
-   output = int(output.replace("\n", ""))
-   print("RUNNING:", output)
-   if int(output) > 0:
-      return(1)
-   else:
-      return(0)
 
 def check_if_solved(cal_file):
    cal_wild = cal_file.replace(".jpg", "*")
@@ -138,6 +128,34 @@ def find_hd_file(cal_glob):
    files = glob.glob(cal_glob)
    return(files)
 
+def calibrate_pic(cal_image_file, json_conf, show = 1):
+   cal_file = cal_image_file
+   cal_image_np = cv2.imread(cal_image_file, 0)
+   hd_datetime, hd_cam, hd_date, hd_y, hd_m, hd_d, hd_h, hd_M, hd_s = convert_filename_to_date_cam(cal_image_file)
+   cams_id = hd_cam
+
+   print("cal pic")
+   temp = adjustLevels(cal_image_np, 120,1,255)
+   cal_image_np = cv2.convertScaleAbs(temp)
+
+   masks = get_masks(cams_id, json_conf, hd = 1)
+   cal_image_np = mask_frame(cal_image_np, [], masks)
+
+   cal_star_file = cal_file.replace(".jpg", "-median.jpg")
+
+   show_img = cv2.resize(cal_image_np, (0,0),fx=.4, fy=.4)
+   cv2.putText(show_img, "Cal Image NP",  (50,50), cv2.FONT_HERSHEY_SIMPLEX, .4, (255, 255, 255), 1)
+   cv2.imshow('pepe', show_img)
+   cv2.waitKey(0)
+   (stars, plate_image) = make_plate_image(cal_image_np, cal_star_file, cams_id, json_conf)
+   if show == 1:
+      show_img = cv2.resize(plate_image, (0,0),fx=.4, fy=.4)
+      cv2.namedWindow('pepe')
+      cv2.putText(show_img, "Plate Image",  (50,50), cv2.FONT_HERSHEY_SIMPLEX, .4, (255, 255, 255), 1)
+      cv2.imshow('pepe', show_img)
+      cv2.waitKey(0)
+
+
 def calibrate_camera(cams_id, json_conf, cal_date = None, show=1):
    # unless passed in use the last night as the calibration date
    # check 1 frame per hour and if there are enough stars then 
@@ -160,10 +178,17 @@ def calibrate_camera(cams_id, json_conf, cal_date = None, show=1):
       print(cal_file)
       #cal_image, cal_image_np = stack_frames(frames,cal_file) 
       cal_image_np =  median_frames(frames) 
+
+      orig_img = cal_image_np
       #cal_image_np = adjustLevels(cal_image_np, 55,1,255)
       masks = get_masks(cams_id, json_conf, hd = 1)
       cal_image_np = mask_frame(cal_image_np, [], masks)
       cal_star_file = cal_file.replace(".jpg", "-median.jpg")
+      cal_orig_file = cal_file.replace(".jpg", "-orig.jpg")
+
+      #MIKE!
+      temp = adjustLevels(cal_image_np, 50,.8,255)
+      cal_image_np = cv2.convertScaleAbs(temp)
 
       show_img = cv2.resize(cal_image_np, (0,0),fx=.4, fy=.4)
       cv2.putText(show_img, "Cal Image NP",  (50,50), cv2.FONT_HERSHEY_SIMPLEX, .4, (255, 255, 255), 1)
@@ -176,11 +201,13 @@ def calibrate_camera(cams_id, json_conf, cal_date = None, show=1):
          cv2.putText(show_img, "Plate Image",  (50,50), cv2.FONT_HERSHEY_SIMPLEX, .4, (255, 255, 255), 1)
          cv2.imshow('pepe', show_img)
          cv2.waitKey(10)
+      #cv2.imwrite(cal_file, cal_image_np)
       cv2.imwrite(cal_file, plate_image)
-      cv2.imwrite(cal_star_file, cal_image_np)
+      cv2.imwrite(cal_star_file, plate_image)
+      cv2.imwrite(cal_orig_file, orig_img)
 
       print("STARS:", len(stars))
-      if len(stars) >= 20 and len(stars) < 80:
+      if len(stars) >= 12 and len(stars) < 80:
          solved = plate_solve(cal_file,json_conf)
          print("SOLVED:", solved)
          if solved == 1:
@@ -200,8 +227,10 @@ def reduce_object(object, sd_video_file, hd_file, hd_trim, hd_crop_file, hd_crop
    if cal_file is None:
       cal_file = find_best_cal_file(hd_datetime, hd_cam)
 
+   print("HD TRIM REDUCE OBJECT: ", hd_trim)
    el = hd_trim.split("-trim-")
    min_file = el[0] + ".mp4"
+
    print(el[1])
    ttt = el[1].split("-")
    trim_num = ttt[0]
@@ -255,10 +284,10 @@ def plate_solve(cal_file,json_conf):
    print(cmd) 
    os.system(cmd)
 
-   running = check_running() 
+   running = check_running("solve-field") 
    start_time = datetime.datetime.now()
-   while running == 1:
-      running = check_running() 
+   while running > 0:
+      running = check_running("solve-field") 
       cur_time = datetime.datetime.now()
       tdiff = cur_time - start_time
       print("running plate solve.", tdiff)
@@ -375,7 +404,9 @@ def make_plate_image(med_stack_all, cam_num, json_conf, show = 1):
    img_height,img_width = med_stack_all.shape
    max_px = np.max(med_stack_all)
    avg_px = np.mean(med_stack_all)
+   print("AVG PX:", avg_px)
    best_thresh = find_best_thresh(med_stack_all, avg_px)
+
 
    _, star_thresh = cv2.threshold(med_stack_all, best_thresh, 255, cv2.THRESH_BINARY)
    thresh_obj = cv2.dilate(star_thresh, None , iterations=4)
@@ -394,6 +425,7 @@ def make_plate_image(med_stack_all, cam_num, json_conf, show = 1):
          mnx,mny,mxx,mxy = bound_cnt(cx,cy,img_width,img_height)
 
          is_star = star_test(cnt_img)
+         #is_star = 1
          cnt_h, cnt_w = cnt_img.shape
          #cv2.putText(cnt_img, str(is_star),  (0,cnt_h-1), cv2.FONT_HERSHEY_SIMPLEX, .2, (255, 255, 255), 1)
          cv2.imshow('pepe', cnt_img)
@@ -418,7 +450,7 @@ def make_plate_image(med_stack_all, cam_num, json_conf, show = 1):
              
             cavg = int((ul + ur + ll + lr) / 4)
             star_cnt = clean_star_bg(cnt_img, cavg+3)
-            plate_image[mny:mxy,mnx:mxx] = cnt_img
+            plate_image[mny:mxy,mnx:mxx] = star_cnt 
 
    cv2.imshow('pepe', plate_image)
    cv2.waitKey(10)
@@ -556,6 +588,7 @@ def find_best_thresh(image, start_thresh):
       if tries > 10:
          go = 0
       tries = tries + 1
+      print("THRESH:", start_thresh)
    return(start_thresh)
 
 
@@ -587,7 +620,7 @@ def star_test(cnt_img):
    print(x_peaks)
    print(cnt_img.shape)
 
-   if px_diff > 25 or max_px > 100:
+   if px_diff > 25 or max_px > 80:
       is_star = 1
       print("STAR PASSED:", px_diff, max_px)
    else:
@@ -598,12 +631,19 @@ def star_test(cnt_img):
 
 
 def clean_star_bg(cnt_img, bg_avg):
+   max_px = np.max(cnt_img)
+   min_px = np.min(cnt_img)
+   avg_px = np.mean(cnt_img)
+   halfway = int((max_px - min_px) / 2)
+   print("MIN,MAX,AVG: ", min_px, max_px, avg_px, halfway)
    cnt_img.setflags(write=1)
    for x in range(0,cnt_img.shape[1]):
       for y in range(0,cnt_img.shape[0]):
          px_val = cnt_img[y,x]
-         if px_val < bg_avg:
-            #cnt_img[y,x] = random.randint(int(bg_avg - 3),int(bg_avg+3))
-            cnt_img[y,x] = 0
+         if px_val < bg_avg + halfway:
+            #cnt_img[y,x] = random.randint(int(bg_avg - 3),int(avg_px))
+            pxval = cnt_img[y,x]
+            pxval = int(pxval) / 2
+            cnt_img[y,x] = pxval
    return(cnt_img)
 

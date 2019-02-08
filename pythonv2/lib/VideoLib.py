@@ -77,7 +77,7 @@ def doHD(sd_video_file, json_conf):
          sd_box= (min_x,min_y,max_x,max_y)
          hd_box= (hd_min_x,hd_min_y,hd_max_x,hd_max_y)
          crop_out_file = crop_hd(hd_trim,hd_box)
-
+         print("HD TRIM:", hd_trim)
          return(hd_file,hd_trim,crop_out_file,hd_box)
 
 def archive_meteor (sd_video_file,hd_file,hd_trim,crop_out_file,hd_box,hd_objects,json_conf):
@@ -178,7 +178,8 @@ def check_hd_motion(frames, trim_file):
 def find_hd_file_new(sd_file, trim_num, dur = 5):
    #(f_datetime, cam, f_date_str,fy,fm,fd, fh, fmin, fs)
 
-   sd_datetime, sd_cam, sd_date, sd_y, sd_m, sd_d, sd_h, sd_M, sd_s = convert_filename_to_date_cam(sd_file)
+   (sd_datetime, sd_cam, sd_date, sd_y, sd_m, sd_d, sd_h, sd_M, sd_s) = convert_filename_to_date_cam(sd_file)
+   #return(f_datetime, cam, f_date_str,fy,fm,fd, fh, fmin, fs)
    print("SD FILE: ", sd_file)
    print("TRIM NUM: ", trim_num)
    if trim_num > 1400:
@@ -190,7 +191,6 @@ def find_hd_file_new(sd_file, trim_num, dur = 5):
    meteor_datetime = sd_datetime + datetime.timedelta(seconds=offset)
    print("METEOR CLIP START DATETIME:", meteor_datetime)
    hd_glob = "/mnt/ams2/HD/" + sd_y + "_" + sd_m + "_" + sd_d + "_*" + sd_cam + "*"
-   print("HD GLOB", hd_glob)
    hd_files = sorted(glob.glob(hd_glob))
    for hd_file in hd_files:
       el = hd_file.split("_")
@@ -203,6 +203,8 @@ def find_hd_file_new(sd_file, trim_num, dur = 5):
             #print("TIME DIFF:", hd_file, meteor_datetime, hd_datetime, time_diff_sec)
             time_diff_sec = time_diff_sec - 3
             dur = int(dur) + 1
+            if trim_num == 0:
+               trim_num = 1
             if time_diff_sec < 0:
                time_diff_sec = 0
             hd_trim = ffmpeg_trim(hd_file, str(time_diff_sec), str(dur), "-trim-" + str(trim_num) + "-HD-meteor")
@@ -212,16 +214,18 @@ def find_hd_file_new(sd_file, trim_num, dur = 5):
 
 def eof_processing(sd_file, trim_num, dur):
    merge_files = []
-   sd_datetime, sd_cam, sd_date, sd_h, sd_m, sd_s = convert_filename_to_date_cam(sd_file)
+   sd_datetime, sd_cam, sd_date, sd_y, sd_m, sd_d, sd_h, sd_M, sd_s = convert_filename_to_date_cam(sd_file)
    offset = int(trim_num) / 25
    print("TRIM SEC OFFSET: ", offset)
    meteor_datetime = sd_datetime + datetime.timedelta(seconds=offset)
-   hd_glob = "/mnt/ams2/HD/" + sd_date + "_*" + sd_cam + "*"
+   #hd_glob = "/mnt/ams2/HD/" + sd_date + "_*" + sd_cam + "*"
+   hd_glob = "/mnt/ams2/HD/" + sd_y + "_" + sd_m + "_" + sd_d + "_*" + sd_cam + "*"
+   print("HD GLOB:", hd_glob)
    hd_files = sorted(glob.glob(hd_glob))
    for hd_file in hd_files:
       el = hd_file.split("_")
       if len(el) == 8 and "meteor" not in hd_file and "crop" not in hd_file:
-         hd_datetime, hd_cam, hd_date, hd_h, hd_m, hd_s = convert_filename_to_date_cam(hd_file)
+         hd_datetime, hd_cam, hd_date, hd_y, hd_m, hd_d, hd_h, hd_M, hd_s = convert_filename_to_date_cam(sd_file)
          time_diff = meteor_datetime - hd_datetime
          time_diff_sec = time_diff.total_seconds()
          if 0 < time_diff_sec < 90:
@@ -229,16 +233,19 @@ def eof_processing(sd_file, trim_num, dur):
    # take the last 5 seconds of file 1
    # take the first 5 seconds of file 2
    # merge them together to make file 3
+   print(merge_files)
+
    hd_trim1 = ffmpeg_trim(merge_files[0], str(55), str(5), "-temp-" + str(trim_num) + "-HD-meteor")
    hd_trim2 = ffmpeg_trim(merge_files[1], str(0), str(5), "-temp-" + str(trim_num) + "-HD-meteor")
    # cat them together
 
-   hd_datetime, sd_cam, sd_date, sd_h, sd_m, sd_s = convert_filename_to_date_cam(merge_files[0])
+   #hd_datetime, sd_cam, sd_date, sd_h, sd_m, sd_s = convert_filename_to_date_cam(merge_files[0])
+   hd_datetime, hd_cam, hd_date, hd_y, hd_m, hd_d, hd_h, hd_M, hd_s = convert_filename_to_date_cam(merge_files[0])
    new_clip_datetime = hd_datetime + datetime.timedelta(seconds=55)
    new_hd_outfile = new_clip_datetime.strftime("%Y_%m_%d_%H_%M_%S" + "_" + "000" + "_" + sd_cam + ".mp4")
-
+   print("HD TRIM1,2,NEW:", hd_trim1, hd_trim2, new_hd_outfile)
    ffmpeg_cat(hd_trim1, hd_trim2, new_hd_outfile)
-   hd_trim = new_hd_outfile.replace(".mp4", "-trim0-HD-trim.mp4")
+   hd_trim = new_hd_outfile.replace(".mp4", "-trim-0-HD-trim.mp4")
    cmd = "cp " + new_hd_outfile + " " + hd_trim
    os.system(cmd)
 

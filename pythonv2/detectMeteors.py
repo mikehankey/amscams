@@ -1,5 +1,6 @@
 #!/usr/bin/python3 
 
+import subprocess
 import json
 import sys
 import glob
@@ -11,7 +12,7 @@ from lib.MeteorTests import test_objects
 from lib.FileIO import load_json_file,archive_meteor 
 from lib.VideoLib import load_video_frames , doHD
 from lib.ImageLib import stack_frames, draw_stack
-from lib.UtilLib import convert_filename_to_date_cam
+from lib.UtilLib import convert_filename_to_date_cam, check_running
 
 
 # Copyright (C) 2018 Mike Hankey - AllSkyCams.com
@@ -51,6 +52,7 @@ def scan_file(video_file, show):
 
    if len(objects) > 0:
       objects,meteor_found = test_objects(objects,frames)
+      print(objects)
    else:
       objects = []
       meteor_found = 0
@@ -94,18 +96,20 @@ def reduce_hd_meteor(video_file, hd_file, hd_trim, hd_crop_file, hd_box,json_con
    (f_datetime, cam, f_date_str,fy,fm,fd, fh, fmin, fs) = convert_filename_to_date_cam(video_file)
    frames = load_video_frames(hd_crop_file, json_conf)
    objects = check_for_motion2(frames, hd_trim,cam, json_conf,0)
+   print(objects)
    if len(objects) > 0:
       objects,meteor_found = test_objects(objects,frames)
    else:
       objects = []
       meteor_found = 0
+
+   hd_object = []
    print("METEOR FOUND:", meteor_found)
    for object in objects:
-      if object['meteor'] == 1:
-         print(object)
-         hd = 1
-         crop = 1
-         hd_object = reduce_object(object, video_file, hd_file, hd_trim, hd_crop_file, hd_box, json_conf)
+      print(object)
+      hd = 1
+      crop = 1
+      hd_object = reduce_object(object, video_file, hd_file, hd_trim, hd_crop_file, hd_box, json_conf)
    return(hd_object)
 
 
@@ -115,6 +119,10 @@ if __name__ == "__main__":
    show = 0
    json_conf = load_json_file("../conf/as6.json") 
    cmd = sys.argv[1]
+   running = check_running("detectMeteors")
+   if running > 2 and cmd != 'doHD':
+      print("running ", running)
+      exit()
    if len(sys.argv) >=3:
       video_file = sys.argv[2]
    if len(sys.argv) == 4:
@@ -131,6 +139,7 @@ if __name__ == "__main__":
    if cmd == 'dohd' or cmd == 'doHD':
       video_file = sys.argv[2] 
       hd_file, hd_trim, hd_crop_file,hd_box = doHD(video_file, json_conf)
- 
+      print("AFTER doHD HD TRIM: ", hd_trim)
       hd_objects = reduce_hd_meteor(video_file, hd_file, hd_trim, hd_crop_file, hd_box, json_conf)
+      print("AFTER REDUCE HD TRIM: ", hd_trim)
       archive_meteor (video_file,hd_file,hd_trim,hd_crop_file,hd_box,hd_objects,json_conf)

@@ -48,6 +48,9 @@ def test_objects(objects,frames):
    total_objects = len(objects)
    for object in objects:
       status, test_results = test_object(object, total_frames)
+
+      for test in test_results:
+         print(test)
       object['total_frames'] = total_frames
       object['meteor'] = status
       object['test_results'] = test_results
