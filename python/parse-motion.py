@@ -283,30 +283,30 @@ cns = 0
 nm = 0
 
 def trim_event(event):
-   low_start = 0
-   high_end = 0
    start_frame = int(event[0][0])
    end_frame = int(event[-1][0])
-   if low_start == 0:
-      low_start = start_frame
-   if start_frame < low_start:
-      low_start = start_frame
-   if end_frame > high_end:
-      high_end = end_frame
 
-   start_frame = int(low_start)
-   end_frame = int(high_end)
+
+   start_frame = start_frame - 50 
+   end_frame = end_frame + 30
+   if start_frame <= 0:  
+      start_frame = 0
+   if end_frame >= 1499:  
+      start_frame = 1499
    frame_elp = int(end_frame) - int(start_frame)
-   start_sec = start_frame / 25 - 2.5
+   
+
+   start_sec = start_frame / 25 
    if start_sec <= 0:
       start_sec = 0
-   dur = (frame_elp / 25) + 2.5 + 2.5
+   dur = (frame_elp / 25) + 2
    if dur >= 60:
       dur = 59
    if dur < 1:
       dur = 2
 
    pad_start = '{:04d}'.format(start_frame)
+   print("TRIMINFO: ", mp4_file, pad_start, start_sec, dur)
    outfile = ffmpeg_trim(mp4_file, start_sec, dur, "-trim" + str(pad_start))
 
 filename = sys.argv[1]
@@ -367,162 +367,4 @@ os.system(cmd)
 # END NEW LOGIC
 exit()
 
-#hd_file = find_hd_file(mp4_file)
-#print("HD FILE:", hd_file)
-
-events = []
-event = []
-last_cons_mo = 0
-no_motion = 0
-ncm = 0
-last_bpt = 0
-last_bptv = 0
-bpt_total = 0
-bptv_total = 0
-bc = 0
-
-
-
-for line in frame_data:
-   (frameno, mo, bpf, bpt,bptv,cons_mo) = line.split(","); 
-   if int(bpt) > int(bpt_avg) or int(bptv) > int(bptv_avg): 
-      cns = cns + 1
-      nm = 0
-   else:
-      cns = 0
-      nm = nm + 1
-   if cns >= 1 or int(cons_mo) >= 1:
-   #   print("LAST BPT/BPTV vs BPT/BPTV", frameno, bpf, bpt_avg, bptv_avg, last_bpt, last_bptv, bpt, bptv, cons_mo, cns, nm)
-      data = (frameno, mo, bpf, bpt,bptv,cons_mo) 
-      event.append(data)
-   if (len(event) >= 2 ) and nm >=3:
-      events.append(event)
-      event = []
-   #   print ("ADD EVENT", len(event), nm)
-   elif nm >3 and len(event) > 0:
-      event = []
-   #   print ("CLEAR EVENT", len(event), nm)
-   #print("DEBUG:", frameno, len(event), cns, cons_mo, nm)
-
-final_events = []
-for event in events:
-   ft = len(event)
-   first = int(event[0][0])
-   last = int(event[-1][0])
-   fdiff = last - first + 1
-   perc = fdiff / ft
-   if perc == 1:
-      print ("EV:", first, last, ft, fdiff, perc)
-      if fdiff > 2:
-         final_events.append(event)
- 
-
-events = final_events 
- 
-max_events = len(events)
-clean_events = events
-
-if max_events > 1:
-   merged_events = []
-   # more than one event, lets merge them if they are close in frame start / overlapping 
-   ec = 0
-   for event in clean_events:
-      if ec + 1 < max_events:
-         s1 = int(clean_events[ec][0][0])
-         s2 = int(clean_events[ec+1][0][0])
-         if s2 - s1 < 75:
-            print ("MERGE EVENTS", s1, s2)
-            new = clean_events[ec] + clean_events[ec+1]
-            merged_events.append(new)
-            ec = ec + 1
-         else:
-            merged_events.append(event)
-      else: 
-            merged_events.append(event)
-      ec = ec + 1   
-   events = merged_events
-
-   ec = 0
-   for event in events:
-      if len(event) > 1:
-         fdiff = int(event[-1][0]) - int(event[0][0]) + 1
-         perc = fdiff / len(event)
-      else:
-         perc = 0
-      if .8 < perc < 1.2 and len(event) > 3:
-         print ("EVENT START/END/LEN/PERC", event[0][0], event[-1][0], len(event), perc)
-      ec = ec + 1   
-
-print(" FINAL EVENTS:", len(events), events)
-
-low_start = 0
-high_end = 0
-if len(events) > 5:
-   for event in events:
-      start_frame = int(event[0][0])
-      end_frame = int(event[-1][0])
-      if low_start == 0:
-         low_start = start_frame
-      if start_frame < low_start:
-         low_start = start_frame
-      if end_frame > high_end:
-         high_end = end_frame
-   # just make 1 trim file
-
-   print ("START/END:", low_start,high_end)
-   start_frame = int(low_start)
-   end_frame = int(high_end)
-   frame_elp = int(end_frame) - int(start_frame)
-   start_sec = int(start_frame / 25) - 3 
-   if start_sec <= 0:
-      start_sec = 0
-   dur = int(frame_elp / 25) + 3 + 2
-   if dur >= 60:
-      dur = 59 
-   if dur < 1:
-      dur = 2 
-
-   pad_start = '{:04d}'.format(start_frame)
-   outfile = ffmpeg_trim(mp4_file, start_sec, dur, "-trim" + str(pad_start))
-     
-
-else:
-
-   for event in events:
-      print ("Event:", event)
-      start_frame = int(event[0][0])
-      end_frame = int(event[-1][0])
-      frame_elp = end_frame - start_frame
-      start_sec = (start_frame / 25) - 3 
-      if start_sec <= 0:
-         start_sec = 0
-      dur = frame_elp / 25 + 3 + 2
-      if dur > 60:
-         dur = 59
-      pad_start = '{:04d}'.format(start_frame)
-      outfile = ffmpeg_trim(mp4_file, start_sec, dur, "-trim" + str(pad_start))
-
-      #hd_outfile = ffmpeg_trim(hd_file, start_sec, dur, "-trim" + str(start_frame))
-      event_count = event_count + 1;
-      print ("EVENT Start frame: ", start_frame, start_sec)
-      print ("EVENT End frame: ", end_frame, start_sec + dur)
-      print ("Total frames: ", frame_elp, dur)
-   #  print(hd_outfile)
-   #  reject_filters(outfile)
-  
-ec = 0; 
-for event in events:
-   print("EVENT: ", ec, event[0][0], len(event) )
-   ec = ec + 1
-el = filename.split("/")
-fn = el[-1]
-dir = filename.replace(fn, "")
-stack_file = dir + fn 
-stack_file = stack_file.replace("-motion.txt", "-stacked.png")
-cmd = "mv " + filename + " " + dir + "data/"
-print(cmd)
-#os.system(cmd)
-cmd = "mv " + stack_file + " " + dir + "images/"
-print(cmd)
-os.system(cmd)
 
