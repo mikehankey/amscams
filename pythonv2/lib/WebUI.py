@@ -1,4 +1,4 @@
-import cv2
+emport cv2
 import cgi
 import time
 import glob
@@ -35,7 +35,7 @@ def make_day_preview(day_dir, stats_data, json_conf):
       html_out = html_out + "<figure><a href=\"webUI.py?cmd=browse_day&day=" + day_str + "&cams_id=" + cams_id \
          + "\" onmouseover=\"document.getElementById(" + day + cams_id + ").src='" + meteor_stack \
          + "'\" onmouseout=\"document.getElementById(" + day + cams_id + ").src='" + obj_stack + "'\">"
-      html_out = html_out + "<img id=\"" + day+ cams_id + "\" width='200' src='" + obj_stack + "'></a><br><figurecaption>" + str(min_total) + " Minutes</figurecaption></figure>"
+      html_out = html_out + "<img id=\"" + day+ cams_id + "\" width='200' height='163' src='" + obj_stack + "'></a><br><figurecaption>" + str(min_total) + " Minutes</figurecaption></figure>"
    return(html_out, day_str)
 
 def controller(json_conf):
