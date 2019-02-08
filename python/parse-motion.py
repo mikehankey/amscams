@@ -297,10 +297,10 @@ def trim_event(event):
    start_frame = int(low_start)
    end_frame = int(high_end)
    frame_elp = int(end_frame) - int(start_frame)
-   start_sec = int(start_frame / 25) - 3
+   start_sec = start_frame / 25 - 2.5
    if start_sec <= 0:
       start_sec = 0
-   dur = int(frame_elp / 25) + 3 + 2
+   dur = (frame_elp / 25) + 2.5 + 2.5
    if dur >= 60:
       dur = 59
    if dur < 1:
@@ -349,6 +349,20 @@ print ("FINAL MERGED EVENTS", len(merged_events))
 for event in merged_events:
    print("TRIM:", event)
    trim_event(event)
+
+el = filename.split("/")
+fn = el[-1]
+dir = filename.replace(fn, "")
+stack_file = dir + fn
+stack_file = stack_file.replace("-motion.txt", "-stacked.png")
+cmd = "mv " + filename + " " + dir + "data/"
+print(cmd)
+#os.system(cmd)
+cmd = "mv " + stack_file + " " + dir + "images/"
+print(cmd)
+os.system(cmd)
+
+
 
 # END NEW LOGIC
 exit()
@@ -512,4 +526,3 @@ cmd = "mv " + stack_file + " " + dir + "images/"
 print(cmd)
 os.system(cmd)
 
-print ("MIKE TOTAL EVENTS",ec )
