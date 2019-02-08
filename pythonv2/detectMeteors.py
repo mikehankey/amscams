@@ -71,8 +71,9 @@ def scan_file(video_file, show):
       # upload meteor
    else:
       print("Meteor Test Failed.")
-      stack_file, stack_img = stack_frames(frames, video_file)
-      draw_stack(objects,stack_img,stack_file)
+      if len(frames) > 0:
+         stack_file, stack_img = stack_frames(frames, video_file)
+         draw_stack(objects,stack_img,stack_file)
       print("SAVE FAILED")
       save_failed_detection(video_file,objects)
       print("MIKE")
