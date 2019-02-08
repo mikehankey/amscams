@@ -167,7 +167,7 @@ def update_file_index(json_conf):
       new_stats[day]['meteor_files'] = len(meteor_files)
       new_stats[day]['pending_files'] = len(pending_files)
       new_min_files, cam_counts = count_min_files(min_files,json_conf)
-      stats[day]['min_files'] = len(new_min_files)
+      new_stats[day]['min_files'] = len(new_min_files)
       for key in cam_counts:
          new_stats[day][key] = cam_counts[key]
 
