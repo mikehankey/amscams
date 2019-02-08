@@ -101,8 +101,42 @@ def controller(json_conf):
 def calibration(json_conf):
    print("Calibration")
 
-def meteors(json_conf):
-   print("Meteors")
+def get_meteor_dirs(meteor_dir):
+   meteor_dirs = []
+   files = glob.glob("/mnt/ams2/meteors/*")
+   for file in files:
+      if cfe(file,1) == 1:
+         meteor_dirs.append(file)
+   return(meteor_dirs)
+
+def get_meteors(meteor_dir,meteors):
+   glob_dir = meteor_dir + "*-trim*.mp4"
+   files = glob.glob(meteor_dir + "/*-trim*.json")
+   for file in files:
+      meteors.append(file)
+   return(meteors)
+  
+
+def meteors(json_conf): 
+   htclass = "none"
+   print("<h1>Meteors</h1>")
+   meteors = []
+   meteor_base_dir ="/mnt/ams2/meteors/"
+   meteor_dirs = sorted(get_meteor_dirs(meteor_base_dir), reverse=True)
+   for meteor_dir in meteor_dirs:
+      meteors = get_meteors(meteor_dir, meteors)
+   for meteor in sorted(meteors,reverse=True):
+      stack_file_tn = meteor.replace('.json', '-stacked-tn.png')
+      video_file = meteor.replace('.json', '.mp4')
+
+      el = meteor.split("/")
+      base_js_name = el[-1].replace("_", "")
+      link = "<a href=\"webUI.py?cmd=examine&video_file=" + video_file + "\">" 
+         #+ " onmouseover=\"document.getElementById('" + base_js_name + "').width=705\" " \
+         #+ " onmouseout=\"document.getElementById('" + base_js_name + "').width=300\" " +  ">"
+      print(link)  
+      print("<img id=" + base_js_name + " class='" + htclass + "' width=300 src=" + stack_file_tn + "></img></a>")
+
 
 def live_view(json_conf):
 
@@ -513,7 +547,6 @@ def browse_day(day,cams_id,json_conf):
          htclass = "none"
       el = base_file.split("/")
       base_js_name = el[-1].replace("_", "")
-
       link = "<a href=\"webUI.py?cmd=examine_min&video_file=" + video_file + "\">" 
          #+ " onmouseover=\"document.getElementById('" + base_js_name + "').width=705\" " \
          #+ " onmouseout=\"document.getElementById('" + base_js_name + "').width=300\" " +  ">"

@@ -3,9 +3,10 @@ import subprocess
 import numpy as np
 import cv2
 import glob
-from lib.FileIO import get_day_stats, load_json_file, cfe, get_days, save_json_file,load_json_file, purge_hd_files, purge_sd_daytime_files
-from lib.ImageLib import draw_stack, thumb, stack_glob, stack_stack
+from lib.FileIO import get_day_stats, load_json_file, cfe, get_days, save_json_file,load_json_file, purge_hd_files, purge_sd_daytime_files, purge_sd_nighttime_files
+from lib.ImageLib import draw_stack, thumb, stack_glob, stack_stack, stack_frames
 from PIL import Image
+from lib.VideoLib import load_video_frames
 
 def purge_data(json_conf):
    proc_dir = json_conf['site']['proc_dir']
@@ -16,7 +17,10 @@ def purge_data(json_conf):
    cmd = "df -h | grep ams2"
    output = subprocess.check_output(cmd, shell=True).decode("utf-8")
    stuff = output.split(" ")
-   disk_perc = int(stuff[13].replace("%", ""))
+   print(stuff)
+   for st in stuff:
+      if "%" in st:
+         disk_perc = int(st.replace("%", ""))
    if disk_perc > disk_thresh:
       print("DELETE some stuff...")
       # delete HD Daytime Files older than 1 day
@@ -27,8 +31,9 @@ def purge_data(json_conf):
       # Keep all dirs in the proc2 dir (for archive browsing), but after time delete everything
       # except the passed dir and its contents. *?refine maybe?*
    print(disk_perc)
-   purge_hd_files(hd_video_dir,json_conf)
-   purge_sd_daytime_files(proc_dir,json_conf)
+   #purge_hd_files(hd_video_dir,json_conf)
+   #purge_sd_daytime_files(proc_dir,json_conf)
+   purge_sd_nighttime_files(proc_dir,json_conf)
 
 
 def stack_night_all(json_conf, limit=0, tday = None):
@@ -43,7 +48,7 @@ def stack_night_all(json_conf, limit=0, tday = None):
          cams_id = json_conf['cameras'][cam]['cams_id']
          glob_dir = proc_dir + tday + "/" 
          print(glob_dir,cams_id)
-         stack_day_cam_trim(json_conf, glob_dir, cams_id)
+         stack_day_cam_all(json_conf, glob_dir, cams_id)
    else:
       for day in sorted(days,reverse=True):
          for cam in json_conf['cameras']:
@@ -228,6 +233,23 @@ def make_file_index(json_conf ):
    save_json_file(json_file, stats)
    print(json_file)
 
+
+def thumb_mp4s(mp4_files,json_conf):
+   for file in mp4_files:
+      stack_file = file.replace(".mp4", "-stacked.png") 
+      stack_thumb = stack_file.replace(".png", "-tn.png") 
+      print(file,stack_file,stack_thumb)
+      frames = load_video_frames(file,json_conf)
+      stack_file, stack_image = stack_frames(frames, file)
+      # now thumbnail the stack_file
+      thumb(stack_file)
+
+def batch_meteor_thumb(json_conf):
+   meteor_base_dir = "/mnt/ams2/meteors/"
+   meteor_dirs = glob.glob(meteor_base_dir + "/*")
+   for meteor_dir in meteor_dirs:
+      mp4_files = glob.glob(meteor_dir + "/*.mp4")
+      thumb_mp4s(mp4_files,json_conf)
 
 def batch_thumb(json_conf):
    print("BATCH THUMB")

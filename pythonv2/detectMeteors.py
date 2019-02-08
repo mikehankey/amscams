@@ -48,7 +48,10 @@ def scan_file(video_file, show):
    frames = load_video_frames(video_file, json_conf)
    print("SHOW:", show)
    show = int(show)
-   objects = check_for_motion2(frames, video_file,cam, json_conf,show)
+   if len(frames) > 0:
+      objects = check_for_motion2(frames, video_file,cam, json_conf,show)
+   else:
+      objects = []
 
    if len(objects) > 0:
       objects,meteor_found = test_objects(objects,frames)
@@ -140,6 +143,8 @@ if __name__ == "__main__":
       video_file = sys.argv[2] 
       hd_file, hd_trim, hd_crop_file,hd_box = doHD(video_file, json_conf)
       print("AFTER doHD HD TRIM: ", hd_trim)
+      sd_json_file = video_file.replace(".mp4", ".json")
+      sd_objects = load_json_file(sd_json_file)
       hd_objects = reduce_hd_meteor(video_file, hd_file, hd_trim, hd_crop_file, hd_box, json_conf)
       print("AFTER REDUCE HD TRIM: ", hd_trim)
-      archive_meteor (video_file,hd_file,hd_trim,hd_crop_file,hd_box,hd_objects,json_conf)
+      archive_meteor (video_file,hd_file,hd_trim,hd_crop_file,hd_box,hd_objects,sd_objects,json_conf)

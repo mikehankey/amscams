@@ -67,7 +67,7 @@ def purge_hd_files(hd_video_dir,json_conf):
 
 
 
-def archive_meteor (sd_video_file,hd_file,hd_trim,hd_crop_file,hd_box,hd_objects,json_conf):
+def archive_meteor (sd_video_file,hd_file,hd_trim,hd_crop_file,hd_box,hd_objects,sd_objects,json_conf):
    el = sd_video_file.split("/")
    fn_base = el[-1] 
    fn_base = fn_base.replace(".mp4", "")
@@ -90,6 +90,7 @@ def archive_meteor (sd_video_file,hd_file,hd_trim,hd_crop_file,hd_box,hd_objects
    meteor_json['hd_trim'] = hd_trim
    meteor_json['hd_crop_file'] = hd_crop_file
    meteor_json['hd_objects'] = hd_objects
+   meteor_json['sd_objects'] = sd_objects
 
    save_json_file(meteor_json_file, meteor_json )
    
