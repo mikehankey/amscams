@@ -1,4 +1,4 @@
-emport cv2
+import cv2
 import cgi
 import time
 import glob
