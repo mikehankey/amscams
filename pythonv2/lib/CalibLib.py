@@ -15,6 +15,62 @@ from lib.FileIO import cfe, save_json_file
 from lib.DetectLib import eval_cnt
 from scipy import signal
 
+
+def XYtoRADec(img_x,img_y,cal_date,cal_params,json_conf):
+   #hd_datetime, hd_cam, hd_date, hd_y, hd_m, hd_d, hd_h, hd_M, hd_s = convert_filename_to_date_cam(hd_file)
+
+   device_lat = json_conf['site']['device_lat']
+   device_lng = json_conf['site']['device_lng']
+   #jd = date_to_jd(Y,M,D)
+
+   # Convert declination to radians
+   dec_rad = radians(dec_d)
+
+   # Precalculate some parameters
+   sl = sin(radians(lat))
+   cl = cos(radians(lat))
+
+   x_poly_fwd = json_conf['x_poly_fwd']
+   y_poly_fwd = json_conf['y_poly_fwd']
+
+   x_det = img_x - json_conf['imagew']/2
+   y_det = img_y - json_conf['imageh']/2
+
+   dx = (x_poly_fwd[0]
+      + x_poly_fwd[1]*x_det
+      + x_poly_fwd[2]*y_det
+      + x_poly_fwd[3]*x_det**2
+      + x_poly_fwd[4]*x_det*y_det
+      + x_poly_fwd[5]*y_det**2
+      + x_poly_fwd[6]*x_det**3
+      + x_poly_fwd[7]*x_det**2*y_det
+      + x_poly_fwd[8]*x_det*y_det**2
+      + x_poly_fwd[9]*y_det**3
+      + x_poly_fwd[10]*x_det*sqrt(x_det**2 + y_det**2)
+      + x_poly_fwd[11]*y_det*sqrt(x_det**2 + y_det**2))
+
+   # Add the distortion correction
+   x_pix = x_det + dx
+
+   dy = (y_poly_fwd[0]
+      + y_poly_fwd[1]*x_det
+      + y_poly_fwd[2]*y_det
+      + y_poly_fwd[3]*x_det**2
+      + y_poly_fwd[4]*x_det*y_det
+      + y_poly_fwd[5]*y_det**2
+      + y_poly_fwd[6]*x_det**3
+      + y_poly_fwd[7]*x_det**2*y_det
+      + y_poly_fwd[8]*x_det*y_det**2
+      + y_poly_fwd[9]*y_det**3
+      + y_poly_fwd[10]*y_det*sqrt(x_det**2 + y_det**2)
+      + y_poly_fwd[11]*x_det*sqrt(x_det**2 + y_det**2))
+
+   # Add the distortion correction
+   y_pix = y_det + dy
+   return(x_pix,y_pix)
+
+
+
 def Decdeg2DMS( Decin ):
    Decin = float(Decin)
    if(Decin<0):
