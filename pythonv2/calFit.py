@@ -9,7 +9,7 @@ import scipy.optimize
 import matplotlib.pyplot as plt
 import sys
 #from caliblib import distort_xy, 
-from lib.CalibLib import distort_xy_new
+from lib.CalibLib import distort_xy_new, find_image_stars 
 from lib.FileIO import load_json_file, save_json_file, cfe
 from lib.UtilLib import calc_dist 
 import lib.brightstardata as bsd
@@ -52,6 +52,40 @@ def calc_dist_residuals(mapped_stars_file, img_w=1920, img_h=1080, center_off_x=
       avg_y = "NA"
 
    return(avg_x, avg_y)
+
+def get_catalog_stars(cal_params):
+   img_w = int(cal_params['imagew'])
+   img_h = int(cal_params['imageh'])
+   RA_center = float(cal_params['ra_center'])
+   dec_center = float(cal_params['dec_center'])
+   F_scale = 3600/float(cal_params['pixscale'])
+
+   fov_w = img_w / F_scale
+   fov_h = img_h / F_scale
+   fov_radius = np.sqrt((fov_w/2)**2 + (fov_h/2)**2)
+
+   pos_angle_ref = cal_params['position_angle']
+   x_res = int(cal_params['imagew'])
+   y_res = int(cal_params['imageh'])
+
+   center_x = int(x_res / 2)
+   center_y = int(x_res / 2)
+
+   bright_stars_sorted = sorted(bright_stars, key=lambda x: x[4], reverse=False)
+
+   for bname, cname, ra, dec, mag in bright_stars_sorted:
+      dcname = cname.decode("utf-8")
+      dbname = bname.decode("utf-8")
+      if dcname == "":
+         name = dbname
+      else:
+         name = dcname
+
+      ang_sep = angularSeparation(ra,dec,RA_center,dec_center)
+      if ang_sep < fov_radius-(fov_radius * 0) and float(mag) < 5:
+         possible_stars = possible_stars + 1
+         print(name)
+
 
 
 def get_fov_stars(params, mapped_stars_file, dimension, other_poly, info_only = 0, show= 1):
@@ -114,7 +148,7 @@ def get_fov_stars(params, mapped_stars_file, dimension, other_poly, info_only = 
          name = dcname
 
       ang_sep = angularSeparation(ra,dec,RA_center,dec_center)
-      if ang_sep < fov_radius-(fov_radius * 0) and float(mag) < 4.5:
+      if ang_sep < fov_radius-(fov_radius * 0) and float(mag) < 5:
          possible_stars = possible_stars + 1
          if ang_sep < fov_radius * .25:
             dist_thresh = dist_thresh_base - 20 

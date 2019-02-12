@@ -4,8 +4,9 @@ import time
 import glob
 import os
 from lib.FileIO import get_proc_days, get_day_stats, get_day_files , load_json_file, get_trims_for_file, get_days, save_json_file, cfe
-from lib.VideoLib import get_masks
+from lib.VideoLib import get_masks, convert_filename_to_date_cam
 from lib.ImageLib import mask_frame 
+from lib.CalibLib import radec_to_azel
 
 def get_template(json_conf):
    template = ""
@@ -35,14 +36,51 @@ def make_day_preview(day_dir, stats_data, json_conf):
       html_out = html_out + "<figure><a href=\"webUI.py?cmd=browse_day&day=" + day_str + "&cams_id=" + cams_id \
          + "\" onmouseover=\"document.getElementById(" + day + cams_id + ").src='" + meteor_stack \
          + "'\" onmouseout=\"document.getElementById(" + day + cams_id + ").src='" + obj_stack + "'\">"
-      html_out = html_out + "<img id=\"" + day+ cams_id + "\" width='200' height='163' src='" + obj_stack + "'></a><br><figurecaption>" + str(min_total) + " Minutes</figurecaption></figure>"
+      html_out = html_out + "<img id=\"" + day+ cams_id + "\" width='200' height='163' src='" + obj_stack + "'></a><br><figcaption>" + str(min_total) + " Minutes</figcaption></figure>"
    return(html_out, day_str)
 
+def parse_jsid(jsid):
+   #print("JSID:", jsid)
+   year = jsid[0:4]
+   month = jsid[4:6]
+   day = jsid[6:8]
+   hour = jsid[8:10]
+   min = jsid[10:12]
+   sec = jsid[12:14]
+   micro_sec = jsid[14:17]
+   cam = jsid[17:23]
+   trim = jsid[24:]
+   trim = trim.replace(".json", "")
+   video_file = "/mnt/ams2/meteors/" + str(year) + "_" + str(month) + "_" + str(day) + "/"  + year + "_" + month + "_" + day + "_" + hour + "_" + min + "_" + sec + "_" + micro_sec + "_" + str(cam) + "-" + trim + ".mp4"
+   #print(video_file)
+   #print(year,month,day,hour,min,sec,micro_sec,cam,trim)
+   return(video_file)
+
 def controller(json_conf):
-   print_css()
-   
+
    form = cgi.FieldStorage()
    cmd = form.getvalue('cmd')
+   #cmd = "play_vid"
+   if cmd == 'play_vid':
+      jsid = form.getvalue('jsid')
+      video_file = parse_jsid(jsid)
+      print("Location: " + video_file + "\n\n")
+      exit()
+
+   print("Content-type: text/html\n\n")
+
+   # do json functions up here and bypass the exta html
+   if cmd == 'override_detect':
+      video_file = form.getvalue('video_file')
+      jsid = form.getvalue('jsid')
+      override_detect(video_file,jsid,json_conf)
+      exit()
+
+
+
+   print_css()
+   jq = do_jquery()
+   
 
    nav_html,bot_html = nav_links(json_conf,cmd)
 
@@ -51,12 +89,17 @@ def controller(json_conf):
    top = stf[0]
    bottom = stf[1]
    top = top.replace("{TOP}", nav_html)
+
+   obs_name = json_conf['site']['obs_name']
+
+   top = top.replace("{OBSNAME}", obs_name)
+   top = top.replace("{JQ}", jq)
+
    print(top)
 
 
-   if cmd == 'override_detect':
-      video_file = form.getvalue('video_file')
-      override_detect(video_file,json_conf)
+      
+
    if cmd == 'video_tools':
       video_tools(json_conf)
    if cmd == 'mask_admin':
@@ -75,15 +118,21 @@ def controller(json_conf):
       reset(video_file, type)
    if cmd == 'examine':
       video_file = form.getvalue('video_file')
+      jsid = form.getvalue('jsid')
+      if jsid is not None:
+         video_file = parse_jsid(jsid)
+
       examine(video_file)
    if cmd == '' or cmd is None or cmd == 'home':
       main_page(json_conf)   
+   if cmd == 'examine_cal':
+      examine_cal(json_conf,form)   
    if cmd == 'calibration':
-      calibration(json_conf)   
+      calibration(json_conf,form)   
    if cmd == 'live_view':
       live_view(json_conf)   
    if cmd == 'meteors':
-      meteors(json_conf)   
+      meteors(json_conf, form)   
    if cmd == 'config':
       as6_config(json_conf)   
    if cmd == 'browse_detects':
@@ -93,20 +142,96 @@ def controller(json_conf):
       #day = '2019_01_27'
       browse_detects(day,type,json_conf)   
 
+   #bottom = bottom.replace("{JQ}", jq)      
    bottom = bottom.replace("{BOTTOMNAV}", bot_html)      
    print(bottom)
    #cam_num = form.getvalue('cam_num')
    #day = form.getvalue('day')
 
-def calibration(json_conf):
+def get_cal_params(json_conf,cams_id):
+   if cams_id is None:
+      files = glob.glob("/mnt/ams2/cal/solved/*.json")
+   else:
+      files = glob.glob("/mnt/ams2/cal/solved/*" + cams_id + "*.json")
+   return(files)
+
+def examine_cal(json_conf,form):
+
+   print("""
+      <script>
+      function swap_pic(img_id,img_src) {
+         document.getElementById(img_id).src=img_src
+
+      }
+      </script>
+
+      """)
+   print("<p>Exmaine calibration</p>")
+   cal_param = form.getvalue('cal_param')
+   cal_file = cal_param.replace("-calparams.json", ".jpg") 
+   orig_cal_file = cal_param.replace("-calparams.json", "-orig.jpg") 
+   rect_file = cal_param.replace("-calparams.json", "-rect.jpg") 
+   grid_file = cal_param.replace("-calparams.json", "-grid.png") 
+   cal_fit_file = cal_param.replace("-calparams.json", "-calfit.jpg") 
+
+   print("<figure><img id=\"cal_img\" width=1200 src=" + grid_file + ">")
+   print("<figcaption>")
+   #print("<a href=# onclick=\"swap_pic('cal_img', '" + orig_cal_file + "')\">Orig</a> -" )
+   print("<a href=# onclick=\"swap_pic('cal_img', '" + cal_file + "')\">Src</a> -" )
+   #print("<a href=# onclick=\"swap_pic('cal_img', '" + cal_file + "')\">Stars</a> -" )
+   print("<a href=# onclick=\"swap_pic('cal_img', '" + grid_file + "')\">Grid</a> -" )
+   print("<a href=# onclick=\"swap_pic('cal_img', '" + cal_fit_file + "')\">Fit</a> ")
+   print("</figcaption></figure>" )
+   print("<div style=\"clear: both\"></div>")
+   json_data = load_json_file(cal_param )
+
+   #orig_cal_file = cal_p
+
+
+def calibration(json_conf,form):
+   cams_id = form.getvalue('cams_id')
    print("Calibration")
+   cal_params = get_cal_params(json_conf, cams_id)
+
+   print("""
+      <div style="float:right">
+      <form>
+       <select name=cam_id onchange="javascript:goto(this.options[selectedIndex].value)">
+        <option value=>Filter By Cam</option>
+        <option value=010001>010001</option>
+        <option value=010002>010002</option>
+        <option value=010003>010003</option>
+        <option value=010004>010004</option>
+        <option value=010005>010005</option>
+        <option value=010006>010006</option>
+        </select>
+      </form>
+      </div>
+      """)
+
+
+
+   stab,sr,sc,et,er,ec = div_table_vars()
+   print(stab)
+
+   print(sr+sc+"Date"+ec+sc+"Camera" + ec + sc + "Center RA/DEC" + ec + sc + "Center AZ/EL" + ec + sc +"Pixel Scale" + ec + sc + "Position Angle" + ec + sc + "Residual" + ec + er)
+   for cal_param in sorted(cal_params,reverse=True):
+      hd_datetime, hd_cam, hd_date, hd_y, hd_m, hd_d, hd_h, hd_M, hd_s = convert_filename_to_date_cam(cal_param)
+      json_data = load_json_file(cal_param )
+
+      az,el = radec_to_azel(json_data['ra_center'],json_data['dec_center'], hd_datetime,json_conf)
+
+
+      print(sr + sc + "<a href=webUI.py?cmd=examine_cal&cal_param=" + cal_param + ">" + hd_date + "</a>" + ec + sc + hd_cam + ec + sc + str(json_data['ra_center'])[0:6] + "/" + str(json_data['dec_center'])[0:5] + ec + sc + str(az)[0:5] + "/" + str(el)[0:5] + ec + sc + str(json_data['pixscale'])[0:5] + ec + sc + str(json_data['position_angle'])[0:5] + ec + sc + str(json_data['x_fun'])[0:4] + "," + str(json_data['y_fun'])[0:4] + ec + er)
+   print(et)
 
 def get_meteor_dirs(meteor_dir):
    meteor_dirs = []
    files = glob.glob("/mnt/ams2/meteors/*")
    for file in files:
-      if cfe(file,1) == 1:
-         meteor_dirs.append(file)
+      if "trash" not in file:
+         if cfe(file,1) == 1:
+            meteor_dirs.append(file)
    return(meteor_dirs)
 
 def get_meteors(meteor_dir,meteors):
@@ -117,25 +242,56 @@ def get_meteors(meteor_dir,meteors):
    return(meteors)
   
 
-def meteors(json_conf): 
+def meteors(json_conf,form): 
+   limit_day = form.getvalue('limit_day')
    htclass = "none"
    print("<h1>Meteors</h1>")
    meteors = []
    meteor_base_dir ="/mnt/ams2/meteors/"
    meteor_dirs = sorted(get_meteor_dirs(meteor_base_dir), reverse=True)
+
+
    for meteor_dir in meteor_dirs:
-      meteors = get_meteors(meteor_dir, meteors)
+      el = meteor_dir.split("/")
+      this_date = el[-1]
+      if limit_day is None: 
+         meteors = get_meteors(meteor_dir, meteors)
+      elif limit_day == this_date:
+         meteors = get_meteors(meteor_dir, meteors)
+         print("<p>{:d} meteors captured on {:s}.</p>".format(len(meteors), str(this_date)))
+   if limit_day is None:
+      print("<p>{:d} meteors captured since inception.</p>".format(len(meteors)))
+
+   span = "<span id=\"{ID}\" class=\"context-menu-one btn btn-neutral\">"  
+   end_span = "</span>"
+
    for meteor in sorted(meteors,reverse=True):
       stack_file_tn = meteor.replace('.json', '-stacked-tn.png')
       video_file = meteor.replace('.json', '.mp4')
+      stack_obj_img = video_file.replace(".mp4", "-stacked-obj-tn.png")
 
       el = meteor.split("/")
+      temp = el[-1].replace(".mp4", "")
+      xxx = temp.split("-trim")
+      desc = xxx[0] 
       base_js_name = el[-1].replace("_", "")
-      link = "<a href=\"webUI.py?cmd=examine&video_file=" + video_file + "\">" 
-         #+ " onmouseover=\"document.getElementById('" + base_js_name + "').width=705\" " \
-         #+ " onmouseout=\"document.getElementById('" + base_js_name + "').width=300\" " +  ">"
-      print(link)  
-      print("<img id=" + base_js_name + " class='" + htclass + "' width=300 src=" + stack_file_tn + "></img></a>")
+      base_js_name = base_js_name.replace(".json", "")
+      base_js_name_img = "img_" + base_js_name
+      fig_id = "fig_" + base_js_name
+      
+
+
+      html_out = ""
+      this_span = span.replace("{ID}", base_js_name)
+      html_out = html_out + "<figure id=\"" + fig_id + "\">" + this_span + "<a href=\"webUI.py?cmd=examine&video_file=" + video_file + "\"" \
+         + " onmouseover=\"document.getElementById('" + base_js_name_img + "').src='" + stack_obj_img \
+         + "'\" onmouseout=\"document.getElementById('" + base_js_name_img + "').src='" + stack_file_tn+ "'\">"
+  
+      html_out = html_out + "<img class=\"" + htclass + "\" id=\"" + base_js_name_img + "\" src='" + stack_file_tn+ "'></a>" + end_span + "<figcaption>" + desc + "</figcaption></figure>\n"
+
+      print(html_out)
+   print("<div style='clear: both'></div>")
+
 
 
 def live_view(json_conf):
@@ -406,10 +562,47 @@ def examine_min(video_file,json_conf):
       print("<h2>No Detections</h2>")
    #print(failed_files,meteor_files)
 
-def override_detect(video_file,json_conf):
+def override_detect(video_file,jsid, json_conf):
+
+   if jsid is not None:
+      video_file = parse_jsid(jsid)
+
    base = video_file.replace(".mp4", "")
    el = base.split("/")
    base_dir = base.replace(el[-1], "")
+
+   if "meteors" in base:
+      new_dir = "/mnt/ams2/trash/"
+      json_file = video_file.replace(".mp4", ".json")
+      json_data = load_json_file(json_file)
+      hd_trim = json_data['hd_trim']
+      sd_video_file = json_data['sd_video_file']
+      el = sd_video_file.split("/")
+      sd_dir  = sd_video_file.replace(el[-1], "") 
+      sd_fail = sd_dir.replace("passed","failed")
+      sd_wild = sd_video_file.replace(".mp4", "*")
+   
+      cmd = "mv "  + sd_wild + " " + sd_fail   
+      os.system(cmd)
+
+      if hd_trim is not None:
+         el = hd_trim.split("-trim-")
+         ttt = el[0]
+         xxx = ttt.split("/")
+         hd_wild = base_dir + "/" + xxx[-1] + "*"
+         cmd2 = "mv " + hd_wild + " /mnt/ams2/trash/"
+         os.system(cmd2)
+      else:
+         cmd2 = ""
+
+      cmd3 = "mv " + base + "* " + new_dir
+      #print(cmd, "<BR>")
+      os.system(cmd3)
+      print("Detection moved to /mnt/ams2/trash (if you made a mistake the files can be retrieved from the trash folder.)<BR>" ) 
+      print(cmd, "<BR>")
+      print(cmd2, "<BR>")
+      print(cmd3, "<BR>")
+      
    
    if "passed" in base:
       new_dir = base_dir.replace("passed", "failed")
@@ -424,7 +617,12 @@ def override_detect(video_file,json_conf):
       print("Files moved to meteor dir.")
 
 def examine(video_file):
+   
    print_css()
+   print("<h1>Examine Meteor</h1>")
+   el = video_file.split("/")
+   fn = el[-1]
+   meteor_dir = video_file.replace(fn, "")
    stack_img = video_file.replace(".mp4", "-stacked.png")
    stack_obj_img = video_file.replace(".mp4", "-stacked-obj.png")
    base_js_name = "123"
@@ -438,44 +636,125 @@ def examine(video_file):
    html_out = html_out + "<img class=\"" + htclass + "\" id=\"" + base_js_name + "\" src='" + stack_img+ "'></a><br>\n"
    print("<figure>")
    print(html_out)
-   if "passed" in video_file:
-      print("<a href=webUI.py?cmd=override_detect&video_file=" + video_file + " >Reject Meteor</a> - ")
+   if "meteors" in video_file:
+      print("<a href=webUI.py?cmd=override_detect&video_file=" + video_file + " >Reject Meteor</a>  ")
    else:
-      print("<a href=webUI.py?cmd=override_detect&video_file=" + video_file + " >Tag as Meteor</a> - ")
+      print("<a href=webUI.py?cmd=override_detect&video_file=" + video_file + " >Tag as Meteor</a>  ")
 
-   print("<a href=webUI.py?cmd=reset&type=meteor&video_file=" + video_file + " >Re-run Detection</a>")
+   #print("<a href=webUI.py?cmd=reset&type=meteor&video_file=" + video_file + " >Re-run Detection</a>")
 
    print("</figure>")
    print("<p style='clear: both'></p>")
    json_file = video_file.replace(".mp4", ".json")
 
-   json_data= load_json_file(json_file)
-   print("<h2>Detection Test Results</h2>")   
-   print("{:d} Object Detections <BR>".format(len(json_data)))
 
-   meteor_output = ""
+   json_data= load_json_file(json_file)
+   meteor_info = meteor_info_table(json_data)
+   print(meteor_info)
+   # HD PART OF PAGE
+   # SKIP OF NO HD_TRIM EXISTS
+
+   hd_trim = json_data['hd_trim']
+   hd_crop = json_data['hd_crop_file']
+   if hd_trim is not None:
+      print("<h2>HD Files</h2>")
+      if "meteors" not in hd_trim:
+         el = hd_trim.split("/")
+         hd_trim = meteor_dir + el[-1]
+         el = hd_crop.split("/")
+         hd_crop= meteor_dir + el[-1]
+
+      hd_trim_stacked = hd_trim.replace(".mp4", "-stacked.png")
+      hd_crop_stacked = hd_crop.replace(".mp4", "-stacked.png")
+      hd_trim_stacked_tn = hd_trim.replace(".mp4", "-stacked-tn.png")
+      hd_crop_stacked_tn = hd_crop.replace(".mp4", "-stacked-tn.png")
+      print("<figure><a href=" + hd_trim + "><img width=300 src=" + hd_trim_stacked_tn + "></a><figcaption>HD Video</figcaption></figure>")
+      print("<figure><a href=" + hd_crop+ "><img src=" + hd_crop_stacked + "></a><figcaption>HD Crop Video</figcaption></figure><div style='clear: both'></div>")
+      print("<a href=" + hd_trim_stacked + ">HD Stacked Image</a> - ")
+      print("<a href=" + hd_crop_stacked + ">HD Cropped Image</a><br>")
+   else:
+      print("<p>No HD video for this meteor.</p>")   
+
+   print("<h2>SD Objects</h2>")   
+   print("<a href=javascript:show_hide_div('object_details')>")
+   print("{:d} Object Detections</a> <BR>".format(len(json_data['sd_objects'])))
+
+   meteor_output = "<div style='display:none;' id='object_details'" + ">Meteor Tests<BR>"
    non_meteor_output = ""
-   for key in json_data:
+   stab,sr,sc,et,er,ec = div_table_vars()
+   for key in json_data['sd_objects']:
       if key['meteor'] == 1:
          meteor_output = meteor_output + "<HR>Object ID: {:d}<BR>".format(key['oid'])
          meteor_output = meteor_output + "Meteor Y/N:    {:d}<BR>".format(key['meteor'])
-         meteor_output = meteor_output + "Meteor Object <BR>"
+         meteor_output = meteor_output + "\n\n<a href=javascript:show_hide_div('obj" + str(key['oid']) + "')>Show/Hide Details</a>"
+         meteor_output = meteor_output + "<div style='display:none;' id=obj" + str(key['oid']) + ">Meteor Object <BR>"
+         meteor_output = meteor_output + stab 
          for test in key['test_results']:
             tname, status, desc = test
-            meteor_output = meteor_output + "{:s} {:f} {:s}<BR>".format(tname,status,str(desc))
+            if tname == 'AVL':
+               if len(desc) > 25:
+                  temp= desc[0:25] + "..."
+               meteor_output = meteor_output + sr + sc + tname + ec + sc + str(status) + ec + sc + str(temp) + ec + er
+            else:
+               meteor_output = meteor_output + sr + sc + tname + ec + sc + str(status) + ec + sc + str(desc) + ec + er
+         meteor_output = meteor_output + et
+         meteor_output = meteor_output + "\n<h2>Frame History</h2>\n"
+         meteor_output = meteor_output + stab 
+         meteor_output = meteor_output + sr + sc + "FN" + ec + sc + "x" + ec + sc + "y" + ec + sc + "w" + ec + sc + "h" + ec + sc + "bx" + ec + sc + "by" + ec + er
          for hist in key['history']:
-            meteor_output = meteor_output + "{:s} <BR>".format(str(hist))
+            fn, x,y,w,h,bx,by = hist
+            meteor_output = meteor_output + sr + sc + str(fn) + ec + sc + str(x) + ec + sc + str(y) + ec + sc + str(w) + ec + sc + str(h) + ec + sc + str(bx) + ec + sc + str(by) + ec + er
+            #meteor_output = meteor_output + "{:s} <BR>".format(str(hist))
+         meteor_output = meteor_output + et + "</div>\n\n"
       else:
          non_meteor_output = non_meteor_output + "<HR>Object ID: {:d}<BR>".format(key['oid'])
          non_meteor_output = non_meteor_output + "Meteor Y/N:    {:d}<BR>".format(key['meteor'])
-         non_meteor_output = non_meteor_output + "Meteor Object <BR>"
+         non_meteor_output = non_meteor_output + "<a href=javascript:show_hide_div('obj" + str(key['oid']) + "')>Show/Hide Details</a>"
+         non_meteor_output = non_meteor_output + "<div style='display:none;' id=obj" + str(key['oid']) + "> NON Meteor Object <BR>"
          for test in key['test_results']:
             tname, status, desc = test
             non_meteor_output = non_meteor_output + "{:s} {:f} {:s}<BR>".format(tname,status,str(desc))
          for hist in key['history']:
-            non_meteor_output = non_meteor_output + "{:s} <BR>".format(str(hist))
+            non_meteor_output = non_meteor_output + "{:s} <BR>".format(str(hist)) 
+         non_meteor_output = non_meteor_output + "</div>"
    print(meteor_output)
    print(non_meteor_output)
+   print("</div>")
+   print("<h2>HD Objects</h2>")
+
+def meteor_info_table(json_data):
+   print("<h2>Meteor Info</h2>")
+   start_time = "tesxt"
+   stab,sr,sc,et,er,ec = div_table_vars()
+   mi = stab 
+
+   mi = mi + sr + sc + "Frame" + ec + sc + "Time" + ec + sc +"SD X,Y " + ec + sc + "SD RA,DEC" + ec + sc + "SD RA,DEC" + ec + sc + "SD AZ,EL" + ec 
+   mi = mi + sc + "HD X,Y" + ec  + sc + "HD RA,DEC" + ec  + sc + "HD AZ,EL" + ec  + er
+
+   mi = mi + sr + sc + "Start " + ec + sc + "Time" + ec + sc + "SD X,Y " + ec + sc + "SD RA,DEC" + ec + sc + "SD RA,DEC" + ec + sc + "SD AZ,EL" + ec 
+   mi = mi + sc + "HD X,Y" + ec  + sc + "HD RA,DEC" + ec  + sc + "HD AZ,EL" + ec  + er
+   mi = mi + sr + sc + "End" + ec + sc + "Time" + ec + sc + "SD X,Y " + ec + sc + "SD RA,DEC" + ec + sc + "SD RA,DEC" + ec + sc + "SD AZ,EL" + ec 
+   mi = mi + sc + "HD X,Y" + ec  + sc + "HD RA,DEC" + ec  + sc + "HD AZ,EL" + ec  + er
+
+
+   mi = mi + et 
+   return(mi) 
+
+def div_table_vars():
+   start_table = """
+      <div class="divTable" style="border: 1px solid #000;" >
+      <div class="divTableBody">
+   """
+   start_row = """
+      <div class="divTableRow">
+   """
+   start_cell = """
+      <div class="divTableCell">
+   """
+   end_table = "</div></div>"
+   end_row = "</div>"
+   end_cell= "</div>"
+   return(start_table, start_row, start_cell, end_table, end_row, end_cell)
   
 def stack_file_from_video(video_file):
    el = video_file.split("/")
@@ -486,17 +765,131 @@ def stack_file_from_video(video_file):
    return(stack_file)
 
 
+def do_jquery():
+   jq = """
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/jquery-contextmenu/2.7.1/jquery.contextMenu.min.css">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery-contextmenu/2.7.1/jquery.contextMenu.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery-contextmenu/2.7.1/jquery.ui.position.js"></script>
+<script>
+    $(function() {
+        $.contextMenu({
+            selector: '.context-menu-one',
+            callback: function(key, options) {
+                id = options.$trigger.attr("id");
+                var m = "clicked: " + key + id;
+                if (key == 'reject') {
+                   new_id = 'fig_' + id
+                   $('#' + new_id).remove();
+                   ajax_url = "webUI.py?cmd=override_detect&jsid=" + id
+                   $.get(ajax_url, function(data) {
+                      $(".result").html(data);
+                   });
+                }
+                
+                if (key == 'examine') {
+                   window.location.href='webUI.py?cmd=examine&jsid=' + id
+                   //alert("EXAMINE:")
+                }
+                if (key == 'play') {
+                   //window.location.href='webUI.py?cmd=play_vid&jsid=' + id
+                      $('#ex1').modal();
+                      var year = id.substring(0,4);
+                      var mon = id.substring(4,6);
+                      var day = id.substring(6,8);
+                      var hour = id.substring(8,10);
+                      var min = id.substring(10,12);
+                      var sec = id.substring(12,14);
+                      var msec = id.substring(14,17);
+                      var cam = id.substring(17,23);
+                      var trim = id.substring(24,id.length);
+                      var src_url = "/mnt/ams2/meteors/" + year + "_" + mon + "_" + day + "/" + year + "_" + mon + "_" + day + "_" + hour + "_" + min + "_" + sec + "_" + msec + "_" + cam + "-" + trim + ".mp4"
+                      $('#v1').attr("src", src_url);
+
+                }
+                //window.console && console.log(m) || alert(m);
+            },
+            items: {
+                "examine": {name: "Examine"},
+                "play": {name: "Play Video"},
+                "reject": {name: "Reject Meteor"},
+                "confirm": {name: "Confirm Meteor"},
+                "satellite": {name: "Mark as Satellite"},
+                "quit": {name: "Quit", icon: function(){
+                    return 'context-menu-icon context-menu-icon-quit';
+                }}
+            }
+        });
+
+        $('.context-menu-one').on('click', function(e){
+            console.log('clicked', this);
+
+
+        })
+    });
+</script>
+
+
+   """
+   return(jq)
+
 def print_css():
    print ("""
    <head>
+
+      <script>
+         function goto(cams_id) {
+            url_str = "webUI.py?cmd=calibration&cams_id=" + cams_id
+            window.location.href=url_str
+         }
+      </script>
+
       <style> 
+
+.divTable{
+	display: table;
+}
+.divTableRow {
+	display: table-row;
+}
+.divTableHeading {
+	background-color: #EEE;
+	display: table-header-group;
+}
+.divTableCell, .divTableHead {
+	border: 1px solid #999999;
+	display: table-cell;
+	padding: 3px 10px;
+        vertical-align: top;
+}
+.divTableCellDetect {
+	border: 1px solid #ff0000;
+	display: table-cell;
+	padding: 3px 10px;
+        vertical-align: top;
+}
+.divTableHeading {
+	background-color: #EEE;
+	display: table-header-group;
+	font-weight: bold;
+}
+.divTableFoot {
+	background-color: #EEE;
+	display: table-footer-group;
+	font-weight: bold;
+}
+.divTableBody {
+	display: table-row-group;
+}
+
+
+
          figure {
             text-align: center;
             font-size: smaller;
             float: left;
-            border: thin silver solid;
-            margin: 0.1em;
-            padding: 0.1em;
+            padding: 0.2em;
+            margin: 0.2em;
          }
 
          img.meteor {
@@ -512,10 +905,10 @@ def print_css():
             padding: 0.3em;
          }
          img.none {
-            border: thin silver solid;
             width: 300px;
-            margin: 0.2em;
-            padding: 0.2em;
+            margin: 0.1em;
+            padding: 0.1em;
+            border: thin silver solid;
          }
          img.norm {
             border: thin silver solid;
@@ -523,7 +916,6 @@ def print_css():
             padding: 0.2em;
          }
       </style>
-   </head>
    """)
 
 
@@ -598,7 +990,7 @@ def main_page(json_conf):
    for day in stats_data: 
       day_str = day
       day_dir = json_conf['site']['proc_dir'] + day + "/" 
-      if "meteor" not in day_dir and "daytime" not in day_dir and "json" not in day_dir:
+      if "meteor" not in day_dir and "daytime" not in day_dir and "json" not in day_dir and "trash" not in day_dir:
          failed_files = stats_data[day]['failed_files']
          meteor_files = stats_data[day]['meteor_files']
          pending_files = stats_data[day]['pending_files']
@@ -606,7 +998,7 @@ def main_page(json_conf):
          html_row, day_x = make_day_preview(day_dir,stats_data[day], json_conf)
          day_str = day.replace("_", "/")
          print("<h2>" + day_str + "</h2>")
-         print("<a href=webUI.py?cmd=browse_detects&type=meteor&day=" + day + ">" \
+         print("<a href=webUI.py?cmd=meteors&limit_day=" + day + ">" \
             + str(meteor_files) + " Meteor Detections</a> - ")
          print("<a href=webUI.py?cmd=browse_detects&type=failed&day=" + day + ">" \
             + str(failed_files) + " Rejected Detections</a> - ")

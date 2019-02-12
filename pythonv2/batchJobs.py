@@ -1,6 +1,6 @@
 #!/usr/bin/python3
 
-from lib.BatchLib import batch_thumb, make_file_index, move_images, update_file_index, stack_night, purge_data, stack_night_all, batch_meteor_thumb
+from lib.BatchLib import batch_thumb, make_file_index, move_images, update_file_index, stack_night, purge_data, stack_night_all, batch_meteor_thumb, batch_doHD
 from lib.FileIO import load_json_file 
 import sys
 
@@ -39,3 +39,5 @@ if sys.argv[1] == 'sna':
 
 if sys.argv[1] == 'pd':
    purge_data(json_conf)
+if sys.argv[1] == 'batch_doHD':
+   batch_doHD(json_conf)

@@ -1,19 +1,41 @@
 <html>
-<title>AllSky6 Control Panel</title>
+<title>AllSky6 - {OBSNAME}</title>
+{JQ}
 <link href="//maxcdn.bootstrapcdn.com/bootstrap/4.1.1/css/bootstrap.min.css" rel="stylesheet" id="bootstrap-css">
 <script src="http://maxcdn.bootstrapcdn.com/bootstrap/4.1.1/js/bootstrap.min.js"></script>
+<!--
 <script src="http://cdnjs.cloudflare.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
+-->
+<script src="/videopopup.js"></script>
+<script>
+function show_hide_div(myDiv) {
+  var x = document.getElementById(myDiv);
+  if (x.style.display === "none") {
+    x.style.display = "block";
+  } else {
+    x.style.display = "none";
+  }
+}
+</script>
 </head>
 <!------ Include the above in your HEAD tag ---------->
+
 <body>
+<center>
+<div id="ex1" class="modal">
+<video autoplay id="v1" loop controls src="">
+</video>
+</div>
+</center>
 
 <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
-	<a class="navbar-brand" href="webUI.py"> <img class="logo" src="/as6nav.png" height="40"> </a>
+	<a class="navbar-brand" href="webUI.py"> <img class="logo" src="/as6nav.png" height="40"> </a> 
   <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbar1" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
     <span class="navbar-toggler-icon"></span>
   </button>
 
   <div class="collapse navbar-collapse" id="navbar1">
+<span style="color: white">{OBSNAME}</span>
     <ul class="navbar-nav ml-auto"> 
 {TOP}
 
@@ -60,6 +82,6 @@
 </div>
 <br><br>
 </article>
-
+{JQ}
 </body>
 </html>

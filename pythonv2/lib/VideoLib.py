@@ -66,7 +66,10 @@ def doHD(sd_video_file, json_conf):
 
          print(min_file,start_sec,frame_dur_sec)
          hd_file, hd_trim = find_hd_file_new(min_file, trim_num, frame_dur_sec)
+
          print("HD:", hd_file, hd_trim)
+         if hd_file == None or hd_file == 0:
+            return(None,None,None,None)
          (max_x,max_y,min_x,min_y) = find_min_max_dist(object['history'])
          (min_x,min_y,max_x,max_y) = bigger_box(min_x,min_y,max_x,max_y,sd_w,sd_h,25)
          hd_min_x = min_x * hdm_x
@@ -79,6 +82,7 @@ def doHD(sd_video_file, json_conf):
          crop_out_file = crop_hd(hd_trim,hd_box)
          print("HD TRIM:", hd_trim)
          return(hd_file,hd_trim,crop_out_file,hd_box)
+   return(0,0,0,0)
 
 def archive_meteor (sd_video_file,hd_file,hd_trim,crop_out_file,hd_box,hd_objects,json_conf):
    print(archive_meteor)
@@ -234,6 +238,8 @@ def eof_processing(sd_file, trim_num, dur):
    # take the first 5 seconds of file 2
    # merge them together to make file 3
    print(merge_files)
+   if len(merge_files) == 0:
+      return(0,0)
 
    hd_trim1 = ffmpeg_trim(merge_files[0], str(55), str(5), "-temp-" + str(trim_num) + "-HD-meteor")
    hd_trim2 = ffmpeg_trim(merge_files[1], str(0), str(5), "-temp-" + str(trim_num) + "-HD-meteor")

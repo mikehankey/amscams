@@ -15,6 +15,103 @@ from lib.FileIO import cfe, save_json_file
 from lib.DetectLib import eval_cnt
 from scipy import signal
 
+def Decdeg2DMS( Decin ):
+   Decin = float(Decin)
+   if(Decin<0):
+      sign = -1
+      dec  = -Decin
+   else:
+      sign = 1
+      dec  = Decin
+
+   d = int( dec )
+   dec -= d
+   dec *= 100.
+   m = int( dec*3./5. )
+   dec -= m*5./3.
+   s = dec*180./5.
+
+   if(sign == -1):
+      out = '-%02d:%02d:%06.3f'%(d,m,s)
+   else: out = '+%02d:%02d:%06.3f'%(d,m,s)
+
+   return out
+
+
+def RAdeg2HMS( RAin ):
+   RAin = float(RAin)
+   if(RAin<0):
+      sign = -1
+      ra   = -RAin
+   else:
+      sign = 1
+      ra   = RAin
+
+   h = int( ra/15. )
+   ra -= h*15.
+   m = int( ra*4.)
+   ra -= m/4.
+   s = ra*240.
+
+   if(sign == -1):
+      out = '-%02d:%02d:%06.3f'%(h,m,s)
+   else: out = '+%02d:%02d:%06.3f'%(h,m,s)
+
+   return out
+
+
+def radec_to_azel(ra,dec, caldate,json_conf):
+   lat = json_conf['site']['device_lat']
+   lon = json_conf['site']['device_lng']
+   alt = json_conf['site']['device_lng']
+
+   body = ephem.FixedBody()
+   #print ("BODY: ", ra, dec)
+   #body._epoch=ephem.J2000
+
+   rah = RAdeg2HMS(ra)
+   dech= Decdeg2DMS(dec)
+
+   body._ra = rah
+   body._dec = dech
+
+   obs = ephem.Observer()
+   obs.lat = ephem.degrees(lat)
+   obs.lon = ephem.degrees(lon)
+   obs.date = caldate
+   obs.elevation=float(alt)
+   body.compute(obs)
+   az = str(body.az)
+   el = str(body.alt)
+   (d,m,s) = az.split(":")
+   dd = float(d) + float(m)/60 + float(s)/(60*60)
+   az = dd
+
+   (d,m,s) = el.split(":")
+   dd = float(d) + float(m)/60 + float(s)/(60*60)
+   el = dd
+   #az = ephem.degrees(body.az)
+   return(az,el)
+
+
+def xyfits(cal_file, stars):
+   xyfile = cal_file.replace(".jpg", "-xy.txt")
+   xyf = open(xyfile, "w")
+   xyf.write("x,y\n")
+   for x,y,mg in stars:
+      xyf.write(str(x) + "," + str(y) + "\n")
+   xyf.close()
+
+   xyfits = xyfile.replace(".txt", ".fits")
+
+   cmd = "/usr/local/astrometry/bin/text2fits -f \"ff\" -s \",\" " + xyfile + " " + xyfits
+   print (cmd)
+   os.system(cmd)
+
+   cmd = "/usr/local/astrometry/bin/solve-field " + xyfits + " --overwrite --width=1920 --height=1080 --scale-low 50 --scale-high 95 --no-remove-lines --x-column x --y-column y"
+   os.system(cmd)
+   print(cmd)
+
 
 def check_if_solved(cal_file):
    cal_wild = cal_file.replace(".jpg", "*")
@@ -130,30 +227,61 @@ def find_hd_file(cal_glob):
 
 def calibrate_pic(cal_image_file, json_conf, show = 1):
    cal_file = cal_image_file
+   new_cal_file = cal_file
+   orig_cal_file = cal_image_file.replace(".jpg", "-orig.jpg")
+   plate_cal_file = cal_image_file.replace(".jpg", "-plate.jpg")
+   dark_cal_file = cal_image_file.replace(".jpg", "-dark.jpg")
+
    cal_image_np = cv2.imread(cal_image_file, 0)
+   orig_image = cal_image_np
    hd_datetime, hd_cam, hd_date, hd_y, hd_m, hd_d, hd_h, hd_M, hd_s = convert_filename_to_date_cam(cal_image_file)
+
+
    cams_id = hd_cam
 
    print("cal pic")
-   temp = adjustLevels(cal_image_np, 120,1,255)
-   cal_image_np = cv2.convertScaleAbs(temp)
-
+   cams_id = cams_id.replace(".jpg", "")
+   print("CAMS ID:", cams_id)
    masks = get_masks(cams_id, json_conf, hd = 1)
+   print("MASKS:", masks)
    cal_image_np = mask_frame(cal_image_np, [], masks)
+   avg_px = np.mean(cal_image_np)
+   print("AVG PX",avg_px)
+   temp = adjustLevels(cal_image_np, avg_px+10,1,255)
+   cal_image_adj  = cv2.convertScaleAbs(temp)
+
+   cv2.imwrite(new_cal_file, cal_image_np)
+   cv2.imwrite(dark_cal_file, cal_image_adj)
+   cv2.imwrite(orig_cal_file, orig_image)
 
    cal_star_file = cal_file.replace(".jpg", "-median.jpg")
 
    show_img = cv2.resize(cal_image_np, (0,0),fx=.4, fy=.4)
    cv2.putText(show_img, "Cal Image NP",  (50,50), cv2.FONT_HERSHEY_SIMPLEX, .4, (255, 255, 255), 1)
    cv2.imshow('pepe', show_img)
-   cv2.waitKey(0)
-   (stars, plate_image) = make_plate_image(cal_image_np, cal_star_file, cams_id, json_conf)
+   cv2.waitKey(10)
+   (stars, nonstars, plate_image) = make_plate_image(cal_image_adj, cal_star_file, cams_id, json_conf)
+   cv2.imwrite(plate_cal_file, plate_image)
+
    if show == 1:
       show_img = cv2.resize(plate_image, (0,0),fx=.4, fy=.4)
       cv2.namedWindow('pepe')
       cv2.putText(show_img, "Plate Image",  (50,50), cv2.FONT_HERSHEY_SIMPLEX, .4, (255, 255, 255), 1)
       cv2.imshow('pepe', show_img)
-      cv2.waitKey(0)
+      cv2.waitKey(10)
+   print("STARS:", len(stars))
+
+   rect_file = orig_cal_file.replace("-orig", "-rect")
+   for x,y,mg in sorted(stars, key=lambda x: x[2], reverse=True) :
+      print(x,y,mg)
+      cv2.rectangle(orig_image, (x-5, y-5), (x + 5, y + 5), (255, 0, 0), 1)
+   for x,y,mg in sorted(nonstars, key=lambda x: x[2], reverse=True) :
+      print(x,y,mg)
+      cv2.rectangle(orig_image, (x-7, y-7), (x + 7, y + 7), (120, 0, 0), 1)
+   cv2.imwrite(rect_file, orig_image)
+
+   solved = plate_solve(new_cal_file,json_conf)
+
 
 
 def calibrate_camera(cams_id, json_conf, cal_date = None, show=1):
@@ -172,42 +300,60 @@ def calibrate_camera(cams_id, json_conf, cal_date = None, show=1):
          continue 
       cal_file = cal_video[0].replace('.mp4', '.jpg')
 
-      frames = load_video_frames(cal_video[0],json_conf,25)
+      frames = load_video_frames(cal_video[0],json_conf,100)
       el = cal_file.split("/")
       cal_file = "/mnt/ams2/cal/tmp/" + el[-1]
       print(cal_file)
-      #cal_image, cal_image_np = stack_frames(frames,cal_file) 
-      cal_image_np =  median_frames(frames) 
+      cal_image, cal_image_np = stack_frames(frames,cal_file) 
+      #cal_image_np =  median_frames(frames) 
 
       orig_img = cal_image_np
-      #cal_image_np = adjustLevels(cal_image_np, 55,1,255)
+
       masks = get_masks(cams_id, json_conf, hd = 1)
       cal_image_np = mask_frame(cal_image_np, [], masks)
       cal_star_file = cal_file.replace(".jpg", "-median.jpg")
       cal_orig_file = cal_file.replace(".jpg", "-orig.jpg")
 
       #MIKE!
-      temp = adjustLevels(cal_image_np, 50,.8,255)
+
+      avg_px = np.mean(cal_image_np)
+      print("AVG PX",avg_px)
+      temp = adjustLevels(cal_image_np, avg_px+10,1,255)
       cal_image_np = cv2.convertScaleAbs(temp)
 
       show_img = cv2.resize(cal_image_np, (0,0),fx=.4, fy=.4)
       cv2.putText(show_img, "Cal Image NP",  (50,50), cv2.FONT_HERSHEY_SIMPLEX, .4, (255, 255, 255), 1)
       cv2.imshow('pepe', show_img)
       cv2.waitKey(10)
-      (stars, plate_image) = make_plate_image(cal_image_np, cal_star_file, cams_id, json_conf)
+      (stars, nonstars, plate_image) = make_plate_image(cal_image_np, cal_star_file, cams_id, json_conf)
       if show == 1:
          show_img = cv2.resize(plate_image, (0,0),fx=.4, fy=.4)
          cv2.namedWindow('pepe')
          cv2.putText(show_img, "Plate Image",  (50,50), cv2.FONT_HERSHEY_SIMPLEX, .4, (255, 255, 255), 1)
          cv2.imshow('pepe', show_img)
          cv2.waitKey(10)
-      #cv2.imwrite(cal_file, cal_image_np)
+     # cv2.imwrite(cal_file, cal_image_np)
       cv2.imwrite(cal_file, plate_image)
       cv2.imwrite(cal_star_file, plate_image)
       cv2.imwrite(cal_orig_file, orig_img)
 
       print("STARS:", len(stars))
-      if len(stars) >= 12 and len(stars) < 80:
+      rect_file = cal_orig_file.replace("-orig", "-rect")
+      for x,y,mg in sorted(stars, key=lambda x: x[2], reverse=True) :
+         print(x,y,mg)
+         cv2.rectangle(orig_img, (x-5, y-5), (x + 5, y + 5), (255, 0, 0), 1)
+      for x,y,mg in sorted(nonstars, key=lambda x: x[2], reverse=True) :
+         print(x,y,mg)
+         cv2.rectangle(orig_img, (x-7, y-7), (x + 7, y + 7), (120, 0, 0), 1)
+      cv2.imwrite(rect_file, orig_img)
+
+      print("STARS:", len(stars))
+      print("NONSTARS:", len(nonstars))
+
+      if len(stars) >= 12 and len(stars) < 200:
+
+         #xyfits(cal_file, stars)
+         #exit()
          solved = plate_solve(cal_file,json_conf)
          print("SOLVED:", solved)
          if solved == 1:
@@ -279,8 +425,8 @@ def plate_solve(cal_file,json_conf):
       gray = image
    height = gray.shape[0]
    width = gray.shape[1]
-
-   cmd = "/usr/local/astrometry/bin/solve-field " + cal_file + " --crpix-center --cpulimit=30 --verbose --no-delete-temp --overwrite --width=" + str(width) + " --height=" + str(height) + " --scale-low 50 --scale-high 90 > " + astr_out + " 2>&1 &"
+# --crpix-center
+   cmd = "/usr/local/astrometry/bin/solve-field " + cal_file + " --cpulimit=30 --verbose --no-delete-temp --overwrite --width=" + str(width) + " --height=" + str(height) + " -d 1-40 --scale-units dw --scale-low 50 --scale-high 90 > " + astr_out + " 2>&1 &"
    print(cmd) 
    os.system(cmd)
 
@@ -324,11 +470,11 @@ def distort_xy_new(sx,sy,ra,dec,RA_center, dec_center, x_poly, y_poly, x_res, y_
    #F_scale = 3600/F_scale
    #F_scale = 1
 
-   RA_center = RA_center + (x_poly[12] * 100)
-   RA_center = RA_center + (y_poly[12] * 100)
+   #RA_center = RA_center 
+   #RA_center = RA_center 
 
-   dec_center = dec_center + (x_poly[13] * 100)
-   dec_center = dec_center + (y_poly[13] * 100)
+   #dec_center = dec_center + (x_poly[13] * 100)
+   #dec_center = dec_center + (y_poly[13] * 100)
 
    # Gnomonization of star coordinates to image coordinates
    ra1 = math.radians(float(RA_center))
@@ -341,7 +487,7 @@ def distort_xy_new(sx,sy,ra,dec,RA_center, dec_center, x_poly, y_poly, x_res, y_
    cosA = (math.sin(dec2) - math.sin(dec1)*math.cos(ad))/(math.cos(dec1)*math.sin(ad))
    theta = -math.degrees(math.atan2(sinA, cosA))
    #theta = theta + pos_angle_ref - 90.0
-   theta = theta + pos_angle_ref - 90 + x_poly[14]
+   theta = theta + pos_angle_ref - 90 
    #theta = theta + pos_angle_ref - 90
 
 
@@ -393,7 +539,9 @@ def distort_xy_new(sx,sy,ra,dec,RA_center, dec_center, x_poly, y_poly, x_res, y_
 
 def make_plate_image(med_stack_all, cam_num, json_conf, show = 1):
    
+   nonstars = []
    stars = []
+   center_stars = 0
    med_cpy = med_stack_all.copy()
    plate_image = med_stack_all
    if show == 1:
@@ -406,7 +554,10 @@ def make_plate_image(med_stack_all, cam_num, json_conf, show = 1):
    avg_px = np.mean(med_stack_all)
    print("AVG PX:", avg_px)
    best_thresh = find_best_thresh(med_stack_all, avg_px)
-
+   print("BEST THRESH:", best_thresh)
+   if best_thresh < 0:
+      best_thresh = 1
+   print("BEST THRESH:", best_thresh)
 
    _, star_thresh = cv2.threshold(med_stack_all, best_thresh, 255, cv2.THRESH_BINARY)
    thresh_obj = cv2.dilate(star_thresh, None , iterations=4)
@@ -434,12 +585,15 @@ def make_plate_image(med_stack_all, cam_num, json_conf, show = 1):
          if is_star == 1:
             cx = int(mnx + mxx / 2)
             cy = int(mny + mxy / 2)
-            stars.append((cx,cy))
             cnt_img = med_cpy[mny:mxy,mnx:mxx]
             cnt_h,cnt_w = cnt_img.shape
             (max_px, avg_px,px_diff,max_loc) = eval_cnt(cnt_img)
+
+            cx = int(x + (w/2))
+            cy = int(y + (h/2))
+
+            stars.append((cx,cy,max_px))
             bp_x,bp_y = max_loc
-            print("BPX:", bp_x,bp_y)
             #cv2.putText(cnt_img, str(is_star),  (0,cnt_h-1), cv2.FONT_HERSHEY_SIMPLEX, .2, (255, 255, 255), 1)
             #cv2.circle(cnt_img, (int(bp_x),int(bp_y)), 5, (255,255,255), 1)
             star_cnt = cnt_img
@@ -449,13 +603,28 @@ def make_plate_image(med_stack_all, cam_num, json_conf, show = 1):
             lr = cnt_img[cnt_h-1,cnt_w-1] 
              
             cavg = int((ul + ur + ll + lr) / 4)
-            star_cnt = clean_star_bg(cnt_img, cavg+3)
-            plate_image[mny:mxy,mnx:mxx] = star_cnt 
+            star_cnt = clean_star_bg(cnt_img, cavg+5)
+            # limit to center stars only...
+            #if abs(mny - (img_height/2)) <= (img_height/2)*.8 and abs(mnx - (img_width/2)) <= (img_width/2)*.8:
+            if True:
+               print(abs(mny-(img_height/2)))
+               print(abs(mnx-(img_width/2)))
+               plate_image[mny:mxy,mnx:mxx] = star_cnt  
+               center_stars = center_stars + 1
+         else:
+            nonstars.append((cx,cy,0))
 
+   temp = sorted(stars, key=lambda x: x[2], reverse=True) 
+   if len(temp) > 30:
+      stars = temp[0:29]
+          
+   print("STARS:", len(stars))
+   print("NON STARS:", len(nonstars))
+   print("CENTER STARS:", center_stars)
    cv2.imshow('pepe', plate_image)
    cv2.waitKey(10)
 
-   return(stars,plate_image)
+   return(stars,nonstars,plate_image)
 
 
 def find_bright_pixels(med_stack_all, solved_file, cam_num, json_conf):
@@ -534,7 +703,6 @@ def find_bright_pixels(med_stack_all, solved_file, cam_num, json_conf):
       star_sz = 10
       for star in star_pixels:
          sx,sy = star
-         print("STAR FOUND:", sx,sy)
          mnx,mny,mxx,mxy = bound_cnt(sx,sy,img_width,img_height)
          star_cnt = med_stack_all[mny:mxy,mnx:mxx]
          #star_cnt = clean_star_bg(star_cnt, bg_avg+7)
@@ -616,16 +784,13 @@ def star_test(cnt_img):
    xs_peaks = signal.find_peaks(PX)
    x_peaks = len(xs_peaks[0])
 
-   print(x_peaks)
-   print(x_peaks)
-   print(cnt_img.shape)
 
-   if px_diff > 25 or max_px > 80:
+   if px_diff > 8 or max_px > 80:
       is_star = 1
       print("STAR PASSED:", px_diff, max_px)
    else:
+      print("STAR FAIL:", px_diff, max_px)
       is_star = 0
-      print("STAR FAILED:", px_diff,max_px)
 
    return(is_star)
 
@@ -635,7 +800,6 @@ def clean_star_bg(cnt_img, bg_avg):
    min_px = np.min(cnt_img)
    avg_px = np.mean(cnt_img)
    halfway = int((max_px - min_px) / 2)
-   print("MIN,MAX,AVG: ", min_px, max_px, avg_px, halfway)
    cnt_img.setflags(write=1)
    for x in range(0,cnt_img.shape[1]):
       for y in range(0,cnt_img.shape[0]):
@@ -644,6 +808,6 @@ def clean_star_bg(cnt_img, bg_avg):
             #cnt_img[y,x] = random.randint(int(bg_avg - 3),int(avg_px))
             pxval = cnt_img[y,x]
             pxval = int(pxval) / 2
-            cnt_img[y,x] = pxval
+            cnt_img[y,x] = 0
    return(cnt_img)
 

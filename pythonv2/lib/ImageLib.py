@@ -12,13 +12,23 @@ def thumb(image_file = "", image = ""):
    print("THUMB!", image_file)
    if image_file != "":
       thumb_file = image_file.replace(".png", "-tn.png")
-      image = cv2.imread(image_file)
+      image = cv2.imread(image_file, 0)
+      print("THUMB FILE OPENED")
+
    try:
-      print(image.shape)
+      h,w = image.shape
+      print("IMAGE SHAPE:", image.shape)
    except:
+      print("IMAGE THUMB FAILED FOR ", image_file)
       return()
-   thumb_img = cv2.resize(image, (0,0),fx=.4, fy=.4)
+
+   if w < 1000:
+      thumb_img = cv2.resize(image, (0,0),fx=.4, fy=.4)
+   else:
+      thumb_img = cv2.resize(image, (0,0),fx=.15, fy=.15)
+
    if image_file != "":
+      print("SAVING:", thumb_file)
       cv2.imwrite(thumb_file,thumb_img)
    
    return(image)
@@ -192,13 +202,14 @@ def preload_image_acc(frames):
 def mask_frame(frame, mp, masks, size=3):
    """ Mask bright pixels detected in the median 
        and also mask areas defined in the config """
-
+   frame.setflags(write=1)
    ih,iw = frame.shape
    px_val = np.mean(frame)
    px_val = 0
 
 
    for mask in masks:
+      print("MASK: ", mask)
       mx,my,mw,mh = mask.split(",")
       frame[int(my):int(my)+int(mh),int(mx):int(mx)+int(mw)] = 0
 

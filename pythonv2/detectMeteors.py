@@ -72,6 +72,7 @@ def scan_file(video_file, show):
    else:
       print("Meteor Test Failed.")
       if len(frames) > 0:
+         print("LEN FRM", len(frames),video_file)
          stack_file, stack_img = stack_frames(frames, video_file)
          draw_stack(objects,stack_img,stack_file)
       print("SAVE FAILED")
@@ -140,12 +141,21 @@ if __name__ == "__main__":
       do_all(json_conf)
    if cmd == 'pm':
       parse_motion(video_file, json_conf)
+   if cmd == 'reduce':
+      video_file = sys.argv[2]
+      json_file = video_file.replace(".mp4", ".json")
+      json_data = load_json_file(json_file)
+      hd_objects = reduce_hd_meteor(video_file, json_data['hd_file'], json_data['hd_trim'], json_data['hd_crop_file'], json_data['hd_box'], json_conf)
+      print(hd_objects)
+
    if cmd == 'dohd' or cmd == 'doHD':
       video_file = sys.argv[2] 
       hd_file, hd_trim, hd_crop_file,hd_box = doHD(video_file, json_conf)
       print("AFTER doHD HD TRIM: ", hd_trim)
       sd_json_file = video_file.replace(".mp4", ".json")
       sd_objects = load_json_file(sd_json_file)
-      hd_objects = reduce_hd_meteor(video_file, hd_file, hd_trim, hd_crop_file, hd_box, json_conf)
-      print("AFTER REDUCE HD TRIM: ", hd_trim)
+      hd_objects = None
+      if hd_file is not None and hd_file != 0:
+         hd_objects = reduce_hd_meteor(video_file, hd_file, hd_trim, hd_crop_file, hd_box, json_conf)
+         print("AFTER REDUCE HD TRIM: ", hd_trim)
       archive_meteor (video_file,hd_file,hd_trim,hd_crop_file,hd_box,hd_objects,sd_objects,json_conf)

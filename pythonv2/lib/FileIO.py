@@ -80,15 +80,17 @@ def archive_meteor (sd_video_file,hd_file,hd_trim,hd_crop_file,hd_box,hd_objects
    meteor_dir = make_meteor_dir(sd_video_file, json_conf) 
 
    meteor_json_file =  meteor_dir + fn_base + ".json"
-
+   
    os.system("cp " + sd_video_file + " " + meteor_dir)
-   os.system("cp " + hd_trim + " " + meteor_dir)
-   os.system("cp " + hd_crop_file+ " " + meteor_dir)
+   if hd_trim is not None and hd_trim != 0: 
+      os.system("cp " + hd_trim + " " + meteor_dir)
+      os.system("cp " + hd_crop_file+ " " + meteor_dir)
    meteor_json = {}
    meteor_json['sd_video_file'] = sd_video_file
    meteor_json['hd_file'] = hd_file
    meteor_json['hd_trim'] = hd_trim
    meteor_json['hd_crop_file'] = hd_crop_file
+   meteor_json['hd_box'] = hd_box 
    meteor_json['hd_objects'] = hd_objects
    meteor_json['sd_objects'] = sd_objects
 

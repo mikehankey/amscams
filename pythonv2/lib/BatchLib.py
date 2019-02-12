@@ -8,6 +8,29 @@ from lib.ImageLib import draw_stack, thumb, stack_glob, stack_stack, stack_frame
 from PIL import Image
 from lib.VideoLib import load_video_frames
 
+def batch_doHD(json_conf):
+   proc_dir = json_conf['site']['proc_dir']
+   all_days = get_days(json_conf)
+   meteors = []
+   for day_dir in all_days:
+      meteor_glob = proc_dir + day_dir + "/passed/*.mp4"
+      print(meteor_glob)
+      meteor_files = glob.glob(meteor_glob)
+      for mf in meteor_files:
+         if "meteor" not in mf:
+            meteors.append(mf) 
+
+   for meteor in meteors:
+      base_meteor = meteor.replace(proc_dir, "")
+      base_meteor = base_meteor.replace("/passed", "")
+      arc_meteor = "/mnt/ams2/meteors/" + base_meteor
+      if cfe(arc_meteor) == 1:
+         print("Meteor already done.")
+      else:
+         cmd = "./detectMeteors.py doHD " + meteor
+         print(cmd)
+         os.system(cmd)
+
 def purge_data(json_conf):
    proc_dir = json_conf['site']['proc_dir']
    hd_video_dir = json_conf['site']['hd_video_dir']
@@ -31,8 +54,8 @@ def purge_data(json_conf):
       # Keep all dirs in the proc2 dir (for archive browsing), but after time delete everything
       # except the passed dir and its contents. *?refine maybe?*
    print(disk_perc)
-   #purge_hd_files(hd_video_dir,json_conf)
-   #purge_sd_daytime_files(proc_dir,json_conf)
+   purge_hd_files(hd_video_dir,json_conf)
+   purge_sd_daytime_files(proc_dir,json_conf)
    purge_sd_nighttime_files(proc_dir,json_conf)
 
 
@@ -235,14 +258,51 @@ def make_file_index(json_conf ):
 
 
 def thumb_mp4s(mp4_files,json_conf):
+   stack_image = None
+   # there should be 3 types of MP4 files (sd, hd, crop)
+   # for each of these there should be a : stack & stack_tn
+   # the sd file should also have an obj and obj_tn
+
    for file in mp4_files:
+      print("WORKING ON FILE:", file)
+
       stack_file = file.replace(".mp4", "-stacked.png") 
+      draw_file = file.replace(".mp4", "-stacked-obj.png") 
       stack_thumb = stack_file.replace(".png", "-tn.png") 
-      print(file,stack_file,stack_thumb)
-      frames = load_video_frames(file,json_conf)
-      stack_file, stack_image = stack_frames(frames, file)
-      # now thumbnail the stack_file
-      thumb(stack_file)
+      meteor_json_file = file.replace(".mp4", ".json") 
+
+      if "crop" in meteor_json_file:
+         if cfe(stack_file) == 0 :
+            frames = load_video_frames(file,json_conf)
+            stack_file, stack_image = stack_frames(frames, file)
+         if cfe(stack_thumb) == 0 :
+            thumb(stack_file)
+
+      elif "HD" in meteor_json_file and "crop" not in meteor_json_file:
+         if cfe(stack_file) == 0 :
+            frames = load_video_frames(file,json_conf)
+            stack_file, stack_image = stack_frames(frames, file)
+         if cfe(stack_thumb) == 0 :
+            thumb(stack_file)
+
+      else:
+         meteor_json = load_json_file(meteor_json_file)
+         objects = meteor_json['sd_objects']
+         if cfe(stack_file) == 0 :
+            frames = load_video_frames(file,json_conf)
+            stack_file, stack_image = stack_frames(frames, file)
+         if cfe(stack_thumb) == 0 :
+            thumb(stack_file)
+
+         if cfe(draw_file) == 0  :
+            stack_image = cv2.imread(stack_file, 0)
+            if len(objects) > 0:
+               draw_stack(objects,stack_image,stack_file)
+            else:
+               cmd = "cp " + stack_file + " " + draw_file
+         draw_file_tn = draw_file.replace(".png", "-tn.png")
+         if cfe(draw_file_tn) == 0  :
+            thumb(draw_file)
 
 def batch_meteor_thumb(json_conf):
    meteor_base_dir = "/mnt/ams2/meteors/"
