@@ -31,7 +31,6 @@ def doHD(sd_video_file, json_conf):
    # upload to VMA
 
    json_file = sd_video_file.replace(".mp4", ".json")
-   print(json_file)
    objects = load_json_file(json_file)
    for object in objects:
       if object['meteor'] == 1:
@@ -49,7 +48,7 @@ def doHD(sd_video_file, json_conf):
          start_sec = (start_frame / 25) 
          frame_dur_sec = frame_dur / 25
 
-         print("SF:", start_frame, end_frame, frame_dur) 
+         #print("SF:", start_frame, end_frame, frame_dur) 
 
          if start_sec - 1 < 0:
             start_sec = 0
@@ -62,12 +61,12 @@ def doHD(sd_video_file, json_conf):
             frame_dur_sec = frame_dur_sec + 1
          if frame_dur_sec < 5:
             frame_dur_sec = 5
-         print("SS:", start_sec, frame_dur_sec) 
+         #print("SS:", start_sec, frame_dur_sec) 
 
-         print(min_file,start_sec,frame_dur_sec)
+         #print(min_file,start_sec,frame_dur_sec)
          hd_file, hd_trim = find_hd_file_new(min_file, trim_num, frame_dur_sec)
 
-         print("HD:", hd_file, hd_trim)
+         #print("HD:", hd_file, hd_trim)
          if hd_file == None or hd_file == 0:
             return(None,None,None,None)
          (max_x,max_y,min_x,min_y) = find_min_max_dist(object['history'])
@@ -80,7 +79,7 @@ def doHD(sd_video_file, json_conf):
          sd_box= (min_x,min_y,max_x,max_y)
          hd_box= (hd_min_x,hd_min_y,hd_max_x,hd_max_y)
          crop_out_file = crop_hd(hd_trim,hd_box)
-         print("HD TRIM:", hd_trim)
+         #print("HD TRIM:", hd_trim)
          return(hd_file,hd_trim,crop_out_file,hd_box)
    return(0,0,0,0)
 
@@ -184,8 +183,8 @@ def find_hd_file_new(sd_file, trim_num, dur = 5):
 
    (sd_datetime, sd_cam, sd_date, sd_y, sd_m, sd_d, sd_h, sd_M, sd_s) = convert_filename_to_date_cam(sd_file)
    #return(f_datetime, cam, f_date_str,fy,fm,fd, fh, fmin, fs)
-   print("SD FILE: ", sd_file)
-   print("TRIM NUM: ", trim_num)
+   #print("SD FILE: ", sd_file)
+   #print("TRIM NUM: ", trim_num)
    if trim_num > 1400:
       print("END OF FILE PROCESSING NEEDED!")
       hd_file, hd_trim = eof_processing(sd_file, trim_num, dur)
@@ -222,22 +221,26 @@ def eof_processing(sd_file, trim_num, dur):
    offset = int(trim_num) / 25
    print("TRIM SEC OFFSET: ", offset)
    meteor_datetime = sd_datetime + datetime.timedelta(seconds=offset)
+   print("METEOR DATETIME:", meteor_datetime)
    #hd_glob = "/mnt/ams2/HD/" + sd_date + "_*" + sd_cam + "*"
    hd_glob = "/mnt/ams2/HD/" + sd_y + "_" + sd_m + "_" + sd_d + "_*" + sd_cam + "*"
    print("HD GLOB:", hd_glob)
    hd_files = sorted(glob.glob(hd_glob))
+   print("HD FILES:", len(hd_files))
    for hd_file in hd_files:
       el = hd_file.split("_")
-      if len(el) == 8 and "meteor" not in hd_file and "crop" not in hd_file:
-         hd_datetime, hd_cam, hd_date, hd_y, hd_m, hd_d, hd_h, hd_M, hd_s = convert_filename_to_date_cam(sd_file)
+      if len(el) == 8 and "meteor" not in hd_file and "crop" not in hd_file and "-HD-" not in hd_file:
+         hd_datetime, hd_cam, hd_date, hd_y, hd_m, hd_d, hd_h, hd_M, hd_s = convert_filename_to_date_cam(hd_file)
          time_diff = meteor_datetime - hd_datetime
          time_diff_sec = time_diff.total_seconds()
-         if 0 < time_diff_sec < 90:
+         print(meteor_datetime, hd_datetime, time_diff_sec,hd_file) 
+         if -90 < time_diff_sec < 90:
+            print("TIME:", time_diff_sec, hd_file)
             merge_files.append(hd_file)
    # take the last 5 seconds of file 1
    # take the first 5 seconds of file 2
    # merge them together to make file 3
-   print(merge_files)
+   print("MERGE FILES:", merge_files)
    if len(merge_files) == 0:
       return(0,0)
 
