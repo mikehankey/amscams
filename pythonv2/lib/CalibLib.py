@@ -56,10 +56,12 @@ def XYtoRADec(img_x,img_y,cal_file,cal_params,json_conf):
    Ho = (280.46061837 + 360.98564736629*(jd - 2451545.0) + 0.000387933*T**2 \
       - (T**3)/38710000.0)%360
 
+   x_poly_fwd = cal_params['x_poly_fwd']
+   y_poly_fwd = cal_params['y_poly_fwd']
    
    dec_d = float(cal_params['dec_center'])
    RA_d = float(cal_params['ra_center'])
-   pos_angle_ref = float(cal_params['position_angle'])
+   pos_angle_ref = float(cal_params['position_angle']) + (1000*x_poly_fwd[12]) + (1000*y_poly_fwd[12])
 
    # Convert declination to radians
    dec_rad = math.radians(dec_d)
@@ -68,8 +70,6 @@ def XYtoRADec(img_x,img_y,cal_file,cal_params,json_conf):
    sl = math.sin(math.radians(lat))
    cl = math.cos(math.radians(lat))
 
-   x_poly_fwd = cal_params['x_poly_fwd']
-   y_poly_fwd = cal_params['y_poly_fwd']
 
    x_det = img_x - int(cal_params['imagew'])/2
    y_det = img_y - int(cal_params['imageh'])/2
@@ -486,6 +486,9 @@ def calibrate_camera(cams_id, json_conf, cal_date = None, show=1):
       cal_file = cal_video[0].replace('.mp4', '.jpg')
 
       frames = load_video_frames(cal_video[0],json_conf,100)
+      if len(frames) < 50: 
+         return()
+
       el = cal_file.split("/")
       cal_file = "/mnt/ams2/cal/tmp/" + el[-1]
       print(cal_file)
@@ -611,7 +614,7 @@ def plate_solve(cal_file,json_conf):
    height = gray.shape[0]
    width = gray.shape[1]
 # --crpix-center
-   cmd = "/usr/local/astrometry/bin/solve-field " + cal_file + " --cpulimit=30 --verbose --no-delete-temp --overwrite --width=" + str(width) + " --height=" + str(height) + " -d 1-40 --scale-units dw --scale-low 50 --scale-high 90 > " + astr_out + " 2>&1 &"
+   cmd = "/usr/local/astrometry/bin/solve-field " + cal_file + " --crpix-center --cpulimit=30 --verbose --no-delete-temp --overwrite --width=" + str(width) + " --height=" + str(height) + " -d 1-40 --scale-units dw --scale-low 50 --scale-high 90 > " + astr_out + " 2>&1 &"
    print(cmd) 
    os.system(cmd)
 
@@ -674,7 +677,7 @@ def distort_xy_new(sx,sy,ra,dec,RA_center, dec_center, x_poly, y_poly, x_res, y_
    cosA = (math.sin(dec2) - math.sin(dec1)*math.cos(ad))/(math.cos(dec1)*math.sin(ad))
    theta = -math.degrees(math.atan2(sinA, cosA))
    #theta = theta + pos_angle_ref - 90.0
-   theta = theta + pos_angle_ref - 90 
+   theta = theta + pos_angle_ref - 90 + (1000*x_poly[12]) + (1000*y_poly[12])
    #theta = theta + pos_angle_ref - 90
 
 

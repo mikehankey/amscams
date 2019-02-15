@@ -178,7 +178,7 @@ def check_hd_motion(frames, trim_file):
 
 
 
-def find_hd_file_new(sd_file, trim_num, dur = 5):
+def find_hd_file_new(sd_file, trim_num, dur = 5, trim_on =1):
    #(f_datetime, cam, f_date_str,fy,fm,fd, fh, fmin, fs)
 
    (sd_datetime, sd_cam, sd_date, sd_y, sd_m, sd_d, sd_h, sd_M, sd_s) = convert_filename_to_date_cam(sd_file)
@@ -186,14 +186,14 @@ def find_hd_file_new(sd_file, trim_num, dur = 5):
    #print("SD FILE: ", sd_file)
    #print("TRIM NUM: ", trim_num)
    if trim_num > 1400:
-      print("END OF FILE PROCESSING NEEDED!")
+      #print("END OF FILE PROCESSING NEEDED!")
       hd_file, hd_trim = eof_processing(sd_file, trim_num, dur)
       return(hd_file, hd_trim)
    offset = int(trim_num) / 25
-   print("TRIM SEC OFFSET: ", offset)
+   #print("TRIM SEC OFFSET: ", offset)
    meteor_datetime = sd_datetime + datetime.timedelta(seconds=offset)
-   print("METEOR CLIP START DATETIME:", meteor_datetime)
-   hd_glob = "/mnt/ams2/HD/" + sd_y + "_" + sd_m + "_" + sd_d + "_*" + sd_cam + "*"
+   #print("METEOR CLIP START DATETIME:", meteor_datetime)
+   hd_glob = "/mnt/ams2/HD/" + sd_y + "_" + sd_m + "_" + sd_d + "_*" + sd_cam + "*.mp4"
    hd_files = sorted(glob.glob(hd_glob))
    for hd_file in hd_files:
       el = hd_file.split("_")
@@ -210,7 +210,10 @@ def find_hd_file_new(sd_file, trim_num, dur = 5):
                trim_num = 1
             if time_diff_sec < 0:
                time_diff_sec = 0
-            hd_trim = ffmpeg_trim(hd_file, str(time_diff_sec), str(dur), "-trim-" + str(trim_num) + "-HD-meteor")
+            if trim_on == 1:
+               hd_trim = ffmpeg_trim(hd_file, str(time_diff_sec), str(dur), "-trim-" + str(trim_num) + "-HD-meteor")
+            else:
+               hd_trim = None
             return(hd_file, hd_trim)
    return(None,None)
 
@@ -247,6 +250,8 @@ def eof_processing(sd_file, trim_num, dur):
    hd_trim1 = ffmpeg_trim(merge_files[0], str(55), str(5), "-temp-" + str(trim_num) + "-HD-meteor")
    hd_trim2 = ffmpeg_trim(merge_files[1], str(0), str(5), "-temp-" + str(trim_num) + "-HD-meteor")
    # cat them together
+
+   print("TRIM FILES:", hd_trim1, hd_trim2)
 
    #hd_datetime, sd_cam, sd_date, sd_h, sd_m, sd_s = convert_filename_to_date_cam(merge_files[0])
    hd_datetime, hd_cam, hd_date, hd_y, hd_m, hd_d, hd_h, hd_M, hd_s = convert_filename_to_date_cam(merge_files[0])

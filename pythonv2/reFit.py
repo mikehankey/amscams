@@ -87,8 +87,9 @@ def match_stars(im_stars, catalog_stars,fit_image):
    
 def minimize_poly_params_fwd(cal_param_file, cal_params,img_stars,catalog_stars,fit_image,json_conf):
    cv2.namedWindow('pepe')
-   fov_poly = np.zeros(shape=(2,), dtype=np.float64)
-   pos_poly = np.zeros(shape=(1,), dtype=np.float64)
+   fov_poly = cal_params['fov_poly'] 
+   pos_poly = cal_params['pos_ang']
+#np.zeros(shape=(1,), dtype=np.float64)
    x_poly_fwd = np.zeros(shape=(15,), dtype=np.float64)
    y_poly_fwd = np.zeros(shape=(15,), dtype=np.float64)
    cal_params['x_poly_fwd'] = x_poly_fwd
@@ -169,6 +170,10 @@ def minimize_poly_params(cal_param_file, cal_params,img_stars,fit_image,json_con
    y_poly = res['x']
    y_fun = res['fun']
 
+   #cal_params['ra_center'] = 
+   #cal_params['dec1_center'] = 
+   #cal_params['position_angle'] = 
+
    cal_params['fov_poly'] = fov_poly.tolist()
    cal_params['pos_ang'] = pos_poly.tolist()
    cal_params['x_poly'] = x_poly.tolist()
@@ -196,12 +201,16 @@ def reduce_fit_fwd(this_poly,field, image_stars,catalog_stars,cal_params,dim,x_p
    matched_stars,total_res_x,total_res_y = match_stars_fwd(img_stars, catalog_stars,fit_image,cal_params)
    if len(matched_stars) > 0:
       matched_perc = len(matched_stars) / len(image_stars)
+      score = (total_res_x * 777 )/ len(matched_stars)**2 
    else:
+      matched_perc = 0
       total_res_x = 9999
+      score = 9999
    if matched_perc < .8:
       total_res_x = 9999
+      score = 9999
    print("RES X:", total_res_x)
-   return(total_res_x)
+   return(score)
 
 def reduce_fit(this_poly,field, image_stars,cal_params,dim,x_poly,y_poly,fov_poly,pos_poly,fit_image):
    if field == 'fov_center':
@@ -217,7 +226,8 @@ def reduce_fit(this_poly,field, image_stars,cal_params,dim,x_poly,y_poly,fov_pol
    match_perc  = 0
    matched_stars,total_res_x,total_res_y = match_stars(img_stars, cat_stars,fit_image)
    if len(matched_stars) > 0:
-      score = total_res_x / len(matched_stars) 
+      #score = (total_res_x * 777) / len(matched_stars)**2 
+      score = total_res_x / len(matched_stars)
       match_perc = len(matched_stars) / len(image_stars)
       if match_perc < 1:
          score = 9999
@@ -275,7 +285,7 @@ def find_close_stars_fwd(star_point, catalog_stars):
       #print(star_ra,star_dec,name,ra,dec)
       ra, dec= float(ra), float(dec)
       match_dist = abs(angularSeparation(star_ra,star_dec,ra,dec))
-      if match_dist < 10:
+      if match_dist < 4:
       #if ra - dt < star_ra < ra + dt and dec -dt < star_dec < dec + dt:
          #star_dist = abs(ra - star_ra) + abs(dec - star_dec)
          #star_dist = angularSeparation(ra,dec,star_ra,star_dec)
@@ -380,3 +390,4 @@ cv2.waitKey(0)
 print("LEN CAT:", len(catalog_stars))
 minimize_poly_params(cal_param_file,cal_params,img_stars,fit_image,json_conf)
 minimize_poly_params_fwd(cal_param_file,cal_params,img_stars,catalog_stars,fit_image_cp,json_conf)
+os.system("./XYtoRAdecAzEl.py az_grid " + cal_param_file)

@@ -16,6 +16,29 @@ from lib.FileIO import load_json_file, save_json_file, cfe
 #import lib.brightstardata as bsd
 #from lib.DetectLib import eval_cnt
 
+def draw_grid_line(points, img, type, key):
+   pc = 0
+   if type == 'el':
+      for point in points:
+         az,el,x,y = point
+         if el == key:
+            print("POINT:", point)
+            if pc > 0:
+               cv2.line(img, (x,y), (last_x,last_y), (255), 2)
+            last_x = x
+            last_y = y
+            pc = pc + 1
+   if type == 'az':
+      for point in points:
+         az,el,x,y = point
+         if az == key:
+            print("POINT:", point)
+            if pc > 0:
+               cv2.line(img, (x,y), (last_x,last_y), (255), 2)
+            last_x = x
+            last_y = y
+            pc = pc + 1
+   return(img)
 
 
 json_conf = load_json_file("../conf/as6.json")
@@ -72,9 +95,9 @@ if cmd == 'az_grid':
    print("BOTTOM LEFT AZ/EL", bl_az,bl_el)
    print("BOTTOM RIGHT AZ/EL", br_az,br_el)
 
-   start_az = tl_az
+   start_az = tl_az - 20 
    start_el = bl_el
-   end_az = tr_az
+   end_az = tr_az 
    end_el = tr_el
    RA_center = float(cal_params['ra_center'])
    dec_center = float(cal_params['dec_center'])
@@ -85,9 +108,20 @@ if cmd == 'az_grid':
    pos_angle_ref = float(cal_params['position_angle'])
    #F_scale = 1
    F_scale = 3600/float(cal_params['pixscale'])
-   for az in range(int(start_az),int(end_az)):
+   az_lines = []
+   el_lines = []
+   points = []
+   if start_az > end_az:
+      start_az = end_az - 180
+
+   print("START AZ, END AZ", start_az, end_az)
+   for az in range(int(start_az),int(end_az)): 
+      if az < 0:
+         az = az + 360
+
       for el in range(int(start_el),int(end_el)+30):
          if az % 10 == 0 and el % 10 == 0:
+
             rah,dech = AzEltoRADec(az,el,cal_param_file,cal_params,json_conf)
             rah = str(rah).replace(":", " ")
             dech = str(dech).replace(":", " ")
@@ -99,7 +133,30 @@ if cmd == 'az_grid':
             #print("GRID POINT:", rah,dech,ra,dec,new_cat_x,new_cat_y)
             new_cat_x,new_cat_y = int(new_cat_x),int(new_cat_y)
             cv2.rectangle(cal_image, (new_cat_x-2, new_cat_y-2), (new_cat_x + 2, new_cat_y + 2), (128, 128, 128), 1)
+            az_lines.append(az)
+            el_lines.append(el)
+            points.append((az,el,new_cat_x,new_cat_y))
+   pc = 0
+   for el in range (0,90):
+      if el % 10 == 0: 
+         cal_image = draw_grid_line(points, cal_image, "el", el)
+   for az in range (0,360):
+      if az % 10 == 0: 
+         cal_image = draw_grid_line(points, cal_image, "az", az)
+
+
+   #for point in points:
+   #   az,el,x,y = point
+   #   if el == 10:
+   #      print("POINT:", point)
+   #      if pc > 0:
+   #         cv2.line(cal_image, (x,y), (last_x,last_y), (255), 2)
+   #      last_x = x
+   #      last_y = y
+   #      pc = pc + 1
    cv2.namedWindow('pepe')
    show_img = cv2.resize(cal_image, (0,0),fx=.5, fy=.5)
    cv2.imshow('pepe', show_img)
    cv2.waitKey(0)
+   az_grid_file = cal_file.replace(".jpg", "-azgrid.png")
+   cv2.imwrite(az_grid_file, cal_image)

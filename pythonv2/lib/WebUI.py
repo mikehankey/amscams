@@ -7,6 +7,7 @@ from lib.FileIO import get_proc_days, get_day_stats, get_day_files , load_json_f
 from lib.VideoLib import get_masks, convert_filename_to_date_cam
 from lib.ImageLib import mask_frame 
 from lib.CalibLib import radec_to_azel
+from lib.WebCalib import calibrate_pic,make_plate_from_points
 
 def get_template(json_conf):
    template = ""
@@ -69,13 +70,15 @@ def controller(json_conf):
 
    print("Content-type: text/html\n\n")
 
-   # do json functions up here and bypass the exta html
+   # do json ajax functions up here and bypass the exta html
    if cmd == 'override_detect':
       video_file = form.getvalue('video_file')
       jsid = form.getvalue('jsid')
       override_detect(video_file,jsid,json_conf)
       exit()
-
+   if cmd == 'make_plate_from_points':
+      make_plate_from_points(json_conf,form)
+      exit()
 
 
    print_css()
@@ -104,6 +107,8 @@ def controller(json_conf):
       video_tools(json_conf)
    if cmd == 'mask_admin':
       mask_admin(json_conf, form)
+   if cmd == 'calibrate_pic':
+      calibrate_pic(json_conf, form)
 
    if cmd == 'examine_min':
       video_file = form.getvalue('video_file')

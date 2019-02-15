@@ -25,7 +25,7 @@ def batch_doHD(json_conf):
       base_meteor = base_meteor.replace("/passed", "")
       arc_meteor = "/mnt/ams2/meteors/" + base_meteor
       if cfe(arc_meteor) == 1:
-         print("Meteor already done.")
+         done = 1
       else:
          cmd = "./detectMeteors.py doHD " + meteor
          print(cmd)
