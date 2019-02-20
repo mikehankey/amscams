@@ -294,9 +294,8 @@ def thumb_mp4s(mp4_files,json_conf):
          if cfe(stack_thumb) == 0 :
             thumb(stack_file)
 
-      if "04_08_29" in draw_file:
-         print("DRAW:", draw_file)
-      if cfe(draw_file) == 0  :
+      draw_file_tn = draw_file.replace(".png", "-tn.png")
+      if cfe(draw_file) == 0:
          print("DRAW:", draw_file)
          stack_image = cv2.imread(stack_file, 0)
          if len(objects) > 0:
@@ -306,8 +305,8 @@ def thumb_mp4s(mp4_files,json_conf):
             cmd = "cp " + stack_file + " " + draw_file
             os.system(cmd)
             draw_file_tn = draw_file.replace(".png", "-tn.png")
-            if cfe(draw_file_tn) == 0  :
-               thumb(draw_file)
+      if cfe(draw_file_tn) == 0  :
+         thumb(draw_file)
 
 def batch_meteor_thumb(json_conf):
    meteor_base_dir = "/mnt/ams2/meteors/"
