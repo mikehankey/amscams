@@ -186,7 +186,8 @@ def find_hd_file_new(sd_file, trim_num, dur = 5, trim_on =1):
    (sd_datetime, sd_cam, sd_date, sd_y, sd_m, sd_d, sd_h, sd_M, sd_s) = convert_filename_to_date_cam(sd_file)
    if trim_num > 1400:
       hd_file, hd_trim = eof_processing(sd_file, trim_num, dur)
-      return(hd_file, hd_trim)
+      time_diff_sec = int(trim_num / 25)
+      return(hd_file, hd_trim, time_diff_sec, dur)
    offset = int(trim_num) / 25
    meteor_datetime = sd_datetime + datetime.timedelta(seconds=offset)
    hd_glob = "/mnt/ams2/HD/" + sd_y + "_" + sd_m + "_" + sd_d + "_*" + sd_cam + "*.mp4"
