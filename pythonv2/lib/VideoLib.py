@@ -71,7 +71,7 @@ def doHD(sd_video_file, json_conf):
 
          #print("HD:", hd_file, hd_trim)
          if hd_file == None or hd_file == 0:
-            return(None,None,None,None)
+            return(None,None,None,None,None,None)
          (max_x,max_y,min_x,min_y) = find_min_max_dist(object['history'])
          (min_x,min_y,max_x,max_y) = bigger_box(min_x,min_y,max_x,max_y,sd_w,sd_h,25)
          hd_min_x = min_x * hdm_x
@@ -209,7 +209,7 @@ def find_hd_file_new(sd_file, trim_num, dur = 5, trim_on =1):
             else:
                hd_trim = None
             return(hd_file, hd_trim, time_diff_sec, dur)
-   return(None,None)
+   return(None,None,None,None)
 
 
 def eof_processing(sd_file, trim_num, dur):
