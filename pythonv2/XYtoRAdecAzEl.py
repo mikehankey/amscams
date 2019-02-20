@@ -1,11 +1,10 @@
 #!/usr/bin/python3
 
-
-#import os
+import os
 #import math
 import cv2
 #import math
-#import numpy as np
+import numpy as np
 #import scipy.optimize
 #import matplotlib.pyplot as plt
 import sys
@@ -16,7 +15,7 @@ from lib.FileIO import load_json_file, save_json_file, cfe
 #import lib.brightstardata as bsd
 #from lib.DetectLib import eval_cnt
 
-def draw_grid_line(points, img, type, key):
+def draw_grid_line(points, img, type, key, show_text = 0):
    pc = 0
    if type == 'el':
       for point in points:
@@ -25,6 +24,11 @@ def draw_grid_line(points, img, type, key):
             print("POINT:", point)
             if pc > 0:
                cv2.line(img, (x,y), (last_x,last_y), (255), 2)
+               if show_text == 1:
+                  print("DRAW MARKER AT ", x,y)
+                  desc = str(az) 
+                  cv2.putText(img, desc,  (x+3,y+15), cv2.FONT_HERSHEY_SIMPLEX, .4, (255, 255, 255), 1)
+
             last_x = x
             last_y = y
             pc = pc + 1
@@ -33,8 +37,13 @@ def draw_grid_line(points, img, type, key):
          az,el,x,y = point
          if az == key:
             print("POINT:", point)
+
             if pc > 0:
                cv2.line(img, (x,y), (last_x,last_y), (255), 2)
+               if show_text == 1:
+                  print("DRAW MARKER AT ", x,y)
+                  desc = str(el) 
+                  cv2.putText(img, desc,  (x+5,y-5), cv2.FONT_HERSHEY_SIMPLEX, .4, (255, 255, 255), 1)
             last_x = x
             last_y = y
             pc = pc + 1
@@ -65,7 +74,12 @@ if cmd == 'az_grid':
 
    cal_file = cal_param_file.replace("-calparams.json", ".jpg")
    cal_image = cv2.imread(cal_file)
-   print(cal_image.shape)
+   if len(cal_image.shape) == 3:
+      ih,iw,cl = cal_image.shape
+   else:
+      ih,iw = cal_image.shape
+   cal_image = np.zeros((ih,iw),dtype=np.uint8)
+
 
    print("AZ GRID...")
 
@@ -95,10 +109,10 @@ if cmd == 'az_grid':
    print("BOTTOM LEFT AZ/EL", bl_az,bl_el)
    print("BOTTOM RIGHT AZ/EL", br_az,br_el)
 
-   start_az = tl_az - 20 
-   start_el = bl_el
-   end_az = tr_az 
-   end_el = tr_el
+   start_az = 0
+   start_el = 0
+   end_az = 370
+   end_el = 90 
    RA_center = float(cal_params['ra_center'])
    dec_center = float(cal_params['dec_center'])
    x_res = int(cal_params['imagew'])
@@ -132,18 +146,30 @@ if cmd == 'az_grid':
             #print("GRID POINT:", az,el,rah,dech,ra,dec,new_cat_x,new_cat_y)
             #print("GRID POINT:", rah,dech,ra,dec,new_cat_x,new_cat_y)
             new_cat_x,new_cat_y = int(new_cat_x),int(new_cat_y)
-            cv2.rectangle(cal_image, (new_cat_x-2, new_cat_y-2), (new_cat_x + 2, new_cat_y + 2), (128, 128, 128), 1)
-            az_lines.append(az)
-            el_lines.append(el)
-            points.append((az,el,new_cat_x,new_cat_y))
+            if new_cat_x > -200 and new_cat_x < 2420 and new_cat_y > -200 and new_cat_y < 1480:
+               cv2.rectangle(cal_image, (new_cat_x-2, new_cat_y-2), (new_cat_x + 2, new_cat_y + 2), (128, 128, 128), 1)
+               if new_cat_x > 0 and new_cat_y > 0:
+                  az_lines.append(az)
+                  el_lines.append(el)
+               points.append((az,el,new_cat_x,new_cat_y))
    pc = 0
    for el in range (0,90):
       if el % 10 == 0: 
+         print("EL:", el)
          cal_image = draw_grid_line(points, cal_image, "el", el)
    for az in range (0,360):
       if az % 10 == 0: 
          cal_image = draw_grid_line(points, cal_image, "az", az)
 
+   # draw az/el markers
+   az_lines = sorted(az_lines)
+   min_az = az_lines[1]
+   min_el = min(el_lines)
+   print("Min az,el", min_az, min_el)
+   print("POINTS:", points)
+   cal_image = draw_grid_line(points, cal_image, "el", min_el, 1)
+   print ("Now do the EL", min_az)
+   cal_image = draw_grid_line(points, cal_image, "az", min_az, 1)
 
    #for point in points:
    #   az,el,x,y = point
@@ -160,3 +186,8 @@ if cmd == 'az_grid':
    cv2.waitKey(0)
    az_grid_file = cal_file.replace(".jpg", "-azgrid.png")
    cv2.imwrite(az_grid_file, cal_image)
+   tr_grid_file = az_grid_file.replace(".png", "-t.png")
+   cmd = "/usr/bin/convert " + az_grid_file + " " + tr_grid_file
+   print(cmd)
+   os.system(cmd)
+   print(az_grid_file)

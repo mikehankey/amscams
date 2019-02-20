@@ -7,7 +7,7 @@ from lib.FileIO import get_proc_days, get_day_stats, get_day_files , load_json_f
 from lib.VideoLib import get_masks, convert_filename_to_date_cam
 from lib.ImageLib import mask_frame 
 from lib.CalibLib import radec_to_azel
-from lib.WebCalib import calibrate_pic,make_plate_from_points
+from lib.WebCalib import calibrate_pic,make_plate_from_points, solve_field, check_solve_status
 
 def get_template(json_conf):
    template = ""
@@ -78,6 +78,12 @@ def controller(json_conf):
       exit()
    if cmd == 'make_plate_from_points':
       make_plate_from_points(json_conf,form)
+      exit()
+   if cmd == 'solve_field':
+      solve_field(json_conf,form)
+      exit()
+   if cmd == 'check_solve_status':
+      check_solve_status(json_conf,form)
       exit()
 
 

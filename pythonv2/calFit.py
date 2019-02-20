@@ -98,6 +98,9 @@ def get_fov_stars(params, mapped_stars_file, dimension, other_poly, info_only = 
    
    cal_params_file = mapped_stars_file.replace("-mapped-stars.json", "-calparams.json")
    cal_img_file = mapped_stars_file.replace("-mapped-stars.json", ".jpg")
+   cal_img_file_4f = cal_img_file.replace(".jpg", "-4f.jpg")
+   if cfe(cal_img_file_4f) == 1:
+      cal_img_file = cal_img_file_4f
    #msj = load_json_file(mapped_stars_file)
    cal_params = load_json_file(cal_params_file)
    cal_img = cv2.imread(cal_img_file)
@@ -416,8 +419,8 @@ def minimize_poly(mapped_stars_file,show=1):
 #cmd = sys.argv[1]
 mapped_stars_file = sys.argv[1]
 
-center_off_x = 1 
-center_off_y = 75
+#center_off_x = 1 
+#center_off_y = 75
 #center_off_y = 0
 #denis(mapped_stars_file)
 #x_poly = np.zeros(shape=(12,), dtype=np.float64)

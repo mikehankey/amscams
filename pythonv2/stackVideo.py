@@ -42,7 +42,7 @@ cmd = sys.argv[1]
 
 
 if cmd == 'sv':
-   video_file = sys.argv[1]
+   video_file = sys.argv[2]
    frames = load_video_frames(video_file, json_conf, 0, 1)
    stack_frames(frames, video_file)
 if cmd == 'sm':

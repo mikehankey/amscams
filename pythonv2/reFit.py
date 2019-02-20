@@ -78,7 +78,13 @@ def match_stars(im_stars, catalog_stars,fit_image):
       cv2.rectangle(fit_image, (scx-5, scy-5), (scx+ 5, scy+ 5), (255, 0, 0), 1)
       cv2.line(fit_image, (scx,scy), (cat_x,cat_y), (255), 2) 
       cv2.putText(fit_image, name ,  (cat_x-5,cat_y-12), cv2.FONT_HERSHEY_SIMPLEX, .4, (255, 255, 255), 1)
+   if len(matched_stars) > 0:
+      total_res_x = total_res_x / len(matched_stars)
+   else:
+      total_res_x = 9999
 
+   desc = "Matched {:d} stars out of {:d} total image stars and {:d} total catalog stars. {:f} residual error.".format(len(matched_stars), len(img_stars), len(catalog_stars),total_res_x)
+   cv2.putText(fit_image, desc,  (5,12), cv2.FONT_HERSHEY_SIMPLEX, .4, (255, 255, 255), 1)
    show_img = cv2.resize(fit_image, (0,0),fx=.5, fy=.5)
    cv2.imshow('pepe', show_img)
    cv2.waitKey(10)
@@ -138,6 +144,8 @@ def minimize_poly_params(cal_param_file, cal_params,img_stars,fit_image,json_con
    x_poly_fwd = np.zeros(shape=(15,), dtype=np.float64)
    y_poly_fwd = np.zeros(shape=(15,), dtype=np.float64)
 
+   cal_params['x_poly'] = x_poly.tolist()
+   cal_params['y_poly'] = y_poly.tolist()
    cal_params['x_poly_fwd'] = x_poly_fwd.tolist()
    cal_params['y_poly_fwd'] = y_poly_fwd.tolist()
 
@@ -147,23 +155,26 @@ def minimize_poly_params(cal_param_file, cal_params,img_stars,fit_image,json_con
    img_x = 960
    img_y = 540
    #XYtoRADec(img_x,img_y,cal_param_file,cal_params,json_conf)
-   #exit() 
    #minimize the fov center error 
    field = 'fov_center'
    res = scipy.optimize.minimize(reduce_fit, fov_poly, args=(field,img_stars, cal_params, "x",x_poly,y_poly,fov_poly,pos_poly,fit_image), method='Nelder-Mead')
    fov_poly = res['x']
-
+   print(res)
+   print("FOV POLY:", fov_poly)
    #minimize the pos_ang error 
     
    field = 'pos_ang'
    res = scipy.optimize.minimize(reduce_fit, pos_poly, args=(field, img_stars, cal_params, "x",x_poly,y_poly,fov_poly,pos_poly,fit_image), method='Nelder-Mead')
    pos_poly = res['x']
-
+   print("POS POLY:", pos_poly)
    # now do the x_poly & y_poly
    field = 'x_poly'
    res = scipy.optimize.minimize(reduce_fit, x_poly, args=(field, img_stars, cal_params, "x",x_poly,y_poly,fov_poly,pos_poly,fit_image), method='Nelder-Mead')
+#,options={'fatol':fatol, 'xatol':xatol_ang})
    x_poly = res['x']
    x_fun = res['fun']
+   print("RES:", res)
+   print("X POLY:", x_poly)
 
    field = 'y_poly'
    res = scipy.optimize.minimize(reduce_fit, y_poly, args=(field, img_stars, cal_params, "x",x_poly,y_poly,fov_poly,pos_poly,fit_image), method='Nelder-Mead')
@@ -206,10 +217,10 @@ def reduce_fit_fwd(this_poly,field, image_stars,catalog_stars,cal_params,dim,x_p
       matched_perc = 0
       total_res_x = 9999
       score = 9999
-   if matched_perc < .8:
+   if matched_perc < .6:
       total_res_x = 9999
       score = 9999
-   print("RES X:", total_res_x)
+   print("SCORE/ RES X:", score, total_res_x)
    return(score)
 
 def reduce_fit(this_poly,field, image_stars,cal_params,dim,x_poly,y_poly,fov_poly,pos_poly,fit_image):
@@ -229,7 +240,11 @@ def reduce_fit(this_poly,field, image_stars,cal_params,dim,x_poly,y_poly,fov_pol
       #score = (total_res_x * 777) / len(matched_stars)**2 
       score = total_res_x / len(matched_stars)
       match_perc = len(matched_stars) / len(image_stars)
-      if match_perc < 1:
+
+      cost = (total_res_x**2)*(1.0/np.sqrt(len(matched_stars) + 1))
+      score = cost
+
+      if match_perc < .5:
          score = 9999
    else:
       score = 9999
@@ -386,7 +401,7 @@ for pair in paired_stars:
 show_img = cv2.resize(fit_image, (0,0),fx=.5, fy=.5)
 cv2.namedWindow('pepe')
 cv2.imshow('pepe', show_img)
-cv2.waitKey(0)
+cv2.waitKey(10)
 print("LEN CAT:", len(catalog_stars))
 minimize_poly_params(cal_param_file,cal_params,img_stars,fit_image,json_conf)
 minimize_poly_params_fwd(cal_param_file,cal_params,img_stars,catalog_stars,fit_image_cp,json_conf)

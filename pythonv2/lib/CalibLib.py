@@ -11,7 +11,7 @@ import os
 from lib.VideoLib import load_video_frames, get_masks
 from lib.ImageLib import stack_frames, median_frames, adjustLevels, mask_frame
 from lib.UtilLib import convert_filename_to_date_cam, bound_cnt, check_running,date_to_jd
-from lib.FileIO import cfe, save_json_file
+from lib.FileIO import cfe, save_json_file, load_json_file
 from lib.DetectLib import eval_cnt
 from scipy import signal
 
@@ -445,8 +445,10 @@ def calibrate_pic(cal_image_file, json_conf, show = 1):
    cv2.putText(show_img, "Cal Image NP",  (50,50), cv2.FONT_HERSHEY_SIMPLEX, .4, (255, 255, 255), 1)
    cv2.imshow('pepe', show_img)
    cv2.waitKey(10)
-   (stars, nonstars, plate_image) = make_plate_image(cal_image_adj, cal_star_file, cams_id, json_conf)
+   (stars, nonstars, plate_image,plate_image_4f) = make_plate_image(cal_image_adj, cal_star_file, cams_id, json_conf)
    cv2.imwrite(plate_cal_file, plate_image)
+   plate_cal_file_4f = plate_cal_file.replace(".jpg", "-4f.jpg")
+   cv2.imwrite(plate_cal_file_4f, plate_image_4f)
 
    if show == 1:
       show_img = cv2.resize(plate_image, (0,0),fx=.4, fy=.4)
@@ -513,7 +515,7 @@ def calibrate_camera(cams_id, json_conf, cal_date = None, show=1):
       cv2.putText(show_img, "Cal Image NP",  (50,50), cv2.FONT_HERSHEY_SIMPLEX, .4, (255, 255, 255), 1)
       cv2.imshow('pepe', show_img)
       cv2.waitKey(10)
-      (stars, nonstars, plate_image) = make_plate_image(cal_image_np, cal_star_file, cams_id, json_conf)
+      (stars, nonstars, plate_image, plate_image_4f) = make_plate_image(cal_image_np, cal_star_file, cams_id, json_conf)
       if show == 1:
          show_img = cv2.resize(plate_image, (0,0),fx=.4, fy=.4)
          cv2.namedWindow('pepe')
@@ -521,8 +523,10 @@ def calibrate_camera(cams_id, json_conf, cal_date = None, show=1):
          cv2.imshow('pepe', show_img)
          cv2.waitKey(10)
      # cv2.imwrite(cal_file, cal_image_np)
+      cal_file_4f = cal_file.replace(".jpg", "-4f.jpg")
       cv2.imwrite(cal_file, plate_image)
       cv2.imwrite(cal_star_file, plate_image)
+      cv2.imwrite(cal_file_4f, plate_image_4f)
       cv2.imwrite(cal_orig_file, orig_img)
 
       print("STARS:", len(stars))
@@ -554,12 +558,13 @@ def find_best_cal_file(hd_datetime, hd_cam):
    cal_file = None
    return(cal_file)
 
-def reduce_object(object, sd_video_file, hd_file, hd_trim, hd_crop_file, hd_crop_box, json_conf, cal_file = None):
+def reduce_object(object, sd_video_file, hd_file, hd_trim, hd_crop_file, hd_crop_box, json_conf, trim_time_offset, cal_file = None):
 
    hd_datetime, hd_cam, hd_date, hd_y, hd_m, hd_d, hd_h, hd_M, hd_s = convert_filename_to_date_cam(hd_file)
-
-   if cal_file is None:
-      cal_file = find_best_cal_file(hd_datetime, hd_cam)
+   cal_param_file = "/mnt/ams2/cal/solved/2019_02_17_09_54_53_000_010004-calparams.json"
+   cal_params = load_json_file(cal_param_file)
+   if cal_param_file is None:
+      cal_param_file = find_best_cal_file(hd_datetime, hd_cam)
 
    print("HD TRIM REDUCE OBJECT: ", hd_trim)
    el = hd_trim.split("-trim-")
@@ -572,22 +577,35 @@ def reduce_object(object, sd_video_file, hd_file, hd_trim, hd_crop_file, hd_crop
    print("REDUCE OBJECT", trim_num)
 
    meteor_frames = []
-   extra_sec = int(trim_num) / 25
+   #extra_sec = int(trim_num) / 25
+   extra_sec = trim_time_offset
    start_frame_time = hd_datetime + datetime.timedelta(0,extra_sec)
    start_frame_str = start_frame_time.strftime('%Y-%m-%d %H:%M:%S.%f')[:-3]
    start_frame_num = object['history'][0][0]
+
+   print("HISTORY:", object['history'])
+
    for hist in object['history']:
       fc,x,y,w,h,mx,my = hist
       hd_x = x + hd_crop_box[0] 
-      hd_y = x + hd_crop_box[1] 
+      hd_y = y + hd_crop_box[1] 
 
-      extra_sec = (start_frame_num + fc) /  25
-      frame_time = hd_datetime + datetime.timedelta(0,extra_sec)
+      extra_sec = (fc) /  25
+      frame_time = start_frame_time + datetime.timedelta(0,extra_sec)
       frame_time_str = frame_time.strftime('%Y-%m-%d %H:%M:%S.%f')[:-3]
-      if cal_file is None:
+      if cal_param_file is None:
          ra, dec, rad, decd, az, el = 0,0,0,0,0,0
+      else:
+         nx = hd_x + (w/2)
+         ny = hd_y + (h/2)
+         xp,yp,ra,dec,az,el= XYtoRADec(nx,ny,cal_param_file,cal_params,json_conf)
+         rad = ra
+         decd = dec
+         print("AZ")
       meteor_frames.append((fc,frame_time_str,x,y,w,h,hd_x,hd_y,ra,dec,rad,decd,az,el))
 
+
+   print("METEORFRMAES:", meteor_frames)
    return(meteor_frames) 
 
 def plate_solve(cal_file,json_conf):
@@ -596,15 +614,11 @@ def plate_solve(cal_file,json_conf):
 
    wcs_file = cal_file.replace(".jpg", ".wcs")
    grid_file = cal_file.replace(".jpg", "-grid.png")
-
    star_file = cal_file.replace(".jpg", "-stars-out.jpg")
    star_data_file = cal_file.replace(".jpg", "-stars.txt")
    astr_out = cal_file.replace(".jpg", "-astrometry-output.txt")
-
    wcs_info_file = cal_file.replace(".jpg", "-wcsinfo.txt")
-
    quarter_file = cal_file.replace(".jpg", "-1.jpg")
-
    image = cv2.imread(cal_file)
 
    if len(image.shape) > 2:
@@ -631,14 +645,15 @@ def plate_solve(cal_file,json_conf):
 
    os.system("grep Mike " + astr_out + " >" +star_data_file + " 2>&1" )
 
-   cmd = "/usr/bin/jpegtopnm " + cal_file + "|/usr/local/astrometry/bin/plot-constellations -w " + wcs_file + " -o " + grid_file + " -i - -N -C -G 600"
+   cmd = "/usr/bin/jpegtopnm " + cal_file + "|/usr/local/astrometry/bin/plot-constellations -w " + wcs_file + " -o " + grid_file + " -i - -N -C -G 600 > /dev/null 2>&1 "
    os.system(cmd)
 
-   cmd = "/usr/local/astrometry/bin/wcsinfo " + wcs_file + " > " + wcs_info_file
+   cmd = "/usr/local/astrometry/bin/wcsinfo " + wcs_file + " > " + wcs_info_file 
    os.system(cmd)
 
    #bright_star_data = parse_astr_star_file(star_data_file)
    #plot_bright_stars(cal_file, image, bright_star_data)
+   print("GRID FILE: ", grid_file)
    solved = cfe(grid_file)
    if solved == 1:
       save_cal_params(wcs_file)
@@ -754,6 +769,7 @@ def make_plate_image(med_stack_all, cam_num, json_conf, show = 1):
    (_, cnts, xx) = cv2.findContours(thresh_obj.copy(), cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
 
    plate_image= np.zeros((img_height,img_width),dtype=np.uint8)
+   plate_image_4f = np.zeros((img_height,img_width),dtype=np.uint8)
    for (i,c) in enumerate(cnts):
       x,y,w,h = cv2.boundingRect(cnts[i])
       cnt_img = med_cpy[y:y+h,x:x+h]
@@ -795,12 +811,14 @@ def make_plate_image(med_stack_all, cam_num, json_conf, show = 1):
             cavg = int((ul + ur + ll + lr) / 4)
             star_cnt = clean_star_bg(cnt_img, cavg+5)
             # limit to center stars only...
-            #if abs(mny - (img_height/2)) <= (img_height/2)*.8 and abs(mnx - (img_width/2)) <= (img_width/2)*.8:
-            if True:
+            if abs(mny - (img_height/2)) <= (img_height/2)*.5 and abs(mnx - (img_width/2)) <= (img_width/2)*.5:
                print(abs(mny-(img_height/2)))
                print(abs(mnx-(img_width/2)))
                plate_image[mny:mxy,mnx:mxx] = star_cnt  
+               plate_image_4f[mny:mxy,mnx:mxx] = star_cnt  
                center_stars = center_stars + 1
+            else:
+               plate_image_4f[mny:mxy,mnx:mxx] = star_cnt  
          else:
             nonstars.append((cx,cy,0))
 
@@ -814,7 +832,7 @@ def make_plate_image(med_stack_all, cam_num, json_conf, show = 1):
    cv2.imshow('pepe', plate_image)
    cv2.waitKey(10)
 
-   return(stars,nonstars,plate_image)
+   return(stars,nonstars,plate_image,plate_image_4f)
 
 
 def find_bright_pixels(med_stack_all, solved_file, cam_num, json_conf):

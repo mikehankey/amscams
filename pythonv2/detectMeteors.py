@@ -97,11 +97,10 @@ def do_all(json_conf):
       print("SCAN DIR:", proc_day)
       scan_dir(proc_day, show)
 
-def reduce_hd_meteor(video_file, hd_file, hd_trim, hd_crop_file, hd_box,json_conf):
+def reduce_hd_meteor(video_file, hd_file, hd_trim, hd_crop_file, hd_box,json_conf,trim_time_offset):
    (f_datetime, cam, f_date_str,fy,fm,fd, fh, fmin, fs) = convert_filename_to_date_cam(video_file)
    frames = load_video_frames(hd_crop_file, json_conf)
    objects = check_for_motion2(frames, hd_trim,cam, json_conf,0)
-   print(objects)
    if len(objects) > 0:
       objects,meteor_found = test_objects(objects,frames)
    else:
@@ -111,21 +110,22 @@ def reduce_hd_meteor(video_file, hd_file, hd_trim, hd_crop_file, hd_box,json_con
    hd_object = []
    print("METEOR FOUND:", meteor_found)
    for object in objects:
-      print(object)
-      hd = 1
-      crop = 1
-      hd_object = reduce_object(object, video_file, hd_file, hd_trim, hd_crop_file, hd_box, json_conf)
+      if object['meteor'] == 1:
+         print("\n\n\nOBJECT: ", object)
+         hd = 1
+         crop = 1
+         hd_object = reduce_object(object, video_file, hd_file, hd_trim, hd_crop_file, hd_box, json_conf,trim_time_offset)
    return(hd_object)
 
 
 
 
 if __name__ == "__main__":
-   show = 0
+   show = 1
    json_conf = load_json_file("../conf/as6.json") 
    cmd = sys.argv[1]
    running = check_running("detectMeteors")
-   if running > 2 and cmd != 'doHD':
+   if running > 2 and cmd != 'doHD' and cmd != 'sf':
       print("running ", running)
       exit()
    if len(sys.argv) >=3:
@@ -146,16 +146,15 @@ if __name__ == "__main__":
       json_file = video_file.replace(".mp4", ".json")
       json_data = load_json_file(json_file)
       hd_objects = reduce_hd_meteor(video_file, json_data['hd_file'], json_data['hd_trim'], json_data['hd_crop_file'], json_data['hd_box'], json_conf)
-      print(hd_objects)
 
    if cmd == 'dohd' or cmd == 'doHD':
       video_file = sys.argv[2] 
-      hd_file, hd_trim, hd_crop_file,hd_box = doHD(video_file, json_conf)
+      hd_file, hd_trim, hd_crop_file,hd_box,trim_time_offset,trim_dur  = doHD(video_file, json_conf)
       print("AFTER doHD HD TRIM: ", hd_trim)
       sd_json_file = video_file.replace(".mp4", ".json")
       sd_objects = load_json_file(sd_json_file)
       hd_objects = None
       if hd_file is not None and hd_file != 0:
-         hd_objects = reduce_hd_meteor(video_file, hd_file, hd_trim, hd_crop_file, hd_box, json_conf)
+         hd_objects = reduce_hd_meteor(video_file, hd_file, hd_trim, hd_crop_file, hd_box, json_conf,trim_time_offset)
          print("AFTER REDUCE HD TRIM: ", hd_trim)
-      archive_meteor (video_file,hd_file,hd_trim,hd_crop_file,hd_box,hd_objects,sd_objects,json_conf)
+      archive_meteor (video_file,hd_file,hd_trim,hd_crop_file,hd_box,hd_objects,sd_objects,json_conf,trim_time_offset,trim_dur)

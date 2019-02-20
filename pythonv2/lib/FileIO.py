@@ -63,11 +63,11 @@ def purge_hd_files(hd_video_dir,json_conf):
       elif tdiff > 5:
          print ("File is nighttime and this many days old will be purged.", tdiff, file)
          print("rm " + file)
-         os.system("rm " + file)
+         #os.system("rm " + file)
 
 
 
-def archive_meteor (sd_video_file,hd_file,hd_trim,hd_crop_file,hd_box,hd_objects,sd_objects,json_conf):
+def archive_meteor (sd_video_file,hd_file,hd_trim,hd_crop_file,hd_box,hd_objects,sd_objects,json_conf,trim_time_offset, trim_dur):
    el = sd_video_file.split("/")
    fn_base = el[-1] 
    fn_base = fn_base.replace(".mp4", "")
@@ -93,6 +93,8 @@ def archive_meteor (sd_video_file,hd_file,hd_trim,hd_crop_file,hd_box,hd_objects
    meteor_json['hd_box'] = hd_box 
    meteor_json['hd_objects'] = hd_objects
    meteor_json['sd_objects'] = sd_objects
+   meteor_json['hd_trim_time_offset'] = trim_time_offset
+   meteor_json['hd_trim_dur'] = trim_dur 
 
    save_json_file(meteor_json_file, meteor_json )
    

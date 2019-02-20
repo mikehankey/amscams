@@ -171,7 +171,7 @@ def test_object(object, total_frames):
 
    if len(object['history']) > 0:
       cm_to_hist = cm / len(object['history'])
-      if cm_to_hist < .4:
+      if cm_to_hist < .25:
          results.append(('CM To Hist', 0, "CM to Hist too Low:" + str(cm_to_hist)))
          status = 0
       
@@ -208,7 +208,7 @@ def test_object(object, total_frames):
    noise_perc = meteor_test_noise(object['history']) 
    noise = 1
    desc = "{:0.0f}:1 object to frame ratio.".format(noise_perc) 
-   if float(noise_perc) > 1.1:
+   if float(noise_perc) > 2.1:
       noise = 0
       status = 0
    results.append(('Noise', noise, desc))
@@ -229,7 +229,7 @@ def test_object(object, total_frames):
    peak_test = 1
    peaks, peak_perc = meteor_test_peaks(object) 
    peak_perc = peak_perc * 100
-   if len(peaks[0]) > 30:
+   if len(peaks[0]) > 50 and peak_perc > 35:
       peak_test = 0
       status = 0
 
@@ -312,7 +312,7 @@ def meteor_test_big(object):
    big = 0
    hist = object['history']
    for fn,x,y,w,h,mx,my in hist:
-      if w > 30 or h > 30:
+      if w > 50 or h > 50:
          big = big + 1
    if big > 1 and len(hist) > 0:
       big_perc = big / len(hist)
@@ -357,6 +357,7 @@ def meteor_test_noise(hist):
    return(perc)
 
 def meteor_test_fit_line(object):
+   oid = object['oid']
    hist = object['history']
    xs = []
    ys = []
@@ -372,12 +373,13 @@ def meteor_test_fit_line(object):
    min_x = min(xs)
    min_y = min(ys)
    line_dist = calc_dist((min_x,min_y),(max_x,max_y))
-   safe_dist = line_dist / 12
+   print("LINE:", line_dist)
+   safe_dist = line_dist / 2
 
    if safe_dist < 5:
       safe_dist = 5
-   if safe_dist > 10:
-      safe_dist = 10
+   #if safe_dist > 10:
+   #   safe_dist = 10
    #print("SAFE DISTANCE: ", safe_dist)
    regression_line = []
    for x in xs:
@@ -389,19 +391,22 @@ def meteor_test_fit_line(object):
       cy = int(y+ (h/2))
       ry = regression_line[i]
       dist = calc_dist((cx,cy),(cx,ry))
-      #print("REG:", dist)
+
+      if int(oid) == 2:
+         print("REG:", safe_dist, dist)
       if dist < safe_dist:
          good = good + 1
 
    match_perc = good / len(regression_line)
 
-   #import matplotlib.pyplot as plt
-   #from matplotlib import style
-   #style.use('ggplot')
+   if int(oid) == 2:
+      import matplotlib.pyplot as plt
+      from matplotlib import style
+      style.use('ggplot')
 
-   #plt.scatter(xs,ys,color='#003F72')
-   #plt.plot(xs, regression_line)
-   #plt.show()
+      plt.scatter(xs,ys,color='#003F72')
+      plt.plot(xs, regression_line)
+      plt.show()
 
    return(match_perc)
 
@@ -442,9 +447,9 @@ def meteor_test_hist_len(object):
    hist = object['history']
    hist_len = len(hist)
 
-   if hist_len > 200:
+   if hist_len > 300:
       status = 0
-      reason = "HISTORY LENGTH TEST FAILED: Hist length of object is too long > 200: " + str(hist_len)
+      reason = "HISTORY LENGTH TEST FAILED: Hist length of object is too long > 300: " + str(hist_len)
    if hist_len < 3:
       status = 0
       reason = "HISTORY LENGTH TEST FAILED: Hist length of object is too short < 3: " + str(hist_len)

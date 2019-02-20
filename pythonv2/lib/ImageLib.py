@@ -3,6 +3,10 @@ import cv2
 import glob
 import numpy as np
 from PIL import Image, ImageChops
+from PIL import ImageDraw
+from PIL import ImageFont
+
+
 from lib.FileIO import cfe
 #from lib.DetectLib import 
 from lib.MeteorTests import find_min_max_dist, max_xy
@@ -209,7 +213,6 @@ def mask_frame(frame, mp, masks, size=3):
 
 
    for mask in masks:
-      print("MASK: ", mask)
       mx,my,mw,mh = mask.split(",")
       frame[int(my):int(my)+int(mh),int(mx):int(mx)+int(mw)] = 0
 
@@ -248,4 +251,35 @@ def median_frames(frames):
    else:
       med_stack_all = cv2.convertScaleAbs(np.median(np.array(frames), axis=0))
    return(med_stack_all)
+
+
+def draw_stars_on_img(image_np, star_list, color="white", track_type="box")  :
+   image = Image.fromarray(image_np)
+   draw = ImageDraw.Draw(image)
+   font = ImageFont.truetype("/usr/share/fonts/truetype/freefont/FreeSans.ttf", 14, encoding="unic" )
+   for data in star_list:
+      print("LEN:", len(data))
+      if len(data) == 12:
+         star_name, common_name, ra, dec, mag, cx, cy, mx, my, az, el,ofn = data
+      if len(data) == 11:
+         star_name, common_name, ra, dec, mag, cx, cy, mx, my, az, el = data
+      if len(data) == 6:
+         star_name, ra, dec, mag, cx, cy = data
+      if len(data) == 8:
+         star_name, ra, dec, mag, cx, cy, az, el = data
+      
+      #az_txt = str(star_name) + " " + str(int(az)) + "/" + str(int(el))
+      az_txt = star_name
+      if track_type == "box":
+         #draw.rectangle((cx-20, cy-20, cx + 20, cy + 20), outline=color)
+         draw.text((cx+15, cy), str(az_txt), font = font, fill=color)
+      if track_type == "trail":
+         draw.ellipse((cx-1, cy-1, cx+1, cy+1),  outline ="white")
+      if track_type == "anchor":
+         draw.ellipse((cx-3, cy-3, cx+3, cy+3),  outline ="white")
+
+   image_np = np.asarray(image)
+   #cv2.imshow('pepe', image_np)
+   #cv2.waitKey(10)
+   return(image_np)
 
