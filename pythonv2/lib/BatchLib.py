@@ -259,6 +259,7 @@ def make_file_index(json_conf ):
 
 def thumb_mp4s(mp4_files,json_conf):
    stack_image = None
+   objects = []
    # there should be 3 types of MP4 files (sd, hd, crop)
    # for each of these there should be a : stack & stack_tn
    # the sd file should also have an obj and obj_tn

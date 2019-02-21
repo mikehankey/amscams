@@ -9,6 +9,7 @@ from lib.ImageLib import find_min_max_dist,bigger_box
 
 
 
+
 def doHD(sd_video_file, json_conf):
    sd_w = 704
    sd_h = 576
@@ -336,6 +337,7 @@ def load_video_frames(trim_file, json_conf, limit=0, mask=1):
    go = 1
    while go == 1:
       _ , frame = cap.read()
+      #print(frame_count)
       if frame is None:
          if frame_count <= 5 :
             cap.release()

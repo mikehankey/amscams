@@ -11,7 +11,7 @@ import json
 
 
 from lib.VideoLib import load_video_frames
-from lib.ImageLib import stack_frames , stack_glob, stack_stack
+from lib.ImageLib import stack_frames , stack_glob, stack_stack, make_10_sec_thumbs
 from lib.FileIO import load_json_file , cfe
 from lib.BatchLib import batch_obj_stacks
 
@@ -60,6 +60,17 @@ if cmd == 'bos':
 
 if cmd == 'sa':
    stack_all()
+
+if cmd == '10sec':
+   sd_video_file = sys.argv[2]
+   el = sd_video_file.split("/")
+   fn = el[-1]
+   out_file = "/mnt/ams2/trash/" + fn
+   cmd = "/usr/bin/ffmpeg -i " + sd_video_file + " -vf scale=\"320:-1\" " + out_file + " >/dev/null 2>&1"
+   os.system(cmd)
+   frames = load_video_frames(out_file, json_conf)
+   #print("frames:", len(frames))
+   make_10_sec_thumbs(sd_video_file, frames, json_conf)
 
 if cmd == 'sn':
    print ("stacking failures")

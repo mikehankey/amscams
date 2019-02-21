@@ -4,10 +4,38 @@ import time
 import glob
 import os
 from lib.FileIO import get_proc_days, get_day_stats, get_day_files , load_json_file, get_trims_for_file, get_days, save_json_file, cfe
-from lib.VideoLib import get_masks, convert_filename_to_date_cam
+from lib.VideoLib import get_masks, convert_filename_to_date_cam, ffmpeg_trim 
+
 from lib.ImageLib import mask_frame 
 from lib.CalibLib import radec_to_azel
 from lib.WebCalib import calibrate_pic,make_plate_from_points, solve_field, check_solve_status
+
+
+def manual_detect(json_conf, form):
+   sd_video_file = form.getvalue('sd_video_file')
+   el = sd_video_file.split("/")
+   fn = el[-1]
+   temp_sd_video_file = "/mnt/ams2/trash/" + fn
+   cmd  = "cp " + sd_video_file + " " + temp_sd_video_file
+   os.system(cmd)
+
+   subcmd = form.getvalue('subcmd')
+   stack_num = form.getvalue('stack_num')
+   print("Manual detect<BR>")
+   cmd = "cd /home/ams/amscams/pythonv2/; ./stackVideo.py 10sec " + sd_video_file
+#   os.system(cmd)
+   if subcmd is None: 
+      for i in range(0,6):
+         stack_file = "/mnt/ams2/trash/stack" + str(i) + ".png"
+         print("<a href=webUI.py?cmd=manual_detect&sd_video_file=" + sd_video_file + "&subcmd=pick_stack&stack_num=" + str(i) + "><img src=" + stack_file + ">")
+   if subcmd == 'pick_stack':
+      print('trim')      
+      trim_start_sec = (int(stack_num) * 10 * 25) / 25
+      dur_sec = 10
+      out_file_suffix = "-trim" + str(int(stack_num) * 10 * 25) 
+      ffmpeg_trim(temp_sd_video_file, trim_start_sec, dur_sec, out_file_suffix)
+      print("trimming clip:", temp_sd_video_file, trim_start_sec, dur_sec, out_file_suffix)
+   
 
 def get_template(json_conf):
    template = ""
@@ -108,6 +136,8 @@ def controller(json_conf):
 
 
       
+   if cmd == 'manual_detect':
+      manual_detect(json_conf,form)
 
    if cmd == 'video_tools':
       video_tools(json_conf)
@@ -551,8 +581,8 @@ def examine_min(video_file,json_conf):
    stack_file = stack_file_from_video(video_file)
   
    print("<a href=" + video_file + ">")
-   print("<img src=" + stack_file + ">")
-   print("<br>" + video_file + "</a><br>")
+   print("<img src=" + stack_file + "><br>")
+   print("<a href=webUI.py?cmd=manual_detect&sd_video_file=" + video_file + ">Manualy Detect</a><br>")
    if len(meteor_files) > 0:
       print("<h2>Meteor Detected</h2>")
       for meteor_file in meteor_files:

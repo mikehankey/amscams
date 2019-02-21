@@ -11,6 +11,26 @@ from lib.FileIO import cfe
 #from lib.DetectLib import 
 from lib.MeteorTests import find_min_max_dist, max_xy
 
+def make_10_sec_thumbs(sd_video_file, frames, json_conf):
+
+   sc = 0
+   fc = 0
+   stacked_image = None
+   for frame in frames:
+      img_pil = Image.fromarray(frame)
+      if stacked_image is None:
+         stacked_image = stack_stack(img_pil, img_pil)
+      else:
+         stacked_image = stack_stack(stacked_image, img_pil)
+      if fc % 250 == 0:
+         
+         stacked_image_np = np.asarray(stacked_image)
+         out_file = "/mnt/ams2/trash/stack" + str(sc) + ".png"
+         cv2.imwrite(out_file, stacked_image_np)
+         sc = sc + 1
+         stacked_image = None
+      fc = fc + 1
+
 
 def thumb(image_file = "", image = ""):
    print("THUMB!", image_file)
