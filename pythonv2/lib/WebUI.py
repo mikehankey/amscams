@@ -69,10 +69,13 @@ def manual_detect(json_conf, form):
    stack_num = form.getvalue('stack_num')
    print("Manual detect<BR>")
    cmd = "cd /home/ams/amscams/pythonv2/; ./stackVideo.py 10sec " + sd_video_file
-#   os.system(cmd)
+   print(cmd)
+   os.system(cmd)
    if subcmd is None: 
       for i in range(0,6):
-         stack_file = "/mnt/ams2/trash/stack" + str(i) + ".png"
+
+         rand = "?rand=" + str(randint(0,10000))
+         stack_file = "/mnt/ams2/trash/stack" + str(i) + ".png" + rand
          print("<a href=webUI.py?cmd=manual_detect&sd_video_file=" + sd_video_file + "&subcmd=pick_stack&stack_num=" + str(i) + "><img src=" + stack_file + ">")
 
 
@@ -438,7 +441,7 @@ def meteors(json_conf,form):
          + " onmouseover=\"document.getElementById('" + base_js_name_img + "').src='" + stack_obj_img \
          + "'\" onmouseout=\"document.getElementById('" + base_js_name_img + "').src='" + stack_file_tn+ "'\">"
   
-      html_out = html_out + "<img class=\"" + htclass + "\" id=\"" + base_js_name_img + "\" src='" + stack_file_tn+ "'></a>" + end_span + "<figcaption>" + desc + "</figcaption></figure>\n"
+      html_out = html_out + "<img width=282 height=192 class=\"" + htclass + "\" id=\"" + base_js_name_img + "\" src='" + stack_file_tn+ "'></a>" + end_span + "<figcaption>" + desc + "</figcaption></figure>\n"
 
       print(html_out)
    print("<div style='clear: both'></div>")
