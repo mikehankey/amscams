@@ -1,15 +1,61 @@
+from random import randint
 import cv2
 import cgi
 import time
 import glob
 import os
-from lib.FileIO import get_proc_days, get_day_stats, get_day_files , load_json_file, get_trims_for_file, get_days, save_json_file, cfe
-from lib.VideoLib import get_masks, convert_filename_to_date_cam, ffmpeg_trim 
-
-from lib.ImageLib import mask_frame 
+from lib.FileIO import get_proc_days, get_day_stats, get_day_files , load_json_file, get_trims_for_file, get_days, save_json_file, cfe, save_meteor
+from lib.VideoLib import get_masks, convert_filename_to_date_cam, ffmpeg_trim , load_video_frames
+from lib.DetectLib import check_for_motion2 
+from lib.MeteorTests import test_objects
+from lib.ImageLib import mask_frame , draw_stack, stack_frames
 from lib.CalibLib import radec_to_azel
-from lib.WebCalib import calibrate_pic,make_plate_from_points, solve_field, check_solve_status
+from lib.WebCalib import calibrate_pic,make_plate_from_points, solve_field, check_solve_status, free_cal, show_cat_stars, choose_file, upscale_2HD
 
+
+
+def run_detect(json_conf, form):
+   temp_sd_video_file = form.getvalue("temp_sd_video_file")
+   stack_file = temp_sd_video_file.replace(".mp4", "-stacked.png")
+   obj_stack_file = temp_sd_video_file.replace(".mp4", "-stacked-obj.png")
+   hd_datetime, hd_cam, hd_date, hd_y, hd_m, hd_d, hd_h, hd_M, hd_s = convert_filename_to_date_cam(temp_sd_video_file)
+   frames = load_video_frames(temp_sd_video_file, json_conf)
+   objects = check_for_motion2(frames, temp_sd_video_file,hd_cam, json_conf,0)
+
+   print("run:", temp_sd_video_file, len(frames))
+   print("<span style=\"color: white>\">")
+
+   objects,meteor_found = test_objects(objects,frames)
+   stack_file,stack_img = stack_frames(frames, temp_sd_video_file)
+   draw_stack(objects,stack_img,stack_file)
+   print("<br><img src=" + obj_stack_file + ">")
+   for object in objects:
+      print("<HR>")
+      for key in object:
+         if key == 'test_results':
+            for test in object['test_results']:
+               (test_name,test_rest, test_desc) = test
+               print(test_name,test_rest, test_desc,"<BR>")
+         else:
+            print(key, object[key], "<BR>")
+   if meteor_found == 1:
+      wild = temp_sd_video_file.replace(".mp4", ".*")
+      el = temp_sd_video_file.split("/")
+      fn = el[-1]
+      day_dir = fn[0:10]
+      proc_dir = json_conf['site']['proc_dir']
+      cmd = "cp " + wild + " " + proc_dir + day_dir + "/passed/" 
+      os.system(cmd)
+      new_video_file = proc_dir + day_dir + "/passed/" + fn
+      print("NEW VIDEO FILE:", new_video_file)
+      save_meteor(temp_sd_video_file,objects,json_conf)
+
+      cmd2 = "cd /home/ams/amscams/pythonv2/; ./detectMeteors.py doHD " + proc_dir + day_dir + "/passed/" + fn
+      print("METEOR WAS FOUND! Copied clip to passed dir for final processing. It should appear in meteor archive within a minute. <br>",cmd)
+      print(cmd2)
+   else:
+      print("Meteor was not found by detection code. Override test results here... (todo...)")
+   print("</span>")
 
 def manual_detect(json_conf, form):
    sd_video_file = form.getvalue('sd_video_file')
@@ -28,13 +74,44 @@ def manual_detect(json_conf, form):
       for i in range(0,6):
          stack_file = "/mnt/ams2/trash/stack" + str(i) + ".png"
          print("<a href=webUI.py?cmd=manual_detect&sd_video_file=" + sd_video_file + "&subcmd=pick_stack&stack_num=" + str(i) + "><img src=" + stack_file + ">")
-   if subcmd == 'pick_stack':
-      print('trim')      
-      trim_start_sec = (int(stack_num) * 10 * 25) / 25
-      dur_sec = 10
-      out_file_suffix = "-trim" + str(int(stack_num) * 10 * 25) 
+
+
+   if subcmd == 'pick_stack' or subcmd == 'retrim':
+      if subcmd == 'pick_stack':
+         print('trim')      
+         trim_start_sec = (int(stack_num) * 10 * 25) / 25
+         dur_sec = 10
+         out_file_suffix = "-trim" + str(int(stack_num) * 10 * 25) 
+      else:
+         trim_start_sec = form.getvalue("trim_start_sec")
+         dur_sec = form.getvalue("dur_sec")
+         stack_num = int(float(trim_start_sec) * 25)
+         out_file_suffix = "-trim" + str(int(stack_num) ) 
+
+
       ffmpeg_trim(temp_sd_video_file, trim_start_sec, dur_sec, out_file_suffix)
-      print("trimming clip:", temp_sd_video_file, trim_start_sec, dur_sec, out_file_suffix)
+      #print("trimming clip:", temp_sd_video_file, trim_start_sec, dur_sec, out_file_suffix)
+      print("<BR>")
+      show_file = temp_sd_video_file.replace(".mp4", out_file_suffix + ".mp4")
+      rand = "?rand=" + str(randint(0,10000))
+      print(" <video autoplay id=\"v1\" loop controls src=\"" + show_file + rand + "\"> </video> ")
+      print("<form><input type=hidden name=sd_video_file value='" + sd_video_file + "'>")
+      print("<input type=hidden name=cmd value='manual_detect'>")
+      print("<input type=hidden name=subcmd value='retrim'>")
+      #print(trim_start_sec, dur_sec)
+      print("Adjust the start time and duration to re-trim the clip.<BR>")
+      print("Trim Start in Seconds (from start of 1 min clip):<input type=textg name=trim_start_sec value='" + str(trim_start_sec) + "'><br>")
+      print("Trim Duration in Seconds: <input type=textg name=dur_sec value='" + str(dur_sec) + "'><br>")
+      print("<input type=submit name=submit value='Re-Trim Clip'></form><br>")
+   if subcmd == 'retrim':
+     
+      print("<P>If the trim clip looks good, run detect code on this clip: ", show_file)
+      print("<form>")
+      print("<input type=hidden name=cmd name='subcmd' value='run_detect'>")
+      print("<input type=hidden name=temp_sd_video_file value='" + show_file + "'>")
+      print("<input type=submit name=submit value='Run Detection Code On This Clip'><br>")
+      print("</form>")
+
    
 
 def get_template(json_conf):
@@ -104,6 +181,9 @@ def controller(json_conf):
       jsid = form.getvalue('jsid')
       override_detect(video_file,jsid,json_conf)
       exit()
+   if cmd == 'upscale_2HD':
+      upscale_2HD(json_conf,form)
+      exit()
    if cmd == 'make_plate_from_points':
       make_plate_from_points(json_conf,form)
       exit()
@@ -112,6 +192,9 @@ def controller(json_conf):
       exit()
    if cmd == 'check_solve_status':
       check_solve_status(json_conf,form)
+      exit()
+   if cmd == 'show_cat_stars':
+      show_cat_stars(json_conf,form)
       exit()
 
 
@@ -134,10 +217,16 @@ def controller(json_conf):
 
    print(top)
 
+   if cmd == 'free_cal':
+      free_cal(json_conf, form)
 
+   if cmd == 'choose_file':
+      choose_file(json_conf,form)
       
    if cmd == 'manual_detect':
       manual_detect(json_conf,form)
+   if cmd == 'run_detect':
+      run_detect(json_conf,form)
 
    if cmd == 'video_tools':
       video_tools(json_conf)
@@ -228,11 +317,32 @@ def examine_cal(json_conf,form):
 
    #orig_cal_file = cal_p
 
+def get_cal_files(json_conf,cams_id):
+
+   files = glob.glob("/mnt/ams2/cal/freecal/*")
+   cal_files = []
+   for file in files:
+      el = file.split("/")
+      fn = el[-1]
+      if cfe(file,1) == 1:
+         cal_file = file + "/" + fn + "-stacked.png"
+         cal_files.append(cal_file)
+     
+   return(cal_files)
 
 def calibration(json_conf,form):
    cams_id = form.getvalue('cams_id')
-   print("Calibration")
-   cal_params = get_cal_params(json_conf, cams_id)
+   print("<h2>Calibration</h2>")
+   print("<p><a href=webUI.py?cmd=free_cal>Make New Calibration</a></P>")
+   print("<p>Or select a previous job to work on</p>")
+   cal_files = get_cal_files(json_conf,cams_id)
+   for file in cal_files:
+      el = file.split("/")
+      fn = el[-1]
+      az_grid_file = file.replace(".png", "-azgrid-half.png")
+      print("<figure><a href=webUI.py?cmd=free_cal&input_file=" + file + "><img width=354 src=" + az_grid_file + "><figcaption>"+ fn + "</figcaption></figure>")
+   print("<div style=\"clear: both\"></div>")
+   #cal_params = get_cal_params(json_conf, cams_id)
 
    print("""
       <div style="float:right">
@@ -253,18 +363,18 @@ def calibration(json_conf,form):
 
 
    stab,sr,sc,et,er,ec = div_table_vars()
-   print(stab)
+   #print(stab)
 
-   print(sr+sc+"Date"+ec+sc+"Camera" + ec + sc + "Center RA/DEC" + ec + sc + "Center AZ/EL" + ec + sc +"Pixel Scale" + ec + sc + "Position Angle" + ec + sc + "Residual" + ec + er)
-   for cal_param in sorted(cal_params,reverse=True):
-      hd_datetime, hd_cam, hd_date, hd_y, hd_m, hd_d, hd_h, hd_M, hd_s = convert_filename_to_date_cam(cal_param)
-      json_data = load_json_file(cal_param )
+   #print(sr+sc+"Date"+ec+sc+"Camera" + ec + sc + "Center RA/DEC" + ec + sc + "Center AZ/EL" + ec + sc +"Pixel Scale" + ec + sc + "Position Angle" + ec + sc + "Residual" + ec + er)
+   #for cal_param in sorted(cal_params,reverse=True):
+   #   hd_datetime, hd_cam, hd_date, hd_y, hd_m, hd_d, hd_h, hd_M, hd_s = convert_filename_to_date_cam(cal_param)
+   #   json_data = load_json_file(cal_param )
 
-      az,el = radec_to_azel(json_data['ra_center'],json_data['dec_center'], hd_datetime,json_conf)
+   #   az,el = radec_to_azel(json_data['ra_center'],json_data['dec_center'], hd_datetime,json_conf)
 
 
-      print(sr + sc + "<a href=webUI.py?cmd=examine_cal&cal_param=" + cal_param + ">" + hd_date + "</a>" + ec + sc + hd_cam + ec + sc + str(json_data['ra_center'])[0:6] + "/" + str(json_data['dec_center'])[0:5] + ec + sc + str(az)[0:5] + "/" + str(el)[0:5] + ec + sc + str(json_data['pixscale'])[0:5] + ec + sc + str(json_data['position_angle'])[0:5] + ec + sc + str(json_data['x_fun'])[0:4] + "," + str(json_data['y_fun'])[0:4] + ec + er)
-   print(et)
+   #   print(sr + sc + "<a href=webUI.py?cmd=examine_cal&cal_param=" + cal_param + ">" + hd_date + "</a>" + ec + sc + hd_cam + ec + sc + str(json_data['ra_center'])[0:6] + "/" + str(json_data['dec_center'])[0:5] + ec + sc + str(az)[0:5] + "/" + str(el)[0:5] + ec + sc + str(json_data['pixscale'])[0:5] + ec + sc + str(json_data['position_angle'])[0:5] + ec + sc + str(json_data['x_fun'])[0:4] + "," + str(json_data['y_fun'])[0:4] + ec + er)
+   #print(et)
 
 def get_meteor_dirs(meteor_dir):
    meteor_dirs = []
@@ -582,7 +692,8 @@ def examine_min(video_file,json_conf):
   
    print("<a href=" + video_file + ">")
    print("<img src=" + stack_file + "><br>")
-   print("<a href=webUI.py?cmd=manual_detect&sd_video_file=" + video_file + ">Manualy Detect</a><br>")
+   print("<a href=webUI.py?cmd=manual_detect&sd_video_file=" + video_file + ">Manually Detect</a> - ")
+   print("<a href=webUI.py?cmd=choose_file&input_file=" + video_file + ">Calibrate Star Field</a><br>")
    if len(meteor_files) > 0:
       print("<h2>Meteor Detected</h2>")
       for meteor_file in meteor_files:

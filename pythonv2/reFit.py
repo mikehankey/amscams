@@ -9,7 +9,7 @@ import scipy.optimize
 import matplotlib.pyplot as plt
 import sys
 #from caliblib import distort_xy,
-from lib.CalibLib import distort_xy_new, find_image_stars, distort_xy_new, XYtoRADec
+from lib.CalibLib import distort_xy_new, find_image_stars, XYtoRADec
 from lib.UtilLib import angularSeparation
 from lib.FileIO import load_json_file, save_json_file, cfe
 from lib.UtilLib import calc_dist,find_angle
@@ -263,7 +263,7 @@ def get_catalog_stars(fov_poly, pos_poly, cal_params,dimension,x_poly,y_poly,min
    fov_h = img_h / F_scale
    fov_radius = np.sqrt((fov_w/2)**2 + (fov_h/2)**2)
 
-   pos_angle_ref = cal_params['position_angle'] + (1000*pos_poly[0])
+   pos_angle_ref = cal_params['position_angle'] 
    x_res = int(cal_params['imagew'])
    y_res = int(cal_params['imageh'])
 

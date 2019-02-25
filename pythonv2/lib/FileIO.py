@@ -60,10 +60,10 @@ def purge_hd_files(hd_video_dir,json_conf):
          print ("File is daytime and this many days old", tdiff, file)
          print("rm " + file)
          os.system("rm " + file)
-      elif tdiff > 5:
+      elif tdiff > 7:
          print ("File is nighttime and this many days old will be purged.", tdiff, file)
          print("rm " + file)
-         #os.system("rm " + file)
+         os.system("rm " + file)
 
 
 
@@ -80,8 +80,8 @@ def archive_meteor (sd_video_file,hd_file,hd_trim,hd_crop_file,hd_box,hd_objects
    meteor_dir = make_meteor_dir(sd_video_file, json_conf) 
 
    meteor_json_file =  meteor_dir + fn_base + ".json"
-   
-   os.system("cp " + sd_video_file + " " + meteor_dir)
+   sd_wild = sd_video_file.replace(".mp4", ".*")   
+   os.system("cp " + sd_wild + " " + meteor_dir)
    if hd_trim is not None and hd_trim != 0: 
       os.system("cp " + hd_trim + " " + meteor_dir)
       os.system("cp " + hd_crop_file+ " " + meteor_dir)
@@ -184,9 +184,14 @@ def get_proc_days(json_conf):
    return(files)
 
 
-def save_meteor(video_file, objects):
+def save_meteor(video_file, objects, json_conf = None):
    print("SAVE METEOR")
    (base_fn, base_dir, image_dir, data_dir,failed_dir,passed_dir) = setup_dirs(video_file)
+   if "trash" in passed_dir:
+      proc_dir = json_conf['site']['proc_dir']
+      el = video_file.split("/")
+      day_dir = el[-1][0:10]
+      passed_dir = proc_dir + day_dir + "/passed/"
    cmd = "mv " + base_dir + base_fn + ".mp4 "  + passed_dir
    print(cmd) 
    os.system(cmd)
@@ -198,6 +203,7 @@ def save_meteor(video_file, objects):
    os.system(cmd)
 
    video_json_file = passed_dir + base_fn + ".json"
+   print("Video JSON ", video_json_file)
    save_json_file(video_json_file, objects)
 
 

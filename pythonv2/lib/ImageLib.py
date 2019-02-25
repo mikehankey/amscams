@@ -11,6 +11,56 @@ from lib.FileIO import cfe
 #from lib.DetectLib import 
 from lib.MeteorTests import find_min_max_dist, max_xy
 
+
+def upscale_to_hd(image, points):
+   sd_stack_img = image
+   hd_image = cv2.resize(image, (1920,1080))
+   hdm_x = 2.7272
+   hdm_y = 1.875
+   shp = image.shape
+   ih,iw = shp[0],shp[1]
+   star_points = []
+   plate_img = np.zeros((ih,iw),dtype=np.uint8)
+   plate_img_4f = np.zeros((ih,iw),dtype=np.uint8)
+
+   for x,y in points:
+      x,y = int(x),int(y)
+      y1 = y - 15
+      y2 = y + 15
+      x1 = x - 15
+      x2 = x + 15
+      cnt_img = image[y1:y2,x1:x2]
+      ch,cw = cnt_img.shape
+      max_pnt,max_val,min_val = cnt_max_px(cnt_img)
+      mx,my = max_pnt
+      mx = mx - 15
+      my = my - 15
+
+      cy1 = y + my - 15
+      cy2 = y + my +15
+      cx1 = x + mx -15
+      cx2 = x + mx +15
+      if ch > 0 and cw > 0:
+         tmp_cnt_img = sd_stack_img[cy1:cy2,cx1:cx2]
+         cnt_img =tmp_cnt_img.copy()
+         bgavg = np.mean(cnt_img)
+         black_cnt_img, cnt_img = clean_star_bg(cnt_img, bgavg + 3 )
+
+         star_points.append([x+mx,y+my])
+         if abs(cy1- (ih/2)) <= (ih/2)*.8 and abs(cx1- (iw/2)) <= (iw/2)*.8:
+            plate_img_4f[cy1:cy2,cx1:cx2] = black_cnt_img
+            plate_img[cy1:cy2,cx1:cx2] = black_cnt_img
+         else:
+            plate_img_4f[cy1:cy2,cx1:cx2] = black_cnt_img
+            hd_image[cy1:cy2,cx1:cx2] = cnt_img
+
+   plate_img = cv2.resize(plate_img, (1920,1080))
+   plate_img_4f = cv2.resize(plate_img_4f, (1920,1080))
+
+   
+
+   return(hd_image,plate_img,plate_img_4f,star_points)
+
 def make_10_sec_thumbs(sd_video_file, frames, json_conf):
 
    sc = 0
@@ -71,6 +121,8 @@ def bigger_box(min_x,min_y,max_x,max_y,iw,ih,fac=5):
 
 
 def draw_stack(objects,stack_img,stack_file):
+   if stack_img is None:
+      return() 
    ih,iw=stack_img.shape
    for obj in objects:
       hist = obj['history'] 
@@ -118,10 +170,10 @@ def stack_glob(glob_dir, out_file):
 
 
 
-def stack_frames(frames,video_file):
+def stack_frames(frames,video_file,nowrite=0):
    stacked_image = None
    stacked_file= video_file.replace(".mp4", "-stacked.png")
-   if cfe(stacked_file) == 1:
+   if cfe(stacked_file) == 1 and nowrite == 0:
       print("SKIP - Stack already done.") 
       stacked_image = cv2.imread(stacked_file,0)
       return(stacked_file,stacked_image)
@@ -131,11 +183,12 @@ def stack_frames(frames,video_file):
          stacked_image = stack_stack(frame_pil, frame_pil)
       else:
          stacked_image = stack_stack(stacked_image, frame_pil)
-   if stacked_image is not None:
-      stacked_image.save(stacked_file)
-      print ("Saved: ", stacked_file)
-   else:
-      print("bad file:", video_file)
+   if nowrite == 0:
+      if stacked_image is not None:
+         stacked_image.save(stacked_file)
+         print ("Saved: ", stacked_file)
+      else:
+         print("bad file:", video_file)
    return(stacked_file,np.asarray(stacked_image))
 
 
@@ -302,4 +355,37 @@ def draw_stars_on_img(image_np, star_list, color="white", track_type="box")  :
    #cv2.imshow('pepe', image_np)
    #cv2.waitKey(10)
    return(image_np)
+
+
+def clean_star_bg(this_cnt_img, bg_avg):
+   cnt_img = this_cnt_img.copy()
+   
+   max_px = np.max(cnt_img)
+   min_px = np.min(cnt_img)
+   avg_px = np.mean(cnt_img)
+   halfway = int((max_px - min_px) / 3)
+   cnt_img.setflags(write=1)
+   black_cnt_img = cnt_img.copy()
+   for x in range(0,cnt_img.shape[1]):
+      for y in range(0,cnt_img.shape[0]):
+         px_val = cnt_img[y,x]
+         if px_val < bg_avg + halfway:
+            #cnt_img[y,x] = random.randint(int(bg_avg - 3),int(avg_px))
+            pxval = cnt_img[y,x]
+            pxval = int(pxval) / 2
+            black_cnt_img[y,x] = 0
+         else:
+            pxval = cnt_img[y,x]
+            pxval = int(pxval) * 2
+            if pxval > 255:
+               pxval = 255
+            cnt_img[y,x] = pxval
+            black_cnt_img[y,x] = pxval
+   return(black_cnt_img, cnt_img)
+
+def cnt_max_px(cnt_img):
+   cnt_img = cv2.GaussianBlur(cnt_img, (7, 7), 0)
+   min_val, max_val, min_loc, max_loc = cv2.minMaxLoc(cnt_img)
+
+   return(max_loc, min_val, max_val)
 

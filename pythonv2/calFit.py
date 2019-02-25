@@ -98,7 +98,7 @@ def get_fov_stars(params, mapped_stars_file, dimension, other_poly, info_only = 
    
    cal_params_file = mapped_stars_file.replace("-mapped-stars.json", "-calparams.json")
    cal_img_file = mapped_stars_file.replace("-mapped-stars.json", ".jpg")
-   cal_img_file_4f = cal_img_file.replace(".jpg", "-4f.jpg")
+   cal_img_file_4f = cal_img_file.replace(".jpg", "stacked-4f.jpg")
    if cfe(cal_img_file_4f) == 1:
       cal_img_file = cal_img_file_4f
    #msj = load_json_file(mapped_stars_file)
@@ -363,6 +363,9 @@ def plot_stars(maped_stars_file, center_off_x=0, center_off_y = 0, show = 1):
 def minimize_poly(mapped_stars_file,show=1):
    cal_params_file = mapped_stars_file.replace("-mapped-stars.json", "-calparams.json")
    fit_image_file = mapped_stars_file.replace("-mapped-stars.json", "-calfit.jpg")
+   ff_fit = fit_image_file.replace("-calfit.jpg", "-4f.jpg")
+   if cfe(ff_fit) == 1:
+      fit_image_file = ff_fit
    cal_params = load_json_file(cal_params_file)
 
    x_poly = np.zeros(shape=(15,), dtype=np.float64)
@@ -405,6 +408,7 @@ def minimize_poly(mapped_stars_file,show=1):
    cal_file = cal_params_file.replace("-calparams.json", ".jpg")
    wcs_file = cal_params_file.replace("-calparams.json", ".wcs")
    fit_file = cal_params_file.replace("-calparams.json", "-calfit.jpg")
+   ff_fit_file = cal_params_file.replace("-calparams.json", "-4f.jpg")
    cmd = "cp " + cal_params_file + " /mnt/ams2/cal/solved/"
    os.system(cmd)
    cmd = "cp " + cal_file + " /mnt/ams2/cal/solved/"
@@ -414,6 +418,8 @@ def minimize_poly(mapped_stars_file,show=1):
    cmd = "cp " + grid_file + " /mnt/ams2/cal/solved/"
    os.system(cmd)
    cmd = "cp " + fit_file + " /mnt/ams2/cal/solved/"
+   os.system(cmd)
+   cmd = "cp " + ff_fit_file + " /mnt/ams2/cal/solved/"
    os.system(cmd)
 
 #cmd = sys.argv[1]

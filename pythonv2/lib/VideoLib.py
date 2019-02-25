@@ -278,7 +278,7 @@ def ffmpeg_trim (filename, trim_start_sec, dur_sec, out_file_suffix):
 
    outfile = filename.replace(".mp4", out_file_suffix + ".mp4")
    cmd = "/usr/bin/ffmpeg -y -i " + filename + " -y -ss 00:00:" + str(trim_start_sec) + " -t 00:00:" + str(dur_sec) + " -c copy " + outfile+ " >/dev/null 2>&1"
-   print (cmd)
+#   print (cmd)
    os.system(cmd)
    return(outfile)
 

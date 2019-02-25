@@ -10,10 +10,15 @@ import glob
 import os
 from lib.VideoLib import load_video_frames, get_masks
 from lib.ImageLib import stack_frames, median_frames, adjustLevels, mask_frame
-from lib.UtilLib import convert_filename_to_date_cam, bound_cnt, check_running,date_to_jd
+from lib.UtilLib import convert_filename_to_date_cam, bound_cnt, check_running,date_to_jd, angularSeparation , calc_dist
 from lib.FileIO import cfe, save_json_file, load_json_file
 from lib.DetectLib import eval_cnt
 from scipy import signal
+import lib.brightstardata as bsd
+
+mybsd = bsd.brightstardata()
+bright_stars = mybsd.bright_stars
+
 
 # XY To RADEC 
 # distort_xy_new (should be called RADEC to corrected xy)
@@ -38,10 +43,8 @@ def AzEltoRADec(azd,eld,cal_file,cal_params,json_conf):
 
 def XYtoRADec(img_x,img_y,cal_file,cal_params,json_conf):
    hd_datetime, hd_cam, hd_date, hd_y, hd_m, hd_d, hd_h, hd_M, hd_s = convert_filename_to_date_cam(cal_file)
-   #print("XPF:", cal_params['x_poly_fwd'])
-   #print("YPF:", cal_params['y_poly_fwd'])
-   F_scale = float(cal_params['pixscale'])
-   F_scale = 24
+   F_scale = 3600/float(cal_params['pixscale'])
+   #F_scale = 24
 
    total_min = (int(hd_h) * 60) + int(hd_M)
    day_frac = total_min / 1440 
@@ -59,8 +62,15 @@ def XYtoRADec(img_x,img_y,cal_file,cal_params,json_conf):
    x_poly_fwd = cal_params['x_poly_fwd']
    y_poly_fwd = cal_params['y_poly_fwd']
    
-   dec_d = float(cal_params['dec_center'])
-   RA_d = float(cal_params['ra_center'])
+   dec_d = float(cal_params['dec_center']) 
+   RA_d = float(cal_params['ra_center']) 
+
+   dec_d = dec_d + (x_poly_fwd[13] * 100)
+   dec_d = dec_d + (y_poly_fwd[13] * 100)
+
+   RA_d = RA_d + (x_poly_fwd[14] * 100)
+   RA_d = RA_d + (y_poly_fwd[14] * 100)
+
    pos_angle_ref = float(cal_params['position_angle']) + (1000*x_poly_fwd[12]) + (1000*y_poly_fwd[12])
 
    # Convert declination to radians
@@ -176,7 +186,7 @@ def XYtoRADec(img_x,img_y,cal_file,cal_params,json_conf):
 
 
 
-   return(x_pix,y_pix,RA,dec,azimuth,altitude)
+   return(x_pix+img_x,y_pix+img_y,RA,dec,azimuth,altitude)
 
 
 
@@ -681,6 +691,10 @@ def distort_xy_new(sx,sy,ra,dec,RA_center, dec_center, x_poly, y_poly, x_res, y_
    #dec_center = dec_center + (x_poly[13] * 100)
    #dec_center = dec_center + (y_poly[13] * 100)
 
+   #RA_center = RA_center + (x_poly[13] * 100)
+   #RA_center = RA_center + (y_poly[13] * 100)
+
+
    # Gnomonization of star coordinates to image coordinates
    ra1 = math.radians(float(RA_center))
    dec1 = math.radians(float(dec_center))
@@ -694,6 +708,7 @@ def distort_xy_new(sx,sy,ra,dec,RA_center, dec_center, x_poly, y_poly, x_res, y_
    #theta = theta + pos_angle_ref - 90.0
    theta = theta + pos_angle_ref - 90 + (1000*x_poly[12]) + (1000*y_poly[12])
    #theta = theta + pos_angle_ref - 90
+
 
 
    dist = np.degrees(math.acos(math.sin(dec1)*math.sin(dec2) + math.cos(dec1)*math.cos(dec2)*math.cos(ra1 - ra2)))
@@ -1018,4 +1033,103 @@ def clean_star_bg(cnt_img, bg_avg):
             pxval = int(pxval) / 2
             cnt_img[y,x] = 0
    return(cnt_img)
+
+def get_catalog_stars(fov_poly, pos_poly, cal_params,dimension,x_poly,y_poly,min=0):
+   catalog_stars = []
+   possible_stars = 0
+   img_w = int(cal_params['imagew'])
+   img_h = int(cal_params['imageh'])
+   RA_center = float(cal_params['ra_center']) + (1000*fov_poly[0])
+   dec_center = float(cal_params['dec_center']) + (1000*fov_poly[1])
+   F_scale = 3600/float(cal_params['pixscale'])
+
+   fov_w = img_w / F_scale
+   fov_h = img_h / F_scale
+   fov_radius = np.sqrt((fov_w/2)**2 + (fov_h/2)**2)
+
+   pos_angle_ref = cal_params['position_angle'] + (1000*pos_poly[0])
+   x_res = int(cal_params['imagew'])
+   y_res = int(cal_params['imageh'])
+
+   center_x = int(x_res / 2)
+   center_y = int(x_res / 2)
+
+   bright_stars_sorted = sorted(bright_stars, key=lambda x: x[4], reverse=False)
+
+   for bname, cname, ra, dec, mag in bright_stars_sorted:
+      dcname = cname.decode("utf-8")
+      dbname = bname.decode("utf-8")
+      if dcname == "":
+         #name = dbname
+         name = bname
+      else:
+         #name = dcname
+         name = cname
+
+      ang_sep = angularSeparation(ra,dec,RA_center,dec_center)
+      if ang_sep < fov_radius-(fov_radius * 0) and float(mag) < 6:
+         new_cat_x, new_cat_y = distort_xy_new (0,0,ra,dec,RA_center, dec_center, x_poly, y_poly, x_res, y_res, pos_angle_ref,F_scale)
+
+         possible_stars = possible_stars + 1
+         #print(name, mag, new_cat_x, new_cat_y)
+         catalog_stars.append((name,mag,ra,dec,new_cat_x,new_cat_y))
+
+   return(catalog_stars)
+
+def find_close_stars_fwd(star_point, catalog_stars,match_thresh=4):
+   star_ra, star_dec = star_point
+   dt = 20
+   temp= []
+   matches = []
+   print("\tFIND CLOSE STARS FWD:", star_ra, star_dec)
+   for name,mag,ra,dec,cat_x,cat_y in catalog_stars:
+      #print(star_ra,star_dec,name,ra,dec)
+      ra, dec= float(ra), float(dec)
+      match_dist = abs(angularSeparation(star_ra,star_dec,ra,dec))
+      if match_dist < match_thresh:
+         #star_dist = abs(ra - star_ra) + abs(dec - star_dec)
+         #star_dist = angularSeparation(ra,dec,star_ra,star_dec)
+         print("MATCH FOR ", star_ra, star_dec, name, ra, dec,match_dist)
+         temp.append((name,mag,ra,dec,cat_x,cat_y,match_dist))
+
+   matches = sorted(temp, key=lambda x: x[6], reverse=False)
+   if len(matches) > 0:
+      print("MATCHED: ", matches[0])
+
+   return(matches[0:1])
+
+def find_close_stars(star_point, catalog_stars,dt=25):
+
+   scx,scy = star_point
+   scx,scy = int(scx), int(scy)
+
+   center_dist = calc_dist((scx,scy),(960,540))
+   if center_dist > 500:
+      dt = 55
+   if center_dist > 700:
+      dt = 65
+   if center_dist > 800:
+      dt = 75
+   if center_dist > 900:
+      dt = 150
+
+   matches = []
+   #print("IMAGE STAR:", scx,scy)
+   for name,mag,ra,dec,cat_x,cat_y in catalog_stars:
+      cat_x, cat_y = int(cat_x), int(cat_y)
+      if cat_x - dt < scx < cat_x + dt and cat_y -dt < scy < cat_y + dt:
+         #print("\t{:s} at {:d},{:d} is CLOSE to image star {:d},{:d} ".format(name,cat_x,cat_y,scx,scy))
+         cat_star_dist= calc_dist((cat_x,cat_y),(scx,scy))
+         matches.append((name,mag,ra,dec,cat_x,cat_y,scx,scy,cat_star_dist))
+
+
+   if len(matches) > 1:
+      matches_sorted = sorted(matches, key=lambda x: x[6], reverse=False)
+      # check angle back to center from cat star and then angle from cat star to img star and pick the one with the closest match for the star...
+      #for match in matches_sorted:
+      #   print("MULTI MATCH:", scx,scy, match[0], match[6])
+      matches = matches_sorted
+
+
+   return(matches[0:1])
 

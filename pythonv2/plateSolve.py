@@ -18,7 +18,21 @@ def plate_solve(cal_file,json_conf):
    if running > 0:
       exit()
 
+   h_cal_file = cal_file.replace("-stacked.jpg", "-half-stack.png")
+   print(cal_file)
+   cal_img = cv2.imread(cal_file)
+   sh = cal_img.shape
+   cih,ciw = sh[0], sh[1]
+   print("SIZE:", cih, ciw)
+   if ciw == 1408 and cih == 1152:
+      cal_img = cv2.resize(cal_img, (704,396))
+      cal_file = cal_file.replace(".png", "p.png")
+      cv2.imwrite(cal_file, cal_img)
+      
+
+
    wcs_file = cal_file.replace(".jpg", ".wcs")
+   solved_file = cal_file.replace(".jpg", ".solved")
    grid_file = cal_file.replace(".jpg", "-grid.png")
    star_file = cal_file.replace(".jpg", "-stars-out.jpg")
    star_data_file = cal_file.replace(".jpg", "-stars.txt")
@@ -34,7 +48,7 @@ def plate_solve(cal_file,json_conf):
    height = gray.shape[0]
    width = gray.shape[1]
 # --crpix-center
-   cmd = "/usr/local/astrometry/bin/solve-field " + cal_file + " --crpix-center --cpulimit=30 --verbose --no-delete-temp --overwrite --width=" + str(width) + " --height=" + str(height) + " -d 1-40 --scale-units dw --scale-low 50 --scale-high 90 > " + astr_out + " 2>&1 &"
+   cmd = "/usr/local/astrometry/bin/solve-field " + cal_file + " --crpix-center --cpulimit=30 --verbose --no-delete-temp --overwrite --width=" + str(width) + " --height=" + str(height) + " -d 1-40 --scale-units dw --scale-low 50 --scale-high 90 -S " + solved_file + " > " + astr_out + " 2>&1 &"
    print(cmd)
    os.system(cmd)
 
