@@ -569,12 +569,12 @@ def find_best_cal_file(hd_datetime, hd_cam):
    return(cal_file)
 
 def reduce_object(object, sd_video_file, hd_file, hd_trim, hd_crop_file, hd_crop_box, json_conf, trim_time_offset, cal_file = None):
-
+   cal_param_file = None
    hd_datetime, hd_cam, hd_date, hd_y, hd_m, hd_d, hd_h, hd_M, hd_s = convert_filename_to_date_cam(hd_file)
-   cal_param_file = "/mnt/ams2/cal/solved/2019_02_17_09_54_53_000_010004-calparams.json"
-   cal_params = load_json_file(cal_param_file)
-   if cal_param_file is None:
-      cal_param_file = find_best_cal_file(hd_datetime, hd_cam)
+   #cal_param_file = "/mnt/ams2/cal/solved/2019_02_17_09_54_53_000_010004-calparams.json"
+   #cal_params = load_json_file(cal_param_file)
+   #if cal_param_file is None:
+   #   cal_param_file = find_best_cal_file(hd_datetime, hd_cam)
 
    print("HD TRIM REDUCE OBJECT: ", hd_trim)
    el = hd_trim.split("-trim-")

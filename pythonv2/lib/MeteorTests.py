@@ -269,7 +269,7 @@ def meteor_test_direction(object):
    avg_avl = np.mean(avl_segs)
    std_d = std_dev(avl_segs)
    tpass = 0
-   vdiff = avg_avl * .2
+   vdiff = avg_avl * .35
    for avl in avl_segs:
       if avg_avl - vdiff <= avl <= avg_avl + vdiff:
          tpass = tpass + 1
