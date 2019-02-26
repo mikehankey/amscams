@@ -31,7 +31,8 @@ def find_matching_cal_files(cam_id):
          el = file.split("/")
          fn = el[-1]
          cal_p_file = file  + "/" + fn + "-stacked-calparams.json"
-         match.append(cal_p_file)
+         if cfe(cal_p_file) == 1:
+            match.append(cal_p_file)
    return(sorted(match,reverse=True))
 
 
@@ -755,7 +756,6 @@ def show_cat_stars(json_conf,form):
    #else:
    #   user_star_file = hd_stack_file.replace("-stacked.png", "-user-stars.json")
    #   user_stars = load_json_file(user_star_file)
-
    cal_params = load_json_file(cal_params_file)
    cal_params = default_cal_params(cal_params,json_conf)
    if child == 1:
