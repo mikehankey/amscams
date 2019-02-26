@@ -6,7 +6,7 @@ import cv2
 import math
 import numpy as np
 import scipy.optimize
-import matplotlib.pyplot as plt
+#import matplotlib.pyplot as plt
 import sys
 #from caliblib import distort_xy,
 from lib.CalibLib import distort_xy_new, find_image_stars, distort_xy_new, XYtoRADec
@@ -79,8 +79,8 @@ def minimize_poly_params_fwd(cal_params_file, cal_params,json_conf,show=0):
    
    fit_img_file = cal_params_file.replace("cal_params.json", ".png")
    fit_img = cv2.imread(fit_img_file)
-   if show == 1:
-      cv2.namedWindow('pepe')
+   #if show == 1:
+   #   cv2.namedWindow('pepe')
    x_poly_fwd = cal_params['x_poly_fwd'] 
    y_poly_fwd = cal_params['y_poly_fwd'] 
    x_poly = cal_params['x_poly'] 

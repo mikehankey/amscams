@@ -760,13 +760,17 @@ def show_cat_stars(json_conf,form):
    cal_params = default_cal_params(cal_params,json_conf)
    if child == 1:
       #update center/ra dec
-      center_az = cal_params['center_az']
-      center_el = cal_params['center_el']
+      if "center_az" in cal_params:
+         center_az = cal_params['center_az']
+         center_el = cal_params['center_el']
 
-      rah,dech = AzEltoRADec(center_az,center_el,hd_stack_file,cal_params,json_conf)
-      rah = str(rah).replace(":", " ")
-      dech = str(dech).replace(":", " ")
-      ra_center,dec_center = HMS2deg(str(rah),str(dech))
+         rah,dech = AzEltoRADec(center_az,center_el,hd_stack_file,cal_params,json_conf)
+         rah = str(rah).replace(":", " ")
+         dech = str(dech).replace(":", " ")
+         ra_center,dec_center = HMS2deg(str(rah),str(dech))
+      else:
+         ra_center = cal_params['ra_center']
+         dec_center = cal_params['dec_center']
       #print("RA/DEC ADJ:", ra_center, dec_center, "<HR>")
       #print("RA/DEC ORIG:", cal_params['ra_center'], cal_params['dec_center'], "<HR>")
       #print("CENTER AZ/EL:", center_az, center_el, "<HR>")
