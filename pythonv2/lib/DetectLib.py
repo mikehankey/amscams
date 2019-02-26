@@ -184,7 +184,7 @@ def check_for_motion2(frames, video_file, cams_id, json_conf, show = 0):
       if len(objects) > 50:
          return([])
       frame = orig_frame.copy()
-      #frame = mask_frame(frame, masked_pixels, masks)
+      frame = mask_frame(frame, masked_pixels, masks)
       frame = adjustLevels(frame, 10,1,255)
       frame = cv2.convertScaleAbs(frame)
 

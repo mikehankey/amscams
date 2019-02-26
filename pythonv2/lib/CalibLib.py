@@ -1042,7 +1042,6 @@ def get_catalog_stars(fov_poly, pos_poly, cal_params,dimension,x_poly,y_poly,min
    RA_center = float(cal_params['ra_center']) + (1000*fov_poly[0])
    dec_center = float(cal_params['dec_center']) + (1000*fov_poly[1])
    F_scale = 3600/float(cal_params['pixscale'])
-
    fov_w = img_w / F_scale
    fov_h = img_h / F_scale
    fov_radius = np.sqrt((fov_w/2)**2 + (fov_h/2)**2)
@@ -1067,7 +1066,7 @@ def get_catalog_stars(fov_poly, pos_poly, cal_params,dimension,x_poly,y_poly,min
          name = cname
 
       ang_sep = angularSeparation(ra,dec,RA_center,dec_center)
-      if ang_sep < fov_radius-(fov_radius * 0) and float(mag) < 6:
+      if ang_sep < fov_radius+(fov_radius * .2) and float(mag) < 5:
          new_cat_x, new_cat_y = distort_xy_new (0,0,ra,dec,RA_center, dec_center, x_poly, y_poly, x_res, y_res, pos_angle_ref,F_scale)
 
          possible_stars = possible_stars + 1
@@ -1113,6 +1112,7 @@ def find_close_stars(star_point, catalog_stars,dt=25):
    if center_dist > 900:
       dt = 150
 
+
    matches = []
    #print("IMAGE STAR:", scx,scy)
    for name,mag,ra,dec,cat_x,cat_y in catalog_stars:
@@ -1124,12 +1124,13 @@ def find_close_stars(star_point, catalog_stars,dt=25):
 
 
    if len(matches) > 1:
-      matches_sorted = sorted(matches, key=lambda x: x[6], reverse=False)
+      matches_sorted = sorted(matches, key=lambda x: x[8], reverse=False)
       # check angle back to center from cat star and then angle from cat star to img star and pick the one with the closest match for the star...
       #for match in matches_sorted:
-      #   print("MULTI MATCH:", scx,scy, match[0], match[6])
+      #print("MULTI MATCH:", scx,scy, matches)
+     
       matches = matches_sorted
-
+   #print("<HR>")
 
    return(matches[0:1])
 

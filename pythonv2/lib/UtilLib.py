@@ -168,4 +168,22 @@ def bound_cnt(x,y,img_w,img_h):
       mxy = y + sz
    return(mnx,mny,mxx,mxy)
 
+def better_parse_file_date(input_file):
+   el = input_file.split("/")
+   fn = el[-1]
+   ddd = fn.split("_")
+   Y = ddd[0]
+   M = ddd[1]
+   D = ddd[2]
+   H = ddd[3]
+   MM = ddd[4]
+   S = ddd[5]
+   MS = ddd[6]
+   CAM = ddd[7]
+   extra = CAM.split("-")
+   cam_id = extra[0]
+   cam_id = cam_id.replace(".mp4", "")
+   f_date_str = Y + "-" + M + "-" + D + " " + H + ":" + MM + ":" + S
+   f_datetime = datetime.datetime.strptime(f_date_str, "%Y-%m-%d %H:%M:%S")
+   return(f_datetime, cam_id, f_date_str,Y,M,D, H, MM, S)
 

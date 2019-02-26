@@ -44,7 +44,7 @@ def scan_file(video_file, show):
 
    if cfe(video_file) == 0:
       print("Error: Input file does not exist!", video_file)
-      exit()
+      return()
    frames = load_video_frames(video_file, json_conf)
    print("SHOW:", show)
    show = int(show)
@@ -125,7 +125,7 @@ if __name__ == "__main__":
    json_conf = load_json_file("../conf/as6.json") 
    cmd = sys.argv[1]
    running = check_running("detectMeteors")
-   if running > 2 and cmd != 'doHD' and cmd != 'sf':
+   if running > 3 and cmd != 'doHD' and cmd != 'sf':
       print("running ", running)
       exit()
    if len(sys.argv) >=3:

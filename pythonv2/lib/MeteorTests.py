@@ -399,14 +399,14 @@ def meteor_test_fit_line(object):
 
    match_perc = good / len(regression_line)
 
-   if int(oid) == 2:
-      import matplotlib.pyplot as plt
-      from matplotlib import style
-      style.use('ggplot')
+   #if int(oid) == 2:
+      #import matplotlib.pyplot as plt
+      #from matplotlib import style
+      #style.use('ggplot')
 
-      plt.scatter(xs,ys,color='#003F72')
-      plt.plot(xs, regression_line)
-      plt.show()
+      #plt.scatter(xs,ys,color='#003F72')
+      #plt.plot(xs, regression_line)
+      #plt.show()
 
    return(match_perc)
 

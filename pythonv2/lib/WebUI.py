@@ -10,7 +10,7 @@ from lib.DetectLib import check_for_motion2
 from lib.MeteorTests import test_objects
 from lib.ImageLib import mask_frame , draw_stack, stack_frames
 from lib.CalibLib import radec_to_azel
-from lib.WebCalib import calibrate_pic,make_plate_from_points, solve_field, check_solve_status, free_cal, show_cat_stars, choose_file, upscale_2HD
+from lib.WebCalib import calibrate_pic,make_plate_from_points, solve_field, check_solve_status, free_cal, show_cat_stars, choose_file, upscale_2HD, fit_field, delete_cal, add_stars_to_fit_pool, save_add_stars_to_fit_pool
 
 
 
@@ -199,12 +199,20 @@ def controller(json_conf):
    if cmd == 'show_cat_stars':
       show_cat_stars(json_conf,form)
       exit()
+   if cmd == 'fit_field':
+      fit_field(json_conf,form)
+      exit()
+   if cmd == 'delete_cal':
+      delete_cal(json_conf,form)
+      exit()
+   if cmd == 'save_add_stars_to_fit_pool':
+      save_add_stars_to_fit_pool(json_conf,form)
+      exit()
 
 
    print_css()
    jq = do_jquery()
    
-
    nav_html,bot_html = nav_links(json_conf,cmd)
 
    template = get_template(json_conf)
@@ -230,6 +238,8 @@ def controller(json_conf):
       manual_detect(json_conf,form)
    if cmd == 'run_detect':
       run_detect(json_conf,form)
+   if cmd == 'add_stars_to_fit_pool':
+      add_stars_to_fit_pool(json_conf,form)
 
    if cmd == 'video_tools':
       video_tools(json_conf)
@@ -277,6 +287,8 @@ def controller(json_conf):
 
    #bottom = bottom.replace("{JQ}", jq)      
    bottom = bottom.replace("{BOTTOMNAV}", bot_html)      
+   rand=time.time()
+   bottom = bottom.replace("{RAND}", str(rand))
    print(bottom)
    #cam_num = form.getvalue('cam_num')
    #day = form.getvalue('day')
@@ -339,16 +351,9 @@ def calibration(json_conf,form):
    print("<p><a href=webUI.py?cmd=free_cal>Make New Calibration</a></P>")
    print("<p>Or select a previous job to work on</p>")
    cal_files = get_cal_files(json_conf,cams_id)
-   for file in cal_files:
-      el = file.split("/")
-      fn = el[-1]
-      az_grid_file = file.replace(".png", "-azgrid-half.png")
-      print("<figure><a href=webUI.py?cmd=free_cal&input_file=" + file + "><img width=354 src=" + az_grid_file + "><figcaption>"+ fn + "</figcaption></figure>")
-   print("<div style=\"clear: both\"></div>")
-   #cal_params = get_cal_params(json_conf, cams_id)
 
    print("""
-      <div style="float:right">
+      <div style="float: top-right">
       <form>
        <select name=cam_id onchange="javascript:goto(this.options[selectedIndex].value)">
         <option value=>Filter By Cam</option>
@@ -362,6 +367,16 @@ def calibration(json_conf,form):
       </form>
       </div>
       """)
+
+
+   for file in cal_files:
+      el = file.split("/")
+      fn = el[-1]
+      az_grid_file = file.replace(".png", "-azgrid-half.png")
+      print("<figure><a href=webUI.py?cmd=free_cal&input_file=" + file + "><img width=354 src=" + az_grid_file + "><figcaption>"+ fn + "</figcaption></figure>")
+   print("<div style=\"clear: both\"></div>")
+   #cal_params = get_cal_params(json_conf, cams_id)
+
 
 
 
@@ -690,13 +705,20 @@ def reset(video_file, type):
 
 def examine_min(video_file,json_conf):
    print("<h1>Examine One-Minute Clip</h1>")
-   failed_files, meteor_files = get_trims_for_file(video_file)
+   failed_files, meteor_files, pending_files = get_trims_for_file(video_file)
    stack_file = stack_file_from_video(video_file)
   
    print("<a href=" + video_file + ">")
    print("<img src=" + stack_file + "><br>")
    print("<a href=webUI.py?cmd=manual_detect&sd_video_file=" + video_file + ">Manually Detect</a> - ")
-   print("<a href=webUI.py?cmd=choose_file&input_file=" + video_file + ">Calibrate Star Field</a><br>")
+   print("<a href=webUI.py?cmd=choose_file&input_file=" + video_file + ">Calibrate Star Field</a> - ")
+   print("<a href=webUI.py?cmd=add_stars_to_fit_pool&input_file=" + video_file + ">Add Stars To Fit Pool</a> <BR> ")
+
+   if len(pending_files) > 0:
+      print("Trim files for this clip are still pending processing. Please wait before manually processing this file.<BR>")
+      for pending in pending_files:
+         print("<a href=" + pending + ">" + pending + "</A><BR>")
+
    if len(meteor_files) > 0:
       print("<h2>Meteor Detected</h2>")
       for meteor_file in meteor_files:
@@ -774,7 +796,7 @@ def override_detect(video_file,jsid, json_conf):
 def examine(video_file):
    
    print_css()
-   print("<h1>Examine Meteor</h1>")
+   print("<h1>Examine Trim File</h1>")
    el = video_file.split("/")
    fn = el[-1]
    meteor_dir = video_file.replace(fn, "")
@@ -805,12 +827,20 @@ def examine(video_file):
 
    json_data= load_json_file(json_file)
    meteor_info = meteor_info_table(json_data)
+
+   #print(json_data)
+
    print(meteor_info)
+   #print(meteor_info)
    # HD PART OF PAGE
    # SKIP OF NO HD_TRIM EXISTS
 
-   hd_trim = json_data['hd_trim']
-   hd_crop = json_data['hd_crop_file']
+   if "hd_trim" in json_data:
+      hd_trim = json_data['hd_trim']
+      hd_crop = json_data['hd_crop_file']
+   else:
+      hd_trim = None
+      hd_crop = None
    if hd_trim is not None:
       print("<h2>HD Files</h2>")
       if "meteors" not in hd_trim:
@@ -831,13 +861,20 @@ def examine(video_file):
       print("<p>No HD video for this meteor.</p>")   
 
    print("<h2>SD Objects</h2>")   
+   if "sd_objects" in json_data:
+      sd_objects = json_data['sd_objects']
+   else:
+      sd_objects = json_data
+   #print(json_data)
+
    print("<a href=javascript:show_hide_div('object_details')>")
-   print("{:d} Object Detections</a> <BR>".format(len(json_data['sd_objects'])))
+   print("{:d} Object Detections</a> <BR>".format(len(sd_objects)))
 
    meteor_output = "<div style='display:none;' id='object_details'" + ">Meteor Tests<BR>"
    non_meteor_output = ""
    stab,sr,sc,et,er,ec = div_table_vars()
-   for key in json_data['sd_objects']:
+
+   for key in sd_objects:
       if key['meteor'] == 1:
          meteor_output = meteor_output + "<HR>Object ID: {:d}<BR>".format(key['oid'])
          meteor_output = meteor_output + "Meteor Y/N:    {:d}<BR>".format(key['meteor'])
@@ -860,24 +897,52 @@ def examine(video_file):
             fn, x,y,w,h,bx,by = hist
             meteor_output = meteor_output + sr + sc + str(fn) + ec + sc + str(x) + ec + sc + str(y) + ec + sc + str(w) + ec + sc + str(h) + ec + sc + str(bx) + ec + sc + str(by) + ec + er
             #meteor_output = meteor_output + "{:s} <BR>".format(str(hist))
-         meteor_output = meteor_output + et + "</div>\n\n"
+         meteor_output = meteor_output + et + "</div> \n\n"
       else:
          non_meteor_output = non_meteor_output + "<HR>Object ID: {:d}<BR>".format(key['oid'])
          non_meteor_output = non_meteor_output + "Meteor Y/N:    {:d}<BR>".format(key['meteor'])
          non_meteor_output = non_meteor_output + "<a href=javascript:show_hide_div('obj" + str(key['oid']) + "')>Show/Hide Details</a>"
          non_meteor_output = non_meteor_output + "<div style='display:none;' id=obj" + str(key['oid']) + "> NON Meteor Object <BR>"
+
+         non_meteor_output = non_meteor_output + stab 
          for test in key['test_results']:
             tname, status, desc = test
-            non_meteor_output = non_meteor_output + "{:s} {:f} {:s}<BR>".format(tname,status,str(desc))
+            non_meteor_output = non_meteor_output + sr + sc + tname + ec + sc + str(status) + ec + sc + str(desc) + ec + er
+            #non_meteor_output = non_meteor_output + "{:s} {:f} {:s}<BR>".format(tname,status,str(desc))
+
+         non_meteor_output = non_meteor_output + et
+         non_meteor_output = non_meteor_output + "\n<h2>Frame History</h2>\n"
+         non_meteor_output = non_meteor_output + stab 
+         non_meteor_output = non_meteor_output + sr + sc + "FN" + ec + sc + "x" + ec + sc + "y" + ec + sc + "w" + ec + sc + "h" + ec + sc + "bx" + ec + sc + "by" + ec + er
          for hist in key['history']:
-            non_meteor_output = non_meteor_output + "{:s} <BR>".format(str(hist)) 
-         non_meteor_output = non_meteor_output + "</div>"
+            fn, x,y,w,h,bx,by = hist
+            #non_meteor_output = non_meteor_output + "{:s} <BR>".format(str(hist)) 
+            non_meteor_output = non_meteor_output + sr + sc + str(fn) + ec + sc + str(x) + ec + sc + str(y) + ec + sc + str(w) + ec + sc + str(h) + ec + sc + str(bx) + ec + sc + str(by) + ec + er
+         non_meteor_output = non_meteor_output + et + "</div>"
+
    print(meteor_output)
    print(non_meteor_output)
    print("</div>")
    print("<h2>HD Objects</h2>")
 
 def meteor_info_table(json_data):
+
+   if "sd_objects" in json_data:
+      sd_objects = json_data['sd_objects']
+   else:
+      sd_objects = json_data
+
+   for obj in sd_objects:
+      if obj['meteor'] == 1:
+         meteors.append(obj)
+
+   if len(meteors) == 1:
+      meteor = meteors[0]
+
+   hist = meteor['history']
+
+
+
    print("<h2>Meteor Info</h2>")
    start_time = "tesxt"
    stab,sr,sc,et,er,ec = div_table_vars()

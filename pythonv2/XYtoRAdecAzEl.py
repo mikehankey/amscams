@@ -55,13 +55,20 @@ def az_grid(cal_file,cal_params,cal_image,iw,ih,show =0):
    new_x, new_y, img_ra,img_dec, tl_az, tl_el = XYtoRADec(0,0,cal_param_file,cal_params,json_conf)
    print("TOP LEFT:", 0,0,new_x,new_y,img_ra,img_dec,tl_az,tl_el)
 
-
-   start_az = center_az - 80
-   end_az = center_az + 70
-   start_el = 30
-   end_el = 89.8
-   start_az = 0
-   end_az = 355
+   if center_el > 70:
+      start_el = 30
+      end_el = 89.8
+      start_az = 0
+      end_az = 355
+   else:
+      start_az = center_az - 80
+      end_az = center_az + 70
+      start_el = center_el - 30
+      end_el = center_el + 30
+      if start_el < 0:
+         start_el = 0
+      if end_el >= 90:
+         end_el = 89.7
 
    RA_center = float(cal_params['ra_center'])
    dec_center = float(cal_params['dec_center'])
@@ -172,13 +179,17 @@ if cmd == "fp":
 if cmd == 'az_grid':
 
    cal_file = cal_param_file.replace("-calparams.json", ".jpg")
+   cal_file = cal_file.replace("-calparams-master.json", ".jpg")
+   if "master" in cal_file:
+      cal_file = cal_file.replace("-master", "")
+
+   print(cal_file)
    cal_image = cv2.imread(cal_file)
    if len(cal_image.shape) == 3:
       ih,iw,cl = cal_image.shape
    else:
       ih,iw = cal_image.shape
    cal_image = np.zeros((ih,iw),dtype=np.uint8)
-
    az_grid(cal_file,cal_params,cal_image,iw,ih)
    exit()
 

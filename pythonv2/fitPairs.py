@@ -158,7 +158,7 @@ total_res_fwd = 0
 for star in (cal_params['close_stars']):
    (dcname,mag,ra,dec,img_ra,img_dec,match_dist,new_x,new_y,img_az,img_el,new_cat_x,new_cat_y,six,siy, img_res) = star
    img_res_fwd = abs(calc_dist((six,siy),(new_x,new_y)))
-   print(dcname, img_res,img_res,img_res_fwd)
+   #print(dcname, img_res,img_res,img_res_fwd)
    total_res = total_res + img_res
    total_res_fwd = total_res_fwd + img_res_fwd
 
@@ -168,3 +168,8 @@ avg_res_fwd = total_res_fwd/total_stars
 print("Total Residual Error:", total_res, total_res_fwd)
 print("Avg Residual Error:", avg_res, avg_res_fwd)
 minimize_poly_params_fwd(cal_params_file, cal_params,json_conf)
+
+cmd = "./XYtoRAdecAzEl.py az_grid " + cal_params_file + ">/tmp/mike.txt 2>&1"
+print(cmd)
+os.system(cmd)
+

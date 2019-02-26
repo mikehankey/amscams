@@ -10,6 +10,52 @@ function sleep (time) {
          canvas.setBackgroundImage(orig_image, canvas.renderAll.bind(canvas));
       }
 
+      function check_fit_status() {
+         alert("check fit status")
+      }
+
+      function add_to_fit_pool() {
+         ajax_url = "/pycgi/webUI.py?cmd=save_add_stars_to_fit_pool&hd_stack_file=" + hd_stack_file
+         alert(ajax_url)
+         $.get(ajax_url, function(data) {
+            $(".result").html(data);
+            var json_resp = $.parseJSON(data);
+            alert(json_resp['message'])
+         });
+
+      }
+
+      function delete_cal() {
+
+         rusure = confirm("Click ok to delete job or cancel.")
+         if (rusure == true) {
+
+            ajax_url = "/pycgi/webUI.py?cmd=delete_cal&hd_stack_file=" + hd_stack_file
+            alert(ajax_url)
+            $.get(ajax_url, function(data) {
+               $(".result").html(data);
+               var json_resp = $.parseJSON(data);
+               alert(json_resp['debug'])
+            });
+         }
+   
+
+      }
+      function fit_field() {
+         ajax_url = "/pycgi/webUI.py?cmd=fit_field&hd_stack_file=" + hd_stack_file
+         alert(ajax_url)
+         $.get(ajax_url, function(data) {
+            $(".result").html(data);
+            var json_resp = $.parseJSON(data);
+            //alert(json_resp['debug'])
+            sleep(5000).then(() => {
+               //alert("time to wake up!")
+               check_fit_status(0)
+            });
+         });
+
+      }
+
       function send_ajax_solve() {
          ajax_url = "/pycgi/webUI.py?cmd=solve_field&hd_stack_file=" + hd_stack_file
          alert(ajax_url)
@@ -27,8 +73,25 @@ function sleep (time) {
 
 
       function show_cat_stars(stack_file) {
-         ajax_url = "/pycgi/webUI.py?cmd=show_cat_stars&hd_stack_file=" + hd_stack_file
-         //alert(ajax_url)
+         var point_str = ""
+         for (i in user_stars) {
+            point_str = point_str + user_stars[i].toString()  + "|"
+         }
+
+         var point_str = ""
+         var objects = canvas.getObjects('circle')
+         for (let i in objects) {
+            x = objects[i].left
+            y = objects[i].top
+            if (objects[i].get('type') == "circle") {
+            point_str = point_str + x.toString() + "," + y.toString() + "|"
+            }
+         }
+
+         ajax_url = "/pycgi/webUI.py?cmd=show_cat_stars&hd_stack_file=" + hd_stack_file + "&points=" + point_str
+         alert(ajax_url)
+
+         remove_objects() 
          $.get(ajax_url, function(data) {
             $(".result").html(data);
             var json_resp = $.parseJSON(data);
@@ -37,6 +100,23 @@ function sleep (time) {
             sleep(1000).then(() => {
                out_html = "<div class='divTable' style='border: 1px solid #000;' ><div class='divTableBody'>"
                out_html = out_html + " <div class='divTableRow'><div class='divTableCell'>Star</div><div class='divTableCell'>Mag</div><div class='divTableCell'>Cat RA/DEC</div><div class='divTableCell'>Img RA/DEC</div><div class='divTableCell'>Residual (Degrees)</div><div class='divTableCell'>Cat X,Y</div><div class='divTableCell'>Img X,Y,</div><div class='divTableCell'>Corrected Img X,Y,</div><div class='divTableCell'>Residual Pixels</div></div>"
+               var user_stars = json_resp['user_stars'];
+
+               for (let s in user_stars) {
+
+                  cx = user_stars[s][0] - 11
+                  cy = user_stars[s][1] - 11
+
+                  var circle = new fabric.Circle({
+                     radius: 5, fill: 'rgba(0,0,0,0)', strokeWidth: 1, stroke: 'rgba(100,200,200,.5)', left: cx/2, top: cy/2,
+                     selectable: false
+                  });
+                  canvas.add(circle);
+               }
+
+
+
+
                for (let s in cat_stars) {
                  
                  cx = cat_stars[s][11] - 11
@@ -59,6 +139,9 @@ function sleep (time) {
                  out_html = out_html + " <div class='divTableCell'>" + cat_stars[s][13] + "/" + cat_stars[s][14] + "</div>"
                  out_html = out_html + " <div class='divTableCell'>" + cat_stars[s][7] + "/" + cat_stars[s][8] + "</div>"
                  out_html = out_html + " <div class='divTableCell'>" + cat_stars[s][15] + "</div></div>"
+
+
+
   
                  var text_p = new fabric.Text("+", {
                     fontFamily: 'Arial', 
@@ -161,6 +244,37 @@ function sleep (time) {
       function az_grid(az_grid_file) {
             canvas.setBackgroundImage(az_grid_file, canvas.renderAll.bind(canvas));
 
+      }
+
+
+      function add_to_fit(img_url) {
+         var point_str = ""
+         for (i in user_stars) {
+            point_str = point_str + user_stars[i].toString()  + "|"
+         }
+
+         var point_str = ""
+         var objects = canvas.getObjects('circle')
+         for (let i in objects) {
+            x = objects[i].left
+            y = objects[i].top
+            if (objects[i].get('type') == "circle") {
+            point_str = point_str + x.toString() + "," + y.toString() + "|"
+            }
+         }
+
+         ajax_url = "/pycgi/webUI.py?cmd=save_add_stars_to_fit_pool&hd_stack_file=" + hd_stack_file + "&points=" + point_str
+         alert(ajax_url)
+
+
+
+      }
+
+      function remove_objects() {
+         var objects = canvas.getObjects()
+         for (let i in objects) {
+            canvas.remove(objects[i]);
+         }
       }
 
       function make_plate(img_url) {

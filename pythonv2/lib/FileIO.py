@@ -125,9 +125,12 @@ def get_trims_for_file(video_file):
    base_fn = fn.replace(".mp4","")
    fail_dir = base_dir + "/failed/" + base_fn + "*.mp4"
    meteor_dir = base_dir + "/passed/" + base_fn + "*.mp4"
+   pending_dir = base_dir + "/" + base_fn + "-trim*.mp4"
+
    fail_files = glob.glob(fail_dir)
    meteor_files = glob.glob(meteor_dir)  
-   return(fail_files, meteor_files)
+   pending_files = glob.glob(pending_dir)  
+   return(fail_files, meteor_files, pending_files)
 
 def get_day_files(day, cams_id, json_conf):
   

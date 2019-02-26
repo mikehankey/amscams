@@ -174,7 +174,7 @@ def stack_frames(frames,video_file,nowrite=0):
    stacked_image = None
    stacked_file= video_file.replace(".mp4", "-stacked.png")
    if cfe(stacked_file) == 1 and nowrite == 0:
-      print("SKIP - Stack already done.") 
+      #print("SKIP - Stack already done.") 
       stacked_image = cv2.imread(stacked_file,0)
       return(stacked_file,stacked_image)
    for frame in frames:

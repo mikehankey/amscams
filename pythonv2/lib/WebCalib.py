@@ -9,8 +9,220 @@ import os
 from lib.FileIO import get_proc_days, get_day_stats, get_day_files , load_json_file, get_trims_for_file, get_days, save_json_file, cfe
 from lib.VideoLib import get_masks, convert_filename_to_date_cam, find_hd_file_new, load_video_frames
 from lib.ImageLib import mask_frame,stack_frames, adjustLevels, upscale_to_hd
-from lib.CalibLib import radec_to_azel, clean_star_bg, get_catalog_stars, find_close_stars, XYtoRADec
+from lib.CalibLib import radec_to_azel, clean_star_bg, get_catalog_stars, find_close_stars, XYtoRADec, HMS2deg, AzEltoRADec
 from lib.UtilLib import check_running, calc_dist, angularSeparation
+
+def get_active_cal_file(input_file):
+   (f_datetime, cam_id, f_date_str,Y,M,D, H, MM, S) = better_parse_file_date(input_file)
+
+   # find all cal files from his cam for the same night
+   matches = find_matching_cal_files(cam_id)
+  
+   if len(matches) > 0: 
+      return(matches[0])
+   else:
+      return(None)
+
+def find_matching_cal_files(cam_id):
+   match = []
+   all_files = glob.glob("/mnt/ams2/cal/freecal/*")
+   for file in all_files:
+      if cam_id in file :
+         el = file.split("/")
+         fn = el[-1]
+         cal_p_file = file  + "/" + fn + "-stacked-calparams.json"
+         match.append(cal_p_file)
+   return(sorted(match,reverse=True))
+
+
+def save_add_stars_to_fit_pool(json_conf,form):
+   hd_stack_file = form.getvalue("hd_stack_file")
+   half_stack_file = hd_stack_file.replace("-stacked.png", "-half-stack.png")
+   #/mnt/ams2/HD/2019_02_17_09_43_36_000_010002-stacked-calparams.json
+   cal_params_file = hd_stack_file.replace(".png", "-calparams.json")
+   cmd1 = "cp " + hd_stack_file + " /mnt/ams2/cal/fit_pool/"
+   cmd2 = "cp " + half_stack_file + " /mnt/ams2/cal/fit_pool/"
+   cmd3 = "cp " + cal_params_file + " /mnt/ams2/cal/fit_pool/"
+   os.system(cmd1)
+   os.system(cmd2)
+   os.system(cmd3)
+   status = "success" 
+   message = "Stars saved to the fit pool." 
+   message = cmd1 + " " + cmd2 + " " + cmd3
+   debug = ""
+   response = """
+   {
+      "status": """ + "\"" + status + "\"," + """ 
+      "message": """ + "\"" + message + "\"," + """ 
+      "debug": """ + "\"" + debug + "\"" + """ 
+   }
+   """
+   print(response)
+
+def pin_point_stars(image, points):   
+   star_points = []
+   for x,y in points:
+      x,y = int(x),int(y)
+      y1 = y - 15
+      y2 = y + 15
+      x1 = x - 15
+      x2 = x + 15
+      cnt_img = image[y1:y2,x1:x2]
+      ch,cw = cnt_img.shape
+      max_pnt,max_val,min_val = cnt_max_px(cnt_img)
+      mx,my = max_pnt
+      mx = mx - 15
+      my = my - 15
+      x = x + mx
+      y = y + my
+      star_points.append((x,y))
+   return(star_points)
+
+
+def add_stars_to_fit_pool(json_conf,form):
+   input_file = form.getvalue("input_file")
+   cal_params_file = get_active_cal_file(input_file)
+   cal_hd_stack_file = cal_params_file.replace("-calparams.json", ".png")
+   print(cal_params_file, "<BR>")
+   print(cal_hd_stack_file, "<BR>")
+   hd_file, hd_trim,time_diff_sec, dur = find_hd_file_new(input_file, 250, 10, 0)
+   if hd_file is None:
+      print("No HD file found. This feature requires HD files. Try doing this on a more recent day. HD files are kept for 3 days total.") 
+   else:
+      frames = load_video_frames(hd_file, json_conf, 25)
+      hd_stack_file = hd_file.replace(".mp4", "-stacked.png")
+
+      this_cal_params_file = hd_stack_file.replace(".png", "-calparams.json")
+      if cfe(this_cal_params_file) == 1:
+         this_cal_params = load_json_file(this_cal_params_file)
+      else:
+         this_cal_params = []
+
+      tmp_file, stack_img = stack_frames(frames, hd_stack_file, 0)
+      hd_stack_file = tmp_file
+      half_stack_file = tmp_file.replace("-stacked.png", "-half-stack.png")
+      half_stack_img = cv2.resize(stack_img, (0,0),fx=.5, fy=.5)
+      cv2.imwrite(half_stack_file, half_stack_img)
+
+      #print("<img src=" + half_stack_file + ">", half_stack_file)
+
+
+   print("<h1>Add Stars To Fit Pool</h1>")
+   if cfe(cal_params_file) == 1:
+      cal_params = load_json_file(cal_params_file)
+      if "user_stars" in this_cal_params:
+         user_stars = this_cal_params['user_stars']
+      else:
+         user_stars = []
+      extra_js = """
+         <script>
+         """
+      extra_js = extra_js + "var stars = ["
+
+      c = 0
+      for temp in user_stars:
+         sx,sy = temp
+         #sx,sy = int(sx),int(sy)
+         if c > 0:
+            extra_js = extra_js + ","
+         extra_js=extra_js+ "[" + str(sx) + "," +str(sy) +"]"
+         c = c + 1
+      extra_js = extra_js + "]"
+      extra_js = extra_js + """
+         </script>
+   """
+   else:
+      extra_js = "<script>var stars = []</script>"
+
+
+
+   js_html = """
+
+   <script>
+      var my_image = '""" + half_stack_file + """'
+      var hd_stack_file = '""" + hd_stack_file + """'
+      var stars = []
+   </script>
+
+
+   """.format(hd_stack_file)
+   canvas_html = """
+      <p>An HD source file was not found for this time period. No worries, we can still calibrate from an SD image, but first we need to pick the stars so we can upscale the image. Select as many stars as possible from the image below and then click the "Upscale To HD" button.</p>
+      <div style="float:left"><canvas id="c" width="960" height="540" style="border:2px solid #000000;"></canvas></div>
+      <div style="float:left"><div style="position: relative; height: 50px; width: 50px" id="myresult" class="img-zoom-result"> </div></div>
+      <div style="clear: both"></div>
+   """
+
+   canvas_html = canvas_html + """
+      <div id=info_panel>Info: </div>
+      <div id=star_panel>Stars: </div>
+      <div id=action_buttons>
+         <input type=button id="button1" value="Show Catalog Stars" onclick="javascript:show_cat_stars('""" + hd_stack_file + """')">
+         <input type=button id="button1" value="Add Stars To Fit Pool" onclick="javascript:add_to_fit_pool('""" + hd_stack_file + """')">
+      </div>
+      <div id=star_list>star_list: </div>
+       <BR><BR>
+   """
+   #print(stack_file)
+
+   print(canvas_html)
+   print(js_html)
+   print(extra_js)
+
+
+def delete_cal(json_conf, form):
+   hd_stack_file = form.getvalue("hd_stack_file")
+   if cfe(hd_stack_file) == 1 and "-stacked.png" in hd_stack_file:
+      el = hd_stack_file.split("/")
+      job = el[-2]
+      if len(job) < 10:
+         status = "error"
+         debug = "bad file"
+      else:
+         job_dir = "/mnt/ams2/cal/freecal/" + job 
+         cmd = "rm -rf " + job_dir 
+         os.system(cmd)
+         status = "deleted"
+         debug = cmd
+   else:
+      status = "error"
+      debug = "stack file not found"
+   response = """
+   {
+      "status": """ + "\"" + status + "\"," + """ 
+      "debug": """ + "\"" + debug + "\"" + """ 
+   }
+   """
+   print(response)
+
+def fit_field(json_conf, form):
+
+   hd_stack_file = form.getvalue("hd_stack_file")
+   cal_params_file = hd_stack_file.replace(".png", "-calparams.json")
+   status = "" 
+   debug = "" 
+   running = check_running("fitPairs.py")
+   if running == 1:
+      status = "running" 
+   else:
+      # todo/future check if it already ran and give user option to re-run or
+      # cancel. 
+      cmd = "cd /home/ams/amscams/pythonv2/; ./fitPairs.py " + cal_params_file + "> /dev/null & 2>&1" 
+      os.system(cmd)
+      debug = cmd
+      status = "started"
+
+
+
+
+   response = """
+   {
+      "status": """ + "\"" + status + "\"," + """ 
+      "debug": """ + "\"" + debug + "\"" + """ 
+   }
+   """
+   print(response)
+
 
 def check_solve_status(json_conf,form):
    hd_stack_file = form.getvalue("hd_stack_file")
@@ -378,7 +590,9 @@ def free_cal(json_conf,form):
    input_file = form.getvalue("input_file")
    # if no input file is specified ask for one. 
    if input_file is None :
-      print("enter the path and filename to the image or video you want to calibrate:")
+      print("To start the calibration process, goto the <a href=webUI.py>minute-by-minute view</a> for a stary night, click a thumb with nice stars and then click the 'Calibrate Star Field' button.<BR><BR> ")
+
+      print("Or you can enter the path and filename to the image or video you want to calibrate:")
       print("<form>")
       print("<input type=hidden name=cmd value=free_cal>")
       print("<input type=text size=50 name=input_file value=\"\">")
@@ -469,12 +683,13 @@ def free_cal(json_conf,form):
       <div id=info_panel>Info: </div>
       <div id=star_panel>Stars: </div>
       <div id=action_buttons>
-         <input type=button id="button1" value="Show Image" onclick="javascript:show_image('""" + stack_file + """')">
+         <input type=button id="button1" value="Show Image" onclick="javascript:show_image('""" + half_stack_file + """')">
          <input type=button id="button1" value="Make Plate" onclick="javascript:make_plate('""" + stack_file + """')">
          <input type=button id="button1" value="Solve Field" onclick="javascript:solve_field('""" + stack_file + """')">
          <input type=button id="button1" value="Show Catalog Stars" onclick="javascript:show_cat_stars('""" + stack_file + """')">
          <input type=button id="button1" value="Fit Field" onclick="javascript:fit_field('""" + stack_file + """')">
          <input type=button id="button1" value="AZ Grid" onclick="javascript:az_grid('""" + az_grid_blend + """')">
+         <input type=button id="button1" value="Delete Calibration" onclick="javascript:delete_cal('""" + stack_file + """')">
       </div>
       <div id=star_list>star_list: </div>
        <BR><BR>
@@ -513,12 +728,50 @@ def default_cal_params(cal_params,json_conf):
 
 
 def show_cat_stars(json_conf,form):
+   child = 0
    hd_stack_file = form.getvalue("hd_stack_file")
    cal_params_file = hd_stack_file.replace(".png", "-calparams.json")
-   user_star_file = hd_stack_file.replace("-stacked.png", "-user-stars.json")
+   #if cfe(cal_params_file) == 0:
+   if True:
+      child = 1
+      user_stars = {}
+      cal_params_file = get_active_cal_file(hd_stack_file)
+      points = form.getvalue("points")
+      star_points = []
+      temps = points.split("|")
+      for temp in temps:
+         if len(temp) > 0:
+            (x,y) = temp.split(",")
+            x,y = int(float(x)),int(float(y))
+            x,y = int(x)+5,int(y)+5
+            x,y = x*2,y*2
+            star_points.append((x,y))
+      points = star_points
+      hd_stack_img = cv2.imread(hd_stack_file,0)
+      points = pin_point_stars(hd_stack_img, points)
+      user_stars['user_stars'] = points 
+
+
+   #else:
+   #   user_star_file = hd_stack_file.replace("-stacked.png", "-user-stars.json")
+   #   user_stars = load_json_file(user_star_file)
+
    cal_params = load_json_file(cal_params_file)
-   user_stars = load_json_file(user_star_file)
    cal_params = default_cal_params(cal_params,json_conf)
+   if child == 1:
+      #update center/ra dec
+      center_az = cal_params['center_az']
+      center_el = cal_params['center_el']
+
+      rah,dech = AzEltoRADec(center_az,center_el,hd_stack_file,cal_params,json_conf)
+      rah = str(rah).replace(":", " ")
+      dech = str(dech).replace(":", " ")
+      ra_center,dec_center = HMS2deg(str(rah),str(dech))
+      #print("RA/DEC ADJ:", ra_center, dec_center, "<HR>")
+      #print("RA/DEC ORIG:", cal_params['ra_center'], cal_params['dec_center'], "<HR>")
+      #print("CENTER AZ/EL:", center_az, center_el, "<HR>")
+      cal_params['ra_center'] = ra_center
+      cal_params['dec_center'] = dec_center
 
    cat_stars = get_catalog_stars(cal_params['fov_poly'], cal_params['pos_poly'], cal_params,"x",cal_params['x_poly'],cal_params['y_poly'],min=0)
    my_cat_stars = []
@@ -549,7 +802,8 @@ def show_cat_stars(json_conf,form):
    #out = str(cal_params)
    #out = out.replace("'", "\"")
    #out = out.replace("(b", "(")
-   save_json_file(cal_params_file, cal_params) 
+   this_cal_params_file = hd_stack_file.replace(".png", "-calparams.json")
+   save_json_file(this_cal_params_file, cal_params) 
    print(json.dumps(cal_params))
 
 def calibrate_pic(json_conf,form):
