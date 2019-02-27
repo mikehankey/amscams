@@ -31,7 +31,8 @@ def find_matching_cal_files(cam_id):
          el = file.split("/")
          fn = el[-1]
          cal_p_file = file  + "/" + fn + "-stacked-calparams.json"
-         match.append(cal_p_file)
+         if cfe(cal_p_file) == 1:
+            match.append(cal_p_file)
    return(sorted(match,reverse=True))
 
 
