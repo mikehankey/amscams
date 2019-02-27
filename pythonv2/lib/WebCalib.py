@@ -761,34 +761,38 @@ def default_cal_params(cal_params,json_conf):
 def show_cat_stars(json_conf,form):
    child = 0
    hd_stack_file = form.getvalue("hd_stack_file")
-   cal_params_file = hd_stack_file.replace(".png", "-calparams.json")
-   #if cfe(cal_params_file) == 0:
-   if True:
-      child = 1
-      user_stars = {}
-      cal_params_file = get_active_cal_file(hd_stack_file)
-      points = form.getvalue("points")
-      star_points = []
-      temps = points.split("|")
-      for temp in temps:
-         if len(temp) > 0:
-            (x,y) = temp.split(",")
-            x,y = int(float(x)),int(float(y))
-            x,y = int(x)+5,int(y)+5
-            x,y = x*2,y*2
-            star_points.append((x,y))
-      points = star_points
-      hd_stack_img = cv2.imread(hd_stack_file,0)
-      points = pin_point_stars(hd_stack_img, points)
-      user_stars['user_stars'] = points 
+   cal_params_file_orig = hd_stack_file.replace(".png", "-calparams.json")
 
+   user_stars = {}
+   cal_params_file = get_active_cal_file(hd_stack_file)
+   points = form.getvalue("points")
+   star_points = []
+   temps = points.split("|")
+   for temp in temps:
+      if len(temp) > 0:
+         (x,y) = temp.split(",")
+         x,y = int(float(x)),int(float(y))
+         x,y = int(x)+5,int(y)+5
+         x,y = x*2,y*2
+         star_points.append((x,y))
+   points = star_points
+   hd_stack_img = cv2.imread(hd_stack_file,0)
+   points = pin_point_stars(hd_stack_img, points)
+   user_stars['user_stars'] = points 
 
+   if cfe(cal_params_file_orig) == 1:
+      cal_params = load_json_file(cal_params_file_orig)
+   else:
+      cal_params = load_json_file(cal_params_file)
+    
    #else:
    #   user_star_file = hd_stack_file.replace("-stacked.png", "-user-stars.json")
    #   user_stars = load_json_file(user_star_file)
    solved_file = cal_params_file.replace("-calparams.json", ".solved")
-   cal_params = load_json_file(cal_params_file)
+   #cal_params = load_json_file(cal_params_file)
    cal_params = default_cal_params(cal_params,json_conf)
+   
+ 
    if child == 1:
       #update center/ra dec
       if "center_az" in cal_params and cfe(solved_file) == 0:

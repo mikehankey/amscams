@@ -23,7 +23,7 @@ function sleep (time) {
 
       function add_to_fit_pool() {
          ajax_url = "/pycgi/webUI.py?cmd=save_add_stars_to_fit_pool&hd_stack_file=" + hd_stack_file
-         alert(ajax_url)
+         //alert(ajax_url)
          $.get(ajax_url, function(data) {
             $(".result").html(data);
             var json_resp = $.parseJSON(data);
@@ -38,11 +38,12 @@ function sleep (time) {
          if (rusure == true) {
 
             ajax_url = "/pycgi/webUI.py?cmd=delete_cal&hd_stack_file=" + hd_stack_file
-            alert(ajax_url)
+            //alert(ajax_url)
             $.get(ajax_url, function(data) {
                $(".result").html(data);
                var json_resp = $.parseJSON(data);
-               alert(json_resp['debug'])
+               alert("job files deleted")
+               //alert(json_resp['debug'])
             });
          }
    
@@ -50,7 +51,6 @@ function sleep (time) {
       }
       function fit_field() {
          ajax_url = "/pycgi/webUI.py?cmd=fit_field&hd_stack_file=" + hd_stack_file
-         alert(ajax_url)
          $.get(ajax_url, function(data) {
             $(".result").html(data);
             var json_resp = $.parseJSON(data);
@@ -66,13 +66,10 @@ function sleep (time) {
 
       function send_ajax_solve() {
          ajax_url = "/pycgi/webUI.py?cmd=solve_field&hd_stack_file=" + hd_stack_file
-         alert(ajax_url)
          $.get(ajax_url, function(data) {
             $(".result").html(data);
             var json_resp = $.parseJSON(data);
-            //alert(json_resp['debug'])
             sleep(5000).then(() => {
-               //alert("time to wake up!")
                check_solve_status(0)
             });
          });
@@ -97,7 +94,6 @@ function sleep (time) {
          }
 
          ajax_url = "/pycgi/webUI.py?cmd=show_cat_stars&hd_stack_file=" + hd_stack_file + "&points=" + point_str
-         alert(ajax_url)
 
          remove_objects() 
          $.get(ajax_url, function(data) {
@@ -134,8 +130,6 @@ function sleep (time) {
 
                  name = cat_stars[s][0]
                  if (cnt < 5) {
-                    //alert(cx)
-                    //alert(cy)
                  }
                 //((dcname,mag,ra,dec,img_ra,img_dec,match_dist,new_x,new_y,img_az,img_el,new_cat_x,new_cat_y,six,siy,cat_dist))
 
@@ -191,14 +185,12 @@ function sleep (time) {
 
       function check_solve_status(then_run) {
          ajax_url = "/pycgi/webUI.py?cmd=check_solve_status&hd_stack_file=" + hd_stack_file
-         alert(ajax_url)
          waiting = true
          $.get(ajax_url, function(data) {
             $(".result").html(data);
             var json_resp = $.parseJSON(data);
             waiting = false
 
-            //alert(json_resp['debug'])
             document.getElementById('star_panel').innerHTML = json_resp['status']
 
             if (json_resp['status'] == 'new' && then_run == 1) {
@@ -218,7 +210,6 @@ function sleep (time) {
                document.getElementById('star_panel').innerHTML = "Plate solve is running..."
 
                sleep(5000).then(() => {
-                  //alert("time to wake up!")
                   check_fit_status(json_resp)
                });
 
@@ -227,15 +218,16 @@ function sleep (time) {
                alert("Astrometry.net successfully solved the plate.")
                document.getElementById('star_panel').innerHTML = "Astrometry.net successfully solved the plate."
 
-               grid_img = json_resp['grid_file']
-               canvas.setBackgroundImage(grid_img, canvas.renderAll.bind(canvas));
+               sleep(1000).then(() => {
+                  grid_img = json_resp['grid_file'];
+                  canvas.setBackgroundImage(grid_img, canvas.renderAll.bind(canvas));
+               });
             }
             if (json_resp['status'] == 'success' && then_run == 1) {
                grid_img = json_resp['grid_file']
                alert("Astrometry.net successfully solved the plate.")
                document.getElementById('star_panel').innerHTML = "Astrometry.net successfully solved the plate."
                canvas.setBackgroundImage(grid_img, canvas.renderAll.bind(canvas));
-               //alert("GRID IMAGE:" + grid_img)
                //alert(json_resp['debug'])
             }
             if (json_resp['status'] == 'failed' && then_run == 0) {
@@ -329,7 +321,6 @@ function sleep (time) {
          }
 
          ajax_url = "/pycgi/webUI.py?cmd=make_plate_from_points&hd_stack_file=" + hd_stack_file + "&points=" + point_str
-         alert(ajax_url)
 
          $.get(ajax_url, function(data) {
             $(".result").html(data);
