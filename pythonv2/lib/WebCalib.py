@@ -154,7 +154,10 @@ def add_stars_to_fit_pool(json_conf,form):
    """
 
    canvas_html = canvas_html + """
-      <div id=info_panel>Info: </div>
+      <div style="float:left" id=info_panel>Info: </div>
+
+      <div style="clear: both"></div>
+
       <div id=star_panel>Stars: </div>
       <div id=action_buttons>
          <input type=button id="button1" value="Show Catalog Stars" onclick="javascript:show_cat_stars('""" + hd_stack_file + """')">
@@ -199,18 +202,31 @@ def fit_field(json_conf, form):
 
    hd_stack_file = form.getvalue("hd_stack_file")
    cal_params_file = hd_stack_file.replace(".png", "-calparams.json")
+   cal_params = load_json_file(cal_params_file)
+
    status = "" 
    debug = "" 
+
+   if "x_fun" in cal_params:
+      status = "done"
+      x_fun = cal_params['x_fun']
+      y_fun = cal_params['y_fun']
+      x_fun_fwd = cal_params['x_fun_fwd']
+      y_fun_fwd = cal_params['y_fun_fwd']
    running = check_running("fitPairs.py")
    if running == 1:
       status = "running" 
-   else:
+      message = "Fit process is running"
+   elif status ==  "done":
+      message = "The fit proceedure has completed with residual error of {:f}/{:f} x/y pixels and {:f}/{:f} x/y degrees".format(x_fun,y_fun,x_fun_fwd,y_fun_fwd);
       # todo/future check if it already ran and give user option to re-run or
       # cancel. 
+   else:
       cmd = "cd /home/ams/amscams/pythonv2/; ./fitPairs.py " + cal_params_file + "> /dev/null & 2>&1" 
       os.system(cmd)
       debug = cmd
       status = "started"
+      message = "Fit process started"
 
 
 
@@ -218,7 +234,8 @@ def fit_field(json_conf, form):
    response = """
    {
       "status": """ + "\"" + status + "\"," + """ 
-      "debug": """ + "\"" + debug + "\"" + """ 
+      "debug": """ + "\"" + debug + "\"," + """ 
+      "message": """ + "\"" + message+ "\"" + """ 
    }
    """
    print(response)
@@ -233,16 +250,24 @@ def check_solve_status(json_conf,form):
       debug = debug + "case=1;"
       solved_file = hd_stack_file.replace(".png", ".solved")
       grid_file = solved_file.replace(".solved", "-grid.png")
+      obj_file = solved_file.replace(".solved", "-objs.png")
+
    
    #solved_file = grid_file
+
+ 
 
    #print(solved_file)
    running = check_running("solve-field")
    status = ""
+   if cfe(obj_file) == 0:
+      status = "new"
    if running > 0:
       status = "running"
    elif running == 0 and cfe(solved_file) == 1:
       status = "success" 
+   elif running == 0 and cfe(obj_file) == 0:
+      status = "new"
    elif running == 0 and cfe(solved_file) == 0:
       status = "failed"
    #status = solved_file 
@@ -675,14 +700,14 @@ def free_cal(json_conf,form):
    """.format(stack_file)
    canvas_html = """
       <div style="float:left"><canvas id="c" width="960" height="540" style="border:2px solid #000000;"></canvas></div>
-      <div style="float:left"><div style="position: relative; height: 50px; width: 50px" id="myresult" class="img-zoom-result"> </div></div>
       <div style="clear: both"></div>
    """
 
    canvas_html = canvas_html + """
-      <div id=info_panel>Info: </div>
-      <div id=star_panel>Stars: </div>
-      <div id=action_buttons>
+      <div>
+      <div style="float:left; border: 1px #000000 solid;"><div style="position: relative; height: 50px; width: 50px; " id="myresult" class="img-zoom-result"> </div> </div>
+
+      <div style="float:left; padding: 10px;" id=action_buttons>
          <input type=button id="button1" value="Show Image" onclick="javascript:show_image('""" + half_stack_file + """')">
          <input type=button id="button1" value="Make Plate" onclick="javascript:make_plate('""" + stack_file + """')">
          <input type=button id="button1" value="Solve Field" onclick="javascript:solve_field('""" + stack_file + """')">
@@ -691,6 +716,11 @@ def free_cal(json_conf,form):
          <input type=button id="button1" value="AZ Grid" onclick="javascript:az_grid('""" + az_grid_blend + """')">
          <input type=button id="button1" value="Delete Calibration" onclick="javascript:delete_cal('""" + stack_file + """')">
       </div>
+      <div style="clear: both"></div>
+      </div>
+      <div style="float:left" id=info_panel>Info: </div>
+      <div style="clear: both"></div>
+      <div id=star_panel> Stars: </div>
       <div id=star_list>star_list: </div>
        <BR><BR>
    """
@@ -755,12 +785,12 @@ def show_cat_stars(json_conf,form):
    #else:
    #   user_star_file = hd_stack_file.replace("-stacked.png", "-user-stars.json")
    #   user_stars = load_json_file(user_star_file)
-
+   solved_file = cal_params_file.replace("-calparams.json", ".solved")
    cal_params = load_json_file(cal_params_file)
    cal_params = default_cal_params(cal_params,json_conf)
    if child == 1:
       #update center/ra dec
-      if "center_az" in cal_params:
+      if "center_az" in cal_params and cfe(solved_file) == 0:
          center_az = cal_params['center_az']
          center_el = cal_params['center_el']
 

@@ -10,8 +10,15 @@ function sleep (time) {
          canvas.setBackgroundImage(orig_image, canvas.renderAll.bind(canvas));
       }
 
-      function check_fit_status() {
-         alert("check fit status")
+      function check_fit_status(json_resp) {
+         if (json_resp['status'] == 'done') {
+
+         }
+         else {
+            alert(json_resp['message'])
+         }
+     
+
       }
 
       function add_to_fit_pool() {
@@ -47,10 +54,11 @@ function sleep (time) {
          $.get(ajax_url, function(data) {
             $(".result").html(data);
             var json_resp = $.parseJSON(data);
-            //alert(json_resp['debug'])
+            alert(json_resp['message'])
+            document.getElementById('star_panel').innerHTML = json_resp['message']
             sleep(5000).then(() => {
                //alert("time to wake up!")
-               check_fit_status(0)
+               check_fit_status(json_resp)
             });
          });
 
@@ -183,29 +191,56 @@ function sleep (time) {
 
       function check_solve_status(then_run) {
          ajax_url = "/pycgi/webUI.py?cmd=check_solve_status&hd_stack_file=" + hd_stack_file
-         //alert(ajax_url)
+         alert(ajax_url)
          waiting = true
          $.get(ajax_url, function(data) {
             $(".result").html(data);
             var json_resp = $.parseJSON(data);
             waiting = false
+
             //alert(json_resp['debug'])
+            document.getElementById('star_panel').innerHTML = json_resp['status']
+
+            if (json_resp['status'] == 'new' && then_run == 1) {
+               rusure = confirm("Click OK to run Astrometry.net plate solve on selected stars.")
+               if (rusure == true) { 
+                  send_ajax_solve()
+               }
+            }
+
             if (json_resp['status'] == 'failed' && then_run == 1) {
-               send_ajax_solve()
+               rusure = confirm("This job already ran and failed. Click OK to re-run.")
+               if (rusure == true) { 
+                  send_ajax_solve()
+               }
             }
             if (json_resp['status'] == 'running' && then_run == 0) {
-               alert("still running")
+               document.getElementById('star_panel').innerHTML = "Plate solve is running..."
+
+               sleep(5000).then(() => {
+                  //alert("time to wake up!")
+                  check_fit_status(json_resp)
+               });
+
             }
             if (json_resp['status'] == 'success' && then_run == 0) {
-               alert("solved")
+               alert("Astrometry.net successfully solved the plate.")
+               document.getElementById('star_panel').innerHTML = "Astrometry.net successfully solved the plate."
+
+               grid_img = json_resp['grid_file']
+               canvas.setBackgroundImage(grid_img, canvas.renderAll.bind(canvas));
             }
             if (json_resp['status'] == 'success' && then_run == 1) {
                grid_img = json_resp['grid_file']
+               alert("Astrometry.net successfully solved the plate.")
+               document.getElementById('star_panel').innerHTML = "Astrometry.net successfully solved the plate."
                canvas.setBackgroundImage(grid_img, canvas.renderAll.bind(canvas));
                //alert("GRID IMAGE:" + grid_img)
                //alert(json_resp['debug'])
             }
             if (json_resp['status'] == 'failed' && then_run == 0) {
+               alert("Astrometry.net failed to solved the plate.")
+               document.getElementById('star_panel').innerHTML = "Astrometry.net failed to solved the plate."
                //alert(json_resp['solved_file'])
                alert("failed")
             }
@@ -305,7 +340,6 @@ function sleep (time) {
             document.getElementById('c').height=540
             document.getElementById('c').style.width=960
             document.getElementById('c').style.height=540
-            alert(document.getElementById('c').width)
             new_img.height=960
             new_img.width=540
             var stars = json_resp['stars'];
