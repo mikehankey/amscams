@@ -791,8 +791,12 @@ def show_cat_stars(json_conf,form):
    solved_file = cal_params_file.replace("-calparams.json", ".solved")
    #cal_params = load_json_file(cal_params_file)
    cal_params = default_cal_params(cal_params,json_conf)
-   
- 
+
+   if 'parent' in cal_params:
+      child = 1
+   else:
+      child = 0 
+
    if child == 1:
       #update center/ra dec
       if "center_az" in cal_params and cfe(solved_file) == 0:
@@ -842,6 +846,7 @@ def show_cat_stars(json_conf,form):
    #out = out.replace("'", "\"")
    #out = out.replace("(b", "(")
    this_cal_params_file = hd_stack_file.replace(".png", "-calparams.json")
+   cal_params['parent_cal'] = cal_params_file
    save_json_file(this_cal_params_file, cal_params) 
    print(json.dumps(cal_params))
 
