@@ -17,7 +17,7 @@ var user_stars = []
             } 
 
 
-canvas.setBackgroundImage(my_image, canvas.renderAll.bind(canvas));
+//canvas.setBackgroundImage(my_image, canvas.renderAll.bind(canvas));
 
 canvas.on('mouse:move', function(e) {
    var pointer = canvas.getPointer(event.e);

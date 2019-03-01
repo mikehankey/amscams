@@ -373,7 +373,6 @@ def meteor_test_fit_line(object):
    min_x = min(xs)
    min_y = min(ys)
    line_dist = calc_dist((min_x,min_y),(max_x,max_y))
-   print("LINE:", line_dist)
    safe_dist = line_dist / 2
 
    if safe_dist < 5:

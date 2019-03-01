@@ -1,4 +1,5 @@
 import datetime
+import time
 import json
 import numpy as np
 import cv2
@@ -8,23 +9,287 @@ import glob
 import os
 from lib.FileIO import get_proc_days, get_day_stats, get_day_files , load_json_file, get_trims_for_file, get_days, save_json_file, cfe
 from lib.VideoLib import get_masks, convert_filename_to_date_cam, find_hd_file_new, load_video_frames
+from lib.DetectLib import check_for_motion2, eval_cnt
+from lib.MeteorTests import test_objects
 from lib.ImageLib import mask_frame,stack_frames, adjustLevels, upscale_to_hd
 from lib.CalibLib import radec_to_azel, clean_star_bg, get_catalog_stars, find_close_stars, XYtoRADec, HMS2deg, AzEltoRADec
 from lib.UtilLib import check_running, calc_dist, angularSeparation
+
+
+def check_make_half_stack(sd_file,hd_file):
+   half_stack_file = sd_file.replace("-stacked", "-half-stack")
+   if cfe(half_stack_file) == 0:
+      if cfe(hd_file) == 1:
+         img = cv2.imread(hd_file)
+         img = cv2.resize(img, (0,0),fx=.5, fy=.5)
+      else:
+         img = cv2.imread(sd_file)
+         img = cv2.resize(img, (960,540))
+      cv2.imwrite(half_stack_file, img)
+  
+def make_cal_select(cal_files) :
+   cal_select = "<SELECT style=\"margin: 5px; padding: 5px\" NAME=cal_param_file>"
+   for cal_file, cal_desc, cal_time_diff in cal_files:
+      dif_days = cal_time_diff / 86400
+      cal_select = cal_select + "<option value=" + cal_file + ">" + cal_desc + "(" + str(dif_days)[0:4] + " days diff)</option>" 
+   cal_select = cal_select + "</SELECT>"
+   return(cal_select)
+
+def reduce_meteor_ajax(json_conf,form):
+   hdm_x = 2.7272727272727272
+   hdm_y = 1.875
+   meteor_json_file = form.getvalue("meteor_json_file")
+   mj = load_json_file(meteor_json_file)
+   cal_params_file = form.getvalue("cal_params_file")
+   cal_params = load_json_file(cal_params_file) 
+   (f_datetime, cam_id, f_date_str,Y,M,D, H, MM, S) = better_parse_file_date(meteor_json_file)
+
+   start_clip_time_str = str(f_datetime)
+
+   el = mj['sd_video_file'].split("-trim")
+   min_file = el[0] + ".mp4"
+   ttt = el[1].split(".")
+   trim_num = int(ttt[0])
+   extra_sec = trim_num / 25
+   start_trim_frame_time = f_datetime + datetime.timedelta(0,extra_sec)
+
+   #print(meteor_json_file)
+   meteor_json = load_json_file(meteor_json_file)
+   sd_video_file = meteor_json['sd_video_file']
+   frames = load_video_frames(sd_video_file,json_conf,0)
+   objects = {}
+   objects = check_for_motion2(frames, sd_video_file,cam_id, json_conf,0)
+   if len(objects) > 0:
+      objects,meteor_found = test_objects(objects,frames)
+   else:
+      objects = []
+      meteor_found = 0
+
+   meteor_obj = get_meteor_object(objects)
+   sd_stack_file = sd_video_file.replace(".mp4", "-stacked.png")
+   reduce_img = cv2.imread(sd_stack_file)
+
+   reduce_img  = cv2.resize(reduce_img, (int(1920/2),int(1080/2)))
+   reduce_img_file = sd_stack_file.replace("-stacked.png", "-reduced.png")
+   fx = meteor_obj['history'][0][1]
+   fy = meteor_obj['history'][0][2]
+   fc = 0
+   last_dist = 0 
+   meteor_frame_data = []
+   for fn,x,y,w,h,mx,my in meteor_obj['history']:
+      #cv2.rectangle(reduce_img, (x, y), (x+ w, y+w), (128, 128, 128), 1)
+      dist_from_first = calc_dist((fx,fy),(x+mx,y+my))
+      if dist_from_first > last_dist or fc == 0: 
+         x2 = x + w
+         y2 = y + h
+         cnt_img = frames[fn][y:y2,x:x2]
+         max_px, avg_px, px_diff,max_loc = eval_cnt(cnt_img)
+ 
+         extra_meteor_sec = fn / 25
+         meteor_frame_time = start_trim_frame_time + datetime.timedelta(0,extra_meteor_sec)
+         meteor_frame_time_str = meteor_frame_time.strftime('%Y-%m-%d %H:%M:%S.%f')[:-3]
+         x = x + mx
+         y = y + my
+         hd_x = int((x) * hdm_x)
+         hd_y = int((y) * hdm_y)
+         half_hd_x = int(hd_x / 2)
+         half_hd_y = int(hd_y / 2)
+         new_x, new_y, ra ,dec , az, el= XYtoRADec(hd_x,hd_y,cal_params_file,cal_params,json_conf)
+         cv2.circle(reduce_img, (half_hd_x,half_hd_y), int(w/2.5), (255,128,128), 1)
+         meteor_frame_data.append((meteor_frame_time_str,int(x),int(y),int(w),int(h),int(max_px),float(ra),float(dec),float(az),float(el)))
+ 
+         tdesc = str(fc) + " - " + str(az)[0:6] + "/" + str(el)[0:5]
+         cv2.putText(reduce_img, str(tdesc),  (int(half_hd_x) + 16,int(half_hd_y)), cv2.FONT_HERSHEY_SIMPLEX, .3, (255, 255, 255), 1) 
+         fc = fc + 1
+      last_dist = dist_from_first
+      
+   cv2.imwrite(reduce_img_file, reduce_img)
+   rand = time.time()
+   #print("<img src=" + reduce_img_file + "?" + str(time)+ ">")
+
+   response = {}
+   response['status'] = 1
+   response['message'] = "reduce complete"
+   response['debug'] = "none"
+   response['sd_meteor_frame_data'] = meteor_frame_data
+   response['reduce_img_file'] = reduce_img_file
+   #print(response)
+
+   #save_json_file(this_cal_params_file, cal_params) 
+   print(json.dumps(response))
+  
+def get_meteor_object(meteor_json):
+   if 'sd_objects' in meteor_json:
+      objects = meteor_json['sd_objects']
+   else:
+      objects = meteor_json
+
+   for object in objects:
+      if object['meteor'] == 1:
+         return(object)
+   return(None) 
+
+def reduce_meteor(json_conf,form):
+
+
+
+   hdm_x = 2.7272727272727272
+   hdm_y = 1.875
+   video_file = form.getvalue("video_file")
+   meteor_json_file = video_file.replace(".mp4", ".json") 
+   mj = load_json_file(meteor_json_file)
+   #print(mj)
+   #exit()
+   meteor_obj = get_meteor_object(mj)
+   #print(meteor_obj)
+   if "/mnt/ams2/meteors" not in mj['sd_video_file']:
+      el = mj['sd_video_file'].split("/")
+      sd_fn = el[-1]
+      day_dir = el[-3]
+      mj['sd_video_file'] = mj['sd_video_file'].replace("/mnt/ams2/SD/proc2", "/mnt/ams2/meteors")
+      mj['sd_video_file'] = mj['sd_video_file'].replace("/passed", "")
+      mj['hd_file'] = mj['hd_file'].replace("/mnt/ams2/HD", "/mnt/ams2/meteors/" + day_dir)
+      mj['hd_trim'] = mj['hd_trim'].replace("/mnt/ams2/HD", "/mnt/ams2/meteors/" + day_dir)
+      mj['hd_crop_file'] = mj['hd_crop_file'].replace("/mnt/ams2/HD", "/mnt/ams2/meteors/" + day_dir)
+      mj['hd_crop_file_stack'] = mj['hd_crop_file'].replace(".mp4", "-stacked.png")
+      mj['hd_trim_stack'] = mj['hd_trim'].replace(".mp4", "-stacked.png")
+      mj['sd_stack'] = mj['sd_video_file'].replace(".mp4", "-stacked.png")
+      mj['half_stack'] = mj['sd_stack'].replace("-stacked.png", "-half-stack.png")
+   sd_video_file = mj['sd_video_file']
+   check_make_half_stack(mj['sd_stack'], mj['hd_trim_stack'])
+   half_stack_file = mj['half_stack']
+   hd_stack_file = mj['hd_trim_stack']
+   meteor_start_frame = meteor_obj['history'][0][0]
+   meteor_end_frame = meteor_obj['history'][-1][0]
+   elp_frames = meteor_end_frame - meteor_start_frame
+   elp_dur = elp_frames / 25
+   (f_datetime, cam_id, f_date_str,Y,M,D, H, MM, S) = better_parse_file_date(meteor_json_file)
+   start_clip_time_str = str(f_datetime)
+   el = sd_video_file.split("-trim")
+   min_file = el[0] + ".mp4"
+   ttt = el[1].split(".")
+   trim_num = int(ttt[0])
+   extra_sec = trim_num / 25 
+   start_trim_frame_time = f_datetime + datetime.timedelta(0,extra_sec)
+
+   extra_meteor_sec = meteor_start_frame / 25
+   start_meteor_frame_time = start_trim_frame_time + datetime.timedelta(0,extra_meteor_sec)
+   start_meteor_frame_time_str = start_meteor_frame_time.strftime('%Y-%m-%d %H:%M:%S.%f')[:-3]
+   
+   start_x = int((meteor_obj['history'][0][1] + (meteor_obj['history'][0][3])/2) * hdm_x)/2
+   start_y = int((meteor_obj['history'][0][2] + (meteor_obj['history'][0][4])/2) * hdm_y)/2
+
+   end_x = int((meteor_obj['history'][-1][1] + (meteor_obj['history'][-1][3])/2) * hdm_x)/2
+   end_y = int((meteor_obj['history'][-1][2] + (meteor_obj['history'][-1][4])/2) * hdm_y)/2
+
+
+
+
+   if "cal_params_file" not in mj:
+
+      cal_files = get_active_cal_file(hd_stack_file)
+      cal_params_file = cal_files[0][0]
+      cal_select = make_cal_select(cal_files)
+
+      mj['cal_params_file']  = cal_params_file
+      az_grid_file = cal_params_file.replace("-calparams.json", "-azgrid-half.png")
+   else:
+      cal_params_file = mj['cal_params_file'] 
+      az_grid_file = cal_params_file.replace("-calparams.json", "-azgrid-half.png")
+   cal_params = load_json_file(cal_params_file)
+   new_x, new_y, start_ra ,start_dec , start_az, start_el= XYtoRADec(start_x*2,start_y*2,cal_params_file,cal_params,json_conf)
+   new_x, new_y, end_ra ,end_dec , end_az, end_el= XYtoRADec(end_x*2,end_y*2,cal_params_file,cal_params,json_conf)
+
+   print("<h1>Reduce Meteor</h1>")
+   #print("<P>" + half_stack_file + "<br>")
+   #print("<P>" + cal_params_file + "<br>")
+
+
+   extra_js = "<script>var stars = []</script>"
+
+
+   bottom_html = "<script>window.onload = show_image('" + half_stack_file + "','" + az_grid_file + "')</script> "
+
+   js_html = """
+
+   <script>
+      var my_image = '""" + half_stack_file + """'
+      var hd_stack_file = '""" + hd_stack_file + """'
+      var az_grid_file = '""" + az_grid_file + """'
+      var stars = []
+   </script>
+
+
+   """.format(hd_stack_file)
+   canvas_html = """
+      <div style="float:left"><canvas id="c" width="960" height="540" style="border:2px solid #000000;"></canvas></div>
+      <div style="float:left">
+      <div>
+<span style="padding: 5px"> Calibration File</span><br>
+   """ + cal_select + """</div>
+<span style="padding: 5px"> <b>Meteor Info</b></span><br>
+<span style="padding: 5px"> Start Clip Time: """ + start_clip_time_str + """</span><br>
+<span style="padding: 5px"> Trim Start Frame Num: """ + str(trim_num) + """ </span><br>
+<span style="padding: 5px"> Meteor Start/End Frame: """ + str(meteor_start_frame) + "/" + str(meteor_end_frame) + """ </span><br>
+<span style="padding: 5px"> Meteor Start Time: """ + str(start_meteor_frame_time_str) + """</span><br>
+<span style="padding: 5px"> Duration: """ + str(elp_dur) + "seconds / " + str(elp_frames) + """ frames</span><br>
+<span style="padding: 5px"> <B>SD Reduction Values</B></span><br>
+
+<span style="padding: 5px"> Start X/Y: """ + str(start_x) + "/" + str(start_y) + """</span><br>
+<span style="padding: 5px"> End X/Y: """ + str(end_x) + "/" + str(end_y) + """</span><br>
+<span style="padding: 5px"> Start RA/DEC: """ + str(start_ra)[0:5] + "/" + str(start_dec)[0:5] + """</span><br>
+<span style="padding: 5px"> End RA/DEC: """ + str(end_ra)[0:5] + "/" + str(end_dec)[0:5] + """</span><br>
+<span style="padding: 5px"> Start AZ/EL: """ + str(start_az)[0:5] + "/" + str(start_el)[0:5] + """</span><br>
+<span style="padding: 5px"> End AZ/EL: """ + str(end_az)[0:5] + "/" + str(end_el)[0:5] + """</span><br>
+<br>
+
+
+
+      </div>
+      <div style="clear: both"></div>
+   """
+
+   canvas_html = canvas_html + """
+      <div>
+      <div style="float: left; position: relative; height: 50px; width: 50px" id="myresult" class="img-zoom-result"> </div>
+
+      <div style="float: left" id=action_buttons>
+         <input style="width: 200; margin: 5px; padding: 5px" type=button id="button1" value="  Show Image    " onclick="javascript:show_meteor_image('""" + half_stack_file + """')">
+         <input style="width: 200; margin: 5px; padding: 5px" type=button id="button1" value="  Show AZ Grid  " onclick="javascript:show_az_grid('""" + half_stack_file + "','" + az_grid_file + """')">
+         <input style="width: 200; margin: 5px; padding: 5px" type=button id="button1" value="  Reduce Meteor " onclick="javascript:reduce_meteor_ajax('""" + meteor_json_file + "','" + cal_params_file + """')">
+      </div>
+
+      <div style="clear: both"></div>
+
+      <div style="float:left" id=info_panel>Info</div>
+      </div>
+   """
+   #print(stack_file)
+
+   print(canvas_html)
+   print(js_html)
+   print(extra_js)
+
+   print("<img id='half_stack_file' style='display: none' src='" + half_stack_file + "'> <br>")
+   print("<img id='az_grid_file' style='display: none' src='" + az_grid_file + "'> <br>")
+   print("<img id='meteor_img' style='display: none' src='" + half_stack_file + "'> <br>")
+
+   return(bottom_html)
+
 
 def get_active_cal_file(input_file):
    (f_datetime, cam_id, f_date_str,Y,M,D, H, MM, S) = better_parse_file_date(input_file)
 
    # find all cal files from his cam for the same night
-   matches = find_matching_cal_files(cam_id)
+   matches = find_matching_cal_files(cam_id, f_datetime)
   
    if len(matches) > 0: 
-      return(matches[0])
+      return(matches)
    else:
       return(None)
 
-def find_matching_cal_files(cam_id):
-   match = []
+def find_matching_cal_files(cam_id, capture_date):
+   matches = []
    all_files = glob.glob("/mnt/ams2/cal/freecal/*")
    for file in all_files:
       if cam_id in file :
@@ -32,8 +297,17 @@ def find_matching_cal_files(cam_id):
          fn = el[-1]
          cal_p_file = file  + "/" + fn + "-stacked-calparams.json"
          if cfe(cal_p_file) == 1:
-            match.append(cal_p_file)
-   return(sorted(match,reverse=True))
+            matches.append(cal_p_file)
+  
+   td_sorted_matches = [] 
+
+   for match in matches:
+      (t_datetime, cam_id, f_date_str,Y,M,D, H, MM, S) = better_parse_file_date(match)
+      tdiff = (capture_date-t_datetime).total_seconds()   
+      td_sorted_matches.append((match,f_date_str,tdiff))
+
+   temp = sorted(td_sorted_matches, key=lambda x: x[2], reverse=False)
+   return(temp)
 
 
 def save_add_stars_to_fit_pool(json_conf,form):
@@ -82,7 +356,8 @@ def pin_point_stars(image, points):
 
 def add_stars_to_fit_pool(json_conf,form):
    input_file = form.getvalue("input_file")
-   cal_params_file = get_active_cal_file(input_file)
+   cal_files = get_active_cal_file(input_file)
+   cal_params_file = cal_files[0][0]
    cal_hd_stack_file = cal_params_file.replace("-calparams.json", ".png")
    print(cal_params_file, "<BR>")
    print(cal_hd_stack_file, "<BR>")

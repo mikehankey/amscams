@@ -159,8 +159,8 @@ def eval_cnt(cnt_img):
    px_diff = max_px - avg_px
    min_val, max_val, min_loc, max_loc = cv2.minMaxLoc(cnt_img)
    mx, my = max_loc
-   #mx = mx - 5
-   #my = my - 5
+   mx = mx - 5 
+   my = my - 5 
    return(max_px, avg_px,px_diff,(mx,my))
 
 
@@ -226,14 +226,18 @@ def check_for_motion2(frames, video_file, cams_id, json_conf, show = 0):
                cnt_img = gray_frame[y:y2,x:x2]
                max_px, avg_px, px_diff,max_loc = eval_cnt(cnt_img)
                mx,my = max_loc
+               cnt_w,cnt_h = cnt_img.shape
+               max_loc = mx,my
+               mx = mx - cnt_w
+               my = my - cnt_h
                #if px_diff > 10:
                #   fwhm = find_fwhm(x+mx,y+my, gray_frame)
 
                if px_diff > 10 and fc > 5 :
                   object, objects = id_object(cnts[i], objects,fc, max_loc)
-
-                  cv2.putText(nice_frame, str(object['oid']),  (x-5,y-5), cv2.FONT_HERSHEY_SIMPLEX, .4, (255, 255, 255), 1)
-                  cv2.rectangle(nice_frame, (x, y), (x + w, y + h), (255, 0, 0,.02), 2)
+                  if show == 1:
+                     cv2.putText(nice_frame, str(object['oid']),  (x-5,y-5), cv2.FONT_HERSHEY_SIMPLEX, .4, (255, 255, 255), 1)
+                     cv2.rectangle(nice_frame, (x, y), (x + w, y + h), (255, 0, 0,.02), 2)
          if show == 1 and fc % 2 == 0:
             show_frame = cv2.resize(nice_frame, (0,0), fx=0.5, fy=0.5)
             cv2.imshow('pepe', show_frame)
@@ -244,8 +248,8 @@ def check_for_motion2(frames, video_file, cams_id, json_conf, show = 0):
 def id_object(cnt, objects, fc,max_loc, is_hd=0):
 
    mx,my= max_loc
-   mx = mx - 1
-   my = my - 1
+   mx = mx 
+   my = my 
    x,y,w,h = cv2.boundingRect(cnt)
    cx,cy = center_point(x,y,w,h)
    #print("ID OBJECT NEAR POINT:", cx,cy)

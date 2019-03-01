@@ -300,11 +300,11 @@ def trim_event(event):
    start_sec = int(start_frame / 25) - 3
    if start_sec <= 0:
       start_sec = 0
-   dur = int(frame_elp / 25) + 3 + 2
+   dur = int(frame_elp / 25) + 3 + 3
    if dur >= 60:
       dur = 59
-   if dur < 1:
-      dur = 2
+   if dur < 2:
+      dur = 3 
 
    pad_start = '{:04d}'.format(start_frame)
    outfile = ffmpeg_trim(mp4_file, start_sec, dur, "-trim" + str(pad_start))

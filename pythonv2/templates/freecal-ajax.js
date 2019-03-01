@@ -1,4 +1,32 @@
-function sleep (time) {
+      function reduce_meteor_ajax(meteor_json_file,cal_params_file) {
+         ajax_url = "/pycgi/webUI.py?cmd=reduce_meteor_ajax&meteor_json_file=" + meteor_json_file + "&cal_params_file=" + cal_params_file
+         alert(ajax_url)
+         $.get(ajax_url, function(data) {
+            $(".result").html(data);
+            var json_resp = $.parseJSON(data);
+            alert(json_resp['sd_meteor_frame_data'])
+            //document.getElementById('star_panel').innerHTML = json_resp['message']
+            sleep(1000).then(() => {
+               var img1 = document.getElementById('half_stack_file')
+               img1.src = json_resp['reduce_img_file']
+
+               var canvas = document.getElementById("c");
+               var cntx= canvas.getContext("2d"); 
+               cntx.drawImage(img1, 0, 0);
+               //cntx.globalAlpha = .2; 
+               //cntx.drawImage(img2, 0, 0);
+
+
+            });
+         });
+
+      }
+
+
+
+
+
+      function sleep (time) {
          return new Promise((resolve) => setTimeout(resolve, time));
       }
 
@@ -6,9 +34,7 @@ function sleep (time) {
          check_solve_status(1)
       }
 
-      function show_image(orig_image) {
-         canvas.setBackgroundImage(orig_image, canvas.renderAll.bind(canvas));
-      }
+
 
       function check_fit_status(json_resp) {
          if (json_resp['status'] == 'done') {
@@ -94,7 +120,7 @@ function sleep (time) {
          }
 
          ajax_url = "/pycgi/webUI.py?cmd=show_cat_stars&hd_stack_file=" + hd_stack_file + "&points=" + point_str
-
+         alert(ajax_url)
          remove_objects() 
          $.get(ajax_url, function(data) {
             $(".result").html(data);
@@ -270,8 +296,35 @@ function sleep (time) {
 
       function az_grid(az_grid_file) {
             canvas.setBackgroundImage(az_grid_file, canvas.renderAll.bind(canvas));
+      }
+
+
+      function show_image(orig_image) {
+         canvas.setBackgroundImage(orig_image, canvas.renderAll.bind(canvas));
+      }
+
+      function show_meteor_image(meteor_image) {
+         var img1 = document.getElementById('half_stack_file')
+         var canvas = document.getElementById("c");
+         var cntx= canvas.getContext("2d"); 
+         cntx.globalAlpha = 1;
+         cntx.drawImage(img1, 0, 0);
 
       }
+
+      function show_az_grid(half_stack_file, az_grid_file) {
+         var img1 = document.getElementById('half_stack_file')
+         var img2 = document.getElementById('az_grid_file')
+
+         var canvas = document.getElementById("c");
+         var cntx= canvas.getContext("2d"); 
+         cntx.drawImage(img1, 0, 0);
+         cntx.globalAlpha = .2; 
+         cntx.drawImage(img2, 0, 0);
+         //canvas.renderAll.bind(canvas)
+         //canvas.setBackgroundImage(az_grid_file, canvas.renderAll.bind(canvas));
+      }
+ 
 
 
       function add_to_fit(img_url) {

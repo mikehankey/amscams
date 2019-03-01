@@ -10,7 +10,7 @@ from lib.DetectLib import check_for_motion2
 from lib.MeteorTests import test_objects
 from lib.ImageLib import mask_frame , draw_stack, stack_frames
 from lib.CalibLib import radec_to_azel
-from lib.WebCalib import calibrate_pic,make_plate_from_points, solve_field, check_solve_status, free_cal, show_cat_stars, choose_file, upscale_2HD, fit_field, delete_cal, add_stars_to_fit_pool, save_add_stars_to_fit_pool
+from lib.WebCalib import calibrate_pic,make_plate_from_points, solve_field, check_solve_status, free_cal, show_cat_stars, choose_file, upscale_2HD, fit_field, delete_cal, add_stars_to_fit_pool, save_add_stars_to_fit_pool, reduce_meteor, reduce_meteor_ajax
 
 
 
@@ -202,6 +202,9 @@ def controller(json_conf):
    if cmd == 'fit_field':
       fit_field(json_conf,form)
       exit()
+   if cmd == 'reduce_meteor_ajax':
+      reduce_meteor_ajax(json_conf,form)
+      exit()
    if cmd == 'delete_cal':
       delete_cal(json_conf,form)
       exit()
@@ -227,6 +230,9 @@ def controller(json_conf):
    top = top.replace("{JQ}", jq)
 
    print(top)
+   extra_html = ""
+   if cmd == 'reduce':
+      extra_html = reduce_meteor(json_conf, form)
 
    if cmd == 'free_cal':
       free_cal(json_conf, form)
@@ -289,9 +295,13 @@ def controller(json_conf):
    bottom = bottom.replace("{BOTTOMNAV}", bot_html)      
    rand=time.time()
    bottom = bottom.replace("{RAND}", str(rand))
+   bottom = bottom.replace("{EXTRA_HTML}", str(extra_html))
    print(bottom)
    #cam_num = form.getvalue('cam_num')
    #day = form.getvalue('day')
+
+
+
 
 def get_cal_params(json_conf,cams_id):
    if cams_id is None:
@@ -407,7 +417,8 @@ def get_meteors(meteor_dir,meteors):
    glob_dir = meteor_dir + "*-trim*.mp4"
    files = glob.glob(meteor_dir + "/*-trim*.json")
    for file in files:
-      meteors.append(file)
+      if "calparams" not in file:
+         meteors.append(file)
    return(meteors)
   
 
@@ -813,7 +824,7 @@ def examine(video_file):
    html_out = html_out + "<img class=\"" + htclass + "\" id=\"" + base_js_name + "\" src='" + stack_img+ "'></a><br>\n"
    print("<figure>")
    print(html_out)
-   if "meteors" in video_file:
+   if "meteors" in video_file or "passed" in video_file:
       print("<a href=webUI.py?cmd=override_detect&video_file=" + video_file + " >Reject Meteor</a>  ")
    else:
       print("<a href=webUI.py?cmd=override_detect&video_file=" + video_file + " >Tag as Meteor</a>  ")
@@ -826,14 +837,11 @@ def examine(video_file):
 
 
    json_data= load_json_file(json_file)
-   meteor_info = meteor_info_table(json_data)
-
-   #print(json_data)
-
-   print(meteor_info)
-   #print(meteor_info)
-   # HD PART OF PAGE
-   # SKIP OF NO HD_TRIM EXISTS
+   object_info = object_info_table(json_data)
+   meteor_info = meteor_info_table(video_file, json_data)
+   if meteor_info is not None:
+      print(meteor_info)
+   
 
    if "hd_trim" in json_data:
       hd_trim = json_data['hd_trim']
@@ -857,107 +865,69 @@ def examine(video_file):
       print("<figure><a href=" + hd_crop+ "><img src=" + hd_crop_stacked + "></a><figcaption>HD Crop Video</figcaption></figure><div style='clear: both'></div>")
       print("<a href=" + hd_trim_stacked + ">HD Stacked Image</a> - ")
       print("<a href=" + hd_crop_stacked + ">HD Cropped Image</a><br>")
-   else:
-      print("<p>No HD video for this meteor.</p>")   
 
-   print("<h2>SD Objects</h2>")   
+   print(object_info)
+
+
+def get_obj_test_score(object):
+   print("YO")
+
+def default_tests():
+   tests = {}
+   tests['score'] = 0 
+   tests['Moving'] = 0
+   tests['Distance'] = 0
+   tests['Hist Len']  = 0
+   tests['Elp Frames'] = 0
+   tests['AVL'] = 0
+   tests['Big CNT'] = 0
+   tests['Big/CM'] = 0
+   tests['CM/Gaps'] = 0 
+   tests['CM To Hist'] = 0
+   tests['PX/Frame'] = 0
+   tests['Moving'] = 0
+   tests['Dupe Px'] = 0
+   tests['Line Fit'] = 0
+   tests['Peaks'] = 0
+   return(tests)
+
+def object_info_table(json_data):
    if "sd_objects" in json_data:
       sd_objects = json_data['sd_objects']
    else:
       sd_objects = json_data
-   #print(json_data)
-
-   print("<a href=javascript:show_hide_div('object_details')>")
-   print("{:d} Object Detections</a> <BR>".format(len(sd_objects)))
-
-   meteor_output = "<div style='display:none;' id='object_details'" + ">Meteor Tests<BR>"
-   non_meteor_output = ""
    stab,sr,sc,et,er,ec = div_table_vars()
-
-   for key in sd_objects:
-      if key['meteor'] == 1:
-         meteor_output = meteor_output + "<HR>Object ID: {:d}<BR>".format(key['oid'])
-         meteor_output = meteor_output + "Meteor Y/N:    {:d}<BR>".format(key['meteor'])
-         meteor_output = meteor_output + "\n\n<a href=javascript:show_hide_div('obj" + str(key['oid']) + "')>Show/Hide Details</a>"
-         meteor_output = meteor_output + "<div style='display:none;' id=obj" + str(key['oid']) + ">Meteor Object <BR>"
-         meteor_output = meteor_output + stab 
-         for test in key['test_results']:
-            tname, status, desc = test
-            if tname == 'AVL':
-               if len(desc) > 25:
-                  temp= desc[0:25] + "..."
-               meteor_output = meteor_output + sr + sc + tname + ec + sc + str(status) + ec + sc + str(temp) + ec + er
-            else:
-               meteor_output = meteor_output + sr + sc + tname + ec + sc + str(status) + ec + sc + str(desc) + ec + er
-         meteor_output = meteor_output + et
-         meteor_output = meteor_output + "\n<h2>Frame History</h2>\n"
-         meteor_output = meteor_output + stab 
-         meteor_output = meteor_output + sr + sc + "FN" + ec + sc + "x" + ec + sc + "y" + ec + sc + "w" + ec + sc + "h" + ec + sc + "bx" + ec + sc + "by" + ec + er
-         for hist in key['history']:
-            fn, x,y,w,h,bx,by = hist
-            meteor_output = meteor_output + sr + sc + str(fn) + ec + sc + str(x) + ec + sc + str(y) + ec + sc + str(w) + ec + sc + str(h) + ec + sc + str(bx) + ec + sc + str(by) + ec + er
-            #meteor_output = meteor_output + "{:s} <BR>".format(str(hist))
-         meteor_output = meteor_output + et + "</div> \n\n"
-      else:
-         non_meteor_output = non_meteor_output + "<HR>Object ID: {:d}<BR>".format(key['oid'])
-         non_meteor_output = non_meteor_output + "Meteor Y/N:    {:d}<BR>".format(key['meteor'])
-         non_meteor_output = non_meteor_output + "<a href=javascript:show_hide_div('obj" + str(key['oid']) + "')>Show/Hide Details</a>"
-         non_meteor_output = non_meteor_output + "<div style='display:none;' id=obj" + str(key['oid']) + "> NON Meteor Object <BR>"
-
-         non_meteor_output = non_meteor_output + stab 
-         for test in key['test_results']:
-            tname, status, desc = test
-            non_meteor_output = non_meteor_output + sr + sc + tname + ec + sc + str(status) + ec + sc + str(desc) + ec + er
-            #non_meteor_output = non_meteor_output + "{:s} {:f} {:s}<BR>".format(tname,status,str(desc))
-
-         non_meteor_output = non_meteor_output + et
-         non_meteor_output = non_meteor_output + "\n<h2>Frame History</h2>\n"
-         non_meteor_output = non_meteor_output + stab 
-         non_meteor_output = non_meteor_output + sr + sc + "FN" + ec + sc + "x" + ec + sc + "y" + ec + sc + "w" + ec + sc + "h" + ec + sc + "bx" + ec + sc + "by" + ec + er
-         for hist in key['history']:
-            fn, x,y,w,h,bx,by = hist
-            #non_meteor_output = non_meteor_output + "{:s} <BR>".format(str(hist)) 
-            non_meteor_output = non_meteor_output + sr + sc + str(fn) + ec + sc + str(x) + ec + sc + str(y) + ec + sc + str(w) + ec + sc + str(h) + ec + sc + str(bx) + ec + sc + str(by) + ec + er
-         non_meteor_output = non_meteor_output + et + "</div>"
-
-   print(meteor_output)
-   print(non_meteor_output)
-   print("</div>")
-   print("<h2>HD Objects</h2>")
-
-def meteor_info_table(json_data):
-
-   if "sd_objects" in json_data:
-      sd_objects = json_data['sd_objects']
-   else:
-      sd_objects = json_data
-
+   oit = "<h3>Object Details</h3>" + stab
+   oit = oit + sr + sc + "ID" + ec + sc + "Meteor" + ec + sc + "Score" + ec + sc + "Moving" + ec + sc + "Dist" + ec + sc + "Len" + ec + sc + "Elp Frms" + ec + sc + "AVL" + ec + sc + "Trailer" + ec + sc + "Big CNT" + ec + sc + "Big/CM" + ec + sc + "CM/Gaps" + ec + sc + "CM/Hist" + ec + sc + "PX/Frm" + ec + sc + "Dupe PX" + ec + sc +"Noise" + ec + sc + "Line Fit" + ec + sc + "Peaks" + ec + er  
    for obj in sd_objects:
-      if obj['meteor'] == 1:
-         meteors.append(obj)
+      tests= default_tests()
+      tests['score']  = 0
+      test_detail = stab
+      meteor_yn = obj['meteor']
+      if meteor_yn == 1:
+         meteor_yn = "Y"
+      else:
+         meteor_yn = "N"
+    
+      for test in obj['test_results']:
+         name, result, descr = test
+         tests[name] = result 
+         test_detail = test_detail + sr + sc + str(name) + ec + sc + str(result) + ec + sc + str(descr) + ec + er
+         tests['score']  = tests['score'] + int(result)
+      test_detail = test_detail + et 
+      total_tests = len(obj['test_results'])
 
-   if len(meteors) == 1:
-      meteor = meteors[0]
+      oit = oit + sr + sc + "<a href=\"javascript:show_hide_div('" + str(obj['oid']) + "')\">" + str(obj['oid']) + "</a>" + ec
+      oit = oit +  sc + str(meteor_yn) + ec + sc + str(tests['score']) + ec + sc + str(tests['Moving']) + ec + sc + str(tests['Distance']) + ec + sc + str(tests['Hist Len']) + ec + sc + str(tests['Elp Frames']) + ec + sc + str(tests['AVL']) + ec + sc + str(tests['Trailer']) + ec + sc + str(tests['Big CNT']) + ec + sc + str(tests['Big/CM']) + ec + sc + str(tests['CM/Gaps']) + ec + sc + str(tests['CM To Hist']) + ec + sc + str(tests['PX/Frame']) + ec + sc + str(tests['Moving']) + ec + sc + str(tests['Dupe Px']) + ec + sc + str(tests['Line Fit']) + ec + sc + str(tests['Peaks']) + ec + er  
+      oit = oit + sr + "<div id=\"" + str(obj['oid']) + "\" style=\"display: none; width: 100%\">" + test_detail + "</div>" + er
+   oit = oit + et
+   return(oit)
+   return(oit)
 
-   hist = meteor['history']
-
-
-
-   print("<h2>Meteor Info</h2>")
-   start_time = "tesxt"
-   stab,sr,sc,et,er,ec = div_table_vars()
-   mi = stab 
-
-   mi = mi + sr + sc + "Frame" + ec + sc + "Time" + ec + sc +"SD X,Y " + ec + sc + "SD RA,DEC" + ec + sc + "SD RA,DEC" + ec + sc + "SD AZ,EL" + ec 
-   mi = mi + sc + "HD X,Y" + ec  + sc + "HD RA,DEC" + ec  + sc + "HD AZ,EL" + ec  + er
-
-   mi = mi + sr + sc + "Start " + ec + sc + "Time" + ec + sc + "SD X,Y " + ec + sc + "SD RA,DEC" + ec + sc + "SD RA,DEC" + ec + sc + "SD AZ,EL" + ec 
-   mi = mi + sc + "HD X,Y" + ec  + sc + "HD RA,DEC" + ec  + sc + "HD AZ,EL" + ec  + er
-   mi = mi + sr + sc + "End" + ec + sc + "Time" + ec + sc + "SD X,Y " + ec + sc + "SD RA,DEC" + ec + sc + "SD RA,DEC" + ec + sc + "SD AZ,EL" + ec 
-   mi = mi + sc + "HD X,Y" + ec  + sc + "HD RA,DEC" + ec  + sc + "HD AZ,EL" + ec  + er
-
-
-   mi = mi + et 
+def meteor_info_table(video_file,json_data):
+   if "meteor_data" not in json_data:
+      mi = "This meteor has not been reduce yet. "
+      mi = mi + "<a href=webUI.py?cmd=reduce&video_file=" + video_file + ">Reduce Meteor Now</a>"
    return(mi) 
 
 def div_table_vars():

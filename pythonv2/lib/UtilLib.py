@@ -101,7 +101,7 @@ def get_sun_info(capture_date, json_conf):
 
    saz = str(sun.az)
    (sun_az, x,y) = saz.split(":")
-   if int(sun_alt) < -1:
+   if int(sun_alt) < -10:
       sun_status = "night"
    else:
       sun_status = "day"

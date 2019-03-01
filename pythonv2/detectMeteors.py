@@ -110,6 +110,7 @@ def reduce_hd_meteor(video_file, hd_file, hd_trim, hd_crop_file, hd_box,json_con
    hd_object = []
    print("METEOR FOUND:", meteor_found)
    for object in objects:
+      print(object)
       if object['meteor'] == 1:
          print("\n\n\nOBJECT: ", object)
          hd = 1
@@ -145,7 +146,7 @@ if __name__ == "__main__":
       video_file = sys.argv[2]
       json_file = video_file.replace(".mp4", ".json")
       json_data = load_json_file(json_file)
-      hd_objects = reduce_hd_meteor(video_file, json_data['hd_file'], json_data['hd_trim'], json_data['hd_crop_file'], json_data['hd_box'], json_conf)
+      hd_objects = reduce_hd_meteor(video_file, json_data['hd_file'], json_data['hd_trim'], json_data['hd_crop_file'], json_data['hd_box'], json_conf,json_data['hd_trim_time_offset'])
 
    if cmd == 'dohd' or cmd == 'doHD':
       video_file = sys.argv[2] 
