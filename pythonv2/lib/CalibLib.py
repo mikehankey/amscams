@@ -806,6 +806,9 @@ def make_plate_image(med_stack_all, cam_num, json_conf, show = 1):
          if is_star == 1:
             cx = int(mnx + mxx / 2)
             cy = int(mny + mxy / 2)
+            print(cx,cy)
+
+            mnx,mny,mxx,mxy = bound_cnt(cx,cy,img_width,img_height)
             cnt_img = med_cpy[mny:mxy,mnx:mxx]
             cnt_h,cnt_w = cnt_img.shape
             (max_px, avg_px,px_diff,max_loc) = eval_cnt(cnt_img)

@@ -177,7 +177,6 @@ def minimize_poly_params_fwd(merged_stars, cal_params_file, cal_params,json_conf
    cal_params['ra_center'] = orig_ra_center
    cal_params['dec_center'] = orig_dec_center
    cal_params_file = cal_params_file.replace("-calparams.json", "-calparams-master.json")
-
    save_json_file(cal_params_file, cal_params)
 
 def build_multi_cal(cal_params_file, json_conf):

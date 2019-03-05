@@ -10,7 +10,7 @@ from lib.DetectLib import check_for_motion2
 from lib.MeteorTests import test_objects
 from lib.ImageLib import mask_frame , draw_stack, stack_frames
 from lib.CalibLib import radec_to_azel
-from lib.WebCalib import calibrate_pic,make_plate_from_points, solve_field, check_solve_status, free_cal, show_cat_stars, choose_file, upscale_2HD, fit_field, delete_cal, add_stars_to_fit_pool, save_add_stars_to_fit_pool, reduce_meteor, reduce_meteor_ajax
+from lib.WebCalib import calibrate_pic,make_plate_from_points, solve_field, check_solve_status, free_cal, show_cat_stars, choose_file, upscale_2HD, fit_field, delete_cal, add_stars_to_fit_pool, save_add_stars_to_fit_pool, reduce_meteor, reduce_meteor_ajax, find_stars_ajax
 
 
 
@@ -203,10 +203,17 @@ def controller(json_conf):
       fit_field(json_conf,form)
       exit()
    if cmd == 'reduce_meteor_ajax':
-      reduce_meteor_ajax(json_conf,form)
+      cal_params_file = form.getvalue("cal_params_file")
+      meteor_json_file = form.getvalue("meteor_json_file")
+      show= 0
+      reduce_meteor_ajax(json_conf,meteor_json_file, cal_params_file, show)
       exit()
    if cmd == 'delete_cal':
       delete_cal(json_conf,form)
+      exit()
+   if cmd == 'find_stars_ajax':
+      stack_file = form.getvalue("stack_file")
+      find_stars_ajax(json_conf,stack_file)
       exit()
    if cmd == 'save_add_stars_to_fit_pool':
       save_add_stars_to_fit_pool(json_conf,form)
@@ -365,7 +372,7 @@ def calibration(json_conf,form):
    print("""
       <div style="float: top-right">
       <form>
-       <select name=cam_id onchange="javascript:goto(this.options[selectedIndex].value)">
+       <select name=cam_id onchange="javascript:goto(this.options[selectedIndex].value, '', 'calib')">
         <option value=>Filter By Cam</option>
         <option value=010001>010001</option>
         <option value=010002>010002</option>
@@ -378,12 +385,14 @@ def calibration(json_conf,form):
       </div>
       """)
 
+   cal_files = sorted(cal_files, reverse=True)
 
    for file in cal_files:
       el = file.split("/")
       fn = el[-1]
       az_grid_file = file.replace(".png", "-azgrid-half.png")
-      print("<figure><a href=webUI.py?cmd=free_cal&input_file=" + file + "><img width=354 src=" + az_grid_file + "><figcaption>"+ fn + "</figcaption></figure>")
+      if cams_id is not None and cams_id in file:
+         print("<figure><a href=webUI.py?cmd=free_cal&input_file=" + file + "><img width=354 src=" + az_grid_file + "><figcaption>"+ fn + "</figcaption></figure>")
    print("<div style=\"clear: both\"></div>")
    #cal_params = get_cal_params(json_conf, cams_id)
 
@@ -417,7 +426,7 @@ def get_meteors(meteor_dir,meteors):
    glob_dir = meteor_dir + "*-trim*.mp4"
    files = glob.glob(meteor_dir + "/*-trim*.json")
    for file in files:
-      if "calparams" not in file:
+      if "calparams" not in file and "reduced" not in file:
          meteors.append(file)
    return(meteors)
   
@@ -449,6 +458,11 @@ def meteors(json_conf,form):
       stack_file_tn = meteor.replace('.json', '-stacked-tn.png')
       video_file = meteor.replace('.json', '.mp4')
       stack_obj_img = video_file.replace(".mp4", "-stacked-obj-tn.png")
+      reduce_file = meteor.replace(".json", "-reduced.json")
+      reduced = 0
+      if cfe(reduce_file) == 1:
+         reduced = 1
+      
 
       el = meteor.split("/")
       temp = el[-1].replace(".mp4", "")
@@ -458,19 +472,22 @@ def meteors(json_conf,form):
       base_js_name = base_js_name.replace(".json", "")
       base_js_name_img = "img_" + base_js_name
       fig_id = "fig_" + base_js_name
-      
-
+      if reduced == 1: 
+         htclass = "reduced"
+      else: 
+         htclass = "norm"
 
       html_out = ""
       this_span = span.replace("{ID}", base_js_name)
-      html_out = html_out + "<figure id=\"" + fig_id + "\">" + this_span + "<a href=\"webUI.py?cmd=examine&video_file=" + video_file + "\"" \
+      html_out = html_out + "<figure id=\"" + fig_id + "\">" + this_span + "<a href=\"webUI.py?cmd=reduce&video_file=" + video_file + "\"" \
          + " onmouseover=\"document.getElementById('" + base_js_name_img + "').src='" + stack_obj_img \
          + "'\" onmouseout=\"document.getElementById('" + base_js_name_img + "').src='" + stack_file_tn+ "'\">"
   
-      html_out = html_out + "<img width=282 height=192 class=\"" + htclass + "\" id=\"" + base_js_name_img + "\" src='" + stack_file_tn+ "'></a>" + end_span + "<figcaption>" + desc + "</figcaption></figure>\n"
+      html_out = html_out + "<img width=282 height=192 class=\"" + htclass + "\" id=\"" + base_js_name_img + "\" src='" + stack_file_tn+ "'></a>" + end_span + "<figcaption>" + desc + " " + str(reduced) + "</figcaption></figure>\n"
 
       print(html_out)
    print("<div style='clear: both'></div>")
+   print("<script>var stars = [];</script>")
 
 
 
@@ -1028,9 +1045,16 @@ def print_css():
    <head>
 
       <script>
-         function goto(cams_id) {
-            url_str = "webUI.py?cmd=calibration&cams_id=" + cams_id
-            window.location.href=url_str
+         function goto(var1,var2, type) {
+            if (type == "calib") {
+               url_str = "webUI.py?cmd=calibration&cams_id=" + var1
+               window.location.href=url_str
+            }
+            if (type == "reduce") {
+            
+               url_str = "webUI.py?cmd=reduce&video_file=" + var1 + "&cal_params_file=" + var2
+               window.location.href=url_str
+            }
          }
       </script>
 
@@ -1078,15 +1102,21 @@ def print_css():
             text-align: center;
             font-size: smaller;
             float: left;
-            padding: 0.2em;
-            margin: 0.2em;
+            padding: 0.1em;
+            margin: 0.1em;
+         }
+         img.reduced {
+            border: thin green solid;
+            background-color: lightgreen;
+            margin: 0.1em;
+            padding: 0.1em;
          }
 
          img.meteor {
             border: thin red solid;
             background-color: red;
-            margin: 0.3em;
-            padding: 0.3em;
+            margin: 0.1em;
+            padding: 0.1em;
          }
          img.fail {
             border: thin silver solid;
@@ -1102,8 +1132,8 @@ def print_css():
          }
          img.norm {
             border: thin silver solid;
-            margin: 0.2em;
-            padding: 0.2em;
+            margin: 0.1em;
+            padding: 0.1em;
          }
       </style>
    """)

@@ -40,6 +40,12 @@ def find_min_max_dist(hist,mute_wh=0):
 
    return(max_x,max_y,min_x,min_y)
 
+def test_score(test_results):
+   score = 0
+   for test, result, desc in test_results:
+      score = score + result
+   return(score)
+
 def test_objects(objects,frames):
    total_frames = len(frames)
    meteor_found = 0
@@ -54,7 +60,9 @@ def test_objects(objects,frames):
       object['total_frames'] = total_frames
       object['meteor'] = status
       object['test_results'] = test_results
+      score = test_score(test_results)
       object['first_last'] = [object['history'][0][0],object['history'][-1][0]]
+      object['score'] = score
       new_objects.append(object)
       if status == 1:
          meteors = meteors + 1
@@ -89,9 +97,10 @@ def test_objects(objects,frames):
             failed_objects.append(object)
          new_objects = failed_objects 
          meteor_found = 0
-      
+     
+   sorted_objects = sorted(new_objects, key = lambda i: i['score'], reverse=True) 
 
-   return(new_objects, meteor_found)
+   return(sorted_objects, meteor_found)
 
 def test_object(object, total_frames):
    status = 1
@@ -391,8 +400,6 @@ def meteor_test_fit_line(object):
       ry = regression_line[i]
       dist = calc_dist((cx,cy),(cx,ry))
 
-      if int(oid) == 2:
-         print("REG:", safe_dist, dist)
       if dist < safe_dist:
          good = good + 1
 

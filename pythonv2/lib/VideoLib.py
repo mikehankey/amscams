@@ -329,7 +329,7 @@ def get_masks(this_cams_id, json_conf, hd = 0):
    return(my_masks)
 
 
-def load_video_frames(trim_file, json_conf, limit=0, mask=1):
+def load_video_frames(trim_file, json_conf, limit=0, mask=1,crop=()):
    (f_datetime, cam, f_date_str,fy,fm,fd, fh, fmin, fs) = convert_filename_to_date_cam(trim_file)
    cap = cv2.VideoCapture(trim_file)
    frames = []
@@ -350,7 +350,28 @@ def load_video_frames(trim_file, json_conf, limit=0, mask=1):
             return(frames)
          if len(frame.shape) == 3:
             frame = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
+         if len(crop) == 4:
+            ih,iw = frame.shape
+            x1,y1,x2,y2 = crop
+            x1 = x1 - 25
+            y1 = y1 - 25
+            x2 = x2 + 25
+            y2 = y2 + 25
+            if x1 < 0:
+               x1 = 0 
+            if y1 < 0:
+               y1 = 0 
+            if x1 > iw -1:
+               x1 = iw -1 
+            if y1 > ih -1:
+               y1 = ih -1 
+            crop_frame = frame[y1:y2,x1:x2]
+            frame = crop_frame
+
          frames.append(frame)
          frame_count = frame_count + 1
    cap.release()
-   return(frames)
+   if len(crop) == 4:
+      return(frames,x1,y1)
+   else:
+      return(frames)

@@ -13,6 +13,7 @@ from lib.FileIO import load_json_file,archive_meteor
 from lib.VideoLib import load_video_frames , doHD
 from lib.ImageLib import stack_frames, draw_stack
 from lib.UtilLib import convert_filename_to_date_cam, check_running
+from lib.WebCalib import reduce_meteor_ajax
 
 
 # Copyright (C) 2018 Mike Hankey - AllSkyCams.com
@@ -126,7 +127,7 @@ if __name__ == "__main__":
    json_conf = load_json_file("../conf/as6.json") 
    cmd = sys.argv[1]
    running = check_running("detectMeteors")
-   if running > 3 and cmd != 'doHD' and cmd != 'sf':
+   if running > 3 and cmd != 'doHD' and cmd != 'sf' and cmd != 'raj':
       print("running ", running)
       exit()
    if len(sys.argv) >=3:
@@ -142,6 +143,14 @@ if __name__ == "__main__":
       do_all(json_conf)
    if cmd == 'pm':
       parse_motion(video_file, json_conf)
+   if cmd == 'raj':
+      meteor_json_file = sys.argv[2]
+      cal_params_file = sys.argv[3]
+      show = 0
+      if len(sys.argv) > 4:
+         show = 1 
+      reduce_meteor_ajax(json_conf, meteor_json_file, cal_params_file, show)
+
    if cmd == 'reduce':
       video_file = sys.argv[2]
       json_file = video_file.replace(".mp4", ".json")

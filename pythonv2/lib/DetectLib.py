@@ -165,7 +165,6 @@ def eval_cnt(cnt_img):
 
 
 def check_for_motion2(frames, video_file, cams_id, json_conf, show = 0):
-   show = 0
 
    objects = []
    if show == 1:

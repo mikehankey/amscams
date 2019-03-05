@@ -17,7 +17,7 @@ var user_stars = []
             } 
 
 
-//canvas.setBackgroundImage(my_image, canvas.renderAll.bind(canvas));
+canvas.setBackgroundImage(my_image, canvas.renderAll.bind(canvas));
 
 canvas.on('mouse:move', function(e) {
    var pointer = canvas.getPointer(event.e);
@@ -58,6 +58,6 @@ canvas.on('mouse:down', function(e) {
 
 
    document.getElementById('info_panel').innerHTML = "star added"
-   document.getElementById('star_panel').innerHTML = "Total Stars: " + user_stars.length;
+   //document.getElementById('star_panel').innerHTML = "Total Stars: " + user_stars.length;
 });
 

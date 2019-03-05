@@ -144,8 +144,7 @@ def convert_filename_to_date_cam(file):
    return(f_datetime, cam, f_date_str,fy,fm,fd, fh, fmin, fs)
 
 
-def bound_cnt(x,y,img_w,img_h):
-   sz = 10
+def bound_cnt(x,y,img_w,img_h,sz=10):
 
    if x - sz < 0:
       mnx = 0

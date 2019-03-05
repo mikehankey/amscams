@@ -7,6 +7,7 @@ from PIL import ImageDraw
 from PIL import ImageFont
 
 
+from lib.UtilLib import bound_cnt
 from lib.FileIO import cfe
 #from lib.DetectLib import 
 from lib.MeteorTests import find_min_max_dist, max_xy
@@ -40,6 +41,8 @@ def upscale_to_hd(image, points):
       cy2 = y + my +15
       cx1 = x + mx -15
       cx2 = x + mx +15
+      cx1,cy1,cx2,cy2= bound_cnt(x+mx,y+my,iw,ih,15)
+
       if ch > 0 and cw > 0:
          tmp_cnt_img = sd_stack_img[cy1:cy2,cx1:cx2]
          cnt_img =tmp_cnt_img.copy()
@@ -51,8 +54,9 @@ def upscale_to_hd(image, points):
             plate_img_4f[cy1:cy2,cx1:cx2] = black_cnt_img
             plate_img[cy1:cy2,cx1:cx2] = black_cnt_img
          else:
-            plate_img_4f[cy1:cy2,cx1:cx2] = black_cnt_img
-            hd_image[cy1:cy2,cx1:cx2] = cnt_img
+            if cy2 - cy1 == ch and cx2 - cx1 == cw:
+               plate_img_4f[cy1:cy2,cx1:cx2] = black_cnt_img
+               hd_image[cy1:cy2,cx1:cx2] = cnt_img
 
    plate_img = cv2.resize(plate_img, (1920,1080))
    plate_img_4f = cv2.resize(plate_img_4f, (1920,1080))
