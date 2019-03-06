@@ -131,7 +131,12 @@ def make_day_preview(day_dir, stats_data, json_conf):
       day = el[-2]
    day_str = day
    html_out = ""
-   for cam in json_conf['cameras']:
+   #json_conf['cameras'] = sorted(json_conf['cameras'])
+   #for cam in json_conf['cameras']:
+   for i in range(1,7):
+      #cam = i
+      key = "cam" + str(i)
+      cam = key
       cams_id = json_conf['cameras'][cam]['cams_id']
       min_total = stats_data[cams_id] 
       obj_stack = day_dir + "/" + "images/"+ cams_id + "-night-stack.png"
