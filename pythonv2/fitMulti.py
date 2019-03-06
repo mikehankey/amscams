@@ -83,9 +83,10 @@ def reduce_fit(this_poly,field, merged_stars, cal_params, cal_params_file, fit_i
       
 
    if tries % 10 == 0:
-      show_img = cv2.resize(this_fit_img, (0,0),fx=.5, fy=.5)
-      cv2.imshow('pepe', show_img) 
-      cv2.waitKey(1)
+      if show == 1:
+         show_img = cv2.resize(this_fit_img, (0,0),fx=.5, fy=.5)
+         cv2.imshow('pepe', show_img) 
+         cv2.waitKey(1)
 
    total_stars = len(cal_params['merged_stars'])
    avg_res = total_res/total_stars
@@ -101,7 +102,6 @@ def reduce_fit(this_poly,field, merged_stars, cal_params, cal_params_file, fit_i
 
 
 def minimize_poly_params_fwd(merged_stars, cal_params_file, cal_params,json_conf,orig_ra_center,orig_dec_center,show=0):
-   show = 1 
    fit_img_file = cal_params_file.replace("-calparams.json", ".png")
    fit_img = cv2.imread(fit_img_file)
    if show == 1:

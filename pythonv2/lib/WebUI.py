@@ -367,24 +367,31 @@ def get_cal_files(json_conf,cams_id):
      
    return(cal_files)
 
+def get_cam_ids(json_conf):
+   cams = []
+   cam_options = ""
+   for i in range(1,7):
+      cam_key ="cam" + str(i)
+      cams_id = json_conf['cameras'][cam_key]['cams_id']
+      cams.append(cams_id)
+      cam_options = cam_options + "<option>" + cams_id + "</option>"
+   return(cams, cam_options)
+
+
 def calibration(json_conf,form):
    cams_id = form.getvalue('cams_id')
    print("<h2>Calibration</h2>")
    print("<p><a href=webUI.py?cmd=free_cal>Make New Calibration</a></P>")
    print("<p>Or select a previous job to work on</p>")
    cal_files = get_cal_files(json_conf,cams_id)
-
+   cams, cam_options = get_cam_ids(json_conf)
    print("""
       <div style="float: top-right">
       <form>
        <select name=cam_id onchange="javascript:goto(this.options[selectedIndex].value, '', 'calib')">
-        <option value=>Filter By Cam</option>
-        <option value=010001>010001</option>
-        <option value=010002>010002</option>
-        <option value=010003>010003</option>
-        <option value=010004>010004</option>
-        <option value=010005>010005</option>
-        <option value=010006>010006</option>
+        <option value=>Filter By Cam</option>""")
+   print(cam_options)
+   print("""    
         </select>
       </form>
       </div>

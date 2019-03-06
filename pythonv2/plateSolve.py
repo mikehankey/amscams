@@ -66,6 +66,7 @@ def plate_solve(cal_file,json_conf):
    os.system("grep Mike " + astr_out + " >" +star_data_file + " 2>&1" )
 
    cmd = "/usr/bin/jpegtopnm " + cal_file + "|/usr/local/astrometry/bin/plot-constellations -w " + wcs_file + " -o " + grid_file + " -i - -N -C -G 600 > /dev/null 2>&1 "
+   print(cmd)
    os.system(cmd)
 
    cmd = "/usr/local/astrometry/bin/wcsinfo " + wcs_file + " > " + wcs_info_file 
