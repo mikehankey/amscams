@@ -1078,7 +1078,7 @@ def get_catalog_stars(fov_poly, pos_poly, cal_params,dimension,x_poly,y_poly,min
 
    return(catalog_stars)
 
-def find_close_stars_fwd(star_point, catalog_stars,match_thresh=4):
+def find_close_stars_fwd(star_point, catalog_stars,match_thresh=5):
    star_ra, star_dec = star_point
    dt = 20
    temp= []
