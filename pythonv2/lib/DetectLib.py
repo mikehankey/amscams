@@ -178,7 +178,7 @@ def check_for_motion2(frames, video_file, cams_id, json_conf, show = 0):
 
    image_acc = preload_image_acc(frames)
    thresh = np.mean(frames[0])
-   thresh = thresh + 80
+   thresh = 25
    fc = 0
    for orig_frame in frames:
       if len(objects) > 50:

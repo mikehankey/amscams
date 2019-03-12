@@ -1219,7 +1219,7 @@ def main_page(json_conf):
    json_file = json_conf['site']['proc_dir'] + "json/" + "main-index.json"
    stats_data = load_json_file(json_file)
 
-   for day in stats_data: 
+   for day in sorted(stats_data, reverse=True): 
       day_str = day
       day_dir = json_conf['site']['proc_dir'] + day + "/" 
       if "meteor" not in day_dir and "daytime" not in day_dir and "json" not in day_dir and "trash" not in day_dir:
