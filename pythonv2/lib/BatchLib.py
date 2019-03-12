@@ -36,14 +36,16 @@ def purge_data(json_conf):
    hd_video_dir = json_conf['site']['hd_video_dir']
    disk_thresh = 80   
 
-
-   cmd = "df -h | grep ams2"
-   output = subprocess.check_output(cmd, shell=True).decode("utf-8")
-   stuff = output.split(" ")
-   print(stuff)
-   for st in stuff:
-      if "%" in st:
-         disk_perc = int(st.replace("%", ""))
+   try:
+      cmd = "df -h | grep ams2"
+      output = subprocess.check_output(cmd, shell=True).decode("utf-8")
+      stuff = output.split(" ")
+      print(stuff)
+      for st in stuff:
+         if "%" in st:
+            disk_perc = int(st.replace("%", ""))
+   except:
+      disk_perc = 81
    if disk_perc > disk_thresh:
       print("DELETE some stuff...")
       # delete HD Daytime Files older than 1 day

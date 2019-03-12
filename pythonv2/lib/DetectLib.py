@@ -177,7 +177,8 @@ def check_for_motion2(frames, video_file, cams_id, json_conf, show = 0):
    fc = 0
 
    image_acc = preload_image_acc(frames)
-   thresh = 25
+   thresh = np.mean(frames[0])
+   thresh = thresh + 80
    fc = 0
    for orig_frame in frames:
       if len(objects) > 50:
@@ -234,13 +235,15 @@ def check_for_motion2(frames, video_file, cams_id, json_conf, show = 0):
 
                if px_diff > 10 and fc > 5 :
                   object, objects = id_object(cnts[i], objects,fc, max_loc)
-                  if show == 1:
+                  if show == 0 or show == 1:
                      cv2.putText(nice_frame, str(object['oid']),  (x-5,y-5), cv2.FONT_HERSHEY_SIMPLEX, .4, (255, 255, 255), 1)
                      cv2.rectangle(nice_frame, (x, y), (x + w, y + h), (255, 0, 0,.02), 2)
          if show == 1 and fc % 2 == 0:
             show_frame = cv2.resize(nice_frame, (0,0), fx=0.5, fy=0.5)
             cv2.imshow('pepe', show_frame)
             cv2.waitKey(1)
+      frame_file = "/mnt/ams2/tmp/" + str(fc) + "obj.png"
+      cv2.imwrite(frame_file, thresh_obj)
       fc = fc + 1
    return(objects)
 

@@ -275,7 +275,6 @@ def reduce_meteor_ajax(json_conf,meteor_json_file, cal_params_file, show = 0):
       start_clip = 0
    end_clip = end_clip + 50
 
-
    (cal_date, cam_id, cal_date_str,Y,M,D, H, MM, S) = better_parse_file_date(cal_params_file)
    cal_params = load_json_file(cal_params_file) 
    (f_datetime, cam_id, f_date_str,Y,M,D, H, MM, S) = better_parse_file_date(meteor_json_file)
@@ -318,7 +317,9 @@ def reduce_meteor_ajax(json_conf,meteor_json_file, cal_params_file, show = 0):
    objects = {}
 
    #objects = track_bright_objects(frames, sd_video_file, cam_id, meteor_obj, json_conf, show)
+   #print(len(frames))
    objects = check_for_motion2(frames, sd_video_file,cam_id, json_conf,show)
+   #print(objects)
 
    # do track brightest object here instead of check_for_motion2? 
 

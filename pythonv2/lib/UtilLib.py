@@ -138,7 +138,11 @@ def convert_filename_to_date_cam(file):
    if "-" in filename:
       xxx = filename.split("-")
       filename = xxx[0]
-   fy,fm,fd,fh,fmin,fs,fms,cam = filename.split("_")
+   el = filename.split("_")
+   if len(el) >= 8:
+      fy,fm,fd,fh,fmin,fs,fms,cam = el[0], el[1], el[2], el[3], el[4], el[5], el[6], el[7]
+   else:
+      fy,fm,fd,fh,fmin,fs,fms,cam = "1999", "01", "01", "00", "00", "00", "000", "010001"
    f_date_str = fy + "-" + fm + "-" + fd + " " + fh + ":" + fmin + ":" + fs
    f_datetime = datetime.datetime.strptime(f_date_str, "%Y-%m-%d %H:%M:%S")
    return(f_datetime, cam, f_date_str,fy,fm,fd, fh, fmin, fs)
