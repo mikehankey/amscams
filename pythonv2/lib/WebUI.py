@@ -323,7 +323,7 @@ def list_meteors(json_conf, form):
    files = glob.glob("/mnt/ams2/meteors/" + meteor_date + "/*.json")
    meteors = []
    for file in files:
-      if "reduced" not in file and "calparams" not in file:
+      if "reduced" in file:
          meteors.append(file)
 
    print(json.dumps(meteors))

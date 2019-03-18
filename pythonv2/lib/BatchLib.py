@@ -3,16 +3,41 @@ import subprocess
 import numpy as np
 import cv2
 import glob
+import urllib.request
+import json
 from lib.FileIO import get_day_stats, load_json_file, cfe, get_days, save_json_file,load_json_file, purge_hd_files, purge_sd_daytime_files, purge_sd_nighttime_files
 from lib.ImageLib import draw_stack, thumb, stack_glob, stack_stack, stack_frames
 from PIL import Image
 from lib.VideoLib import load_video_frames
 
+def sync_event(meteor_json_url, meteor_date):
+   meteor_json_url = meteor_json_url.replace(".json", "-reduced.json")
+   meteor_data = urllib.request.urlopen(meteor_json_url).read()
+   meteor_data_json = json.loads(meteor_data.decode("utf-8"))
+   print(meteor_data_json)
+
+
 def sync_multi_station(json_conf):
+   meteor_date = "2019_03_17"
    sync_urls = load_json_file("/home/ams/amscams/conf/sync_urls.json")
    stations = json_conf['site']['multi_station_sync']
    for station in stations:
-      print(station, sync_urls['sync_urls'][station])
+      url = sync_urls['sync_urls'][station]
+      url = url + "pycgi/webUI.py?cmd=list_meteors&meteor_date=" + meteor_date 
+      multi_dir = "/mnt/ams2/multi_station/" + meteor_date
+      if cfe(multi_dir, 1) == 0:
+         os.system("mkdir " + multi_dir)
+      station_data = urllib.request.urlopen(url).read()
+      dc_station_data = json.loads(station_data.decode("utf-8"))
+      print(dc_station_data)
+      multi_file = multi_dir + "/" + station + "_" + meteor_date + ".txt"
+      save_json_file(multi_file, dc_station_data)
+      data = load_json_file(multi_file)
+      for file in data:
+         print(file)
+         file_url = sync_urls['sync_urls'][station] + file
+         sync_event(file_url, meteor_date)
+      
 
 def batch_doHD(json_conf):
    proc_dir = json_conf['site']['proc_dir']
