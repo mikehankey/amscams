@@ -4,6 +4,7 @@ import cgi
 import time
 import glob
 import os
+import json
 from lib.FileIO import get_proc_days, get_day_stats, get_day_files , load_json_file, get_trims_for_file, get_days, save_json_file, cfe, save_meteor
 from lib.VideoLib import get_masks, convert_filename_to_date_cam, ffmpeg_trim , load_video_frames
 from lib.DetectLib import check_for_motion2 
@@ -195,6 +196,9 @@ def controller(json_conf):
    if cmd == 'make_plate_from_points':
       make_plate_from_points(json_conf,form)
       exit()
+   if cmd == 'list_meteors':
+      list_meteors(json_conf,form)
+      exit()
    if cmd == 'solve_field':
       solve_field(json_conf,form)
       exit()
@@ -313,6 +317,16 @@ def controller(json_conf):
    #day = form.getvalue('day')
 
 
+
+def list_meteors(json_conf, form):
+   meteor_date = form.getvalue("meteor_date")
+   files = glob.glob("/mnt/ams2/meteors/" + meteor_date + "/*.json")
+   meteors = []
+   for file in files:
+      if "reduced" not in file:
+         meteors.append(file)
+
+   print(json.dumps(meteors))
 
 
 def get_cal_params(json_conf,cams_id):

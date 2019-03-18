@@ -8,6 +8,12 @@ from lib.ImageLib import draw_stack, thumb, stack_glob, stack_stack, stack_frame
 from PIL import Image
 from lib.VideoLib import load_video_frames
 
+def sync_multi_station(json_conf):
+   sync_urls = load_json_file("/home/ams/amscams/conf/sync_urls.json")
+   stations = json_conf['site']['multi_station_sync']
+   for station in stations:
+      print(station, sync_urls['sync_urls'][station])
+
 def batch_doHD(json_conf):
    proc_dir = json_conf['site']['proc_dir']
    all_days = get_days(json_conf)
