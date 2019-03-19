@@ -4,33 +4,148 @@ from sympy import Point3D, Line3D, Segment3D, Plane
 import sys
 import numpy as np
 import matplotlib as mpl
-mpl.use('Agg')
+#mpl.use('Agg')
 import matplotlib.pyplot as plt
 from mpl_toolkits.mplot3d import Axes3D
 from mpl_toolkits.mplot3d.art3d import Poly3DCollection
 from lib.UtilLib import convert_filename_to_date_cam
 from lib.FileIO import cfe
-
+import simplekml
 
 from mpl_toolkits import mplot3d
 import math
 from lib.FileIO import load_json_file, save_json_file
 
+def make_kmz(meteor):
+   kml = simplekml.Kml()
+
+   for key in meteor:
+      if "obs" in key:
+         obs_lon = meteor[key]['x2_lat'] 
+         obs_lat = meteor[key]['y2_lon'] 
+         point = kml.newpoint(name=key,coords=[(obs_lon,obs_lat)])
+
+   for key in meteor['meteor_points_lat_lon']:
+      for lon,lat,alt in meteor['meteor_points_lat_lon'][key]:
+         alt = alt * 1000
+         print(lat,lon,alt)
+         point = kml.newpoint(coords=[(lon,lat,alt)])
+         point.altitudemode = simplekml.AltitudeMode.relativetoground
+   kml.save("test.kml")
+
+def plot_meteor_ms(meteor):
+   fig_file = meteor_file.replace(".json", "-fig2.png")
+   fig = plt.figure()
+   ax = Axes3D(fig)
+   xs = []
+   ys = []
+   zs = []
+  
+   for key in meteor:
+      if "obs" in key:
+
+      #nmx = (mx / (111.32 * math.cos(meteor['obs1']['ObsY']*math.pi/180))) + meteor['obs1']['lat']
+      #nmy = (my / (111.14)) + meteor['obs1']['lon']
+
+         #ox = (float(meteor[key]['ObsX'])/ (111.32 * math.cos(meteor['obs1']['ObsY']*math.pi/180))) + meteor['obs1']['lat']
+         #oy = (float(meteor[key]['ObsY']) / 111.14) + meteor['obs1']['lon']
+
+         ox = meteor['obs1']['lon'] + meteor[key]['ObsX'] / (111.32 * math.cos(meteor['obs1']['lat']*math.pi/180))
+         oy = meteor['obs1']['lat'] + (meteor[key]['ObsY'] / 111.14) 
+
+         xs.append(ox)
+         ys.append(oy)
+         zs.append(float(meteor[key]['ObsZ']))
+         ax.text(ox, oy,meteor[key]['ObsZ'],meteor[key]['station_name'],fontsize=10)
+         meteor[key]['x2_lat'] = ox
+         meteor[key]['y2_lon'] = oy
+       
+
+   #ax.text(Obs1Lon, Obs1Lat,Obs1Alt,Obs1Station,fontsize=10)
+   ax.scatter3D(xs,ys,zs,c='r',marker='o')
+
+   xs = []
+   ys = []
+   zs = []
+   plane_colors = {}
+   plane_colors['obs1'] = 'b'
+   plane_colors['obs2'] = 'g'
+   plane_colors['obs3'] = 'y'
+   cc = 0
+   meteor_points_lat_lon = {}
+   #long = long1 + BolideX / (111.32 * math.cos(lat1*math.pi/180));
+   #lat = lat1 + (BolideY / 111.14);
+   for key in meteor['meteor_points']:
+      plane_key,line_key = key.split("-")
+      meteor_points_lat_lon[key] = []
+      ox = meteor['obs1']['lon'] + meteor[line_key]['ObsX'] / (111.32 * math.cos(meteor['obs1']['lat']*math.pi/180))
+      oy = meteor['obs1']['lat'] + (meteor[line_key]['ObsY'] / 111.14) 
+
+      oz = meteor[line_key]['ObsZ']
+      for x,y,z in meteor['meteor_points'][key]:
+         x = meteor['obs1']['lon'] + x / (111.32 * math.cos(meteor['obs1']['lat']*math.pi/180))
+         y = (y / 111.14) + meteor['obs1']['lat']
+
+
+         xs.append(x)
+         ys.append(y)
+         zs.append(z)
+         meteor_points_lat_lon[key].append((x,y,z))
+         color = plane_colors[line_key]
+         ax.plot([ox,x],[oy,y],[oz,z],c=color) 
+   ax.scatter3D(xs,ys,zs,c='r',marker='x')
+   meteor['meteor_points_lat_lon'] = meteor_points_lat_lon
+
+
+   plt.show()
+   return(meteor)
+
+
 def plot_meteor_obs(meteor, meteor_file):
    fig_file = meteor_file.replace(".json", "-fig2.png")
    fig = plt.figure()
    ax = Axes3D(fig)
-   x = [meteor['obs1']['ObsX'], meteor['obs2']['ObsX']]
-   y = [meteor['obs1']['ObsY'], meteor['obs2']['ObsY']]
-   z = [meteor['obs1']['ObsZ'], meteor['obs2']['ObsZ']]
+   #lat = lat1 + (BolideY / 111.14);
+   #long = long1 + BolideX / (111.32 * math.cos(lat1*math.pi/180));
+
+   Obs1Station = meteor['obs1']['station_name']
+   Obs1Lon = (meteor['obs1']['ObsX'] / (111.32 * math.cos(meteor['obs1']['ObsY']*math.pi/180))) + meteor['obs1']['lat']
+   Obs1Lat = (meteor['obs1']['ObsY'] / (111.14)) + meteor['obs1']['lon']
+   Obs1Alt = meteor['obs1']['ObsZ'] 
+   ax.text(Obs1Lon, Obs1Lat,Obs1Alt,Obs1Station,fontsize=10)
+
+   Obs2Station = meteor['obs2']['station_name']
+   Obs2Lon = (meteor['obs2']['ObsX'] / (111.32 * math.cos(meteor['obs2']['ObsY']*math.pi/180))) + meteor['obs2']['lat']
+   Obs2Lat = (meteor['obs2']['ObsY'] / (111.14)) + meteor['obs2']['lon']
+   Obs2Alt = meteor['obs2']['ObsZ'] 
+   ax.text(Obs2Lon, Obs2Lat,Obs2Alt,Obs2Station,fontsize=10)
+
+   print("OBS1:", Obs1Lon, Obs1Lat, Obs1Alt)
+   print("OBS2:", Obs2Lon, Obs2Lat, Obs2Alt)
+
+   #x = [meteor['obs1']['ObsX'], meteor['obs2']['ObsX']]
+   #y = [meteor['obs1']['ObsY'], meteor['obs2']['ObsY']]
+   #z = [meteor['obs1']['ObsZ'], meteor['obs2']['ObsZ']]
+
+   x = [Obs1Lon, Obs2Lon]
+   y = [Obs1Lat, Obs2Lat]
+   z = [Obs1Alt, Obs2Alt]
    ax.scatter3D(x,y,z,c='r',marker='o')
  
    meteor_points1 = meteor['meteor_points1']
    meteor_points2 = meteor['meteor_points2']
+
    for mx,my,mz in meteor_points1:
-      ax.plot([meteor['obs1']['ObsX'],mx],[meteor['obs1']['ObsY'],my],[meteor['obs1']['ObsZ'],mz],c='g')
+      nmx = (mx / (111.32 * math.cos(meteor['obs1']['ObsY']*math.pi/180))) + meteor['obs1']['lat']
+      nmy = (my / (111.14)) + meteor['obs1']['lon']
+      ax.plot([Obs1Lon,nmx],[Obs1Lat,nmy],[Obs1Alt,mz],c='g')
    for mx,my,mz in meteor_points1:
-      ax.plot([meteor['obs2']['ObsX'],mx],[meteor['obs2']['ObsY'],my],[meteor['obs2']['ObsZ'],mz],c='g')
+      nmx = (mx / (111.32 * math.cos(meteor['obs1']['ObsY']*math.pi/180))) + meteor['obs1']['lat']
+      nmy = (my / (111.14)) + meteor['obs1']['lon']
+      ax.plot([Obs2Lon,nmx],[Obs2Lat,nmy],[Obs2Alt,mz],c='b')
+   ax.set_xlabel('Longitude')
+   ax.set_ylabel('Latitude')
+   ax.set_zlabel('Altitude')
 
    plt.savefig(fig_file)
 
@@ -66,6 +181,56 @@ def plot_meteor(meteor, meteor_file):
    plt.show()
    plt.savefig(fig_file)
 
+def compute_ms_solution(meteor):
+   vfact = 180
+   for key in meteor:
+      if "obs" in key:
+         vp = []
+         for data in meteor[key]['mo_vectors'] :
+            vx,vy,vz = data
+            veX = meteor[key]['ObsX'] + ( vx * vfact)
+            veY = meteor[key]['ObsY'] + ( vy * vfact)
+            veZ = meteor[key]['ObsZ'] + ( vz * vfact)
+            vp.append((veX,veY,veZ))
+         meteor[key]['vector_points'] = vp
+
+   planes = {}
+   for key in meteor:
+      if "obs" in key :
+         mod = meteor[key]
+         print(mod) 
+         planes[key] = Plane( \
+            Point3D(mod['ObsX'],mod['ObsY'],mod['ObsZ']), \
+            Point3D(mod['vector_points'][0][0],mod['vector_points'][0][1],mod['vector_points'][0][2]), \
+            Point3D(mod['vector_points'][-1][0],mod['vector_points'][-1][1], mod['vector_points'][-1][2]))
+   print(planes)
+
+   meteor_points = {}
+
+
+   for pkey in planes: 
+      plane = planes[pkey]
+      for key in meteor:
+         if "obs" in key and key != pkey:
+            mod = meteor[key]
+            point_key = pkey + "-" + key
+            meteor_points[point_key] = []
+            for veX,veY,veZ in mod['vector_points']:
+
+               print("LINE DATA:", mod['ObsX'],mod['ObsY'],mod['ObsZ'],veX,veY,veZ)
+               line = Line3D(Point3D(mod['ObsX'],mod['ObsY'],mod['ObsZ']),Point3D(veX,veY,veZ))
+
+               inter = plane.intersection(line)
+               print(inter[0])
+               mx = float((eval(str(inter[0].x))))
+               my = float((eval(str(inter[0].y))))
+               mz = float((eval(str(inter[0].z))))
+               meteor_points[point_key].append((mx,my,mz))
+
+   meteor['meteor_points'] = meteor_points
+   #print(meteor_points)
+   return(meteor)      
+         
 
 def compute_solution(meteor):
    # vector factor
@@ -265,72 +430,92 @@ def make_obs_vectors(mo):
       mo_vectors.append((vx,vy,vz))
    return(mo_vectors)
 
-def setup_obs(mo1,mo2):
+def setup_obs(meteors_obs):
+
    meteor = {}
+   mos = {}
+   lats = []
+   lons = []
+   alts = []
+   for i in range(1,len(meteor_obs)+1):
+      mokey = 'mo' + str(i)
+      obskey = 'obs' + str(i)
+      mo = meteor_obs[mokey]
+      mos[mokey] = mo
+      meteor[obskey] = {}
+      lats.append(float(mos[mokey]['cal_params']['site_lat']))
+      lons.append(float(mos[mokey]['cal_params']['site_lng']))
+      alts.append(float(mos[mokey]['cal_params']['site_alt']) / 1000)
 
-   meteor['obs1'] = {}
-   meteor['obs2'] = {}
+   # determine base lat/lon (use first observer) 
 
-   lat1 =  float(mo1['cal_params']['site_lat'])
-   lon1 =  float(mo1['cal_params']['site_lng'])
-   alt1 =  float(mo1['cal_params']['site_alt']) / 1000
 
-   lat2 =  float(mo2['cal_params']['site_lat'])
-   lon2 =  float(mo2['cal_params']['site_lng'])
-   alt2 =  float(mo2['cal_params']['site_alt']) / 1000
-
-   Obs1Z = alt1
+   Obs1Z = alts[0]
    Obs1Y = 0 
    Obs1X = 0 
 
-   Obs2Z = alt2 - alt1
-   Obs2Y = (lat2 - lat1)*111.14
-   Obs2X = (lon2 - lon1)*111.32*math.cos(((lat1+lat2)/2)*math.pi/180)
-
-   meteor['obs1']['lat'] = lat1
-   meteor['obs1']['lon'] = lon1
-   meteor['obs1']['alt'] = alt1
+   meteor['obs1']['station_name'] = mo1['station_name']
+   meteor['obs1']['lat'] = lats[0]
+   meteor['obs1']['lon'] = lons[0]
+   meteor['obs1']['alt'] = alts[0]
    meteor['obs1']['ObsX'] = Obs1X
    meteor['obs1']['ObsY'] = Obs1Y
    meteor['obs1']['ObsZ'] = Obs1Z
+   meteor['obs1']['mo_vectors'] = make_obs_vectors(meteor_obs['mo1'])
 
-   meteor['obs2']['lat'] = lat2
-   meteor['obs2']['lon'] = lon2
-   meteor['obs2']['alt'] = alt2
-   meteor['obs2']['ObsX'] = Obs2X
-   meteor['obs2']['ObsY'] = Obs2Y
-   meteor['obs2']['ObsZ'] = Obs2Z
 
-   mo1_vec =  make_obs_vectors(mo1)
-   mo2_vec =  make_obs_vectors(mo2)
+   for i in range(2,len(meteor_obs)+1):
+      obskey = "obs" + str(i) 
+      mokey = 'mo' + str(i)
 
-   meteor['obs1']['vectors'] = mo1_vec
-   meteor['obs2']['vectors'] = mo2_vec
 
-   x = [Obs1X,Obs2X]
-   y = [Obs1Y,Obs2Y]
-   z = [Obs1Z,Obs2Z]
 
-   #print(meteor)
-   plot_xyz(x,y,z,meteor)
+      meteor[obskey]['station_name'] = meteor_obs[mokey]['station_name']
+      meteor[obskey]['lat'] = lats[i-1]
+      meteor[obskey]['lon'] = lons[i-1]
+      meteor[obskey]['alt'] = alts[i-1]
+      meteor[obskey]['ObsZ'] = alts[i-1] - alts[0]
+      meteor[obskey]['ObsY'] = (lats[i-1]- lats[0])*111.14
+      meteor[obskey]['ObsX'] = (lons[i-1] - lons[0])*111.32*math.cos(((lats[0]+lats[i-1])/2)*math.pi/180)
+      meteor[obskey]['mo_vectors'] = make_obs_vectors(meteor_obs[mokey])
+
    return(meteor)
 
-obs1_file, obs2_file = sys.argv[1], sys.argv[2]
 
-hd_datetime, cam1, hd_date, hd_y, hd_m, hd_d, hd_h, hd_M, hd_s = convert_filename_to_date_cam(obs1_file)
-hd_datetime, cam2, hd_date, hd_y, hd_m, hd_d, hd_h, hd_M, hd_s = convert_filename_to_date_cam(obs2_file)
-meteor_file = "/mnt/ams2/multi_station/" + hd_y + "_" + hd_m + "_" + hd_d + "/" + hd_y + "_" + hd_m + "_" + hd_d + hd_h + "_" + hd_M + "_" + hd_s + "_" + cam1 + "_" + cam2 + "-solved.json" 
-print(meteor_file)
-if cfe(meteor_file) == 0:
+if len(sys.argv) == 3:
+   obs1_file, obs2_file = sys.argv[1], sys.argv[2]
+   hd_datetime, cam1, hd_date, hd_y, hd_m, hd_d, hd_h, hd_M, hd_s = convert_filename_to_date_cam(obs1_file)
+   hd_datetime, cam2, hd_date, hd_y, hd_m, hd_d, hd_h, hd_M, hd_s = convert_filename_to_date_cam(obs2_file)
+   meteor_file = "/mnt/ams2/multi_station/" + hd_y + "_" + hd_m + "_" + hd_d + "/" + hd_y + "_" + hd_m + "_" + hd_d + "_" + hd_h + "_" + hd_M + "_" + hd_s + "_" + cam1 + "_" + cam2 + "-solved.json" 
    mo1 = load_json_file(obs1_file)
    mo2 = load_json_file(obs2_file)
-   meteor = setup_obs(mo1,mo2)
-   meteor = compute_solution(meteor)
+   meteor_obs = {}
+   meteor_obs['mo1'] = mo1
+   meteor_obs['mo2'] = mo2
+
+if len(sys.argv) == 4:
+   obs1_file, obs2_file,obs3_file = sys.argv[1], sys.argv[2], sys.argv[3]
+   hd_datetime, cam1, hd_date, hd_y, hd_m, hd_d, hd_h, hd_M, hd_s = convert_filename_to_date_cam(obs1_file)
+   hd_datetime, cam2, hd_date, hd_y, hd_m, hd_d, hd_h, hd_M, hd_s = convert_filename_to_date_cam(obs2_file)
+   hd_datetime, cam3, hd_date, hd_y, hd_m, hd_d, hd_h, hd_M, hd_s = convert_filename_to_date_cam(obs3_file)
+   meteor_file = "/mnt/ams2/multi_station/" + hd_y + "_" + hd_m + "_" + hd_d + "/" + hd_y + "_" + hd_m + "_" + hd_d + "_" + hd_h + "_" + hd_M + "_" + hd_s + "_" + cam1 + "_" + cam2 + "_" + cam3 + "-solved.json" 
+   mo1 = load_json_file(obs1_file)
+   mo2 = load_json_file(obs2_file)
+   mo3 = load_json_file(obs3_file)
+   meteor_obs = {}
+   meteor_obs['mo1'] = mo1
+   meteor_obs['mo2'] = mo2
+   meteor_obs['mo3'] = mo3
+
+if cfe(meteor_file) == 0:
+   meteor = setup_obs(meteor_obs)
+   #meteor = compute_solution(meteor)
+   meteor = compute_ms_solution(meteor)
 else:
    meteor = load_json_file(meteor_file)
-  
-#plot_meteor(meteor,meteor_file)
-plot_meteor_obs(meteor, meteor_file)
+   meteor = plot_meteor_ms(meteor)
+#plot_meteor_obs(meteor, meteor_file)
 save_json_file(meteor_file, meteor)
+make_kmz(meteor)
 
 
