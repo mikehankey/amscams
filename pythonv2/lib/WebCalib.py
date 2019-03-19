@@ -17,6 +17,11 @@ from lib.ImageLib import mask_frame,stack_frames, adjustLevels, upscale_to_hd, m
 from lib.CalibLib import radec_to_azel, clean_star_bg, get_catalog_stars, find_close_stars, XYtoRADec, HMS2deg, AzEltoRADec
 from lib.UtilLib import check_running, calc_dist, angularSeparation, bound_cnt
 
+def man_reduce(json_conf,form):
+   print("<h2>Manually Reduce</h2>")
+   file = form.getvalue('file')
+   print(file)
+
 def test_star(cnt_img, fname=None):
    ch,cw = cnt_img.shape
    min_val, max_val, min_loc, max_loc = cv2.minMaxLoc(cnt_img)
@@ -714,6 +719,7 @@ def reduce_meteor(json_conf,form):
 <span style="padding: 5px"> End RA/DEC: """ + str(end_ra)[0:5] + "/" + str(end_dec)[0:5] + """</span><br>
 <span style="padding: 5px"> Start AZ/EL: """ + str(start_az)[0:5] + "/" + str(start_el)[0:5] + """</span><br>
 <span style="padding: 5px"> End AZ/EL: """ + str(end_az)[0:5] + "/" + str(end_el)[0:5] + """</span><br>
+<span style="padding: 5px"> <a target='_blank' href=\"webUI.py?cmd=man_reduce&file=""" + mj['sd_stack']+ """\">Manualy Reduce</a></span><br>
 
 <span style="padding: 5px"> <B>Media Files</B></span><br>
 <span style="padding: 5px"> <a target='_blank' href=javascript:play_video('""" + mj['sd_video_file']+ """')>SD Video</a></span><br>
@@ -1284,6 +1290,7 @@ def get_hd_filenames(hd_video_file):
 def better_parse_file_date(input_file):
    el = input_file.split("/")
    fn = el[-1]
+   print(input_file)
    ddd = fn.split("_")
    Y = ddd[0]
    M = ddd[1]

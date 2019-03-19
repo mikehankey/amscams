@@ -11,7 +11,7 @@ from lib.DetectLib import check_for_motion2
 from lib.MeteorTests import test_objects
 from lib.ImageLib import mask_frame , draw_stack, stack_frames
 from lib.CalibLib import radec_to_azel
-from lib.WebCalib import calibrate_pic,make_plate_from_points, solve_field, check_solve_status, free_cal, show_cat_stars, choose_file, upscale_2HD, fit_field, delete_cal, add_stars_to_fit_pool, save_add_stars_to_fit_pool, reduce_meteor, reduce_meteor_ajax, find_stars_ajax
+from lib.WebCalib import calibrate_pic,make_plate_from_points, solve_field, check_solve_status, free_cal, show_cat_stars, choose_file, upscale_2HD, fit_field, delete_cal, add_stars_to_fit_pool, save_add_stars_to_fit_pool, reduce_meteor, reduce_meteor_ajax, find_stars_ajax, man_reduce
 
 
 
@@ -252,6 +252,8 @@ def controller(json_conf):
 
    if cmd == 'free_cal':
       free_cal(json_conf, form)
+   if cmd == 'man_reduce':
+      man_reduce(json_conf,form)
 
    if cmd == 'choose_file':
       choose_file(json_conf,form)
