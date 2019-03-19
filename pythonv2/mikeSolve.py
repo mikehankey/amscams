@@ -1,18 +1,41 @@
 #!/usr/bin/python3
 
 from sympy import Point3D, Line3D, Segment3D, Plane
-
+import sys
 import numpy as np
+import matplotlib as mpl
+mpl.use('Agg')
 import matplotlib.pyplot as plt
 from mpl_toolkits.mplot3d import Axes3D
 from mpl_toolkits.mplot3d.art3d import Poly3DCollection
+from lib.UtilLib import convert_filename_to_date_cam
+from lib.FileIO import cfe
+
 
 from mpl_toolkits import mplot3d
 import math
-import utm
-from lib.FileIO import load_json_file
+from lib.FileIO import load_json_file, save_json_file
 
-def plot_meteor(meteor):
+def plot_meteor_obs(meteor, meteor_file):
+   fig_file = meteor_file.replace(".json", "-fig2.png")
+   fig = plt.figure()
+   ax = Axes3D(fig)
+   x = [meteor['obs1']['ObsX'], meteor['obs2']['ObsX']]
+   y = [meteor['obs1']['ObsY'], meteor['obs2']['ObsY']]
+   z = [meteor['obs1']['ObsZ'], meteor['obs2']['ObsZ']]
+   ax.scatter3D(x,y,z,c='r',marker='o')
+ 
+   meteor_points1 = meteor['meteor_points1']
+   meteor_points2 = meteor['meteor_points2']
+   for mx,my,mz in meteor_points1:
+      ax.plot([meteor['obs1']['ObsX'],mx],[meteor['obs1']['ObsY'],my],[meteor['obs1']['ObsZ'],mz],c='g')
+   for mx,my,mz in meteor_points1:
+      ax.plot([meteor['obs2']['ObsX'],mx],[meteor['obs2']['ObsY'],my],[meteor['obs2']['ObsZ'],mz],c='g')
+
+   plt.savefig(fig_file)
+
+def plot_meteor(meteor, meteor_file):
+   fig_file = meteor_file.replace(".json", "-fig1.png")
    fig = plt.figure()
    ax = Axes3D(fig)
    #print(meteor)
@@ -27,18 +50,21 @@ def plot_meteor(meteor):
    ys = []
    zs = []
    for mx,my,mz in meteor_points1:
-      xs.append(mx)
-      ys.append(my)
-      zs.append(mz)
+      if mz > 10:
+         xs.append(mx)
+         ys.append(my)
+         zs.append(mz)
    ax.scatter3D(xs,ys,zs,marker='x')
 
    for mx,my,mz in meteor_points2:
-      xs.append(mx)
-      ys.append(my)
-      zs.append(mz)
+      if mz > 10:
+         xs.append(mx)
+         ys.append(my)
+         zs.append(mz)
    ax.scatter3D(xs,ys,zs,marker='o')
 
    plt.show()
+   plt.savefig(fig_file)
 
 
 def compute_solution(meteor):
@@ -289,9 +315,22 @@ def setup_obs(mo1,mo2):
    plot_xyz(x,y,z,meteor)
    return(meteor)
 
-mo1 = load_json_file("test1.json")
-mo2 = load_json_file("test2.json")
-meteor = setup_obs(mo1,mo2)
-meteor = compute_solution(meteor)
-plot_meteor(meteor)
+obs1_file, obs2_file = sys.argv[1], sys.argv[2]
+
+hd_datetime, cam1, hd_date, hd_y, hd_m, hd_d, hd_h, hd_M, hd_s = convert_filename_to_date_cam(obs1_file)
+hd_datetime, cam2, hd_date, hd_y, hd_m, hd_d, hd_h, hd_M, hd_s = convert_filename_to_date_cam(obs2_file)
+meteor_file = "/mnt/ams2/multi_station/" + hd_y + "_" + hd_m + "_" + hd_d + "/" + hd_y + "_" + hd_m + "_" + hd_d + hd_h + "_" + hd_M + "_" + hd_s + "_" + cam1 + "_" + cam2 + "-solved.json" 
+print(meteor_file)
+if cfe(meteor_file) == 0:
+   mo1 = load_json_file(obs1_file)
+   mo2 = load_json_file(obs2_file)
+   meteor = setup_obs(mo1,mo2)
+   meteor = compute_solution(meteor)
+else:
+   meteor = load_json_file(meteor_file)
+  
+#plot_meteor(meteor,meteor_file)
+plot_meteor_obs(meteor, meteor_file)
+save_json_file(meteor_file, meteor)
+
 

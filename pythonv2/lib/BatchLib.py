@@ -9,16 +9,45 @@ from lib.FileIO import get_day_stats, load_json_file, cfe, get_days, save_json_f
 from lib.ImageLib import draw_stack, thumb, stack_glob, stack_stack, stack_frames
 from PIL import Image
 from lib.VideoLib import load_video_frames
+from lib.UtilLib import convert_filename_to_date_cam
+
+def get_meteor_files(mdir):
+   files = glob.glob(mdir + "/*-reduced.json")
+   return(files)
+
+def find_multi_station_meteors(json_conf, meteor_date="2019_03_19"):
+   meteor_dir = "/mnt/ams2/meteors/" + meteor_date
+   multi_station_dir = "/mnt/ams2/multi_station/" + meteor_date
+   meteor_files = get_meteor_files(meteor_dir)
+   ms_files = get_meteor_files(multi_station_dir)
+   multi_station_meteors = {}
+   for meteor_file in meteor_files:
+      multi_station_matches = []
+      meteor_datetime, cam_id, hd_date, hd_y, hd_m, hd_d, hd_h, hd_M, hd_s = convert_filename_to_date_cam(meteor_file)
+      print(meteor_datetime)
+      for ms_file in ms_files:
+         ms_datetime, ms_cam_id, ms_date, ms_y, ms_m, ms_d, ms_h, ms_M, ms_s = convert_filename_to_date_cam(ms_file)
+         time_diff = abs((meteor_datetime-ms_datetime).total_seconds())
+         if time_diff < 120:
+            print("\t", ms_datetime, time_diff)
+            multi_station_matches
+            cmd = "./mikeSolve.py " + meteor_file  + " " + ms_file
+            os.system(cmd)
+            print(cmd)
+
 
 def sync_event(meteor_json_url, meteor_date):
-   meteor_json_url = meteor_json_url.replace(".json", "-reduced.json")
    meteor_data = urllib.request.urlopen(meteor_json_url).read()
    meteor_data_json = json.loads(meteor_data.decode("utf-8"))
-   print(meteor_data_json)
+   el = meteor_json_url.split("/")
+   event_file = el[-1]
+   data_file = "/mnt/ams2/multi_station/" + meteor_date + "/" + event_file
+   print("Syncing...", data_file)
+   save_json_file(data_file, meteor_data_json)
 
 
 def sync_multi_station(json_conf):
-   meteor_date = "2019_03_17"
+   meteor_date = "2019_03_19"
    sync_urls = load_json_file("/home/ams/amscams/conf/sync_urls.json")
    stations = json_conf['site']['multi_station_sync']
    for station in stations:
@@ -34,7 +63,7 @@ def sync_multi_station(json_conf):
       save_json_file(multi_file, dc_station_data)
       data = load_json_file(multi_file)
       for file in data:
-         print(file)
+         print(station, file)
          file_url = sync_urls['sync_urls'][station] + file
          sync_event(file_url, meteor_date)
       
