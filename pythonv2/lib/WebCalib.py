@@ -394,6 +394,9 @@ def save_manual_reduction(meteor_json_file,cal_params_file,json_conf):
       hd_x = int(hd_x) * 2
       hd_y = int(hd_y) * 2
       meteor_frame_data.append((frame_time, fn, hd_x,hd_y,w,h,max_px,ra,dec,az,el))
+   meteor_frame_data = sorted(meteor_frame_data, key=lambda x: x[1], reverse=False)
+
+
    first_frame_data = meteor_frame_data[0]
    last_frame_data = meteor_frame_data[-1]
 
