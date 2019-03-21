@@ -11,7 +11,7 @@ from lib.DetectLib import check_for_motion2
 from lib.MeteorTests import test_objects
 from lib.ImageLib import mask_frame , draw_stack, stack_frames
 from lib.CalibLib import radec_to_azel
-from lib.WebCalib import calibrate_pic,make_plate_from_points, solve_field, check_solve_status, free_cal, show_cat_stars, choose_file, upscale_2HD, fit_field, delete_cal, add_stars_to_fit_pool, save_add_stars_to_fit_pool, reduce_meteor, reduce_meteor_ajax, find_stars_ajax, man_reduce
+from lib.WebCalib import calibrate_pic,make_plate_from_points, solve_field, check_solve_status, free_cal, show_cat_stars, choose_file, upscale_2HD, fit_field, delete_cal, add_stars_to_fit_pool, save_add_stars_to_fit_pool, reduce_meteor, reduce_meteor_ajax, find_stars_ajax, man_reduce, pin_point, get_manual_points, del_manual_points
 
 
 
@@ -190,6 +190,15 @@ def controller(json_conf):
       jsid = form.getvalue('jsid')
       override_detect(video_file,jsid,json_conf)
       exit()
+   if cmd == 'get_manual_points':
+      get_manual_points(json_conf,form)
+      exit()
+   if cmd == 'del_manual_points':
+      del_manual_points(json_conf,form)
+      exit()
+   if cmd == 'pin_point':
+      pin_point(json_conf,form)
+      exit()
    if cmd == 'upscale_2HD':
       upscale_2HD(json_conf,form)
       exit()
@@ -253,7 +262,7 @@ def controller(json_conf):
    if cmd == 'free_cal':
       free_cal(json_conf, form)
    if cmd == 'man_reduce':
-      man_reduce(json_conf,form)
+      extra_html = man_reduce(json_conf,form)
 
    if cmd == 'choose_file':
       choose_file(json_conf,form)
@@ -454,7 +463,7 @@ def get_meteors(meteor_dir,meteors):
    glob_dir = meteor_dir + "*-trim*.mp4"
    files = glob.glob(meteor_dir + "/*-trim*.json")
    for file in files:
-      if "calparams" not in file and "reduced" not in file:
+      if "calparams" not in file and "reduced" not in file and "manual" not in file:
          meteors.append(file)
    return(meteors)
   

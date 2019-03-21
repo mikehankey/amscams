@@ -8,7 +8,7 @@ import time
 import glob
 import os
 from lib.FileIO import get_proc_days, get_day_stats, get_day_files , load_json_file, get_trims_for_file, get_days, save_json_file, cfe
-from lib.VideoLib import get_masks, convert_filename_to_date_cam, find_hd_file_new, load_video_frames, find_min_max_dist
+from lib.VideoLib import get_masks, convert_filename_to_date_cam, find_hd_file_new, load_video_frames, find_min_max_dist, ffmpeg_dump_frames
 from lib.DetectLib import check_for_motion2, eval_cnt, find_bright_pixels
 
 from lib.MeteorTests import test_objects
@@ -17,10 +17,94 @@ from lib.ImageLib import mask_frame,stack_frames, adjustLevels, upscale_to_hd, m
 from lib.CalibLib import radec_to_azel, clean_star_bg, get_catalog_stars, find_close_stars, XYtoRADec, HMS2deg, AzEltoRADec
 from lib.UtilLib import check_running, calc_dist, angularSeparation, bound_cnt
 
+
+def man_reduce_canvas(frame_num,thumbs,file,cal_params_file):
+   rand = time.time()
+   c = 0 
+   jstxt = "<script> var imgFiles = new Array(); \n "
+   jstxt = jstxt + " var orig_file = '" + file + "';\n"
+   jstxt = jstxt + " var cal_params_file = '" + cal_params_file + "';\n"
+   for thumb in thumbs:
+      img = thumb.replace("-t", "")
+      c = c + 1
+      jstxt = jstxt + "imgFiles[" + str(c) + "] = \"" + img + "\";\n" 
+
+   fb = thumbs[0].split("frames")
+   frame_base = fb[0]
+
+      #<div style="float:left"><canvas id="c" width="960" height="540" style="border:2px solid #000000;"></canvas></div>
+   jstxt = jstxt + "</script>"
+   print(jstxt)
+   print("""
+      
+      <canvas id="cnv" width="960" height="540" style="border:2px solid #000000;"></canvas>
+      <div style="clear:both">
+      </div>
+      <div>manual reduction</div>
+      <form>
+      <input type=button name=next onclick="javascript:show_frame_image('""" + str(frame_num-1)+ """', '""" + frame_base + """', 'prev','""" + file + "','" + cal_params_file + """')" value="Prev Frame">
+      <input type=button name=next onclick="javascript:show_frame_image('""" + str(frame_num+1)+ """', '""" + frame_base + """', 'next','""" + file + "','" + cal_params_file + """')" value="Next Frame">
+      </form>
+      <div id="info_panel"></div>
+   """)
+   #extra_html = "<script>var stars = [];\n" 
+   extra_html = "<script src=../js/manreduce.js?" + str(rand) + "></script>"
+   extra_html = extra_html + "<script>\n   show_frame_image('" + str(frame_num) + "','" + frame_base + "','prev');\n</script>"
+   return(extra_html)
+
+def calc_frame_time(video_file, frame_num):
+
+   return(frame_time)
+
+def reduce_point(cal_params_file, meteor_json_file, frame_num, point_data,json_conf):
+   cal_params = load_json_file(cal_params_file)
+   (cal_date, cam_id, cal_date_str,Y,M,D, H, MM, S) = better_parse_file_date(cal_params_file)
+   cal_params = load_json_file(cal_params_file)
+   (f_datetime, cam_id, f_date_str,Y,M,D, H, MM, S) = better_parse_file_date(meteor_json_file)
+   (hd_x,hd_y,w,h,mxp) =point_data
+   new_x, new_y, ra ,dec , az, el= XYtoRADec(hd_x,hd_y,cal_params_file,cal_params,json_conf)
+
+
+   return(ra,dec,az,el)
+
+
 def man_reduce(json_conf,form):
    print("<h2>Manually Reduce</h2>")
    file = form.getvalue('file')
-   print(file)
+   cal_params_file = form.getvalue('cal_params_file')
+   scmd = form.getvalue('scmd')
+   (f_datetime, cam_id, f_date_str,Y,M,D, H, MM, S) = better_parse_file_date(file)
+
+   tmp_dir = "/mnt/ams2/tmp/" + Y + "_" + M + "_" + D + "_" + H + "_" + MM + "_" + S + "_" + cam_id + "/"
+   video_file = file.replace("-stacked.png", ".mp4")
+   if scmd is None:
+      if cfe(tmp_dir, 1) == 0:
+         print("MAKE:", tmp_dir)
+         os.system("mkdir " + tmp_dir)
+      ffmpeg_dump_frames(video_file,tmp_dir)
+   thumbs = glob.glob(tmp_dir + "*-t.png")
+   if scmd is None:
+      for thumb in sorted(thumbs):
+         print("<a href=webUI.py?cmd=man_reduce&scmd=2&file=" + file + "&frame=" + thumb + "&cal_params_file=" + cal_params_file + "><img src=" + thumb + "></a>")
+   if scmd == '2':
+      frame = form.getvalue('frame')
+      frame = frame.replace("-t", "")
+      el = frame.split("/")
+      filename = el[-1]
+      trash = filename.split("frames")
+      frame_num = int(trash[-1].replace(".png", ""))
+      next_frame_num = frame_num + 1
+      prev_frame_num = frame_num - 1
+      frame_num_str = "{0:05d}".format(frame_num)
+      prev_frame_num_str = "{0:05d}".format(prev_frame_num)
+      next_frame_num_str = "{0:05d}".format(next_frame_num)
+      next_frame = frame.replace(frame_num_str, next_frame_num_str)
+      prev_frame = frame.replace(frame_num_str, prev_frame_num_str)
+      #print("<img src=" + frame + "><br>" + str(frame_num) + " " + frame_num_str)
+      #print("<a href=webUI.py?cmd=man_reduce&scmd=2&file=" + file + "&frame=" + prev_frame + "> Prev </a>")
+      #print("<a href=webUI.py?cmd=man_reduce&scmd=2&file=" + file + "&frame=" + next_frame + "> Next  </a>")
+      extra = man_reduce_canvas(frame_num, thumbs,file,cal_params_file)
+      return(extra)
 
 def test_star(cnt_img, fname=None):
    ch,cw = cnt_img.shape
@@ -264,6 +348,205 @@ def remove_obj_dupes(object):
          unique_px.append((fn,x,y,w,h,mx,my))
    return(unique_px)
 
+def get_manual_points(json_conf, form):
+   response = {}
+   response['status'] = 1
+   response['message'] = "get points"
+   print(json.dumps(response))
+   frame_file = form.getvalue("frame_file")
+   crp = frame_file.split("frames")
+   frame_num = int(crp[-1].replace(".png", ""))
+   orig_file = form.getvalue("orig_file")
+
+   man_json_file = orig_file.replace("-stacked.png", "-manual.json")
+   if cfe(man_json_file) == 0:
+      man_json = {}
+   else:
+      man_json = load_json_file(man_json_file)
+   
+   response['manual_frame_data'] = man_json
+
+
+def save_manual_reduction(meteor_json_file,cal_params_file,json_conf):
+   meteor_json_file = meteor_json_file.replace("-stacked.png", ".json")
+   print(meteor_json_file)
+   man_file = meteor_json_file.replace(".json", "-manual.json")
+   mj = load_json_file(meteor_json_file)
+
+   man_json = load_json_file(man_file) 
+   meteor_frame_data = []
+   for key in man_json:
+      meteor_frame_data.append(man_json[key])
+   first_frame_data = meteor_frame_data[0]
+   last_frame_data = meteor_frame_data[-1]
+
+   (start_frame_time,start_frame,sx,sy,sw,mx,my,sh,smp,sra,sdec,saz,sel) = first_frame_data
+   (end_frame_time,end_frame,ex,ey,ew,eh,emx,emy,emp,era,edec,eaz,eel) = last_frame_data
+
+   (cal_date, cam_id, cal_date_str,Y,M,D, H, MM, S) = better_parse_file_date(cal_params_file)
+   cal_params = load_json_file(cal_params_file)
+   (f_datetime, cam_id, f_date_str,Y,M,D, H, MM, S) = better_parse_file_date(meteor_json_file)
+
+   start_clip_time_str = str(f_datetime)
+   sd_video_file = mj['sd_video_file']
+   hd_video_file = mj['hd_trim']
+   meteor_dir = "/mnt/ams2/meteors/" + Y + "_" + M + "_" + D + "/"
+   el = sd_video_file.split("/")
+   fn = el[-1]
+   fin_sd_video_file = meteor_dir + fn
+
+   if hd_video_file != 0 and hd_video_file != None:
+      el = hd_video_file.split("/")
+      fn = el[-1] 
+      fin_hd_video_file = meteor_dir + fn
+   else:
+      fin_hd_video_file = sd_video_file
+
+   max_max_px= 0
+   elp_dur = (end_frame - start_frame) / 25
+
+   vf_type = "SD"
+   fin_sd_stack = fin_sd_video_file.replace(".mp4", ".png")
+   fin_hd_stack = fin_hd_video_file.replace(".mp4", ".png")
+   fin_reduced_video = fin_sd_video_file.replace(".mp4", "-reduced.mp4")
+   fin_reduced_stack = fin_sd_video_file.replace(".mp4", "-reduced.png")
+
+
+   response = {}
+   response['status'] = 1
+   response['message'] = "Reduction Saved"
+   meteor_reduced = {}
+   meteor_reduced['api_key'] = json_conf['site']['api_key']
+   meteor_reduced['station_name'] = json_conf['site']['ams_id']
+   meteor_reduced['device_name'] = cam_id
+   meteor_reduced['sd_video_file'] = fin_sd_video_file
+   meteor_reduced['hd_video_file'] = fin_hd_video_file
+   meteor_reduced['sd_stack'] = fin_sd_stack
+   meteor_reduced['hd_stack'] = fin_hd_stack
+   meteor_reduced['reduced_stack'] = fin_reduced_stack
+   meteor_reduced['reduced_video'] = fin_reduced_video
+   meteor_reduced['vf_type'] = vf_type
+   meteor_reduced['event_start_time'] = start_frame_time 
+   meteor_reduced['event_duration'] = float(elp_dur)
+   meteor_reduced['peak_magnitude'] = int(max_max_px)
+   meteor_reduced['start_az'] = saz 
+   meteor_reduced['start_el'] = sel
+   meteor_reduced['end_az'] = eaz
+   meteor_reduced['end_el'] = eel
+   meteor_reduced['start_ra'] = sra
+   meteor_reduced['start_dec'] = sdec
+   meteor_reduced['end_ra'] = era
+   meteor_reduced['end_dec'] = edec 
+   meteor_reduced['meteor_frame_data'] = meteor_frame_data
+   meteor_reduced['cal_params_file'] = cal_params_file
+   meteor_reduced['cal_params'] = {}
+   meteor_reduced['cal_params']['site_lat'] = json_conf['site']['device_lat']
+   meteor_reduced['cal_params']['site_lng'] = json_conf['site']['device_lng']
+   meteor_reduced['cal_params']['site_alt'] = json_conf['site']['device_alt']
+   meteor_reduced['cal_params']['ra_center'] = cal_params['ra_center']
+   meteor_reduced['cal_params']['dec_center'] = cal_params['dec_center']
+   meteor_reduced['cal_params']['az_center'] = cal_params['center_az']
+   meteor_reduced['cal_params']['el_center'] = cal_params['center_el']
+   meteor_reduced['cal_params']['position_angle'] = cal_params['position_angle']
+   meteor_reduced['cal_params']['cal_date'] = cal_date_str
+   meteor_reduced['cal_params']['x_poly'] = cal_params['x_poly']
+   meteor_reduced['cal_params']['y_poly'] = cal_params['y_poly']
+   meteor_reduced['cal_params']['x_poly_fwd'] = cal_params['x_poly_fwd']
+   meteor_reduced['cal_params']['y_poly_fwd'] = cal_params['y_poly_fwd']
+   meteor_reduced['cal_params']['x_res_err'] = cal_params['x_fun']
+   meteor_reduced['cal_params']['y_res_err'] = cal_params['y_fun']
+   meteor_reduced['cal_params']['x_fwd_res_err'] = cal_params['x_fun_fwd']
+   meteor_reduced['cal_params']['y_fwd_res_err'] = cal_params['y_fun_fwd']
+   meteor_reduce_file = meteor_json_file.replace(".json", "-reduced.json")
+   save_json_file(meteor_reduce_file, meteor_reduced)
+
+
+def del_manual_points(json_conf, form):
+   response = {}
+   response['status'] = 1
+   response['message'] = "delete point"
+
+   frame_num = form.getvalue("frame_num")
+   orig_file = form.getvalue("orig_file")
+
+   man_json_file = orig_file.replace("-stacked.png", "-manual.json")
+   if cfe(man_json_file) == 0:
+      man_json = {}
+   else:
+      man_json = load_json_file(man_json_file)
+   man_json.pop(frame_num)
+
+   save_json_file(man_json_file, man_json)
+   response['manual_frame_data'] = man_json
+
+   print(json.dumps(response))
+
+def pin_point(json_conf, form):
+   response = {}
+   response['status'] = 1
+   response['message'] = "pin point"
+   
+   frame_file = form.getvalue("frame_file")
+   crp = frame_file.split("frames")
+   frame_num = int(crp[-1].replace(".png", ""))
+   orig_file = form.getvalue("orig_file")
+   cal_params_file = form.getvalue("cal_params_file")
+
+   man_json_file = orig_file.replace("-stacked.png", "-manual.json")
+   if cfe(man_json_file) == 0:
+      man_json = {}
+   else:
+      man_json = load_json_file(man_json_file)
+
+   #el = frame_file.split("/")
+   #base_dir = el[-2]
+
+   x = int(form.getvalue("x"))
+   y = int(form.getvalue("y"))
+ 
+   cx1 = x - 5 
+   cy1 = y - 5 
+   cx2 = x + 5 
+   cy2 = y + 5 
+
+   frame_img = cv2.imread(frame_file,0)
+   cnt_img = frame_img[cy1:cy2,cx1:cx2]
+   max_px, avg_px, px_diff,max_loc = eval_cnt(cnt_img)
+   w = 5
+   h = 5
+
+
+
+
+   meteor_json_file = orig_file.replace("-stacked.mp4", ".json")
+   hd_x = (x + int(max_loc[0])) * 2
+   hd_y = (y + int(max_loc[1])) * 2
+   point_data = (hd_x,hd_y,5,5,int(max_px))
+   (ra,dec,az,el) = reduce_point(cal_params_file, meteor_json_file, frame_num, point_data,json_conf)
+
+   response['frame_num'] = 0
+   response['pp_x'] = x
+   response['pp_y'] = y
+   response['pp_w'] = 5
+   response['pp_h'] = 5
+   response['pp_mx'] = int(max_loc[0])
+   response['pp_my'] = int(max_loc[1])
+   response['pp_max_px'] = int(max_px)
+   response['pp_ra'] = ra
+   response['pp_dec'] = dec
+   response['pp_az'] = az
+   response['pp_el'] = el
+
+   frame_time = "na"
+   man_json[frame_num] = [frame_time,frame_num,x,y,w,h,int(max_loc[0]),int(max_loc[1]),int(max_px),ra,dec,az,el]
+   response['manual_frame_data'] = man_json
+
+   save_json_file(man_json_file, man_json)
+
+   save_manual_reduction(meteor_json_file,cal_params_file,json_conf)
+
+   print(json.dumps(response))
+
 
 def reduce_meteor_ajax(json_conf,meteor_json_file, cal_params_file, show = 0):
    if show == 1:
@@ -271,6 +554,7 @@ def reduce_meteor_ajax(json_conf,meteor_json_file, cal_params_file, show = 0):
    hdm_x = 2.7272727272727272
    hdm_y = 1.875
    mj = load_json_file(meteor_json_file)
+   man_reduce_file = meteor_json_file.replace(".json", "-manual.json")
 
    meteor_obj = get_meteor_object(mj)
    start_clip = meteor_obj['history'][0][0]
@@ -322,9 +606,7 @@ def reduce_meteor_ajax(json_conf,meteor_json_file, cal_params_file, show = 0):
    objects = {}
 
    #objects = track_bright_objects(frames, sd_video_file, cam_id, meteor_obj, json_conf, show)
-   #print(len(frames))
    objects = check_for_motion2(frames, sd_video_file,cam_id, json_conf,show)
-   #print(objects)
 
    # do track brightest object here instead of check_for_motion2? 
 
@@ -436,7 +718,6 @@ def reduce_meteor_ajax(json_conf,meteor_json_file, cal_params_file, show = 0):
       last_dist = dist_from_first
    cv2.imwrite(reduce_img_file, reduce_img)
    rand = time.time()
-   #print("<img src=" + reduce_img_file + "?" + str(time)+ ">")
 
    response = {}
    response['status'] = 1
@@ -444,7 +725,6 @@ def reduce_meteor_ajax(json_conf,meteor_json_file, cal_params_file, show = 0):
    response['debug'] = "none"
    response['sd_meteor_frame_data'] = meteor_frame_data
    response['reduce_img_file'] = reduce_img_file
-   #print(response)
    vf_type = "SD"
    fin_sd_stack = fin_sd_video_file.replace(".mp4", ".png")
    fin_hd_stack = fin_hd_video_file.replace(".mp4", ".png")
@@ -474,10 +754,8 @@ def reduce_meteor_ajax(json_conf,meteor_json_file, cal_params_file, show = 0):
    meteor_reduced['end_ra'] = end_ra
    meteor_reduced['end_dec'] = end_dec
    meteor_reduced['meteor_frame_data'] = meteor_frame_data
-
    meteor_reduced['cal_params_file'] = cal_params_file
    meteor_reduced['cal_params'] = {}
-
    meteor_reduced['cal_params']['site_lat'] = json_conf['site']['device_lat']
    meteor_reduced['cal_params']['site_lng'] = json_conf['site']['device_lng']
    meteor_reduced['cal_params']['site_alt'] = json_conf['site']['device_alt']
@@ -495,7 +773,6 @@ def reduce_meteor_ajax(json_conf,meteor_json_file, cal_params_file, show = 0):
    meteor_reduced['cal_params']['y_res_err'] = cal_params['y_fun']
    meteor_reduced['cal_params']['x_fwd_res_err'] = cal_params['x_fun_fwd']
    meteor_reduced['cal_params']['y_fwd_res_err'] = cal_params['y_fun_fwd']
-
    meteor_reduce_file = meteor_json_file.replace(".json", "-reduced.json")
    save_json_file(meteor_reduce_file, meteor_reduced) 
 
@@ -612,7 +889,6 @@ def reduce_meteor(json_conf,form):
       hd_stack_img = cv2.resize(stack_img, (1920,1080))
      
 
-   #print(meteor_obj['history'])
 
    meteor_start_frame = meteor_obj['history'][0][0]
    meteor_end_frame = meteor_obj['history'][-1][0]
@@ -649,14 +925,13 @@ def reduce_meteor(json_conf,form):
          cal_params_file = form_cal_params_file
 
       cal_select = make_cal_select(cal_files,sd_video_file,cal_params_file)
-
+   
       mj['cal_params_file']  = cal_params_file
       az_grid_file = cal_params_file.replace("-calparams.json", "-azgrid-half.png")
    else:
       cal_params_file = mj['cal_params_file'] 
       az_grid_file = cal_params_file.replace("-calparams.json", "-azgrid-half.png")
    cal_params = load_json_file(cal_params_file)
-
    if reduced == 0:
       new_x, new_y, start_ra ,start_dec , start_az, start_el= XYtoRADec(start_x*2,start_y*2,cal_params_file,cal_params,json_conf)
       new_x, new_y, end_ra ,end_dec , end_az, end_el= XYtoRADec(end_x*2,end_y*2,cal_params_file,cal_params,json_conf)
@@ -719,7 +994,7 @@ def reduce_meteor(json_conf,form):
 <span style="padding: 5px"> End RA/DEC: """ + str(end_ra)[0:5] + "/" + str(end_dec)[0:5] + """</span><br>
 <span style="padding: 5px"> Start AZ/EL: """ + str(start_az)[0:5] + "/" + str(start_el)[0:5] + """</span><br>
 <span style="padding: 5px"> End AZ/EL: """ + str(end_az)[0:5] + "/" + str(end_el)[0:5] + """</span><br>
-<span style="padding: 5px"> <a target='_blank' href=\"webUI.py?cmd=man_reduce&file=""" + mj['sd_stack']+ """\">Manualy Reduce</a></span><br>
+<span style="padding: 5px"> <a target='_blank' href=\"webUI.py?cmd=man_reduce&file=""" + mj['sd_stack']+ "&cal_params_file=" + cal_params_file +  """\">Manualy Reduce</a></span><br>
 
 <span style="padding: 5px"> <B>Media Files</B></span><br>
 <span style="padding: 5px"> <a target='_blank' href=javascript:play_video('""" + mj['sd_video_file']+ """')>SD Video</a></span><br>
@@ -884,7 +1159,6 @@ def pin_point_stars(image, points):
 def add_stars_to_fit_pool(json_conf,form):
    input_file = form.getvalue("input_file")
    cal_files = get_active_cal_file(input_file)
-   #print(cal_files)
    cal_params_file = cal_files[0][0]
    cal_hd_stack_file = cal_params_file.replace("-calparams.json", ".png")
    print(cal_params_file, "<BR>")
@@ -1290,7 +1564,6 @@ def get_hd_filenames(hd_video_file):
 def better_parse_file_date(input_file):
    el = input_file.split("/")
    fn = el[-1]
-   print(input_file)
    ddd = fn.split("_")
    Y = ddd[0]
    M = ddd[1]
