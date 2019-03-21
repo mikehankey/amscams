@@ -53,8 +53,21 @@ def man_reduce_canvas(frame_num,thumbs,file,cal_params_file):
    return(extra_html)
 
 def calc_frame_time(video_file, frame_num):
+   (f_datetime, cam_id, f_date_str,Y,M,D, H, MM, S) = better_parse_file_date(video_file)
+   el = video_file.split("-trim")
+   min_file = el[0] + ".mp4"
+   ttt = el[1].split(".")
+   ttt[0] = ttt[0].replace("-stacked", "")
+   trim_num = int(ttt[0])
+   extra_sec = trim_num / 25
+   start_trim_frame_time = f_datetime + datetime.timedelta(0,extra_sec)
+   extra_meteor_sec = frame_num / 25
+   meteor_frame_time = start_trim_frame_time + datetime.timedelta(0,extra_meteor_sec)
+   meteor_frame_time_str = meteor_frame_time.strftime('%Y-%m-%d %H:%M:%S.%f')[:-3]
 
-   return(frame_time)
+
+
+   return(meteor_frame_time,meteor_frame_time_str)
 
 def reduce_point(cal_params_file, meteor_json_file, frame_num, point_data,json_conf):
    cal_params = load_json_file(cal_params_file)
@@ -64,8 +77,9 @@ def reduce_point(cal_params_file, meteor_json_file, frame_num, point_data,json_c
    (hd_x,hd_y,w,h,mxp) =point_data
    new_x, new_y, ra ,dec , az, el= XYtoRADec(hd_x,hd_y,cal_params_file,cal_params,json_conf)
 
+   (meteor_frame_time,meteor_frame_time_str) = calc_frame_time(meteor_json_file ,frame_num)
 
-   return(ra,dec,az,el)
+   return(ra,dec,az,el,meteor_frame_time_str)
 
 
 def man_reduce(json_conf,form):
@@ -507,10 +521,10 @@ def pin_point(json_conf, form):
    x = int(form.getvalue("x"))
    y = int(form.getvalue("y"))
  
-   cx1 = x - 5 
-   cy1 = y - 5 
-   cx2 = x + 5 
-   cy2 = y + 5 
+   cx1 = x - 10 
+   cy1 = y - 10
+   cx2 = x + 10
+   cy2 = y + 10
 
    frame_img = cv2.imread(frame_file,0)
    cnt_img = frame_img[cy1:cy2,cx1:cx2]
@@ -522,18 +536,19 @@ def pin_point(json_conf, form):
 
 
    meteor_json_file = orig_file.replace("-stacked.mp4", ".json")
-   hd_x = (x + int(max_loc[0])) * 2
-   hd_y = (y + int(max_loc[1])) * 2
+   hd_x = (x + int(max_loc[0]) - 5) * 2
+   hd_y = (y + int(max_loc[1]) - 5) * 2
    point_data = (hd_x,hd_y,5,5,int(max_px))
-   (ra,dec,az,el) = reduce_point(cal_params_file, meteor_json_file, frame_num, point_data,json_conf)
+   (ra,dec,az,el,frame_time_str) = reduce_point(cal_params_file, meteor_json_file, frame_num, point_data,json_conf)
 
    response['frame_num'] = 0
+   response['pp_ft'] = frame_time_str
    response['pp_x'] = x
    response['pp_y'] = y
    response['pp_w'] = 5
    response['pp_h'] = 5
-   response['pp_mx'] = int(max_loc[0])
-   response['pp_my'] = int(max_loc[1])
+   response['pp_mx'] = int(max_loc[0]) - 5
+   response['pp_my'] = int(max_loc[1]) -5 
    response['pp_max_px'] = int(max_px)
    response['pp_ra'] = ra
    response['pp_dec'] = dec
@@ -541,7 +556,7 @@ def pin_point(json_conf, form):
    response['pp_el'] = el
 
    frame_time = "na"
-   man_json[frame_num] = [frame_time,frame_num,x,y,w,h,int(max_px),ra,dec,az,el]
+   man_json[frame_num] = [frame_time_str,frame_num,x,y,w,h,int(max_px),ra,dec,az,el]
    response['manual_frame_data'] = man_json
 
    save_json_file(man_json_file, man_json)
