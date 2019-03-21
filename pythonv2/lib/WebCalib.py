@@ -369,19 +369,22 @@ def get_manual_points(json_conf, form):
 
 def save_manual_reduction(meteor_json_file,cal_params_file,json_conf):
    meteor_json_file = meteor_json_file.replace("-stacked.png", ".json")
-   print(meteor_json_file)
    man_file = meteor_json_file.replace(".json", "-manual.json")
    mj = load_json_file(meteor_json_file)
 
    man_json = load_json_file(man_file) 
    meteor_frame_data = []
    for key in man_json:
-      meteor_frame_data.append(man_json[key])
+
+      frame_time, fn, hd_x,hd_y,w,h,max_px,ra,dec,az,el = man_json[key]
+      hd_x = int(hd_x) * 2
+      hd_y = int(hd_y) * 2
+      meteor_frame_data.append((frame_time, fn, hd_x,hd_y,w,h,max_px,ra,dec,az,el))
    first_frame_data = meteor_frame_data[0]
    last_frame_data = meteor_frame_data[-1]
 
-   (start_frame_time,start_frame,sx,sy,sw,mx,my,sh,smp,sra,sdec,saz,sel) = first_frame_data
-   (end_frame_time,end_frame,ex,ey,ew,eh,emx,emy,emp,era,edec,eaz,eel) = last_frame_data
+   (start_frame_time,start_frame,sx,sy,sw,sh,smp,sra,sdec,saz,sel) = first_frame_data
+   (end_frame_time,end_frame,ex,ey,ew,eh,emp,era,edec,eaz,eel) = last_frame_data
 
    (cal_date, cam_id, cal_date_str,Y,M,D, H, MM, S) = better_parse_file_date(cal_params_file)
    cal_params = load_json_file(cal_params_file)
@@ -538,7 +541,7 @@ def pin_point(json_conf, form):
    response['pp_el'] = el
 
    frame_time = "na"
-   man_json[frame_num] = [frame_time,frame_num,x,y,w,h,int(max_loc[0]),int(max_loc[1]),int(max_px),ra,dec,az,el]
+   man_json[frame_num] = [frame_time,frame_num,x,y,w,h,int(max_px),ra,dec,az,el]
    response['manual_frame_data'] = man_json
 
    save_json_file(man_json_file, man_json)
