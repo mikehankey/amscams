@@ -8,7 +8,8 @@ json_conf = load_json_file("../conf/as6.json")
 if sys.argv[1] == 'msm':
    find_multi_station_meteors(json_conf)
 if sys.argv[1] == 'sms':
-   sync_multi_station(json_conf)
+   sync_date = sys.argv[2]
+   sync_multi_station(json_conf, sync_date)
 
 if sys.argv[1] == 'tn':
    batch_thumb(json_conf)

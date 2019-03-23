@@ -1,3 +1,4 @@
+import datetime
 import os
 import subprocess
 import numpy as np
@@ -11,16 +12,117 @@ from PIL import Image
 from lib.VideoLib import load_video_frames
 from lib.UtilLib import convert_filename_to_date_cam
 
+
+def solve_event(event_id, meteor_events):
+   meteor = meteor_events[event_id]
+   obs = []
+   for station_name in meteor['observations']:
+      if len(meteor['observations'][station_name]) > 1:
+         # pick the best video from this station since there is more than one
+         for device_name in meteor['observations'][station_name]:
+            video_file = meteor['observations'][station_name][device_name]
+      else:
+         for device_name in meteor['observations'][station_name]:
+            video_file = meteor['observations'][station_name][device_name]
+      reduced_file = video_file.replace(".mp4", "-reduced.json")
+      if cfe(reduced_file) == 0:
+         reduced_file = reduced_file.replace("/meteors/", "/multi_station/")
+      obs.append(reduced_file)
+
+   print("OBS:", obs)
+   arglist = ""
+   for ob in obs:
+      arglist = arglist + ob + " " 
+
+   cmd = "./mikeSolve.py " + arglist
+   os.system(cmd)
+   print(cmd)
+         
+
 def get_meteor_files(mdir):
    files = glob.glob(mdir + "/*-reduced.json")
    return(files)
 
-def find_multi_station_meteors(json_conf, meteor_date="2019_03_19"):
+def id_event(meteor_events, meteor_file, meteor_json, event_start_time) :
+   
+   total_events = len(meteor_events)
+   station_name = meteor_json['station_name']
+   device_name = meteor_json['device_name']
+   sd_video_file = meteor_json['sd_video_file']
+   if total_events == 0:
+      event_id = 1
+      meteor_events[event_id] = {}
+      meteor_events[event_id]['start_time'] = event_start_time
+      meteor_events[event_id]['observations'] = {}
+      meteor_events[event_id]['observations'][station_name]  = {}
+      meteor_events[event_id]['observations'][station_name][device_name] = sd_video_file
+      return(meteor_events) 
+
+   for ekey in meteor_events:
+      this_start_time = meteor_events[ekey]['start_time']
+      evst_datetime = datetime.datetime.strptime(event_start_time, "%Y-%m-%d %H:%M:%S.%f")
+      this_datetime = datetime.datetime.strptime(this_start_time, "%Y-%m-%d %H:%M:%S.%f")
+      tdiff = (evst_datetime-this_datetime).total_seconds() 
+      print(ekey, this_start_time, tdiff)
+      if abs(tdiff) < 5:
+         print("second capture of same event")
+         meteor_events[ekey]['observations'][station_name][device_name] = sd_video_file
+         return(meteor_events)
+
+   # no matches found so make new event
+   event_id = total_events + 1
+   print("new event:", event_id)
+   meteor_events[event_id] = {}
+   meteor_events[event_id]['start_time'] = event_start_time
+   meteor_events[event_id]['observations'] = {}
+   meteor_events[event_id]['observations'][station_name]  = {}
+   meteor_events[event_id]['observations'][station_name][device_name] = sd_video_file
+
+   return(meteor_events)
+
+def find_multi_station_meteors(json_conf, meteor_date="2019_03_20"):
+   meteor_events = {}
    meteor_dir = "/mnt/ams2/meteors/" + meteor_date
    multi_station_dir = "/mnt/ams2/multi_station/" + meteor_date
    meteor_files = get_meteor_files(meteor_dir)
    ms_files = get_meteor_files(multi_station_dir)
    multi_station_meteors = {}
+   for meteor_file in meteor_files:
+      meteor_json = load_json_file(meteor_file)
+      event_start_time = meteor_json['event_start_time']
+      print(meteor_file) 
+      meteor_events = id_event(meteor_events, meteor_file, meteor_json, event_start_time)
+
+   event_file = "/mnt/ams2/multi_station/" + meteor_date + "/" + "events_" + meteor_date + ".json"
+
+   for event_id in meteor_events:
+      event_start_time = meteor_events[event_id]['start_time']
+      evst_datetime = datetime.datetime.strptime(event_start_time, "%Y-%m-%d %H:%M:%S.%f")
+      for ms_file in ms_files:
+         ms_json = load_json_file(ms_file)
+         ms_start_time = ms_json['event_start_time'] 
+         ms_datetime = datetime.datetime.strptime(ms_start_time, "%Y-%m-%d %H:%M:%S.%f")
+         ms_station_name = ms_json['station_name']
+         ms_device_name = ms_json['device_name']
+         ms_sd_video_file = ms_json['sd_video_file']
+         time_diff = abs((evst_datetime-ms_datetime).total_seconds())
+          
+         if time_diff < 5:
+            print("MULTI-STATION DETECTION:", event_id, ms_file)
+            if ms_device_name in meteor_events:
+               meteor_events[event_id]['observations'][ms_station_name][ms_device_name] = ms_sd_video_file
+            else:
+               meteor_events[event_id]['observations'][ms_station_name]  = {}
+               meteor_events[event_id]['observations'][ms_station_name][ms_device_name] = ms_sd_video_file
+
+   save_json_file(event_file, meteor_events)
+   for event_id in meteor_events:
+      total_obs = len(meteor_events[event_id]['observations'])
+      if total_obs > 1:
+         print(event_id, " TOTAL OBS " , total_obs)
+         solve_event(event_id, meteor_events)
+   
+   exit()
    for meteor_file in meteor_files:
       multi_station_matches = []
       meteor_datetime, cam_id, hd_date, hd_y, hd_m, hd_d, hd_h, hd_M, hd_s = convert_filename_to_date_cam(meteor_file)
@@ -30,7 +132,7 @@ def find_multi_station_meteors(json_conf, meteor_date="2019_03_19"):
          time_diff = abs((meteor_datetime-ms_datetime).total_seconds())
          if time_diff < 120:
             print("\t", ms_datetime, time_diff)
-            multi_station_matches
+            #multi_station_matches
             cmd = "./mikeSolve.py " + meteor_file  + " " + ms_file
             os.system(cmd)
             print(cmd)
@@ -46,8 +148,7 @@ def sync_event(meteor_json_url, meteor_date):
    save_json_file(data_file, meteor_data_json)
 
 
-def sync_multi_station(json_conf):
-   meteor_date = "2019_03_19"
+def sync_multi_station(json_conf, meteor_date='2019_03_20'):
    sync_urls = load_json_file("/home/ams/amscams/conf/sync_urls.json")
    stations = json_conf['site']['multi_station_sync']
    for station in stations:

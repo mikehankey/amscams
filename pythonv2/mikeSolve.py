@@ -4,7 +4,7 @@ from sympy import Point3D, Line3D, Segment3D, Plane
 import sys
 import numpy as np
 import matplotlib as mpl
-#mpl.use('Agg')
+mpl.use('Agg')
 import matplotlib.pyplot as plt
 from mpl_toolkits.mplot3d import Axes3D
 from mpl_toolkits.mplot3d.art3d import Poly3DCollection
@@ -17,21 +17,39 @@ import math
 from lib.FileIO import load_json_file, save_json_file
 
 def make_kmz(meteor):
+   kml_file = meteor_file.replace(".json", ".kml")
    kml = simplekml.Kml()
+
+   observers = {}
 
    for key in meteor:
       if "obs" in key:
          obs_lon = meteor[key]['x2_lat'] 
          obs_lat = meteor[key]['y2_lon'] 
+         observers[key] = {}
+         observers[key]['lat'] = obs_lat
+         observers[key]['lon'] = obs_lon
          point = kml.newpoint(name=key,coords=[(obs_lon,obs_lat)])
+         
 
    for key in meteor['meteor_points_lat_lon']:
       for lon,lat,alt in meteor['meteor_points_lat_lon'][key]:
+ 
+         obs1, obs2 = key.split("-")
+         olat = observers[obs2]['lat']
+         olon = observers[obs2]['lon']
+         print("KEY: ", key, olat, olon)
          alt = alt * 1000
-         print(lat,lon,alt)
+         #print(lat,lon,alt)
          point = kml.newpoint(coords=[(lon,lat,alt)])
-         point.altitudemode = simplekml.AltitudeMode.relativetoground
-   kml.save("test.kml")
+         point.altitudemode = simplekml.AltitudeMode.relativetoground    
+         #point.style.iconstyle.icon.href = None
+         point.style.iconstyle.icon.href = 'http://maps.google.com/mapfiles/kml/shapes/placemark_circle.png'
+         line = kml.newlinestring(name="", description="", coords=[(olon,olat,0),(lon,lat,alt)])
+         line.altitudemode = simplekml.AltitudeMode.relativetoground
+
+   print(kml_file)
+   kml.save(kml_file)
 
 def plot_meteor_ms(meteor):
    fig_file = meteor_file.replace(".json", "-fig2.png")
@@ -96,8 +114,9 @@ def plot_meteor_ms(meteor):
    ax.scatter3D(xs,ys,zs,c='r',marker='x')
    meteor['meteor_points_lat_lon'] = meteor_points_lat_lon
 
+   plt.savefig(fig_file)
 
-   plt.show()
+   #plt.show()
    return(meteor)
 
 
@@ -178,7 +197,7 @@ def plot_meteor(meteor, meteor_file):
          zs.append(mz)
    ax.scatter3D(xs,ys,zs,marker='o')
 
-   plt.show()
+   #plt.show()
    plt.savefig(fig_file)
 
 def compute_ms_solution(meteor):
@@ -416,7 +435,7 @@ def plot_xyz(x,y,z,meteor):
    ax.set_xlabel('X Label')
    ax.set_ylabel('Y Label')
    ax.set_zlabel('Z Label')
-   plt.show()
+   #plt.show()
 
 def make_obs_vectors(mo):
    fc = 0
@@ -461,6 +480,7 @@ def setup_obs(meteors_obs):
    meteor['obs1']['ObsX'] = Obs1X
    meteor['obs1']['ObsY'] = Obs1Y
    meteor['obs1']['ObsZ'] = Obs1Z
+   meteor['obs1']['reduction_file'] = mo1['reduction_file']
    meteor['obs1']['mo_vectors'] = make_obs_vectors(meteor_obs['mo1'])
 
 
@@ -474,9 +494,10 @@ def setup_obs(meteors_obs):
       meteor[obskey]['lat'] = lats[i-1]
       meteor[obskey]['lon'] = lons[i-1]
       meteor[obskey]['alt'] = alts[i-1]
-      meteor[obskey]['ObsZ'] = alts[i-1] - alts[0]
-      meteor[obskey]['ObsY'] = (lats[i-1]- lats[0])*111.14
       meteor[obskey]['ObsX'] = (lons[i-1] - lons[0])*111.32*math.cos(((lats[0]+lats[i-1])/2)*math.pi/180)
+      meteor[obskey]['ObsY'] = (lats[i-1]- lats[0])*111.14
+      meteor[obskey]['ObsZ'] = alts[i-1] - alts[0]
+      meteor[obskey]['reduction_file'] = meteor_obs[mokey]['reduction_file']
       meteor[obskey]['mo_vectors'] = make_obs_vectors(meteor_obs[mokey])
 
    return(meteor)
@@ -493,6 +514,9 @@ if len(sys.argv) == 3:
    meteor_obs['mo1'] = mo1
    meteor_obs['mo2'] = mo2
 
+   meteor_obs['mo1']['reduction_file'] = obs1_file
+   meteor_obs['mo2']['reduction_file'] = obs2_file
+
 if len(sys.argv) == 4:
    obs1_file, obs2_file,obs3_file = sys.argv[1], sys.argv[2], sys.argv[3]
    hd_datetime, cam1, hd_date, hd_y, hd_m, hd_d, hd_h, hd_M, hd_s = convert_filename_to_date_cam(obs1_file)
@@ -507,13 +531,19 @@ if len(sys.argv) == 4:
    meteor_obs['mo2'] = mo2
    meteor_obs['mo3'] = mo3
 
+   meteor_obs['mo1']['reduction_file'] = obs1_file
+   meteor_obs['mo2']['reduction_file'] = obs2_file
+   meteor_obs['mo3']['reduction_file'] = obs3_file
+
 if cfe(meteor_file) == 0:
    meteor = setup_obs(meteor_obs)
    #meteor = compute_solution(meteor)
    meteor = compute_ms_solution(meteor)
 else:
    meteor = load_json_file(meteor_file)
-   meteor = plot_meteor_ms(meteor)
+
+print("plotting meteor")
+meteor = plot_meteor_ms(meteor)
 #plot_meteor_obs(meteor, meteor_file)
 save_json_file(meteor_file, meteor)
 make_kmz(meteor)
