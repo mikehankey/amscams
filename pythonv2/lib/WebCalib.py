@@ -173,7 +173,7 @@ def find_stars_ajax(json_conf, stack_file, is_ajax = 1):
    orig_img = img
    #img = half_img
    avg = np.mean(img)
-   best_thresh = avg + 15
+   best_thresh = avg + 10
    #print("SHAPE:", iw,ih,best_thresh,"<BR>")
    _, star_bg = cv2.threshold(img, best_thresh, 255, cv2.THRESH_BINARY)
    thresh_obj = cv2.dilate(star_bg, None , iterations=4)
@@ -1762,9 +1762,19 @@ def free_cal(json_conf,form):
 
    #video or image
    if "mp4" in input_file:
-      frames = load_video_frames(input_file, json_conf, 1499)
-      stack_file, stack_img = stack_frames(frames, input_file, 1)
-      input_file = input_file.replace(".mp4", ".png") 
+      stack_file = input_file.replace(".mp4", "-stacked.png")
+      el = input_file.split("/")
+      dr  = el[-1].replace(".mp4", "")
+      sfn = el[-1].replace(".mp4", "-stacked.png")
+      stack_file = "/mnt/ams2/cal/freecal/" + dr + "/" + sfn 
+
+      if cfe(stack_file) == 0:
+         frames = load_video_frames(input_file, json_conf, 1499)
+         stack_file, stack_img = stack_frames(frames, input_file, 1)
+         input_file = input_file.replace(".mp4", ".png") 
+      else:
+         input_file = input_file.replace(".mp4", ".png") 
+         stack_img = cv2.imread(stack_file,0)
    else:
       stack_file = input_file
       stack_img = cv2.imread(input_file)
