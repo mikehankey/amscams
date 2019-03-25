@@ -12,6 +12,57 @@ from PIL import Image
 from lib.VideoLib import load_video_frames
 from lib.UtilLib import convert_filename_to_date_cam
 
+def get_kml(kml_file):
+   fp = open(kml_file, "r")
+   lc = 0
+   kml_txt = ""
+   lines = fp.readlines()
+   for line in lines: 
+      if lc >= 3 and lc < len(lines)-2:
+         kml_txt = kml_txt + line
+      lc = lc + 1 
+   fp.close()
+   return(kml_txt)
+      
+
+def get_kmls(ms_dir):
+   kmls = sorted(glob.glob(ms_dir + "/*.kml"))
+   return(kmls)
+   
+
+def merge_kml_files(json_conf):
+   kml_header = """<?xml version="1.0" encoding="UTF-8"?>
+<kml xmlns="http://www.opengis.net/kml/2.2" xmlns:gx="http://www.google.com/kml/ext/2.2">
+    <Document id="1">
+
+   """
+   kml_footer = """
+    </Document>
+</kml>
+   """
+   solutions = {}
+   ms_dirs = sorted(glob.glob("/mnt/ams2/multi_station/*"))
+   for ms_dir in ms_dirs:
+      if cfe(ms_dir, 1) == 1:
+         solutions[ms_dir] = get_kmls(ms_dir)
+   master_kml = kml_header
+   for ms_dir in solutions:
+      el = ms_dir.split("/")
+      day_folder_name = el[-1]
+      master_kml = master_kml + "\n<Folder>\n\t<name>" + day_folder_name + "</name>"
+      print(ms_dir, len(solutions[ms_dir]))
+      for kml_file in solutions[ms_dir]:
+         el = kml_file.split("/")
+         ef = el[-1]
+         event_folder_name = ef[0:20] 
+         master_kml = master_kml + "\n<Folder>\n\t<name>" + event_folder_name + "</name>"
+         kml_text = get_kml(kml_file) 
+         master_kml = master_kml + kml_text + "\n</Folder>\n"
+      master_kml = master_kml + "</Folder>\n"
+   master_kml = master_kml + kml_footer
+   out = open("/mnt/ams2/master_meteor_kml.kml", "w")
+   out.write(master_kml)
+   out.close()
 
 def solve_event(event_id, meteor_events):
    meteor = meteor_events[event_id]

@@ -138,11 +138,7 @@ def convert_filename_to_date_cam(file):
    if "-" in filename:
       xxx = filename.split("-")
       filename = xxx[0]
-   el = filename.split("_")
-   if len(el) >= 8:
-      fy,fm,fd,fh,fmin,fs,fms,cam = el[0], el[1], el[2], el[3], el[4], el[5], el[6], el[7]
-   else:
-      fy,fm,fd,fh,fmin,fs,fms,cam = "1999", "01", "01", "00", "00", "00", "000", "010001"
+   fy,fm,fd,fh,fmin,fs,fms,cam = filename.split("_")
    f_date_str = fy + "-" + fm + "-" + fd + " " + fh + ":" + fmin + ":" + fs
    f_datetime = datetime.datetime.strptime(f_date_str, "%Y-%m-%d %H:%M:%S")
    return(f_datetime, cam, f_date_str,fy,fm,fd, fh, fmin, fs)
@@ -190,7 +186,6 @@ def better_parse_file_date(input_file):
    f_datetime = datetime.datetime.strptime(f_date_str, "%Y-%m-%d %H:%M:%S")
    return(f_datetime, cam_id, f_date_str,Y,M,D, H, MM, S)
 
-
 def haversine(lon1, lat1, lon2, lat2):
     """
     Calculate the great circle distance between two points
@@ -209,6 +204,7 @@ def haversine(lon1, lat1, lon2, lat2):
     bearing = math.degrees(bearing)
     bearing = (bearing + 360) % 360
     return km, bearing
+
 
 def calculate_initial_compass_bearing(pointA, pointB):
     """
@@ -246,47 +242,3 @@ def calculate_initial_compass_bearing(pointA, pointB):
 
     return compass_bearing
 
-def calc_radiant(arg_impact_lat, arg_impact_long, arg_start_lat, arg_start_long, arg_date, arg_time):
-# arguments
-# - impact point lat as decimal
-# - impact point long as decimal
-# - start point lat as decimal
-# - start point long as decimal
-# - date
-# - time
-
-   distance,bear = haversine(float(arg_impact_lat), float(arg_impact_long), float(arg_start_lat), float(arg_start_long))
-   entry_angle = math.atan(80 / distance) * (180 / math.pi)
-   point1 = (float(arg_impact_lat),float(arg_impact_long))
-   point2 = (float(arg_start_lat),float(arg_start_long))
-   date = arg_date
-   time =  arg_time
-   year, month, day= date.split('-')
-   hour,min,sec = time.split(':')
-   seconds = int(hour) * 3600 + (int(min) * 60)
-   fraction = float(seconds) / 86400
-   frac_day = int(day) + fraction
-   #julian_date = bearing.date_to_jd(int(year),int(month),frac_day)
-
-   julian_date = date_to_jd(int(year),int(month),float(frac_day))
-   az_deg = calculate_initial_compass_bearing(point1, point2)
-   el_deg = entry_angle
-   pi = math.pi
-   az = (az_deg * pi)/180 #rad
-   el = (el_deg * pi)/180 #rad
-   lat = point1[0] #deg
-   lon = point1[1] #deg
-   alt = 0 #m
-   print("LAT", lat)
-   print("LON", lon)
-   print("ALT", alt)
-   ut = julian_date #julian date
-   # Which Julian Date does Ephem start its own count at?
-   J0 = ephem.julian_date(0)
-   observer = ephem.Observer()
-   observer.lon = str(lon)  # str() forces deg -> rad conversion
-   observer.lat = str(lat)  # deg -> rad
-   observer.elevation = alt
-   observer.date = ut - J0
-   ra,dec = observer.radec_of(az, el)
-   return ra, dec, az_deg, el_deg

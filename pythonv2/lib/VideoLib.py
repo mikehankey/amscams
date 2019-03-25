@@ -201,7 +201,7 @@ def find_hd_file_new(sd_file, trim_num, dur = 5, trim_on =1):
          time_diff_sec = time_diff.total_seconds()
          if 0 < time_diff_sec < 60:
             time_diff_sec = time_diff_sec - 3
-            dur = int(dur) + 1
+            dur = int(dur) + 1 + 3
             if trim_num == 0:
                trim_num = 1
             if time_diff_sec < 0:

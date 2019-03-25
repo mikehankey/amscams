@@ -12,7 +12,7 @@ from lib.SolutionsLib import solutions
 from lib.MeteorTests import test_objects
 from lib.ImageLib import mask_frame , draw_stack, stack_frames
 from lib.CalibLib import radec_to_azel
-from lib.WebCalib import calibrate_pic,make_plate_from_points, solve_field, check_solve_status, free_cal, show_cat_stars, choose_file, upscale_2HD, fit_field, delete_cal, add_stars_to_fit_pool, save_add_stars_to_fit_pool, reduce_meteor, reduce_meteor_ajax, find_stars_ajax, man_reduce, pin_point, get_manual_points, del_manual_points
+from lib.WebCalib import calibrate_pic,make_plate_from_points, solve_field, check_solve_status, free_cal, show_cat_stars, choose_file, upscale_2HD, fit_field, delete_cal, add_stars_to_fit_pool, save_add_stars_to_fit_pool, reduce_meteor, reduce_meteor_ajax, find_stars_ajax, man_reduce, pin_point, get_manual_points, del_manual_points, sat_cap
 
 
 
@@ -264,6 +264,8 @@ def controller(json_conf):
 
    if cmd == 'free_cal':
       free_cal(json_conf, form)
+   if cmd == 'sat_cap':
+      sat_cap(json_conf, form)
    if cmd == 'man_reduce':
       extra_html = man_reduce(json_conf,form)
 
@@ -775,12 +777,14 @@ def examine_min(video_file,json_conf):
    print("<h1>Examine One-Minute Clip</h1>")
    failed_files, meteor_files, pending_files = get_trims_for_file(video_file)
    stack_file = stack_file_from_video(video_file)
+   next_stack_file = stack_file_from_video(video_file)
   
    print("<a href=" + video_file + ">")
-   print("<img src=" + stack_file + "><br>")
+   print("<img src=" + stack_file + "><br>")   
    print("<a href=webUI.py?cmd=manual_detect&sd_video_file=" + video_file + ">Manually Detect</a> - ")
    print("<a href=webUI.py?cmd=choose_file&input_file=" + video_file + ">Calibrate Star Field</a> - ")
    print("<a href=webUI.py?cmd=add_stars_to_fit_pool&input_file=" + video_file + ">Add Stars To Fit Pool</a> <BR> ")
+   print("<a href=webUI.py?cmd=sat_cap&input_file=" + video_file + "&stack_file=" + stack_file + "&next_stack_file=" + next_stack_file + ">Add / Reduce Satellite Capture</a> <BR> ")
 
    if len(pending_files) > 0:
       print("Trim files for this clip are still pending processing. Please wait before manually processing this file.<BR>")
@@ -1185,7 +1189,16 @@ def browse_day(day,cams_id,json_conf):
    print_css()
 
    day_files = get_day_files(day,cams_id,json_conf)
+   cc = 0
+   all_files = []
    for base_file in sorted(day_files,reverse=True):
+      all_files.append(base_file)
+
+   for base_file in sorted(day_files,reverse=True):
+      if cc + 1 < len(day_files) - 2:
+         next_stack_file = all_files[cc+1]
+      else:
+         next_stack_file = all_files[cc] 
       video_file = base_file + ".mp4"
       stack_file = stack_file_from_video(video_file)
       stack_file_tn = stack_file.replace(".png", "-tn.png")
@@ -1199,11 +1212,12 @@ def browse_day(day,cams_id,json_conf):
          htclass = "none"
       el = base_file.split("/")
       base_js_name = el[-1].replace("_", "")
-      link = "<a href=\"webUI.py?cmd=examine_min&video_file=" + video_file + "\">" 
+      link = "<a href=\"webUI.py?cmd=examine_min&video_file=" + video_file + "&next_stack_file=" + next_stack_file +"&next_stack_file=" + next_stack_file +  "\">" 
          #+ " onmouseover=\"document.getElementById('" + base_js_name + "').width=705\" " \
          #+ " onmouseout=\"document.getElementById('" + base_js_name + "').width=300\" " +  ">"
       print(link)  
       print("<img id=" + base_js_name + " class='" + htclass + "' width=300 src=" + stack_file_tn + "></img></a>")
+      cc = cc + 1
 
 def browse_detects(day,type,json_conf):
    print_css()

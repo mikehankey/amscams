@@ -39,11 +39,11 @@ def view_event(json_conf,form):
    for key in meteor['meteor_points_lat_lon']:
       print("<P>")
       print(st + sr)
-      print(sc + "Combo" + ec + sc + "Longitude" + ec + sc + "Latitude" + ec + sc + "Altitude" + ec + er)
+      print(sc + "Combo" + ec + sc + "Frame Time" + ec + sc + "Frame Num" + ec + sc + "Longitude" + ec + sc + "Latitude" + ec + sc + "Altitude" + ec + er)
       for point in meteor['meteor_points_lat_lon'][key]:
-         mlon, mlat, malt = point 
+         ft, fn, mlon, mlat, malt = point 
          #print(str(mlat) + "," + str(mlon) + "," + str(malt) + "<BR>")
-         print(sr + sc + key + ec + sc + str(mlon) + ec + sc + str(mlat) + ec + sc + str(malt) + ec + er)
+         print(sr + sc + key + ec + sc + ft + ec + sc + fn + ec + sc + str(mlon) + ec + sc + str(mlat) + ec + sc + str(malt) + ec + er)
       print(et)
 
 
