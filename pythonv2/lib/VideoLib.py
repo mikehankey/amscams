@@ -47,7 +47,7 @@ def doHD(sd_video_file, json_conf):
          frame_dur = end_frame - start_frame  
 
          start_sec = (start_frame / 25) 
-         frame_dur_sec = frame_dur / 25
+         frame_dur_sec = (frame_dur / 25) + 3
 
          #print("SF:", start_frame, end_frame, frame_dur) 
 

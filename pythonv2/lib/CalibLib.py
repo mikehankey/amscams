@@ -962,8 +962,8 @@ def find_best_thresh(image, start_thresh):
       image = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
    show_img = cv2.resize(image, (0,0),fx=.4, fy=.4)
    cv2.putText(show_img, "Find Best Thresh",  (50,50), cv2.FONT_HERSHEY_SIMPLEX, .4, (255, 255, 255), 1)
-   cv2.imshow('pepe', show_img)
-   cv2.waitKey(10)
+#   cv2.imshow('pepe', show_img)
+#   cv2.waitKey(10)
 
    go = 1
    tries = 0

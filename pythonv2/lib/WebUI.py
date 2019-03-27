@@ -1,4 +1,7 @@
 from random import randint
+from sympy import Point3D, Line3D, Segment3D, Plane
+import time
+import math
 import cv2
 import cgi
 import time
@@ -12,8 +15,8 @@ from lib.SolutionsLib import solutions
 from lib.MeteorTests import test_objects
 from lib.ImageLib import mask_frame , draw_stack, stack_frames
 from lib.CalibLib import radec_to_azel
-from lib.WebCalib import calibrate_pic,make_plate_from_points, solve_field, check_solve_status, free_cal, show_cat_stars, choose_file, upscale_2HD, fit_field, delete_cal, add_stars_to_fit_pool, save_add_stars_to_fit_pool, reduce_meteor, reduce_meteor_ajax, find_stars_ajax, man_reduce, pin_point, get_manual_points, del_manual_points, sat_cap
-
+from lib.WebCalib import calibrate_pic,make_plate_from_points, solve_field, check_solve_status, free_cal, show_cat_stars, choose_file, upscale_2HD, fit_field, delete_cal, add_stars_to_fit_pool, save_add_stars_to_fit_pool, reduce_meteor, reduce_meteor_ajax, find_stars_ajax, man_reduce, pin_point, get_manual_points, del_manual_points, sat_cap, HMS2deg
+from lib.UtilLib import calc_radiant
 
 
 def run_detect(json_conf, form):
@@ -116,8 +119,6 @@ def manual_detect(json_conf, form):
       print("<input type=hidden name=temp_sd_video_file value='" + show_file + "'>")
       print("<input type=submit name=submit value='Run Detection Code On This Clip'><br>")
       print("</form>")
-
-   
 
 def get_template(json_conf):
    template = ""
@@ -261,6 +262,8 @@ def controller(json_conf):
       extra_html = reduce_meteor(json_conf, form)
    if cmd == 'solutions':
       solutions(json_conf, form)
+   if cmd == 'rad_calc':
+      rad_calc(json_conf, form)
 
    if cmd == 'free_cal':
       free_cal(json_conf, form)
@@ -1281,3 +1284,131 @@ def main_page(json_conf):
          print(html_row)
          print("</P><div style='clear: both'></div>")
 
+
+def rad_calc(json_conf, form):
+   event_date = form.getvalue("event_date")
+   start_lon = form.getvalue("start_lon")
+   if start_lon is not None:
+      start_lon = float(form.getvalue("start_lon"))
+      start_lat = float(form.getvalue("start_lat"))
+      start_alt = float(form.getvalue("start_alt"))
+      end_lon = float(form.getvalue("end_lon"))
+      end_lat = float(form.getvalue("end_lat"))
+      end_alt = float(form.getvalue("end_alt"))
+      velocity= float(form.getvalue("velocity"))
+   print("<h1>Meteor Orbit Calculator</h1>" )
+   stab,sr,sc,et,er,ec = div_table_vars()
+
+   if start_lon is None:
+      print("""
+          <form>
+            Event Date: <input type=text name=event_date VALUE=YYYY-MM-DD HH:MM:SS> UTC<BR>
+            Start Lat: <input type=text name=start_lat><BR>
+            Start Lon: <input type=text name=start_lon><BR>
+            Start Alt: <input type=text name=start_alt><BR>
+            End Lat: <input type=text name=end_lat><BR>
+            End Lon: <input type=text name=end_lon><BR>
+            End Alt: <input type=text name=end_alt><BR>
+            Velocity: <input type=text name=velocity><BR>
+            <input type=submit name=submit value="Submit">
+            <input type=hidden name=cmd value="rad_calc">
+          </form>
+      """)
+   else:
+      arg_date, arg_time = event_date.split(" ")
+
+      rad_rah,rad_dech,rad_az,rad_el,track_dist,entry_angle = calc_radiant(end_lon,end_lat,end_alt,start_lon,start_lat,start_alt, arg_date, arg_time)
+      rad_rah = str(rad_rah).replace(":", " ")
+      rad_dech = str(rad_dech).replace(":", " ")
+      ra,dec = HMS2deg(str(rad_rah),str(rad_dech))
+
+      print("<h3>Input Data</h3>")
+      print(stab)
+      print(sr + sc + "Event Date" + ec +sc +str(event_date) + ec + er)
+      print(sr + sc + "Start Point" + ec + sc + str(start_lon) + "," + str(start_lat) + "," + str(start_alt) + ec + er)
+      print(sr + sc + "End Point" + ec + sc + str(end_lon) + "," + str(end_lat) + "," + str(end_alt) + ec + er)
+      print(sr + sc + "Velocity" + ec + sc + str(velocity) + ec + er)
+      print(et)
+
+      print("<h3>Preprocess Input Data and get ready for Orbit</h3>")
+      print("<h3>Determine Radiant Az, El, RA, Dec</h3>")
+      #print("<h4>Step 1 - Determine 0KM and 80KM altitude end and start points</h4>")
+      #print(stab)
+      #print(sr + sc + "0KM Point" + ec + sc + str(zero_lon) + "," + str(zero_lat) + "," +  str(0) + ec + er)
+      #print(sr + sc + "80KM Point" + ec + sc + str(hund_lon) + "," + str(hund_lat) + "," +  str(80) + ec + er)
+      #print(et)
+      print("<h4>Step 2 - Determine track distance and entry angle</h4>")
+      print("<h5>Step 2a - Use haversine between end and start lat,lon,alt points to determine track ground length and radiant azimuth from the 0KM point</h5>")
+      print(stab)
+      print(sr + sc + "Track Distance" + ec + sc + str(track_dist) + ec + er)
+      print(sr + sc + "Radiant AZ" + ec + sc + str(rad_az) + ec + er)
+      print(et)
+      print("<h5>Step 2b - To determine entry angle. Use pythagorian theorum to compute ground track distance between 0km and 80km longitude and latitude points. </h5>")
+      print(stab)
+      print(sr + sc + "Entry Angle (Radiant Elevation)" + ec + sc + str(entry_angle) + ec + er)
+      print(et)
+
+      print("<h4>Step 3 Convert Az,El to RA,Dec using pyehem and HMS2Deg</h4>")
+      print(stab)
+      print(sr + sc + "Radiant RA (HMS)" + str(rad_rah) + ec + er)
+      print(sr + sc + "Radiant Dec (DMS)" + str(rad_dech) + ec + er)
+      print(sr + sc + "Radiant RA " + str(ra) + ec + er)
+      print(sr + sc + "Radiant Dec " + str(dec) + ec + er)
+      print(et)
+
+      # run orbit
+      metorb = load_json_file("/home/ams/amscams/pythonv2/orbits/orbit-vars.json")
+      event_start_time = event_date.replace(" ", "T")
+      metorb['orbit_vars']['meteor_input']['start_time'] = event_start_time
+      metorb['orbit_vars']['meteor_input']['end_point'] = [end_lon,end_lat,end_alt]
+      metorb['orbit_vars']['meteor_input']['rad_az'] = rad_az
+      metorb['orbit_vars']['meteor_input']['rad_el'] = entry_angle 
+      metorb['orbit_vars']['meteor_input']['velocity'] = velocity
+
+      save_json_file("/home/ams/amscams/pythonv2/orbits/orbit-vars.json",metorb)
+      os.system("cd /home/ams/amscams/pythonv2/; ./mikeOrb.py > /dev/null")  
+      time.sleep(1)
+      new_metorb = load_json_file("/home/ams/amscams/pythonv2/orbits/orbit-vars.json")
+
+      metorb = new_metorb
+      #parsed = json.dumps(new_metorb)
+      #parsed = json.loads(new_parsed)
+      print("<h1>Orbit Calculation Steps</h1>")
+      print("<h2>Step 1 : Determine Observed Radiant Sidereal Time, Hour Angle, RA,Dec & J2000 RA & Dec</h2>")
+      print("<h2>Step 1a : Calculate JD from input UTC date</h2>")
+      print(stab)
+      print(sr + sc +"Event Time UTC " + ec + sc + str(metorb['orbit_vars']['date_vars']['event_time_utc']) + ec + er)
+      print(sr + sc +"Julian Date For Time of Event" + ec + sc + str(metorb['orbit_vars']['date_vars']['jd_at_t']) + ec + er)
+      print(et)
+      print("<h2>Step 1b : Calculate T, Theta Rad & Maal3650 from the event JD </h2>")
+      print(stab)
+      print(sr + sc + "T" + ec + sc + str(metorb['orbit_vars']['date_vars']['T']) + ec + sc + "(JD-2451545)/36525" + ec +  er)
+      theta_rad_formula = "(280.46061837+360.98564736629*(JD_AT_T-2451545)+((0.000387933*(T^2))-(T^3/38710000)))"
+      print(sr + sc + "theta_rad" + ec + sc + str(metorb['orbit_vars']['date_vars']['theta_rad']) + ec + sc + theta_rad_formula + ec + er)
+
+      print(sr + sc + "maal_360" + ec + sc + str(metorb['orbit_vars']['date_vars']['maal_360']) + ec + sc + "theta_rad/360" + ec +er)
+      print(et)
+      print("<h2>Step 1c : Calculate Greenwich Sidreal time & Local Sidereal Time</h2>")
+      greenwich_formula = "theta_rad - (maal_360 * 360)"
+      print(sr + sc + "Greenwich Sidereal" + ec + sc + str(metorb['orbit_vars']['date_vars']['greenwich_sidereal_time']) + ec + sc + greenwich_formula + ec +er)
+      local_sr_formula = "impact longitude + greenwhich_sidereal"
+      print(sr + sc + "Impact Point Sidereal " + ec + sc + str(metorb['orbit_vars']['date_vars']['local_sidereal_time_deg']) + ec + sc + local_sr_formula + ec +er)
+      print("<h2>Step 1d : Calculate Hour Angle </h2>")
+      print(stab)
+      print(sr + sc + "Hour Angle " + ec + sc + str(metorb['orbit_vars']['date_vars']['local_sidereal_hour_angle']) + ec + sc + "" + ec +er)
+      print(et)
+      print("<h2>Step 1e : Calc Radiant RA/DEC</h2>")
+      print(stab)
+      print(sr + sc + "Observed Radiant RA " + ec + sc + str(metorb['orbit_vars']['radiants']['observed_radiant_position']['rad_ra']) + ec + sc + "" + ec +er)
+      print(sr + sc + "Observed Radiant Dec " + ec + sc + str(metorb['orbit_vars']['radiants']['observed_radiant_position']['rad_dec']) + ec + sc + "" + ec +er)
+      print(et)
+      print("<h2>Step 1f : Calc Radiant J2000 RA/DEC</h2>")
+      print(stab)
+      print(sr + sc + "J2000 Observed Radiant RA " + ec + sc + str(metorb['orbit_vars']['radiants']['observed_radiant_position']['rad_raJ2']) + ec + sc + "" + ec +er)
+      print(sr + sc + "J2000 Observed Radiant Dec " + ec + sc + str(metorb['orbit_vars']['radiants']['observed_radiant_position']['rad_decJ2']) + ec + sc + "" + ec +er)
+      print(et)
+      print("<h2>Part 2 : Convert Observed Radiant Position Geocentric Radiant Position</h2>")
+      print("<h2>Step 1 : Compute Zenith Attraction, apparent radiant altitude, true radiant altitude</h2>")
+      print("<h2>Step 2 : Compute Geocentric Hour Angle</h2>")
+      print("<PRE><font color=white>")
+      print(json.dumps( new_metorb, indent=4))

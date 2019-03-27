@@ -246,7 +246,7 @@ def calculate_initial_compass_bearing(pointA, pointB):
 
     return compass_bearing
 
-def calc_radiant(arg_impact_lat, arg_impact_long, arg_start_lat, arg_start_long, arg_date, arg_time):
+def calc_radiant(end_lon, end_lat, end_alt, start_lon, start_lat, start_alt, arg_date, arg_time):
 # arguments
 # - impact point lat as decimal
 # - impact point long as decimal
@@ -255,10 +255,11 @@ def calc_radiant(arg_impact_lat, arg_impact_long, arg_start_lat, arg_start_long,
 # - date
 # - time
 
-   distance,bear = haversine(float(arg_impact_lat), float(arg_impact_long), float(arg_start_lat), float(arg_start_long))
-   entry_angle = math.atan(80 / distance) * (180 / math.pi)
-   point1 = (float(arg_impact_lat),float(arg_impact_long))
-   point2 = (float(arg_start_lat),float(arg_start_long))
+   ang_alt = (start_alt - end_alt) 
+   distance,bear = haversine(float(end_lon), float(end_lat), float(start_lon), float(start_lat))
+   entry_angle = math.atan(ang_alt/ distance) * (180 / math.pi)
+   point1 = (float(end_lat),float(end_lon))
+   point2 = (float(start_lat),float(start_lon))
    date = arg_date
    time =  arg_time
    year, month, day= date.split('-')
@@ -270,23 +271,26 @@ def calc_radiant(arg_impact_lat, arg_impact_long, arg_start_lat, arg_start_long,
 
    julian_date = date_to_jd(int(year),int(month),float(frac_day))
    az_deg = calculate_initial_compass_bearing(point1, point2)
+   print("AZ DEG:", az_deg, bear)
    el_deg = entry_angle
    pi = math.pi
    az = (az_deg * pi)/180 #rad
    el = (el_deg * pi)/180 #rad
    lat = point1[0] #deg
    lon = point1[1] #deg
-   alt = 0 #m
-   print("LAT", lat)
-   print("LON", lon)
-   print("ALT", alt)
+   #alt = 0 #m
+   #print("LAT", lat)
+   #print("LON", lon)
+   #print("ALT", alt)
    ut = julian_date #julian date
    # Which Julian Date does Ephem start its own count at?
    J0 = ephem.julian_date(0)
    observer = ephem.Observer()
    observer.lon = str(lon)  # str() forces deg -> rad conversion
    observer.lat = str(lat)  # deg -> rad
-   observer.elevation = alt
-   observer.date = ut - J0
+   observer.elevation = end_alt * 1000
+   #observer.date = ut - J0
+   print("<h1>MIKE!", arg_date,arg_time,"</h1>")
+   observer.date = arg_date +  " " + arg_time
    ra,dec = observer.radec_of(az, el)
-   return ra, dec, az_deg, el_deg
+   return ra, dec, az_deg, el_deg, distance, entry_angle
