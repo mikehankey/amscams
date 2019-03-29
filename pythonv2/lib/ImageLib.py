@@ -291,6 +291,7 @@ def mask_frame(frame, mp, masks, size=3):
 
    for mask in masks:
       mx,my,mw,mh = mask.split(",")
+      #print("MASKING: ", mx,my,mw,mh)
       frame[int(my):int(my)+int(mh),int(mx):int(mx)+int(mw)] = 0
 
    for x,y in mp:

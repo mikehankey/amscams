@@ -28,8 +28,14 @@ def AzEltoRADec(azd,eld,cal_file,cal_params,json_conf):
    az = np.radians(azd)
    el = np.radians(eld)
    hd_datetime, hd_cam, hd_date, hd_y, hd_m, hd_d, hd_h, hd_M, hd_s = convert_filename_to_date_cam(cal_file)
-   device_lat = json_conf['site']['device_lat']
-   device_lng = json_conf['site']['device_lng']
+   if "device_lat" in cal_params:
+      device_lat = cal_params['device_lat']
+      device_lng = cal_params['device_lng']
+      device_alt = cal_params['device_alt']
+   else:
+      device_lat = json_conf['site']['device_lat']
+      device_lng = json_conf['site']['device_lng']
+      device_alt = json_conf['site']['device_alt']
 
    obs = ephem.Observer()
 
@@ -255,10 +261,12 @@ def RAdeg2HMS( RAin ):
    return out
 
 
-def radec_to_azel(ra,dec, caldate,json_conf):
-   lat = json_conf['site']['device_lat']
-   lon = json_conf['site']['device_lng']
-   alt = json_conf['site']['device_lng']
+def radec_to_azel(ra,dec, caldate,json_conf, lat=None,lon=None,alt=None):
+   if lat is None:
+      print("MIKE LAT IS NOT NONE!") 
+      lat = json_conf['site']['device_lat']
+      lon = json_conf['site']['device_lng']
+      alt = json_conf['site']['device_alt']
 
    body = ephem.FixedBody()
    #print ("BODY: ", ra, dec)
@@ -1069,7 +1077,7 @@ def get_catalog_stars(fov_poly, pos_poly, cal_params,dimension,x_poly,y_poly,min
          name = cname
 
       ang_sep = angularSeparation(ra,dec,RA_center,dec_center)
-      if ang_sep < fov_radius and float(mag) < 5:
+      if ang_sep < fov_radius and float(mag) < 6:
          new_cat_x, new_cat_y = distort_xy_new (0,0,ra,dec,RA_center, dec_center, x_poly, y_poly, x_res, y_res, pos_angle_ref,F_scale)
 
          possible_stars = possible_stars + 1
@@ -1095,8 +1103,8 @@ def find_close_stars_fwd(star_point, catalog_stars,match_thresh=5):
          temp.append((name,mag,ra,dec,cat_x,cat_y,match_dist))
 
    matches = sorted(temp, key=lambda x: x[6], reverse=False)
-   if len(matches) > 0:
-      print("MATCHED: ", matches[0])
+   #if len(matches) > 0:
+   #   print("MATCHED: ", matches[0])
 
    return(matches[0:1])
 
@@ -1136,4 +1144,41 @@ def find_close_stars(star_point, catalog_stars,dt=25):
    #print("<HR>")
 
    return(matches[0:1])
+
+def radec_to_azel2(ra,dec,lat,lon,alt, caldate):
+   y = caldate[0:4]
+   m = caldate[4:6]
+   d = caldate[6:8]
+
+   #t = caldate[8:14]
+   h = caldate[8:10]
+   mm = caldate[10:12]
+   s = caldate[12:14]
+   caldate = y + "/" + m + "/" + d + " " + h + ":" + mm + ":" + s
+   print("CAL DATE:", caldate)
+
+   body = ephem.FixedBody()
+   print ("BODY: ", ra, dec)
+   body._ra = ra
+   body._dec = dec
+   #body._epoch=ephem.J2000
+
+   obs = ephem.Observer()
+   obs.lat = ephem.degrees(lat)
+   obs.lon = ephem.degrees(lon)
+   obs.date = caldate
+   print ("CALDATE:", caldate)
+   obs.elevation=float(alt)
+   body.compute(obs)
+   az = str(body.az)
+   el = str(body.alt)
+   (d,m,s) = az.split(":")
+   dd = float(d) + float(m)/60 + float(s)/(60*60)
+   az = dd
+
+   (d,m,s) = el.split(":")
+   dd = float(d) + float(m)/60 + float(s)/(60*60)
+   el = dd
+   #az = ephem.degrees(body.az)
+   return(az,el)
 

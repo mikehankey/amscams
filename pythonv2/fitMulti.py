@@ -20,7 +20,9 @@ import lib.brightstardata as bsd
 from lib.DetectLib import eval_cnt
 tries = 0
 
-def reduce_fit(this_poly,field, merged_stars, cal_params, cal_params_file, fit_img, json_conf, show=0):
+
+
+def reduce_fit(this_poly,field, merged_stars, cal_params, cal_params_file, fit_img, json_conf, show=1):
    this_fit_img = fit_img.copy()
    global tries
    pos_poly = cal_params['pos_poly']
@@ -65,6 +67,7 @@ def reduce_fit(this_poly,field, merged_stars, cal_params, cal_params_file, fit_i
  
       if field == 'x_poly' or field == 'y_poly':
          new_cat_x, new_cat_y = distort_xy_new (0,0,ra,dec,float(ra_center), float(dec_center), x_poly, y_poly, float(cal_params['imagew']), float(cal_params['imageh']), float(cal_params['position_angle']),3600/float(cal_params['pixscale']))
+         cv2.line(this_fit_img, (six,siy), (int(new_cat_x),int(new_cat_y)), (255), 2) 
          img_res = abs(calc_dist((six,siy),(new_cat_x,new_cat_y)))
 
       else:
@@ -72,20 +75,21 @@ def reduce_fit(this_poly,field, merged_stars, cal_params, cal_params_file, fit_i
          cal_params['dec_center'] = dec_center
          new_x, new_y, img_ra,img_dec, img_az, img_el = XYtoRADec(six,siy,cal_file,cal_params,json_conf)
          new_x, new_y= distort_xy_new (0,0,img_ra,img_dec,float(ra_center), float(dec_center), x_poly, y_poly, float(cal_params['imagew']), float(cal_params['imageh']), float(cal_params['position_angle']),3600/float(cal_params['pixscale']))
+         cv2.line(this_fit_img, (six,siy), (int(new_x),int(new_y)), (255), 2) 
          img_res = abs(angularSeparation(ra,dec,img_ra,img_dec))
          #img_res = abs(calc_dist((six,siy),(new_x,new_y)))
 
       cv2.rectangle(this_fit_img, (int(new_x)-2, int(new_y)-2), (int(new_x) + 2, int(new_y) + 2), (128, 128, 128), 1)
       cv2.rectangle(this_fit_img, (int(new_cat_x)-2, int(new_cat_y)-2), (int(new_cat_x) + 2, int(new_cat_y) + 2), (128, 128, 128), 1)
-      cv2.rectangle(this_fit_img, (six-4, siy-4), (six+4, siy+4), (128, 128, 128), 1)
-      cv2.line(this_fit_img, (six,siy), (int(new_cat_x),int(new_cat_y)), (255), 2) 
+      cv2.circle(this_fit_img,(six,siy), 7, (128,128,128), 1)
+
       total_res = total_res + img_res
       
 
    if tries % 10 == 0:
       if show == 1:
-         show_img = cv2.resize(this_fit_img, (0,0),fx=.5, fy=.5)
-         cv2.imshow('pepe', show_img) 
+         #show_img = cv2.resize(this_fit_img, (0,0),fx=.5, fy=.5)
+         cv2.imshow('pepe', this_fit_img) 
          cv2.waitKey(1)
 
    total_stars = len(cal_params['merged_stars'])
@@ -178,6 +182,7 @@ def minimize_poly_params_fwd(merged_stars, cal_params_file, cal_params,json_conf
    cal_params['dec_center'] = orig_dec_center
    cal_params_file = cal_params_file.replace("-calparams.json", "-calparams-master.json")
    save_json_file(cal_params_file, cal_params)
+   print(cal_params_file)
 
 def build_multi_cal(cal_params_file, json_conf):
    (f_datetime, cam_id, f_date_str,Y,M,D, H, MM, S) = better_parse_file_date(cal_params_file)
@@ -201,7 +206,12 @@ def build_multi_cal(cal_params_file, json_conf):
       print(match)
       merged_stars = load_merge_cal(this_cal_params_file, merged_stars)
 
-   
+  
+   print("TOTAL STARS FOR MULTI FIT: ", len(merged_stars))
+#   for star in merged_stars:
+#      print(star)
+#Her', 3.9, 255.0725, 30.9264, 254.93918273042874, 31.134331748651338, 0.23724688302817137, 1241.672569534275, 499.3139621783825, 80.29912941591652, 41.13792480322102, 1233, 505, 1230, 501, 5.0)
+#   exit()
 
 #   for (cal_file,ra_center,dec_center, dcname,mag,ra,dec,img_ra,img_dec,match_dist,new_x,new_y,img_az,img_el,new_cat_x,new_cat_y,six,siy,cat_dist) in merged_stars:
 #      print(cal_file,ra_center,dec_center, dcname,mag,ra,dec,img_ra,img_dec,match_dist,new_x,new_y,img_az,img_el,new_cat_x,new_cat_y,six,siy,cat_dist)
@@ -210,6 +220,7 @@ def build_multi_cal(cal_params_file, json_conf):
 def load_merge_cal(cal_params_file, merged_stars):
    cp = load_json_file(cal_params_file)
    cal_file = cal_params_file.replace("-calparams.json", ".png")
+
    tcs = cp['close_stars']
    center_az = cp['center_az']
    center_el = cp['center_el']
@@ -220,15 +231,19 @@ def load_merge_cal(cal_params_file, merged_stars):
    print("CENTER AZ/EL", center_az, center_el, ra_center, dec_center) 
 
    for (dcname,mag,ra,dec,img_ra,img_dec,match_dist,new_x,new_y,img_az,img_el,new_cat_x,new_cat_y,six,siy,cat_dist) in tcs:
-      merged_stars.append((cal_file,ra_center,dec_center, dcname,mag,ra,dec,img_ra,img_dec,match_dist,new_x,new_y,img_az,img_el,new_cat_x,new_cat_y,six,siy,cat_dist))
-
+      if cat_dist < 10: 
+         merged_stars.append((cal_file,ra_center,dec_center, dcname,mag,ra,dec,img_ra,img_dec,match_dist,new_x,new_y,img_az,img_el,new_cat_x,new_cat_y,six,siy,cat_dist))
+      print("MIKE:", six,siy, cat_dist)
    
 
    return(merged_stars)
 
 def find_matching_cal_files(date_str, cam_id):
    match = []
-   all_files = glob.glob("/mnt/ams2/cal/fit_pool/*.json")
+   glob_dir = "/mnt/ams2/cal/autocal/tmp/*calparams.json"
+   print(glob_dir)
+   #all_files = glob.glob("/mnt/ams2/cal/fit_pool/*.json")
+   all_files = glob.glob(glob_dir)
    for file in all_files:
       if cam_id in file :
          match.append(file)

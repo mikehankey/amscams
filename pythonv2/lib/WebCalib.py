@@ -1131,10 +1131,14 @@ def reduce_meteor(json_conf,form):
 
 
 def get_active_cal_file(input_file):
+   #print("INPUT FILE", input_file) 
+   if "png" in input_file:
+      input_file = input_file.replace(".png", ".mp4")
    (f_datetime, cam_id, f_date_str,Y,M,D, H, MM, S) = better_parse_file_date(input_file)
 
    # find all cal files from his cam for the same night
    matches = find_matching_cal_files(cam_id, f_datetime)
+   #print("MATCHED:", matches)
    if len(matches) > 0: 
       return(matches)
    else:
@@ -1377,9 +1381,6 @@ def fit_field(json_conf, form):
       status = "started"
       message = "Fit process started"
 
-
-
-
    response = """
    {
       "status": """ + "\"" + status + "\"," + """ 
@@ -1482,9 +1483,7 @@ def cnt_max_px(cnt_img):
 
 def make_plate_from_points(json_conf, form):
    hd_stack_file = form.getvalue("hd_stack_file")
-   #print(hd_stack_file)
    hd_stack_img = cv2.imread(hd_stack_file,0)
-   #print(hd_stack_img)
    shp = hd_stack_img.shape
    ih,iw = shp[0],shp[1]
    sd = 0
@@ -1493,7 +1492,6 @@ def make_plate_from_points(json_conf, form):
    
    hdm_x = 2.7272
    hdm_y = 1.875
-
   
    plate_img = np.zeros((ih,iw),dtype=np.uint8)
    hd_stack_file_an = hd_stack_file.replace(".png", "-an.png")
@@ -1509,10 +1507,7 @@ def make_plate_from_points(json_conf, form):
          x,y = int(x)+5,int(y)+5
          x,y = x*2,y*2
          points.append((x,y))
-     
    plate_image_4f = np.zeros((ih,iw),dtype=np.uint8)
-
-
    hd_stack_img = cv2.imread(hd_stack_file,0);
    hd_stack_img_an = hd_stack_img.copy()
    star_points = []
@@ -1523,16 +1518,13 @@ def make_plate_from_points(json_conf, form):
       y2 = y + 15
       x1 = x - 15
       x2 = x + 15
-       
       x1,y1,x2,y2= bound_cnt(x,y,iw,ih,15)
-      
       cnt_img = hd_stack_img[y1:y2,x1:x2]
       ch,cw = cnt_img.shape
       max_pnt,max_val,min_val = cnt_max_px(cnt_img) 
       mx,my = max_pnt 
       mx = mx - 15
       my = my - 15
-
       cy1 = y + my - 15
       cy2 = y + my +15
       cx1 = x + mx -15
@@ -1566,7 +1558,6 @@ def make_plate_from_points(json_conf, form):
    points_file = hd_stack_file.replace("-stacked.png", "-user-stars.json")
    save_json_file(points_file,points_json)
 
-
    #cv2.imwrite(hd_stack_file_an, hd_stack_img_an)
    ff_file = hd_stack_file_an.replace("-an.png", "-4f.jpg")
    cal_file = hd_stack_file_an.replace("-an.png", ".jpg")
@@ -1575,8 +1566,6 @@ def make_plate_from_points(json_conf, form):
       plate_img = cv2.resize(plate_img, (1920,1080))
       plate_image_4f = cv2.resize(plate_image_4f, (1920,1080))
       hd_stack_img_an = cv2.resize(hd_stack_img_an, (1920,1080))
-   
-   
    
    half_stack_img_an = cv2.resize(hd_stack_img_an, (0,0),fx=.5, fy=.5)
    half_stack_plate = cv2.resize(plate_img, (0,0),fx=.5, fy=.5)

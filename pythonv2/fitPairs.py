@@ -16,10 +16,10 @@ from lib.UtilLib import calc_dist,find_angle
 import lib.brightstardata as bsd
 from lib.DetectLib import eval_cnt
 
-def reduce_fit(this_poly,field, cal_params, cal_params_file, fit_img, json_conf, show=0):
+def reduce_fit(this_poly,field, cal_params, cal_params_file, fit_img, json_conf, show=1):
    pos_poly = cal_params['pos_poly']
    fov_poly = cal_params['fov_poly']
-
+   this_fit_img = fit_img.copy()
    if field == 'x_poly':
       x_poly_fwd = cal_params['x_poly_fwd']
       y_poly_fwd = cal_params['y_poly_fwd']
@@ -58,13 +58,24 @@ def reduce_fit(this_poly,field, cal_params, cal_params_file, fit_img, json_conf,
       if field == 'x_poly' or field == 'y_poly':
          new_cat_x, new_cat_y = distort_xy_new (0,0,ra,dec,float(cal_params['ra_center']), float(cal_params['dec_center']), x_poly, y_poly, float(cal_params['imagew']), float(cal_params['imageh']), float(cal_params['position_angle']),3600/float(cal_params['pixscale']))
          img_res = abs(calc_dist((six,siy),(new_cat_x,new_cat_y)))
+         cv2.line(this_fit_img, (six,siy), (int(new_cat_x),int(new_cat_y)), (255), 2)
 
       else:
          new_x, new_y, img_ra,img_dec, img_az, img_el = XYtoRADec(six,siy,cal_params_file,cal_params,json_conf)
          img_res = abs(angularSeparation(ra,dec,img_ra,img_dec))
+         cv2.line(this_fit_img, (six,siy), (int(new_x),int(new_y)), (255), 2)
          #img_res = abs(calc_dist((six,siy),(new_x,new_y)))
 
+      cv2.rectangle(this_fit_img, (int(new_x)-2, int(new_y)-2), (int(new_x) + 2, int(new_y) + 2), (128, 128, 128), 1)
+      cv2.rectangle(this_fit_img, (int(new_cat_x)-2, int(new_cat_y)-2), (int(new_cat_x) + 2, int(new_cat_y) + 2), (128, 128, 128), 1)
+      #cv2.rectangle(this_fit_img, (six-4, siy-4), (six+4, siy+4), (128, 128, 128), 1)
+      cv2.circle(this_fit_img, (six,siy), 5, (128,128,128), 1)
+
       total_res = total_res + img_res
+
+   show_img = cv2.resize(this_fit_img, (0,0),fx=.5, fy=.5)
+   cv2.imshow('pepe', this_fit_img)
+   cv2.waitKey(1)
 
    total_stars = len(cal_params['close_stars'])
    avg_res = total_res/total_stars
@@ -75,9 +86,11 @@ def reduce_fit(this_poly,field, cal_params, cal_params_file, fit_img, json_conf,
    return(avg_res)
 
 
-def minimize_poly_params_fwd(cal_params_file, cal_params,json_conf,show=0):
+def minimize_poly_params_fwd(cal_params_file, cal_params,json_conf,show=1):
+
+   cv2.namedWindow('pepe')
    
-   fit_img_file = cal_params_file.replace("cal_params.json", ".png")
+   fit_img_file = cal_params_file.replace("-calparams.json", ".png")
    fit_img = cv2.imread(fit_img_file)
    #if show == 1:
    #   cv2.namedWindow('pepe')
