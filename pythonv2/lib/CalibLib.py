@@ -10,7 +10,7 @@ import glob
 import os
 from lib.VideoLib import load_video_frames, get_masks
 from lib.ImageLib import stack_frames, median_frames, adjustLevels, mask_frame
-from lib.UtilLib import convert_filename_to_date_cam, bound_cnt, check_running,date_to_jd, angularSeparation , calc_dist
+from lib.UtilLib import convert_filename_to_date_cam, bound_cnt, check_running,date_to_jd, angularSeparation , calc_dist, better_parse_file_date
 from lib.FileIO import cfe, save_json_file, load_json_file
 from lib.DetectLib import eval_cnt
 from scipy import signal
@@ -24,10 +24,11 @@ bright_stars = mybsd.bright_stars
 # distort_xy_new (should be called RADEC to corrected xy)
 #AZ TO RA DEC (and then to XY)
 
-def AzEltoRADec(azd,eld,cal_file,cal_params,json_conf):
-   az = np.radians(azd)
-   el = np.radians(eld)
+def AzEltoRADec(az,el,cal_file,cal_params,json_conf):
+   azr = np.radians(az)
+   elr = np.radians(el)
    hd_datetime, hd_cam, hd_date, hd_y, hd_m, hd_d, hd_h, hd_M, hd_s = convert_filename_to_date_cam(cal_file)
+   #hd_datetime = hd_y + "/" + hd_m + "/" + hd_d + " " + hd_h + ":" + hd_M + ":" + hd_s
    if "device_lat" in cal_params:
       device_lat = cal_params['device_lat']
       device_lng = cal_params['device_lng']
@@ -39,11 +40,23 @@ def AzEltoRADec(azd,eld,cal_file,cal_params,json_conf):
 
    obs = ephem.Observer()
 
-   obs.lat = device_lat
-   obs.lon = device_lng
+
+   obs.lat = str(device_lat)
+   obs.lon = str(device_lng)
+   obs.elevation = float(device_alt)
    obs.date = hd_datetime 
 
-   ra,dec = obs.radec_of(az,el)
+   #print("AZ2RA DATETIME:", hd_datetime)
+   #print("AZ2RA LAT:", obs.lat)
+   #print("AZ2RA LON:", obs.lon)
+   #print("AZ2RA ELV:", obs.elevation)
+   #print("AZ2RA DATE:", obs.date)
+   #print("AZ2RA AZ,EL:", az,el)
+   #print("AZ2RA RAD AZ,EL:", azr,elr)
+
+   ra,dec = obs.radec_of(azr,elr)
+
+
    return(ra,dec)
 
 
@@ -263,20 +276,21 @@ def RAdeg2HMS( RAin ):
 
 def radec_to_azel(ra,dec, caldate,json_conf, lat=None,lon=None,alt=None):
    if lat is None:
-      print("MIKE LAT IS NOT NONE!") 
       lat = json_conf['site']['device_lat']
       lon = json_conf['site']['device_lng']
       alt = json_conf['site']['device_alt']
 
    body = ephem.FixedBody()
    #print ("BODY: ", ra, dec)
-   #body._epoch=ephem.J2000
+   body._epoch=ephem.J2000
 
    rah = RAdeg2HMS(ra)
    dech= Decdeg2DMS(dec)
 
    body._ra = rah
    body._dec = dech
+
+   
 
    obs = ephem.Observer()
    obs.lat = ephem.degrees(lat)
@@ -286,6 +300,16 @@ def radec_to_azel(ra,dec, caldate,json_conf, lat=None,lon=None,alt=None):
    body.compute(obs)
    az = str(body.az)
    el = str(body.alt)
+
+   #print("RADEC_2_AZEL BODY RA:", body._ra)
+   #print("RADEC_2_AZEL BODY DEC:", body._dec)
+   #print("RADEC_2_AZEL OBS DATE:", obs.date)
+   #print("RADEC_2_AZEL OBS LAT:", obs.lat)
+   #print("RADEC_2_AZEL OBS LON:", obs.lon)
+   #print("RADEC_2_AZEL OBS EL:", obs.elevation)
+   #print("RADEC_2_AZEL AZH AZH:", az)
+   #print("RADEC_2_AZEL ELH ELH:", el)
+   
    (d,m,s) = az.split(":")
    dd = float(d) + float(m)/60 + float(s)/(60*60)
    az = dd
@@ -294,6 +318,18 @@ def radec_to_azel(ra,dec, caldate,json_conf, lat=None,lon=None,alt=None):
    dd = float(d) + float(m)/60 + float(s)/(60*60)
    el = dd
    #az = ephem.degrees(body.az)
+
+   #print("RADEC_2_AZEL DATE:", caldate)
+   #print("RADEC_2_AZEL lat:", lat)
+   #print("RADEC_2_AZEL lon:", lon)
+   #print("RADEC_2_AZEL alt:", alt)
+   #print("RADEC_2_AZEL RA IN:", ra)
+   #print("RADEC_2_AZEL DEC IN:", dec)
+   #print("RADEC_2_AZEL RAH IN:", rah)
+   #print("RADEC_2_AZEL DECH IN:", dech)
+   #print("RADEC_2_AZEL AZ OUT:", az)
+   #print("RADEC_2_AZEL EL OUT:", el)
+
    return(az,el)
 
 
@@ -852,9 +888,6 @@ def make_plate_image(med_stack_all, cam_num, json_conf, show = 1):
    if len(temp) > 30:
       stars = temp[0:29]
           
-   print("STARS:", len(stars))
-   print("NON STARS:", len(nonstars))
-   print("CENTER STARS:", center_stars)
    cv2.imshow('pepe', plate_image)
    cv2.waitKey(10)
 
@@ -1050,19 +1083,24 @@ def get_catalog_stars(fov_poly, pos_poly, cal_params,dimension,x_poly,y_poly,min
    possible_stars = 0
    img_w = int(cal_params['imagew'])
    img_h = int(cal_params['imageh'])
-   RA_center = float(cal_params['ra_center']) + (1000*fov_poly[0])
-   dec_center = float(cal_params['dec_center']) + (1000*fov_poly[1])
+   #RA_center = float(cal_params['ra_center']) + (1000*fov_poly[0])
+   #dec_center = float(cal_params['dec_center']) + (1000*fov_poly[1])
+   RA_center = float(cal_params['ra_center']) 
+   dec_center = float(cal_params['dec_center']) 
    F_scale = 3600/float(cal_params['pixscale'])
    fov_w = img_w / F_scale
    fov_h = img_h / F_scale
    fov_radius = np.sqrt((fov_w/2)**2 + (fov_h/2)**2)
 
-   pos_angle_ref = cal_params['position_angle'] + (1000*pos_poly[0])
+   #pos_angle_ref = cal_params['position_angle'] + (1000*pos_poly[0])
+   pos_angle_ref = cal_params['position_angle'] 
+   # + (1000*pos_poly[0])
    x_res = int(cal_params['imagew'])
    y_res = int(cal_params['imageh'])
 
-   center_x = int(x_res / 2)
-   center_y = int(x_res / 2)
+   if img_w < 1920:
+      center_x = int(x_res / 2)
+      center_y = int(x_res / 2)
 
    bright_stars_sorted = sorted(bright_stars, key=lambda x: x[4], reverse=False)
 
@@ -1104,7 +1142,6 @@ def find_close_stars_fwd(star_point, catalog_stars,match_thresh=5):
 
    matches = sorted(temp, key=lambda x: x[6], reverse=False)
    #if len(matches) > 0:
-   #   print("MATCHED: ", matches[0])
 
    return(matches[0:1])
 
@@ -1181,4 +1218,38 @@ def radec_to_azel2(ra,dec,lat,lon,alt, caldate):
    el = dd
    #az = ephem.degrees(body.az)
    return(az,el)
+
+def get_active_cal_file(input_file):
+   #print("INPUT FILE", input_file)
+   if "png" in input_file:
+      input_file = input_file.replace(".png", ".mp4")
+   (f_datetime, cam_id, f_date_str,Y,M,D, H, MM, S) = better_parse_file_date(input_file)
+
+   # find all cal files from his cam for the same night
+   matches = find_matching_cal_files(cam_id, f_datetime)
+   if len(matches) > 0:
+      return(matches)
+   else:
+      return(None)
+
+def find_matching_cal_files(cam_id, capture_date):
+   matches = []
+   all_files = glob.glob("/mnt/ams2/cal/freecal/*")
+   for file in all_files:
+      if cam_id in file :
+         el = file.split("/")
+         fn = el[-1]
+         cal_p_file = file  + "/" + fn + "-stacked-calparams.json"
+         if cfe(cal_p_file) == 1:
+            matches.append(cal_p_file)
+
+   td_sorted_matches = []
+
+   for match in matches:
+      (t_datetime, cam_id, f_date_str,Y,M,D, H, MM, S) = better_parse_file_date(match)
+      tdiff = (capture_date-t_datetime).total_seconds()
+      td_sorted_matches.append((match,f_date_str,tdiff))
+
+   temp = sorted(td_sorted_matches, key=lambda x: x[2], reverse=False)
+   return(temp)
 

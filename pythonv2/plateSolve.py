@@ -246,10 +246,11 @@ def pair_stars(cal_params, cal_params_file, json_conf):
    cal_params['cal_params_file'] = cal_params_file
    save_json_file(cal_params_file, cal_params)
 
-   cv2.imshow('pepe', cal_img)
-   cv2.waitKey(0)
-
-   os.system("./fitPairs.py " + cal_params_file)
+   #cv2.imshow('pepe', cal_img)
+   #cv2.waitKey(0)
+   fit_on = 0
+   if fit_on == 1:
+      os.system("./fitPairs.py " + cal_params_file)
 
    return(star_matches)
 
@@ -257,5 +258,5 @@ json_conf = load_json_file("../conf/as6.json")
 
 cal_img_file = sys.argv[1]
 
-cv2.namedWindow('pepe')
+#cv2.namedWindow('pepe')
 plate_solve(cal_img_file, json_conf)

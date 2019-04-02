@@ -37,7 +37,7 @@ def find_closest_frame(master_ftime, time_list, mfc):
 
 def map_obs_frames(meteor):
    #first determine which obs has the most frames captured, use that as the 'parent' 
-   for obskey in meteor['vel_data']
+   for obskey in meteor['vel_data']:
       (ft,fn,lon,lat,alt,point_dist,vel,dist_from_start,vel_from_start) = meteor['vel_data'][obskey]
 
 
@@ -209,8 +209,8 @@ def fit_points_to_line(meteor,meteor_json_file):
    arg_date = hd_y + "-" + hd_m + "-" + hd_d
    arg_time = hd_h + ":" + hd_M + ":" + hd_s
 
-
-   rah,dech,az,el = calc_radiant(meteor['final_solution']['0km'][1],meteor['final_solution']['0km'][0],meteor['final_solution']['100km'][1],meteor['final_solution']['100km'][0], arg_date, arg_time)
+   #def calc_radiant(end_lon, end_lat, end_alt, start_lon, start_lat, start_alt, arg_date, arg_time):
+   rah,dech,az,el,track_dist,entry_angle = calc_radiant(meteor['final_solution']['0km'][1],meteor['final_solution']['0km'][0],0,meteor['final_solution']['100km'][1],meteor['final_solution']['100km'][0], 100,arg_date, arg_time)
    rah = str(rah).replace(":", " ")
    dech = str(dech).replace(":", " ")
    ra,dec= HMS2deg(str(rah),str(dech))
@@ -277,8 +277,8 @@ def make_kmz(meteor):
          line.linestyle.color = color
          cc = cc + 1
 
-   zkmx, zkmy, zkmz = meteor['final_solution']['0km']
-   okmx,okmy,okmz = meteor['final_solution']['100km']
+   #zkmx, zkmy, zkmz = meteor['final_solution']['0km']
+   #okmx,okmy,okmz = meteor['final_solution']['100km']
 
    start_x,start_y,start_z = meteor['final_solution']['meteor_start_point']
    end_x,end_y,end_z = meteor['final_solution']['meteor_end_point']
@@ -783,13 +783,13 @@ else:
    meteor = load_json_file(meteor_file)
 save_json_file(meteor_file, meteor)
 
-#meteor = plot_meteor_ms(meteor)
+meteor = plot_meteor_ms(meteor)
 
-#meteor = compute_velocity(meteor)
-meteor  = velocity_curve(meteor)
+meteor = compute_velocity(meteor)
+#meteor  = velocity_curve(meteor)
 #save_json_file(meteor_file, meteor)
 
-#meteor = fit_points_to_line(meteor,meteor_file)
+meteor = fit_points_to_line(meteor,meteor_file)
 save_json_file(meteor_file, meteor)
-#make_kmz(meteor)
+make_kmz(meteor)
 

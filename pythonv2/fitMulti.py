@@ -92,8 +92,11 @@ def reduce_fit(this_poly,field, merged_stars, cal_params, cal_params_file, fit_i
          cv2.imshow('pepe', this_fit_img) 
          cv2.waitKey(1)
 
-   total_stars = len(cal_params['merged_stars'])
-   avg_res = total_res/total_stars
+   total_stars = len(merged_stars)
+   if total_stars > 0:
+      avg_res = total_res/total_stars
+   else:
+      avg_res = 999
 
    print("Total Residual Error:", total_res )
    print("Total Stars:", total_stars)
@@ -106,6 +109,9 @@ def reduce_fit(this_poly,field, merged_stars, cal_params, cal_params_file, fit_i
 
 
 def minimize_poly_params_fwd(merged_stars, cal_params_file, cal_params,json_conf,orig_ra_center,orig_dec_center,show=0):
+
+   print("MS LEN:", len(merged_stars))
+
    fit_img_file = cal_params_file.replace("-calparams.json", ".png")
    fit_img = cv2.imread(fit_img_file)
    if show == 1:
@@ -121,11 +127,17 @@ def minimize_poly_params_fwd(merged_stars, cal_params_file, cal_params,json_conf
       cv2.namedWindow('pepe') 
    this_fit_img = fit_img.copy()
    for star in merged_stars:
+      print("STAR: ", len(star))
+      print("STAR: ", star)
       (cal_file,ra_center,dec_center,dcname,mag,ra,dec,img_ra,img_dec,match_dist,new_x,new_y,img_az,img_el,new_cat_x,new_cat_y,six,siy, img_res) = star
       cv2.rectangle(this_fit_img, (new_cat_x-2, new_cat_y-2), (new_cat_x + 2, new_cat_y + 2), (128, 128, 128), 1)
       cv2.rectangle(this_fit_img, (six-4, siy-4), (six+4, siy+4), (128, 128, 128), 1)
       cv2.line(this_fit_img, (six,siy), (new_cat_x,new_cat_y), (255), 2) 
    cv2.imwrite("/mnt/ams2/test.png", this_fit_img)
+   cv2.imshow('pepe', this_fit_img)
+   cv2.waitKey(1)
+#   exit()
+
 
    # do x poly 
    field = 'x_poly'
@@ -175,9 +187,9 @@ def minimize_poly_params_fwd(merged_stars, cal_params_file, cal_params,json_conf
 
    img_x = 960
    img_y = 540
-   new_x, new_y, img_ra,img_dec, img_az, img_el = XYtoRADec(img_x,img_y,cal_params_file,cal_params,json_conf)
-   cal_params['center_az'] = img_az
-   cal_params['center_el'] = img_el
+   #new_x, new_y, img_ra,img_dec, img_az, img_el = XYtoRADec(img_x,img_y,cal_params_file,cal_params,json_conf)
+   #cal_params['center_az'] = img_az
+   #cal_params['center_el'] = img_el
    cal_params['ra_center'] = orig_ra_center
    cal_params['dec_center'] = orig_dec_center
    cal_params_file = cal_params_file.replace("-calparams.json", "-calparams-master.json")
@@ -249,40 +261,24 @@ def find_matching_cal_files(date_str, cam_id):
          match.append(file)
    return(match)
 
+if __name__ == "__main__":
 
-tries = 0
-json_conf = load_json_file("../conf/as6.json")
-
-
-cal_params_file = sys.argv[1]
-
-print(cal_params_file)
-cal_params = load_json_file(cal_params_file)
-total_res = 0
-total_res_fwd = 0
-
-merged_stars, merged_files, orig_ra_center, orig_dec_center = build_multi_cal(cal_params_file, json_conf)
-cal_params['merged_stars'] = merged_stars
-cal_params['merged_files'] = merged_files
-minimize_poly_params_fwd(merged_stars, cal_params_file, cal_params,json_conf,orig_ra_center,orig_dec_center)
-exit()
+   tries = 0
+   json_conf = load_json_file("../conf/as6.json")
 
 
-for star in (cal_params['close_stars']):
-   (dcname,mag,ra,dec,img_ra,img_dec,match_dist,new_x,new_y,img_az,img_el,new_cat_x,new_cat_y,six,siy, img_res) = star
-   img_res_fwd = abs(calc_dist((six,siy),(new_x,new_y)))
-   #print(dcname, img_res,img_res,img_res_fwd)
-   total_res = total_res + img_res
-   total_res_fwd = total_res_fwd + img_res_fwd
+   cal_params_file = sys.argv[1]
 
-total_stars = len(cal_params['close_stars'])
-avg_res = total_res/total_stars
-avg_res_fwd = total_res_fwd/total_stars
-print("Total Residual Error:", total_res, total_res_fwd)
-print("Avg Residual Error:", avg_res, avg_res_fwd)
-minimize_poly_params_fwd(cal_params_file, cal_params,json_conf)
+   print(cal_params_file)
+   cal_params = load_json_file(cal_params_file)
+   total_res = 0
+   total_res_fwd = 0
 
-cmd = "./XYtoRAdecAzEl.py az_grid " + cal_params_file + ">/tmp/mike.txt 2>&1"
-print(cmd)
-os.system(cmd)
+   merged_stars, merged_files, orig_ra_center, orig_dec_center = build_multi_cal(cal_params_file, json_conf)
+   cal_params['merged_stars'] = merged_stars
+   cal_params['merged_files'] = merged_files
+   minimize_poly_params_fwd(merged_stars, cal_params_file, cal_params,json_conf,orig_ra_center,orig_dec_center)
+
+
+
 
