@@ -1154,6 +1154,10 @@ def find_matching_cal_files(cam_id, capture_date):
          cal_p_file = file  + "/" + fn + "-stacked-calparams.json"
          if cfe(cal_p_file) == 1:
             matches.append(cal_p_file)
+         else:
+            cal_p_file = file  + "/" + fn + "-calparams.json"
+         if cfe(cal_p_file) == 1:
+            matches.append(cal_p_file)
   
    td_sorted_matches = [] 
 

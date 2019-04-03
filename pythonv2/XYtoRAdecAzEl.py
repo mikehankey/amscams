@@ -71,8 +71,8 @@ def az_grid(cal_file,cal_params,cal_image,iw,ih,show =0):
          end_el = 89.7
 
       if center_az - 80 < 0:
-         start_az = 270
-         end_az = 450
+         start_az = center_az - 80
+         end_az = start_az + 160 
 
    RA_center = float(cal_params['ra_center'])
    dec_center = float(cal_params['dec_center'])

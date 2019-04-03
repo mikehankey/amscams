@@ -396,6 +396,10 @@ def get_cal_files(json_conf,cams_id):
       fn = el[-1]
       if cfe(file,1) == 1:
          cal_file = file + "/" + fn + "-stacked.png"
+         if cfe(cal_file): 
+            cal_files.append(cal_file)
+         else:
+            cal_file = file + "/" + fn + ".png"
          cal_files.append(cal_file)
      
    return(cal_files)
