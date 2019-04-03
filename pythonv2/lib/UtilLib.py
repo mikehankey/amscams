@@ -1,4 +1,4 @@
-
+import cv2
 import subprocess
 import datetime
 import math
@@ -294,3 +294,10 @@ def calc_radiant(end_lon, end_lat, end_alt, start_lon, start_lat, start_alt, arg
    observer.date = arg_date +  " " + arg_time
    ra,dec = observer.radec_of(az, el)
    return ra, dec, az_deg, el_deg, distance, entry_angle
+
+def cnt_max_px(cnt_img):
+   cnt_img = cv2.GaussianBlur(cnt_img, (7, 7), 0)
+   min_val, max_val, min_loc, max_loc = cv2.minMaxLoc(cnt_img)
+
+   return(max_loc, min_val, max_val)
+

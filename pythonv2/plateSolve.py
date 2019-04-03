@@ -131,6 +131,8 @@ def plate_solve(cal_file,json_conf):
       wild = base_file + "-stars.txt"
       os.system("rm " + wild)
       wild = base_file + "-wcsinfo.txt"
+      wild = base_file + ".solved"
+      os.system("touch " + wild)
    else:
       #cal failed
       wild = base_file + ".txt"
@@ -209,7 +211,9 @@ def pair_stars(cal_params, cal_params_file, json_conf):
       if (x-10 > 0 and y-10 > 0) and (x+10 < iw-1 and y+10 < ih-1):
          print("STAR:", y1,y2,x1,x2)
          cnt_img = cal_img[y1:y2,x1:x2]
-         max_px, avg_px, px_diff,max_loc = eval_cnt(cnt_img)
+         cnh,cnw = cnt_img.shape
+         if cnh > 0 and cnw > 0:
+            max_px, avg_px, px_diff,max_loc = eval_cnt(cnt_img)
          mx,my = max_loc
          # maybe bug here?
          pp_x = (x + int(max_loc[0]) -10)

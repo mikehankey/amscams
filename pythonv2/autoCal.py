@@ -14,8 +14,8 @@ from lib.ImageLib import mask_frame , stack_frames
 #import matplotlib.pyplot as plt
 import sys
 #from caliblib import distort_xy,
-from lib.CalibLib import distort_xy_new, find_image_stars, distort_xy_new, XYtoRADec, radec_to_azel, get_catalog_stars,AzEltoRADec , HMS2deg, get_active_cal_file, RAdeg2HMS
-from lib.UtilLib import calc_dist, find_angle
+from lib.CalibLib import distort_xy_new, find_image_stars, distort_xy_new, XYtoRADec, radec_to_azel, get_catalog_stars,AzEltoRADec , HMS2deg, get_active_cal_file, RAdeg2HMS, clean_star_bg
+from lib.UtilLib import calc_dist, find_angle, bound_cnt, cnt_max_px
 
 from lib.UtilLib import angularSeparation, convert_filename_to_date_cam, better_parse_file_date
 from lib.FileIO import load_json_file, save_json_file, cfe
@@ -23,7 +23,7 @@ from lib.UtilLib import calc_dist,find_angle
 import lib.brightstardata as bsd
 from lib.DetectLib import eval_cnt
 
-def multi_merge(all_stars, json_conf):
+def multi_merge(all_stars, master_cal_params, master_cal_file, json_conf):
 
    cameras = json_conf['cameras']
    cam_ids = []
@@ -31,35 +31,49 @@ def multi_merge(all_stars, json_conf):
    cp_files = {}
    for camera in cameras:
       multi_merge[cameras[camera]['cams_id']]  = {}
+      cam_id = cameras[camera]['cams_id']
+ 
       cp_files[cameras[camera]['cams_id']]  = ""
+
+
+   bad_cams = {}
+   for cam_id in master_cal_params:
+      bad_cams[cam_id] = 0 
+      if master_cal_params[cam_id]['center_az'] is None or str(master_cal_params[cam_id]['center_az']) == "nan" :
+         print("GAY", cam_id, str(master_cal_params[cam_id]['center_az']))
+         bad_cams[cam_id] = 1
+         #sample_file = sample_files
+         #poss = get_active_cal_file(sample_file)
+         #cal_params_file = poss[0][0]
 
    for file in all_stars:
       (f_datetime, cam_id, f_date_str,fy,fm,fd, fh, fmin, fs) = convert_filename_to_date_cam(file)
-      multi_merge[cam_id][file] = [] 
-      for star in all_stars[file]:
-         print("STAR LEN:", len(star))
-         print("STAR :", star)
-         name,mag,ra,dec,new_cat_x,new_cat_y,ix,iy,px_dist,cal_params_file = star
-         (f_datetime, cam_id, f_date_str,fy,fm,fd, fh, fmin, fs) = convert_filename_to_date_cam(cal_params_file)
-         cal_params = load_json_file(cal_params_file)
-         cp_files[cam_id] = cal_params_file
-         img_ra = ra
-         img_dec = dec
-         match_dist = px_dist
-         ra_center = cal_params['ra_center']
-         dec_center = cal_params['dec_center']
-         img_az = cal_params['center_az']
-         img_el = cal_params['center_el']
-         img_res = px_dist
-         # find new ra/dec center
-         rah,dech = AzEltoRADec(img_az,img_el,file,cal_params,json_conf)
-         rah = str(rah).replace(":", " ")
-         dech = str(dech).replace(":", " ")
-         ra_center,dec_center = HMS2deg(str(rah),str(dech))
-         print("CENTER AZ/EL", img_az, img_el, ra_center, dec_center)
+      if bad_cams[cam_id] == 0:
 
-         if match_dist < 5:
-            multi_merge[cam_id][file].append((cal_params_file,ra_center,dec_center,name,mag,ra,dec,img_ra,img_dec,match_dist,new_cat_x,new_cat_y,img_az,img_el,new_cat_x,new_cat_y,ix,iy, img_res))
+         multi_merge[cam_id][file] = [] 
+         sc = 0
+         print(file)
+         for star in all_stars[file]:
+            print(sc)
+            name,mag,ra,dec,new_cat_x,new_cat_y,ix,iy,px_dist,cal_params_file = star
+            (f_datetime, cam_id, f_date_str,fy,fm,fd, fh, fmin, fs) = convert_filename_to_date_cam(cal_params_file)
+            cal_params = master_cal_params[cam_id]
+            cp_files[cam_id] = cal_params_file
+            img_ra = ra
+            img_dec = dec
+            match_dist = px_dist
+            img_az = cal_params['center_az']
+            img_el = cal_params['center_el']
+            img_res = px_dist
+            # find new ra/dec center
+            rah,dech = AzEltoRADec(img_az,img_el,file,cal_params,json_conf)
+            rah = str(rah).replace(":", " ")
+            dech = str(dech).replace(":", " ")
+            ra_center,dec_center = HMS2deg(str(rah),str(dech))
+
+            if match_dist < 5:
+               multi_merge[cam_id][file].append((cal_params_file,ra_center,dec_center,name,mag,ra,dec,img_ra,img_dec,match_dist,new_cat_x,new_cat_y,img_az,img_el,new_cat_x,new_cat_y,ix,iy, img_res))
+            sc = sc + 1
 
    for cam_id in multi_merge:
       merge_file = "/mnt/ams2/cal/autocal/startrack/starmerge-" + cam_id + ".json"
@@ -67,9 +81,10 @@ def multi_merge(all_stars, json_conf):
 
       merged_stars = multi_merge[cam_id]
       cal_params_file = cp_files[cam_id] 
-      cal_params = load_json_file(cal_params_file)
-      orig_ra_center = cal_params['ra_center']
-      orig_dec_center = cal_params['dec_center']
+      #cal_params = load_json_file(cal_params_file)
+      cal_params = master_cal_params[cam_id]
+      #orig_ra_center = cal_params['ra_center']
+      #orig_dec_center = cal_params['dec_center']
 
       multi_fit_merge = []
       for file in merged_stars:
@@ -86,16 +101,22 @@ def multi_merge(all_stars, json_conf):
                cv2.line(img, (ix,iy), (new_cat_x,new_cat_y), (255), 2)
                multi_fit_merge.append(star)
             if show == 1:
-               cv2.imshow('pepe', img)
-               cv2.waitKey(1)
+               simg = cv2.resize(img, (960,540))
+               cv2.imshow('pepe', simg)
+               cv2.waitKey(30)
 
       new_cp = cal_params_file.replace("-calparams.json", "-calparams-master.json")
-      if cfe(new_cp) == 1 and "010001" not in new_cp:
+      if cfe(new_cp) == 1 :
          new_multi_fit_merge = remove_bad_pairs(multi_fit_merge)
-         print("MINIMIZE: ", cal_params_file, orig_ra_center, orig_dec_center)
-         minimize_poly_params_fwd(new_multi_fit_merge, cal_params_file, cal_params,json_conf,orig_ra_center,orig_dec_center,show=0)
+         print("MINIMIZE: " )
+         cal_params = default_cal_params(cal_params,json_conf)
+         #cal_params['close_stars'] = user_stars
+         fin_cal_params = minimize_poly_params_fwd(new_multi_fit_merge, cal_params_file, cal_params,json_conf,0,0,0)
+         for key in fin_cal_params:
+            master_cal_params[key] = fin_cal_params[key]
       else:
          print("SKIPPING ALREADY DONE!")
+   save_json_file(master_cal_file, master_cal_params)
 
 def star_quad(x,y):
    iw = 1920
@@ -217,7 +238,7 @@ def reduce_latlon(this_poly, cal_params, cal_params_file, json_conf, all_paired_
       org_el = cal_params['center_el'] 
 
    
-      min_mod = 60
+      min_mod = 30
       lat = float(org_lat) + float(this_poly[0])
       lon = float(org_lon) + float(this_poly[1])
       alt = float(org_alt) + float(this_poly[2])
@@ -285,16 +306,15 @@ def get_sd_files(day,cam_id,json_conf):
    sd_files = []
    all_files = sorted(glob.glob(base_dir))
    for file in all_files:
-      if "-tn" not in file and "-night-stack" not in file:
+      if "-tn" not in file and "-night-stack" not in file and "-hd-stack" not in file:
          sd_files.append(file)
 
    return(sd_files)
 
 def track_stars (day,json_conf,scmd='',cal_params_file=None,show=0):
-
    if show == 1:
       cv2.namedWindow('pepe')
-   min_mod = 120
+   min_mod = 60
 
    # for each cam! 
    cameras = json_conf['cameras']
@@ -381,26 +401,255 @@ def track_stars (day,json_conf,scmd='',cal_params_file=None,show=0):
 
    return(all_i_files) 
 
-def hd_cal(all_i_files, json_conf):
+def flatten_all_stars(all_stars, json_conf):
+   cameras = json_conf['cameras']
+   cam_ids = []
+   multi_merge = {}
+   cp_files = {}
+   for camera in cameras:
+      multi_merge[cameras[camera]['cams_id']]  = {}
+      cp_files[cameras[camera]['cams_id']]  = ""
+
+   for file in all_stars:
+      print(file, len(all_stars))
+      (f_datetime, cam_id, f_date_str,fy,fm,fd, fh, fmin, fs) = convert_filename_to_date_cam(file)
+      multi_merge[cam_id][file] = []
+      for star in all_stars[file]:
+         name,mag,ra,dec,new_cat_x,new_cat_y,ix,iy,px_dist,cal_params_file = star
+         (f_datetime, cam_id, f_date_str,fy,fm,fd, fh, fmin, fs) = convert_filename_to_date_cam(cal_params_file)
+         cal_params = load_json_file(cal_params_file)
+         cp_files[cam_id] = cal_params_file
+         img_ra = ra
+         img_dec = dec
+         match_dist = px_dist
+         ra_center = cal_params['ra_center']
+         dec_center = cal_params['dec_center']
+         img_az = cal_params['center_az']
+         img_el = cal_params['center_el']
+         img_res = px_dist
+         # find new ra/dec center
+         rah,dech = AzEltoRADec(img_az,img_el,file,cal_params,json_conf)
+         rah = str(rah).replace(":", " ")
+         dech = str(dech).replace(":", " ")
+         ra_center,dec_center = HMS2deg(str(rah),str(dech))
+         #print("CENTER AZ/EL", img_az, img_el, ra_center, dec_center)
+
+         if match_dist < 5:
+            multi_merge[cam_id][file].append((cal_params_file,ra_center,dec_center,name,mag,ra,dec,img_ra,img_dec,match_dist,new_cat_x,new_cat_y,img_az,img_el,new_cat_x,new_cat_y,ix,iy, img_res))
+   return(multi_merge) 
+
+def hd_cal(all_i_files, json_conf, show = 0):
    print("HD CAL")
+   good_hd_stacks = []
+
+   all_new_i_files = {}
+
    for file in all_i_files:
       hd_stack_file = file.replace("-stacked.png", "-hd-stacked.png")
+      total_stars = len(all_i_files[file])
       if cfe(hd_stack_file) == 0:
+         print(file, total_stars)
          hd_file, hd_trim,time_diff_sec, dur = find_hd_file_new(file, 0, 10, 0)
-         frames = load_video_frames(hd_file, json_conf)
-         print(len(frames)) 
-         stack_file, stack_img = stack_frames(frames, hd_file, 1)
+         print("LOADING:", hd_file)
+         if hd_file is not None and total_stars > 10:
+            frames = load_video_frames(hd_file, json_conf, 300)
+            print(len(frames)) 
+            stack_file, stack_img = stack_frames(frames, hd_file, 1)
          
-         print(stack_file, stack_img.shape) 
-         cv2.imwrite(hd_stack_file, stack_img)
+         #print(stack_file, stack_img.shape) 
+            cv2.imwrite(hd_stack_file, stack_img)
+            good_hd_stacks.append(hd_stack_file)
  
-         print(file, hd_file, hd_trim,time_diff_sec,dur)
+         #print(file, hd_file, hd_trim,time_diff_sec,dur)
+      else:
+         print("HD FILE ALREADY DONE:", hd_stack_file, total_stars)
+         if total_stars > 10:
+            good_hd_stacks.append(hd_stack_file)
 
-   #for each hour of the night. 
-   # if weather is good
-   # stack 2x hd file per hour
-   # attempt to solve each
-   # save successful ones to new dir
+   for hd_stack_file in good_hd_stacks:
+      (f_datetime, cam_id, f_date_str,fy,fm,fd, fh, fmin, fs) = convert_filename_to_date_cam(file)
+      masks = get_masks(cam_id, json_conf,0)
+
+      hd_stack_img = cv2.imread(hd_stack_file,0)
+      hd_stack_img = mask_frame(hd_stack_img, [], masks)
+      print("HD:", hd_stack_file)
+
+      poss = get_active_cal_file(hd_stack_file)
+      cal_params_file = poss[0][0]
+      masks = []
+
+      cat_image_stars,img = get_image_stars_from_catalog(hd_stack_file,json_conf,cal_params_file, masks, show)
+
+      all_new_i_files[hd_stack_file] = cat_image_stars
+   #flat_stars = flatten_all_stars(all_i_files, json_conf)
+   for file in all_new_i_files:
+      hd_stack_img = cv2.imread(file,0)
+      print("HD FILE:", file)
+      file_stars = all_new_i_files[file]
+      for file_star in file_stars:
+         (name,mag,ra,dec,new_cat_x,new_cat_y,ix,iy,px_dist,cal_params_file) = file_star
+         #(cal_params_file,ra_center,dec_center,name,mag,ra,dec,img_ra,img_dec,match_dist,new_cat_x,new_cat_y,img_az,img_el,new_cat_x,new_cat_y,ix,iy, img_res) = file_star
+         #if px_dist < 10:
+         #   cv2.rectangle(hd_stack_img, (new_cat_x-2, new_cat_y-2), (new_cat_x + 2, new_cat_y + 2), (128, 128, 128), 1)
+         #   cv2.line(hd_stack_img, (ix,iy), (new_cat_x,new_cat_y), (255), 2)
+         #   cv2.circle(hd_stack_img,(ix,iy), 5, (128,128,128), 1)
+
+      plate_img, user_stars = make_plate_image(hd_stack_img, file_stars)
+      plate_img_file = file.replace(".png", ".jpg")
+      cv2.imwrite(plate_img_file, plate_img)
+     
+      el = plate_img_file.split("/")
+      day_dir = el[-3] 
+      fn = el[-1] 
+      hd_day_dir = "/mnt/ams2/cal/autocal/hdimages/" + day_dir + "/"
+      new_plate_img_file = hd_day_dir + fn
+      solved_file = new_plate_img_file.replace(".jpg", ".solved")
+      failed_file = new_plate_img_file.replace(".jpg", ".failed")
+
+      user_star_file = new_plate_img_file.replace(".jpg", "-user-stars.json")
+      json_user_stars = {}
+      json_user_stars['user_stars'] = user_stars
+      save_json_file(user_star_file, json_user_stars)
+
+      if cfe(failed_file) == 0 and cfe(solved_file) == 0:
+         if cfe(hd_day_dir, 1) == 0: 
+            os.system("mkdir " + hd_day_dir)
+         os.system("cp " + plate_img_file + " " + hd_day_dir)
+         os.system("cp " + file + " " + hd_day_dir)
+
+         os.system("./plateSolve.py " + new_plate_img_file)
+      else: 
+         print("SKIP: Astrometry solver already run on file:", solved_file, failed_file)
+   
+     
+
+      if show == 1:
+         show_img = cv2.resize(plate_img, (960,540))
+         cv2.imshow('pepe', show_img)
+         cv2.waitKey(1) 
+
+   master_cal_params = avg_cal_files(hd_day_dir,json_conf)
+   master_cal_params_file = hd_day_dir + day_dir + "-master_cal_params.json"
+   all_star_file = hd_day_dir + day_dir + "-allstars.json"
+   save_json_file(all_star_file, all_new_i_files)
+   save_json_file(master_cal_params_file, master_cal_params)
+   print(master_cal_params_file)
+   print(all_star_file)
+
+   #multi_merge(all_i_files,master_cal_params,json_conf)
+
+   #multifit?
+
+def avg_cal_files(cal_dir,json_conf):
+   cameras = json_conf['cameras']
+   cam_ids = []
+   multi_merge = {}
+   cp_files = {}
+   master_cal_params = {}
+   for camera in cameras:
+      cam_id = cameras[camera]['cams_id']
+      master_cal_params[cam_id] = {}
+      glob_dir = cal_dir + "/*" + cam_id + "*-calparams.json"
+      cp_files = glob.glob(glob_dir)
+      m_az, m_el, m_px, m_pa = avg_cal_files_cam(cp_files)
+      master_cal_params[cam_id]['center_az'] = float(m_az)
+      master_cal_params[cam_id]['center_el'] = float(m_el)
+      master_cal_params[cam_id]['pixscale'] = float(m_px)
+      master_cal_params[cam_id]['position_angle'] = float(m_pa)
+      master_cal_params[cam_id]['imagew'] = 1920
+      master_cal_params[cam_id]['imageh'] = 1080
+   return(master_cal_params)
+
+
+
+def avg_cal_files_cam(cp_files):
+   azs = []
+   els = []
+   pxs = []
+   pas = []
+   for cal_param_file in cp_files:
+      print(cal_param_file)
+      cal_params = load_json_file(cal_param_file)
+      center_az = cal_params['center_az']
+      center_el = cal_params['center_el']
+      pixscale = cal_params['pixscale']
+      position_angle = cal_params['position_angle']
+      azs.append(center_az)
+      els.append(center_el)
+      pxs.append(pixscale)
+      pas.append(position_angle)
+   m_az = float(np.median(np.array(azs).astype(np.float)))
+   m_el = float(np.median(np.array(els).astype(np.float)))
+   m_px = float(np.median(np.array(pxs).astype(np.float)))
+   m_pa = float(np.median(np.array(pas).astype(np.float)))
+
+   for cal_param_file in cp_files:
+      print(cal_param_file)
+      cal_params = load_json_file(cal_param_file)
+      center_az = cal_params['center_az']
+      center_el = cal_params['center_el']
+      pixscale = cal_params['pixscale']
+      position_angle = cal_params['position_angle']
+      cal_params['orig_center_az'] = center_az
+      cal_params['orig_center_el'] = center_el
+      cal_params['orig_pixscale'] = pixscale 
+      cal_params['orig_position_angle'] = position_angle
+      cal_params['center_az'] = m_az 
+      cal_params['center_el'] = m_el 
+      cal_params['pixscale'] = m_px 
+      cal_params['position_angle'] = m_pa 
+
+
+
+   return(m_az,m_el,m_px,m_pa) 
+   
+
+def make_plate_image(image, file_stars): 
+   ih, iw = image.shape
+   for file_star in file_stars:
+      (name,mag,ra,dec,new_cat_x,new_cat_y,ix,iy,px_dist,cal_params_file) = file_star
+
+   plate_image = np.zeros((ih,iw),dtype=np.uint8)
+   hd_stack_img = image
+   hd_stack_img_an = hd_stack_img.copy()
+   star_points = []
+   for file_star in file_stars:
+      (name,mag,ra,dec,new_cat_x,new_cat_y,ix,iy,px_dist,cal_params_file) = file_star
+         
+      x,y = int(ix),int(iy)
+      #cv2.circle(hd_stack_img_an, (int(x),int(y)), 5, (128,128,128), 1)
+      y1 = y - 15
+      y2 = y + 15
+      x1 = x - 15
+      x2 = x + 15
+      x1,y1,x2,y2= bound_cnt(x,y,iw,ih,15)
+      cnt_img = hd_stack_img[y1:y2,x1:x2]
+      ch,cw = cnt_img.shape
+      max_pnt,max_val,min_val = cnt_max_px(cnt_img)
+      mx,my = max_pnt
+      mx = mx - 15
+      my = my - 15
+      cy1 = y + my - 15
+      cy2 = y + my +15
+      cx1 = x + mx -15
+      cx2 = x + mx +15
+      cx1,cy1,cx2,cy2= bound_cnt(x+mx,y+my,iw,ih)
+      if ch > 0 and cw > 0:
+         cnt_img = hd_stack_img[cy1:cy2,cx1:cx2]
+         bgavg = np.mean(cnt_img)
+         cnt_img = clean_star_bg(cnt_img, bgavg + 3)
+
+         cv2.rectangle(hd_stack_img_an, (x+mx-5-15, y+my-5-15), (x+mx+5-15, y+my+5-15), (128, 128, 128), 1)
+         cv2.rectangle(hd_stack_img_an, (x+mx-15-15, y+my-15-15), (x+mx+15-15, y+my+15-15), (128, 128, 128), 1)
+         star_points.append([x+mx,y+my])
+         plate_image[cy1:cy2,cx1:cx2] = cnt_img
+
+   points_json = {}
+   points_json['user_stars'] = star_points
+
+   return(plate_image,star_points)
+
+   
 
 def get_image_stars_from_catalog(file,json_conf,cal_params_file, masks = [], show = 0):
    img = cv2.imread(file,0)
@@ -436,7 +685,7 @@ def get_image_stars_from_catalog(file,json_conf,cal_params_file, masks = [], sho
    y_poly = cal_params['y_poly']
    #print(x_poly, y_poly, cal_params, x_poly,y_poly)
    cat_stars = get_catalog_stars(fov_poly, pos_poly, cal_params,"x",x_poly,y_poly,min=0)
-   cat_stars = cat_stars[0:50]
+   #cat_stars = cat_stars[0:50]
 
    cat_image_stars = []
    for cat_star in cat_stars:
@@ -475,8 +724,9 @@ def find_img_point_from_cat_star(cx,cy,img):
       return(0,0)
    cnt_img = img[y1:y2,x1:x2]
    max_px, avg_px, px_diff,max_loc = eval_cnt(cnt_img.copy())
-   if px_diff < 10:
+   if px_diff < 20:
       return(0,0)
+   #print("PX DIFF:", px_diff)
    #cv2.imshow('pepe',cnt_img)
    #cv2.waitKey(0)
    mx,my = max_loc
@@ -553,12 +803,36 @@ def sum_weather(all_i_files,json_conf):
       weather_sum[fh] = avg_stars
    return(weather_sum)
 
+def default_cal_params(cal_params,json_conf):
+   if 'fov_poly' not in cal_params:
+      fov_poly = [0,0]
+      cal_params['fov_poly'] = fov_poly
+   if 'pos_poly' not in cal_params:
+      pos_poly = [0]
+      cal_params['pos_poly'] = pos_poly
+   if 'x_poly' not in cal_params:
+      x_poly = np.zeros(shape=(15,), dtype=np.float64)
+      cal_params['x_poly'] = x_poly.tolist()
+   if 'y_poly' not in cal_params:
+      y_poly = np.zeros(shape=(15,), dtype=np.float64)
+      cal_params['y_poly'] = x_poly.tolist()
+   if 'x_poly_fwd' not in cal_params:
+      x_poly = np.zeros(shape=(15,), dtype=np.float64)
+      cal_params['x_poly_fwd'] = x_poly.tolist()
+   if 'y_poly_fwd' not in cal_params:
+      y_poly = np.zeros(shape=(15,), dtype=np.float64)
+      cal_params['y_poly_fwd'] = x_poly.tolist()
+
+   return(cal_params)
+
+
+
 json_conf = load_json_file("../conf/as6.json")
 
 
 cmd = sys.argv[1]
-show = 0
 date = sys.argv[2]
+show = int(sys.argv[3])
 if cmd == 'weather':
    scmd = ""
    all_i_files = track_stars(date, json_conf, scmd, None, show)
@@ -578,13 +852,21 @@ if cmd == 'weather':
 
 if cmd == 'hd_cal':
   scmd = ''
+  print("SHOW: ", show)
   all_i_files = track_stars(date, json_conf, scmd, None, show)
-  hd_cal(all_i_files, json_conf)
+  hd_cal(all_i_files, json_conf, show)
+
+if cmd == 'mm':
+   starfile = sys.argv[2]
+   master_cal_file = starfile.replace("-allstars.json", "-master_cal_params.json")
+   all_i_files = load_json_file(starfile)
+   master_cal_params = load_json_file(master_cal_file)
+   multi_merge(all_i_files,master_cal_params,master_cal_file,json_conf)
 
 if cmd == 'multi_fit':
-  scmd = ''
-  all_i_files = track_stars(date, json_conf, scmd, None, show)
-  multi_merge(all_i_files,json_conf)
+   scmd = ''
+   all_i_files = track_stars(date, json_conf, scmd, None, show)
+   multi_merge(all_i_files,json_conf)
 
 if cmd == 'all':
    cam_id = sys.argv[3]
