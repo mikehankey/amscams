@@ -134,25 +134,25 @@ def az_grid(cal_file,cal_params,cal_image,iw,ih,show =0):
    az_grid_half_blend = cal_file.replace(".jpg", "-azgrid-half-blend.png")
 
    half_stack_file = cal_file.replace("-stacked.jpg", "-stacked.png")
-   half_stack_img = cv2.imread(half_stack_file)
-   half_stack_img = cv2.resize(half_stack_img, (0,0),fx=.5, fy=.5)
+   #half_stack_img = cv2.imread(half_stack_file)
+   #half_stack_img = cv2.resize(half_stack_img, (0,0),fx=.5, fy=.5)
 
    az_grid_half_img = cv2.resize(cal_image, (0,0),fx=.5, fy=.5)
 
-   az_grid_half_img_c = cv2.cvtColor(az_grid_half_img,cv2.COLOR_GRAY2RGB)
+   #az_grid_half_img_c = cv2.cvtColor(az_grid_half_img,cv2.COLOR_GRAY2RGB)
 
-   print(half_stack_img.shape)
-   print(az_grid_half_img_c.shape)
+   #print(half_stack_img.shape)
+   #print(az_grid_half_img_c.shape)
 
-   blend_image = cv2.addWeighted(half_stack_img, .9, az_grid_half_img_c, .1,0)
-   cv2.imwrite(az_grid_half_blend, blend_image)
-   print(az_grid_half_blend)
+   #blend_image = cv2.addWeighted(half_stack_img, .9, az_grid_half_img_c, .1,0)
+   #cv2.imwrite(az_grid_half_blend, blend_image)
+   #print(az_grid_half_blend)
    cv2.imwrite(az_grid_file, cal_image)
    cv2.imwrite(az_grid_file_half, az_grid_half_img)
    tr_grid_file = az_grid_file.replace(".png", "-t.png")
-   cmd = "/usr/bin/convert " + az_grid_file + " " + tr_grid_file
-   print(cmd)
-   os.system(cmd)
+   #cmd = "/usr/bin/convert " + az_grid_file + " " + tr_grid_file
+   #print(cmd)
+   #os.system(cmd)
    print(az_grid_file)
 
 
@@ -183,16 +183,20 @@ if cmd == "fp":
 if cmd == 'az_grid':
 
    cal_file = cal_param_file.replace("-calparams.json", ".jpg")
-   cal_file = cal_file.replace("-calparams-master.json", ".jpg")
+   #cal_file = cal_file.replace("-calparams-master.json", ".jpg")
    if "master" in cal_file:
       cal_file = cal_file.replace("-master", "")
 
    print(cal_file)
    cal_image = cv2.imread(cal_file)
-   if len(cal_image.shape) == 3:
-      ih,iw,cl = cal_image.shape
-   else:
-      ih,iw = cal_image.shape
+   #if len(cal_image.shape) == 3:
+   #   ih,iw,cl = cal_image.shape
+   #else:
+   #   ih,iw = cal_image.shape
+
+   ih = 1080
+   iw = 1920
+
    cal_image = np.zeros((ih,iw),dtype=np.uint8)
    az_grid(cal_file,cal_params,cal_image,iw,ih)
    exit()

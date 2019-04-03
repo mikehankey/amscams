@@ -23,6 +23,46 @@ from lib.UtilLib import calc_dist,find_angle
 import lib.brightstardata as bsd
 from lib.DetectLib import eval_cnt
 
+def save_cal(starfile, master_cal_file, json_conf):
+   print("Saving calibration files...")
+   master_cal_params = load_json_file(master_cal_file)
+   el = master_cal_file.split("/")
+   fn = el[-1]
+   date = fn[0:10]
+   print("DATE:", date)
+
+   cpm = {}
+   for cam_id in master_cal_params:
+      if "01" in cam_id:
+         print(cam_id, len(master_cal_params[cam_id]))
+         cpm[cam_id] = master_cal_params[cam_id]
+
+   master_cal_params = cpm
+
+   for cam_id in master_cal_params:
+      print(cam_id, len(master_cal_params[cam_id]))
+      if len(master_cal_params[cam_id]) > 6:
+         cfbase = date + "_00_00_00_000_" + cam_id
+         cf_dir = "/mnt/ams2/cal/freecal/" + cfbase + "/"
+         cal_params_file = cf_dir + date + "_00_00_00_000_" + cam_id + "-calparams.json"
+         cal_params = master_cal_params[cam_id]
+         if cfe(cf_dir, 1) == 0:
+            print("mkdir ", cf_dir)
+            os.system("mkdir " + cf_dir)
+
+         img_az = cal_params['center_az']
+         img_el = cal_params['center_el']
+         print("AZ:", img_az, img_el)
+         rah,dech = AzEltoRADec(img_az,img_el,cal_params_file,cal_params,json_conf)
+         rah = str(rah).replace(":", " ")
+         dech = str(dech).replace(":", " ")
+         ra_center,dec_center = HMS2deg(str(rah),str(dech))
+         cal_params['ra_center'] = ra_center
+         cal_params['dec_center'] = dec_center
+         save_json_file(cal_params_file, cal_params)
+         os.system("cp " + starfile + " " + cf_dir)
+         os.system("./XYtoRAdecAzEl.py az_grid " + cal_params_file)
+
 def multi_merge(all_stars, master_cal_params, master_cal_file, json_conf):
 
    cameras = json_conf['cameras']
@@ -855,6 +895,11 @@ if cmd == 'hd_cal':
   print("SHOW: ", show)
   all_i_files = track_stars(date, json_conf, scmd, None, show)
   hd_cal(all_i_files, json_conf, show)
+
+if cmd == 'save_cal':
+   starfile = sys.argv[2]
+   master_cal_file = starfile.replace("-allstars.json", "-master_cal_params.json")
+   save_cal(starfile, master_cal_file, json_conf)
 
 if cmd == 'mm':
    starfile = sys.argv[2]
