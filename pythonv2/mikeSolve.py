@@ -1,5 +1,6 @@
 #!/usr/bin/python3
 from datetime import datetime
+import datetime as ddt
 
 from sympy import Point3D, Line3D, Segment3D, Plane
 import sys
@@ -18,32 +19,82 @@ import math
 from lib.FileIO import load_json_file, save_json_file
 from lib.WebCalib import HMS2deg
 
-def find_closest_frame(master_ftime, time_list, mfc):
-   print("MFC: ", mfc)
-   print("Master Ftime: ", master_ftime)
-   print("Slave Len: ", len(time_list))
+def find_closest_frame(master_ftime, time_list ):
+   mfc = 0
    lc = 0
    temp = []
    for stime in time_list:
-      xtime = datetime.strptime(stime, "%Y-%m-%d %H:%M:%S.%f")
+      #xtime = datetime.strptime(stime, "%Y-%m-%d %H:%M:%S.%f")
+      xtime = stime
       tdiff = abs((master_ftime - xtime).total_seconds())
       temp.append((master_ftime, xtime, lc, mfc, tdiff))
       lc = lc + 1
    temp_sorted = sorted(temp, key=lambda x: x[4], reverse=False)
    #for mft, tft, tfc, mfc, tdiff in temp_sorted:
    match = temp_sorted[0]
-   print("BEST MATCHED FRAME:", match[2])
-   return(match[2],match[4])
-
-def map_obs_frames(meteor):
-   #first determine which obs has the most frames captured, use that as the 'parent' 
-   for obskey in meteor['vel_data']:
-      (ft,fn,lon,lat,alt,point_dist,vel,dist_from_start,vel_from_start) = meteor['vel_data'][obskey]
+   print("BEST MATCHED FRAME:", match[1])
+   return(match[1],match[4])
 
 
 def velocity_curve(meteor):
 
    frame_map = {}
+
+   longest_key = ""
+   max_len = 0 
+   mapped_frame_data = {}
+   time_list = [] 
+   for key in meteor['vel_data']:
+      leng = len(meteor['vel_data'][key])
+      print(key,leng) 
+      if leng > max_len:
+         longest_key = key
+         max_len = leng
+
+   for vel in meteor['vel_data'][longest_key]:
+      (ft,fn,lon,lat,alt,point_dist,vel,dist_from_start,vel_from_start) = vel
+      ft = datetime.strptime(ft, "%Y-%m-%d %H:%M:%S.%f")
+      mapped_frame_data[ft] = {}
+      if longest_key not in mapped_frame_data[ft]:
+         mapped_frame_data[ft][longest_key] = [ft,fn,lon,lat,alt]
+         time_list.append(ft)
+      print(ft)
+
+   # add 25 frames before and after:
+   #st = datetime.strptime(time_list[0], "%Y-%m-%d %H:%M:%S.%f")
+   #et = datetime.strptime(time_list[-1], "%Y-%m-%d %H:%M:%S.%f")
+   st = time_list[0]
+   et = time_list[-1]
+
+   for i in range(1,100):
+      extra_sec = i/25 
+      frame_time = st - ddt.timedelta(seconds=extra_sec)
+      mapped_frame_data[frame_time] = {}
+      time_list.append(frame_time)
+      frame_time = et + ddt.timedelta(seconds=extra_sec)
+      mapped_frame_data[frame_time] = {}
+      time_list.append(frame_time)
+ 
+     
+   time_list = sorted(time_list)
+ 
+
+   for key in meteor['vel_data']:
+      print("MAP TIME/FRAMES of :", key)
+      #if key not in mapped_frame_data[ft]:
+      if True:
+         for vel in meteor['vel_data'][key]:
+            (ft,fn,lon,lat,alt,point_dist,vel,dist_from_start,vel_from_start) = vel
+            this_ft = datetime.strptime(ft, "%Y-%m-%d %H:%M:%S.%f")
+            bftm,tdiff  = find_closest_frame(this_ft, time_list)
+            bftms = bftm.strftime('%Y-%m-%d %H:%M:%S.%f')[:-3]
+            mapped_frame_data[bftm][key] = [ft,fn,lon,lat,alt]
+
+
+   print(mapped_frame_data)
+
+   print("MOST FRAMES IN SOLUTION:", longest_key, max_len) 
+   exit()
 
    obs1_tp = len(meteor['vel_curve_x']['obs2-obs1'])
    obs2_tp = len(meteor['vel_curve_x']['obs1-obs2'])
@@ -166,10 +217,11 @@ def fit_points_to_line(meteor,meteor_json_file):
       exs.append(meteor['vel_data'][key][-1][2])
       eys.append(meteor['vel_data'][key][-1][3])
       ezs.append(meteor['vel_data'][key][-1][4])
-      for ft,fn,lon,lat,alt,dist,vel,tdist,tvel in meteor['vel_data'][key]:
-         xs.append(lon)
-         ys.append(lat)
-         zs.append(alt)
+      if key != 'obs1-obs3' and key != 'obs3-obs1':
+         for ft,fn,lon,lat,alt,dist,vel,tdist,tvel in meteor['vel_data'][key]:
+            xs.append(lon)
+            ys.append(lat)
+            zs.append(alt)
 
    A_xz = np.vstack((xs,np.ones(len(xs)))).T
    m_xz, c_xz = np.linalg.lstsq(A_xz, zs,rcond=None)[0]
@@ -229,7 +281,8 @@ def make_kmz(meteor):
    kml = simplekml.Kml()
 
    observers = {}
-
+   done = {}
+   obs_folder = kml.newfolder(name='Stations')
    for key in meteor:
       if "obs" in key:
          obs_lon = meteor[key]['x2_lat'] 
@@ -237,7 +290,9 @@ def make_kmz(meteor):
          observers[key] = {}
          observers[key]['lat'] = obs_lat
          observers[key]['lon'] = obs_lon
-         #point = kml.newpoint(name=key,coords=[(obs_lon,obs_lat)])
+         if "key" not in done:
+            point = obs_folder.newpoint(name=key,coords=[(obs_lon,obs_lat)])
+         done[key] = 1
          
          colors = [
             'FF641E16',
@@ -256,6 +311,10 @@ def make_kmz(meteor):
 
    for key in meteor['meteor_points_lat_lon']:
       cc = 0
+
+      sol_key = key
+      sol_folder = kml.newfolder(name=sol_key)
+
       for ft,fn,lon,lat,alt in meteor['meteor_points_lat_lon'][key]:
          if cc > len(colors) -1:
             cc = 0 
@@ -265,14 +324,14 @@ def make_kmz(meteor):
          print("KEY: ", key, olat, olon)
          alt = alt * 1000
          #print(lat,lon,alt)
-         point = kml.newpoint(coords=[(lon,lat,alt)])
+         point = sol_folder.newpoint(coords=[(lon,lat,alt)])
          point.altitudemode = simplekml.AltitudeMode.relativetoground    
          #point.style.iconstyle.icon.href = None
          point.style.iconstyle.icon.href = 'http://maps.google.com/mapfiles/kml/shapes/placemark_circle.png'
          color = colors[cc]
          print(color)
          point.style.iconstyle.color = color
-         line = kml.newlinestring(name="", description="", coords=[(olon,olat,0),(lon,lat,alt)])
+         line = sol_folder.newlinestring(name="", description="", coords=[(olon,olat,0),(lon,lat,alt)])
          line.altitudemode = simplekml.AltitudeMode.relativetoground
          line.linestyle.color = color
          cc = cc + 1
@@ -783,11 +842,12 @@ else:
    meteor = load_json_file(meteor_file)
 save_json_file(meteor_file, meteor)
 
-meteor = plot_meteor_ms(meteor)
 
+meteor = plot_meteor_ms(meteor)
 meteor = compute_velocity(meteor)
+
 #meteor  = velocity_curve(meteor)
-#save_json_file(meteor_file, meteor)
+###save_json_file(meteor_file, meteor)
 
 meteor = fit_points_to_line(meteor,meteor_file)
 save_json_file(meteor_file, meteor)
