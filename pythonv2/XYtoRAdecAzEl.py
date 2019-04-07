@@ -123,11 +123,11 @@ def az_grid(cal_file,cal_params,cal_image,iw,ih,show =0):
       if az % 10 == 0:
          cal_image = draw_grid_line(points, cal_image, "az", az)
 
-   if show ==1:
-      cv2.namedWindow('pepe')
-      show_img = cv2.resize(cal_image, (0,0),fx=.5, fy=.5)
-      cv2.imshow('pepe', show_img)
-      cv2.waitKey(0)
+   #if show ==1:
+   #   cv2.namedWindow('pepe')
+   #   show_img = cv2.resize(cal_image, (0,0),fx=.5, fy=.5)
+   #   cv2.imshow('pepe', show_img)
+   #   cv2.waitKey(0)
 
    az_grid_file = cal_file.replace(".jpg", "-azgrid.png")
    az_grid_file_half = cal_file.replace(".jpg", "-azgrid-half.png")
@@ -302,10 +302,10 @@ if cmd == 'az_grid':
    #      last_x = x
    #      last_y = y
    #      pc = pc + 1
-   cv2.namedWindow('pepe')
-   show_img = cv2.resize(cal_image, (0,0),fx=.5, fy=.5)
-   cv2.imshow('pepe', show_img)
-   cv2.waitKey(0)
+   #cv2.namedWindow('pepe')
+   #show_img = cv2.resize(cal_image, (0,0),fx=.5, fy=.5)
+   #cv2.imshow('pepe', show_img)
+   #cv2.waitKey(0)
    az_grid_file = cal_file.replace(".jpg", "-azgrid.png")
    cv2.imwrite(az_grid_file, cal_image)
    tr_grid_file = az_grid_file.replace(".png", "-t.png")
