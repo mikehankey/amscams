@@ -1,6 +1,7 @@
 #!/usr/bin/python3
 from datetime import datetime
 import datetime as ddt
+import pymap3d as pm
 
 from sympy import Point3D, Line3D, Segment3D, Plane
 import sys
@@ -18,6 +19,356 @@ from mpl_toolkits import mplot3d
 import math
 from lib.FileIO import load_json_file, save_json_file
 from lib.WebCalib import HMS2deg
+
+def sync_meteor_frames(meteor):
+   max_len = 0
+   longest_key = ""
+   sync_frames = {}
+   observers = []
+   for key in meteor['vel_data']:
+      leng = len(meteor['vel_data'][key])
+      print(key,leng) 
+      if leng > max_len:
+         longest_key = key
+         max_len = leng
+   master_key = longest_key
+   sync_frames[master_key] = {}
+
+
+   #create parent object
+   for key in meteor['vel_data']:
+      start_time = meteor['vel_data'][key][0][0]
+      dt_start_time = datetime.strptime(start_time, "%Y-%m-%d %H:%M:%S.%f")
+      observers.append(key)
+      fld_ft = key + "_ft" 
+      fld_fn = key + "_fn" 
+      fld_lon = key + "_lon" 
+      fld_lat = key + "_lat" 
+      fld_alt = key + "_alt" 
+      fld_dfs = key + "_dfs" 
+      fld_vfs = key + "_vfs" 
+      if key != master_key:
+         print("Child observation")
+      else:
+         #for ec in range(0,25):
+         #   sync_frames[master_key][ec] = {}
+         #   time_diff = (25-ec)/25
+         #   dt_child_time = dt_start_time + ddt.timedelta(0,time_diff)
+         #   st_child_time = dt_child_time.strftime('%Y-%m-%d %H:%M:%S.%f')
+         #   sync_frames[master_key][ec][fld_ft] = st_child_time
+
+         ec = 0
+         for vel_data in meteor['vel_data'][key]:
+            ft,fn,lon,lat,alt,dist_from_last_point,vel_from_last_point,dist_from_start,vel_from_start = vel_data
+            sync_frames[master_key][ec] = {}
+            sync_frames[master_key][ec][fld_ft] = ft
+            sync_frames[master_key][ec][fld_fn] = fn
+            sync_frames[master_key][ec][fld_lon] = lon
+            sync_frames[master_key][ec][fld_lat] = lat
+            sync_frames[master_key][ec][fld_alt] = alt
+            sync_frames[master_key][ec][fld_dfs] = dist_from_start 
+            sync_frames[master_key][ec][fld_vfs] = vel_from_start 
+            ec = ec + 1
+         for ec in range(ec,ec+25):
+            sync_frames[master_key][ec] = {}
+
+   #Add children to parent object
+   for key in sync_frames:
+      print("MIKE:",key)
+
+   time_diffs = []
+
+   #SYNC FRAMES BY DISTANCE
+   for key in meteor['vel_data']:
+      ms_fld_ft = master_key + "_ft" 
+      fld_ft = key + "_ft" 
+      fld_fn = key + "_fn" 
+      fld_lon = key + "_lon" 
+      fld_lat = key + "_lat" 
+      fld_alt = key + "_alt" 
+      fld_dfs = key + "_dfs" 
+      fld_vfs = key + "_vfs" 
+      if key == master_key:
+         print("Parent observation/master key:", master_key)
+      else:
+         ec = 0
+         for vel_data in meteor['vel_data'][key]:
+            ft,fn,lon,lat,alt,dist_from_last_point,vel_from_last_point,dist_from_start,vel_from_start = vel_data
+            print("Child observation")
+
+            best_parent_frame,least_dist = find_best_frame_by_dist(sync_frames, master_key, key, lon,lat,alt)
+
+
+            parent_time = sync_frames[master_key][best_parent_frame][ms_fld_ft] 
+
+            dt_parent_time = datetime.strptime(parent_time, "%Y-%m-%d %H:%M:%S.%f")
+            dt_child_time = datetime.strptime(ft, "%Y-%m-%d %H:%M:%S.%f")
+
+            tdiff = (dt_parent_time - dt_child_time).total_seconds()
+            time_diffs.append(tdiff)
+
+            print("DIST MATCH CHILD:", ft,fn, "PARENT:", best_parent_frame, parent_time, least_dist, tdiff)
+            ec = ec + 1
+   
+   time_diff = float(np.median(time_diffs))
+   print("TIME SHIFT DIFF:", time_diff)
+
+   #ADJUST TIME AND SYNC BY TIME
+   for key in meteor['vel_data']:
+      ms_fld_ft = master_key + "_ft" 
+      ms_fld_lat = master_key + "_lat" 
+      ms_fld_lon = master_key + "_lon" 
+      ms_fld_alt = master_key + "_alt" 
+      fld_ft = key + "_ft" 
+      if key == master_key:
+         print("Parent observation/master key:", master_key)
+      else:
+         ec = 0
+         fld_ft = key + "_ft" 
+         fld_fn = key + "_fn" 
+         fld_lon = key + "_lon" 
+         fld_lat = key + "_lat" 
+         fld_alt = key + "_alt" 
+         fld_dfs = key + "_dfs" 
+         fld_vfs = key + "_vfs" 
+    
+         for vel_data in meteor['vel_data'][key]:
+            ft,fn,lon,lat,alt,dist_from_last_point,vel_from_last_point,dist_from_start,vel_from_start = vel_data
+            print("Child observation")
+
+            dt_child_time = datetime.strptime(ft, "%Y-%m-%d %H:%M:%S.%f")
+            dt_child_time = dt_child_time + ddt.timedelta(0,time_diff)
+
+            best_parent_frame,least_time = find_best_frame_by_time(sync_frames, master_key, key, dt_child_time)
+
+            if ms_fld_ft in sync_frames[master_key][best_parent_frame]:
+               parent_time = sync_frames[master_key][best_parent_frame][ms_fld_ft] 
+
+               dt_parent_time = datetime.strptime(parent_time, "%Y-%m-%d %H:%M:%S.%f")
+               tdiff = abs((dt_parent_time - dt_child_time).total_seconds())
+               ec = best_parent_frame 
+               sync_frames[master_key][ec][fld_ft] = ft
+               sync_frames[master_key][ec][fld_fn] = fn
+
+            if ms_fld_lat in sync_frames[master_key][best_parent_frame]:
+               parent_lat = sync_frames[master_key][best_parent_frame][ms_fld_lat] 
+               parent_lon = sync_frames[master_key][best_parent_frame][ms_fld_lon] 
+               parent_alt = sync_frames[master_key][best_parent_frame][ms_fld_alt] 
+               best_parent_frame_dist,least_dist = find_best_frame_by_dist(sync_frames, master_key, key, lon,lat,alt)
+               time_adj_dist = calc_point_dist([parent_lon,parent_lat,parent_alt],[lon,lat,alt])
+
+               sync_frames[master_key][ec][fld_lon] = lon
+               sync_frames[master_key][ec][fld_lat] = lat
+               sync_frames[master_key][ec][fld_alt] = alt
+               sync_frames[master_key][ec][fld_dfs] = dist_from_start 
+               sync_frames[master_key][ec][fld_vfs] = vel_from_start 
+
+
+   rpt = ""
+   for key in sync_frames:
+      for ekey in sync_frames[master_key]:
+         #print(key, ekey)
+         rpt = str(key) + " " + str(ekey)
+         for obs in observers:
+            fl_ft = obs + "_ft"
+            fl_fn = obs + "_fn"
+            fl_lon = obs + "_lon"
+            fl_lat = obs + "_lat"
+            fl_alt = obs + "_alt"
+            if fl_ft in sync_frames[master_key][ekey]:
+               rpt = rpt + " " + str(sync_frames[master_key][ekey][fl_ft]) + " " 
+            if fl_lon in sync_frames[master_key][ekey]:
+               rpt = rpt + str(sync_frames[master_key][ekey][fl_fn]) + " " 
+               rpt = rpt + str(sync_frames[master_key][ekey][fl_lon]) + " " 
+               rpt = rpt + str(sync_frames[master_key][ekey][fl_lat]) + " " 
+               rpt = rpt + str(sync_frames[master_key][ekey][fl_alt])  + " " 
+            #if len(rpt) > 5:
+         print(rpt)
+   meteor['sync_frames'] = sync_frames
+   make_sync_kml(sync_frames,meteor,master_key,observers)
+   return(meteor)
+
+def make_sync_kml(sync_frames,meteor,master_key,obs_sol):
+
+   curve_data = {}
+   for key in obs_sol:
+      curve_data[key] = {}
+      curve_data[key]['xs'] = []
+      curve_data[key]['ys'] = []
+
+
+   kml_file = meteor_file.replace(".json", ".kml")
+   kml = simplekml.Kml()
+
+   observers = {}
+   done = {}
+   obs_folder = kml.newfolder(name='Stations')
+   for key in meteor:
+      if "obs" in key:
+         obs_lon = meteor[key]['x2_lat']
+         obs_lat = meteor[key]['y2_lon']
+         observers[key] = {}
+         observers[key]['lat'] = obs_lat
+         observers[key]['lon'] = obs_lon
+         if "key" not in done:
+            point = obs_folder.newpoint(name=key,coords=[(obs_lon,obs_lat)])
+         done[key] = 1
+
+   colors = [
+      'FF641E16',
+      'FF512E5F',
+      'FF154360',
+      'FF0E6251',
+      'FF145A32',
+      'FF7D6608',
+      'FF78281F',
+      'FF4A235A',
+      'FF1B4F72',
+      'FF0B5345',
+      'FF186A3B',
+      'FF7E5109'
+   ]
+   meteor['final_solution']
+   start_x,start_y,start_z = meteor['final_solution']['meteor_start_point']
+   end_x,end_y,end_z = meteor['final_solution']['meteor_end_point']
+   poly = kml.newpolygon(name='Meteor Track')
+   poly.outerboundaryis = [(start_x,start_y,start_z*1000),(end_x,end_y,end_z*1000),(end_x,end_y,0),(start_x,start_y,0)]
+   poly.altitudemode = simplekml.AltitudeMode.relativetoground
+
+
+   cc = 0
+   for key in sync_frames:
+      for ekey in sync_frames[master_key]:
+         for obs in obs_sol:
+            xob,mob = obs.split("-") 
+            olon = observers[mob]['lon']
+            olat = observers[mob]['lat']
+            #sol_key = obs 
+            #sol_folder = kml.newfolder(name=sol_key)
+            fl_ft = obs + "_ft"
+            fl_fn = obs + "_fn"
+            fl_lon = obs + "_lon"
+            fl_lat = obs + "_lat"
+            fl_alt = obs + "_alt"
+            fl_vfs = obs + "_vfs"
+            #if fl_ft in sync_frames[master_key][ekey]:
+            #   rpt = rpt + " " + str(sync_frames[master_key][ekey][fl_ft]) + " " 
+            if fl_lon in sync_frames[master_key][ekey]:
+               ft = sync_frames[master_key][ekey][fl_ft]
+               lon = float(sync_frames[master_key][ekey][fl_lon])  
+               lat = float(sync_frames[master_key][ekey][fl_lat])  
+               alt = float(sync_frames[master_key][ekey][fl_alt])  * 1000
+               vfs = float(sync_frames[master_key][ekey][fl_vfs])  
+               color = colors[cc]
+               #point = sol_folder.newpoint(coords=[(lon,lat,alt)])
+               point = kml.newpoint(coords=[(lon,lat,alt)])
+
+               point.altitudemode = simplekml.AltitudeMode.relativetoground
+               point.style.iconstyle.icon.href = 'http://maps.google.com/mapfiles/kml/shapes/placemark_circle.png'
+
+               line = kml.newlinestring(name="", description="", coords=[(olon,olat,0),(lon,lat,alt)])
+               line.altitudemode = simplekml.AltitudeMode.relativetoground
+               line.linestyle.color = color
+
+               point.style.iconstyle.color = color
+               line = kml.newlinestring(name="", description="", coords=[(lon,lat,0),(lon,lat,alt)])
+               line.altitudemode = simplekml.AltitudeMode.relativetoground
+               line.linestyle.color = color
+               fts = float(str(ft)[-5:-1])
+               curve_data[obs]['xs'].append(fts)
+               curve_data[obs]['ys'].append(vfs)
+         cc = cc + 1
+         if cc > len(colors)-1:
+            cc = 0
+
+   oc = 0
+   pltz = {}
+   for obs in curve_data:
+      pltz[obs], = plt.plot(curve_data[obs]['xs'], curve_data[obs]['ys'])
+      oc = oc + 1
+
+   code1 = ""
+   code2 = ""
+   for obs in pltz:
+      print(obs)
+      if code1 != "":
+         code1 = code1 + ","
+      if code2 != "":
+         code2 = code2 + ","
+      code1 = code1 + "pltz['" + obs + "']" 
+      code2 = code2 + "\"" + obs + "\""
+   fcode = "plt.legend((" + code1 + "),(" + code2 + "))"
+   print(fcode)
+   eval(fcode)
+      #plt.legend(pltz[obs], obs)
+
+   #plt.show()
+   plt.title('Meteor Velocity in KM/Second')
+   plt.ylabel('KM/Sec From Start')
+   plt.xlabel('Frame 1/25 sec')
+   vel_fig_file = meteor['meteor_file'].replace(".json", "-fig_vel.png")
+   plt.savefig(vel_fig_file)
+   print(vel_fig_file)
+
+   kml_file = vel_fig_file.replace("-fig_vel.png",".kml")
+   kml.save(kml_file)
+   print(kml_file)
+
+def calc_point_dist(p1,p2):
+      p1_lon = p1[0]
+      p1_lat = p1[1]
+      p1_alt = p1[2]
+      p2_lon = p2[0]
+      p2_lat = p2[1]
+      p2_alt = p2[2]
+
+      x1, y1, z1 = pm.geodetic2ecef(p1_lat,p1_lon,p1_alt)
+      x2, y2, z2 = pm.geodetic2ecef(p2_lat,p2_lon,p2_alt)
+
+      dt = math.sqrt((x2-x1)**2 + (y2-y1)**2 + (z2-z1)**2)
+      #print("DISTANCE:", dt)
+      return(dt)
+
+
+def find_best_frame_by_time(sync_frames,master_key,child_key,dt_child_time):
+   least_time = 100
+   best_match = 0
+   #dt_child_time = datetime.strptime(child_time, "%Y-%m-%d %H:%M:%S.%f")
+   for key in sync_frames:
+      for ekey in sync_frames[master_key]:
+         fld_ft = key + "_ft" 
+         if fld_ft in sync_frames[master_key][ekey]:
+            ptime = sync_frames[master_key][ekey][fld_ft] 
+            dt_parent_time = datetime.strptime(ptime, "%Y-%m-%d %H:%M:%S.%f")
+            tdiff = abs((dt_parent_time - dt_child_time).total_seconds())
+            if tdiff < least_time:
+               least_time = tdiff
+               best_match = ekey
+   return(best_match,least_time)
+
+def find_best_frame_by_dist(sync_frames,master_key,child_key,lon,lat,alt):
+   least_dist = 100000000
+   best_match = 0
+   for key in sync_frames:
+      for ekey in sync_frames[master_key]:
+         fld_lon = key + "_lon" 
+         fld_lat = key + "_lat" 
+         fld_alt = key + "_alt" 
+         #print(master_key,child_key,key,ekey)
+         #print(sync_frames[master_key][ekey])
+         if fld_lon in sync_frames[master_key][ekey]:
+            p_lon = sync_frames[master_key][ekey][fld_lon] 
+            p_lat = sync_frames[master_key][ekey][fld_lat] 
+            p_alt = sync_frames[master_key][ekey][fld_alt] 
+            p1 = [p_lon,p_lat,p_alt]
+            p2 = [lon,lat,alt]
+            this_dist = calc_point_dist(p1,p2) 
+            if this_dist < least_dist:
+               least_dist = this_dist
+               best_match = ekey
+
+         #print(key, ekey, p_lat, p_lon, p_alt, lat,lon,alt,this_dist)
+   return(best_match,least_dist)
 
 def find_closest_frame(master_ftime, time_list ):
    mfc = 0
@@ -802,6 +1153,7 @@ def setup_obs(meteors_obs):
    return(meteor)
 
 
+
 if len(sys.argv) == 3:
    obs1_file, obs2_file = sys.argv[1], sys.argv[2]
    hd_datetime, cam1, hd_date, hd_y, hd_m, hd_d, hd_h, hd_M, hd_s = convert_filename_to_date_cam(obs1_file)
@@ -836,20 +1188,23 @@ if len(sys.argv) == 4:
 
 if cfe(meteor_file) == 0:
    meteor = setup_obs(meteor_obs)
-   #meteor = compute_solution(meteor)
    meteor = compute_ms_solution(meteor)
+   meteor['meteor_file'] = meteor_file
 else:
    meteor = load_json_file(meteor_file)
+   meteor['meteor_file'] = meteor_file
 save_json_file(meteor_file, meteor)
 
 
 meteor = plot_meteor_ms(meteor)
 meteor = compute_velocity(meteor)
+meteor = fit_points_to_line(meteor,meteor_file)
 
-#meteor  = velocity_curve(meteor)
+meteor  = sync_meteor_frames(meteor)
+
+####meteor  = velocity_curve(meteor)
 ###save_json_file(meteor_file, meteor)
 
-meteor = fit_points_to_line(meteor,meteor_file)
 save_json_file(meteor_file, meteor)
 make_kmz(meteor)
 

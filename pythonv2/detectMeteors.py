@@ -123,7 +123,7 @@ def reduce_hd_meteor(video_file, hd_file, hd_trim, hd_crop_file, hd_box,json_con
 
 
 if __name__ == "__main__":
-   show = 1
+   show = 0
    json_conf = load_json_file("../conf/as6.json") 
    cmd = sys.argv[1]
    running = check_running("detectMeteors")

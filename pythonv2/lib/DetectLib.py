@@ -170,10 +170,13 @@ def check_for_motion2(frames, video_file, cams_id, json_conf, show = 0):
    if show == 1:
       cv2.namedWindow('pepe')
 
-   masks = get_masks(cams_id, json_conf)
    med_stack_all = median_frames(frames[0:25])
    masked_pixels, marked_med_stack = find_bright_pixels(med_stack_all)
    frame_height, frame_width = frames[0].shape
+   if frame_width <= 1920:
+      masks = get_masks(cams_id, json_conf,0)
+   else:
+      masks = get_masks(cams_id, json_conf,1)
    fc = 0
 
    image_acc = preload_image_acc(frames)

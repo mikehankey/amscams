@@ -12,6 +12,26 @@ from PIL import Image
 from lib.VideoLib import load_video_frames
 from lib.UtilLib import convert_filename_to_date_cam
 
+def batch_reduce(json_conf):
+   meteor_dirs = glob.glob("/mnt/ams2/meteors/*")
+   for meteor_dir in meteor_dirs:
+      print(meteor_dir)
+      meteor_files = glob.glob(meteor_dir + "/" + "*.json")
+      for json_file in meteor_files:
+         if "reduced" not in json_file and "calparams" not in json_file and "manual" not in json_file:
+            reduced_file = json_file.replace(".json", "-reduced.json")
+            if cfe(reduced_file) == 1:
+               print("Meteor done")
+            else:
+               cal_files = get_active_cal_file(json_file)
+               cal_params_file = cal_files[0][0]
+               print("Meteor not done", cal_params_file)
+               cmd = "./detectMeteors.py raj " + json_file + " " + cal_params_file
+               print(cmd)
+               os.system(cmd)
+               
+
+
 def get_kml(kml_file):
    fp = open(kml_file, "r")
    lc = 0
@@ -596,3 +616,63 @@ def stack_folder(folder,json_conf):
             draw_stack(objects,stack_img,stack_file)
          except:
             print("draw failed")
+
+def get_active_cal_file(input_file):
+   #print("INPUT FILE", input_file)
+   if "png" in input_file:
+      input_file = input_file.replace(".png", ".mp4")
+   (f_datetime, cam_id, f_date_str,Y,M,D, H, MM, S) = better_parse_file_date(input_file)
+
+   # find all cal files from his cam for the same night
+   matches = find_matching_cal_files(cam_id, f_datetime)
+   #print("MATCHED:", matches)
+   if len(matches) > 0:
+      return(matches)
+   else:
+      return(None)
+
+
+def better_parse_file_date(input_file):
+   el = input_file.split("/")
+   fn = el[-1]
+   ddd = fn.split("_")
+   Y = ddd[0]
+   M = ddd[1]
+   D = ddd[2]
+   H = ddd[3]
+   MM = ddd[4]
+   S = ddd[5]
+   MS = ddd[6]
+   CAM = ddd[7]
+   extra = CAM.split("-")
+   cam_id = extra[0]
+   cam_id = cam_id.replace(".mp4", "")
+   f_date_str = Y + "-" + M + "-" + D + " " + H + ":" + MM + ":" + S
+   f_datetime = datetime.datetime.strptime(f_date_str, "%Y-%m-%d %H:%M:%S")
+   return(f_datetime, cam_id, f_date_str,Y,M,D, H, MM, S)
+
+def find_matching_cal_files(cam_id, capture_date):
+   matches = []
+   all_files = glob.glob("/mnt/ams2/cal/freecal/*")
+   for file in all_files:
+      if cam_id in file :
+         el = file.split("/")
+         fn = el[-1]
+         cal_p_file = file  + "/" + fn + "-stacked-calparams.json"
+         if cfe(cal_p_file) == 1:
+            matches.append(cal_p_file)
+         else:
+            cal_p_file = file  + "/" + fn + "-calparams.json"
+         if cfe(cal_p_file) == 1:
+            matches.append(cal_p_file)
+ 
+   td_sorted_matches = []
+
+   for match in matches:
+      (t_datetime, cam_id, f_date_str,Y,M,D, H, MM, S) = better_parse_file_date(match)
+      tdiff = (capture_date-t_datetime).total_seconds()
+      td_sorted_matches.append((match,f_date_str,tdiff))
+
+   temp = sorted(td_sorted_matches, key=lambda x: x[2], reverse=False)
+   return(temp)
+

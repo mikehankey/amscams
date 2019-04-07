@@ -64,7 +64,7 @@ def save_cal(starfile, master_cal_file, json_conf):
          os.system("./XYtoRAdecAzEl.py az_grid " + cal_params_file)
 
 def multi_merge(all_stars, master_cal_params, master_cal_file, json_conf):
-
+   show = 0
    cameras = json_conf['cameras']
    cam_ids = []
    multi_merge = {}
@@ -478,8 +478,12 @@ def flatten_all_stars(all_stars, json_conf):
             multi_merge[cam_id][file].append((cal_params_file,ra_center,dec_center,name,mag,ra,dec,img_ra,img_dec,match_dist,new_cat_x,new_cat_y,img_az,img_el,new_cat_x,new_cat_y,ix,iy, img_res))
    return(multi_merge) 
 
-def hd_cal(all_i_files, json_conf, show = 0):
+def hd_cal(all_i_files, json_conf, day, show = 0):
    print("HD CAL")
+   hd_day_dir = "/mnt/ams2/cal/autocal/hdimages/" + day + "/"
+   if cfe(hd_day_dir, 1) == 0: 
+      os.system("mkdir " + hd_day_dir)
+
    good_hd_stacks = []
 
    all_new_i_files = {}
@@ -894,7 +898,7 @@ if cmd == 'hd_cal':
   scmd = ''
   print("SHOW: ", show)
   all_i_files = track_stars(date, json_conf, scmd, None, show)
-  hd_cal(all_i_files, json_conf, show)
+  hd_cal(all_i_files, json_conf, date,show)
 
 if cmd == 'save_cal':
    starfile = sys.argv[2]

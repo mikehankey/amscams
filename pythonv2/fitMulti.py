@@ -22,7 +22,7 @@ tries = 0
 
 
 
-def reduce_fit(this_poly,field, merged_stars, cal_params, cal_params_file, fit_img, json_conf, show=1):
+def reduce_fit(this_poly,field, merged_stars, cal_params, cal_params_file, fit_img, json_conf, show=0):
    this_fit_img = fit_img.copy()
    global tries
    pos_poly = cal_params['pos_poly']
@@ -90,7 +90,7 @@ def reduce_fit(this_poly,field, merged_stars, cal_params, cal_params_file, fit_i
       if show == 1:
          #show_img = cv2.resize(this_fit_img, (0,0),fx=.5, fy=.5)
          simg = cv2.resize(this_fit_img, (960,540))
-
+   if show == 1:
          cv2.imshow('pepe', simg) 
          cv2.waitKey(1)
 
@@ -137,8 +137,8 @@ def minimize_poly_params_fwd(merged_stars, cal_params_file, cal_params,json_conf
       cv2.line(this_fit_img, (six,siy), (new_cat_x,new_cat_y), (255), 2) 
    cv2.imwrite("/mnt/ams2/test.png", this_fit_img)
    simg = cv2.resize(this_fit_img, (960,540))
-
-   cv2.imshow('pepe', simg)
+   if show == 1:
+      cv2.imshow('pepe', simg)
    cv2.waitKey(1)
 #   exit()
 
