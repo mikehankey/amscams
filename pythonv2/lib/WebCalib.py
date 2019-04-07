@@ -1759,10 +1759,36 @@ def sd_pic_stars(json_conf,form):
    print(js_html)
 
 
+def auto_cal(json_conf,form):
+   print("<h2>Auto Calibration</h2>")
+   input_file = form.getvalue("input_file")
+   cal_params_file = input_file.replace(".png", "-calparams.json")
+   az_grid = input_file.replace(".png", "-azgrid-half.png")
+   cal_params = load_json_file(cal_params_file)
+   print("<img src=" + az_grid + "><BR>");
+   print(cal_params_file)
+   el = cal_params_file.split("/")
+   fn = el[-1]
+   day = fn[0:10]
+   wild = fn[24:30]
+   image_dir = "/mnt/ams2/cal/autocal/hdimages/" + day + "/*" + wild + "*-hd-stacked.png" 
+   images = glob.glob(image_dir)
+   for image in images:
+      solved_file = image.replace(".png", ".solved")
+      print("<img width=960 height=530 src=" + image + "><BR>" + image + " ")
+      if cfe(solved_file) == 1:
+         print("solved<br>")
+      else:
+         print("solve failed<br>")
+
 
 def free_cal(json_conf,form):
    input_file = form.getvalue("input_file")
    # if no input file is specified ask for one. 
+   if cfe(input_file) == 0:
+      
+      auto_cal(json_conf,form)
+      return()
    if input_file is None :
       print("To start the calibration process, goto the <a href=webUI.py>minute-by-minute view</a> for a stary night, click a thumb with nice stars and then click the 'Calibrate Star Field' button.<BR><BR> ")
 
