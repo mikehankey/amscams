@@ -113,6 +113,8 @@ def reduce_fit(this_poly,field, merged_stars, cal_params, cal_params_file, fit_i
 def minimize_poly_params_fwd(merged_stars, cal_params_file, cal_params,json_conf,orig_ra_center=0,orig_dec_center=0,show=0):
 
    print("MS LEN:", len(merged_stars))
+   if len(merged_stars) < 20:
+      return(cal_params)
 
    fit_img_file = cal_params_file.replace("-calparams.json", ".png")
    fit_img = cv2.imread(fit_img_file)

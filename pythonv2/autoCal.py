@@ -146,7 +146,7 @@ def multi_merge(all_stars, master_cal_params, master_cal_file, json_conf):
                cv2.waitKey(30)
 
       new_cp = cal_params_file.replace("-calparams.json", "-calparams-master.json")
-      if cfe(new_cp) == 1 :
+      if cfe(new_cp) == 0 :
          new_multi_fit_merge = remove_bad_pairs(multi_fit_merge)
          print("MINIMIZE: " )
          cal_params = default_cal_params(cal_params,json_conf)

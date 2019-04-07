@@ -1766,20 +1766,38 @@ def auto_cal(json_conf,form):
    az_grid = input_file.replace(".png", "-azgrid-half.png")
    cal_params = load_json_file(cal_params_file)
    print("<img src=" + az_grid + "><BR>");
-   print(cal_params_file)
+   print(cal_params_file + "<BR>")
    el = cal_params_file.split("/")
    fn = el[-1]
    day = fn[0:10]
    wild = fn[24:30]
+
+   all_stars_file = "/mnt/ams2/cal/autocal/hdimages/" + day + "/" + day + "-allstars.json"
+   print(all_stars_file,"<BR>")
+   allstars = load_json_file(all_stars_file)
+
    image_dir = "/mnt/ams2/cal/autocal/hdimages/" + day + "/*" + wild + "*-hd-stacked.png" 
    images = glob.glob(image_dir)
    for image in images:
+      el = image.split("/")
+      fn = el[-1]
+      key_image = image.replace("cal/autocal/hdimages/", "SD/proc2//")
+      key_image = key_image.replace(fn, "images/" + fn)
       solved_file = image.replace(".png", ".solved")
-      print("<img width=960 height=530 src=" + image + "><BR>" + image + " ")
+      print("<img width=960 height=530 src=" + image + "><BR>" + key_image + " ")
       if cfe(solved_file) == 1:
          print("solved<br>")
       else:
          print("solve failed<br>")
+      if key_image in allstars:
+         for star in allstars[key_image]:
+            name = star[0]
+            #dcname = str(name.decode("utf-8"))
+            #dbname = dcname.encode("utf-8")
+            test = name.encode("ascii",'xmlcharrefreplace')
+            print(test.decode('ascii') )
+          
+         print("<BR>")
 
 
 def free_cal(json_conf,form):
