@@ -23,12 +23,18 @@ def batch_reduce(json_conf):
             if cfe(reduced_file) == 1:
                print("Meteor done")
             else:
+               print(json_file)
                cal_files = get_active_cal_file(json_file)
-               cal_params_file = cal_files[0][0]
-               print("Meteor not done", cal_params_file)
-               cmd = "./detectMeteors.py raj " + json_file + " " + cal_params_file
-               print(cmd)
-               os.system(cmd)
+               if cal_files is not None:
+                  print(len(cal_files))
+                  cal_params_file = cal_files[0][0]
+                  print("Meteor not done", cal_params_file)
+                  cmd = "./detectMeteors.py raj " + json_file + " " + cal_params_file
+                  print(cmd)
+                  os.system(cmd)
+               else:
+                  print("No calfile for : ", json_file)
+                  continue
                
 
 
@@ -656,6 +662,7 @@ def find_matching_cal_files(cam_id, capture_date):
    all_files = glob.glob("/mnt/ams2/cal/freecal/*")
    for file in all_files:
       if cam_id in file :
+         print("POS FILE FOUND:", file)
          el = file.split("/")
          fn = el[-1]
          cal_p_file = file  + "/" + fn + "-stacked-calparams.json"
@@ -663,6 +670,7 @@ def find_matching_cal_files(cam_id, capture_date):
             matches.append(cal_p_file)
          else:
             cal_p_file = file  + "/" + fn + "-calparams.json"
+            print("CAL P FILE PROBS:", cal_p_file)
          if cfe(cal_p_file) == 1:
             matches.append(cal_p_file)
  

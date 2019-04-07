@@ -647,6 +647,10 @@ def reduce_meteor_ajax(json_conf,meteor_json_file, cal_params_file, show = 0):
    crop = (crop_min_x,crop_min_y,crop_max_x,crop_max_y)
    #crop_min_x = 0
    #crop_min_y = 0
+   if cfe(sd_video_file) == 0:
+      sd_video_file = sd_video_file.replace("SD/proc2/", "meteors/")
+      sd_video_file = sd_video_file.replace("/passed/", "/")
+
    frames,ofx,ofy = load_video_frames(sd_video_file,json_conf,0,0,crop)
    crop_min_x = ofx
    crop_min_y = ofy
@@ -654,7 +658,7 @@ def reduce_meteor_ajax(json_conf,meteor_json_file, cal_params_file, show = 0):
       end_clip = len(frames) - 1
    #frames = frames[start_clip:end_clip]
    objects = {}
-
+   print("FRAMES:",len(frames))
    #objects = track_bright_objects(frames, sd_video_file, cam_id, meteor_obj, json_conf, show)
    objects = check_for_motion2(frames, sd_video_file,cam_id, json_conf,show)
 
@@ -667,7 +671,10 @@ def reduce_meteor_ajax(json_conf,meteor_json_file, cal_params_file, show = 0):
       objects = []
       meteor_found = 0
    meteor_obj = get_meteor_object(objects)
-
+   if cfe(sd_stack_file) == 0:
+      sd_stack_file = sd_stack_file.replace("SD/proc2/", "meteors/")
+      sd_stack_file = sd_stack_file.replace("/passed/", "/")
+   print(sd_stack_file)
    reduce_img = cv2.imread(sd_stack_file)
 
    reduce_img  = cv2.resize(reduce_img, (int(1920/2),int(1080/2)))
