@@ -367,6 +367,8 @@ def track_stars (day,json_conf,scmd='',cal_params_file=None,show=0):
       masks = get_masks(cam_id, json_conf,1)
       sd_files = get_sd_files(day,cam_id,json_conf)
       #print("SD FILES:", len(sd_files))
+      if len(sd_files) == 0:
+         continue
       poss = get_active_cal_file(sd_files[4])
       cal_params_file = poss[0][0]
 
