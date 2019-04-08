@@ -226,12 +226,19 @@ def sync_event(meteor_json_url, meteor_date):
    print("Syncing...", data_file)
    save_json_file(data_file, meteor_data_json)
    sync_video =  meteor_data_json['sd_video_file'] 
+   sync_pic =  sync_video.replace(".mp4", "-stacked.png")
    video_file = data_file.replace("json", "mp4")
+   video_url = "http://" + host + sync_video
+   stack_url = "http://" + host + sync_pic
+   stack_file = data_file.replace(".json", "-stacked.png")
    video_url = "http://" + host + sync_video
    if cfe(video_file) == 0:
       cmd = "wget \"" + video_url + "\" -O " + video_file
       os.system(cmd)
       print(cmd)
+   if cfe(stack_file) == 0:
+      cmd = "wget \"" + stack_url + "\" -O " + stack_file
+      os.system(cmd)
 
 
 def sync_multi_station(json_conf, meteor_date='2019_03_20'):
@@ -243,6 +250,7 @@ def sync_multi_station(json_conf, meteor_date='2019_03_20'):
       multi_dir = "/mnt/ams2/multi_station/" + meteor_date
       if cfe(multi_dir, 1) == 0:
          os.system("mkdir " + multi_dir)
+      print("URL", url)
       station_data = urllib.request.urlopen(url).read()
       dc_station_data = json.loads(station_data.decode("utf-8"))
       print(dc_station_data)

@@ -245,6 +245,7 @@ def make_sync_kml(sync_frames,meteor,master_key,obs_sol):
             olat = observers[mob]['lat']
             #sol_key = obs 
             #sol_folder = kml.newfolder(name=sol_key)
+            fl_msft = master_key + "_ft"
             fl_ft = obs + "_ft"
             fl_fn = obs + "_fn"
             fl_lon = obs + "_lon"
@@ -254,7 +255,7 @@ def make_sync_kml(sync_frames,meteor,master_key,obs_sol):
             #if fl_ft in sync_frames[master_key][ekey]:
             #   rpt = rpt + " " + str(sync_frames[master_key][ekey][fl_ft]) + " " 
             if fl_lon in sync_frames[master_key][ekey]:
-               ft = sync_frames[master_key][ekey][fl_ft]
+               ft = sync_frames[master_key][ekey][fl_msft]
                lon = float(sync_frames[master_key][ekey][fl_lon])  
                lat = float(sync_frames[master_key][ekey][fl_lat])  
                alt = float(sync_frames[master_key][ekey][fl_alt])  * 1000
@@ -274,7 +275,7 @@ def make_sync_kml(sync_frames,meteor,master_key,obs_sol):
                line = kml.newlinestring(name="", description="", coords=[(lon,lat,0),(lon,lat,alt)])
                line.altitudemode = simplekml.AltitudeMode.relativetoground
                line.linestyle.color = color
-               fts = float(str(ft)[-5:-1])
+               fts = float(str(ft)[-6:])
                curve_data[obs]['xs'].append(fts)
                curve_data[obs]['ys'].append(vfs)
          cc = cc + 1
@@ -286,6 +287,8 @@ def make_sync_kml(sync_frames,meteor,master_key,obs_sol):
    for obs in curve_data:
       pltz[obs], = plt.plot(curve_data[obs]['xs'], curve_data[obs]['ys'])
       oc = oc + 1
+      print("XS:", curve_data[obs]['xs'])
+      print("YS:", curve_data[obs]['ys'])
 
    code1 = ""
    code2 = ""
@@ -303,9 +306,9 @@ def make_sync_kml(sync_frames,meteor,master_key,obs_sol):
       #plt.legend(pltz[obs], obs)
 
    #plt.show()
-   plt.title('Meteor Velocity in KM/Second')
+   plt.title('Meteor Velocity KM/Second')
    plt.ylabel('KM/Sec From Start')
-   plt.xlabel('Frame 1/25 sec')
+   plt.xlabel('Frame TIme 1/25 sec')
    vel_fig_file = meteor['meteor_file'].replace(".json", "-fig_vel.png")
    plt.savefig(vel_fig_file)
    print(vel_fig_file)
@@ -623,7 +626,9 @@ def fit_points_to_line(meteor,meteor_json_file):
    meteor['final_solution']['radiant_el'] = el
    meteor['final_solution']['radiant_ra'] = ra
    meteor['final_solution']['radiant_dec'] = dec
-
+   #ax.clf()
+   plt.clf()
+   fig.clf()
    print("RADIANT:", ra,dec, az,el)
    return(meteor)
 
@@ -696,6 +701,8 @@ def make_kmz(meteor):
    poly.outerboundaryis = [(start_x,start_y,start_z*1000),(end_x,end_y,end_z*1000),(end_x,end_y,0),(start_x,start_y,0)]
    poly.altitudemode = simplekml.AltitudeMode.relativetoground    
 
+   plt.clf()
+
    print(kml_file)
    kml.save(kml_file)
 
@@ -763,7 +770,10 @@ def plot_meteor_ms(meteor):
    meteor['meteor_points_lat_lon'] = meteor_points_lat_lon
 
    plt.savefig(fig_file)
+   plt.clf()
+   fig.clf()
 
+   del fig
    #plt.show()
    return(meteor)
 
