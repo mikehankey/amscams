@@ -9,7 +9,7 @@ import glob
 import os
 from lib.FileIO import get_proc_days, get_day_stats, get_day_files , load_json_file, get_trims_for_file, get_days, save_json_file, cfe
 from lib.VideoLib import get_masks, convert_filename_to_date_cam, find_hd_file_new, load_video_frames, find_min_max_dist, ffmpeg_dump_frames
-from lib.DetectLib import check_for_motion2, eval_cnt, find_bright_pixels
+from lib.DetectLib import check_for_motion2, eval_cnt, eval_cnt_better, find_bright_pixels
 
 from lib.MeteorTests import test_objects
 from lib.ImageLib import mask_frame,stack_frames, adjustLevels, upscale_to_hd, median_frames
@@ -658,7 +658,7 @@ def reduce_meteor_ajax(json_conf,meteor_json_file, cal_params_file, show = 0):
       end_clip = len(frames) - 1
    #frames = frames[start_clip:end_clip]
    objects = {}
-   print("FRAMES:",len(frames))
+   #print("FRAMES:",len(frames))
    #objects = track_bright_objects(frames, sd_video_file, cam_id, meteor_obj, json_conf, show)
    objects = check_for_motion2(frames, sd_video_file,cam_id, json_conf,show)
 
@@ -674,7 +674,7 @@ def reduce_meteor_ajax(json_conf,meteor_json_file, cal_params_file, show = 0):
    if cfe(sd_stack_file) == 0:
       sd_stack_file = sd_stack_file.replace("SD/proc2/", "meteors/")
       sd_stack_file = sd_stack_file.replace("/passed/", "/")
-   print(sd_stack_file)
+   #print(sd_stack_file)
    reduce_img = cv2.imread(sd_stack_file)
 
    reduce_img  = cv2.resize(reduce_img, (int(1920/2),int(1080/2)))
@@ -739,7 +739,8 @@ def reduce_meteor_ajax(json_conf,meteor_json_file, cal_params_file, show = 0):
          x2 = x + w
          y2 = y + h
          cnt_img = frames[fn][y:y2,x:x2]
-         max_px, avg_px, px_diff,max_loc = eval_cnt(cnt_img)
+         #max_px, avg_px, px_diff,max_loc = eval_cnt(cnt_img)
+         max_px, avg_px, px_diff,max_loc = eval_cnt_better(cnt_img)
          if max_px > max_max_px:
             max_max_px = max_px
  

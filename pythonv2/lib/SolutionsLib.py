@@ -42,6 +42,22 @@ def view_event(json_conf,form):
 
    meteor = load_json_file(solved_file)
 
+   start_point = meteor['final_solution']['meteor_start_point']
+   end_point = meteor['final_solution']['meteor_end_point']
+   hund_point = meteor['final_solution']['100km']
+   zero_point = meteor['final_solution']['0km']
+   radiant_az = meteor['final_solution']['radiant_az']
+   radiant_el = meteor['final_solution']['radiant_el']
+   radiant_ra = meteor['final_solution']['radiant_ra']
+   radiant_dec = meteor['final_solution']['radiant_dec']
+
+   event_start_time = ""
+   event_duration = ""
+   event_avg_vel = ""
+   event_int_vel = ""
+   peak_mag = ""
+
+
    reduction_files = []
    mp4_files = []
    observers = []
@@ -52,6 +68,8 @@ def view_event(json_conf,form):
    for key in meteor['vel_data']:
       if key != master_key: 
          observers.append(key)
+   print("<div>")
+   solve_cmd = "./mikeSolve.py "
    for key in meteor:
       if "obs" in key:
          red = meteor[key]['reduction_file']
@@ -65,12 +83,42 @@ def view_event(json_conf,form):
          el = stack_file.split("/")
          desc = el[-1]
         
-         print("<figure><a href=" + mp4_file + "><img width=480 height=270 src=" + stack_file + "><figcaption>" + desc + "</figcaption></a></figure>")
+         #print("<div style=\"border: 1px solid white\"><figure><a href=" + mp4_file + "><img width=480 height=270 src=" + stack_file + "></figcaption>" + desc + "</figcaption></a></figure>")
+         print("<div style=\"border: 1px solid white; float: left\"><a href=" + mp4_file + "><figcaption><img width=480 height=270 src=" + stack_file + "></figcaption>" + desc + "</figcaption></a></figure>")
+         reduced = load_json_file(red)
+         print("<BR>")
+         print(reduced['station_name'] + "<BR>")
+         print("<a href=" + red+ ">Reduction File</a>" + "<BR>")
+         solve_cmd = solve_cmd + red + " " 
+         print(st)
+         for fd in reduced['meteor_frame_data']:
+            ft, fn, x, y, w, h, mxpx, ra, dec, az, el = fd
+            print(sr + sc + str(ft) + ec + sc + str(fn) + ec + sc + str(x) + "," + str(y) +  ec + sc + str(mxpx) + ec + sc + str(ra) + "/" + str(dec) + ec + sc + str(az) + "/" + str(el) + ec + er)
+         print(et)
+         print("</div>")
 
+   print("</div>")
    print("<div style='clear: both'></div>")
+   print("Resolve command: " +  solve_cmd + "<BR>")
    print("<figure><img width=480 src=" + fig + "><figcaption>3D Track</figcaption></figure>")
    print("<figure><img width=480 src=" + fig_vel + "><figcaption>Velocity From Start</figcaption></figure>")
    print("<div style='clear: both'></div>")
+
+   print("<B>Event Info</B>")
+   print(st)
+   print(sr + sc + "Event Start Time:" + ec + sc + str(event_start_time) + ec + er )
+   print(sr + sc + "Event Duration:" + ec + sc + str(event_duration) + ec + er )
+   print(sr + sc + "Average Velocity:" + ec + sc + str(event_avg_vel) + ec + er )
+   print(sr + sc + "Initial Velocity:" + ec + sc + str(event_int_vel) + ec + er )
+   print(sr + sc + "Peak Magnitude:" + ec + sc + str(peak_mag) + ec + er )
+   print(sr + sc + "Start Point:" + ec + sc + str(start_point) + ec + er )
+   print(sr + sc + "End Point:" + ec + sc + str(end_point) + ec + er )
+   print(sr + sc + "100KM Point:" + ec + sc + str(hund_point) + ec + er )
+   print(sr + sc + "0KM Point:" + ec + sc + str(zero_point) + ec + er )
+   print(sr + sc + "Event Type:" + ec + sc + str("Meteor or Satellite") + ec + er )
+   print(sr + sc + "Classification" + ec + sc + str("Shower or Sat Name ") + ec + er )
+   print(et)
+
    reduction_file_obs1 = meteor['obs1']['reduction_file']
    meteor_json = load_json_file(reduction_file_obs1)
    sd_stack_obs1 = meteor_json['sd_stack']
@@ -79,11 +127,15 @@ def view_event(json_conf,form):
       sd_stack_obs1 = sd_stack_obs1.replace(".png", "-stacked.png")
    #print("<figure><img src=" + sd_stack_obs1 + "><caption></caption></figure>")
 
-   #print("<a href=/pycgi/webUI.py?cmd=reduce&video_file=" + sd_video_file_obs1 + ">View Meteor Reduction</a>")
+   print("<a href=/pycgi/webUI.py?cmd=reduce&video_file=" + sd_video_file_obs1 + ">View Meteor Reduction</a>")
    kml_file = solved_file.replace(".json", ".kml")
    print("<a href=" + kml_file + ">Event KML</a>")
 
    print("<P>")
+   print("<B>Orbit Info</B>")
+
+   print("<P>")
+   print("<B>Syncronized Frames</B>")
    print(st + sr)
    print(sc + "Frame Time" + ec )
    for obs in observers:

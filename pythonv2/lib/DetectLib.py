@@ -150,6 +150,33 @@ def center_point(x,y,w,h):
    cy = y + (h/2)
    return(cx,cy)
 
+def eval_cnt_better(cnt_img):
+   cnth,cntw = cnt_img.shape
+   max_px = np.max(cnt_img)
+   avg_px = np.mean(cnt_img)
+   px_diff = max_px - avg_px
+   min_val, max_val, min_loc, max_loc = cv2.minMaxLoc(cnt_img)
+   thresh = int((max_px - px_diff) / 2)
+   _, threshold = cv2.threshold(cnt_img.copy(), thresh, 255, cv2.THRESH_BINARY)
+
+   #thresh_obj = cv2.dilate(threshold.copy(), None , iterations=4)
+   cnt_res = cv2.findContours(threshold.copy(), cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
+
+   if len(cnt_res) == 3:
+      (_, cnts, xx) = cnt_res 
+   elif len(cnt_res) == 2:
+      (cnts, xx) = cnt_res 
+   if len(cnts) > 0:
+      for (i,c) in enumerate(cnts):
+         x,y,w,h = cv2.boundingRect(cnts[i])
+ 
+      mx = int(x + (w / 2))
+      my = int(y + (h / 2))
+   #else:
+   #   mx, my = max_loc
+   mx = mx - 5 
+   my = my - 5 
+   return(max_px, avg_px,px_diff,(mx,my))
 
 
 def eval_cnt(cnt_img):
