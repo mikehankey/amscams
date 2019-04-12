@@ -93,7 +93,7 @@ def view_event(json_conf,form):
          print(st)
          for fd in reduced['meteor_frame_data']:
             ft, fn, x, y, w, h, mxpx, ra, dec, az, el = fd
-            print(sr + sc + str(ft) + ec + sc + str(fn) + ec + sc + str(x) + "," + str(y) +  ec + sc + str(mxpx) + ec + sc + str(ra) + "/" + str(dec) + ec + sc + str(az) + "/" + str(el) + ec + er)
+            print(sr + sc + str(ft) + ec + sc + str(fn) + ec + sc + str(x) + "," + str(y) +  ec + sc + str(mxpx) + ec + sc + str(ra)[0:6] + "/" + str(dec)[0:6] + ec + sc + str(az)[0:6] + "/" + str(el)[0:6] + ec + er)
          print(et)
          print("</div>")
 

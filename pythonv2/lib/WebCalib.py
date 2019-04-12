@@ -2002,7 +2002,8 @@ def show_cat_stars(json_conf,form):
             x,y = int(float(x)),int(float(y))
             x,y = int(x)+5,int(y)+5
             x,y = x*2,y*2
-            star_points.append((x,y))
+            if x >0 and y > 0 and x<1920 and y< 1080:
+               star_points.append((x,y))
    points = star_points
    hd_stack_img = cv2.imread(hd_stack_file,0)
    points = pin_point_stars(hd_stack_img, points)

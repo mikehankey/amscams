@@ -20,6 +20,274 @@ import math
 from lib.FileIO import load_json_file, save_json_file
 from lib.WebCalib import HMS2deg
 
+def column(matrix, i):
+    return [row[i] for row in matrix]
+
+def make_easykml(kml_file, points={}, lines={}, polys={}):
+
+   colors = [
+      'FF641E16',
+      'FF512E5F',
+      'FF154360',
+      'FF0E6251',
+      'FF145A32',
+      'FF7D6608',
+      'FF78281F',
+      'FF4A235A',
+      'FF1B4F72',
+      'FF0B5345',
+      'FF186A3B',
+      'FF7E5109'
+   ]
+
+
+   kml = simplekml.Kml()
+
+   cc = 0
+   for key in lines:
+      slat,slon,salt,sdesc =lines[key]['start_lat'], lines[key]['start_lon'],lines[key]['start_alt'], lines[key]['desc']
+      elat,elon,ealt,edesc =lines[key]['end_lat'], lines[key]['end_lon'],lines[key]['end_alt'], lines[key]['desc']
+      line = kml.newlinestring(name=sdesc, description="", coords=[(slon,slat,salt),(elon,elat,ealt)])
+      line.altitudemode = simplekml.AltitudeMode.relativetoground
+      line.linestyle.color = colors[cc]
+      line.linestyle.width= 10
+      cc = cc + 1
+
+
+   for key in points:
+      lat,lon,alt,desc =points[key]['lat'], points[key]['lon'],points[key]['alt'], points[key]['desc']
+      point = kml.newpoint(name=desc,coords=[(lon,lat,alt)])
+
+   kml.save(kml_file)
+
+   #obs_folder = kml.newfolder(name='Stations')
+
+
+def simple_solve(mo, meteor_file ):
+   wgs84 = pm.Ellipsoid('wgs84');
+   planes = {}
+   vfact = 1000000
+   print("simple Solve")
+   print(meteor_file)
+   for obs in mo:
+      #print(obs)
+      print("start position:", float(obs['cal_params']['site_lng']), float(obs['cal_params']['site_lng']), float(obs['cal_params']['site_alt']))
+      x, y, z = pm.geodetic2ecef(float(obs['cal_params']['site_lat']), float(obs['cal_params']['site_lng']), float(obs['cal_params']['site_alt']), wgs84)
+      obs['x'] = x
+      obs['y'] = y
+      obs['z'] = z
+
+      lat, lon, alt = pm.ecef2geodetic(float(x), float(y), float(z), wgs84)
+      print ("X,Y,Z:", x,y,z)
+      print ("After convert back:", lon, lat, alt)
+      start_az = float(obs['start_az'])
+      start_el = float(obs['start_el'])
+      end_az = float(obs['end_az'])
+      end_el = float(obs['end_el'])
+ 
+      print("START AZ/EL:", start_az, start_el)
+      sveX, sveY, sveZ = pm.aer2ecef(start_az,start_el,1000000, float(obs['cal_params']['site_lat']), float(obs['cal_params']['site_lng']), float(obs['cal_params']['site_alt']), wgs84)
+      svlat, svlon, svalt = pm.ecef2geodetic(float(sveX), float(sveY), float(sveZ), wgs84)
+      print ("Start Vector Points(XYZ):", sveX, sveY, sveZ)
+      print ("Start Vector Points(LLA):", svlon, svlat, svalt)
+    
+      eveX, eveY, eveZ = pm.aer2ecef(end_az,end_el,1000000, float(obs['cal_params']['site_lat']), float(obs['cal_params']['site_lng']), float(obs['cal_params']['site_alt']), wgs84)
+
+      obs['svpx'] = sveX
+      obs['svpy'] = sveY
+      obs['svpz'] = sveZ
+
+      obs['evpx'] = eveX
+      obs['evpy'] = eveY
+      obs['evpz'] = eveZ
+
+      evlat, evlon, evalt = pm.ecef2geodetic(float(eveX), float(eveY), float(eveZ), wgs84)
+      print ("End Vector Points(XYZ):", eveX, eveY, eveZ)
+      print ("End Vector Points(LLA):", evlon, evlat, evalt)
+
+      site = obs['station_name'].upper()
+      planes[site] = Plane( \
+         Point3D(x,y,z), \
+         Point3D(sveX,sveY,sveZ), \
+         Point3D(eveX,eveY,eveZ))
+
+      print(x,y,z,obs['station_name'].upper(), obs['cal_params']['site_lat'], obs['cal_params']['site_lng'], obs['cal_params']['site_alt'], obs['start_az'], obs['start_el'], obs['end_az'], obs['end_el'])
+
+   meteor_start_points = {}
+   meteor_end_points = {}
+
+   solution = {}
+
+   for pkey in planes:
+      plane = planes[pkey]
+      for obs in mo:
+         obs_id = obs['station_name'].upper()
+         print("PKEY/OBS:", pkey, obs_id)
+         if obs_id != pkey.upper():
+            point_key = pkey.upper() + "-" + obs['station_name'].upper()
+            meteor_start_points[point_key] = [] 
+            meteor_end_points[point_key] = [] 
+            x = obs['x']
+            y = obs['y']
+            z = obs['z']
+            svpx = obs['svpx']
+            svpy = obs['svpy']
+            svpz = obs['svpz']
+
+            evpx = obs['evpx']
+            evpy = obs['evpy']
+            evpz = obs['evpz']
+
+            start_line = Line3D(Point3D(x,y,z),Point3D(svpx,svpy,svpz))
+            end_line = Line3D(Point3D(x,y,z),Point3D(evpx,evpy,evpz))
+            inter = plane.intersection(start_line)
+
+
+            if hasattr(inter[0], 'p1'):
+               p1 = inter[0].p1
+               p2 = inter[0].p2
+               if p1[2] < p2[2]:
+                  sx = float((eval(str(p1[0]))))
+                  sy = float((eval(str(p1[1]))))
+                  sz = float((eval(str(p1[2]))))
+               else:
+                  sx = float((eval(str(p2[0]))))
+                  sy = float((eval(str(p2[1]))))
+                  sz = float((eval(str(p2[2]))))
+               
+           
+            else:
+               sx = float((eval(str(inter[0].x))))
+               sy = float((eval(str(inter[0].y))))
+               sz = float((eval(str(inter[0].z))))
+
+            inter = plane.intersection(end_line)
+
+            if hasattr(inter[0], 'p1'):
+               p1 = inter[0].p1
+               p2 = inter[0].p2
+               if p1[2] < p2[2]:
+                  ex = float((eval(str(p1[0]))))
+                  ey = float((eval(str(p1[1]))))
+                  ez = float((eval(str(p1[2]))))
+               else:
+                  ex = float((eval(str(p2[0]))))
+                  ey = float((eval(str(p2[1]))))
+                  ez = float((eval(str(p2[2]))))
+            else:
+               ex = float((eval(str(inter[0].x))))
+               ey = float((eval(str(inter[0].y))))
+               ez = float((eval(str(inter[0].z))))
+
+
+
+            meteor_start_points[point_key].append((sx,sy,sz))
+            meteor_end_points[point_key].append((ex,ey,ez))
+
+  
+   sp_lats = []
+   sp_lons = []
+   sp_alts = []
+
+   ep_lats = []
+   ep_lons = []
+   ep_alts = []
+
+   kml_points = {}
+   kml_lines = {}
+
+   for key in meteor_start_points:
+      start_point = meteor_start_points[key][0]
+      kml_lines[key] = {}
+      lat, lon, alt = pm.ecef2geodetic(float(start_point[0]), float(start_point[1]), float(start_point[2]), wgs84)
+      kml_lines[key]['start_lat'] = lat
+      kml_lines[key]['start_lon'] = lon 
+      kml_lines[key]['start_alt'] = alt
+      kml_lines[key]['desc'] = key + " line"
+   for key in meteor_start_points:
+      end_point = meteor_end_points[key][0]
+      lat, lon, alt = pm.ecef2geodetic(float(end_point[0]), float(end_point[1]), float(end_point[2]), wgs84)
+      kml_lines[key]['end_lat'] = lat
+      kml_lines[key]['end_lon'] = lon 
+      kml_lines[key]['end_alt'] = alt
+      kml_lines[key]['desc'] = key + " line"
+
+   for key in meteor_start_points:
+      kml_key = "sp " + key
+      kml_points[kml_key] = {}
+      print("LEN:", len(meteor_start_points[key]))
+      for start_point in meteor_start_points[key]:
+         
+         lat, lon, alt = pm.ecef2geodetic(float(start_point[0]), float(start_point[1]), float(start_point[2]), wgs84)
+         print ("SP:", key, start_point, lat, lon, alt)
+         sp_lats.append(lat)
+         sp_lons.append(lon)
+         sp_alts.append(alt)
+         kml_points[kml_key]['lat'] = lat
+         kml_points[kml_key]['lon'] = lon
+         kml_points[kml_key]['alt'] = alt
+         kml_points[kml_key]['desc'] = key + " start point"
+
+   for key in meteor_end_points:
+      if key not in kml_points:
+         kml_key = "ep " + key
+         kml_points[kml_key] = {}
+      for end_point in meteor_end_points[key]:
+         lat, lon, alt = pm.ecef2geodetic(float(end_point[0]), float(end_point[1]), float(end_point[2]), wgs84)
+         print ("EP:", key, start_point, lat, lon, alt)
+         ep_lats.append(lat)
+         ep_lons.append(lon)
+         ep_alts.append(alt)
+         kml_points[kml_key]['lat'] = lat
+         kml_points[kml_key]['lon'] = lon
+         kml_points[kml_key]['alt'] = alt
+         kml_points[kml_key]['desc'] = key + " end point"
+
+
+   print("MEDIAN START:", np.median(np.array(sp_lats)), np.median(np.array(sp_lons)), np.median(np.array(sp_alts))  )
+   kml_points['med_start'] = {}
+   kml_points['med_start']['lat'] = np.median(np.array(sp_lats)) 
+   kml_points['med_start']['lon'] = np.median(np.array(sp_lons)) 
+   kml_points['med_start']['alt'] = np.median(np.array(sp_alts)) 
+   kml_points['med_start']['desc'] =  "med start"
+   kml_points['med_end'] = {}
+
+   kml_points['med_end']['lat'] = np.median(np.array(ep_lats)) 
+   kml_points['med_end']['lon'] = np.median(np.array(ep_lons)) 
+   kml_points['med_end']['alt'] = np.median(np.array(ep_alts)) 
+   kml_points['med_end']['desc'] =  "med end"
+   print("MEDIAN END:", np.median(np.array(ep_lats)), np.median(np.array(ep_lons)), np.median(np.array(ep_alts))  )
+   bad_keys = []
+   for key in meteor_start_points:
+      for start_point in meteor_start_points[key]:
+         lat, lon, alt = pm.ecef2geodetic(float(start_point[0]), float(start_point[1]), float(start_point[2]), wgs84)
+         distance,bear = haversine(lat, lon, np.median(np.array(sp_lats)), np.median(np.array(sp_lons)))
+         alt_diff = abs(np.median(np.array(sp_alts)) - alt)
+         print ("KEY DISTANCE FROM MEDIAN START:", key, distance, alt_diff)
+         if distance + alt_diff > 5000:
+            bad_keys.append(key)
+   for key in meteor_end_points:
+      for point in meteor_end_points[key]:
+         lat, lon, alt = pm.ecef2geodetic(float(point[0]), float(point[1]), float(point[2]), wgs84)
+         distance,bear = haversine(lat, lon, np.median(np.array(sp_lats)), np.median(np.array(sp_lons)))
+         alt_diff = abs(np.median(np.array(ep_alts)) - alt)
+         print ("KEY DISTANCE FROM MEDIAN END:", key, distance, alt_diff)
+         if distance + alt_diff > 5000:
+            bad_keys.append(key)
+   for kml_key in bad_keys:  
+      print("BAD:", kml_key)
+      if kml_key in kml_points:
+         kml_points.pop(kml_key, None)
+      if kml_key in kml_lines:
+         kml_lines.pop(kml_key, None)
+      if kml_key in meteor_start_points:
+         meteor_start_points.pop(kml_key, None)
+      if kml_key in meteor_end_points:
+         meteor_end_points.pop(kml_key, None)
+
+   kml_file = meteor_file.replace(".json", ".kml")
+   make_easykml(kml_file, kml_points,kml_lines)
+
 def sync_meteor_frames(meteor):
    max_len = 0
    longest_key = ""
@@ -1163,7 +1431,32 @@ def setup_obs(meteors_obs):
    return(meteor)
 
 
+print(sys.argv[1])
+if sys.argv[1] == 'simple':
+   print("yes")
+   obs_files = []
+   cams = []
+   mo = []
+   for i in range(2,len(sys.argv)):
+      obs_files.append(sys.argv[i])
+      hd_datetime, cam_id, hd_date, hd_y, hd_m, hd_d, hd_h, hd_M, hd_s = convert_filename_to_date_cam(obs_files[i-2])
+      cams.append(cam_id)
+      data = load_json_file(sys.argv[i])
+      data['reduction_file'] = sys.argv[i]
+      mo.append(data)
 
+   cam_str = ""
+   for cam in cams:
+      if cam_str != "":
+         cam_str = cam_str + "_"
+      cam_str = cam_str + cam
+   meteor_file = "/mnt/ams2/multi_station/" + hd_y + "_" + hd_m + "_" + hd_d + "/" + hd_y + "_" + hd_m + "_" + hd_d + "_" + hd_h + "_" + hd_M + "_" + hd_s + "_" + cam_str + "-solved.json" 
+
+   simple_solve(mo, meteor_file )
+   exit()
+
+exit()
+meteor_file = ""
 if len(sys.argv) == 3:
    obs1_file, obs2_file = sys.argv[1], sys.argv[2]
    hd_datetime, cam1, hd_date, hd_y, hd_m, hd_d, hd_h, hd_M, hd_s = convert_filename_to_date_cam(obs1_file)
