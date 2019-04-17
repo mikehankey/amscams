@@ -62,6 +62,12 @@ def make_easykml(kml_file, points={}, lines={}, polys={}):
 
    #obs_folder = kml.newfolder(name='Stations')
 
+def find_vector_point(lat,lon,alt,az,el,factor=1000000):
+
+   wgs84 = pm.Ellipsoid('wgs84');
+   sveX, sveY, sveZ = pm.aer2ecef(az,el,1000000, lat, lon, alt, wgs84)
+   svlat, svlon, svalt = pm.ecef2geodetic(float(sveX), float(sveY), float(sveZ), wgs84)
+   return(sveX,sveY,sveZ,svlat,svlon,svalt)
 
 def simple_solve(mo, meteor_file ):
    wgs84 = pm.Ellipsoid('wgs84');
@@ -69,41 +75,70 @@ def simple_solve(mo, meteor_file ):
    vfact = 1000000
    print("simple Solve")
    print(meteor_file)
+   meteor = {}
+   meteor['observations'] = {}
+   meteor['simple_solutions'] = {}
    for obs in mo:
-      #print(obs)
-      print("start position:", float(obs['cal_params']['site_lng']), float(obs['cal_params']['site_lng']), float(obs['cal_params']['site_alt']))
+      key = obs['station_name'].upper()
+      meteor['observations'][key] = {}
+
+      meteor['observations'][key]['station_name'] = obs['station_name'].upper()
+      meteor['observations'][key]['lat'] = float(obs['cal_params']['site_lat'])
+      meteor['observations'][key]['lng'] = float(obs['cal_params']['site_lng'])
+      meteor['observations'][key]['alt'] = float(obs['cal_params']['site_alt'])
+
       x, y, z = pm.geodetic2ecef(float(obs['cal_params']['site_lat']), float(obs['cal_params']['site_lng']), float(obs['cal_params']['site_alt']), wgs84)
       obs['x'] = x
       obs['y'] = y
       obs['z'] = z
+      meteor['observations'][key]['x'] = x
+      meteor['observations'][key]['y'] = y
+      meteor['observations'][key]['z'] = z
 
       lat, lon, alt = pm.ecef2geodetic(float(x), float(y), float(z), wgs84)
-      print ("X,Y,Z:", x,y,z)
-      print ("After convert back:", lon, lat, alt)
+
       start_az = float(obs['start_az'])
       start_el = float(obs['start_el'])
       end_az = float(obs['end_az'])
       end_el = float(obs['end_el'])
- 
-      print("START AZ/EL:", start_az, start_el)
-      sveX, sveY, sveZ = pm.aer2ecef(start_az,start_el,1000000, float(obs['cal_params']['site_lat']), float(obs['cal_params']['site_lng']), float(obs['cal_params']['site_alt']), wgs84)
-      svlat, svlon, svalt = pm.ecef2geodetic(float(sveX), float(sveY), float(sveZ), wgs84)
-      print ("Start Vector Points(XYZ):", sveX, sveY, sveZ)
-      print ("Start Vector Points(LLA):", svlon, svlat, svalt)
-    
-      eveX, eveY, eveZ = pm.aer2ecef(end_az,end_el,1000000, float(obs['cal_params']['site_lat']), float(obs['cal_params']['site_lng']), float(obs['cal_params']['site_alt']), wgs84)
+      meteor['observations'][key]['start_az'] = start_az
+      meteor['observations'][key]['start_el'] = start_el
+      meteor['observations'][key]['end_az'] = end_az
+      meteor['observations'][key]['end_el'] = end_el
 
+      meteor['observations'][key]['event_start_time'] = obs['event_start_time']
+      meteor['observations'][key]['duration'] = float(obs['event_duration'])
+
+      # make start vectors 
+      sveX, sveY, sveZ, svlat, svlon,svalt = find_vector_point(float(obs['cal_params']['site_lat']), float(obs['cal_params']['site_lng']), float(obs['cal_params']['site_alt']), start_az, start_el, 1000000) 
       obs['svpx'] = sveX
       obs['svpy'] = sveY
       obs['svpz'] = sveZ
+      meteor['observations'][key]['sveX'] = sveX
+      meteor['observations'][key]['sveY'] = sveY
+      meteor['observations'][key]['sveZ'] = sveZ
+      meteor['observations'][key]['svlat'] = svlat
+      meteor['observations'][key]['svlon'] = svlon
+      meteor['observations'][key]['svalt'] = svalt
+    
+      # make end vectors 
+      eveX, eveY, eveZ, evlat, evlon,evalt = find_vector_point(float(obs['cal_params']['site_lat']), float(obs['cal_params']['site_lng']), float(obs['cal_params']['site_alt']), end_az, end_el, 1000000) 
+      #eveX, eveY, eveZ = pm.aer2ecef(end_az,end_el,1000000, float(obs['cal_params']['site_lat']), float(obs['cal_params']['site_lng']), float(obs['cal_params']['site_alt']), wgs84)
 
       obs['evpx'] = eveX
       obs['evpy'] = eveY
       obs['evpz'] = eveZ
+      meteor['observations'][key]['eveX'] = eveX
+      meteor['observations'][key]['eveY'] = eveY
+      meteor['observations'][key]['eveZ'] = eveZ
 
-      evlat, evlon, evalt = pm.ecef2geodetic(float(eveX), float(eveY), float(eveZ), wgs84)
-      print ("End Vector Points(XYZ):", eveX, eveY, eveZ)
-      print ("End Vector Points(LLA):", evlon, evlat, evalt)
+      #evlat, evlon, evalt = pm.ecef2geodetic(float(eveX), float(eveY), float(eveZ), wgs84)
+
+      meteor['observations'][key]['evlat'] = evlat
+      meteor['observations'][key]['evlon'] = evlon
+      meteor['observations'][key]['evalt'] = evalt
+      meteor['observations'][key]['meteor_frame_data'] = obs['meteor_frame_data']
+
 
       site = obs['station_name'].upper()
       planes[site] = Plane( \
@@ -125,6 +160,7 @@ def simple_solve(mo, meteor_file ):
          print("PKEY/OBS:", pkey, obs_id)
          if obs_id != pkey.upper():
             point_key = pkey.upper() + "-" + obs['station_name'].upper()
+            meteor['simple_solutions'][point_key] = {} 
             meteor_start_points[point_key] = [] 
             meteor_end_points[point_key] = [] 
             x = obs['x']
@@ -180,6 +216,8 @@ def simple_solve(mo, meteor_file ):
                ez = float((eval(str(inter[0].z))))
 
 
+            meteor['simple_solutions'][point_key]['start_point']  = [sx,sy,sz]
+            meteor['simple_solutions'][point_key]['end_point']  = [ex,ey,ez]
 
             meteor_start_points[point_key].append((sx,sy,sz))
             meteor_end_points[point_key].append((ex,ey,ez))
@@ -200,6 +238,8 @@ def simple_solve(mo, meteor_file ):
       start_point = meteor_start_points[key][0]
       kml_lines[key] = {}
       lat, lon, alt = pm.ecef2geodetic(float(start_point[0]), float(start_point[1]), float(start_point[2]), wgs84)
+      meteor['simple_solutions'][point_key]['start_point_lla']  = [lat,lon,alt]
+      meteor['simple_solutions'][point_key]['status']  = "good"
       kml_lines[key]['start_lat'] = lat
       kml_lines[key]['start_lon'] = lon 
       kml_lines[key]['start_alt'] = alt
@@ -207,6 +247,7 @@ def simple_solve(mo, meteor_file ):
    for key in meteor_start_points:
       end_point = meteor_end_points[key][0]
       lat, lon, alt = pm.ecef2geodetic(float(end_point[0]), float(end_point[1]), float(end_point[2]), wgs84)
+      meteor['simple_solutions'][point_key]['end_point_lla']  = [lat,lon,alt]
       kml_lines[key]['end_lat'] = lat
       kml_lines[key]['end_lon'] = lon 
       kml_lines[key]['end_alt'] = alt
@@ -276,6 +317,7 @@ def simple_solve(mo, meteor_file ):
             bad_keys.append(key)
    for kml_key in bad_keys:  
       print("BAD:", kml_key)
+      meteor['simple_solutions'][kml_key]['status']  = "bad"
       if kml_key in kml_points:
          kml_points.pop(kml_key, None)
       if kml_key in kml_lines:
@@ -287,6 +329,9 @@ def simple_solve(mo, meteor_file ):
 
    kml_file = meteor_file.replace(".json", ".kml")
    make_easykml(kml_file, kml_points,kml_lines)
+   save_json_file(meteor_file, meteor)
+   print(meteor_file)
+   print(kml_file)
 
 def sync_meteor_frames(meteor):
    max_len = 0

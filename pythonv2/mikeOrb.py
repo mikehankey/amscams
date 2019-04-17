@@ -110,6 +110,10 @@ def Ceplecha_vars(metorb, excel):
    Vhz_au = metorb['earth_vars']['earth_vh']['Vhz_au'] 
    Vhy_au = metorb['earth_vars']['earth_vh']['Vhy_au'] 
 
+   Vhx_km = metorb['earth_vars']['earth_vh']['Vhx_km'] 
+   Vhz_km = metorb['earth_vars']['earth_vh']['Vhz_km'] 
+   Vhy_km = metorb['earth_vars']['earth_vh']['Vhy_km'] 
+
 
    Vh_au= metorb['earth_vars']['earth_vh']['Vh_au']  
    
@@ -133,6 +137,9 @@ def Ceplecha_vars(metorb, excel):
    solar_longitude = node2 
 
    #=TAN(RADIANS(C13))/SIN(RADIANS(J13-C19))
+   metorb['Ceplecha_vars']['beta'] = beta 
+   metorb['Ceplecha_vars']['olambda'] = olambda
+
    tan_incl = math.tan(math.radians(beta))/math.sin(math.radians(olambda-solar_longitude))
    metorb['Ceplecha_vars']['tan_incl0'] = tan_incl
 
@@ -318,6 +325,7 @@ def tan_beta_vars(metorb, excel):
    tan_beta = -1 * (Vhz_km/(math.sqrt(Vhx_km**2+Vhy_km**2)))
    tan_lambda = Vhy_km / Vhx_km
    beta = math.atan(tan_beta)*180/math.pi
+   print("TAN LAM:", Vhy_km , Vhx_km, tan_lambda)
 
    #=ATAN(B13)*180/PI() 
    atan_lambda = math.atan(tan_lambda)*180/math.pi
@@ -408,6 +416,9 @@ def earth_pos_vars(metorb, excel):
    # C1 = angle of ecliptic
    # I13 Dec Geo J2A
    # H13 RA Geo J2
+
+   #=-F5*((SIN(RADIANS(C1))*SIN(RADIANS(inputb!I13)))+(COS(RADIANS(C1))*COS(RADIANS(inputb!I13))*SIN(RADIANS(inputb!H13))))
+
    Vgy = -1 * Vgeo * ((math.sin(math.radians(ang_of_ecl))*math.sin(math.radians(dec_geo))) + \
       math.cos(math.radians(ang_of_ecl)) * math.cos(math.radians(dec_geo))*math.sin(math.radians(ra_geo)))
 
@@ -568,15 +579,28 @@ def geocentric_radiant_position(metorb,excel):
    print("APP RAD ALT:", apparent_radiant_altitude)
    sin_a = (-1*math.cos(math.radians(diurnal_dec))*sin_H)/math.cos(math.radians(apparent_radiant_altitude))
    print("SIN A:", sin_a)
-   A = math.degrees(math.asin(sin_a))
-   print("A:", A)
-   if A == 360:
-      A = 0
+   SIN_A = math.degrees(math.asin(sin_a))
+   print("A:", SIN_A)
+   if SIN_A == 360:
+      SIN_A = 0
+   if SIN_A < 0:
+      SIN_A = SIN_A + 360 
+   if SIN_A > 360:
+      SIN_A = SIN_A - 360 
 #   if A > 0:
 #      true_radiant_azimuth = 180 - A  
 #   else:
 #      true_radiant_azimuth = 180+(360-A)
-   true_radiant_azimuth = A
+
+   if SIN_A > 0:
+      SIN_A_bot = 180 - A 
+   else:
+      SIN_A_bot = 180 + (360- A)
+
+   #A_test = True
+   #if SIN_A == SIN_A_bot or A =
+
+   true_radiant_azimuth = SIN_A
    if true_radiant_azimuth < 0:
       true_radiant_azimuth = true_radiant_azimuth + 360
    if true_radiant_azimuth == 360 :
@@ -606,6 +630,8 @@ def geocentric_radiant_position(metorb,excel):
    print("True Radiant Az:", true_radiant_azimuth)
    print("GEO SIN DEC:", geo_sin_dec)
    print("DEC RADIANS:", dec_radians) 
+   metorb['sheet4_vars']['geo_sin_dec'] = geo_sin_dec 
+   metorb['sheet4_vars']['dec_radians'] = dec_radians
    metorb['sheet4_vars']['true_radiant_altitude'] = true_radiant_altitude 
    metorb['sheet4_vars']['lat'] = lat 
    metorb['sheet4_vars']['true_radiant_azimuth']  = true_radiant_azimuth
@@ -934,6 +960,10 @@ def compute_obs_hour_angle(metorb,excel):
    rad_az = metorb['meteor_input']['rad_az']
    rad_el = metorb['meteor_input']['rad_el']
    rad_dec = metorb['meteor_input']['rad_dec']
+   lat = metorb['meteor_input']['end_point'][1]
+   lon = metorb['meteor_input']['end_point'][0]
+   dec_radians = metorb['sheet2_vars']['dec_radians'] 
+
 
    print("RAD AZ,EL,DEC:", rad_az,rad_el,rad_dec)
 
@@ -942,10 +972,53 @@ def compute_obs_hour_angle(metorb,excel):
    sin_u_radians = math.asin(sin_u)
    sin_u_degrees = math.degrees(sin_u_radians)
    if sin_u_degrees < 0:
+      sin_u_degrees_orig = sin_u_degrees
       sin_u_degrees = sin_u_degrees + 360
 
+   if sin_u_degrees_orig > 0:
+      sin_u_deg_bot = 180 - sin_u_degrees_orig
+   else:
+      sin_u_deg_bot = 180 + (360- sin_u_degrees)
+
    print("SIN_U", sin_u)
+   #=((SIN(RADIANS(input!D19))*COS(RADIANS(input!D12)))-(COS(RADIANS(input!D19))*COS(RADIANS(input!C19))*SIN(RADIANS(input!D12))))/COS(Sheet2!C4)
+   #D12 = lat
+   #D19 = rad_el
+   #C19 = rad_az
+   #S2.C4 = dec_radians
+   print("DEBUG: ", rad_el, lat, dec_radians)
+
+   cos_u = ((math.sin(math.radians(rad_el))*math.cos(math.radians(lat)))- (math.cos(math.radians(rad_el))* math.cos(math.radians(rad_az))* math.sin(math.radians(lat)))) /math.cos(dec_radians)
+   if cos_u == 1:
+      cos_u_rad = radians(0)
+   else:
+      cos_u_rad = math.acos(cos_u)
+   if cos_u == -1:
+      cos_u_deg = 180
+   else:
+      cos_u_deg = math.degrees(cos_u_rad) 
+   if cos_u_deg == 360:
+      cos_u_deg = 0
+   if cos_u_deg > 360:
+      cos_u_deg = cos_u_deg - 360
+   cos_u_deg_360 = 360 - cos_u_deg 
+   if cos_u == 1:
+      cos_u_deg_360 = 0
+   if cos_u_deg_360 > 360:
+      cos_u_deg_360 = cos_u_deg_360 - 360
+
+   if sin_u_degrees == cos_u_deg or sin_u_degrees == cos_u_deg_360:
+      sin_u_degrees = sin_u_degrees
+   else:
+      sin_u_degrees = sin_u_deg_bot 
+   
+
+   print("COS U:", cos_u, cos_u_rad, cos_u_deg, sin_u_degrees, sin_u_deg_bot)
+   
+
    local_sidereal_hour_angle = sin_u_degrees
+
+
    #output['E21'] = local_sidereal_hour_angle
    #sheet2['F10'] = sin_u
    #sheet2['G10'] = sin_u_radians
@@ -976,6 +1049,7 @@ def compute_obs_hour_angle(metorb,excel):
 def compute_obs_rad_dec(metorb,excel):
    rad_alt = math.radians(metorb['meteor_input']['rad_el'])
    rad_lat = math.radians(metorb['meteor_input']['end_point'][1])
+   print("RAD LAT:", metorb['meteor_input']['end_point'][1])
    rad_az = math.radians(metorb['meteor_input']['rad_az'])
    #sin dec = SIN(RADIANS(rad_alt))*SIN(RADIANS(rad_lat))+COS(RADIANS(rad_alt))*COS(RADIANS(rad_az))*COS(RADIANS(rad_lat))
    sin_dec = math.sin(rad_alt)*math.sin(rad_lat)+math.cos(rad_alt)*math.cos(rad_az)*math.cos(rad_lat)
