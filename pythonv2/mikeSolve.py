@@ -49,14 +49,24 @@ def make_easykml(kml_file, points={}, lines={}, polys={}):
       elat,elon,ealt,edesc =lines[key]['end_lat'], lines[key]['end_lon'],lines[key]['end_alt'], lines[key]['desc']
       line = kml.newlinestring(name=sdesc, description="", coords=[(slon,slat,salt),(elon,elat,ealt)])
       line.altitudemode = simplekml.AltitudeMode.relativetoground
-      line.linestyle.color = colors[cc]
-      line.linestyle.width= 10
+      if "color" in lines[key]:
+         line.linestyle.color = lines[key]['color']
+      else:
+         line.linestyle.color = colors[cc]
+      if "width" in lines[key]:
+         line.linestyle.width= lines[key]['width']
+      else:
+         line.linestyle.width= 5
       cc = cc + 1
 
 
    for key in points:
       lat,lon,alt,desc =points[key]['lat'], points[key]['lon'],points[key]['alt'], points[key]['desc']
       point = kml.newpoint(name=desc,coords=[(lon,lat,alt)])
+      if "icon" in points[key]:
+          point.style.iconstyle.icon.href = points[key]['icon']
+      else:
+          point.style.iconstyle.icon.href = 'http://maps.google.com/mapfiles/kml/shapes/placemark_circle.png'
 
    kml.save(kml_file)
 
@@ -234,16 +244,51 @@ def simple_solve(mo, meteor_file ):
    kml_points = {}
    kml_lines = {}
 
+   for key in meteor['observations']:
+      name = meteor['observations'][key]['station_name'] 
+      lat = meteor['observations'][key]['lat'] 
+      lon = meteor['observations'][key]['lng'] 
+      alt = meteor['observations'][key]['alt'] 
+      kml_key = "site" + key
+      kml_points[kml_key] = {}
+      kml_points[kml_key]['lat'] = lat
+      kml_points[kml_key]['lon'] = lon
+      kml_points[kml_key]['alt'] = 0
+      kml_points[kml_key]['desc'] = key 
+
+
    for key in meteor_start_points:
       start_point = meteor_start_points[key][0]
       kml_lines[key] = {}
       lat, lon, alt = pm.ecef2geodetic(float(start_point[0]), float(start_point[1]), float(start_point[2]), wgs84)
       meteor['simple_solutions'][point_key]['start_point_lla']  = [lat,lon,alt]
       meteor['simple_solutions'][point_key]['status']  = "good"
+      line_key = "obsln" + key
       kml_lines[key]['start_lat'] = lat
       kml_lines[key]['start_lon'] = lon 
       kml_lines[key]['start_alt'] = alt
       kml_lines[key]['desc'] = key + " line"
+ 
+      obs1, obs2 = key.split("-")
+      oname = meteor['observations'][obs2]['station_name'] 
+      olat = meteor['observations'][obs2]['lat']   
+      olon = meteor['observations'][obs2]['lng'] 
+      oalt = meteor['observations'][obs2]['alt']
+      obs2 = "s" + obs2
+      kml_lines[obs2] = {}
+      kml_lines[obs2]['start_lat'] = lat
+      kml_lines[obs2]['start_lon'] = lon 
+      kml_lines[obs2]['start_alt'] = alt
+      kml_lines[obs2]['desc'] = key + " line"
+      # make obs lines
+      kml_lines[obs2]['end_lat'] = olat
+      kml_lines[obs2]['end_lon'] = olon 
+      kml_lines[obs2]['end_alt'] = oalt
+      kml_lines[obs2]['desc'] = key + " " + oname
+      kml_lines[obs2]['color'] = 'FF00FF00'
+      kml_lines[obs2]['width'] = 2
+
+
    for key in meteor_start_points:
       end_point = meteor_end_points[key][0]
       lat, lon, alt = pm.ecef2geodetic(float(end_point[0]), float(end_point[1]), float(end_point[2]), wgs84)
@@ -283,6 +328,25 @@ def simple_solve(mo, meteor_file ):
          kml_points[kml_key]['lon'] = lon
          kml_points[kml_key]['alt'] = alt
          kml_points[kml_key]['desc'] = key + " end point"
+
+         obs1, obs2 = key.split("-")
+         oname = meteor['observations'][obs2]['station_name'] 
+         olat = meteor['observations'][obs2]['lat']   
+         olon = meteor['observations'][obs2]['lng'] 
+         oalt = meteor['observations'][obs2]['alt']
+         kml_lines[obs2] = {}
+         kml_lines[obs2]['start_lat'] = lat
+         kml_lines[obs2]['start_lon'] = lon 
+         kml_lines[obs2]['start_alt'] = alt
+         kml_lines[obs2]['desc'] = key + " line"
+         # make obs lines
+         kml_lines[obs2]['end_lat'] = olat
+         kml_lines[obs2]['end_lon'] = olon 
+         kml_lines[obs2]['end_alt'] = oalt
+         kml_lines[obs2]['desc'] = key + " " + oname
+         kml_lines[obs2]['color'] = 'FF0000FF'
+         kml_lines[obs2]['width'] = 2
+
 
 
    print("MEDIAN START:", np.median(np.array(sp_lats)), np.median(np.array(sp_lons)), np.median(np.array(sp_alts))  )
@@ -1500,7 +1564,6 @@ if sys.argv[1] == 'simple':
    simple_solve(mo, meteor_file )
    exit()
 
-exit()
 meteor_file = ""
 if len(sys.argv) == 3:
    obs1_file, obs2_file = sys.argv[1], sys.argv[2]
@@ -1535,10 +1598,12 @@ if len(sys.argv) == 4:
    meteor_obs['mo3']['reduction_file'] = obs3_file
 
 if cfe(meteor_file) == 0:
+   print("COMPUTE METEOR")
    meteor = setup_obs(meteor_obs)
    meteor = compute_ms_solution(meteor)
    meteor['meteor_file'] = meteor_file
 else:
+   print("LOAD METEOR")
    meteor = load_json_file(meteor_file)
    meteor['meteor_file'] = meteor_file
 save_json_file(meteor_file, meteor)

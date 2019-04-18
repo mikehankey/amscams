@@ -64,9 +64,9 @@ def doHD(sd_video_file, json_conf):
             frame_dur_sec = 5
 
          if frame_dur > 180:
-            frame_dur_sec = frame_dur_sec + 4
+            frame_dur_sec = frame_dur_sec +  4
          #print("SS:", start_sec, frame_dur_sec) 
-
+         frame_dur_sec = frame_dur_sec + 3
          #print(min_file,start_sec,frame_dur_sec)
          hd_file, hd_trim,trim_time_offset, trim_dur = find_hd_file_new(min_file, trim_num, frame_dur_sec)
 

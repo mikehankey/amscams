@@ -2010,8 +2010,10 @@ def show_cat_stars(json_conf,form):
    user_stars['user_stars'] = points 
 
    if cfe(cal_params_file_orig) == 1:
+      #print("CAL PARAMS:", cal_params_file_orig)
       cal_params = load_json_file(cal_params_file_orig)
    else:
+      #print("CAL PARAMS:", cal_params_file)
       cal_params = load_json_file(cal_params_file)
     
    #else:
