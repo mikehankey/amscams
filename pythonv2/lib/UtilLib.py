@@ -271,7 +271,7 @@ def calc_radiant(end_lon, end_lat, end_alt, start_lon, start_lat, start_alt, arg
 
    julian_date = date_to_jd(int(year),int(month),float(frac_day))
    az_deg = calculate_initial_compass_bearing(point1, point2)
-   print("AZ DEG:", az_deg, bear)
+   #print("AZ DEG:", az_deg, bear)
    el_deg = entry_angle
    pi = math.pi
    az = (az_deg * pi)/180 #rad
@@ -290,7 +290,7 @@ def calc_radiant(end_lon, end_lat, end_alt, start_lon, start_lat, start_alt, arg
    observer.lat = str(lat)  # deg -> rad
    observer.elevation = end_alt * 1000
    #observer.date = ut - J0
-   print("<h1>MIKE!", arg_date,arg_time,"</h1>")
+   #print("<h1>MIKE!", arg_date,arg_time,"</h1>")
    observer.date = arg_date +  " " + arg_time
    ra,dec = observer.radec_of(az, el)
    return ra, dec, az_deg, el_deg, distance, entry_angle

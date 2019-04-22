@@ -1,0 +1,453 @@
+<script src="//ajax.googleapis.com/ajax/libs/jquery/1/jquery.min.js"></script>
+<style>
+/* DivTable.com */
+.divTable{
+	display: table;
+}
+.divTableRow {
+	display: table-row;
+}
+.divTableHeading {
+	background-color: #EEE;
+	display: table-header-group;
+}
+.divTableCell, .divTableHead {
+	border: 1px solid #999999;
+	display: table-cell;
+	padding: 3px 10px;
+}
+.divTableHeading {
+	background-color: #EEE;
+	display: table-header-group;
+	font-weight: bold;
+}
+.divTableFoot {
+	background-color: #EEE;
+	display: table-footer-group;
+	font-weight: bold;
+}
+.divTableBody {
+	display: table-row-group;
+}
+
+figure {
+  float: right;
+  text-align: center;
+  font-style: italic;
+  font-size: smaller;
+  text-indent: 0;
+  border: thin silver solid;
+  margin: 0.5em;
+  padding: 0.5em;
+}
+</style>
+<script>
+function get_event() {
+   var urlParams = new URLSearchParams(window.location.search);
+   job = urlParams.getAll('event')
+   var ajax_url = "/test.json"
+   $.ajax({
+      url: "/output/" + job + "/" + job + ".json",
+      dataType: "text",
+      success: function(data) {
+         var myjson = $.parseJSON(data);
+         render_page(myjson,job)
+      }
+   });
+}
+
+function UrlExists(url)
+{
+    var http = new XMLHttpRequest();
+    http.open('HEAD', url, false);
+    http.send();
+    return http.status;
+}
+
+function playVideo(video) {
+   var x = document.getElementById("video_player");
+   x.style.display = "block";
+   video_player = "<video id='my_vid' width='704' height='576' controls autoplay loop><source src='" + video + "' type='video/mp4'></video><br><a href='javascript:show_hide(\"video_player\")'>close</a>"
+   document.getElementById("video_player").innerHTML = video_player 
+/*
+   can_html = "<canvas width=704 height=576 border=1 id='vid_frames'></canvas><img id=test>"
+   document.getElementById("reducer").innerHTML = can_html
+   var vid_frames = document.getElementById('vid_frames')
+   img = document.getElementById("test")
+   var context = vid_frames.getContext('2d');
+   var video = document.getElementById("my_vid")
+   video.addEventListener('canplay', function() {
+      context.drawImage = (video, 0,0, vid_frames.width, vid_frames.height)
+      var dataURL = vid_frames.toDataURL();
+      img.setAttribute('src', dataURL); 
+   }, false);
+*/
+}
+
+
+function show_hide(div_id) {
+  var x = document.getElementById(div_id);
+  if (x.style.display === "none") {
+    x.style.display = "block";
+  } else {
+    x.style.display = "none";
+  }
+}
+
+function render_page(myjson,job) {
+   var red_files = new Array()
+   var obs = new Array()
+   var event_times = new Array()
+   var imgs = new Array()
+   var vids = new Array()
+   var lag_imgs = new Array()
+   var res1_imgs = new Array()
+   var res2_imgs = new Array()
+   var vids = new Array()
+   var job_dir = "/output/" + job + "/"
+
+   // Get obs/reduction info
+   for (let s in myjson["as6_info"]) 
+   {
+      var n = s.search("reduced")
+      if (n != -1) {
+         red_files.push(s)
+      }
+   }
+
+   for (let r in red_files) {
+      red_file = red_files[r]
+      video = myjson['as6_info'][red_file]['sd_video_file']
+      if (UrlExists(video) == 200  ) {
+         vids.push(video)
+      }
+      else {
+         video = video.replace("/meteors/", "/multi_station/")
+         video = video.replace(".mp4", "-reduced.mp4")
+         if (UrlExists(video) == 200) {
+            vids.push(video)
+         }
+      }
+
+      sid = myjson['as6_info'][red_file]['station_id']
+      pic = job + "-OBS-" + sid + ".png"
+      lag_pic = job + "_" + sid + "_lag.png"
+      res1_pic = job + "_" + sid + "_angular_residuals.png"
+      res2_pic = job + "_" + sid + "_spatial_residuals.png"
+      obs.push(sid)
+      lag_imgs.push(lag_pic)
+      res1_imgs.push(res1_pic)
+      res2_imgs.push(res2_pic)
+      imgs.push(pic)
+   }
+
+   fd_html = new Array()
+
+
+   dt = '<div class="divTable"><div class="divTableBody">'
+   dr = '<div class="divTableRow">'
+   dc = '<div class="divTableCell">'
+   er = '</div>'
+   ec = '</div>'
+   et  = '</div></div>'
+   red_file_html = ""
+   for (let r in red_files) {
+      red_file = red_files[r]
+      red_file_html = red_file_html + red_file + "<BR>"
+      frame_data = myjson['as6_info'][red_file]['all_red']['meteor_frame_data']
+      fdh = dt
+      fdh = fdh + dc +  "Time" + ec + dc + "#" + ec + dc + "X" + ec + dc + "Y" + ec + dc + "MP" + ec + dc + "AZ" +ec + dc + "EL" + ec + er
+      for (let f in frame_data) {
+          
+         fdh = fdh + dr 
+         ft = f / 25
+         az = frame_data[f][9].toFixed(2)
+         el = frame_data[f][10].toFixed(2)
+         fdh = fdh + dc + ft + ec + dc + frame_data[f][1] + ec + dc + frame_data[f][2] + ec + dc + frame_data[f][3] + ec + dc + frame_data[f][6] + ec + dc + az +  ec + dc + el +  ec + er
+      }
+      fdh = fdh + et
+      fd_html.push(fdh)
+      
+   }
+   fd_ht = "<div>"
+   for (let r in fd_html) {
+      fd_ht = fd_ht + "<div style='float: left; border: solid black 1px; width: 400px; padding: 2px'>"
+      fd_ht = fd_ht + fd_html[r] 
+      fd_ht = fd_ht + "</div><div style='float: left; width: 10px;'> &nbsp; </div> "
+   }
+   fd_ht = fd_ht + "</div>"
+
+   document.getElementById("red_data").innerHTML = fd_ht  
+
+   // make obs images
+   img_html = ""
+   red_img_html = ""
+   lag_img_html = ""
+   res1_img_html = ""
+   res2_img_html = ""
+   for (let i in imgs) {
+      console.log(imgs[i])
+      img_src = job_dir + imgs[i]
+      video_file = vids[i]
+      sid = obs[i]
+      desc = myjson['as6_info'][sid] 
+      img_html = img_html + "<figure style='float: left'><a href=javascript:playVideo('" + video_file + "')><img src=" + img_src + "><figcaption>" + desc + "</a></figcaption></figure>"
+
+      img_src = job_dir + imgs[i]
+      img_src = img_src.replace("OBS", "RED")
+      red_img_html = red_img_html + "<figure style='float: left'><img width=384 src=" + img_src + "><figcaption>" + desc + "</figcaption></figure>"
+   }
+
+   desc = ""
+   for (let i in lag_imgs) {
+      img_src = job_dir + lag_imgs[i]
+      res1_img_src = job_dir + res1_imgs[i]
+      res2_img_src = job_dir + res2_imgs[i]
+      lag_img_html = lag_img_html + "<figure style='float: left'><img width=384 src=" + img_src + "><figcaption>" + desc + "</figcaption></figure>"
+      res1_img_html = res1_img_html + "<figure style='float: left'><img width=384 src=" + res1_img_src + "><figcaption>" + desc + "</figcaption></figure>"
+      res2_img_html = res2_img_html + "<figure style='float: left'><img width=384 src=" + res2_img_src + "><figcaption>" + desc + "</figcaption></figure>"
+   }
+   img_src = job_dir + job + "_lags_all.png"
+   lag_img_html = lag_img_html + "<figure style='float: left'><img width=384 src=" + img_src + "><figcaption>" + desc + "</figcaption></figure>"
+
+   vel_html = ""
+   img_src = job_dir + job + "_velocities.png"
+   vel_html = vel_html + "<figure style='float: left'><img width=384 src=" + img_src + "><figcaption>" + desc + "</figcaption></figure>"
+   img_src = job_dir + job + "_lengths.png"
+   vel_html = vel_html + "<figure style='float: left'><img width=384 src=" + img_src + "><figcaption>" + desc + "</figcaption></figure>"
+
+   document.getElementById("vel_html").innerHTML = vel_html 
+   document.getElementById("lag_imgs").innerHTML = lag_img_html
+   document.getElementById("res1_imgs").innerHTML = res1_img_html
+   document.getElementById("res2_imgs").innerHTML = res2_img_html
+
+   document.getElementById("obs_imgs").innerHTML = img_html
+   document.getElementById("red_imgs").innerHTML = red_img_html
+   document.getElementById("red_file_text").innerHTML = red_file_html
+
+   // update page text
+   event_utc = myjson['as6_info']['event_utc']
+   document.getElementById("event_time").innerHTML = myjson['as6_info']['event_utc']
+   document.getElementById("start_point").innerHTML = myjson['as6_info']['start_point']
+   document.getElementById("end_point").innerHTML = myjson['as6_info']['end_point']
+   document.getElementById("velocity").innerHTML = myjson['as6_info']['velocity']
+   document.getElementById("duration").innerHTML = myjson['as6_info']['duration']
+   document.getElementById("track_length").innerHTML = myjson['as6_info']['track_length']
+   document.getElementById("radiant").innerHTML = myjson['as6_info']['radiant']
+   document.getElementById("peak_magnitude").innerHTML = myjson['as6_info']['peak_magnitude']
+   document.getElementById("shower").innerHTML = myjson['as6_info']['shower']
+
+   // orb vars
+   document.getElementById("la_sun").innerHTML = myjson['orbit']['la_sun']
+   document.getElementById("a").innerHTML = myjson['orbit']['a']
+   document.getElementById("e").innerHTML = myjson['orbit']['e']
+   document.getElementById("i").innerHTML = myjson['orbit']['i']
+   document.getElementById("peri").innerHTML = myjson['orbit']['peri']
+   document.getElementById("node").innerHTML = myjson['orbit']['node']
+   document.getElementById("opi").innerHTML = myjson['orbit']['pi']
+   document.getElementById("q").innerHTML = myjson['orbit']['q']
+   document.getElementById("jd_ref").innerHTML = myjson['orbit']['jd_ref']
+   document.getElementById("M").innerHTML = myjson['orbit']['mean_anomaly']
+   document.getElementById("Q").innerHTML = myjson['orbit']['Q']
+   document.getElementById("n").innerHTML = myjson['orbit']['n']
+   document.getElementById("T").innerHTML = myjson['orbit']['T']
+   document.getElementById("last_peri").innerHTML = myjson['orbit']['last_perihelion']
+   document.getElementById("tj").innerHTML = myjson['orbit']['Tj']
+   document.getElementById("true_anomaly").innerHTML = myjson['orbit']['true_anomaly']
+   document.getElementById("v_init").innerHTML = myjson['orbit']['v_init']
+   document.getElementById("v_avg").innerHTML = myjson['orbit']['v_avg']
+
+   img_src = job_dir + job + "_ground_track.png"
+   img_html = "<figure style='float: left'><img width=350 height=350 src=" + img_src + "><figcaption>" + "</figcaption></figure>"
+   img_src = job_dir + job + "_ground_track_zoom.png"
+   img_html = img_html + "<figure style='float: left'><img width=350 height=350 src=" + img_src + "><figcaption>" + "</figcaption></figure>"
+   document.getElementById("ground_track").innerHTML = img_html 
+
+   img_src = job_dir + job + "_orbit_top.png"
+   img_html = "<figure style='float: left'><img width=350 height=350 src=" + img_src + "><figcaption>" + "</figcaption></figure>"
+   img_src = job_dir + job + "_orbit_side.png"
+   img_html = img_html + "<figure style='float: left'><img width=350 height=350 src=" + img_src + "><figcaption>" + "</figcaption></figure>"
+   document.getElementById("orbit_imgs").innerHTML = img_html 
+
+
+}
+
+</script>
+
+<script>
+get_event()
+</script>
+<h1>Video Meteor Event</h1>
+<h2>Observations</h2>
+<div id="video_player"></div>
+<div id="reducer"></div>
+<div id="obs_imgs"></div>
+<div style="clear:both"></div>
+<h2>Reduction Info</h2>
+
+<div id="red_file_text"></div>
+<div id="red_imgs"></div>
+<div style="clear:both"></div>
+<div id="red_data"></div>
+<div style="clear:both"></div>
+
+<h2>Solutions</h2>
+<div>
+   <div style="float: left">
+      <div class="divTable">
+         <div class="divTableBody">
+            <div class="divTableRow">
+               <div class="divTableCell">Event Time</div>
+               <div class="divTableCell" id="event_time">event_time</div>
+            </div>
+            <div class="divTableRow">
+               <div class="divTableCell">Start Point</div>
+               <div class="divTableCell" id="start_point">start_point</div>
+            </div>
+            <div class="divTableRow">
+               <div class="divTableCell">End Point</div>
+               <div class="divTableCell" id="end_point">end_point</div>
+            </div>
+            <div class="divTableRow">
+               <div class="divTableCell">Velocity</div>
+               <div class="divTableCell" id="velocity">velocity</div>
+            </div>
+            <div class="divTableRow">
+               <div class="divTableCell">Duration</div>
+               <div class="divTableCell" id="duration">duration</div>
+            </div>
+            <div class="divTableRow">
+               <div class="divTableCell">Track Length</div>
+               <div class="divTableCell" id="track_length">Track Length</div>
+            </div>
+            <div class="divTableRow">
+               <div class="divTableCell">Radiant</div>
+               <div class="divTableCell" id="radiant">Radiant</div>
+            </div>
+            <div class="divTableRow">
+               <div class="divTableCell">Peak Magnitude</div>
+               <div class="divTableCell" id="peak_magnitude">peak_magnitude</div>
+            </div>
+            <div class="divTableRow">
+               <div class="divTableCell">Shower</div>
+               <div class="divTableCell" id="shower">shower</div>
+            </div>
+         </div>
+   </div>
+</div>
+<div style="width: 50px; float: left"> &nbsp;</div>
+<div style="float: left" id="ground_track">
+IMG
+</div>
+</div>
+</div>
+
+<div style="clear: both"></div>
+<h2>Velocity</h2>
+<div id="vel_html"></div>
+
+
+
+<div style="clear: both"></div>
+<h2>Orbit </h2>
+
+<div>
+   <div style="float:left">
+      <div class="divTable">
+         <div class="divTableBody">
+            <div class="divTableRow">
+               <div class="divTableCell">La Sun</div>
+               <div class="divTableCell" id="la_sun">la_sun</div>
+            </div>
+            <div class="divTableRow">
+               <div class="divTableCell">a</div>
+               <div class="divTableCell" id="a">a</div>
+            </div>
+            <div class="divTableRow">
+               <div class="divTableCell">e</div>
+               <div class="divTableCell" id="e">e</div>
+            </div>
+            <div class="divTableRow">
+               <div class="divTableCell">i</div>
+               <div class="divTableCell" id="i">i</div>
+            </div>
+            <div class="divTableRow">
+               <div class="divTableCell">peri</div>
+               <div class="divTableCell" id="peri">peri</div>
+            </div>
+            <div class="divTableRow">
+               <div class="divTableCell">node</div>
+               <div class="divTableCell" id="node">node</div>
+            </div>
+            <div class="divTableRow">
+               <div class="divTableCell">Pi</div>
+               <div class="divTableCell" id="opi">pi</div>
+            </div>
+            <div class="divTableRow">
+               <div class="divTableCell">q</div>
+               <div class="divTableCell" id="q">q</div>
+            </div>
+            <div class="divTableRow">
+               <div class="divTableCell">JD Ref</div>
+               <div class="divTableCell" id="jd_ref">f</div>
+            </div>
+
+            <div class="divTableRow">
+               <div class="divTableCell">M</div>
+               <div class="divTableCell" id="M">M</div>
+            </div>
+            <div class="divTableRow">
+               <div class="divTableCell">Q</div>
+               <div class="divTableCell" id="Q">Q</div>
+            </div>
+            <div class="divTableRow">
+               <div class="divTableCell">n</div>
+               <div class="divTableCell" id="n">n</div>
+            </div>
+            <div class="divTableRow">
+               <div class="divTableCell">T</div>
+               <div class="divTableCell" id="T">T</div>
+            </div>
+            <div class="divTableRow">
+               <div class="divTableCell">Last Peri</div>
+               <div class="divTableCell" id="last_peri">last_peri</div>
+            </div>
+            <div class="divTableRow">
+               <div class="divTableCell">Tj</div>
+               <div class="divTableCell" id="tj">tj</div>
+            </div>
+            <div class="divTableRow">
+               <div class="divTableCell">True Anomaly</div>
+               <div class="divTableCell" id="true_anomaly">true_anomaly</div>
+            </div>
+            <div class="divTableRow">
+               <div class="divTableCell">Initial Velocity</div>
+               <div class="divTableCell" id="v_init">v_init</div>
+            </div>
+            <div class="divTableRow">
+               <div class="divTableCell">Average Velocity</div>
+               <div class="divTableCell" id="v_avg">v_avg</div>
+            </div>
+         </div>
+      </div>
+   </div>
+   <div style="width: 50px; float: left"> &nbsp;</div>
+   <div id="orbit_imgs" style="float: left">
+
+   </div>
+</div>
+<div style="clear: both"></div>
+
+
+
+</div>
+<h2>Lag</h2>
+<div style="float: left" id="lag_imgs"> </div>
+
+
+<div style="clear: both"></div>
+<h2>Residual Error</h2>
+<div style="float: left" id="res1_imgs"> </div>
+<div style="float: left" id="res2_imgs"> </div>
+
+

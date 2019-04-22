@@ -1,8 +1,64 @@
 import glob
-from lib.FileIO import load_json_file, cfe
+from lib.FileIO import load_json_file, cfe, save_json_file
+
+        #if isinstance(obj, np.integer):
+        #elif isinstance(obj, np.floating):
+        #elif isinstance(obj, np.ndarray):
+        #elif isinstance(obj, datetime.datetime):
+
+
+def make_sol_index(output_dir):
+   solutions = {}
+   dirs = glob.glob(output_dir + "*")
+   for dir in dirs:
+      el = dir.split("/")
+      fn = el[-1]
+      json_file = dir + "/" + fn + ".json" 
+      if cfe(json_file) == 1:
+         try:
+            json_data = load_json_file(json_file)
+         except:
+            print("BAD JSON:", json_file, "<BR>")
+      solutions[fn] = {}
+     
+   save_json_file("/var/www/html/solutions.json", solutions) 
+
+def sol_detail(json_conf, form):
+   print("<h3>Video Meteor Event</h3>")
+   event = form.getvalue("event")
+   open_key = form.getvalue("open_key")
+   event_dir = "/home/ams/dvida/WesternMeteorPyLib/wmpl/Trajectory/output/" + event + "/"
+   event_url = "/output/" + event + "/"
+   json_file = event_dir + event + ".json"
+   json_data = load_json_file(json_file)
+   for key in sorted(json_data):
+      print(key + "<BR>")
+      if open_key == key:
+         for okey in json_data[key]:
+            print(" &nbsp; - " + okey + "<BR>")
+            
+
+   summary_img = event_url + event + "-all.jpg"
+   print("<img src=" + summary_img + ">")
 
 def solutions(json_conf, form):
+   sol_dir = "/var/www/html/output/*"
+   make_sol_index(sol_dir)
+   dirs = glob.glob(sol_dir)
+   for dir in sorted(dirs, reverse=True):
+      el = dir.split("/")
+      fd = el[-1]
+      orb = dir + "/" + fd + "_orbit_top.png"
+      if cfe(orb) == 1:
+         link = "/viewEvent.html?event=" + fd 
+         orb_url = "/output/" + fd + "/thumbs/" + fd + "_orbit_top.png"
+         print("<figure><a href=" + link + "><img width=300 height=300 src=" + orb_url + "></a><figcaption>" + fd + "</figcaption></figure>")
+   print("<div style='clear: both'></div>")
+
+def solutions_old(json_conf, form):
    print("<h2>Solutions</h2>")
+   
+
    day = form.getvalue("day") 
    scmd = form.getvalue("scmd")
    if scmd == 'view_event':

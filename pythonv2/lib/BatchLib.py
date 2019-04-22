@@ -111,7 +111,8 @@ def solve_event(event_id, meteor_events):
    for ob in obs:
       arglist = arglist + ob + " " 
 
-   cmd = "./mikeSolve.py " + arglist
+   #cmd = "./mikeSolve.py " + arglist
+   cmd = "cd /home/ams/dvida/WesternMeteorPyLib/wmpl/Trajectory; python mikeTrajectory.py " + arglist
    os.system(cmd)
    print(cmd)
          

@@ -11,7 +11,7 @@ import json
 from lib.FileIO import get_proc_days, get_day_stats, get_day_files , load_json_file, get_trims_for_file, get_days, save_json_file, cfe, save_meteor
 from lib.VideoLib import get_masks, convert_filename_to_date_cam, ffmpeg_trim , load_video_frames
 from lib.DetectLib import check_for_motion2 
-from lib.SolutionsLib import solutions 
+from lib.SolutionsLib import solutions , sol_detail
 from lib.MeteorTests import test_objects
 from lib.ImageLib import mask_frame , draw_stack, stack_frames
 from lib.CalibLib import radec_to_azel
@@ -262,6 +262,8 @@ def controller(json_conf):
       extra_html = reduce_meteor(json_conf, form)
    if cmd == 'solutions':
       solutions(json_conf, form)
+   if cmd == 'sol_detail':
+      sol_detail(json_conf, form)
    if cmd == 'rad_calc':
       rad_calc(json_conf, form)
 
