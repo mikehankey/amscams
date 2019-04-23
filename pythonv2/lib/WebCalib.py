@@ -629,6 +629,11 @@ def custom_fit(json_conf,form):
 
 
 def reduce_meteor_ajax(json_conf,meteor_json_file, cal_params_file, show = 0):
+
+   cmd = "cd /home/ams/amscams/pythonv2/; ./autoCal.py cfit " + cal_params_file + " 0 > /mnt/ams2/tmp/autoCal.txt &"
+   #print(cmd)
+   os.system(cmd)
+
    if show == 1:
       cv2.namedWindow('pepe')
    hdm_x = 2.7272727272727272
