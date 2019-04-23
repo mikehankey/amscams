@@ -220,6 +220,67 @@ def remove_bad_pairs(merged_stars):
 
    return(new_merged_stars)
 
+def minimize_fov_pos(json_conf,cal_params_file,paired_stars, show=0, fov_pos_poly):
+   cal_params = load_json_file(cal_params_file)
+   cal_params['device_lat'] = json_conf['site']['device_lat']
+   cal_params['device_lon'] = json_conf['site']['device_lng']
+   cal_params['device_alt'] = json_conf['site']['device_alt']
+   cal_params['orig_ra_center'] = cal_params['ra_center']
+   cal_params['orig_dec_center'] = cal_params['dec_center']
+   if fov_post_poly is None:
+      this_poly = np.zeros(shape=(3,), dtype=np.float64)
+      this_poly[0] = .001
+      this_poly[1] = .001
+      this_poly[2] = .001
+   else:
+      this_poly = fov_post_poly 
+   res = scipy.optimize.minimize(reduce_fov_pos, this_poly, args=(cal_params,cal_params_file,json_conf, paired_stars,show), method='Nelder-Mead')
+   fov_pos_poly = res['x']
+   fov_pos_fun = res['fun']
+   cal_params['fov_pos_poly'] = fov_pos_poly.tolist()
+   cal_params['fov_pos_fun'] = fov_pos_fun
+   return(fov_pos_poly)
+
+def reduce_fov_pos(this_poly, cal_params, cal_params_file, json_conf, paired_stars, show=0):
+   # cal_params_file should be 'image' filename
+   center_az = cal_params['center_az'] + this_poly[0]
+   center_el = cal_params['center_el'] + this_poly[1]
+   position_angle = cal_params['position_angle'] + thi_poly[2]
+
+   rah,dech = AzEltoRADec(new_az,new_el,cal_params_file,cal_params,json_conf)
+   rah = str(rah).replace(":", " ")
+   dech = str(dech).replace(":", " ")
+
+   ra_center,dec_center = HMS2deg(str(rah),str(dech))
+
+   cal_params['ra_center'] = ra_center
+   cal_params['dec_center'] = dec_center
+
+
+   fov_poly = cal_params['fov_poly']
+   pos_poly = cal_params['pos_poly']
+   x_poly = cal_params['x_poly']
+   y_poly = cal_params['y_poly']
+   cat_stars = get_catalog_stars(fov_poly, pos_poly, cal_params,"x",x_poly,y_poly,min=0)
+   for cat_star in cat_stars:
+      (name,mag,ra,dec,new_cat_x,new_cat_y) = cat_star
+      dname = name.decode("utf-8")
+      for iname,imag,ira,idec,inew_cat_x,inew_cat_y,ix,iy,ipx_dist,cp_file in paired_stars:
+         pdist = calc_dist((ix,iy),(new_cat_x,new_cat_y))
+         if pdist <= 15:
+            new_res.append(pdist)
+            used_key = str(ix) + "." + str(iy)
+            if used_key not in used: 
+                  new_paired_stars.append((iname,imag,ira,idec,inew_cat_x,inew_cat_y,ix,iy,ipx_dist))
+                  used[used_key] = 1
+
+
+
+   tres = np.sum(new_res)
+   avg_res = tres / len(new_paired_stars) 
+   print(avg_res)
+   return(avg_res)
+
 
 def minimize_lat_lon(json_conf,cal_params_file,all_paired_stars,show=0,latlon_poly=None):
    cal_params = load_json_file(cal_params_file)
@@ -257,6 +318,10 @@ def minimize_lat_lon(json_conf,cal_params_file,all_paired_stars,show=0,latlon_po
    return(latlon_poly)
 
 def reduce_latlon(this_poly, cal_params, cal_params_file, json_conf, all_paired_stars, show=0):
+
+
+
+
 
    all_night_res = []
    for image_file in all_paired_stars:
