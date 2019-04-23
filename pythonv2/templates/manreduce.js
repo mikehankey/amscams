@@ -134,7 +134,7 @@ function pin_point(x,y,current_frame,orig_file,cal_params_file) {
          }
 
          var circle = new fabric.Circle({
-            radius: 5, fill: 'rgba(0,0,0,0)', strokeWidth: 1, stroke: 'rgba(255,255,255,.5)', left: x-5, top: y-5,
+            radius: 5, fill: 'rgba(0,0,0,0)', strokeWidth: 1, stroke: 'rgba(255,255,255,.5)', left: x-10, top: y-10,
             selectable: false
          });
             canvas.add(circle);

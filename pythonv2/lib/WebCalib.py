@@ -254,10 +254,10 @@ def check_make_half_stack(sd_file,hd_file):
 def make_cal_select(cal_files,video_file,cpf) :
    cal_select = "<SELECT onchange=\"javascript:goto('" + video_file + "', this.options[selectedIndex].value ,'reduce')\" style=\"margin: 5px; padding: 5px\" NAME=cal_param_file>"
    for cal_file, cal_desc, cal_time_diff in cal_files:
-      dif_days = cal_time_diff / 86400
+      dif_days = abs(cal_time_diff / 86400)
       if int(abs(cal_time_diff)) < 86400:
          hrs = int(cal_time_diff) / 60 / 60 
-         dif_days = hrs * 24
+         dif_days = hrs / 24
       if cpf == cal_file:
          cal_select = cal_select + "<option SELECTED value=" + cal_file + ">" + cal_desc + "(" + str(dif_days)[0:5] + " days diff)</option>" 
       else:
@@ -509,6 +509,24 @@ def save_manual_reduction(meteor_json_file,cal_params_file,json_conf):
    meteor_reduce_file = meteor_json_file.replace(".json", "-reduced.json")
    save_json_file(meteor_reduce_file, meteor_reduced)
 
+def del_frame(json_conf, form):
+   fn = form.getvalue("fn")
+   meteor_file = form.getvalue("meteor_json_file")
+   meteor_file = meteor_file.replace(".json", "-reduced.json")
+   meteor_json = load_json_file(meteor_file)
+   new_frame_data = []
+   for data in meteor_json['meteor_frame_data']:
+      tfn = data[1]
+      if str(fn) == str(tfn):
+         skip = 1
+      else:
+         new_frame_data.append(data)
+   meteor_json['meteor_frame_data'] = new_frame_data
+   response = {}
+   response['message'] = 'frame deleted'
+   response['frame_data'] = new_frame_data
+   save_json_file(meteor_file, meteor_json)
+   print(response)
 
 def del_manual_points(json_conf, form):
    response = {}
@@ -568,8 +586,8 @@ def pin_point(json_conf, form):
 
 
    meteor_json_file = orig_file.replace("-stacked.mp4", ".json")
-   hd_x = (x + int(max_loc[0]) - 5) * 2
-   hd_y = (y + int(max_loc[1]) - 5) * 2
+   hd_x = (x + int(max_loc[0]) - 10) * 2
+   hd_y = (y + int(max_loc[1]) - 10) * 2
    point_data = (hd_x,hd_y,5,5,int(max_px))
    (ra,dec,az,el,frame_time_str) = reduce_point(cal_params_file, meteor_json_file, frame_num, point_data,json_conf)
 
@@ -579,8 +597,8 @@ def pin_point(json_conf, form):
    response['pp_y'] = y
    response['pp_w'] = 5
    response['pp_h'] = 5
-   response['pp_mx'] = int(max_loc[0]) - 5
-   response['pp_my'] = int(max_loc[1]) -5 
+   response['pp_mx'] = int(max_loc[0]) 
+   response['pp_my'] = int(max_loc[1]) 
    response['pp_max_px'] = int(max_px)
    response['pp_ra'] = ra
    response['pp_dec'] = dec
@@ -595,6 +613,18 @@ def pin_point(json_conf, form):
 
    save_manual_reduction(meteor_json_file,cal_params_file,json_conf)
 
+   print(json.dumps(response))
+
+
+def custom_fit(json_conf,form):
+   cal_params_file = form.getvalue("cal_params_file")
+   cmd = "cd /home/ams/amscams/pythonv2/; ./autoCal.py cfit " + cal_params_file + " 0 > /mnt/ams2/tmp/autoCal.txt &"
+   #print(cmd)
+   os.system(cmd)
+
+   response = {}
+   response['msg'] = "custom fit process started"
+   response['debug'] = cmd
    print(json.dumps(response))
 
 
@@ -850,7 +880,7 @@ def get_meteor_object(meteor_json):
    else:
       return(None)
 
-def make_frame_table(meteor_reduced):
+def make_frame_table(meteor_reduced,meteor_json_file):
    stab,sr,sc,et,er,ec = div_table_vars()
    frame_javascript = "<script>"
    frame_table = stab
@@ -865,14 +895,16 @@ def make_frame_table(meteor_reduced):
       text_y = (start_y/2) - (lc * 12)
 
       az_desc = "\"" + str(lc) + " -  " + str(az) + " / " + str(el)  + "\""
-      frame_table = frame_table + sr + sc + str(fn) +ec + sc + frame_time + ec + sc + str(hd_x) + "/" + str(hd_y) + " - " + str(w) + "/" + str(h) + ec + sc + str(max_px) +ec + sc + str(ra) + "/" + str(dec) + ec + sc +  str(az) + "/" + str(el)  + ec +er
+      del_frame_link = "<a href=\"javascript:del_frame('" + str(fn) + "','" + meteor_json_file +"')\">X</a> "
+
+      frame_table = frame_table + sr + sc + del_frame_link + str(fn) +ec + sc + frame_time + ec + sc + str(hd_x) + "/" + str(hd_y) + " - " + str(w) + "/" + str(h) + ec + sc + str(max_px) +ec + sc + str(ra) + "/" + str(dec) + ec + sc +  str(az) + "/" + str(el)  + ec +er
 
       frame_javascript = frame_javascript + """
-                 var rad = 6;
+                 var rad = 5;
 
                  var meteor_rect = new fabric.Circle({
 
-                     radius: rad, fill: 'rgba(0,0,0,0)', strokeWidth: 1, stroke: 'rgba(255,255,255,.5)', left: """ + str(hd_x-5) + """, top: """ + str(hd_y-5) + """,
+                     radius: rad, fill: 'rgba(255,255,0,0)', strokeWidth: 1, stroke: 'rgba(255,255,255,.5)', left: """ + str(hd_x-5) + """, top: """ + str(hd_y-5) + """,
                      selectable: false
                  });
                  canvas.add(meteor_rect);
@@ -905,7 +937,7 @@ def reduce_meteor(json_conf,form):
    meteor_reduced_file = meteor_json_file.replace(".json", "-reduced.json")
    if cfe(meteor_reduced_file) == 1:
       meteor_reduced = load_json_file(meteor_reduced_file)
-      frame_table, frame_javascript = make_frame_table(meteor_reduced)
+      frame_table, frame_javascript = make_frame_table(meteor_reduced,meteor_json_file)
       reduced = 1
    else:
       frame_table = ""
@@ -1082,7 +1114,7 @@ def reduce_meteor(json_conf,form):
          <input style="width: 200; margin: 5px; padding: 5px" type=button id="button1" value="  Show AZ Grid  " onclick="javascript:show_az_grid('""" + half_stack_file + "','" + az_grid_file + """')">
          <input style="width: 200; margin: 5px; padding: 5px" type=button id="button1" value="Show Catalog Stars" onclick="javascript:show_cat_stars('""" + hd_stack_file + "','" + cal_params_file + """', 'nopick')">
          <input style="width: 200; margin: 5px; padding: 5px" type=button id="button1" value="  Reduce Meteor " onclick="javascript:reduce_meteor_ajax('""" + meteor_json_file + "','" + cal_params_file + """')">
-         <input style="width: 200; margin: 5px; padding: 5px" type=button id="button1" value="  Fit Stars " onclick="javascript:custom_fit('""" + meteor_json_file + "','" + cal_params_file + """')">
+         <input style="width: 200; margin: 5px; padding: 5px" type=button id="button1" value="  Fit Stars " onclick="javascript:custom_fit('""" + hd_stack_file + "','" + cal_params_file + """')">
       </div>
 
 
@@ -1829,8 +1861,12 @@ def free_cal(json_conf,form):
    # test the input file, stack if video, check size and re-size, make half-stack, copy to work dir
 
    (f_datetime, cam_id, f_date_str,Y,M,D, H, MM, S) = better_parse_file_date(input_file)
+   if ".png" in cam_id:
+      cam_id = cam_id.replace(".png", "")
+
    base_dir = "/mnt/ams2/cal/freecal/" + Y + "_" + M + "_" + D + "_" + H + "_" + MM + "_" + S + "_" + "000" + "_" + cam_id
    base_file = Y + "_" + M + "_" + D + "_" + H + "_" + MM + "_" + S + "_" + "000" + "_" + cam_id
+   print("BASE DIR:", base_dir)
    if cfe(base_dir, 1) != 1:
       os.system("mkdir " + base_dir)
 
@@ -1988,6 +2024,11 @@ def show_cat_stars(json_conf,form):
 
    points = form.getvalue("points")
    star_points = []
+   if cfe(hd_stack_file) == 0:
+      bad_hd = 1      
+      print("BAD HD LINK! Try to fix...")
+
+
    if points is None:
       points = ""
       star_json = find_stars_ajax(json_conf, hd_stack_file, 0)
@@ -2283,7 +2324,7 @@ def calibrate_pic(json_conf,form):
               cy = stars[s][1] - 11
 
               var circle = new fabric.Circle({
-                 radius: 5, fill: 'rgba(0,0,0,0)', strokeWidth: 1, stroke: 'rgba(100,200,200,.5)', left: cx/2, top: cy/2,
+                 radius: 5, fill: 'rgba(255,0,0,0)', strokeWidth: 1, stroke: 'rgba(100,200,200,.5)', left: cx/2, top: cy/2,
                  selectable: false
               });
               canvas.add(circle);

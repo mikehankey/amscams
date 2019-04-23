@@ -14,21 +14,19 @@ from lib.UtilLib import convert_filename_to_date_cam
 
 def batch_reduce(json_conf):
    meteor_dirs = glob.glob("/mnt/ams2/meteors/*")
-   for meteor_dir in meteor_dirs:
+   for meteor_dir in sorted(meteor_dirs, reverse=True):
       print(meteor_dir)
       meteor_files = glob.glob(meteor_dir + "/" + "*.json")
-      for json_file in meteor_files:
+      for json_file in sorted(meteor_files,reverse=True):
          if "reduced" not in json_file and "calparams" not in json_file and "manual" not in json_file:
             reduced_file = json_file.replace(".json", "-reduced.json")
             if cfe(reduced_file) == 1:
-               print("Meteor done")
+               print("Meteor done", reduced_file)
             else:
-               print(json_file)
                cal_files = get_active_cal_file(json_file)
                if cal_files is not None:
-                  print(len(cal_files))
                   cal_params_file = cal_files[0][0]
-                  print("Meteor not done", cal_params_file)
+                  print("Meteor not done", json_file)
                   cmd = "./detectMeteors.py raj " + json_file + " " + cal_params_file
                   print(cmd)
                   os.system(cmd)
@@ -671,7 +669,7 @@ def find_matching_cal_files(cam_id, capture_date):
    all_files = glob.glob("/mnt/ams2/cal/freecal/*")
    for file in all_files:
       if cam_id in file :
-         print("POS FILE FOUND:", file)
+         #print("POS FILE FOUND:", file)
          el = file.split("/")
          fn = el[-1]
          cal_p_file = file  + "/" + fn + "-stacked-calparams.json"
@@ -679,7 +677,7 @@ def find_matching_cal_files(cam_id, capture_date):
             matches.append(cal_p_file)
          else:
             cal_p_file = file  + "/" + fn + "-calparams.json"
-            print("CAL P FILE PROBS:", cal_p_file)
+         #   print("CAL P FILE PROBS:", cal_p_file)
          if cfe(cal_p_file) == 1:
             matches.append(cal_p_file)
  

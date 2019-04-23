@@ -1,6 +1,12 @@
    function custom_fit(meteor_json_file, cal_params_file) {
-      alert(meteor_json_file)
-      alert(cal_params_file)
+      new_cp_file = meteor_json_file.replace(".png", "-calparams.json")
+      ajax_url = "/pycgi/webUI.py?cmd=custom_fit&cal_params_file=" + new_cp_file 
+      alert(ajax_url)
+      $.get(ajax_url, function(data) {
+         var json_resp = $.parseJSON(data);
+         var auto_stars = json_resp['stars']
+         alert("Running custom fit. Please wait 1 minute then show catalog stars again to check.")
+      });
    }
 
 
@@ -30,7 +36,15 @@
    }
 
 
-
+      function del_frame(fn, meteor_json_file) {
+         ajax_url = "/pycgi/webUI.py?cmd=del_frame&meteor_json_file=" + meteor_json_file + "&fn=" + fn 
+         alert(ajax_url)
+         $.get(ajax_url, function(data) {
+            $(".result").html(data);
+            var json_resp = $.parseJSON(data);
+            alert(json_resp['msg'])
+         });
+      }
 
       function reduce_meteor_ajax(meteor_json_file,cal_params_file) {
          ajax_url = "/pycgi/webUI.py?cmd=reduce_meteor_ajax&meteor_json_file=" + meteor_json_file + "&cal_params_file=" + cal_params_file
@@ -71,9 +85,9 @@
                     rad = 6
 
                  }
-            
+                 del_frame_link = "<a href=javascript:del_frame('" + fn + "','" + meteor_json_file +"')>XY</a> "
 
-                 out_html = out_html + " <div class='divTableRow'><div class='divTableCell'>" + fn + "</div><div class='divTableCell'>" + ft + "</div>"
+                 out_html = out_html + " <div class='divTableRow'><div class='divTableCell'>" + del_frame_link + fn + "</div><div class='divTableCell'>" + ft + "</div>"
                  out_html = out_html + " <div class='divTableCell'>" + x + "/" + y + " - " + w + "/" + h + "</div>"
                  out_html = out_html + " <div class='divTableCell'>" + max_px + "</div>"
                  out_html = out_html + " <div class='divTableCell'>" + ra + "/" + dec + "</div>"
@@ -94,9 +108,6 @@
                  text_p.setColor('rgba(255,255,255,.75)')
                  canvas.add(text_p)
                  lc += 1
-
-
-
             }
 
 

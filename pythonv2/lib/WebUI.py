@@ -15,7 +15,7 @@ from lib.SolutionsLib import solutions , sol_detail
 from lib.MeteorTests import test_objects
 from lib.ImageLib import mask_frame , draw_stack, stack_frames
 from lib.CalibLib import radec_to_azel
-from lib.WebCalib import calibrate_pic,make_plate_from_points, solve_field, check_solve_status, free_cal, show_cat_stars, choose_file, upscale_2HD, fit_field, delete_cal, add_stars_to_fit_pool, save_add_stars_to_fit_pool, reduce_meteor, reduce_meteor_ajax, find_stars_ajax, man_reduce, pin_point, get_manual_points, del_manual_points, sat_cap, HMS2deg
+from lib.WebCalib import calibrate_pic,make_plate_from_points, solve_field, check_solve_status, free_cal, show_cat_stars, choose_file, upscale_2HD, fit_field, delete_cal, add_stars_to_fit_pool, save_add_stars_to_fit_pool, reduce_meteor, reduce_meteor_ajax, find_stars_ajax, man_reduce, pin_point, get_manual_points, del_manual_points, sat_cap, HMS2deg, custom_fit, del_frame
 from lib.UtilLib import calc_radiant
 
 
@@ -192,8 +192,14 @@ def controller(json_conf):
       jsid = form.getvalue('jsid')
       override_detect(video_file,jsid,json_conf)
       exit()
+   if cmd == 'custom_fit':
+      custom_fit(json_conf,form)
+      exit()
    if cmd == 'get_manual_points':
       get_manual_points(json_conf,form)
+      exit()
+   if cmd == 'del_frame':
+      del_frame(json_conf,form)
       exit()
    if cmd == 'del_manual_points':
       del_manual_points(json_conf,form)
@@ -397,12 +403,15 @@ def get_cal_files(json_conf,cams_id):
       el = file.split("/")
       fn = el[-1]
       if cfe(file,1) == 1:
-         cal_file = file + "/" + fn + "-stacked.png"
+         cal_file = file + "/" + fn + "-calparams.json"
          if cfe(cal_file): 
+            cal_file = cal_file.replace("-calparams.json", ".png")
             cal_files.append(cal_file)
          else:
-            cal_file = file + "/" + fn + ".png"
-         cal_files.append(cal_file)
+            cal_file = file + "/" + fn + "-stacked-calparams.json"
+            cal_file = cal_file.replace("-calparams.json", ".png")
+            if cfe(cal_file): 
+               cal_files.append(cal_file)
      
    return(cal_files)
 
