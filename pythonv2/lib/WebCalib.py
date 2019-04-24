@@ -2129,8 +2129,7 @@ def show_cat_stars(json_conf,form):
          dbname = dcname.encode("utf-8")
          new_x, new_y, img_ra,img_dec, img_az, img_el = XYtoRADec(ix,iy,cal_params_file,cal_params,json_conf)
          match_dist = abs(angularSeparation(ra,dec,img_ra,img_dec))
-         if x >0 and y > 0 and x<1920 and y< 1080:
-            my_close_stars.append((dcname,mag,ra,dec,img_ra,img_dec,match_dist,new_x,new_y,img_az,img_el,new_cat_x,new_cat_y,six,siy,cat_dist))
+         my_close_stars.append((dcname,mag,ra,dec,img_ra,img_dec,match_dist,new_x,new_y,img_az,img_el,new_cat_x,new_cat_y,six,siy,cat_dist))
          total_match_dist = total_match_dist + match_dist
          total_cat_dist = total_cat_dist + cat_dist
          total_matches = total_matches + 1

@@ -492,6 +492,48 @@ def get_meteors(meteor_dir,meteors):
   
 
 def meteors(json_conf,form): 
+   print ("""
+   
+      <script>   
+      var last_x = 0
+      var last_y = 0
+      document.onmousemove = function(e) {
+         last_x = e.pageX
+         last_y = e.pageY
+      }
+
+      //$(this).on('mousemove', function(event) {
+      //   var x = event.movementX
+      //   var y = event.movementY
+      //   if (event.keyCode == 120) {
+            //   elementMouseIsOver = document.elementFromPoint(x,y)
+      //    }
+      //      console.log(x)
+            //alert(event.keyCode)
+       //})
+      $(this).on('keypress', function(event) {
+          emo = document.elementFromPoint(last_x,last_y).id
+          new_id = 'fig_' + emo
+          new_id = new_id.replace("_img", "")
+          console.log("delete " + last_x + " " + last_y + " " + new_id)
+          $('#' + new_id).remove();
+          pid = new_id.replace("fig_", "")
+          ajax_url = "webUI.py?cmd=override_detect&jsid=" + pid
+          console.log(ajax_url)
+          $.get(ajax_url, function(data) {
+          $(".result").html(data);
+       
+          });
+
+
+  
+       })
+       </script>   
+
+
+   """)
+
+
    limit_day = form.getvalue('limit_day')
    htclass = "none"
    print("<h1>Meteors</h1>")
