@@ -1,4 +1,5 @@
 import glob
+import math
 from lib.FileIO import load_json_file, cfe, save_json_file
 
         #if isinstance(obj, np.integer):
@@ -22,10 +23,30 @@ def make_sol_index(output_dir):
          except:
             print("BAD JSON:", json_file, "<BR>")
             good = 0
-           
+         
       if good == 1: 
-         solutions[fn] = {}
-         solutions[fn][a] = json_data['orbit']['a']
+         if (json_data['orbit']['a'] is not None):
+            solutions[fn] = {}
+            print(json_file, good,"<BR>")     
+            el = dir.split("/")
+            solutions[fn]['name'] = fn
+            solutions[fn]['a'] = str(json_data['orbit']['a'])
+            solutions[fn]['e'] = str(json_data['orbit']['e'])
+            solutions[fn]['I'] = str(math.degrees(json_data['orbit']['i']))
+            solutions[fn]['Peri'] = str(math.degrees(json_data['orbit']['peri']))
+            solutions[fn]['Node'] = str(math.degrees(json_data['orbit']['node']))
+            solutions[fn]['q'] = str(json_data['orbit']['q'])
+            solutions[fn]['P'] = str(json_data['orbit']['T'])
+            try:
+               solutions[fn]['M'] = str(math.degrees(json_data['orbit']['mean_anomaly']))
+            except:
+               solutions[fn]['M'] = str(json_data['orbit']['mean_anomaly'])
+            solutions[fn]['T'] = str(json_data['orbit']['jd_ref'])
+            solutions[fn]['epoch'] =  str(json_data['orbit']['jd_ref'])
+            #solutions[fn]['epoch'] = 2451545.0 
+            qs = solutions[fn]
+            solutions[fn]['embed'] = "http://orbit.allskycams.com/index_emb.php?name={:s}&&epoch={:s}&a={:s}&M={:s}&e={:s}&I={:s}&Peri={:s}&Node={:s}&P={:s}&q={:s}&T={:s}".format( str(fn), str(qs['epoch']), str(qs['a']), str(qs['M']), str(qs['e']), str(qs['I']), str(qs['Peri']), str(qs['Node']), str(qs['P']), str(qs['q']), str(qs['T']))
+            print("<a href=" + solutions[fn]['embed'] + ">orbit</a>")
      
    save_json_file("/var/www/html/solutions.json", solutions) 
 
