@@ -14,12 +14,18 @@ def make_sol_index(output_dir):
       el = dir.split("/")
       fn = el[-1]
       json_file = dir + "/" + fn + ".json" 
+      good = 1 
       if cfe(json_file) == 1:
+           
          try:
             json_data = load_json_file(json_file)
          except:
             print("BAD JSON:", json_file, "<BR>")
-      solutions[fn] = {}
+            good = 0
+           
+      if good == 1: 
+         solutions[fn] = {}
+         solutions[fn][a] = json_data['orbit']['a']
      
    save_json_file("/var/www/html/solutions.json", solutions) 
 
