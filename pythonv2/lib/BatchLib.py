@@ -265,7 +265,7 @@ def sync_events_to_cloud(json_conf, meteor_date):
          extra_sec = int(start_frame) / 25
          meteor_datetime, cam_id, hd_date, hd_y, hd_m, hd_d, hd_h, hd_M, hd_s = convert_filename_to_date_cam(meteor)
          event_start_time = meteor_datetime + datetime.timedelta(0,extra_sec)
-         print("START FRAME:", start_frame,event_start_time)
+         print("START :", start_frame,mf,event_start_time)
          json_data['capture_files'].append(mf)
          json_data['start_times'].append(str(event_start_time))
 
