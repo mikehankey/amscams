@@ -261,19 +261,56 @@ def sync_events_to_cloud(json_conf, meteor_date):
          mf = meteor.split("/")[-1] 
          event_start_time = meteor_json['event_start_time'] 
  
-         print("START :"  ,mf,event_start_time)
          json_data['capture_files'].append(mf)
          json_data['start_times'].append(str(event_start_time))
 
    req_json = json.dumps(json_data)
    json_data['cmd'] = "upload_caps"
-   url = "http://54.214.104.131/pycgi/test.py"
+   url = "http://54.214.104.131/pycgi/api-captures.py"
    mydata = parse.urlencode(json_data).encode()
    post = request.Request(url, data=mydata)
    resp = request.urlopen(post).read()
 
-   print(resp)
+   # capture list syncd
+   print("capture list syncd")
 
+   # check if there are any multi-station files that need syncing...
+   url = "http://54.214.104.131/json_data/" + meteor_date + "/events_by_station-" + meteor_date + ".json"
+   print(url)
+   exit()
+
+   try:
+      resp = request.urlopen(url).read()
+      station_name = json_data['station_name']
+      json_data = json.loads(resp)
+   except:
+      print("No events to sync with yet.")
+      exit()
+
+   print(json_data[station_name])
+
+   for file in json_data[station_name]:
+      print(station_name, file)
+      event_id = int(json_data[station_name][file]['event_id'])
+      reduction_file_syncd = int(json_data[station_name][file]['reduction_file_syncd'])
+      sd_video_file_syncd = int(json_data[station_name][file]['sd_video_file_syncd'])
+      sd_stack_file_syncd = int(json_data[station_name][file]['sd_stack_file_syncd'])
+      device_name = json_data[station_name][file]['device_name']
+    
+      if reduction_file_syncd == 0:
+         cmd = "./upload_file.py " + str(meteor_date) + " " + str(station_name) + " " + str(device_name) + " " + str(event_id) + " reduced.json " + "/mnt/ams2/meteors/" + str(meteor_date) + "/" + file
+         print(cmd)
+         os.system(cmd)
+      if sd_video_file_syncd == 0:
+         vid_file = file.replace("-reduced.json", ".mp4")
+         cmd = "./upload_file.py " + str(meteor_date) + " " + str(station_name) + " " + str(device_name) + " " + str(event_id) + " sd.mp4 " + "/mnt/ams2/meteors/" + str(meteor_date) + "/" + vid_file
+         print(cmd)
+         os.system(cmd)
+      if sd_stack_file_syncd == 0:
+         stack_file = file.replace("-reduced.json", "-stacked.png")
+         cmd = "./upload_file.py " + str(meteor_date) + " " + str(station_name) + " " + str(device_name) + " " + str(event_id) + " stacked.png " + "/mnt/ams2/meteors/" + str(meteor_date) + "/" + stack_file
+         print(cmd)
+         os.system(cmd)
 
 def sync_multi_station(json_conf, meteor_date='2019_03_20'):
    sync_urls = load_json_file("/home/ams/amscams/conf/sync_urls.json")
@@ -284,7 +321,6 @@ def sync_multi_station(json_conf, meteor_date='2019_03_20'):
       multi_dir = "/mnt/ams2/multi_station/" + meteor_date
       if cfe(multi_dir, 1) == 0:
          os.system("mkdir " + multi_dir)
-      print("URL", url)
       station_data = urllib.request.urlopen(url).read()
       dc_station_data = json.loads(station_data.decode("utf-8"))
       print(dc_station_data)
