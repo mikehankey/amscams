@@ -262,10 +262,15 @@ def sync_events_to_cloud(json_conf, meteor_date):
 
          mf = meteor.split("/")[-1] 
          start_frame = get_event_start_frame(meteor_json['sd_objects'])
+
+         td = meteor.split("-trim")
+         start_frame = int(td[-1].replace(".json", ""))
+
          extra_sec = int(start_frame) / 25
          meteor_datetime, cam_id, hd_date, hd_y, hd_m, hd_d, hd_h, hd_M, hd_s = convert_filename_to_date_cam(meteor)
          event_start_time = meteor_datetime + datetime.timedelta(0,extra_sec)
-         print("START :", start_frame,mf,event_start_time)
+ 
+         print("START :",  start_frame,mf,event_start_time)
          json_data['capture_files'].append(mf)
          json_data['start_times'].append(str(event_start_time))
 
