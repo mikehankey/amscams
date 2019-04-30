@@ -1,3 +1,4 @@
+from urllib import request, parse
 import datetime
 import os
 import subprocess
@@ -238,6 +239,44 @@ def sync_event(meteor_json_url, meteor_date):
    if cfe(stack_file) == 0:
       cmd = "wget \"" + stack_url + "\" -O " + stack_file
       os.system(cmd)
+
+def get_event_start_frame(sd_objects):
+   st = 0
+   for object in sd_objects:
+      if object['meteor'] == 1:
+         st = object['history'][0][0]
+   return(st)
+
+def sync_events_to_cloud(json_conf, meteor_date):
+   meteors = glob.glob("/mnt/ams2/meteors/" + meteor_date + "/*.json")
+   json_data = {}
+   json_data['station_name'] = json_conf['site']['ams_id'].upper()
+   json_data['meteor_date'] = meteor_date
+   json_data['capture_files'] = []
+   json_data['start_times'] = []
+   for meteor in meteors:
+      if "reduced" not in meteor and "calparams" not in meteor and "manual" not in meteor:
+         #print(meteor)
+         meteor_json = load_json_file(meteor)
+         #print(meteor_json)
+
+         mf = meteor.split("/")[-1] 
+         start_frame = get_event_start_frame(meteor_json['sd_objects'])
+         extra_sec = int(start_frame) / 25
+         meteor_datetime, cam_id, hd_date, hd_y, hd_m, hd_d, hd_h, hd_M, hd_s = convert_filename_to_date_cam(meteor)
+         event_start_time = meteor_datetime + datetime.timedelta(0,extra_sec)
+         print("START FRAME:", start_frame,event_start_time)
+         json_data['capture_files'].append(mf)
+         json_data['start_times'].append(str(event_start_time))
+
+   req_json = json.dumps(json_data)
+   json_data['cmd'] = "upload_caps"
+   url = "http://54.214.104.131/pycgi/test.py"
+   mydata = parse.urlencode(json_data).encode()
+   post = request.Request(url, data=mydata)
+   resp = request.urlopen(post).read()
+
+   print(resp)
 
 
 def sync_multi_station(json_conf, meteor_date='2019_03_20'):

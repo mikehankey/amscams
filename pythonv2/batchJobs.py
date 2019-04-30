@@ -1,6 +1,6 @@
 #!/usr/bin/python3
 
-from lib.BatchLib import batch_thumb, make_file_index, move_images, update_file_index, stack_night, purge_data, stack_night_all, batch_meteor_thumb, batch_doHD, sync_multi_station, find_multi_station_meteors, merge_kml_files, batch_reduce
+from lib.BatchLib import batch_thumb, make_file_index, move_images, update_file_index, stack_night, purge_data, stack_night_all, batch_meteor_thumb, batch_doHD, sync_multi_station, find_multi_station_meteors, merge_kml_files, batch_reduce, sync_events_to_cloud
 from lib.FileIO import load_json_file 
 import sys
 
@@ -11,6 +11,9 @@ if sys.argv[1] == 'msm':
 if sys.argv[1] == 'sms':
    sync_date = sys.argv[2]
    sync_multi_station(json_conf, sync_date)
+if sys.argv[1] == 'cloud':
+   sync_date = sys.argv[2]
+   sync_events_to_cloud(json_conf, sync_date)
 if sys.argv[1] == 'mkml':
    merge_kml_files(json_conf)
 
