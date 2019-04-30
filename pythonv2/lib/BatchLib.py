@@ -277,7 +277,6 @@ def sync_events_to_cloud(json_conf, meteor_date):
    # check if there are any multi-station files that need syncing...
    url = "http://54.214.104.131/json_data/" + meteor_date + "/events_by_station-" + meteor_date + ".json"
    print(url)
-   exit()
 
    try:
       resp = request.urlopen(url).read()
