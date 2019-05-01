@@ -249,6 +249,7 @@ def get_event_start_frame(sd_objects):
 
 def sync_events_to_cloud(json_conf, meteor_date):
    meteors = glob.glob("/mnt/ams2/meteors/" + meteor_date + "/*.json")
+   station_name = json_conf['site']['ams_id'].upper()
    json_data = {}
    json_data['station_name'] = json_conf['site']['ams_id'].upper()
    json_data['meteor_date'] = meteor_date
@@ -280,10 +281,9 @@ def sync_events_to_cloud(json_conf, meteor_date):
 
    try:
       resp = request.urlopen(url).read()
-      station_name = json_data['station_name']
-      json_data = json.loads(resp)
+      json_data = json.loads(resp.decode('utf-8'))
    except:
-      print("No events to sync with yet.")
+      print("No events to sync with yet.", url)
       exit()
 
    print(json_data[station_name])
