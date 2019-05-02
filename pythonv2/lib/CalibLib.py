@@ -1223,6 +1223,8 @@ def get_active_cal_file(input_file):
    #print("INPUT FILE", input_file)
    if "png" in input_file:
       input_file = input_file.replace(".png", ".mp4")
+   if "json" in input_file:
+      input_file = input_file.replace(".json", ".mp4")
    (f_datetime, cam_id, f_date_str,Y,M,D, H, MM, S) = better_parse_file_date(input_file)
 
    # find all cal files from his cam for the same night
@@ -1242,6 +1244,11 @@ def find_matching_cal_files(cam_id, capture_date):
          cal_p_file = file  + "/" + fn + "-stacked-calparams.json"
          if cfe(cal_p_file) == 1:
             matches.append(cal_p_file)
+         else:
+            cal_p_file = file  + "/" + fn + "-calparams.json"
+         if cfe(cal_p_file) == 1:
+            matches.append(cal_p_file)
+
 
    td_sorted_matches = []
 
