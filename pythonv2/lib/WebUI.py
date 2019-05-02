@@ -257,7 +257,7 @@ def controller(json_conf):
    bottom = stf[1]
    top = top.replace("{TOP}", nav_html)
 
-   obs_name = json_conf['site']['obs_name']
+   obs_name = json_conf['site']['ams_id'] + " " + json_conf['site']['obs_name']
 
    top = top.replace("{OBSNAME}", obs_name)
    top = top.replace("{JQ}", jq)

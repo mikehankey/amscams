@@ -21,8 +21,11 @@ def batch_reduce(json_conf):
       for json_file in sorted(meteor_files,reverse=True):
          if "reduced" not in json_file and "calparams" not in json_file and "manual" not in json_file:
             reduced_file = json_file.replace(".json", "-reduced.json")
+            failed_file = json_file.replace(".json", "-rfailed.txt")
             if cfe(reduced_file) == 1:
                print("Meteor done", reduced_file)
+            elif cfe(failed_file) == 1:
+               print("Skip already tried and failed", failed_file)
             else:
                cal_files = get_active_cal_file(json_file)
                if cal_files is not None:

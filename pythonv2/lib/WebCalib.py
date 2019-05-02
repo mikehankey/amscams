@@ -619,7 +619,7 @@ def pin_point(json_conf, form):
 def custom_fit(json_conf,form):
    cal_params_file = form.getvalue("cal_params_file")
    cmd = "cd /home/ams/amscams/pythonv2/; ./autoCal.py cfit " + cal_params_file + " 0 > /mnt/ams2/tmp/autoCal.txt &"
-   #print(cmd)
+   print(cmd)
    os.system(cmd)
 
    response = {}
@@ -630,18 +630,22 @@ def custom_fit(json_conf,form):
 
 def reduce_meteor_ajax(json_conf,meteor_json_file, cal_params_file, show = 0):
 
-   cmd = "cd /home/ams/amscams/pythonv2/; ./autoCal.py cfit " + cal_params_file + " 0 > /mnt/ams2/tmp/autoCal.txt &"
-   #print(cmd)
-   os.system(cmd)
 
    if show == 1:
       cv2.namedWindow('pepe')
    hdm_x = 2.7272727272727272
    hdm_y = 1.875
    mj = load_json_file(meteor_json_file)
+
+   sd_video_file = mj['sd_video_file']
+   sd_stack_file = sd_video_file.replace(".mp4", "-stacked.png")
    man_reduce_file = meteor_json_file.replace(".json", "-manual.json")
+   failed_file = meteor_json_file.replace(".json", "-rfailed.txt")
 
    meteor_obj = get_meteor_object(mj)
+   if meteor_obj is None: 
+      os.system("touch " + failed_file)
+
    start_clip = meteor_obj['history'][0][0]
    end_clip = meteor_obj['history'][-1][0]
    start_clip = start_clip - 25
@@ -654,7 +658,6 @@ def reduce_meteor_ajax(json_conf,meteor_json_file, cal_params_file, show = 0):
    (f_datetime, cam_id, f_date_str,Y,M,D, H, MM, S) = better_parse_file_date(meteor_json_file)
 
    start_clip_time_str = str(f_datetime)
-   sd_video_file = mj['sd_video_file']
    hd_video_file = mj['hd_trim']
    meteor_dir = "/mnt/ams2/meteors/" + Y + "_" + M + "_" + D + "/" 
    el = sd_video_file.split("/")
@@ -674,7 +677,16 @@ def reduce_meteor_ajax(json_conf,meteor_json_file, cal_params_file, show = 0):
    trim_num = int(ttt[0])
    extra_sec = trim_num / 25
    start_trim_frame_time = f_datetime + datetime.timedelta(0,extra_sec)
-   sd_stack_file = sd_video_file.replace(".mp4", "-stacked.png")
+
+
+   if cfe(failed_file) == 1:
+      print("This reduction was already tried and failed.", failed_file)
+      return()
+
+   cmd = "cd /home/ams/amscams/pythonv2/; ./autoCal.py cfit " + cal_params_file + " 0 > /mnt/ams2/tmp/autoCal.txt "
+   print(cmd)
+   os.system(cmd)
+
 
    meteor_json = load_json_file(meteor_json_file)
    sd_video_file = meteor_json['sd_video_file']
@@ -696,6 +708,10 @@ def reduce_meteor_ajax(json_conf,meteor_json_file, cal_params_file, show = 0):
    #print("FRAMES:",len(frames))
    #objects = track_bright_objects(frames, sd_video_file, cam_id, meteor_obj, json_conf, show)
    objects = check_for_motion2(frames, sd_video_file,cam_id, json_conf,show)
+   if len(objects) == 0:
+      os.system("touch " + failed_file)
+      return()
+      
 
    # do track brightest object here instead of check_for_motion2? 
 
@@ -706,6 +722,10 @@ def reduce_meteor_ajax(json_conf,meteor_json_file, cal_params_file, show = 0):
       objects = []
       meteor_found = 0
    meteor_obj = get_meteor_object(objects)
+   if len(meteor_obj) == 0:
+      os.system("touch " + failed_file)
+      return()
+
    if cfe(sd_stack_file) == 0:
       sd_stack_file = sd_stack_file.replace("SD/proc2/", "meteors/")
       sd_stack_file = sd_stack_file.replace("/passed/", "/")
@@ -756,6 +776,12 @@ def reduce_meteor_ajax(json_conf,meteor_json_file, cal_params_file, show = 0):
    tot_f = len(meteor_obj['history'])
    max_max_px = 0
    ih,iw = frames[0].shape
+
+   end_el = None
+   end_az = None
+   start_el = None
+   start_az = None
+
    for fn,x,y,w,h,mx,my in meteor_obj['history']:
       #if fc == 0:
       #   fy = int((fy + my) * hdm_y / 2)
@@ -812,6 +838,12 @@ def reduce_meteor_ajax(json_conf,meteor_json_file, cal_params_file, show = 0):
    cv2.imwrite(reduce_img_file, reduce_img)
    rand = time.time()
 
+   if end_az is None and start_az is not None:
+      end_az = start_az
+      end_el = start_el
+      end_ra = start_ra
+      end_dec = start_dec
+
    response = {}
    response['status'] = 1
    response['message'] = "reduce complete"
@@ -823,6 +855,7 @@ def reduce_meteor_ajax(json_conf,meteor_json_file, cal_params_file, show = 0):
    fin_hd_stack = fin_hd_video_file.replace(".mp4", ".png")
    fin_reduced_video = fin_sd_video_file.replace(".mp4", "-reduced.mp4")
    fin_reduced_stack = fin_sd_video_file.replace(".mp4", "-reduced.png")
+
    meteor_reduced = {}
   
    meteor_reduced['api_key'] = json_conf['site']['api_key']
@@ -841,6 +874,7 @@ def reduce_meteor_ajax(json_conf,meteor_json_file, cal_params_file, show = 0):
    meteor_reduced['start_az'] = int(start_az)
    meteor_reduced['start_el'] = int(start_el)
    meteor_reduced['end_az'] = int(end_az)
+
    meteor_reduced['end_el'] = int(end_el)
    meteor_reduced['start_ra'] = start_ra
    meteor_reduced['start_dec'] = start_dec

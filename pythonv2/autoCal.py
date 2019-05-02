@@ -236,6 +236,8 @@ def minimize_fov_pos(cal_params_file, json_conf, show=0 ):
    org_pos = cal_params['position_angle']
 
 
+
+
    if fov_pos_poly is None:
       this_poly = np.zeros(shape=(3,), dtype=np.float64)
       this_poly[0] = -.01
@@ -243,6 +245,13 @@ def minimize_fov_pos(cal_params_file, json_conf, show=0 ):
       this_poly[2] = -.01
    else:
       this_poly = fov_post_poly 
+   res = reduce_fov_pos(this_poly, cal_params,cal_params_file,json_conf, paired_stars,show)
+   print("Initial residual error.", res)   
+   if res < 2.5:
+      # Res is good No need to recalibrate!
+      #print("Res is good no need to recal")
+      exit()
+
    res = scipy.optimize.minimize(reduce_fov_pos, this_poly, args=(cal_params,cal_params_file,json_conf, paired_stars,show), method='Nelder-Mead')
    fov_pos_poly = res['x']
    fov_pos_fun = res['fun']
