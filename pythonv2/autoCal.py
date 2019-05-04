@@ -135,7 +135,6 @@ def multi_merge(all_stars, master_cal_params, master_cal_file, json_conf):
             for star in merged_stars[file]:
                cal_params_file,ra_center,dec_center,name,mag,ra,dec,img_ra,img_dec,match_dist,new_cat_x,new_cat_y,img_az,img_el,new_cat_x,new_cat_y,ix,iy, img_res = star
 
-               print("MIKE:", file,ra_center,dec_center,img_az,img_el)
                cv2.circle(img,(ix,iy), 5, (128,128,128), 1)
                cv2.rectangle(img, (new_cat_x-2, new_cat_y-2), (new_cat_x + 2, new_cat_y + 2), (128, 128, 128), 1)
                cv2.line(img, (ix,iy), (new_cat_x,new_cat_y), (255), 2)
@@ -228,8 +227,17 @@ def clone_cal_params(cal_params_file, child_file,json_conf):
    print("BASE NAME: ", fn)    
    image_file = child_file.replace("-calparams.json", "-stacked.png")
 
-   #print(image_file)
-   #exit()
+   meteor_json_file = image_file.replace("-stacked.png", "-reduced.json")
+   meteor_json = load_json_file(meteor_json_file)
+   hd_video_file = meteor_json['hd_video_file']
+   hd_stack_file = hd_video_file.replace(".mp4", "-stacked.png")
+   if cfe(hd_stack_file) == 0:
+      print("HD FILE NOT FOUND!")
+      hd_stack_file = meteor_json_file.replace(".json", "-stacked.png")
+   hd_star_img = cv2.imread(hd_stack_file, 0)
+   img = hd_star_img
+   image_file = hd_stack_file
+   print("HD STACK FILE", image_file)
 
    cal_dir = "/mnt/ams2/cal/freecal/" + fn + "/"
    if cfe(cal_dir, 1) == 0:
@@ -240,7 +248,7 @@ def clone_cal_params(cal_params_file, child_file,json_conf):
    new_cal_params = cal_params
    center_az = cal_params['center_az']
    center_el = cal_params['center_el']
-
+   print(image_file)
    rah,dech = AzEltoRADec(center_az,center_el,image_file,cal_params,json_conf)
    rah = str(rah).replace(":", " ")
    dech = str(dech).replace(":", " ")
@@ -253,6 +261,8 @@ def clone_cal_params(cal_params_file, child_file,json_conf):
    for name,mag,ra,dec,new_cat_x,new_cat_y,ix,iy,px_dist,cal_params_file in cat_image_stars:
       close_stars.append(( name,mag,ra,dec,0,0,px_dist,new_cat_x,new_cat_y,0,0,new_cat_x,new_cat_y,ix,iy,px_dist))
 
+   print("AZ/EL/RA/DEC:", center_az, center_el, ra_center, dec_center, len(close_stars))
+
 
    new_cal_params['close_stars']  = close_stars 
 
@@ -261,110 +271,237 @@ def clone_cal_params(cal_params_file, child_file,json_conf):
    return(new_cal_params, new_cal_file)
 
 
-def minimize_fov_pos(cal_params_file, json_conf, show=0 ):
+def minimize_fov_pos(cal_params_file, image_file, json_conf, show=0 ):
 
-
-   fov_pos_poly = None
-   print("CP:", cal_params_file)
+   debug = open("debug.txt", "w")
+   debug.write("CAL FILE:" + cal_params_file + "\n")  
    cal_params = load_json_file(cal_params_file)
-   paired_stars = cal_params['close_stars']
+   if "fov_fit" in cal_params:
+      if cal_params['fov_fit'] == 1:
+         print("Skip already done the best we could do.")
+         #return(0,0)
    cal_params['device_lat'] = json_conf['site']['device_lat']
    cal_params['device_lng'] = json_conf['site']['device_lng']
    cal_params['device_alt'] = json_conf['site']['device_alt']
    cal_params['orig_ra_center'] = cal_params['ra_center']
    cal_params['orig_dec_center'] = cal_params['dec_center']
+
+   cal_params['orig_az_center'] = cal_params['center_az']
+   cal_params['orig_el_center'] = cal_params['center_el']
    cal_params['orig_pos_ang'] = cal_params['position_angle']
+
+   close_stars = cal_params['close_stars'] 
+
+   print("BEFORE:", len(close_stars))
+
+   close_stars = remove_dupe_cat_stars(close_stars)
+   cal_params['close_stars'] = close_stars
+   paired_stars = cal_params['close_stars']
+   print("AFTER:", len(close_stars))
+
    org_az = cal_params['center_az']
    org_el = cal_params['center_el']
    org_pos = cal_params['position_angle']
+   debug.write("ORIG:" + str(cal_params['orig_az_center']) + " " + str(cal_params['orig_el_center']) + " " +  str(cal_params['orig_pos_ang']) + "\n")
 
+   
+   this_poly = np.zeros(shape=(3,), dtype=np.float64)
+   this_poly[0] = 0 
+   this_poly[1] = 0
+   this_poly[2] = 0
 
+   meteor_json_file = image_file.replace("-stacked.png", "-reduced.json")
+   meteor_json = load_json_file(meteor_json_file)
+   hd_video_file = meteor_json['hd_video_file']
+   hd_stack_file = hd_video_file.replace(".mp4", "-stacked.png")
+   if cfe(hd_stack_file) == 0:
+      print("HD FILE NOT FOUND!")
+      hd_stack_file = meteor_json_file.replace(".json", "-stacked.png")
+   hd_star_img = cv2.imread(hd_stack_file, 0)
+   img = hd_star_img
+   image_file = hd_stack_file
 
+   
+   img = cv2.imread(image_file,0)
+   oimg = img.copy()
+   img = cv2.resize(img, (1920,1080))
+   if show == 1:
+      cv2.namedWindow('pepe')
 
-   if fov_pos_poly is None:
-      this_poly = np.zeros(shape=(3,), dtype=np.float64)
-      this_poly[0] = -.01
-      this_poly[1] = -.01
-      this_poly[2] = -.01
-   else:
-      this_poly = fov_post_poly 
-   res = reduce_fov_pos(this_poly, cal_params,cal_params_file,json_conf, paired_stars,show)
+   res = reduce_fov_pos(this_poly, cal_params,image_file,oimg,json_conf, paired_stars,show)
+   debug.write("FIRST RES:" + str(res) + " " +  str(cal_params['orig_az_center']) + " " + str(cal_params['orig_el_center']) + " " + str(cal_params['orig_pos_ang']) + "\n")
+
+   print("START RES:", res) 
+   print("START AZ:", cal_params['center_az']) 
+   print("START EL:", cal_params['center_el'] ) 
+   print("START POS:", cal_params['position_angle']) 
+   total_dist = 0
+
+   for data in paired_stars:
+      iname,mag,ra,dec,img_ra,img_dec,match_dist,new_x,new_y,img_az,img_el,old_cat_x,old_cat_y,six,siy,cat_dist  = data
+      new_x = int(new_x)  
+      new_y = int(new_y)  
+      six = int(six)  
+      siy = int(siy)  
+      cv2.rectangle(img, (new_x-2, new_y-2), (new_x + 2, new_y + 2), (255), 1)
+      cv2.line(img, (six,siy), (new_x,new_y), (255), 1)
+      cv2.circle(img,(six,siy), 5, (255), 1)
+      #cv2.circle(img,(300,300), 50, (255), 1)
+      total_dist = total_dist + match_dist
+      cv2.putText(img, iname,  (six,siy), cv2.FONT_HERSHEY_SIMPLEX, .8, (255, 255, 255), 1)
+
+   show=1
+   desc = "Initial Res: " + str(res)
+   cv2.putText(img, desc,  (20,50), cv2.FONT_HERSHEY_SIMPLEX, .8, (255, 255, 255), 1)
+   show_img = cv2.resize(img, (960,540))
+   if show == 1:
+      cv2.imshow('pepe', show_img)
+      cv2.waitKey(1) 
+
    print("Initial residual error.", res)   
    if res < 1:
       # Res is good No need to recalibrate!
       print("Res is good no need to recal")
-      exit()
+      return(0,0)
+   res = scipy.optimize.minimize(reduce_fov_pos, this_poly, args=( cal_params,image_file,oimg,json_conf, paired_stars,show), method='Nelder-Mead')
 
-   res = scipy.optimize.minimize(reduce_fov_pos, this_poly, args=(cal_params,cal_params_file,json_conf, paired_stars,show), method='Nelder-Mead')
+
    fov_pos_poly = res['x']
+   print("FOV POS POLY:", float(fov_pos_poly[0]), float(fov_pos_poly[1]), float(fov_pos_poly[2])) 
    fov_pos_fun = res['fun']
+
+   final_res = reduce_fov_pos(fov_pos_poly, cal_params,image_file,img,json_conf, paired_stars,show)
+
    cal_params['fov_pos_poly'] = fov_pos_poly.tolist()
    cal_params['fov_pos_fun'] = fov_pos_fun
-   cal_params['center_az'] = cal_params['center_az'] + fov_pos_poly[0] 
-   cal_params['center_el'] = cal_params['center_el'] + fov_pos_poly[1] 
-   cal_params['position_angle'] = cal_params['position_angle'] + fov_pos_poly[2] 
+
+
+   cal_params['center_az'] = float(cal_params['orig_az_center']) + float(fov_pos_poly[0] )
+   cal_params['center_el'] = float(cal_params['orig_el_center']) + float(fov_pos_poly[1] )
+   cal_params['position_angle'] = float(cal_params['orig_pos_ang']) + float(fov_pos_poly[2] )
+
+   debug.write("ADD:" + str(float(cal_params['orig_az_center'])) + " " + str(float(fov_pos_poly[0])) + "=" + str(cal_params['center_az']) + "\n")
+   debug.write("ADD:" + str(float(cal_params['orig_el_center'])) + " " + str(float(fov_pos_poly[1])) + "=" + str(cal_params['center_el']) + "\n")
+   debug.write("ADD:" + str(float(cal_params['orig_pos_ang'])) + " " + str(float(fov_pos_poly[2])) + "=" + str(cal_params['position_angle']) + "\n")
+
+   debug.write("FINAL RES:" + str(final_res) + " " +  str(cal_params['center_az']) + " " + str(cal_params['center_el']) + " " + str(cal_params['position_angle']) + "\n")
+
+
+   debug.write("AFTER + POLY (FINAL CENTER AZ,EL,POS):" + str(final_res) + " " + str(cal_params['center_az']) + " " + str(cal_params['center_el']) + " " +  str(cal_params['position_angle']) + "\n")
+   debug.write("AFTER + POLY (ORIG CENTER AZ,EL,POS):" + str(final_res) + " " + str(cal_params['orig_az_center']) + " " + str(cal_params['orig_el_center']) + " " +  str(cal_params['orig_pos_ang']) + "\n")
+
+   #cal_params['orig_pos_ang'] = cal_params['position_angle']
+   #cal_params['orig_az_center'] = cal_params['orig_az_center']
+   #cal_params['orig_el_center'] = cal_params['orig_el_center']
+
+   cal_params['fov_fit'] = 1 
+   close_stars = []
+   cat_image_stars, img = get_image_stars_from_catalog(image_file,json_conf,cal_params_file, masks = [], show = 0)
+   for name,mag,ra,dec,new_cat_x,new_cat_y,ix,iy,px_dist,cal_params_file in cat_image_stars:
+      close_stars.append(( name,mag,ra,dec,0,0,px_dist,new_cat_x,new_cat_y,0,0,new_cat_x,new_cat_y,ix,iy,px_dist))
+
+   cal_params['close_stars'] =  close_stars
+   debug.write("SAVING CAL FILE:" + cal_params_file + " with pos:" + str(cal_params['position_angle']))
    save_json_file(cal_params_file, cal_params)
-   print("ORG/NEW AZ: ", org_az, cal_params['center_az'])
-   print("ORG/NEW EL: ", org_el, cal_params['center_el'])
-   print("ORG/NEW POS: ", org_pos, cal_params['position_angle'])
-   print("FOV/POS POLY : ", fov_pos_poly)
-   print("NEW AVG RES: ", fov_pos_fun)
-   if fov_pos_fun < 1:
-      # clone the calibration file to new day
-      fn = cal_params_file.split("/")[-1]
-      cal_dir = fn[0:30]
-      stack = cal_params_file.replace("-calparams.json", ".png")
-      free_cal_dir = "/mnt/ams2/cal/freecal/" + cal_dir + "/"
-      new_cal_file = free_cal_dir + cal_dir + "-calparams.json"
-      new_cal_stack = free_cal_dir + cal_dir + "-stacked.png"
-      cmd = "mkdir " + free_cal_dir 
-      print(cmd)
-      os.system(cmd)
-      cmd = "cp " + cal_params_file + " " + new_cal_file 
-      print(cmd)
-      os.system(cmd)
-      cmd = "cp " + stack + " " + new_cal_stack 
-      print(cmd)
-      os.system(cmd)
-      cmd = "./XYtoRAdecAzEl.py az_grid " + new_cal_file
-      print(cmd)
-      os.system(cmd)
+
+   print("ORIG MAZ:", cal_params['orig_az_center'], cal_params['orig_el_center'], cal_params['orig_pos_ang'])
+   print("END MAZ:", cal_params['center_az'], cal_params['center_el'], cal_params['position_angle'])
+   debug.write("LAST:" +str(fov_pos_fun)+ " "+  str(cal_params['center_az']) + " " + str(cal_params['center_el']) + " " + str(cal_params['position_angle']) + "\n")
+
+   debug.write("SAVING CAL FILE:" + cal_params_file + " with pos:" + str(cal_params['position_angle']))
+   save_json_file(cal_params_file, cal_params)
+   new_cal_params = load_json_file(cal_params_file)
+   paired_stars = new_cal_params['close_stars']
+   this_poly = np.zeros(shape=(3,), dtype=np.float64)
+   this_poly[0] = 0
+   this_poly[1] = 0
+   this_poly[2] = 0
+
+   final_res = reduce_fov_pos(this_poly, new_cal_params,image_file,oimg,json_conf, paired_stars,show)
+   print("FINAL RES:", final_res)
+   debug.write("FINAL:" + str(final_res) + " "  +str(fov_pos_fun)+ " "+  str(cal_params['center_az']) + " " + str(cal_params['center_el']) + " " + str(cal_params['position_angle']) + "\n")
+   print(cal_params_file)
+
+   #if fov_pos_fun < 333:
+   #   # clone the calibration file to new day
+   #   fn = cal_params_file.split("/")[-1]
+   #   cal_dir = fn[0:30]
+   #   stack = cal_params_file.replace("-calparams.json", ".png")
+   #   free_cal_dir = "/mnt/ams2/cal/freecal/" + cal_dir + "/"
+   #   new_cal_file = free_cal_dir + cal_dir + "-calparams.json"
+   #   new_cal_stack = free_cal_dir + cal_dir + "-stacked.png"
+   #   cmd = "mkdir " + free_cal_dir 
+   #   if cfe(free_cal_dir, 1) == 0:
+   #      print(cmd)
+   #      os.system(cmd)
+   #   if cal_params_file != new_cal_file:
+   #      cmd = "cp " + cal_params_file + " " + new_cal_file 
+   #      print(cmd)
+   #      os.system(cmd)
+   #   cmd = "cp " + stack + " " + new_cal_stack 
+   #   print(cmd)
+   #   os.system(cmd)
+   #   #cmd = "./XYtoRAdecAzEl.py az_grid " + new_cal_file
+   #   #os.system(cmd)
+
+   print("END RES:", final_res) 
+   print("END AZ:", cal_params['center_az']) 
+   print("END EL:", cal_params['center_el'] ) 
+   print("END POS:", cal_params['position_angle']) 
+
+
    return(fov_pos_poly,cal_params)
 
-def reduce_fov_pos(this_poly, cal_params, cal_params_file, json_conf, paired_stars, show=0):
+
+def remove_dupe_cat_stars(paired_stars):
+   used = {}
+   new_paired_stars = []
+   for data in paired_stars:
+      iname,mag,ra,dec,img_ra,img_dec,match_dist,new_x,new_y,img_az,img_el,old_cat_x,old_cat_y,six,siy,cat_dist  = data
+      used_key = str(six) + "." + str(siy)
+      if used_key not in used:
+         new_paired_stars.append(data)
+         used[used_key] = 1
+   return(new_paired_stars)
+
+
+def reduce_fov_pos(this_poly, in_cal_params, cal_params_file, oimage, json_conf, paired_stars, show=0):
+   image = oimage.copy()
+   show = 1
    # cal_params_file should be 'image' filename
-   org_az = cal_params['center_az'] 
-   org_el = cal_params['center_el'] 
-   org_pos_angle = cal_params['orig_pos_ang'] 
+   org_az = in_cal_params['center_az'] 
+   org_el = in_cal_params['center_el'] 
+   org_pos_angle = in_cal_params['orig_pos_ang'] 
+   new_az = in_cal_params['center_az'] + this_poly[0]
+   new_el = in_cal_params['center_el'] + this_poly[1]
+   #print("POSITION ANGLE:", in_cal_params['position_angle'], org_az, org_el)
+   position_angle = float(in_cal_params['position_angle']) + this_poly[2]
 
-   new_az = cal_params['center_az'] + this_poly[0]
-   new_el = cal_params['center_el'] + this_poly[1]
-   position_angle = cal_params['orig_pos_ang'] + this_poly[2]
 
-   rah,dech = AzEltoRADec(new_az,new_el,cal_params_file,cal_params,json_conf)
+
+   rah,dech = AzEltoRADec(new_az,new_el,cal_params_file,in_cal_params,json_conf)
    rah = str(rah).replace(":", " ")
    dech = str(dech).replace(":", " ")
 
    ra_center,dec_center = HMS2deg(str(rah),str(dech))
 
-   #print(ra_center,dec_center,position_angle,this_poly[0], this_poly[1], this_poly[2])
-   cal_params['position_angle'] = position_angle
-   cal_params['ra_center'] = ra_center
-   cal_params['dec_center'] = dec_center
-   cal_params['device_lat'] = json_conf['site']['device_lat']
-   cal_params['device_lng'] = json_conf['site']['device_lng']
-   cal_params['device_alt'] = json_conf['site']['device_alt']
+   in_cal_params['position_angle'] = position_angle
+   in_cal_params['ra_center'] = ra_center
+   in_cal_params['dec_center'] = dec_center
+   in_cal_params['device_lat'] = json_conf['site']['device_lat']
+   in_cal_params['device_lng'] = json_conf['site']['device_lng']
+   in_cal_params['device_alt'] = json_conf['site']['device_alt']
 
 
-   fov_poly = cal_params['fov_poly']
-   pos_poly = cal_params['pos_poly']
-   x_poly = cal_params['x_poly']
-   y_poly = cal_params['y_poly']
-   cat_stars = get_catalog_stars(fov_poly, pos_poly, cal_params,"x",x_poly,y_poly,min=0)
+   fov_poly = 0
+   pos_poly = 0
+   x_poly = in_cal_params['x_poly']
+   y_poly = in_cal_params['y_poly']
+   cat_stars = get_catalog_stars(fov_poly, pos_poly, in_cal_params,"x",x_poly,y_poly,min=0)
    new_res = []
    new_paired_stars = []
    used = {}
-   org_stars = len(paired_stars)
+   org_star_count = len(paired_stars)
    for cat_star in cat_stars:
       (name,mag,ra,dec,new_cat_x,new_cat_y) = cat_star
       dname = name.decode("utf-8")
@@ -372,26 +509,44 @@ def reduce_fov_pos(this_poly, cal_params, cal_params_file, json_conf, paired_sta
          iname,mag,ra,dec,img_ra,img_dec,match_dist,new_x,new_y,img_az,img_el,old_cat_x,old_cat_y,six,siy,cat_dist  = data
          if dname == iname:
             pdist = calc_dist((six,siy),(new_cat_x,new_cat_y))
-            #print("match found", dname, iname, pdist)
-            if pdist <= 15:
+            if pdist <= 7:
                new_res.append(pdist)
                used_key = str(six) + "." + str(siy)
                if used_key not in used: 
                   new_paired_stars.append((iname,mag,ra,dec,new_cat_x,new_cat_y,six,siy,pdist))
                   used[used_key] = 1
+                  new_cat_x,new_cat_y = int(new_cat_x), int(new_cat_y)
+                  cv2.rectangle(image, (new_cat_x-5, new_cat_y-5), (new_cat_x + 5, new_cat_y + 5), (255), 1)
+                  cv2.line(image, (six,siy), (new_cat_x,new_cat_y), (255), 1)
+                  cv2.circle(image,(six,siy), 10, (255), 1)
+          
+
 
    tres  =0 
    for iname,mag,ra,dec,new_cat_x,new_cat_y,six,siy,pdist in new_paired_stars:
       tres = tres + pdist
      
-   tres = tres + ((len(paired_stars) - len(new_paired_stars) ) * 99)
+   orig_star_count = len(in_cal_params['close_stars'])
 
    if len(new_paired_stars) > 0:
       avg_res = tres / len(new_paired_stars) 
    else:
       avg_res = 9999999
       res = 9999999
-   print("AVG RES:", avg_res, len(new_paired_stars))
+
+   if orig_star_count > len(new_paired_stars):
+      pen = ((orig_star_count - len(new_paired_stars)) * 2)
+   else:
+      pen = 0
+ 
+   desc = "RES: " + str(avg_res) + " " + str(len(new_paired_stars)) + " " + str(orig_star_count) + " PEN:" + str(pen)
+   cv2.putText(image, desc,  (10,50), cv2.FONT_HERSHEY_SIMPLEX, .8, (255, 255, 255), 1)
+   #print("AVG RES:", avg_res, len(new_paired_stars), "/", org_star_count, new_az, new_el, ra_center, dec_center, position_angle )
+   if show == 1:
+      show_img = cv2.resize(image, (960,540))
+      cv2.imshow('pepe', show_img)
+      cv2.waitKey(1) 
+   in_cal_params['position_angle'] = org_pos_angle
    return(avg_res)
 
 
@@ -402,6 +557,7 @@ def minimize_lat_lon(json_conf,cal_params_file,all_paired_stars,show=0,latlon_po
    cal_params['device_alt'] = json_conf['site']['device_alt']
    cal_params['orig_ra_center'] = cal_params['ra_center']
    cal_params['orig_dec_center'] = cal_params['dec_center']
+   cal_params['orig_pos_ang'] = cal_params['position_angle']
 
    org_lat = json_conf['site']['device_lat'] 
    org_lon = json_conf['site']['device_lng'] 
@@ -558,7 +714,6 @@ def track_stars (day,json_conf,scmd='',cal_params_file=None,show=0):
       ufc = 1
       for file in sd_files:
          if fc % min_mod == 0:
-            print("MIKE:", file)
             if cal_params_file is None:
                stars = get_image_stars(file,show) 
             else:
@@ -900,6 +1055,8 @@ def get_image_stars_from_catalog(file,json_conf,cal_params_file, masks = [], sho
    #rahh = RAdeg2HMS(rah)
    ra_center,dec_center = HMS2deg(str(rah),str(dech))
 
+
+   #print("GET IMAGE STARS FROM CATALOG: ", center_az, center_el, ra_center, dec_center, file,cal_params_file)
    cal_params['ra_center'] = ra_center
    cal_params['dec_center'] = dec_center
 
@@ -949,7 +1106,7 @@ def find_img_point_from_cat_star(cx,cy,img):
    if px_diff < 20:
       return(0,0)
    #cv2.imshow('pepe',cnt_img)
-   #cv2.waitKey(0)
+   #cv2.waitKey(1)
    mx,my = max_loc
    nx = cx + mx - sz + 5
    ny = cy + my - sz + 5
@@ -1053,15 +1210,21 @@ def star_res(meteor_json_file, json_conf, show):
       cv2.namedWindow('pepe')
    if "-reduced" not in meteor_json_file :
       meteor_json_red_file = meteor_json_file.replace(".json", "-reduced.json")
-   #print("Check residual error between image and catalog stars.")
-   #print("Meteor File:", meteor_json_file)
+   if cfe(meteor_json_file) == 0:
+      print("Can't open :", meteor_json_file)
+      exit()
    meteor_json = load_json_file(meteor_json_file) 
+   if cfe(meteor_json_red_file) == 0:
+      print("Can't open reduction file:", meteor_json_red_file)
+      exit()
+
+   print("loading:", meteor_json_red_file)
    meteor_json_red = load_json_file(meteor_json_red_file) 
+
    hd_video_file = meteor_json_red['hd_video_file']
    hd_stack_file = hd_video_file.replace(".mp4", "-stacked.png")
    if cfe(hd_stack_file) == 0:
       hd_stack_file = meteor_json_file.replace(".json", "-stacked.png")
-   #print("HD STACK: ", hd_stack_file)
    hd_star_img = cv2.imread(hd_stack_file, 0)
    (f_datetime, cam_id, f_date_str,fy,fm,fd, fh, fmin, fs) = convert_filename_to_date_cam(meteor_json_file)
    masks = get_masks(cam_id, json_conf,1)
@@ -1078,7 +1241,8 @@ def star_res(meteor_json_file, json_conf, show):
    #print("Closest Cal Params File:", cal_params_file)
    cat_image_stars, img = get_image_stars_from_catalog(hd_stack_file,json_conf,cal_params_file, masks = [], show = 0)
    total_res = 0
-
+   #for x in cat_image_stars:
+   #   print(x)
 
    found_stars = len(cat_image_stars)
    for pstar in cat_image_stars:
@@ -1098,24 +1262,29 @@ def star_res(meteor_json_file, json_conf, show):
    if show == 1:
       show_img = cv2.resize(img, (0,0),fx=.5, fy=.5)
       cv2.imshow('pepe', show_img)
-      cv2.waitKey(0)
+      cv2.waitKey(1)
    return(avg_res, found_stars,img)
 
 
 def batch_fix (json_conf):
    meteor_dirs = glob.glob("/mnt/ams2/meteors/*")
-   for meteor_dir in sorted(meteor_dirs,reverse=True):
+   bad_files = []
+   for meteor_dir in sorted(meteor_dirs,reverse=True)[10:15]:
       meteor_files = glob.glob(meteor_dir + "/*-reduced.json")
       for meteor_file in meteor_files:
          mf = meteor_file.replace("-reduced.json", ".json")
          fn = mf.split("/")[-1]
-         err,tstars = star_res(mf, json_conf, show)
-         #if err > 2:
-         ##   cmd = "./autoCal.py cfit " + mf + " 0"
-         #   print(cmd)
-         #   exit()
-         #   os.system(cmd)
+         err,tstars,img = star_res(mf, json_conf, show)
+         print("RES:", err)
+         if err > 1.8:
+            cmd = "./autoCal.py cfit " + mf + " 0"
+            bad_files.append(cmd)
+            print(cmd)
+            os.system(cmd)
          print(fn, tstars, err)
+         #exit()
+   for bad_file in bad_files:
+      print(bad_file)
 
 
 json_conf = load_json_file("../conf/as6.json")
@@ -1189,15 +1358,28 @@ if cmd == 'cfit':
    cal_params_file = poss[0][0]
    # CLONE THE CALPARAMS FILE 
    new_cal_params_file = meteor_json.replace(".json", "-calparams.json")
-   new_cal_params,new_cal_file = clone_cal_params(cal_params_file, new_cal_params_file,json_conf)
-   print("METEOR FILE FILE: ", meteor_json)
-   print("BEST CAL FILE: ", cal_params_file)
-   print("NEW CAL FILE: ", new_cal_file)
-   fov_poly, cal_params = minimize_fov_pos(new_cal_file, json_conf)
+   image_file = meteor_json.replace(".json", "-stacked.png")
+
+   key = cal_params_file.split("/")[-1][0:30]
+   new_key = meteor_json.split("/")[-1][0:30]
+
+   if key != new_key:
+
+      new_cal_params,new_cal_file = clone_cal_params(cal_params_file, new_cal_params_file,json_conf)
+      print("KEYS: ", key, new_key)
+      print("CLONE: ", cal_params_file, new_cal_params_file)
+      print("METEOR FILE FILE: ", meteor_json)
+      print("BEST CAL FILE: ", cal_params_file)
+      print("NEW CAL FILE: ", new_cal_file)
+   else:
+      print("Not cloning. This is already a cloned file.", key, new_key, cal_params_file ) 
+      new_cal_file = cal_params_file
+   fov_poly, cal_params = minimize_fov_pos(new_cal_file, image_file, json_conf)
 if cmd == "batch_fix":
    batch_fix(json_conf)
 
 if cmd == 'star_res':
    meteor_json_file = sys.argv[2]
-   star_res(meteor_json_file, json_conf, show)
+   res,stars,img = star_res(meteor_json_file, json_conf, show)
+   print("RES:", res)
 

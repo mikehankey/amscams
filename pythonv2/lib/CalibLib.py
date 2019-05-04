@@ -1102,6 +1102,8 @@ def get_catalog_stars(fov_poly, pos_poly, cal_params,dimension,x_poly,y_poly,min
       center_x = int(x_res / 2)
       center_y = int(x_res / 2)
 
+   #print("GET CAT STARS:", img_w, img_h, RA_center, dec_center)
+
    bright_stars_sorted = sorted(bright_stars, key=lambda x: x[4], reverse=False)
 
    for bname, cname, ra, dec, mag in bright_stars_sorted:
@@ -1220,7 +1222,6 @@ def radec_to_azel2(ra,dec,lat,lon,alt, caldate):
    return(az,el)
 
 def get_active_cal_file(input_file):
-   #print("INPUT FILE", input_file)
    if "png" in input_file:
       input_file = input_file.replace(".png", ".mp4")
    if "json" in input_file:
@@ -1254,7 +1255,7 @@ def find_matching_cal_files(cam_id, capture_date):
 
    for match in matches:
       (t_datetime, cam_id, f_date_str,Y,M,D, H, MM, S) = better_parse_file_date(match)
-      tdiff = (capture_date-t_datetime).total_seconds()
+      tdiff = abs((capture_date-t_datetime).total_seconds())
       td_sorted_matches.append((match,f_date_str,tdiff))
 
    temp = sorted(td_sorted_matches, key=lambda x: x[2], reverse=False)

@@ -683,9 +683,9 @@ def reduce_meteor_ajax(json_conf,meteor_json_file, cal_params_file, show = 0):
       print("This reduction was already tried and failed.", failed_file)
       return()
 
-   cmd = "cd /home/ams/amscams/pythonv2/; ./autoCal.py cfit " + cal_params_file + " 0 > /mnt/ams2/tmp/autoCal.txt "
-   print(cmd)
-   os.system(cmd)
+   #cmd = "cd /home/ams/amscams/pythonv2/; ./autoCal.py cfit " + cal_params_file + " 0 > /mnt/ams2/tmp/autoCal.txt "
+   #print(cmd)
+   #os.system(cmd)
 
 
    meteor_json = load_json_file(meteor_json_file)
