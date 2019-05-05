@@ -290,9 +290,11 @@ def mask_frame(frame, mp, masks, size=3):
    px_val = np.mean(frame)
    px_val = 0
 
+   print("MASK WIDTH:", iw, ih)
 
    for mask in masks:
       mx,my,mw,mh = mask.split(",")
+      print("MASKING: ", mx,my,mw,mh)
       frame[int(my):int(my)+int(mh),int(mx):int(mx)+int(mw)] = 0
 
    for x,y in mp:
