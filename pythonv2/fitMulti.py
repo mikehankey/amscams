@@ -22,7 +22,7 @@ tries = 0
 
 
 
-def reduce_fit(this_poly,field, merged_stars, cal_params, fit_img, json_conf, show=0):
+def reduce_fit(this_poly,field, merged_stars, cal_params, fit_img, json_conf, cam_id=None,show=0):
    cv2.namedWindow('pepe')
    this_fit_img = np.zeros((1080,1920),dtype=np.uint8)
    global tries
@@ -97,7 +97,7 @@ def reduce_fit(this_poly,field, merged_stars, cal_params, fit_img, json_conf, sh
    else:
       avg_res = 999
 
-   desc = "Initial Res: " + str(avg_res) + " " + str(total_stars)
+   desc = str(cam_id) + " Initial Res: " + str(avg_res)[0:6] + " " + str(total_stars)
    cv2.putText(this_fit_img, desc,  (20,50), cv2.FONT_HERSHEY_SIMPLEX, .8, (255, 255, 255), 1)
 
    show = 1
@@ -116,8 +116,10 @@ def reduce_fit(this_poly,field, merged_stars, cal_params, fit_img, json_conf, sh
    return(avg_res)
 
 
-def minimize_poly_params_fwd(merged_stars, json_conf,orig_ra_center=0,orig_dec_center=0,show=0):
+def minimize_poly_params_fwd(merged_stars, json_conf,orig_ra_center=0,orig_dec_center=0,cam_id=None,show=0):
 
+   if len(merged_stars) < 50:
+      return(0,0)
    cal_params = {}
    print("MS LEN:", len(merged_stars))
    if len(merged_stars) < 20:
@@ -129,10 +131,8 @@ def minimize_poly_params_fwd(merged_stars, json_conf,orig_ra_center=0,orig_dec_c
 
    if show == 1:
       cv2.namedWindow('pepe')
-   #x_poly_fwd = cal_params['x_poly_fwd'] 
-   #y_poly_fwd = cal_params['y_poly_fwd'] 
-   #x_poly = cal_params['x_poly'] 
-   #y_poly = cal_params['y_poly'] 
+
+   master_file = "master_cal_file_" + str(cam_id) + ".json"
 
    #close_stars = cal_params['close_stars']
    # do x poly fwd
@@ -158,16 +158,25 @@ def minimize_poly_params_fwd(merged_stars, json_conf,orig_ra_center=0,orig_dec_c
    field = 'x_poly'
    cal_params['pixscale'] = 158.739329193
 
-   x_poly = np.zeros(shape=(15,), dtype=np.float64)
-   y_poly = np.zeros(shape=(15,), dtype=np.float64)
-   x_poly_fwd = np.zeros(shape=(15,), dtype=np.float64)
-   y_poly_fwd = np.zeros(shape=(15,), dtype=np.float64)
+   if cfe(master_file) == 1:
+      print(master_file)
+      temp = load_json_file(master_file)
+
+      x_poly_fwd = temp['x_poly_fwd'] 
+      y_poly_fwd = temp['y_poly_fwd'] 
+      x_poly = temp['x_poly'] 
+      y_poly = temp['y_poly'] 
+   else:
+      x_poly = np.zeros(shape=(15,), dtype=np.float64)
+      y_poly = np.zeros(shape=(15,), dtype=np.float64)
+      x_poly_fwd = np.zeros(shape=(15,), dtype=np.float64)
+      y_poly_fwd = np.zeros(shape=(15,), dtype=np.float64)
    cal_params['x_poly'] = x_poly
    cal_params['y_poly'] = y_poly
    cal_params['x_poly_fwd'] = x_poly_fwd
    cal_params['y_poly_fwd'] = y_poly_fwd
    
-   res = scipy.optimize.minimize(reduce_fit, x_poly, args=(field,merged_stars,cal_params,fit_img,json_conf), method='Nelder-Mead')
+   res = scipy.optimize.minimize(reduce_fit, x_poly, args=(field,merged_stars,cal_params,fit_img,json_conf,cam_id), method='Nelder-Mead')
    x_poly = res['x']
    x_fun = res['fun']
    cal_params['x_poly'] = x_poly.tolist()
@@ -175,7 +184,7 @@ def minimize_poly_params_fwd(merged_stars, json_conf,orig_ra_center=0,orig_dec_c
 
    # do y poly 
    field = 'y_poly'
-   res = scipy.optimize.minimize(reduce_fit, y_poly, args=(field,merged_stars,cal_params,fit_img,json_conf), method='Nelder-Mead')
+   res = scipy.optimize.minimize(reduce_fit, y_poly, args=(field,merged_stars,cal_params,fit_img,json_conf,cam_id), method='Nelder-Mead')
    y_poly = res['x']
    y_fun = res['fun']
    cal_params['y_poly'] = y_poly.tolist()
@@ -183,7 +192,7 @@ def minimize_poly_params_fwd(merged_stars, json_conf,orig_ra_center=0,orig_dec_c
    
    # do x poly fwd
    field = 'x_poly_fwd'
-   res = scipy.optimize.minimize(reduce_fit, x_poly_fwd, args=(field,merged_stars,cal_params,fit_img,json_conf), method='Nelder-Mead')
+   res = scipy.optimize.minimize(reduce_fit, x_poly_fwd, args=(field,merged_stars,cal_params,fit_img,json_conf,cam_id), method='Nelder-Mead')
    x_poly_fwd = res['x']
    x_fun_fwd = res['fun']
    cal_params['x_poly_fwd'] = x_poly_fwd.tolist()
@@ -191,7 +200,7 @@ def minimize_poly_params_fwd(merged_stars, json_conf,orig_ra_center=0,orig_dec_c
 
    # do y poly fwd
    field = 'y_poly_fwd'
-   res = scipy.optimize.minimize(reduce_fit, y_poly_fwd, args=(field,merged_stars,cal_params,fit_img,json_conf), method='Nelder-Mead')
+   res = scipy.optimize.minimize(reduce_fit, y_poly_fwd, args=(field,merged_stars,cal_params,fit_img,json_conf,cam_id), method='Nelder-Mead')
    y_poly_fwd = res['x']
    y_fun_fwd = res['fun']
    cal_params['y_poly_fwd'] = y_poly_fwd.tolist()
@@ -218,7 +227,7 @@ def minimize_poly_params_fwd(merged_stars, json_conf,orig_ra_center=0,orig_dec_c
    #cal_params_file = cal_params_file.replace("-calparams.json", "-calparams-master.json")
    #save_json_file(cal_params_file, cal_params)
    #print(cal_params_file)
-   return(cal_params)
+   return(1, cal_params)
 
 def build_multi_cal(cal_params_file, json_conf):
    (f_datetime, cam_id, f_date_str,Y,M,D, H, MM, S) = better_parse_file_date(cal_params_file)
@@ -292,6 +301,10 @@ if __name__ == "__main__":
 
 
    cal_params_file = sys.argv[1]
+   try:
+      cam_id = sys.argv[2]
+   except:
+      cam_id = None
 
    print(cal_params_file)
    cal_params = load_json_file(cal_params_file)
@@ -301,7 +314,7 @@ if __name__ == "__main__":
    merged_stars, merged_files, orig_ra_center, orig_dec_center = build_multi_cal(cal_params_file, json_conf)
    cal_params['merged_stars'] = merged_stars
    cal_params['merged_files'] = merged_files
-   minimize_poly_params_fwd(merged_stars, cal_params_file, cal_params,json_conf,orig_ra_center,orig_dec_center)
+   minimize_poly_params_fwd(merged_stars, cal_params_file, cal_params,json_conf,orig_ra_center,orig_dec_center,cam_id)
 
 
 

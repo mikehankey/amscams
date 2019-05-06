@@ -17,8 +17,8 @@ import lib.brightstardata as bsd
 from lib.DetectLib import eval_cnt
 
 def reduce_fit(this_poly,field, cal_params, cal_params_file, fit_img, json_conf, show=1):
-   pos_poly = cal_params['pos_poly']
-   fov_poly = cal_params['fov_poly']
+   pos_poly = 0 
+   fov_poly = 0
    this_fit_img = fit_img.copy()
    if field == 'x_poly':
       x_poly_fwd = cal_params['x_poly_fwd']
@@ -51,6 +51,8 @@ def reduce_fit(this_poly,field, cal_params, cal_params_file, fit_img, json_conf,
    # loop over each pair of img/cat star and re-compute distortion with passed 'this poly', calc error distance and return avg distance for all pairs set
    total_res = 0
    total_res_fwd = 0
+   ra_center = float(cal_params['ra_center'])
+   dec_center = float(cal_params['dec_center'])
 
    for star in (cal_params['close_stars']):
       (dcname,mag,ra,dec,img_ra,img_dec,match_dist,new_x,new_y,img_az,img_el,new_cat_x,new_cat_y,six,siy, img_res) = star
@@ -80,8 +82,8 @@ def reduce_fit(this_poly,field, cal_params, cal_params_file, fit_img, json_conf,
    total_stars = len(cal_params['close_stars'])
    avg_res = total_res/total_stars
 
-   print("Total Residual Error:", total_res )
-   print("Avg Residual Error:", avg_res )
+   #print("Total Residual Error:", total_res )
+   print("Avg Residual Error:", field, avg_res )
  
    return(avg_res)
 
@@ -91,7 +93,11 @@ def minimize_poly_params_fwd(cal_params_file, cal_params,json_conf,show=1):
    #cv2.namedWindow('pepe')
    
    fit_img_file = cal_params_file.replace("-calparams.json", ".png")
-   fit_img = cv2.imread(fit_img_file)
+   if cfe(fit_img_file) == 1:
+      fit_img = cv2.imread(fit_img_file)
+   else:
+      fit_img = np.zeros((1080,1920),dtype=np.uint8)
+
    #if show == 1:
    #   cv2.namedWindow('pepe')
    x_poly_fwd = cal_params['x_poly_fwd'] 
@@ -149,11 +155,11 @@ def minimize_poly_params_fwd(cal_params_file, cal_params,json_conf,show=1):
    print("Y_POLY FWD FUN", y_fun_fwd)
 
 
-   img_x = 960
-   img_y = 540
-   new_x, new_y, img_ra,img_dec, img_az, img_el = XYtoRADec(img_x,img_y,cal_params_file,cal_params,json_conf)
-   cal_params['center_az'] = img_az
-   cal_params['center_el'] = img_el
+   #img_x = 960
+   #img_y = 540
+   #new_x, new_y, img_ra,img_dec, img_az, img_el = XYtoRADec(img_x,img_y,cal_params_file,cal_params,json_conf)
+   #cal_params['center_az'] = img_az
+   #cal_params['center_el'] = img_el
    save_json_file(cal_params_file, cal_params)
 
 

@@ -715,9 +715,6 @@ def plate_solve(cal_file,json_conf):
 
 def distort_xy_new(sx,sy,ra,dec,RA_center, dec_center, x_poly, y_poly, x_res, y_res, pos_angle_ref,F_scale=1):
 
-   #print("INPUT", sx,sy,ra,dec,RA_center,dec_center,pos_angle_ref,F_scale)
-   #print(x_poly)
-   #print(y_poly)
    ra_star = ra
    dec_star = dec
 
@@ -729,16 +726,6 @@ def distort_xy_new(sx,sy,ra,dec,RA_center, dec_center, x_poly, y_poly, x_res, y_
    #F_scale = 3600/F_scale
    #F_scale = 1
 
-   #RA_center = RA_center 
-   #RA_center = RA_center 
-
-   #dec_center = dec_center + (x_poly[13] * 100)
-   #dec_center = dec_center + (y_poly[13] * 100)
-
-   #RA_center = RA_center + (x_poly[13] * 100)
-   #RA_center = RA_center + (y_poly[13] * 100)
-
-
    # Gnomonization of star coordinates to image coordinates
    ra1 = math.radians(float(RA_center))
    dec1 = math.radians(float(dec_center))
@@ -746,11 +733,16 @@ def distort_xy_new(sx,sy,ra,dec,RA_center, dec_center, x_poly, y_poly, x_res, y_
    dec2 = math.radians(float(dec_star))
    ad = math.acos(math.sin(dec1)*math.sin(dec2) + math.cos(dec1)*math.cos(dec2)*math.cos(ra2 - ra1))
    radius = math.degrees(ad)
-   sinA = math.cos(dec2)*math.sin(ra2 - ra1)/math.sin(ad)
-   cosA = (math.sin(dec2) - math.sin(dec1)*math.cos(ad))/(math.cos(dec1)*math.sin(ad))
+   
+   try:
+      sinA = math.cos(dec2)*math.sin(ra2 - ra1)/math.sin(ad)
+      cosA = (math.sin(dec2) - math.sin(dec1)*math.cos(ad))/(math.cos(dec1)*math.sin(ad))
+   except:
+      sinA = 0
+      cosA = 0
    theta = -math.degrees(math.atan2(sinA, cosA))
-   #theta = theta + pos_angle_ref - 90.0
-   theta = theta + pos_angle_ref - 90 + (1000*x_poly[12]) + (1000*y_poly[12])
+   theta = theta + pos_angle_ref - 90.0
+   #theta = theta + pos_angle_ref - 90 + (1000*x_poly[12]) + (1000*y_poly[12])
    #theta = theta + pos_angle_ref - 90
 
 
