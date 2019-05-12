@@ -1,4 +1,5 @@
 #!/usr/bin/python3
+import time
 import glob
 import os
 import math
@@ -8,6 +9,7 @@ import numpy as np
 import scipy.optimize
 from fitMulti import minimize_poly_params_fwd
 from lib.VideoLib import get_masks, find_hd_file_new, load_video_frames
+from lib.UtilLib import check_running
 
 from lib.ImageLib import mask_frame , stack_frames
 
@@ -63,16 +65,23 @@ def save_cal(starfile, master_cal_file, json_conf):
          os.system("cp " + starfile + " " + cf_dir)
          os.system("./XYtoRAdecAzEl.py az_grid " + cal_params_file)
 
-def multi_merge(all_stars, json_conf):
-   show = 1 
+def multi_merge(all_stars, json_conf, show = 0):
    cameras = json_conf['cameras']
    cam_ids = []
 
+
    for cam_id in all_stars:
+      master_cal_file = "master_cal_file_" + cam_id + ".json"
       status = 0
+      skip = 0
+      if cfe(master_cal_file) == 1:
+         mcj = load_json_file(master_cal_file)
+         x_fun = float(mcj['x_fun'])
+      if mcj['x_fun'] < .5:
+         print(" This master file is sub .8-pixel res, it is good for now. Skipping.")
+         skip = 1
       print("CAMID",cam_id)
       merge_file = "/mnt/ams2/cal/autocal/startrack/starmerge-" + cam_id + ".json"
-      save_json_file(merge_file, all_stars[cam_id])
 
       merged_stars = all_stars[cam_id]
 
@@ -99,9 +108,9 @@ def multi_merge(all_stars, json_conf):
       new_cp = cal_params_file.replace("-calparams.json", "-calparams-master.json")
       master_cal_params = {}
       #if cfe(new_cp) == 0 :
-      if True :
+      if True:
          #new_multi_fit_merge = remove_bad_pairs(multi_fit_merge)
-         new_multi_fit_merge = clean_pairs(multi_fit_merge)
+         new_multi_fit_merge = clean_pairs(multi_fit_merge, x_fun)
          #exit()
          #new_multi_fit_merge = multi_fit_merge
          print("MINIMIZE: " )
@@ -109,18 +118,29 @@ def multi_merge(all_stars, json_conf):
          cal_params = default_cal_params(cal_params,json_conf)
          #cal_params['close_stars'] = user_stars
          # do 1 cam here
-         if True:
-            status, fin_cal_params = minimize_poly_params_fwd(new_multi_fit_merge, json_conf,0,0,cam_id)
+         merge_file = "/mnt/ams2/cal/tmp/" + cam_id + "_merge.json"
+         save_json_file(merge_file, new_multi_fit_merge)
+         
+         if skip == 0:
+            #status, fin_cal_params = minimize_poly_params_fwd(new_multi_fit_merge, json_conf,0,0,cam_id)
+           
+            cmd = "./autoCal.py run_merge " + merge_file + " " + cam_id + " " + str(show) + " &"
+            print(cmd)
+            os.system(cmd) 
             if status == 1:
                for key in fin_cal_params:
                   master_cal_params[key] = fin_cal_params[key]
       else:
          print("SKIPPING ALREADY DONE!")
-      if status == 1:
-         master_cal_file = "master_cal_file_" + cam_id + ".json"
+      if status == 1 and skip == 0:
          save_json_file(master_cal_file, master_cal_params)
 
-def clean_pairs(merged_stars):
+def clean_pairs(merged_stars, last_res = 0):
+   merged_stars = sorted(merged_stars, key=lambda x: x[19], reverse=True)
+   bottom_num = -1 * int(len(merged_stars) * .2)
+   temp = merged_stars[0:bottom_num]
+   merged_stars = temp 
+   
    merged_stars = sorted(merged_stars, key=lambda x: x[19], reverse=False)
    ts = 0
    tsv = 0
@@ -133,16 +153,36 @@ def clean_pairs(merged_stars):
    else:
       avg = 0
 
+   multi = 0
+   print("Last res:", last_res)
 
+   inc_limit = 1 
+   if 3 < last_res < 5:
+      inc_limit = 2
+   if 1 < last_res < 3:
+      inc_limit = 1 
+   if last_res < 1:
+      inc_limit = 1 
+   if ts < 400:
+      inc_limit = 3 
+ 
+   inc_limit = 3
+ 
+   print("INC LIM:", inc_limit, last_res)  
+ 
    print("AVG:", avg)
+  
    good_merge = []
    for star in merged_stars:
       (cal_file,ra_center,dec_center,position_angle,dcname,mag,ra,dec,img_ra,img_dec,match_dist,new_x,new_y,img_az,img_el,new_cat_x,new_cat_y,six,siy, img_res) = star
       print(six, siy, img_res)
-      if img_res <= avg -(avg * 0):
+      if img_res <= inc_limit:
+         print("STAR GOOD:", img_res)
          good_merge.append(star)
       else:
          print("drop star, too far.", img_res)
+
+
    return(good_merge)
 
 def star_quad(x,y):
@@ -268,7 +308,7 @@ def clone_cal_params(cal_params_file, child_file,json_conf):
 
 
 def minimize_fov_pos(meteor_json_file, image_file, json_conf, cal_params = None, show=0 ):
-
+   print("SHOW:", show)
    debug = open("debug.txt", "w")
    if cal_params is None:
       cal_params = load_json_file(cal_params_file)
@@ -328,11 +368,11 @@ def minimize_fov_pos(meteor_json_file, image_file, json_conf, cal_params = None,
    oimg = mask_frame(oimg, [], masks)
    img = mask_frame(img, [], masks)
 
-
-   cv2.namedWindow('pepe')
-
-   cv2.imshow('pepe', img)
-   cv2.waitKey(1) 
+  
+   if show == 1:
+      cv2.namedWindow('pepe')
+      cv2.imshow('pepe', img)
+      cv2.waitKey(1) 
 
    res = reduce_fov_pos(this_poly, cal_params,image_file,oimg,json_conf, paired_stars,0,show)
    debug.write("FIRST RES:" + str(res) + " " +  str(cal_params['orig_az_center']) + " " + str(cal_params['orig_el_center']) + " " + str(cal_params['orig_pos_ang']) + "\n")
@@ -356,7 +396,6 @@ def minimize_fov_pos(meteor_json_file, image_file, json_conf, cal_params = None,
       total_dist = total_dist + match_dist
       cv2.putText(img, iname,  (six,siy), cv2.FONT_HERSHEY_SIMPLEX, .8, (255, 255, 255), 1)
 
-   show=1
    desc = "Initial Res: " + str(res)
    cv2.putText(img, desc,  (20,50), cv2.FONT_HERSHEY_SIMPLEX, .8, (255, 255, 255), 1)
    show_img = cv2.resize(img, (960,540))
@@ -441,7 +480,6 @@ def remove_dupe_cat_stars(paired_stars):
 
 def reduce_fov_pos(this_poly, in_cal_params, cal_params_file, oimage, json_conf, paired_stars, min_run = 1, show=0):
    image = oimage.copy()
-   show = 1
    # cal_params_file should be 'image' filename
    org_az = in_cal_params['center_az'] 
    org_el = in_cal_params['center_el'] 
@@ -1246,6 +1284,7 @@ def get_stars_from_image(file,json_conf,masks = [], cal_params = None, show = 0)
    star_dist = 10
    if mc_on == 0:
       star_dist = 15 
+
    for star in img_stars:
       ix, iy = star
       status, star_info = lookup_star_in_cat(ix,iy,cat_stars,star_dist)
@@ -1551,28 +1590,50 @@ def star_res(meteor_json_file, json_conf, show):
 
 
 def batch_fix (json_conf):
+   max_proc = 12
    meteor_dirs = glob.glob("/mnt/ams2/meteors/*")
    bad_files = [] 
    refit = 0
+
+   jobs = []
+
    for meteor_dir in sorted(meteor_dirs,reverse=True)[10:11]:
       meteor_files = glob.glob(meteor_dir + "/*-reduced.json")
       for meteor_file in meteor_files:
          mf = meteor_file.replace("-reduced.json", ".json")
          fn = mf.split("/")[-1]
          cmd = "./autoCal.py imgstars " + mf + " 0"
-         os.system(cmd)
-         cmd = "./autoCal.py cfit " + mf + " 0"
-         os.system(cmd)
+         jobs.append(cmd) 
+         #os.system(cmd)
+         cmd =  "./autoCal.py cfit " + mf + " 0"
+         jobs.append(cmd) 
+         #os.system(cmd)
          cmd = "./autoCal.py imgstars " + mf + " 0"
-         os.system(cmd)
-   cmd = "./autoCal.py star_cal 2019_04_23"
-   os.system(cmd)
+         jobs.append(cmd) 
+         #os.system(cmd)
+         mfr = mf.replace(".json", "-reduced.json")
+         cmd = "./reducer.py " + mfr 
+         jobs.append(cmd) 
+
+   running = check_running("autoCal.py")
+   print("Jobs Running: ", running)
+
+   jc = 0
+   for job in jobs:
+      while (check_running("autoCal.py")) > 10:       
+         print("Waiting to run some jobs...")
+         time.sleep(10)
+      print(job)
+      os.system(job + " &")
+      #if jc > 10:
+      #   print("Quit early.")
+      #   exit()
+      jc = jc + 1
 
 
-json_conf = load_json_file("../conf/as6.json")
 
 
-def meteor_cal(date,json_conf):
+def meteor_cal(date,json_conf, show=0):
    meteor_dir = "/mnt/ams2/meteors/" + date + "/*reduced.json"
    meteor_files = glob.glob(meteor_dir) 
    merge_stars = {}
@@ -1583,8 +1644,8 @@ def meteor_cal(date,json_conf):
       if cam_id not in merge_stars:
          merge_stars[cam_id] = {}
       merge_stars[cam_id][meteor_file] = [] 
-      if 'cat_image_stars' in md:
-         cat_image_stars = md['cat_image_stars']
+      if 'cat_image_stars' in md['cal_params']:
+         cat_image_stars = md['cal_params']['cat_image_stars']
       else:
          print("NO CAT IMAGE STARS IN FILE", meteor_file)
          cat_image_stars = []
@@ -1594,16 +1655,13 @@ def meteor_cal(date,json_conf):
          merge_stars[cam_id][meteor_file].append((meteor_file,md['cal_params']['ra_center'],md['cal_params']['dec_center'],md['cal_params']['position_angle'],name,mag,ra,dec,img_ra,img_dec,match_dist,new_cat_x,new_cat_y,img_az,img_el,new_cat_x,new_cat_y,ix,iy, img_res))
 
    cc = 0
-   merged = merge_stars['010002'] 
-   for file_key in merged:
-      stars = merged[file_key]
-      for star in stars:
-         print(cc, star)
-         meteor_file,ra_center,dec_center,position_angle,name,mag,ra,dec,img_ra,img_dec,match_dist,new_cat_x,new_cat_y,img_az,img_el,new_cat_x,new_cat_y,ix,iy, img_res = star
-         cc = cc + 1
-
-     
-   multi_merge(merge_stars,json_conf)
+   #for file_key in merged:
+   #   stars = merged[file_key]
+   #   for star in stars:
+   #      print(cc, star)
+   #      meteor_file,ra_center,dec_center,position_angle,name,mag,ra,dec,img_ra,img_dec,match_dist,new_cat_x,new_cat_y,img_az,img_el,new_cat_x,new_cat_y,ix,iy, img_res = star
+   #      cc = cc + 1
+   multi_merge(merge_stars,json_conf,show)
 
 
 def meteor_cal_old(date,json_conf):
@@ -1632,6 +1690,7 @@ def meteor_cal_old(date,json_conf):
    multi_merge(merge_stars,json_conf)
          
 
+json_conf = load_json_file("../conf/as6.json")
 cmd = sys.argv[1]
 try:
    date = sys.argv[2]
@@ -1694,6 +1753,8 @@ if cmd == 'latlon':
    #minimize_latlon(cal_params_file, json_conf)
 if cmd == 'cfit':
    meteor_json = sys.argv[2]
+   if len(sys.argv) == 4:
+      show = int(sys.argv[3])
    meteor_json_file_red = meteor_json.replace(".json", "-reduced.json")
    mj = load_json_file(meteor_json_file_red)
    if 'hd_stack' in mj:
@@ -1703,7 +1764,7 @@ if cmd == 'cfit':
 
    cal_params = mj['cal_params']
    cal_params['cat_image_stars'] = mj['cat_image_stars']
-   fov_poly, cal_params = minimize_fov_pos(meteor_json, image_file, json_conf, cal_params)
+   fov_poly, cal_params = minimize_fov_pos(meteor_json, image_file, json_conf, cal_params, show)
    mj['cal_params'] = cal_params 
    save_json_file(meteor_json_file_red, mj)
 
@@ -1799,4 +1860,24 @@ if cmd == 'imgstars':
 
 if cmd == 'meteor_cal':
    date = sys.argv[2]
-   meteor_cal(date, json_conf)
+   if len(sys.argv) == 4:
+      show = int(sys.argv[3])
+   print("date:", date)
+   meteor_cal(date, json_conf, show)
+if cmd == 'run_merge':
+   merge_file = sys.argv[2]
+   if len(sys.argv) == 5:
+      show = int(sys.argv[4])
+   cam_id = sys.argv[3]
+   merge_stars = load_json_file(merge_file)
+   cam_stars = {}
+   master_cal_params = {}
+   master_cal_file = "master_cal_file_" + cam_id + ".json"
+   print("SHOW:", show)
+   status, fin_cal_params = minimize_poly_params_fwd(merge_stars, json_conf,0,0,cam_id, show)
+   for key in fin_cal_params:
+      master_cal_params[key] = fin_cal_params[key]
+   if status == 1 :
+      save_json_file(master_cal_file, master_cal_params)
+
+

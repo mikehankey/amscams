@@ -100,7 +100,6 @@ def reduce_fit(this_poly,field, merged_stars, cal_params, fit_img, json_conf, ca
    desc = str(cam_id) + " Initial Res: " + str(avg_res)[0:6] + " " + str(total_stars)
    cv2.putText(this_fit_img, desc,  (20,50), cv2.FONT_HERSHEY_SIMPLEX, .8, (255, 255, 255), 1)
 
-   show = 1
    if show == 1:
       simg = cv2.resize(this_fit_img, (960,540))
       cv2.imshow('pepe', simg) 
@@ -305,6 +304,7 @@ if __name__ == "__main__":
       cam_id = sys.argv[2]
    except:
       cam_id = None
+
 
    print(cal_params_file)
    cal_params = load_json_file(cal_params_file)
