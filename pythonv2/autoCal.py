@@ -1612,8 +1612,8 @@ def batch_fix (json_conf):
          jobs.append(cmd) 
          #os.system(cmd)
          mfr = mf.replace(".json", "-reduced.json")
-         cmd = "./reducer.py " + mfr 
-         jobs.append(cmd) 
+         #cmd = "./reducer.py " + mfr 
+         #jobs.append(cmd) 
 
    running = check_running("autoCal.py")
    print("Jobs Running: ", running)
