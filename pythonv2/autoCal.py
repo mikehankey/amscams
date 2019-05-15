@@ -68,8 +68,6 @@ def save_cal(starfile, master_cal_file, json_conf):
 def multi_merge(all_stars, json_conf, show = 0):
    cameras = json_conf['cameras']
    cam_ids = []
-
-
    for cam_id in all_stars:
       master_cal_file = "master_cal_file_" + cam_id + ".json"
       status = 0
@@ -1689,6 +1687,26 @@ def meteor_cal_old(date,json_conf):
    save_json_file("merge.txt", merge_stars)
    multi_merge(merge_stars,json_conf)
          
+def get_hd_files_for_day_cam(day,cam_id):
+   glob_str = "/mnt/ams2/HD/" + day + "*" + cam_id + "*.mp4"
+   print(glob_str)
+   hd_files = glob.glob(glob_str)
+   return(hd_files) 
+
+def make_hd_images(day, json_conf):
+
+   cameras = json_conf['cameras']
+   for id in  cameras:
+      cam_id = json_conf['cameras'][id]['cams_id'] 
+      print("CAM ID:", id, cam_id)
+      hd_files = get_hd_files_for_day_cam(day,cam_id)
+      print("HD FILES:", len(hd_files))
+
+
+
+
+
+
 
 json_conf = load_json_file("../conf/as6.json")
 cmd = sys.argv[1]
@@ -1717,6 +1735,8 @@ if cmd == 'weather':
       if weather[key] >= 30:
          status = 'great' 
       print(key, weather[key], status)
+
+
 
 if cmd == 'hd_cal':
   scmd = ''
@@ -1857,6 +1877,10 @@ if cmd == 'imgstars':
 
    print("Saving:", meteor_json_file_red)
    save_json_file(meteor_json_file_red, meteor_json)
+
+if cmd == 'make_hd_images':
+   date = sys.argv[2]
+   make_hd_images(date, json_conf)
 
 if cmd == 'meteor_cal':
    date = sys.argv[2]
