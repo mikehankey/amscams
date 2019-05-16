@@ -45,7 +45,7 @@ def AzEltoRADec(az,el,cal_file,cal_params,json_conf):
    obs.lon = str(device_lng)
    obs.elevation = float(device_alt)
    obs.date = hd_datetime 
-
+   #print("AZ/RA DEBUG: ", device_lat, device_lng, device_alt, hd_datetime, az, el)
    #print("AZ2RA DATETIME:", hd_datetime)
    #print("AZ2RA LAT:", obs.lat)
    #print("AZ2RA LON:", obs.lon)
@@ -55,7 +55,8 @@ def AzEltoRADec(az,el,cal_file,cal_params,json_conf):
    #print("AZ2RA RAD AZ,EL:", azr,elr)
 
    ra,dec = obs.radec_of(azr,elr)
-
+   
+   #print("AZ2RA RA,DEC:", ra,dec)
 
    return(ra,dec)
 
@@ -1109,7 +1110,7 @@ def get_catalog_stars(fov_poly, pos_poly, cal_params,dimension,x_poly,y_poly,min
          name = cname
 
       ang_sep = angularSeparation(ra,dec,RA_center,dec_center)
-      if ang_sep < fov_radius and float(mag) < 6:
+      if ang_sep < fov_radius and float(mag) < 5.5:
          new_cat_x, new_cat_y = distort_xy_new (0,0,ra,dec,RA_center, dec_center, x_poly, y_poly, x_res, y_res, pos_angle_ref,F_scale)
 
          possible_stars = possible_stars + 1
