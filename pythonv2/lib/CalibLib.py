@@ -1076,8 +1076,6 @@ def get_catalog_stars(fov_poly, pos_poly, cal_params,dimension,x_poly,y_poly,min
    possible_stars = 0
    img_w = int(cal_params['imagew'])
    img_h = int(cal_params['imageh'])
-   #RA_center = float(cal_params['ra_center']) + (1000*fov_poly[0])
-   #dec_center = float(cal_params['dec_center']) + (1000*fov_poly[1])
    RA_center = float(cal_params['ra_center']) 
    dec_center = float(cal_params['dec_center']) 
    F_scale = 3600/float(cal_params['pixscale'])
@@ -1085,9 +1083,7 @@ def get_catalog_stars(fov_poly, pos_poly, cal_params,dimension,x_poly,y_poly,min
    fov_h = img_h / F_scale
    fov_radius = np.sqrt((fov_w/2)**2 + (fov_h/2)**2)
 
-   #pos_angle_ref = cal_params['position_angle'] + (1000*pos_poly[0])
    pos_angle_ref = cal_params['position_angle'] 
-   # + (1000*pos_poly[0])
    x_res = int(cal_params['imagew'])
    y_res = int(cal_params['imageh'])
 
@@ -1095,18 +1091,14 @@ def get_catalog_stars(fov_poly, pos_poly, cal_params,dimension,x_poly,y_poly,min
       center_x = int(x_res / 2)
       center_y = int(x_res / 2)
 
-   #print("GET CAT STARS:", img_w, img_h, RA_center, dec_center)
-
    bright_stars_sorted = sorted(bright_stars, key=lambda x: x[4], reverse=False)
 
    for bname, cname, ra, dec, mag in bright_stars_sorted:
       dcname = cname.decode("utf-8")
       dbname = bname.decode("utf-8")
       if dcname == "":
-         #name = dbname
          name = bname
       else:
-         #name = dcname
          name = cname
 
       ang_sep = angularSeparation(ra,dec,RA_center,dec_center)
@@ -1114,7 +1106,6 @@ def get_catalog_stars(fov_poly, pos_poly, cal_params,dimension,x_poly,y_poly,min
          new_cat_x, new_cat_y = distort_xy_new (0,0,ra,dec,RA_center, dec_center, x_poly, y_poly, x_res, y_res, pos_angle_ref,F_scale)
 
          possible_stars = possible_stars + 1
-         #print(name, mag, new_cat_x, new_cat_y)
          catalog_stars.append((name,mag,ra,dec,new_cat_x,new_cat_y))
 
    return(catalog_stars)

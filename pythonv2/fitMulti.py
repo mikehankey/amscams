@@ -22,8 +22,8 @@ tries = 0
 
 
 
-def reduce_fit(this_poly,field, merged_stars, cal_params, fit_img, json_conf, cam_id=None,show=0):
-   cv2.namedWindow('pepe')
+def reduce_fit(this_poly,field, merged_stars, cal_params, fit_img, json_conf, cam_id=None,mode=0,show=0):
+   print("SHOW IS:", show)
    this_fit_img = np.zeros((1080,1920),dtype=np.uint8)
    global tries
 
@@ -60,20 +60,23 @@ def reduce_fit(this_poly,field, merged_stars, cal_params, fit_img, json_conf, ca
    total_res_fwd = 0
 
    # OK. For multi-fit, we need to add the cal_file (includes date) to the front of this list. and then calulate the RA/DEC center on-the-fly based on the AZ/EL and date conversion. The update the calparams for this specific star before doing the distortion. 
-
+   new_merged_stars = []
    for star in merged_stars:
-      (cal_file,ra_center,dec_center,pos_angle,dcname,mag,ra,dec,img_ra,img_dec,match_dist,new_x,new_y,img_az,img_el,new_cat_x,new_cat_y,six,siy, img_res) = star
+      (cal_file,ra_center,dec_center,pos_angle,pixscale,dcname,mag,ra,dec,img_ra,img_dec,match_dist,new_x,new_y,img_az,img_el,new_cat_x,new_cat_y,six,siy, old_img_res) = star
  
       if field == 'x_poly' or field == 'y_poly':
-         new_cat_x, new_cat_y = distort_xy_new (0,0,ra,dec,float(ra_center), float(dec_center), x_poly, y_poly, float(1920), float(1080), float(pos_angle),3600/float(cal_params['pixscale']))
+         new_cat_x, new_cat_y = distort_xy_new (0,0,ra,dec,float(ra_center), float(dec_center), x_poly, y_poly, float(1920), float(1080), float(pos_angle),3600/float(pixscale))
          cv2.rectangle(this_fit_img, (int(new_cat_x)-10, int(new_cat_y)-10), (int(new_cat_x) + 10, int(new_cat_y) + 10), (128, 128, 128), 1)
          cv2.line(this_fit_img, (six,siy), (int(new_cat_x),int(new_cat_y)), (255), 2) 
          img_res = abs(calc_dist((six,siy),(new_cat_x,new_cat_y)))
-
+         new_y = new_cat_y
+         new_x = new_cat_x
+         #print("RES OLD/NEW:", old_img_res, img_res)
       else:
          cal_params['ra_center'] = ra_center
          cal_params['dec_center'] = dec_center
          cal_params['position_angle'] = pos_angle 
+         cal_params['pixscale'] = pixscale 
          cal_params['imagew'] = 1920
          cal_params['imageh'] = 1080 
          new_x, new_y, img_ra,img_dec, img_az, img_el = XYtoRADec(six,siy,cal_file,cal_params,json_conf)
@@ -85,6 +88,7 @@ def reduce_fit(this_poly,field, merged_stars, cal_params, fit_img, json_conf, ca
 
          cv2.rectangle(this_fit_img, (int(new_x)-10, int(new_y)-10), (int(new_x) + 10, int(new_y) + 10), (128, 128, 128), 1)
       cv2.circle(this_fit_img,(six,siy), 12, (128,128,128), 1)
+      new_merged_stars.append((cal_file,ra_center,dec_center,pos_angle,pixscale,dcname,mag,ra,dec,img_ra,img_dec,match_dist,new_x,new_y,img_az,img_el,new_cat_x,new_cat_y,six,siy, img_res))
 
       total_res = total_res + img_res
      
@@ -103,20 +107,22 @@ def reduce_fit(this_poly,field, merged_stars, cal_params, fit_img, json_conf, ca
    if show == 1:
       simg = cv2.resize(this_fit_img, (960,540))
       cv2.imshow('pepe', simg) 
-      cv2.waitKey(1)
+      cv2.waitKey(10)
 
    print("Total Residual Error:",field, total_res )
    print("Total Stars:", total_stars)
    print("Total Tries:", tries)
    print("Avg Residual Error:", avg_res )
+   print("Show:", show)
    tries = tries + 1
    #print("Try:", tries)
- 
-   return(avg_res)
+   if mode == 0: 
+      return(avg_res)
+   else:
+      return(avg_res, new_merged_stars)
 
 
-def minimize_poly_params_fwd(merged_stars, json_conf,orig_ra_center=0,orig_dec_center=0,cam_id=None,show=0):
-
+def minimize_poly_params_fwd(merged_stars, json_conf,orig_ra_center=0,orig_dec_center=0,cam_id=None,master_file=None,show=0):
    if len(merged_stars) < 50:
       return(0,0)
    cal_params = {}
@@ -130,8 +136,8 @@ def minimize_poly_params_fwd(merged_stars, json_conf,orig_ra_center=0,orig_dec_c
 
    if show == 1:
       cv2.namedWindow('pepe')
-
-   master_file = "master_cal_file_" + str(cam_id) + ".json"
+   if master_file is None:
+      master_file = "master_cal_file_" + str(cam_id) + ".json"
 
    #close_stars = cal_params['close_stars']
    # do x poly fwd
@@ -139,9 +145,9 @@ def minimize_poly_params_fwd(merged_stars, json_conf,orig_ra_center=0,orig_dec_c
       cv2.namedWindow('pepe') 
    this_fit_img = fit_img.copy()
    for star in merged_stars:
-      print("STAR: ", len(star))
-      print("STAR: ", star)
-      (cal_file,ra_center,dec_center,position_angle,dcname,mag,ra,dec,img_ra,img_dec,match_dist,new_x,new_y,img_az,img_el,new_cat_x,new_cat_y,six,siy, img_res) = star
+      #print("STAR: ", len(star))
+      #print("STAR: ", star)
+      (cal_file,ra_center,dec_center,position_angle,pixscale,dcname,mag,ra,dec,img_ra,img_dec,match_dist,new_x,new_y,img_az,img_el,new_cat_x,new_cat_y,six,siy, img_res) = star
       cv2.rectangle(this_fit_img, (new_cat_x-2, new_cat_y-2), (new_cat_x + 2, new_cat_y + 2), (128, 128, 128), 1)
       cv2.rectangle(this_fit_img, (six-4, siy-4), (six+4, siy+4), (128, 128, 128), 1)
       cv2.line(this_fit_img, (six,siy), (new_cat_x,new_cat_y), (255), 2) 
@@ -155,7 +161,7 @@ def minimize_poly_params_fwd(merged_stars, json_conf,orig_ra_center=0,orig_dec_c
 
    # do x poly 
    field = 'x_poly'
-   cal_params['pixscale'] = 158.739329193
+   #cal_params['pixscale'] = 158.739329193
 
    if cfe(master_file) == 1:
       print(master_file)
@@ -174,24 +180,55 @@ def minimize_poly_params_fwd(merged_stars, json_conf,orig_ra_center=0,orig_dec_c
    cal_params['y_poly'] = y_poly
    cal_params['x_poly_fwd'] = x_poly_fwd
    cal_params['y_poly_fwd'] = y_poly_fwd
-   
-   res = scipy.optimize.minimize(reduce_fit, x_poly, args=(field,merged_stars,cal_params,fit_img,json_conf,cam_id), method='Nelder-Mead')
+
+   strict =  1
+   if strict == 0: 
+      xa = 100
+      fa = 100
+      options = {'xatol': xa, 'fatol': fa}
+   else:
+      xa = 10 
+      fa = 10
+      temp2 = []
+      res,updated_merged_stars = reduce_fit(x_poly, "x_poly",merged_stars,cal_params,fit_img,json_conf,cam_id,1,show)
+
+      c = 0
+      new_merged_stars = []
+      for star in updated_merged_stars:
+         (cal_file,ra_center,dec_center,pos_angle,pixscale,dcname,mag,ra,dec,img_ra,img_dec,match_dist,new_x,new_y,img_az,img_el,new_cat_x,new_cat_y,six,siy, img_res) = star
+         if img_res < res :
+            print("bad_star:", img_res)
+            new_merged_stars.append(star)
+      print("AVG RES:", res)
+      print("OLD MERGED STARS:", len(merged_stars))
+      print("NEW MERGED STARS:", len(new_merged_stars))
+      merged_stars = new_merged_stars 
+      options = {}
+   #exit()
+         
+   mode = 0 
+   res = scipy.optimize.minimize(reduce_fit, x_poly, args=(field,merged_stars,cal_params,fit_img,json_conf,cam_id,mode,show), method='Nelder-Mead', options={})
    x_poly = res['x']
    x_fun = res['fun']
    cal_params['x_poly'] = x_poly.tolist()
    cal_params['x_fun'] = x_fun
 
+      
    # do y poly 
    field = 'y_poly'
-   res = scipy.optimize.minimize(reduce_fit, y_poly, args=(field,merged_stars,cal_params,fit_img,json_conf,cam_id), method='Nelder-Mead')
+   res = scipy.optimize.minimize(reduce_fit, y_poly, args=(field,merged_stars,cal_params,fit_img,json_conf,cam_id,mode,show), method='Nelder-Mead', options={})
    y_poly = res['x']
    y_fun = res['fun']
    cal_params['y_poly'] = y_poly.tolist()
    cal_params['y_fun'] = y_fun
    
+
+
    # do x poly fwd
    field = 'x_poly_fwd'
-   res = scipy.optimize.minimize(reduce_fit, x_poly_fwd, args=(field,merged_stars,cal_params,fit_img,json_conf,cam_id), method='Nelder-Mead')
+   xa = .05
+   fa = .05
+   res = scipy.optimize.minimize(reduce_fit, x_poly_fwd, args=(field,merged_stars,cal_params,fit_img,json_conf,cam_id,mode,show), method='Nelder-Mead'  )
    x_poly_fwd = res['x']
    x_fun_fwd = res['fun']
    cal_params['x_poly_fwd'] = x_poly_fwd.tolist()
@@ -199,7 +236,7 @@ def minimize_poly_params_fwd(merged_stars, json_conf,orig_ra_center=0,orig_dec_c
 
    # do y poly fwd
    field = 'y_poly_fwd'
-   res = scipy.optimize.minimize(reduce_fit, y_poly_fwd, args=(field,merged_stars,cal_params,fit_img,json_conf,cam_id), method='Nelder-Mead')
+   res = scipy.optimize.minimize(reduce_fit, y_poly_fwd, args=(field,merged_stars,cal_params,fit_img,json_conf,cam_id,mode,show), method='Nelder-Mead')
    y_poly_fwd = res['x']
    y_fun_fwd = res['fun']
    cal_params['y_poly_fwd'] = y_poly_fwd.tolist()
@@ -219,8 +256,8 @@ def minimize_poly_params_fwd(merged_stars, json_conf,orig_ra_center=0,orig_dec_c
    img_x = 960
    img_y = 540
    #new_x, new_y, img_ra,img_dec, img_az, img_el = XYtoRADec(img_x,img_y,cal_params_file,cal_params,json_conf)
-   #cal_params['center_az'] = img_az
-   #cal_params['center_el'] = img_el
+   cal_params['center_az'] = img_az
+   cal_params['center_el'] = img_el
    #cal_params['ra_center'] = orig_ra_center
    #cal_params['dec_center'] = orig_dec_center
    #cal_params_file = cal_params_file.replace("-calparams.json", "-calparams-master.json")
