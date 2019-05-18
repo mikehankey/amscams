@@ -101,8 +101,8 @@ def reduce_fit(this_poly,field, merged_stars, cal_params, fit_img, json_conf, ca
    else:
       avg_res = 999
 
-   desc = str(cam_id) + " Initial Res: " + str(avg_res)[0:6] + " " + str(total_stars)
-   cv2.putText(this_fit_img, desc,  (20,50), cv2.FONT_HERSHEY_SIMPLEX, .8, (255, 255, 255), 1)
+   desc = "Cam: " + str(cam_id) + " Stars: " + str(total_stars) + " " + field + " Res: " + str(avg_res)[0:6] + " Tries: " + str(tries)
+   cv2.putText(this_fit_img, desc,  (5,1070), cv2.FONT_HERSHEY_SIMPLEX, 1, (255, 255, 255), 1)
 
    if show == 1:
       simg = cv2.resize(this_fit_img, (960,540))
@@ -145,8 +145,6 @@ def minimize_poly_params_fwd(merged_stars, json_conf,orig_ra_center=0,orig_dec_c
       cv2.namedWindow('pepe') 
    this_fit_img = fit_img.copy()
    for star in merged_stars:
-      #print("STAR: ", len(star))
-      #print("STAR: ", star)
       (cal_file,ra_center,dec_center,position_angle,pixscale,dcname,mag,ra,dec,img_ra,img_dec,match_dist,new_x,new_y,img_az,img_el,new_cat_x,new_cat_y,six,siy, img_res) = star
       cv2.rectangle(this_fit_img, (new_cat_x-2, new_cat_y-2), (new_cat_x + 2, new_cat_y + 2), (128, 128, 128), 1)
       cv2.rectangle(this_fit_img, (six-4, siy-4), (six+4, siy+4), (128, 128, 128), 1)
@@ -156,7 +154,6 @@ def minimize_poly_params_fwd(merged_stars, json_conf,orig_ra_center=0,orig_dec_c
    if show == 1:
       cv2.imshow('pepe', simg)
    cv2.waitKey(1)
-#   exit()
 
 
    # do x poly 
@@ -181,30 +178,53 @@ def minimize_poly_params_fwd(merged_stars, json_conf,orig_ra_center=0,orig_dec_c
    cal_params['x_poly_fwd'] = x_poly_fwd
    cal_params['y_poly_fwd'] = y_poly_fwd
 
-   strict =  1
+   res,updated_merged_stars = reduce_fit(x_poly, "x_poly",merged_stars,cal_params,fit_img,json_conf,cam_id,1,show)
+   if res < .5:
+      strict = 1 
+   else:
+      strict = 0
+   print("INITIAL RES: ", res, strict)
    if strict == 0: 
       xa = 100
       fa = 100
       options = {'xatol': xa, 'fatol': fa}
+      options = {}
    else:
       xa = 10 
       fa = 10
       temp2 = []
-      res,updated_merged_stars = reduce_fit(x_poly, "x_poly",merged_stars,cal_params,fit_img,json_conf,cam_id,1,show)
+   res,updated_merged_stars = reduce_fit(x_poly, "x_poly",merged_stars,cal_params,fit_img,json_conf,cam_id,1,show)
 
-      c = 0
-      new_merged_stars = []
-      for star in updated_merged_stars:
-         (cal_file,ra_center,dec_center,pos_angle,pixscale,dcname,mag,ra,dec,img_ra,img_dec,match_dist,new_x,new_y,img_az,img_el,new_cat_x,new_cat_y,six,siy, img_res) = star
-         if img_res < res :
-            print("bad_star:", img_res)
-            new_merged_stars.append(star)
-      print("AVG RES:", res)
-      print("OLD MERGED STARS:", len(merged_stars))
-      print("NEW MERGED STARS:", len(new_merged_stars))
-      merged_stars = new_merged_stars 
-      options = {}
-   #exit()
+   # compute std dev distance
+   tot_res = 0
+   close_stars = []
+   dist_list = []
+   for star in updated_merged_stars:
+      (cal_file,ra_center,dec_center,pos_angle,pixscale,dcname,mag,ra,dec,img_ra,img_dec,match_dist,new_x,new_y,img_az,img_el,new_cat_x,new_cat_y,six,siy, img_res) = star
+      #px_dist = calc_dist((six,siy),(new_cat_x,new_cat_y))
+      dist_list.append(img_res)
+   std_dev_dist = np.std(dist_list)
+   if strict == 1:
+      std_dev_dist = std_dev_dist * 1.5
+   else:
+      std_dev_dist = std_dev_dist * 2
+   if std_dev_dist < 2:
+      std_dev_dist = 2
+
+
+   c = 0
+   new_merged_stars = []
+   for star in updated_merged_stars:
+      (cal_file,ra_center,dec_center,pos_angle,pixscale,dcname,mag,ra,dec,img_ra,img_dec,match_dist,new_x,new_y,img_az,img_el,new_cat_x,new_cat_y,six,siy, img_res) = star
+      if img_res < std_dev_dist:
+      #if True:
+         print("bad_star:", img_res)
+         new_merged_stars.append(star)
+   print("AVG RES:", res)
+   print("OLD MERGED STARS:", len(merged_stars))
+   print("NEW MERGED STARS:", len(new_merged_stars))
+   merged_stars = new_merged_stars 
+   options = {}
          
    mode = 0 
    res = scipy.optimize.minimize(reduce_fit, x_poly, args=(field,merged_stars,cal_params,fit_img,json_conf,cam_id,mode,show), method='Nelder-Mead', options={})
