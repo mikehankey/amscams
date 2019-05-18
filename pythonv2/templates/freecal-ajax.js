@@ -1,10 +1,10 @@
-   function custom_fit(meteor_json_file, cal_params_file) {
-      new_cp_file = meteor_json_file.replace(".png", "-calparams.json")
+   function custom_fit(meteor_json_file, hd_video_file, cal_params_file) {
+      new_cp_file = meteor_json_file.replace(".mp4", "-calparams.json")
       ajax_url = "/pycgi/webUI.py?cmd=custom_fit&cal_params_file=" + new_cp_file 
-      alert(ajax_url)
+      console.log(ajax_url)
       $.get(ajax_url, function(data) {
          var json_resp = $.parseJSON(data);
-         var auto_stars = json_resp['stars']
+         //var auto_stars = json_resp['stars']
          alert("Running custom fit. Please wait 1 minute then show catalog stars again to check.")
       });
    }
@@ -221,7 +221,7 @@
 
 
 
-      function show_cat_stars(stack_file, cal_params_file, type) {
+      function show_cat_stars(video_file, stack_file, cal_params_file, type) {
          var point_str = ""
             for (i in user_stars) {
                point_str = point_str + user_stars[i].toString()  + "|"
@@ -240,7 +240,7 @@
          if (type != "nopick") {
          }
          
-         ajax_url = "/pycgi/webUI.py?cmd=show_cat_stars&hd_stack_file=" + hd_stack_file + "&points=" + point_str + "&cal_params_file=" + cal_params_file
+         ajax_url = "/pycgi/webUI.py?cmd=show_cat_stars&video_file=" + video_file + "&hd_stack_file=" + hd_stack_file + "&points=" + point_str + "&cal_params_file=" + cal_params_file
          alert(ajax_url)
          remove_objects() 
          $.get(ajax_url, function(data) {

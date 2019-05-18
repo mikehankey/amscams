@@ -494,8 +494,8 @@ def save_manual_reduction(meteor_json_file,cal_params_file,json_conf):
    meteor_reduced['cal_params']['site_alt'] = json_conf['site']['device_alt']
    meteor_reduced['cal_params']['ra_center'] = cal_params['ra_center']
    meteor_reduced['cal_params']['dec_center'] = cal_params['dec_center']
-   meteor_reduced['cal_params']['az_center'] = cal_params['center_az']
-   meteor_reduced['cal_params']['el_center'] = cal_params['center_el']
+   meteor_reduced['cal_params']['center_az'] = cal_params['center_az']
+   meteor_reduced['cal_params']['center_el'] = cal_params['center_el']
    meteor_reduced['cal_params']['position_angle'] = cal_params['position_angle']
    meteor_reduced['cal_params']['cal_date'] = cal_date_str
    meteor_reduced['cal_params']['x_poly'] = cal_params['x_poly']
@@ -618,13 +618,15 @@ def pin_point(json_conf, form):
 
 def custom_fit(json_conf,form):
    cal_params_file = form.getvalue("cal_params_file")
-   cmd = "cd /home/ams/amscams/pythonv2/; ./autoCal.py cfit " + cal_params_file + " 0 > /mnt/ams2/tmp/autoCal.txt &"
-   print(cmd)
-   os.system(cmd)
+   cmd1 = "cd /home/ams/amscams/pythonv2/; ./autoCal.py imgstars " + cal_params_file + " 0 > /mnt/ams2/tmp/autoCal.txt "
+   os.system(cmd1)
+   cmd2 = "cd /home/ams/amscams/pythonv2/; ./autoCal.py cfit " + cal_params_file + " 0 > /mnt/ams2/tmp/autoCal.txt &"
+   #print(cmd)
+   os.system(cmd2)
 
    response = {}
    response['msg'] = "custom fit process started"
-   response['debug'] = cmd
+   #response['debug'] = cmd
    print(json.dumps(response))
 
 
@@ -888,9 +890,12 @@ def reduce_meteor_ajax(json_conf,meteor_json_file, cal_params_file, show = 0):
    meteor_reduced['cal_params']['site_alt'] = json_conf['site']['device_alt']
    meteor_reduced['cal_params']['ra_center'] = cal_params['ra_center']
    meteor_reduced['cal_params']['dec_center'] = cal_params['dec_center']
-   meteor_reduced['cal_params']['az_center'] = cal_params['center_az']
-   meteor_reduced['cal_params']['el_center'] = cal_params['center_el']
+   meteor_reduced['cal_params']['center_az'] = cal_params['center_az']
+   meteor_reduced['cal_params']['center_el'] = cal_params['center_el']
    meteor_reduced['cal_params']['position_angle'] = cal_params['position_angle']
+   meteor_reduced['cal_params']['pixscale'] = cal_params['pixscale']
+   meteor_reduced['cal_params']['imagew'] = cal_params['imagew']
+   meteor_reduced['cal_params']['imageh'] = cal_params['imageh']
    meteor_reduced['cal_params']['cal_date'] = cal_date_str
    meteor_reduced['cal_params']['x_poly'] = cal_params['x_poly']
    meteor_reduced['cal_params']['y_poly'] = cal_params['y_poly']
@@ -1151,9 +1156,9 @@ def reduce_meteor(json_conf,form):
       <div style="float: left" id=action_buttons>
          <input style="width: 200; margin: 5px; padding: 5px" type=button id="button1" value="  Show Image    " onclick="javascript:show_meteor_image('""" + half_stack_file + """')">
          <input style="width: 200; margin: 5px; padding: 5px" type=button id="button1" value="  Show AZ Grid  " onclick="javascript:show_az_grid('""" + half_stack_file + "','" + az_grid_file + """')">
-         <input style="width: 200; margin: 5px; padding: 5px" type=button id="button1" value="Show Catalog Stars" onclick="javascript:show_cat_stars('""" + hd_stack_file + "','" + cal_params_file + """', 'nopick')">
+         <input style="width: 200; margin: 5px; padding: 5px" type=button id="button1" value="Show Catalog Stars" onclick="javascript:show_cat_stars('""" + video_file + "','" + hd_stack_file + "','" + cal_params_file + """', 'nopick')">
          <input style="width: 200; margin: 5px; padding: 5px" type=button id="button1" value="  Reduce Meteor " onclick="javascript:reduce_meteor_ajax('""" + meteor_json_file + "','" + cal_params_file + """')">
-         <input style="width: 200; margin: 5px; padding: 5px" type=button id="button1" value="  Fit Stars " onclick="javascript:custom_fit('""" + hd_stack_file + "','" + cal_params_file + """')">
+         <input style="width: 200; margin: 5px; padding: 5px" type=button id="button1" value="  Minimize FOV Vars  " onclick="javascript:custom_fit('""" + meteor_json_file + "','" + hd_stack_file + "','" + cal_params_file + """')">
       </div>
 
 
@@ -2046,20 +2051,37 @@ def default_cal_params(cal_params,json_conf):
 
 def show_cat_stars(json_conf,form):
    child = 0
+   cal_params = None
    hd_stack_file = form.getvalue("hd_stack_file")
-   cal_params_file_orig = hd_stack_file.replace(".png", "-calparams.json")
-   cpfo = cfe(cal_params_file_orig)
+   video_file = form.getvalue("video_file")
+   # check if this meteor file has been custom fit and if it has use that info.
+   meteor_red_file = video_file.replace(".mp4", "-reduced.json")
+   meteor_mode = 0
+   if cfe(meteor_red_file) == 1:
+      meteor_red = load_json_file(meteor_red_file)
+      if "cal_params" in meteor_red:
+         cal_params = meteor_red['cal_params']
+         meteor_mode = 1
+         if "cat_image_stars" in cal_params:
+            cal_params['close_stars']  = cal_params['cat_image_stars']
+            #cal_params['user_stars']  = cal_params['user_stars']
+            #print(json.dumps(cal_params))
+            #exit()
 
-   user_stars = {}
-   cal_params_file = form.getvalue("cal_params_file")
+   if meteor_mode == 0:
+      cal_params_file_orig = hd_stack_file.replace(".png", "-calparams.json")
+      cpfo = cfe(cal_params_file_orig)
 
-   if cal_params_file is None and cpfo == 0:
-      cal_params_files = get_active_cal_file(hd_stack_file)
-      cal_params_file = cal_params_files[0][0]
-   elif cal_params_file is not None:
-      cal_params_file = cal_params_file
-   else:
-      cal_params_file = cal_params_file_orig
+      user_stars = {}
+      cal_params_file = form.getvalue("cal_params_file")
+
+      if cal_params_file is None and cpfo == 0:
+         cal_params_files = get_active_cal_file(hd_stack_file)
+         cal_params_file = cal_params_files[0][0]
+      elif cal_params_file is not None:
+         cal_params_file = cal_params_file
+      else:
+         cal_params_file = cal_params_file_orig
 
    points = form.getvalue("points")
    star_points = []
@@ -2087,19 +2109,25 @@ def show_cat_stars(json_conf,form):
    points = star_points
    hd_stack_img = cv2.imread(hd_stack_file,0)
    points = pin_point_stars(hd_stack_img, points)
-   user_stars['user_stars'] = points 
-
-   if cfe(cal_params_file_orig) == 1:
-      #print("CAL PARAMS:", cal_params_file_orig)
-      cal_params = load_json_file(cal_params_file_orig)
+   if meteor_mode == 0:
+      user_stars['user_stars'] = points 
    else:
-      #print("CAL PARAMS:", cal_params_file)
-      cal_params = load_json_file(cal_params_file)
+      cal_params['user_stars'] = points 
+      user_stars = {}
+      user_stars['user_stars'] = points 
+
+   if meteor_mode == 0:
+      if cfe(cal_params_file_orig) == 1:
+         #print("CAL PARAMS:", cal_params_file_orig)
+         cal_params = load_json_file(cal_params_file_orig)
+      else:
+         #print("CAL PARAMS:", cal_params_file)
+         cal_params = load_json_file(cal_params_file)
     
    #else:
    #   user_star_file = hd_stack_file.replace("-stacked.png", "-user-stars.json")
    #   user_stars = load_json_file(user_star_file)
-   solved_file = cal_params_file.replace("-calparams.json", ".solved")
+   #solved_file = cal_params_file.replace("-calparams.json", ".solved")
    #cal_params = load_json_file(cal_params_file)
    cal_params = default_cal_params(cal_params,json_conf)
 
@@ -2108,13 +2136,16 @@ def show_cat_stars(json_conf,form):
    else:
       child = 0 
    #print("<HR>RA/DEC:", cal_params_file, child, cal_params['ra_center'], cal_params['dec_center'])
-   el1 = cal_params_file.split("/")
-   el2 = hd_stack_file.split("/")
-   temp1 = el1[-1]
-   temp2 = el2[-1]
-   temp1 = temp1[0:20]
-   temp2 = temp2[0:20]
-   if temp1 != temp2:
+   if meteor_mode == 0:
+      el1 = cal_params_file.split("/")
+      el2 = hd_stack_file.split("/")
+      temp1 = el1[-1]
+      temp2 = el2[-1]
+      temp1 = temp1[0:20]
+      temp2 = temp2[0:20]
+      if temp1 != temp2:
+         child = 1
+   else:
       child = 1
 
    #print("<HR>RA/DEC:", child, cal_params['ra_center'], cal_params['dec_center'])
@@ -2140,8 +2171,10 @@ def show_cat_stars(json_conf,form):
 
    #print("<HR>RA/DEC:", cal_params['ra_center'], cal_params['dec_center'])
    #print("<HR>", cal_params_file, "<HR>")
-
-   cat_stars = get_catalog_stars(cal_params['fov_poly'], cal_params['pos_poly'], cal_params,"x",cal_params['x_poly'],cal_params['y_poly'],min=0)
+   if "imagew" not in cal_params:
+      cal_params['imagew'] = 1920
+      cal_params['imageh'] = 1080
+   cat_stars = get_catalog_stars([], [], cal_params,"x",cal_params['x_poly'],cal_params['y_poly'],min=0)
    my_cat_stars = []
    my_close_stars = []
 
@@ -2150,8 +2183,8 @@ def show_cat_stars(json_conf,form):
       dcname = str(name.decode("utf-8"))
       dbname = dcname.encode("utf-8")
       my_cat_stars.append((dcname,mag,ra,dec,new_cat_x,new_cat_y))
-   cal_params['cat_stars'] = my_cat_stars
-   cal_params['user_stars'] = user_stars['user_stars']
+   #cal_params['cat_stars'] = my_cat_stars
+   #cal_params['user_stars'] = user_stars
    total_match_dist = 0
    total_cat_dist = 0 
    total_matches = 0
@@ -2161,7 +2194,10 @@ def show_cat_stars(json_conf,form):
       for name,mag,ra,dec,new_cat_x,new_cat_y,six,siy,cat_dist in close_stars:
          dcname = str(name.decode("utf-8"))
          dbname = dcname.encode("utf-8")
-         new_x, new_y, img_ra,img_dec, img_az, img_el = XYtoRADec(ix,iy,cal_params_file,cal_params,json_conf)
+         if meteor_mode == 0:
+            new_x, new_y, img_ra,img_dec, img_az, img_el = XYtoRADec(ix,iy,cal_params_file,cal_params,json_conf)
+         else:
+            new_x, new_y, img_ra,img_dec, img_az, img_el = XYtoRADec(ix,iy,video_file,cal_params,json_conf)
          match_dist = abs(angularSeparation(ra,dec,img_ra,img_dec))
          my_close_stars.append((dcname,mag,ra,dec,img_ra,img_dec,match_dist,new_x,new_y,img_az,img_el,new_cat_x,new_cat_y,six,siy,cat_dist))
          total_match_dist = total_match_dist + match_dist
@@ -2177,11 +2213,19 @@ def show_cat_stars(json_conf,form):
    #out = out.replace("'", "\"")
    #out = out.replace("(b", "(")
    this_cal_params_file = hd_stack_file.replace(".png", "-calparams.json")
-   cal_params['parent_cal'] = cal_params_file
+   if meteor_mode == 0:
+      cal_params['parent_cal'] = cal_params_file
+    
    cal_params['total_res_deg'] = total_match_dist / total_matches
    cal_params['total_res_px'] = total_cat_dist / total_matches
    cal_params['cal_params_file'] = this_cal_params_file
-   save_json_file(this_cal_params_file, cal_params) 
+   cal_params['user_stars'] = user_stars['user_stars']
+
+   #if meteor_mode == 0:
+   #   save_json_file(this_cal_params_file, cal_params) 
+   if meteor_mode == 1:
+      meteor_red['cal_params'] = cal_params
+      save_json_file(meteor_red_file, meteor_red) 
    print(json.dumps(cal_params))
 
 def calibrate_pic(json_conf,form):
