@@ -145,7 +145,10 @@ if __name__ == "__main__":
       parse_motion(video_file, json_conf)
    if cmd == 'raj':
       meteor_json_file = sys.argv[2]
-      cal_params_file = sys.argv[3]
+      if len(sys.argv) >= 4:
+         cal_params_file = sys.argv[3]
+      else:
+         cal_params_file = meteor_json_file.replace(".json", "-reduced.json")
       show = 0
       if len(sys.argv) > 4:
          show = 1 

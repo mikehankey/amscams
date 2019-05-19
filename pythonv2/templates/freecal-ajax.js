@@ -5,7 +5,7 @@
       $.get(ajax_url, function(data) {
          var json_resp = $.parseJSON(data);
          //var auto_stars = json_resp['stars']
-         alert("Running custom fit. Please wait 1 minute then show catalog stars again to check.")
+         console.log("Running custom fit. Please wait 1 minute then show catalog stars again to check.")
       });
    }
 
@@ -13,12 +13,12 @@
 
    function find_stars(stack_file) {
       ajax_url = "/pycgi/webUI.py?cmd=find_stars_ajax&stack_file=" + stack_file
-      alert(ajax_url)  
+      console.log(ajax_url)  
       $.get(ajax_url, function(data) {
          $(".result").html(data);
          var json_resp = $.parseJSON(data);
          var auto_stars = json_resp['stars']
-         alert(auto_stars)
+         console.log(auto_stars)
          lc = 0
          for (let s in auto_stars) {
             x = auto_stars[s][0] / 2 
@@ -38,7 +38,7 @@
 
       function del_frame(fn, meteor_json_file) {
          ajax_url = "/pycgi/webUI.py?cmd=del_frame&meteor_json_file=" + meteor_json_file + "&fn=" + fn 
-         alert(ajax_url)
+         console.log(ajax_url)
          $.get(ajax_url, function(data) {
             $(".result").html(data);
             var json_resp = $.parseJSON(data);
@@ -48,16 +48,18 @@
 
       function reduce_meteor_ajax(meteor_json_file,cal_params_file) {
          ajax_url = "/pycgi/webUI.py?cmd=reduce_meteor_ajax&meteor_json_file=" + meteor_json_file + "&cal_params_file=" + cal_params_file
-         alert(ajax_url)
+         console.log(ajax_url)
          $.get(ajax_url, function(data) {
             $(".result").html(data);
             var json_resp = $.parseJSON(data);
-            alert(json_resp['sd_meteor_frame_data'])
+            console.log(json_resp['sd_meteor_frame_data'])
             var smf = json_resp['sd_meteor_frame_data']
+            var prefix = json_resp['prefix']
+            console.log(prefix)
 
              //((dcname,mag,ra,dec,img_ra,img_dec,match_dist,new_x,new_y,img_az,img_el,new_cat_x,new_cat_y,six,siy,cat_dist))
             out_html = "<div class='divTable' style='border: 1px solid #000;' ><div class='divTableBody'>"
-            out_html = out_html + " <div class='divTableRow'><div class='divTableCell'>FN</div><div class='divTableCell'>Frame Time</div><div class='divTableCell'>X/Y - W/H</div><div class='divTableCell'>Max PX</div><div class='divTableCell'>RA/DEC</div><div class='divTableCell'>AZ/EL</div></div>"
+            out_html = out_html + " <div class='divTableRow'><div class='divTableCell'>IMG</div><div class='divTableCell'>FN</div><div class='divTableCell'>Frame Time</div><div class='divTableCell'>X/Y - W/H</div><div class='divTableCell'>Max PX</div><div class='divTableCell'>RA/DEC</div><div class='divTableCell'>AZ/EL</div><div class='divTableCell'>Del</div></div>"
 
             lc = 0
             for (let s in smf) {
@@ -85,19 +87,31 @@
                     rad = 6
 
                  }
-                 del_frame_link = "<a href=javascript:del_frame('" + fn + "','" + meteor_json_file +"')>XY</a> "
-
-                 out_html = out_html + " <div class='divTableRow'><div class='divTableCell'>" + del_frame_link + fn + "</div><div class='divTableCell'>" + ft + "</div>"
+                 del_frame_link = "<a href=javascript:del_frame('" + fn + "','" + meteor_json_file +"')>X</a> "
+                 cmp_img_url = prefix + fn + ".png"
+                 cmp_img = "<img src=" + cmp_img_url + ">"
+                 out_html = out_html + " <div class='divTableRow'><div class='divTableCell'>" + cmp_img + "</div><div class='divTableCell'>" + fn + "</div><div class='divTableCell'>" + ft + "</div>"
                  out_html = out_html + " <div class='divTableCell'>" + x + "/" + y + " - " + w + "/" + h + "</div>"
                  out_html = out_html + " <div class='divTableCell'>" + max_px + "</div>"
                  out_html = out_html + " <div class='divTableCell'>" + ra + "/" + dec + "</div>"
-                 out_html = out_html + " <div class='divTableCell'>" + az + "/" + el+ "</div></div>"
+                 out_html = out_html + " <div class='divTableCell'>" + az + "/" + el+ "</div>"
+                 out_html = out_html + " <div class='divTableCell'>" + del_frame_link + "</div></div>"
+
+                 var starrect = new fabric.Rect({
+                    fill: 'rgba(0,0,0,0)', strokeWidth: 1, stroke: 'rgba(230,100,200,.5)', left: x-rad, top: y-rad,
+                    width: 10,
+                    height: 10 ,
+                    selectable: false
+                 });
+                 canvas.add(starrect);
+                 /*
                  var circle = new fabric.Circle({
                      radius: rad, fill: 'rgba(0,0,0,0)', strokeWidth: 1, stroke: 'rgba(255,255,255,.5)', left: x-rad, top: y-rad,
                      selectable: false
                  });
                  canvas.add(circle);
- 
+                 */
+                 /* 
                  az_desc = lc + " -  " + az + " / " + el
                  var text_p = new fabric.Text(az_desc, {
                     fontFamily: 'Arial', 
@@ -107,6 +121,7 @@
                  });
                  text_p.setColor('rgba(255,255,255,.75)')
                  canvas.add(text_p)
+                 */
                  lc += 1
             }
 
@@ -146,7 +161,7 @@
             rusure = confirm("Click ok to run the fit again.")
             if (rusure == true) {
                ajax_url = "/pycgi/webUI.py?cmd=fit_field&override=1&hd_stack_file=" + hd_stack_file
-               alert(ajax_url)
+               console.log(ajax_url)
                $.get(ajax_url, function(data) {
                   $(".result").html(data);
                   var json_resp = $.parseJSON(data);
@@ -194,7 +209,7 @@
       }
       function fit_field() {
          ajax_url = "/pycgi/webUI.py?cmd=fit_field&hd_stack_file=" + hd_stack_file
-         alert(ajax_url)
+         console.log(ajax_url)
          $.get(ajax_url, function(data) {
             $(".result").html(data);
             var json_resp = $.parseJSON(data);
@@ -241,7 +256,7 @@
          }
          
          ajax_url = "/pycgi/webUI.py?cmd=show_cat_stars&video_file=" + video_file + "&hd_stack_file=" + hd_stack_file + "&points=" + point_str + "&cal_params_file=" + cal_params_file
-         alert(ajax_url)
+         console.log(ajax_url)
          remove_objects() 
          $.get(ajax_url, function(data) {
             $(".result").html(data);
@@ -251,7 +266,7 @@
             total_res_px = json_resp['total_res_px']
             total_res_deg = json_resp['total_res_deg']
             cal_params_file = json_resp['cal_params_file']
-            alert(cal_params_file)
+            console.log(cal_params_file)
             sleep(1000).then(() => {
                out_html = "Residual error : " + total_res_deg + " degrees / " + total_res_px + " pixels"
                out_html = out_html + "<div class='divTable' style='border: 1px solid #000;' ><div class='divTableBody'>"
@@ -281,13 +296,13 @@
                 //((dcname,mag,ra,dec,img_ra,img_dec,match_dist,new_x,new_y,img_az,img_el,new_cat_x,new_cat_y,six,siy,cat_dist))
 
                  out_html = out_html + " <div class='divTableRow'><div class='divTableCell'>" + cat_stars[s][0] + "</div><div class='divTableCell'>" + cat_stars[s][1] + "</div>"
-                 out_html = out_html + " <div class='divTableCell'>" + cat_stars[s][2] + "/" + cat_stars[s][3] + "</div>"
-                 out_html = out_html + " <div class='divTableCell'>" + cat_stars[s][4] + "/" + cat_stars[s][5] + "</div>"
-                 out_html = out_html + " <div class='divTableCell'>" + cat_stars[s][6] + "</div>"
-                 out_html = out_html + " <div class='divTableCell'>" + cat_stars[s][11] + "/" + cat_stars[s][12] + "</div>"
-                 out_html = out_html + " <div class='divTableCell'>" + cat_stars[s][13] + "/" + cat_stars[s][14] + "</div>"
-                 out_html = out_html + " <div class='divTableCell'>" + cat_stars[s][7] + "/" + cat_stars[s][8] + "</div>"
-                 out_html = out_html + " <div class='divTableCell'>" + cat_stars[s][15] + "</div></div>"
+                 out_html = out_html + " <div class='divTableCell'>" + Math.round(cat_stars[s][2] * 100) / 100 + "/" + Math.round(cat_stars[s][3] * 100) / 100 + "</div>"
+                 out_html = out_html + " <div class='divTableCell'>" + Math.round(cat_stars[s][4] * 100) / 100 + "/" + Math.round(cat_stars[s][5] * 100) / 100+ "</div>"
+                 out_html = out_html + " <div class='divTableCell'>" + Math.round(cat_stars[s][6] * 100) / 100 + "</div>"
+                 out_html = out_html + " <div class='divTableCell'>" + Math.round(cat_stars[s][11] * 100) / 100 + "/" + Math.round(cat_stars[s][12] * 100) / 100 + "</div>"
+                 out_html = out_html + " <div class='divTableCell'>" + Math.round(cat_stars[s][13] * 100) / 100 + "/" + Math.round(cat_stars[s][14] * 100) / 100 + "</div>"
+                 out_html = out_html + " <div class='divTableCell'>" + Math.round(cat_stars[s][7] * 100) / 100 + "/" + Math.round(cat_stars[s][8] * 100) / 100 + "</div>"
+                 out_html = out_html + " <div class='divTableCell'>" + Math.round(cat_stars[s][15] * 100)/ 100 + "</div></div>"
 
 
 
@@ -403,7 +418,7 @@
          }
 
          ajax_url = "/pycgi/webUI.py?cmd=upscale_2HD&hd_stack_file=" + hd_stack_file + "&points=" + point_str
-         alert(ajax_url)
+         console.log(ajax_url)
          $.get(ajax_url, function(data) {
             $(".result").html(data);
             var json_resp = $.parseJSON(data);
@@ -476,7 +491,7 @@
          }
 
          ajax_url = "/pycgi/webUI.py?cmd=save_add_stars_to_fit_pool&hd_stack_file=" + hd_stack_file + "&points=" + point_str
-         alert(ajax_url)
+         console.log(ajax_url)
 
 
 
@@ -506,7 +521,7 @@
          }
 
          ajax_url = "/pycgi/webUI.py?cmd=make_plate_from_points&hd_stack_file=" + hd_stack_file + "&points=" + point_str
-         alert(ajax_url)
+         console.log(ajax_url)
          $.get(ajax_url, function(data) {
             $(".result").html(data);
             var json_resp = $.parseJSON(data);
