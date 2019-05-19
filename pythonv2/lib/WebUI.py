@@ -15,7 +15,7 @@ from lib.SolutionsLib import solutions , sol_detail
 from lib.MeteorTests import test_objects
 from lib.ImageLib import mask_frame , draw_stack, stack_frames
 from lib.CalibLib import radec_to_azel
-from lib.WebCalib import calibrate_pic,make_plate_from_points, solve_field, check_solve_status, free_cal, show_cat_stars, choose_file, upscale_2HD, fit_field, delete_cal, add_stars_to_fit_pool, save_add_stars_to_fit_pool, reduce_meteor, reduce_meteor_ajax, find_stars_ajax, man_reduce, pin_point, get_manual_points, del_manual_points, sat_cap, HMS2deg, custom_fit, del_frame
+from lib.WebCalib import calibrate_pic,make_plate_from_points, solve_field, check_solve_status, free_cal, show_cat_stars, choose_file, upscale_2HD, fit_field, delete_cal, add_stars_to_fit_pool, save_add_stars_to_fit_pool, reduce_meteor, reduce_meteor_ajax, find_stars_ajax, man_reduce, pin_point, get_manual_points, del_manual_points, sat_cap, HMS2deg, custom_fit, del_frame, clone_cal
 from lib.UtilLib import calc_radiant
 
 
@@ -191,6 +191,9 @@ def controller(json_conf):
       video_file = form.getvalue('video_file')
       jsid = form.getvalue('jsid')
       override_detect(video_file,jsid,json_conf)
+      exit()
+   if cmd == 'clone_cal':
+      clone_cal(json_conf,form)
       exit()
    if cmd == 'custom_fit':
       custom_fit(json_conf,form)

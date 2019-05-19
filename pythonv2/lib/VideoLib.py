@@ -380,7 +380,7 @@ def ffmpeg_dump_frames(video_file, out_dir):
    jpg_out = out_dir + "frames%05d.png"
    #"960" height="540"
    syscmd = "/usr/bin/ffmpeg -i " + video_file + " -s 960x540 -ss 00:00:00  " + jpg_out
-   print(syscmd)
+   #print(syscmd)
    os.system(syscmd)
    jpg_tout = out_dir + "frames%05d-t.png"
    syscmd = "/usr/bin/ffmpeg -i " + video_file + " -s 360x240 -ss 00:00:00  " + jpg_tout

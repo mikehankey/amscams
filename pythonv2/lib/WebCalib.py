@@ -17,6 +17,48 @@ from lib.ImageLib import mask_frame,stack_frames, adjustLevels, upscale_to_hd, m
 from lib.CalibLib import radec_to_azel, clean_star_bg, get_catalog_stars, find_close_stars, XYtoRADec, HMS2deg, AzEltoRADec
 from lib.UtilLib import check_running, calc_dist, angularSeparation, bound_cnt
 
+
+def clone_cal(json_conf, form):
+   print("Clone Cal.")
+   file = form.getvalue("file")
+   prefix =  file.split("/")[-1][0:30]
+   red_file = file.replace("-stacked.png", "-reduced.json") 
+   if cfe(red_file) == 1:
+      red_data = load_json_file(red_file)
+      if "cal_params" in red_data:
+         print("Cloning", prefix)
+         new_dir = "/mnt/ams2/cal/freecal/" + prefix + "/" 
+         os.system("mkdir " + new_dir)
+         new_file = new_dir + prefix + "-calparams.json"
+         save_json_file(new_file, red_data['cal_params'])
+         hd_stack = red_data['hd_video_file']
+         hd_stack = hd_stack.replace(".mp4", "-stacked.png") 
+         if "SD" in hd_stack:
+            hd_stack = hd_stack.replace("SD/proc2/", "meteors/")
+            hd_stack = hd_stack.replace("passed/", "")
+            #hd_stack = hd_stack.replace(".png", "-stacked.png")
+            cal_img_file = new_file.replace("-calparams.json", "-stacked.png")
+            if cfe(hd_stack) == 1:
+               sd_img = cv2.imread(hd_stack)
+               hd_img = cv2.resize(sd_img, (1920,1080)) 
+               cv2.imwrite(cal_img_file, hd_img)
+         else:
+            hd_stack = red_data['hd_video_file']
+            hd_stack = hd_stack.replace(".mp4", "-stacked.png") 
+            cal_img_file = new_file.replace("-calparams.json", "-stacked.png")
+            cmd = "cp " + hd_stack + " " + cal_img_file
+            print("<H1>", cmd, "</h1>")
+            os.system(cmd)
+            
+       
+         print(hd_stack)
+         print("NEW CAL:", new_file)
+         cmd = "cd /home/ams/amscams/pythonv2/; ./XYtoRAdecAzEl.py az_grid " + new_file + " >/mnt/ams2/tmp/xy.out"
+         os.system(cmd)
+         print(cmd)
+   else:
+      print("No cal params to clone!?")
+
 def sat_cap(json_conf, form):
    print ("Satellite Processing")
    video_file = form.getvalue("input_file")
@@ -98,8 +140,14 @@ def calc_frame_time(video_file, frame_num):
 
    return(meteor_frame_time,meteor_frame_time_str)
 
+
 def reduce_point(cal_params_file, meteor_json_file, frame_num, point_data,json_conf):
-   cal_params = load_json_file(cal_params_file)
+   if "reduced" in cal_params_file:
+      red_data = load_json_file(cal_params_file)
+      cal_params = red_data['cal_param']
+   
+   else:
+      cal_params = load_json_file(cal_params_file)
    (cal_date, cam_id, cal_date_str,Y,M,D, H, MM, S) = better_parse_file_date(cal_params_file)
    cal_params = load_json_file(cal_params_file)
    (f_datetime, cam_id, f_date_str,Y,M,D, H, MM, S) = better_parse_file_date(meteor_json_file)
@@ -114,6 +162,11 @@ def reduce_point(cal_params_file, meteor_json_file, frame_num, point_data,json_c
 def man_reduce(json_conf,form):
    print("<h2>Manually Reduce</h2>")
    file = form.getvalue('file')
+   meteor_json_red_file = file.replace("-stacked.png", "-reduced.json")
+   meteor_red = load_json_file(meteor_json_red_file)
+   mfd = meteor_red['meteor_frame_data']
+   ff = int(mfd[0][1])
+   lf = int(mfd[-1][1])
    cal_params_file = form.getvalue('cal_params_file')
    scmd = form.getvalue('scmd')
    (f_datetime, cam_id, f_date_str,Y,M,D, H, MM, S) = better_parse_file_date(file)
@@ -122,13 +175,18 @@ def man_reduce(json_conf,form):
    video_file = file.replace("-stacked.png", ".mp4")
    if scmd is None:
       if cfe(tmp_dir, 1) == 0:
-         print("MAKE:", tmp_dir)
          os.system("mkdir " + tmp_dir)
-      ffmpeg_dump_frames(video_file,tmp_dir)
+         ffmpeg_dump_frames(video_file,tmp_dir)
    thumbs = glob.glob(tmp_dir + "*-t.png")
+   fc = 0
    if scmd is None:
       for thumb in sorted(thumbs):
-         print("<a href=webUI.py?cmd=man_reduce&scmd=2&file=" + file + "&frame=" + thumb + "&cal_params_file=" + cal_params_file + "><img src=" + thumb + "></a>")
+         if fc > ff -3 and fc < lf + 3:
+            full = thumb.replace("-t", "")
+            print("<BR><a href=webUI.py?cmd=man_reduce&scmd=2&file=" + file + "&frame=" + thumb + "&cal_params_file=" + cal_params_file + "><img src=" + full + "></a><BR>")
+         else:
+            print("<a href=webUI.py?cmd=man_reduce&scmd=2&file=" + file + "&frame=" + thumb + "&cal_params_file=" + cal_params_file + "><img src=" + thumb + " width=100></a>")
+         fc = fc + 1 
    if scmd == '2':
       frame = form.getvalue('frame')
       frame = frame.replace("-t", "")
@@ -192,6 +250,8 @@ def find_stars_ajax(json_conf, stack_file, is_ajax = 1):
       tmp_file, img = stack_frames(frames, stack_file, 3)
    else:
       img = cv2.imread(stack_file, 0)
+
+
    #best_thresh = find_best_thresh(med_stack_all, pdif)
    ih, iw = img.shape
    x1 = 0
@@ -252,6 +312,7 @@ def check_make_half_stack(sd_file,hd_file):
       cv2.imwrite(half_stack_file, img)
   
 def make_cal_select(cal_files,video_file,cpf) :
+
    cal_select = "<SELECT onchange=\"javascript:goto('" + video_file + "', this.options[selectedIndex].value ,'reduce')\" style=\"margin: 5px; padding: 5px\" NAME=cal_param_file>"
    for cal_file, cal_desc, cal_time_diff in cal_files:
       dif_days = abs(cal_time_diff / 86400)
@@ -629,6 +690,47 @@ def custom_fit(json_conf,form):
    #response['debug'] = cmd
    print(json.dumps(response))
 
+def make_meteor_cnt_composite_images(json_conf, mfd, sd_video_file):
+   cmp_images = {}
+   frames = load_video_frames(sd_video_file, json_conf)
+   cnt_max_w = 0
+   cnt_max_h = 0
+   for frame_data in mfd:
+      frame_time, fn, hd_x,hd_y,w,h,max_px,ra,dec,az,el = frame_data
+      if w > cnt_max_w:
+         cnt_max_w = w
+      if h > cnt_max_h:
+         cnt_max_h = h 
+
+   cnt_w = int(cnt_max_w / 2)
+   cnt_h = int(cnt_max_h / 2)
+   #if cnt_w < 50 and cnt_h < 50:
+   #   cnt_w = 50 
+   #   cnt_h = 50 
+   #if cnt_w < 40 and cnt_h < 40:
+   #   cnt_w = 40 
+   #   cnt_h = 40 
+   if cnt_w < 25 and cnt_h < 25:
+      cnt_w = 25
+      cnt_h = 25
+   else:
+      cnt_w = 50 
+      cnt_h = 50
+   #print(cnt_w,cnt_h)
+   for frame_data in mfd:
+      frame_time, fn, hd_x,hd_y,w,h,max_px,ra,dec,az,el = frame_data
+      x1,y1,x2,y2 = bound_xy(hd_x,hd_y,1920,1080,cnt_w)
+      #x1 = hd_x - cnt_w
+      #x2 = hd_x + cnt_w
+      #y1 = hd_y - cnt_h
+      #y2 = hd_y + cnt_h
+      img = frames[fn]
+      hd_img = cv2.resize(img, (1920,1080))
+      #cv2.rectangle(hd_img, (x1, y1), (x2, y2), (128, 128, 128), 1)
+      cnt_img = hd_img[y1:y2,x1:x2]
+      cmp_images[fn] = cnt_img 
+   return(cmp_images)
+
 
 def reduce_meteor_ajax(json_conf,meteor_json_file, cal_params_file, show = 0):
 
@@ -656,7 +758,12 @@ def reduce_meteor_ajax(json_conf,meteor_json_file, cal_params_file, show = 0):
    end_clip = end_clip + 50
 
    (cal_date, cam_id, cal_date_str,Y,M,D, H, MM, S) = better_parse_file_date(cal_params_file)
-   cal_params = load_json_file(cal_params_file) 
+   if "reduced" in cal_params_file:
+      red_data  = load_json_file(cal_params_file) 
+      cal_params = red_data['cal_params']
+
+   else:
+      cal_params = load_json_file(cal_params_file) 
    (f_datetime, cam_id, f_date_str,Y,M,D, H, MM, S) = better_parse_file_date(meteor_json_file)
 
    start_clip_time_str = str(f_datetime)
@@ -908,6 +1015,16 @@ def reduce_meteor_ajax(json_conf,meteor_json_file, cal_params_file, show = 0):
    meteor_reduce_file = meteor_json_file.replace(".json", "-reduced.json")
    save_json_file(meteor_reduce_file, meteor_reduced) 
 
+
+   cmp_imgs = make_meteor_cnt_composite_images(json_conf, meteor_frame_data, sd_video_file)
+   prefix = sd_video_file.replace(".mp4", "-frm")
+   prefix = prefix.replace("SD/proc2/", "meteors/")
+   prefix = prefix.replace("/passed", "")
+   response['prefix'] = prefix
+   for fn in cmp_imgs:
+      cv2.imwrite(prefix  + str(fn) + ".png", cmp_imgs[fn])    
+
+
    print(json.dumps(response))
   
 def get_meteor_object(meteor_json):
@@ -925,10 +1042,15 @@ def get_meteor_object(meteor_json):
       return(None)
 
 def make_frame_table(meteor_reduced,meteor_json_file):
+
+   prefix = meteor_reduced['sd_video_file'].replace(".mp4", "-frm")
+   prefix = prefix.replace("SD/proc2/", "meteors/")
+   prefix = prefix.replace("/passed", "")
+
    stab,sr,sc,et,er,ec = div_table_vars()
    frame_javascript = "<script>"
    frame_table = stab
-   frame_table = frame_table + sr + sc + "FN" +ec + sc + "Frame Time" + ec + sc + "X/Y - W/H " + ec + sc + "Max PX" +ec + sc + "RA/DEC" + ec + sc + "AZ/EL" + ec + er 
+   frame_table = frame_table + sr + sc + "IMG" + ec + sc + "FN" +ec + sc + "Frame Time" + ec + sc + "X/Y - W/H " + ec + sc + "Max PX" +ec + sc + "RA/DEC" + ec + sc + "AZ/EL" + ec + sc + "DEL " + ec + er 
    lc = 0
    start_y = meteor_reduced['meteor_frame_data'][0][3]
    for frame_data in meteor_reduced['meteor_frame_data'] :
@@ -937,23 +1059,34 @@ def make_frame_table(meteor_reduced,meteor_json_file):
       hd_y = int(hd_y/2)
       text_y = str(hd_y)
       text_y = (start_y/2) - (lc * 12)
+      cmp_img_url = prefix  + str(fn) + ".png"
+      cmp_img = "<img src=" + cmp_img_url + ">"
 
       az_desc = "\"" + str(lc) + " -  " + str(az) + " / " + str(el)  + "\""
       del_frame_link = "<a href=\"javascript:del_frame('" + str(fn) + "','" + meteor_json_file +"')\">X</a> "
 
-      frame_table = frame_table + sr + sc + del_frame_link + str(fn) +ec + sc + frame_time + ec + sc + str(hd_x) + "/" + str(hd_y) + " - " + str(w) + "/" + str(h) + ec + sc + str(max_px) +ec + sc + str(ra) + "/" + str(dec) + ec + sc +  str(az) + "/" + str(el)  + ec +er
+      frame_table = frame_table + sr + sc + cmp_img + ec + sc  + str(fn) +ec + sc + frame_time + ec + sc + str(hd_x) + "/" + str(hd_y) + " - " + str(w) + "/" + str(h) + ec + sc + str(max_px) +ec + sc + str(ra) + "/" + str(dec) + ec + sc +  str(az) + "/" + str(el)  + ec + sc + del_frame_link + ec + er
 
       frame_javascript = frame_javascript + """
                  var rad = 5;
-
+                 var meteor_rect = new fabric.Rect({
+                    fill: 'rgba(0,0,0,0)', strokeWidth: 1, stroke: 'rgba(230,100,200,.1)',  left: """ + str(hd_x-5) + """, top: """ + str(hd_y-5) + """, 
+                    width: 10,
+                    height: 10 ,
+                    selectable: false
+                 });
+                 canvas.add(meteor_rect);
+/*
                  var meteor_rect = new fabric.Circle({
 
                      radius: rad, fill: 'rgba(255,255,0,0)', strokeWidth: 1, stroke: 'rgba(255,255,255,.5)', left: """ + str(hd_x-5) + """, top: """ + str(hd_y-5) + """,
                      selectable: false
                  });
                  canvas.add(meteor_rect);
+*/
       """        
       frame_javascript = frame_javascript + """ 
+/*
                  var text_p = new fabric.Text(""" + az_desc + """, {
                     fontFamily: 'Arial',
                     fontSize: 10,
@@ -962,7 +1095,7 @@ def make_frame_table(meteor_reduced,meteor_json_file):
                  });
                  text_p.setColor('rgba(255,255,255,.75)')
                  canvas.add(text_p)
-
+*/
 
       """
       lc = lc + 1
@@ -1128,7 +1261,8 @@ def reduce_meteor(json_conf,form):
 <span style="padding: 5px"> End RA/DEC: """ + str(end_ra)[0:5] + "/" + str(end_dec)[0:5] + """</span><br>
 <span style="padding: 5px"> Start AZ/EL: """ + str(start_az)[0:5] + "/" + str(start_el)[0:5] + """</span><br>
 <span style="padding: 5px"> End AZ/EL: """ + str(end_az)[0:5] + "/" + str(end_el)[0:5] + """</span><br>
-<span style="padding: 5px"> <a target='_blank' href=\"webUI.py?cmd=man_reduce&file=""" + mj['sd_stack']+ "&cal_params_file=" + cal_params_file +  """\">Manualy Reduce</a></span><br>
+<span style="padding: 5px"> <a target='_blank' href=\"webUI.py?cmd=man_reduce&file=""" + mj['sd_stack']+ "&cal_params_file=" + cal_params_file +  """\">Manually Reduce</a></span><br>
+<span style="padding: 5px"> <a target='_blank' href=\"webUI.py?cmd=clone_cal&file=""" + mj['sd_stack']+ "&cal_params_file=" + cal_params_file +  """\">Clone Cal</a></span><br>
 
 <span style="padding: 5px"> <B>Media Files</B></span><br>
 <span style="padding: 5px"> <a target='_blank' href=javascript:play_video('""" + mj['sd_video_file']+ """')>SD Video</a></span><br>
@@ -1166,9 +1300,11 @@ def reduce_meteor(json_conf,form):
 
       <div style="float:left" id=info_panel>Info</div>
       <div style="clear: both"></div>
-      <div style="float:left" id=info_panel><a href="javascript:show_hide_div('adv_func')">Advanced Functions</a> - 
-
+      <div style="float:left" id=info_panel>
+<!--
+<a href="javascript:show_hide_div('adv_func')">Advanced Functions</a> - 
 <a href="javascript:show_hide_div('problems')">Fix Problems</a></div>
+-->
 </div>
 
       <div style="float:left; display: none;" id=adv_func>
@@ -1247,9 +1383,8 @@ def find_matching_cal_files(cam_id, capture_date):
 
    for match in matches:
       (t_datetime, cam_id, f_date_str,Y,M,D, H, MM, S) = better_parse_file_date(match)
-      tdiff = (capture_date-t_datetime).total_seconds()   
+      tdiff = abs((capture_date-t_datetime).total_seconds())
       td_sorted_matches.append((match,f_date_str,tdiff))
-
    temp = sorted(td_sorted_matches, key=lambda x: x[2], reverse=False)
    return(temp)
 
@@ -2054,6 +2189,11 @@ def show_cat_stars(json_conf,form):
    cal_params = None
    hd_stack_file = form.getvalue("hd_stack_file")
    video_file = form.getvalue("video_file")
+   if cfe(hd_stack_file) == 0:
+      sd_stack_file = video_file.replace(".mp4", "-stacked.png")
+      sd_img = cv2.imread(sd_stack_file)
+      hd_stack_img = cv2.resize(sd_img, (1920,1080))
+      cv2.imwrite(hd_stack_file, hd_stack_img)
    # check if this meteor file has been custom fit and if it has use that info.
    meteor_red_file = video_file.replace(".mp4", "-reduced.json")
    meteor_mode = 0
@@ -2384,6 +2524,7 @@ def calibrate_pic(json_conf,form):
          }
 
          var point_str = ""
+ 
          var objects = canvas.getObjects('circle')
          for (let i in objects) {
             x = objects[i].left
@@ -2405,7 +2546,6 @@ def calibrate_pic(json_conf,form):
               
               cx = stars[s][0] - 11 
               cy = stars[s][1] - 11
-
               var circle = new fabric.Circle({
                  radius: 5, fill: 'rgba(255,0,0,0)', strokeWidth: 1, stroke: 'rgba(100,200,200,.5)', left: cx/2, top: cy/2,
                  selectable: false

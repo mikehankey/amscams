@@ -273,7 +273,7 @@ def check_for_motion2(frames, video_file, cams_id, json_conf, show = 0):
             cv2.imshow('pepe', show_frame)
             cv2.waitKey(1)
       frame_file = "/mnt/ams2/tmp/" + str(fc) + "obj.png"
-      cv2.imwrite(frame_file, thresh_obj)
+      #cv2.imwrite(frame_file, thresh_obj)
       fc = fc + 1
    return(objects)
 

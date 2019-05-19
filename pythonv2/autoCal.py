@@ -1258,6 +1258,7 @@ def lookup_star_in_cat(ix,iy,cat_stars,star_dist=10):
       return(0, closest)
 
 def get_stars_from_image(file,json_conf,masks = [], cal_params = None, show = 0):
+   user_stars = None
    if show == 1:
       cv2.namedWindow('pepe')
    img = cv2.imread(file,0)
@@ -1271,6 +1272,10 @@ def get_stars_from_image(file,json_conf,masks = [], cal_params = None, show = 0)
       cal_params = load_json_file(cal_params_file)
    else:
       cal_params_file = None
+
+   if "user_stars" in cal_params:
+      user_stars = cal_params['user_stars']
+      img_stars = user_stars
    
    if "center_az" not in cal_params:
       print("NO CENTER AZ!")
@@ -1299,7 +1304,8 @@ def get_stars_from_image(file,json_conf,masks = [], cal_params = None, show = 0)
 
    wc = 0
    hc = 0
-   img_stars = []
+   if user_stars is None:
+      img_stars = []
    for w in range(0,1920):
       for h in range(0,1080):
          if (w == 0 and h == 0) or (w % gsize == 0 and h % gsize == 0):
@@ -2209,10 +2215,30 @@ if cmd == 'imgstars':
       if "cal_params" in meteor_json:
          cal_params = meteor_json['cal_params']
       else:
+         
          poss = get_active_cal_file(file)
          cal_params_file = poss[0][0]
          cal_params = load_json_file(cal_params_file)
+         print("Try to use cal params:", cal_params_file)
          meteor_json['cal_params'] = cal_params
+         if "tried_cal" not in meteor_json:
+            meteor_json['tried_cal'] = []
+            meteor_json['tried_cal'].append(cal_params_file)
+         else:
+            already_tried = 1
+            next_one = len(meteor_json['tried_cal'])
+            cal_params_file = poss[next_one][0]
+            cal_params = load_json_file(cal_params_file)
+            meteor_json['cal_params'] = cal_params
+            meteor_json['tried_cal'].append(cal_params_file)
+            
+         if len(meteor_json['tried_cal']) > 3:
+            meteor_json['tried_cal'] = []
+ 
+         meteor_json['cal_params'] = cal_params 
+         print("Saving json file....", meteor_json_file_red)
+         save_json_file(meteor_json_file_red, meteor_json)
+         print("Try to use cal params:", cal_params_file)
    else:
       meteor_json = load_json_file(meteor_json_file)
       meteor_json_file_red = meteor_json_file
@@ -2256,6 +2282,25 @@ if cmd == 'imgstars':
       cal_params['y_poly_fwd'] = mcf['y_poly_fwd']
 
    cat_image_stars, img, no_match, res_err, match_per,cp_data = get_stars_from_image(file, json_conf, masks, cal_params, show)
+   print("MATCH/NO MATCH: ", len(cat_image_stars), len(no_match))
+   if len(cat_image_stars) > 0 and len(no_match) > 0:
+      good_perc = len(cat_image_stars) / len(no_match)
+   else:
+      good_perc = 0
+   print("PERC GOOD:", good_perc)
+   if good_perc < .25 and res_err > 8:
+      print("Problem here. Let's clean up. try again...", meteor_json_file )
+      del meteor_json['cal_params']  
+      meteor_json['deleted_tries']  = 1
+
+      if len(meteor_json['tried_cal']) < 4 and "deleted_tries" not in meteor_json:
+         cmd = "./autoCal.py imgstars " + meteor_json_file + " 0"
+         print(cmd)
+         os.system(cmd)
+      save_json_file(meteor_json_file_red, meteor_json)
+     
+      exit()
+
 
    # compute std dev distance
    tot_res = 0
