@@ -174,7 +174,7 @@ print(cal_params_file)
 cal_params = load_json_file(cal_params_file)
 total_res = 0
 total_res_fwd = 0
-for star in (cal_params['close_stars']):
+for star in (cal_params['cat_image_stars']):
    (dcname,mag,ra,dec,img_ra,img_dec,match_dist,new_x,new_y,img_az,img_el,new_cat_x,new_cat_y,six,siy, img_res) = star
    img_res_fwd = abs(calc_dist((six,siy),(new_x,new_y)))
    #print(dcname, img_res,img_res,img_res_fwd)

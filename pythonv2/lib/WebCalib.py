@@ -2205,7 +2205,6 @@ def free_cal(json_conf,form):
 
    base_dir = "/mnt/ams2/cal/freecal/" + Y + "_" + M + "_" + D + "_" + H + "_" + MM + "_" + S + "_" + "000" + "_" + cam_id
    base_file = Y + "_" + M + "_" + D + "_" + H + "_" + MM + "_" + S + "_" + "000" + "_" + cam_id
-   print("BASE DIR:", base_dir)
    if cfe(base_dir, 1) != 1:
       os.system("mkdir " + base_dir)
 
@@ -2233,7 +2232,6 @@ def free_cal(json_conf,form):
 
 
    if sw != 1920:
-      #print(input_file, sh,sw)
       #stack_img = adjustLevels(stack_img, 5,.98,255)
       half_stack_img = stack_img 
       stack_img = cv2.resize(stack_img, (sw*2, sh*2))
@@ -2311,7 +2309,7 @@ def free_cal(json_conf,form):
       <div id=star_list>star_list: </div>
        <BR><BR>
    """
-   print(stack_file)
+   #print(stack_file)
 
    print(canvas_html)
    print(extra_js)
@@ -2430,6 +2428,7 @@ def show_cat_stars(json_conf,form):
       bad_hd = 1      
       print("BAD HD LINK! Try to fix...")
 
+   #print("RED FILE:", meteor_red_file)
    user_points = {}
    if points is None:
       points = ""
@@ -2588,12 +2587,15 @@ def show_cat_stars(json_conf,form):
    cal_params['user_stars'] = user_stars['user_stars']
 
    # need to remove from cat stars any stars that are not on the users list. and then add them to a banned list for the file so they don't come back. 
-
+   #print("NEED TO SAVE.")
    #if meteor_mode == 0:
    #   save_json_file(this_cal_params_file, cal_params) 
    if meteor_mode == 1:
       meteor_red['cal_params'] = cal_params
       save_json_file(meteor_red_file, meteor_red) 
+   if meteor_mode == 0:
+      meteor_red_file = meteor_red_file.replace(".png", "-calparams.json") 
+      save_json_file(meteor_red_file, cal_params) 
    print(json.dumps(cal_params))
 
 def calibrate_pic(json_conf,form):
