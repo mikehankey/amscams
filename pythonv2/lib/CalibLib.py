@@ -1266,14 +1266,14 @@ def define_crop_box(mfd):
 
    if w % 2 != 0:
       w = w + 1
-   sz = int(w/2) + 50
+   #sz = int(w/2) + 50
 
    cx = int(min_x + ((max_x - min_x) / 2))
    cy = int(min_y + ((max_y - min_y) / 2))
-   box_min_x = cx - sz
-   box_min_y = cy - sz
-   box_max_x = cx + sz
-   box_max_y = cy + sz
+   box_min_x = min_x - 50 
+   box_min_y = min_y - 50
+   box_max_x = max_x + 50
+   box_max_y = max_y + 50 
    if box_min_x < 0:
       mox_max_x = box_max_x + abs(box_min_x)
       box_min_x = 0

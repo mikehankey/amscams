@@ -130,7 +130,7 @@
 
 
 
-            document.getElementById('star_list').innerHTML = out_html.toString() ;
+            document.getElementById('meteor_frame_list').innerHTML = out_html.toString() ;
             sleep(1000).then(() => {
                var img1 = document.getElementById('half_stack_file')
                img1.src = json_resp['reduce_img_file']
@@ -384,8 +384,8 @@
 
 
             out_html = out_html + "</div></div>"
-         if (type != "first_load") {
             document.getElementById('star_list').innerHTML = out_html.toString() ;
+         if (type != "first_load") {
          }
 
             });

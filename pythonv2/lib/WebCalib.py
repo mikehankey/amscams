@@ -1400,16 +1400,18 @@ def reduce_meteor(json_conf,form):
 -->
 <span style="padding: 5px"> Calibration File</span><br>
    """ + cal_select + """</div>
+<!--
 <span style="padding: 5px"> <b>Meteor Info</b></span><br>
 <span style="padding: 5px"> Start Clip Time: """ + start_clip_time_str + """</span><br>
 <span style="padding: 5px"> Trim Start Frame Num: """ + str(trim_num) + """ </span><br>
 <span style="padding: 5px"> Meteor Start/End Frame: """ + str(meteor_start_frame) + "/" + str(meteor_end_frame) + """ </span><br>
 <span style="padding: 5px"> Meteor Start Time: """ + str(start_meteor_frame_time_str) + """</span><br>
 <span style="padding: 5px"> Duration: """ + str(elp_dur) + "seconds / " + str(elp_frames) + """ frames</span><br>
+-->
       """
    canvas_html = canvas_html + """
 
-
+<!--
 <span style="padding: 5px"> <B>SD Reduction Values</B></span><br>
 
 <span style="padding: 5px"> Start X/Y: """ + str(start_x) + "/" + str(start_y) + """</span><br>
@@ -1420,7 +1422,7 @@ def reduce_meteor(json_conf,form):
 <span style="padding: 5px"> End AZ/EL: """ + str(end_az)[0:5] + "/" + str(end_el)[0:5] + """</span><br>
 <span style="padding: 5px"> <a target='_blank' href=\"webUI.py?cmd=man_reduce&file=""" + mj['sd_stack']+ "&cal_params_file=" + cal_params_file +  """\">Manually Reduce</a></span><br>
 <span style="padding: 5px"> <a target='_blank' href=\"webUI.py?cmd=clone_cal&file=""" + mj['sd_stack']+ "&cal_params_file=" + cal_params_file +  """\">Clone Cal</a></span><br>
-
+-->
 <span style="padding: 5px"> <B>Media Files</B></span><br>
 <span style="padding: 5px"> <a target='_blank' href=javascript:play_video('""" + mj['sd_video_file']+ """')>SD Video</a></span><br>
 
@@ -1491,7 +1493,8 @@ def reduce_meteor(json_conf,form):
 </a></div>
   
       <div style="clear: both"></div>
-      <div style="" id=star_list>""" + frame_table + """</div>
+      <div style="" id=meteor_frame_list>""" + frame_table + """</div>
+      <div style="" id=star_list>""" +  """</div>
       </div>
    """
    #print(stack_file)
@@ -2468,9 +2471,12 @@ def show_cat_stars(json_conf,form):
       else:
          #print("CAL PARAMS:", cal_params_file)
          cal_params = load_json_file(cal_params_file)
-    
-   if 'crop_box' not in cal_params:
+   
+ 
+   if 'crop_box' not in meteor_red:
       cal_params['crop_box'] = (0,0,0,0)
+   else: 
+      cal_params['crop_box'] = meteor_red['crop_box']
    #else:
    #   user_star_file = hd_stack_file.replace("-stacked.png", "-user-stars.json")
    #   user_stars = load_json_file(user_star_file)
