@@ -337,6 +337,8 @@ def controller(json_conf):
       #day = '2019_01_27'
       browse_detects(day,type,json_conf)   
 
+   extra_html = extra_html + "<div id=\"waiting\" class=\"waiting\"><!-- Place at bottom of page --></div>"
+
    #bottom = bottom.replace("{JQ}", jq)      
    bottom = bottom.replace("{BOTTOMNAV}", bot_html)      
    rand=time.time()
@@ -1086,6 +1088,22 @@ def do_jquery():
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery-contextmenu/2.7.1/jquery.contextMenu.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery-contextmenu/2.7.1/jquery.ui.position.js"></script>
 <script>
+
+$body = $("body");
+
+$(document).bind({
+    ajaxStart: function() { 
+       $("#waiting").show();
+       //$body.addClass("waiting");    
+       console.log("starting ajax")
+    },
+    ajaxStop: function() { 
+       $("#waiting").hide();
+       //$body.removeClass("waiting"); 
+       console.log("ending ajax")
+    }    
+});
+
     $(function() {
         $.contextMenu({
             selector: '.context-menu-one',
@@ -1166,6 +1184,31 @@ def print_css():
       </script>
 
       <style> 
+.waiting {
+    display:    none;
+    position:   fixed;
+    z-index:    1000;
+    top:        25%;
+    left:       25%;
+    height:     400;
+    width:      400;
+    background: rgba( 0, 0, 0, .33 ) 
+                url('/ajax-loader3.gif') 
+                50% 50% 
+                no-repeat;
+}
+
+/* When the body has the loading class, we turn
+   the scrollbar off with overflow:hidden */
+body.loading .waiting {
+    overflow: hidden;   
+}
+
+/* Anytime the body has the loading class, our
+   modal element will be visible */
+body.loading .waiting {
+    display: block;
+}
 
 .divTable{
 	display: table;

@@ -38,6 +38,8 @@
 
       function del_frame(fn, meteor_json_file) {
          ajax_url = "/pycgi/webUI.py?cmd=del_frame&meteor_json_file=" + meteor_json_file + "&fn=" + fn 
+         fr_id = "fr_row" + fn
+         document.getElementById(fr_id).remove()
          console.log(ajax_url)
          $.get(ajax_url, function(data) {
             $(".result").html(data);
@@ -87,10 +89,11 @@
                     rad = 6
 
                  }
+                 fr_id = "fr_row" + fn
                  del_frame_link = "<a href=javascript:del_frame('" + fn + "','" + meteor_json_file +"')>X</a> "
                  cmp_img_url = prefix + fn + ".png"
                  cmp_img = "<img src=" + cmp_img_url + ">"
-                 out_html = out_html + " <div class='divTableRow'><div class='divTableCell'>" + cmp_img + "</div><div class='divTableCell'>" + fn + "</div><div class='divTableCell'>" + ft + "</div>"
+                 out_html = out_html + " <div class='divTableRow' id='" + fr_id + "'><div class='divTableCell'>" + cmp_img + "</div><div class='divTableCell'>" + fn + "</div><div class='divTableCell'>" + ft + "</div>"
                  out_html = out_html + " <div class='divTableCell'>" + x + "/" + y + " - " + w + "/" + h + "</div>"
                  out_html = out_html + " <div class='divTableCell'>" + max_px + "</div>"
                  out_html = out_html + " <div class='divTableCell'>" + ra + "/" + dec + "</div>"
@@ -134,7 +137,7 @@
 
                var canvas = document.getElementById("c");
                var cntx= canvas.getContext("2d"); 
-               cntx.drawImage(img1, 0, 0);
+               //cntx.drawImage(img1, 0, 0);
 
 
             });
@@ -255,9 +258,11 @@
          if (type != "nopick") {
          }
          
-         ajax_url = "/pycgi/webUI.py?cmd=show_cat_stars&video_file=" + video_file + "&hd_stack_file=" + hd_stack_file + "&points=" + point_str + "&cal_params_file=" + cal_params_file
+         ajax_url = "/pycgi/webUI.py?cmd=show_cat_stars&type=" + type + "&video_file=" + video_file + "&hd_stack_file=" + hd_stack_file + "&points=" + point_str + "&cal_params_file=" + cal_params_file
          console.log(ajax_url)
-         remove_objects() 
+         if (type != "first_load") {
+            remove_objects() 
+         }
          $.get(ajax_url, function(data) {
             $(".result").html(data);
             var json_resp = $.parseJSON(data);
@@ -265,17 +270,35 @@
             cat_stars = json_resp['close_stars']
             total_res_px = json_resp['total_res_px']
             total_res_deg = json_resp['total_res_deg']
+            crop_box = json_resp['crop_box']
+            box_x = crop_box[0] / 2
+            box_y = crop_box[1] / 2
+            box_w = (crop_box[2] - crop_box[0]) / 2 
+            box_h = (crop_box[3] - crop_box[1]) / 2
             cal_params_file = json_resp['cal_params_file']
             console.log(cal_params_file)
+
+         var roi_rect = new fabric.Rect({
+            fill: 'rgba(0,0,0,0)', strokeWidth: 1, stroke: 'rgba(230,230,230,.2)',  left: box_x, top: box_y,
+            width: box_w,
+            height: box_h ,
+            selectable: false
+         });
+         canvas.add(roi_rect);
+
+
+
+
             sleep(1000).then(() => {
-               out_html = "Residual error : " + total_res_deg + " degrees / " + total_res_px + " pixels"
+
+               out_html = "Residual error : " + Math.round(total_res_deg * 100) / 100 + " degrees / " + Math.round(total_res_px *100) / 100 + " pixels"
                out_html = out_html + "<div class='divTable' style='border: 1px solid #000;' ><div class='divTableBody'>"
                out_html = out_html + " <div class='divTableRow'><div class='divTableCell'>Star</div><div class='divTableCell'>Mag</div><div class='divTableCell'>Cat RA/DEC</div><div class='divTableCell'>Img RA/DEC</div><div class='divTableCell'>Residual (Degrees)</div><div class='divTableCell'>Cat X,Y</div><div class='divTableCell'>Img X,Y,</div><div class='divTableCell'>Corrected Img X,Y,</div><div class='divTableCell'>Residual Pixels</div></div>"
                var user_stars = json_resp['user_stars'];
 
-               for (let s in user_stars) {
-                  cx = user_stars[s][0] - 11
-                  cy = user_stars[s][1] - 11
+               for (let s in cat_stars) {
+                  cx = cat_stars[s][13] - 11 
+                  cy = cat_stars[s][14] - 11 
 
                   var circle = new fabric.Circle({
                      radius: 5, fill: 'rgba(0,0,0,0)', strokeWidth: 1, stroke: 'rgba(100,200,200,.5)', left: cx/2, top: cy/2,
@@ -336,8 +359,34 @@
                  cnt = cnt + 1
 
             } 
+
+            // ADD TEXT TO IMAGE
+         //total_res_deg total_res_px cat_stars.length
+         res_desc = "Residual Star Error: " + Math.round(total_res_deg * 100) / 100 + " degrees / " + Math.round(total_res_px *100) / 100 + " pixels"
+         var text_p = new fabric.Text(res_desc , {
+            fontFamily: 'Arial',
+            fontSize: 10,
+            left: 5 ,
+            top: 5
+         });
+         text_p.setColor('rgba(255,255,255,.75)')
+         canvas.add(text_p)
+
+         star_desc = "Total Stars :" + cat_stars.length
+         var text_p = new fabric.Text(star_desc, {
+            fontFamily: 'Arial',
+            fontSize: 10,
+            left: 5 ,
+            top: 20
+         });
+         text_p.setColor('rgba(255,255,255,.75)')
+         canvas.add(text_p)
+
+
             out_html = out_html + "</div></div>"
+         if (type != "first_load") {
             document.getElementById('star_list').innerHTML = out_html.toString() ;
+         }
 
             });
          });

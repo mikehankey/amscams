@@ -1,4 +1,5 @@
 import datetime
+import html
 import time
 import json
 import numpy as np
@@ -14,7 +15,7 @@ from lib.DetectLib import check_for_motion2, eval_cnt, eval_cnt_better, find_bri
 from lib.MeteorTests import test_objects
 from lib.ImageLib import mask_frame,stack_frames, adjustLevels, upscale_to_hd, median_frames
 
-from lib.CalibLib import radec_to_azel, clean_star_bg, get_catalog_stars, find_close_stars, XYtoRADec, HMS2deg, AzEltoRADec
+from lib.CalibLib import radec_to_azel, clean_star_bg, get_catalog_stars, find_close_stars, XYtoRADec, HMS2deg, AzEltoRADec, define_crop_box
 from lib.UtilLib import check_running, calc_dist, angularSeparation, bound_cnt
 
 
@@ -980,11 +981,11 @@ def reduce_meteor_ajax(json_conf,meteor_json_file, cal_params_file, show = 0):
    meteor_reduced['event_start_time'] = event_start_time
    meteor_reduced['event_duration'] = float(elp_dur)
    meteor_reduced['peak_magnitude'] = int(max_max_px)
-   meteor_reduced['start_az'] = int(start_az)
-   meteor_reduced['start_el'] = int(start_el)
-   meteor_reduced['end_az'] = int(end_az)
+   meteor_reduced['start_az'] = start_az
+   meteor_reduced['start_el'] = start_el
+   meteor_reduced['end_az'] = end_az
 
-   meteor_reduced['end_el'] = int(end_el)
+   meteor_reduced['end_el'] = end_el
    meteor_reduced['start_ra'] = start_ra
    meteor_reduced['start_dec'] = start_dec
    meteor_reduced['end_ra'] = end_ra
@@ -1008,11 +1009,21 @@ def reduce_meteor_ajax(json_conf,meteor_json_file, cal_params_file, show = 0):
    meteor_reduced['cal_params']['y_poly'] = cal_params['y_poly']
    meteor_reduced['cal_params']['x_poly_fwd'] = cal_params['x_poly_fwd']
    meteor_reduced['cal_params']['y_poly_fwd'] = cal_params['y_poly_fwd']
-   meteor_reduced['cal_params']['x_res_err'] = cal_params['x_fun']
-   meteor_reduced['cal_params']['y_res_err'] = cal_params['y_fun']
-   meteor_reduced['cal_params']['x_fwd_res_err'] = cal_params['x_fun_fwd']
-   meteor_reduced['cal_params']['y_fwd_res_err'] = cal_params['y_fun_fwd']
+
+   
+   (box_min_x,box_min_y,box_max_x,box_max_y) = define_crop_box(meteor_reduced['meteor_frame_data'])
+   meteor_reduced['crop_box'] = (box_min_x,box_min_y,box_max_x,box_max_y)
+
+   if 'x_fun' in cal_params:
+      meteor_reduced['cal_params']['x_res_err'] = cal_params['x_fun']
+      meteor_reduced['cal_params']['y_res_err'] = cal_params['y_fun']
+      meteor_reduced['cal_params']['x_fwd_res_err'] = cal_params['x_fun_fwd']
+      meteor_reduced['cal_params']['y_fwd_res_err'] = cal_params['y_fun_fwd']
    meteor_reduce_file = meteor_json_file.replace(".json", "-reduced.json")
+
+   (box_min_x,box_min_y,box_max_x,box_max_y) = define_crop_box(meteor_reduced['meteor_frame_data'])
+   meteor_reduced['crop_box'] = (box_min_x,box_min_y,box_max_x,box_max_y) 
+
    save_json_file(meteor_reduce_file, meteor_reduced) 
 
 
@@ -1042,35 +1053,156 @@ def get_meteor_object(meteor_json):
       return(None)
 
 def make_frame_table(meteor_reduced,meteor_json_file):
+   astro_res_err = 0
+   cat_image_stars = []
+   total_stars = 0
+   if "cal_params" in meteor_reduced:
+      if "astro_res_err" in meteor_reduced['cal_params']:
+         astro_res_err = meteor_reduced['cal_params']['astro_res_err']
+      if "cat_image_stars" in meteor_reduced['cal_params']:
+         cat_image_stars = meteor_reduced['cal_params']['cat_image_stars']
+         total_stars = len(cat_image_stars)
+
 
    prefix = meteor_reduced['sd_video_file'].replace(".mp4", "-frm")
    prefix = prefix.replace("SD/proc2/", "meteors/")
    prefix = prefix.replace("/passed", "")
 
+   video_file = meteor_reduced['sd_video_file']
+   hd_stack_file = meteor_reduced['hd_stack']
+   cal_params_file = ""
+   res_desc = "Residual Star Error: " + str(astro_res_err)[0:5]
+   star_desc = "Total Stars: " + str(total_stars)
    stab,sr,sc,et,er,ec = div_table_vars()
-   frame_javascript = "<script>"
+   if "crop_box" in meteor_reduced:
+
+      (box_min_x,box_min_y,box_max_x,box_max_y) = define_crop_box(meteor_reduced['meteor_frame_data'])
+      meteor_reduced['crop_box'] = (box_min_x,box_min_y,box_max_x,box_max_y) 
+      #(box_min_x,box_min_y,box_max_x,box_max_y) = meteor_reduced['crop_box']
+      box_width = int((box_max_x - box_min_x) / 2)
+      box_height = int((box_max_y - box_min_y) / 2)
+   else: 
+     box_min_x =0 
+     box_min_y =0 
+     box_width=0 
+     box_height=0 
+   box_min_x = int(box_min_x/2)
+   box_min_y = int(box_min_y/2)
+   #frame_javascript = "<script> show_cat_stars"
+
+
+         #var cam_id = '"""  + meteor_reduced['device_name'] + """'
+         #var start_time = '"""  + meteor_reduced['event_start_time'] + """'
+         #var duration = '"""  + meteor_reduced['event_duration'] + """'
+         #var start_az = '"""  + meteor_reduced['start_az'] + """'
+         #var end_az = '"""  + meteor_reduced['end_az'] + """'
+
+
+
+   frame_javascript = """ <script> 
+
+      function init_info() {
+
+         var site_id = '"""  + meteor_reduced['station_name'].upper() + """'
+         var cam_id = '"""  + meteor_reduced['device_name'] + """'
+         var start_time = '"""  + meteor_reduced['event_start_time'] + """'
+         var duration = '"""  + str(meteor_reduced['event_duration']) + """'
+         var start_az = '"""  + str(meteor_reduced['start_az']) + """'
+         var start_el = '"""  + str(meteor_reduced['start_el']) + """'
+         var end_az = '"""  + str(meteor_reduced['end_az']) + """'
+         var end_el = '"""  + str(meteor_reduced['end_el']) + """'
+
+         var text_cam_id = new fabric.Text("Cam ID: " + site_id + "-" + cam_id, {
+            fontFamily: 'Arial',
+            fontSize: 10,
+            left: 5 ,
+            top: 495 
+         });
+         text_cam_id.setColor('rgba(255,255,255,.75)')
+         canvas.add(text_cam_id)
+
+         var text_cam_id = new fabric.Text("Start Time: " + start_time + " (" + duration + " seconds)", {
+            fontFamily: 'Arial',
+            fontSize: 10,
+            left: 5 ,
+            top: 510
+         });
+         text_cam_id.setColor('rgba(255,255,255,.75)')
+         canvas.add(text_cam_id)
+
+         var text_cam_id = new fabric.Text("Start AZ/EL : " + Math.round(start_az * 100) / 100 + "/" + Math.round(start_el* 100) / 100 + " End AZ/EL: " + Math.round(end_az * 100) / 100 + "/" + Math.round(end_el * 100) / 100 , {
+            fontFamily: 'Arial',
+            fontSize: 10,
+            left: 5 ,
+            top: 525
+         });
+         text_cam_id.setColor('rgba(255,255,255,.75)')
+         canvas.add(text_cam_id)
+
+      }
+
+      window.onload = function () {
+         init_info()
+         show_cat_stars('""" + video_file + "','" + hd_stack_file + "','" + cal_params_file + """', 'first_load') 
+
+         var text_p = new fabric.Text('""" + res_desc + """', {
+            fontFamily: 'Arial',
+            fontSize: 10,
+            left: 5 ,
+            top: 5 
+         });
+         text_p.setColor('rgba(255,255,255,.75)')
+         //canvas.add(text_p)
+
+         var text_p = new fabric.Text('""" + star_desc + """', {
+            fontFamily: 'Arial',
+            fontSize: 10,
+            left: 5 ,
+            top: 20 
+         });
+         text_p.setColor('rgba(255,255,255,.75)')
+         //canvas.add(text_p)
+
+         var roi_rect = new fabric.Rect({
+            fill: 'rgba(0,0,0,0)', strokeWidth: 1, stroke: 'rgba(230,230,230,.2)',  left: """ + str(box_min_x) + """, top: """ + str(box_min_y) + """, 
+            width: """ + str(box_width) + """,
+            height: """ + str(box_height) + """ ,
+            selectable: false
+         });
+         canvas.add(roi_rect);
+
+      }
+   """
    frame_table = stab
    frame_table = frame_table + sr + sc + "IMG" + ec + sc + "FN" +ec + sc + "Frame Time" + ec + sc + "X/Y - W/H " + ec + sc + "Max PX" +ec + sc + "RA/DEC" + ec + sc + "AZ/EL" + ec + sc + "DEL " + ec + er 
    lc = 0
    start_y = meteor_reduced['meteor_frame_data'][0][3]
+
+   #for cstar in meteor_reduced['cal_params']['cat_image_stars']:
+   #   (iname,mag,ra,dec,tmp1,tmp2,px_dist,new_cat_x,new_cat_y,tmp3,tmp4,new_cat_x,new_cat_y,ix,iy,px_dist) = cstar
+
+
+
    for frame_data in meteor_reduced['meteor_frame_data'] :
       frame_time, fn, hd_x,hd_y,w,h,max_px,ra,dec,az,el = frame_data
       hd_x = int(hd_x/2)
       hd_y = int(hd_y/2)
       text_y = str(hd_y)
       text_y = (start_y/2) - (lc * 12)
+      fr_id = "fr_row" + str(fn)
       cmp_img_url = prefix  + str(fn) + ".png"
       cmp_img = "<img src=" + cmp_img_url + ">"
 
       az_desc = "\"" + str(lc) + " -  " + str(az) + " / " + str(el)  + "\""
       del_frame_link = "<a href=\"javascript:del_frame('" + str(fn) + "','" + meteor_json_file +"')\">X</a> "
 
-      frame_table = frame_table + sr + sc + cmp_img + ec + sc  + str(fn) +ec + sc + frame_time + ec + sc + str(hd_x) + "/" + str(hd_y) + " - " + str(w) + "/" + str(h) + ec + sc + str(max_px) +ec + sc + str(ra) + "/" + str(dec) + ec + sc +  str(az) + "/" + str(el)  + ec + sc + del_frame_link + ec + er
+      sr_id = "<div class=\"divTableRow\" id=\"" + fr_id + "\">"
+      frame_table = frame_table + sr_id + sc + cmp_img + ec + sc  + str(fn) +ec + sc + frame_time + ec + sc + str(hd_x) + "/" + str(hd_y) + " - " + str(w) + "/" + str(h) + ec + sc + str(max_px) +ec + sc + str(ra) + "/" + str(dec) + ec + sc +  str(az) + "/" + str(el)  + ec + sc + del_frame_link + ec + er
 
       frame_javascript = frame_javascript + """
                  var rad = 5;
                  var meteor_rect = new fabric.Rect({
-                    fill: 'rgba(0,0,0,0)', strokeWidth: 1, stroke: 'rgba(230,100,200,.1)',  left: """ + str(hd_x-5) + """, top: """ + str(hd_y-5) + """, 
+                    fill: 'rgba(0,0,0,0)', strokeWidth: 1, stroke: 'rgba(230,100,200,.3)',  left: """ + str(hd_x-5) + """, top: """ + str(hd_y-5) + """, 
                     width: 10,
                     height: 10 ,
                     selectable: false
@@ -1112,15 +1244,30 @@ def reduce_meteor(json_conf,form):
    video_file = form.getvalue("video_file")
    meteor_json_file = video_file.replace(".mp4", ".json") 
    meteor_reduced_file = meteor_json_file.replace(".json", "-reduced.json")
+
+
+
+
    if cfe(meteor_reduced_file) == 1:
       meteor_reduced = load_json_file(meteor_reduced_file)
-      frame_table, frame_javascript = make_frame_table(meteor_reduced,meteor_json_file)
       reduced = 1
+      if "crop_box" not in meteor_reduced:
+         (box_min_x,box_min_y,box_max_x,box_max_y) = define_crop_box(meteor_reduced['meteor_frame_data'])
+         meteor_reduced['crop_box'] = (box_min_x,box_min_y,box_max_x,box_max_y)
+      frame_table, frame_javascript = make_frame_table(meteor_reduced,meteor_json_file)
+
    else:
       frame_table = ""
       reduced = 0
    mj = load_json_file(meteor_json_file)
    meteor_obj = get_meteor_object(mj)
+   if reduced == 1:
+      if "cal_params" in meteor_reduced:
+         if "astro_res_err" in meteor_reduced['cal_params']:
+            astro_res_error = meteor_reduced['cal_params']['astro_res_err']
+         if "cat_image_stars" in meteor_reduced['cal_params']:
+            cat_image_stars = meteor_reduced['cal_params']['cat_image_stars']
+            total_stars = len(cat_image_stars)
 
 
    if "/mnt/ams2/meteors" not in mj['sd_video_file']:
@@ -1233,14 +1380,24 @@ def reduce_meteor(json_conf,form):
       var hd_stack_file = '""" + hd_stack_file + """'
       var az_grid_file = '""" + az_grid_file + """'
       var stars = []
+
    </script>
 
 
    """.format(hd_stack_file)
+
+   js_html = js_html + """
+   """
+
    canvas_html = """
       <div style="float:left"><canvas id="c" width="960" height="540" style="border:2px solid #000000;"></canvas></div>
       <div style="float:left">
       <div>
+<!--
+<div id="loading" >
+  <p><img src="loading.gif" /> Please Wait</p>
+</div>
+-->
 <span style="padding: 5px"> Calibration File</span><br>
    """ + cal_select + """</div>
 <span style="padding: 5px"> <b>Meteor Info</b></span><br>
@@ -2183,11 +2340,27 @@ def default_cal_params(cal_params,json_conf):
 
    return(cal_params)
 
+def remove_dupe_cat_stars(cat_image_stars):
+   new_data = []
+   dupe_cat = {}
+   dupe_img = {}
+   for star in cat_image_stars: 
+      (dcname,mag,ra,dec,img_ra,img_dec,match_dist,new_x,new_y,img_az,img_el,new_cat_x,new_cat_y,six,siy,cat_dist) = star
+      ikey = str(six) + "." + str(siy)
+      ckey = str(new_cat_x) + "." + str(new_cat_y)
+      if ikey not in dupe_img and ckey not in dupe_cat:
+         new_data.append((dcname,mag,ra,dec,img_ra,img_dec,match_dist,new_x,new_y,img_az,img_el,new_cat_x,new_cat_y,six,siy,cat_dist))
+         dupe_cat[ckey] = 1
+         dupe_img[ikey] = 1
+ 
+   return(new_data)
+
 
 def show_cat_stars(json_conf,form):
    child = 0
    cal_params = None
    hd_stack_file = form.getvalue("hd_stack_file")
+   type = form.getvalue("type")
    video_file = form.getvalue("video_file")
    if cfe(hd_stack_file) == 0:
       sd_stack_file = video_file.replace(".mp4", "-stacked.png")
@@ -2202,11 +2375,36 @@ def show_cat_stars(json_conf,form):
       if "cal_params" in meteor_red:
          cal_params = meteor_red['cal_params']
          meteor_mode = 1
+         cal_params_file = ""
          if "cat_image_stars" in cal_params:
-            cal_params['close_stars']  = cal_params['cat_image_stars']
+
+            clean_close_stars = remove_dupe_cat_stars(cal_params['cat_image_stars'])
+            cal_params['close_stars']  = clean_close_stars
             #cal_params['user_stars']  = cal_params['user_stars']
-            #print(json.dumps(cal_params))
-            #exit()
+            
+            #user_stars = cal_params['user_stars']
+            user_stars = []
+            used = {}
+            for cstar in cal_params['cat_image_stars']:
+               (iname,mag,ra,dec,tmp1,tmp2,px_dist,new_cat_x,new_cat_y,tmp3,tmp4,new_cat_x,new_cat_y,ix,iy,px_dist) = cstar
+               key = str(ix) + "." + str(iy)
+               here_now = 0
+               if px_dist < 5:
+                  for x,y in user_stars:
+                     dst = calc_dist((x,y),(ix,iy))
+                     if dst < 10:
+                        here_now = 1
+                  if here_now == 0:
+                     user_stars.append((ix,iy))
+            cal_params['user_stars']  = user_stars
+
+            if "crop_box" in meteor_red:
+               cal_params['crop_box']  = meteor_red['crop_box'] 
+            if type == "first_load":
+               print(json.dumps(cal_params))
+               exit()
+         (box_min_x,box_min_y,box_max_x,box_max_y) = define_crop_box(meteor_red['meteor_frame_data'])
+         meteor_red['crop_box'] = (box_min_x,box_min_y,box_max_x,box_max_y) 
 
    if meteor_mode == 0:
       cal_params_file_orig = hd_stack_file.replace(".png", "-calparams.json")
@@ -2229,13 +2427,13 @@ def show_cat_stars(json_conf,form):
       bad_hd = 1      
       print("BAD HD LINK! Try to fix...")
 
-
+   user_points = {}
    if points is None:
       points = ""
       star_json = find_stars_ajax(json_conf, hd_stack_file, 0)
       
-      for x,y,mp in star_json['stars'][0:20]:
-         star_points.append((x,y))
+      #for x,y,mp in star_json['stars'][0:20]:
+      #   star_points.append((x,y))
    else:
       temps = points.split("|")
       for temp in temps:
@@ -2245,10 +2443,17 @@ def show_cat_stars(json_conf,form):
             x,y = int(x)+5,int(y)+5
             x,y = x*2,y*2
             if x >0 and y > 0 and x<1920 and y< 1080:
+
+
                star_points.append((x,y))
    points = star_points
    hd_stack_img = cv2.imread(hd_stack_file,0)
    points = pin_point_stars(hd_stack_img, points)
+
+   for x,y in points:
+      pk = str(x) + '.' + str(y)
+      user_points[pk] = 1
+
    if meteor_mode == 0:
       user_stars['user_stars'] = points 
    else:
@@ -2264,6 +2469,8 @@ def show_cat_stars(json_conf,form):
          #print("CAL PARAMS:", cal_params_file)
          cal_params = load_json_file(cal_params_file)
     
+   if 'crop_box' not in cal_params:
+      cal_params['crop_box'] = (0,0,0,0)
    #else:
    #   user_star_file = hd_stack_file.replace("-stacked.png", "-user-stars.json")
    #   user_stars = load_json_file(user_star_file)
@@ -2339,7 +2546,11 @@ def show_cat_stars(json_conf,form):
          else:
             new_x, new_y, img_ra,img_dec, img_az, img_el = XYtoRADec(ix,iy,video_file,cal_params,json_conf)
          match_dist = abs(angularSeparation(ra,dec,img_ra,img_dec))
-         my_close_stars.append((dcname,mag,ra,dec,img_ra,img_dec,match_dist,new_x,new_y,img_az,img_el,new_cat_x,new_cat_y,six,siy,cat_dist))
+         ipk = str(six) + "." + str(siy)
+         if ipk in user_points.keys() :
+            my_close_stars.append((dcname,mag,ra,dec,img_ra,img_dec,match_dist,new_x,new_y,img_az,img_el,new_cat_x,new_cat_y,six,siy,cat_dist))
+         else:
+            print(ipk,"not found<BR>", user_points.keys(), "<BR>")
          total_match_dist = total_match_dist + match_dist
          total_cat_dist = total_cat_dist + cat_dist
          total_matches = total_matches + 1
@@ -2347,19 +2558,26 @@ def show_cat_stars(json_conf,form):
 
       #print(close_stars,"<BR>")
    #   print(close_stars, "<BR>")
-
-   cal_params['close_stars'] = my_close_stars
+   clean_close_stars = remove_dupe_cat_stars(my_close_stars)
+   cal_params['close_stars'] = clean_close_stars 
+   cal_params['cat_image_stars'] = clean_close_stars 
    #out = str(cal_params)
    #out = out.replace("'", "\"")
    #out = out.replace("(b", "(")
    this_cal_params_file = hd_stack_file.replace(".png", "-calparams.json")
    if meteor_mode == 0:
       cal_params['parent_cal'] = cal_params_file
-    
-   cal_params['total_res_deg'] = total_match_dist / total_matches
-   cal_params['total_res_px'] = total_cat_dist / total_matches
+   
+   if total_matches > 0 :
+      cal_params['total_res_deg'] = total_match_dist / total_matches
+      cal_params['total_res_px'] = total_cat_dist / total_matches
+   else:
+      cal_params['total_res_deg'] = 9999
+      cal_params['total_res_px'] = 9999
    cal_params['cal_params_file'] = this_cal_params_file
    cal_params['user_stars'] = user_stars['user_stars']
+
+   # need to remove from cat stars any stars that are not on the users list. and then add them to a banned list for the file so they don't come back. 
 
    #if meteor_mode == 0:
    #   save_json_file(this_cal_params_file, cal_params) 

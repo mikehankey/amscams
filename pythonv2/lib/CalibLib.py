@@ -1243,5 +1243,44 @@ def find_matching_cal_files(cam_id, capture_date):
       td_sorted_matches.append((match,f_date_str,tdiff))
 
    temp = sorted(td_sorted_matches, key=lambda x: x[2], reverse=False)
+
    return(temp)
+def define_crop_box(mfd):
+   temp = sorted(mfd, key=lambda x: x[2], reverse=False)
+   min_x = temp[0][2]
+   temp = sorted(mfd, key=lambda x: x[2], reverse=True)
+   max_x = temp[0][2]
+   temp = sorted(mfd, key=lambda x: x[3], reverse=False)
+   min_y = temp[0][3]
+   temp = sorted(mfd, key=lambda x: x[3], reverse=True)
+   max_y = temp[0][3]
+   w = max_x - min_x
+   h = max_y - min_y
+#   if w > h:
+#      h = w
+#   else:
+#      w = h
+#   if w < 100 and h < 100:
+#      w = 100
+#      h = 100
+
+   if w % 2 != 0:
+      w = w + 1
+   sz = int(w/2) + 50
+
+   cx = int(min_x + ((max_x - min_x) / 2))
+   cy = int(min_y + ((max_y - min_y) / 2))
+   box_min_x = cx - sz
+   box_min_y = cy - sz
+   box_max_x = cx + sz
+   box_max_y = cy + sz
+   if box_min_x < 0:
+      mox_max_x = box_max_x + abs(box_min_x)
+      box_min_x = 0
+   if box_min_y < 0:
+      mox_max_y = box_max_y + abs(box_min_y)
+      box_min_y = 0
+
+
+   return(box_min_x,box_min_y,box_max_x,box_max_y)
 

@@ -17,7 +17,7 @@ from lib.ImageLib import mask_frame , stack_frames
 #import matplotlib.pyplot as plt
 import sys
 #from caliblib import distort_xy,
-from lib.CalibLib import distort_xy_new, find_image_stars, distort_xy_new, XYtoRADec, radec_to_azel, get_catalog_stars,AzEltoRADec , HMS2deg, get_active_cal_file, RAdeg2HMS, clean_star_bg
+from lib.CalibLib import distort_xy_new, find_image_stars, distort_xy_new, XYtoRADec, radec_to_azel, get_catalog_stars,AzEltoRADec , HMS2deg, get_active_cal_file, RAdeg2HMS, clean_star_bg, define_crop_box
 from lib.UtilLib import calc_dist, find_angle, bound_cnt, cnt_max_px
 
 from lib.UtilLib import angularSeparation, convert_filename_to_date_cam, better_parse_file_date
@@ -1263,7 +1263,8 @@ def get_stars_from_image(file,json_conf,masks = [], cal_params = None, show = 0)
       cv2.namedWindow('pepe')
    img = cv2.imread(file,0)
    img = cv2.resize(img, (1920,1080))
-   img = mask_frame(img, [], masks)
+   mimg = mask_frame(img, [], masks)
+   img = mimg.copy()
    (f_datetime, cam_id, f_date_str,fy,fm,fd, fh, fmin, fs) = convert_filename_to_date_cam(file)
 
    if cal_params is None:
@@ -1712,27 +1713,24 @@ def star_res(meteor_json_file, json_conf, show):
 
 
 def batch_fix (json_conf):
-   max_proc = 12
+   max_proc = 22
    meteor_dirs = glob.glob("/mnt/ams2/meteors/*")
    bad_files = [] 
    refit = 0
 
    jobs = []
 
-   for meteor_dir in sorted(meteor_dirs,reverse=True)[10:11]:
+   for meteor_dir in sorted(meteor_dirs,reverse=True):
       meteor_files = glob.glob(meteor_dir + "/*-reduced.json")
       for meteor_file in meteor_files:
          mf = meteor_file.replace("-reduced.json", ".json")
          fn = mf.split("/")[-1]
-         cmd = "./autoCal.py imgstars " + mf + " 0"
-         jobs.append(cmd) 
-         #os.system(cmd)
          cmd =  "./autoCal.py cfit " + mf + " 0"
          jobs.append(cmd) 
-         #os.system(cmd)
-         cmd = "./autoCal.py imgstars " + mf + " 0"
-         jobs.append(cmd) 
-         #os.system(cmd)
+
+         #cmd = "./autoCal.py imgstars " + mf + " 0"
+         #jobs.append(cmd) 
+
          mfr = mf.replace(".json", "-reduced.json")
          #cmd = "./reducer.py " + mfr 
          #jobs.append(cmd) 
@@ -1741,8 +1739,9 @@ def batch_fix (json_conf):
    print("Jobs Running: ", running)
 
    jc = 0
+   
    for job in jobs:
-      while (check_running("autoCal.py")) > 10:       
+      while (check_running("autoCal.py")) > 22:       
          time.sleep(1)
       print(job)
       os.system(job + " &")
@@ -2247,6 +2246,14 @@ if cmd == 'imgstars':
 
    (f_datetime, cam_id, f_date_str,fy,fm,fd, fh, fmin, fs) = convert_filename_to_date_cam(file)
    masks = get_masks(cam_id, json_conf,1)
+   if "meteor_frame_data" in meteor_json:
+      (box_min_x,box_min_y,box_max_x,box_max_y) = define_crop_box(meteor_json['meteor_frame_data'])
+      meteor_json['crop_box'] = (box_min_x,box_min_y,box_max_x,box_max_y)
+      box_w = box_max_x - box_min_x 
+      box_h = box_max_y - box_min_y
+      mask_s = str(box_min_x) + "," + str(box_min_y) + "," + str(box_w) + "," + str(box_h)
+      masks.append(mask_s)
+
 
    if cal_params == 0:
       poss = get_active_cal_file(file)
@@ -2292,11 +2299,15 @@ if cmd == 'imgstars':
       print("Problem here. Let's clean up. try again...", meteor_json_file )
       del meteor_json['cal_params']  
       meteor_json['deleted_tries']  = 1
+      meteor_json['tried_cal'] = []
 
-      if len(meteor_json['tried_cal']) < 4 and "deleted_tries" not in meteor_json:
-         cmd = "./autoCal.py imgstars " + meteor_json_file + " 0"
-         print(cmd)
-         os.system(cmd)
+      if "tried_cal" in meteor_json:
+         if len(meteor_json['tried_cal']) < 4 and "deleted_tries" not in meteor_json:
+            cmd = "./autoCal.py imgstars " + meteor_json_file + " 0"
+            print(cmd)
+            os.system(cmd)
+      #else:
+      #   meteor_json['tried_cal'] = []
       save_json_file(meteor_json_file_red, meteor_json)
      
       exit()
