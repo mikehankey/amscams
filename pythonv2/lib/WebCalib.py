@@ -2373,7 +2373,7 @@ def show_cat_stars(json_conf,form):
    # check if this meteor file has been custom fit and if it has use that info.
    meteor_red_file = video_file.replace(".mp4", "-reduced.json")
    meteor_mode = 0
-   if cfe(meteor_red_file) == 1:
+   if cfe(meteor_red_file) == 1 and "reduced" in meteor_red_file:
       meteor_red = load_json_file(meteor_red_file)
       if "cal_params" in meteor_red:
          cal_params = meteor_red['cal_params']
@@ -2472,11 +2472,15 @@ def show_cat_stars(json_conf,form):
          #print("CAL PARAMS:", cal_params_file)
          cal_params = load_json_file(cal_params_file)
    
- 
-   if 'crop_box' not in meteor_red:
-      cal_params['crop_box'] = (0,0,0,0)
-   else: 
-      cal_params['crop_box'] = meteor_red['crop_box']
+   if meteor_mode == 1: 
+      if 'crop_box' not in meteor_red:
+         cal_params['crop_box'] = (0,0,0,0)
+      else: 
+         cal_params['crop_box'] = meteor_red['crop_box']
+   else:
+         cal_params['crop_box'] = (0,0,0,0)
+
+
    #else:
    #   user_star_file = hd_stack_file.replace("-stacked.png", "-user-stars.json")
    #   user_stars = load_json_file(user_star_file)
