@@ -358,7 +358,10 @@ def minimize_fov_pos(meteor_json_file, image_file, json_conf, cal_params = None,
    else: 
       meteor_json = cal_params 
       image_file = image_file.replace("-calparams", "")
+      meteor_json_file = image_file.replace("-stacked.png", "-calparams.json")
+      print("MIKE MJF(calfile):", meteor_json_file)
       hd_stack_file = image_file
+      hd_stack_file = hd_stack_file.replace("-stacked-stacked", "-stacked")
    if cfe(hd_stack_file) == 0:
       print("HD FILE NOT FOUND!", hd_stack_file)
       hd_stack_file = meteor_json_file.replace(".json", "-stacked.png")
@@ -1261,6 +1264,8 @@ def get_stars_from_image(file,json_conf,masks = [], cal_params = None, show = 0)
    user_stars = None
    if show == 1:
       cv2.namedWindow('pepe')
+   print("FILE:",file)
+   file = file.replace("-stacked-stacked", "-stacked")
    img = cv2.imread(file,0)
    img = cv2.resize(img, (1920,1080))
    mimg = mask_frame(img, [], masks)
