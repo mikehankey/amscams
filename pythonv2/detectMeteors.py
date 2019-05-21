@@ -13,7 +13,7 @@ from lib.FileIO import load_json_file,archive_meteor
 from lib.VideoLib import load_video_frames , doHD
 from lib.ImageLib import stack_frames, draw_stack
 from lib.UtilLib import convert_filename_to_date_cam, check_running
-from lib.WebCalib import reduce_meteor_ajax
+from lib.WebCalib import reduce_meteor_ajax, better_reduce
 
 
 # Copyright (C) 2018 Mike Hankey - AllSkyCams.com
@@ -143,6 +143,13 @@ if __name__ == "__main__":
       do_all(json_conf)
    if cmd == 'pm':
       parse_motion(video_file, json_conf)
+
+   if cmd == 'br':
+      meteor_json_file = sys.argv[2]
+      if len(sys.argv) > 3:
+         show = 1 
+      better_reduce(json_conf, meteor_json_file, show)
+
    if cmd == 'raj':
       meteor_json_file = sys.argv[2]
       if len(sys.argv) >= 4:

@@ -266,7 +266,7 @@ def find_stars_ajax(json_conf, stack_file, is_ajax = 1):
    best_thresh = avg + 10
    #print("SHAPE:", iw,ih,best_thresh,"<BR>")
    _, star_bg = cv2.threshold(img, best_thresh, 255, cv2.THRESH_BINARY)
-   thresh_obj = cv2.dilate(star_bg, None , iterations=4)
+   thresh_obj = cv2.dilate(star_bg, None , iterations=10)
    (_, cnts, xx) = cv2.findContours(thresh_obj.copy(), cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
    cc = 0
    for (i,c) in enumerate(cnts):
@@ -732,6 +732,314 @@ def make_meteor_cnt_composite_images(json_conf, mfd, sd_video_file):
       cmp_images[fn] = cnt_img 
    return(cmp_images)
 
+def better_reduce(json_conf,meteor_json_file,show=0):
+
+   if "-reduced" not in meteor_json_file:
+      meteor_json_file = meteor_json_file.replace(".json", "-reduced.json")
+      meteor_json_file = meteor_json_file.replace(".mp4", "-reduced.json")
+   if show == 1:
+      cv2.namedWindow('pepe')
+   hdm_x = 2.7272727272727272
+   hdm_y = 1.875
+   mj = load_json_file(meteor_json_file)
+   sd_video_file = mj['sd_video_file']
+   frames = load_video_frames(sd_video_file,json_conf, 0, 1, [],1)
+
+
+   first_x = mj['meteor_frame_data'][0][2]
+   first_y = mj['meteor_frame_data'][0][3]
+   first_fn = mj['meteor_frame_data'][0][1]
+   last_x = mj['meteor_frame_data'][-1][2]
+   last_y = mj['meteor_frame_data'][-1][3]
+   last_fn = mj['meteor_frame_data'][-1][1]
+   metframes = {}
+   max_max_px = 0
+   min_min_px = 255
+   for fd in mj['meteor_frame_data']:
+      frame_time, fn, hd_x,hd_y,w,h,max_px,ra,dec,az,el = fd
+      if fn not in metframes:
+         if max_px > max_max_px:
+            max_max_px = max_px
+         if max_px < min_min_px:
+            min_min_px = max_px
+         metframes[fn] = {}
+         metframes[fn]['frame_time'] = frame_time
+         metframes[fn]['hd_x'] = hd_x
+         metframes[fn]['hd_y'] = hd_y
+         metframes[fn]['est_x'] = 0
+         metframes[fn]['est_y'] = 0
+         metframes[fn]['bp_x'] = 0 
+         metframes[fn]['bp_y'] = 0 
+         metframes[fn]['blob_x'] = 0 
+         metframes[fn]['blob_y'] = 0 
+         metframes[fn]['best_x'] = 0 
+         metframes[fn]['best_y'] = 0 
+         metframes[fn]['w'] = w
+         metframes[fn]['h'] = h
+         metframes[fn]['max_px'] = max_px
+         metframes[fn]['ra'] = ra
+         metframes[fn]['dec'] = dec
+         metframes[fn]['az'] = az 
+         metframes[fn]['el'] = el
+         metframes[fn]['last_dist'] = 0
+         metframes[fn]['last_four_dist'] = 0
+         metframes[fn]['last_four_slope_b'] = 0
+         metframes[fn]['last_four_slope_m'] = 0
+
+   x1,y1,x2,y2= mj['crop_box']
+   mx1 = 5
+   my1 = 5 
+   mx2 = my1 + (x2-x1)
+   my2 = my1 + (y2-y1)
+
+   dmx1 = 5
+   dmy1 = my2 + 5
+   dmx2 = dmx1 + (x2-x1)
+   dmy2 = dmy1 + (y2-y1)
+
+   fc = 0
+   image_acc = None
+   last_crop_img = None
+   last_crops = []
+   first_frame = frames[0]
+   first_frame = cv2.resize(first_frame, (int(1920),int(1080)))
+   #image_acc_crop = first_frame[y1:y2,x1:x2]
+
+   image_acc = first_frame
+   image_acc = cv2.cvtColor(image_acc, cv2.COLOR_BGR2GRAY)
+   image_acc = cv2.GaussianBlur(image_acc, (5, 5), 0)
+   cv2.convertScaleAbs(image_acc, image_acc, 1, 1)
+
+
+   min_min_px = min_min_px * .8
+   #_, image_acc = cv2.threshold(image_acc.copy(), min_min_px, 255, cv2.THRESH_BINARY)
+   #image_acc = cv2.GaussianBlur(image_acc, (7, 7), 0)
+   
+   pos_cnts = []
+   for frame in frames:
+      this_pos_cnts = ()
+      color_frame = frame.copy()
+      frame = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
+      frame = cv2.resize(frame, (int(1920),int(1080)))
+      half_frame = cv2.resize(frame, (int(960),int(540)))
+      reduce_img  = cv2.resize(frame, (int(1920),int(1080)))
+      crop_img = reduce_img[y1:y2,x1:x2]
+      crh,crw = crop_img.shape
+
+
+
+      #half_frame[my1:my2,mx1:mx2] = show_crop_img
+      tdesc = str(fc) 
+
+      crop_blur = cv2.GaussianBlur(crop_img, (7, 7), 0)
+      #_, crop_blur_thresh = cv2.threshold(crop_blur.copy(), min_min_px, 255, cv2.THRESH_BINARY)
+
+      image_diff = cv2.absdiff(image_acc.astype(frame.dtype), frame,)
+      alpha = .1
+
+      # good
+      #image_diff = cv2.absdiff(image_acc.astype(crop_img.dtype), crop_blur,)
+
+
+
+
+      if fc > 0:
+
+         alpha = .5
+         image_diff = np.float32(image_diff)
+         image_acc = np.float32(image_acc)
+         hello = cv2.accumulateWeighted(image_diff, image_acc, alpha)
+
+      for pnt in pos_cnts:
+         (px,py,pw,ph) = pnt
+         cpx = px + int(pw/2)
+         cpy = py + int(ph/2)
+         sz2 = int(pw * ph / 4)
+         #image_diff[cpy-sz2:cpy+sz2,cpx-sz2:cpx+sz2] = 0
+
+      _, diff_thresh = cv2.threshold(image_diff.copy(), min_min_px, 255, cv2.THRESH_BINARY)
+
+      #cv2.rectangle(half_frame, (dmx1, dmy1), (dmx2, dmy2), (128, 128, 128), 1)
+      #thresh_obj = cv2.dilate(diff_thresh, None , iterations=10)
+      cnt_diff_thresh = np.uint8(diff_thresh)
+
+      cnt_diff_thresh_crop = cnt_diff_thresh[y1:y2,x1:x2]
+      image_diff_crop = image_diff[y1:y2,x1:x2]
+      cnt_res = cv2.findContours(cnt_diff_thresh_crop.copy(), cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
+
+      image_diff_crop = image_diff[y1:y2,x1:x2]
+      diff_thresh_crop = diff_thresh[y1:y2,x1:x2]
+      crh,crw = diff_thresh_crop.shape
+
+      if len(cnt_res) == 3:
+         (_, cnts, xx) = cnt_res
+      elif len(cnt_res) == 2:
+         (cnts, xx) = cnt_res
+      print("CNTS:", fc, len(cnts))
+      if len(cnts) > 0:
+         this_pos_cnts = []
+         # below is for the small window...
+         #x,y,w,h,sz = 0,0,0,0,0
+         for (i,c) in enumerate(cnts):
+            tx,ty,tw,th = cv2.boundingRect(cnts[i])
+            size = tw * th
+            this_pos_cnts.append((tx,ty,tw,th,tw*th))
+         if tw > 1 and th > 1:
+            if len(this_pos_cnts) > 1:
+               # more than 1 cnt, find best one. 
+               temp = sorted(this_pos_cnts, key=lambda x: x[4], reverse=True)
+               # biggest_cnt 
+               x,y,w,h,sz = temp[0]
+               for a,b,c,d,e in temp:
+                  print("MANY CNTS:", fc, a,b,c,d,e)
+            else:
+               print("ONLY ONE CNT!")
+               x,y,w,h,sz = this_pos_cnts[0]
+            pos_cnts.append((x,y,w,h))
+            cv2.rectangle(diff_thresh_crop, (int(x), int(y)), (int((x+w)), int((y+h))), (128, 128, 128), 1)
+            cv2.rectangle(image_diff, (int(x), int(y)), (int((x+w)), int((y+h))), (128, 128, 128), 1)
+            cnt_found = 1
+         else:
+            print("TOO SMALL", w,h)  
+            x,y,w,h,sz = 0,0,0,0,0
+            cnt_found = 0 
+         
+
+
+
+          
+
+      crh,crw = diff_thresh_crop.shape
+      mx1 = 5
+      mx2 = 5 + int(crw)
+      my1 = 5 
+      my2 = 5 + int(crh)
+
+      if fc in metframes:
+         tdesc = tdesc + " " + metframes[fc]['frame_time']
+
+      # fix if image is too big 
+      
+      cv2.putText(half_frame, str(tdesc),  (10, 530), cv2.FONT_HERSHEY_SIMPLEX, .5, (255, 255, 255), 1) 
+      if fc in metframes:
+         tdesc = "Frame: " + str(fc)
+         hd_x = metframes[fc]['hd_x']
+         hd_y = metframes[fc]['hd_y']
+         #cv2.putText(half_frame, str(tdesc),  (int(mx1-5) ,int(my1-5)), cv2.FONT_HERSHEY_SIMPLEX, .3, (255, 255, 255), 1) 
+         cv2.circle(half_frame, (int(hd_x/2),int(hd_y/2)), int(10), (128,128,128), 1)
+
+      #cv2.rectangle(half_frame, (mx1, my1), (mx2, my2), (128, 128, 128), 1)
+      crop_img = image_diff[y1:y2,x1:x2]
+      crh,crw = crop_img.shape
+      print("RESIZE???", crw, crh)
+      if crh >= 400 or crw >= 400:
+         show_crop_img = cv2.resize(crop_img, (0,0),fx=.7, fy=.7)
+         show_image_acc = cv2.resize(image_acc, (0,0),fx=.7, fy=.7)
+         crh,crw = show_crop_img.shape
+      else:
+         show_crop_img = crop_img
+         show_image_acc = image_acc 
+
+
+      if len(this_pos_cnts) > 0 and cnt_found == 1:
+         
+         cnt_desc = str(x) + "," + str(y) + " " + str(w) + "," + str(h)
+         cv2.putText(half_frame, str(cnt_desc),  (mx1+2, my2+20), cv2.FONT_HERSHEY_SIMPLEX, .3, (255, 255, 255), 1) 
+         sm_x1 = int(x+(w/2)) - 24
+         sm_y1 = int(y+(h/2)) - 24
+         sm_x2 = int(x+(w/2)) + 24
+         sm_y2 = int(y+(h/2)) + 24
+         hd_cnt_x = sm_x1 + 24 + x1
+         hd_cnt_y = sm_y1 + 24 + y1
+         #small_cnt = crop_img[sm_y1:sm_y2,sm_x1:sm_x2]
+         small_cnt = image_diff_crop[sm_y1:sm_y2,sm_x1:sm_x2]
+         if fc not in metframes:
+            metframes[fc] = {}
+
+         metframes[fc]['small_cnt'] = [sm_y1+y1,sm_y2+y1,sm_x1+x1,sm_x2+x1]
+         min_val, max_val, min_loc, max_loc = cv2.minMaxLoc(small_cnt)
+         sc_bp_x = max_loc[0] - 12
+         sc_bp_y = max_loc[1] - 12
+         small_cnt2 = image_diff_crop[sm_y1+sc_bp_y:sm_y2+sc_bp_y,sm_x1+sc_bp_x:sm_x2+sc_bp_x]
+         cv2.circle(small_cnt, (sc_bp_x+12,sc_bp_y+12), int(10), (255,128,128), 1)
+         bp_x = sm_x1+sc_bp_x+x1 +12
+         bp_y = sm_y1+sc_bp_y+y1 +12
+         cv2.circle(half_frame, (int(bp_x/2),int(bp_y/2)), int(5), (255,255,255), 1)
+         print("X1,Y1:", x1,y1) 
+         print("HD CNT_X", int(hd_cnt_x/2),int(hd_cnt_y/2))
+         cv2.circle(half_frame, (int(hd_cnt_x/2),int(hd_cnt_y/2)), int(10), (255,255,255), 2)
+         metframes[fc]['blob_x'] = hd_cnt_x
+         metframes[fc]['blob_y'] = hd_cnt_y
+         metframes[fc]['bp_x'] = bp_x
+         metframes[fc]['bp_y'] = bp_y
+         smch,smcw = small_cnt.shape 
+         if smch == 48 and smcw == 48:
+            half_frame[5:53,900:948] = small_cnt 
+      else:
+         print("Problem...")
+         # no cnt found.... if event is not over, we should create a new point from the estimate here.
+         # or at least create and empty frame so we can fill it in later
+
+
+      crh,crw = image_diff_crop.shape
+      print("what is crop shape = ", crh,crw)
+      if crh >= 400 or crw >= 400:
+         print("MIKE: ", crw, crh)
+         show_diff = cv2.resize(image_diff_crop, (0,0),fx=.7, fy=.7)
+         show_diff_thresh = cv2.resize(diff_thresh_crop, (0,0),fx=.7, fy=.7)
+         show_image_diff_crop = cv2.resize(image_diff_crop, (0,0),fx=.5, fy=.5)
+      else:
+         show_diff_thresh = diff_thresh_crop
+         show_image_diff_crop = image_diff_crop
+      crh,crw = show_image_diff_crop.shape
+      mx1 = 5
+      mx2 = 5 + int(crw)
+      my1 = 5 
+      my2 = 5 + int(crh)
+      print("orig crop shape: ", image_diff_crop.shape)
+      print("canvas shape = ", my2-my1,mx2-mx1)
+      print("crop shape: ", show_image_diff_crop.shape)
+      print("mx,my: ", mx1,mx2,my1,my2)
+
+
+      half_frame[my1:my2,mx1:mx2] = show_image_diff_crop
+
+
+      cv2.rectangle(half_frame, (int(mx1), int(my1)), (int(mx2), int(my2)), (128, 128, 128), 1)
+
+      if show == 1 and fc  < last_fn + 25:
+         cv2.imshow('pepe', half_frame)
+         cv2.waitKey(30)
+         #cv2.waitKey(60)
+      last_crop_img = crop_img
+      last_crops.append(last_crop_img)
+      fc = fc + 1
+
+
+   # 2nd Pass 
+   fc = 0
+   for frame in frames:
+      frame = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
+      color_frame = frame.copy()
+      color_frame = cv2.resize(color_frame, (int(1920),int(1080)))
+      frame = cv2.resize(frame, (int(1920),int(1080)))
+
+      if fc in metframes:
+         print(metframes[fc].keys)
+         if 'small_cnt' in metframes[fc]:
+            sm_y1,sm_y2,sm_x1,sm_x2 = metframes[fc]['small_cnt'] 
+            print("CNT BOX:", sm_x1,sm_y1,sm_x2,sm_y2)
+            cv2.rectangle(color_frame, (int(sm_x1), int(sm_y1)), (int(sm_x2), int(sm_y2)), (128, 128, 128), 1)
+
+
+      half_frame = cv2.resize(color_frame, (int(960),int(540)))
+      cv2.imshow('pepe', half_frame)
+      cv2.waitKey(30)
+      fc = fc + 1
+
+
+      
+
 
 def reduce_meteor_ajax(json_conf,meteor_json_file, cal_params_file, show = 0):
 
@@ -938,7 +1246,7 @@ def reduce_meteor_ajax(json_conf,meteor_json_file, cal_params_file, show = 0):
             end_el = el
             end_ra = ra
             end_dec = dec
-         cv2.circle(reduce_img, (half_hd_x,half_hd_y), int(w/2.5), (255,128,128), 1)
+         cv2.circle(reduce_img, (half_hd_x,half_hd_y), int(10), (255,128,128), 1)
          meteor_frame_data.append((meteor_frame_time_str,fn,int(hd_x),int(hd_y),int(w),int(h),int(max_px),float(round(ra,2)),float(round(dec,2)),float(round(az,2)),float(round(el,2))))
  
          tdesc = str(fc) + " - " + str(az)[0:6] + "/" + str(el)[0:5]

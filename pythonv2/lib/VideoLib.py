@@ -365,6 +365,7 @@ def load_video_frames(trim_file, json_conf, limit=0, mask=1,crop=(),color=0):
                x1 = iw -1 
             if y1 > ih -1:
                y1 = ih -1 
+            print("MIKE:", x1,y2,x2,y2)
             crop_frame = frame[y1:y2,x1:x2]
             frame = crop_frame
 
