@@ -796,72 +796,51 @@ def save_reduction(meteor_json_file, metconf, metframes):
    save_json_file(meteor_reduce_file, meteor_reduced)
    return(metconf,metframes)
 
+def best_fit_slope_and_intercept(xs,ys):
+    xs = np.array(xs, dtype=np.float64)
+    ys = np.array(ys, dtype=np.float64)
+    m = (((np.mean(xs)*np.mean(ys)) - np.mean(xs*ys)) /
+         ((np.mean(xs)*np.mean(xs)) - np.mean(xs*xs)))
+
+    b = np.mean(ys) - m*np.mean(xs)
+
+    return m, b
+
+
 
 def better_reduce(json_conf,meteor_json_file,show=0):
 
-   if "-reduced" not in meteor_json_file:
-      meteor_json_file = meteor_json_file.replace(".json", "-reduced.json")
-      meteor_json_file = meteor_json_file.replace(".mp4", "-reduced.json")
+   #if "-reduced" not in meteor_json_file:
+   #   meteor_json_file = meteor_json_file.replace(".json", "-reduced.json")
+   #   meteor_json_file = meteor_json_file.replace(".mp4", "-reduced.json")
    if show == 1:
       cv2.namedWindow('pepe')
    hdm_x = 2.7272727272727272
    hdm_y = 1.875
+   print(meteor_json_file)
    mj = load_json_file(meteor_json_file)
+   #print(mj['history'])
    sd_video_file = mj['sd_video_file']
    frames = load_video_frames(sd_video_file,json_conf, 0, 1, [],1)
 
 
-   first_x = mj['meteor_frame_data'][0][2]
-   first_y = mj['meteor_frame_data'][0][3]
-   first_fn = mj['meteor_frame_data'][0][1]
-   last_x = mj['meteor_frame_data'][-1][2]
-   last_y = mj['meteor_frame_data'][-1][3]
-   last_fn = mj['meteor_frame_data'][-1][1]
-   metframes = {}
-   max_max_px = 0
-   min_min_px = 255
-   for fd in mj['meteor_frame_data']:
-      frame_time, fn, hd_x,hd_y,w,h,max_px,ra,dec,az,el = fd
-      if fn not in metframes:
-         if max_px > max_max_px:
-            max_max_px = max_px
-         if max_px < min_min_px:
-            min_min_px = max_px
-         metframes[fn] = {}
-         metframes[fn]['frame_time'] = frame_time
-         metframes[fn]['hd_x'] = hd_x
-         metframes[fn]['hd_y'] = hd_y
-         metframes[fn]['est_x'] = 0
-         metframes[fn]['est_y'] = 0
-         metframes[fn]['bp_x'] = 0 
-         metframes[fn]['bp_y'] = 0 
-         metframes[fn]['blob_x'] = 0 
-         metframes[fn]['blob_y'] = 0 
-         metframes[fn]['best_x'] = 0 
-         metframes[fn]['best_y'] = 0 
-         metframes[fn]['w'] = w
-         metframes[fn]['h'] = h
-         metframes[fn]['max_px'] = max_px
-         metframes[fn]['ra'] = ra
-         metframes[fn]['dec'] = dec
-         metframes[fn]['az'] = az 
-         metframes[fn]['el'] = el
-         metframes[fn]['last_dist'] = 0
-         metframes[fn]['last_four_dist'] = 0
-         metframes[fn]['last_four_slope_b'] = 0
-         metframes[fn]['last_four_slope_m'] = 0
 
-   x1,y1,x2,y2= mj['crop_box']
+#   xs = [first_x,last_x]
+#   ys = [first_y,last_y]
+#   x1 = min(xs) + 10
+#   x2 = max(xs) + 10
+#   y1 = min(ys) + 10
+#   y2 = max(ys) + 10
    
-   mx1 = 5
-   my1 = 5 
-   mx2 = my1 + (x2-x1)
-   my2 = my1 + (y2-y1)
+#   mx1 = 5
+#   my1 = 5 
+#   mx2 = my1 + (x2-x1)
+#   my2 = my1 + (y2-y1)
 
-   dmx1 = 5
-   dmy1 = my2 + 5
-   dmx2 = dmx1 + (x2-x1)
-   dmy2 = dmy1 + (y2-y1)
+#   dmx1 = 5
+#   dmy1 = my2 + 5
+#   dmx2 = dmx1 + (x2-x1)
+#   dmy2 = dmy1 + (y2-y1)
 
    fc = 0
    image_acc = None
@@ -876,8 +855,12 @@ def better_reduce(json_conf,meteor_json_file,show=0):
    image_acc = cv2.GaussianBlur(image_acc, (5, 5), 0)
    cv2.convertScaleAbs(image_acc, image_acc, 1, 1)
 
-
-   min_min_px = min_min_px * .8
+   avg_px = np.mean(first_frame)
+   max_px = np.max(first_frame)
+   min_px = np.min(first_frame)
+   px_diff = max_px - avg_px
+   min_min_px = max_px - int(px_diff /2)
+   #min_min_px = min_min_px * .8
    #_, image_acc = cv2.threshold(image_acc.copy(), min_min_px, 255, cv2.THRESH_BINARY)
    #image_acc = cv2.GaussianBlur(image_acc, (7, 7), 0)
    
@@ -892,13 +875,13 @@ def better_reduce(json_conf,meteor_json_file,show=0):
    image_acc = None
    for frame in frames:
       work_frame = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
-      work_frame = cv2.resize(work_frame, (int(1920),int(1080)))
+      #work_frame = cv2.resize(work_frame, (int(1920),int(1080)))
       if last_wf is not None:
          last_wf = cv2.GaussianBlur(last_wf, (7, 7), 0)
          if image_acc is None:
             image_acc = frames[-1] 
             image_acc = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
-            image_acc = cv2.resize(work_frame, (int(1920),int(1080)))
+            #image_acc = cv2.resize(work_frame, (int(1920),int(1080)))
             image_acc = cv2.GaussianBlur(image_acc, (7, 7), 0)
             #cv2.imshow('pepe', image_acc)
             #cv2.waitKey(0)
@@ -913,8 +896,9 @@ def better_reduce(json_conf,meteor_json_file,show=0):
          cnt_res = cv2.findContours(tmp_img, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
          #show_img = cv2.resize(first_thresh, (0,0),fx=.5, fy=.5)
          show_img = cv2.resize(image_acc, (0,0),fx=.5, fy=.5)
+         #show_img = cv2.resize(image_diff, (0,0),fx=.5, fy=.5)
          cv2.imshow('pepe', show_img)
-         cv2.waitKey(30)
+         cv2.waitKey(1)
 
          if len(cnt_res) == 3:
             (_, cnts, xx) = cnt_res
@@ -925,13 +909,13 @@ def better_reduce(json_conf,meteor_json_file,show=0):
             for (i,c) in enumerate(cnts):
                tx,ty,tw,th = cv2.boundingRect(cnts[i])
                smasks.append((tx,ty,tw,th))
-         #if fc > first_fn -1:
-         #   break
          med_frames.append(np.uint8(first_thresh))
+         #if fc > 50:
+         #   break
       last_wf = work_frame
       fc = fc + 1
 
-   med_frame = median_frames(med_frames)
+   med_frame = median_frames(med_frames[0:10])
 
    blur_med = cv2.GaussianBlur(med_frame, (7, 7), 0)
    med_frame = blur_med
@@ -959,10 +943,11 @@ def better_reduce(json_conf,meteor_json_file,show=0):
 
    #test_frame = blur_med + blur_frame 
    show_f = cv2.subtract(test_frame, med_frame)
-   cv2.imshow('pepe', show_f )
-   cv2.waitKey(0)
+   #cv2.imshow('pepe', show_f )
+   #cv2.waitKey(0)
 
    clean_frames = []
+   clean_sm_frames = []
    med_frame = cv2.dilate(med_frame, None , iterations=10)
    blur_med= cv2.GaussianBlur(med_frame, (11, 11), 0)
    for frame in med_frames:
@@ -975,37 +960,82 @@ def better_reduce(json_conf,meteor_json_file,show=0):
          cpy = py + int(ph/2)
          sz2 = int(pw * ph / 4)
          if pw < 10 and ph < 10:
-            print("not today")
             temp[cpy-sz2:cpy+sz2,cpx-sz2:cpx+sz2] = 0
       clean_frames.append(temp)
+      temp_sm = cv2.resize(temp, (int(704),int(576)))
+      clean_sm_frames.append(temp_sm)
       #cv2.imshow('pepe', temp)
       #cv2.waitKey(0)
    (f_datetime, cam_id, f_date_str,fy,fm,fd, fh, fmin, fs) = convert_filename_to_date_cam(sd_video_file)
-   objects = check_for_motion2(clean_frames, sd_video_file,cam_id, json_conf,show)
-
+   show = 0
+   objects = check_for_motion2(clean_sm_frames, sd_video_file,cam_id, json_conf,show)
+   show = 1
+   meteor_found = 0
    for object in objects:  
       bad = 0
-
+      status = ""
+      hist = object['history']
       if len(object['history']) < 2:
          bad = 1 
+         status =  status + "history too short: " + str(len(object['history']))
+      else:
+         hist = clean_hist(hist)
+         object['history'] = hist
 
       # ELP Frames test
       elp_frames = meteor_test_elp_frames(object)
       cm,gaps,gap_events,cm_hist_len_ratio = meteor_test_cm_gaps(object)
       if (elp_frames) > 1:
          cm_elp_ratio = cm / elp_frames
+      else:
+         cm_elp_ratio = 0
 
       if cm_elp_ratio < .5:
          bad = 1
+         status =  status + "cm_elp_ratio too low: " + str(cm_elp_ratio)
+
 
       if bad == 0:
-         print(cm, elp_frames, cm_elp_ratio, object)
+         #print("METEOR FOUND:", cm, elp_frames, cm_elp_ratio, object)
+         object['status'] = "meteor found"
+         object['meteor'] = 1
+         meteor_found = 1   
+         meteor_obj = object 
+      else:
+         object['status'] = "NOT FOUND:" + status
+         object['meteor'] = 0
+
+   hdm_x = 2.7272727272727272
+   hdm_y = 1.875
+
+
+   if meteor_found == 1:
+      print("METEOR FOUND:", meteor_obj)
+      hist = meteor_obj['history']
+      for fc,x,y,w,h,mx,my in hist:
+         hd_x = (x + mx ) * hdm_x
+         hd_y = (y + my ) * hdm_y
+         
+         print("HD X,Y:", hd_x,hd_y)
+         frame = frames[fc]
+         frame = cv2.resize(frame, (int(1920),int(1080)))
+         cv2.circle(frame, (int(hd_x),int(hd_y)), int(10), (255,255,255), 1)
+         show_frame = cv2.resize(frame, (int(960),int(540)))
+         cv2.imshow('pepe', show_frame)
+         cv2.waitKey(0)
+
+   else:
+      for object in objects:  
+         if object['meteor'] == 1:
+            print("METEOR FOUND:", object)
+         else:
+            print("NOT FOUND:", object)
 
 
    # end first run
    exit()
 
-   x1,y1,x2,y2= mj['crop_box']
+   #x1,y1,x2,y2= mj['crop_box']
    fc = 0
    for frame in frames:
       this_pos_cnts = ()
@@ -1230,6 +1260,7 @@ def better_reduce(json_conf,meteor_json_file,show=0):
 
    # 2nd Pass 
    fc = 0
+   
    for frame in frames:
       frame = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
       color_frame = frame.copy()
@@ -1249,7 +1280,114 @@ def better_reduce(json_conf,meteor_json_file,show=0):
       fc = fc + 1
 
 
-      
+def clean_hist(history, metframes = None):
+
+   hdm_x = 2.7272727272727272
+   hdm_y = 1.875
+
+   first_x = history[-1][1]
+   first_y = history[-1][2]
+   first_fc = history[-1][0]
+   last_x = history[-1][1]
+   last_y = history[-1][2]
+   last_fc = history[-1][0]
+   total_dist = calc_dist((first_x,first_y),(last_x,last_y))
+   dist_per_hist = total_dist / len(history)
+
+   xs = []
+   ys = []
+   for fc,x,y,w,h,mx,my in history:
+      xs.append(x)
+      ys.append(y)
+
+   m,b = best_fit_slope_and_intercept(xs,ys)
+
+
+   # check for and remove a single trailing last frame if it exists
+   last_fn_gap = history[-1][0] -  history[-2][0] 
+   print("GAP:", history[-1][0], history[-2][0], last_fn_gap)
+   last_fn = len(history) -1 
+   if last_fn_gap > 2:
+      print("BAD GAP DEL HIST:!", last_fn)
+      history.pop(last_fn)
+   last_x = None
+
+   # check the distance between frames and remove bad frames towards the end if they exist
+   over = 0
+   hc = 0
+   bad_fr = {}
+   if metframes is None:
+      metframes = {}
+   first_x = None
+   for fc,x,y,w,h,mx,my in history:
+      if first_x is None:
+         first_x = x 
+         first_y = y
+         first_fc = fc
+      if fc not in metframes:
+         hd_x = (x + mx ) * hdm_x
+         hd_y = (y + my ) * hdm_y
+         metframes[fc] = {}
+         metframes[fc]['orig_x'] = x
+         metframes[fc]['orig_y'] = y
+         metframes[fc]['orig_w'] = w
+         metframes[fc]['orig_h'] = h
+         metframes[fc]['orig_mx'] = mx
+         metframes[fc]['orig_my'] = my
+         metframes[fc]['orig_hd_x'] = hd_x
+         metframes[fc]['orig_hd_y'] = hd_y
+
+      dist = 0
+
+      gap = 0
+      nx = x + (w) + mx
+      ny = y + (h) + my
+      if last_x is not None:
+         dist = calc_dist((nx,ny),(last_x,last_y))
+         start_dist = calc_dist((first_x,first_y),(nx,ny))
+         gap = fc - last_fc
+         metframes[fc]['start_dist'] = start_dist 
+         metframes[fc]['last_dist'] = dist 
+         metframes[fc]['gap'] = gap
+         print("LAST DIST/Gap:", fc, dist, gap)
+         # frames till end? 
+         frames_till_end = history[-1][0] - fc
+         print("FRAMES TILL END?", frames_till_end)
+         if frames_till_end <= 3 and dist == 0 and gap > 3:
+            # this event is DEF over and this is a ghost frame
+            over = 1
+            metframes[fc]['over'] = 1
+      print("FRAME:", hc, fc, nx, ny, dist, gap, over)
+      last_x = nx
+      last_y = ny
+      last_fc = fc
+      hc = hc + 1
+
+
+   for fc in metframes:
+      if over in metframes: 
+         print("DEL:", fc, hc)
+         bad_fr[fc] = 1
+         del metframes[fc]
+
+   new_hist = []
+   for fc,x,y,w,h,mx,my in history:
+      if fc not in bad_fr:
+         new_hist.append((fc,x,y,w,h,mx,my))
+
+   print("OLD HIST")
+   for hist in history:
+      print(hist)
+
+   print("CLEAN HIST")
+   for hist in new_hist:
+      print(hist)
+
+   for mf in metframes:
+      print("MF:", mf, metframes[mf])
+
+   return(new_hist)
+ 
 
 
 def reduce_meteor_ajax(json_conf,meteor_json_file, cal_params_file, show = 0):
@@ -2881,6 +3019,7 @@ def show_cat_stars(json_conf,form):
    cal_params = None
    hd_stack_file = form.getvalue("hd_stack_file")
    type = form.getvalue("type")
+   points = form.getvalue("points")
    video_file = form.getvalue("video_file")
    if cfe(hd_stack_file) == 0:
       sd_stack_file = video_file.replace(".mp4", "-stacked.png")
@@ -2920,7 +3059,18 @@ def show_cat_stars(json_conf,form):
 
             if "crop_box" in meteor_red:
                cal_params['crop_box']  = meteor_red['crop_box'] 
-            if type == "first_load":
+            if type == "first_load" or points is None:
+               # this didn't work out the way we wanted it do. can delete
+               if "cat_image_stars" not in cal_params:
+                  video_json_file = video_file.replace(".mp4", ".json")
+                  cmd = "cd /home/ams/amscams/pythonv2/; ./autoCal.py imgstars " + video_json_file + " > /mnt/ams2/tmp/trs.txt"
+                  #os.system(cmd)
+               elif len(cal_params['cat_image_stars']) == 0:
+                  video_json_file = video_file.replace(".mp4", ".json")
+                  cmd = "cd /home/ams/amscams/pythonv2/; ./autoCal.py imgstars " + video_json_file + " > /mnt/ams2/tmp/trs.txt"
+                  #os.system(cmd)
+
+            
                print(json.dumps(cal_params))
                exit()
          (box_min_x,box_min_y,box_max_x,box_max_y) = define_crop_box(meteor_red['meteor_frame_data'])
