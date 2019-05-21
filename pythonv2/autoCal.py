@@ -13,7 +13,8 @@ from lib.VideoLib import get_masks, find_hd_file_new, load_video_frames
 from lib.UtilLib import check_running, get_sun_info
 
 from lib.ImageLib import mask_frame , stack_frames
-
+import matplotlib
+matplotlib.use('Agg')
 #import matplotlib.pyplot as plt
 import sys
 #from caliblib import distort_xy,

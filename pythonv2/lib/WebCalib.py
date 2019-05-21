@@ -12,7 +12,8 @@ from lib.FileIO import get_proc_days, get_day_stats, get_day_files , load_json_f
 from lib.VideoLib import get_masks, convert_filename_to_date_cam, find_hd_file_new, load_video_frames, find_min_max_dist, ffmpeg_dump_frames
 from lib.DetectLib import check_for_motion2, eval_cnt, eval_cnt_better, find_bright_pixels
 
-from lib.MeteorTests import test_objects
+from lib.MeteorTests import test_objects, meteor_test_elp_frames, meteor_test_cm_gaps
+
 from lib.ImageLib import mask_frame,stack_frames, adjustLevels, upscale_to_hd, median_frames
 
 from lib.CalibLib import radec_to_azel, clean_star_bg, get_catalog_stars, find_close_stars, XYtoRADec, HMS2deg, AzEltoRADec, define_crop_box
@@ -732,6 +733,70 @@ def make_meteor_cnt_composite_images(json_conf, mfd, sd_video_file):
       cmp_images[fn] = cnt_img 
    return(cmp_images)
 
+def save_reduction(meteor_json_file, metconf, metframes):
+
+   meteor_reduced = {}
+
+   meteor_reduced['api_key'] = json_conf['site']['api_key']
+   meteor_reduced['station_name'] = json_conf['site']['ams_id']
+   meteor_reduced['device_name'] = cam_id
+   meteor_reduced['sd_video_file'] = fin_sd_video_file
+   meteor_reduced['hd_video_file'] = fin_hd_video_file
+   meteor_reduced['sd_stack'] = fin_sd_stack
+   meteor_reduced['hd_stack'] = fin_hd_stack
+   meteor_reduced['reduced_stack'] = fin_reduced_stack
+   meteor_reduced['reduced_video'] = fin_reduced_video
+   meteor_reduced['vf_type'] = vf_type
+   meteor_reduced['event_start_time'] = event_start_time
+   meteor_reduced['event_duration'] = float(elp_dur)
+   meteor_reduced['peak_magnitude'] = int(max_max_px)
+   meteor_reduced['start_az'] = start_az
+   meteor_reduced['start_el'] = start_el
+   meteor_reduced['end_az'] = end_az
+
+   meteor_reduced['end_el'] = end_el
+   meteor_reduced['start_ra'] = start_ra
+   meteor_reduced['start_dec'] = start_dec
+   meteor_reduced['end_ra'] = end_ra
+   meteor_reduced['end_dec'] = end_dec
+   meteor_reduced['meteor_frame_data'] = meteor_frame_data
+   meteor_reduced['cal_params_file'] = cal_params_file
+   meteor_reduced['cal_params'] = {}
+   meteor_reduced['cal_params']['site_lat'] = json_conf['site']['device_lat']
+   meteor_reduced['cal_params']['site_lng'] = json_conf['site']['device_lng']
+   meteor_reduced['cal_params']['site_alt'] = json_conf['site']['device_alt']
+   meteor_reduced['cal_params']['ra_center'] = cal_params['ra_center']
+   meteor_reduced['cal_params']['dec_center'] = cal_params['dec_center']
+   meteor_reduced['cal_params']['center_az'] = cal_params['center_az']
+   meteor_reduced['cal_params']['center_el'] = cal_params['center_el']
+   meteor_reduced['cal_params']['position_angle'] = cal_params['position_angle']
+   meteor_reduced['cal_params']['pixscale'] = cal_params['pixscale']
+   meteor_reduced['cal_params']['imagew'] = cal_params['imagew']
+   meteor_reduced['cal_params']['imageh'] = cal_params['imageh']
+   meteor_reduced['cal_params']['cal_date'] = cal_date_str
+   meteor_reduced['cal_params']['x_poly'] = cal_params['x_poly']
+   meteor_reduced['cal_params']['y_poly'] = cal_params['y_poly']
+   meteor_reduced['cal_params']['x_poly_fwd'] = cal_params['x_poly_fwd']
+   meteor_reduced['cal_params']['y_poly_fwd'] = cal_params['y_poly_fwd']
+
+
+   (box_min_x,box_min_y,box_max_x,box_max_y) = define_crop_box(meteor_reduced['meteor_frame_data'])
+   meteor_reduced['crop_box'] = (box_min_x,box_min_y,box_max_x,box_max_y)
+
+   if 'x_fun' in cal_params:
+      meteor_reduced['cal_params']['x_res_err'] = cal_params['x_fun']
+      meteor_reduced['cal_params']['y_res_err'] = cal_params['y_fun']
+      meteor_reduced['cal_params']['x_fwd_res_err'] = cal_params['x_fun_fwd']
+      meteor_reduced['cal_params']['y_fwd_res_err'] = cal_params['y_fun_fwd']
+   meteor_reduce_file = meteor_json_file.replace(".json", "-reduced.json")
+
+   (box_min_x,box_min_y,box_max_x,box_max_y) = define_crop_box(meteor_reduced['meteor_frame_data'])
+   meteor_reduced['crop_box'] = (box_min_x,box_min_y,box_max_x,box_max_y)
+
+   save_json_file(meteor_reduce_file, meteor_reduced)
+   return(metconf,metframes)
+
+
 def better_reduce(json_conf,meteor_json_file,show=0):
 
    if "-reduced" not in meteor_json_file:
@@ -787,6 +852,7 @@ def better_reduce(json_conf,meteor_json_file,show=0):
          metframes[fn]['last_four_slope_m'] = 0
 
    x1,y1,x2,y2= mj['crop_box']
+   
    mx1 = 5
    my1 = 5 
    mx2 = my1 + (x2-x1)
@@ -816,25 +882,152 @@ def better_reduce(json_conf,meteor_json_file,show=0):
    #image_acc = cv2.GaussianBlur(image_acc, (7, 7), 0)
    
    pos_cnts = []
+   # block out bright stars first
+   fc = 0
+   smasks = []
+   last_wf = None
+   med_frames = []
+   thresh_frames = []
+   alpha = .5
+   image_acc = None
+   for frame in frames:
+      work_frame = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
+      work_frame = cv2.resize(work_frame, (int(1920),int(1080)))
+      if last_wf is not None:
+         last_wf = cv2.GaussianBlur(last_wf, (7, 7), 0)
+         if image_acc is None:
+            image_acc = frames[-1] 
+            image_acc = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
+            image_acc = cv2.resize(work_frame, (int(1920),int(1080)))
+            image_acc = cv2.GaussianBlur(image_acc, (7, 7), 0)
+            #cv2.imshow('pepe', image_acc)
+            #cv2.waitKey(0)
+         image_diff = cv2.absdiff(last_wf.astype(work_frame.dtype), work_frame,)
+         image_acc = np.float32(image_acc)
+         hello = cv2.accumulateWeighted(image_diff, image_acc, alpha)
+         #cv2.imshow('pepe', image_acc)
+         #cv2.waitKey(0)
+
+         _, first_thresh = cv2.threshold(image_diff.copy(), 7, 255, cv2.THRESH_BINARY)
+         tmp_img = np.uint8(first_thresh.copy())
+         cnt_res = cv2.findContours(tmp_img, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
+         #show_img = cv2.resize(first_thresh, (0,0),fx=.5, fy=.5)
+         show_img = cv2.resize(image_acc, (0,0),fx=.5, fy=.5)
+         cv2.imshow('pepe', show_img)
+         cv2.waitKey(30)
+
+         if len(cnt_res) == 3:
+            (_, cnts, xx) = cnt_res
+         elif len(cnt_res) == 2:
+            (cnts, xx) = cnt_res
+         if len(cnts) > 0:
+            this_pos_cnts = []
+            for (i,c) in enumerate(cnts):
+               tx,ty,tw,th = cv2.boundingRect(cnts[i])
+               smasks.append((tx,ty,tw,th))
+         #if fc > first_fn -1:
+         #   break
+         med_frames.append(np.uint8(first_thresh))
+      last_wf = work_frame
+      fc = fc + 1
+
+   med_frame = median_frames(med_frames)
+
+   blur_med = cv2.GaussianBlur(med_frame, (7, 7), 0)
+   med_frame = blur_med
+   blur_med = cv2.dilate(blur_med, None , iterations=10)
+   blur_frame = cv2.GaussianBlur(last_wf, (7, 7), 0)
+
+   _, med_thresh= cv2.threshold(blur_med.copy(), 2, 255, cv2.THRESH_BINARY)
+   cnt_res = cv2.findContours(tmp_img, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
+   show_img = cv2.resize(first_thresh, (0,0),fx=.5, fy=.5)
+   #cv2.imshow('pepe', show_img)
+   #cv2.waitKey(30)
+
+   if len(cnt_res) == 3:
+      (_, cnts, xx) = cnt_res
+   elif len(cnt_res) == 2:
+      (cnts, xx) = cnt_res
+   smasks = []
+   test_frame = last_wf 
+   if len(cnts) > 0:
+      this_pos_cnts = []
+      for (i,c) in enumerate(cnts):
+         tx,ty,tw,th = cv2.boundingRect(cnts[i])
+         smasks.append((tx,ty,tw,th))
+         #test_frame[ty:ty+th,tx:tx+tw] = 0
+
+   #test_frame = blur_med + blur_frame 
+   show_f = cv2.subtract(test_frame, med_frame)
+   cv2.imshow('pepe', show_f )
+   cv2.waitKey(0)
+
+   clean_frames = []
+   med_frame = cv2.dilate(med_frame, None , iterations=10)
+   blur_med= cv2.GaussianBlur(med_frame, (11, 11), 0)
+   for frame in med_frames:
+
+      blur_frame = cv2.GaussianBlur(frame, (11, 11), 0)
+      temp = cv2.subtract(blur_frame, blur_med)
+      for pnt in smasks:
+         (px,py,pw,ph) = pnt
+         cpx = px + int(pw/2)
+         cpy = py + int(ph/2)
+         sz2 = int(pw * ph / 4)
+         if pw < 10 and ph < 10:
+            print("not today")
+            temp[cpy-sz2:cpy+sz2,cpx-sz2:cpx+sz2] = 0
+      clean_frames.append(temp)
+      #cv2.imshow('pepe', temp)
+      #cv2.waitKey(0)
+   (f_datetime, cam_id, f_date_str,fy,fm,fd, fh, fmin, fs) = convert_filename_to_date_cam(sd_video_file)
+   objects = check_for_motion2(clean_frames, sd_video_file,cam_id, json_conf,show)
+
+   for object in objects:  
+      bad = 0
+
+      if len(object['history']) < 2:
+         bad = 1 
+
+      # ELP Frames test
+      elp_frames = meteor_test_elp_frames(object)
+      cm,gaps,gap_events,cm_hist_len_ratio = meteor_test_cm_gaps(object)
+      if (elp_frames) > 1:
+         cm_elp_ratio = cm / elp_frames
+
+      if cm_elp_ratio < .5:
+         bad = 1
+
+      if bad == 0:
+         print(cm, elp_frames, cm_elp_ratio, object)
+
+
+   # end first run
+   exit()
+
+   x1,y1,x2,y2= mj['crop_box']
+   fc = 0
    for frame in frames:
       this_pos_cnts = ()
       color_frame = frame.copy()
       frame = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
       frame = cv2.resize(frame, (int(1920),int(1080)))
-      half_frame = cv2.resize(frame, (int(960),int(540)))
       reduce_img  = cv2.resize(frame, (int(1920),int(1080)))
+
+      temp = cv2.subtract(reduce_img , med_frame)
+      reduce_img = temp
+      frame = temp
+
       crop_img = reduce_img[y1:y2,x1:x2]
       crh,crw = crop_img.shape
 
+      cv2.rectangle(frame, (x1, y1), (x2, y2), (128, 128, 128), 1)
 
 
-      #half_frame[my1:my2,mx1:mx2] = show_crop_img
       tdesc = str(fc) 
 
       crop_blur = cv2.GaussianBlur(crop_img, (7, 7), 0)
-      #_, crop_blur_thresh = cv2.threshold(crop_blur.copy(), min_min_px, 255, cv2.THRESH_BINARY)
 
-      image_diff = cv2.absdiff(image_acc.astype(frame.dtype), frame,)
       alpha = .1
 
       # good
@@ -843,21 +1036,40 @@ def better_reduce(json_conf,meteor_json_file,show=0):
 
 
 
-      if fc > 0:
 
+      for pnt in smasks:
+         (px,py,pw,ph) = pnt
+         cpx = px + int(pw/2)
+         cpy = py + int(ph/2)
+         sz2 = int(pw * ph / 4)
+         if pw < 10 and ph < 10:
+            print("not today")
+            #frame[cpy-sz2:cpy+sz2,cpx-sz2:cpx+sz2] = 0
+            #image_acc[cpy-sz2:cpy+sz2,cpx-sz2:cpx+sz2] = 0
+            #color_frame[cpy-sz2:cpy+sz2,cpx-sz2:cpx+sz2] = 0,0,0
+         else:
+            sz2 = 10
+            #frame[cpy-sz2:cpy+sz2,cpx-sz2:cpx+sz2] = 0
+            #image_acc[cpy-sz2:cpy+sz2,cpx-sz2:cpx+sz2] = 0
+            #color_frame[cpy-sz2:cpy+sz2,cpx-sz2:cpx+sz2] = 0,0,0
+
+
+      half_frame = cv2.resize(frame, (int(960),int(540)))
+      if fc > 0:
          alpha = .5
          image_diff = np.float32(image_diff)
          image_acc = np.float32(image_acc)
          hello = cv2.accumulateWeighted(image_diff, image_acc, alpha)
 
-      for pnt in pos_cnts:
-         (px,py,pw,ph) = pnt
-         cpx = px + int(pw/2)
-         cpy = py + int(ph/2)
-         sz2 = int(pw * ph / 4)
-         #image_diff[cpy-sz2:cpy+sz2,cpx-sz2:cpx+sz2] = 0
-
+      image_diff = cv2.absdiff(image_acc.astype(frame.dtype), frame,)
       _, diff_thresh = cv2.threshold(image_diff.copy(), min_min_px, 255, cv2.THRESH_BINARY)
+      #cv2.imshow('pepe', image_diff)
+      #cv2.waitKey(0)
+      #cv2.imshow('pepe', diff_thresh)
+      #cv2.waitKey(0)
+
+
+      _, diff_thresh = cv2.threshold(image_diff.copy(), 5, 255, cv2.THRESH_BINARY)
 
       #cv2.rectangle(half_frame, (dmx1, dmy1), (dmx2, dmy2), (128, 128, 128), 1)
       #thresh_obj = cv2.dilate(diff_thresh, None , iterations=10)
@@ -984,7 +1196,7 @@ def better_reduce(json_conf,meteor_json_file,show=0):
       crh,crw = image_diff_crop.shape
       print("what is crop shape = ", crh,crw)
       if crh >= 400 or crw >= 400:
-         print("MIKE: ", crw, crh)
+         #print("MIKE: ", crw, crh)
          show_diff = cv2.resize(image_diff_crop, (0,0),fx=.7, fy=.7)
          show_diff_thresh = cv2.resize(diff_thresh_crop, (0,0),fx=.7, fy=.7)
          show_image_diff_crop = cv2.resize(image_diff_crop, (0,0),fx=.5, fy=.5)
@@ -1009,7 +1221,7 @@ def better_reduce(json_conf,meteor_json_file,show=0):
 
       if show == 1 and fc  < last_fn + 25:
          cv2.imshow('pepe', half_frame)
-         cv2.waitKey(30)
+         cv2.waitKey(0)
          #cv2.waitKey(60)
       last_crop_img = crop_img
       last_crops.append(last_crop_img)
@@ -1022,13 +1234,12 @@ def better_reduce(json_conf,meteor_json_file,show=0):
       frame = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
       color_frame = frame.copy()
       color_frame = cv2.resize(color_frame, (int(1920),int(1080)))
+      cv2.rectangle(color_frame, (x1, y1), (x2, y2), (128, 128, 128), 1)
       frame = cv2.resize(frame, (int(1920),int(1080)))
 
       if fc in metframes:
-         print(metframes[fc].keys)
          if 'small_cnt' in metframes[fc]:
             sm_y1,sm_y2,sm_x1,sm_x2 = metframes[fc]['small_cnt'] 
-            print("CNT BOX:", sm_x1,sm_y1,sm_x2,sm_y2)
             cv2.rectangle(color_frame, (int(sm_x1), int(sm_y1)), (int(sm_x2), int(sm_y2)), (128, 128, 128), 1)
 
 
