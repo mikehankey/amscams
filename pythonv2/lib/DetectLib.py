@@ -211,7 +211,7 @@ def check_for_motion2(frames, video_file, cams_id, json_conf, show = 0):
    thresh = 25
    fc = 0
    for orig_frame in frames:
-      if len(objects) > 100:
+      if len(objects) > 1000:
          return([])
       frame = orig_frame.copy()
       frame = mask_frame(frame, masked_pixels, masks)
@@ -271,7 +271,7 @@ def check_for_motion2(frames, video_file, cams_id, json_conf, show = 0):
          if show == 1 and fc % 2 == 0:
             show_frame = cv2.resize(nice_frame, (0,0), fx=0.5, fy=0.5)
             cv2.imshow('pepe', show_frame)
-            cv2.waitKey(1)
+            cv2.waitKey(10)
       frame_file = "/mnt/ams2/tmp/" + str(fc) + "obj.png"
       #cv2.imwrite(frame_file, thresh_obj)
       fc = fc + 1

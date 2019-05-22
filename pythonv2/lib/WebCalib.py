@@ -1,4 +1,5 @@
 import datetime
+import scipy.optimize
 import html
 import time
 import json
@@ -819,12 +820,20 @@ def better_reduce(json_conf,meteor_json_file,show=0):
    hdm_y = 1.875
    print(meteor_json_file)
    mj = load_json_file(meteor_json_file)
-   #print(mj['history'])
    sd_video_file = mj['sd_video_file']
    frames = load_video_frames(sd_video_file,json_conf, 0, 1, [],1)
    skip_detect = 0
    if "updated_obj" in mj:
       skip_detect = 1
+   if skip_detect == 0:
+      objects = detect_meteor(json_conf, frames, meteor_json_file,mj,show=0)
+   else:
+      objects = mj['updated_obj']
+   detect_meteor_step2(json_conf, objects, frames, meteor_json_file,mj,show=0)
+
+
+
+def detect_meteor(json_conf, frames, meteor_json_file,mj,show=0):
 
    fc = 0
    image_acc = None
@@ -945,14 +954,17 @@ def better_reduce(json_conf,meteor_json_file,show=0):
       clean_sm_frames.append(temp_sm)
       #cv2.imshow('pepe', temp)
       #cv2.waitKey(0)
-   (f_datetime, cam_id, f_date_str,fy,fm,fd, fh, fmin, fs) = convert_filename_to_date_cam(sd_video_file)
+   (f_datetime, cam_id, f_date_str,fy,fm,fd, fh, fmin, fs) = convert_filename_to_date_cam(mj['sd_video_file'])
    show = 1 
-   objects = check_for_motion2(diff_frames, sd_video_file,cam_id, json_conf,show)
+   objects = check_for_motion2(diff_frames, mj['sd_video_file'],cam_id, json_conf,show)
+   save_json_file(meteor_json_file, mj)
 
+   return(objects)
 
+def detect_meteor_step2(json_conf, objects, frames, meteor_json_file,mj,show=0):
 
    mj['updated_obj'] = objects
-   save_json_file(meteor_json_file, mj)
+   sd_video_file = mj['sd_video_file']
    print(meteor_json_file)
    show = 1
    meteor_found = 0
@@ -1005,6 +1017,8 @@ def better_reduce(json_conf,meteor_json_file,show=0):
 
    m,b = best_fit_slope_and_intercept(hd_xs,hd_ys)
 
+   metconf['hd_m'] = m
+   metconf['hd_b'] = b
    metconf['hd_first_x'] = hd_xs[0]
    metconf['hd_first_y'] = hd_ys[0]
    metconf['hd_first_fc'] = hd_fcs[0]
@@ -1018,8 +1032,42 @@ def better_reduce(json_conf,meteor_json_file,show=0):
    hd_xs = []
    hd_ys = []
 
-   metconf['acl_poly'] = .3
-   metconf['acl_poly2'] = -1
+   acl_poly = np.zeros(shape=(3,), dtype=np.float64)
+   acl_poly[0] = np.float64(metconf['hd_avg_seg_len'])
+   acl_poly[1] = np.float64(0.001)
+   acl_poly[2] = np.float64(metconf['x_dir_mod'] )
+   if meteor_found == 1:
+      for fn in metframes:
+         print(fn,metframes[fn])   
+      if "metconf" in mj:
+         if "acl_poly" in mj['metconf']:
+            acl_poly = mj['metconf']['acl_poly']
+
+      avg_res,metframes = reduce_meteor_acl(acl_poly, metconf,metframes,frames,4,1,show)
+      if "metframes" not in mj:
+         res = scipy.optimize.minimize(reduce_meteor_acl, acl_poly, args=( metconf, metframes,frames,7,0,show), method='Nelder-Mead')
+         print("SCI PI DONE:", res)
+         acl_poly = res['x']
+         x_fun = res['fun']
+         avg_res = reduce_meteor_acl(acl_poly, metconf,metframes,frames,4,1,show)
+         print(acl_poly, x_fun)
+         metconf['acl_poly'] = acl_poly.tolist()
+         metconf['acl_fun'] = x_fun 
+         metconf['acl_res'] = avg_res 
+         avg_res,metframes = reduce_meteor_acl(acl_poly, metconf,metframes,frames,4,1,show)
+         mj['metconf'] = metconf
+         mj['metframes'] = metframes
+         print("final point res:", avg_res)
+         save_json_file(meteor_json_file,mj)
+         print("saved:", meteor_json_file)
+      else:
+         avg_res = mj['metconf']['acl_res'] 
+         print("already solved with error of:", avg_res)
+
+   exit()
+
+
+
    if meteor_found == 1:
       fc = 0
       for frame in frames:
@@ -1046,8 +1094,8 @@ def better_reduce(json_conf,meteor_json_file,show=0):
                b = lf_b
  
             elp_fs = fc - ffn 
-            extra_acl = metconf['acl_poly'] *elp_fs
-            print("INFO:", fc, elp_fs, m, b, metconf['hd_avg_seg_len'], metconf['hd_avg_seg_len']*elp_fs, extra_acl ) 
+            extra_acl = metconf['acl_poly'] *elp_fs**2
+            #print("INFO:", fc, elp_fs, m, b, metconf['hd_avg_seg_len'], metconf['hd_avg_seg_len']*elp_fs, extra_acl ) 
             hd_est_x = int((fx + (metconf['x_dir_mod'] * (metconf['hd_avg_seg_len']*elp_fs)) + extra_acl ))
             hd_est_y = int((m*hd_est_x)+b)
          
@@ -1286,7 +1334,7 @@ def better_reduce(json_conf,meteor_json_file,show=0):
 
       cv2.rectangle(half_frame, (int(mx1), int(my1)), (int(mx2), int(my2)), (128, 128, 128), 1)
 
-      if show == 1 and fc  < last_fn + 25:
+      if show == 1 and fc  < last_fn + 5:
          cv2.imshow('pepe', half_frame)
          cv2.waitKey(0)
          #cv2.waitKey(60)
@@ -1315,6 +1363,151 @@ def better_reduce(json_conf,meteor_json_file,show=0):
       cv2.imshow('pepe', half_frame)
       cv2.waitKey(30)
       fc = fc + 1
+
+def reduce_meteor_acl(acl_poly, metconf,metframes,frames,thresh=4,mode=0,show=0):
+   hd_xs = []
+   hd_ys = []
+   ffn = None
+   fx = None
+   m = metconf['hd_m']
+   b = metconf['hd_b']
+   avg_res_dist = 0
+   total_res_dist = 0
+   res_dist = 0
+   over = 0
+   hd_est_x = None
+   if True:
+      fc = 0
+      total_res_dist = 0
+      for frame in frames:
+         if fc in metframes:
+            over = 0
+            hd_x = metframes[fc]['orig_hd_x']
+            hd_y = metframes[fc]['orig_hd_y']
+            hd_xs.append( metframes[fc]['orig_hd_x'] )
+            hd_ys.append( metframes[fc]['orig_hd_y'])
+            if fx is None:
+               fx = hd_x
+               fy = hd_y
+               ffn = fc
+            if len(hd_xs) > 10:
+               sxs = hd_xs[-10:]
+               sys = hd_ys[-10:]
+               lf_m,lf_b = best_fit_slope_and_intercept(sxs,sys)
+               metframes[fc]['lf_m'] = m
+               metframes[fc]['lf_b'] = b
+               m = lf_m
+               b = lf_b
+
+            elp_fs = fc - ffn
+            extra_acl = acl_poly[1] *elp_fs**2
+            if ffn == fc:
+               hd_est_x = fx 
+               hd_est_y = fy
+            else:
+               print("FX:", fx)
+               hd_est_x = int((fx + (acl_poly[2] * (acl_poly[0]*elp_fs)) + extra_acl ))
+               hd_est_y = int((m*hd_est_x)+b)
+
+            x1,y1,x2,y2 = bound_xy(hd_x,hd_y,1920,1080,50)
+            cw = x2 - x1
+            ch = y2 - y1
+            if hd_x != 0 and hd_y != 0:
+               res_dist = calc_dist((hd_x,hd_y),(hd_est_x,hd_est_y))
+            else:
+               res_dist = 0
+            metframes['hd_est_x'] = hd_est_x
+            metframes['hd_est_y'] = hd_est_y
+            metframes['hd_res_dist'] = res_dist 
+            total_res_dist = total_res_dist + res_dist
+            frame = cv2.resize(frame, (int(1920),int(1080)))
+            
+            #gf = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
+            y1,y2,x1,x2 = int(y1),int(y2),int(x1),int(x2)
+            #print("CROP",y1,y2,x1,x2)
+            crop_img = frame[y1:y2,x1:x2]
+            cv2.circle(frame, (int(hd_x),int(hd_y)), int(10), (255,255,255), 1)
+            cv2.circle(frame, (int(hd_est_x),int(hd_est_y)), int(2), (255,254,10), 2)
+            show_frame = cv2.resize(frame, (int(960),int(540)))
+            ch = int(ch)
+            cw = int(cw) 
+            ch,cw,cl = crop_img.shape
+            print("CROP SHAPE:", ch,cw)
+            #crop_img = cv2.resize(crop_img, (int(100),int(100)))
+            show_frame[5:5+ch,5:5+cw] = crop_img
+            if len(hd_xs) > 0:
+               avg_res_dist = total_res_dist / len(hd_xs)
+            tdesc = "RES: " + str(res_dist)[0:6] + "AVG RES: " + str(avg_res_dist)[0:6]
+            cv2.putText(show_frame, str(tdesc),  (int(5) ,int(25+ch)), cv2.FONT_HERSHEY_SIMPLEX, .5, (255, 255, 255), 1) 
+            tdesc = "AVG RES: " + str(avg_res_dist)[0:6]
+            cv2.putText(show_frame, str(tdesc),  (int(5) ,int(50+ch)), cv2.FONT_HERSHEY_SIMPLEX, .5, (255, 255, 255), 1) 
+            tdesc = "FC : " + str(fc)[0:6]
+            cv2.putText(show_frame, str(tdesc),  (int(5) ,int(75+ch)), cv2.FONT_HERSHEY_SIMPLEX, .5, (255, 255, 255), 1) 
+            tdesc = "EST XY : " + str(hd_est_x)[0:6] + "," + str(hd_est_y)[0:6]
+            cv2.putText(show_frame, str(tdesc),  (int(5) ,int(100+ch)), cv2.FONT_HERSHEY_SIMPLEX, .5, (255, 255, 255), 1) 
+            tdesc = "POLY : " + str(acl_poly[0])[0:6] + "," + str(acl_poly[1])[0:6] + "," + str(acl_poly[2])[0:6]
+            cv2.putText(show_frame, str(tdesc),  (int(5) ,int(125+ch)), cv2.FONT_HERSHEY_SIMPLEX, .5, (255, 255, 255), 1) 
+            tdesc = "ELPS: " + str(elp_fs)
+            cv2.putText(show_frame, str(tdesc),  (int(5) ,int(150+ch)), cv2.FONT_HERSHEY_SIMPLEX, .5, (255, 255, 255), 1) 
+         else:
+            # missing frame if things started?
+            elp_fs = 0
+            over = over + 1
+            if fx is not None and over < 7:
+               frame = cv2.resize(frame, (int(1920),int(1080)))
+               elp_fs = fc - ffn
+               hd_est_x = int((fx + (acl_poly[2] * (acl_poly[0]*elp_fs)) + extra_acl ))
+               equ = str(hd_est_x) + " = " + str(fx) + " + (" + str(acl_poly[2]) + " * " + "(" + str(acl_poly[0]) + "*" + str(elp_fs) + " )) + " + str(extra_acl) + " ))" 
+               hd_est_y = int((m*hd_est_x)+b)
+               print("EQ:", equ)
+               print("HDY:", hd_est_y)
+               x1,y1,x2,y2 = bound_xy(hd_est_x,hd_est_y,1920,1080,50)
+               cw = x2 - x1
+               ch = y2 - y1
+               crop_img = frame[y1:y2,x1:x2]
+
+               cv2.circle(frame, (int(hd_est_x),int(hd_est_y)), int(10), (0,0,255), )
+               res = 0
+
+
+               show_frame = cv2.resize(frame, (int(960),int(540)))
+               ch = int(ch)
+               cw = int(cw)
+               ich,icw,cl = crop_img.shape 
+               if ich == 100 and icw == 100:
+                  print(ich,icw)
+                  show_frame[5:5+ch,5:5+cw] = crop_img
+               if len(hd_xs) > 0:
+                  avg_res_dist = total_res_dist / len(hd_xs)
+               tdesc = "RES: " + str(res_dist)[0:6] + "AVG RES: " + str(avg_res_dist)[0:6]
+               cv2.putText(show_frame, str(tdesc),  (int(5) ,int(25+ch)), cv2.FONT_HERSHEY_SIMPLEX, .5, (255, 255, 255), 1) 
+               tdesc = "AVG RES: " + str(avg_res_dist)[0:6]
+               cv2.putText(show_frame, str(tdesc),  (int(5) ,int(50+ch)), cv2.FONT_HERSHEY_SIMPLEX, .5, (255, 255, 255), 1) 
+               tdesc = "FC : " + str(fc)[0:6]
+               cv2.putText(show_frame, str(tdesc),  (int(5) ,int(75+ch)), cv2.FONT_HERSHEY_SIMPLEX, .5, (255, 255, 255), 1) 
+               tdesc = "EST XY : " + str(hd_est_x)[0:6] + "," + str(hd_est_y)[0:6]
+               cv2.putText(show_frame, str(tdesc),  (int(5) ,int(100+ch)), cv2.FONT_HERSHEY_SIMPLEX, .5, (255, 255, 255), 1) 
+               tdesc = "POLY : " + str(acl_poly[0])[0:6] + "," + str(acl_poly[1])[0:6] + "," + str(acl_poly[2])[0:6]
+               cv2.putText(show_frame, str(tdesc),  (int(5) ,int(125+ch)), cv2.FONT_HERSHEY_SIMPLEX, .5, (255, 255, 255), 1) 
+               tdesc = "ELPS: " + str(elp_fs)
+               cv2.putText(show_frame, str(tdesc),  (int(5) ,int(150+ch)), cv2.FONT_HERSHEY_SIMPLEX, .5, (255, 255, 255), 1) 
+
+         if hd_est_x is not None :
+               cv2.circle(frame, (int(hd_est_x),int(hd_est_y)), int(10), (255,0,0), 1)
+
+         if fx is not None:
+            if fc % 1 == 0:
+               cv2.imshow('pepe', show_frame)
+               cv2.waitKey(0)
+        
+         fc = fc + 1
+   if len(hd_xs) > 0:
+     avg_res_dist = total_res_dist / len(hd_xs)
+   if mode == 1:
+      return(avg_res_dist,metframes)
+   else:
+      return(avg_res_dist)
+
 
 
 def clean_hist(history, metframes = None, metconf = None):
