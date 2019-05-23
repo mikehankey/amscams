@@ -10,7 +10,7 @@ import numpy as np
 import scipy.optimize
 from fitMulti import minimize_poly_params_fwd
 from lib.VideoLib import get_masks, find_hd_file_new, load_video_frames
-from lib.UtilLib import check_running, get_sun_info
+from lib.UtilLib import check_running, get_sun_info, fix_json_file
 
 from lib.ImageLib import mask_frame , stack_frames
 #import matplotlib
@@ -1717,9 +1717,16 @@ def star_res(meteor_json_file, json_conf, show):
       cv2.waitKey(1)
    return(avg_res, found_stars,img)
 
+def fix_js(json_file):
+   new_json = fix_json_file(json_file)
+   if new_json is not None:
+      print("FIXED", json_file)
+   else:
+      print("JSON GOOD", json_file)
+
 
 def batch_fix (json_conf):
-   max_proc = 22
+   max_proc = 16
    meteor_dirs = glob.glob("/mnt/ams2/meteors/*")
    bad_files = [] 
    refit = 0
@@ -1731,8 +1738,13 @@ def batch_fix (json_conf):
       for meteor_file in meteor_files:
          mf = meteor_file.replace("-reduced.json", ".json")
          fn = mf.split("/")[-1]
-         cmd =  "./autoCal.py cfit " + mf + " 0"
+#         fix_js(mf)
+
+         cmd =  "./detectMeteors.py br " + mf + " 0"
          jobs.append(cmd) 
+
+         #cmd =  "./autoCal.py cfit " + mf + " 0"
+         #jobs.append(cmd) 
 
          #cmd = "./autoCal.py imgstars " + mf + " 0"
          #jobs.append(cmd) 
@@ -1747,7 +1759,7 @@ def batch_fix (json_conf):
    jc = 0
    
    for job in jobs:
-      while (check_running("autoCal.py")) > 22:       
+      while (check_running("detectMeteors.py")) > max_proc:       
          time.sleep(1)
       print(job)
       os.system(job + " &")

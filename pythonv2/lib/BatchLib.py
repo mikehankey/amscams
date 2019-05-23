@@ -617,7 +617,10 @@ def thumb_mp4s(mp4_files,json_conf):
 
       else:
          meteor_json = load_json_file(meteor_json_file)
-         objects = meteor_json['sd_objects']
+         try:
+            objects = meteor_json['sd_objects']
+         except:
+            objects = []
          if cfe(stack_file) == 0 :
             frames = load_video_frames(file,json_conf)
             stack_file, stack_image = stack_frames(frames, file)

@@ -12,7 +12,7 @@ from lib.MeteorTests import test_objects
 from lib.FileIO import load_json_file,archive_meteor 
 from lib.VideoLib import load_video_frames , doHD
 from lib.ImageLib import stack_frames, draw_stack
-from lib.UtilLib import convert_filename_to_date_cam, check_running
+from lib.UtilLib import convert_filename_to_date_cam, check_running, fix_json_file
 from lib.WebCalib import reduce_meteor_ajax, better_reduce
 
 
@@ -127,7 +127,7 @@ if __name__ == "__main__":
    json_conf = load_json_file("../conf/as6.json") 
    cmd = sys.argv[1]
    running = check_running("detectMeteors")
-   if running > 3 and cmd != 'doHD' and cmd != 'sf' and cmd != 'raj':
+   if running > 3 and cmd != 'doHD' and cmd != 'sf' and cmd != 'raj' and cmd != 'br':
       print("running ", running)
       exit()
    if len(sys.argv) >=3:
@@ -169,6 +169,17 @@ if __name__ == "__main__":
 
    if cmd == 'dohd' or cmd == 'doHD':
       video_file = sys.argv[2] 
+      json_file = video_file.replace(".mp4", ".json")
+      new_json = fix_json_file(json_file)
+      if new_json is not None:
+         for line in new_json:
+            print(new_json)
+      else:
+         print("JSON GOOD")
+
+      exit()
+
+
       hd_file, hd_trim, hd_crop_file,hd_box,trim_time_offset,trim_dur  = doHD(video_file, json_conf)
       print("AFTER doHD HD TRIM: ", hd_trim)
       sd_json_file = video_file.replace(".mp4", ".json")

@@ -1,3 +1,4 @@
+import json
 import cv2
 import subprocess
 import datetime
@@ -300,4 +301,41 @@ def cnt_max_px(cnt_img):
    min_val, max_val, min_loc, max_loc = cv2.minMaxLoc(cnt_img)
 
    return(max_loc, min_val, max_val)
+
+def fix_json_file(json_file):
+   fp = open(json_file)
+   new_file = json_file.replace(".json", "-new.json")
+   out = open(new_file, "w")
+   try: 
+      load_json_file(json_file)
+   except:
+      print("JSON CORRUPT:", json_file)
+      #exit()
+   over = 0
+   for line in fp:
+      if "metframes" in line or "metconf" in line:
+         over = 1
+      if over == 0: 
+         out.write(line)
+   if over == 1:
+      out.write("   \"version\" : 1 } ")
+      print("JSON FIXED", json_file)
+      out.close()
+      fixed_json = load_json_file(new_file)
+      save_json_file(json_file, fixed_json)
+      return(1)
+
+   else:
+      return(None)
+
+
+def save_json_file(json_file, json_data):
+   with open(json_file, 'w') as outfile:
+      json.dump(json_data, outfile, indent=4)
+   outfile.close()
+
+def load_json_file(json_file):
+   with open(json_file, 'r') as infile:
+      json_data = json.load(infile)
+   return(json_data)
 
