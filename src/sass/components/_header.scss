@@ -1,0 +1,47 @@
+.navbar-brand {
+    iframe {
+        display: block;
+        vertical-align: top;
+        float: left;
+        margin-right: .8rem;
+    }
+
+    color: $white !important; 
+    font-family: Montserrat,Helvetica Neue,Arial,Sans-serif;
+
+    span.tx {
+        display: block;
+        float: left;
+        padding-top: .1rem;
+
+        span {
+            display: block;
+            font-size: .85rem;
+            color: rgba(255,255,255,.8);
+            line-height: 1.4;
+            font-weight: 400;
+
+
+            &.m {
+                color: $white !important; 
+                font-size: 1.5rem;
+                line-height: 1;
+                font-weight: 600;
+            }
+        }
+    }
+    
+}
+
+.navbar {
+    box-shadow: 0 2px 5px rgba(0,0,0,1);
+}
+
+.navbar-dark .navbar-nav .nav-link {
+    color: #fff;
+    text-transform: uppercase;
+}
+
+.navbar-dark .navbar-nav .active>.nav-link {
+    color:#c2c9ff;
+}

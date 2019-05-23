@@ -1,0 +1,64 @@
+.log_star {
+    -webkit-transition: opacity 2s; 
+    transition: opacity 2s;
+    transform-origin: 50% 50%;
+    transform-style: preserve-3D
+}
+
+#meteorc {
+    transform-origin: bottom center;
+    transform-style: preserve-3D
+} 
+
+#meteorbr {
+    transform-origin: top 100%;
+    transform-style: preserve-3D
+}
+
+#meteorbg {
+    transform-origin: 100% 0%;
+    transform-style: preserve-3D
+}
+
+
+
+.animated  #meteorc {
+    animation: metc 1.1s ease infinite;
+}
+
+.animated  #meteorbr {
+    animation: metbr 1.1s ease infinite;
+}
+
+.animated  #meteorbg {
+    animation: metbg 1.1s ease infinite;
+}
+
+
+.animated .log_star {
+    animation: star .5s ease infinite;
+}
+
+@keyframes metc {
+    0% {  transform: scale(0,0) ; opacity:.2;  }
+    80% {  transform: scale(1,1); opacity:1 }
+    100% { opacity:0}
+}
+
+@keyframes metbr {
+    0% {  transform: scale(0,0) ; opacity:.2;  }
+    80% {  transform: scale(1,1); opacity:1 }
+    100% { opacity:0}
+}
+
+@keyframes metbg {
+    0% {  transform: scale(0,0) ; opacity:.2;  }
+    80% {  transform: scale(1,1); opacity:1 }
+    100% { opacity:0}
+}
+
+@keyframes star {
+    0%  {    opacity:.6;  }
+    50% {   opacity:.1;  }
+    100%  {   opacity:.6;  }
+}

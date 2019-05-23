@@ -120,9 +120,14 @@ def manual_detect(json_conf, form):
       print("<input type=submit name=submit value='Run Detection Code On This Clip'><br>")
       print("</form>")
 
-def get_template(json_conf):
+def get_template(json_conf, skin = None  ):
+   
    template = ""
-   fpt = open("/home/ams/amscams/pythonv2/templates/as6.html", "r")
+   skin = "as6ams"
+   if skin == "as6ams":
+      fpt = open("/home/ams/amscams/pythonv2/templates/as6ams.html", "r")
+   else:
+      fpt = open("/home/ams/amscams/pythonv2/templates/as6.html", "r")
    for line in fpt:
       template = template + line
    return(template) 
@@ -153,7 +158,7 @@ def make_day_preview(day_dir, stats_data, json_conf):
       html_out = html_out + "<figure><a href=\"webUI.py?cmd=browse_day&day=" + day_str + "&cams_id=" + cams_id \
          + "\" onmouseover=\"document.getElementById(" + day + cams_id + ").src='" + meteor_stack \
          + "'\" onmouseout=\"document.getElementById(" + day + cams_id + ").src='" + obj_stack + "'\">"
-      html_out = html_out + "<img id=\"" + day+ cams_id + "\" width='200' height='163' src='" + obj_stack + "'></a><br><figcaption>" + str(min_total) + " Minutes</figcaption></figure>"
+      html_out = html_out + "<img style=\"border: 1px solid #ff9900; padding: 1px; margin: 5px\" id=\"" + day+ cams_id + "\" width='200' height='163' src='" + obj_stack + "'></a><br><figcaption>" + str(min_total) + " Minutes</figcaption></figure>"
    return(html_out, day_str)
 
 def parse_jsid(jsid):
@@ -177,6 +182,7 @@ def controller(json_conf):
 
    form = cgi.FieldStorage()
    cmd = form.getvalue('cmd')
+   skin = form.getvalue('skin')
    #cmd = "play_vid"
    if cmd == 'play_vid':
       jsid = form.getvalue('jsid')
@@ -253,16 +259,23 @@ def controller(json_conf):
    jq = do_jquery()
    
    nav_html,bot_html = nav_links(json_conf,cmd)
+   nav_html = ""
 
-   template = get_template(json_conf)
+   template = get_template(json_conf, skin)
    stf = template.split("{BODY}")
    top = stf[0]
    bottom = stf[1]
    top = top.replace("{TOP}", nav_html)
 
-   obs_name = json_conf['site']['ams_id'] + " " + json_conf['site']['obs_name']
+   obs_name = json_conf['site']['obs_name']
+   op_city =  json_conf['site']['operator_city']
+   op_state = json_conf['site']['operator_state']
+   station_name = json_conf['site']['ams_id'].upper()
 
-   top = top.replace("{OBSNAME}", obs_name)
+   top = top.replace("{OBS_NAME}", obs_name)
+   top = top.replace("{OP_CITY}", op_city)
+   top = top.replace("{OP_STATE}", op_state)
+   top = top.replace("{STATION_NAME}", station_name)
    top = top.replace("{JQ}", jq)
 
    print(top)
@@ -499,41 +512,6 @@ def get_meteors(meteor_dir,meteors):
 def meteors(json_conf,form): 
    print ("""
    
-      <script>   
-      var last_x = 0
-      var last_y = 0
-      document.onmousemove = function(e) {
-         last_x = e.pageX
-         last_y = e.pageY
-      }
-
-      //$(this).on('mousemove', function(event) {
-      //   var x = event.movementX
-      //   var y = event.movementY
-      //   if (event.keyCode == 120) {
-            //   elementMouseIsOver = document.elementFromPoint(x,y)
-      //    }
-      //      console.log(x)
-            //alert(event.keyCode)
-       //})
-      $(this).on('keypress', function(event) {
-          emo = document.elementFromPoint(last_x,last_y).id
-          new_id = 'fig_' + emo
-          new_id = new_id.replace("_img", "")
-          console.log("delete " + last_x + " " + last_y + " " + new_id)
-          $('#' + new_id).remove();
-          pid = new_id.replace("fig_", "")
-          ajax_url = "webUI.py?cmd=override_detect&jsid=" + pid
-          console.log(ajax_url)
-          $.get(ajax_url, function(data) {
-          $(".result").html(data);
-       
-          });
-
-
-  
-       })
-       </script>   
 
 
    """)
@@ -575,14 +553,23 @@ def meteors(json_conf,form):
       temp = el[-1].replace(".mp4", "")
       xxx = temp.split("-trim")
       desc = xxx[0] 
+      desc_parts = desc.split("_")
+      desc = desc_parts[1] + "/" + desc_parts[2] + " " + desc_parts[3] + ":" + desc_parts[4] + " - " + desc_parts[7]
+
+
       base_js_name = el[-1].replace("_", "")
       base_js_name = base_js_name.replace(".json", "")
       base_js_name_img = "img_" + base_js_name
       fig_id = "fig_" + base_js_name
+      del_id =  base_js_name
       if reduced == 1: 
          htclass = "reduced"
       else: 
          htclass = "norm"
+
+      buttons = "<br><a href=\"javascript:play_meteor_video('" + video_file + " ')\">Play</A> - " 
+      buttons = buttons + "<a href=\"webUI.py?cmd=reduce&video_file=" + video_file + "\"" + ">Info</A> - " 
+      buttons = buttons + "<a href=\"javascript:reject_meteor('" + del_id + "')\">Del</A>" 
 
       html_out = ""
       this_span = span.replace("{ID}", base_js_name)
@@ -590,7 +577,7 @@ def meteors(json_conf,form):
          + " onmouseover=\"document.getElementById('" + base_js_name_img + "').src='" + stack_obj_img \
          + "'\" onmouseout=\"document.getElementById('" + base_js_name_img + "').src='" + stack_file_tn+ "'\">"
   
-      html_out = html_out + "<img width=282 height=192 class=\"" + htclass + "\" id=\"" + base_js_name_img + "\" src='" + stack_file_tn+ "'></a>" + end_span + "<figcaption>" + desc + " " + str(reduced) + "</figcaption></figure>\n"
+      html_out = html_out + "<img width=282 height=192 class=\"" + htclass + "\" id=\"" + base_js_name_img + "\" src='" + stack_file_tn+ "'></a>" + end_span + "<figcaption>" + desc + str(buttons) + "</figcaption></figure>\n"
 
       print(html_out)
    print("<div style='clear: both'></div>")
@@ -603,23 +590,22 @@ def live_view(json_conf):
 
    print ("<link href='https://fonts.googleapis.com/css?family=Roboto:100,400,300,500,700' rel='stylesheet' type='text/css'>")
    print ("<link href='scale.css' rel='stylesheet' type='text/css'>")
-   print ("<div align=\"center\" class=\"fond\" style=\"width: 100%\">")
-   print("<h2>Latest View</h2> Updated Once Every 5 Minutes")
+   print ("<div class=\"fond\" style=\"width: 100%\">")
+   print("<h2>Latest View</h2> Still pictures are updated in 5 minute intervals.")
    print ("<div>")
    rand=time.time()
    for cam_num in range(1,7):
       cam_key = 'cam' + str(cam_num)
-      print(cam_key)
       cam_ip = json_conf['cameras'][cam_key]['ip']
       sd_url = json_conf['cameras'][cam_key]['sd_url']
       hd_url = json_conf['cameras'][cam_key]['hd_url']
       cams_id = json_conf['cameras'][cam_key]['cams_id']
 
-      print ("<div class=\"style_prevu_kit\" style=\"background-color:#cccccc;\"><img src=/mnt/ams2/latest/" + cams_id + ".jpg?" + str(rand) + " width=640 height=360></div>")
+      print ("<div style=\"padding: 5px; border: 1px ffffff solid; float:left\" ><figure><img src=/mnt/ams2/latest/" + cams_id + ".jpg?" + str(rand) + " width=640 height=360><figcaption>" + cams_id + "</figcaption></figure></div>")
    print ("</div>")
    print ("</div>")
    print ("</div>")
-
+   print("<div style=\"clear: both\"></div>")
 
 def as6_config(json_conf):
    print("AS6 Config")
@@ -1082,87 +1068,45 @@ def stack_file_from_video(video_file):
 
 
 def do_jquery():
+
+
+
+#$body = $("body");
+
+#$(document).bind({
+#    ajaxStart: function() {
+#       $("#waiting").show();
+#       //$body.addClass("waiting");
+#       console.log("starting ajax")
+#    },
+#    ajaxStop: function() {
+#       $("#waiting").hide();
+#       //$body.removeClass("waiting");
+#       console.log("ending ajax")
+#    }
+#});
+
+#<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
+#<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/jquery-contextmenu/2.7.1/jquery.contextMenu.min.css">
+#<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery-contextmenu/2.7.1/jquery.contextMenu.min.js"></script>
+#<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery-contextmenu/2.7.1/jquery.ui.position.js"></script>
+
    jq = """
-<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
-<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/jquery-contextmenu/2.7.1/jquery.contextMenu.min.css">
-<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery-contextmenu/2.7.1/jquery.contextMenu.min.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery-contextmenu/2.7.1/jquery.ui.position.js"></script>
 <script>
 
-$body = $("body");
-
-$(document).bind({
-    ajaxStart: function() { 
-       $("#waiting").show();
-       //$body.addClass("waiting");    
-       console.log("starting ajax")
-    },
-    ajaxStop: function() { 
-       $("#waiting").hide();
-       //$body.removeClass("waiting"); 
-       console.log("ending ajax")
-    }    
-});
-
-    $(function() {
-        $.contextMenu({
-            selector: '.context-menu-one',
-            callback: function(key, options) {
-                id = options.$trigger.attr("id");
-                var m = "clicked: " + key + id;
-                if (key == 'reject') {
-                   new_id = 'fig_' + id
-                   $('#' + new_id).remove();
-                   ajax_url = "webUI.py?cmd=override_detect&jsid=" + id
-                   $.get(ajax_url, function(data) {
-                      $(".result").html(data);
-                   });
-                }
-                
-                if (key == 'examine') {
-                   window.location.href='webUI.py?cmd=examine&jsid=' + id
-                   //alert("EXAMINE:")
-                }
-                if (key == 'play') {
-                   //window.location.href='webUI.py?cmd=play_vid&jsid=' + id
-                      $('#ex1').modal();
-                      var year = id.substring(0,4);
-                      var mon = id.substring(4,6);
-                      var day = id.substring(6,8);
-                      var hour = id.substring(8,10);
-                      var min = id.substring(10,12);
-                      var sec = id.substring(12,14);
-                      var msec = id.substring(14,17);
-                      var cam = id.substring(17,23);
-                      var trim = id.substring(24,id.length);
-                      var src_url = "/mnt/ams2/meteors/" + year + "_" + mon + "_" + day + "/" + year + "_" + mon + "_" + day + "_" + hour + "_" + min + "_" + sec + "_" + msec + "_" + cam + "-" + trim + ".mp4"
-                      $('#v1').attr("src", src_url);
-
-                }
-                //window.console && console.log(m) || alert(m);
-            },
-            items: {
-                "examine": {name: "Examine"},
-                "play": {name: "Play Video"},
-                "reject": {name: "Reject Meteor"},
-                "confirm": {name: "Confirm Meteor"},
-                "satellite": {name: "Mark as Satellite"},
-                "quit": {name: "Quit", icon: function(){
-                    return 'context-menu-icon context-menu-icon-quit';
-                }}
-            }
-        });
-
-        $('.context-menu-one').on('click', function(e){
-            console.log('clicked', this);
 
 
-        })
-    });
 </script>
 
 
    """
+
+                #"confirm": {name: "Confirm Meteor"},
+                #"satellite": {name: "Mark as Satellite"},
+                #"quit": {name: "Quit", icon: function(){
+                    #return 'context-menu-icon context-menu-icon-quit';
+
+
    return(jq)
 
 def print_css():
@@ -1256,8 +1200,8 @@ body.loading .waiting {
             margin: 0.1em;
          }
          img.reduced {
-            border: thin green solid;
-            background-color: lightgreen;
+            border: thin ff9900 solid;
+            background-color: ff9900;
             margin: 0.1em;
             padding: 0.1em;
          }
@@ -1361,12 +1305,13 @@ def browse_detects(day,type,json_conf):
    print("<div style=\"clear: both\"></div>")
 
 def main_page(json_conf):
-   print("<h1>AllSky6 Control Panel</h1>")    
+   print("<SCRIPT>var my_image = []</SCRIPT>")
+   #print("<h1>AllSky6 Control Panel</h1>")    
    days = sorted(get_proc_days(json_conf),reverse=True)
 
    json_file = json_conf['site']['proc_dir'] + "json/" + "main-index.json"
    stats_data = load_json_file(json_file)
-
+   print("<div style=\"border: 0px solid #6699ff; padding: 20px; margin: 10px; display:inline-block; \" >")
    for day in sorted(stats_data, reverse=True): 
       day_str = day
       day_dir = json_conf['site']['proc_dir'] + day + "/" 
@@ -1377,16 +1322,24 @@ def main_page(json_conf):
 
          html_row, day_x = make_day_preview(day_dir,stats_data[day], json_conf)
          day_str = day.replace("_", "/")
-         print("<h2>" + day_str + "</h2>")
-         print("<a href=webUI.py?cmd=meteors&limit_day=" + day + ">" \
-            + str(meteor_files) + " Meteor Detections</a> - ")
+         print("<div style=\"border: 0px solid #ffffff; padding: 0px;\"> &nbsp;")
+         print("<div style=\"float: left;\">")
+         print(day_str + " - <a href=webUI.py?cmd=meteors&limit_day=" + day + ">" \
+            + str(meteor_files) + " Meteors </a>  ")
+  
+         print("</div>")
+         print("<div style=\"border: 0px solid #ffffff; float: right;\">")
          print("<a href=webUI.py?cmd=browse_detects&type=failed&day=" + day + ">" \
-            + str(failed_files) + " Rejected Detections</a> - ")
+            + str(failed_files) + " Non-Meteors </a> - ")
          print(str(pending_files) + " Files Pending</a> ")
+         print("</div>")
+         print("</div>")
          print("<P>")
          print(html_row)
          print("</P><div style='clear: both'></div>")
-
+   #print("""      <div style="float:left"><canvas id="c" width="960" height="540" style="border:2px solid #000000;"></canvas></div> """)
+ 
+   print("</div>")
 
 def rad_calc(json_conf, form):
    event_date = form.getvalue("event_date")

@@ -124,6 +124,26 @@ def man_reduce_canvas(frame_num,thumbs,file,cal_params_file):
    #extra_html = "<script>var stars = [];\n" 
    extra_html = "<script src=../js/manreduce.js?" + str(rand) + "></script>"
    extra_html = extra_html + "<script>\n   show_frame_image('" + str(frame_num) + "','" + frame_base + "','prev');\n</script>"
+
+   extra_html = extra_html + """
+
+   <script>
+    var grid_by_default = false;
+    var my_image = '{MY_IMAGE}';
+    var hd_stack_file = '{HD_STACK_FILE}';
+    var az_grid_file = '{AZ_GRID_FILE}';
+    var stars = [];
+   </script>
+
+   <div hidden>
+    <img id='half_stack_file' src='{HALF_STACK_FILE}'>
+    <img id='az_grid_file' src='{AZ_GRID_FILE}'>
+    <img id='meteor_img' src='{METEOR_IMG}'>
+   </div>
+
+   """
+   extra_html = extra_html.replace("{MY_IMAGE}", half_stack_img)
+
    return(extra_html)
 
 def calc_frame_time(video_file, frame_num):
@@ -2281,14 +2301,6 @@ def make_frame_table(meteor_reduced,meteor_json_file):
      box_height=0 
    box_min_x = int(box_min_x/2)
    box_min_y = int(box_min_y/2)
-   #frame_javascript = "<script> show_cat_stars"
-
-
-         #var cam_id = '"""  + meteor_reduced['device_name'] + """'
-         #var start_time = '"""  + meteor_reduced['event_start_time'] + """'
-         #var duration = '"""  + meteor_reduced['event_duration'] + """'
-         #var start_az = '"""  + meteor_reduced['start_az'] + """'
-         #var end_az = '"""  + meteor_reduced['end_az'] + """'
 
 
 
@@ -2563,24 +2575,30 @@ def reduce_meteor(json_conf,form):
    bottom_html = bottom_html + "function play_video(src_url) { $('#ex1').modal(); $('#v1').attr(\"src\", src_url);} </script>"
 
    if reduced == 1:
-      bottom_html = bottom_html + frame_javascript
+      #bottom_html = bottom_html + frame_javascript
+      ejs = frame_javascript
+   else:
+      ejs = ""
+
+   js_html = ejs + """
+      <script>
+       var grid_by_default = false;
+       var my_image = '""" + half_stack_file + """'
+       var hd_stack_file = '""" + hd_stack_file + """'
+       var az_grid_file = '""" + az_grid_file + """'
+      var stars = [];
+     </script>
+
+     <div hidden>
+      <img id='""" + half_stack_file + """' id='half_stack_file'>
+      <img id='""" + az_grid_file + """' id='az_grid_file'>
+      <img id='""" + half_stack_file + """' id='meteor_img'>
+     </div> """
 
 
-   js_html = """
-
-   <script>
-      var my_image = '""" + half_stack_file + """'
-      var hd_stack_file = '""" + hd_stack_file + """'
-      var az_grid_file = '""" + az_grid_file + """'
-      var stars = []
-
-   </script>
 
 
-   """.format(hd_stack_file)
-
-   js_html = js_html + """
-   """
+#   """.format(hd_stack_file)
 
    canvas_html = """
       <div style="float:left"><canvas id="c" width="960" height="540" style="border:2px solid #000000;"></canvas></div>
@@ -2692,6 +2710,15 @@ def reduce_meteor(json_conf,form):
    """
    #print(stack_file)
 
+   extra_js = extra_js + """
+
+<script src="./dist/js/amscam.min.js?a"></script>
+<script src="./src/js/mikes/freecal-ajax.js?a"></script>
+<script src="./src/js/plugins/fabric.js?a"></script>
+<script src="./src/js/mikes/freecal-canvas.js?a"></script>
+
+
+   """ 
    print(canvas_html)
    print(js_html)
    print(extra_js)
@@ -2699,6 +2726,9 @@ def reduce_meteor(json_conf,form):
    print("<img id='half_stack_file' style='display: none' src='" + half_stack_file + "'> <br>")
    print("<img id='az_grid_file' style='display: none' src='" + az_grid_file + "'> <br>")
    print("<img id='meteor_img' style='display: none' src='" + half_stack_file + "'> <br>")
+
+  
+
 
    return(bottom_html)
 
@@ -3505,10 +3535,19 @@ def free_cal(json_conf,form):
    #print(stack_file)
 
    print(canvas_html)
-   print(extra_js)
+
+   extra_js = extra_js + """ 
+   <script src="./dist/js/amscam.min.js?a"></script>
+   <script src="./src/js/mikes/freecal-ajax.js?a"></script>
+   <script src="./src/js/plugins/fabric.js?a"></script>
+   <script src="./src/js/mikes/freecal-canvas.js?a"></script>
+   """
+ 
+
    print(js_html)
    #print("<script src=\"/js/freecal-canvas.js\"></script>")
    #print("<script src=\"/js/freecal-ajax.js\"></script>")
+   print(extra_js)
 
 
 

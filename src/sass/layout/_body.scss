@@ -1,0 +1,92 @@
+body {
+    background: #061329;
+    color: #fff;
+    min-width: 1400px;
+}
+
+.container-fluid {
+    max-width: 1400px;
+}
+
+// Typo
+h1 {
+    background: #081938;
+    font-size: 1.2rem;
+    font-weight: normal;
+    font-family: 'Montserrat','Helvetica Neue',Arial,Sans-serif;
+    padding: .8rem 1rem;
+    -webkit-box-shadow: 0 1px 2px rgba(0,0,0,0.8);
+    box-shadow: 0 1px 2px rgba(0,0,0,0.8);
+    text-transform: uppercase;
+    color: #c1c1c1;
+}
+
+h2 {
+    font-size: 1.2rem;
+    text-transform: uppercase;
+    padding-bottom: .4rem;
+    border-bottom: 1px solid rgba(255,255,255,.38);
+    margin-bottom: .5rem;
+}
+
+// Canvas
+.flex-fixed-canvas {
+    flex: 0 0 960px;
+}
+
+.flex-fixed-r-canvas {
+    flex: 0 0 calc(1400px - 960px);
+    margin-left:1rem;
+}
+
+
+//Table
+.td-al-m td {
+    vertical-align: middle;
+}
+.table-dark th, .table-dark td, .table-dark thead th {
+    border-color: #000000;
+    color: #fff;
+    color: rgba(255,255,255,0.88);
+}
+.table th, .table td {
+    padding: .5rem;
+}
+
+
+// Overlay
+#overlay {
+    position: fixed;
+    width: 100%;
+    height: 100%;
+    top: 4.3rem;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: rgba(1, 6, 27, 0.85);
+    z-index: 2; 
+
+    .row {
+        margin-top:-4.3rem;
+    }
+ 
+  }
+
+// Popup links
+.img-link, .vid-link {
+ 
+        display: block;
+
+        img {
+            margin: .5rem;
+            opacity:.65;
+        }
+
+        &:hover, &:focus {
+            img {
+                opacity: 1;
+            }
+        }
+   
+
+}

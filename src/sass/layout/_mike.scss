@@ -1,0 +1,75 @@
+.divTable{
+	display: table;
+}
+.divTableRow {
+	display: table-row;
+}
+.divTableHeading {
+	background-color: #EEE;
+	display: table-header-group;
+}
+.divTableCell, .divTableHead {
+	border: 1px solid #999999;
+	display: table-cell;
+	padding: 3px 10px;
+        vertical-align: top;
+}
+.divTableCellDetect {
+	border: 1px solid #ff0000;
+	display: table-cell;
+	padding: 3px 10px;
+        vertical-align: top;
+}
+.divTableHeading {
+	background-color: #EEE;
+	display: table-header-group;
+	font-weight: bold;
+}
+.divTableFoot {
+	background-color: #EEE;
+	display: table-footer-group;
+	font-weight: bold;
+}
+.divTableBody {
+	display: table-row-group;
+}
+
+
+
+         figure {
+            text-align: center;
+            font-size: smaller;
+            float: left;
+            padding: 0.1em;
+            margin: 0.1em;
+         }
+         img.reduced {
+            border: thin green solid;
+            background-color: lightgreen;
+            margin: 0.1em;
+            padding: 0.1em;
+         }
+
+         img.meteor {
+            border: thin red solid;
+            background-color: red;
+            margin: 0.1em;
+            padding: 0.1em;
+         }
+         img.fail {
+            border: thin silver solid;
+            background-color: orange ;
+            margin: 0.3em;
+            padding: 0.3em;
+         }
+         img.none {
+            width: 300px;
+            margin: 0.1em;
+            padding: 0.1em;
+            border: thin silver solid;
+         }
+         img.norm {
+            border: thin silver solid;
+            margin: 0.1em;
+            padding: 0.1em;
+         }
