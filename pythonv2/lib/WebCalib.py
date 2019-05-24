@@ -3238,13 +3238,16 @@ def pin_point_stars(image, points):
       x2 = x + 15
       cnt_img = image[y1:y2,x1:x2]
       ch,cw = cnt_img.shape
-      max_pnt,max_val,min_val = cnt_max_px(cnt_img)
-      mx,my = max_pnt
-      mx = mx - 15
-      my = my - 15
-      x = x + mx
-      y = y + my
-      star_points.append((x,y))
+      try:
+         max_pnt,max_val,min_val = cnt_max_px(cnt_img)
+         mx,my = max_pnt
+         mx = mx - 15
+         my = my - 15
+         x = x + mx
+         y = y + my
+         star_points.append((x,y))
+      except:
+         missed_star = 1
    return(star_points)
 
 
