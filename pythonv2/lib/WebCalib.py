@@ -2264,8 +2264,9 @@ def get_meteor_object(meteor_json):
       objects = meteor_json
 
    for object in objects:
-      if object['meteor'] == 1:
-         return(object)
+      if "meteor" in object: 
+         if object['meteor'] == 1:
+            return(object)
    if len(objects) > 0:
       return(objects[0])
    else:
@@ -2647,15 +2648,14 @@ def reduce_meteor_new(json_conf,form):
          if "cat_image_stars" in meteor_reduced['cal_params']:
             cat_image_stars = meteor_reduced['cal_params']['cat_image_stars']
             total_stars = len(cat_image_stars)
-      mj = meteor_reduced
-      mr = mj
+#      mj = meteor_reduced
+#      mr = mj
    else:
 
       cal_files = get_active_cal_file(mj['sd_video_file'])
       cal_params_file = cal_files[0][0]
       #print("Meteor not reduced yet...using...", cal_params_file)
       #exit()
-            
    if "/mnt/ams2/meteors" not in mj['sd_video_file']:
       el = mj['sd_video_file'].split("/")
       sd_fn = el[-1]
@@ -2757,7 +2757,7 @@ def reduce_meteor_new(json_conf,form):
       <tbody>
    """
    if reduced == 1:
-      if "cat_image_stars" in meteor_reduced['cal_params']:
+      if "cal_params" in meteor_reduced:
          for star in meteor_reduced['cal_params']['cat_image_stars']:
             (dcname,mag,ra,dec,img_ra,img_dec,match_dist,new_x,new_y,img_az,img_el,new_cat_x,new_cat_y,six,siy,cat_dist) = star
             good_name =  dcname.encode("ascii","xmlcharrefreplace")
@@ -2776,6 +2776,8 @@ def reduce_meteor_new(json_conf,form):
             """.format(str(enc_name), str(mag), str(ra_dec), str(match_dist), str(cat_dist))
 
          stars_table  + stars_table + "</tbody> </table>"
+      else:
+         fin_a_cal = 1
    
    if reduced == 0:
       meteor_reduced = {}

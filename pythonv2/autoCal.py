@@ -1726,7 +1726,7 @@ def fix_js(json_file):
 
 
 def batch_fix (json_conf):
-   max_proc = 16
+   max_proc = 1
    meteor_dirs = glob.glob("/mnt/ams2/meteors/*")
    bad_files = [] 
    refit = 0
@@ -1740,14 +1740,15 @@ def batch_fix (json_conf):
          fn = mf.split("/")[-1]
 #         fix_js(mf)
 
-         cmd =  "./detectMeteors.py br " + mf + " 0"
+         #cmd =  "./detectMeteors.py br " + mf + " 0"
+         #jobs.append(cmd) 
+
+         cmd = "./autoCal.py imgstars " + mf + " 0"
          jobs.append(cmd) 
 
-         #cmd =  "./autoCal.py cfit " + mf + " 0"
-         #jobs.append(cmd) 
+         cmd =  "./autoCal.py cfit " + mf + " 0"
+         jobs.append(cmd) 
 
-         #cmd = "./autoCal.py imgstars " + mf + " 0"
-         #jobs.append(cmd) 
 
          mfr = mf.replace(".json", "-reduced.json")
          #cmd = "./reducer.py " + mfr 
@@ -1759,7 +1760,7 @@ def batch_fix (json_conf):
    jc = 0
    
    for job in jobs:
-      while (check_running("detectMeteors.py")) > max_proc:       
+      while (check_running("autoCal.py")) > max_proc:       
          time.sleep(1)
       print(job)
       os.system(job + " &")

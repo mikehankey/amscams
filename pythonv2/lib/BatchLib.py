@@ -19,7 +19,8 @@ def batch_reduce(json_conf):
       print(meteor_dir)
       meteor_files = glob.glob(meteor_dir + "/" + "*.json")
       for json_file in sorted(meteor_files,reverse=True):
-         if "reduced" not in json_file and "calparams" not in json_file and "manual" not in json_file:
+#         if "reduced" not in json_file and "calparams" not in json_file and "manual" not in json_file:
+          if True:
             reduced_file = json_file.replace(".json", "-reduced.json")
             failed_file = json_file.replace(".json", "-rfailed.txt")
             if cfe(reduced_file) == 1:
