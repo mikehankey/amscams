@@ -2440,10 +2440,325 @@ def make_frame_table(meteor_reduced,meteor_json_file):
    frame_table = frame_table + et
    return(frame_table, frame_javascript)
 
+def reduce_meteor_js(meteor_reduced):
+   video_file = meteor_reduced['sd_video_file']
+   hd_stack_file = meteor_reduced['hd_stack']
+   cal_params_file = ""
+   if "cal_params" in meteor_reduced:
+      if "total_res_deg" in meteor_reduced['cal_params']:
+         res_deg = meteor_reduced['cal_params']['total_res_deg']
+         res_px = meteor_reduced['cal_params']['total_res_px']
+      else:
+         res_deg = "9999"
+         res_px = "9999"
+      if "cat_image_stars" in meteor_reduced['cal_params']:
+         cat_image_stars = meteor_reduced['cal_params']['cat_image_stars']
+      else:
+         cat_image_stars = []
+   else:
+      res_deg = "9999"
+      res_px = "9999"
+      cat_image_stars = [] 
+   star_desc = "Registered Stars: " + str(len(cat_image_stars))
+   res_desc = "Residual Star Error: " + str(res_deg)[0:5] + "deg" + " " + str(res_px) + " px"
+
+
+   (box_min_x,box_min_y,box_max_x,box_max_y) = define_crop_box(meteor_reduced['meteor_frame_data'])
+   meteor_reduced['crop_box'] = (box_min_x,box_min_y,box_max_x,box_max_y) 
+   box_width = int((box_max_x - box_min_x) / 2)
+   box_height = int((box_max_y - box_min_y) / 2)
+   meteor_js = """ <script>
+
+      function init_info() {
+
+         var site_id = '"""  + meteor_reduced['station_name'].upper() + """'
+         var cam_id = '"""  + meteor_reduced['device_name'] + """'
+         var start_time = '"""  + meteor_reduced['event_start_time'] + """'
+         var duration = '"""  + str(meteor_reduced['event_duration']) + """'
+         var start_az = '"""  + str(meteor_reduced['start_az']) + """'
+         var start_el = '"""  + str(meteor_reduced['start_el']) + """'
+         var end_az = '"""  + str(meteor_reduced['end_az']) + """'
+         var end_el = '"""  + str(meteor_reduced['end_el']) + """'
+
+         var text_cam_id = new fabric.Text("Cam ID: " + site_id + "-" + cam_id, {
+            fontFamily: 'Arial',
+            fontSize: 10,
+            left: 5 ,
+            top: 495
+         });
+         text_cam_id.setColor('rgba(255,255,255,.75)')
+         canvas.add(text_cam_id)
+
+         var text_cam_id = new fabric.Text("Start Time: " + start_time + " (" + duration + " seconds)", {
+            fontFamily: 'Arial',
+            fontSize: 10,
+            left: 5 ,
+            top: 510
+         });
+         text_cam_id.setColor('rgba(255,255,255,.75)')
+         canvas.add(text_cam_id)
+
+         var text_cam_id = new fabric.Text("Start AZ/EL : " + Math.round(start_az * 100) / 100 + "/" + Math.round(start_el* 100) / 100 + " End AZ/EL: " + Math.round(end_az * 100) / 100 + "/" + Math.round(end_el * 100) / 100 , {
+            fontFamily: 'Arial',
+            fontSize: 10,
+            left: 5 ,
+            top: 525
+         });
+         text_cam_id.setColor('rgba(255,255,255,.75)')
+         canvas.add(text_cam_id)
+
+      }
+
+      window.onload = function () {
+         init_info()
+         show_cat_stars('""" + video_file + "','" + hd_stack_file + "','" + cal_params_file + """', 'first_load')
+
+         var text_p = new fabric.Text('""" + res_desc + """', {
+            fontFamily: 'Arial',
+            fontSize: 10,
+            left: 5 ,
+            top: 5
+         });
+         text_p.setColor('rgba(255,255,255,.75)')
+         //canvas.add(text_p)
+
+         var text_p = new fabric.Text('""" + star_desc + """', {
+            fontFamily: 'Arial',
+            fontSize: 10,
+            left: 5 ,
+            top: 20
+         });
+         text_p.setColor('rgba(255,255,255,.75)')
+         //canvas.add(text_p)
+
+         var roi_rect = new fabric.Rect({
+            fill: 'rgba(0,0,0,0)', strokeWidth: 1, stroke: 'rgba(230,230,230,.2)',  left: """ + str(box_min_x) + """, top: """ + str(box_min_y) + """,
+            width: """ + str(box_width) + """,
+            height: """ + str(box_height) + """ ,
+            selectable: false
+         });
+         canvas.add(roi_rect);
+
+      }
+   """
+
+   return(meteor_js)
+
+
+def reduce_meteor_new(json_conf,form):
+   fp = open("/home/ams/amscams/pythonv2/templates/reducePage.html")
+   template = ""
+   for line in fp :
+      template = template + line
+
+   form_cal_params_file = form.getvalue("cal_params_file")
+   hdm_x = 2.7272727272727272
+   hdm_y = 1.875
+   video_file = form.getvalue("video_file")
+   meteor_json_file = video_file.replace(".mp4", ".json") 
+   meteor_reduced_file = meteor_json_file.replace(".json", "-reduced.json")
+   template = template.replace("{VIDEO_FILE}", video_file)
+
+
+
+
+   if cfe(meteor_reduced_file) == 1:
+      meteor_reduced = load_json_file(meteor_reduced_file)
+      reduced = 1
+      if "crop_box" not in meteor_reduced:
+         (box_min_x,box_min_y,box_max_x,box_max_y) = define_crop_box(meteor_reduced['meteor_frame_data'])
+         meteor_reduced['crop_box'] = (box_min_x,box_min_y,box_max_x,box_max_y)
+      frame_table, frame_javascript = make_frame_table(meteor_reduced,meteor_json_file)
+
+   else:
+      frame_table = ""
+      reduced = 0
+   mj = load_json_file(meteor_json_file)
+   meteor_obj = get_meteor_object(mj)
+   if reduced == 1:
+      if "cal_params" in meteor_reduced:
+         if "cat_image_stars" in meteor_reduced['cal_params']:
+            cat_image_stars = meteor_reduced['cal_params']['cat_image_stars']
+            total_stars = len(cat_image_stars)
+      mj = meteor_reduced
+   else:
+      print("Meteor not reduced yet...")
+      exit()
+            
+   mj = meteor_reduced 
+   mr = mj
+   if "/mnt/ams2/meteors" not in mj['sd_video_file']:
+      el = mj['sd_video_file'].split("/")
+      sd_fn = el[-1]
+      day_dir = el[-3]
+      mj['sd_video_file'] = mj['sd_video_file'].replace("/mnt/ams2/SD/proc2", "/mnt/ams2/meteors")
+      mj['sd_video_file'] = mj['sd_video_file'].replace("/passed", "")
+      if mj['hd_file'] != 0 and mj['hd_file'] != None:
+         mj['hd_file'] = mj['hd_file'].replace("/mnt/ams2/HD", "/mnt/ams2/meteors/" + day_dir)
+         mj['hd_trim'] = mj['hd_trim'].replace("/mnt/ams2/HD", "/mnt/ams2/meteors/" + day_dir)
+         mj['hd_crop_file'] = mj['hd_crop_file'].replace("/mnt/ams2/HD", "/mnt/ams2/meteors/" + day_dir)
+         mj['hd_crop_file_stack'] = mj['hd_crop_file'].replace(".mp4", "-stacked.png")
+         mj['hd_trim_stack'] = mj['hd_trim'].replace(".mp4", "-stacked.png")
+      else:
+         mj['hd_file'] = 0
+         mj['hd_trim'] = 0
+         mj['hd_crop_file'] = 0
+         mj['hd_crop_file_stack'] = 0
+         mj['hd_trim_stack'] = 0
+      mj['sd_stack'] = mj['sd_video_file'].replace(".mp4", "-stacked.png")
+
+   mj['half_stack'] = mj['sd_stack'].replace(".png", "-half-stack.png")
+   sd_video_file = mj['sd_video_file']
+   sd_stack = mj['sd_stack']
+
+   mj['sd_stack'] = sd_stack.replace(".png", "-stacked.png")
+   mj['hd_stack'] = sd_stack.replace(".png", "-stacked.png")
+   check_make_half_stack(mj['sd_stack'], mj['hd_stack'])
+   half_stack_file = mj['half_stack']
+   hd_stack_file = mj['hd_stack']
+   if hd_stack_file == 0:
+      stack_img = cv2.imread(sd_stack)
+      hd_stack_file = sd_stack.replace("-stacked.png", "-HD-stacked.png")
+      hd_stack_img = cv2.resize(stack_img, (1920,1080))
+
+
+   if "cal_params_file" not in mj:
+      if hd_stack_file == 0:
+         cal_files = get_active_cal_file(sd_stack)
+      else:
+         cal_files = get_active_cal_file(hd_stack_file)
+      cal_params_file = cal_files[0][0]
+      if form_cal_params_file is not None:
+         cal_params_file = form_cal_params_file
+
+      cal_select = make_cal_select(cal_files,sd_video_file,cal_params_file)
+
+      mj['cal_params_file']  = cal_params_file
+      az_grid_file = cal_params_file.replace("-calparams.json", "-azgrid-half.png")
+   else:
+      cal_params_file = mj['cal_params_file']
+      az_grid_file = cal_params_file.replace("-calparams.json", "-azgrid-half.png")
+  
+   # find new? 
+   if cfe(cal_params_file) == 1: 
+      cal_params = load_json_file(cal_params_file)
+
+   meteor_js = reduce_meteor_js(meteor_reduced)
+
+
+
+   template = template.replace("{EVENT_START_TIME}", meteor_reduced['event_start_time'])
+   template = template.replace("{EVENT_DURATION}", str(meteor_reduced['event_duration']))
+   template = template.replace("{EVENT_MAGNITUDE}", str(meteor_reduced['peak_magnitude']))
+   if "solution" in meteor_reduced:
+      template = template.replace("{EVENT_OBS_TOTAL}", meteor_reduced['solution']['obs_total'])
+   else:
+      template = template.replace("{EVENT_OBS_TOTAL}", "1 Station 1 Cam")
+
+   template = template.replace("{CAL_PARAMS_FILE}", cal_params_file)
+   template = template.replace("{HD_STACK_FILE}", video_file)
+   template = template.replace("{METEOR_JSON_FILE}", meteor_json_file)
+   template = template.replace("{event_start_time}", meteor_json_file)
+
+   table_top = """
+   <table class="table table-dark table-striped table-hover td-al-m mb-0" id=" + meteor_json_file + ">
+      <thead>
+         <tr>
+            <th></th><th>#</th><th>Time</th><th>X/Y - W/H</th><th>Max PX</th><th>RA/DEC</th><th>AZ/EL</th><th></th>
+         </tr>
+      </thead>
+   """
+   table_bottom = """
+   <tbody>
+   </tbody>
+   </table>
+   """
+
+   prefix = sd_video_file.replace(".mp4", "-frm")
+   prefix = prefix.replace("SD/proc2/", "meteors/")
+   prefix = prefix.replace("/passed", "")
+
+   # STARS TABLE
+   #for star in meteor_reduced['cal_params']['cat_image_stars']:
+   #   print("YO")
+   
+
+   # RED TABLE
+   red_table = table_top 
+   for frame_data in meteor_reduced['meteor_frame_data']:
+      frame_time, fn, hd_x,hd_y,w,h,max_px,ra,dec,az,el = frame_data
+      row_id = "tr" + str(fn)
+      xy_wh = str(hd_x) + "," + str(hd_y) + " " + str(w) + "," + str(h)
+      az_el = str(az) + "/" + str(el) 
+      ra_dec = str(ra) + "/" + str(dec) 
+
+
+      fr_id = "fr_row" + str(fn)
+      cmp_img_url = prefix  + str(fn) + ".png"
+      cmp_img = "<img src=" + cmp_img_url + " class=\"img-fluid\">"
+
+      del_frame_link = "javascript:del_frame('" + str(fn) + "','" + meteor_json_file +"')"
+
+
+      red_table = red_table + """
+      <tr id="fr_{:s}">
+        <td>{:s}</td>
+        <td>{:s}</td>
+        <td>{:s}</td>
+        <td>{:s}</td>
+        <td>{:s}</td>
+        <td>{:s}</td>
+        <td>{:s}</td>
+        <td><a href="{:s}"><i class="icon-delete"></i></a></td>
+      </tr>
+   """.format(str(fn), str(cmp_img ), str(fn), str(frame_time),str(xy_wh), str(max_px),str(ra_dec),str(az_el),str(del_frame_link))
+   red_table = red_table + table_bottom
+   frame_javascript = ""
+
+   template = template.replace("{%RED_TABLE%}", red_table)
+   cal_params_file = ""
+   template = template.replace("{%SELECTED_CAL_PARAMS_FILE%}", cal_params_file)
+
+   print(template)
+   # canvas image
+   # side info
+   # stars info table
+   # frame data table
+   # other stuff
+   #half_stack_file = ""
+   az_grid_file = ""
+
+   if reduced == 1:
+      #bottom_html = bottom_html + frame_javascript
+      ejs = frame_javascript
+   else:
+      ejs = ""
+
+
+   js_html = ejs + """
+      <script>
+       var grid_by_default = false;
+       var my_image = '""" + half_stack_file + """'
+       var hd_stack_file = '""" + hd_stack_file + """'
+       var az_grid_file = '""" + az_grid_file + """'
+      var stars = [];
+     </script>
+     rand = str(time.time())
+     <script src="./dist/js/amscam.min.js?" + rand + "></script>
+     <script src="./src/js/mikes/freecal-ajax.js?" + rand + "></script>
+     <script src="./src/js/plugins/fabric.js?a"></script>
+     <script src="./src/js/mikes/freecal-canvas.js?" + rand + "></script>
+     <div hidden>
+      <img id='""" + half_stack_file + """' id='half_stack_file'>
+      <img id='""" + az_grid_file + """' id='az_grid_file'>
+      <img id='""" + half_stack_file + """' id='meteor_img'>
+     </div> """
+
+   return(js_html)
+
 def reduce_meteor(json_conf,form):
 
    form_cal_params_file = form.getvalue("cal_params_file")
-
    hdm_x = 2.7272727272727272
    hdm_y = 1.875
    video_file = form.getvalue("video_file")
@@ -2474,34 +2789,39 @@ def reduce_meteor(json_conf,form):
             cat_image_stars = meteor_reduced['cal_params']['cat_image_stars']
             total_stars = len(cat_image_stars)
 
-
-   if "/mnt/ams2/meteors" not in mj['sd_video_file']:
-      el = mj['sd_video_file'].split("/")
+   mr = meteor_reduced
+   if "/mnt/ams2/meteors" not in mr['sd_video_file']:
+      el = mr['sd_video_file'].split("/")
       sd_fn = el[-1]
       day_dir = el[-3]
-      mj['sd_video_file'] = mj['sd_video_file'].replace("/mnt/ams2/SD/proc2", "/mnt/ams2/meteors")
-      mj['sd_video_file'] = mj['sd_video_file'].replace("/passed", "")
-      if mj['hd_file'] != 0 and mj['hd_file'] != None:
-         mj['hd_file'] = mj['hd_file'].replace("/mnt/ams2/HD", "/mnt/ams2/meteors/" + day_dir)
-         mj['hd_trim'] = mj['hd_trim'].replace("/mnt/ams2/HD", "/mnt/ams2/meteors/" + day_dir)
-         mj['hd_crop_file'] = mj['hd_crop_file'].replace("/mnt/ams2/HD", "/mnt/ams2/meteors/" + day_dir)
-         mj['hd_crop_file_stack'] = mj['hd_crop_file'].replace(".mp4", "-stacked.png")
-         mj['hd_trim_stack'] = mj['hd_trim'].replace(".mp4", "-stacked.png")
+      mr['sd_video_file'] = mr['sd_video_file'].replace("/mnt/ams2/SD/proc2", "/mnt/ams2/meteors")
+      mr['sd_video_file'] = mr['sd_video_file'].replace("/passed", "")
+      if mr['hd_file'] != 0 and mr['hd_file'] != None:
+         mr['hd_file'] = mr['hd_file'].replace("/mnt/ams2/HD", "/mnt/ams2/meteors/" + day_dir)
+         mr['hd_trim'] = mr['hd_trim'].replace("/mnt/ams2/HD", "/mnt/ams2/meteors/" + day_dir)
+         mr['hd_crop_file'] = mr['hd_crop_file'].replace("/mnt/ams2/HD", "/mnt/ams2/meteors/" + day_dir)
+         mr['hd_crop_file_stack'] = mr['hd_crop_file'].replace(".mp4", "-stacked.png")
+         mr['hd_trim_stack'] = mr['hd_trim'].replace(".mp4", "-stacked.png")
       else:
-         mj['hd_file'] = 0
-         mj['hd_trim'] = 0
-         mj['hd_crop_file'] = 0
-         mj['hd_crop_file_stack'] = 0
-         mj['hd_trim_stack'] = 0
-      mj['sd_stack'] = mj['sd_video_file'].replace(".mp4", "-stacked.png")
+         mr['hd_file'] = 0
+         mr['hd_trim'] = 0
+         mr['hd_crop_file'] = 0
+         mr['hd_crop_file_stack'] = 0
+         mr['hd_trim_stack'] = 0
+      mr['sd_stack'] = mj['sd_video_file'].replace(".mp4", "-stacked.png")
      
-      mj['half_stack'] = mj['sd_stack'].replace("-stacked.png", "-half-stack.png")
-   sd_video_file = mj['sd_video_file']
-   sd_stack = mj['sd_stack']
-   
-   check_make_half_stack(mj['sd_stack'], mj['hd_trim_stack'])
-   half_stack_file = mj['half_stack']
-   hd_stack_file = mj['hd_trim_stack']
+      mr['half_stack'] = mj['sd_stack'].replace("-stacked.png", "-half-stack.png")
+   sd_video_file = mr['sd_video_file']
+   sd_stack = mr['sd_stack']
+
+   mr['sd_stack'] = sd_stack.replace(".png", "-stacked.png")
+   mr['hd_stack'] = sd_stack.replace(".png", "-stacked.png")
+
+   print(mr['sd_stack'], mr['hd_stack'])  
+ 
+   check_make_half_stack(mr['sd_stack'], mr['hd_stack'])
+   hd_stack_file = mr['hd_stack']
+   half_stack_file = hd_stack_file.replace("-stacked","half-stacked")
    if hd_stack_file == 0:
       stack_img = cv2.imread(sd_stack)
       hd_stack_file = sd_stack.replace("-stacked.png", "-HD-stacked.png")
@@ -2545,7 +2865,7 @@ def reduce_meteor(json_conf,form):
 
       cal_select = make_cal_select(cal_files,sd_video_file,cal_params_file)
    
-      mj['cal_params_file']  = cal_params_file
+      #mj['cal_params_file']  = cal_params_file
       az_grid_file = cal_params_file.replace("-calparams.json", "-azgrid-half.png")
    else:
       cal_params_file = mj['cal_params_file'] 
@@ -2564,7 +2884,7 @@ def reduce_meteor(json_conf,form):
       end_az = meteor_reduced['meteor_frame_data'][-1][9]
       end_el = meteor_reduced['meteor_frame_data'][-1][10]
 
-   print("<h1>Reduce Meteor</h1>")
+   #print("<h1>Reduce Meteor</h1>")
 
 
    extra_js = "<script>var stars = []</script>"
@@ -2595,8 +2915,8 @@ def reduce_meteor(json_conf,form):
       <img id='""" + half_stack_file + """' id='meteor_img'>
      </div> """
 
-
-
+   meteor_reduced['half_stack'] = half_stack_file
+   mj = mr
 
 #   """.format(hd_stack_file)
 
@@ -2638,12 +2958,12 @@ def reduce_meteor(json_conf,form):
 <span style="padding: 5px"> <a target='_blank' href=javascript:play_video('""" + mj['sd_video_file']+ """')>SD Video</a></span><br>
 
 
-<span style="padding: 5px"> <a target='_blank' href=\"javascript:show_image('""" + mj['sd_stack']+ """',1.3636,.9375)\">SD Image</a></span><br>
+<span style="padding: 5px"> <a target='_blank' href=\"javascript:show_image('""" + mr['sd_stack']+ """',1.3636,.9375)\">SD Image</a></span><br>
    """
-   if mj['hd_trim'] != 0 and mj['hd_trim'] != None:
+   if mj['hd_stack'] != 0 and mj['hd_stack'] != None:
       canvas_html = canvas_html + """
-<span style="padding: 5px"> <a target='_blank' href=javascript:play_video('""" + mj['hd_trim']+ """')>HD Video</a></span><br>
-<span style="padding: 5px"> <a target='_blank' href= """ + mj['hd_trim_stack']+ """>HD Image</a></span><br>
+<span style="padding: 5px"> <a target='_blank' href=javascript:play_video('""" + mj['hd_stack']+ """')>HD Video</a></span><br>
+<span style="padding: 5px"> <a target='_blank' href= """ + mj['hd_stack']+ """>HD Image</a></span><br>
 <span style="padding: 5px"> <a target='_blank' href= """ + mj['half_stack']+ """>Half Stack Image</a></span><br>
       
       """
