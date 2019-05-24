@@ -643,7 +643,7 @@ def thumb_mp4s(mp4_files,json_conf):
 
 def batch_meteor_thumb(json_conf):
    meteor_base_dir = "/mnt/ams2/meteors/"
-   meteor_dirs = glob.glob(meteor_base_dir + "/*")
+   meteor_dirs = sorted(glob.glob(meteor_base_dir + "/*"), reverse=True)
    for meteor_dir in meteor_dirs:
       mp4_files = glob.glob(meteor_dir + "/*.mp4")
       thumb_mp4s(mp4_files,json_conf)

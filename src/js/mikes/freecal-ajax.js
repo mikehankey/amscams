@@ -1,3 +1,195 @@
+function update_red_info_ajax(video_file) {
+         ajax_url = "/pycgi/webUI.py?cmd=update_red_info_ajax&video_file=" + video_file
+         console.log(ajax_url)
+         remove_objects()
+         $.get(ajax_url, function(data) {
+            $(".result").html(data);
+            var json_resp = $.parseJSON(data);
+            var cnt = 0
+            cat_stars = json_resp['cat_image_stars']
+            total_res_px = json_resp['total_res_px']
+            total_res_deg = json_resp['total_res_deg']
+            crop_box = json_resp['crop_box']
+            smf = json_resp['meteor_frame_data']
+            box_x = crop_box[0] / 2
+            box_y = crop_box[1] / 2
+            box_w = (crop_box[2] - crop_box[0]) / 2
+            box_h = (crop_box[3] - crop_box[1]) / 2
+            cal_params_file = json_resp['cal_params_file']
+            stml = ""
+            rtml = ""
+            out_html = ""
+            lc= 0
+            // CROP BOX
+            var cropb = new fabric.Rect({
+                  fill: 'rgba(0,0,0,0)', strokeWidth: 1, stroke: 'rgba(128,128,128,.5)', left: box_x, top: box_y,
+                  width: box_w,
+                  height: box_h,
+                  selectable: false
+               });
+            canvas.add(cropb);
+
+            // ADD TEXT TO IMAGE
+            //total_res_deg total_res_px cat_stars.length
+            res_desc = "Residual Star Error: " + Math.round(total_res_deg * 100) / 100 + " degrees / " + Math.round(total_res_px *100) / 100 + " pixels"
+            var text_p = new fabric.Text(res_desc , {
+               fontFamily: 'Arial',
+               fontSize: 10,
+               left: 5 ,
+               top: 5
+            });
+           text_p.setColor('rgba(255,255,255,.75)')
+           canvas.add(text_p)
+
+           star_desc = "Total Stars :" + cat_stars.length
+           var text_p = new fabric.Text(star_desc, {
+              fontFamily: 'Arial',
+              fontSize: 10,
+              left: 5 ,
+              top: 20
+           });
+           text_p.setColor('rgba(255,255,255,.75)')
+           canvas.add(text_p)
+
+
+
+
+            // REDUCTION FRAMES
+            for (let s in smf) {
+              //((meteor_frame_time_str,fn,int(x),int(y),int(w),int(h),int(max_px),float(ra),float(dec),float(az),float(el)))
+              if (lc == 0) {
+                 start_y = smf[s][3];
+              }
+              text_y = (start_y/2) - (lc * 12);
+
+               ft = smf[s][0] ;
+               fn = smf[s][1] ;
+               x = smf[s][2] / 2 ;
+               y = smf[s][3] / 2;
+               w = smf[s][4] ;
+               h = smf[s][5] ;
+               max_px = smf[s][6] ;
+               ra = smf[s][7] ;
+               dec = smf[s][8] ;
+               az = smf[s][9] ;
+               el = smf[s][10] ;
+               if (w > h) {
+                  rad = 6;
+               }
+               else {
+                  rad = 6;
+
+               }
+               fr_id = "fr_row" + fn;
+               meteor_json_file = ""
+               prefix = ""
+               del_frame_link = "<a href=javascript:del_frame('" + fn + "','" + meteor_json_file +"')>X</a> ";
+               cmp_img_url = prefix + fn + ".png";
+               cmp_img = "<img src=" + cmp_img_url + ">";
+               rtml = rtml + " <div class='divTableRow' id='" + fr_id + "'><div class='divTableCell'>" + cmp_img + "</div><div class='divTableCell'>" + fn + "</div><div class='divTableCell'>" + ft + "</div>";
+               rtml = rtml + " <div class='divTableCell'>" + x + "/" + y + " - " + w + "/" + h + "</div>";
+               rtml = rtml + " <div class='divTableCell'>" + max_px + "</div>";
+               rtml = rtml + " <div class='divTableCell'>" + ra + "/" + dec + "</div>";
+               rtml = rtml + " <div class='divTableCell'>" + az + "/" + el+ "</div>";
+               rtml = rtml + " <div class='divTableCell'>" + del_frame_link + "</div></div>";
+
+               var starrect = new fabric.Rect({
+                  fill: 'rgba(0,0,0,0)', strokeWidth: 1, stroke: 'rgba(230,100,200,.5)', left: x-rad, top: y-rad,
+                  width: 10,
+                  height: 10 ,
+                  selectable: false
+               });
+               canvas.add(starrect);
+               /*
+               var circle = new fabric.Circle({
+                   radius: rad, fill: 'rgba(0,0,0,0)', strokeWidth: 1, stroke: 'rgba(255,255,255,.5)', left: x-rad, top: y-rad,
+                   selectable: false
+               });
+               canvas.add(circle);
+               */
+               /*
+               az_desc = lc + " -  " + az + " / " + el
+               var text_p = new fabric.Text(az_desc, {
+                  fontFamily: 'Arial',
+                  fontSize: 10,
+                  left: (x)+25,
+                  top: text_y+25
+               });
+               text_p.setColor('rgba(255,255,255,.75)')
+               canvas.add(text_p)
+               */
+               lc += 1;
+          }
+
+
+
+
+             for (let s in cat_stars) {
+                cx = cat_stars[s][13] - 11
+                cy = cat_stars[s][14] - 11
+
+                var circle = new fabric.Circle({
+                   radius: 5, fill: 'rgba(0,0,0,0)', strokeWidth: 1, stroke: 'rgba(100,200,200,.5)', left: cx/2, top: cy/2,
+                   selectable: false
+                });
+                canvas.add(circle);
+             }
+
+
+            for (let s in cat_stars) {
+               cx = cat_stars[s][11] - 11
+               cy = cat_stars[s][12] - 11
+               icx = cat_stars[s][7] - 11
+               icy = cat_stars[s][8] - 11
+
+               name = cat_stars[s][0]
+
+               out_html = out_html + " <div class='divTableRow'><div class='divTableCell'>" + cat_stars[s][0] + "</div><div class='divTableCell'>" + cat_stars[s][1] + "</div>"
+               out_html = out_html + " <div class='divTableCell'>" + Math.round(cat_stars[s][2] * 100) / 100 + "/" + Math.round(cat_stars[s][3] * 100) / 100 + "</div>"
+               out_html = out_html + " <div class='divTableCell'>" + Math.round(cat_stars[s][4] * 100) / 100 + "/" + Math.round(cat_stars[s][5] * 100) / 100+ "</div>"
+               out_html = out_html + " <div class='divTableCell'>" + Math.round(cat_stars[s][6] * 100) / 100 + "</div>"
+               out_html = out_html + " <div class='divTableCell'>" + Math.round(cat_stars[s][11] * 100) / 100 + "/" + Math.round(cat_stars[s][12] * 100) / 100 + "</div>"
+               out_html = out_html + " <div class='divTableCell'>" + Math.round(cat_stars[s][13] * 100) / 100 + "/" + Math.round(cat_stars[s][14] * 100) / 100 + "</div>"
+               out_html = out_html + " <div class='divTableCell'>" + Math.round(cat_stars[s][7] * 100) / 100 + "/" + Math.round(cat_stars[s][8] * 100) / 100 + "</div>"
+               out_html = out_html + " <div class='divTableCell'>" + Math.round(cat_stars[s][15] * 100)/ 100 + "</div></div>"
+
+               var text_p = new fabric.Text("+", {
+                  fontFamily: 'Arial',
+                  fontSize: 12,
+                  left: (icx/2)+2,
+                  top: (icy/2)-2
+               });
+               text_p.setColor('rgba(255,0,0,.75)')
+               canvas.add(text_p)
+
+               var text = new fabric.Text(name, {
+                  fontFamily: 'Arial',
+                  fontSize: 12,
+                  left: cx/2,
+                  top: cy/2+5
+               });
+               text.setColor('rgba(255,255,255,.25)')
+               canvas.add(text)
+
+               var starrect = new fabric.Rect({
+                  fill: 'rgba(0,0,0,0)', strokeWidth: 1, stroke: 'rgba(230,100,200,.5)', left: cx/2, top: cy/2,
+                  width: 10,
+                  height: 10 ,
+                  selectable: false
+               });
+               canvas.add(starrect);
+               cnt = cnt + 1
+           }
+        });
+}
+
+
+
+
+
+
+
+
 function custom_fit(meteor_json_file, hd_video_file, cal_params_file) {
     new_cp_file = meteor_json_file.replace(".mp4", "-calparams.json")
     ajax_url = "/pycgi/webUI.py?cmd=custom_fit&cal_params_file=" + new_cp_file 
@@ -38,13 +230,14 @@ function custom_fit(meteor_json_file, hd_video_file, cal_params_file) {
 
     function del_frame(fn, meteor_json_file) {
        ajax_url = "/pycgi/webUI.py?cmd=del_frame&meteor_json_file=" + meteor_json_file + "&fn=" + fn 
-       fr_id = "fr_row" + fn
+       fr_id = "fr_" + fn
+       //alert(fr_id)
        document.getElementById(fr_id).remove()
        console.log(ajax_url)
        $.get(ajax_url, function(data) {
           $(".result").html(data);
           var json_resp = $.parseJSON(data);
-          alert(json_resp['msg'])
+          alert(json_resp['message'])
        });
     }
 

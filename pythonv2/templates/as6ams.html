@@ -1,0 +1,75 @@
+<!doctype html>
+<html lang="en-US">
+<head>
+
+    <meta charset="UTF-8">
+    <title>American Meteor Society Camera Network</title>
+    <meta content="American Meteor Society Camera Network" name="description">
+    <meta content="meteor shower, meteor, fireball, meteorite, video, detection, reduction, asteroid, meteoroid" name="keywords">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <!-- (see gulpfile.js > css) -->
+    <link rel="stylesheet" href="./dist/css/main.css"/>
+ 
+
+{JQ}
+    
+</head>
+<body>
+
+<center>
+<div id="ex1" class="modal">
+<video autoplay id="v1" loop controls src="">
+</video>
+</div>
+</center>
+
+{TOP}    
+<nav class="navbar navbar-expand-lg navbar-dark bg-dark"> 
+    
+    <a class="navbar-brand clearfix" href="/pycgi/webUI.py" title="Home">  
+        <iframe id="logo_holder" src="./dist/img/logo.svg" width="70" height="45" style="border:0"></iframe>
+        <span class="tx"><span class="m">AMS Video Meteor Program</span><span class="s">{STATION_NAME} - {OBS_NAME}, {OP_CITY} {OP_STATE}</span></span>
+    </a>
+
+    <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#mainN" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+        <span class="navbar-toggler-icon"></span>
+    </button>
+
+    <div class="collapse navbar-collapse" id="mainN">
+        <ul class="navbar-nav ml-auto"> 
+            <li class="nav-item"><a class="nav-link" href="/pycgi/webUI.py?cmd=home"> Home</a></li>
+            <li class="nav-item"><a class="nav-link" href="/pycgi/webUI.py?cmd=meteors"> Meteors</a></li>
+            <li class="nav-item"><a class="nav-link" href="/pycgi/webUI.py?cmd=calibration"> Calibration</a></li>
+            <li class="nav-item"><a class="nav-link" href="/pycgi/webUI.py?cmd=video_tools"> Tools</a></li>
+            <li class="nav-item"><a class="nav-link" href="/pycgi/webUI.py?cmd=live_view"> Live </a></li>
+            <li class="nav-item"><a class="nav-link" href="/pycgi/webUI.py?cmd=config"> Config</a></li>
+        </ul>
+    </div>
+
+</nav>
+{BODY}
+ 
+<!--FOOTER -->
+<div id="footer">
+    &copy; American Meteor Society / AllSkycams.com
+</div>
+<!-- DATA -->
+ 
+
+<!-- Other scripts (see gulpfile.js > js) -->
+<script src="./dist/js/amscam.min.js"></script>
+
+<!-- Should be combined and minified -->
+<script src="./src/js/functions/reject_meteor.js?{RAND}"></script>
+<script src="./src/js/rightClick.js?{RAND}"></script>
+<script src="./src/js/mikes/reduct_buttons.js?{RAND}"></script>
+<script src="./src/js/mikes/goto.js?{RAND}"></script>
+<center>
+{BOTTOMNAV}
+{EXTRA_HTML}
+</center>
+
+</body>
+</html>

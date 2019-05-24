@@ -1973,11 +1973,17 @@ def reduce_meteor_ajax(json_conf,meteor_json_file, cal_params_file, show = 0):
 
    (cal_date, cam_id, cal_date_str,Y,M,D, H, MM, S) = better_parse_file_date(cal_params_file)
    if "reduced" in cal_params_file:
-      red_data  = load_json_file(cal_params_file) 
-      cal_params = red_data['cal_params']
+      if cfe(cal_params_file) == 1:
+         red_data  = load_json_file(cal_params_file) 
+         cal_params = red_data['cal_params']
+      else:
+         cal_params_files = get_active_cal_file(sd_stack_file)
+         cal_params_file = cal_params_files[0][0]
 
    else:
       cal_params = load_json_file(cal_params_file) 
+
+
    (f_datetime, cam_id, f_date_str,Y,M,D, H, MM, S) = better_parse_file_date(meteor_json_file)
 
    start_clip_time_str = str(f_datetime)
@@ -2348,7 +2354,7 @@ def make_frame_table(meteor_reduced,meteor_json_file):
 
       window.onload = function () {
          init_info()
-         show_cat_stars('""" + video_file + "','" + hd_stack_file + "','" + cal_params_file + """', 'first_load') 
+         show_cat_image_stars_ajax ('""" + video_file + """') 
 
          var text_p = new fabric.Text('""" + res_desc + """', {
             fontFamily: 'Arial',
@@ -2439,6 +2445,63 @@ def make_frame_table(meteor_reduced,meteor_json_file):
    frame_javascript = frame_javascript + "</script>"
    frame_table = frame_table + et
    return(frame_table, frame_javascript)
+
+def update_red_info_ajax(json_conf, form):
+
+   # need reduction points / metframe_data
+   # crop_box
+   # ares err 
+   # text values 
+   # star list 
+   total_res_deg = 0 
+   total_res_px = 0 
+   max_res_deg = 0 
+   max_res_px = 0 
+   
+
+
+   video_file = form.getvalue('video_file') 
+   meteor_json_file = video_file.replace(".mp4", ".json")
+   meteor_red_file = meteor_json_file.replace(".json", "-reduced.json")
+   rsp = {}
+
+
+
+   if cfe(meteor_red_file) == 1:
+      mr = load_json_file(meteor_red_file)
+      if "cal_params" in mr:
+ 
+         if "cat_image_stars" in mr['cal_params']:
+            rsp['cat_image_stars'] = mr['cal_params']['cat_image_stars'] 
+            sc = 0
+            for star in mr['cal_params']['cat_image_stars']:
+               (dcname,mag,ra,dec,img_ra,img_dec,match_dist,new_x,new_y,img_az,img_el,new_cat_x,new_cat_y,six,siy,cat_dist) = star
+               max_res_deg = float(max_res_deg) + float(match_dist)
+               max_res_px = float(max_res_px) + float(cat_dist )
+               sc = sc + 1
+            if len( mr['cal_params']['cat_image_stars']) > 0:
+               rsp['total_res_px'] = max_res_deg / sc
+               rsp['total_res_deg'] = (max_res_px / sc) / float(mr['cal_params']['pixscale'] )
+               mr['total_res_px'] = max_res_deg / sc
+               mr['total_res_deg'] = (max_res_px / sc ) / float(mr['cal_params']['pixscale'])
+
+
+         else:
+            os.system("cd /home/ams/amscams/pythonv2/; ./autoCal.py imgstars " + meteor_json_file + " >/mnt/ams2/tmp/aci.txt")
+            mr = load_json_file(meteor_red_file)
+            if "cal_params" in mr:
+               if "cat_image_stars" in mr['cal_params']:
+                  rsp['cat_image_stars'] = mr['cal_params']['cat_image_stars'] 
+
+         if "meteor_frame_data" in mr: 
+            rsp['meteor_frame_data'] = mr['meteor_frame_data']
+            (box_min_x,box_min_y,box_max_x,box_max_y) = define_crop_box(mr['meteor_frame_data'])
+            rsp['crop_box'] = (box_min_x,box_min_y,box_max_x,box_max_y)
+            mr['crop_box'] = rsp['crop_box']
+         
+
+   print(json.dumps(rsp))
+   
 
 def reduce_meteor_js(meteor_reduced):
    video_file = meteor_reduced['sd_video_file']
@@ -2555,6 +2618,10 @@ def reduce_meteor_new(json_conf,form):
    hdm_x = 2.7272727272727272
    hdm_y = 1.875
    video_file = form.getvalue("video_file")
+
+   # for testing
+   #video_file= "/mnt/ams2/meteors/2019_05_24/2019_05_24_08_01_13_000_010001-trim0987.mp4"
+
    meteor_json_file = video_file.replace(".mp4", ".json") 
    meteor_reduced_file = meteor_json_file.replace(".json", "-reduced.json")
    template = template.replace("{VIDEO_FILE}", video_file)
@@ -2581,12 +2648,14 @@ def reduce_meteor_new(json_conf,form):
             cat_image_stars = meteor_reduced['cal_params']['cat_image_stars']
             total_stars = len(cat_image_stars)
       mj = meteor_reduced
+      mr = mj
    else:
-      print("Meteor not reduced yet...")
-      exit()
+
+      cal_files = get_active_cal_file(mj['sd_video_file'])
+      cal_params_file = cal_files[0][0]
+      #print("Meteor not reduced yet...using...", cal_params_file)
+      #exit()
             
-   mj = meteor_reduced 
-   mr = mj
    if "/mnt/ams2/meteors" not in mj['sd_video_file']:
       el = mj['sd_video_file'].split("/")
       sd_fn = el[-1]
@@ -2611,9 +2680,17 @@ def reduce_meteor_new(json_conf,form):
    sd_video_file = mj['sd_video_file']
    sd_stack = mj['sd_stack']
 
-   mj['sd_stack'] = sd_stack.replace(".png", "-stacked.png")
-   mj['hd_stack'] = sd_stack.replace(".png", "-stacked.png")
+   if "stacked" not in mj['sd_stack']:
+      mj['sd_stack'] = mj['sd_stack'].replace(".png", "-stacked.png")
+      mj['hd_stack'] = mj['hd_stack'].replace(".png", "-stacked.png")
+
+   if "hd_stack" not in mj: 
+      mj['hd_stack'] = mj['hd_trim'].replace(".mp4", "-stacked.png")
+      
+   #print(mj['sd_stack'], mj['hd_stack'])  
+
    check_make_half_stack(mj['sd_stack'], mj['hd_stack'])
+   mj['half_stack'] = mj['half_stack'].replace("-stacked", "")
    half_stack_file = mj['half_stack']
    hd_stack_file = mj['hd_stack']
    if hd_stack_file == 0:
@@ -2643,25 +2720,70 @@ def reduce_meteor_new(json_conf,form):
    if cfe(cal_params_file) == 1: 
       cal_params = load_json_file(cal_params_file)
 
-   meteor_js = reduce_meteor_js(meteor_reduced)
-
-
-
-   template = template.replace("{EVENT_START_TIME}", meteor_reduced['event_start_time'])
-   template = template.replace("{EVENT_DURATION}", str(meteor_reduced['event_duration']))
-   template = template.replace("{EVENT_MAGNITUDE}", str(meteor_reduced['peak_magnitude']))
-   if "solution" in meteor_reduced:
-      template = template.replace("{EVENT_OBS_TOTAL}", meteor_reduced['solution']['obs_total'])
+   if reduced == 1: 
+      meteor_js = reduce_meteor_js(meteor_reduced)
    else:
-      template = template.replace("{EVENT_OBS_TOTAL}", "1 Station 1 Cam")
+      meteor_js = ""
+
+
+   if reduced == 1:
+      template = template.replace("{EVENT_START_TIME}", meteor_reduced['event_start_time'])
+      template = template.replace("{EVENT_DURATION}", str(meteor_reduced['event_duration']))
+      template = template.replace("{EVENT_MAGNITUDE}", str(meteor_reduced['peak_magnitude']))
+      if "solution" in meteor_reduced:
+         template = template.replace("{EVENT_OBS_TOTAL}", meteor_reduced['solution']['obs_total'])
+      else:
+         template = template.replace("{EVENT_OBS_TOTAL}", "1 Station 1 Cam")
 
    template = template.replace("{CAL_PARAMS_FILE}", cal_params_file)
    template = template.replace("{HD_STACK_FILE}", video_file)
    template = template.replace("{METEOR_JSON_FILE}", meteor_json_file)
    template = template.replace("{event_start_time}", meteor_json_file)
 
+   template = template.replace("{SELECTED_CAL_PARAMS_FILE}", cal_params_file)
+
+
+   prefix = sd_video_file.replace(".mp4", "-frm")
+   prefix = prefix.replace("SD/proc2/", "meteors/")
+   prefix = prefix.replace("/passed", "")
+
+   # STARS TABLE
+
+   stars_table = """ <table class="table table-dark table-striped table-hover td-al-m"><thead>
+         <tr>
+            <th>Name</th><th>mag</th><th>Cat RA/Dec</th><th>Res &deg;</th><th>Res. Pixels</th>
+         </tr>
+      </thead>
+      <tbody>
+   """
+   if reduced == 1:
+      if "cat_image_stars" in meteor_reduced['cal_params']:
+         for star in meteor_reduced['cal_params']['cat_image_stars']:
+            (dcname,mag,ra,dec,img_ra,img_dec,match_dist,new_x,new_y,img_az,img_el,new_cat_x,new_cat_y,six,siy,cat_dist) = star
+            good_name =  dcname.encode("ascii","xmlcharrefreplace")
+
+            good_name = str(good_name).replace("b'", "")
+            good_name = str(good_name).replace("'", "")
+            enc_name = good_name 
+
+
+
+            ra_dec = str(ra) + "/" + str(dec)
+            stars_table = stars_table + """ 
+               <tr>
+                  <td>{:s}</td><td>{:s}</td><td>{:s}</td><td>{:s}</td><td>{:s}</td>
+               </tr>
+            """.format(str(enc_name), str(mag), str(ra_dec), str(match_dist), str(cat_dist))
+
+         stars_table  + stars_table + "</tbody> </table>"
+   
+   if reduced == 0:
+      meteor_reduced = {}
+      meteor_reduced['meteor_frame_data'] = []
+   # RED TABLE
+
    table_top = """
-   <table class="table table-dark table-striped table-hover td-al-m mb-0" id=" + meteor_json_file + ">
+   <table class="table table-dark table-striped table-hover td-al-m mb-0" >
       <thead>
          <tr>
             <th></th><th>#</th><th>Time</th><th>X/Y - W/H</th><th>Max PX</th><th>RA/DEC</th><th>AZ/EL</th><th></th>
@@ -2669,21 +2791,10 @@ def reduce_meteor_new(json_conf,form):
       </thead>
    """
    table_bottom = """
-   <tbody>
-   </tbody>
+   <tbody></tbody>
    </table>
    """
 
-   prefix = sd_video_file.replace(".mp4", "-frm")
-   prefix = prefix.replace("SD/proc2/", "meteors/")
-   prefix = prefix.replace("/passed", "")
-
-   # STARS TABLE
-   #for star in meteor_reduced['cal_params']['cat_image_stars']:
-   #   print("YO")
-   
-
-   # RED TABLE
    red_table = table_top 
    for frame_data in meteor_reduced['meteor_frame_data']:
       frame_time, fn, hd_x,hd_y,w,h,max_px,ra,dec,az,el = frame_data
@@ -2712,10 +2823,11 @@ def reduce_meteor_new(json_conf,form):
         <td><a href="{:s}"><i class="icon-delete"></i></a></td>
       </tr>
    """.format(str(fn), str(cmp_img ), str(fn), str(frame_time),str(xy_wh), str(max_px),str(ra_dec),str(az_el),str(del_frame_link))
-   red_table = red_table + table_bottom
+   red_table = red_table + table_bottom 
    frame_javascript = ""
 
    template = template.replace("{%RED_TABLE%}", red_table)
+   template = template.replace("{%STAR_TABLE%}", stars_table)
    cal_params_file = ""
    template = template.replace("{%SELECTED_CAL_PARAMS_FILE%}", cal_params_file)
 
@@ -2735,6 +2847,7 @@ def reduce_meteor_new(json_conf,form):
       ejs = ""
 
 
+   rand = str(time.time())
    js_html = ejs + """
       <script>
        var grid_by_default = false;
@@ -2743,7 +2856,6 @@ def reduce_meteor_new(json_conf,form):
        var az_grid_file = '""" + az_grid_file + """'
       var stars = [];
      </script>
-     rand = str(time.time())
      <script src="./dist/js/amscam.min.js?" + rand + "></script>
      <script src="./src/js/mikes/freecal-ajax.js?" + rand + "></script>
      <script src="./src/js/plugins/fabric.js?a"></script>
