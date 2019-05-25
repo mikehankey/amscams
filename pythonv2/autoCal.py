@@ -357,7 +357,7 @@ def minimize_fov_pos(meteor_json_file, image_file, json_conf, cal_params = None,
       hd_video_file = meteor_json['hd_video_file']
       hd_stack_file = hd_video_file.replace(".mp4", "-stacked.png")
    else: 
-      meteor_json = cal_params 
+      meteor_json['cal_params'] = cal_params 
       image_file = image_file.replace("-calparams", "")
       meteor_json_file = image_file.replace("-stacked.png", "-calparams.json")
       print("MIKE MJF(calfile):", meteor_json_file)
@@ -408,7 +408,7 @@ def minimize_fov_pos(meteor_json_file, image_file, json_conf, cal_params = None,
 
  
    print("START RES:", cam_id, res, len(paired_stars))   
-   if res < .3: 
+   if res < .5: 
       # Res is good No need to recalibrate!
       print("Res is good no need to recal")
       return(0,cal_params)
@@ -2130,12 +2130,13 @@ if cmd == 'cfit':
    if 'hd_stack' in mj:
       image_file = mj['hd_stack']
    else:
-      image_file = mj['sd_stack']
+      if "sd_stack" in mj:
+         image_file = mj['sd_stack']
    if "cal_params" in mj:
       cal_params = mj['cal_params']
    else:
       print("run image stars first")
-      os.system("./autoCal.py imgstars " + meteor_json)
+      #os.system("./autoCal.py imgstars " + meteor_json)
       mj = load_json_file(meteor_json_file_red)
       cal_params = mj['cal_params']
 
@@ -2156,11 +2157,13 @@ if cmd == 'cfit':
    print("FINAL POS:", cal_params['position_angle'])
    print("FINAL PIXSCALE:", cal_params['pixscale'])
 
-
+   print("SAVING JSON RED FILE: ", meteor_json_file_red)
+   for key in mj:
+      print(key)
    save_json_file(meteor_json_file_red, mj)
    cmd1 = "cd /home/ams/amscams/pythonv2/; ./autoCal.py imgstars " + meteor_json + " 0 > /mnt/ams2/tmp/autoCal.txt "
    #print(cmd1)
-   os.system(cmd1)
+   #os.system(cmd1)
 
 
 if cmd == 'cfit_hdcal':
@@ -2226,7 +2229,15 @@ if cmd == 'imgstars':
       meteor_mode = 1
       meteor_json_file_red = meteor_json_file.replace(".json", "-reduced.json")
       meteor_json = load_json_file(meteor_json_file_red)
-      file = meteor_json['hd_stack']
+      for key in meteor_json :
+         print(key)
+      if "hd_stack" in meteor_json:
+         file = meteor_json['hd_stack']
+      else:
+         print("No hd stack?", meteor_json)
+         exit()
+         hd_stack = meteor_json['hd_trim'].replace(".mp4", "-stacked.png")
+         file = hd_stack
       if cfe(file) == 0:
          file = file.replace(".png", "-stacked.png")
          meteor_json['hd_stack'] = file
@@ -2314,7 +2325,7 @@ if cmd == 'imgstars':
    else:
       good_perc = 0
    print("PERC GOOD:", good_perc)
-   if good_perc < .25 and res_err > 8:
+   if good_perc < .05 and res_err > 8:
       print("Problem here. Let's clean up. try again...", meteor_json_file )
       del meteor_json['cal_params']  
       meteor_json['deleted_tries']  = 1

@@ -2493,7 +2493,7 @@ def update_red_info_ajax(json_conf, form):
 
 
          else:
-            os.system("cd /home/ams/amscams/pythonv2/; ./autoCal.py imgstars " + meteor_json_file + " >/mnt/ams2/tmp/aci.txt")
+            #os.system("cd /home/ams/amscams/pythonv2/; ./autoCal.py imgstars " + meteor_json_file + " >/mnt/ams2/tmp/aci.txt")
             mr = load_json_file(meteor_red_file)
             if "cal_params" in mr:
                if "cat_image_stars" in mr['cal_params']:
@@ -4076,10 +4076,10 @@ def show_cat_stars(json_conf,form):
                (iname,mag,ra,dec,tmp1,tmp2,px_dist,new_cat_x,new_cat_y,tmp3,tmp4,new_cat_x,new_cat_y,ix,iy,px_dist) = cstar
                key = str(ix) + "." + str(iy)
                here_now = 0
-               if px_dist < 5:
+               if px_dist < 15:
                   for x,y in user_stars:
                      dst = calc_dist((x,y),(ix,iy))
-                     if dst < 10:
+                     if dst < 15:
                         here_now = 1
                   if here_now == 0:
                      user_stars.append((ix,iy))
