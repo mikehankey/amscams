@@ -170,14 +170,13 @@ if __name__ == "__main__":
    if cmd == 'dohd' or cmd == 'doHD':
       video_file = sys.argv[2] 
       json_file = video_file.replace(".mp4", ".json")
-      new_json = fix_json_file(json_file)
-      if new_json is not None:
-         for line in new_json:
-            print(new_json)
-      else:
-         print("JSON GOOD")
+      #new_json = fix_json_file(json_file)
+      #if new_json is not None:
+      #   for line in new_json:
+      #      print(new_json)
+      #else:
+      #   print("JSON GOOD")
 
-      exit()
 
 
       hd_file, hd_trim, hd_crop_file,hd_box,trim_time_offset,trim_dur  = doHD(video_file, json_conf)
