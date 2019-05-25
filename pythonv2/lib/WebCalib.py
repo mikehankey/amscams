@@ -319,7 +319,12 @@ def find_stars_ajax(json_conf, stack_file, is_ajax = 1):
 
 
 
-def check_make_half_stack(sd_file,hd_file):
+def check_make_half_stack(sd_file,hd_file,meteor_reduced):
+   if cfe(hd_file) == 0:
+      hd_trim = meteor_reduced['hd_trim']
+      hd_trim.replace(".mp4", "-HD-meteor-stacked.png")
+
+
    half_stack_file = sd_file.replace("-stacked", "-half-stack")
    if cfe(half_stack_file) == 0:
       if hd_file != 0:
@@ -2689,7 +2694,7 @@ def reduce_meteor_new(json_conf,form):
       
    #print(mj['sd_stack'], mj['hd_stack'])  
 
-   check_make_half_stack(mj['sd_stack'], mj['hd_stack'])
+   check_make_half_stack(mj['sd_stack'], mj['hd_stack'], mj)
    mj['half_stack'] = mj['half_stack'].replace("-stacked", "")
    half_stack_file = mj['half_stack']
    hd_stack_file = mj['hd_stack']
@@ -2735,10 +2740,22 @@ def reduce_meteor_new(json_conf,form):
       else:
          template = template.replace("{EVENT_OBS_TOTAL}", "1 Station 1 Cam")
 
+   if reduced == 1:
+      #print(meteor_reduced.keys())
+      sd_video_file = meteor_reduced['sd_video_file']
+      hd_video_file = meteor_reduced['hd_video_file']
+      sd_stack = meteor_reduced['sd_stack'].replace(".png", "-stacked.png")
+      hd_stack = meteor_reduced['hd_stack'].replace(".png", "-stacked.png")
+      template = template.replace("{SD_VIDEO}", sd_video_file)
+      template = template.replace("{HD_VIDEO}", hd_video_file)
+      template = template.replace("{SD_STACK}", sd_stack)
+      template = template.replace("{HD_STACK}", hd_stack)
+
    template = template.replace("{CAL_PARAMS_FILE}", cal_params_file)
    template = template.replace("{HD_STACK_FILE}", video_file)
    template = template.replace("{METEOR_JSON_FILE}", meteor_json_file)
    template = template.replace("{event_start_time}", meteor_json_file)
+   template = template.replace("{HALF_STACK}", half_stack_file)
 
    template = template.replace("{SELECTED_CAL_PARAMS_FILE}", cal_params_file)
 
@@ -2758,26 +2775,25 @@ def reduce_meteor_new(json_conf,form):
    """
    if reduced == 1:
       if "cal_params" in meteor_reduced:
-         for star in meteor_reduced['cal_params']['cat_image_stars']:
-            (dcname,mag,ra,dec,img_ra,img_dec,match_dist,new_x,new_y,img_az,img_el,new_cat_x,new_cat_y,six,siy,cat_dist) = star
-            good_name =  dcname.encode("ascii","xmlcharrefreplace")
+         if "cat_image_stars" in meteor_reduced['cal_params']:
+            for star in meteor_reduced['cal_params']['cat_image_stars']:
+               (dcname,mag,ra,dec,img_ra,img_dec,match_dist,new_x,new_y,img_az,img_el,new_cat_x,new_cat_y,six,siy,cat_dist) = star
+               good_name =  dcname.encode("ascii","xmlcharrefreplace")
 
-            good_name = str(good_name).replace("b'", "")
-            good_name = str(good_name).replace("'", "")
-            enc_name = good_name 
+               good_name = str(good_name).replace("b'", "")
+               good_name = str(good_name).replace("'", "")
+               enc_name = good_name 
 
-
-
-            ra_dec = str(ra) + "/" + str(dec)
-            stars_table = stars_table + """ 
+               ra_dec = str(ra) + "/" + str(dec)
+               stars_table = stars_table + """ 
                <tr>
                   <td>{:s}</td><td>{:s}</td><td>{:s}</td><td>{:s}</td><td>{:s}</td>
                </tr>
-            """.format(str(enc_name), str(mag), str(ra_dec), str(match_dist), str(cat_dist))
+               """.format(str(enc_name), str(mag), str(ra_dec), str(match_dist), str(cat_dist))
 
-         stars_table  + stars_table + "</tbody> </table>"
-      else:
-         fin_a_cal = 1
+            stars_table  + stars_table + "</tbody> </table>"
+         else:
+            fin_a_cal = 1
    
    if reduced == 0:
       meteor_reduced = {}
@@ -2933,7 +2949,7 @@ def reduce_meteor(json_conf,form):
 
    print(mr['sd_stack'], mr['hd_stack'])  
  
-   check_make_half_stack(mr['sd_stack'], mr['hd_stack'])
+   check_make_half_stack(mr['sd_stack'], mr['hd_stack'], mr)
    hd_stack_file = mr['hd_stack']
    half_stack_file = hd_stack_file.replace("-stacked","half-stacked")
    if hd_stack_file == 0:
