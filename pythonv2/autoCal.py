@@ -27,6 +27,21 @@ from lib.UtilLib import calc_dist,find_angle
 import lib.brightstardata as bsd
 from lib.DetectLib import eval_cnt
 
+def cal_index(json_conf):
+   freecal_dirs = glob.glob("/mnt/ams2/cal/freecal/*")
+   for fc in freecal_dirs:
+      if cfe(fc, 1) == 1:
+         base_name = fc.split("/")[-1]
+         cp_file = fc + "/" + base_name + "-calparams.json"
+         if cfe(cp_file) == 1:
+            print(cp_file)
+         else:
+            cp_file = fc + "/" + base_name + "-stacked-calparams.json"
+            if cfe(cp_file) == 1:
+               print("FOUND:", cp_file)
+            else:
+               print("NOT FOUND:", cp_file)
+
 def save_cal(starfile, master_cal_file, json_conf):
    print("Saving calibration files...")
    master_cal_params = load_json_file(master_cal_file)
@@ -2459,5 +2474,6 @@ if cmd == 'run_merge':
       if status == 1 :
          print("SAVING MCF:", master_cal_file)
          save_json_file(master_cal_file, master_cal_params)
-
+if cmd == "cal_index":
+   cal_index(json_conf)
 
