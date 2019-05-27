@@ -86,7 +86,7 @@ def make_10_sec_thumbs(sd_video_file, frames, json_conf):
       fc = fc + 1
 
 
-def thumb(image_file = "", image = ""):
+def thumb(image_file = "", image = "", perc_size = None):
    print("THUMB!", image_file)
    if image_file != "":
       thumb_file = image_file.replace(".png", "-tn.png")
@@ -100,10 +100,13 @@ def thumb(image_file = "", image = ""):
       print("IMAGE THUMB FAILED FOR ", image_file)
       return()
 
-   if w < 1000:
-      thumb_img = cv2.resize(image, (0,0),fx=.4, fy=.4)
+   if perc_size is None:
+      if w < 1000:
+         thumb_img = cv2.resize(image, (0,0),fx=.4, fy=.4)
+      else:
+         thumb_img = cv2.resize(image, (0,0),fx=.15, fy=.15)
    else:
-      thumb_img = cv2.resize(image, (0,0),fx=.15, fy=.15)
+      thumb_img = cv2.resize(image, (0,0),fx=perc_size, fy=perc_size)
 
    if image_file != "":
       print("SAVING:", thumb_file)

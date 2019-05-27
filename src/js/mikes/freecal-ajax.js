@@ -1,3 +1,107 @@
+function init_load(cfile) {
+   update_hd_cal_ajax(cfile)
+}
+
+function update_hd_cal_ajax(cfile) {
+   ajax_url = "/pycgi/webUI.py?cmd=update_hd_cal_ajax&cfile=" + cfile 
+   console.log(ajax_url)
+   remove_objects()
+   $.get(ajax_url, function(data) {
+      $(".result").html(data);
+      var json_resp = $.parseJSON(data);
+      cat_stars = json_resp['cat_image_stars']
+      total_res_px = json_resp['total_res_px']
+      total_res_deg = json_resp['total_res_deg']
+      total_res_px = json_resp['total_res_px']
+      total_res_deg = json_resp['total_res_deg']
+      total_stars = json_resp['total_stars']
+
+            // ADD TEXT TO IMAGE
+            //total_res_deg total_res_px cat_stars.length
+            res_desc = "Residual Star Error: " + Math.round(total_res_deg * 100) / 100 + " degrees / " + Math.round(total_res_px *100) / 100 + " pixels"
+            //res_desc = "Residual Star Error: " + total_res_deg  + " degrees / " + Math.round(total_res_px *100) / 100 + " pixels"
+            var text_p = new fabric.Text(res_desc , {
+               fontFamily: 'Arial',
+               fontSize: 10,
+               left: 5 ,
+               top: 5
+            });
+           text_p.setColor('rgba(255,255,255,.75)')
+           canvas.add(text_p)
+
+           star_desc = "Total Stars :" + cat_stars.length
+           var text_p = new fabric.Text(star_desc, {
+              fontFamily: 'Arial',
+              fontSize: 10,
+              left: 5 ,
+              top: 20
+           });
+           text_p.setColor('rgba(255,255,255,.75)')
+           canvas.add(text_p)
+
+
+      for (let s in cat_stars) {
+         cx = cat_stars[s][13] - 11
+         cy = cat_stars[s][14] - 11
+         var circle = new fabric.Circle({
+            radius: 5, fill: 'rgba(0,0,0,0)', strokeWidth: 1, stroke: 'rgba(100,200,200,.5)', left: cx/2, top: cy/2,
+            selectable: false
+         });
+         canvas.add(circle);
+      }
+      cnt = 0
+      out_html = ""
+      for (let s in cat_stars) {
+         cx = cat_stars[s][11] - 11
+         cy = cat_stars[s][12] - 11
+         icx = cat_stars[s][7] - 11
+         icy = cat_stars[s][8] - 11
+
+         name = cat_stars[s][0]
+
+         out_html = out_html + " <div class='divTableRow'><div class='divTableCell'>" + cat_stars[s][0] + "</div><div class='divTableCell'>" + cat_stars[s][1] + "</div>"
+         out_html = out_html + " <div class='divTableCell'>" + Math.round(cat_stars[s][2] * 100) / 100 + "/" + Math.round(cat_stars[s][3] * 100) / 100 + "</div>"
+         out_html = out_html + " <div class='divTableCell'>" + Math.round(cat_stars[s][4] * 100) / 100 + "/" + Math.round(cat_stars[s][5] * 100) / 100+ "</div>"
+         out_html = out_html + " <div class='divTableCell'>" + Math.round(cat_stars[s][6] * 100) / 100 + "</div>"
+         out_html = out_html + " <div class='divTableCell'>" + Math.round(cat_stars[s][11] * 100) / 100 + "/" + Math.round(cat_stars[s][12] * 100) / 100 + "</div>"
+         out_html = out_html + " <div class='divTableCell'>" + Math.round(cat_stars[s][13] * 100) / 100 + "/" + Math.round(cat_stars[s][14] * 100) / 100 + "</div>"
+         out_html = out_html + " <div class='divTableCell'>" + Math.round(cat_stars[s][7] * 100) / 100 + "/" + Math.round(cat_stars[s][8] * 100) / 100 + "</div>"
+         out_html = out_html + " <div class='divTableCell'>" + Math.round(cat_stars[s][15] * 100)/ 100 + "</div></div>"
+
+         var text_p = new fabric.Text("+", {
+            fontFamily: 'Arial',
+            fontSize: 12,
+            left: (icx/2)+2,
+            top: (icy/2)-2
+         });
+         text_p.setColor('rgba(255,0,0,.75)')
+         canvas.add(text_p)
+
+         var text = new fabric.Text(name, {
+            fontFamily: 'Arial',
+            fontSize: 12,
+            left: cx/2,
+            top: cy/2+5
+         });
+         text.setColor('rgba(255,255,255,.25)')
+         canvas.add(text)
+
+         var starrect = new fabric.Rect({
+            fill: 'rgba(0,0,0,0)', strokeWidth: 1, stroke: 'rgba(230,100,200,.5)', left: cx/2, top: cy/2,
+            width: 10,
+            height: 10 ,
+            selectable: false
+         });
+         canvas.add(starrect);
+         cnt = cnt + 1
+     }
+
+   });
+
+
+}
+
+
 function update_red_info_ajax(video_file) {
          ajax_url = "/pycgi/webUI.py?cmd=update_red_info_ajax&video_file=" + video_file
          console.log(ajax_url)

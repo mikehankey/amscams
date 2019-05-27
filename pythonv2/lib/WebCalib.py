@@ -20,6 +20,17 @@ from lib.ImageLib import mask_frame,stack_frames, adjustLevels, upscale_to_hd, m
 from lib.CalibLib import radec_to_azel, clean_star_bg, get_catalog_stars, find_close_stars, XYtoRADec, HMS2deg, AzEltoRADec, define_crop_box
 from lib.UtilLib import check_running, calc_dist, angularSeparation, bound_cnt
 
+def remove_dupe_cat_stars(paired_stars):
+   used = {}
+   new_paired_stars = []
+   for data in paired_stars:
+      iname,mag,ra,dec,img_ra,img_dec,match_dist,new_x,new_y,img_az,img_el,old_cat_x,old_cat_y,six,siy,cat_dist  = data
+      used_key = str(six) + "." + str(siy)
+      if used_key not in used:
+         new_paired_stars.append(data)
+         used[used_key] = 1
+   return(new_paired_stars)
+
 
 def clone_cal(json_conf, form):
    print("Clone Cal.")
@@ -617,7 +628,7 @@ def del_frame(json_conf, form):
    response['message'] = 'frame deleted'
    response['frame_data'] = new_frame_data
    save_json_file(meteor_file, meteor_json)
-   print(response)
+   print(json.dumps(response))
 
 def del_manual_points(json_conf, form):
    response = {}
@@ -2451,6 +2462,19 @@ def make_frame_table(meteor_reduced,meteor_json_file):
    frame_javascript = frame_javascript + "</script>"
    frame_table = frame_table + et
    return(frame_table, frame_javascript)
+
+def update_hd_cal_ajax(json_conf, form):
+   cfile = form.getvalue('cfile') 
+   cal_file = cfile.replace("-stacked.png", "-calparams.json")
+   cal_params = load_json_file(cal_file)
+   cal_params['cat_image_stars'] = remove_dupe_cat_stars(cal_params['cat_image_stars'])
+   resp = {}
+   resp['cat_image_stars'] = cal_params['cat_image_stars']
+   resp['total_stars'] = len(cal_params['cat_image_stars'])
+   resp['total_res_px'] = cal_params['total_res_px']
+   resp['total_res_deg'] = cal_params['total_res_deg']
+
+   print(json.dumps(resp))
 
 def update_red_info_ajax(json_conf, form):
 
@@ -4289,9 +4313,13 @@ def show_cat_stars(json_conf,form):
    #   save_json_file(this_cal_params_file, cal_params) 
    if meteor_mode == 1:
       meteor_red['cal_params'] = cal_params
+      meteor_red['manual_update'] = 1 
       save_json_file(meteor_red_file, meteor_red) 
    if meteor_mode == 0:
       meteor_red_file = meteor_red_file.replace(".png", "-calparams.json") 
+      if type == 'hd_cal_detail':
+         meteor_red_file = meteor_red_file.replace("reduced", "calparams")
+      cal_params['manual_update'] = 1 
       save_json_file(meteor_red_file, cal_params) 
    print(json.dumps(cal_params))
 

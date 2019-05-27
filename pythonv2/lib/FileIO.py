@@ -95,7 +95,7 @@ def archive_meteor (sd_video_file,hd_file,hd_trim,hd_crop_file,hd_box,hd_objects
    meteor_json['sd_objects'] = sd_objects
    meteor_json['hd_trim_time_offset'] = trim_time_offset
    meteor_json['hd_trim_dur'] = trim_dur 
-
+   print("saving", meteor_json_file)
    save_json_file(meteor_json_file, meteor_json )
    
 

@@ -15,7 +15,7 @@ from lib.SolutionsLib import solutions , sol_detail
 from lib.MeteorTests import test_objects
 from lib.ImageLib import mask_frame , draw_stack, stack_frames
 from lib.CalibLib import radec_to_azel
-from lib.WebCalib import calibrate_pic,make_plate_from_points, solve_field, check_solve_status, free_cal, show_cat_stars, choose_file, upscale_2HD, fit_field, delete_cal, add_stars_to_fit_pool, save_add_stars_to_fit_pool, reduce_meteor, reduce_meteor_ajax, find_stars_ajax, man_reduce, pin_point, get_manual_points, del_manual_points, sat_cap, HMS2deg, custom_fit, del_frame, clone_cal, reduce_meteor_new , update_red_info_ajax
+from lib.WebCalib import calibrate_pic,make_plate_from_points, solve_field, check_solve_status, free_cal, show_cat_stars, choose_file, upscale_2HD, fit_field, delete_cal, add_stars_to_fit_pool, save_add_stars_to_fit_pool, reduce_meteor, reduce_meteor_ajax, find_stars_ajax, man_reduce, pin_point, get_manual_points, del_manual_points, sat_cap, HMS2deg, custom_fit, del_frame, clone_cal, reduce_meteor_new , update_red_info_ajax, update_hd_cal_ajax
 from lib.UtilLib import calc_radiant
 
 
@@ -198,6 +198,9 @@ def controller(json_conf):
       jsid = form.getvalue('jsid')
       override_detect(video_file,jsid,json_conf)
       exit()
+   if cmd == 'update_hd_cal_ajax':
+      update_hd_cal_ajax(json_conf,form)
+      exit()
    if cmd == 'update_red_info_ajax':
       update_red_info_ajax(json_conf,form)
       exit()
@@ -317,6 +320,10 @@ def controller(json_conf):
       mask_admin(json_conf, form)
    if cmd == 'calibrate_pic':
       calibrate_pic(json_conf, form)
+   if cmd == 'hd_cal_index':
+      hd_cal_index(json_conf, form)
+   if cmd == 'hd_cal_detail':
+      extra_html = hd_cal_detail(json_conf, form)
 
    if cmd == 'examine_min':
       video_file = form.getvalue('video_file')
@@ -448,8 +455,120 @@ def get_cam_ids(json_conf):
       cam_options = cam_options + "<option>" + cams_id + "</option>"
    return(cams, cam_options)
 
+def hd_cal_detail(json_conf, form):
+   rand = str(time.time())
+   cfile = form.getvalue("cfile")
+   hd_stack_file = cfile
+   cal_params_file = hd_stack_file.replace("-stacked.png", "-calparams.json")
+   video_file = hd_stack_file.replace("-stacked.png", ".mp4")
+   ci = load_json_file("/mnt/ams2/cal/hd_images/hd_cal_index.json")
+
+   half_stack_file = cfile.replace("-stacked", "-half-stack")
+   print(half_stack_file)
+   if cfe(half_stack_file) == 0:
+      img = cv2.imread(hd_stack_file)
+      img = cv2.resize(img, (960,540))
+      cv2.imwrite(half_stack_file, img)
+
+
+   az_grid_file = cfile
+   print("CAL DETAIL")
+   #print("<img src=" + cfile + ">")
+   print("""<div style='width: 80%'>
+      <div style="float:left"><canvas id="c" width="960" height="540" style="border:2px solid #000000;"></canvas></div>
+   </div>
+         <a href="javascript:show_cat_stars('""" + video_file + "','" + hd_stack_file + "','" + cal_params_file + """', 'hd_cal_detail')">Show/Save Catalog Stars</a>
+
+      <div style='clear: both'></div> 
+<div id="star_list"></div>
+
+      <P>&nbsp;</P>
+      <P>&nbsp;</P>
+      <P>&nbsp;</P>
+      <P>&nbsp;</P>
+   """)
+
+   js_html = """
+     <script>
+       var grid_by_default = false;
+       var my_image = '""" + half_stack_file + """'
+       var hd_stack_file = '""" + hd_stack_file + """'
+       var az_grid_file = '""" + az_grid_file + """'
+       var stars = [];
+     </script>
+
+
+     <script src='./src/js/mikes/freecal-ajax.js?"""  + str(rand) + """ '></script>
+     <script src="./src/js/plugins/fabric.js?a"></script>
+     <script src="./src/js/mikes/freecal-canvas.js?" + str(rand) + "></script>
+     <div hidden>
+      <img id='""" + half_stack_file + """' id='half_stack_file'>
+      <img id='""" + az_grid_file + """' id='az_grid_file'>
+      <img id='""" + half_stack_file + """' id='meteor_img'>
+     </div>  
+
+      <script>
+        $(window).on('load', function() {
+            init_load('""" + str(cfile) + """')
+        });
+      //window.onload = function () {
+      //}
+     </script>
+   """
+
+   return(js_html)
+
+
+def hd_cal_index(json_conf, form):
+
+   print("<h1>Auto Calibration Index</h1>")
+   print("<div style=\"padding: 5px; margin: 5px; clear:both\"  >")
+   ci = load_json_file("/mnt/ams2/cal/hd_images/hd_cal_index.json")
+   for day in sorted(ci,reverse=True):
+      print("<div style=\"padding: 5px; margin: 5px; clear:both\"  >")
+      print("<h2>" + str(day) + "</h2></div>")
+      for cam_id in sorted(ci[day],reverse=False):
+         print("<div style=\"padding: 5px; margin: 5px; clear:both\"  >")
+         print("<h4>" +  " Cam: " + str(cam_id) + "</h4></div>")
+         
+         for cfile in sorted(ci[day][cam_id], reverse=True):
+            if "total_res_deg" in ci[day][cam_id][cfile]:
+               trd = ci[day][cam_id][cfile]['total_res_deg']
+               trp = ci[day][cam_id][cfile]['total_res_px']
+               ts = ci[day][cam_id][cfile]['total_stars']
+            else:
+               trd = 0 
+               trp = 0 
+               ts = 0 
+
+            fn = cfile.split("/")[-1]
+            tn = "/mnt/ams2/cal/hd_images/" + day + "/thumbs/" + fn 
+            tn = tn.replace(".png", "-tn.png")
+            detail_link = "webUI.py?cmd=hd_cal_detail&cfile=" + cfile
+            print("<figure style=\"float:left\"><a href=" + detail_link + "><img src=" + tn + " width=144 height=81></a><figcaption>" + str(ts) + " " + str(trp)[0:5] + "," + str(trd)[0:5] + "</figcaption></figure>")
+   print("</div>")
 
 def calibration(json_conf,form):
+   print("""
+      <div style="padding: 10px">
+      <a href="">Past Calibrations</a> - 
+      <a href="">Cal Image Files</a> - 
+      <a href="">All Sky Model</a>
+      </div>
+   """)
+   ci = load_json_file("/mnt/ams2/cal/freecal_index.json")
+   print("<h1>Past Calibrations</h1><div style=\"margin: 10px\"><table border=1 cellpadding=\"10\">")
+   print("<TR><TD>Cal Date</td><td>Cam ID</td><td>Total Stars</td><td>Center AZ/EL</td><td>Pos Angle</td><td>Pix Scale</td><td>Res X/Y Pix</td><td>Res X/Y Deg</td></tr>")
+   for cf in sorted(ci, reverse=True):
+      link = "/pycgi/webUI.py?cmd=free_cal&input_file=" + ci[cf]['cal_image_file'] 
+      print("<TR><TD><a href={:s}>{:s}</a></td><td>{:s}</td><td>{:s}</td><td>{:s}/{:s}</td><td>{:s}</td><td>{:s}</td><td>{:s}/{:s}</td><td>{:s}/{:s}</td></tr>".format( link, str(ci[cf]['cal_date']), \
+         str(ci[cf]['cam_id']), str(ci[cf]['total_stars']), str(ci[cf]['center_az'])[0:6], str(ci[cf]['center_el'])[0:6], str(ci[cf]['position_angle'])[0:6], \
+         str(ci[cf]['pixscale'])[0:6], str(ci[cf]['x_fun'])[0:6], str(ci[cf]['y_fun'])[0:6], str(ci[cf]['x_fun_fwd'])[0:7], str(ci[cf]['y_fun_fwd'])[0:6]))
+
+   print("</table></div>")
+
+
+def calibration_old(json_conf,form):
    cams_id = form.getvalue('cams_id')
    print("<h2>Calibration</h2>")
    print("<p><a href=webUI.py?cmd=free_cal>Make New Calibration</a></P>")
@@ -1116,8 +1235,7 @@ def do_jquery():
 
 def print_css():
    print ("""
-   <head>
-
+<!--
       <script>
          function goto(var1,var2, type) {
             if (type == "calib") {
@@ -1131,7 +1249,7 @@ def print_css():
             }
          }
       </script>
-
+-->
       <style> 
 
 

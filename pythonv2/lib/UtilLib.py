@@ -322,7 +322,7 @@ def fix_json_file(json_file):
       print("JSON FIXED", json_file)
       out.close()
       fixed_json = load_json_file(new_file)
-      save_json_file(json_file, fixed_json)
+      #save_json_file(json_file, fixed_json)
       return(1)
 
    else:
