@@ -36,6 +36,7 @@ def cal_index(json_conf):
       if cfe(fc, 1) == 1:
          base_name = fc.split("/")[-1]
          cp_file = fc + "/" + base_name + "-calparams.json"
+         print("CP:", cp_file)
          if cfe(cp_file) == 1:
             cal_files[cp_file] = {}
             cal_files[cp_file]['base_dir'] = fc 
@@ -93,6 +94,7 @@ def cal_index(json_conf):
          
 
    for cp_file in cal_files:
+      print(cp_file)
       print( cal_files[cp_file]['base_dir'], cal_files[cp_file]['cam_id'], cal_files[cp_file]['center_az'], cal_files[cp_file]['center_el'], cal_files[cp_file]['position_angle'], cal_files[cp_file]['pixscale'], cal_files[cp_file]['x_fun'], cal_files[cp_file]['y_fun'], cal_files[cp_file]['x_fun_fwd'], cal_files[cp_file]['y_fun_fwd'], cal_files[cp_file]['total_stars'] )
      
    print("saved : /mnt/ams2/cal/freecal_index.json")
@@ -113,8 +115,8 @@ def hd_cal_index(json_conf):
          # will run command on every hdcal file in archive.
 
          #cmd = "./autoCal.py scan_hd_images " + day_dir
-         #cmd = "./autoCal.py batch_hd_fit " + day_dir
-         #os.system(cmd)
+         cmd = "./autoCal.py batch_hd_fit " + day_dir
+         os.system(cmd)
          #print(cmd)
          #exit()
          img_files = glob.glob(fc + "/*stacked.png")
@@ -286,8 +288,9 @@ def clean_pairs(merged_stars, inc_limit = 5):
       cv2.rectangle(img, (new_x-2, new_y-2), (new_x + 2, new_y + 2), (255), 1)
       cv2.line(img, (six,siy), (new_x,new_y), (255), 1)
       cv2.circle(img,(six,siy), 5, (255), 1)
-   cv2.imshow('pepe', img)
-   cv2.waitKey(0)
+   if show == 1:
+      cv2.imshow('pepe', img)
+      cv2.waitKey(0)
 
 
    for star in merged_stars:
@@ -317,8 +320,8 @@ def clean_pairs(merged_stars, inc_limit = 5):
          dupe_check[dupe_key] = 1 
       else: 
          dupe_check[dupe_key] = dupe_check[dupe_key] + 1
-
-   cv2.imshow('pepe', img)
+   if show == 1:
+      cv2.imshow('pepe', img)
    cv2.waitKey(0)
    print("TOTAL GOOD MERGED STARS:", len(good_merge))
    return(good_merge)
@@ -2152,6 +2155,7 @@ def make_hd_images(day, json_conf, mod=15):
             print("skip already done.")
 
 def batch_hd_fit(day,json_conf):
+   procs = 2
    day_dir = "/mnt/ams2/cal/hd_images/" + day + "/"
    files = glob.glob(day_dir + "*calparams.json")
    jobs1 = []
@@ -2164,7 +2168,7 @@ def batch_hd_fit(day,json_conf):
 
    jc = 0
    for job in jobs1:
-      while (check_running("autoCal.py")) > 24:       
+      while (check_running("autoCal.py")) > procs:       
          #print("Waiting to run some jobs...")
          time.sleep(1)
       os.system(job + " &")
@@ -2172,8 +2176,9 @@ def batch_hd_fit(day,json_conf):
    jc = 0
    
 
-def scan_hd_images(day,json_conf):
-   cv2.namedWindow('pepe')
+def scan_hd_images(day,json_conf, show = 0):
+   if show == 1:
+      cv2.namedWindow('pepe')
    day_dir = "/mnt/ams2/cal/hd_images/" + day + "/"
    cameras = json_conf['cameras']
    for id in  cameras:
@@ -2195,12 +2200,12 @@ def scan_hd_images(day,json_conf):
                for name,mag,ra,dec,new_cat_x,new_cat_y,ix,iy,px_dist,cal_params_file in cat_image_stars:
                   close_stars.append(( name,mag,ra,dec,0,0,px_dist,new_cat_x,new_cat_y,0,0,new_cat_x,new_cat_y,ix,iy,px_dist))
 
-
-               show_img = cv2.resize(img, (960,540))
-               cv2.putText(show_img, hd_file,  (5,500), cv2.FONT_HERSHEY_SIMPLEX, .5, (255, 255, 255), 1)
-               cv2.putText(show_img, "BR: " + str(avg_br),  (5,450), cv2.FONT_HERSHEY_SIMPLEX, .5, (255, 255, 255), 1)
-               cv2.imshow('pepe', show_img) 
-               cv2.waitKey(30)
+               if show == 1:
+                  show_img = cv2.resize(img, (960,540))
+                  cv2.putText(show_img, hd_file,  (5,500), cv2.FONT_HERSHEY_SIMPLEX, .5, (255, 255, 255), 1)
+                  cv2.putText(show_img, "BR: " + str(avg_br),  (5,450), cv2.FONT_HERSHEY_SIMPLEX, .5, (255, 255, 255), 1)
+                  cv2.imshow('pepe', show_img) 
+                  cv2.waitKey(30)
                if 'cat_stars' in cp_data:
                   del cp_data['cat_stars'] 
                cp_data['cat_image_stars'] = close_stars
@@ -2221,16 +2226,17 @@ def scan_hd_images(day,json_conf):
 
             for star in cal_params['cat_image_stars']:
                name,mag,ra,dec,temp1,temp2,px_dist,new_cat_x,new_cat_y,temp3,temp4,new_cat_x,new_cat_y,ix,iy,px_dist = star
+   
+            if show == 1:
+               show_img = cv2.resize(img, (960,540))
                cv2.circle(img,(ix,iy), 5, (128,128,128), 1)
                cv2.rectangle(img, (new_cat_x-5, new_cat_y-5), (new_cat_x + 5, new_cat_y + 5), (128, 128, 128), 1)
                cv2.line(img, (ix,iy), (new_cat_x,new_cat_y), (255), 1)
-
                #cv2.putText(show_img, hd_file,  (5,500), cv2.FONT_HERSHEY_SIMPLEX, .5, (255, 255, 255), 1)
                #cv2.putText(show_img, "BR: " + str(avg_br),  (5,450), cv2.FONT_HERSHEY_SIMPLEX, .5, (255, 255, 255), 1)
-               cv2.putText(show_img, "DONE! ", (5,500), cv2.FONT_HERSHEY_SIMPLEX, .8, (255, 255, 255), 1)
-            show_img = cv2.resize(img, (960,540))
-            cv2.imshow('pepe', show_img) 
-            cv2.waitKey(30)
+               cv2.putText(show_img, "DONE! ", (5,500), cv2.FONT_HERSHEY_SIMPLEX, .8, (255, 255, 255), 1)       
+               cv2.imshow('pepe', show_img) 
+               cv2.waitKey(30)
 
 json_conf = load_json_file("../conf/as6.json")
 cmd = sys.argv[1]
