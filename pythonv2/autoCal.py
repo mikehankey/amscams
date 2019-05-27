@@ -2178,9 +2178,12 @@ def scan_hd_images(day,json_conf):
    cameras = json_conf['cameras']
    for id in  cameras:
       cam_id = json_conf['cameras'][id]['cams_id'] 
+      print(cam_id)
       masks = get_masks(cam_id, json_conf,1)
-      hd_files = glob.glob(day_dir + "*" + cam_id + "*.png")
+      print (day_dir + "*" + cam_id + "*.png")
+      hd_files = glob.glob(day_dir + "*" + cam_id + "-stacked.png")
       for hd_file in sorted(hd_files):
+         print(hd_file)
          close_stars = []
          cp_file = hd_file.replace("-stacked.png", "-calparams.json")
          if cfe(cp_file) == 0:
@@ -2213,11 +2216,11 @@ def scan_hd_images(day,json_conf):
             print  (hd_file)
             img = cv2.imread(hd_file, 0)
             cp_file = hd_file.replace("-stacked.png", "-calparams.json")
+            print("CP FILE: ", cp_file)
             cal_params = load_json_file(cp_file)
 
             for star in cal_params['cat_image_stars']:
                name,mag,ra,dec,temp1,temp2,px_dist,new_cat_x,new_cat_y,temp3,temp4,new_cat_x,new_cat_y,ix,iy,px_dist = star
-               show_img = cv2.resize(img, (960,540))
                cv2.circle(img,(ix,iy), 5, (128,128,128), 1)
                cv2.rectangle(img, (new_cat_x-5, new_cat_y-5), (new_cat_x + 5, new_cat_y + 5), (128, 128, 128), 1)
                cv2.line(img, (ix,iy), (new_cat_x,new_cat_y), (255), 1)
@@ -2225,6 +2228,7 @@ def scan_hd_images(day,json_conf):
                #cv2.putText(show_img, hd_file,  (5,500), cv2.FONT_HERSHEY_SIMPLEX, .5, (255, 255, 255), 1)
                #cv2.putText(show_img, "BR: " + str(avg_br),  (5,450), cv2.FONT_HERSHEY_SIMPLEX, .5, (255, 255, 255), 1)
                cv2.putText(show_img, "DONE! ", (5,500), cv2.FONT_HERSHEY_SIMPLEX, .8, (255, 255, 255), 1)
+            show_img = cv2.resize(img, (960,540))
             cv2.imshow('pepe', show_img) 
             cv2.waitKey(30)
 

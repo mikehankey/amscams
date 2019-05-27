@@ -2891,17 +2891,20 @@ def reduce_meteor_new(json_conf,form):
 
    rand = str(time.time())
    js_html = ejs + """
+
       <script>
        var grid_by_default = false;
        var my_image = '""" + half_stack_file + """'
        var hd_stack_file = '""" + hd_stack_file + """'
        var az_grid_file = '""" + az_grid_file + """'
+       var meteor_json_file = '""" + meteor_json_file + """'
       var stars = [];
      </script>
      <script src="./dist/js/amscam.min.js?" + rand + "></script>
-     <script src="./src/js/mikes/freecal-ajax.js?" + rand + "></script>
      <script src="./src/js/plugins/fabric.js?a"></script>
-     <script src="./src/js/mikes/freecal-canvas.js?" + rand + "></script>
+     <script src="./src/js/ui/canvas-interactions.js?" + rand + "></script>
+     <script src="./src/js/mikes/freecal-ajax.js?" + rand + "></script>
+     <!--<script src="./src/js/mikes/freecal-canvas.js?" + rand + "></script>-->
      <div hidden>
       <img id='""" + half_stack_file + """' id='half_stack_file'>
       <img id='""" + az_grid_file + """' id='az_grid_file'>

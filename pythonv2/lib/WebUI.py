@@ -324,6 +324,8 @@ def controller(json_conf):
       hd_cal_index(json_conf, form)
    if cmd == 'hd_cal_detail':
       extra_html = hd_cal_detail(json_conf, form)
+   if cmd == 'calib_hd_cal_detail':
+      extra_html = calib_hd_cal_detail(json_conf, form)
 
    if cmd == 'examine_min':
       video_file = form.getvalue('video_file')
@@ -455,6 +457,22 @@ def get_cam_ids(json_conf):
       cam_options = cam_options + "<option>" + cams_id + "</option>"
    return(cams, cam_options)
 
+def calib_hd_cal_detail(json_conf, form):
+   cfile = form.getvalue("cfile")
+   fn = cfile.split("/")[-1]
+   base_name = fn.replace("-stacked.png", "")
+   freecal_dir = "/mnt/ams2/cal/freecal/" + base_name
+   if cfe(freecal_dir) == 0:
+      cmd = "mkdir " + freecal_dir
+      os.system(cmd)
+      print(cmd)
+   cmd2 = "cp " + cfile + " " + freecal_dir + "/" + base_name + "-stacked.png"
+   print(cmd)
+   os.system(cmd)
+   cmfile = cfile.replace("-stacked.png", ".mp4")
+   print("<script>window.location.href='/pycgi/webUI.py?cmd=free_cal&input_file=" + cfile + "'</script>")
+   return("ok")
+
 def hd_cal_detail(json_conf, form):
    rand = str(time.time())
    cfile = form.getvalue("cfile")
@@ -477,8 +495,8 @@ def hd_cal_detail(json_conf, form):
    print("""<div style='width: 80%'>
       <div style="float:left"><canvas id="c" width="960" height="540" style="border:2px solid #000000;"></canvas></div>
    </div>
-         <a href="javascript:show_cat_stars('""" + video_file + "','" + hd_stack_file + "','" + cal_params_file + """', 'hd_cal_detail')">Show/Save Catalog Stars</a>
-
+         <a href="javascript:show_cat_stars('""" + video_file + "','" + hd_stack_file + "','" + cal_params_file + """', 'hd_cal_detail')">Show/Save Catalog Stars</a><BR>
+         <a href=/pycgi/webUI.py?cmd=calib_hd_cal_detail&cfile=""" + cfile + """>Calibrate This Image</a><BR>
       <div style='clear: both'></div> 
 <div id="star_list"></div>
 
@@ -552,7 +570,7 @@ def calibration(json_conf,form):
    print("""
       <div style="padding: 10px">
       <a href="">Past Calibrations</a> - 
-      <a href="">Cal Image Files</a> - 
+      <a href="/pycgi/webUI.py?cmd=hd_cal_index">HD Cal Index</a> - 
       <a href="">All Sky Model</a>
       </div>
    """)
