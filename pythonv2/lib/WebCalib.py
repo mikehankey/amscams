@@ -2729,7 +2729,7 @@ def reduce_meteor_new(json_conf,form):
       stack_img = cv2.imread(sd_stack)
       hd_stack_file = sd_stack.replace("-stacked.png", "-HD-stacked.png")
       hd_stack_img = cv2.resize(stack_img, (1920,1080))
-
+   hd_stack = hd_stack_file
 
    if "cal_params_file" not in mj:
       if hd_stack_file == 0:
@@ -2782,6 +2782,8 @@ def reduce_meteor_new(json_conf,form):
       template = template.replace("{HD_VIDEO}", hd_video_file)
       template = template.replace("{SD_STACK}", sd_stack)
       template = template.replace("{HD_STACK}", hd_stack)
+   else:
+      hd_video_file = mj['hd_trim']
 
    template = template.replace("{CAL_PARAMS_FILE}", cal_params_file)
    template = template.replace("{HD_STACK}", hd_stack)
