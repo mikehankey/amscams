@@ -2784,7 +2784,10 @@ def reduce_meteor_new(json_conf,form):
       template = template.replace("{HD_STACK}", hd_stack)
 
    template = template.replace("{CAL_PARAMS_FILE}", cal_params_file)
-   template = template.replace("{HD_STACK_FILE}", video_file)
+   template = template.replace("{HD_STACK}", hd_stack)
+   template = template.replace("{SD_STACK}", sd_stack)
+   template = template.replace("{SD_VIDEO}", sd_video_file)
+   template = template.replace("{HD_VIDEO}", hd_video_file)
    template = template.replace("{METEOR_JSON_FILE}", meteor_json_file)
    template = template.replace("{event_start_time}", meteor_json_file)
    template = template.replace("{HALF_STACK}", half_stack_file)
