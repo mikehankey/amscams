@@ -114,6 +114,8 @@ function update_red_info_ajax(video_file) {
             total_res_px = json_resp['total_res_px']
             total_res_deg = json_resp['total_res_deg']
             crop_box = json_resp['crop_box']
+            status = json_resp['status']
+            if (status == 1) {
             smf = json_resp['meteor_frame_data']
             box_x = crop_box[0] / 2
             box_y = crop_box[1] / 2
@@ -284,7 +286,9 @@ function update_red_info_ajax(video_file) {
                canvas.add(starrect);
                cnt = cnt + 1
            }
+   } // end status if
         });
+
 }
 
 
@@ -681,7 +685,7 @@ function custom_fit(meteor_json_file, hd_video_file, cal_params_file) {
 
 
           out_html = out_html + "</div></div>"
-          document.getElementById('star_list').innerHTML = out_html.toString() ;
+          //document.getElementById('star_list').innerHTML = out_html.toString() ;
        if (type != "first_load") {
        }
 

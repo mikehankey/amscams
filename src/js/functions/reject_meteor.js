@@ -11,6 +11,7 @@ function reject_meteor(id) {
 }
 
 function play_meteor_video (video_url) {
+//   alert(video_url)
    $('#ex1').modal();
    $('#v1').attr("src", video_url);
 }

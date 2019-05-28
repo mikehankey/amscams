@@ -5,18 +5,7 @@
             <div class="canvas-container">
                  <canvas id="c" width="960" height="540"></canvas> 
             </div>
- 
-<!--
-            <div class="btn-holder row mb-3">
-                <a href="javascript:show_cat_stars('{VIDEO_FILE}','{HD_STACK_FILE}','{SELECTED_CAL_PARAMS_FILE}', 'nopick')" class="col btn btn-primary"><i class="icon-star_catalog"></i> Stars Catalog</a>
-                <a href="javascript:reduce_meteor_ajax('{METEOR_JSON_FILE}','{CAL_PARAMS_FILE}')" class="col btn btn-primary"><i class="icon-reduce_meteor"></i> Reduce</a>
-                <a class="col btn btn-primary"><i class="icon-cog"></i> Minimize FOV</a>
-            </div>
--->
-            <div class="btn-holder row mb-3">
-               <!--frame by frame selector here?-->
-            </div>
-
+  
             <ul class="nav nav-tabs">
                 <li class="nav-item">
                     <a class="nav-link active" id="reduc-tab-l" data-toggle="tab" href="#reduc-tab" role="tab" aria-controls="reduction" aria-selected="true">Reduction</a>
@@ -34,108 +23,104 @@
                     <a class="nav-link" id="orbit-tab-l" data-toggle="tab" href="#orbit-tab" role="tab" aria-controls="orbit" aria-selected="false">Orbit</a>
                 </li>
             </ul>
-            <div class="tab-content box" >
-            <!-- main tab table-->
 
-                    <div class="tab-pane fade show active" id="reduc-tab" role="tabpanel" aria-labelledby="reduc-tab-l">
-{%RED_TABLE%}
-                            <table class="table table-dark table-striped table-hover td-al-m">
-                                    <thead>
-                                    </thead>
-                            </table>
+            <div class="tab-content box" > 
 
-                    </div>
+                <div class="tab-pane fade show active" id="reduc-tab" role="tabpanel" aria-labelledby="reduc-tab-l">
+                    {%RED_TABLE%}
+                </div>
 
-                    <div class="tab-pane fade" id="stars-tab" role="tabpanel" aria-labelledby="stars-tab-l">
-{%STAR_TABLE%}
+                <div class="tab-pane fade" id="stars-tab" role="tabpanel" aria-labelledby="stars-tab-l">
+                    {%STAR_TABLE%}
+                </div> 
 
-                            <table class="table table-dark table-striped table-hover td-al-m">
-                                    <thead>
-                                    </thead>
-                            </table>
+                <div class="tab-pane fade" id="plots-tab" role="tabpanel" aria-labelledby="plots-tab-l">
+                    {%PLOTS_TABLE%}
+                </div> 
 
+                <div class="tab-pane fade" id="trajectory-tab" role="tabpanel" aria-labelledby="trajectory-tab-l">
+                    {%TRAJECTOR Y_TABLE%}
+                </div> 
 
-                    </div> 
-
-                    <div class="tab-pane fade" id="plots-tab" role="tabpanel" aria-labelledby="plots-tab-l">
-{%PLOTS_TABLE%}
-                    </div> 
-
-
-                    <div class="tab-pane fade" id="trajectory-tab" role="tabpanel" aria-labelledby="trajectory-tab-l">
-{%TRAJECTORY_TABLE%}
-                    </div> 
-
-                    <div class="tab-pane fade" id="orbit-tab" role="tabpanel" aria-labelledby="orbit-tab-l">
-{%PLOTS_TABLE%}
-                    </div> 
-
+                <div class="tab-pane fade" id="orbit-tab" role="tabpanel" aria-labelledby="orbit-tab-l">
+                    {%PLOTS_TABLE%}
+                </div> 
 
             </div>
  
         </div>
 
         <div class="flex-fixed-r-canvas h-100">
-             
-            <div class="box">
-                <h2>Meteor Info</h2>
-                <dl class="row mb-0">
-                    <dt class="col-6">Start Time</dt>  		<dd class="col-6">{EVENT_START_TIME}</dd>
-                    <dt class="col-6">Duration</dt>  	<dd class="col-6">{EVENT_DURATION}</dd>
-                    <dt class="col-6">Magnitude</dt> 			    <dd class="col-6">{EVENT_MAGNITUDE}</dd>
-                </dl>
-
-            </div>
-
-
-            <div class="box">
-                    <h2>Calibration & Reduction</h2>
-                    <p class="mb-1">Load a calibration</p>
-                    <select class="custom-select" onchange="javascript:goto('/mnt/ams2/meteors/2019_05_19/2019_05_19_08_26_51_000_010037-trim0378.mp4', this.options[selectedIndex].value ,'reduce')" name="cal_param_file">
-                        <option value="/mnt/ams2/cal/freecal/2019_05_13_07_14_40_000_010037/2019_05_13_07_14_40_000_010037-stacked-calparams.json">2019-05-13 07:14:40 (6.050 days diff)</option>
-                        <option value="/mnt/ams2/cal/freecal/2019_05_13_07_14_40_000_010037/2019_05_13_07_14_40_000_010037-stacked-calparams.json">2019-05-13 07:14:40 (6.050 days diff)</option>
-                    </select>
-                    <p class="mb-1"></p>
-                   <a href="javascript:update_red_info_ajax('{VIDEO_FILE}')"><i class="icon-star_catalog"></i> - Update Page Info</A> <BR>
-                   <a href="javascript:show_cat_stars('{VIDEO_FILE}','{HD_STACK_FILE}','{SELECTED_CAL_PARAMS_FILE}', 'nopick')" ><i class="icon-star_catalog"></i> - Show/Save Stars</A> <BR>
-                   <a href="javascript:reduce_meteor_ajax('{METEOR_JSON_FILE}','{CAL_PARAMS_FILE}', 'nopick')" ><i class="icon-star_catalog"></i> - Reduce Meteor</A> <BR>
-                   <a href="javascript:reduce_meteor_ajax('{METEOR_JSON_FILE}','{CAL_PARAMS_FILE}')', 'nopick')" ><i class="icon-star_catalog"></i> - Minimize FOV</A> <BR>
-                   <a href="javascript:reduce_meteor_ajax('{METEOR_JSON_FILE}','{CAL_PARAMS_FILE}')', 'nopick')" ><i class="icon-star_catalog"></i> - Manualy Reduce</A> <BR>
-                   <a href="javascript:reduce_meteor_ajax('{METEOR_JSON_FILE}','{CAL_PARAMS_FILE}')', 'nopick')" ><i class="icon-star_catalog"></i> - Show Grid</A> <BR>
-
-
-            </div> 
-
-
-            <div class="box">
-                <h2>Zoom</h2>
-                <div class="btn-holder row mt-1"> 
-                        <!--<a id="show_grid" class="col btn btn-secondary mt-0 mb-0"><i class="icon-grid"></i> <span>Show Grid</span></a>-->
-                        <a id="show_zoom" class="col btn btn-secondary mt-0 mb-0"><i class="icon-zoom"></i> <span>Show Zoom</span></a>
-                </div>
-            </div>
-           
 
             <div class="canvas_zoom_holder mb-3">
                     <div id="canvas_zoom_target"><img src="./dist/img/target.svg"/></div>
                     <div id="canvas_pointer_info"></div>
                     <div id="canvas_zoom"></div>
             </div>
-            
+             
+            <div class="box">
+                <h2>Meteor Info</h2>
+                <dl class="row mb-0">
+                    <dt class="col-6">Start Time</dt>   <dd class="col-6">{EVENT_START_TIME}</dd>
+                    <dt class="col-6">Duration</dt>  	<dd class="col-6">{EVENT_DURATION}</dd>
+                    <dt class="col-6">Magnitude</dt>    <dd class="col-6">{EVENT_MAGNITUDE}</dd>
+                </dl>
+            </div>
 
-
+            <div class="box">
+                    <h2>Calibration &amp; Reduction</h2>
+                    <p class="mb-1">Load a calibration parameters</p>
+                    <select class="custom-select" onchange="javascript:goto('/mnt/ams2/meteors/2019_05_19/2019_05_19_08_26_51_000_010037-trim0378.mp4', this.options[selectedIndex].value ,'reduce')" name="cal_param_file">
+                        <option value="/mnt/ams2/cal/freecal/2019_05_13_07_14_40_000_010037/2019_05_13_07_14_40_000_010037-stacked-calparams.json">2019-05-13 07:14:40 (6.050 days diff)</option>
+                        <option value="/mnt/ams2/cal/freecal/2019_05_13_07_14_40_000_010037/2019_05_13_07_14_40_000_010037-stacked-calparams.json">2019-05-13 07:14:40 (6.050 days diff)</option>
+                    </select>
+                    <div id="reduc_info" class="mt-3">
+                        <span class="star_counter_holder"><span id="star_counter"></span> star<span id="star_s"></span> added</span>
+                        <a id="update_stars" class="col btn btn-primary disabled"><i class="icon-star_catalog"></i> Update Star List</a>
+                    </div>
+                    <!--
+                        <p class="mb-1"></p>
+                    <a href="javascript:update_red_info_ajax('{VIDEO_FILE}')"><i class="icon-star_catalog"></i> - Update Page Info</A> <BR>
+                    <a href="javascript:show_cat_stars('{VIDEO_FILE}','{HD_STACK_FILE}','{SELECTED_CAL_PARAMS_FILE}', 'nopick')" ><i class="icon-star_catalog"></i> - Show/Save Stars</A> <BR>
+                    <a href="javascript:reduce_meteor_ajax('{METEOR_JSON_FILE}','{CAL_PARAMS_FILE}', 'nopick')" ><i class="icon-star_catalog"></i> - Reduce Meteor</A> <BR>
+                    <a href="javascript:reduce_meteor_ajax('{METEOR_JSON_FILE}','{CAL_PARAMS_FILE}')', 'nopick')" ><i class="icon-star_catalog"></i> - Minimize FOV</A> <BR>
+                    <a href="javascript:reduce_meteor_ajax('{METEOR_JSON_FILE}','{CAL_PARAMS_FILE}')', 'nopick')" ><i class="icon-star_catalog"></i> - Manualy Reduce</A> <BR>
+                    <a href="javascript:reduce_meteor_ajax('{METEOR_JSON_FILE}','{CAL_PARAMS_FILE}')', 'nopick')" ><i class="icon-star_catalog"></i> - Show Grid</A> <BR>
+                        -->
+            </div> 
 
             <div class="box">
                 <h2>Media</h2>
                 <div class="d-flex">
-                    <div class="flex-fill pr-2"><a class="img-link" href="{HD_STACK}"><img src="./dist/img/img_hd.svg" title="HD Image" class="img-fluid"></a></div>
-                    <div class="flex-fill pr-2"><a class="img-link" href="{SD_STACK}"><img src="./dist/img/img_sd.svg" title="SD Image" class="img-fluid"></a></div>
-                    <div class="flex-fill pr-2"><a class="img-link" href="{HALF_STACK}"><img src="./dist/img/img_hstack.svg" title="Half Stack Image" class="img-fluid"></a></div>
-                    <div class="flex-fill pr-2"><a class="vid-link" href="{HD_VIDEO}"><img src="./dist/img/vid_hd.svg" title="HD Video" class="img-fluid"></a></div>
-                    <div class="flex-fill"><a class="vid-link" href="{SD_VIDEO}"><img src="./dist/img/vid_sd.svg" title="SD Video" class="img-fluid"></a></div>
+                        <div class="flex-fill pr-2">
+                            <a style="background:url({HD_STACK})" class="img-link d-block" href="{HD_STACK}">
+                                <img src="./dist/img/img_hd.svg"/>
+                            </a>
+                        </div>
+                        <div class="flex-fill pr-2">
+                            <a style="background:url({SD_STACK})" class="img-link d-block" href="{SD_STACK}">
+                                <img src="./dist/img/img_sd.svg"/>
+                            </a>
+                        </div>
+                        <div class="flex-fill pr-2">
+                            <a style="background:url({HALF_STACK})" class="img-link d-block" href="{HALF_STACK}">
+                                <img src="./dist/img/img_hstack.svg"/>
+                            </a>
+                        </div>
+                        <div class="flex-fill pr-2">
+                            <a style="background:url({HD_VIDEO})" class="vid-link d-block" href="{HD_VIDEO}">
+                                <img src="./dist/img/vid_hd.svg"/>
+                            </a>
+                        </div>
+                        <div class="flex-fill">
+                            <a style="background:url({SD_VIDEO})" class="vid-link d-block" href="{SD_VIDEO}"></a>
+                                <img src="./dist/img/vid_sd.svg"/>
+                            </a>
+                        </div> 
                 </div>
             </div> 
 
+            <!--
             <div class="box">
                 <h2>Observations </h2> 
                 <dl class="row mb-0">
@@ -151,16 +136,17 @@
                     <dd class="col-6">Monte Carlo</dd>
                 </dl>
             </div>
+            -->
 
 
         </div>
 </div>
 
+<!--
 <div id="star_list_old"></div> 
-
+-->
 <script>
-window.onload = function () {
-   update_red_info_ajax('{VIDEO_FILE}')
-}
-
+    window.onload = function () {
+        update_red_info_ajax('{VIDEO_FILE}');
+    }
 </script>

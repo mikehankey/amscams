@@ -1,23 +1,19 @@
+
 <!doctype html>
 <html lang="en-US">
 <head>
 
     <meta charset="UTF-8">
-    <title>American Meteor Society Camera Network</title>
+    <title>AMS Video Meteor Program</title>
     <meta content="American Meteor Society Camera Network" name="description">
     <meta content="meteor shower, meteor, fireball, meteorite, video, detection, reduction, asteroid, meteoroid" name="keywords">
     <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-
-    <!-- (see gulpfile.js > css) -->
-    <link rel="stylesheet" href="./dist/css/main.css"/>
  
-
-{JQ}
-    
+    <link rel="stylesheet" href="./dist/css/main.css"/>
+    {JQ}
 </head>
 <body>
-
 <center>
 <div id="ex1" class="modal">
 <video autoplay id="v1" loop controls src="">
@@ -25,7 +21,6 @@
 </div>
 </center>
 
-{TOP}    
 <nav class="navbar navbar-expand-lg navbar-dark bg-dark"> 
     
     <a class="navbar-brand clearfix" href="/pycgi/webUI.py" title="Home">  
@@ -47,29 +42,33 @@
             <li class="nav-item"><a class="nav-link" href="/pycgi/webUI.py?cmd=config"> Config</a></li>
         </ul>
     </div>
-
 </nav>
+{TOP}
 {BODY}
  
-<!--FOOTER -->
 <div id="footer">
     &copy; American Meteor Society / AllSkycams.com
 </div>
-<!-- DATA -->
- 
 
-<!-- Other scripts (see gulpfile.js > js) -->
-<script src="./dist/js/amscam.min.js"></script>
-
-<!-- Should be combined and minified -->
-<script src="./src/js/functions/reject_meteor.js?{RAND}"></script>
-<script src="./src/js/rightClick.js?{RAND}"></script>
-<script src="./src/js/mikes/reduct_buttons.js?{RAND}"></script>
-<script src="./src/js/mikes/goto.js?{RAND}"></script>
-<center>
 {BOTTOMNAV}
 {EXTRA_HTML}
-</center>
+<script src="./dist/js/amscam.min.js"></script> 
+
+<!-- TODO: combined and minified -->
+<script src="./src/js/plugins/fabric.js"></script>
+<script src="./src/js/ui/canvas-interactions.js"></script>
+ 
+<script src="./src/js/mikes/freecal-ajax.js?c=dez"></script> 
+<script src="./src/js/mikes/goto.js"></script>
+
+<script src="./src/js/ui/display_buttons.js"></script>
+
+<script src="./src/js/functions/delete_frame.js"></script>
+<script src="./src/js/functions/select_meteor.js"></script>
+<script src="./src/js/functions/reject_meteor.js"></script>
+<!--
+-->
+
 
 </body>
 </html>
