@@ -2839,7 +2839,7 @@ def reduce_meteor_new(json_conf,form):
    <table class="table table-dark table-striped table-hover td-al-m mb-0" >
       <thead>
          <tr>
-            <th></th><th>#</th><th>Time</th><th>X/Y - W/H</th><th>Max PX</th><th>RA/DEC</th><th>AZ/EL</th><th></th>
+            <th></th><th>#</th><th>Time</th><th>X/Y - W/H</th><th>Max PX</th><th>RA/DEC</th><th>AZ/EL</th><th></th><th></th>
          </tr>
       </thead>
    """
@@ -2859,7 +2859,7 @@ def reduce_meteor_new(json_conf,form):
 
       fr_id = "fr_row" + str(fn)
       cmp_img_url = prefix  + str(fn) + ".png"
-      cmp_img = "<img src=" + cmp_img_url + " class=\"img-fluid\">"
+      cmp_img = "<img width=\"50\" height=\"50\" src=" + cmp_img_url + " class=\"img-fluid select_meteor\">"
 
       del_frame_link = "javascript:del_frame('" + str(fn) + "','" + meteor_json_file +"')"
 
@@ -2873,9 +2873,10 @@ def reduce_meteor_new(json_conf,form):
         <td>{:s}</td>
         <td>{:s}</td>
         <td>{:s}</td>
-        <td><a href="{:s}"><i class="icon-delete"></i></a></td>
+        <td><a class="btn btn-danger btn-sm delete_frame"><i class="icon-delete"></i></a></td>
+        <td><a class="btn btn-success btn-sm select_meteor"><i class="icon-target"></i></a></td>
       </tr>
-   """.format(str(fn), str(cmp_img ), str(fn), str(frame_time),str(xy_wh), str(max_px),str(ra_dec),str(az_el),str(del_frame_link))
+   """.format(str(fn), str(cmp_img ), str(fn), str(frame_time),str(xy_wh), str(max_px),str(ra_dec),str(az_el))
    red_table = red_table + table_bottom 
    frame_javascript = ""
 
