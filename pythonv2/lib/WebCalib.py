@@ -2767,6 +2767,11 @@ def reduce_meteor_new(json_conf,form):
       else:
          template = template.replace("{EVENT_OBS_TOTAL}", "1 Station 1 Cam")
 
+   else:
+      template = template.replace("{EVENT_START_TIME}", "pending reduction")
+      template = template.replace("{EVENT_DURATION}", "pending reducetion")
+      template = template.replace("{EVENT_MAGNITUDE}", "pending reduction")
+
    if reduced == 1:
       #print(meteor_reduced.keys())
       sd_video_file = meteor_reduced['sd_video_file']
