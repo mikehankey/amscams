@@ -103,6 +103,7 @@ def cal_index(json_conf):
 def hd_cal_index(json_conf):
    freecal_dirs = glob.glob("/mnt/ams2/cal/hd_images/*")
    cal_files = {}
+   cam_day_sum = {}
    for fc in freecal_dirs:
 
       if cfe(fc, 1) == 1:
@@ -110,12 +111,14 @@ def hd_cal_index(json_conf):
             os.system("mkdir " + fc + "/thumbs/")
          day_dir = fc.split("/")[-1]
          cal_files[day_dir] = {}
+         if day_dir not in cam_day_sum:
+            cam_day_sum[day_dir] = {}
 
          # TEMP one time jobs here for batch fixing things.
          # will run command on every hdcal file in archive.
 
          #cmd = "./autoCal.py scan_hd_images " + day_dir
-         cmd = "./autoCal.py batch_hd_fit " + day_dir
+         cmd = "./autoCal.py batch_hd_fit " + day_dir + " cfit"
          os.system(cmd)
          #print(cmd)
          #exit()
@@ -126,21 +129,57 @@ def hd_cal_index(json_conf):
 
             if cam_id not in cal_files[day_dir]:
                cal_files[day_dir][cam_id] = {}
+            if cam_id not in cam_day_sum[day_dir]:
+               cam_day_sum[day_dir][cam_id] = {}
+               cam_day_sum[day_dir][cam_id]['files_with_stars'] = 0
+               cam_day_sum[day_dir][cam_id]['files_without_stars'] = 0
+               cam_day_sum[day_dir][cam_id]['total_res_px_for_night'] = 0
+               cam_day_sum[day_dir][cam_id]['total_res_deg_for_night'] = 0
+               cam_day_sum[day_dir][cam_id]['avg_res_px_for_night'] = 0
+               cam_day_sum[day_dir][cam_id]['avg_res_deg_for_night'] = 0
+               cam_day_sum[day_dir][cam_id]['total_stars_tracked_for_night'] = 0
+               cam_day_sum[day_dir][cam_id]['avg_res_px_for_night'] = 0
+               cam_day_sum[day_dir][cam_id]['avg_res_deg_for_night'] = 0
+
             cal_files[day_dir][cam_id][imf] = {}
             if cfe(cal_file) == 0:
                print("NONE:", cal_file )
             else:
                print("CP:", cal_file)
                cp = load_json_file(cal_file)
+
+               cp['cat_image_stars'] = remove_dupe_cat_stars(cp['cat_image_stars'])
+
                cal_files[day_dir][cam_id][imf]['center_az'] = cp['center_az']
                cal_files[day_dir][cam_id][imf]['center_el'] = cp['center_el']
                cal_files[day_dir][cam_id][imf]['position_angle'] = cp['position_angle']
                cal_files[day_dir][cam_id][imf]['pixscale'] = cp['pixscale']
+
+               #if cp['total_res_px'] != 9999 and cp['total_res_deg'] != 9999:
+               #   cal_files[day_dir][cam_id][imf]['total_res_px'] = cp['total_res_px']
+               #   cal_files[day_dir][cam_id][imf]['total_res_deg'] = cp['total_res_deg']
+               #elif "total_res_px" not in cal_files[day_dir][cam_id][imf]:
+               #   cal_files[day_dir][cam_id][imf]['total_res_px'] = 0 
+               #   cal_files[day_dir][cam_id][imf]['total_res_px'] = cp['total_res_px']
+               #   cal_files[day_dir][cam_id][imf]['total_res_deg'] = cp['total_res_deg']
+               #   cal_files[day_dir][cam_id][imf]['total_res_deg'] = 0 
                cal_files[day_dir][cam_id][imf]['total_res_px'] = cp['total_res_px']
-               cal_files[day_dir][cam_id][imf]['total_res_deg'] = cp['total_res_deg']
+               if len(cp['cat_image_stars']) > 0:
+                  cal_files[day_dir][cam_id][imf]['total_res_deg'] = cp['total_res_deg']
+               else:
+                  cal_files[day_dir][cam_id][imf]['total_res_deg'] = 0
+                  cal_files[day_dir][cam_id][imf]['total_res_px'] = 0
+
                cal_files[day_dir][cam_id][imf]['total_stars'] = len(cp['cat_image_stars'])
                cal_files[day_dir][cam_id][imf]['cat_image_stars'] = cp['cat_image_stars']
                print ("RES:", imf, cal_files[day_dir][cam_id][imf]['total_res_deg'] )
+               if len(cp['cat_image_stars']) > 0 and cp['total_res_deg'] != 9999:
+                  cam_day_sum[day_dir][cam_id]['files_with_stars'] = cam_day_sum[day_dir][cam_id]['files_with_stars'] + 1
+                  cam_day_sum[day_dir][cam_id]['total_res_px_for_night'] = cam_day_sum[day_dir][cam_id]['total_res_px_for_night'] + cp['total_res_px'] 
+                  cam_day_sum[day_dir][cam_id]['total_res_deg_for_night'] = cam_day_sum[day_dir][cam_id]['total_res_deg_for_night'] + cp['total_res_deg']
+                  cam_day_sum[day_dir][cam_id]['total_stars_tracked_for_night'] = cam_day_sum[day_dir][cam_id]['total_stars_tracked_for_night'] + len(cp['cat_image_stars'])
+               else:
+                  cam_day_sum[day_dir][cam_id]['files_without_stars'] = cam_day_sum[day_dir][cam_id]['files_without_stars'] + 1
 
             if "-tn" not in imf:
                tn = imf.replace(".png", "-tn.png")
@@ -153,6 +192,11 @@ def hd_cal_index(json_conf):
                   cmd = "mv " + tn + " " + new_tn
                   os.system(cmd)
                   print(cmd)
+            if cam_day_sum[day_dir][cam_id]['files_with_stars'] > 0:
+               cam_day_sum[day_dir][cam_id]['avg_res_px_for_night'] = cam_day_sum[day_dir][cam_id]['total_res_px_for_night'] / cam_day_sum[day_dir][cam_id]['files_with_stars']
+               cam_day_sum[day_dir][cam_id]['avg_res_deg_for_night'] = cam_day_sum[day_dir][cam_id]['total_res_deg_for_night'] / cam_day_sum[day_dir][cam_id]['files_with_stars']
+
+   save_json_file("/mnt/ams2/cal/hd_images/hd_cal_index-cam-day-sum.json", cam_day_sum)
    save_json_file("/mnt/ams2/cal/hd_images/hd_cal_index.json", cal_files)
 
 def save_cal(starfile, master_cal_file, json_conf):
@@ -263,6 +307,7 @@ def multi_merge(all_stars, json_conf, day_dir, show = 0):
 
 def clean_pairs(merged_stars, inc_limit = 5):
    
+   merged_stars_orig = sorted(merged_stars, key=lambda x: x[19], reverse=False)
    merged_stars = sorted(merged_stars, key=lambda x: x[19], reverse=False)
 
    multi = 0
@@ -302,7 +347,7 @@ def clean_pairs(merged_stars, inc_limit = 5):
       for key in dupe_check:
          ix, iy = key.split(".")
          dupe_dist = calc_dist((int(ix),int(iy)),(six,siy))
-         if dupe_dist < 5 and dupe_dist != 0:
+         if dupe_dist < 0 and dupe_dist != 0 and dupe_dist < std_dev_dist :
             dist_check = dist_check + 1
             print("STAR DUPE DIST:", cam_id, six,siy,ix,iy,dupe_dist)
          
@@ -2154,16 +2199,19 @@ def make_hd_images(day, json_conf, mod=15):
          else:
             print("skip already done.")
 
-def batch_hd_fit(day,json_conf):
-   procs = 2
+def batch_hd_fit(day,json_conf,scmd):
+   procs = 24
    day_dir = "/mnt/ams2/cal/hd_images/" + day + "/"
    files = glob.glob(day_dir + "*calparams.json")
    jobs1 = []
    jobs2 = []
    jobs3 = []
    for file in files:
-      cmd = "./autoCal.py cfit_hdcal " + file + " 0"
-      #cmd = "./autoCal.py imgstars " + file + " 0"
+      if scmd == 'cfit':
+         cmd = "./autoCal.py cfit_hdcal " + file + " 0"
+      if scmd == 'imgstars':
+         cmd = "./autoCal.py imgstars " + file + " 0"
+      
       jobs1.append(cmd)
 
    jc = 0
@@ -2171,6 +2219,7 @@ def batch_hd_fit(day,json_conf):
       while (check_running("autoCal.py")) > procs:       
          #print("Waiting to run some jobs...")
          time.sleep(1)
+      print("JOB:", job)
       os.system(job + " &")
       jc = jc + 1
    jc = 0
@@ -2401,6 +2450,7 @@ if cmd == 'star_res':
    print("RES:", res)
 
 if cmd == 'imgstars':
+   print("IMGSTARS")
    meteor_mode = 0
    if len(sys.argv) == 4:
       show = int(sys.argv[3])
@@ -2453,7 +2503,13 @@ if cmd == 'imgstars':
             print("no more saving cal stars for this file since they have been manually selected.")
          print("Try to use cal params:", cal_params_file)
    else:
-      meteor_json = load_json_file(meteor_json_file)
+      print(meteor_json_file)
+      try:
+         meteor_json = load_json_file(meteor_json_file)
+      except:
+         print("Corrupt file:", meteor_json_file)
+         os.system("rm " + meteor_json_file)
+         exit()
       meteor_json_file_red = meteor_json_file
       cal_params = meteor_json
       file = meteor_json_file.replace("-calparams.json", "-stacked.png")
@@ -2515,21 +2571,19 @@ if cmd == 'imgstars':
    # failure loop
    if good_perc < .05 and res_err > 8:
       print("Problem here. Let's clean up. try again...", meteor_json_file )
-      del meteor_json['cal_params']  
+      if 'cal_params' in meteor_json:
+         del meteor_json['cal_params']  
       meteor_json['deleted_tries']  = 1
       meteor_json['tried_cal'] = []
 
       if "tried_cal" in meteor_json:
          if len(meteor_json['tried_cal']) < 4 and "deleted_tries" not in meteor_json:
-            cmd = "./autoCal.py imgstars " + meteor_json_file + " 0"
+            #cmd = "./autoCal.py imgstars " + meteor_json_file + " 0"
             print(cmd)
-            os.system(cmd)
-      #else:
-      #   meteor_json['tried_cal'] = []
-      #add back cal params
+            #os.system(cmd)
+
       meteor_json['cal_params'] = cal_params  
       if "manual_update" not in cal_params:
-         print("SAVING CAL_P:", cal_params['manual_update'])
          save_json_file(meteor_json_file_red, meteor_json)
       else: 
          print("no more saving cal stars for this file since they have been manually selected.")
@@ -2602,11 +2656,19 @@ if cmd == 'imgstars':
 
 if cmd == 'batch_hd_fit':
    date = sys.argv[2]
-   print("BHD:", date)
-   batch_hd_fit(date, json_conf)
+   if len(sys.argv) == 4:
+      scmd = sys.argv[3]
+   else:
+      scmd = "imgstars"
+   print(scmd)
+   batch_hd_fit(date, json_conf, scmd)
 
 if cmd == 'scan_hd_images':
    date = sys.argv[2]
+   if date == "today":
+      day = datetime.datetime.today().strftime('%Y_%m_%d')
+      print(day)
+
    scan_hd_images(date, json_conf)
 if cmd == 'make_hd_images':
    date = sys.argv[2]
@@ -2614,6 +2676,8 @@ if cmd == 'make_hd_images':
       day = datetime.datetime.today().strftime('%Y_%m_%d')
       print(day)
    make_hd_images(day, json_conf)
+   if date == "today":
+      scan_hd_images(day, json_conf)
 
 if cmd == 'night_cal':
    date = sys.argv[2]

@@ -480,6 +480,7 @@ def hd_cal_detail(json_conf, form):
    cal_params_file = hd_stack_file.replace("-stacked.png", "-calparams.json")
    video_file = hd_stack_file.replace("-stacked.png", ".mp4")
    ci = load_json_file("/mnt/ams2/cal/hd_images/hd_cal_index.json")
+   cp = load_json_file(cal_params_file)
 
    half_stack_file = cfile.replace("-stacked", "-half-stack")
    print(half_stack_file)
@@ -505,6 +506,11 @@ def hd_cal_detail(json_conf, form):
       <P>&nbsp;</P>
       <P>&nbsp;</P>
    """)
+   for star in cp['cat_image_stars']:
+      (dcname,mag,ra,dec,img_ra,img_dec,match_dist,new_x,new_y,img_az,img_el,new_cat_x,new_cat_y,six,siy,cat_dist) = star
+
+      print(ra,dec, "<BR>") 
+
 
    js_html = """
      <script>
@@ -542,13 +548,49 @@ def hd_cal_index(json_conf, form):
    print("<h1>Auto Calibration Index</h1>")
    print("<div style=\"padding: 5px; margin: 5px; clear:both\"  >")
    ci = load_json_file("/mnt/ams2/cal/hd_images/hd_cal_index.json")
+   cam_day_sum = load_json_file("/mnt/ams2/cal/hd_images/hd_cal_index-cam-day-sum.json")
+   print("""
+   <script>
+      function show_hide(div_id) {
+         var x = document.getElementById(div_id);
+         if (x.style.display === "none") {
+            x.style.display = "block";
+            x.style.visibility= "visible";
+         } else {
+            x.style.display = "none";
+            x.style.visibility= "hidden";
+         }
+      }
+   </script>
+   """)
+
+   print("<table border=1 cellpadding=5 cellspacing=5>")
+   print("<tr><th>Date</th><th>Cam</th><th>Images w/ Stars</th><th>Images w/o Stars</th><th>Total Stars For Night</th><th>Avg Res Px For Night</th><th>Avg Res Deg For Night</th></tr>")
    for day in sorted(ci,reverse=True):
-      print("<div style=\"padding: 5px; margin: 5px; clear:both\"  >")
-      print("<h2>" + str(day) + "</h2></div>")
+      #print("<div style=\"padding: 5px; margin: 5px; clear:both\"  >")
+      #print("<h2>" + str(day) + "</h2></div>")
       for cam_id in sorted(ci[day],reverse=False):
-         print("<div style=\"padding: 5px; margin: 5px; clear:both\"  >")
-         print("<h4>" +  " Cam: " + str(cam_id) + "</h4></div>")
-         
+         #print("<div style=\"padding: 5px; margin: 5px; clear:both\"  >")
+
+            #"files_with_stars": 8,
+            #"files_without_stars": 2,
+            #"total_res_px_for_night": 26.89815024073073,
+            #"total_res_deg_for_night": 1.1729207442987446,
+            #"avg_res_px_for_night": 0,
+            #"avg_res_deg_for_night": 0,
+            #"total_stars_tracked_for_night": 53
+         if "files_with_stars" in cam_day_sum[day][cam_id]:
+            desc = str(cam_day_sum[day][cam_id]['files_with_stars']) + " files with stars / "
+            desc = desc + str(cam_day_sum[day][cam_id]['files_without_stars']) + " files without stars "
+         else:
+            desc = ""
+         div_id = str(day) + "." + str(cam_id)
+         show_link = "<a href=\"javascript:show_hide('" + div_id + "')\">"
+         print("<tr ><td>{:s}</td><td>{:s}{:s}</a></td><td>{:s}</td><td>{:s}</td><td>{:s}</td><td>{:s}</td><td>{:s}</td></tr>".format(
+         str(day), show_link, str(cam_id), str(cam_day_sum[day][cam_id]['files_with_stars']), str(cam_day_sum[day][cam_id]['files_without_stars']), str(cam_day_sum[day][cam_id]['total_stars_tracked_for_night']), str(cam_day_sum[day][cam_id]['avg_res_px_for_night'])[0:5],str(cam_day_sum[day][cam_id]['avg_res_deg_for_night'])[0:5])
+         )
+          
+         print("<tr ><td colspan=7><div id='" + div_id + "' style='display: none;' > ")
          for cfile in sorted(ci[day][cam_id], reverse=True):
             if "total_res_deg" in ci[day][cam_id][cfile]:
                trd = ci[day][cam_id][cfile]['total_res_deg']
@@ -563,7 +605,9 @@ def hd_cal_index(json_conf, form):
             tn = "/mnt/ams2/cal/hd_images/" + day + "/thumbs/" + fn 
             tn = tn.replace(".png", "-tn.png")
             detail_link = "webUI.py?cmd=hd_cal_detail&cfile=" + cfile
-            print("<figure style=\"float:left\"><a href=" + detail_link + "><img src=" + tn + " width=144 height=81></a><figcaption>" + str(ts) + " " + str(trp)[0:5] + "," + str(trd)[0:5] + "</figcaption></figure>")
+            print("<figure style=\"float:left; \"><a href=" + detail_link + "><img src=" + tn + " width=144 height=81></a><figcaption>" + str(ts) + " " + str(trp)[0:5] + "," + str(trd)[0:5] + "</figcaption></figure>")
+         print("</td></tr> ")
+   print("</div></table>")
    print("</div>")
 
 def calibration(json_conf,form):

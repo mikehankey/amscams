@@ -218,9 +218,8 @@ def minimize_poly_params_fwd(merged_stars, json_conf,orig_ra_center=0,orig_dec_c
    new_merged_stars = []
    for star in updated_merged_stars:
       (cal_file,ra_center,dec_center,pos_angle,pixscale,dcname,mag,ra,dec,img_ra,img_dec,match_dist,new_x,new_y,img_az,img_el,new_cat_x,new_cat_y,six,siy, img_res) = star
-      if img_res < std_dev_dist:
-      #if True:
-         print("bad_star:", img_res)
+      #if img_res < std_dev_dist:
+      if True:
          new_merged_stars.append(star)
    print("AVG RES:", res)
    print("OLD MERGED STARS:", len(merged_stars))
