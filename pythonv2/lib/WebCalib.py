@@ -2528,6 +2528,9 @@ def update_red_info_ajax(json_conf, form):
             (box_min_x,box_min_y,box_max_x,box_max_y) = define_crop_box(mr['meteor_frame_data'])
             rsp['crop_box'] = (box_min_x,box_min_y,box_max_x,box_max_y)
             mr['crop_box'] = rsp['crop_box']
+      rsp['status'] = 1
+   else: 
+      rsp['status'] = 0
          
 
    print(json.dumps(rsp))
@@ -2818,10 +2821,10 @@ def reduce_meteor_new(json_conf,form):
             stars_table  + stars_table + "</tbody> </table>"
          else:
             fin_a_cal = 1
-   
    if reduced == 0:
       meteor_reduced = {}
       meteor_reduced['meteor_frame_data'] = []
+   stars_table = stars_table + "</tbody></table>";
    # RED TABLE
 
    table_top = """
@@ -2898,18 +2901,30 @@ def reduce_meteor_new(json_conf,form):
        var hd_stack_file = '""" + hd_stack_file + """'
        var az_grid_file = '""" + az_grid_file + """'
        var meteor_json_file = '""" + meteor_json_file + """'
+       var main_vid = '""" + sd_video_file + """'
       var stars = [];
      </script>
-     <script src="./dist/js/amscam.min.js?" + rand + "></script>
-     <script src="./src/js/plugins/fabric.js?a"></script>
-     <script src="./src/js/ui/canvas-interactions.js?" + rand + "></script>
-     <script src="./src/js/mikes/freecal-ajax.js?" + rand + "></script>
      <!--<script src="./src/js/mikes/freecal-canvas.js?" + rand + "></script>-->
-     <div hidden>
-      <img id='""" + half_stack_file + """' id='half_stack_file'>
-      <img id='""" + az_grid_file + """' id='az_grid_file'>
-      <img id='""" + half_stack_file + """' id='meteor_img'>
-     </div> """
+
+     <!-- Other scripts (see gulpfile.js > js) -->
+     <!-- <script src="./dist/js/amscam.min.js"></script> -->
+
+     <!-- Should be combined and minified -->
+<!--
+     <script src="./src/js/plugins/fabric.js"></script>
+ 
+     <script src="./src/js/mikes/goto.js"></script>
+
+     <script src="./src/js/ui/display_buttons.js"></script>
+     <script src="./src/js/ui/canvas-interactions.js?asd"></script>
+     <script src="./src/js/ui/frame_anim.js"></script>
+     <script src="./src/js/mikes/freecal-ajax.js?c=dez2"></script> 
+-->
+<!--
+     <script src="./src/js/functions/delete_frame.js"></script>
+     <script src="./src/js/functions/select_meteor.js"></script>
+-->
+   """
 
    return(js_html)
 
@@ -3070,6 +3085,7 @@ def reduce_meteor(json_conf,form):
       <img id='""" + half_stack_file + """' id='half_stack_file'>
       <img id='""" + az_grid_file + """' id='az_grid_file'>
       <img id='""" + half_stack_file + """' id='meteor_img'>
+      <img id='""" + half_stack_file + """' id='my_image'>
      </div> """
 
    meteor_reduced['half_stack'] = half_stack_file
