@@ -170,21 +170,19 @@ def minimize_poly_params_fwd(merged_stars, json_conf,orig_ra_center=0,orig_dec_c
       y_poly_fwd = temp['y_poly_fwd'] 
       x_poly = temp['x_poly'] 
       y_poly = temp['y_poly'] 
+      strict = 1
    else:
       x_poly = np.zeros(shape=(15,), dtype=np.float64)
       y_poly = np.zeros(shape=(15,), dtype=np.float64)
       x_poly_fwd = np.zeros(shape=(15,), dtype=np.float64)
       y_poly_fwd = np.zeros(shape=(15,), dtype=np.float64)
+      strict = 0
    cal_params['x_poly'] = x_poly
    cal_params['y_poly'] = y_poly
    cal_params['x_poly_fwd'] = x_poly_fwd
    cal_params['y_poly_fwd'] = y_poly_fwd
 
    res,updated_merged_stars = reduce_fit(x_poly, "x_poly",merged_stars,cal_params,fit_img,json_conf,cam_id,1,show)
-   if res < .5:
-      strict = 1 
-   else:
-      strict = 0
    print("INITIAL RES: ", res, strict)
    if strict == 0: 
       xa = 100
@@ -207,19 +205,18 @@ def minimize_poly_params_fwd(merged_stars, json_conf,orig_ra_center=0,orig_dec_c
       dist_list.append(img_res)
    std_dev_dist = np.std(dist_list)
    if strict == 1:
-      std_dev_dist = std_dev_dist * 1.5
+      std_dev_dist = std_dev_dist * .5
    else:
       std_dev_dist = std_dev_dist * 2
-   if std_dev_dist < 2:
-      std_dev_dist = 2
+   if std_dev_dist < 1:
+      std_dev_dist = 1 
 
 
    c = 0
    new_merged_stars = []
    for star in updated_merged_stars:
       (cal_file,ra_center,dec_center,pos_angle,pixscale,dcname,mag,ra,dec,img_ra,img_dec,match_dist,new_x,new_y,img_az,img_el,new_cat_x,new_cat_y,six,siy, img_res) = star
-      #if img_res < std_dev_dist:
-      if True:
+      if img_res < std_dev_dist:
          new_merged_stars.append(star)
    print("AVG RES:", res)
    print("OLD MERGED STARS:", len(merged_stars))

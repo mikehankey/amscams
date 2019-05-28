@@ -27,6 +27,25 @@ from lib.UtilLib import calc_dist,find_angle
 import lib.brightstardata as bsd
 from lib.DetectLib import eval_cnt
 
+def master_merge(tcam_id):
+   print("CAM ID:", tcam_id)
+   master_merge = []
+   freecal_dirs = glob.glob("/mnt/ams2/cal/hd_images/*")
+   cal_files = {}
+   cam_day_sum = {}
+   for fc in freecal_dirs:
+      if cfe(fc, 1) == 1:
+         merge_file = fc + "/starmerge-" + tcam_id + ".json"
+         print(merge_file)
+         if cfe(merge_file) == 1:
+            merge_data = load_json_file(merge_file)
+            (f_datetime, cam_id, f_date_str,fy,fm,fd, fh, fmin, fs) = convert_filename_to_date_cam(merge_file)
+            master_merge = master_merge + merge_data
+
+   save_json_file("/mnt/ams2/cal/hd_images/master_merge_" + tcam_id + ".json", master_merge)
+
+
+
 def cal_index(json_conf):
    # BUILD FREE CAL INDEX
 
@@ -2081,6 +2100,7 @@ def night_cal(date,json_conf, show=0):
    day_dir = "/mnt/ams2/cal/hd_images/" + date + "/"
    cal_files = glob.glob(night_dir) 
    merge_stars = {}
+   cam_centers = {}
    for meteor_file in cal_files:
       md = load_json_file(meteor_file)
       (f_datetime, cam_id, f_date_str,fy,fm,fd, fh, fmin, fs) = convert_filename_to_date_cam(meteor_file)
@@ -2097,7 +2117,6 @@ def night_cal(date,json_conf, show=0):
          name,mag,ra,dec,img_ra,img_dec,match_dist,new_cat_x,new_cat_y,img_az,img_el,new_cat_x,new_cat_y,ix,iy, img_res = star
          print(cam_id, meteor_file)
          merge_stars[cam_id][meteor_file].append((meteor_file,md['ra_center'],md['dec_center'],md['position_angle'],md['pixscale'],name,mag,ra,dec,img_ra,img_dec,match_dist,new_cat_x,new_cat_y,img_az,img_el,new_cat_x,new_cat_y,ix,iy, img_res))
-
 
    cc = 0
 
@@ -2691,6 +2710,9 @@ if cmd == 'night_sum':
    if len(sys.argv) == 4:
       show = int(sys.argv[3])
    night_sum(date, json_conf, show)
+if cmd == 'master_merge':
+   cam_id = sys.argv[2]
+   master_merge(cam_id)
 
 if cmd == 'meteor_cal':
    date = sys.argv[2]

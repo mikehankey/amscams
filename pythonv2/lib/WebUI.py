@@ -767,7 +767,7 @@ def meteors(json_conf,form):
 
       print(html_out)
    print("<div style='clear: both'></div>")
-   print("<script>var stars = [];</script>")
+   print("<script>var stars = []; var az_grid_file = '';</script>")
 
 
 

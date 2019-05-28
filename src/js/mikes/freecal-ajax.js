@@ -146,16 +146,17 @@ function update_red_info_ajax(video_file) {
             });
            text_p.setColor('rgba(255,255,255,.75)')
            canvas.add(text_p)
-
-           star_desc = "Total Stars :" + cat_stars.length
-           var text_p = new fabric.Text(star_desc, {
-              fontFamily: 'Arial',
-              fontSize: 10,
-              left: 5 ,
-              top: 20
-           });
-           text_p.setColor('rgba(255,255,255,.75)')
-           canvas.add(text_p)
+           if (typeof cat_stars != 'undefined') {
+              star_desc = "Total Stars :" + cat_stars.length
+              var text_p = new fabric.Text(star_desc, {
+                 fontFamily: 'Arial',
+                 fontSize: 10,
+                 left: 5 ,
+                 top: 20
+              });
+              text_p.setColor('rgba(255,255,255,.75)')
+              canvas.add(text_p)
+           }
 
 
 
