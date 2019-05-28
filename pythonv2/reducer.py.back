@@ -1,0 +1,710 @@
+#!/usr/bin/python3
+import time
+import glob
+import os
+import math
+import cv2
+import math
+import numpy as np
+import scipy.optimize
+from fitMulti import minimize_poly_params_fwd
+from lib.VideoLib import get_masks, find_hd_file_new, load_video_frames
+from lib.UtilLib import check_running
+
+from lib.ImageLib import mask_frame , stack_frames
+
+#import matplotlib.pyplot as plt
+import sys
+#from caliblib import distort_xy,
+from lib.CalibLib import distort_xy_new, find_image_stars, distort_xy_new, XYtoRADec, radec_to_azel, get_catalog_stars,AzEltoRADec , HMS2deg, get_active_cal_file, RAdeg2HMS, clean_star_bg
+from lib.UtilLib import calc_dist, find_angle, bound_cnt, cnt_max_px
+
+from lib.UtilLib import angularSeparation, convert_filename_to_date_cam, better_parse_file_date
+from lib.FileIO import load_json_file, save_json_file, cfe
+from lib.UtilLib import calc_dist,find_angle
+import lib.brightstardata as bsd
+from lib.DetectLib import eval_cnt
+json_conf = load_json_file("../conf/as6.json")
+
+def best_fit_slope_and_intercept(xs,ys):
+    xs = np.array(xs, dtype=np.float64)
+    ys = np.array(ys, dtype=np.float64)
+    m = (((np.mean(xs)*np.mean(ys)) - np.mean(xs*ys)) /
+         ((np.mean(xs)*np.mean(xs)) - np.mean(xs*xs)))
+
+    b = np.mean(ys) - m*np.mean(xs)
+
+    return m, b
+
+
+def cleanup_json_file(mf):
+
+   if "close_stars" in mf['cal_params']:
+      del mf['cal_params']['close_stars']
+   if "cat_stars" in mf['cal_params']:
+      del mf['cal_params']['cat_stars']
+   if "fov_poly" in mf['cal_params']:
+      del mf['cal_params']['fov_poly']
+   if "pos_poly" in mf['cal_params']:
+      del mf['cal_params']['pos_poly']
+   if "user_stars" in mf['cal_params']:
+      del mf['cal_params']['user_stars']
+   if "api_key" in mf:
+      del mf['api_key']
+
+
+   return(mf)
+
+def define_crop_box(mfd):
+   temp = sorted(mfd, key=lambda x: x[2], reverse=False)
+   min_x = temp[0][2]
+   temp = sorted(mfd, key=lambda x: x[2], reverse=True)
+   max_x = temp[0][2]
+   temp = sorted(mfd, key=lambda x: x[3], reverse=False)
+   min_y = temp[0][3]
+   temp = sorted(mfd, key=lambda x: x[3], reverse=True)
+   max_y = temp[0][3]
+   w = max_x - min_x 
+   h = max_y - min_y
+   if w > h:
+      h = w
+   else:
+      w = h
+   if w < 100 and h < 100:
+      w = 100
+      h = 100
+
+   print(w,h)
+   if w % 2 != 0:
+      w = w + 1
+   sz = int(w/2) + 50
+
+   cx = int(min_x + ((max_x - min_x) / 2))
+   cy = int(min_y + ((max_y - min_y) / 2))
+   box_min_x = cx - sz
+   box_min_y = cy - sz
+   box_max_x = cx + sz
+   box_max_y = cy + sz
+   if box_min_x < 0: 
+      mox_max_x = box_max_x + abs(box_min_x)
+      box_min_x = 0
+   if box_min_y < 0: 
+      mox_max_y = box_max_y + abs(box_min_y)
+      box_min_y = 0
+   
+
+   return(box_min_x,box_min_y,box_max_x,box_max_y)
+   
+
+def check_cnt_bounds(hd_x1, hd_y1, hd_x2, hd_y2 ):
+   if hd_x1 < 0:
+      hd_x2 = hd_x2 + (hd_x1*-1)
+      hd_x1 = 0
+   if hd_y1 < 0:
+      hd_y2 = hd_y2 + (hd_y1*-1)
+      hd_y1 = 0
+   if hd_x2 > 1920:
+      hd_x2 = 1920 -1
+   if hd_y2 > 1080:
+      hd_y2 = 1080-1
+   return(hd_x1, hd_y1, hd_x2, hd_y2)
+
+
+def setup_json_frame_data(mfd):
+   # establish initial first x,y last x,y
+   fx = mfd[0][2]
+   fy = mfd[0][3]
+   lx = mfd[-1][2]
+   ly = mfd[-1][3]
+
+   dir_x = fx - lx
+   dir_y = fx - ly
+   if dir_x < 0:
+      x_dir_mod = 1
+   else:
+      x_dir_mod = -1
+   if dir_y < 0:
+      y_dir_mod = 1
+   else:
+      y_dir_mod = -1
+
+
+   # establish first frame number, last frame number and total frames
+   ff = mfd[0][1]
+   lf = mfd[-1][1]
+   tf = lf - ff
+   tf = tf + 1
+
+   # establish initial line distance and x_incr
+   line_dist = calc_dist((fx,fy),(lx,ly))
+   x_incr = int(line_dist / (tf ))
+
+   metframes = {}
+   etime = 0
+   for i in range(0,tf):
+      fi = i + ff
+      metframes[fi] = {}
+      if i > 0:
+         etime = i / 25
+      else:
+         etime = 0
+      metframes[fi]['etime'] = etime
+      metframes[fi]['fn'] = fi
+      metframes[fi]['ft'] = 0
+      metframes[fi]['hd_x'] = 0
+      metframes[fi]['hd_y'] = 0
+      metframes[fi]['w'] = 0
+      metframes[fi]['h'] = 0
+      metframes[fi]['max_px'] = 0
+      metframes[fi]['ra'] = 0
+      metframes[fi]['dec'] = 0
+      metframes[fi]['az'] = 0
+      metframes[fi]['el'] = 0
+   xs = []
+   ys = []
+   for fd in mfd:
+      frame_time, fn, hd_x,hd_y,w,h,max_px,ra,dec,az,el = fd
+      fi = fn
+      xs.append(hd_x)
+      ys.append(hd_y)
+      metframes[fi]['fn'] = fi
+      metframes[fi]['ft'] = frame_time
+      metframes[fi]['hd_x'] = hd_x
+      metframes[fi]['hd_y'] = hd_y
+      metframes[fi]['w'] = w
+      metframes[fi]['h'] = h
+      metframes[fi]['max_px'] = max_px
+      metframes[fi]['ra'] = ra
+      metframes[fi]['dec'] = dec
+      metframes[fi]['az'] = az
+      metframes[fi]['el'] = el
+   metconf = {}
+   metconf['xs'] = xs
+   metconf['ys'] = ys
+   metconf['fx'] = fx
+   metconf['fy'] = fy
+   metconf['lx'] = lx
+   metconf['ly'] = ly
+   metconf['tf'] = tf
+   metconf['line_dist'] = line_dist
+   metconf['x_incr'] = x_incr
+   metconf['x_dir_mod'] = x_dir_mod
+   metconf['y_dir_mod'] = y_dir_mod
+   
+   return(metframes, metconf )
+
+def play_meteor(metframes,frames, metconf):
+   if "med_seg_len" in metconf:
+      med_seg_len = metconf['med_seg_len']
+      m = metconf['m']
+      b = metconf['b']
+      x_dir_mod = metconf['x_dir_mod']
+   else:
+      med_seg_len = None
+
+   fx = None
+   fy = None
+   last_x = None
+   last_y = None
+   last_fn = None
+   last_max_px = None
+   max_val = None
+   len_from_start = 0
+   len_from_last = 0
+   len_segs = []
+   peak_br = 0
+   confirmed_last_frame = None
+   no_motion = 0 
+   len_diff = 0
+   px_diff = 0
+   bdiff = 0
+   new_metframes = {}
+   for fn in metframes:
+      new_metframes[fn] = metframes[fn]
+      hd_x = metframes[fn]['hd_x']
+      hd_y = metframes[fn]['hd_y']
+
+      # load and resize image
+      img = frames[fn]
+      work_img = img.copy()
+      img2 = cv2.resize(img, (1920,1080))
+      img2 = cv2.cvtColor(img2,cv2.COLOR_GRAY2RGB)
+      work_img = cv2.resize(work_img, (1920,1080))
+
+      if fx is None: 
+         fx = hd_x
+         fy = hd_y
+         ff = fn 
+      if fx is not None and (hd_x != 0 and hd_y != 0) :
+         len_from_start = calc_dist((fx,fy),(hd_x,hd_y))
+      else: 
+         len_from_start = 0
+      if last_x is not None and (hd_x != 0 and hd_y != 0) :
+         len_from_last = calc_dist((last_x,last_y),(hd_x,hd_y))
+         elp_fr = fn - last_fn 
+         len_from_last = len_from_last / elp_fr
+         len_segs.append(len_from_last)
+      else: 
+         len_from_last = 0
+
+      if len(len_segs) > 2:
+         if len(len_segs) >= 4:
+            last_four =np.median(len_segs[-4:])
+            xs =metconf['xs']
+            ys =metconf['ys']
+            sxs = xs[-4:]
+            sys = ys[-4:]
+            m,b = best_fit_slope_and_intercept(sxs,sys)
+         else:
+            last_four = np.median(len_segs)
+
+      else:
+         last_four = med_seg_len
+ 
+      # only do this loop on the 2nd pass
+      if med_seg_len is not None and last_fn is not None:
+         elp_f = fn - last_fn
+
+          
+
+         if elp_f == 0:
+            est_x = fx 
+            est_y = fy 
+         else:           
+            # recalc m,b based on last 4 instead of global.
+
+            #est_x = int(last_x + x_dir_mod * (med_seg_len*elp_f))
+            est_x = int(last_x + x_dir_mod * (last_four*elp_f))
+            est_y = int((m*est_x)+b)
+         if confirmed_last_frame is None  :
+            # yellow est mark 
+            cv2.circle(img2,(est_x,est_y), 5, (0,255,255), 1)
+
+         # frame details are missing try to fix     
+         if hd_x == 0:
+            hd_y1 = est_y - 40
+            hd_y2 = est_y + 40
+            hd_x1 = est_x - 40
+            hd_x2 = est_x + 40
+            hd_x1, hd_y1, hd_x2, hd_y2 = check_cnt_bounds(hd_x1, hd_y1, hd_x2, hd_y2)
+            cv2.rectangle(img2, (hd_x1, hd_y1), (hd_x2, hd_y2), (128, 128, 128), 1)
+            cnt_img = work_img[hd_y1:hd_y2,hd_x1:hd_x2]
+            min_val, max_val, min_loc, (mx,my)= cv2.minMaxLoc(cnt_img)
+            px_diff = max_val - min_val
+            hd_x = hd_x1 + mx 
+            hd_y = hd_y1 + my 
+            if confirmed_last_frame is None and px_diff > 10:
+               new_metframes[fn]['hd_x'] = hd_x
+               new_metframes[fn]['hd_y'] = hd_y
+            else:
+               new_metframes[fn]['hd_x'] = 0
+               new_metframes[fn]['hd_y'] = 0
+
+            if px_diff > peak_br:
+               peak_br = px_diff 
+            if last_max_px is not None:
+               bdiff = px_diff / peak_br 
+               mdiff = max_val / min_val 
+
+            len_from_last = calc_dist((last_x,last_y),(hd_x,hd_y))
+            if last_four > 0:
+               len_diff = len_from_last / last_four
+            else:
+               len_diff = 0
+            #print("BDIFF:", fn, max_val, min_val, px_diff, bdiff, len_from_last, len_diff)
+            if confirmed_last_frame is None and len_diff < .2 and bdiff < .2 and no_motion == 0:
+               # EVENT IS OVER
+               confirmed_last_frame =  int(fn) - 1
+               #hd_x = 0
+               #hd_y = 0
+               new_metframes[fn]['hd_x'] = 0
+               new_metframes[fn]['hd_y'] = 0
+            if len_diff < .2 and bdiff < .2:
+               no_motion = no_motion + 1
+            if confirmed_last_frame is None :
+               # save new frame data here in metframes
+               # show small CNT
+               #cv2.circle(cnt_img,(mx,mx), 1, (255,255,255), 1)
+               desc = "MAX PX: " + str(max_val) + " " + str(mx) + "," + str(my) 
+               cv2.putText(img2, desc,  (5,15), cv2.FONT_HERSHEY_SIMPLEX, .4, (255, 255, 255), 1)
+ 
+               # green mark adjusted bright point
+               cv2.circle(img2,(hd_x,hd_y), 7, (0,255,0), 1)
+               cv2.imshow('pepe', cnt_img)
+         else:
+            if confirmed_last_frame is not None :
+               # This event is done, do not restart it up. 
+               print("Event is done.")
+               hd_x = 0
+               hd_y = 0
+               new_metframes[fn]['hd_x'] = 0
+               new_metframes[fn]['hd_y'] = 0
+            else: 
+               hd_y1 = hd_y - 40
+               hd_y2 = hd_y + 40
+               hd_x1 = hd_x - 40
+               hd_x2 = hd_x + 40
+               hd_x1, hd_y1, hd_x2, hd_y2 = check_cnt_bounds(hd_x1, hd_y1, hd_x2, hd_y2)
+               cv2.rectangle(img2, (hd_x1, hd_y1), (hd_x2, hd_y2), (128, 128, 128), 1)
+               cnt_img = work_img[hd_y1:hd_y2,hd_x1:hd_x2]
+               min_val, max_val, min_loc, (mx,my)= cv2.minMaxLoc(cnt_img)
+               px_diff = max_val - min_val
+               if max_val > px_diff:
+                  peak_br = px_diff 
+               if last_max_px is not None:
+                  bdiff = px_diff / peak_br 
+                  if last_four > 0:
+                     len_diff = len_from_last / last_four
+                  else:
+                     len_diff = 0
+                  print("BDIFF:", max_val, min_val, px_diff, bdiff, len_from_last, len_diff)
+                  if len_diff < .2 and bdiff < .2 and no_motion == 0:
+                     # EVENT IS OVER
+                     confirmed_last_frame =  int(fn) - 1
+                     no_motion = no_motion + 1
+                     #hd_x = 0
+                     #hd_y = 0
+                  else:
+                     no_motion = 0
+            if len_diff < .2 and bdiff < .2:
+               no_motion = no_motion + 1
+            # show small CNT
+            if confirmed_last_frame is None :
+               #cv2.circle(cnt_img,(mx,mx), 1, (255,255,255), 1)
+               #cv2.imshow('pepe', cnt_img)
+               desc = "MAX PX: " + str(max_val) + " " + str(mx) + "," + str(my)
+               cv2.putText(img2, desc,  (5,15), cv2.FONT_HERSHEY_SIMPLEX, .4, (255, 255, 255), 1)
+               #hd_x = hd_x1 + mx
+               #hd_y = hd_y1 + my
+               # GREEN image the actual point
+               #print("GREEN LAST FRAME:", confirmed_last_frame)
+               cv2.circle(img2,(hd_x,hd_y), 7, (0,255,0), 1)
+            else:
+               new_metframes[fn]['hd_x'] = 0
+               new_metframes[fn]['hd_y'] = 0
+
+
+      if confirmed_last_frame is not None:
+         hd_x = 0
+         hd_y = 0
+         new_metframes[fn]['hd_x'] = hd_x
+         new_metframes[fn]['hd_x'] = hd_y
+         new_metframes[fn]['ft'] = 0
+         new_metframes[fn]['w'] = 0
+         new_metframes[fn]['h'] = 0
+         new_metframes[fn]['max_px'] = 0
+         new_metframes[fn]['ra'] = 0
+         new_metframes[fn]['dec'] = 0
+         new_metframes[fn]['az'] = 0
+         new_metframes[fn]['el'] = 0
+      print("NO MOTION:", no_motion)      
+      print("CNFIRMED LAST FRAME:", confirmed_last_frame)      
+      print("FRAME DATA:", fn, hd_x, hd_y, len_from_start, len_from_last, len_diff, px_diff, bdiff)
+      if confirmed_last_frame is None :
+         cv2.circle(img2,(hd_x,hd_y), 5, (0,0,255), 1)
+
+      cv2.putText(img2, "FN:" + str(fn),  (5,50), cv2.FONT_HERSHEY_SIMPLEX, .4, (255, 255, 255), 1)
+      cv2.imshow('pepe2', img2)
+      if med_seg_len is None:
+         cv2.waitKey(1)
+      else:
+         cv2.waitKey(0)
+      if hd_x != 0 and hd_y != 0:
+         last_x = hd_x
+         last_y = hd_y
+         last_fn = fn
+         if max_val is not None:
+            last_max_px = max_val
+
+   print("Confirmed last frame is:", confirmed_last_frame)
+   metconf['med_seg_len'] = np.median(len_segs)
+
+   for frm in new_metframes:
+      print(frm, new_metframes[frm])
+
+   return(new_metframes, metconf)
+
+def fine_reduce(meteor_red_file):
+
+   #load reduction
+   mf = load_json_file (meteor_red_file)
+   mf = cleanup_json_file(mf) 
+
+   # open display windows
+   cv2.namedWindow('pepe')
+   cv2.namedWindow('pepe2')
+ 
+   # load frames
+   frames = load_video_frames(mf['sd_video_file'], json_conf)
+   mfd = mf['meteor_frame_data']
+
+   # define first crop box area
+   (min_x,min_y,max_x,max_y) = define_crop_box(mfd)
+
+   # load frame data into json struct
+
+   metframes, metconf = setup_json_frame_data (mfd)
+   xs = metconf['xs']
+   ys = metconf['ys']
+   fx = metconf['fx']
+   fy = metconf['fy']
+   lx = metconf['lx']
+   ly = metconf['ly']
+   tf = metconf['tf']
+   line_dist = metconf['line_dist']
+   x_incr = metconf['x_incr']
+   x_dir_mod = metconf['x_incr']
+   y_dir_mod = metconf['x_incr']
+
+
+   # check for median_len_seg
+   m,b = best_fit_slope_and_intercept(xs,ys)
+   metconf['m'] = m
+   metconf['b'] = b
+
+   if "med_seg_len" not in "mf":
+      metframes, metconf = play_meteor(metframes,frames,metconf)
+
+   metframes, metconf = play_meteor(metframes,frames,metconf)
+   metframes, metconf = play_meteor(metframes,frames,metconf)
+
+   exit()
+
+
+   # Remove erroneous frames at end of file
+   lc = 0
+   last_x = None
+   last_y = None
+   roll_mag =[]
+   bad_frames =[]
+   prev_dist = None
+
+   #ftx = last_x - (lc * x_incr)
+   #ry = int((m*ftx)+b)
+   
+
+   for fn in metframes:
+      hd_x = metframes[fn]['hd_x']
+      hd_y = metframes[fn]['hd_y']
+
+      if last_x is not None:
+         prev_dist = calc_dist((last_x,last_y),(hd_x,hd_y))
+         print("PREV DISTANCE: ", prev_dist)
+
+      max_px = metframes[fn]['max_px']
+      print(lc, hd_x, hd_y, line_dist, max_px)
+
+      img = frames[fn]
+      img2 = cv2.resize(img, (1920,1080))
+      img2 = cv2.cvtColor(img2,cv2.COLOR_GRAY2RGB)
+
+      hd_y1 = hd_y - 20
+      hd_y2 = hd_y + 20
+      hd_x1 = hd_x - 20
+      hd_x2 = hd_x + 20
+      if hd_x != 0:
+         hd_x1, hd_y1, hd_x2, hd_y2 = check_cnt_bounds(hd_x1, hd_y1, hd_x2, hd_y2)
+         cv2.circle(img2,(hd_x,hd_y), 1, (0,0,255), 1)
+         cnt_img = img2[hd_y1:hd_y2,hd_x1:hd_x2]
+         gray_cnt = cv2.cvtColor(cnt_img, cv2.COLOR_BGR2GRAY)
+         min_val, max_val, min_loc, (mx,my)= cv2.minMaxLoc(gray_cnt)
+         pxd = max_val - min_val
+         roll_mag.append(pxd)
+         mag_avg = np.mean(roll_mag)
+         new_x = hd_x1 + mx
+         new_y = hd_y1 + my
+
+         metframes[fn]['hd_x'] = new_x
+         metframes[fn]['hd_y'] = new_y
+
+         if mag_avg > 0:
+            mag_perc = pxd / mag_avg
+         else: 
+            mag_perc = 1 
+         if mag_perc < .33:
+            cv2.putText(cnt_img, "X",  (5,5), cv2.FONT_HERSHEY_SIMPLEX, .2, (0, 0, 255), 1)
+            bad_frames.append(fn)
+         else:
+            # HD_X = 0 / NO METEOR, TRY TO FIND BASED ON LAST SPOT
+            if last_x is not None:
+               print("LX: ", last_x, x_incr)
+               new_x = last_x + x_incr
+               new_y = int((m*new_x)+b)
+               hd_x = new_x
+               hd_y = new_y
+               hd_y1 = hd_y - 20
+               hd_y2 = hd_y + 20
+               hd_x1 = hd_x - 20
+               hd_x2 = hd_x + 20
+               hd_x1, hd_y1, hd_x2, hd_y2 = check_cnt_bounds(hd_x1, hd_y1, hd_x2, hd_y2)
+               cnt_img = img2[hd_y1:hd_y2,hd_x1:hd_x2]
+               gray_cnt = cv2.cvtColor(cnt_img, cv2.COLOR_BGR2GRAY)
+               min_val, max_val, min_loc, (mx,my)= cv2.minMaxLoc(gray_cnt)
+
+               cnew_x = hd_x1 + mx
+               cnew_y = hd_y1 + my
+               metframes[fn]['hd_x'] = new_x
+               metframes[fn]['hd_y'] = new_y
+               if confirmed_last_frame is None: 
+                  cv2.circle(cnt_img,(mx,my), 1, (0,255,0), 1)
+                  cv2.putText(cnt_img, str(pxd) + "/" + str(mag_avg),  (5,5), cv2.FONT_HERSHEY_SIMPLEX, .2, (255, 255, 255), 1)
+                  cv2.putText(cnt_img, "?" + str(mag_avg),  (5,10), cv2.FONT_HERSHEY_SIMPLEX, .4, (255, 255, 255), 1)
+
+         cv2.imshow('pepe', cnt_img)
+         cv2.imshow('pepe2', img2)
+
+         cv2.waitKey(0)
+         last_x = hd_x
+         last_y = hd_y
+      else:
+         if last_x is not None: 
+            ftx = last_x - (lc * x_incr)
+            ry = int((m*ftx)+b)
+            hd_y1 = ry - 20
+            hd_y2 = ry + 20
+            hd_x1 = ftx - 20
+            hd_x2 = ftx + 20
+            hd_x1, hd_y1, hd_x2, hd_y2 = check_cnt_bounds(hd_x1, hd_y1, hd_x2, hd_y2)
+            cv2.circle(img2,(hd_x,hd_y), 1, (0,0,255), 1)
+            cnt_img = img2[hd_y1:hd_y2,hd_x1:hd_x2]
+            gray_cnt = cv2.cvtColor(cnt_img, cv2.COLOR_BGR2GRAY)
+
+            min_val, max_val, min_loc, (mx,my)= cv2.minMaxLoc(gray_cnt)
+            new_x = mx + hd_x1
+            new_y = my + hd_y1
+            pxd = max_val - min_val
+            roll_mag.append(pxd)
+            mag_avg = np.mean(roll_mag)
+
+            if mag_avg > 0:
+               mag_perc = pxd / mag_avg
+            else: 
+               mag_perc = 1
+            if mag_perc < .33:
+               cv2.putText(cnt_img, "X",  (5,5), cv2.FONT_HERSHEY_SIMPLEX, .2, (0, 0, 255), 1)
+               bad_frames.append(fn)
+               metframes[fn]['hd_x'] = new_x
+               metframes[fn]['hd_y'] = new_y
+            else:
+               metframes[fn]['hd_x'] = ftx 
+               metframes[fn]['hd_y'] = ry
+               metframes[fn]['max_px'] = max_val
+               cv2.putText(cnt_img, str(pxd) + "/" + str(mag_avg),  (5,5), cv2.FONT_HERSHEY_SIMPLEX, .2, (255, 255, 255), 1)
+            
+            last_x = hd_x
+            last_y = hd_y
+            cv2.circle(cnt_img,(mx,my), 1, (0,255,0), 1)
+            cv2.imshow('pepe2', img2)
+            cv2.imshow('pepe', cnt_img)
+            cv2.waitKey(0)
+
+      lc = lc + 1
+
+
+   exit()
+   #DELETE BAD FRAMES
+   for bad_fn in bad_frames:
+      print("LINE DEL:", bad_fn)
+      del metframes[bad_fn] 
+
+   lc = 0
+   xs = []
+   ys = []
+   for fn in metframes:
+      if lc == 0:
+         ff = fn
+         fx = metframes[fn]['hd_x']
+         fy = metframes[fn]['hd_y']
+      lf = fn
+      lx = metframes[fn]['hd_x']
+      ly = metframes[fn]['hd_y']
+      xs.append(metframes[fn]['hd_x'])
+      ys.append(metframes[fn]['hd_y'])
+
+      lc = lc + 1
+
+   tf = lf - ff
+   #tf = tf + 1
+
+   line_dist = calc_dist((fx,fy),(lx,ly))
+   x_incr = int(line_dist / (tf))
+   print("LINE DIST:", line_dist, x_incr, lf, ff, tf)
+
+   m,b = best_fit_slope_and_intercept(xs,ys)
+
+   regression_line = []
+
+   ffn = mfd[0][1]
+   for fn in metframes:
+      cc = fn - ffn
+      frame_time = metframes[fn]['etime']
+      hd_x = metframes[fn]['hd_x']
+      hd_y = metframes[fn]['hd_y']
+      w = metframes[fn]['w']
+      h = metframes[fn]['h']
+      max_px = metframes[fn]['max_px']
+      ra = metframes[fn]['ra']
+      dec = metframes[fn]['dec']
+      az = metframes[fn]['az']
+      el = metframes[fn]['el']
+
+      img = frames[fn]
+      img2 = cv2.resize(img, (1920,1080))
+      img2 = cv2.cvtColor(img2,cv2.COLOR_GRAY2RGB)
+
+      tcc = 0
+      print("MIKE FR LEN:", len(metframes))
+      for tmp in metframes:
+         x = metframes[tmp]['hd_x']
+         y = metframes[tmp]['hd_y']
+         ftx = fx - (tcc * x_incr)
+         if x == 0:
+            x = ftx
+         ry = int((m*x)+b)
+         print("MIKEXY: ", fn, x,y, ftx, ry, ff, lf)
+         # BLUE 
+         cv2.circle(img2,(x,ry), 1, (255,0,0), 1)
+         cv2.putText(img2, str(tcc),  (ftx,ry-2), cv2.FONT_HERSHEY_SIMPLEX, .4, (255, 255, 255), 1)
+         cv2.circle(img2,(ftx,ry), 5, (238,128,0), 1)
+         #RED MARK
+         if fn < confirmed_last_frame:
+            cv2.circle(img2,(x,y), 5, (0,0,255), 1)
+         # GREEN
+         cv2.circle(img2,(fx,fy), 1, (0,255,0), 1)
+         cv2.circle(img2,(lx,ly), 1, (0,255,0), 1)
+         tcc = tcc + 1
+      
+
+      cv2.rectangle(img2, (min_x, min_y), (max_x, max_y), (128, 128, 128), 1)
+      cv2.rectangle(img2, (hd_x-10, hd_y-10), (hd_x+ 10, hd_y+ 10), (128, 128, 128), 1)
+      cv2.circle(img2,(hd_x,hd_y), 1, (0,0,255), 1)
+      crop_img = img2[min_y:max_y,min_x:max_x]
+      ch,cw,x = crop_img.shape
+      desc = str(cc) +" " + str(fn) + " " + str(frame_time)
+      cv2.putText(crop_img, desc,  (5,ch-5), cv2.FONT_HERSHEY_SIMPLEX, .4, (255, 255, 255), 1)
+      cv2.imshow('pepe', crop_img)
+      cv2.waitKey(0)
+
+   # rewrite meteor Frame data
+   new_mfd = []
+   for fi in metframes:
+      fn = metframes[fi]['fn'] 
+      ft = metframes[fi]['ft'] 
+      hd_x = metframes[fi]['hd_x'] 
+      hd_y = metframes[fi]['hd_y'] 
+      hd_w = metframes[fi]['w'] 
+      hd_h = metframes[fi]['h'] 
+      max_px = metframes[fi]['max_px'] 
+      ra = metframes[fi]['ra'] 
+      dec = metframes[fi]['dec'] 
+      az = metframes[fi]['az'] 
+      el = metframes[fi]['el'] 
+      new_mfd.append((frame_time, fn, hd_x,hd_y,w,h,max_px,ra,dec,az,el))
+   
+   mf['meteor_frame_data'] = new_mfd   
+   save_json_file(meteor_red_file, mf)
+   save_json_file("test.json", metframes)
+
+mrf = sys.argv[1]
+fine_reduce(mrf)
+

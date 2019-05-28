@@ -261,7 +261,7 @@ def controller(json_conf):
       exit()
 
 
-   print_css()
+   #print_css()
    jq = do_jquery()
    
    nav_html,bot_html = nav_links(json_conf,cmd)
@@ -970,7 +970,7 @@ def nav_links(json_conf, cmd):
          temp = nav_item_active.replace("{LINK}", "webUI.py?cmd=" + link) 
          temp = temp.replace("{DESC}", nav_links[link]) 
       nav = nav + temp 
-      bot_nav = bot_nav + "<a href=webUI.py?cmd=" + link + ">" + nav_links[link] + "</a>"
+      bot_nav = bot_nav + "<a href=\"webUI.py?cmd=" + link + "\">" + nav_links[link] + "</a>"
    
    return(nav, bot_nav)
 
@@ -1104,7 +1104,7 @@ def override_detect(video_file,jsid, json_conf):
 
 def examine(video_file):
    
-   print_css()
+   #print_css()
    print("<h1>Examine Trim File</h1>")
    el = video_file.split("/")
    fn = el[-1]
@@ -1397,7 +1397,7 @@ def print_css():
 def browse_day(day,cams_id,json_conf):
 
 
-   print_css()
+   #print_css()
 
    day_files = get_day_files(day,cams_id,json_conf)
    cc = 0
@@ -1431,7 +1431,7 @@ def browse_day(day,cams_id,json_conf):
       cc = cc + 1
 
 def browse_detects(day,type,json_conf):
-   print_css()
+   #print_css()
    proc_dir = json_conf['site']['proc_dir']
    failed_files, meteor_files, pending_files,min_files = get_day_stats(proc_dir + day + "/", json_conf)
    if type == 'meteor':
