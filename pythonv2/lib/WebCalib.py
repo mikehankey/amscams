@@ -2510,10 +2510,10 @@ def update_red_info_ajax(json_conf, form):
                max_res_px = float(max_res_px) + float(cat_dist )
                sc = sc + 1
             if len( mr['cal_params']['cat_image_stars']) > 0:
-               rsp['total_res_px'] = max_res_deg / sc
-               rsp['total_res_deg'] = (max_res_px / sc) / float(mr['cal_params']['pixscale'] )
-               mr['total_res_px'] = max_res_deg / sc
-               mr['total_res_deg'] = (max_res_px / sc ) / float(mr['cal_params']['pixscale'])
+               rsp['total_res_px'] = max_res_px/ sc
+               rsp['total_res_deg'] = (max_res_deg / sc) 
+               mr['total_res_px'] = max_res_px / sc
+               mr['total_res_deg'] = (max_res_deg  / sc ) 
 
 
          else:
