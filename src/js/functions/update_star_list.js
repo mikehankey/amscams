@@ -4,7 +4,8 @@ function update_cat_stars() {
         hd_stack_file:       hd_stack_file,     // Defined on the page
         cmd: 'show_cat_stars',                 
         cal_params_file:  $('#cal_param_selected').val(),   // The one selected 
-        type: typeof type !== 'undefined' ? type : 'nopick' // 'nopick' is the default option
+        type: typeof type !== 'undefined' ? type : 'nopick', // 'nopick' is the default option
+        points: ''
     }
  
     // Get user stars from array
