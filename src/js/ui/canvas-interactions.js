@@ -62,7 +62,7 @@ if ($('canvas#c').length!=0) {
   const render = canvas.renderAll.bind(canvas);
 
   // Loading Animation
-  loading(true);
+  loading();
 
   // Zoom
   function canvas_interactions() {

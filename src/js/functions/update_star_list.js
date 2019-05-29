@@ -22,7 +22,7 @@ function update_cat_stars() {
          }
     }); 
 
-    loading(true,'Updating star list');
+    loading({text:'Updating star list...'});
 
     // Remove All objects from Canvas
     remove_objects();

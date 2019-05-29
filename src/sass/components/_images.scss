@@ -6,4 +6,39 @@ img  {
         -webkit-box-shadow: none;
         box-shadow: none;
     }
+
+    &.ns {
+        box-shadow: none;
+        -webkit-box-shadow: none;
+    }
+}
+
+// Media Link
+// Popup links
+.img-link, .vid-link {
+    display: block;
+    background-size: contain!important;
+    display: block; 
+    padding-bottom: 56.5%;
+    position: relative;
+
+    img {
+        opacity: .65;
+        width: 85%;
+        position: absolute;
+        top: 5%;
+        left: 5%;
+        margin: 0;
+        box-shadow: none;
+        -webkit-box-shadow: none;
+    }
+
+    &:hover  {
+            opacity: 1;
+            img {
+                opacity: 1;
+            }
+    }
+
+
 }

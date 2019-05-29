@@ -1,0 +1,23 @@
+.modal-content {
+    background: #091b38;
+}
+
+.modal-footer { 
+    border:none;
+
+    .btn-primary {
+        background: transparent;
+    }
+}
+
+
+.error {
+    .modal-content {
+        background: #6e0a0a;
+    }
+
+    button.close {
+        color:#fff;
+    }
+ 
+}

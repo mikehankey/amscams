@@ -3,10 +3,12 @@
     -webkit-box-shadow: 0 2px 5px #000;
     box-shadow: 0 2px 5px #000;
     margin-bottom: .8rem;
+    z-index: 9;
+    visibility: hidden;
 
     #canvas_zoom {
         width: 100%;
-        height: 150px;
+        height: 248px;
     }   
 
     #canvas_pointer_info {
@@ -33,4 +35,8 @@
     }
 }
 
+
+.star_counter_holder {
+    visibility: hidden;
+}
                       

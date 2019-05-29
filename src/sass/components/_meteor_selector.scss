@@ -1,0 +1,45 @@
+#meteor_chooser_holder {
+    width: 400px;
+}
+
+.meteor_chooser {
+    width: 400px; /* x4 */ 
+    height: 400px;
+    background-size: contain;
+    cursor: crosshair;
+    position: relative;
+    overflow: hidden;
+    margin: 0 auto;
+    background-color:#111;
+    background-repeat: no-repeat;
+}
+
+#lh, #org_lh {
+    position: absolute;
+    left: 0;
+    top:50%;
+    width:400px;
+    height: 1px;
+    background:rgba(255,255,255,.3);
+    box-shadow: 0 0 1px rgba(0,0,0,1);
+}
+
+
+
+#lv,  #org_lv {
+    position: absolute;
+    top: 0;
+    left:50%;
+    width: 1px;
+    height: 400px;
+    background:rgba(255,255,255,.3);
+    box-shadow: 0 0 1px rgba(0,0,0,1);
+}
+
+#org_lh, #org_lv {
+    background:rgba(255,255,255,.1);
+}
+
+ .done #lh,  .done #lv { 
+    background:rgba(255,0,0,.5);
+}

@@ -1,0 +1,116 @@
+.gallery {
+
+    .preview {
+
+        img, .btn-toolbar, span  {
+            display: block;
+            -webkit-transition: all .3s ease;  
+            transition: all .3s ease;
+        }
+       
+
+        &:hover {
+            z-index: 99;
+
+           
+            span {
+                opacity:0;
+            }
+
+            img {
+                -webkit-box-shadow: 0 2px 5px #000;
+                box-shadow: 0 2px 5px #000;
+            } 
+
+            .btn-toolbar {
+                opacity: 1;
+            }
+        }
+    }
+
+    .preview {
+
+        margin-bottom:2rem;
+
+        img {  
+            border:3px solid transparent;
+            overflow: hidden;
+            
+            &:hover {
+                border-color: #000;
+            }
+        }
+
+        a.mtt:before {
+            position: absolute;
+            top: 1.2rem;
+            right: -2.5rem;
+            z-index: 9;
+            -webkit-transform: rotate(45deg);
+            transform: rotate(45deg);
+            font-weight: bold;
+            width: 150px;
+            text-align: center;
+        }
+
+        &.reduced {
+
+            a.mtt:before {
+                content: 'Reduced';
+                color: #f90;
+                background: #ff99003d;
+            }
+           
+        }
+        &.meteor {
+            a.mtt:before {
+                content: 'Meteor';
+                color: #21c419;
+                background:#00ff2d3d;
+            }
+           
+        }
+        &.fail {
+            a.mtt:before {
+                content: 'Fail';
+                color: #c00;
+                background: #ff00003d;
+            }
+        }
+
+        .btn-toolbar {
+            opacity: 0;
+        }
+
+        .btn-group {
+            margin: .2rem auto;
+            width: 100%;
+
+            .btn-secondary {
+                background:#061329;
+            }
+        }
+    }
+
+    a {
+        display: block;
+        position: relative;
+
+        &.mtt { 
+            overflow: hidden;
+        } 
+
+        span {
+            position: absolute;
+            bottom:0;
+            left:0;
+            right:0;
+            background:rgba(0,0,0,.3);
+            color:rgba(255,255,255,.65) !important;
+            padding: .2rem 0 .3rem;
+            font-size: .85rem;
+            text-align: center;
+        } 
+    }  
+}
+ 

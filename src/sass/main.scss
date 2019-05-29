@@ -51,10 +51,12 @@
 @import "./logo/animation"; 
 
 @import "./plugins/popup";
+@import "./plugins/jq.contextmenu";
 
 
-@import "./layout/body";
+@import "./layout/layout";
 
+@import "./components/modals";
 @import "./components/canvas";
 @import "./components/canvas_zoom";
 @import "./components/header"; 
@@ -64,3 +66,6 @@
 @import "./components/images"; 
 @import "./components/tabs";
 @import "./components/box"; 
+@import "./components/meteor_selector";
+@import "./components/anim_frame";
+@import "./components/gallery";

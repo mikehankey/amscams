@@ -3,7 +3,6 @@
 .canvas-container {
     position: relative;
     background: #111;
- 
 }
 
 canvas {
@@ -19,6 +18,11 @@ canvas {
     &#c {
         -webkit-box-shadow: 0 2px 5px #000;
         box-shadow: 0 2px 5px #000;
+        cursor: url(../img/target_cur.png) 20 20, auto !important;
+    }
+
+    &.upper-canvas  {
+        cursor: url(../img/target_cur.png) 20 20, auto !important;
     }
 
    
