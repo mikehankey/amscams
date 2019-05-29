@@ -6,7 +6,7 @@
                  <canvas id="c" width="960" height="540"></canvas> 
             </div>
   
-            <ul class="nav nav-tabs">
+            <ul class="nav nav-tabs mt-3">
                 <li class="nav-item">
                     <a class="nav-link active" id="reduc-tab-l" data-toggle="tab" href="#reduc-tab" role="tab" aria-controls="reduction" aria-selected="true">Reduction</a>
                 </li>
@@ -24,7 +24,7 @@
                 </li>
             </ul>
 
-            <div class="tab-content box" > 
+            <div class="tab-content box " > 
 
                 <div class="tab-pane fade show active" id="reduc-tab" role="tabpanel" aria-labelledby="reduc-tab-l">
                     {%RED_TABLE%}
@@ -62,11 +62,14 @@
                 <h2>Meteor Info</h2>
                 <dl class="row mb-0">
                     <dt class="col-6">Start Time</dt>   <dd class="col-6">{EVENT_START_TIME}</dd>
-                    <dt class="col-6">Duration</dt>  	<dd class="col-6">{EVENT_DURATION}</dd>
+                    <dt class="col-6">Duration</dt>  	<dd class="col-6" id="dur">{EVENT_DURATION}</dd>
                     <dt class="col-6">Magnitude</dt>    <dd class="col-6">{EVENT_MAGNITUDE}</dd>
                 </dl>
-            </div>
-
+                <div class="btn-holder row mt-1">
+			<a id="show_grid" class="col btn btn-secondary mt-0 mb-0"><i class="icon-grid"></i> <span>Show Grid</span></a>
+	 		<a id="play_anim" class="col btn btn-secondary mt-0 mb-0"><i class="icon-play"></i> <span>Thumbs Anim.</span></a> 
+		</div>
+	    </div>
             <div class="box">
                     <h2>Calibration &amp; Reduction</h2>
                     <p class="mb-1">Load a calibration parameters</p>
@@ -90,8 +93,9 @@
             <div class="box">
                 <h2>Media</h2>
                 <div class="d-flex">
-                        <div class="flex-fill pr-2">
-                            <a style="background:url({HD_STACK})" class="img-link d-block" href="{HD_STACK}">
+                       
+			 <div class="flex-fill pr-2">
+                            <a style="background:url({SD_STACK})" class="img-link d-block" href="{HD_STACK}">
                                 <img alt="" src="./dist/img/img_hd.svg"/>
                             </a>
                         </div>
@@ -101,17 +105,17 @@
                             </a>
                         </div>
                         <div class="flex-fill pr-2">
-                            <a style="background:url({HALF_STACK})" class="img-link d-block" href="{HALF_STACK}">
+                            <a style="background:url({SD_STACK})" class="img-link d-block" href="{HALF_STACK}">
                                 <img alt="" src="./dist/img/img_hstack.svg"/>
                             </a>
                         </div>
                         <div class="flex-fill pr-2">
-                            <a style="background:url({HD_VIDEO})" class="vid-link d-block" href="{HD_VIDEO}">
+                            <a style="background:url({SD_STACK})" class="vid-link d-block" href="{HD_VIDEO}">
                                 <img alt="" src="./dist/img/vid_hd.svg"/>
                             </a>
                         </div>
                         <div class="flex-fill">
-                            <a style="background:url({SD_VIDEO})" class="vid-link d-block" href="{SD_VIDEO}">
+                            <a style="background:url({SD_STACK})" class="vid-link d-block" href="{SD_VIDEO}">
                                 <img alt="" src="./dist/img/vid_sd.svg"/>
                             </a>
                         </div> 
