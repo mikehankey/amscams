@@ -321,7 +321,7 @@ def controller(json_conf):
    if cmd == 'calibrate_pic':
       calibrate_pic(json_conf, form)
    if cmd == 'hd_cal_index':
-      hd_cal_index(json_conf, form)
+      extra_html = hd_cal_index(json_conf, form)
    if cmd == 'hd_cal_detail':
       extra_html = hd_cal_detail(json_conf, form)
    if cmd == 'calib_hd_cal_detail':
@@ -522,9 +522,6 @@ def hd_cal_detail(json_conf, form):
      </script>
 
 
-     <script src='./src/js/mikes/freecal-ajax.js?"""  + str(rand) + """ '></script>
-     <script src="./src/js/plugins/fabric.js?a"></script>
-     <script src="./src/js/mikes/freecal-canvas.js?" + str(rand) + "></script>
      <div hidden>
       <img id='""" + half_stack_file + """' id='half_stack_file'>
       <img id='""" + az_grid_file + """' id='az_grid_file'>
@@ -532,11 +529,9 @@ def hd_cal_detail(json_conf, form):
      </div>  
 
       <script>
-        $(window).on('load', function() {
-            init_load('""" + str(cfile) + """')
-        });
-      //window.onload = function () {
-      //}
+      window.onload = function () {
+            init_load('""" + str(cfile) + """');
+      }
      </script>
    """
 
@@ -544,6 +539,8 @@ def hd_cal_detail(json_conf, form):
 
 
 def hd_cal_index(json_conf, form):
+
+
 
    print("<h1>Auto Calibration Index</h1>")
    print("<div style=\"padding: 5px; margin: 5px; clear:both\"  >")
@@ -609,6 +606,17 @@ def hd_cal_index(json_conf, form):
          print("</td></tr> ")
    print("</div></table>")
    print("</div>")
+   extra_html = """
+   <script>
+      var my_image = ''
+      var half_stack_file = ''
+      var az_grid_file = ''
+      var grid_by_default = false
+      var hd_stack_file = ''
+   </script>
+
+   """
+   return(extra_html)
 
 def calibration(json_conf,form):
    print("""
@@ -628,6 +636,7 @@ def calibration(json_conf,form):
          str(ci[cf]['pixscale'])[0:6], str(ci[cf]['x_fun'])[0:6], str(ci[cf]['y_fun'])[0:6], str(ci[cf]['x_fun_fwd'])[0:7], str(ci[cf]['y_fun_fwd'])[0:6]))
 
    print("</table></div>")
+
 
 
 def calibration_old(json_conf,form):

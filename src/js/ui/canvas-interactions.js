@@ -46,7 +46,10 @@ function update_user_stars(star) {
 
 
 // All interactions with the canvas are defined below
-if($('canvas#c').length!=0) {
+
+
+if ($('canvas#c').length!=0) {
+//&& (document.readyState === "complete")) {
 
   // Defined #c canvas
   var canvas = new fabric.Canvas('c', {

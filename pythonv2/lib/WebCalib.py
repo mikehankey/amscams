@@ -4009,6 +4009,9 @@ def free_cal(json_conf,form):
    js_html = """
    <script>
       var my_image = '""" + half_stack_file + """'
+      var half_stack_file = '""" + half_stack_file + """'
+      var az_grid_file = '""" + az_grid_file + """'
+      var grid_by_default = false
       var hd_stack_file = '""" + stack_file + """'
    </script>
    """.format(stack_file)
@@ -4044,16 +4047,10 @@ def free_cal(json_conf,form):
    print(canvas_html)
 
    extra_js = extra_js + """ 
-   <script src="./dist/js/amscam.min.js?a"></script>
-   <script src="./src/js/mikes/freecal-ajax.js?a"></script>
-   <script src="./src/js/plugins/fabric.js?a"></script>
-   <script src="./src/js/mikes/freecal-canvas.js?a"></script>
    """
  
 
    print(js_html)
-   #print("<script src=\"/js/freecal-canvas.js\"></script>")
-   #print("<script src=\"/js/freecal-ajax.js\"></script>")
    print(extra_js)
 
 

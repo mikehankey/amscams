@@ -324,8 +324,7 @@ def multi_merge(all_stars, json_conf, day_dir, show = 0):
       else:
          print("SKIPPING ALREADY DONE!")
 
-def clean_pairs(merged_stars, inc_limit = 5):
-   
+def clean_pairs(merged_stars, inc_limit = 5, show = 0):
    merged_stars_orig = sorted(merged_stars, key=lambda x: x[19], reverse=False)
    merged_stars = sorted(merged_stars, key=lambda x: x[19], reverse=False)
 
@@ -341,9 +340,7 @@ def clean_pairs(merged_stars, inc_limit = 5):
       (cal_file,ra_center,dec_center,position_angle,pixscale,dcname,mag,ra,dec,img_ra,img_dec,match_dist,new_x,new_y,img_az,img_el,new_cat_x,new_cat_y,six,siy, img_res) = star
       dist_list.append(img_res)
    std_dev_dist = np.std(dist_list) * 2 
-   print("STD:", std_dev_dist)
 
-   #std_dev_dist = std_dev_dist * 1.2 
    if std_dev_dist < 3:
       std_dev_dist = 3 
 
@@ -356,7 +353,6 @@ def clean_pairs(merged_stars, inc_limit = 5):
       cv2.imshow('pepe', img)
       cv2.waitKey(0)
 
-
    for star in merged_stars:
       (cal_file,ra_center,dec_center,position_angle,pixscale,dcname,mag,ra,dec,img_ra,img_dec,match_dist,new_x,new_y,img_az,img_el,new_cat_x,new_cat_y,six,siy, img_res) = star
       (f_datetime, cam_id, f_date_str,fy,fm,fd, fh, fmin, fs) = convert_filename_to_date_cam(cal_file)
@@ -366,7 +362,7 @@ def clean_pairs(merged_stars, inc_limit = 5):
       for key in dupe_check:
          ix, iy = key.split(".")
          dupe_dist = calc_dist((int(ix),int(iy)),(six,siy))
-         if dupe_dist < 0 and dupe_dist != 0 and dupe_dist < std_dev_dist :
+         if dupe_dist < 10 and dupe_dist != 0 and dupe_dist < std_dev_dist :
             dist_check = dist_check + 1
             print("STAR DUPE DIST:", cam_id, six,siy,ix,iy,dupe_dist)
          
@@ -2102,6 +2098,7 @@ def night_cal(date,json_conf, show=0):
    merge_stars = {}
    cam_centers = {}
    for meteor_file in cal_files:
+      print(meteor_file)
       md = load_json_file(meteor_file)
       (f_datetime, cam_id, f_date_str,fy,fm,fd, fh, fmin, fs) = convert_filename_to_date_cam(meteor_file)
       if cam_id not in merge_stars:
@@ -2219,7 +2216,7 @@ def make_hd_images(day, json_conf, mod=15):
             print("skip already done.")
 
 def batch_hd_fit(day,json_conf,scmd):
-   procs = 24
+   procs = json_conf['site']['procs']
    day_dir = "/mnt/ams2/cal/hd_images/" + day + "/"
    files = glob.glob(day_dir + "*calparams.json")
    jobs1 = []
@@ -2493,7 +2490,6 @@ if cmd == 'imgstars':
       if "cal_params" in meteor_json:
          cal_params = meteor_json['cal_params']
       else:
-         
          poss = get_active_cal_file(file)
          cal_params_file = poss[0][0]
          cal_params = load_json_file(cal_params_file)
@@ -2568,15 +2564,17 @@ if cmd == 'imgstars':
 
    fn = meteor_json_file.split("/")[-1]
    day_dir = meteor_json_file.replace(fn, "")
-   master_cal_file = day_dir + "/master_cal_file_" + cam_id + ".json"
+   master_cal_file = "/mnt/ams2/cal/hd_images/" + "/master_cal_file_" + cam_id + ".json"
    if cfe(master_cal_file) == 1:
-      #print("MASTER:", master_cal_file)
+      print("MASTER:", master_cal_file)
       mcf = load_json_file(master_cal_file)
       cal_params['x_poly'] = mcf['x_poly']
       cal_params['y_poly'] = mcf['y_poly']
       cal_params['x_poly_fwd'] = mcf['x_poly_fwd']
       cal_params['y_poly_fwd'] = mcf['y_poly_fwd']
 
+
+   print("XPOLY0:", cal_params['x_poly'][0])
    cat_image_stars, img, no_match, res_err, match_per,cp_data = get_stars_from_image(file, json_conf, masks, cal_params, show)
    cal_params['total_res_px'] = res_err
    cal_params['total_res_deg'] = ((float(res_err) * float(cal_params['pixscale'])) / 60) / 60
@@ -2603,7 +2601,10 @@ if cmd == 'imgstars':
 
       meteor_json['cal_params'] = cal_params  
       if "manual_update" not in cal_params:
-         save_json_file(meteor_json_file_red, meteor_json)
+         if meteor_mode == 1:
+            save_json_file(meteor_json_file_red, meteor_json)
+         else:
+            save_json_file(meteor_json_file_red, cal_params)
       else: 
          print("no more saving cal stars for this file since they have been manually selected.")
      
@@ -2697,6 +2698,11 @@ if cmd == 'make_hd_images':
    make_hd_images(day, json_conf)
    if date == "today":
       scan_hd_images(day, json_conf)
+   if date == "today":
+      batch_hd_fit(day, json_conf,'imgstars')
+      batch_hd_fit(day, json_conf,'cfit')
+   if date == "today":
+      hd_cal_index(json_conf)
 
 if cmd == 'night_cal':
    date = sys.argv[2]

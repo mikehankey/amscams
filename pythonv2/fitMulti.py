@@ -1,5 +1,5 @@
 #!/usr/bin/python3
-
+from lib.UtilLib import convert_filename_to_date_cam, haversine, calc_radiant
 import glob
 import os
 import math
@@ -124,9 +124,11 @@ def reduce_fit(this_poly,field, merged_stars, cal_params, fit_img, json_conf, ca
       return(avg_res, new_merged_stars)
 
 
-def minimize_poly_params_fwd(merged_stars, json_conf,orig_ra_center=0,orig_dec_center=0,cam_id=None,master_file=None,show=0):
+def minimize_poly_params_fwd(merged_stars, json_conf,orig_ra_center=0,orig_dec_center=0,cam_id=None,master_file=None,show=1):
    if len(merged_stars) < 50:
       return(0,0)
+   merged_stars = clean_pairs(merged_stars,5,show)
+
    cal_params = {}
    print("MS LEN:", len(merged_stars))
    if len(merged_stars) < 20:
@@ -155,7 +157,7 @@ def minimize_poly_params_fwd(merged_stars, json_conf,orig_ra_center=0,orig_dec_c
    simg = cv2.resize(this_fit_img, (960,540))
    if show == 1:
       cv2.imshow('pepe', simg)
-   cv2.waitKey(1)
+      cv2.waitKey(10)
 
 
    # do x poly 
@@ -205,9 +207,10 @@ def minimize_poly_params_fwd(merged_stars, json_conf,orig_ra_center=0,orig_dec_c
       dist_list.append(img_res)
    std_dev_dist = np.std(dist_list)
    if strict == 1:
-      std_dev_dist = std_dev_dist * .5
+      std_dev_dist = std_dev_dist * .8
+      std_dev_dist = 3
    else:
-      std_dev_dist = std_dev_dist * 2
+      std_dev_dist = std_dev_dist * 5
    if std_dev_dist < 1:
       std_dev_dist = 1 
 
@@ -370,6 +373,116 @@ if __name__ == "__main__":
    cal_params['merged_stars'] = merged_stars
    cal_params['merged_files'] = merged_files
    minimize_poly_params_fwd(merged_stars, cal_params_file, cal_params,json_conf,orig_ra_center,orig_dec_center,cam_id)
+
+def clean_pairs(merged_stars, inc_limit = 5,show=0):
+   updated_merged_stars = []
+   img = np.zeros((1080,1920),dtype=np.uint8)
+   #np_ms = np.empty(shape=[21,0])
+   np_ms = np.array([[0,0,0,0,0]])
+   #print(np_ms.shape)
+   ms_index = {}
+   for star in merged_stars:
+      (cal_file,ra_center,dec_center,position_angle,pixscale,dcname,mag,ra,dec,img_ra,img_dec,match_dist,new_x,new_y,img_az,img_el,new_cat_x,new_cat_y,six,siy, img_res) = star
+      #np_ms = np.append(np_ms, [[cal_file,ra_center,dec_center,position_angle,pixscale,dcname,mag,ra,dec,img_ra,img_dec,match_dist,new_x,new_y,img_az,img_el,new_cat_x,new_cat_y,six,siy, img_res]],axis=0 )
+      ms_key = str(ra) + ":" + str(dec) + ":" + str(six) + ":" + str(siy)
+      ms_index[ms_key] = star
+      np_ms = np.append(np_ms, [[ra,dec,six,siy,img_res]],axis=0 )
+   gsize = 25 
+   for w in range(0,1920):
+      for h in range(0,1080):
+         if (w == 0 and h == 0) or (w % gsize == 0 and h % gsize == 0):
+            x1 = w
+            x2 = w + gsize
+            y1 = h
+            y2 = h + gsize
+            if x2 > 1920:
+               x2 = 1920
+            if y2 > 1080:
+               y2 = 1080
+            cv2.rectangle(img, (int(x1), int(y1)), (int(x2) , int(y2) ), (50, 50, 50), 1)
+            matches = (np_ms[np.where((np_ms[:,2] > x1) & (np_ms[:,2] < x2) & (np_ms[:,3] > y1) & (np_ms[:,3] < y2)      )  ])
+            if len(matches) > 0:
+               matches = sorted(matches, key=lambda x: x[4], reverse=False)
+               match = matches[0]
+               key = str(match[0]) + ":" + str(match[1]) + ":" + str(int(match[2])) + ":" + str(int(match[3]))
+               info = ms_index[key]
+               print("MATCH:", key, info)
+
+               (cal_file,ra_center,dec_center,position_angle,pixscale,dcname,mag,ra,dec,img_ra,img_dec,match_dist,new_x,new_y,img_az,img_el,new_cat_x,new_cat_y,six,siy, img_res) = info 
+               updated_merged_stars.append((cal_file,ra_center,dec_center,position_angle,pixscale,dcname,mag,ra,dec,img_ra,img_dec,match_dist,new_x,new_y,img_az,img_el,new_cat_x,new_cat_y,six,siy, img_res))
+               cv2.rectangle(img, (new_x-2, new_y-2), (new_x + 2, new_y + 2), (255), 1)
+               cv2.line(img, (six,siy), (new_x,new_y), (255), 1)
+               cv2.circle(img,(six,siy), 5, (255), 1)
+
+            else:   
+               print("No match for grid square :(")
+   show = 1
+   if show == 1:
+      cv2.imshow('pepe', img)
+      cv2.waitKey(0)
+
+   return(updated_merged_stars)
+
+def clean_pairs_old(merged_stars, inc_limit = 5,show=0):
+   merged_stars_orig = sorted(merged_stars, key=lambda x: x[19], reverse=False)
+   merged_stars = sorted(merged_stars, key=lambda x: x[19], reverse=False)
+
+   multi = 0
+   good_merge = []
+   print("TOTAL MERGED STARS:", len(merged_stars))
+   img = np.zeros((1080,1920),dtype=np.uint8)
+   dupe_check = {}
+   close_stars = {}
+
+   dist_list = []
+   for star in merged_stars:
+      (cal_file,ra_center,dec_center,position_angle,pixscale,dcname,mag,ra,dec,img_ra,img_dec,match_dist,new_x,new_y,img_az,img_el,new_cat_x,new_cat_y,six,siy, img_res) = star
+      dist_list.append(img_res)
+   std_dev_dist = np.std(dist_list) * 2
+
+   std_dev_dist = 10
+
+   for star in merged_stars:
+      (cal_file,ra_center,dec_center,position_angle,pixscale,dcname,mag,ra,dec,img_ra,img_dec,match_dist,new_x,new_y,img_az,img_el,new_cat_x,new_cat_y,six,siy, img_res) = star
+      cv2.rectangle(img, (new_x-2, new_y-2), (new_x + 2, new_y + 2), (255), 1)
+      cv2.line(img, (six,siy), (new_x,new_y), (255), 1)
+      cv2.circle(img,(six,siy), 5, (255), 1)
+   if show == 1:
+      cv2.imshow('pepe', img)
+      cv2.waitKey(10)
+
+   for star in merged_stars:
+      (cal_file,ra_center,dec_center,position_angle,pixscale,dcname,mag,ra,dec,img_ra,img_dec,match_dist,new_x,new_y,img_az,img_el,new_cat_x,new_cat_y,six,siy, img_res) = star
+      (f_datetime, cam_id, f_date_str,fy,fm,fd, fh, fmin, fs) = convert_filename_to_date_cam(cal_file)
+      print("STAR RES:", img_res)
+      dupe_key = str(six) + "." + str(siy)
+      dist_check = 0
+      for key in dupe_check:
+         ix, iy = key.split(".")
+         dupe_dist = calc_dist((int(ix),int(iy)),(six,siy))
+         if dupe_dist < 50 and dupe_dist != 0 and dupe_dist < std_dev_dist :
+            dist_check = dist_check + 1
+            print("STAR DUPE DIST:", cam_id, six,siy,ix,iy,dupe_dist)
+
+
+      #if img_res <= inc_limit and dupe_key not in dupe_check and dist_check == 0:
+      if dupe_key not in dupe_check and dist_check < 2 and img_res < std_dev_dist:
+         good_merge.append(star)
+         cv2.rectangle(img, (new_x-2, new_y-2), (new_x + 2, new_y + 2), (255), 1)
+         cv2.line(img, (six,siy), (new_x,new_y), (255), 1)
+         cv2.circle(img,(six,siy), 5, (255), 1)
+      else:
+         print("DUPE STAR DETECTED:", six,siy)
+
+      if dupe_key not in dupe_check:
+         dupe_check[dupe_key] = 1
+      else:
+         dupe_check[dupe_key] = dupe_check[dupe_key] + 1
+   if show == 1:
+      cv2.imshow('pepe', img)
+   cv2.waitKey(10)
+   print("TOTAL GOOD MERGED STARS:", len(good_merge))
+   return(good_merge)
 
 
 
