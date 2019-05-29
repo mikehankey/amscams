@@ -8,13 +8,13 @@ function update_cat_stars() {
     }
  
     // Get user stars from array
-    cmd_data.point_str = user_stars.join("|")+"|";
+    cmd_data.points = user_stars.join("|")+"|";
 
     // Get Stars from canvas
     var canvas_stars = canvas.getObjects('circle');
     $.each(canvas_stars, function(i,v) {
         if (v.get('type') == "circle" && v.get('radius') == 5) {
-            cmd_data.point_str= cmd_data.point_str + v.left.toString() + "," + v.top.toString() + "|";
+            cmd_data.points= cmd_data.points + v.left.toString() + "," + v.top.toString() + "|";
          }
     }); 
 
