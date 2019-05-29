@@ -78,6 +78,7 @@ function update_cat_stars() {
                         left: ((v[7] - 11)/2)+4,   // +4 = shift text
                         top: ((v[8] - 11)/2) -4,    // -4 = shift text
                         fill:'rgba(255,0,0,.75)',
+                        selectable: false
                 }));
 
                 // Add Star Name on canvas
@@ -87,6 +88,7 @@ function update_cat_stars() {
                         left: (v[11] - 11)/2+5,
                         top: (v[12] - 11)/2+8,
                         fill:'rgba(255,255,255,.45)',
+                        selectable: false
                 }));
 
                 // Add the corresponding row
