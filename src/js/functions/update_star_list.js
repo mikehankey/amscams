@@ -1,4 +1,3 @@
-
 function update_cat_stars() {
     var cmd_data = {
         video_file:          main_vid,          // Defined on the page
@@ -9,7 +8,7 @@ function update_cat_stars() {
     }
  
     // Get user stars from array
-    cmd_data.points = user_stars.join("|")+"|";
+    // cmd_data.points = user_stars.join("|")+"|";
 
     // Get Stars from canvas
     var canvas_stars = canvas.getObjects('circle');
