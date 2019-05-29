@@ -89,8 +89,14 @@ function update_cat_stars() {
                         fill:'rgba(255,255,255,.45)',
                 }));
 
+                // Add the corresponding row
+                // Name	mag	Cat RA/Dec	Res °	Res. Pixels
+                table_tbody_html+= '<tr><td>'+v[0]+'</td><td>'+v[1]+'</td><td>'+v[2]+'/'+v[3]+'</td><td>'+v[6]+'</td><td>'+v[15]+'</td></tr>';
+
             });
 
+            // Replace current table content
+            $('#stars-tab tbody').html(table_tbody_html);
 
             // Open proper tab
             $('#stars-tab-l').click();
