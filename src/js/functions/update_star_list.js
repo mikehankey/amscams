@@ -1,3 +1,4 @@
+
 function update_cat_stars() {
     var cmd_data = {
         video_file:          main_vid,          // Defined on the page
@@ -99,6 +100,16 @@ function update_cat_stars() {
                         fill:'rgba(255,255,255,.45)',
                         selectable: false
                 }));
+
+                // Add Rectangle
+                canvas.add(new fabric.Rect({
+                    fill: 'rgba(0,0,0,0)', strokeWidth: 1, stroke: 'rgba(230,100,200,.5)', 
+                    left:  (v[11] - 11)/2, 
+                    top:(v[12] - 11)/2,
+                    width: 10,
+                    height: 10 ,
+                    selectable: false
+                 }));
 
                 // Add the corresponding row
                 // Name mag Cat RA/Dec  Res °   Res. Pixels
