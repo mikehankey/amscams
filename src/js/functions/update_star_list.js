@@ -29,6 +29,7 @@ function update_cat_stars() {
         success: function(data) {
         
             var json_resp = $.parseJSON(data);
+            var cat_stars = json_resp['close_stars'];     
            
             // Draw New Box
             canvas.add(
@@ -52,7 +53,7 @@ function update_cat_stars() {
             $('<p id="star_res_p" class="mt-2"><b>Residual Error:</b> '+  total_res_deg + '&deg; / ' + total_res_px + 'px.</p>').insertBefore('#stars-tab table');
 
             // Add same text to image 
-            res_desc = "Res. Star Error: " + total_res_deg + " degrees / " + total_res_px + " px"
+            res_desc = "Res. Star Error: " + total_res_deg + " degrees / " + total_res_px + " px \nTotal stars: " + cat_stars.length;
             canvas.add(new fabric.Text(res_desc , {
                 fontFamily: 'Arial',
                 fontSize: 12,
@@ -66,7 +67,7 @@ function update_cat_stars() {
             var table_tbody_html = '';
 
             // Table - tbody (in #stars-tab) & draw on canvas
-            var cat_stars = json_resp['close_stars'];     
+            
             $.each(cat_stars,function(i,v) {
 
                 // Add to circle canvas
