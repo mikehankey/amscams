@@ -1,7 +1,3 @@
-/*
-<a href="javascript:show_cat_stars('/mnt/ams2/meteors/2019_05_28/2019_05_28_08_25_43_000_010033-trim0378.mp4','{HD_STACK_FILE}','/mnt/ams2/cal/freecal/2019_05_19_08_30_31_000_010033/2019_05_19_08_30_31_000_010033-stacked-calparams.json', 'nopick')"><i class="icon-star_catalog"></i> - Show/Save Stars</a>meteor_json_file 
-*/
- 
 function update_cat_stars() {
     var cmd_data = {
         video_file:          main_vid,          // Defined on the page
@@ -55,6 +51,18 @@ function update_cat_stars() {
             $('#star_res_p').remove();
             $('<p id="star_res_p" class="mt-2"><b>Residual Error:</b> '+  total_res_deg + '&deg; / ' + total_res_px + 'px.</p>').insertBefore('#stars-tab table');
 
+            // Add same text to image 
+            res_desc = "Res. Star Error: " + total_res_deg + " degrees / " + total_res_px + " px"
+            canvas.add(new fabric.Text(res_desc , {
+                fontFamily: 'Arial',
+                fontSize: 12,
+                left: 5 ,
+                top: 5,
+                fill: 'rgba(255,255,255,.75)',
+                selectable: false
+            }));
+
+
             var table_tbody_html = '';
 
             // Table - tbody (in #stars-tab) & draw on canvas
@@ -92,7 +100,7 @@ function update_cat_stars() {
                 }));
 
                 // Add the corresponding row
-                // Name	mag	Cat RA/Dec	Res °	Res. Pixels
+                // Name mag Cat RA/Dec  Res °   Res. Pixels
                 table_tbody_html+= '<tr><td>'+v[0]+'</td><td>'+v[1]+'</td><td>'+v[2]+'/'+v[3]+'</td><td>'+v[6]+'</td><td>'+v[15]+'</td></tr>';
 
             });
