@@ -26,8 +26,7 @@ function frame_anim() {
 
     requestAnimationFrame(step);
 }
- 
- 
+  
 
 // 'step' function will be called each time browser rerender the content
 // we achieve that by passing 'step' as a parameter to 'requestAnimationFrame' function
@@ -63,8 +62,7 @@ $(function() {
     });
 
     $('#anim_modal').on('hidden.bs.modal', function () {
-        playing = false;
-        console.log('Anim closed');
+        playing = false; 
     })
       
 })

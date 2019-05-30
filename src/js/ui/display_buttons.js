@@ -67,6 +67,9 @@ function show_hide_zoom() {
 
 
 $(function() {
-    show_hide_grid(); 
-    show_hide_zoom();
+    
+    if($('#c').length!=0) {
+        show_hide_grid(); 
+        show_hide_zoom();
+    }
 })

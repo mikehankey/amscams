@@ -33,7 +33,7 @@
         margin-bottom:2rem;
 
         img {  
-            border:3px solid transparent;
+            border:2px solid rgba(255,255,255,.85);
             overflow: hidden;
             
             &:hover {
@@ -98,6 +98,7 @@
 
         &.mtt { 
             overflow: hidden;
+            border: 2px solid transparent;
         } 
 
         span {

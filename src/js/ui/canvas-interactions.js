@@ -111,6 +111,9 @@ if ($('canvas#c').length!=0) {
       // Hide grid on click
       if($('#c').hasClass('grid')) $('#show_grid').click();
     
+      // Make the update star button blinked
+      make_it_blink($('#update_stars'));
+
       var pointer = canvas.getPointer(event.e);
       x_val = pointer.x | 0;
       y_val = pointer.y | 0;
@@ -127,7 +130,7 @@ if ($('canvas#c').length!=0) {
     
       var objFound = false
       var clickPoint = new fabric.Point(x_val,y_val);
-      var objects = canvas.getObjects('circle')
+      var objects = canvas.getObjects('circle');
       
       for (let i in objects) {
         if (!objFound && objects[i].containsPoint(clickPoint)) {

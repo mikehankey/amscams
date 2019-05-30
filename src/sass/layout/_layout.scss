@@ -8,7 +8,7 @@ body {
     max-width: 1400px;
 
     &.lg-l {
-        max-width: 1650px;
+        max-width: 100%;
     }
 }
 
@@ -44,6 +44,14 @@ h2 {
     position: relative;
 }
 
+
+// Blinkin button 
+.blinked {
+    background-color:#c00 !important;
+    -webkit-transition: background 1.0s ease-in-out !important;
+    -ms-transition:     background 1.0s ease-in-out !important;
+    transition:         background 1.0s ease-in-out !important;
+}
 
 //Table
 .td-al-m td {
