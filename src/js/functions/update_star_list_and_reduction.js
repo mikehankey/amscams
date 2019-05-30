@@ -4,7 +4,7 @@ function update_star_and_reduction() {
         cmd: 'update_red_info_ajax'
     }
 
-    loading({text:'Updating star list and reduction data...'}); 
+    loading({text:'Updating star list and reduction data...', overlay:true}); 
     
     // Remove All objects from Canvas
     remove_objects();
@@ -19,8 +19,7 @@ function update_star_and_reduction() {
 
             // Remove All objects from Canvas
             remove_objects();
-
-            
+ 
             // Update Stars
             update_stars_on_canvas_and_table(json_resp);
 

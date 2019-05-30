@@ -21,11 +21,11 @@ function update_stars_on_canvas_and_table(json_resp) {
     var total_res_deg = (Math.round(json_resp['total_res_deg'] * 100) / 100);
     var total_res_px = (Math.round(json_resp['total_res_px'] *100) / 100);
     $('#star_res_p').remove();
-    $('<p id="star_res_p" class="mt-2"><b>Residual Error:</b> '+  total_res_deg + '&deg; / ' + total_res_px + 'px.</p>').insertBefore('#stars-tab table');
 
     // Add same text to image 
     if(typeof cat_stars !== 'undefined') { 
         res_desc = "Res. Star Error: " + total_res_deg + " degrees / " + total_res_px + " px \nTotal stars: " + cat_stars.length;
+        $('<p id="star_res_p" class="mt-2"><b>Residual Error:</b> '+  total_res_deg + '&deg; / ' + total_res_px + 'px.</p>').insertBefore('#stars-tab table');
     } else {
         res_desc = "Total stars: 0";
     }
