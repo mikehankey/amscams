@@ -8,38 +8,42 @@ function update_stars_on_canvas_and_table(json_resp) {
     var table_tbody_html = '';
   
     // Draw New Box
-    canvas.add(
-        new fabric.Rect({
-            fill: 'rgba(0,0,0,0)', 
-            strokeWidth: 1, 
-            stroke: 'rgba(230,230,230,.2)',  
-            left: json_resp['crop_box'][0] / 2, 
-            top: json_resp['crop_box'][1] / 2,
-            width: (json_resp['crop_box'][2] - json_resp['crop_box'][0]) / 2,
-            height: (json_resp['crop_box'][3] - json_resp['crop_box'][1]) / 2,
-            selectable: false
-         })
-    );
+    if(typeof json_resp['crop_box'] !== 'undefined') {
+        canvas.add(
+            new fabric.Rect({
+                fill: 'rgba(0,0,0,0)', 
+                strokeWidth: 1, 
+                stroke: 'rgba(230,230,230,.2)',  
+                left: json_resp['crop_box'][0] / 2, 
+                top: json_resp['crop_box'][1] / 2,
+                width: (json_resp['crop_box'][2] - json_resp['crop_box'][0]) / 2,
+                height: (json_resp['crop_box'][3] - json_resp['crop_box'][1]) / 2,
+                selectable: false
+             })
+        );
+    }
+   
+    if(typeof json_resp['total_res_deg']!=='undefined' && typeof json_resp['total_res_px']!=='undefined') {
+        // Updating star table info 
+        // Residual Error
+        var total_res_deg = (Math.round(json_resp['total_res_deg'] * 100) / 100);
+        var total_res_px = (Math.round(json_resp['total_res_px'] *100) / 100);
+        $('#star_res_p').remove();
 
-    // Updating star table info 
-    // Residual Error
-    var total_res_deg = (Math.round(json_resp['total_res_deg'] * 100) / 100);
-    var total_res_px = (Math.round(json_resp['total_res_px'] *100) / 100);
-    $('#star_res_p').remove();
-
-    // Add same text to image 
-    if(typeof cat_stars !== 'undefined') { 
-        res_desc = "Res. Star Error: " + total_res_deg + " degrees / " + total_res_px + " px";
-        $('<p id="star_res_p" class="mt-2"><b>Residual Error:</b> '+  total_res_deg + '&deg; / ' + total_res_px + 'px.</p>').insertBefore('#stars-tab table');
-        canvas.add(new fabric.Text(res_desc , {
-            fontFamily: 'Arial',
-            fontSize: 12,
-            left: 5 ,
-            top: 5,
-            fill: 'rgba(255,255,255,.75)',
-            selectable: false
-        })); 
-        $('#str_cnt').text(cat_stars.length);
+        // Add same text to image 
+        if(typeof cat_stars !== 'undefined') { 
+            res_desc = "Res. Star Error: " + total_res_deg + " degrees / " + total_res_px + " px";
+            $('<p id="star_res_p" class="mt-2"><b>Residual Error:</b> '+  total_res_deg + '&deg; / ' + total_res_px + 'px.</p>').insertBefore('#stars-tab table');
+            canvas.add(new fabric.Text(res_desc , {
+                fontFamily: 'Arial',
+                fontSize: 12,
+                left: 5 ,
+                top: 5,
+                fill: 'rgba(255,255,255,.75)',
+                selectable: false
+            })); 
+            $('#str_cnt').text(cat_stars.length);
+        }
     }
 
     // Table - tbody (in #stars-tab) & draw on canvas
