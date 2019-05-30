@@ -24,6 +24,10 @@ function update_star_count() {
 
 // Remove or add a star to user_stars
 function update_user_stars(star) {
+
+
+  
+  /*
   var ind=-1;  
 
   for(var i = 0; i < user_stars.length; i++) {
@@ -40,6 +44,7 @@ function update_user_stars(star) {
   } 
 
   update_star_count();
+  */
   
 }
  
@@ -62,7 +67,7 @@ if ($('canvas#c').length!=0) {
   const render = canvas.renderAll.bind(canvas);
 
   // Loading Animation
-  loading();
+  loading({'text':'Loading Media...','overlay':true});
 
   // Zoom
   function canvas_interactions() {
@@ -88,7 +93,6 @@ if ($('canvas#c').length!=0) {
     // Hide/Show zoom when necessary
     $('.canvas-container canvas').mouseenter(function(){ 
       out_timer = setTimeout(function() { $('.canvas_zoom_holder').slideDown(300);},350);
-    
     }).mouseleave(function() { 
       clearTimeout(out_timer);
       out_timer = setTimeout(function() {

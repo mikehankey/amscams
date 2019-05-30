@@ -112,7 +112,7 @@ function update_cat_stars() {
                  }));
 
                 // Add the corresponding row
-                // Name mag Cat RA/Dec  Res °   Res. Pixels
+                // Name	mag	Cat RA/Dec	Res °	Res. Pixels
                 table_tbody_html+= '<tr><td>'+v[0]+'</td><td>'+v[1]+'</td><td>'+v[2]+'/'+v[3]+'</td><td>'+v[6]+'</td><td>'+v[15]+'</td></tr>';
 
             });
