@@ -2,6 +2,7 @@ function update_reduction_on_canvas_and_table(json_resp) {
     var smf = json_resp['meteor_frame_data'];
     var lc = 0;
     var table_tbody_html = '';
+    var rad = 6;
 
     $.each(smf, function(i,v){
         
@@ -20,8 +21,8 @@ function update_reduction_on_canvas_and_table(json_resp) {
         // Add Rectangle
         canvas.add(new fabric.Rect({
             fill: 'rgba(0,0,0,0)', strokeWidth: 1, stroke: 'rgba(230,100,200,.5)', 
-            left:  v[2]/2, 
-            top:   v[3]/2,
+            left:  v[2]/2-rad, 
+            top:   v[3]/2-rad,
             width: 10,
             height: 10 ,
             selectable: false

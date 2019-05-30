@@ -16,6 +16,10 @@ function update_star_and_reduction() {
         success: function(data) {
         
             var json_resp = $.parseJSON(data); 
+
+            // Remove All objects from Canvas
+            remove_objects();
+
             
             // Update Stars
             update_stars_on_canvas_and_table(json_resp);
