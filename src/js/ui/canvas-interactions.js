@@ -28,7 +28,7 @@ function update_user_stars() {
     */
 }
  
-
+var custom_stars = [];
 
 // All interactions with the canvas are defined below
 
@@ -126,18 +126,33 @@ if ($('canvas#c').length!=0) {
         left: x_val-5, 
         top: y_val-5,
         selectable: false 
-      });
-    
+      }); 
+
       var objFound = false
       var clickPoint = new fabric.Point(x_val,y_val);
       var objects = canvas.getObjects('circle');
+
+      var id;
       
       for (let i in objects) {
         if (!objFound && objects[i].containsPoint(clickPoint)) {
-            objFound = true
+            objFound = true;
+            id = objects[i].gp_id;
             canvas.remove(objects[i]);
           }
       }
+
+      //Remove all the related object +, name, square
+      if(objFound) { 
+        objects = canvas.getObjects();
+        for (let i in objects) {
+              if(objects[i].gp_id== id) { 
+                canvas.remove(objects[i]);
+              }
+        }
+      }
+     
+
       
       if (objFound == false) {
         canvas.add(circle); 

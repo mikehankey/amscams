@@ -52,7 +52,8 @@ function update_stars_on_canvas_and_table(json_resp) {
                 radius: 5, fill: 'rgba(0,0,0,0)', strokeWidth: 1, stroke: 'rgba(100,200,200,.5)', 
                 left: (v[13] - 11)/2, 
                 top: (v[14] - 11)/2,
-                selectable: false 
+                selectable: false,
+                gp_id: v[0]
         }));
 
         // Add "+" on canvas
@@ -63,7 +64,8 @@ function update_stars_on_canvas_and_table(json_resp) {
                 left: ((v[7] - 11)/2)+4,   // +4 = shift text
                 top: ((v[8] - 11)/2) -4,    // -4 = shift text
                 fill:'rgba(255,0,0,.75)',
-                selectable: false 
+                selectable: false ,
+                gp_id: v[0]
         }));
 
         // Add Star Name on canvas
@@ -73,7 +75,8 @@ function update_stars_on_canvas_and_table(json_resp) {
                 left: (v[11] - 11)/2+5,
                 top: (v[12] - 11)/2+8,
                 fill:'rgba(255,255,255,.45)',
-                selectable: false 
+                selectable: false,
+                gp_id: v[0] 
         }));
 
         // Add Rectangle
@@ -83,7 +86,8 @@ function update_stars_on_canvas_and_table(json_resp) {
             top:(v[12] - 11)/2,
             width: 10,
             height: 10 ,
-            selectable: false 
+            selectable: false,
+            gp_id: v[0] 
          }));
 
         // Add the corresponding row
