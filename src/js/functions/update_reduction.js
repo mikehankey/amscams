@@ -1,7 +1,7 @@
 function update_reduction_on_canvas_and_table(json_resp) {
     var smf = json_resp['meteor_frame_data'];
 
-    if(typeo smf == 'undefined') {
+    if(typeof smf == 'undefined') {
         smf = json_resp['sd_meteor_frame_data'];
     }
 
