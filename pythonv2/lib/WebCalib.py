@@ -3924,6 +3924,7 @@ def auto_cal(json_conf,form):
 def free_cal(json_conf,form):
    input_file = form.getvalue("input_file")
    # if no input file is specified ask for one. 
+   print(input_file)
    if cfe(input_file) == 0:
       
       auto_cal(json_conf,form)

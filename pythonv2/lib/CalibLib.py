@@ -1072,6 +1072,7 @@ def clean_star_bg(cnt_img, bg_avg):
    return(cnt_img)
 
 def get_catalog_stars(fov_poly, pos_poly, cal_params,dimension,x_poly,y_poly,min=0):
+   
    catalog_stars = []
    possible_stars = 0
    img_w = int(cal_params['imagew'])
@@ -1086,6 +1087,8 @@ def get_catalog_stars(fov_poly, pos_poly, cal_params,dimension,x_poly,y_poly,min
    pos_angle_ref = cal_params['position_angle'] 
    x_res = int(cal_params['imagew'])
    y_res = int(cal_params['imageh'])
+
+   #print("USING CALP:", RA_center, dec_center, pos_angle_ref, cal_params['pixscale'], x_res, y_res)
 
    if img_w < 1920:
       center_x = int(x_res / 2)

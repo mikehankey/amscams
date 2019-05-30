@@ -357,6 +357,8 @@ def controller(json_conf):
       live_view(json_conf)   
    if cmd == 'meteors':
       meteors(json_conf, form)   
+   if cmd == 'new_meteors':
+      meteors(json_conf, form)   
    if cmd == 'config':
       as6_config(json_conf)   
    if cmd == 'browse_detects':
@@ -722,7 +724,7 @@ def get_meteors(meteor_dir,meteors):
          meteors.append(file)
    return(meteors)
  
-def meteors(json_conf,form):  
+def meteors_new(json_conf,form):  
 
    limit_day = form.getvalue('limit_day')
    htclass = "none"
@@ -783,7 +785,7 @@ def meteors(json_conf,form):
     
    print("</div></div>") 
 
-def meteors_old(json_conf,form): 
+def meteors(json_conf,form): 
    print ("""
    
 
