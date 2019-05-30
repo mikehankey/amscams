@@ -1,5 +1,10 @@
 function update_stars_on_canvas_and_table(json_resp) {
-    var cat_stars = json_resp['close_stars'];     
+    var cat_stars = json_resp['close_stars'];    
+    
+    // Depending on the Ajax Call
+    if(typeof cat_stars == 'undefined') {
+        cat_stars = json_resp['cat_image_stars'];
+    }
            
     // Draw New Box
     canvas.add(
