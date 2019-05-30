@@ -136,9 +136,9 @@ function update_star_list() {
         url:  "/pycgi/webUI.py",
         data: cmd_data,
         success: function(data) {
-            
+            var json_resp = $.parseJSON(data);
             if(json_resp['status']!==0) {
-                update_stars_on_canvas_and_table($.parseJSON(data));
+                update_stars_on_canvas_and_table(json_resp);
 
                 // Open proper tab
                 $('#stars-tab-l').click();
