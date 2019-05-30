@@ -143,16 +143,14 @@ if ($('canvas#c').length!=0) {
       }
 
       //Remove all the related object +, name, square
-      if(objFound) { 
+      if(objFound && $.trim(id)!=='') { 
         objects = canvas.getObjects();
         for (let i in objects) {
               if(objects[i].gp_id== id) { 
                 canvas.remove(objects[i]);
               }
         }
-      }
-     
-
+      } 
       
       if (objFound == false) {
         canvas.add(circle); 
