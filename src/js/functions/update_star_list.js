@@ -112,7 +112,7 @@ function update_star_list() {
         video_file:          main_vid,          // Defined on the page
         hd_stack_file:       hd_stack_file,     // Defined on the page
         cmd: 'show_cat_stars',                 
-        //cal_params_file:  $('#cal_param_selected').val(),   // The one selected 
+        cal_params_file:  $('#cal_param_selected').val(),   // The one selected 
         type: typeof type !== 'undefined' ? type : 'nopick', // 'nopick' is the default option
         points: ''
     }
