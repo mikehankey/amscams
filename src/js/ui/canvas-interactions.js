@@ -122,7 +122,7 @@ if ($('canvas#c').length!=0) {
         stroke: 'rgba(100,200,200,.85)', 
         left: x_val-5, 
         top: y_val-5,
-        selectable: false,
+        selectable: false, 
         type: 'star_circle'
       });
     
