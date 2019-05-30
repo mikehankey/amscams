@@ -136,13 +136,15 @@ function update_star_list() {
         url:  "/pycgi/webUI.py",
         data: cmd_data,
         success: function(data) {
-        
-            update_stars_on_canvas_and_table($.parseJSON(data));
-
-            // Open proper tab
-            $('#stars-tab-l').click();
             
-            loading_done();
+            if(json_resp['status']!==0) {
+                update_stars_on_canvas_and_table($.parseJSON(data));
+
+                // Open proper tab
+                $('#stars-tab-l').click();
+                
+                loading_done();
+            }  
  
         } 
     });

@@ -17,15 +17,19 @@ function update_star_and_reduction() {
         
             var json_resp = $.parseJSON(data); 
 
-            // Remove All objects from Canvas
-            remove_objects();
- 
-            // Update Stars
-            update_stars_on_canvas_and_table(json_resp);
+            if(json_resp['status']!==0) {
+             
+                // Remove All objects from Canvas
+                remove_objects();
+                
+                // Update Stars
+                update_stars_on_canvas_and_table(json_resp);
 
-            // Update Reduction
-            update_reduction_on_canvas_and_table(json_resp);
-            
+                // Update Reduction
+                update_reduction_on_canvas_and_table(json_resp);
+                
+            }
+
             loading_done();
  
         }, error: function(data) {
