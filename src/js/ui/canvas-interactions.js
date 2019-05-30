@@ -1,4 +1,4 @@
-
+/*
 // Update user star counter and enable/disable the related button
 function update_star_count() {
   var l = user_stars.length;
@@ -23,30 +23,35 @@ function update_star_count() {
 
 
 // Remove or add a star to user_stars
-function update_user_stars(star) {
+function update_user_stars() {
+    
+  var canvas_cnt = 0, diff;
+  var canvas_stars = canvas.getObjects('circle');
+  var init_start_cnt = parseInt($('#str_cnt').text());
+
+    // Count the stars on the canvas
+    $.each(canvas_stars, function(i,v) {
+        if (v.get('type') == "circle" && v.get('radius') == 5) {
+          canvas_cnt=canvas_cnt+1;
+        }
+    }); 
+
+    diff = init_start_cnt - canvas_cnt;
 
 
-  
-  /*
-  var ind=-1;  
 
-  for(var i = 0; i < user_stars.length; i++) {
-    if(Math.abs(star[0]-user_stars[i][0])<6 && 
-       Math.abs(star[1]-user_stars[i][1])<6) {
-      ind=i; 
+    // Compare to total stars 
+    if(canvas_cnt>parseInt($('#str_cnt').text())) {
+      $('.star_counter_holder').css('visibility','visible');
+      $('#update_stars').removeAttr('disabled').removeClass('disabled');
+      $('#star_counter').val(canvas_cnt-$('#str_cnt').text());
+    } else {
+      $('.star_counter_holder').css('visibility','hidden');
+      $('#update_stars').attr('disabled','disabled').addClass('disabled'); 
     }
-  }  
-
-  if(ind==-1) {
-    user_stars.push(star); 
-  } else {
-    user_stars.splice(ind, 1); 
-  } 
-
-  update_star_count();
-  */
-  
+ 
 }
+*/
  
 
 
@@ -160,8 +165,8 @@ if ($('canvas#c').length!=0) {
         canvas.add(circle); 
       }
      
-      update_user_stars([x_val,y_val]);
-
+      //update_user_stars();
+      update_star_list();
     });
     
   }
