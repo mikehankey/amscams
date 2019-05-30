@@ -102,6 +102,8 @@ function update_stars_on_canvas_and_table(json_resp) {
     // Remove star counter message & beforeunload
     $('#star_counter').text('');
     $(window).unbind('beforeunload');
+    stars_added = 0;
+    stars_removed = 0;
 }
 
 

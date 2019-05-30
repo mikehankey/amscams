@@ -5,6 +5,15 @@
     .btn { 
         cursor:pointer;
 
+        &.btn-v {
+            line-height: 1;
+
+            i {
+                display: block;
+                padding-bottom: .4rem;
+            }
+        }
+
         i {
             font-size: 1.3rem;
             vertical-align: text-top;
