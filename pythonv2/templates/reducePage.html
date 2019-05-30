@@ -73,8 +73,8 @@
             <div class="box">
                     <h2>Calibration &amp; Reduction</h2>
                     <p class="mb-1">Load a calibration parameters</p>
-                    <select id="cal_param_selected" class="custom-select" onchange="javascript:goto('/mnt/ams2/meteors/2019_05_19/2019_05_19_08_26_51_000_010037-trim0378.mp4', this.options[selectedIndex].value ,'reduce')" name="cal_param_file">
-                        {SELECTED_CAL_PARAMS_FILE}
+                    <select id="cal_param_selected" class="custom-select">
+                        <option val="{SELECTED_CAL_PARAMS_FILE}">{SELECTED_CAL_PARAMS_FILE}</option>
                     </select>
                     
                     <div class="row mt-3">
