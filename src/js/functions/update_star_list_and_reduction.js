@@ -35,3 +35,10 @@ function update_star_and_reduction() {
     });
 
 }
+
+$(function() {
+    // Manual
+    $('#refresh_data').click(function(){
+        update_star_and_reduction();
+    });
+})

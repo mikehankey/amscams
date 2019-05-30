@@ -3,7 +3,7 @@ var loading_interval;
 function loading(options) {
 
     loading_done(); // Avoid multiple
-    $('#bottom_overlay').remove();
+    $('#top_overlay').remove();
 
     if(typeof options !== 'undefined') {
         options.text    = typeof options.text == 'undefined' ? 'Loading': options.text;
@@ -23,7 +23,7 @@ function loading(options) {
     } else {
         $("#logo_holder").contents().find("#logo").addClass("animated");
         // Add bottom overlay 
-        $('<div id="bottom_overlay" class="animated"><div class="text-center"><img src="./dist/img/anim_logo.svg"/><h3>'+options.text+'</h3></div>').appendTo($('body')).addClass('dpl');
+        $('<div id="top_overlay" class="animated"><div class="text-center"><img src="./dist/img/anim_logo.svg"/><h3>'+options.text+'</h3></div>').appendTo($('body')).addClass('dpl');
     } 
     
     /*
@@ -65,6 +65,6 @@ function loading_done() {
     // Remove Overlay 
     $('#overlay').fadeOut(150, function() {$('#overlay').remove();})
     $('body').css('overflow','auto');
-    $('#bottom_overlay').removeClass('dpl');
+    $('#top_overlay').removeClass('dpl');
 } 
  
