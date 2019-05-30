@@ -98,6 +98,10 @@ function update_stars_on_canvas_and_table(json_resp) {
 
     // Replace current table content
     $('#stars-tab tbody').html(table_tbody_html);
+
+    // Remove star counter message & beforeunload
+    $('#star_counter').text('');
+    $(window).unbind('beforeunload');
 }
 
 
