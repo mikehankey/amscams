@@ -337,7 +337,8 @@ def check_make_half_stack(sd_file,hd_file,meteor_reduced):
 
 
    half_stack_file = sd_file.replace("-stacked", "-half-stack")
-   if cfe(half_stack_file) == 0:
+   if True :
+   #if cfe(half_stack_file) == 0:
       if hd_file != 0:
          if cfe(hd_file) == 1:
             img = cv2.imread(hd_file)
@@ -2509,7 +2510,11 @@ def update_red_info_ajax(json_conf, form):
                max_res_deg = float(max_res_deg) + float(match_dist)
                max_res_px = float(max_res_px) + float(cat_dist )
                sc = sc + 1
-            if len( mr['cal_params']['cat_image_stars']) > 0:
+            if "total_res_px" in mr['cal_params']:
+               rsp['total_res_px'] = mr['cal_params']['total_res_px']
+               rsp['total_res_deg'] = mr['cal_params']['total_res_deg']
+
+            elif len( mr['cal_params']['cat_image_stars']) > 0:
                rsp['total_res_px'] = max_res_px/ sc
                rsp['total_res_deg'] = (max_res_deg / sc) 
                mr['total_res_px'] = max_res_px / sc
@@ -2716,8 +2721,15 @@ def reduce_meteor_new(json_conf,form):
       mj['sd_stack'] = mj['sd_stack'].replace(".png", "-stacked.png")
       mj['hd_stack'] = mj['hd_stack'].replace(".png", "-stacked.png")
 
-   if "hd_stack" not in mj: 
+   if "hd_stack" not in mj and mj['hd_trim'] != 0: 
       mj['hd_stack'] = mj['hd_trim'].replace(".mp4", "-stacked.png")
+   else:
+      mj['hd_stack'] = sd_stack.replace(".png", "-HD.png")
+      if cfe(mj['hd_stack']) == 0:
+         tmp = cv2.imread(sd_stack)
+         hd_stack_img = cv2.resize(tmp, (1920,1080))
+         print(mj['hd_stack'])
+         cv2.imwrite(mj['hd_stack'], hd_stack_img)
       
    #print(mj['sd_stack'], mj['hd_stack'])  
 
@@ -2725,7 +2737,7 @@ def reduce_meteor_new(json_conf,form):
    mj['half_stack'] = mj['half_stack'].replace("-stacked", "")
    half_stack_file = mj['half_stack']
    hd_stack_file = mj['hd_stack']
-   if hd_stack_file == 0:
+   if cfe(hd_stack_file) == 0:
       stack_img = cv2.imread(sd_stack)
       hd_stack_file = sd_stack.replace("-stacked.png", "-HD-stacked.png")
       hd_stack_img = cv2.resize(stack_img, (1920,1080))
