@@ -25,13 +25,13 @@ function update_star_and_reduction() {
 
             // Update Reduction
             update_reduction_on_canvas_and_table(json_resp);
-
-            // Open proper tab
-            $('#stars-tab-l').click();
             
             loading_done();
  
-        } 
+        }, error: function(data) {
+            alert('ERROR - Please, contact us');
+            loading_done();
+        }
     });
 
 }
