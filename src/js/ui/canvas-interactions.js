@@ -17,18 +17,18 @@ function update_user_stars() {
 
           if(stars_removed != 0) {
             if(stars_removed>1) {
-              $('#star_counter').text(' and ' + stars_removed + ' stars removed');
+              $('#star_counter').text($('#star_counter').text() + ' and ' + stars_removed + ' stars removed');
             } else {
-              $('#star_counter').text(' and ' + stars_removed + ' star removed');
+              $('#star_counter').text($('#star_counter').text() + ' and ' + stars_removed + ' star removed');
             }
             
           }
       } else if(stars_removed!==0) {
           $('#star_counter').css('visibility','visible');
           if(stars_removed>1) {
-            $('#star_counter').text(' and ' + stars_removed + ' stars removed');
+            $('#star_counter').text(stars_removed + ' stars removed');
           } else {
-            $('#star_counter').text(' and ' + stars_removed + ' star removed');
+            $('#star_counter').text(stars_removed + ' star removed');
           }
       }
 
