@@ -1,35 +1,50 @@
+var stars_added   = 0;
+var stars_removed = 0;
+
 // Remove or add a star to user_stars
 function update_user_stars() {
-    /*
-  var canvas_cnt = 0, diff;
-  var canvas_stars = canvas.getObjects('circle');
-  var init_start_cnt = parseInt($('#str_cnt').text());
 
-    // Count the stars on the canvas
-    $.each(canvas_stars, function(i,v) {
-        if (v.get('type') == "circle" && v.get('radius') == 5) {
-          canvas_cnt=canvas_cnt+1;
-        }
-    }); 
+    if(stars_added!==0 || stars_removed!==0) {
+     
+      if(stars_added !== 0 ) {
+          $('#star_counter').css('visibility','visible');
 
-    diff = init_start_cnt - canvas_cnt;
+          if(stars_added>1) {
+           $('#star_counter').text(stars_added + ' stars added');
+          } else {
+           $('#star_counter').text(stars_added + ' star added');
+          }
 
+          if(stars_removed != 0) {
+            if(stars_removed>1) {
+              $('#star_counter').text(' and ' + stars_removed + ' stars removed');
+            } else {
+              $('#star_counter').text(' and ' + stars_removed + ' star removed');
+            }
+            
+          }
+      } else if(stars_removed!==0) {
+          $('#star_counter').css('visibility','visible');
+          if(stars_removed>1) {
+            $('#star_counter').text(' and ' + stars_removed + ' stars removed');
+          } else {
+            $('#star_counter').text(' and ' + stars_removed + ' star removed');
+          }
+      }
 
-
-    // Compare to total stars 
-    if(canvas_cnt>parseInt($('#str_cnt').text())) {
-      $('.star_counter_holder').css('visibility','visible');
-      $('#update_stars').removeAttr('disabled').removeClass('disabled');
-      $('#star_counter').val(canvas_cnt-$('#str_cnt').text());
+        $(window).unbind('beforeunload').bind('beforeunload', function(){
+          return 'You have unsave updates on the star list. Are you sure you want to leave?';
+        });
+ 
     } else {
-      $('.star_counter_holder').css('visibility','hidden');
-      $('#update_stars').attr('disabled','disabled').addClass('disabled'); 
+        $('#star_counter').css('visibility','hidden').text('');
+        $(window).unbind('beforeunload');
     }
-    */
+   
+ 
 }
  
-var custom_stars = [];
-
+ 
 // All interactions with the canvas are defined below
 
 
@@ -128,12 +143,14 @@ if ($('canvas#c').length!=0) {
         selectable: false 
       }); 
 
-      var objFound = false
+      var objFound = false;
+      var grpFound = false;
       var clickPoint = new fabric.Point(x_val,y_val);
       var objects = canvas.getObjects('circle');
-
       var id;
       
+
+      // Remove an existing star
       for (let i in objects) {
         if (!objFound && objects[i].containsPoint(clickPoint)) {
             objFound = true;
@@ -142,20 +159,34 @@ if ($('canvas#c').length!=0) {
           }
       }
 
-      //Remove all the related object +, name, square
+      // Remove all the related object +, name, square if
+      // it's a start from the catalog
       if(objFound && $.trim(id)!=='') { 
         objects = canvas.getObjects();
         for (let i in objects) {
               if(objects[i].gp_id== id) { 
                 canvas.remove(objects[i]);
+                grpFound = true;
               }
         }
-      } 
+      }  
+ 
+
+      if(objFound && grpFound) {
+        // An existing star has been removed 
+        stars_removed += 1;
+      } else if( objFound && !grpFound) {
+        stars_added -=  1;
+      } else if(!objFound && !grpFound) {
+        stars_added += 1;
+      }
+  
       
       if (objFound == false) {
         canvas.add(circle); 
       }
-     
+      
+      update_user_stars();
 
     });
     
