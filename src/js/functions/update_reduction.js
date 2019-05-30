@@ -25,7 +25,8 @@ function update_reduction_on_canvas_and_table(json_resp) {
             top:   v[3]/2-rad,
             width: 10,
             height: 10 ,
-            selectable: false
+            selectable: false,
+            type: 'reduc_rect'
         }));
 
     });
