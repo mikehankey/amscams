@@ -1,10 +1,11 @@
 function reduce_meteor() {
     var cmd_data = {
         meteor_json_file:   meteor_json_file,          // Defined on the page 
-        cal_params_file:   $('#cal_param_selected').val(), 
+        //cal_params_file:   $('#cal_param_selected').val(), 
         cmd: 'reduce_meteor_ajax'
-    }
-
+    };
+ 
+ 
     loading({text:'Reducing meteor...', overlay:true}); 
     
     // Remove All objects from Canvas
