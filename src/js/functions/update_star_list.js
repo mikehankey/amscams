@@ -1,5 +1,6 @@
 function update_stars_on_canvas_and_table(json_resp) {
-    var cat_stars = json_resp['close_stars'];    
+    var cat_stars = json_resp['close_stars']; 
+    var total_stars = 0;   
     
     // Depending on the Ajax Call
     if(typeof cat_stars == 'undefined') {
@@ -22,13 +23,17 @@ function update_stars_on_canvas_and_table(json_resp) {
 
     // Updating star table info 
     // Residual Error
-    total_res_deg = (Math.round(json_resp['total_res_deg'] * 100) / 100);
-    total_res_px = (Math.round(json_resp['total_res_px'] *100) / 100);
+    var total_res_deg = (Math.round(json_resp['total_res_deg'] * 100) / 100);
+    var total_res_px = (Math.round(json_resp['total_res_px'] *100) / 100);
     $('#star_res_p').remove();
     $('<p id="star_res_p" class="mt-2"><b>Residual Error:</b> '+  total_res_deg + '&deg; / ' + total_res_px + 'px.</p>').insertBefore('#stars-tab table');
 
     // Add same text to image 
-    res_desc = "Res. Star Error: " + total_res_deg + " degrees / " + total_res_px + " px \nTotal stars: " + cat_stars.length;
+    if(typeof cat_stars !== 'undefined') {
+        total_stars = cat_stars.length;
+    }
+    res_desc = "Res. Star Error: " + total_res_deg + " degrees / " + total_res_px + " px \nTotal stars: " + total_stars;
+    
     canvas.add(new fabric.Text(res_desc , {
         fontFamily: 'Arial',
         fontSize: 12,
