@@ -1,12 +1,7 @@
 function update_stars_on_canvas_and_table(json_resp) {
     var cat_stars = json_resp['close_stars']; 
-    var total_stars = 0;   
-    
-    // Depending on the Ajax Call
-    if(typeof cat_stars == 'undefined') {
-        cat_stars = json_resp['cat_image_stars'];
-    }
-           
+    var table_tbody_html = '';
+  
     // Draw New Box
     canvas.add(
         new fabric.Rect({
@@ -29,11 +24,12 @@ function update_stars_on_canvas_and_table(json_resp) {
     $('<p id="star_res_p" class="mt-2"><b>Residual Error:</b> '+  total_res_deg + '&deg; / ' + total_res_px + 'px.</p>').insertBefore('#stars-tab table');
 
     // Add same text to image 
-    if(typeof cat_stars !== 'undefined') {
-        total_stars = cat_stars.length;
+    if(typeof cat_stars !== 'undefined') { 
+        res_desc = "Res. Star Error: " + total_res_deg + " degrees / " + total_res_px + " px \nTotal stars: " + cat_stars.length;
+    } else {
+        res_desc = "Total stars: 0";
     }
-    res_desc = "Res. Star Error: " + total_res_deg + " degrees / " + total_res_px + " px \nTotal stars: " + total_stars;
-    
+     
     canvas.add(new fabric.Text(res_desc , {
         fontFamily: 'Arial',
         fontSize: 12,
@@ -41,10 +37,8 @@ function update_stars_on_canvas_and_table(json_resp) {
         top: 5,
         fill: 'rgba(255,255,255,.75)',
         selectable: false
-    }));
+    })); 
 
-
-    var table_tbody_html = '';
 
     // Table - tbody (in #stars-tab) & draw on canvas
     
@@ -148,6 +142,7 @@ function update_star_list() {
 
 $(function () {
 
+    // Click on button
     $('#update_stars').click(function() {
         update_star_list();
     });

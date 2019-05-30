@@ -15,8 +15,7 @@ function update_star_and_reduction() {
         data: cmd_data,
         success: function(data) {
         
-            var json_resp = $.parseJSON(data);
-            var cat_stars = json_resp['close_stars'];     
+            var json_resp = $.parseJSON(data); 
             
             // Update Stars
             update_stars_on_canvas_and_table(json_resp);

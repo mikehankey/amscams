@@ -7,7 +7,7 @@ function update_reduction_on_canvas_and_table(json_resp) {
         
         // Get thumb path
         var frame_id = v[1];
-        var thumb_path = my_image.substring(0,my_image.indexOf('-trim')) + frame_id + '.png';
+        var thumb_path = my_image.substring(0,my_image.indexOf('-half')) + '-frm' + frame_id + '.png';
         var square_size = 6;
 
         // Thumb	#	Time	X/Y - W/H	Max PX	RA/DEC	AZ/EL
