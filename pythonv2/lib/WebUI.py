@@ -746,44 +746,46 @@ def meteors_new(json_conf,form):
       print("<h2 class='mb-3'><span id='meteor_count'>{:d}</span> meteors captured since inception.</h2>".format(len(meteors)))
  
    for meteor in sorted(meteors,reverse=True):
-        stack_file_tn = meteor.replace('.json', '-stacked-tn.png')
-        video_file = meteor.replace('.json', '.mp4')
-        stack_obj_img = video_file.replace(".mp4", "-stacked-obj-tn.png")
-        reduce_file = meteor.replace(".json", "-reduced.json")
-        reduced = 0
-        if cfe(reduce_file) == 1:
-            reduced = 1
+      stack_file_tn = meteor.replace('.json', '-stacked-tn.png')
+      video_file = meteor.replace('.json', '.mp4')
+      stack_obj_img = video_file.replace(".mp4", "-stacked-obj-tn.png")
+      reduce_file = meteor.replace(".json", "-reduced.json")
+      reduced = 0
+      if cfe(reduce_file) == 1:
+         reduced = 1
     
-        el = meteor.split("/")
-        temp = el[-1].replace(".mp4", "")
-        xxx = temp.split("-trim")
-        desc = xxx[0] 
-        desc_parts = desc.split("_")
-        desc = desc_parts[1] + "/" + desc_parts[2] + " " + desc_parts[3] + ":" + desc_parts[4] + " - " + desc_parts[7]
+      el = meteor.split("/")
+      temp = el[-1].replace(".mp4", "")
+      xxx = temp.split("-trim")
+      desc = xxx[0] 
+      desc_parts = desc.split("_")
+      desc = desc_parts[1] + "/" + desc_parts[2] + " " + desc_parts[3] + ":" + desc_parts[4] + " - " + desc_parts[7]
 
-        base_js_name = el[-1].replace("_", "")
-        base_js_name = base_js_name.replace(".json", "")
-        base_js_name_img = "img_" + base_js_name
-        fig_id = "fig_" + base_js_name
-        del_id =  base_js_name
+      base_js_name = el[-1].replace("_", "")
+      base_js_name = base_js_name.replace(".json", "")
+      base_js_name_img = "img_" + base_js_name
+      fig_id = "fig_" + base_js_name
+      del_id =  base_js_name
 
-        #We also can have fail or meteor (the css is ready for that)
-        if reduced == 1: 
-            htclass = "reduced"
-        else: 
-            htclass = "norm"
+      #We also can have fail or meteor (the css is ready for that)
+      if reduced == 1: 
+         htclass = "reduced"
+      else: 
+         htclass = "norm"
 
-        html_out = "<div id='"+del_id+"' class='col-lg-2 col-md-3 preview "+ htclass +"'>"
-        html_out = html_out + "<a class='mtt' href='webUI.py?cmd=reduce&video_file=" + video_file + " data_obj='"+stack_obj_img+"'>"
-        html_out = html_out + "<img alt='"+desc+"' class='img-fluid ns' src='" + stack_file_tn + "'>"
-        html_out = html_out + "<span>" + desc + "</span></a>"
-        html_out = html_out + "<div class='btn-toolbar'><div class='btn-group'>"
-        html_out = html_out + "<a class='vid_link_gal col btn btn-primary btn-sm' title='Play Video' href='" + video_file + "'><i class='icon-play'></i></a>"
-        html_out = html_out + "<a class='delete_meteor_gallery col btn btn-danger btn-sm' title='Delete Detection' data-meteor='" + del_id + "'><i class='icon-delete'></i></a>"
-        html_out = html_out + "</div></div>"
-        print(html_out)
+      #html_out = "<div id='"+del_id+"' class='col-lg-2 col-md-3 preview "+ htclass +"'>"
+      #html_out = html_out + "<a class='mtt' href='webUI.py?cmd=reduce&video_file=" + video_file + " data_obj='"+stack_obj_img+"'>"
+      #html_out = html_out + "<img alt='"+desc+"' class='img-fluid ns' src='" + stack_file_tn + "'>"
+      #html_out = html_out + "<span>" + desc + "</span></a>"
+      #html_out = html_out + "<div class='btn-toolbar'><div class='btn-group'>"
+      #html_out = html_out + "<a class='vid_link_gal col btn btn-primary btn-sm' title='Play Video' href='" + video_file + "'><i class='icon-play'></i></a>"
+      #html_out = html_out + "<a class='delete_meteor_gallery col btn btn-danger btn-sm' title='Delete Detection' data-meteor='" + del_id + "'><i class='icon-delete'></i></a>"
+      #html_out = html_out + "</div></div>"
+      #print(html_out)
     
    print("</div></div>") 
+
+
 
 def meteors(json_conf,form): 
    print ("""
