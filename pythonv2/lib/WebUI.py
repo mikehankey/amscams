@@ -1600,12 +1600,11 @@ def main_page(json_conf):
          html_row, day_x = make_day_preview(day_dir,stats_data[day], json_conf)
          day_str = day.replace("_", "/")
 
-         print("<h2>"+day_str" - <a href=webUI.py?cmd=meteors&limit_day=" + day + ">" + str(meteor_files) + " Meteors </a> </h2>")
-         print("<p><a href=webUI.py?cmd=browse_detects&type=failed&day=" + day + ">" + str(failed_files) + " Non-Meteors </a> - " + str(pending_files) + " Files Pending</a> "")
+         print("<h2>"+day_str+" - <a href=webUI.py?cmd=meteors&limit_day=" + day + ">" + str(meteor_files) + " Meteors </a> </h2>")
+         print("<p><a href=webUI.py?cmd=browse_detects&type=failed&day=" + day + ">" + str(failed_files) + " Non-Meteors </a> - " + str(pending_files) + " Files Pending</a>")
          print("<div class='gallery row text-center text-lg-left'>")
          print(html_row)
          print("</div>")
-   #print("""      <div style="float:left"><canvas id="c" width="960" height="540" style="border:2px solid #000000;"></canvas></div> """)
  
    print("</div>")
 
