@@ -1545,11 +1545,18 @@ def browse_day(day,cams_id,json_conf):
          htclass = "none"
       el = base_file.split("/")
       base_js_name = el[-1].replace("_", "")
-      link = "<a href=\"webUI.py?cmd=examine_min&video_file=" + video_file + "&next_stack_file=" + next_stack_file +"&next_stack_file=" + next_stack_file +  "\">" 
+
+      html_out =  "<div id='"+del_id+"' class='col-lg-2 col-md-3 preview "+ htclass +"'>"
+      html_out = html_out + "<a class='mtt' href='webUI.py?cmd=examine_min&video_file=" + video_file + "&next_stack_file=" + next_stack_file +"&next_stack_file=" + next_stack_file + "' title='Examine'>"
+      html_out = html_out + "<img alt='"+desc+"' class='img-fluid ns lz' src='" + stack_file_tn + "'>"
+      html_out = html_out + "<span>" + desc + "</span></a></div>"
+      print(html_out)
+
+      #link = "<a href=\"webUI.py?cmd=examine_min&video_file=" + video_file + "&next_stack_file=" + next_stack_file +"&next_stack_file=" + next_stack_file +  "\">" 
          #+ " onmouseover=\"document.getElementById('" + base_js_name + "').width=705\" " \
          #+ " onmouseout=\"document.getElementById('" + base_js_name + "').width=300\" " +  ">"
-      print(link)  
-      print("<img id=" + base_js_name + " class='" + htclass + "' width=300 src=" + stack_file_tn + "></img></a>")
+      #print(link)  
+      #print("<img id=" + base_js_name + " class='" + htclass + "' width=300 src=" + stack_file_tn + "></img></a>")
       cc = cc + 1
 
    print('</div></div>')
