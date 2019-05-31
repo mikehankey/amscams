@@ -1586,7 +1586,9 @@ def main_page(json_conf):
 
    json_file = json_conf['site']['proc_dir'] + "json/" + "main-index.json"
    stats_data = load_json_file(json_file)
-   print("<div style=\"border: 0px solid #6699ff; padding: 20px; margin: 10px; display:inline-block; \" >")
+
+   print('<h1>Daily detections</h1>')
+   print('<div id="main_container" class="container-fluid h-100 mt-4 lg-l">')
    for day in sorted(stats_data, reverse=True): 
       day_str = day
       day_dir = json_conf['site']['proc_dir'] + day + "/" 
@@ -1597,21 +1599,12 @@ def main_page(json_conf):
 
          html_row, day_x = make_day_preview(day_dir,stats_data[day], json_conf)
          day_str = day.replace("_", "/")
-         print("<div style=\"border: 0px solid #ffffff; padding: 0px;\"> &nbsp;")
-         print("<div style=\"float: left;\">")
-         print(day_str + " - <a href=webUI.py?cmd=meteors&limit_day=" + day + ">" \
-            + str(meteor_files) + " Meteors </a>  ")
-  
-         print("</div>")
-         print("<div style=\"border: 0px solid #ffffff; float: right;\">")
-         print("<a href=webUI.py?cmd=browse_detects&type=failed&day=" + day + ">" \
-            + str(failed_files) + " Non-Meteors </a> - ")
-         print(str(pending_files) + " Files Pending</a> ")
-         print("</div>")
-         print("</div>")
-         print("<P>")
+
+         print("<h2>"+day_str" - <a href=webUI.py?cmd=meteors&limit_day=" + day + ">" + str(meteor_files) + " Meteors </a> </h2>")
+         print("<p><a href=webUI.py?cmd=browse_detects&type=failed&day=" + day + ">" + str(failed_files) + " Non-Meteors </a> - " + str(pending_files) + " Files Pending</a> "")
+         print("<div class='gallery row text-center text-lg-left'>")
          print(html_row)
-         print("</P><div style='clear: both'></div>")
+         print("</div>")
    #print("""      <div style="float:left"><canvas id="c" width="960" height="540" style="border:2px solid #000000;"></canvas></div> """)
  
    print("</div>")
