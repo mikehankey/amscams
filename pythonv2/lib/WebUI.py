@@ -157,11 +157,11 @@ def make_day_preview(day_dir, stats_data, json_conf):
       day=day.replace("_","")
 
 
-      html_out = "<div class='col-lg-2 col-md-3 preview'>"
-      html_out = html_out + "<a class='mtt' href='webUI.py?cmd=browse_day&day=" + day_file + "&cams_id="+cam_id+"' data-obj='"+obj_stack+"' title='Browse all day'>"
-      html_out = html_out + "<img alt='"+day_str+"' class='img-fluid ns lz' src='" + meteor_stack + "'>"
+      html_out = html_out + "<div class='col-lg-2 col-md-3 preview mb-5'>"
+      html_out = html_out + "<a class='mtt' href='webUI.py?cmd=browse_day&day=" + day_str + "&cams_id="+cams_id+"'  title='Browse all day'>"
+      html_out = html_out + "<img alt='" + day_str + "' class='img-fluid ns lz' src='" + obj_stack + "'>"
       html_out = html_out + "<span>" + str(min_total) + " minutes</span></a></div>"     
-     
+      
       #html_out = html_out + "<figure><a href=\"webUI.py?cmd=browse_day&day=" + day_str + "&cams_id=" + cams_id \
       #   + "\" onmouseover=\"document.getElementById(" + day + cams_id + ").src='" + meteor_stack \
       #   + "'\" onmouseout=\"document.getElementById(" + day + cams_id + ").src='" + obj_stack + "'\">"
