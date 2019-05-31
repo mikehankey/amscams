@@ -42,3 +42,12 @@ img  {
 
 
 }
+
+
+// LAZY LOAD
+img.lz {
+    background-color: #132531;
+    background-image: url('../img/loading.gif');
+    background-repeat: no-repeat;
+    background-position: 50% 50%;
+}

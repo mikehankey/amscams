@@ -741,14 +741,12 @@ def meteors_new(json_conf,form):
          meteors = get_meteors(meteor_dir, meteors)
       elif limit_day == this_date:
          meteors = get_meteors(meteor_dir, meteors)
-         header_out = "<h1><span id='meteor_count'>"+format(len(meteors))+"</span> meteors captured on "+str(this_date)+"</h1>"
+         header_out = "<h1><span class='h'><span id='meteor_count'>"+format(len(meteors))+"</span> meteors</span> captured on "+str(this_date)+"</h1>"
    
    if limit_day is None:
-      header_out = "<h1><span id='meteor_count'>"+format(len(meteors))+"</span> meteors captured since inception</h1>"
+      header_out = "<h1><span class='h'><span id='meteor_count'>"+format(len(meteors))+"</span> meteors</span> captured since inception</h1>"
  
-   print(header_out)
-   print("<div id='main_container' class='container-fluid h-100 mt-4 lg-l'>")
-   print("<div class='gallery row text-center text-lg-left'>")
+  
 
    for meteor in sorted(meteors,reverse=True):
       stack_file_tn = meteor.replace('.json', '-stacked-tn.png')
@@ -786,8 +784,10 @@ def meteors_new(json_conf,form):
       html_out = html_out + "<a class='delete_meteor_gallery col btn btn-danger btn-sm' title='Delete Detection' data-meteor='" + del_id + "'><i class='icon-delete'></i></a>"
       html_out = html_out + "</div></div></div>"
  
-      print(html_out)
-    
+   print(header_out)
+   print("<div id='main_container' class='container-fluid h-100 mt-4 lg-l'>")
+   print("<div class='gallery row text-center text-lg-left'>")
+   print(html_out)
    print("</div></div>") 
 
 

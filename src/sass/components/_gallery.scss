@@ -30,11 +30,12 @@
 
     .preview {
 
-        margin-bottom:2rem;
+        margin-bottom:.5rem;
 
         img {  
-            border:2px solid rgba(255,255,255,.85);
+            border:1px solid rgba(255,255,255,.85);
             overflow: hidden;
+            width:100%;
             
             &:hover {
                 border-color: #000;
@@ -53,12 +54,22 @@
             text-align: center;
         }
 
+        &:hover {
+            a.mtt:before {
+                display: none;
+            }
+        }
+
         &.reduced {
 
             a.mtt:before {
                 content: 'Reduced';
                 color: #f90;
                 background: #ff99003d;
+            }
+
+            img {
+                border-color: #f90;
             }
            
         }
@@ -68,6 +79,9 @@
                 color: #21c419;
                 background:#00ff2d3d;
             }
+            img {
+                border-color: #21c419;
+            }
            
         }
         &.fail {
@@ -75,6 +89,9 @@
                 content: 'Fail';
                 color: #c00;
                 background: #ff00003d;
+            }
+            img {
+                border-color: #c00;
             }
         }
 
@@ -99,7 +116,15 @@
         &.mtt { 
             overflow: hidden;
             border: 2px solid transparent;
+            display: block;
+            width: 100%;
+            min-height: 231px; // For loading anim
         } 
+
+        img {
+            width: 100%;
+            min-height: 231px; // For loading anim
+        }
 
         span {
             position: absolute;
