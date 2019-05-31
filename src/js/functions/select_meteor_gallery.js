@@ -5,7 +5,7 @@ $(function() {
 
         $sel.on('change',function() {
             var id = $(this).attr('id');
-
+            loading({"text":"Selecting meteors..."});
             switch (id) {
                 case "reduced":
                     // Reduced Only
@@ -19,10 +19,9 @@ $(function() {
                    break;
                 default:
                     $('.preview.norm').fadeIn();
-              }
-
-
-        });
+            }
+            loading_done();
+         });
 
 
     }
