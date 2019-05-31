@@ -1523,7 +1523,7 @@ def browse_day(day,cams_id,json_conf):
       all_files.append(base_file)
 
 
-   print("<div class='h1_holder d-flex justify-content-between'><h1><span class='h'><span id='meteor_count'>"+format(len(base_file))+"</span> meteors</span> captured on +"day"+</h1></div>")
+   print("<div class='h1_holder d-flex justify-content-between'><h1><span class='h'><span id='meteor_count'>"+format(len(base_file))+"</span> meteors</span> captured on "+day+"</h1></div>")
    print("<div id='main_container' class='container-fluid h-100 mt-4 lg-l'>")
    print("<div class='gallery row text-center text-lg-left'>")
 
