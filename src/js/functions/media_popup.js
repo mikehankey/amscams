@@ -8,6 +8,10 @@ $(function() {
       $('.vid-link').magnificPopup({
         type: 'iframe' 
       });
+
+      $('.vid_link_gal').magnificPopup({
+        type: 'iframe' 
+      });
 });
 
 
