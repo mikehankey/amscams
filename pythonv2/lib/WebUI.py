@@ -732,8 +732,11 @@ def meteors_new(json_conf,form):
    meteor_base_dir ="/mnt/ams2/meteors/"
    meteor_dirs = sorted(get_meteor_dirs(meteor_base_dir), reverse=True)
   
-   header_out = "";
-   html_out = "";
+   header_out = "<div class='h1_holder  d-flex justify-content-between'>"
+   html_out = ""
+
+   norm_cnt = 0
+   reduced_cnt = 0
 
    for meteor_dir in meteor_dirs:
       el = meteor_dir.split("/")
@@ -742,10 +745,10 @@ def meteors_new(json_conf,form):
          meteors = get_meteors(meteor_dir, meteors)
       elif limit_day == this_date:
          meteors = get_meteors(meteor_dir, meteors)
-         header_out = "<h1><span class='h'><span id='meteor_count'>"+format(len(meteors))+"</span> meteors</span> captured on "+str(this_date)+"</h1>"
+         header_out = header_out + "<h1><span class='h'><span id='meteor_count'>"+format(len(meteors))+"</span> meteors</span> captured on "+str(this_date)+"</h1>"
    
    if limit_day is None:
-      header_out = "<h1><span class='h'><span id='meteor_count'>"+format(len(meteors))+"</span> meteors</span> captured since inception</h1>"
+      header_out = header_out + "<h1><span class='h'><span id='meteor_count'>"+format(len(meteors))+"</span> meteors</span> captured since inception</h1>"
  
   
 
@@ -773,8 +776,10 @@ def meteors_new(json_conf,form):
       #We also can have fail or meteor (the css is ready for that)
       if reduced == 1: 
          htclass = "reduced"
+         reduced_cnt = reduced_cnt + 1
       else: 
          htclass = "norm"
+         norm_cnt = norm_cnt + 1
 
       html_out = html_out + "<div id='"+del_id+"' class='col-lg-2 col-md-3 preview "+ htclass +"'>"
       html_out = html_out + "<a class='mtt' href='webUI.py?cmd=reduce&video_file=" + video_file + " data_obj='"+stack_obj_img+"' alt='Go to Info Page'>"
@@ -785,7 +790,16 @@ def meteors_new(json_conf,form):
       html_out = html_out + "<a class='delete_meteor_gallery col btn btn-danger btn-sm' title='Delete Detection' data-meteor='" + del_id + "'><i class='icon-delete'></i></a>"
       html_out = html_out + "</div></div></div>"
  
-   print(header_out)
+   #Create buttons
+   header_out = header_out + '<div class="btn-group btn-group-toggle" data-toggle="buttons">'
+   header_out = header_out + '<label class="btn btn-secondary active btn-met-all">'
+   header_out = header_out + '<input type="radio" name="meteor_select" id="all" autocomplete="off" checked=""> All '+ format(len(meteors)) +' meteors</label>'
+   header_out = header_out + '<label class="btn btn-secondary active btn-met-reduced">'
+   header_out = header_out + '<input type="radio" name="meteor_select" id="reduced" autocomplete="off"> Reduced '+  reduced_cnt +' Only</label>'
+   header_out = header_out + '<label class="btn btn-secondary">'
+   header_out = header_out + '<input type="radio" name="meteor_select" id="non_reduced" autocomplete="off"> Non-Reduced '+ format(len(meteors)-reduced_cnt) +'Only</label>
+  
+   print(header_out+'</div>')
    print("<div id='main_container' class='container-fluid h-100 mt-4 lg-l'>")
    print("<div class='gallery row text-center text-lg-left'>")
    print(html_out)
