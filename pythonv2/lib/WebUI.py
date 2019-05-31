@@ -733,6 +733,7 @@ def meteors_new(json_conf,form):
    meteor_dirs = sorted(get_meteor_dirs(meteor_base_dir), reverse=True)
   
    header_out = "";
+   html_out = "";
 
    for meteor_dir in meteor_dirs:
       el = meteor_dir.split("/")
@@ -775,7 +776,7 @@ def meteors_new(json_conf,form):
       else: 
          htclass = "norm"
 
-      html_out = "<div id='"+del_id+"' class='col-lg-2 col-md-3 preview "+ htclass +"'>"
+      html_out = html_out + "<div id='"+del_id+"' class='col-lg-2 col-md-3 preview "+ htclass +"'>"
       html_out = html_out + "<a class='mtt' href='webUI.py?cmd=reduce&video_file=" + video_file + " data_obj='"+stack_obj_img+"' alt='Go to Info Page'>"
       html_out = html_out + "<img alt='"+desc+"' class='img-fluid ns lz' src='" + stack_file_tn + "'>"
       html_out = html_out + "<span>" + desc + "</span></a>"     
