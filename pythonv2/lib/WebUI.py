@@ -358,7 +358,7 @@ def controller(json_conf):
    if cmd == 'meteors':
       meteors(json_conf, form)   
    if cmd == 'new_meteors':
-      meteors(json_conf, form)   
+      meteors_new(json_conf, form)   
    if cmd == 'config':
       as6_config(json_conf)   
    if cmd == 'browse_detects':
