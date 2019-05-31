@@ -1,17 +1,23 @@
-
-
 function reject_meteor(id) {
-   var m = "clicked: " + id;
-   new_id = 'fig_' + id
-   $('#' + new_id).remove();
-   ajax_url = "webUI.py?cmd=override_detect&jsid=" + id
-   $.get(ajax_url, function(data) {
-         $(".result").html(data);
+      loading({text:"Deleting"});
+      $.ajax({ 
+            url:  "webUI.py?cmd=override_detect",
+            data: {jsid: id},
+            success: function(data) {
+                  loading_done();
+                  // Debug
+                  console.log(data);
+            }, 
+            error: function() {
+                  alert('Impossible to reject. Please try again later')
+                  loading_done();
+            }
       });
 }
+  
 
-function play_meteor_video(video_url) {
-//   alert(video_url)
-   $('#ex1').modal();
-   $('#v1').attr("src", video_url);
-}
+$(function() {
+      $('.delete_meteor_gallery').click(function() {
+            reject_meteor($(this).attr('data-meteor'));
+      })
+})
