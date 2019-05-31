@@ -782,7 +782,7 @@ def meteors_new(json_conf,form):
          norm_cnt = norm_cnt + 1
 
       html_out = html_out + "<div id='"+del_id+"' class='col-lg-2 col-md-3 preview "+ htclass +"'>"
-      html_out = html_out + "<a class='mtt' href='webUI.py?cmd=reduce&video_file=" + video_file + " data_obj='"+stack_obj_img+"' title='Go to Info Page'>"
+      html_out = html_out + "<a class='mtt' href='webUI.py?cmd=reduce&video_file=" + video_file + "' data_obj='"+stack_obj_img+"' title='Go to Info Page'>"
       html_out = html_out + "<img alt='"+desc+"' class='img-fluid ns lz' src='" + stack_file_tn + "'>"
       html_out = html_out + "<span>" + desc + "</span></a>"     
       html_out = html_out + "<div class='btn-toolbar'><div class='btn-group'>"
