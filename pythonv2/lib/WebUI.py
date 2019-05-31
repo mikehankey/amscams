@@ -1516,15 +1516,16 @@ def print_css():
 
 
 def browse_day(day,cams_id,json_conf):
-
-
-   #print_css()
-
    day_files = get_day_files(day,cams_id,json_conf)
    cc = 0
    all_files = []
    for base_file in sorted(day_files,reverse=True):
       all_files.append(base_file)
+
+
+   print("<div class='h1_holder d-flex justify-content-between'><h1><span class='h'><span id='meteor_count'>"+format(len(base_file))+"</span> meteors</span> captured on +"day"+</h1></div>")
+   print("<div id='main_container' class='container-fluid h-100 mt-4 lg-l'>")
+   print("<div class='gallery row text-center text-lg-left'>")
 
    for base_file in sorted(day_files,reverse=True):
       if cc + 1 < len(day_files) - 2:
@@ -1550,6 +1551,8 @@ def browse_day(day,cams_id,json_conf):
       print(link)  
       print("<img id=" + base_js_name + " class='" + htclass + "' width=300 src=" + stack_file_tn + "></img></a>")
       cc = cc + 1
+
+   print('</div></div>')
 
 def browse_detects(day,type,json_conf):
    #print_css()
