@@ -782,7 +782,7 @@ def meteors_new(json_conf,form):
          norm_cnt = norm_cnt + 1
 
       html_out = html_out + "<div id='"+del_id+"' class='col-lg-2 col-md-3 preview "+ htclass +"'>"
-      html_out = html_out + "<a class='mtt' href='webUI.py?cmd=reduce&video_file=" + video_file + " data_obj='"+stack_obj_img+"' alt='Go to Info Page'>"
+      html_out = html_out + "<a class='mtt' href='webUI.py?cmd=reduce&video_file=" + video_file + " data_obj='"+stack_obj_img+"' title='Go to Info Page'>"
       html_out = html_out + "<img alt='"+desc+"' class='img-fluid ns lz' src='" + stack_file_tn + "'>"
       html_out = html_out + "<span>" + desc + "</span></a>"     
       html_out = html_out + "<div class='btn-toolbar'><div class='btn-group'>"
@@ -790,16 +790,18 @@ def meteors_new(json_conf,form):
       html_out = html_out + "<a class='delete_meteor_gallery col btn btn-danger btn-sm' title='Delete Detection' data-meteor='" + del_id + "'><i class='icon-delete'></i></a>"
       html_out = html_out + "</div></div></div>"
  
+   non_rec_cnt = len(meteors)-reduced_cnt
+ 
    #Create buttons
    header_out = header_out + '<div class="btn-group btn-group-toggle" data-toggle="buttons">'
    header_out = header_out + '<label class="btn btn-secondary active btn-met-all">'
    header_out = header_out + '<input type="radio" name="meteor_select" id="all" autocomplete="off" checked=""> All '+ format(len(meteors)) +' meteors</label>'
-   header_out = header_out + '<label class="btn btn-secondary active btn-met-reduced">'
-   header_out = header_out + '<input type="radio" name="meteor_select" id="reduced" autocomplete="off"> Reduced '+  reduced_cnt +' Only</label>'
+   header_out = header_out + '<label class="btn btn-secondary btn-met-reduced">'
+   header_out = header_out + '<input type="radio" name="meteor_select" id="reduced" autocomplete="off">All '+  format(reduced_cnt) +' Reduced Meteors Only</label>'
    header_out = header_out + '<label class="btn btn-secondary">'
-   header_out = header_out + '<input type="radio" name="meteor_select" id="non_reduced" autocomplete="off"> Non-Reduced '+ format(len(meteors)-reduced_cnt) +'Only</label>
-  
-   print(header_out+'</div>')
+   header_out = header_out + '<input type="radio" name="meteor_select" id="non_reduced" autocomplete="off">All '+ format(non_rec_cnt) +'  Non-Reduced Meteors Only</label>'
+
+   print(header_out+'</div></div>')
    print("<div id='main_container' class='container-fluid h-100 mt-4 lg-l'>")
    print("<div class='gallery row text-center text-lg-left'>")
    print(html_out)
