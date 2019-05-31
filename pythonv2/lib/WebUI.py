@@ -728,12 +728,12 @@ def meteors_new(json_conf,form):
 
    limit_day = form.getvalue('limit_day')
    htclass = "none"
-   print("<h1>Meteors</h1>")
-   print("<div id='main_container' class='container-fluid h-100 mt-4 lg-l'>")
    meteors = []
    meteor_base_dir ="/mnt/ams2/meteors/"
    meteor_dirs = sorted(get_meteor_dirs(meteor_base_dir), reverse=True)
   
+   header_out = "";
+
    for meteor_dir in meteor_dirs:
       el = meteor_dir.split("/")
       this_date = el[-1]
@@ -741,10 +741,13 @@ def meteors_new(json_conf,form):
          meteors = get_meteors(meteor_dir, meteors)
       elif limit_day == this_date:
          meteors = get_meteors(meteor_dir, meteors)
-         print(" <h2 class='mb-3'><span id='meteor_count'>{:d}</span> meteors captured on {:s}</h2>".format(len(meteors), str(this_date)))
+         header_out = "<h1><span id='meteor_count'>"+format(len(meteors))+"</span> meteors captured on "+str(this_date)+"</h1>"
+   
    if limit_day is None:
-      print("<h2 class='mb-3'><span id='meteor_count'>{:d}</span> meteors captured since inception</h2>".format(len(meteors)))
-
+      header_out = "<h1><span id='meteor_count'>"+format(len(meteors))+"</span> meteors captured since inception</h1>"
+ 
+   print(header_out)
+   print("<div id='main_container' class='container-fluid h-100 mt-4 lg-l'>")
    print("<div class='gallery row text-center text-lg-left'>")
 
    for meteor in sorted(meteors,reverse=True):
@@ -772,11 +775,11 @@ def meteors_new(json_conf,form):
       if reduced == 1: 
          htclass = "reduced"
       else: 
-        htclass = "norm"
+         htclass = "norm"
 
       html_out = "<div id='"+del_id+"' class='col-lg-2 col-md-3 preview "+ htclass +"'>"
       html_out = html_out + "<a class='mtt' href='webUI.py?cmd=reduce&video_file=" + video_file + " data_obj='"+stack_obj_img+"' alt='Go to Info Page'>"
-      html_out = html_out + "<img alt='"+desc+"' class='img-fluid ns' src='" + stack_file_tn + "'>"
+      html_out = html_out + "<img alt='"+desc+"' class='img-fluid ns lz' src='" + stack_file_tn + "'>"
       html_out = html_out + "<span>" + desc + "</span></a>"     
       html_out = html_out + "<div class='btn-toolbar'><div class='btn-group'>"
       html_out = html_out + "<a class='vid_link_gal col btn btn-primary btn-sm' title='Play Video' href='" + video_file + "'><i class='icon-play'></i></a>"
