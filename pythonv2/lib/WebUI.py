@@ -726,24 +726,26 @@ def get_meteors(meteor_dir,meteors):
  
 def meteors_new(json_conf,form):  
 
-   limit_day = form.getvalue('limit_day')
-   htclass = "none"
-   print("<h1>Meteors</h1>")
-   print("<div id='main_container' class='container-fluid h-100 mt-4 lg-l'>")
-   meteors = []
-   meteor_base_dir ="/mnt/ams2/meteors/"
-   meteor_dirs = sorted(get_meteor_dirs(meteor_base_dir), reverse=True)
+   print("TEST")
+
+   #limit_day = form.getvalue('limit_day')
+   #htclass = "none"
+   #print("<h1>Meteors</h1>")
+   #print("<div id='main_container' class='container-fluid h-100 mt-4 lg-l'>")
+   #meteors = []
+   #meteor_base_dir ="/mnt/ams2/meteors/"
+   #meteor_dirs = sorted(get_meteor_dirs(meteor_base_dir), reverse=True)
  
-   for meteor_dir in meteor_dirs:
-      el = meteor_dir.split("/")
-      this_date = el[-1]
-      if limit_day is None: 
-         meteors = get_meteors(meteor_dir, meteors)
-      elif limit_day == this_date:
-         meteors = get_meteors(meteor_dir, meteors)
-         print(" <h2 class='mb-3'><span id='meteor_count'>{:d}</span> meteors captured on {:s}.</h2>".format(len(meteors), str(this_date)))
-   if limit_day is None:
-      print("<h2 class='mb-3'><span id='meteor_count'>{:d}</span> meteors captured since inception.</h2>".format(len(meteors)))
+   #for meteor_dir in meteor_dirs:
+      #el = meteor_dir.split("/")
+      #this_date = el[-1]
+      #if limit_day is None: 
+         #meteors = get_meteors(meteor_dir, meteors)
+      #elif limit_day == this_date:
+         #meteors = get_meteors(meteor_dir, meteors)
+         #print(" <h2 class='mb-3'><span id='meteor_count'>{:d}</span> meteors captured on {:s}.</h2>".format(len(meteors), str(this_date)))
+   #if limit_day is None:
+      #print("<h2 class='mb-3'><span id='meteor_count'>{:d}</span> meteors captured since inception.</h2>".format(len(meteors)))
  
    #for meteor in sorted(meteors,reverse=True):
       #stack_file_tn = meteor.replace('.json', '-stacked-tn.png')
