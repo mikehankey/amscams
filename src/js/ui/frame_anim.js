@@ -1,12 +1,11 @@
-var $allframes = $('img.select_meteor');
- var totalFrames = $allframes.length;
- var animationDuration = parseFloat($('#dur').text())*1000; // Duration get the 
- var timePerFrame = animationDuration / totalFrames;
- var timeWhenLastUpdate;
- var timeFromLastUpdate;
- var frameNumber = 1; 
- var playing = true;
 
+var totalFrames = $allframes.length;
+var animationDuration = parseFloat($('#dur').text())*1000; // Duration get the 
+var timePerFrame = animationDuration / totalFrames;
+var timeWhenLastUpdate;
+var timeFromLastUpdate;
+var frameNumber = 1; 
+var playing = true;
 
 // Modal for selector
 function addAnimModalTemplate($allframes) {
@@ -21,6 +20,7 @@ function addAnimModalTemplate($allframes) {
 }
 
 function frame_anim() { 
+    var $allframes = $('img.select_meteor');
     addAnimModalTemplate($allframes);
     $('#anim_modal').modal();
 
