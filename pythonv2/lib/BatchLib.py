@@ -19,8 +19,8 @@ def batch_reduce(json_conf):
       print(meteor_dir)
       meteor_files = glob.glob(meteor_dir + "/" + "*.json")
       for json_file in sorted(meteor_files,reverse=True):
-#         if "reduced" not in json_file and "calparams" not in json_file and "manual" not in json_file:
-          if True:
+          if "reduced" not in json_file and "calparams" not in json_file and "manual" not in json_file and "starmerge" not in json_file and "master" not in json_file:
+ #         if True:
             reduced_file = json_file.replace(".json", "-reduced.json")
             failed_file = json_file.replace(".json", "-rfailed.txt")
             if cfe(reduced_file) == 1:
@@ -28,6 +28,7 @@ def batch_reduce(json_conf):
             elif cfe(failed_file) == 1:
                print("Skip already tried and failed", failed_file)
             else:
+               print("Get cal file:", json_file)
                cal_files = get_active_cal_file(json_file)
                if cal_files is not None:
                   cal_params_file = cal_files[0][0]
@@ -708,12 +709,14 @@ def stack_folder(folder,json_conf):
             print("draw failed")
 
 def get_active_cal_file(input_file):
-   #print("INPUT FILE", input_file)
+   print("INPUT FILE", input_file)
    if "png" in input_file:
       input_file = input_file.replace(".png", ".mp4")
+   
    (f_datetime, cam_id, f_date_str,Y,M,D, H, MM, S) = better_parse_file_date(input_file)
 
    # find all cal files from his cam for the same night
+   print("FIND MATCH:", cam_id, f_datetime)
    matches = find_matching_cal_files(cam_id, f_datetime)
    #print("MATCHED:", matches)
    if len(matches) > 0:
@@ -745,8 +748,8 @@ def find_matching_cal_files(cam_id, capture_date):
    matches = []
    all_files = glob.glob("/mnt/ams2/cal/freecal/*")
    for file in all_files:
-      if cam_id in file :
-         #print("POS FILE FOUND:", file)
+      if cam_id in file and cfe(file, 1) == 1:
+         print("cal FILE FOUND:", file)
          el = file.split("/")
          fn = el[-1]
          cal_p_file = file  + "/" + fn + "-stacked-calparams.json"
