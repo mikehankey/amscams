@@ -363,7 +363,7 @@ def controller(json_conf):
    if cmd == 'live_view':
       live_view(json_conf)   
    if cmd == 'meteors':
-      meteors(json_conf, form)   
+      meteors_new(json_conf, form)   
    if cmd == 'new_meteors':
       meteors_new(json_conf, form)   
    if cmd == 'config':
@@ -566,9 +566,7 @@ def meteor_index(json_conf, form):
 
 
 def hd_cal_index(json_conf, form):
-
-
-
+   cam_id_filter = form.getvalue("cam_id")
    print("<h1>Auto Calibration Index</h1>")
    print("<div style=\"padding: 5px; margin: 5px; clear:both\"  >")
    ci = load_json_file("/mnt/ams2/cal/hd_images/hd_cal_index.json")
@@ -589,7 +587,7 @@ def hd_cal_index(json_conf, form):
    """)
 
    print("<table border=1 cellpadding=5 cellspacing=5>")
-   print("<tr><th>Date</th><th>Cam</th><th>Images w/ Stars</th><th>Images w/o Stars</th><th>Total Stars For Night</th><th>Avg Res Px For Night</th><th>Avg Res Deg For Night</th></tr>")
+   print("<tr><th>Date</th><th>Cam</th><th>Images w/ Stars</th><th>Images w/o Stars</th><th>Total Stars For Night</th><th>Center AZ/EL</th><th>Position Angle</th><th>PixScale</th><th>Avg Res Px For Night</th><th>Avg Res Deg For Night</th></tr>")
    for day in sorted(ci,reverse=True):
       #print("<div style=\"padding: 5px; margin: 5px; clear:both\"  >")
       #print("<h2>" + str(day) + "</h2></div>")
@@ -610,27 +608,72 @@ def hd_cal_index(json_conf, form):
             desc = ""
          div_id = str(day) + "." + str(cam_id)
          show_link = "<a href=\"javascript:show_hide('" + div_id + "')\">"
-         print("<tr ><td>{:s}</td><td>{:s}{:s}</a></td><td>{:s}</td><td>{:s}</td><td>{:s}</td><td>{:s}</td><td>{:s}</td></tr>".format(
-         str(day), show_link, str(cam_id), str(cam_day_sum[day][cam_id]['files_with_stars']), str(cam_day_sum[day][cam_id]['files_without_stars']), str(cam_day_sum[day][cam_id]['total_stars_tracked_for_night']), str(cam_day_sum[day][cam_id]['avg_res_px_for_night'])[0:5],str(cam_day_sum[day][cam_id]['avg_res_deg_for_night'])[0:5])
-         )
-          
-         print("<tr ><td colspan=7><div id='" + div_id + "' style='display: none;' > ")
-         for cfile in sorted(ci[day][cam_id], reverse=True):
-            if "total_res_deg" in ci[day][cam_id][cfile]:
-               trd = ci[day][cam_id][cfile]['total_res_deg']
-               trp = ci[day][cam_id][cfile]['total_res_px']
-               ts = ci[day][cam_id][cfile]['total_stars']
-            else:
-               trd = 0 
-               trp = 0 
-               ts = 0 
+         if cam_day_sum[day][cam_id]['avg_res_deg_for_night'] > .5:
+               color = "style='color: #ff0000'"
+         elif .4 < cam_day_sum[day][cam_id]['avg_res_deg_for_night'] <= .5:
+               color = "style='color: #FF4500'"
+         elif .3 < cam_day_sum[day][cam_id]['avg_res_deg_for_night'] <= .4:
+               color = "style='color: #FFFF00'"
+         elif .2 < cam_day_sum[day][cam_id]['avg_res_deg_for_night'] <= .3:
+               color = "style='color: #00FF00'"
+         elif .1 < cam_day_sum[day][cam_id]['avg_res_deg_for_night'] <= .2:
+               color = "style='color: #00ffff'"
+         elif 0 < cam_day_sum[day][cam_id]['avg_res_deg_for_night'] <= .1:
+               color = "style='color: #0000ff'"
+         elif cam_day_sum[day][cam_id]['avg_res_deg_for_night'] == 0:
+               color = "style='color: #ffffff'"
+         else: 
+               color = ""
+         if cam_id_filter is None:
+            show_row = 1
+         elif cam_id == cam_id_filter:
+            show_row = 1
+         else:
+            show_row = 0 
 
-            fn = cfile.split("/")[-1]
-            tn = "/mnt/ams2/cal/hd_images/" + day + "/thumbs/" + fn 
-            tn = tn.replace(".png", "-tn.png")
-            detail_link = "webUI.py?cmd=hd_cal_detail&cfile=" + cfile
-            print("<figure style=\"float:left; \"><a href=" + detail_link + "><img src=" + tn + " width=144 height=81></a><figcaption>" + str(ts) + " " + str(trp)[0:5] + "," + str(trd)[0:5] + "</figcaption></figure>")
-         print("</td></tr> ")
+         if "position_angle" in cam_day_sum[day][cam_id]:
+            fov_pos = str(cam_day_sum[day][cam_id]['position_angle'])[0:5] 
+         else : 
+            fov_pos = ""
+
+         if "center_az" in cam_day_sum[day][cam_id]:
+            az_el = str(str(cam_day_sum[day][cam_id]['center_az'])[0:5] + "/" + str(cam_day_sum[day][cam_id]['center_el'])[0:5])
+         else : 
+            az_el = ""
+         if "position_angle" in cam_day_sum[day][cam_id]:
+            pos_ang = str(str(cam_day_sum[day][cam_id]['position_angle'])[0:5])
+         else : 
+            pos_ang = ""
+         if "pixscale" in cam_day_sum[day][cam_id]:
+            px_scale = str(str(cam_day_sum[day][cam_id]['pixscale'])[0:5])
+         else : 
+            px_scale = ""
+
+         if show_row == 1:
+            print("<tr " + color + "><td>{:s}</td><td>{:s}{:s}</a></td><td>{:s}</td><td>{:s}</td><td>{:s}</td><td>{:s}</td><td>{:s}</td><td>{:s}</td><td>{:s}</td><td>{:s}</td></tr>".format( str(day), show_link, str(cam_id), str(cam_day_sum[day][cam_id]['files_with_stars']), str(cam_day_sum[day][cam_id]['files_without_stars']), str(cam_day_sum[day][cam_id]['total_stars_tracked_for_night']), az_el, pos_ang, px_scale, str(cam_day_sum[day][cam_id]['avg_res_px_for_night'])[0:5],str(cam_day_sum[day][cam_id]['avg_res_deg_for_night'])[0:5]))
+          
+            print("<tr ><td colspan=10><div id='" + div_id + "' style='display: none;' > ")
+            for cfile in sorted(ci[day][cam_id], reverse=True):
+               if "total_res_deg" in ci[day][cam_id][cfile]:
+                  trd = ci[day][cam_id][cfile]['total_res_deg']
+                  trp = ci[day][cam_id][cfile]['total_res_px']
+                  ts = ci[day][cam_id][cfile]['total_stars']
+               else:
+                  trd = 0 
+                  trp = 0 
+                  ts = 0 
+
+               fn = cfile.split("/")[-1]
+               tn = "/mnt/ams2/cal/hd_images/" + day + "/thumbs/" + fn 
+               tn = tn.replace(".png", "-tn.png")
+               detail_link = "webUI.py?cmd=hd_cal_detail&cfile=" + cfile
+               if trp >= 5:
+                  color = "style='color: #ff0000'"
+               else:
+                  color = ""
+         
+               print("<figure style=\"float:left; \"><a href=" + detail_link + "><img src=" + tn + " width=144 height=81></a><figcaption " + color + ">Stars:" + str(ts) + "<BR>Rpx " + str(trp)[0:5] + ", Rd" + str(trd)[0:5] + "<BR>" + "" + "</figcaption></figure>")
+            print("</td></tr> ")
    print("</div></table>")
    print("</div>")
    extra_html = """
@@ -875,6 +918,12 @@ def meteors(json_conf,form):
          htclass = "norm"
 
       buttons = "<br><a href=\"javascript:play_meteor_video('" + video_file + " ')\">Play</A> - " 
+      #buttons = " <a class=\"vid-link\" href=\"" + video_file + "\">Play</a> -"
+      #buttons = """
+      #    <a href='""" + video_file + """'>Play</a>
+#
+#      """
+
       buttons = buttons + "<a href=\"webUI.py?cmd=reduce&video_file=" + video_file + "\"" + ">Info</A> - " 
       buttons = buttons + "<a href=\"javascript:reject_meteor('" + del_id + "')\">Del</A>" 
 

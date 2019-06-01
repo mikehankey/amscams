@@ -1965,7 +1965,6 @@ def clean_hist(history, metframes = None, metconf = None):
 
 def reduce_meteor_ajax(json_conf,meteor_json_file, cal_params_file, show = 0):
 
-
    if show == 1:
       cv2.namedWindow('pepe')
    hdm_x = 2.7272727272727272
@@ -1994,8 +1993,10 @@ def reduce_meteor_ajax(json_conf,meteor_json_file, cal_params_file, show = 0):
          red_data  = load_json_file(cal_params_file) 
          cal_params = red_data['cal_params']
       else:
+
          cal_params_files = get_active_cal_file(sd_stack_file)
          cal_params_file = cal_params_files[0][0]
+         cal_params = load_json_file(cal_params_file) 
 
    else:
       cal_params = load_json_file(cal_params_file) 
@@ -2878,7 +2879,7 @@ def reduce_meteor_new(json_conf,form):
       del_frame_link = "javascript:del_frame('" + str(fn) + "','" + meteor_json_file +"')"
 
 
-      red_table = red_table + """
+      red_table2 = red_table + """
       <tr id="fr_{:s}">
         <td>{:s}</td>
         <td>{:s}</td>
@@ -2896,7 +2897,10 @@ def reduce_meteor_new(json_conf,form):
 
    template = template.replace("{%RED_TABLE%}", red_table)
    template = template.replace("{%STAR_TABLE%}", stars_table)
+   #template = template.replace("{%RED_TABLE%}", "")
+   #template = template.replace("{%STAR_TABLE%}", "")
    cal_params_file = ""
+   #template = template.replace("{%CAL_PARAMS_OPTIONS%}", cal_params_options)
    template = template.replace("{%SELECTED_CAL_PARAMS_FILE%}", cal_params_file)
 
    print(template)
@@ -3960,7 +3964,7 @@ def free_cal(json_conf,form):
       stack_file = "/mnt/ams2/cal/freecal/" + dr + "/" + sfn 
 
       if cfe(stack_file) == 0:
-         frames = load_video_frames(input_file, json_conf, 1499)
+         frames = load_video_frames(input_file, json_conf, 200)
          stack_file, stack_img = stack_frames(frames, input_file, 1)
          input_file = input_file.replace(".mp4", ".png") 
       else:
@@ -4137,9 +4141,9 @@ def show_cat_stars(json_conf,form):
             user_stars = []
             used = {}
             for cstar in cal_params['cat_image_stars']:
-               (iname,mag,ra,dec,tmp1,tmp2,px_dist,new_cat_x,new_cat_y,tmp3,tmp4,new_cat_x,new_cat_y,ix,iy,px_dist) = cstar
+               (iname,mag,ra,dec,tmp1,tmp2,px_dist,est_cat_x,est_cat_y,tmp3,tmp4,new_cat_x,new_cat_y,ix,iy,px_dist) = cstar
                key = str(ix) + "." + str(iy)
-               here_now = 0
+               here_now = 1
                if px_dist < 15:
                   for x,y in user_stars:
                      dst = calc_dist((x,y),(ix,iy))
