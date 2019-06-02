@@ -74,12 +74,23 @@ def meteor_index(json_conf, extra_cmd = ""):
             red_data = load_json_file(rmeteor)
             if "cal_params" in red_data:
                print("CP EXISTS")
+               meteor_index[day][meteor]['center_az'] = red_data['cal_params']['center_az']
+               meteor_index[day][meteor]['center_el'] = red_data['cal_params']['center_el']
+               meteor_index[day][meteor]['position_angle'] = red_data['cal_params']['position_angle']
+               if 'event_start_time' in red_data:
+                  meteor_index[day][meteor]['event_start_time'] = red_data['event_start_time']
+               if 'pixscale' in red_data['cal_params']:
+                  meteor_index[day][meteor]['pixscale'] = red_data['cal_params']['pixscale']
+               else:
+                  meteor_index[day][meteor]['pixscale'] = 999 
+               if "cat_image_stars" in red_data['cal_params']:
+                  meteor_index[day][meteor]['total_stars'] = len(red_data['cal_params']['cat_image_stars'])
+               else:
+                  meteor_index[day][meteor]['total_stars'] = 0
                if "total_res_px" in red_data['cal_params']:
-                  print("RES EXISTS")
                   meteor_index[day][meteor]['total_res_px'] = red_data['cal_params']['total_res_px']
                   meteor_index[day][meteor]['total_res_deg'] = red_data['cal_params']['total_res_deg']
                else:
-                  print("RES DOES NOT EXIST")
                   meteor_index[day][meteor]['total_res_px'] = 0 
                   meteor_index[day][meteor]['total_res_deg'] = 0 
             else:
@@ -90,8 +101,11 @@ def meteor_index(json_conf, extra_cmd = ""):
                   jobs.append("./autoCal.py cfit " + meteor)
             
 
-
-            meteor_index[day][meteor]['angular_separation'] = 9999
+           
+            if 'angular_separation' in red_data:
+               meteor_index[day][meteor]['angular_separation'] = 9999
+            else:
+               meteor_index[day][meteor]['angular_separation'] = 9999
             if 'peak_magnitude' in red_data:
                meteor_index[day][meteor]['peak_magnitude'] = red_data['peak_magnitude']
             if 'event_duation ' in red_data:
@@ -1696,7 +1710,13 @@ def lookup_star_in_cat(ix,iy,cat_stars,no_poly_cat_stars, star_dist=10,):
       return(0, closest)
 
 def get_stars_from_image(file,json_conf,masks = [], cal_params = None, show = 0, strict = 0):
-   user_stars = None
+   orig_cat_image_stars = cal_params['cat_image_stars']
+   user_stars = []
+   if len(orig_cat_image_stars) > 0:
+      print("ORIG:", orig_cat_image_stars[0])
+      for name,mag,ra,dec,tmp1,tmp2,px_dist,new_cat_x,new_cat_y,tmp3,tmp4,new_cat_x,new_cat_y,ix,iy,px_dist in orig_cat_image_stars:
+         user_stars.append((ix,iy,0))
+   img_stars = user_stars 
    if show == 1:
       cv2.namedWindow('pepe')
    print("FILE:",file)
@@ -1714,9 +1734,9 @@ def get_stars_from_image(file,json_conf,masks = [], cal_params = None, show = 0,
    else:
       cal_params_file = None
 
-   if "user_stars" in cal_params:
-      user_stars = cal_params['user_stars']
-      img_stars = user_stars
+   #if "user_stars" in cal_params:
+   #   user_stars = cal_params['user_stars']
+   #   img_stars = user_stars
    
    if "center_az" not in cal_params:
       print("NO CENTER AZ!")
@@ -1762,7 +1782,9 @@ def get_stars_from_image(file,json_conf,masks = [], cal_params = None, show = 0,
    hc = 0
    if user_stars is None:
       img_stars = []
-   new_img_stars = []
+      new_img_stars = []
+   else:
+      new_img_stars = user_stars 
    for w in range(0,1920):
       for h in range(0,1080):
          if (w == 0 and h == 0) or (w % gsize == 0 and h % gsize == 0):

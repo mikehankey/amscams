@@ -250,6 +250,9 @@ def controller(json_conf):
    if cmd == 'fit_field':
       fit_field(json_conf,form)
       exit()
+   if cmd == 'reset_reduce':
+      reset_reduce(json_conf,form)
+      exit()
    if cmd == 'reduce_meteor_ajax':
       cal_params_file = form.getvalue("cal_params_file")
       meteor_json_file = form.getvalue("meteor_json_file")
@@ -386,7 +389,29 @@ def controller(json_conf):
    #cam_num = form.getvalue('cam_num')
    #day = form.getvalue('day')
 
-
+def reset_reduce(json_conf, form):
+   mjf = form.getvalue("cal_params_file")
+   mjf = mjf.replace(".json", "-reduced.json") 
+   if "reduced.json" not in mjf:
+      print("BAD FILE!")
+      exit()
+   if cfe(mjf) == 0:
+      print("BAD FILE!")
+      exit()
+   if "meteors" not in mjf:
+      print("BAD FILE!")
+      exit()
+   if " " in mjf:
+      print("BAD FILE!")
+      exit()
+   if ";" in mjf:
+      print("BAD FILE!")
+      exit()
+   cmd = "rm " + mjf 
+   os.system(cmd)
+   resp = {}
+   resp['status'] = "reduction and cal params reset"
+   print(json.dumps(resp))
 
 def list_meteors(json_conf, form):
    meteor_date = form.getvalue("meteor_date")
@@ -551,17 +576,63 @@ def hd_cal_detail(json_conf, form):
 
 def meteor_index(json_conf, form):
    print("<h1>Meteor Index</h1>")
+   cam_id = form.getvalue("cam_id")
    mi = load_json_file("/mnt/ams2/cal/hd_images/meteor_index.json")
    print("<div style=\"padding: 5px; margin: 5px; clear:both\"  >")
    print("<table border=1 cellpadding=5 cellspacing=5>")
-   print("<tr><th>Day</th><th>File</th><th>Reduced</th><th>Res Px</th><th>Res Deg</th></tr>")
+   print("<tr><th>Meteor</th><th>Reduced</th><th>AZ/EL FOV</th><th>Pos Ang</th><th>Pixscale</th><th>Stars</th><th>Res Px</th><th>Res Deg</th><th>Dur</th><th>Ang Sep</th><th>Mag</th></tr>")
    for day in mi:
       for meteor_file in mi[day]:
+         hd_datetime, hd_cam, hd_date, hd_y, hd_m, hd_d, hd_h, hd_M, hd_s = convert_filename_to_date_cam(meteor_file)
+         if cam_id is None:
+            show = 1
+         elif cam_id == hd_cam:
+            show = 1
+         else:
+            show = 0
          fn = meteor_file.split("/")[-1]
          fn = fn.replace(".json", "")
          video_file = meteor_file.replace(".json", ".mp4")
          link = "<a href=/pycgi/webUI.py?cmd=reduce&video_file=" + video_file + ">"
-         print("<tr><td>{:s}</td><td> {:s}{:s}</a></td><td> {:s}</td><td> {:s}</td><td> {:s} </td></tr> ".format(day, link, fn, str(mi[day][meteor_file]['reduced']), str(mi[day][meteor_file]['total_res_px'])[0:5], str(mi[day][meteor_file]['total_res_deg'])[0:5]))
+
+         if mi[day][meteor_file]['total_res_deg'] > .5:
+               color = "style='color: #ff0000'"
+         elif .4 < mi[day][meteor_file]['total_res_deg'] < .5:
+               color = "style='color: #FF4500'"
+         elif .3< mi[day][meteor_file]['total_res_deg'] < .4:
+               color = "style='color: #FFFF00'"
+         elif .2 < mi[day][meteor_file]['total_res_deg'] < .3:
+               color = "style='color: #00FF00'"
+         elif .1 < mi[day][meteor_file]['total_res_deg'] < .2:
+               color = "style='color: #00ffff'"
+         elif mi[day][meteor_file]['total_res_deg'] == 0:
+               color = "style='color: #ffffff'"
+         elif mi[day][meteor_file]['total_res_deg'] == 9999:
+               color = "style='color: #ffffff'"
+         elif 0 < mi[day][meteor_file]['total_res_deg'] < .1:
+               color = "style='color: #0000ff'"
+         else:
+               color = "style='color: #ffffff'"
+         if 'center_az' in mi[day][meteor_file]:
+            az_el = str(mi[day][meteor_file]['center_az'])[0:5] + "/" +  str(mi[day][meteor_file]['center_el'])[0:5]
+         else:
+            az_el = ""
+         if 'event_start_time' in mi[day][meteor_file]:
+            fn = mi[day][meteor_file]['event_start_time']
+         pos = ""
+         pxs = ""
+         ts = 0 
+         if 'total_stars' in mi[day][meteor_file]:
+            ts = str(mi[day][meteor_file]['total_stars'])
+         if 'position_angle' in mi[day][meteor_file]:
+            pos = str(mi[day][meteor_file]['position_angle'])[0:5]
+          
+         if 'pixscale' in mi[day][meteor_file]:
+            pxs = str(mi[day][meteor_file]['pixscale'])[0:5]
+
+         if show == 1:
+            print("<tr " + color + "><td> {:s}{:s}</a></td><td>{:s}</td><td>{:s}</td><td>{:s}</td><td>{:s}</td><td>{:s}</td><td> {:s}</td><td> {:s} </td><td></td><td></td><td></td></tr> ".format(link, fn, str(mi[day][meteor_file]['reduced']), az_el, pos, pxs, str(ts), str(mi[day][meteor_file]['total_res_px'])[0:5], str(mi[day][meteor_file]['total_res_deg'])[0:5]))
+          
    print("</table></div>")
 
 

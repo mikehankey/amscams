@@ -2691,6 +2691,9 @@ def reduce_meteor_new(json_conf,form):
    else:
 
       cal_files = get_active_cal_file(mj['sd_video_file'])
+      print("GETTING CAL FILES for ", mj['sd_video_file'], "<HR>")
+      for cal_file in cal_files:
+         print(cal_file, "<BR>")
       cal_params_file = cal_files[0][0]
       #print("Meteor not reduced yet...using...", cal_params_file)
       #exit()
