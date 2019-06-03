@@ -157,7 +157,7 @@ def make_day_preview(day_dir, stats_data, json_conf):
       day=day.replace("_","")
 
 
-      html_out = html_out + "<div class='col-lg-2 col-md-3 preview mb-5'>"
+      html_out = html_out + "<div class='preview mb-5'>"
       html_out = html_out + "<a class='mtt' href='webUI.py?cmd=browse_day&day=" + day_str + "&cams_id="+cams_id+"'  title='Browse all day'>"
       html_out = html_out + "<img alt='" + day_str + "' class='img-fluid ns lz' src='" + obj_stack + "'>"
       html_out = html_out + "<span>" + str(min_total) + " minutes</span></a></div>"     
@@ -902,7 +902,7 @@ def meteors_new(json_conf,form):
          htclass = "norm"
          norm_cnt = norm_cnt + 1
 
-      html_out = html_out + "<div id='"+del_id+"' class='col-lg-2 col-md-3 preview "+ htclass +"'>"
+      html_out = html_out + "<div id='"+del_id+"' class='preview "+ htclass +"'>"
       html_out = html_out + "<a class='mtt' href='webUI.py?cmd=reduce&video_file=" + video_file + "' data-obj='"+stack_obj_img+"' title='Go to Info Page'>"
       html_out = html_out + "<img alt='"+desc+"' class='img-fluid ns lz' src='" + stack_file_tn + "'>"
       html_out = html_out + "<span>" + desc + "</span></a>"     
@@ -924,7 +924,7 @@ def meteors_new(json_conf,form):
 
    print(header_out+'</div></div>')
    print("<div id='main_container' class='container-fluid h-100 mt-4 lg-l'>")
-   print("<div class='gallery row text-center text-lg-left'>")
+   print("<div class='gallery gal-resizerow text-center text-lg-left'>")
    print(html_out)
    print("</div></div>") 
 
@@ -1666,7 +1666,6 @@ def browse_day(day,cams_id,json_conf):
       el = base_file.split("/")
       base_js_name = el[-1].split('_')
 
-
       html_out =  "<div class='preview "+ htclass +"'>"
       html_out = html_out + "<a class='mtt mb-3' href='webUI.py?cmd=examine_min&video_file=" + video_file + "&next_stack_file=" + next_stack_file +"&next_stack_file=" + next_stack_file + "' title='Examine'>"
       html_out = html_out + "<img class='ns lz' src='" + stack_file_tn + "'>"
@@ -1742,7 +1741,7 @@ def main_page(json_conf):
          print("<div class='h2_holder  d-flex justify-content-between'>")
          print("<h2>"+day_str+" - <a href=webUI.py?cmd=meteors&limit_day=" + day + ">" + str(meteor_files) + " Meteors </a></h2>")
          print("<p><a href=webUI.py?cmd=browse_detects&type=failed&day=" + day + ">" + str(failed_files) + " Non-Meteors </a> - " + str(pending_files) + " Files Pending</a>")
-         print("</div><div class='gallery row text-center text-lg-left'>")
+         print("</div><div class='gallery gal-resize row text-center text-lg-left'>")
          print(html_row)
          print("</div>")
  
