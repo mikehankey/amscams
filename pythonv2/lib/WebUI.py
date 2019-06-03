@@ -1645,7 +1645,7 @@ def browse_day(day,cams_id,json_conf):
 
    print("<div class='h1_holder d-flex justify-content-between'><h1><span class='h'><span id='meteor_count'>"+format(len(base_file))+"</span> meteors</span> captured on "+day.replace('_','/')+"</h1></div>")
    print("<div id='main_container' class='container-fluid h-100 mt-4 lg-l'>")
-   print("<div class='gallery row text-center text-lg-left'>")
+   print("<div class='gallery gal-resize row text-center text-lg-left'>")
 
    for base_file in sorted(day_files,reverse=True):
       if cc + 1 < len(day_files) - 2:
@@ -1667,7 +1667,7 @@ def browse_day(day,cams_id,json_conf):
       base_js_name = el[-1].split('_')
 
 
-      html_out =  "<div class='col-lg-2 col-md-3 preview "+ htclass +"'>"
+      html_out =  "<div class='preview "+ htclass +"'>"
       html_out = html_out + "<a class='mtt mb-3' href='webUI.py?cmd=examine_min&video_file=" + video_file + "&next_stack_file=" + next_stack_file +"&next_stack_file=" + next_stack_file + "' title='Examine'>"
       html_out = html_out + "<img class='ns lz' src='" + stack_file_tn + "'>"
       html_out = html_out + "<span>"+base_js_name[0] +"/" +base_js_name[1]+"/" +base_js_name[2] + " " +  base_js_name[3]+ ":" +  base_js_name[4]+ ":" +  base_js_name[5] +"</span>"
