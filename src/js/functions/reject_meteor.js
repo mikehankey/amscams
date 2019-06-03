@@ -5,6 +5,10 @@ function reject_meteor(id) {
             data: {jsid: id},
             success: function(data) {
                   loading_done();
+                  $('#id').fadeOut(200, function() {
+                        $(this).remove();
+                  });
+ 
                   // Debug
                   console.log(data);
             }, 
