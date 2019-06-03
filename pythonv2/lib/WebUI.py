@@ -1666,11 +1666,10 @@ def browse_day(day,cams_id,json_conf):
       el = base_file.split("/")
       base_js_name = el[-1].split('_')
 
-       
 
       html_out =  "<div class='col-lg-2 col-md-3 preview "+ htclass +"'>"
       html_out = html_out + "<a class='mtt' href='webUI.py?cmd=examine_min&video_file=" + video_file + "&next_stack_file=" + next_stack_file +"&next_stack_file=" + next_stack_file + "' title='Examine'>"
-      html_out = html_out + "<img class='img-fluid ns lz' src='" + stack_file_tn + "'>"
+      html_out = html_out + "<img class='ns lz' src='" + stack_file_tn + "'>"
       html_out = html_out + "<span>"+base_js_name[0] +"/" +base_js_name[1]+"/" +base_js_name[2] + " " +  base_js_name[3]+ ":" +  base_js_name[4]+ ":" +  base_js_name[5] +"</span>"
       html_out = html_out + "</a></div>"
       print(html_out)
