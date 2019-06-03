@@ -157,7 +157,7 @@ def make_day_preview(day_dir, stats_data, json_conf):
       day=day.replace("_","")
 
 
-      html_out = html_out + "<div class='preview mb-5'>"
+      html_out = html_out + "<div class='preview col-lg-2 col-md-3 '>"
       html_out = html_out + "<a class='mtt' href='webUI.py?cmd=browse_day&day=" + day_str + "&cams_id="+cams_id+"'  title='Browse all day'>"
       html_out = html_out + "<img alt='" + day_str + "' class='img-fluid ns lz' src='" + obj_stack + "'>"
       html_out = html_out + "<span>" + str(min_total) + " minutes</span></a></div>"     
@@ -902,7 +902,7 @@ def meteors_new(json_conf,form):
          htclass = "norm"
          norm_cnt = norm_cnt + 1
 
-      html_out = html_out + "<div id='"+del_id+"' class='preview "+ htclass +"'>"
+      html_out = html_out + "<div id='"+del_id+"' class='preview col-lg-2 col-md-3  "+ htclass +"'>"
       html_out = html_out + "<a class='mtt' href='webUI.py?cmd=reduce&video_file=" + video_file + "' data-obj='"+stack_obj_img+"' title='Go to Info Page'>"
       html_out = html_out + "<img alt='"+desc+"' class='img-fluid ns lz' src='" + stack_file_tn + "'>"
       html_out = html_out + "<span>" + desc + "</span></a>"     
@@ -1666,7 +1666,7 @@ def browse_day(day,cams_id,json_conf):
       el = base_file.split("/")
       base_js_name = el[-1].split('_')
 
-      html_out =  "<div class='preview "+ htclass +"'>"
+      html_out =  "<div class='preview col-lg-2 col-md-3 "+ htclass +"'>"
       html_out = html_out + "<a class='mtt mb-3' href='webUI.py?cmd=examine_min&video_file=" + video_file + "&next_stack_file=" + next_stack_file +"&next_stack_file=" + next_stack_file + "' title='Examine'>"
       html_out = html_out + "<img class='ns lz' src='" + stack_file_tn + "'>"
       html_out = html_out + "<span>"+base_js_name[0] +"/" +base_js_name[1]+"/" +base_js_name[2] + " " +  base_js_name[3]+ ":" +  base_js_name[4]+ ":" +  base_js_name[5] +"</span>"
