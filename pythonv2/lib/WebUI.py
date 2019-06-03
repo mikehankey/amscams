@@ -924,7 +924,7 @@ def meteors_new(json_conf,form):
 
    print(header_out+'</div></div>')
    print("<div id='main_container' class='container-fluid h-100 mt-4 lg-l'>")
-   print("<div class='gallery gal-resizerow text-center text-lg-left'>")
+   print("<div class='gallery gal-resize row text-center text-lg-left'>")
    print(html_out)
    print("</div></div>") 
 
