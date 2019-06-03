@@ -60,7 +60,7 @@ def scan_file(video_file, show):
 
    if len(objects) > 0:
       objects,meteor_found = test_objects(objects,frames)
-      print(objects)
+      #print(objects)
    else:
       objects = []
       meteor_found = 0
@@ -82,7 +82,6 @@ def scan_file(video_file, show):
          draw_stack(objects,stack_img,stack_file)
       print("SAVE FAILED")
       save_failed_detection(video_file,objects)
-      print("MIKE")
    obj_report = object_report(objects)
    print(obj_report)
    if meteor_found == 1:
@@ -94,8 +93,11 @@ def scan_file(video_file, show):
          jd = load_json_file(json_file)
          print("FAILED 2nd pass check. MOVE TO TRASH", jd['sd_video_file'], jd['hd_trim'])
          sd_file = jd['sd_video_file'].split("/")[-1]
+
          day = sd_file[0:10]
          sd_wild = sd_file.replace(".mp4", "*")
+         cmd = "mv " + sd_file +  " /mnt/ams2/trash"
+         os.system(cmd)
          cmd = "mv " + "/mnt/ams2/meteors/" + day + "/" + sd_wild + " /mnt/ams2/trash"
          os.system(cmd)
          if 'hd_trim' in jd:
@@ -140,7 +142,17 @@ def reduce_hd_meteor(video_file, hd_file, hd_trim, hd_crop_file, hd_box,json_con
          hd_object = reduce_object(object, video_file, hd_file, hd_trim, hd_crop_file, hd_box, json_conf,trim_time_offset)
    return(hd_object)
 
-
+def reject(date):
+   files =  glob.glob("/mnt/ams2/meteors/" + date + "/*.json")
+   meteors = []
+   for file in files:
+      if "reduced" not in file and "manual" not in file and "star" not in file:
+         file = file.replace(".json", ".mp4")
+         meteors.append(file)
+   for meteor in meteors:
+      cmd = "./detectMeteors.py sf " + meteor
+      print(cmd)
+      os.system(cmd)
 
 
 if __name__ == "__main__":
@@ -148,7 +160,7 @@ if __name__ == "__main__":
    json_conf = load_json_file("../conf/as6.json") 
    cmd = sys.argv[1]
    running = check_running("detectMeteors")
-   if running > 3 and cmd != 'doHD' and cmd != 'sf' and cmd != 'raj' and cmd != 'br':
+   if running > 3 and cmd != 'doHD' and cmd != 'sf' and cmd != 'raj' and cmd != 'br' and cmd != 'reject':
       print("running ", running)
       exit()
    if len(sys.argv) >=3:
@@ -181,6 +193,12 @@ if __name__ == "__main__":
       if len(sys.argv) > 4:
          show = 1 
       reduce_meteor_ajax(json_conf, meteor_json_file, cal_params_file, show)
+
+   if cmd == 'reject':
+      date = sys.argv[2]
+      reject(date)
+ 
+
 
    if cmd == 'reduce':
       video_file = sys.argv[2]

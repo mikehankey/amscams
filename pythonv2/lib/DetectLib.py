@@ -31,11 +31,11 @@ def parse_motion(video_file, json_conf):
       if skip == 0:
          print(fn,x,y,pv) 
 
-def object_report(objects):
+def object_report(objects, all = 0):
    object_report = "OBJECT REPORT\n"
    object_report = object_report + "-------------\n"
    for object in objects:
-      if object['oid'] != 'None':
+      if object['oid'] != 'None' and object['meteor'] == 1:
          object_report = object_report + "Object:\t\t{:s}\n".format(str(object['oid']))
          object_report = object_report + "Clip Len:\t\t{:s}\n".format(str(object['total_frames']))
          object_report = object_report + "Hist Length:\t{:d}\n".format(len(object['history']))
@@ -270,7 +270,7 @@ def check_for_motion2(frames, video_file, cams_id, json_conf, show = 0):
                      cv2.rectangle(nice_frame, (x, y), (x + w, y + h), (255, 0, 0,.02), 2)
          if show == 1 and fc % 2 == 0:
             show_frame = cv2.resize(nice_frame, (0,0), fx=0.5, fy=0.5)
-            cv2.imshow('pepe', show_frame)
+            cv2.imshow('pepe', frame)
             cv2.waitKey(10)
       frame_file = "/mnt/ams2/tmp/" + str(fc) + "obj.png"
       #cv2.imwrite(frame_file, thresh_obj)
