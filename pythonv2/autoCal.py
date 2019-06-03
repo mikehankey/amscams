@@ -65,10 +65,6 @@ def meteor_index(json_conf, extra_cmd = ""):
          meteor_index[day][meteor] = {}
          rmeteor = meteor.replace(".json", "-reduced.json")
          if cfe(rmeteor) == 1:
-            if extra_cmd == "cfit":
-               jobs.append("./autoCal.py cfit " + meteor)
-            if extra_cmd == "imgstars":
-               jobs.append("./autoCal.py imgstars " + meteor)
             print("loading:", rmeteor)
             meteor_index[day][meteor]['reduced'] = 1
             red_data = load_json_file(rmeteor)
@@ -93,6 +89,12 @@ def meteor_index(json_conf, extra_cmd = ""):
                else:
                   meteor_index[day][meteor]['total_res_px'] = 0 
                   meteor_index[day][meteor]['total_res_deg'] = 0 
+
+               if extra_cmd == "cfit" and meteor_index[day][meteor]['total_res_deg'] > .3 and meteor_index[day][meteor]['total_stars'] > 15:
+                  jobs.append("./autoCal.py cfit " + meteor)
+               if extra_cmd == "imgstars" and meteor_index[day][meteor]['total_res_deg'] > .3 and meteor_index[day][meteor]['total_stars'] > 15:
+                  jobs.append("./autoCal.py imgstars " + meteor)
+
             else:
                print("CP NOT IN METEOR YET")
                meteor_index[day][meteor]['total_res_px'] = 999
@@ -145,11 +147,18 @@ def master_merge(tcam_id):
    for fc in freecal_dirs:
       if cfe(fc, 1) == 1:
          merge_file = fc + "/starmerge-" + tcam_id + ".json"
-         print(merge_file)
          if cfe(merge_file) == 1:
             merge_data = load_json_file(merge_file)
+      
+            merge_len = len(merge_data[0])
+
             (f_datetime, cam_id, f_date_str,fy,fm,fd, fh, fmin, fs) = convert_filename_to_date_cam(merge_file)
-            master_merge = master_merge + merge_data
+            if merge_len == 23:
+               stars_in_merge = len(merge_data)
+               if stars_in_merge > 20:
+                  master_merge = master_merge + merge_data
+            else:
+               print("BAD MERGE LEN", master_merge = master_merge + merge_data)
 
    meteorcal_dirs = glob.glob("/mnt/ams2/meteors/*")
    for fc in meteorcal_dirs:
@@ -404,6 +413,9 @@ def multi_merge(all_stars, json_conf, day_dir, show = 0):
    cameras = json_conf['cameras']
    cam_ids = []
    x_fun = 4
+
+
+
    for cam_id in sorted(all_stars):
       master_cal_file = str(day_dir) + "/" + "master_cal_file_" + str(cam_id) + ".json"
       status = 0
@@ -427,13 +439,13 @@ def multi_merge(all_stars, json_conf, day_dir, show = 0):
 
       multi_fit_merge = []
       for file in merged_stars:
-         #print(file)
+         print(file)
          if cfe(file) == 1:
             img = np.zeros((1080,1920),dtype=np.uint8)
             img = cv2.resize(img, (1920,1080))
             for star in merged_stars[file]:
-               #print(star)
-               cal_params_file,ra_center,dec_center,position_angle,pixscale,name,mag,ra,dec,img_ra,img_dec,match_dist,new_cat_x,new_cat_y,img_az,img_el,new_cat_x,new_cat_y,ix,iy, img_res = star
+               print(star)
+               cal_params_file,ra_center,dec_center,position_angle,pixscale,name,mag,ra,dec,img_ra,img_dec,match_dist,new_cat_x,new_cat_y,img_az,img_el,new_cat_x,new_cat_y,ix,iy, img_res,np_new_cat_x, np_new_cat_y = star
 
                cv2.circle(img,(ix,iy), 5, (128,128,128), 1)
                cv2.rectangle(img, (new_cat_x-2, new_cat_y-2), (new_cat_x + 2, new_cat_y + 2), (128, 128, 128), 1)
@@ -443,6 +455,7 @@ def multi_merge(all_stars, json_conf, day_dir, show = 0):
                simg = cv2.resize(img, (960,540))
                cv2.imshow(cam_id, simg)
                cv2.waitKey(0)
+
 
       #new_cp = cal_params_file.replace("-calparams.json", "-calparams-master.json")
       master_cal_params = {}
@@ -455,7 +468,12 @@ def multi_merge(all_stars, json_conf, day_dir, show = 0):
          cal_params = default_cal_params(cal_params,json_conf)
          # do 1 cam here
          merge_file = day_dir + "/starmerge-" + cam_id + ".json"
+         for star in new_multi_fit_merge:
+            print(len(star), star)
          save_json_file(merge_file, new_multi_fit_merge)
+         print("saved ", merge_file)
+         #print("QUIT")
+         #exit()
          
          if skip == 0:
            
@@ -1635,6 +1653,9 @@ def find_star_in_crop(cnt_img):
       return(max_px, avg_px,px_diff,(mx,my))
 
 def get_cat_stars(file, cal_params_file, json_conf, cal_params = None):
+   print("GETTING CAT STARS:")
+   print("FILE:", file)
+   print("CP FILE:", cal_params_file)
    if cal_params == None:
       print("CAL PARAMS ARE NONE!")
       exit()
@@ -1648,7 +1669,6 @@ def get_cat_stars(file, cal_params_file, json_conf, cal_params = None):
       lat = json_conf['site']['device_lat']
       lon = json_conf['site']['device_lng']
       alt = json_conf['site']['device_alt']
-
    ra_center = cal_params['ra_center']
    dec_center = cal_params['dec_center']
    center_az = cal_params['center_az']
@@ -1657,7 +1677,12 @@ def get_cat_stars(file, cal_params_file, json_conf, cal_params = None):
    rah = str(rah).replace(":", " ")
    dech = str(dech).replace(":", " ")
 
+
    ra_center,dec_center = HMS2deg(str(rah),str(dech))
+
+   print("RA/DEC:", ra_center, dec_center)
+   print("AZ/EL:", center_az, center_el)
+
 
    cal_params['ra_center'] = ra_center
    cal_params['dec_center'] = dec_center
@@ -1666,13 +1691,7 @@ def get_cat_stars(file, cal_params_file, json_conf, cal_params = None):
    x_poly = cal_params['x_poly']
    y_poly = cal_params['y_poly']
 
-   #x_poly = np.zeros(shape=(15,), dtype=np.float64)
-   #y_poly = np.zeros(shape=(15,), dtype=np.float64)
-   #cal_params['x_poly'] = x_poly.tolist()
-   #cal_params['y_poly'] = y_poly.tolist()
-
    cat_stars = get_catalog_stars(fov_poly, pos_poly, cal_params,"x",x_poly,y_poly,min=0)
-
 
    return(cat_stars)
 
@@ -2382,53 +2401,96 @@ def night_cal(date,json_conf, show=0):
    cal_files = glob.glob(night_dir) 
    merge_stars = {}
    cam_centers = {}
-   for meteor_file in cal_files:
-      print(meteor_file)
-      md = load_json_file(meteor_file)
-      (f_datetime, cam_id, f_date_str,fy,fm,fd, fh, fmin, fs) = convert_filename_to_date_cam(meteor_file)
-      if cam_id not in merge_stars:
-         merge_stars[cam_id] = {}
-      merge_stars[cam_id][meteor_file] = [] 
-      if 'cat_image_stars' in md:
-         cat_image_stars = md['cat_image_stars']
-      else:
-         print("NO CAT IMAGE STARS IN FILE", meteor_file)
-         cat_image_stars = []
+#   for meteor_file in cal_files:
+#      print(meteor_file)
+#      md = load_json_file(meteor_file)
+#      (f_datetime, cam_id, f_date_str,fy,fm,fd, fh, fmin, fs) = convert_filename_to_date_cam(meteor_file)
+#      if cam_id not in merge_stars:
+#         merge_stars[cam_id] = {}
+#      merge_stars[cam_id][meteor_file] = [] 
+#      if 'cat_image_stars' in md:
+#         cat_image_stars = md['cat_image_stars']
+      #else:
+#         print("NO CAT IMAGE STARS IN FILE", meteor_file)
+#         cat_image_stars = []
    
-      for star in cat_image_stars:
-         name,mag,ra,dec,img_ra,img_dec,match_dist,new_cat_x,new_cat_y,img_az,img_el,new_cat_x,new_cat_y,ix,iy, img_res = star
-         print(cam_id, meteor_file)
-         merge_stars[cam_id][meteor_file].append((meteor_file,md['ra_center'],md['dec_center'],md['position_angle'],md['pixscale'],name,mag,ra,dec,img_ra,img_dec,match_dist,new_cat_x,new_cat_y,img_az,img_el,new_cat_x,new_cat_y,ix,iy, img_res))
+#      for star in cat_image_stars:
+#         if len(star) == 16:
+#            name,mag,ra,dec,img_ra,img_dec,match_dist,new_cat_x,new_cat_y,img_az,img_el,new_cat_x,new_cat_y,ix,iy, img_res = star
+#            #merge_stars[cam_id][meteor_file].append((meteor_file,md['ra_center'],md['dec_center'],md['position_angle'],md['pixscale'],name,mag,ra,dec,img_ra,img_dec,match_dist,new_cat_x,new_cat_y,img_az,img_el,new_cat_x,new_cat_y,ix,iy, img_res, 0, 0))
+#         else:
+#            print("BAD STAR:", meteor_file, len(star))
 
    cc = 0
 
-   night_dir = "/mnt/ams2/meteors/" + date + "/*reduced.json"
-   day_dir = "/mnt/ams2/meteors/" + date + "/"
+#   night_dir = "/mnt/ams2/meteors/" + date + "/*reduced.json"
+#   day_dir = "/mnt/ams2/meteors/" + date + "/"
    cal_files = glob.glob(night_dir)
    #merge_stars = {}
    #cam_centers = {}
-   for meteor_file in cal_files:
-      print(meteor_file)
-      md = load_json_file(meteor_file)
-      (f_datetime, cam_id, f_date_str,fy,fm,fd, fh, fmin, fs) = convert_filename_to_date_cam(meteor_file)
+   for cal_file in cal_files:
+      np_cal_params = None
+      print(cal_file)
+      md = load_json_file(cal_file)
+      (f_datetime, cam_id, f_date_str,fy,fm,fd, fh, fmin, fs) = convert_filename_to_date_cam(cal_file)
       if cam_id not in merge_stars:
          merge_stars[cam_id] = {}
-      merge_stars[cam_id][meteor_file] = []
-      if 'cal_params' in md:
-         if 'cat_image_stars' in md['cal_params']:
-            cat_image_stars = md['cal_params']['cat_image_stars']
+      merge_stars[cam_id][cal_file] = []
+      if 'x_poly' in md:
+         np_cal_params = md
+         np_cal_params['x_poly'] = np.zeros(shape=(15,), dtype=np.float64)
+         np_cal_params['y_poly'] = np.zeros(shape=(15,), dtype=np.float64)
+
+         if 'cat_image_stars' in md:
+            cat_image_stars = md['cat_image_stars']
       else:
-         print("NO CAT IMAGE STARS IN FILE", meteor_file)
+         print("NO CAT IMAGE STARS IN FILE", cal_file)
          cat_image_stars = []
 
+      print("CALP: ", cal_file, np_cal_params['center_az'], np_cal_params['center_el'])
+      np_cat_stars = get_cat_stars(cal_file,cal_file,json_conf,np_cal_params)
+#   np_angle_to_center = find_angle((960,540), (np_new_cat_x, np_new_cat_y))
+      no_poly_cat_stars = {}
+      for cat_star in np_cat_stars:
+         (np_name,np_mag,np_ra,np_dec,np_new_cat_x,np_new_cat_y) = cat_star
+         key = str(np_ra) + ":" + str(np_dec)
+         no_poly_cat_stars[key] = cat_star
+
+      avgpxscale = 162
+
       for star in cat_image_stars:
-         name,mag,ra,dec,img_ra,img_dec,match_dist,new_cat_x,new_cat_y,img_az,img_el,new_cat_x,new_cat_y,ix,iy, img_res = star
-         print(cam_id, meteor_file)
-         merge_stars[cam_id][meteor_file].append((meteor_file,md['cal_params']['ra_center'],md['cal_params']['dec_center'],md['cal_params']['position_angle'],md['cal_params']['pixscale'],name,mag,ra,dec,img_ra,img_dec,match_dist,new_cat_x,new_cat_y,img_az,img_el,new_cat_x,new_cat_y,ix,iy, img_res))
+         bad = 0
+         if len(star) == 16:
+            name,mag,ra,dec,img_ra,img_dec,match_dist,new_cat_x,new_cat_y,img_az,img_el,new_cat_x,new_cat_y,ix,iy, img_res = star
+            key = str(ra) + ":" + str(dec)
+         else:
+            bad = 1
+            print("BAD STAR:", star)
+           
+         if key in no_poly_cat_stars:
+            np_name,np_mag,np_ra,np_dec,np_new_cat_x,np_new_cat_y = no_poly_cat_stars[key]
+            np_angle_to_center = find_angle((960,540), (np_new_cat_x, np_new_cat_y))
+            img_angle_to_center = find_angle((960,540), (ix, iy))
+            ang_diff = abs(img_angle_to_center - np_angle_to_center)
+            #if md['pixscale'] < 157:  
+            #   bad = 0
+            #   print("BAD PIX SCALE:", cam_id, md['pixscale'])
+            #if md['pixscale'] >  162:  
+            #   bad = 0
+            #   print("BAD PIX SCALE:", cam_id, md['pixscale'])
+            if ang_diff > 1:
+               print("BAD ANG:", cam_id, ix, iy, np_name, name, new_cat_x, new_cat_y, np_new_cat_x, np_new_cat_y, " -- ", img_angle_to_center, np_angle_to_center, ang_diff)
+               bad = 1
+            else:
+               print("GOOD ANG:", cam_id, ix, iy, np_name, name, new_cat_x, new_cat_y, np_new_cat_x, np_new_cat_y, " -- ", img_angle_to_center, np_angle_to_center, ang_diff)
+         if bad == 0:
+            merge_stars[cam_id][cal_file].append((cal_file,md['ra_center'],md['dec_center'],md['position_angle'],md['pixscale'],name,mag,ra,dec,img_ra,img_dec,match_dist,new_cat_x,new_cat_y,img_az,img_el,new_cat_x,new_cat_y,ix,iy, img_res,np_new_cat_x, np_new_cat_y))
 
    cc = 0
  
-
+   for day in merge_stars:
+      for file in merge_stars[day]:
+         print(file, merge_stars[day][file])
 
    multi_merge(merge_stars,json_conf,day_dir, show )
 
@@ -2461,11 +2523,36 @@ def meteor_cal(date,json_conf, show=0):
 
    meteor_dir = "/mnt/ams2/meteors/" + date + "/*reduced.json"
    day_dir = "/mnt/ams2/meteors/" + date + "/"
+
+
    meteor_files = glob.glob(meteor_dir) 
    merge_stars = {}
    for meteor_file in meteor_files:
       print(meteor_file)
       md = load_json_file(meteor_file)
+
+      np_cal_params = None
+      no_poly_cat_stars = {}
+      if 'cal_params' in md:
+         np_cal_params = md['cal_params']
+         np_cal_params['x_poly'] = np.zeros(shape=(15,), dtype=np.float64)
+         np_cal_params['y_poly'] = np.zeros(shape=(15,), dtype=np.float64)
+         #center_az = np_cal_params['center_az']
+         #center_el = np_cal_params['center_el']
+         #rah,dech = AzEltoRADec(center_az,center_el,meteor_file,np_cal_params,json_conf)
+         #rah = str(rah).replace(":", " ")
+         #dech = str(dech).replace(":", " ")
+         #ra_center,dec_center = HMS2deg(str(rah),str(dech))
+         #np_cal_params['ra_center'] = ra_center
+         #np_cal_params['dec_center'] = dec_center
+
+
+         np_cat_stars = get_cat_stars(meteor_file,meteor_file,json_conf,np_cal_params)
+         no_poly_cat_stars = {}
+         for cat_star in np_cat_stars:
+            (np_name,np_mag,np_ra,np_dec,np_new_cat_x,np_new_cat_y) = cat_star
+            key = str(np_ra) + ":" + str(np_dec)
+            no_poly_cat_stars[key] = cat_star
       (f_datetime, cam_id, f_date_str,fy,fm,fd, fh, fmin, fs) = convert_filename_to_date_cam(meteor_file)
       if cam_id not in merge_stars:
          merge_stars[cam_id] = {}
@@ -2479,8 +2566,24 @@ def meteor_cal(date,json_conf, show=0):
    
       for star in cat_image_stars:
          name,mag,ra,dec,img_ra,img_dec,match_dist,new_cat_x,new_cat_y,img_az,img_el,new_cat_x,new_cat_y,ix,iy, img_res = star
+         bad = 0
+         key = str(ra) + ":" + str(dec)
+         if key in no_poly_cat_stars:
+            np_name,np_mag,np_ra,np_dec,np_new_cat_x,np_new_cat_y = no_poly_cat_stars[key]
+            np_angle_to_center = find_angle((960,540), (np_new_cat_x, np_new_cat_y))
+            img_angle_to_center = find_angle((960,540), (ix, iy))
+            ang_diff = abs(img_angle_to_center - np_angle_to_center)
+            #print(name, np_name, ix, iy, new_cat_x, new_cat_y, np_new_cat_x, np_new_cat_y)
+            if ang_diff > 2:
+               print("BAD ANG:", img_angle_to_center, np_angle_to_center, ang_diff)
+               bad = 1
+            else:
+               print("GOOD ANG:", img_angle_to_center, np_angle_to_center, ang_diff)
+         if bad == 0:
+            merge_stars[cam_id][meteor_file].append((meteor_file,md['cal_params']['ra_center'],md['cal_params']['dec_center'],md['cal_params']['position_angle'],md['cal_params']['pixscale'],name,mag,ra,dec,img_ra,img_dec,match_dist,new_cat_x,new_cat_y,img_az,img_el,new_cat_x,new_cat_y,ix,iy, img_res, np_new_cat_x, np_new_cat_y))
+ 
+
          #merge_stars[cam_id][meteor_file].append((meteor_file,md['cal_params']['ra_center'],md['cal_params']['dec_center'],md['cal_params']['position_angle'],name,mag,ra,dec,img_ra,img_dec,match_dist,new_cat_x,new_cat_y,img_az,img_el,new_cat_x,new_cat_y,ix,iy, img_res))
-         merge_stars[cam_id][meteor_file].append((meteor_file,md['cal_params']['ra_center'],md['cal_params']['dec_center'],md['cal_params']['position_angle'],md['cal_params']['pixscale'],name,mag,ra,dec,img_ra,img_dec,match_dist,new_cat_x,new_cat_y,img_az,img_el,new_cat_x,new_cat_y,ix,iy, img_res))
 
    cc = 0
 

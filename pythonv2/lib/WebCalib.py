@@ -2691,9 +2691,9 @@ def reduce_meteor_new(json_conf,form):
    else:
 
       cal_files = get_active_cal_file(mj['sd_video_file'])
-      print("GETTING CAL FILES for ", mj['sd_video_file'], "<HR>")
-      for cal_file in cal_files:
-         print(cal_file, "<BR>")
+      #print("GETTING CAL FILES for ", mj['sd_video_file'], "<HR>")
+      #for cal_file in cal_files:
+      #   print(cal_file, "<BR>")
       cal_params_file = cal_files[0][0]
       #print("Meteor not reduced yet...using...", cal_params_file)
       #exit()
@@ -3347,8 +3347,8 @@ def add_stars_to_fit_pool(json_conf,form):
    cal_files = get_active_cal_file(input_file)
    cal_params_file = cal_files[0][0]
    cal_hd_stack_file = cal_params_file.replace("-calparams.json", ".png")
-   print(cal_params_file, "<BR>")
-   print(cal_hd_stack_file, "<BR>")
+   #print(cal_params_file, "<BR>")
+   #print(cal_hd_stack_file, "<BR>")
    hd_file, hd_trim,time_diff_sec, dur = find_hd_file_new(input_file, 250, 10, 0)
    if hd_file is None:
       print("No HD file found. This feature requires HD files. Try doing this on a more recent day. HD files are kept for 3 days total.") 
