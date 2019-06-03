@@ -5,8 +5,8 @@ function reject_meteor(id) {
             data: {jsid: id},
             success: function(data) {
                   loading_done();
-                  $('#'+id).css('opacity',.5).removeClass('norm meteor reduced').addClass('del').find('.btn-toolbar').remove();
- 
+                  $('#'+id).css('opacity',.5).removeClass('norm meteor reduced').addClass('del').find('.btn-toolbar').remove().end().find('a').removeAttr('src').removeAttr('title').addAttr('title','DELETED').unbind('mouseover').unbind('mouseout');
+                  
                   // Debug
                   console.log(data);
             }, 

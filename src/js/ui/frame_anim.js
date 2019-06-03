@@ -1,4 +1,4 @@
-
+var $allframes;
 var totalFrames;
 var animationDuration;
 var timePerFrame;
@@ -20,7 +20,7 @@ function addAnimModalTemplate($allframes) {
 }
 
 function frame_anim() { 
-    var $allframes = $('img.select_meteor');
+    $allframes = $('img.select_meteor');
     totalFrames = $allframes.length;
     animationDuration = parseFloat($('#dur').text())*1000; // Duration get the 
     timePerFrame = animationDuration / totalFrames;
