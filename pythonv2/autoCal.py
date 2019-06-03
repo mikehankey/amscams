@@ -1710,7 +1710,10 @@ def lookup_star_in_cat(ix,iy,cat_stars,no_poly_cat_stars, star_dist=10,):
       return(0, closest)
 
 def get_stars_from_image(file,json_conf,masks = [], cal_params = None, show = 0, strict = 0):
-   orig_cat_image_stars = cal_params['cat_image_stars']
+   if "cat_image_stars" in cal_params:
+      orig_cat_image_stars = cal_params['cat_image_stars']
+   else:
+      orig_cat_image_stars = []
    user_stars = []
    if len(orig_cat_image_stars) > 0:
       print("ORIG:", orig_cat_image_stars[0])
