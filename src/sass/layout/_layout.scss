@@ -64,6 +64,24 @@ h2 {
     margin-bottom: .5rem;
 }
 
+.h2_holder {
+    padding-bottom: .4rem;
+    border-bottom: 1px solid rgba(255,255,255,.38);
+    margin-bottom: 1rem;
+
+    h2 {
+        border: none;
+        margin: 0;
+        padding: 0;
+        text-transform: none;
+    }
+
+    p {
+        margin:0
+    }
+}
+
+
 // Canvas
 .flex-fixed-canvas {
     flex: 0 0 960px;

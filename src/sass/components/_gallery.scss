@@ -95,6 +95,17 @@
             }
         }
 
+        &.del {
+            a.mtt:before {
+                content: 'DELETED';
+                color: #fff;
+                background: #000;
+            }
+            img {
+                border-color: #000;
+            }
+        }
+
         .btn-toolbar {
             opacity: 0;
         }

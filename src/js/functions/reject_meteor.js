@@ -5,9 +5,7 @@ function reject_meteor(id) {
             data: {jsid: id},
             success: function(data) {
                   loading_done();
-                  $('#id').fadeOut(200, function() {
-                        $(this).remove();
-                  });
+                  $('#'+id).css('opacity',.5).removeClass('norm meteor reduced').addClass('del').find('.btn-toolbar').remove();
  
                   // Debug
                   console.log(data);
