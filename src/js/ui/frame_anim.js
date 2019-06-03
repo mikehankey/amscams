@@ -25,15 +25,24 @@ function addAnimModalTemplate($allframes) {
 
 function frame_anim() { 
     var realDur = parseFloat($('#dur').text());
+    $allframes = $('img.select_meteor');
+    totalFrames = $allframes.length;
 
     if(isNaN(realDur)) {
         readDur = 1; // second default
         $('<div class="alert alert-danger">Unknown Real Duration</div>').insertAfter($('#anim_header'));
-        
     }
 
-    $allframes = $('img.select_meteor');
-    totalFrames = $allframes.length;
+    if(totalFrames==0) {
+        bootbox.alert({
+            message: "No frame found. Reduce the meteor first",
+            className: 'rubberBand animated error',
+            centerVertical: true
+        });
+        return false;
+    }
+
+    
     animationDuration = realDur*1000; // Duration get the 
     timePerFrame = animationDuration / totalFrames;
     frameNumber = 1; 
@@ -48,22 +57,17 @@ function frame_anim() {
 
     $('#mar').val(0).on('input', function () { 
         var val = parseInt($(this).val());
-
-        console.log(val);
-
-        if(val<=-1)   {
-            console.log("A");
+ 
+        if(val<=-1)   { 
             val-= 1; 
             timePerFrame = animationDuration*Math.abs(val) / totalFrames; 
             $('#cur_sp').text('x'+val);
-        } else if(val>=1) {
-            console.log("B");
+        } else if(val>=1) { 
             val+= 1;
             timePerFrame = animationDuration*1/Math.abs(val) / totalFrames; 
             $('#cur_sp').text('x'+val);
         }
-        else {
-            console.log("C");
+        else { 
             val=1;
             $('#cur_sp').text('x1');
         } 
