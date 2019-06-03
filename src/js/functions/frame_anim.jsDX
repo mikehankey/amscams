@@ -1,19 +1,22 @@
-var $allframes;
-var totalFrames;
-var animationDuration;
-var timePerFrame;
-var timeWhenLastUpdate;
-var timeFromLastUpdate;
-var frameNumber; 
-var playing;
+var $allframes = $('img.select_meteor');
+ var totalFrames = $allframes.length;
+ var animationDuration = parseFloat($('#dur').text())*1000; // Duration get the 
+ var timePerFrame = animationDuration / totalFrames;
+ var timeWhenLastUpdate;
+ var timeFromLastUpdate;
+ var frameNumber = 1; 
+ var playing = true;
+
+ alert('ok');
+
 
 // Modal for selector
 function addAnimModalTemplate($allframes) {
     if($('#anim_modal').length === 0) {
         $('<div id="anim_modal" class="modal fade" tabindex="-1" role="dialog"><div class="modal-dialog modal-dialog-centered" role="document">\
-        <div class="modal-content"><div class="modal-body"><div class="d-flex justify-content-between"><p><b>Frame by frame animation</b></p><p><span id="cur_f"></span>/<span id="tot_f"></span> frames</p></div><div id="anim_holder">\
+        <div class="modal-content"><div class="modal-body"><p><b>Frame by frame animation</b></p><div id="anim_holder">\
         </div><div class="modal-footer d-flex justify-content-between p-0 pb-2 pr-2">\
-        <div class="pt-2"><input type="range" value="1" id="mar" max="5" min="-5"/> <span id="cur_sp"></span></div>\
+        <input type="range" value="0"/>\
         <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button></div></div></div></div>').appendTo('body');
         
         // Add all the frames
@@ -24,47 +27,8 @@ function addAnimModalTemplate($allframes) {
 }
 
 function frame_anim() { 
-    var realDur = parseFloat($('#dur').text());
-    $allframes = $('img.select_meteor');
-    totalFrames = $allframes.length;
-    animationDuration = realDur*1000; // Duration get the 
-    timePerFrame = animationDuration / totalFrames;
-    frameNumber = 1; 
-    playing = true;
-    
-
     addAnimModalTemplate($allframes);
     $('#anim_modal').modal();
-
-    $('#tot_f').text(totalFrames);
-    $('#cur_sp').text('x1');
-
-    $('#mar').val(0).on('input', function () { 
-        var val = parseInt($(this).val());
-
-        console.log(val);
-
-        if(val<=-1)   {
-            console.log("A");
-            val-= 1; 
-            timePerFrame = animationDuration*Math.abs(val) / totalFrames; 
-            $('#cur_sp').text('x'+val);
-        } else if(val>=1) {
-            console.log("B");
-            val+= 1;
-            timePerFrame = animationDuration*1/Math.abs(val) / totalFrames; 
-            $('#cur_sp').text('x'+val);
-        }
-        else {
-            console.log("C");
-            val=1;
-            $('#cur_sp').text('x1');
-        } 
-
-       
-
-        
-    }); 
     requestAnimationFrame(step);
 }
   
@@ -72,7 +36,6 @@ function frame_anim() {
 // 'step' function will be called each time browser rerender the content
 // we achieve that by passing 'step' as a parameter to 'requestAnimationFrame' function
 function step(startTime) {
- 
 
   // 'startTime' is provided by requestAnimationName function, and we can consider it as current time
   // first of all we calculate how much time has passed from the last time when frame was update
@@ -81,7 +44,6 @@ function step(startTime) {
 
   // then we check if it is time to update the frame
   if (timeFromLastUpdate > timePerFrame) {
-    
     $('.to_anim').css('opacity', 0); 
     $(`.to_anim-${frameNumber}`).css('opacity', 1);  
     timeWhenLastUpdate = startTime;
@@ -91,8 +53,6 @@ function step(startTime) {
     } else {
       frameNumber = frameNumber + 1;
     }        
-
-    $('#cur_f').text(frameNumber);
   }
 
   if(playing) requestAnimationFrame(step);
