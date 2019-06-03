@@ -22,10 +22,24 @@ function reduce_meteor() {
                 // Open proper tab
                 $('#reduc-tab-l').click();
                 
-                loading_done();
-            }  
- 
-        } 
+               
+            }  else {
+                bootbox.alert({
+                    message: "The reduction failed.",
+                    className: 'rubberBand animated error',
+                    centerVertical: true
+                });
+            }
+            loading_done();
+        }, 
+        error:function() {
+            bootbox.alert({
+                message: "The reduction returned an error.",
+                className: 'rubberBand animated error',
+                centerVertical: true
+            });
+            loading_done();
+        }
     });
 }
 
