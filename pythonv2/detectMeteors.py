@@ -10,7 +10,7 @@ from lib.FileIO import setup_dirs, cfe, save_failed_detection, save_meteor
 from lib.DetectLib import check_for_motion2, id_object, object_report, parse_motion 
 from lib.MeteorTests import test_objects
 from lib.FileIO import load_json_file,archive_meteor 
-from lib.VideoLib import load_video_frames , doHD
+from lib.VideoLib import load_video_frames , doHD, get_masks
 from lib.ImageLib import stack_frames, draw_stack
 from lib.UtilLib import convert_filename_to_date_cam, check_running, fix_json_file
 from lib.WebCalib import reduce_meteor_ajax, better_reduce
@@ -42,6 +42,7 @@ def scan_dir(dir, show):
 def scan_file(video_file, show):
    (base_fn, base_dir, image_dir, data_dir,failed_dir,passed_dir) = setup_dirs(video_file)
    (f_datetime, cam, f_date_str,fy,fm,fd, fh, fmin, fs) = convert_filename_to_date_cam(video_file)
+   masks = get_masks(cam, json_conf,1)
 
    if cfe(video_file) == 0:
       print("Error: Input file does not exist!", video_file)
