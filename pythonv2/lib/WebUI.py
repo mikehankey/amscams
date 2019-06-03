@@ -1664,7 +1664,9 @@ def browse_day(day,cams_id,json_conf):
       else:
          htclass = "none"
       el = base_file.split("/")
-      base_js_name = el[-1].replace("_", "")
+      base_js_name = el[-1].split('_')
+
+      print(base_js_name)
 
       html_out =  "<div class='col-lg-2 col-md-3 preview "+ htclass +"'>"
       html_out = html_out + "<a class='mtt' href='webUI.py?cmd=examine_min&video_file=" + video_file + "&next_stack_file=" + next_stack_file +"&next_stack_file=" + next_stack_file + "' title='Examine'>"
