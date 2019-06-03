@@ -1,5 +1,5 @@
 #!/usr/bin/python3 
-
+import os
 import subprocess
 import json
 import sys
@@ -41,6 +41,9 @@ def scan_dir(dir, show):
 
 def scan_file(video_file, show):
    (base_fn, base_dir, image_dir, data_dir,failed_dir,passed_dir) = setup_dirs(video_file)
+   recheck = 0
+   if "meteors" in video_file:
+      recheck = 1
    (f_datetime, cam, f_date_str,fy,fm,fd, fh, fmin, fs) = convert_filename_to_date_cam(video_file)
    masks = get_masks(cam, json_conf,1)
 
@@ -63,7 +66,7 @@ def scan_file(video_file, show):
       meteor_found = 0
 
 
-   if meteor_found == 1:
+   if meteor_found == 1 and recheck == 0:
       print("Meteor Test Passed.")
       stack_file,stack_img = stack_frames(frames, video_file)
       draw_stack(objects,stack_img,stack_file)
@@ -71,7 +74,7 @@ def scan_file(video_file, show):
       # hd_meteor_processing(video_file,objects)
       # reduce meteor / solve meteor
       # upload meteor
-   else:
+   elif recheck == 0:
       print("Meteor Test Failed.")
       if len(frames) > 0:
          print("LEN FRM", len(frames),video_file)
@@ -86,6 +89,23 @@ def scan_file(video_file, show):
       print("Meteor Test Passed.")
    else:
       print("Meteor Test Failed.")
+      if recheck == 1:
+         json_file = video_file.replace(".mp4", ".json")
+         jd = load_json_file(json_file)
+         print("FAILED 2nd pass check. MOVE TO TRASH", jd['sd_video_file'], jd['hd_trim'])
+         sd_file = jd['sd_video_file'].split("/")[-1]
+         day = sd_file[0:10]
+         sd_wild = sd_file.replace(".mp4", "*")
+         cmd = "mv " + "/mnt/ams2/meteors/" + day + "/" + sd_wild + " /mnt/ams2/trash"
+         os.system(cmd)
+         if 'hd_trim' in jd:
+            hd_file = jd['hd_trim'].split("/")[-1]
+            day = hd_file[0:10]
+            (f_datetime, cam, f_date_str,fy,fm,fd, fh, fmin, fs) = convert_filename_to_date_cam(hd_file)
+            hd_wild = fy + "_" + fm + "_" + fd + "_" + fh + "_" + fmin + "_*" + cam + "*" 
+            cmd = "mv " + "/mnt/ams2/meteors/" + day + "/" + hd_wild + " /mnt/ams2/trash"
+            os.system(cmd)
+            exit()
      
 def do_all(json_conf): 
    show = 0
@@ -134,7 +154,7 @@ if __name__ == "__main__":
    if len(sys.argv) >=3:
       video_file = sys.argv[2]
    if len(sys.argv) == 4:
-       show = sys.argv[3]
+      show = sys.argv[3]
    if cmd == 'sf':
       scan_file(video_file, show)
    if cmd == 'sd':

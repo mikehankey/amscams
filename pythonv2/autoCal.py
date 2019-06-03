@@ -90,9 +90,9 @@ def meteor_index(json_conf, extra_cmd = ""):
                   meteor_index[day][meteor]['total_res_px'] = 0 
                   meteor_index[day][meteor]['total_res_deg'] = 0 
 
-               if extra_cmd == "cfit" and meteor_index[day][meteor]['total_res_deg'] > .3 and meteor_index[day][meteor]['total_stars'] > 15:
+               if extra_cmd == "cfit" and meteor_index[day][meteor]['total_res_deg'] > .2 and meteor_index[day][meteor]['total_stars'] > 15:
                   jobs.append("./autoCal.py cfit " + meteor)
-               if extra_cmd == "imgstars" and meteor_index[day][meteor]['total_res_deg'] > .3 and meteor_index[day][meteor]['total_stars'] > 15:
+               if extra_cmd == "imgstars" and meteor_index[day][meteor]['total_res_deg'] > .2 and meteor_index[day][meteor]['total_stars'] > 15:
                   jobs.append("./autoCal.py imgstars " + meteor)
 
             else:
