@@ -1714,6 +1714,7 @@ def get_stars_from_image(file,json_conf,masks = [], cal_params = None, show = 0,
       if "cat_image_stars" in cal_params:
          orig_cat_image_stars = cal_params['cat_image_stars']
       else:
+         orig_cat_image_stars = []
    else:
       orig_cat_image_stars = []
    user_stars = []
