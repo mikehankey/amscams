@@ -6,7 +6,14 @@ $(function() {
       });
       
       $('.vid-link').magnificPopup({
-        type: 'iframe' 
+        type: 'iframe',
+        preloader: true,
+
+        callbacks: {
+          open: function() {
+            $('.mfp-iframe').contents().find('video').attr('loop','');
+          } 
+        } 
       });
 
       $('.vid_link_gal').magnificPopup({
