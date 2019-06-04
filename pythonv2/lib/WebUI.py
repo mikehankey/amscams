@@ -848,14 +848,100 @@ def get_meteors(meteor_dir,meteors):
       if "calparams" not in file and "reduced" not in file and "manual" not in file:
          meteors.append(file)
    return(meteors)
+
+
+def get_pagination(page,total_pages,url):
+   #how many pages appear to the left and right of your current page
+   adjacents = 1
+   start = (page - 1) * NUMBER_OF_METEOR_PER_PAGE;
+   
+   last_page = int(math.ceil(total_pages / NUMBER_OF_METEOR_PER_PAGE))
+   
+   lpm1 = last_page - 1
+   _prev = page - 1
+   _next = page + 1   
+
+   pagination = '<nav>'
+
+   if(last_page>1):
+
+      pagination = pagination + "<ul class='pagination justify-content-center'>"
+
+      #previous button
+      if (page > 1):
+         pagination = pagination + "<li class='page-item'><a class='page-link' href='"+url+"&p=" + _prev+"'>&laquo; Previous</a></li>";
+      else:
+         pagination = pagination + "<li class='page-item disabled'><a class='page-link' >&laquo; Previous</a></li>";
+
+      #pages
+      if (last_page < 5 + (adjacents * 2)):
+      
+         for counter in range(1,last_page+1):
+            if(counter == page ):
+               pagination = pagination + "<li class='page-item active'><a class='page-link' >"+counter+"</a></li>";
+            else:
+               pagination = pagination + "<li class='page-item'><a  class='page-link' href='"+url+"&p=" + counter+"'>"+counter+"</a></li>";
+            
+      elif (last_page > 5 + (adjacents * 2)):
+
+         #close to beginning; only hide later pages
+         if(page < 3 + (adjacents * 2)):
+               
+               for counter in range(1,4 + (adjacents * 2)):
+                  if(counter == page):
+                     pagination = pagination + "<li class='page-item active'><a class='page-link' >"+counter+"</a></li>";
+                  else:
+                     pagination = pagination + "<li class='page-item'><a class='page-link'  href='"+url+"?p="+ counter+"'>"+counter+"</a></li>";
+
+               pagination = pagination + "<li class='page-item disabled'><a>...</a></li>";
+               pagination = pagination + "<li class='page-item'><a  class='page-link' href='"+url+"&p=" + lpm1+"'>"+lpm1+"</a></li>";
+               pagination = pagination + "<li class='page-item'><a  class='page-link' href='"+url+"&p=" + last_page+"'>"+last_page+"</a></li>";
+            
+         elif(last_page-1-(adjacents*2)>page and page > (adjacents*2)):
+
+               pagination = pagination + "<li class='page-item'><a class='page-link' href='"+url+"&p=1'>1</a></li>";
+               pagination = pagination + "<li class='page-item'><a class='page-link' href='"+url+"&p=2'>2</a></li>";
+               pagination = pagination + "<li class='disabled page-item'><a>...</a></li>";
+               
+               for counter in range(page-adjacents, page+adjacents):
+                  if(counter == page):
+                     pagination = pagination + "<li class='page-item active'><a>"+counter+"</a></li>";                   
+                  else:
+                     pagination = pagination + "<li><a  href='"+url+"?p="+ counter+"'>"+counter+"</a></li>";
+               
+               pagination = pagination + "<li class='page-item disabled'><a>...</a></li>";
+               pagination = pagination + "<li class='page-item'><a  class='page-link' href='"+url+"&p=" + lpm1+"'>"+lpm1+"</a></li>";
+               pagination = pagination + "<li class='page-item'><a  class='page-link' href='"+url+"&p=" + last_page+"'>"+last_page+"</a></li>";
+            
+         #close to end; only hide early pages
+         else:
+               
+               pagination = pagination + "<li class='page-item'><a class='page-link' href='"+url+"&p=1'>1</a></li>";
+               pagination = pagination + "<li class='page-item'><a class='page-link' href='"+url+"&p=2'>2</a></li>";
+               pagination = pagination + "<li class='disabled page-item'><a>...</a></li>";
+               
+               for counter in range(last_page - (2 + (adjacents * 2)), last_page):
+                  if(counter == page):
+                     pagination = pagination + "<li class='page-item active'><a class='page-link'>"+counter+"</a></li>";                   
+                  else:
+                     pagination = pagination + "<li class='page-item'><a class='page-link' href='"+url+"?p="+ counter+"'>"+counter+"</a></li>";
+
+   else:
+      #Display all pages
+      for counter in range(1,last_page):
+         if(counter == page):
+            pagination = pagination + "<li class='page-item active'><a class='page-link' >"+counter+"</a></li>";
+         else:
+            pagination = pagination + "<li class='page-item active'><a class='page-link' href='"+url+"&p=" + counter+"' >"+counter+"</a></li>";
+ 
+   return(pagination)
  
 def meteors_new(json_conf,form):  
 
+   cur_page  = 0
    limit_day = form.getvalue('limit_day')
    cur_page  = form.getvalue('p')
 
-   if cur_page is None:
-      cur_page = 0
 
    htclass = "none"
    meteors = []
@@ -889,6 +975,7 @@ def meteors_new(json_conf,form):
    meteor_from       = NUMBER_OF_METEOR_PER_PAGE*cur_page
    total_number_page = len(meteors) % NUMBER_OF_METEOR_PER_PAGE
    counter = 0
+
 
    print("Curpage " + cur_page)
    print("meteor_from " + meteor_from)
@@ -951,6 +1038,8 @@ def meteors_new(json_conf,form):
    print("<div id='main_container' class='container-fluid h-100 mt-4 lg-l'>")
    print("<div class='gallery gal-resize row text-center text-lg-left'>")
    print(html_out)
+   #page,total_pages,url
+   print(pagination(cur_page,total_number_page,"/pycgi/webUI.py?cmd=new_meteors"))
    print("</div></div>") 
 
 
