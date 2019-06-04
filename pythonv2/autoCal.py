@@ -70,6 +70,16 @@ def meteor_index(json_conf, extra_cmd = ""):
             red_data = load_json_file(rmeteor)
             if "cal_params" in red_data:
                print("CP EXISTS")
+               if "center_az" not in red_data['cal_params']:
+                  if "az_center" in red_data['cal_params']:
+                     red_data['cal_params']['center_az'] = red_data['cal_params']['az_center']
+                     red_data['cal_params']['center_el'] = red_data['cal_params']['el_center']
+                     save_json_file(rmeteor, red_data)
+          
+                  #cmd = "./autoCal.py imgstars " + meteor
+                  #print(cmd)
+ 
+               
                meteor_index[day][meteor]['center_az'] = red_data['cal_params']['center_az']
                meteor_index[day][meteor]['center_el'] = red_data['cal_params']['center_el']
                meteor_index[day][meteor]['position_angle'] = red_data['cal_params']['position_angle']
@@ -120,7 +130,6 @@ def meteor_index(json_conf, extra_cmd = ""):
             meteor_index[day][meteor]['angular_separation'] = 0
             meteor_index[day][meteor]['magnitude'] = 0
             meteor_index[day][meteor]['duration'] = 0
-
    save_json_file("/mnt/ams2/cal/hd_images/meteor_index.json", meteor_index)
 
    jc = 0
@@ -206,6 +215,16 @@ def cal_index(json_conf):
    for cp_file in cal_files:
       cj = load_json_file(cp_file)
       (f_datetime, cam_id, f_date_str,fy,fm,fd, fh, fmin, fs) = convert_filename_to_date_cam(cp_file)
+      if 'center_az' not in cj:
+         new_date = fy + "/" + fm + "/" + fd + " " + fh + ":" + fmin + ":" + fs
+         az, el = radec_to_azel(cj['ra'],cj['dec'], new_date,json_conf)
+         cj['center_az'] = az
+         cj['center_el'] = el
+         print("FIXING MISSING AZ/EL FROM CAL_PARMAS!")
+         exit()
+      else:
+         print("CENTER AZ IS :", cj['center_az'], cj['center_el'])
+
       cal_files[cp_file]['cal_date'] = f_date_str
       cal_files[cp_file]['cam_id'] = cam_id 
       cal_files[cp_file]['center_az'] = cj['center_az']

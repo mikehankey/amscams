@@ -587,7 +587,7 @@ def meteor_index(json_conf, form):
    print("<div style=\"padding: 5px; margin: 5px; clear:both\"  >")
    print("<table border=1 cellpadding=5 cellspacing=5>")
    print("<tr><th>Meteor</th><th>Reduced</th><th>AZ/EL FOV</th><th>Pos Ang</th><th>Pixscale</th><th>Stars</th><th>Res Px</th><th>Res Deg</th><th>Dur</th><th>Ang Sep</th><th>Mag</th></tr>")
-   for day in mi:
+   for day in sorted(mi, reverse=True):
       for meteor_file in mi[day]:
          hd_datetime, hd_cam, hd_date, hd_y, hd_m, hd_d, hd_h, hd_M, hd_s = convert_filename_to_date_cam(meteor_file)
          if cam_id is None:

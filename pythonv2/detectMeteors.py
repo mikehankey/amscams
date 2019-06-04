@@ -219,7 +219,7 @@ if __name__ == "__main__":
    json_conf = load_json_file("../conf/as6.json") 
    cmd = sys.argv[1]
    running = check_running("detectMeteors")
-   if running > 3 and cmd != 'doHD' and cmd != 'sf' and cmd != 'raj' and cmd != 'br' and cmd != 'reject':
+   if running > 3 and cmd != 'doHD' and cmd != 'sf' and cmd != 'raj' and cmd != 'br' and cmd != 'reject' and cmd != 'fix_meteor_dir':
       print("running ", running)
       exit()
    if len(sys.argv) >=3:
