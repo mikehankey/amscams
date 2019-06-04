@@ -867,8 +867,10 @@ def get_pagination(page,total_pages,url):
    
    last_page = total_pages / NUMBER_OF_METEOR_PER_PAGE
 
+   last_page = ceil(last_page)
+   last_page = int(last_page)
+
    print("LAST PAGE : " + format(last_page))
-   print("TEST:" + format(10/6))
    
    lpm1 = last_page - 1
    _prev = page - 1
