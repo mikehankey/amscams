@@ -873,25 +873,21 @@ def meteors_new(json_conf,form):
       this_date = el[-1]
       if limit_day is None: 
          meteors = get_meteors(meteor_dir, meteors)
+         header_out = header_out + "<h1><span class='h'><span id='meteor_count'>"+format(len(meteors))+"</span> meteors</span> captured since inception</h1>"
       elif limit_day == this_date:
          meteors = get_meteors(meteor_dir, meteors)
          header_out = header_out + "<h1><span class='h'><span id='meteor_count'>"+format(len(meteors))+"</span> meteors</span> captured on "+str(this_date)+"</h1>"
    
-   if limit_day is None:
-      header_out = header_out + "<h1><span class='h'><span id='meteor_count'>"+format(len(meteors))+"</span> meteors</span> captured since inception</h1>"
+   meteors_displayed = 0
 
    #NUMBER_OF_METEOR_PER_PAGE
-   sorted_meteors = sorted(meteors,reverse=True)
- 
+   meteors = sorted(meteors,reverse=True)
+
    meteor_from       = NUMBER_OF_METEOR_PER_PAGE*cur_page
    total_number_page = len(meteors) % NUMBER_OF_METEOR_PER_PAGE
    counter = 0
 
-
-   print("CUR PAGE " +  cur_page)
-   print("NB OF PAGE " + total_number_page)
-
-   for idx, meteor in enumerate(sorted_meteors):
+   for idx, meteor in enumerate(meteors):
       if(counter<=total_number_page):
          stack_file_tn = meteor.replace('.json', '-stacked-tn.png')
          video_file = meteor.replace('.json', '.mp4')
@@ -932,7 +928,6 @@ def meteors_new(json_conf,form):
          counter = counter + 1
 
 
-   print("METEOR DISPLAYED " + counter)      
    non_rec_cnt = len(meteors)-reduced_cnt
  
    #Create buttons
