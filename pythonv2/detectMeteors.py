@@ -176,7 +176,7 @@ def junk(date):
                               cmd = "mv " + "/mnt/ams2/meteors/" + day + "/" + hd_wild + " /mnt/ams2/trash"
                               print(cmd)
                               os.system(cmd)
-                              exit()
+                              #exit()
 
                       
 
