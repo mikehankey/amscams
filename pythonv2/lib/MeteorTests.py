@@ -109,7 +109,7 @@ def test_object(object, total_frames):
    last_frame = object['history'][-1][0]
    # Dist test
    dist = meteor_test_distance(object) 
-   if float(dist) <= 2:
+   if float(dist) <= 5:
       results.append(('Distance', 0, dist))
       status = 0
    else:
