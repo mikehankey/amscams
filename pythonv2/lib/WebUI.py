@@ -949,6 +949,10 @@ def get_pagination(page,total_elts,url):
          else:
             pagination = pagination + "<li class='page-item active'><a class='page-link' href='"+url+"&p=" + format(counter)+"' >"+format(counter)+"</a></li>";
  
+
+   if (page < counter - 1)  pagination =  pagination + "<li class='page-item'><a class='page-link' href='"+url+"&p=" + format(counter)+"'>Next &raquo;</a></li>";
+   else pagination =  pagination + "<li class='page-item disabled'><a class='page-link'>Next &raquo;</a></li>";
+
    return(pagination)
  
 def meteors_new(json_conf,form):  
@@ -1033,7 +1037,7 @@ def meteors_new(json_conf,form):
          html_out = html_out + "<div class='btn-toolbar'><div class='btn-group'>"
          html_out = html_out + "<a class='vid_link_gal col btn btn-primary btn-sm' title='Play Video' href='./video_player.html?video=" + video_file + "&vid_id="+del_id+"'><i class='icon-play'></i></a>"
          html_out = html_out + "<a class='delete_meteor_gallery col btn btn-danger btn-sm' title='Delete Detection' data-meteor='" + del_id + "'><i class='icon-delete'></i></a>"
-         html_out = html_out + "</div>"+format(counter)+"</div></div>"
+         html_out = html_out + "</div></div></div>"
          counter = counter + 1
 
 
