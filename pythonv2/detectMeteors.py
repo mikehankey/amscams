@@ -142,6 +142,45 @@ def reduce_hd_meteor(video_file, hd_file, hd_trim, hd_crop_file, hd_box,json_con
          hd_object = reduce_object(object, video_file, hd_file, hd_trim, hd_crop_file, hd_box, json_conf,trim_time_offset)
    return(hd_object)
 
+def junk(date):
+   print("JUNK")
+   files =  glob.glob("/mnt/ams2/meteors/" + date + "/*.json")
+   meteors = []
+   for file in files:
+      if "reduced" not in file and "manual" not in file and "star" not in file:
+         js = load_json_file(file)
+         jd = js
+         for object in js['sd_objects']:
+            if object['meteor'] == 1:
+               for res in object['test_results']:
+                  if res[0] == 'Distance':
+                     if res[2] < 5:
+                        print ("BAD CAP", res[2], file)
+                        sd_file = jd['sd_video_file'].split("/")[-1]
+
+                        day = sd_file[0:10]
+                        sd_wild = sd_file.replace(".mp4", "*")
+                        cmd = "mv " + jd['sd_video_file'] +  " /mnt/ams2/trash"
+                        print(cmd)
+                        os.system(cmd)
+                        cmd = "mv " + "/mnt/ams2/meteors/" + day + "/" + sd_wild + " /mnt/ams2/trash"
+                        print(cmd)
+                        os.system(cmd)
+                        if 'hd_trim' in jd:
+                           if jd['hd_trim'] != 0:
+                              print(jd['hd_trim'])
+                              hd_file = jd['hd_trim'].split("/")[-1]
+                              day = hd_file[0:10]
+                              (f_datetime, cam, f_date_str,fy,fm,fd, fh, fmin, fs) = convert_filename_to_date_cam(hd_file)
+                              hd_wild = fy + "_" + fm + "_" + fd + "_" + fh + "_" + fmin + "_*" + cam + "*"
+                              cmd = "mv " + "/mnt/ams2/meteors/" + day + "/" + hd_wild + " /mnt/ams2/trash"
+                              print(cmd)
+                              os.system(cmd)
+                              exit()
+
+                      
+
+
 def reject(date):
    files =  glob.glob("/mnt/ams2/meteors/" + date + "/*.json")
    meteors = []
@@ -193,6 +232,9 @@ if __name__ == "__main__":
       if len(sys.argv) > 4:
          show = 1 
       reduce_meteor_ajax(json_conf, meteor_json_file, cal_params_file, show)
+   if cmd == 'junk':
+      date = sys.argv[2]
+      junk(date)
 
    if cmd == 'reject':
       date = sys.argv[2]
