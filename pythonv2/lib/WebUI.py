@@ -943,8 +943,8 @@ def meteors_new(json_conf,form):
    limit_day = form.getvalue('limit_day')
    cur_page  = form.getvalue('p')
 
-   if cur_page is None:
-      cur_page = 0
+   if (cur_page is None) or (cur_page==0):
+      cur_page = 1
    else:
       cur_page = int(cur_page)
 
