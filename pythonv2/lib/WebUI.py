@@ -1787,7 +1787,7 @@ def browse_day(day,cams_id,json_conf):
 
    print("<div class='h1_holder d-flex justify-content-between'><h1><span class='h'><span id='meteor_count'>"+format(len(base_file))+"</span> meteors</span> captured on "+day.replace('_','/')+"</h1></div>")
    print("<div id='main_container' class='container-fluid h-100 mt-4 lg-l'>")
-   print("<div class='gallery gal-resize row text-center text-lg-left'>")
+   print("<div class='gallery gal-resize row text-center text-lg-left '>")
 
    for base_file in sorted(day_files,reverse=True):
       if cc + 1 < len(day_files) - 2:
@@ -1883,7 +1883,7 @@ def main_page(json_conf):
          print("<div class='h2_holder  d-flex justify-content-between'>")
          print("<h2>"+day_str+" - <a href=webUI.py?cmd=meteors&limit_day=" + day + ">" + str(meteor_files) + " Meteors </a></h2>")
          print("<p><a href=webUI.py?cmd=browse_detects&type=failed&day=" + day + ">" + str(failed_files) + " Non-Meteors </a> - " + str(pending_files) + " Files Pending</a>")
-         print("</div><div class='gallery gal-resize row text-center text-lg-left'>")
+         print("</div><div class='gallery gal-resize row text-center text-lg-left mb-4'>")
          print(html_row)
          print("</div>")
  
