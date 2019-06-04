@@ -8,6 +8,7 @@ import time
 import glob
 import os
 import json
+import cgitb
 from lib.FileIO import get_proc_days, get_day_stats, get_day_files , load_json_file, get_trims_for_file, get_days, save_json_file, cfe, save_meteor
 from lib.VideoLib import get_masks, convert_filename_to_date_cam, ffmpeg_trim , load_video_frames
 from lib.DetectLib import check_for_motion2 
@@ -937,7 +938,7 @@ def get_pagination(page,total_pages,url):
    return(pagination)
  
 def meteors_new(json_conf,form):  
-
+   cgitb.enable()
    cur_page  = 0
    limit_day = form.getvalue('limit_day')
    cur_page  = form.getvalue('p')
