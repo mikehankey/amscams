@@ -1919,6 +1919,7 @@ def main_page(json_conf,form):
    pagination = get_pagination(cur_page,len(real_detections),"/pycgi/webUI.py?cmd=home",NUMBER_OF_DAYS_PER_PAGE)
 
    print("<div class='h1_holder d-flex justify-content-between'><h1>Daily Dectections</h1><div class='page_h'>Page  " + format(cur_page) + "/" +  format(pagination[2]) + "</div></div>")
+   print("<div id='main_container' class='container-fluid h-100 mt-4 lg-l'>")
    print(to_display)
    print(pagination[0])
    print("</div>")
