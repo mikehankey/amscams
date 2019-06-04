@@ -862,8 +862,12 @@ def get_pagination(page,total_pages,url):
    #how many pages appear to the left and right of your current page
    adjacents = 1
    start = (page - 1) * NUMBER_OF_METEOR_PER_PAGE;
+
+   print("START: " + format(start))
    
    last_page = int(math.ceil(total_pages / NUMBER_OF_METEOR_PER_PAGE))
+
+   print("LAST PAGE : " + format(last_page))
    
    lpm1 = last_page - 1
    _prev = page - 1
