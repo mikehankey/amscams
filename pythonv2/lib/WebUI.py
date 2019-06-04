@@ -852,8 +852,7 @@ def get_meteors(meteor_dir,meteors):
 
 
 def get_pagination(page,total_elts,url):
-
-   to_return = []
+ 
 
    #print("IN PAGINATION ")
    #print("PAGE: " + format(page))
@@ -957,10 +956,7 @@ def get_pagination(page,total_elts,url):
       pagination =  pagination + "<li class='page-item disabled'><a class='page-link'>Next &raquo;</a></li>"
 
 
-   to_return[0] = pagination
-   to_return[1] = start
-   to_return[2] = NUMBER_OF_METEOR_PER_PAGE
-   to_return[3] = last_page
+   to_return  = [pagination, start, last_page]
 
    return(to_return)
  
