@@ -957,12 +957,12 @@ def get_pagination(page,total_elts,url):
       pagination =  pagination + "<li class='page-item disabled'><a class='page-link'>Next &raquo;</a></li>"
 
 
-   to_return['pagination'] = pagination
-   to_return['start'] = start
-   to_return['end'] = NUMBER_OF_METEOR_PER_PAGE
-   to_return['last_page'] = last_page
+   to_return[0] = pagination
+   to_return[1] = start
+   to_return[2] = NUMBER_OF_METEOR_PER_PAGE
+   to_return[3] = last_page
 
-   return(pagination)
+   return(to_return)
  
 def meteors_new(json_conf,form):  
    cgitb.enable()
