@@ -890,8 +890,8 @@ def meteors_new(json_conf,form):
    counter = 0
 
 
-   print('CUR PAGE ' +  cur_page)
-   print('NB OF PACE ' + total_number_page)
+   print("CUR PAGE " +  cur_page)
+   print("NB OF PACE " + total_number_page)
 
    for idx, meteor in enumerate(meteors):
       if(counter<=total_number_page):
@@ -934,7 +934,7 @@ def meteors_new(json_conf,form):
          counter = counter + 1
 
 
-   print('METEOR DISPLAYED ' + counter)      
+   print("METEOR DISPLAYED " + counter)      
    non_rec_cnt = len(meteors)-reduced_cnt
  
    #Create buttons
