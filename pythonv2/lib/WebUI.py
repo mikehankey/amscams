@@ -19,6 +19,10 @@ from lib.WebCalib import calibrate_pic,make_plate_from_points, solve_field, chec
 from lib.UtilLib import calc_radiant
 
 
+NUMBER_OF_METEOR_PER_PAGE = 60
+
+
+
 def run_detect(json_conf, form):
    temp_sd_video_file = form.getvalue("temp_sd_video_file")
    stack_file = temp_sd_video_file.replace(".mp4", "-stacked.png")
@@ -848,6 +852,8 @@ def get_meteors(meteor_dir,meteors):
 def meteors_new(json_conf,form):  
 
    limit_day = form.getvalue('limit_day')
+   cur_page  = form.getvalue('p')
+
    htclass = "none"
    meteors = []
    meteor_base_dir ="/mnt/ams2/meteors/"
@@ -858,22 +864,27 @@ def meteors_new(json_conf,form):
 
    norm_cnt = 0
    reduced_cnt = 0
-
+ 
    for meteor_dir in meteor_dirs:
       el = meteor_dir.split("/")
       this_date = el[-1]
       if limit_day is None: 
          meteors = get_meteors(meteor_dir, meteors)
+         header_out = header_out + "<h1><span class='h'><span id='meteor_count'>"+format(len(meteors))+"</span> meteors</span> captured since inception</h1>"
       elif limit_day == this_date:
          meteors = get_meteors(meteor_dir, meteors)
          header_out = header_out + "<h1><span class='h'><span id='meteor_count'>"+format(len(meteors))+"</span> meteors</span> captured on "+str(this_date)+"</h1>"
    
-   if limit_day is None:
-      header_out = header_out + "<h1><span class='h'><span id='meteor_count'>"+format(len(meteors))+"</span> meteors</span> captured since inception</h1>"
- 
-  
+   meteors_displayed = 0
 
-   for meteor in sorted(meteors,reverse=True):
+   #NUMBER_OF_METEOR_PER_PAGE
+   meteors = sorted(meteors,reverse=True)
+
+   for idx, meteor in enumerate(meteors):
+    print(idx, meteor)
+
+
+   for meteor in meteors:
       stack_file_tn = meteor.replace('.json', '-stacked-tn.png')
       video_file = meteor.replace('.json', '.mp4')
       stack_obj_img = video_file.replace(".mp4", "-stacked-obj-tn.png")
