@@ -5,6 +5,13 @@
                     width: 100%;
                     max-height: 90vh;
                 }
+                #info_link {
+                    position: absolute;
+                    top: .5rem;
+                    right: .5rem;
+                    width: 3rem;
+                    z-index: 9;
+                }
             </style>
             <link rel="stylesheet" href="./dist/css/main.css"/>
             <script src="./dist/js/amscam.min.js"></script> 
@@ -32,13 +39,8 @@
               
             </script>
     </head>
-    <body> 
-
+    <body style="background-color: transparent;position: relative;min-width: 0;"> 
+        <a id="info_link"  target="_parent"  class="col btn btn-primary btn-sm" title="Go to Info Page"><i class="icon-question"></i></a>
         <video controls loop autoplay name="media"><source type="video/mp4"></video>
-        <div class="btn-toolbar">
-            <div class="btn-group">
-                <a id="info_link" class="col btn btn-primary btn-sm" title="Go to Info Page"><i class="icon-question"></i></a>
-            </div>
-        </div>
     </body>
 </html>
