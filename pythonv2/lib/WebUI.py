@@ -891,7 +891,7 @@ def meteors_new(json_conf,form):
 
    for idx, meteor in enumerate(meteors):
       # Minus 1 so we have NUMBER_OF_METEOR_PER_PAGE per page starting at 0
-      if(counter<=NUMBER_OF_METEOR_PER_PAGE-1):
+      if(counter<=NUMBER_OF_METEOR_PER_PAGE-1 && idx >= meteor_from):
          stack_file_tn = meteor.replace('.json', '-stacked-tn.png')
          video_file = meteor.replace('.json', '.mp4')
          stack_obj_img = video_file.replace(".mp4", "-stacked-obj-tn.png")
