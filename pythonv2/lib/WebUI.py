@@ -852,7 +852,7 @@ def get_meteors(meteor_dir,meteors):
    return(meteors)
 
 
-def get_pagination(page,total_elts,url):
+def get_pagination(page,total_elts,url,max_per_page):
  
 
    #print("IN PAGINATION ")
@@ -862,11 +862,11 @@ def get_pagination(page,total_elts,url):
 
    #how many pages appear to the left and right of your current page
    adjacents = 1
-   start = (page - 1) * NUMBER_OF_METEOR_PER_PAGE;
+   start = (page - 1) * max_per_page;
 
    #print("START: " + format(start))
    
-   last_page = total_elts / NUMBER_OF_METEOR_PER_PAGE
+   last_page = total_elts / max_per_page
 
    last_page = math.ceil(last_page)
    last_page = int(last_page)
@@ -1060,7 +1060,7 @@ def meteors_new(json_conf,form):
    #header_out = header_out + '<label class="btn btn-secondary">'
    #header_out = header_out + '<input type="radio" name="meteor_select" id="non_reduced" autocomplete="off">All '+ format(non_rec_cnt) +'  Non-Reduced Meteors Only</label>'
 
-   pagination = get_pagination(cur_page,len(meteors),"/pycgi/webUI.py?cmd=new_meteors")
+   pagination = get_pagination(cur_page,len(meteors),"/pycgi/webUI.py?cmd=new_meteors",NUMBER_OF_METEOR_PER_PAGE)
 
    header_out = header_out + "<div class='page_h'>Page  " + format(cur_page) + "/" +  format(pagination[2]) + "</div>"
 
@@ -1916,10 +1916,8 @@ def main_page(json_conf,form):
          print(html_row)
          print("</div>")
          counter = counter + 1
-
-   print("CUR PAGE " + format(cur_page))
-   print("TOTAL " + format(len(real_detections)))
-   pagination = get_pagination(cur_page,len(real_detections),"/pycgi/webUI.py?cmd=home")
+ 
+   pagination = get_pagination(cur_page,len(real_detections),"/pycgi/webUI.py?cmd=home",NUMBER_OF_DAYS_PER_PAGE)
    print(pagination[0])
  
    print("</div>")
