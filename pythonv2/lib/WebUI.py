@@ -1059,7 +1059,7 @@ def meteors_new(json_conf,form):
 
    pagination = get_pagination(cur_page,len(meteors),"/pycgi/webUI.py?cmd=new_meteors")
 
-   header_out = header_out + "<div>Page  " +   cur_page + "/" +  format(pagination[2]) + "</div>"
+   header_out = header_out + "<div>Page  " + format(cur_page) + "/" +  format(pagination[2]) + "</div>"
 
    print(header_out+'</div></div>')
    print("<div id='main_container' class='container-fluid h-100 mt-4 lg-l'>")
