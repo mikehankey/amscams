@@ -167,7 +167,7 @@ def junk(date):
                         print(cmd)
                         os.system(cmd)
                         if 'hd_trim' in jd:
-                           if jd['hd_trim'] != 0:
+                           if jd['hd_trim'] != 0 and jd['hd_trim'] is not None:
                               print(jd['hd_trim'])
                               hd_file = jd['hd_trim'].split("/")[-1]
                               day = hd_file[0:10]
