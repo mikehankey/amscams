@@ -142,6 +142,24 @@ def reduce_hd_meteor(video_file, hd_file, hd_trim, hd_crop_file, hd_box,json_con
          hd_object = reduce_object(object, video_file, hd_file, hd_trim, hd_crop_file, hd_box, json_conf,trim_time_offset)
    return(hd_object)
 
+def fix_meteor_dir(date):
+   good_meteors = {}   
+   meteor_files =  glob.glob("/mnt/ams2/meteors/" + date + "/*.json")
+   sd_passed_files =  glob.glob("/mnt/ams2/SD/proc2/" + date + "/passed/*.mp4")
+   for meteor_file in meteor_files:
+      if "reduced" not in meteor_file and "star" not in meteor_file and "manual" not in meteor_file:
+         mfn = meteor_file.split("/")[-1]
+         mfn = mfn.replace(".json", "")
+         print(mfn)
+         good_meteors[mfn] = {}
+         sd_video_file = "/mnt/ams2/meteors/" + date + "/" + mfn + ".mp4"
+         if cfe(sd_video_file) == 0:
+            print("SD MISSING:", sd_video_file) 
+         else:
+            print("SD EXISTS:", sd_video_file) 
+
+   print("FIX MD", len(good_meteors), len(sd_passed_files))
+
 def junk(date):
    print("JUNK")
    files =  glob.glob("/mnt/ams2/meteors/" + date + "/*.json")
@@ -234,6 +252,9 @@ if __name__ == "__main__":
       if len(sys.argv) > 4:
          show = 1 
       reduce_meteor_ajax(json_conf, meteor_json_file, cal_params_file, show)
+   if cmd == 'fix_meteor_dir':
+      date = sys.argv[2]
+      fix_meteor_dir(date)
    if cmd == 'junk':
       date = sys.argv[2]
       junk(date)

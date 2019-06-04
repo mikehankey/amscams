@@ -136,7 +136,7 @@ def get_day_files(day, cams_id, json_conf):
   
    file_info = {} 
    proc_dir = json_conf['site']['proc_dir']
-   [failed_files, meteor_files,pending_files,min_files] = get_day_stats(proc_dir + day + "/", json_conf)
+   [failed_files, meteor_files,pending_files,min_files] = get_day_stats(day, proc_dir + day + "/", json_conf)
    day_dir = proc_dir + day + "/" + "*" + cams_id + "*.mp4"
    temp_files = glob.glob(day_dir)
    for file in sorted(temp_files, reverse=True):
@@ -166,20 +166,32 @@ def get_day_files(day, cams_id, json_conf):
 
    return(file_info)
 
-def get_day_stats(day, json_conf):
+def get_day_stats(day, day_dir, json_conf):
    proc_dir = json_conf['site']['proc_dir']
-   failed_dir = day + "/failed/*trim*.mp4"
-   meteor_dir = day + "/passed/*trim*.mp4"
-   pending_dir = day + "/*trim*.mp4"
-   min_files = day + "/*.mp4"
+   failed_dir = day_dir + "/failed/*trim*.mp4"
+   meteor_dir = "/mnt/ams2/meteors/" + day + "/*.json"
+   pending_dir = day_dir + "/*trim*.mp4"
+   min_files = day_dir + "/*.mp4"
    failed_files = glob.glob(failed_dir)
-   meteor_files = glob.glob(meteor_dir)
+   tmp_meteor_files = glob.glob(meteor_dir)
+   meteor_files = []
+   for tmp in tmp_meteor_files :
+      if "reduced" not in tmp and "manual" not in tmp and "star" not in tmp:
+         meteor_files.append(tmp)
    pending_files = glob.glob(pending_dir)
    min_files = glob.glob(min_files)
    detect_files = [failed_files, meteor_files,pending_files,min_files]
 
    return(detect_files)
 
+def update_meteor_count(day):
+   meteor_dir = "/mnt/ams2/meteors/" + day + "/*.json"
+   tmp_meteor_files = glob.glob(meteor_dir)
+   meteor_files = []
+   for tmp in tmp_meteor_files :
+      if "reduced" not in tmp and "manual" not in tmp and "star" not in tmp:
+         meteor_files.append(tmp)
+   return(meteor_files)
 
 def get_proc_days(json_conf):
    proc_dir = json_conf['site']['proc_dir']

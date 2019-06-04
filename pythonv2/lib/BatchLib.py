@@ -7,7 +7,7 @@ import cv2
 import glob
 import urllib.request
 import json
-from lib.FileIO import get_day_stats, load_json_file, cfe, get_days, save_json_file,load_json_file, purge_hd_files, purge_sd_daytime_files, purge_sd_nighttime_files
+from lib.FileIO import get_day_stats, load_json_file, cfe, get_days, save_json_file,load_json_file, purge_hd_files, purge_sd_daytime_files, purge_sd_nighttime_files, update_meteor_count
 from lib.ImageLib import draw_stack, thumb, stack_glob, stack_stack, stack_frames
 from PIL import Image
 from lib.VideoLib import load_video_frames
@@ -568,19 +568,30 @@ def make_file_index(json_conf ):
    stats = {}
 
    json_file = data_dir + "main-index.json"
+   main_index = load_json_file(json_file)
 
    for day in days:
-
-      (failed_files, meteor_files,pending_files,min_files) = get_day_stats(proc_dir + day + "/", json_conf)
-
       stats[day] = {}
-      stats[day]['failed_files'] = len(failed_files)
-      stats[day]['meteor_files'] = len(meteor_files)
-      stats[day]['pending_files'] = len(pending_files)
-      new_min_files, cam_counts = count_min_files(min_files,json_conf)
-      stats[day]['min_files'] = len(new_min_files)
-      for key in cam_counts:
-         stats[day][key] = cam_counts[key]
+      if day not in main_index:
+         (failed_files, meteor_files,pending_files,min_files) = get_day_stats(day, proc_dir + day + "/", json_conf)
+         stats[day]['failed_files'] = len(failed_files)
+         stats[day]['meteor_files'] = len(meteor_files)
+         stats[day]['pending_files'] = len(pending_files)
+
+         new_min_files, cam_counts = count_min_files(min_files,json_conf)
+         stats[day]['min_files'] = len(new_min_files)
+         for key in cam_counts:
+            stats[day][key] = cam_counts[key]
+
+      else:  
+         failed_files = main_index[day]['failed_files'] 
+         meteors = update_meteor_count(day)
+         main_index[day]['meteor_files'] = len(meteors)
+         pending_files = main_index[day]['pending_files'] 
+         min_files = main_index[day]['min_files'] 
+
+         stats[day] = main_index[day]
+
       
       print(day)
    json_file = data_dir + "main-index.json"

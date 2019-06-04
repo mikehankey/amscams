@@ -952,11 +952,10 @@ def get_pagination(page,total_elts,url,max_per_page):
  
 
 
-
-   #if (page < counter - 1):
-   #   pagination =  pagination + "<li class='page-item'><a class='page-link' href='"+url+"&p=" + format(page+1)+"'>Next &raquo;</a></li>"
-   #else:
-   #   pagination =  pagination + "<li class='page-item disabled'><a class='page-link'>Next &raquo;</a></li>"
+   if (page < (counter - 1) * 60):
+      pagination =  pagination + "<li class='page-item'><a class='page-link' href='"+url+"&p=" + format(page+1)+"'>Next &raquo;</a></li>"
+   else:
+      pagination =  pagination + "<li class='page-item disabled'><a class='page-link'>Next &raquo;</a></li>"
 
 
    to_return  = [pagination, start, last_page]
@@ -994,6 +993,7 @@ def meteors_new(json_conf,form):
       elif limit_day == this_date:
          meteors = get_meteors(meteor_dir, meteors)
          header_out = header_out + "<h1><span class='h'><span id='meteor_count'>"+format(len(meteors))+"</span> meteors</span> captured on "+str(this_date)+"</h1>"
+
    
    if limit_day is None:
       header_out = header_out + "<h1><span class='h'><span id='meteor_count'>"+format(len(meteors))+"</span> meteors</span> captured since inception</h1>"
@@ -1007,9 +1007,16 @@ def meteors_new(json_conf,form):
    total_number_page = math.ceil(len(meteors) / NUMBER_OF_METEOR_PER_PAGE)
    counter = 0
 
+  
+   meteor_start = (cur_page -1) * NUMBER_OF_METEOR_PER_PAGE 
+   meteor_end = meteor_start + NUMBER_OF_METEOR_PER_PAGE
+   all_meteors = meteors
+
+   meteors = meteors[meteor_start:meteor_end]
+
    for idx, meteor in enumerate(meteors):
       # Minus 1 so we have NUMBER_OF_METEOR_PER_PAGE per page starting at 0
-      if(counter<=NUMBER_OF_METEOR_PER_PAGE-1 and idx >= meteor_from):
+      if(counter<=NUMBER_OF_METEOR_PER_PAGE-1 and idx <= meteor_from):
          stack_file_tn = meteor.replace('.json', '-stacked-tn.png')
          video_file = meteor.replace('.json', '.mp4')
          stack_obj_img = video_file.replace(".mp4", "-stacked-obj-tn.png")
@@ -1059,8 +1066,10 @@ def meteors_new(json_conf,form):
    #header_out = header_out + '<input type="radio" name="meteor_select" id="reduced" autocomplete="off">All '+  format(reduced_cnt) +' Reduced Meteors Only</label>'
    #header_out = header_out + '<label class="btn btn-secondary">'
    #header_out = header_out + '<input type="radio" name="meteor_select" id="non_reduced" autocomplete="off">All '+ format(non_rec_cnt) +'  Non-Reduced Meteors Only</label>'
-
-   pagination = get_pagination(cur_page,len(meteors),"/pycgi/webUI.py?cmd=new_meteors",NUMBER_OF_METEOR_PER_PAGE)
+   if len(all_meteors) > NUMBER_OF_METEOR_PER_PAGE:
+      pagination = get_pagination(cur_page,len(all_meteors),"/pycgi/webUI.py?cmd=new_meteors",NUMBER_OF_METEOR_PER_PAGE)
+   else:
+      pagination = ["","",""]
 
    header_out = header_out + "<div class='page_h'>Page  " + format(cur_page) + "/" +  format(pagination[2]) + "</div>"
 
@@ -1896,11 +1905,20 @@ def main_page(json_conf,form):
       if "meteor" not in day_dir and "daytime" not in day_dir and "json" not in day_dir and "trash" not in day_dir:
          real_detections.append(day)
 
+   all_real_detections = real_detections
+
+   day_start = (cur_page-1) * NUMBER_OF_DAYS_PER_PAGE
+   day_end = day_start + NUMBER_OF_DAYS_PER_PAGE
+   # slice the array to just the values you want.
+   real_detections = all_real_detections[day_start:day_end]
+
+#   print(all_real_detections)
 
    for idx, day in enumerate(real_detections): 
       day_str = day
       day_dir = json_conf['site']['proc_dir'] + day + "/" 
-      if counter<=NUMBER_OF_DAYS_PER_PAGE-1 and idx >= detections_form:
+      #if counter<=NUMBER_OF_DAYS_PER_PAGE-1 and idx >= detections_form:
+      if True:
          failed_files = stats_data[day]['failed_files']
          meteor_files = stats_data[day]['meteor_files']
          pending_files = stats_data[day]['pending_files']
@@ -1916,7 +1934,7 @@ def main_page(json_conf,form):
          to_display = to_display + "</div>"
          counter = counter + 1
  
-   pagination = get_pagination(cur_page,len(real_detections),"/pycgi/webUI.py?cmd=home",NUMBER_OF_DAYS_PER_PAGE)
+   pagination = get_pagination(cur_page,len(all_real_detections),"/pycgi/webUI.py?cmd=home",NUMBER_OF_DAYS_PER_PAGE)
 
    print("<div class='h1_holder d-flex justify-content-between'><h1>Daily Dectections</h1><div class='page_h'>Page  " + format(cur_page) + "/" +  format(pagination[2]) + "</div></div>")
    print("<div id='main_container' class='container-fluid h-100 mt-4 lg-l'>")
