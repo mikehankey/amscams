@@ -885,9 +885,15 @@ def meteors_new(json_conf,form):
    #NUMBER_OF_METEOR_PER_PAGE
    meteors = sorted(meteors,reverse=True)
 
+
    meteor_from       = NUMBER_OF_METEOR_PER_PAGE*cur_page
    total_number_page = len(meteors) % NUMBER_OF_METEOR_PER_PAGE
    counter = 0
+
+
+   print("Curpage " + cur_page)
+   print("meteor_from " + meteor_from)
+   print("total_number_page " + total_number_page)
 
    for idx, meteor in enumerate(meteors):
       # Minus 1 so we have NUMBER_OF_METEOR_PER_PAGE per page starting at 0
