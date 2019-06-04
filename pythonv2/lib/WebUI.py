@@ -1895,7 +1895,7 @@ def main_page(json_conf,form):
       day_str = day
       day_dir = json_conf['site']['proc_dir'] + day + "/" 
       if "meteor" not in day_dir and "daytime" not in day_dir and "json" not in day_dir and "trash" not in day_dir:
-         real_detections.append[day]
+         real_detections.append(day)
 
 
    for idx, day in enumerate(real_detections): 
