@@ -125,8 +125,13 @@ def meteor_index(json_conf, extra_cmd = ""):
 
    jc = 0
    for job in jobs:
-      max_proc = 24 
-      while (check_running("autoCal.py")) > max_proc:
+
+      if 'procs' in json_conf['site']:
+         procs = json_conf['site']['procs']
+      else: 
+         procs = 4
+
+      while (check_running("autoCal.py")) > max_procs:
          time.sleep(1)
       print(job)
       #if "010002" in job:
@@ -2246,7 +2251,12 @@ def fix_js(json_file):
 
 
 def batch_fix (json_conf):
-   max_proc = 1
+
+   if 'procs' in json_conf['site']:
+      max_procs = json_conf['site']['procs']
+   else: 
+      max_procs = 4
+
    meteor_dirs = glob.glob("/mnt/ams2/meteors/*")
    bad_files = [] 
    refit = 0
@@ -2280,7 +2290,7 @@ def batch_fix (json_conf):
    jc = 0
    
    for job in jobs:
-      while (check_running("autoCal.py")) > max_proc:       
+      while (check_running("autoCal.py")) > max_procs:       
          time.sleep(1)
       print(job)
       os.system(job + " &")
@@ -2660,7 +2670,10 @@ def make_hd_images(day, json_conf, mod=15):
 
 def batch_hd_fit(day,json_conf,scmd):
    print("YES", day, scmd)
-   procs = json_conf['site']['procs']
+   if 'procs' in json_conf['site']:
+      procs = json_conf['site']['procs']
+   else: 
+      procs = 4
    day_dir = "/mnt/ams2/cal/hd_images/" + day + "/"
    files = glob.glob(day_dir + "*calparams.json")
    jobs1 = []
