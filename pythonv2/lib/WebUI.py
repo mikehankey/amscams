@@ -884,7 +884,7 @@ def get_pagination(page,total_elts,url):
 
       #previous button
       if (page > 1):
-         pagination = pagination + "<li class='page-item'><a class='page-link' href='"+url+"&p=" + _prev+"'>&laquo; Previous</a></li>";
+         pagination = pagination + "<li class='page-item'><a class='page-link' href='"+url+"&p=" + format(_prev) +"'>&laquo; Previous</a></li>";
       else:
          pagination = pagination + "<li class='page-item disabled'><a class='page-link' >&laquo; Previous</a></li>";
 
@@ -893,9 +893,9 @@ def get_pagination(page,total_elts,url):
       
          for counter in range(1,last_page+1):
             if(counter == page ):
-               pagination = pagination + "<li class='page-item active'><a class='page-link' >"+counter+"</a></li>";
+               pagination = pagination + "<li class='page-item active'><a class='page-link' >"+ format(counter)+"</a></li>";
             else:
-               pagination = pagination + "<li class='page-item'><a  class='page-link' href='"+url+"&p=" + counter+"'>"+counter+"</a></li>";
+               pagination = pagination + "<li class='page-item'><a  class='page-link' href='"+url+"&p=" + format(counter)+"'>"+format(counter)+"</a></li>";
             
       elif (last_page > 5 + (adjacents * 2)):
 
@@ -904,13 +904,13 @@ def get_pagination(page,total_elts,url):
                
                for counter in range(1,4 + (adjacents * 2)):
                   if(counter == page):
-                     pagination = pagination + "<li class='page-item active'><a class='page-link' >"+counter+"</a></li>";
+                     pagination = pagination + "<li class='page-item active'><a class='page-link' >"+format(counter)+"</a></li>";
                   else:
-                     pagination = pagination + "<li class='page-item'><a class='page-link'  href='"+url+"?p="+ counter+"'>"+counter+"</a></li>";
+                     pagination = pagination + "<li class='page-item'><a class='page-link'  href='"+url+"?p="+ format(counter)+"'>"+ format(counter)+"</a></li>";
 
                pagination = pagination + "<li class='page-item disabled'><a>...</a></li>";
-               pagination = pagination + "<li class='page-item'><a  class='page-link' href='"+url+"&p=" + lpm1+"'>"+lpm1+"</a></li>";
-               pagination = pagination + "<li class='page-item'><a  class='page-link' href='"+url+"&p=" + last_page+"'>"+last_page+"</a></li>";
+               pagination = pagination + "<li class='page-item'><a  class='page-link' href='"+url+"&p=" + format(lpm1)+"'>"+format(lpm1)+"</a></li>";
+               pagination = pagination + "<li class='page-item'><a  class='page-link' href='"+url+"&p=" + format(last_page)+"'>"+ format(last_page)+"</a></li>";
             
          elif(last_page-1-(adjacents*2)>page and page > (adjacents*2)):
 
@@ -920,13 +920,13 @@ def get_pagination(page,total_elts,url):
                
                for counter in range(page-adjacents, page+adjacents):
                   if(counter == page):
-                     pagination = pagination + "<li class='page-item active'><a>"+counter+"</a></li>";                   
+                     pagination = pagination + "<li class='page-item active'><a>"+format(counter)+"</a></li>";                   
                   else:
-                     pagination = pagination + "<li><a  href='"+url+"?p="+ counter+"'>"+counter+"</a></li>";
+                     pagination = pagination + "<li><a  href='"+url+"?p="+ format(counter)+"'>"+format(counter)+"</a></li>";
                
                pagination = pagination + "<li class='page-item disabled'><a>...</a></li>";
-               pagination = pagination + "<li class='page-item'><a  class='page-link' href='"+url+"&p=" + lpm1+"'>"+lpm1+"</a></li>";
-               pagination = pagination + "<li class='page-item'><a  class='page-link' href='"+url+"&p=" + last_page+"'>"+last_page+"</a></li>";
+               pagination = pagination + "<li class='page-item'><a  class='page-link' href='"+url+"&p=" + format(lpm1)+"'>"+format(lpm1)+"</a></li>";
+               pagination = pagination + "<li class='page-item'><a  class='page-link' href='"+url+"&p=" + format(last_page)+"'>"+format(last_page)+"</a></li>";
             
          #close to end; only hide early pages
          else:
@@ -937,17 +937,17 @@ def get_pagination(page,total_elts,url):
                
                for counter in range(last_page - (2 + (adjacents * 2)), last_page):
                   if(counter == page):
-                     pagination = pagination + "<li class='page-item active'><a class='page-link'>"+counter+"</a></li>";                   
+                     pagination = pagination + "<li class='page-item active'><a class='page-link'>"+format(counter)+"</a></li>";                   
                   else:
-                     pagination = pagination + "<li class='page-item'><a class='page-link' href='"+url+"?p="+ counter+"'>"+counter+"</a></li>";
+                     pagination = pagination + "<li class='page-item'><a class='page-link' href='"+url+"?p="+ format(counter)+"'>"+format(counter)+"</a></li>";
 
    else:
       #Display all pages
       for counter in range(1,last_page):
          if(counter == page):
-            pagination = pagination + "<li class='page-item active'><a class='page-link' >"+counter+"</a></li>";
+            pagination = pagination + "<li class='page-item active'><a class='page-link' >"+format(counter)+"</a></li>";
          else:
-            pagination = pagination + "<li class='page-item active'><a class='page-link' href='"+url+"&p=" + counter+"' >"+counter+"</a></li>";
+            pagination = pagination + "<li class='page-item active'><a class='page-link' href='"+url+"&p=" + format(counter)+"' >"+format(counter)+"</a></li>";
  
    return(pagination)
  
