@@ -852,7 +852,7 @@ def get_meteors(meteor_dir,meteors):
 def meteors_new(json_conf,form):  
 
    limit_day = form.getvalue('limit_day')
-   cur_page  = int(form.getvalue('p'))
+   cur_page  = form.getvalue('p')
 
    if cur_page is None:
       cur_page = 0
@@ -885,11 +885,10 @@ def meteors_new(json_conf,form):
    #NUMBER_OF_METEOR_PER_PAGE
    meteors = sorted(meteors,reverse=True)
 
-
+   cur_page = int(cur_page)
    meteor_from       = NUMBER_OF_METEOR_PER_PAGE*cur_page
    total_number_page = len(meteors) % NUMBER_OF_METEOR_PER_PAGE
    counter = 0
-
 
    print("Curpage " + cur_page)
    print("meteor_from " + meteor_from)
