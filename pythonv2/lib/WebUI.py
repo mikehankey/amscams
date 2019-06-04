@@ -1888,10 +1888,20 @@ def main_page(json_conf,form):
    total_number_page = math.ceil(len(detections) / NUMBER_OF_DAYS_PER_PAGE)
    counter = 0
 
+
+   real_detections = []
+   # Need a fist loop to cleanup
    for idx, day in enumerate(detections): 
       day_str = day
       day_dir = json_conf['site']['proc_dir'] + day + "/" 
-      if "meteor" not in day_dir and "daytime" not in day_dir and "json" not in day_dir and "trash" not in day_dir and counter<=NUMBER_OF_DAYS_PER_PAGE-1 and idx >= detections_form:
+      if "meteor" not in day_dir and "daytime" not in day_dir and "json" not in day_dir and "trash" not in day_dir:
+         real_detections.append[day]
+
+
+   for idx, day in enumerate(real_detections): 
+      day_str = day
+      day_dir = json_conf['site']['proc_dir'] + day + "/" 
+      if counter<=NUMBER_OF_DAYS_PER_PAGE-1 and idx >= detections_form:
          failed_files = stats_data[day]['failed_files']
          meteor_files = stats_data[day]['meteor_files']
          pending_files = stats_data[day]['pending_files']
@@ -1907,7 +1917,7 @@ def main_page(json_conf,form):
          print("</div>")
          counter = counter + 1
 
-   pagination = get_pagination(cur_page,len(detections),"/pycgi/webUI.py?cmd=home")
+   pagination = get_pagination(cur_page,len(real_detections),"/pycgi/webUI.py?cmd=home")
    print(pagination[0])
  
    print("</div>")
