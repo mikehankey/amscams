@@ -148,6 +148,8 @@ def junk(date):
    meteors = []
    for file in files:
       if "reduced" not in file and "manual" not in file and "star" not in file:
+         if cfe(file) == 0:
+            continue 
          js = load_json_file(file)
          jd = js
          for object in js['sd_objects']:
