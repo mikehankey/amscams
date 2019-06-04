@@ -1880,15 +1880,14 @@ def main_page(json_conf,form):
    json_file = json_conf['site']['proc_dir'] + "json/" + "main-index.json"
    stats_data = load_json_file(json_file)
 
-   print('<h1>Daily detections</h1>')
-   print('<div id="main_container" class="container-fluid h-100 mt-4 lg-l">')
+   
 
    detections = sorted(stats_data,reverse=True)
    detections_form = NUMBER_OF_DAYS_PER_PAGE*cur_page
    total_number_page = math.ceil(len(detections) / NUMBER_OF_DAYS_PER_PAGE)
    counter = 0
 
-
+   to_display = "";
    real_detections = []
    # Need a fist loop to cleanup
    for idx, day in enumerate(detections): 
@@ -1909,15 +1908,18 @@ def main_page(json_conf,form):
          html_row, day_x = make_day_preview(day_dir,stats_data[day], json_conf)
          day_str = day.replace("_", "/")
 
-         print("<div class='h2_holder  d-flex justify-content-between'>")
-         print("<h2>"+day_str+" - <a href=webUI.py?cmd=meteors&limit_day=" + day + ">" + str(meteor_files) + " Meteors </a></h2>")
-         print("<p><a href=webUI.py?cmd=browse_detects&type=failed&day=" + day + ">" + str(failed_files) + " Non-Meteors </a> - " + str(pending_files) + " Files Pending</a>")
-         print("</div><div class='gallery gal-resize row text-center text-lg-left mb-4'>")
-         print(html_row)
-         print("</div>")
+         to_display  = to_display + "<div class='h2_holder  d-flex justify-content-between'>"
+         to_display  = to_display +"<h2>"+day_str+" - <a href=webUI.py?cmd=meteors&limit_day=" + day + ">" + str(meteor_files) + " Meteors </a></h2>"
+         to_display  = to_display +"<p><a href=webUI.py?cmd=browse_detects&type=failed&day=" + day + ">" + str(failed_files) + " Non-Meteors </a> - " + str(pending_files) + " Files Pending</a>"
+         to_display  = to_display +"</div><div class='gallery gal-resize row text-center text-lg-left mb-4'>"
+         to_display  = to_display + html_row
+         to_display = to_display + "</div>"
          counter = counter + 1
  
    pagination = get_pagination(cur_page,len(real_detections),"/pycgi/webUI.py?cmd=home",NUMBER_OF_DAYS_PER_PAGE)
+
+   print("<div class='h1_holder d-flex justify-content-between'><h1>Daily Dectections</h1><div class='page_h'>Page  " + format(cur_page) + "/" +  format(pagination[2]) + "</div></div>")
+
    print(pagination[0])
  
    print("</div>")
