@@ -1886,7 +1886,7 @@ def main_page(json_conf,form):
    total_number_page = math.ceil(len(detections) / NUMBER_OF_DAYS_PER_PAGE)
    counter = 0
 
-   for idex, day in enumerate(detections): 
+   for idx, day in enumerate(detections): 
       day_str = day
       day_dir = json_conf['site']['proc_dir'] + day + "/" 
       if "meteor" not in day_dir and "daytime" not in day_dir and "json" not in day_dir and "trash" not in day_dir and counter<=NUMBER_OF_DAYS_PER_PAGE-1 and idx >= detections_form:
