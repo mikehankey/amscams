@@ -536,7 +536,8 @@ def update_file_index(json_conf):
       new_stats[day] = stats[day]
    for day in new_stats_copy:
       new_stats[day] = new_stats_copy[day]
-   save_json_file(json_file, new_stats)
+ 
+   save_json_file(json_file, sorted(new_stats,reverse=True))
    print(json_file)
 
 def count_min_files(min_files,json_conf):
@@ -586,6 +587,7 @@ def make_file_index(json_conf ):
       else:  
          failed_files = main_index[day]['failed_files'] 
          meteors = update_meteor_count(day)
+         print("meteors:", day, len(meteors))
          main_index[day]['meteor_files'] = len(meteors)
          pending_files = main_index[day]['pending_files'] 
          min_files = main_index[day]['min_files'] 
