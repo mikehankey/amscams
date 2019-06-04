@@ -907,7 +907,7 @@ def meteors_new(json_conf,form):
       html_out = html_out + "<img alt='"+desc+"' class='img-fluid ns lz' src='" + stack_file_tn + "'>"
       html_out = html_out + "<span>" + desc + "</span></a>"     
       html_out = html_out + "<div class='btn-toolbar'><div class='btn-group'>"
-      html_out = html_out + "<a class='vid_link_gal col btn btn-primary btn-sm' title='Play Video' href='./video_player.html?video=" + video_file + "&vid_id='"+del_id"'><i class='icon-play'></i></a>"
+      html_out = html_out + "<a class='vid_link_gal col btn btn-primary btn-sm' title='Play Video' href='./video_player.html?video=" + video_file + "&vid_id='"+del_id+"'><i class='icon-play'></i></a>"
       html_out = html_out + "<a class='delete_meteor_gallery col btn btn-danger btn-sm' title='Delete Detection' data-meteor='" + del_id + "'><i class='icon-delete'></i></a>"
       html_out = html_out + "</div></div></div>"
  
