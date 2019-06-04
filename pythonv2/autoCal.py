@@ -75,7 +75,6 @@ def meteor_index(json_conf, extra_cmd = ""):
                      red_data['cal_params']['center_az'] = red_data['cal_params']['az_center']
                      red_data['cal_params']['center_el'] = red_data['cal_params']['el_center']
                      save_json_file(rmeteor, red_data)
-          
                   #cmd = "./autoCal.py imgstars " + meteor
                   #print(cmd)
  
@@ -132,13 +131,16 @@ def meteor_index(json_conf, extra_cmd = ""):
             meteor_index[day][meteor]['duration'] = 0
    save_json_file("/mnt/ams2/cal/hd_images/meteor_index.json", meteor_index)
 
+   print(json_conf)
+
+   if 'max_procs' in json_conf['site']:
+      max_procs = json_conf['site']['max_procs']
+   else: 
+      max_procs = 4
+
    jc = 0
    for job in jobs:
 
-      if 'procs' in json_conf['site']:
-         procs = json_conf['site']['procs']
-      else: 
-         procs = 4
 
       while (check_running("autoCal.py")) > max_procs:
          time.sleep(1)
@@ -1677,9 +1679,9 @@ def find_star_in_crop(cnt_img):
       return(max_px, avg_px,px_diff,(mx,my))
 
 def get_cat_stars(file, cal_params_file, json_conf, cal_params = None):
-   print("GETTING CAT STARS:")
-   print("FILE:", file)
-   print("CP FILE:", cal_params_file)
+   #print("GETTING CAT STARS:")
+   #print("FILE:", file)
+   #print("CP FILE:", cal_params_file)
    if cal_params == None:
       print("CAL PARAMS ARE NONE!")
       exit()
@@ -1704,8 +1706,8 @@ def get_cat_stars(file, cal_params_file, json_conf, cal_params = None):
 
    ra_center,dec_center = HMS2deg(str(rah),str(dech))
 
-   print("RA/DEC:", ra_center, dec_center)
-   print("AZ/EL:", center_az, center_el)
+   #print("RA/DEC:", ra_center, dec_center)
+   #print("AZ/EL:", center_az, center_el)
 
 
    cal_params['ra_center'] = ra_center
@@ -1720,7 +1722,7 @@ def get_cat_stars(file, cal_params_file, json_conf, cal_params = None):
    return(cat_stars)
 
 def lookup_star_in_cat(ix,iy,cat_stars,no_poly_cat_stars, star_dist=10,):
-   print("LOOKUP:", ix,iy)
+   #print("LOOKUP:", ix,iy)
    close = []
    for cat_star in cat_stars:
       name,mag,ra,dec,new_cat_x,new_cat_y = cat_star
@@ -1744,11 +1746,11 @@ def lookup_star_in_cat(ix,iy,cat_stars,no_poly_cat_stars, star_dist=10,):
       print("NO POLY CAT STAR KEY FOUND.")
    star_dist = 20 
    if closest[2] < star_dist and ang_diff < 5:
-      print("NP STAR ANGLE/ I STAR ANG TO CENTER:", ix, iy, np_new_cat_x, np_new_cat_y, np_angle_to_center, istar_angle_to_center, istar_dist_to_center , closest[2] )
-      print("CLOSEST:", closest)
+      #print("NP STAR ANGLE/ I STAR ANG TO CENTER:", ix, iy, np_new_cat_x, np_new_cat_y, np_angle_to_center, istar_angle_to_center, istar_dist_to_center , closest[2] )
+      #print("CLOSEST:", closest)
       return(1, closest)
    else:
-      print("FAIL NP STAR ANGLE/ I STAR ANG TO CENTER:", ix, iy, np_new_cat_x, np_new_cat_y, np_angle_to_center, istar_angle_to_center, istar_dist_to_center , closest[2] )
+      #print("FAIL NP STAR ANGLE/ I STAR ANG TO CENTER:", ix, iy, np_new_cat_x, np_new_cat_y, np_angle_to_center, istar_angle_to_center, istar_dist_to_center , closest[2] )
      
       return(0, closest)
 
@@ -2876,6 +2878,7 @@ if cmd == 'cfit':
       print("run image stars first", cmd)
       os.system(cmd)
       mj = load_json_file(meteor_json_file_red)
+      print("MIKE:", meteor_json_file_red)
       cal_params = mj['cal_params']
 
    if "center_az" not in cal_params or "cat_image_stars" not in cal_params:
@@ -2926,8 +2929,13 @@ if cmd == 'cfit_hdcal':
       cal_params['x_poly_fwd'] = mcf['x_poly_fwd']
       cal_params['y_poly_fwd'] = mcf['y_poly_fwd']
 
-
-   meteor_json['cat_image_stars'] = cal_params['cat_image_stars']
+   if "close_stars" in cal_params:
+      meteor_json['cat_image_stars'] = cal_params['close_stars']
+   elif "cat_image_stars" in cal_params:
+      meteor_json['cat_image_stars'] = cal_params['cat_image_stars']
+   else:
+      print("NO CAT IMAGE STARS!")
+      exit()
    image_file = image_file.replace("-calparams", "")
    #print("IMGAGE: ", image_file)
 
@@ -3076,11 +3084,21 @@ if cmd == 'imgstars' or cmd == 'imgstars_strict':
       cal_params['x_poly_fwd'] = mcf['x_poly_fwd']
       cal_params['y_poly_fwd'] = mcf['y_poly_fwd']
 
+   if "pixscale" not in cal_params:
+      cal_params['pixscale'] = 158
+   if "imagew" not in cal_params:
+      cal_params['imagew'] = 1920
+   if "imageh" not in cal_params:
+      cal_params['imageh'] = 1080 
 
    print("XPOLY0:", cal_params['x_poly'][0])
    print("FOV:", cal_params['center_az'], cal_params['center_el'])
    if cfe(file) == 0:
-      file = meteor_json['sd_stack'].replace(".png", "-stacked.png")
+      if "calparams" in meteor_json_file:
+         file = meteor_json_file.replace("-calparams.json", ".png")
+         
+      else:
+         file = meteor_json['sd_stack'].replace(".png", "-stacked.png")
    print("CAL VARS:", cal_params['center_az'], cal_params['center_el'], cal_params['position_angle'], cal_params['pixscale'])
    cat_image_stars, img, no_match, res_err, match_per,cp_data = get_stars_from_image(file, json_conf, masks, cal_params, show, strict)
    cal_params['total_res_px'] = res_err
@@ -3284,5 +3302,5 @@ if cmd == "meteor_index":
    extra_cmd = ""
    if len(sys.argv) == 3:
       extra_cmd = sys.argv[2]
-   meteor_index(meteor_index, extra_cmd)
+   meteor_index(json_conf, extra_cmd)
 
