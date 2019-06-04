@@ -1917,7 +1917,7 @@ def main_page(json_conf,form):
          print("</div>")
          counter = counter + 1
 
-   print("CUR PAGE " + cur_page)
+   print("CUR PAGE " + format(cur_page))
    print("TOTAL " + format(len(real_detections)))
    pagination = get_pagination(cur_page,len(real_detections),"/pycgi/webUI.py?cmd=home")
    print(pagination[0])
