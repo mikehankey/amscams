@@ -29,18 +29,28 @@
                 }
                 $(function() {
                     var video = getQueryVariable("video");
+                    var vid_id  = getQueryVariable("vid_id");
                     if(!video) {
                         $('body').html('VIDEO NOT FOUND');
                     } else {
                         $('video').attr('src',video);
                         $('#info_link').attr('href','/pycgi/webUI.py?cmd=reduce&video_file='+video )
                     }
+
+
+                    $('#delete_link').unbind('click').on('click',function() {
+                        // Click Delete Button
+                        window.parent.$(window.parent.document).find('#'+vid_id + " .delete_meteor_gallery ").click();
+                        // Click Delete iframe Button
+                        window.parent.$(window.parent.document).find('.mfp-close').click();
+                    });
                 })
               
             </script>
     </head>
-    <body style="background-color: transparent;position: relative;min-width: 0;"> 
-        <a id="info_link"  target="_parent"  class="col btn btn-primary btn-sm" title="Go to Info Page"><i class="icon-question"></i></a>
+    <body style="background-color: transparent;position: relative;min-width: 0; margin:0"> 
+        <a id="delete_link" class="col btn btn-danger" title="Delete detection"><i class="icon-delete"></i></a>
+        <a id="info_link"  target="_parent"  class="col btn btn-primary" title="Go to Info Page"><i class="icon-question"></i></a>
         <video controls loop autoplay name="media"><source type="video/mp4"></video>
     </body>
 </html>
