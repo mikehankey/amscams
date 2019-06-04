@@ -854,23 +854,23 @@ def get_meteors(meteor_dir,meteors):
 def get_pagination(page,total_elts,url):
 
 
-   print("IN PAGINATION ")
-   print("PAGE: " + format(page))
-   print("TOTAL PAGES " + format(total_elts))
-   print("URL" + url)
+   #print("IN PAGINATION ")
+   #print("PAGE: " + format(page))
+   #print("TOTAL PAGES " + format(total_elts))
+   #print("URL" + url)
 
    #how many pages appear to the left and right of your current page
    adjacents = 1
    start = (page - 1) * NUMBER_OF_METEOR_PER_PAGE;
 
-   print("START: " + format(start))
+   #print("START: " + format(start))
    
    last_page = total_elts / NUMBER_OF_METEOR_PER_PAGE
 
    last_page = math.ceil(last_page)
    last_page = int(last_page)
 
-   print("LAST PAGE : " + format(last_page))
+   #print("LAST PAGE : " + format(last_page))
    
    lpm1 = last_page - 1
    _prev = page - 1
@@ -895,7 +895,7 @@ def get_pagination(page,total_elts,url):
             if(counter == page ):
                pagination = pagination + "<li class='page-item active'><a class='page-link' >"+ format(counter)+"</a></li>";
             else:
-               pagination = pagination + "<li class='page-item'><a  class='page-link' href='"+url+"&p=" + format(counter)+"'>"+format(counter)+"</a></li>";
+               pagination = pagination + "<li class='page-item'><a class='page-link' href='"+url+"&p=" + format(counter)+"'>"+format(counter)+"</a></li>";
             
       elif (last_page > 5 + (adjacents * 2)):
 
@@ -916,24 +916,24 @@ def get_pagination(page,total_elts,url):
 
                pagination = pagination + "<li class='page-item'><a class='page-link' href='"+url+"&p=1'>1</a></li>";
                pagination = pagination + "<li class='page-item'><a class='page-link' href='"+url+"&p=2'>2</a></li>";
-               pagination = pagination + "<li class='disabled page-item'><a>...</a></li>";
+               pagination = pagination + "<li class='disabled page-item'><a class='page-link'>...</a></li>";
                
                for counter in range(page-adjacents, page+adjacents):
                   if(counter == page):
                      pagination = pagination + "<li class='page-item active'><a>"+format(counter)+"</a></li>";                   
                   else:
-                     pagination = pagination + "<li><a  href='"+url+"&p="+ format(counter)+"'>"+format(counter)+"</a></li>";
+                     pagination = pagination + "<li class='page-item'><a class='page-link' href='"+url+"&p="+ format(counter)+"'>"+format(counter)+"</a></li>";
                
-               pagination = pagination + "<li class='page-item disabled'><a>...</a></li>";
-               pagination = pagination + "<li class='page-item'><a  class='page-link' href='"+url+"&p=" + format(lpm1)+"'>"+format(lpm1)+"</a></li>";
-               pagination = pagination + "<li class='page-item'><a  class='page-link' href='"+url+"&p=" + format(last_page)+"'>"+format(last_page)+"</a></li>";
+               pagination = pagination + "<li class='page-item disabled'><a class='page-link'>...</a></li>";
+               pagination = pagination + "<li class='page-item'><a class='page-link' href='"+url+"&p=" + format(lpm1)+"'>"+format(lpm1)+"</a></li>";
+               pagination = pagination + "<li class='page-item'><a class='page-link' href='"+url+"&p=" + format(last_page)+"'>"+format(last_page)+"</a></li>";
             
          #close to end; only hide early pages
          else:
                
                pagination = pagination + "<li class='page-item'><a class='page-link' href='"+url+"&p=1'>1</a></li>";
                pagination = pagination + "<li class='page-item'><a class='page-link' href='"+url+"&p=2'>2</a></li>";
-               pagination = pagination + "<li class='disabled page-item'><a>...</a></li>";
+               pagination = pagination + "<li class='disabled page-item'><a class='page-link'>...</a></li>";
                
                for counter in range(last_page - (2 + (adjacents * 2)), last_page):
                   if(counter == page):
