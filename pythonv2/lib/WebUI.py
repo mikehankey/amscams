@@ -939,9 +939,14 @@ def get_pagination(page,total_pages,url):
  
 def meteors_new(json_conf,form):  
    cgitb.enable()
-   cur_page  = 0
+
    limit_day = form.getvalue('limit_day')
    cur_page  = form.getvalue('p')
+
+   if cur_page is None:
+      cur_page = 0
+   else:
+      cur_page = int(cur_page)
 
 
    htclass = "none"
