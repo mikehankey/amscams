@@ -96,7 +96,7 @@ def scan_file(video_file, show):
 
          day = sd_file[0:10]
          sd_wild = sd_file.replace(".mp4", "*")
-         cmd = "mv " + sd_file +  " /mnt/ams2/trash"
+         cmd = "mv " + jd['sd_video_file'] +  " /mnt/ams2/trash"
          os.system(cmd)
          cmd = "mv " + "/mnt/ams2/meteors/" + day + "/" + sd_wild + " /mnt/ams2/trash"
          os.system(cmd)
