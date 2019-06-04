@@ -880,10 +880,8 @@ def meteors_new(json_conf,form):
    if limit_day is None:
       header_out = header_out + "<h1><span class='h'><span id='meteor_count'>"+format(len(meteors))+"</span> meteors</span> captured since inception</h1>"
 
-   meteors_displayed = 0
-
    #NUMBER_OF_METEOR_PER_PAGE
-   meteors = sorted(meteors,reverse=True)
+   sorted_meteors = sorted(meteors,reverse=True)
  
    meteor_from       = NUMBER_OF_METEOR_PER_PAGE*cur_page
    total_number_page = len(meteors) % NUMBER_OF_METEOR_PER_PAGE
@@ -891,9 +889,9 @@ def meteors_new(json_conf,form):
 
 
    print("CUR PAGE " +  cur_page)
-   print("NB OF PACE " + total_number_page)
+   print("NB OF PAGE " + total_number_page)
 
-   for idx, meteor in enumerate(meteors):
+   for idx, meteor in enumerate(sorted_meteors):
       if(counter<=total_number_page):
          stack_file_tn = meteor.replace('.json', '-stacked-tn.png')
          video_file = meteor.replace('.json', '.mp4')
