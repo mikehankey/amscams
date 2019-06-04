@@ -1043,8 +1043,8 @@ def meteors_new(json_conf,form):
    print("<div id='main_container' class='container-fluid h-100 mt-4 lg-l'>")
    print("<div class='gallery gal-resize row text-center text-lg-left'>")
    print(html_out)
-   #page,total_pages,url
-   print(pagination(cur_page,total_number_page,"/pycgi/webUI.py?cmd=new_meteors"))
+   #page,total_pages,url for pagination
+   print(get_pagination(cur_page,total_number_page,"/pycgi/webUI.py?cmd=new_meteors"))
    print("</div></div>") 
 
 
