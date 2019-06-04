@@ -852,7 +852,7 @@ def get_meteors(meteor_dir,meteors):
 def meteors_new(json_conf,form):  
 
    limit_day = form.getvalue('limit_day')
-   cur_page  = form.getvalue('p')
+   cur_page  = int(form.getvalue('p'))
 
    if cur_page is None:
       cur_page = 0
