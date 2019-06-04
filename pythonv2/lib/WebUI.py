@@ -21,6 +21,7 @@ from lib.UtilLib import calc_radiant
 
 
 NUMBER_OF_METEOR_PER_PAGE = 60
+NUMBER_OF_DAYS_PER_PAGE = 7
 
 
 
@@ -363,7 +364,7 @@ def controller(json_conf):
 
       examine(video_file)
    if cmd == '' or cmd is None or cmd == 'home':
-      main_page(json_conf)   
+      main_page(json_conf,form)   
    if cmd == 'examine_cal':
       examine_cal(json_conf,form)   
    if cmd == 'calibration':
@@ -1859,8 +1860,16 @@ def browse_detects(day,type,json_conf):
 
    print("<div style=\"clear: both\"></div>")
 
-def main_page(json_conf):
-   print("<SCRIPT>var my_image = []</SCRIPT>")
+def main_page(json_conf,form):
+
+    cgitb.enable()
+
+   if (cur_page is None) or (cur_page==0):
+      cur_page = 1
+   else:
+      cur_page = int(cur_page)
+
+   #print("<SCRIPT>var my_image = []</SCRIPT>")
    #print("<h1>AllSky6 Control Panel</h1>")    
    days = sorted(get_proc_days(json_conf),reverse=True)
 
@@ -1869,10 +1878,16 @@ def main_page(json_conf):
 
    print('<h1>Daily detections</h1>')
    print('<div id="main_container" class="container-fluid h-100 mt-4 lg-l">')
-   for day in sorted(stats_data, reverse=True): 
+
+   detections = sorted(stats_data,reverse=True)
+   detections_form = NUMBER_OF_DAYS_PER_PAGE*cur_page
+   total_number_page = math.ceil(len(detections) / NUMBER_OF_DAYS_PER_PAGE)
+   counter = 0
+
+   for idex, day in enumerate(detections): 
       day_str = day
       day_dir = json_conf['site']['proc_dir'] + day + "/" 
-      if "meteor" not in day_dir and "daytime" not in day_dir and "json" not in day_dir and "trash" not in day_dir:
+      if "meteor" not in day_dir and "daytime" not in day_dir and "json" not in day_dir and "trash" not in day_dir and counter<=NUMBER_OF_DAYS_PER_PAGE-1 and idx >= detections_form:
          failed_files = stats_data[day]['failed_files']
          meteor_files = stats_data[day]['meteor_files']
          pending_files = stats_data[day]['pending_files']
@@ -1886,6 +1901,10 @@ def main_page(json_conf):
          print("</div><div class='gallery gal-resize row text-center text-lg-left mb-4'>")
          print(html_row)
          print("</div>")
+         counter = counter + 1
+
+   pagination = get_pagination(cur_page,len(detections),"/pycgi/webUI.py?cmd=home")
+   print(pagination[0])
  
    print("</div>")
 
