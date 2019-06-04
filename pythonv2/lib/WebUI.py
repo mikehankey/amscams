@@ -852,6 +852,13 @@ def get_meteors(meteor_dir,meteors):
 
 
 def get_pagination(page,total_pages,url):
+
+
+   print("IN PAGINATION ")
+   print("PAGE: " + format(page))
+   print("TOTAL PAGES " + format(total_pages))
+   print("URL" + url)
+
    #how many pages appear to the left and right of your current page
    adjacents = 1
    start = (page - 1) * NUMBER_OF_METEOR_PER_PAGE;
@@ -981,11 +988,6 @@ def meteors_new(json_conf,form):
    total_number_page = math.ceil(len(meteors) / NUMBER_OF_METEOR_PER_PAGE)
    counter = 0
 
-
-   print("Curpage " + format(cur_page))
-   print("meteor_from " + format(meteor_from))
-   print("total_number_page " + format(total_number_page))
-
    for idx, meteor in enumerate(meteors):
       # Minus 1 so we have NUMBER_OF_METEOR_PER_PAGE per page starting at 0
       if(counter<=NUMBER_OF_METEOR_PER_PAGE-1 and idx >= meteor_from):
@@ -1024,7 +1026,7 @@ def meteors_new(json_conf,form):
          html_out = html_out + "<div class='btn-toolbar'><div class='btn-group'>"
          html_out = html_out + "<a class='vid_link_gal col btn btn-primary btn-sm' title='Play Video' href='./video_player.html?video=" + video_file + "&vid_id="+del_id+"'><i class='icon-play'></i></a>"
          html_out = html_out + "<a class='delete_meteor_gallery col btn btn-danger btn-sm' title='Delete Detection' data-meteor='" + del_id + "'><i class='icon-delete'></i></a>"
-         html_out = html_out + "</div></div>"+format(counter)+"</div>"
+         html_out = html_out + "</div>"+format(counter)+"</div></div>"
          counter = counter + 1
 
 
@@ -1043,9 +1045,10 @@ def meteors_new(json_conf,form):
    print("<div id='main_container' class='container-fluid h-100 mt-4 lg-l'>")
    print("<div class='gallery gal-resize row text-center text-lg-left'>")
    print(html_out)
+   print("</div>")
    #page,total_pages,url for pagination
    print(get_pagination(cur_page,total_number_page,"/pycgi/webUI.py?cmd=new_meteors"))
-   print("</div></div>") 
+   print("</div>") 
 
 
 
