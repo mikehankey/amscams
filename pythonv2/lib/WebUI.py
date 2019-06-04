@@ -977,7 +977,6 @@ def meteors_new(json_conf,form):
    #NUMBER_OF_METEOR_PER_PAGE
    meteors = sorted(meteors,reverse=True)
 
-   cur_page = int(cur_page)
    meteor_from       = NUMBER_OF_METEOR_PER_PAGE*cur_page
    total_number_page = len(meteors) % NUMBER_OF_METEOR_PER_PAGE
    counter = 0
