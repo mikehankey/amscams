@@ -1897,8 +1897,6 @@ def main_page(json_conf,form):
       if "meteor" not in day_dir and "daytime" not in day_dir and "json" not in day_dir and "trash" not in day_dir:
          real_detections.append(day)
 
-   print('TOTAL DAYS ' + format(len(real_detections)))
-   print('vs TOTAL DEC ' + format(len(stats_data)))
 
    for idx, day in enumerate(real_detections): 
       day_str = day
@@ -1919,6 +1917,8 @@ def main_page(json_conf,form):
          print("</div>")
          counter = counter + 1
 
+   print("CUR PAGE " + cur_page)
+   print("TOTAL " + format(len(real_detections)))
    pagination = get_pagination(cur_page,len(real_detections),"/pycgi/webUI.py?cmd=home")
    print(pagination[0])
  
