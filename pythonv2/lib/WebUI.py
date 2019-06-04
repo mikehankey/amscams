@@ -851,12 +851,12 @@ def get_meteors(meteor_dir,meteors):
    return(meteors)
 
 
-def get_pagination(page,total_pages,url):
+def get_pagination(page,total_elts,url):
 
 
    print("IN PAGINATION ")
    print("PAGE: " + format(page))
-   print("TOTAL PAGES " + format(total_pages))
+   print("TOTAL PAGES " + format(total_elts))
    print("URL" + url)
 
    #how many pages appear to the left and right of your current page
@@ -865,7 +865,7 @@ def get_pagination(page,total_pages,url):
 
    print("START: " + format(start))
    
-   last_page = total_pages / NUMBER_OF_METEOR_PER_PAGE
+   last_page = total_elts / NUMBER_OF_METEOR_PER_PAGE
 
    last_page = math.ceil(last_page)
    last_page = int(last_page)
@@ -1054,7 +1054,7 @@ def meteors_new(json_conf,form):
    print(html_out)
    print("</div>")
    #page,total_pages,url for pagination
-   print(get_pagination(cur_page,total_number_page,"/pycgi/webUI.py?cmd=new_meteors"))
+   print(get_pagination(cur_page,len(meteors),"/pycgi/webUI.py?cmd=new_meteors"))
    print("</div>") 
 
 
