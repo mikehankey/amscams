@@ -1049,13 +1049,17 @@ def meteors_new(json_conf,form):
    non_rec_cnt = len(meteors)-reduced_cnt
  
    #Create buttons
-   header_out = header_out + '<div class="btn-group btn-group-toggle" data-toggle="buttons">'
-   header_out = header_out + '<label class="btn btn-secondary active btn-met-all">'
-   header_out = header_out + '<input type="radio" name="meteor_select" id="all" autocomplete="off" checked=""> All '+ format(len(meteors)) +' meteors</label>'
-   header_out = header_out + '<label class="btn btn-secondary btn-met-reduced">'
-   header_out = header_out + '<input type="radio" name="meteor_select" id="reduced" autocomplete="off">All '+  format(reduced_cnt) +' Reduced Meteors Only</label>'
-   header_out = header_out + '<label class="btn btn-secondary">'
-   header_out = header_out + '<input type="radio" name="meteor_select" id="non_reduced" autocomplete="off">All '+ format(non_rec_cnt) +'  Non-Reduced Meteors Only</label>'
+   #header_out = header_out + '<div class="btn-group btn-group-toggle" data-toggle="buttons">'
+   #header_out = header_out + '<label class="btn btn-secondary active btn-met-all">'
+   #header_out = header_out + '<input type="radio" name="meteor_select" id="all" autocomplete="off" checked=""> All '+ format(len(meteors)) +' meteors</label>'
+   #header_out = header_out + '<label class="btn btn-secondary btn-met-reduced">'
+   #header_out = header_out + '<input type="radio" name="meteor_select" id="reduced" autocomplete="off">All '+  format(reduced_cnt) +' Reduced Meteors Only</label>'
+   #header_out = header_out + '<label class="btn btn-secondary">'
+   #header_out = header_out + '<input type="radio" name="meteor_select" id="non_reduced" autocomplete="off">All '+ format(non_rec_cnt) +'  Non-Reduced Meteors Only</label>'
+
+   pagination = get_pagination(cur_page,len(meteors),"/pycgi/webUI.py?cmd=new_meteors")
+
+   header_out = header_out + "<div>Page  " +   cur_page + "/" +  format(pagination[2]) + "</div>"
 
    print(header_out+'</div></div>')
    print("<div id='main_container' class='container-fluid h-100 mt-4 lg-l'>")
@@ -1063,7 +1067,7 @@ def meteors_new(json_conf,form):
    print(html_out)
    print("</div>")
    #page,total_pages,url for pagination
-   print(get_pagination(cur_page,len(meteors),"/pycgi/webUI.py?cmd=new_meteors"))
+   print(pagination[0])
    print("</div>") 
  
 
