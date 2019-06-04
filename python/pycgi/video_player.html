@@ -6,6 +6,7 @@
                     max-height: 90vh;
                 }
             </style>
+            <link rel="stylesheet" href="./dist/css/main.css"/>
             <script src="./dist/js/amscam.min.js"></script> 
             <script>
                 function getQueryVariable(variable) {
@@ -25,13 +26,19 @@
                         $('body').html('VIDEO NOT FOUND');
                     } else {
                         $('video').attr('src',video);
+                        $('#info_link').attr('href','/pycgi/webUI.py?cmd=reduce&video_file='+video )
                     }
                 })
               
             </script>
     </head>
-    <body>
+    <body> 
+
         <video controls loop autoplay name="media"><source type="video/mp4"></video>
-       
+        <div class="btn-toolbar">
+            <div class="btn-group">
+                <a id="info_link" class="col btn btn-primary btn-sm" title="Go to Info Page"><i class="icon-question"></i></a>
+            </div>
+        </div>
     </body>
 </html>
