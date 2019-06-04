@@ -873,10 +873,12 @@ def meteors_new(json_conf,form):
       this_date = el[-1]
       if limit_day is None: 
          meteors = get_meteors(meteor_dir, meteors)
-         header_out = header_out + "<h1><span class='h'><span id='meteor_count'>"+format(len(meteors))+"</span> meteors</span> captured since inception</h1>"
       elif limit_day == this_date:
          meteors = get_meteors(meteor_dir, meteors)
          header_out = header_out + "<h1><span class='h'><span id='meteor_count'>"+format(len(meteors))+"</span> meteors</span> captured on "+str(this_date)+"</h1>"
+   
+   if limit_day is None:
+      header_out = header_out + "<h1><span class='h'><span id='meteor_count'>"+format(len(meteors))+"</span> meteors</span> captured since inception</h1>"
    
    meteors_displayed = 0
 
