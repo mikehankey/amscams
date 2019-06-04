@@ -978,9 +978,9 @@ def meteors_new(json_conf,form):
    counter = 0
 
 
-   print("Curpage " + cur_page)
-   print("meteor_from " + meteor_from)
-   print("total_number_page " + total_number_page)
+   print("Curpage " + format(cur_page))
+   print("meteor_from " + format(meteor_from))
+   print("total_number_page " + format((total_number_page))
 
    for idx, meteor in enumerate(meteors):
       # Minus 1 so we have NUMBER_OF_METEOR_PER_PAGE per page starting at 0
