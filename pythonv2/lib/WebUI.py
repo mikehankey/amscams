@@ -906,7 +906,7 @@ def get_pagination(page,total_elts,url):
                   if(counter == page):
                      pagination = pagination + "<li class='page-item active'><a class='page-link' >"+format(counter)+"</a></li>";
                   else:
-                     pagination = pagination + "<li class='page-item'><a class='page-link'  href='"+url+"?p="+ format(counter)+"'>"+ format(counter)+"</a></li>";
+                     pagination = pagination + "<li class='page-item'><a class='page-link'  href='"+url+"&p="+ format(counter)+"'>"+ format(counter)+"</a></li>";
 
                pagination = pagination + "<li class='page-item disabled'><a>...</a></li>";
                pagination = pagination + "<li class='page-item'><a  class='page-link' href='"+url+"&p=" + format(lpm1)+"'>"+format(lpm1)+"</a></li>";
@@ -922,7 +922,7 @@ def get_pagination(page,total_elts,url):
                   if(counter == page):
                      pagination = pagination + "<li class='page-item active'><a>"+format(counter)+"</a></li>";                   
                   else:
-                     pagination = pagination + "<li><a  href='"+url+"?p="+ format(counter)+"'>"+format(counter)+"</a></li>";
+                     pagination = pagination + "<li><a  href='"+url+"&p="+ format(counter)+"'>"+format(counter)+"</a></li>";
                
                pagination = pagination + "<li class='page-item disabled'><a>...</a></li>";
                pagination = pagination + "<li class='page-item'><a  class='page-link' href='"+url+"&p=" + format(lpm1)+"'>"+format(lpm1)+"</a></li>";
@@ -939,7 +939,7 @@ def get_pagination(page,total_elts,url):
                   if(counter == page):
                      pagination = pagination + "<li class='page-item active'><a class='page-link'>"+format(counter)+"</a></li>";                   
                   else:
-                     pagination = pagination + "<li class='page-item'><a class='page-link' href='"+url+"?p="+ format(counter)+"'>"+format(counter)+"</a></li>";
+                     pagination = pagination + "<li class='page-item'><a class='page-link' href='"+url+"&p="+ format(counter)+"'>"+format(counter)+"</a></li>";
 
    else:
       #Display all pages
