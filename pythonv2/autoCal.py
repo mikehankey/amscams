@@ -2840,6 +2840,8 @@ if cmd == 'cfit':
          if len(mj['cal_param']['cat_image_stars']) < 7:
             print("There aren't enough stars to custom fit. Use best defaults instead.") 
             exit()
+   else:
+      os.system("./autoCal.py imgstars " + meteor_json)
 
 
    if 'hd_stack' in mj:
