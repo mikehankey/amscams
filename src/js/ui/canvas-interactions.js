@@ -77,7 +77,7 @@ if ($('canvas#c').length!=0) {
     
     var zoom = 4;
 
-    $('#canvas_zoom').css({'background':'url('+hd_stack_file+') no-repeat 50% 50% #000','background-size': h_canvas_w*zoom + 'px ' + h_canvas_h*zoom + 'px' })
+    $('#canvas_zoom').css({'background':'url('+my_image +') no-repeat 50% 50% #000','background-size': h_canvas_w*zoom + 'px ' + h_canvas_h*zoom + 'px' })
     $('.canvas_zoom_holder').css({'width':w_preview_dim*2, 'height':h_preview_dim*2,'position':'absolute'});
 
 
