@@ -1142,9 +1142,17 @@ def get_mask_img(cams_id, json_conf):
    proc_dir = json_conf['site']['proc_dir']
    days = get_days(json_conf)
    day = days[0]
-   img_dir = proc_dir + day + "/images/"
-   files = glob.glob(img_dir + "*" + cams_id + "*-stacked.png")
-   return(files[0])
+   img_dir = "/mnt/ams2/latest/"
+
+   #files = glob.glob(img_dir +  cams_id + ".jpg")
+   file = img_dir + cams_id + ".jpg"
+   sfile = img_dir + cams_id + "-sm.jpg"
+   img = cv2.imread(file)
+   simg = cv2.resize(img, (704,576))
+   cv2.imwrite(sfile, simg)
+   files = [sfile]
+
+   return(sfile)
 
 def save_masks(form,camera,cams_id, json_conf):
    hdm_x = 2.7272
@@ -1213,6 +1221,7 @@ def mask_admin(json_conf,form):
    else:
       print("Masks for ", cams_id, "<BR>")
       imgf = get_mask_img(cams_id, json_conf) 
+      #print(imgf) 
       masks = get_masks(cams_id, json_conf)
       img = cv2.imread(imgf, 0)
       tmasks = []
