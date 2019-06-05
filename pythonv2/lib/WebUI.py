@@ -930,7 +930,10 @@ def meteors_new(json_conf,form):
          meteors = get_meteors(meteor_dir, meteors)
       elif limit_day == this_date:
          meteors = get_meteors(meteor_dir, meteors)
-         header_out = header_out + "<h1><span class='h'><span id='meteor_count'>"+format(len(meteors))+"</span> meteors</span> captured on "+str(this_date.replace("_", "/"))+"</h1>"
+         header_out = header_out + "<h1><span class='h'><span id='meteor_count'>"+format(len(meteors))+"</span> meteors</span> captured on"
+         header_out = header_out + "<div class='input-group date datepicker' data-display-format='YYYY/MM/DD' data-action='reload' data-url-param='limit_day' data-send-format='YYYY_MM_DD'>"
+         header_out = header_out + "<input value='"+str(this_date.replace("_", "/"))+"' type='text' class='form-control'>"
+         header_out = header_out + "<span class='input-group-addon'><span class='icon-clock'></span></span></div>"
 
    
    if limit_day is None:

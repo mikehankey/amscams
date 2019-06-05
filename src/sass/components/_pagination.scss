@@ -1,0 +1,23 @@
+/*
+ On header
+ */
+ .page_h {
+    color: #fff;
+    line-height: 2.4rem;
+ }
+
+
+.pagination {
+    .page-link { 
+        color: #ffffff;
+        background-color: #133b7e;
+        border: 1px solid #061329;
+    }
+
+    .page-item.disabled .page-link {
+        
+        background-color: #0d295b;
+        border-color: #061329;
+    }
+
+}

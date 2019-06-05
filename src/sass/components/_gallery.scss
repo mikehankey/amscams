@@ -1,153 +1,165 @@
 .gallery {
+    
+    &.gal-resize {
+        margin: 0 auto;
 
-    .preview {
+        .preview {
 
-        img, .btn-toolbar, span  {
-            display: block;
-            -webkit-transition: all .3s ease;  
-            transition: all .3s ease;
-        }
-       
-
-        &:hover {
-            z-index: 99;
-
-           
-            span {
-                opacity:0;
+          
+            .btn-toolbar { 
+                opacity: 0;
+                padding:0 1rem .4rem 1rem;
             }
-
-            img {
-                -webkit-box-shadow: 0 2px 5px #000;
-                box-shadow: 0 2px 5px #000;
-            } 
-
-            .btn-toolbar {
-                opacity: 1;
-            }
-        }
-    }
-
-    .preview {
-
-        margin-bottom:.5rem;
-
-        img {  
-            border:1px solid rgba(255,255,255,.85);
-            overflow: hidden;
-            width:100%;
             
+
             &:hover {
-                border-color: #000;
-            }
-        }
-
-        a.mtt:before {
-            position: absolute;
-            top: 1.2rem;
-            right: -2.5rem;
-            z-index: 9;
-            -webkit-transform: rotate(45deg);
-            transform: rotate(45deg);
-            font-weight: bold;
-            width: 150px;
-            text-align: center;
-        }
-
-        &:hover {
-            a.mtt:before {
-                display: none;
-            }
-        }
-
-        &.reduced {
-
-            a.mtt:before {
-                content: 'Reduced';
-                color: #f90;
-                background: #ff99003d;
+               .btn-toolbar {
+                   opacity:1;
+               }
             }
 
-            img {
-                border-color: #f90;
+            
+            img, .btn-toolbar, span  {
+                display: block;
+                -webkit-transition: all .3s ease;  
+                transition: all .3s ease;
             }
-           
-        }
-        &.meteor {
-            a.mtt:before {
-                content: 'Meteor';
-                color: #21c419;
-                background:#00ff2d3d;
-            }
-            img {
-                border-color: #21c419;
-            }
-           
-        }
-        &.fail {
-            a.mtt:before {
-                content: 'Fail';
-                color: #c00;
-                background: #ff00003d;
-            }
-            img {
-                border-color: #c00;
-            }
-        }
 
-        &.del {
-            a.mtt:before {
-                content: 'DELETED';
-                color: #fff;
-                background: #000;
-            }
-            img {
-                border-color: #000;
-            }
-        }
+            a.mtt {
+                display: block;
+                position: relative;
+                height: auto;
+                width: 100%;
+                overflow:hidden;
+                padding:56.25% 0 0 0;
 
-        .btn-toolbar {
-            opacity: 0;
-        }
 
-        .btn-group {
-            margin: .2rem auto;
-            width: 100%;
+                span {
+                    position: absolute;
+                    bottom:-3rem;
+                    left:0;
+                    right:0;
+                    background:rgba(0,0,0,.3);
+                    color:rgba(255,255,255,.85) !important;
+                    padding: .2rem 0 .3rem;
+                    font-size: .85rem;
+                    text-align: center;
+                } 
 
-            .btn-secondary {
-                background:#061329;
+                &:before {
+                    position: absolute;
+                    top: 1.2rem;
+                    right: -2.5rem;
+                    z-index: 9;
+                    -webkit-transform: rotate(45deg);
+                    transform: rotate(45deg);
+                    font-weight: bold;
+                    width: 150px;
+                    text-align: center;
+                    display: none;
+                }
+                
+
+                &:hover {
+                    span {
+                        bottom:0;
+                    }
+
+                    &:before {
+                        display: block;
+                    }
+                }
+     
+                 img {
+                     border: 1px solid rgba(255,255,255,0.85);
+                     display: block;
+                     max-width: 100%;
+                     max-height: 100%;
+                     position: absolute;
+                     top: 0;
+                     bottom: 0;
+                     left: 0;
+                     right: 0; 
+                     width: 100%;
+
+                    &:hover {
+                        border-color: #000;
+                    }
+                 }
+             }
+
+  
+            .btn-group {
+                margin: .2rem auto;
+                width: 100%;
+    
+                .btn-secondary {
+                    background:#061329;
+                }
             }
-        }
+
+            &:hover {
+                a.mtt:before {
+                    display: block;
+                }
+            }
+
+
+            
+            &.reduced {
+
+                a.mtt:before {
+                    content: 'Reduced';
+                    color: #f90;
+                    background: #ff99003d;
+                }
+    
+                img {
+                    border-color: #f90!important;
+                }
+               
+            }
+            &.meteor {
+                a.mtt:before {
+                    content: 'Meteor';
+                    color: #21c419;
+                    background:#00ff2d3d;
+                }
+                img {
+                    border-color: #21c419!important;
+                }
+               
+            }
+            &.fail {
+                a.mtt:before {
+                    content: 'Fail';
+                    color: #c00;
+                    background: #ff00003d;
+                }
+                img {
+                    border-color: #c00!important;
+                }
+            }
+    
+            &.del {
+                a.mtt:before {
+                    content: 'Delete';
+                    color: #fff;
+                    background: #000;
+                    display: block;
+                }
+                img {
+                    border-color: #000!important;
+                }
+     
+            }
+
+            
+        } 
+        
+     
+
     }
 
-    a {
-        display: block;
-        position: relative;
-
-        &.mtt { 
-            overflow: hidden;
-            border: 2px solid transparent;
-            display: block;
-            width: 100%;
-            min-height: 231px; // For loading anim
-        } 
-
-        img {
-            width: 100%;
-            min-height: 231px; // For loading anim
-        }
-
-        span {
-            position: absolute;
-            bottom:0;
-            left:0;
-            right:0;
-            background:rgba(0,0,0,.3);
-            color:rgba(255,255,255,.65) !important;
-            padding: .2rem 0 .3rem;
-            font-size: .85rem;
-            text-align: center;
-        } 
-    }  
 }
  

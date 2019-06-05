@@ -52,7 +52,7 @@
 
 @import "./plugins/popup";
 @import "./plugins/jq.contextmenu";
-
+@import "./plugins/datepicker";
 
 @import "./layout/layout";
 
@@ -69,3 +69,6 @@
 @import "./components/meteor_selector";
 @import "./components/anim_frame";
 @import "./components/gallery";
+@import "./components/alerts";
+@import "./components/pagination";
+@import "./components/date_picker";
