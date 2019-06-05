@@ -2665,9 +2665,7 @@ def reduce_meteor_new(json_conf,form):
    meteor_json_file = video_file.replace(".mp4", ".json") 
    meteor_reduced_file = meteor_json_file.replace(".json", "-reduced.json")
    template = template.replace("{VIDEO_FILE}", video_file)
-
-
-
+ 
 
    if cfe(meteor_reduced_file) == 1:
       meteor_reduced = load_json_file(meteor_reduced_file)
@@ -2925,8 +2923,7 @@ def reduce_meteor_new(json_conf,form):
 
    rand = str(time.time())
    js_html = ejs + """
-
-      <script>
+   <script>
        var grid_by_default = false;
        var my_image = '""" + half_stack_file + """'
        var hd_stack_file = '""" + hd_stack_file + """'
@@ -2935,26 +2932,6 @@ def reduce_meteor_new(json_conf,form):
        var main_vid = '""" + sd_video_file + """'
       var stars = [];
      </script>
-     <!--<script src="./src/js/mikes/freecal-canvas.js?" + rand + "></script>-->
-
-     <!-- Other scripts (see gulpfile.js > js) -->
-     <!-- <script src="./dist/js/amscam.min.js"></script> -->
-
-     <!-- Should be combined and minified -->
-<!--
-     <script src="./src/js/plugins/fabric.js"></script>
- 
-     <script src="./src/js/mikes/goto.js"></script>
-
-     <script src="./src/js/ui/display_buttons.js"></script>
-     <script src="./src/js/ui/canvas-interactions.js?asd"></script>
-     <script src="./src/js/ui/frame_anim.js"></script>
-     <script src="./src/js/mikes/freecal-ajax.js?c=dez2"></script> 
--->
-<!--
-     <script src="./src/js/functions/delete_frame.js"></script>
-     <script src="./src/js/functions/select_meteor.js"></script>
--->
    """
 
    return(js_html)
@@ -3934,11 +3911,14 @@ def auto_cal(json_conf,form):
 
 def free_cal(json_conf,form):
 
-   print("*****************")
+   fp = open("/home/ams/amscams/pythonv2/templates/freeCalibrationPage.html")
+   template = ""
+   for line in fp :
+      template = template + line
 
    input_file = form.getvalue("input_file")
    # if no input file is specified ask for one. 
-   print(input_file)
+   #print(input_file)
    if cfe(input_file) == 0:
       
       auto_cal(json_conf,form)
@@ -4036,9 +4016,7 @@ def free_cal(json_conf,form):
 
 
    #get Meteor Date
-   print("<div class='h1_holder  d-flex justify-content-between'>")
-   print("<h1>"+get_meteor_date(stack_file)+" Meteor</h1>")
-   print("</div>")
+   template = template.replace("{%TITLE%}", get_meteor_date(stack_file))
 
 
    js_html = """
@@ -4079,6 +4057,7 @@ def free_cal(json_conf,form):
    """
    #print(stack_file)
 
+   print(template)
    print(canvas_html)
 
    extra_js = extra_js + """ 
