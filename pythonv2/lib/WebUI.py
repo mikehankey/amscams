@@ -943,10 +943,10 @@ def meteors_new(json_conf,form):
             header_out = header_out + "<input value='"+str(this_date.replace("_", "/"))+"' type='text' class='form-control'>"
             header_out = header_out + "<span class='input-group-addon'><span class='icon-clock'></span></span></div>"
    
-   if limit_day is None:
+   if limit_day is None and len(meteors)>=1:
       header_out = header_out + "<h1><span class='h'><span id='meteor_count'>"+format(len(meteors))+"</span> meteors</span> captured since inception</h1>"
    
-   if(len(meteors)>=1):
+   if len(meteors)>=1 :
       meteors_displayed = 0
 
       #NUMBER_OF_METEOR_PER_PAGE
@@ -955,8 +955,7 @@ def meteors_new(json_conf,form):
       meteor_from       = NUMBER_OF_METEOR_PER_PAGE*cur_page
       total_number_page = math.ceil(len(meteors) / NUMBER_OF_METEOR_PER_PAGE)
       counter = 0
-
-     
+ 
       meteor_start = (cur_page -1) * NUMBER_OF_METEOR_PER_PAGE 
       meteor_end = meteor_start + NUMBER_OF_METEOR_PER_PAGE
       all_meteors = meteors
@@ -1015,8 +1014,7 @@ def meteors_new(json_conf,form):
       #header_out = header_out + '<input type="radio" name="meteor_select" id="reduced" autocomplete="off">All '+  format(reduced_cnt) +' Reduced Meteors Only</label>'
       #header_out = header_out + '<label class="btn btn-secondary">'
       #header_out = header_out + '<input type="radio" name="meteor_select" id="non_reduced" autocomplete="off">All '+ format(non_rec_cnt) +'  Non-Reduced Meteors Only</label>'
-      
-     
+       
       pagination = get_pagination(cur_page,len(all_meteors),"/pycgi/webUI.py?cmd=new_meteors",NUMBER_OF_METEOR_PER_PAGE)
 
       if(pagination[2] != ''):
