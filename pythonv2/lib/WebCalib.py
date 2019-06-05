@@ -3820,7 +3820,10 @@ def choose_file(json_conf,form):
    if hd_file is None:
       sd_pic_stars(json_conf,form)
    else:
-      print("<a href=webUI.py?cmd=free_cal&input_file=" + hd_file + "></a>HD File found. Stacking frames. Please wait... </a>") 
+      #<a href=webUI.py?cmd=free_cal&input_file=" + hd_file + "></a>
+      print('<div id="main_container" class="container-fluid h-100 mt-4 lg-l">')
+      print("<span class='load_msg'>HD File found. Stacking frames. Please wait...</span>") 
+      print('</div>')
       print("<script>window.location.href='webUI.py?cmd=free_cal&input_file=" + hd_file + "';</script>")
 
 def sd_pic_stars(json_conf,form):

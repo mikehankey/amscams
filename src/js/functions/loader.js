@@ -24,30 +24,7 @@ function loading(options) {
         $("#logo_holder").contents().find("#logo").addClass("animated");
         // Add bottom overlay 
         $('<div id="top_overlay" class="animated"><div class="text-center"><img src="./dist/img/anim_logo.svg"/><h3>'+options.text+'</h3></div>').appendTo($('body')).addClass('dpl');
-    } 
-    
-    /*
-    
-
-        var $s = $('.navbar-brand .tx span.s');
-        var $m = $('.navbar-brand .tx span.m');
-        $m.text(text);
-        $s.text('...');
-         
-        $('.navbar-brand').find('.tx').find('span').each(function() {
-            $(this).attr('data-src',$(this).text());
-        });
-  
-
-        loading_interval = setInterval(function() {
-            if($m.text() == real_text + '...') $m.text(real_text);
-            if($s.text() == '...')        $s.text('');
-     
-            $m.text($m.text()+'.');
-            $s.text($s.text()+'.');
-        },250);
-    }
-    */
+    }  
 
 }
 
@@ -67,4 +44,14 @@ function loading_done() {
     $('body').css('overflow','auto');
     $('#top_overlay').removeClass('dpl');
 } 
+
+
+$(function() {
+
+    // Automatic loading message
+    if($('.load_msg').length!=0) {
+        loading({text:$('.load_msg').text(),overlay:true});
+    }
+
+})
  
