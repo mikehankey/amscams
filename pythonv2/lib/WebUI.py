@@ -1364,13 +1364,18 @@ def reset(video_file, type):
    os.system(cmd2)
 
 def examine_min(video_file,json_conf):
-   print("<h1>Examine One-Minute Clip</h1>")
    failed_files, meteor_files, pending_files = get_trims_for_file(video_file)
    stack_file = stack_file_from_video(video_file)
    next_stack_file = stack_file_from_video(video_file)
   
-   print("<a href=" + video_file + ">")
-   print("<img src=" + stack_file + "><br>")   
+
+   print("<h1>Examine One-Minute Clip " +  get_meteor_date(video_file) +"<h1>")
+   print("<div id='main_container' class='container-fluid d-flex h-100 mt-4 position-relative'>")
+
+   print("<a href=" + video_file + " class='vid-link mx-auto d-block' title='Click to Play'>")
+   print("<img src=" + stack_file + "></a>")
+
+
    print("<a href=webUI.py?cmd=manual_detect&sd_video_file=" + video_file + ">Manually Detect</a> - ")
    print("<a href=webUI.py?cmd=choose_file&input_file=" + video_file + ">Calibrate Star Field</a> - ")
    print("<a href=webUI.py?cmd=add_stars_to_fit_pool&input_file=" + video_file + ">Add Stars To Fit Pool</a> <BR> ")
