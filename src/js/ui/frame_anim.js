@@ -29,7 +29,7 @@ function frame_anim() {
     totalFrames = $allframes.length;
 
     if(isNaN(realDur)) {
-        readDur = 1; // second default
+        realDur = 1; // second default
         $('<div class="alert alert-danger">Unknown Real Duration</div>').insertAfter($('#anim_header'));
     }
 

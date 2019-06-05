@@ -4016,7 +4016,7 @@ def free_cal(json_conf,form):
 
 
    #get Meteor Date as title
-   template = template.replace("{%TITLE%}", get_meteor_date(stack_file))
+   template = template.replace("{%METEOR_DATE%}", get_meteor_date(stack_file))
 
 
    js_html = """
