@@ -4034,7 +4034,7 @@ def free_cal(json_conf,form):
    #   <div style="float:left"><canvas id="c" width="960" height="540" style="border:2px solid #000000;"></canvas></div>
    #   <div style="clear: both"></div>
    #"""
-
+   canvas_html = ""
    canvas_html = canvas_html + """
       <div>
       <div style="float:left; border: 1px #000000 solid;"><div style="position: relative; height: 50px; width: 50px; " id="myresult" class="img-zoom-result"> </div> </div>
