@@ -5,12 +5,14 @@
         var  $row = $(this).closest('tr');
         var  id = $row.attr('id');
  
-        $row.fadeOut(150, function() {$row.remove();})
+        // Get the frame ID
+        // the id should be fr_{ID}
+        var d = id.split('_');
  
         $.ajax({ 
-            url:  "/pycgi/webUI.py?cmd=del_frame&meteor_json_file=" + meteor_json_file + "&fn=" + fn,
+            url:  "/pycgi/webUI.py?cmd=del_frame&meteor_json_file=" + meteor_json_file + "&fn=" + d[],
             success: function(response) {
-                 console.log($.parseJSON(response));
+                $row.fadeOut(150, function() {$row.remove();})
             } 
         });
       
