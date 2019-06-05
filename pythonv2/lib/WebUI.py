@@ -901,6 +901,9 @@ def get_meteors(meteor_dir,meteors):
 def get_pagination(page,total_elts,url,max_per_page):
  
 
+   if(total_elts<=max_per_page)
+      return ["","",""]
+
    #print("IN PAGINATION ")
    #print("PAGE: " + format(page))
    #print("TOTAL PAGES " + format(total_elts))
@@ -1113,11 +1116,8 @@ def meteors_new(json_conf,form):
    #header_out = header_out + '<label class="btn btn-secondary">'
    #header_out = header_out + '<input type="radio" name="meteor_select" id="non_reduced" autocomplete="off">All '+ format(non_rec_cnt) +'  Non-Reduced Meteors Only</label>'
    
-   #if len(all_meteors) > NUMBER_OF_METEOR_PER_PAGE:
+  
    pagination = get_pagination(cur_page,len(all_meteors),"/pycgi/webUI.py?cmd=new_meteors",NUMBER_OF_METEOR_PER_PAGE)
-   #else:
-   #   pagination = ["","",""]
-
    header_out = header_out + "<div class='page_h'>Page  " + format(cur_page) + "/" +  format(pagination[2]) + "</div>"
 
    print(header_out+'</div></div>')
