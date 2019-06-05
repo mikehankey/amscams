@@ -29,8 +29,9 @@ function frame_anim() {
     totalFrames = $allframes.length;
 
     if(isNaN(realDur)) {
-        readDur = 1; // second default
-        $('<div class="alert alert-danger">Unknown Real Duration</div>').insertAfter($('#anim_header'));
+        realDur = 1; // second default
+        $('#alert_anim').remove();
+        $('<div id="alert_anim" class="alert alert-danger">Unknown Real Duration</div>').insertAfter($('#anim_header'));
     }
 
     if(totalFrames==0) {
@@ -41,8 +42,7 @@ function frame_anim() {
         });
         return false;
     }
-
-    
+ 
     animationDuration = realDur*1000; // Duration get the 
     timePerFrame = animationDuration / totalFrames;
     frameNumber = 1; 

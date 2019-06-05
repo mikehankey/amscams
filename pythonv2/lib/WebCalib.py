@@ -9,6 +9,7 @@ import cgi
 import time
 import glob
 import os
+from lib.PrintUtils import get_meteor_date
 from lib.FileIO import get_proc_days, get_day_stats, get_day_files , load_json_file, get_trims_for_file, get_days, save_json_file, cfe
 from lib.VideoLib import get_masks, convert_filename_to_date_cam, find_hd_file_new, load_video_frames, find_min_max_dist, ffmpeg_dump_frames
 from lib.DetectLib import check_for_motion2, eval_cnt, eval_cnt_better, find_bright_pixels
@@ -2664,9 +2665,7 @@ def reduce_meteor_new(json_conf,form):
    meteor_json_file = video_file.replace(".mp4", ".json") 
    meteor_reduced_file = meteor_json_file.replace(".json", "-reduced.json")
    template = template.replace("{VIDEO_FILE}", video_file)
-
-
-
+ 
 
    if cfe(meteor_reduced_file) == 1:
       meteor_reduced = load_json_file(meteor_reduced_file)
@@ -2924,8 +2923,7 @@ def reduce_meteor_new(json_conf,form):
 
    rand = str(time.time())
    js_html = ejs + """
-
-      <script>
+   <script>
        var grid_by_default = false;
        var my_image = '""" + half_stack_file + """'
        var hd_stack_file = '""" + hd_stack_file + """'
@@ -2934,26 +2932,6 @@ def reduce_meteor_new(json_conf,form):
        var main_vid = '""" + sd_video_file + """'
       var stars = [];
      </script>
-     <!--<script src="./src/js/mikes/freecal-canvas.js?" + rand + "></script>-->
-
-     <!-- Other scripts (see gulpfile.js > js) -->
-     <!-- <script src="./dist/js/amscam.min.js"></script> -->
-
-     <!-- Should be combined and minified -->
-<!--
-     <script src="./src/js/plugins/fabric.js"></script>
- 
-     <script src="./src/js/mikes/goto.js"></script>
-
-     <script src="./src/js/ui/display_buttons.js"></script>
-     <script src="./src/js/ui/canvas-interactions.js?asd"></script>
-     <script src="./src/js/ui/frame_anim.js"></script>
-     <script src="./src/js/mikes/freecal-ajax.js?c=dez2"></script> 
--->
-<!--
-     <script src="./src/js/functions/delete_frame.js"></script>
-     <script src="./src/js/functions/select_meteor.js"></script>
--->
    """
 
    return(js_html)
@@ -3822,7 +3800,7 @@ def choose_file(json_conf,form):
    else:
       #<a href=webUI.py?cmd=free_cal&input_file=" + hd_file + "></a>
       print('<div id="main_container" class="container-fluid h-100 mt-4 lg-l">')
-      print("<span class='load_msg'>HD File found. Stacking frames. Please wait...</span>") 
+      print("<div id='overlay' class='animated'><div class='row h-100 text-center'><div class='col-sm-12 my-auto'><div class='card card-block' style='background:transparent'><iframe style='zoom: 1.8;border:0;margin: 0 auto;' src='./dist/img/anim_logo.svg' width='140' height='90'></iframe><h3>HD File found. Stacking frames. Please wait...</h3></div></div></div></div>")
       print('</div>')
       print("<script>window.location.href='webUI.py?cmd=free_cal&input_file=" + hd_file + "';</script>")
 
@@ -3932,9 +3910,15 @@ def auto_cal(json_conf,form):
 
 
 def free_cal(json_conf,form):
+
+   fp = open("/home/ams/amscams/pythonv2/templates/freeCalibrationPage.html")
+   template = ""
+   for line in fp :
+      template = template + line
+
    input_file = form.getvalue("input_file")
    # if no input file is specified ask for one. 
-   print(input_file)
+   #print(input_file)
    if cfe(input_file) == 0:
       
       auto_cal(json_conf,form)
@@ -4029,6 +4013,12 @@ def free_cal(json_conf,form):
    else:
       extra_js = "<script>var stars = []</script>"
 
+
+
+   #get Meteor Date as title
+   template = template.replace("{%METEOR_DATE%}", get_meteor_date(stack_file))
+
+
    js_html = """
    <script>
       var my_image = '""" + half_stack_file + """'
@@ -4038,11 +4028,13 @@ def free_cal(json_conf,form):
       var hd_stack_file = '""" + stack_file + """'
    </script>
    """.format(stack_file)
-   canvas_html = """
-      <div style="float:left"><canvas id="c" width="960" height="540" style="border:2px solid #000000;"></canvas></div>
-      <div style="clear: both"></div>
-   """
 
+
+   #canvas_html = """
+   #   <div style="float:left"><canvas id="c" width="960" height="540" style="border:2px solid #000000;"></canvas></div>
+   #   <div style="clear: both"></div>
+   #"""
+   canvas_html = ""
    canvas_html = canvas_html + """
       <div>
       <div style="float:left; border: 1px #000000 solid;"><div style="position: relative; height: 50px; width: 50px; " id="myresult" class="img-zoom-result"> </div> </div>
@@ -4067,6 +4059,7 @@ def free_cal(json_conf,form):
    """
    #print(stack_file)
 
+   print(template)
    print(canvas_html)
 
    extra_js = extra_js + """ 
