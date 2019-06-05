@@ -11,9 +11,10 @@ def get_pagination(page,total_elts,url,max_per_page):
  
    #how many pages appear to the left and right of your current page
    adjacents = 2
-   start = (page - 1) * max_per_page; 
 
+   start = (page - 1) * max_per_page; 
    display_page_counter = 0
+   
    last_page = total_elts / max_per_page
    last_page = math.ceil(last_page)
    last_page = int(last_page)
@@ -38,6 +39,7 @@ def get_pagination(page,total_elts,url,max_per_page):
       if (page > 1):
          pagination = pagination + "<li class='page-item'><a class='page-link' href='"+url+"&p=" + format(_prev) +"'>&laquo; Previous</a></li>";
       else:
+         # no Page "0"
          pagination = pagination + "<li class='page-item disabled'><a class='page-link' >&laquo; Previous</a></li>";
 
       display_page_counter = display_page_counter + 1
@@ -45,7 +47,7 @@ def get_pagination(page,total_elts,url,max_per_page):
       #pages
       if (last_page < 5 + (adjacents * 2)):
       
-         for counter in range(1,last_page+1):
+         for counter in range(1,last_page+2):
             if(counter == page ):
                pagination = pagination + "<li class='page-item active'><a class='page-link' >"+ format(counter)+"</a></li>";
             else:
