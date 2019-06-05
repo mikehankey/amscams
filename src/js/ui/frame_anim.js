@@ -80,11 +80,10 @@ function frame_anim() {
             val=1;
             $('#cur_sp').text('x1');
         } 
-
-       
-
         
     }); 
+    console.log('TIME PER FRAME ', timePerFrame);
+    console.log('animationDuration ', animationDuration);
     requestAnimationFrame(step);
 }
   
@@ -93,7 +92,6 @@ function frame_anim() {
 // we achieve that by passing 'step' as a parameter to 'requestAnimationFrame' function
 function step(startTime) {
  
-
   // 'startTime' is provided by requestAnimationName function, and we can consider it as current time
   // first of all we calculate how much time has passed from the last time when frame was update
   if (!timeWhenLastUpdate) timeWhenLastUpdate = startTime;
@@ -127,6 +125,7 @@ $(function() {
     $('#anim_modal').on('hidden.bs.modal', function () {
         playing = false; 
         $('#anim_modal').remove();
+        console.log('REMOVE MODAL');
     })
       
 })
