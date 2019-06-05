@@ -932,6 +932,7 @@ def meteors_new(json_conf,form):
          meteors = get_meteors(meteor_dir, meteors)
       elif limit_day == this_date:
          meteors = get_meteors(meteor_dir, meteors)
+         print(format(len(meteors)) + " meteors found")
          if(len(meteors)>=1):
             header_out = header_out + "<h1><span class='h'><span id='meteor_count'>"+format(len(meteors))+"</span> meteors</span> captured on"
             header_out = header_out + "<div class='input-group date datepicker' data-display-format='YYYY/MM/DD' data-action='reload' data-url-param='limit_day' data-send-format='YYYY_MM_DD'>"
