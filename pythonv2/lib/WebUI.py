@@ -932,17 +932,10 @@ def meteors_new(json_conf,form):
          meteors = get_meteors(meteor_dir, meteors)
       elif limit_day == this_date:
          meteors = get_meteors(meteor_dir, meteors)
-         print(format(len(meteors)) + " meteors found")
-         if(len(meteors)>=1):
-            header_out = header_out + "<h1><span class='h'><span id='meteor_count'>"+format(len(meteors))+"</span> meteors</span> captured on"
-            header_out = header_out + "<div class='input-group date datepicker' data-display-format='YYYY/MM/DD' data-action='reload' data-url-param='limit_day' data-send-format='YYYY_MM_DD'>"
-            header_out = header_out + "<input value='"+str(this_date.replace("_", "/"))+"' type='text' class='form-control'>"
-            header_out = header_out + "<span class='input-group-addon'><span class='icon-clock'></span></span></div>"
-         else:
-            header_out = header_out + "<h1><span class='h'><span id='meteor_count'>0</span> meteor</span> captured on"
-            header_out = header_out + "<div class='input-group date datepicker' data-display-format='YYYY/MM/DD' data-action='reload' data-url-param='limit_day' data-send-format='YYYY_MM_DD'>"
-            header_out = header_out + "<input value='"+str(this_date.replace("_", "/"))+"' type='text' class='form-control'>"
-            header_out = header_out + "<span class='input-group-addon'><span class='icon-clock'></span></span></div>"
+         header_out = header_out + "<h1><span class='h'><span id='meteor_count'>"+format(len(meteors))+"</span> meteors</span> captured on"
+         header_out = header_out + "<div class='input-group date datepicker' data-display-format='YYYY/MM/DD' data-action='reload' data-url-param='limit_day' data-send-format='YYYY_MM_DD'>"
+         header_out = header_out + "<input value='"+str(this_date.replace("_", "/"))+"' type='text' class='form-control'>"
+         header_out = header_out + "<span class='input-group-addon'><span class='icon-clock'></span></span></div>"
    
    if limit_day is None and len(meteors)>=1:
       header_out = header_out + "<h1><span class='h'><span id='meteor_count'>"+format(len(meteors))+"</span> meteors</span> captured since inception</h1>"
@@ -1020,6 +1013,12 @@ def meteors_new(json_conf,form):
 
       if(pagination[2] != ''):
          header_out = header_out + "<div class='page_h'>Page  " + format(cur_page) + "/" +  format(pagination[2]) + "</div>"
+
+   else:
+      header_out = header_out + "<h1><span class='h'><span id='meteor_count'>0</span> meteor</span> captured on"
+      header_out = header_out + "<div class='input-group date datepicker' data-display-format='YYYY/MM/DD' data-action='reload' data-url-param='limit_day' data-send-format='YYYY_MM_DD'>"
+      header_out = header_out + "<input value='"+str(this_date.replace("_", "/"))+"' type='text' class='form-control'>"
+      header_out = header_out + "<span class='input-group-addon'><span class='icon-clock'></span></span></div>"
 
    print(header_out+'</div></div>')
    print("<div id='main_container' class='container-fluid h-100 mt-4 lg-l'>")
