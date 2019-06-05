@@ -4033,7 +4033,6 @@ def free_cal(json_conf,form):
 
    #get Meteor Date
    fn = stack_file.split("/")[-1]
-   fn = fn.split("-")[0]
    print("TEST " + fn)
 
    // 2019_06_04_10_19_31_000_010033-half-stack.png
