@@ -24,7 +24,7 @@ function setQueryParameters(params) {
 
 $(function() {
 
-    //        <div class='input-group date datepicker' data-date-format="YYYY/MM/DD" data-action="reload" data-url-param="limit_day" data-sep="_">
+    //  div class='input-group date datepicker' data-date-format="YYYY/MM/DD" data-action="reload" data-url-param="limit_day" data-sep="_">
 
 
     $('.datepicker').each(function() {
@@ -36,13 +36,13 @@ $(function() {
                 
                 // Convert date
                 var new_date = e.date.format($t.attr('data-send-format'));
-
+                 
                 // Replace in cur URL and reload
-                var param = $t.attr('data-url-param');
                 var cur_params = getQueryParameters();
+                // WARNING limit_day is hardcoded here
 
-                if(cur_params.param != new_date) {
-                    cur_params.param = new_date;
+                if(cur_params.limit_day != new_date) {
+                    cur_params.limit_day = new_date;
                     setQueryParameters(cur_params);
                 }
 
