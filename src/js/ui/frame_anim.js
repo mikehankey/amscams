@@ -103,7 +103,7 @@ function step(startTime) {
     $(`.to_anim-${frameNumber}`).css('opacity', 1);  
     timeWhenLastUpdate = startTime;
  
-    if (frameNumber >= totalFrames) {
+    if (frameNumber >= totalFrames-1) {
       frameNumber = 0;
     } else {
       frameNumber = frameNumber + 1;
