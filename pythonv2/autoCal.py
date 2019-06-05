@@ -63,6 +63,8 @@ def reset_reduce(json_conf, meteor_file):
    print(cmd)
    cmd = "cd /home/ams/amscams/pythonv2/; ./detectMeteors.py raj " + mf 
    os.system(cmd)
+   cmd = "cd /home/ams/amscams/pythonv2/; ./autoCal.py imgstars " + mf  
+   os.system(cmd)
 
 
 def get_meteor_dirs():
@@ -129,11 +131,17 @@ def meteor_index(json_conf, extra_cmd = ""):
                   meteor_index[day][meteor]['total_stars'] = len(red_data['cal_params']['cat_image_stars'])
                else:
                   meteor_index[day][meteor]['total_stars'] = 0
+
+
+               #if meteor_index[day][meteor]['total_stars'] == 0:
+               #   os.system("./autoCal.py imgstars " + meteor)
+
                if "total_res_px" in red_data['cal_params']:
                   meteor_index[day][meteor]['total_res_px'] = red_data['cal_params']['total_res_px']
                   meteor_index[day][meteor]['total_res_deg'] = red_data['cal_params']['total_res_deg']
                   if red_data['cal_params']['total_res_deg'] > .4:
                      os.system("./autoCal.py rr " + meteor)
+                     #os.system("./autoCal.py rr " + meteor)
 
                else:
                   meteor_index[day][meteor]['total_res_px'] = 0 
@@ -1820,6 +1828,7 @@ def get_stars_from_image(file,json_conf,masks = [], cal_params = None, show = 0,
    img = cv2.imread(file,0)
    img = cv2.resize(img, (1920,1080))
    mimg = mask_frame(img, [], masks)
+   print("MASKING IMAGE:", masks)
    img = mimg.copy()
    (f_datetime, cam_id, f_date_str,fy,fm,fd, fh, fmin, fs) = convert_filename_to_date_cam(file)
 
