@@ -900,7 +900,7 @@ def get_meteors(meteor_dir,meteors):
 
 def get_pagination(page,total_elts,url,max_per_page):
  
-
+   # No Pagination Needed
    if(total_elts <= max_per_page):
       return ["","",""]
 
@@ -1118,7 +1118,9 @@ def meteors_new(json_conf,form):
    
   
    pagination = get_pagination(cur_page,len(all_meteors),"/pycgi/webUI.py?cmd=new_meteors",NUMBER_OF_METEOR_PER_PAGE)
-   header_out = header_out + "<div class='page_h'>Page  " + format(cur_page) + "/" +  format(pagination[2]) + "</div>"
+
+   if(pagination[2] !== ''):
+      header_out = header_out + "<div class='page_h'>Page  " + format(cur_page) + "/" +  format(pagination[2]) + "</div>"
 
    print(header_out+'</div></div>')
    print("<div id='main_container' class='container-fluid h-100 mt-4 lg-l'>")
