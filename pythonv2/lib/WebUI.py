@@ -1119,7 +1119,7 @@ def meteors_new(json_conf,form):
   
    pagination = get_pagination(cur_page,len(all_meteors),"/pycgi/webUI.py?cmd=new_meteors",NUMBER_OF_METEOR_PER_PAGE)
 
-   if(pagination[2] !== ''):
+   if(pagination[2] != ''):
       header_out = header_out + "<div class='page_h'>Page  " + format(cur_page) + "/" +  format(pagination[2]) + "</div>"
 
    print(header_out+'</div></div>')
