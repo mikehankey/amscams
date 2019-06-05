@@ -1,6 +1,3 @@
-<div class='h1_holder  d-flex justify-content-between'>
-	<h1>{%METEOR_DATE%} Meteor</h1>
-</div>
 <div id="main_container" class="container-fluid d-flex h-100 mt-4 position-relative"> 
         <div class="h-100 flex-fixed-canvas">
             <div class="canvas-container">
@@ -13,5 +10,15 @@
 	            <div id="canvas_pointer_info"></div>
 	            <div id="canvas_zoom"></div>
             </div> 
+
+            <div class="box">
+                <h2>Detection Info</h2>
+                <dl class="row mb-0">
+                    <dt class="col-6">Detect. Time</dt>   <dd class="col-6">{%METEOR_DATE%}</dd> 
+                </dl>
+                <div class="btn-holder row mt-1">
+					<a id="show_grid" class="col btn btn-secondary mt-0 mb-0"><i class="icon-grid"></i> <span>Show Grid</span></a>
+				</div>
+	    	</div>
         </div>
 </div>

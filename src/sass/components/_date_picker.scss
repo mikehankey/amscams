@@ -27,7 +27,9 @@
         }
 
         &:hover {
-            background: #0e295b;
+            input {
+                background: #0e295b;
+            }
         }
 
         .input-group-addon {
