@@ -9,6 +9,7 @@ import glob
 import os
 import json
 import cgitb
+import pagination
 from lib.FileIO import get_proc_days, get_day_stats, get_day_files , load_json_file, get_trims_for_file, get_days, save_json_file, cfe, save_meteor
 from lib.VideoLib import get_masks, convert_filename_to_date_cam, ffmpeg_trim , load_video_frames
 from lib.DetectLib import check_for_motion2 
@@ -898,118 +899,7 @@ def get_meteors(meteor_dir,meteors):
    return(meteors)
 
 
-def get_pagination(page,total_elts,url,max_per_page):
- 
-   # No Pagination Needed
-   if(total_elts <= max_per_page):
-      return ["","",""]
 
-   #print("IN PAGINATION ")
-   #print("PAGE: " + format(page))
-   #print("TOTAL PAGES " + format(total_elts))
-   #print("URL" + url)
-
-   #how many pages appear to the left and right of your current page
-   adjacents = 2
-   start = (page - 1) * max_per_page; 
-
-   #print("START: " + format(start))
-   
-   last_page = total_elts / max_per_page
-
-   last_page = math.ceil(last_page)
-   last_page = int(last_page)
-
-   #print("LAST PAGE : " + format(last_page))
-   
-   lpm1 = last_page - 1
-   _prev = page - 1
-   _next = page + 1   
-
-   pagination = '<nav>'
-
-   if(last_page>1):
-
-      pagination = pagination + "<ul class='pagination justify-content-center'>"
-
-      #previous button
-      if (page > 1):
-         pagination = pagination + "<li class='page-item'><a class='page-link' href='"+url+"&p=" + format(_prev) +"'>&laquo; Previous</a></li>";
-      else:
-         pagination = pagination + "<li class='page-item disabled'><a class='page-link' >&laquo; Previous</a></li>";
-
-      #pages
-      if (last_page < 5 + (adjacents * 2)):
-      
-         for counter in range(1,last_page+1):
-            if(counter == page ):
-               pagination = pagination + "<li class='page-item active'><a class='page-link' >"+ format(counter)+"</a></li>";
-            else:
-               pagination = pagination + "<li class='page-item'><a class='page-link' href='"+url+"&p=" + format(counter)+"'>"+format(counter)+"</a></li>";
-            
-      elif (last_page > 5 + (adjacents * 2)):
-
-         #close to beginning; only hide later pages
-         if(page < 3 + (adjacents * 2)):
-               
-               for counter in range(1,4 + (adjacents * 2)):
-                  if(counter == page):
-                     pagination = pagination + "<li class='page-item active'><a class='page-link' >"+format(counter)+"</a></li>";
-                  else:
-                     pagination = pagination + "<li class='page-item'><a class='page-link'  href='"+url+"&p="+ format(counter)+"'>"+ format(counter)+"</a></li>";
-
-               pagination = pagination + "<li class='page-item disabled'><a class='page-link'>...</a></li>";
-               pagination = pagination + "<li class='page-item'><a  class='page-link' href='"+url+"&p=" + format(lpm1)+"'>"+format(lpm1)+"</a></li>";
-               pagination = pagination + "<li class='page-item'><a  class='page-link' href='"+url+"&p=" + format(last_page)+"'>"+ format(last_page)+"</a></li>";
-            
-         elif(last_page-1-(adjacents*2)>page and page > (adjacents*2)):
-
-               pagination = pagination + "<li class='page-item'><a class='page-link' href='"+url+"&p=1'>1</a></li>";
-               pagination = pagination + "<li class='page-item'><a class='page-link' href='"+url+"&p=2'>2</a></li>";
-               pagination = pagination + "<li class='disabled page-item'><a class='page-link'>...</a></li>";
-               
-               for counter in range(page-adjacents, page+adjacents):
-                  if(counter == page):
-                     pagination = pagination + "<li class='page-item active'><a class='page-link' >"+format(counter)+"</a></li>";                   
-                  else:
-                     pagination = pagination + "<li class='page-item'><a class='page-link' href='"+url+"&p="+ format(counter)+"'>"+format(counter)+"</a></li>";
-               
-               pagination = pagination + "<li class='page-item disabled'><a class='page-link'>...</a></li>";
-               pagination = pagination + "<li class='page-item'><a class='page-link' href='"+url+"&p=" + format(lpm1)+"'>"+format(lpm1)+"</a></li>";
-               pagination = pagination + "<li class='page-item'><a class='page-link' href='"+url+"&p=" + format(last_page)+"'>"+format(last_page)+"</a></li>";
-            
-         #close to end; only hide early pages
-         else:
-               
-               pagination = pagination + "<li class='page-item'><a class='page-link' href='"+url+"&p=1'>1</a></li>";
-               pagination = pagination + "<li class='page-item'><a class='page-link' href='"+url+"&p=2'>2</a></li>";
-               pagination = pagination + "<li class='disabled page-item'><a class='page-link'>...</a></li>";
-               
-               for counter in range(last_page - (2 + (adjacents * 2)), last_page):
-                  if(counter == page):
-                     pagination = pagination + "<li class='page-item active'><a class='page-link'>"+format(counter)+"</a></li>";                   
-                  else:
-                     pagination = pagination + "<li class='page-item'><a class='page-link' href='"+url+"&p="+ format(counter)+"'>"+format(counter)+"</a></li>";
-
-   else:
-      #Display all pages
-      for counter in range(1,last_page):
-         if(counter == page):
-            pagination = pagination + "<li class='page-item active'><a class='page-link' >"+format(counter)+"</a></li>";
-         else:
-            pagination = pagination + "<li class='page-item active'><a class='page-link' href='"+url+"&p=" + format(counter)+"' >"+format(counter)+"</a></li>";
- 
-
-
-   if (page < (counter - 1) * 60):
-      pagination =  pagination + "<li class='page-item'><a class='page-link' href='"+url+"&p=" + format(page+1)+"'>Next &raquo;</a></li>"
-   else:
-      pagination =  pagination + "<li class='page-item disabled'><a class='page-link'>Next &raquo;</a></li>"
-
-
-   to_return  = [pagination, start, last_page]
-
-   return(to_return)
  
 def meteors_new(json_conf,form):  
    cgitb.enable()
