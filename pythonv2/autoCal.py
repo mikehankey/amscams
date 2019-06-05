@@ -27,6 +27,43 @@ from lib.UtilLib import calc_dist,find_angle
 import lib.brightstardata as bsd
 from lib.DetectLib import eval_cnt
 
+def reset_reduce(json_conf, meteor_file):
+   mjf = meteor_file
+   mjf = mjf.replace(".json", "-reduced.json")
+   if "reduced.json" not in mjf:
+      print("BAD FILE!")
+      exit()
+   if cfe(mjf) == 0:
+      print("BAD FILE!")
+      exit()
+   if "meteors" not in mjf:
+      print("BAD FILE!")
+      exit()
+   if " " in mjf:
+      print("BAD FILE!")
+      exit()
+   if ";" in mjf:
+      print("BAD FILE!")
+      exit()
+   cmd = "rm " + mjf
+   os.system(cmd)
+
+   mf = mjf.replace("-reduced.json", ".json")
+   cmd = "cd /home/ams/amscams/pythonv2/; ./detectMeteors.py raj " + mf 
+   os.system(cmd)
+   print(cmd)
+   cmd = "cd /home/ams/amscams/pythonv2/; ./autoCal.py imgstars " + mf  
+   os.system(cmd)
+   print(cmd)
+   cmd = "cd /home/ams/amscams/pythonv2/; ./autoCal.py cfit " + mf 
+   os.system(cmd)
+   print(cmd)
+   cmd = "cd /home/ams/amscams/pythonv2/; ./autoCal.py imgstars " + mf  
+   os.system(cmd)
+   print(cmd)
+   cmd = "cd /home/ams/amscams/pythonv2/; ./detectMeteors.py raj " + mf 
+   os.system(cmd)
+
 
 def get_meteor_dirs():
    meteor_dirs = []
@@ -95,6 +132,9 @@ def meteor_index(json_conf, extra_cmd = ""):
                if "total_res_px" in red_data['cal_params']:
                   meteor_index[day][meteor]['total_res_px'] = red_data['cal_params']['total_res_px']
                   meteor_index[day][meteor]['total_res_deg'] = red_data['cal_params']['total_res_deg']
+                  if red_data['cal_params']['total_res_deg'] > .4:
+                     os.system("./autoCal.py rr " + meteor)
+
                else:
                   meteor_index[day][meteor]['total_res_px'] = 0 
                   meteor_index[day][meteor]['total_res_deg'] = 0 
@@ -202,13 +242,13 @@ def cal_index(json_conf):
    for fc in freecal_dirs:
       if cfe(fc, 1) == 1:
          base_name = fc.split("/")[-1]
-         cp_file = fc + "/" + base_name + "-calparams.json"
+         cp_file = fc + "/" + base_name + "-stacked-calparams.json"
          print("CP:", cp_file)
          if cfe(cp_file) == 1:
             cal_files[cp_file] = {}
             cal_files[cp_file]['base_dir'] = fc 
          else:
-            cp_file = fc + "/" + base_name + "-stacked-calparams.json"
+            cp_file = fc + "/" + base_name + "-calparams.json"
             if cfe(cp_file) == 1:
                cal_files[cp_file] = {}
                cal_files[cp_file]['base_dir'] = fc 
@@ -249,10 +289,10 @@ def cal_index(json_conf):
        
  
       if "cat_image_stars" in cj:
-         cal_files[cp_file]['cat_image_stars'] = cj['cat_image_stars']
+         #cal_files[cp_file]['cat_image_stars'] = cj['cat_image_stars']
          cal_files[cp_file]['total_stars'] = len(cj['cat_image_stars'])
       elif "close_stars" in cj:
-         cal_files[cp_file]['cat_image_stars'] = cj['close_stars']
+         #cal_files[cp_file]['cat_image_stars'] = cj['close_stars']
          cal_files[cp_file]['total_stars'] = len(cj['close_stars'])
       else:
          print("NO CAT STARS:", cp_file)
@@ -268,7 +308,12 @@ def cal_index(json_conf):
          #cmd = "rm -rf " + cal_files[cp_file]['base_dir']
          #os.system(cmd)
          #print(cmd)
-         
+      if "total_res_px" in cj:
+         cal_files[cp_file]['total_res_px'] = cj['total_res_px']
+         cal_files[cp_file]['total_res_deg'] = cj['total_res_deg']         
+      else:
+         cal_files[cp_file]['total_res_px'] = 0
+         cal_files[cp_file]['total_res_deg'] = 0
 
    for cp_file in cal_files:
       print(cp_file)
@@ -550,7 +595,7 @@ def clean_pairs(merged_stars, inc_limit = 5, show = 0):
          dupe_dist = calc_dist((int(ix),int(iy)),(six,siy))
          if dupe_dist < 10 and dupe_dist != 0 and dupe_dist < std_dev_dist :
             dist_check = dist_check + 1
-            print("STAR DUPE DIST:", cam_id, six,siy,ix,iy,dupe_dist)
+            #print("STAR DUPE DIST:", cam_id, six,siy,ix,iy,dupe_dist)
          
 
       #if img_res <= inc_limit and dupe_key not in dupe_check and dist_check == 0:
@@ -2858,7 +2903,7 @@ if cmd == 'cfit':
             print("This file is good and doesn't need to be refit.")
             exit()
       if 'cat_img_stars' in mj['cal_params']:
-         if len(mj['cal_param']['cat_image_stars']) < 7:
+         if len(mj['cal_param']['cat_image_stars']) < 5:
             print("There aren't enough stars to custom fit. Use best defaults instead.") 
             exit()
    else:
@@ -3150,7 +3195,7 @@ if cmd == 'imgstars' or cmd == 'imgstars_strict':
    sc = 0
    for name,mag,ra,dec,new_cat_x,new_cat_y,ix,iy,px_dist,cp_file in cat_image_stars:
       #px_dist = calc_dist((ix,iy),(new_cat_x,new_cat_y))
-      print("STAR DATA:", sc, name, new_cat_x, new_cat_y, ix, iy, px_dist)
+      #print("STAR DATA:", sc, name, new_cat_x, new_cat_y, ix, iy, px_dist)
       dist_list.append(px_dist)
       tot_res = tot_res + px_dist
       sc = sc + 1
@@ -3304,3 +3349,5 @@ if cmd == "meteor_index":
       extra_cmd = sys.argv[2]
    meteor_index(json_conf, extra_cmd)
 
+if cmd == "rr" or cmd == 'reset_reduce':
+   reset_reduce(json_conf, sys.argv[2])

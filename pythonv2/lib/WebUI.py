@@ -415,6 +415,23 @@ def reset_reduce(json_conf, form):
       exit()
    cmd = "rm " + mjf 
    os.system(cmd)
+
+   mf = mjf.replace("-reduced.json", ".json")
+   cmd = "cd /home/ams/amscams/pythonv2/; ./detectMeteors.py raj " + mf + " > /mnt/ams2/tmp/dmt"
+   os.system(cmd)
+   print(cmd)
+   cmd = "cd /home/ams/amscams/pythonv2/; ./autoCal.py imgstars " + mf + " > /mnt/ams2/tmp/dmt"
+   os.system(cmd)
+   print(cmd)
+   #cmd = "cd /home/ams/amscams/pythonv2/; ./autoCal.py cfit " + mf + " > /mnt/ams2/tmp/dmt"
+   #os.system(cmd)
+   #print(cmd)
+   #cmd = "cd /home/ams/amscams/pythonv2/; ./autoCal.py imgstars " + mf + " > /mnt/ams2/tmp/dmt"
+   #os.system(cmd)
+   #print(cmd)
+   #cmd = "cd /home/ams/amscams/pythonv2/; ./detectMeteors.py raj " + mf + " > /mnt/ams2/tmp/dmty"
+   #os.system(cmd)
+
    resp = {}
    resp['status'] = "reduction and cal params reset"
    print(json.dumps(resp))
@@ -766,6 +783,7 @@ def hd_cal_index(json_conf, form):
    return(extra_html)
 
 def calibration(json_conf,form):
+   cam_id_filter = form.getvalue("cam_id")
    print("""
       <div style="padding: 10px">
       <a href="">Past Calibrations</a> - 
@@ -775,13 +793,41 @@ def calibration(json_conf,form):
       </div>
    """)
    ci = load_json_file("/mnt/ams2/cal/freecal_index.json")
+   
    print("<h1>Past Calibrations</h1><div style=\"margin: 10px\"><table border=1 cellpadding=\"10\">")
-   print("<TR><TD>Cal Date</td><td>Cam ID</td><td>Total Stars</td><td>Center AZ/EL</td><td>Pos Angle</td><td>Pix Scale</td><td>Res X/Y Pix</td><td>Res X/Y Deg</td></tr>")
+   print("<TR><TD>Cal Date</td><td>Cam ID</td><td>Total Stars</td><td>Center AZ/EL</td><td>Pos Angle</td><td>Pix Scale</td><td>Res Pix</td><td>Res Deg</td></tr>")
    for cf in sorted(ci, reverse=True):
-      link = "/pycgi/webUI.py?cmd=free_cal&input_file=" + ci[cf]['cal_image_file'] 
-      print("<TR><TD><a href={:s}>{:s}</a></td><td>{:s}</td><td>{:s}</td><td>{:s}/{:s}</td><td>{:s}</td><td>{:s}</td><td>{:s}/{:s}</td><td>{:s}/{:s}</td></tr>".format( link, str(ci[cf]['cal_date']), \
-         str(ci[cf]['cam_id']), str(ci[cf]['total_stars']), str(ci[cf]['center_az'])[0:6], str(ci[cf]['center_el'])[0:6], str(ci[cf]['position_angle'])[0:6], \
-         str(ci[cf]['pixscale'])[0:6], str(ci[cf]['x_fun'])[0:6], str(ci[cf]['y_fun'])[0:6], str(ci[cf]['x_fun_fwd'])[0:7], str(ci[cf]['y_fun_fwd'])[0:6]))
+      if 'cal_image_file' in ci[cf]:
+         link = "/pycgi/webUI.py?cmd=free_cal&input_file=" + ci[cf]['cal_image_file'] 
+      else:
+         link = ""
+      if ci[cf]['total_res_deg'] > .5:
+         color = "style='color: #ff0000'"
+      elif .4 < ci[cf]['total_res_deg'] <= .5:
+         color = "style='color: #FF4500'"
+      elif .3 < ci[cf]['total_res_deg'] <= .4:
+         color = "style='color: #FFFF00'"
+      elif .2 < ci[cf]['total_res_deg'] <= .3:
+         color = "style='color: #00FF00'"
+      elif .1 < ci[cf]['total_res_deg'] <= .2:
+         color = "style='color: #00ffff'"
+      elif 0 < ci[cf]['total_res_deg'] <= .1:
+         color = "style='color: #0000ff'"
+      elif ci[cf]['total_res_deg'] == 0:
+         color = "style='color: #ffffff'"
+      else:
+         color = ""
+      if cam_id_filter is None:
+         show_row = 1
+      elif cam_id == cam_id_filter:
+         show_row = 1
+      else:
+         show_row = 0
+
+      if show_row == 1: 
+         print("<TR " + color + "><TD><a href={:s}>{:s}</a></td><td>{:s}</td><td>{:s}</td><td>{:s}/{:s}</td><td>{:s}</td><td>{:s}</td><td>{:s}</td><td>{:s}</td></tr>".format( link, str(ci[cf]['cal_date']), \
+            str(ci[cf]['cam_id']), str(ci[cf]['total_stars']), str(ci[cf]['center_az']), str(ci[cf]['center_el']), str(ci[cf]['position_angle']), \
+            str(ci[cf]['pixscale']), str(ci[cf]['total_res_px']), str(ci[cf]['total_res_deg']) ))
 
    print("</table></div>")
 
