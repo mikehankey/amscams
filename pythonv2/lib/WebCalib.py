@@ -3822,7 +3822,7 @@ def choose_file(json_conf,form):
    else:
       #<a href=webUI.py?cmd=free_cal&input_file=" + hd_file + "></a>
       print('<div id="main_container" class="container-fluid h-100 mt-4 lg-l">')
-      print("<span class='load_msg'>HD File found. Stacking frames. Please wait...</span>") 
+      print("<div id='overlay' class='animated'><div class='row h-100 text-center'><div class='col-sm-12 my-auto'><div class='card card-block' style='background:transparent'><iframe style='zoom: 1.8;border:0;margin: 0 auto;' src='./dist/img/anim_logo.svg' width='140' height='90'></iframe><h3>HD File found. Stacking frames. Please wait...</h3></div></div></div></div>")
       print('</div>')
       print("<script>window.location.href='webUI.py?cmd=free_cal&input_file=" + hd_file + "';</script>")
 
