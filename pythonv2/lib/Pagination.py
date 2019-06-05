@@ -29,7 +29,7 @@ def get_pagination(page,total_elts,url,max_per_page):
    _prev = page - 1
    _next = page + 1   
 
-   pagination = '<nav>'
+   pagination = '<nav class="mt-3">'
 
    if(last_page>1):
 
@@ -47,7 +47,7 @@ def get_pagination(page,total_elts,url,max_per_page):
       #pages
       if (last_page < 5 + (adjacents * 2)):
       
-         for counter in range(1,last_page+2):
+         for counter in range(1,last_page+1):
             if(counter == page ):
                pagination = pagination + "<li class='page-item active'><a class='page-link' >"+ format(counter)+"</a></li>";
             else:
