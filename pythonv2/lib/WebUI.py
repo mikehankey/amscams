@@ -1374,41 +1374,45 @@ def examine_min(video_file,json_conf):
    print("<div id='main_container' class='container-fluid d-flex h-100 mt-4 position-relative'>")
 
    print("<div class='h-100 flex-fixed-canvas'>")
-   print("<a href='" + video_file + "' class='vid-link mx-auto d-block' title='Click to Play'><img src='" + stack_file + "'></a>")
+   print("<a href='" + video_file + "' class='vid-link mx-auto d-block' title='Click to Play'><img src='" + stack_file + "' class='mx-auto d-block'></a>")
    print("</div>")
    print("<div class='flex-fixed-r-canvas h-100'>")
-   print("<div class='box'><h2>Actions</h2>")
-   print("<a class='btn btn-primary mx-auto d-block' href=webUI.py?cmd=manual_detect&sd_video_file=" + video_file + ">Manually Detect</a> - ")
-   print("<a class='btn btn-primary mx-auto d-block'  href=webUI.py?cmd=choose_file&input_file=" + video_file + ">Calibrate Star Field</a> - ")
-   print("<a class='btn btn-primary mx-auto d-block'  href=webUI.py?cmd=add_stars_to_fit_pool&input_file=" + video_file + ">Add Stars To Fit Pool</a> <BR> ")
-   print("<a class='btn btn-primary mx-auto d-block'  href=webUI.py?cmd=sat_cap&input_file=" + video_file + "&stack_file=" + stack_file + "&next_stack_file=" + next_stack_file + ">Add / Reduce Satellite Capture</a> <BR> ")
-   print("</div></div></div>") 
+   print("<div class='box'><h2 class='mb-4'>Actions</h2>")
+   print("<a class='btn btn-primary mx-auto d-block' href=webUI.py?cmd=manual_detect&sd_video_file=" + video_file + ">Manually Detect</a>")
+   print("<a class='btn btn-primary mx-auto d-block'  href=webUI.py?cmd=choose_file&input_file=" + video_file + ">Calibrate Star Field</a>")
+   print("<a class='btn btn-primary mx-auto d-block'  href=webUI.py?cmd=add_stars_to_fit_pool&input_file=" + video_file + ">Add Stars To Fit Pool</a>")
+   print("<a class='btn btn-primary mx-auto d-block'  href=webUI.py?cmd=sat_cap&input_file=" + video_file + "&stack_file=" + stack_file + "&next_stack_file=" + next_stack_file + ">Add / Reduce Satellite Capture</a>")
+   print("</div>")
 
+   print("<div class='box'><h2 class='mb-4'>Status</h2>")
 
+ 
    if len(pending_files) > 0:
-      print("Trim files for this clip are still pending processing. Please wait before manually processing this file.<BR>")
+      print("<p>Trim files for this clip are still pending processing. Please wait before manually processing this file.</p>")
       for pending in pending_files:
          print("<a href=" + pending + ">" + pending + "</A><BR>")
 
    if len(meteor_files) > 0:
-      print("<h2>Meteor Detected</h2>")
+      print("<p><b>Meteor DETECTED</b></p>")
       for meteor_file in meteor_files:
          meteor_stack = meteor_file.replace(".mp4", "-stacked.png")
-         print("<a href=" + meteor_file + ">")
-         print("<img src=" + meteor_stack + "></a>")
-         print("<br><a href=webUI.py?cmd=examine&video_file=" + meteor_file + ">Examine</a><br>")
+         print("<a href='" + meteor_file + "' class='mx-auto d-block'>")
+         print("<img src='" + meteor_stack + "' class='mx-auto d-block'></a>")
+         print("<a class='btn btn-primary mx-auto d-block' href='webUI.py?cmd=examine&video_file=" + meteor_file + "'>Examine</a>")
 
-   if len(failed_files) > 0:
-      print("<h2>Non Meteor Detections</h2>")
+   if len(failed_files) > 0: 
+      print("<p><b>NON METEOR Detection</b></p>")
       for fail_file in failed_files:
          fail_stack = fail_file.replace(".mp4", "-stacked.png")
-         print("<a href=" + fail_file + ">")
-         print("<img src=" + fail_stack + "></a>")
-         print("<br><a href=webUI.py?cmd=examine&video_file=" + fail_file + ">Examine</a><br>")
+         print("<a href='" + fail_file + "' class='mx-auto d-block'>")
+         print("<img src='" + fail_stack + "' class='mx-auto d-block'></a>")
+         print("<a class='btn btn-primary mx-auto d-block' href='webUI.py?cmd=examine&video_file=" + fail_file + "'>Examine</a>")
         
    if len(failed_files) == 0 and len(meteor_files) == 0:
-      print("<h2>No Detections</h2>")
+      print("<p><b>NO Detection</b></p>")
    #print(failed_files,meteor_files)
+
+   print("</div></div></div>") 
 
 def override_detect(video_file,jsid, json_conf):
 
