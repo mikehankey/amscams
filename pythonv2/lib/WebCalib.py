@@ -3933,6 +3933,9 @@ def auto_cal(json_conf,form):
 
 
 def free_cal(json_conf,form):
+
+   print("*****************")
+
    input_file = form.getvalue("input_file")
    # if no input file is specified ask for one. 
    print(input_file)
@@ -4033,12 +4036,8 @@ def free_cal(json_conf,form):
 
 
    #get Meteor Date
-   
-
-   #2019_06_04_10_19_31_000_010033-half-stack.png
-   
    print("<div class='h1_holder  d-flex justify-content-between'>")
-   print("<h1>"+get_meteor_date(stack_file)+"</h1>")
+   print("<h1>"+get_meteor_date(stack_file)+" Meteor</h1>")
    print("</div>")
 
 
