@@ -7,13 +7,7 @@ $(function() {
       
       $('.vid-link').magnificPopup({
         type: 'iframe',
-        preloader: true,
-
-        callbacks: {
-          open: function() {
-            $('.mfp-iframe').contents().find('video').attr('loop','');
-          } 
-        } 
+        preloader: true
       });
 
       $('.vid_link_gal').magnificPopup({
