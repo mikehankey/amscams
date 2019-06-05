@@ -65,6 +65,14 @@ def reset_reduce(json_conf, meteor_file):
    os.system(cmd)
    cmd = "cd /home/ams/amscams/pythonv2/; ./autoCal.py imgstars " + mf  
    os.system(cmd)
+   cmd = "cd /home/ams/amscams/pythonv2/; ./autoCal.py cfit " + mf 
+   os.system(cmd)
+   cmd = "cd /home/ams/amscams/pythonv2/; ./autoCal.py cfit " + mf 
+   os.system(cmd)
+   cmd = "cd /home/ams/amscams/pythonv2/; ./autoCal.py cfit " + mf 
+   os.system(cmd)
+   cmd = "cd /home/ams/amscams/pythonv2/; ./autoCal.py imgstars " + mf  
+   os.system(cmd)
 
 
 def get_meteor_dirs():
@@ -139,7 +147,7 @@ def meteor_index(json_conf, extra_cmd = ""):
                if "total_res_px" in red_data['cal_params']:
                   meteor_index[day][meteor]['total_res_px'] = red_data['cal_params']['total_res_px']
                   meteor_index[day][meteor]['total_res_deg'] = red_data['cal_params']['total_res_deg']
-                  if red_data['cal_params']['total_res_deg'] > .4:
+                  if red_data['cal_params']['total_res_deg'] >= .3:
                      os.system("./autoCal.py rr " + meteor)
                      #os.system("./autoCal.py rr " + meteor)
 
@@ -1927,8 +1935,10 @@ def get_stars_from_image(file,json_conf,masks = [], cal_params = None, show = 0,
          hc = hc + 1
       wc = wc + 1
    if show == 1:
+      cv2.imwrite("/mnt/ams2/tmp/test.png", img)
       cv2.imshow('pepe', img)
       cv2.waitKey(0)
+   cv2.imwrite("/mnt/ams2/tmp/test.png", img)
 
    total_res = 0
    tstars = 0
@@ -2908,7 +2918,7 @@ if cmd == 'cfit':
    mj = load_json_file(meteor_json_file_red)
    if 'cal_params' in mj:
       if 'total_res_deg' in mj['cal_params']:
-         if 0 < mj['cal_params']['total_res_deg'] < .1 :
+         if 0 < mj['cal_params']['total_res_deg'] <= .08 :
             print("This file is good and doesn't need to be refit.")
             exit()
       if 'cat_img_stars' in mj['cal_params']:
