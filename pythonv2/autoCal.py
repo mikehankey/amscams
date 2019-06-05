@@ -147,8 +147,8 @@ def meteor_index(json_conf, extra_cmd = ""):
                if "total_res_px" in red_data['cal_params']:
                   meteor_index[day][meteor]['total_res_px'] = red_data['cal_params']['total_res_px']
                   meteor_index[day][meteor]['total_res_deg'] = red_data['cal_params']['total_res_deg']
-                  if red_data['cal_params']['total_res_deg'] >= .3:
-                     os.system("./autoCal.py rr " + meteor)
+                  #if red_data['cal_params']['total_res_deg'] >= .2:
+                  #   os.system("./autoCal.py rr " + meteor)
                      #os.system("./autoCal.py rr " + meteor)
 
                else:
