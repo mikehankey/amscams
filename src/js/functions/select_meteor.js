@@ -45,8 +45,7 @@ function setup_modal_actions(x,y) {
 }
 
 
-$(function() {
-
+function setup_select_meteor() {
     var viewer_dim = 400;
 
     // Click on selector (button & thumb)
@@ -116,4 +115,6 @@ $(function() {
         
 
     });
-});
+}
+
+ 
