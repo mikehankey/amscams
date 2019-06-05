@@ -9,6 +9,15 @@ var playing;
 
 // Modal for selector
 function addAnimModalTemplate($allframes) {
+    var realDur = parseFloat($('#dur').text());
+    var dur_unknow = false;
+
+    if(isNaN(realDur)) {
+        realDur = 1; // second default
+        dur_unknow= true;
+       
+    }
+
     if($('#anim_modal').length === 0) {
         $('<div id="anim_modal" class="modal fade" tabindex="-1" role="dialog"><div class="modal-dialog modal-dialog-centered" role="document">\
         <div class="modal-content"><div class="modal-body"><div id="anim_header" class="d-flex justify-content-between"><p><b>Frame by frame animation</b></p><p><span id="cur_f"></span>/<span id="tot_f"></span> frames</p></div><div id="anim_holder">\
@@ -20,20 +29,23 @@ function addAnimModalTemplate($allframes) {
         $allframes.each(function(i,v) {
             $(this).clone().addClass('to_anim to_anim-'+i).appendTo('#anim_holder');
         });
+
+        animationDuration = realDur*1000; // Duration get the 
+
+        if(dur_unknow) {
+            $('#alert_anim').remove();
+            $('<div id="alert_anim" class="alert alert-danger">Unknown Real Duration</div>').insertAfter($('#anim_header'));
+        }
     }
 }
 
 function frame_anim() { 
-    var realDur = parseFloat($('#dur').text());
-    var dur_unknow = false;
+    
     $allframes = $('img.select_meteor');
     totalFrames = $allframes.length;
-
-    if(isNaN(realDur)) {
-        realDur = 1; // second default
-        dur_unknow= true;
-       
-    }
+    
+    addAnimModalTemplate($allframes);
+    $('#anim_modal').modal();
 
     if(totalFrames==0) {
         bootbox.alert({
@@ -43,20 +55,11 @@ function frame_anim() {
         });
         return false;
     }
- 
-    animationDuration = realDur*1000; // Duration get the 
+  
     timePerFrame = animationDuration / totalFrames;
     frameNumber = 0; 
     playing = true;
-    
-
-    addAnimModalTemplate($allframes);
-    $('#anim_modal').modal();
-
-    if(dur_unknow) {
-        $('#alert_anim').remove();
-        $('<div id="alert_anim" class="alert alert-danger">Unknown Real Duration</div>').insertAfter($('#anim_header'));
-    }
+     
 
     $('#tot_f').text(totalFrames);
     $('#cur_sp').text('x1');
