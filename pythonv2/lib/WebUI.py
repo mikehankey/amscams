@@ -1373,14 +1373,17 @@ def examine_min(video_file,json_conf):
    print("<h1>Examine One-Minute Clip - " +  get_meteor_date(video_file) +"</h1>")
    print("<div id='main_container' class='container-fluid d-flex h-100 mt-4 position-relative'>")
 
-   print("<a href='" + video_file + "'' class='vid-link mx-auto d-block' title='Click to Play'>")
-   print("<img src='" + stack_file + "''></a>")
+   print("<div class='h-100 flex-fixed-canvas'>")
+   print("<a href='" + video_file + "' class='vid-link mx-auto d-block' title='Click to Play'><img src='" + stack_file + "'></a>")
+   print("</div>")
+   print("<div class='flex-fixed-r-canvas h-100'>")
+ 
+   print("<a class='btn btn-primary' href=webUI.py?cmd=manual_detect&sd_video_file=" + video_file + ">Manually Detect</a> - ")
+   print("<a class='btn btn-primary'  href=webUI.py?cmd=choose_file&input_file=" + video_file + ">Calibrate Star Field</a> - ")
+   print("<a class='btn btn-primary'  href=webUI.py?cmd=add_stars_to_fit_pool&input_file=" + video_file + ">Add Stars To Fit Pool</a> <BR> ")
+   print("<a class='btn btn-primary'  href=webUI.py?cmd=sat_cap&input_file=" + video_file + "&stack_file=" + stack_file + "&next_stack_file=" + next_stack_file + ">Add / Reduce Satellite Capture</a> <BR> ")
+   print("</div>")
 
-
-   print("<a href=webUI.py?cmd=manual_detect&sd_video_file=" + video_file + ">Manually Detect</a> - ")
-   print("<a href=webUI.py?cmd=choose_file&input_file=" + video_file + ">Calibrate Star Field</a> - ")
-   print("<a href=webUI.py?cmd=add_stars_to_fit_pool&input_file=" + video_file + ">Add Stars To Fit Pool</a> <BR> ")
-   print("<a href=webUI.py?cmd=sat_cap&input_file=" + video_file + "&stack_file=" + stack_file + "&next_stack_file=" + next_stack_file + ">Add / Reduce Satellite Capture</a> <BR> ")
 
    if len(pending_files) > 0:
       print("Trim files for this clip are still pending processing. Please wait before manually processing this file.<BR>")
