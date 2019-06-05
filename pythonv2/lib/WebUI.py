@@ -1377,12 +1377,12 @@ def examine_min(video_file,json_conf):
    print("<a href='" + video_file + "' class='vid-link mx-auto d-block' title='Click to Play'><img src='" + stack_file + "'></a>")
    print("</div>")
    print("<div class='flex-fixed-r-canvas h-100'>")
- 
-   print("<a class='btn btn-primary' href=webUI.py?cmd=manual_detect&sd_video_file=" + video_file + ">Manually Detect</a> - ")
-   print("<a class='btn btn-primary'  href=webUI.py?cmd=choose_file&input_file=" + video_file + ">Calibrate Star Field</a> - ")
-   print("<a class='btn btn-primary'  href=webUI.py?cmd=add_stars_to_fit_pool&input_file=" + video_file + ">Add Stars To Fit Pool</a> <BR> ")
-   print("<a class='btn btn-primary'  href=webUI.py?cmd=sat_cap&input_file=" + video_file + "&stack_file=" + stack_file + "&next_stack_file=" + next_stack_file + ">Add / Reduce Satellite Capture</a> <BR> ")
-   print("</div>")
+   print("<div class='box'><h2>Actions</h2>")
+   print("<a class='btn btn-primary mx-auto d-block' href=webUI.py?cmd=manual_detect&sd_video_file=" + video_file + ">Manually Detect</a> - ")
+   print("<a class='btn btn-primary mx-auto d-block'  href=webUI.py?cmd=choose_file&input_file=" + video_file + ">Calibrate Star Field</a> - ")
+   print("<a class='btn btn-primary mx-auto d-block'  href=webUI.py?cmd=add_stars_to_fit_pool&input_file=" + video_file + ">Add Stars To Fit Pool</a> <BR> ")
+   print("<a class='btn btn-primary mx-auto d-block'  href=webUI.py?cmd=sat_cap&input_file=" + video_file + "&stack_file=" + stack_file + "&next_stack_file=" + next_stack_file + ">Add / Reduce Satellite Capture</a> <BR> ")
+   print("</div></div></div>") 
 
 
    if len(pending_files) > 0:
