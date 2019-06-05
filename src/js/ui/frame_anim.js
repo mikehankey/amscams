@@ -46,7 +46,7 @@ function frame_anim() {
  
     animationDuration = realDur*1000; // Duration get the 
     timePerFrame = animationDuration / totalFrames;
-    frameNumber = 1; 
+    frameNumber = 0; 
     playing = true;
     
 
@@ -104,7 +104,7 @@ function step(startTime) {
     timeWhenLastUpdate = startTime;
  
     if (frameNumber >= totalFrames) {
-      frameNumber = 1;
+      frameNumber = 0;
     } else {
       frameNumber = frameNumber + 1;
     }        
