@@ -911,7 +911,7 @@ def get_pagination(page,total_elts,url,max_per_page):
 
    #how many pages appear to the left and right of your current page
    adjacents = 1
-   start = (page - 1) * max_per_page;
+   start = (page - 1) * max_per_page; 
 
    #print("START: " + format(start))
    
