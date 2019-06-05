@@ -25,13 +25,14 @@ function addAnimModalTemplate($allframes) {
 
 function frame_anim() { 
     var realDur = parseFloat($('#dur').text());
+    var dur_unknow = false;
     $allframes = $('img.select_meteor');
     totalFrames = $allframes.length;
 
     if(isNaN(realDur)) {
         realDur = 1; // second default
-        $('#alert_anim').remove();
-        $('<div id="alert_anim" class="alert alert-danger">Unknown Real Duration</div>').insertAfter($('#anim_header'));
+        dur_unknow= true;
+       
     }
 
     if(totalFrames==0) {
@@ -51,6 +52,11 @@ function frame_anim() {
 
     addAnimModalTemplate($allframes);
     $('#anim_modal').modal();
+
+    if(dur_unknow) {
+        $('#alert_anim').remove();
+        $('<div id="alert_anim" class="alert alert-danger">Unknown Real Duration</div>').insertAfter($('#anim_header'));
+    }
 
     $('#tot_f').text(totalFrames);
     $('#cur_sp').text('x1');
