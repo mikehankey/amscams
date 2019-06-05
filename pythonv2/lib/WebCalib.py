@@ -9,6 +9,7 @@ import cgi
 import time
 import glob
 import os
+from lib.PrintUtils import get_meteor_date
 from lib.FileIO import get_proc_days, get_day_stats, get_day_files , load_json_file, get_trims_for_file, get_days, save_json_file, cfe
 from lib.VideoLib import get_masks, convert_filename_to_date_cam, find_hd_file_new, load_video_frames, find_min_max_dist, ffmpeg_dump_frames
 from lib.DetectLib import check_for_motion2, eval_cnt, eval_cnt_better, find_bright_pixels
@@ -4032,14 +4033,13 @@ def free_cal(json_conf,form):
 
 
    #get Meteor Date
-   fn = stack_file.split("/")[-1]
-   fn = fn.split("-")[0]
-   print("TEST " + fn)
+   
 
    #2019_06_04_10_19_31_000_010033-half-stack.png
    
    print("<div class='h1_holder  d-flex justify-content-between'>")
-   print("<h1></h1>")
+   print("<h1>"+get_meteor_date(stack_file)+"</h1>")
+   print("</div>")
 
 
    js_html = """
