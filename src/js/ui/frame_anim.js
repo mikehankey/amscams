@@ -123,6 +123,7 @@ $(function() {
 
     $('#anim_modal').on('hidden.bs.modal', function () {
         playing = false; 
+        $('#anim_modal').remove();
     })
       
 })
