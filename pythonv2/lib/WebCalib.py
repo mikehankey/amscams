@@ -4015,7 +4015,7 @@ def free_cal(json_conf,form):
 
 
 
-   #get Meteor Date
+   #get Meteor Date as title
    template = template.replace("{%TITLE%}", get_meteor_date(stack_file))
 
 
@@ -4028,10 +4028,12 @@ def free_cal(json_conf,form):
       var hd_stack_file = '""" + stack_file + """'
    </script>
    """.format(stack_file)
-   canvas_html = """
-      <div style="float:left"><canvas id="c" width="960" height="540" style="border:2px solid #000000;"></canvas></div>
-      <div style="clear: both"></div>
-   """
+
+
+   #canvas_html = """
+   #   <div style="float:left"><canvas id="c" width="960" height="540" style="border:2px solid #000000;"></canvas></div>
+   #   <div style="clear: both"></div>
+   #"""
 
    canvas_html = canvas_html + """
       <div>
