@@ -901,7 +901,7 @@ def get_meteors(meteor_dir,meteors):
 def get_pagination(page,total_elts,url,max_per_page):
  
 
-   if(total_elts<=max_per_page)
+   if(total_elts <= max_per_page):
       return ["","",""]
 
    #print("IN PAGINATION ")
