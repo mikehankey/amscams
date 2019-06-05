@@ -902,7 +902,6 @@ def get_meteors(meteor_dir,meteors):
 
  
 def meteors_new(json_conf,form):  
-   cgitb.enable()
 
    limit_day = form.getvalue('limit_day')
    cur_page  = form.getvalue('p')
@@ -1812,7 +1811,6 @@ def browse_detects(day,type,json_conf):
 
 def main_page(json_conf,form):
 
-   cgitb.enable()
 
    cur_page  = form.getvalue('p')
 

@@ -1,7 +1,10 @@
 import math
+import cgitb
 
 def get_pagination(page,total_elts,url,max_per_page):
- 
+   
+   cgitb.enable()
+
    # No Pagination Needed: return empty array
    if(total_elts <= max_per_page):
       return ["","",""]
