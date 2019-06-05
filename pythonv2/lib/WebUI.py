@@ -9,7 +9,7 @@ import glob
 import os
 import json
 import cgitb
-import pagination
+import Pagination
 from lib.FileIO import get_proc_days, get_day_stats, get_day_files , load_json_file, get_trims_for_file, get_days, save_json_file, cfe, save_meteor
 from lib.VideoLib import get_masks, convert_filename_to_date_cam, ffmpeg_trim , load_video_frames
 from lib.DetectLib import check_for_motion2 
@@ -1007,7 +1007,7 @@ def meteors_new(json_conf,form):
    #header_out = header_out + '<input type="radio" name="meteor_select" id="non_reduced" autocomplete="off">All '+ format(non_rec_cnt) +'  Non-Reduced Meteors Only</label>'
    
   
-   pagination = get_pagination(cur_page,len(all_meteors),"/pycgi/webUI.py?cmd=new_meteors",NUMBER_OF_METEOR_PER_PAGE)
+   pagination = pagination.get_pagination(cur_page,len(all_meteors),"/pycgi/webUI.py?cmd=new_meteors",NUMBER_OF_METEOR_PER_PAGE)
 
    if(pagination[2] != ''):
       header_out = header_out + "<div class='page_h'>Page  " + format(cur_page) + "/" +  format(pagination[2]) + "</div>"
@@ -1650,39 +1650,39 @@ def print_css():
 
 
 .divTable{
-	display: table;
+   display: table;
 }
 .divTableRow {
-	display: table-row;
+   display: table-row;
 }
 .divTableHeading {
-	background-color: #EEE;
-	display: table-header-group;
+   background-color: #EEE;
+   display: table-header-group;
 }
 .divTableCell, .divTableHead {
-	border: 1px solid #999999;
-	display: table-cell;
-	padding: 3px 10px;
+   border: 1px solid #999999;
+   display: table-cell;
+   padding: 3px 10px;
         vertical-align: top;
 }
 .divTableCellDetect {
-	border: 1px solid #ff0000;
-	display: table-cell;
-	padding: 3px 10px;
+   border: 1px solid #ff0000;
+   display: table-cell;
+   padding: 3px 10px;
         vertical-align: top;
 }
 .divTableHeading {
-	background-color: #EEE;
-	display: table-header-group;
-	font-weight: bold;
+   background-color: #EEE;
+   display: table-header-group;
+   font-weight: bold;
 }
 .divTableFoot {
-	background-color: #EEE;
-	display: table-footer-group;
-	font-weight: bold;
+   background-color: #EEE;
+   display: table-footer-group;
+   font-weight: bold;
 }
 .divTableBody {
-	display: table-row-group;
+   display: table-row-group;
 }
 
 
@@ -1873,7 +1873,7 @@ def main_page(json_conf,form):
          to_display = to_display + "</div>"
          counter = counter + 1
  
-   pagination = get_pagination(cur_page,len(all_real_detections),"/pycgi/webUI.py?cmd=home",NUMBER_OF_DAYS_PER_PAGE)
+   pagination = pagination.get_pagination(cur_page,len(all_real_detections),"/pycgi/webUI.py?cmd=home",NUMBER_OF_DAYS_PER_PAGE)
 
    print("<div class='h1_holder d-flex justify-content-between'><h1>Daily Dectections</h1><div class='page_h'>Page  " + format(cur_page) + "/" +  format(pagination[2]) + "</div></div>")
    print("<div id='main_container' class='container-fluid h-100 mt-4 lg-l'>")
