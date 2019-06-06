@@ -26,9 +26,9 @@ function find_stars() {
 		            canvas.add(circle);
 		         }
 
-		        if(auto_stars.length()>1) {
+		        if(auto_stars.length>1) {
 		        	bootbox.alert({
-		                message: auto_stars.length() + " have been found.<br/>You can now select more stars (bright) before solving the Field.",
+		                message: auto_stars.length + " have been found.<br/>You can now select more stars (bright) before solving the Field.",
 		                className: 'rubberBand animated error',
 		                centerVertical: true
 		            });
