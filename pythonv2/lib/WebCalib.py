@@ -2811,7 +2811,7 @@ def reduce_meteor_new(json_conf,form):
 
    template = template.replace("{SELECTED_CAL_PARAMS_FILE}", cal_params_file)
    #Name of the option in the <select>
-   template = template.replace("{SELECTED_CAL_PARAMS_FILE_NAME}", get_meteor_date(cal_params_file)
+   template = template.replace("{SELECTED_CAL_PARAMS_FILE_NAME}", get_meteor_date(cal_params_file))
 
    prefix = sd_video_file.replace(".mp4", "-frm")
    prefix = prefix.replace("SD/proc2/", "meteors/")
