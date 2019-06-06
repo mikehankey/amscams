@@ -47,8 +47,7 @@ function frame_anim() {
     $('#anim_modal').modal();
     $('#anim_modal').on('hidden.bs.modal', function () {
         playing = false; 
-        $('#anim_modal').remove();
-        console.log('REMOVE MODAL');
+        $('#anim_modal').remove(); 
     })
 
     if(totalFrames==0) {
@@ -85,9 +84,7 @@ function frame_anim() {
             $('#cur_sp').text('x1');
         } 
         
-    }); 
-    console.log('TIME PER FRAME ', timePerFrame);
-    console.log('animationDuration ', animationDuration);
+    });  
     requestAnimationFrame(step);
 }
   

@@ -35,8 +35,9 @@
                     return false;
                 }
                 $(function() {
-                    var video = getQueryVariable("video");
+                    var video   = getQueryVariable("video");
                     var vid_id  = getQueryVariable("vid_id");
+                    var butt    = getQueryVariable("butt");
                     if(!video) {
                         $('body').html('VIDEO NOT FOUND');
                     } else {
@@ -44,6 +45,9 @@
                         $('#info_link').attr('href','/pycgi/webUI.py?cmd=reduce&video_file='+video )
                     }
 
+                    if(!butt) {
+                        $('<a id="delete_link" class="col btn btn-danger" title="Delete detection"><i class="icon-delete"></i></a><a id="info_link"  target="_parent"  class="col btn btn-primary" title="Go to Info Page"><i class="icon-question"></i></a>').insertBefore('video')
+                    }
 
                     $('#delete_link').unbind('click').on('click',function() {
                         // Click Delete Button
@@ -56,8 +60,6 @@
             </script>
     </head>
     <body style="background-color: transparent;position: relative;min-width: 0; margin:0"> 
-        <a id="delete_link" class="col btn btn-danger" title="Delete detection"><i class="icon-delete"></i></a>
-        <a id="info_link"  target="_parent"  class="col btn btn-primary" title="Go to Info Page"><i class="icon-question"></i></a>
         <video controls loop autoplay name="media"><source type="video/mp4"></video>
     </body>
 </html>
