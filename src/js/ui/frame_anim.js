@@ -13,30 +13,29 @@ function addAnimModalTemplate($allframes) {
     var dur_unknow = false;
 
     if(isNaN(realDur)) {
-        realDur = 1; // second default
+        realDur = 1; // 1 second default
         dur_unknow= true;
-       
     }
 
-    if($('#anim_modal').length === 0) {
-        $('<div id="anim_modal" class="modal fade" tabindex="-1" role="dialog"><div class="modal-dialog modal-dialog-centered" role="document">\
-        <div class="modal-content"><div class="modal-body"><div id="anim_header" class="d-flex justify-content-between"><p><b>Frame by frame animation</b></p><p><span id="cur_f"></span>/<span id="tot_f"></span> frames</p></div><div id="anim_holder">\
-        </div><div class="modal-footer d-flex justify-content-between p-0 pb-2 pr-2">\
-        <div class="pt-2"><input type="range" value="1" id="mar" max="5" min="-5"/> <span id="cur_sp"></span></div>\
-        <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button></div></div></div></div>').appendTo('body');
-        
-        // Add all the frames
-        $allframes.each(function(i,v) {
-            $(this).clone().addClass('to_anim to_anim-'+i).appendTo('#anim_holder');
-        });
+    $('#anim_modal').remove();
 
-        animationDuration = realDur*1000; // Duration get the 
+    $('<div id="anim_modal" class="modal fade" tabindex="-1" role="dialog"><div class="modal-dialog modal-dialog-centered" role="document">\
+    <div class="modal-content"><div class="modal-body"><div id="anim_header" class="d-flex justify-content-between"><p><b>Frame by frame animation</b></p><p><span id="cur_f"></span>/<span id="tot_f"></span> frames</p></div><div id="anim_holder">\
+    </div><div class="modal-footer d-flex justify-content-between p-0 pb-2 pr-2">\
+    <div class="pt-2"><input type="range" value="1" id="mar" max="5" min="-5"/> <span id="cur_sp"></span></div>\
+    <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button></div></div></div></div>').appendTo('body');
+    
+    // Add all the frames
+    $allframes.each(function(i,v) {
+        $(this).clone().addClass('to_anim to_anim-'+i).appendTo('#anim_holder');
+    });
 
-        if(dur_unknow) {
-            $('#alert_anim').remove();
-            $('<div id="alert_anim" class="alert alert-danger">Unknown Real Duration</div>').insertAfter($('#anim_header'));
-        }
-    }
+    animationDuration = realDur*1000; // Duration get the 
+
+    if(dur_unknow) {
+        $('#alert_anim').remove();
+        $('<div id="alert_anim" class="alert alert-danger">Unknown Real Duration</div>').insertAfter($('#anim_header'));
+    } 
 }
 
 function frame_anim() { 
