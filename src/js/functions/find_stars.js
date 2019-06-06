@@ -28,19 +28,19 @@ function find_stars() {
 
 		        if(auto_stars.length>1) {
 		        	bootbox.alert({
-		                message: auto_stars.length + " have been found.<br/>You can now select more stars (bright) before solving the Field.",
-		                className: 'rubberBand animated error',
+		                message: auto_stars.length + " stars have been found.<br/>You can now select more (bright) stars before solving the Field.",
+		                className: 'rubberBand animated',
 		                centerVertical: true
 		            });
 		        } else {
 		        	bootbox.alert({
 		                message: "We couldn't find any stars. Please, select (bright) stars before solving the Field.",
-		                className: 'rubberBand animated error',
+		                className: 'rubberBand animated',
 		                centerVertical: true
 		            });		        	
 		        }
 		  
-
+		        $('#solve_field_info').removeClass('hidden');
 		        loading_done();
 			}
 			catch(err) {
