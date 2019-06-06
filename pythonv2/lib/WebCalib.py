@@ -2812,6 +2812,9 @@ def reduce_meteor_new(json_conf,form):
    template = template.replace("{SELECTED_CAL_PARAMS_FILE}", cal_params_file)
 
 
+   cal_params_file_name = cal_params_file.split('/')[-1]
+   template = template.replace("{SELECTED_CAL_PARAMS_FILE_NAME}",cal_params_file_name)
+
    prefix = sd_video_file.replace(".mp4", "-frm")
    prefix = prefix.replace("SD/proc2/", "meteors/")
    prefix = prefix.replace("/passed", "")
