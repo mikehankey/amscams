@@ -88,22 +88,25 @@
                         <div class="col">
                           <a id="reduce_meteor" class="btn btn-primary btn-v"><i class="icon-reduce_meteor"></i> Reduce Meteor</a>
                         </div>
-                        <div class="col">
-                           Extra Commands:<BR>
-                    <a target=_blank href=/pycgi/webUI.py?cmd=custom_fit&cal_params_file={METEOR_JSON_FILE}>Minimize FOV Parms</a><BR>
-                    <a target=_blank href=/pycgi/webUI.py?cmd=reset_reduce&cal_params_file={METEOR_JSON_FILE}>Reset</a><BR>
-                    <a target=_blank href=/pycgi/webUI.py?cmd=free_cal&input_file={HD_STACK}>Calibrate This Image</a><BR>
+                    </div>
 
-                    <!-- same link as del meteor-->
-                    <a target=_blank href=/pycgi/webUI.py?cmd=reject_meteor&cal_params_file={METEOR_JSON_FILE}></A>Delete Selected Stars and Mark image as cloudy</a><BR>
-                    <a target=_blank href=/pycgi/webUI.py?cmd=reject_meteor&cal_params_file={METEOR_JSON_FILE}></A>Reject Meteor</a><BR>
-                    <a target=_blank href=/pycgi/webUI.py?cmd=reject_meteor&cal_params_file={METEOR_JSON_FILE}></A>Calibrate This Image</a><BR>
+                    <div class="row mt-2 ">
+                        <div class="col"><a class="btn btn-primary btn-sm mx-auto d-block" data-toggle="collapse" href="#extra_command" role="button" aria-expanded="false" aria-controls="extra_command"><span class="icon-plus"></span> More commands...</a></div>
+                    </div>
+
+                    <div class="row mt-1 collapse" id="extra_command">
+                        <div class="col"> 
+                                <a class="btn btn-primary" target=_blank href=/pycgi/webUI.py?cmd=custom_fit&cal_params_file={METEOR_JSON_FILE}>Minimize FOV Parms</a> 
+                                <a class="btn btn-primary" target=_blank href=/pycgi/webUI.py?cmd=reset_reduce&cal_params_file={METEOR_JSON_FILE}>Reset</a> 
+                                <a class="btn btn-primary"  target=_blank href=/pycgi/webUI.py?cmd=free_cal&input_file={HD_STACK}>Calibrate This Image</a> 
+
+                                <!-- same link as del meteor-->
+                                <a class="btn btn-primary" target=_blank href=/pycgi/webUI.py?cmd=reject_meteor&cal_params_file={METEOR_JSON_FILE}></a>Delete Selected Stars and Mark image as cloudy</a> 
+                                <a class="btn btn-primary" target=_blank href=/pycgi/webUI.py?cmd=reject_meteor&cal_params_file={METEOR_JSON_FILE}></a>Reject Meteor</a><BR>
+                                <a class="btn btn-primary" target=_blank href=/pycgi/webUI.py?cmd=reject_meteor&cal_params_file={METEOR_JSON_FILE}></a>Calibrate This Image</a> 
                         </div>
                     </div>
-                    <!--
-                    <a href="javascript:reduce_meteor_ajax('{METEOR_JSON_FILE}','{CAL_PARAMS_FILE}', 'nopick')" ><i class="icon-star_catalog"></i> - Minimize FOV</A> <BR>
-                    <a href="javascript:reduce_meteor_ajax('{METEOR_JSON_FILE}','{CAL_PARAMS_FILE}', 'nopick')" ><i class="icon-star_catalog"></i> - Manually Reduce</A> 
-                    -->
+                   
             </div> 
 
             <div class="box">
