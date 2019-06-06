@@ -3993,9 +3993,9 @@ def free_cal(json_conf,form):
    cv2.imwrite(stack_file, stack_img)
 
 
-   user_stars_file   = stack_file.replace("-stacked.png", "-user-stars.json")
-   az_grid_file      = stack_file.replace(".png", "-azgrid-half.png")
-   az_grid_blend     = stack_file.replace(".png", "-azgrid-half-blend.png")
+   user_stars_file = stack_file.replace("-stacked.png", "-user-stars.json")
+   az_grid_file = stack_file.replace(".png", "-azgrid-half.png")
+   az_grid_blend = stack_file.replace(".png", "-azgrid-half-blend.png")
 
 
    if cfe(user_stars_file) == 1:
