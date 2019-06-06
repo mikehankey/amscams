@@ -40,7 +40,8 @@ function find_stars() {
 		            });		        	
 		        }
 		  
-		        $('#solve_field_info').removeClass('hidden');
+		        $('#solve_field_info').removeAttr('hidden');
+		        $('.auto_detect_stars').attrAttr('hidden');
 		        loading_done();
 			}
 			catch(err) {
