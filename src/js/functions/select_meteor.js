@@ -2,9 +2,13 @@
 function meteor_select(dir,all_frames_ids) {
     var next_id;
     var cur_id = parseInt($('#sel_frame_id').text());
+    var cur_index = all_frames_ids.indexOf(cur_id);
 
     console.log('CUR ID' + cur_id);
-
+    console.log('DIR ' +  dir)
+    console.log('ALL FRAMES ' + all_frames_ids)
+    console.log('CUR INDEX ' + cur_index)
+ 
     if(dir=="prev") {
         if(all_frames_ids.indexOf(cur_id)==0) {
             next_id = all_frames_ids[all_frames_ids.length-1];
@@ -19,6 +23,7 @@ function meteor_select(dir,all_frames_ids) {
         }
     }
 
+    console.log('NEXT ID ' + next_id);
     $('#reduc-tab table tbody tr#fr_' + next_id + " .select_meteor").click();
 }
 
@@ -77,7 +82,7 @@ function setup_select_meteor() {
     $('#reduc-tab table tbody tr').each(function() {
         var id = $(this).attr('id');
         id = id.split('_');
-        all_frames_ids.push(id[1]);
+        all_frames_ids.push(parseInt(id[1]));
     });
 
     // Click on selector (button & thumb)
