@@ -643,7 +643,7 @@ def meteor_index(json_conf, form):
          else:
             az_el = ""
          if 'event_start_time' in mi[day][meteor_file]:
-            fn = mi[day][meteor_file]['event_start_time']
+            fn = mi[day][meteor_file]['event_start_time'] + " - " + hd_cam 
          pos = ""
          pxs = ""
          ts = 0 

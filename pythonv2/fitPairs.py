@@ -54,7 +54,7 @@ def reduce_fit(this_poly,field, cal_params, cal_params_file, fit_img, json_conf,
    ra_center = float(cal_params['ra_center'])
    dec_center = float(cal_params['dec_center'])
 
-   for star in (cal_params['close_stars']):
+   for star in (cal_params['cat_image_stars']):
       (dcname,mag,ra,dec,img_ra,img_dec,match_dist,new_x,new_y,img_az,img_el,new_cat_x,new_cat_y,six,siy, img_res) = star
  
       if field == 'x_poly' or field == 'y_poly':
@@ -79,7 +79,7 @@ def reduce_fit(this_poly,field, cal_params, cal_params_file, fit_img, json_conf,
    #cv2.imshow('pepe', this_fit_img)
    #cv2.waitKey(1)
 
-   total_stars = len(cal_params['close_stars'])
+   total_stars = len(cal_params['cat_image_stars'])
    avg_res = total_res/total_stars
 
    #print("Total Residual Error:", total_res )
@@ -105,7 +105,7 @@ def minimize_poly_params_fwd(cal_params_file, cal_params,json_conf,show=1):
    x_poly = cal_params['x_poly'] 
    y_poly = cal_params['y_poly'] 
 
-   close_stars = cal_params['close_stars']
+   close_stars = cal_params['cat_image_stars']
    # do x poly fwd
 
 
@@ -181,7 +181,7 @@ for star in (cal_params['cat_image_stars']):
    total_res = total_res + img_res
    total_res_fwd = total_res_fwd + img_res_fwd
 
-total_stars = len(cal_params['close_stars'])
+total_stars = len(cal_params['cat_image_stars'])
 avg_res = total_res/total_stars
 avg_res_fwd = total_res_fwd/total_stars
 print("Total Residual Error:", total_res, total_res_fwd)

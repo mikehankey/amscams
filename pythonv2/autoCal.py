@@ -114,7 +114,10 @@ def meteor_index(json_conf, extra_cmd = ""):
          if cfe(rmeteor) == 1:
             print("loading:", rmeteor)
             meteor_index[day][meteor]['reduced'] = 1
-            red_data = load_json_file(rmeteor)
+            try:
+               red_data = load_json_file(rmeteor)
+            except:
+               os.system("mv " + rmeteor + " /mnt/ams2/trash")
             if "cal_params" in red_data:
                print("CP EXISTS")
                if "center_az" not in red_data['cal_params']:
@@ -147,8 +150,9 @@ def meteor_index(json_conf, extra_cmd = ""):
                if "total_res_px" in red_data['cal_params']:
                   meteor_index[day][meteor]['total_res_px'] = red_data['cal_params']['total_res_px']
                   meteor_index[day][meteor]['total_res_deg'] = red_data['cal_params']['total_res_deg']
-                  #if red_data['cal_params']['total_res_deg'] >= .2:
-                  #   os.system("./autoCal.py rr " + meteor)
+                  if red_data['cal_params']['total_res_deg'] >= .3:
+                     print("REDO!", meteor)
+                     os.system("./autoCal.py rr " + meteor)
                      #os.system("./autoCal.py rr " + meteor)
 
                else:
@@ -1068,7 +1072,7 @@ def reduce_fov_pos(this_poly, in_cal_params, cal_params_file, oimage, json_conf,
    cv2.putText(image, desc2,  (10,110), cv2.FONT_HERSHEY_SIMPLEX, 1, (255, 255, 255), 1)
 
 
-   #print("AVG RES:", avg_res, len(paired_stars), "/", org_star_count, new_az, new_el, ra_center, dec_center, position_angle)
+   print("AVG RES:", avg_res, len(paired_stars), "/", org_star_count, new_az, new_el, ra_center, dec_center, position_angle)
    if show == 1:
       show_img = cv2.resize(image, (960,540))
       if "cam_id" in in_cal_params:
@@ -2911,6 +2915,8 @@ if cmd == 'latlon':
    #minimize_latlon(cal_params_file, json_conf)
 if cmd == 'cfit':
    meteor_json = sys.argv[2]
+   if "mp4" in meteor_json:
+      meteor_json = meteor_json.replace(".mp4", ".json")
    if len(sys.argv) == 4:
       show = int(sys.argv[3])
    #os.system("./autoCal.py imgstars " + meteor_json + " " + str(show))
@@ -3045,6 +3051,8 @@ if cmd == 'imgstars' or cmd == 'imgstars_strict':
    if len(sys.argv) == 4:
       show = int(sys.argv[3])
    meteor_json_file = sys.argv[2]
+   if ".mp4" in meteor_json_file:
+      meteor_json_file = meteor_json_file.replace(".mp4", ".json")
    if "calparams" not in meteor_json_file:
       meteor_mode = 1
       meteor_json_file_red = meteor_json_file.replace(".json", "-reduced.json")
