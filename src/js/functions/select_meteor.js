@@ -2,7 +2,7 @@
 // Modal for selector
 function addModalTemplate() {
     if($('#select_meteor_modal').length==0) {
-        $('<div id="select_meteor_modal" class="modal modal-lg fade" tabindex="-1" role="dialog"><input type="hidden" name="thumb_w"/><input type="hidden" name="thumb_h"/><div class="modal-dialog modal-dialog-centered" role="document"><div class="modal-content"><div class="modal-body"><button title="Next" type="button" class="mfp-arrow mfp-arrow-right mfp-prevent-close"></button><button title="Prev" type="button" class="mfp-arrow mfp-arrow-left mfp-prevent-close"></button><p><strong>FRAME #<span id="sel_frame_id"></span> - Click the center of the meteor.</strong> <span id="meteor_org_pos" class="float-right pl-3"><b>Org:</b></span> <span id="meteor_pos" class="float-right"></span></p><div class="meteor_chooser"><div id="org_lh"></div><div id="org_lv"></div><div id="lh"></div><div id="lv"></div></div></div><div class="modal-footer p-0 pb-2 pr-2"><button type="button" class="btn btn-primary" id="Save Meteor Center">Save</button><button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button></div></div></div></div>').appendTo('body');
+        $('<div id="select_meteor_modal" class="modal fade" tabindex="-1"><input type="hidden" name="thumb_w"/><input type="hidden" name="thumb_h"/><div class="modal-dialog  modal-lg modal-dialog-centered" role="document"><div class="modal-content"><div class="modal-body"><button title="Next" type="button" class="mfp-arrow mfp-arrow-right mfp-prevent-close"></button><button title="Prev" type="button" class="mfp-arrow mfp-arrow-left mfp-prevent-close"></button><p><strong>FRAME #<span id="sel_frame_id"></span> - Click the center of the meteor.</strong> <span id="meteor_org_pos" class="float-right pl-3"><b>Org:</b></span> <span id="meteor_pos" class="float-right"></span></p><div class="meteor_chooser"><div id="org_lh"></div><div id="org_lv"></div><div id="lh"></div><div id="lv"></div></div></div><div class="modal-footer p-0 pb-2 pr-2"><button type="button" class="btn btn-primary" id="Save Meteor Center">Save</button><button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button></div></div></div></div>').appendTo('body');
     }
 }
 
@@ -94,8 +94,6 @@ function setup_select_meteor() {
             // Redefine viewer depending on the thumb dimension
             if(real_width !== real_height) {
             
-                console.log('HERE');
-
                 if(real_width > real_height) {
                     console.log('1');
                     $('.meteor_chooser').css('height',  real_height/real_width * viewer_dim);
@@ -123,7 +121,8 @@ function setup_select_meteor() {
             $(".meteor_chooser").removeClass('done');
 
             setup_modal_actions($tr.attr('data-pos-x'),$tr.attr('data-pos-y'));
-            }).attr({ src: imgSrc }); 
+        
+        }).attr({ src: imgSrc }); 
 
         
 
