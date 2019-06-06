@@ -17,14 +17,31 @@ function find_stars() {
          		var auto_stars = json_resp['stars'];
 
          		for (let s in auto_stars) {
-		            x = auto_stars[s][0] / 2 
-		            y = auto_stars[s][1] / 2
+		            x = auto_stars[s][0] / 2;
+		            y = auto_stars[s][1] / 2;
 		            var circle = new fabric.Circle({
 		               radius: 5, fill: 'rgba(0,0,0,0)', strokeWidth: 1, stroke: 'rgba(255,255,255,.5)', left: x-5, top: y-5,
 		               selectable: false
 		            });
 		            canvas.add(circle);
 		         }
+
+		        if(auto_stars.length()>1) {
+		        	bootbox.alert({
+		                message: auto_stars.length() + " have been found.<br/>You can now select more stars (bright) before solving the Field.",
+		                className: 'rubberBand animated error',
+		                centerVertical: true
+		            });
+		        } else {
+		        	bootbox.alert({
+		                message: "We couldn't find any stars. Please, select (bright) stars before solving the Field.",
+		                className: 'rubberBand animated error',
+		                centerVertical: true
+		            });		        	
+		        }
+		  
+
+		        loading_done();
 			}
 			catch(err) {
 		  		bootbox.alert({
@@ -32,10 +49,12 @@ function find_stars() {
 	                className: 'rubberBand animated error',
 	                centerVertical: true
             	});
+
+            	 loading_done();
 			}
 
             
-            loading_done();
+           
         }, 
         error:function() {
             bootbox.alert({
