@@ -41,7 +41,7 @@ function find_stars() {
 		        }
 		  
 		        $('#solve_field_info').removeAttr('hidden');
-		        $('.auto_detect_stars').prop('hidden');
+		        $('#auto_detect_stars').prop('hidden');
 		        loading_done();
 			}
 			catch(err) {
@@ -70,7 +70,7 @@ function find_stars() {
 
 
 $(function() {
-	$('.auto_detect_stars').click(function() {
+	$('#auto_detect_stars').click(function() {
 		find_stars();
 	})
 })
