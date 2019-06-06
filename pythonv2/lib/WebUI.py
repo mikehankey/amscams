@@ -1402,16 +1402,16 @@ def examine_min(video_file,json_conf):
       for meteor_file in meteor_files:
          meteor_stack = meteor_file.replace(".mp4", "-stacked.png")
          print("<a href='" + meteor_file + "' class='mx-auto d-block'>")
-         print("<img src='" + meteor_stack + "' class='mx-auto d-block'></a>")
-         print("<a class='btn btn-primary mx-auto d-block' href='webUI.py?cmd=examine&video_file=" + meteor_file + "'>Examine</a>")
+         print("<img src='" + meteor_stack + "' class='mx-auto d-block img-fluid'></a>")
+         print("<a class='btn btn-primary mx-auto d-block mt-1 mb-3' href='webUI.py?cmd=examine&video_file=" + meteor_file + "'>Examine</a>")
 
    if len(failed_files) > 0: 
       print("<p class='text-center alert error'><b>NON METEOR Detection</b></p>")
       for fail_file in failed_files:
          fail_stack = fail_file.replace(".mp4", "-stacked.png")
          print("<a href='" + fail_file + "' class='mx-auto d-block'>")
-         print("<img src='" + fail_stack + "' class='mx-auto d-block'></a>")
-         print("<a class='btn btn-primary mx-auto d-block' href='webUI.py?cmd=examine&video_file=" + fail_file + "'>Examine</a>")
+         print("<img src='" + fail_stack + "' class='mx-auto d-block img-fluid'></a>")
+         print("<a class='btn btn-primary mx-auto d-block  mt-1 mb-3' href='webUI.py?cmd=examine&video_file=" + fail_file + "'>Examine</a>")
         
    if len(failed_files) == 0 and len(meteor_files) == 0:
       print("<p class='text-center alert error'><b>NO Detection</b></p>")
