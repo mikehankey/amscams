@@ -1,8 +1,28 @@
+// Select a meteor (next/prev)
+function meteor_select(dir,cur_id,all_frames_ids) {
+    var next_id;
+    if(dir=="prev") {
+        if(all_frames_ids.indexOf(cur_id)==0) {
+            next_id = all_frames_ids[all_frames_ids.length-1];
+        } else {
+            next_id = all_frames_ids.indexOf(cur_id)-1;
+        }
+    } else {
+         if(all_frames_ids.indexOf(cur_id)==all_frames_ids.length) {
+            next_id = all_frames_ids[0];
+        } else {
+            next_id = all_frames_ids.indexOf(cur_id)+1;
+        }
+    }
+
+    $('#reduc-tab table tbody tr#' + next_id + " .select_meteor").click();
+}
+
 
 // Modal for selector
 function addModalTemplate() {
     if($('#select_meteor_modal').length==0) {
-        $('<div id="select_meteor_modal" class="modal fade" tabindex="-1"><input type="hidden" name="thumb_w"/><input type="hidden" name="thumb_h"/><div class="modal-dialog  modal-lg modal-dialog-centered" role="document"><div class="modal-content"><div class="modal-body"><button title="Next" type="button" class="mfp-arrow mfp-arrow-right mfp-prevent-close"></button><button title="Prev" type="button" class="mfp-arrow mfp-arrow-left mfp-prevent-close"></button><p><strong>FRAME #<span id="sel_frame_id"></span> - Click the center of the meteor.</strong> <span id="meteor_org_pos" class="float-right pl-3"><b>Org:</b></span> <span id="meteor_pos" class="float-right"></span></p><div class="meteor_chooser"><div id="org_lh"></div><div id="org_lv"></div><div id="lh"></div><div id="lv"></div></div></div><div class="modal-footer p-0 pb-2 pr-2"><button type="button" class="btn btn-primary" id="Save Meteor Center">Save</button><button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button></div></div></div></div>').appendTo('body');
+        $('<div id="select_meteor_modal" class="modal fade" tabindex="-1"><input type="hidden" name="thumb_w"/><input type="hidden" name="thumb_h"/><div class="modal-dialog  modal-lg modal-dialog-centered" role="document"><div class="modal-content"><div class="modal-body"><button id="met-sel-next" title="Next" type="button" class="mfp-arrow mfp-arrow-right mfp-prevent-close"></button><button id="met-sel-prev" title="Prev" type="button" class="mfp-arrow mfp-arrow-left mfp-prevent-close"></button><p><strong>FRAME #<span id="sel_frame_id"></span> - Click the center of the meteor.</strong> <span id="meteor_org_pos" class="float-right pl-3"><b>Org:</b></span> <span id="meteor_pos" class="float-right"></span></p><div class="meteor_chooser"><div id="org_lh"></div><div id="org_lv"></div><div id="lh"></div><div id="lv"></div></div></div><div class="modal-footer p-0 pb-2 pr-2"><button type="button" class="btn btn-primary" id="Save Meteor Center">Save</button><button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button></div></div></div></div>').appendTo('body');
     }
 }
 
@@ -72,11 +92,22 @@ function setup_select_meteor() {
         // Add template if necessary
         addModalTemplate();
 
+        // Prev Button
+        $('#met-sel-prev').unbind('click').click(function() {
+            meteor_select("prev",parseInt(meteor_id),all_frames_ids);
+        });
+
+        // Next Button
+        $('#met-sel-next').unbind('click').click(function() {
+            meteor_select("next",parseInt(meteor_id),all_frames_ids);
+        });
+
         // Add image 
         $('.meteor_chooser').css('background-image','url('+$img.attr('src')+')');
 
         // Add current ID
         $('#sel_frame_id').text(meteor_id);
+
 
 
         // Update image real dimensions 
