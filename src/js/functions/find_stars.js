@@ -41,7 +41,7 @@ function find_stars() {
 		        }
 		  
 		        $('#solve_field_info').removeAttr('hidden');
-		        $('#auto_detect_stars').prop('hidden');
+		        $('#auto_detect_stars').removeClass('d-block').hide();
 		        loading_done();
 			}
 			catch(err) {
