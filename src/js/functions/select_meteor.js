@@ -1,6 +1,10 @@
 // Select a meteor (next/prev)
-function meteor_select(dir,cur_id,all_frames_ids) {
+function meteor_select(dir,all_frames_ids) {
     var next_id;
+    var cur_id = parseInt($('#sel_frame_id').text());
+
+    console.log('CUR ID' + cur_id);
+
     if(dir=="prev") {
         if(all_frames_ids.indexOf(cur_id)==0) {
             next_id = all_frames_ids[all_frames_ids.length-1];
@@ -15,7 +19,7 @@ function meteor_select(dir,cur_id,all_frames_ids) {
         }
     }
 
-    $('#reduc-tab table tbody tr#' + next_id + " .select_meteor").click();
+    $('#reduc-tab table tbody tr#fr_' + next_id + " .select_meteor").click();
 }
 
 
@@ -94,12 +98,14 @@ function setup_select_meteor() {
 
         // Prev Button
         $('#met-sel-prev').unbind('click').click(function() {
-            meteor_select("prev",parseInt(meteor_id),all_frames_ids);
+            console.log('CLICK PREV');
+            meteor_select("prev",all_frames_ids);
         });
 
         // Next Button
         $('#met-sel-next').unbind('click').click(function() {
-            meteor_select("next",parseInt(meteor_id),all_frames_ids);
+            console.log('CLICK NEXT');
+            meteor_select("next",all_frames_ids);
         });
 
         // Add image 
