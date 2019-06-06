@@ -45,6 +45,11 @@ function frame_anim() {
     
     addAnimModalTemplate($allframes);
     $('#anim_modal').modal();
+    $('#anim_modal').on('hidden.bs.modal', function () {
+        playing = false; 
+        $('#anim_modal').remove();
+        console.log('REMOVE MODAL');
+    })
 
     if(totalFrames==0) {
         bootbox.alert({
@@ -121,10 +126,6 @@ $(function() {
        frame_anim();
     });
 
-    $('#anim_modal').on('hidden.bs.modal', function () {
-        playing = false; 
-        $('#anim_modal').remove();
-        console.log('REMOVE MODAL');
-    })
+   
       
 })
