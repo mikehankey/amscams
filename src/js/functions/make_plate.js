@@ -1,7 +1,7 @@
 function new_make_plate() {
 	var cmd_data = {
 		cmd: 'make_plate_from_points',
-        stack_file: hd_stack_file, // Defined on the page
+        hd_stack_file: hd_stack_file, // Defined on the page
         points: ''
 	}
 
