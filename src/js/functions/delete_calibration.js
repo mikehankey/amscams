@@ -19,10 +19,12 @@ function delete_calibration() {
                     // I guess it always goes smoothly??
                     bootbox.alert({
                         message: "The page will now reload",
+                        className: 'rubberBand animated',
+                        centerVertical: true,
                         callback: function () {
                             location.reload();
                         }
-                    })
+                    });
                 }
             });
         }

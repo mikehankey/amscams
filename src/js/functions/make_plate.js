@@ -72,4 +72,14 @@ function new_make_plate() {
         }
     });
 }
- 
+  
+
+
+$(function() {
+    $('#solve_field').click(function() {
+
+        // First step:
+        new_make_plate();
+
+    })
+})
