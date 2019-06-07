@@ -14,9 +14,6 @@ function new_make_plate() {
             cmd_data.points = cmd_data.points + v.left.toString() + "," + v.top.toString() + "|";
          }
     }); 
-
-    console.log("CMD");
-    console.log(cmd_data);
   
     $.ajax({ 
         url:  "/pycgi/webUI.py",
@@ -50,8 +47,26 @@ function new_make_plate() {
                 });
                 canvas.add(circle);
   
-              }  
+            }  
 
+            bootbox.alert({
+                message: "The Plate is done. We will now solving the field.",
+                className: 'rubberBand animated',
+                centerVertical: true
+            },function(){ 
+                // Call solve_field on callback
+                new_solve_field();
+            });
+
+           
+        }, 
+        error:function() {
+            bootbox.alert({
+                message: "The process returned an error",
+                className: 'rubberBand animated error',
+                centerVertical: true
+            });
+            loading_done();
         }
     });
 }
