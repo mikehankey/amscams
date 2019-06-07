@@ -28,7 +28,7 @@ function find_stars() {
 
 		        if(auto_stars.length>1) {
 		        	bootbox.alert({
-		                message: "<strong>" +  auto_stars.length + " stars </strong> found.<br/>You can now select more (bright) stars before solving the Field.",
+		                message: "<h3>" +  auto_stars.length + " stars found.</h3>You can now select more (bright) stars before solving the Field.",
 		                className: 'rubberBand animated',
 		                centerVertical: true
 					});
