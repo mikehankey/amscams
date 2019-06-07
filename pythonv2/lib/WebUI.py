@@ -386,8 +386,6 @@ def controller(json_conf):
       #day = '2019_01_27'
       browse_detects(day,type,json_conf)   
 
-   extra_html = extra_html + "<div id=\"waiting\" class=\"waiting\"><!-- Place at bottom of page --></div>"
-
    #bottom = bottom.replace("{JQ}", jq)      
    bottom = bottom.replace("{BOTTOMNAV}", bot_html)      
    rand=time.time()

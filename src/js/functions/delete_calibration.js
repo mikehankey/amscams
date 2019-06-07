@@ -2,7 +2,7 @@
 function delete_calibration() {
     bootbox.confirm("Are you sure you want to permanently delete the current calibration parameters?", function(result){ 
         if(result) {
-            loading({message:"Deleting Calibration Parameters", overlay:"true"});
+            loading({text:"Deleting Calibration Parameters", overlay:"true"});
             $.ajax({ 
                 url:  "/pycgi/webUI.py",
                 data: {
@@ -11,6 +11,10 @@ function delete_calibration() {
                 },
                 success: function(data) {
                     loading_done();
+
+                    // Avoid "unsaved" message from canvas_interactions 
+                    // if the user selected some stars
+                    $(window).unbind('beforeunload');
 
                     // I guess it always goes smoothly??
                     bootbox.alert({
