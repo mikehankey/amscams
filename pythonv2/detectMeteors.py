@@ -161,7 +161,6 @@ def fix_meteor_dir(date):
    print("FIX MD", len(good_meteors), len(sd_passed_files))
 
 def junk(date):
-   print("JUNK")
    files =  glob.glob("/mnt/ams2/meteors/" + date + "/*.json")
    meteors = []
    for file in files:
@@ -174,7 +173,7 @@ def junk(date):
             if object['meteor'] == 1:
                for res in object['test_results']:
                   if res[0] == 'Distance':
-                     if res[2] < 5:
+                     if res[2] < 100:
                         print ("BAD CAP", res[2], file)
                         sd_file = jd['sd_video_file'].split("/")[-1]
 

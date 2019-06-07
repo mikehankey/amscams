@@ -121,7 +121,6 @@ def meteor_index(json_conf, extra_cmd = ""):
             except:
                os.system("mv " + rmeteor + " /mnt/ams2/trash")
             if "cal_params" in red_data:
-               print("CP EXISTS")
                if "center_az" not in red_data['cal_params']:
                   if "az_center" in red_data['cal_params']:
                      red_data['cal_params']['center_az'] = red_data['cal_params']['az_center']
@@ -174,6 +173,8 @@ def meteor_index(json_conf, extra_cmd = ""):
                   jobs.append("./autoCal.py cfit " + meteor)
             
 
+            if 'multi_station' in red_data:
+               meteor_index[day][meteor]['multi_station'] = red_data['multi_station']
            
             if 'angular_separation' in red_data:
                meteor_index[day][meteor]['angular_separation'] = 9999

@@ -1969,10 +1969,18 @@ def reduce_meteor_ajax(json_conf,meteor_json_file, cal_params_file, show = 0):
 
    if show == 1:
       cv2.namedWindow('pepe')
+   custom_fit = 0
    hdm_x = 2.7272727272727272
    hdm_y = 1.875
    #print(meteor_json_file)
    mj = load_json_file(meteor_json_file)
+   red_file = meteor_json_file.replace(".json", "-reduced.json") 
+   if cfe(red_file) == 1:
+      mjr = load_json_file(red_file)
+   
+      if "cal_params" in mjr:
+         cal_params = mjr['cal_params']
+         custom_fit = 1
 
    sd_video_file = mj['sd_video_file']
    sd_stack_file = sd_video_file.replace(".mp4", "-stacked.png")
@@ -1991,18 +1999,21 @@ def reduce_meteor_ajax(json_conf,meteor_json_file, cal_params_file, show = 0):
    end_clip = end_clip + 50
 
    (cal_date, cam_id, cal_date_str,Y,M,D, H, MM, S) = better_parse_file_date(cal_params_file)
-   if "reduced" in cal_params_file:
+   if "reduced" in cal_params_file :
       if cfe(cal_params_file) == 1:
          red_data  = load_json_file(cal_params_file) 
+         #print("Using ", cal_params_file)
          cal_params = red_data['cal_params']
       else:
-
-         cal_params_files = get_active_cal_file(sd_stack_file)
-         cal_params_file = cal_params_files[0][0]
-         cal_params = load_json_file(cal_params_file) 
-
+         if custom_fit == 0:
+            cal_params_files = get_active_cal_file(sd_stack_file)
+            cal_params_file = cal_params_files[0][0]
+            #print("Using ", cal_params_file)
+            cal_params = load_json_file(cal_params_file) 
    else:
-      cal_params = load_json_file(cal_params_file) 
+      if custom_fit == 0:
+         #print("Using ", cal_params_file)
+         cal_params = load_json_file(cal_params_file) 
 
 
    (f_datetime, cam_id, f_date_str,Y,M,D, H, MM, S) = better_parse_file_date(meteor_json_file)
@@ -2206,7 +2217,10 @@ def reduce_meteor_ajax(json_conf,meteor_json_file, cal_params_file, show = 0):
    fin_reduced_video = fin_sd_video_file.replace(".mp4", "-reduced.mp4")
    fin_reduced_stack = fin_sd_video_file.replace(".mp4", "-reduced.png")
 
-   meteor_reduced = {}
+   if custom_fit == 1:
+      meteor_reduced = mjr
+   else:
+      meteor_reduced = {}
   
    meteor_reduced['api_key'] = json_conf['site']['api_key']
    meteor_reduced['station_name'] = json_conf['site']['ams_id']
@@ -2232,7 +2246,8 @@ def reduce_meteor_ajax(json_conf,meteor_json_file, cal_params_file, show = 0):
    meteor_reduced['end_dec'] = end_dec
    meteor_reduced['meteor_frame_data'] = meteor_frame_data
    meteor_reduced['cal_params_file'] = cal_params_file
-   meteor_reduced['cal_params'] = {}
+   if "cal_params" not in meteor_reduced:
+      meteor_reduced['cal_params'] = {}
    meteor_reduced['cal_params']['site_lat'] = json_conf['site']['device_lat']
    meteor_reduced['cal_params']['site_lng'] = json_conf['site']['device_lng']
    meteor_reduced['cal_params']['site_alt'] = json_conf['site']['device_alt']

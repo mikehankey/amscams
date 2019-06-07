@@ -600,10 +600,11 @@ def hd_cal_detail(json_conf, form):
 def meteor_index(json_conf, form):
    print("<h1>Meteor Index</h1>")
    cam_id = form.getvalue("cam_id")
+   day_limit= form.getvalue("day")
    mi = load_json_file("/mnt/ams2/cal/hd_images/meteor_index.json")
    print("<div style=\"padding: 5px; margin: 5px; clear:both\"  >")
    print("<table border=1 cellpadding=5 cellspacing=5>")
-   print("<tr><th>Meteor</th><th>Reduced</th><th>AZ/EL FOV</th><th>Pos Ang</th><th>Pixscale</th><th>Stars</th><th>Res Px</th><th>Res Deg</th><th>Dur</th><th>Ang Sep</th><th>Mag</th></tr>")
+   print("<tr><th>Meteor</th><th>Reduced</th><th>Multi-Station</th><th>AZ/EL FOV</th><th>Pos Ang</th><th>Pixscale</th><th>Stars</th><th>Res Px</th><th>Res Deg</th><th>Dur</th><th>Ang Sep</th><th>Mag</th></tr>")
    for day in sorted(mi, reverse=True):
       for meteor_file in mi[day]:
          hd_datetime, hd_cam, hd_date, hd_y, hd_m, hd_d, hd_h, hd_M, hd_s = convert_filename_to_date_cam(meteor_file)
@@ -645,16 +646,27 @@ def meteor_index(json_conf, form):
          pos = ""
          pxs = ""
          ts = 0 
+         if 'multi_station' in mi[day][meteor_file]:
+            multi_text = "Y"
+         else:
+            multi_text = "N"
          if 'total_stars' in mi[day][meteor_file]:
             ts = str(mi[day][meteor_file]['total_stars'])
          if 'position_angle' in mi[day][meteor_file]:
             pos = str(mi[day][meteor_file]['position_angle'])[0:5]
-          
+         
+         fn = meteor_file.split("/")[-1] 
          if 'pixscale' in mi[day][meteor_file]:
             pxs = str(mi[day][meteor_file]['pixscale'])[0:5]
+         if day_limit is not None:
+            if day_limit == fn[0:10]:
+               show = 1
+            else:
+               show = 0
+
 
          if show == 1:
-            print("<tr " + color + "><td> {:s}{:s}</a></td><td>{:s}</td><td>{:s}</td><td>{:s}</td><td>{:s}</td><td>{:s}</td><td> {:s}</td><td> {:s} </td><td></td><td></td><td></td></tr> ".format(link, fn, str(mi[day][meteor_file]['reduced']), az_el, pos, pxs, str(ts), str(mi[day][meteor_file]['total_res_px'])[0:5], str(mi[day][meteor_file]['total_res_deg'])[0:5]))
+            print("<tr " + color + "><td> {:s}{:s}</a></td><td>{:s}</td><td>{:s}</td><td>{:s}</td><td>{:s}</td><td>{:s}</td><td>{:s}</td><td> {:s}</td><td> {:s} </td><td></td><td></td><td></td></tr> ".format(link, fn, str(mi[day][meteor_file]['reduced']), multi_text, az_el, pos, pxs, str(ts), str(mi[day][meteor_file]['total_res_px'])[0:5], str(mi[day][meteor_file]['total_res_deg'])[0:5]))
           
    print("</table></div>")
 
