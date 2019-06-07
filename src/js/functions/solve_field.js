@@ -86,18 +86,19 @@ function check_solve_field_status(step) {
 
             } else  if (status == 'success') {
 
-                bootbox.alert({
-                    message: "Astrometry.net successfull solved the plate (return solve_field???).",
-                    className: 'rubberBand animated',
-                    centerVertical: true
-                });
-   
                 sleep(1000).then(() => {
+                    bootbox.alert({
+                        message: "Astrometry.net successfull solved the plate (return solve_field???).",
+                        className: 'rubberBand animated',
+                        centerVertical: true
+                    });
+   
                    // Add the grid to the image
                    canvas.setBackgroundImage(json_resp['grid_file'], canvas.renderAll.bind(canvas));
                    // Add the grid to the page so the show/hide grid button can work
                    az_grid_file = json_resp['grid_file'];
                    $('#show_grid_holder').removeAttr('hidden');  // Show the button
+                   loading_done();
                 });
 
             } else if(status == 'failed' && then_run == 0) {
