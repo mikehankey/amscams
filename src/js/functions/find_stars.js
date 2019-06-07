@@ -31,7 +31,10 @@ function find_stars() {
 		                message: "<strong>" +  auto_stars.length + " stars </strong> found.<br/>You can now select more (bright) stars before solving the Field.",
 		                className: 'rubberBand animated',
 		                centerVertical: true
-		            });
+					});
+					
+					// Show Delete Parameters
+					$('#delete_calib_holder').removeAttr('hidden');
 				} else if(auto_stars.length==1) {
 					bootbox.alert({
 		                message: "Only <strong>1</strong> star has been found.<br/>Please, select more (bright) stars before solving the Field.",
