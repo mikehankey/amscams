@@ -40,7 +40,7 @@ function find_stars() {
 		            });
 				} else {
 		        	bootbox.alert({
-		                message: "We couldn't find any stars. Please, select (bright) stars before solving the Field.",
+		                message: "<strong>We couldn't find any stars.</strong><br/>Please, select (bright) stars before solving the Field.",
 		                className: 'rubberBand animated',
 		                centerVertical: true
 		            });		        	
