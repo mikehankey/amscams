@@ -28,11 +28,17 @@ function find_stars() {
 
 		        if(auto_stars.length>1) {
 		        	bootbox.alert({
-		                message: auto_stars.length + " stars have been found.<br/>You can now select more (bright) stars before solving the Field.",
+		                message: "<strong>" +  auto_stars.length + " starts </strong> stars.<br/>You can now select more (bright) stars before solving the Field.",
 		                className: 'rubberBand animated',
 		                centerVertical: true
 		            });
-		        } else {
+				} else if(auto_stars.length==1) {
+					bootbox.alert({
+		                message: "Only <strong>1</strong> star has been found.<br/>Please, select more (bright) stars before solving the Field.",
+		                className: 'rubberBand animated',
+		                centerVertical: true
+		            });
+				} else {
 		        	bootbox.alert({
 		                message: "We couldn't find any stars. Please, select (bright) stars before solving the Field.",
 		                className: 'rubberBand animated',

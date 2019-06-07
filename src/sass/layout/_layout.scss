@@ -187,3 +187,18 @@ h2 {
 .load_msg {
     display: none;
 }
+
+
+// Title toggle
+.dt-title {
+    color: #fff;
+
+    &:hover {
+        text-decoration: none;
+    }
+
+    &:after {
+        float: right;
+        margin-top: .6rem;
+    }
+}
