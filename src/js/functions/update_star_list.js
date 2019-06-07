@@ -146,7 +146,17 @@ function update_star_list() {
         url:  "/pycgi/webUI.py",
         data: cmd_data,
         success: function(data) {
-            var json_resp = $.parseJSON(data);
+            try {
+                var json_resp = $.parseJSON(data);
+            } catch(e) {
+                bootbox.alert({
+                    message: "The process failed (no result). Please, try again later.",
+                    className: 'rubberBand animated error',
+                    centerVertical: true
+                }); 
+                return false;
+            }
+          
             if(json_resp['status']!==0) {
                 update_stars_on_canvas_and_table(json_resp);
 
