@@ -1971,7 +1971,7 @@ def reduce_meteor_ajax(json_conf,meteor_json_file, cal_params_file, show = 0):
       cv2.namedWindow('pepe')
    hdm_x = 2.7272727272727272
    hdm_y = 1.875
-   print(meteor_json_file)
+   #print(meteor_json_file)
    mj = load_json_file(meteor_json_file)
 
    sd_video_file = mj['sd_video_file']
