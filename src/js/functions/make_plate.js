@@ -5,7 +5,7 @@ function new_make_plate() {
         points: ''
 	}
 
-    loading({text: "Making Plate for Astrometry",overlay:true});
+    loading({text: "Making Plate for Astrometry.net ",overlay:true});
     
     // Get all selected stars (all circles on the canvas)
     var canvas_stars = canvas.getObjects('circle');
@@ -48,6 +48,8 @@ function new_make_plate() {
                 canvas.add(circle);
   
             }  
+
+            loading_done();
 
             bootbox.alert({
                 message: "The Plate is done. We will now solving the field.",
