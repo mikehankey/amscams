@@ -1,4 +1,4 @@
-function make_plate() {
+function new_make_plate() {
 	var cmd_data = {
 		cmd: 'make_plate_from_points',
         stack_file: hd_stack_file, // Defined on the page
@@ -11,11 +11,13 @@ function make_plate() {
     var canvas_stars = canvas.getObjects('circle');
     $.each(canvas_stars, function(i,v) {
         if (v.get('type') == "circle" && v.get('radius') == 5) {
-            cmd_data.points= cmd_data.points + v.left.toString() + "," + v.top.toString() + "|";
+            cmd_data.points = cmd_data.points + v.left.toString() + "," + v.top.toString() + "|";
          }
     }); 
- 
 
+    console.log("CMD");
+    console.log(cmd_data);
+  
     $.ajax({ 
         url:  "/pycgi/webUI.py",
         data: cmd_data,
