@@ -9,6 +9,7 @@ import cgi
 import time
 import glob
 import os
+import cgitb
 from lib.PrintUtils import get_meteor_date
 from lib.FileIO import get_proc_days, get_day_stats, get_day_files , load_json_file, get_trims_for_file, get_days, save_json_file, cfe
 from lib.VideoLib import get_masks, convert_filename_to_date_cam, find_hd_file_new, load_video_frames, find_min_max_dist, ffmpeg_dump_frames
@@ -2939,6 +2940,8 @@ def reduce_meteor_new(json_conf,form):
    return(js_html)
 
 def reduce_meteor(json_conf,form):
+
+   cgitb.enable()
 
    form_cal_params_file = form.getvalue("cal_params_file")
    hdm_x = 2.7272727272727272
