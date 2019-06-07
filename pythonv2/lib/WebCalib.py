@@ -2651,6 +2651,9 @@ def reduce_meteor_js(meteor_reduced):
 
 
 def reduce_meteor_new(json_conf,form):
+
+  cgitb.enable()
+      
    fp = open("/home/ams/amscams/pythonv2/templates/reducePage.html")
    template = ""
    for line in fp :
@@ -2940,8 +2943,6 @@ def reduce_meteor_new(json_conf,form):
    return(js_html)
 
 def reduce_meteor(json_conf,form):
-
-   cgitb.enable()
 
    form_cal_params_file = form.getvalue("cal_params_file")
    hdm_x = 2.7272727272727272
