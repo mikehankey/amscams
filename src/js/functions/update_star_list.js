@@ -153,9 +153,17 @@ function update_star_list() {
                 // Open proper tab
                 $('#stars-tab-l').click();
                 
-                loading_done();
-            }  
- 
+                
+            }  else {
+
+                bootbox.alert({
+                    message: "The process failed. Please, try again later.",
+                    className: 'rubberBand animated error',
+                    centerVertical: true
+                }); 
+
+            }
+            loading_done();
         } 
     });
  
