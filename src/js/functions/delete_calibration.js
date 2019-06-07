@@ -28,7 +28,7 @@ function delete_calibration() {
 
 
 $(function() {
-    $('#delete_calibration').click(funtion() {
+    $('#delete_calibration').click(function() {
         delete_calibration();
     });
 })
