@@ -39,11 +39,14 @@ function check_fit_status(data) {
             }
         });
     } else {
+        /*
+        NOTHING
         bootbox.alert({
             message: data['message'],
             className: 'rubberBand animated error',
             centerVertical: true
         });
+        */
     }
 }
      
