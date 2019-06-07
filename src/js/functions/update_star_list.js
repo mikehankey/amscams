@@ -154,6 +154,7 @@ function update_star_list() {
                     className: 'rubberBand animated error',
                     centerVertical: true
                 }); 
+                loading_done();
                 return false;
             }
           
