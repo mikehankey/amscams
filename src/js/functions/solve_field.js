@@ -1,5 +1,4 @@
 function new_solve_field() {
-    new_make_plate(); // Make Plate First
     check_solve_field_status(1);
 }
 
