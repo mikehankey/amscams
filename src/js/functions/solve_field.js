@@ -27,7 +27,7 @@ function check_fit_status(data) {
                     url:  "/pycgi/webUI.py",
                     data: {
                         cmd: fit_field,
-                        override:1
+                        override:1,
                         hd_stack_file: hd_stack_file
                     },
                     success:function(data) {
@@ -67,7 +67,7 @@ function check_solve_field_status(step) {
                 // Check astrometry.net plate 
                 check_solve();
 
-            } else if(status == 'failed' && step== 1S) {
+            } else if(status == 'failed' && step== 1) {
                 
                 // Failure
                 bootbox.confirm("The job already ran and failed. Click 'Ok' to try again.", function(result){ 
