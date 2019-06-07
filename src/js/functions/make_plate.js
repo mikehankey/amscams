@@ -54,7 +54,7 @@ function new_make_plate() {
             bootbox.alert({
                 message: "The Plate is done. We will now solving the field.",
                 className: 'rubberBand animated',
-                centerVertical: true,
+                centerVertical: true, 
                 callback: function () {
                     // Call solve_field on callback (STEP 2)
                     new_solve_field();
