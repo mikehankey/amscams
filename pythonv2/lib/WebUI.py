@@ -700,7 +700,7 @@ def hd_cal_index(json_conf, form):
             desc = ""
          
          div_id = str(day) + "_" + str(cam_id)
-         show_link = '<a href="#" class="btn btn-sm btn-primary"><b>'+cam_id+'</b></a>'
+         show_link = '<a class="btn btn-sm btn-primary"><b>'+cam_id+'</b></a>'
  
          if cam_day_sum[day][cam_id]['avg_res_deg_for_night'] > .5:
                color = "lv1"
@@ -770,7 +770,7 @@ def hd_cal_index(json_conf, form):
                   
                print('<div class="preview p-2"><a href="'+detail_link+'" class="mttt">')
                print('<img src="'+tn+'" class="ns lz" width="200" height="112"/>');
-               print('<span>' + str(ts) + " stars<br>" + str(trp)[0:5] + " Rpx<br>" +  str(trd)[0:5] + "Rd</span></a></div>")
+               print('</a><span class="det">' + str(ts) + " stars - " + str(trp)[0:5] + " Rpx -" +  str(trd)[0:5] + "Rd</span></div>")
 
             
          
