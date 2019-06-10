@@ -1856,7 +1856,7 @@ def browse_detects(day,type,json_conf):
       base_js_name=short_name.replace("_", "")
 
       html_out = html_out + "<div class='preview col-lg-2 col-md-3 '>"
-      html_out = html_out + "<a class='mtt' href='webUI.py?cmd=examine&video_file=" + day_stfiler +"'  title='Examine'>"
+      html_out = html_out + "<a class='mtt' href='webUI.py?cmd=examine&video_file=" + file +"'  title='Examine'>"
       html_out = html_out + "<img alt='" + short_name + "' class='img-fluid ns lz' src='" + stack_img + "'>"
       html_out = html_out + "<span>" + short_name + " minutes</span></a></div>"     
       
