@@ -31,14 +31,6 @@ function update_star_and_reduction() {
             }
 
             loading_done();
-
-            // Delete Frame
-            setup_delete_frame();
-
-
-            // Select Meteor
-            setup_select_meteor();
-
  
         }, error: function(data) {
             alert('ERROR - Please, contact us');
