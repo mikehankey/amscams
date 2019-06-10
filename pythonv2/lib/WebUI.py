@@ -1837,7 +1837,7 @@ def browse_detects(day,type,json_conf):
    if type == 'meteor':
       files = meteor_files
       show_day = day.replace("_", "/")
-      print("<h1>Meteor Detections on {:s}</h1>".format(show_day))
+      print("<h1>Meteor Detections on "+format(show_day)+"</h1>")
       print("{:d} Meteors Detected<br>".format(len(files)))
    else:
       print("<h1>Non-Meteor Detections on {:s}</h1>".format(show_day))
