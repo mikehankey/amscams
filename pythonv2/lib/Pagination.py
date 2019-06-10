@@ -4,11 +4,11 @@ import math
 def get_pagination(page,total_elts,url,max_per_page):
    
 
-   print("IN PAGINATION")
-   print("PAGE " +  format(page))
-   print("TOTAL ELTS " + format(total_elts))
-   print("URL " + url)
-   print("MAX PER P " + format(max_per_page))
+   #print("IN PAGINATION")
+   #print("PAGE " +  format(page))
+   #print("TOTAL ELTS " + format(total_elts))
+   #print("URL " + url)
+   #print("MAX PER P " + format(max_per_page))
 
 
    #cgitb.enable()
@@ -18,7 +18,7 @@ def get_pagination(page,total_elts,url,max_per_page):
       return ["","",""]
  
    #how many pages appear to the left and right of your current page
-   adjacents = 5
+   adjacents = 2
 
    start = (page - 1) * max_per_page; 
    display_page_counter = 0
@@ -27,10 +27,10 @@ def get_pagination(page,total_elts,url,max_per_page):
    last_page = math.ceil(last_page)
    last_page = int(last_page) 
  
-   print("PAGE (cur): " + format(page))
-   print("TOTAL ELTS " + format(total_elts))
-   print("START: " + format(start))
-   print("LAST PAGE : " + format(last_page))
+   #print("PAGE (cur): " + format(page))
+   #print("TOTAL ELTS " + format(total_elts))
+   #print("START: " + format(start))
+   #print("LAST PAGE : " + format(last_page))
    
    lpm1 = last_page - 1
    _prev = page - 1
