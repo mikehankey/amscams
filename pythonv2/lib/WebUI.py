@@ -1833,7 +1833,8 @@ def browse_detects(day,type,json_conf):
    cgitb.enable()
    #print_css()
    proc_dir = json_conf['site']['proc_dir']
-   failed_files, meteor_files, pending_files,min_files = get_day_stats(proc_dir + day + "/", json_conf)
+   #get_day_stats(day, day_dir, json_conf)
+   failed_files, meteor_files, pending_files,min_files = get_day_stats(day,proc_dir + day + "/", json_conf)
    if type == 'meteor':
       files = meteor_files
       show_day = day.replace("_", "/")
