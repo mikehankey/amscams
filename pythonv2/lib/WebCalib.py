@@ -2817,9 +2817,9 @@ def reduce_meteor_new(json_conf,form):
          template = template.replace("{EVENT_OBS_TOTAL}", "1 Station 1 Cam")
 
    else:
-      template = template.replace("{EVENT_START_TIME}", "pending reduction")
-      template = template.replace("{EVENT_DURATION}", "pending reducetion")
-      template = template.replace("{EVENT_MAGNITUDE}", "pending reduction")
+      template = template.replace("{EVENT_START_TIME}", "<i>pending reduction</i>")
+      template = template.replace("{EVENT_DURATION}", "<i>pending reducetion</i>")
+      template = template.replace("{EVENT_MAGNITUDE}", "<i>pending reduction</i>")
 
    if reduced == 1:
       #print(meteor_reduced.keys())
@@ -3437,9 +3437,9 @@ def add_stars_to_fit_pool(json_conf,form):
    js_html = """
 
    <script>
-      var my_image = '""" + half_stack_file + """'
-      var hd_stack_file = '""" + hd_stack_file + """'
-      var stars = []
+      var my_image = '""" + half_stack_file + """';
+      var hd_stack_file = '""" + hd_stack_file + """';
+      var stars = [];
    </script>
 
 

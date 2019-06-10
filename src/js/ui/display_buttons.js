@@ -5,7 +5,11 @@ function show_hide_grid() {
     
     // Test if we have a grid
     if(!has_grid) {
-        has_grid = !($.trim(az_grid_file) === "");
+        if(typeof az_grid_file  == 'undefined'){
+            has_grid = false;
+        } else {
+            has_grid = !($.trim(az_grid_file) === "");
+        }
     }
      
         // How/ Hide Grid

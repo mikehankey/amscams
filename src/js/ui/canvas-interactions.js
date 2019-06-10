@@ -200,7 +200,7 @@ if ($('canvas#c').length!=0) {
       render();    
       
       // Show Grid if grid_by_default is set to true
-      if(grid_by_default) $('#show_grid').click();
+      if(typeof grid_by_default !== 'undefined' grid_by_default) $('#show_grid').click();
 
       // Setup Interactions
       canvas_interactions();
