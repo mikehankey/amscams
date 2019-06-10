@@ -1837,20 +1837,18 @@ def browse_detects(day,type,json_conf,form):
    proc_dir = json_conf['site']['proc_dir']
    failed_files, meteor_files, pending_files,min_files = get_day_stats(day,proc_dir + day + "/", json_conf)
    show_day = day.replace("_", "/")
-   
+
+   title = "<div class='h1_holder d-flex justify-content-between'>"
+  
    if type == 'meteor':
       files = meteor_files
-      print("<h1>Meteor Detections on "+format(show_day)+"</h1>")
-      print("{:d} Meteors Detected<br>".format(len(files)))
+      title = title + "<h1>" + format(len(files)) + " Meteor Detections on "+format(show_day)+"</h1>" 
    else:
       files = failed_files
-      print("<h1>"+format(len(files))+" Non-Meteor Detections on {:s}</h1>".format(show_day))
-     
-
-   print("<div id='main_container' class='container-fluid h-100 mt-4 lg-l'>")
-   print("<div class='gallery gal-resize row text-center text-lg-left'>")
-
-   html_out = ""
+      title = title + "<h1>" + format(len(files)) + " Non-Meteor Detections on " + format(show_day)+"</h1>" 
+ 
+   html_out = "<div id='main_container' class='container-fluid h-100 mt-4 lg-l'>" 
+   html_out = html_out + "<div class='gallery gal-resize row text-center text-lg-left'>"
 
    files = sorted(files, reverse=True)
    _from = (cur_page-1) * NUMBER_OF_METEOR_PER_PAGE
@@ -1872,10 +1870,13 @@ def browse_detects(day,type,json_conf,form):
       html_out = html_out + "<span>" + short_name + "</span></a></div>"     
        
    
-   print(html_out+"</div>")
+   html_out = html_out + "</div>"
    pagination =  get_pagination(cur_page,len(files),"/pycgi/webUI.py?cmd=browse_detects&type="+type+"&day="+day,NUMBER_OF_METEOR_PER_PAGE)
+   
+   print( title + "<div class='page_h'>Page  " + format(cur_page) + "/" +  format(pagination[2]) + "</div></div>")
+   print(html_out)
    print(pagination[0])
-   print('</div>') 
+   print("</div>")
 
 
 
