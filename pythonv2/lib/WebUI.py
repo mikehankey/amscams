@@ -673,6 +673,9 @@ def meteor_index(json_conf, form):
 
 
 def hd_cal_index(json_conf, form):
+   
+   cgitb.enable()
+
    cam_id_filter = form.getvalue("cam_id")
    print("<h1>Auto Calibration</h1>")
  
