@@ -1835,8 +1835,9 @@ def browse_detects(day,type,json_conf):
       print("<h1>Meteor Detections on "+format(show_day)+"</h1>")
       print("{:d} Meteors Detected<br>".format(len(files)))
    else:
-      print("<h1>"+format(len(files))+" Non-Meteor Detections on {:s}</h1>".format(show_day))
       files = failed_files
+      print("<h1>"+format(len(files))+" Non-Meteor Detections on {:s}</h1>".format(show_day))
+     
 
    print("<div id='main_container' class='container-fluid h-100 mt-4 lg-l'>")
    print("<div class='gallery gal-resize row text-center text-lg-left'>")
