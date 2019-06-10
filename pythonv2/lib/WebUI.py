@@ -681,12 +681,12 @@ def hd_cal_index(json_conf, form):
 
    print('<div class="m-3">')
    print('<table class="table table-dark table-striped table-hover td-al-m">')
-   print('<thead><tr><th>&nbsp;</th><th>Date</th><th>Cam ID</th><th>Images w/ Stars</th><th>Images w/o Stars</th><th>Total Stars For Night</th><th>Center AZ/EL</th><th>Position Angle</th><th>PixScale</th><th>Avg Res Px For Night</th><th>Avg Res Deg For Night</th></tr></thead>')
+   print('<thead><tr><th>Date</th><th>Cam ID</th><th>Images w/ Stars</th><th>Images w/o Stars</th><th>Total Stars For Night</th><th>Center AZ/EL</th><th>Position Angle</th><th>PixScale</th><th>Avg Res Px For Night</th><th>Avg Res Deg For Night</th></tr></thead>')
    print('<tbody>')
 
    for day in sorted(ci,reverse=True): 
          
-      print('<tr><td colspan="11"><h6 class="mb-0">'+day.replace("_","/")+'</h6></td></tr>')
+      print('<tr><td colspan="10"><h6 class="mb-0">'+day.replace("_","/")+'</h6></td></tr>')
 
       for cam_id in sorted(ci[day],reverse=False):
 
@@ -697,7 +697,7 @@ def hd_cal_index(json_conf, form):
             desc = ""
          
          div_id = str(day) + "." + str(cam_id)
-         show_link = '<a class="btn btn-sm btn-primary" type="button" data-toggle="collapse" data-target="#'+div_id+'">'+cam_id+'</a>'
+         show_link = '<a class="btn btn-sm btn-primary" type="button" data-toggle="collapse" data-target="#'+div_id+'"><b>'+cam_id+'</b></a>'
  
          if cam_day_sum[day][cam_id]['avg_res_deg_for_night'] > .5:
                color = "lv1"
@@ -742,7 +742,7 @@ def hd_cal_index(json_conf, form):
             px_scale = ""
 
          if show_row == 1:
-            print("<tr class='" + color + "'><td><div class='st'></div></td><td>{:s}</td><td>{:s}{:s}</a></td><td>{:s}</td><td>{:s}</td><td>{:s}</td><td>{:s}</td><td>{:s}</td><td>{:s}</td><td>{:s}</td><td>{:s}</td></tr>".format( str(day), show_link, str(cam_id), str(cam_day_sum[day][cam_id]['files_with_stars']), str(cam_day_sum[day][cam_id]['files_without_stars']), str(cam_day_sum[day][cam_id]['total_stars_tracked_for_night']), az_el, pos_ang, px_scale, str(cam_day_sum[day][cam_id]['avg_res_px_for_night'])[0:5],str(cam_day_sum[day][cam_id]['avg_res_deg_for_night'])[0:5]))
+            print("<tr class='" + color + "'><td><div class='st'></div></td><td>{:s}</a></td><td>{:s}</td><td>{:s}</td><td>{:s}</td><td>{:s}</td><td>{:s}</td><td>{:s}</td><td>{:s}</td><td>{:s}</td></tr>".format(show_link, str(cam_day_sum[day][cam_id]['files_with_stars']), str(cam_day_sum[day][cam_id]['files_without_stars']), str(cam_day_sum[day][cam_id]['total_stars_tracked_for_night']), az_el, pos_ang, px_scale, str(cam_day_sum[day][cam_id]['avg_res_px_for_night'])[0:5],str(cam_day_sum[day][cam_id]['avg_res_deg_for_night'])[0:5]))
           
             print("<tr class='collapse' id='"+div_id+"'><td colspan='11'>")
             for cfile in sorted(ci[day][cam_id], reverse=True):
