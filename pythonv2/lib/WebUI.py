@@ -798,43 +798,35 @@ def hd_cal_index(json_conf, form):
 def calibration(json_conf,form):
    cam_id_filter = form.getvalue("cam_id")
 
-   print("<h1>Calibrations</h1>")
-   
-
-
-   print("""
-      <div style="padding: 10px">
-      <a href="">Past Calibrations</a> - 
-      <a href="/pycgi/webUI.py?cmd=hd_cal_index">HD Cal Index</a> - 
-      <a href="/pycgi/webUI.py?cmd=meteor_index">Meteor Cal Index</a> - 
-      <a href="">All Sky Model</a>
-      </div>
-   """)
+   print("<h1>Past Calibrations</h1>")
    ci = load_json_file("/mnt/ams2/cal/freecal_index.json")
    
-   print("<h1>Past Calibrations</h1><div style=\"margin: 10px\"><table border=1 cellpadding=\"10\">")
-   print("<TR><TD>Cal Date</td><td>Cam ID</td><td>Total Stars</td><td>Center AZ/EL</td><td>Pos Angle</td><td>Pix Scale</td><td>Res Pix</td><td>Res Deg</td></tr>")
+
+   print("<table class='table table-dark table-striped table-hover td-al-m m-auto table-fit'>")
+   print("<thead><tr><th>&nbsp;</th><th>Date</th><th>Cam ID</th><th>Stars</th><th>Center AZ/EL</th><th>Pos Angle</th><th>Pixscale</th><th>Res Px</th><th>Res Deg</th></tr></thead>")
+   print("<tbody>")
+ 
    for cf in sorted(ci, reverse=True):
       if 'cal_image_file' in ci[cf]:
          link = "/pycgi/webUI.py?cmd=free_cal&input_file=" + ci[cf]['cal_image_file'] 
       else:
          link = ""
       if ci[cf]['total_res_deg'] > .5:
-         color = "style='color: #ff0000'"
+         color = "lv1"; #style='color: #ff0000'"
       elif .4 < ci[cf]['total_res_deg'] <= .5:
-         color = "style='color: #FF4500'"
+         color = "lv2"; #"style='color: #FF4500'"
       elif .3 < ci[cf]['total_res_deg'] <= .4:
-         color = "style='color: #FFFF00'"
+         color = "lv3"; #"style='color: #FFFF00'"
       elif .2 < ci[cf]['total_res_deg'] <= .3:
-         color = "style='color: #00FF00'"
+         color = "lv4"; #"style='color: #00FF00'"
       elif .1 < ci[cf]['total_res_deg'] <= .2:
-         color = "style='color: #00ffff'"
+         color = "lv5"; #"style='color: #00ffff'"
       elif 0 < ci[cf]['total_res_deg'] <= .1:
-         color = "style='color: #0000ff'"
+         color = "lv8"; #"style='color: #0000ff'"
       elif ci[cf]['total_res_deg'] == 0:
-         color = "style='color: #ffffff'"
+         color = "lv7"; #"style='color: #ffffff'"
       else:
-         color = ""
+         color = "lv7"
       if cam_id_filter is None:
          show_row = 1
       elif cam_id == cam_id_filter:
@@ -843,11 +835,11 @@ def calibration(json_conf,form):
          show_row = 0
 
       if show_row == 1: 
-         print("<TR " + color + "><TD><a href={:s}>{:s}</a></td><td>{:s}</td><td>{:s}</td><td>{:s}/{:s}</td><td>{:s}</td><td>{:s}</td><td>{:s}</td><td>{:s}</td></tr>".format( link, str(ci[cf]['cal_date']), \
+         print("<tr class='" + color + "'><TD><a href={:s}>{:s}</a></td><td>{:s}</td><td>{:s}</td><td>{:s}/{:s}</td><td>{:s}</td><td>{:s}</td><td>{:s}</td><td>{:s}</td></tr>".format( link, str(ci[cf]['cal_date']), \
             str(ci[cf]['cam_id']), str(ci[cf]['total_stars']), str(ci[cf]['center_az']), str(ci[cf]['center_el']), str(ci[cf]['position_angle']), \
             str(ci[cf]['pixscale']), str(ci[cf]['total_res_px']), str(ci[cf]['total_res_deg']) ))
 
-   print("</table></div>")
+   print("</tbody></table></div>")
 
 
 
