@@ -1393,7 +1393,7 @@ def examine_min(video_file,json_conf):
    if os.path.isfile(stack_file):
       print("<a href='" + video_file + "' class='vid_link_gal mx-auto d-block' title='Click to Play'><img src='" + stack_file + "' class='mx-auto d-block img-fluid' style='width:100%'></a>")
    else:
-      print("<div class='alert error'>The Stack Image is missing.</div>")
+      print("<div class='alert error'>The Stack Image isn't ready yet.</div>")
 
    print("</div>")
    print("<div class='flex-fixed-r-canvas h-100'>")
@@ -1919,7 +1919,7 @@ def main_page(json_conf,form):
          day_str = day.replace("_", "/")
 
          to_display  = to_display + "<div class='h2_holder  d-flex justify-content-between'>"
-         to_display  = to_display +"<h2>"+day_str+" - <a href=webUI.py?cmd=meteors&limit_day=" + day + ">" + str(meteor_files) + " Meteors </a></h2>"
+         to_display  = to_display +"<h2>"+day_str+" - <a class='btn btn-primary' href=webUI.py?cmd=meteors&limit_day=" + day + ">" + str(meteor_files) + " Meteors </a></h2>"
          to_display  = to_display +"<p><a href=webUI.py?cmd=browse_detects&type=failed&day=" + day + ">" + str(failed_files) + " Non-Meteors </a> - " + str(pending_files) + " Files Pending</a>"
          to_display  = to_display +"</div><div class='gallery gal-resize row text-center text-lg-left mb-4'>"
          to_display  = to_display + html_row
