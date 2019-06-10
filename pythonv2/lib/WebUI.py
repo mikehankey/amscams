@@ -1847,6 +1847,7 @@ def browse_detects(day,type,json_conf):
    print("<div id='main_container' class='container-fluid h-100 mt-4 lg-l'>")
    print("<div class='gallery gal-resize row text-center text-lg-left'>")
 
+   html_out = ""
 
    for file in sorted(files, reverse=True):
       stack_img = file.replace(".mp4", "-stacked.png")
@@ -1874,6 +1875,8 @@ def browse_detects(day,type,json_conf):
 
       #print("<figure><img id=" + base_js_name + " class='" + htclass + "' width=300 src=" + stack_img + "></img></a><figcaption>" + short_name + "</figcaption></figure>")
       #print("<figure>" + html_out + "<figcaption>" + short_name + "</figcaption></figure>")
+   
+   print html_out
    print('</div></div>')
 
 
