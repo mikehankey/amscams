@@ -1835,7 +1835,7 @@ def browse_detects(day,type,json_conf):
       print("<h1>Meteor Detections on "+format(show_day)+"</h1>")
       print("{:d} Meteors Detected<br>".format(len(files)))
    else:
-      print("<h1>Non-Meteor Detections on {:s}</h1>".format(show_day))
+      print("<h1>"+format(len(files))+" Non-Meteor Detections on {:s}</h1>".format(show_day))
       files = failed_files
 
    print("<div id='main_container' class='container-fluid h-100 mt-4 lg-l'>")
@@ -1847,26 +1847,14 @@ def browse_detects(day,type,json_conf):
       stack_img = file.replace(".mp4", "-stacked.png")
       stack_obj_img = file.replace(".mp4", "-stacked-obj.png")
       el = stack_img.split("/")
-      short_name = get_meteor_date(file)
-      
-      #print("<a href=webUI.py?cmd=examine&video_file=" + file + ">")
-      #print("<img src=" + stack_img + " width=400></a>{:s}".format(short_name))
+      short_name = get_meteor_date(file) 
       base_js_name=short_name.replace("_", "")
 
-      html_out = html_out + "<div class='preview col-lg-2 col-md-3 mb-4'>"
+      html_out = html_out + "<div class='preview col-lg-2 col-md-3 mb-4 fail'>"
       html_out = html_out + "<a class='mtt' href='webUI.py?cmd=examine&video_file=" + file +"'  title='Examine'>"
       html_out = html_out + "<img alt='" + short_name + "' class='img-fluid ns lz' src='" + stack_img + "'>"
       html_out = html_out + "<span>" + short_name + "</span></a></div>"     
-      
-      #htclass = "none"
-      #html_out = ""
-      #html_out = html_out + "<a href=\"webUI.py?cmd=examine&video_file=" + file + "\"" \
-      #   + " onmouseover=\"document.getElementById('" + base_js_name + "').src='" + stack_obj_img \
-      #   + "'\" onmouseout=\"document.getElementById('" + base_js_name + "').src='" + stack_img+ "'\">"
-      #html_out = html_out + "<img class=\"" + htclass + "\" id=\"" + base_js_name + "\" width='200' src='" + stack_img+ "'></a>\n"
-
-      #print("<figure><img id=" + base_js_name + " class='" + htclass + "' width=300 src=" + stack_img + "></img></a><figcaption>" + short_name + "</figcaption></figure>")
-      #print("<figure>" + html_out + "<figcaption>" + short_name + "</figcaption></figure>")
+       
    
    print(html_out)
    print('</div></div>')
