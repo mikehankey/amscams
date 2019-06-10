@@ -748,7 +748,7 @@ def hd_cal_index(json_conf, form):
             print("<tr class='" + color + " clickable toggler' data-tog='#fr"+div_id+"'><td><div class='st'></div></td><td>{:s}</a></td><td>{:s}</td><td>{:s}</td><td>{:s}</td><td>{:s}</td><td>{:s}</td><td>{:s}</td><td>{:s}</td><td>{:s}</td></tr>".format(show_link, str(cam_day_sum[day][cam_id]['files_with_stars']), str(cam_day_sum[day][cam_id]['files_without_stars']), str(cam_day_sum[day][cam_id]['total_stars_tracked_for_night']), az_el, pos_ang, px_scale, str(cam_day_sum[day][cam_id]['avg_res_px_for_night'])[0:5],str(cam_day_sum[day][cam_id]['avg_res_deg_for_night'])[0:5]))
           
             print("<tr><td colspan='11' class='collapse' id='fr"+div_id+"'>")
-            print("<div class='text-center text-lg-left gallery gal-resize'>")
+            print("<div class='text-center text-lg-left gallery gal-resize d-flex flex-wrap'>")
             for cfile in sorted(ci[day][cam_id], reverse=True):
                if "total_res_deg" in ci[day][cam_id][cfile]:
                   trd = ci[day][cam_id][cfile]['total_res_deg']
@@ -768,7 +768,7 @@ def hd_cal_index(json_conf, form):
                else:
                   color = ""
                   
-               print('<div class="preview"><a href="'+detail_link+'">')
+               print('<div class="preview p-2"><a href="'+detail_link+'" class="mttt">')
                print('<img src="'+tn+'" class="ns lz" width="200" height="112"/>');
                print('<span>' + str(ts) + " stars<br>" + str(trp)[0:5] + " Rpx<br>" +  str(trd)[0:5] + "Rd</span></a></div>")
 
