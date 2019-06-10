@@ -686,7 +686,7 @@ def hd_cal_index(json_conf, form):
 
    for day in sorted(ci,reverse=True): 
          
-      print('<tr><td colspan="10"><h6 class="mb-0">'+day.replace("_","/")+'</h6></td></tr>')
+      print('<tr data-toggle="collapse" data-target="#fr'+div_id+'" class="clickable"><td colspan="10"><h6 class="mb-0">'+day.replace("_","/")+'</h6></td></tr>')
 
       for cam_id in sorted(ci[day],reverse=False):
 
@@ -697,7 +697,7 @@ def hd_cal_index(json_conf, form):
             desc = ""
          
          div_id = str(day) + "." + str(cam_id)
-         show_link = '<button class="btn btn-sm btn-primary" type="button" data-toggle="collapse" data-target="#fr'+div_id+'"><b>'+cam_id+'</b></button>'
+         show_link = '<a href="#" class="btn btn-sm btn-primary"><b>'+cam_id+'</b></a>'
  
          if cam_day_sum[day][cam_id]['avg_res_deg_for_night'] > .5:
                color = "lv1"
@@ -744,7 +744,7 @@ def hd_cal_index(json_conf, form):
          if show_row == 1:
             print("<tr class='" + color + "'><td><div class='st'></div></td><td>{:s}</a></td><td>{:s}</td><td>{:s}</td><td>{:s}</td><td>{:s}</td><td>{:s}</td><td>{:s}</td><td>{:s}</td><td>{:s}</td></tr>".format(show_link, str(cam_day_sum[day][cam_id]['files_with_stars']), str(cam_day_sum[day][cam_id]['files_without_stars']), str(cam_day_sum[day][cam_id]['total_stars_tracked_for_night']), az_el, pos_ang, px_scale, str(cam_day_sum[day][cam_id]['avg_res_px_for_night'])[0:5],str(cam_day_sum[day][cam_id]['avg_res_deg_for_night'])[0:5]))
           
-            print("<tr class='collapse' id='fr"+div_id+"'><td colspan='11'>")
+            print("<tr><td colspan='11' class='collapse' id='fr"+div_id+"'>")
             for cfile in sorted(ci[day][cam_id], reverse=True):
                if "total_res_deg" in ci[day][cam_id][cfile]:
                   trd = ci[day][cam_id][cfile]['total_res_deg']
