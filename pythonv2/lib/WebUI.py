@@ -1818,13 +1818,7 @@ def browse_day(day,cams_id,json_conf):
       html_out = html_out + "<img class='ns lz' src='" + stack_file_tn + "'>"
       html_out = html_out + "<span>"+base_js_name[0] +"/" +base_js_name[1]+"/" +base_js_name[2] + " " +  base_js_name[3]+ ":" +  base_js_name[4]+ ":" +  base_js_name[5] +"</span>"
       html_out = html_out + "</a></div>"
-      print(html_out)
-
-      #link = "<a href=\"webUI.py?cmd=examine_min&video_file=" + video_file + "&next_stack_file=" + next_stack_file +"&next_stack_file=" + next_stack_file +  "\">" 
-         #+ " onmouseover=\"document.getElementById('" + base_js_name + "').width=705\" " \
-         #+ " onmouseout=\"document.getElementById('" + base_js_name + "').width=300\" " +  ">"
-      #print(link)  
-      #print("<img id=" + base_js_name + " class='" + htclass + "' width=300 src=" + stack_file_tn + "></img></a>")
+      print(html_out) 
       cc = cc + 1
 
    print('</div></div>')
@@ -1876,7 +1870,7 @@ def browse_detects(day,type,json_conf):
       #print("<figure><img id=" + base_js_name + " class='" + htclass + "' width=300 src=" + stack_img + "></img></a><figcaption>" + short_name + "</figcaption></figure>")
       #print("<figure>" + html_out + "<figcaption>" + short_name + "</figcaption></figure>")
    
-   print html_out
+   print(html_out)
    print('</div></div>')
 
 
