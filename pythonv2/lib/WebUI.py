@@ -674,23 +674,31 @@ def meteor_index(json_conf, form):
 
 def hd_cal_index(json_conf, form):
    cam_id_filter = form.getvalue("cam_id")
-   print("<h1>Auto Calibration Index</h1>")
+   print("<h1>Auto Calibration</h1>")
  
    ci = load_json_file("/mnt/ams2/cal/hd_images/hd_cal_index.json")
    cam_day_sum = load_json_file("/mnt/ams2/cal/hd_images/hd_cal_index-cam-day-sum.json")
 
    print('<table class="table table-dark table-striped table-hover td-al-m">')
    print('<thead><tr><th>&nbsp;</th><th>Date</th><th>Cam ID</th><th>Images w/ Stars</th><th>Images w/o Stars</th><th>Total Stars For Night</th><th>Center AZ/EL</th><th>Position Angle</th><th>PixScale</th><th>Avg Res Px For Night</th><th>Avg Res Deg For Night</th></tr></thead>')
- 
+   print('<tbody>')
+
    for day in sorted(ci,reverse=True): 
+         
+      print('<tr><td colspan="11"><h3>'+day.replace("_","/")+'</h3></td></tr>')
+
       for cam_id in sorted(ci[day],reverse=False):
+
          if "files_with_stars" in cam_day_sum[day][cam_id]:
             desc = str(cam_day_sum[day][cam_id]['files_with_stars']) + " files with stars / "
             desc = desc + str(cam_day_sum[day][cam_id]['files_without_stars']) + " files without stars "
          else:
             desc = ""
+         
          div_id = str(day) + "." + str(cam_id)
          show_link = "<a href=\"javascript:show_hide('" + div_id + "')\">"
+
+
          if cam_day_sum[day][cam_id]['avg_res_deg_for_night'] > .5:
                color = "style='color: #ff0000'"
          elif .4 < cam_day_sum[day][cam_id]['avg_res_deg_for_night'] <= .5:
@@ -733,7 +741,7 @@ def hd_cal_index(json_conf, form):
             px_scale = ""
 
          if show_row == 1:
-            print("<tr " + color + "><td>{:s}</td><td>{:s}{:s}</a></td><td>{:s}</td><td>{:s}</td><td>{:s}</td><td>{:s}</td><td>{:s}</td><td>{:s}</td><td>{:s}</td><td>{:s}</td></tr>".format( str(day), show_link, str(cam_id), str(cam_day_sum[day][cam_id]['files_with_stars']), str(cam_day_sum[day][cam_id]['files_without_stars']), str(cam_day_sum[day][cam_id]['total_stars_tracked_for_night']), az_el, pos_ang, px_scale, str(cam_day_sum[day][cam_id]['avg_res_px_for_night'])[0:5],str(cam_day_sum[day][cam_id]['avg_res_deg_for_night'])[0:5]))
+            print("<tr " + color + "><td><div class='st'></div></td><td>{:s}</td><td>{:s}{:s}</a></td><td>{:s}</td><td>{:s}</td><td>{:s}</td><td>{:s}</td><td>{:s}</td><td>{:s}</td><td>{:s}</td><td>{:s}</td></tr>".format( str(day), show_link, str(cam_id), str(cam_day_sum[day][cam_id]['files_with_stars']), str(cam_day_sum[day][cam_id]['files_without_stars']), str(cam_day_sum[day][cam_id]['total_stars_tracked_for_night']), az_el, pos_ang, px_scale, str(cam_day_sum[day][cam_id]['avg_res_px_for_night'])[0:5],str(cam_day_sum[day][cam_id]['avg_res_deg_for_night'])[0:5]))
           
             print("<tr ><td colspan=10><div id='" + div_id + "' style='display: none;' > ")
             for cfile in sorted(ci[day][cam_id], reverse=True):
