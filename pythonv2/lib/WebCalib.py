@@ -2445,7 +2445,7 @@ def make_frame_table(meteor_reduced,meteor_json_file):
       del_frame_link = "<a href=\"javascript:del_frame('" + str(fn) + "','" + meteor_json_file +"')\">X</a> "
 
       sr_id = "<div class=\"divTableRow\" id=\"" + fr_id + "\">"
-      frame_table = frame_table + sr_id + sc + cmp_img + ec + sc  + str(fn) +ec + sc + frame_time + ec + sc + str(hd_x) + "/" + str(hd_y) + " - " + str(w) + "/" + str(h) + ec + sc + str(max_px) +ec + sc + str(ra) + "/" + str(dec) + ec + sc +  str(az) + "/" + str(el)  + ec + sc + del_frame_link + ec + er
+      frame_table = frame_table + sr_id + sc + cmp_img + ec + sc  + str(fn) +ec + sc + str(frame_time) + ec + sc + str(hd_x) + "/" + str(hd_y) + " - " + str(w) + "/" + str(h) + ec + sc + str(max_px) +ec + sc + str(ra) + "/" + str(dec) + ec + sc +  str(az) + "/" + str(el)  + ec + sc + del_frame_link + ec + er
 
       frame_javascript = frame_javascript + """
                  var rad = 5;
@@ -2686,7 +2686,7 @@ def reduce_meteor_new(json_conf,form):
    meteor_reduced_file = meteor_json_file.replace(".json", "-reduced.json")
    template = template.replace("{VIDEO_FILE}", video_file)
  
-
+   ms_data = None
    if cfe(meteor_reduced_file) == 1:
       meteor_reduced = load_json_file(meteor_reduced_file)
       reduced = 1
@@ -2700,15 +2700,29 @@ def reduce_meteor_new(json_conf,form):
       reduced = 0
    mj = load_json_file(meteor_json_file)
    meteor_obj = get_meteor_object(mj)
+   ms_desc = ""
    if reduced == 1:
-      if "cal_params" in meteor_reduced:
+      if "cal_params" in meteor_reduced['cal_params']:
          if "cat_image_stars" in meteor_reduced['cal_params']:
             cat_image_stars = meteor_reduced['cal_params']['cat_image_stars']
             total_stars = len(cat_image_stars)
+      if "multi_station" in meteor_reduced:
+         ms_data= meteor_reduced['multi_station']
+         if cfe("/home/ams/amscams/conf/sync_urls.json") == 1:
+            sync_urls = load_json_file("/home/ams/amscams/conf/sync_urls.json")
+            for st in ms_data['obs']:
+               ms_link = sync_urls['sync_urls'][st] + "/pycgi/webUI.py?cmd=reduce&video_file=" + ms_data['obs'][st]['sd_video_file'].replace(".json", ".mp4")
+               ms_desc = ms_desc + "<a href=" + ms_link + ">" + st + "</a><BR>"
+               #print(ms_desc)
+         template = template.replace("{MULTI_STATION}", ms_desc)
+
+              
+         
+
 #      mj = meteor_reduced
 #      mr = mj
    else:
-
+      ms_data = None
       cal_files = get_active_cal_file(mj['sd_video_file'])
       #print("GETTING CAL FILES for ", mj['sd_video_file'], "<HR>")
       #for cal_file in cal_files:

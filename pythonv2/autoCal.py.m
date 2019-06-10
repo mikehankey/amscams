@@ -1,7 +1,5 @@
 #!/usr/bin/python3
-from datetime import datetime
-
-#import datetime
+import datetime
 import time
 import glob
 import os
@@ -28,29 +26,6 @@ from lib.FileIO import load_json_file, save_json_file, cfe
 from lib.UtilLib import calc_dist,find_angle
 import lib.brightstardata as bsd
 from lib.DetectLib import eval_cnt
-
-
-def bound_xy(x,y,iw,ih,sz):
-   if x-sz < 0:
-      x1 = 0
-   else:
-      x1 = x - sz
-   if y-sz < 0:
-      y1 = 0
-   else:
-      y1 = y - sz
-   if x+sz > iw-1:
-      x2 = iw -1
-   else:
-      x2 = x + sz
-   if y+sz > ih-1:
-      y2 = ih
-   else:
-      y2 = y + sz
-
-
-   return(x1,y1,x2,y2)
-
 
 def reset_reduce(json_conf, meteor_file):
    mjf = meteor_file
@@ -139,11 +114,9 @@ def meteor_index(json_conf, extra_cmd = ""):
          if cfe(rmeteor) == 1:
             print("loading:", rmeteor)
             meteor_index[day][meteor]['reduced'] = 1
-            try:
-               red_data = load_json_file(rmeteor)
-            except:
-               os.system("mv " + rmeteor + " /mnt/ams2/trash")
+            red_data = load_json_file(rmeteor)
             if "cal_params" in red_data:
+               print("CP EXISTS")
                if "center_az" not in red_data['cal_params']:
                   if "az_center" in red_data['cal_params']:
                      red_data['cal_params']['center_az'] = red_data['cal_params']['az_center']
@@ -174,8 +147,7 @@ def meteor_index(json_conf, extra_cmd = ""):
                if "total_res_px" in red_data['cal_params']:
                   meteor_index[day][meteor]['total_res_px'] = red_data['cal_params']['total_res_px']
                   meteor_index[day][meteor]['total_res_deg'] = red_data['cal_params']['total_res_deg']
-                  if red_data['cal_params']['total_res_deg'] >= .3:
-                     print("REDO!", meteor)
+                  #if red_data['cal_params']['total_res_deg'] >= .3:
                      #os.system("./autoCal.py rr " + meteor)
                      #os.system("./autoCal.py rr " + meteor)
 
@@ -196,8 +168,6 @@ def meteor_index(json_conf, extra_cmd = ""):
                   jobs.append("./autoCal.py cfit " + meteor)
             
 
-            if 'multi_station' in red_data:
-               meteor_index[day][meteor]['multi_station'] = red_data['multi_station']
            
             if 'angular_separation' in red_data:
                meteor_index[day][meteor]['angular_separation'] = 9999
@@ -219,44 +189,6 @@ def meteor_index(json_conf, extra_cmd = ""):
 
    print(json_conf)
 
-
-   fov_vars = {}
-   fov_day = {}
-   # make best day avg for fov vars
-   for day in meteor_index:
-      for meteor in meteor_index[day]:
-         (f_datetime, cam_id, f_date_str,fy,fm,fd, fh, fmin, fs) = convert_filename_to_date_cam(meteor)
-         if cam_id not in fov_vars:
-            fov_vars[cam_id] = {}
-            fov_day[cam_id] = {}
-         if day not in fov_vars[cam_id]:
-            fov_vars[cam_id][day] = {}
-            fov_vars[cam_id][day]['center_az'] = []
-            fov_vars[cam_id][day]['center_el'] = []
-            fov_vars[cam_id][day]['position_angle'] = []
-            fov_vars[cam_id][day]['pixscale'] = []
-         if 'center_az' in meteor_index[day][meteor]:
-            fov_vars[cam_id][day]['center_az'].append( float(meteor_index[day][meteor]['center_az']))
-            fov_vars[cam_id][day]['center_el'].append( float(meteor_index[day][meteor]['center_el']))
-            fov_vars[cam_id][day]['position_angle'].append( float(meteor_index[day][meteor]['position_angle']))
-            fov_vars[cam_id][day]['pixscale'].append( float(meteor_index[day][meteor]['pixscale']))
-
-   for cam_id in fov_vars:
-      for day in fov_vars[cam_id]:
-         if len(fov_vars[cam_id][day]['pixscale']) > 3:
-            if cam_id not in fov_day:
-               fov_day[cam_id] = {}
-            if cam_id not in fov_day[cam_id]:
-               fov_day[cam_id][day] = {}
-            fov_day[cam_id][day]['avg_center_az'] = np.mean(fov_vars[cam_id][day]['center_az'])
-            fov_day[cam_id][day]['avg_center_el'] = np.mean(fov_vars[cam_id][day]['center_el'])
-            fov_day[cam_id][day]['avg_position_angle'] = np.mean(fov_vars[cam_id][day]['position_angle'])
-            fov_day[cam_id][day]['avg_pixscale'] = np.mean(fov_vars[cam_id][day]['pixscale'])
-
-   save_json_file("/mnt/ams2/cal/hd_images/fov_vars.json", fov_day)
-
-
-
    if 'max_procs' in json_conf['site']:
       max_procs = json_conf['site']['max_procs']
    else: 
@@ -275,56 +207,7 @@ def meteor_index(json_conf, extra_cmd = ""):
  
    exit()
 
-def find_best_fov(meteor_json_file, json_conf):
-   found = 0
-   rfile = meteor_json_file.replace(".json", "-reduced.json")
-   if "mp4" in rfile:
-      rfile = rfile.replace(".mp4", "-reduced.json")
-   (f_datetime, cam_id, f_date_str,fy,fm,fd, fh, fmin, fs) = convert_filename_to_date_cam(meteor_json_file)
-   fov= load_json_file("/mnt/ams2/cal/hd_images/fov_vars.json")
-   mj = load_json_file(rfile)
-   fovs = []
-   for day in fov[cam_id]:
-      fov_date = datetime.strptime(day, "%Y_%m_%d")
-      tdiff = abs((f_datetime-fov_date).total_seconds())
-      fovs.append((day, tdiff, fov[cam_id][day]['avg_center_az'], fov[cam_id][day]['avg_center_el'], fov[cam_id][day]['avg_position_angle'], fov[cam_id][day]['avg_pixscale']))
-        
-   this_poly = np.zeros(shape=(4,), dtype=np.float64)
-   if 'cal_params' in mj:
-      cal_params = mj['cal_params']
-   else:
-      print("NO CAL")
-      poss = get_active_cal_file(meteor_json_file)
-      cal_params_file = poss[0][0]
-      cal_params = load_json_file(cal_params_file)
-
-   paired_stars = cal_params['cat_image_stars']
-   oimg = np.zeros((1080,1920),dtype=np.uint8)
-
-
-   start_res = reduce_fov_pos(this_poly, cal_params,meteor_json_file,oimg,json_conf, paired_stars,0,show)
-   best_res = start_res 
-   print("START RES:", start_res)
-   fovs = sorted(fovs, key=lambda x: x[1], reverse=False)
-   for fov in fovs:
-      (date,tdif,center_az,center_el,position_angle,pixscale) = fov
-      cal_params['center_az'] = center_az
-      cal_params['center_el'] = center_el
-      cal_params['position_angle'] = position_angle
-      cal_params['pixscale'] = pixscale
-   
-      res = reduce_fov_pos(this_poly, cal_params,meteor_json_file,oimg,json_conf, paired_stars,0,show)
-      if res < best_res:
-         best_cal_params = cal_params
-         best_res = res
-         print("BEST:", date,tdif,center_az,center_el,position_angle,pixscale)
-         found = 1
-   if found == 0:
-      print ("Could not find a better file. CFIT this one.")
-      cmd = "./autoCal.py cfit " + meteor_json_file
-      print(cmd)
-      os.system("./autoCal.py cfit " + meteor_json_file)
-
+ 
 
 
 def master_merge(tcam_id):
@@ -450,8 +333,7 @@ def cal_index(json_conf):
 
    for cp_file in cal_files:
       print(cp_file)
-      
-      #print( cal_files[cp_file]['base_dir'], cal_files[cp_file]['cam_id'], cal_files[cp_file]['center_az'], cal_files[cp_file]['center_el'], cal_files[cp_file]['position_angle'], cal_files[cp_file]['pixscale'], cal_files[cp_file]['x_fun'], cal_files[cp_file]['y_fun'], cal_files[cp_file]['x_fun_fwd'], cal_files[cp_file]['y_fun_fwd'], cal_files[cp_file]['total_stars'] )
+      print( cal_files[cp_file]['base_dir'], cal_files[cp_file]['cam_id'], cal_files[cp_file]['center_az'], cal_files[cp_file]['center_el'], cal_files[cp_file]['position_angle'], cal_files[cp_file]['pixscale'], cal_files[cp_file]['x_fun'], cal_files[cp_file]['y_fun'], cal_files[cp_file]['x_fun_fwd'], cal_files[cp_file]['y_fun_fwd'], cal_files[cp_file]['total_stars'] )
      
    print("saved : /mnt/ams2/cal/freecal_index.json")
    save_json_file("/mnt/ams2/cal/freecal_index.json", cal_files)
@@ -1162,7 +1044,7 @@ def reduce_fov_pos(this_poly, in_cal_params, cal_params_file, oimage, json_conf,
    for iname,mag,ra,dec,new_cat_x,new_cat_y,six,siy,pdist in new_paired_stars:
       tres = tres + pdist
      
-   orig_star_count = len(in_cal_params['cat_image_stars'])
+   orig_star_count = len(in_cal_params['close_stars'])
 
    if len(paired_stars) > 0:
       avg_res = tres / len(paired_stars) 
@@ -1179,14 +1061,14 @@ def reduce_fov_pos(this_poly, in_cal_params, cal_params_file, oimage, json_conf,
    show_res = avg_res - (pen*10) 
    desc = "RES: " + str(show_res) + " " + str(len(new_paired_stars)) + " " + str(orig_star_count) + " PEN:" + str(pen)
    cv2.putText(image, desc,  (10,50), cv2.FONT_HERSHEY_SIMPLEX, .8, (255, 255, 255), 1)
-   desc2 = "CENTER AZ/EL/POS" + str(new_az) + " " + str(new_el) + " " + str(in_cal_params['position_angle']) 
+   desc2 = "CENTER AZ/EL/POS" + str(new_az) + " " + str(new_el) + " " + str(cal_params['position_angle']) 
    cv2.putText(image, desc2,  (10,80), cv2.FONT_HERSHEY_SIMPLEX, .8, (255, 255, 255), 1)
 
-   desc2 = "PX SCALE:" + str(in_cal_params['pixscale'])
+   desc2 = "PX SCALE:" + str(cal_params['pixscale'])
    cv2.putText(image, desc2,  (10,110), cv2.FONT_HERSHEY_SIMPLEX, 1, (255, 255, 255), 1)
 
 
-   print("AVG RES:", avg_res, len(paired_stars), "/", org_star_count, new_az, new_el, ra_center, dec_center, position_angle)
+   #print("AVG RES:", avg_res, len(paired_stars), "/", org_star_count, new_az, new_el, ra_center, dec_center, position_angle)
    if show == 1:
       show_img = cv2.resize(image, (960,540))
       if "cam_id" in in_cal_params:
@@ -3029,8 +2911,6 @@ if cmd == 'latlon':
    #minimize_latlon(cal_params_file, json_conf)
 if cmd == 'cfit':
    meteor_json = sys.argv[2]
-   if "mp4" in meteor_json:
-      meteor_json = meteor_json.replace(".mp4", ".json")
    if len(sys.argv) == 4:
       show = int(sys.argv[3])
    #os.system("./autoCal.py imgstars " + meteor_json + " " + str(show))
@@ -3165,8 +3045,6 @@ if cmd == 'imgstars' or cmd == 'imgstars_strict':
    if len(sys.argv) == 4:
       show = int(sys.argv[3])
    meteor_json_file = sys.argv[2]
-   if ".mp4" in meteor_json_file:
-      meteor_json_file = meteor_json_file.replace(".mp4", ".json")
    if "calparams" not in meteor_json_file:
       meteor_mode = 1
       meteor_json_file_red = meteor_json_file.replace(".json", "-reduced.json")
@@ -3492,5 +3370,3 @@ if cmd == "meteor_index":
 
 if cmd == "rr" or cmd == 'reset_reduce':
    reset_reduce(json_conf, sys.argv[2])
-if cmd == "best_fov" or cmd == 'bf':
-   find_best_fov(sys.argv[2], json_conf)
