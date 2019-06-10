@@ -697,7 +697,7 @@ def hd_cal_index(json_conf, form):
             desc = ""
          
          div_id = str(day) + "." + str(cam_id)
-         show_link = '<a class="btn btn-sm btn-primary" type="button" data-toggle="collapse" data-target="#fr'+div_id+'"><b>'+cam_id+'</b></a>'
+         show_link = '<button class="btn btn-sm btn-primary" type="button" data-toggle="collapse" data-target="#fr'+div_id+'"><b>'+cam_id+'</b></button>'
  
          if cam_day_sum[day][cam_id]['avg_res_deg_for_night'] > .5:
                color = "lv1"
