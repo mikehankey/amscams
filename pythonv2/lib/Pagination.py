@@ -8,7 +8,7 @@ def get_pagination(page,total_elts,url,max_per_page):
    print("PAGE " +  format(page))
    print("TOTAL ELTS " + format(total_elts))
    print("URL " + url)
-   print("MAX PER P " + max_per_page)
+   print("MAX PER P " + format(max_per_page))
 
 
    #cgitb.enable()
