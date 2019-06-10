@@ -1857,6 +1857,7 @@ def browse_detects(day,type,json_conf,form):
    _to = _from + NUMBER_OF_METEOR_PER_PAGE
 
    # slice the array for pagination
+   cur_res = len(files)
    files = files[_from:_to] 
 
    for file in files:
@@ -1873,10 +1874,10 @@ def browse_detects(day,type,json_conf,form):
        
    
    print(html_out)
-   pagination =  get_pagination(cur_page,len(files),"/pycgi/webUI.py?cmd=browse_detects&type="+type+"&day="+day,NUMBER_OF_METEOR_PER_PAGE)
+   pagination =  get_pagination(cur_page,cur_res,"/pycgi/webUI.py?cmd=browse_detects&type="+type+"&day="+day,NUMBER_OF_METEOR_PER_PAGE)
    print(pagination[0])
    print('</div></div>')
-   print('TOTAL ' +  format(len(files)))
+   print('TOTAL ' +  format(cur_res))
    print('PAGINATION')
    print(pagination)
 
