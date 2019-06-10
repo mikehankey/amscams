@@ -1834,11 +1834,13 @@ def browse_detects(day,type,json_conf):
    #print_css()
    proc_dir = json_conf['site']['proc_dir']
    failed_files, meteor_files, pending_files,min_files = get_day_stats(day,proc_dir + day + "/", json_conf)
+
    if type == 'meteor':
       files = meteor_files
       show_day = day.replace("_", "/")
-      print("<h1>Meteor Detections on "+format(show_day)+"</h1>")
-      print("{:d} Meteors Detected<br>".format(len(files)))
+      print(format(show_day))
+      #print("<h1>Meteor Detections on "+format(show_day)+"</h1>")
+      #print("{:d} Meteors Detected<br>".format(len(files)))
    else:
       print("<h1>Non-Meteor Detections on {:s}</h1>".format(show_day))
       files = failed_files
