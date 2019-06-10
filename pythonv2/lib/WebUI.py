@@ -697,7 +697,7 @@ def hd_cal_index(json_conf, form):
             desc = ""
          
          div_id = str(day) + "." + str(cam_id)
-         show_link = '<a class="btn btn-sm btn-primary" type="button" data-toggle="collapse" data-target="#'+div_id+'"><b>'+cam_id+'</b></a>'
+         show_link = '<a class="btn btn-sm btn-primary" type="button" data-toggle="collapse" data-target="#fr'+div_id+'"><b>'+cam_id+'</b></a>'
  
          if cam_day_sum[day][cam_id]['avg_res_deg_for_night'] > .5:
                color = "lv1"
@@ -744,7 +744,7 @@ def hd_cal_index(json_conf, form):
          if show_row == 1:
             print("<tr class='" + color + "'><td><div class='st'></div></td><td>{:s}</a></td><td>{:s}</td><td>{:s}</td><td>{:s}</td><td>{:s}</td><td>{:s}</td><td>{:s}</td><td>{:s}</td><td>{:s}</td></tr>".format(show_link, str(cam_day_sum[day][cam_id]['files_with_stars']), str(cam_day_sum[day][cam_id]['files_without_stars']), str(cam_day_sum[day][cam_id]['total_stars_tracked_for_night']), az_el, pos_ang, px_scale, str(cam_day_sum[day][cam_id]['avg_res_px_for_night'])[0:5],str(cam_day_sum[day][cam_id]['avg_res_deg_for_night'])[0:5]))
           
-            print("<tr class='collapse' id='"+div_id+"'><td colspan='11'>")
+            print("<tr class='collapse' id='fr"+div_id+"'><td colspan='11'>")
             for cfile in sorted(ci[day][cam_id], reverse=True):
                if "total_res_deg" in ci[day][cam_id][cfile]:
                   trd = ci[day][cam_id][cfile]['total_res_deg']
@@ -764,7 +764,7 @@ def hd_cal_index(json_conf, form):
                else:
                   color = ""
          
-               print("<figure style=\"float:left; \"><a href=" + detail_link + "><img src=" + tn + " width=144 height=81></a><figcaption " + color + ">Stars:" + str(ts) + "<BR>Rpx " + str(trp)[0:5] + ", Rd" + str(trd)[0:5] + "<BR>" + "" + "</figcaption></figure>")
+               print("<figure style=\"float:left; \"><a href=" + detail_link + "><img src=" + tn + " class='img-fluid ns lz'></a><figcaption " + color + ">Stars:" + str(ts) + "<BR>Rpx " + str(trp)[0:5] + ", Rd" + str(trd)[0:5] + "<BR>" + "" + "</figcaption></figure>")
             print("</td></tr> ")
    print("</div></table>")
    print("</div></div>")
