@@ -384,7 +384,7 @@ def controller(json_conf):
       type = form.getvalue('type')
       #type = 'meteor'
       #day = '2019_01_27'
-      browse_detects(day,type,json_conf)   
+      browse_detects(day,type,json_conf,form)   
 
    #bottom = bottom.replace("{JQ}", jq)      
    bottom = bottom.replace("{BOTTOMNAV}", bot_html)      
@@ -1823,9 +1823,17 @@ def browse_day(day,cams_id,json_conf):
 
    print('</div></div>')
 
-def browse_detects(day,type,json_conf):
+def browse_detects(day,type,json_conf,form):
    cgitb.enable()
-   #print_css()
+
+   cur_page  = form.getvalue('p')
+
+   if (cur_page is None) or (cur_page==0):
+      cur_page = 1
+   else:
+      cur_page = int(cur_page)
+
+   
    proc_dir = json_conf['site']['proc_dir']
    failed_files, meteor_files, pending_files,min_files = get_day_stats(day,proc_dir + day + "/", json_conf)
    show_day = day.replace("_", "/")
@@ -1844,7 +1852,14 @@ def browse_detects(day,type,json_conf):
 
    html_out = ""
 
-   for file in sorted(files, reverse=True):
+   files = sorted(files, reverse=True)
+   _from = (cur_page-1) * NUMBER_OF_METEOR_PER_PAGE
+   _to = _from + NUMBER_OF_METEOR_PER_PAGE
+
+   # slice the array for pagination
+   files = files[_from:_to] 
+
+   for file in files:
       stack_img = file.replace(".mp4", "-stacked.png")
       stack_obj_img = file.replace(".mp4", "-stacked-obj.png")
       el = stack_img.split("/")
@@ -1858,6 +1873,8 @@ def browse_detects(day,type,json_conf):
        
    
    print(html_out)
+   pagination =  get_pagination(cur_page,len(files),"/pycgi/webUI.py?cmd=browse_detects&type="+type+"&day="+day,NUMBER_OF_METEOR_PER_PAGE)
+   print(pagination[0])
    print('</div></div>')
 
 
@@ -1900,33 +1917,30 @@ def main_page(json_conf,form):
    day_start = (cur_page-1) * NUMBER_OF_DAYS_PER_PAGE
    day_end = day_start + NUMBER_OF_DAYS_PER_PAGE
    # slice the array to just the values you want.
-   real_detections = all_real_detections[day_start:day_end]
-
-#   print(all_real_detections)
+   real_detections = all_real_detections[day_start:day_end] 
 
    for idx, day in enumerate(real_detections): 
       day_str = day
       day_dir = json_conf['site']['proc_dir'] + day + "/" 
-      #if counter<=NUMBER_OF_DAYS_PER_PAGE-1 and idx >= detections_form:
-      if True:
-         failed_files = stats_data[day]['failed_files']
-         meteor_files = stats_data[day]['meteor_files']
-         pending_files = stats_data[day]['pending_files']
+       
+      failed_files = stats_data[day]['failed_files']
+      meteor_files = stats_data[day]['meteor_files']
+      pending_files = stats_data[day]['pending_files']
 
-         html_row, day_x = make_day_preview(day_dir,stats_data[day], json_conf)
-         day_str = day.replace("_", "/")
+      html_row, day_x = make_day_preview(day_dir,stats_data[day], json_conf)
+      day_str = day.replace("_", "/")
 
-         to_display  = to_display + "<div class='h2_holder  d-flex justify-content-between'>"
-         to_display  = to_display +"<h2>"+day_str+" - <a class='btn btn-primary' href=webUI.py?cmd=meteors&limit_day=" + day + ">" + str(meteor_files) + " Meteors </a></h2>"
-         to_display  = to_display +"<p><a href=webUI.py?cmd=browse_detects&type=failed&day=" + day + ">" + str(failed_files) + " Non-Meteors </a>"
+      to_display  = to_display + "<div class='h2_holder  d-flex justify-content-between'>"
+      to_display  = to_display +"<h2>"+day_str+" - <a class='btn btn-primary' href=webUI.py?cmd=meteors&limit_day=" + day + ">" + str(meteor_files) + " Meteors </a></h2>"
+      to_display  = to_display +"<p><a href=webUI.py?cmd=browse_detects&type=failed&day=" + day + ">" + str(failed_files) + " Non-Meteors </a>"
 
-         if(pending_files>0):
-             to_display  = to_display + " - " + str(pending_files) + " Files Pending</a>"
+      if(pending_files>0):
+            to_display  = to_display + " - " + str(pending_files) + " Files Pending</a>"
 
-         to_display  = to_display +"</div><div class='gallery gal-resize row text-center text-lg-left mb-4'>"
-         to_display  = to_display + html_row
-         to_display = to_display + "</div>"
-         counter = counter + 1
+      to_display  = to_display +"</div><div class='gallery gal-resize row text-center text-lg-left mb-4'>"
+      to_display  = to_display + html_row
+      to_display = to_display + "</div>"
+      counter = counter + 1
  
    pagination =  get_pagination(cur_page,len(all_real_detections),"/pycgi/webUI.py?cmd=home",NUMBER_OF_DAYS_PER_PAGE)
 
