@@ -675,39 +675,15 @@ def meteor_index(json_conf, form):
 def hd_cal_index(json_conf, form):
    cam_id_filter = form.getvalue("cam_id")
    print("<h1>Auto Calibration Index</h1>")
-   print("<div style=\"padding: 5px; margin: 5px; clear:both\"  >")
+ 
    ci = load_json_file("/mnt/ams2/cal/hd_images/hd_cal_index.json")
    cam_day_sum = load_json_file("/mnt/ams2/cal/hd_images/hd_cal_index-cam-day-sum.json")
-   print("""
-   <script>
-      function show_hide(div_id) {
-         var x = document.getElementById(div_id);
-         if (x.style.display === "none") {
-            x.style.display = "block";
-            x.style.visibility= "visible";
-         } else {
-            x.style.display = "none";
-            x.style.visibility= "hidden";
-         }
-      }
-   </script>
-   """)
 
-   print("<table border=1 cellpadding=5 cellspacing=5>")
-   print("<tr><th>Date</th><th>Cam</th><th>Images w/ Stars</th><th>Images w/o Stars</th><th>Total Stars For Night</th><th>Center AZ/EL</th><th>Position Angle</th><th>PixScale</th><th>Avg Res Px For Night</th><th>Avg Res Deg For Night</th></tr>")
-   for day in sorted(ci,reverse=True):
-      #print("<div style=\"padding: 5px; margin: 5px; clear:both\"  >")
-      #print("<h2>" + str(day) + "</h2></div>")
+   print('<table class="table table-dark table-striped table-hover td-al-m">')
+   print('<thead><tr><th>&nbsp;</th><th>Date</th><th>Cam ID</th><th>Images w/ Stars</th><th>Images w/o Stars</th><th>Total Stars For Night</th><th>Center AZ/EL</th><th>Position Angle</th><th>PixScale</th><th>Avg Res Px For Night</th><th>Avg Res Deg For Night</th></tr></thead>')
+ 
+   for day in sorted(ci,reverse=True): 
       for cam_id in sorted(ci[day],reverse=False):
-         #print("<div style=\"padding: 5px; margin: 5px; clear:both\"  >")
-
-            #"files_with_stars": 8,
-            #"files_without_stars": 2,
-            #"total_res_px_for_night": 26.89815024073073,
-            #"total_res_deg_for_night": 1.1729207442987446,
-            #"avg_res_px_for_night": 0,
-            #"avg_res_deg_for_night": 0,
-            #"total_stars_tracked_for_night": 53
          if "files_with_stars" in cam_day_sum[day][cam_id]:
             desc = str(cam_day_sum[day][cam_id]['files_with_stars']) + " files with stars / "
             desc = desc + str(cam_day_sum[day][cam_id]['files_without_stars']) + " files without stars "
