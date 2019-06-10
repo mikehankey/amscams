@@ -1830,6 +1830,7 @@ def browse_day(day,cams_id,json_conf):
    print('</div></div>')
 
 def browse_detects(day,type,json_conf):
+   cgitb.enable()
    #print_css()
    proc_dir = json_conf['site']['proc_dir']
    failed_files, meteor_files, pending_files,min_files = get_day_stats(proc_dir + day + "/", json_conf)
