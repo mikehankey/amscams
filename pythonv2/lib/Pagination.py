@@ -27,10 +27,10 @@ def get_pagination(page,total_elts,url,max_per_page):
    last_page = math.ceil(last_page)
    last_page = int(last_page) 
  
-   #print("PAGE (cur): " + format(page))
-   #print("TOTAL ELTS " + format(total_elts))
-   #print("START: " + format(start))
-   #print("LAST PAGE : " + format(last_page))
+   print("PAGE (cur): " + format(page))
+   print("TOTAL ELTS " + format(total_elts))
+   print("START: " + format(start))
+   print("LAST PAGE : " + format(last_page))
    
    lpm1 = last_page - 1
    _prev = page - 1
