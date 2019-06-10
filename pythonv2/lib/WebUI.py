@@ -682,7 +682,7 @@ def hd_cal_index(json_conf, form):
    ci = load_json_file("/mnt/ams2/cal/hd_images/hd_cal_index.json")
    cam_day_sum = load_json_file("/mnt/ams2/cal/hd_images/hd_cal_index-cam-day-sum.json")
 
-   print('<div class="m-3">')
+   print('<div class="m-auto mt-3 mb-3" style="max-width: 1730px;">')
    print('<table class="table table-dark table-striped table-hover td-al-m">')
    print('<thead><tr><th>Date</th><th>Cam ID</th><th>Images w/ Stars</th><th>Images w/o Stars</th><th>Total Stars For Night</th><th>Center AZ/EL</th><th>Position Angle</th><th>PixScale</th><th>Avg Res Px For Night</th><th>Avg Res Deg For Night</th></tr></thead>')
    print('<tbody>')
@@ -748,7 +748,7 @@ def hd_cal_index(json_conf, form):
             print("<tr class='" + color + " clickable toggler' data-tog='#fr"+div_id+"'><td><div class='st'></div></td><td>{:s}</a></td><td>{:s}</td><td>{:s}</td><td>{:s}</td><td>{:s}</td><td>{:s}</td><td>{:s}</td><td>{:s}</td><td>{:s}</td></tr>".format(show_link, str(cam_day_sum[day][cam_id]['files_with_stars']), str(cam_day_sum[day][cam_id]['files_without_stars']), str(cam_day_sum[day][cam_id]['total_stars_tracked_for_night']), az_el, pos_ang, px_scale, str(cam_day_sum[day][cam_id]['avg_res_px_for_night'])[0:5],str(cam_day_sum[day][cam_id]['avg_res_deg_for_night'])[0:5]))
           
             print("<tr><td colspan='11' class='collapse' id='fr"+div_id+"'>")
-            print("<div class='text-center text-lg-left gallery gal-resize d-flex flex-wrap'>")
+            print("<div class='text-center text-lg-left gallery gal-resize d-flex flex-wrap' style='max-width: 1730px;'>")
             for cfile in sorted(ci[day][cam_id], reverse=True):
                if "total_res_deg" in ci[day][cam_id][cfile]:
                   trd = ci[day][cam_id][cfile]['total_res_deg']
@@ -770,7 +770,7 @@ def hd_cal_index(json_conf, form):
                   
                print('<div class="preview p-2"><a href="'+detail_link+'" class="mttt">')
                print('<img src="'+tn+'" class="ns lz" width="200" height="112"/>');
-               print('</a><span class="det" '+color+'>' + str(ts) + " stars - " + str(trp)[0:5] + " Rpx -" +  str(trd)[0:5] + "Rd</span></div>")
+               print('</a><span class="det" '+color+'><b>' + str(ts) + "</b> stars - <b>" + str(trp)[0:5] + "</b>Rpx - <b>" +  str(trd)[0:5] + "</b>Rd</span></div>")
 
             
          
