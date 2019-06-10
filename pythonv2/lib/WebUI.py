@@ -602,7 +602,7 @@ def meteor_index(json_conf, form):
    cam_id = form.getvalue("cam_id")
    day_limit= form.getvalue("day")
    mi = load_json_file("/mnt/ams2/cal/hd_images/meteor_index.json") 
-   print("<table class='table m-auto'>")
+   print("<table class='table table-dark table-striped table-hover td-al-m table-fit'>")
    print("<thead><tr><th>Meteor</th><th>Reduced</th><th>Multi-Station</th><th>AZ/EL FOV</th><th>Pos Ang</th><th>Pixscale</th><th>Stars</th><th>Res Px</th><th>Res Deg</th><th>Dur</th><th>Ang Sep</th><th>Mag</th></tr></thead>")
    print("<tbody>")
    for day in sorted(mi, reverse=True):
