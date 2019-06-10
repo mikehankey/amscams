@@ -699,7 +699,7 @@ def hd_cal_index(json_conf, form):
          else:
             desc = ""
          
-         div_id = str(day) + "." + str(cam_id)
+         div_id = str(day) + "_" + str(cam_id)
          show_link = '<a href="#" class="btn btn-sm btn-primary"><b>'+cam_id+'</b></a>'
  
          if cam_day_sum[day][cam_id]['avg_res_deg_for_night'] > .5:
