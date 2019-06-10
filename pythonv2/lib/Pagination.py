@@ -3,6 +3,14 @@ import math
 
 def get_pagination(page,total_elts,url,max_per_page):
    
+
+   print("IN PAGINATION")
+   print("PAGE " +  format(page))
+   print("TOTAL ELTS " + format(total_elts))
+   print("URL " + url)
+   print("MAX PER P " + max_per_page)
+
+
    #cgitb.enable()
 
    # No Pagination Needed: return empty array
