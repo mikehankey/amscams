@@ -1404,13 +1404,15 @@ def examine_min(video_file,json_conf):
    print("<a class='btn btn-primary mx-auto d-block mb-2' href='webUI.py?cmd=sat_cap&input_file=" + video_file + "&stack_file=" + stack_file + "&next_stack_file=" + next_stack_file + "'>Add / Reduce Satellite Capture</a>")
    print("</div>")
 
-   print("<div class='box'><h2 class='mb-4'>Status</h2>")
+   print("<div class='box'><h2>Status</h2>")
    print("<div class='p-3'>")
  
    if len(pending_files) > 0:
       print("<p>Trim files for this clip are still pending processing. Please wait before manually processing this file.</p>")
+      print("<ul>")
       for pending in pending_files:
-         print("<a href=" + pending + ">" + pending + "</a>")
+         print("<li><a href=" + pending + ">" + pending + "</a></li>")
+      print("</ul>")
 
    if len(meteor_files) > 0:
       print("<p class='text-center alert success'><b>Meteor DETECTED</b></p>")
