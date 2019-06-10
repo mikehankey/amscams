@@ -1832,8 +1832,7 @@ def browse_day(day,cams_id,json_conf):
 def browse_detects(day,type,json_conf):
    cgitb.enable()
    #print_css()
-   proc_dir = json_conf['site']['proc_dir']
-   #get_day_stats(day, day_dir, json_conf)
+   proc_dir = json_conf['site']['proc_dir'] r
    failed_files, meteor_files, pending_files,min_files = get_day_stats(day,proc_dir + day + "/", json_conf)
    if type == 'meteor':
       files = meteor_files
@@ -1841,7 +1840,9 @@ def browse_detects(day,type,json_conf):
       print("<h1>Meteor Detections on {:s}</h1>".format(show_day))
       print("{:d} Meteors Detected<br>".format(len(files)))
    else:
+      print("<h1>Non-Meteor Detections on {:s}</h1>".format(show_day))
       files = failed_files
+
    for file in sorted(files, reverse=True):
       stack_img = file.replace(".mp4", "-stacked.png")
       stack_obj_img = file.replace(".mp4", "-stacked-obj.png")
@@ -1853,18 +1854,18 @@ def browse_detects(day,type,json_conf):
       #print("<a href=webUI.py?cmd=examine&video_file=" + file + ">")
       #print("<img src=" + stack_img + " width=400></a>{:s}".format(short_name))
       base_js_name=short_name.replace("_", "")
-      htclass = "none"
-
-      html_out = ""
-      html_out = html_out + "<a href=\"webUI.py?cmd=examine&video_file=" + file + "\"" \
-         + " onmouseover=\"document.getElementById('" + base_js_name + "').src='" + stack_obj_img \
-         + "'\" onmouseout=\"document.getElementById('" + base_js_name + "').src='" + stack_img+ "'\">"
-      html_out = html_out + "<img class=\"" + htclass + "\" id=\"" + base_js_name + "\" width='200' src='" + stack_img+ "'></a>\n"
+      
+      #htclass = "none"
+      #html_out = ""
+      #html_out = html_out + "<a href=\"webUI.py?cmd=examine&video_file=" + file + "\"" \
+      #   + " onmouseover=\"document.getElementById('" + base_js_name + "').src='" + stack_obj_img \
+      #   + "'\" onmouseout=\"document.getElementById('" + base_js_name + "').src='" + stack_img+ "'\">"
+      #html_out = html_out + "<img class=\"" + htclass + "\" id=\"" + base_js_name + "\" width='200' src='" + stack_img+ "'></a>\n"
 
       #print("<figure><img id=" + base_js_name + " class='" + htclass + "' width=300 src=" + stack_img + "></img></a><figcaption>" + short_name + "</figcaption></figure>")
-      print("<figure>" + html_out + "<figcaption>" + short_name + "</figcaption></figure>")
+      #print("<figure>" + html_out + "<figcaption>" + short_name + "</figcaption></figure>")
 
-   print("<div style=\"clear: both\"></div>")
+   #print("<div style=\"clear: both\"></div>")
 
 def main_page(json_conf,form):
 
