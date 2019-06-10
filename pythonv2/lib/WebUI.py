@@ -679,13 +679,14 @@ def hd_cal_index(json_conf, form):
    ci = load_json_file("/mnt/ams2/cal/hd_images/hd_cal_index.json")
    cam_day_sum = load_json_file("/mnt/ams2/cal/hd_images/hd_cal_index-cam-day-sum.json")
 
+   print('<div class="mr-3 ml-3">')
    print('<table class="table table-dark table-striped table-hover td-al-m">')
    print('<thead><tr><th>&nbsp;</th><th>Date</th><th>Cam ID</th><th>Images w/ Stars</th><th>Images w/o Stars</th><th>Total Stars For Night</th><th>Center AZ/EL</th><th>Position Angle</th><th>PixScale</th><th>Avg Res Px For Night</th><th>Avg Res Deg For Night</th></tr></thead>')
    print('<tbody>')
 
    for day in sorted(ci,reverse=True): 
          
-      print('<tr><td colspan="11"><h3>'+day.replace("_","/")+'</h3></td></tr>')
+      print('<tr><td colspan="11"><h5 class="mb-0">'+day.replace("_","/")+'</h5></td></tr>')
 
       for cam_id in sorted(ci[day],reverse=False):
 
@@ -697,24 +698,24 @@ def hd_cal_index(json_conf, form):
          
          div_id = str(day) + "." + str(cam_id)
          show_link = "<a href=\"javascript:show_hide('" + div_id + "')\">"
-
-
+ 
          if cam_day_sum[day][cam_id]['avg_res_deg_for_night'] > .5:
-               color = "style='color: #ff0000'"
+               color = "lv1"
          elif .4 < cam_day_sum[day][cam_id]['avg_res_deg_for_night'] <= .5:
-               color = "style='color: #FF4500'"
+               color = "lv2"
          elif .3 < cam_day_sum[day][cam_id]['avg_res_deg_for_night'] <= .4:
-               color = "style='color: #FFFF00'"
+               color = "lv3"
          elif .2 < cam_day_sum[day][cam_id]['avg_res_deg_for_night'] <= .3:
-               color = "style='color: #00FF00'"
+               color = "lv4"
          elif .1 < cam_day_sum[day][cam_id]['avg_res_deg_for_night'] <= .2:
-               color = "style='color: #00ffff'"
+               color = "lv8"
          elif 0 < cam_day_sum[day][cam_id]['avg_res_deg_for_night'] <= .1:
-               color = "style='color: #0000ff'"
+               color = "lv5"
          elif cam_day_sum[day][cam_id]['avg_res_deg_for_night'] == 0:
-               color = "style='color: #ffffff'"
+               color = "lv7"
          else: 
-               color = ""
+               color = "lv7"
+
          if cam_id_filter is None:
             show_row = 1
          elif cam_id == cam_id_filter:
@@ -741,9 +742,9 @@ def hd_cal_index(json_conf, form):
             px_scale = ""
 
          if show_row == 1:
-            print("<tr " + color + "><td><div class='st'></div></td><td>{:s}</td><td>{:s}{:s}</a></td><td>{:s}</td><td>{:s}</td><td>{:s}</td><td>{:s}</td><td>{:s}</td><td>{:s}</td><td>{:s}</td><td>{:s}</td></tr>".format( str(day), show_link, str(cam_id), str(cam_day_sum[day][cam_id]['files_with_stars']), str(cam_day_sum[day][cam_id]['files_without_stars']), str(cam_day_sum[day][cam_id]['total_stars_tracked_for_night']), az_el, pos_ang, px_scale, str(cam_day_sum[day][cam_id]['avg_res_px_for_night'])[0:5],str(cam_day_sum[day][cam_id]['avg_res_deg_for_night'])[0:5]))
+            print("<tr class='" + color + "'><td><div class='st'></div></td><td>{:s}</td><td>{:s}{:s}</a></td><td>{:s}</td><td>{:s}</td><td>{:s}</td><td>{:s}</td><td>{:s}</td><td>{:s}</td><td>{:s}</td><td>{:s}</td></tr>".format( str(day), show_link, str(cam_id), str(cam_day_sum[day][cam_id]['files_with_stars']), str(cam_day_sum[day][cam_id]['files_without_stars']), str(cam_day_sum[day][cam_id]['total_stars_tracked_for_night']), az_el, pos_ang, px_scale, str(cam_day_sum[day][cam_id]['avg_res_px_for_night'])[0:5],str(cam_day_sum[day][cam_id]['avg_res_deg_for_night'])[0:5]))
           
-            print("<tr ><td colspan=10><div id='" + div_id + "' style='display: none;' > ")
+            print("<tr ><td colspan='11' class='collapse'>")
             for cfile in sorted(ci[day][cam_id], reverse=True):
                if "total_res_deg" in ci[day][cam_id][cfile]:
                   trd = ci[day][cam_id][cfile]['total_res_deg']
@@ -766,7 +767,7 @@ def hd_cal_index(json_conf, form):
                print("<figure style=\"float:left; \"><a href=" + detail_link + "><img src=" + tn + " width=144 height=81></a><figcaption " + color + ">Stars:" + str(ts) + "<BR>Rpx " + str(trp)[0:5] + ", Rd" + str(trd)[0:5] + "<BR>" + "" + "</figcaption></figure>")
             print("</td></tr> ")
    print("</div></table>")
-   print("</div>")
+   print("</div></div>")
    extra_html = """
    <script>
       var my_image = ''
