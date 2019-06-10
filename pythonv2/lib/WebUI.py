@@ -1844,6 +1844,10 @@ def browse_detects(day,type,json_conf):
       print("<h1>Non-Meteor Detections on {:s}</h1>".format(show_day))
       files = failed_files
 
+   print("<div id='main_container' class='container-fluid h-100 mt-4 lg-l'>")
+   print("<div class='gallery gal-resize row text-center text-lg-left'>")
+
+
    for file in sorted(files, reverse=True):
       stack_img = file.replace(".mp4", "-stacked.png")
       stack_obj_img = file.replace(".mp4", "-stacked-obj.png")
@@ -1855,6 +1859,11 @@ def browse_detects(day,type,json_conf):
       #print("<a href=webUI.py?cmd=examine&video_file=" + file + ">")
       #print("<img src=" + stack_img + " width=400></a>{:s}".format(short_name))
       base_js_name=short_name.replace("_", "")
+
+      html_out = html_out + "<div class='preview col-lg-2 col-md-3 '>"
+      html_out = html_out + "<a class='mtt' href='webUI.py?cmd=examine&video_file=" + day_stfiler +"'  title='Examine'>"
+      html_out = html_out + "<img alt='" + short_name + "' class='img-fluid ns lz' src='" + stack_img + "'>"
+      html_out = html_out + "<span>" + short_name + " minutes</span></a></div>"     
       
       #htclass = "none"
       #html_out = ""
@@ -1865,8 +1874,9 @@ def browse_detects(day,type,json_conf):
 
       #print("<figure><img id=" + base_js_name + " class='" + htclass + "' width=300 src=" + stack_img + "></img></a><figcaption>" + short_name + "</figcaption></figure>")
       #print("<figure>" + html_out + "<figcaption>" + short_name + "</figcaption></figure>")
+   print('</div></div>')
 
-   #print("<div style=\"clear: both\"></div>")
+
 
 def main_page(json_conf,form):
 
