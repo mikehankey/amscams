@@ -48,7 +48,7 @@ def get_pagination(page,total_elts,url,max_per_page):
 
       if(end < last):
             pagination = pagination + "<li class='page-item disabled'><a class='page-link'><span>&hellip;</span></a></li>";            
-            pagination = pagination + "<li class='page-item '><a href='"+url+"&p="+format(last)+"' class='page-link'>1</a></li>";
+            pagination = pagination + "<li class='page-item '><a href='"+url+"&p="+format(last)+"' class='page-link'>"+format(last)+"</a></li>";
 
       if(page == last):
             pagination = pagination + "<li class='page-item disabled'><a class='page-link' >Next &raquo;</a></li>";
