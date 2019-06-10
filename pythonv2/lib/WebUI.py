@@ -797,6 +797,11 @@ def hd_cal_index(json_conf, form):
 
 def calibration(json_conf,form):
    cam_id_filter = form.getvalue("cam_id")
+
+   print("<h1>Calibrations</h1>")
+   
+
+
    print("""
       <div style="padding: 10px">
       <a href="">Past Calibrations</a> - 
