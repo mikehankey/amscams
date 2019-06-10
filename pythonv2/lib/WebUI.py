@@ -601,10 +601,10 @@ def meteor_index(json_conf, form):
    print("<h1>Meteor Index</h1>")
    cam_id = form.getvalue("cam_id")
    day_limit= form.getvalue("day")
-   mi = load_json_file("/mnt/ams2/cal/hd_images/meteor_index.json")
-   print("<div style=\"padding: 5px; margin: 5px; clear:both\"  >")
-   print("<table border=1 cellpadding=5 cellspacing=5>")
-   print("<tr><th>Meteor</th><th>Reduced</th><th>Multi-Station</th><th>AZ/EL FOV</th><th>Pos Ang</th><th>Pixscale</th><th>Stars</th><th>Res Px</th><th>Res Deg</th><th>Dur</th><th>Ang Sep</th><th>Mag</th></tr>")
+   mi = load_json_file("/mnt/ams2/cal/hd_images/meteor_index.json") 
+   print("<table class='table m-auto'>")
+   print("<thead><tr><th>Meteor</th><th>Reduced</th><th>Multi-Station</th><th>AZ/EL FOV</th><th>Pos Ang</th><th>Pixscale</th><th>Stars</th><th>Res Px</th><th>Res Deg</th><th>Dur</th><th>Ang Sep</th><th>Mag</th></tr></thead>")
+   print("<tbody>")
    for day in sorted(mi, reverse=True):
       for meteor_file in mi[day]:
          hd_datetime, hd_cam, hd_date, hd_y, hd_m, hd_d, hd_h, hd_M, hd_s = convert_filename_to_date_cam(meteor_file)
@@ -667,8 +667,7 @@ def meteor_index(json_conf, form):
 
          if show == 1:
             print("<tr " + color + "><td> {:s}{:s}</a></td><td>{:s}</td><td>{:s}</td><td>{:s}</td><td>{:s}</td><td>{:s}</td><td>{:s}</td><td> {:s}</td><td> {:s} </td><td></td><td></td><td></td></tr> ".format(link, fn, str(mi[day][meteor_file]['reduced']), multi_text, az_el, pos, pxs, str(ts), str(mi[day][meteor_file]['total_res_px'])[0:5], str(mi[day][meteor_file]['total_res_deg'])[0:5]))
-          
-   print("</table></div>")
+   print("<tbody></table>")
 
 
 def hd_cal_index(json_conf, form):
