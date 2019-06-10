@@ -1389,7 +1389,12 @@ def examine_min(video_file,json_conf):
    print("<div id='main_container' class='container-fluid d-flex h-100 mt-4 position-relative'>")
 
    print("<div class='h-100 flex-fixed-canvas'>")
-   print("<a href='" + video_file + "' class='vid_link_gal mx-auto d-block' title='Click to Play'><img src='" + stack_file + "' class='mx-auto d-block img-fluid' style='width:100%'></a>")
+
+   if(os.path.isfile(stack_file))   
+      print("<a href='" + video_file + "' class='vid_link_gal mx-auto d-block' title='Click to Play'><img src='" + stack_file + "' class='mx-auto d-block img-fluid' style='width:100%'></a>")
+   else
+      print("<div class='alert error'>The Stack Image is missing.</div>")
+
    print("</div>")
    print("<div class='flex-fixed-r-canvas h-100'>")
    print("<div class='box'><h2 class='mb-4'>Actions</h2>")
@@ -1400,7 +1405,7 @@ def examine_min(video_file,json_conf):
    print("</div>")
 
    print("<div class='box'><h2 class='mb-4'>Status</h2>")
-
+   print("<div class='p-3'>")
  
    if len(pending_files) > 0:
       print("<p>Trim files for this clip are still pending processing. Please wait before manually processing this file.</p>")
@@ -1427,7 +1432,7 @@ def examine_min(video_file,json_conf):
       print("<p class='text-center alert error'><b>NO Detection</b></p>")
    #print(failed_files,meteor_files)
 
-   print("</div></div></div></div>") 
+   print("</div></div></div></div></div>") 
 
 def override_detect(video_file,jsid, json_conf):
 
