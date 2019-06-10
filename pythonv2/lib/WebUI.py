@@ -1876,6 +1876,9 @@ def browse_detects(day,type,json_conf,form):
    pagination =  get_pagination(cur_page,len(files),"/pycgi/webUI.py?cmd=browse_detects&type="+type+"&day="+day,NUMBER_OF_METEOR_PER_PAGE)
    print(pagination[0])
    print('</div></div>')
+   print('TOTAL ' +  len(files))
+   print('PAGINATION')
+   print(pagination)
 
 
 
