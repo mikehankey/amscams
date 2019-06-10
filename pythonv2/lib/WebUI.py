@@ -602,9 +602,11 @@ def meteor_index(json_conf, form):
    cam_id = form.getvalue("cam_id")
    day_limit= form.getvalue("day")
    mi = load_json_file("/mnt/ams2/cal/hd_images/meteor_index.json") 
+
    print("<table class='table table-dark table-striped table-hover td-al-m m-auto table-fit'>")
-   print("<thead><tr><th>Meteor</th><th>Reduced</th><th>Multi-Station</th><th>AZ/EL FOV</th><th>Pos Ang</th><th>Pixscale</th><th>Stars</th><th>Res Px</th><th>Res Deg</th><th>Dur</th><th>Ang Sep</th><th>Mag</th></tr></thead>")
+   print("<thead><tr><th>&nbsp;</th><th>Meteor</th><th>Reduced</th><th>Multi-Station</th><th>AZ/EL FOV</th><th>Pos Ang</th><th>Pixscale</th><th>Stars</th><th>Res Px</th><th>Res Deg</th><th>Dur</th><th>Ang Sep</th><th>Mag</th></tr></thead>")
    print("<tbody>")
+
    for day in sorted(mi, reverse=True):
       for meteor_file in mi[day]:
          hd_datetime, hd_cam, hd_date, hd_y, hd_m, hd_d, hd_h, hd_M, hd_s = convert_filename_to_date_cam(meteor_file)
@@ -617,26 +619,26 @@ def meteor_index(json_conf, form):
          fn = meteor_file.split("/")[-1]
          fn = fn.replace(".json", "")
          video_file = meteor_file.replace(".json", ".mp4")
-         link = "<a href=/pycgi/webUI.py?cmd=reduce&video_file=" + video_file + ">"
+         link = "<a href=/pycgi/webUI.py?cmd=reduce&video_file=" + get_meteor_date(video_file) + ">"
 
          if mi[day][meteor_file]['total_res_deg'] > .5:
-               color = "style='color: #ff0000'"
+               color = "lv1"
          elif .4 < mi[day][meteor_file]['total_res_deg'] < .5:
-               color = "style='color: #FF4500'"
+               color = "lv2"
          elif .3< mi[day][meteor_file]['total_res_deg'] < .4:
-               color = "style='color: #FFFF00'"
+               color = "lv3"
          elif .2 < mi[day][meteor_file]['total_res_deg'] < .3:
-               color = "style='color: #00FF00'"
+               color = "lv4"
          elif .1 < mi[day][meteor_file]['total_res_deg'] < .2:
-               color = "style='color: #00ffff'"
+               color = "lv5"
          elif mi[day][meteor_file]['total_res_deg'] == 0:
-               color = "style='color: #ffffff'"
+               color = "lv6"
          elif mi[day][meteor_file]['total_res_deg'] == 9999:
-               color = "style='color: #ffffff'"
+               color = "lv7"
          elif 0 < mi[day][meteor_file]['total_res_deg'] < .1:
-               color = "style='color: #0000ff'"
+               color = "lv8"
          else:
-               color = "style='color: #ffffff'"
+               color = "lv7"
          if 'center_az' in mi[day][meteor_file]:
             az_el = str(mi[day][meteor_file]['center_az'])[0:5] + "/" +  str(mi[day][meteor_file]['center_el'])[0:5]
          else:
@@ -666,7 +668,7 @@ def meteor_index(json_conf, form):
 
 
          if show == 1:
-            print("<tr " + color + "><td> {:s}{:s}</a></td><td>{:s}</td><td>{:s}</td><td>{:s}</td><td>{:s}</td><td>{:s}</td><td>{:s}</td><td> {:s}</td><td> {:s} </td><td></td><td></td><td></td></tr> ".format(link, fn, str(mi[day][meteor_file]['reduced']), multi_text, az_el, pos, pxs, str(ts), str(mi[day][meteor_file]['total_res_px'])[0:5], str(mi[day][meteor_file]['total_res_deg'])[0:5]))
+            print("<tr class='" + color + "'><td><div class='st'></div></td><td> {:s}{:s}</a></td><td>{:s}</td><td>{:s}</td><td>{:s}</td><td>{:s}</td><td>{:s}</td><td>{:s}</td><td> {:s}</td><td> {:s} </td><td></td><td></td><td></td></tr> ".format(link, fn, str(mi[day][meteor_file]['reduced']), multi_text, az_el, pos, pxs, str(ts), str(mi[day][meteor_file]['total_res_px'])[0:5], str(mi[day][meteor_file]['total_res_deg'])[0:5]))
    print("<tbody></table>")
 
 
