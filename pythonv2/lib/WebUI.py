@@ -770,7 +770,7 @@ def hd_cal_index(json_conf, form):
                   
                print('<div class="preview p-2"><a href="'+detail_link+'" class="mttt">')
                print('<img src="'+tn+'" class="ns lz" width="200" height="112"/>');
-               print('</a><span class="det">' + str(ts) + " stars - " + str(trp)[0:5] + " Rpx -" +  str(trd)[0:5] + "Rd</span></div>")
+               print('</a><span class="det" '+color+'>' + str(ts) + " stars - " + str(trp)[0:5] + " Rpx -" +  str(trd)[0:5] + "Rd</span></div>")
 
             
          
