@@ -1847,18 +1847,16 @@ def browse_detects(day,type,json_conf):
       stack_img = file.replace(".mp4", "-stacked.png")
       stack_obj_img = file.replace(".mp4", "-stacked-obj.png")
       el = stack_img.split("/")
-      short = el[-1].replace("-stacked.png", "")
-      xxx = short.split("-trim")
-      short_name = xxx[0]
-    
+      short_name = get_meteor_date(file)
+      
       #print("<a href=webUI.py?cmd=examine&video_file=" + file + ">")
       #print("<img src=" + stack_img + " width=400></a>{:s}".format(short_name))
       base_js_name=short_name.replace("_", "")
 
-      html_out = html_out + "<div class='preview col-lg-2 col-md-3 '>"
+      html_out = html_out + "<div class='preview col-lg-2 col-md-3 mb-4'>"
       html_out = html_out + "<a class='mtt' href='webUI.py?cmd=examine&video_file=" + file +"'  title='Examine'>"
       html_out = html_out + "<img alt='" + short_name + "' class='img-fluid ns lz' src='" + stack_img + "'>"
-      html_out = html_out + "<span>" + short_name + " minutes</span></a></div>"     
+      html_out = html_out + "<span>" + short_name + "</span></a></div>"     
       
       #htclass = "none"
       #html_out = ""
