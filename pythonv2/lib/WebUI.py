@@ -1390,9 +1390,9 @@ def examine_min(video_file,json_conf):
 
    print("<div class='h-100 flex-fixed-canvas'>")
 
-   if(os.path.isfile(stack_file))   
+   if os.path.isfile(stack_file):
       print("<a href='" + video_file + "' class='vid_link_gal mx-auto d-block' title='Click to Play'><img src='" + stack_file + "' class='mx-auto d-block img-fluid' style='width:100%'></a>")
-   else
+   else:
       print("<div class='alert error'>The Stack Image is missing.</div>")
 
    print("</div>")
