@@ -748,7 +748,7 @@ def hd_cal_index(json_conf, form):
             print("<tr class='" + color + " clickable toggler' data-tog='#fr"+div_id+"'><td><div class='st'></div></td><td>{:s}</a></td><td>{:s}</td><td>{:s}</td><td>{:s}</td><td>{:s}</td><td>{:s}</td><td>{:s}</td><td>{:s}</td><td>{:s}</td></tr>".format(show_link, str(cam_day_sum[day][cam_id]['files_with_stars']), str(cam_day_sum[day][cam_id]['files_without_stars']), str(cam_day_sum[day][cam_id]['total_stars_tracked_for_night']), az_el, pos_ang, px_scale, str(cam_day_sum[day][cam_id]['avg_res_px_for_night'])[0:5],str(cam_day_sum[day][cam_id]['avg_res_deg_for_night'])[0:5]))
           
             print("<tr><td colspan='11' class='collapse' id='fr"+div_id+"'>")
-            print("<div class='text-center text-lg-left gallery gal-resize d-flex flex-wrap' style='max-width: 1730px;'>")
+            print("<div class='text-center text-lg-left gallery gal-resize d-flex flex-wrap' style='max-width: 1520px;'>")
             for cfile in sorted(ci[day][cam_id], reverse=True):
                if "total_res_deg" in ci[day][cam_id][cfile]:
                   trd = ci[day][cam_id][cfile]['total_res_deg']
@@ -831,7 +831,7 @@ def calibration(json_conf,form):
          show_row = 0
 
       if show_row == 1: 
-         print("<tr class='" + color + "'><td><div class='st'></div></td><td><a href='{:s}'>{:s}</a></td><td>{:s}</td><td>{:s}</td><td>{:s}/{:s}</td><td>{:s}</td><td>{:s}</td><td>{:s}</td><td>{:s}</td></tr>".format( link, str(ci[cf]['cal_date']), \
+         print("<tr class='" + color + "'><td><div class='st'></div></td><td><a class='btn btn-primary' href='{:s}'>{:s}</a></td><td>{:s}</td><td>{:s}</td><td>{:s}/{:s}</td><td>{:s}</td><td>{:s}</td><td>{:s}</td><td>{:s}</td></tr>".format( link, str(ci[cf]['cal_date']), \
             str(ci[cf]['cam_id']), str(ci[cf]['total_stars']), str(ci[cf]['center_az']), str(ci[cf]['center_el']), str(ci[cf]['position_angle']), \
             str(ci[cf]['pixscale']), str(ci[cf]['total_res_px']), str(ci[cf]['total_res_deg']) ))
 
