@@ -1857,10 +1857,9 @@ def browse_detects(day,type,json_conf,form):
    _to = _from + NUMBER_OF_METEOR_PER_PAGE
 
    # slice the array for pagination
-   cur_res = len(files)
-   files = files[_from:_to] 
+   real_files   = files[_from:_to] 
 
-   for file in files:
+   for file in real_files:
       stack_img = file.replace(".mp4", "-stacked.png")
       stack_obj_img = file.replace(".mp4", "-stacked-obj.png")
       el = stack_img.split("/")
@@ -1873,10 +1872,10 @@ def browse_detects(day,type,json_conf,form):
       html_out = html_out + "<span>" + short_name + "</span></a></div>"     
        
    
-   print(html_out)
-   pagination =  get_pagination(cur_page,cur_res,"/pycgi/webUI.py?cmd=browse_detects&type="+type+"&day="+day,NUMBER_OF_METEOR_PER_PAGE)
+   print(html_out+"</div>")
+   pagination =  get_pagination(cur_page,len(files),"/pycgi/webUI.py?cmd=browse_detects&type="+type+"&day="+day,NUMBER_OF_METEOR_PER_PAGE)
    print(pagination[0])
-   print('</div></div>') 
+   print('</div>') 
 
 
 
