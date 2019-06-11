@@ -3902,6 +3902,11 @@ def sd_pic_stars(json_conf,form):
                 </dl> 
             </div>"""
 
+   canvas_html = canvas_html +"<div class='box'><h2 class='mb-4'>Actions</h2>"
+   canvas_html = canvas_html +"<a class='btn btn-primary mx-auto d-block mb-2' id='auto_detect_stars'>Auto Star Detect</a>"
+   canvas_html = canvas_html +"<a class='btn btn-primary mx-auto d-block mb-2' id='upscale_to_HD'>Upscale to HD</a>"
+   canvas_html = canvas_html +"</div>"
+
 
    canvas_html = canvas_html + """
       
