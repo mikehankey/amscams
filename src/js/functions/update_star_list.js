@@ -146,35 +146,16 @@ function update_star_list() {
         url:  "/pycgi/webUI.py",
         data: cmd_data,
         success: function(data) {
-            try {
-                var json_resp = $.parseJSON(data);
-            } catch(e) {
-                bootbox.alert({
-                    message: "The process failed (no result). Please, try again later.",
-                    className: 'rubberBand animated error',
-                    centerVertical: true
-                }); 
-                loading_done();
-                return false;
-            }
-          
+            var json_resp = $.parseJSON(data);
             if(json_resp['status']!==0) {
                 update_stars_on_canvas_and_table(json_resp);
 
                 // Open proper tab
                 $('#stars-tab-l').click();
-                loading_done();
                 
-            }  else {
-
-                bootbox.alert({
-                    message: "The process failed. Please, try again later.",
-                    className: 'rubberBand animated error',
-                    centerVertical: true
-                }); 
-
-            }
-            loading_done();
+                loading_done();
+            }  
+ 
         } 
     });
  

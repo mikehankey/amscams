@@ -384,7 +384,7 @@ def controller(json_conf):
       type = form.getvalue('type')
       #type = 'meteor'
       #day = '2019_01_27'
-      browse_detects(day,type,json_conf)   
+      browse_detects(day,type,json_conf,form)   
 
    #bottom = bottom.replace("{JQ}", jq)      
    bottom = bottom.replace("{BOTTOMNAV}", bot_html)      
@@ -596,15 +596,21 @@ def hd_cal_detail(json_conf, form):
 
    return(js_html)
 
-
 def meteor_index(json_conf, form):
    print("<h1>Meteor Index</h1>")
    cam_id = form.getvalue("cam_id")
    day_limit= form.getvalue("day")
    mi = load_json_file("/mnt/ams2/cal/hd_images/meteor_index.json")
    print("<div style=\"padding: 5px; margin: 5px; clear:both\"  >")
-   print("<table border=1 cellpadding=5 cellspacing=5>")
-   print("<tr><th>Meteor</th><th>Reduced</th><th>Multi-Station</th><th>AZ/EL FOV</th><th>Pos Ang</th><th>Pixscale</th><th>Stars</th><th>Res Px</th><th>Res Deg</th><th>Dur</th><th>Ang Sep</th><th>Mag</th><th>Seg Res</th><th>Missing Frames</th></tr>")
+   #print("<table border=1 cellpadding=5 cellspacing=5>")
+   #print("<tr><th>Meteor</th><th>Reduced</th><th>Multi-Station</th><th>AZ/EL FOV</th><th>Pos Ang</th><th>Pixscale</th><th>Stars</th><th>Res Px</th><th>Res Deg</th><th>Dur</th><th>Ang Sep</th><th>Mag</th><th>Seg Res</th><th>Missing Frames</th></tr>")
+
+
+
+   print("<table class='table table-dark table-striped table-hover td-al-m m-auto table-fit'>")
+   print("<thead><tr><th>&nbsp;</th><th>Meteor</th><th>Reduced</th><th>Multi-Station</th><th>AZ/EL FOV</th><th>Pos Ang</th><th>Pixscale</th><th>Stars</th><th>Res Px</th><th>Res Deg</th><th>Dur</th><th>Ang Sep</th><th>Mag</th></tr></thead>")
+   print("<tbody>")
+
    for day in sorted(mi, reverse=True):
       for meteor_file in mi[day]:
          hd_datetime, hd_cam, hd_date, hd_y, hd_m, hd_d, hd_h, hd_M, hd_s = convert_filename_to_date_cam(meteor_file)
@@ -617,26 +623,26 @@ def meteor_index(json_conf, form):
          fn = meteor_file.split("/")[-1]
          fn = fn.replace(".json", "")
          video_file = meteor_file.replace(".json", ".mp4")
-         link = "<a href=/pycgi/webUI.py?cmd=reduce&video_file=" + video_file + ">"
+         link = "<a href='/pycgi/webUI.py?cmd=reduce&video_file=" + video_file + "' class='btn btn-primary'>" + get_meteor_date(video_file) + "</a>"
 
          if mi[day][meteor_file]['total_res_deg'] > .5:
-               color = "style='color: #ff0000'"
+               color = "lv1"
          elif .4 < mi[day][meteor_file]['total_res_deg'] < .5:
-               color = "style='color: #FF4500'"
+               color = "lv2"
          elif .3< mi[day][meteor_file]['total_res_deg'] < .4:
-               color = "style='color: #FFFF00'"
+               color = "lv3"
          elif .2 < mi[day][meteor_file]['total_res_deg'] < .3:
-               color = "style='color: #00FF00'"
+               color = "lv4"
          elif .1 < mi[day][meteor_file]['total_res_deg'] < .2:
-               color = "style='color: #00ffff'"
+               color = "lv5"
          elif mi[day][meteor_file]['total_res_deg'] == 0:
-               color = "style='color: #ffffff'"
+               color = "lv6"
          elif mi[day][meteor_file]['total_res_deg'] == 9999:
-               color = "style='color: #ffffff'"
+               color = "lv7"
          elif 0 < mi[day][meteor_file]['total_res_deg'] < .1:
-               color = "style='color: #0000ff'"
+               color = "lv8"
          else:
-               color = "style='color: #ffffff'"
+               color = "lv7"
          if 'center_az' in mi[day][meteor_file]:
             az_el = str(mi[day][meteor_file]['center_az'])[0:5] + "/" +  str(mi[day][meteor_file]['center_el'])[0:5]
          else:
@@ -679,68 +685,57 @@ def meteor_index(json_conf, form):
          if show == 1:
             print("<tr " + color + "><td> {:s}{:s}</a></td><td>{:s}</td><td>{:s}</td><td>{:s}</td><td>{:s}</td><td>{:s}</td><td>{:s}</td><td> {:s}</td><td>  </td><td>{:s}</td><td></td><td></td><td>{:s}</td><td>{:s}</td></tr> ".format(link, fn, str(mi[day][meteor_file]['reduced']), multi_text, az_el, pos, pxs, str(ts), str(mi[day][meteor_file]['total_res_px'])[0:5], str(mi[day][meteor_file]['total_res_deg'])[0:5], str(seg_res), str(missing_frames)))
           
-   print("</table></div>")
+   print("<tbody></table>")
 
 
 def hd_cal_index(json_conf, form):
+   
+   cgitb.enable()
+
+   js_img_array = {}
    cam_id_filter = form.getvalue("cam_id")
-   print("<h1>Auto Calibration Index</h1>")
-   print("<div style=\"padding: 5px; margin: 5px; clear:both\"  >")
+   print("<h1>Auto Calibration</h1>")
+ 
    ci = load_json_file("/mnt/ams2/cal/hd_images/hd_cal_index.json")
    cam_day_sum = load_json_file("/mnt/ams2/cal/hd_images/hd_cal_index-cam-day-sum.json")
-   print("""
-   <script>
-      function show_hide(div_id) {
-         var x = document.getElementById(div_id);
-         if (x.style.display === "none") {
-            x.style.display = "block";
-            x.style.visibility= "visible";
-         } else {
-            x.style.display = "none";
-            x.style.visibility= "hidden";
-         }
-      }
-   </script>
-   """)
 
-   print("<table border=1 cellpadding=5 cellspacing=5>")
-   print("<tr><th>Date</th><th>Cam</th><th>Images w/ Stars</th><th>Images w/o Stars</th><th>Total Stars For Night</th><th>Center AZ/EL</th><th>Position Angle</th><th>PixScale</th><th>Avg Res Px For Night</th><th>Avg Res Deg For Night</th></tr>")
-   for day in sorted(ci,reverse=True):
-      #print("<div style=\"padding: 5px; margin: 5px; clear:both\"  >")
-      #print("<h2>" + str(day) + "</h2></div>")
+   print('<div class="m-3" style="max-width: 1730px;">')
+   print('<table class="table table-dark table-striped table-hover td-al-m">')
+   print('<thead><tr><th>Date</th><th>Cam ID</th><th>Images w/ Stars</th><th>Images w/o Stars</th><th>Total Stars For Night</th><th>Center AZ/EL</th><th>Position Angle</th><th>PixScale</th><th>Avg Res Px For Night</th><th>Avg Res Deg For Night</th></tr></thead>')
+   print('<tbody>')
+
+   for day in sorted(ci,reverse=True): 
+         
+      print('<tr><td colspan="10"><h6 class="mb-0">'+day.replace("_","/")+'</h6></td></tr>')
+
       for cam_id in sorted(ci[day],reverse=False):
-         #print("<div style=\"padding: 5px; margin: 5px; clear:both\"  >")
 
-            #"files_with_stars": 8,
-            #"files_without_stars": 2,
-            #"total_res_px_for_night": 26.89815024073073,
-            #"total_res_deg_for_night": 1.1729207442987446,
-            #"avg_res_px_for_night": 0,
-            #"avg_res_deg_for_night": 0,
-            #"total_stars_tracked_for_night": 53
          if "files_with_stars" in cam_day_sum[day][cam_id]:
             desc = str(cam_day_sum[day][cam_id]['files_with_stars']) + " files with stars / "
             desc = desc + str(cam_day_sum[day][cam_id]['files_without_stars']) + " files without stars "
          else:
             desc = ""
-         div_id = str(day) + "." + str(cam_id)
-         show_link = "<a href=\"javascript:show_hide('" + div_id + "')\">"
+         
+         div_id = str(day) + "_" + str(cam_id)
+         show_link = '<a class="btn btn-sm btn-primary"><b>'+cam_id+'</b></a>'
+ 
          if cam_day_sum[day][cam_id]['avg_res_deg_for_night'] > .5:
-               color = "style='color: #ff0000'"
+               color = "lv1"
          elif .4 < cam_day_sum[day][cam_id]['avg_res_deg_for_night'] <= .5:
-               color = "style='color: #FF4500'"
+               color = "lv2"
          elif .3 < cam_day_sum[day][cam_id]['avg_res_deg_for_night'] <= .4:
-               color = "style='color: #FFFF00'"
+               color = "lv3"
          elif .2 < cam_day_sum[day][cam_id]['avg_res_deg_for_night'] <= .3:
-               color = "style='color: #00FF00'"
+               color = "lv4"
          elif .1 < cam_day_sum[day][cam_id]['avg_res_deg_for_night'] <= .2:
-               color = "style='color: #00ffff'"
+               color = "lv8"
          elif 0 < cam_day_sum[day][cam_id]['avg_res_deg_for_night'] <= .1:
-               color = "style='color: #0000ff'"
+               color = "lv5"
          elif cam_day_sum[day][cam_id]['avg_res_deg_for_night'] == 0:
-               color = "style='color: #ffffff'"
+               color = "lv7"
          else: 
-               color = ""
+               color = "lv7"
+
          if cam_id_filter is None:
             show_row = 1
          elif cam_id == cam_id_filter:
@@ -767,9 +762,12 @@ def hd_cal_index(json_conf, form):
             px_scale = ""
 
          if show_row == 1:
-            print("<tr " + color + "><td>{:s}</td><td>{:s}{:s}</a></td><td>{:s}</td><td>{:s}</td><td>{:s}</td><td>{:s}</td><td>{:s}</td><td>{:s}</td><td>{:s}</td><td>{:s}</td></tr>".format( str(day), show_link, str(cam_id), str(cam_day_sum[day][cam_id]['files_with_stars']), str(cam_day_sum[day][cam_id]['files_without_stars']), str(cam_day_sum[day][cam_id]['total_stars_tracked_for_night']), az_el, pos_ang, px_scale, str(cam_day_sum[day][cam_id]['avg_res_px_for_night'])[0:5],str(cam_day_sum[day][cam_id]['avg_res_deg_for_night'])[0:5]))
+            print("<tr class='" + color + " clickable toggler' data-tog='#fr"+div_id+"'><td><div class='st'></div></td><td>{:s}</a></td><td>{:s}</td><td>{:s}</td><td>{:s}</td><td>{:s}</td><td>{:s}</td><td>{:s}</td><td>{:s}</td><td>{:s}</td></tr>".format(show_link, str(cam_day_sum[day][cam_id]['files_with_stars']), str(cam_day_sum[day][cam_id]['files_without_stars']), str(cam_day_sum[day][cam_id]['total_stars_tracked_for_night']), az_el, pos_ang, px_scale, str(cam_day_sum[day][cam_id]['avg_res_px_for_night'])[0:5],str(cam_day_sum[day][cam_id]['avg_res_deg_for_night'])[0:5]))
           
-            print("<tr ><td colspan=10><div id='" + div_id + "' style='display: none;' > ")
+            print("<tr><td colspan='11' class='collapse' id='fr"+div_id+"'>")
+            print("<div class='text-center text-lg-left gallery gal-resize d-flex flex-wrap' style='max-width: 1520px;'>")
+            js_img_array["fr"+div_id] = []
+
             for cfile in sorted(ci[day][cam_id], reverse=True):
                if "total_res_deg" in ci[day][cam_id][cfile]:
                   trd = ci[day][cam_id][cfile]['total_res_deg']
@@ -788,58 +786,55 @@ def hd_cal_index(json_conf, form):
                   color = "style='color: #ff0000'"
                else:
                   color = ""
-         
-               print("<figure style=\"float:left; \"><a href=" + detail_link + "><img src=" + tn + " width=144 height=81></a><figcaption " + color + ">Stars:" + str(ts) + "<BR>Rpx " + str(trp)[0:5] + ", Rd" + str(trd)[0:5] + "<BR>" + "" + "</figcaption></figure>")
+            
+               
+               js_img_array["fr"+div_id].append({'col':color, 'lk': detail_link, 'src': tn, 'st': str(ts), 'trp': str(trp)[0:5] , 'trd':  str(trd)[0:5]})
+               #print('<div class="preview p-2"><a href="'+detail_link+'" class="m:ttt">')
+               #print('<img data-src="'+tn+'" class="ns lz-shown" width="200" height="112"/>');
+               #print('</a><span class="det" '+color+'><b>' + str(ts) + "</b> stars - <b>" + str(trp)[0:5] + "</b>Rpx - <b>" +  str(trd)[0:5] + "</b>Rd</span></div>")
+
+             
+            print("</div>")
             print("</td></tr> ")
    print("</div></table>")
-   print("</div>")
-   extra_html = """
-   <script>
-      var my_image = ''
-      var half_stack_file = ''
-      var az_grid_file = ''
-      var grid_by_default = false
-      var hd_stack_file = ''
-   </script>
+   print("</div></div>")
 
-   """
-   return(extra_html)
+   # Show the details dynamically to we speed up the page load (by A LOT)
+   print("<script>var all_cal_details="+json.dumps(js_img_array)+"</script>") 
+   return("")
 
 def calibration(json_conf,form):
    cam_id_filter = form.getvalue("cam_id")
-   print("""
-      <div style="padding: 10px">
-      <a href="">Past Calibrations</a> - 
-      <a href="/pycgi/webUI.py?cmd=hd_cal_index">HD Cal Index</a> - 
-      <a href="/pycgi/webUI.py?cmd=meteor_index">Meteor Cal Index</a> - 
-      <a href="">All Sky Model</a>
-      </div>
-   """)
+
+   print("<h1>Past Calibrations</h1>")
    ci = load_json_file("/mnt/ams2/cal/freecal_index.json")
    
-   print("<h1>Past Calibrations</h1><div style=\"margin: 10px\"><table border=1 cellpadding=\"10\">")
-   print("<TR><TD>Cal Date</td><td>Cam ID</td><td>Total Stars</td><td>Center AZ/EL</td><td>Pos Angle</td><td>Pix Scale</td><td>Res Pix</td><td>Res Deg</td></tr>")
+
+   print("<table class='table table-dark table-striped table-hover td-al-m m-auto table-fit'>")
+   print("<thead><tr><th>&nbsp;</th><th>Date</th><th>Cam ID</th><th>Stars</th><th>Center AZ/EL</th><th>Pos Angle</th><th>Pixscale</th><th>Res Px</th><th>Res Deg</th></tr></thead>")
+   print("<tbody>")
+ 
    for cf in sorted(ci, reverse=True):
       if 'cal_image_file' in ci[cf]:
          link = "/pycgi/webUI.py?cmd=free_cal&input_file=" + ci[cf]['cal_image_file'] 
       else:
          link = ""
       if ci[cf]['total_res_deg'] > .5:
-         color = "style='color: #ff0000'"
+         color = "lv1"; #style='color: #ff0000'"
       elif .4 < ci[cf]['total_res_deg'] <= .5:
-         color = "style='color: #FF4500'"
+         color = "lv2"; #"style='color: #FF4500'"
       elif .3 < ci[cf]['total_res_deg'] <= .4:
-         color = "style='color: #FFFF00'"
+         color = "lv3"; #"style='color: #FFFF00'"
       elif .2 < ci[cf]['total_res_deg'] <= .3:
-         color = "style='color: #00FF00'"
+         color = "lv4"; #"style='color: #00FF00'"
       elif .1 < ci[cf]['total_res_deg'] <= .2:
-         color = "style='color: #00ffff'"
+         color = "lv5"; #"style='color: #00ffff'"
       elif 0 < ci[cf]['total_res_deg'] <= .1:
-         color = "style='color: #0000ff'"
+         color = "lv8"; #"style='color: #0000ff'"
       elif ci[cf]['total_res_deg'] == 0:
-         color = "style='color: #ffffff'"
+         color = "lv7"; #"style='color: #ffffff'"
       else:
-         color = ""
+         color = "lv7"
       if cam_id_filter is None:
          show_row = 1
       elif cam_id == cam_id_filter:
@@ -848,11 +843,11 @@ def calibration(json_conf,form):
          show_row = 0
 
       if show_row == 1: 
-         print("<TR " + color + "><TD><a href={:s}>{:s}</a></td><td>{:s}</td><td>{:s}</td><td>{:s}/{:s}</td><td>{:s}</td><td>{:s}</td><td>{:s}</td><td>{:s}</td></tr>".format( link, str(ci[cf]['cal_date']), \
+         print("<tr class='" + color + "'><td><div class='st'></div></td><td><a class='btn btn-primary' href='{:s}'>{:s}</a></td><td><b>{:s}</b></td><td>{:s}</td><td>{:s}/{:s}</td><td>{:s}</td><td>{:s}</td><td>{:s}</td><td>{:s}</td></tr>".format( link, str(ci[cf]['cal_date']), \
             str(ci[cf]['cam_id']), str(ci[cf]['total_stars']), str(ci[cf]['center_az']), str(ci[cf]['center_el']), str(ci[cf]['position_angle']), \
             str(ci[cf]['pixscale']), str(ci[cf]['total_res_px']), str(ci[cf]['total_res_deg']) ))
 
-   print("</table></div>")
+   print("</tbody></table></div>")
 
 
 
@@ -1143,26 +1138,58 @@ def meteors(json_conf,form):
 
 
 def live_view(json_conf):
+ 
 
-
-   print ("<link href='https://fonts.googleapis.com/css?family=Roboto:100,400,300,500,700' rel='stylesheet' type='text/css'>")
-   print ("<link href='scale.css' rel='stylesheet' type='text/css'>")
-   print ("<div class=\"fond\" style=\"width: 100%\">")
-   print("<h2>Latest View</h2> Still pictures are updated in 5 minute intervals.")
-   print ("<div>")
+   print("""<h1>Live</h1>
+            <div class="container mt-3">
+                  <p class="text-center"><b>Still pictures are updated in 5 minutes intervals. This page will automatically refresh in <span id="cntd">2:00</span>.</b></p>
+                  <div class="gallery gal-resize row text-center text-lg-left mb-4">
+   """)
+ 
    rand=time.time()
    for cam_num in range(1,7):
       cam_key = 'cam' + str(cam_num)
       cam_ip = json_conf['cameras'][cam_key]['ip']
-      sd_url = json_conf['cameras'][cam_key]['sd_url']
-      hd_url = json_conf['cameras'][cam_key]['hd_url']
+      #sd_url = json_conf['cameras'][cam_key]['sd_url']
+      #hd_url = json_conf['cameras'][cam_key]['hd_url']
       cams_id = json_conf['cameras'][cam_key]['cams_id']
 
-      print ("<div style=\"padding: 5px; border: 1px ffffff solid; float:left\" ><figure><img src=/mnt/ams2/latest/" + cams_id + ".jpg?" + str(rand) + " width=640 height=360><figcaption>" + cams_id + "</figcaption></figure></div>")
-   print ("</div>")
-   print ("</div>")
-   print ("</div>")
-   print("<div style=\"clear: both\"></div>")
+      img = "/mnt/ams2/latest/" + cams_id + ".jpg"
+      
+
+      print('<div class="preview col-lg-4 mb-4"><a class="mtt img-link-gal" href="'+img+'" title="Live View">')
+      print('<img alt="'+cams_id+'" class="img-fluid ns lz" src="'+img+'?r=' + str(rand) + '"><span><b>Cam '+cams_id+' ('+cam_ip+')</span></b></a></div>')
+
+   print("</div></div></div>")
+
+   #Countdown
+   print("""
+      <script>
+      var timeoutHandle;
+      function countdown(minutes) {
+            var seconds = 60;
+            var mins = minutes;
+            if(mins==0) {
+                  location.reload();
+            }
+            function tick() {
+                  var counter = document.getElementById("cntd");
+                  var current_minutes = mins-1
+                  seconds--;
+                  counter.innerHTML = current_minutes.toString() + ":" + (seconds < 10 ? "0" : "") + String(seconds);
+                  if( seconds > 0 ) {
+                        timeoutHandle = setTimeout(tick, 1000);
+                  } else {
+                        if(mins > 1){
+                              setTimeout(function () { countdown(mins - 1); }, 1000);
+                        }
+                  }
+            }
+            tick();
+      }
+      countdown(5);
+      </script>
+   """)
 
 def as6_config(json_conf):
    print("AS6 Config")
@@ -1355,12 +1382,13 @@ def nav_links(json_conf, cmd):
    return(nav, bot_nav)
 
 def video_tools(json_conf):
-   print("video tools")
-   print("<li>Join Two Clips</li>")
-   print("<li>Trim Clip</li>")
-   print("<li>Stack Video</li>")
-   print("<li>Make Meteors Tonight Video</li>")
-   print("<li>Make Timelapse</li>")
+   print("<div class='alert alert-info m-3 text-center'>Coming soon</div>")
+   #print("video tools")
+   #print("<li>Join Two Clips</li>")
+   #print("<li>Trim Clip</li>")
+   #print("<li>Stack Video</li>")
+   #print("<li>Make Meteors Tonight Video</li>")
+   #print("<li>Make Timelapse</li>")
 
 def reset(video_file, type):
    if "passed" in video_file:
@@ -1400,7 +1428,12 @@ def examine_min(video_file,json_conf):
    print("<div id='main_container' class='container-fluid d-flex h-100 mt-4 position-relative'>")
 
    print("<div class='h-100 flex-fixed-canvas'>")
-   print("<a href='" + video_file + "' class='vid_link_gal mx-auto d-block' title='Click to Play'><img src='" + stack_file + "' class='mx-auto d-block img-fluid' style='width:100%'></a>")
+
+   if os.path.isfile(stack_file):
+      print("<a href='" + video_file + "' class='vid_link_gal mx-auto d-block' title='Click to Play'><img src='" + stack_file + "' class='mx-auto d-block img-fluid' style='width:100%'></a>")
+   else:
+      print("<div class='alert error'>The Stack Image isn't ready yet.</div>")
+
    print("</div>")
    print("<div class='flex-fixed-r-canvas h-100'>")
    print("<div class='box'><h2 class='mb-4'>Actions</h2>")
@@ -1410,13 +1443,15 @@ def examine_min(video_file,json_conf):
    print("<a class='btn btn-primary mx-auto d-block mb-2' href='webUI.py?cmd=sat_cap&input_file=" + video_file + "&stack_file=" + stack_file + "&next_stack_file=" + next_stack_file + "'>Add / Reduce Satellite Capture</a>")
    print("</div>")
 
-   print("<div class='box'><h2 class='mb-4'>Status</h2>")
-
+   print("<div class='box'><h2>Status</h2>")
+   print("<div class='p-3'>")
  
    if len(pending_files) > 0:
       print("<p>Trim files for this clip are still pending processing. Please wait before manually processing this file.</p>")
+      print("<ul>")
       for pending in pending_files:
-         print("<a href=" + pending + ">" + pending + "</a>")
+         print("<li><a href=" + pending + ">" + pending + "</a></li>")
+      print("</ul>")
 
    if len(meteor_files) > 0:
       print("<p class='text-center alert success'><b>Meteor DETECTED</b></p>")
@@ -1438,7 +1473,7 @@ def examine_min(video_file,json_conf):
       print("<p class='text-center alert error'><b>NO Detection</b></p>")
    #print(failed_files,meteor_files)
 
-   print("</div></div></div></div>") 
+   print("</div></div></div></div></div>") 
 
 def override_detect(video_file,jsid, json_conf):
 
@@ -1822,51 +1857,67 @@ def browse_day(day,cams_id,json_conf):
       html_out = html_out + "<img class='ns lz' src='" + stack_file_tn + "'>"
       html_out = html_out + "<span>"+base_js_name[0] +"/" +base_js_name[1]+"/" +base_js_name[2] + " " +  base_js_name[3]+ ":" +  base_js_name[4]+ ":" +  base_js_name[5] +"</span>"
       html_out = html_out + "</a></div>"
-      print(html_out)
-
-      #link = "<a href=\"webUI.py?cmd=examine_min&video_file=" + video_file + "&next_stack_file=" + next_stack_file +"&next_stack_file=" + next_stack_file +  "\">" 
-         #+ " onmouseover=\"document.getElementById('" + base_js_name + "').width=705\" " \
-         #+ " onmouseout=\"document.getElementById('" + base_js_name + "').width=300\" " +  ">"
-      #print(link)  
-      #print("<img id=" + base_js_name + " class='" + htclass + "' width=300 src=" + stack_file_tn + "></img></a>")
+      print(html_out) 
       cc = cc + 1
 
    print('</div></div>')
 
-def browse_detects(day,type,json_conf):
-   #print_css()
+def browse_detects(day,type,json_conf,form):
+   cgitb.enable()
+
+   cur_page  = form.getvalue('p')
+
+   if (cur_page is None) or (cur_page==0):
+      cur_page = 1
+   else:
+      cur_page = int(cur_page)
+
+   
    proc_dir = json_conf['site']['proc_dir']
-   failed_files, meteor_files, pending_files,min_files = get_day_stats(proc_dir + day + "/", json_conf)
+   failed_files, meteor_files, pending_files,min_files = get_day_stats(day,proc_dir + day + "/", json_conf)
+   show_day = day.replace("_", "/")
+
+   title = "<div class='h1_holder d-flex justify-content-between'>"
+  
    if type == 'meteor':
       files = meteor_files
-      show_day = day.replace("_", "/")
-      print("<h1>Meteor Detections on {:s}</h1>".format(show_day))
-      print("{:d} Meteors Detected<br>".format(len(files)))
+      title = title + "<h1>" + format(len(files)) + " Meteor Detections on "+format(show_day)+"</h1>" 
    else:
       files = failed_files
-   for file in sorted(files, reverse=True):
+      title = title + "<h1>" + format(len(files)) + " Non-Meteor Detections on " + format(show_day)+"</h1>" 
+ 
+   html_out = "<div id='main_container' class='container-fluid h-100 mt-4 lg-l'>" 
+   html_out = html_out + "<div class='gallery gal-resize row text-center text-lg-left'>"
+
+   files = sorted(files, reverse=True)
+   _from = (cur_page-1) * NUMBER_OF_METEOR_PER_PAGE
+   _to = _from + NUMBER_OF_METEOR_PER_PAGE
+
+   # slice the array for pagination
+   real_files   = files[_from:_to] 
+
+   for file in real_files:
       stack_img = file.replace(".mp4", "-stacked.png")
       stack_obj_img = file.replace(".mp4", "-stacked-obj.png")
       el = stack_img.split("/")
-      short = el[-1].replace("-stacked.png", "")
-      xxx = short.split("-trim")
-      short_name = xxx[0]
-    
-      #print("<a href=webUI.py?cmd=examine&video_file=" + file + ">")
-      #print("<img src=" + stack_img + " width=400></a>{:s}".format(short_name))
+      short_name = get_meteor_date(file) 
       base_js_name=short_name.replace("_", "")
-      htclass = "none"
 
-      html_out = ""
-      html_out = html_out + "<a href=\"webUI.py?cmd=examine&video_file=" + file + "\"" \
-         + " onmouseover=\"document.getElementById('" + base_js_name + "').src='" + stack_obj_img \
-         + "'\" onmouseout=\"document.getElementById('" + base_js_name + "').src='" + stack_img+ "'\">"
-      html_out = html_out + "<img class=\"" + htclass + "\" id=\"" + base_js_name + "\" width='200' src='" + stack_img+ "'></a>\n"
+      html_out = html_out + "<div class='preview col-lg-2 col-md-3 mb-4 fail'>"
+      html_out = html_out + "<a class='mtt' href='webUI.py?cmd=examine&video_file=" + file +"'  title='Examine'>"
+      html_out = html_out + "<img alt='" + short_name + "' class='img-fluid ns lz' src='" + stack_img + "'>"
+      html_out = html_out + "<span>" + short_name + "</span></a></div>"     
+       
+   
+   html_out = html_out + "</div>"
+   pagination =  get_pagination(cur_page,len(files),"/pycgi/webUI.py?cmd=browse_detects&type="+type+"&day="+day,NUMBER_OF_METEOR_PER_PAGE)
+   
+   print( title + "<div class='page_h'>Page  " + format(cur_page) + "/" +  format(pagination[2]) + "</div></div>")
+   print(html_out)
+   print(pagination[0])
+   print("</div>")
 
-      #print("<figure><img id=" + base_js_name + " class='" + htclass + "' width=300 src=" + stack_img + "></img></a><figcaption>" + short_name + "</figcaption></figure>")
-      print("<figure>" + html_out + "<figcaption>" + short_name + "</figcaption></figure>")
 
-   print("<div style=\"clear: both\"></div>")
 
 def main_page(json_conf,form):
 
@@ -1906,29 +1957,30 @@ def main_page(json_conf,form):
    day_start = (cur_page-1) * NUMBER_OF_DAYS_PER_PAGE
    day_end = day_start + NUMBER_OF_DAYS_PER_PAGE
    # slice the array to just the values you want.
-   real_detections = all_real_detections[day_start:day_end]
-
-#   print(all_real_detections)
+   real_detections = all_real_detections[day_start:day_end] 
 
    for idx, day in enumerate(real_detections): 
       day_str = day
       day_dir = json_conf['site']['proc_dir'] + day + "/" 
-      #if counter<=NUMBER_OF_DAYS_PER_PAGE-1 and idx >= detections_form:
-      if True:
-         failed_files = stats_data[day]['failed_files']
-         meteor_files = stats_data[day]['meteor_files']
-         pending_files = stats_data[day]['pending_files']
+       
+      failed_files = stats_data[day]['failed_files']
+      meteor_files = stats_data[day]['meteor_files']
+      pending_files = stats_data[day]['pending_files']
 
-         html_row, day_x = make_day_preview(day_dir,stats_data[day], json_conf)
-         day_str = day.replace("_", "/")
+      html_row, day_x = make_day_preview(day_dir,stats_data[day], json_conf)
+      day_str = day.replace("_", "/")
 
-         to_display  = to_display + "<div class='h2_holder  d-flex justify-content-between'>"
-         to_display  = to_display +"<h2>"+day_str+" - <a href=webUI.py?cmd=meteors&limit_day=" + day + ">" + str(meteor_files) + " Meteors </a></h2>"
-         to_display  = to_display +"<p><a href=webUI.py?cmd=browse_detects&type=failed&day=" + day + ">" + str(failed_files) + " Non-Meteors </a> - " + str(pending_files) + " Files Pending</a>"
-         to_display  = to_display +"</div><div class='gallery gal-resize row text-center text-lg-left mb-4'>"
-         to_display  = to_display + html_row
-         to_display = to_display + "</div>"
-         counter = counter + 1
+      to_display  = to_display + "<div class='h2_holder  d-flex justify-content-between'>"
+      to_display  = to_display +"<h2>"+day_str+" - <a class='btn btn-primary' href=webUI.py?cmd=meteors&limit_day=" + day + ">" + str(meteor_files) + " Meteors </a></h2>"
+      to_display  = to_display +"<p><a href=webUI.py?cmd=browse_detects&type=failed&day=" + day + ">" + str(failed_files) + " Non-Meteors </a>"
+
+      if(pending_files>0):
+            to_display  = to_display + " - " + str(pending_files) + " Files Pending</a>"
+
+      to_display  = to_display +"</div><div class='gallery gal-resize row text-center text-lg-left mb-4'>"
+      to_display  = to_display + html_row
+      to_display = to_display + "</div>"
+      counter = counter + 1
  
    pagination =  get_pagination(cur_page,len(all_real_detections),"/pycgi/webUI.py?cmd=home",NUMBER_OF_DAYS_PER_PAGE)
 

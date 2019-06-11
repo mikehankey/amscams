@@ -2680,7 +2680,7 @@ def reduce_meteor_js(meteor_reduced):
 
 def reduce_meteor_new(json_conf,form):
 
-   cgitb.enable()
+   #cgitb.enable()
       
    fp = open("/home/ams/amscams/pythonv2/templates/reducePage.html")
    template = ""
@@ -2830,9 +2830,9 @@ def reduce_meteor_new(json_conf,form):
          template = template.replace("{EVENT_OBS_TOTAL}", "1 Station 1 Cam")
 
    else:
-      template = template.replace("{EVENT_START_TIME}", "pending reduction")
-      template = template.replace("{EVENT_DURATION}", "pending reducetion")
-      template = template.replace("{EVENT_MAGNITUDE}", "pending reduction")
+      template = template.replace("{EVENT_START_TIME}", "<i>pending reduction</i>")
+      template = template.replace("{EVENT_DURATION}", "<i>pending reducetion</i>")
+      template = template.replace("{EVENT_MAGNITUDE}", "<i>pending reduction</i>")
 
    if reduced == 1:
       #print(meteor_reduced.keys())
@@ -3450,9 +3450,9 @@ def add_stars_to_fit_pool(json_conf,form):
    js_html = """
 
    <script>
-      var my_image = '""" + half_stack_file + """'
-      var hd_stack_file = '""" + hd_stack_file + """'
-      var stars = []
+      var my_image = '""" + half_stack_file + """';
+      var hd_stack_file = '""" + hd_stack_file + """';
+      var stars = [];
    </script>
 
 
@@ -3852,8 +3852,12 @@ def choose_file(json_conf,form):
       print('</div>')
       print("<script>window.location.href='webUI.py?cmd=free_cal&input_file=" + hd_file + "';</script>")
 
+
+
+
 def sd_pic_stars(json_conf,form):
-   print("<h1>Calibrate SD Image Step #1 - Pick Stars</h1>")
+
+   
    input_file = form.getvalue("input_file")
    (f_datetime, cam_id, f_date_str,Y,M,D, H, MM, S) = better_parse_file_date(input_file)
    base_dir = "/mnt/ams2/cal/freecal/" + Y + "_" + M + "_" + D + "_" + H + "_" + MM + "_" + S + "_" + "000" + "_" + cam_id
@@ -3873,7 +3877,7 @@ def sd_pic_stars(json_conf,form):
       stack_img = cv2.resize(stack_img, (sw*2, sh*2))
       #half_stack_file = input_file.replace(".mp4", "-half-stack.png") 
       #stack_file = input_file.replace(".mp4", "-stacked.png") 
-      print(stack_file,half_stack_file)
+      #print(stack_file,half_stack_file)
       #stack_img = cv2.resize(stack_img, (1920, 1080))
       #half_stack_img = cv2.resize(stack_img, (960, 540))
       cv2.imwrite(stack_file, stack_img)
@@ -3882,25 +3886,47 @@ def sd_pic_stars(json_conf,form):
       stack_file = input_file
       stack_img = cv2.imread(input_file)
 
+   print("<h1>Calibrate SD Image Step #1 - Pick Stars - "+ get_meteor_date(stack_file) +"</h1>")
 
    js_html = """
-
    <script>
       var my_image = '""" + half_stack_file + """'
       var hd_stack_file = '""" + stack_file + """'
       var stars = []
    </script>
-
-
    """.format(stack_file)
-   canvas_html = """
-      <p>An HD source file was not found for this time period. No worries, we can still calibrate from an SD image, but first we need to pick the stars so we can upscale the image. Select as many stars as possible from the image below and then click the "Upscale To HD" button.</p>
-      <div style="float:left"><canvas id="c" width="960" height="540" style="border:2px solid #000000;"></canvas></div>
-      <div style="float:left"><div style="position: relative; height: 50px; width: 50px" id="myresult" class="img-zoom-result"> </div></div>
-      <div style="clear: both"></div>
-   """
 
+   canvas_html = '<div class="container-fluid"><div class="alert alert-info mt-4 mb-4">An HD source file was not found for this time period. No worries, we can still calibrate from an SD image, but first we need to pick the stars so we can upscale the image.<br/><b>Select as many stars as possible from the image below and then click the "Upscale To HD" button.</b></div></div>'
+   
+   canvas_html = canvas_html +  '<div id="main_container" class="container-fluid d-flex h-100 mt-4 position-relative">'
+   canvas_html = canvas_html +  '<div class="h-100 flex-fixed-canvas"><div class="canvas-container"><canvas id="c" width="960" height="785"></canvas></div></div>' 
+
+   #Right Col
+   canvas_html = canvas_html + "<div class='flex-fixed-r-canvas h-100'>"
+   canvas_html = canvas_html + """<div class="canvas_zoom_holder mb-3">
+                              <div id="canvas_zoom_target"><img alt="" src="./dist/img/target.svg"/></div>
+                              <div id="canvas_pointer_info"></div>
+                              <div id="canvas_zoom"></div>
+                              </div>"""
+
+
+   canvas_html = canvas_html + """<div class="box">
+                <h2>Info</h2>
+                <dl class="row mb-0">
+                    <dt class="col-6">Start Time</dt>   <dd class="col-6">"""+ get_meteor_date(half_stack_file) +"""</dd>
+                </dl> 
+            </div>"""
+
+   canvas_html = canvas_html +"<div class='box'><h2 class='mb-4'>Actions</h2>"
+   canvas_html = canvas_html +"<a class='btn btn-primary mx-auto d-block mb-2' id='auto_detect_stars'>Auto Star Detect</a>"
+   canvas_html = canvas_html +"<a class='btn btn-primary mx-auto d-block mb-2' id='upscale_to_HD'>Upscale to HD</a>"
+   canvas_html = canvas_html +"</div>"
+
+   canvas_html = canvas_html +"</div></div>"
+   
    canvas_html = canvas_html + """
+      
+      <div style="float:left"><div style="position: relative; height: 50px; width: 50px" id="myresult" class="img-zoom-result"> </div></div>
       <div id=info_panel>Info: </div>
       <div id=star_panel>Stars: </div>
       <div id=action_buttons>
@@ -3910,7 +3936,7 @@ def sd_pic_stars(json_conf,form):
       <div id=star_list>star_list: </div>
        <BR><BR>
    """
-   print(stack_file)
+   #print(stack_file)
 
    print(canvas_html)
    print(js_html)
