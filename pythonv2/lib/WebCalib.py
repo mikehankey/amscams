@@ -2667,7 +2667,7 @@ def reduce_meteor_js(meteor_reduced):
 
 def reduce_meteor_new(json_conf,form):
 
-   cgitb.enable()
+   #cgitb.enable()
       
    fp = open("/home/ams/amscams/pythonv2/templates/reducePage.html")
    template = ""
@@ -3839,6 +3839,9 @@ def choose_file(json_conf,form):
       print('</div>')
       print("<script>window.location.href='webUI.py?cmd=free_cal&input_file=" + hd_file + "';</script>")
 
+
+
+
 def sd_pic_stars(json_conf,form):
    print("<h1>Calibrate SD Image Step #1 - Pick Stars</h1>")
    input_file = form.getvalue("input_file")
@@ -3860,7 +3863,7 @@ def sd_pic_stars(json_conf,form):
       stack_img = cv2.resize(stack_img, (sw*2, sh*2))
       #half_stack_file = input_file.replace(".mp4", "-half-stack.png") 
       #stack_file = input_file.replace(".mp4", "-stacked.png") 
-      print(stack_file,half_stack_file)
+      #print(stack_file,half_stack_file)
       #stack_img = cv2.resize(stack_img, (1920, 1080))
       #half_stack_img = cv2.resize(stack_img, (960, 540))
       cv2.imwrite(stack_file, stack_img)
