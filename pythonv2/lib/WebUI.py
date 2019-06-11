@@ -784,7 +784,7 @@ def hd_cal_index(json_conf, form):
    print("</div></div>")
 
    # Show the details dynamically to we speed up the page load (by A LOT)
-   print("<script>var all_cal_details="+js_img_array+"</script>") 
+   print("<script>var all_cal_details="+json.dumps(js_img_array)+"</script>") 
    return("")
 
 def calibration(json_conf,form):
