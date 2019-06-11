@@ -768,9 +768,9 @@ def hd_cal_index(json_conf, form):
                else:
                   color = ""
                   
-               print('<div class="preview p-2"><a href="'+detail_link+'" class="mttt">')
-               print('<img data-src="'+tn+'" class="ns lz-shown" width="200" height="112"/>');
-               print('</a><span class="det" '+color+'><b>' + str(ts) + "</b> stars - <b>" + str(trp)[0:5] + "</b>Rpx - <b>" +  str(trd)[0:5] + "</b>Rd</span></div>")
+               #print('<div class="preview p-2"><a href="'+detail_link+'" class="mttt">')
+               #print('<img data-src="'+tn+'" class="ns lz-shown" width="200" height="112"/>');
+               #print('</a><span class="det" '+color+'><b>' + str(ts) + "</b> stars - <b>" + str(trp)[0:5] + "</b>Rpx - <b>" +  str(trd)[0:5] + "</b>Rd</span></div>")
 
              
             print("</div>")
