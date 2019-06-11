@@ -43,6 +43,9 @@ function reduce_meteor() {
     });
 }
 
+
+ 
+
 $(function () {
 
     // Click on button
