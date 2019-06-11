@@ -204,15 +204,24 @@ def meteor_index(json_conf, extra_cmd = ""):
 
             if 'multi_station' in red_data:
                meteor_index[day][meteor]['multi_station'] = red_data['multi_station']
-           
-            if 'angular_separation' in red_data:
-               meteor_index[day][meteor]['angular_separation'] = 9999
+          
+            if 'metconf' in red_data: 
+               if 'angular_separation' in red_data['metconf']:
+                  meteor_index[day][meteor]['angular_separation'] = red_data['metconf']['angular_separation']
+               else:
+                  meteor_index[day][meteor]['angular_separation'] = 9999
             else:
                meteor_index[day][meteor]['angular_separation'] = 9999
+
             if 'peak_magnitude' in red_data:
                meteor_index[day][meteor]['peak_magnitude'] = red_data['peak_magnitude']
+            else:
+               meteor_index[day][meteor]['peak_magnitude'] = 0
+
             if 'event_duation ' in red_data:
                meteor_index[day][meteor]['event_duration'] = red_data['event_duration']
+            else:
+               meteor_index[day][meteor]['event_duration'] = 0
          else:
  
             meteor_index[day][meteor]['reduced'] = 0
@@ -220,7 +229,7 @@ def meteor_index(json_conf, extra_cmd = ""):
             meteor_index[day][meteor]['total_res_deg'] = 0
             meteor_index[day][meteor]['angular_separation'] = 0
             meteor_index[day][meteor]['magnitude'] = 0
-            meteor_index[day][meteor]['duration'] = 0
+            meteor_index[day][meteor]['event_duration'] = 0
    save_json_file("/mnt/ams2/cal/hd_images/meteor_index.json", meteor_index)
 
    print(json_conf)

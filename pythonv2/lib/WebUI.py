@@ -660,6 +660,17 @@ def meteor_index(json_conf, form):
             ts = str(mi[day][meteor_file]['total_stars'])
          if 'position_angle' in mi[day][meteor_file]:
             pos = str(mi[day][meteor_file]['position_angle'])[0:5]
+
+         ass = ""
+         dur = ""
+         if 'angular_separation' in mi[day][meteor_file]:
+            ass = mi[day][meteor_file]['angular_separation']
+         else:
+            ass = ""
+         if 'event_duration' in mi[day][meteor_file]:
+            dur = str(mi[day][meteor_file]['event_duration'])
+         else:
+            dur = ""
          
          fn = meteor_file.split("/")[-1] 
          if 'pixscale' in mi[day][meteor_file]:
@@ -683,7 +694,7 @@ def meteor_index(json_conf, form):
             if seg_res > 2 or missing_frames > 0:
                color = "lv1"
          if show == 1:
-            print("<tr class='" + color + "'><td><div class='st'></div></td><td> {:s}</td><td>{:s}</td><td>{:s}</td><td>{:s}</td><td>{:s}</td><td>{:s}</td><td>{:s}</td><td> {:s}</td><td> {:s} </td><td></td><td></td><td></td><td>{:s}</td><td>{:s}</td></tr> ".format(link, str(mi[day][meteor_file]['reduced']), multi_text, az_el, pos, pxs, str(ts), str(mi[day][meteor_file]['total_res_px'])[0:5], str(mi[day][meteor_file]['total_res_deg'])[0:5], str(seg_res), str(missing_frames)))
+            print("<tr class='" + color + "'><td><div class='st'></div></td><td> {:s}</td><td>{:s}</td><td>{:s}</td><td>{:s}</td><td>{:s}</td><td>{:s}</td><td>{:s}</td><td> {:s}</td><td> {:s} </td><td>{:s}</td><td>{:s}</td><td>MAG</td><td>{:s}</td><td>{:s}</td></tr> ".format(link, str(mi[day][meteor_file]['reduced']), multi_text, az_el, pos, pxs, str(ts), str(mi[day][meteor_file]['total_res_px'])[0:5], str(mi[day][meteor_file]['total_res_deg'])[0:5], str(dur), str(ass), str(seg_res), str(missing_frames)))
           
    print("<tbody></table>")
 

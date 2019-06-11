@@ -627,6 +627,9 @@ def del_frame(json_conf, form):
       else:
          new_frame_data.append(data)
    meteor_json['meteor_frame_data'] = new_frame_data
+   if "metframes" in meteor_json:
+      if fn in meteor_json['metframes']:
+         meteor_json['metframes'].pop(fn)
    response = {}
    response['message'] = 'frame deleted'
    response['frame_data'] = new_frame_data
