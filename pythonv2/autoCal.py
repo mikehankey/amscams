@@ -143,6 +143,12 @@ def meteor_index(json_conf, extra_cmd = ""):
                red_data = load_json_file(rmeteor)
             except:
                os.system("mv " + rmeteor + " /mnt/ams2/trash")
+            if "red_seg_res" in red_data:
+               meteor_index[day][meteor]['red_seg_res'] = red_data['red_seg_res']
+            if "frames_missing_before" in red_data:
+               meteor_index[day][meteor]['frames_missing_before'] = red_data['frames_missing_before']
+          
+
             if "cal_params" in red_data:
                if "center_az" not in red_data['cal_params']:
                   if "az_center" in red_data['cal_params']:

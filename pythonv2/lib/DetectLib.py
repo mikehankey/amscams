@@ -6,6 +6,22 @@ from lib.ImageLib import median_frames, mask_frame, preload_image_acc, adjustLev
 from lib.UtilLib import calc_dist,find_slope, convert_filename_to_date_cam
 from lib.VideoLib import get_masks
 
+
+def arecolinear(points):
+    xdiff1 = float(points[1][0] - points[0][0])
+    ydiff1 = float(points[1][1] - points[0][1])
+    xdiff2 = float(points[2][0] - points[1][0])
+    ydiff2 = float(points[2][1] - points[1][1])
+
+    # infinite slope?
+    if xdiff1 == 0 or xdiff2 == 0:
+        return xdiff1 == xdiff2
+    elif ydiff1/xdiff1 == ydiff2/xdiff2:
+        return True
+    else:
+        return False
+
+
 def parse_motion(video_file, json_conf):
    print(video_file)
    motion_file = video_file.replace(".mp4", "-motion.txt")
@@ -284,8 +300,8 @@ def id_object(cnt, objects, fc,max_loc, is_hd=0):
    my = my 
    x,y,w,h = cv2.boundingRect(cnt)
    cx,cy = center_point(x,y,w,h)
-   #print("ID OBJECT NEAR POINT:", cx,cy)
-   #print("\tLEN OBJECTS:", len(objects))
+   if fc < 5:
+      return({},objects)
 
    if len(objects) == 0:
       oid = 1
@@ -298,8 +314,8 @@ def id_object(cnt, objects, fc,max_loc, is_hd=0):
    obj_found = 0
    matches = []
 
-
    for obj in objects:
+      dist = 0
       moid = obj['oid']
       oid = obj['oid']
       ox = obj['x']
@@ -316,6 +332,7 @@ def id_object(cnt, objects, fc,max_loc, is_hd=0):
       max_id = max(objects, key=lambda x:x['oid'])
       oid= max_id['oid'] + 1
       object = make_new_object(oid,fc,x,y,w,h,mx,my)
+      object['status'] = "new"
       objects.append(object)
       return(object, objects)
 
@@ -323,8 +340,43 @@ def id_object(cnt, objects, fc,max_loc, is_hd=0):
       object = matches[0]
       object_hist = object['history']
       this_hist = [fc,x,y,w,h,mx,my]
-      if len(object_hist) <= 1500:
+      object['status'] = "updated"
+      hxs = []
+      hys = []
+      points = []
+      for fc,x,y,w,h,mx,my in object_hist:
+         hxs.append(x)
+         hys.append(y)
+         points.append((x,y))
+      if len(hxs) > 4:
+         min_hx = min(hxs)
+         min_hy = min(hys)
+         max_hx = max(hxs)
+         max_hy = max(hys)
+         dist = calc_dist((min_hx,min_hy),(max_hx,max_hy))
+         if dist < 5:
+            object['status'] = "not_moving"
+         else: 
+            object['status'] = "moving"
+
+
+
+      if len(points) > 3:
+         is_straight = arecolinear(points)
+
+      if len(object_hist) <= 250 : 
          object_hist.append(this_hist)
+         #if len(points) > 3:
+         #   if is_straight is True:
+         #      object_hist.append(this_hist)
+         #   else:
+         #      object['status'] = "not_straight"
+         #else: 
+         #   object_hist.append(this_hist)
+
+
+
+      #print(object['status'], len(object['history']))
       object['history'] = object_hist
       objects = save_object(object,objects)
       obj_found = 1
@@ -335,7 +387,7 @@ def id_object(cnt, objects, fc,max_loc, is_hd=0):
       #print("--------------------")
       #print(matches)
       #print("--------------------")
-      min_dist = 1000
+      min_dist = 25 
       match_total_hist = 0
       for match in matches:
          match_hist = match['history']
@@ -351,6 +403,7 @@ def id_object(cnt, objects, fc,max_loc, is_hd=0):
             match_total_hist = len(match_hist)
 
       object = best_hist_obj
+      object['status'] = "updated"
       object_hist = object['history']
       this_hist = [fc,x,y,w,h,mx,my]
       if len(object_hist) <= 150:

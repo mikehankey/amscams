@@ -2547,8 +2547,21 @@ def update_red_info_ajax(json_conf, form):
                if "cat_image_stars" in mr['cal_params']:
                   rsp['cat_image_stars'] = mr['cal_params']['cat_image_stars'] 
 
+         new_mfd = []
          if "meteor_frame_data" in mr: 
-            rsp['meteor_frame_data'] = mr['meteor_frame_data']
+            for frame_data in mr['meteor_frame_data']:      
+               frame_time, fn, hd_x,hd_y,w,h,max_px,ra,dec,az,el = frame_data
+               if len(str(ra)) > 6:
+                  ra = str(ra)[0:6]
+               if len(str(dec)) > 6:
+                  dec = str(dec)[0:6]
+               if len(str(az)) > 6:
+                  az = str(az)[0:6]
+               if len(str(el)) > 6:
+                  el = str(el)[0:6]
+               new_mfd.append((frame_time, fn, hd_x,hd_y,w,h,max_px,ra,dec,az,el)) 
+
+            rsp['meteor_frame_data'] = new_mfd
             (box_min_x,box_min_y,box_max_x,box_max_y) = define_crop_box(mr['meteor_frame_data'])
             rsp['crop_box'] = (box_min_x,box_min_y,box_max_x,box_max_y)
             mr['crop_box'] = rsp['crop_box']

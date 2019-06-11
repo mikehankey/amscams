@@ -274,12 +274,16 @@ def adjustLevels(img_array, minv, gamma, maxv, nbits=None):
 
 
 def preload_image_acc(frames):
-   alpha = .9
+   alpha = .5
    image_acc = np.empty(np.shape(frames[0]))
    for frame in frames:
       frame = cv2.GaussianBlur(frame, (7, 7), 0)
       image_diff = cv2.absdiff(image_acc.astype(frame.dtype), frame,)
       hello = cv2.accumulateWeighted(frame, image_acc, alpha)
+      #show_frame = cv2.convertScaleAbs(image_acc)
+
+      #cv2.imshow('pepe', show_frame)
+      #cv2.waitKey(0)
    return(image_acc)
 
 

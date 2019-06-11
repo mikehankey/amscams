@@ -604,7 +604,7 @@ def meteor_index(json_conf, form):
    mi = load_json_file("/mnt/ams2/cal/hd_images/meteor_index.json")
    print("<div style=\"padding: 5px; margin: 5px; clear:both\"  >")
    print("<table border=1 cellpadding=5 cellspacing=5>")
-   print("<tr><th>Meteor</th><th>Reduced</th><th>Multi-Station</th><th>AZ/EL FOV</th><th>Pos Ang</th><th>Pixscale</th><th>Stars</th><th>Res Px</th><th>Res Deg</th><th>Dur</th><th>Ang Sep</th><th>Mag</th></tr>")
+   print("<tr><th>Meteor</th><th>Reduced</th><th>Multi-Station</th><th>AZ/EL FOV</th><th>Pos Ang</th><th>Pixscale</th><th>Stars</th><th>Res Px</th><th>Res Deg</th><th>Dur</th><th>Ang Sep</th><th>Mag</th><th>Seg Res</th><th>Missing Frames</th></tr>")
    for day in sorted(mi, reverse=True):
       for meteor_file in mi[day]:
          hd_datetime, hd_cam, hd_date, hd_y, hd_m, hd_d, hd_h, hd_M, hd_s = convert_filename_to_date_cam(meteor_file)
@@ -664,9 +664,20 @@ def meteor_index(json_conf, form):
             else:
                show = 0
 
+         if "red_seg_res" in mi[day][meteor_file]:
+            seg_res = mi[day][meteor_file]['red_seg_res']
+         else:
+            seg_res = 999
+         if "frames_missing_before" in mi[day][meteor_file]:
+            missing_frames = len(mi[day][meteor_file]['frames_missing_before'])
+         else:
+            missing_frames = 0
 
+         if seg_res != 999 :
+            if seg_res > 2 or missing_frames > 0:
+               color = "style='color: #ff0000'"
          if show == 1:
-            print("<tr " + color + "><td> {:s}{:s}</a></td><td>{:s}</td><td>{:s}</td><td>{:s}</td><td>{:s}</td><td>{:s}</td><td>{:s}</td><td> {:s}</td><td> {:s} </td><td></td><td></td><td></td></tr> ".format(link, fn, str(mi[day][meteor_file]['reduced']), multi_text, az_el, pos, pxs, str(ts), str(mi[day][meteor_file]['total_res_px'])[0:5], str(mi[day][meteor_file]['total_res_deg'])[0:5]))
+            print("<tr " + color + "><td> {:s}{:s}</a></td><td>{:s}</td><td>{:s}</td><td>{:s}</td><td>{:s}</td><td>{:s}</td><td>{:s}</td><td> {:s}</td><td>  </td><td>{:s}</td><td></td><td></td><td>{:s}</td><td>{:s}</td></tr> ".format(link, fn, str(mi[day][meteor_file]['reduced']), multi_text, az_el, pos, pxs, str(ts), str(mi[day][meteor_file]['total_res_px'])[0:5], str(mi[day][meteor_file]['total_res_deg'])[0:5], str(seg_res), str(missing_frames)))
           
    print("</table></div>")
 

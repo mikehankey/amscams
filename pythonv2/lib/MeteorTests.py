@@ -483,7 +483,7 @@ def meteor_test_cm_gaps(object):
    gap_events = 0
    last_frame = 0
    for fn,x,y,w,h,mx,my in hist:
-      if (last_frame + 1 == fn) and last_frame > 0:
+      if ((last_frame + 1 == fn) and last_frame > 0) or last_frame == fn:
          cm = cm + 1
       else:
          cm = 0

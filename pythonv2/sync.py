@@ -18,12 +18,24 @@ from lib.UtilLib import check_running, get_sun_info, fix_json_file, find_angle, 
 from lib.FileIO import load_json_file, save_json_file, cfe
 
 json_conf = load_json_file("../conf/as6.json")
+my_station = json_conf['site']['ams_id']
 cmd = sys.argv[1]
 day = sys.argv[2]
 
 def check_for_event(day, stations, meteor, all_meteors, mse):
    status = 0
    my_meteor_datetime, my_cam1, hd_date, hd_y, hd_m, hd_d, hd_h, hd_M, hd_s = convert_filename_to_date_cam(meteor)
+
+   # first check if this meteor belongs to an existing event!
+   for ev in mse:
+      ev_meteor_datetime, my_cam1, hd_date, hd_y, hd_m, hd_d, hd_h, hd_M, hd_s = convert_filename_to_date_cam(ev)
+      tdiff = abs((my_meteor_datetime-ev_meteor_datetime).total_seconds())
+      if tdiff < 60:
+         if my_station not in mse[ev]['obs']:
+            mse[ev]['obs'][my_station] = {}
+            mse[ev]['obs'][my_station]['sd_video_file'] = ev 
+   
+
    for station in stations:
       print ("CHECKING MY METEOR AT STATION:", station)
       if day not in all_meteors[station]:
@@ -37,7 +49,7 @@ def check_for_event(day, stations, meteor, all_meteors, mse):
             tdiff = abs((my_meteor_datetime-st_meteor_datetime).total_seconds())
             # get date for each from filename
             # find time distance for each
-            if tdiff < 60:
+            if tdiff < 5:
                print("MULTI-STATION MATCH:", meteor, st_meteor, tdiff)
                if meteor not in mse:
                   mse[meteor] = {}
@@ -97,22 +109,24 @@ def sync_ms_json(day, mse, sync_urls):
    for my_meteor in mse:
       print("Need to sync content for my meteor: ", my_meteor)
       for station in mse[my_meteor]['obs']: 
-         url = sync_urls['sync_urls'][station]
-         st_video_url = mse[my_meteor]['obs'][station]['sd_video_file']
-         fn = st_video_url.split("/")[-1]
-         fn = fn.replace(".json", "-reduced.json") 
-         st_video_url  = st_video_url.replace(".json", "-reduced.json") 
-         lfdd = "/mnt/ams2/stations/" + station + "/" + day
-         if cfe(lfdd, 1) == 0:
-            os.system("mkdir " + lfdd)
-         lfn  = "/mnt/ams2/stations/" + station + "/" + day + "/" + fn
-         if cfe(lfn) == 0:
-            sync_url = url + st_video_url
-            print("NEED TO SYNC URL:", sync_url)
-            cmd = "wget \"" + sync_url + "\" -O " + lfn 
-            os.system(cmd)
-         else: 
-            print("Already have:", url + st_video_url)
+         if station != my_station:
+            url = sync_urls['sync_urls'][station]
+            st_video_url = mse[my_meteor]['obs'][station]['sd_video_file']
+            fn = st_video_url.split("/")[-1]
+            fn = fn.replace(".json", "-reduced.json") 
+            st_video_url  = st_video_url.replace(".json", "-reduced.json") 
+            lfdd = "/mnt/ams2/stations/" + station + "/" + day
+            if cfe(lfdd, 1) == 0:
+               os.system("mkdir " + lfdd)
+            lfn  = "/mnt/ams2/stations/" + station + "/" + day + "/" + fn
+            #if cfe(lfn) == 0:
+            if True:
+               sync_url = url + st_video_url
+               print("NEED TO SYNC URL:", sync_url)
+               cmd = "wget \"" + sync_url + "\" -O " + lfn 
+               os.system(cmd)
+            else: 
+               print("Already have:", url + st_video_url)
   
 def solve_events(day, mse,sync_urls):
    evs = []

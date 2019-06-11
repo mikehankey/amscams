@@ -38,6 +38,29 @@ import lib.brightstardata as bsd
 from lib.DetectLib import eval_cnt
 json_conf = load_json_file("../conf/as6.json")
 
+
+def bound_xy(x,y,iw,ih,sz):
+   if x-sz < 0:
+      x1 = 0
+   else:
+      x1 = x - sz
+   if y-sz < 0:
+      y1 = 0
+   else:
+      y1 = y - sz
+   if x+sz > iw-1:
+      x2 = iw -1
+   else:
+      x2 = x + sz
+   if y+sz > ih-1:
+      y2 = ih
+   else:
+      y2 = y + sz
+
+
+   return(x1,y1,x2,y2)
+
+
 def best_fit_slope_and_intercept(xs,ys):
     xs = np.array(xs, dtype=np.float64)
     ys = np.array(ys, dtype=np.float64)
@@ -127,6 +150,23 @@ def check_cnt_bounds(hd_x1, hd_y1, hd_x2, hd_y2 ):
  
    return(hd_x1, hd_y1, hd_x2, hd_y2)
 
+def find_dir_mod(mfd):
+   fx = mfd[0][2]
+   fy = mfd[0][3]
+   lx = mfd[-1][2]
+   ly = mfd[-1][3]
+
+   dir_x = fx - lx
+   dir_y = fy - ly
+   if dir_x < 0:
+      x_dir_mod = 1
+   else:
+      x_dir_mod = -1
+   if dir_y < 0:
+      y_dir_mod = 1
+   else:
+      y_dir_mod = -1
+   return(x_dir_mod, y_dir_mod)   
 
 def setup_json_frame_data(mfd):
    # establish initial first x,y last x,y
@@ -247,11 +287,14 @@ def minimize_start_len(metframes,frames,metconf,mf,show=0):
 def reduce_start_len(poly, metframes,frames,metconf,mf,show=0):
    metconf['med_seg_len'] = float(metconf['med_seg_len'] + poly[0])
    metconf['acl_poly'] = poly[1]
-   if metconf['runs'] < 10:
+   if metconf['runs'] < 20:
       metframes, metconf,avg_res = play_meteor(metframes,frames,metconf,mf,show)
       metconf['avg_res_diff'] = avg_res
    else:
       return(0)
+
+   for fn in metframes:
+      print(fn, metframes)
    return(avg_res)
 
 #def find_best_point_from_est(img2, est_x, est_y, last_x,last_y, med_seg_len, cnt_sz):
@@ -457,9 +500,9 @@ def slope_fixes(metframes,metconf,mf,frames, show):
 
       cv2.imshow('pepe2', img2)
       if metconf['runs'] > 2:
-         cv2.waitKey(0)
+         cv2.waitKey(1)
       else:
-         cv2.waitKey(0)
+         cv2.waitKey(1)
 
    best_m,best_b = best_fit_slope_and_intercept(new_xs,new_ys)
    metconf['slope_m'] = best_m
@@ -623,13 +666,14 @@ def check_frame_errors(metframes, frames,metconf,mf,show=0):
       cv2.putText(img2, desc,  (500,500), cv2.FONT_HERSHEY_SIMPLEX, .8, colors, 1)
       cv2.rectangle(img2, (min_x, min_y), (max_x, max_y), (128, 128, 128), 1)
       cv2.imshow('pepe2', img2)
-      cv2.waitKey(0)
+      cv2.waitKey(1)
       fcc = fcc + 1
 
    len_segs = []
    for fn in metframes:
       print (fn, metframes[fn]['hd_x'], metframes[fn]['hd_y'], metframes[fn]['len_from_start'], metframes[fn]['len_from_last'], metframes[fn]['max_px'], metframes[fn]['point_status'])
-      len_segs.append(metframes[fn]['len_from_last'])
+      if metframes[fn]['len_from_last'] < 100:
+         len_segs.append(metframes[fn]['len_from_last'])
 
    med_seg_len = np.median(len_segs)
    print("MED SEG LEN:", med_seg_len)
@@ -671,7 +715,7 @@ def check_frame_errors(metframes, frames,metconf,mf,show=0):
    metconf['m'] = xm
    metconf['b'] = xb
    metconf['med_seg_len'] =  metconf['line_dist'] / metconf['tf']
-   exit()
+
    return(metframes, metconf, avg_res_diff)
 
 
@@ -711,13 +755,15 @@ def play_meteor_clip(metframes,frames, metconf,mf,show=0):
          fy = hd_y
          ff = fn 
       for xxx in range(0,len(metframes)):
-         #est_x = int((fx + x_dir_mod * (med_seg_len*xxx)) )
+      #   est_x = int((fx + x_dir_mod * (med_seg_len*xxx)) )
          est_x = int((fx + x_dir_mod * (med_seg_len*xxx)) + acl_poly * xxx)
          est_y = int((m*est_x)+b)
-         if hd_x != 0 and hd_y != 0 and est_x != 0 and est_y != 0:
-            cv2.line(img2, (hd_x,hd_y), (est_x,est_y), (255,255,255), 1)
-      #cv2.imshow('pepe2', img2)
-      #cv2.waitKey(10)
+         #if hd_x != 0 and hd_y != 0 and est_x != 0 and est_y != 0:
+          #  cv2.line(img2, (hd_x,hd_y), (est_x,est_y), (255,255,255), 1)
+      #      cv2.circle(img2,(hd_x,hd_y), 10, (0,255,0), 1)
+      #      cv2.circle(img2,(est_x,est_y), 15, (0,255,255), 1)
+      cv2.imshow('pepe2', img2)
+      cv2.waitKey(0)
 
       if last_x != None:
          # SLOPE TESTS: check slope of this px compared to first and compare to original
@@ -732,10 +778,8 @@ def play_meteor_clip(metframes,frames, metconf,mf,show=0):
          #est_x = int(last_x + x_dir_mod * (dist_factor*elp_f))
          est_x = int((last_x + x_dir_mod * (dist_factor*elp_f)) + acl_poly * fcc)
          est_y = int((m*est_x)+b)
-         cv2.circle(img2,(est_x,est_y), 10, (0,255,255), 1)
-         cv2.line(img2, (hd_x,hd_y), (last_x,last_y), (255), 1)
-      else:
-         cv2.putText(img2, "LAST X IS NONE!?",  (400,400), cv2.FONT_HERSHEY_SIMPLEX, .8, (0, 0, 255), 1)
+      #else:
+      #   cv2.putText(img2, "LAST X IS NONE!?",  (400,400), cv2.FONT_HERSHEY_SIMPLEX, .8, (0, 0, 255), 1)
 
 
       if last_len is not None:
@@ -744,9 +788,10 @@ def play_meteor_clip(metframes,frames, metconf,mf,show=0):
       if last_len_diff != "":
          if last_len_diff > 0:
             cv2.circle(img2,(hd_x,hd_y), 10, (0,255,0), 1)
+            print("YO", last_len_diff)
          else:
             # MAKE CORRECTION
-            cv2.circle(img2,(hd_x,hd_y), 10, (0,0,255), 1)
+            #cv2.circle(img2,(hd_x,hd_y), 10, (0,0,255), 1)
             hd_x = est_x 
             hd_y = est_y
             len_from_last = calc_dist((last_x,last_y),(hd_x,hd_y))
@@ -754,10 +799,15 @@ def play_meteor_clip(metframes,frames, metconf,mf,show=0):
                len_from_start = calc_dist((fx,fy),(hd_x,hd_y))
             cv2.circle(img2,(hd_x,hd_y), 8, (0,255,0), 1)
             # Improve estimate with blob / bright point detector here
-            metframes[fn]['hd_x'] = hd_x 
-            metframes[fn]['hd_y'] = hd_y 
       else:
          cv2.circle(img2,(hd_x,hd_y), 10, (0,255,0), 1)
+
+      metframes[fn]['est_x'] = est_x 
+      metframes[fn]['est_y'] = est_y 
+
+      cv2.circle(img2,(est_x,est_y), 10, (0,255,255), 1)
+      if last_x is not None:
+         cv2.line(img2, (hd_x,hd_y), (last_x,last_y), (0,0,255), 1)
 
       desc = "FN" + str(fn) 
       cv2.putText(img2, desc ,  (5,10), cv2.FONT_HERSHEY_SIMPLEX, .4, (255, 255, 255), 1)
@@ -874,7 +924,8 @@ def play_meteor(metframes,frames, metconf, mf,show=0):
 
       #img2 = cv2.cvtColor(image_diff,cv2.COLOR_GRAY2RGB)
       #work_img = image_diff
-
+      cv2.imshow('pepe2', image_diff) 
+      cv2.waitKey(0)
       # set first frame if not set
       if fx is None: 
          fx = hd_x
@@ -899,7 +950,11 @@ def play_meteor(metframes,frames, metconf, mf,show=0):
       # calc last four length
       if len(len_segs) > 2:
          if len(len_segs) >= 4:
+            print("LAST 4 SEGS:", len_segs[-4:])
             last_four =np.median(len_segs[-4:])
+            print("LAST 4 SEGS:", last_four)
+     
+
             sxs = xs[-4:]
             sys = ys[-4:]
             seg_d = calc_dist((sxs[0],sys[0]),(sxs[-1],sys[-1]))
@@ -927,7 +982,11 @@ def play_meteor(metframes,frames, metconf, mf,show=0):
          # recalc m,b based on last 4 instead of global.
          if last_four is not None and x_dir_mod is not None: 
             #est_x = int(last_x + x_dir_mod * (last_four*elp_f))
-            est_x = int((last_x + x_dir_mod * (last_four*elp_f)) + acl_poly * fc)
+            print(last_x, x_dir_mod, last_four, elp_f, acl_poly, fc)
+            if np.isnan(last_four):
+               est_x = last_x
+            else:
+               est_x = int((last_x + x_dir_mod * (last_four*elp_f)) + acl_poly * fc)
          else:
            #est_x = int(last_x + x_dir_mod * (len_from_last*elp_f))
             est_x = int((last_x + x_dir_mod * (len_from_last*elp_f)) + acl_poly * fc)
@@ -1168,8 +1227,8 @@ def play_meteor(metframes,frames, metconf, mf,show=0):
          if last_len_diff <= 0:
             # picked bad / previous point , reject or find new
             print ("DELETE X,Y BAD LEN DIFF:", last_len_diff)
-            #hd_x = 0
-            #hd_y = 0
+            hd_x = 0
+            hd_y = 0
 
       #print("FRAME DATA:", no_motion, fn, hd_x, hd_y, new_x, new_y, best_x, best_y)
       if hd_x != 0 and hd_y != 0:
@@ -1293,10 +1352,14 @@ def play_meteor(metframes,frames, metconf, mf,show=0):
       if res_diff > 10 or metframes[fn]['max_px'] == 0 and metconf['runs'] > 0:
          desc = str(res_diff) + " " + str(metframes[fn]['max_px'])
          cv2.putText(img2, "BAD POINT!:" + desc,  (400,400), cv2.FONT_HERSHEY_SIMPLEX, .8, (0,255,0), 1)
-         hd_x = 0
-         hd_y = 0
-         new_metframes[fn]['hd_x'] = 0
-         new_metframes[fn]['hd_y'] = 0
+         #hd_x = 0
+         #hd_y = 0
+         #new_metframes[fn]['hd_x'] = 0
+         #new_metframes[fn]['hd_y'] = 0
+
+      if new_metframes[fn]['hd_x'] == 0 and new_metframes[fn]['hd_y'] == 0:
+         new_metframes[fn]['hd_x'] = est_x 
+         new_metframes[fn]['hd_y'] = est_y
 
       cv2.rectangle(img2, (min_x, min_y), (max_x, max_y), (128, 128, 128), 1)
       if show == 1:
@@ -1304,7 +1367,7 @@ def play_meteor(metframes,frames, metconf, mf,show=0):
       if metconf['runs'] == "":
          metconf['runs'] = 1
       if int(metconf['runs']) < 1:
-         cv2.waitKey(10)
+         cv2.waitKey(0)
       else:
          cv2.waitKey(0)
       if hd_x != 0 and hd_y != 0:
@@ -1356,6 +1419,56 @@ def play_meteor(metframes,frames, metconf, mf,show=0):
 
    return(new_metframes, metconf, avg_res_diff)
 
+
+
+
+def make_meteor_cnt_composite_images(json_conf, mfd, metframes, frames, sd_video_file):
+   cmp_images = {}
+   #frames = load_video_frames(sd_video_file, json_conf)
+   cnt_max_w = 0
+   cnt_max_h = 0
+   for frame_data in mfd:
+      frame_time, fn, hd_x,hd_y,w,h,max_px,ra,dec,az,el = frame_data
+      if w > cnt_max_w:
+         cnt_max_w = w
+      if h > cnt_max_h:
+         cnt_max_h = h
+
+   cnt_w = int(cnt_max_w / 2)
+   cnt_h = int(cnt_max_h / 2)
+   #if cnt_w < 50 and cnt_h < 50:
+   #   cnt_w = 50
+   #   cnt_h = 50
+   #if cnt_w < 40 and cnt_h < 40:
+   #   cnt_w = 40
+   #   cnt_h = 40
+   if cnt_w < 25 and cnt_h < 25:
+      cnt_w = 25
+      cnt_h = 25
+   else:
+      cnt_w = 50
+      cnt_h = 50
+   #print(cnt_w,cnt_h)
+   for frame_data in mfd:
+      frame_time, fn, hd_x,hd_y,w,h,max_px,ra,dec,az,el = frame_data
+      x1,y1,x2,y2 = bound_xy(hd_x,hd_y,1920,1080,cnt_w)
+      #x1 = hd_x - cnt_w
+      #x2 = hd_x + cnt_w
+      #y1 = hd_y - cnt_h
+      #y2 = hd_y + cnt_h
+      img = frames[fn]
+      hd_img = cv2.resize(img, (1920,1080))
+      cnt_img = hd_img[y1:y2,x1:x2]
+      metframes[fn]['x1'] = x1
+      metframes[fn]['y1'] = y1
+      metframes[fn]['x2'] = x1
+      metframes[fn]['y2'] = y1
+      print("X1:", x1,y1,x2,y2)
+      print("CNT:", cnt_img.shape)
+      cmp_images[fn] = cnt_img
+   return(cmp_images, metframes)
+
+
 def fine_reduce(meteor_red_file, show=0):
 
    #load reduction
@@ -1392,25 +1505,179 @@ def fine_reduce(meteor_red_file, show=0):
 
    # load up stars for mask
    mask_px = []
-   for star in mf['cat_image_stars']:
+   for star in mf['cal_params']['cat_image_stars']:
       star_x = int(star[7])
       star_y = int(star[8])
       mask_px.append((star_x,star_y))
 
    metconf['mask_px'] = mask_px
+
+   # SIMPLE FIX FOR MISSING FRAME DATA
+   last_x = None
+   first_x = None
+   last_y = None
+   segs = []
+   hd_x = []
+   hd_y = []
+   for mfr in metframes:
+      if first_x is None:
+         first_x = metframes[mfr]['hd_x']
+         first_y = metframes[mfr]['hd_y']
+      hd_x = metframes[mfr]['hd_x']
+      hd_y = metframes[mfr]['hd_y']
+      if last_x is not None:
+         len_from_last = calc_dist((hd_x,hd_y),(last_x,last_y))
+         len_from_start = calc_dist((first_x,first_y),(hd_x,hd_y))
+         metframes[mfr]['len_from_last'] = len_from_last
+         metframes[mfr]['len_from_start'] = len_from_start
+         if len_from_last < 40:
+            segs.append(len_from_last)
+      last_x = hd_x
+      last_y = hd_y
+      print(mfr, metframes[mfr])
+   avg_seg_len = len_from_start / len(metframes)
+   med_seg_len = np.median(segs)
+   std_seg_len = np.std(segs)
+   print("SEGS:", segs)
+   print("AVG SEG LEN:", avg_seg_len)
+   print("MED SEG LEN:", med_seg_len)
+   print("STD SEG LEN:", std_seg_len)
+   if hd_x != 0 and hd_y != 0:
+      xs.append(hd_x)
+      ys.append(hd_y)
+
+   m,b = best_fit_slope_and_intercept(xs,ys)
+ 
+   fcc = 0
+
+   x_dir_mod, y_dir_mod = find_dir_mod(mfd)
+   metconf['med_seg_len'] = med_seg_len
+   (metframes, frames, metconf) = play_meteor_clip(metframes,frames, metconf,mf,show=0)
+   exit()
+
+   for mfr in metframes:
+      if first_x is None:
+         first_x = metframes[mfr]['hd_x']
+         first_y = metframes[mfr]['hd_y']
+      hd_x = metframes[mfr]['hd_x']
+      hd_y = metframes[mfr]['hd_y']
+      if hd_x == 0 and hd_y == 0:
+         print("NEED TO FIX THIS FRAME.", mfr, metframes[mfr])
+         print("X DIR MOD:", x_dir_mod) 
+         print ("EQ:" + str(first_x) + " + " + str(x_dir_mod) + " * " + str(avg_seg_len) + " * " + str(fcc))
+         est_x = int(first_x + x_dir_mod * (med_seg_len*fcc))
+         est_y = int((m*est_x)+b)
+
+         metframes[mfr]['est_x'] = est_x
+         metframes[mfr]['est_y'] = est_y
+         metframes[mfr]['hd_x'] = est_x
+         metframes[mfr]['hd_y'] = est_y
+         print("FIXED THIS FRAME.", mfr, metframes[mfr])
+      ref_time = fcc / 25
+      metframes[mfr]['ft'] = ref_time
+      fcc = fcc + 1
+
+   for mfr in metframes:
+      print(mfr, metframes[mfr])
+
+   last_x = None
    if "med_seg_len" not in "mf":
       metframes, metconf,avg_res = check_frame_errors(metframes,frames,metconf, mf,show)
+      metframes, frames, metconf = minimize_start_len(metframes,frames,metconf,mf,show)
+      for fn in metframes:
+         print(fn, metframes[fn])
+         if last_x is not None:
+          
+            if 'est_x' in metframes[fn] and 'est_y' in metframes[fn]:
+               len_from_last = calc_dist((metframes[fn]['est_x'],metframes[fn]['est_y']),(last_x,last_y))
+            else:
+               print(fn, metframes[fn])
+               len_from_last = calc_dist((metframes[fn]['hd_x'],metframes[fn]['hd_y']),(last_x,last_y))
+            len_from_start = calc_dist((first_x,first_y),(hd_x,hd_y))
+            metframes[fn]['len_from_last'] = len_from_last
+            metframes[fn]['len_from_start'] = len_from_start
+         if metframes[fn]['hd_x'] == 0 and metframes[fn]['hd_y'] == 0:
+            metframes[fn]['hd_x'] = metframes[fn]['est_x']
+            metframes[fn]['hd_y'] = metframes[fn]['est_y']
+            print(fn, metframes[fn])
+         if 'est_x' in metframes[fn]:
+            last_x = metframes[fn]['est_x']
+            last_y = metframes[fn]['est_y']
+         else:
+            last_x = metframes[fn]['hd_x']
+            last_y = metframes[fn]['hd_y']
+
+      metframes, metconf,avg_res = check_frame_errors(metframes,frames,metconf, mf,show)
+
+      cal_params_file = mf['sd_video_file'].replace(".mp4", ".json")
+      cal_params = mf['cal_params']
+
+
+      meteor_frame_data = []
+      first_frame  = None
+      for fn in metframes:
+         print(fn, metframes[fn])
+
+         img = frames[fn]
+         img = cv2.resize(img, (1920,1080))
+         img2 = cv2.cvtColor(img,cv2.COLOR_GRAY2RGB)
+         nx, ny, ra ,dec , az, el= XYtoRADec(metframes[fn]['hd_x'],metframes[fn]['hd_y'],cal_params_file,cal_params,json_conf)
+         metframes[fn]['az'] = az
+         metframes[fn]['el'] = el
+         metframes[fn]['ra'] = ra
+         metframes[fn]['dec'] = dec
+         if first_frame is None:
+            mf['start_az'] = az
+            mf['start_el'] = el
+            mf['start_ra'] = ra
+            mf['start_dec'] = dec
+            first_frame = fn
+         else:
+            mf['end_az'] = az
+            mf['end_el'] = el
+            mf['end_ra'] = ra
+            mf['end_dec'] = dec
+    
+         cv2.circle(img2,(metframes[fn]['hd_x'],metframes[fn]['hd_y']), 2, (255,128,255), 2)
+         cv2.imshow('pepe', img2)
+         cv2.waitKey(1)
+         meteor_frame_data.append((metframes[fn]['ft'],fn,int(metframes[fn]['hd_x']),int(metframes[fn]['hd_y']),int(metframes[fn]['w']),int(metframes[fn]['h']),int(metframes[fn]['max_px']),float(metframes[fn]['ra']),float(metframes[fn]['dec']),float(metframes[fn]['az']),float(metframes[fn]['el']) ))
+
+
+
+      if "orig_meteor_frame_data" not in mf:
+         mf['orig_meteor_frame_data'] = mf['meteor_frame_data']
+      mf['meteor_frame_data'] = meteor_frame_data
+      mf['metconf'] = metconf 
+
+      cmp_imgs,metframes = make_meteor_cnt_composite_images(json_conf, meteor_frame_data, metframes, frames, mf['sd_video_file'])
+      mf['metframes'] = metframes
+
+      prefix = mf['sd_video_file'].replace(".mp4", "-frm")
+      prefix = prefix.replace("SD/proc2/", "meteors/")
+      prefix = prefix.replace("/passed", "")
+      for fn in cmp_imgs:
+         cv2.imwrite(prefix  + str(fn) + ".png", cmp_imgs[fn])
+
+
+
+      save_json_file(meteor_red_file, mf) 
+      #save_json_file("test.json", mf) 
+
+
+
+      exit()
       metframes, metconf,avg_res = check_frame_errors(metframes,frames,metconf, mf,show)
       metframes, metconf,avg_res = check_frame_errors(metframes,frames,metconf, mf,show)
-      #metframes, frames, metconf = minimize_start_len(metframes,frames,metconf,mf,show)
       #metframes, metconf,avg_res = play_meteor(metframes,frames,metconf, mf,show)
       print("AVG RES:", avg_res)
-      exit()
+
       metframes, metconf,avg_res = play_meteor(metframes,frames,metconf, mf,show)
-      metframes, metconf = slope_fixes(metframes, metconf,mf,frames,show)
-      metframes, metconf = slope_fixes(metframes, metconf,mf,frames,show)
-      metframes, metconf = slope_fixes(metframes, metconf,mf,frames,show)
-      exit()
+
+      #metframes, metconf = slope_fixes(metframes, metconf,mf,frames,show)
+      #metframes, metconf = slope_fixes(metframes, metconf,mf,frames,show)
+      #metframes, metconf = slope_fixes(metframes, metconf,mf,frames,show)
+
       metframes, frames, metconf = minimize_start_len(metframes,frames,metconf,mf,show)
 
       #if metconf['runs'] > 3:
@@ -1442,7 +1709,13 @@ def fine_reduce(meteor_red_file, show=0):
 
 
 mrf = sys.argv[1]
+if "json" in mrf :
+   if "reduced" not in mrf :
+      mrf = mrf.replace(".json", "-reduced.json")
+if "mp4" in mrf :
+   mrf = mrf.replace(".mp4", "-reduced.json")
 if len(sys.argv) == 3:
+   
    show = int(sys.argv[2])
 else:
    show = 1
