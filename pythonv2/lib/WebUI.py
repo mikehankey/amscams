@@ -608,7 +608,7 @@ def meteor_index(json_conf, form):
 
 
    print("<table class='table table-dark table-striped table-hover td-al-m m-auto table-fit'>")
-   print("<thead><tr><th>&nbsp;</th><th>Meteor</th><th>Reduced</th><th>Multi-Station</th><th>AZ/EL FOV</th><th>Pos Ang</th><th>Pixscale</th><th>Stars</th><th>Res Px</th><th>Res Deg</th><th>Dur</th><th>Ang Sep</th><th>Mag</th></tr></thead>")
+   print("<thead><tr><th>&nbsp;</th><th>Meteor</th><th>Reduced</th><th>Multi-Station</th><th>AZ/EL FOV</th><th>Pos Ang</th><th>Pixscale</th><th>Stars</th><th>Res Px</th><th>Res Deg</th><th>Dur</th><th>Ang Sep</th><th>Mag</th><th>Seg Res</td><th>Missing Frames</th></tr></thead>")
    print("<tbody>")
 
    for day in sorted(mi, reverse=True):
@@ -681,9 +681,9 @@ def meteor_index(json_conf, form):
 
          if seg_res != 999 :
             if seg_res > 2 or missing_frames > 0:
-               color = "style='color: #ff0000'"
+               color = "lv1"
          if show == 1:
-            print("<tr " + color + "><td> {:s}{:s}</a></td><td>{:s}</td><td>{:s}</td><td>{:s}</td><td>{:s}</td><td>{:s}</td><td>{:s}</td><td> {:s}</td><td>  </td><td>{:s}</td><td></td><td></td><td>{:s}</td><td>{:s}</td></tr> ".format(link, fn, str(mi[day][meteor_file]['reduced']), multi_text, az_el, pos, pxs, str(ts), str(mi[day][meteor_file]['total_res_px'])[0:5], str(mi[day][meteor_file]['total_res_deg'])[0:5], str(seg_res), str(missing_frames)))
+            print("<tr class='" + color + "'><td><div class='st'></div></td><td> {:s}</td><td>{:s}</td><td>{:s}</td><td>{:s}</td><td>{:s}</td><td>{:s}</td><td>{:s}</td><td> {:s}</td><td> {:s} </td><td></td><td></td><td></td><td>{:s}</td><td>{:s}</td></tr> ".format(link, str(mi[day][meteor_file]['reduced']), multi_text, az_el, pos, pxs, str(ts), str(mi[day][meteor_file]['total_res_px'])[0:5], str(mi[day][meteor_file]['total_res_deg'])[0:5], str(seg_res), str(missing_frames)))
           
    print("<tbody></table>")
 
