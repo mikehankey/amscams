@@ -3895,6 +3895,13 @@ def sd_pic_stars(json_conf,form):
                               </div>"""
 
 
+   canvas_html = canvas_html + """<div class="box">
+                <h2>Info</h2>
+                <dl class="row mb-0">
+                    <dt class="col-6">Start Time</dt>   <dd class="col-6">"""+ get_meteor_date(half_stack_file) +"""</dd>
+                </dl> 
+            </div>"""
+
 
    canvas_html = canvas_html + """
       
