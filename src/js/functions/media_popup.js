@@ -1,8 +1,18 @@
 $(function() {
-    $('.img-link').magnificPopup({
+      $('.img-link').magnificPopup({
         type: 'image' ,
         removalDelay: 300, 
         mainClass: 'mfp-fade'
+      });
+
+      $('.img-link-gal').magnificPopup({
+        type: 'image' ,
+        removalDelay: 300, 
+        preloader: true,
+        mainClass: 'mfp-fade',
+        gallery:{
+          enabled:true
+        }
       });
       
       $('.vid-link').magnificPopup({

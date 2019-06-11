@@ -1128,8 +1128,7 @@ def live_view(json_conf):
    print("""<h1>Latest View</h1>
             <div class="container">
                   <p>Still pictures are updated in 5 minutes intervals.</p>
-            </div>
-            <div class="gallery gal-resize row text-center text-lg-left mb-4">
+                  <div class="gallery gal-resize row text-center text-lg-left mb-4">
    """)
  
    rand=time.time()
@@ -1142,15 +1141,10 @@ def live_view(json_conf):
 
       img = "/mnt/ams2/latest/" + cams_id + ".jpg?" + str(rand)
 
-      print('<div class="preview col-lg-2 col-md-3 "><a class="mtt" href="'+img+'" title="Live View">')
-      print('<img alt='"""+cam_id+"""' class="img-fluid ns lz" src="'+img+'"><span><b>Cam '+cams_id+'</span></b></a></div>')
+      print('<div class="preview col-lg-2"><a class="mtt" href="'+img+'" title="Live View">')
+      print('<img alt="'+cam_id+'" class="img-fluid ns lz img-link-gal" src="'+img+'"><span><b>Cam '+cams_id+'</span></b></a></div>')
 
-      #print ("<div style=\"padding: 5px; border: 1px ffffff solid; float:left\" ><figure><img src=/mnt/ams2/latest/" + cams_id + ".jpg?" + str(rand) + " width=640 height=360><figcaption>" + cams_id + "</figcaption></figure></div>")
-   print("</div></div></div>")
-   #print ("</div>")
-   #print ("</div>")
-   #print ("</div>")
-   #print("<div style=\"clear: both\"></div>")
+    print("</div></div></div>") 
 
 def as6_config(json_conf):
    print("AS6 Config")
