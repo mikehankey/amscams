@@ -68,7 +68,8 @@ def make_meteor_cnt_composite_images(json_conf, mfd, metframes, frames, sd_video
       #x2 = hd_x + cnt_w
       #y1 = hd_y - cnt_h
       #y2 = hd_y + cnt_h
-      img = frames[fn]
+      ifn = int(fn)
+      img = frames[ifn]
       hd_img = cv2.resize(img, (1920,1080))
       cnt_img = hd_img[y1:y2,x1:x2]
       metframes[fn]['x1'] = x1
@@ -462,6 +463,7 @@ def fine_reduce(mrf, json_conf, show):
       oid = meteor_obj['oid']
       for row in hist:
          (fn,x,y,w,h,cx,cy) = row
+         fn = int(fn)
          mf_objs[fn]['objects'].append(row)
          mf_objs[fn]['object_ids'].append(oid)
          mf_objs[fn]['med_x'] = cx 
@@ -494,6 +496,7 @@ def fine_reduce(mrf, json_conf, show):
       if med_x != 0 and med_y != 0 and no_meteor <= 5:
          event_started = 1
          meteor_exists = 1
+         fn = int(fn)
          metframes[fn] = {}
          if first_frame is None:
             event_started = 1
@@ -649,7 +652,7 @@ def fine_reduce(mrf, json_conf, show):
    ys = []
    metconf['med_seg_len'] = med_seg_len
    last_frame = None
-   for fn in sorted(metframes):
+   for fn in metframes:
       est_res = 0
       img = frames[fn].copy()
       img = cv2.resize(img, (1920,1080))
@@ -753,7 +756,7 @@ def fine_reduce(mrf, json_conf, show):
    # OK LAST TIME
    meteor_frame_data = []
    bad_frames = []
-   for fn in sorted(metframes):
+   for fn in metframes:
       bad = 0
       print("MIKE:", fn, metframes[fn])
       est_res = 0
@@ -962,7 +965,7 @@ def reduce_acl(this_poly, metframes,metconf,frames,show=0):
    fcc = 0
    m_10 = metconf['m']
    b_10 = metconf['b']
-   for fn in sorted(metframes):
+   for fn in metframes:
       print(fn, metframes[fn])
       est_res = 0
       img = frames[fn].copy()
@@ -1068,8 +1071,32 @@ def test_obj(obj):
    print("PASSED METEOR:", obj)
    return(1)
 
+def sort_metframes(metframes):
+   new_metframes = {}
+   fns = []
+   for fn in metframes:
+      fns.append(int(fn))
+   for fn in sorted(fns):
+      fn = str(fn)    
+      if fn in metframes:
+         new_metframes[fn] = metframes[fn]
+   return(new_metframes)
+
+def metframes_to_mfd(metframes):
+   meteor_frame_data = []
+   for fn in metframes:
+      meteor_frame_data.append((metframes[fn]['etime'],fn,int(metframes[fn]['hd_x']),int(metframes[fn]['hd_y']),int(metframes[fn]['w']),int(metframes[fn]['h']),int(metframes[fn]['max_px']),float(metframes[fn]['ra']),float(metframes[fn]['dec']),float(metframes[fn]['az']),float(metframes[fn]['el']) ))
+   return(meteor_frame_data)
+
 def eval_metframes(mrf):
    mr = load_json_file(mrf)
+   sd_video_file = mrf.replace("-reduced.json", ".mp4")
+   mr['metframes'] = sort_metframes(mr['metframes'])
+
+   if 'frames_missing_before' in mr:
+      mr.pop("frames_missing_before")
+      mr.pop("frames_missing_after")
+
    first_frame = None
    last_frame = None
    segs = []
@@ -1080,7 +1107,7 @@ def eval_metframes(mrf):
          if int(last_frame) + 1 != int(fn):
             print("Frame missing before fn", last_frame, fn)
             frames_missing_before.append(fn)
-            frames_missing_after.append(fn)
+            frames_missing_after.append(last_frame)
          
       if "last_len_diff" in mr['metframes'][fn]: 
          print(fn, mr['metframes'][fn]['len_from_last'], mr['metframes'][fn]['last_len_diff'])
@@ -1092,6 +1119,7 @@ def eval_metframes(mrf):
          print(fn, mr['metframes'][fn])
       last_frame = fn
 
+   print("")
    avg_seg = np.mean(segs)
    all_seg_res = []
    for fn in mr['metframes']:
@@ -1106,14 +1134,130 @@ def eval_metframes(mrf):
       else: 
          print(fn)
 
+   print("")
    avg_seg_res = np.mean(all_seg_res)
    print("AVG SEG RES:", avg_seg_res)
    print("MISSING FRAMES:", len(frames_missing_before))
    mr['red_seg_res'] = avg_seg_res
    if len(frames_missing_before) > 0:
       mr['frames_missing_before'] = frames_missing_before
-      mr['frames_missing_after'] = frames_missing_before
+      mr['frames_missing_after'] = frames_missing_after
+
+   if len(frames_missing_before) == 1:
+      missing_frame_gap = int(frames_missing_before[0]) -  int(frames_missing_after[0])
+      print("Just 1 frame missing, lets fix it.", frames_missing_after[0], frames_missing_before[0])
+      print("Missing frame gap is:", missing_frame_gap)
+      if missing_frame_gap == 2:
+         ms_fn = int(frames_missing_after[0]) + 1 
+         bfn = frames_missing_after[0]
+         afn = frames_missing_before[0]
+         before_x = mr['metframes'][bfn]['hd_x']
+         before_y = mr['metframes'][bfn]['hd_y']
+         after_x = mr['metframes'][afn]['hd_x']
+         after_y = mr['metframes'][afn]['hd_y']
+         mid_x = int((before_x + after_x) / 2)
+         mid_y = int((before_y + after_y) / 2)
+         print("MID X :", before_x, after_x, mid_x)
+         print("MID Y :", before_y, after_y, mid_y)
+
+         ms_fn = str(ms_fn)
+         mr['metframes'][ms_fn] = {}
+         mr['metframes'][ms_fn]['hd_x'] = mid_x
+         mr['metframes'][ms_fn]['hd_y'] = mid_y
+         metframes = mr['metframes']
+         metframes = make_metframe(mrf, mr, ms_fn, mid_x, mid_y, metframes) 
+         mr['metframes'] = metframes
+         print("FIXED:", ms_fn, mr['metframes'][ms_fn]) 
+
+   mfd = metframes_to_mfd(mr['metframes'])
+  
+   print("LOAD:", sd_video_file) 
+   sd_frames = load_video_frames(sd_video_file, json_conf)
+   frames = []
+   for frame in sd_frames:
+      #hd_img = frame
+      hd_img = cv2.resize(frame, (1920,1080))
+      frames.append(hd_img)
+
+
+   for fn in mr['metframes']:
+      ifn = int(fn)
+      hd_x = mr['metframes'][fn]['hd_x']
+      hd_y = mr['metframes'][fn]['hd_y']
+      cnt_w = 40
+      size = 40
+      x1,y1,x2,y2 = bound_cnt(hd_x,hd_y,1920,1080,cnt_w)
+
+      cnt_img = frames[ifn][y1:y2,x1:x2]
+      blob_x, blob_y, blob_max, blob_w, blob_h = find_blob_center(cnt_img,frames[ifn],frames[ifn],x1,y1,x2,y2,size)
+      mr['metframes'][fn]['hd_x'] = blob_x 
+      mr['metframes'][fn]['hd_y'] = blob_y 
+
+   cmp_imgs,mr['metframes'] = make_meteor_cnt_composite_images(json_conf, mfd, mr['metframes'], frames, sd_video_file)
+   prefix = mr['sd_video_file'].replace(".mp4", "-frm")
+   prefix = prefix.replace("SD/proc2/", "meteors/")
+   prefix = prefix.replace("/passed", "")
+   for fn in cmp_imgs:
+      cv2.imwrite(prefix  + str(fn) + ".png", cmp_imgs[fn])
+
+   mr['meteor_frame_data'] = mfd
+
    save_json_file(mrf, mr)
+   save_json_file("test.json", mr)
+
+
+def make_metframe(mrf, mr, fn, hd_x, hd_y, metframes):
+   bfn = str(int(fn) - 1)
+   afn = str(int(fn) + 1)
+   cnt_w = 25
+   x1,y1,x2,y2 = bound_cnt(hd_x,hd_y,1920,1080,cnt_w)
+
+   for fn in metframes:
+      print("MIKE1", fn, metframes[fn])
+
+   print("METFRAMES:", bfn,metframes[bfn])
+   if "len_from_last" in metframes[bfn]:
+      metframes[fn]["len_from_last"] = metframes[bfn]['len_from_last']
+   else:
+      metframes[fn]["len_from_last"] = 1 
+   if "len_from_start" in metframes[fn]:
+      metframes[fn]["len_from_start"] = metframes[bfn]['len_from_start'] + metframes[bfn]['len_from_last']
+
+   if "last_len_diff" in metframes[fn]:
+      metframes[fn]["last_len_diff"] = metframes[bfn]['last_len_diff']
+   else:
+      metframes[fn]["last_len_diff"] = 1
+
+   nx, ny, ra ,dec , az, el= XYtoRADec(hd_x,hd_y,mrf,mr['cal_params'],json_conf)
+
+   metframes[fn]["etime"] = metframes[bfn]['etime'] + 1/25
+   metframes[fn]["fn"] = fn
+   metframes[fn]["max_px"] = 0
+   metframes[fn]["w"] = 0
+   metframes[fn]["h"] = 0
+   metframes[fn]["ra"] = ra
+   metframes[fn]["dec"] = dec
+   metframes[fn]["az"] = az
+   metframes[fn]["el"] = el
+   metframes[fn]["est_x"] = 0
+   metframes[fn]["est_y"] = 0
+   metframes[fn]["est_res"] = 0
+   metframes[fn]["bp_x"] = 0
+   metframes[fn]["bp_y"] = 0
+   metframes[fn]["px_diff"] = 0
+   metframes[fn]["m_10"] =  metframes[bfn]['m_10']
+   metframes[fn]["b_10"] =  metframes[bfn]['b_10']
+   metframes[fn]["x1"] = x1
+   metframes[fn]["y1"] = y1
+   metframes[fn]["x2"] = x2
+   metframes[fn]["y2"] = y2
+
+
+
+
+   new_metframes = sort_metframes(metframes)
+
+   return(new_metframes)
 
 mrf = sys.argv[1]
 
@@ -1132,7 +1276,7 @@ if len(sys.argv) == 3:
 
    show = int(sys.argv[2])
 else:
-   show = 1
+   show = 0
 
 
 fine_reduce(mrf, json_conf,show)
