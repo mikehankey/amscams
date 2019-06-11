@@ -1122,12 +1122,11 @@ def meteors(json_conf,form):
 
 
 def live_view(json_conf):
-
-   cgitb.enable()
+ 
 
    print("""<h1>Live</h1>
             <div class="container mt-3">
-                  <p>Still pictures are updated in 5 minutes intervals. This page will automatically refresh in <span id="cntd">2:00</span>.</p>
+                  <p class="text-center"><b>Still pictures are updated in 5 minutes intervals. This page will automatically refresh in <span id="cntd">2:00</span>.</b></p>
                   <div class="gallery gal-resize row text-center text-lg-left mb-4">
    """)
  
@@ -1153,7 +1152,10 @@ def live_view(json_conf):
       var timeoutHandle;
       function countdown(minutes) {
             var seconds = 60;
-            var mins = minutes
+            var mins = minutes;
+            if(mins==0) {
+                  location.reload();
+            }
             function tick() {
                   var counter = document.getElementById("cntd");
                   var current_minutes = mins-1
@@ -1163,8 +1165,7 @@ def live_view(json_conf):
                         timeoutHandle = setTimeout(tick, 1000);
                   } else {
                         if(mins > 1){
-                              setTimeout(function () { countdown(mins - 1);  location.reload(); }, 1000);
-
+                              setTimeout(function () { countdown(mins - 1); }, 1000);
                         }
                   }
             }
