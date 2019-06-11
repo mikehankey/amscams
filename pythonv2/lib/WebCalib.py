@@ -3881,13 +3881,13 @@ def sd_pic_stars(json_conf,form):
    </script>
    """.format(stack_file)
 
-   canvas_html = '<div class="alert alert-info m-4">An HD source file was not found for this time period. No worries, we can still calibrate from an SD image, but first we need to pick the stars so we can upscale the image.<br/><b>Select as many stars as possible from the image below and then click the "Upscale To HD" button.</b></div><div class="h-100 flex-fixed-canvas">'
+   canvas_html = '<div class="alert alert-info m-4">An HD source file was not found for this time period. No worries, we can still calibrate from an SD image, but first we need to pick the stars so we can upscale the image.<br/><b>Select as many stars as possible from the image below and then click the "Upscale To HD" button.</b></div>'
    canvas_html = canvas_html +  '<div id="main_container" class="container-fluid d-flex h-100 mt-4 position-relative">'
 
-   canvas_html = canvas_html +  '<div class="canvas-container"><canvas id="c" width="573" height="469" class="m-auto"></canvas></div>' 
+   canvas_html = canvas_html +  '<div class="h-100 flex-fixed-s-canvas"><div class="canvas-container"><canvas id="c" width="573" height="469" class="m-auto"></canvas></div>' 
 
    #Right Col
-   canvas_html = canvas_html + "<div class='flex-fixed-r-canvas h-100'>"
+   canvas_html = canvas_html + "<div class='flex-fixed-r-s-canvas h-100'>"
    canvas_html = canvas_html + """<div class="canvas_zoom_holder mb-3">
                               <div id="canvas_zoom_target"><img alt="" src="./dist/img/target.svg"/></div>
                               <div id="canvas_pointer_info"></div>
