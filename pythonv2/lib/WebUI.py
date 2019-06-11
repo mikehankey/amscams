@@ -772,7 +772,7 @@ def hd_cal_index(json_conf, form):
                   color = ""
             
                
-               js_img_array["fr"+div_id].append({'src': tn, 'stars': str(ts), 'rpx': str(trp)[0:5] , 'trd':  str(trd)[0:5]})
+               js_img_array["fr"+div_id].append({'col':color, 'lk': detail_link, 'src': tn, 'st': str(ts), 'trp': str(trp)[0:5] , 'trd':  str(trd)[0:5]})
                #print('<div class="preview p-2"><a href="'+detail_link+'" class="m:ttt">')
                #print('<img data-src="'+tn+'" class="ns lz-shown" width="200" height="112"/>');
                #print('</a><span class="det" '+color+'><b>' + str(ts) + "</b> stars - <b>" + str(trp)[0:5] + "</b>Rpx - <b>" +  str(trd)[0:5] + "</b>Rd</span></div>")
