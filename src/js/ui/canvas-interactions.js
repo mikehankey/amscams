@@ -212,8 +212,8 @@ if ($('canvas#c').length!=0) {
     {
       width: canvas.width,
       height: canvas.height, 
-      originX: 'left',
-      originY: 'top'
+      originX: 'center',
+      originY: 'center'
   });
  
   // Add Stars 
