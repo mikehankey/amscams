@@ -3883,7 +3883,7 @@ def sd_pic_stars(json_conf,form):
    </script>
    """.format(stack_file)
 
-   canvas_html = '<div class="container-fluid"><div class="alert alert-info m-4">An HD source file was not found for this time period. No worries, we can still calibrate from an SD image, but first we need to pick the stars so we can upscale the image.<br/><b>Select as many stars as possible from the image below and then click the "Upscale To HD" button.</b></div></div>'
+   canvas_html = '<div class="container-fluid"><div class="alert alert-info mt-4 mb-4">An HD source file was not found for this time period. No worries, we can still calibrate from an SD image, but first we need to pick the stars so we can upscale the image.<br/><b>Select as many stars as possible from the image below and then click the "Upscale To HD" button.</b></div></div>'
    
    canvas_html = canvas_html +  '<div id="main_container" class="container-fluid d-flex h-100 mt-4 position-relative">'
    canvas_html = canvas_html +  '<div class="h-100 flex-fixed-canvas"><div class="canvas-container"><canvas id="c" width="960" height="540"></canvas></div></div>' 
