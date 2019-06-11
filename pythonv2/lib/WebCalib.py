@@ -3844,6 +3844,7 @@ def choose_file(json_conf,form):
 
 def sd_pic_stars(json_conf,form):
 
+   
    input_file = form.getvalue("input_file")
    (f_datetime, cam_id, f_date_str,Y,M,D, H, MM, S) = better_parse_file_date(input_file)
    base_dir = "/mnt/ams2/cal/freecal/" + Y + "_" + M + "_" + D + "_" + H + "_" + MM + "_" + S + "_" + "000" + "_" + cam_id
@@ -3873,7 +3874,6 @@ def sd_pic_stars(json_conf,form):
       stack_img = cv2.imread(input_file)
 
    print("<h1>Calibrate SD Image Step #1 - Pick Stars - "+ get_meteor_date(stack_file) +"</h1>")
-
 
    js_html = """
    <script>
@@ -3923,7 +3923,7 @@ def sd_pic_stars(json_conf,form):
       <div id=star_list>star_list: </div>
        <BR><BR>
    """
-   print(stack_file)
+   #print(stack_file)
 
    print(canvas_html)
    print(js_html)
