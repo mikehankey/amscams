@@ -152,9 +152,6 @@ def find_blob_center(cnt_img,img,norm_img,x1,y1,x2,y2,size):
       max_px = max_val
   
  
-   #cv2.imshow('pepe2', cnt_img2)   
-   #cv2.moveWindow('pepe2',1600,210)
-   #cv2.waitKey(1)
 
    return(blob_x, blob_y,max_val,blob_w,blob_h)     
 
@@ -208,9 +205,10 @@ def find_cnts(fn,image, thresh_val, objects):
             cy = int(y + (h / 2))
             if "oid" in object:
                print("ADDING OID TEXT:", x,y, oid)
-               cv2.putText(marked_image, str(oid),  (cx,cy), cv2.FONT_HERSHEY_SIMPLEX, .8, (255,255,255), 1)
-               cv2.imshow("TEST", marked_image)
-               cv2.waitKey(1)
+               if show == 1:
+                  cv2.putText(marked_image, str(oid),  (cx,cy), cv2.FONT_HERSHEY_SIMPLEX, .8, (255,255,255), 1)
+                  cv2.imshow("TEST", marked_image)
+                  cv2.waitKey(1)
             cv2.rectangle(marked_image, (x, y), (x+w, y+h), (128), 1)
             cnt_img = image[y:y+h,x:x+w]
             min_val, max_val, min_loc, (mx,my)= cv2.minMaxLoc(cnt_img)
@@ -417,10 +415,11 @@ def fine_reduce(mrf, json_conf, show):
       if "avg_x" in mf_objs[mf]:
          x = mf_objs[mf]['avg_x']
          y = mf_objs[mf]['avg_y']
-         cv2.circle(frame,(x,y), 5, (0,255,0), 1)
-         cv2.imshow('color_frame', show_img)
-         cv2.moveWindow('final',500,700)
-         cv2.waitKey(1)
+         if show == 1:
+            cv2.circle(frame,(x,y), 5, (0,255,0), 1)
+            cv2.imshow('color_frame', show_img)
+            cv2.moveWindow('final',500,700)
+            cv2.waitKey(1)
   
    first_x = None    
    max_dist_from_start = 0
@@ -819,10 +818,10 @@ def fine_reduce(mrf, json_conf, show):
                bad_frames.append(fn)
                print("BAD FRAME:", fn)
             
-
-      cv2.imshow('last', img)   
-      cv2.moveWindow('last',25,25)
-      cv2.waitKey(10)
+      if show == 1:
+         cv2.imshow('last', img)   
+         cv2.moveWindow('last',25,25)
+         cv2.waitKey(10)
       if "w" not in metframes[fn]:
          metframes[fn]['w'] = 5 
          metframes[fn]['h'] = 5
@@ -998,9 +997,10 @@ def reduce_acl(this_poly, metframes,metconf,frames,show=0):
       err.append(hd_est_res)
 
       cv2.putText(img, str(med_seg) + " " + str(acl_poly),  (10,10), cv2.FONT_HERSHEY_SIMPLEX, .4, (0,0,255), 1)
-      cv2.imshow('last', img)
-      cv2.moveWindow('last',25,25)
-      cv2.waitKey(1)
+      if show == 1:
+         cv2.imshow('last', img)
+         cv2.moveWindow('last',25,25)
+         cv2.waitKey(1)
       fcc = fcc + 1
       
       if len(xs) > 10:
