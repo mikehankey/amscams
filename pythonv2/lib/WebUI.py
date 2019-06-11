@@ -676,13 +676,14 @@ def hd_cal_index(json_conf, form):
    
    cgitb.enable()
 
+   js_img_array = {}
    cam_id_filter = form.getvalue("cam_id")
    print("<h1>Auto Calibration</h1>")
  
    ci = load_json_file("/mnt/ams2/cal/hd_images/hd_cal_index.json")
    cam_day_sum = load_json_file("/mnt/ams2/cal/hd_images/hd_cal_index-cam-day-sum.json")
 
-   print('<div class="m-auto mt-3 mb-3" style="max-width: 1730px;">')
+   print('<div class="m-3" style="max-width: 1730px;">')
    print('<table class="table table-dark table-striped table-hover td-al-m">')
    print('<thead><tr><th>Date</th><th>Cam ID</th><th>Images w/ Stars</th><th>Images w/o Stars</th><th>Total Stars For Night</th><th>Center AZ/EL</th><th>Position Angle</th><th>PixScale</th><th>Avg Res Px For Night</th><th>Avg Res Deg For Night</th></tr></thead>')
    print('<tbody>')
@@ -749,6 +750,8 @@ def hd_cal_index(json_conf, form):
           
             print("<tr><td colspan='11' class='collapse' id='fr"+div_id+"'>")
             print("<div class='text-center text-lg-left gallery gal-resize d-flex flex-wrap' style='max-width: 1520px;'>")
+            js_img_array["fr"+div_id] = []
+
             for cfile in sorted(ci[day][cam_id], reverse=True):
                if "total_res_deg" in ci[day][cam_id][cfile]:
                   trd = ci[day][cam_id][cfile]['total_res_deg']
@@ -767,8 +770,10 @@ def hd_cal_index(json_conf, form):
                   color = "style='color: #ff0000'"
                else:
                   color = ""
-                  
-               #print('<div class="preview p-2"><a href="'+detail_link+'" class="mttt">')
+            
+               
+               js_img_array["fr"+div_id].append({'src': tn, 'stars': str(ts), 'rpx': str(trp)[0:5] , 'trd':  str(trd)[0:5]})
+               #print('<div class="preview p-2"><a href="'+detail_link+'" class="m:ttt">')
                #print('<img data-src="'+tn+'" class="ns lz-shown" width="200" height="112"/>');
                #print('</a><span class="det" '+color+'><b>' + str(ts) + "</b> stars - <b>" + str(trp)[0:5] + "</b>Rpx - <b>" +  str(trd)[0:5] + "</b>Rd</span></div>")
 
@@ -777,17 +782,8 @@ def hd_cal_index(json_conf, form):
             print("</td></tr> ")
    print("</div></table>")
    print("</div></div>")
-   extra_html = """
-   <script>
-      var my_image = ''
-      var half_stack_file = ''
-      var az_grid_file = ''
-      var grid_by_default = false
-      var hd_stack_file = ''
-   </script>
-
-   """
-   return(extra_html)
+   print(js_img_array) 
+   return("")
 
 def calibration(json_conf,form):
    cam_id_filter = form.getvalue("cam_id")
