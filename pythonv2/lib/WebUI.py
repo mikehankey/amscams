@@ -1149,6 +1149,7 @@ def live_view(json_conf):
 
    #Countdown
    print("""
+      <script>
       var timeoutHandle;
       function countdown(minutes) {
             var seconds = 60;
@@ -1170,6 +1171,7 @@ def live_view(json_conf):
             tick();
       }
       countdown(5);
+      </script>
    """)
 
 def as6_config(json_conf):
