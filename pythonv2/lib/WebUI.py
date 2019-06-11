@@ -1127,7 +1127,7 @@ def live_view(json_conf):
 
    print("""<h1>Latest View</h1>
             <div class="container mt-3">
-                  <p>Still pictures are updated in 5 minutes intervals.</p>
+                  <p>Still pictures are updated in 5 minutes intervals. This page will automatically refresh in <span id="cntd">2:00</span>.</p>
                   <div class="gallery gal-resize row text-center text-lg-left mb-4">
    """)
  
@@ -1146,6 +1146,31 @@ def live_view(json_conf):
       print('<img alt="'+cams_id+'" class="img-fluid ns lz" src="'+img+'?r=' + str(rand) + '"><span><b>Cam '+cams_id+' ('+cam_ip+')</span></b></a></div>')
 
    print("</div></div></div>")
+
+   #Countdown
+   print("""
+      var timeoutHandle;
+      function countdown(minutes) {
+            var seconds = 60;
+            var mins = minutes
+            function tick() {
+                  var counter = document.getElementById("cntd");
+                  var current_minutes = mins-1
+                  seconds--;
+                  counter.innerHTML = current_minutes.toString() + ":" + (seconds < 10 ? "0" : "") + String(seconds);
+                  if( seconds > 0 ) {
+                        timeoutHandle = setTimeout(tick, 1000);
+                  } else {
+                        if(mins > 1){
+                              setTimeout(function () { countdown(mins - 1);  location.reload(); }, 1000);
+
+                        }
+                  }
+            }
+            tick();
+      }
+      countdown(5);
+   """)
 
 def as6_config(json_conf):
    print("AS6 Config")
