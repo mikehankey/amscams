@@ -1126,7 +1126,7 @@ def live_view(json_conf):
    cgitb.enable()
 
    print("""<h1>Latest View</h1>
-            <div class="container">
+            <div class="container mt-3">
                   <p>Still pictures are updated in 5 minutes intervals.</p>
                   <div class="gallery gal-resize row text-center text-lg-left mb-4">
    """)

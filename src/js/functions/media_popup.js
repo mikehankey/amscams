@@ -7,8 +7,6 @@ $(function() {
 
       $('.img-link-gal').magnificPopup({
         type: 'image' ,
-        removalDelay: 300, 
-        preloader: true,
         mainClass: 'mfp-fade',
         gallery:{
           enabled:true
