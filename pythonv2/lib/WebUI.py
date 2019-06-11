@@ -1124,7 +1124,7 @@ def meteors(json_conf,form):
 def live_view(json_conf):
 
    cgitb.enable()
-      
+
    print("""<h1>Latest View</h1>
             <div class="container">
                   <p>Still pictures are updated in 5 minutes intervals.</p>
@@ -1143,7 +1143,7 @@ def live_view(json_conf):
       img = "/mnt/ams2/latest/" + cams_id + ".jpg?" + str(rand)
 
       print('<div class="preview col-lg-2 col-md-3 "><a class="mtt" href="'+img+'" title="Live View">')
-      print('<img alt='"""+cam_id+"""' class="img-fluid ns lz" src="'+img+'"><span><b>Cam'+cam_id+'</span></b></a></div>')
+      print('<img alt='"""+cam_id+"""' class="img-fluid ns lz" src="'+img+'"><span><b>Cam '+cams_id+'</span></b></a></div>')
 
       #print ("<div style=\"padding: 5px; border: 1px ffffff solid; float:left\" ><figure><img src=/mnt/ams2/latest/" + cams_id + ".jpg?" + str(rand) + " width=640 height=360><figcaption>" + cams_id + "</figcaption></figure></div>")
    print("</div></div></div>")
