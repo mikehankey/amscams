@@ -1122,13 +1122,13 @@ def meteors(json_conf,form):
 
 
 def live_view(json_conf):
-
-
-   print ("<link href='https://fonts.googleapis.com/css?family=Roboto:100,400,300,500,700' rel='stylesheet' type='text/css'>")
-   print ("<link href='scale.css' rel='stylesheet' type='text/css'>")
-   print ("<div class=\"fond\" style=\"width: 100%\">")
-   print("<h2>Latest View</h2> Still pictures are updated in 5 minute intervals.")
-   print ("<div>")
+   print("""<h1>Latest View</h1>
+            <div class="container">
+                  <p>Still pictures are updated in 5 minutes intervals.</p>
+            </div>
+            <div class="gallery gal-resize row text-center text-lg-left mb-4">
+   """)
+ 
    rand=time.time()
    for cam_num in range(1,7):
       cam_key = 'cam' + str(cam_num)
@@ -1137,11 +1137,18 @@ def live_view(json_conf):
       hd_url = json_conf['cameras'][cam_key]['hd_url']
       cams_id = json_conf['cameras'][cam_key]['cams_id']
 
-      print ("<div style=\"padding: 5px; border: 1px ffffff solid; float:left\" ><figure><img src=/mnt/ams2/latest/" + cams_id + ".jpg?" + str(rand) + " width=640 height=360><figcaption>" + cams_id + "</figcaption></figure></div>")
-   print ("</div>")
-   print ("</div>")
-   print ("</div>")
-   print("<div style=\"clear: both\"></div>")
+      img = "/mnt/ams2/latest/" + cams_id + ".jpg?" + str(rand)
+      print("""
+            <div class="preview col-lg-2 col-md-3 "><a class="mtt" href='"""+img+"""' title="Live View">
+            <img alt='"""+cam_id+"""' class="img-fluid ns lz" src='"""+img+"""'><span><b>'Cam """+cam_id+"""'</span></b></a></div>
+      """)
+
+      #print ("<div style=\"padding: 5px; border: 1px ffffff solid; float:left\" ><figure><img src=/mnt/ams2/latest/" + cams_id + ".jpg?" + str(rand) + " width=640 height=360><figcaption>" + cams_id + "</figcaption></figure></div>")
+   print("</div></div></div>")
+   #print ("</div>")
+   #print ("</div>")
+   #print ("</div>")
+   #print("<div style=\"clear: both\"></div>")
 
 def as6_config(json_conf):
    print("AS6 Config")
@@ -1334,12 +1341,13 @@ def nav_links(json_conf, cmd):
    return(nav, bot_nav)
 
 def video_tools(json_conf):
-   print("video tools")
-   print("<li>Join Two Clips</li>")
-   print("<li>Trim Clip</li>")
-   print("<li>Stack Video</li>")
-   print("<li>Make Meteors Tonight Video</li>")
-   print("<li>Make Timelapse</li>")
+   print("<div class='alert alert-info m-3 text-center'>Coming soon</div>")
+   #print("video tools")
+   #print("<li>Join Two Clips</li>")
+   #print("<li>Trim Clip</li>")
+   #print("<li>Stack Video</li>")
+   #print("<li>Make Meteors Tonight Video</li>")
+   #print("<li>Make Timelapse</li>")
 
 def reset(video_file, type):
    if "passed" in video_file:

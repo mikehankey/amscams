@@ -3907,7 +3907,8 @@ def sd_pic_stars(json_conf,form):
    canvas_html = canvas_html +"<a class='btn btn-primary mx-auto d-block mb-2' id='upscale_to_HD'>Upscale to HD</a>"
    canvas_html = canvas_html +"</div>"
 
-
+   canvas_html = canvas_html +"</div></div>"
+   
    canvas_html = canvas_html + """
       
       <div style="float:left"><div style="position: relative; height: 50px; width: 50px" id="myresult" class="img-zoom-result"> </div></div>
