@@ -32,8 +32,10 @@ function add_a_frame(cur_fn) {
     });
 }
 
-$(function() {
+function setup_add_frames() {
     $('.add_f').click(function() {
         add_a_frame($(this).attr('data-rel'));
     }); 
-})
+}
+
+ 
