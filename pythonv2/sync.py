@@ -102,6 +102,23 @@ def check_for_event(day, stations, meteor, all_meteors, mse):
    # do something to handle 2x,3x captures from multi-cams at same station.  These should not be considered 'events'.
 
    # else return 0
+
+def sync_stations(json_conf):
+   api_host = "http://54.214.104.131/" 
+   sync_urls = load_json_file("../conf/sync_urls.json")
+   print("SYNC STATIONS")
+   my_station_id = json_conf['site']['ams_id'].upper()
+   stations = {}
+   for station in sync_urls['sync_urls']:
+      stations[station] = {}
+      lfn = "/mnt/ams2/stations/data/" + station + "_meteor_index.json.gz"
+      mi_url = api_host + "/stations/" + station + "_meteor_index.json.gz" 
+      print(mi_url)
+      cmd = "wget \"" + mi_url + "\" -O " + lfn 
+      print(cmd)
+      #os.system(cmd)
+
+
    
 
 def find_events_for_day(day,json_conf):
@@ -190,6 +207,8 @@ def solve_events(day, mse,sync_urls):
    #os.system(cmd)
 
     
+if cmd == "ss":
+   sync_stations( json_conf)
          
 if cmd == "smi":
    sync_meteor_index( json_conf)
