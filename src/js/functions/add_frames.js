@@ -1,3 +1,19 @@
+function add_reduc_row(data) {
+
+    var row = "<tr>";
+
+    // Test if path_image exist -> replace with processing thumb in case it doesn't 
+
+    row += '<img alt="Thumb #'+id+'" src="'+path_image+'" width="50" height="50" class="img-fluid select_meteor"></td>';
+
+    // Create row
+    var $row = $('<tr><td></td><td></td><td></td></tr>');
+
+
+    // Reload all actions on reduct table!!!
+    
+}
+
 function add_a_frame(cur_fn) {
     loading({text: "Generating Frame #"+ cur_fn});
  
@@ -12,6 +28,7 @@ function add_a_frame(cur_fn) {
         data: cmd_data, 
         success: function(data) { 
             loading_done();
+            add_reduc_row(data);
             
             bootbox.alert({
                 message: "FRAME CREATED " + data,
