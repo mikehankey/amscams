@@ -2844,7 +2844,7 @@ def reduce_meteor_new(json_conf,form):
       sd_stack = meteor_reduced['sd_stack'].replace(".png", "-stacked.png")
       hd_stack = meteor_reduced['hd_stack'].replace(".png", "-stacked.png")
       template = template.replace("{SD_VIDEO}", sd_video_file)
-      template = template.replace("{HD_VIDEO}", hd_video_file)
+      template = template.replace("{HD_VIDEO}", str(hd_video_file))
       template = template.replace("{SD_STACK}", sd_stack)
       template = template.replace("{HD_STACK}", hd_stack)
    else:
@@ -2854,7 +2854,7 @@ def reduce_meteor_new(json_conf,form):
    template = template.replace("{HD_STACK}", hd_stack)
    template = template.replace("{SD_STACK}", sd_stack)
    template = template.replace("{SD_VIDEO}", sd_video_file)
-   template = template.replace("{HD_VIDEO}", hd_video_file)
+   template = template.replace("{HD_VIDEO}", str(hd_video_file))
    template = template.replace("{METEOR_JSON_FILE}", meteor_json_file)
    template = template.replace("{event_start_time}", meteor_json_file)
    template = template.replace("{HALF_STACK}", half_stack_file)
