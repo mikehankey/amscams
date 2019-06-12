@@ -13,6 +13,11 @@ function show_add_frame_modal() {
 function populate_frame_modal() {
     var frame_count = 0;
     var _html = "";
+
+    // Every 8 thumb, we add a left margin
+    margin-left: 3.22rem;
+
+
     $('#reduc-tab tbody tr').each(function() {
 
         var cur_fr_img  = $(this).find('img').clone(); 
@@ -23,12 +28,17 @@ function populate_frame_modal() {
         
         if(frame_count==0) {
            // Add first "-" button
-           _html += "<button class='btn btn-secondary'>+</button>";
+           _html += "<button class='btn btn-secondary addf'>+</button>";
         }
 
         // Add Thumb and frame #
-        _html += "<div class='fth'><span>#"+cur_frame_number+"</span>" + cur_fr_img.prop("outerHTML") + "</div>";
-  
+        if(frame_count % 9 ==0 ) {
+            _html += "<div class='fth'><span>#"+cur_frame_number+"</span>" + cur_fr_img.prop("outerHTML") + "</div>";
+        } else {
+            _html += "<div class='fth' style='margin-left: 3.22rem;'><span>#"+cur_frame_number+"</span>" + cur_fr_img.prop("outerHTML") + "</div>";
+        }
+
+
         // Add Button (+)
         _html += "<button class='btn btn-secondary addf'>+</button>";
 
