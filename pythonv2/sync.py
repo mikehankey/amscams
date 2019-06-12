@@ -1,5 +1,6 @@
 #!/usr/bin/python3
-
+from urllib import request, parse
+import requests
 from datetime import datetime
 import sys
 #import datetime
@@ -20,7 +21,42 @@ from lib.FileIO import load_json_file, save_json_file, cfe
 json_conf = load_json_file("../conf/as6.json")
 my_station = json_conf['site']['ams_id']
 cmd = sys.argv[1]
-day = sys.argv[2]
+if len(sys.argv) == 3:
+   day = sys.argv[2]
+
+def sync_meteor_index(json_conf):
+   print("Sync meteor index.")
+   index = "/mnt/ams2/cal/hd_images/meteor_index.json"
+   index_gz = "/mnt/ams2/cal/hd_images/meteor_index.json.gz"
+   json_data = load_json_file(index)
+
+   # The File to send
+   file = index 
+   _file = {'files': open(file, 'rb')}
+
+   os.system("gzip -fk " + index )
+
+   # The Data to send with the file
+   api_key = "test"
+   station_name = json_conf['site']['ams_id']
+   device_name = "na"
+   event_id = "na"
+   file_type = "idx"
+   meteor_day = "na"
+   _data= {'api_key': api_key, 'meteor_day': meteor_day, 'station_name': station_name, 'device_name': device_name, 'format' : 'json', 'event_id' : event_id, 'file_type': file_type}
+   url = 'http://54.214.104.131/pycgi/api-meteor-index.py'
+
+   session = requests.Session()
+   del session.headers['User-Agent']
+   del session.headers['Accept-Encoding']
+
+   with requests.Session() as session:
+      response = session.post(url, data= _data, files=_file)
+
+   print (response.text)
+   response.raw.close()
+
+
 
 def check_for_event(day, stations, meteor, all_meteors, mse):
    status = 0
@@ -155,6 +191,8 @@ def solve_events(day, mse,sync_urls):
 
     
          
+if cmd == "smi":
+   sync_meteor_index( json_conf)
 
 if cmd == "find_events" or cmd == 'fe':
    find_events_for_day(day, json_conf)
