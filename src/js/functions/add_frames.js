@@ -14,12 +14,19 @@ function add_frame(cmd_data,min_fn,max_fn,total) {
         success: function(data) {
             console.log(data);
             loading_done();
-            /*
+            
             if(cur_fn<max_fn) {
                 cmd_data.fn = cur_fn+1;
                 add_frame(cmd_data,cmd_data.fn,max_fn,total);
             }
-            */
+            
+        }, 
+        error:function() {
+            bootbox.alert({
+                message: "The process returned an error",
+                className: 'rubberBand animated error',
+                centerVertical: true 
+            });
         }
     });
 } 
@@ -47,10 +54,11 @@ function add_frames() {
     add_frame(cmd_data,min_fn, max_fn,total);
     loading_done();
 }
+ 
 
 
-add_frames();
-
-
-
-
+$(function() {
+    $('#fix_frames').click(function() {
+        add_frames();
+    });
+})

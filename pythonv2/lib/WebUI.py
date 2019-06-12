@@ -601,9 +601,7 @@ def meteor_index(json_conf, form):
    cam_id = form.getvalue("cam_id")
    day_limit= form.getvalue("day")
    mi = load_json_file("/mnt/ams2/cal/hd_images/meteor_index.json")
-   #print("<table border=1 cellpadding=5 cellspacing=5>")
-   #print("<tr><th>Meteor</th><th>Reduced</th><th>Multi-Station</th><th>AZ/EL FOV</th><th>Pos Ang</th><th>Pixscale</th><th>Stars</th><th>Res Px</th><th>Res Deg</th><th>Dur</th><th>Ang Sep</th><th>Mag</th><th>Seg Res</th><th>Missing Frames</th></tr>")
-
+    
    print("<table class='table table-dark table-striped table-hover td-al-m m-auto table-fit'>")
    print("<thead><tr><th>&nbsp;</th><th>Meteor</th><th>Reduced</th><th>Multi-Station</th><th>AZ/EL FOV</th><th>Pos Ang</th><th>Pixscale</th><th>Stars</th><th>Res Px</th><th>Res Deg</th><th>Dur</th><th>Ang Sep</th><th>Mag</th><th>Seg Res</td><th>Missing Frames</th></tr></thead>")
    print("<tbody>")
@@ -693,7 +691,7 @@ def meteor_index(json_conf, form):
          if show == 1:
             print("<tr class='" + color + "'><td><div class='st'></div></td><td> {:s}</td><td>{:s}</td><td>{:s}</td><td>{:s}</td><td>{:s}</td><td>{:s}</td><td>{:s}</td><td> {:s}</td><td> {:s} </td><td>{:s}</td><td>{:s}</td><td>MAG</td><td>{:s}</td><td>{:s}</td></tr> ".format(link, str(mi[day][meteor_file]['reduced']), multi_text, az_el, pos, pxs, str(ts), str(mi[day][meteor_file]['total_res_px'])[0:5], str(mi[day][meteor_file]['total_res_deg'])[0:5], str(dur), str(ass), str(seg_res), str(missing_frames)))
           
-   print("<tbody></table>")
+   print("</tbody></table>")
 
 
 def hd_cal_index(json_conf, form):
@@ -1985,7 +1983,7 @@ def main_page(json_conf,form):
       if(pending_files>0):
             to_display  = to_display + " - " + str(pending_files) + " Files Pending</a>"
 
-      to_display  = to_display +"</div><div class='gallery gal-resize row text-center text-lg-left mb-4'>"
+      to_display  = to_display +"</div><div class='gallery gal-resize row text-center text-lg-left mb-5 mr-3 ml-3'>"
       to_display  = to_display + html_row
       to_display = to_display + "</div>"
       counter = counter + 1
