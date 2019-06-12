@@ -2908,7 +2908,7 @@ def reduce_meteor_new(json_conf,form):
    <table class="table table-dark table-striped table-hover td-al-m mb-0" >
       <thead>
          <tr>
-            <th></th><th>#</th><th>Time</th><th>X/Y - W/H</th><th>Max PX</th><th>RA/DEC</th><th>AZ/EL</th><th></th><th></th>
+            <th></th><th>#</th><th>Time</th><th>X/Y - W/H</th><th>Max PX</th><th>RA/DEC</th><th>AZ/EL</th><th colspan="4" class="text-right"><button id="fix_frames" class="btn btn-primary btn-sm">Update/Fix Frames</button></th>
          </tr>
       </thead>
    """
