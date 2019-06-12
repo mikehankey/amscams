@@ -29,6 +29,13 @@ from lib.UtilLib import calc_dist,find_angle
 import lib.brightstardata as bsd
 from lib.DetectLib import eval_cnt
 
+def cams_exp(file, json_conf):
+   json_data = load_json_file(file)
+   mfd = json_data['meteor_frame_data']
+   for mf in mfd:
+#['2019-01-07 11:08:32.640', 94, 820, 868, 11, 11, 164, 199.69, 39.85, 58.5, 25.92]
+
+      print(mf[1],mf[2],mf[3],mf[7],mf[8],mf[9],mf[10],mf[6])
 
 def bound_xy(x,y,iw,ih,sz):
    if x-sz < 0:
@@ -3539,3 +3546,5 @@ if cmd == "best_fov" or cmd == 'bf':
    find_best_fov(sys.argv[2], json_conf)
 if cmd == "run_job" or cmd == 'rj' or cmd == 'jr':
    run_job(sys.argv[2], json_conf)
+if cmd == "cams_exp" :
+   cams_exp(sys.argv[2], json_conf)
