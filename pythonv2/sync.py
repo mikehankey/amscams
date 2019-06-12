@@ -199,7 +199,9 @@ def create_update_events (day, json_conf ):
    print("SAVED /mnt/ams2/stations/data/" + day + "_events.json")
 
 def sync_content(event_id, station_name, upload_file, file_type):
-
+   if cfe(upload_file) == 0:
+      print("FAILED UPLOAD: file doesn't exist so can't upload it!", upload_file)
+      return(0)
    my_meteor_datetime, my_cam, hd_date, hd_y, hd_m, hd_d, hd_h, hd_M, hd_s = convert_filename_to_date_cam(upload_file)
    url = "http://54.214.104.131/pycgi/api-sync-content.py"
    # The File to send
