@@ -1,13 +1,25 @@
-function add_frame(cmd_data, fn) {
-    loading({text: "Generating Frame "+ i +"/" + total,overlay:true});
+function add_frame(cmd_data,min_fn,max_fn,total) {
+
+    var cur_fn = min_fn;
+
+    loading({text: "Generating Frame "+ cur_fn +"/" + total,overlay:true});
+    cmd_data.fn = cur_fn;
+    
+    console.log("DOING ", cmd_data);
+
     $.ajax({ 
-        url:  "/pycgi/webUI.py",
+        url:  "/pycgi/WebUI.py",
         data: cmd_data,
-        fn: fn,
         async: false,
         success: function(data) {
             console.log(data);
             loading_done();
+            /*
+            if(cur_fn<max_fn) {
+                cmd_data.fn = cur_fn+1;
+                add_frame(cmd_data,cmd_data.fn,max_fn,total);
+            }
+            */
         }
     });
 } 
@@ -32,12 +44,7 @@ function add_frames() {
         sd_video_file: sd_video_file, // Defined on the page
     };
    
-    for(var i=min_fn; i<=max_fn; i++) {
-       
-        add_frame(cmd_data,i);
-       
-    }
-
+    add_frame(cmd_data,min_fn, max_fn,total);
     loading_done();
 }
 
