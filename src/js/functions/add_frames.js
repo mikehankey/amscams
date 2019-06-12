@@ -1,9 +1,43 @@
-function add_frame() {
+function add_frame(cmd_data, fn) {
+    $.ajax({ 
+        url:  "/pycgi/webUI.py",
+        data: cmd_data,
+        success: function(data) {
+            console.log(data);
+        }
+    });
+} 
+
+
+function add_frames() {
+    var all_frame_ids = [];
+
+    // Get All Frame Ids
+    $('#reduc-tab tbody tr').each(function() {
+        var cur_frame_number = $(this).attr('id');
+        cur_frame_number = cur_frame_number.split('_');
+        all_frame_ids.push(parseInt(cur_frame_number[1]));
+    });
+
+    // Get max frame #
+    var max_fn = Math.max.apply(Math, all_frame_ids);
+    var min_fn = Math.min.apply(Math, all_frame_ids);
+    var total  = max_fn-min_fn;
+
     var cmd_data = {
 		cmd: 'add_frame',
-        sd_video_file: hd_stack_file, // Defined on the page
-        points: ''
-	}
+        sd_video_file: sd_video_file, // Defined on the page
+    };
+
+    loading({text: "Generating "+ total +" frames",overlay:true});
+
+    for(var i=min_fn; i<=max_fn; i++) {
+        loading({text: "Generating Frame "+ i +"/" + total,overlay:true});
+        add_frame(cmd_data,i);
+        loading_done();
+    }
+
+    loading_done();
 }
 
 
