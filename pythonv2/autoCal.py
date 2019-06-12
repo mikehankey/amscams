@@ -2979,6 +2979,32 @@ def scan_hd_images(day,json_conf, show = 0):
                cv2.imshow('pepe', show_img) 
                cv2.waitKey(30)
 
+def run_job(job, json_conf):
+   fp = open(job)
+   jobs = []
+   for line in fp:
+      line = line.replace("\n", "")
+      print(line)   
+      jobs.append(line)
+
+   if 'max_procs' in json_conf['site']:
+      max_procs = json_conf['site']['max_procs']
+   else:
+      max_procs = 4
+
+   jc = 0
+   job_name = "mikeTrajectory.py"
+   for job in jobs:
+
+
+      while check_running(job_name) > max_procs:
+         time.sleep(1)
+      print(job)
+      #if "010002" in job:
+      os.system(job + " &")
+      jc = jc + 1
+
+
 json_conf = load_json_file("../conf/as6.json")
 cmd = sys.argv[1]
 try:
@@ -3408,6 +3434,7 @@ if cmd == 'imgstars' or cmd == 'imgstars_strict':
       meteor_json['cal_params'] = cal_params
       if "manual_update" not in cal_params:
          save_json_file(meteor_json_file_red, meteor_json)
+   
 
 
 if cmd == 'batch_hd_fit':
@@ -3509,3 +3536,5 @@ if cmd == "rr" or cmd == 'reset_reduce':
    reset_reduce(json_conf, sys.argv[2])
 if cmd == "best_fov" or cmd == 'bf':
    find_best_fov(sys.argv[2], json_conf)
+if cmd == "run_job" or cmd == 'rj' or cmd == 'jr':
+   run_job(sys.argv[2], json_conf)
