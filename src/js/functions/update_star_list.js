@@ -97,6 +97,8 @@ function update_stars_on_canvas_and_table(json_resp) {
         // Add the corresponding row
         // Name	mag	Cat RA/Dec	Res °	Res. Pixels
         var time_f = v[1];
+        console.log(time_f);
+        console.log(typeof time_f);
         time_f = time_f.split(' ');
         table_tbody_html+= '<tr><td>'+v[0]+'</td><td>'+time_f[1]+'</td><td>'+v[2]+'/'+v[3]+'</td><td>'+v[6]+'</td><td>'+v[15]+'</td></tr>';
 
