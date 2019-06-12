@@ -11,7 +11,6 @@ function find_stars() {
 	$.ajax({ 
         url:  "/pycgi/webUI.py",
 		data: cmd_data,
-		async: false,
         success: function(data) {
         	try {
 		  		var json_resp = $.parseJSON(data);
