@@ -1,7 +1,6 @@
 function add_a_frame(cur_fn) {
     loading({text: "Generating Frame #"+ cur_fn});
-
-
+ 
     var cmd_data = {
 		cmd: 'add_frame',
         sd_video_file: sd_video_file, // Defined on the page
