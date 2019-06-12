@@ -38,7 +38,7 @@ def sync_meteor_index(json_conf):
 
    # The Data to send with the file
    api_key = "test"
-   station_name = json_conf['site']['ams_id']
+   station_name = json_conf['site']['ams_id'].upper()
    device_name = "na"
    event_id = "na"
    file_type = "idx"
