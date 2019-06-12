@@ -1047,7 +1047,10 @@ def test_obj(obj):
       print("Failed dist:", dist)
    if dist< 5:
       print("Failed dist:", dist)
-   speed = dist / elp
+   if elp > 0:
+      speed = dist / elp
+   else:
+      speed = 0
    print("SPEED IS:", oid, speed)
    print("DIST IS:", oid, dist)
   
