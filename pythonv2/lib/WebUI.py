@@ -601,11 +601,8 @@ def meteor_index(json_conf, form):
    cam_id = form.getvalue("cam_id")
    day_limit= form.getvalue("day")
    mi = load_json_file("/mnt/ams2/cal/hd_images/meteor_index.json")
-   print("<div style=\"padding: 5px; margin: 5px; clear:both\"  >")
    #print("<table border=1 cellpadding=5 cellspacing=5>")
    #print("<tr><th>Meteor</th><th>Reduced</th><th>Multi-Station</th><th>AZ/EL FOV</th><th>Pos Ang</th><th>Pixscale</th><th>Stars</th><th>Res Px</th><th>Res Deg</th><th>Dur</th><th>Ang Sep</th><th>Mag</th><th>Seg Res</th><th>Missing Frames</th></tr>")
-
-
 
    print("<table class='table table-dark table-striped table-hover td-al-m m-auto table-fit'>")
    print("<thead><tr><th>&nbsp;</th><th>Meteor</th><th>Reduced</th><th>Multi-Station</th><th>AZ/EL FOV</th><th>Pos Ang</th><th>Pixscale</th><th>Stars</th><th>Res Px</th><th>Res Deg</th><th>Dur</th><th>Ang Sep</th><th>Mag</th><th>Seg Res</td><th>Missing Frames</th></tr></thead>")
@@ -710,8 +707,8 @@ def hd_cal_index(json_conf, form):
    ci = load_json_file("/mnt/ams2/cal/hd_images/hd_cal_index.json")
    cam_day_sum = load_json_file("/mnt/ams2/cal/hd_images/hd_cal_index-cam-day-sum.json")
 
-   print('<div class="m-3" style="max-width: 1730px;">')
-   print('<table class="table table-dark table-striped table-hover td-al-m">')
+   print('<div class="m-auto" style="max-width: 1730px;">')
+   print('<table class="table table-dark table-striped table-hover m-3 td-al-m">')
    print('<thead><tr><th>Date</th><th>Cam ID</th><th>Images w/ Stars</th><th>Images w/o Stars</th><th>Total Stars For Night</th><th>Center AZ/EL</th><th>Position Angle</th><th>PixScale</th><th>Avg Res Px For Night</th><th>Avg Res Deg For Night</th></tr></thead>')
    print('<tbody>')
 
