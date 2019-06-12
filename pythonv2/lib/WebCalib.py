@@ -2552,7 +2552,7 @@ def update_red_info_ajax(json_conf, form):
 
          new_mfd = []
          if "meteor_frame_data" in mr: 
-            temp = sorted(mr['meteor_frame_data'], key=lambda x: x[1], reverse=False)
+            temp = sorted(mr['meteor_frame_data'], key=lambda x: int(x[1]), reverse=False)
             for frame_data in temp:      
                frame_time, fn, hd_x,hd_y,w,h,max_px,ra,dec,az,el = frame_data
                if len(str(ra)) > 6:
