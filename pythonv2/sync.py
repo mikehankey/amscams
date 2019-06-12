@@ -31,7 +31,7 @@ def sync_meteor_index(json_conf):
    json_data = load_json_file(index)
 
    # The File to send
-   file = index 
+   file = index_gz
    _file = {'files': open(file, 'rb')}
 
    os.system("gzip -fk " + index )
@@ -116,7 +116,8 @@ def sync_stations(json_conf):
       print(mi_url)
       cmd = "wget \"" + mi_url + "\" -O " + lfn 
       print(cmd)
-      #os.system(cmd)
+      os.system(cmd)
+      os.system("gunzip " + lfn)
 
 
    
