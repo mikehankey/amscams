@@ -1,11 +1,17 @@
 .alert {
-    &.error {
+    &.error, &.alert-error, &.alert-danger {
         background: #6e0a0a;
         color:#fff;
     }
 
-    &.success {
+    &.success, &.alert-success {
         background: green;
         color:#fff;
     }
+
+    &.alert-info {
+	    color: #ffffff;
+	    background-color: #113c84;
+	    border-color: #113c84;
+	}
 }

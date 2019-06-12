@@ -14,12 +14,11 @@ function populate_frame_modal() {
     var frame_count = 0;
     var _html = "";
 
-    // Every 8 thumb, we add a left margin
-    margin-left: 3.22rem;
+  
 
 
     $('#reduc-tab tbody tr').each(function() {
-
+        var cl = "";
         var cur_fr_img  = $(this).find('img').clone(); 
         cur_fr_img.removeClass('select_meteor').css({width:'80px', height:'80px'})
         var cur_frame_number = $(this).attr('id');
@@ -32,15 +31,19 @@ function populate_frame_modal() {
         }
 
         // Add Thumb and frame #
-        if(frame_count % 9 ==0 ) {
-            _html += "<div class='fth'><span>#"+cur_frame_number+"</span>" + cur_fr_img.prop("outerHTML") + "</div>";
-        } else {
-            _html += "<div class='fth' style='margin-left: 3.22rem;'><span>#"+cur_frame_number+"</span>" + cur_fr_img.prop("outerHTML") + "</div>";
+          // Every 8 thumb, we add a left margin 
+        if(frame_count!=0 && frame_count % 8 ==0 ) {
+            cl = "mgr";
+        else {
+            cl = "";
         }
+
+         _html += "<div class='fth "+mgr+"'><span>#"+cur_frame_number+"</span>" + cur_fr_img.prop("outerHTML") + "</div>";
+         
 
 
         // Add Button (+)
-        _html += "<button class='btn btn-secondary addf'>+</button>";
+        _html += "<button class='btn btn-primary addf'>+</button>";
 
         frame_count++;
 
