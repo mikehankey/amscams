@@ -8,15 +8,20 @@
 
 
 input[type="range"]{
-    -webkit-appearance:none;
-    width:160px;
-    height:20px; 
+    -webkit-appearance: none;
+    width: 160px;
+    height: 20px;
+    background: -webkit-gradient(linear, left top, right top, from(#2b5179), to(#4480bf));
     background: linear-gradient(to right, #2b5179 0%, #4480bf 100%);
-    background-size:150px 10px;
-    background-position:center;
-    background-repeat:no-repeat;
-    overflow:hidden; 
-    outline: none;
+    background-size: 150px 15px;
+    background-position: center;
+    background-repeat: no-repeat;
+    overflow: hidden;
+    outline: none; 
+    cursor: move;  
+    cursor: grab;
+    cursor: -moz-grab;
+    cursor: -webkit-grab;
   }
   
   input[type="range"]::-webkit-slider-thumb{
@@ -27,16 +32,17 @@ input[type="range"]{
     position:relative;
     z-index:3;
     box-shadow:0 0 5px 0 rgba(0,0,0,0.3);
+    border-radius:50%;
   }
   
   input[type="range"]::-webkit-slider-thumb:after{
     content:" ";
     width:160px;
-    height:10px;
+    height:20px;
     position:absolute;
     z-index:1;
     right:20px;
     top:5px;
     background: #0c3867;
-    background: linear-gradient(to right, #0c3867 1%, #0c3867 70%);
+    background: linear-gradient(to right, #0c3867 1%, #0f4a88 70%);
   }

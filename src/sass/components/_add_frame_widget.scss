@@ -1,0 +1,27 @@
+#add_frame_container {
+	
+	// Buttons
+	.addf { 
+		margin: 0 .5rem 1rem;
+	}
+
+	// Thumb
+	.fth {
+			position:relative;
+			margin-bottom: 1rem;
+
+			span {
+			    display: block;
+			    text-align: center;
+			    position: absolute;
+			    font-size: .8rem;
+			    top: .1rem;
+			    left: .1rem;
+			    line-height: 1;
+			}
+
+			&.mgr {
+					margin-left: 3.22rem;
+			}
+	}
+}

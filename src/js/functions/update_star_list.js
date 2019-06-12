@@ -32,13 +32,13 @@ function update_stars_on_canvas_and_table(json_resp) {
 
         // Add same text to image 
         if(typeof cat_stars !== 'undefined') { 
-            res_desc = "Res. Star Error: " + total_res_deg + " degrees / " + total_res_px + " px";
+            res_desc = "Res. Star Error: " + total_res_deg + "° / " + total_res_px + " px";
             $('<p id="star_res_p" class="mt-2"><b>Residual Error:</b> '+  total_res_deg + '&deg; / ' + total_res_px + 'px.</p>').insertBefore('#stars-tab table');
             canvas.add(new fabric.Text(res_desc , {
                 fontFamily: 'Arial',
                 fontSize: 12,
                 left: 5 ,
-                top: 5,
+                top: 515,
                 fill: 'rgba(255,255,255,.75)',
                 selectable: false
             })); 
@@ -95,7 +95,7 @@ function update_stars_on_canvas_and_table(json_resp) {
          }));
 
         // Add the corresponding row
-        // Name	mag	Cat RA/Dec	Res °	Res. Pixels
+        // Name	mag	Cat RA/Dec	Res °	Res. Pixels 
         table_tbody_html+= '<tr><td>'+v[0]+'</td><td>'+v[1]+'</td><td>'+v[2]+'/'+v[3]+'</td><td>'+v[6]+'</td><td>'+v[15]+'</td></tr>';
 
     });
