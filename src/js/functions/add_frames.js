@@ -13,18 +13,28 @@ function show_add_frame_modal() {
 function populate_frame_modal() {
     var frame_count = 0;
     var _html = "";
- 
+    var all_frame_ids = [];
+
+    // Get All Frame Ids
     $('#reduc-tab tbody tr').each(function() {
-        var cl = "";
-        var cur_fr_img  = $(this).find('img').clone(); 
-        cur_fr_img.removeClass('select_meteor').css({width:'80px', height:'80px'})
         var cur_frame_number = $(this).attr('id');
         cur_frame_number = cur_frame_number.split('_');
-        cur_frame_number = cur_frame_number[1];
+        all_frame_ids.push(cur_frame_number[1]);
+    });
+ 
+    $(all_frame_ids).each(function(ind, id) {
+        var cl = "";
+        var cur_fr_img  = $('tr#fr_'+id).find('img').clone(); 
+        cur_fr_img.removeClass('select_meteor').css({width:'80px', height:'80px'})
+        cur_frame_number = id;
         
         if(frame_count==0) {
            // Add first "-" button
-           _html += "<button class='btn btn-primary addf' data-rel='"+(cur_frame_number-1)+"'>+</button>";
+           if((cur_frame_number-1)>0) {
+                _html += "<button class='btn btn-primary addf' data-rel='"+(cur_frame_number-1)+"'>+</button>";
+           } else {
+                _html += "<button class='btn btn-primary addf' disabled data-rel='"+(cur_frame_number-1)+"'>+</button>";
+           }
         }
 
         // Add Thumb and frame #
@@ -38,7 +48,12 @@ function populate_frame_modal() {
         _html += "<div class='fth "+cl+"'><span>#"+cur_frame_number+"</span>" + cur_fr_img.prop("outerHTML") + "</div>";
         
         // Add Button (+)
-        _html += "<button class='btn btn-primary addf' data-rel='"+cur_frame_number+"'>+</button>";
+        if(all_frame_ids.indexOf(cur_frame_number)==-1) {
+            _html += "<button class='btn btn-primary addf' data-rel='"+cur_frame_number+"'>+</button>";
+        } else {
+            _html += "<button class='btn btn-primary addf' disabled data-rel='"+cur_frame_number+"'>+</button>";
+        }
+       
 
         frame_count++;
 
