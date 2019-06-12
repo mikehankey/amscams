@@ -1983,7 +1983,7 @@ def main_page(json_conf,form):
       if(pending_files>0):
             to_display  = to_display + " - " + str(pending_files) + " Files Pending</a>"
 
-      to_display  = to_display +"</div><div class='gallery gal-resize row text-center text-lg-left mb-4'>"
+      to_display  = to_display +"</div><div class='gallery gal-resize row text-center text-lg-left mb-5 mr-3 ml-3'>"
       to_display  = to_display + html_row
       to_display = to_display + "</div>"
       counter = counter + 1
