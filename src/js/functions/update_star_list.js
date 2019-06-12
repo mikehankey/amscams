@@ -32,7 +32,7 @@ function update_stars_on_canvas_and_table(json_resp) {
 
         // Add same text to image 
         if(typeof cat_stars !== 'undefined') { 
-            res_desc = "Res. Star Error: " + total_res_deg + " degrees / " + total_res_px + " px";
+            res_desc = "Res. Star Error: " + total_res_deg + "° / " + total_res_px + " px";
             $('<p id="star_res_p" class="mt-2"><b>Residual Error:</b> '+  total_res_deg + '&deg; / ' + total_res_px + 'px.</p>').insertBefore('#stars-tab table');
             canvas.add(new fabric.Text(res_desc , {
                 fontFamily: 'Arial',
