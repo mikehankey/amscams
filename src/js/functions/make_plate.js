@@ -52,7 +52,7 @@ function new_make_plate() {
             loading_done();
 
             bootbox.alert({
-                message: "The Plate is done. We will now solving the field.",
+                message: "The Plate is done. We will now solve the field.",
                 className: 'rubberBand animated',
                 centerVertical: true, 
                 callback: function () {

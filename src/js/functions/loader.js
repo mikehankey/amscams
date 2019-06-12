@@ -43,6 +43,7 @@ function loading_done() {
     $('#overlay').fadeOut(150, function() {$('#overlay').remove();})
     $('body').css('overflow','auto');
     $('#bottom_overlay').removeClass('dpl');
+    setTimeout(function() { $('#bottom_overlay').remove(); }, 300);
 } 
 
 

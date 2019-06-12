@@ -28,13 +28,20 @@ function update_star_and_reduction() {
                 // Update Reduction
                 update_reduction_on_canvas_and_table(json_resp);
                 
+                // Update Add frames
+                setup_add_frames();
             }
 
             loading_done();
  
         }, error: function(data) {
-            alert('ERROR - Please, contact us');
+            
             loading_done();
+            bootbox.alert({
+                message: "Something went wrong with this detection.",
+                className: 'rubberBand animated error',
+                centerVertical: true 
+            });
         }
     });
 

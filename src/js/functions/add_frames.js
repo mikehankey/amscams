@@ -1,27 +1,45 @@
-function add_frame(cmd_data,min_fn,max_fn,total) {
+function add_reduc_row(data) {
 
-    var cur_fn = min_fn;
+    var row = "<tr>";
 
-    loading({text: "Generating Frame "+ cur_fn +"/" + total,overlay:true});
-    cmd_data.fn = cur_fn;
+    // Test if path_image exist -> replace with processing thumb in case it doesn't 
+
+    row += '<img alt="Thumb #'+id+'" src="'+path_image+'" width="50" height="50" class="img-fluid select_meteor"></td>';
+
+    // Create row
+    var $row = $('<tr><td></td><td></td><td></td></tr>');
+
+
+    // Reload all actions on reduct table!!!
     
-    console.log("DOING ", cmd_data);
+}
+
+function add_a_frame(cur_fn) {
+    loading({text: "Generating Frame #"+ cur_fn});
+ 
+    var cmd_data = {
+		cmd: 'add_frame',
+        sd_video_file: sd_video_file, // Defined on the page
+        fn: cur_fn
+    };
 
     $.ajax({ 
         url:  "/pycgi/WebUI.py",
-        data: cmd_data,
-        async: false,
-        success: function(data) {
-            console.log(data);
+        data: cmd_data, 
+        success: function(data) { 
             loading_done();
+            add_reduc_row(data);
             
-            if(cur_fn<max_fn) {
-                cmd_data.fn = cur_fn+1;
-                add_frame(cmd_data,cmd_data.fn,max_fn,total);
-            }
+            bootbox.alert({
+                message: "FRAME CREATED " + data,
+                className: 'rubberBand animated',
+                centerVertical: true 
+            });
             
         }, 
         error:function() {
+            loading_done();
+
             bootbox.alert({
                 message: "The process returned an error",
                 className: 'rubberBand animated error',
@@ -29,36 +47,12 @@ function add_frame(cmd_data,min_fn,max_fn,total) {
             });
         }
     });
-} 
- 
-function add_frames() {
-    var all_frame_ids = [];
-
-    // Get All Frame Ids
-    $('#reduc-tab tbody tr').each(function() {
-        var cur_frame_number = $(this).attr('id');
-        cur_frame_number = cur_frame_number.split('_');
-        all_frame_ids.push(parseInt(cur_frame_number[1]));
-    });
-
-    // Get max frame #
-    var max_fn = Math.max.apply(Math, all_frame_ids);
-    var min_fn = Math.min.apply(Math, all_frame_ids);
-    var total  = max_fn-min_fn;
-
-    var cmd_data = {
-		cmd: 'add_frame',
-        sd_video_file: sd_video_file, // Defined on the page
-    };
-   
-    add_frame(cmd_data,min_fn, max_fn,total);
-    loading_done();
 }
+
+function setup_add_frames() {
+    $('.add_f').click(function() {
+        add_a_frame($(this).attr('data-rel'));
+    }); 
+}
+
  
-
-
-$(function() {
-    $('#fix_frames').click(function() {
-        add_frames();
-    });
-})
