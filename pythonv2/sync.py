@@ -24,7 +24,52 @@ cmd = sys.argv[1]
 if len(sys.argv) == 3:
    day = sys.argv[2]
 
+
+def id_event(meteor_events, station_name, meteor_file, event_start_time) :
+
+   total_events = len(meteor_events)
+   this_meteor_datetime, this_cam, hd_date, hd_y, hd_m, hd_d, hd_h, hd_M, hd_s = convert_filename_to_date_cam(meteor_file)
+   device_name = this_cam
+   if total_events == 0:
+      event_id = 1
+      meteor_events[event_id] = {}
+      meteor_events[event_id]['start_time'] = event_start_time
+      meteor_events[event_id]['observations'] = {}
+      meteor_events[event_id]['observations'][station_name]  = {}
+      meteor_events[event_id]['observations'][station_name][device_name] = meteor_file
+      return(meteor_events)
+
+   for ekey in meteor_events:
+      this_start_time = meteor_events[ekey]['start_time']
+      evst_datetime = datetime.strptime(event_start_time, "%Y-%m-%d %H:%M:%S.%f")
+      this_datetime = datetime.strptime(this_start_time, "%Y-%m-%d %H:%M:%S.%f")
+      tdiff = (evst_datetime-this_datetime).total_seconds()
+      if abs(tdiff) < 5:
+         print("second capture of same event")
+         if station_name not in meteor_events[ekey]['observations']:
+            meteor_events[ekey]['observations'][station_name] = {}
+         meteor_events[ekey]['observations'][station_name][device_name] = meteor_file 
+
+
+         return(meteor_events)
+
+   # no matches found so make new event
+   event_id = total_events + 1
+   print("new event:", event_id)
+   meteor_events[event_id] = {}
+   meteor_events[event_id]['start_time'] = event_start_time
+   meteor_events[event_id]['observations'] = {}
+   meteor_events[event_id]['observations'][station_name]  = {}
+   meteor_events[event_id]['observations'][station_name][device_name] = meteor_file 
+
+   return(meteor_events)
+
+
+
 def create_update_events (day, json_conf ):
+   meteor_events = {}
+   my_station = json_conf['site']['ams_id'].upper()
+   multi_station_events = {}
    sync_urls = load_json_file("../conf/sync_urls.json")
    all_meteor_index = {}
    day_meteor_index = {}
@@ -38,7 +83,178 @@ def create_update_events (day, json_conf ):
 
    for station in station_meteors:
       for station_meteor in station_meteors[station]:
-         print(station, station_meteor)
+         if "event_start_time" in station_meteors[station][station_meteor]:
+            meteor_events = id_event(meteor_events, station, station_meteor, station_meteors[station][station_meteor]['event_start_time'])
+         else:
+            print("METEOR NOT REDUCED!")
+
+   msc = 1
+   for meteor_event in meteor_events:
+      if len(meteor_events[meteor_event]['observations']) > 1:
+         print (msc, len(meteor_events[meteor_event]['observations']), meteor_events[meteor_event])
+         multi_station_events[meteor_event] = meteor_events[meteor_event]
+         msc = msc + 1
+
+   print("MULTI-STATION METEORS")
+   print("---------------------")
+   msc = 1
+   new_ms_events = {}
+   for meteor_event in multi_station_events:
+      lats = [] 
+      lons = [] 
+      if len(meteor_events[meteor_event]['observations']) > 1:
+         print (msc, len(meteor_events[meteor_event]['observations']), meteor_events[meteor_event]['start_time'])
+         multi_station_events[meteor_event] = meteor_events[meteor_event]
+         msc = msc + 1
+         for obs in multi_station_events[meteor_event]['observations']:
+            print("OBS:", obs, sync_urls['sync_urls'][obs]['device_lat'], sync_urls['sync_urls'][obs]['device_lng'], sync_urls['sync_urls'][obs]['device_alt'])
+
+
+            lats.append(abs(float(sync_urls['sync_urls'][obs]['device_lat'])))
+            lons.append(abs(float(sync_urls['sync_urls'][obs]['device_lng'])))
+         mlat = abs(np.mean(lats))
+         mlon = abs(np.mean(lons))
+         multi_station_events[meteor_event]['obs_mean_lat'] = abs(mlat)
+         multi_station_events[meteor_event]['obs_mean_lon'] = abs(mlon)
+         print("Mean lat/lon for event:", mlat, mlon)
+         temp =  multi_station_events[meteor_event]['start_time'].replace(" ", "")
+         ams_meteor_event_id,trash = temp.split(".")
+
+         ams_meteor_event_id =  ams_meteor_event_id.replace(":", "")
+         ams_meteor_event_id =  ams_meteor_event_id.replace("-", "")
+         ams_meteor_event_id =  ams_meteor_event_id + "_" + str(int(mlat)) + "_" + str(int(mlon))
+         print("AMS METEOR EVENT ID:", ams_meteor_event_id)
+         multi_station_events[meteor_event]['ams_meteor_event_id'] = ams_meteor_event_id
+
+         for obs in multi_station_events[meteor_event]['observations']:
+            if obs == my_station:
+               print("UPDATE RED FILE WITH ID", multi_station_events[meteor_event]['observations'][my_station])
+               for tcam_id in multi_station_events[meteor_event]['observations'][my_station]:
+                  red_file = multi_station_events[meteor_event]['observations'][my_station][tcam_id]
+                  print("RED FILE:", red_file, multi_station_events[meteor_event])
+                  red_file = red_file.replace(".json", "-reduced.json")
+                  red_data = load_json_file(red_file)
+                  red_data['event_info'] = multi_station_events[meteor_event]
+                  red_data['sync_status'] = 0
+                  save_json_file(red_file, red_data)
+         new_ms_events[ams_meteor_event_id] = multi_station_events[meteor_event] = meteor_events[meteor_event]
+         event_files = check_make_event(ams_meteor_event_id, json_conf)
+         cloud_files = []
+         for ef in event_files:
+            fn = ef.split("/")[-1]
+            cloud_files.append(fn)
+         print("SYNC CONTENT")
+
+         my_meteor_datetime, my_cam, hd_date, hd_y, hd_m, hd_d, hd_h, hd_M, hd_s = convert_filename_to_date_cam(red_file)
+         new_file = ams_meteor_event_id + "_" + my_station + "_" + my_cam + ".json"
+         print("NF:", new_file)
+         if new_file in cloud_files:
+            print(new_file, "already exists in the cloud")
+         else:
+            sync_content(ams_meteor_event_id, my_station, red_file, ".json")
+
+         hd_video_file = red_data['hd_video_file']
+         hd_stack = red_data['hd_stack'].replace(".png", "-stacked.png")
+         sd_stack = red_data['sd_stack'].replace(".png", "-stacked.png")
+
+         video_file = red_file.replace("-reduced.json", ".mp4")
+
+         new_file = ams_meteor_event_id + "_" + my_station + "_" + my_cam + ".mp4"
+         if new_file in cloud_files:
+            print(new_file, "already exists in the cloud")
+         else:
+            sync_content(ams_meteor_event_id, my_station, video_file, ".mp4")
+
+         new_file = ams_meteor_event_id + "_" + my_station + "_" + my_cam + "-HD.mp4"
+         if new_file in cloud_files:
+            print(new_file, "already exists in the cloud")
+         else:
+            sync_content(ams_meteor_event_id, my_station, hd_video_file, "-HD.mp4")
+
+         new_file = ams_meteor_event_id + "_" + my_station + "_" + my_cam + "-HD-stacked.png"
+
+         if new_file in cloud_files:
+            print(new_file, "already exists in the cloud")
+         else:
+            print("STACK ", new_file, hd_stack)
+            if "stacked-stacked" in hd_stack:
+               hd_stack = hd_stack.replace("-stacked", "")
+            if "stacked" not in hd_stack:
+               hd_stack = hd_stack.replace(".png", "-stacked.png")
+
+            sync_content(ams_meteor_event_id, my_station, hd_stack, "-HD-stacked.png")
+
+         new_file = ams_meteor_event_id + "_" + my_station + "_" + my_cam + "-stacked.png"
+         if new_file in cloud_files:
+            print(new_file, "already exists in the cloud")
+         else:
+            if "stacked-stacked" in sd_stack:
+               sd_stack = hd_stack.replace("-stacked", "")
+            sync_content(ams_meteor_event_id, my_station, sd_stack, "-stacked.png")
+
+
+
+  
+   save_json_file("/mnt/ams2/stations/data/" + day + "_events.json", new_ms_events)
+   print("SAVED /mnt/ams2/stations/data/" + day + "_events.json")
+
+def sync_content(event_id, station_name, upload_file, file_type):
+
+   my_meteor_datetime, my_cam, hd_date, hd_y, hd_m, hd_d, hd_h, hd_M, hd_s = convert_filename_to_date_cam(upload_file)
+   url = "http://54.214.104.131/pycgi/api-sync-content.py"
+   # The File to send
+   file = upload_file 
+   _file = {'files': open(file, 'rb')}
+
+
+   # The Data to send with the file
+   api_key = "test"
+   _data= {'api_key': api_key, 'station_name': station_name, 'device_name': my_cam, 'event_id' : event_id, 'file_type': file_type}
+
+   print(url, _data)
+   session = requests.Session()
+   del session.headers['User-Agent']
+   del session.headers['Accept-Encoding']
+
+   with requests.Session() as session:
+       response = session.post(url, data= _data, files=_file)
+
+ 
+   print (response.text)
+   response.raw.close()
+
+
+
+def check_make_event(event_id, json_conf):
+   file = "test.txt"
+   _file = {'files': open(file, 'rb')}
+
+   # os.system("gzip -fk " + index )
+
+   # The Data to send with the file
+   api_key = "test"
+   station_name = json_conf['site']['ams_id'].upper()
+   device_name = "na"
+   file_type = "idx"
+   meteor_day = "na"
+   _data= {'api_key': api_key, 'station_name': station_name, 'event_id' : event_id }
+   url = 'http://54.214.104.131/pycgi/api-make-check-event.py'
+   print(url, _data)
+   session = requests.Session()
+   del session.headers['User-Agent']
+   del session.headers['Accept-Encoding']
+
+   with requests.Session() as session:
+      response = session.post(url, data= _data, files=_file)
+      #response = session.post(url, data= _data )
+
+   resp = response.text
+   files = resp.split("\n")
+   response.raw.close()
+   return(files)
+
+
+ 
 
 def sync_meteor_index(json_conf):
    print("Sync meteor index.")
@@ -133,7 +349,7 @@ def sync_stations(json_conf):
       cmd = "wget \"" + mi_url + "\" -O " + lfn 
       print(cmd)
       os.system(cmd)
-      os.system("gunzip " + lfn)
+      os.system("gunzip -f " + lfn)
 
 
    
