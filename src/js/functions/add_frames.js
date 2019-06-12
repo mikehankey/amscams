@@ -1,3 +1,20 @@
+function add_frame() {
+    var cmd_data = {
+		cmd: 'add_frame',
+        sd_video_file: hd_stack_file, // Defined on the page
+        points: ''
+	}
+}
+
+
+
+
+
+
+
+
+
+/*
 function show_add_frame_modal() {
 
     if($('#add_frame_modal').length === 0) {
@@ -55,18 +72,9 @@ function populate_frame_modal() {
         // Add Button (+)
         cur_frame_number += 1;
         if(all_frame_ids.indexOf(cur_frame_number)==-1) {
- 
-            var missing_frames = [];
-            var tmp_cf = cur_frame_number;
-            
-            // Get all the possible frame to generates
-            while(all_frame_ids.indexOf(tmp_cf)===-1 || tmp_cf<max_fn ) {
-                missing_frames.push(tmp_cf);
-                tmp_cf=1+tmp_cf;
-                console.log("WE TEST" , tmp_cf , all_frame_ids.indexOf(tmp_cf)===-1);
-            }
+          
 
-            _html += "<button class='btn btn-primary addf' data-rel='["+tmp_cf.toString()+"]'>+</button>";
+            _html += "<button class='btn btn-primary addf' data-rel='["+cur_frame_number+"]'>+</button>";
         } else {
             _html += "<button class='btn btn-primary addf' style='opacity:.2' disabled>+</button>";
         }
@@ -94,3 +102,4 @@ function setup_add_frames() {
 show_add_frame_modal();
 populate_frame_modal();
 $('#add_frame_modal').modal('show');
+*/
