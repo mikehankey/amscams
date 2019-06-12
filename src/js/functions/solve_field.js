@@ -40,11 +40,12 @@ function new_check_solve_status(step) {
                 canvas.setBackgroundImage(grid_img, canvas.renderAll.bind(canvas));
                 loading_done();
             } else if(status=='failed' && step ==0) {
-                
+
             }
         }
     });
   
+    /*
        if (json_resp['status'] == 'success' && then_run == 1) {
           grid_img = json_resp['grid_file']
           alert("Astrometry.net successfully solved the plate.")
@@ -59,4 +60,5 @@ function new_check_solve_status(step) {
           alert("failed")
        }
     });
+    */
 }
