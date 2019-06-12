@@ -19,21 +19,23 @@ function populate_frame_modal() {
     $('#reduc-tab tbody tr').each(function() {
         var cur_frame_number = $(this).attr('id');
         cur_frame_number = cur_frame_number.split('_');
-        all_frame_ids.push(cur_frame_number[1]);
+        all_frame_ids.push(parseInt(cur_frame_number[1]));
     });
  
+    console.log(all_frame_ids);
+    
     $(all_frame_ids).each(function(ind, id) {
         var cl = "";
         var cur_fr_img  = $('tr#fr_'+id).find('img').clone(); 
         cur_fr_img.removeClass('select_meteor').css({width:'80px', height:'80px'})
-        cur_frame_number = id;
+        cur_frame_number = parseInt(id);
         
         if(frame_count==0) {
            // Add first "-" button
            if((cur_frame_number-1)>0) {
                 _html += "<button class='btn btn-primary addf' data-rel='"+(cur_frame_number-1)+"'>+</button>";
            } else {
-                _html += "<button class='btn btn-primary addf' disabled data-rel='"+(cur_frame_number-1)+"'>+</button>";
+                _html += "<button style='opacity:.2' class='btn btn-primary addf' disabled data-rel='"+(cur_frame_number-1)+"'>+</button>";
            }
         }
 
@@ -48,10 +50,11 @@ function populate_frame_modal() {
         _html += "<div class='fth "+cl+"'><span>#"+cur_frame_number+"</span>" + cur_fr_img.prop("outerHTML") + "</div>";
         
         // Add Button (+)
+        cur_frame_number += 1;
         if(all_frame_ids.indexOf(cur_frame_number)==-1) {
             _html += "<button class='btn btn-primary addf' data-rel='"+cur_frame_number+"'>+</button>";
         } else {
-            _html += "<button class='btn btn-primary addf' disabled data-rel='"+cur_frame_number+"'>+</button>";
+            _html += "<button class='btn btn-primary addf' style='opacity:.2' disabled data-rel='"+cur_frame_number+"'>+</button>";
         }
        
 
