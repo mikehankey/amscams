@@ -2,7 +2,7 @@ function show_add_frame_modal() {
 
     if($('#add_frame_modal').length === 0) {
         // Create modal if not exist
-        $('<div class="modal fade" id="add_frame_modal"><div class="modal-dialog modal-xl"><div class="modal-content"><div class="modal-header"><h5>Click "+" to select the position of the new frame to generate</h5></div><div class="modal-body"><div id="add_frame_container" class="d-flex flex-wrap"></div></div></div></div></div>').appendTo('body')
+        $('<div class="modal fade" id="add_frame_modal"><div class="modal-dialog modal-xl"><div class="modal-content"><div class="modal-header"><h5>Click "+" to select the position of the new frame to generate</h5> <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span>&times;</span></button></div><div class="modal-body"><div id="add_frame_container" class="d-flex flex-wrap"></div></div></div></div></div>').appendTo('body')
     }
 
     // By default we regenerate the whole content in case a frame has been added 
@@ -13,10 +13,7 @@ function show_add_frame_modal() {
 function populate_frame_modal() {
     var frame_count = 0;
     var _html = "";
-
-  
-
-
+ 
     $('#reduc-tab tbody tr').each(function() {
         var cl = "";
         var cur_fr_img  = $(this).find('img').clone(); 
@@ -27,7 +24,7 @@ function populate_frame_modal() {
         
         if(frame_count==0) {
            // Add first "-" button
-           _html += "<button class='btn btn-primary addf'>+</button>";
+           _html += "<button class='btn btn-primary addf' data-rel='"+(cur_frame_number-1)+"'>+</button>";
         }
 
         // Add Thumb and frame #
@@ -38,12 +35,10 @@ function populate_frame_modal() {
             cl = "";
         }
 
-         _html += "<div class='fth "+cl+"'><span>#"+cur_frame_number+"</span>" + cur_fr_img.prop("outerHTML") + "</div>";
-         
-
-
+        _html += "<div class='fth "+cl+"'><span>#"+cur_frame_number+"</span>" + cur_fr_img.prop("outerHTML") + "</div>";
+        
         // Add Button (+)
-        _html += "<button class='btn btn-primary addf'>+</button>";
+        _html += "<button class='btn btn-primary addf' data-rel='"+cur_frame_number+"'>+</button>";
 
         frame_count++;
 
