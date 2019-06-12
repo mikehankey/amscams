@@ -21,13 +21,12 @@ function populate_frame_modal() {
         cur_frame_number = cur_frame_number.split('_');
         all_frame_ids.push(parseInt(cur_frame_number[1]));
     });
- 
-    console.log(all_frame_ids);
-    
+  
+    var last_valid = 0;
     $(all_frame_ids).each(function(ind, id) {
         var cl = "";
         var cur_fr_img  = $('tr#fr_'+id).find('img').clone(); 
-        cur_fr_img.removeClass('select_meteor').css({width:'80px', height:'80px'})
+        cur_fr_img.removeClass('select_meteor').css({width:'80px', height:'80px'}).addClass('ns');
         cur_frame_number = parseInt(id);
         
         if(frame_count==0) {
@@ -35,7 +34,7 @@ function populate_frame_modal() {
            if((cur_frame_number-1)>0) {
                 _html += "<button class='btn btn-primary addf' data-rel='"+(cur_frame_number-1)+"'>+</button>";
            } else {
-                _html += "<button style='opacity:.2' class='btn btn-primary addf' disabled data-rel='"+(cur_frame_number-1)+"'>+</button>";
+                _html += "<button style='opacity:.2' class='btn btn-primary addf' disabled>+</button>";
            }
         }
 
@@ -52,9 +51,19 @@ function populate_frame_modal() {
         // Add Button (+)
         cur_frame_number += 1;
         if(all_frame_ids.indexOf(cur_frame_number)==-1) {
-            _html += "<button class='btn btn-primary addf' data-rel='"+cur_frame_number+"'>+</button>";
+ 
+            var missing_frames = [];
+            var tmp_cf = cur_frame_number;
+            // Get all the possible frame to generates
+            while(all_frame_ids.indexOf(tmp_cf)===-1 || tmp_cf<100 ) {
+                missing_frames.push(tmp_cf);
+                tmp_cf=1+tmp_cf;
+                console.log("WE TEST" , tmp_cf , all_frame_ids.indexOf(tmp_cf)===-1);
+            }
+
+            _html += "<button class='btn btn-primary addf' data-rel='["+tmp_cf.toString()+"]'>+</button>";
         } else {
-            _html += "<button class='btn btn-primary addf' style='opacity:.2' disabled data-rel='"+cur_frame_number+"'>+</button>";
+            _html += "<button class='btn btn-primary addf' style='opacity:.2' disabled>+</button>";
         }
        
 
