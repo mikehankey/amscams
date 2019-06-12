@@ -21,6 +21,10 @@ function populate_frame_modal() {
         cur_frame_number = cur_frame_number.split('_');
         all_frame_ids.push(parseInt(cur_frame_number[1]));
     });
+
+    // Get max frame #
+    var max_fn = Math.max.apply(Math, all_frame_ids);
+ 
   
     var last_valid = 0;
     $(all_frame_ids).each(function(ind, id) {
@@ -54,8 +58,9 @@ function populate_frame_modal() {
  
             var missing_frames = [];
             var tmp_cf = cur_frame_number;
+            
             // Get all the possible frame to generates
-            while(all_frame_ids.indexOf(tmp_cf)===-1 || tmp_cf<100 ) {
+            while(all_frame_ids.indexOf(tmp_cf)===-1 || tmp_cf<max_fn ) {
                 missing_frames.push(tmp_cf);
                 tmp_cf=1+tmp_cf;
                 console.log("WE TEST" , tmp_cf , all_frame_ids.indexOf(tmp_cf)===-1);
