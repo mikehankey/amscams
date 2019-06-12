@@ -27,18 +27,18 @@ function populate_frame_modal() {
         
         if(frame_count==0) {
            // Add first "-" button
-           _html += "<button class='btn btn-secondary addf'>+</button>";
+           _html += "<button class='btn btn-primary addf'>+</button>";
         }
 
         // Add Thumb and frame #
           // Every 8 thumb, we add a left margin 
         if(frame_count!=0 && frame_count % 8 ==0 ) {
             cl = "mgr";
-        else {
+        } else {
             cl = "";
         }
 
-         _html += "<div class='fth "+mgr+"'><span>#"+cur_frame_number+"</span>" + cur_fr_img.prop("outerHTML") + "</div>";
+         _html += "<div class='fth "+cl+"'><span>#"+cur_frame_number+"</span>" + cur_fr_img.prop("outerHTML") + "</div>";
          
 
 
