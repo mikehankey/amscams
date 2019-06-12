@@ -147,7 +147,8 @@ def meteor_index(json_conf, extra_cmd = ""):
                meteor_index[day][meteor]['red_seg_res'] = red_data['red_seg_res']
             if "frames_missing_before" in red_data:
                meteor_index[day][meteor]['frames_missing_before'] = red_data['frames_missing_before']
-          
+            if "event_start_time" in red_data:
+               meteor_index[day][meteor]['event_start_time'] = red_data['event_start_time']
 
             if "cal_params" in red_data:
                if "center_az" not in red_data['cal_params']:

@@ -24,6 +24,22 @@ cmd = sys.argv[1]
 if len(sys.argv) == 3:
    day = sys.argv[2]
 
+def create_update_events (day, json_conf ):
+   sync_urls = load_json_file("../conf/sync_urls.json")
+   all_meteor_index = {}
+   day_meteor_index = {}
+   all_meteor_index = {}
+   for station in sync_urls['sync_urls']:
+      all_meteor_index[station] = load_json_file("/mnt/ams2/stations/data/" + station + "_meteor_index.json")
+
+   station_meteors = {}
+   for station in all_meteor_index:
+      station_meteors[station] = all_meteor_index[station][day]
+
+   for station in station_meteors:
+      for station_meteor in station_meteors[station]:
+         print(station, station_meteor)
+
 def sync_meteor_index(json_conf):
    print("Sync meteor index.")
    index = "/mnt/ams2/cal/hd_images/meteor_index.json"
@@ -216,3 +232,5 @@ if cmd == "smi":
 
 if cmd == "find_events" or cmd == 'fe':
    find_events_for_day(day, json_conf)
+if cmd == "cue" :
+   create_update_events(day, json_conf)
