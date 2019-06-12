@@ -449,6 +449,7 @@ def fine_reduce(mrf, json_conf, show):
    if len(meteor_objs) != 1:
       print("METEOR DETECTION BAD! More than one meteor detect. Pick best one...")
       for mo in meteor_objs:
+         print(mo)
          hist_len = len(mo['history'])
          if hist_len > max_len:
             max_len = hist_len 
