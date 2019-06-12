@@ -25,10 +25,10 @@ function update_reduction_on_canvas_and_table(json_resp) {
 
         if(i==0) {
             // We add a "+" before and after
-            table_tbody_html+= '<td class="position-relative"><a class="btn btn-success btn-sm select_meteor"><i class="icon-target"></i></a><a class="btn btn-primary btn-sm btn-mm" data-rel="'+ (frame_id-1) +'"><i class="icon-plus"></i></a><a class="btn btn-primary btn-sm btn-pp" data-rel="'+ (frame_id+1) +'"><i class="icon-plus"></i></a></td>';
+            table_tbody_html+= '<td class="position-relative"><a class="btn btn-success btn-sm select_meteor"><i class="icon-target"></i></a><a title="Add a frame" class="btn btn-primary btn-sm btn-mm" data-rel="'+ (frame_id-1) +'"><i class="icon-plus"></i></a><a class="btn btn-primary btn-sm btn-pp" data-rel="'+ (frame_id+1) +'"><i class="icon-plus"></i></a></td>';
         } else {
             // We add a "+" after
-            table_tbody_html+= '<td class="position-relative"><a class="btn btn-success btn-sm select_meteor"><i class="icon-target"></i></a><a class="btn btn-primary btn-sm btn-pp" data-rel="'+ (frame_id+1) +'"><i class="icon-plus"></i></a></td>';
+            table_tbody_html+= '<td class="position-relative"><a class="btn btn-success btn-sm select_meteor"><i class="icon-target"></i></a><a title="Add a frame" class="btn btn-primary btn-sm btn-pp" data-rel="'+ (frame_id+1) +'"><i class="icon-plus"></i></a></td>';
         }
     
 
