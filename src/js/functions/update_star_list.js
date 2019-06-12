@@ -38,7 +38,7 @@ function update_stars_on_canvas_and_table(json_resp) {
                 fontFamily: 'Arial',
                 fontSize: 12,
                 left: 5 ,
-                top: 525,
+                top: 515,
                 fill: 'rgba(255,255,255,.75)',
                 selectable: false
             })); 
