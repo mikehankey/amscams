@@ -17,13 +17,20 @@ function update_reduction_on_canvas_and_table(json_resp) {
         var square_size = 6;
         var _time = v[0].split(' ');
        
-
         // Thumb	#	Time	X/Y - W/H	Max PX	RA/DEC	AZ/EL
         table_tbody_html+= '<tr id="fr_'+frame_id+'"><td><img alt="Thumb #'+frame_id+'" src='+thumb_path+' width=50 height=50 class="img-fluid select_meteor"/></td>';
         table_tbody_html+= '<td>'+frame_id+'</td><td>'+_time[1]+'</td> <td>'+ (v[2]/2)+'/'+parseFloat(v[3]/2)+'</td><td>'+v[4]+'</td><td>'+v[5]+'</td>';
         table_tbody_html+= '<td>'+v[6]+'</td><td>'+v[7]+'/'+v[8]+'</td><td>'+v[9]+'/'+v[10]+'</td>'
         table_tbody_html+= '<td><a class="btn btn-danger btn-sm delete_frame"><i class="icon-delete"></i></a></td>';
-        table_tbody_html+= '<td class="class="position-relative"><a class="btn btn-success btn-sm select_meteor"><i class="icon-target"></i></a><a class="btn btn-primary btn-sm btn-mm" data-rel="'+ (frame_id-1) +'"><i class="icon-minus"></i></a><a class="btn btn-primary btn-sm btn-pp" data-rel="'+ (frame_id+1) +'"><i class="icon-plus"></i></a></td>';
+
+        if(i==0) {
+            // We add a "+" before and after
+            table_tbody_html+= '<td class="position-relative"><a class="btn btn-success btn-sm select_meteor"><i class="icon-target"></i></a><a class="btn btn-primary btn-sm btn-mm" data-rel="'+ (frame_id-1) +'"><i class="icon-plus"></i></a><a class="btn btn-primary btn-sm btn-pp" data-rel="'+ (frame_id+1) +'"><i class="icon-plus"></i></a></td>';
+        } else {
+            // We add a "+" after
+            table_tbody_html+= '<td class="position-relative"><a class="btn btn-success btn-sm select_meteor"><i class="icon-target"></i></a><a class="btn btn-primary btn-sm btn-pp" data-rel="'+ (frame_id+1) +'"><i class="icon-plus"></i></a></td>';
+        }
+    
 
         // Add Rectangle
         canvas.add(new fabric.Rect({
