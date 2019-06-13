@@ -1830,7 +1830,7 @@ def browse_day(day,cams_id,json_conf):
 
    print("<div class='h1_holder d-flex justify-content-between'><h1><span class='h'><span id='meteor_count'>"+format(len(base_file))+"</span> meteors</span> ")
    print("captured on ")
-   print("<div class='input-group date datepicker' data-display-format='YYYY/MM/DD' data-action='reload' data-url-param='limit_day' data-send-format='YYYY_MM_DD'>")
+   print("<div class='input-group date datepicker' data-display-format='YYYY/MM/DD' data-action='reload' data-url-param='day' data-send-format='YYYY_MM_DD'>")
    print("<input value='"+str(day.replace("_", "/"))+"' type='text' class='form-control'>")
    print("<span class='input-group-addon'><span class='icon-clock'></span></span></div> by Cam #"+cams_id+"</h1></div>") 
   
