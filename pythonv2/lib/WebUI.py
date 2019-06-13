@@ -1832,7 +1832,7 @@ def browse_day(day,cams_id,json_conf):
    print("captured on ")
    print("<div class='input-group date datepicker' data-display-format='YYYY/MM/DD' data-action='reload' data-url-param='limit_day' data-send-format='YYYY_MM_DD'>")
    print("<input value='"+str(day.replace("_", "/"))+"' type='text' class='form-control'>")
-   print("<span class='input-group-addon'><span class='icon-clock'></span></span></div> by Cam #"+cams_id+"</h1>") 
+   print("<span class='input-group-addon'><span class='icon-clock'></span></span></div> by Cam #"+cams_id+"</h1></div>") 
   
 
    print("<div id='main_container' class='container-fluid h-100 mt-4 lg-l'>")
