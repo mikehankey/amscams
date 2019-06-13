@@ -1,6 +1,6 @@
 function getQueryParameters() {
     var queryString = location.search.slice(1),
-        params = {};
+        params = [];
   
     queryString.replace(/([^=]*)=([^&]*)&*/g, function (_, key, value) {
       params[key] = value;
@@ -18,7 +18,7 @@ function setQueryParameters(params) {
       value = params[key];
       query.push(key + "=" + value);
     }
-  
+    
     location.search = query.join("&");
 }
 
@@ -40,11 +40,13 @@ $(function() {
                 // Replace in cur URL and reload
                 var cur_params = getQueryParameters();
                 // WARNING limit_day is hardcoded here
-
-                if(cur_params.limit_day != new_date) {
-                    cur_params.limit_day = new_date;
+                var param_to_update = $t.attr('data-url-param');
+                 
+                if(cur_params[param_to_update] != new_date) {
+                    cur_params[param_to_update] = new_date;
                     setQueryParameters(cur_params);
                 }
+                 
 
             });
         }
