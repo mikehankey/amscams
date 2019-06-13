@@ -167,12 +167,7 @@ def make_day_preview(day_dir, stats_data, json_conf):
       html_out = html_out + "<div class='preview col-lg-2 col-md-3 '>"
       html_out = html_out + "<a class='mtt' href='webUI.py?cmd=browse_day&day=" + day_str + "&cams_id="+cams_id+"'  title='Browse all day'>"
       html_out = html_out + "<img alt='" + day_str + "' class='img-fluid ns lz' src='" + obj_stack + "'>"
-      html_out = html_out + "<span>" + str(min_total) + " minutes</span></a>Cam #"+ cams_id+"</div>"     
-      
-      #html_out = html_out + "<figure><a href=\"webUI.py?cmd=browse_day&day=" + day_str + "&cams_id=" + cams_id \
-      #   + "\" onmouseover=\"document.getElementById(" + day + cams_id + ").src='" + meteor_stack \
-      #   + "'\" onmouseout=\"document.getElementById(" + day + cams_id + ").src='" + obj_stack + "'\">"
-      #html_out = html_out + "<img style=\"border: 1px solid #ff9900; padding: 1px; margin: 5px\" id=\"" + day+ cams_id + "\" width='200' height='163' src='" + obj_stack + "'></a><br><figcaption>" + str(min_total) + " Minutes</figcaption></figure>"
+      html_out = html_out + "</a><span class='pre-b'>Cam #"+ cams_id+" - " + str(min_total) + " minutes</span></div>"     
    return(html_out, day_str)
 
 def parse_jsid(jsid):
