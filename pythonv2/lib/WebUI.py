@@ -1141,7 +1141,7 @@ def live_view(json_conf):
  
 
    print("""<h1>Live</h1>
-            <div class="container mt-3">
+            <div class="container mt-3" style="max-width: 1500px;">
                   <p class="text-center"><b>Still pictures are updated in 5 minutes intervals. This page will automatically refresh in <span id="cntd">2:00</span>.</b></p>
                   <div class="gallery gal-resize row text-center text-lg-left mb-4">
    """)
