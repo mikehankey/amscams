@@ -1828,16 +1828,14 @@ def browse_day(day,cams_id,json_conf):
    for base_file in sorted(day_files,reverse=True):
       all_files.append(base_file)
 
-   print("<div class='h1_holder d-flex justify-content-between'><h1><span class='h'><span id='meteor_count'>"+format(len(day_files))+"</span> meteors</span> ")
-   print("captured on ")
+   print("<div class='h1_holder d-flex justify-content-between'><h1><span class='h'><span id='meteor_count'>"+format(len(day_files))+"</span> detections</span> on")
    print("<div class='input-group date datepicker' data-display-format='YYYY/MM/DD' data-action='reload' data-url-param='day' data-send-format='YYYY_MM_DD'>")
    print("<input value='"+str(day.replace("_", "/"))+"' type='text' class='form-control'>")
    print("<span class='input-group-addon'><span class='icon-clock'></span></span></div> by Cam #"+cams_id+"</h1></div>") 
   
    print("<div id='main_container' class='container-fluid h-100 mt-4 lg-l'>")
    print("<div class='gallery gal-resize row text-center text-lg-left '>")
-
-        
+ 
 
    for base_file in sorted(day_files,reverse=True):
       if cc + 1 < len(day_files) - 2:
