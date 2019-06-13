@@ -132,7 +132,7 @@ function update_star_list() {
          }
     }); 
 
-    loading({text:'Updating star list...', overlay:"true"});
+    loading({text:'Updating star list...', overlay:true});
 
     // Remove All objects from Canvas but the reduction squares
     var objects = canvas.getObjects()

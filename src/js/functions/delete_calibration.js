@@ -2,7 +2,7 @@
 function delete_calibration() {
     bootbox.confirm("Are you sure you want to permanently delete the current calibration parameters?", function(result){ 
         if(result) {
-            loading({text:"Deleting Calibration Parameters", overlay:"true"});
+            loading({text:"Deleting Calibration Parameters", overlay:true});
             $.ajax({ 
                 url:  "/pycgi/webUI.py",
                 data: {

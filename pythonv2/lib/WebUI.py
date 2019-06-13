@@ -1935,8 +1935,7 @@ def main_page(json_conf,form):
 
    json_file = json_conf['site']['proc_dir'] + "json/" + "main-index.json"
    stats_data = load_json_file(json_file)
- 
-
+  
    detections = sorted(stats_data,reverse=True)
    detections_form = NUMBER_OF_DAYS_PER_PAGE*cur_page
    total_number_page = math.ceil(len(detections) / NUMBER_OF_DAYS_PER_PAGE)
