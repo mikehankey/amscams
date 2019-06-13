@@ -163,12 +163,11 @@ def make_day_preview(day_dir, stats_data, json_conf):
          meteor_stack = "/mnt/ams2/blank.jpg"
 
       day=day.replace("_","")
-
-
+ 
       html_out = html_out + "<div class='preview col-lg-2 col-md-3 '>"
       html_out = html_out + "<a class='mtt' href='webUI.py?cmd=browse_day&day=" + day_str + "&cams_id="+cams_id+"'  title='Browse all day'>"
       html_out = html_out + "<img alt='" + day_str + "' class='img-fluid ns lz' src='" + obj_stack + "'>"
-      html_out = html_out + "<span>" + str(min_total) + " minutes</span></a></div>"     
+      html_out = html_out + "<span>" + str(min_total) + " minutes</span></a>Cam #"+ cams_id+"</div>"     
       
       #html_out = html_out + "<figure><a href=\"webUI.py?cmd=browse_day&day=" + day_str + "&cams_id=" + cams_id \
       #   + "\" onmouseover=\"document.getElementById(" + day + cams_id + ").src='" + meteor_stack \
@@ -1926,23 +1925,18 @@ def browse_detects(day,type,json_conf,form):
 
 
 def main_page(json_conf,form):
-
-
    cur_page  = form.getvalue('p')
 
    if (cur_page is None) or (cur_page==0):
       cur_page = 1
    else:
       cur_page = int(cur_page)
-
-   #print("<SCRIPT>var my_image = []</SCRIPT>")
-   #print("<h1>AllSky6 Control Panel</h1>")    
+ 
    days = sorted(get_proc_days(json_conf),reverse=True)
 
    json_file = json_conf['site']['proc_dir'] + "json/" + "main-index.json"
    stats_data = load_json_file(json_file)
-
-   
+ 
 
    detections = sorted(stats_data,reverse=True)
    detections_form = NUMBER_OF_DAYS_PER_PAGE*cur_page
