@@ -1332,7 +1332,8 @@ def make_metframe(mrf, mr, fn, hd_x, hd_y, metframes):
 
    nx, ny, ra ,dec , az, el= XYtoRADec(hd_x,hd_y,mrf,mr['cal_params'],json_conf)
 
-   metframes[fn]["etime"] = metframes[bfn]['etime'] + 1/25
+   #metframes[fn]["etime"] = metframes[bfn]['etime'] + 1/25
+   metframes[fn]["etime"] = 0
    metframes[fn]["fn"] = fn
    metframes[fn]["max_px"] = 0
    metframes[fn]["w"] = 0
