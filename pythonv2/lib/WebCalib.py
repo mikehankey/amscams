@@ -60,7 +60,7 @@ def add_frame_ajax( json_conf, form):
       est_y = int((metconf['m']*est_x)+metconf['b'])
    elif str(next_fn) in metframes:
       # this frame exists before any others so need to add est in reverse. 
-      print("Next fn exist ", next_fn)
+      #print("Next fn exist ", next_fn)
       last_x = metframes[next_fn]['hd_x']
       last_y = metframes[next_fn]['hd_y']
       est_x = int(last_x + ((-1*metconf['x_dir_mod']) * metconf['med_seg_len']))
