@@ -37,6 +37,7 @@ function setup_modal_actions(x,y) {
     //    thumb real dim = 50x50
     var thumb_prev = 500;
     var thumb_dim  = 50;
+    var factor = 500/50;
 
     x = parseInt(x);
     y = parseInt(y);
@@ -57,18 +58,18 @@ function setup_modal_actions(x,y) {
             $('#lh').css('top',relY);
             $('#lv').css('left',relX);
             $('#meteor_pos').text(parseInt(relX+x)+'/'+parseInt(relY+y));
+            alert('WE DO THE AJAX CALL HERE');
         }
+ 
     }).unbind('mousemove').mousemove(function(e) {
         
         var parentOffset = $(this).offset(); 
         var relX = e.pageX - parentOffset.left;
         var relY = e.pageY - parentOffset.top;
 
-        console.log('REL ', relX , ' ' , relY)
-
-        var realX = relX;
-        var realY = relY;
-
+        //WARNING ONLY WORKS WITH SQUARES
+        var realX = relX/factor+x-thumb_dim/2;
+        var realY = relY/factor+y-thumb_dim/2;
 
         // Cross
         if(!$(this).hasClass('done')) {
