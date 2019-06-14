@@ -957,12 +957,11 @@ def fine_reduce(mrf, json_conf, show):
    prefix = prefix.replace("/passed", "")
    for fn in cmp_imgs:
       cv2.imwrite(prefix  + str(fn) + ".png", cmp_imgs[fn])
-
+      print("UPDATING!")
       mjr['metframes'][fn]['cnt_thumb'] = prefix + str(fn) + ".png"
 
 
    mjr['metconf'] = metconf
-   mjr['metframes'] = metframes
    mjr['meteor_frame_data'] = meteor_frame_data
    save_json_file("test.json", mjr)
    print("SAVED:", mrf )
@@ -1301,6 +1300,9 @@ def eval_metframes(mrf):
    prefix = prefix.replace("/passed", "")
    for fn in cmp_imgs:
       cv2.imwrite(prefix  + str(fn) + ".png", cmp_imgs[fn])
+      mr['metframes'][fn]['cnt_thumb'] = prefix + str(fn) + ".png"
+
+
 
    mr['meteor_frame_data'] = mfd
 
@@ -1332,7 +1334,8 @@ def make_metframe(mrf, mr, fn, hd_x, hd_y, metframes):
 
    nx, ny, ra ,dec , az, el= XYtoRADec(hd_x,hd_y,mrf,mr['cal_params'],json_conf)
 
-   metframes[fn]["etime"] = metframes[bfn]['etime'] + 1/25
+   #metframes[fn]["etime"] = metframes[bfn]['etime'] + 1/25
+   metframes[fn]["etime"] = 0
    metframes[fn]["fn"] = fn
    metframes[fn]["max_px"] = 0
    metframes[fn]["w"] = 0
@@ -1347,8 +1350,8 @@ def make_metframe(mrf, mr, fn, hd_x, hd_y, metframes):
    metframes[fn]["bp_x"] = 0
    metframes[fn]["bp_y"] = 0
    metframes[fn]["px_diff"] = 0
-   metframes[fn]["m_10"] =  metframes[bfn]['m_10']
-   metframes[fn]["b_10"] =  metframes[bfn]['b_10']
+   metframes[fn]["m_10"] =  0
+   metframes[fn]["b_10"] =  0
    metframes[fn]["x1"] = x1
    metframes[fn]["y1"] = y1
    metframes[fn]["x2"] = x2
