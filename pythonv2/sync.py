@@ -125,7 +125,7 @@ def create_update_events (day, json_conf ):
          ams_meteor_event_id =  ams_meteor_event_id + "_" + str(int(mlat)) + "_" + str(int(mlon))
          print("AMS METEOR EVENT ID:", ams_meteor_event_id)
          multi_station_events[meteor_event]['ams_meteor_event_id'] = ams_meteor_event_id
-
+         red_file = None
          for obs in multi_station_events[meteor_event]['observations']:
             if obs == my_station:
                print("UPDATE RED FILE WITH ID", multi_station_events[meteor_event]['observations'][my_station])
@@ -143,6 +143,10 @@ def create_update_events (day, json_conf ):
          for ef in event_files:
             fn = ef.split("/")[-1]
             cloud_files.append(fn)
+         if red_file is None:
+            print("SKIP:  this is not one of our events?")
+            continue
+
          print("SYNC CONTENT")
 
          my_meteor_datetime, my_cam, hd_date, hd_y, hd_m, hd_d, hd_h, hd_M, hd_s = convert_filename_to_date_cam(red_file)
