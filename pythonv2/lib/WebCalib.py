@@ -96,7 +96,7 @@ def add_frame_ajax( json_conf, form):
    else :
       resp = {}
       resp['msg'] = "frame already exists."
-      print(json.dumps(resp))
+      print(json.dumps(resp, allow_nan=false))
       exit()
    
   
@@ -108,12 +108,7 @@ def add_frame_ajax( json_conf, form):
    resp = {}
    resp['msg'] = "new frame added."
    resp['newframe'] = mr['metframes'][new_fn]
-
-   #TEST REMOVE BAD DATA FOR JS JSON
-   json_to_send = resp
-   clean_dict = simplejson.loads(simplejson.dumps(json_to_send, ignore_nan=True))
-   
-   print(json.dumps(clean_dict))
+   print(json.dumps(resp))
 
 
 def remove_dupe_cat_stars(paired_stars):
