@@ -9,7 +9,6 @@ import cgi
 import time
 import glob
 import os
-import simplejson
 import cgitb
 from lib.PrintUtils import get_meteor_date
 from lib.FileIO import get_proc_days, get_day_stats, get_day_files , load_json_file, get_trims_for_file, get_days, save_json_file, cfe
@@ -98,8 +97,7 @@ def add_frame_ajax( json_conf, form):
       resp['msg'] = "frame already exists."
       print(json.dumps(resp))
       exit()
-   
-  
+ 
 
    mr['metframes'] = metframes
    save_json_file(mrf, mr)
@@ -107,7 +105,7 @@ def add_frame_ajax( json_conf, form):
    mr = load_json_file(mrf )
    resp = {}
    resp['msg'] = "new frame added."
-   resp['newframe'] = mr['metframes'][new_fn]
+   resp['newframe'] = mr['metframes'][new_fn] 
    print(json.dumps(resp, allow_nan=false))
 
 
