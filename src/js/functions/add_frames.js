@@ -1,25 +1,29 @@
 function add_reduc_row(data) {
     /*
-          {"msg": "new frame added.", 
-           "newframe": 
-            {"fn": "121",
-             "hd_x": 969,
-             "hd_y": 878,
-             "w": 5,
-             "h": 5,
-             "ra": 61.78094346203922,
-             "dec": 61.674271792893386,
-             "az": 14.87728474941026,
-             "el": 8.596841983793604,
-             "max_px": 0,
-             "est_x": 973,
-             "est_y": 879,
-             "len_from_last": 7.280109889280518,
-             "b_10": NaN,
-             "frame_time": "2019-06-11 08:23:35.320",
-             "x1": 919, "y1": 828, "x2": 1019, "y2": 928}}
+        msg: "new frame added."
+        newframe:
+        az: 358.1230279283592
+        b_10: NaN
+        cnt_thumb: "/mnt/ams2/meteors/2019_06_13/2019_06_13_07_29_25_000_010033-trim1026-frm53.png"
+        dec: 65.48315690419676
+        el: 8.918430871796353
+        est_x: 598
+        est_y: 870
+        fn: "53"
+        frame_time: "2019-06-13 07:30:08.160"
+        h: 5
+        hd_x: 598
+        hd_y: 864
+        len_from_last: 6.324555320336759
+        max_px: 0
+        ra: 87.03382179634303
+        w: 5
+        x1: 573
+        x2: 623
+        y1: 839
+        y2: 889
     */
-    if(data.msg=='new frame added') {
+    if(data.msg=='new frame added.') {
         var new_frame_id = parseInt(data.newframe.fn);
 
         // Try to find the row after first 
@@ -31,24 +35,32 @@ function add_reduc_row(data) {
             $tr_before = $('#reduc-tab table tbody tr')[0];
         }
 
-        
+        var _time = data.newframe.frame_time;
+        _time = _time.split(' ');
+        _time = _time[1];
 
-   
+        // Build new row
+        var row = "<tr id='fr_' "+ new_frame_id +" data-org-x='"+hd_x+"' data-org-y='"+hd_y+"'>";
+        row += '<td><img alt="Thumb #'+new_frame_id+'" src="'+cnt_thumb+'" width="50" height="50" class="img-fluid select_meteor">';
+        row += '<td>' + new_frame_id + '</td>';
+        row += '<td>' + _time + '</td>'; 
+        row += '<td>' + new_frame.ra.toFixed(3) + "&deg;/" + new_frame.dec.toFixed(3) + '&deg</td>';              
+        row += '<td>' + new_frame.az.toFixed(3) + "&deg;/" + new_frame.el.toFixed(3) + '&deg</td>';               
+        row += '<td>' + hd_x + "/" + hd_y + '</td>';              
+        row += '<td>' + w + "/" + h + '</td>';            
+        row += '<td>' + max_px + '</td>';      
+        row += '<td>' + max_px + '</td>';      
+        row += '<td><a class="btn btn-danger btn-sm delete_frame"><i class="icon-delete"></i></a></td>';
+        row += '<td class="position-relative"><a class="btn btn-success btn-sm select_meteor"><i class="icon-target"></i></a></td>';
+
+        $(row).insertBefore($tr_after);
+
+
+            // Reload all actions on reduct table!!!
 
     }
 
-    var row = "<tr>";
-
-    // Test if path_image exist -> replace with processing thumb in case it doesn't 
-
-    row += '<img alt="Thumb #'+id+'" src="'+path_image+'" width="50" height="50" class="img-fluid select_meteor"></td>';
-
-    // Create row
-    var $row = $('<tr><td></td><td></td><td></td></tr>');
-
-
-    // Reload all actions on reduct table!!!
-    
+    loading_done();
 }
 
 function add_a_frame(cur_fn) {
@@ -64,7 +76,7 @@ function add_a_frame(cur_fn) {
         url:  "/pycgi/webUI.py",
         data: cmd_data, 
         success: function(data) { 
-            loading_done();
+            
             add_reduc_row(data);
             
             bootbox.alert({
