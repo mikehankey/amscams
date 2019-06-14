@@ -1,5 +1,7 @@
 function add_reduc_row(data) {
 
+    console.log("DATA ", data);
+
     if(data.msg=='new frame added.') {
         var new_frame_id = parseInt(data.newframe.fn);
         var next_id = parseInt(new_frame_id)-1;
@@ -36,7 +38,7 @@ function add_reduc_row(data) {
         console.log('TR BEFORE ');
         console.log($tr_before);
 
-        $(row).insertBefore($tr_before);
+        $(row).insertAfter($tr_before);
 
 
             // Reload all actions on reduct table!!!
@@ -70,11 +72,7 @@ function add_a_frame(cur_fn) {
         url:  "/pycgi/webUI.py",
         data: cmd_data, 
         success: function(data) { 
-            
             add_reduc_row(data);
-            
-           
-            
         }, 
         error:function() {
             loading_done();
