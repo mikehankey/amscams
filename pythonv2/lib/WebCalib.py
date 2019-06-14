@@ -39,7 +39,7 @@ def update_frame_ajax(json_conf, form):
 
 def add_frame_ajax( json_conf, form):
 
-   cgitb.enable()
+   #cgitb.enable()
 
    sd_video_file = form.getvalue("sd_video_file")
    new_fn = form.getvalue("fn")
@@ -49,7 +49,7 @@ def add_frame_ajax( json_conf, form):
    mrf = sd_video_file.replace(".mp4", "-reduced.json")
    mr = load_json_file(mrf)
    print(mr)
-   metframes = mr['meteor_frame_data']
+   metframes = mr['metframes']
    metconf = mr['metconf']
    
    if str(prev_fn) in metframes:
@@ -2998,7 +2998,7 @@ def reduce_meteor_new(json_conf,form):
    <table class="table table-dark table-striped table-hover td-al-m mb-2 pr-5" >
       <thead>
          <tr>
-            <th></th><th>#</th><th>Time</th><th>X/Y - W/H</th><th>Max px</th><th>Max &deg;</th><th>?</th><th>RA/DEC</th><th>AZ/EL</th><th colspan="4"></th>
+            <th></th><th>#</th><th>Time</th><th>X/Y - W/H</th><th>Max px</th><th>RA/DEC</th><th>AZ/EL</th><th colspan="4"></th>
          </tr>
       </thead>
    """
