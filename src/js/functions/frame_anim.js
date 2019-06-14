@@ -1,9 +1,6 @@
  var $allframes = $('img.select_meteor');
- var totalFrames = 0;
+ var totalFrames = $allframes.length;
  
- $allframes.each(function(){
-    totalFrames+=1;
-});
  
  var animationDuration = parseFloat($('#dur').text())*1000; // Duration get the 
  var timePerFrame = animationDuration / totalFrames;
