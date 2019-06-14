@@ -32,9 +32,12 @@ function addModalTemplate() {
 
 // Actions on modal 
 function setup_modal_actions(x,y) {
-
+    
     // Warning: preview  = 500x500
     //    thumb real dim = 50x50
+    var thumb_prev = 500;
+    var thumb_dim  = 50;
+
     x = parseInt(x);
     y = parseInt(y);
 
@@ -56,14 +59,22 @@ function setup_modal_actions(x,y) {
             $('#meteor_pos').text(parseInt(relX+x)+'/'+parseInt(relY+y));
         }
     }).unbind('mousemove').mousemove(function(e) {
+        
         var parentOffset = $(this).offset(); 
         var relX = e.pageX - parentOffset.left;
         var relY = e.pageY - parentOffset.top;
+
+        console.log('REL ', relX , ' ' , relY)
+
+        var realX = relX;
+        var realY = relY;
+
+
         // Cross
         if(!$(this).hasClass('done')) {
             $('#lh').css('top',relY);
             $('#lv').css('left',relX);
-            $('#meteor_pos').text(parseInt(relX+x)+'/'+parseInt(relY+y));
+            $('#meteor_pos').text(parseInt(realX)+'/'+parseInt(realY));
         }
     });
 }
