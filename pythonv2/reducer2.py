@@ -958,6 +958,8 @@ def fine_reduce(mrf, json_conf, show):
    for fn in cmp_imgs:
       cv2.imwrite(prefix  + str(fn) + ".png", cmp_imgs[fn])
 
+      mjr['metframes'][fn]['cnt_thumb'] = prefix + str(fn) + ".png"
+
 
    mjr['metconf'] = metconf
    mjr['metframes'] = metframes
@@ -1104,8 +1106,9 @@ def metframes_to_mfd(metframes, sd_video_file):
    meteor_frame_data = []
    for fn in metframes:
       frame_time,frame_time_str = calc_frame_time(sd_video_file, fn) 
+      metframes[fn]['frame_time'] = frame_time_str
       meteor_frame_data.append((frame_time_str,fn,int(metframes[fn]['hd_x']),int(metframes[fn]['hd_y']),int(metframes[fn]['w']),int(metframes[fn]['h']),int(metframes[fn]['max_px']),float(metframes[fn]['ra']),float(metframes[fn]['dec']),float(metframes[fn]['az']),float(metframes[fn]['el']) ))
-   return(meteor_frame_data)
+   return(meteor_frame_data, metframes)
 
 def update_len_diff(metframes,metconf):
 
@@ -1118,7 +1121,13 @@ def update_len_diff(metframes,metconf):
    xs = []
    ys = []
    for fn in metframes:
+      if "hd_x" not in metframes[fn]:
+         print("MISSING HD_X:", metframes[fn]) 
+         metframes[fn]['hd_x'] = metframes[fn]['hd_est_x']
+         metframes[fn]['hd_y'] = metframes[fn]['hd_est_y']
+
       if first_fn is None:
+         print("MIKE:", metframes[fn])
          first_fn = fn
          first_x = metframes[fn]['hd_x']
          first_y = metframes[fn]['hd_y']
@@ -1184,6 +1193,9 @@ def eval_metframes(mrf):
    frames_missing_before = []
    frames_missing_after = []
    for fn in mr['metframes']:
+      if "hd_x" not in mr['metframes'][fn]:
+         mr['metframes']['hd_x'] = mr['metframes']['hd_est_x']
+         mr['metframes']['hd_y'] = mr['metframes']['hd_est_y']
       if last_frame is not None:
          if int(last_frame) + 1 != int(fn):
             print("Frame missing before fn", last_frame, fn)
@@ -1269,7 +1281,7 @@ def eval_metframes(mrf):
       cnt_w = 40
       size = 40
       x1,y1,x2,y2 = bound_cnt(hd_x,hd_y,1920,1080,cnt_w)
-
+      print("FN:", ifn)
       cnt_img = frames[ifn][y1:y2,x1:x2]
       blob_x, blob_y, blob_max, blob_w, blob_h = find_blob_center(cnt_img,frames[ifn],frames[ifn],x1,y1,x2,y2,size)
       #if "hd_x" not in mr['metframes']:
@@ -1282,7 +1294,7 @@ def eval_metframes(mrf):
       mr['metframes'][fn]['ra'] = ra
       mr['metframes'][fn]['dec'] = dec 
 
-   mfd = metframes_to_mfd(mr['metframes'], mr['sd_video_file'])
+   mfd,mr['metframes'] = metframes_to_mfd(mr['metframes'], mr['sd_video_file'])
    cmp_imgs,mr['metframes'] = make_meteor_cnt_composite_images(json_conf, mfd, mr['metframes'], frames, sd_video_file)
    prefix = mr['sd_video_file'].replace(".mp4", "-frm")
    prefix = prefix.replace("SD/proc2/", "meteors/")
