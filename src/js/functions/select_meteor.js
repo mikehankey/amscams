@@ -94,8 +94,9 @@ function setup_modal_actions(fn_id,x,y) {
             $('#lh').css('top',relY);
             $('#lv').css('left',relX);
             $('#meteor_pos').text(parseInt(realX)+'/'+parseInt(realY));
-            select_meteor_ajax(fn_id,realX,realY);
         }
+
+        select_meteor_ajax(fn_id,realX,realY);
  
     }).unbind('mousemove').mousemove(function(e) {
         
