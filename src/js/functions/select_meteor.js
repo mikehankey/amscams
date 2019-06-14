@@ -32,8 +32,8 @@ function addModalTemplate() {
 // Actions on modal 
 function setup_modal_actions(x,y) {
 
-    // Warning: preview  = 400x400
-    //    thumb real dim = 100x100
+    // Warning: preview  = 500x500
+    //    thumb real dim = 50x50
     x = parseInt(x);
     y = parseInt(y);
 
@@ -69,7 +69,7 @@ function setup_modal_actions(x,y) {
 
 
 function setup_select_meteor() {
-    var viewer_dim = 400;
+    var viewer_dim = 500;
     var all_frames_ids = [];
 
     // Get all the frame ids
