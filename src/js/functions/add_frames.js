@@ -27,7 +27,7 @@ function add_reduc_row(data) {
         var new_frame_id = parseInt(data.newframe.fn);
 
         // Try to find the row after first 
-        var $tr_after = $('tr#'+ (new_frame_id-1));
+        var $tr_before = $('tr#'+ (new_frame_id-1));
 
         // If it doesn't exist
         if($tr_before.length==0) {
@@ -46,10 +46,10 @@ function add_reduc_row(data) {
         row += '<td>' + _time + '</td>'; 
         row += '<td>' + new_frame.ra.toFixed(3) + "&deg;/" + new_frame.dec.toFixed(3) + '&deg</td>';              
         row += '<td>' + new_frame.az.toFixed(3) + "&deg;/" + new_frame.el.toFixed(3) + '&deg</td>';               
-        row += '<td>' + hd_x + "/" + hd_y + '</td>';              
-        row += '<td>' + w + "/" + h + '</td>';            
-        row += '<td>' + max_px + '</td>';      
-        row += '<td>' + max_px + '</td>';      
+        row += '<td>' + new_frame.hd_x + "/" + new_frame.hd_y + '</td>';              
+        row += '<td>' + new_frame.w + "/" + new_frame.h + '</td>';            
+        row += '<td>' + new_frame.max_px + '</td>';      
+        row += '<td>' + new_frame.max_px + '</td>';      
         row += '<td><a class="btn btn-danger btn-sm delete_frame"><i class="icon-delete"></i></a></td>';
         row += '<td class="position-relative"><a class="btn btn-success btn-sm select_meteor"><i class="icon-target"></i></a></td>';
 
