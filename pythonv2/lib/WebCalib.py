@@ -102,6 +102,7 @@ def add_frame_ajax( json_conf, form):
 
    #Update NaN to "NaN" for JS 
    for k, v in metframes.items():
+         print v
          if(math.isnan(v)):
                metframes.pop(k, None)
 
