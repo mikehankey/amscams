@@ -957,7 +957,7 @@ def fine_reduce(mrf, json_conf, show):
    prefix = prefix.replace("/passed", "")
    for fn in cmp_imgs:
       cv2.imwrite(prefix  + str(fn) + ".png", cmp_imgs[fn])
-
+      print("UPDATING!")
       mjr['metframes'][fn]['cnt_thumb'] = prefix + str(fn) + ".png"
 
 
@@ -1300,6 +1300,9 @@ def eval_metframes(mrf):
    prefix = prefix.replace("/passed", "")
    for fn in cmp_imgs:
       cv2.imwrite(prefix  + str(fn) + ".png", cmp_imgs[fn])
+      mr['metframes'][fn]['cnt_thumb'] = prefix + str(fn) + ".png"
+
+
 
    mr['meteor_frame_data'] = mfd
 
