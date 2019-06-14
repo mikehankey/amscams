@@ -430,15 +430,20 @@ def solve_events(day, json_conf):
          print(station)
          if station != my_station:
             for cam_id in events[event]['observations'][station]:
-               local_file = events[event]['observations'][station][cam_id].replace("meteors", "multi_station")
-
+               local_dir =  "/mnt/ams2/events/" + event 
+               if cfe(local_dir,1) == 0:
+                  cmd = "mkdir " + local_dir
+                  os.system(cmd)
+               local_file = local_dir + "/" + event + "_" + station + "_" + cam_id + ".json" 
                remote_url = remote_host + "/meteors/" + event + "/" + event + "_" + station + "_" + cam_id + ".json" 
                remote_url = remote_url.replace("/mnt/ams2", "")
                run_files.append(local_file)
                print(station, cam_id, remote_url, local_file)
-               cmd = "wget \"" + remote_url + "\" -O " + local_file 
-               print(cmd)
-               os.system(cmd)
+               #if cfe(local_file) == 0:
+               if True:
+                  cmd = "wget \"" + remote_url + "\" -O " + local_file 
+                  print(cmd)
+                  os.system(cmd)
          else:
             for cam_id in events[event]['observations'][station]:
                print(cam_id, events[event]['observations'][station])
@@ -449,7 +454,6 @@ def solve_events(day, json_conf):
       cmd = "cd /home/ams/dvida/WesternMeteorPyLib/wmpl/Trajectory; python mikeTrajectory.py " + arglist
       jobs.append(cmd)
 
-   exit()
    print("JOBS:")
    if 'max_procs' in json_conf['site']:
       max_procs = json_conf['site']['max_procs']

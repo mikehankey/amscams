@@ -1231,8 +1231,6 @@ def eval_metframes(mrf):
    for fn in mr['metframes']:
       print("MR:", mr['metframes'][fn]['m_10'], mr['metframes'][fn]['b_10'] )
 
-   exit()
-
    for fn in mr['metframes']:
 
       if "m_10" in mr['metframes'][fn]:
@@ -1345,6 +1343,8 @@ def eval_metframes(mrf):
       mr['metframes'][fn]['ra'] = ra
       mr['metframes'][fn]['dec'] = dec 
 
+
+   print("MFD!")
    mfd,mr['metframes'] = metframes_to_mfd(mr['metframes'], mr['sd_video_file'])
    cmp_imgs,mr['metframes'] = make_meteor_cnt_composite_images(json_conf, mfd, mr['metframes'], frames, sd_video_file)
    prefix = mr['sd_video_file'].replace(".mp4", "-frm")
