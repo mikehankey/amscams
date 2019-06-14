@@ -1,6 +1,5 @@
 function add_reduc_row(data) {
-
-    
+ 
 
     if(typeof data.newframe !=="undefined") {
         var new_frame_id = parseInt(data.newframe.fn);
@@ -33,19 +32,20 @@ function add_reduc_row(data) {
         row += '<td>' + new_frame.max_px + '</td>';       
         row += '<td><a class="btn btn-danger btn-sm delete_frame"><i class="icon-delete"></i></a></td>';
         row += '<td class="position-relative"><a class="btn btn-success btn-sm select_meteor"><i class="icon-target"></i></a></td>';
-
-        console.log('TR BEFORE ');
-        console.log($tr_before);
-
+ 
         $(row).insertAfter($tr_before);
 
-
-            // Reload all actions on reduct table!!!
-            bootbox.alert({
-                message: "FRAME CREATED ",
-                className: 'rubberBand animated',
-                centerVertical: true 
-            });
+        // Reload all actions on reduct table!!!
+        bootbox.alert({
+            message: "FRAME CREATED ",
+            className: 'rubberBand animated',
+            centerVertical: true 
+        });
+ 
+        // Setup Delete Frame
+        setup_delete_frame();
+        // Setup Select Meteor
+        setup_select_meteor();    
 
     } else {
         bootbox.alert({
