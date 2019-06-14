@@ -3,8 +3,7 @@ function meteor_select(dir,all_frames_ids) {
     var next_id;
     var cur_id = parseInt($('#sel_frame_id').text());
     var cur_index = all_frames_ids.indexOf(cur_id);
-     
-
+      
     if(dir=="prev") {
         if(cur_index==0) {
             next_id = all_frames_ids.length-1;
@@ -18,6 +17,8 @@ function meteor_select(dir,all_frames_ids) {
             next_id = cur_index + 1;
         }
     } 
+
+    // Open the next or previous one
     $('#reduc-tab table tbody tr#fr_' + all_frames_ids[next_id] + " .select_meteor").click();
 }
 
@@ -112,9 +113,7 @@ function setup_select_meteor() {
 
         // Add current ID
         $('#sel_frame_id').text(meteor_id);
-
-
-
+  
         // Update image real dimensions 
         var img = new Image();
         var imgSrc = $img.attr('src');
@@ -131,21 +130,15 @@ function setup_select_meteor() {
             if(real_width !== real_height) {
             
                 if(real_width > real_height) {
-                    console.log('1');
                     $('.meteor_chooser').css('height',  real_height/real_width * viewer_dim);
                 } else {
-                    
-                    console.log('2');
                     $('.meteor_chooser').css('width', real_width/real_height * viewer_dim);
                 }
 
             } else {
-
-                console.log('SAME');
                 $('.meteor_chooser').css({'height': viewer_dim + 'px', 'width':viewer_dim + 'px'});
             }
-            
-            
+             
             // Reset Cross position
             $('#lh').css('top','50%');
             $('#lv').css('left','50%');
@@ -156,7 +149,7 @@ function setup_select_meteor() {
             // Reset
             $(".meteor_chooser").removeClass('done');
 
-            setup_modal_actions($tr.attr('data-pos-x'),$tr.attr('data-pos-y'));
+            setup_modal_actions($tr.attr('data-org-x'),$tr.attr('data-org-y'));
         
         }).attr({ src: imgSrc }); 
 
