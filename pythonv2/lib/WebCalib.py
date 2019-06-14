@@ -110,11 +110,10 @@ def add_frame_ajax( json_conf, form):
    resp['newframe'] = mr['metframes'][new_fn]
 
    #TEST REMOVE BAD DATA FOR JS JSON
-   json_to_send = json.dumps(resp)
+   json_to_send = resp
    clean_dict = simplejson.loads(simplejson.dumps(json_to_send, ignore_nan=True))
-  
-
-   print(clean_dict)
+   
+   print(json.dumps(clean_dict))
 
 
 def remove_dupe_cat_stars(paired_stars):
