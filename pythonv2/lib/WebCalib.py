@@ -9,6 +9,7 @@ import cgi
 import time
 import glob
 import os
+import math
 import cgitb
 from lib.PrintUtils import get_meteor_date
 from lib.FileIO import get_proc_days, get_day_stats, get_day_files , load_json_file, get_trims_for_file, get_days, save_json_file, cfe
