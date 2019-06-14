@@ -22,6 +22,90 @@ from lib.ImageLib import mask_frame,stack_frames, adjustLevels, upscale_to_hd, m
 from lib.CalibLib import radec_to_azel, clean_star_bg, get_catalog_stars, find_close_stars, XYtoRADec, HMS2deg, AzEltoRADec, define_crop_box
 from lib.UtilLib import check_running, calc_dist, angularSeparation, bound_cnt
 
+def update_frame_ajax(json_conf, form):
+   sd_video_file = form.getvalue("sd_video_file")
+   fn = form.getvalue("fn")
+   new_x = form.getvalue("new_x")
+   new_y = form.getvalue("new_y")
+
+   mrf = sd_video_file.replace(".mp4", "-reduced.json")
+   mr = load_json_file(mrf)
+   mr['metframes'][fn]['hd_x'] = new_x
+   mr['metframes'][fn]['hd_y'] = new_y
+
+   # this will update all values (ra,dec etc) and make new thumbs from new point. 
+   os.system("cd /home/ams/amscams/pythonv2/; ./reducer2.py eval " + mrf + "> /mnt/ams2/tmp/rrr.txt")
+   
+
+def add_frame_ajax( json_conf, form):
+   sd_video_file = form.getvalue("sd_video_file")
+   new_fn = form.getvalue("fn")
+   prev_fn = str(int(new_fn) - 1)
+   next_fn = str(int(new_fn) + 1)
+   
+   mrf = sd_video_file.replace(".mp4", "-reduced.json")
+   mr = load_json_file(mrf)
+   metframes = mr['metframes']
+   metconf = mr['metconf']
+   
+   if str(prev_fn) in metframes:
+      # frame exists before make est from prev frame info
+      last_x = metframes[prev_fn]['hd_x']
+      last_y = metframes[prev_fn]['hd_y']
+      est_x = int(last_x + (metconf['x_dir_mod'] * metconf['med_seg_len']))
+      est_y = int((metconf['m']*est_x)+metconf['b'])
+   elif str(next_fn) in metframes:
+      # this frame exists before any others so need to add est in reverse. 
+      print("Next fn exist ", next_fn)
+      last_x = metframes[next_fn]['hd_x']
+      last_y = metframes[next_fn]['hd_y']
+      est_x = int(last_x + ((-1*metconf['x_dir_mod']) * metconf['med_seg_len']))
+      est_y = int((metconf['m']*est_x)+metconf['b'])
+
+   if new_fn not in metframes:
+      metframes[new_fn] = {}
+      metframes[new_fn]['fn'] = new_fn 
+      metframes[new_fn]['hd_x'] = est_x
+      metframes[new_fn]['hd_y'] = est_y
+      metframes[new_fn]['w'] = 5
+      metframes[new_fn]['h'] = 5
+      metframes[new_fn]['ra'] = 0
+      metframes[new_fn]['dec'] = 0
+      metframes[new_fn]['az'] = 0
+      metframes[new_fn]['el'] = 0
+      metframes[new_fn]['max_px'] = 0
+      x1,y1,x2,y2 = bound_cnt(est_x,est_y,1920,1080,6)
+      frames = load_video_frames(sd_video_file, json_conf)
+      ifn = int(new_fn)
+      frame = frames[ifn]
+      frame = cv2.resize(frame, (1920,1080)) 
+      cnt_img = frame[y1:y2,x1:x2]
+      min_val, max_val, min_loc, max_loc = cv2.minMaxLoc(cnt_img)
+      hd_x = max_loc[0] + x1  
+      hd_y = max_loc[1] + y1 
+      print("MAX:", max_loc)
+      metframes[new_fn]['hd_x'] = hd_x
+      metframes[new_fn]['hd_y'] = hd_y 
+      metframes[new_fn]['est_x'] = est_x
+      metframes[new_fn]['est_y'] = est_y 
+
+
+   else :
+      resp = {}
+      resp['msg'] = "frame already exists."
+      print(json.dumps(resp))
+      exit()
+
+   mr['metframes'] = metframes
+   save_json_file(mrf, mr)
+   os.system("cd /home/ams/amscams/pythonv2/; ./reducer2.py eval " + mrf + "> /mnt/ams2/tmp/rrr.txt")
+   mr = load_json_file(mrf )
+   resp = {}
+   resp['msg'] = "new frame added."
+   resp['newframe'] = mr['metframes'][new_fn]
+   print(json.dumps(resp))
+
+
 def remove_dupe_cat_stars(paired_stars):
    used = {}
    new_paired_stars = []
@@ -2728,7 +2812,8 @@ def reduce_meteor_new(json_conf,form):
          if cfe("/home/ams/amscams/conf/sync_urls.json") == 1:
             sync_urls = load_json_file("/home/ams/amscams/conf/sync_urls.json")
             for st in ms_data['obs']:
-               ms_link = sync_urls['sync_urls'][st] + "/pycgi/webUI.py?cmd=reduce&video_file=" + ms_data['obs'][st]['sd_video_file'].replace(".json", ".mp4")
+               #ms_link = sync_urls['sync_urls'][st] + "/pycgi/webUI.py?cmd=reduce&video_file=" + ms_data['obs'][st]['sd_video_file'].replace(".json", ".mp4")
+               ms_link = ""
                ms_desc = ms_desc + "<a href=" + ms_link + ">" + st + "</a><BR>"
                #print(ms_desc)
          template = template.replace("{MULTI_STATION}", ms_desc)

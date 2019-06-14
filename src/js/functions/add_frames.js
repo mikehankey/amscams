@@ -24,7 +24,7 @@ function add_a_frame(cur_fn) {
     };
 
     $.ajax({ 
-        url:  "/pycgi/WebUI.py",
+        url:  "/pycgi/webUI.py",
         data: cmd_data, 
         success: function(data) { 
             loading_done();

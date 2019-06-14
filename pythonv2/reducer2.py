@@ -1,6 +1,6 @@
 #!/usr/bin/python3
 
-
+import datetime
 import time
 import glob
 import os
@@ -31,6 +31,23 @@ from lib.UtilLib import calc_dist,find_angle
 import lib.brightstardata as bsd
 from lib.DetectLib import eval_cnt, id_object
 json_conf = load_json_file("../conf/as6.json")
+
+def calc_frame_time(video_file, frame_num):
+   (f_datetime, cam_id, f_date_str,Y,M,D, H, MM, S) = better_parse_file_date(video_file)
+   el = video_file.split("-trim")
+   min_file = el[0] + ".mp4"
+   ttt = el[1].split(".")
+   ttt[0] = ttt[0].replace("-stacked", "")
+   trim_num = int(ttt[0])
+   extra_sec = trim_num / 25
+   start_trim_frame_time = f_datetime + datetime.timedelta(0,extra_sec)
+   extra_meteor_sec = int(frame_num) / 25
+   meteor_frame_time = start_trim_frame_time + datetime.timedelta(0,extra_meteor_sec)
+   meteor_frame_time_str = meteor_frame_time.strftime('%Y-%m-%d %H:%M:%S.%f')[:-3]
+
+
+
+   return(meteor_frame_time,meteor_frame_time_str)
 
 
 
@@ -150,9 +167,6 @@ def find_blob_center(cnt_img,img,norm_img,x1,y1,x2,y2,size):
       blob_x = mx + nx1
       blob_y = my + ny1
       max_px = max_val
-  
- 
-
    return(blob_x, blob_y,max_val,blob_w,blob_h)     
 
 
@@ -470,7 +484,7 @@ def fine_reduce(mrf, json_conf, show):
          mf_objs[fn]['med_y'] = cy
        
   
-   sz = 50
+   sz = 10
    first_frame = None
    last_frame = None
    last_len = None
@@ -1086,16 +1100,79 @@ def sort_metframes(metframes):
          new_metframes[fn] = metframes[fn]
    return(new_metframes)
 
-def metframes_to_mfd(metframes):
+def metframes_to_mfd(metframes, sd_video_file):
    meteor_frame_data = []
    for fn in metframes:
-      meteor_frame_data.append((metframes[fn]['etime'],fn,int(metframes[fn]['hd_x']),int(metframes[fn]['hd_y']),int(metframes[fn]['w']),int(metframes[fn]['h']),int(metframes[fn]['max_px']),float(metframes[fn]['ra']),float(metframes[fn]['dec']),float(metframes[fn]['az']),float(metframes[fn]['el']) ))
+      frame_time,frame_time_str = calc_frame_time(sd_video_file, fn) 
+      meteor_frame_data.append((frame_time_str,fn,int(metframes[fn]['hd_x']),int(metframes[fn]['hd_y']),int(metframes[fn]['w']),int(metframes[fn]['h']),int(metframes[fn]['max_px']),float(metframes[fn]['ra']),float(metframes[fn]['dec']),float(metframes[fn]['az']),float(metframes[fn]['el']) ))
    return(meteor_frame_data)
+
+def update_len_diff(metframes,metconf):
+
+
+   last_frame = None
+   last_len = None
+   first_fn = None
+   segs = []
+   fcc = 0
+   xs = []
+   ys = []
+   for fn in metframes:
+      if first_fn is None:
+         first_fn = fn
+         first_x = metframes[fn]['hd_x']
+         first_y = metframes[fn]['hd_y']
+      if last_frame is not None:
+         metframes[fn]['len_from_last'] = calc_dist((metframes[fn]['hd_x'],metframes[fn]['hd_y']), (last_x,last_y))
+         if int(fn) - int(last_frame) > 1:
+            metframes[fn]['len_from_last'] = metframes[fn]['len_from_last'] / (int(fn) - int(last_frame))
+            metframes[fn]['len_from_start'] = calc_dist((metframes[fn]['hd_x'],metframes[fn]['hd_y']), (first_x,first_y))
+         if last_len is not None:
+            if "len_from_start" in metframes[fn]:
+               metframes[fn]['last_len_diff'] = metframes[fn]['len_from_start'] - last_len
+               segs.append(metframes[fn]['last_len_diff'])
+
+            if "len_from_start" in metframes[fn]:
+               last_len = metframes[fn]['len_from_start']
+      xs.append(metframes[fn]['hd_x'])
+      ys.append(metframes[fn]['hd_y'])
+
+      if fcc > 10:
+         n_m_10,n_b_10 = best_fit_slope_and_intercept(xs[-10:],ys[-10:])
+         if abs(n_b_10 - metconf['b']) < 200:
+            metconf['m_10'] = n_m_10
+            metconf['b_10'] = n_b_10
+
+         med_seg_len = np.median(segs[-10:])
+         metframes[fn]['b_10'] = med_seg_len 
+
+
+      last_frame = fn 
+      last_x = metframes[fn]['hd_x']
+      last_y = metframes[fn]['hd_y']
+      fcc = fcc + 1
+
+   if len(xs) > 25:
+      med_seg_len = np.median(segs[0:8])
+   else:
+      med_seg_len = np.median(segs)
+   if len(segs) == 0:
+      med_seg_len = 2
+
+
+   metconf['med_seg_len'] = med_seg_len
+
+   return(metframes,metconf)
+
 
 def eval_metframes(mrf):
    mr = load_json_file(mrf)
    sd_video_file = mrf.replace("-reduced.json", ".mp4")
+   if "metframes" not in mr:
+      print("No metframes. Try reducing first? ", mrf)
+      exit()
    mr['metframes'] = sort_metframes(mr['metframes'])
+   mr['metframes'],mr['metconf'] = update_len_diff(mr['metframes'], mr['metconf'])
 
    if 'frames_missing_before' in mr:
       mr.pop("frames_missing_before")
@@ -1127,6 +1204,8 @@ def eval_metframes(mrf):
    avg_seg = np.mean(segs)
    all_seg_res = []
    for fn in mr['metframes']:
+
+       
       if "len_from_last" in mr['metframes'][fn]:
          seg_res =  abs(mr['metframes'][fn]['len_from_last'] - avg_seg)
          if "last_len_diff" in mr['metframes'][fn]:
@@ -1173,7 +1252,6 @@ def eval_metframes(mrf):
          mr['metframes'] = metframes
          print("FIXED:", ms_fn, mr['metframes'][ms_fn]) 
 
-   mfd = metframes_to_mfd(mr['metframes'])
   
    print("LOAD:", sd_video_file) 
    sd_frames = load_video_frames(sd_video_file, json_conf)
@@ -1194,9 +1272,17 @@ def eval_metframes(mrf):
 
       cnt_img = frames[ifn][y1:y2,x1:x2]
       blob_x, blob_y, blob_max, blob_w, blob_h = find_blob_center(cnt_img,frames[ifn],frames[ifn],x1,y1,x2,y2,size)
-      mr['metframes'][fn]['hd_x'] = blob_x 
-      mr['metframes'][fn]['hd_y'] = blob_y 
+      #if "hd_x" not in mr['metframes']:
+      #   mr['metframes'][fn]['hd_x'] = blob_x 
+      #   mr['metframes'][fn]['hd_y'] = blob_y 
+      
+      nx, ny, ra ,dec , az, el= XYtoRADec(hd_x,hd_y,mrf,mr['cal_params'],json_conf)
+      mr['metframes'][fn]['az'] = az
+      mr['metframes'][fn]['el'] = el
+      mr['metframes'][fn]['ra'] = ra
+      mr['metframes'][fn]['dec'] = dec 
 
+   mfd = metframes_to_mfd(mr['metframes'], mr['sd_video_file'])
    cmp_imgs,mr['metframes'] = make_meteor_cnt_composite_images(json_conf, mfd, mr['metframes'], frames, sd_video_file)
    prefix = mr['sd_video_file'].replace(".mp4", "-frm")
    prefix = prefix.replace("SD/proc2/", "meteors/")
