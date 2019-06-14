@@ -169,7 +169,8 @@ def create_update_events (day, json_conf ):
          if new_file in cloud_files:
             print(new_file, "already exists in the cloud")
          else:
-            sync_content(ams_meteor_event_id, my_station, hd_video_file, "-HD.mp4")
+            print(new_file, "disabled HD sync for now")
+            #sync_content(ams_meteor_event_id, my_station, hd_video_file, "-HD.mp4")
 
          new_file = ams_meteor_event_id + "_" + my_station + "_" + my_cam + "-HD-stacked.png"
 
@@ -416,30 +417,55 @@ def sync_ms_json(day, mse, sync_urls):
             else: 
                print("Already have:", url + st_video_url)
   
-def solve_events(day, mse,sync_urls):
-   evs = []
+def solve_events(day, json_conf):
+   remote_host = "http://54.214.104.131/"
+   my_station = json_conf['site']['ams_id']
+   event_file = "/mnt/ams2/stations/data/" + day  + "_events.json"
+   events = load_json_file(event_file)
    jobs = []
-   for my_meteor in mse:
-      tob = []
-      my_red_meteor = my_meteor.replace(".json", "-reduced.json") 
-      tob.append(my_red_meteor)
-      for station in mse[my_meteor]['obs']: 
-         red_file = mse[my_meteor]['obs'][station]['sd_video_file'].replace(".json", "-reduced.json")
-         red_file = red_file.replace("/meteors/", "/stations/" + station + "/")
-         tob.append(red_file)
-      evs.append(tob)
-         
+   for event in events:
+      print(event )
+      run_files = []
+      for station in events[event]['observations']:
+         print(station)
+         if station != my_station:
+            for cam_id in events[event]['observations'][station]:
+               local_file = events[event]['observations'][station][cam_id].replace("meteors", "multi_station")
 
-   for ev in evs:
-      arglist = ""
-      for ob in ev:
+               remote_url = remote_host + "/meteors/" + event + "/" + event + "_" + station + "_" + cam_id + ".json" 
+               remote_url = remote_url.replace("/mnt/ams2", "")
+               run_files.append(local_file)
+               print(station, cam_id, remote_url, local_file)
+               cmd = "wget \"" + remote_url + "\" -O " + local_file 
+               print(cmd)
+               os.system(cmd)
+         else:
+            for cam_id in events[event]['observations'][station]:
+               print(cam_id, events[event]['observations'][station])
+               run_files.append(events[event]['observations'][station][cam_id])
+         arglist = ""
+      for ob in run_files:
          arglist = arglist + ob + " "
       cmd = "cd /home/ams/dvida/WesternMeteorPyLib/wmpl/Trajectory; python mikeTrajectory.py " + arglist
       jobs.append(cmd)
 
+   exit()
+   print("JOBS:")
+   if 'max_procs' in json_conf['site']:
+      max_procs = json_conf['site']['max_procs']
+   else:
+      max_procs = 4
+
+   jc = 0
+   job_name = "mikeTrajectory.py"
    for job in jobs:
+      while check_running(job_name) > max_procs:
+         time.sleep(1)
       print(job)
-   #os.system(cmd)
+      #if "010002" in job:
+      #os.system(job + " &")
+      jc = jc + 1
+
 
     
 if cmd == "ss":
@@ -452,3 +478,5 @@ if cmd == "find_events" or cmd == 'fe':
    find_events_for_day(day, json_conf)
 if cmd == "cue" :
    create_update_events(day, json_conf)
+if cmd == "se" :
+   solve_events(day, json_conf)

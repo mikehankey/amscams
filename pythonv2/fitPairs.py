@@ -76,8 +76,8 @@ def reduce_fit(this_poly,field, cal_params, cal_params_file, fit_img, json_conf,
       total_res = total_res + img_res
 
    show_img = cv2.resize(this_fit_img, (0,0),fx=.5, fy=.5)
-   #cv2.imshow('pepe', this_fit_img)
-   #cv2.waitKey(1)
+   cv2.imshow('pepe', show_img)
+   cv2.waitKey(1)
 
    total_stars = len(cal_params['cat_image_stars'])
    avg_res = total_res/total_stars

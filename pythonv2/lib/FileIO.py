@@ -291,7 +291,7 @@ def load_config(json_file):
 
 def save_json_file(json_file, json_data):
    with open(json_file, 'w') as outfile:
-      json.dump(json_data, outfile, indent=4)
+      json.dump(json_data, outfile, indent=4, allow_nan=True)
    outfile.close()
 
 def load_json_file(json_file):
