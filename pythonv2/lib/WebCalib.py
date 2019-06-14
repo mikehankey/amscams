@@ -4222,14 +4222,14 @@ def free_cal(json_conf,form):
    """
    #print(stack_file)
 
-   list_of_buttons = '<input type="button" class="btn btn-primary" value="Show Image" onclick="javascript:show_image(\''+half_stack_file+'\',1,1)">'
-   list_of_buttons += '<input type="button" class="btn btn-primary" value="Find Stars" onclick="javascript:find_stars(\''+stack_file+'\')">'
-   list_of_buttons += '<input type="button" class="btn btn-primary" value="Make Plate" onclick="javascript:make_plate(\''+stack_file+'\')">'
-   list_of_buttons += '<input type="button" class="btn btn-primary" value="Solve Field" onclick="javascript:solve_field(\''+stack_file+'\')">'
-   list_of_buttons += '<input type="button" class="btn btn-primary" value="Show Catalog Stars" onclick="javascript:show_cat_stars(\''+stack_file+'\',\'\',\'pick\')">'
-   list_of_buttons += '<input type="button" class="btn btn-primary" value="Fit Field" onclick="javascript:fit_field(\''+stack_file+'\')">'
-   list_of_buttons += '<input type="button" class="btn btn-primary" value="AZ Grid" onclick="javascript:az_grid(\''+az_grid_blend+'\')">'
-   list_of_buttons += '<input type="button" class="btn btn-primary" value="Delete Calibration" onclick="javascript:delete_cal(\''+stack_file+'\')">'
+   list_of_buttons = '<input type="button" class="btn btn-primary d-block" value="Show Image" onclick="javascript:show_image(\''+half_stack_file+'\',1,1)">'
+   list_of_buttons += '<input type="button" class="btn btn-primary d-block mt-2" value="Find Stars" onclick="javascript:find_stars(\''+stack_file+'\')">'
+   list_of_buttons += '<input type="button" class="btn btn-primary d-block mt-2" value="Make Plate" onclick="javascript:make_plate(\''+stack_file+'\')">'
+   list_of_buttons += '<input type="button" class="btn btn-primary d-block mt-2" value="Solve Field" onclick="javascript:solve_field(\''+stack_file+'\')">'
+   list_of_buttons += '<input type="button" class="btn btn-primary d-block mt-2" value="Show Catalog Stars" onclick="javascript:show_cat_stars(\''+stack_file+'\',\'\',\'pick\')">'
+   list_of_buttons += '<input type="button" class="btn btn-primary d-block mt-2" value="Fit Field" onclick="javascript:fit_field(\''+stack_file+'\')">'
+   list_of_buttons += '<input type="button" class="btn btn-primary d-block mt-2" value="AZ Grid" onclick="javascript:az_grid(\''+az_grid_blend+'\')">'
+   list_of_buttons += '<input type="button" class="btn btn-danger d-block mt-4" value="Delete Calibration" onclick="javascript:delete_cal(\''+stack_file+'\')">'
  
    template = template.replace("{%ALL_BUTTONS%}", list_of_buttons)
 
