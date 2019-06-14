@@ -99,6 +99,10 @@ def add_frame_ajax( json_conf, form):
       print(json.dumps(resp))
       exit()
    
+   #TEST REMOVE BAD DATA FOR JS JSON
+   clean_dict = filter(lambda k: not isnan(metframes[k]), metframes)
+   metframes = clean_dict
+
    mr['metframes'] = metframes
    save_json_file(mrf, mr)
    os.system("cd /home/ams/amscams/pythonv2/; ./reducer2.py eval " + mrf + "> /mnt/ams2/tmp/rrr.txt")
