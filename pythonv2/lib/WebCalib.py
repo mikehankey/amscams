@@ -49,7 +49,7 @@ def add_frame_ajax( json_conf, form):
    mrf = sd_video_file.replace(".mp4", "-reduced.json")
    mr = load_json_file(mrf)
    print(mr)
-   metframes = mr['metframes']
+   metframes = mr['meteor_frame_data']
    metconf = mr['metconf']
    
    if str(prev_fn) in metframes:
