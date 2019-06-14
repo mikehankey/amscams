@@ -98,14 +98,7 @@ def add_frame_ajax( json_conf, form):
       resp['msg'] = "frame already exists."
       print(json.dumps(resp))
       exit()
- 
-
-   #Update NaN to "NaN" for JS 
-   for k, v in metframes.items():
-         print v
-         if(math.isnan(v)):
-               metframes.pop(k, None)
-
+   
    mr['metframes'] = metframes
    save_json_file(mrf, mr)
    os.system("cd /home/ams/amscams/pythonv2/; ./reducer2.py eval " + mrf + "> /mnt/ams2/tmp/rrr.txt")
