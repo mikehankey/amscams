@@ -48,7 +48,7 @@ def add_frame_ajax( json_conf, form):
    
    mrf = sd_video_file.replace(".mp4", "-reduced.json")
    mr = load_json_file(mrf)
-   print(mr)
+   #print(mr)
    metframes = mr['metframes']
    metconf = mr['metconf']
    
@@ -87,7 +87,7 @@ def add_frame_ajax( json_conf, form):
       min_val, max_val, min_loc, max_loc = cv2.minMaxLoc(cnt_img)
       hd_x = max_loc[0] + x1  
       hd_y = max_loc[1] + y1 
-      print("MAX:", max_loc)
+      #print("MAX:", max_loc)
       metframes[new_fn]['hd_x'] = hd_x
       metframes[new_fn]['hd_y'] = hd_y 
       metframes[new_fn]['est_x'] = est_x
