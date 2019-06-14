@@ -4204,14 +4204,13 @@ def free_cal(json_conf,form):
    #canvas_html = """
    #   <div style="float:left"><canvas id="c" width="960" height="540" style="border:2px solid #000000;"></canvas></div>
    #   <div style="clear: both"></div>
+   #       <div style="float:left; border: 1px #000000 solid;"><div style="position: relative; height: 50px; width: 50px; " id="myresult" class="img-zoom-result"> </div> </div>
+
    #"""
    canvas_html = ""
    canvas_html = canvas_html + """
       <div>
-      <div style="float:left; border: 1px #000000 solid;"><div style="position: relative; height: 50px; width: 50px; " id="myresult" class="img-zoom-result"> </div> </div>
-
       <div style="float:left; padding: 10px;" id=action_buttons>
-        
       </div>
       <div style="clear: both"></div>
       </div>
@@ -4223,13 +4222,19 @@ def free_cal(json_conf,form):
    """
    #print(stack_file)
 
-   list_of_buttons = '********<input type="button" class="btn btn-primary" value="Show Image" onclick="javascript:show_image(\''+half_stack_file+'\',1,1)">'
-   list_of_buttons = list_of_buttons + '<input type="button" class="btn btn-primary" value="Find Stars" onclick="javascript:find_stars(\''+stack_file+'\')">'
+   list_of_buttons = '<input type="button" class="btn btn-primary" value="Show Image" onclick="javascript:show_image(\''+half_stack_file+'\',1,1)">'
+   list_of_buttons += '<input type="button" class="btn btn-primary" value="Find Stars" onclick="javascript:find_stars(\''+stack_file+'\')">'
+   list_of_buttons += '<input type="button" class="btn btn-primary" value="Make Plate" onclick="javascript:make_plate(\''+stack_file+'\')">'
+   list_of_buttons += '<input type="button" class="btn btn-primary" value="Solve Field" onclick="javascript:solve_field(\''+stack_file+'\')">'
+   list_of_buttons += '<input type="button" class="btn btn-primary" value="Show Catalog Stars" onclick="javascript:show_cat_stars(\''+stack_file+'\',\'\',\'pick\')">'
+   list_of_buttons += '<input type="button" class="btn btn-primary" value="Fit Field" onclick="javascript:fit_field(\''+stack_file+'\')">'
+   list_of_buttons += '<input type="button" class="btn btn-primary" value="AZ Grid" onclick="javascript:az_grid(\''+az_grid_blend+'\')">'
+   list_of_buttons += '<input type="button" class="btn btn-primary" value="Delete Calibration" onclick="javascript:delete_cal(\''+stack_file+'\')">'
 
-    
-   template.replace("{%ALL_BUTTONS%}", list_of_buttons)
+ 
+   template = template.replace("{%ALL_BUTTONS%}", list_of_buttons)
 
-   #print(list_of_buttons)
+   print(list_of_buttons)
 
    print(template)
    print(canvas_html)
@@ -4241,7 +4246,7 @@ def free_cal(json_conf,form):
    print(js_html)
    print(extra_js)
 
- 
+
 
 def default_cal_params(cal_params,json_conf):
    if 'fov_poly' not in cal_params:
