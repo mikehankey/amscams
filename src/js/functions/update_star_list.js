@@ -37,8 +37,8 @@ function update_stars_on_canvas_and_table(json_resp) {
             canvas.add(new fabric.Text(res_desc , {
                 fontFamily: 'Arial',
                 fontSize: 12,
-                left: 5 ,
-                top: 515,
+                left: 5,
+                top: 518,
                 fill: 'rgba(255,255,255,.75)',
                 selectable: false
             })); 
