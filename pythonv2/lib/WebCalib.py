@@ -4211,14 +4211,7 @@ def free_cal(json_conf,form):
       <div style="float:left; border: 1px #000000 solid;"><div style="position: relative; height: 50px; width: 50px; " id="myresult" class="img-zoom-result"> </div> </div>
 
       <div style="float:left; padding: 10px;" id=action_buttons>
-         <input type=button id="button1" value="Show Image" onclick="javascript:show_image('""" + half_stack_file + """',1,1)">
-         <input type=button id="button1" value="Find Stars" onclick="javascript:find_stars('""" + stack_file + """')">
-         <input type=button id="button1" value="Make Plate" onclick="javascript:make_plate('""" + stack_file + """')">
-         <input type=button id="button1" value="Solve Field" onclick="javascript:solve_field('""" + stack_file + """')">
-         <input type=button id="button1" value="Show Catalog Stars" onclick="javascript:show_cat_stars('""" + stack_file + "','" + "" + """', 'pick')">
-         <input type=button id="button1" value="Fit Field" onclick="javascript:fit_field('""" + stack_file + """')">
-         <input type=button id="button1" value="AZ Grid" onclick="javascript:az_grid('""" + az_grid_blend + """')">
-         <input type=button id="button1" value="Delete Calibration" onclick="javascript:delete_cal('""" + stack_file + """')">
+        
       </div>
       <div style="clear: both"></div>
       </div>
@@ -4230,6 +4223,17 @@ def free_cal(json_conf,form):
    """
    #print(stack_file)
 
+
+   list_of_buttons =  """
+         <input type=button id="button1" value="Show Image" onclick="javascript:show_image('""" + half_stack_file + """',1,1)">
+         <input type=button id="button1" value="Find Stars" onclick="javascript:find_stars('""" + stack_file + """')">
+         <input type=button id="button1" value="Make Plate" onclick="javascript:make_plate('""" + stack_file + """')">
+         <input type=button id="button1" value="Solve Field" onclick="javascript:solve_field('""" + stack_file + """')">
+         <input type=button id="button1" value="Show Catalog Stars" onclick="javascript:show_cat_stars('""" + stack_file + "','" + "" + """', 'pick')">
+         <input type=button id="button1" value="Fit Field" onclick="javascript:fit_field('""" + stack_file + """')">
+         <input type=button id="button1" value="AZ Grid" onclick="javascript:az_grid('""" + az_grid_blend + """')">
+         <input type=button id="button1" value="Delete Calibration" onclick="javascript:delete_cal('""" + stack_file + """')">"""
+   template.replace("{BUTTONS}", list_of_buttons)
    print(template)
    print(canvas_html)
 

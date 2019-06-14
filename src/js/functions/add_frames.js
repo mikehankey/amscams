@@ -1,9 +1,41 @@
 function add_reduc_row(data) {
-    //{"msg": "new frame added.", 
-    //"newframe": {"fn": "63", "hd_x": 887, "hd_y": 762, "w": 5, "h": 5,
-    // "ra": 63.13939392539605, "dec": 67.7292367055501, "az": 11.588535096776218, 
-    //"el": 13.753721430435006, "max_px": 0, "est_x": 890, "est_y": 762, 
-    //"len_from_last": 1.4142135623730951, "b_10": NaN, "x1": 837, "y1": 712, "x2": 937, "y2": 812}}
+    /*
+          {"msg": "new frame added.", 
+           "newframe": 
+            {"fn": "121",
+             "hd_x": 969,
+             "hd_y": 878,
+             "w": 5,
+             "h": 5,
+             "ra": 61.78094346203922,
+             "dec": 61.674271792893386,
+             "az": 14.87728474941026,
+             "el": 8.596841983793604,
+             "max_px": 0,
+             "est_x": 973,
+             "est_y": 879,
+             "len_from_last": 7.280109889280518,
+             "b_10": NaN,
+             "frame_time": "2019-06-11 08:23:35.320",
+             "x1": 919, "y1": 828, "x2": 1019, "y2": 928}}
+    */
+    if(data.msg=='new frame added') {
+        var new_frame_id = parseInt(data.newframe.fn);
+
+        // Try to find the row after first 
+        var $tr_after = $('tr#'+ (new_frame_id-1));
+
+        // If it doesn't exist
+        if($tr_before.length==0) {
+            // Add on first position
+            $tr_before = $('#reduc-tab table tbody tr')[0];
+        }
+
+        
+
+   
+
+    }
 
     var row = "<tr>";
 

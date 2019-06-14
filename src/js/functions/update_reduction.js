@@ -36,7 +36,7 @@ function update_reduction_on_canvas_and_table(json_resp) {
             table_tbody_html+= '<td class="position-relative"><a class="btn btn-success btn-sm select_meteor"><i class="icon-target"></i></a><a title="Add a frame" class="btn btn-primary btn-sm btn-mm add_f" data-rel="'+ (frame_id-1) +'"><i class="icon-plus"></i></a>';
 
             if(all_frame_ids.indexOf((frame_id+1))==-1) {
-                table_tbody_html+= '<a class="btn btn-primary btn-sm btn-pp add_f" title="Add a frame"  data-rel="'+ (frame_id+1) +'"><i class="icon-plus"></i></a></td>';
+                table_tbody_html+= '<a class="btn btn-primary btn-sm btn-pp add_f" title="Add a frame" data-rel="'+ (frame_id+1) +'"><i class="icon-plus"></i></a></td>';
             } 
 
             table_tbody_html+= '</td>';
