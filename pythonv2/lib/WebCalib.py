@@ -4229,7 +4229,7 @@ def free_cal(json_conf,form):
     
    template.replace("{%ALL_BUTTONS%}", list_of_buttons)
 
-   print(list_of_buttons)
+   #print(list_of_buttons)
 
    print(template)
    print(canvas_html)
@@ -4241,7 +4241,7 @@ def free_cal(json_conf,form):
    print(js_html)
    print(extra_js)
 
-
+ 
 
 def default_cal_params(cal_params,json_conf):
    if 'fov_poly' not in cal_params:
