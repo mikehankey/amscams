@@ -92,13 +92,17 @@ def add_frame_ajax( json_conf, form):
       metframes[new_fn]['hd_y'] = hd_y 
       metframes[new_fn]['est_x'] = est_x
       metframes[new_fn]['est_y'] = est_y 
-
-
    else :
       resp = {}
       resp['msg'] = "frame already exists."
       print(json.dumps(resp))
       exit()
+ 
+
+   #Update NaN to "NaN" for JS 
+   for k, v in metframes.items():
+         if(math.isnan(v)):
+               metframes.pop(k, None)
 
    mr['metframes'] = metframes
    save_json_file(mrf, mr)
