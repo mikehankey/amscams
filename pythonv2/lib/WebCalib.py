@@ -4223,8 +4223,8 @@ def free_cal(json_conf,form):
    """
    #print(stack_file)
 
-   list_of_buttons = '<input type="button" class="btn btn-primary" value="Show Image" onclick="javascript:show_image(\''+half_stack_file+'\',1,1)">'
-   list_of_buttons += '<input type="button" class="btn btn-primary" value="Find Stars" onclick="javascript:find_stars(\''+stack_file+'\')">'
+   list_of_buttons = '********<input type="button" class="btn btn-primary" value="Show Image" onclick="javascript:show_image(\''+half_stack_file+'\',1,1)">'
+   list_of_buttons = list_of_buttons + '<input type="button" class="btn btn-primary" value="Find Stars" onclick="javascript:find_stars(\''+stack_file+'\')">'
 
     
    template.replace("{%ALL_BUTTONS%}", list_of_buttons)
