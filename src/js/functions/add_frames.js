@@ -65,7 +65,7 @@ function add_a_frame(cur_fn) {
         fn: cur_fn
     };
  
-    loading({text: "Generating Frame #"+ cur_fn});
+    loading({text: "Generating Frame #"+ cur_fn, overlay:true});
  
     $.ajax({ 
         url:  "/pycgi/webUI.py",
@@ -74,7 +74,7 @@ function add_a_frame(cur_fn) {
             add_reduc_row($.parseJSON(data));
         }, 
         error:function() { 
-
+            console.log('ERROR');
             bootbox.alert({
                 message: "The process returned an error",
                 className: 'rubberBand animated error',
