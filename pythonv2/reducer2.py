@@ -758,8 +758,12 @@ def fine_reduce(mrf, json_conf, show):
             m_10 = n_m_10
             b_10 = n_b_10
          med_seg_len = np.median(segs[-10:])
-      metframes[fn]['m_10'] = m_10 
-      metframes[fn]['b_10'] = b_10
+      if np.isnan(m_10 ) is True or np.isnan(b_10) is True:
+         metframes[fn]['m_10'] = metframes['m'] 
+         metframes[fn]['b_10'] = metframes['b'] 
+      else:
+         metframes[fn]['m_10'] = m_10 
+         metframes[fn]['b_10'] = b_10
       if "hd_x" in metframes[fn]:
          last_fn = fn
          last_hd_x = metframes[fn]['hd_x']
@@ -1191,7 +1195,55 @@ def eval_metframes(mrf):
    segs = []
    frames_missing_before = []
    frames_missing_after = []
+
+   xs = []
+   ys = []
    for fn in mr['metframes']:
+      if "m_10" in mr['metframes'][fn]:
+         print ("MB:", mr['metframes'][fn]['m_10'] , mr['metframes'][fn]['b_10'])
+      if "hd_x" in mr['metframes'][fn]:
+         xs.append(mr['metframes'][fn]['hd_x'])
+         ys.append(mr['metframes'][fn]['hd_y'])
+
+   m,b = best_fit_slope_and_intercept(xs,ys)
+   if len(xs) > 25:
+      m_10,b_10 = best_fit_slope_and_intercept(xs[0:10],ys[0:10])
+   else:
+      m_10 = m
+      b_10 = b
+
+   fcc = 0
+   xs = []
+   ys = []
+   for fn in mr['metframes']:
+      mr['metframes'][fn]['m_10'] = m_10
+      mr['metframes'][fn]['b_10'] = b_10
+      if fcc > 10:
+        
+         m_10,b_10 = best_fit_slope_and_intercept(xs[-10:],ys[-10:])
+         mr['metframes'][fn]['m_10'] = m_10
+         mr['metframes'][fn]['b_10'] = b_10
+         print("MRB:", fcc, mr['metframes'][fn]['m_10'], mr['metframes'][fn]['b_10'] )
+      fcc = fcc + 1
+      xs.append(mr['metframes'][fn]['hd_x'])
+      ys.append(mr['metframes'][fn]['hd_y'])
+
+   for fn in mr['metframes']:
+      print("MR:", mr['metframes'][fn]['m_10'], mr['metframes'][fn]['b_10'] )
+
+   exit()
+
+   for fn in mr['metframes']:
+
+      if "m_10" in mr['metframes'][fn]:
+         if np.isnan(mr['metframes'][fn]['m_10'] ) is True or np.isnan(mr['metframes'][fn]['b_10']) is True:
+            print("NAN IS TRUE!")
+            mr['metframes'][fn]['m_10'] = metconf['m'] 
+            mr['metframes'][fn]['b_10'] = metconf['b'] 
+      else:
+         mr['metframes'][fn]['m_10'] = metconf['m'] 
+         mr['metframes'][fn]['b_10'] = metconf['b'] 
+
       if "hd_x" not in mr['metframes'][fn]:
          mr['metframes']['hd_x'] = mr['metframes']['hd_est_x']
          mr['metframes']['hd_y'] = mr['metframes']['hd_est_y']
