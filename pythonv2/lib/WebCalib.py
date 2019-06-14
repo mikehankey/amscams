@@ -4235,7 +4235,7 @@ def free_cal(json_conf,form):
          <input type=button class="btn btn-primary" value="Delete Calibration" onclick="javascript:delete_cal('""" + stack_file + """')">"""
    template.replace("{%ALL_BUTTONS%}", list_of_buttons)
 
-      print(list_of_buttons)
+   print(list_of_buttons)
 
    print(template)
    print(canvas_html)
