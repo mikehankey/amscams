@@ -39,7 +39,7 @@ def update_frame_ajax(json_conf, form):
 
 def add_frame_ajax( json_conf, form):
 
-   #cgitb.enable()
+   cgitb.enable()
 
    sd_video_file = form.getvalue("sd_video_file")
    new_fn = form.getvalue("fn")
