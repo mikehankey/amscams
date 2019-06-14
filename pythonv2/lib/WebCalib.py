@@ -39,8 +39,6 @@ def update_frame_ajax(json_conf, form):
 
 def add_frame_ajax( json_conf, form):
 
-   #cgitb.enable()
-
    sd_video_file = form.getvalue("sd_video_file")
    new_fn = form.getvalue("fn")
    prev_fn = str(int(new_fn) - 1)
@@ -92,13 +90,12 @@ def add_frame_ajax( json_conf, form):
       metframes[new_fn]['hd_y'] = hd_y 
       metframes[new_fn]['est_x'] = est_x
       metframes[new_fn]['est_y'] = est_y 
-
-
    else :
       resp = {}
       resp['msg'] = "frame already exists."
       print(json.dumps(resp))
       exit()
+ 
 
    mr['metframes'] = metframes
    save_json_file(mrf, mr)
@@ -106,7 +103,7 @@ def add_frame_ajax( json_conf, form):
    mr = load_json_file(mrf )
    resp = {}
    resp['msg'] = "new frame added."
-   resp['newframe'] = mr['metframes'][new_fn]
+   resp['newframe'] = mr['metframes'][new_fn] 
    print(json.dumps(resp))
 
 
@@ -4204,21 +4201,13 @@ def free_cal(json_conf,form):
    #canvas_html = """
    #   <div style="float:left"><canvas id="c" width="960" height="540" style="border:2px solid #000000;"></canvas></div>
    #   <div style="clear: both"></div>
+   #       <div style="float:left; border: 1px #000000 solid;"><div style="position: relative; height: 50px; width: 50px; " id="myresult" class="img-zoom-result"> </div> </div>
+
    #"""
    canvas_html = ""
    canvas_html = canvas_html + """
       <div>
-      <div style="float:left; border: 1px #000000 solid;"><div style="position: relative; height: 50px; width: 50px; " id="myresult" class="img-zoom-result"> </div> </div>
-
       <div style="float:left; padding: 10px;" id=action_buttons>
-         <input type=button id="button1" value="Show Image" onclick="javascript:show_image('""" + half_stack_file + """',1,1)">
-         <input type=button id="button1" value="Find Stars" onclick="javascript:find_stars('""" + stack_file + """')">
-         <input type=button id="button1" value="Make Plate" onclick="javascript:make_plate('""" + stack_file + """')">
-         <input type=button id="button1" value="Solve Field" onclick="javascript:solve_field('""" + stack_file + """')">
-         <input type=button id="button1" value="Show Catalog Stars" onclick="javascript:show_cat_stars('""" + stack_file + "','" + "" + """', 'pick')">
-         <input type=button id="button1" value="Fit Field" onclick="javascript:fit_field('""" + stack_file + """')">
-         <input type=button id="button1" value="AZ Grid" onclick="javascript:az_grid('""" + az_grid_blend + """')">
-         <input type=button id="button1" value="Delete Calibration" onclick="javascript:delete_cal('""" + stack_file + """')">
       </div>
       <div style="clear: both"></div>
       </div>
@@ -4229,6 +4218,19 @@ def free_cal(json_conf,form):
        <BR><BR>
    """
    #print(stack_file)
+
+   list_of_buttons = '<a class="btn btn-primary d-block" onclick="javascript:show_image(\''+half_stack_file+'\',1,1)">Show Image</a>'
+   list_of_buttons += '<a class="btn btn-primary d-block mt-2" onclick="javascript:find_stars(\''+stack_file+'\')">Find Stars</a>'
+   list_of_buttons += '<a class="btn btn-primary d-block mt-2" onclick="javascript:make_plate(\''+stack_file+'\')">Make Plate</a>'
+   list_of_buttons += '<a class="btn btn-primary d-block mt-2" onclick="javascript:solve_field(\''+stack_file+'\')">Solve Field</a>'
+   list_of_buttons += '<a class="btn btn-primary d-block mt-2" onclick="javascript:show_cat_stars(\''+stack_file+'\',\'\',\'pick\')">Show Catalog Stars</a>'
+   list_of_buttons += '<a class="btn btn-primary d-block mt-2" onclick="javascript:fit_field(\''+stack_file+'\')">Fit Field</a>'
+   list_of_buttons += '<a class="btn btn-primary d-block mt-2" onclick="javascript:az_grid(\''+az_grid_blend+'\')">AZ Grid</a>'
+   list_of_buttons += '<a class="btn btn-danger d-block mt-4"  onclick="javascript:delete_cal(\''+stack_file+'\')">Delete Calibration</a>'
+ 
+   template = template.replace("{%ALL_BUTTONS%}", list_of_buttons)
+
+   #print(list_of_buttons)
 
    print(template)
    print(canvas_html)

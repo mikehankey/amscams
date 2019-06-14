@@ -8,9 +8,9 @@
 			<div class="canvas_zoom_holder mb-3">
 	            <div id="canvas_zoom_target"><img alt="" src="./dist/img/target.svg"/></div>
 	            <div id="canvas_pointer_info"></div>
-	            <div id="canvas_zoom"></div>
+                <div id="canvas_zoom"></div>
             </div> 
-
+             
             <div class="box">
                 <h2>Detection Info</h2>
                 <dl class="row mb-0">
@@ -19,12 +19,24 @@
                 <div id="show_grid_holder" class="btn-holder row mt-1" hidden>
 					<a id="show_grid" class="col btn btn-secondary mt-0 mb-0"><i class="icon-grid"></i> <span>Show Grid</span></a>
 				</div>
-	    	</div>
+            </div>
+            
+            <div class="box">
+                    <h2>ACTIONS</h2>
+                    <div class="row mt-3 " >
+                        <div class="col pl-4 pr-4 "> 
+                            {%ALL_BUTTONS%}
+                        </div>
+                    </div>
+            </div>
 
+            <!--
+
+            
             <div class="box">
                 <h2>Calibration</h2>
                 <div class="p-3">
-                    <a id="auto_detect_stars" class="btn btn-primary d-block mb-2 ">Automatic Star Detection</a>
+                  <a id="auto_detect_stars" class="btn btn-primary d-block mb-2 ">Automatic Star Detection</a>
                     <div id="solve_field_info" class="mb-2 " hidden>
                         <span id="star_counter" class="pb-2"></span>
                         <a id="solve_field" class="btn d-block btn-primary"><i class="icon-star_catalog"></i> Solve Field</a>
@@ -37,5 +49,6 @@
                     </div>
                 </div>
             </div>
+            -->
         </div>
 </div>
