@@ -1348,8 +1348,8 @@ def make_metframe(mrf, mr, fn, hd_x, hd_y, metframes):
    metframes[fn]["bp_x"] = 0
    metframes[fn]["bp_y"] = 0
    metframes[fn]["px_diff"] = 0
-   metframes[fn]["m_10"] =  metframes[bfn]['m_10']
-   metframes[fn]["b_10"] =  metframes[bfn]['b_10']
+   metframes[fn]["m_10"] =  0
+   metframes[fn]["b_10"] =  0
    metframes[fn]["x1"] = x1
    metframes[fn]["y1"] = y1
    metframes[fn]["x2"] = x2
