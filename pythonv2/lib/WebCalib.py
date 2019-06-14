@@ -106,7 +106,7 @@ def add_frame_ajax( json_conf, form):
    resp = {}
    resp['msg'] = "new frame added."
    resp['newframe'] = mr['metframes'][new_fn] 
-   print(json.dumps(resp, allow_nan=false))
+   print(json.dumps(resp))
 
 
 def remove_dupe_cat_stars(paired_stars):
