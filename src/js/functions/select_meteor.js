@@ -1,3 +1,35 @@
+function select_meteor_ajax(fn,x,y) {
+    var cmd_data = {
+		cmd: 'update_frame',
+        sd_video_file: sd_video_file, // Defined on the page
+        fn: fn,
+        new_x: x/2,
+        new_y: y/2 
+    };
+
+    loading({text:"Updating the frame", overlay:true});
+
+    $.ajax({ 
+        url:  "/pycgi/webUI.py",
+        data: cmd_data, 
+        success: function(data) { 
+            loading_done(); 
+            console.log(data);
+            
+        }, 
+        error:function() {
+            loading_done();
+
+            bootbox.alert({
+                message: "The process returned an error",
+                className: 'rubberBand animated error',
+                centerVertical: true 
+            });
+        }
+    });
+}
+
+
 // Select a meteor (next/prev)
 function meteor_select(dir,all_frames_ids) {
     var next_id;
@@ -31,7 +63,7 @@ function addModalTemplate() {
 }
 
 // Actions on modal 
-function setup_modal_actions(x,y) {
+function setup_modal_actions(fn_id,x,y) {
     
     // Warning: preview  = 500x500
     //    thumb real dim = 50x50
@@ -51,14 +83,18 @@ function setup_modal_actions(x,y) {
         var relX = parseFloat(e.pageX - parentOffset.left);
         var relY = parseFloat(e.pageY - parentOffset.top);
 
+        //WARNING ONLY WORKS WITH SQUARES
+        var realX = relX/factor+x-thumb_dim/2;
+        var realY = relY/factor+y-thumb_dim/2;
+
         // Transform values
         if(!$(this).hasClass('done')) {
             $(this).addClass('done');
         } else {
             $('#lh').css('top',relY);
             $('#lv').css('left',relX);
-            $('#meteor_pos').text(parseInt(relX+x)+'/'+parseInt(relY+y));
-            alert('WE DO THE AJAX CALL HERE');
+            $('#meteor_pos').text(parseInt(realX)+'/'+parseInt(realY));
+            select_meteor_ajax(fn_id,realX,realY);
         }
  
     }).unbind('mousemove').mousemove(function(e) {
@@ -110,13 +146,11 @@ function setup_select_meteor() {
 
         // Prev Button
         $('#met-sel-prev').unbind('click').click(function() {
-            console.log('CLICK PREV');
             meteor_select("prev",all_frames_ids);
         });
 
         // Next Button
         $('#met-sel-next').unbind('click').click(function() {
-            console.log('CLICK NEXT');
             meteor_select("next",all_frames_ids);
         });
 
@@ -161,7 +195,7 @@ function setup_select_meteor() {
             // Reset
             $(".meteor_chooser").removeClass('done');
 
-            setup_modal_actions($tr.attr('data-org-x'),$tr.attr('data-org-y'));
+            setup_modal_actions(meteor_id, $tr.attr('data-org-x'),$tr.attr('data-org-y'));
         
         }).attr({ src: imgSrc }); 
 
