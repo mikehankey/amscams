@@ -1,6 +1,6 @@
 function select_meteor_ajax(fn,x,y) {
     var cmd_data = {
-		cmd: 'update_frame',
+		cmd: 'update_frame_ajax',
         sd_video_file: sd_video_file, // Defined on the page
         fn: fn,
         new_x: x/2,
