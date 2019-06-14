@@ -9,7 +9,7 @@ import cgi
 import time
 import glob
 import os
-import math
+import simplejson
 import cgitb
 from lib.PrintUtils import get_meteor_date
 from lib.FileIO import get_proc_days, get_day_stats, get_day_files , load_json_file, get_trims_for_file, get_days, save_json_file, cfe
@@ -100,7 +100,7 @@ def add_frame_ajax( json_conf, form):
       exit()
    
    #TEST REMOVE BAD DATA FOR JS JSON
-   clean_dict = filter(lambda k: not isnan(metframes[k]), metframes)
+   clean_dict = simplejson.loads(simplejson.dumps(metframes, ignore_nan=True))
    metframes = clean_dict
 
    mr['metframes'] = metframes
