@@ -962,7 +962,6 @@ def fine_reduce(mrf, json_conf, show):
 
 
    mjr['metconf'] = metconf
-   mjr['metframes'] = metframes
    mjr['meteor_frame_data'] = meteor_frame_data
    save_json_file("test.json", mjr)
    print("SAVED:", mrf )
