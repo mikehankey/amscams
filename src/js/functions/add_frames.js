@@ -59,22 +59,21 @@ function add_reduc_row(data) {
 }
 
 function add_a_frame(cur_fn) {
-    loading({text: "Generating Frame #"+ cur_fn});
- 
     var cmd_data = {
 		cmd: 'add_frame',
         sd_video_file: sd_video_file, // Defined on the page
         fn: cur_fn
     };
-
+ 
+    loading({text: "Generating Frame #"+ cur_fn});
+ 
     $.ajax({ 
         url:  "/pycgi/webUI.py",
         data: cmd_data, 
         success: function(data) { 
             add_reduc_row($.parseJSON(data));
         }, 
-        error:function() {
-            loading_done();
+        error:function() { 
 
             bootbox.alert({
                 message: "The process returned an error",
