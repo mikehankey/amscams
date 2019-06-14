@@ -4233,7 +4233,10 @@ def free_cal(json_conf,form):
          <input type=button class="btn btn-primary" value="Fit Field" onclick="javascript:fit_field('""" + stack_file + """')">
          <input type=button class="btn btn-primary" value="AZ Grid" onclick="javascript:az_grid('""" + az_grid_blend + """')">
          <input type=button class="btn btn-primary" value="Delete Calibration" onclick="javascript:delete_cal('""" + stack_file + """')">"""
-   template.replace("{%BUTTONS%}", list_of_buttons)
+   template.replace("{%ALL_BUTTONS%}", list_of_buttons)
+
+      print(list_of_buttons)
+
    print(template)
    print(canvas_html)
 
