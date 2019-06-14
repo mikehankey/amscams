@@ -17,12 +17,12 @@ function update_reduction_on_canvas_and_table(json_resp) {
         var square_size = 6;
         var _time = v[0].split(' ');
 
-        console.log(_time);
+         
        
         // Thumb	#	Time	X/Y - W/H	Max PX	RA/DEC	AZ/EL
         table_tbody_html+= '<tr id="fr_'+frame_id+'"><td><img alt="Thumb #'+frame_id+'" src='+thumb_path+' width=50 height=50 class="img-fluid select_meteor"/></td>';
         table_tbody_html+= '<td>'+frame_id+'</td><td>'+_time[1]+'</td><td>'+ parseFloat(v[2]/2)+'/'+parseFloat(v[3]/2) - v[4]/v[5]+'</td>';
-        table_tbody_html+= '<td>'+v[6]+'</td><td>'+v[7]+'/'+v[8]+'</td><td>'+v[9]+'/'+v[10]+'</td>'
+        table_tbody_html+= '<td>'+v[6]+'</td><td>'+v[7]+'/'+v[8]+'</td><td>'+v[9]+'/'+v[10]+'</td>';
         table_tbody_html+= '<td><a class="btn btn-danger btn-sm delete_frame"><i class="icon-delete"></i></a></td>';
 
         if(i==0) {
