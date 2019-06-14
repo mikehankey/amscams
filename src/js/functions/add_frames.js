@@ -1,8 +1,8 @@
 function add_reduc_row(data) {
 
-    console.log("DATA ", data);
+    
 
-    if(data.msg=='new frame added.') {
+    if(typeof data.newframe !=="undefined") {
         var new_frame_id = parseInt(data.newframe.fn);
         var next_id = parseInt(new_frame_id)-1;
 
@@ -71,7 +71,7 @@ function add_a_frame(cur_fn) {
         url:  "/pycgi/webUI.py",
         data: cmd_data, 
         success: function(data) { 
-            add_reduc_row(data);
+            add_reduc_row($.parseJSON(data));
         }, 
         error:function() {
             loading_done();
