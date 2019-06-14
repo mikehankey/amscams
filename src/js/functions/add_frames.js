@@ -33,11 +33,25 @@ function add_reduc_row(data) {
         row += '<td><a class="btn btn-danger btn-sm delete_frame"><i class="icon-delete"></i></a></td>';
         row += '<td class="position-relative"><a class="btn btn-success btn-sm select_meteor"><i class="icon-target"></i></a></td>';
 
+        console.log('TR BEFORE ');
+        console.log($tr_before);
+
         $(row).insertBefore($tr_before);
 
 
             // Reload all actions on reduct table!!!
+            bootbox.alert({
+                message: "FRAME CREATED ",
+                className: 'rubberBand animated',
+                centerVertical: true 
+            });
 
+    } else {
+        bootbox.alert({
+            message: "This frame already exists. Please, refresh the page if you don't see it.",
+            className: 'rubberBand animated error',
+            centerVertical: true 
+        });
     }
 
     loading_done();
@@ -59,11 +73,7 @@ function add_a_frame(cur_fn) {
             
             add_reduc_row(data);
             
-            bootbox.alert({
-                message: "FRAME CREATED " + data,
-                className: 'rubberBand animated',
-                centerVertical: true 
-            });
+           
             
         }, 
         error:function() {
