@@ -30,6 +30,35 @@ from lib.UtilLib import calc_dist,find_angle
 import lib.brightstardata as bsd
 from lib.DetectLib import eval_cnt
 
+def check(day):
+   red_files = glob.glob("/mnt/ams2/meteors/" + day + "/*reduced.json")
+   for file in red_files:
+      red = load_json_file(file)
+      if "meteor_frame_data" in red:
+         print("OK", file)
+      else:
+         print("BAD", file)
+   ev_day = day.replace("_", "")
+   ev_dirs = glob.glob("/mnt/ams2/events/*")
+   print("EV DAY:", ev_day)
+   for dir in ev_dirs:
+      fn = dir.split("/")[-1]
+
+      if ev_day == fn[0:8]:
+         print(ev_day, fn[0:8])
+         files = glob.glob(dir + "/*.json" )
+         print(dir + "/*.json" )
+         for file in files:
+            print(file)
+            try:
+               evred = load_json_file(file)
+            except:
+               print("BAD FILE MISSING:", file)
+            if "meteor_frame_data" in evred:
+               print("OK", file)
+            else:
+               print("BAD NO FRAMES", file)
+
 def mark_stars_on_image(img, cat_image_stars):
    image = Image.fromarray(img)
    draw = ImageDraw.Draw(image)
@@ -3084,6 +3113,7 @@ def run_job(job, json_conf):
 
    jc = 0
    job_name = "mikeTrajectory.py"
+   #job_name = "reducer2.py"
    for job in jobs:
 
 
@@ -3630,6 +3660,12 @@ if cmd == "best_fov" or cmd == 'bf':
 if cmd == "run_job" or cmd == 'rj' or cmd == 'jr':
    run_job(sys.argv[2], json_conf)
 if cmd == "cams_exp" :
+   check(sys.argv[2])
    cams_exp(sys.argv[2], json_conf)
 if cmd == "star_merge_movie" or cmd == "smm":
    star_merge_movie(json_conf)
+if cmd == "check":
+   check(sys.argv[2])   
+
+
+

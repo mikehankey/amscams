@@ -1345,8 +1345,12 @@ def eval_metframes(mrf):
       mr['metframes'][fn]['dec'] = dec 
 
 
-   print("MFD!")
    mfd,mr['metframes'] = metframes_to_mfd(mr['metframes'], mr['sd_video_file'])
+   print("MFD!", mfd)
+   mr['meteor_frame_data'] = mfd
+
+   
+
    cmp_imgs,mr['metframes'] = make_meteor_cnt_composite_images(json_conf, mfd, mr['metframes'], frames, sd_video_file)
    prefix = mr['sd_video_file'].replace(".mp4", "-frm")
    prefix = prefix.replace("SD/proc2/", "meteors/")
@@ -1357,8 +1361,7 @@ def eval_metframes(mrf):
 
 
 
-   mr['meteor_frame_data'] = mfd
-
+   print("SAVE:", mrf)
    save_json_file(mrf, mr)
    save_json_file("test.json", mr)
 

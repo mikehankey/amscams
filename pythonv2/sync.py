@@ -153,7 +153,8 @@ def create_update_events (day, json_conf ):
          new_file = ams_meteor_event_id + "_" + my_station + "_" + my_cam + ".json"
          print("NF:", new_file)
          if new_file in cloud_files:
-            print(new_file, "already exists in the cloud")
+            print(new_file, "already exists in the cloud, but sync again since its json")
+            sync_content(ams_meteor_event_id, my_station, red_file, ".json")
          else:
             sync_content(ams_meteor_event_id, my_station, red_file, ".json")
 
@@ -412,8 +413,8 @@ def sync_ms_json(day, mse, sync_urls):
             if cfe(lfdd, 1) == 0:
                os.system("mkdir " + lfdd)
             lfn  = "/mnt/ams2/stations/" + station + "/" + day + "/" + fn
-            #if cfe(lfn) == 0:
-            if True:
+            if cfe(lfn) == 0:
+            #if True:
                sync_url = url + st_video_url
                print("NEED TO SYNC URL:", sync_url)
                cmd = "wget \"" + sync_url + "\" -O " + lfn 
@@ -451,7 +452,8 @@ def solve_events(day, json_conf):
          else:
             for cam_id in events[event]['observations'][station]:
                print(cam_id, events[event]['observations'][station])
-               run_files.append(events[event]['observations'][station][cam_id])
+               rf = events[event]['observations'][station][cam_id].replace(".json", "-reduced.json")
+               run_files.append(rf)
          arglist = ""
       for ob in run_files:
          arglist = arglist + ob + " "
@@ -474,7 +476,39 @@ def solve_events(day, json_conf):
       #os.system(job + " &")
       jc = jc + 1
 
+def find_event_dir(sol):
+   sol = sol.replace("_", "")
+   event_dir = "/mnt/ams2/events/"
+   events = glob.glob(event_dir + "*")
+   for ev in events:
+      ev_fn = ev.split("/")[-1]
+      #if "619" in ev_fn:
+      if str(sol) in str(ev_fn):
+         return(sol)
+   return(0)
 
+def check_solutions(day, json_conf):
+   sol_dir = "/mnt/ams2/monte/"
+   sols = glob.glob(sol_dir + "*orbit_side*")
+   orbits = []
+   rpts = []
+   for sol in sols:
+      orbits.append(sol)
+   sols = glob.glob(sol_dir + "*report.txt")
+   for sol in sols:
+      sol_str = sol.replace("_mc_report.txt", "")
+      sol_fn = sol_str.split("/")[-1]
+      rpts.append(sol_fn)
+      event_id = find_event_dir(sol_fn)
+      if event_id == 0:
+         print("EVENT NOT FOUND:", event_id, sol_fn)
+      else:
+         print("EVENT ID!:", event_id)
+
+   print("TOTAL EVENTS:", len(rpts))
+   print("TOTAL ORBITS:", len(orbits))
+      
+   
     
 if cmd == "ss":
    sync_stations( json_conf)
@@ -488,3 +522,10 @@ if cmd == "cue" :
    create_update_events(day, json_conf)
 if cmd == "se" :
    solve_events(day, json_conf)
+if cmd == "cs" :
+   check_solutions(day, json_conf)
+if cmd == "us" or cmd == "upload_solution" :
+   ams_meteor_event_id = sys.argv[2] 
+   my_station = json_conf['site']['ams_id']
+   sol_file = "/mnt/ams2/events/" + ams_meteor_event_id + "/" + ams_meteor_event_id + "_monte_carlo.tar.gz"
+   sync_content(ams_meteor_event_id, my_station, sol_file, "_monte_carlo.tar.gz")
