@@ -17,8 +17,11 @@ import lib.brightstardata as bsd
 from lib.DetectLib import eval_cnt
 
 def reduce_fit(this_poly,field, cal_params, cal_params_file, fit_img, json_conf, show=1):
+   global tries
    pos_poly = 0 
    fov_poly = 0
+   fit_img = np.zeros((1080,1920),dtype=np.uint8)
+   fit_img = cv2.cvtColor(fit_img, cv2.COLOR_GRAY2RGB)
    this_fit_img = fit_img.copy()
    if field == 'x_poly':
       x_poly_fwd = cal_params['x_poly_fwd']
@@ -60,12 +63,34 @@ def reduce_fit(this_poly,field, cal_params, cal_params_file, fit_img, json_conf,
       if field == 'x_poly' or field == 'y_poly':
          new_cat_x, new_cat_y = distort_xy_new (0,0,ra,dec,float(cal_params['ra_center']), float(cal_params['dec_center']), x_poly, y_poly, float(cal_params['imagew']), float(cal_params['imageh']), float(cal_params['position_angle']),3600/float(cal_params['pixscale']))
          img_res = abs(calc_dist((six,siy),(new_cat_x,new_cat_y)))
-         cv2.line(this_fit_img, (six,siy), (int(new_cat_x),int(new_cat_y)), (255), 2)
 
+         if img_res < 1:
+            color = (255,0,0)
+         elif 1 < img_res < 2:
+            color = (0,255,0)
+         elif 3 < img_res < 4:
+            color = (255,255,0)
+         elif 5 < img_res < 6:
+            color = (0,165,255)
+         else :
+            color = (0,0,255)
+
+         cv2.line(this_fit_img, (six,siy), (int(new_cat_x),int(new_cat_y)), color, 2)
       else:
          new_x, new_y, img_ra,img_dec, img_az, img_el = XYtoRADec(six,siy,cal_params_file,cal_params,json_conf)
+         new_cat_x, new_cat_y = distort_xy_new (0,0,img_ra,img_dec,float(cal_params['ra_center']), float(cal_params['dec_center']), x_poly, y_poly, float(cal_params['imagew']), float(cal_params['imageh']), float(cal_params['position_angle']),3600/float(cal_params['pixscale']))
          img_res = abs(angularSeparation(ra,dec,img_ra,img_dec))
-         cv2.line(this_fit_img, (six,siy), (int(new_x),int(new_y)), (255), 2)
+         if img_res < .1:
+            color = (255,0,0)
+         elif .1 < img_res < .2:
+            color = (0,255,0)
+         elif .2 < img_res < .3:
+            color = (255,255,0)
+         elif .4 < img_res < .5:
+            color = (0,165,255)
+         else:
+            color = (0,0,255)
+         cv2.line(this_fit_img, (six,siy), (int(new_cat_x),int(new_cat_y)), color, 2)
          #img_res = abs(calc_dist((six,siy),(new_x,new_y)))
 
       cv2.rectangle(this_fit_img, (int(new_x)-2, int(new_y)-2), (int(new_x) + 2, int(new_y) + 2), (128, 128, 128), 1)
@@ -74,13 +99,28 @@ def reduce_fit(this_poly,field, cal_params, cal_params_file, fit_img, json_conf,
       cv2.circle(this_fit_img, (six,siy), 5, (128,128,128), 1)
 
       total_res = total_res + img_res
-
-   show_img = cv2.resize(this_fit_img, (0,0),fx=.5, fy=.5)
-   #cv2.imshow('pepe', this_fit_img)
-   #cv2.waitKey(1)
+   tries = tries + 1
 
    total_stars = len(cal_params['cat_image_stars'])
    avg_res = total_res/total_stars
+
+   show_img = cv2.resize(this_fit_img, (0,0),fx=.5, fy=.5)
+   cn = str(tries)
+   cnp = cn.zfill(10)
+   desc = field + " res: " + str(img_res) 
+   cv2.putText(this_fit_img, desc, (int(50), int(50)),cv2.FONT_HERSHEY_SIMPLEX, 2, (255,255,255), 1)
+   if (field == 'xpoly' or field == 'ypoly') and img_res > 3:
+      if tries % 3 == 0:
+         cv2.imwrite("/mnt/ams2/fitmovies/fr" + str(cnp) + ".png", this_fit_img)
+   elif (field == 'xpoly_fwd' or field == 'ypoly_fwd') and img_res > .1:
+      if tries % 3 == 0:
+         cv2.imwrite("/mnt/ams2/fitmovies/fr" + str(cnp) + ".png", this_fit_img)
+   else:
+      if tries % 3 == 0:
+         cv2.imwrite("/mnt/ams2/fitmovies/fr" + str(cnp) + ".png", this_fit_img)
+   #cv2.imshow('pepe', this_fit_img)
+   #cv2.waitKey(1)
+
 
    #print("Total Residual Error:", total_res )
    print("Avg Residual Error:", field, avg_res )
@@ -89,7 +129,8 @@ def reduce_fit(this_poly,field, cal_params, cal_params_file, fit_img, json_conf,
 
 
 def minimize_poly_params_fwd(cal_params_file, cal_params,json_conf,show=1):
-
+   global tries
+   tries = 0 
    #cv2.namedWindow('pepe')
    
    fit_img_file = cal_params_file.replace("-calparams.json", ".png")
@@ -108,22 +149,11 @@ def minimize_poly_params_fwd(cal_params_file, cal_params,json_conf,show=1):
    close_stars = cal_params['cat_image_stars']
    # do x poly fwd
 
+   x_poly_fwd = np.zeros(shape=(15,),dtype=np.float64)
+   y_poly_fwd = np.zeros(shape=(15,),dtype=np.float64)
+   x_poly = np.zeros(shape=(15,),dtype=np.float64)
+   y_poly = np.zeros(shape=(15,),dtype=np.float64)
 
-   # do x poly fwd
-   field = 'x_poly_fwd'
-   res = scipy.optimize.minimize(reduce_fit, x_poly_fwd, args=(field,cal_params,cal_params_file,fit_img,json_conf), method='Nelder-Mead')
-   x_poly_fwd = res['x']
-   x_fun_fwd = res['fun']
-   cal_params['x_poly_fwd'] = x_poly_fwd.tolist()
-   cal_params['x_fun_fwd'] = x_fun_fwd
-
-   # do y poly fwd
-   field = 'y_poly_fwd'
-   res = scipy.optimize.minimize(reduce_fit, y_poly_fwd, args=(field,cal_params,cal_params_file,fit_img,json_conf), method='Nelder-Mead')
-   y_poly_fwd = res['x']
-   y_fun_fwd = res['fun']
-   cal_params['y_poly_fwd'] = y_poly_fwd.tolist()
-   cal_params['y_fun_fwd'] = y_fun_fwd
 
 
    # do x poly 
@@ -142,6 +172,21 @@ def minimize_poly_params_fwd(cal_params_file, cal_params,json_conf,show=1):
    cal_params['y_poly'] = y_poly.tolist()
    cal_params['y_fun'] = y_fun
 
+   # do x poly fwd
+   field = 'x_poly_fwd'
+   res = scipy.optimize.minimize(reduce_fit, x_poly_fwd, args=(field,cal_params,cal_params_file,fit_img,json_conf), method='Nelder-Mead')
+   x_poly_fwd = res['x']
+   x_fun_fwd = res['fun']
+   cal_params['x_poly_fwd'] = x_poly_fwd.tolist()
+   cal_params['x_fun_fwd'] = x_fun_fwd
+
+   # do y poly fwd
+   field = 'y_poly_fwd'
+   res = scipy.optimize.minimize(reduce_fit, y_poly_fwd, args=(field,cal_params,cal_params_file,fit_img,json_conf), method='Nelder-Mead')
+   y_poly_fwd = res['x']
+   y_fun_fwd = res['fun']
+   cal_params['y_poly_fwd'] = y_poly_fwd.tolist()
+   cal_params['y_fun_fwd'] = y_fun_fwd
 
 
    print("POLY PARAMS")
