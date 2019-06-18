@@ -23,6 +23,9 @@ from lib.CalibLib import radec_to_azel, clean_star_bg, get_catalog_stars, find_c
 from lib.UtilLib import check_running, calc_dist, angularSeparation, bound_cnt
 
 def update_frame_ajax(json_conf, form):
+   
+   cgitb.enable()
+
    sd_video_file = form.getvalue("sd_video_file")
    fn = form.getvalue("fn")
    new_x = form.getvalue("new_x")
