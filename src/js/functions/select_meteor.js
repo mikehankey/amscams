@@ -3,8 +3,8 @@ function select_meteor_ajax(fn,x,y) {
 		cmd: 'update_frame_ajax',
         sd_video_file: sd_video_file, // Defined on the page
         fn: fn,
-        new_x: x/2,
-        new_y: y/2 
+        new_x: x,
+        new_y: y 
     };
 
     loading({text:"Updating the frame", overlay:true});
