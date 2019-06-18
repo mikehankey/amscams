@@ -560,6 +560,7 @@ def count_min_files(min_files,json_conf):
 
 
 def make_file_index(json_conf ):
+   print("FILE INDEX")
    proc_dir = json_conf['site']['proc_dir']
    data_dir = proc_dir + "/json/"
    days = get_days(json_conf)
@@ -573,7 +574,7 @@ def make_file_index(json_conf ):
 
    for day in days:
       stats[day] = {}
-      if day not in main_index:
+      if day in main_index:
          (failed_files, meteor_files,pending_files,min_files) = get_day_stats(day, proc_dir + day + "/", json_conf)
          stats[day]['failed_files'] = len(failed_files)
          stats[day]['meteor_files'] = len(meteor_files)
