@@ -1794,7 +1794,7 @@ def monteCarloTrajectory(traj, mc_runs=None, mc_pick_multiplier=1, noise_sigma=1
                 # Plot MC best radiant
                 m.scatter(traj_best.orbit.ra_g, traj_best.orbit.dec_g, s=20, facecolors='none', edgecolors='g')
 
-
+            traj.show_plots = False
 
             plt.title('Monte Carlo - geocentric radiant')
             # plt.xlabel('$\\alpha_g (\\degree)$')
@@ -3622,7 +3622,7 @@ class Trajectory(object):
 
 
 
-    def savePlots(self, output_dir, file_name, show_plots=True):
+    def savePlots(self, output_dir, file_name, show_plots=False):
         """ Show plots of the estimated trajectory. 
     
         Arguments:
@@ -5237,10 +5237,11 @@ class Trajectory(object):
             if self.monte_carlo:
 
                 traj_best.save_results = self.save_results
-                traj_best.show_plots = self.show_plots
+                traj_best.show_plots = False
+                #self.show_plots
 
                 # Monte Carlo output directory
-                mc_output_dir = os.path.join(self.output_dir, 'Monte Carlo')
+                mc_output_dir = os.path.join(self.output_dir, 'monte_carlo')
                 mc_file_name = self.file_name + "_mc"
 
 
@@ -5251,6 +5252,16 @@ class Trajectory(object):
 
                     # Save the picked trajectory structure with Monte Carlo points
                     savePickle(traj_best, mc_output_dir, mc_file_name + '_trajectory.pickle')
+                    print("SAVING PICKLE")
+                    json_file = self.output_dir + "/monte_carlo/" + self.file_name
+                    json_file = json_file + ".json"
+                    new_obj = todict(self)
+                    print(new_obj)
+                    print("TEST", new_obj['best_conv_inter']['obs2']['ignore_list'])
+                    print("MIKE SAVE JSON!", json_file)
+                    save_json_file(json_file, new_obj)
+
+
                     
                     # Save the uncertanties
                     savePickle(uncertanties, mc_output_dir, mc_file_name + '_uncertanties.pickle')
@@ -5259,8 +5270,9 @@ class Trajectory(object):
                     traj_best.saveReport(mc_output_dir, mc_file_name + '_report.txt', \
                         uncertanties=uncertanties, verbose=True)
 
-                # Save and show plots
-                traj_best.savePlots(mc_output_dir, mc_file_name, show_plots=self.show_plots)
+                # Save and show plot 
+                self.show_plots = False
+                traj_best.savePlots(mc_output_dir, mc_file_name, show_plots=False)
 
 
             ## Save original picks results
@@ -5297,7 +5309,8 @@ class Trajectory(object):
             # Save and show plots
             self.show_plots = False
             self.savePlots(self.output_dir, self.file_name, \
-                show_plots=(self.show_plots and not self.monte_carlo))
+                show_plots=False)
+            #(self.show_plots and not self.monte_carlo))
 
             # copy over reduction images if they exist
             for red_file in self.as6_info:
@@ -5358,51 +5371,69 @@ class Trajectory(object):
         else:
             return self
 
-def load_reduction_files(files):
+def load_reduction_files(fargs,ams_event_id):
+   #from FileIO import load_json_file, save_json_file, todict,cfe
    obs_info = {}
    # frame time from event start
    times = []
    # azs for each frame
    # els for each frame
-   all_dates = []
-   for c in range(1,len(files)):
-      obs_data = load_json_file(files[c])
+   files = []
+   for file in fargs:
+      print("ARG", file)
+      if "mnt" in file:
+         files.append(file)
 
+   print("FILES:", files)
+
+   all_dates = []
+   for c in range(0,len(files)):
+      obs_data = load_json_file(files[c])
+      obs_data['ams_event_id'] = ams_event_id
+      save_json_file(files[c], obs_data)
       thetas= []
       phis = []
       times = []
       fc = 0
-      sf = obs_data['meteor_frame_data'][0][1]
+      sf = int(obs_data['meteor_frame_data'][0][1])
       for frame_data in obs_data['meteor_frame_data']:
          meteor_frame_time_str,fn,hd_x,hd_y,w,h,max_px,ra,dec,az,el = frame_data
-         tfc = fn - sf
-         ft = datetime.datetime.strptime(meteor_frame_time_str, "%Y-%m-%d %H:%M:%S.%f")
+         tfc = int(fn) - sf
+         #ft = datetime.datetime.strptime(meteor_frame_time_str, "%Y-%m-%d %H:%M:%S.%f")
          ref_time = tfc / 25
          times.append(float(ref_time))
          thetas.append(float(az))
          phis.append(float(el))
-         all_dates.append(ft)
+         #all_dates.append(ft)
          fc = fc + 1
 
       obs_info[files[c]] = {}
       #obs_info[files[c]]['reduction'] = obs_data
-      obs_info[files[c]]['lat'] = obs_data['cal_params']['site_lat']
-      obs_info[files[c]]['lon'] = obs_data['cal_params']['site_lng']
-      obs_info[files[c]]['alt'] = obs_data['cal_params']['site_alt']
+      if 'device_lat' in obs_data['cal_params']:
+         obs_info[files[c]]['lat'] = obs_data['cal_params']['device_lat']
+         obs_info[files[c]]['lon'] = obs_data['cal_params']['device_lng']
+         obs_info[files[c]]['alt'] = obs_data['cal_params']['device_alt']
+      elif 'site_lat' in obs_data['cal_params']:
+         obs_info[files[c]]['lat'] = obs_data['cal_params']['site_lat']
+         obs_info[files[c]]['lon'] = obs_data['cal_params']['site_lng']
+         obs_info[files[c]]['alt'] = obs_data['cal_params']['site_alt']
       obs_info[files[c]]['times'] = times
       obs_info[files[c]]['phis'] = phis 
       obs_info[files[c]]['thetas'] = thetas
       obs_info[files[c]]['station_id'] = obs_data['station_name'].upper() + "-" + obs_data['device_name']
       obs_info[files[c]]['sd_video_file'] = obs_data['sd_video_file'] 
       obs_info[files[c]]['hd_video_file'] = obs_data['hd_video_file'] 
+      event_start = obs_data['event_start_time'] 
       obs_info[files[c]]['all_red'] = obs_data
 
-   event_start = min(all_dates)
-   jd_ref = trajconv.datetime2JD(event_start)
+   #event_start = min(all_dates)
+
+   event_start_dt = datetime.datetime.strptime(event_start, "%Y-%m-%d %H:%M:%S.%f")
+   jd_ref = trajconv.datetime2JD(event_start_dt)
    event_utc = event_start
    obs_info['jd_ref'] = jd_ref
    obs_info['event_utc'] = event_utc 
-
+   print("LEN:", len(obs_info))
    return(obs_info)
 
 
@@ -5419,19 +5450,21 @@ if __name__ == "__main__":
     from wmpl.Utils.TrajConversions import equatorialCoordPrecession_vect, J2000_JD
 
     meastype = 4
+    ams_event_id = sys.argv[1]
+    out_dir = "/mnt/ams2/events/" + ams_event_id + "/"
 
     # GET REDUCTION FILES 
     if True:
        meastype = 2
-       obs_info = load_reduction_files(sys.argv)
-       save_json_file("test.json", obs_info)
+       obs_info = load_reduction_files(sys.argv, ams_event_id)
+       save_json_file("/mnt/ams2/events/" + ams_event_id + "/obsinfo.json", obs_info)
 
 
        # Init new trajectory solving
 
        jdt_ref = obs_info['jd_ref']
 
-       traj_solve = Trajectory(jdt_ref, meastype=meastype, save_results=False, monte_carlo=False)
+       traj_solve = Trajectory(jdt_ref, output_dir=out_dir, meastype=meastype, save_results=False, monte_carlo=True)
        traj_solve.as6_info = {}
        for obs_file in obs_info:
           traj_solve.as6_info[obs_file] = obs_info[obs_file]
@@ -5465,6 +5498,19 @@ if __name__ == "__main__":
 
 
        traj_solve.run()
+
+       # tar & zip solution and uploaded it to cloud
+       cmd = "cd /mnt/ams2/events/" + ams_event_id + "/;" + " tar -cjf " + ams_event_id + "_monte_carlo.tar " + "monte_carlo/*" 
+       cmd2 = "gzip -f /mnt/ams2/events/" + ams_event_id + "/" + ams_event_id + "_monte_carlo.tar"
+       cmd3 = "cd /home/ams/amscams/pythonv2; ./sync.py us " + ams_event_id
+
+       print(cmd)
+       os.system(cmd)
+       print(cmd2)
+       os.system(cmd2)
+       print(cmd3)
+       os.system(cmd3)
+
        exit()
 
 

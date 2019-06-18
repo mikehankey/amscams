@@ -173,7 +173,7 @@ def junk(date):
             if object['meteor'] == 1:
                for res in object['test_results']:
                   if res[0] == 'Distance':
-                     if res[2] < 100:
+                     if res[2] < 10:
                         print ("BAD CAP", res[2], file)
                         sd_file = jd['sd_video_file'].split("/")[-1]
 

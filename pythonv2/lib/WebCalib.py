@@ -2819,6 +2819,8 @@ def reduce_meteor_new(json_conf,form):
                #print(ms_desc)
          template = template.replace("{MULTI_STATION}", ms_desc)
 
+   
+
               
          
 
@@ -2852,6 +2854,33 @@ def reduce_meteor_new(json_conf,form):
          mj['hd_crop_file_stack'] = 0
          mj['hd_trim_stack'] = 0
       mj['sd_stack'] = mj['sd_video_file'].replace(".mp4", "-stacked.png")
+
+
+   if "ams_event_id" in meteor_reduced:
+      link = "/mnt/ams2/events/" + meteor_reduced['ams_event_id'] + "/"
+      solution = "<dt class=\"col-6\"><a href=" + link + ">" + meteor_reduced['ams_event_id'] + "</dt><dd class=\"col-6\">Monte Carlo</dd>";
+   else:
+      solution = ""
+
+   plots_html = ""
+   traj_html = ""
+   orb_html = ""
+   if "ams_event_id" in meteor_reduced:
+      template = template.replace("{SOLUTIONS}", solution)
+      sol_dir = link + "monte_carlo/"
+      sol_files = glob.glob(sol_dir + "*")
+      print(sol_dir) 
+      for sf in sorted(sol_files):
+         if "png" in sf and "track" not in sf and "orbit" not in sf:
+            plots_html = plots_html + "<figure ><img width=400 src=" + sf + "></figure>" 
+         if "png" in sf and "track" in sf :
+            traj_html = traj_html + "<figure ><img width=400 src=" + sf + "></figure>" 
+         if "png" in sf and "orbit" in sf :
+            orb_html = orb_html + "<figure ><img width=400 src=" + sf + "></figure>" 
+
+   template = template.replace("{%PLOTS_TABLE%}", plots_html)
+   template = template.replace("{%TRAJECTORY_TABLE%}", traj_html)
+   template = template.replace("{%ORBIT_TABLE%}", orb_html)
 
    mj['half_stack'] = mj['sd_stack'].replace(".png", "-half-stack.png")
    sd_video_file = mj['sd_video_file']

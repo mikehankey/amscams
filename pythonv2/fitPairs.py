@@ -120,6 +120,8 @@ def reduce_fit(this_poly,field, cal_params, cal_params_file, fit_img, json_conf,
          cv2.imwrite("/mnt/ams2/fitmovies/fr" + str(cnp) + ".png", this_fit_img)
    #cv2.imshow('pepe', this_fit_img)
    #cv2.waitKey(1)
+   cv2.imshow('pepe', show_img)
+   cv2.waitKey(1)
 
 
    #print("Total Residual Error:", total_res )

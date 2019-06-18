@@ -125,7 +125,7 @@ def create_update_events (day, json_conf ):
          ams_meteor_event_id =  ams_meteor_event_id + "_" + str(int(mlat)) + "_" + str(int(mlon))
          print("AMS METEOR EVENT ID:", ams_meteor_event_id)
          multi_station_events[meteor_event]['ams_meteor_event_id'] = ams_meteor_event_id
-
+         red_file = None
          for obs in multi_station_events[meteor_event]['observations']:
             if obs == my_station:
                print("UPDATE RED FILE WITH ID", multi_station_events[meteor_event]['observations'][my_station])
@@ -143,13 +143,18 @@ def create_update_events (day, json_conf ):
          for ef in event_files:
             fn = ef.split("/")[-1]
             cloud_files.append(fn)
+         if red_file is None:
+            print("SKIP:  this is not one of our events?")
+            continue
+
          print("SYNC CONTENT")
 
          my_meteor_datetime, my_cam, hd_date, hd_y, hd_m, hd_d, hd_h, hd_M, hd_s = convert_filename_to_date_cam(red_file)
          new_file = ams_meteor_event_id + "_" + my_station + "_" + my_cam + ".json"
          print("NF:", new_file)
          if new_file in cloud_files:
-            print(new_file, "already exists in the cloud")
+            print(new_file, "already exists in the cloud, but sync again since its json")
+            sync_content(ams_meteor_event_id, my_station, red_file, ".json")
          else:
             sync_content(ams_meteor_event_id, my_station, red_file, ".json")
 
@@ -169,7 +174,8 @@ def create_update_events (day, json_conf ):
          if new_file in cloud_files:
             print(new_file, "already exists in the cloud")
          else:
-            sync_content(ams_meteor_event_id, my_station, hd_video_file, "-HD.mp4")
+            print(new_file, "disabled HD sync for now")
+            #sync_content(ams_meteor_event_id, my_station, hd_video_file, "-HD.mp4")
 
          new_file = ams_meteor_event_id + "_" + my_station + "_" + my_cam + "-HD-stacked.png"
 
@@ -407,8 +413,8 @@ def sync_ms_json(day, mse, sync_urls):
             if cfe(lfdd, 1) == 0:
                os.system("mkdir " + lfdd)
             lfn  = "/mnt/ams2/stations/" + station + "/" + day + "/" + fn
-            #if cfe(lfn) == 0:
-            if True:
+            if cfe(lfn) == 0:
+            #if True:
                sync_url = url + st_video_url
                print("NEED TO SYNC URL:", sync_url)
                cmd = "wget \"" + sync_url + "\" -O " + lfn 
@@ -416,31 +422,93 @@ def sync_ms_json(day, mse, sync_urls):
             else: 
                print("Already have:", url + st_video_url)
   
-def solve_events(day, mse,sync_urls):
-   evs = []
+def solve_events(day, json_conf):
+   remote_host = "http://54.214.104.131/"
+   my_station = json_conf['site']['ams_id']
+   event_file = "/mnt/ams2/stations/data/" + day  + "_events.json"
+   events = load_json_file(event_file)
    jobs = []
-   for my_meteor in mse:
-      tob = []
-      my_red_meteor = my_meteor.replace(".json", "-reduced.json") 
-      tob.append(my_red_meteor)
-      for station in mse[my_meteor]['obs']: 
-         red_file = mse[my_meteor]['obs'][station]['sd_video_file'].replace(".json", "-reduced.json")
-         red_file = red_file.replace("/meteors/", "/stations/" + station + "/")
-         tob.append(red_file)
-      evs.append(tob)
-         
-
-   for ev in evs:
-      arglist = ""
-      for ob in ev:
+   for event in events:
+      print(event )
+      run_files = []
+      for station in events[event]['observations']:
+         print(station)
+         if station != my_station:
+            for cam_id in events[event]['observations'][station]:
+               local_dir =  "/mnt/ams2/events/" + event 
+               if cfe(local_dir,1) == 0:
+                  cmd = "mkdir " + local_dir
+                  os.system(cmd)
+               local_file = local_dir + "/" + event + "_" + station + "_" + cam_id + ".json" 
+               remote_url = remote_host + "/meteors/" + event + "/" + event + "_" + station + "_" + cam_id + ".json" 
+               remote_url = remote_url.replace("/mnt/ams2", "")
+               run_files.append(local_file)
+               print(station, cam_id, remote_url, local_file)
+               #if cfe(local_file) == 0:
+               if True:
+                  cmd = "wget \"" + remote_url + "\" -O " + local_file 
+                  print(cmd)
+                  os.system(cmd)
+         else:
+            for cam_id in events[event]['observations'][station]:
+               print(cam_id, events[event]['observations'][station])
+               rf = events[event]['observations'][station][cam_id].replace(".json", "-reduced.json")
+               run_files.append(rf)
+         arglist = ""
+      for ob in run_files:
          arglist = arglist + ob + " "
       cmd = "cd /home/ams/dvida/WesternMeteorPyLib/wmpl/Trajectory; python mikeTrajectory.py " + arglist
       jobs.append(cmd)
 
-   for job in jobs:
-      print(job)
-   #os.system(cmd)
+   print("JOBS:")
+   if 'max_procs' in json_conf['site']:
+      max_procs = json_conf['site']['max_procs']
+   else:
+      max_procs = 4
 
+   jc = 0
+   job_name = "mikeTrajectory.py"
+   for job in jobs:
+      while check_running(job_name) > max_procs:
+         time.sleep(1)
+      print(job)
+      #if "010002" in job:
+      #os.system(job + " &")
+      jc = jc + 1
+
+def find_event_dir(sol):
+   sol = sol.replace("_", "")
+   event_dir = "/mnt/ams2/events/"
+   events = glob.glob(event_dir + "*")
+   for ev in events:
+      ev_fn = ev.split("/")[-1]
+      #if "619" in ev_fn:
+      if str(sol) in str(ev_fn):
+         return(sol)
+   return(0)
+
+def check_solutions(day, json_conf):
+   sol_dir = "/mnt/ams2/monte/"
+   sols = glob.glob(sol_dir + "*orbit_side*")
+   orbits = []
+   rpts = []
+   for sol in sols:
+      orbits.append(sol)
+   sols = glob.glob(sol_dir + "*report.txt")
+   for sol in sols:
+      sol_str = sol.replace("_mc_report.txt", "")
+      sol_fn = sol_str.split("/")[-1]
+      rpts.append(sol_fn)
+      event_id = find_event_dir(sol_fn)
+      if event_id == 0:
+         print("EVENT NOT FOUND:", event_id, sol_fn)
+      else:
+         print("EVENT ID!:", event_id)
+
+   print("TOTAL EVENTS:", len(rpts))
+   print("TOTAL ORBITS:", len(orbits))
+      
+   
     
 if cmd == "ss":
    sync_stations( json_conf)
@@ -452,3 +520,12 @@ if cmd == "find_events" or cmd == 'fe':
    find_events_for_day(day, json_conf)
 if cmd == "cue" :
    create_update_events(day, json_conf)
+if cmd == "se" :
+   solve_events(day, json_conf)
+if cmd == "cs" :
+   check_solutions(day, json_conf)
+if cmd == "us" or cmd == "upload_solution" :
+   ams_meteor_event_id = sys.argv[2] 
+   my_station = json_conf['site']['ams_id']
+   sol_file = "/mnt/ams2/events/" + ams_meteor_event_id + "/" + ams_meteor_event_id + "_monte_carlo.tar.gz"
+   sync_content(ams_meteor_event_id, my_station, sol_file, "_monte_carlo.tar.gz")

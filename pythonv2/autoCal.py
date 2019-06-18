@@ -1,5 +1,6 @@
 #!/usr/bin/python3
 from datetime import datetime
+from PIL import Image, ImageDraw, ImageFont
 
 #import datetime
 import time
@@ -28,6 +29,105 @@ from lib.FileIO import load_json_file, save_json_file, cfe
 from lib.UtilLib import calc_dist,find_angle
 import lib.brightstardata as bsd
 from lib.DetectLib import eval_cnt
+
+def check(day):
+   red_files = glob.glob("/mnt/ams2/meteors/" + day + "/*reduced.json")
+   for file in red_files:
+      red = load_json_file(file)
+      if "meteor_frame_data" in red:
+         print("OK", file)
+      else:
+         print("BAD", file)
+   ev_day = day.replace("_", "")
+   ev_dirs = glob.glob("/mnt/ams2/events/*")
+   print("EV DAY:", ev_day)
+   for dir in ev_dirs:
+      fn = dir.split("/")[-1]
+
+      if ev_day == fn[0:8]:
+         print(ev_day, fn[0:8])
+         files = glob.glob(dir + "/*.json" )
+         print(dir + "/*.json" )
+         for file in files:
+            print(file)
+            try:
+               evred = load_json_file(file)
+            except:
+               print("BAD FILE MISSING:", file)
+            if "meteor_frame_data" in evred:
+               print("OK", file)
+            else:
+               print("BAD NO FRAMES", file)
+
+def mark_stars_on_image(img, cat_image_stars):
+   image = Image.fromarray(img)
+   draw = ImageDraw.Draw(image)
+   font = ImageFont.truetype("/usr/share/fonts/truetype/freefont/FreeSans.ttf", 12, encoding="unic" )
+   print(cat_image_stars[0])
+
+   for star in cat_image_stars:
+      color = "white"
+      (name,mag,ra,dec,tmp1,tmp2,px_dist,new_cat_x,new_cat_y,tmp2,tmp3,new_cat_x,new_cat_y,ix,iy,px_dist) = star
+      draw.rectangle((ix-10, iy-10, ix + 10, iy + 10), outline=color)
+      draw.text((ix-10, iy-15), str(name), font = font, fill=color)
+      #draw.ellipse((mx-1, my-1, mx+1, my+1),  outline ="white")
+      #draw.ellipse((mx-3, my-3, mx+3, my+3),  outline ="white")
+
+   return(np.asarray(image))
+
+
+def star_merge_movie(json_conf):
+   cam_id = "010005"
+   starmerge_file = "/mnt/ams2/cal/hd_images/master_merge_010005.json"
+   starmerge = load_json_file(starmerge_file)
+   total_files = {}
+   hd_cal_files = []
+   meteor_files = []
+   for star in starmerge:
+      total_files[star[0]] = {}
+
+   for file in total_files:
+      print(file)
+      if "reduced" in file and cfe(file) == 1 :
+         mr = load_json_file(file)
+         if 'hd_stack' in mr:
+            print(mr['hd_stack'])
+            if cfe(mr['hd_stack']) == 1:
+               img = cv2.imread(mr['hd_stack'])
+               if img.shape[0] != 1080:
+                  img = cv2.resize(img, (1920,1080))
+
+               if "cat_image_stars" in mr['cal_params']:
+                  new_img = mark_stars_on_image(img, mr['cal_params']['cat_image_stars'])
+
+                  show_img = cv2.resize(new_img, (960,540))
+                  show_img = new_img
+                  cv2.imshow('meteors', show_img)
+                  cv2.waitKey(10)
+                  meteor_files.append(file)
+      elif cfe(file) == 1:
+         hd_cal_files.append(file)
+
+   for file in sorted(hd_cal_files):
+      print(file)
+      
+      cp = load_json_file(file)
+      cp_img = file.replace("-calparams.json", "-stacked.png")
+      if cfe(cp_img) == 0:
+         print("BAD:", cp_img)
+      else:
+         img = cv2.imread(cp_img)
+         if img.shape[0] != 1080:
+            img = cv2.resize(img, (1920,1080))
+
+         if "cat_image_stars" in cp:
+            new_img = mark_stars_on_image(img, cp['cat_image_stars'])
+
+            show_img = cv2.resize(new_img, (960,540))
+            show_img = new_img
+            cv2.imshow('meteors', show_img)
+            cv2.waitKey(10)
+
 
 def cams_exp(file, json_conf):
    json_data = load_json_file(file)
@@ -2766,11 +2866,14 @@ def meteor_cal(date,json_conf, show=0):
    for meteor_file in meteor_files:
       print(meteor_file)
       md = load_json_file(meteor_file)
-
       np_cal_params = None
       no_poly_cat_stars = {}
       if 'cal_params' in md:
          np_cal_params = md['cal_params']
+         total_res_px = md['cal_params']['total_res_px']
+         if total_res_px > 2 or len(md['cal_params']['cat_image_stars']) < 15:
+            print("Skip this file!")
+            continue
          np_cal_params['x_poly'] = np.zeros(shape=(15,), dtype=np.float64)
          np_cal_params['y_poly'] = np.zeros(shape=(15,), dtype=np.float64)
          #center_az = np_cal_params['center_az']
@@ -2799,11 +2902,19 @@ def meteor_cal(date,json_conf, show=0):
       else:
          print("NO CAT IMAGE STARS IN FILE", meteor_file)
          cat_image_stars = []
-   
+  
+      timg_res = 0 
+      for star in cat_image_stars:
+         name,mag,ra,dec,img_ra,img_dec,match_dist,new_cat_x,new_cat_y,img_az,img_el,new_cat_x,new_cat_y,ix,iy, img_res = star
+         timg_res = timg_res + img_res
+      if len(cat_image_stars) > 0:
+         file_res = timg_res / len(cat_image_stars)
+      print("FILE RES:", file_res)
       for star in cat_image_stars:
          name,mag,ra,dec,img_ra,img_dec,match_dist,new_cat_x,new_cat_y,img_az,img_el,new_cat_x,new_cat_y,ix,iy, img_res = star
          bad = 0
          key = str(ra) + ":" + str(dec)
+       
          if key in no_poly_cat_stars:
             np_name,np_mag,np_ra,np_dec,np_new_cat_x,np_new_cat_y = no_poly_cat_stars[key]
             np_angle_to_center = find_angle((960,540), (np_new_cat_x, np_new_cat_y))
@@ -3002,6 +3113,7 @@ def run_job(job, json_conf):
 
    jc = 0
    job_name = "mikeTrajectory.py"
+   #job_name = "reducer2.py"
    for job in jobs:
 
 
@@ -3507,7 +3619,8 @@ if cmd == 'run_merge':
    cam_id = sys.argv[3]
    new_starlist = merge_file.replace(".json", "-clean.json")
    if cfe(new_starlist) == 1:
-      merge_stars = load_json_file(new_starlist)
+      #merge_stars = load_json_file(new_starlist)
+      merge_stars = load_json_file(merge_file)
    else:
       merge_stars = load_json_file(merge_file)
    cam_stars = {}
@@ -3547,4 +3660,12 @@ if cmd == "best_fov" or cmd == 'bf':
 if cmd == "run_job" or cmd == 'rj' or cmd == 'jr':
    run_job(sys.argv[2], json_conf)
 if cmd == "cams_exp" :
+   check(sys.argv[2])
    cams_exp(sys.argv[2], json_conf)
+if cmd == "star_merge_movie" or cmd == "smm":
+   star_merge_movie(json_conf)
+if cmd == "check":
+   check(sys.argv[2])   
+
+
+
