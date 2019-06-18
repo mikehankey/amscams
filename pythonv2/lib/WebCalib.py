@@ -26,17 +26,21 @@ def update_frame_ajax(json_conf, form):
    
    sd_video_file = form.getvalue("sd_video_file")
    fn = form.getvalue("fn")
-   new_x = form.getvalue("new_x")
-   new_y = form.getvalue("new_y")
+   new_x = int(float(form.getvalue("new_x")))
+   new_y = int(float(form.getvalue("new_y")))
 
    mrf = sd_video_file.replace(".mp4", "-reduced.json")
    mr = load_json_file(mrf)
-   mr['metframes'][fn]['hd_x'] = new_x
-   mr['metframes'][fn]['hd_y'] = new_y
-
+   mr['metframes'][fn]['hd_x'] = int(new_x)
+   mr['metframes'][fn]['hd_y'] = int(new_y)
+   save_json_file(mrf, mr)
    # this will update all values (ra,dec etc) and make new thumbs from new point. 
+   resp = {}
+   resp['msg'] = "new frame added."
+   resp['new_frame'] = mr['metframes'][fn]
+   print(json.dumps(resp))
    os.system("cd /home/ams/amscams/pythonv2/; ./reducer2.py eval " + mrf + "> /mnt/ams2/tmp/rrr.txt")
-   
+
 
 def add_frame_ajax( json_conf, form):
 
@@ -52,6 +56,7 @@ def add_frame_ajax( json_conf, form):
    metconf = mr['metconf']
    
    if str(prev_fn) in metframes:
+
       # frame exists before make est from prev frame info
       last_x = metframes[prev_fn]['hd_x']
       last_y = metframes[prev_fn]['hd_y']
@@ -2857,27 +2862,29 @@ def reduce_meteor_new(json_conf,form):
       mj['sd_stack'] = mj['sd_video_file'].replace(".mp4", "-stacked.png")
 
 
-   if "ams_event_id" in meteor_reduced:
-      link = "/mnt/ams2/events/" + meteor_reduced['ams_event_id'] + "/"
-      solution = "<dt class=\"col-6\"><a href=" + link + ">" + meteor_reduced['ams_event_id'] + "</dt><dd class=\"col-6\">Monte Carlo</dd>";
-   else:
-      solution = ""
+   if cfe(meteor_reduced_file) == 1:
+      if "ams_event_id" in meteor_reduced:
+         link = "/mnt/ams2/events/" + meteor_reduced['ams_event_id'] + "/"
+         solution = "<dt class=\"col-6\"><a href=" + link + ">" + meteor_reduced['ams_event_id'] + "</dt><dd class=\"col-6\">Monte Carlo</dd>";
+      else:
+         solution = ""
 
    plots_html = ""
    traj_html = ""
    orb_html = ""
-   if "ams_event_id" in meteor_reduced:
-      template = template.replace("{SOLUTIONS}", solution)
-      sol_dir = link + "monte_carlo/"
-      sol_files = glob.glob(sol_dir + "*")
-      print(sol_dir) 
-      for sf in sorted(sol_files):
-         if "png" in sf and "track" not in sf and "orbit" not in sf:
-            plots_html = plots_html + "<figure ><img width=400 src=" + sf + "></figure>" 
-         if "png" in sf and "track" in sf :
-            traj_html = traj_html + "<figure ><img width=400 src=" + sf + "></figure>" 
-         if "png" in sf and "orbit" in sf :
-            orb_html = orb_html + "<figure ><img width=400 src=" + sf + "></figure>" 
+   if cfe(meteor_reduced_file) == 1:
+      if "ams_event_id" in meteor_reduced:
+         template = template.replace("{SOLUTIONS}", solution)
+         sol_dir = link + "monte_carlo/"
+         sol_files = glob.glob(sol_dir + "*")
+         print(sol_dir) 
+         for sf in sorted(sol_files):
+            if "png" in sf and "track" not in sf and "orbit" not in sf:
+               plots_html = plots_html + "<figure ><img width=400 src=" + sf + "></figure>" 
+            if "png" in sf and "track" in sf :
+               traj_html = traj_html + "<figure ><img width=400 src=" + sf + "></figure>" 
+            if "png" in sf and "orbit" in sf :
+               orb_html = orb_html + "<figure ><img width=400 src=" + sf + "></figure>" 
 
    template = template.replace("{%PLOTS_TABLE%}", plots_html)
    template = template.replace("{%TRAJECTORY_TABLE%}", traj_html)
@@ -4333,6 +4340,11 @@ def show_cat_stars(json_conf,form):
          cal_params = meteor_red['cal_params']
          meteor_mode = 1
          cal_params_file = ""
+         if "cat_image_stars" not in cal_params:
+            mp4 = meteor_red_file.replace("-reduced.json", ".mp4")
+            #os.system("cd /home/ams/amscams/pythonv2/; ./autoCal.py imgstars " + mp4)
+            meteor_red = load_json_file(meteor_red_file)
+
          if "cat_image_stars" in cal_params:
 
             clean_close_stars = remove_dupe_cat_stars(cal_params['cat_image_stars'])

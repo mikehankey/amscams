@@ -93,7 +93,7 @@ def reduce_fit(this_poly,field, cal_params, cal_params_file, fit_img, json_conf,
          cv2.line(this_fit_img, (six,siy), (int(new_cat_x),int(new_cat_y)), color, 2)
          #img_res = abs(calc_dist((six,siy),(new_x,new_y)))
 
-      cv2.rectangle(this_fit_img, (int(new_x)-2, int(new_y)-2), (int(new_x) + 2, int(new_y) + 2), (128, 128, 128), 1)
+      #cv2.rectangle(this_fit_img, (int(new_x)-2, int(new_y)-2), (int(new_x) + 2, int(new_y) + 2), (128, 128, 128), 1)
       cv2.rectangle(this_fit_img, (int(new_cat_x)-2, int(new_cat_y)-2), (int(new_cat_x) + 2, int(new_cat_y) + 2), (128, 128, 128), 1)
       #cv2.rectangle(this_fit_img, (six-4, siy-4), (six+4, siy+4), (128, 128, 128), 1)
       cv2.circle(this_fit_img, (six,siy), 5, (128,128,128), 1)
@@ -109,19 +109,27 @@ def reduce_fit(this_poly,field, cal_params, cal_params_file, fit_img, json_conf,
    cnp = cn.zfill(10)
    desc = field + " res: " + str(img_res) 
    cv2.putText(this_fit_img, desc, (int(50), int(50)),cv2.FONT_HERSHEY_SIMPLEX, 2, (255,255,255), 1)
-   if (field == 'xpoly' or field == 'ypoly') and img_res > 3:
-      if tries % 3 == 0:
-         cv2.imwrite("/mnt/ams2/fitmovies/fr" + str(cnp) + ".png", this_fit_img)
-   elif (field == 'xpoly_fwd' or field == 'ypoly_fwd') and img_res > .1:
-      if tries % 3 == 0:
-         cv2.imwrite("/mnt/ams2/fitmovies/fr" + str(cnp) + ".png", this_fit_img)
-   else:
-      if tries % 3 == 0:
-         cv2.imwrite("/mnt/ams2/fitmovies/fr" + str(cnp) + ".png", this_fit_img)
+   if (field == 'xpoly' or field == 'ypoly'): 
+      if img_res > 5:
+         if tries % 1 == 0:
+            cv2.imwrite("/mnt/ams2/fitmovies/fr" + str(cnp) + ".png", this_fit_img)
+      else:
+         if tries % 5 == 0:
+            cv2.imwrite("/mnt/ams2/fitmovies/fr" + str(cnp) + ".png", this_fit_img)
+   else: 
+      if img_res > .3:
+         if tries % 1 == 0:
+            cv2.imwrite("/mnt/ams2/fitmovies/fr" + str(cnp) + ".png", this_fit_img)
+      elif .08 < img_res < .3 :
+         if tries % 5 == 0:
+            cv2.imwrite("/mnt/ams2/fitmovies/fr" + str(cnp) + ".png", this_fit_img)
+      else: 
+         if tries % 1 == 0:
+            cv2.imwrite("/mnt/ams2/fitmovies/fr" + str(cnp) + ".png", this_fit_img)
    #cv2.imshow('pepe', this_fit_img)
    #cv2.waitKey(1)
-   cv2.imshow('pepe', show_img)
-   cv2.waitKey(1)
+   #cv2.imshow('pepe', show_img)
+   #cv2.waitKey(1)
 
 
    #print("Total Residual Error:", total_res )
