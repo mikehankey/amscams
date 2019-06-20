@@ -13,8 +13,7 @@ function select_meteor_ajax(fn,x,y) {
         url:  "/pycgi/webUI.py",
         data: cmd_data, 
         success: function(data) {
-
-
+ 
             var data = $.parseJSON(data);
             var nf = data.new_frame; 
             var new_row = "";
@@ -29,6 +28,9 @@ function select_meteor_ajax(fn,x,y) {
             var hd_y = nf.hd_y;
             hd_y = hd_y/2;
 
+            // Get last col of current tr so we can use it in the new one without 
+            // taking care of the + frames buttons 
+
             // Build new table row
             new_row += '<tr id="fr_'+fn+'" data-org-x="'+x+'" data-org-y="'+y+'"><td><img src="'+nf.cnt_thumb+'" width="50" height="50" class="img-fluid select_meteor"/></td>';
             new_row += '<td>'+fn+'</td>';
@@ -36,15 +38,13 @@ function select_meteor_ajax(fn,x,y) {
             new_row += '<td>'+nf.ra.toFixed(2) + "&deg/" + nf.dec.toFixed(2) +'&deg</td>';
             new_row += '<td>'+nf.az.toFixed(2) + "&deg/" + nf.el.toFixed(2) +'&deg</td>';
             new_row += '<td>'+hd_x.toFixed(2) + "/" + hd_y.toFixed(2) +'</td>';
-            new_row += '<td>'+nf.w.toFixed(2) + "x" + nf.h.toFixed(2) +'</td>';
+            new_row += '<td>'+nf.w + "x" + nf.h +'</td>';
             new_row += '<td>'+nf.max_px +'</td>';
             new_row += '<td><a class="btn btn-danger btn-sm delete_frame"><i class="icon-delete"></i></a></td>';
-            new_row += '<td class="position-relative"><a class="btn btn-success btn-sm select_meteor"><i class="icon-target"></i></a><a title="Add a frame" class="btn btn-primary btn-sm btn-mm add_f" data-rel="4"><i class="icon-plus"></i></a></td>';
+            new_row += '<td class="position-relative">'+$('tr#fr_'+fn +' td:last-child').html()+'</td></tr>';
             $('tr#fr_'+fn).replaceWith($(new_row));
    
-
-            console.log('tr#fr_'+fn);
-            console.log(new_row);
+ 
 
             loading_done();
             
