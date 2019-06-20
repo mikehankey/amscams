@@ -27,7 +27,7 @@ function select_meteor_ajax(fn,x,y) {
             hd_y = hd_y/2;
 
             // Build new table row
-            new_row += '<tr id="fn_'+fn+'" data-org-x="'+x+'" data-org-y="'+y+'"><td><img src="'+nf.cnt_thumb+'" width="50" height="50" class="img-fluid select_meteor"/></td>';
+            new_row += '<tr id="fr_'+fn+'" data-org-x="'+x+'" data-org-y="'+y+'"><td><img src="'+nf.cnt_thumb+'" width="50" height="50" class="img-fluid select_meteor"/></td>';
             new_row += '<td>'+fn+'</td>';
             new_row += '<td>'+t+'</td>';
             new_row += '<td>'+nf.ra.tofixed(2) + "&deg/" + nf.dec.tofixed(2) +'&deg</td>';
@@ -37,8 +37,8 @@ function select_meteor_ajax(fn,x,y) {
             new_row += '<td>'+nf.max_px +'</td>';
             new_row += '<td><a class="btn btn-danger btn-sm delete_frame"><i class="icon-delete"></i></a></td>';
             new_row += '<td class="position-relative"><a class="btn btn-success btn-sm select_meteor"><i class="icon-target"></i></a><a title="Add a frame" class="btn btn-primary btn-sm btn-mm add_f" data-rel="4"><i class="icon-plus"></i></a></td>';
-            $('tr#fn_'+fn).replaceWidth($(new_row));
-
+            $('tr#fr_'+fn).replaceWidth($(new_row));
+   
             loading_done();
             
         }, 
