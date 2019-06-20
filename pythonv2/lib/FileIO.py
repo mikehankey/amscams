@@ -133,7 +133,6 @@ def get_trims_for_file(video_file):
    return(fail_files, meteor_files, pending_files)
 
 def get_day_files(day, cams_id, json_conf):
-  
    file_info = {} 
    proc_dir = json_conf['site']['proc_dir']
    [failed_files, meteor_files,pending_files,min_files] = get_day_stats(day, proc_dir + day + "/", json_conf)
@@ -170,8 +169,8 @@ def get_day_stats(day, day_dir, json_conf):
    proc_dir = json_conf['site']['proc_dir']
    failed_dir = day_dir + "/failed/*trim*.mp4"
    meteor_dir = "/mnt/ams2/meteors/" + day + "/*.json"
-   pending_dir = day_dir + "/*trim*.mp4"
-   min_files = day_dir + "/*.mp4"
+   pending_dir = "/mnt/ams2/SD/proc2/" + day + "/*trim*.mp4"
+   min_file_dir = "/mnt/ams2/SD/proc2/" + day + "/*.mp4"
    failed_files = glob.glob(failed_dir)
    tmp_meteor_files = glob.glob(meteor_dir)
    meteor_files = []
@@ -179,7 +178,7 @@ def get_day_stats(day, day_dir, json_conf):
       if "reduced" not in tmp and "manual" not in tmp and "star" not in tmp:
          meteor_files.append(tmp)
    pending_files = glob.glob(pending_dir)
-   min_files = glob.glob(min_files)
+   min_files = glob.glob(min_file_dir)
    detect_files = [failed_files, meteor_files,pending_files,min_files]
 
    return(detect_files)
@@ -200,7 +199,8 @@ def get_proc_days(json_conf):
 
 
 def save_meteor(video_file, objects, json_conf = None):
-   print("SAVE METEOR")
+   print("SAVE METEOR", objects)
+   exit()
    (base_fn, base_dir, image_dir, data_dir,failed_dir,passed_dir) = setup_dirs(video_file)
    if "trash" in passed_dir:
       proc_dir = json_conf['site']['proc_dir']
