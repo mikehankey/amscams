@@ -3,8 +3,8 @@ function select_meteor_ajax(fn,x,y) {
 		cmd: 'update_frame_ajax',
         sd_video_file: sd_video_file, // Defined on the page
         fn: fn,
-        new_x: x,
-        new_y: y 
+        new_x: x/2,
+        new_y: y/2 
     };
 
     loading({text:"Updating the frame", overlay:true});
@@ -12,9 +12,34 @@ function select_meteor_ajax(fn,x,y) {
     $.ajax({ 
         url:  "/pycgi/webUI.py",
         data: cmd_data, 
-        success: function(data) { 
+        success: function(data) {
+            var nf = data.new_frame; 
+            var new_row = "";
+            var t = nf.frame_time;
+            t = t.split(' ');
+            t = t[1];
             loading_done(); 
-            console.log(data);
+
+            var hd_x = nf.hd_x;
+            hd_x = hd_x/2;
+
+            var hd_y = nf.hd_y;
+            hd_y = hd_y/2;
+
+            // Build new table row
+            new_row += '<tr id="fn_'+fn+'" data-org-x="'+x+'" data-org-y="'+y+'"><td><img src="'+nf.cnt_thumb+'" width="50" height="50" class="img-fluid select_meteor"/></td>';
+            new_row += '<td>'+fn+'</td>';
+            new_row += '<td>'+t+'</td>';
+            new_row += '<td>'+nf.ra.tofixed(2) + "&deg/" + nf.dec.tofixed(2) +'&deg</td>';
+            new_row += '<td>'+nf.az.tofixed(2) + "&deg/" + nf.el.tofixed(2) +'&deg</td>';
+            new_row += '<td>'+hd_x.tofixed(2) + "/" + hd_y.tofixed(2) +'</td>';
+            new_row += '<td>'+nf.w.tofixed(2) + "x" + nf.h.tofixed(2) +'</td>';
+            new_row += '<td>'+nf.max_px +'</td>';
+            new_row += '<td><a class="btn btn-danger btn-sm delete_frame"><i class="icon-delete"></i></a></td>';
+            new_row += '<td class="position-relative"><a class="btn btn-success btn-sm select_meteor"><i class="icon-target"></i></a><a title="Add a frame" class="btn btn-primary btn-sm btn-mm add_f" data-rel="4"><i class="icon-plus"></i></a></td>';
+            $('tr#fn_'+fn).replaceWidth($(new_row));
+
+            loading_done();
             
         }, 
         error:function() {
