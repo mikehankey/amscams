@@ -31,7 +31,7 @@ function select_meteor_ajax(fn,x,y) {
             // taking care of the + frames buttons 
 
             // Build new table row
-            new_row += '<tr id="fr_'+fn+'" data-org-x="'+x+'" data-org-y="'+y+'"><td><img src="'+nf.cnt_thumb+'?='+Math.floor((Math.random() * 100) + 1)+'" width="50" height="50" class="img-fluid select_meteor"/></td>';
+            new_row += '<tr id="fr_'+fn+'" data-org-x="'+x+'" data-org-y="'+y+'"><td><img src="'+nf.cnt_thumb+'?c='+Math.floor((Math.random() * 100) + 1)+'" width="50" height="50" class="img-fluid select_meteor"/></td>';
             new_row += '<td>'+fn+'</td>';
             new_row += '<td>'+t+'</td>';
             new_row += '<td>'+nf.ra.toFixed(2) + "&deg/" + nf.dec.toFixed(2) +'&deg</td>';
