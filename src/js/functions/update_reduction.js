@@ -67,8 +67,6 @@ function update_reduction_on_canvas_and_table(json_resp) {
     // Replace current table content
     $('#reduc-tab tbody').html(table_tbody_html);
 
-    // Setup Delete Frame
-    setup_delete_frame();
-    // Setup Select Meteor
-    setup_select_meteor();
+    // Reload the actions
+    reduction_table_actions();
 }

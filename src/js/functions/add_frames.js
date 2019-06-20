@@ -41,11 +41,9 @@ function add_reduc_row(data) {
             className: 'rubberBand animated',
             centerVertical: true 
         });
- 
-        // Setup Delete Frame
-        setup_delete_frame();
-        // Setup Select Meteor
-        setup_select_meteor();    
+        
+        // Reload the actions
+        reduction_table_actions();
 
     } else {
         bootbox.alert({

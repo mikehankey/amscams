@@ -20,8 +20,7 @@ function select_meteor_ajax(fn,x,y) {
             var t = nf.frame_time;
             t = t.split(' ');
             t = t[1];
-            loading_done(); 
-
+           
             var hd_x = nf.hd_x;
             hd_x = hd_x/2;
 
@@ -37,16 +36,23 @@ function select_meteor_ajax(fn,x,y) {
             new_row += '<td>'+t+'</td>';
             new_row += '<td>'+nf.ra.toFixed(2) + "&deg/" + nf.dec.toFixed(2) +'&deg</td>';
             new_row += '<td>'+nf.az.toFixed(2) + "&deg/" + nf.el.toFixed(2) +'&deg</td>';
-            new_row += '<td>'+hd_x.toFixed(2) + "/" + hd_y.toFixed(2) +'</td>';
+            new_row += '<td>'+hd_x.toFixed(1) + "/" + hd_y.toFixed(1) +'</td>';
             new_row += '<td>'+nf.w + "x" + nf.h +'</td>';
             new_row += '<td>'+nf.max_px +'</td>';
             new_row += '<td><a class="btn btn-danger btn-sm delete_frame"><i class="icon-delete"></i></a></td>';
             new_row += '<td class="position-relative">'+$('tr#fr_'+fn +' td:last-child').html()+'</td></tr>';
             $('tr#fr_'+fn).replaceWith($(new_row));
    
- 
+            // Reload the actions
+            reduction_table_actions();
 
             loading_done();
+
+            bootbox.alert({
+                message: "The frame as well as the corresponding reduction table row have been updated.",
+                className: 'rubberBand animated',
+                centerVertical: true 
+            });
             
         }, 
         error:function() {
