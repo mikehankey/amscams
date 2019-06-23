@@ -570,7 +570,10 @@ def make_file_index(json_conf ):
    stats = {}
 
    json_file = data_dir + "main-index.json"
-   main_index = load_json_file(json_file)
+   if cfe(json_file) == 1:
+      main_index = load_json_file(json_file)
+   else:
+      main_index = {}
 
    for day in days:
       stats[day] = {}
@@ -586,12 +589,16 @@ def make_file_index(json_conf ):
             stats[day][key] = cam_counts[key]
 
       else:  
-         failed_files = main_index[day]['failed_files'] 
+         (failed_files, meteor_files,pending_files,min_files) = get_day_stats(day, proc_dir + day + "/", json_conf)
+         stats[day]['failed_files'] = len(failed_files)
+         stats[day]['meteor_files'] = len(meteor_files)
+         stats[day]['pending_files'] = len(pending_files)
          meteors = update_meteor_count(day)
          print("meteors:", day, len(meteors))
+         main_index[day] = {}
          main_index[day]['meteor_files'] = len(meteors)
-         pending_files = main_index[day]['pending_files'] 
-         min_files = main_index[day]['min_files'] 
+         #pending_files = main_index[day]['pending_files'] 
+         #min_files = main_index[day]['min_files'] 
 
          stats[day] = main_index[day]
 
