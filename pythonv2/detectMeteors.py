@@ -107,8 +107,7 @@ def scan_file(video_file, show):
             hd_wild = fy + "_" + fm + "_" + fd + "_" + fh + "_" + fmin + "_*" + cam + "*" 
             cmd = "mv " + "/mnt/ams2/meteors/" + day + "/" + hd_wild + " /mnt/ams2/trash"
             os.system(cmd)
-            exit()
-     
+   print("done scan file")     
 def do_all(json_conf): 
    show = 0
    proc_dir = json_conf['site']['proc_dir']

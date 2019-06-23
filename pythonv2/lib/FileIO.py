@@ -200,7 +200,6 @@ def get_proc_days(json_conf):
 
 def save_meteor(video_file, objects, json_conf = None):
    print("SAVE METEOR", objects)
-   exit()
    (base_fn, base_dir, image_dir, data_dir,failed_dir,passed_dir) = setup_dirs(video_file)
    if "trash" in passed_dir:
       proc_dir = json_conf['site']['proc_dir']

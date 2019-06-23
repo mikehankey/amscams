@@ -595,7 +595,7 @@ def make_file_index(json_conf ):
          stats[day]['pending_files'] = len(pending_files)
          meteors = update_meteor_count(day)
          print("meteors:", day, len(meteors))
-         main_index[day] = {}
+         #main_index[day] = {}
          main_index[day]['meteor_files'] = len(meteors)
          #pending_files = main_index[day]['pending_files'] 
          #min_files = main_index[day]['min_files'] 
