@@ -1949,11 +1949,13 @@ def main_page(json_conf,form):
    total_number_page = math.ceil(len(detections) / NUMBER_OF_DAYS_PER_PAGE)
    counter = 0
 
-   to_display = "";
+   to_display = ""
+   first_day = ""
    real_detections = []
    # Need a fist loop to cleanup
    for idx, day in enumerate(detections): 
-      print(day)
+      if(idx==0)
+            first_day = day
       day_str = day
       day_dir = json_conf['site']['proc_dir'] + day + "/" 
       if "meteor" not in day_dir and "daytime" not in day_dir and "json" not in day_dir and "trash" not in day_dir:
@@ -1993,8 +1995,7 @@ def main_page(json_conf,form):
 
    header_out = "<div class='h1_holder d-flex justify-content-between'><h1>Daily Dectections until"
    header_out = header_out + "<div class='input-group date datepicker' data-display-format='YYYY/MM/DD' data-action='reload' data-url-param='limit_day' data-send-format='YYYY_MM_DD'>"
-   print(day_end)
-   #header_out = header_out + "<input value='"+str(this_date.replace("_", "/"))+"' type='text' class='form-control'>"
+   header_out = header_out + "<input value='"+str(first_day.replace("_", "/"))+"' type='text' class='form-control'>"
    header_out = header_out + "<span class='input-group-addon'><span class='icon-clock'></span></span></div></h1>"
    header_out = header_out + "<div class='page_h'>Page  " + format(cur_page) + "/" +  format(pagination[2]) + "</div></div>" 
 
