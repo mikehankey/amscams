@@ -1941,9 +1941,7 @@ def main_page(json_conf,form):
    else:
       cur_page = int(cur_page)
 
-   if(end_day is None):
-      now = datetime.datetime.now()
-      end_day = now.strftime("%Y/%m/%d")
+  
 
    days = sorted(get_proc_days(json_conf),reverse=True)
 
@@ -1958,8 +1956,16 @@ def main_page(json_conf,form):
    to_display = ""
    first_day = ""
    real_detections = []
+
    # Need a fist loop to cleanup
    for idx, day in enumerate(detections): 
+      print(day)
+       
+      #Default day if not defined
+      if(end_day is None and idx==0):
+         now = datetime.datetime.now()
+         end_day = now.strftime("%Y/%m/%d")
+
       day_str = day
       day_dir = json_conf['site']['proc_dir'] + day + "/" 
       if "meteor" not in day_dir and "daytime" not in day_dir and "json" not in day_dir and "trash" not in day_dir:
