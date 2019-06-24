@@ -161,9 +161,9 @@ def make_day_preview(day_dir, stats_data, json_conf):
       obj_stack = day_dir + "/" + "images/"+ cams_id + "-night-stack.png"
       meteor_stack = day_dir + "/" + "images/" + cams_id + "-meteors-stack.png"
       if cfe(obj_stack) == 0:
-         obj_stack = "/mnt/ams2/blank.jpg"
+         obj_stack = "/dist/img/proccessing.png"
       if cfe(meteor_stack) == 0:
-         meteor_stack = "/mnt/ams2/blank.jpg"
+         meteor_stack = "/dist/img/proccessing.png"
 
       day=day.replace("_","")
  
