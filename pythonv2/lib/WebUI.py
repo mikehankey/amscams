@@ -922,8 +922,7 @@ def get_meteors(meteor_dir,meteors):
          meteors.append(file)
    return(meteors)
 
-
-
+ 
  
 def meteors_new(json_conf,form):  
 
@@ -1942,7 +1941,13 @@ def main_page(json_conf,form):
       cur_page = int(cur_page)
   
    days = sorted(get_proc_days(json_conf),reverse=True)
-   print(days)
+   
+   # We remove the days we don't care about to speed up the page
+   if(end_day is not None):
+         for idx, d in enumerate(days)
+            print(idx + "  => " + d)
+ #### meteors = meteors[meteor_start:meteor_end]
+
 
    json_file = json_conf['site']['proc_dir'] + "json/" + "main-index.json"
    stats_data = load_json_file(json_file)
