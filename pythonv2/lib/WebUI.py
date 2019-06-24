@@ -9,6 +9,7 @@ import glob
 import os
 import json
 import cgitb
+import re
 import datetime
 from lib.Pagination import get_pagination
 from lib.PrintUtils import get_meteor_date
@@ -1945,9 +1946,11 @@ def main_page(json_conf,form):
    # We remove the days we don't care about to speed up the page
    if(end_day is not None):
          for idx, d in enumerate(days):
-            print(" D " +  d +  "\n")
-            #ddd = get_meteor_date(d)
-            #print(str(ddd) + "  => " + str(d) +  "\n")
+            test_ends_with_int = re.search(r'\d+$', d)
+            
+            if m is not None:
+                  ddd = get_meteor_date(d)
+                  print(str(ddd) + "  => " + str(d) +  "\n")
             # Get the date 
  #### meteors = meteors[meteor_start:meteor_end]
 
