@@ -112,6 +112,7 @@ function step(startTime) {
     }        
 
     $('#cur_f').text(frameNumber);
+    console.log("FN" + frameNumber);
   }
 
   if(playing) requestAnimationFrame(step);
