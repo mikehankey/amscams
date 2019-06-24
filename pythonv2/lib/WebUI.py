@@ -1975,8 +1975,8 @@ def main_page(json_conf,form):
 
       day_str = day
       day_dir = json_conf['site']['proc_dir'] + day + "/" 
-      day_cur_date = day_str.strftime("%Y/%m/%d")
-      
+      #day_cur_date = day_str.strftime("%Y/%m/%d")
+      print('DAY ' + day_str)
 
       if "meteor" not in day_dir and "daytime" not in day_dir and "json" not in day_dir and "trash" not in day_dir:
          real_detections.append(day) 
