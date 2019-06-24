@@ -1971,7 +1971,7 @@ def main_page(json_conf,form):
       #Default day if not defined
       if(end_day is None and idx==0):
          now = datetime.datetime.now()
-         end_day_date = now
+         end_day_date = time.strptime(now,"%Y/%m/%d")
 
       day_str = day
       day_dir = json_conf['site']['proc_dir'] + day + "/" 
