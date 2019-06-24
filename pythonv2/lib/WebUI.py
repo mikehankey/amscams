@@ -1948,7 +1948,7 @@ def main_page(json_conf,form):
          for idx, d in enumerate(days):
             test_ends_with_int = re.search(r'\d+$', d)
             
-            if m is not None:
+            if test_ends_with_int is not None:
                   ddd = get_meteor_date(d)
                   print(str(ddd) + "  => " + str(d) +  "\n")
             # Get the date 
