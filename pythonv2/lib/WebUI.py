@@ -11,6 +11,7 @@ import json
 import cgitb
 import re
 import datetime
+import time
 from lib.Pagination import get_pagination
 from lib.PrintUtils import get_meteor_date, get_date_from_file
 from lib.FileIO import get_proc_days, get_day_stats, get_day_files , load_json_file, get_trims_for_file, get_days, save_json_file, cfe, save_meteor
@@ -1976,7 +1977,7 @@ def main_page(json_conf,form):
       day_dir = json_conf['site']['proc_dir'] + day + "/" 
 
       # Use to compare with end
-      day_cur_date = datetime.strptime(day_str,"%Y_%m_%d")
+      day_cur_date = time.strptime(day_str,"%Y_%m_%d")
        
 
       if "meteor" not in day_dir and "daytime" not in day_dir and "json" not in day_dir and "trash" not in day_dir and end_day_date <= day_cur_date:
