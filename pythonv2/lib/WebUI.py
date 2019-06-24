@@ -1940,6 +1940,7 @@ def main_page(json_conf,form):
       cur_page = 1
    else:
       cur_page = int(cur_page)
+ 
   
    days = sorted(get_proc_days(json_conf),reverse=True)
   
@@ -1964,34 +1965,27 @@ def main_page(json_conf,form):
    first_day = ""
    real_detections = []
 
-   treated_counter = 0
-
-   # Need a fist loop to cleanup
+   # Need a fist loop to cleanup (big waist of time & resources here)
    for idx, day in enumerate(detections): 
          
       #Default day if not defined
       if(end_day is None and idx==0):
          now = datetime.datetime.now()
-         end_day = now.strftime("%Y/%m/%d")
+         end_day_date = now.strftime("%Y/%m/%d")
 
       day_str = day
       day_dir = json_conf['site']['proc_dir'] + day + "/" 
+      day_cur_date = day_str.strftime("%Y/%m/%d")
+      
+
       if "meteor" not in day_dir and "daytime" not in day_dir and "json" not in day_dir and "trash" not in day_dir:
-         real_detections.append(day)
-         treated_counter += +1
-
-      if(treated_counter > NUMBER_OF_DAYS_PER_PAGE):
-            break
-
-
-
-
-         
-
+         real_detections.append(day) 
+  
    all_real_detections = real_detections
 
    day_start = (cur_page-1) * NUMBER_OF_DAYS_PER_PAGE
-   day_end = day_start + NUMBER_OF_DAYS_PER_PAGE
+   day_end   = day_start + NUMBER_OF_DAYS_PER_PAGE
+   
    # slice the array to just the values you want.
    real_detections = all_real_detections[day_start:day_end] 
 
