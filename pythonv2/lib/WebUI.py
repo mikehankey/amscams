@@ -1940,8 +1940,7 @@ def main_page(json_conf,form):
       cur_page = 1
    else:
       cur_page = int(cur_page)
- 
-  
+   
    days = sorted(get_proc_days(json_conf),reverse=True)
   
    # We remove the days we don't care about to speed up the page
@@ -1975,10 +1974,12 @@ def main_page(json_conf,form):
 
       day_str = day
       day_dir = json_conf['site']['proc_dir'] + day + "/" 
-      #day_cur_date = day_str.strftime("%Y/%m/%d")
-      print('DAY ' + day_str)
 
-      if "meteor" not in day_dir and "daytime" not in day_dir and "json" not in day_dir and "trash" not in day_dir:
+      # Use to compare with end
+      day_cur_date = day_str.strftime("%Y_%m_%d")
+
+
+      if "meteor" not in day_dir and "daytime" not in day_dir and "json" not in day_dir and "trash" not in day_dir and end_day_date <= day_cur_date:
          real_detections.append(day) 
   
    all_real_detections = real_detections
