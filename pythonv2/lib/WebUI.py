@@ -1943,7 +1943,7 @@ def main_page(json_conf,form):
       cur_page = int(cur_page)
 
    if(end_day is not None):
-      end_day_date = end_day.strftime('%Y_%m_%d')
+      end_day_date = datetime.datetime.strptime(end_day,"%Y_%m_%d")
    
    days = sorted(get_proc_days(json_conf),reverse=True)
   
