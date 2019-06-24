@@ -1949,7 +1949,7 @@ def main_page(json_conf,form):
             test_ends_with_int = re.search(r'\d+$', d)
             
             if test_ends_with_int is not None:
-                  ddd = get_meteor_date(d)
+                  ddd = get_date_from_file(d)
                   print(str(ddd) + "  => " + str(d) +  "\n")
             # Get the date 
  #### meteors = meteors[meteor_start:meteor_end]
