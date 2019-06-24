@@ -1944,7 +1944,7 @@ def main_page(json_conf,form):
    
    # We remove the days we don't care about to speed up the page
    if(end_day is not None):
-         for idx, d in enumerate(days)
+         for idx, d in enumerate(days):
             print(idx + "  => " + d)
  #### meteors = meteors[meteor_start:meteor_end]
 
