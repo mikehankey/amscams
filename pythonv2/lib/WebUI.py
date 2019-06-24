@@ -1964,6 +1964,7 @@ def main_page(json_conf,form):
    to_display = ""
    first_day = ""
    real_detections = []
+   real_detections_to_display = []
 
    # Need a fist loop to cleanup (big waist of time & resources here)
    for idx, day in enumerate(detections): 
@@ -1971,13 +1972,13 @@ def main_page(json_conf,form):
       #Default day if not defined
       if(end_day is None and idx==0):
          now = datetime.datetime.now()
-         end_day_date = time.strptime(now,"%Y/%m/%d")
+         end_day_date = now
 
       day_str = day
       day_dir = json_conf['site']['proc_dir'] + day + "/" 
 
       # Use to compare with end
-      day_cur_date = time.strptime(day_str,"%Y_%m_%d")
+      day_cur_date = datetime.strptime(day_str,"%Y_%m_%d")
        
 
       if "meteor" not in day_dir and "daytime" not in day_dir and "json" not in day_dir and "trash" not in day_dir and end_day_date <= day_cur_date:
