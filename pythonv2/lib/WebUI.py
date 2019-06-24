@@ -1999,8 +1999,7 @@ def main_page(json_conf,form):
    # slice the array to just the values you want.
    real_detections = all_real_detections[day_start:day_end] 
    real_detections_to_display_d = real_detections_to_display[day_start:day_end] 
-    
-
+   
    for idx, day in enumerate(real_detections_to_display_d): 
       day_str = day
       day_dir = json_conf['site']['proc_dir'] + day + "/" 
@@ -2023,7 +2022,7 @@ def main_page(json_conf,form):
       to_display = to_display + "</div>"
       counter = counter + 1
  
-   pagination =  get_pagination(cur_page,len(real_detections),"/pycgi/webUI.py?cmd=home",NUMBER_OF_DAYS_PER_PAGE)
+   pagination =  get_pagination(cur_page,len(all_real_detections),"/pycgi/webUI.py?cmd=home",NUMBER_OF_DAYS_PER_PAGE)
 
    header_out = "<div class='h1_holder d-flex justify-content-between'><h1>Daily Dectections until "
    header_out = header_out + "<div class='input-group date datepicker' data-display-format='YYYY/MM/DD' data-action='reload' data-url-param='limit_day' data-send-format='YYYY_MM_DD'>"
