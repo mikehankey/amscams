@@ -1999,7 +1999,10 @@ def main_page(json_conf,form):
    real_detections = all_real_detections[day_start:day_end] 
 
    real_detections_to_display = real_detections_to_display[day_start:day_end] 
-   print ("DETECTIONS TO DISPLAY " +  str(len(real_detections_to_display)) + "\n")
+   print ("day_start " +  day_start + "<br>")
+   print ("day_end " +  day_end + "<br>")
+   print ("DETECTIONS TO DISPLAY " +  str(len(real_detections_to_display)) + "<br>")
+   
    
 
    for idx, day in enumerate(real_detections_to_display): 
