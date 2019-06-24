@@ -1839,7 +1839,8 @@ def browse_day(day,cams_id,json_conf):
    print("<div class='h1_holder d-flex justify-content-between'><h1><span class='h'><span id='meteor_count'>"+format(len(day_files))+"</span> detections</span> on")
    print("<div class='input-group date datepicker' data-display-format='YYYY/MM/DD' data-action='reload' data-url-param='day' data-send-format='YYYY_MM_DD'>")
    print("<input value='"+str(day.replace("_", "/"))+"' type='text' class='form-control'>")
-   print("<span class='input-group-addon'><span class='icon-clock'></span></span></div> by Cam #"+cams_id+"</h1></div>") 
+   print("<span class='input-group-addon'><span class='icon-clock'></span></span></div> by Cam #"+cams_id+"</h1>"
+   print("<div><a id='play_anim_thumb'>All night Animation</a></div>") 
   
    print("<div id='main_container' class='container-fluid h-100 mt-4 lg-l'>")
    print("<div class='gallery gal-resize row text-center text-lg-left '>")
@@ -2027,7 +2028,7 @@ def main_page(json_conf,form):
  
    pagination =  get_pagination(cur_page,len(real_detections_to_display),"/pycgi/webUI.py?cmd=home",NUMBER_OF_DAYS_PER_PAGE)
 
-   header_out = "<div class='h1_holder d-flex justify-content-between'><h1>Daily Dectections until"
+   header_out = "<div class='h1_holder d-flex justify-content-between'><h1>Daily Dectections until "
    header_out = header_out + "<div class='input-group date datepicker' data-display-format='YYYY/MM/DD' data-action='reload' data-url-param='limit_day' data-send-format='YYYY_MM_DD'>"
    header_out = header_out + "<input value='"+ end_day +"' type='text' class='form-control'>"
    header_out = header_out + "<span class='input-group-addon'><span class='icon-clock'></span></span></div></h1>"
