@@ -85,15 +85,14 @@ function frame_anim() {
         } 
         
     });  
-
-    console.log('START AN');
-    requestAnimationFrame(step);
+ 
+    requestAnimationFrame(step_frame);
 }
   
 
 // 'step' function will be called each time browser rerender the content
 // we achieve that by passing 'step' as a parameter to 'requestAnimationFrame' function
-function step(startTime) {
+function step_frame(startTime) {
  
   // 'startTime' is provided by requestAnimationName function, and we can consider it as current time
   // first of all we calculate how much time has passed from the last time when frame was update
@@ -117,7 +116,7 @@ function step(startTime) {
     console.log("FN" + frameNumber);
   }
 
-  if(playing) requestAnimationFrame(step);
+  if(playing) requestAnimationFrame(step_frame);
 }
  
 $(function() {
