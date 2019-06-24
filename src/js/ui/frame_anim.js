@@ -5,7 +5,7 @@ var timePerFrame;
 var timeWhenLastUpdate;
 var timeFromLastUpdate;
 var frameNumber; 
-var playing;
+var playing; 
 
 // Modal for selector
 function addAnimModalTemplate($allframes) {
@@ -85,6 +85,8 @@ function frame_anim() {
         } 
         
     });  
+
+    console.log('START AN');
     requestAnimationFrame(step);
 }
   
