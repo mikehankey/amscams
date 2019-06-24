@@ -1999,7 +1999,10 @@ def main_page(json_conf,form):
    # slice the array to just the values you want.
    real_detections = all_real_detections[day_start:day_end] 
 
-   print ("DETECTIONS TO DISPLAY " +  str(len(real_detections_to_display)))
+   print ("DETECTIONS TO DISPLAY " +  str(len(real_detections_to_display)) + "\n")
+   for idx, day in enumerate(real_detections_to_display): 
+      day_str = day
+      print(day + "\n")
    
 
    for idx, day in enumerate(real_detections): 
