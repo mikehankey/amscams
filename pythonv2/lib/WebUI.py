@@ -1999,9 +1999,6 @@ def main_page(json_conf,form):
    real_detections = all_real_detections[day_start:day_end] 
 
    real_detections_to_display = real_detections_to_display[day_start:day_end] 
-   print ("day_start " +  str(day_start) + "<br>")
-   print ("day_end " +  str(day_end) + "<br>")
-   print ("DETECTIONS TO DISPLAY " +  str(len(real_detections_to_display)) + "<br>")
    
    
 
@@ -2028,7 +2025,7 @@ def main_page(json_conf,form):
       to_display = to_display + "</div>"
       counter = counter + 1
  
-   pagination =  get_pagination(cur_page,len(all_real_detections),"/pycgi/webUI.py?cmd=home",NUMBER_OF_DAYS_PER_PAGE)
+   pagination =  get_pagination(cur_page,len(real_detections_to_display),"/pycgi/webUI.py?cmd=home",NUMBER_OF_DAYS_PER_PAGE)
 
    header_out = "<div class='h1_holder d-flex justify-content-between'><h1>Daily Dectections until"
    header_out = header_out + "<div class='input-group date datepicker' data-display-format='YYYY/MM/DD' data-action='reload' data-url-param='limit_day' data-send-format='YYYY_MM_DD'>"
