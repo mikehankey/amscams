@@ -1940,10 +1940,9 @@ def main_page(json_conf,form):
       cur_page = 1
    else:
       cur_page = int(cur_page)
-
   
-
    days = sorted(get_proc_days(json_conf),reverse=True)
+   print(days)
 
    json_file = json_conf['site']['proc_dir'] + "json/" + "main-index.json"
    stats_data = load_json_file(json_file)
@@ -1959,8 +1958,7 @@ def main_page(json_conf,form):
 
    # Need a fist loop to cleanup
    for idx, day in enumerate(detections): 
-      print(day)
-       
+         
       #Default day if not defined
       if(end_day is None and idx==0):
          now = datetime.datetime.now()
