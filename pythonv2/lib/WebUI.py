@@ -1983,8 +1983,7 @@ def main_page(json_conf,form):
 
       # Use to compare with end
       day_cur_date = datetime.datetime.strptime(day_str,"%Y_%m_%d")
-       
-
+     
       if "meteor" not in day_dir and "daytime" not in day_dir and "json" not in day_dir and "trash" not in day_dir:
          real_detections.append(day) 
 
@@ -2000,10 +1999,7 @@ def main_page(json_conf,form):
    real_detections = all_real_detections[day_start:day_end] 
 
    real_detections_to_display = real_detections_to_display[day_start:day_end] 
-   #print ("DETECTIONS TO DISPLAY " +  str(len(real_detections_to_display)) + "\n")
-   #for idx, day in enumerate(real_detections_to_display): 
-   #   day_str = day
-   #   print(day + "\n")
+   print ("DETECTIONS TO DISPLAY " +  str(len(real_detections_to_display)) + "\n")
    
 
    for idx, day in enumerate(real_detections_to_display): 
