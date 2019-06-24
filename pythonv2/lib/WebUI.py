@@ -1980,7 +1980,7 @@ def main_page(json_conf,form):
          real_detections.append(day)
          treated_counter += +1
 
-      if(treated_counter > NUMBER_OF_DAYS_PER_PAGE)
+      if(treated_counter > NUMBER_OF_DAYS_PER_PAGE):
             break
 
 
