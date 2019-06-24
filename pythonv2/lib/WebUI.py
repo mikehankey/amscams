@@ -1953,6 +1953,7 @@ def main_page(json_conf,form):
    real_detections = []
    # Need a fist loop to cleanup
    for idx, day in enumerate(detections): 
+      print(day)
       day_str = day
       day_dir = json_conf['site']['proc_dir'] + day + "/" 
       if "meteor" not in day_dir and "daytime" not in day_dir and "json" not in day_dir and "trash" not in day_dir:
