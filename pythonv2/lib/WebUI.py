@@ -1998,12 +1998,10 @@ def main_page(json_conf,form):
    
    # slice the array to just the values you want.
    real_detections = all_real_detections[day_start:day_end] 
+   real_detections_to_display_d = real_detections_to_display[day_start:day_end] 
+    
 
-   real_detections_to_display = real_detections_to_display[day_start:day_end] 
-   
-   
-
-   for idx, day in enumerate(real_detections_to_display): 
+   for idx, day in enumerate(real_detections_to_display_d): 
       day_str = day
       day_dir = json_conf['site']['proc_dir'] + day + "/" 
       failed_files = stats_data[day]['failed_files']
