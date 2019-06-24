@@ -1942,17 +1942,14 @@ def main_page(json_conf,form):
       cur_page = int(cur_page)
   
    days = sorted(get_proc_days(json_conf),reverse=True)
-   
+  
    # We remove the days we don't care about to speed up the page
    if(end_day is not None):
          for idx, d in enumerate(days):
             test_ends_with_int = re.search(r'\d+$', d)
             
             if test_ends_with_int is not None:
-                  ddd = get_date_from_file(d)
-                  print(str(ddd) + "  => " + str(d) +  "\n")
-            # Get the date 
- #### meteors = meteors[meteor_start:meteor_end]
+                  ddd = get_date_from_file(d) 
 
 
    json_file = json_conf['site']['proc_dir'] + "json/" + "main-index.json"
@@ -1967,6 +1964,8 @@ def main_page(json_conf,form):
    first_day = ""
    real_detections = []
 
+   treated_counter = 0
+
    # Need a fist loop to cleanup
    for idx, day in enumerate(detections): 
          
@@ -1979,6 +1978,15 @@ def main_page(json_conf,form):
       day_dir = json_conf['site']['proc_dir'] + day + "/" 
       if "meteor" not in day_dir and "daytime" not in day_dir and "json" not in day_dir and "trash" not in day_dir:
          real_detections.append(day)
+         treated_counter += +1
+
+      if(treated_counter > NUMBER_OF_DAYS_PER_PAGE)
+            break
+
+
+
+
+         
 
    all_real_detections = real_detections
 
