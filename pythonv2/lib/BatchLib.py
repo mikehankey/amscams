@@ -600,7 +600,7 @@ def make_file_index(json_conf ):
          #pending_files = main_index[day]['pending_files'] 
          #min_files = main_index[day]['min_files'] 
 
-         stats[day] = main_index[day]
+         #stats[day] = main_index[day]
 
       
       print(day)

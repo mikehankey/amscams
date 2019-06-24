@@ -2006,7 +2006,6 @@ def main_page(json_conf,form):
    for idx, day in enumerate(real_detections_to_display): 
       day_str = day
       day_dir = json_conf['site']['proc_dir'] + day + "/" 
-       
       failed_files = stats_data[day]['failed_files']
       meteor_files = stats_data[day]['meteor_files']
       pending_files = stats_data[day]['pending_files']
