@@ -1997,7 +1997,7 @@ def main_page(json_conf,form):
    header_out = header_out + "<span class='input-group-addon'><span class='icon-clock'></span></span></div></h1>"
    header_out = header_out + "<div class='page_h'>Page  " + format(cur_page) + "/" +  format(pagination[2]) + "</div></div>" 
 
-   print header_out
+   print(header_out)
    print("<div id='main_container' class='container-fluid h-100 mt-4 lg-l'>")
    print(to_display)
    print(pagination[0])
