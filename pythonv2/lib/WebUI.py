@@ -1930,6 +1930,8 @@ def browse_detects(day,type,json_conf,form):
 
 
 def main_page(json_conf,form):
+
+   cgitb.enable()   
    cur_page  = form.getvalue('p')
 
    if (cur_page is None) or (cur_page==0):
