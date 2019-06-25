@@ -40,23 +40,17 @@ def check_pwd_ajax(user, pwd):
     json_file = open('../../conf/as6.json')
     json_str = json_file.read()
     json_data = json.loads(json_str)
-
+    result = {}
     try:
         if(json_data['site']['ams_id']==user and json_data['site']['pwd']==pwd):
-            result = {
-                'passed': True
-            }
+            result['passed'] = 1
             #print encode(AllonsEnfantsDeLaPatrie,pwd)
         else:
-            result = {
-                'passed': False
-            }
+           result['passed'] = 0
     except Exception:
-        result = {
-            'error': 'Password not found in your configuration. Please, contact Mike.'
-         }
+        result['error'] = 'Password not found in your configuration. Please, contact Mike.'
     r = json.dumps(result)
-    print r
+    print(r)
 
 
 def setup_pwd(domain,user,pwd):
