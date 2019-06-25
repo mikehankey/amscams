@@ -51,10 +51,11 @@ def check_pwd_ajax(user, pwd):
     r = json.dumps(result)
     print(r) 
 
+    encode(KEY,pwd)
     setup_login_cookie(user)
 
 
-def setup_login_cookie(user,pwd):
+def setup_login_cookie(user):
     #setup_pwd('www.moncul.com','toto','t0t0t')
     cgitb.enable()
     expiration = datetime.datetime.now() + datetime.timedelta(days=0.5)
