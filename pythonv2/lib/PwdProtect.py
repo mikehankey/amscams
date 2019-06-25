@@ -44,12 +44,12 @@ def check_pwd_ajax(user, pwd):
     try:
         if(json_data['site']['ams_id']==user and json_data['site']['pwd']==pwd):
             result = {
-                'passed': true
+                'passed': True
             }
             print encode(AllonsEnfantsDeLaPatrie,pwd)
         else:
             result = {
-                'passed': false
+                'passed': False
             }
     except Exception:
         result = {
