@@ -4,11 +4,11 @@ import cgitb
 
 
 
-def login():
+def login_page():
     fpt = open("/home/ams/amscams/pythonv2/templates/login.html", "r")
     for line in fpt:
         template = template + line
-    print template
+    print(template)
 
 def setup_pwd(domain,user,pwd):
 
@@ -16,12 +16,12 @@ def setup_pwd(domain,user,pwd):
     cgitb.enable()
     expiration = datetime.datetime.now() + datetime.timedelta(days=0.5)
     
-    print ("Content-type:text/html\r\n")
-    print ("Set-Cookie:User = "+user+";\r\n")
-    print ("Set-Cookie:Password = "+pwd+"\r\n")
-    print ("Set-Cookie:Expires = "+expiration.strftime("%a, %d-%b-%Y %H:%M:%S GMT")+";\r\n")
-    print ("Set-Cookie:Domain = lovable-falcon-4326.dataplicity.io;\r\n")
-    print ("Set-Cookie:Path = /;\n")
+    print("Content-type:text/html\r\n")
+    print("Set-Cookie:User = "+user+";\r\n")
+    print("Set-Cookie:Password = "+pwd+"\r\n")
+    print("Set-Cookie:Expires = "+expiration.strftime("%a, %d-%b-%Y %H:%M:%S GMT")+";\r\n")
+    print("Set-Cookie:Domain = lovable-falcon-4326.dataplicity.io;\r\n")
+    print("Set-Cookie:Path = /;\n")
  
     
     #print "Set-Cookie:UserID = XYZ;\r\n"

@@ -12,7 +12,7 @@ import cgitb
 import re
 import datetime
 import time
-from lib.PwdProtect import setup_pwd, login
+from lib.PwdProtect import setup_pwd, login_page
 from lib.Pagination import get_pagination
 from lib.PrintUtils import get_meteor_date, get_date_from_file
 from lib.FileIO import get_proc_days, get_day_stats, get_day_files , load_json_file, get_trims_for_file, get_days, save_json_file, cfe, save_meteor
@@ -209,7 +209,8 @@ def controller(json_conf):
 
    #login
    if cmd == 'login':
-      login()
+      login_page()
+      exit()
  
 
    # do json ajax functions up here and bypass the exta html
