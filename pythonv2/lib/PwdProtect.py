@@ -43,7 +43,8 @@ def check_pwd_ajax(user, pwd):
     try:
         if(json_data['site']['ams_id']==user and json_data['site']['pwd']==pwd):
             result['passed'] = 1
-            setup_login_cookie(user)
+            p = encode(KEY,pwd)
+            setup_login_cookie(user,p)
         else:
             result['passed'] = 0
     except Exception:
@@ -53,12 +54,13 @@ def check_pwd_ajax(user, pwd):
     print(r) 
 
 
-def setup_login_cookie(user):
+def setup_login_cookie(user,pwd):
     #setup_pwd('www.moncul.com','toto','t0t0t')
     cgitb.enable()
     expiration = datetime.datetime.now() + datetime.timedelta(days=0.5)
     print("Content-type:text/html\r\n")
     print("Set-Cookie:User = "+user+";\r\n")
+    print("Set-Cookie:¨Pwd = "+pwd+";\r\n")
     print("Set-Cookie:Expires = "+expiration.strftime("%a, %d-%b-%Y %H:%M:%S GMT")+";\r\n")
     #print("Set-Cookie:Domain = lovable-falcon-4326.dataplicity.io;\r\n")
     print("Set-Cookie:Path = /;\n") 
