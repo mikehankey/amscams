@@ -195,7 +195,7 @@ def parse_jsid(jsid):
 
 def controller(json_conf):
 
-   setupPwd('www.moncul.com','toto','t0t0t')
+   #setupPwd('www.moncul.com','toto','t0t0t')
 
    form = cgi.FieldStorage()
    cmd = form.getvalue('cmd')
