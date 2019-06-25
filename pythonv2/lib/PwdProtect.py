@@ -2,7 +2,17 @@ import datetime
 import random
 import cgitb
 
+
+
+def login():
+    fpt = open("/home/ams/amscams/pythonv2/templates/login.html", "r")
+    for line in fpt:
+        template = template + line
+    print template
+
 def setup_pwd(domain,user,pwd):
+
+    #setup_pwd('www.moncul.com','toto','t0t0t')
     cgitb.enable()
     expiration = datetime.datetime.now() + datetime.timedelta(days=0.5)
     

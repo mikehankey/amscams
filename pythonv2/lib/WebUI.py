@@ -12,7 +12,7 @@ import cgitb
 import re
 import datetime
 import time
-from lib.PwdProtect import setup_pwd
+from lib.PwdProtect import setup_pwd, login
 from lib.Pagination import get_pagination
 from lib.PrintUtils import get_meteor_date, get_date_from_file
 from lib.FileIO import get_proc_days, get_day_stats, get_day_files , load_json_file, get_trims_for_file, get_days, save_json_file, cfe, save_meteor
@@ -24,8 +24,7 @@ from lib.ImageLib import mask_frame , draw_stack, stack_frames
 from lib.CalibLib import radec_to_azel
 from lib.WebCalib import calibrate_pic,make_plate_from_points, solve_field, check_solve_status, free_cal, show_cat_stars, choose_file, upscale_2HD, fit_field, delete_cal, add_stars_to_fit_pool, save_add_stars_to_fit_pool, reduce_meteor, reduce_meteor_ajax, find_stars_ajax, man_reduce, pin_point, get_manual_points, del_manual_points, sat_cap, HMS2deg, custom_fit, del_frame, clone_cal, reduce_meteor_new , update_red_info_ajax, update_hd_cal_ajax, add_frame_ajax, update_frame_ajax
 from lib.UtilLib import calc_radiant
-
-
+ 
 
 NUMBER_OF_METEOR_PER_PAGE = 60
 NUMBER_OF_DAYS_PER_PAGE = 7
@@ -196,8 +195,6 @@ def parse_jsid(jsid):
 
 def controller(json_conf):
 
-   setup_pwd('www.moncul.com','toto','t0t0t')
-
    form = cgi.FieldStorage()
    cmd = form.getvalue('cmd')
    skin = form.getvalue('skin')
@@ -209,6 +206,11 @@ def controller(json_conf):
       exit()
 #   cmd = "reduce"
    print("Content-type: text/html\n\n")
+
+   #login
+   if cmd == 'login':
+      login()
+ 
 
    # do json ajax functions up here and bypass the exta html
    if cmd == 'override_detect':
@@ -375,7 +377,7 @@ def controller(json_conf):
 
       examine(video_file)
    if cmd == '' or cmd is None or cmd == 'home':
-      main_page(json_conf,form)   
+      main_page(json_conf,form) 
    if cmd == 'examine_cal':
       examine_cal(json_conf,form)   
    if cmd == 'calibration':
