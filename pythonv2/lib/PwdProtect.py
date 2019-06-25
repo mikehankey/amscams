@@ -1,5 +1,3 @@
-from os import environ
-import cgi, cgitb
 import Cookie
 import datetime
 import random
