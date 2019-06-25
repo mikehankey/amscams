@@ -157,7 +157,7 @@ def make_day_preview(day_dir, stats_data, json_conf):
       key = "cam" + str(i)
       cam = key
       cams_id = json_conf['cameras'][cam]['cams_id']
-      if(stats_data[cams_id]  is not None):
+      if(stats_data is not None and stats_data[cams_id] is not None):
             min_total = stats_data[cams_id] 
       else:
             min_total = 0
