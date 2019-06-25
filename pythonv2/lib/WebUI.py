@@ -12,7 +12,7 @@ import cgitb
 import re
 import datetime
 import time
-from lib.PwdProtect import setupPwd
+from lib.PwdProtect import setup_pwd
 from lib.Pagination import get_pagination
 from lib.PrintUtils import get_meteor_date, get_date_from_file
 from lib.FileIO import get_proc_days, get_day_stats, get_day_files , load_json_file, get_trims_for_file, get_days, save_json_file, cfe, save_meteor
