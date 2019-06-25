@@ -34,8 +34,7 @@ def decode(key, string):
     return encoded_string
 
 def check_pwd_ajax(user, pwd):
-    cgitb.enable()
-
+    cgitb.enable() 
     #check in conf/as6.json if pwd is right
     json_file = open('../../conf/as6.json')
     json_str = json_file.read()
@@ -44,19 +43,15 @@ def check_pwd_ajax(user, pwd):
     try:
         if(json_data['site']['ams_id']==user and json_data['site']['pwd']==pwd):
             result['passed'] = 1
+            setup_login_cookie(user)
         else:
            result['passed'] = 0
     except Exception:
         result['error'] = 'Password not found in your configuration. Please, contact Mike.'
     r = json.dumps(result)
-    print(r)
+    print(r) 
 
-    print("ENCONDING")
-    rz= encode(KEY,pwd)
-    print(rz)
-
-
-def setup_pwd(domain,user,pwd):
+def setup_login_cookie(user):
 
     #setup_pwd('www.moncul.com','toto','t0t0t')
     cgitb.enable()
@@ -64,15 +59,10 @@ def setup_pwd(domain,user,pwd):
     
     print("Content-type:text/html\r\n")
     print("Set-Cookie:User = "+user+";\r\n")
-    print("Set-Cookie:Password = "+pwd+"\r\n")
     print("Set-Cookie:Expires = "+expiration.strftime("%a, %d-%b-%Y %H:%M:%S GMT")+";\r\n")
     print("Set-Cookie:Domain = lovable-falcon-4326.dataplicity.io;\r\n")
-    print("Set-Cookie:Path = /;\n")
- 
-    
-    #print "Set-Cookie:UserID = XYZ;\r\n"
-    #print "Set-Cookie:Password = XYZ123;\r\n"
-    #print "Set-Cookie:Expires = Tuesday, 31-Dec-2007 23:12:40 GMT";\r\n"
-    #print "Set-Cookie:Domain = www.tutorialspoint.com;\r\n"
-    #print "Set-Cookie:Path = /perl;\n"
-    #print "Content-type:text/html\r\n\r\n"
+    print("Set-Cookie:Path = /;\n") 
+
+def read_login_cookie():
+
+    #Check if cookie exists
