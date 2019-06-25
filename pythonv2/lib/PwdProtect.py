@@ -6,9 +6,9 @@ import random
 
 def setupPwd(domain,user,pwd):
     expiration = datetime.datetime.now() + datetime.timedelta(days=0.5)
-
+    ses = random.randint(0,1000000000)
     cookie = Cookie.SimpleCookie()
-    cookie["session"] = random.randint(1000000000)
+    cookie["session"] = ses
     cookie["session"]["domain"] = domain
     cookie["session"]["path"] = "/"
     cookie["session"]["expires"] = expiration.strftime("%a, %d-%b-%Y %H:%M:%S GMT")
@@ -18,6 +18,7 @@ def setupPwd(domain,user,pwd):
     print
     print "Cookie set with: " + cookie.output()
 
+    return cookie["session"]
     
     #print "Set-Cookie:UserID = XYZ;\r\n"
     #print "Set-Cookie:Password = XYZ123;\r\n"
