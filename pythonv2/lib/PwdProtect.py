@@ -52,16 +52,13 @@ def check_pwd_ajax(user, pwd):
     r = json.dumps(result)
     print(r) 
 
-def setup_login_cookie(user):
 
+def setup_login_cookie(user):
     #setup_pwd('www.moncul.com','toto','t0t0t')
     cgitb.enable()
     expiration = datetime.datetime.now() + datetime.timedelta(days=0.5)
-    
     print("Content-type:text/html\r\n")
     print("Set-Cookie:User = "+user+";\r\n")
     print("Set-Cookie:Expires = "+expiration.strftime("%a, %d-%b-%Y %H:%M:%S GMT")+";\r\n")
     #print("Set-Cookie:Domain = lovable-falcon-4326.dataplicity.io;\r\n")
     print("Set-Cookie:Path = /;\n") 
-
- 
