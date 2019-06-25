@@ -1,8 +1,10 @@
 import Cookie
 import datetime
 import random
+import cgitb
 
 def setupPwd(domain,user,pwd):
+    cgitb.enable()
     expiration = datetime.datetime.now() + datetime.timedelta(days=0.5)
     ses = random.randint(0,1000000000)
     cookie = Cookie.SimpleCookie()
@@ -13,7 +15,6 @@ def setupPwd(domain,user,pwd):
 
     print "Content-type: text/plain"
     print cookie.output()
-    print
     print "Cookie set with: " + cookie.output()
 
     return cookie["session"]
