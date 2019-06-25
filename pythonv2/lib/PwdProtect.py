@@ -6,7 +6,7 @@ def setup_pwd(domain,user,pwd):
     cgitb.enable()
     expiration = datetime.datetime.now() + datetime.timedelta(days=0.5)
     print ("Set-Cookie:User = "+user+";\r\n")
-    print ("Set-Cookie:Password = "+pwd+"";\r\n")
+    print ("Set-Cookie:Password = "+pwd+"\r\n")
     print ("Set-Cookie:Expires = "+expiration.strftime("%a, %d-%b-%Y %H:%M:%S GMT")+";\r\n")
     print ("Set-Cookie:Domain = lovable-falcon-4326.dataplicity.io;\r\n")
     print ("Set-Cookie:Path = /;\n")
