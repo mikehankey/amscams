@@ -45,9 +45,10 @@ def check_pwd_ajax(user, pwd):
             result['passed'] = 1
             setup_login_cookie(user)
         else:
-           result['passed'] = 0
+            result['passed'] = 0
     except Exception:
         result['error'] = 'Password not found in your configuration. Please, contact Mike.'
+    
     r = json.dumps(result)
     print(r) 
 
@@ -60,9 +61,7 @@ def setup_login_cookie(user):
     print("Content-type:text/html\r\n")
     print("Set-Cookie:User = "+user+";\r\n")
     print("Set-Cookie:Expires = "+expiration.strftime("%a, %d-%b-%Y %H:%M:%S GMT")+";\r\n")
-    print("Set-Cookie:Domain = lovable-falcon-4326.dataplicity.io;\r\n")
+    #print("Set-Cookie:Domain = lovable-falcon-4326.dataplicity.io;\r\n")
     print("Set-Cookie:Path = /;\n") 
 
-def read_login_cookie():
-
-    #Check if cookie exists
+ 
