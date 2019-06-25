@@ -51,6 +51,7 @@ def check_pwd_ajax(user, pwd):
     r = json.dumps(result)
     print(r)
 
+    print("ENCONDING")
     rz= encode(KEY,pwd)
     print(rz)
 
