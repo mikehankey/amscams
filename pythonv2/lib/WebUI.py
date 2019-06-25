@@ -157,8 +157,10 @@ def make_day_preview(day_dir, stats_data, json_conf):
       key = "cam" + str(i)
       cam = key
       cams_id = json_conf['cameras'][cam]['cams_id']
-      min_total = 0
-      min_total = stats_data[cams_id] 
+      if(stats_data[cams_id]  is not None):
+            min_total = stats_data[cams_id] 
+      else:
+            min_total = 0
       obj_stack = day_dir + "/" + "images/"+ cams_id + "-night-stack.png"
       meteor_stack = day_dir + "/" + "images/" + cams_id + "-meteors-stack.png"
       if cfe(obj_stack) == 0:
