@@ -1,5 +1,7 @@
 import datetime 
 import cgitb
+import json
+import sys
  
 
 def login_page():
@@ -9,6 +11,35 @@ def login_page():
     for line in fpt:
         template = template + line
     print(template)
+
+# Decode String based on Key
+def encode(key, string):
+    encoded_chars = []
+    for i in range(len(string)):
+        key_c = key[i % len(key)]
+        encoded_c = chr(ord(string[i]) + ord(key_c) % 256)
+        encoded_chars.append(encoded_c)
+    encoded_string = ''.join(encoded_chars)
+    return encoded_string
+
+# Encode String based on Key
+def decode(key, string):
+    encoded_chars = []
+    for i in range(len(string)):
+        key_c = key[i % len(key)]
+        encoded_c = chr((ord(string[i]) - ord(key_c) + 256) % 256)
+        encoded_chars.append(encoded_c)
+    encoded_string = ''.join(encoded_chars)
+    return encoded_string
+
+def check_pwd_ajax(user, pwd):
+    #check in conf/as6.json if pwd is right
+    json_file = open('../conf/as6.json')
+    json_str = json_file.read()
+    json_data = json.loads(json_str)
+
+    print(json_data)
+
 
 def setup_pwd(domain,user,pwd):
 

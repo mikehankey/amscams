@@ -2,7 +2,7 @@
 <html lang="en-US">
 <head>
     <meta charset="UTF-8">
-    <title>{STATION_NAME} - {OBS_NAME} - AllSky6 </title>
+    <title>American Meteor Society Camera Network - Login</title>
     <meta content="American Meteor Society Camera Network" name="description">
     <meta content="meteor shower, meteor, fireball, meteorite, video, detection, reduction, asteroid, meteoroid" name="keywords">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
@@ -47,14 +47,14 @@
                 <div class="d-flex justify-content-center h-100 tdf">
                     <div class="card">
                         <div class="card-header">			 
-				            <h3> <iframe id="logo_holder" src="./dist/img/logo.svg" width="70" height="45" style="border:0" class="float-right"></iframe> Login</h3>
+				            <h3><iframe id="logo_holder" src="./dist/img/logo.svg" width="70" height="45" style="border:0" class="float-right"></iframe> Login</h3>
                         </div>
-                        <form>
+                        <form id="login_form">
                             <div class="input-group form-group"> 
-                                <input type="text" class="form-control" placeholder="username">
+                                <input id="u" type="text" class="form-control" placeholder="username">
                             </div>
                             <div class="input-group form-group">
-                                <input type="password" class="form-control" placeholder="password">
+                                <input id="p" type="password" class="form-control" placeholder="password">
                             </div>
                             <!--
                             <div class="row align-items-center remember">
@@ -85,6 +85,29 @@
 <div id="footer">
     &copy; American Meteor Society / AllSkycams.com
 </div>
+
+<script src="./src/js/functions/loader.js"></script>
+<script>
+    $(function() {
+        $('#login_form').submit(function() {
+            // Ajax call to check pwd/user
+            var cmd_data = {
+                cmd: 'check_pwd', 
+                user: $('#u').val(),
+                pwd: $('#p').val()
+            }
+
+            loading({text: "Please wait",overlay:true});
+
+            $.ajax({ 
+                url:  "/pycgi/webUI.py",
+                data: cmd_data,
+                success: function(data) {
+                    console.log(data);
+                });
+            })
+
+</script>
  
 </body>
 </html>
