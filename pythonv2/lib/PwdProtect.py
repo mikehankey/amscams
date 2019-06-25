@@ -20,7 +20,7 @@ def encode(key, string):
         key_c = key[i % len(key)]
         encoded_c = chr(ord(string[i]) + ord(key_c) % 256)
         encoded_chars.append(encoded_c)
-    encoded_string = "".join(encoded_chars)
+    encoded_string = ''.join(encoded_chars)
     return encoded_string
 
 # Encode String based on Key
@@ -44,14 +44,15 @@ def check_pwd_ajax(user, pwd):
     try:
         if(json_data['site']['ams_id']==user and json_data['site']['pwd']==pwd):
             result['passed'] = 1
-            r= encode(KEY,pwd)
-            print(r)
         else:
            result['passed'] = 0
     except Exception:
         result['error'] = 'Password not found in your configuration. Please, contact Mike.'
     r = json.dumps(result)
     print(r)
+
+    rz= encode(KEY,pwd)
+    print(rz)
 
 
 def setup_pwd(domain,user,pwd):
