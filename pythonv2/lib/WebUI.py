@@ -204,13 +204,12 @@ def controller(json_conf):
       print("Location: " + video_file + "\n\n")
       exit() 
 
+   print("Content-type: text/html\n\n")      
+
    #login
    if cmd == 'login':
       login_page()
-      exit()
-
-   print("Content-type: text/html\n\n")
- 
+      exit() 
 
    # do json ajax functions up here and bypass the exta html
    if cmd == 'override_detect':

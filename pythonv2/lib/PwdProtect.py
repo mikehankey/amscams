@@ -1,10 +1,9 @@
-import datetime
-import random
+import datetime 
 import cgitb
-
-
+ 
 
 def login_page():
+    cgitb.enable()
     fpt = open("/home/ams/amscams/pythonv2/templates/login.html", "r")
     for line in fpt:
         template = template + line
