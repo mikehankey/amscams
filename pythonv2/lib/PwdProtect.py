@@ -2,7 +2,8 @@ import datetime
 import cgitb
 import json
 import sys
- 
+
+KEY="AllonsEnfantsDeLaPatrie" 
 
 def login_page():
     cgitb.enable()
@@ -40,9 +41,19 @@ def check_pwd_ajax(user, pwd):
 
     try:
         if(json_data['site']['ams_id']==user and json_data['site']['pwd']==pwd):
-            print("YES")
+            result = {
+                'passed': true
+            }
+            print encode(AllonsEnfantsDeLaPatrie,pwd)
+        else:
+            result = {
+                'passed': false
+            }
     except Exception:
-        print("NO")
+        result = {
+            'error': 'Password not found in your configuration. Please, contact Mike.'
+         }
+    print json.dumps(result)
 
 
 def setup_pwd(domain,user,pwd):
