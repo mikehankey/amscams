@@ -23,12 +23,12 @@ from lib.ImageLib import mask_frame , draw_stack, stack_frames
 from lib.CalibLib import radec_to_azel
 from lib.WebCalib import calibrate_pic,make_plate_from_points, solve_field, check_solve_status, free_cal, show_cat_stars, choose_file, upscale_2HD, fit_field, delete_cal, add_stars_to_fit_pool, save_add_stars_to_fit_pool, reduce_meteor, reduce_meteor_ajax, find_stars_ajax, man_reduce, pin_point, get_manual_points, del_manual_points, sat_cap, HMS2deg, custom_fit, del_frame, clone_cal, reduce_meteor_new , update_red_info_ajax, update_hd_cal_ajax, add_frame_ajax, update_frame_ajax
 from lib.UtilLib import calc_radiant
+from lib.PwdProtect import setupPwd
 
 
 NUMBER_OF_METEOR_PER_PAGE = 60
 NUMBER_OF_DAYS_PER_PAGE = 7
-
-
+ 
 
 def run_detect(json_conf, form):
    temp_sd_video_file = form.getvalue("temp_sd_video_file")
@@ -194,6 +194,8 @@ def parse_jsid(jsid):
    return(video_file)
 
 def controller(json_conf):
+
+   setupPwd('www.moncul.com','toto','t0t0t')
 
    form = cgi.FieldStorage()
    cmd = form.getvalue('cmd')
