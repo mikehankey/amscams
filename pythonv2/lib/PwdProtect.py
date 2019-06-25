@@ -46,7 +46,7 @@ def check_pwd_ajax(user, pwd):
             result = {
                 'passed': True
             }
-            print encode(AllonsEnfantsDeLaPatrie,pwd)
+            #print encode(AllonsEnfantsDeLaPatrie,pwd)
         else:
             result = {
                 'passed': False
