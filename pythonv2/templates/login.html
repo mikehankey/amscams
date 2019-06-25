@@ -12,42 +12,52 @@
     <meta http-equiv="Pragma" content="no-cache" />
     <meta http-equiv="Expires" content="0" /> 
 
-    <script src="./dist/js/amscam.min.js"></script> 
-</head>
-<body>
-<nav class="navbar navbar-expand-lg navbar-dark bg-dark"> 
-       
-    <a class="navbar-brand clearfix" href="/pycgi/webUI.py" title="Home">  
-        <iframe id="logo_holder" src="./dist/img/logo.svg" width="70" height="45" style="border:0"></iframe>
-        <span class="tx"><span class="m">AMS Video Meteor Program</span><span class="s">Login</span></span>
-    </a>
- 
-</nav> 
+    <script src="./dist/js/amscam.min.js"></script>
+    <style>
+        html,body{ height: 100% };
+        .container{
+        height: 100%;
+        align-content: center;
+        }
+        .card{
+        height: 370px;
+        margin-top: auto;
+        margin-bottom: auto;
+        width: 400px;
+        background-color: rgba(0,0,0,0) !important;
+        }
 
-<div class="container">
-	<div class="d-flex justify-content-center h-100">
-		<div class="card">
-			<div class="card-header">
-				<h3>Login</h3>
-			</div>
-			<div class="card-body">
-				<form>
-					<div class="input-group form-group"> 
-						<input type="text" class="form-control" placeholder="username">
-					</div>
-					<div class="input-group form-group">
-						<input type="password" class="form-control" placeholder="password">
+    </style> 
+</head>
+<body class=" h-100">
+ 
+ 
+        <div class="container">
+                <div class="d-flex justify-content-center h-100">
+                    <div class="card">
+                        <div class="card-header">			 
+				            <h3> <iframe id="logo_holder" src="./dist/img/logo.svg" width="70" height="45" style="border:0"></iframe> Login</h3>
+                        </div>
+                        <form>
+                            <div class="input-group form-group"> 
+                                <input type="text" class="form-control" placeholder="username">
+                            </div>
+                            <div class="input-group form-group">
+                                <input type="password" class="form-control" placeholder="password">
+                            </div>
+                            <!--
+                            <div class="row align-items-center remember">
+                                <input type="checkbox">Remember Me
+                            </div>
+                            -->
+                            <div class="form-group">
+                                <input type="submit" value="Login" class="btn btn-primary float-right">
+                            </div>
+                        </form>
                     </div>
-                    <!--
-					<div class="row align-items-center remember">
-						<input type="checkbox">Remember Me
-                    </div>
-                    -->
-					<div class="form-group">
-						<input type="submit" value="Login" class="btn btn-primary float-right">
-					</div>
-				</form>
+                </div>
             </div>
+            
             <!--
 			<div class="card-footer">
 				<div class="d-flex justify-content-center links">
@@ -58,9 +68,8 @@
 				</div>
             </div>
             -->
-		</div>
-	</div>
-</div>
+	 
+ 
  
 <div id="footer">
     &copy; American Meteor Society / AllSkycams.com
