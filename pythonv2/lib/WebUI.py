@@ -197,20 +197,19 @@ def controller(json_conf):
 
    form = cgi.FieldStorage()
    cmd = form.getvalue('cmd')
-   skin = form.getvalue('skin')
-   #cmd = "play_vid"
+   skin = form.getvalue('skin') 
    if cmd == 'play_vid':
       jsid = form.getvalue('jsid')
       video_file = parse_jsid(jsid)
       print("Location: " + video_file + "\n\n")
-      exit()
-#   cmd = "reduce"
-   print("Content-type: text/html\n\n")
+      exit() 
 
    #login
    if cmd == 'login':
       login_page()
       exit()
+
+   print("Content-type: text/html\n\n")
  
 
    # do json ajax functions up here and bypass the exta html
