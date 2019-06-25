@@ -1,4 +1,3 @@
-import Cookie
 import datetime
 import random
 import cgitb
