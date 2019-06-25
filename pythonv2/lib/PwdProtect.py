@@ -51,7 +51,8 @@ def check_pwd_ajax(user, pwd):
     r = json.dumps(result)
     print(r) 
 
-    encode(KEY,pwd)
+    to = encode(KEY,pwd)
+    print("ENCODED " + to)
     setup_login_cookie(user)
 
 
