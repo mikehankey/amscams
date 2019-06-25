@@ -25,7 +25,7 @@ def encode(key, string):
 
 # Encode String based on Key
 def decode(key, string):
-    encoded_chars = []
+    encoded_chars = [] 
     for i in range(len(string)):
         key_c = key[i % len(key)]
         encoded_c = chr((ord(string[i]) - ord(key_c) + 256) % 256)
