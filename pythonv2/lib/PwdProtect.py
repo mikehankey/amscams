@@ -44,7 +44,7 @@ def check_pwd_ajax(user, pwd):
     try:
         if(json_data['site']['ams_id']==user and json_data['site']['pwd']==pwd):
             result['passed'] = 1
-            print encode(AllonsEnfantsDeLaPatrie,pwd)
+            print encode(KEY,pwd)
         else:
            result['passed'] = 0
     except Exception:
