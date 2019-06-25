@@ -38,7 +38,11 @@ def check_pwd_ajax(user, pwd):
     json_str = json_file.read()
     json_data = json.loads(json_str)
 
-    print(json_data)
+    try:
+        if(json_data['ams_id']===user and json_data['pwd']===pwd):
+            print("YES")
+    except Exception:
+        print("NO")
 
 
 def setup_pwd(domain,user,pwd):
