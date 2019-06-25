@@ -34,6 +34,8 @@ def decode(key, string):
     return encoded_string
 
 def check_pwd_ajax(user, pwd):
+    cgitb.enable()
+
     #check in conf/as6.json if pwd is right
     json_file = open('../../conf/as6.json')
     json_str = json_file.read()
@@ -53,7 +55,8 @@ def check_pwd_ajax(user, pwd):
         result = {
             'error': 'Password not found in your configuration. Please, contact Mike.'
          }
-    print json.dumps(result)
+    r = json.dumps(result)
+    print r
 
 
 def setup_pwd(domain,user,pwd):
