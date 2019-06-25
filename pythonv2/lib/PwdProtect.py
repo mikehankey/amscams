@@ -35,7 +35,7 @@ def decode(key, string):
     return encoded_string
 
 def check_pwd_ajax(user, pwd):
-    cgitb.enable() 
+    #cgitb.enable() 
     #check in conf/as6.json if pwd is right
     json_file = open('../../conf/as6.json')
     json_str = json_file.read()
@@ -44,6 +44,7 @@ def check_pwd_ajax(user, pwd):
     try:
         if(json_data['site']['ams_id']==user and json_data['site']['pwd']==pwd):
             result['passed'] = 1
+            setup_login_cookie(user)
         else:
             result['passed'] = 0
     except Exception:
@@ -52,14 +53,10 @@ def check_pwd_ajax(user, pwd):
     r = json.dumps(result)
     print(r) 
 
-    to = encode(KEY,pwd)
-    print("ENCODED " + to)
-    setup_login_cookie(user)
-
 
 def setup_login_cookie(user):
     #setup_pwd('www.moncul.com','toto','t0t0t')
-    cgitb.enable()
+    #cgitb.enable()
     expiration = datetime.datetime.now() + datetime.timedelta(days=0.5)
     print("Content-type:text/html\r\n")
     print("Set-Cookie:User = "+user+";\r\n") 
