@@ -16,15 +16,26 @@
     <style>
         html,body{ height: 100% };
         .container{
-        height: 100%;
-        align-content: center;
+            height: 100%;
+            align-content: center;
         }
-        .card{
-        height: 370px;
-        margin-top: auto;
-        margin-bottom: auto;
-        width: 400px;
-        background-color: rgba(0,0,0,0) !important;
+        .card-header {
+            padding:0;
+        }
+        .card{ 
+            margin-top: auto;
+            margin-bottom: auto;
+            width: 400px;
+            background-color: rgba(0,0,0,0) !important;
+        }
+
+        h3 {
+            margin: 0 0 .5rem;
+            line-height: 1.5;
+        }
+
+        .tdf {
+            margin-top: calc(100vh/2 - 200px);
         }
 
     </style> 
@@ -33,10 +44,10 @@
  
  
         <div class="container">
-                <div class="d-flex justify-content-center h-100">
+                <div class="d-flex justify-content-center h-100 tdf">
                     <div class="card">
                         <div class="card-header">			 
-				            <h3> <iframe id="logo_holder" src="./dist/img/logo.svg" width="70" height="45" style="border:0"></iframe> Login</h3>
+				            <h3> <iframe id="logo_holder" src="./dist/img/logo.svg" width="70" height="45" style="border:0" class="float-right"></iframe> Login</h3>
                         </div>
                         <form>
                             <div class="input-group form-group"> 
