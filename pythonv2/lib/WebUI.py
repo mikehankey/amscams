@@ -626,11 +626,10 @@ def meteor_index(json_conf, form):
 
 
    mi = load_json_file("/mnt/ams2/cal/hd_images/meteor_index.json")
-
+   mi = sorted(mi, reverse=True)
    meteor_start = (cur_page -1) * NUMBER_OF_METEOR_PER_PAGE 
    meteor_end = meteor_start + NUMBER_OF_METEOR_PER_PAGE
-  
- 
+   
    all_meteors = mi
  
    dsmi = mi[meteor_start:meteor_end] 
