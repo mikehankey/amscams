@@ -1,4 +1,4 @@
 var v = Cookies.get('wpAMS-10091976');
-if(v == 'undefined') {
+if(v == undefined) {
     window.location.href = "/pycgi/webUI.py?cmd=login";
 }
