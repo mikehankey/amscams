@@ -624,6 +624,12 @@ def meteor_index(json_conf, form):
 
    smi = sorted(mi, reverse=True)
 
+   meteor_start = (cur_page -1) * NUMBER_OF_METEOR_PER_PAGE 
+   meteor_end = meteor_start + NUMBER_OF_METEOR_PER_PAGE
+   all_meteors = smi
+
+   smi = smi[meteor_start:meteor_end]
+
    for day in smi:
       for meteor_file in mi[day]:
          hd_datetime, hd_cam, hd_date, hd_y, hd_m, hd_d, hd_h, hd_M, hd_s = convert_filename_to_date_cam(meteor_file)
