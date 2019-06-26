@@ -738,8 +738,22 @@ def meteor_index(json_conf, form):
             if seg_res > 2 or missing_frames > 0:
                color = "lv1"
          if show == 1:
-            results += "<tr class='" + color + "'><td><div class='st'></div></td><td>"+ link +"</td><td>" str(mi[day][meteor_file]['reduced'])+"</td><td>"+multi_text+"</td><td>"+az_el+"</td><td>"+pos+"</td><td>"+pxs+"</td><td>"+str(ts)+"</td><td>"+ str(mi[day][meteor_file]['total_res_px'][0:5])+"</td><td>"+str(dur)+"</td><td>"+str(ass)+"</td><td>"+str(seg_res)+"</td><td>"+str(missing_frames)+"</td><td>MAG</td><td></td></tr>"
- 
+               results += "<tr class='" + color + "'>"
+               results += "<td><div class='st'></div></td>"
+               results += "<td>"+link+"</td>"
+               results += "<td>"+ str(mi[day][meteor_file]['reduced'])+"</td>"
+               results += "<td>"+ multi_text+"</td>"
+               results += "<td>"+ az_el+"</td>"
+               results += "<td>"+ pos+"</td>"
+               results += "<td>"+ pxs+"</td>"
+               results += "<td>"+ str(ts)+"</td>"
+               results += "<td>"+ str(mi[day][meteor_file]['total_res_px'])[0:5]+"</td>"
+               results += "<td>"+ str(mi[day][meteor_file]['total_res_deg'])[0:5]+"</td>"
+               results += "<td>"+ str(dur)+"</td>"
+               results += "<td>"+ str(ass)+"</td>"
+               results += "<td>"+ str(seg_res)+"</td>"
+               results += "<td>"+ str(missing_frames)+"</td>"
+
    results += "</tbody></table>"
   
    print'<h1>Meteor Calibration Index <div class="input-group date datepicker" data-display-format="YYYY/MM/DD" data-action="reload" data-url-param="limit_day" data-send-format="YYYY_MM_DD"><input value="'+day_limit.replace("_", "/")+'" type="text" class="form-control"><span class="input-group-addon"><span class="icon-clock"></span></span></div></h1>'
