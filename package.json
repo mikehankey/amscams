@@ -1,0 +1,30 @@
+{
+  "name": "amscamapp",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.html",
+  "dependencies": {
+    "gulp": "^4.0.2",
+    "gulp-bower": "^0.0.15",
+    "gulp-sass": "^4.0.2"
+  },
+  "devDependencies": {
+    "bootstrap": "^4.2.1",
+    "browser-sync": "^2.26.3",
+    "gulp": "^4.0.2",
+    "gulp-autoprefixer": "^6.0.0",
+    "gulp-bower": "0.0.15",
+    "gulp-clean-css": "^4.0.0",
+    "gulp-concat": "^2.6.1",
+    "gulp-header": "^2.0.7",
+    "gulp-plumber": "^1.2.1",
+    "gulp-rename": "^1.4.0",
+    "gulp-sass": "^4.0.2",
+    "gulp-sourcemaps": "^2.6.4",
+    "gulp-uglify": "^3.0.1",
+    "jquery": "^3.3.1",
+    "popper.js": "^1.14.6"
+  },
+  "author": "Mike Hankey, Vincent Perlerin",
+  "license": "ISC"
+}
