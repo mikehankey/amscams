@@ -111,6 +111,7 @@
                     data = jQuery.parseJSON(data);
                     if(data.passed !== undefined && data.passed == 1) {
                         // We setup the cookie here
+                        $('.container .d-flex').remove();
                         Cookies.set('wpAMS-10091976', 'arythrisvV', { expires: 1, path: '/' });
                         window.location.href = "/pycgi/webUI.py"
                     } else if(data.passed !== undefined) {
