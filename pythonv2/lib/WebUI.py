@@ -637,7 +637,7 @@ def meteor_index(json_conf, form):
                         meteors[day] = mmi[day] 
       mi = meteors  
    else:
-      mi = sorted(mmi, reverse=True)
+      mi = mmi
             
   
     
@@ -648,7 +648,7 @@ def meteor_index(json_conf, form):
 
    res_cnt = 0
 
-   for day in mi:
+   for day in sorted(mi, reverse=True):
       results += "<tr><td colspan='15'><h5 class='m-0'>"+day.replace("_", "/")+"</h5></td></tr>"
       
       for meteor_file in mi[day]:
