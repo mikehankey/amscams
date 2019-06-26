@@ -915,7 +915,7 @@ def hd_cal_index(json_conf, form):
                #print('</a><span class="det" '+color+'><b>' + str(ts) + "</b> stars - <b>" + str(trp)[0:5] + "</b>Rpx - <b>" +  str(trd)[0:5] + "</b>Rd</span></div>")
                results += '<div class="preview p-2"><a href="'+detail_link+'" class="m ttt">'
                results += '<img data-src="'+tn+'" class="ns lz-shown" width="200" height="112"/></a>'
-               results += '<span class="det" '+color+'><b>' + str(ts) + "</b> stars - <b>" + str(trp)[0:5] + "</b>Rpx - <b>" +  str(trd)[0:5] + "</b>Rd</span></div>'               
+               results += '<span class="det" '+color+'><b>' + str(ts) + '</b> stars - <b>' + str(trp)[0:5] + '</b>Rpx - <b>' +  str(trd)[0:5] + '</b>Rd</span></div>'               
 
              
             results += "</div>"
