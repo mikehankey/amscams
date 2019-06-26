@@ -755,6 +755,7 @@ def meteor_index(json_conf, form):
                results += "<td>"+ str(mi[day][meteor_file]['total_res_deg'])[0:5]+"</td>"
                results += "<td>"+ str(dur)+"</td>"
                results += "<td>"+ str(ass)+"</td>"
+               results += "<td>"+ str(MAG)+"</td>"
                results += "<td>"+ str(seg_res)+"</td>"
                results += "<td>"+ str(missing_frames)+"</td>"
          
@@ -765,7 +766,7 @@ def meteor_index(json_conf, form):
    if(res_cnt>1):
       print(results)
    else:
-      print('<div class="container"><div class="alert alert-error">No result found for this date. <a href="#" class="btn btn-secondary">Access the latest meteor calibration.</a></div></div>')
+      print('<div class="container"><div class="alert alert-error">No result found for this date. <a href="/pycgi/webUI.py?cmd=meteor_index" style="color:#fff; text-decoration:underline">Access the latest meteor calibration.</a></div></div>')
 
 
 def hd_cal_index(json_conf, form):
