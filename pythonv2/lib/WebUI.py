@@ -641,7 +641,7 @@ def meteor_index(json_conf, form):
    print("LED " + str(len(dsmi)))   
 
    for day in dsmi:
-      print("D " + str(dsmi) + "<br/>")
+      print("D " + str(day) + "<br/>")
 
 
    print("<h1>Meteor Index</h1>")
