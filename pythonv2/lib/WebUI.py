@@ -630,8 +630,9 @@ def meteor_index(json_conf, form):
 
    if(day_limit is not None):
       for idx, day in enumerate(mi):
-         if(day!=day_limit):
-            mi.pop(idx)
+         print(str(idx) + "   > " + str(day) + "<br/>")
+         #if(day!=day_limit):
+         #   mi.pop(idx)
             
 
    #Get only day_limit if it exists
