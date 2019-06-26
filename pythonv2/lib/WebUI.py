@@ -754,9 +754,8 @@ def meteor_index(json_conf, form):
                results += "<td>"+ str(seg_res)+"</td>"
                results += "<td>"+ str(missing_frames)+"</td>"
 
-   results += "</tbody></table>"
-   dd = day_limit.replace("_", "/")
-   print'<h1>Meteor Calibration Index <div class="input-group date datepicker" data-display-format="YYYY/MM/DD" data-action="reload" data-url-param="limit_day" data-send-format="YYYY_MM_DD"><input value="'+dd+'" type="text" class="form-control"><span class="input-group-addon"><span class="icon-clock"></span></span></div></h1>'
+   results += "</tbody></table>" 
+   print('<h1>Meteor Calibration Index <div class="input-group date datepicker" data-display-format="YYYY/MM/DD" data-action="reload" data-url-param="limit_day" data-send-format="YYYY_MM_DD"><input value="'+day_limit.replace("_", "/")+'" type="text" class="form-control"><span class="input-group-addon"><span class="icon-clock"></span></span></div></h1>')
    print(results)
 
 
