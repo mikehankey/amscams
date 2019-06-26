@@ -924,7 +924,7 @@ def hd_cal_index(json_conf, form):
    results += "</div></table>"  
    results += "</div></div>"           
  
-   print (results)
+   print(results)
    # Show the details dynamically to we speed up the page load (by A LOT)
    print("<script>var all_cal_details="+json.dumps(js_img_array)+"</script>") 
    return("")
