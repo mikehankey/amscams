@@ -46,6 +46,7 @@
 				            <h3><iframe id="logo_holder" src="./dist/img/logo.svg" width="70" height="45" style="border:0" class="float-right"></iframe> Login</h3>
                         </div>
                         <form id="login_form">
+                            <div class="alert alert-error" id="error" hidden></div>
                             <div class="input-group form-group"> 
                                 <input id="u" type="text" class="form-control" placeholder="username">
                             </div>
@@ -85,6 +86,11 @@
 <script src="./src/js/functions/loader.js"></script>
 <script>
     $(function() {
+
+        $('#login_form input').focus(function() {
+            $('#error').attr('hidden','');
+        });
+
         $('#login_form').submit(function() {
             // Ajax call to check pwd/user
             var cmd_data = {
@@ -99,10 +105,17 @@
                 url:  "/pycgi/webUI.py",
                 data: cmd_data,
                 success: function(data) {
-                    console.log(data);
+                   
+                    if(data.passed !== undefined && data.passed == 1) {
+                        // We setup the cookie here
+                        Cookies.set('wpAMS-10091976', 'arythrisvV', { expires: 1 });
+                        window.location.href = "/pycgi/webUI.py"
+                    } else if(data.passed !== undefined) {
+                        $('#error').html("Wrong username / password combination.").removeAttr('hidden');
+                    } else {
+                        $('#error').html(data.error).removeAttr('hidden');
+                    }
 
-                    // We setup the cookie here
-                    Cookies.set('wpAMS-10091976', 'arythrisvV', { expires: 1 });
                 }
             })
 
