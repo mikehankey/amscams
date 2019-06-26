@@ -612,11 +612,9 @@ def hd_cal_detail(json_conf, form):
    return(js_html)
 
 def meteor_index(json_conf, form):
- 
-   cgitb.enable()
-
+   print("<h1>Meteor Index</h1>")
    cam_id = form.getvalue("cam_id")
-   day_limit = form.getvalue("day")
+   day_limit= form.getvalue("day")
    cur_page  = form.getvalue('p')
 
    if (cur_page is None) or (cur_page==0):
@@ -624,24 +622,14 @@ def meteor_index(json_conf, form):
    else:
       cur_page = int(cur_page)
 
-
    mi = load_json_file("/mnt/ams2/cal/hd_images/meteor_index.json")
-   mi = sorted(mi, reverse=True)
-   meteor_start = (cur_page -1) * NUMBER_OF_METEOR_PER_PAGE 
-   meteor_end = meteor_start + NUMBER_OF_METEOR_PER_PAGE
-   
-   all_meteors = mi
- 
-   dsmi = mi[meteor_start:meteor_end] 
-   
-
-   print("<h1>Meteor Index</h1>")
+   mi = sorted(mi, reverse=True);
    print("<table class='table table-dark table-striped table-hover td-al-m m-auto table-fit'>")
    print("<thead><tr><th>&nbsp;</th><th>Meteor</th><th>Reduced</th><th>Multi-Station</th><th>AZ/EL FOV</th><th>Pos Ang</th><th>Pixscale</th><th>Stars</th><th>Res Px</th><th>Res Deg</th><th>Dur</th><th>Ang Sep</th><th>Mag</th><th>Seg Res</td><th>Missing Frames</th></tr></thead>")
    print("<tbody>")
 
-   for day in sorted(dsmi, reverse=True):
-      for meteor_file in dsmi[day]:
+   for day in mi:
+      for meteor_file in mi[day]:
          hd_datetime, hd_cam, hd_date, hd_y, hd_m, hd_d, hd_h, hd_M, hd_s = convert_filename_to_date_cam(meteor_file)
          if cam_id is None:
             show = 1
@@ -704,6 +692,7 @@ def meteor_index(json_conf, form):
          fn = meteor_file.split("/")[-1] 
          if 'pixscale' in mi[day][meteor_file]:
             pxs = str(mi[day][meteor_file]['pixscale'])[0:5]
+
          if day_limit is not None:
             if day_limit == fn[0:10]:
                show = 1
