@@ -616,7 +616,7 @@ def meteor_index(json_conf, form):
 
    cam_id    = form.getvalue("cam_id")
    day_limit = form.getvalue("limit_day") 
-   show_all  = form.getvalue('show_all')
+   show_all  = form.getvalue('opt')
  
    mmi = load_json_file("/mnt/ams2/cal/hd_images/meteor_index.json")
   
