@@ -628,7 +628,7 @@ def meteor_index(json_conf, form):
    meteors = {}
    day_defined = 0 
 
-   day_limit = "2019_06_24"
+   day_limit = "2019_26_06"
 
    #Remove not needed
    if(day_limit is not None):
