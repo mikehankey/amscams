@@ -624,13 +624,13 @@ def meteor_index(json_conf, form):
    else:
       cur_page = int(cur_page)
 
-   mi = load_json_file("/mnt/ams2/cal/hd_images/meteor_index.json")
+   mmi = load_json_file("/mnt/ams2/cal/hd_images/meteor_index.json")
 
    day_limit = "2019_06_02"
 
    meteors = {}
    if(day_limit is not None):
-      for idx, day in enumerate(mi):
+      for idx, day in enumerate(mmi):
          if(day==day_limit):
                meteors[day] = mi[day]
  
