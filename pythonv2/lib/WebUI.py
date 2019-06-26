@@ -615,7 +615,7 @@ def meteor_index(json_conf, form):
    cgitb.enable() 
 
    cam_id    = form.getvalue("cam_id")
-   day_limit = form.getvalue("day")
+   day_limit = form.getvalue("day_limit")
    cur_page  = form.getvalue('p')
 
    if (cur_page is None) or (cur_page==0):
@@ -631,6 +631,7 @@ def meteor_index(json_conf, form):
    #Remove not needed
    if(day_limit is not None):
       print('DAY LIMIT DEFINED<br/>')
+      print ("DAY LIMIT " + day_limit + "<br/><br/>")
       day_defined = 1   
       for idx, day in enumerate(mmi):
          print("DAY " + str(day) + "<br/>")
@@ -643,7 +644,7 @@ def meteor_index(json_conf, form):
    mi = meteors  
 
 
-   print ("DAY LIMIT " + day_limit + "<br/><br/>")
+   
    print(str(mi))
 
    results = "<table class='table table-dark table-striped table-hover td-al-m m-auto table-fit'>"
