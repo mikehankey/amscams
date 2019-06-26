@@ -631,7 +631,7 @@ def meteor_index(json_conf, form):
    print("<tbody>")
 
    for day in sorted(mi, reverse=True):
-      print(get_meteor_time(day))
+      print(str(day) + "**********<br/>")
       for meteor_file in mi[day]:
          hd_datetime, hd_cam, hd_date, hd_y, hd_m, hd_d, hd_h, hd_M, hd_s = convert_filename_to_date_cam(meteor_file)
          if cam_id is None:
