@@ -615,6 +615,14 @@ def meteor_index(json_conf, form):
 
    cam_id = form.getvalue("cam_id")
    day_limit = form.getvalue("day")
+   cur_page  = form.getvalue('p')
+
+   if (cur_page is None) or (cur_page==0):
+      cur_page = 1
+   else:
+      cur_page = int(cur_page)
+
+
    mi = load_json_file("/mnt/ams2/cal/hd_images/meteor_index.json")
 
    print("<h1>Meteor Index</h1>")
@@ -628,6 +636,7 @@ def meteor_index(json_conf, form):
    meteor_start = (cur_page -1) * NUMBER_OF_METEOR_PER_PAGE 
    meteor_end = meteor_start + NUMBER_OF_METEOR_PER_PAGE
    all_meteors = smi
+
 
    dsmi = smi[meteor_start:meteor_end]
 
