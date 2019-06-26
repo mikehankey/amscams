@@ -627,14 +627,15 @@ def meteor_index(json_conf, form):
   
    meteors = {}
    day_defined = 0 
-
-   
-
+ 
    #Remove not needed
    if(day_limit is not None):
+      print('DAY LIMIT DEFINED<br/>')
       day_defined = 1   
       for idx, day in enumerate(mmi):
+         print("DAY " + str(day) + "<br/>")
          if(day==day_limit):
+               print("VAL FOUND<br/>")
                meteors[day] = mmi[day]
    else:
       meteors = mmi
