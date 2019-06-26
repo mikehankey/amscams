@@ -612,6 +612,8 @@ def hd_cal_detail(json_conf, form):
    return(js_html)
 
 def meteor_index(json_conf, form):
+   cgitb.enable()
+
    print("<h1>Meteor Index</h1>")
    cam_id = form.getvalue("cam_id")
    day_limit= form.getvalue("day")
