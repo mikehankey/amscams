@@ -614,7 +614,7 @@ def hd_cal_detail(json_conf, form):
 def meteor_index(json_conf, form):
    cgitb.enable()
 
-   print("<h1>Meteor Index</h1>")
+  
    cam_id = form.getvalue("cam_id")
    day_limit= form.getvalue("day")
    cur_page  = form.getvalue('p')
@@ -627,9 +627,11 @@ def meteor_index(json_conf, form):
    mmi = load_json_file("/mnt/ams2/cal/hd_images/meteor_index.json")
   
    meteors = {}
+   day_defined = 0
 
    #Remove not needed
    if(day_limit is not None):
+      day_defined = 1   
       for idx, day in enumerate(mmi):
          if(day==day_limit):
                meteors[day] = mmi[day]
@@ -637,14 +639,17 @@ def meteor_index(json_conf, form):
       meteors = mmi
             
    mi = meteors 
- 
 
-   print("<table class='table table-dark table-striped table-hover td-al-m m-auto table-fit'>")
-   print("<thead><tr><th>&nbsp;</th><th>Meteor</th><th>Reduced</th><th>Multi-Station</th><th>AZ/EL FOV</th><th>Pos Ang</th><th>Pixscale</th><th>Stars</th><th>Res Px</th><th>Res Deg</th><th>Dur</th><th>Ang Sep</th><th>Mag</th><th>Seg Res</td><th>Missing Frames</th></tr></thead>")
-   print("<tbody>")
+   results = "<table class='table table-dark table-striped table-hover td-al-m m-auto table-fit'>"
+   results += "<thead><tr><th>&nbsp;</th><th>Meteor</th><th>Reduced</th><th>Multi-Station</th><th>AZ/EL FOV</th><th>Pos Ang</th><th>Pixscale</th><th>Stars</th><th>Res Px</th><th>Res Deg</th><th>Dur</th><th>Ang Sep</th><th>Mag</th><th>Seg Res</td><th>Missing Frames</th></tr></thead>"
+   results += "<tbody>"
 
    for day in sorted(mi, reverse=True):
-      print("<tr><td colspan='15'><h5 class='m-0'>"+day.replace("_", "/")+"</h5></td></tr>")   
+      results += "<tr><td colspan='15'><h5 class='m-0'>"+day.replace("_", "/")+"</h5></td></tr>"
+      
+      if(day_limit is None):
+         day_limit = day.replace("_", "/")
+
       for meteor_file in mi[day]:
          hd_datetime, hd_cam, hd_date, hd_y, hd_m, hd_d, hd_h, hd_M, hd_s = convert_filename_to_date_cam(meteor_file)
          if cam_id is None:
@@ -733,9 +738,13 @@ def meteor_index(json_conf, form):
             if seg_res > 2 or missing_frames > 0:
                color = "lv1"
          if show == 1:
-            print("<tr class='" + color + "'><td><div class='st'></div></td><td> {:s}</td><td>{:s}</td><td>{:s}</td><td>{:s}</td><td>{:s}</td><td>{:s}</td><td>{:s}</td><td> {:s}</td><td> {:s} </td><td>{:s}</td><td>{:s}</td><td>MAG</td><td>{:s}</td><td>{:s}</td></tr> ".format(link, str(mi[day][meteor_file]['reduced']), multi_text, az_el, pos, pxs, str(ts), str(mi[day][meteor_file]['total_res_px'])[0:5], str(mi[day][meteor_file]['total_res_deg'])[0:5], str(dur), str(ass), str(seg_res), str(missing_frames)))
+            results += "<tr class='" + color + "'><td><div class='st'></div></td><td> {:s}</td><td>{:s}</td><td>{:s}</td><td>{:s}</td><td>{:s}</td><td>{:s}</td><td>{:s}</td><td> {:s}</td><td> {:s} </td><td>{:s}</td><td>{:s}</td><td>MAG</td><td>{:s}</td><td>{:s}</td></tr> ".format(link, str(mi[day][meteor_file]['reduced']), multi_text, az_el, pos, pxs, str(ts), str(mi[day][meteor_file]['total_res_px'])[0:5], str(mi[day][meteor_file]['total_res_deg'])[0:5], str(dur), str(ass), str(seg_res), str(missing_frames))
  
-   print("</tbody></table>")
+   results += "</tbody></table>"
+   header = '<h1>Meteor Calibration Index <div class="input-group date datepicker" data-display-format="YYYY/MM/DD" data-action="reload" data-url-param="limit_day" data-send-format="YYYY_MM_DD"><input value="'+day_limit.replace("_", "/")+'" type="text" class="form-control"><span class="input-group-addon"><span class="icon-clock"></span></span></div></h1>'
+
+   print(header)
+   print(results)
 
 
 def hd_cal_index(json_conf, form):
