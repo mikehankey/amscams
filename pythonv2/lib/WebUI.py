@@ -627,25 +627,24 @@ def meteor_index(json_conf, form):
   
    meteors = {}
    day_defined = 0 
- 
+  
+   #Get First none empty day
+   if(day_limit is None):
+      for day in sorted(mmi, reverse=True):
+            day_limit = day.replace("_", "/")
+            break
+
    #Remove not needed
-   if(day_limit is not None):
-      print('DAY LIMIT DEFINED<br/>')
-      print ("DAY LIMIT " + day_limit + "<br/><br/>")
+   if(day_limit is not None): 
       day_defined = 1   
-      for idx, day in enumerate(mmi):
-         print("DAY " + str(day) + "<br/>")
-         if(day==day_limit):
-               print("VAL FOUND<br/>")
+      for idx, day in enumerate(mmi): 
+         if(day==day_limit): 
                meteors[day] = mmi[day]
    else:
       meteors = mmi
             
    mi = meteors  
-
-
-   
-   print(str(mi))
+ 
 
    results = "<table class='table table-dark table-striped table-hover td-al-m m-auto table-fit'>"
    results += "<thead><tr><th>&nbsp;</th><th>Meteor</th><th>Reduced</th><th>Multi-Station</th><th>AZ/EL FOV</th><th>Pos Ang</th><th>Pixscale</th><th>Stars</th><th>Res Px</th><th>Res Deg</th><th>Dur</th><th>Ang Sep</th><th>Mag</th><th>Seg Res</td><th>Missing Frames</th></tr></thead>"
@@ -654,9 +653,7 @@ def meteor_index(json_conf, form):
    for day in sorted(mi, reverse=True):
       results += "<tr><td colspan='15'><h5 class='m-0'>"+day.replace("_", "/")+"</h5></td></tr>"
       
-      if(day_limit is None):
-         day_limit = day.replace("_", "/")
-
+      
       for meteor_file in mi[day]:
          hd_datetime, hd_cam, hd_date, hd_y, hd_m, hd_d, hd_h, hd_M, hd_s = convert_filename_to_date_cam(meteor_file)
          if cam_id is None:
