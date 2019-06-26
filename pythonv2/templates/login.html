@@ -111,8 +111,10 @@
                         Cookies.set('wpAMS-10091976', 'arythrisvV', { expires: 1 });
                         window.location.href = "/pycgi/webUI.py"
                     } else if(data.passed !== undefined) {
+                        console.log(1);
                         $('#error').html("Wrong username / password combination.").removeAttr('hidden');
                     } else {
+                        console.log(2);
                         $('#error').html(data.error).removeAttr('hidden');
                     }
 
