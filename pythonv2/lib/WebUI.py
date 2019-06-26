@@ -625,6 +625,8 @@ def meteor_index(json_conf, form):
       cur_page = int(cur_page)
 
    mi = load_json_file("/mnt/ams2/cal/hd_images/meteor_index.json")
+
+   print(str(mi))
    
    print("<table class='table table-dark table-striped table-hover td-al-m m-auto table-fit'>")
    print("<thead><tr><th>&nbsp;</th><th>Meteor</th><th>Reduced</th><th>Multi-Station</th><th>AZ/EL FOV</th><th>Pos Ang</th><th>Pixscale</th><th>Stars</th><th>Res Px</th><th>Res Deg</th><th>Dur</th><th>Ang Sep</th><th>Mag</th><th>Seg Res</td><th>Missing Frames</th></tr></thead>")
