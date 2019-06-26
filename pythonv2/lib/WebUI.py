@@ -631,7 +631,7 @@ def meteor_index(json_conf, form):
    print("<tbody>")
 
    for day in sorted(mi, reverse=True):
-      print("<tr><td colspan='15'><h4 class='m-0'>"+day.replace("_", "/")+"</h4></td></tr>")   
+      print("<tr><td colspan='15'><h5 class='m-0'>"+day.replace("_", "/")+"</h5></td></tr>")   
       for meteor_file in mi[day]:
          hd_datetime, hd_cam, hd_date, hd_y, hd_m, hd_d, hd_h, hd_M, hd_s = convert_filename_to_date_cam(meteor_file)
          if cam_id is None:
@@ -663,12 +663,17 @@ def meteor_index(json_conf, form):
                color = "lv8"
          else:
                color = "lv7"
+
+
          if 'center_az' in mi[day][meteor_file]:
             az_el = str(mi[day][meteor_file]['center_az'])[0:5] + "/" +  str(mi[day][meteor_file]['center_el'])[0:5]
          else:
             az_el = ""
+
+
          if 'event_start_time' in mi[day][meteor_file]:
             fn = mi[day][meteor_file]['event_start_time'] + " - " + hd_cam 
+         
          pos = ""
          pxs = ""
          ts = 0 
@@ -716,7 +721,8 @@ def meteor_index(json_conf, form):
                color = "lv1"
          if show == 1:
             print("<tr class='" + color + "'><td><div class='st'></div></td><td> {:s}</td><td>{:s}</td><td>{:s}</td><td>{:s}</td><td>{:s}</td><td>{:s}</td><td>{:s}</td><td> {:s}</td><td> {:s} </td><td>{:s}</td><td>{:s}</td><td>MAG</td><td>{:s}</td><td>{:s}</td></tr> ".format(link, str(mi[day][meteor_file]['reduced']), multi_text, az_el, pos, pxs, str(ts), str(mi[day][meteor_file]['total_res_px'])[0:5], str(mi[day][meteor_file]['total_res_deg'])[0:5], str(dur), str(ass), str(seg_res), str(missing_frames)))
-          
+         print("***********************"+str(mi[day][meteor_file]['reduced'])+"**************")
+
    print("</tbody></table>")
 
 
