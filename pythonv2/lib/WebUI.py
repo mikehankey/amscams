@@ -615,30 +615,26 @@ def meteor_index(json_conf, form):
    cgitb.enable() 
 
    cam_id    = form.getvalue("cam_id")
-   day_limit = form.getvalue("limit_day")
-   cur_page  = form.getvalue('p')
-
-   if (cur_page is None) or (cur_page==0):
-      cur_page = 1
-   else:
-      cur_page = int(cur_page)
-
+   day_limit = form.getvalue("limit_day") 
+   show_all  = form.getvalue('show_all')
+ 
    mmi = load_json_file("/mnt/ams2/cal/hd_images/meteor_index.json")
   
    meteors = {}
    day_defined = 0 
   
    #Get First none empty day
-   if(day_limit is None):
+   if(day_limit is None and show_all is None):
       for day in sorted(mmi, reverse=True):
             day_limit = day 
             break
  
    #Remove not needed
-   if(day_limit is not None):  
-      for idx, day in enumerate(mmi): 
-         if(day==day_limit): 
-            meteors[day] = mmi[day] 
+   if(show_all is None):
+      if(day_limit is not None):  
+            for idx, day in enumerate(mmi): 
+            if(day==day_limit): 
+                  meteors[day] = mmi[day] 
    else:
       meteors = mmi
             
@@ -762,7 +758,7 @@ def meteor_index(json_conf, form):
          res_cnt+= 1
 
    results += "</tbody></table>" 
-   print('<div class="h1_holder d-flex justify-content-between mb-4"><h1>Meteor Calibration Index for <div class="input-group date datepicker" data-display-format="YYYY/MM/DD" data-action="reload" data-url-param="limit_day" data-send-format="YYYY_MM_DD"><input value="'+day_limit.replace("_", "/")+'" type="text" class="form-control"><span class="input-group-addon"><span class="icon-clock"></span></span></div></h1></div>')
+   print('<div class="h1_holder d-flex justify-content-between mb-4"><h1>Meteor Calibration Index for <div class="input-group date datepicker" data-display-format="YYYY/MM/DD" data-action="reload" data-url-param="limit_day" data-send-format="YYYY_MM_DD"><input value="'+day_limit.replace("_", "/")+'" type="text" class="form-control"><span class="input-group-addon"><span class="icon-clock"></span></span></div></h1><div><a href="/pycgi/webUI.py?cmd=meteor_index&opt=show_all" class="btn btn-primary">Show All</a></div></div>')
    if(res_cnt>1):
       print(results)
    else:
