@@ -643,7 +643,7 @@ def meteor_index(json_conf, form):
          fn = meteor_file.split("/")[-1]
          fn = fn.replace(".json", "")
          video_file = meteor_file.replace(".json", ".mp4")
-         link = "<a href='/pycgi/webUI.py?cmd=reduce&video_file=" + video_file + "' class='btn btn-primary'>" + get_meteor_date(video_file) + "</a>"
+         link = "<a href='/pycgi/webUI.py?cmd=reduce&video_file=" + video_file + "' class='btn btn-primary'>" + get_meteor_time(video_file) + "</a>"
 
          if mi[day][meteor_file]['total_res_deg'] > .5:
                color = "lv1"
@@ -721,8 +721,7 @@ def meteor_index(json_conf, form):
                color = "lv1"
          if show == 1:
             print("<tr class='" + color + "'><td><div class='st'></div></td><td> {:s}</td><td>{:s}</td><td>{:s}</td><td>{:s}</td><td>{:s}</td><td>{:s}</td><td>{:s}</td><td> {:s}</td><td> {:s} </td><td>{:s}</td><td>{:s}</td><td>MAG</td><td>{:s}</td><td>{:s}</td></tr> ".format(link, str(mi[day][meteor_file]['reduced']), multi_text, az_el, pos, pxs, str(ts), str(mi[day][meteor_file]['total_res_px'])[0:5], str(mi[day][meteor_file]['total_res_deg'])[0:5], str(dur), str(ass), str(seg_res), str(missing_frames)))
-         print("***********************"+str(mi[day][meteor_file]['reduced'])+"**************")
-
+ 
    print("</tbody></table>")
 
 
