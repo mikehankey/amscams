@@ -810,12 +810,14 @@ def hd_cal_index(json_conf, form):
    results += '<table class="table table-dark table-striped table-hover m-3 td-al-m">'
    results += '<thead><tr><th>Date</th><th>Cam ID</th><th>Images w/ Stars</th><th>Images w/o Stars</th><th>Total Stars For Night</th><th>Center AZ/EL</th><th>Position Angle</th><th>PixScale</th><th>Avg Res Px For Night</th><th>Avg Res Deg For Night</th></tr></thead>'
    results += '<tbody>'   
+   res_cnt = 0
 
    for day in sorted(ci,reverse=True): 
          
       results += '<tr><td colspan="10"><h6 class="mb-0">'+day.replace("_","/")+'</h6></td></tr>'
 
       for cam_id in sorted(ci[day],reverse=False):
+         res_cnt+= 1
 
          if "files_with_stars" in cam_day_sum[day][cam_id]:
             desc = str(cam_day_sum[day][cam_id]['files_with_stars']) + " files with stars / "
@@ -924,6 +926,17 @@ def hd_cal_index(json_conf, form):
    results += "</div></table>"  
    results += "</div></div>"           
  
+
+   if(day_limit is not None):
+      print('<div class="h1_holder d-flex justify-content-between mb-4"><h1>Meteor Calibration Index for <div class="input-group date datepicker" data-display-format="YYYY/MM/DD" data-action="reload" data-url-param="limit_day" data-send-format="YYYY_MM_DD"><input value="'+day_limit.replace("_", "/")+'" type="text" class="form-control"><span class="input-group-addon"><span class="icon-clock"></span></span></div></h1><div><a href="/pycgi/webUI.py?cmd=meteor_index&opt=show_all" class="btn btn-primary">Show All</a></div></div>')
+   else:
+      print('<div class="h1_holder d-flex justify-content-between mb-4"><h1>Meteor Calibration Index</h1><div><a href="/pycgi/webUI.py?cmd=meteor_index" class="btn btn-primary">Browse by date</a></div></div>')
+
+   if(res_cnt>1):
+      print(results)
+   else:
+      print('<div class="container"><div class="alert alert-error">No result found for this date. <a href="/pycgi/webUI.py?cmd=meteor_index" style="color:#fff; text-decoration:underline">Access the latest meteor calibration.</a></div></div>')
+
    print(results)
    # Show the details dynamically to we speed up the page load (by A LOT)
    print("<script>var all_cal_details="+json.dumps(js_img_array)+"</script>") 
