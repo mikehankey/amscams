@@ -612,9 +612,8 @@ def hd_cal_detail(json_conf, form):
    return(js_html)
 
 def meteor_index(json_conf, form):
-   cgitb.enable()
+   cgitb.enable() 
 
-  
    cam_id = form.getvalue("cam_id")
    day_limit= form.getvalue("day")
    cur_page  = form.getvalue('p')
@@ -629,8 +628,7 @@ def meteor_index(json_conf, form):
    meteors = {}
    day_defined = 0
 
-
-   day_limit = "2019_05_26"
+ 
 
    #Remove not needed
    if(day_limit is not None):
@@ -642,6 +640,9 @@ def meteor_index(json_conf, form):
       meteors = mmi
             
    mi = meteors 
+
+
+   print(str(mi))
 
    results = "<table class='table table-dark table-striped table-hover td-al-m m-auto table-fit'>"
    results += "<thead><tr><th>&nbsp;</th><th>Meteor</th><th>Reduced</th><th>Multi-Station</th><th>AZ/EL FOV</th><th>Pos Ang</th><th>Pixscale</th><th>Stars</th><th>Res Px</th><th>Res Deg</th><th>Dur</th><th>Ang Sep</th><th>Mag</th><th>Seg Res</td><th>Missing Frames</th></tr></thead>"
