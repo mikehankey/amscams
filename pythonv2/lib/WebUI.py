@@ -635,10 +635,11 @@ def meteor_index(json_conf, form):
             for idx, day in enumerate(mmi): 
                   if(day==day_limit): 
                         meteors[day] = mmi[day] 
+      mi = meteors  
    else:
-      meteors = sorted(mmi, reverse=True)
+      mi = sorted(mmi, reverse=True)
             
-   mi = meteors  
+  
     
 
    results = "<table class='table table-dark table-striped table-hover td-al-m m-auto table-fit'>"
