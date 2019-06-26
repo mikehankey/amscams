@@ -628,12 +628,12 @@ def meteor_index(json_conf, form):
  
    
    mi = load_json_file("/mnt/ams2/cal/hd_images/meteor_index.json")
-   mi = sorted(mi, reverse=True)
+   dmi = sorted(mi, reverse=True)
 
    meteor_start = (cur_page -1) * NUMBER_OF_METEOR_PER_PAGE 
    meteor_end = meteor_start + NUMBER_OF_METEOR_PER_PAGE
 
-   dmi = mi[meteor_start:meteor_end]
+   mi = dmi[meteor_start:meteor_end]
 
 
    print("<h1>Meteor Index</h1>")  
@@ -644,8 +644,8 @@ def meteor_index(json_conf, form):
 
 
 
-   for day in dmi:
-      for meteor_file in dmi[day]:
+   for day in mi:
+      for meteor_file in mi[day]:
          hd_datetime, hd_cam, hd_date, hd_y, hd_m, hd_d, hd_h, hd_M, hd_s = convert_filename_to_date_cam(meteor_file)
          if cam_id is None:
             show = 1
