@@ -633,7 +633,8 @@ def meteor_index(json_conf, form):
       for idx, day in enumerate(mmi):
          if(day==day_limit):
                meteors[day] = mmi[day]
- 
+   else:
+      meteors = mmi
             
    mi = meteors 
  
