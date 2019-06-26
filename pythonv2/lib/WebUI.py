@@ -638,9 +638,7 @@ def meteor_index(json_conf, form):
       mi = meteors  
    else:
       mi = mmi
-            
-  
-    
+             
 
    results = "<table class='table table-dark table-striped table-hover td-al-m m-auto table-fit'>"
    results += "<thead><tr><th>&nbsp;</th><th>Meteor</th><th>Reduced</th><th>Multi-Station</th><th>AZ/EL FOV</th><th>Pos Ang</th><th>Pixscale</th><th>Stars</th><th>Res Px</th><th>Res Deg</th><th>Dur</th><th>Ang Sep</th><th>Mag</th><th>Seg Res</td><th>Missing Frames</th></tr></thead>"
@@ -759,7 +757,11 @@ def meteor_index(json_conf, form):
          res_cnt+= 1
 
    results += "</tbody></table>" 
-   print('<div class="h1_holder d-flex justify-content-between mb-4"><h1>Meteor Calibration Index for <div class="input-group date datepicker" data-display-format="YYYY/MM/DD" data-action="reload" data-url-param="limit_day" data-send-format="YYYY_MM_DD"><input value="'+day_limit.replace("_", "/")+'" type="text" class="form-control"><span class="input-group-addon"><span class="icon-clock"></span></span></div></h1><div><a href="/pycgi/webUI.py?cmd=meteor_index&opt=show_all" class="btn btn-primary">Show All</a></div></div>')
+   if(show_all is not None):
+      print('<div class="h1_holder d-flex justify-content-between mb-4"><h1>Meteor Calibration Index for <div class="input-group date datepicker" data-display-format="YYYY/MM/DD" data-action="reload" data-url-param="limit_day" data-send-format="YYYY_MM_DD"><input value="'+day_limit.replace("_", "/")+'" type="text" class="form-control"><span class="input-group-addon"><span class="icon-clock"></span></span></div></h1><div><a href="/pycgi/webUI.py?cmd=meteor_index&opt=show_all" class="btn btn-primary">Show All</a></div></div>')
+   else:
+      print('<div class="h1_holder d-flex justify-content-between mb-4"><h1>Meteor Calibration Index</h1><div><a href="/pycgi/webUI.py?cmd=meteor_index" class="btn btn-primary">Browse by date</a></div></div>')
+
    if(res_cnt>1):
       print(results)
    else:
