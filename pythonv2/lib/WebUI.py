@@ -641,6 +641,9 @@ def meteor_index(json_conf, form):
       for idx, day in enumerate(mmi): 
          if(day==day_limit): 
             meteors[day] = mmi[day]
+            print("RECORD FOR D DAY FOUND<br/>")
+         else:
+            print(day + " vs " + day_limit + "<br/>")
    else:
       meteors = mmi
             
@@ -654,7 +657,6 @@ def meteor_index(json_conf, form):
 
    for day in mi:
       results += "<tr><td colspan='15'><h5 class='m-0'>"+day.replace("_", "/")+"</h5></td></tr>"
-      
       
       for meteor_file in mi[day]:
          hd_datetime, hd_cam, hd_date, hd_y, hd_m, hd_d, hd_h, hd_M, hd_s = convert_filename_to_date_cam(meteor_file)
