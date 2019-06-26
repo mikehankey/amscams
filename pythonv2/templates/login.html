@@ -87,6 +87,9 @@
 <script>
     $(function() {
 
+        // Remove cookie for logout
+        Cookies.remove('wpAMS-10091976', { path: '/' });
+
         $('#login_form input').focus(function() {
             $('#error').attr('hidden','');
         });
@@ -108,13 +111,11 @@
                     data = jQuery.parseJSON(data);
                     if(data.passed !== undefined && data.passed == 1) {
                         // We setup the cookie here
-                        Cookies.set('wpAMS-10091976', 'arythrisvV', { expires: 1 });
+                        Cookies.set('wpAMS-10091976', 'arythrisvV', { expires: 1, path: '/' });
                         window.location.href = "/pycgi/webUI.py"
                     } else if(data.passed !== undefined) {
-                        console.log(1);
                         $('#error').html("Wrong username / password combination.").removeAttr('hidden');
                     } else {
-                        console.log(2);
                         $('#error').html(data.error).removeAttr('hidden');
                     }
 
