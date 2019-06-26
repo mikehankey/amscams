@@ -633,7 +633,7 @@ def meteor_index(json_conf, form):
    meteor_start = (cur_page -1) * NUMBER_OF_METEOR_PER_PAGE 
    meteor_end = meteor_start + NUMBER_OF_METEOR_PER_PAGE
 
-   mi = mi[meteor_start:meteor_end]
+   dmi = mi[meteor_start:meteor_end]
 
 
    print("<h1>Meteor Index</h1>")  
@@ -644,8 +644,8 @@ def meteor_index(json_conf, form):
 
 
 
-   for day in mi:
-      for meteor_file in mi[day]:
+   for day in dmi:
+      for meteor_file in dmi[day]:
          hd_datetime, hd_cam, hd_date, hd_y, hd_m, hd_d, hd_h, hd_M, hd_s = convert_filename_to_date_cam(meteor_file)
          if cam_id is None:
             show = 1
