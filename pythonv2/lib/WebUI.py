@@ -738,7 +738,7 @@ def meteor_index(json_conf, form):
             if seg_res > 2 or missing_frames > 0:
                color = "lv1"
          if show == 1:
-            results += "<tr class='" + color + "'><td><div class='st'></div></td><td>"+format(link, str(mi[day][meteor_file]['reduced'])+"</td><td>"+multi_text+"</td><td>"+az_el+"</td><td>"+pos+"</td><td>"+pxs+"</td><td>"+str(ts)+"</td><td>"+ str(mi[day][meteor_file]['total_res_px'])[0:5]+"</td><td>"+str(dur)+"</td><td>"+str(ass)+"</td><td>"+str(seg_res)+"</td><td>"+str(missing_frames)+"</td><td>MAG</td><td></td><td></td></tr>"
+            results += "<tr class='" + color + "'><td><div class='st'></div></td><td>"+ link +"</td><td>" str(mi[day][meteor_file]['reduced'])+"</td><td>"+multi_text+"</td><td>"+az_el+"</td><td>"+pos+"</td><td>"+pxs+"</td><td>"+str(ts)+"</td><td>"+ str(mi[day][meteor_file]['total_res_px'])[0:5]+"</td><td>"+str(dur)+"</td><td>"+str(ass)+"</td><td>"+str(seg_res)+"</td><td>"+str(missing_frames)+"</td><td>MAG</td><td></td></tr>"
  
    results += "</tbody></table>"
   
