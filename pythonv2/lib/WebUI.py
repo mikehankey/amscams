@@ -631,29 +631,25 @@ def meteor_index(json_conf, form):
    #Get First none empty day
    if(day_limit is None):
       for day in sorted(mmi, reverse=True):
-            day_limit = day
-            print("DAY LIMIT "  + day_limit)
-            print(str(mmi))
+            day_limit = day 
             break
  
    #Remove not needed
    if(day_limit is not None):  
       for idx, day in enumerate(mmi): 
          if(day==day_limit): 
-            meteors[day] = mmi[day]
-            print("RECORD FOR D DAY FOUND<br/>")
-         else:
-            print(day + " vs " + day_limit + "<br/>")
+            meteors[day] = mmi[day] 
    else:
       meteors = mmi
             
    mi = meteors  
-   
-   print(str(len(mi)) + " records <br/>")
+    
 
    results = "<table class='table table-dark table-striped table-hover td-al-m m-auto table-fit'>"
    results += "<thead><tr><th>&nbsp;</th><th>Meteor</th><th>Reduced</th><th>Multi-Station</th><th>AZ/EL FOV</th><th>Pos Ang</th><th>Pixscale</th><th>Stars</th><th>Res Px</th><th>Res Deg</th><th>Dur</th><th>Ang Sep</th><th>Mag</th><th>Seg Res</td><th>Missing Frames</th></tr></thead>"
    results += "<tbody>"
+
+   res_cnt = 0
 
    for day in mi:
       results += "<tr><td colspan='15'><h5 class='m-0'>"+day.replace("_", "/")+"</h5></td></tr>"
@@ -761,10 +757,15 @@ def meteor_index(json_conf, form):
                results += "<td>"+ str(ass)+"</td>"
                results += "<td>"+ str(seg_res)+"</td>"
                results += "<td>"+ str(missing_frames)+"</td>"
+         
+         res_cnt+= 1
 
    results += "</tbody></table>" 
    print('<div class="h1_holder d-flex justify-content-between mb-4"><h1>Meteor Calibration Index for <div class="input-group date datepicker" data-display-format="YYYY/MM/DD" data-action="reload" data-url-param="limit_day" data-send-format="YYYY_MM_DD"><input value="'+day_limit.replace("_", "/")+'" type="text" class="form-control"><span class="input-group-addon"><span class="icon-clock"></span></span></div></h1></div>')
-   print(results)
+   if(res_cnt>1):
+      print(results)
+   else:
+      print('<div class="container"><div class="alert alert-error">No result found for this date. <a href="#" class="btn btn-secondary">Access the latest meteor calibration.</a></div></div>')
 
 
 def hd_cal_index(json_conf, form):
