@@ -641,7 +641,9 @@ def meteor_index(json_conf, form):
    print("<thead><tr><th>&nbsp;</th><th>Meteor</th><th>Reduced</th><th>Multi-Station</th><th>AZ/EL FOV</th><th>Pos Ang</th><th>Pixscale</th><th>Stars</th><th>Res Px</th><th>Res Deg</th><th>Dur</th><th>Ang Sep</th><th>Mag</th><th>Seg Res</td><th>Missing Frames</th></tr></thead>")
    print("<tbody>")
 
-
+   for day in mi:
+      print(mi[day]);
+      
 
 
    for day in mi:
