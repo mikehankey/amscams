@@ -636,7 +636,7 @@ def meteor_index(json_conf, form):
                   if(day==day_limit): 
                         meteors[day] = mmi[day] 
    else:
-      meteors = mmi
+      meteors = sorted(mmi, reverse=True)
             
    mi = meteors  
     
