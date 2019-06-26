@@ -629,7 +629,7 @@ def meteor_index(json_conf, form):
    day_limit = "2019_06_02"
 
    for idx, day in enumerate(mi):
-      if(day!==day_limit)
+      if(day!==day_limit):
             mi.pop(idx)
             
 
