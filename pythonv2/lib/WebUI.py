@@ -772,21 +772,48 @@ def hd_cal_index(json_conf, form):
    
    cgitb.enable()
 
-   js_img_array = {}
+   day_limit = form.getvalue("limit_day") 
+   show_all  = form.getvalue('opt')
    cam_id_filter = form.getvalue("cam_id")
-   print("<h1>Auto Calibration</h1>")
+   js_img_array = {}
  
-   ci = load_json_file("/mnt/ams2/cal/hd_images/hd_cal_index.json")
+   cci = load_json_file("/mnt/ams2/cal/hd_images/hd_cal_index.json")
    cam_day_sum = load_json_file("/mnt/ams2/cal/hd_images/hd_cal_index-cam-day-sum.json")
+   
+   meteors = {}
+   day_defined = 0 
+  
+   #Get First none empty day
+   if(day_limit is None and show_all is None):
+      for day in sorted(cci, reverse=True):
+            day_limit = day 
+            break
 
-   print('<div class="m-auto" style="max-width: 1730px;">')
-   print('<table class="table table-dark table-striped table-hover m-3 td-al-m">')
-   print('<thead><tr><th>Date</th><th>Cam ID</th><th>Images w/ Stars</th><th>Images w/o Stars</th><th>Total Stars For Night</th><th>Center AZ/EL</th><th>Position Angle</th><th>PixScale</th><th>Avg Res Px For Night</th><th>Avg Res Deg For Night</th></tr></thead>')
-   print('<tbody>')
+   #Remove not needed
+   if(show_all is None):
+      if(day_limit is not None):  
+            for idx, day in enumerate(cci): 
+                  if(day==day_limit): 
+                        meteors[day] = cci[day] 
+      ci = meteors  
+   else:
+      ci = cci
+
+   
+   #print("<h1>Auto Calibration</h1>")
+   #print('<div class="m-auto" style="max-width: 1730px;">')
+   #print('<table class="table table-dark table-striped table-hover m-3 td-al-m">')
+   #print('<thead><tr><th>Date</th><th>Cam ID</th><th>Images w/ Stars</th><th>Images w/o Stars</th><th>Total Stars For Night</th><th>Center AZ/EL</th><th>Position Angle</th><th>PixScale</th><th>Avg Res Px For Night</th><th>Avg Res Deg For Night</th></tr></thead>')
+   #print('<tbody>')
+
+   results =  '<div class="m-auto" style="max-width: 1730px;">'
+   results += '<table class="table table-dark table-striped table-hover m-3 td-al-m">'
+   results += '<thead><tr><th>Date</th><th>Cam ID</th><th>Images w/ Stars</th><th>Images w/o Stars</th><th>Total Stars For Night</th><th>Center AZ/EL</th><th>Position Angle</th><th>PixScale</th><th>Avg Res Px For Night</th><th>Avg Res Deg For Night</th></tr></thead>'
+   results += '<tbody>'   
 
    for day in sorted(ci,reverse=True): 
          
-      print('<tr><td colspan="10"><h6 class="mb-0">'+day.replace("_","/")+'</h6></td></tr>')
+      results += '<tr><td colspan="10"><h6 class="mb-0">'+day.replace("_","/")+'</h6></td></tr>'
 
       for cam_id in sorted(ci[day],reverse=False):
 
@@ -842,10 +869,24 @@ def hd_cal_index(json_conf, form):
             px_scale = ""
 
          if show_row == 1:
-            print("<tr class='" + color + " clickable toggler' data-tog='#fr"+div_id+"'><td><div class='st'></div></td><td>{:s}</a></td><td>{:s}</td><td>{:s}</td><td>{:s}</td><td>{:s}</td><td>{:s}</td><td>{:s}</td><td>{:s}</td><td>{:s}</td></tr>".format(show_link, str(cam_day_sum[day][cam_id]['files_with_stars']), str(cam_day_sum[day][cam_id]['files_without_stars']), str(cam_day_sum[day][cam_id]['total_stars_tracked_for_night']), az_el, pos_ang, px_scale, str(cam_day_sum[day][cam_id]['avg_res_px_for_night'])[0:5],str(cam_day_sum[day][cam_id]['avg_res_deg_for_night'])[0:5]))
-          
-            print("<tr><td colspan='11' class='collapse' id='fr"+div_id+"'>")
-            print("<div class='text-center text-lg-left gallery gal-resize d-flex flex-wrap' style='max-width: 1520px;'>")
+            #print("<tr class='" + color + " clickable toggler' data-tog='#fr"+div_id+"'><td><div class='st'>
+            # </div></td><td>{:s}</a></td><td>{:s}</td><td>{:s}</td><td>{:s}</td><td>{:s}</td><td>{:s}</td>
+            # <td>{:s}</td><td>{:s}</td><td>{:s}</td></tr>".format(show_link, str(cam_day_sum[day][cam_id]['files_with_stars']),
+            #  str(cam_day_sum[day][cam_id]['files_without_stars']), str(cam_day_sum[day][cam_id]['total_stars_tracked_for_night']),
+            #  az_el, pos_ang, px_scale, str(cam_day_sum[day][cam_id]['avg_res_px_for_night'])[0:5],str(cam_day_sum[day][cam_id]['avg_res_deg_for_night'])[0:5]))
+            results += "<tr class='" + color + " clickable toggler' data-tog='#fr"+div_id+"'><td><div class='st'></div></td>"
+            results += "<td>"+show_link+"</td>"    
+            results += "<td>"+str(cam_day_sum[day][cam_id]['files_with_stars'])+"</td>"    
+            results += "<td>"+str(cam_day_sum[day][cam_id]['files_without_stars'])+"</td>"  
+            results += "<td>"+str(cam_day_sum[day][cam_id]['total_stars_tracked_for_night'])+"</td>"    
+            results += "<td>"+az_el+"</td><td>"+pos_ang+"</td><td>"+px_scale+"</td><td>"+str(cam_day_sum[day][cam_id]['avg_res_px_for_night'])[0:5]+"</td>" 
+            results += "<td>"+str(cam_day_sum[day][cam_id]['avg_res_deg_for_night'])[0:5]+"</td></tr>"
+
+            results += "<tr><td colspan='11' class='collapse' id='fr"+div_id+"'>"      
+            results += "<div class='text-center text-lg-left gallery gal-resize d-flex flex-wrap' style='max-width: 1520px;'>"
+
+            #print("<tr><td colspan='11' class='collapse' id='fr"+div_id+"'>")
+            #print("<div class='text-center text-lg-left gallery gal-resize d-flex flex-wrap' style='max-width: 1520px;'>")
             js_img_array["fr"+div_id] = []
 
             for cfile in sorted(ci[day][cam_id], reverse=True):
@@ -872,13 +913,18 @@ def hd_cal_index(json_conf, form):
                #print('<div class="preview p-2"><a href="'+detail_link+'" class="m:ttt">')
                #print('<img data-src="'+tn+'" class="ns lz-shown" width="200" height="112"/>');
                #print('</a><span class="det" '+color+'><b>' + str(ts) + "</b> stars - <b>" + str(trp)[0:5] + "</b>Rpx - <b>" +  str(trd)[0:5] + "</b>Rd</span></div>")
+               results += '<div class="preview p-2"><a href="'+detail_link+'" class="m ttt">'
+               results += '<img data-src="'+tn+'" class="ns lz-shown" width="200" height="112"/></a>'
+               results += '<span class="det" '+color+'><b>' + str(ts) + "</b> stars - <b>" + str(trp)[0:5] + "</b>Rpx - <b>" +  str(trd)[0:5] + "</b>Rd</span></div>'               
 
              
-            print("</div>")
-            print("</td></tr> ")
-   print("</div></table>")
-   print("</div></div>")
+            results += "</div>"
+            results += "</td></tr>" 
 
+   results += "</div></table>"  
+   results += "</div></div>"           
+ 
+   print (results)
    # Show the details dynamically to we speed up the page load (by A LOT)
    print("<script>var all_cal_details="+json.dumps(js_img_array)+"</script>") 
    return("")
