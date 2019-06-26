@@ -640,7 +640,7 @@ def meteor_index(json_conf, form):
    meteor_end = meteor_start + NUMBER_OF_METEOR_PER_PAGE
    all_meteors = smi
 
-   print("FROM " + meteor_start + " TO " + meteor_end)
+   print("FROM " + str(meteor_start) + " TO " + str(meteor_end))
    print("LE " + str(len(smi)))   
    dsmi = smi[meteor_start:meteor_end]
    print("LED " + str(len(dsmi)))   
