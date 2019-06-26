@@ -612,8 +612,7 @@ def hd_cal_detail(json_conf, form):
    return(js_html)
 
 def meteor_index(json_conf, form):
-
-
+ 
    cgitb.enable()
 
    cam_id = form.getvalue("cam_id")
@@ -628,12 +627,8 @@ def meteor_index(json_conf, form):
 
    mi = load_json_file("/mnt/ams2/cal/hd_images/meteor_index.json")
 
-   print("<h1>Meteor Index</h1>")
-   print("<table class='table table-dark table-striped table-hover td-al-m m-auto table-fit'>")
-   print("<thead><tr><th>&nbsp;</th><th>Meteor</th><th>Reduced</th><th>Multi-Station</th><th>AZ/EL FOV</th><th>Pos Ang</th><th>Pixscale</th><th>Stars</th><th>Res Px</th><th>Res Deg</th><th>Dur</th><th>Ang Sep</th><th>Mag</th><th>Seg Res</td><th>Missing Frames</th></tr></thead>")
-   print("<tbody>")
-
-
+  
+ 
    smi = sorted(mi, reverse=True)
 
    meteor_start = (cur_page -1) * NUMBER_OF_METEOR_PER_PAGE 
@@ -644,6 +639,15 @@ def meteor_index(json_conf, form):
    print("LE " + str(len(smi)))   
    dsmi = smi[meteor_start:meteor_end]
    print("LED " + str(len(dsmi)))   
+
+   for day in dsmi:
+      print("D " + dsmi + "<br/>")
+
+
+   print("<h1>Meteor Index</h1>")
+   print("<table class='table table-dark table-striped table-hover td-al-m m-auto table-fit'>")
+   print("<thead><tr><th>&nbsp;</th><th>Meteor</th><th>Reduced</th><th>Multi-Station</th><th>AZ/EL FOV</th><th>Pos Ang</th><th>Pixscale</th><th>Stars</th><th>Res Px</th><th>Res Deg</th><th>Dur</th><th>Ang Sep</th><th>Mag</th><th>Seg Res</td><th>Missing Frames</th></tr></thead>")
+   print("<tbody>")
 
    for day in dsmi:
       for meteor_file in dsmi[day]:
