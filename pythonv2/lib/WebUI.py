@@ -14,7 +14,7 @@ import datetime
 import time
 from lib.PwdProtect import   login_page, check_pwd_ajax
 from lib.Pagination import get_pagination
-from lib.PrintUtils import get_meteor_date, get_date_from_file
+from lib.PrintUtils import get_meteor_date, get_date_from_file, get_meteor_time
 from lib.FileIO import get_proc_days, get_day_stats, get_day_files , load_json_file, get_trims_for_file, get_days, save_json_file, cfe, save_meteor
 from lib.VideoLib import get_masks, convert_filename_to_date_cam, ffmpeg_trim , load_video_frames
 from lib.DetectLib import check_for_motion2 
@@ -631,7 +631,7 @@ def meteor_index(json_conf, form):
    print("<tbody>")
 
    for day in sorted(mi, reverse=True):
-      print(mi[day])
+      print(get_meteor_time(day))
       for meteor_file in mi[day]:
          hd_datetime, hd_cam, hd_date, hd_y, hd_m, hd_d, hd_h, hd_M, hd_s = convert_filename_to_date_cam(meteor_file)
          if cam_id is None:
