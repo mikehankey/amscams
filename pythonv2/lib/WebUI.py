@@ -625,22 +625,18 @@ def meteor_index(json_conf, form):
       cur_page = int(cur_page)
 
    mmi = load_json_file("/mnt/ams2/cal/hd_images/meteor_index.json")
-
-   day_limit = "2019_06_02"
-
+  
    meteors = {}
+
+   #Remove not needed
    if(day_limit is not None):
       for idx, day in enumerate(mmi):
          if(day==day_limit):
                meteors[day] = mmi[day]
  
             
-   mi = meteors
-   #Get only day_limit if it exists
-   #if(day_limit is not None):
-
-
-
+   mi = meteors 
+ 
 
    print("<table class='table table-dark table-striped table-hover td-al-m m-auto table-fit'>")
    print("<thead><tr><th>&nbsp;</th><th>Meteor</th><th>Reduced</th><th>Multi-Station</th><th>AZ/EL FOV</th><th>Pos Ang</th><th>Pixscale</th><th>Stars</th><th>Res Px</th><th>Res Deg</th><th>Dur</th><th>Ang Sep</th><th>Mag</th><th>Seg Res</td><th>Missing Frames</th></tr></thead>")
