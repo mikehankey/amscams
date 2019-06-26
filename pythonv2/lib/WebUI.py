@@ -627,7 +627,9 @@ def meteor_index(json_conf, form):
 
    mi = load_json_file("/mnt/ams2/cal/hd_images/meteor_index.json")
 
-  
+   for day in sorted(mi, reverse=True):	   
+      for meteor_file in mi[day]:
+            print(str(meteor_file))
  
    smi = sorted(mi, reverse=True)
 
