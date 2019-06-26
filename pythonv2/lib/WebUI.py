@@ -615,7 +615,7 @@ def meteor_index(json_conf, form):
    cgitb.enable() 
 
    cam_id    = form.getvalue("cam_id")
-   day_limit = form.getvalue("day_limit")
+   day_limit = form.getvalue("limit_day")
    cur_page  = form.getvalue('p')
 
    if (cur_page is None) or (cur_page==0):
