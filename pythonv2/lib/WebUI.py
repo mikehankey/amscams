@@ -632,10 +632,10 @@ def meteor_index(json_conf, form):
    if(day_limit is None):
       for day in sorted(mmi, reverse=True):
             day_limit = day.replace("_", "/")
+            print("DAY LIMIT "  + day_limit)
             break
 
 
-   print("DAY LIMIT "  + day_limit)
 
    #Remove not needed
    if(day_limit is not None): 
