@@ -757,7 +757,7 @@ def meteor_index(json_conf, form):
          res_cnt+= 1
 
    results += "</tbody></table>" 
-   if(show_all is not None):
+   if(day_limit is not None):
       print('<div class="h1_holder d-flex justify-content-between mb-4"><h1>Meteor Calibration Index for <div class="input-group date datepicker" data-display-format="YYYY/MM/DD" data-action="reload" data-url-param="limit_day" data-send-format="YYYY_MM_DD"><input value="'+day_limit.replace("_", "/")+'" type="text" class="form-control"><span class="input-group-addon"><span class="icon-clock"></span></span></div></h1><div><a href="/pycgi/webUI.py?cmd=meteor_index&opt=show_all" class="btn btn-primary">Show All</a></div></div>')
    else:
       print('<div class="h1_holder d-flex justify-content-between mb-4"><h1>Meteor Calibration Index</h1><div><a href="/pycgi/webUI.py?cmd=meteor_index" class="btn btn-primary">Browse by date</a></div></div>')
