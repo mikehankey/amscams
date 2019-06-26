@@ -44,7 +44,7 @@ def check_pwd_ajax(user, pwd):
     try:
         if(json_data['site']['ams_id']==user and json_data['site']['pwd']==pwd):
             result['passed'] = 1
-            setup_login_cookie(user)
+            #setup_login_cookie(user)
         else:
             result['passed'] = 0
     except Exception:

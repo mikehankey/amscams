@@ -18,7 +18,7 @@
         .card-header {
             padding:0;
         }
-        .card{ 
+        .card.login { 
             margin-top: auto;
             margin-bottom: auto;
             width: 400px;
@@ -41,7 +41,7 @@
  
         <div class="container">
                 <div class="d-flex justify-content-center h-100 tdf">
-                    <div class="card">
+                    <div class="card login">
                         <div class="card-header">			 
 				            <h3><iframe id="logo_holder" src="./dist/img/logo.svg" width="70" height="45" style="border:0" class="float-right"></iframe> Login</h3>
                         </div>
@@ -100,6 +100,9 @@
                 data: cmd_data,
                 success: function(data) {
                     console.log(data);
+
+                    // We setup the cookie here
+                    $.cookie("wpAMS-10091976", "arythrisvV", { path: '/' });
                 }
             })
 
