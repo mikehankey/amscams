@@ -631,10 +631,9 @@ def meteor_index(json_conf, form):
    meteor_end = meteor_start + NUMBER_OF_METEOR_PER_PAGE
   
  
-   all_meteors = smi
-
-   
-   dsmi = smi[meteor_start:meteor_end] 
+   all_meteors = mi
+ 
+   dsmi = mi[meteor_start:meteor_end] 
    
 
    print("<h1>Meteor Index</h1>")
