@@ -930,14 +930,13 @@ def hd_cal_index(json_conf, form):
    if(day_limit is not None):
       print('<div class="h1_holder d-flex justify-content-between mb-4"><h1>Auto Calibration Index for <div class="input-group date datepicker" data-display-format="YYYY/MM/DD" data-action="reload" data-url-param="limit_day" data-send-format="YYYY_MM_DD"><input value="'+day_limit.replace("_", "/")+'" type="text" class="form-control"><span class="input-group-addon"><span class="icon-clock"></span></span></div></h1><div><a href="/pycgi/webUI.py?cmd=meteor_index&opt=show_all" class="btn btn-primary">Show All</a></div></div>')
    else:
-      print('<div class="h1_holder d-flex justify-content-between mb-4"><h1>Auto Calibration Index</h1><div><a href="/pycgi/webUI.py?cmd=meteor_index" class="btn btn-primary">Browse by date</a></div></div>')
+      print('<div class="h1_holder d-flex justify-content-between mb-4"><h1>Auto Calibration Index</h1><div><a href="/pycgi/webUI.py?cmd=hd_cal_index" class="btn btn-primary">Browse by date</a></div></div>')
 
    if(res_cnt>1):
       print(results)
    else:
-      print('<div class="container"><div class="alert alert-error">No result found for this date. <a href="/pycgi/webUI.py?cmd=meteor_index" style="color:#fff; text-decoration:underline">Access the latest meteor calibration.</a></div></div>')
-
-   print(results)
+      print('<div class="container"><div class="alert alert-error">No result found for this date. <a href="/pycgi/webUI.py?cmd=hd_cal_index" style="color:#fff; text-decoration:underline">Access the latest meteor calibration.</a></div></div>')
+ 
    # Show the details dynamically to we speed up the page load (by A LOT)
    print("<script>var all_cal_details="+json.dumps(js_img_array)+"</script>") 
    return("")
