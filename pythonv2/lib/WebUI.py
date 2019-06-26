@@ -613,6 +613,9 @@ def hd_cal_detail(json_conf, form):
 
 def meteor_index(json_conf, form):
 
+
+   cgitb.enable()
+
    cam_id = form.getvalue("cam_id")
    day_limit = form.getvalue("day")
    cur_page  = form.getvalue('p')
