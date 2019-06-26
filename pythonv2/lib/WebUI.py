@@ -629,21 +629,21 @@ def meteor_index(json_conf, form):
 
    meteor_start = (cur_page -1) * NUMBER_OF_METEOR_PER_PAGE 
    meteor_end = meteor_start + NUMBER_OF_METEOR_PER_PAGE
-   smi = sorted(mi, reverse=True)
+  
  
    all_meteors = smi
 
    
    dsmi = smi[meteor_start:meteor_end] 
- 
+   
 
    print("<h1>Meteor Index</h1>")
    print("<table class='table table-dark table-striped table-hover td-al-m m-auto table-fit'>")
    print("<thead><tr><th>&nbsp;</th><th>Meteor</th><th>Reduced</th><th>Multi-Station</th><th>AZ/EL FOV</th><th>Pos Ang</th><th>Pixscale</th><th>Stars</th><th>Res Px</th><th>Res Deg</th><th>Dur</th><th>Ang Sep</th><th>Mag</th><th>Seg Res</td><th>Missing Frames</th></tr></thead>")
    print("<tbody>")
 
-   for day in smi:
-      for meteor_file in smi[day]:
+   for day in sorted(dsmi, reverse=True):
+      for meteor_file in dsmi[day]:
          hd_datetime, hd_cam, hd_date, hd_y, hd_m, hd_d, hd_h, hd_M, hd_s = convert_filename_to_date_cam(meteor_file)
          if cam_id is None:
             show = 1
