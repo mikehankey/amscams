@@ -3,7 +3,7 @@ import cgitb
 import json
 import sys
 
-KEY="AllonsEnfantsDeLaPatrie" 
+KEY="AllonsEnfantsDeLaPatrieAllonsEnfantsDeLaPatrie" 
 
 def login_page():
     cgitb.enable()
