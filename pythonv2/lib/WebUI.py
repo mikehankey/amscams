@@ -755,7 +755,7 @@ def meteor_index(json_conf, form):
                results += "<td>"+ str(mi[day][meteor_file]['total_res_deg'])[0:5]+"</td>"
                results += "<td>"+ str(dur)+"</td>"
                results += "<td>"+ str(ass)+"</td>"
-               results += "<td>"+ str(MAG)+"</td>"
+               results += "<td>MAG</td>"
                results += "<td>"+ str(seg_res)+"</td>"
                results += "<td>"+ str(missing_frames)+"</td>"
          
