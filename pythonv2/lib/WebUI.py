@@ -628,8 +628,7 @@ def meteor_index(json_conf, form):
 
    day_limit = "2019_06_02"
 
-   meteors = []
-
+   meteors = {}
    if(day_limit is not None):
       for idx, day in enumerate(mi):
          if(day==day_limit):
