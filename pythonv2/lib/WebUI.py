@@ -632,7 +632,6 @@ def meteor_index(json_conf, form):
 
    if(day_limit is not None):
       for idx, day in enumerate(mi):
-         print(str(idx) + "   > " + str(day) + "<br/>")
          if(day==day_limit):
                meteors.append(day)
             
