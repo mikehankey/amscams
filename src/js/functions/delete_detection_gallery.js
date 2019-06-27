@@ -26,9 +26,13 @@ $(function() {
      // Delete All
      $('#del-all').click(function() {
          // Get all id
-         $('.preview.selected').each(function { 
-             reject_meteor($(this).attr('id'))
-         })
+     
+
+         jQuery.each($('.preview.selected'), function( i, val ) { 
+            reject_meteor($(val).attr('id'));
+            }
+         );
+
          
      })
 })
