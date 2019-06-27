@@ -3,12 +3,12 @@
     &.gal-resize {
         margin: 0 auto;
 
-        .preview {
- 
-            .list-onl {
-                display: none;
-            }
+        .list-onl {
+            display: none;
+        }
 
+        .preview {
+  
             .btn-toolbar { 
                 opacity: 0;
                 padding:0 1rem .4rem 1rem;
@@ -183,6 +183,10 @@
      
         max-width: 750px; 
 
+        .list-onl {
+            display: block;
+        }
+
         .preview {
             width: 100%;
             flex: 0 0 100%;
@@ -193,8 +197,7 @@
             position: relative;
             max-height: calc(230px + 1rem);
 
-            .list-onl {
-                display: block;
+            .list-onl { 
 
                 span {
                     font-weight: bold;
