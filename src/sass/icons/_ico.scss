@@ -1,10 +1,10 @@
 @font-face {
     font-family: 'icomoon';
-    src:  url('./../fonts/icomoon.eot?qeo0ld');
-    src:  url('./../fonts/icomoon.eot?qeo0ld#iefix') format('embedded-opentype'),
-      url('./../fonts/icomoon.ttf?qeo0ld') format('truetype'),
-      url('./../fonts/icomoon.woff?qeo0ld') format('woff'),
-      url('./../fonts/icomoon.svg?qeo0ld#icomoon') format('svg');
+    src:  url('./../fonts/icomoon.eot?a6t0js');
+    src:  url('./../fonts/icomoon.eot?a6t0js#iefix') format('embedded-opentype'),
+      url('./../fonts/icomoon.ttf?a6t0js') format('truetype'),
+      url('./../fonts/icomoon.woff?a6t0js') format('woff'),
+      url('./../fonts/icomoon.svg?a6t0js#icomoon') format('svg');
     font-weight: normal;
     font-style: normal;
   }
@@ -23,7 +23,36 @@
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
   }
-
+  .icon-list:before {
+    content: "\e924";
+  }
+  .icon-gallery:before {
+    content: "\e925";
+  }
+  .icon-checkbox-checked:before {
+    content: "\e926";
+  }
+  .icon-checkbox-unchecked:before {
+    content: "\e927";
+  }
+  .icon-circle-left:before {
+    content: "\e91e";
+  }
+  .icon-circle-right:before {
+    content: "\e91f";
+  }
+  .icon-circle-down:before {
+    content: "\e920";
+  }
+  .icon-compass:before {
+    content: "\e921";
+  }
+  .icon-podcast:before {
+    content: "\e922";
+  }
+  .icon-minus:before {
+    content: "\e923";
+  }  
   .icon-twitter:before {
     content: "\e91b";
   }
