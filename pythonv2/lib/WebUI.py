@@ -170,10 +170,10 @@ def make_day_preview(day_dir, stats_data, json_conf):
 
       day=day.replace("_","")
  
-      html_out = html_out + "<div class='preview col-lg-2 col-md-3 '>"
-      html_out = html_out + "<a class='mtt' href='webUI.py?cmd=browse_day&day=" + day_str + "&cams_id="+cams_id+"'  title='Browse all day'>"
-      html_out = html_out + "<img alt='" + day_str + "' class='img-fluid ns lz' src='" + obj_stack + "'>"
-      html_out = html_out + "</a><span class='pre-b'>Cam #"+ cams_id+" - " + str(min_total) + " minutes</span></div>"     
+      html_out +=  "<div class='preview col-lg-2 col-md-3 '>"
+      html_out +=  "<a class='mtt' href='webUI.py?cmd=browse_day&day=" + day_str + "&cams_id="+cams_id+"'  title='Browse all day'>"
+      html_out +=  "<img alt='" + day_str + "' class='img-fluid ns lz' src='" + obj_stack + "'>"
+      html_out +=  "</a><span class='pre-b'>Cam #"+ cams_id+" - " + str(min_total) + " minutes</span></div>"     
    return(html_out, day_str)
 
 def parse_jsid(jsid):
@@ -1148,15 +1148,16 @@ def meteors_new(json_conf,form):
                htclass = "norm"
                norm_cnt = norm_cnt + 1
 
-            html_out = html_out + "<div id='"+del_id+"' class='preview col-lg-2 col-md-3  "+ htclass +"'>"
-            html_out = html_out + "<a class='mtt' href='webUI.py?cmd=reduce&video_file=" + video_file + "' data-obj='"+stack_obj_img+"' title='Go to Info Page'>"
-            html_out = html_out + "<img alt='"+desc+"' class='img-fluid ns lz' src='" + stack_file_tn + "'>"
-            html_out = html_out + "<span>" + desc + "</span></a>"  
-            html_out = html_out + "<div class='details'><div class='list-onl'><span>" + desc + "</span></div>"
-            html_out = html_out + "<div class='btn-toolbar'><div class='btn-group'>"
-            html_out = html_out + "<a class='vid_link_gal col btn btn-primary btn-sm' title='Play Video' href='./video_player.html?video=" + video_file + "&vid_id="+del_id+"'><i class='icon-play'></i></a>"
-            html_out = html_out + "<a class='delete_meteor_gallery col btn btn-danger btn-sm' title='Delete Detection' data-meteor='" + del_id + "'><i class='icon-delete'></i></a>"
-            html_out = html_out + "</div></div></div></div>"
+            html_out +=  "<div id='"+del_id+"' class='preview col-lg-2 col-md-3  "+ htclass +"'>"
+            html_out +=  "<a class='mtt' href='webUI.py?cmd=reduce&video_file=" + video_file + "' data-obj='"+stack_obj_img+"' title='Go to Info Page'>"
+            html_out +=  "<img alt='"+desc+"' class='img-fluid ns lz' src='" + stack_file_tn + "'>"
+            html_out +=  "<span>" + desc + "</span></a>"  
+
+            html_out +=  "<div class='list-onl'><span>" + desc + "</span></div>"
+            html_out +=  "<div class='btn-toolbar'><div class='btn-group'>"
+            html_out +=  "<a class='vid_link_gal col btn btn-primary btn-sm' title='Play Video' href='./video_player.html?video=" + video_file + "&vid_id="+del_id+"'><i class='icon-play'></i></a>"
+            html_out +=  "<a class='delete_meteor_gallery col btn btn-danger btn-sm' title='Delete Detection' data-meteor='" + del_id + "'><i class='icon-delete'></i></a>"
+            html_out +=  "</div></div></div>"
             counter = counter + 1
 
 
@@ -1188,7 +1189,7 @@ def meteors_new(json_conf,form):
    print(header_out+'</div></div>')
    print("<div id='main_container' class='container-fluid h-100 mt-4 lg-l'>")
    print("<div class='gallery gal-resize row text-center text-lg-left'>")
-   print("<div class='list-onl'><h2></h2>")
+ 
    print(html_out)
    print("</div>")
    #page,total_pages,url for pagination
@@ -1269,11 +1270,11 @@ def meteors(json_conf,form):
 
       html_out = ""
       this_span = span.replace("{ID}", base_js_name)
-      html_out = html_out + "<figure id=\"" + fig_id + "\">" + this_span + "<a href=\"webUI.py?cmd=reduce&video_file=" + video_file + "\"" \
+      html_out +=  "<figure id=\"" + fig_id + "\">" + this_span + "<a href=\"webUI.py?cmd=reduce&video_file=" + video_file + "\"" \
          + " onmouseover=\"document.getElementById('" + base_js_name_img + "').src='" + stack_obj_img \
          + "'\" onmouseout=\"document.getElementById('" + base_js_name_img + "').src='" + stack_file_tn+ "'\">"
   
-      html_out = html_out + "<img width=282 height=192 class=\"" + htclass + "\" id=\"" + base_js_name_img + "\" src='" + stack_file_tn+ "'></a>" + end_span + "<figcaption>" + desc + str(buttons) + "</figcaption></figure>\n"
+      html_out +=  "<img width=282 height=192 class=\"" + htclass + "\" id=\"" + base_js_name_img + "\" src='" + stack_file_tn+ "'></a>" + end_span + "<figcaption>" + desc + str(buttons) + "</figcaption></figure>\n"
 
       print(html_out)
    print("<div style='clear: both'></div>")
@@ -1687,10 +1688,10 @@ def examine(video_file):
    print("<a href=" + video_file + ">")
    #print("<p><img src=" + stack_img + " ></a></p>")
    html_out = ""
-   html_out = html_out + "<a href=\"" + video_file + "\"" \
+   html_out +=  "<a href=\"" + video_file + "\"" \
          + " onmouseover=\"document.getElementById('" + base_js_name + "').src='" + stack_obj_img \
          + "'\" onmouseout=\"document.getElementById('" + base_js_name + "').src='" + stack_img+ "'\">"
-   html_out = html_out + "<img class=\"" + htclass + "\" id=\"" + base_js_name + "\" src='" + stack_img+ "'></a><br>\n"
+   html_out +=  "<img class=\"" + htclass + "\" id=\"" + base_js_name + "\" src='" + stack_img+ "'></a><br>\n"
    print("<figure>")
    print(html_out)
    if "meteors" in video_file or "passed" in video_file:
@@ -2002,10 +2003,10 @@ def browse_day(day,cams_id,json_conf):
       base_js_name = el[-1].split('_')
 
       html_out =  "<div class='preview col-lg-2 col-md-3 "+ htclass +"'>"
-      html_out = html_out + "<a class='mtt mb-3' href='webUI.py?cmd=examine_min&video_file=" + video_file + "&next_stack_file=" + next_stack_file +"&next_stack_file=" + next_stack_file + "' title='Examine'>"
-      html_out = html_out + "<img class='ns lz' src='" + stack_file_tn + "'>"
-      html_out = html_out + "<span>"+base_js_name[0] +"/" +base_js_name[1]+"/" +base_js_name[2] + " " +  base_js_name[3]+ ":" +  base_js_name[4]+ ":" +  base_js_name[5] +"</span>"
-      html_out = html_out + "</a></div>"
+      html_out +=  "<a class='mtt mb-3' href='webUI.py?cmd=examine_min&video_file=" + video_file + "&next_stack_file=" + next_stack_file +"&next_stack_file=" + next_stack_file + "' title='Examine'>"
+      html_out +=  "<img class='ns lz' src='" + stack_file_tn + "'>"
+      html_out +=  "<span>"+base_js_name[0] +"/" +base_js_name[1]+"/" +base_js_name[2] + " " +  base_js_name[3]+ ":" +  base_js_name[4]+ ":" +  base_js_name[5] +"</span>"
+      html_out +=  "</a></div>"
       print(html_out) 
       cc = cc + 1
 
@@ -2036,7 +2037,7 @@ def browse_detects(day,type,json_conf,form):
       title = title + "<h1>" + format(len(files)) + " Non-Meteor Detections on " + format(show_day)+"</h1>" 
  
    html_out = "<div id='main_container' class='container-fluid h-100 mt-4 lg-l'>" 
-   html_out = html_out + "<div class='gallery gal-resize row text-center text-lg-left'>"
+   html_out +=  "<div class='gallery gal-resize row text-center text-lg-left'>"
 
    files = sorted(files, reverse=True)
    _from = (cur_page-1) * NUMBER_OF_METEOR_PER_PAGE
@@ -2052,13 +2053,13 @@ def browse_detects(day,type,json_conf,form):
       short_name = get_meteor_date(file) 
       base_js_name=short_name.replace("_", "")
 
-      html_out = html_out + "<div class='preview col-lg-2 col-md-3 mb-4 fail'>"
-      html_out = html_out + "<a class='mtt' href='webUI.py?cmd=examine&video_file=" + file +"'  title='Examine'>"
-      html_out = html_out + "<img alt='" + short_name + "' class='img-fluid ns lz' src='" + stack_img + "'>"
-      html_out = html_out + "<span>" + short_name + "</span></a></div>"     
+      html_out +=  "<div class='preview col-lg-2 col-md-3 mb-4 fail'>"
+      html_out +=  "<a class='mtt' href='webUI.py?cmd=examine&video_file=" + file +"'  title='Examine'>"
+      html_out +=  "<img alt='" + short_name + "' class='img-fluid ns lz' src='" + stack_img + "'>"
+      html_out +=  "<span>" + short_name + "</span></a></div>"     
        
    
-   html_out = html_out + "</div>"
+   html_out +=  "</div>"
    pagination =  get_pagination(cur_page,len(files),"/pycgi/webUI.py?cmd=browse_detects&type="+type+"&day="+day,NUMBER_OF_METEOR_PER_PAGE)
    
    print( title + "<div class='page_h'>Page  " + format(cur_page) + "/" +  format(pagination[2]) + "</div></div>")
