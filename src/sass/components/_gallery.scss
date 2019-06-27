@@ -223,18 +223,7 @@
                 }
 
                 span {
-                    position: relative;
-                    bottom: inherit;
-                    left: inherit;
-                    right: inherit;
-                    color: rgba(255,255,255,0.85) !important;
-                    padding: .2rem 0 .3rem;
-                    font-size: 1rem;
-                    text-align: center;
-                    float: left;
-                    margin: 0 0 0 1rem;
-                    background: transparent;
-                    font-weight: bold;
+                    display: none;
                 }
 
              
