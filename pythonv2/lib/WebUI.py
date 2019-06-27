@@ -1154,7 +1154,7 @@ def meteors_new(json_conf,form):
             html_out +=  "<span>" + desc + "</span></a>"  
 
             html_out +=  "<div class='list-onl'><span>" + desc + "</span></div>"
-            html_out +=  '<div class="list-onl sel-box"><div class="custom-control custom-checkbox"><input type="checkbox" class="custom-control-input" id="chec_' + del_id + '" name="chec_' + del_id + '"><label class="custom-control-label" for="chec_' + del_id + '"></label> </div></div>'
+            html_out +=  '<div class="list-onl sel-box"><div class="custom-control big custom-checkbox"><input type="checkbox" class="custom-control-input" id="chec_' + del_id + '" name="chec_' + del_id + '"><label class="custom-control-label" for="chec_' + del_id + '"></label> </div></div>'
             html_out +=  "<div class='btn-toolbar'><div class='btn-group'>"
             html_out +=  "<a class='vid_link_gal col btn btn-primary btn-sm' title='Play Video' href='./video_player.html?video=" + video_file + "&vid_id="+del_id+"'><i class='icon-play'></i></a>"
             html_out +=  "<a class='delete_meteor_gallery col btn btn-danger btn-sm' title='Delete Detection' data-meteor='" + del_id + "'><i class='icon-delete'></i></a>"
@@ -1191,8 +1191,8 @@ def meteors_new(json_conf,form):
    print("<div id='main_container' class='container-fluid h-100 mt-4 lg-l'>")
    print("<div class='gallery gal-resize row text-center text-lg-left'>")
    print("<div class='list-onl'>")
-   print("<div class='filter-header d-flex justify-content-between'>")
-   print('<button id="sel-all" title="Select All" class="btn btn-primary"><i class="icon-checkbox-checked"></i></button>')
+   print("<div class='filter-header d-flex flex-row-reverse '>")
+   print('<button id="sel-all" title="Select All" class="btn btn-primary ml-3"><i class="icon-checkbox-checked"></i></button>')
    print('<button id="del-all" class="btn btn-danger"><i class="icon-delete"></i> Delete All Selected</button>')
    print("</div>")
    print("</div>")

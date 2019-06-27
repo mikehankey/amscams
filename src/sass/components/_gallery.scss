@@ -190,6 +190,14 @@
             display: block;
             // For Flex
             width: 100%; 
+
+
+            &.sel-box {
+                width: auto;
+                position: absolute;
+                right: 0;
+                top: .6rem;
+            }
         }
 
         .preview {
