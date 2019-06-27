@@ -189,13 +189,40 @@
             max-height: calc(230px + 1rem);
 
             a.mtt {
-                max-height: calc(230px + 1rem);
+                height: calc(230px + 1rem);
+                padding: 0;
+                width: 530px;
+
                 img {
+                    position: relative;
                     max-height: calc(230px + 1rem);
                     width: 344px;
                     height: 230px;
                     float: left;
                     padding: 0;
+                    top: inherit;
+                    left: inherit;
+                    right: inherit;
+                    bottom: inherit;
+                }
+
+                span {
+                    position: relative;
+                    bottom: inherit;
+                    left: inherit;
+                    right: inherit;
+                    color: rgba(255,255,255,0.85) !important;
+                    padding: .2rem 0 .3rem;
+                    font-size: 1rem;
+                    text-align: center;
+                    float: left;
+                    margin: 0 0 0 1rem;
+                    background: transparent;
+                }
+
+                .btn-toolbar {
+                    opacity: 1 !important;
+                    float: left;
                 }
             }
         }
