@@ -4,8 +4,7 @@
         margin: 0 auto;
 
         .preview {
-
-          
+ 
             .btn-toolbar { 
                 opacity: 0;
                 padding:0 1rem .4rem 1rem;
@@ -167,10 +166,34 @@
 
 // Smaller gallery
  a.mttt {
-                display: block; 
+    display: block; 
  }
 
  span.det {
     font-size: .9rem;
     text-align: center; 
+ }
+
+
+ .gallery.list {
+    
+    &.gal-resize {
+        max-width: 1000px; 
+
+        .preview {
+            width: 100%;
+            flex: 0 0 100%;
+            max-width: 100%;
+            border-bottom: 1px solid rgba(255,255,255,.6);
+            padding: 0 0 1rem;
+            margin-bottom: 1rem;
+
+            img {
+                width: 344px;
+                height: 230px;
+                float: left;
+                padding: 0;
+            }
+        }
+    }
  }

@@ -1098,8 +1098,8 @@ def meteors_new(json_conf,form):
    
    if len(meteors)>=1 :
       
-      header_out += "<div><button id='show_gal' class='btn btn-primary act'><i class='icon-gallery'></i></button>"
-      header_out += "<button id='show_gal' class='btn btn-primary'><i class='icon-list'></i></button>"
+      header_out += "<div><div class='btn-group'><button id='show_gal' class='btn btn-primary act'><i class='icon-gallery'></i></button>"
+      header_out += "<button id='show_gal' class='btn btn-primary'><i class='icon-list'></i></button></div>"
       
 
       meteors_displayed = 0
