@@ -1192,6 +1192,7 @@ def meteors_new(json_conf,form):
    print("<div class='list-onl'>")
    print('<div class="custom-control custom-checkbox"><input type="checkbox" class="custom-control-input"  id="s-all" name="s-all"><label class="custom-control-label" for="s-all">Select All</label></div>')
    print('<button class="btn btn-error"><i class="icon-delete"></i> Delete All Selected</button>')
+   print("</div>")
    print(html_out)
    print("</div>")
    #page,total_pages,url for pagination
