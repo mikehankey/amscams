@@ -195,7 +195,7 @@
             &.sel-box {
                 width: auto;
                 position: absolute;
-                right: 0;
+                right: .8rem;
                 top: .6rem;
             }
         }
@@ -213,6 +213,10 @@
             margin: 0 auto 1rem;
             padding: 1rem;
 
+            &.selected {
+                background: rgba(255,255,255,.1);
+            }
+
             .list-onl { 
 
                 span {
@@ -228,12 +232,13 @@
                 font-size: 1.2rem;
                 opacity: 1 !important;
 
+                /*
                 .btn.btn-sm i {
                     font-size: 1.2rem;
                     padding: .6rem;
                     line-height: 1.5rem;
-
                 }
+                */
             }
 
             a.mtt {
