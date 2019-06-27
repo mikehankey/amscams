@@ -1099,7 +1099,7 @@ def meteors_new(json_conf,form):
    if len(meteors)>=1 :
       
       header_out += "<div><div class='btn-group'><button id='show_gal' class='btn btn-primary act'><i class='icon-gallery'></i></button>"
-      header_out += "<button id='show_gal' class='btn btn-primary'><i class='icon-list'></i></button></div>"
+      header_out += "<button id='show_list' class='btn btn-primary'><i class='icon-list'></i></button></div>"
       
 
       meteors_displayed = 0
@@ -1191,8 +1191,8 @@ def meteors_new(json_conf,form):
    print("<div class='gallery gal-resize row text-center text-lg-left'>")
    print("<div class='list-onl'>")
    print("<div class='filter-header d-flex justify-content-between'>")
-   print('<button class="btn btn-primary"><i class="icon-delete"></i> Delete All Selected</button>')
-   print('<button class="btn btn-danger"><i class="icon-delete"></i> Delete All Selected</button>')
+   print('<button id="sel-all" class="btn btn-primary"><i class="icon-checkbox-checked"></i></button>')
+   print('<button id="del-all" class="btn btn-danger"><i class="icon-delete"></i> Delete All Selected</button>')
    print("</div>")
    print("</div>")
    print(html_out)
