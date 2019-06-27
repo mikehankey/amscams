@@ -22,4 +22,13 @@ $(function() {
         $('.sel-box input[type=checkbox]').click();
         update_selected_counter();
      })
+
+     // Delete All
+     $('#del-all').click(function() {
+         // Get all id
+         $('.preview.selected').each(function { 
+             reject_meteor($(this).attr('id'))
+         })
+         
+     })
 })
