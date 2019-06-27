@@ -186,12 +186,17 @@
             border-bottom: 1px solid rgba(255,255,255,.6);
             padding: 0 0 1rem;
             margin-bottom: 1rem;
+            max-height: calc(230px + 1rem);
 
-            img {
-                width: 344px;
-                height: 230px;
-                float: left;
-                padding: 0;
+            a.mtt {
+                max-height: calc(230px + 1rem);
+                img {
+                    max-height: calc(230px + 1rem);
+                    width: 344px;
+                    height: 230px;
+                    float: left;
+                    padding: 0;
+                }
             }
         }
 }
