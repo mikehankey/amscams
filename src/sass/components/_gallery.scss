@@ -186,7 +186,23 @@
             border-bottom: 1px solid rgba(255,255,255,.6);
             padding: 0 0 1rem;
             margin-bottom: 1rem;
+            position: relative;
             max-height: calc(230px + 1rem);
+
+            .btn-toolbar {
+                position: absolute;
+                float: none;
+                top: 2rem;
+                left: 342px;
+                font-size: 1.3rem;
+
+                .btn.btn-sm i {
+                    font-size: 1.2rem;
+                    padding: 1rem;
+                    line-height: 1.8rem;
+
+                }
+            }
 
             a.mtt {
                 height: calc(230px + 1rem);
@@ -220,10 +236,7 @@
                     background: transparent;
                 }
 
-                .btn-toolbar {
-                    opacity: 1 !important;
-                    float: left;
-                }
+             
             }
         }
 }
