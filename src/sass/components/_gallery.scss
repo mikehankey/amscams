@@ -189,14 +189,17 @@
         }
 
         .preview {
-            width: 100%;
-            flex: 0 0 100%;
+            -webkit-box-flex: 0;
             max-width: 750px;
-            border-bottom: 1px solid rgba(255,255,255,.3);
+            border-bottom: 1px solid rgba(255,255,255,0.3);
             padding: 0 0 1rem;
             margin-bottom: 1rem;
             position: relative;
-            max-height: calc(230px + 1rem);
+            max-height: calc(230px + 2.7rem);
+            width: 95%;
+            flex: 0 0 95%;
+            margin: 0 auto 1rem;
+            padding: 1rem;
 
             .list-onl { 
 
@@ -247,4 +250,14 @@
              
             }
         }
+}
+
+
+.filter-header {
+    width: 100%;
+    background: #081938;
+    padding: .8rem 1rem;
+    -webkit-box-shadow: 0 1px 2px rgba(0,0,0,0.8);
+    box-shadow: 0 1px 2px rgba(0,0,0,0.8);
+    margin-bottom: 1rem;
 }
