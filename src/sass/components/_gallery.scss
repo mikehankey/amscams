@@ -5,6 +5,10 @@
 
         .preview {
  
+            .list-onl {
+                display: none;
+            }
+
             .btn-toolbar { 
                 opacity: 0;
                 padding:0 1rem .4rem 1rem;
@@ -189,13 +193,21 @@
             position: relative;
             max-height: calc(230px + 1rem);
 
+            .list-onl {
+                display: block;
+
+                span {
+                    font-weight: bold;
+                }
+            }
+
             .btn-toolbar {
                 position: absolute;
                 float: none;
-                top: 2rem;
-                left: 342px;
+                bottom: 1rem;
+                left: 408px;
                 font-size: 1.3rem;
-                opacity:1!important;
+                opacity: 1 !important;
 
                 .btn.btn-sm i {
                     font-size: 1.2rem;
@@ -207,7 +219,9 @@
 
             a.mtt {
                 height: calc(230px + 1rem);
-                padding: 0; 
+                padding: 0;
+                width: 426px;
+                float: left;
 
                 img {
                     position: relative;
