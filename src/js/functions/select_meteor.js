@@ -13,46 +13,57 @@ function select_meteor_ajax(fn,x,y) {
         url:  "/pycgi/webUI.py",
         data: cmd_data, 
         success: function(data) {
- 
-            var data = $.parseJSON(data);
-            var nf = data.new_frame; 
-            var new_row = "";
-            var t = nf.frame_time;
-            t = t.split(' ');
-            t = t[1];
-           
-            var hd_x = nf.hd_x;
-            hd_x = hd_x/2;
+            
+            if($.trim(data)!='') {
+                var data = $.parseJSON(data);
+                var nf = data.new_frame; 
+                var new_row = "";
+                var t = nf.frame_time;
+                t = t.split(' ');
+                t = t[1];
+               
+                var hd_x = nf.hd_x;
+                hd_x = hd_x/2;
+    
+                var hd_y = nf.hd_y;
+                hd_y = hd_y/2;
+    
+                // Get last col of current tr so we can use it in the new one without 
+                // taking care of the + frames buttons 
+    
+                // Build new table row
+                new_row += '<tr id="fr_'+fn+'" data-org-x="'+x+'" data-org-y="'+y+'"><td><img src="'+nf.cnt_thumb+'?c='+Math.floor((Math.random() * 100) + 1)+'" width="50" height="50" class="img-fluid select_meteor"/></td>';
+                new_row += '<td>'+fn+'</td>';
+                new_row += '<td>'+t+'</td>';
+                new_row += '<td>'+nf.ra.toFixed(2) + "&deg/" + nf.dec.toFixed(2) +'&deg</td>';
+                new_row += '<td>'+nf.az.toFixed(2) + "&deg/" + nf.el.toFixed(2) +'&deg</td>';
+                new_row += '<td>'+hd_x.toFixed(1) + "/" + hd_y.toFixed(1) +'</td>';
+                new_row += '<td>'+nf.w + "x" + nf.h +'</td>';
+                new_row += '<td>'+nf.max_px +'</td>';
+                new_row += '<td><a class="btn btn-danger btn-sm delete_frame"><i class="icon-delete"></i></a></td>';
+                new_row += '<td class="position-relative">'+$('tr#fr_'+fn +' td:last-child').html()+'</td></tr>';
+                $('tr#fr_'+fn).replaceWith($(new_row));
+       
+                // Reload the actions
+                reduction_table_actions();
+    
+                loading_done();
+    
+                bootbox.alert({
+                    message: "The frame as well as the corresponding reduction table row have been updated.",
+                    className: 'rubberBand animated',
+                    centerVertical: true 
+                });
+            } else {
+                loading_done();
+    
+                bootbox.alert({
+                    message: "Something went wrong: please contact us.",
+                    className: 'rubberBand animated error',
+                    centerVertical: true 
+                });
+            }
 
-            var hd_y = nf.hd_y;
-            hd_y = hd_y/2;
-
-            // Get last col of current tr so we can use it in the new one without 
-            // taking care of the + frames buttons 
-
-            // Build new table row
-            new_row += '<tr id="fr_'+fn+'" data-org-x="'+x+'" data-org-y="'+y+'"><td><img src="'+nf.cnt_thumb+'?c='+Math.floor((Math.random() * 100) + 1)+'" width="50" height="50" class="img-fluid select_meteor"/></td>';
-            new_row += '<td>'+fn+'</td>';
-            new_row += '<td>'+t+'</td>';
-            new_row += '<td>'+nf.ra.toFixed(2) + "&deg/" + nf.dec.toFixed(2) +'&deg</td>';
-            new_row += '<td>'+nf.az.toFixed(2) + "&deg/" + nf.el.toFixed(2) +'&deg</td>';
-            new_row += '<td>'+hd_x.toFixed(1) + "/" + hd_y.toFixed(1) +'</td>';
-            new_row += '<td>'+nf.w + "x" + nf.h +'</td>';
-            new_row += '<td>'+nf.max_px +'</td>';
-            new_row += '<td><a class="btn btn-danger btn-sm delete_frame"><i class="icon-delete"></i></a></td>';
-            new_row += '<td class="position-relative">'+$('tr#fr_'+fn +' td:last-child').html()+'</td></tr>';
-            $('tr#fr_'+fn).replaceWith($(new_row));
-   
-            // Reload the actions
-            reduction_table_actions();
-
-            loading_done();
-
-            bootbox.alert({
-                message: "The frame as well as the corresponding reduction table row have been updated.",
-                className: 'rubberBand animated',
-                centerVertical: true 
-            });
             
         }, 
         error:function() {
