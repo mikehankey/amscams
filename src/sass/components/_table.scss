@@ -37,3 +37,18 @@
 	.lv8 { .st, .btn-primary { background-color:#00cbd3;}} // Light Blue
 	
 }
+
+// + -  buttons
+.add_f {
+	position:absolute;
+	right:0;
+	
+	&.btn-mm {
+		top: -.8rem; 
+	}
+	
+	&.btn-pp {
+	bottom:.8rem  
+	}
+	
+ }
