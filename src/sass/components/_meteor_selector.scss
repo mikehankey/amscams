@@ -1,10 +1,13 @@
+$meteor_selector_w: 500px;
+
+
 #meteor_chooser_holder {
-    width: 400px;
+    width: $meteor_selector_w;
 }
 
 .meteor_chooser {
-    width: 400px; /* x4 */ 
-    height: 400px;
+    width: $meteor_selector_w;  
+    height:$meteor_selector_w;
     background-size: contain;
     cursor: crosshair;
     position: relative;
@@ -18,7 +21,7 @@
     position: absolute;
     left: 0;
     top:50%;
-    width:400px;
+    width:$meteor_selector_w;
     height: 1px;
     background:rgba(255,255,255,.3);
     box-shadow: 0 0 1px rgba(0,0,0,1);
@@ -31,7 +34,7 @@
     top: 0;
     left:50%;
     width: 1px;
-    height: 400px;
+    height: $meteor_selector_w;
     background:rgba(255,255,255,.3);
     box-shadow: 0 0 1px rgba(0,0,0,1);
 }
