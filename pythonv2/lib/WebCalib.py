@@ -28,9 +28,19 @@ def update_frame_ajax(json_conf, form):
    fn = form.getvalue("fn")
    new_x = int(float(form.getvalue("new_x")))
    new_y = int(float(form.getvalue("new_y")))
-
    mrf = sd_video_file.replace(".mp4", "-reduced.json")
    mr = load_json_file(mrf)
+ 
+   #Temporary but necessary
+   try:
+      mr['metframes'][fn]['hd_x'] = int(new_x)
+      mr['metframes'][fn]['hd_y'] = int(new_y)
+   except Exception: 
+      os.system("cd /home/ams/amscams/pythonv2/; ./reducer2.py " + mrf + "> /mnt/ams2/tmp/rrr.txt")
+      os.system("cd /home/ams/amscams/pythonv2/; ./reducer.py " + mrf + "> /mnt/ams2/tmp/rrr.txt")
+      mr['metframes'][fn]['hd_x'] = int(new_x)
+      mr['metframes'][fn]['hd_y'] = int(new_y)
+
    mr['metframes'][fn]['hd_x'] = int(new_x)
    mr['metframes'][fn]['hd_y'] = int(new_y)
    save_json_file(mrf, mr)
@@ -50,10 +60,12 @@ def add_frame_ajax( json_conf, form):
    next_fn = str(int(new_fn) + 1)
    
    mrf = sd_video_file.replace(".mp4", "-reduced.json")
-   mr = load_json_file(mrf)
-   #print(mr)
+   
    metframes = mr['metframes']
    metconf = mr['metconf']
+   mr = load_json_file(mrf)
+   #print(mr)
+ 
    
    if str(prev_fn) in metframes:
 
