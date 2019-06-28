@@ -41,14 +41,18 @@
 // + -  buttons
 .add_f {
 	position:absolute;
-	right:0;
+	right: -1.3rem;
+	display:none;
 	
 	&.btn-mm {
 		top: -.8rem; 
 	}
 	
 	&.btn-pp {
-	bottom:.8rem  
+		bottom:-.8rem  
 	}
-	
- }
+}
+
+table:hover .add_f {
+	display: block;
+}
