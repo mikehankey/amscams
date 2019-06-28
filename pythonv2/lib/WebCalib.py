@@ -28,16 +28,19 @@ def update_frame_ajax(json_conf, form):
    fn = form.getvalue("fn")
    new_x = int(float(form.getvalue("new_x")))
    new_y = int(float(form.getvalue("new_y")))
-   mrf = sd_video_file.replace(".mp4", "-reduced.json")
-   mr = load_json_file(mrf)
+  
  
    #Temporary but necessary
    try:
+      mrf = sd_video_file.replace(".mp4", "-reduced.json")
+      mr = load_json_file(mrf)   
       mr['metframes'][fn]['hd_x'] = int(new_x)
       mr['metframes'][fn]['hd_y'] = int(new_y)
    except Exception: 
       os.system("cd /home/ams/amscams/pythonv2/; ./reducer2.py eval" + mrf + "> /mnt/ams2/tmp/rrr.txt")
       os.system("cd /home/ams/amscams/pythonv2/; ./reducer.py eval" + mrf + "> /mnt/ams2/tmp/rrr.txt")
+      mrf = sd_video_file.replace(".mp4", "-reduced.json")
+      mr = load_json_file(mrf)   
       mr = load_json_file(mrf)
       mr['metframes'][fn]['hd_x'] = int(new_x)
       mr['metframes'][fn]['hd_y'] = int(new_y)
