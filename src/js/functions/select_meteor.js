@@ -22,12 +22,8 @@ function select_meteor_ajax(fn,x,y) {
                 t = t.split(' ');
                 t = t[1];
                
-                var hd_x = nf.hd_x;
-                hd_x = hd_x/2;
-    
-                var hd_y = nf.hd_y;
-                hd_y = hd_y/2;
-    
+                var hd_x = nf.hd_x; 
+                var hd_y = nf.hd_y; 
                 // Get last col of current tr so we can use it in the new one without 
                 // taking care of the + frames buttons 
     

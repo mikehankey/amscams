@@ -69,7 +69,18 @@ function add_a_frame(cur_fn) {
         url:  "/pycgi/webUI.py",
         data: cmd_data, 
         success: function(data) { 
-            add_reduc_row($.parseJSON(data));
+            loading_done();
+            if($.trim(data)!=='') {
+                add_reduc_row($.parseJSON(data));
+            } else {
+                bootbox.alert({
+                    message: "Something went wrong: please contact us.",
+                    className: 'rubberBand animated error',
+                    centerVertical: true 
+                });
+                
+            }
+          
         }, 
         error:function() { 
             console.log('ERROR');
