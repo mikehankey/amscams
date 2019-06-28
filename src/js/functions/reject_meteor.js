@@ -5,7 +5,7 @@ function meteor_is_deleted(id) {
 
 
 function reject_meteor(id) {
-      loading({text:"Deleting", container:$("#"+id)});
+      loading({text:"Deleting", container:$("#"+id), overlay:true});
       $.ajax({ 
             url:  "webUI.py?cmd=override_detect",
             data: {jsid: id},

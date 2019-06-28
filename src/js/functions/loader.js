@@ -20,7 +20,6 @@ function loading(options) {
     if(options.overlay === true) {
 
         if(options.container !== 'undefined') {
-       
             $('<div id="overlay" style="position: absolute;z-index: 9;" class="animated"><div class="row h-100 text-center"><div class="col-sm-12 my-auto"><div class="card card-block" style="background:transparent"><iframe style="zoom: 1.8;border:0;margin: 0 auto;" src="./dist/img/anim_logo.svg" width="140" height="90"></iframe><h3>'+options.text+'</h3></div></div></div></div>').appendTo(options.container);
 
         } else {
