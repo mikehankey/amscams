@@ -44,21 +44,21 @@ def create_sd_vid(frames, path, date, camID, fps=25, watermark_pos='tr', text_po
     # Watermark position based on options
     if(watermark_pos=='tr'):
         watermark_position = "main_w-overlay_w-20:20"
-    else if(watermark_pos=='tl'):
+    elif (watermark_pos=='tl'):
         watermark_position = "20:20"    
-    else if(watermark_pos=='bl'):
+    elif (watermark_pos=='bl'):
         watermark_position = "20:main_h-overlay_h-20"
-    else if(watermark_pos=='br'): 
+    elif (watermark_pos=='br'): 
         watermark_position = "main_w-overlay_w-20:main_h-overlay_h-20"
 
     # Text position based on options
     if(text_pos=='tr'):
         text_position = "main_w-text_w-20:20"
-    else if(text_pos=='tl'):
+    elif (text_pos=='tl'):
         text_position = "20:20"    
-    else if(watermark_pos=='bl'):
+    elif (watermark_pos=='bl'):
         text_position = "20:main_h-text_h-20"
-    else if(watermark_pos=='br'): 
+    elif (watermark_pos=='br'): 
         text_position = "main_w-text_w-20:main_h-text_h-20"
  
     cmd = 'ffmpeg \
