@@ -31,7 +31,9 @@ def create_sd_vid(frames, path):
         #print(output)
 
     #Create Video based on all newly create frames
-    cmd = 'ffmpeg -r 60 -f image2 -s 1920x1080 -i ' + newpath+ '/%d.png -vcodec libx264 -crf 25 -pix_fmt yuv420p '+newpath+'/test.mp4
+    cmd = 'ffmpeg -r 60 -f image2 -s 1920x1080 -i ' + newpath+ '/%d.png -vcodec libx264 -crf 25 -pix_fmt yuv420p '+newpath+'/test.mp4'
+    output = subprocess.check_output(cmd, shell=True).decode("utf-8")
+    print(output)
 
 files, path = get_sd_frames("010034","2019_06_23")
 create_sd_vid(files,path)
