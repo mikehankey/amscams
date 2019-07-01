@@ -56,9 +56,9 @@ def create_sd_vid(frames, path, date, camID, fps="25", watermark_pos='tr', text_
         text_position = "main_w-text_w-20:20"
     elif (text_pos=='tl'):
         text_position = "20:20"    
-    elif (watermark_pos=='bl'):
+    elif (text_pos=='bl'):
         text_position = "20:main_h-text_h-20"
-    elif (watermark_pos=='br'): 
+    elif (text_pos=='br'): 
         text_position = "main_w-text_w-20:main_h-text_h-20"
  
     cmd = 'ffmpeg \
