@@ -1,4 +1,4 @@
-import os
+import glob, os, os.path
 import subprocess
 from os import listdir,makedirs
 from os.path import isfile, join, exists
@@ -42,9 +42,11 @@ def create_sd_vid(frames, path, date, camID):
     output = subprocess.check_output(cmd, shell=True).decode("utf-8")
 
     #DELETING RESIZE FRAMES
-    os.unlink(path+"/tmp/*.png")
+    filelist = glob.glob(os.path.join(newpath, "*.png"))
+    for f in filelist:
+        os.remove(f) 
 
-    #DELETING TMP VIDEOS
+    #DELETING TMP VIDEO 
     os.unlink(tmp_file_path)
 
     #print(output)
