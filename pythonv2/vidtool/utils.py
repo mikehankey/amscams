@@ -25,11 +25,12 @@ def create_sd_vid(frames, path):
         os.makedirs(newpath)
 
     for f in frames: 
+        print(f)
         #Resize 
         #ffmpeg -i input.jpg -vf scale=320:240 output_320x240.png
-        cmd = 'ffmpeg -i ' + f + " -vf scale=1920:1080 newpath/" + f
-        output = subprocess.check_output(cmd, shell=True).decode("utf-8")
-        print(output)
+        #cmd = 'ffmpeg -i ' + f + " -vf scale=1920:1080 newpath/" + f
+        #output = subprocess.check_output(cmd, shell=True).decode("utf-8")
+        #print(output)
 
 
 files, path = get_sd_frames("010034","2019_06_23")
