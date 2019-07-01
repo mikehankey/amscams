@@ -60,12 +60,12 @@ def create_sd_vid(frames, path, date, camID, fps="25", watermark_pos='tr', text_
         text_position = "20:main_h-text_h-20"
     elif (text_pos=='br'): 
         text_position = "main_w-text_w-20:main_h-text_h-20"
- 
+    
+    #ffmpeg -i /mnt/ams2/SD/proc2/2019_06_23/images/tmp/2019_06_23010034.mp4 -i ./dist/img/ams_watermark.png -filter_complex "[0:v]drawtext=:text='TESTING TESTING':fontcolor=white@1.0:fontsize=36:x=00:y=40[text];[text][1:v]overlay[filtered]" -map "[filtered]"   -codec:v libx264 -codec:a copy /mnt/ams2/SD/proc2/2019_06_23/images/tmp/output.mp4
     cmd = 'ffmpeg \
          -i ' + tmp_file_path  +' \
          -i ' + watermark + ' -filter_complex \
-        "[0:v]drawtext=text=\'' + text + '\':fontcolor=black@1.0:fontsize=30:'+text_position+'[text]; \
-        [text][1:v]overlay='+watermark_position+'[filtered]" -map "[filtered]" \
+        "[0:v]drawtext=:text=\'' + text + '\':fontcolor=white@1.0:fontsize=30:'+text_position+'[text]; [text][1:v]overlay='+watermark_position+'[filtered]" -map "[filtered]" \
         -codec:v libx264 -codec:a copy ' + def_file_path
     output = subprocess.check_output(cmd, shell=True).decode("utf-8")
 
