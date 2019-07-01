@@ -623,9 +623,10 @@ def meteor_index(json_conf, form):
   
    meteors = {}
    day_defined = 0 
+ 
   
    #Get First none empty day
-   if(day_limit is None and show_all is None):
+   if(day_limit is None and show_all is None and multi is None):
       for day in sorted(mmi, reverse=True):
             day_limit = day 
             break
