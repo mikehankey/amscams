@@ -726,9 +726,9 @@ def meteor_index(json_conf, form):
 
             if day_limit is not None:
                   if day_limit == fn[0:10]:
-                  show = 1
+                        show = 1
                   else:
-                  show = 0
+                        show = 0
 
             if "red_seg_res" in mi[day][meteor_file]:
                   seg_res = mi[day][meteor_file]['red_seg_res']
@@ -741,7 +741,7 @@ def meteor_index(json_conf, form):
 
             if seg_res != 999 :
                   if seg_res > 2 or missing_frames > 0:
-                  color = "lv1"
+                        color = "lv1"
             if show == 1:
                   results += "<tr class='" + color + "'>"
                   results += "<td><div class='st'></div></td>"
