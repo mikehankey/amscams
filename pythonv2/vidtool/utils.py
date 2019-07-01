@@ -19,7 +19,7 @@ def get_sd_frames(camID,date):
 #Input list of SD files, path of the current image, date, camID
 #Position of watermark & text = tr=>Top Right, bl=>Bottom Left
 #Output Video with watermark & text
-def create_sd_vid(frames, path, date, camID, fps=25, watermark_pos='tr', text_pos='bl'): 
+def create_sd_vid(frames, path, date, camID, fps="25", watermark_pos='tr', text_pos='bl'): 
 
     #Create temporary folder to store the frames for the video
     newpath = r''+path+'/tmp/'
@@ -35,7 +35,7 @@ def create_sd_vid(frames, path, date, camID, fps=25, watermark_pos='tr', text_po
     #Create Video based on all newly create frames
     def_file_path =  newpath +'/'+date +'_'+ camID+'.mp4'
     tmp_file_path =  newpath +'/'+date + camID + '.mp4'
-    cmd = 'ffmpeg -hide_banner -loglevel panic -r '+fps+' -f image2 -s 1920x1080 -i ' + newpath+ '/%d.png -vcodec libx264 -crf 25 -pix_fmt yuv420p ' + tmp_file_path
+    cmd = 'ffmpeg -hide_banner -loglevel panic -r '+ str(fps) +' -f image2 -s 1920x1080 -i ' + newpath+ '/%d.png -vcodec libx264 -crf 25 -pix_fmt yuv420p ' + tmp_file_path
     output = subprocess.check_output(cmd, shell=True).decode("utf-8")
     
     watermark = "./../../dist/img/ams_watermark.png"
