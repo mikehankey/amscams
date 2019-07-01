@@ -53,13 +53,13 @@ def create_sd_vid(frames, path, date, camID, fps="25", watermark_pos='tr', text_
 
     # Text position based on options
     if(text_pos=='tr'):
-        text_position = "main_w-text_w-20:20"
+        text_position = "x=main_w-text_w-20:y=20"
     elif (text_pos=='tl'):
-        text_position = "20:20"    
+        text_position = "x=20:y=20"    
     elif (text_pos=='bl'):
-        text_position = "20:main_h-text_h-20"
+        text_position = "x=20:y=main_h-text_h-20"
     elif (text_pos=='br'): 
-        text_position = "main_w-text_w-20:main_h-text_h-20"
+        text_position = "x=main_w-text_w-20:y=main_h-text_h-20"
     
     #ffmpeg -i /mnt/ams2/SD/proc2/2019_06_23/images/tmp/2019_06_23010034.mp4 -i ./dist/img/ams_watermark.png -filter_complex "[0:v]drawtext=:text='TESTING TESTING':fontcolor=white@1.0:fontsize=36:x=00:y=40[text];[text][1:v]overlay[filtered]" -map "[filtered]"   -codec:v libx264 -codec:a copy /mnt/ams2/SD/proc2/2019_06_23/images/tmp/output.mp4
     cmd = 'ffmpeg \
