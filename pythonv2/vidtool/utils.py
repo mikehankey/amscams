@@ -12,7 +12,7 @@ def get_sd_frames(camID,date):
     cur_path = SD_PATH + date + "/images/"
     onlyfiles = [f for f in listdir(cur_path) if camID in f and "-tn" not in f and "-night" not in f and "trim" not in f and isfile(join(cur_path, f))]
     #FOR DEBUG
-    onlyfiles = onlyfiles[1:10]
+    #onlyfiles = onlyfiles[1:10]
     return(sorted(onlyfiles), cur_path, date, camID)
  
 
