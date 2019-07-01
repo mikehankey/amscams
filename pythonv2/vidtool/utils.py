@@ -24,13 +24,14 @@ def create_sd_vid(frames, path):
     if not os.path.exists(newpath):
         os.makedirs(newpath)
 
-    for f in frames: 
-        #Resize 
-        #ffmpeg -i input.jpg -vf scale=320:240 output_320x240.png
-        cmd = 'ffmpeg -i ' + path+"/"+f + " -vf scale=1920:1080 " + newpath + "/" + f
+    for idx,f in enumerate(frames): 
+        #Resize the frames in /tmp
+        cmd = 'ffmpeg -i ' + path+"/"+f + " -vf scale=1920:1080 " + newpath + "/" + idx + ".png"
         output = subprocess.check_output(cmd, shell=True).decode("utf-8")
-        print(output)
+        #print(output)
 
+    #Create Video based on all newly create frames
+    cmd = 'ffmpeg -r 60 -f image2 -s 1920x1080 -i ' + newpath+ '/%d.png -vcodec libx264 -crf 25 -pix_fmt yuv420p '+newpath+'/test.mp4
 
 files, path = get_sd_frames("010034","2019_06_23")
 create_sd_vid(files,path)
