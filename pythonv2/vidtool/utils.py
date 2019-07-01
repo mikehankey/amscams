@@ -36,7 +36,8 @@ def create_sd_vid(frames, path, date, camID):
     #Draw text on video
     text = "AMS Cams #"+camID+ " " +  str(date.replace("_", "/")) 
     cmd = 'ffmpeg -i '+ new_file_path +' -vf drawtext="text='+text+': fontcolor=white: fontsize=24: box=1: boxcolor=black@0.5: boxborderw=5: x=(w-text_w)/2: y=(h-text_h)/2" -codec:a copy ' + new_file_path
-   
+    output = subprocess.check_output(cmd, shell=True).decode("utf-8")
+    
     #print(output)
     print('VIDEO READ AT '+newpath+'/'+date + '_' + camID + '.mp4' )
 
