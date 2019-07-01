@@ -67,6 +67,8 @@ def create_sd_vid(frames, path, date, camID, fps="25", watermark_pos='tr', text_
          -i ' + watermark + ' -filter_complex \
         "[0:v]drawtext=:text=\'' + text + '\':fontcolor=white@1.0:fontsize=30:'+text_position+'[text]; [text][1:v]overlay='+watermark_position+'[filtered]" -map "[filtered]" \
         -codec:v libx264 -codec:a copy ' + def_file_path
+    print ('TEST COMMAND')
+    print (cmd)
     output = subprocess.check_output(cmd, shell=True).decode("utf-8")
 
 
