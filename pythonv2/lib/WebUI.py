@@ -798,14 +798,7 @@ def hd_cal_index(json_conf, form):
       ci = meteors  
    else:
       ci = cci
-
-   
-   #print("<h1>Auto Calibration</h1>")
-   #print('<div class="m-auto" style="max-width: 1730px;">')
-   #print('<table class="table table-dark table-striped table-hover m-3 td-al-m">')
-   #print('<thead><tr><th>Date</th><th>Cam ID</th><th>Images w/ Stars</th><th>Images w/o Stars</th><th>Total Stars For Night</th><th>Center AZ/EL</th><th>Position Angle</th><th>PixScale</th><th>Avg Res Px For Night</th><th>Avg Res Deg For Night</th></tr></thead>')
-   #print('<tbody>')
-
+ 
    results =  '<div class="m-auto" style="max-width: 1730px;">'
    results += '<table class="table table-dark table-striped table-hover m-3 td-al-m">'
    results += '<thead><tr><th>Date</th><th>Cam ID</th><th>Images w/ Stars</th><th>Images w/o Stars</th><th>Total Stars For Night</th><th>Center AZ/EL</th><th>Position Angle</th><th>PixScale</th><th>Avg Res Px For Night</th><th>Avg Res Deg For Night</th></tr></thead>'
@@ -911,13 +904,7 @@ def hd_cal_index(json_conf, form):
                   color = ""
             
                
-               js_img_array["fr"+div_id].append({'col':color, 'lk': detail_link, 'src': tn, 'st': str(ts), 'trp': str(trp)[0:5] , 'trd':  str(trd)[0:5]})
-               #print('<div class="preview p-2"><a href="'+detail_link+'" class="m:ttt">')
-               #print('<img data-src="'+tn+'" class="ns lz-shown" width="200" height="112"/>');
-               #print('</a><span class="det" '+color+'><b>' + str(ts) + "</b> stars - <b>" + str(trp)[0:5] + "</b>Rpx - <b>" +  str(trd)[0:5] + "</b>Rd</span></div>")
-               #results += '<div class="preview p-2"><a href="'+detail_link+'" class="m ttt">'
-               #results += '<img data-src="'+tn+'" class="ns lz-shown" width="200" height="112"/></a>'
-               #results += '<span class="det" '+color+'><b>' + str(ts) + '</b> stars - <b>' + str(trp)[0:5] + '</b>Rpx - <b>' +  str(trd)[0:5] + '</b>Rd</span></div>'               
+               js_img_array["fr"+div_id].append({'col':color, 'lk': detail_link, 'src': tn, 'st': str(ts), 'trp': str(trp)[0:5] , 'trd':  str(trd)[0:5]})            
 
              
             results += "</div>"
@@ -930,7 +917,7 @@ def hd_cal_index(json_conf, form):
    if(day_limit is not None):
       print('<div class="h1_holder d-flex justify-content-between mb-4"><h1>Auto Calibration Index for <div class="input-group date datepicker" data-display-format="YYYY/MM/DD" data-action="reload" data-url-param="limit_day" data-send-format="YYYY_MM_DD"><input value="'+day_limit.replace("_", "/")+'" type="text" class="form-control"><span class="input-group-addon"><span class="icon-clock"></span></span></div></h1><div><a href="/pycgi/webUI.py?cmd=hd_cal_index&opt=show_all" class="btn btn-primary">Show All</a></div></div>')
    else:
-      print('<div class="h1_holder d-flex justify-content-between mb-4"><h1>Auto Calibration Index</h1><div><a href="/pycgi/webUI.py?cmd=hd_cal_index" class="btn btn-primary">Browse by date</a></div></div>')
+      print('<div class="h1_holder d-flex justify-content-between mb-4"><h1>Auto Calibration Index</h1><div><a href="/pycgi/webUI.py?cmd=hd_cal_index" class="btn btn-primary">Browse by date</a> <a href="/pycgi/webUI.py?cmd=hd_cal_index&multi=1" class="btn btn-primary">Multi-station only</a></div></div>')
 
    if(res_cnt>1):
       print(results)
