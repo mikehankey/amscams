@@ -36,10 +36,24 @@ def create_sd_vid(frames, path, date, camID):
     cmd = 'ffmpeg -hide_banner -loglevel panic -r 25 -f image2 -s 1920x1080 -i ' + newpath+ '/%d.png -vcodec libx264 -crf 25 -pix_fmt yuv420p ' + tmp_file_path
     output = subprocess.check_output(cmd, shell=True).decode("utf-8")
    
-    #Draw text on video
+    #Draw text & watemark on video
+    #ams_watermark
+    #watermark = "./dist/ams_watermark.png"
+    #text = "AMS Cams #"+camID+ " " +  str(date.replace("_", "/")) 
+    #cmd = 'ffmpeg -i '+ tmp_file_path +' -vf drawtext="text='+text+': fontcolor=white: fontsize=24: box=1: boxcolor=black@0.5: boxborderw=5: x=10: y=h-10-text_h" -codec:a copy ' + def_file_path
+    #output = subprocess.check_output(cmd, shell=True).decode("utf-8")
+
+
+    watermark = "../../dist/ams_watermark.png"
     text = "AMS Cams #"+camID+ " " +  str(date.replace("_", "/")) 
-    cmd = 'ffmpeg -i '+ tmp_file_path +' -vf drawtext="text='+text+': fontcolor=white: fontsize=24: box=1: boxcolor=black@0.5: boxborderw=5: x=10: y=h-10-text_h" -codec:a copy ' + def_file_path
+    cmd = 'ffmpeg \
+         -i ' + tmp_file_path  +' \
+         -i ' + watermark + ' -filter_complex \
+        "[0:v]drawtext=text=' + text + ':fontcolor=black@1.0:fontsize=30:x=20:y=h-20-text_h[text]; \
+        [text][1:v]overlay=main_w-overlay_w-20:20[filtered]" -map "[filtered]" \
+        -codec:v libx264 -codec:a copy ' + def_file_path
     output = subprocess.check_output(cmd, shell=True).decode("utf-8")
+
 
     #DELETING RESIZE FRAMES
     filelist = glob.glob(os.path.join(newpath, "*.png"))
