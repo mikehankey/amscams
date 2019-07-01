@@ -16,8 +16,9 @@ def get_sd_frames(camID,date):
 
 
 #Input list of SD files, path of the current image, date, camID
-#Output Video of resized frames
-def create_sd_vid(frames, path, date, camID): 
+#Position of watermark & text = tr=>Top Right, bl=>Bottom Left
+#Output Video with watermark & text
+def create_sd_vid(frames, path, date, camID, fps=25, watermark_pos='tr', text_pos='bl'): 
 
     #Create temporary folder to store the frames for the video
     newpath = r''+path+'/tmp/'
@@ -33,24 +34,37 @@ def create_sd_vid(frames, path, date, camID):
     #Create Video based on all newly create frames
     def_file_path =  newpath +'/'+date +'_'+ camID+'.mp4'
     tmp_file_path =  newpath +'/'+date + camID + '.mp4'
-    cmd = 'ffmpeg -hide_banner -loglevel panic -r 25 -f image2 -s 1920x1080 -i ' + newpath+ '/%d.png -vcodec libx264 -crf 25 -pix_fmt yuv420p ' + tmp_file_path
+    cmd = 'ffmpeg -hide_banner -loglevel panic -r '+fps+' -f image2 -s 1920x1080 -i ' + newpath+ '/%d.png -vcodec libx264 -crf 25 -pix_fmt yuv420p ' + tmp_file_path
     output = subprocess.check_output(cmd, shell=True).decode("utf-8")
-   
-    #Draw text & watemark on video
-    #ams_watermark
-    #watermark = "./dist/ams_watermark.png"
-    #text = "AMS Cams #"+camID+ " " +  str(date.replace("_", "/")) 
-    #cmd = 'ffmpeg -i '+ tmp_file_path +' -vf drawtext="text='+text+': fontcolor=white: fontsize=24: box=1: boxcolor=black@0.5: boxborderw=5: x=10: y=h-10-text_h" -codec:a copy ' + def_file_path
-    #output = subprocess.check_output(cmd, shell=True).decode("utf-8")
+    
+    watermark = "./../../dist/img/ams_watermark.png"
+    text = "AMS Cams #"+camID+ " " +  str(date.replace("_", "/"))  
 
+    # Watermark position based on options
+    if(watermark_pos=='tr'):
+        watermark_position = "main_w-overlay_w-20:20"
+    else if(watermark_pos=='tl'):
+        watermark_position = "20:20"    
+    else if(watermark_pos=='bl'):
+        watermark_position = "20:main_h-overlay_h-20"
+    else if(watermark_pos=='br'): 
+        watermark_position = "main_w-overlay_w-20:main_h-overlay_h-20"
 
-    watermark = "../../dist/img/ams_watermark.png"
-    text = "AMS Cams #"+camID+ " " +  str(date.replace("_", "/")) 
+    # Text position based on options
+    if(text_pos=='tr'):
+        text_position = "main_w-text_w-20:20"
+    else if(text_pos=='tl'):
+        text_position = "20:20"    
+    else if(watermark_pos=='bl'):
+        text_position = "20:main_h-text_h-20"
+    else if(watermark_pos=='br'): 
+        text_position = "main_w-text_w-20:main_h-text_h-20"
+ 
     cmd = 'ffmpeg \
          -i ' + tmp_file_path  +' \
          -i ' + watermark + ' -filter_complex \
-        "[0:v]drawtext=text=' + text + ':fontcolor=black@1.0:fontsize=30:x=20:y=h-20-text_h[text]; \
-        [text][1:v]overlay=main_w-overlay_w-20:20[filtered]" -map "[filtered]" \
+        "[0:v]drawtext=text=' + text + ':fontcolor=black@1.0:fontsize=30:'+text_position+'[text]; \
+        [text][1:v]overlay='+watermark_position+'[filtered]" -map "[filtered]" \
         -codec:v libx264 -codec:a copy ' + def_file_path
     output = subprocess.check_output(cmd, shell=True).decode("utf-8")
 
