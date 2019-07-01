@@ -26,7 +26,7 @@ def create_sd_vid(frames, path):
 
     for idx,f in enumerate(frames): 
         #Resize the frames in /tmp
-        cmd = 'ffmpeg -i ' + path+"/"+f + " -vf scale=1920:1080 " + newpath + "/" + idx + ".png"
+        cmd = 'ffmpeg -i ' + path+'/'+ f + ' -vf scale=1920:1080 ' + newpath + '/' + str(idx) + '.png'
         output = subprocess.check_output(cmd, shell=True).decode("utf-8")
         #print(output)
 
