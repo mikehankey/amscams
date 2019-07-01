@@ -35,4 +35,4 @@ def create_sd_vid(frames, path, date, camID):
     print('VIDEO READ AT '+newpath+'/'+date + '_' + camID + '.mp4' )
 
 files, path, date, camID = get_sd_frames("010034","2019_06_23")
-create_sd_vid(files,path, date)
+create_sd_vid(files,path, date, camID)
