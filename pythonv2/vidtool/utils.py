@@ -9,7 +9,7 @@ SD_PATH='/mnt/ams2/SD/proc2/'
 #Input: camID, date
 #Ouput: list of sd frames found for this date
 def get_sd_frames(camID,date):
-    #ex:camID:010035, date:2019_05_26
+    #ex:camID:010034, date:2019_06_23
     cur_path = SD_PATH + date + "/images/"
     onlyfiles = [f for f in listdir(cur_path) if camID in f and "-tn" not in f and isfile(join(cur_path, f))]
     return(sorted(onlyfiles), cur_path)
@@ -26,8 +26,10 @@ def create_sd_vid(frames, path):
     for f in frames: 
         #Resize 
         #ffmpeg -i input.jpg -vf scale=320:240 output_320x240.png
-        print(f)
+        cmd = 'ffmpeg -i ' + f + " -vf scale=1920:1080 newpath/" + f
+        output = subprocess.check_output(cmd, shell=True).decode("utf-8")
+        print output
 
 
-files, path = get_sd_frames("010035","2019_05_26")
+files, path = get_sd_frames("010034","2019_06_23")
 create_sd_vid(files,path)
