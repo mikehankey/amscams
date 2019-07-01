@@ -28,7 +28,7 @@ def create_sd_vid(frames, path):
         #ffmpeg -i input.jpg -vf scale=320:240 output_320x240.png
         cmd = 'ffmpeg -i ' + f + " -vf scale=1920:1080 newpath/" + f
         output = subprocess.check_output(cmd, shell=True).decode("utf-8")
-        print output
+        print(output)
 
 
 files, path = get_sd_frames("010034","2019_06_23")
