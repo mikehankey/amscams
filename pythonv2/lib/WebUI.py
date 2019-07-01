@@ -772,7 +772,7 @@ def meteor_index(json_conf, form):
    if(res_cnt>1):
       print(results)
    else:
-      print('<div class="container"><div class="alert alert-error">No result found for this date. <a href="/pycgi/webUI.py?cmd=meteor_index" style="color:#fff; text-decoration:underline">Access the latest meteor calibration.</a></div></div>')
+      print('<div class="container"><div class="alert alert-error">No result found for your criteria. <a href="/pycgi/webUI.py?cmd=meteor_index" style="color:#fff; text-decoration:underline">Access the latest meteor calibration.</a></div></div>')
 
 
 def hd_cal_index(json_conf, form):
