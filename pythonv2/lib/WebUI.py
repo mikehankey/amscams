@@ -617,7 +617,8 @@ def meteor_index(json_conf, form):
    cam_id    = form.getvalue("cam_id")
    day_limit = form.getvalue("limit_day") 
    show_all  = form.getvalue('opt')
- 
+   multi     = form.getvalue('multi')
+
    mmi = load_json_file("/mnt/ams2/cal/hd_images/meteor_index.json")
   
    meteors = {}
@@ -657,104 +658,109 @@ def meteor_index(json_conf, form):
             show = 1
          else:
             show = 0
-         fn = meteor_file.split("/")[-1]
-         fn = fn.replace(".json", "")
-         video_file = meteor_file.replace(".json", ".mp4")
-         link = "<a href='/pycgi/webUI.py?cmd=reduce&video_file=" + video_file + "' class='btn btn-primary'>" + get_meteor_time(video_file) + "</a>"
-
-         if mi[day][meteor_file]['total_res_deg'] > .5:
-               color = "lv1"
-         elif .4 < mi[day][meteor_file]['total_res_deg'] < .5:
-               color = "lv2"
-         elif .3< mi[day][meteor_file]['total_res_deg'] < .4:
-               color = "lv3"
-         elif .2 < mi[day][meteor_file]['total_res_deg'] < .3:
-               color = "lv4"
-         elif .1 < mi[day][meteor_file]['total_res_deg'] < .2:
-               color = "lv5"
-         elif mi[day][meteor_file]['total_res_deg'] == 0:
-               color = "lv6"
-         elif mi[day][meteor_file]['total_res_deg'] == 9999:
-               color = "lv7"
-         elif 0 < mi[day][meteor_file]['total_res_deg'] < .1:
-               color = "lv8"
-         else:
-               color = "lv7"
-
-
-         if 'center_az' in mi[day][meteor_file]:
-            az_el = str(mi[day][meteor_file]['center_az'])[0:5] + "/" +  str(mi[day][meteor_file]['center_el'])[0:5]
-         else:
-            az_el = ""
-
-
-         if 'event_start_time' in mi[day][meteor_file]:
-            fn = mi[day][meteor_file]['event_start_time'] + " - " + hd_cam 
          
-         pos = ""
-         pxs = ""
-         ts = 0 
          if 'multi_station' in mi[day][meteor_file]:
             multi_text = "Y"
          else:
             multi_text = "N"
-         if 'total_stars' in mi[day][meteor_file]:
-            ts = str(mi[day][meteor_file]['total_stars'])
-         if 'position_angle' in mi[day][meteor_file]:
-            pos = str(mi[day][meteor_file]['position_angle'])[0:5]
 
-         ass = ""
-         dur = ""
-         if 'angular_separation' in mi[day][meteor_file]:
-            ass = mi[day][meteor_file]['angular_separation']
-         else:
-            ass = ""
-         if 'event_duration' in mi[day][meteor_file]:
-            dur = str(mi[day][meteor_file]['event_duration'])
-         else:
-            dur = ""
-         
-         fn = meteor_file.split("/")[-1] 
-         if 'pixscale' in mi[day][meteor_file]:
-            pxs = str(mi[day][meteor_file]['pixscale'])[0:5]
+         if((multi is not None and multi_text=='Y') or (multi is None)):
 
-         if day_limit is not None:
-            if day_limit == fn[0:10]:
-               show = 1
+            fn = meteor_file.split("/")[-1]
+            fn = fn.replace(".json", "")
+            video_file = meteor_file.replace(".json", ".mp4")
+            link = "<a href='/pycgi/webUI.py?cmd=reduce&video_file=" + video_file + "' class='btn btn-primary'>" + get_meteor_time(video_file) + "</a>"
+
+            if mi[day][meteor_file]['total_res_deg'] > .5:
+                  color = "lv1"
+            elif .4 < mi[day][meteor_file]['total_res_deg'] < .5:
+                  color = "lv2"
+            elif .3< mi[day][meteor_file]['total_res_deg'] < .4:
+                  color = "lv3"
+            elif .2 < mi[day][meteor_file]['total_res_deg'] < .3:
+                  color = "lv4"
+            elif .1 < mi[day][meteor_file]['total_res_deg'] < .2:
+                  color = "lv5"
+            elif mi[day][meteor_file]['total_res_deg'] == 0:
+                  color = "lv6"
+            elif mi[day][meteor_file]['total_res_deg'] == 9999:
+                  color = "lv7"
+            elif 0 < mi[day][meteor_file]['total_res_deg'] < .1:
+                  color = "lv8"
             else:
-               show = 0
+                  color = "lv7"
 
-         if "red_seg_res" in mi[day][meteor_file]:
-            seg_res = mi[day][meteor_file]['red_seg_res']
-         else:
-            seg_res = 999
-         if "frames_missing_before" in mi[day][meteor_file]:
-            missing_frames = len(mi[day][meteor_file]['frames_missing_before'])
-         else:
-            missing_frames = 0
 
-         if seg_res != 999 :
-            if seg_res > 2 or missing_frames > 0:
-               color = "lv1"
-         if show == 1:
-               results += "<tr class='" + color + "'>"
-               results += "<td><div class='st'></div></td>"
-               results += "<td>"+link+"</td>"
-               results += "<td>"+ str(mi[day][meteor_file]['reduced'])+"</td>"
-               results += "<td>"+ multi_text+"</td>"
-               results += "<td>"+ az_el+"</td>"
-               results += "<td>"+ pos+"</td>"
-               results += "<td>"+ pxs+"</td>"
-               results += "<td>"+ str(ts)+"</td>"
-               results += "<td>"+ str(mi[day][meteor_file]['total_res_px'])[0:5]+"</td>"
-               results += "<td>"+ str(mi[day][meteor_file]['total_res_deg'])[0:5]+"</td>"
-               results += "<td>"+ str(dur)+"</td>"
-               results += "<td>"+ str(ass)+"</td>"
-               results += "<td>MAG</td>"
-               results += "<td>"+ str(seg_res)+"</td>"
-               results += "<td>"+ str(missing_frames)+"</td>"
-         
-         res_cnt+= 1
+            if 'center_az' in mi[day][meteor_file]:
+                  az_el = str(mi[day][meteor_file]['center_az'])[0:5] + "/" +  str(mi[day][meteor_file]['center_el'])[0:5]
+            else:
+                  az_el = ""
+
+
+            if 'event_start_time' in mi[day][meteor_file]:
+                  fn = mi[day][meteor_file]['event_start_time'] + " - " + hd_cam 
+            
+            pos = ""
+            pxs = ""
+            ts = 0 
+            
+            if 'total_stars' in mi[day][meteor_file]:
+                  ts = str(mi[day][meteor_file]['total_stars'])
+            if 'position_angle' in mi[day][meteor_file]:
+                  pos = str(mi[day][meteor_file]['position_angle'])[0:5]
+
+            ass = ""
+            dur = ""
+            if 'angular_separation' in mi[day][meteor_file]:
+                  ass = mi[day][meteor_file]['angular_separation']
+            else:
+                  ass = ""
+            if 'event_duration' in mi[day][meteor_file]:
+                  dur = str(mi[day][meteor_file]['event_duration'])
+            else:
+                  dur = ""
+            
+            fn = meteor_file.split("/")[-1] 
+            if 'pixscale' in mi[day][meteor_file]:
+                  pxs = str(mi[day][meteor_file]['pixscale'])[0:5]
+
+            if day_limit is not None:
+                  if day_limit == fn[0:10]:
+                  show = 1
+                  else:
+                  show = 0
+
+            if "red_seg_res" in mi[day][meteor_file]:
+                  seg_res = mi[day][meteor_file]['red_seg_res']
+            else:
+                  seg_res = 999
+            if "frames_missing_before" in mi[day][meteor_file]:
+                  missing_frames = len(mi[day][meteor_file]['frames_missing_before'])
+            else:
+                  missing_frames = 0
+
+            if seg_res != 999 :
+                  if seg_res > 2 or missing_frames > 0:
+                  color = "lv1"
+            if show == 1:
+                  results += "<tr class='" + color + "'>"
+                  results += "<td><div class='st'></div></td>"
+                  results += "<td>"+link+"</td>"
+                  results += "<td>"+ str(mi[day][meteor_file]['reduced'])+"</td>"
+                  results += "<td>"+ multi_text+"</td>"
+                  results += "<td>"+ az_el+"</td>"
+                  results += "<td>"+ pos+"</td>"
+                  results += "<td>"+ pxs+"</td>"
+                  results += "<td>"+ str(ts)+"</td>"
+                  results += "<td>"+ str(mi[day][meteor_file]['total_res_px'])[0:5]+"</td>"
+                  results += "<td>"+ str(mi[day][meteor_file]['total_res_deg'])[0:5]+"</td>"
+                  results += "<td>"+ str(dur)+"</td>"
+                  results += "<td>"+ str(ass)+"</td>"
+                  results += "<td>MAG</td>"
+                  results += "<td>"+ str(seg_res)+"</td>"
+                  results += "<td>"+ str(missing_frames)+"</td>"
+            
+            res_cnt+= 1
 
    results += "</tbody></table>" 
    if(day_limit is not None):
