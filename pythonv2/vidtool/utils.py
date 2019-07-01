@@ -1,4 +1,4 @@
-from os import listdir, makedirs
+import os
 from os.path import isfile, join, exists
 
 
@@ -19,8 +19,8 @@ def create_sd_vid(frames, path):
 
     #Create temporary folder to store the frames for the video
     newpath = r''+path+'/tmp/'
-    if not path.exists(newpath):
-        makedirs(newpath)
+    if not os.path.exists(newpath):
+        os.makedirs(newpath)
 
     for f in frames: 
         #Resize 
