@@ -44,7 +44,7 @@ def create_sd_vid(frames, path, date, camID):
     #output = subprocess.check_output(cmd, shell=True).decode("utf-8")
 
 
-    watermark = "../../dist/ams_watermark.png"
+    watermark = "../../dist/img/ams_watermark.png"
     text = "AMS Cams #"+camID+ " " +  str(date.replace("_", "/")) 
     cmd = 'ffmpeg \
          -i ' + tmp_file_path  +' \
