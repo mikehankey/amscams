@@ -38,7 +38,7 @@ def create_sd_vid(frames, path, date, camID, fps="25", watermark_pos='tr', text_
     cmd = 'ffmpeg -hide_banner -loglevel panic -r '+ str(fps) +' -f image2 -s 1920x1080 -i ' + newpath+ '/%d.png -vcodec libx264 -crf 25 -pix_fmt yuv420p ' + tmp_file_path
     output = subprocess.check_output(cmd, shell=True).decode("utf-8")
     
-    watermark = "./../../dist/img/ams_watermark.png"
+    watermark = "./dist/img/ams_watermark.png"
     text = "AMS Cams #"+camID+ " " +  str(date.replace("_", "/"))  
 
     # Watermark position based on options
@@ -64,7 +64,7 @@ def create_sd_vid(frames, path, date, camID, fps="25", watermark_pos='tr', text_
     cmd = 'ffmpeg \
          -i ' + tmp_file_path  +' \
          -i ' + watermark + ' -filter_complex \
-        "[0:v]drawtext=text=' + text + ':fontcolor=black@1.0:fontsize=30:'+text_position+'[text]; \
+        "[0:v]drawtext=text="' + text + '":fontcolor=black@1.0:fontsize=30:'+text_position+'[text]; \
         [text][1:v]overlay='+watermark_position+'[filtered]" -map "[filtered]" \
         -codec:v libx264 -codec:a copy ' + def_file_path
     output = subprocess.check_output(cmd, shell=True).decode("utf-8")
