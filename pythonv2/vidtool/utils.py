@@ -29,15 +29,16 @@ def create_sd_vid(frames, path, date, camID):
         #print(output)
 
     #Create Video based on all newly create frames
-    new_file_path =  newpath +'/'+date +'_'+ camID+'.mp4'
-    cmd = 'ffmpeg -hide_banner -loglevel panic -r 25 -f image2 -s 1920x1080 -i ' + newpath+ '/%d.png -vcodec libx264 -crf 25 -pix_fmt yuv420p ' + new_file_path
+    def_file_path =  newpath +'/'+date +'_'+ camID+'.mp4'
+    tmp_file_path =  newpath +'/'+date + camID + '.mp4'
+    cmd = 'ffmpeg -hide_banner -loglevel panic -r 25 -f image2 -s 1920x1080 -i ' + newpath+ '/%d.png -vcodec libx264 -crf 25 -pix_fmt yuv420p ' + tmp_file_path
     output = subprocess.check_output(cmd, shell=True).decode("utf-8")
    
     #Draw text on video
     text = "AMS Cams #"+camID+ " " +  str(date.replace("_", "/")) 
-    cmd = 'ffmpeg -i '+ new_file_path +' -vf drawtext="text='+text+': fontcolor=white: fontsize=24: box=1: boxcolor=black@0.5: boxborderw=5: x=(w-text_w)/2: y=(h-text_h)/2" -codec:a copy ' + new_file_path
+    cmd = 'ffmpeg -i '+ tmp_file_path +' -vf drawtext="text='+text+': fontcolor=white: fontsize=24: box=1: boxcolor=black@0.5: boxborderw=5: x=10: y=h-10" -codec:a copy ' + def_file_path
     output = subprocess.check_output(cmd, shell=True).decode("utf-8")
-    
+
     #print(output)
     print('VIDEO READ AT '+newpath+'/'+date + '_' + camID + '.mp4' )
 
