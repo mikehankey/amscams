@@ -29,7 +29,11 @@ def create_sd_vid(frames, path, date, camID):
         #print(output)
 
     #Create Video based on all newly create frames
-    cmd = 'ffmpeg -hide_banner -loglevel panic -r 25 -f image2 -s 1920x1080 -i ' + newpath+ '/%d.png -vcodec libx264 -crf 25 -pix_fmt yuv420p '+newpath+'/'+date +'_'+ camID+'.mp4'
+    drawtext= "text='AMS Cams #"+camID+" " +  str(date.replace("_", "/")) + "': fontcolor=white: fontsize=24: x=10: y=h-10"
+    cmd = 'ffmpeg -hide_banner -loglevel panic -r 25 -f image2 -s 1920x1080 -i ' + newpath+ '/%d.png -vcodec libx264 -crf 25 -pix_fmt yuv420p '+ drawtext + ' '+newpath+'/'+date +'_'+ camID+'.mp4'
+   
+   
+   
     output = subprocess.check_output(cmd, shell=True).decode("utf-8")
     #print(output)
     print('VIDEO READ AT '+newpath+'/'+date + '_' + camID + '.mp4' )
