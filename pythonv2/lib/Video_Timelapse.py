@@ -42,7 +42,7 @@ def create_sd_vid(frames, path, date, camID, fps="15", dimensions="1920:1080", t
         watermark_position = "20:20"    
     elif (watermark_pos=='bl'):
         watermark_position = "20:main_h-overlay_h-20"
-    elif (watermark_pos=='br'): 
+    else: 
         watermark_position = "main_w-overlay_w-20:main_h-overlay_h-20"
 
     # Text position based on options
@@ -52,7 +52,7 @@ def create_sd_vid(frames, path, date, camID, fps="15", dimensions="1920:1080", t
         text_position = "x=20:y=20"    
     elif (text_pos=='bl'):
         text_position = "x=20:y=main_h-text_h-20"
-    elif (text_pos=='br'): 
+    else: 
         text_position = "x=main_w-text_w-20:y=main_h-text_h-20"
  
     for idx,f in enumerate(frames): 
