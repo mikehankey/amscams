@@ -159,7 +159,7 @@ if stream_errors == 1:
    os.system("../python/ffmpeg_record.py start_all")
 
 if len(derrs) > 0 or len(errors) > 0:
-   sendmail('mike.hankey@gmail.com', 'mike.hankey@gmail.com', 'AS6 Alert', msg)
+   #sendmail('mike.hankey@gmail.com', 'mike.hankey@gmail.com', 'AS6 Alert', msg)
    fp = open("/mnt/ams2/tmp/wd.txt", "w")
    fp.write(msg)
    fp.close()
