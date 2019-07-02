@@ -16,6 +16,12 @@ function add_timelapse_modal() {
                     <div class="row"> \
                         <div class="col-sm-6"> \
                             <div class="form-group row mb-1"> \
+                                <label class="col-sm-4 col-form-label"><b>Date</b></label> \
+                                <div class="col-sm-8"> \
+                                    <input type="text" readonly class="form-control-plaintext" id="tl_date" name="tl_date" value=""> \
+                                </div> \
+                            </div> \
+                            <div class="form-group row mb-1"> \
                                 <label class="col-sm-4 col-form-label"><b>Cam Id</b></label> \
                                 <div class="col-sm-8"> \
                                     <input type="text" readonly class="form-control-plaintext" id="tl_cam_id" name="tl_cam_id" value=""> \
@@ -85,8 +91,8 @@ function add_timelapse_modal() {
                 </form> \
             </div> \
             <div class="modal-footer"> \
-                <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancel</button> \
                 <button type="button" class="btn btn-primary">Generate</button> \
+                <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancel</button> \
             </div> \
             </div> \
         </div> \
@@ -98,6 +104,9 @@ function add_timelapse_modal() {
 
     // Cam ID 
     $('#tl_cam_id').val($('#cam_id').text());
+
+    // Date
+    $('#tl_date').val($('input[name=cur_date]').val());
 
     // Init duration
     $('#tld').val(parseFloat($('#tot_f').val()/parseFloat($('#fps').val())).toFixed(2) + ' seconds');

@@ -12,7 +12,7 @@ import cgitb
 import re
 import datetime
 import time
-from lib.PwdProtect import   login_page, check_pwd_ajax
+from lib.PwdProtect import login_page, check_pwd_ajax
 from lib.Pagination import get_pagination
 from lib.PrintUtils import get_meteor_date, get_date_from_file, get_meteor_time
 from lib.FileIO import get_proc_days, get_day_stats, get_day_files , load_json_file, get_trims_for_file, get_days, save_json_file, cfe, save_meteor
@@ -24,6 +24,7 @@ from lib.ImageLib import mask_frame , draw_stack, stack_frames
 from lib.CalibLib import radec_to_azel
 from lib.WebCalib import calibrate_pic,make_plate_from_points, solve_field, check_solve_status, free_cal, show_cat_stars, choose_file, upscale_2HD, fit_field, delete_cal, add_stars_to_fit_pool, save_add_stars_to_fit_pool, reduce_meteor, reduce_meteor_ajax, find_stars_ajax, man_reduce, pin_point, get_manual_points, del_manual_points, sat_cap, HMS2deg, custom_fit, del_frame, clone_cal, reduce_meteor_new , update_red_info_ajax, update_hd_cal_ajax, add_frame_ajax, update_frame_ajax
 from lib.UtilLib import calc_radiant
+from vidtool.Timelapse import generate_timelapse
  
 
 NUMBER_OF_METEOR_PER_PAGE = 60
@@ -214,6 +215,11 @@ def controller(json_conf):
       user = form.getvalue("user")
       pwd = form.getvalue("pwd")
       check_pwd_ajax(user,pwd)
+      exit()
+
+   #VIDEO
+   if cmd == 'generate_timelapse':
+      generate_timelapse(form.getvalue('cam_id'),form.getvalue('date'),form.getvalue('fps'),form.getvalue('dim'),form.getvalue('text_pos'),form.getvalue('wat_pos'))
       exit()
 
    # do json ajax functions up here and bypass the exta html
