@@ -69,7 +69,7 @@ def create_sd_vid(frames, path, date, camID, fps="25", watermark_pos='tr', text_
                 -filter_complex "[0:v]scale=1920:1080[scaled]; \
                 [scaled]drawtext=:text=\'toto\':fontcolor=white@1.0:fontsize=30:'+text_position+'[texted]; \
                 [texted]overlay='+watermark_position+'[out]" \
-                -map "[out]" ' + newpath + '/' + str(idx) + '.png'      
+                -map "[out]"  -codec:v libx264 -codec:a copy ' + newpath + '/' + str(idx) + '.png'      
         
         #+ ' -vf scale=1920:1080 ' + newpath + '/' + str(idx) + '.png'
         output = subprocess.check_output(cmd, shell=True).decode("utf-8")
