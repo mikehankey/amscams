@@ -68,8 +68,7 @@ def create_sd_vid(frames, path, date, camID, fps="25", watermark_pos='tr', text_
          
         output = subprocess.check_output(cmd, shell=True).decode("utf-8")
     
-   
-   
+    
     #Create Video based on all newly create frames
     def_file_path =  newpath +'/'+date +'_'+ camID +'.mp4'
     tmp_file_path =  newpath +'/'+ date + camID + '.mp4'
@@ -92,15 +91,15 @@ def create_sd_vid(frames, path, date, camID, fps="25", watermark_pos='tr', text_
 
 
     #DELETING RESIZE FRAMES
-    filelist = glob.glob(os.path.join(newpath, "*.png"))
-    for f in filelist:
-        os.remove(f) 
+    #filelist = glob.glob(os.path.join(newpath, "*.png"))
+    #for f in filelist:
+    #    os.remove(f) 
 
     #DELETING TMP VIDEO 
-    os.unlink(tmp_file_path)
+    #os.unlink(tmp_file_path)
 
     #print(output)
-    print('VIDEO READY AT '+newpath+'/'+date + '_' + camID + '.mp4' )
+    #print('VIDEO READY AT '+newpath+'/'+date + '_' + camID + '.mp4' )
 
 files, path, date, camID = get_sd_frames("010034","2019_07_01")
 create_sd_vid(files,path, date, camID)
