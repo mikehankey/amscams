@@ -37,7 +37,7 @@ def decode(key, string):
 def check_pwd_ajax(user, pwd):
     #cgitb.enable() 
     #check in conf/as6.json if pwd is right
-    json_file = open('../../conf/as6.json')
+    json_file = open('/home/ams/amscams/conf/as6.json')
     json_str = json_file.read()
     json_data = json.loads(json_str)
     result = {}
