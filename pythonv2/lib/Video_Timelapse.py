@@ -76,13 +76,11 @@ def create_sd_vid(frames, path, date, camID, fps="15", dimensions="1920:1080", t
          
         output = subprocess.check_output(cmd, shell=True).decode("utf-8")
     
-    
     #Create Video based on all newly create frames
     def_file_path =  newpath +'/'+date +'_'+ camID +'.mp4' 
     cmd = 'ffmpeg -hide_banner -loglevel panic -r '+ str(fps) +' -f image2 -s 1920x1080 -i ' + newpath+ '/%d.png -vcodec libx264 -crf 25 -pix_fmt yuv420p ' + def_file_path
     output = subprocess.check_output(cmd, shell=True).decode("utf-8")
    
-
     #DELETING RESIZE FRAMES
     filelist = glob.glob(os.path.join(newpath, "*.png"))
     for f in filelist:
@@ -94,6 +92,7 @@ def create_sd_vid(frames, path, date, camID, fps="15", dimensions="1920:1080", t
 
 # GENERATE TIMELAPSE
 def generate_timelapse(cam_id,date,fps,dim,text_pos,wat_pos):
+    print("DATE " + date)
     files, path, date, camID = get_sd_frames(cam_id,date)
     create_sd_vid(files,path, date, camID,fps,dim,text_pos,wat_pos)
  

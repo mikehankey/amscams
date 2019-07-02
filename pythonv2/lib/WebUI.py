@@ -218,8 +218,7 @@ def controller(json_conf):
       exit()
 
    #VIDEO (TIMELAPSE)
-   if cmd == 'generate_timelapse':
-      print('DATE ' + form.getvalue('date'))
+   if cmd == 'generate_timelapse': 
       generate_timelapse(form.getvalue('cam_id'),form.getvalue('date'),form.getvalue('fps'),form.getvalue('dim'),form.getvalue('text_pos'),form.getvalue('wat_pos'))
       exit()
 
