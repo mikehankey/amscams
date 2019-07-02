@@ -27,6 +27,8 @@ function add_timelapse_modal() {
                                     <input type="text" readonly class="form-control-plaintext" id="tld" value=""> \
                                 </div> \
                             </div> \
+                        </div> \
+                        <div class="col-sm-6"> \
                             <div class="form-group row mb-1"> \
                                 <label for="fps" class="col-sm-4 col-form-label"><b>FPS</b></label> \
                                 <div class="col-sm-8"> \
@@ -45,9 +47,31 @@ function add_timelapse_modal() {
                                 <label for="dim" class="col-sm-4 col-form-label"><b>Dimension</b></label> \
                                 <div class="col-sm-8"> \
                                     <select id="dim" class="form-control"> \
-                                        <option value="dim1">1920x1080</option> \
-                                        <option value="dim2" selected>1280x720</option> \
-                                        <option value="dim3">640x320</option> \
+                                        <option value="1920:1080">1920x1080</option> \
+                                        <option value="1280:720" selected>1280x720</option> \
+                                        <option value="640:320">640x320</option> \
+                                    </select> \
+                                </div> \
+                            </div> \
+                            <div class="form-group row mb-1"> \
+                                <label for="text_pos" class="col-sm-4 col-form-label"><b>Info pos.</b></label> \
+                                <div class="col-sm-8"> \
+                                    <select id="text_pos" class="form-control"> \
+                                        <option value="tr"selected>Top right</option> \
+                                        <option value="tl" >Top Left</option> \
+                                        <option value="br" >Bottom Right</option> \
+                                        <option value="bl" >Bottom Left</option> \
+                                    </select> \
+                                </div> \
+                            </div> \
+                            <div class="form-group row mb-1"> \
+                                <label for="wat_pos" class="col-sm-4 col-form-label"><b>Logo pos.</b></label> \
+                                <div class="col-sm-8"> \
+                                    <select id="wat_pos" class="form-control"> \
+                                        <option value="tr"selected>Top right</option> \
+                                        <option value="tl" >Top Left</option> \
+                                        <option value="br" >Bottom Right</option> \
+                                        <option value="bl" >Bottom Left</option> \
                                     </select> \
                                 </div> \
                             </div> \
