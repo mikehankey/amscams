@@ -154,9 +154,9 @@ for error in errors:
    print (error)
 
 if stream_errors == 1:
-   os.system("./ffmpeg_record.py stop 1")
+   os.system("../python/ffmpeg_record.py stop 1")
    time.sleep(3)
-   os.system("./ffmpeg_record.py start_all")
+   os.system("../python/ffmpeg_record.py start_all")
 
 if len(derrs) > 0 or len(errors) > 0:
    sendmail('mike.hankey@gmail.com', 'mike.hankey@gmail.com', 'AS6 Alert', msg)
