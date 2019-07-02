@@ -8,7 +8,7 @@ $(function() {
             var url = $img.attr('src');
             $.get(url)
             .fail(function() { 
-                console.log('NOT FOUND ', url)
+                //console.log('NOT FOUND ', url)
                 $img.attr('src','./dist/img/proccessing.png').addClass('process');
             })
 
