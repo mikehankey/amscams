@@ -100,5 +100,5 @@ def create_sd_vid(frames, path, date, camID, fps="25", watermark_pos='tr', text_
     #print(output)
     print('VIDEO READY AT '+newpath+'/'+date + '_' + camID + '.mp4' )
 
-files, path, date, camID = get_sd_frames("010034","2019_06_23")
+files, path, date, camID = get_sd_frames("010034","2019_07_01")
 create_sd_vid(files,path, date, camID)
