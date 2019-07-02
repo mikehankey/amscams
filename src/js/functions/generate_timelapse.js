@@ -16,6 +16,12 @@ function add_timelapse_modal() {
                     <div class="row"> \
                         <div class="col-sm-6"> \
                             <div class="form-group row mb-1"> \
+                                <label class="col-sm-4 col-form-label"><b>Cam Id</b></label> \
+                                <div class="col-sm-8"> \
+                                    <input type="text" readonly class="form-control-plaintext" id="tl_cam_id" name="tl_cam_id" value=""> \
+                                </div> \
+                            </div> \
+                            <div class="form-group row mb-1"> \
                                 <label class="col-sm-4 col-form-label"><b>Frame Count</b></label> \
                                 <div class="col-sm-8"> \
                                     <input type="text" readonly class="form-control-plaintext" id="tot_f" value=""> \
@@ -68,10 +74,10 @@ function add_timelapse_modal() {
                                 <label for="wat_pos" class="col-sm-4 col-form-label"><b>Logo pos.</b></label> \
                                 <div class="col-sm-8"> \
                                     <select id="wat_pos" class="form-control"> \
-                                        <option value="tr"selected>Top right</option> \
+                                        <option value="tr" >Top right</option> \
                                         <option value="tl" >Top Left</option> \
                                         <option value="br" >Bottom Right</option> \
-                                        <option value="bl" >Bottom Left</option> \
+                                        <option value="bl" selected>Bottom Left</option> \
                                     </select> \
                                 </div> \
                             </div> \
@@ -89,6 +95,9 @@ function add_timelapse_modal() {
     // How many frames 
     hmf = $('img.lz').not('.process').length;
     $('#tot_f').val(hmf);
+
+    // Cam ID 
+    $('#tl_cam_id').val($('#cam_id').text());
 
     // Init duration
     $('#tld').val(parseFloat($('#tot_f').val()/parseFloat($('#fps').val())).toFixed(2) + ' seconds');
