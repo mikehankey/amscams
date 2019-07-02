@@ -1,10 +1,15 @@
 import glob, os, os.path, sys
-import subprocess
-import lib.PrintUtils
+import subprocess 
 from os import listdir,makedirs
 from os.path import isfile, join, exists
  
 SD_PATH='/mnt/ams2/SD/proc2/'
+
+#Return Date & Time based on file name
+def get_meteor_date(file):
+	fn = file.split("/")[-1] 
+	fn = fn.split('_',6)
+	return fn[0] + "/" + fn[1] + "/" + fn[2] + " " + fn[3] + ":" + fn[4] + ":" + fn[5]
 
 #Input: camID, date
 #Ouput: list of sd frames found for this date
