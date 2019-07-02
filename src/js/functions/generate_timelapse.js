@@ -1,8 +1,6 @@
 function add_timelapse_modal() {
     $('#timelapse_modal').remove();
-
-    
-
+ 
 
     $('<div class="modal" tabindex="-1" role="dialog"> \
         <div class="modal-dialog modal-dialog-centered modal-lg" role="document"> \
@@ -17,13 +15,29 @@ function add_timelapse_modal() {
                 <form> \
                     <div class="form-group row mb-1"> \
                         <label class="col-sm-2 col-form-label"><b>Frame Count</b></label> \
-                        <div class="col-sm-10"> \
+                        <div class="col-sm-4"> \
                             <input type="text" readonly class="form-control-plaintext" id="tot_f" value=""> \
+                        </div> \
+                        <div class="col-sm-4"><span id="tld"></span>\
+                        </div>\
+                    </div> \
+                    <div class="form-group row mb-1"> \
+                        <label for="fps" class="col-sm-2 col-form-label"><b>FPS</b></label> \
+                        <div class="col-sm-4"> \
+                            <select id="fps" class="form-control"> \
+                                <option value="1">1 fps</option> \
+                                <option value="5">5 fps</option> \
+                                <option value="10">10 fps</option> \
+                                <option value="15">15 fps</option> \
+                                <option value="24.975">24.975 fps</option> \
+                                <option value="29.97">29.97 fps</option> \
+                                <option value="54.94">54.94 fps</option> \
+                            </select> \
                         </div> \
                     </div> \
                     <div class="form-group row mb-1"> \
-                        <label for="dim">Dimension</label> \
-                        <div class="col-sm-10"> \
+                        <label for="dim" class="col-sm-2 col-form-label"><b>Dimension</b></label> \
+                        <div class="col-sm-4"> \
                             <select id="dim" class="form-control"> \
                                 <option value="dim1">1920x1080</option> \
                                 <option value="dim2">1280x720</option> \
@@ -45,6 +59,10 @@ function add_timelapse_modal() {
     hmf = $('img.lz').not('.process').length;
     $('#tot_f').val(hmf);
 
+    // Update duration 
+    $('#fps').unbind('change').bind('change',function() {
+        $('#tld').val(parseFloat($(this).val())/parseFloat($('#tot_f').val()).toFixed(2) + 'seconds');
+    });
 }
 
 $(function() {
