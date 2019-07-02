@@ -18,7 +18,7 @@ def get_sd_frames(camID,date):
     cur_path = SD_PATH + date + "/images/"
     onlyfiles = [f for f in listdir(cur_path) if camID in f and "-tn" not in f and "-night" not in f and "trim" not in f and isfile(join(cur_path, f))]
     #FOR DEBUG
-    onlyfiles = onlyfiles[1:2]
+    onlyfiles = onlyfiles[1:50]
     return(sorted(onlyfiles), cur_path, date, camID)
  
 
@@ -72,11 +72,12 @@ def create_sd_vid(frames, path, date, camID, fps="25", watermark_pos='tr', text_
     sys.exit()
    
     #Create Video based on all newly create frames
-    def_file_path =  newpath +'/'+date +'_'+ camID+'.mp4'
-    tmp_file_path =  newpath +'/'+date + camID + '.mp4'
-    cmd = 'ffmpeg -hide_banner -loglevel panic -r '+ str(fps) +' -f image2 -s 1920x1080 -i ' + newpath+ '/%d.png -vcodec libx264 -crf 25 -pix_fmt yuv420p ' + tmp_file_path
+    def_file_path =  newpath +'/'+date +'_'+ camID +'.mp4'
+    tmp_file_path =  newpath +'/'+ date + camID + '.mp4'
+    #-hide_banner -loglevel panic
+    cmd = 'ffmpeg  -r '+ str(fps) +' -f image2 -s 1920x1080 -i ' + newpath+ '/%d.png -vcodec libx264 -crf 25 -pix_fmt yuv420p ' + tmp_file_path
     output = subprocess.check_output(cmd, shell=True).decode("utf-8")
-    
+    print(output)
 
  
     #ffmpeg -i /mnt/ams2/SD/proc2/2019_06_23/images/tmp/2019_06_23010034.mp4 -i ./dist/img/ams_watermark.png -filter_complex "[0:v]drawtext=:text='TESTING TESTING':fontcolor=white@1.0:fontsize=36:x=00:y=40[text];[text][1:v]overlay[filtered]" -map "[filtered]"   -codec:v libx264 -codec:a copy /mnt/ams2/SD/proc2/2019_06_23/images/tmp/output.mp4
