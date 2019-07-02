@@ -1,5 +1,6 @@
 import glob, os, os.path, sys
 import subprocess
+import lib.PrintUtils
 from os import listdir,makedirs
 from os.path import isfile, join, exists
  
@@ -58,20 +59,17 @@ def create_sd_vid(frames, path, date, camID, fps="25", watermark_pos='tr', text_
     #-map "[out]"   /mnt/ams2/SD/proc2/2019_06_23/images/2019_06_23_12_04_42_000_010034-stacked-tn-test.png
 
     
-    text = "AMS Cam #"+camID+ " " +  str(date.replace("_", "/"))  
-
     for idx,f in enumerate(frames): 
-        #Resize the frames in /tmp
-        #-hide_banner -loglevel panic
-        cmd = 'ffmpeg  \
+        #Resize the frames, add date & watermark in /tmp 
+        text = "AMS Cam #"+camID+ " " +  get_meteor_date(f)
+        cmd = 'ffmpeg -hide_banner -loglevel panic \
                 -i ' + path+'/'+ f + '    \
                 -i ' + watermark + ' \
                 -filter_complex "[0:v]scale=1920:1080[scaled]; \
-                [scaled]drawtext=:text=\'toto\':fontcolor=white@1.0:fontsize=30:'+text_position+'[texted]; \
+                [scaled]drawtext=:text='+text+':fontcolor=white@1.0:fontsize=30:'+text_position+'[texted]; \
                 [texted]overlay='+watermark_position+'[out]" \
                 -map "[out]"  ' + newpath + '/' + str(idx) + '.png'      
-        
-        #+ ' -vf scale=1920:1080 ' + newpath + '/' + str(idx) + '.png'
+         
         output = subprocess.check_output(cmd, shell=True).decode("utf-8")
         print(output)
 
