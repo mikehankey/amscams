@@ -1976,7 +1976,7 @@ def browse_day(day,cams_id,json_conf):
    print("<div class='input-group date datepicker' data-display-format='YYYY/MM/DD' data-action='reload' data-url-param='day' data-send-format='YYYY_MM_DD'>")
    print("<input value='"+str(day.replace("_", "/"))+"' type='text' class='form-control'>")
    print("<span class='input-group-addon'><span class='icon-clock'></span></span></div> by Cam #"+cams_id+"</h1>")
-   print("<div><button class='btn btn-primary' id='play_anim_thumb' style='text-transform: initial;'><span class='icon-youtube'></span> All night Animation Preview</button></div></div>") 
+   print("<div class='d-flex'><button class='btn btn-primary mr-3' id='create_night_anim' style='text-transform: initial;'><span class='icon-youtube'></span> Generate All Night Video</button><button class='btn btn-primary' id='play_anim_thumb' style='text-transform: initial;'><span class='icon-youtube'></span> All night Animation Preview</button></div></div>") 
   
    print("<div id='main_container' class='container-fluid h-100 mt-4 lg-l'>")
    print("<div class='gallery gal-resize row text-center text-lg-left '>")
