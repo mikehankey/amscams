@@ -66,7 +66,8 @@ def create_sd_vid(frames, path, date, camID, fps="25", watermark_pos='tr', text_
     
     for idx,f in enumerate(frames): 
         #Resize the frames, add date & watermark in /tmp 
-        text = "AMS Cam #"+camID+ " " +  get_meteor_date(f)
+        t = get_meteor_date(f)
+        text = "AMS Cam #"+camID+ " " + t 
         cmd = 'ffmpeg -hide_banner -loglevel panic \
                 -i ' + path+'/'+ f + '    \
                 -i ' + watermark + ' \
