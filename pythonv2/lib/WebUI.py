@@ -217,8 +217,9 @@ def controller(json_conf):
       check_pwd_ajax(user,pwd)
       exit()
 
-   #VIDEO
+   #VIDEO (TIMELAPSE)
    if cmd == 'generate_timelapse':
+      print('DATE ' + form.getvalue('date'))
       generate_timelapse(form.getvalue('cam_id'),form.getvalue('date'),form.getvalue('fps'),form.getvalue('dim'),form.getvalue('text_pos'),form.getvalue('wat_pos'))
       exit()
 
