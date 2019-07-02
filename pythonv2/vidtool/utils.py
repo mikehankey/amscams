@@ -25,7 +25,7 @@ def get_sd_frames(camID,date):
 #Input list of SD files, path of the current image, date, camID
 #Position of watermark & text = tr=>Top Right, bl=>Bottom Left
 #Output Video with watermark & text
-def create_sd_vid(frames, path, date, camID, fps="15", watermark_pos='tr', text_pos='bl', enhancement=1 ) : 
+def create_sd_vid(frames, path, date, camID, fps="15", watermark_pos='tr', text_pos='bl', enhancement=0 ) : 
 
     #Create temporary folder to store the frames for the video
     newpath = r''+path+'tmp'
@@ -65,7 +65,7 @@ def create_sd_vid(frames, path, date, camID, fps="15", watermark_pos='tr', text_
                     -i ' + path+'/'+ f + '    \
                     -i ' + watermark + ' \
                     -filter_complex "[0:v]scale=1920:1080[scaled]; \
-                    [scaled]drawtext=:text=\'' + text + '\':fontcolor=white@1.0:fontsize=30:'+text_position+'[texted]; \
+                    [scaled]drawtext=:text=\'' + text + '\':fontcolor=white@1.0:fontsize=25:'+text_position+'[texted]; \
                     [texted]overlay='+watermark_position+'[out]" \
                     -map "[out]"  ' + newpath + '/' + str(idx) + '.png'      
         else:
@@ -73,7 +73,7 @@ def create_sd_vid(frames, path, date, camID, fps="15", watermark_pos='tr', text_
                     -i ' + path+'/'+ f + '    \
                     -i ' + watermark + ' \
                     -filter_complex "[0:v]scale=1920:1080[scaled]; \
-                    [scaled]eq=contrast=1.3[sat];[sat]drawtext=:text=\'' + text + '\':fontcolor=white@1.0:fontsize=30:'+text_position+'[texted]; \
+                    [scaled]eq=contrast=1.3[sat];[sat]drawtext=:text=\'' + text + '\':fontcolor=white@1.0:fontsize=25:'+text_position+'[texted]; \
                     [texted]overlay='+watermark_position+'[out]" \
                     -map "[out]"  ' + newpath + '/' + str(idx) + '.png'                
          
