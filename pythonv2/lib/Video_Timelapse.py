@@ -1,5 +1,6 @@
 import glob, os, os.path, sys
 import subprocess 
+import cgitb
 from os import listdir,makedirs
 from os.path import isfile, join, exists
  
@@ -92,6 +93,7 @@ def create_sd_vid(frames, path, date, camID, fps="15", dimensions="1920:1080", t
 
 # GENERATE TIMELAPSE
 def generate_timelapse(cam_id,date,fps,dim,text_pos,wat_pos):
+    cgitb.enable() 
     print("DATE " + date)
     files, path, date, camID = get_sd_frames(cam_id,date)
     create_sd_vid(files,path, date, camID,fps,dim,text_pos,wat_pos)
