@@ -12,7 +12,7 @@ def get_sd_frames(camID,date):
     cur_path = SD_PATH + date + "/images/"
     onlyfiles = [f for f in listdir(cur_path) if camID in f and "-tn" not in f and "-night" not in f and "trim" not in f and isfile(join(cur_path, f))]
     #FOR DEBUG
-    #onlyfiles = onlyfiles[1:10]
+    onlyfiles = onlyfiles[1:2]
     return(sorted(onlyfiles), cur_path, date, camID)
  
 
@@ -26,20 +26,7 @@ def create_sd_vid(frames, path, date, camID, fps="25", watermark_pos='tr', text_
     if not os.path.exists(newpath):
         os.makedirs(newpath)
 
-    for idx,f in enumerate(frames): 
-        #Resize the frames in /tmp
-        cmd = 'ffmpeg -hide_banner -loglevel panic -i ' + path+'/'+ f + ' -vf scale=1920:1080 ' + newpath + '/' + str(idx) + '.png'
-        output = subprocess.check_output(cmd, shell=True).decode("utf-8")
-        #print(output)
-
-    #Create Video based on all newly create frames
-    def_file_path =  newpath +'/'+date +'_'+ camID+'.mp4'
-    tmp_file_path =  newpath +'/'+date + camID + '.mp4'
-    cmd = 'ffmpeg -hide_banner -loglevel panic -r '+ str(fps) +' -f image2 -s 1920x1080 -i ' + newpath+ '/%d.png -vcodec libx264 -crf 25 -pix_fmt yuv420p ' + tmp_file_path
-    output = subprocess.check_output(cmd, shell=True).decode("utf-8")
-    
     watermark = "./dist/img/ams_watermark.png"
-    text = "AMS Cams #"+camID+ " " +  str(date.replace("_", "/"))  
 
     # Watermark position based on options
     if(watermark_pos=='tr'):
@@ -60,15 +47,50 @@ def create_sd_vid(frames, path, date, camID, fps="25", watermark_pos='tr', text_
         text_position = "x=20:y=main_h-text_h-20"
     elif (text_pos=='br'): 
         text_position = "x=main_w-text_w-20:y=main_h-text_h-20"
+
+    #ffmpeg \
+    #-i /mnt/ams2/SD/proc2/2019_06_23/images/2019_06_23_12_04_42_000_010034-stacked-tn.png \
+    #-i ./dist/img/ams_watermark.png \
+    #-filter_complex \
+    #"[0:v]scale=1920:1080[scaled]; \
+    #[scaled]drawtext=:text='toto':fontcolor=white@1.0:fontsize=30:x=main_w-text_w-20:y=20[texted]; \
+    #[texted]overlay=main_w-overlay_w-20:20[out]" \
+    #-map "[out]"   /mnt/ams2/SD/proc2/2019_06_23/images/2019_06_23_12_04_42_000_010034-stacked-tn-test.png
+
     
+    text = "AMS Cam #"+camID+ " " +  str(date.replace("_", "/"))  
+
+    for idx,f in enumerate(frames): 
+        #Resize the frames in /tmp
+        cmd = '''ffmpeg -hide_banner -loglevel panic \
+                    -i ''' + path+'''/'''+ f + ''' \
+                    -filter_complex \
+                    "[0:v]scale=1920:1080[scaled]; \  
+                     [scaled]drawtext=:text='toto':fontcolor=white@1.0:fontsize=30:x=main_w-text_w-20:y=20[texted]; \
+                     [texted]overlay=main_w-overlay_w-20:20[out] \
+                     -map "[out]" ''' + newpath + '''/''' + str(idx) + '''.png'''      
+        
+        #+ ' -vf scale=1920:1080 ' + newpath + '/' + str(idx) + '.png'
+        output = subprocess.check_output(cmd, shell=True).decode("utf-8")
+        print(output)
+
+    #Create Video based on all newly create frames
+    def_file_path =  newpath +'/'+date +'_'+ camID+'.mp4'
+    tmp_file_path =  newpath +'/'+date + camID + '.mp4'
+    cmd = 'ffmpeg -hide_banner -loglevel panic -r '+ str(fps) +' -f image2 -s 1920x1080 -i ' + newpath+ '/%d.png -vcodec libx264 -crf 25 -pix_fmt yuv420p ' + tmp_file_path
+    output = subprocess.check_output(cmd, shell=True).decode("utf-8")
+    
+
+ 
     #ffmpeg -i /mnt/ams2/SD/proc2/2019_06_23/images/tmp/2019_06_23010034.mp4 -i ./dist/img/ams_watermark.png -filter_complex "[0:v]drawtext=:text='TESTING TESTING':fontcolor=white@1.0:fontsize=36:x=00:y=40[text];[text][1:v]overlay[filtered]" -map "[filtered]"   -codec:v libx264 -codec:a copy /mnt/ams2/SD/proc2/2019_06_23/images/tmp/output.mp4
     cmd = 'ffmpeg \
          -i ' + tmp_file_path  +' \
          -i ' + watermark + ' -filter_complex \
-        "[0:v]drawtext=:text=\'' + text + '\':fontcolor=white@1.0:fontsize=30:'+text_position+'[text]; [text][1:v]overlay='+watermark_position+'[filtered]" -map "[filtered]" \
-        -codec:v libx264 -codec:a copy ' + def_file_path
-    print ('TEST COMMAND')
-    print (cmd)
+        "[0:v]drawtext=:text=\'' + text + '\':fontcolor=white@1.0:fontsize=30:'+text_position+'[text]; \
+         [text][1:v]overlay='+watermark_position+'[filtered]"\
+        " -map  [filtered]" -codec:v libx264 -codec:a copy ' + def_file_path
+    #print ('TEST COMMAND')
+    #print (cmd)
     output = subprocess.check_output(cmd, shell=True).decode("utf-8")
 
 
