@@ -6,10 +6,10 @@ from os.path import isfile, join, exists
 SD_PATH='/mnt/ams2/SD/proc2/'
 
 #Return Date & Time based on file name
-def get_meteor_date(file):
+def get_meteor_date_ffmpeg(file):
 	fn = file.split("/")[-1] 
 	fn = fn.split('_',6)
-	return fn[0] + "-" + fn[1] + "-" + fn[2] + " " + fn[3] + "-" + fn[4] + "-" + fn[5]
+	return fn[0] + "/" + fn[1] + "/" + fn[2] + " " + fn[3] + "\:" + fn[4] + "\:" + fn[5]
 
 #Input: camID, date
 #Ouput: list of sd frames found for this date
@@ -66,7 +66,7 @@ def create_sd_vid(frames, path, date, camID, fps="25", watermark_pos='tr', text_
     
     for idx,f in enumerate(frames): 
         #Resize the frames, add date & watermark in /tmp  
-        text = 'AMS Cam #'+camID+ ' ' + get_meteor_date(f) 
+        text = 'AMS Cam #'+camID+ ' ' + get_meteor_date_ffmpeg(f) 
         print(text)
         cmd = 'ffmpeg -hide_banner -loglevel panic \
                 -i ' + path+'/'+ f + '    \
