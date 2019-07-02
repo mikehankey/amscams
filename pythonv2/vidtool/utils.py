@@ -68,8 +68,7 @@ def create_sd_vid(frames, path, date, camID, fps="25", watermark_pos='tr', text_
          
         output = subprocess.check_output(cmd, shell=True).decode("utf-8")
     
-    print(newpath)
-    sys.exit()
+   
    
     #Create Video based on all newly create frames
     def_file_path =  newpath +'/'+date +'_'+ camID +'.mp4'
