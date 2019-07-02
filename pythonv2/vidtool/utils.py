@@ -28,7 +28,7 @@ def get_sd_frames(camID,date):
 def create_sd_vid(frames, path, date, camID, fps="25", watermark_pos='tr', text_pos='bl'): 
 
     #Create temporary folder to store the frames for the video
-    newpath = r''+path+'/tmp/'
+    newpath = r''+path+'tmp'
     if not os.path.exists(newpath):
         os.makedirs(newpath)
 
@@ -70,36 +70,17 @@ def create_sd_vid(frames, path, date, camID, fps="25", watermark_pos='tr', text_
     
     
     #Create Video based on all newly create frames
-    def_file_path =  newpath +'/'+date +'_'+ camID +'.mp4'
-    tmp_file_path =  newpath +'/'+ date + camID + '.mp4'
-    #-hide_banner -loglevel panic
-    cmd = 'ffmpeg  -r '+ str(fps) +' -f image2 -s 1920x1080 -i ' + newpath+ '/%d.png -vcodec libx264 -crf 25 -pix_fmt yuv420p ' + tmp_file_path
+    def_file_path =  newpath +'/'+date +'_'+ camID +'.mp4' 
+    cmd = 'ffmpeg -hide_banner -loglevel panic -r '+ str(fps) +' -f image2 -s 1920x1080 -i ' + newpath+ '/%d.png -vcodec libx264 -crf 25 -pix_fmt yuv420p ' + def_file_path
     output = subprocess.check_output(cmd, shell=True).decode("utf-8")
-    print(output)
-
- 
-    #ffmpeg -i /mnt/ams2/SD/proc2/2019_06_23/images/tmp/2019_06_23010034.mp4 -i ./dist/img/ams_watermark.png -filter_complex "[0:v]drawtext=:text='TESTING TESTING':fontcolor=white@1.0:fontsize=36:x=00:y=40[text];[text][1:v]overlay[filtered]" -map "[filtered]"   -codec:v libx264 -codec:a copy /mnt/ams2/SD/proc2/2019_06_23/images/tmp/output.mp4
-    #fcmd = 'ffmpeg \
-    #f     -i ' + tmp_file_path  +' \
-    #f     -i ' + watermark + ' -filter_complex \
-    #f    "[0:v]drawtext=:text=\'' + text + '\':fontcolor=white@1.0:fontsize=30:'+text_position+'[text]; \
-    #f     [text][1:v]overlay='+watermark_position+'[filtered]"\
-    #f    " -map  [filtered]" -codec:v libx264 -codec:a copy ' + def_file_path
-    #print ('TEST COMMAND')
-    #print (cmd)
-    #output = subprocess.check_output(cmd, shell=True).decode("utf-8")
-
+   
 
     #DELETING RESIZE FRAMES
-    #filelist = glob.glob(os.path.join(newpath, "*.png"))
-    #for f in filelist:
-    #    os.remove(f) 
+    filelist = glob.glob(os.path.join(newpath, "*.png"))
+    for f in filelist:
+        os.remove(f) 
 
-    #DELETING TMP VIDEO 
-    #os.unlink(tmp_file_path)
-
-    #print(output)
-    #print('VIDEO READY AT '+newpath+'/'+date + '_' + camID + '.mp4' )
+    print('VIDEO READY AT '+newpath+'/'+date + '_' + camID + '.mp4' )
 
 files, path, date, camID = get_sd_frames("010034","2019_07_01")
 create_sd_vid(files,path, date, camID)
