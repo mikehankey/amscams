@@ -86,7 +86,7 @@ def create_sd_vid(frames, path, date, camID, fps="25", watermark_pos='tr', text_
     #f    " -map  [filtered]" -codec:v libx264 -codec:a copy ' + def_file_path
     #print ('TEST COMMAND')
     #print (cmd)
-    output = subprocess.check_output(cmd, shell=True).decode("utf-8")
+    #output = subprocess.check_output(cmd, shell=True).decode("utf-8")
 
 
     #DELETING RESIZE FRAMES
