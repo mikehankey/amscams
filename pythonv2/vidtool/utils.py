@@ -25,7 +25,7 @@ def get_sd_frames(camID,date):
 #Input list of SD files, path of the current image, date, camID
 #Position of watermark & text = tr=>Top Right, bl=>Bottom Left
 #Output Video with watermark & text
-def create_sd_vid(frames, path, date, camID, fps="25", watermark_pos='tr', text_pos='bl'): 
+def create_sd_vid(frames, path, date, camID, fps="15", watermark_pos='tr', text_pos='bl'): 
 
     #Create temporary folder to store the frames for the video
     newpath = r''+path+'tmp'
