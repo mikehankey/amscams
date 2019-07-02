@@ -1,4 +1,4 @@
-import glob, os, os.path
+import glob, os, os.path, sys
 import subprocess
 from os import listdir,makedirs
 from os.path import isfile, join, exists
@@ -74,6 +74,8 @@ def create_sd_vid(frames, path, date, camID, fps="25", watermark_pos='tr', text_
         #+ ' -vf scale=1920:1080 ' + newpath + '/' + str(idx) + '.png'
         output = subprocess.check_output(cmd, shell=True).decode("utf-8")
         print(output)
+
+    sys.exit()
 
     #Create Video based on all newly create frames
     def_file_path =  newpath +'/'+date +'_'+ camID+'.mp4'
