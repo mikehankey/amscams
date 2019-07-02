@@ -60,6 +60,7 @@ def create_sd_vid(frames, path, date, camID, fps="15", dimensions="1920:1080", t
         text = 'AMS Cam #'+camID+ ' ' + get_meteor_date_ffmpeg(f) 
         if(enhancement!=1):
             cmd = 'ffmpeg -hide_banner -loglevel panic \
+                    -y \
                     -i ' + path+'/'+ f + '    \
                     -i ' + watermark + ' \
                     -filter_complex "[0:v]scale='+dimensions+'[scaled]; \
@@ -68,6 +69,7 @@ def create_sd_vid(frames, path, date, camID, fps="15", dimensions="1920:1080", t
                     -map "[out]"  ' + newpath + '/' + str(idx) + '.png'      
         else:
             cmd = 'ffmpeg -hide_banner -loglevel panic \
+                    -y \
                     -i ' + path+'/'+ f + '    \
                     -i ' + watermark + ' \
                     -filter_complex "[0:v]scale='+dimensions+'[scaled]; \
@@ -79,7 +81,7 @@ def create_sd_vid(frames, path, date, camID, fps="15", dimensions="1920:1080", t
     
     #Create Video based on all newly create frames
     def_file_path =  newpath +'/'+date +'_'+ camID +'.mp4' 
-    cmd = 'ffmpeg -hide_banner -loglevel panic -r '+ str(fps) +' -f image2 -s 1920x1080 -i ' + newpath+ '/%d.png -vcodec libx264 -crf 25 -pix_fmt yuv420p ' + def_file_path
+    cmd = 'ffmpeg -hide_banner -loglevel panic -y  -r '+ str(fps) +' -f image2 -s 1920x1080 -i ' + newpath+ '/%d.png -vcodec libx264 -crf 25 -pix_fmt yuv420p ' + def_file_path
     output = subprocess.check_output(cmd, shell=True).decode("utf-8")
    
     #DELETING RESIZE FRAMES
