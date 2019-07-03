@@ -108,7 +108,7 @@ def generate_timelapse_create_video(files,path, date, camID,fps,dim,text_pos,wat
 # DEBUG
 def test_video_timelapse():
     cgitb.enable() 
-    files, path, date, camID = generate_timelapse_get_frames('010034','2019_07_02','15','bl','br')
-    generate_timelapse_create_video(files, path, date, camID,'15','1280:720','bl','br')
+    files, path, date, camID = generate_timelapse_get_frames('010034','2019_07_02','1280:720','15','bl','tr')
+    generate_timelapse_create_video(files, path, date, camID,'15','1280:720','bl','tr')
 
 test_video_timelapse() 
