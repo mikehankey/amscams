@@ -4,12 +4,9 @@ function loading(options) {
     $('#bottom_overlay').remove();
 
     if(typeof options !== undefined) {
-        console.log(1)
         options.text    = typeof options.text == 'undefined' ? 'Loading': options.text;
         options.overlay = typeof options.text == 'undefined' ? true : options.overlay; 
     } else {
-        console.log(2)
-        
         options = {
             text: 'Loading',
             overlay: true,
@@ -17,27 +14,17 @@ function loading(options) {
         };
     }
 
-    console.log(options);
-
     // Overlay Option Container
     if(options.container !== undefined && options.overlay === true) {
-        console.log(3)
-
 
         if(options.container !== undefined) { 
-            console.log(2)
-
             $('<div id="overlay" style="position: absolute;z-index: 9;" class="animated"><div class="row h-100 text-center"><div class="col-sm-12 my-auto"><div class="card card-block" style="background:transparent"><iframe style="border:0;margin: 0 auto;" src="./dist/img/anim_logo.svg" width="140" height="90"></iframe><h4>'+options.text+'</h4></div></div></div></div>').appendTo(options.container);
-
         } else {
-            console.log(3)
-
             $('body').css('overflow','hidden');
             $('<div id="overlay" class="animated"><div class="row h-100 text-center"><div class="col-sm-12 my-auto"><div class="card card-block" style="background:transparent"><iframe style="zoom: 1.8;border:0;margin: 0 auto;" src="./dist/img/anim_logo.svg" width="140" height="90"></iframe><h3>'+options.text+'</h3></div></div></div></div>').appendTo($('body'));
         }
 
     } else {
-        console.log(4)
         $("#logo_holder").contents().find("#logo").addClass("animated");
         // Add bottom overlay 
         $('<div id="bottom_overlay" class="animated"><div class="text-center"><img src="./dist/img/anim_logo.svg"/><h3>'+options.text+'</h3></div>').appendTo($('body')).addClass('dpl');

@@ -23,7 +23,7 @@
     padding: 1rem 0;
     -webkit-transition: all .3s ease;  
     transition: all .3s ease;
-
+    z-index: 999999; 
 
     &.dpl {
         bottom:0;
