@@ -118,9 +118,9 @@ function add_timelapse_modal() {
 
     // Generate
     $('#generate_timelapse').click(function() {
-        var cmd_data = {
-            cmd: 'generate_timelapse?' + $('#timelapse_form').serialize()
-        }
+        var cmd_data = $('#timelapse_form').serialize();
+        cmd_data.cmd = 'generate_timelapse';
+
         $('#timelapse_modal').modal('hide');
         loading({text: "Generating Timelapse Video", overlay: false});
         
