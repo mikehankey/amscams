@@ -115,8 +115,9 @@ obs_name = config['site']['obs_name']
 clean_zombies()
 
 # Check disk space 
-derrs = check_disk_space()
-print (derrs)
+derrs = []
+#derrs = check_disk_space()
+#print (derrs)
 
 # Check Pings
 bad = 0
