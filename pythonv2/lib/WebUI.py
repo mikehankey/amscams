@@ -228,7 +228,7 @@ def controller(json_conf):
       generate_timelapse_create_video(files,path, date, camID,fps,dim,text_pos,wat_pos)
       exit()
 
-   if cmd == 'test_video_timelapse'
+   if cmd == 'test_video_timelapse':
       test_video_timelapse() 
       exit()
 
