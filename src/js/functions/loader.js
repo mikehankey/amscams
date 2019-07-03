@@ -5,7 +5,7 @@ function loading(options) {
 
     if(typeof options !== undefined) {
         options.text    = typeof options.text == 'undefined' ? 'Loading': options.text;
-        options.overlay = typeof options.text == 'undefined' ? true : options.overlay; 
+        options.overlay = typeof options.overlay == 'undefined' ? false : options.overlay; 
     } else {
         options = {
             text: 'Loading',
