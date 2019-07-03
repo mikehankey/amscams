@@ -5,6 +5,8 @@ from os import listdir,makedirs
 from os.path import isfile, join, exists
  
 SD_PATH='/mnt/ams2/SD/proc2/'
+WAITING_JOBS_FOLDER = SD_PATH + '/timelapse/'
+WAITING_JOBS = WAITING_JOBS_FOLDER + 'waiting_jobs.json'
 
 #Return Date & Time based on file name
 def get_meteor_date_ffmpeg(file):
@@ -94,21 +96,20 @@ def create_sd_vid(frames, path, date, camID, fps="15", dimensions="1920:1080", t
 
 
 # GENERATE TIMELAPSE - STEP 1
-def generate_timelapse_get_frames(cam_id,date,fps,dim,text_pos,wat_pos):
-    cgitb.enable() 
-    #files, path, date, camID = get_sd_frames(cam_id,date)
-    return get_sd_frames(cam_id,date)
-
-# GENERATE TIMELAPSE - STEP 2
-def generate_timelapse_create_video(files,path, date, camID,fps,dim,text_pos,wat_pos):
-    cgitb.enable() 
+def generate_timelapse(cam_id,date,fps,dim,text_pos,wat_pos): 
+    files, path, date, camID = get_sd_frames(cam_id,date)
     create_sd_vid(files,path, date, camID,fps,dim,text_pos,wat_pos)
-    
- 
-# DEBUG
-def test_video_timelapse():
-    cgitb.enable() 
-    files, path, date, camID = generate_timelapse_get_frames('010034','2019_07_02','1280:720','15','bl','tr')
-    generate_timelapse_create_video(files, path, date, camID,'15','1280:720','bl','tr')
 
-#test_video_timelapse() 
+
+#ADD Job to /mnt/ams2/SD/proc2/timelapse.job.json
+def define_timelapse_job(cam_id,date,fps,dim,text_pos,wat_pos):
+ 
+    #Is the waiting_job folder exists? 
+    if not os.path.exists(WAITING_JOBS_FOLDER):
+        os.makedirs(WAITING_JOBS_FOLDER)
+
+    #Open the waiting_job  
+    with open(WAITING_JOBS, "w+") as jsonFile:
+        data = json.load(jsonFile)
+
+    print(data)
