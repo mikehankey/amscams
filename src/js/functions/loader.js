@@ -1,33 +1,36 @@
 function loading(options) {
 
-    loading_done(); // Avoid multiple
+    // Avoir multiple loader
+    loading_done();  
     $('#bottom_overlay').remove();
-
-    if(typeof options !== undefined) {
-        options.text    = typeof options.text == 'undefined' ? 'Loading': options.text;
-        options.overlay = typeof options.overlay == 'undefined' ? false : options.overlay; 
-    } else {
+    
+    if(options == undefined) {
         options = {
             text: 'Loading',
             overlay: true,
-            element: 'body'        
+            container: 'body'       
         };
+    } else {
+        if(options.text == undefined)       options.text = 'Loading';
+        if(options.overlay == undefined)    options.overlay = true;
+        if(options.container == undefined)  options.container = 'body';
     }
+ 
 
     // Overlay Option Container
     if(options.container !== undefined && options.overlay === true) {
 
-        if(options.container !== undefined) { 
-            $('<div id="overlay" style="position: absolute;z-index: 9;" class="animated"><div class="row h-100 text-center"><div class="col-sm-12 my-auto"><div class="card card-block" style="background:transparent"><iframe style="border:0;margin: 0 auto;" src="./dist/img/anim_logo.svg" width="140" height="90"></iframe><h4>'+options.text+'</h4></div></div></div></div>').appendTo(options.container);
+        if(options.container !== undefined && options.container != 'body') { 
+            $('<div id="overlay" style="position: absolute;z-index: 9999;" class="animated"><div class="row h-100 text-center"><div class="col-sm-12 my-auto"><div class="card card-block" style="background:transparent"><iframe style="border:0;margin: 0 auto;" src="./dist/img/anim_logo.svg" width="140" height="90"></iframe><h4>'+options.text+'</h4></div></div></div></div>').appendTo(options.container);
         } else {
-            $('body').css('overflow','hidden');
-            $('<div id="overlay" class="animated"><div class="row h-100 text-center"><div class="col-sm-12 my-auto"><div class="card card-block" style="background:transparent"><iframe style="zoom: 1.8;border:0;margin: 0 auto;" src="./dist/img/anim_logo.svg" width="140" height="90"></iframe><h3>'+options.text+'</h3></div></div></div></div>').appendTo($('body'));
-        }
+            $('body').css('overflow','hidden'); 
+            $('<div id="overlay" class="animated"><div class="row h-100 text-center"><div class="col-sm-12 my-auto"><div class="card card-block" style="background:transparent"><iframe style="border:0;margin: 0 auto;" src="./dist/img/anim_logo.svg" width="140" height="90"></iframe><h4>'+options.text+'</h4></div></div></div></div>').appendTo('body');
+        }  
 
     } else {
         $("#logo_holder").contents().find("#logo").addClass("animated");
         // Add bottom overlay 
-        $('<div id="bottom_overlay" class="animated"><div class="text-center"><img src="./dist/img/anim_logo.svg"/><h3>'+options.text+'</h3></div>').appendTo($('body')).addClass('dpl');
+        $('<div id="bottom_overlay"><div class="text-center animated"><img src="./dist/img/anim_logo.svg"/><h3>'+options.text+'</h3></div>').appendTo($('body')).addClass('dpl');
     }  
 
 }
@@ -44,8 +47,7 @@ function loading_done() {
     // Remove Overlay 
     $('#overlay').fadeOut(150, function() {$('#overlay').remove();})
     $('body').css('overflow','auto');
-    $('#bottom_overlay').removeClass('dpl');
-    setTimeout(function() { $('#bottom_overlay').remove(); }, 300);
+    $('#bottom_overlay').remove();
 } 
 
 
