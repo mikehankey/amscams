@@ -105,4 +105,9 @@ def generate_timelapse_create_video(files,path, date, camID,fps,dim,text_pos,wat
     create_sd_vid(files,path, date, camID,fps,dim,text_pos,wat_pos)
     
  
- 
+# DEBUG
+def test_video_timelapse() 
+    files, path, date, camID = generate_timelapse_get_frames('010034','2019_07_02','15','bl','br')
+    generate_timelapse_create_video(files, path, date, camID,'15','1280:720','bl','br')
+
+test_video_timelapse() 
