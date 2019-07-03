@@ -111,4 +111,4 @@ def test_video_timelapse():
     files, path, date, camID = generate_timelapse_get_frames('010034','2019_07_02','1280:720','15','bl','tr')
     generate_timelapse_create_video(files, path, date, camID,'15','1280:720','bl','tr')
 
-test_video_timelapse() 
+#test_video_timelapse() 
