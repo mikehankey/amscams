@@ -64,7 +64,7 @@ def create_sd_vid(frames, path, date, camID, fps="15", dimensions="1920:1080", t
                     -i ' + path+'/'+ f + '    \
                     -i ' + watermark + ' \
                     -filter_complex "[0:v]scale='+dimensions+'[scaled]; \
-                    [scaled]drawtext=:text=\'' + text + '\':fontcolor=white@1.0:fontsize=25:'+text_position+'[texted]; \
+                    [scaled]drawtext=:text=\'' + text + '\':fontcolor=white@1.0:fontsize=18:'+text_position+'[texted]; \
                     [texted]overlay='+watermark_position+'[out]" \
                     -map "[out]"  ' + newpath + '/' + str(idx) + '.png'      
         else:
@@ -73,7 +73,7 @@ def create_sd_vid(frames, path, date, camID, fps="15", dimensions="1920:1080", t
                     -i ' + path+'/'+ f + '    \
                     -i ' + watermark + ' \
                     -filter_complex "[0:v]scale='+dimensions+'[scaled]; \
-                    [scaled]eq=contrast=1.3[sat];[sat]drawtext=:text=\'' + text + '\':fontcolor=white@1.0:fontsize=25:'+text_position+'[texted]; \
+                    [scaled]eq=contrast=1.3[sat];[sat]drawtext=:text=\'' + text + '\':fontcolor=white@1.0:fontsize=18:'+text_position+'[texted]; \
                     [texted]overlay='+watermark_position+'[out]" \
                     -map "[out]"  ' + newpath + '/' + str(idx) + '.png'                
          
