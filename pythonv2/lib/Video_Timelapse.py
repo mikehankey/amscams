@@ -103,22 +103,22 @@ def generate_timelapse(cam_id,date,fps,dim,text_pos,wat_pos):
 
 
 #ADD Job to /mnt/ams2/SD/proc2/timelapse.job.json
-def define_timelapse_job(cam_id,date,fps,dim,text_pos,wat_pos):
- 
+def add_timelapse_job(cam_id,date,fps,dim,text_pos,wat_pos):
     #Is the waiting_job folder exists? 
     if not os.path.exists(WAITING_JOBS_FOLDER):
         os.makedirs(WAITING_JOBS_FOLDER)
 
     #Open the waiting_job  
-    with open(WAITING_JOBS, "w+") as jsonFile:
-        data = json.load(jsonFile)
+    with open(WAITING_JOBS, "r+") as jsonFile:
+        try:
+            data = json.load(jsonFile)
+        except:
+            data = {} 
 
     #Do we have any jobs
-    if(data['jobs'] is None):
-        data['jobs'] = []  
-
-    print("DATA READ")
-    print(str(data))
+    alljobs = data.get('jobs') 
+    if(alljobs is None):
+        data['jobs'] = []   
 
     #Add the new job
     data['jobs'].append({  
@@ -131,8 +131,8 @@ def define_timelapse_job(cam_id,date,fps,dim,text_pos,wat_pos):
         'wat_pos':wat_pos
     })
 
-    print("DATA UPDATED")
-    print(str(data))
-
     with open(WAITING_JOBS, 'w') as outfile:
         json.dump(data, outfile)
+
+    res = {'msg' = 'The video will be ready in 5 or 10 minutes. Go to the Custom Videos page to download the video'}
+    print(json.dump(res))
