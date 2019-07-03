@@ -224,7 +224,7 @@ def controller(json_conf):
       text_pos = form.getvalue('text_pos')
       wat_pos = form.getvalue('wat_pos')
       # 2 steps to avoid 504 Timeout
-      files, path, date, camID = generate_timelapse_get_frames(form.getvalue('cam_id'),form.getvalue('date'),fps,dim,text_pos,wat_pos)
+      files, path, date, camID = generate_timelapse_get_frames(form.getvalue('tl_cam_id'),form.getvalue('tl_date'),fps,dim,text_pos,wat_pos)
       generate_timelapse_create_video(files,path, date, camID,fps,dim,text_pos,wat_pos)
       exit()
 
