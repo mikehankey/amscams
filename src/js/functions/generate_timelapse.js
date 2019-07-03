@@ -133,8 +133,7 @@ function add_timelapse_modal() {
         var cmd_data = getFormData($("#timelapse_form"));
         cmd_data.cmd = "generate_timelapse";
 
-        console.log(cmd_data);
-
+ 
         $('#timelapse_modal').modal('hide');
         loading({text: "Generating Timelapse Video", overlay: false});
         
@@ -143,13 +142,16 @@ function add_timelapse_modal() {
             data: cmd_data,
             success: function(data) {
                 console.log(data);
+                loading_done();
             }, 
             error:function(err) {
                 bootbox.alert({
-	                message: "The process returned an error - " + err,
+	                message: "The process returned an error - please try again later",
 	                className: 'rubberBand animated error',
 	                centerVertical: true
-            	});
+                });
+                
+                loading_done();
             }
         });
     });
