@@ -117,8 +117,11 @@ def define_timelapse_job(cam_id,date,fps,dim,text_pos,wat_pos):
     if(data['jobs'] is None):
         data['jobs'] = []  
 
+    print("DATA READ")
+    print(str(data))
+
     #Add the new job
-    data['people'].append({  
+    data['jobs'].append({  
         'name': 'timelapse',
         'cam_id': cam_id,
         'date': date,
@@ -127,6 +130,9 @@ def define_timelapse_job(cam_id,date,fps,dim,text_pos,wat_pos):
         'text_pos':text_pos,
         'wat_pos':wat_pos
     })
+
+    print("DATA UPDATED")
+    print(str(data))
 
     with open(WAITING_JOBS, 'w') as outfile:
         json.dump(data, outfile)
