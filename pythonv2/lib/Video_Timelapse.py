@@ -1,11 +1,12 @@
 import glob, os, os.path, sys
 import subprocess 
 import cgitb
+import json
 from os import listdir,makedirs
 from os.path import isfile, join, exists
  
 SD_PATH='/mnt/ams2/SD/proc2/'
-WAITING_JOBS_FOLDER = SD_PATH + '/timelapse/'
+WAITING_JOBS_FOLDER = SD_PATH + '/custom_videos/'
 WAITING_JOBS = WAITING_JOBS_FOLDER + 'waiting_jobs.json'
 
 #Return Date & Time based on file name
@@ -112,4 +113,20 @@ def define_timelapse_job(cam_id,date,fps,dim,text_pos,wat_pos):
     with open(WAITING_JOBS, "w+") as jsonFile:
         data = json.load(jsonFile)
 
-    print(data)
+    #Do we have any jobs
+    if(data['jobs'] is None):
+        data['jobs'] = []  
+
+    #Add the new job
+    data['people'].append({  
+        'name': 'timelapse',
+        'cam_id': cam_id,
+        'date': date,
+        'fps': fps,
+        'dim':dim,
+        'text_pos':text_pos,
+        'wat_pos':wat_pos
+    })
+
+    with open(WAITING_JOBS, 'w') as outfile:
+        json.dump(data, outfile)
