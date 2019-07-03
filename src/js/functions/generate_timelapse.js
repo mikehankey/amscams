@@ -143,6 +143,13 @@ function add_timelapse_modal() {
             data: cmd_data,
             success: function(data) {
                 console.log(data);
+            }, 
+            error:function(err) {
+                bootbox.alert({
+	                message: "The process returned an error - " + err,
+	                className: 'rubberBand animated error',
+	                centerVertical: true
+            	});
             }
         });
     });
