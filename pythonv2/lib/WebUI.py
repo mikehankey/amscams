@@ -225,7 +225,8 @@ def controller(json_conf):
       wat_pos = form.getvalue('wat_pos')
       # 2 steps to avoid 504 Timeout
       files, path, date, camID = generate_timelapse_create_frames(form.getvalue('cam_id'),form.getvalue('date'),fps,dim,text_pos,wat_pos)
-      generate_timelapse_create_video(files,path, date, camID,fps,dim,text_pos,wat_pos)
+      print(str(files))
+      #generate_timelapse_create_video(files,path, date, camID,fps,dim,text_pos,wat_pos)
       exit()
 
    # do json ajax functions up here and bypass the exta html
