@@ -93,11 +93,16 @@ def create_sd_vid(frames, path, date, camID, fps="15", dimensions="1920:1080", t
 
 
 
-# GENERATE TIMELAPSE
-def generate_timelapse(cam_id,date,fps,dim,text_pos,wat_pos):
+# GENERATE TIMELAPSE - STEP 1
+def generate_timelapse_create_frames(cam_id,date,fps,dim,text_pos,wat_pos):
     cgitb.enable() 
-    print("DATE " + date)
-    files, path, date, camID = get_sd_frames(cam_id,date)
-    print('FILES ' + str(files))
-    #create_sd_vid(files,path, date, camID,fps,dim,text_pos,wat_pos)
+    #files, path, date, camID = get_sd_frames(cam_id,date)
+    return get_sd_frames(cam_id,date)
+
+# GENERATE TIMELAPSE - STEP 2
+def generate_timelapse_create_frames(files,path, date, camID,fps,dim,text_pos,wat_pos):
+    cgitb.enable() 
+    create_sd_vid(files,path, date, camID,fps,dim,text_pos,wat_pos)
+    
+ 
  

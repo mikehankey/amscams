@@ -219,7 +219,12 @@ def controller(json_conf):
 
    #VIDEO (TIMELAPSE)
    if cmd == 'generate_timelapse': 
-      generate_timelapse(form.getvalue('cam_id'),form.getvalue('date'),form.getvalue('fps'),form.getvalue('dim'),form.getvalue('text_pos'),form.getvalue('wat_pos'))
+      fps = form.getvalue('fps')
+      dim = form.getvalue('dim')
+      text_pos = form.getvalue('text_pos')
+      wat_pos = form.getvalue('wat_pos')
+      files, path, date, camID = generate_timelapse_create_frames(form.getvalue('cam_id'),form.getvalue('date'),fps,dim,text_pos,wat_pos)
+      create_sd_vid(files,path, date, camID,fps,dim,text_pos,wat_pos)
       exit()
 
    # do json ajax functions up here and bypass the exta html
