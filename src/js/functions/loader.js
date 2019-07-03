@@ -15,7 +15,8 @@ function loading(options) {
         if(options.overlay == undefined)    options.overlay = true;
         if(options.container == undefined)  options.container = 'body';
     }
- 
+    
+    $("#logo_holder").contents().find("#logo").addClass("animated");
 
     // Overlay Option Container
     if(options.container !== undefined && options.overlay === true) {
@@ -28,10 +29,10 @@ function loading(options) {
         }  
 
     } else {
-        $("#logo_holder").contents().find("#logo").addClass("animated");
         // Add bottom overlay 
         $('<div id="bottom_overlay"><div class="text-center animated"><img src="./dist/img/anim_logo.svg"/><h3>'+options.text+'</h3></div>').appendTo($('body')).addClass('dpl');
     }  
+ 
 
 }
 
@@ -47,7 +48,7 @@ function loading_done() {
     // Remove Overlay 
     $('#overlay').fadeOut(150, function() {$('#overlay').remove();})
     $('body').css('overflow','auto');
-    $('#bottom_overlay').remove();
+    $('#bottom_overlay').removeClass('dlp').remove();  
 } 
 
 
