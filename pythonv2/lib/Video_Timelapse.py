@@ -100,7 +100,7 @@ def generate_timelapse_create_frames(cam_id,date,fps,dim,text_pos,wat_pos):
     return get_sd_frames(cam_id,date)
 
 # GENERATE TIMELAPSE - STEP 2
-def generate_timelapse_create_frames(files,path, date, camID,fps,dim,text_pos,wat_pos):
+def generate_timelapse_create_video(files,path, date, camID,fps,dim,text_pos,wat_pos):
     cgitb.enable() 
     create_sd_vid(files,path, date, camID,fps,dim,text_pos,wat_pos)
     
