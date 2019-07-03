@@ -1,3 +1,15 @@
+function getFormData($form){
+    var unindexed_array = $form.serializeArray();
+    var indexed_array = {};
+
+    $.map(unindexed_array, function(n, i){
+        indexed_array[n['name']] = n['value'];
+    });
+
+    return indexed_array;
+}
+
+
 function add_timelapse_modal() {
     $('#timelapse_modal').remove();
  
@@ -117,9 +129,11 @@ function add_timelapse_modal() {
     });
 
     // Generate
-    $('#generate_timelapse').click(function() {
-        var cmd_data = $('#timelapse_form').serialize();
-        cmd_data.cmd = 'generate_timelapse';
+    $('#generate_timelapse').click(function() { 
+        var cmd_data = getFormData($("#timelapse_form"));
+        cmd_data.cmd = "generate_timelapse";
+
+        console.log(cmd_data);
 
         $('#timelapse_modal').modal('hide');
         loading({text: "Generating Timelapse Video", overlay: false});
