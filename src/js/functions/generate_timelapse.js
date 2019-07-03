@@ -121,10 +121,10 @@ function add_timelapse_modal() {
     $('#tl_date').val($('input[name=cur_date]').val());
 
     // Init duration
-    $('#tld').val(parseFloat($('#tot_f').val()/parseFloat($('#fps').val())).toFixed(2) + ' seconds');
+    $('#tld').val(parseFloat($('#tot_f').val()/parseFloat($('select[name=fps]').val())).toFixed(2) + ' seconds');
 
     // Update duration 
-    $('#fps').unbind('change').bind('change',function() {
+    $('select[name=fps]').unbind('change').bind('change',function() {
         $('#tld').val(parseFloat($('#tot_f').val()/parseFloat($(this).val())).toFixed(2) + ' seconds');
     });
 
