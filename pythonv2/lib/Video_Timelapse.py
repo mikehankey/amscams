@@ -29,7 +29,7 @@ def get_sd_frames(camID,date):
 def create_sd_vid(frames, path, date, camID, fps="15", dimensions="1920:1080", text_pos='bl', watermark_pos='tr', enhancement=0 ) : 
 
     #Create temporary folder to store the frames for the video
-    newpath = r''+path+'tmp/'
+    newpath = r''+path+'/tmp/'
     if not os.path.exists(newpath):
         os.makedirs(newpath)
 
