@@ -2,7 +2,7 @@ function add_timelapse_modal() {
     $('#timelapse_modal').remove();
  
 
-    $('<div class="modal" tabindex="-1" role="dialog"> \
+    $('<div id="timelapse_modal" class="modal" tabindex="-1" role="dialog"> \
         <div class="modal-dialog modal-dialog-centered modal-lg" role="document"> \
             <div class="modal-content"> \
             <div class="modal-header"> \
@@ -121,8 +121,16 @@ function add_timelapse_modal() {
         var cmd_data = {
             cmd: 'generate_timelapse?' + $('#timelapse_form').serialize()
         }
-        loading({text: "Generating Timelapse Video"});
-        console.log(cmd_data)
+        $('#timelapse_modal').modal('hide');
+        loading({text: "Generating Timelapse Video", overlay: false});
+        
+        $.ajax({ 
+            url:  "/pycgi/webUI.py",
+            data: cmd_data,
+            success: function(data) {
+                console.log(data);
+            }
+        });
     });
 }
 
