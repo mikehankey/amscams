@@ -85,9 +85,9 @@ def create_sd_vid(frames, path, date, camID, fps="15", dimensions="1920:1080", t
     output = subprocess.check_output(cmd, shell=True).decode("utf-8")
    
     #DELETING RESIZE FRAMES
-    filelist = glob.glob(os.path.join(newpath, "*.png"))
-    for f in filelist:
-        os.remove(f) 
+    #filelist = glob.glob(os.path.join(newpath, "*.png"))
+    #for f in filelist:
+    #    os.remove(f) 
 
     print('VIDEO READY AT '+newpath+'/'+date + '_' + camID + '.mp4' )
 
