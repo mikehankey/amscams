@@ -12,7 +12,7 @@ function add_timelapse_modal() {
                 </button> \
             </div> \
             <div class="modal-body"> \
-                <form> \
+                <form id="timelapse_form"> \
                     <div class="row"> \
                         <div class="col-sm-6"> \
                             <div class="form-group row mb-1"> \
@@ -44,7 +44,7 @@ function add_timelapse_modal() {
                             <div class="form-group row mb-1"> \
                                 <label for="fps" class="col-sm-4 col-form-label"><b>FPS</b></label> \
                                 <div class="col-sm-8"> \
-                                    <select id="fps" class="form-control"> \
+                                    <select name="fps" class="form-control"> \
                                         <option value="1">1 fps</option> \
                                         <option value="5">5 fps</option> \
                                         <option value="10" selected>10 fps</option> \
@@ -58,7 +58,7 @@ function add_timelapse_modal() {
                             <div class="form-group row mb-1"> \
                                 <label for="dim" class="col-sm-4 col-form-label"><b>Dimension</b></label> \
                                 <div class="col-sm-8"> \
-                                    <select id="dim" class="form-control"> \
+                                    <select name="dim" class="form-control"> \
                                         <option value="1920:1080">1920x1080</option> \
                                         <option value="1280:720" selected>1280x720</option> \
                                         <option value="640:320">640x320</option> \
@@ -68,7 +68,7 @@ function add_timelapse_modal() {
                             <div class="form-group row mb-1"> \
                                 <label for="text_pos" class="col-sm-4 col-form-label"><b>Info pos.</b></label> \
                                 <div class="col-sm-8"> \
-                                    <select id="text_pos" class="form-control"> \
+                                    <select name="text_pos" class="form-control"> \
                                         <option value="tr"selected>Top right</option> \
                                         <option value="tl" >Top Left</option> \
                                         <option value="br" >Bottom Right</option> \
@@ -79,7 +79,7 @@ function add_timelapse_modal() {
                             <div class="form-group row mb-1"> \
                                 <label for="wat_pos" class="col-sm-4 col-form-label"><b>Logo pos.</b></label> \
                                 <div class="col-sm-8"> \
-                                    <select id="wat_pos" class="form-control"> \
+                                    <select name="wat_pos" class="form-control"> \
                                         <option value="tr" >Top right</option> \
                                         <option value="tl" >Top Left</option> \
                                         <option value="br" >Bottom Right</option> \
@@ -90,10 +90,10 @@ function add_timelapse_modal() {
                         </div> \
                 </form> \
             </div> \
-            <div class="modal-footer"> \
-                <button type="button" class="btn btn-primary">Generate</button> \
-                <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancel</button> \
             </div> \
+            <div class="modal-footer"> \
+                <button type="button" id="generate_timelapse" class="btn btn-primary">Generate</button> \
+                <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancel</button> \
             </div> \
         </div> \
         </div>').appendTo('body').modal('show');
@@ -114,6 +114,15 @@ function add_timelapse_modal() {
     // Update duration 
     $('#fps').unbind('change').bind('change',function() {
         $('#tld').val(parseFloat($('#tot_f').val()/parseFloat($(this).val())).toFixed(2) + ' seconds');
+    });
+
+    // Generate
+    $('#generate_timelapse').click(function() {
+        var cmd_data = {
+            cmd: 'generate_timelapse?' + $('#timelapse_form').serialize()
+        }
+        loading({text: "Generating Timelapse Video"});
+        console.log(cmd_data)
     });
 }
 
