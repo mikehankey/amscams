@@ -26,7 +26,7 @@ def get_sd_frames(camID,date):
 #Input list of SD files, path of the current image, date, camID
 #Position of watermark & text = tr=>Top Right, bl=>Bottom Left
 #Output Video with watermark & text
-def create_sd_vid_frames(frames, path, date, camID, fps="15", dimensions="1920:1080", text_pos='bl', watermark_pos='tr', enhancement=0 ) : 
+def create_sd_vid(frames, path, date, camID, fps="15", dimensions="1920:1080", text_pos='bl', watermark_pos='tr', enhancement=0 ) : 
 
     #Create temporary folder to store the frames for the video
     newpath = r''+path+'tmp'
@@ -79,27 +79,6 @@ def create_sd_vid_frames(frames, path, date, camID, fps="15", dimensions="1920:1
          
         output = subprocess.check_output(cmd, shell=True).decode("utf-8")
     
-    return (newpath,date,camID,fps)
-
-
-
-
-
-# GENERATE TIMELAPSE - STEP 1
-def generate_timelapse_get_frames(cam_id,date,fps,dim,text_pos,wat_pos):
-    cgitb.enable() 
-    #files, path, date, camID = get_sd_frames(cam_id,date)
-    return get_sd_frames(cam_id,date)
-
-# GENERATE TIMELAPSE - STEP 2
-def generate_timelapse_create_video(files,path, date, camID,fps,dim,text_pos,wat_pos):
-    cgitb.enable() 
-    print(str(files))
-    return create_sd_vid_frames(files,path, date, camID,fps,dim,text_pos,wat_pos)
-
-# GENERATE TIMELAPSE - STEP 3
-def funcname(self, parameter_list):
-    
     #Create Video based on all newly create frames
     def_file_path =  newpath +'/'+date +'_'+ camID +'.mp4' 
     cmd = 'ffmpeg -hide_banner -loglevel panic -y  -r '+ str(fps) +' -f image2 -s 1920x1080 -i ' + newpath+ '/%d.png -vcodec libx264 -crf 25 -pix_fmt yuv420p ' + def_file_path
@@ -111,6 +90,19 @@ def funcname(self, parameter_list):
         os.remove(f) 
 
     print('VIDEO READY AT '+newpath+'/'+date + '_' + camID + '.mp4' )
+
+
+
+# GENERATE TIMELAPSE - STEP 1
+def generate_timelapse_create_frames(cam_id,date,fps,dim,text_pos,wat_pos):
+    cgitb.enable() 
+    #files, path, date, camID = get_sd_frames(cam_id,date)
+    return get_sd_frames(cam_id,date)
+
+# GENERATE TIMELAPSE - STEP 2
+def generate_timelapse_create_video(files,path, date, camID,fps,dim,text_pos,wat_pos):
+    cgitb.enable() 
+    create_sd_vid(files,path, date, camID,fps,dim,text_pos,wat_pos)
     
  
  
