@@ -134,5 +134,6 @@ def add_timelapse_job(cam_id,date,fps,dim,text_pos,wat_pos):
     with open(WAITING_JOBS, 'w') as outfile:
         json.dump(data, outfile)
 
-    res = {'msg' = 'The video will be ready in 5 or 10 minutes. Go to the Custom Videos page to download the video'}
+    res = {}
+    res['msg'] = 'The video will be ready in 5 or 10 minutes. Go to the Custom Videos page to download the video'
     print(json.dump(res))
