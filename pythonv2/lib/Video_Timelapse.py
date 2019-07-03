@@ -98,5 +98,6 @@ def generate_timelapse(cam_id,date,fps,dim,text_pos,wat_pos):
     cgitb.enable() 
     print("DATE " + date)
     files, path, date, camID = get_sd_frames(cam_id,date)
-    create_sd_vid(files,path, date, camID,fps,dim,text_pos,wat_pos)
+    print('FILES ' + str(files))
+    #create_sd_vid(files,path, date, camID,fps,dim,text_pos,wat_pos)
  
