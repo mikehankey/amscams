@@ -360,7 +360,7 @@ def controller(json_conf):
       add_stars_to_fit_pool(json_conf,form)
 
    if cmd == 'video_tools':
-      video_tools(json_conf)
+      video_tools(json_conf,form)
    if cmd == 'mask_admin':
       mask_admin(json_conf, form)
    if cmd == 'calibrate_pic':
@@ -425,7 +425,7 @@ def controller(json_conf):
 
 # VIDEO TOOLS PAGE
 # LIST OF PROCESS/READY VIDEOS
-def video_tools(json_conf):
+def video_tools(json_conf,form):
    cgitb.enable()
 
    SD_PATH='/mnt/ams2/SD/proc2/'
