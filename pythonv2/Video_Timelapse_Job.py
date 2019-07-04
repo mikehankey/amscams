@@ -33,6 +33,7 @@ if js_file.is_file():
             json.dump(data, outfile)
 
         # Generate Video
+        print(str(cur_job))
         video_path = generate_timelapse(cur_job['cam_id'],cur_job['date'],cur_job['fps'],cur_job['dim'],cur_job['text_pos'],cur_job['wat_pos'])
 
         data['jobs'][0]['status'] = 'ready'
