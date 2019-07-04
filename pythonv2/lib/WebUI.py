@@ -443,7 +443,6 @@ def video_tools(json_conf,form):
       cur_page = int(cur_page)
 
    all_vids = glob.glob(VID_FOLDER + "*.mp4" )
-
    all_vids_out = ""
 
    for vid in all_vids:
@@ -459,6 +458,7 @@ def video_tools(json_conf,form):
    #READ THE waiting_jobs file if it exist 
    js_file = Path(WAITING_JOBS)
    header_out = '';
+   processing_vids = '';
 
    if js_file.is_file():
 
@@ -466,10 +466,27 @@ def video_tools(json_conf,form):
       with open(WAITING_JOBS, "r+") as jsonFile:
             data = json.load(jsonFile)
 
+      for jobs in data:
+           
+
+            if(jobs['status']=='waiting'):
+                  processing_vids += "<div class='preview col-lg-2 col-md-3 norm'>"
+                  processing_vids += "<a class='mtt'>"
+                  processing_vids += "<img class='img-fluid ns lz' src='./dist/img/waiting.png'/>"
+                  processing_vids += "<span>" + jobs['date'].replace('_','/') + " - " + jobs['cam_id'] +"</span></a></div>"
+
+
+            if(jobs['status']=='waiting'):
+                  processing_vids += "<div class='preview col-lg-2 col-md-3 norm'>"
+                  processing_vids += "<a class='mtt'>"
+                  processing_vids += "<img class='img-fluid ns lz' src='./dist/img/processing.png'/>"
+                  processing_vids += "<span>" + jobs['date'].replace('_','/') + " - " + jobs['cam_id'] +"</span></a></div>"
+
+
       header_out = "<h1>"+format(len(data['jobs']))+" videos found</h1>"
 
    else:
-      header_out = "<div class='alert alert-info'>Nothing here for the moment</div>"
+      header_out = "<h1>No video found</h1>"
 
    
    print(header_out)
