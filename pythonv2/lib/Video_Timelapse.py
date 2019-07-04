@@ -135,7 +135,8 @@ def add_timelapse_job(cam_id,date,fps,dim,text_pos,wat_pos):
         'fps': fps,
         'dim':dim,
         'text_pos':text_pos,
-        'wat_pos':wat_pos
+        'wat_pos':wat_pos,
+        'status': 'waiting'
     }
 
     duplicate = False

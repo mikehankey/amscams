@@ -26,8 +26,13 @@ if js_file.is_file():
     if(alljobs is not None):
         #Get the first one data 
         cur_job = alljobs[0]
-        #{'fps': '10', 'dim': '1280:720', 'name': 'timelapse', 'text_pos': 'tr', 'wat_pos': 'bl', 'date': '2019_07_03', 'cam_id': '010038'}
-        print(generate_timelapse(cur_job['cam_id'],cur_job['date'],cur_job['fps'],cur_job['dim'],cur_job['text_pos'],cur_job['wat_pos']))
+
+        #Change Status of the job in the JSON
+        data['jobs'][0]['status'] = 'processing'
+
+        # Generate Video
+        video_path = generate_timelapse(cur_job['cam_id'],cur_job['date'],cur_job['fps'],cur_job['dim'],cur_job['text_pos'],cur_job['wat_pos'])
+
         
 
         
