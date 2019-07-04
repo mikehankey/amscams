@@ -9,6 +9,7 @@ from os.path import isfile, join, exists
 SD_PATH='/mnt/ams2/SD/proc2/'
 WAITING_JOBS_FOLDER = SD_PATH + '/custom_videos/'
 WAITING_JOBS = WAITING_JOBS_FOLDER + 'waiting_jobs.json'
+DEST_PATH = '/mnt/ams2/SD/CUSTOM_VIDEOS'
 
 #Return Date & Time based on file name
 def get_meteor_date_ffmpeg(file):
@@ -36,6 +37,10 @@ def create_sd_vid(frames, path, date, camID, fps="15", dimensions="1920:1080", t
     newpath = r''+path+'/tmp/'
     if not os.path.exists(newpath):
         os.makedirs(newpath)
+
+    #Create destination folder if it doesn't exist yet
+    if not os.path.exists(DEST_PATH):
+        os.makedirs(DEST_PATH)
 
     watermark = "/home/ams/amscams/dist/img/ams_watermark.png"
     
@@ -84,7 +89,7 @@ def create_sd_vid(frames, path, date, camID, fps="15", dimensions="1920:1080", t
         output = subprocess.check_output(cmd, shell=True).decode("utf-8")
     
     #Create Video based on all newly create frames
-    def_file_path =  newpath +'/'+date +'_'+ camID +'.mp4' 
+    def_file_path =  DEST_PATH +'/'+date +'_'+ camID +'.mp4' 
     cmd = 'ffmpeg -hide_banner -loglevel panic -y  -r '+ str(fps) +' -f image2 -s 1920x1080 -i ' + newpath+ '/%d.png -vcodec libx264 -crf 25 -pix_fmt yuv420p ' + def_file_path
     output = subprocess.check_output(cmd, shell=True).decode("utf-8")
    
@@ -93,7 +98,7 @@ def create_sd_vid(frames, path, date, camID, fps="15", dimensions="1920:1080", t
     for f in filelist:
         os.remove(f) 
 
-    return newpath+'/'+date + '_' + camID + '.mp4' 
+    return def_file_path
 
 
 

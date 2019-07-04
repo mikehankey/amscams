@@ -452,12 +452,12 @@ def video_tools(json_conf,form):
       with open(WAITING_JOBS, "r+") as jsonFile:
             data = json.load(jsonFile)
 
-      header_out = "<h1>"+format(len(data['jobs']))+"</h1>"
+      header_out = "<h1>"+format(len(data['jobs']))+" videos</h1>"
 
 
 
    else:
-      header_out = '<div class="alert alert-info">Nothing here for the moment</div>'
+      header_out = "<div class="alert alert-info">Nothing here for the moment</div>"
 
    
    print(header_out)
