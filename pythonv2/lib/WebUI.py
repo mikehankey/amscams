@@ -441,6 +441,8 @@ def video_tools(json_conf,form):
 
    #READ THE waiting_jobs file if it exist 
    js_file = Path(WAITING_JOBS)
+   header_out = '';
+
    if js_file.is_file():
 
       #Open the waiting_job & Load the data
@@ -452,7 +454,7 @@ def video_tools(json_conf,form):
 
 
    else:
-      print('<div class="alert alert-info">Nothing here for the moment</div>')
+      header_out = '<div class="alert alert-info">Nothing here for the moment</div>'
 
    
    print(header_out)
