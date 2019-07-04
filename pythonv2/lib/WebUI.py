@@ -223,10 +223,7 @@ def controller(json_conf):
       add_timelapse_job(form.getvalue('tl_cam_id'),form.getvalue('tl_date'),form.getvalue('fps'),form.getvalue('dim'),form.getvalue('text_pos'),form.getvalue('wat_pos'))
       exit()
 
-   #CUSTOM VIDEOS (LIST)
-   if cmd== 'video_tools':
-      video_tools(json_conf,form)
-      exit()   
+  
 
 
    # do json ajax functions up here and bypass the exta html
@@ -332,6 +329,12 @@ def controller(json_conf):
 
    print(top)
    extra_html = ""
+
+   #CUSTOM VIDEOS (LIST)
+   if cmd== 'video_tools':
+      video_tools(json_conf,form)
+      exit()   
+
    if cmd == 'reduce_new':
       extra_html = reduce_meteor_new(json_conf, form)
    if cmd == 'reduce':
