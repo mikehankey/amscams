@@ -15,7 +15,7 @@ import time
 from pathlib import Path
 from lib.PwdProtect import login_page, check_pwd_ajax
 from lib.Pagination import get_pagination
-from lib.PrintUtils import get_meteor_date, get_date_from_file, get_meteor_time
+from lib.PrintUtils import get_meteor_date, get_date_from_file, get_meteor_time, get_custom_video_date_and_cam_id
 from lib.FileIO import get_proc_days, get_day_stats, get_day_files , load_json_file, get_trims_for_file, get_days, save_json_file, cfe, save_meteor
 from lib.VideoLib import get_masks, convert_filename_to_date_cam, ffmpeg_trim , load_video_frames
 from lib.DetectLib import check_for_motion2 
@@ -445,9 +445,16 @@ def video_tools(json_conf,form):
 
    all_vids = glob.glob(VID_FOLDER + "*.mp4" )
 
-   for vid in all_vids:
-         print(vid)   
+   all_vids_out = ""
 
+   for vid in all_vids:
+         # Get Date & Cam ID
+         date, camid = get_custom_video_date_and_cam_id(vid)
+
+         all_vids_out += "<div class='preview col-lg-2 col-md-3 norm'>"
+         all_vids_out += "<a class='mtt vid-link' href='"+vid+"' title='Play the Video>"
+         all_vids_out += "<img class='img-fluid ns lz' src='" + vid.replace('.mp4','.png') + "'/>"
+         all_vids_out += "<span>" + date + " - " + camid +"</span></a>"
 
 
    #READ THE waiting_jobs file if it exist 
@@ -467,6 +474,7 @@ def video_tools(json_conf,form):
 
    
    print(header_out)
+   print(all_vids_out)
    
       
 
