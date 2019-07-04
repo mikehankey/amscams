@@ -457,7 +457,7 @@ def video_tools(json_conf,form):
 
 
    else:
-      header_out = "<div class="alert alert-info">Nothing here for the moment</div>"
+      header_out = "<div class='alert alert-info'>Nothing here for the moment</div>"
 
    
    print(header_out)
