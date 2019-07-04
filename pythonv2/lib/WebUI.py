@@ -466,9 +466,8 @@ def video_tools(json_conf,form):
       with open(WAITING_JOBS, "r+") as jsonFile:
             data = json.load(jsonFile)
 
-      for jobs in data:
-           
-
+      for jobs in data['jobs']:
+            
             if(jobs['status']=='waiting'):
                   processing_vids += "<div class='preview col-lg-2 col-md-3 norm'>"
                   processing_vids += "<a class='mtt'>"
