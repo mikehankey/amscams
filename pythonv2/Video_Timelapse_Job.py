@@ -26,6 +26,7 @@ if js_file.is_file():
     if(alljobs is not None):
 
         cur_idx = 0
+        cur_job = 'X'
 
         #Get the first "waiting" job
         for idx, cur_jobs in enumerate(alljobs):
@@ -34,7 +35,7 @@ if js_file.is_file():
                 cur_idx = idx
                 break;
 
-        if(cur_jon is not None):
+        if(cur_job != 'X'):
 
             #Change Status of the job in the JSON
             data['jobs'][cur_idx]['status'] = 'processing'
