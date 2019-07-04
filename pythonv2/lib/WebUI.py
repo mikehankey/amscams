@@ -217,11 +217,16 @@ def controller(json_conf):
       check_pwd_ajax(user,pwd)
       exit()
 
-   #VIDEO (TIMELAPSE)
+   #CUSTOM VIDEOS (AJAX CALL)
    if cmd == 'generate_timelapse': 
-      #generate_timelapse(form.getvalue('tl_cam_id'),form.getvalue('tl_date'),form.getvalue('fps'),form.getvalue('dim'),form.getvalue('text_pos'),form.getvalue('wat_pos'))
       add_timelapse_job(form.getvalue('tl_cam_id'),form.getvalue('tl_date'),form.getvalue('fps'),form.getvalue('dim'),form.getvalue('text_pos'),form.getvalue('wat_pos'))
       exit()
+
+   #CUSTOM VIDEOS (LIST)
+   if cmd== 'video_tools':
+      video_tools(json_conf)
+      exit()   
+
 
    # do json ajax functions up here and bypass the exta html
    if cmd == 'override_detect':
@@ -416,6 +421,43 @@ def controller(json_conf):
    print(bottom)
    #cam_num = form.getvalue('cam_num')
    #day = form.getvalue('day')
+
+
+# VIDEO TOOLS PAGE
+# LIST OF PROCESS/READY VIDEOS
+def video_tools(json_conf):
+   cgitb.enable()
+
+   SD_PATH='/mnt/ams2/SD/proc2/'
+   WAITING_JOBS_FOLDER = SD_PATH + '/custom_videos/'
+   WAITING_JOBS = WAITING_JOBS_FOLDER + 'waiting_jobs.json'
+
+   cur_page  = form.getvalue('p')
+
+   if (cur_page is None) or (cur_page==0):
+      cur_page = 1
+   else:
+      cur_page = int(cur_page)
+
+   #READ THE waiting_jobs file if it exist 
+   js_file = Path(WAITING_JOBS)
+   if js_file.is_file():
+
+      #Open the waiting_job & Load the data
+      with open(WAITING_JOBS, "r+") as jsonFile:
+            data = json.load(jsonFile)
+
+      header_out = "<h1>"+format(len(data['jobs']))+"</h1>"
+
+
+
+   else:
+      print('<div class="alert alert-info">Nothing here for the moment</div>')
+
+   
+   print(header_out)
+   
+      
 
 def reset_reduce(json_conf, form):
    mjf = form.getvalue("cal_params_file")
@@ -1532,14 +1574,7 @@ def nav_links(json_conf, cmd):
    
    return(nav, bot_nav)
 
-def video_tools(json_conf):
-   print("<div class='alert alert-info m-3 text-center'>Coming soon</div>")
-   #print("video tools")
-   #print("<li>Join Two Clips</li>")
-   #print("<li>Trim Clip</li>")
-   #print("<li>Stack Video</li>")
-   #print("<li>Make Meteors Tonight Video</li>")
-   #print("<li>Make Timelapse</li>")
+
 
 def reset(video_file, type):
    if "passed" in video_file:
