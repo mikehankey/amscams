@@ -140,7 +140,7 @@ def add_timelapse_job(cam_id,date,fps,dim,text_pos,wat_pos):
 
     duplicate = False
 
-    #Search if the job already exist
+    #Search if the job already exist (avoid duplicates)
     for job in data['jobs']:
         if(job['name'] == 'timelapse' and job['cam_id']== cam_id and job['date']== date and job['fps']== fps and job['dim']== dim and job['text_pos']== text_pos and job['wat_pos']== wat_pos ):
             duplicate = True
