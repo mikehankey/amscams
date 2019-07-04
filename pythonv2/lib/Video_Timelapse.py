@@ -107,6 +107,12 @@ def add_timelapse_job(cam_id,date,fps,dim,text_pos,wat_pos):
     #Is the waiting_job folder exists? 
     if not os.path.exists(WAITING_JOBS_FOLDER):
         os.makedirs(WAITING_JOBS_FOLDER)
+ 
+    #Create JSON file if it doesn't exist yet
+    js_file = Path(WAITING_JOBS)
+    if js_file.is_file()== false:
+        f= open("WAITING_JOBS","w+")
+        f.close()
 
     #Open the waiting_job  
     with open(WAITING_JOBS, "r+") as jsonFile:
@@ -135,5 +141,5 @@ def add_timelapse_job(cam_id,date,fps,dim,text_pos,wat_pos):
         json.dump(data, outfile)
 
     res = {}
-    res['msg'] = 'The video will be ready in 5 or 10 minutes. Go to the Custom Videos page to download the video'
+    res['msg'] = 'The video will be ready in 5 or 10 minutes. Go to the <a href="/pycgi/webUI.py?cmd=video_tools">Custom Videos</a> page to download the video'
     print(json.dumps(res))
