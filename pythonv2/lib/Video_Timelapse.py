@@ -156,11 +156,11 @@ def add_timelapse_job(cam_id,date,fps,dim,text_pos,wat_pos):
             json.dump(data, outfile)
 
         res = {}
-        res['msg'] = '<b>The video will be ready in 5 or 10 minutes.<br>Go to the <a href="/pycgi/webUI.py?cmd=video_tools">Custom Videos</a> page to download the video.</b>'
+        res['msg'] = '<h4>Video added to the waiting list</h4><b>The video will be ready in 5 or 10 minutes.<br>Go to the <a href="/pycgi/webUI.py?cmd=video_tools">Custom Videos</a> page to download the video.</b>'
         print(json.dumps(res))
     
     else:
 
         res = {}
-        res['msg'] = '<b>This video is already on the waiting list.</b><br/><b>This video will be ready in 5 or 10 minutes.<br>Go to the <a href="/pycgi/webUI.py?cmd=video_tools">Custom Videos</a> page to download the video.</b>'
+        res['msg'] = '<h4>This video is already on the waiting list.</h4><b>This video will be ready in 5 or 10 minutes.<br>Go to the <a href="/pycgi/webUI.py?cmd=video_tools">Custom Videos</a> page to download the video.</b>'
         print(json.dumps(res))
