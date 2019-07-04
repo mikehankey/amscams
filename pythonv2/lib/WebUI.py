@@ -224,7 +224,7 @@ def controller(json_conf):
 
    #CUSTOM VIDEOS (LIST)
    if cmd== 'video_tools':
-      video_tools(json_conf)
+      video_tools(json_conf,form)
       exit()   
 
 
@@ -359,8 +359,7 @@ def controller(json_conf):
    if cmd == 'add_stars_to_fit_pool':
       add_stars_to_fit_pool(json_conf,form)
 
-   if cmd == 'video_tools':
-      video_tools(json_conf,form)
+ 
    if cmd == 'mask_admin':
       mask_admin(json_conf, form)
    if cmd == 'calibrate_pic':
