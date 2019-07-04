@@ -490,6 +490,7 @@ def video_tools(json_conf,form):
    
    print(header_out)
    print("<div class='gallery gal-resize row text-center text-lg-left'>")
+   print(processing_vids)
    print(all_vids_out)
    print("</div>")
    
