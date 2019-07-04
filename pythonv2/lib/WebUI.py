@@ -484,11 +484,9 @@ def video_tools(json_conf,form):
                   processing_vids += "<span>" + jobs['date'].replace('_','/') + " - " + jobs['cam_id'] +"</span></a></div>"
                   vid_counter+=1
 
-      header_out = "<h1>"+str(vid_counter)+" videos found</h1>"
+     
 
-   else:
-      header_out = "<h1>No video found</h1>"
-
+   header_out = "<h1>"+str(vid_counter)+" videos found</h1>"
    
    print(header_out)
    print("<div class='gallery gal-resize row text-center text-lg-left mt-4'>")
