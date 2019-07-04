@@ -112,7 +112,7 @@ def add_timelapse_job(cam_id,date,fps,dim,text_pos,wat_pos):
     #Create JSON file if it doesn't exist yet
     js_file = Path(WAITING_JOBS)
     if js_file.is_file()== False:
-        f= open("WAITING_JOBS","w+")
+        f= open(WAITING_JOBS,"w+")
         f.close()
 
     #Open the waiting_job  
