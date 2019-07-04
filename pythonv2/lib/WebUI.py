@@ -452,7 +452,7 @@ def video_tools(json_conf,form):
       with open(WAITING_JOBS, "r+") as jsonFile:
             data = json.load(jsonFile)
 
-      header_out = "<h1>"+format(len(data['jobs']))+" videos</h1>"
+      header_out = "<h1>"+format(len(data['jobs']))+" videos found</h1>"
 
 
 

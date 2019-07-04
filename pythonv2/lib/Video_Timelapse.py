@@ -94,7 +94,8 @@ def create_sd_vid(frames, path, date, camID, fps="15", dimensions="1920:1080", t
     output = subprocess.check_output(cmd, shell=True).decode("utf-8")
    
     #Rename and Move the first frame in the dest folder so we'll use it as a thumb
-    cmd = 'cp ' + newpath + '/0.png' +   DEST_PATH          
+    cmd = 'mv ' + newpath + '/0.png ' +   DEST_PATH + '/'+date +'_'+ camID +'.png'        
+    output = subprocess.check_output(cmd, shell=True).decode("utf-8")
 
     #DELETING RESIZE FRAMES
     filelist = glob.glob(os.path.join(newpath, "*.png"))
