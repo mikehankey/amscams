@@ -142,5 +142,5 @@ def add_timelapse_job(cam_id,date,fps,dim,text_pos,wat_pos):
         json.dump(data, outfile)
 
     res = {}
-    res['msg'] = 'The video will be ready in 5 or 10 minutes. Go to the <a href="/pycgi/webUI.py?cmd=video_tools">Custom Videos</a> page to download the video'
+    res['msg'] = '<b>The video will be ready in 5 or 10 minutes.<br>Go to the <a href="/pycgi/webUI.py?cmd=video_tools">Custom Videos</a> page to download the video.</b>'
     print(json.dumps(res))
