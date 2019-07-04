@@ -93,14 +93,14 @@ def create_sd_vid(frames, path, date, camID, fps="15", dimensions="1920:1080", t
     for f in filelist:
         os.remove(f) 
 
-    print('VIDEO READY AT '+newpath+'/'+date + '_' + camID + '.mp4' )
+    return newpath+'/'+date + '_' + camID + '.mp4' 
 
 
 
 # GENERATE TIMELAPSE - STEP 1
 def generate_timelapse(cam_id,date,fps,dim,text_pos,wat_pos): 
     files, path, date, camID = get_sd_frames(cam_id,date)
-    create_sd_vid(files,path, date, camID,fps,dim,text_pos,wat_pos)
+    return create_sd_vid(files,path, date, camID,fps,dim,text_pos,wat_pos)
 
 
 #ADD Job to /mnt/ams2/SD/proc2/timelapse.job.json
