@@ -434,6 +434,7 @@ def video_tools(json_conf,form):
    SD_PATH='/mnt/ams2/SD/proc2/'
    WAITING_JOBS_FOLDER = SD_PATH + '/custom_videos/'
    WAITING_JOBS = WAITING_JOBS_FOLDER + 'waiting_jobs.json'
+   VID_FOLDER = '/mnt/ams2/SD/CUSTOM_VIDEOS/'
 
    cur_page  = form.getvalue('p')
 
@@ -441,6 +442,13 @@ def video_tools(json_conf,form):
       cur_page = 1
    else:
       cur_page = int(cur_page)
+
+   all_vids = glob.glob(VID_FOLDER + "*.mp4" )
+
+   for vid in all_vids:
+         print(vid)   
+
+
 
    #READ THE waiting_jobs file if it exist 
    js_file = Path(WAITING_JOBS)
@@ -453,8 +461,6 @@ def video_tools(json_conf,form):
             data = json.load(jsonFile)
 
       header_out = "<h1>"+format(len(data['jobs']))+" videos found</h1>"
-
-
 
    else:
       header_out = "<div class='alert alert-info'>Nothing here for the moment</div>"
