@@ -475,7 +475,7 @@ def video_tools(json_conf,form):
                   processing_vids += "<span>" + jobs['date'].replace('_','/') + " - " + jobs['cam_id'] +"</span></a></div>"
 
 
-            if(jobs['status']=='waiting'):
+            if(jobs['status']=='processing'):
                   processing_vids += "<div class='preview col-lg-2 col-md-3 norm'>"
                   processing_vids += "<a class='mtt'>"
                   processing_vids += "<img class='img-fluid ns lz' src='./dist/img/processing.png'/>"
