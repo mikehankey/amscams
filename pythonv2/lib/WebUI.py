@@ -332,8 +332,7 @@ def controller(json_conf):
 
    #CUSTOM VIDEOS (LIST)
    if cmd== 'video_tools':
-      video_tools(json_conf,form)
-      exit()   
+      video_tools(json_conf,form) 
 
    if cmd == 'reduce_new':
       extra_html = reduce_meteor_new(json_conf, form)
