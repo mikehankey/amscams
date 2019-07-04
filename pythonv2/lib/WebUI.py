@@ -454,7 +454,7 @@ def video_tools(json_conf,form):
          all_vids_out += "<div class='preview col-lg-2 col-md-3 norm'>"
          all_vids_out += "<a class='mtt vid-link' href='"+vid+"' title='Play the Video'>"
          all_vids_out += "<img class='img-fluid ns lz' src='" + vid.replace('.mp4','.png') + "'/>"
-         all_vids_out += "<span>" + date + " - " + camid +"</span></a>"
+         all_vids_out += "<span>" + date + " - " + camid +"</span></a></div>"
 
 
    #READ THE waiting_jobs file if it exist 
