@@ -37,7 +37,7 @@ def create_sd_vid(frames, path, date, camID, fps="15", dimensions="1920:1080", t
     if not os.path.exists(newpath):
         os.makedirs(newpath)
 
-    watermark = "./dist/img/ams_watermark.png"
+    watermark = "/home/ams/amscams/dist/img/ams_watermark.png"
     
     # Watermark position based on options
     if(watermark_pos=='tr'):
