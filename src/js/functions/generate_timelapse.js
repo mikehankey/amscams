@@ -81,10 +81,10 @@ function add_timelapse_modal() {
                                 <label for="text_pos" class="col-sm-4 col-form-label"><b>Info pos.</b></label> \
                                 <div class="col-sm-8"> \
                                     <select name="text_pos" class="form-control"> \
-                                        <option value="tr"selected>Top right</option> \
+                                        <option value="tr">Top right</option> \
                                         <option value="tl" >Top Left</option> \
                                         <option value="br" >Bottom Right</option> \
-                                        <option value="bl" >Bottom Left</option> \
+                                        <option value="bl" selected>Bottom Left</option> \
                                     </select> \
                                 </div> \
                             </div> \
@@ -92,10 +92,10 @@ function add_timelapse_modal() {
                                 <label for="wat_pos" class="col-sm-4 col-form-label"><b>Logo pos.</b></label> \
                                 <div class="col-sm-8"> \
                                     <select name="wat_pos" class="form-control"> \
-                                        <option value="tr" >Top right</option> \
+                                        <option value="tr" selected>Top right</option> \
                                         <option value="tl" >Top Left</option> \
                                         <option value="br" >Bottom Right</option> \
-                                        <option value="bl" selected>Bottom Left</option> \
+                                        <option value="bl" >Bottom Left</option> \
                                     </select> \
                                 </div> \
                             </div> \

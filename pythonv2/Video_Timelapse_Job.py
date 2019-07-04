@@ -24,21 +24,30 @@ if js_file.is_file():
     #Do we have any jobs
     alljobs = data['jobs']
     if(alljobs is not None):
-        #Get the first one data 
-        cur_job = alljobs[0]
 
-        #Change Status of the job in the JSON
-        data['jobs'][0]['status'] = 'processing'
-        with open(WAITING_JOBS, 'w') as outfile:
-            json.dump(data, outfile)
+        cur_idx = 0
 
-        # Generate Video
-        #print(str(cur_job))
-        video_path = generate_timelapse(cur_job['cam_id'],cur_job['date'],cur_job['fps'],cur_job['dim'],cur_job['text_pos'],cur_job['wat_pos'])
+        #Get the first "waiting" job
+        for idx, cur_jobs in enumerate(alljobs)
+            if(cur_jobs['status']=='waiting'):
+                cur_job = cur_jobs
+                cur_idx = idx
+                break;
 
-        data['jobs'][0]['status'] = 'ready'
-        data['jobs'][0]['path']   = video_path
-        with open(WAITING_JOBS, 'w') as outfile:
-            json.dump(data, outfile)
+        if(cur_jon is not None):
+
+            #Change Status of the job in the JSON
+            data['jobs'][cur_idx]['status'] = 'processing'
+            with open(WAITING_JOBS, 'w') as outfile:
+                json.dump(data, outfile)
+
+            # Generate Video
+            #print(str(cur_job))
+            video_path = generate_timelapse(cur_job['cam_id'],cur_job['date'],cur_job['fps'],cur_job['dim'],cur_job['text_pos'],cur_job['wat_pos'])
+
+            data['jobs'][0]['status'] = 'ready'
+            data['jobs'][0]['path']   = video_path
+            with open(WAITING_JOBS, 'w') as outfile:
+                json.dump(data, outfile)
 
         
