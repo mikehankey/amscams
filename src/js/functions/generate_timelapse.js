@@ -135,7 +135,7 @@ function add_timelapse_modal() {
 
  
         $('#timelapse_modal').modal('hide');
-        loading({text: "Generating Timelapse Video", overlay: false});
+        loading({text: "Creating Video", overlay: true});
         
         $.ajax({ 
             url:  "/pycgi/webUI.py",
