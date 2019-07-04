@@ -141,7 +141,11 @@ function add_timelapse_modal() {
             url:  "/pycgi/webUI.py",
             data: cmd_data,
             success: function(data) {
-                console.log(data);
+                bootbox.alert({
+	                message: data.msg,
+	                className: 'rubberBand animated',
+	                centerVertical: true
+                });
                 loading_done();
             }, 
             error:function(err) {
