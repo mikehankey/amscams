@@ -10,10 +10,11 @@ function reject_meteor(id) {
             url:  "webUI.py?cmd=override_detect",
             data: {jsid: id},
             success: function(data) {
-                  loading_done();
+                  
                   meteor_is_deleted(id);
                   // Debug
                   //console.log(data);
+                  loading_done();
             }, 
             error: function() {
                   alert('Impossible to reject. Please, reload the page and try again later.')
