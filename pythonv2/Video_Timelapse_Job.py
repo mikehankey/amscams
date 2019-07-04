@@ -28,7 +28,7 @@ if js_file.is_file():
         cur_idx = 0
 
         #Get the first "waiting" job
-        for idx, cur_jobs in enumerate(alljobs)
+        for idx, cur_jobs in enumerate(alljobs):
             if(cur_jobs['status']=='waiting'):
                 cur_job = cur_jobs
                 cur_idx = idx
