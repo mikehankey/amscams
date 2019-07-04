@@ -127,8 +127,8 @@ def add_timelapse_job(cam_id,date,fps,dim,text_pos,wat_pos):
     if(alljobs is None):
         data['jobs'] = []   
 
-    #Add the new job
-    data['jobs'].append({  
+    #Define new job
+    new_job = {  
         'name': 'timelapse',
         'cam_id': cam_id,
         'date': date,
@@ -136,11 +136,31 @@ def add_timelapse_job(cam_id,date,fps,dim,text_pos,wat_pos):
         'dim':dim,
         'text_pos':text_pos,
         'wat_pos':wat_pos
-    })
+    }
 
-    with open(WAITING_JOBS, 'w') as outfile:
-        json.dump(data, outfile)
+    duplicate = False
 
-    res = {}
-    res['msg'] = '<b>The video will be ready in 5 or 10 minutes.<br>Go to the <a href="/pycgi/webUI.py?cmd=video_tools">Custom Videos</a> page to download the video.</b>'
-    print(json.dumps(res))
+    #Search if the job already exist
+    for job in data['jobs']:
+        if(job['name'] == 'timelapse' and job['cam_id']== cam_id and job['date']== date and job['fps']== fps and job['dim']== dim and job['text_pos']== text_pos and job['wat_pos']== wat_pos ):
+            duplicate = True
+            break
+
+    
+    if(duplicate == False):
+
+        #Add the new job
+        data['jobs'].append(new_job)
+
+        with open(WAITING_JOBS, 'w') as outfile:
+            json.dump(data, outfile)
+
+        res = {}
+        res['msg'] = '<b>The video will be ready in 5 or 10 minutes.<br>Go to the <a href="/pycgi/webUI.py?cmd=video_tools">Custom Videos</a> page to download the video.</b>'
+        print(json.dumps(res))
+    
+    else:
+
+        res = {}
+        res['msg'] = '<b>This video is already on the waiting list.</b><br/><b>This video will be ready in 5 or 10 minutes.<br>Go to the <a href="/pycgi/webUI.py?cmd=video_tools">Custom Videos</a> page to download the video.</b>'
+        print(json.dumps(res))
