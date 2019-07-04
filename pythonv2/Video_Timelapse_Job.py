@@ -29,6 +29,8 @@ if js_file.is_file():
 
         #Change Status of the job in the JSON
         data['jobs'][0]['status'] = 'processing'
+        with open(WAITING_JOBS, 'w') as outfile:
+            json.dump(data, outfile)
 
         # Generate Video
         video_path = generate_timelapse(cur_job['cam_id'],cur_job['date'],cur_job['fps'],cur_job['dim'],cur_job['text_pos'],cur_job['wat_pos'])
