@@ -141,8 +141,9 @@ function add_timelapse_modal() {
             url:  "/pycgi/webUI.py",
             data: cmd_data,
             success: function(data) {
+                var json_resp = $.parseJSON(data); 
                 bootbox.alert({
-	                message: data.msg,
+	                message: json_resp.msg,
 	                className: 'rubberBand animated',
 	                centerVertical: true
                 });
