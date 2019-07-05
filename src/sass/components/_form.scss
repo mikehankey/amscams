@@ -83,5 +83,14 @@ h1 select {
   option {
     background:  #061329;
     color: #fff;
+    padding:.5rem;
+  }
+
+  &:focus {
+    outline:0;
+
+    option{
+      outline:0;
+    }
   }
 }
