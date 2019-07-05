@@ -432,10 +432,6 @@ def controller(json_conf):
 def video_tools(json_conf,form):
    cgitb.enable()
 
-   #Try to get CAM IDs
-   cam_ids = get_the_cam_ids()
-   print(str(cam_ids))
-
    cur_page  = form.getvalue('p')
 
    if (cur_page is None) or (cur_page==0):
@@ -2051,11 +2047,18 @@ def browse_day(day,cams_id,json_conf):
    all_files = []
    for base_file in sorted(day_files,reverse=True):
       all_files.append(base_file)
+ 
+   #Get CAM IDs from drop_dow & Javascript
+   cam_ids = get_the_cam_ids() 
 
    print("<div class='h1_holder d-flex justify-content-between'><h1><span class='h'><span id='meteor_count'>"+format(len(day_files))+"</span> detections</span> on")
    print("<div class='input-group date datepicker' data-display-format='YYYY/MM/DD' data-action='reload' data-url-param='day' data-send-format='YYYY_MM_DD'>")
    print("<input value='"+str(day.replace("_", "/"))+"' type='text' class='form-control'>")
-   print("<span class='input-group-addon'><span class='icon-clock'></span></span></div> by Cam #<span id='cam_id'>"+cams_id+"</span></h1>")
+   print("<span class='input-group-addon'><span class='icon-clock'></span></span></div> by Cam #")
+   print("<select id='cam_id' name='cam_id'>")
+   for cam_id in cam_ids
+      print('<option value="'+cam_id+'">'+cam_id+'</option>')
+   print("</select></h1>") 
    print("<div class='d-flex'><button class='btn btn-primary mr-3' id='create_night_anim' style='text-transform: initial;'><span class='icon-youtube'></span> Generate Timelapse Video</button><button class='btn btn-primary' id='play_anim_thumb' style='text-transform: initial;'><span class='icon-youtube'></span> Timelapse Preview</button></div></div>") 
   
    print("<div id='main_container' class='container-fluid h-100 mt-4 lg-l'>")
