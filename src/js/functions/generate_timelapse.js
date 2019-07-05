@@ -11,9 +11,7 @@ function getFormData($form){
 
 
 function add_timelapse_modal() {
-    $('#timelapse_modal').remove();
- 
-
+    $('#timelapse_modal').remove(); 
     $('<div id="timelapse_modal" class="modal" tabindex="-1" role="dialog"> \
         <div class="modal-dialog modal-dialog-centered modal-lg" role="document"> \
             <div class="modal-content"> \
