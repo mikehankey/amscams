@@ -31,15 +31,14 @@ else:
     clean_data = {}
     clean_data["cameras"] = []
 
-    #First we loop through the cams
-    for cam_nb in data["cameras"]:
-        cam_number = data["cameras"][cam_nb] 
-        cur_cam = {}
-        cur_cam["id"]   = data["cameras"][cam_nb]["cams_id"]
-        cur_cam["v"]    = data["cameras"][cam_nb]["cam_version"]
-        cur_cam["ip"]    = data["cameras"][cam_nb]["ip"]
-        cur_cam["ref"]  = str(cam_nb)
-        cur_cam["sd"]  = {}
+    #Loop through the cams
+    for cam_nb in data["cameras"]: 
+        cur_cam = {} 
+        cur_cam["id"] = data["cameras"][cam_nb]["cams_id"]
+        cur_cam["v"] = int(data["cameras"][cam_nb]["cam_version"])
+        cur_cam["ip"] = data["cameras"][cam_nb]["ip"]
+        cur_cam["ref"] = str(cam_nb)
+        cur_cam["sd"] = {}
         cur_cam["sd"]['url'] = data["cameras"][cam_nb]["sd_url"]
         #Sort SD Masks 
         mask_keys_sorted = sorted(data["cameras"][cam_nb]["masks"])
@@ -53,9 +52,19 @@ else:
         cur_cam["hd"]['masks'] = []
         for mask in mask_keys_sorted:
             cur_cam["hd"]['masks'].append(data["cameras"][cam_nb]["hd_masks"][mask])
-        
-        print(str(cur_cam))
-        exit()
+        clean_data["cameras"].append(cur_cam)
+
+    print(str(clean_data))
+
+    #Then we take care of the cam settings
+    clean_data["cam_settings"] = []
+    for setting in data["camera_settingsv1"]:
+        night
+
+
+
+    print(str(clean_data))
+    exit()
 
         #clean_data["cameras"].append({   \
         #    "id"    : data["cameras"][cam_nb]["cams_id"], \ 
