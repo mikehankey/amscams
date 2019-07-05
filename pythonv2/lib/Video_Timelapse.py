@@ -36,8 +36,8 @@ def create_sd_vid(frames, path, date, camID, fps="15", dimensions="1920:1080", t
         os.makedirs(newpath)
 
     #Create destination folder if it doesn't exist yet
-    if not os.path.exists(DEST_PATH):
-        os.makedirs(DEST_PATH)
+    if not os.path.exists(VID_FOLDER):
+        os.makedirs(VID_FOLDER)
 
     watermark = "/home/ams/amscams/dist/img/ams_watermark.png"
     
@@ -86,12 +86,12 @@ def create_sd_vid(frames, path, date, camID, fps="15", dimensions="1920:1080", t
         output = subprocess.check_output(cmd, shell=True).decode("utf-8")
 
     #Create Video based on all newly create frames
-    def_file_path =  DEST_PATH +'/'+date +'_'+ camID +'.mp4' 
+    def_file_path =  VID_FOLDER +'/'+date +'_'+ camID +'.mp4' 
     cmd = 'ffmpeg -hide_banner -loglevel panic -y  -r '+ str(fps) +' -f image2 -s 1920x1080 -i ' + newpath+ '/%d.png -vcodec libx264 -crf 25 -pix_fmt yuv420p ' + def_file_path
     output = subprocess.check_output(cmd, shell=True).decode("utf-8")
    
     #Rename and Move the first frame in the dest folder so we'll use it as a thumb
-    cmd = 'mv ' + newpath + '/0.png ' +   DEST_PATH + '/'+date +'_'+ camID +'.png'        
+    cmd = 'mv ' + newpath + '/0.png ' +   VID_FOLDER + '/'+date +'_'+ camID +'.png'        
     output = subprocess.check_output(cmd, shell=True).decode("utf-8")
 
     #DELETING RESIZE FRAMES
