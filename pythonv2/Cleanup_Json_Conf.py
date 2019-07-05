@@ -40,5 +40,6 @@ else:
     clean_data = {}
 
     #First we loop through the cams
-    for cams in data["cameras"]:
-        print(cams)
+    for cam in data["cameras"]:
+        print(str(cam)) #The order of the cam
+        print(cam['cams_id']) #The order of the cam
