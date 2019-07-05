@@ -62,8 +62,7 @@ else:
         cur_settings["BLC"] = int(data["camera_settingsv1"][setting]["BLC"])
         cur_settings["contrast"] = int(data["camera_settingsv1"][setting]["contrast"])
         clean_data["cam_settings"].append(cur_settings)
-    #Then the site
-    clean_data["site"]= [] 
+    #Then the site 
     cur_site = {}
     cur_site['device_alt'] = float(data["site"]["device_alt"])
     cur_site['device_lng'] =  float(data["site"]["device_lng"]) 
@@ -89,7 +88,7 @@ else:
     except:
         cur_site['operator_country'] =  'US' 
         
-    clean_data["site"].append(cur_site)         
+    clean_data.append(cur_site)         
     print(str(clean_data))
     exit()
 
