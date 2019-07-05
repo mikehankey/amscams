@@ -2056,7 +2056,7 @@ def browse_day(day,cams_id,json_conf):
    print("<input value='"+str(day.replace("_", "/"))+"' type='text' class='form-control'>")
    print("<span class='input-group-addon'><span class='icon-clock'></span></span></div> by Cam #")
    print("<select id='cam_id' name='cam_id'>")
-   for cam_id in cam_ids
+   for cam_id in cam_ids:
       print('<option value="'+cam_id+'">'+cam_id+'</option>')
    print("</select></h1>") 
    print("<div class='d-flex'><button class='btn btn-primary mr-3' id='create_night_anim' style='text-transform: initial;'><span class='icon-youtube'></span> Generate Timelapse Video</button><button class='btn btn-primary' id='play_anim_thumb' style='text-transform: initial;'><span class='icon-youtube'></span> Timelapse Preview</button></div></div>") 
