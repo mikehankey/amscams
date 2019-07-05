@@ -61,7 +61,7 @@ else:
     clean_data["cam_settings"] = []
     
     for setting in data["camera_settingsv1"]:
-        cur_settings = {}
+        cur_settings[setting] = {}
         cur_settings[setting]["brightness"] = int(data["camera_settingsv1"][setting]["brightness"])
         cur_settings[setting]["gamma"] = int(data["camera_settingsv1"][setting]["gamma"])
         cur_settings[setting]["BLC"] = int(data["camera_settingsv1"][setting]["BLC"])
