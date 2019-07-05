@@ -115,7 +115,7 @@ function add_timelapse_modal() {
     $('#tot_f').val(hmf);
 
     // Cam ID 
-    $('#tl_cam_id').val($('#cam_id').text());
+    $('#tl_cam_id').val($('#cam_id').val());
 
     // Date
     $('#tl_date').val($('input[name=cur_date]').val());
