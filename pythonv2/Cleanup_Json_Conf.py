@@ -62,10 +62,10 @@ else:
     
     for setting in data["camera_settingsv1"]:
         cur_settings = {}
-        cur_settings["brightness"] = int(data["camera_settingsv1"][setting]["brightness"])
-        cur_settings["gamma"] = int(data["camera_settingsv1"][setting]["gamma"])
-        cur_settings["BLC"] = int(data["camera_settingsv1"][setting]["BLC"])
-        cur_settings["contrast"] = int(data["camera_settingsv1"][setting]["contrast"])
+        cur_settings[setting]["brightness"] = int(data["camera_settingsv1"][setting]["brightness"])
+        cur_settings[setting]["gamma"] = int(data["camera_settingsv1"][setting]["gamma"])
+        cur_settings[setting]["BLC"] = int(data["camera_settingsv1"][setting]["BLC"])
+        cur_settings[setting]["contrast"] = int(data["camera_settingsv1"][setting]["contrast"])
         clean_data["cam_settings"].append(cur_settings)
     
     #Then the site 
