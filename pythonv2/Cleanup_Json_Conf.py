@@ -84,7 +84,7 @@ else:
     cur_site['operator_email'] =  data["site"]["operator_email"] 
     cur_site['cams_queue_dir'] =  data["site"]["cams_queue_dir"] 
     cur_site['operator_state'] =  data["site"]["operator_state"] 
-    try data["site"]["operator_country"]:
+    try: 
         cur_site['operator_country'] =  data["site"]["operator_country"]   
     except:
         cur_site['operator_country'] =  'US' 
