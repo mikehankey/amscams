@@ -30,20 +30,30 @@ else:
     #Create new (clean) array to create clean conf file
     clean_data = {}
     clean_data["cameras"] = []
+
     #First we loop through the cams
     for cam_nb in data["cameras"]:
         cam_number = data["cameras"][cam_nb] 
         cur_cam = {}
         cur_cam["id"]   = data["cameras"][cam_nb]["cams_id"]
         cur_cam["v"]    = data["cameras"][cam_nb]["cam_version"]
+        cur_cam["ip"]    = data["cameras"][cam_nb]["ip"]
         cur_cam["ref"]  = str(cam_nb)
         cur_cam["sd"]  = {}
         cur_cam["sd"]['url'] = data["cameras"][cam_nb]["sd_url"]
-        #Sort Masks 
+        #Sort SD Masks 
         mask_keys_sorted = sorted(data["cameras"][cam_nb]["masks"])
         cur_cam["sd"]['masks'] = []
         for mask in mask_keys_sorted:
             cur_cam["sd"]['masks'].append(data["cameras"][cam_nb]["masks"][mask])
+        cur_cam["hd"]  = {}
+        cur_cam["hd"]['url'] = data["cameras"][cam_nb]["hd_url"]        
+        #Sort HD Masks 
+        mask_keys_sorted = sorted(data["cameras"][cam_nb]["hd_masks"])
+        cur_cam["hd"]['masks'] = []
+        for mask in mask_keys_sorted:
+            cur_cam["hd"]['masks'].append(data["cameras"][cam_nb]["masks"][mask])
+        
         print(str(cur_cam))
         exit()
 
