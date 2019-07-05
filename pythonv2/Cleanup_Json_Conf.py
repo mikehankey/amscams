@@ -30,6 +30,7 @@ else:
     #Create new (clean) array to create clean conf file
     clean_data = {}
     clean_data["cameras"] = []
+
     #Loop through the cams
     for cam_nb in sorted(data["cameras"]): 
         cur_cam = {} 
@@ -39,6 +40,7 @@ else:
         cur_cam["ref"] = str(cam_nb)
         cur_cam["sd"] = {}
         cur_cam["sd"]['url'] = data["cameras"][cam_nb]["sd_url"]
+    
         #Sort SD Masks 
         mask_keys_sorted = sorted(data["cameras"][cam_nb]["masks"])
         cur_cam["sd"]['masks'] = []
@@ -46,15 +48,18 @@ else:
             cur_cam["sd"]['masks'].append(data["cameras"][cam_nb]["masks"][mask])
         cur_cam["hd"]  = {}
         cur_cam["hd"]['url'] = data["cameras"][cam_nb]["hd_url"]        
+    
         #Sort HD Masks 
         mask_keys_sorted = sorted(data["cameras"][cam_nb]["hd_masks"])
         cur_cam["hd"]['masks'] = []
         for mask in mask_keys_sorted:
             cur_cam["hd"]['masks'].append(data["cameras"][cam_nb]["hd_masks"][mask])
         clean_data["cameras"].append(cur_cam)
+    
     #print(str(clean_data))
     #Then we take care of the cam settings
     clean_data["cam_settings"] = []
+    
     for setting in data["camera_settingsv1"]:
         cur_settings = {}
         cur_settings["brightness"] = int(data["camera_settingsv1"][setting]["brightness"])
@@ -62,6 +67,7 @@ else:
         cur_settings["BLC"] = int(data["camera_settingsv1"][setting]["BLC"])
         cur_settings["contrast"] = int(data["camera_settingsv1"][setting]["contrast"])
         clean_data["cam_settings"].append(cur_settings)
+    
     #Then the site 
     cur_site = {}
     cur_site['device_alt'] = float(data["site"]["device_alt"])
@@ -83,12 +89,13 @@ else:
     cur_site['operator_email'] =  data["site"]["operator_email"] 
     cur_site['cams_queue_dir'] =  data["site"]["cams_queue_dir"] 
     cur_site['operator_state'] =  data["site"]["operator_state"] 
+    
     try: 
         cur_site['operator_country'] =  data["site"]["operator_country"]   
     except:
         cur_site['operator_country'] =  'US' 
         
-    clean_data["site"].append(cur_site)         
+    clean_data["site"] = cur_site        
     print(str(clean_data))
     exit()
 
