@@ -88,7 +88,7 @@ else:
     except:
         cur_site['operator_country'] =  'US' 
         
-    clean_data.append(cur_site)         
+    clean_data["site"].append(cur_site)         
     print(str(clean_data))
     exit()
 
