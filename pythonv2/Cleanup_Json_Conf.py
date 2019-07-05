@@ -11,7 +11,6 @@ PATH_TO_CLEAN_CONF_JSON = "/home/ams/amscams/conf/testconf-clean.json"
 # Test if the clean versio already exist
 file_org = Path(PATH_TO_CONF_JSON)
 file_to_clean = Path(PATH_TO_CLEAN_CONF_JSON)
-
 if file_to_clean.is_file():
     #ADD POSSIBILITY TO Erase?
     print("Clean version already exists") 
@@ -30,7 +29,6 @@ else:
     #Create new (clean) array to create clean conf file
     clean_data = {}
     clean_data["cameras"] = []
-
     #Loop through the cams
     for cam_nb in sorted(data["cameras"]): 
         cur_cam = {} 
@@ -40,7 +38,6 @@ else:
         cur_cam["ref"] = str(cam_nb)
         cur_cam["sd"] = {}
         cur_cam["sd"]['url'] = data["cameras"][cam_nb]["sd_url"]
-    
         #Sort SD Masks 
         mask_keys_sorted = sorted(data["cameras"][cam_nb]["masks"])
         cur_cam["sd"]['masks'] = []
@@ -48,7 +45,6 @@ else:
             cur_cam["sd"]['masks'].append(data["cameras"][cam_nb]["masks"][mask])
         cur_cam["hd"]  = {}
         cur_cam["hd"]['url'] = data["cameras"][cam_nb]["hd_url"]        
-    
         #Sort HD Masks 
         mask_keys_sorted = sorted(data["cameras"][cam_nb]["hd_masks"])
         cur_cam["hd"]['masks'] = []
@@ -69,32 +65,41 @@ else:
     
     #Then the site 
     cur_site = {}
-    cur_site['device_alt'] = float(data["site"]["device_alt"])
-    cur_site['device_lng'] =  float(data["site"]["device_lng"]) 
-    cur_site['device_lat'] =  float(data["site"]["device_lat"]) 
+    cur_site['alt'] =  float(data["site"]["device_alt"])
+    cur_site['lng'] =  float(data["site"]["device_lng"]) 
+    cur_site['lat'] =  float(data["site"]["device_lat"]) 
+    clean_data["geoloc"] = cur_site  
+
+    cur_site = {}
     cur_site['api_key'] =  data["site"]["api_key"] 
     cur_site['cams_pwd'] =  data["site"]["cams_pwd"] 
+    clean_data["security"] = cur_site  
+    
+    cur_site = {}    
     cur_site['cams_dir'] =  data["site"]["cams_dir"] 
-    cur_site['operator_name'] =  data["site"]["operator_name"] 
-    cur_site['proc_dir'] =  data["site"]["proc_dir"] 
-    cur_site['mac_addr'] =  data["site"]["mac_addr"] 
-    cur_site['city'] =  data["site"]["operator_city"] 
-    cur_site['ams_id'] =  data["site"]["ams_id"] 
-    cur_site['pwd'] =  data["site"]["pwd"] 
     cur_site['sd_video_dir'] =  data["site"]["sd_video_dir"] 
     cur_site['hd_video_dir'] =  data["site"]["hd_video_dir"] 
     cur_site['cal_dir'] =  data["site"]["cal_dir"] 
-    cur_site['obs_name'] =  data["site"]["obs_name"] 
-    cur_site['operator_email'] =  data["site"]["operator_email"] 
     cur_site['cams_queue_dir'] =  data["site"]["cams_queue_dir"] 
-    cur_site['operator_state'] =  data["site"]["operator_state"] 
+    cur_site['proc_dir'] =  data["site"]["proc_dir"] 
+    clean_data["directories"] = cur_site  
+    
+    cur_site = {}    
+    cur_site['name'] =  data["site"]["operator_name"] 
+    cur_site['city'] =  data["site"]["operator_city"] 
+    cur_site['obs_name'] =  data["site"]["obs_name"] 
+    cur_site['email'] =  data["site"]["operator_email"] 
+    cur_site['state'] =  data["site"]["operator_state"] 
+    cur_site['pwd'] =  data["site"]["pwd"]  
+    cur_site['mac_addr'] =  data["site"]["mac_addr"]
+    cur_site['ams_id'] =  data["site"]["ams_id"] 
     
     try: 
-        cur_site['operator_country'] =  data["site"]["operator_country"]   
+        cur_site['country'] =  data["site"]["operator_country"]   
     except:
-        cur_site['operator_country'] =  'US' 
+        cur_site['country'] =  'US' 
         
-    clean_data["site"] = cur_site        
+    clean_data["operator"] = cur_site        
     print(str(clean_data))
     exit()
 
