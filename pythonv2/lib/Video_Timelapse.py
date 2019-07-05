@@ -6,8 +6,7 @@ from pathlib import Path
 from os import listdir,makedirs
 from os.path import isfile, join, exists
 from lib.VIDEO_VARS import * 
- 
- 
+  
 
 #Return Date & Time based on file name
 def get_meteor_date_ffmpeg(file):

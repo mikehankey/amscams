@@ -4,7 +4,7 @@ import json
 from pathlib import Path 
 from os.path import isfile, join, exists
 from lib.Video_Timelapse import generate_timelapse
-from lib.VIDEO_VARS import SD_PATH,WAITING_JOBS_FOLDER,WAITING_JOBS,VID_FOLDER
+from lib.VIDEO_VARS import * 
 
 #READ THE waiting_jobs file if it exist 
 js_file = Path(WAITING_JOBS)
