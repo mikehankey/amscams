@@ -432,7 +432,8 @@ def video_tools(json_conf,form):
    cgitb.enable()
 
    #Try to get CAM IDs
-   get_the_cam_ids()
+   cam_ids = get_the_cam_ids()
+   print(str(cam_ids))
 
    SD_PATH='/mnt/ams2/SD/proc2/'
    WAITING_JOBS_FOLDER = SD_PATH + '/custom_videos/'
