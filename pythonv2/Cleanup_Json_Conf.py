@@ -49,10 +49,10 @@ else:
         cur_cam["hd"]  = {}
         cur_cam["hd"]['url'] = data["cameras"][cam_nb]["hd_url"]        
         #Sort HD Masks 
-        mask_h_keys_sorted = sorted(data["cameras"][cam_nb]["hd_masks"])
+        mask_keys_sorted = sorted(data["cameras"][cam_nb]["hd_masks"])
         cur_cam["hd"]['masks'] = []
-        for mask in mask_h_keys_sorted:
-            cur_cam["hd"]['masks'].append(data["cameras"][cam_nb]["masks"][mask])
+        for mask in mask_keys_sorted:
+            cur_cam["hd"]['masks'].append(data["cameras"][cam_nb]["hd_masks"][mask])
         
         print(str(cur_cam))
         exit()
