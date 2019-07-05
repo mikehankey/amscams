@@ -1,5 +1,5 @@
 import json
-import lib.Cleanup_Json_Conf
+from lib.Cleanup_Json_Conf import cleanup_json
 
 def get_the_cam_ids():
     json_path = cleanup_json()
