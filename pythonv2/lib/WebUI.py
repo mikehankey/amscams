@@ -26,6 +26,7 @@ from lib.CalibLib import radec_to_azel
 from lib.WebCalib import calibrate_pic,make_plate_from_points, solve_field, check_solve_status, free_cal, show_cat_stars, choose_file, upscale_2HD, fit_field, delete_cal, add_stars_to_fit_pool, save_add_stars_to_fit_pool, reduce_meteor, reduce_meteor_ajax, find_stars_ajax, man_reduce, pin_point, get_manual_points, del_manual_points, sat_cap, HMS2deg, custom_fit, del_frame, clone_cal, reduce_meteor_new , update_red_info_ajax, update_hd_cal_ajax, add_frame_ajax, update_frame_ajax
 from lib.UtilLib import calc_radiant
 from lib.Video_Timelapse import add_timelapse_job
+from lib.VIDEO_VARS import SD_PATH,WAITING_JOBS_FOLDER,WAITING_JOBS,VID_FOLDER
 from lib.Get_Cam_ids import get_the_cam_ids
  
 
@@ -434,11 +435,6 @@ def video_tools(json_conf,form):
    #Try to get CAM IDs
    cam_ids = get_the_cam_ids()
    print(str(cam_ids))
-
-   SD_PATH='/mnt/ams2/SD/proc2/'
-   WAITING_JOBS_FOLDER = SD_PATH + '/custom_videos/'
-   WAITING_JOBS = WAITING_JOBS_FOLDER + 'waiting_jobs.json'
-   VID_FOLDER = '/mnt/ams2/SD/CUSTOM_VIDEOS/'
 
    cur_page  = form.getvalue('p')
 
