@@ -102,7 +102,7 @@ else:
     clean_data["operator"] = cur_site 
 
     #Create new json conf file
-    with open(WAITING_JOBS, 'w+') as outfile:
+    with open(PATH_TO_CLEAN_CONF_JSON, 'w+') as outfile:
         json.dump(clean_data, outfile)
 
-    print(WAITING_JOBS + " created")       
+    print(PATH_TO_CLEAN_CONF_JSON + " created")       
