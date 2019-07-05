@@ -4,9 +4,9 @@ import json
 from pathlib import Path 
 from os.path import isfile, join, exists
 
-PATH_TO_CONF_JSON = "/home/ams/amscams/conf/as6.json"
-#PATH_TO_CONF_JSON = "/home/ams/amscams/conf/testconf.json"
-PATH_TO_CLEAN_CONF_JSON = "/home/ams/amscams/conf/testconf-clean.json"
+#This file creates a cleaner version of the conf file as6.json
+PATH_TO_CONF_JSON = "/home/ams/amscams/conf/as6.json" 
+PATH_TO_CLEAN_CONF_JSON = "/home/ams/amscams/conf/as6-clean.json"
 
 # Test if the clean versio already exist
 file_org = Path(PATH_TO_CONF_JSON)
@@ -99,19 +99,10 @@ else:
     except:
         cur_site['country'] =  'US' 
         
-    clean_data["operator"] = cur_site        
-    print(str(clean_data))
-    exit()
+    clean_data["operator"] = cur_site 
 
-        #clean_data["cameras"].append({   \
-        #    "id"    : data["cameras"][cam_nb]["cams_id"], \ 
-        #    "v"     : data["cameras"][cam_nb]["cam_version"], \
-        #    "sd"    :   {   "url": data["cameras"][cam_nb]["sd_url"], \
-        #                    "masks": data["cameras"][cam_nb]["masks"]  \
-        #                }   
-        #    })
-        
+    #Create new json conf file
+    with open(WAITING_JOBS, 'w+') as outfile:
+        json.dump(clean_data, outfile)
 
-        #for key in sorted(mydict):
-        #print "%s: %s" % (key, mydict[key])
-        
+    print(WAITING_JOBS + " created")       
