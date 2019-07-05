@@ -6,6 +6,11 @@ def get_the_cam_ids():
     with open(json_path, "r+") as jsonFile:
         data = json.load(jsonFile)
         toReturn = []
-        for cam in data['cameras']
+        for cam in data['cameras']:
             toReturn.append(data['cameras'][cam]['id'])
         return toReturn
+
+
+
+
+ 
