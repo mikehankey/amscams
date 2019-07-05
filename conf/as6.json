@@ -1,0 +1,160 @@
+{
+    "camera_settingsv1": {
+        "night": {
+            "brightness": "60",
+            "gamma": "30",
+            "BLC": "20",
+            "contrast": "150"
+        },
+        "calib": {
+            "brightness": "50",
+            "gamma": "50",
+            "BLC": "50",
+            "contrast": "50"
+        },
+        "day": {
+            "brightness": "50",
+            "gamma": "50",
+            "BLC": "50",
+            "contrast": "50"
+        }
+    },
+    "cameras": {
+        "cam3": {
+            "cams_id": "010039",
+            "cam_version": "1",
+            "masks": {
+                "mask0": "0,526,704,50",
+                "mask1": "230,420,100,110",
+                "mask5": "280,400,100,140",
+                "mask2": "520,250,204,200",
+                "mask3": "0,476,80,100",
+                "mask4": "420,400,284,130"
+            },
+            "sd_url": "/user=admin&password=&channel=1&stream=1.sdp",
+            "hd_masks": {
+                "hd_mask1": "627,787,272,206",
+                "hd_mask3": "0,892,218,187",
+                "hd_mask2": "1418,468,556,375",
+                "hd_mask4": "1145,750,774,243",
+                "hd_mask0": "0,986,1919,93",
+                "hd_mask5": "763,750,272,262"
+            },
+            "ip": "192.168.76.73",
+            "hd_url": "/user=admin&password=&channel=1&stream=0.sdp"
+        },
+        "cam4": {
+            "cams_id": "010040",
+            "cam_version": "1",
+            "masks": {
+                "mask2": "0,380,200,100",
+                "mask5": "580,420,125,270",
+                "mask3": "0,250,40,250",
+                "mask1": "0,456,704,120",
+                "mask4": "65,350,80,250"
+            },
+            "sd_url": "/user=admin&password=&channel=1&stream=1.sdp",
+            "hd_masks": {
+                "mask2": "0,400,120,500",
+                "mask5": "1500,750,500,500",
+                "mask3": "0,500,220,500",
+                "mask1": "0,800,1920,280",
+                "mask4": "0,600,550,500"
+            },
+            "ip": "192.168.76.74",
+            "hd_url": "/user=admin&password=&channel=1&stream=0.sdp"
+        },
+        "cam2": {
+            "cams_id": "010038",
+            "cam_version": "1",
+            "masks": {
+                "mask2": "0,500,704,76",
+                "mask0": "0,450,270,120",
+                "mask1": "0,370,270,100"
+            },
+            "sd_url": "/user=admin&password=&channel=1&stream=1.sdp",
+            "hd_masks": {
+                "hd_mask0": "0,843,736,225",
+                "hd_mask1": "0,693,736,187",
+                "hd_mask2": "0,937,1919,142"
+            },
+            "ip": "192.168.76.72",
+            "hd_url": "/user=admin&password=&channel=1&stream=0.sdp"
+        },
+        "cam5": {
+            "cams_id": "010041",
+            "cam_version": "1",
+            "masks": {
+                "mask0": "0,400,704,176"
+            },
+            "sd_url": "/user=admin&password=&channel=1&stream=1.sdp",
+            "hd_masks": {
+                "hd_mask0": "0,750,1919,330"
+            },
+            "ip": "192.168.76.75",
+            "hd_url": "/user=admin&password=&channel=1&stream=0.sdp"
+        },
+        "cam6": {
+            "cams_id": "010042",
+            "cam_version": "1",
+            "masks": {
+                "mask1": "0,0,0,0"
+            },
+            "sd_url": "/user=admin&password=&channel=1&stream=1.sdp",
+            "hd_masks": {
+                "mask1": "1,1,1,1"
+            },
+            "ip": "192.168.76.76",
+            "hd_url": "/user=admin&password=&channel=1&stream=0.sdp"
+        },
+        "cam1": {
+            "cams_id": "010037",
+            "cam_version": "1",
+            "masks": {
+                "mask0": "0,250,60,250",
+                "mask1": "250,460,100,100",
+                "mask5": "0,496,704,100",
+                "mask2": "560,400,150,100",
+                "mask3": "0,400,250,100",
+                "mask4": "425,340,100,200"
+            },
+            "sd_url": "/user=admin&password=&channel=1&stream=1.sdp",
+            "hd_masks": {
+                "hd_mask1": "681,862,272,187",
+                "hd_mask5": "0,930,1919,187",
+                "hd_mask2": "1527,750,409,187",
+                "hd_mask0": "0,468,163,468",
+                "hd_mask4": "1159,637,272,375",
+                "hd_mask3": "0,750,681,187"
+            },
+            "ip": "192.168.76.71",
+            "hd_url": "/user=admin&password=&channel=1&stream=0.sdp"
+        }
+    },
+    "site": {
+        "device_alt": "56",
+        "api_key": "123",
+        "cams_pwd": "",
+        "cams_dir": "/home/ams/amscams/",
+        "device_lng": "-76.9560",
+        "operator_name": "Elizabeth Warner",
+        "proc_dir": "/mnt/ams2/SD/proc2/",
+        "mac_addr": "00:0e:c4:d3:e1:15",
+        "multi_station_sync": [
+            "ams7",
+            "ams9",
+            "ams15"
+        ],
+        "operator_city": "College Park",
+        "ams_id": "AMS7",
+        "pwd": "meteors",
+        "sd_video_dir": "/mnt/ams2/SD/",
+        "cal_dir": "/mnt/ams2/cal/",
+        "device_lat": "39.0021",
+        "hd_video_dir": "/mnt/ams2/HD/",
+        "obs_name": "UMD",
+        "operator_email": "mike.hankey@gmail.com",
+        "cams_queue_dir": "/mnt/ams2/CAMS/queue/",
+        "operator_state": "MD"
+    }
+}
