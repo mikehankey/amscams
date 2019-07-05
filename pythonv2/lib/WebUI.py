@@ -26,6 +26,7 @@ from lib.CalibLib import radec_to_azel
 from lib.WebCalib import calibrate_pic,make_plate_from_points, solve_field, check_solve_status, free_cal, show_cat_stars, choose_file, upscale_2HD, fit_field, delete_cal, add_stars_to_fit_pool, save_add_stars_to_fit_pool, reduce_meteor, reduce_meteor_ajax, find_stars_ajax, man_reduce, pin_point, get_manual_points, del_manual_points, sat_cap, HMS2deg, custom_fit, del_frame, clone_cal, reduce_meteor_new , update_red_info_ajax, update_hd_cal_ajax, add_frame_ajax, update_frame_ajax
 from lib.UtilLib import calc_radiant
 from lib.Video_Timelapse import add_timelapse_job
+from lib.VIDEO_VARS import * 
 from lib.Get_Cam_ids import get_the_cam_ids
  
 
@@ -431,15 +432,6 @@ def controller(json_conf):
 def video_tools(json_conf,form):
    cgitb.enable()
 
-   #Try to get CAM IDs
-   cam_ids = get_the_cam_ids()
-   print(str(cam_ids))
-
-   SD_PATH='/mnt/ams2/SD/proc2/'
-   WAITING_JOBS_FOLDER = SD_PATH + '/custom_videos/'
-   WAITING_JOBS = WAITING_JOBS_FOLDER + 'waiting_jobs.json'
-   VID_FOLDER = '/mnt/ams2/SD/CUSTOM_VIDEOS/'
-
    cur_page  = form.getvalue('p')
 
    if (cur_page is None) or (cur_page==0):
@@ -458,7 +450,7 @@ def video_tools(json_conf,form):
          all_vids_out += "<div class='preview col-lg-2 col-md-3 norm'>"
          all_vids_out += "<a class='mtt vid-link nop' href='"+vid+"' title='Play the Video'>"
          all_vids_out += "<img class='img-fluid ns lz' src='" + vid.replace('.mp4','.png') + "'/>"
-         all_vids_out += "<span>" + date + " - " + camid +"</span></a></div>"
+         all_vids_out += "</a><span>" + date + " - Cam#" + camid +"</span></div>"
          vid_counter+=1
 
 
@@ -2055,11 +2047,25 @@ def browse_day(day,cams_id,json_conf):
    all_files = []
    for base_file in sorted(day_files,reverse=True):
       all_files.append(base_file)
+ 
+   #Get CAM IDs from drop_dow & Javascript
+   all_cam_ids = get_the_cam_ids() 
 
    print("<div class='h1_holder d-flex justify-content-between'><h1><span class='h'><span id='meteor_count'>"+format(len(day_files))+"</span> detections</span> on")
    print("<div class='input-group date datepicker' data-display-format='YYYY/MM/DD' data-action='reload' data-url-param='day' data-send-format='YYYY_MM_DD'>")
    print("<input value='"+str(day.replace("_", "/"))+"' type='text' class='form-control'>")
-   print("<span class='input-group-addon'><span class='icon-clock'></span></span></div> by Cam #<span id='cam_id'>"+cams_id+"</span></h1>")
+   print("<span class='input-group-addon'><span class='icon-clock'></span></span></div> by Cam #")
+   
+   #Cam selector
+   print("<select id='cam_id' name='cam_id' data-url-param='cams_id' class='cam_picker'>")
+   for ccam_id in all_cam_ids:
+      if ccam_id == cams_id:
+            sel='selected'
+      else:
+            sel=''
+      print('<option value="'+ccam_id+'" '+sel+'>'+ccam_id+'</option>')
+   print("</select></h1>") 
+   
    print("<div class='d-flex'><button class='btn btn-primary mr-3' id='create_night_anim' style='text-transform: initial;'><span class='icon-youtube'></span> Generate Timelapse Video</button><button class='btn btn-primary' id='play_anim_thumb' style='text-transform: initial;'><span class='icon-youtube'></span> Timelapse Preview</button></div></div>") 
   
    print("<div id='main_container' class='container-fluid h-100 mt-4 lg-l'>")

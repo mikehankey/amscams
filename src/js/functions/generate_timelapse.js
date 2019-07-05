@@ -11,9 +11,7 @@ function getFormData($form){
 
 
 function add_timelapse_modal() {
-    $('#timelapse_modal').remove();
- 
-
+    $('#timelapse_modal').remove(); 
     $('<div id="timelapse_modal" class="modal" tabindex="-1" role="dialog"> \
         <div class="modal-dialog modal-dialog-centered modal-lg" role="document"> \
             <div class="modal-content"> \
@@ -115,7 +113,8 @@ function add_timelapse_modal() {
     $('#tot_f').val(hmf);
 
     // Cam ID 
-    $('#tl_cam_id').val($('#cam_id').text());
+    $('#tl_cam_id').val($('#cam_id').val());
+    console.log('CAM ID VAL ', $('#cam_id').val());
 
     // Date
     $('#tl_date').val($('input[name=cur_date]').val());

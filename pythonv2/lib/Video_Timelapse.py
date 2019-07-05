@@ -5,11 +5,8 @@ import json
 from pathlib import Path
 from os import listdir,makedirs
 from os.path import isfile, join, exists
- 
-SD_PATH='/mnt/ams2/SD/proc2/'
-WAITING_JOBS_FOLDER = SD_PATH + '/custom_videos/'
-WAITING_JOBS = WAITING_JOBS_FOLDER + 'waiting_jobs.json'
-DEST_PATH = '/mnt/ams2/SD/CUSTOM_VIDEOS'
+from lib.VIDEO_VARS import * 
+  
 
 #Return Date & Time based on file name
 def get_meteor_date_ffmpeg(file):
@@ -21,7 +18,7 @@ def get_meteor_date_ffmpeg(file):
 #Ouput: list of sd frames found for this date
 def get_sd_frames(camID,date):
     #ex:camID:010034, date:2019_06_23
-    cur_path = SD_PATH + date + "/images"
+    cur_path = IMG_SRC_PATH + date + "/images"
     onlyfiles = [f for f in listdir(cur_path) if camID in f and "-tn" not in f and "-night" not in f and "trim" not in f and isfile(join(cur_path, f))]
     #FOR DEBUG
     #onlyfiles = onlyfiles[1:50]
@@ -39,8 +36,8 @@ def create_sd_vid(frames, path, date, camID, fps="15", dimensions="1920:1080", t
         os.makedirs(newpath)
 
     #Create destination folder if it doesn't exist yet
-    if not os.path.exists(DEST_PATH):
-        os.makedirs(DEST_PATH)
+    if not os.path.exists(VID_FOLDER):
+        os.makedirs(VID_FOLDER)
 
     watermark = "/home/ams/amscams/dist/img/ams_watermark.png"
     
@@ -89,12 +86,12 @@ def create_sd_vid(frames, path, date, camID, fps="15", dimensions="1920:1080", t
         output = subprocess.check_output(cmd, shell=True).decode("utf-8")
 
     #Create Video based on all newly create frames
-    def_file_path =  DEST_PATH +'/'+date +'_'+ camID +'.mp4' 
+    def_file_path =  VID_FOLDER +'/'+date +'_'+ camID +'.mp4' 
     cmd = 'ffmpeg -hide_banner -loglevel panic -y  -r '+ str(fps) +' -f image2 -s 1920x1080 -i ' + newpath+ '/%d.png -vcodec libx264 -crf 25 -pix_fmt yuv420p ' + def_file_path
     output = subprocess.check_output(cmd, shell=True).decode("utf-8")
    
     #Rename and Move the first frame in the dest folder so we'll use it as a thumb
-    cmd = 'mv ' + newpath + '/0.png ' +   DEST_PATH + '/'+date +'_'+ camID +'.png'        
+    cmd = 'mv ' + newpath + '/0.png ' +   VID_FOLDER + '/'+date +'_'+ camID +'.png'        
     output = subprocess.check_output(cmd, shell=True).decode("utf-8")
 
     #DELETING RESIZE FRAMES
