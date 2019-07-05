@@ -5,7 +5,7 @@ import json
 from pathlib import Path
 from os import listdir,makedirs
 from os.path import isfile, join, exists
-from lib.VIDEO_VARS import SD_PATH,WAITING_JOBS_FOLDER,WAITING_JOBS,VID_FOLDER
+from lib.VIDEO_VARS import * 
  
  
 
