@@ -84,10 +84,11 @@ else:
     cur_site['operator_email'] =  data["site"]["operator_email"] 
     cur_site['cams_queue_dir'] =  data["site"]["cams_queue_dir"] 
     cur_site['operator_state'] =  data["site"]["operator_state"] 
-    if(data["site"]["operator_country"] is None):
-        cur_site['operator_country'] =  'US'
-    else:
+    try data["site"]["operator_country"]:
         cur_site['operator_country'] =  data["site"]["operator_country"]   
+    except:
+        cur_site['operator_country'] =  'US' 
+        
     clean_data["site"].append(cur_site)         
     print(str(clean_data))
     exit()
