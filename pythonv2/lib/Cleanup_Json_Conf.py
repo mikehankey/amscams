@@ -14,8 +14,8 @@ def cleanup_json():
     file_to_clean = Path(PATH_TO_CLEAN_CONF_JSON)
     if file_to_clean.is_file():
         #ADD POSSIBILITY TO Erase?
-        print("Clean version already exists") 
-        exit()
+        #print("Clean version already exists") 
+        return PATH_TO_CLEAN_CONF_JSON
     elif file_org.is_file() == False: 
         print("Conf file is missing") 
         exit()
