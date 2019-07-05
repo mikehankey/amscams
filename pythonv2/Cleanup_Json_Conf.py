@@ -30,9 +30,8 @@ else:
     #Create new (clean) array to create clean conf file
     clean_data = {}
     clean_data["cameras"] = []
-
     #Loop through the cams
-    for cam_nb in data["cameras"]: 
+    for cam_nb in sorted(data["cameras"]): 
         cur_cam = {} 
         cur_cam["id"] = data["cameras"][cam_nb]["cams_id"]
         cur_cam["v"] = int(data["cameras"][cam_nb]["cam_version"])
@@ -53,16 +52,44 @@ else:
         for mask in mask_keys_sorted:
             cur_cam["hd"]['masks'].append(data["cameras"][cam_nb]["hd_masks"][mask])
         clean_data["cameras"].append(cur_cam)
-
-    print(str(clean_data))
-
+    #print(str(clean_data))
     #Then we take care of the cam settings
     clean_data["cam_settings"] = []
     for setting in data["camera_settingsv1"]:
-        night
-
-
-
+        cur_settings = {}
+        cur_settings["brightness"] = int(data["camera_settingsv1"][setting]["brightness"])
+        cur_settings["gamma"] = int(data["camera_settingsv1"][setting]["gamma"])
+        cur_settings["BLC"] = int(data["camera_settingsv1"][setting]["BLC"])
+        cur_settings["contrast"] = int(data["camera_settingsv1"][setting]["contrast"])
+        clean_data["cam_settings"].append(cur_settings)
+    #Then the site
+    clean_data["site"]= []
+    for site in data["site"]:
+        cur_site = {}
+        cur_site['device_alt'] = float(data["site"][site]["device_alt"])
+        cur_site['device_lng'] =  float(data["site"][site]["device_lng"]) 
+        cur_site['device_lat'] =  float(data["site"][site]["device_lat"]) 
+        cur_site['api_key'] =  data["site"][site]["api_key"] 
+        cur_site['cams_pwd'] =  data["site"][site]["cams_pwd"] 
+        cur_site['cams_dir'] =  data["site"][site]["cams_dir"] 
+        cur_site['operator_name'] =  data["site"][site]["operator_name"] 
+        cur_site['proc_dir'] =  data["site"][site]["proc_dir"] 
+        cur_site['mac_addr'] =  data["site"][site]["mac_addr"] 
+        cur_site['city'] =  data["site"][site]["operator_city"] 
+        cur_site['ams_id'] =  data["site"][site]["ams_id"] 
+        cur_site['pwd'] =  data["site"][site]["pwd"] 
+        cur_site['sd_video_dir'] =  data["site"][site]["sd_video_dir"] 
+        cur_site['hd_video_dir'] =  data["site"][site]["hd_video_dir"] 
+        cur_site['cal_dir'] =  data["site"][site]["cal_dir"] 
+        cur_site['obs_name'] =  data["site"][site]["obs_name"] 
+        cur_site['operator_email'] =  data["site"][site]["operator_email"] 
+        cur_site['cams_queue_dir'] =  data["site"][site]["cams_queue_dir"] 
+        cur_site['operator_state'] =  data["site"][site]["operator_state"] 
+        if(data["site"][site]["operator_country"] is None):
+            cur_site['operator_country'] =  'US'
+        else:
+            cur_site['operator_country'] =  data["site"][site]["operator_country"]   
+        clean_data["site"].append(cur_site)         
     print(str(clean_data))
     exit()
 
