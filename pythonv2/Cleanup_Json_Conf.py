@@ -65,29 +65,29 @@ else:
     #Then the site
     clean_data["site"]= [] 
     cur_site = {}
-    cur_site['device_alt'] = float(data["site"][site]["device_alt"])
-    cur_site['device_lng'] =  float(data["site"][site]["device_lng"]) 
-    cur_site['device_lat'] =  float(data["site"][site]["device_lat"]) 
-    cur_site['api_key'] =  data["site"][site]["api_key"] 
-    cur_site['cams_pwd'] =  data["site"][site]["cams_pwd"] 
-    cur_site['cams_dir'] =  data["site"][site]["cams_dir"] 
-    cur_site['operator_name'] =  data["site"][site]["operator_name"] 
-    cur_site['proc_dir'] =  data["site"][site]["proc_dir"] 
-    cur_site['mac_addr'] =  data["site"][site]["mac_addr"] 
-    cur_site['city'] =  data["site"][site]["operator_city"] 
-    cur_site['ams_id'] =  data["site"][site]["ams_id"] 
-    cur_site['pwd'] =  data["site"][site]["pwd"] 
-    cur_site['sd_video_dir'] =  data["site"][site]["sd_video_dir"] 
-    cur_site['hd_video_dir'] =  data["site"][site]["hd_video_dir"] 
-    cur_site['cal_dir'] =  data["site"][site]["cal_dir"] 
-    cur_site['obs_name'] =  data["site"][site]["obs_name"] 
-    cur_site['operator_email'] =  data["site"][site]["operator_email"] 
-    cur_site['cams_queue_dir'] =  data["site"][site]["cams_queue_dir"] 
-    cur_site['operator_state'] =  data["site"][site]["operator_state"] 
-    if(data["site"][site]["operator_country"] is None):
+    cur_site['device_alt'] = float(data["site"]["device_alt"])
+    cur_site['device_lng'] =  float(data["site"]["device_lng"]) 
+    cur_site['device_lat'] =  float(data["site"]["device_lat"]) 
+    cur_site['api_key'] =  data["site"]["api_key"] 
+    cur_site['cams_pwd'] =  data["site"]["cams_pwd"] 
+    cur_site['cams_dir'] =  data["site"]["cams_dir"] 
+    cur_site['operator_name'] =  data["site"]["operator_name"] 
+    cur_site['proc_dir'] =  data["site"]["proc_dir"] 
+    cur_site['mac_addr'] =  data["site"]["mac_addr"] 
+    cur_site['city'] =  data["site"]["operator_city"] 
+    cur_site['ams_id'] =  data["site"]["ams_id"] 
+    cur_site['pwd'] =  data["site"]["pwd"] 
+    cur_site['sd_video_dir'] =  data["site"]["sd_video_dir"] 
+    cur_site['hd_video_dir'] =  data["site"]["hd_video_dir"] 
+    cur_site['cal_dir'] =  data["site"]["cal_dir"] 
+    cur_site['obs_name'] =  data["site"]["obs_name"] 
+    cur_site['operator_email'] =  data["site"]["operator_email"] 
+    cur_site['cams_queue_dir'] =  data["site"]["cams_queue_dir"] 
+    cur_site['operator_state'] =  data["site"]["operator_state"] 
+    if(data["site"]["operator_country"] is None):
         cur_site['operator_country'] =  'US'
     else:
-        cur_site['operator_country'] =  data["site"][site]["operator_country"]   
+        cur_site['operator_country'] =  data["site"]["operator_country"]   
     clean_data["site"].append(cur_site)         
     print(str(clean_data))
     exit()
