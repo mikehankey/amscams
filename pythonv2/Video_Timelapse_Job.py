@@ -32,6 +32,9 @@ if js_file.is_file():
                 cur_idx = idx
                 break;
 
+        print('CURRENT JOB')
+        print(str(cur_job))
+
         if(cur_job != 'X'):
 
             #Change Status of the job in the JSON
@@ -43,6 +46,7 @@ if js_file.is_file():
             #print(str(cur_job))
             video_path = generate_timelapse(cur_job['cam_id'],cur_job['date'],cur_job['fps'],cur_job['dim'],cur_job['text_pos'],cur_job['wat_pos'])
 
+            # Update the JSON so we dont process the same vid twice
             data['jobs'][0]['status'] = 'ready'
             data['jobs'][0]['path']   = video_path
             with open(WAITING_JOBS, 'w') as outfile:
