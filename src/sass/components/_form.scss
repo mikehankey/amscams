@@ -72,3 +72,16 @@ input[type="range"]{
 .form-control-plaintext { 
   color:#fff;
 }
+
+
+// Select in header
+h1 select {
+  background: none;
+  border: none;
+  color: #fff;
+
+  option {
+    background:  #061329;
+    color: #fff;
+  }
+}

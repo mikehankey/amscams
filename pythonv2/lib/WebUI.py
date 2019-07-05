@@ -2055,7 +2055,7 @@ def browse_day(day,cams_id,json_conf):
    print("<div class='input-group date datepicker' data-display-format='YYYY/MM/DD' data-action='reload' data-url-param='day' data-send-format='YYYY_MM_DD'>")
    print("<input value='"+str(day.replace("_", "/"))+"' type='text' class='form-control'>")
    print("<span class='input-group-addon'><span class='icon-clock'></span></span></div> by Cam #")
-   print("<select id='cam_id' name='cam_id'>")
+   print("<select id='cam_id' name='cam_id' data-url-param='cams_id' class='cam_picker'>")
    for cam_id in cam_ids:
       print('<option value="'+cam_id+'">'+cam_id+'</option>')
    print("</select></h1>") 
