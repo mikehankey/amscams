@@ -18,7 +18,7 @@ def get_meteor_date_ffmpeg(file):
 #Ouput: list of sd frames found for this date
 def get_sd_frames(camID,date):
     #ex:camID:010034, date:2019_06_23
-    cur_path = SD_PATH + date + "/images"
+    cur_path = IMG_SRC_PATH + date + "/images"
     onlyfiles = [f for f in listdir(cur_path) if camID in f and "-tn" not in f and "-night" not in f and "trim" not in f and isfile(join(cur_path, f))]
     #FOR DEBUG
     #onlyfiles = onlyfiles[1:50]
