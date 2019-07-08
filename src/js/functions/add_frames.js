@@ -1,8 +1,16 @@
 function add_reduc_row(data,before) {
+
+    console.log("before",before);
   
     if(typeof data.newframe !=="undefined") {
         var new_frame_id = parseInt(data.newframe.fn);
-        var next_id = parseInt(new_frame_id)-1;
+
+        if(before) {
+            var next_id = parseInt(new_frame_id)-1;
+        } else {
+            var next_id = parseInt(new_frame_id);
+        }
+        
 
         var new_frame = data.newframe;
 
