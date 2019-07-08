@@ -25,6 +25,8 @@ function update_reduction_on_canvas_and_table(json_resp) {
     for (var i = 0; i <= 255; i = i + step) {
         all_colors.push(rainbow.colourAt(i));
     }
+
+    console.log(all_colors);
     
     $.each(smf, function(i,v){
  
