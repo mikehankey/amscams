@@ -11,6 +11,9 @@
                     <a class="nav-link active" id="reduc-tab-l" data-toggle="tab" href="#reduc-tab" role="tab" aria-controls="reduction" aria-selected="true">Reduction</a>
                 </li>
                 <li class="nav-item">
+                    <a class="nav-link" id="lightc-tab-l" data-toggle="tab" href="#lightc-tab" role="tab" aria-controls="lightc" aria-selected="true">Light Curve</a>
+                </li>
+                <li class="nav-item">
                     <a class="nav-link" id="stars-tab-l" data-toggle="tab" href="#stars-tab" role="tab" aria-controls="stars" aria-selected="false"><span id="str_cnt"></span> Stars</a>
                 </li>
                 <li class="nav-item">
@@ -28,6 +31,10 @@
 
                 <div class="tab-pane fade show active pr-3" id="reduc-tab" role="tabpanel" aria-labelledby="reduc-tab-l">
                     {%RED_TABLE%}
+                </div>
+
+                <div class="tab-pane fade show active pr-3" id="lightc-tab" role="tabpanel" aria-labelledby="lightc-tab-l">
+                    {%LIGHT_CURVE%}
                 </div>
 
                 <div class="tab-pane fade" id="stars-tab" role="tabpanel" aria-labelledby="stars-tab-l">
