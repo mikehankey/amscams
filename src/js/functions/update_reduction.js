@@ -24,7 +24,7 @@ function update_reduction_on_canvas_and_table(json_resp) {
     $.each(smf, function(i,v){
 
         // Color
-        var hex = '#' + rainbow.colourAt(i+30);    
+        var hex = '#' + rainbow.colourAt(i+all_frame_ids.length);    
         
         // Get thumb path
         var frame_id = parseInt(v[1]);
