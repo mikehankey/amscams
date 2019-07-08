@@ -3090,7 +3090,7 @@ def reduce_meteor_new(json_conf,form):
    template = template.replace("{%STAR_TABLE%}", stars_table)
 
    light_curve_file = sd_video_file.replace('.mp4','-lightcurve.png')
-   if(is_file(light_curve_file)):
+   if(isfile(light_curve_file)):
       template = template.replace("{%LIGHT_CURVE%}", light_curve_file)
    else:
       template = template.replace("{%LIGHT_CURVE%}", "<div class='alert alert-danger'>Light Curve file not found</div>")
