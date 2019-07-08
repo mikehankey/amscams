@@ -20,7 +20,9 @@ function update_reduction_on_canvas_and_table(json_resp) {
     // Create Colors
     var rainbow = new Rainbow();
     var all_colors = [];
-    for (var i = 0; i <= all_frame_ids.length; i = i + 1) {
+    var total = all_frame_ids.length; 
+    var step = parseInt(255/total);
+    for (var i = 0; i <= 255; i = i + step) {
         all_colors.push(rainbow.colourAt(i));
     }
     
