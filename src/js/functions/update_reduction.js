@@ -17,7 +17,14 @@ function update_reduction_on_canvas_and_table(json_resp) {
         all_frame_ids.push(parseInt(v[1]));
     });
 
+    // Create Colors
+    var rainbow = new Rainbow();
+    rainbow.setSpectrum('red', 'FFFFFF', '#00ff00'); 
+    
     $.each(smf, function(i,v){
+
+        // Color
+        var hex = '#' + rainbow.colourAt(i);    
         
         // Get thumb path
         var frame_id = parseInt(v[1]);
@@ -53,7 +60,9 @@ function update_reduction_on_canvas_and_table(json_resp) {
 
         // Add Rectangle
         canvas.add(new fabric.Rect({
-            fill: 'rgba(0,0,0,0)', strokeWidth: 1, stroke: 'rgba(230,100,200,.5)', 
+            fill: 'rgba(0,0,0,0)', 
+            strokeWidth: 1, 
+            stroke: hex, //'rgba(230,100,200,.5)', 
             left:  v[2]/2-rad, 
             top:   v[3]/2-rad,
             width: 10,
