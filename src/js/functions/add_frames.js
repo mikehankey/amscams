@@ -1,6 +1,5 @@
-function add_reduc_row(data) {
- 
-
+function add_reduc_row(data,before) {
+  
     if(typeof data.newframe !=="undefined") {
         var new_frame_id = parseInt(data.newframe.fn);
         var next_id = parseInt(new_frame_id)-1;
@@ -33,7 +32,11 @@ function add_reduc_row(data) {
         row += '<td><a class="btn btn-danger btn-sm delete_frame"><i class="icon-delete"></i></a></td>';
         row += '<td class="position-relative"><a class="btn btn-success btn-sm select_meteor"><i class="icon-target"></i></a></td>';
  
-        $(row).insertAfter($tr_before);
+        if(before) {
+            $(row).insertBefore($tr_before);
+        } else {
+            $(row).insertAfter($tr_before);
+        }
 
         // Reload all actions on reduct table!!!
         bootbox.alert({
@@ -56,7 +59,7 @@ function add_reduc_row(data) {
     loading_done();
 }
 
-function add_a_frame(cur_fn) {
+function add_a_frame(cur_fn, before) {
     var cmd_data = {
 		cmd: 'add_frame',
         sd_video_file: sd_video_file, // Defined on the page
@@ -71,7 +74,7 @@ function add_a_frame(cur_fn) {
         success: function(data) { 
             loading_done();
             if($.trim(data)!=='') {
-                add_reduc_row($.parseJSON(data));
+                add_reduc_row($.parseJSON(data),before);
             } else {
                 bootbox.alert({
                     message: "Something went wrong: please contact us.",
@@ -95,7 +98,7 @@ function add_a_frame(cur_fn) {
 
 function setup_add_frames() {
     $('.add_f').click(function() {
-        add_a_frame($(this).attr('data-rel'));
+        add_a_frame($(this).attr('data-rel'),$(this).hasClasss('.bt-mm')?true:false);
     }); 
 }
 
