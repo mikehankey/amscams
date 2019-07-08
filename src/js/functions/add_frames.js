@@ -5,7 +5,7 @@ function add_frame_square_on_canvas(x,y) {
     canvas.add(new fabric.Rect({
         fill: 'rgba(0,0,0,0)', 
         strokeWidth: 1, 
-        stroke: '#ff8a80'
+        stroke: '#ff8a80',
         left:  x-rad, 
         top:   y-rad,
         width: 10,
