@@ -20,13 +20,12 @@ function update_reduction_on_canvas_and_table(json_resp) {
     // Create Colors
     var rainbow = new Rainbow();
     var all_colors = [];
-    for (var i = 0; i <= all_frame_ids.length; i = i + 10) {
+    for (var i = 0; i <= all_frame_ids.length; i = i + 1) {
         all_colors.push(rainbow.colourAt(i));
     }
     
     $.each(smf, function(i,v){
-
-      
+ 
         
         // Get thumb path
         var frame_id = parseInt(v[1]);
