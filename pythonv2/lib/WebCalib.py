@@ -10,15 +10,13 @@ import time
 import glob
 import os
 import cgitb
+from os.path import isfile
 from lib.PrintUtils import get_meteor_date
 from lib.FileIO import get_proc_days, get_day_stats, get_day_files , load_json_file, get_trims_for_file, get_days, save_json_file, cfe
 from lib.VideoLib import get_masks, convert_filename_to_date_cam, find_hd_file_new, load_video_frames, find_min_max_dist, ffmpeg_dump_frames
 from lib.DetectLib import check_for_motion2, eval_cnt, eval_cnt_better, find_bright_pixels
-
 from lib.MeteorTests import test_objects, meteor_test_elp_frames, meteor_test_cm_gaps
-
 from lib.ImageLib import mask_frame,stack_frames, adjustLevels, upscale_to_hd, median_frames
-
 from lib.CalibLib import radec_to_azel, clean_star_bg, get_catalog_stars, find_close_stars, XYtoRADec, HMS2deg, AzEltoRADec, define_crop_box
 from lib.UtilLib import check_running, calc_dist, angularSeparation, bound_cnt
 
@@ -3090,7 +3088,12 @@ def reduce_meteor_new(json_conf,form):
 
    template = template.replace("{%RED_TABLE%}", red_table)
    template = template.replace("{%STAR_TABLE%}", stars_table)
-   template = template.replace("{%LIGHT_CURVE%}", sd_video_file.replace('.mp4','-lightcurve.png '))
+
+   light_curve_file = sd_video_file.replace('.mp4','-lightcurve.png')
+   if(is_file(light_curve_file)):
+      template = template.replace("{%LIGHT_CURVE%}", light_curve_file)
+   else:
+      template = template.replace("{%LIGHT_CURVE%}", "<div class='alert alert-danger'>Light Curve file not found</div>")
 
    
    #template = template.replace("{%RED_TABLE%}", "")
