@@ -19,12 +19,17 @@ function update_reduction_on_canvas_and_table(json_resp) {
 
     // Create Colors
     var rainbow = new Rainbow();
+    rainbow.setNumberRange(0, 255);
     var all_colors = [];
-    var total = all_frame_ids.length; 
+    //var total = all_frame_ids.length; 
+    total = 25;
     var step = parseInt(255/total);
+    console.log("STEP " + step);
     for (var i = 0; i <= 255; i = i + step) {
         all_colors.push('#'+rainbow.colourAt(i));
     }
+    
+    console.log("all_colors " + all_colors);
  
     
     $.each(smf, function(i,v){
