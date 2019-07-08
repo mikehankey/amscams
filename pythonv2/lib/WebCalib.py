@@ -3045,7 +3045,7 @@ def reduce_meteor_new(json_conf,form):
    <table class="table table-dark table-striped table-hover td-al-m mb-2 pr-5" >
       <thead>
          <tr>
-            <th></th><th>#</th><th>Time</th><th>RA/DEC</th><th>AZ/EL</th><th>X/Y</th><th>w/h</th><th>Max px</th><th colspan="4"></th>
+            <th></th><th></th><th>#</th><th>Time</th><th>RA/DEC</th><th>AZ/EL</th><th>X/Y</th><th>w/h</th><th>Max px</th><th colspan="4"></th>
          </tr>
       </thead>
    """
