@@ -102,6 +102,7 @@ function js() {
       './src/js/plugins/bootstrap-datetimepicker.min.js', 
       './src/js/plugins/jquery.lazy.js', 
       './src/js/plugins/js.cookie.js', 
+      './src/js/plugins/rainbowvis.js', 
       './node_modules/bootstrap/dist/js/bootstrap.js' 
     ])
     .pipe(concat('amscam.min.js').on('error', function(e){
