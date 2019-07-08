@@ -21,8 +21,7 @@ function update_reduction_on_canvas_and_table(json_resp) {
     var rainbow = new Rainbow();
     rainbow.setNumberRange(0, 255);
     var all_colors = [];
-    //var total = all_frame_ids.length; 
-    total = 25;
+    var total = all_frame_ids.length; 
     var step = parseInt(255/total); 
     for (var i = 0; i <= 255; i = i + step) {
         all_colors.push('#'+rainbow.colourAt(i));
