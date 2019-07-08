@@ -22,6 +22,7 @@ img  {
     padding-bottom: 56.5%;
     position: relative;
 
+  
     img {
         opacity: .65;
         width: 85%;
@@ -32,6 +33,11 @@ img  {
         box-shadow: none;
         -webkit-box-shadow: none;
     }
+
+    &.nop img {
+        opacity:1;
+    }
+
 
     &:hover  {
             opacity: 1;
