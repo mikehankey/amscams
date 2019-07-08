@@ -109,7 +109,7 @@ def generate_timelapse(cam_id,date,fps,dim,text_pos,wat_pos):
     return create_sd_vid(files,path, date, camID,fps,dim,text_pos,wat_pos)
 
 
-#ADD Job to /mnt/ams2/SD/proc2/timelapse.job.json
+#ADD Job to WAITING_JOBS
 def add_timelapse_job(cam_id,date,fps,dim,text_pos,wat_pos):
     #Is the waiting_job folder exists? 
     if not os.path.exists(WAITING_JOBS_FOLDER):
