@@ -3,8 +3,9 @@ import subprocess
 import json
 from pathlib import Path 
 from os.path import isfile, join, exists
-from lib.Video_Timelapse import generate_timelapse
+from lib.Video_Timelapse import generate_timelapse, get_meteor_date_ffmpeg
 from lib.VIDEO_VARS import * 
+
 
 #READ THE waiting_jobs file if it exist 
 js_file = Path(WAITING_JOBS)
@@ -32,8 +33,8 @@ if js_file.is_file():
                 cur_idx = idx
                 break;
 
-        print('CURRENT JOB')
-        print(str(cur_job))
+        #print('CURRENT JOB')
+        #print(str(cur_job))
 
         if(cur_job != 'X'):
 
@@ -42,14 +43,22 @@ if js_file.is_file():
             with open(WAITING_JOBS, 'w') as outfile:
                 json.dump(data, outfile)
 
-            # Generate Video
-            #print(str(cur_job))
-            video_path = generate_timelapse(cur_job['cam_id'],cur_job['date'],cur_job['fps'],cur_job['dim'],cur_job['text_pos'],cur_job['wat_pos'])
+            #Test if we have the HD files or not
+            dirs = os.listdir(HD_VID_SRC_PATH)  #Get All files
+            if(isfile(dirs[0]) and get_meteor_date_ffmpeg(dirs[0])==cur_job['date']):
+                print("WE HAVE HD")
+            
+            else:
+                # WE NEED TO DO IT FROM THE SDs
 
-            # Update the JSON so we dont process the same vid twice
-            data['jobs'][0]['status'] = 'ready'
-            data['jobs'][0]['path']   = video_path
-            with open(WAITING_JOBS, 'w') as outfile:
-                json.dump(data, outfile)
+                # Generate Video
+                #print(str(cur_job))
+                video_path = generate_timelapse(cur_job['cam_id'],cur_job['date'],cur_job['fps'],cur_job['dim'],cur_job['text_pos'],cur_job['wat_pos'])
+
+                # Update the JSON so we dont process the same vid twice
+                data['jobs'][0]['status'] = 'ready'
+                data['jobs'][0]['path']   = video_path
+                with open(WAITING_JOBS, 'w') as outfile:
+                    json.dump(data, outfile)
 
         
