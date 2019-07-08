@@ -106,7 +106,7 @@ function add_a_frame(cur_fn, before) {
 
 function setup_add_frames() {
     $('.add_f').click(function() {
-        add_a_frame($(this).attr('data-rel'),$(this).hasClass('.btn-mm')?true:false);
+        add_a_frame($(this).attr('data-rel'),$(this).hasClass('btn-mm'));
     }); 
 }
 
