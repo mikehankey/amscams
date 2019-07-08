@@ -3090,6 +3090,9 @@ def reduce_meteor_new(json_conf,form):
 
    template = template.replace("{%RED_TABLE%}", red_table)
    template = template.replace("{%STAR_TABLE%}", stars_table)
+   template = template.replace("{%LIGHT_CURVE%}", 'LIGHT CURVE')
+
+   
    #template = template.replace("{%RED_TABLE%}", "")
    #template = template.replace("{%STAR_TABLE%}", "")
    cal_params_file = ""
