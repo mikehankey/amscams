@@ -1,6 +1,23 @@
-function add_reduc_row(data,before) {
+function add_frame_square_on_canvas(x,y) {
+    var rad = 6;
 
-    console.log("before",before);
+    // Add Rectangle
+    canvas.add(new fabric.Rect({
+        fill: 'rgba(0,0,0,0)', 
+        strokeWidth: 1, 
+        stroke: '#ff8a80'
+        left:  x-rad, 
+        top:   y-rad,
+        width: 10,
+        height: 10 ,
+        selectable: false,
+        type: 'reduc_rect'
+    }));
+}
+
+
+function add_reduc_row(data,before) {
+ 
   
     if(typeof data.newframe !=="undefined") {
         var new_frame_id = parseInt(data.newframe.fn);
@@ -29,6 +46,7 @@ function add_reduc_row(data,before) {
 
         // Build new row
         var row = "<tr id='fr_' "+ new_frame_id +" data-org-x='"+new_frame.hd_x+"' data-org-y='"+new_frame.hd_y+"'>";
+        row += '<td><div class="st" style="background-color:#ff8a80"></div></td>'
         row += '<td><img alt="Thumb #'+new_frame_id+'" src="'+new_frame.cnt_thumb +'" width="50" height="50" class="img-fluid select_meteor">';
         row += '<td>' + new_frame_id + '</td>';
         row += '<td>' + _time + '</td>'; 
@@ -53,6 +71,9 @@ function add_reduc_row(data,before) {
             centerVertical: true 
         });
         
+        // Add square to canvas
+        add_frame_square_on_canvas(parseFloat(new_frame.hd_x)/2,parseFloat(new_frame.hd_y)/2);
+
         // Reload the actions
         reduction_table_actions();
 
