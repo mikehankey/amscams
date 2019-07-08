@@ -19,12 +19,14 @@ function update_reduction_on_canvas_and_table(json_resp) {
 
     // Create Colors
     var rainbow = new Rainbow();
-    rainbow.setSpectrum('red', 'FFFFFF', '#00ff00'); 
+    var all_colors = [];
+    for (var i = 0; i <= all_frame_ids.length; i = i + 10) {
+        all_colors.push(rainbow.colourAt(i));
+    }
     
     $.each(smf, function(i,v){
 
-        // Color
-        var hex = '#' + rainbow.colourAt(i+all_frame_ids.length);    
+      
         
         // Get thumb path
         var frame_id = parseInt(v[1]);
@@ -62,7 +64,7 @@ function update_reduction_on_canvas_and_table(json_resp) {
         canvas.add(new fabric.Rect({
             fill: 'rgba(0,0,0,0)', 
             strokeWidth: 1, 
-            stroke: hex, //'rgba(230,100,200,.5)', 
+            stroke: all_colors[i], //'rgba(230,100,200,.5)', 
             left:  v[2]/2-rad, 
             top:   v[3]/2-rad,
             width: 10,
