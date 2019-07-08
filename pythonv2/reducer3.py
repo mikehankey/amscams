@@ -15,7 +15,7 @@ from lib.UtilLib import check_running, angularSeparation
 from lib.CalibLib import radec_to_azel, clean_star_bg, get_catalog_stars, find_close_stars, XYtoRADec, HMS2deg, AzEltoRADec
 
 from lib.ImageLib import mask_frame , stack_frames, preload_image_acc
-#from lib.ReducerLib import setup_metframes
+from lib.ReducerLib import setup_metframes, detect_meteor 
 from lib.MeteorTests import meteor_test_cm_gaps
 
 
@@ -39,5 +39,10 @@ try:
 except:
    show = 0
 
-if cmd == 'play':
-   play_meteor(file, json_conf)
+if cmd == 'dm' or cmd == 'detect_meteor':
+   metframes, frames, metconf = detect_meteor(file, json_conf)
+   print("Metframes")
+   for fn in metframes:
+      print(fn, metframes[fn])
+
+
