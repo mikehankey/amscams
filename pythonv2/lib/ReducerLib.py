@@ -47,7 +47,7 @@ def detect_meteor(video_file, json_conf, show = 0):
 
    min_px = min(mxpx)
    max_px = min(mxpx)
-   thresh = min_px
+   thresh = min_px * .33
 
    for frame in sd_frames:
     
@@ -159,11 +159,15 @@ def detect_meteor(video_file, json_conf, show = 0):
       metconf['first_frame'] = fns[0]
       metconf['sd_acl_poly'] = 0
 
+      hdm_x = 2.7272
+      hdm_y = 1.875
       sd_dist = calc_dist(( metconf['sd_xs'][0], metconf['sd_ys'][0]),( metconf['sd_xs'][-1], metconf['sd_ys'][-1]))
+      hd_dist = calc_dist(( metconf['sd_xs'][0]*hdm_x, metconf['sd_ys'][0]*hdm_y),( metconf['sd_xs'][-1]*hdm_x, metconf['sd_ys'][-1]*hdm_y))
       metconf['sd_dist'] = sd_dist
       metconf['hist_len'] = meteors[0]['hist_len']
       elp_fr = meteors[0]['history'][-1][0] - meteors[0]['history'][0][0]
       metconf['sd_seg_len'] = sd_dist / elp_fr 
+      metconf['med_seg_len'] = hd_dist / elp_fr 
 #(meteors[0]['hist_len'] )
       #metconf['sd_seg_len'] = 2
 
@@ -181,6 +185,8 @@ def detect_meteor(video_file, json_conf, show = 0):
             my = metframes[fc]['sd_max_y']
             lc_x = metframes[fc]['sd_lc_x']
             lc_y = metframes[fc]['sd_lc_y']
+            lc_y = metframes[fc]['m'] = metconf['m']
+            lc_y = metframes[fc]['b'] = metconf['b']
             cx = int(x + (w/2))
             cy = int(y + (h/2))
             fcc = fc - metconf['first_frame']
@@ -219,11 +225,14 @@ def detect_meteor(video_file, json_conf, show = 0):
    # make light curve:
 
    for hs in obj['history']:
+      print("HIST:", hs)
       iis.append(hs[-1])
       fns.append(hs[0])
 
+   import matplotlib
+   matplotlib.use('Agg')
    import matplotlib.pyplot as plt
-   fig = plt.figure()
+   #fig = plt.figure()
    plt.plot(fns,iis)
    curve_file = video_file.replace(".mp4", "-lightcurve.png")
    plt.savefig(curve_file)
@@ -300,8 +309,11 @@ def clean_metframes(mf, metconf, frames):
    cleaning = 1
    while cleaning == 1:
       last_f = first_fn + (len(mf) - 1)
-      if "bad" in mf[last_f]:
-         del mf[last_f]
+      if last_f in mf:
+         if "bad" in mf[last_f]:
+            del mf[last_f]
+         else:
+            cleaning = 0
       else:
          cleaning = 0
 
