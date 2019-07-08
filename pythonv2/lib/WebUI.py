@@ -25,7 +25,7 @@ from lib.ImageLib import mask_frame , draw_stack, stack_frames
 from lib.CalibLib import radec_to_azel
 from lib.WebCalib import calibrate_pic,make_plate_from_points, solve_field, check_solve_status, free_cal, show_cat_stars, choose_file, upscale_2HD, fit_field, delete_cal, add_stars_to_fit_pool, save_add_stars_to_fit_pool, reduce_meteor, reduce_meteor_ajax, find_stars_ajax, man_reduce, pin_point, get_manual_points, del_manual_points, sat_cap, HMS2deg, custom_fit, del_frame, clone_cal, reduce_meteor_new , update_red_info_ajax, update_hd_cal_ajax, add_frame_ajax, update_frame_ajax
 from lib.UtilLib import calc_radiant
-from lib.Video_Timelapse import add_timelapse_job
+form lib.Video_Jobs.py import add_video_job 
 from lib.VIDEO_VARS import * 
 from lib.Get_Cam_ids import get_the_cam_ids
  
@@ -225,7 +225,7 @@ def controller(json_conf):
 
    #CUSTOM VIDEOS (AJAX CALL)
    if cmd == 'generate_timelapse': 
-      add_timelapse_job(form.getvalue('tl_cam_id'),form.getvalue('tl_date'),form.getvalue('fps'),form.getvalue('dim'),form.getvalue('text_pos'),form.getvalue('wat_pos'))
+      add_video_job(form.getvalue('tl_cam_id'),form.getvalue('tl_date'),form.getvalue('fps'),form.getvalue('dim'),form.getvalue('text_pos'),form.getvalue('wat_pos'))
       exit()
 
   
