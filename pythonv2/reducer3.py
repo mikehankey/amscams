@@ -9,7 +9,6 @@ import cv2
 import math
 import numpy as np
 import scipy.optimize
-from fitMulti import minimize_poly_params_fwd
 from lib.VideoLib import get_masks, find_hd_file_new, load_video_frames
 from lib.UtilLib import check_running, angularSeparation
 from lib.CalibLib import radec_to_azel, clean_star_bg, get_catalog_stars, find_close_stars, XYtoRADec, HMS2deg, AzEltoRADec
