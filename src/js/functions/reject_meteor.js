@@ -44,7 +44,7 @@ function reject_multiple_meteor(array_of_jsid, ids) {
             
                   $.each(ids, function(i,v){
                         console.log("IS DELETED " + v);
-                        console.log("I ", I);
+                        console.log("I ", i);
                         meteor_is_deleted(v);
                         loading_done();
                   });
