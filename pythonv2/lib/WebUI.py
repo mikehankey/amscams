@@ -237,6 +237,14 @@ def controller(json_conf):
       jsid = form.getvalue('jsid')
       override_detect(video_file,jsid,json_conf)
       exit()
+   
+   #Delete multiple detections at once 
+   if cmd == 'delete_multiple_detection':
+      detections = form.getvalue('detetcions')
+      jsid = form.getvalue('jsid')
+      delete_multiple_detection(detections,jsid,json_conf)
+      exit()
+
    if cmd == 'add_frame':
       add_frame_ajax(json_conf,form)
       exit()
@@ -1697,6 +1705,12 @@ def examine_min(video_file,json_conf):
    #print(failed_files,meteor_files)
 
    print("</div></div></div></div></div>") 
+
+
+
+#Delete multiple detections at once
+def delete_multiple_detection(detections,jsid,json_conf):
+      print(detections)
 
 def override_detect(video_file,jsid, json_conf):
 
