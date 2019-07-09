@@ -39,7 +39,11 @@ function reject_multiple_meteor(array_of_jsid, ids) {
                   // meteor_is_deleted(id);
                   // Debug
                   //console.log(data);
-                  loading_done();
+                  $.each(ids, function(i,v){
+                        meteor_is_deleted(v);
+                        loading_done();
+                  });
+                 
             }, 
             error: function() {
                   alert('Impossible to reject. Please, reload the page and try again later.')
