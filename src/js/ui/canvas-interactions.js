@@ -126,7 +126,21 @@ if ($('canvas#c').length!=0) {
 
 
       if(e.button === 3) {
-        console.log("right click");
+
+        if($('#c').hasClass('zoomed')) {
+            $('#c').removeClass('zoomed');
+        } else {
+            var wh = $(window).height();
+            var cw = $('#c').width();
+            var ch = $('#c').height();
+            $('#c').css({ 
+              'width': wh*cw/ch,
+              'height': wh
+            }).addClass('zoomed');
+            return false;
+        }
+
+        
       } else {
 
         // Hide grid on click

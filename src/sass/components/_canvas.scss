@@ -25,5 +25,11 @@ canvas {
         cursor: url(../img/target_cur.png) 20 20, auto !important;
     }
 
+    &.zoomed {
+         position : fixed;
+         z-index :9999;
+         margin-left :'50%';
+         transform:  translateX(-50%) 
+    }
    
 }
