@@ -240,7 +240,7 @@ def controller(json_conf):
    
    #Delete multiple detections at once 
    if cmd == 'delete_multiple_detection':
-      detections = form.getvalue('detetcions') 
+      detections = form.getvalue('detections') 
       delete_multiple_detection(detections,json_conf)
       exit()
 
