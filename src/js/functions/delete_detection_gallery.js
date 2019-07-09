@@ -29,7 +29,12 @@ $(function() {
      
 
          jQuery.each($('.preview.selected'), function( i, val ) { 
-            reject_meteor($(val).attr('id'));
+                var toSend = [];
+                $.each(val,function() {
+                    toSend.push(val);
+                })
+                console.log(toSend);
+                //reject_meteor($(val).attr('id'));
             }
          );
 
