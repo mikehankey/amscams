@@ -1718,6 +1718,8 @@ def override_detect(video_file,jsid, json_conf):
     
    if jsid is not None:
       video_file = parse_jsid(jsid)
+
+   print("video_file " + str(video_file))
  
    base = video_file.replace(".mp4", "")
    el = base.split("/")
@@ -1726,10 +1728,8 @@ def override_detect(video_file,jsid, json_conf):
    if "meteors" in base:
       new_dir = "/mnt/ams2/trash/"
       json_file = video_file.replace(".mp4", ".json")
-      try:
-            json_data = load_json_file(json_file)
-      except:
-            json_data = json.loads(json_file)
+      print("json_file " + str(json_file))
+      json_data = load_json_file(json_file)
       hd_trim = json_data['hd_trim']
       sd_video_file = json_data['sd_video_file']
       el = sd_video_file.split("/")
