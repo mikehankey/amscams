@@ -7,7 +7,7 @@ $(function() {
             $('#c').removeClass('r-zoomed');
             $(this).removeClass('zoom-btn-f').find('i').removeClass('icon-zoom-out').addClass('icon-zoom-in');
         } else {
-            $('<div id="zc" class="modal-backdrop fade show"></div>').appendTo($(body));
+            $('<div id="zc" class="modal-backdrop fade show"></div>').appendTo($('body'));
             $('#c').addClass('r-zoomed');
             $(this).addClass('zoom-btn-f').find('i').removeClass('icon-zoom-in').addClass('icon-zoom-out');
         }
