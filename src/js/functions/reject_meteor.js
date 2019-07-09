@@ -24,7 +24,7 @@ function reject_meteor(id) {
 }
 
 
-function reject_multiple_meteor(array_of_files, ids) {
+function reject_multiple_meteor(array_of_jsid, ids) {
       // Deleting
       $.each(ids, function(i,v){ 
             loading({text:"Deleting", container:$("#"+v), overlay:true, standalone:true});
@@ -32,7 +32,7 @@ function reject_multiple_meteor(array_of_files, ids) {
 
       $.ajax({ 
             url:  "webUI.py?cmd=delete_multiple_detection",
-            data: {detections: array_of_files},
+            data: {detections: array_of_jsid},
             success: function(data) {
                   
                   // TODO!!!!

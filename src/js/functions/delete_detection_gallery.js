@@ -30,12 +30,7 @@ $(function() {
          var detections = [];
          var ids = [];
          jQuery.each($('.preview.selected'), function( i, val ) { 
-                var lnk = $(val).find('a').attr('href');
-                var params = [];
-                lnk.replace(/([^=]*)=([^&]*)&*/g, function (_, key, value) {
-                    params[key] = value;
-                });
-                detections.push(params['video_file']);
+                detections.push($(val).find('.delete_meteor_gallery').attr('data-meteor'));
                 ids.push($(val).attr('id'));
             }
          );
