@@ -30,6 +30,8 @@ function reject_multiple_meteor(array_of_jsid, ids) {
             loading({text:"Deleting", container:$("#"+v), overlay:true, standalone:true});
       });
 
+      console.log("array_of_jsid ", array_of_jsid)
+
       $.ajax({ 
             url:  "webUI.py?cmd=delete_multiple_detection",
             data: {detections: array_of_jsid},
@@ -39,7 +41,10 @@ function reject_multiple_meteor(array_of_jsid, ids) {
                   // meteor_is_deleted(id);
                   // Debug
                   //console.log(data);
+            
                   $.each(ids, function(i,v){
+                        console.log("IS DELETED " + v);
+                        console.log("I ", I);
                         meteor_is_deleted(v);
                         loading_done();
                   });
