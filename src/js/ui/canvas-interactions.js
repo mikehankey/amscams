@@ -124,6 +124,8 @@ if ($('canvas#c').length!=0) {
     
     canvas.on('mouse:down', function(e) {
 
+      console.log('MOUSE DOWN ');
+      console.log(e.button);
 
       if(e.button === 3) {
 
