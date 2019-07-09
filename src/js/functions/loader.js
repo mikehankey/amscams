@@ -1,8 +1,7 @@
 function loading(options) {
 
     // Avoir multiple loader
-    
-    if(options == undefined || options.standalone !== undefined) {
+    if(options == undefined || options.standalone == undefined) {
        $('#bottom_overlay').remove();
        loading_done();  
     }
