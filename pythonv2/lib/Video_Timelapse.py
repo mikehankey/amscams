@@ -6,23 +6,7 @@ from pathlib import Path
 from os import listdir,makedirs
 from os.path import isfile, join, exists
 from lib.VIDEO_VARS import * 
-  
-
-#Return Date & Time based on file name
-def get_meteor_date_ffmpeg(file):
-	fn = file.split("/")[-1] 
-	fn = fn.split('_',6)
-	return fn[0] + "/" + fn[1] + "/" + fn[2] + " " + fn[3] + "\:" + fn[4] + "\:" + fn[5]
-
-#Input: camID, date
-#Ouput: list of sd frames found for this date
-def get_sd_frames(camID,date):
-    #ex:camID:010034, date:2019_06_23
-    cur_path = IMG_SD_SRC_PATH + date + "/images"
-    onlyfiles = [f for f in listdir(cur_path) if camID in f and "-tn" not in f and "-night" not in f and "trim" not in f and isfile(join(cur_path, f))]
-    #FOR DEBUG
-    #onlyfiles = onlyfiles[1:50]
-    return(sorted(onlyfiles), cur_path, date, camID)
+ 
  
 
 #Input list of SD files, path of the current image, date, camID
