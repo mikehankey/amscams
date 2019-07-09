@@ -152,7 +152,7 @@ if ($('canvas#c').length!=0) {
 
         // Remove zoom
         if($('#c').hasClass('r-zoomed')) {
-          $('#c').removeClass('r-zoomed'); 
+          $('#c').removeClass('r-zoomed').removeAttr('style'); 
           return false;
         }
 
