@@ -124,8 +124,13 @@ if ($('canvas#c').length!=0) {
     
     canvas.on('mouse:down', function(e) {
 
-      console.log('MOUSE DOWN ');
-      console.log(e.button);
+      //console.log('MOUSE DOWN ');
+      //console.log(e.button);
+
+      // Remove zoom 
+      if($('#c').hasClass('r-zoomed')) {
+        $('#c').removeClass('r-zoomed');
+      }
 
       if(e.button === 3) {
 
