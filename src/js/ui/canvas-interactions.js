@@ -127,8 +127,8 @@ if ($('canvas#c').length!=0) {
 
       if(e.button === 3) {
 
-        if($('#c').hasClass('zoomed')) {
-            $('#c').removeClass('zoomed');
+        if($('#c').hasClass('r-zoomed')) {
+            $('#c').removeClass('r-zoomed');
         } else {
             var wh = $(window).height();
             var cw = $('#c').width();
@@ -136,10 +136,9 @@ if ($('canvas#c').length!=0) {
             $('#c').css({ 
               'width': wh*cw/ch,
               'height': wh
-            }).addClass('zoomed');
+            }).addClass('r-zoomed');
             return false;
-        }
-
+        } 
         
       } else {
 

@@ -25,7 +25,7 @@ canvas {
         cursor: url(../img/target_cur.png) 20 20, auto !important;
     }
 
-    &.zoomed {
+    &.r-zoomed {
          position : fixed;
          z-index :9999;
          margin-left :'50%';
