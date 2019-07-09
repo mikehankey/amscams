@@ -240,7 +240,7 @@ def controller(json_conf):
    
    #Delete multiple detections at once 
    if cmd == 'delete_multiple_detection':
-      detections = form.getvalue('detections') 
+      detections = form.getvalue('detections[]')
       delete_multiple_detection(detections,json_conf)
       exit()
 
@@ -1709,26 +1709,19 @@ def examine_min(video_file,json_conf):
 
 #Delete multiple detections at once
 def delete_multiple_detection(detections,json_conf):
-   print(str(detections))
+   for to_delete in detections:
+         print(str(to_delete))
 
 def override_detect(video_file,jsid, json_conf):
    cgitb.enable()
-   print("VIDEO_FILE " + str(video_file))
-   print("JSID "+ jsid)
-   print("json_conf" + str(json_conf))
-
+    
    if jsid is not None:
       video_file = parse_jsid(jsid)
-
-   print("VIDEO_FILE " + str(video_file))
-
+ 
    base = video_file.replace(".mp4", "")
    el = base.split("/")
    base_dir = base.replace(el[-1], "")
-
-   print("BASE " + str(base))
-   print("base_dir " + str(base_dir))
-
+ 
    if "meteors" in base:
       new_dir = "/mnt/ams2/trash/"
       json_file = video_file.replace(".mp4", ".json")
