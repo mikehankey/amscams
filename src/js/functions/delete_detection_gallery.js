@@ -29,13 +29,16 @@ $(function() {
      
          var toSend = [];
          jQuery.each($('.preview.selected'), function( i, val ) { 
-                toSend.push($(val).attr('id'));
-                //console.log(toSend);
-                //reject_meteor($(val).attr('id'));
+                var lnk = $(val).find('a').attr('href');
+                var params = [];
+                lnk.replace(/([^=]*)=([^&]*)&*/g, function (_, key, value) {
+                    params[key] = value;
+                });
+                toSend.push(params['video_file']);
+               
             }
          );
-
-         reject_multiple_meteor(toSend);
+        reject_multiple_meteor(toSend);
 
          
      })

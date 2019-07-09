@@ -1709,9 +1709,8 @@ def examine_min(video_file,json_conf):
 
 #Delete multiple detections at once
 def delete_multiple_detection(detections,json_conf):
-   for to_delete in detections:
-         #print(str(to_delete))
-         override_detect(to_delete+'.mp4','',json_conf)
+      for to_delete in detections:
+            override_detect(to_delete,'',json_conf)
 
 def override_detect(video_file,jsid, json_conf):
    cgitb.enable()
@@ -1719,8 +1718,7 @@ def override_detect(video_file,jsid, json_conf):
    if jsid is not None:
       video_file = parse_jsid(jsid)
 
-   print("video_file " + str(video_file))
- 
+  
    base = video_file.replace(".mp4", "")
    el = base.split("/")
    base_dir = base.replace(el[-1], "")
@@ -1728,7 +1726,6 @@ def override_detect(video_file,jsid, json_conf):
    if "meteors" in base:
       new_dir = "/mnt/ams2/trash/"
       json_file = video_file.replace(".mp4", ".json")
-      print("json_file " + str(json_file))
       json_data = load_json_file(json_file)
       hd_trim = json_data['hd_trim']
       sd_video_file = json_data['sd_video_file']
