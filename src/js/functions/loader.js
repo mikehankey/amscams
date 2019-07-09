@@ -47,8 +47,10 @@ function loading_done() {
     */
     $("#logo_holder").contents().find("#logo").removeClass("animated");
 
-    // Remove Overlay 
-    $('#overlay').fadeOut(150, function() {$('#overlay').remove();})
+    // Remove Overlay(s)
+    $('#overlay').each(function() {
+        $(this).fadeOut(150, function() {$('#overlay').remove();})
+    });
     $('body').css('overflow','auto');
     $('#bottom_overlay').removeClass('dlp').remove();  
 } 
