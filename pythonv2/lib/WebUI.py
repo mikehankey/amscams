@@ -240,9 +240,8 @@ def controller(json_conf):
    
    #Delete multiple detections at once 
    if cmd == 'delete_multiple_detection':
-      detections = form.getvalue('detetcions')
-      jsid = form.getvalue('jsid')
-      delete_multiple_detection(detections,jsid,json_conf)
+      detections = form.getvalue('detetcions') 
+      delete_multiple_detection(detections,json_conf)
       exit()
 
    if cmd == 'add_frame':
@@ -1709,17 +1708,26 @@ def examine_min(video_file,json_conf):
 
 
 #Delete multiple detections at once
-def delete_multiple_detection(detections,jsid,json_conf):
+def delete_multiple_detection(detections,json_conf):
       print(detections)
 
 def override_detect(video_file,jsid, json_conf):
 
+   print("VIDEO_FILE " + video_file)
+   print("JSID "+ jsid)
+   print("json_conf" + json_conf)
+
    if jsid is not None:
       video_file = parse_jsid(jsid)
+
+   print("VIDEO_FILE " + video_file)
 
    base = video_file.replace(".mp4", "")
    el = base.split("/")
    base_dir = base.replace(el[-1], "")
+
+   print("BASE " + base)
+   print("base_dir " + base_dir)
 
    if "meteors" in base:
       new_dir = "/mnt/ams2/trash/"
