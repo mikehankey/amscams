@@ -8,6 +8,9 @@ from lib.VIDEO_VARS import *
 
 
 #READ THE waiting_jobs file if it exist 
+#AND CREATE EVENTUAL VIDEO(S)
+#TO ADD TO CRONTAB:
+#python3 /home/ams/amscams/pythonv2/Video_Jobs_Cron.py > /tmp/vid.txt
 js_file = Path(WAITING_JOBS)
 if js_file.is_file():
 

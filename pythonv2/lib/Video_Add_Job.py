@@ -8,7 +8,8 @@ from os.path import isfile, join, exists
 from lib.VIDEO_VARS import * 
 
 #ADD Job to WAITING_JOBS
-def add_video_job(cam_id,date,fps,dim,text_pos,wat_pos):
+def add_video_job(name,cam_id,date,fps,dim,text_pos,wat_pos):
+
     #Is the waiting_job folder exists? 
     if not os.path.exists(WAITING_JOBS_FOLDER):
         os.makedirs(WAITING_JOBS_FOLDER)
@@ -33,7 +34,7 @@ def add_video_job(cam_id,date,fps,dim,text_pos,wat_pos):
 
     #Define new job
     new_job = {  
-        'name': 'timelapse',
+        'name': name,
         'cam_id': cam_id,
         'date': date,
         'fps': fps,
@@ -47,7 +48,7 @@ def add_video_job(cam_id,date,fps,dim,text_pos,wat_pos):
 
     #Search if the job already exist (avoid duplicates)
     for job in data['jobs']:
-        if(job['name'] == 'timelapse' and job['cam_id']== cam_id and job['date']== date and job['fps']== fps and job['dim']== dim and job['text_pos']== text_pos and job['wat_pos']== wat_pos ):
+        if(job['name'] == name and job['cam_id']== cam_id and job['date']== date and job['fps']== fps and job['dim']== dim and job['text_pos']== text_pos and job['wat_pos']== wat_pos ):
             duplicate = True
             break
 
