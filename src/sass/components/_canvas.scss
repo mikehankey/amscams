@@ -35,8 +35,8 @@ canvas {
         transform: translateX(-50%);
         padding: 2rem;
         background: black;
-        height:100vh;
-        width: auto;
+        height:100vh !important;
+        width: auto !important;
     }
    
 }
