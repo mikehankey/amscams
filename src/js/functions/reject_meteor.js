@@ -48,6 +48,8 @@ function reject_multiple_meteor(array_of_jsid, ids) {
                         meteor_is_deleted(v);
                         loading_done();
                   });
+                  loading_done();
+                  loading_done();
                  
             }, 
             error: function() {
