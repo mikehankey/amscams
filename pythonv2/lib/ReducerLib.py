@@ -525,6 +525,7 @@ def hist_to_metframes(obj,metconf):
    for hs in obj['history']:
       if len(hs) == 9:
          fn,x,y,w,h,mx,my,max_px,intensity = hs
+         fn = int(fn)
       if len(hs) == 8:
          fn,x,y,w,h,mx,my,max_px = hs
       cx = int(x + (w/2))
@@ -1041,6 +1042,7 @@ def meteor_test_peaks(object):
    return(sci_peaks, peak_to_frame)
 
 def metframes_to_mfd(metframes, sd_video_file):
+   metframes = sort_metframes(metframes)
    hdm_x = 2.7272
    hdm_y = 1.875
 
@@ -1049,15 +1051,22 @@ def metframes_to_mfd(metframes, sd_video_file):
       frame_time,frame_time_str = calc_frame_time(sd_video_file, fn)
       metframes[fn]['frame_time'] = frame_time_str
       if "hd_x" not in metframes[fn]:
+         metframes[fn]['x1'] = int(metframes[fn]['sd_x'] * hdm_x)
+         metframes[fn]['y1'] = int(metframes[fn]['sd_y'] * hdm_y)
          metframes[fn]['hd_x'] = int(metframes[fn]['sd_cx'] * hdm_x)
          metframes[fn]['hd_y'] = int(metframes[fn]['sd_cy'] * hdm_y)
          metframes[fn]['w'] = metframes[fn]['sd_w']
          metframes[fn]['h'] = metframes[fn]['sd_h']
+         print(metframes[fn])
+         # update the Ra,dec,az,el here!
          metframes[fn]['ra'] = 0
          metframes[fn]['dec'] = 0
          metframes[fn]['az'] = 0
          metframes[fn]['el'] = 0
-      metframes[fn]['max_px'] = metframes[fn]['sd_intensity']
+      if 'sd_intensity' in metframes[fn]:
+         metframes[fn]['max_px'] = metframes[fn]['sd_intensity']
+      else:
+         print("Get missing intensity...")
       meteor_frame_data.append((frame_time_str,fn,int(metframes[fn]['hd_x']),int(metframes[fn]['hd_y']),int(metframes[fn]['w']),int(metframes[fn]['h']),int(metframes[fn]['max_px']),float(metframes[fn]['ra']),float(metframes[fn]['dec']),float(metframes[fn]['az']),float(metframes[fn]['el']) ))
    return(meteor_frame_data, metframes)
 
@@ -1107,6 +1116,7 @@ def make_meteor_cnt_composite_images(json_conf, mfd, metframes, frames, sd_video
    #print(cnt_w,cnt_h)
    for frame_data in mfd:
       frame_time, fn, hd_x,hd_y,w,h,max_px,ra,dec,az,el = frame_data
+      fn = str(fn)
       x1,y1,x2,y2 = bound_cnt(hd_x,hd_y,1920,1080,cnt_w)
       #x1 = hd_x - cnt_w
       #x2 = hd_x + cnt_w
@@ -1124,4 +1134,38 @@ def make_meteor_cnt_composite_images(json_conf, mfd, metframes, frames, sd_video
       print("CNT:", cnt_img.shape)
       cmp_images[fn] = cnt_img
    return(cmp_images, metframes)
+
+def make_crop_images(sd_video_file, json_conf):
+   if ".mp4" in sd_video_file:
+      red_file = sd_video_file.replace(".mp4", "-reduced.json")
+   frames = load_video_frames(sd_video_file, json_conf)
+   red_data = load_json_file(red_file)
+
+   cmp_imgs,metframes = make_meteor_cnt_composite_images(json_conf, red_data['meteor_frame_data'], red_data['metframes'], frames, sd_video_file)
+   metconf = red_data['metconf']
+   prefix = red_data['sd_video_file'].replace(".mp4", "-frm")
+   prefix = prefix.replace("SD/proc2/", "meteors/")
+   prefix = prefix.replace("/passed", "")
+   for fn in cmp_imgs:
+      cv2.imwrite(prefix  + str(fn) + ".png", cmp_imgs[fn])
+      print("UPDATING!", prefix + str(fn) + ".png")
+      metframes[fn]['cnt_thumb'] = prefix + str(fn) + ".png"
+
+   mfd, metframes = metframes_to_mfd(metframes, sd_video_file)
+   red_data['metconf'] = metconf
+   red_data['metframes'] = metframes
+   red_data['meteor_frame_data'] = mfd
+   print("saving json:", red_file)
+   save_json_file(red_file, red_data)
+
+def sort_metframes(metframes):
+   new_metframes = {}
+   fns = []
+   for fn in metframes:
+      fns.append(int(fn))
+   for fn in sorted(fns):
+      fn = str(fn)
+      if fn in metframes:
+         new_metframes[fn] = metframes[fn]
+   return(new_metframes)
 

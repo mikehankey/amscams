@@ -66,7 +66,8 @@ def add_frame_ajax( json_conf, form):
    metframes = mr['metframes']
    metconf = mr['metconf']
    #print(mr)
- 
+   #if new_fn in metframes:
+   #   print("YO", metframes[new_fn]) 
    
    if str(prev_fn) in metframes:
 
@@ -82,6 +83,9 @@ def add_frame_ajax( json_conf, form):
       last_y = metframes[next_fn]['hd_y']
       est_x = int(last_x + ((-1*metconf['x_dir_mod']) * metconf['med_seg_len']))
       est_y = int((metconf['m']*est_x)+metconf['b'])
+
+   #print("NE FN", new_fn, type(new_fn), "<HR>")
+   #print(isinstance(new_fn, str))
 
    if new_fn not in metframes:
       metframes[new_fn] = {}
@@ -111,7 +115,9 @@ def add_frame_ajax( json_conf, form):
       metframes[new_fn]['est_y'] = est_y 
    else :
       resp = {}
-      resp['msg'] = "frame already exists."
+      resp['msg'] = "frame " + str(new_fn)  + " already exists."
+      #for fn in metframes:
+      #   print(str(fn), "<BR>")
       print(json.dumps(resp))
       exit()
  
