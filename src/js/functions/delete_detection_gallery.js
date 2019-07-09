@@ -29,10 +29,7 @@ $(function() {
      
          var toSend = [];
          jQuery.each($('.preview.selected'), function( i, val ) { 
-                
-                $.each(val,function() {
-                    toSend.push($(val).attr('id'));
-                })
+                toSend.push($(val).attr('id'));
                 //console.log(toSend);
                 //reject_meteor($(val).attr('id'));
             }
