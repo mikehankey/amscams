@@ -125,7 +125,7 @@ if ($('canvas#c').length!=0) {
     canvas.on('mouse:down', function(e) {
 
       // RIGHT CLICK!
-      if(event.button === 3) {
+      if(e.button === 3) {
         console.log("right click");
       } else {
         // Hide grid on click
