@@ -34,12 +34,12 @@ json_conf = load_json_file("../conf/as6.json")
 cmd = sys.argv[1]
 file = sys.argv[2]
 try:
-   show = sys.argv[3]
+   show = int(sys.argv[3])
 except:
    show = 0
 
 if cmd == 'dm' or cmd == 'detect_meteor':
-   metframes, frames, metconf = detect_meteor(file, json_conf)
+   metframes, frames, metconf = detect_meteor(file, json_conf, show)
    print("Metframes")
    for fn in metframes:
       print(fn, metframes[fn])
