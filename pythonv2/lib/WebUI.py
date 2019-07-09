@@ -25,7 +25,7 @@ from lib.ImageLib import mask_frame , draw_stack, stack_frames
 from lib.CalibLib import radec_to_azel
 from lib.WebCalib import calibrate_pic,make_plate_from_points, solve_field, check_solve_status, free_cal, show_cat_stars, choose_file, upscale_2HD, fit_field, delete_cal, add_stars_to_fit_pool, save_add_stars_to_fit_pool, reduce_meteor, reduce_meteor_ajax, find_stars_ajax, man_reduce, pin_point, get_manual_points, del_manual_points, sat_cap, HMS2deg, custom_fit, del_frame, clone_cal, reduce_meteor_new , update_red_info_ajax, update_hd_cal_ajax, add_frame_ajax, update_frame_ajax
 from lib.UtilLib import calc_radiant
-from lib.Video_Jobs import add_video_job 
+from lib.Video_Add_Job import add_video_job 
 from lib.VIDEO_VARS import * 
 from lib.Get_Cam_ids import get_the_cam_ids
  
@@ -225,7 +225,7 @@ def controller(json_conf):
 
    #CUSTOM VIDEOS (AJAX CALL)
    if cmd == 'generate_timelapse': 
-      add_video_job(form.getvalue('tl_cam_id'),form.getvalue('tl_date'),form.getvalue('fps'),form.getvalue('dim'),form.getvalue('text_pos'),form.getvalue('wat_pos'))
+      add_video_job('timelapse',form.getvalue('tl_cam_id'),form.getvalue('tl_date'),form.getvalue('fps'),form.getvalue('dim'),form.getvalue('text_pos'),form.getvalue('wat_pos'))
       exit()
 
   
@@ -237,6 +237,13 @@ def controller(json_conf):
       jsid = form.getvalue('jsid')
       override_detect(video_file,jsid,json_conf)
       exit()
+   
+   #Delete multiple detections at once 
+   if cmd == 'delete_multiple_detection':
+      detections = form.getvalue('detections[]')
+      delete_multiple_detection(detections,json_conf)
+      exit()
+
    if cmd == 'add_frame':
       add_frame_ajax(json_conf,form)
       exit()
@@ -1698,15 +1705,24 @@ def examine_min(video_file,json_conf):
 
    print("</div></div></div></div></div>") 
 
-def override_detect(video_file,jsid, json_conf):
 
+
+#Delete multiple detections at once
+def delete_multiple_detection(detections,json_conf):
+      for to_delete in detections:
+            override_detect(to_delete,'',json_conf)
+
+def override_detect(video_file,jsid, json_conf):
+   cgitb.enable()
+    
    if jsid is not None:
       video_file = parse_jsid(jsid)
 
+  
    base = video_file.replace(".mp4", "")
    el = base.split("/")
    base_dir = base.replace(el[-1], "")
-
+ 
    if "meteors" in base:
       new_dir = "/mnt/ams2/trash/"
       json_file = video_file.replace(".mp4", ".json")

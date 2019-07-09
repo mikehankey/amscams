@@ -27,11 +27,18 @@ $(function() {
      $('#del-all').click(function() {
          // Get all id
      
-
+         var toSend = [];
          jQuery.each($('.preview.selected'), function( i, val ) { 
-            reject_meteor($(val).attr('id'));
+                var lnk = $(val).find('a').attr('href');
+                var params = [];
+                lnk.replace(/([^=]*)=([^&]*)&*/g, function (_, key, value) {
+                    params[key] = value;
+                });
+                toSend.push(params['video_file']);
+               
             }
          );
+        reject_multiple_meteor(toSend);
 
          
      })
