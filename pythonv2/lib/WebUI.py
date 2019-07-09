@@ -1715,19 +1715,19 @@ def override_detect(video_file,jsid, json_conf):
    cgitb.enable()
    print("VIDEO_FILE " + str(video_file))
    print("JSID "+ jsid)
-   print("json_conf" + json_conf)
+   print("json_conf" + str(json_conf))
 
    if jsid is not None:
       video_file = parse_jsid(jsid)
 
-   print("VIDEO_FILE " + video_file)
+   print("VIDEO_FILE " + str(video_file))
 
    base = video_file.replace(".mp4", "")
    el = base.split("/")
    base_dir = base.replace(el[-1], "")
 
-   print("BASE " + base)
-   print("base_dir " + base_dir)
+   print("BASE " + str(base))
+   print("base_dir " + str(base_dir))
 
    if "meteors" in base:
       new_dir = "/mnt/ams2/trash/"
