@@ -27,6 +27,7 @@ function reject_meteor(id) {
 function reject_multiple_meteor(array_of_ids) {
       // Deleting
       $.each(array_of_ids, function(i,v){
+            console.log(v);
             loading({text:"Deleting", container:$("#"+v), overlay:true});
       });
 
