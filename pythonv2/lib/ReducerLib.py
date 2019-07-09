@@ -1,5 +1,6 @@
 from scipy import signal
 
+import operator
 import datetime
 from lib.FileIO import load_json_file, save_json_file, cfe
 import numpy as np
@@ -10,10 +11,88 @@ from lib.ImageLib import adjustLevels
 from lib.UtilLib import find_slope 
 import scipy.optimize
 
+def find_best_match(matches, cnt, objects):
+   # eval the following things. 
+   # - distance from object
+   # - slope from start in relation to current point 
+   # - brightness of object? 
+   # - if the original object is moving or not? 
+   # - the last size of the object and the current size? 
+
+   mscore = {}
+   bscore = {}
+   for match in matches:
+      xs = []
+      ys = []
+      for hs in match['history']:
+         oid = match['oid']
+         if len(hs) == 9:
+            fn,x,y,w,h,mx,my,max_px,intensity = hs
+         if len(hs) == 8:
+            fn,x,y,w,h,mx,my,max_px = hs
+         xs.append(x)
+         ys.append(y)
+      m,b = best_fit_slope_and_intercept(xs,ys)
+      cntx,cnty,cntw,cnth = cv2.boundingRect(cnt)
+      cnt_cx,cnt_cy = center_point(cntx,cnty,cntw,cnth)
+      txs = [xs[0], cnt_cx]
+      tys = [ys[0], cnt_cy]
+      tm,tb = best_fit_slope_and_intercept(txs,tys)
+      mscore[oid] = abs(tm-m)
+      bscore[oid] = abs(tb-b)
+      print("M,B for this object is: ", m,b,tm,tb)
+   
+   best_mids = sorted(mscore.items(), key=operator.itemgetter(1))
+   best_bids = sorted(bscore.items(), key=operator.itemgetter(1))
+   best_mid = best_bids[0][0]
+   print("BEST MID:", best_mid)
+   for obj in matches:
+      print("OBJ:", obj['oid'], best_mid)
+      if int(obj['oid']) == int(best_mid):
+         return(obj)
+
+def build_thresh_frames(sd_frames):
+   thresh_frames = []
+   for frame in sd_frames:
+      hd_img = frame
+      if len(hd_img.shape) == 3:
+         gray_frame = cv2.cvtColor(hd_img, cv2.COLOR_BGR2GRAY)
+         gray_frame = cv2.convertScaleAbs(gray_frame)
+      else:
+         gray_frame = hd_img
+      #frames.append(hd_img)
+
+      # do image acc / diff
+      blur_frame = cv2.GaussianBlur(frame, (7, 7), 0)
+      level_frame = adjustLevels(blur_frame, 30,1,255)
+      level_frame = cv2.convertScaleAbs(level_frame)
+      gray_frame = level_frame
+
+      #if image_acc is None:
+      #   image_acc = np.float32(gray_frame)
+
+      #alpha = .1
+      #hello = cv2.accumulateWeighted(gray_frame, image_acc, alpha)
+
+      #image_diff = cv2.absdiff(image_acc.astype(gray_frame.dtype), gray_frame,)
+      #first_image_diff = cv2.absdiff(first_gray_frame.astype(gray_frame.dtype), gray_frame,)
+      #image_diff = first_image_diff
+
+      #thresh = np.max(image_diff) * .95
+      ithresh = np.max(gray_frame) * .8
+      #if thresh < 20:
+      #   thresh = 20
+
+      _, image_thresh = cv2.threshold(gray_frame.copy(), ithresh, 255, cv2.THRESH_BINARY)
+      #show_img2 = cv2.resize(cv2.convertScaleAbs(image_thresh), (960,540))
+      #cv2.imshow('diff image', show_img2)
+      #cv2.waitKey(0)
+      thresh_frames.append(image_thresh)
+   return(thresh_frames)
+
 
 
 def detect_meteor(video_file, json_conf, show = 0):
-
    red_file = video_file.replace(".mp4", "-reduced.json")
    met_file = video_file.replace(".mp4", ".json")
    if cfe(red_file) == 0:
@@ -47,10 +126,14 @@ def detect_meteor(video_file, json_conf, show = 0):
 
    min_px = min(mxpx)
    max_px = min(mxpx)
-   thresh = min_px * .33
+   thresh = min_px * .8
+   first_gray_frame = None
+   last_image_thresh = None
+
+   #thresh_frames = build_thresh_frames(sd_frames)
+   #exit()
 
    for frame in sd_frames:
-    
       #hd_img = cv2.resize(frame, (1920,1080))
       hd_img = frame
       if len(hd_img.shape) == 3:
@@ -62,10 +145,13 @@ def detect_meteor(video_file, json_conf, show = 0):
 
 
       # do image acc / diff
-      #blur_frame = cv2.GaussianBlur(frame, (7, 7), 0)
-      level_frame = adjustLevels(gray_frame, 30,1,255)
+      blur_frame = cv2.GaussianBlur(gray_frame, (7, 7), 0)
+      level_frame = adjustLevels(blur_frame, 50,1,255)
       level_frame = cv2.convertScaleAbs(level_frame)
       gray_frame = level_frame
+
+      if first_gray_frame is None:
+         first_gray_frame = gray_frame 
 
       if image_acc is None:
          image_acc = np.float32(gray_frame)
@@ -74,11 +160,29 @@ def detect_meteor(video_file, json_conf, show = 0):
       hello = cv2.accumulateWeighted(gray_frame, image_acc, alpha)
 
       image_diff = cv2.absdiff(image_acc.astype(gray_frame.dtype), gray_frame,)
+      first_image_diff = cv2.absdiff(first_gray_frame.astype(gray_frame.dtype), gray_frame,)
+      image_diff = first_image_diff
+
+      thresh = np.max(image_diff) * .95
+      ithresh = np.max(gray_frame) * .8
       print("THRESH:", thresh)
+      if thresh < 20:
+         thresh = 20
+
+      _, image_thresh = cv2.threshold(gray_frame.copy(), ithresh, 255, cv2.THRESH_BINARY)
+
+      if last_image_thresh is not None:
+         image_thresh_diff = cv2.absdiff(image_thresh.astype(gray_frame.dtype), last_image_thresh,)
+      else:
+         image_thresh_diff = image_thresh
 
       _, diff_thresh = cv2.threshold(image_diff.copy(), thresh, 255, cv2.THRESH_BINARY)
+      #show_img2 = cv2.resize(cv2.convertScaleAbs(image_thresh_diff), (960,540))
+      #cv2.imshow('diff image', show_img2) 
+      #cv2.waitKey(0)
 
       # find contours and ID objects
+      diff_thresh = image_thresh
       cnts,pos_cnts = find_contours(diff_thresh, gray_frame)
       if len(pos_cnts) > 1:
          _, diff_thresh = cv2.threshold(image_diff.copy(), 30, 255, cv2.THRESH_BINARY)
@@ -103,9 +207,9 @@ def detect_meteor(video_file, json_conf, show = 0):
       if show == 1:
          show_img = cv2.resize(cv2.convertScaleAbs(diff_thresh), (960,540))
          show_img2 = cv2.resize(cv2.convertScaleAbs(marked_image), (960,540))
-
          cv2.imshow('diff image', show_img2) 
          cv2.waitKey(0)
+      last_image_thresh = image_thresh
       fc = fc + 1
 
 
@@ -142,7 +246,10 @@ def detect_meteor(video_file, json_conf, show = 0):
          obj['y_dir_mod'] = y_dir_mod
          meteors.append(obj)
    if len(meteors) == 0:
-      print("No meteors found.")
+      print("No meteors found.") 
+      for obj in objects:
+         print(obj['oid'], obj)
+      exit()
    elif len(meteors) == 1:
       metconf = {}
       metconf['x_dir_mod'] = meteors[0]['x_dir_mod']
@@ -566,6 +673,11 @@ def id_object(cnt, objects, fc,max_loc, max_px, intensity, is_hd=0):
       objects.append(object)
       object['hist_len'] = 1
       return(object, objects)
+   if len(matches) > 1:
+      best_match = find_best_match(matches, cnt, objects)
+      matches = []
+      print("BEST MATCH:", best_match)
+      matches.append(best_match)
 
    if len(matches) == 1:
       object = matches[0]
@@ -614,6 +726,7 @@ def id_object(cnt, objects, fc,max_loc, max_px, intensity, is_hd=0):
       return(object, objects)
 
    if len(matches) > 1:
+      best_match = find_best_match(matches, cnt, objects)
       #print(fc, "MORE THAN ONE MATCH for",x,y, len(matches))
       #print("--------------------")
       #print(matches)
@@ -667,6 +780,10 @@ def find_contours(image, orig_image):
          if w > 1 and h > 1 and max_val > 30:
             pos_cnts.append((x,y,w,h,size,mx,my,max_val,intensity))
             real_cnts.append(cnts[i])
+   else:
+      print("NO CNTS FOUND.")
+
+
    return(real_cnts,pos_cnts)
 
 def make_new_object(oid, fc, x,y,w,h,max_x,max_y,max_px,intensity):
@@ -788,7 +905,6 @@ def find_min_max_dist(hist,mute_wh=0):
       #print("HIST: ", len(hs))
       if len(hs) == 9:
          fn,x,y,w,h,mx,my,max_px,intensity = hs
-  
       if len(hs) == 8:
          fn,x,y,w,h,mx,my,max_px = hs
 
