@@ -27,18 +27,19 @@ $(function() {
      $('#del-all').click(function() {
          // Get all id
      
-         var toSend = [];
+         var detections = [];
+         var ids = [];
          jQuery.each($('.preview.selected'), function( i, val ) { 
                 var lnk = $(val).find('a').attr('href');
                 var params = [];
                 lnk.replace(/([^=]*)=([^&]*)&*/g, function (_, key, value) {
                     params[key] = value;
                 });
-                toSend.push(params['video_file']);
-               
+                detections.push(params['video_file']);
+                ids.push($(val).attr('id'));
             }
          );
-        reject_multiple_meteor(toSend);
+        reject_multiple_meteor(detections, ids);
 
          
      })

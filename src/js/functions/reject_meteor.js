@@ -24,16 +24,16 @@ function reject_meteor(id) {
 }
 
 
-function reject_multiple_meteor(array_of_ids) {
+function reject_multiple_meteor(array_of_files, ids) {
       // Deleting
-      $.each(array_of_ids, function(i,v){
+      $.each(ids, function(i,v){
             console.log(v);
             loading({text:"Deleting", container:$("#"+v), overlay:true});
       });
 
       $.ajax({ 
             url:  "webUI.py?cmd=delete_multiple_detection",
-            data: {detections: array_of_ids},
+            data: {detections: array_of_files},
             success: function(data) {
                   
                   // TODO!!!!
