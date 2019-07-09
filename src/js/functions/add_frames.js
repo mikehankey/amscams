@@ -1,9 +1,33 @@
-function add_reduc_row(data) {
- 
+function add_frame_square_on_canvas(x,y) {
+    var rad = 6;
 
+    // Add Rectangle
+    canvas.add(new fabric.Rect({
+        fill: 'rgba(0,0,0,0)', 
+        strokeWidth: 1, 
+        stroke: '#ff8a80',
+        left:  x-rad, 
+        top:   y-rad,
+        width: 10,
+        height: 10 ,
+        selectable: false,
+        type: 'reduc_rect'
+    }));
+}
+
+
+function add_reduc_row(data,before) {
+ 
+  
     if(typeof data.newframe !=="undefined") {
         var new_frame_id = parseInt(data.newframe.fn);
-        var next_id = parseInt(new_frame_id)-1;
+
+        if(!before) {
+            var next_id = parseInt(new_frame_id)-1;
+        } else {
+            var next_id = parseInt(new_frame_id);
+        }
+        
 
         var new_frame = data.newframe;
 
@@ -22,6 +46,7 @@ function add_reduc_row(data) {
 
         // Build new row
         var row = "<tr id='fr_' "+ new_frame_id +" data-org-x='"+new_frame.hd_x+"' data-org-y='"+new_frame.hd_y+"'>";
+        row += '<td><div class="st" style="background-color:#ff8a80"></div></td>'
         row += '<td><img alt="Thumb #'+new_frame_id+'" src="'+new_frame.cnt_thumb +'" width="50" height="50" class="img-fluid select_meteor">';
         row += '<td>' + new_frame_id + '</td>';
         row += '<td>' + _time + '</td>'; 
@@ -33,7 +58,11 @@ function add_reduc_row(data) {
         row += '<td><a class="btn btn-danger btn-sm delete_frame"><i class="icon-delete"></i></a></td>';
         row += '<td class="position-relative"><a class="btn btn-success btn-sm select_meteor"><i class="icon-target"></i></a></td>';
  
-        $(row).insertAfter($tr_before);
+        if(before) {
+            $(row).insertBefore($tr_before);
+        } else {
+            $(row).insertAfter($tr_before);
+        }
 
         // Reload all actions on reduct table!!!
         bootbox.alert({
@@ -42,6 +71,9 @@ function add_reduc_row(data) {
             centerVertical: true 
         });
         
+        // Add square to canvas
+        add_frame_square_on_canvas(parseFloat(new_frame.hd_x)/2,parseFloat(new_frame.hd_y)/2);
+
         // Reload the actions
         reduction_table_actions();
 
@@ -56,7 +88,7 @@ function add_reduc_row(data) {
     loading_done();
 }
 
-function add_a_frame(cur_fn) {
+function add_a_frame(cur_fn, before) {
     var cmd_data = {
 		cmd: 'add_frame',
         sd_video_file: sd_video_file, // Defined on the page
@@ -71,7 +103,7 @@ function add_a_frame(cur_fn) {
         success: function(data) { 
             loading_done();
             if($.trim(data)!=='') {
-                add_reduc_row($.parseJSON(data));
+                add_reduc_row($.parseJSON(data),before);
             } else {
                 bootbox.alert({
                     message: "Something went wrong: please contact us.",
@@ -95,7 +127,7 @@ function add_a_frame(cur_fn) {
 
 function setup_add_frames() {
     $('.add_f').click(function() {
-        add_a_frame($(this).attr('data-rel'));
+        add_a_frame($(this).attr('data-rel'),$(this).hasClass('btn-mm'));
     }); 
 }
 

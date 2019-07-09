@@ -38,6 +38,14 @@ img  {
         opacity:1;
     }
 
+    &.fl {
+        padding:0;
+
+        img {
+            position:relative;
+        }
+    }
+
 
     &:hover  {
             opacity: 1;
