@@ -1713,7 +1713,7 @@ def delete_multiple_detection(detections,json_conf):
 
 def override_detect(video_file,jsid, json_conf):
    cgitb.enable()
-   print("VIDEO_FILE " + video_file)
+   print("VIDEO_FILE " + str(video_file))
    print("JSID "+ jsid)
    print("json_conf" + json_conf)
 
