@@ -27,9 +27,9 @@ $(function() {
      $('#del-all').click(function() {
          // Get all id
      
-
+         var toSend = [];
          jQuery.each($('.preview.selected'), function( i, val ) { 
-                var toSend = [];
+                
                 $.each(val,function() {
                     toSend.push($(val).attr('id'));
                 })
