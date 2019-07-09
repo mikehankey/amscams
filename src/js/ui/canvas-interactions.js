@@ -140,6 +140,7 @@ if ($('canvas#c').length!=0) {
             var wh = $(window).height();
             var cw = $('#c').width();
             var ch = $('#c').height();
+            e.stopProgation();
             $('#c').css({ 
               'width': wh*cw/ch,
               'height': wh
@@ -148,6 +149,13 @@ if ($('canvas#c').length!=0) {
         } 
         
       } else {
+
+        // Remove zoom
+        if($('#c').hasClass('r-zoomed')) {
+          $('#c').removeClass('r-zoomed');
+          e.stopProgation();
+          return false;
+        }
 
         // Hide grid on click
         if($('#c').hasClass('grid')) $('#show_grid').click();
