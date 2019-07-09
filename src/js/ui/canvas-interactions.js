@@ -128,73 +128,74 @@ if ($('canvas#c').length!=0) {
       if(e.button === 3) {
         console.log("right click");
       } else {
-        // Hide grid on click
-        if($('#c').hasClass('grid')) $('#show_grid').click();
+          // Hide grid on click
+          if($('#c').hasClass('grid')) $('#show_grid').click();
+            
+          // Make the update star button blinked
+          make_it_blink($('#update_stars'));
+
+          var pointer = canvas.getPointer(event.e);
+          x_val = pointer.x | 0;
+          y_val = pointer.y | 0;
+
+          var circle = new fabric.Circle({
+            radius: 5, 
+            fill: 'rgba(0,0,0,0)', 
+            strokeWidth: 1, 
+            stroke: 'rgba(100,200,200,.85)', 
+            left: x_val-5, 
+            top: y_val-5,
+            selectable: false 
+          }); 
+
+          var objFound = false;
+          var grpFound = false;
+          var clickPoint = new fabric.Point(x_val,y_val);
+          var objects = canvas.getObjects('circle');
+          var id;
           
-        // Make the update star button blinked
-        make_it_blink($('#update_stars'));
 
-        var pointer = canvas.getPointer(event.e);
-        x_val = pointer.x | 0;
-        y_val = pointer.y | 0;
-
-        var circle = new fabric.Circle({
-          radius: 5, 
-          fill: 'rgba(0,0,0,0)', 
-          strokeWidth: 1, 
-          stroke: 'rgba(100,200,200,.85)', 
-          left: x_val-5, 
-          top: y_val-5,
-          selectable: false 
-        }); 
-
-        var objFound = false;
-        var grpFound = false;
-        var clickPoint = new fabric.Point(x_val,y_val);
-        var objects = canvas.getObjects('circle');
-        var id;
-        
-
-        // Remove an existing star
-        for (let i in objects) {
-          if (!objFound && objects[i].containsPoint(clickPoint)) {
-              objFound = true;
-              id = objects[i].gp_id;
-              canvas.remove(objects[i]);
-            }
-        }
-
-        // Remove all the related object +, name, square if
-        // it's a start from the catalog
-        if(objFound && $.trim(id)!=='') { 
-          objects = canvas.getObjects();
+          // Remove an existing star
           for (let i in objects) {
-                if(objects[i].gp_id== id) { 
-                  canvas.remove(objects[i]);
-                  grpFound = true;
-                }
+            if (!objFound && objects[i].containsPoint(clickPoint)) {
+                objFound = true;
+                id = objects[i].gp_id;
+                canvas.remove(objects[i]);
+              }
           }
-        }  
+
+          // Remove all the related object +, name, square if
+          // it's a start from the catalog
+          if(objFound && $.trim(id)!=='') { 
+            objects = canvas.getObjects();
+            for (let i in objects) {
+                  if(objects[i].gp_id== id) { 
+                    canvas.remove(objects[i]);
+                    grpFound = true;
+                  }
+            }
+          }  
 
 
-        if(objFound && grpFound) {
-          // An existing star has been removed 
-          stars_removed += 1;
-        } else if( objFound && !grpFound) {
-          stars_added -=  1;
-        } else if(!objFound && !grpFound) {
-          stars_added += 1;
+          if(objFound && grpFound) {
+            // An existing star has been removed 
+            stars_removed += 1;
+          } else if( objFound && !grpFound) {
+            stars_added -=  1;
+          } else if(!objFound && !grpFound) {
+            stars_added += 1;
+          }
+
+          
+          if (objFound == false) {
+            canvas.add(circle); 
+          }
+          
+          update_user_stars();
         }
-
-        
-        if (objFound == false) {
-          canvas.add(circle); 
-        }
-        
-        update_user_stars();
 
       });
-      }
+    }
 
     
     
