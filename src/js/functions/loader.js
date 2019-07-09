@@ -48,6 +48,8 @@ function loading_done() {
     $("#logo_holder").contents().find("#logo").removeClass("animated");
 
     // Remove Overlay(s)
+    // I know, it doesn't make sense but my instructions are pretty vague 
+    // and it's hard to follow so, please dont judge me too quickly
     $('#overlay').each(function() {
         $(this).fadeOut(150, function() {$('#overlay').remove();})
     });
