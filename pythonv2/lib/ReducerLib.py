@@ -251,13 +251,27 @@ def detect_meteor(video_file, json_conf, show = 0):
          print(obj['oid'], obj)
       exit()
    elif len(meteors) == 1:
+      hdm_x = 2.7272
+      hdm_y = 1.875
+      hdxs = []
+      hdys = []
       metconf = {}
       metconf['x_dir_mod'] = meteors[0]['x_dir_mod']
       metconf['y_dir_mod'] = meteors[0]['y_dir_mod']
       metframes,xs,ys,fns = hist_to_metframes(meteors[0],metconf)
       m,b = best_fit_slope_and_intercept(xs,ys)
-      metconf['m'] = m
-      metconf['b'] = b
+      for i in range(0,len(xs)-1):
+         hd_x = xs[i] * hdm_x
+         hd_y = ys[i] * hdm_y
+         hdxs.append(hd_x)
+         hdys.append(hd_y)
+      
+      hd_m,hd_b = best_fit_slope_and_intercept(hdxs,hdys)
+
+      metconf['m'] = hd_m
+      metconf['b'] = hd_b
+      metconf['sd_m'] = m
+      metconf['sd_b'] = b
       metconf['sd_xs'] = xs
       metconf['sd_ys'] = ys
       metconf['sd_fns'] = fns
@@ -266,8 +280,6 @@ def detect_meteor(video_file, json_conf, show = 0):
       metconf['first_frame'] = fns[0]
       metconf['sd_acl_poly'] = 0
 
-      hdm_x = 2.7272
-      hdm_y = 1.875
       sd_dist = calc_dist(( metconf['sd_xs'][0], metconf['sd_ys'][0]),( metconf['sd_xs'][-1], metconf['sd_ys'][-1]))
       hd_dist = calc_dist(( metconf['sd_xs'][0]*hdm_x, metconf['sd_ys'][0]*hdm_y),( metconf['sd_xs'][-1]*hdm_x, metconf['sd_ys'][-1]*hdm_y))
       metconf['sd_dist'] = sd_dist
@@ -292,8 +304,8 @@ def detect_meteor(video_file, json_conf, show = 0):
             my = metframes[fc]['sd_max_y']
             lc_x = metframes[fc]['sd_lc_x']
             lc_y = metframes[fc]['sd_lc_y']
-            lc_y = metframes[fc]['m'] = metconf['m']
-            lc_y = metframes[fc]['b'] = metconf['b']
+            #lc_y = metframes[fc]['m'] = metconf['m']
+            #lc_y = metframes[fc]['b'] = metconf['b']
             cx = int(x + (w/2))
             cy = int(y + (h/2))
             fcc = fc - metconf['first_frame']
@@ -478,7 +490,7 @@ def reduce_seg_acl(this_poly,metframes,metconf,frames,show=0):
          cnt_img = frame[y:y+h,x:x+w]
          #est_x = int(metconf['sd_fx']) + (metconf['x_dir_mod'] * (this_poly[0]*fcc)) + (0 * fcc)
          est_x = int(metconf['sd_fx']) + (metconf['x_dir_mod'] * (this_poly[0]*fcc)) + (this_poly[1] * (fcc**2))
-         est_y = (metconf['m']*est_x)+metconf['b']
+         est_y = (metconf['sd_m']*est_x)+metconf['sd_b']
          est_x = int(est_x)
          est_y = int(est_y)
          #res_err = calc_dist((est_x,est_y),(lc_x,lc_y))
