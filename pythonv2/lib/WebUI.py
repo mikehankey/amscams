@@ -1709,9 +1709,10 @@ def examine_min(video_file,json_conf):
 
 #Delete multiple detections at once
 def delete_multiple_detection(detections,json_conf):
-   for to_delete in detections:
+   print(json_conf)
+   #for to_delete in detections:
          #print(str(to_delete))
-         override_detect(to_delete+'.mp4','',json_conf)
+         #override_detect(to_delete+'.mp4','',json_conf)
 
 def override_detect(video_file,jsid, json_conf):
    cgitb.enable()
