@@ -55,7 +55,7 @@ if ($('canvas#c').length!=0) {
   var canvas = new fabric.Canvas('c', {
     hoverCursor: 'default',
     selection: true,
-    fireRightClick: true  // <-- enable firing of right click events
+    //fireRightClick: true  // <-- enable firing of right click events
   });
 
   var out_timer, in_timer;
@@ -124,31 +124,6 @@ if ($('canvas#c').length!=0) {
     
     canvas.on('mouse:down', function(e) {
 
-      //console.log('MOUSE DOWN ');
-      //console.log(e.button);
-
-      // Remove zoom 
-      if($('#c').hasClass('r-zoomed')) {
-        $('#c').removeClass('r-zoomed');
-      }
-
-      if(e.button === 3) {
-
-        if($('#c').hasClass('r-zoomed')) {
-            $('#c').removeClass('r-zoomed');
-        } else {
-            var wh = $(window).height();
-            var cw = $('#c').width();
-            var ch = $('#c').height();
-            
-            $('#c').css({ 
-              'width': wh*cw/ch,
-              'height': wh
-            }).addClass('r-zoomed');
-            return false;
-        } 
-        
-      } else {
 
         // Remove zoom
         if($('#c').hasClass('r-zoomed')) {
@@ -220,7 +195,7 @@ if ($('canvas#c').length!=0) {
         }
         
         update_user_stars();
-      }
+     
 
     });
     
