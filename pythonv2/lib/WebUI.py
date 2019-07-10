@@ -11,7 +11,7 @@ import json
 import cgitb
 import re
 import datetime
-import time
+import time 
 from pathlib import Path
 from lib.PwdProtect import login_page, check_pwd_ajax
 from lib.Pagination import get_pagination
@@ -27,6 +27,7 @@ from lib.WebCalib import calibrate_pic,make_plate_from_points, solve_field, chec
 from lib.UtilLib import calc_radiant
 from lib.Video_Add_Job import add_video_job 
 from lib.VIDEO_VARS import * 
+from lib.Video_Tools import getLength
 from lib.Get_Cam_ids import get_the_cam_ids
  
 
@@ -457,10 +458,15 @@ def video_tools(json_conf,form):
          # Get Date & Cam ID
          date, camid = get_custom_video_date_and_cam_id(vid)
 
+         length = getLength(vid)
+         if(length=='' or length==0):
+               length = ''
+         
+
          all_vids_out += "<div class='preview col-lg-2 col-md-3 norm'>"
          all_vids_out += "<a class='mtt vid-link nop' href='"+vid+"' title='Play the Video'>"
          all_vids_out += "<img class='img-fluid ns lz' src='" + vid.replace('.mp4','.png') + "'/>"
-         all_vids_out += "</a><span>" + date + " - Cam#" + camid +"</span></div>"
+         all_vids_out += "</a><span>" + date + " - Cam#" + camid +" - " +  length + "</span></div>"
          vid_counter+=1
 
 

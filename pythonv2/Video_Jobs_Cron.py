@@ -47,7 +47,6 @@ if js_file.is_file():
                 json.dump(data, outfile)
 
             if(cur_jobs['name']=='timelapse'): 
-                print(str(cur_jobs))
                 video_path =  generate_timelapse(cur_job['cam_id'],cur_job['date'],cur_job['fps'],cur_job['dim'],cur_job['text_pos'],cur_job['wat_pos'],0) 
 
                 # Update the JSON so we dont process the same vid twice
