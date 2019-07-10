@@ -11,7 +11,8 @@ from shutil import copyfile
 def getLength(filename):
     cmd = "ffprobe -i "+filename +"  -show_entries format=duration -v quiet"
     output = subprocess.check_output(cmd, shell=True).decode("utf-8")
-    return str(output)   
+    out = [line for line in my_string.split('\n') if "duration" in line]
+    return str(out)   
 
 
 #Return Date & Time based on file name (that ends with a date)
