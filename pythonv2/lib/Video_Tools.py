@@ -44,13 +44,14 @@ def get_hd_frames(camID,date):
         if not os.path.exists(tmppath):
             os.makedirs(tmppath)
         else:
-            #Clean the directory
+            #Clean the directory (maybe necessary)
             files = glob.glob(tmppath+'/*')
             for f in files:
                 os.remove(f)
         #We extract one frame per video and add it to the array to return
         toReturn = []
         for idx,vid in enumerate(sorted(onlyfiles)):
+            vid = vid.replace('.mp4','')
             cmd = 'ffmpeg -y -hide_banner -loglevel panic -i '+IMG_HD_SRC_PATH+'/'+vid+' -vframes 1 -f image2 '+ tmppath + vid + '.png' 
             output = subprocess.check_output(cmd, shell=True).decode("utf-8")
             toReturn.append( tmppath + vid + '.png' )
