@@ -57,7 +57,7 @@ def get_hd_frames(camID,date):
             toReturn.append( tmppath + vid_out + '.png' )
             #print(tmppath + '/'  + str(idx) + '.png' )
             #print(output)
-        return(sorted(toReturn), cur_path, date, camID)  
+        return(sorted(toReturn), tmppath, date, camID)  
  
 
 
