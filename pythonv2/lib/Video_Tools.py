@@ -9,9 +9,10 @@ from shutil import copyfile
 
 #Return Video length
 def getLength(filename):
-  result = subprocess.Popen(["ffprobe", filename],
-    stdout = subprocess.PIPE, stderr = subprocess.STDOUT)
-  return [x for x in result.stdout.readlines() if "Duration" in x]
+    cmd = "ffprobe -i "+filename +"  -show_entries format=duration -v quiet"
+    output = subprocess.check_output(cmd, shell=True).decode("utf-8")
+    return str(output)   
+
 
 #Return Date & Time based on file name (that ends with a date)
 def get_meteor_date_ffmpeg(_file):
