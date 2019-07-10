@@ -2,7 +2,7 @@ import os
 import glob
 import subprocess 
 from lib.VIDEO_VARS import * 
-import lib.Video_Tools
+from lib.Video_Tools import * 
 from os import listdir, remove
 from os.path import isfile, join, exists
 
