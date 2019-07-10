@@ -78,7 +78,7 @@ def get_text_pos(text_pos):
     if(text_pos=='tr'):
         return "x=main_w-text_w-20:y=20"
     elif (text_pos=='tl'):
-        return= "x=20:y=20"    
+        return  "x=20:y=20"    
     elif (text_pos=='bl'):
         return "x=20:y=main_h-text_h-20"
     else: 
