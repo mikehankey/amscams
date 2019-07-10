@@ -50,7 +50,7 @@ def get_hd_frames(camID,date):
     #test if we have at least one file name - YYYY_DD_MM_HH_ii_SS[_000_]CAM_ID.mp4
     test = [f for f in listdir(cur_path) if f.startswith(date) and f.endswith(camID+'.mp4') and isfile(join(cur_path, f))]
     if not test:
-        print('NO HD Frames founds, Searching for SD')
+        print('NO HD Frames found - Searching for SD')
         #If nothing is found we try the SD
         return get_sd_frames(camID,date)
     else:

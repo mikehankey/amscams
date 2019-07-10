@@ -26,8 +26,8 @@ from os.path import isfile, join, exists
 #TEST HD FRAMES
 print("GET SD FRAMES FOR '010038','2019_07_09'")
 #path, date, camID
-date = '2019_06_02'
-camID = '010042'
+date = '2019_07_09'
+camID = '010038'
 frames, path = get_hd_frames(camID,date)
 if(frames is None):
     print('NO FRAME FOUND')
