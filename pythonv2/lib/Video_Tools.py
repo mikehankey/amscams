@@ -8,8 +8,8 @@ from shutil import copyfile
 
 
 #Return Date & Time based on file name (that ends with a date)
-def get_meteor_date_ffmpeg(file):
-	fn = file.split("/")[-1] 
+def get_meteor_date_ffmpeg(_file):
+	fn = _file.split("/")[-1] 
 	fn = fn.split('_',6)
 	return fn[0] + "/" + fn[1] + "/" + fn[2] + " " + fn[3] + "\:" + fn[4] + "\:" + fn[5]
 
