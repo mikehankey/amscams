@@ -4,6 +4,7 @@ import subprocess
 from lib.VIDEO_VARS import * 
 from os import listdir, remove
 from os.path import isfile, join, exists
+from shutil import copyfile
 
 
 #Return Date & Time based on file name (that ends with a date)
@@ -27,7 +28,12 @@ def get_sd_frames(camID,date):
         print('FOLDER: ' + cur_path)
         return([] , curpath)
     else:    
-        return(sorted(frames) , curpath)
+        #Move the frames to a tmp folder so we can delete them once we're done with the video
+        tmppath = r''+TMP_IMG_HD_SRC_PATH
+        for frame in frames
+            copyfile(cur_path+'/'+frame, tmppath+frame)
+            print('COPY ' + cur_path+'/'+frame + '    > ' + tmppath+frame)
+        return(sorted(frames) , tmppath)
 
 
 
