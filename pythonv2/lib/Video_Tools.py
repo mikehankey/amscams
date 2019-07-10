@@ -26,7 +26,7 @@ def get_sd_frames(camID,date):
     if not frames:
         print('NO INPUT FOR VID CamID:' + camID + ' - DATE ' + date)
         print('FOLDER: ' + cur_path)
-        return([] , curpath)
+        return([] , cur_path)
     else:    
         #Move the frames to a tmp folder so we can delete them once we're done with the video
         tmppath = r''+TMP_IMG_HD_SRC_PATH
