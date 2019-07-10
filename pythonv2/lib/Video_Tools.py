@@ -91,9 +91,12 @@ def get_text_pos(text_pos):
 #Resize the frames 
 def add_info_to_frames(frames, path, date, camID, dimensions="1920:1080", text_pos='bl', watermark_pos='tr', enhancement=0):
     #Create temporary folder to store the frames for the video
+
+    # for HD
     if "tmp" in path:
         newpath = r''+path
         path = ''
+    # for SD
     else:
         newpath = r''+path+'/tmp/'
 
@@ -133,6 +136,9 @@ def add_info_to_frames(frames, path, date, camID, dimensions="1920:1080", text_p
                     [texted]overlay='+watermark_position+'[out]" \
                     -map "[out]"  ' + newpath + '/' + str(idx) + '.png'                
          
-        output = subprocess.check_output(cmd, shell=True).decode("utf-8")    
+        output = subprocess.check_output(cmd, shell=True).decode("utf-8")  
+
+        #Remove the source 
+        os.remove(path+'/'+ f)  
 
     print("THEY SHOULD BE THERE: " + newpath)
