@@ -9,7 +9,7 @@ from os.path import isfile, join, exists
 
 #TEST HD_FRAMES
 #print("GET HD FRAMES FOR '010040','2019_07_10'")
-#frames, path, date, camID = get_hd_frames('010040','2019_07_10')
+frames, path, date, camID = get_hd_frames('010040','2019_07_10')
 #print("PATH " + str(path))
 #print("date " + str(date))
 #print("camID " + str(camID))
