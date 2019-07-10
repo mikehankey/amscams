@@ -1,6 +1,7 @@
 import os
 import glob
 import subprocess 
+import datetime
 from lib.VIDEO_VARS import * 
 from os import listdir, remove
 from os.path import isfile, join, exists
@@ -12,7 +13,8 @@ def getLength(filename):
     cmd = "ffprobe -i "+filename +"  -show_entries format=duration -v quiet"
     output = subprocess.check_output(cmd, shell=True).decode("utf-8")
     out = [line for line in output.split('\n') if "duration" in line]
-    return str(out[0][9:])   
+    out = out[0][9:]
+    return str(datetime.timedelta(seconds=float(out)))  
 
 
 #Return Date & Time based on file name (that ends with a date)
