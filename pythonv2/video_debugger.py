@@ -23,7 +23,7 @@ from os.path import isfile, join, exists
 #    print('THE VID SHOULD BE THERE ' + s)
 
  
- #TEST HD FRAMES
+#TEST HD FRAMES
 print("GET SD FRAMES FOR '010038','2019_07_09'")
 #path, date, camID
 date = '2019_06_02'
