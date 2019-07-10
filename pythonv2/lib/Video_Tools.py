@@ -56,7 +56,7 @@ def get_hd_frames(camID,date):
     else:
         onlyfiles = [f for f in listdir(cur_path) if camID in f and date in f and "-tn" not in f and "-night" not in f and "trim" not in f and isfile(join(cur_path, f))]
         #DEBUG ONLY!! 
-        onlyfiles = onlyfiles[1:5]
+        #onlyfiles = onlyfiles[1:5]
           
         
         #Check temporary folder to store the frames of all the videos
