@@ -21,9 +21,9 @@ from os.path import isfile, join, exists
 
 
 #TEST SD FRAMES
-print("GET HD FRAMES FOR '010040','2019_07_10'")
+print("GET SD FRAMES FOR '010040','2019_06_020'")
 #path, date, camID
-frames = get_hd_frames('010040','2019_07_10')
+frames = get_sd_frames('010040','2019_06_02')
 #print(str(frames))
 #print("PATH " + str(path))
 #print("date " + str(date))
