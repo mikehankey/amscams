@@ -148,7 +148,7 @@ def add_info_to_frames(frames, path, date, camID, dimensions="1920:1080", text_p
 
 
 #Create a video based on a set of frames
-def create_vid_from_frames(frames, path, date, camID, fps="15") :
+def create_vid_from_frames(frames, path, date, camID, fps="25") :
     
     #Create Video based on all newly create frames
     
