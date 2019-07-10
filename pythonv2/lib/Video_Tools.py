@@ -21,6 +21,8 @@ def get_sd_frames(camID,date):
     cur_path = IMG_SD_SRC_PATH + date + "/images"
     #print(cur_path)
     onlyfiles = [f for f in listdir(cur_path) if camID in f and "-tn" not in f and "-night" not in f and "trim" not in f and isfile(join(cur_path, f))]
+    print('LIST DIR')
+    print(str(listdir(cur_path)))
     if not onlyfiles:
         print('NO INPUT FOR VID CamID:' + camID + ' - DATE ' + date)
         print('FOLDER: ' + cur_path)
