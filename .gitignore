@@ -1,2 +1,10 @@
 /node_modules
 /conf/as6.json
+*.txt  
+*.mp4
+*.png
+*.json
+*.swp
+!./dist/*
+!./src/*
+./pythonv2/lib/__pycache__/

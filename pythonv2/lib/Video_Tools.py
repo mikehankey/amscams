@@ -1,4 +1,5 @@
 import os
+import glob
 import subprocess 
 from lib.VIDEO_VARS import * 
 from os import listdir, remove

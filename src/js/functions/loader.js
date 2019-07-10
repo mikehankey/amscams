@@ -39,9 +39,7 @@ function loading(options) {
 }
 
 
-function loading_done_select_meteor() {
 
-}
 
 function loading_done() {
     // Reset title
