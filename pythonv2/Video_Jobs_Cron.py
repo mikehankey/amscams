@@ -46,20 +46,13 @@ if js_file.is_file():
             with open(WAITING_JOBS, 'w') as outfile:
                 json.dump(data, outfile)
 
-            #Test if we have the HD files or not
-            dirs = os.listdir(HD_VID_SRC_PATH)  #Get All files
-            if(isfile(dirs[0]) and get_meteor_date_ffmpeg(dirs[0])==cur_job['date']):
-                print("WE HAVE HD")
-            
-            else:
-                # WE NEED TO DO IT FROM THE SDs
-                # Generate Video 
-                video_path = generate_timelapse(cur_job['cam_id'],cur_job['date'],cur_job['fps'],cur_job['dim'],cur_job['text_pos'],cur_job['wat_pos'])
+            if(cur_jobs['name']=='timelapse'): 
+                video_path =  generate_timelapse(cur_job['cam_id'],cur_job['date'],cur_job['fps'],cur_job['dim'],cur_job['text_pos'],cur_job['wat_pos'],0) 
 
-            # Update the JSON so we dont process the same vid twice
-            data['jobs'][0]['status'] = 'ready'
-            data['jobs'][0]['path']   = video_path
-            with open(WAITING_JOBS, 'w') as outfile:
-                json.dump(data, outfile)
+                # Update the JSON so we dont process the same vid twice
+                data['jobs'][0]['status'] = 'ready'
+                data['jobs'][0]['path']   = video_path
+                with open(WAITING_JOBS, 'w') as outfile:
+                    json.dump(data, outfile)
 
         
