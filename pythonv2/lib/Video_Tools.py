@@ -24,7 +24,7 @@ def get_sd_frames(camID,date):
     if not onlyfiles:
         print('NO INPUT FOR VID CamID:' + camID + ' - DATE ' + date)
     #DEBUG ONLY!! 
-    onlyfiles = onlyfiles[1:5]
+    #onlyfiles = onlyfiles[1:5]
     return(sorted(onlyfiles), cur_path, date, camID)
 
 
@@ -42,7 +42,7 @@ def get_hd_frames(camID,date):
     else:
         onlyfiles = [f for f in listdir(cur_path) if camID in f and date in f and "-tn" not in f and "-night" not in f and "trim" not in f and isfile(join(cur_path, f))]
         #DEBUG ONLY!! 
-        onlyfiles = onlyfiles[1:5]
+        #onlyfiles = onlyfiles[1:5]
         #Check temporary folder to store the frames of all the videos
         tmppath = r''+TMP_IMG_HD_SRC_PATH
         if not os.path.exists(tmppath):
@@ -143,7 +143,7 @@ def add_info_to_frames(frames, path, date, camID, dimensions="1920:1080", text_p
         #Remove the source 
         os.remove(path+'/'+ f)  
 
-    return newpath
+    return(newpath)
 
 
 
