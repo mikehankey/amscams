@@ -57,7 +57,7 @@ def get_hd_frames(camID,date):
             cmd = 'ffmpeg -y -hide_banner -loglevel panic -i '+IMG_HD_SRC_PATH+'/'+vid+' -vframes 1 -f image2 '+ tmppath + vid_out + '.png' 
             output = subprocess.check_output(cmd, shell=True).decode("utf-8")
             toReturn.append( tmppath + vid_out + '.png' )
-            print(tmppath + '/'  + vid_out + '.png' )
+            #print(tmppath + '/'  + vid_out + '.png' )
             #print(output)
         return(sorted(toReturn), tmppath, date, camID)  
  
@@ -91,7 +91,11 @@ def get_text_pos(text_pos):
 #Resize the frames 
 def add_info_to_frames(frames, path, date, camID, dimensions="1920:1080", text_pos='bl', watermark_pos='tr', enhancement=0):
     #Create temporary folder to store the frames for the video
-    newpath = r''+path+'/tmp/'
+    if "tmp" in path:
+        newpath = r''+path
+    else:
+        newpath = r''+path+'/tmp/'
+        
     if not os.path.exists(newpath):
         os.makedirs(newpath)
 
