@@ -30,6 +30,11 @@ def get_sd_frames(camID,date):
     else:    
         #Move the frames to a tmp folder so we can delete them once we're done with the video
         tmppath = r''+TMP_IMG_HD_SRC_PATH
+        
+        #Create directory if necessary
+        if not os.path.exists(tmppath):
+            os.makedirs(tmppath) 
+        
         for frame in frames:
             copyfile(cur_path+'/'+frame, tmppath+frame)
             #print('COPY ' + cur_path+'/'+frame + '    > ' + tmppath+frame)
