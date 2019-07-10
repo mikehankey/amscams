@@ -26,6 +26,8 @@ print("GET SD FRAMES FOR '010042','2019_06_020'")
 date = '2019_06_02'
 camID = '010042'
 frames = get_sd_frames(camID,date)
+print('FRAMES')
+print(str(frames))
 if(frames is None):
     print('NO FRAME FOUND')
 else:
