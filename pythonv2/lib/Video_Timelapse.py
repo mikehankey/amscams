@@ -8,6 +8,6 @@ def generate_timelapse(cam_id,date,fps,dim,text_pos,wat_pos, enhancement=0):
         print('NO FRAME FOUND')
         return ''
     else:
-        where_path = add_info_to_frames(frames, path, date, camID, dim, text_pos,wat_pos,enhancement)
-        return create_vid_from_frames(frames, where_path, date, camID,fps)
+        where_path = add_info_to_frames(frames, path, date, cam_id, dim, text_pos,wat_pos,enhancement)
+        return create_vid_from_frames(frames, where_path, date, cam_id,fps)
         
