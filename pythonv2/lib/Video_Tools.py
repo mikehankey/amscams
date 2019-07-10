@@ -34,6 +34,7 @@ def get_sd_frames(camID,date):
         #Create directory if necessary
         if not os.path.exists(tmppath):
             os.makedirs(tmppath)  
+
         for frame in frames:
             copyfile(cur_path+'/'+frame, tmppath+frame)
        
@@ -121,8 +122,6 @@ def add_info_to_frames(frames, path, date, camID, dimensions="1920:1080", text_p
     # Treat All frames
     for idx,f in enumerate(frames): 
         #Resize the frames, add date & watermark in /tmp
-        print('F ', str(f))
-        exit()
         text = 'AMS Cam #'+camID+ ' ' + get_meteor_date_ffmpeg(f) 
         if(enhancement!=1):
             cmd = 'ffmpeg -hide_banner -loglevel panic \
