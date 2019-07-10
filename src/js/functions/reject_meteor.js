@@ -1,6 +1,8 @@
 function meteor_is_deleted(id) {
-      $('#'+id).css('opacity',.5).removeClass('norm meteor reduced').addClass('del').find('.btn-toolbar').remove().end().find('a').removeAttr('href').removeAttr('title').attr('title','DELETED').unbind('mouseover').unbind('mouseout').end().find(".custom-checkbox").remove();                  
-      $('#'+id).find('.overlay_loader').remove(); 
+      var $div = $('#'+id);
+      $div.css('opacity',.5).removeClass('norm meteor reduced').addClass('del').find('.btn-toolbar').remove().end().find('a').removeAttr('href').removeAttr('title').attr('title','DELETED').unbind('mouseover').unbind('mouseout').end().find(".custom-checkbox").remove();                  
+      $div.find('.overlay_loader').remove(); 
+      $div.removeClass('selected');
       update_selected_counter();
 }
 
