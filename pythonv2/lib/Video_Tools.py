@@ -51,10 +51,10 @@ def get_hd_frames(camID,date):
         #We extract one frame per video and add it to the array to return
         toReturn = []
         for idx,vid in enumerate(sorted(onlyfiles)):
-            vid = vid.replace('.mp4','')
-            cmd = 'ffmpeg -y -hide_banner -loglevel panic -i '+IMG_HD_SRC_PATH+'/'+vid+' -vframes 1 -f image2 '+ tmppath + vid + '.png' 
+            vid_out = vid.replace('.mp4','')
+            cmd = 'ffmpeg -y -hide_banner -loglevel panic -i '+IMG_HD_SRC_PATH+'/'+vid+' -vframes 1 -f image2 '+ tmppath + vid_out + '.png' 
             output = subprocess.check_output(cmd, shell=True).decode("utf-8")
-            toReturn.append( tmppath + vid + '.png' )
+            toReturn.append( tmppath + vid_out + '.png' )
             #print(tmppath + '/'  + str(idx) + '.png' )
             #print(output)
         return(sorted(toReturn), cur_path, date, camID)  
