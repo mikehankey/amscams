@@ -14,7 +14,7 @@ def getLength(filename):
     output = subprocess.check_output(cmd, shell=True).decode("utf-8")
     out = [line for line in output.split('\n') if "duration" in line]
     out = out[0][9:]
-    return str(datetime.timedelta(seconds=float(out)))  
+    return str(datetime.timedelta(seconds=round(float(out),0)))  
 
 
 #Return Date & Time based on file name (that ends with a date)
