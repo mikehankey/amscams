@@ -93,9 +93,10 @@ def add_info_to_frames(frames, path, date, camID, dimensions="1920:1080", text_p
     #Create temporary folder to store the frames for the video
     if "tmp" in path:
         newpath = r''+path
+        path = ''
     else:
         newpath = r''+path+'/tmp/'
-        
+
     if not os.path.exists(newpath):
         os.makedirs(newpath)
 
