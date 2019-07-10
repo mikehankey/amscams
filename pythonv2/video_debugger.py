@@ -28,6 +28,7 @@ camID = '010042'
 frames = get_sd_frames(camID,date)
 print('FRAMES')
 print(str(frames))
+exit();
 if(frames is None):
     print('NO FRAME FOUND')
 else:

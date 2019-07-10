@@ -33,13 +33,11 @@ def get_sd_frames(camID,date):
         
         #Create directory if necessary
         if not os.path.exists(tmppath):
-            os.makedirs(tmppath) 
-        frames_to_return = []
+            os.makedirs(tmppath)  
         for frame in frames:
             copyfile(cur_path+'/'+frame, tmppath+frame)
-            frames_to_return.append(frame)
-            #print('COPY ' + cur_path+'/'+frame + '    > ' + tmppath+frame)
-        return(sorted(frames_to_return) , tmppath)
+       
+        return(sorted(frames) , tmppath)
 
 
 
