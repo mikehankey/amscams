@@ -25,17 +25,10 @@ def get_sd_frames(camID,date):
     if not frames:
         print('NO INPUT FOR VID CamID:' + camID + ' - DATE ' + date)
         print('FOLDER: ' + cur_path)
-        return([],'',date,camID)
+        return([] , curpath)
     else:    
-        #Add path to frames
-        for idx,frame in enumerate(frames):
-            frames[idx] = cur_path + frame 
+        return(sorted(frames) , curpath)
 
-        return sorted(frames) 
-
-    #DEBUG ONLY!! 
-    #onlyfiles = onlyfiles[1:5]
-    
 
 
 #Input! camID, date
@@ -71,7 +64,7 @@ def get_hd_frames(camID,date):
             toReturn.append( tmppath + vid_out + '.png' )
             #print(tmppath + '/'  + vid_out + '.png' )
             #print(output)
-        return(sorted(toReturn), tmppath, date, camID)  
+        return(sorted(toReturn), tmppath)  
  
 
 
