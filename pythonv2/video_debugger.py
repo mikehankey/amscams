@@ -23,7 +23,17 @@ from os.path import isfile, join, exists
 #TEST SD FRAMES
 print("GET SD FRAMES FOR '010042','2019_06_020'")
 #path, date, camID
-frames = get_sd_frames('010042','2019_06_02')
+date = '2019_06_02'
+camID = '010042'
+frames = get_sd_frames(camID,date)
+if(frames is None):
+    print('NO FRAME FOUND')
+else:
+    where_path = add_info_to_frames(frames, TMP_IMG_HD_SRC_PATH, date, camID,  "1920:1080",  'bl',  'tr',  0)
+    s = create_vid_from_frames(frames, where_path, date, camID, fps="60")
+    print('THE VID SHOULD BE THERE ' + s)
+
+
 #print(str(frames))
 #print("PATH " + str(path))
 #print("date " + str(date))
