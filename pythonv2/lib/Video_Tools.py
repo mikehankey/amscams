@@ -23,10 +23,14 @@ def get_sd_frames(camID,date):
     onlyfiles = [f for f in listdir(cur_path) if camID in f and "-tn" not in f and "-night" not in f and "trim" not in f and isfile(join(cur_path, f))]
     if not onlyfiles:
         print('NO INPUT FOR VID CamID:' + camID + ' - DATE ' + date)
+        print('FOLDER: ' + cur_path)
+        return([],'',date,camID)
+    else:    
+        return(sorted(onlyfiles), cur_path, date, camID)
+
     #DEBUG ONLY!! 
     #onlyfiles = onlyfiles[1:5]
-    return(sorted(onlyfiles), cur_path, date, camID)
-
+    
 
 
 #Input! camID, date
