@@ -113,7 +113,7 @@ def add_info_to_frames(frames, path, date, camID, dimensions="1920:1080", text_p
                     -i ' + path+'/'+ f + '    \
                     -i ' + AMS_WATERMARK + ' \
                     -filter_complex "[0:v]scale='+dimensions+'[scaled]; \
-                    [scaled]drawtext=:text=\'' + text + '\':fontcolor=white@1.0:fontsize=18:'+text_position+'[texted]; \
+                    [scaled]drawtext=:text=\'' + text + '\':fontcolor=white@1.0:fontsize=25:'+text_position+'[texted]; \
                     [texted]overlay='+watermark_position+'[out]" \
                     -map "[out]"  ' + newpath + '/' + str(idx) + '.png'      
         else:
@@ -122,7 +122,7 @@ def add_info_to_frames(frames, path, date, camID, dimensions="1920:1080", text_p
                     -i ' + path+'/'+ f + '    \
                     -i ' + AMS_WATERMARK + ' \
                     -filter_complex "[0:v]scale='+dimensions+'[scaled]; \
-                    [scaled]eq=contrast=1.3[sat];[sat]drawtext=:text=\'' + text + '\':fontcolor=white@1.0:fontsize=18:'+text_position+'[texted]; \
+                    [scaled]eq=contrast=1.3[sat];[sat]drawtext=:text=\'' + text + '\':fontcolor=white@1.0:fontsize=25:'+text_position+'[texted]; \
                     [texted]overlay='+watermark_position+'[out]" \
                     -map "[out]"  ' + newpath + '/' + str(idx) + '.png'                
          
