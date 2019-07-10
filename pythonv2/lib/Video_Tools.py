@@ -16,7 +16,7 @@ def get_meteor_date_ffmpeg(file):
 
 #Input: camID, date
 #Ouput: list of sd frames found for this date/cam
-#ex:camID:010034, date:2019_06_23
+#ex:camID:010034, date:2019_06_23 
 def get_sd_frames(camID,date):
     cur_path = IMG_SD_SRC_PATH + date + "/images"
     #print(cur_path)
@@ -48,14 +48,15 @@ def get_hd_frames(camID,date):
             files = glob.glob(tmppath+'/*')
             for f in files:
                 os.remove(f)
-        #We extract one frame per video
+        #We extract one frame per video and add it to the array to return
+        toReturn = []
         for idx,vid in enumerate(sorted(onlyfiles)):
-            print(str(idx) + " ====> " + vid)
-            cmd = 'ffmpeg -y -i '+IMG_HD_SRC_PATH+'/'+vid+' -vframes 1 -f image2 '+ tmppath + str(idx) + '.png' 
+            cmd = 'ffmpeg -y -i '+IMG_HD_SRC_PATH+'/'+vid+' -vframes 1 -f image2 '+ tmppath + vid + '.png' 
             output = subprocess.check_output(cmd, shell=True).decode("utf-8")
-            print(tmppath + '/'  + str(idx) + '.png' )
-            print(output)
-        #return(sorted(onlyfiles), cur_path, date, camID)  
+            toReturn.append( tmppath + vid + '.png' )
+            #print(tmppath + '/'  + str(idx) + '.png' )
+            #print(output)
+        return(sorted(toReturn), cur_path, date, camID)  
  
 
 
