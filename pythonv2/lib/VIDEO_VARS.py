@@ -14,3 +14,6 @@ WAITING_JOBS = WAITING_JOBS_FOLDER + 'waiting_jobs.json'
 #Store Vidos
 VID_FOLDER = WAITING_JOBS_FOLDER 
 
+#AMS WATERMARK
+AMS_WATERMARK = "/home/ams/amscams/dist/img/ams_watermark.png"
+

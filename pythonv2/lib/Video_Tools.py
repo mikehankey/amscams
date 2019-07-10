@@ -61,3 +61,71 @@ def get_hd_frames(camID,date):
  
 
 
+#Return ffmpeg code for watermarkposition
+def get_watermark_pos(watermark_pos):
+    if(watermark_pos=='tr'):
+        return "main_w-overlay_w-20:20"
+    elif (watermark_pos=='tl'):
+        return "20:20"    
+    elif (watermark_pos=='bl'):
+        return "20:main_h-overlay_h-20"
+    else: 
+       return "main_w-overlay_w-20:main_h-overlay_h-20"
+
+
+#Return ffmpeg code for Info position (text only)
+def get_text_pos(text_pos):
+    if(text_pos=='tr'):
+        return "x=main_w-text_w-20:y=20"
+    elif (text_pos=='tl'):
+        return= "x=20:y=20"    
+    elif (text_pos=='bl'):
+        return "x=20:y=main_h-text_h-20"
+    else: 
+        return "x=main_w-text_w-20:y=main_h-text_h-20"
+
+
+#Add AMS Logo, Info and eventual logo (todo)
+#Resize the frames 
+def add_info_to_frames(frames, path, date, camID, dimensions="1920:1080", text_pos='bl', watermark_pos='tr', enhancement=0):
+    #Create temporary folder to store the frames for the video
+    newpath = r''+path+'/tmp/'
+    if not os.path.exists(newpath):
+        os.makedirs(newpath)
+
+    #Create destination folder if it doesn't exist yet
+    if not os.path.exists(VID_FOLDER):
+        os.makedirs(VID_FOLDER) 
+
+    # Watermark position based on options
+    watermark_position = get_watermark_pos(watermark_pos)
+
+    # Info position based on options
+    text_position = get_text_pos(text_pos)
+
+    # Treat All frames
+    for idx,f in enumerate(frames): 
+        #Resize the frames, add date & watermark in /tmp  
+        text = 'AMS Cam #'+camID+ ' ' + get_meteor_date_ffmpeg(f) 
+        if(enhancement!=1):
+            cmd = 'ffmpeg -hide_banner -loglevel panic \
+                    -y \
+                    -i ' + path+'/'+ f + '    \
+                    -i ' + AMS_WATERMARK + ' \
+                    -filter_complex "[0:v]scale='+dimensions+'[scaled]; \
+                    [scaled]drawtext=:text=\'' + text + '\':fontcolor=white@1.0:fontsize=18:'+text_position+'[texted]; \
+                    [texted]overlay='+watermark_position+'[out]" \
+                    -map "[out]"  ' + newpath + '/' + str(idx) + '.png'      
+        else:
+            cmd = 'ffmpeg -hide_banner -loglevel panic \
+                    -y \
+                    -i ' + path+'/'+ f + '    \
+                    -i ' + AMS_WATERMARK + ' \
+                    -filter_complex "[0:v]scale='+dimensions+'[scaled]; \
+                    [scaled]eq=contrast=1.3[sat];[sat]drawtext=:text=\'' + text + '\':fontcolor=white@1.0:fontsize=18:'+text_position+'[texted]; \
+                    [texted]overlay='+watermark_position+'[out]" \
+                    -map "[out]"  ' + newpath + '/' + str(idx) + '.png'                
+         
+        output = subprocess.check_output(cmd, shell=True).decode("utf-8")    
+
+    print("THEY SHOULD BE THERE: " + newpath)
