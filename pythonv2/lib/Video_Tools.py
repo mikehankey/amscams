@@ -39,6 +39,8 @@ def get_hd_frames(camID,date):
         return get_sd_frames(camID,date)
     else:
         onlyfiles = [f for f in listdir(cur_path) if camID in f and date in f and "-tn" not in f and "-night" not in f and "trim" not in f and isfile(join(cur_path, f))]
+        #DEBUG ONLY!!!!!!!!!!!!
+        onlyfiles = onlyfiles[1:5]
         #Check temporary folder to store the frames of all the videos
         tmppath = r''+TMP_IMG_HD_SRC_PATH
         if not os.path.exists(tmppath):
@@ -55,7 +57,7 @@ def get_hd_frames(camID,date):
             cmd = 'ffmpeg -y -hide_banner -loglevel panic -i '+IMG_HD_SRC_PATH+'/'+vid+' -vframes 1 -f image2 '+ tmppath + vid_out + '.png' 
             output = subprocess.check_output(cmd, shell=True).decode("utf-8")
             toReturn.append( tmppath + vid_out + '.png' )
-            #print(tmppath + '/'  + str(idx) + '.png' )
+            print(tmppath + '/'  + vid_out + '.png' )
             #print(output)
         return(sorted(toReturn), tmppath, date, camID)  
  
