@@ -33,5 +33,5 @@ if(frames is None):
     print('NO FRAME FOUND')
 else:
     where_path = add_info_to_frames(frames, path, date, camID,  "1920:1080",  'bl',  'tr',  0)
-    s = create_vid_from_frames(frames, where_path, date, camID, fps="120")
+    s = create_vid_from_frames(frames, where_path, date, camID, fps="30")
     print('THE VID SHOULD BE THERE ' + s)
