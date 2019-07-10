@@ -21,14 +21,12 @@ def get_sd_frames(camID,date):
     cur_path = IMG_SD_SRC_PATH + date + "/images"
     #print(cur_path)
     onlyfiles = [f for f in listdir(cur_path) if camID in f and "-tn" not in f and "-night" not in f and "trim" not in f and isfile(join(cur_path, f))]
-    print('LIST DIR')
-    print(str(listdir(cur_path)))
     if not onlyfiles:
         print('NO INPUT FOR VID CamID:' + camID + ' - DATE ' + date)
         print('FOLDER: ' + cur_path)
         return([],'',date,camID)
     else:    
-        return(sorted(onlyfiles), cur_path, date, camID)
+        return sorted(onlyfiles) 
 
     #DEBUG ONLY!! 
     #onlyfiles = onlyfiles[1:5]
@@ -43,6 +41,7 @@ def get_hd_frames(camID,date):
     #test if we have at least one file name - YYYY_DD_MM_HH_ii_SS[_000_]CAM_ID.mp4
     test = [f for f in listdir(cur_path) if f.startswith(date) and f.endswith(camID+'.mp4') and isfile(join(cur_path, f))]
     if not test:
+        print('NO HD Frames founds, Searching for SD')
         #If nothing is found we try the SD
         return get_sd_frames(camID,date)
     else:
@@ -169,8 +168,8 @@ def create_vid_from_frames(frames, path, date, camID, fps="25") :
     output = subprocess.check_output(cmd, shell=True).decode("utf-8")
 
     #DELETING RESIZE FRAMES
-    filelist = glob.glob(os.path.join(path, "*.png"))
-    for f in filelist:
-        os.remove(f) 
+    #filelist = glob.glob(os.path.join(path, "*.png"))
+    #for f in filelist:
+    #    os.remove(f) 
 
     return def_file_path 
