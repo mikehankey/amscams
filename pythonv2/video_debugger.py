@@ -22,14 +22,14 @@ from os.path import isfile, join, exists
 
 #TEST SD FRAMES
 print("GET HD FRAMES FOR '010040','2019_07_08'")
-frames, path, date, camID = get_sd_frames('010040','2019_07_07')
+frames, path, date, camID = get_sd_frames('010040','2019_07_05')
 #print("PATH " + str(path))
 #print("date " + str(date))
-#print("camID " + str(camID))
+#print("camID " + str(camID))5
 #print("files " + str(files))
 if(frames is None):
     print('NO FRAME FOUND')
 else:
-    new_path = add_info_to_frames(frames, path, date, camID,  "1920:1080",  'bl',  'tr',  0)
-    s = create_vid_from_frames(frames, new_path, date, camID, fps="60")
+    #new_path = add_info_to_frames(frames, path, date, camID,  "1920:1080",  'bl',  'tr',  0)
+    #s = create_vid_from_frames(frames, new_path, date, camID, fps="60")
     print('THE VID SHOULD BE THERE ' + s)
