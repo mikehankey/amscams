@@ -24,7 +24,7 @@ function loading(options) {
     if(options.container !== undefined && options.overlay === true) {
 
         if(options.container !== undefined && options.container != 'body') { 
-            $('<div id="overlay" style="position: absolute;z-index: 9999;" class="animated"><div class="row h-100 text-center"><div class="col-sm-12 my-auto"><div class="card card-block" style="background:transparent"><iframe style="border:0;margin: 0 auto;" src="./dist/img/anim_logo.svg" width="140" height="90"></iframe><h4>'+options.text+'</h4></div></div></div></div>').appendTo(options.container);
+            $('<div class="overlay_loader" style="position: absolute;z-index: 9999;" class="animated"><div class="row h-100 text-center"><div class="col-sm-12 my-auto"><div class="card card-block" style="background:transparent"><iframe style="border:0;margin: 0 auto;" src="./dist/img/anim_logo.svg" width="140" height="90"></iframe><h4>'+options.text+'</h4></div></div></div></div>').appendTo(options.container);
         } else {
             $('body').css('overflow','hidden'); 
             $('<div id="overlay" class="animated"><div class="row h-100 text-center"><div class="col-sm-12 my-auto"><div class="card card-block" style="background:transparent"><iframe style="border:0;margin: 0 auto;" src="./dist/img/anim_logo.svg" width="140" height="90"></iframe><h4>'+options.text+'</h4></div></div></div></div>').appendTo('body');
@@ -35,6 +35,11 @@ function loading(options) {
         $('<div id="bottom_overlay"><div class="text-center animated"><img src="./dist/img/anim_logo.svg"/><h3>'+options.text+'</h3></div>').appendTo($('body')).addClass('dpl');
     }  
  
+
+}
+
+
+function loading_done_select_meteor() {
 
 }
 
