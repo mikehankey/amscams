@@ -23,6 +23,8 @@ def get_sd_frames(camID,date):
     onlyfiles = [f for f in listdir(cur_path) if camID in f and "-tn" not in f and "-night" not in f and "trim" not in f and isfile(join(cur_path, f))]
     if not onlyfiles:
         print('NO INPUT FOR VID CamID:' + camID + ' - DATE ' + date)
+    #DEBUG ONLY!! 
+    onlyfiles = onlyfiles[1:5]
     return(sorted(onlyfiles), cur_path, date, camID)
 
 
@@ -39,7 +41,7 @@ def get_hd_frames(camID,date):
         return get_sd_frames(camID,date)
     else:
         onlyfiles = [f for f in listdir(cur_path) if camID in f and date in f and "-tn" not in f and "-night" not in f and "trim" not in f and isfile(join(cur_path, f))]
-        #DEBUG ONLY!!!!!!!!!!!!
+        #DEBUG ONLY!! 
         onlyfiles = onlyfiles[1:5]
         #Check temporary folder to store the frames of all the videos
         tmppath = r''+TMP_IMG_HD_SRC_PATH
@@ -141,4 +143,28 @@ def add_info_to_frames(frames, path, date, camID, dimensions="1920:1080", text_p
         #Remove the source 
         os.remove(path+'/'+ f)  
 
-    print("THEY SHOULD BE THERE: " + newpath)
+    return newpath
+
+
+
+#Create a video based on a set of frames
+def create_vid_from_frames(frames, path, date, camID, fps="15") :
+    
+    #Create Video based on all newly create frames
+    
+    #Destination folder
+    def_file_path =  VID_FOLDER +'/'+date +'_'+ camID +'.mp4' 
+    
+    cmd = 'ffmpeg -hide_banner -loglevel panic -y  -r '+ str(fps) +' -f image2 -s 1920x1080 -i ' + path+ '/%d.png -vcodec libx264 -crf 25 -pix_fmt yuv420p ' + def_file_path
+    output = subprocess.check_output(cmd, shell=True).decode("utf-8")
+   
+    #Rename and Move the first frame in the dest folder so we'll use it as a thumb
+    cmd = 'mv ' + path + '/0.png ' +   VID_FOLDER + '/'+date +'_'+ camID +'.png'        
+    output = subprocess.check_output(cmd, shell=True).decode("utf-8")
+
+    #DELETING RESIZE FRAMES
+    filelist = glob.glob(os.path.join(path, "*.png"))
+    for f in filelist:
+        os.remove(f) 
+
+    return def_file_path 
