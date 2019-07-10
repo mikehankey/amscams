@@ -32,7 +32,7 @@ def get_sd_frames(camID,date):
         tmppath = r''+TMP_IMG_HD_SRC_PATH
         for frame in frames:
             copyfile(cur_path+'/'+frame, tmppath+frame)
-            print('COPY ' + cur_path+'/'+frame + '    > ' + tmppath+frame)
+            #print('COPY ' + cur_path+'/'+frame + '    > ' + tmppath+frame)
         return(sorted(frames) , tmppath)
 
 
@@ -101,19 +101,9 @@ def get_text_pos(text_pos):
 #Add AMS Logo, Info and eventual logo (todo)
 #Resize the frames 
 def add_info_to_frames(frames, path, date, camID, dimensions="1920:1080", text_pos='bl', watermark_pos='tr', enhancement=0):
-    #Create temporary folder to store the frames for the video
-
-    # for HD
-    if "tmp" in path:
-        newpath = r''+path
-        path = ''
-    # for SD
-    else:
-        newpath = r''+path+'/tmp/'
-
-    if not os.path.exists(newpath):
-        os.makedirs(newpath)
-
+    
+    newpath = r''+path 
+    
     #Create destination folder if it doesn't exist yet
     if not os.path.exists(VID_FOLDER):
         os.makedirs(VID_FOLDER) 
