@@ -140,3 +140,54 @@ function update_reduction_only() {
         }
     });
 }
+
+
+
+// test if we have a missing thumb 
+function test_missing_thumb() {
+    var rows_with_missing_thumbs = [];
+    var we_try_how_many_times = 10;
+    var cnt = 0;
+    $('#reduc-tab table img').each(function() {
+        // 50 = normal size
+	    if($(this).width()!==50) {
+            rows_with_missing_thumbs.push($(this).closest('tr').attr('id'));
+            // Replace with loading
+            $(this).attr('data-src',$(this).attr('src')).attr('src','/pycgi/dist/img/anim_logo.svg');
+        }
+    });
+
+    if(rows_with_missing_thumbs.length!=0) {
+        // We try to load it 
+        //console.log("We try to load " )
+        //console.log(rows_with_missing_thumbs)
+
+        try_again = setInterval(function(){ 
+            
+            if(rows_with_missing_thumbs.length==0 || cnt>=we_try_how_many_times) {
+                // Replace with processing
+                clearInterval(try_again);
+            }    
+
+            $.each(rows_with_missing_thumbs, function(i,v) {
+                var img_to_test = '/pycgi/' + $('tr#'+v).find('img.select_meteor').attr('data-src');
+                //console.log('TEST ', img_to_test);
+                $.ajax({
+                    url:img_to_test,
+                    type:'HEAD',
+                    success:function(e){
+                        // We place the image
+                        $('tr#'+v).find('img.select_meteor').attr('src','data-src').removeAttr('data-src');
+                        // We remove the td# from the array
+                        rows_with_missing_thumbs.splice(i, 1);
+                    },  
+                    error:function() { // :( 
+                    }
+                });
+            });
+
+            cnt++;
+        
+        }, 3000);
+    }
+}
