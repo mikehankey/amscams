@@ -43,7 +43,7 @@ function select_meteor_ajax(fn,x,y) {
                 $('tr#fr_'+fn).replaceWith($(new_row));
                 */
 
-               update_reduction_only();
+                update_reduction_only();
                
                 loading_done();
     
