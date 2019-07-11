@@ -42,14 +42,14 @@ def add_video_job(name,cam_id,date,fps,dim,text_pos,wat_pos,extra_text):
         'text_pos':text_pos,
         'wat_pos':wat_pos,
         'status': 'waiting',
-        'extra_test':extra_text
+        'extra_text':extra_text
     }
 
     duplicate = False
 
     #Search if the job already exist (avoid duplicates)
     for job in data['jobs']:
-        if(job['name'] == name and job['cam_id']== cam_id and job['date']== date and job['fps']== fps and job['dim']== dim and job['text_pos']== text_pos and job['wat_pos']== wat_pos ):
+        if(job['extra_text'] == extra_text and job['name'] == name and job['cam_id']== cam_id and job['date']== date and job['fps']== fps and job['dim']== dim and job['text_pos']== text_pos and job['wat_pos']== wat_pos ):
             duplicate = True
             break
 

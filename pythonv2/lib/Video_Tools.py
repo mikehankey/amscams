@@ -123,7 +123,7 @@ def get_text_pos(text_pos):
 
 #Add AMS Logo, Info and eventual logo (todo)
 #Resize the frames 
-def add_info_to_frames(frames, path, date, camID, dimensions="1920:1080", text_pos='bl', watermark_pos='tr', enhancement=0):
+def add_info_to_frames(frames, path, date, camID, dimensions="1920:1080", text_pos='bl', watermark_pos='tr', enhancement=0, extra_text):
     
     newpath = r''+path 
     
@@ -137,10 +137,16 @@ def add_info_to_frames(frames, path, date, camID, dimensions="1920:1080", text_p
     # Info position based on options
     text_position = get_text_pos(text_pos)
 
+    # Do we have extra text?
+    if(extra_text.strip()==''):
+        extra_text=''
+
     # Treat All frames
     for idx,f in enumerate(frames): 
         #Resize the frames, add date & watermark in /tmp
         text = 'AMS Cam #'+camID+ ' ' + get_meteor_date_ffmpeg(f) + 'UT'
+        #Add extra text
+        text = extra_text + "^L" + text
         if(enhancement!=1):
             cmd = 'ffmpeg -hide_banner -loglevel panic \
                     -y \
