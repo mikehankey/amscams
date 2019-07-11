@@ -5,7 +5,7 @@ from lib.UtilLib import check_running
 #python3 /home/ams/amscams/pythonv2/Video_Jobs_Cron_Meta.py > /tmp/vid.txt
 
 #We don't do anything if the process is running 
-if(check_running('Video_Jobs_Cron.py')== False):
+if(check_running('Video_Jobs_Cron.py')== 0):
     video_job()
 else:
     print('Video_Jobs_Cron is already running for now')
