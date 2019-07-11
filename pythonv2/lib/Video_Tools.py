@@ -32,7 +32,8 @@ def get_sd_frames(camID,date):
     cur_path = IMG_SD_SRC_PATH + date + "/images"
     #print(cur_path)
     frames = [f for f in listdir(cur_path) if camID in f and "-tn" not in f and "-night" not in f and "trim" not in f and isfile(join(cur_path, f))]
-    
+    #DEBUG ONLY!! 
+    frames = frames[1:5]
     if not frames:
         print('NO INPUT FOR VID CamID:' + camID + ' - DATE ' + date)
         print('FOLDER: ' + cur_path)
@@ -64,9 +65,9 @@ def get_hd_frames(camID,date):
         #If nothing is found we try the SD
         return get_sd_frames(camID,date)
     else:
-        onlyfiles = [f for f in listdir(cur_path) if camID in f and date in f and "-tn" not in f and "-night" not in f and "trim" not in f and isfile(join(cur_path, f))]
+        frames = [f for f in listdir(cur_path) if camID in f and date in f and "-tn" not in f and "-night" not in f and "trim" not in f and isfile(join(cur_path, f))]
         #DEBUG ONLY!! 
-        #onlyfiles = onlyfiles[1:5]
+        frames = frames[1:5]
           
         
         #Check temporary folder to store the frames of all the videos
@@ -80,7 +81,7 @@ def get_hd_frames(camID,date):
                 os.remove(f)
         #We extract one frame per video and add it to the array to return
         toReturn = []
-        for idx,vid in enumerate(sorted(onlyfiles)):
+        for idx,vid in enumerate(sorted(frames)):
             vid_out = vid.replace('.mp4','')
             cmd = 'ffmpeg -y -hide_banner -loglevel panic -i '+IMG_HD_SRC_PATH+'/'+vid+' -vframes 1 -f image2 '+ tmppath + vid_out + '.png' 
             output = subprocess.check_output(cmd, shell=True).decode("utf-8")
