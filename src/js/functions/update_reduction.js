@@ -126,6 +126,8 @@ function update_reduction_only() {
 
 
             }
+
+            reduction_table_actions();
  
             loading_done();
  
