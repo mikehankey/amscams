@@ -33,7 +33,7 @@ def get_sd_frames(camID,date):
     #print(cur_path)
     frames = [f for f in listdir(cur_path) if camID in f and "-tn" not in f and "-night" not in f and "trim" not in f and isfile(join(cur_path, f))]
     #DEBUG ONLY!! 
-    #frames = frames[1:15]
+    frames = frames[1:50]
     if not frames:
         print('NO INPUT FOR VID CamID:' + camID + ' - DATE ' + date)
         print('FOLDER: ' + cur_path)
@@ -67,7 +67,7 @@ def get_hd_frames(camID,date):
     else:
         frames = [f for f in listdir(cur_path) if camID in f and date in f and "-tn" not in f and "-night" not in f and "trim" not in f and isfile(join(cur_path, f))]
         #DEBUG ONLY!! 
-        #frames = frames[1:15]
+        frames = frames[1:50]
           
         
         #Check temporary folder to store the frames of all the videos
