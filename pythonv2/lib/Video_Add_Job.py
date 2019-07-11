@@ -8,7 +8,7 @@ from os.path import isfile, join, exists
 from lib.VIDEO_VARS import * 
 
 #ADD Job to WAITING_JOBS
-def add_video_job(name,cam_id,date,fps,dim,text_pos,wat_pos):
+def add_video_job(name,cam_id,date,fps,dim,text_pos,wat_pos,extra_text):
 
     #Is the waiting_job folder exists? 
     if not os.path.exists(WAITING_JOBS_FOLDER):
@@ -41,7 +41,8 @@ def add_video_job(name,cam_id,date,fps,dim,text_pos,wat_pos):
         'dim':dim,
         'text_pos':text_pos,
         'wat_pos':wat_pos,
-        'status': 'waiting'
+        'status': 'waiting',
+        'extra_test':extra_text
     }
 
     duplicate = False

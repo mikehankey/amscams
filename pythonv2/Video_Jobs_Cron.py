@@ -8,7 +8,7 @@ from lib.VIDEO_VARS import *
 
 
 def video_job():
-    print('VIDEO JOB RUNNING')
+    print('VIDEO JOB NOW RUNNING')
 
     js_file = Path(WAITING_JOBS)
     if js_file.is_file():

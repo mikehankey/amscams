@@ -226,7 +226,7 @@ def controller(json_conf):
 
    #CUSTOM VIDEOS (AJAX CALL)
    if cmd == 'generate_timelapse': 
-      add_video_job('timelapse',form.getvalue('tl_cam_id'),form.getvalue('tl_date'),form.getvalue('fps'),form.getvalue('dim'),form.getvalue('text_pos'),form.getvalue('wat_pos'))
+      add_video_job('timelapse',form.getvalue('tl_cam_id'),form.getvalue('tl_date'),form.getvalue('fps'),form.getvalue('dim'),form.getvalue('text_pos'),form.getvalue('wat_pos'),form.getvalue('extra_text'))
       exit()
 
   

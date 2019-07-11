@@ -38,7 +38,7 @@ function add_timelapse_modal() {
                                 </div> \
                             </div> \
                             <div class="form-group row mb-1"> \
-                                <label class="col-sm-4 col-form-label"><b>Frame Count</b></label> \
+                                <label class="col-sm-4 col-form-label"><b>Frame Cnt~</b></label> \
                                 <div class="col-sm-8"> \
                                     <input type="text" readonly class="form-control-plaintext" id="tot_f" value=""> \
                                 </div> \
@@ -98,6 +98,12 @@ function add_timelapse_modal() {
                                 </div> \
                             </div> \
                         </div> \
+                        <div class="col-sm-6"> \
+                            <div class="form-group">\
+                                <label for="wat_pos" class="col-form-label"><b>Extra info</b></label> \
+                                <textarea name="extra_text" value="" row="1"/> \
+                            </div>\
+                        </div>\
                 </form> \
             </div> \
             </div> \
