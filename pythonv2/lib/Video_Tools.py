@@ -146,7 +146,7 @@ def add_info_to_frames(frames, path, date, camID, extra_text, dimensions="1920:1
         #Resize the frames, add date & watermark in /tmp
         text = 'AMS Cam #'+camID+ ' ' + get_meteor_date_ffmpeg(f) + 'UT'
         #Add extra text
-        text = extra_text + "^L" + text
+        text = extra_text + "\n" + text
         if(enhancement!=1):
             cmd = 'ffmpeg -hide_banner -loglevel panic \
                     -y \
