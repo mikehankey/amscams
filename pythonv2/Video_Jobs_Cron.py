@@ -5,7 +5,7 @@ from pathlib import Path
 from os.path import isfile, join, exists
 from lib.Video_Timelapse import generate_timelapse, get_meteor_date_ffmpeg
 from lib.VIDEO_VARS import * 
- 
+from lib.UtilLib import check_running 
 
 #We don't do anything if the process is running 
 if(check_running('Video_Jobs_Cron.py')== False):
