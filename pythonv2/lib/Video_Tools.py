@@ -153,7 +153,7 @@ def add_info_to_frames(frames, path, date, camID, extra_text, dimensions="1920:1
                     -i ' + path+'/'+ f + '    \
                     -i ' + AMS_WATERMARK + ' \
                     -filter_complex "[0:v]scale='+dimensions+'[scaled]; \
-                    [scaled]drawtext=:text=\'' + text + '\':fontcolor=white@'+FONT_TRANSPARENCY+':fontsize='+FONT_SIZE+':'+text_position+':line_h='+(FONT_SIZE+5)+'[texted]; \
+                    [scaled]drawtext=:text=\'' + text + '\':fontcolor=white@'+FONT_TRANSPARENCY+':fontsize='+FONT_SIZE+':'+text_position+':line_h='+str(FONT_SIZE+5)+'[texted]; \
                     [texted]overlay='+watermark_position+'[out]" \
                     -map "[out]"  ' + newpath + '/' + str(idx) + '.png'      
         else:
@@ -162,7 +162,7 @@ def add_info_to_frames(frames, path, date, camID, extra_text, dimensions="1920:1
                     -i ' + path+'/'+ f + '    \
                     -i ' + AMS_WATERMARK + ' \
                     -filter_complex "[0:v]scale='+dimensions+'[scaled]; \
-                    [scaled]eq=contrast=1.3[sat];[sat]drawtext=:text=\'' + text + '\':fontcolor=white@'+FONT_TRANSPARENCY+':fontsize='+FONT_SIZE+':'+text_position+':line_h='+(FONT_SIZE+5)+'[texted]; \
+                    [scaled]eq=contrast=1.3[sat];[sat]drawtext=:text=\'' + text + '\':fontcolor=white@'+FONT_TRANSPARENCY+':fontsize='+FONT_SIZE+':'+text_position+':line_h='+str(FONT_SIZE+5)+'[texted]; \
                     [texted]overlay='+watermark_position+'[out]" \
                     -map "[out]"  ' + newpath + '/' + str(idx) + '.png'                
          
