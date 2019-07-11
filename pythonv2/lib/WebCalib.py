@@ -34,8 +34,8 @@ def update_frame_ajax(json_conf, form):
       mr['metframes'][fn]['hd_x'] = int(new_x)
       mr['metframes'][fn]['hd_y'] = int(new_y)
    except Exception: 
-      os.system("cd /home/ams/amscams/pythonv2/; ./reducer2.py " + sd_video_file + "> /mnt/ams2/tmp/rrr.txt")
-      os.system("cd /home/ams/amscams/pythonv2/; ./reducer2.py eval " + sd_video_file + "> /mnt/ams2/tmp/rrr.txt")
+      #os.system("cd /home/ams/amscams/pythonv2/; ./reducer3.py " + sd_video_file + "> /mnt/ams2/tmp/rrr.txt")
+      os.system("cd /home/ams/amscams/pythonv2/; ./reducer3.py dm " + sd_video_file + "> /mnt/ams2/tmp/rrr.txt")
       mrf = sd_video_file.replace(".mp4", "-reduced.json")
       mr = load_json_file(mrf)   
       mr = load_json_file(mrf)
@@ -50,42 +50,64 @@ def update_frame_ajax(json_conf, form):
    resp['msg'] = "new frame added."
    resp['new_frame'] = mr['metframes'][fn]
    print(json.dumps(resp))
-   os.system("cd /home/ams/amscams/pythonv2/; ./reducer2.py eval " + mrf + "> /mnt/ams2/tmp/rrr.txt")
+   os.system("cd /home/ams/amscams/pythonv2/; ./reducer3.py cm " + mrf + "> /mnt/ams2/tmp/rrr.txt")
 
 
 def add_frame_ajax( json_conf, form):
+   hdm_x = 2.7272727272727272
+   hdm_y = 1.875
 
    sd_video_file = form.getvalue("sd_video_file")
    new_fn = form.getvalue("fn")
+
+
    prev_fn = str(int(new_fn) - 1)
    next_fn = str(int(new_fn) + 1)
    
    mrf = sd_video_file.replace(".mp4", "-reduced.json")
-   
    mr = load_json_file(mrf)
+   #print(mr['metconf']['sd_fns'])
+   first_frame = int(mr['metconf']['sd_fns'][0])
+   first_x = int(mr['metconf']['sd_xs'][0])
    metframes = mr['metframes']
    metconf = mr['metconf']
    #print(mr)
    #if new_fn in metframes:
-   #   print("YO", metframes[new_fn]) 
-   
    if str(prev_fn) in metframes:
 
       # frame exists before make est from prev frame info
-      last_x = metframes[prev_fn]['hd_x']
-      last_y = metframes[prev_fn]['hd_y']
-      est_x = int(last_x + (metconf['x_dir_mod'] * metconf['med_seg_len']))
-      est_y = int((metconf['m']*est_x)+metconf['b'])
+      last_x = metframes[prev_fn]['sd_cx']
+      last_y = metframes[prev_fn]['sd_cy']
+      #est_x = int(last_x + (metconf['x_dir_mod'] * metconf['sd_seg_len']))
+      #est_y = int((metconf['sd_m']*est_x)+metconf['sd_b'])
+      #est_x = int(est_x * hdm_x)
+      #est_y = int(est_y * hdm_y)
+      fcc = (int(new_fn) - int(first_frame)) 
+      #print("FCC:", fcc, metconf['sd_seg_len'], metconf['sd_acl_poly'])
+      est_x = int(first_x) + (metconf['x_dir_mod'] * (metconf['sd_seg_len']*fcc)) + (metconf['sd_acl_poly'] * (fcc**2))
+      est_y = (metconf['sd_m']*est_x)+metconf['sd_b']
+      sd_cx = est_x
+      sd_cy = est_y
+      est_x = int(est_x *hdm_x)
+      est_y = int(est_y *hdm_y)
+
    elif str(next_fn) in metframes:
       # this frame exists before any others so need to add est in reverse. 
-      #print("Next fn exist ", next_fn)
-      last_x = metframes[next_fn]['hd_x']
-      last_y = metframes[next_fn]['hd_y']
-      est_x = int(last_x + ((-1*metconf['x_dir_mod']) * metconf['med_seg_len']))
-      est_y = int((metconf['m']*est_x)+metconf['b'])
+      last_x = metframes[next_fn]['sd_cx']
+      last_y = metframes[next_fn]['sd_cy']
+      #est_x = int(last_x + ((-1*metconf['x_dir_mod']) * metconf['med_seg_len']))
+      #est_x = int(last_x + ((-1*metconf['x_dir_mod']) * metconf['sd_seg_len']))
+      #est_y = int((metconf['sd_m']*est_x)+metconf['sd_b'])
+      #est_x = int(est_x * hdm_x)
+      #est_y = int(est_y * hdm_y)
 
-   #print("NE FN", new_fn, type(new_fn), "<HR>")
-   #print(isinstance(new_fn, str))
+      #print("<HR>", int(last_x), metconf['x_dir_mod'], metconf['sd_seg_len'], metconf['sd_acl_poly'])
+      est_x = int(last_x) + (-1*metconf['x_dir_mod'] * (metconf['sd_seg_len']*1)) + (metconf['sd_acl_poly'] * 1)
+      est_y = (metconf['sd_m']*est_x)+metconf['sd_b']
+      sd_cx = est_x
+      sd_cy = est_y
+      est_x = int(est_x * hdm_x)
+      est_y = int(est_y * hdm_y)
 
    if new_fn not in metframes:
       metframes[new_fn] = {}
@@ -94,6 +116,8 @@ def add_frame_ajax( json_conf, form):
       metframes[new_fn]['hd_y'] = est_y
       metframes[new_fn]['w'] = 5
       metframes[new_fn]['h'] = 5
+      metframes[new_fn]['sd_cx'] = sd_cx
+      metframes[new_fn]['sd_cy'] = sd_cy
       metframes[new_fn]['ra'] = 0
       metframes[new_fn]['dec'] = 0
       metframes[new_fn]['az'] = 0
@@ -104,6 +128,7 @@ def add_frame_ajax( json_conf, form):
       ifn = int(new_fn)
       frame = frames[ifn]
       frame = cv2.resize(frame, (1920,1080)) 
+      
       cnt_img = frame[y1:y2,x1:x2]
       min_val, max_val, min_loc, max_loc = cv2.minMaxLoc(cnt_img)
       hd_x = max_loc[0] + x1  
@@ -124,7 +149,7 @@ def add_frame_ajax( json_conf, form):
 
    mr['metframes'] = metframes
    save_json_file(mrf, mr)
-   os.system("cd /home/ams/amscams/pythonv2/; ./reducer2.py eval " + mrf + "> /mnt/ams2/tmp/rrr.txt")
+   os.system("cd /home/ams/amscams/pythonv2/; ./reducer3.py cm " + mrf + "> /mnt/ams2/tmp/rrr.txt")
    mr = load_json_file(mrf )
    resp = {}
    resp['msg'] = "new frame added."

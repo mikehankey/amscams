@@ -1,5 +1,6 @@
 from scipy import signal
 
+import math
 import operator
 import datetime
 from lib.FileIO import load_json_file, save_json_file, cfe
@@ -7,7 +8,7 @@ import numpy as np
 import cv2
 from lib.UtilLib import calc_dist, better_parse_file_date, bound_cnt
 from lib.VideoLib import load_video_frames 
-from lib.ImageLib import adjustLevels 
+from lib.ImageLib import adjustLevels , mask_frame
 from lib.UtilLib import find_slope 
 import scipy.optimize
 
@@ -41,7 +42,6 @@ def find_best_match(matches, cnt, objects):
       mscore[oid] = abs(tm-m)
       bscore[oid] = abs(tb-b)
       print("M,B for this object is: ", m,b,tm,tb)
-   
    best_mids = sorted(mscore.items(), key=operator.itemgetter(1))
    best_bids = sorted(bscore.items(), key=operator.itemgetter(1))
    best_mid = best_bids[0][0]
@@ -82,7 +82,6 @@ def build_thresh_frames(sd_frames):
       ithresh = np.max(gray_frame) * .8
       #if thresh < 20:
       #   thresh = 20
-
       _, image_thresh = cv2.threshold(gray_frame.copy(), ithresh, 255, cv2.THRESH_BINARY)
       #show_img2 = cv2.resize(cv2.convertScaleAbs(image_thresh), (960,540))
       #cv2.imshow('diff image', show_img2)
@@ -126,15 +125,32 @@ def detect_meteor(video_file, json_conf, show = 0):
 
    min_px = min(mxpx)
    max_px = min(mxpx)
-   thresh = min_px * .8
+   thresh = min_px * .5
    first_gray_frame = None
    last_image_thresh = None
 
    #thresh_frames = build_thresh_frames(sd_frames)
    #exit()
 
+   mask_image = sd_frames[0]
+
+   ithresh = np.max(mask_image) * .5
+   if ithresh < 20:
+      ithresh = 20
+   _, mask_thresh = cv2.threshold(mask_image.copy(), ithresh, 255, cv2.THRESH_BINARY)
+   mask_cnts,mask_pos_cnts = find_contours(mask_thresh, mask_thresh)
+
+   mask_points = []
+   for msk in mask_pos_cnts:
+      mask_points.append((msk[0], msk[1]))
+      print(msk)
+
+
+
    for frame in sd_frames:
       #hd_img = cv2.resize(frame, (1920,1080))
+      hd_img = mask_frame(frame, mask_points, [],5)
+
       hd_img = frame
       if len(hd_img.shape) == 3:
          gray_frame = cv2.cvtColor(hd_img, cv2.COLOR_BGR2GRAY)
@@ -164,8 +180,7 @@ def detect_meteor(video_file, json_conf, show = 0):
       image_diff = first_image_diff
 
       thresh = np.max(image_diff) * .95
-      ithresh = np.max(gray_frame) * .8
-      print("THRESH:", thresh)
+      ithresh = np.max(gray_frame) * .5
       if thresh < 20:
          thresh = 20
 
@@ -220,10 +235,10 @@ def detect_meteor(video_file, json_conf, show = 0):
       fns = []
       elp_fr = obj['history'][-1][0] - obj['history'][0][0]
       #print(obj)
-      for hs in obj['history']:
+      #for hs in obj['history']:
          #print(obj['oid'], hs[-1])
-         iis.append(hs[-1])
-         fns.append(hs[0])
+         #iis.append(hs[-1])
+         #fns.append(hs[0])
 
       sci_peaks, peak_to_frame = meteor_test_peaks(obj)
 
@@ -234,21 +249,31 @@ def detect_meteor(video_file, json_conf, show = 0):
    for obj in objects:
       elp_fr = obj['history'][-1][0] - obj['history'][0][0]
       hist_len = len(obj['history'])
+
+      (max_cm,gaps,gap_events,cm_hist_len_ratio) = meteor_test_cm_gaps(obj)
+      obj['max_cm'] = max_cm  
+      obj['gaps'] = gaps
+      obj['gap_events'] = gap_events
+      obj['cm_hist_len_ratio'] = cm_hist_len_ratio
+
       if elp_fr > 0:
          elp_fr_to_hist_len_ratio = len(obj['history']) / elp_fr
          obj['elp_fr_to_hist_len_ratio'] = elp_fr_to_hist_len_ratio
          print("ELP HIST:", obj['oid'], elp_fr_to_hist_len_ratio)
-      if obj['max_cm'] >= 3 and obj['gaps'] < 10 and (.9 <= elp_fr_to_hist_len_ratio <= 2):
+      if obj['max_cm'] >= 3 and obj['gaps'] < 10 and (.7 <= elp_fr_to_hist_len_ratio <= 2):
 
          print(obj['oid'], obj['status'], obj['hist_len'], obj['is_straight'], obj['dist'], obj['max_cm'], obj['gaps'], obj['gap_events'], obj['cm_hist_len_ratio'])     
          x_dir_mod, y_dir_mod = find_dir_mod(obj['history'])
          obj['x_dir_mod'] = x_dir_mod
          obj['y_dir_mod'] = y_dir_mod
+         obj['debug'] = "Meteor"
          meteors.append(obj)
+      else:
+         obj['debug'] = "Hist len: " + str(obj['hist_len']) + " Straight: " + str(obj['is_straight']) + " Dist: " + str(obj['dist']) + " Max CM:" + str(obj['max_cm']) + " Gaps: " + str(obj['gaps']) + " Gap Events: " + str(obj['gap_events']) + " Gap frame ratio:" + str(obj['cm_hist_len_ratio'])
    if len(meteors) == 0:
       print("No meteors found.") 
       for obj in objects:
-         print(obj['oid'], obj)
+         print(obj['oid'], obj['debug'], obj['history'])
       exit()
    elif len(meteors) == 1:
       hdm_x = 2.7272
@@ -338,20 +363,26 @@ def detect_meteor(video_file, json_conf, show = 0):
       for obj in meteors:
          print(obj)
 
+   iis = []
+   fns = []
    for fn in metframes:
       print(fn, metframes[fn])
+      if "sd_intensity" in metframes[fn]:
+         iis.append(int(metframes[fn]['sd_intensity']))
+         fns.append(int(fn))
 
    # make light curve:
 
-   for hs in obj['history']:
-      print("HIST:", hs)
-      iis.append(hs[-1])
-      fns.append(hs[0])
+   #for hs in obj['history']:
+   #   print("HIST:", hs)
+   #   iis.append(hs[-1])
+   #   fns.append(hs[0])
 
    import matplotlib
    matplotlib.use('Agg')
    import matplotlib.pyplot as plt
    #fig = plt.figure()
+   print(fns,iis)
    plt.plot(fns,iis)
    curve_file = video_file.replace(".mp4", "-lightcurve.png")
    plt.savefig(curve_file)
@@ -360,12 +391,14 @@ def detect_meteor(video_file, json_conf, show = 0):
    print("")
    for key in metconf:
       print(key, metconf[key])
-   clean_metframes(metframes,metconf,frames)
+   metframes, metconf = clean_metframes(metframes,metconf,frames)
    metframes, metconf = minimize_start_len(metframes,frames,metconf,show)
 
-   mfd, metframes = metframes_to_mfd(metframes, video_file)
+   print("METFRAME LEN:", len(metframes))
+   mfd, metframes,metconf = metframes_to_mfd(metframes, metconf, video_file)
+   print("METFRAME LEN:", len(metframes))
 
-   print(mfd)
+
    cmp_imgs,metframes = make_meteor_cnt_composite_images(json_conf, mfd, metframes, frames, video_file)
    prefix = red_data['sd_video_file'].replace(".mp4", "-frm")
    prefix = prefix.replace("SD/proc2/", "meteors/")
@@ -469,7 +502,12 @@ def minimize_start_len(metframes,frames,metconf,show=0):
 
 
 def reduce_seg_acl(this_poly,metframes,metconf,frames,show=0):
+  
+   # update m/b
+   m,b = best_fit_slope_and_intercept(metconf['sd_xs'],metconf['sd_ys'])
+   print("METCONF:", m, b, metconf['sd_xs'], metconf['sd_ys'])
    
+ 
    fc = 0
    tot_res_err = 0
    for frame in frames:   
@@ -491,6 +529,7 @@ def reduce_seg_acl(this_poly,metframes,metconf,frames,show=0):
          #est_x = int(metconf['sd_fx']) + (metconf['x_dir_mod'] * (this_poly[0]*fcc)) + (0 * fcc)
          est_x = int(metconf['sd_fx']) + (metconf['x_dir_mod'] * (this_poly[0]*fcc)) + (this_poly[1] * (fcc**2))
          est_y = (metconf['sd_m']*est_x)+metconf['sd_b']
+         print("EST X/Y", est_x, est_y, metconf['sd_m'], metconf['sd_b'])
          est_x = int(est_x)
          est_y = int(est_y)
          #res_err = calc_dist((est_x,est_y),(lc_x,lc_y))
@@ -708,12 +747,14 @@ def id_object(cnt, objects, fc,max_loc, max_px, intensity, is_hd=0):
          hxs.append(tx)
          hys.append(ty)
          points.append((tx,ty))
-      if len(hxs) > 4:
+      if len(hxs) >= 2:
          min_hx = min(hxs)
          min_hy = min(hys)
          max_hx = max(hxs)
          max_hy = max(hys)
+         
          dist = calc_dist((min_hx,min_hy),(max_hx,max_hy))
+         #print("DIST:", min_hx, min_hy, max_hx,max_hy)
          object['dist'] = dist
          if dist < 5:
             object['status'] = "not_moving"
@@ -853,8 +894,9 @@ def find_in_hist(object,x,y,object_hist, hd = 0):
       last_this_slope = find_slope((lx,ly), (x,y))
       if int(oid) == 3:
          slope_diff = abs(abs(first_last_slope) - abs(first_this_slope))
-         if slope_diff > 1:
-            return(0)
+
+         #if slope_diff > 1:
+         #   return(0)
 
    if len(object_hist) >=4:
       object_hist = object_hist[-3:]
@@ -957,7 +999,7 @@ def arecolinear(points):
 
 def meteor_test_cm_gaps(object):
    hist = object['history']
-   cm = 0
+   cm = 1
    max_cm = 0
    gaps = 0
    max_gaps = 0
@@ -968,26 +1010,30 @@ def meteor_test_cm_gaps(object):
          fn,x,y,w,h,mx,my,max_px,intensity = hs
       if len(hs) == 8:
          fn,x,y,w,h,mx,my,max_px = hs
+      print("CM:", object['oid'], fn, last_frame, cm)
       
       if ((last_frame + 1 == fn) and last_frame > 0) or last_frame == fn:
          cm = cm + 1
+         print("YES CM!", fn, hist)
+         if cm > max_cm:
+            max_cm = cm
       else:
+         print("NO CM!", fn)
          cm = 0
          if last_frame > 5 :
             gaps = gaps + (fn - last_frame)
             if fn - last_frame > 1:
                gap_events = gap_events + 1
-      if cm > max_cm:
-         max_cm = cm
       if gaps > max_gaps:
          max_gaps = gaps
-      last_frame = fn
+      last_frame = int(fn)
 
    # max cm per hist len 1 is best score. < .5 is fail.
    if max_cm > 0:
       cm_hist_len_ratio = max_cm / len(hist)
    else:
       cm_hist_len_ratio = 0
+   max_cm = max_cm + 1
    return(max_cm,gaps,gap_events,cm_hist_len_ratio)
 
 def find_dir_mod(mfd):
@@ -1017,6 +1063,12 @@ def best_fit_slope_and_intercept(xs,ys):
          ((np.mean(xs)*np.mean(xs)) - np.mean(xs*xs)))
 
     b = np.mean(ys) - m*np.mean(xs)
+    if math.isnan(m) is True:
+
+       m = 1   
+       b = 1   
+    else:
+       print("M,B is cool.", m,b)
 
     return m, b
 
@@ -1041,12 +1093,19 @@ def meteor_test_peaks(object):
 
    return(sci_peaks, peak_to_frame)
 
-def metframes_to_mfd(metframes, sd_video_file):
+def metframes_to_mfd(metframes, metconf, sd_video_file):
    metframes = sort_metframes(metframes)
    hdm_x = 2.7272
    hdm_y = 1.875
 
    meteor_frame_data = []
+   last_hd_x = None
+   last_hd_y = None
+   hd_segs = []
+   xs = []
+   ys = []
+   hdxs = []
+   hdys = []
    for fn in metframes:
       frame_time,frame_time_str = calc_frame_time(sd_video_file, fn)
       metframes[fn]['frame_time'] = frame_time_str
@@ -1068,7 +1127,18 @@ def metframes_to_mfd(metframes, sd_video_file):
       else:
          print("Get missing intensity...")
       meteor_frame_data.append((frame_time_str,fn,int(metframes[fn]['hd_x']),int(metframes[fn]['hd_y']),int(metframes[fn]['w']),int(metframes[fn]['h']),int(metframes[fn]['max_px']),float(metframes[fn]['ra']),float(metframes[fn]['dec']),float(metframes[fn]['az']),float(metframes[fn]['el']) ))
-   return(meteor_frame_data, metframes)
+      if last_hd_x is not None:
+         hd_seg_len = calc_dist((last_hd_x, last_hd_y), (metframes[fn]['hd_x'], metframes[fn]['hd_y']))
+         print("SEG:", fn, last_hd_x, last_hd_y, metframes[fn]['hd_x'], metframes[fn]['hd_y'], hd_seg_len)
+         hd_segs.append(hd_seg_len)
+      last_hd_x = metframes[fn]['hd_x']
+      last_hd_y = metframes[fn]['hd_y']
+
+   med_seg_len = float(np.median(hd_segs))
+   metconf['hd_segs'] = hd_segs
+   #metconf['med_seg_len'] = med_seg_len 
+      
+   return(meteor_frame_data, metframes, metconf)
 
 def calc_frame_time(video_file, frame_num):
    (f_datetime, cam_id, f_date_str,Y,M,D, H, MM, S) = better_parse_file_date(video_file)
@@ -1093,7 +1163,9 @@ def make_meteor_cnt_composite_images(json_conf, mfd, metframes, frames, sd_video
    cnt_max_w = 0
    cnt_max_h = 0
    for frame_data in mfd:
+      
       frame_time, fn, hd_x,hd_y,w,h,max_px,ra,dec,az,el = frame_data
+      print("MFD:", fn)
       if w > cnt_max_w:
          cnt_max_w = w
       if h > cnt_max_h:
@@ -1116,7 +1188,9 @@ def make_meteor_cnt_composite_images(json_conf, mfd, metframes, frames, sd_video
    #print(cnt_w,cnt_h)
    for frame_data in mfd:
       frame_time, fn, hd_x,hd_y,w,h,max_px,ra,dec,az,el = frame_data
-      fn = str(fn)
+      print("MFD:", fn)
+      if fn not in metframes:
+         fn = str(fn)
       x1,y1,x2,y2 = bound_cnt(hd_x,hd_y,1920,1080,cnt_w)
       #x1 = hd_x - cnt_w
       #x2 = hd_x + cnt_w
@@ -1138,11 +1212,15 @@ def make_meteor_cnt_composite_images(json_conf, mfd, metframes, frames, sd_video
 def make_crop_images(sd_video_file, json_conf):
    if ".mp4" in sd_video_file:
       red_file = sd_video_file.replace(".mp4", "-reduced.json")
+   elif "-reduced.json" in sd_video_file:
+      red_file = sd_video_file
+      sd_video_file = red_file.replace("-reduced.json", ".mp4")
+
+
    frames = load_video_frames(sd_video_file, json_conf)
    red_data = load_json_file(red_file)
 
    cmp_imgs,metframes = make_meteor_cnt_composite_images(json_conf, red_data['meteor_frame_data'], red_data['metframes'], frames, sd_video_file)
-   metconf = red_data['metconf']
    prefix = red_data['sd_video_file'].replace(".mp4", "-frm")
    prefix = prefix.replace("SD/proc2/", "meteors/")
    prefix = prefix.replace("/passed", "")
@@ -1151,7 +1229,8 @@ def make_crop_images(sd_video_file, json_conf):
       print("UPDATING!", prefix + str(fn) + ".png")
       metframes[fn]['cnt_thumb'] = prefix + str(fn) + ".png"
 
-   mfd, metframes = metframes_to_mfd(metframes, sd_video_file)
+   mfd, metframes,metconf = metframes_to_mfd(metframes, red_data['metconf'], sd_video_file)
+   print("LEN MET:", len(mfd), len(metframes))
    red_data['metconf'] = metconf
    red_data['metframes'] = metframes
    red_data['meteor_frame_data'] = mfd
@@ -1164,8 +1243,11 @@ def sort_metframes(metframes):
    for fn in metframes:
       fns.append(int(fn))
    for fn in sorted(fns):
+      ifn = int(fn)
       fn = str(fn)
-      if fn in metframes:
+      if fn in metframes :
          new_metframes[fn] = metframes[fn]
+      if ifn in metframes :
+         new_metframes[ifn] = metframes[ifn]
    return(new_metframes)
 
