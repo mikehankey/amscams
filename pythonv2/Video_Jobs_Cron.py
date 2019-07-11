@@ -5,15 +5,9 @@ from pathlib import Path
 from os.path import isfile, join, exists
 from lib.Video_Timelapse import generate_timelapse, get_meteor_date_ffmpeg
 from lib.VIDEO_VARS import * 
-from lib.UtilLib import check_running 
 
-#We don't do anything if the process is running 
-if(check_running('Video_Jobs_Cron.py')== False):
 
-    #READ THE waiting_jobs file if it exist 
-    #AND CREATE EVENTUAL VIDEO(S)
-    #TO ADD TO CRONTAB:
-    #python3 /home/ams/amscams/pythonv2/Video_Jobs_Cron.py > /tmp/vid.txt
+def video_job():
     js_file = Path(WAITING_JOBS)
     if js_file.is_file():
 
