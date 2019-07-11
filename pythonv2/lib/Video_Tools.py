@@ -146,14 +146,14 @@ def add_info_to_frames(frames, path, date, camID, extra_text, dimensions="1920:1
         #Resize the frames, add date & watermark in /tmp
         text = 'AMS Cam #'+camID+ ' ' + get_meteor_date_ffmpeg(f) + 'UT'
         #Add extra text
-        text = extra_text + "\n" + text
+        text =  + "\n" + text + extra_text
         if(enhancement!=1):
             cmd = 'ffmpeg -hide_banner -loglevel panic \
                     -y \
                     -i ' + path+'/'+ f + '    \
                     -i ' + AMS_WATERMARK + ' \
                     -filter_complex "[0:v]scale='+dimensions+'[scaled]; \
-                    [scaled]drawtext=:text=\'' + text + '\':fontcolor=white@'+FONT_TRANSPARENCY+':fontsize='+FONT_SIZE+':'+text_position+'[texted]; \
+                    [scaled]drawtext=:text=\'' + text + '\':fontcolor=white@'+FONT_TRANSPARENCY+':fontsize='+FONT_SIZE+':'+text_position+':line_h='+(FONT_SIZE+5)+'[texted]; \
                     [texted]overlay='+watermark_position+'[out]" \
                     -map "[out]"  ' + newpath + '/' + str(idx) + '.png'      
         else:
@@ -162,7 +162,7 @@ def add_info_to_frames(frames, path, date, camID, extra_text, dimensions="1920:1
                     -i ' + path+'/'+ f + '    \
                     -i ' + AMS_WATERMARK + ' \
                     -filter_complex "[0:v]scale='+dimensions+'[scaled]; \
-                    [scaled]eq=contrast=1.3[sat];[sat]drawtext=:text=\'' + text + '\':fontcolor=white@'+FONT_TRANSPARENCY+':fontsize='+FONT_SIZE+':'+text_position+'[texted]; \
+                    [scaled]eq=contrast=1.3[sat];[sat]drawtext=:text=\'' + text + '\':fontcolor=white@'+FONT_TRANSPARENCY+':fontsize='+FONT_SIZE+':'+text_position+':line_h='+(FONT_SIZE+5)+'[texted]; \
                     [texted]overlay='+watermark_position+'[out]" \
                     -map "[out]"  ' + newpath + '/' + str(idx) + '.png'                
          
