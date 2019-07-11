@@ -38,8 +38,7 @@ function update_star_and_reduction() {
             }
 
             loading_done();
-            alert('ok');
-            test_missing_thumb();
+           
  
         }, error: function(data) {
             
