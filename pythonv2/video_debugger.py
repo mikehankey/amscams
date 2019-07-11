@@ -32,6 +32,6 @@ frames, path = get_hd_frames(camID,date,50)
 if(frames is None):
     print('NO FRAME FOUND')
 else:
-    where_path = add_info_to_frames(frames, path, date, camID, 'THIS IS A TEST', "1920:1080",  'bl',  'tr',  0)
+    where_path = add_info_to_frames(frames, path, date, camID, "THIS IS A TEST", "1920:1080",  'bl',  'tr',  0)
     s = create_vid_from_frames(frames, where_path, date, camID, fps="30")
     print('THE VID SHOULD BE THERE ' + s)

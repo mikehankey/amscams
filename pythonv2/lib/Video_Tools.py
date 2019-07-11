@@ -124,7 +124,7 @@ def get_text_pos(text_pos):
 #Add AMS Logo, Info and eventual logo (todo)
 #Resize the frames 
 def add_info_to_frames(frames, path, date, camID, extra_text, dimensions="1920:1080", text_pos='bl', watermark_pos='tr', enhancement=0):
-    
+ 
     newpath = r''+path 
     
     #Create destination folder if it doesn't exist yet
@@ -148,6 +148,9 @@ def add_info_to_frames(frames, path, date, camID, extra_text, dimensions="1920:1
         #Add extra text
         text =  extra_text + "\n" + text 
         line_height = int(FONT_SIZE) +5
+
+        print('LINE HEIGHT ' + line_height)
+
         if(enhancement!=1):
             cmd = 'ffmpeg -hide_banner -loglevel panic \
                     -y \
