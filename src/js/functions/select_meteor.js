@@ -43,11 +43,8 @@ function select_meteor_ajax(fn,x,y) {
                 $('tr#fr_'+fn).replaceWith($(new_row));
                 */
 
-               update_star_and_reduction();
-
-                // Reload the actions
-                reduction_table_actions();
-    
+                update_star_and_reduction();
+               
                 loading_done();
     
                 bootbox.alert({

@@ -29,7 +29,8 @@ function update_reduction_on_canvas_and_table(json_resp) {
      
     
     $.each(smf, function(i,v){
-  
+ 
+        
         // Get thumb path
         var frame_id = parseInt(v[1]);
         var thumb_path = my_image.substring(0,my_image.indexOf('-half')) + '-frm' + frame_id + '.png';
@@ -83,4 +84,59 @@ function update_reduction_on_canvas_and_table(json_resp) {
 
     // Reload the actions
     reduction_table_actions();
+}
+
+
+// Remove Reductions data from the canvas
+function remove_reduction_objects_from_canvas() {
+    var objects = canvas.getObjects()
+    $.each(objects,function(i,v){
+        if(v.type=='reduc_rect') {
+            canvas.remove(objects[i]);
+        }
+    });
+     
+ }
+
+function update_reduction_only() {
+    var cmd_data = {
+        video_file:       main_vid,          // Defined on the page 
+        cmd: 'update_red_info_ajax'
+    }
+
+    loading({text:'Updating  reduction data...', overlay:true}); 
+    
+    $.ajax({ 
+        url:  "/pycgi/webUI.py",
+        data: cmd_data,
+        success: function(data) {
+        
+            var json_resp = $.parseJSON(data); 
+
+            if(json_resp['status']!==0) {
+             
+                // Remove All objects from Canvas with type =   type: 'reduc_rect'
+                remove_reduction_objects_from_canvas();
+                 
+                // Update Reduction
+                update_reduction_on_canvas_and_table(json_resp);
+                
+                // Update Add frames
+                setup_add_frames();
+
+
+            }
+ 
+            loading_done();
+ 
+        }, error: function(data) {
+            
+            loading_done();
+            bootbox.alert({
+                message: "Something went wrong with the reduction data. Please, try again later",
+                className: 'rubberBand animated error',
+                centerVertical: true 
+            });
+        }
+    });
 }
