@@ -169,6 +169,10 @@ function test_missing_thumb() {
             if(rows_with_missing_thumbs.length==0 || cnt>=we_try_how_many_times) {
                 // Replace with processing
                 clearInterval(try_again);
+
+                $.each(rows_with_missing_thumbs, function(i,v) {
+                    $('tr#'+v).find('img.select_meteor').removeAttr('data-src').attr('src','./dist/img/proccessing-sm.png');
+                });
             }    
 
             $.each(rows_with_missing_thumbs, function(i,v) {
