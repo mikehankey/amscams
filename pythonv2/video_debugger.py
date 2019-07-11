@@ -28,7 +28,7 @@ print("GET SD FRAMES FOR '010037','2019_07_11'")
 #path, date, camID
 date = '2019_07_11'
 camID = '010037'
-frames, path = get_hd_frames(camID,date)
+frames, path = get_hd_frames(camID,date,50)
 if(frames is None):
     print('NO FRAME FOUND')
 else:

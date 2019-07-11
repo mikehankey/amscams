@@ -28,12 +28,15 @@ def get_meteor_date_ffmpeg(_file):
 #Input: camID, date
 #Ouput: list of sd frames found for this date/cam
 #ex:camID:010034, date:2019_06_23 
-def get_sd_frames(camID,date):
+def get_sd_frames(camID,date,limit_frame=False):
     cur_path = IMG_SD_SRC_PATH + date + "/images"
     #print(cur_path)
     frames = [f for f in listdir(cur_path) if camID in f and "-tn" not in f and "-night" not in f and "trim" not in f and isfile(join(cur_path, f))]
+    
     #DEBUG ONLY!! 
-    frames = frames[1:50]
+    if(limit_frame is not False):
+        frames = frames[1:50]
+
     if not frames:
         print('NO INPUT FOR VID CamID:' + camID + ' - DATE ' + date)
         print('FOLDER: ' + cur_path)
@@ -56,18 +59,20 @@ def get_sd_frames(camID,date):
 #Input! camID, date
 #Ouput: list of HD frames found for this date or get_sd_frames if no HD frame has been found
 #ex: get_hd_frames('010040','2019_07_08')
-def get_hd_frames(camID,date):
+def get_hd_frames(camID,date,limit_frame=False):
     cur_path = IMG_HD_SRC_PATH
     #test if we have at least one file name - YYYY_DD_MM_HH_ii_SS[_000_]CAM_ID.mp4
     test = [f for f in listdir(cur_path) if f.startswith(date) and f.endswith(camID+'.mp4') and isfile(join(cur_path, f))]
     if not test:
         print('NO HD Frames found - Searching for SD')
         #If nothing is found we try the SD
-        return get_sd_frames(camID,date)
+        return get_sd_frames(camID,date,limit_frame)
     else:
         frames = [f for f in listdir(cur_path) if camID in f and date in f and "-tn" not in f and "-night" not in f and "trim" not in f and isfile(join(cur_path, f))]
+
         #DEBUG ONLY!! 
-        frames = frames[1:50]
+        if(limit_frame is not False):
+            frames = frames[1:50]
           
         
         #Check temporary folder to store the frames of all the videos
