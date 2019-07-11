@@ -4,6 +4,5 @@ function reduction_table_actions() {
         // Setup Select Meteor
         setup_select_meteor();
         // Missing Thumbs?
-        console.log("MISSING THUMBS");
         test_missing_thumb();
 }

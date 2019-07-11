@@ -33,9 +33,13 @@ function update_star_and_reduction() {
 
                 // Reload the actions
                 reduction_table_actions();
+
+                
             }
 
             loading_done();
+
+            test_missing_thumb();
  
         }, error: function(data) {
             
