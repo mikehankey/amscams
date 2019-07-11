@@ -123,7 +123,7 @@ def get_text_pos(text_pos):
 
 #Add AMS Logo, Info and eventual logo (todo)
 #Resize the frames 
-def add_info_to_frames(frames, path, date, camID, dimensions="1920:1080", text_pos='bl', watermark_pos='tr', enhancement=0, extra_text):
+def add_info_to_frames(frames, path, date, camID, extra_text, dimensions="1920:1080", text_pos='bl', watermark_pos='tr', enhancement=0):
     
     newpath = r''+path 
     
