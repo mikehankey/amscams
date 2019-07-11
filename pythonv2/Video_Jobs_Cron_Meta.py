@@ -7,3 +7,5 @@ from lib.UtilLib import check_running
 #We don't do anything if the process is running 
 if(check_running('Video_Jobs_Cron.py')== False):
     video_job()
+else:
+    print('Video_Jobs_Cron is already running for now')
