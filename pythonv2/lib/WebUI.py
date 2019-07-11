@@ -463,7 +463,7 @@ def video_tools(json_conf,form):
                length = ''
          
 
-         all_vids_out += "<div class='preview col-lg-2 col-md-3 norm'>"
+         all_vids_out += "<div class='preview col-lg-3 col-md-3 norm'>"
          all_vids_out += "<a class='mtt vid-link nop' href='"+vid+"' title='Play the Video'>"
          all_vids_out += "<img class='img-fluid ns lz' src='" + vid.replace('.mp4','.png') + "'/>"
          all_vids_out += "</a><span>" + date + " - Cam#" + camid +" - " +  length + "</span></div>"
@@ -484,14 +484,14 @@ def video_tools(json_conf,form):
       for jobs in data['jobs']:
             
             if(jobs['status']=='waiting'):
-                  processing_vids += "<div class='preview col-lg-2 col-md-3 norm'>"
+                  processing_vids += "<div class='preview col-lg-3 col-md-3 norm'>"
                   processing_vids += "<a class='mtt'>"
                   processing_vids += "<img class='img-fluid ns lz' src='./dist/img/waiting.png'/>"
                   processing_vids += "<span>" + jobs['date'].replace('_','/') + " - " + jobs['cam_id'] +"</span></a></div>"
                   vid_counter+=1
 
             if(jobs['status']=='processing'):
-                  processing_vids += "<div class='preview col-lg-2 col-md-3 norm'>"
+                  processing_vids += "<div class='preview col-lg-3 col-md-3 norm'>"
                   processing_vids += "<a class='mtt'>"
                   processing_vids += "<img class='img-fluid ns lz' src='./dist/img/processing.png'/>"
                   processing_vids += "<span>" + jobs['date'].replace('_','/') + " - " + jobs['cam_id'] +"</span></a></div>"
