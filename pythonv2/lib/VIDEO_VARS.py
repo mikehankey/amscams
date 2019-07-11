@@ -17,3 +17,6 @@ VID_FOLDER = WAITING_JOBS_FOLDER
 #AMS WATERMARK
 AMS_WATERMARK = "/home/ams/amscams/dist/img/ams_watermark.png"
 
+#Size of the FONT for the text info
+FONT_SIZE = "18"
+FONT_TRANSPARENCY = "0.6" # between 0 and 1
