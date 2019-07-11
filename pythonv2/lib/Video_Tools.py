@@ -147,7 +147,7 @@ def add_info_to_frames(frames, path, date, camID, extra_text, dimensions="1920:1
         text = 'AMS Cam #'+camID+ ' ' + get_meteor_date_ffmpeg(f) + 'UT'
         #Add extra text
         text =  extra_text + "\n" + text 
-        line_height = int(FONT_SIZE) +5
+        line_height = str(int(FONT_SIZE) +5)
 
         print('LINE HEIGHT ' + line_height)
 
