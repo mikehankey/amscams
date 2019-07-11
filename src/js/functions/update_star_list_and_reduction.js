@@ -30,6 +30,9 @@ function update_star_and_reduction() {
                 
                 // Update Add frames
                 setup_add_frames();
+
+                // Reload the actions
+                reduction_table_actions();
             }
 
             loading_done();
