@@ -15,6 +15,7 @@ function select_meteor_ajax(fn,x,y) {
         success: function(data) {
             
             if($.trim(data)!='') {
+                /*
                 var data = $.parseJSON(data);
                 var nf = data.new_frame; 
                 var new_row = "";
@@ -28,7 +29,8 @@ function select_meteor_ajax(fn,x,y) {
                 // taking care of the + frames buttons 
     
                 // Build new table row
-                new_row += '<tr id="fr_'+fn+'" data-org-x="'+x+'" data-org-y="'+y+'"><td><img src="'+nf.cnt_thumb+'?c='+Math.floor((Math.random() * 100) + 1)+'" width="50" height="50" class="img-fluid select_meteor"/></td>';
+                new_row += '<tr id="fr_'+fn+'" data-org-x="'+x+'" data-org-y="'+y+'">'
+                new_row += '<td><img src="'+nf.cnt_thumb+'?c='+Math.floor((Math.random() * 100) + 1)+'" width="50" height="50" class="img-fluid select_meteor"/></td>';
                 new_row += '<td>'+fn+'</td>';
                 new_row += '<td>'+t+'</td>';
                 new_row += '<td>'+nf.ra.toFixed(2) + "&deg/" + nf.dec.toFixed(2) +'&deg</td>';
@@ -39,7 +41,10 @@ function select_meteor_ajax(fn,x,y) {
                 new_row += '<td><a class="btn btn-danger btn-sm delete_frame"><i class="icon-delete"></i></a></td>';
                 new_row += '<td class="position-relative">'+$('tr#fr_'+fn +' td:last-child').html()+'</td></tr>';
                 $('tr#fr_'+fn).replaceWith($(new_row));
-       
+                */
+
+               update_star_and_reduction();
+
                 // Reload the actions
                 reduction_table_actions();
     
