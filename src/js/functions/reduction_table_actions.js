@@ -3,7 +3,6 @@ function reduction_table_actions() {
         setup_delete_frame();
         // Setup Select Meteor
         setup_select_meteor();
-        // Missing Thumbs?
-        console.log('TEST MISSING THUMBS');
+        // Missing Thumbs? 
         test_missing_thumb();
 }
