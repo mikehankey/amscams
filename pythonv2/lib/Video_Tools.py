@@ -109,16 +109,28 @@ def get_watermark_pos(watermark_pos):
        return "main_w-overlay_w-20:main_h-overlay_h-20"
 
 
-#Return ffmpeg code for Info position (text only)
-def get_text_pos(text_pos):
-    if(text_pos=='tr'):
-        return "x=main_w-text_w-20:y=20"
-    elif (text_pos=='tl'):
-        return  "x=20:y=20"    
-    elif (text_pos=='bl'):
-        return "x=20:y=main_h-text_h-20"
-    else: 
-        return "x=main_w-text_w-20:y=main_h-text_h-20"
+#Return ffmpeg code for Info position (text only + extra text)
+def get_text_pos(text_pos, extra_text_here):
+
+    if(extra_text_here==False):
+        if(text_pos=='tr'):
+            return ("x=main_w-text_w-20:y=20","")
+        elif (text_pos=='tl'):
+            return ("x=20:y=20","")    
+        elif (text_pos=='bl'):
+            return("x=20:y=main_h-text_h-20","")
+        else: 
+            return ("x=main_w-text_w-20","")
+    else:
+        if(text_pos=='tr'):
+            return ("x=main_w-text_w-20:y=20+line_h*2+5","x=main_w-text_w-20:y=20")
+        elif (text_pos=='tl'):
+            return ("x=20:y=20+line_h*2+5","x=20:y=20")    
+        elif (text_pos=='bl'):
+            return("x=20:y=main_h-text_h-20-line_h*2-5","x=20:y=main_h-text_h-20")
+        else: 
+            return ("x=main_w-text_w-20","")                
+             
 
 
 #Add AMS Logo, Info and eventual logo (todo)
@@ -134,12 +146,13 @@ def add_info_to_frames(frames, path, date, camID, extra_text, dimensions="1920:1
     # Watermark position based on options
     watermark_position = get_watermark_pos(watermark_pos)
 
-    # Info position based on options
-    text_position = get_text_pos(text_pos)
-
     # Do we have extra text?
-    if(extra_text.strip()==''):
+    if(extra_text is None or extra_text.strip()==''):
         extra_text=''
+
+    # Info position based on options
+    text_position, extra_text_position = get_text_pos(text_pos, (extra_text!=''))
+ 
 
     # Treat All frames
     for idx,f in enumerate(frames): 
