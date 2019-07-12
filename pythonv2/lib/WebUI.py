@@ -482,6 +482,13 @@ def video_tools(json_conf,form):
    header_out = '';
    processing_vids = '';
 
+   #Get All Cam IDs
+   all_cam_ids = get_the_cam_ids() 
+
+   #Get Current Date (default for datepicker)
+   now = datetime.datetime.now()
+   out_put_date = now.year + "/" + now.month + "/" + now.day
+ 
    if js_file.is_file():
 
       #Open the waiting_job & Load the data
@@ -508,9 +515,10 @@ def video_tools(json_conf,form):
    header_out = "<div class='h1_holder d-flex justify-content-between'>"      
    header_out += "<h1>"+str(vid_counter)+" videos found</h1>"
    header_out += "<div class='d-flex'><button class='btn btn-primary mr-3' id='create_timelapse' style='text-transform: initial;'><span class='icon-youtube'></span> Generate Timelapse Video</button></div></div>"
-   
-
+  
    print(header_out)
+   print("<input type='hidden' name='cur_date' value='"+out_put_date+"'/>")
+   print("<input type='hidden' name='cam_ids' value='"+str(all_cam_ids)+"'/>")
    print("<div class='gallery gal-resize row text-center text-lg-left mt-4'>")
    print(processing_vids)
    print(all_vids_out)
