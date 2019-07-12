@@ -27,9 +27,13 @@ def video_job():
 
             cur_idx = 0
             cur_job = 'X'
+            processing = False
 
             #Get the first "waiting" job
             for idx, cur_jobs in enumerate(alljobs):
+                if(cur_jobs['status']=='processing'):
+                    processing = True
+                    break
                 if(cur_jobs['status']=='waiting'):
                     cur_job = cur_jobs
                     cur_idx = idx
@@ -38,7 +42,7 @@ def video_job():
             #print('CURRENT JOB')
             #print(str(cur_job))
 
-            if(cur_job != 'X'):
+            if(cur_job != 'X' and processing==False):
 
                 #Change Status of the job in the JSON
                 data['jobs'][cur_idx]['status'] = 'processing'
