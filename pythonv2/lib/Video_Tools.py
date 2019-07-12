@@ -175,7 +175,7 @@ def add_info_to_frames(frames, path, date, camID, extra_text, dimensions="1920:1
                     [scaled]drawtext=:text=\'' + text + '\':fontcolor=white@'+FONT_TRANSPARENCY+':fontsize='+FONT_SIZE+':'+text_position 
             if(with_extra_text is True):
                 cmd+= '[texted];' 
-                cmd+= '[texted]drawtext=:text=\''+ extra_text +'\':fontcolor=white@'+FONT_TRANSPARENCY+':fontsize='+FONT_SIZE+':'+extra_text_position+'[texted2];[texted2]'  
+                cmd+= '[texted]drawtext=:text=\''+ extra_text +'\':fontfile=\'/usr/share/fonts/truetype/dejavu/DejaVuSans-Bold.ttf\':fontcolor=white@'+FONT_TRANSPARENCY+':fontsize='+FONT_SIZE+':'+extra_text_position+'[texted2];[texted2]'  
             else:
                 cmd+= '[texted]; [texted]'
 
@@ -190,7 +190,7 @@ def add_info_to_frames(frames, path, date, camID, extra_text, dimensions="1920:1
                     [scaled]eq=contrast=1.3[sat];[sat]drawtext=:text=\'' + text + '\':fontcolor=white@'+FONT_TRANSPARENCY+':fontsize='+FONT_SIZE+':'+text_position 
             if(with_extra_text is True):
                 cmd+= '[texted];' 
-                cmd+= '[texted]drawtext=:text=\''+ extra_text +'\':fontcolor=white@'+FONT_TRANSPARENCY+':fontsize='+FONT_SIZE+':'+extra_text_position+'[texted2];[texted2]'  
+                cmd+= '[texted]drawtext=:text=\''+ extra_text +'\':fontfile=\'/usr/share/fonts/truetype/dejavu/DejaVuSans-Bold.ttf\':fontcolor=white@'+FONT_TRANSPARENCY+':fontsize='+FONT_SIZE+':'+extra_text_position+'[texted2];[texted2]'  
             else:
                 cmd+= '[texted]; [texted]'
 
