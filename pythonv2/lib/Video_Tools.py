@@ -147,7 +147,7 @@ def add_info_to_frames(frames, path, date, camID, extra_text, dimensions="1920:1
     watermark_position = get_watermark_pos(watermark_pos)
 
     # Do we have extra text?
-    if(extra_text is not None or extra_text.strip()!='') {
+    if(extra_text is not None or extra_text.strip()!=''):
         with_extra_text = True
     else:
         with_extra_text = False
