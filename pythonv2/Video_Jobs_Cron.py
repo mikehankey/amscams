@@ -26,6 +26,10 @@ def video_job():
 
         #Do we have any jobs
         alljobs = data['jobs']
+
+        print("ALL JOBS")
+        print(str(alljobs))
+
         if(alljobs is not None):
 
             cur_idx = 0
@@ -36,10 +40,12 @@ def video_job():
             for idx, cur_jobs in enumerate(alljobs):
                 if(cur_jobs['status']=='processing'):
                     processing = True
+                    print("ONE PROCESSING FOUND")
                     break
                 if(cur_jobs['status']=='waiting'):
                     cur_job = cur_jobs
                     cur_idx = idx
+                    print("ONE WAITING FOUND")
                     break;
 
             #print('CURRENT JOB')
