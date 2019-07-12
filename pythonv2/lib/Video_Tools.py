@@ -120,7 +120,7 @@ def get_text_pos(text_pos, extra_text_here):
         elif (text_pos=='bl'):
             return("x=20:y=main_h-text_h-20","")
         else: 
-            return ("x=main_w-text_w-20","")
+            return ("x=main_w-text_w-20:y=main_h-text_h-20","")
     else:
         if(text_pos=='tr'):
             return ("x=main_w-text_w-20:y=20+line_h*2+5","x=main_w-text_w-20:y=20")
@@ -129,7 +129,7 @@ def get_text_pos(text_pos, extra_text_here):
         elif (text_pos=='bl'):
             return("x=20:y=main_h-text_h-20-line_h*2-5","x=20:y=main_h-text_h-20")
         else: 
-            return ("x=main_w-text_w-20","")                
+            return ("x=main_w-text_w-20:y=main_h-text_h-20-line_h*2-5","x=main_w-text_w-20:y=main_h-text_h-20")                
              
 
 
@@ -147,7 +147,8 @@ def add_info_to_frames(frames, path, date, camID, extra_text, dimensions="1920:1
     watermark_position = get_watermark_pos(watermark_pos)
 
     # Do we have extra text?
-    if(extra_text is None or extra_text.strip()==''):
+    with_extra_text = !(extra_text is None or extra_text.strip()=='')
+    if(!with_extra_text):
         extra_text=''
 
     # Info position based on options
@@ -170,8 +171,14 @@ def add_info_to_frames(frames, path, date, camID, extra_text, dimensions="1920:1
                     -i ' + path+'/'+ f + '    \
                     -i ' + AMS_WATERMARK + ' \
                     -filter_complex "[0:v]scale='+dimensions+'[scaled]; \
-                    [scaled]drawtext=:text=\'' + text + '\':fontcolor=white@'+FONT_TRANSPARENCY+':fontsize='+FONT_SIZE+':'+text_position+'[texted]; \
-                    [texted]overlay='+watermark_position+'[out]" \
+                    [scaled]drawtext=:text=\'' + text + '\':fontcolor=white@'+FONT_TRANSPARENCY+':fontsize='+FONT_SIZE+':'+text_position'
+            if(with_extra_text is True):
+                cmd+= '[texted];' 
+                cmd+= '[texted]drawtext=:text=\''+ exta_text +'\':fontcolor=white@'+FONT_TRANSPARENCY+':fontsize='+FONT_SIZE+':'+extra_text_position'+[texted2];[texted2]'  
+            else:
+                cmd+= '[texted]; [texted]'
+
+            cmd += 'overlay='+watermark_position+'[out]" \
                     -map "[out]"  ' + newpath + '/' + str(idx) + '.png'      
         else:
             cmd = 'ffmpeg -hide_banner -loglevel panic \
@@ -179,10 +186,17 @@ def add_info_to_frames(frames, path, date, camID, extra_text, dimensions="1920:1
                     -i ' + path+'/'+ f + '    \
                     -i ' + AMS_WATERMARK + ' \
                     -filter_complex "[0:v]scale='+dimensions+'[scaled]; \
-                    [scaled]eq=contrast=1.3[sat];[sat]drawtext=:text=\'' + text + '\':fontcolor=white@'+FONT_TRANSPARENCY+':fontsize='+FONT_SIZE+':'+text_position+'[texted]; \
-                    [texted]overlay='+watermark_position+'[out]" \
-                    -map "[out]"  ' + newpath + '/' + str(idx) + '.png'                
-         
+                    [scaled]eq=contrast=1.3[sat];[sat]drawtext=:text=\'' + text + '\':fontcolor=white@'+FONT_TRANSPARENCY+':fontsize='+FONT_SIZE+':'+text_position'
+            if(with_extra_text is True):
+                cmd+= '[texted];' 
+                cmd+= '[texted]drawtext=:text=\''+ exta_text +'\':fontcolor=white@'+FONT_TRANSPARENCY+':fontsize='+FONT_SIZE+':'+extra_text_position'+[texted2];[texted2]'  
+            else:
+                cmd+= '[texted]; [texted]'
+
+            cmd += 'overlay='+watermark_position+'[out]" \
+                    -map "[out]"  ' + newpath + '/' + str(idx) + '.png'  
+
+ 
         output = subprocess.check_output(cmd, shell=True).decode("utf-8")  
 
         #Remove the source 
