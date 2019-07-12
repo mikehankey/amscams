@@ -485,7 +485,7 @@ def video_tools(json_conf,form):
    #Get All Cam IDs
    all_cam_ids = get_the_cam_ids() 
    out_put_all_cam_ids = ' '
-   for camid in all_cam_ids
+   for camid in all_cam_ids:
       out_put_all_cam_ids += camid + "|"
 
    #Get Current Date (default for datepicker)
