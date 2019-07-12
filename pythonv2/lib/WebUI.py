@@ -505,9 +505,11 @@ def video_tools(json_conf,form):
                   vid_counter+=1
 
      
-
-   header_out = "<h1>"+str(vid_counter)+" videos found</h1>"
+   header_out = "<div class='h1_holder d-flex justify-content-between'>"      
+   header_out += "<h1>"+str(vid_counter)+" videos found</h1>"
+   header_out += "<div class='d-flex'><button class='btn btn-primary mr-3' id='create_timelapse' style='text-transform: initial;'><span class='icon-youtube'></span> Generate Timelapse Video</button></div></div>"
    
+
    print(header_out)
    print("<div class='gallery gal-resize row text-center text-lg-left mt-4'>")
    print(processing_vids)
