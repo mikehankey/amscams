@@ -21,6 +21,9 @@ def video_job():
                 # in case something went wrong
                 data = {} 
 
+        print("DATA FOUND ")
+        print(str(data))
+
         #Do we have any jobs
         alljobs = data['jobs']
         if(alljobs is not None):
@@ -44,10 +47,14 @@ def video_job():
 
             if(cur_job != 'X' and processing==False):
 
+                print("FIND ONE")
+
                 #Change Status of the job in the JSON
                 data['jobs'][cur_idx]['status'] = 'processing'
                 with open(WAITING_JOBS, 'w') as outfile:
                     json.dump(data, outfile)
+
+                print(str(cur_job))
 
                 if(cur_jobs['name']=='timelapse'): 
                     print("GENERATE VID FOR CAM_ID " + cur_job['cam_id'])
