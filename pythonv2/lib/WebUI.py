@@ -518,7 +518,7 @@ def video_tools(json_conf,form):
   
    print(header_out)
    print("<input type='hidden' name='cur_date' value='"+out_put_date+"'/>")
-   print("<input type='hidden' name='cam_ids' value='"+str(all_cam_ids)+"'/>")
+   print("<input type='hidden' name='cam_ids' value='"+' '.join([all_cam_ids])+"'/>")
    print("<div class='gallery gal-resize row text-center text-lg-left mt-4'>")
    print(processing_vids)
    print(all_vids_out)
