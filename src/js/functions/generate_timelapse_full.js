@@ -159,6 +159,6 @@ function add_timelapse_full_modal() {
 
 $(function() {
     $('#create_timelapse').click(function() {
-        add_timelapse_full_modal();
+        add_timelapse_full_modal();    
     });
 })
