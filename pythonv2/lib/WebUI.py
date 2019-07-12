@@ -484,6 +484,7 @@ def video_tools(json_conf,form):
 
    #Get All Cam IDs
    all_cam_ids = get_the_cam_ids() 
+   out_put_all_cam_ids = ' '.join([all_cam_ids])
 
    #Get Current Date (default for datepicker)
    now = datetime.datetime.now()
@@ -518,7 +519,7 @@ def video_tools(json_conf,form):
   
    print(header_out)
    print("<input type='hidden' name='cur_date' value='"+out_put_date+"'/>")
-   print("<input type='hidden' name='cam_ids' value='"+' '.join([all_cam_ids])+"'/>")
+   print("<input type='hidden' name='cam_ids' value='"+out_put_all_cam_ids+"'/>")
    print("<div class='gallery gal-resize row text-center text-lg-left mt-4'>")
    print(processing_vids)
    print(all_vids_out)
