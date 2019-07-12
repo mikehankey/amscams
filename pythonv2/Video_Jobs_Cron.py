@@ -62,14 +62,14 @@ def video_job():
 
                 print(str(cur_job))
 
-                #if(cur_jobs['name']=='timelapse'): 
-                #    print("GENERATE VID FOR CAM_ID " + cur_job['cam_id'])
-                #    video_path =  generate_timelapse(cur_job['cam_id'],cur_job['date'],cur_job['fps'],cur_job['dim'],cur_job['text_pos'],cur_job['wat_pos'],cur_job['extra_text'],0) 
+                if(cur_jobs['name']=='timelapse'): 
+                    print("GENERATE VID FOR CAM_ID " + cur_job['cam_id'])
+                    video_path =  generate_timelapse(cur_job['cam_id'],cur_job['date'],cur_job['fps'],cur_job['dim'],cur_job['text_pos'],cur_job['wat_pos'],cur_job['extra_text'],0) 
 
                     # Update the JSON so we dont process the same vid twice
-                #    data['jobs'][0]['status'] = 'ready'
-                #    data['jobs'][0]['path']   = video_path
-                #    with open(WAITING_JOBS, 'w') as outfile:
-                #        json.dump(data, outfile)
+                    data['jobs'][0]['status'] = 'ready'
+                    data['jobs'][0]['path']   = video_path
+                    with open(WAITING_JOBS, 'w') as outfile:
+                        json.dump(data, outfile)
 
         
