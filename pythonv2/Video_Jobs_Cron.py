@@ -56,7 +56,7 @@ def video_job():
                 print("FIND ONE")
 
                 #Change Status of the job in the JSON
-                data['jobs'][cur_idx]['status'] = 'processing'
+                data['jobs'][cur_idx]['status'] = 'processing' 
                 with open(WAITING_JOBS, 'w') as outfile:
                     json.dump(data, outfile)
 
