@@ -88,7 +88,7 @@ def get_hd_frames(camID,date,limit_frame=False):
         toReturn = []
         for idx,vid in enumerate(sorted(frames)):
             vid_out = vid.replace('.mp4','')
-            cmd = 'ffmpeg -y -hide_banner -loglevel panic -i '+IMG_HD_SRC_PATH+'/'+vid+' -vframes 1 -f image2 '+ tmppath + vid_out + '.png' 
+            cmd = 'ffmpeg -y  -i '+IMG_HD_SRC_PATH+'/'+vid+' -vframes 1 -f image2 '+ tmppath + vid_out + '.png' 
             output = subprocess.check_output(cmd, shell=True).decode("utf-8")
             toReturn.append( vid_out + '.png' )
             #print(tmppath + '/'  + vid_out + '.png' )
@@ -153,6 +153,7 @@ def add_info_to_frames(frames, path, date, camID, extra_text, dimensions="1920:1
         with_extra_text = False
         extra_text=''
  
+    #No debug: -hide_banner -loglevel panic
 
     # Info position based on options
     text_position, extra_text_position = get_text_pos(text_pos, (extra_text!=''))
@@ -167,7 +168,7 @@ def add_info_to_frames(frames, path, date, camID, extra_text, dimensions="1920:1
         #print('LINE HEIGHT ' + line_height)
 
         if(enhancement!=1):
-            cmd = 'ffmpeg -hide_banner -loglevel panic \
+            cmd = 'ffmpeg  \
                     -y \
                     -i ' + path+'/'+ f + '    \
                     -i ' + AMS_WATERMARK + ' \
@@ -182,7 +183,7 @@ def add_info_to_frames(frames, path, date, camID, extra_text, dimensions="1920:1
             cmd += 'overlay='+watermark_position+'[out]" \
                     -map "[out]"  ' + newpath + '/' + str(idx) + '.png'      
         else:
-            cmd = 'ffmpeg -hide_banner -loglevel panic \
+            cmd = 'ffmpeg  \
                     -y \
                     -i ' + path+'/'+ f + '    \
                     -i ' + AMS_WATERMARK + ' \
@@ -216,7 +217,7 @@ def create_vid_from_frames(frames, path, date, camID, fps="25") :
     #Destination folder
     def_file_path =  VID_FOLDER +'/'+date +'_'+ camID +'.mp4' 
     
-    cmd = 'ffmpeg -hide_banner -loglevel panic -y  -r '+ str(fps) +' -f image2 -s 1920x1080 -i ' + path+ '/%d.png -vcodec libx264 -crf 25 -pix_fmt yuv420p ' + def_file_path
+    cmd = 'ffmpeg  -y  -r '+ str(fps) +' -f image2 -s 1920x1080 -i ' + path+ '/%d.png -vcodec libx264 -crf 25 -pix_fmt yuv420p ' + def_file_path
     output = subprocess.check_output(cmd, shell=True).decode("utf-8")
    
     #Rename and Move the first frame in the dest folder so we'll use it as a thumb
