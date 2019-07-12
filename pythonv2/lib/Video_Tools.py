@@ -150,7 +150,7 @@ def add_info_to_frames(frames, path, date, camID, extra_text, dimensions="1920:1
     if(extra_text is None):
         with_extra_text = False
         extra_text=''
-    elif(extra_text.strip()!==''):
+    elif(extra_text.strip()==''):
         with_extra_text = False
         extra_text=''
     else:
