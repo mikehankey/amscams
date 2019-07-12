@@ -123,13 +123,13 @@ def get_text_pos(text_pos, extra_text_here):
             return ("x=main_w-text_w-20:y=main_h-text_h-20","")
     else:
         if(text_pos=='tr'):
-            return ("x=main_w-text_w-20:y=20+line_h*2+5","x=main_w-text_w-20:y=20")
+            return ("x=main_w-text_w-20:y=20+line_h*2","x=main_w-text_w-20:y=20")
         elif (text_pos=='tl'):
-            return ("x=20:y=20+line_h*2+5","x=20:y=20")    
+            return ("x=20:y=20+line_h*2","x=20:y=20")    
         elif (text_pos=='bl'):
-            return("x=20:y=main_h-text_h-20-line_h*2-5","x=20:y=main_h-text_h-20")
+            return("x=20:y=main_h-text_h-20-line_h*2","x=20:y=main_h-text_h-20")
         else: 
-            return ("x=main_w-text_w-20:y=main_h-text_h-20-line_h*2-5","x=main_w-text_w-20:y=main_h-text_h-20")                
+            return ("x=main_w-text_w-20:y=main_h-text_h-20-line_h*2","x=main_w-text_w-20:y=main_h-text_h-20")                
              
 
 
