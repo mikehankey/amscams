@@ -487,7 +487,7 @@ def video_tools(json_conf,form):
 
    #Get Current Date (default for datepicker)
    now = datetime.datetime.now()
-   out_put_date = now.year + "/" + now.month + "/" + now.day
+   out_put_date = str(now.year) + "/" + str(now.month) + "/" + str(now.day)
  
    if js_file.is_file():
 
