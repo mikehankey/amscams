@@ -48,6 +48,7 @@ def get_job_to_process():
         with open(PROCESSING_JOBS, 'r+') as processingFile:
             try:
                 data = json.load(processingFile)
+                print("WE ARE HERE IN PROCESSING")
             except:
                 #Nothing to do
                 data = {}
