@@ -22,8 +22,6 @@ def is_a_job_processing():
 #Return a job to process 
 #of False if no waiting job found
 def get_job_to_process():
-    js_file = Path(WAITING_JOBS)
-    
     #Open the waiting_job & Load the data
     with open(WAITING_JOBS, "r+") as jsonFile:
         try:
@@ -31,12 +29,45 @@ def get_job_to_process():
         except:
             #Nothing to do
             return False
+    jsonFile.close()
 
     alljobs = data['jobs']
     if(alljobs is not None):
-        return alljobs[0]
+        toReturn = alljobs[0]
+
+        #We remove the job from the waiting list 
+        alljobs.pop(0)
+        
+        with open(WAITING_JOBS, 'w') as outfile:
+            json.dump(alljobs, outfile)
+        outfile.close()
+
+        print('WAITING LIST UPDATED')
+ 
+        #We add the job to the processing list
+        with open(PROCESSING_JOBS, 'r+') as processingFile:
+            try:
+                data = json.load(processingFile)
+            except:
+                #Nothing to do
+                data = {}
+        processingFile.close()        
+
+        data.update(toReturn)
+
+        with open(PROCESSING_JOBS, 'w') as processingFile:
+            json.dump(data, processingFile)
+        processingFile.close()        
+
+        print('PROCESSING LIST UPDATED')
+
+        return toReturn
     else:
         return False        
+
+
+ 
+
 
 
 
@@ -44,14 +75,17 @@ def video_job():
     
     #Test if we have a video currently being processed
     if(is_a_job_processing() == True):
-        print("ONE IS ALREADY PROCESSING")
+        print("ONE JOB IS ALREADY PROCESSING")
         sys.exit(0)
 
     #Get Job to Process
     job = get_job_to_process();
     
     if(job is not False):
-        print("WE FOUND A JOB")
+        #print("WE FOUND A JOB")
+        #We remove the job from the WAITING_JOBS and put it in PROCESSING_JOBS
+        remove_from_waiting_list_put_to_processing_list(job)
+
     else:
         print("NO JOB FOUND")
 
