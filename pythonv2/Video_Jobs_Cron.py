@@ -7,9 +7,32 @@ from lib.Video_Timelapse import generate_timelapse, get_meteor_date_ffmpeg
 from lib.VIDEO_VARS import * 
 
 
-def video_job():
-    print('VIDEO JOB NOW RUNNING')
 
+
+def move_video_job_to_processing(job):
+
+
+def is_a_job_processing():
+    js_file = Path(PROCESSING_JOBS)
+     with open(WAITING_JOBS, "r+") as jsonFile:
+        try:
+            data = json.load(jsonFile)
+        except:
+            # in case something went wrong
+            data = {} 
+    if(len(data)==0):
+        return False
+    else:
+        return True
+
+
+def video_job():
+    
+    #Test if we have a video currently being processed
+    if(is_a_job_processing() == True):
+        exit;
+
+    #Read the waiting jobs lists
     js_file = Path(WAITING_JOBS)
     if js_file.is_file():
 

@@ -13,8 +13,14 @@ def add_video_job(name,cam_id,date,fps,dim,text_pos,wat_pos,extra_text):
     #Is the waiting_job folder exists? 
     if not os.path.exists(WAITING_JOBS_FOLDER):
         os.makedirs(WAITING_JOBS_FOLDER)
+
+    #Create JSON file if it doesn't exist yet (PROCESSING)
+    js_file = Path(PROCESSING_JOBS)
+    if js_file.is_file()== False:
+        f= open(PROCESSING_JOBS,"w+")
+        f.close()    
  
-    #Create JSON file if it doesn't exist yet
+    #Create JSON file if it doesn't exist yet (WAITING)
     js_file = Path(WAITING_JOBS)
     if js_file.is_file()== False:
         f= open(WAITING_JOBS,"w+")
