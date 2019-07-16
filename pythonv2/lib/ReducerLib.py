@@ -8,9 +8,46 @@ import numpy as np
 import cv2
 from lib.UtilLib import calc_dist, better_parse_file_date, bound_cnt
 from lib.VideoLib import load_video_frames 
-from lib.ImageLib import adjustLevels , mask_frame
+from lib.ImageLib import adjustLevels , mask_frame, median_frames
 from lib.UtilLib import find_slope 
+from lib.CalibLib import radec_to_azel, clean_star_bg, get_catalog_stars, find_close_stars, XYtoRADec, HMS2deg, AzEltoRADec
+
 import scipy.optimize
+
+def update_intensity(metframes, sd_frames):
+   for fn in metframes:
+      sd_img = sd_frames[fn].copy()
+      w = metframes[fn]['sd_w']
+      h = metframes[fn]['sd_h']
+      x = metframes[fn]['sd_x']
+      y = metframes[fn]['sd_y']
+      cnt_img = sd_img[y:y+h,x:x+w]
+      min_val, max_val, min_loc, (mx,my)= cv2.minMaxLoc(cnt_img)
+      metframes[fn]['sd_intensity'] = float(np.sum(cnt_img))
+      metframes[fn]['sd_max_px'] = float(max_val)
+      metframes[fn]['sd_mx'] = float(mx)
+      metframes[fn]['sd_my'] = float(my)
+      print("Intensity:",  metframes[fn]['sd_intensity'])
+   return(metframes)    
+
+def make_light_curve(metframes,sd_video_file):
+   iis = []
+   fns = []
+   for fn in metframes:
+      print(fn, metframes[fn])
+      if "sd_intensity" in metframes[fn]:
+         iis.append(int(metframes[fn]['sd_intensity']))
+         fns.append(int(fn))
+
+   import matplotlib
+   matplotlib.use('Agg')
+   import matplotlib.pyplot as plt
+   #fig = plt.figure()
+   print(fns,iis)
+   plt.plot(fns,iis)
+   curve_file = sd_video_file.replace(".mp4", "-lightcurve.png")
+   plt.savefig(curve_file)
+
 
 def find_best_match(matches, cnt, objects):
    # eval the following things. 
@@ -45,9 +82,8 @@ def find_best_match(matches, cnt, objects):
    best_mids = sorted(mscore.items(), key=operator.itemgetter(1))
    best_bids = sorted(bscore.items(), key=operator.itemgetter(1))
    best_mid = best_bids[0][0]
-   print("BEST MID:", best_mid)
    for obj in matches:
-      print("OBJ:", obj['oid'], best_mid)
+      #print("OBJ:", obj['oid'], best_mid)
       if int(obj['oid']) == int(best_mid):
          return(obj)
 
@@ -89,7 +125,302 @@ def build_thresh_frames(sd_frames):
       thresh_frames.append(image_thresh)
    return(thresh_frames)
 
+def clean_object(obj):
+   # remove duplicate cnts
+   # if more than one cnt exists for a given frame, pick the one that is farthest from 1st frame
+   # if cnts are not moving in the desired direction remove them
+   last_fn = None
+   first_fn = None
+   first_x = None
 
+   frame_data = {}
+
+   for hs in obj['history']:
+      fn,x,y,w,h,mx,my,max_px,intensity = hs
+      frame_data[fn] = {}
+      frame_data[fn]['cnts'] = []
+      if first_x is None:
+         first_x = x
+         first_y = y
+         first_fn = fn
+      if last_fn is not None:
+         if last_fn == fn:
+            frame_data[fn]['cnts'].append(hs)
+         else:
+            frame_data[fn]['cnts'].append(hs)
+      last_fn = fn
+
+   clean_hist = []
+   for fn in frame_data:
+      if len(frame_data[fn]['cnts']) > 1:
+         best_cnt = pick_best_cnt(frame_data[fn]['cnts'], first_x, first_y)
+         clean_hist.append(best_cnt)
+      else:
+         if len(frame_data[fn]['cnts']) > 0:
+            clean_hist.append(frame_data[fn]['cnts'][0])
+
+   first_fn = None
+   last_c_dist = None
+
+   best_hist = []
+
+   for hs in clean_hist:
+      dist_bad = 0
+      fn,x,y,w,h,mx,my,max_px,intensity = hs
+      if first_fn is None:
+         first_fn = fn
+         first_x = x
+         first_y = y
+      else:
+         c_dist = calc_dist((x,y),(first_x,first_y))
+         if last_c_dist is not None:
+            c_dist_diff = c_dist - last_c_dist
+            #print("C DIST DIFF:", fn, c_dist_diff)
+            if c_dist_diff <= 0:
+               dist_bad = 1
+      
+         last_c_dist = c_dist 
+      if dist_bad == 0:
+         #print("BEST CNT:", hs)
+         best_hist.append(hs)
+
+   obj['history'] = best_hist
+   return(obj)
+
+def pick_best_cnt(cnts, first_x, first_y):
+   max_dist = 0
+   for hs in cnts:
+      fn,x,y,w,h,mx,my,max_px,intensity = hs
+      c_dist = calc_dist((x,y),(first_x,first_y))
+      if c_dist > max_dist:
+         max_dist = c_dist
+         best_cnt = hs
+   return(best_cnt)
+   
+
+def detect_from_bright_pixels(masked_frames):
+   max_vals = []
+   avg_vals = []
+   px_diffs = []
+   objects = []
+   for gray_frame in masked_frames:
+      mxv = np.max(gray_frame)
+      avgv = np.mean(gray_frame)
+      #print("MAX/AVG VAL:", mxv, avgv, mxv - avgv)
+      max_vals.append(mxv)
+      avg_vals.append(avgv)
+      px_diffs.append(mxv-avgv)
+
+   avg_pxd = np.mean(px_diffs)  
+   avg_val = np.mean(avg_vals)  
+   for i in range(0,len(px_diffs)-1):
+      marked_image = masked_frames[i]
+      px_increase = px_diffs[i] / avg_pxd 
+      if px_increase > 1.25: 
+         min_val, max_val, min_loc, (mx,my)= cv2.minMaxLoc(masked_frames[i])
+         #print("PXI:", i, max_vals[i], px_diffs[i], px_increase, mx,my)
+         ithresh=max_vals[i] * .95
+         if ithresh < 20:
+            ithresh = 20
+         _, image_thresh = cv2.threshold(masked_frames[i].copy(), ithresh, 255, cv2.THRESH_BINARY)
+         cnts,pos_cnts = find_contours(image_thresh, gray_frame)
+         if len(cnts) == 0:
+            ithresh=max_vals[i] * .9
+            _, image_thresh = cv2.threshold(masked_frames[i].copy(), ithresh, 255, cv2.THRESH_BINARY)
+            cnts,pos_cnts = find_contours(image_thresh, gray_frame)
+            if len(cnts) == 0:
+               ithresh=max_vals[i] * .85
+               _, image_thresh = cv2.threshold(masked_frames[i].copy(), ithresh, 255, cv2.THRESH_BINARY)
+               cnts,pos_cnts = find_contours(image_thresh, gray_frame)
+               if len(cnts) == 0:
+                  ithresh=max_vals[i] * .80
+                  _, image_thresh = cv2.threshold(masked_frames[i].copy(), ithresh, 255, cv2.THRESH_BINARY)
+                  cnts,pos_cnts = find_contours(image_thresh, gray_frame)
+                  if len(cnts) == 0:
+                     ithresh=max_vals[i] * .75
+                     _, image_thresh = cv2.threshold(masked_frames[i].copy(), ithresh, 255, cv2.THRESH_BINARY)
+                     cnts,pos_cnts = find_contours(image_thresh, gray_frame)
+                     if len(cnts) == 0:
+                        ithresh=max_vals[i] * .70
+                        _, image_thresh = cv2.threshold(masked_frames[i].copy(), ithresh, 255, cv2.THRESH_BINARY)
+                        cnts,pos_cnts = find_contours(image_thresh, gray_frame)
+
+         for cnt in cnts:
+            x,y,w,h = cv2.boundingRect(cnt)
+            cnt_img = masked_frames[i][y:y+h,x:x+w]
+            intensity = np.sum(cnt_img)
+            object, objects = id_object(cnt, objects,i, (mx,my), max_val, intensity, 0)
+            #cv2.rectangle(marked_image, (x, y), (x+w, y+h), (128), 1)
+      cv2.imshow('Bright Pixel Detect', marked_image)
+      cv2.waitKey(30)
+
+   meteors = []
+   for obj in objects:
+      obj = clean_object(obj)
+      print("CLEAN OBJECT:", obj)
+      
+
+
+      obj['debug'] = "Hist len: " + str(obj['hist_len']) + " Straight: " + str(obj['is_straight']) + " Dist: " + str(obj['dist']) + " Max CM:" + str(obj['max_cm']) + " Gaps: " + str(obj['gaps']) + " Gap Events: " + str(obj['gap_events']) + " Gap frame ratio:" + str(obj['cm_hist_len_ratio'])
+ 
+      if obj['dist'] > 0 and obj['max_cm'] > 2:
+         # object is a meteor!?!
+         print(obj['oid'], obj['debug'])
+         meteors.append(obj)
+      for hs in obj['history']:
+         x = hs[1]
+         y = hs[2]
+         w = hs[3]
+         h = hs[4]
+         #cv2.rectangle(marked_image, (x, y), (x+w, y+h), (128), 1)
+      cv2.imshow('Bright Pixel Detect', marked_image)
+      cv2.waitKey(30)
+   
+   return(meteors)
+
+def detect_from_thresh_diff(masked_frames):
+   print("Detect from thresh.")
+   first_gray_frame = None
+   image_acc = None
+   last_image_thresh = None
+   objects = []
+   fc = 0
+   
+   for gray_frame in masked_frames:
+      # do image acc / diff
+      blur_frame = cv2.GaussianBlur(gray_frame, (7, 7), 0)
+      level_frame = adjustLevels(blur_frame, 50,1,255)
+      level_frame = cv2.convertScaleAbs(level_frame)
+      gray_frame = level_frame
+
+      if first_gray_frame is None:
+         first_gray_frame = gray_frame
+
+      if image_acc is None:
+         image_acc = np.float32(gray_frame)
+
+      alpha = .1
+      hello = cv2.accumulateWeighted(gray_frame, image_acc, alpha)
+
+      image_diff = cv2.absdiff(image_acc.astype(gray_frame.dtype), gray_frame,)
+      first_image_diff = cv2.absdiff(first_gray_frame.astype(gray_frame.dtype), gray_frame,)
+      image_diff = first_image_diff
+
+      thresh = np.max(image_diff) * .95
+      ithresh = np.max(gray_frame) * .5
+      if thresh < 20:
+         thresh = 20
+
+      _, image_thresh = cv2.threshold(gray_frame.copy(), ithresh, 255, cv2.THRESH_BINARY)
+      if last_image_thresh is not None:
+         image_thresh_diff = cv2.absdiff(image_thresh.astype(gray_frame.dtype), last_image_thresh,)
+      else:
+         image_thresh_diff = image_thresh
+
+      _, diff_thresh = cv2.threshold(image_diff.copy(), thresh, 255, cv2.THRESH_BINARY)
+      #show_img2 = cv2.resize(cv2.convertScaleAbs(image_thresh_diff), (960,540))
+      #cv2.imshow('diff image', show_img2)
+      #cv2.waitKey(0)
+
+      # find contours and ID objects
+      diff_thresh = image_thresh
+      cnts,pos_cnts = find_contours(diff_thresh, gray_frame)
+      #if len(pos_cnts) > 1:
+      #   _, diff_thresh = cv2.threshold(image_diff.copy(), 30, 255, cv2.THRESH_BINARY)
+      #   cnts,pos_cnts = find_contours(diff_thresh, gray_frame)
+
+      ic = 0
+      marked_image = gray_frame.copy()
+  
+      for cnt in cnts:
+         x,y,w,h,size,mx,my,max_val,intensity = pos_cnts[ic]
+         object, objects = id_object(cnt, objects,fc, (mx,my), max_val, intensity, 0)
+         print(object)
+         if "oid" in object:
+            name = str(object['oid'])
+            cv2.putText(marked_image, name ,  (x-5,y-12), cv2.FONT_HERSHEY_SIMPLEX, .4, (255, 255, 255), 1)
+         #cv2.rectangle(marked_image, (x, y), (x+w, y+h), (128), 1)
+
+         ic = ic + 1
+
+      cv2.imshow('Detect From Thresh Diff', marked_image)
+      cv2.waitKey(30)
+      fc = fc + 1
+   meteors = []
+   for obj in objects:
+      obj = clean_object(obj)
+      points = hist_to_points(obj['history'])
+      print("POINTS:", points) 
+      obj['is_straight'] = arecolinear(points)
+      obj['max_cm'],obj['gaps'],obj['gap_events'],obj['cm_hist_len_ratio'] = meteor_test_cm_gaps(obj)
+      
+      print("DETECT FROM THRESH:", obj)
+      meteor_score = test_for_meteor(obj) 
+      if meteor_score >= 4:
+         meteors.append(obj)
+
+   return(meteors) 
+
+def test_for_meteor(obj):
+   obj['sci_peaks'], obj['peak_to_frame'] = meteor_test_peaks(obj)
+   obj['max_cm'],obj['gaps'],obj['gap_events'],obj['cm_hist_len_ratio'] = meteor_test_cm_gaps(obj)
+   obj['moving'],obj['moving_desc'] = meteor_test_moving(obj['history'])
+   points = hist_to_points(obj['history'])
+   obj['is_straight'] = arecolinear(points)
+
+   meteor_score = 0
+   if obj['is_straight'] is True:
+      meteor_score = meteor_score + 2
+      print("PLUS 2 for STRAIGHT!", meteor_score)
+   if obj['moving'] == 1:
+      meteor_score = meteor_score + 2
+      print("PLUS 2 for MOVING!", meteor_score)
+   if 1 < obj['dist_per_frame'] < 10:
+      meteor_score = meteor_score + 1
+      print("PLUS 1 for good speed!", meteor_score)
+
+   if obj['cm_hist_len_ratio'] < .5:
+      print("MINUS 1 for for bad cm/hist ratio!", meteor_score)
+      meteor_score = meteor_score - 1
+   else:
+      print("PLUS 1 for for good cm/hist ratio!", meteor_score)
+      meteor_score = meteor_score + 1
+   
+
+   if obj['max_cm'] < 3:
+      meteor_score = 0
+      print("ZERO FOR LOW CM!", meteor_score)
+   if obj['moving'] == 0:
+      meteor_score = 0
+      print("ZERO FOR NOT MOVING!", meteor_score)
+   if obj['gap_events'] > 3:
+      print("ZERO FOR TO MANY GAP EVENTS!", meteor_score)
+      meteor_score = 0
+   if obj['dist'] < 5:
+      print("ZERO FOR SHORT DISTANCE!", meteor_score)
+      meteor_score = 0
+
+   if 1 < obj['dist_per_frame'] > 10:
+      print("ZERO FOR TOO FAST !", meteor_score)
+      meteor_score = 0
+ 
+
+
+   for key in obj:
+      print("MTEST:", key, obj[key])
+   print("METEOR SCORE:", meteor_score)
+
+   return(meteor_score)
+
+
+def hist_to_points(hist):
+   points = []
+   for hs in hist:
+      points.append((hs[1], hs[2]))
+   return(points)
+
+def detect_from_img_acc_diff(masked_frames):
+   print("Detect from img_acc_diff.")
 
 def detect_meteor(video_file, json_conf, show = 0):
    red_file = video_file.replace(".mp4", "-reduced.json")
@@ -131,25 +462,252 @@ def detect_meteor(video_file, json_conf, show = 0):
 
    #thresh_frames = build_thresh_frames(sd_frames)
    #exit()
+   print("LEN FRAMES:", len(sd_frames))
+   mask_image = median_frames(sd_frames)
+   #mask_image = cv2.convertScaleAbs(mask_image)
 
-   mask_image = sd_frames[0]
+   print("MS:", mask_image.shape)
+
+   cv2.imshow("MASK IMAGE", mask_image)
+   cv2.waitKey(30)
+
 
    ithresh = np.max(mask_image) * .5
+   avg_thresh = np.mean(mask_image) + 15
+   if ithresh > 50:
+      ithresh = 50
+   print("ITHRESH:", ithresh)
    if ithresh < 20:
       ithresh = 20
+   if avg_thresh > ithresh:
+      ithresh = avg_thresh
+
    _, mask_thresh = cv2.threshold(mask_image.copy(), ithresh, 255, cv2.THRESH_BINARY)
    mask_cnts,mask_pos_cnts = find_contours(mask_thresh, mask_thresh)
 
    mask_points = []
+   masks = []
    for msk in mask_pos_cnts:
       mask_points.append((msk[0], msk[1]))
-      print(msk)
+      if msk[2] < 150 and msk[3] < 150:
+         msk_str = str(msk[0]) + "," +  str(msk[1]) + "," + str(msk[2]) + "," + str(msk[3])
+         masks.append((msk_str))
+
+   if show == 1:
+      img = mask_frame(mask_image, mask_points, masks,5)
+      cv2.imshow('Mask Thresh', mask_thresh)
+      cv2.waitKey(30)
+      cv2.imshow('pepe', img)
+      cv2.waitKey(30)
+
+   masked_frames = []
+   for frame in sd_frames:
+      #hd_img = cv2.resize(frame, (1920,1080))
+      hd_img = mask_frame(frame, mask_points, masks,5)
+      masked_frames.append(hd_img)
+   bp_meteors = detect_from_bright_pixels(masked_frames)
+   dtd_meteors = detect_from_thresh_diff(masked_frames)
 
 
+   orig_meteors = []
+   if "meteor_frame_data" in red_data:
+      orig_meteors.append(red_data['meteor_frame_data'])
+   else:
+      orig_meteors = []
+
+   if len(dtd_meteors) > 0:
+      if len(dtd_meteors[0]['history']) > 1:
+         x_dir_mod, y_dir_mod = find_dir_mod(dtd_meteors[0]['history'])
+   if len(bp_meteors) > 0:
+      if len(bp_meteors[0]['history']) > 1:
+         x_dir_mod, y_dir_mod = find_dir_mod(bp_meteors[0]['history'])
+
+
+   # MERGE ALL OF THE DETECT METHOD RESULTS INTO ONE FINAL 
+   hdm_x = 2.7272
+   hdm_y = 1.875
+   metconf = {}
+   metframes = {}
+   bp_metframes = {}
+   dtd_metframes = {}
+   orig_metframes = {}
+   metconf['x_dir_mod'] = x_dir_mod 
+   metconf['y_dir_mod'] = y_dir_mod
+   if len(bp_meteors) > 0:
+      bp_metframes,metconf = hist_to_metframes(bp_meteors[0],bp_metframes,metconf)
+   else:
+      bp_metframes = {}
+   if len(dtd_meteors) > 0:
+      dtd_metframes,metconf = hist_to_metframes(dtd_meteors[0],dtd_metframes,metconf)
+   else:
+      dtd_metframes = {}
+   orig_obj = {}
+   orig_obj['history'] = orig_meteors[0]
+   orig_metframes,metconf = hist_to_metframes(orig_obj,orig_metframes,metconf)
+   for fn in bp_metframes:
+      if fn not in metframes:
+         metframes[fn] = {}
+      if 'tx' not in metframes[fn]:
+         metframes[fn]['tx'] = []
+         metframes[fn]['ty'] = []
+         metframes[fn]['tw'] = []
+         metframes[fn]['th'] = []
+
+      metframes[fn]['tx'].append(int(bp_metframes[fn]['sd_x'] + (bp_metframes[fn]['sd_w']/2)))
+      metframes[fn]['ty'].append(int(bp_metframes[fn]['sd_y'] + (bp_metframes[fn]['sd_h']/2)))
+      metframes[fn]['tw'].append(int(bp_metframes[fn]['sd_w']))
+      metframes[fn]['th'].append(int(bp_metframes[fn]['sd_h']))
+
+   for fn in dtd_metframes:
+      if fn not in metframes:
+         metframes[fn] = {}
+      if 'tx' not in metframes[fn]:
+         metframes[fn]['tx'] = []
+         metframes[fn]['ty'] = []
+         metframes[fn]['tw'] = []
+         metframes[fn]['th'] = []
+
+      metframes[fn]['tx'].append(int(dtd_metframes[fn]['sd_x'] + (dtd_metframes[fn]['sd_w']/2)))
+      metframes[fn]['ty'].append(int(dtd_metframes[fn]['sd_y'] + (dtd_metframes[fn]['sd_h']/2)))
+      metframes[fn]['tw'].append(int(dtd_metframes[fn]['sd_w']))
+      metframes[fn]['th'].append(int(dtd_metframes[fn]['sd_h']))
+
+   for fn in orig_metframes:
+      if fn not in metframes:
+         metframes[fn] = {}
+      if 'tx' not in metframes[fn]:
+         metframes[fn]['tx'] = []
+         metframes[fn]['ty'] = []
+         metframes[fn]['tw'] = []
+         metframes[fn]['th'] = []
+
+      tx =  orig_metframes[fn]['sd_x'] + (orig_metframes[fn]['sd_w']/2)
+      tx = int(tx / hdm_x)
+      ty =  orig_metframes[fn]['sd_y'] + (orig_metframes[fn]['sd_h']/2)
+      ty = int(ty / hdm_y)
+      
+      metframes[fn]['tx'].append( tx)
+      metframes[fn]['ty'].append(ty)
+      metframes[fn]['tw'].append(int(orig_metframes[fn]['sd_w']/hdm_x))
+      metframes[fn]['th'].append(int(orig_metframes[fn]['sd_h']/hdm_y))
+
+       
+
+   metframes = sort_metframes(metframes)
+
+   total_frames = len(metframes)
+
+   print("FINAL METFRAMES:")
+   fc = 0
+   missing_frames = []
+   for fn in metframes:
+      next_fn = fn + 1
+      if fc < total_frames - 1:
+         if next_fn not in metframes:
+            missing_frames.append(next_fn)
+      metframes[fn]['ax'] = int(np.median(metframes[fn]['tx']))
+      metframes[fn]['ay'] = int(np.median(metframes[fn]['ty']))
+      metframes[fn]['aw'] = int(np.median(metframes[fn]['tw']))
+      metframes[fn]['ah'] = int(np.median(metframes[fn]['th']))
+   
+      fc = fc + 1
+   print("MISSING FRAMES:", missing_frames)
+   for msf in missing_frames:
+      before = msf - 1
+      after = msf + 1
+      if before in metframes and after in metframes:
+         metframes[msf] = {}
+         metframes[msf]['ax'] = int((metframes[before]['ax'] + metframes[after]['ax']) / 2)
+         metframes[msf]['ay'] = int((metframes[after]['ay'] + metframes[after]['ay']) / 2)
+         metframes[msf]['aw'] = int(metframes[before]['aw'])
+         metframes[msf]['ah'] = int(metframes[before]['ah'])
+   
+         metframes[msf]['fixed'] = 1 
+
+   metframes = sort_metframes(metframes)
+   xdm = metconf['x_dir_mod']
+   ydm = metconf['y_dir_mod']
+   for fn in metframes:
+      img = sd_frames[fn] 
+      x = metframes[fn]['ax']
+      y = metframes[fn]['ay']
+      w = metframes[fn]['aw']
+      h = metframes[fn]['ah']
+      if w < 4:
+         w = 4
+      if h < 4:
+         h = 4
+      metframes[fn]['hd_x'] = x * hdm_x
+      metframes[fn]['hd_y'] = y * hdm_y
+      metframes[fn]['sd_cx'] = x 
+      metframes[fn]['sd_cy'] = y 
+      metframes[fn]['sd_x'] = int(x - (metframes[fn]['aw']/2))
+      metframes[fn]['sd_y'] = int(y - (metframes[fn]['ay']/2))
+      metframes[fn]['sd_w'] = int(w)
+      metframes[fn]['sd_h'] = int(h)
+      metframes[fn]['w'] = int(w)
+      metframes[fn]['h'] = int(h)
+      if xdm < 0:
+         lc_x = metframes[fn]['sd_x']
+      else:
+         lc_x = metframes[fn]['sd_x'] + metframes[fn]['sd_w']
+      if ydm < 0:
+         lc_y = metframes[fn]['sd_y']
+      else:
+         lc_y = metframes[fn]['sd_y'] + metframes[fn]['sd_h']
+
+      metframes[fn]['sd_lcx'] = int(lc_x)
+      metframes[fn]['sd_lcy'] = int(lc_y)
+      metframes[fn]['lc_x'] = int(lc_x)
+      metframes[fn]['l_cy'] = int(lc_y)
+
+      metframes[fn]['sd_intensity'] = 0
+      metframes[fn]['hd_intensity'] = 0
+      metframes[fn]['sd_max_px'] = 0
+      metframes[fn]['hd_max_px'] = 0
+      metframes[fn]['magnitude'] = 0
+      metframes[fn]['ra'] = 0
+      metframes[fn]['dec'] = 0
+      metframes[fn]['az'] = 0
+      metframes[fn]['el'] = 0
+     
+      print("MF:", fn, metframes[fn])
+
+      #cv2.circle(img,(x,y), 3, (255,255,255), 1)
+      #cv2.rectangle(img, (x-2, y-2), (x+2, y+2), (128), 1)
+      #cv2.imshow('pepe', img)
+      #cv2.waitKey(0)
+
+   # FINISH UP AND SAVE!
+   print("METFRAME LEN:", len(metframes))
+   mfd, metframes,metconf = metframes_to_mfd(metframes, metconf, video_file,json_conf)
+   print("METFRAME LEN:", len(metframes))
+
+
+   cmp_imgs,metframes = make_meteor_cnt_composite_images(json_conf, mfd, metframes, sd_frames, video_file)
+   prefix = red_data['sd_video_file'].replace(".mp4", "-frm")
+   prefix = prefix.replace("SD/proc2/", "meteors/")
+   prefix = prefix.replace("/passed", "")
+   for fn in cmp_imgs:
+      cv2.imwrite(prefix  + str(fn) + ".png", cmp_imgs[fn])
+      print("UPDATING!", prefix + str(fn) + ".png")
+      metframes[fn]['cnt_thumb'] = prefix + str(fn) + ".png"
+
+   metframes = update_intensity(metframes, sd_frames)
+
+   red_data['metconf'] = metconf
+   red_data['metframes'] = metframes
+   red_data['meteor_frame_data'] = mfd
+   make_light_curve(metframes,video_file)
+   save_json_file(red_file, red_data)
+   print("saving json:", red_file)
+
+
+   exit()
 
    for frame in sd_frames:
       #hd_img = cv2.resize(frame, (1920,1080))
-      hd_img = mask_frame(frame, mask_points, [],5)
+      hd_img = mask_frame(frame, mask_points, masks,5)
 
       hd_img = frame
       if len(hd_img.shape) == 3:
@@ -212,7 +770,7 @@ def detect_meteor(video_file, json_conf, show = 0):
          if "oid" in object:
             name = str(object['oid'])
             cv2.putText(marked_image, name ,  (x-5,y-12), cv2.FONT_HERSHEY_SIMPLEX, .4, (255, 255, 255), 1)
-         cv2.rectangle(marked_image, (x, y), (x+w, y+h), (128), 1)
+         #cv2.rectangle(marked_image, (x, y), (x+w, y+h), (128), 1)
 
          ic = ic + 1
       #print("OBJECTS:", fc, len(objects))
@@ -395,7 +953,7 @@ def detect_meteor(video_file, json_conf, show = 0):
    metframes, metconf = minimize_start_len(metframes,frames,metconf,show)
 
    print("METFRAME LEN:", len(metframes))
-   mfd, metframes,metconf = metframes_to_mfd(metframes, metconf, video_file)
+   mfd, metframes,metconf = metframes_to_mfd(metframes, metconf, video_file,json_conf)
    print("METFRAME LEN:", len(metframes))
 
 
@@ -554,19 +1112,25 @@ def reduce_seg_acl(this_poly,metframes,metconf,frames,show=0):
    print("RES:", res_err, this_poly[0], this_poly[1]) 
    return(res_err)
 
-def hist_to_metframes(obj,metconf):
-   metframes = {}
+def hist_to_metframes(obj,metframes,metconf):
+   #metframes = {}
    xs = []
    ys = []
    fns = []
    xdm = metconf['x_dir_mod']
    ydm = metconf['y_dir_mod']
    for hs in obj['history']:
+      print(len(hs))
+      intensity = 0
       if len(hs) == 9:
          fn,x,y,w,h,mx,my,max_px,intensity = hs
          fn = int(fn)
       if len(hs) == 8:
          fn,x,y,w,h,mx,my,max_px = hs
+      if len(hs) == 11:
+         ft,fn,x,y,w,h,max_px,ra,dec,az,el = hs
+         mx = 0
+         my = 0
       cx = int(x + (w/2))
       cy = int(y + (h/2))
       fn = int(fn)
@@ -578,7 +1142,9 @@ def hist_to_metframes(obj,metconf):
          lc_y = y
       else:
          lc_y = y + h
-      metframes[fn] = {}
+      if fn not in metframes:
+         metframes[fn] = {}
+      
       metframes[fn]['sd_x'] = x
       metframes[fn]['sd_y'] = y
       metframes[fn]['sd_w'] = w
@@ -594,7 +1160,10 @@ def hist_to_metframes(obj,metconf):
       xs.append(lc_x)
       ys.append(lc_y)
       fns.append(fn)
-   return(metframes,xs,ys,fns)
+      metconf['sd_xs'] = xs
+      metconf['sd_ys'] = ys
+      metconf['sd_fns'] = fns
+   return(metframes,metconf)
 
 def setup_metframes(mfd):
    # establish initial first x,y last x,y
@@ -728,7 +1297,6 @@ def id_object(cnt, objects, fc,max_loc, max_px, intensity, is_hd=0):
    if len(matches) > 1:
       best_match = find_best_match(matches, cnt, objects)
       matches = []
-      print("BEST MATCH:", best_match)
       matches.append(best_match)
 
    if len(matches) == 1:
@@ -754,7 +1322,6 @@ def id_object(cnt, objects, fc,max_loc, max_px, intensity, is_hd=0):
          max_hy = max(hys)
          
          dist = calc_dist((min_hx,min_hy),(max_hx,max_hy))
-         #print("DIST:", min_hx, min_hy, max_hx,max_hy)
          object['dist'] = dist
          if dist < 5:
             object['status'] = "not_moving"
@@ -765,6 +1332,7 @@ def id_object(cnt, objects, fc,max_loc, max_px, intensity, is_hd=0):
       if len(hys) > 0: 
          object['dist_per_frame'] = dist / len(hys)
       if len(points) > 3:
+         #print("STRAIGHT OBJ ID:", object['oid'])
          is_straight = arecolinear(points)
          object['is_straight'] =  is_straight
       else:
@@ -834,8 +1402,6 @@ def find_contours(image, orig_image):
          if w > 1 and h > 1 and max_val > 30:
             pos_cnts.append((x,y,w,h,size,mx,my,max_val,intensity))
             real_cnts.append(cnts[i])
-   else:
-      print("NO CNTS FOUND.")
 
 
    return(real_cnts,pos_cnts)
@@ -983,7 +1549,44 @@ def max_xy(x,y,w,h,max_x,max_y,min_x,min_y,mute_wh=0):
       min_y = y
    return(max_x,max_y,min_x,min_y)
 
+
 def arecolinear(points):
+   xs = []
+   ys = []
+   is_straight = 0
+   for x,y in points:
+      xs.append(x)
+      ys.append(y)
+   ovall_m,ovall_b = best_fit_slope_and_intercept(xs,ys)
+   if len(xs) > 2:
+      fl_m,fl_b = best_fit_slope_and_intercept((xs[0],xs[-1]),(ys[0],ys[-1]))
+   
+      first_diff_m = abs(ovall_m - fl_m)
+      first_diff_b = abs(ovall_b - fl_b)
+   else:
+      return(False)
+
+   #print("STRAIGHT:", first_diff_m, first_diff_b)
+   good = 0
+   for i in range(0,len(xs)-1):
+      if i > 0:
+         tm,tb = best_fit_slope_and_intercept((xs[0],xs[i]),(ys[0],ys[i]))
+         t_diff_m = abs(ovall_m - tm)
+         t_diff_b = abs(ovall_b - tb)
+         if t_diff_b <= 300 or t_diff_m <= .8:
+            #print("GOOD STRAIGHT TM DIFF:", tm, tb, ovall_m, ovall_b, t_diff_m, t_diff_b)
+            good = good + 1
+         #else:
+         #   print("BAD STRAIGHT TM DIFF:", tm, tb, ovall_m, ovall_b, t_diff_m, t_diff_b)
+   perc_good = good / (len(xs) - 1)
+   #print("STRAIGHT PERC GOOD:", perc_good, good, len(xs) -1)
+   if perc_good > .8:
+      return(True)
+   else:
+      return(False)
+      
+
+def arecolinear_old(points):
     xdiff1 = float(points[1][0] - points[0][0])
     ydiff1 = float(points[1][1] - points[0][1])
     xdiff2 = float(points[2][0] - points[1][0])
@@ -1005,25 +1608,35 @@ def meteor_test_cm_gaps(object):
    max_gaps = 0
    gap_events = 0
    last_frame = 0
+   last_frame_diff = 0
+   nomo = 0
    for hs in hist:
       if len(hs) == 9:
          fn,x,y,w,h,mx,my,max_px,intensity = hs
       if len(hs) == 8:
          fn,x,y,w,h,mx,my,max_px = hs
-      print("CM:", object['oid'], fn, last_frame, cm)
-      
-      if ((last_frame + 1 == fn) and last_frame > 0) or last_frame == fn:
+      #print("CM:", object['oid'], fn, last_frame, cm)
+      if last_frame > 0:
+         last_frame_diff = fn - last_frame - 1
+      print("LAST FRAME DIFF:", last_frame_diff) 
+      if last_frame > 0 and last_frame_diff < 2:
          cm = cm + 1
-         print("YES CM!", fn, hist)
+         nomo = 0
+         print("YES CM!", fn, cm, nomo)
          if cm > max_cm:
             max_cm = cm
       else:
-         print("NO CM!", fn)
-         cm = 0
-         if last_frame > 5 :
-            gaps = gaps + (fn - last_frame)
+         print("NO CM!", fn, cm, nomo)
+         if last_frame != 0:
+            nomo = fn - last_frame 
+         
+         if nomo > 1:
+            cm = 0
+            gaps = gaps + (fn - last_frame) - 1
             if fn - last_frame > 1:
                gap_events = gap_events + 1
+            if fn - last_frame == 1:
+               print("SINGLE FRAME GAP FIX IT!")
       if gaps > max_gaps:
          max_gaps = gaps
       last_frame = int(fn)
@@ -1064,11 +1677,8 @@ def best_fit_slope_and_intercept(xs,ys):
 
     b = np.mean(ys) - m*np.mean(xs)
     if math.isnan(m) is True:
-
        m = 1   
        b = 1   
-    else:
-       print("M,B is cool.", m,b)
 
     return m, b
 
@@ -1090,14 +1700,17 @@ def meteor_test_peaks(object):
    total_frames = len(points)
    if total_frames > 0:
       peak_to_frame = total_peaks / total_frames
+   else:
+      peak_to_frame = 0
 
    return(sci_peaks, peak_to_frame)
 
-def metframes_to_mfd(metframes, metconf, sd_video_file):
+def metframes_to_mfd(metframes, metconf, sd_video_file,json_conf):
    metframes = sort_metframes(metframes)
    hdm_x = 2.7272
    hdm_y = 1.875
-
+   red_file = sd_video_file.replace(".mp4", "-reduced.json")
+   mjr = load_json_file(red_file)
    meteor_frame_data = []
    last_hd_x = None
    last_hd_y = None
@@ -1116,16 +1729,16 @@ def metframes_to_mfd(metframes, metconf, sd_video_file):
          metframes[fn]['hd_y'] = int(metframes[fn]['sd_cy'] * hdm_y)
          metframes[fn]['w'] = metframes[fn]['sd_w']
          metframes[fn]['h'] = metframes[fn]['sd_h']
-         print(metframes[fn])
-         # update the Ra,dec,az,el here!
-         metframes[fn]['ra'] = 0
-         metframes[fn]['dec'] = 0
-         metframes[fn]['az'] = 0
-         metframes[fn]['el'] = 0
+
       if 'sd_intensity' in metframes[fn]:
          metframes[fn]['max_px'] = metframes[fn]['sd_intensity']
       else:
          print("Get missing intensity...")
+      nx, ny, ra ,dec , az, el= XYtoRADec(metframes[fn]['hd_x'],metframes[fn]['hd_y'],sd_video_file,mjr['cal_params'],json_conf)
+      metframes[fn]['ra'] = ra
+      metframes[fn]['dec'] = dec
+      metframes[fn]['az'] = az
+      metframes[fn]['el'] = el
       meteor_frame_data.append((frame_time_str,fn,int(metframes[fn]['hd_x']),int(metframes[fn]['hd_y']),int(metframes[fn]['w']),int(metframes[fn]['h']),int(metframes[fn]['max_px']),float(metframes[fn]['ra']),float(metframes[fn]['dec']),float(metframes[fn]['az']),float(metframes[fn]['el']) ))
       if last_hd_x is not None:
          hd_seg_len = calc_dist((last_hd_x, last_hd_y), (metframes[fn]['hd_x'], metframes[fn]['hd_y']))
@@ -1197,6 +1810,7 @@ def make_meteor_cnt_composite_images(json_conf, mfd, metframes, frames, sd_video
       #y1 = hd_y - cnt_h
       #y2 = hd_y + cnt_h
       ifn = int(fn)
+      print(ifn)
       img = frames[ifn]
       hd_img = cv2.resize(img, (1920,1080))
       cnt_img = hd_img[y1:y2,x1:x2]
@@ -1229,7 +1843,7 @@ def make_crop_images(sd_video_file, json_conf):
       print("UPDATING!", prefix + str(fn) + ".png")
       metframes[fn]['cnt_thumb'] = prefix + str(fn) + ".png"
 
-   mfd, metframes,metconf = metframes_to_mfd(metframes, red_data['metconf'], sd_video_file)
+   mfd, metframes,metconf = metframes_to_mfd(metframes, red_data['metconf'], sd_video_file,json_conf)
    print("LEN MET:", len(mfd), len(metframes))
    red_data['metconf'] = metconf
    red_data['metframes'] = metframes
