@@ -6,12 +6,7 @@ from os.path import isfile, join, exists
 from lib.Video_Timelapse import generate_timelapse, get_meteor_date_ffmpeg
 from lib.VIDEO_VARS import * 
 
-
-
-
-def move_video_job_to_processing(job):
-
-
+#Test if we are already taking care of a video
 def is_a_job_processing():
     js_file = Path(PROCESSING_JOBS)
      with open(WAITING_JOBS, "r+") as jsonFile:
