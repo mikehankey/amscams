@@ -58,15 +58,12 @@ def get_job_to_process():
         if(len(data)==0):
             data['jobs'] = []
 
-        print("TO RETURN ")
-        print(str(toReturn))
+        toReturn['status'] = "processing"
         data['jobs'].append(toReturn)
 
         with open(PROCESSING_JOBS, 'w') as processingFile:
             json.dump(data, processingFile)
-        processingFile.close()        
-
-        print('PROCESSING LIST UPDATED')
+        processingFile.close()         
 
         return toReturn
     else:
@@ -89,7 +86,8 @@ def video_job():
     job = get_job_to_process();
     
     if(job is not False):
-         print("WE FOUND A JOB")
+        print("WE FOUND A JOB")
+        print(str(job))
         #We remove the job from the WAITING_JOBS and put it in PROCESSING_JOBS
  
     else:
