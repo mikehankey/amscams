@@ -38,16 +38,10 @@ def video_job():
             except:
                 # in case something went wrong
                 data = {} 
-
-        print("DATA FOUND ")
-        print(str(data))
-
+ 
         #Do we have any jobs
         alljobs = data['jobs']
-
-        print("ALL JOBS")
-        print(str(alljobs))
-
+ 
         if(alljobs is not None):
 
             cur_idx = 0
@@ -56,18 +50,16 @@ def video_job():
 
             #Get the first "waiting" job
             for idx, cur_jobs in enumerate(alljobs):
-                if(cur_jobs['status']=='processing'):
-                    processing = True
-                    print("ONE PROCESSING FOUND")
-                    break
-                if(cur_jobs['status']=='waiting'):
-                    cur_job = cur_jobs
-                    cur_idx = idx
-                    print("ONE WAITING FOUND")
-                    break;
+                cur_job = cur_jobs
+                cur_idx = idx
+                break;
 
-            #print('CURRENT JOB')
-            #print(str(cur_job))
+            #We  remove this jobs from the waiting list
+            alljobs.pop(idx, None)
+
+            print("NEW JOB LISTS")
+            print(alljobs);
+            exit;
 
             if(cur_job != 'X' and processing==False):
 
