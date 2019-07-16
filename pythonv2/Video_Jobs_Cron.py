@@ -58,6 +58,8 @@ def get_job_to_process():
         if(len(data)==0):
             data['jobs'] = []
 
+        print("TO RETURN ")
+        print(str(toReturn))
         data['jobs'].update(toReturn)
 
         with open(PROCESSING_JOBS, 'w') as processingFile:
