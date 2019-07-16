@@ -54,6 +54,10 @@ def get_job_to_process():
                 data = {} 
         processingFile.close()        
 
+        #When the file is empty at first
+        if(len(data)==0):
+            data['jobs'] = {}
+
         data['jobs'].update(toReturn)
 
         with open(PROCESSING_JOBS, 'w') as processingFile:
