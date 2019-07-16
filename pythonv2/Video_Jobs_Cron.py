@@ -60,7 +60,7 @@ def get_job_to_process():
 
         print("TO RETURN ")
         print(str(toReturn))
-        data['jobs'].update(toReturn)
+        data['jobs'].append(toReturn)
 
         with open(PROCESSING_JOBS, 'w') as processingFile:
             json.dump(data, processingFile)
