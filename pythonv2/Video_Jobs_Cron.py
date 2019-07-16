@@ -56,7 +56,7 @@ def get_job_to_process():
 
         #When the file is empty at first
         if(len(data)==0):
-            data['jobs'] = {}
+            data['jobs'] = []
 
         data['jobs'].update(toReturn)
 
