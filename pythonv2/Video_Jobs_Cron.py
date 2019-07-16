@@ -51,6 +51,7 @@ def get_job_to_process():
             except:
                 #Nothing to do
                 data = {}
+                data['jobs'] = {}
         processingFile.close()        
 
         data.update(toReturn)
