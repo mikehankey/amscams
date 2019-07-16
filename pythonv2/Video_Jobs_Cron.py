@@ -20,66 +20,40 @@ def is_a_job_processing():
     else:
         return True
 
+#Return a job to process 
+#of False if no waiting job found
+def get_job_to_process():
+    js_file = Path(WAITING_JOBS)
+    
+    #Open the waiting_job & Load the data
+    with open(WAITING_JOBS, "r+") as jsonFile:
+        try:
+            data = json.load(jsonFile)
+        except:
+            #Nothing to do
+            return False
+
+    alljobs = data['jobs']
+    if(alljobs is not None):
+        return alljobs[0]
+    else:
+        return False        
+
+
 
 def video_job():
     
     #Test if we have a video currently being processed
     if(is_a_job_processing() == True):
-        exit;
+        sys.exit(0)
 
-    #Read the waiting jobs lists
-    js_file = Path(WAITING_JOBS)
-    if js_file.is_file():
+    #Get Job to Process
+    job = get_job_to_process();
+    
+    if(job is not False):
+        print("WE FOUND A JOB")
+    else:
+        print("NO JOB FOUND")
 
-        #Open the waiting_job & Load the data
-        with open(WAITING_JOBS, "r+") as jsonFile:
-            try:
-                data = json.load(jsonFile)
-            except:
-                # in case something went wrong
-                data = {} 
- 
-        #Do we have any jobs
-        alljobs = data['jobs']
- 
-        if(alljobs is not None):
-
-            cur_idx = 0
-            cur_job = 'X'
-            processing = False
-
-            #Get the first "waiting" job
-            for idx, cur_jobs in enumerate(alljobs):
-                cur_job = cur_jobs
-                cur_idx = idx
-                break;
-
-            #We  remove this jobs from the waiting list
-            alljobs.pop(idx)
-
-            print("NEW JOB LISTS")
-            print(alljobs);
-            exit;
-
-            if(cur_job != 'X' and processing==False):
-
-                print("FIND ONE")
-
-                #Change Status of the job in the JSON
-                data['jobs'][cur_idx]['status'] = 'processing' 
-                with open(WAITING_JOBS, 'w') as outfile:
-                    json.dump(data, outfile)
-
-                print(str(cur_job))
-
-                if(cur_jobs['name']=='timelapse'): 
-                    print("GENERATE VID FOR CAM_ID " + cur_job['cam_id'])
-                    video_path =  generate_timelapse(cur_job['cam_id'],cur_job['date'],cur_job['fps'],cur_job['dim'],cur_job['text_pos'],cur_job['wat_pos'],cur_job['extra_text'],0) 
-
-                    # Update the JSON so we dont process the same vid twice
-                    data['jobs'][0]['status'] = 'ready'
-                    data['jobs'][0]['path']   = video_path
-                    with open(WAITING_JOBS, 'w') as outfile:
-                        json.dump(data, outfile)
 
         
