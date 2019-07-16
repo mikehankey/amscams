@@ -82,12 +82,11 @@ def video_job():
     job = get_job_to_process();
     
     if(job is not False):
-        #print("WE FOUND A JOB")
+         print("WE FOUND A JOB")
         #We remove the job from the WAITING_JOBS and put it in PROCESSING_JOBS
-        remove_from_waiting_list_put_to_processing_list(job)
-
+ 
     else:
-        print("NO JOB FOUND")
+        print("NO JOB FOUND") 
 
 
         
