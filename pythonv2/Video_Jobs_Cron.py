@@ -32,7 +32,7 @@ def get_job_to_process():
     jsonFile.close()
     alljobs = data['jobs']
 
-    if(alljobs is not None and alljobs[0] is not None):
+    if(alljobs is not None and len(alljobs)!=0):
         toReturn = alljobs[0]
  
         #We remove the job from the waiting list 
