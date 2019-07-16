@@ -45,6 +45,7 @@ def video_job():
     
     #Test if we have a video currently being processed
     if(is_a_job_processing() == True):
+        print("ONE IS ALREADY PROCESSING")
         sys.exit(0)
 
     #Get Job to Process
