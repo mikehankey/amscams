@@ -51,11 +51,10 @@ def get_job_to_process():
                 print("WE ARE HERE IN PROCESSING")
             except:
                 #Nothing to do
-                data = {}
-                data['jobs'] = {}
+                data = {} 
         processingFile.close()        
 
-        data.update(toReturn)
+        data['jobs'].update(toReturn)
 
         with open(PROCESSING_JOBS, 'w') as processingFile:
             json.dump(data, processingFile)
