@@ -55,7 +55,7 @@ def video_job():
                 break;
 
             #We  remove this jobs from the waiting list
-            alljobs.pop(idx, None)
+            alljobs.pop(idx)
 
             print("NEW JOB LISTS")
             print(alljobs);
