@@ -30,16 +30,16 @@ def get_job_to_process():
             #Nothing to do
             return False
     jsonFile.close()
-
     alljobs = data['jobs']
+
     if(alljobs is not None):
         toReturn = alljobs[0]
-
+ 
         #We remove the job from the waiting list 
-        alljobs.pop(0)
+        data['jobs'].pop(0)
         
         with open(WAITING_JOBS, 'w') as outfile:
-            json.dump(alljobs, outfile)
+            json.dump(data, outfile)
         outfile.close()
 
         print('WAITING LIST UPDATED')
