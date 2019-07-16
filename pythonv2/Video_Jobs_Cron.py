@@ -9,7 +9,7 @@ from lib.VIDEO_VARS import *
 #Test if we are already taking care of a video
 def is_a_job_processing():
     js_file = Path(PROCESSING_JOBS)
-    with open(WAITING_JOBS, "r+") as jsonFile:
+    with open(PROCESSING_JOBS, "r+") as jsonFile:
         try:
             data = json.load(jsonFile)
         except:
