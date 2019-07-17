@@ -41,7 +41,7 @@ function add_timelapse_full_modal() {
                             <div class="form-group row mb-1"> \
                                 <label class="col-sm-4 col-form-label"><b>Camera</b></label> \
                                 <div class="col-sm-8" id="cam_select_h"></div> \
-                            </div> \ 
+                            </div> \
                         </div> \
                         <div class="col-sm-6"> \
                             <div class="form-group row mb-1"> \
