@@ -510,22 +510,24 @@ def video_tools(json_conf,form):
       jsonFile.close()
 
       #Open the processing_job & Load the data
-      try:
-            with open(PROCESSING_JOBS, "r+") as jsonFile:
+      with open(PROCESSING_JOBS, "r+") as jsonFile:
+            jsonFile.seek(0)
+            first_char = jsonFile.read(1)
+            if not first_char:
+                  data = {}
+                  data['jobs'] = []
+            else:
                   data = json.load(jsonFile)
 
-            for jobs in data['jobs']: 
+      for jobs in data['jobs']: 
 
-                  if(jobs['status']=='processing'):
-                        processing_vids += "<div class='preview col-lg-2 col-md-3 mb-3 norm'>"
-                        processing_vids += "<a class='mtt'>"
-                        processing_vids += "<img class='img-fluid ns lz' src='./dist/img/proccessing.png'/>"
-                        processing_vids += "<span>" + jobs['date'].replace('_','/') + " - " + jobs['cam_id'] +"</span></a></div>"
-                        vid_counter+=1
-      
-            jsonFile.close()
-      except:
-            #The file is empty, we don't do anything
+            if(jobs['status']=='processing'):
+                  processing_vids += "<div class='preview col-lg-2 col-md-3 mb-3 norm'>"
+                  processing_vids += "<a class='mtt'>"
+                  processing_vids += "<img class='img-fluid ns lz' src='./dist/img/proccessing.png'/>"
+                  processing_vids += "<span>" + jobs['date'].replace('_','/') + " - " + jobs['cam_id'] +"</span></a></div>"
+                  vid_counter+=1
+      jsonFile.close()
 
      
    header_out = "<div class='h1_holder d-flex justify-content-between'>"      
