@@ -125,17 +125,18 @@ def get_text_pos(text_pos, extra_text_here):
         line_height_spacing_factor = "0.4"
 
         if(text_pos=='tr'):
-            return ("x=main_w-text_w-20:y=20","x=main_w-text_w-20:y=20+line_h*2*"+line_height_spacing_factor)
+            return ("x=main_w-text_w-20:y=20","x=main_w-text_w-20:y=20+line_h*")
         elif (text_pos=='tl'):
-            return ("x=20:y=20","x=20:y=20+line_h*2*"+line_height_spacing_factor)    
+            return ("x=20:y=20","x=20:y=20+line_h")    
         elif (text_pos=='bl'):
-            return("x=20:y=main_h-text_h-20","x=20:y=main_h-text_h-20-line_h*2*"+line_height_spacing_factor)
+            return("x=20:y=main_h-text_h-20","x=20:y=main_h-text_h-20-line_h")
         else: 
             return ("x=main_w-text_w-20:y=main_h-text_h-20","x=main_w-text_w-20:y=main_h-text_h-20-line_h")                
 
 
 #Add text, logo, etc.. to a frame             
-def add_info_to_frame(frame, extra_text,text_position, extra_text_position, cam_text, watermark_position, newpath, dimensions="1920:1080", text_pos='bl', watermark_pos='tr', enhancement=0):
+def add_info_to_frame(frame, cam_text, extra_text, text_position, extra_text_position, watermark_position, newpath, dimensions="1920:1080", text_pos='bl', watermark_pos='tr', enhancement=0):
+     
     # Do we have extra text?
     if(extra_text is None):
         with_extra_text = False
