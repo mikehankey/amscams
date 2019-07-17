@@ -86,10 +86,11 @@ def video_job():
 
         #TIMELAPSE
         if(job['name']=='timelapse'):
-            try:
-                video_path =  generate_timelapse(cur_job['cam_id'],cur_job['date'],cur_job['fps'],cur_job['dim'],cur_job['text_pos'],cur_job['wat_pos'],cur_job['extra_text'],0) 
-            except:
-                error = True
+            video_path =  generate_timelapse(cur_job['cam_id'],cur_job['date'],cur_job['fps'],cur_job['dim'],cur_job['text_pos'],cur_job['wat_pos'],cur_job['extra_text'],0) 
+
+            #try:
+            #except:
+            #    error = True
  
         if(error == False):
 
