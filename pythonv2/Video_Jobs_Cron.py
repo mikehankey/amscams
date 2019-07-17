@@ -89,7 +89,7 @@ def video_job():
 
         #TIMELAPSE
         if(job['name']=='timelapse'):
-            video_path =  generate_timelapse(cur_job['cam_id'],cur_job['date'],cur_job['fps'],cur_job['dim'],cur_job['text_pos'],cur_job['wat_pos'],cur_job['extra_text'],0) 
+            video_path =  generate_timelapse(job['cam_id'],job['date'],job['fps'],job['dim'],job['text_pos'],job['wat_pos'],job['extra_text'],0) 
 
             #try:
             #except:
