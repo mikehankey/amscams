@@ -122,15 +122,56 @@ def get_text_pos(text_pos, extra_text_here):
         else: 
             return ("x=main_w-text_w-20:y=main_h-text_h-20","")
     else:
+        line_height_spacing_factor = ".8"
+
         if(text_pos=='tr'):
-            return ("x=main_w-text_w-20:y=20","x=main_w-text_w-20:y=20+line_h*2")
+            return ("x=main_w-text_w-20:y=20","x=main_w-text_w-20:y=20+line_h*2*"+line_height_spacing_factor)
         elif (text_pos=='tl'):
-            return ("x=20:y=20","x=20:y=20+line_h*2")    
+            return ("x=20:y=20","x=20:y=20+line_h*2*"+line_height_spacing_factor)    
         elif (text_pos=='bl'):
-            return("x=20:y=main_h-text_h-20","x=20:y=main_h-text_h-20-line_h*2")
+            return("x=20:y=main_h-text_h-20","x=20:y=main_h-text_h-20-line_h*2*"+line_height_spacing_factor)
         else: 
-            return ("x=main_w-text_w-20:y=main_h-text_h-20","x=main_w-text_w-20:y=main_h-text_h-20-line_h*2")                
-             
+            return ("x=main_w-text_w-20:y=main_h-text_h-20","x=main_w-text_w-20:y=main_h-text_h-20-line_h*2"+line_height_spacing_factor)                
+
+
+#Add text, logo, etc.. to a frame             
+def add_info_to_frame(frame, path, date, extra_text, dimensions="1920:1080", text_pos='bl', watermark_pos='tr', enhancement=0,text_position, extra_text_position, cam_text, watermark_position, newpath):
+    if(enhancement!=1):
+        cmd = 'ffmpeg -hide_banner -loglevel panic \
+                -y \
+                -i ' + path+'/'+ f + '    \
+                -i ' + AMS_WATERMARK + ' \
+                -filter_complex "[0:v]scale='+dimensions+'[scaled]; \
+                [scaled]drawtext=:text=\'' + cam_text + '\':fontcolor=white@'+FONT_TRANSPARENCY+':fontsize='+FONT_SIZE+':'+text_position 
+        if(with_extra_text is True):
+            cmd+= '[texted];' 
+            cmd+= '[texted]drawtext=:text=\''+ extra_text +'\':fontfile=\'/usr/share/fonts/truetype/dejavu/DejaVuSans-Bold.ttf\':fontcolor=white@'+FONT_TRANSPARENCY+':fontsize='+FONT_SIZE+':'+extra_text_position+'[texted2];[texted2]'  
+        else:
+            cmd+= '[texted]; [texted]'
+
+        cmd += 'overlay='+watermark_position+'[out]" \
+                -map "[out]"  ' + newpath + '.png'      
+    else:
+        cmd = 'ffmpeg -hide_banner -loglevel panic \
+                -y \
+                -i ' + path+'/'+ f + '    \
+                -i ' + AMS_WATERMARK + ' \
+                -filter_complex "[0:v]scale='+dimensions+'[scaled]; \
+                [scaled]eq=contrast=1.3[sat];[sat]drawtext=:text=\'' + cam_text + '\':fontcolor=white@'+FONT_TRANSPARENCY+':fontsize='+FONT_SIZE+':'+text_position 
+        if(with_extra_text is True):
+            cmd+= '[texted];' 
+            cmd+= '[texted]drawtext=:text=\''+ extra_text +'\':fontfile=\'/usr/share/fonts/truetype/dejavu/DejaVuSans-Bold.ttf\':fontcolor=white@'+FONT_TRANSPARENCY+':fontsize='+FONT_SIZE+':'+extra_text_position+'[texted2];[texted2]'  
+        else:
+            cmd+= '[texted]; [texted]'
+
+        cmd += 'overlay='+watermark_position+'[out]" \
+                -map "[out]"  ' + newpath + '.png'  
+
+
+    #print(cmd)
+    output = subprocess.check_output(cmd, shell=True).decode("utf-8")  
+    print("FRAME READY AT " + output)
+
 
 
 #Add AMS Logo, Info and eventual logo (todo)
@@ -203,7 +244,7 @@ def add_info_to_frames(frames, path, date, camID, extra_text, dimensions="1920:1
                     -map "[out]"  ' + newpath + '/' + str(idx) + '.png'  
 
 
-        print(cmd)
+        #print(cmd)
         output = subprocess.check_output(cmd, shell=True).decode("utf-8")  
 
         #Remove the source 
