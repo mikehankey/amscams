@@ -194,9 +194,7 @@ def add_info_to_frames(frames, path, date, camID, extra_text, dimensions="1920:1
     #Create destination folder if it doesn't exist yet
     if not os.path.exists(VID_FOLDER):
         os.makedirs(VID_FOLDER) 
-
-    # Watermark position based on options
-    watermark_position = get_watermark_pos(watermark_pos)
+ 
 
     # Do we have extra text?
     if(extra_text is None):
@@ -207,12 +205,11 @@ def add_info_to_frames(frames, path, date, camID, extra_text, dimensions="1920:1
         extra_text=''
     else:
         with_extra_text = True
- 
- 
-    #No debug: -hide_banner -loglevel panic
-
+  
     # Info position based on options
     text_position, extra_text_position = get_text_pos(text_pos, (extra_text!=''))
+    # Watermark position based on options
+    watermark_position = get_watermark_pos(watermark_pos)
  
 
     # Treat All frames
@@ -222,42 +219,8 @@ def add_info_to_frames(frames, path, date, camID, extra_text, dimensions="1920:1
         
         #line_height = str(int(FONT_SIZE) +5)
         #print('LINE HEIGHT ' + line_height)
-
-        if(enhancement!=1):
-            cmd = 'ffmpeg -hide_banner -loglevel panic \
-                    -y \
-                    -i ' + path+'/'+ f + '    \
-                    -i ' + AMS_WATERMARK + ' \
-                    -filter_complex "[0:v]scale='+dimensions+'[scaled]; \
-                    [scaled]drawtext=:text=\'' + text + '\':fontcolor=white@'+FONT_TRANSPARENCY+':fontsize='+FONT_SIZE+':'+text_position 
-            if(with_extra_text is True):
-                cmd+= '[texted];' 
-                cmd+= '[texted]drawtext=:text=\''+ extra_text +'\':fontfile=\'/usr/share/fonts/truetype/dejavu/DejaVuSans-Bold.ttf\':fontcolor=white@'+FONT_TRANSPARENCY+':fontsize='+FONT_SIZE+':'+extra_text_position+'[texted2];[texted2]'  
-            else:
-                cmd+= '[texted]; [texted]'
-
-            cmd += 'overlay='+watermark_position+'[out]" \
-                    -map "[out]"  ' + newpath + '/' + str(idx) + '.png'      
-        else:
-            cmd = 'ffmpeg -hide_banner -loglevel panic \
-                    -y \
-                    -i ' + path+'/'+ f + '    \
-                    -i ' + AMS_WATERMARK + ' \
-                    -filter_complex "[0:v]scale='+dimensions+'[scaled]; \
-                    [scaled]eq=contrast=1.3[sat];[sat]drawtext=:text=\'' + text + '\':fontcolor=white@'+FONT_TRANSPARENCY+':fontsize='+FONT_SIZE+':'+text_position 
-            if(with_extra_text is True):
-                cmd+= '[texted];' 
-                cmd+= '[texted]drawtext=:text=\''+ extra_text +'\':fontfile=\'/usr/share/fonts/truetype/dejavu/DejaVuSans-Bold.ttf\':fontcolor=white@'+FONT_TRANSPARENCY+':fontsize='+FONT_SIZE+':'+extra_text_position+'[texted2];[texted2]'  
-            else:
-                cmd+= '[texted]; [texted]'
-
-            cmd += 'overlay='+watermark_position+'[out]" \
-                    -map "[out]"  ' + newpath + '/' + str(idx) + '.png'  
-
-
-        #print(cmd)
-        output = subprocess.check_output(cmd, shell=True).decode("utf-8")  
-
+        newpath = add_info_to_frame(path+'/'+ f ,text,extra_text,text_position,extra_text_position,watermark_position,newpath + '/' + str(idx),dimensions,enhancement)
+ 
         #Remove the source 
         os.remove(path+'/'+ f)  
 
