@@ -131,7 +131,7 @@ def get_text_pos(text_pos, extra_text_here):
         elif (text_pos=='bl'):
             return("x=20:y=main_h-text_h-20","x=20:y=main_h-text_h-20-line_h*2*"+line_height_spacing_factor)
         else: 
-            return ("x=main_w-text_w-20:y=main_h-text_h-20","x=main_w-text_w-20:y=main_h-text_h-20-line_h*2"+line_height_spacing_factor)                
+            return ("x=main_w-text_w-20:y=main_h-text_h-20","x=main_w-text_w-20:y=main_h-text_h-20-line_h")                
 
 
 #Add text, logo, etc.. to a frame             
