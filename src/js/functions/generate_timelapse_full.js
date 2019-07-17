@@ -29,7 +29,7 @@ function add_timelapse_full_modal() {
             </div> \
             <div class="modal-body"> \
                 <form id="timelapse_full_form"> \
-                    <div class="row"> \
+                    <div class="row p-3"> \
                         <div class="col-sm-6"> \
                             <div class="form-group row mb-1"> \
                                 <label class="col-sm-4 col-form-label"><b>Date</b></label> \
@@ -74,10 +74,10 @@ function add_timelapse_full_modal() {
                             </div> \
                         </div> \
                     </div> \
-                    <div class="row"> \
+                    <div class="row p-3"> \
                             <div class="col-sm-12 mb-1"> \
                                 <div class="form-group">\
-                                    <label for="wat_pos" class="col-sm-4 col-form-label"><b>Position of the AMS Watermark</b></label> \
+                                    <label for="wat_pos" class="col-form-label"><b>Position of the AMS Watermark</b></label> \
                                     <select name="wat_pos" class="form-control"> \
                                         <option value="tr" selected>Top right</option> \
                                         <option value="tl" >Top Left</option> \
@@ -88,7 +88,7 @@ function add_timelapse_full_modal() {
                             </div> \
                             <div class="col-sm-12 mb-1"> \
                                 <div class="form-group"> \
-                                    <label for="text_pos" class="col-sm-4 col-form-label"><b>Position of the Camera Info</b></label> \
+                                    <label for="text_pos" class="col-form-label"><b>Position of the Camera Info</b></label> \
                                     <select name="text_pos" class="form-control"> \
                                         <option value="tr">Top right</option> \
                                         <option value="tl" >Top Left</option> \
