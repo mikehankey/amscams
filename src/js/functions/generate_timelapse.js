@@ -101,7 +101,7 @@ function add_timelapse_modal() {
                         <div class="col-sm-12"> \
                             <div class="form-group">\
                                 <label for="extra_text" class="col-form-label"><b>Extra info</b></label> \
-                                <input type="text name="extra_text" class="form-control" value=" "/> \
+                                <input type="text" name="extra_text" class="form-control" value=" "/> \
                             </div>\
                         </div>\
                 </form> \
