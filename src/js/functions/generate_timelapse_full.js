@@ -34,7 +34,7 @@ function add_timelapse_full_modal() {
                             <div class="form-group row mb-1"> \
                                 <label class="col-sm-4 col-form-label"><b>Date</b></label> \
                                 <div class="col-sm-8"> \
-                                    <input name="video_date" value="" type="text" class="datepicker form-control"> \
+                                    <input name="video_date" value="" type="text" data-display-format="YYYY/MM/DD" class="datepicker form-control"> \
                                 </div> \
                             </div> \
                             <div class="form-group row mb-1"> \
@@ -72,19 +72,11 @@ function add_timelapse_full_modal() {
                                     </select> \
                                 </div> \
                             </div> \
+                        </div> \
+                    </div> \
+                    <div class="row"> \
                             <div class="form-group row mb-1"> \
-                                <label for="text_pos" class="col-sm-4 col-form-label"><b>Info pos.</b></label> \
-                                <div class="col-sm-8"> \
-                                    <select name="text_pos" class="form-control"> \
-                                        <option value="tr">Top right</option> \
-                                        <option value="tl" >Top Left</option> \
-                                        <option value="br" >Bottom Right</option> \
-                                        <option value="bl" selected>Bottom Left</option> \
-                                    </select> \
-                                </div> \
-                            </div> \
-                            <div class="form-group row mb-1"> \
-                                <label for="wat_pos" class="col-sm-4 col-form-label"><b>Logo pos.</b></label> \
+                                <label for="wat_pos" class="col-sm-4 col-form-label"><b>Position of the AMS Watermark</b></label> \
                                 <div class="col-sm-8"> \
                                     <select name="wat_pos" class="form-control"> \
                                         <option value="tr" selected>Top right</option> \
@@ -94,13 +86,24 @@ function add_timelapse_full_modal() {
                                     </select> \
                                 </div> \
                             </div> \
-                        </div> \
-                        <div class="col-sm-12"> \
-                            <div class="form-group">\
-                                <label for="extra_text" class="col-form-label"><b>Extra info</b></label> \
-                                <input type="text" name="extra_text" class="form-control" value=""/> \
+                            <div class="form-group row mb-1"> \
+                             <label for="text_pos" class="col-sm-4 col-form-label"><b>Position of the Camera Info</b></label> \
+                             <div class="col-sm-8"> \
+                                 <select name="text_pos" class="form-control"> \
+                                     <option value="tr">Top right</option> \
+                                     <option value="tl" >Top Left</option> \
+                                     <option value="br" >Bottom Right</option> \
+                                     <option value="bl" selected>Bottom Left</option> \
+                                 </select> \
+                             </div> \
+                         </div> \
+                            <div class="col-sm-12"> \
+                                <div class="form-group">\
+                                    <label for="extra_text" class="col-form-label"><b>Extra info (added above the Camera Info)</b></label> \
+                                    <input type="text" name="extra_text" class="form-control" value=""/> \
+                                </div>\
                             </div>\
-                        </div>\
+                    </div> \
                 </form> \
             </div> \
             </div> \
