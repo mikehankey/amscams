@@ -1,18 +1,6 @@
-function getFormData($form){
-    var unindexed_array = $form.serializeArray();
-    var indexed_array = {};
-
-    $.map(unindexed_array, function(n, i){
-        indexed_array[n['name']] = n['value'];
-    });
-
-    return indexed_array;
-}
-
-
-function add_timelapse_modal() {
-    $('#timelapse_modal').remove(); 
-    $('<div id="timelapse_modal" class="modal" tabindex="-1" role="dialog"> \
+function add_timelapse_full_modal() {
+    $('#full_timelapse_modal').remove(); 
+    $('<div id="full_timelapse_modal" class="modal" tabindex="-1" role="dialog"> \
         <div class="modal-dialog modal-dialog-centered modal-lg" role="document"> \
             <div class="modal-content"> \
             <div class="modal-header"> \
@@ -22,13 +10,15 @@ function add_timelapse_modal() {
                 </button> \
             </div> \
             <div class="modal-body"> \
-                <form id="timelapse_form"> \
+                <form id="timelapse_full_form"> \
                     <div class="row"> \
                         <div class="col-sm-6"> \
                             <div class="form-group row mb-1"> \
                                 <label class="col-sm-4 col-form-label"><b>Date</b></label> \
                                 <div class="col-sm-8"> \
-                                    <input type="text" readonly class="form-control-plaintext" id="tl_date" name="tl_date" value=""> \
+                                <div class="input-group date datepicker" data-display-format="YYYY/MM/DD" data-action="reload" data-url-param="day" data-send-format="YYYY_MM_DD"> \
+                                    <input value="2019/07/12" type="text" class="form-control"> \
+                                    <span class="input-group-addon"><span class="icon-clock"></span></span></div> \
                                 </div> \
                             </div> \
                             <div class="form-group row mb-1"> \
@@ -57,7 +47,7 @@ function add_timelapse_modal() {
                                     <select name="fps" class="form-control"> \
                                         <option value="1">1 fps</option> \
                                         <option value="5">5 fps</option> \
-                                        <option value="10" >10 fps</option> \
+                                        <option value="10">10 fps</option> \
                                         <option value="15">15 fps</option> \
                                         <option value="24.975">24.975 fps</option> \
                                         <option value="29.97" selected>29.97 fps</option> \
@@ -101,7 +91,7 @@ function add_timelapse_modal() {
                         <div class="col-sm-12"> \
                             <div class="form-group">\
                                 <label for="extra_text" class="col-form-label"><b>Extra info</b></label> \
-                                <input type="text" name="extra_text" class="form-control" value=" "/> \
+                                <input type="text" name="extra_text" class="form-control" value=""/> \
                             </div>\
                         </div>\
                 </form> \
@@ -135,11 +125,11 @@ function add_timelapse_modal() {
 
     // Generate
     $('#generate_timelapse').click(function() { 
-        var cmd_data = getFormData($("#timelapse_form"));
+        var cmd_data = getFormData($("#timelapse_full_form"));
         cmd_data.cmd = "generate_timelapse";
 
  
-        $('#timelapse_modal').modal('hide');
+        $('#full_timelapse_modal').modal('hide');
         loading({text: "Creating Video", overlay: true});
         
         $.ajax({ 
@@ -168,7 +158,7 @@ function add_timelapse_modal() {
 }
 
 $(function() {
-    $('#create_night_anim').click(function() {
-        add_timelapse_modal();
+    $('#create_timelapse').click(function() {
+        add_timelapse_full_modal();    
     });
 })

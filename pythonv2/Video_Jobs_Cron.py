@@ -6,60 +6,110 @@ from os.path import isfile, join, exists
 from lib.Video_Timelapse import generate_timelapse, get_meteor_date_ffmpeg
 from lib.VIDEO_VARS import * 
 
-
-#READ THE waiting_jobs file if it exist 
-#AND CREATE EVENTUAL VIDEO(S)
-#TO ADD TO CRONTAB:
-#python3 /home/ams/amscams/pythonv2/Video_Jobs_Cron.py > /tmp/vid.txt
-js_file = Path(WAITING_JOBS)
-if js_file.is_file():
-
-    #Open the waiting_job & Load the data
-    with open(WAITING_JOBS, "r+") as jsonFile:
+#Test if we are already taking care of a video
+def is_a_job_processing():
+    with open(PROCESSING_JOBS, "r+") as jsonFile:
         try:
             data = json.load(jsonFile)
         except:
             # in case something went wrong
             data = {} 
+    print("IN is_a_job_processing")     
+    print(data)   
+    print(str(len(data)))   
+    if(len(data)==0):
+        return False
+    else:
+        return True
 
-    #Do we have any jobs
+#Return a job to process 
+#of False if no waiting job found
+def get_job_to_process():
+    #Open the waiting_job & Load the data
+    with open(WAITING_JOBS, "r+") as jsonFile:
+        try:
+            data = json.load(jsonFile)
+        except:
+            #Nothing to do
+            return False
+    jsonFile.close()
     alljobs = data['jobs']
-    if(alljobs is not None):
 
-        cur_idx = 0
-        cur_job = 'X'
+    if(alljobs is not None and len(alljobs)!=0):
+        toReturn = alljobs[0]
+ 
+        #We remove the job from the waiting list 
+        data['jobs'].pop(0)
+        
+        with open(WAITING_JOBS, 'w') as outfile:
+            json.dump(data, outfile)
+        outfile.close()
 
-        #Get the first "waiting" job
-        for idx, cur_jobs in enumerate(alljobs):
-            if(cur_jobs['status']=='waiting'):
-                cur_job = cur_jobs
-                cur_idx = idx
-                break;
+        print('WAITING LIST UPDATED')
+ 
+        #We add the job to the processing list
+        with open(PROCESSING_JOBS, 'r+') as processingFile:
+            try:
+                data = json.load(processingFile) 
+            except:
+                #Nothing to do
+                data = {} 
+        processingFile.close()        
 
-        #print('CURRENT JOB')
-        #print(str(cur_job))
+        #When the file is empty at first
+        if(len(data)==0):
+            data['jobs'] = []
 
-        if(cur_job != 'X'):
+        toReturn['status'] = "processing"
+        data['jobs'].append(toReturn)
 
-            #Change Status of the job in the JSON
-            data['jobs'][cur_idx]['status'] = 'processing'
-            with open(WAITING_JOBS, 'w') as outfile:
-                json.dump(data, outfile)
+        with open(PROCESSING_JOBS, 'w') as processingFile:
+            json.dump(data, processingFile)
+        processingFile.close()         
 
-            #Test if we have the HD files or not
-            dirs = os.listdir(HD_VID_SRC_PATH)  #Get All files
-            if(isfile(dirs[0]) and get_meteor_date_ffmpeg(dirs[0])==cur_job['date']):
-                print("WE HAVE HD")
-            
-            else:
-                # WE NEED TO DO IT FROM THE SDs
-                # Generate Video 
-                video_path = generate_timelapse(cur_job['cam_id'],cur_job['date'],cur_job['fps'],cur_job['dim'],cur_job['text_pos'],cur_job['wat_pos'])
+        return toReturn
+    else:
+        return False        
+ 
 
-            # Update the JSON so we dont process the same vid twice
-            data['jobs'][0]['status'] = 'ready'
-            data['jobs'][0]['path']   = video_path
-            with open(WAITING_JOBS, 'w') as outfile:
-                json.dump(data, outfile)
+
+
+def video_job():
+    
+    #Test if we have a video currently being processed
+    if(is_a_job_processing() == True):
+        print("ONE JOB IS ALREADY PROCESSING")
+        sys.exit(0)
+
+    #Get Job to Process
+    job = get_job_to_process();
+    
+    if(job is not False):
+        error = False
+
+        #TIMELAPSE
+        if(job['name']=='timelapse'):
+            video_path =  generate_timelapse(job['cam_id'],job['date'],job['fps'],job['dim'],job['text_pos'],job['wat_pos'],job['extra_text'],0) 
+
+            #try:
+            #except:
+            #    error = True
+ 
+        if(error == False):
+
+            #We empty the list of processing file  
+            processingFile = open(PROCESSING_JOBS, 'r+')
+            processingFile.truncate(0)
+            processingFile.close()  
+
+            print("VIDEO PROCESSED " + video_path)
+
+        else:
+
+            print("ERROR PROCESSING THE VIDEO")
+    
+    else:
+        print("NO JOB FOUND") 
+
 
         

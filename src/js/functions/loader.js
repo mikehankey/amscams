@@ -1,8 +1,7 @@
 function loading(options) {
 
     // Avoir multiple loader
-    
-    if(options == undefined || options.standalone !== undefined) {
+    if(options == undefined || options.standalone == undefined) {
        $('#bottom_overlay').remove();
        loading_done();  
     }
@@ -25,7 +24,7 @@ function loading(options) {
     if(options.container !== undefined && options.overlay === true) {
 
         if(options.container !== undefined && options.container != 'body') { 
-            $('<div id="overlay" style="position: absolute;z-index: 9999;" class="animated"><div class="row h-100 text-center"><div class="col-sm-12 my-auto"><div class="card card-block" style="background:transparent"><iframe style="border:0;margin: 0 auto;" src="./dist/img/anim_logo.svg" width="140" height="90"></iframe><h4>'+options.text+'</h4></div></div></div></div>').appendTo(options.container);
+            $('<div class="overlay_loader" style="position: absolute;z-index: 9999;" class="animated"><div class="row h-100 text-center"><div class="col-sm-12 my-auto"><div class="card card-block" style="background:transparent"><iframe style="border:0;margin: 0 auto;" src="./dist/img/anim_logo.svg" width="140" height="90"></iframe><h4>'+options.text+'</h4></div></div></div></div>').appendTo(options.container);
         } else {
             $('body').css('overflow','hidden'); 
             $('<div id="overlay" class="animated"><div class="row h-100 text-center"><div class="col-sm-12 my-auto"><div class="card card-block" style="background:transparent"><iframe style="border:0;margin: 0 auto;" src="./dist/img/anim_logo.svg" width="140" height="90"></iframe><h4>'+options.text+'</h4></div></div></div></div>').appendTo('body');
@@ -39,6 +38,9 @@ function loading(options) {
 
 }
 
+
+
+
 function loading_done() {
     // Reset title
     /*
@@ -48,8 +50,12 @@ function loading_done() {
     */
     $("#logo_holder").contents().find("#logo").removeClass("animated");
 
-    // Remove Overlay 
-    $('#overlay').fadeOut(150, function() {$('#overlay').remove();})
+    // Remove Overlay(s)
+    // I know, it doesn't make sense but my instructions are pretty vague 
+    // and it's hard to follow so, please dont judge me too quickly
+    $('#overlay').each(function() {
+        $(this).fadeOut(150, function() {$('#overlay').remove();})
+    });
     $('body').css('overflow','auto');
     $('#bottom_overlay').removeClass('dlp').remove();  
 } 

@@ -101,7 +101,10 @@ function add_a_frame(cur_fn, before) {
         url:  "/pycgi/webUI.py",
         data: cmd_data, 
         success: function(data) { 
+            
+            update_reduction_only();
             loading_done();
+            /*
             if($.trim(data)!=='') {
                 add_reduc_row($.parseJSON(data),before);
             } else {
@@ -112,6 +115,7 @@ function add_a_frame(cur_fn, before) {
                 });
                 
             }
+            */
           
         }, 
         error:function() { 

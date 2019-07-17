@@ -85,3 +85,115 @@ function update_reduction_on_canvas_and_table(json_resp) {
     // Reload the actions
     reduction_table_actions();
 }
+
+
+// Remove Reductions data from the canvas
+function remove_reduction_objects_from_canvas() {
+    var objects = canvas.getObjects()
+    $.each(objects,function(i,v){
+        if(v.type=='reduc_rect') {
+            canvas.remove(objects[i]);
+        }
+    });
+     
+ }
+
+function update_reduction_only() {
+    var cmd_data = {
+        video_file:       main_vid,          // Defined on the page 
+        cmd: 'update_red_info_ajax'
+    }
+
+    loading({text:'Updating  reduction data...', overlay:true}); 
+    
+    $.ajax({ 
+        url:  "/pycgi/webUI.py",
+        data: cmd_data,
+        success: function(data) {
+        
+            var json_resp = $.parseJSON(data); 
+
+            if(json_resp['status']!==0) {
+             
+                // Remove All objects from Canvas with type =   type: 'reduc_rect'
+                remove_reduction_objects_from_canvas();
+                 
+                // Update Reduction
+                update_reduction_on_canvas_and_table(json_resp);
+                
+                // Update Add frames
+                setup_add_frames();
+
+
+            }
+
+            reduction_table_actions();
+ 
+            loading_done();
+ 
+        }, error: function(data) {
+            
+            loading_done();
+            bootbox.alert({
+                message: "Something went wrong with the reduction data. Please, try again later",
+                className: 'rubberBand animated error',
+                centerVertical: true 
+            });
+        }
+    });
+}
+
+
+
+// test if we have a missing thumb 
+function test_missing_thumb() {
+    var rows_with_missing_thumbs = [];
+    var we_try_how_many_times = 10;
+    var cnt = 0;
+    $('#reduc-tab table img').each(function() {
+        // 50 = normal size
+	    if($(this).width()!==50) {
+            rows_with_missing_thumbs.push($(this).closest('tr').attr('id'));
+            // Replace with loading
+            $(this).attr('data-src',$(this).attr('src')).attr('src','/pycgi/dist/img/anim_logo.svg');
+        }
+    });
+
+    if(rows_with_missing_thumbs.length!=0) {
+        // We try to load it 
+        //console.log("We try to load " )
+        //console.log(rows_with_missing_thumbs)
+
+        try_again = setInterval(function(){ 
+            
+            if(rows_with_missing_thumbs.length==0 || cnt>=we_try_how_many_times) {
+                // Replace with processing
+                clearInterval(try_again);
+
+                $.each(rows_with_missing_thumbs, function(i,v) {
+                    $('tr#'+v).find('img.select_meteor').removeAttr('data-src').attr('src','./dist/img/proccessing-sm.png');
+                });
+            }    
+
+            $.each(rows_with_missing_thumbs, function(i,v) {
+                var img_to_test = '/pycgi/' + $('tr#'+v).find('img.select_meteor').attr('data-src');
+                //console.log('TEST ', img_to_test);
+                $.ajax({
+                    url:img_to_test,
+                    type:'HEAD',
+                    success:function(e){
+                        // We place the image
+                        $('tr#'+v).find('img.select_meteor').attr('src','data-src').removeAttr('data-src');
+                        // We remove the td# from the array
+                        rows_with_missing_thumbs.splice(i, 1);
+                    },  
+                    error:function() { // :( 
+                    }
+                });
+            });
+
+            cnt++;
+        
+        }, 3000);
+    }
+}

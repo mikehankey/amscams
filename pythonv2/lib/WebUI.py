@@ -11,7 +11,7 @@ import json
 import cgitb
 import re
 import datetime
-import time
+import time 
 from pathlib import Path
 from lib.PwdProtect import login_page, check_pwd_ajax
 from lib.Pagination import get_pagination
@@ -27,6 +27,7 @@ from lib.WebCalib import calibrate_pic,make_plate_from_points, solve_field, chec
 from lib.UtilLib import calc_radiant
 from lib.Video_Add_Job import add_video_job 
 from lib.VIDEO_VARS import * 
+from lib.Video_Tools import getLength
 from lib.Get_Cam_ids import get_the_cam_ids
  
 
@@ -225,9 +226,16 @@ def controller(json_conf):
 
    #CUSTOM VIDEOS (AJAX CALL)
    if cmd == 'generate_timelapse': 
-      add_video_job('timelapse',form.getvalue('tl_cam_id'),form.getvalue('tl_date'),form.getvalue('fps'),form.getvalue('dim'),form.getvalue('text_pos'),form.getvalue('wat_pos'))
+   
+      #Extra text is potional
+      try:
+            extra_text = form.getvalue('extra_text')
+      except KeyError as e:
+            extra_text = ""
+     
+      add_video_job('timelapse',form.getvalue('tl_cam_id'),form.getvalue('tl_date'),form.getvalue('fps'),form.getvalue('dim'),form.getvalue('text_pos'),form.getvalue('wat_pos'),extra_text)
       exit()
-
+   
   
 
 
@@ -449,18 +457,23 @@ def video_tools(json_conf,form):
    else:
       cur_page = int(cur_page)
 
-   all_vids = glob.glob(VID_FOLDER + "*.mp4" )
+   all_vids = sorted(glob.glob(VID_FOLDER + "*.mp4"), key=os.path.getmtime)
    all_vids_out = ""
    vid_counter = 0
 
+   #All vids in the VID_FOLDER
    for vid in all_vids:
          # Get Date & Cam ID
          date, camid = get_custom_video_date_and_cam_id(vid)
 
-         all_vids_out += "<div class='preview col-lg-2 col-md-3 norm'>"
+         length = getLength(vid)
+         if(length=='' or length==0):
+               length = ''
+          
+         all_vids_out += "<div class='preview col-lg-2 col-md-3 norm  mb-3'>"
          all_vids_out += "<a class='mtt vid-link nop' href='"+vid+"' title='Play the Video'>"
          all_vids_out += "<img class='img-fluid ns lz' src='" + vid.replace('.mp4','.png') + "'/>"
-         all_vids_out += "</a><span>" + date + " - Cam#" + camid +"</span></div>"
+         all_vids_out += "</a><span>" + date + " - Cam#" + camid +" - " +  length + "</span></div>"
          vid_counter+=1
 
 
@@ -469,6 +482,16 @@ def video_tools(json_conf,form):
    header_out = '';
    processing_vids = '';
 
+   #Get All Cam IDs
+   all_cam_ids = get_the_cam_ids() 
+   out_put_all_cam_ids = ' '
+   for camid in all_cam_ids:
+      out_put_all_cam_ids += camid + "|"
+
+   #Get Current Date (default for datepicker)
+   now = datetime.datetime.now()
+   out_put_date = str(now.year) + "/" + str(now.month) + "/" + str(now.day)
+ 
    if js_file.is_file():
 
       #Open the waiting_job & Load the data
@@ -478,24 +501,27 @@ def video_tools(json_conf,form):
       for jobs in data['jobs']:
             
             if(jobs['status']=='waiting'):
-                  processing_vids += "<div class='preview col-lg-2 col-md-3 norm'>"
+                  processing_vids += "<div class='preview col-lg-2 col-md-3 mb-3 norm'>"
                   processing_vids += "<a class='mtt'>"
                   processing_vids += "<img class='img-fluid ns lz' src='./dist/img/waiting.png'/>"
                   processing_vids += "<span>" + jobs['date'].replace('_','/') + " - " + jobs['cam_id'] +"</span></a></div>"
                   vid_counter+=1
 
             if(jobs['status']=='processing'):
-                  processing_vids += "<div class='preview col-lg-2 col-md-3 norm'>"
+                  processing_vids += "<div class='preview col-lg-2 col-md-3 mb-3 norm'>"
                   processing_vids += "<a class='mtt'>"
-                  processing_vids += "<img class='img-fluid ns lz' src='./dist/img/processing.png'/>"
+                  processing_vids += "<img class='img-fluid ns lz' src='./dist/img/proccessing.png'/>"
                   processing_vids += "<span>" + jobs['date'].replace('_','/') + " - " + jobs['cam_id'] +"</span></a></div>"
                   vid_counter+=1
 
      
-
-   header_out = "<h1>"+str(vid_counter)+" videos found</h1>"
-   
+   header_out = "<div class='h1_holder d-flex justify-content-between'>"      
+   header_out += "<h1>"+str(vid_counter)+" videos found</h1>"
+   header_out += "<div class='d-flex'><button class='btn btn-primary mr-3' id='create_timelapse' style='text-transform: initial;'><span class='icon-youtube'></span> Generate Timelapse Video</button></div></div>"
+  
    print(header_out)
+   print("<input type='hidden' name='cur_date' value='"+out_put_date+"'/>")
+   print("<input type='hidden' name='cam_ids' value='"+out_put_all_cam_ids+"'/>")
    print("<div class='gallery gal-resize row text-center text-lg-left mt-4'>")
    print(processing_vids)
    print(all_vids_out)
@@ -1710,14 +1736,17 @@ def examine_min(video_file,json_conf):
 #Delete multiple detections at once
 def delete_multiple_detection(detections,json_conf):
       for to_delete in detections:
-            override_detect(to_delete,'',json_conf)
+            #print("TO DELETE " + str(to_delete))
+            #print("JSON " +  str(json_conf))
+            override_detect('',to_delete,'')
+
+
 
 def override_detect(video_file,jsid, json_conf):
    cgitb.enable()
     
    if jsid is not None:
-      video_file = parse_jsid(jsid)
-
+      video_file = parse_jsid(jsid) 
   
    base = video_file.replace(".mp4", "")
    el = base.split("/")
