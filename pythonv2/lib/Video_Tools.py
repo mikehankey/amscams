@@ -122,20 +122,31 @@ def get_text_pos(text_pos, extra_text_here):
         else: 
             return ("x=main_w-text_w-20:y=main_h-text_h-20","")
     else:
-        line_height_spacing_factor = ".8"
+        line_height_spacing_factor = "0.4"
 
         if(text_pos=='tr'):
-            return ("x=main_w-text_w-20:y=20","x=main_w-text_w-20:y=20+line_h*2*"+line_height_spacing_factor)
+            return ("x=main_w-text_w-20:y=20","x=main_w-text_w-20:y=20+line_h*")
         elif (text_pos=='tl'):
-            return ("x=20:y=20","x=20:y=20+line_h*2*"+line_height_spacing_factor)    
+            return ("x=20:y=20","x=20:y=20+line_h")    
         elif (text_pos=='bl'):
-            return("x=20:y=main_h-text_h-20","x=20:y=main_h-text_h-20-line_h*2*"+line_height_spacing_factor)
+            return("x=20:y=main_h-text_h-20","x=20:y=main_h-text_h-20-line_h")
         else: 
-            return ("x=main_w-text_w-20:y=main_h-text_h-20","x=main_w-text_w-20:y=main_h-text_h-20-line_h*2"+line_height_spacing_factor)                
+            return ("x=main_w-text_w-20:y=main_h-text_h-20","x=main_w-text_w-20:y=main_h-text_h-20-line_h")                
 
 
 #Add text, logo, etc.. to a frame             
-def add_info_to_frame(frame, path, date, extra_text, dimensions="1920:1080", text_pos='bl', watermark_pos='tr', enhancement=0,text_position, extra_text_position, cam_text, watermark_position, newpath):
+def add_info_to_frame(frame, cam_text, extra_text, text_position, extra_text_position, watermark_position, newpath, dimensions="1920:1080", text_pos='bl', watermark_pos='tr', enhancement=0):
+     
+    # Do we have extra text?
+    if(extra_text is None):
+        with_extra_text = False
+        extra_text=''
+    elif(extra_text.strip()==''):
+        with_extra_text = False
+        extra_text=''
+    else:
+        with_extra_text = True
+    
     if(enhancement!=1):
         cmd = 'ffmpeg -hide_banner -loglevel panic \
                 -y \
@@ -170,7 +181,7 @@ def add_info_to_frame(frame, path, date, extra_text, dimensions="1920:1080", tex
 
     #print(cmd)
     output = subprocess.check_output(cmd, shell=True).decode("utf-8")  
-    print("FRAME READY AT " + output)
+    print("FRAME READY AT " + newpath)
 
 
 
