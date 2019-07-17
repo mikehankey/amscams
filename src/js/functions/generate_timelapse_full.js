@@ -40,7 +40,7 @@ function add_timelapse_full_modal() {
                             </div> \
                             <div class="form-group row mb-1"> \
                                 <label class="col-sm-4 col-form-label"><b>Camera</b></label> \
-                                <div class="col-sm-8">'+cam_select+'</div> \
+                                <div class="col-sm-8" id="cam_select_h"></div> \
                             </div> \ 
                         </div> \
                         <div class="col-sm-6"> \
@@ -111,6 +111,9 @@ function add_timelapse_full_modal() {
             </div> \
         </div> \
         </div>').appendTo('body').modal('show');
+
+    // Cam selecteor
+    $('#cam_select_h').html(cam_select);
 
     //Start datepicker
     load_date_pickers();
