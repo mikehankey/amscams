@@ -75,7 +75,7 @@ function add_timelapse_full_modal() {
                         </div> \
                     </div> \
                     <div class="row"> \
-                            <div class="form-group row mb-1"> \
+                            <div class="form-group col-sm-12 mb-1"> \
                                 <label for="wat_pos" class="col-sm-4 col-form-label"><b>Position of the AMS Watermark</b></label> \
                                 <div class="col-sm-8"> \
                                     <select name="wat_pos" class="form-control"> \
@@ -86,17 +86,17 @@ function add_timelapse_full_modal() {
                                     </select> \
                                 </div> \
                             </div> \
-                            <div class="form-group row mb-1"> \
-                             <label for="text_pos" class="col-sm-4 col-form-label"><b>Position of the Camera Info</b></label> \
-                             <div class="col-sm-8"> \
-                                 <select name="text_pos" class="form-control"> \
-                                     <option value="tr">Top right</option> \
-                                     <option value="tl" >Top Left</option> \
-                                     <option value="br" >Bottom Right</option> \
-                                     <option value="bl" selected>Bottom Left</option> \
-                                 </select> \
-                             </div> \
-                         </div> \
+                            <div class="form-group col-sm-12 mb-1"> \
+                                <label for="text_pos" class="col-sm-4 col-form-label"><b>Position of the Camera Info</b></label> \
+                                <div class="col-sm-8"> \
+                                    <select name="text_pos" class="form-control"> \
+                                        <option value="tr">Top right</option> \
+                                        <option value="tl" >Top Left</option> \
+                                        <option value="br" >Bottom Right</option> \
+                                        <option value="bl" selected>Bottom Left</option> \
+                                    </select> \
+                                </div> \
+                            </div> \
                             <div class="col-sm-12"> \
                                 <div class="form-group">\
                                     <label for="extra_text" class="col-form-label"><b>Extra info (added above the Camera Info)</b></label> \
