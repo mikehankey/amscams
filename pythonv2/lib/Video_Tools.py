@@ -125,11 +125,11 @@ def get_text_pos(text_pos, extra_text_here):
         line_height_spacing = "2"
 
         if(text_pos=='tr'):
-            return ("x=main_w-text_w-20:y=20","x=main_w-text_w-20:y=20+line_h*")
+            return ("x=main_w-text_w-20:y=20+line_h+"+line_height_spacing,"x=main_w-text_w-20:y=20")
         elif (text_pos=='tl'):
-            return ("x=20:y=20","x=20:y=20+line_h")    
+            return ("x=20:y=20+line_h+"+line_height_spacing,"x=20:y=20")    
         elif (text_pos=='bl'):
-            return("x=20:y=main_h-text_h-20","x=20:y=main_h-text_h-20-line_h")
+            return("x=20:y=main_h-text_h-20","x=20:y=main_h-text_h-20-line_h-"+line_height_spacing)
         else: 
             return ("x=main_w-text_w-20:y=main_h-text_h-20","x=main_w-text_w-20:y=main_h-text_h-20-line_h-"+line_height_spacing)                
 
