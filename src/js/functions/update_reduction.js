@@ -17,7 +17,19 @@ function update_reduction_on_canvas_and_table(json_resp) {
         all_frame_ids.push(parseInt(v[1]));
     });
 
+    // Create Colors
+    var rainbow = new Rainbow();
+    rainbow.setNumberRange(0, 255);
+    var all_colors = [];
+    var total = all_frame_ids.length; 
+    var step = parseInt(255/total); 
+    for (var i = 0; i <= 255; i = i + step) {
+        all_colors.push('#'+rainbow.colourAt(i));
+    }
+     
+    
     $.each(smf, function(i,v){
+ 
         
         // Get thumb path
         var frame_id = parseInt(v[1]);
@@ -26,7 +38,8 @@ function update_reduction_on_canvas_and_table(json_resp) {
         var _time = v[0].split(' ');
   
         // Thumb	#	Time	X/Y - W/H	Max PX	RA/DEC	AZ/EL
-        table_tbody_html+= '<tr id="fr_'+frame_id+'" data-org-x="'+v[2]+'" data-org-y="'+v[3]+'"><td><img alt="Thumb #'+frame_id+'" src='+thumb_path+' width=50 height=50 class="img-fluid select_meteor"/></td>';
+        table_tbody_html+= '<tr id="fr_'+frame_id+'" data-org-x="'+v[2]+'" data-org-y="'+v[3]+'"><td><div class="st" style="background-color:'+all_colors[i]+'"></div></td>'
+        table_tbody_html+= '<td><img alt="Thumb #'+frame_id+'" src='+thumb_path+' width=50 height=50 class="img-fluid select_meteor"/></td>';
         table_tbody_html+= '<td>'+frame_id+'</td><td>'+_time[1]+'</td><td>'+v[7]+'&deg;/'+v[8]+'&deg;</td><td>'+v[9]+'&deg;/'+v[10]+'&deg;</td><td>'+ parseFloat(v[2])+'/'+parseFloat(v[3]) +'</td><td>'+ v[4]+'x'+v[5]+'</td>';
         table_tbody_html+= '<td>'+v[6]+'</td>';
         table_tbody_html+= '<td><a class="btn btn-danger btn-sm delete_frame"><i class="icon-delete"></i></a></td>';
@@ -53,7 +66,9 @@ function update_reduction_on_canvas_and_table(json_resp) {
 
         // Add Rectangle
         canvas.add(new fabric.Rect({
-            fill: 'rgba(0,0,0,0)', strokeWidth: 1, stroke: 'rgba(230,100,200,.5)', 
+            fill: 'rgba(0,0,0,0)', 
+            strokeWidth: 1, 
+            stroke: all_colors[i], //'rgba(230,100,200,.5)', 
             left:  v[2]/2-rad, 
             top:   v[3]/2-rad,
             width: 10,

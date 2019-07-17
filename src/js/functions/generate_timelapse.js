@@ -11,9 +11,7 @@ function getFormData($form){
 
 
 function add_timelapse_modal() {
-    $('#timelapse_modal').remove();
- 
-
+    $('#timelapse_modal').remove(); 
     $('<div id="timelapse_modal" class="modal" tabindex="-1" role="dialog"> \
         <div class="modal-dialog modal-dialog-centered modal-lg" role="document"> \
             <div class="modal-content"> \
@@ -81,10 +79,10 @@ function add_timelapse_modal() {
                                 <label for="text_pos" class="col-sm-4 col-form-label"><b>Info pos.</b></label> \
                                 <div class="col-sm-8"> \
                                     <select name="text_pos" class="form-control"> \
-                                        <option value="tr"selected>Top right</option> \
+                                        <option value="tr">Top right</option> \
                                         <option value="tl" >Top Left</option> \
                                         <option value="br" >Bottom Right</option> \
-                                        <option value="bl" >Bottom Left</option> \
+                                        <option value="bl" selected>Bottom Left</option> \
                                     </select> \
                                 </div> \
                             </div> \
@@ -92,10 +90,10 @@ function add_timelapse_modal() {
                                 <label for="wat_pos" class="col-sm-4 col-form-label"><b>Logo pos.</b></label> \
                                 <div class="col-sm-8"> \
                                     <select name="wat_pos" class="form-control"> \
-                                        <option value="tr" >Top right</option> \
+                                        <option value="tr" selected>Top right</option> \
                                         <option value="tl" >Top Left</option> \
                                         <option value="br" >Bottom Right</option> \
-                                        <option value="bl" selected>Bottom Left</option> \
+                                        <option value="bl" >Bottom Left</option> \
                                     </select> \
                                 </div> \
                             </div> \
@@ -115,7 +113,8 @@ function add_timelapse_modal() {
     $('#tot_f').val(hmf);
 
     // Cam ID 
-    $('#tl_cam_id').val($('#cam_id').text());
+    $('#tl_cam_id').val($('#cam_id').val());
+    console.log('CAM ID VAL ', $('#cam_id').val());
 
     // Date
     $('#tl_date').val($('input[name=cur_date]').val());
@@ -135,13 +134,18 @@ function add_timelapse_modal() {
 
  
         $('#timelapse_modal').modal('hide');
-        loading({text: "Generating Timelapse Video", overlay: false});
+        loading({text: "Creating Video", overlay: true});
         
         $.ajax({ 
             url:  "/pycgi/webUI.py",
             data: cmd_data,
             success: function(data) {
-                console.log(data);
+                var json_resp = $.parseJSON(data); 
+                bootbox.alert({
+	                message: json_resp.msg,
+	                className: 'rubberBand animated',
+	                centerVertical: true
+                });
                 loading_done();
             }, 
             error:function(err) {

@@ -1,8 +1,11 @@
 function loading(options) {
 
     // Avoir multiple loader
-    loading_done();  
-    $('#bottom_overlay').remove();
+    
+    if(options == undefined || options.standalone !== undefined) {
+       $('#bottom_overlay').remove();
+       loading_done();  
+    }
     
     if(options == undefined) {
         options = {

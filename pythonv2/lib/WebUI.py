@@ -12,9 +12,10 @@ import cgitb
 import re
 import datetime
 import time
+from pathlib import Path
 from lib.PwdProtect import login_page, check_pwd_ajax
 from lib.Pagination import get_pagination
-from lib.PrintUtils import get_meteor_date, get_date_from_file, get_meteor_time
+from lib.PrintUtils import get_meteor_date, get_date_from_file, get_meteor_time, get_custom_video_date_and_cam_id
 from lib.FileIO import get_proc_days, get_day_stats, get_day_files , load_json_file, get_trims_for_file, get_days, save_json_file, cfe, save_meteor
 from lib.VideoLib import get_masks, convert_filename_to_date_cam, ffmpeg_trim , load_video_frames
 from lib.DetectLib import check_for_motion2 
@@ -24,7 +25,9 @@ from lib.ImageLib import mask_frame , draw_stack, stack_frames
 from lib.CalibLib import radec_to_azel
 from lib.WebCalib import calibrate_pic,make_plate_from_points, solve_field, check_solve_status, free_cal, show_cat_stars, choose_file, upscale_2HD, fit_field, delete_cal, add_stars_to_fit_pool, save_add_stars_to_fit_pool, reduce_meteor, reduce_meteor_ajax, find_stars_ajax, man_reduce, pin_point, get_manual_points, del_manual_points, sat_cap, HMS2deg, custom_fit, del_frame, clone_cal, reduce_meteor_new , update_red_info_ajax, update_hd_cal_ajax, add_frame_ajax, update_frame_ajax
 from lib.UtilLib import calc_radiant
-from lib.Video_Timelapse import add_timelapse_job
+from lib.Video_Add_Job import add_video_job 
+from lib.VIDEO_VARS import * 
+from lib.Get_Cam_ids import get_the_cam_ids
  
 
 NUMBER_OF_METEOR_PER_PAGE = 60
@@ -173,8 +176,11 @@ def make_day_preview(day_dir, stats_data, json_conf):
  
       html_out +=  "<div class='preview col-lg-2 col-md-3 '>"
       html_out +=  "<a class='mtt' href='webUI.py?cmd=browse_day&day=" + day_str + "&cams_id="+cams_id+"'  title='Browse all day'>"
-      html_out +=  "<img alt='" + day_str + "' class='img-fluid ns lz' src='" + obj_stack + "'>"
-      html_out +=  "</a><span class='pre-b'>Cam #"+ cams_id+" - " + str(min_total) + " minutes</span></div>"     
+      html_out +=  "<img alt='" + day_str + "' class='img-fluid ns lz' src='" + obj_stack + "'>" 
+      if(min_total==0):
+            html_out +=  "</a><span class='pre-b'>Cam #"+ cams_id+" - <i>processing</i></span></div>"   
+      else:
+            html_out +=  "</a><span class='pre-b'>Cam #"+ cams_id+" - " + str(min_total) + " minutes</span></div>"   
    return(html_out, day_str)
 
 def parse_jsid(jsid):
@@ -217,11 +223,13 @@ def controller(json_conf):
       check_pwd_ajax(user,pwd)
       exit()
 
-   #VIDEO (TIMELAPSE)
+   #CUSTOM VIDEOS (AJAX CALL)
    if cmd == 'generate_timelapse': 
-      #generate_timelapse(form.getvalue('tl_cam_id'),form.getvalue('tl_date'),form.getvalue('fps'),form.getvalue('dim'),form.getvalue('text_pos'),form.getvalue('wat_pos'))
-      add_timelapse_job(form.getvalue('tl_cam_id'),form.getvalue('tl_date'),form.getvalue('fps'),form.getvalue('dim'),form.getvalue('text_pos'),form.getvalue('wat_pos'))
+      add_video_job('timelapse',form.getvalue('tl_cam_id'),form.getvalue('tl_date'),form.getvalue('fps'),form.getvalue('dim'),form.getvalue('text_pos'),form.getvalue('wat_pos'))
       exit()
+
+  
+
 
    # do json ajax functions up here and bypass the exta html
    if cmd == 'override_detect':
@@ -229,6 +237,13 @@ def controller(json_conf):
       jsid = form.getvalue('jsid')
       override_detect(video_file,jsid,json_conf)
       exit()
+   
+   #Delete multiple detections at once 
+   if cmd == 'delete_multiple_detection':
+      detections = form.getvalue('detections[]')
+      delete_multiple_detection(detections,json_conf)
+      exit()
+
    if cmd == 'add_frame':
       add_frame_ajax(json_conf,form)
       exit()
@@ -326,6 +341,11 @@ def controller(json_conf):
 
    print(top)
    extra_html = ""
+
+   #CUSTOM VIDEOS (LIST)
+   if cmd== 'video_tools':
+      video_tools(json_conf,form) 
+
    if cmd == 'reduce_new':
       extra_html = reduce_meteor_new(json_conf, form)
    if cmd == 'reduce':
@@ -354,8 +374,7 @@ def controller(json_conf):
    if cmd == 'add_stars_to_fit_pool':
       add_stars_to_fit_pool(json_conf,form)
 
-   if cmd == 'video_tools':
-      video_tools(json_conf)
+ 
    if cmd == 'mask_admin':
       mask_admin(json_conf, form)
    if cmd == 'calibrate_pic':
@@ -416,6 +435,73 @@ def controller(json_conf):
    print(bottom)
    #cam_num = form.getvalue('cam_num')
    #day = form.getvalue('day')
+
+
+# VIDEO TOOLS PAGE
+# LIST OF PROCESS/READY VIDEOS
+def video_tools(json_conf,form):
+   cgitb.enable()
+
+   cur_page  = form.getvalue('p')
+
+   if (cur_page is None) or (cur_page==0):
+      cur_page = 1
+   else:
+      cur_page = int(cur_page)
+
+   all_vids = glob.glob(VID_FOLDER + "*.mp4" )
+   all_vids_out = ""
+   vid_counter = 0
+
+   for vid in all_vids:
+         # Get Date & Cam ID
+         date, camid = get_custom_video_date_and_cam_id(vid)
+
+         all_vids_out += "<div class='preview col-lg-2 col-md-3 norm'>"
+         all_vids_out += "<a class='mtt vid-link nop' href='"+vid+"' title='Play the Video'>"
+         all_vids_out += "<img class='img-fluid ns lz' src='" + vid.replace('.mp4','.png') + "'/>"
+         all_vids_out += "</a><span>" + date + " - Cam#" + camid +"</span></div>"
+         vid_counter+=1
+
+
+   #READ THE waiting_jobs file if it exist 
+   js_file = Path(WAITING_JOBS)
+   header_out = '';
+   processing_vids = '';
+
+   if js_file.is_file():
+
+      #Open the waiting_job & Load the data
+      with open(WAITING_JOBS, "r+") as jsonFile:
+            data = json.load(jsonFile)
+
+      for jobs in data['jobs']:
+            
+            if(jobs['status']=='waiting'):
+                  processing_vids += "<div class='preview col-lg-2 col-md-3 norm'>"
+                  processing_vids += "<a class='mtt'>"
+                  processing_vids += "<img class='img-fluid ns lz' src='./dist/img/waiting.png'/>"
+                  processing_vids += "<span>" + jobs['date'].replace('_','/') + " - " + jobs['cam_id'] +"</span></a></div>"
+                  vid_counter+=1
+
+            if(jobs['status']=='processing'):
+                  processing_vids += "<div class='preview col-lg-2 col-md-3 norm'>"
+                  processing_vids += "<a class='mtt'>"
+                  processing_vids += "<img class='img-fluid ns lz' src='./dist/img/processing.png'/>"
+                  processing_vids += "<span>" + jobs['date'].replace('_','/') + " - " + jobs['cam_id'] +"</span></a></div>"
+                  vid_counter+=1
+
+     
+
+   header_out = "<h1>"+str(vid_counter)+" videos found</h1>"
+   
+   print(header_out)
+   print("<div class='gallery gal-resize row text-center text-lg-left mt-4'>")
+   print(processing_vids)
+   print(all_vids_out)
+   print("</div>")
+   
+      
 
 def reset_reduce(json_conf, form):
    mjf = form.getvalue("cal_params_file")
@@ -1532,14 +1618,7 @@ def nav_links(json_conf, cmd):
    
    return(nav, bot_nav)
 
-def video_tools(json_conf):
-   print("<div class='alert alert-info m-3 text-center'>Coming soon</div>")
-   #print("video tools")
-   #print("<li>Join Two Clips</li>")
-   #print("<li>Trim Clip</li>")
-   #print("<li>Stack Video</li>")
-   #print("<li>Make Meteors Tonight Video</li>")
-   #print("<li>Make Timelapse</li>")
+
 
 def reset(video_file, type):
    if "passed" in video_file:
@@ -1626,15 +1705,24 @@ def examine_min(video_file,json_conf):
 
    print("</div></div></div></div></div>") 
 
-def override_detect(video_file,jsid, json_conf):
 
+
+#Delete multiple detections at once
+def delete_multiple_detection(detections,json_conf):
+      for to_delete in detections:
+            override_detect(to_delete,'',json_conf)
+
+def override_detect(video_file,jsid, json_conf):
+   cgitb.enable()
+    
    if jsid is not None:
       video_file = parse_jsid(jsid)
 
+  
    base = video_file.replace(".mp4", "")
    el = base.split("/")
    base_dir = base.replace(el[-1], "")
-
+ 
    if "meteors" in base:
       new_dir = "/mnt/ams2/trash/"
       json_file = video_file.replace(".mp4", ".json")
@@ -1978,11 +2066,25 @@ def browse_day(day,cams_id,json_conf):
    all_files = []
    for base_file in sorted(day_files,reverse=True):
       all_files.append(base_file)
+ 
+   #Get CAM IDs from drop_dow & Javascript
+   all_cam_ids = get_the_cam_ids() 
 
    print("<div class='h1_holder d-flex justify-content-between'><h1><span class='h'><span id='meteor_count'>"+format(len(day_files))+"</span> detections</span> on")
    print("<div class='input-group date datepicker' data-display-format='YYYY/MM/DD' data-action='reload' data-url-param='day' data-send-format='YYYY_MM_DD'>")
    print("<input value='"+str(day.replace("_", "/"))+"' type='text' class='form-control'>")
-   print("<span class='input-group-addon'><span class='icon-clock'></span></span></div> by Cam #<span id='cam_id'>"+cams_id+"</span></h1>")
+   print("<span class='input-group-addon'><span class='icon-clock'></span></span></div> by Cam #")
+   
+   #Cam selector
+   print("<select id='cam_id' name='cam_id' data-url-param='cams_id' class='cam_picker'>")
+   for ccam_id in all_cam_ids:
+      if ccam_id == cams_id:
+            sel='selected'
+      else:
+            sel=''
+      print('<option value="'+ccam_id+'" '+sel+'>'+ccam_id+'</option>')
+   print("</select></h1>") 
+   
    print("<div class='d-flex'><button class='btn btn-primary mr-3' id='create_night_anim' style='text-transform: initial;'><span class='icon-youtube'></span> Generate Timelapse Video</button><button class='btn btn-primary' id='play_anim_thumb' style='text-transform: initial;'><span class='icon-youtube'></span> Timelapse Preview</button></div></div>") 
   
    print("<div id='main_container' class='container-fluid h-100 mt-4 lg-l'>")

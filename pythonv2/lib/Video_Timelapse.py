@@ -2,28 +2,11 @@ import glob, os, os.path, sys
 import subprocess 
 import cgitb
 import json
+from pathlib import Path
 from os import listdir,makedirs
 from os.path import isfile, join, exists
+from lib.VIDEO_VARS import * 
  
-SD_PATH='/mnt/ams2/SD/proc2/'
-WAITING_JOBS_FOLDER = SD_PATH + '/custom_videos/'
-WAITING_JOBS = WAITING_JOBS_FOLDER + 'waiting_jobs.json'
-
-#Return Date & Time based on file name
-def get_meteor_date_ffmpeg(file):
-	fn = file.split("/")[-1] 
-	fn = fn.split('_',6)
-	return fn[0] + "/" + fn[1] + "/" + fn[2] + " " + fn[3] + "\:" + fn[4] + "\:" + fn[5]
-
-#Input: camID, date
-#Ouput: list of sd frames found for this date
-def get_sd_frames(camID,date):
-    #ex:camID:010034, date:2019_06_23
-    cur_path = SD_PATH + date + "/images"
-    onlyfiles = [f for f in listdir(cur_path) if camID in f and "-tn" not in f and "-night" not in f and "trim" not in f and isfile(join(cur_path, f))]
-    #FOR DEBUG
-    #onlyfiles = onlyfiles[1:50]
-    return(sorted(onlyfiles), cur_path, date, camID)
  
 
 #Input list of SD files, path of the current image, date, camID
@@ -36,7 +19,11 @@ def create_sd_vid(frames, path, date, camID, fps="15", dimensions="1920:1080", t
     if not os.path.exists(newpath):
         os.makedirs(newpath)
 
-    watermark = "./dist/img/ams_watermark.png"
+    #Create destination folder if it doesn't exist yet
+    if not os.path.exists(VID_FOLDER):
+        os.makedirs(VID_FOLDER)
+
+    watermark = "/home/ams/amscams/dist/img/ams_watermark.png"
     
     # Watermark position based on options
     if(watermark_pos=='tr'):
@@ -81,59 +68,28 @@ def create_sd_vid(frames, path, date, camID, fps="15", dimensions="1920:1080", t
                     -map "[out]"  ' + newpath + '/' + str(idx) + '.png'                
          
         output = subprocess.check_output(cmd, shell=True).decode("utf-8")
-    
+
     #Create Video based on all newly create frames
-    def_file_path =  newpath +'/'+date +'_'+ camID +'.mp4' 
+    def_file_path =  VID_FOLDER +'/'+date +'_'+ camID +'.mp4' 
     cmd = 'ffmpeg -hide_banner -loglevel panic -y  -r '+ str(fps) +' -f image2 -s 1920x1080 -i ' + newpath+ '/%d.png -vcodec libx264 -crf 25 -pix_fmt yuv420p ' + def_file_path
     output = subprocess.check_output(cmd, shell=True).decode("utf-8")
    
+    #Rename and Move the first frame in the dest folder so we'll use it as a thumb
+    cmd = 'mv ' + newpath + '/0.png ' +   VID_FOLDER + '/'+date +'_'+ camID +'.png'        
+    output = subprocess.check_output(cmd, shell=True).decode("utf-8")
+
     #DELETING RESIZE FRAMES
     filelist = glob.glob(os.path.join(newpath, "*.png"))
     for f in filelist:
         os.remove(f) 
 
-    print('VIDEO READY AT '+newpath+'/'+date + '_' + camID + '.mp4' )
+    return def_file_path
 
 
 
 # GENERATE TIMELAPSE - STEP 1
 def generate_timelapse(cam_id,date,fps,dim,text_pos,wat_pos): 
     files, path, date, camID = get_sd_frames(cam_id,date)
-    create_sd_vid(files,path, date, camID,fps,dim,text_pos,wat_pos)
+    return create_sd_vid(files,path, date, camID,fps,dim,text_pos,wat_pos)
 
 
-#ADD Job to /mnt/ams2/SD/proc2/timelapse.job.json
-def add_timelapse_job(cam_id,date,fps,dim,text_pos,wat_pos):
-    #Is the waiting_job folder exists? 
-    if not os.path.exists(WAITING_JOBS_FOLDER):
-        os.makedirs(WAITING_JOBS_FOLDER)
-
-    #Open the waiting_job  
-    with open(WAITING_JOBS, "r+") as jsonFile:
-        try:
-            data = json.load(jsonFile)
-        except:
-            data = {} 
-
-    #Do we have any jobs
-    alljobs = data.get('jobs') 
-    if(alljobs is None):
-        data['jobs'] = []   
-
-    #Add the new job
-    data['jobs'].append({  
-        'name': 'timelapse',
-        'cam_id': cam_id,
-        'date': date,
-        'fps': fps,
-        'dim':dim,
-        'text_pos':text_pos,
-        'wat_pos':wat_pos
-    })
-
-    with open(WAITING_JOBS, 'w') as outfile:
-        json.dump(data, outfile)
-
-    res = {}
-    res['msg'] = 'The video will be ready in 5 or 10 minutes. Go to the Custom Videos page to download the video'
-    print(json.dumps(res))

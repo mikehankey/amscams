@@ -10,10 +10,36 @@ function reject_meteor(id) {
             url:  "webUI.py?cmd=override_detect",
             data: {jsid: id},
             success: function(data) {
-                  loading_done();
+                  
                   meteor_is_deleted(id);
                   // Debug
                   //console.log(data);
+                  loading_done();
+            }, 
+            error: function() {
+                  alert('Impossible to reject. Please, reload the page and try again later.')
+                  loading_done();
+            }
+      });
+}
+
+
+function reject_multiple_meteor(array_of_files, ids) {
+      // Deleting
+      $.each(ids, function(i,v){ 
+            loading({text:"Deleting", container:$("#"+v), overlay:true, standalone:true});
+      });
+
+      $.ajax({ 
+            url:  "webUI.py?cmd=delete_multiple_detection",
+            data: {detections: array_of_files},
+            success: function(data) {
+                  
+                  // TODO!!!!
+                  // meteor_is_deleted(id);
+                  // Debug
+                  //console.log(data);
+                  loading_done();
             }, 
             error: function() {
                   alert('Impossible to reject. Please, reload the page and try again later.')

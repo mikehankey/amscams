@@ -82,11 +82,15 @@ h2 {
             opacity:.65;
         }
 
+        
+        &.nop img {
+            opacity:1;
+        }
+
         &:hover, &:focus {
             img {
                 opacity: 1;
             }
         }
-   
-
+    
 }
