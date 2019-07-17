@@ -40,6 +40,5 @@ from os.path import isfile, join, exists
 
 
 #Test text & logo
-def add_info_to_frame(frame, extra_text, dimensions="1920:1080", text_pos='bl', watermark_pos='tr', enhancement=0,text_position, extra_text_position, cam_text, watermark_position, newpath):
 text_position, extra_text_position = = get_text_pos('br',True)
 add_info_to_frame('/mnt/ams2/CUSTOM_VIDEOS/to_test.png','Mike Hankey Rocks','1920:1080','bl','tr',0,text_position,extra_text_position,"CAM TEXT",get_watermark_pos('bl'),'/mnt/ams2/CUSTOM_VIDEOS/to_test_res.png')
