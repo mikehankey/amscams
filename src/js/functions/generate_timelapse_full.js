@@ -34,8 +34,7 @@ function add_timelapse_full_modal() {
                             <div class="form-group row mb-1"> \
                                 <label class="col-sm-4 col-form-label"><b>Date</b></label> \
                                 <div class="col-sm-8"> \
-                                <div class="input-group date datepicker" data-display-format="YYYY/MM/DD"> \
-                                    <input name="video_date" value="" type="text" class="form-control"> \
+                                    <input name="video_date" value="" type="text" class="datepicker form-control"> \
                                 </div> \
                             </div> \
                             <div class="form-group row mb-1"> \
