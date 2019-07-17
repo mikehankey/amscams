@@ -87,14 +87,14 @@ function add_timelapse_full_modal() {
                                 </div> \
                             </div> \
                             <div class="col-sm-12 mb-1"> \
-                                <div class="form-group">\
-                                    <label for="text_pos" class="col-sm-4 col-form-label"><b>Position of the Camera Info</b></label> \ 
+                                <div class="form-group"> \
+                                    <label for="text_pos" class="col-sm-4 col-form-label"><b>Position of the Camera Info</b></label> \
                                     <select name="text_pos" class="form-control"> \
                                         <option value="tr">Top right</option> \
                                         <option value="tl" >Top Left</option> \
                                         <option value="br" >Bottom Right</option> \
                                         <option value="bl" selected>Bottom Left</option> \
-                                    </select> \ 
+                                    </select> \
                                 </div> \
                             </div> \
                             <div class="col-sm-12"> \
