@@ -4,6 +4,18 @@ function add_timelapse_full_modal() {
     var utcMoment = moment.utc();
     var curD = utcMoment.format('YYYY/MM/DD');
 
+    // Get the Cam IDs for the select
+    var cam_ids = $('input[name=cam_ids]').val();
+    cam_ids = cam_ids.split('|');
+
+    var cam_select = "<select name='cam' class='form-control'>";
+    $.each(cam_ids,function(i,v){
+        if($.trim(v)!=='') {
+            cam_select = cam_select + "<option value='"+v+"'>" + v + "</option>";
+        }
+    });
+    cam_select = cam_select + "</select>";
+
 
     $('#full_timelapse_modal').remove(); 
     $('<div id="full_timelapse_modal" class="modal" tabindex="-1" role="dialog"> \
@@ -24,27 +36,14 @@ function add_timelapse_full_modal() {
                                 <div class="col-sm-8"> \
                                 <div class="input-group date datepicker" data-display-format="YYYY/MM/DD"> \
                                     <input value="'+curD+'" type="text" class="form-control"> \
-                                    <span class="input-group-addon"><span class="icon-clock"></span></span></div> \
                                 </div> \
                             </div> \
                             <div class="form-group row mb-1"> \
                                 <label class="col-sm-4 col-form-label"><b>Cam Id</b></label> \
                                 <div class="col-sm-8"> \
-                                    <input type="text" readonly class="form-control-plaintext" id="tl_cam_id" name="tl_cam_id" value=""> \
+                                    '+cam_select+'\
                                 </div> \
-                            </div> \
-                            <div class="form-group row mb-1"> \
-                                <label class="col-sm-4 col-form-label"><b>Frame Cnt~</b></label> \
-                                <div class="col-sm-8"> \
-                                    <input type="text" readonly class="form-control-plaintext" id="tot_f" value=""> \
-                                </div> \
-                            </div> \
-                            <div class="form-group row mb-1"> \
-                                <label class="col-sm-4 col-form-label"><b>Duration</b></label> \
-                                <div class="col-sm-8"> \
-                                    <input type="text" readonly class="form-control-plaintext" id="tld" value=""> \
-                                </div> \
-                            </div> \
+                            </div> \ 
                         </div> \
                         <div class="col-sm-6"> \
                             <div class="form-group row mb-1"> \
