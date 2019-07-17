@@ -45,7 +45,7 @@ watermark_position = get_watermark_pos('tr')
 add_info_to_frame('/mnt/ams2/CUSTOM_VIDEOS/to_test.png',"BR",'Mike Hankey Rocks',text_position,extra_text_position,watermark_position,'/mnt/ams2/CUSTOM_VIDEOS/to_test_BR','1920:1080', 0)
 
 text_position, extra_text_position = get_text_pos('bl',True)
-watermark_position = get_watermark_pos('bl')
+watermark_position = get_watermark_pos('tl')
 add_info_to_frame('/mnt/ams2/CUSTOM_VIDEOS/to_test.png',"BL",'Mike Hankey Rocks',text_position,extra_text_position,watermark_position,'/mnt/ams2/CUSTOM_VIDEOS/to_test_BL','1920:1080', 0)
 
 text_position, extra_text_position = get_text_pos('tl',True)
@@ -54,5 +54,5 @@ add_info_to_frame('/mnt/ams2/CUSTOM_VIDEOS/to_test.png',"TL",'Mike Hankey Rocks'
 
 
 text_position, extra_text_position = get_text_pos('tr',True)
-watermark_position = get_watermark_pos('bl')
+watermark_position = get_watermark_pos('br')
 add_info_to_frame('/mnt/ams2/CUSTOM_VIDEOS/to_test.png',"TR",'Mike Hankey Rocks',text_position,extra_text_position,watermark_position,'/mnt/ams2/CUSTOM_VIDEOS/to_test_TR','1920:1080', 0)
