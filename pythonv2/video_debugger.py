@@ -43,7 +43,7 @@ from os.path import isfile, join, exists
 text_position, extra_text_position = get_text_pos('br',True)
 
 
-#add_info_to_frame(frame, cam_text, extra_text, text_position, extra_text_position, watermark_position, newpath, dimensions="1920:1080", text_pos='bl', watermark_pos='tr', enhancement=0)
+#add_info_to_frame(frame, cam_text, extra_text, text_position, extra_text_position, watermark_position, newpath, dimensions="1920:1080", text_pos='bl',  enhancement=0)
 
 
-add_info_to_frame('/mnt/ams2/CUSTOM_VIDEOS/to_test.png',"BL",'Mike Hankey Rocks',text_position,extra_text_position,get_watermark_pos('bl'),'/mnt/ams2/CUSTOM_VIDEOS/to_test_res','1920:1080','bl','tr',0)
+add_info_to_frame('/mnt/ams2/CUSTOM_VIDEOS/to_test.png',"BL",'Mike Hankey Rocks',text_position,extra_text_position,get_watermark_pos('bl'),'/mnt/ams2/CUSTOM_VIDEOS/to_test_res','1920:1080', 'tr',0)
