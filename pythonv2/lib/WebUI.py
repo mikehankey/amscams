@@ -457,7 +457,7 @@ def video_tools(json_conf,form):
    else:
       cur_page = int(cur_page)
 
-   all_vids = sorted(glob.glob(VID_FOLDER + "*.mp4"), key=os.path.getmtime)
+   all_vids = sorted(glob.glob(VID_FOLDER + "*.mp4"), key=os.path.getmtime, reverse=True)
    all_vids_out = ""
    vid_counter = 0
 

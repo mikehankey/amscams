@@ -217,9 +217,9 @@ def add_info_to_frames(frames, path, date, camID, extra_text, dimensions="1920:1
         #Resize the frames, add date & watermark in /tmp
         text = 'AMS Cam #'+camID+ ' ' + get_meteor_date_ffmpeg(f) + 'UT'
         org_path = path+'/'+ f 
-        print("ORG PATH "+ org_path)
-        print("newpath "+ newpath)
-        print("idx "+ str(idx))
+        #print("ORG PATH "+ org_path)
+        #print("newpath "+ newpath)
+        #print("idx "+ str(idx))
         t_newpath = newpath + '/' + str(idx)
         add_info_to_frame(org_path,text,extra_text,text_position,extra_text_position,watermark_position,t_newpath,dimensions,enhancement)
  
