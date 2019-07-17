@@ -219,7 +219,9 @@ def add_info_to_frames(frames, path, date, camID, extra_text, dimensions="1920:1
         
         #line_height = str(int(FONT_SIZE) +5)
         #print('LINE HEIGHT ' + line_height)
-        newpath = add_info_to_frame(path+'/'+ f ,text,extra_text,text_position,extra_text_position,watermark_position,newpath + '/' + str(idx),dimensions,enhancement)
+        org_path = path+'/'+ f 
+        newpath = newpath + '/' + str(idx)
+        newpath = add_info_to_frame(org_path,text,extra_text,text_position,extra_text_position,watermark_position,newpath,dimensions,enhancement)
  
         #Remove the source 
         os.remove(path+'/'+ f)  
