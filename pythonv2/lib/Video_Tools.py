@@ -135,7 +135,7 @@ def get_text_pos(text_pos, extra_text_here):
 
 
 #Add text, logo, etc.. to a frame             
-def add_info_to_frame(frame, cam_text, extra_text, text_position, extra_text_position, watermark_position, newpath, dimensions="1920:1080", text_pos='bl',  enhancement=0):
+def add_info_to_frame(frame, cam_text, extra_text, text_position, extra_text_position, watermark_position, newpath, dimensions="1920:1080",  enhancement=0):
      
     # Do we have extra text?
     if(extra_text is None):

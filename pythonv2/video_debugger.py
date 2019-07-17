@@ -41,9 +41,18 @@ from os.path import isfile, join, exists
 
 #Test text & logo
 text_position, extra_text_position = get_text_pos('br',True)
+watermark_position = get_watermark_pos('tr')
+add_info_to_frame('/mnt/ams2/CUSTOM_VIDEOS/to_test.png',"BR",'Mike Hankey Rocks',text_position,extra_text_position,watermark_position,'/mnt/ams2/CUSTOM_VIDEOS/to_test_BR','1920:1080', 0)
+
+text_position, extra_text_position = get_text_pos('bl',True)
+watermark_position = get_watermark_pos('bl')
+add_info_to_frame('/mnt/ams2/CUSTOM_VIDEOS/to_test.png',"BL",'Mike Hankey Rocks',text_position,extra_text_position,watermark_position,'/mnt/ams2/CUSTOM_VIDEOS/to_test_BL','1920:1080', 0)
+
+text_position, extra_text_position = get_text_pos('tl',True)
+watermark_position = get_watermark_pos('bl')
+add_info_to_frame('/mnt/ams2/CUSTOM_VIDEOS/to_test.png',"TL",'Mike Hankey Rocks',text_position,extra_text_position,watermark_position,'/mnt/ams2/CUSTOM_VIDEOS/to_test_TL','1920:1080', 0)
 
 
-#add_info_to_frame(frame, cam_text, extra_text, text_position, extra_text_position, watermark_position, newpath, dimensions="1920:1080", text_pos='bl',  enhancement=0)
-
-
-add_info_to_frame('/mnt/ams2/CUSTOM_VIDEOS/to_test.png',"BL",'Mike Hankey Rocks',text_position,extra_text_position,get_watermark_pos('bl'),'/mnt/ams2/CUSTOM_VIDEOS/to_test_res','1920:1080', 'tr',0)
+text_position, extra_text_position = get_text_pos('tr',True)
+watermark_position = get_watermark_pos('bl')
+add_info_to_frame('/mnt/ams2/CUSTOM_VIDEOS/to_test.png',"TR",'Mike Hankey Rocks',text_position,extra_text_position,watermark_position,'/mnt/ams2/CUSTOM_VIDEOS/to_test_TR','1920:1080', 0)
