@@ -136,6 +136,16 @@ def get_text_pos(text_pos, extra_text_here):
 
 #Add text, logo, etc.. to a frame             
 def add_info_to_frame(frame, extra_text,text_position, extra_text_position, cam_text, watermark_position, newpath, dimensions="1920:1080", text_pos='bl', watermark_pos='tr', enhancement=0):
+    # Do we have extra text?
+    if(extra_text is None):
+        with_extra_text = False
+        extra_text=''
+    elif(extra_text.strip()==''):
+        with_extra_text = False
+        extra_text=''
+    else:
+        with_extra_text = True
+    
     if(enhancement!=1):
         cmd = 'ffmpeg -hide_banner -loglevel panic \
                 -y \
