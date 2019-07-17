@@ -14,6 +14,9 @@ def is_a_job_processing():
         except:
             # in case something went wrong
             data = {} 
+    print("IN is_a_job_processing")     
+    print(data)   
+    print(str(len(data)))   
     if(len(data)==0):
         return False
     else:
