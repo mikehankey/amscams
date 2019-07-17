@@ -51,7 +51,7 @@ function add_timelapse_full_modal() {
                                         <option value="15">15 fps</option> \
                                         <option value="23.976">23.976 fps</option> \
                                         <option value="24">24 fps</option> \
-                                        <option value="25">25 fps</option> \ 
+                                        <option value="25">25 fps</option> \
                                         <option value="29.97" >29.97 fps</option> \
                                         <option value="30" selected>30 fps</option> \
                                         <option value="50">50 fps</option> \
