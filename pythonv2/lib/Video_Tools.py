@@ -135,7 +135,7 @@ def get_text_pos(text_pos, extra_text_here):
 
 
 #Add text, logo, etc.. to a frame             
-def add_info_to_frame(frame, cam_text, extra_text, text_position, extra_text_position, watermark_position, newpath, dimensions="1920:1080",  enhancement=0):
+def add_info_to_frame(frame, cam_text, extra_text, text_position, extra_text_position, watermark, watermark_position, newpath, dimensions="1920:1080",  enhancement=0):
      
     # Do we have extra text?
     if(extra_text is None):
@@ -145,13 +145,14 @@ def add_info_to_frame(frame, cam_text, extra_text, text_position, extra_text_pos
         with_extra_text = False
         extra_text=''
     else:
-        with_extra_text = True
-    
+        with_extra_text = True 
+
+
     if(enhancement!=1):
         cmd = 'ffmpeg -hide_banner -loglevel panic \
                 -y \
                 -i ' + frame + '    \
-                -i ' + AMS_WATERMARK + ' \
+                -i ' + watermark + ' \
                 -filter_complex "[0:v]scale='+dimensions+'[scaled]; \
                 [scaled]drawtext=:text=\'' + cam_text + '\':fontcolor=white@'+FONT_TRANSPARENCY+':fontsize='+FONT_SIZE+':'+text_position 
         if(with_extra_text is True):
@@ -166,7 +167,7 @@ def add_info_to_frame(frame, cam_text, extra_text, text_position, extra_text_pos
         cmd = 'ffmpeg -hide_banner -loglevel panic \
                 -y \
                 -i ' + frame + '    \
-                -i ' + AMS_WATERMARK + ' \
+                -i ' + watermark + ' \
                 -filter_complex "[0:v]scale='+dimensions+'[scaled]; \
                 [scaled]eq=contrast=1.3[sat];[sat]drawtext=:text=\'' + cam_text + '\':fontcolor=white@'+FONT_TRANSPARENCY+':fontsize='+FONT_SIZE+':'+text_position 
         if(with_extra_text is True):
@@ -211,6 +212,11 @@ def add_info_to_frames(frames, path, date, camID, extra_text, dimensions="1920:1
     # Watermark position based on options
     watermark_position = get_watermark_pos(watermark_pos)
  
+    #Watermark R or L
+    if('r' in watermark_pos):
+        watermark = AMS_WATERMARK_R
+    else:
+        watermark = AMS_WATERMARK
 
     # Treat All frames
     for idx,f in enumerate(frames): 
@@ -221,7 +227,7 @@ def add_info_to_frames(frames, path, date, camID, extra_text, dimensions="1920:1
         #print("newpath "+ newpath)
         #print("idx "+ str(idx))
         t_newpath = newpath + '/' + str(idx)
-        add_info_to_frame(org_path,text,extra_text,text_position,extra_text_position,watermark_position,t_newpath,dimensions,enhancement)
+        add_info_to_frame(org_path,text,extra_text,text_position,extra_text_position,watermark,watermark_position,t_newpath,dimensions,enhancement)
  
         #Remove the source 
         os.remove(path+'/'+ f)  
