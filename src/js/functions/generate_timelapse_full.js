@@ -1,4 +1,10 @@
 function add_timelapse_full_modal() {
+
+    // Init date picker with current date
+    var utcMoment = moment.utc();
+    var curD = utcMoment.format('YYYY/MM/DD');
+
+
     $('#full_timelapse_modal').remove(); 
     $('<div id="full_timelapse_modal" class="modal" tabindex="-1" role="dialog"> \
         <div class="modal-dialog modal-dialog-centered modal-lg" role="document"> \
@@ -16,8 +22,8 @@ function add_timelapse_full_modal() {
                             <div class="form-group row mb-1"> \
                                 <label class="col-sm-4 col-form-label"><b>Date</b></label> \
                                 <div class="col-sm-8"> \
-                                <div class="input-group date datepicker" data-display-format="YYYY/MM/DD" data-action="reload" data-url-param="day" data-send-format="YYYY_MM_DD"> \
-                                    <input value="2019/07/12" type="text" class="form-control"> \
+                                <div class="input-group date datepicker" data-display-format="YYYY/MM/DD"> \
+                                    <input value="'+curD+'" type="text" class="form-control"> \
                                     <span class="input-group-addon"><span class="icon-clock"></span></span></div> \
                                 </div> \
                             </div> \
