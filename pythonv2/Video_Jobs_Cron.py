@@ -47,8 +47,7 @@ def get_job_to_process():
         #We add the job to the processing list
         with open(PROCESSING_JOBS, 'r+') as processingFile:
             try:
-                data = json.load(processingFile)
-                print("WE ARE HERE IN PROCESSING")
+                data = json.load(processingFile) 
             except:
                 #Nothing to do
                 data = {} 
@@ -68,10 +67,7 @@ def get_job_to_process():
         return toReturn
     else:
         return False        
-
-
  
-
 
 
 
@@ -86,10 +82,30 @@ def video_job():
     job = get_job_to_process();
     
     if(job is not False):
-        print("WE FOUND A JOB")
-        print(str(job))
-        #We remove the job from the WAITING_JOBS and put it in PROCESSING_JOBS
+        error = False
+
+        #TIMELAPSE
+        if(job['name']=='timelapse'):
+            try:
+                video_path =  generate_timelapse(cur_job['cam_id'],cur_job['date'],cur_job['fps'],cur_job['dim'],cur_job['text_pos'],cur_job['wat_pos'],cur_job['extra_text'],0) 
+            except:
+                error = True
  
+        if(error == False):
+
+            #We empty the list of processing file
+            with open(PROCESSING_JOBS, 'w') as processingFile:
+                data = {}
+                data['jobs'] = []
+                json.dump(data, processingFile)
+            processingFile.close()  
+
+            print("VIDEO PROCESSED " + video_path)
+
+        else:
+
+            print("ERROR PROCESSING THE VIDEO")
+    
     else:
         print("NO JOB FOUND") 
 
