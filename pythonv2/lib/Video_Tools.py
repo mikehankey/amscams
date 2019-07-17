@@ -135,7 +135,7 @@ def get_text_pos(text_pos, extra_text_here):
 
 
 #Add text, logo, etc.. to a frame             
-def add_info_to_frame(frame, path, date, extra_text, dimensions="1920:1080", text_pos='bl', watermark_pos='tr', enhancement=0,text_position, extra_text_position, cam_text, watermark_position, newpath):
+def add_info_to_frame(frame, extra_text,text_position, extra_text_position, cam_text, watermark_position, newpath, dimensions="1920:1080", text_pos='bl', watermark_pos='tr', enhancement=0):
     if(enhancement!=1):
         cmd = 'ffmpeg -hide_banner -loglevel panic \
                 -y \
