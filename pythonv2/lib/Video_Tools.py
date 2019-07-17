@@ -122,7 +122,7 @@ def get_text_pos(text_pos, extra_text_here):
         else: 
             return ("x=main_w-text_w-20:y=main_h-text_h-20","")
     else:
-        line_height_spacing_factor = "1.8"
+        line_height_spacing_factor = "0.4"
 
         if(text_pos=='tr'):
             return ("x=main_w-text_w-20:y=20","x=main_w-text_w-20:y=20+line_h*2*"+line_height_spacing_factor)
