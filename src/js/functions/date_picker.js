@@ -22,11 +22,8 @@ function setQueryParameters(params) {
     location.search = query.join("&");
 }
 
-$(function() {
 
-    //  div class='input-group date datepicker' data-date-format="YYYY/MM/DD" data-action="reload" data-url-param="limit_day" data-sep="_">
-
-
+function load_date_pickers() {
     $('.datepicker').each(function() {
         var $t = $(this);
         $t.datetimepicker({format: $t.attr('data-display-format')});
@@ -51,5 +48,8 @@ $(function() {
             });
         }
     });
+}
 
+$(function() {
+    load_date_pickers()
 })
