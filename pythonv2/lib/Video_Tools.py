@@ -139,7 +139,7 @@ def add_info_to_frame(frame, path, date, extra_text, dimensions="1920:1080", tex
     if(enhancement!=1):
         cmd = 'ffmpeg -hide_banner -loglevel panic \
                 -y \
-                -i ' + path+'/'+ f + '    \
+                -i ' + frame + '    \
                 -i ' + AMS_WATERMARK + ' \
                 -filter_complex "[0:v]scale='+dimensions+'[scaled]; \
                 [scaled]drawtext=:text=\'' + cam_text + '\':fontcolor=white@'+FONT_TRANSPARENCY+':fontsize='+FONT_SIZE+':'+text_position 
@@ -154,7 +154,7 @@ def add_info_to_frame(frame, path, date, extra_text, dimensions="1920:1080", tex
     else:
         cmd = 'ffmpeg -hide_banner -loglevel panic \
                 -y \
-                -i ' + path+'/'+ f + '    \
+                -i ' + frame + '    \
                 -i ' + AMS_WATERMARK + ' \
                 -filter_complex "[0:v]scale='+dimensions+'[scaled]; \
                 [scaled]eq=contrast=1.3[sat];[sat]drawtext=:text=\'' + cam_text + '\':fontcolor=white@'+FONT_TRANSPARENCY+':fontsize='+FONT_SIZE+':'+text_position 
