@@ -97,11 +97,9 @@ def video_job():
  
         if(error == False):
 
-            #We empty the list of processing file
-            with open(PROCESSING_JOBS, 'w') as processingFile:
-                data = {}
-                data['jobs'] = []
-                json.dump(data, processingFile)
+            #We empty the list of processing file  
+            processingFile = open(PROCESSING_JOBS, 'r+')
+            processingFile.truncate(0)
             processingFile.close()  
 
             print("VIDEO PROCESSED " + video_path)
