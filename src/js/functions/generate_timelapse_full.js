@@ -47,10 +47,10 @@ function add_timelapse_full_modal() {
                                     <select name="fps" class="form-control"> \
                                         <option value="1">1 fps</option> \
                                         <option value="5">5 fps</option> \
-                                        <option value="10" selected>10 fps</option> \
+                                        <option value="10">10 fps</option> \
                                         <option value="15">15 fps</option> \
                                         <option value="24.975">24.975 fps</option> \
-                                        <option value="29.97">29.97 fps</option> \
+                                        <option value="29.97" selected>29.97 fps</option> \
                                         <option value="54.94">54.94 fps</option> \
                                     </select> \
                                 </div> \
