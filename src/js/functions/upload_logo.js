@@ -13,8 +13,25 @@ $("form#upload_logo").submit(function(e) {
         type: 'POST',
         data: formData,
         success: function (data) {
-            alert(data)
+            
             loading_done();
+            if(typeof data.error == 'undefined') {
+                bootbox.alert({
+                    message: "Your image has been uploaded. We will now reload this page",
+                    className: 'rubberBand animated',
+                    centerVertical: true,
+                    callback: function() {
+                        location.reload();
+                    }
+                });
+            } else {
+                bootbox.alert({
+                    message: "We cannot upload your image. Please, try again later.",
+                    className: 'rubberBand animated error',
+                    centerVertical: true 
+                });
+            }
+                
         },
         cache: false,
         contentType: false,
