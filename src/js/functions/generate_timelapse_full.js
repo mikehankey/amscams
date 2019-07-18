@@ -8,7 +8,7 @@ function add_timelapse_full_modal() {
     var cam_ids = $('input[name=cam_ids]').val();
     cam_ids = cam_ids.split('|');
 
-    var cam_select = "<select name='cam' class='form-control'>";
+    var cam_select = "<select name='cam' class='form-control'  multiple='multiple'>";
     $.each(cam_ids,function(i,v){
         if($.trim(v)!=='') {
             cam_select = cam_select + "<option value='"+v+"'>" + v + "</option>";
@@ -38,8 +38,8 @@ function add_timelapse_full_modal() {
                                 </div> \
                             </div> \
                             <div class="form-group row mb-1"> \
-                                <label class="col-sm-4 col-form-label" multiple="multiple"><b>Camera</b></label> \
-                                <div class="col-sm-8">+'cam_select+'</div> \
+                                <label class="col-sm-4 col-form-label"><b>Camera</b></label> \
+                                <div class="col-sm-8">'+cam_select+'</div> \
                             </div> \
                         </div> \
                         <div class="col-sm-6"> \
