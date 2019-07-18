@@ -1,3 +1,47 @@
+/**
+ * Avoid the same position for watermark & info
+ */
+
+function avoid_same_location() {
+    $('select[name=wat_pos],select[name=text_pos]').change(function(e) {
+        var $src = $(e.target);
+        var val = $src.val();
+        var $dest;
+        var v_dest;
+        var v_src = $src.val();
+        
+        
+        if($src.attr('name')=='wat_pos') {
+            $dest = $('select[name=text_pos]')
+        } else {
+            $dest = $('select[name=wat_pos]')
+        }
+
+        v_dest = $dest.val();
+
+        if(v_src==v_dest) {
+            switch (v_src) {
+                case "tr":
+                  $dest.val("br");
+                  break;
+                case "tl":
+                  $dest.val("br");
+                  break;
+                case "bl":
+                  $dest.val("tr");
+                  break;
+                case "br":
+                  $dest.val("bl");
+                  break;
+            }
+        }  
+
+    });
+}
+ 
+
+
+
 function add_timelapse_full_modal() {
 
     // Init date picker with current date
@@ -37,7 +81,7 @@ function add_timelapse_full_modal() {
                                 </div>\
                             </div> \
                             <div class="form-group mb-2"> \
-                                <label class="col-form-label"><b>Camera</b></label> \
+                                <label class="col-form-label"><b>Camera</b><i>One video per camera</i></label> \
                                 <div>'+cam_select+'</div> \
                             </div> \
                             <div class="row">\
@@ -102,7 +146,6 @@ function add_timelapse_full_modal() {
                         </div> \
                      </div> \
                 </form> \
-            </div> \
             <div class="modal-footer"> \
                 <button type="button" id="generate_timelapse" class="btn btn-primary">Generate</button> \
                 <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancel</button> \
@@ -116,14 +159,9 @@ function add_timelapse_full_modal() {
     //Start datepicker
     load_date_pickers();
 
-    // How many frames 
-    hmf = $('img.lz').not('.process').length;
-    $('#tot_f').val(hmf);
-
-    // Cam ID 
-    $('#tl_cam_id').val($('#cam_id').val());
-    console.log('CAM ID VAL ', $('#cam_id').val());
-
+    // Avoid Same Location
+    avoid_same_location();
+  
     // Date
     $('#tl_date').val($('input[name=cur_date]').val());
 
