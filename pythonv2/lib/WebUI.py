@@ -488,6 +488,10 @@ def video_tools(json_conf,form):
    for camid in all_cam_ids:
       out_put_all_cam_ids += camid + "|"
 
+   #Get Operator info
+   operator = get_operator_info()
+   print(operator)
+
    #Get Current Date (default for datepicker)
    now = datetime.datetime.now()
    out_put_date = str(now.year) + "/" + str(now.month) + "/" + str(now.day)

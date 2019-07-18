@@ -6,4 +6,8 @@ def get_operator_info():
     with open(json_path, "r+") as jsonFile:
         data = json.load(jsonFile) 
         return data['operator']
+
+
+
+
      
