@@ -233,7 +233,8 @@ def controller(json_conf):
       except KeyError as e:
             extra_text = ""
 
-      print(str(form.getvalue))
+      
+      print(str(form.getvalue("sel_cam[]")))
      
       #add_video_job('timelapse',form.getvalue('tl_cam_id'),form.getvalue('tl_date'),form.getvalue('fps'),form.getvalue('dim'),form.getvalue('text_pos'),form.getvalue('wat_pos'),extra_text)
       exit()
