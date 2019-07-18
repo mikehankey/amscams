@@ -52,7 +52,7 @@ def add_video_job(name,cam_ids,date,fps,dim,text_pos,wat_pos,extra_text):
         new_job = {  
             'name': name,
             'cam_id': cam_id,
-            'date': date,
+            'date': date.replace('/','_'),
             'fps': fps,
             'dim':dim,
             'text_pos':text_pos,
