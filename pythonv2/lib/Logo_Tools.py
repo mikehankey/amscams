@@ -21,7 +21,7 @@ def upload_logo(form):
 
     #Create PNG in LOGOS_PATH
     f= open(LOGOS_PATH+str(cur)+'.png',"w+")
-    f.write(logo)
+    f.write(bytes(logo))
     f.close()
 
     print("LOGO SHOULD BE HERE: " + LOGOS_PATH+str(cur)+'.png')
