@@ -29,6 +29,7 @@ from lib.Video_Add_Job import add_video_job
 from lib.VIDEO_VARS import * 
 from lib.Video_Tools import getLength
 from lib.LOGOS_VARS import * 
+from lib.Logo_Tools import * 
 from lib.Get_Cam_ids import get_the_cam_ids
 from lib.Get_Operator_info import get_operator_info
  
@@ -238,8 +239,10 @@ def controller(json_conf):
       add_video_job('timelapse',form.getvalue('sel_cam[]'),form.getvalue('tl_date'),form.getvalue('fps'),form.getvalue('dim'),form.getvalue('text_pos'),form.getvalue('wat_pos'),extra_text)
       exit()
 
-      
-
+   #CUSTOM LOGOS        
+   if cmd == 'upload_logo': 
+      upload_logo(form)   
+      exit()
 
    # do json ajax functions up here and bypass the exta html
    if cmd == 'override_detect':
