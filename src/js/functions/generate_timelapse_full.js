@@ -55,7 +55,9 @@ function add_timelapse_full_modal() {
     var cam_select = "<select id='sel_cams' name='sel_cam[]' class='form-control'  multiple='multiple'>";
     $.each(cam_ids,function(i,v){
         if($.trim(v)!=='') {
-            cam_select = cam_select + "<option value='"+v+"'>Camera #" + v + "</option>";
+            if(i==0) sel = "selected"
+            else sel = ""
+            cam_select = cam_select + "<option "+ sel + " value='"+v+"'>Camera #" + v + "</option>";
         }
     });
     cam_select = cam_select + "</select>";
@@ -81,7 +83,7 @@ function add_timelapse_full_modal() {
                                 </div>\
                             </div> \
                             <div class="form-group mb-2"> \
-                                <label class="col-form-label"><b>Camera</b><i>One video per camera</i></label> \
+                                <label class="col-form-label"><b>Camera</b> <i>One video per camera</i></label> \
                                 <div>'+cam_select+'</div> \
                             </div> \
                             <div class="row">\
