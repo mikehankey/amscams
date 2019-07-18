@@ -236,8 +236,8 @@ def controller(json_conf):
 
       add_video_job('timelapse',form.getvalue('sel_cam[]'),form.getvalue('tl_date'),form.getvalue('fps'),form.getvalue('dim'),form.getvalue('text_pos'),form.getvalue('wat_pos'),extra_text)
       exit()
-   
-  
+
+      
 
 
    # do json ajax functions up here and bypass the exta html
@@ -354,6 +354,10 @@ def controller(json_conf):
    #CUSTOM VIDEOS (LIST)
    if cmd== 'video_tools':
       video_tools(json_conf,form) 
+   
+   #Custom logos (uploaded by user)
+   if cmd == 'custom_logos'
+      custom_logos(json_conf,form)
 
    if cmd == 'reduce_new':
       extra_html = reduce_meteor_new(json_conf, form)
@@ -445,6 +449,14 @@ def controller(json_conf):
    #cam_num = form.getvalue('cam_num')
    #day = form.getvalue('day')
 
+
+# CUSTOM LOGO PAGE
+def custom_logos(json_conf,form):
+   header_out = "<div class='h1_holder d-flex justify-content-between'>"      
+   header_out += "<h1>Custom Logo</h1>"
+   header_out += "<div class='d-flex'><button class='btn btn-primary mr-3' id='add_new_logo' style='text-transform: initial;'><span class='icon-plus'></span> Add new Logo</button></div></div>"
+   print(header_out)
+      
 
 # VIDEO TOOLS PAGE
 # LIST OF PROCESS/READY VIDEOS
