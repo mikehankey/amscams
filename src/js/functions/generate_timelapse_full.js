@@ -62,7 +62,7 @@ function add_timelapse_full_modal() {
                             </div> \
                             <div class="form-group mb-1"> \
                                 <label for="dim" class="col-form-label"><b>Dimension</b></label> \
-                                    <div class="col-sm-3 p-0">\
+                                <div class="col-sm-3 p-0">\
                                     <select name="dim" class="form-control"> \
                                         <option value="1920:1080">1920x1080</option> \
                                         <option value="1280:720" selected>1280x720</option> \
@@ -70,25 +70,29 @@ function add_timelapse_full_modal() {
                                     </select> \
                                 </div>\
                             </div> \
-                            <div class="form-group">\
+                            <div class="form-group mb-1">\
                                 <label for="wat_pos" class="col-form-label"><b>Position of the AMS Watermark</b></label> \
-                                <select name="wat_pos" class="form-control"> \
-                                    <option value="tr" selected>Top right</option> \
-                                    <option value="tl" >Top Left</option> \
-                                    <option value="br" >Bottom Right</option> \
-                                    <option value="bl" >Bottom Left</option> \
-                                </select> \
+                                <div class="col-sm-3 p-0">\
+                                    <select name="wat_pos" class="form-control"> \
+                                        <option value="tr" selected>Top right</option> \
+                                        <option value="tl" >Top Left</option> \
+                                        <option value="br" >Bottom Right</option> \
+                                        <option value="bl" >Bottom Left</option> \
+                                    </select> \
+                                </div>\
                             </div> \
-                            <div class="form-group"> \
+                            <div class="form-group mb-1"> \
                                 <label for="text_pos" class="col-form-label"><b>Position of the Camera Info</b></label> \
-                                <select name="text_pos" class="form-control"> \
-                                    <option value="tr">Top right</option> \
-                                    <option value="tl" >Top Left</option> \
-                                    <option value="br" >Bottom Right</option> \
-                                    <option value="bl" selected>Bottom Left</option> \
-                                </select> \
+                                <div class="col-sm-3 p-0">\
+                                    <select name="text_pos" class="form-control"> \
+                                        <option value="tr">Top right</option> \
+                                        <option value="tl" >Top Left</option> \
+                                        <option value="br" >Bottom Right</option> \
+                                        <option value="bl" selected>Bottom Left</option> \
+                                    </select> \
+                                </div>\
                             </div> \
-                            <div class="form-group">\
+                            <div class="form-group mb-1">\
                                 <label for="extra_text" class="col-form-label"><b>Extra info (added above the Camera Info)</b></label> \
                                 <input type="text" name="extra_text" class="form-control" value=""/> \
                             </div>\
