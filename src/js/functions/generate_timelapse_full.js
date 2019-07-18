@@ -217,7 +217,7 @@ function add_timelapse_full_modal() {
                                 </div>\
                             </div> \
                             <div class="form-group"> \
-                                <label for="logo_pos" class="col-form-label"><b>Position of the Logo</b></label> \
+                                <label for="logo_pos" class="col-form-label"><b>Extra Logo</b></label> \
                                 <select name="logo" class="image-picker show-html"> \
                                 </select> \
                                 <div id="logo_preview"></div>\
