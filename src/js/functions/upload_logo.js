@@ -7,13 +7,14 @@ $('#logo_file_upload').change(function() {
 $("form#upload_logo").submit(function(e) {
     e.preventDefault();    
     var formData = new FormData(this);
-
+    loading({text:'Uploading your image',overlay:true})
     $.ajax({
         url: '/pycgi/webUI.py?cmd=upload_logo',
         type: 'POST',
         data: formData,
         success: function (data) {
             alert(data)
+            loading_done();
         },
         cache: false,
         contentType: false,
