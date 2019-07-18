@@ -474,7 +474,7 @@ def custom_logos(json_conf,form):
    for logo in all_logos:
       header_out += "<div class='preview col-lg-2 col-md-3 norm mb-3'>"
       header_out += "<a class='mtt img-link nop' href='"+logo+"' title='View Logo'>"
-      header_out += "<img class='img-fluid ns lz' src='" + logo + "'/>"
+      header_out += "<img class='img-fluid ns ' src='" + logo + "'/>"
       header_out += "</a></div>"
    
    header_out += '</div>'
