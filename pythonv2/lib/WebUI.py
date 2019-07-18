@@ -356,7 +356,7 @@ def controller(json_conf):
       video_tools(json_conf,form) 
    
    #Custom logos (uploaded by user)
-   if cmd == 'custom_logos'
+   if cmd == 'custom_logos':
       custom_logos(json_conf,form)
 
    if cmd == 'reduce_new':
