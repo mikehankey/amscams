@@ -9,6 +9,7 @@ from lib.VIDEO_VARS import *
 
 #ADD Job to WAITING_JOBS
 def add_video_job(name,cam_ids,date,fps,dim,text_pos,wat_pos,extra_text):
+    cgitb.enable()
 
     #Is the waiting_job folder exists? 
     if not os.path.exists(WAITING_JOBS_FOLDER):
