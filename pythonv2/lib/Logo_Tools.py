@@ -17,7 +17,7 @@ def upload_logo(form):
     cur = len([name for name in os.listdir(LOGOS_PATH) if os.path.isfile(os.path.join(LOGOS_PATH, name))])
     cur += 1
 
-    print("WE CURRENTLY HAVE " + cur + " LOGOS")
+    print("WE CURRENTLY HAVE " + str(cur) + " LOGOS")
 
     #Create PNG in LOGOS_PATH
     f= open(LOGOS_PATH+str(cur)+'.png',"w+")
