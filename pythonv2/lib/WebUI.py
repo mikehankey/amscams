@@ -459,7 +459,7 @@ def custom_logos(json_conf,form):
    header_out = "<div class='h1_holder d-flex justify-content-between'>"      
    header_out += "<h1>Custom Logos</h1>"
    header_out += "<div class='d-flex'>"
-   header_out += '<form id="upload_logo" action="/webUI.py?cmd=upload_logo" method="post" accept-charset="utf-8" enctype="multipart/form-data">'
+   header_out += '<form id="upload_logo" action="/pycgi/webUI.py?cmd=upload_logo" method="post" accept-charset="utf-8" enctype="multipart/form-data">'
    header_out += '<input id="logo_file_upload" class="btn btn-primary mr-3" name="logo" type="file" value="" accept="image/x-png"/>'
    header_out += '</form></div>'
    print(header_out)
