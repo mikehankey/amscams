@@ -147,7 +147,7 @@ function add_timelapse_full_modal() {
                                             </select> \
                                     </div> \
                                 </div>\
-                                <div class="col-sm-4 hidden">\
+                                <div class="col-sm-4">\
                                     <div class="form-group mb-2"> \
                                         <label for="dim" class="col-form-label"><b>Extra Logo</b></label> \
                                             <select name="extra_logo_yn" class="form-control"> \
@@ -219,7 +219,7 @@ function add_timelapse_full_modal() {
     avoid_same_location();
    
     //UI for custom logo
-
+    add_custom_logo();
 
     // Generate
     $('#generate_timelapse').click(function() { 
