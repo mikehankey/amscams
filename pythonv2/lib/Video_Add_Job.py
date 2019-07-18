@@ -39,6 +39,8 @@ def add_video_job(name,cam_ids,date,fps,dim,text_pos,wat_pos,extra_text):
     if(alljobs is None):
         data['jobs'] = []   
 
+    
+    res = {}
     ok_list = ''
     bad_list = ''
 
@@ -79,14 +81,13 @@ def add_video_job(name,cam_ids,date,fps,dim,text_pos,wat_pos,extra_text):
                 json.dump(data, outfile)
             outfile.close()
 
-            ok_list = '<li>Cam ID ' + cam_id + ' / ' + date + ' ADDED</li>'
+            ok_list += '<li>Cam ID ' + cam_id + ' / ' + date + ' ADDED</li>'
         
         else:
 
-            bad_list = '<li>Cam ID ' + cam_id + ' / ' + date + ' NOT ADDED - This video is already on the wainting list</li>'
+            bad_list += '<li>Cam ID ' + cam_id + ' / ' + date + ' NOT ADDED - This video is already on the wainting list</li>'
 
-            res = {}
 
-    res['msg'] = '<h4>Video(s) added to the waiting list</h4><ul>'+ok_list+bad_list'</ul><b>The video(s) will be ready in 5 or 10 minutes.<br>Go to the <a href="/pycgi/webUI.py?cmd=video_tools">Custom Videos</a> page to download the video.</b>'
+    res['msg'] = '<h4>Video(s) added to the waiting list</h4><ul>'+ok_list+bad_list+'</ul><b>The video(s) will be ready in 5 or 10 minutes.<br>Go to the <a href="/pycgi/webUI.py?cmd=video_tools">Custom Videos</a> page to download the video.</b>'
     print(json.dumps(res))
            
