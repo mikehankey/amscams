@@ -69,11 +69,20 @@ function add_custom_logo() {
             if($('select[name=logo] option').length==0) {
                 var all_logos = $('input[name=logos]').val();
                 all_logos = all_logos.split('|');
+                var $preview =  '<ul class="thumbnails image_picker_selector">';
                 $.each(all_logos,function(i,v){
                     if(v!='') {
                         $('<option data-img-src="'+v+'" value="'+v+'"></option').appendTo($("select[name=logo]"));
+                        $preview += '<li><div class="thumbnail"><img class="image_picker_image" src="'+v+'"/></div><li>';
                     }
                 })
+
+                // Add Preview
+                $preview += '</ul>';
+                $('#logo_preview').html($preview);
+
+                // Enable plugin
+                $("select [name=logo]").imagepicker();
             }
  
       
@@ -211,6 +220,7 @@ function add_timelapse_full_modal() {
                                 <label for="logo_pos" class="col-form-label"><b>Position of the Logo</b></label> \
                                 <select name="logo" class="image-picker show-html"> \
                                 </select> \
+                                <div id="logo_preview"></div>\
                             </div> \
                             <div class="form-group mb-2">\
                                 <label for="extra_text" class="col-form-label"><b>Extra info (added above the Camera Info)</b></label> \
