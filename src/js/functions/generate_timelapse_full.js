@@ -183,24 +183,13 @@ function add_timelapse_full_modal() {
 
     // Avoid Same Location
     avoid_same_location();
-  
-    // Date
-    $('#tl_date').val($('input[name=cur_date]').val());
-
-    // Init duration
-    $('#tld').val(parseFloat($('#tot_f').val()/parseFloat($('select[name=fps]').val())).toFixed(2) + ' seconds');
-
-    // Update duration 
-    $('select[name=fps]').unbind('change').bind('change',function() {
-        $('#tld').val(parseFloat($('#tot_f').val()/parseFloat($(this).val())).toFixed(2) + ' seconds');
-    });
+   
 
     // Generate
     $('#generate_timelapse').click(function() { 
         var cmd_data =  $("#timelapse_full_form").serializeObject(); //getFormData($("#timelapse_full_form"));
         cmd_data.cmd = "generate_timelapse";
 
- 
         $('#full_timelapse_modal').modal('hide');
         loading({text: "Creating Video", overlay: true});
         
