@@ -141,7 +141,7 @@ function add_timelapse_full_modal() {
                                         <label for="dim" class="col-form-label"><b>Extra Logo</b></label> \
                                             <select name="extra_logo_yn" class="form-control"> \
                                                 <option value="n"selected >No</option> \
-                                                <option value="y" >Yes</option> \ 
+                                                <option value="y" >Yes</option> \
                                             </select> \
                                     </div> \
                                 </div>\
