@@ -469,6 +469,8 @@ def custom_logos(json_conf,form):
    header_out += '<div id="main_container" class="container-fluid h-100 mt-4 lg-l">'
    header_out += '<div class="alert alert-info" style="max-width: 900px;margin: 0 auto 2rem;"">We STRONGLY recommand using clean PNG images (ideally semi-transparent) with height < 130px and width < 400px</div>'
    
+   header_out += '<div class="gallery gal-resize row text-center text-lg-left mr-4 ml-4 mt-2">'
+
    #Get the existing logos
    all_logos = sorted(glob.glob(LOGOS_PATH + "*.*"), key=os.path.getmtime, reverse=True)
    for logo in all_logos:
@@ -477,7 +479,7 @@ def custom_logos(json_conf,form):
       header_out += "<img class='img-fluid ns ' src='" + logo + "'/>"
       header_out += "</a></div>"
    
-   header_out += '</div>'
+   header_out += '</div></div>'
    
    print(header_out)
       
