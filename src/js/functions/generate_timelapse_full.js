@@ -63,10 +63,10 @@ function add_custom_logo() {
     $('select[name=extra_logo_yn]').change(function() {
          if($(this).val()=='y') {
             $('#position .col-sm-6').removeClass('col-sm-6').addClass('col-sm-4');
-            $('#logo_pos').addClass('hidden');
+            $('#logo_pos').attr('hidden','hidden');
         } else {
             $('#position .col-sm-4').removeClass('col-sm-4').addClass('col-sm-6');
-            $('#logo_pos').removeClass('hidden');
+            $('#logo_pos').removeAttr('hidden');
         }
     })
 }
@@ -180,7 +180,7 @@ function add_timelapse_full_modal() {
                                         </select> \
                                     </div>\
                                 </div>\
-                                <div id="logo_pos" class="col-sm-6 hidden">\
+                                <div id="logo_pos" class="col-sm-6" hidden>\
                                     <div class="form-group mb-2"> \
                                         <label for="logo_pos" class="col-form-label"><b>Position of the Logo</b></label> \
                                         <select name="logo_pos" class="form-control"> \
