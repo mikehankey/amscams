@@ -28,6 +28,7 @@ from lib.UtilLib import calc_radiant
 from lib.Video_Add_Job import add_video_job 
 from lib.VIDEO_VARS import * 
 from lib.Video_Tools import getLength
+from lib.LOGOS_VARS import * 
 from lib.Get_Cam_ids import get_the_cam_ids
 from lib.Get_Operator_info import get_operator_info
  
@@ -453,8 +454,12 @@ def controller(json_conf):
 # CUSTOM LOGO PAGE
 def custom_logos(json_conf,form):
    header_out = "<div class='h1_holder d-flex justify-content-between'>"      
-   header_out += "<h1>Custom Logo</h1>"
-   header_out += "<div class='d-flex'><button class='btn btn-primary mr-3' id='add_new_logo' style='text-transform: initial;'><span class='icon-plus'></span> Add new Logo</button></div></div>"
+   header_out += "<h1>Custom Logos</h1>"
+   header_out += "<div class='d-flex'>"
+   header_out += '<form action="/webUI.py?cmd=upload_logo" method="post" accept-charset="utf-8" enctype="multipart/form-data">'
+   header_out += '<input id="logo" class="btn btn-primary mr-3" name="logo" type="file" value="" accept="image/x-png"/>'
+   header_out += '<input type="submit" value="submit" />'
+   header_out += '</form></div>'
    print(header_out)
       
 
