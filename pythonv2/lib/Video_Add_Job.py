@@ -12,6 +12,9 @@ def add_video_job(name,cam_ids,date,fps,dim,text_pos,wat_pos,extra_text):
 
     cgitb.enable() 
 
+    print("IN ADD VIDEO JOB")
+    print(cam_ids)
+
     #Is the waiting_job folder exists? 
     if not os.path.exists(WAITING_JOBS_FOLDER):
         os.makedirs(WAITING_JOBS_FOLDER)
@@ -44,7 +47,8 @@ def add_video_job(name,cam_ids,date,fps,dim,text_pos,wat_pos,extra_text):
     
     res = {}
     ok_list = ''
-    bad_list = ''
+    bad_list = '' 
+  
 
     for cam_id in cam_ids:
 
