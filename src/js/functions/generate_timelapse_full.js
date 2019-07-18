@@ -1,4 +1,24 @@
 /**
+ * Get the form values
+ */
+$.fn.serializeObject = function() {
+    var o = {};
+    var a = this.serializeArray();
+    $.each(a, function() {
+        if (o[this.name]) {
+            if (!o[this.name].push) {
+                o[this.name] = [o[this.name]];
+            }
+            o[this.name].push(this.value || '');
+        } else {
+            o[this.name] = this.value || '';
+        }
+    });
+    return o;
+};
+
+
+/**
  * Avoid the same position for watermark & info
  */
 
@@ -177,7 +197,7 @@ function add_timelapse_full_modal() {
 
     // Generate
     $('#generate_timelapse').click(function() { 
-        var cmd_data = JSON.stringify( $("#timelapse_full_form").serializeArray() ); //getFormData($("#timelapse_full_form"));
+        var cmd_data =  $("#timelapse_full_form").serializeObject(); //getFormData($("#timelapse_full_form"));
         cmd_data.cmd = "generate_timelapse";
 
  
