@@ -524,10 +524,9 @@ def video_tools(json_conf,form):
                   print("2<br/>")
                   print(jsonFile)
 
-                  print("<br/>******************<br/>")
-                  data = [json.loads(line) for line in jsonFile] 
                   
-
+                  data = json.loads(jsonFile)
+                  
                   print("3")
 
       for jobs in data['jobs']: 
