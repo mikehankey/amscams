@@ -10,9 +10,7 @@ from lib.VIDEO_VARS import *
 #ADD Job to WAITING_JOBS
 def add_video_job(name,cam_ids,date,fps,dim,text_pos,wat_pos,extra_text):
 
-    cgitb.enable()
-    print("DATE " + date)
-
+    #cgitb.enable() 
 
     #Is the waiting_job folder exists? 
     if not os.path.exists(WAITING_JOBS_FOLDER):
@@ -85,11 +83,11 @@ def add_video_job(name,cam_ids,date,fps,dim,text_pos,wat_pos,extra_text):
                 json.dump(data, outfile)
             outfile.close()
 
-            ok_list += '<li>Cam ID ' + cam_id + ' / ' + date + ' ADDED</li>'
+            ok_list += '<li>Cam ID ' + cam_id + ' - ' + date + ' ADDED</li>'
         
         else:
 
-            bad_list += '<li>Cam ID ' + cam_id + ' / ' + date + ' NOT ADDED - This video is already on the wainting list</li>'
+            bad_list += '<li>Cam ID ' + cam_id + ' - ' + date + ' NOT ADDED - This video is already on the wainting list</li>'
 
 
     res['msg'] = '<h4>Video(s) added to the waiting list</h4><ul>'+ok_list+bad_list+'</ul><b>The video(s) will be ready in 5 or 10 minutes.<br>Go to the <a href="/pycgi/webUI.py?cmd=video_tools">Custom Videos</a> page to download the video.</b>'
