@@ -10,15 +10,15 @@ def upload_logo(form):
     fileitem = logo
     print('FILE ITEM' + str(fileitem))
     print('FILE ITEM FILE' + fileitem.file)
-    if fileitem.file:
+    if fileitem:
         # It's an uploaded file; count lines
         linecount = 0
         while 1:
-            line = fileitem.file.readline()
+            line = fileitem.readline()
             if not line: break
             linecount = linecount + 1
         
         print("linecount " + linecount)
-        print(fileitem.file)
+        print(fileitem)
     else:
         print("NO FILE FOUND")
