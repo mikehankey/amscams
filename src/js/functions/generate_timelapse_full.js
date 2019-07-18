@@ -205,6 +205,7 @@ function add_timelapse_full_modal() {
     // Avoid Same Location
     avoid_same_location();
    
+    //UI for custom logo
 
 
     // Generate
