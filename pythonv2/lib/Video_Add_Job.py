@@ -15,6 +15,8 @@ def add_video_job(name,cam_ids,date,fps,dim,text_pos,wat_pos,extra_text):
     print("IN ADD VIDEO JOB")
     print(cam_ids)
 
+    print(type(cam_ids))
+
     #Is the waiting_job folder exists? 
     if not os.path.exists(WAITING_JOBS_FOLDER):
         os.makedirs(WAITING_JOBS_FOLDER)
