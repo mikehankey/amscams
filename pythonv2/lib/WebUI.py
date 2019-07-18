@@ -489,10 +489,6 @@ def video_tools(json_conf,form):
    for camid in all_cam_ids:
       out_put_all_cam_ids += camid + "|"
 
-   #Get Operator info
-   operator = get_operator_info()
-   print(operator)
-
    #Get Current Date (default for datepicker)
    now = datetime.datetime.now()
    out_put_date = str(now.year) + "/" + str(now.month) + "/" + str(now.day)
@@ -541,9 +537,13 @@ def video_tools(json_conf,form):
    header_out = "<div class='h1_holder d-flex justify-content-between'>"      
    header_out += "<h1>"+str(vid_counter)+" videos found</h1>"
    header_out += "<div class='d-flex'><button class='btn btn-primary mr-3' id='create_timelapse' style='text-transform: initial;'><span class='icon-youtube'></span> Generate Timelapse Video</button></div></div>"
-  
+   
+   #Get Operator info
+   operator = get_operator_info()
+   #{'obs_name': 'UMD', 'pwd': 'meteors', 'name': 'Elizabeth Warner', 'email': 'mike.hankey@gmail.com', 'country': 'US', 'ams_id': 'AMS7', 'city': 'College Park', 'mac_addr': '00:0e:c4:d3:e1:15', 'state': 'MD'}
+
    print(header_out)
-   print("<input type='hidden' name='cur_date' value='"+out_put_date+"'/>")
+   print("<input type='hidden' name='operator_info' value='"+operator['name'] + ', ' + operator['obs_name']+ ', ' + operator['city'] + ', ' + operator['state']+ ', ' + operator['country'] +"'/>")  
    print("<input type='hidden' name='cam_ids' value='"+out_put_all_cam_ids+"'/>")
    print("<div class='gallery gal-resize row text-center text-lg-left mt-4'>")
    print(processing_vids)

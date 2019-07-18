@@ -177,6 +177,9 @@ function add_timelapse_full_modal() {
 
     // Multi Select cam
     $('select#sel_cams').multiselect({includeSelectAllOption: true});
+
+    // Extra Text (operator info)
+    $('input[name=extra_text]').val($('input[name=operator_info]').val());
    
     //Start datepicker
     load_date_pickers();
