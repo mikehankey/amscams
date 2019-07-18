@@ -29,6 +29,7 @@ from lib.Video_Add_Job import add_video_job
 from lib.VIDEO_VARS import * 
 from lib.Video_Tools import getLength
 from lib.Get_Cam_ids import get_the_cam_ids
+from lib.Get_Operator_info import get_operator_info
  
 
 NUMBER_OF_METEOR_PER_PAGE = 60
