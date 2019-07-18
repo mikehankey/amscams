@@ -94,3 +94,13 @@ h1 select {
     }
   }
 }
+
+
+
+// Multiselect 
+.multiselect.dropdown-toggle.btn.btn-default {
+    background:#fff;
+}
+.multiselect-container>li>a>label {
+     padding: .5rem 1rem 0 .5rem;
+}
