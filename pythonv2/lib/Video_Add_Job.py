@@ -10,11 +10,8 @@ from lib.VIDEO_VARS import *
 #ADD Job to WAITING_JOBS
 def add_video_job(name,cam_ids,date,fps,dim,text_pos,wat_pos,extra_text):
 
-    cgitb.enable()  
-
-    print("EXTRA TEXT")
-    print(extra_text)
-
+    #cgitb.enable()  
+ 
     #If we only have one cam_id
     if(type(cam_ids) is str):
         cam_ids = [cam_ids]
