@@ -64,6 +64,21 @@ function add_custom_logo() {
          if($(this).val()=='y') {
             $('#position .col-sm-6').removeClass('col-sm-6').addClass('col-sm-4');
             $('#logo_pos').removeAttr('hidden');
+            
+            // Populate select[name=logo] with logos
+            if($('select[name=logo] option').length==0) {
+                var all_logos = $('input[name=logos]').val();
+                all_logos = all_logos.split('|');
+                $.each(all_logos,function(i,v){
+                    if(v!='') {
+                        $('<option data-img-src="'+v+'" value="'+v+'"></option').appendTo($("select[name=logo]"));
+                    }
+                })
+            }
+ 
+      
+      
+      
         } else {
             $('#position .col-sm-4').removeClass('col-sm-4').addClass('col-sm-6');
             $('#logo_pos').attr('hidden','hidden');
@@ -192,6 +207,11 @@ function add_timelapse_full_modal() {
                                     </div>\
                                 </div>\
                             </div> \
+                            <div class="form-group"> \
+                                <label for="logo_pos" class="col-form-label"><b>Position of the Logo</b></label> \
+                                <select name="logo" class="image-picker show-html"> \
+                                </select> \
+                            </div> \
                             <div class="form-group mb-2">\
                                 <label for="extra_text" class="col-form-label"><b>Extra info (added above the Camera Info)</b></label> \
                                 <input type="text" name="extra_text" class="form-control" value=""/> \
@@ -217,9 +237,15 @@ function add_timelapse_full_modal() {
 
     // Avoid Same Location
     avoid_same_location();
+
+    // If no custom logos...
+    if($.trim($('input[name=logos]').val())=='') {
+        $('select[name=extra_logo_yn]').attr('disabled','disabled');
+    } else {
+        //UI for custom logo
+        add_custom_logo();
+    }
    
-    //UI for custom logo
-    add_custom_logo();
 
     // Generate
     $('#generate_timelapse').click(function() { 

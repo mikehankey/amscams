@@ -474,7 +474,7 @@ def custom_logos(json_conf,form):
    #Get the existing logos
    all_logos = sorted(glob.glob(LOGOS_PATH + "*.*"), key=os.path.getmtime, reverse=True)
    for logo in all_logos:
-      header_out += "<div class='preview col-lg-2 col-md-3 norm mb-3'>"
+      header_out += "<div class='col-lg-2 col-md-3 norm mb-3'>"
       header_out += "<a class='mtt img-link nop' href='"+logo+"'>"
       header_out += "<img class='img-fluid ns ' src='" + logo + "'/>"
       header_out += "</a></div>"
