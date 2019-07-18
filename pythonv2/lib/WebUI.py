@@ -513,23 +513,15 @@ def video_tools(json_conf,form):
       with open(PROCESSING_JOBS, "r+") as jsonFile:
             jsonFile.seek(0)
             first_char = jsonFile.read(1)
-            print("PROCESSING JOBS<br/>")
-
+             
             if not first_char:
                   data = {}
                   data['jobs'] = []
-                  print("1<br/>")
-            else:
+                   
+            else:  
+                  jsonFile.seek(0)
+                  data = json.loads(jsonFile.read()) 
                   
-                  print("2<br/>")
-                  print(jsonFile.read())
-                  
-
-                  
-                  data = json.loads('{'+jsonFile.read())
-                  
-                  print("3")
-
       for jobs in data['jobs']: 
 
             if(jobs['status']=='processing'):
