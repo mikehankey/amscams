@@ -31,57 +31,61 @@ function add_timelapse_full_modal() {
                 <form id="timelapse_full_form"> \
                     <div class="row pr-3 pl-3 pt-0"> \
                         <div class="col-sm-12 mb-1"> \
-                            <div class="form-group mb-1"> \
+                            <div class="form-group mb-2"> \
                                 <label class="col-form-label"><b>Date</b></label> \
                                 <div class="col-sm-3 p-0">\
                                     <input name="video_date" value="'+curD+'" type="text" data-display-format="YYYY/MM/DD" class="datepicker form-control"> \
                                 </div>\
                             </div> \
-                            <div class="form-group mb-1"> \
+                            <div class="form-group mb-2"> \
                                 <label class="col-form-label"><b>Camera</b></label> \
                                 <div>'+cam_select+'</div> \
                             </div> \
-                            <div class="form-group  mb-1"> \
-                                <label for="fps" class=" col-form-label"><b>FPS</b></label> \
-                                <div class="col-sm-3 p-0">\
-                                    <select name="fps" class="form-control"> \
-                                        <option value="1">1 fps</option> \
-                                        <option value="5">5 fps</option> \
-                                        <option value="10">10 fps</option> \
-                                        <option value="15">15 fps</option> \
-                                        <option value="23.976">23.976 fps</option> \
-                                        <option value="24">24 fps</option> \
-                                        <option value="25">25 fps</option> \
-                                        <option value="29.97" >29.97 fps</option> \
-                                        <option value="30" selected>30 fps</option> \
-                                        <option value="50">50 fps</option> \
-                                        <option value="59.94">59.94 fps</option> \
-                                        <option value="60">60 fps</option> \
-                                    </select> \
-                                </div>\
-                            </div> \
-                            <div class="form-group mb-1"> \
-                                <label for="dim" class="col-form-label"><b>Dimension</b></label> \
-                                <div class="col-sm-3 p-0">\
-                                    <select name="dim" class="form-control"> \
-                                        <option value="1920:1080">1920x1080</option> \
-                                        <option value="1280:720" selected>1280x720</option> \
-                                        <option value="640:320">640x320</option> \
-                                    </select> \
-                                </div>\
-                            </div> \
-                            <div class="form-group mb-1">\
+                            <div class="col-sm-6">\
+                                <div class="form-group  mb-1"> \
+                                    <label for="fps" class=" col-form-label"><b>FPS</b></label> \
+                                    <div class="col-sm-3 p-0">\
+                                        <select name="fps" class="form-control"> \
+                                            <option value="1">1 fps</option> \
+                                            <option value="5">5 fps</option> \
+                                            <option value="10">10 fps</option> \
+                                            <option value="15">15 fps</option> \
+                                            <option value="23.976">23.976 fps</option> \
+                                            <option value="24">24 fps</option> \
+                                            <option value="25">25 fps</option> \
+                                            <option value="29.97" >29.97 fps</option> \
+                                            <option value="30" selected>30 fps</option> \
+                                            <option value="50">50 fps</option> \
+                                            <option value="59.94">59.94 fps</option> \
+                                            <option value="60">60 fps</option> \
+                                        </select> \
+                                    </div>\
+                                </div> \
+                            </div>\
+                            <div class="col-sm-6">\
+                                <div class="form-group mb-2"> \
+                                    <label for="dim" class="col-form-label"><b>Dimension</b></label> \
+                                    <div class="col-sm-3 p-0">\
+                                        <select name="dim" class="form-control"> \
+                                            <option value="1920:1080">1920x1080</option> \
+                                            <option value="1280:720" selected>1280x720</option> \
+                                            <option value="640:320">640x320</option> \
+                                        </select> \
+                                    </div>\
+                                </div> \
+                            </div>\
+                            <div class="form-group mb-2">\
                                 <label for="wat_pos" class="col-form-label"><b>Position of the AMS Watermark</b></label> \
                                 <div class="col-sm-3 p-0">\
                                     <select name="wat_pos" class="form-control"> \
-                                        <option value="tr" selected>Top right</option> \
-                                        <option value="tl" >Top Left</option> \
+                                        <option value="tr" >Top right</option> \
+                                        <option value="tl" selected>Top Left</option> \
                                         <option value="br" >Bottom Right</option> \
                                         <option value="bl" >Bottom Left</option> \
                                     </select> \
                                 </div>\
                             </div> \
-                            <div class="form-group mb-1"> \
+                            <div class="form-group mb-2"> \
                                 <label for="text_pos" class="col-form-label"><b>Position of the Camera Info</b></label> \
                                 <div class="col-sm-3 p-0">\
                                     <select name="text_pos" class="form-control"> \
@@ -92,7 +96,7 @@ function add_timelapse_full_modal() {
                                     </select> \
                                 </div>\
                             </div> \
-                            <div class="form-group mb-1">\
+                            <div class="form-group mb-2">\
                                 <label for="extra_text" class="col-form-label"><b>Extra info (added above the Camera Info)</b></label> \
                                 <input type="text" name="extra_text" class="form-control" value=""/> \
                             </div>\
