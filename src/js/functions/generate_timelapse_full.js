@@ -59,6 +59,15 @@ function avoid_same_location() {
     });
 }
  
+function add_custom_logo() {
+    $('#extra_logo_yn').change(function() {
+        if($(this).val()=='y') {
+            $('#position .col-sm-6').removeClass('col-sm-6').addClass('col-sm-4');
+        } else {
+            $('#position .col-sm-4').removeClass('col-sm-4').addClass('col-sm-6');
+        }
+    })
+}
 
 
 
@@ -146,10 +155,10 @@ function add_timelapse_full_modal() {
                                     </div> \
                                 </div>\
                             </div>\
-                            <div class="row">\
-                                <div class="col-sm-6">\
+                            <div class="row" id="position">\
+                                <div class="col-sm-6" >\
                                     <div class="form-group mb-2">\
-                                        <label for="wat_pos" class="col-form-label"><b>Position of the AMS Watermark</b></label> \
+                                        <label for="wat_pos" class="col-form-label"><b>Position of the AMS Logo</b></label> \
                                             <select name="wat_pos" class="form-control"> \
                                                 <option value="tr" >Top right</option> \
                                                 <option value="tl" selected>Top Left</option> \
@@ -196,6 +205,7 @@ function add_timelapse_full_modal() {
     // Avoid Same Location
     avoid_same_location();
    
+
 
     // Generate
     $('#generate_timelapse').click(function() { 
