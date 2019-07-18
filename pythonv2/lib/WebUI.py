@@ -526,7 +526,7 @@ def video_tools(json_conf,form):
                   
 
                   
-                  data = json.loads(jsonFile.read())
+                  data = json.loads('{'+jsonFile.read())
                   
                   print("3")
 
