@@ -60,11 +60,13 @@ function avoid_same_location() {
 }
  
 function add_custom_logo() {
-    $('#extra_logo_yn').change(function() {
-        if($(this).val()=='y') {
+    $('select[name=extra_logo_yn]').change(function() {
+         if($(this).val()=='y') {
             $('#position .col-sm-6').removeClass('col-sm-6').addClass('col-sm-4');
+            $('#logo_pos').addClass('hidden');
         } else {
             $('#position .col-sm-4').removeClass('col-sm-4').addClass('col-sm-6');
+            $('#logo_pos').removeClass('hidden');
         }
     })
 }
@@ -145,7 +147,7 @@ function add_timelapse_full_modal() {
                                             </select> \
                                     </div> \
                                 </div>\
-                                <div class="col-sm-4">\
+                                <div class="col-sm-4 hidden">\
                                     <div class="form-group mb-2"> \
                                         <label for="dim" class="col-form-label"><b>Extra Logo</b></label> \
                                             <select name="extra_logo_yn" class="form-control"> \
@@ -175,6 +177,17 @@ function add_timelapse_full_modal() {
                                             <option value="tl" >Top Left</option> \
                                             <option value="br" >Bottom Right</option> \
                                             <option value="bl" selected>Bottom Left</option> \
+                                        </select> \
+                                    </div>\
+                                </div>\
+                                <div id="logo_pos" class="col-sm-6 hidden">\
+                                    <div class="form-group mb-2"> \
+                                        <label for="logo_pos" class="col-form-label"><b>Position of the Logo</b></label> \
+                                        <select name="logo_pos" class="form-control"> \
+                                            <option value="tr" selected>Top right</option> \
+                                            <option value="tl" >Top Left</option> \
+                                            <option value="br" >Bottom Right</option> \
+                                            <option value="bl" >Bottom Left</option> \
                                         </select> \
                                     </div>\
                                 </div>\
