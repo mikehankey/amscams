@@ -34,12 +34,12 @@ function add_timelapse_full_modal() {
                             <div class="form-group row mb-1"> \
                                 <label class="col-sm-4 col-form-label"><b>Date</b></label> \
                                 <div class="col-sm-8"> \
-                                    <input name="video_date" value="" type="text" data-display-format="YYYY/MM/DD" class="datepicker form-control"> \
+                                    <input name="video_date" value="'+curD+'" type="text" data-display-format="YYYY/MM/DD" class="datepicker form-control"> \
                                 </div> \
                             </div> \
                             <div class="form-group row mb-1"> \
-                                <label class="col-sm-4 col-form-label"><b>Camera</b></label> \
-                                <div class="col-sm-8" id="cam_select_h"></div> \
+                                <label class="col-sm-4 col-form-label" multiple="multiple"><b>Camera</b></label> \
+                                <div class="col-sm-8">+'cam_select+'</div> \
                             </div> \
                         </div> \
                         <div class="col-sm-6"> \
@@ -114,12 +114,7 @@ function add_timelapse_full_modal() {
         </div> \
         </div>').appendTo('body').modal('show');
 
-    // Cam selecteor
-    $('#cam_select_h').html(cam_select);
-
-    // Video date
-    $('input[name=video_date]').val(curD);
-
+   
     //Start datepicker
     load_date_pickers();
 
