@@ -52,7 +52,7 @@ function add_timelapse_full_modal() {
     var cam_ids = $('input[name=cam_ids]').val();
     cam_ids = cam_ids.split('|');
 
-    var cam_select = "<select name='sel_cam[]' class='form-control'  multiple='multiple'>";
+    var cam_select = "<select id='sel_cams' name='sel_cam[]' class='form-control'  multiple='multiple'>";
     $.each(cam_ids,function(i,v){
         if($.trim(v)!=='') {
             cam_select = cam_select + "<option value='"+v+"'>Camera #" + v + "</option>";
@@ -154,7 +154,7 @@ function add_timelapse_full_modal() {
         </div>').appendTo('body').modal('show');
 
     // Multi Select cam
-    $('select[name=sel_cam[]]').multiselect({includeSelectAllOption: true});
+    $('select#sel_cams').multiselect({includeSelectAllOption: true});
    
     //Start datepicker
     load_date_pickers();
