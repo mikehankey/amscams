@@ -522,7 +522,8 @@ def video_tools(json_conf,form):
             else:
                   
                   print("2<br/>")
-                  print(jsonFile)
+                  print(jsonFile.read())
+                  
 
                   
                   data = json.loads(jsonFile.read())
