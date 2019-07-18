@@ -448,7 +448,7 @@ def controller(json_conf):
 # VIDEO TOOLS PAGE
 # LIST OF PROCESS/READY VIDEOS
 def video_tools(json_conf,form):
-   cgitb.enable()
+   #cgitb.enable()
 
    cur_page  = form.getvalue('p')
 
