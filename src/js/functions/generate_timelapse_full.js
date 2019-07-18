@@ -177,7 +177,7 @@ function add_timelapse_full_modal() {
 
     // Generate
     $('#generate_timelapse').click(function() { 
-        var cmd_data = getFormData($("#timelapse_full_form"));
+        var cmd_data = JSON.stringify( $("#timelapse_full_form").serializeArray() ); //getFormData($("#timelapse_full_form"));
         cmd_data.cmd = "generate_timelapse";
 
  

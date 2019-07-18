@@ -227,13 +227,15 @@ def controller(json_conf):
    #CUSTOM VIDEOS (AJAX CALL)
    if cmd == 'generate_timelapse': 
    
-      #Extra text is potional
+      #Extra text is optional
       try:
             extra_text = form.getvalue('extra_text')
       except KeyError as e:
             extra_text = ""
+
+      print(str(form.getvalue))
      
-      add_video_job('timelapse',form.getvalue('tl_cam_id'),form.getvalue('tl_date'),form.getvalue('fps'),form.getvalue('dim'),form.getvalue('text_pos'),form.getvalue('wat_pos'),extra_text)
+      #add_video_job('timelapse',form.getvalue('tl_cam_id'),form.getvalue('tl_date'),form.getvalue('fps'),form.getvalue('dim'),form.getvalue('text_pos'),form.getvalue('wat_pos'),extra_text)
       exit()
    
   
