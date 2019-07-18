@@ -114,6 +114,8 @@ function add_timelapse_full_modal() {
         </div> \
         </div>').appendTo('body').modal('show');
 
+    // Multi Select cam
+    $('select[name=cam]').multiselect();
    
     //Start datepicker
     load_date_pickers();
