@@ -239,7 +239,7 @@ def controller(json_conf):
       add_video_job('timelapse',form.getvalue('sel_cam[]'),form.getvalue('tl_date'),form.getvalue('fps'),form.getvalue('dim'),form.getvalue('text_pos'),form.getvalue('wat_pos'),extra_text)
       exit()
 
-   #CUSTOM LOGOS        
+   #CUSTOM LOGOS  (AJAX CALL)       
    if cmd == 'upload_logo': 
       upload_logo(form)   
       exit()
@@ -460,8 +460,22 @@ def custom_logos(json_conf,form):
    header_out += "<h1>Custom Logos</h1>"
    header_out += "<div class='d-flex'>"
    header_out += '<form id="upload_logo" action="/pycgi/webUI.py?cmd=upload_logo" method="post" accept-charset="utf-8" enctype="multipart/form-data">'
-   header_out += '<input id="logo_file_upload" class="btn btn-primary mr-3" name="logo" type="file" value="" accept="image/x-png"/>'
+   header_out += '<div class="custom-file">'
+   header_out += '<input type="file" class="custom-file-input" id="logo_file_upload" name="logo" accept="image/x-png,image/gif,image/jpeg">'
+   header_out += '<label class="custom-file-label" for="logo">Select a logo</label>'
+   header_out += '</div>'
    header_out += '</form></div>'
+
+   header_out += '<div id="main_container" class="container-fluid h-100 mt-4 lg-l">'
+   header_out += '<div class="alert alert-info">We STRONGLY recommand using a clean PNG (ideally semi-transparent) with height < 130px an width < 400px</div>'
+   
+   #Get the existing logos
+   all_logos = sorted(glob.glob(LOGOS_PATH + "*.*"), key=os.path.getmtime, reverse=True)
+   print(str(all_logos))
+   
+   
+   header_out += '</div>'
+   
    print(header_out)
       
 
