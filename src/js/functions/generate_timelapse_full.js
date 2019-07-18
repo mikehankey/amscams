@@ -107,7 +107,7 @@ function add_timelapse_full_modal() {
                                 <div>'+cam_select+'</div> \
                             </div> \
                             <div class="row">\
-                                <div class="col-sm-6">\
+                                <div class="col-sm-4">\
                                     <div class="form-group  mb-1"> \
                                         <label for="fps" class=" col-form-label"><b>FPS</b></label> \
                                             <select name="fps" class="form-control"> \
@@ -126,13 +126,22 @@ function add_timelapse_full_modal() {
                                             </select> \
                                     </div> \
                                 </div>\
-                                <div class="col-sm-6">\
+                                <div class="col-sm-4">\
                                     <div class="form-group mb-2"> \
                                         <label for="dim" class="col-form-label"><b>Dimension</b></label> \
                                             <select name="dim" class="form-control"> \
                                                 <option value="1920:1080">1920x1080</option> \
                                                 <option value="1280:720" selected>1280x720</option> \
                                                 <option value="640:320">640x320</option> \
+                                            </select> \
+                                    </div> \
+                                </div>\
+                                <div class="col-sm-4">\
+                                    <div class="form-group mb-2"> \
+                                        <label for="dim" class="col-form-label"><b>Extra Logo</b></label> \
+                                            <select name="extra_logo_yn" class="form-control"> \
+                                                <option value="n"selected >No</option> \
+                                                <option value="y" >Yes</option> \ 
                                             </select> \
                                     </div> \
                                 </div>\
