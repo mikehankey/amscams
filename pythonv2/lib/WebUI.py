@@ -579,11 +579,14 @@ def video_tools(json_conf,form):
 
    #Get Custom Logos
    all_logos = sorted(glob.glob(LOGOS_PATH + "*.*"), key=os.path.getmtime, reverse=True)
+   out_put_all_logos = ''
+   for logo in all_logos:
+      out_put_all_logos += logo + "|"
 
    print(header_out)
    print("<input type='hidden' name='operator_info' value='"+operator['name'] + ', ' + operator['obs_name']+ ', ' + operator['city'] + ', ' + operator['state']+ ', ' + operator['country'] +"'/>")  
    print("<input type='hidden' name='cam_ids' value='"+out_put_all_cam_ids+"'/>")
-   print("<input type='hidden' name='logos' value='"+str(all_logos)+"'/>")
+   print("<input type='hidden' name='logos' value='"+str(out_put_all_logos)+"'/>")
    print("<div class='gallery gal-resize row text-center text-lg-left mt-4'>")
    print(processing_vids)
    print(all_vids_out)
