@@ -279,34 +279,46 @@ function add_timelapse_full_modal() {
         var cmd_data =  $("#timelapse_full_form").serializeObject(); //getFormData($("#timelapse_full_form"));
         cmd_data.cmd = "generate_timelapse";
 
-        $('#full_timelapse_modal').modal('hide');
-        loading({text: "Creating Video", overlay: true});
+        // AT LEAST ONE CAM NEEDS TO BE SELECTED
+        if(typeof cmd_data['sel_cam[]'] == 'undefined') {
+            bootbox.alert({
+                message: "Please, select at least one camera",
+                className: 'rubberBand animated error',
+                centerVertical: true
+            });
+            
+        } else {
+            $('#full_timelapse_modal').modal('hide');
+            loading({text: "Creating Video", overlay: true});
+            
+            $.ajax({ 
+                url:  "/pycgi/webUI.py",
+                data: cmd_data,
+                success: function(data) {
+                    var json_resp = $.parseJSON(data); 
+                    bootbox.alert({
+                        message: json_resp.msg + "<p>This page will now reload.</p>",
+                        className: 'rubberBand animated',
+                        centerVertical: true,
+                        callback: function () {
+                            location.reload();
+                        }
+                    });
+                    loading_done();
+                }, 
+                error:function(err) {
+                    bootbox.alert({
+                        message: "The process returned an error - please try again later",
+                        className: 'rubberBand animated error',
+                        centerVertical: true
+                    });
+                    
+                    loading_done();
+                }
+            });
+        }
+
         
-        $.ajax({ 
-            url:  "/pycgi/webUI.py",
-            data: cmd_data,
-            success: function(data) {
-                var json_resp = $.parseJSON(data); 
-                bootbox.alert({
-	                message: json_resp.msg + "<p>This page will now reload.</p>",
-	                className: 'rubberBand animated',
-                    centerVertical: true,
-                    callback: function () {
-                        location.reload();
-                    }
-                });
-                loading_done();
-            }, 
-            error:function(err) {
-                bootbox.alert({
-	                message: "The process returned an error - please try again later",
-	                className: 'rubberBand animated error',
-	                centerVertical: true
-                });
-                
-                loading_done();
-            }
-        });
     });
 }
 
