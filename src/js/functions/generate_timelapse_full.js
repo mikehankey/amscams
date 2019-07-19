@@ -84,7 +84,7 @@ function add_custom_logo() {
       
         } else {
             $('#position .col-sm-4').removeClass('col-sm-4').addClass('col-sm-6');
-            $('#logo_pos, #logo_picker'').attr('hidden','hidden');
+            $('#logo_pos, #logo_picker').attr('hidden','hidden');
         }
     })
 }
