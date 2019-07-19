@@ -69,11 +69,11 @@ function add_custom_logo() {
             if($('select[name=logo] option').length==0) {
                 var all_logos = $('input[name=logos]').val();
                 all_logos = all_logos.split('|');
-                var $preview =  '<ul class="thumbnails image_picker_selector">';
+                var $preview =  '<ul class="logo_selector">';
                 $.each(all_logos,function(i,v){
-                    if(v!='') {
-                        $('<option data-img-src="'+v+'" value="'+v+'"></option').appendTo($("select[name=logo]"));
-                        $preview += '<li><div class="thumbnail"><img class="image_picker_image" src="'+v+'"/></div><li>';
+                    if($.trim(v)!='') {
+                        $('<option value="'+v+'"></option').appendTo($("select[name=logo]"));
+                        $preview += '<li><a class="logo_selectable"><img class="img-fluid" src="'+v+'"/></a><li>';
                     }
                 })
 
@@ -212,8 +212,7 @@ function add_timelapse_full_modal() {
                             </div> \
                             <div class="form-group picker"> \
                                 <label for="logo_pos" class="col-form-label"><b>Extra Logo</b></label> \
-                                <select name="logo" class="image-picker show-html"> \
-                                </select> \
+                                <select name="logo" class="hidden"></select> \
                                 <div id="logo_preview"></div>\
                             </div> \
                             <div class="form-group mb-2">\
