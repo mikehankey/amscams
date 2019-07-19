@@ -243,7 +243,7 @@ def add_info_to_frames(frames, path, date, camID, extra_text, logo,logo_pos, dim
     if(logo is None):
         with_extra_logo = False 
         logo_position= 'X'
-    elif(extra_text.strip()==''):
+    elif(logo.strip()==''):
         with_extra_logo = False
         logo_position = 'X' 
     else:
