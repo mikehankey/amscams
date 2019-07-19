@@ -43,12 +43,11 @@ from os.path import isfile, join, exists
 text_position, extra_text_position = get_text_pos('br',True)
 watermark_position = get_watermark_pos('tr')
 logo_pos  = logo_position = get_watermark_pos(logo_pos)
-add_info_to_frame('/mnt/ams2/CUSTOM_VIDEOS/to_test.png',"CAM TEXT",'EXTRA TEXT',text_position,extra_text_position,watermark_position,'/mnt/ams2//CUSTOM_LOGOS/2.png',logo_pos,'/mnt/ams2/CUSTOM_VIDEOS/to_test_BR','1920:1080', 0)
+add_info_to_frame('/mnt/ams2/CUSTOM_VIDEOS/2019_07_19_010037.png',"CAM TEXT",'EXTRA TEXT',text_position,extra_text_position,watermark_position,'/mnt/ams2//CUSTOM_LOGOS/2.png',logo_pos,'/mnt/ams2/CUSTOM_VIDEOS/to_test_BR','1920:1080', 0)
 
 
 
-def add_info_to_frame(frame, cam_text, extra_text, text_position, extra_text_position, watermark, watermark_position, logo, logo_pos, newpath, dimensions="1920:1080",  enhancement=0):
-
+ 
 
 
 #text_position, extra_text_position = get_text_pos('bl',True)
