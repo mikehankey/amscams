@@ -153,7 +153,7 @@ def add_info_to_frame(frame, cam_text, extra_text, text_position, extra_text_pos
     cmd = 'ffmpeg -hide_banner -loglevel panic \
             -y \
             -i ' + frame + '    \
-            -i ' + watermark + ' \
+            -i ' + watermark  
 
     if(logo_pos is not 'X'):
         cmd += ' -i ' +  logo
