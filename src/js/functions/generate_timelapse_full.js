@@ -63,7 +63,7 @@ function add_custom_logo() {
     $('select[name=extra_logo_yn]').change(function() {
          if($(this).val()=='y') {
             $('#position .col-sm-6').removeClass('col-sm-6').addClass('col-sm-4');
-            $('#logo_pos').removeAttr('hidden');
+            $('#logo_pos, #logo_picker').removeAttr('hidden');
             
             // Populate select[name=logo] with logos
             if($('select[name=logo] option').length==0) {
@@ -84,7 +84,7 @@ function add_custom_logo() {
       
         } else {
             $('#position .col-sm-4').removeClass('col-sm-4').addClass('col-sm-6');
-            $('#logo_pos').attr('hidden','hidden');
+            $('#logo_pos, #logo_picker'').attr('hidden','hidden');
         }
     })
 }
@@ -210,9 +210,9 @@ function add_timelapse_full_modal() {
                                     </div>\
                                 </div>\
                             </div> \
-                            <div class="form-group picker"> \
+                            <div id="logo_picker" class="form-group" hidden> \
                                 <label for="logo_pos" class="col-form-label"><b>Extra Logo</b></label> \
-                                <select name="logo" class="hidden"></select> \
+                                <select name="logo" hidden></select> \
                                 <div id="logo_preview"></div>\
                             </div> \
                             <div class="form-group mb-2">\
