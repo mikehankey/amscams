@@ -239,10 +239,19 @@ def controller(json_conf):
       #Do we have an extra logo
       try:
             extra_logo = form.getvalue('extra_logo_yn')
+            logo = form.getvalue('logo')
+            logo_pos = form.getvalue('logo_pos')
       except KeyError as e:
-            extra_text = "n"
+            extra_logo = "n"
+            logo = ""
+            logo_pos = ""
 
       print(form.getvalue)
+      print("EXTRA LOGO " + extra_logo)
+      
+      print("EXTRA LOGO SRC " + logo)
+      
+      print("EXTRA LOGO  POS" + logo_pos)
       exit()
 
 
