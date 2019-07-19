@@ -137,6 +137,7 @@ def get_text_pos(text_pos, extra_text_here):
 #Add text, logo, etc.. to a frame             
 def add_info_to_frame(frame, cam_text, extra_text, text_position, extra_text_position, watermark, watermark_position, logo, logo_pos, newpath, dimensions="1920:1080",  enhancement=0):
      
+
     # Do we have extra text?
     if(extra_text is None):
         with_extra_text = False
@@ -156,12 +157,7 @@ def add_info_to_frame(frame, cam_text, extra_text, text_position, extra_text_pos
 
     if(logo_pos is not 'X'):
         cmd += ' -i ' +  logo
-
-    print('DIM' +  str(dimensions))
-    print("CAM TET " + cam_text)
-    print("FONT_TRANSPARENCY " + FONT_TRANSPARENCY)
-    print("FONT_SIZE " + FONT_SIZE)
-    print("text_position " + text_position)
+ 
     
     cmd +=  ' -filter_complex "[0:v]scale='+dimensions+'[scaled]; \
             [scaled]drawtext=:text=\'' + cam_text + '\':fontcolor=white@'+FONT_TRANSPARENCY+':fontsize='+FONT_SIZE+':'+text_position 
