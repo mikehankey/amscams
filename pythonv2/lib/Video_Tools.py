@@ -184,8 +184,8 @@ def add_info_to_frame(frame, cam_text, extra_text, text_position, extra_text_pos
     cmd += ' -map "[out]"  ' + newpath + '.png'      
 
 
-    print("CMD")
-    print(cmd)
+    #print("CMD")
+    #print(cmd)
 
 
     #else:
@@ -242,17 +242,13 @@ def add_info_to_frames(frames, path, date, camID, extra_text, logo,logo_pos, dim
     # Do we have extra logo
     if(logo is None):
         with_extra_logo = False 
-        logo_position= 'X'
-        print("LOGO IS NONE")
+        logo_position= 'X' 
     elif(logo.strip()==''):
         with_extra_logo = False
-        logo_position = 'X' 
-        print("LOGO IS EMPTY")
+        logo_position = 'X'  
     else:
         with_extra_logo = True 
-        logo_position = get_watermark_pos(logo_pos)    
-        print("LOGO IS NOT EMPTY")
-        print(logo)
+        logo_position = get_watermark_pos(logo_pos)     
 
 
     #Watermark R or L
