@@ -19,17 +19,6 @@ $.fn.serializeObject = function() {
 
 
 /**
- * Extra Logo selector
- */
-function extra_logo_selector() {
-    $('a.logo_selectable').click(function() {
-        $('.logo_selectable').removeClass('selected');
-        $(this).addClass('selected');
-        $('select[name=logo]').val($(this).attr('src'));
-    });
-}
-
-/**
  * Avoid the same position for watermark & info
  */
 
@@ -69,7 +58,24 @@ function avoid_same_location() {
 
     });
 }
- 
+
+
+
+/**
+ * Extra Logo selector
+ */
+function extra_logo_selector() {
+    $('a.logo_selectable').click(function() {
+        $('.logo_selectable').removeClass('selected');
+        $(this).addClass('selected');
+        $('select[name=logo]').val($(this).find('img').attr('src'));
+    });
+}
+
+
+/**
+ * Actions for extra logo
+ */
 function add_custom_logo() {
     $('select[name=extra_logo_yn]').change(function() {
          if($(this).val()=='y') {
@@ -83,7 +89,7 @@ function add_custom_logo() {
                 var $preview =  '<ul class="logo_selector">';
                 $.each(all_logos,function(i,v){
                     if($.trim(v)!='') {
-                        $('<option value="'+v+'"></option').appendTo($("select[name=logo]"));
+                        $('<option value="'+v+'">'+v+'</option').appendTo($("select[name=logo]"));
                         $preview += '<li><a class="logo_selectable"><img class="img-fluid ns" src="'+v+'"/></a><li>';
                     }
                 })
