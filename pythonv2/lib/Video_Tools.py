@@ -157,6 +157,9 @@ def add_info_to_frame(frame, cam_text, extra_text, text_position, extra_text_pos
 
     if(logo_pos is not 'X'):
         cmd += ' -i ' +  logo
+        with_extra_logo= True
+    else:
+        with_extra_logo= False
  
     
     cmd +=  ' -filter_complex "[0:v]scale='+dimensions+'[scaled]; \
@@ -169,8 +172,22 @@ def add_info_to_frame(frame, cam_text, extra_text, text_position, extra_text_pos
     else:
         cmd+= '[texted]; [texted]'
 
-    cmd += 'overlay='+watermark_position+'[out]" \
-            -map "[out]"  ' + newpath + '.png'      
+    #Watermark
+    cmd += 'overlay='+watermark_position
+
+    #Extra Logo
+    if(with_extra_logo is True):
+        cmd+= '[wat];[owatut]overlay='+logo_pos+'[out];'
+    else:
+        cmd+= '[out];'
+
+    cmd += '-map "[out]"  ' + newpath + '.png'      
+
+
+    print("CMD")
+    print(cmd)
+
+
     #else:
     #    cmd = 'ffmpeg -hide_banner -loglevel panic \
     #            -y \
