@@ -157,7 +157,7 @@ def add_info_to_frame(frame, cam_text, extra_text, text_position, extra_text_pos
     if(logo_pos is not 'X'):
         cmd += ' -i ' +  logo
 
-    print('DIM' +  dimensions)
+    print('DIM' +  str(dimensions))
     print("CAM TET " + cam_text)
     print("FONT_TRANSPARENCY " + FONT_TRANSPARENCY)
     print("FONT_SIZE " + FONT_SIZE)
