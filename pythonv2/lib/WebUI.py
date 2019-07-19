@@ -236,6 +236,17 @@ def controller(json_conf):
       except KeyError as e:
             extra_text = ""
 
+      #Do we have an extra logo
+      try:
+            extra_logo = form.getvalue('extra_logo_yn')
+      except KeyError as e:
+            extra_text = "n"
+
+      print(form.getvalue)
+      exit()
+
+
+
       add_video_job('timelapse',form.getvalue('sel_cam[]'),form.getvalue('tl_date'),form.getvalue('fps'),form.getvalue('dim'),form.getvalue('text_pos'),form.getvalue('wat_pos'),extra_text)
       exit()
 
