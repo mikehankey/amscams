@@ -8,7 +8,7 @@ from os.path import isfile, join, exists
 from lib.VIDEO_VARS import * 
 
 #ADD Job to WAITING_JOBS
-def add_video_job(name,cam_ids,date,fps,dim,text_pos,wat_pos,extra_text):
+def add_video_job(name,cam_ids,date,fps,dim,text_pos,wat_pos,extra_text,logo,logo_pos):
 
     #cgitb.enable()  
  
@@ -63,7 +63,9 @@ def add_video_job(name,cam_ids,date,fps,dim,text_pos,wat_pos,extra_text):
             'text_pos':text_pos,
             'wat_pos':wat_pos,
             'status': 'waiting',
-            'extra_text':extra_text
+            'extra_text':extra_text,
+            'logo': logo,
+            'logo_pos': logo_pos
         }
 
         duplicate = False
@@ -74,7 +76,7 @@ def add_video_job(name,cam_ids,date,fps,dim,text_pos,wat_pos,extra_text):
                 this_extra_text = job['extra_text']
             except KeyError as e:
                 this_extra_text = ""
-            if(this_extra_text == extra_text and job['name'] == name and job['cam_id']== cam_id and job['date']== date and job['fps']== fps and job['dim']== dim and job['text_pos']== text_pos and job['wat_pos']== wat_pos ):
+            if(job['logo'] == logo and job['logo_pos'] == logo_pos and this_extra_text == extra_text and job['name'] == name and job['cam_id']== cam_id and job['date']== date and job['fps']== fps and job['dim']== dim and job['text_pos']== text_pos and job['wat_pos']== wat_pos ):
                 duplicate = True
                 break
 
