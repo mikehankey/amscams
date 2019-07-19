@@ -102,7 +102,6 @@ function js() {
       './src/js/plugins/js.cookie.js', 
       './src/js/plugins/rainbowvis.js', 
       './src/js/plugins/popper.min.js', 
-      './src/js/plugins/image-picker.js',
       './node_modules/bootstrap/dist/js/bootstrap.js',
       './src/js/plugins/bootstrap-multiselect.js', 
       './src/js/plugins/bootbox.js', 

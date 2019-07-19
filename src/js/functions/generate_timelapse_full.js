@@ -80,13 +80,7 @@ function add_custom_logo() {
                 // Add Preview
                 $preview += '</ul>';
                 $('#logo_preview').html($preview);
-
-                // Enable plugin
-                $("select [name=logo]").imagepicker();
             }
- 
-      
-      
       
         } else {
             $('#position .col-sm-4').removeClass('col-sm-4').addClass('col-sm-6');
