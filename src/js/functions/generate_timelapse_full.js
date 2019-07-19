@@ -19,39 +19,52 @@ $.fn.serializeObject = function() {
 
 
 /**
- * Avoid the same position for watermark & info
+ * Avoid the same position for watermark & info & extra logo
  */
 
 function avoid_same_location() {
-    $('select[name=wat_pos],select[name=text_pos]').change(function(e) {
+    $('select[name=wat_pos],select[name=text_pos],select[name=logo_pos]').change(function(e) {
+
+        // Which one just changed?
         var $src = $(e.target);
-        var val = $src.val();
-        var $dest;
-        var v_dest;
-        var v_src = $src.val();
+        var v_src = $src.val(); 
         
+        var $dest,$dest2;
+        var v_dest,v_dest2;
         
         if($src.attr('name')=='wat_pos') {
-            $dest = $('select[name=text_pos]')
-        } else {
-            $dest = $('select[name=wat_pos]')
+            $dest = $('select[name=text_pos]');
+            $dest2 = $('select[name=logo_pos]');
+        } else if($src.attr('name')=='text_pos'){
+            $dest = $('select[name=wat_pos]');
+            $dest2 = $('select[name=logo_pos]');
+        } else if($src.attr('name')=='logo_pos'){
+            $dest = $('select[name=wat_pos]');
+            $dest2 = $('select[name=text_pos]');
         }
 
         v_dest = $dest.val();
+        v2_dest = $dest2.val();
 
-        if(v_src==v_dest) {
+
+
+        if(v_src==v_dest || v_src==v2_dest) {
             switch (v_src) {
                 case "tr":
                   $dest.val("br");
+                  $dest2.val("tl");
                   break;
                 case "tl":
                   $dest.val("br");
+                  $dest2.val("tr");
                   break;
                 case "bl":
                   $dest.val("tr");
+                  $dest2.val("tl");
                   break;
                 case "br":
                   $dest.val("bl");
+                  $dest2.val("tr");
                   break;
             }
         }  
