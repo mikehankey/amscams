@@ -9,8 +9,10 @@
             max-width: 25%;
             a {
                 display: block;
-                padding: 1rem;
-                border: 1px solid rgba(255,255,255,.3);
+                padding: .5rem;
+                margin: .5em;
+                border: 2px solid rgba(255,255,255,.3);
+                cursor: pointer;
 
                 &.selected {
                     border-color: #1564b9;
