@@ -173,11 +173,11 @@ def add_info_to_frame(frame, cam_text, extra_text, text_position, extra_text_pos
         cmd+= '[texted]; [texted]'
 
     #Watermark
-    cmd += 'overlay='+watermark_position
+    cmd += 'overlay='+watermark_position;
 
     #Extra Logo
     if(with_extra_logo is True):
-        cmd+= '[wat];[owatut]overlay='+logo_pos+'[out];'
+        cmd+= '[wat];[wat]overlay='+logo_pos+'[out];'
     else:
         cmd+= '[out];'
 
