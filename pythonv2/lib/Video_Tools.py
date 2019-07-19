@@ -147,8 +147,7 @@ def add_info_to_frame(frame, cam_text, extra_text, text_position, extra_text_pos
     else:
         with_extra_text = True 
  
- 
-
+  
     #if(enhancement!=1):
     cmd = 'ffmpeg -hide_banner -loglevel panic \
             -y \
@@ -157,6 +156,12 @@ def add_info_to_frame(frame, cam_text, extra_text, text_position, extra_text_pos
 
     if(logo_pos is not 'X'):
         cmd += ' -i ' +  logo
+
+    print('DIM' +  dimensions)
+    print("CAM TET " + cam_text)
+    print("FONT_TRANSPARENCY " + FONT_TRANSPARENCY)
+    print("FONT_SIZE " + FONT_SIZE)
+    print("text_position " + text_position)
     
     cmd +=  ' -filter_complex "[0:v]scale='+dimensions+'[scaled]; \
             [scaled]drawtext=:text=\'' + cam_text + '\':fontcolor=white@'+FONT_TRANSPARENCY+':fontsize='+FONT_SIZE+':'+text_position 
