@@ -19,6 +19,17 @@ $.fn.serializeObject = function() {
 
 
 /**
+ * Extra Logo selector
+ */
+function extra_logo_selector() {
+    $('a.logo_selectable').click(function() {
+        $('.logo_selectable').removeClass('selected');
+        $(this).addClass('selected');
+        $('select[name=logo]').val($(this).attr('src'));
+    });
+}
+
+/**
  * Avoid the same position for watermark & info
  */
 
@@ -80,6 +91,9 @@ function add_custom_logo() {
                 // Add Preview
                 $preview += '</ul>';
                 $('#logo_preview').html($preview);
+
+                // Selectable
+                extra_logo_selector();
             }
       
         } else {
