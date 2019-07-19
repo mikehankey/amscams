@@ -100,6 +100,10 @@ function add_custom_logo() {
 
                 // Selectable
                 extra_logo_selector();
+
+                // Select default
+                $('.logo_selector img[src="'+$('select[name=logo]').val()+'"]').closest('a').addClass('selected');
+                
             }
       
         } else {
