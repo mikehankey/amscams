@@ -163,7 +163,7 @@ def add_info_to_frame(frame, cam_text, extra_text, text_position, extra_text_pos
  
     
     cmd +=  ' -filter_complex "[0:v]scale='+dimensions+'[scaled]; \
-            [scaled]drawtext=:text=\'' + cam_text + '\':fontcolor=white@'+FONT_TRANSPARENCY+':fontsize='+FONT_SIZE+':'+text_position 
+            [scaled]drawtext=:text=\'' + cam_text +'\':fontfile=\'/usr/share/fonts/truetype/dejavu/DejaVuSans-Bold.ttf\':fontcolor=white@'+FONT_TRANSPARENCY+':fontsize='+FONT_SIZE+':'+text_position 
     
     #Extra Text
     if(with_extra_text is True):
@@ -177,11 +177,11 @@ def add_info_to_frame(frame, cam_text, extra_text, text_position, extra_text_pos
 
     #Extra Logo
     if(with_extra_logo is True):
-        cmd+= '[wat];[wat]overlay='+logo_pos+'[out];'
+        cmd+= '[wat];[wat]overlay='+logo_pos+'[out];"'
     else:
-        cmd+= '[out];'
+        cmd+= '[out];"'
 
-    cmd += '-map "[out]"  ' + newpath + '.png'      
+    cmd += ' -map "[out]"  ' + newpath + '.png'      
 
 
     print("CMD")
