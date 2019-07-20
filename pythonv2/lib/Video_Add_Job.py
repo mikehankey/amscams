@@ -8,8 +8,14 @@ from os.path import isfile, join, exists
 from lib.VIDEO_VARS import * 
 
 #ADD Job to WAITING_JOBS
-def add_video_job(name,cam_id,date,fps,dim,text_pos,wat_pos,extra_text):
+def add_video_job(name,cam_ids,date,fps,dim,text_pos,wat_pos,extra_text,logo,logo_pos):
 
+    #cgitb.enable()  
+ 
+    #If we only have one cam_id
+    if(type(cam_ids) is str):
+        cam_ids = [cam_ids]
+ 
     #Is the waiting_job folder exists? 
     if not os.path.exists(WAITING_JOBS_FOLDER):
         os.makedirs(WAITING_JOBS_FOLDER)
@@ -32,52 +38,65 @@ def add_video_job(name,cam_id,date,fps,dim,text_pos,wat_pos,extra_text):
             data = json.load(jsonFile)
         except:
             data = {} 
+    jsonFile.close()
 
     #Do we have any jobs
     alljobs = data.get('jobs') 
     if(alljobs is None):
         data['jobs'] = []   
 
-    #Define new job
-    new_job = {  
-        'name': name,
-        'cam_id': cam_id,
-        'date': date,
-        'fps': fps,
-        'dim':dim,
-        'text_pos':text_pos,
-        'wat_pos':wat_pos,
-        'status': 'waiting',
-        'extra_text':extra_text
-    }
+    
+    res = {}
+    ok_list = ''
+    bad_list = '' 
+  
 
-    duplicate = False
+    for cam_id in cam_ids:
 
-    #Search if the job already exist (avoid duplicates)
-    for job in data['jobs']:
-        try:
-            this_extra_text = job['extra_text']
-        except KeyError as e:
-            this_extra_text = ""
-        if(this_extra_text == extra_text and job['name'] == name and job['cam_id']== cam_id and job['date']== date and job['fps']== fps and job['dim']== dim and job['text_pos']== text_pos and job['wat_pos']== wat_pos ):
-            duplicate = True
-            break
+        #Define new job
+        new_job = {  
+            'name': name,
+            'cam_id': cam_id,
+            'date': date.replace('/','_'),
+            'fps': fps,
+            'dim':dim,
+            'text_pos':text_pos,
+            'wat_pos':wat_pos,
+            'status': 'waiting',
+            'extra_text':extra_text,
+            'logo': logo,
+            'logo_pos': logo_pos
+        }
+
+        duplicate = False
+
+        #Search if the job already exist (avoid duplicates)
+        for job in data['jobs']:
+            try:
+                this_extra_text = job['extra_text']
+            except KeyError as e:
+                this_extra_text = ""
+            if(job['logo'] == logo and job['logo_pos'] == logo_pos and this_extra_text == extra_text and job['name'] == name and job['cam_id']== cam_id and job['date']== date and job['fps']== fps and job['dim']== dim and job['text_pos']== text_pos and job['wat_pos']== wat_pos ):
+                duplicate = True
+                break
 
     
-    if(duplicate == False):
+        if(duplicate == False):
 
-        #Add the new job
-        data['jobs'].append(new_job)
+            #Add the new job
+            data['jobs'].append(new_job)
 
-        with open(WAITING_JOBS, 'w') as outfile:
-            json.dump(data, outfile)
+            with open(WAITING_JOBS, 'w') as outfile:
+                json.dump(data, outfile)
+            outfile.close()
 
-        res = {}
-        res['msg'] = '<h4>Video added to the waiting list</h4><b>The video will be ready in 5 or 10 minutes.<br>Go to the <a href="/pycgi/webUI.py?cmd=video_tools">Custom Videos</a> page to download the video.</b>'
-        print(json.dumps(res))
-    
-    else:
+            ok_list += '<li>Cam ID ' + cam_id + ' - ' + date + ' ADDED</li>'
+        
+        else:
 
-        res = {}
-        res['msg'] = '<h4>This video is already on the waiting list.</h4><b>This video will be ready in 5 or 10 minutes.<br>Go to the <a href="/pycgi/webUI.py?cmd=video_tools">Custom Videos</a> page to download the video.</b>'
-        print(json.dumps(res))
+            bad_list += '<li>Cam ID ' + cam_id + ' - ' + date + ' NOT ADDED - This video is already on the wainting list</li>'
+
+
+    res['msg'] = '<h4>Video(s) added to the waiting list</h4><b>The video(s) will be ready in 5 or 10 minutes.<ul>'+ok_list+bad_list+'</ul>Go to the <a href="/pycgi/webUI.py?cmd=video_tools">Custom Videos</a> page to download the video.</b>'
+    print(json.dumps(res))
+           

@@ -1,4 +1,154 @@
+/**
+ * Get the form values
+ */
+$.fn.serializeObject = function() {
+    var o = {};
+    var a = this.serializeArray();
+    $.each(a, function() {
+        if (o[this.name]) {
+            if (!o[this.name].push) {
+                o[this.name] = [o[this.name]];
+            }
+            o[this.name].push(this.value || '');
+        } else {
+            o[this.name] = this.value || '';
+        }
+    });
+    return o;
+};
+
+
+/**
+ * Avoid the same position for watermark & info & extra logo
+ */
+
+function avoid_same_location() {
+    $('select[name=wat_pos],select[name=text_pos],select[name=logo_pos]').change(function(e) {
+
+        // Which one just changed?
+        var $src = $(e.target);
+        var v_src = $src.val(); 
+        
+        var $dest,$dest2;
+        var v_dest,v_dest2;
+        
+        if($src.attr('name')=='wat_pos') {
+            $dest = $('select[name=text_pos]');
+            $dest2 = $('select[name=logo_pos]');
+        } else if($src.attr('name')=='text_pos'){
+            $dest = $('select[name=wat_pos]');
+            $dest2 = $('select[name=logo_pos]');
+        } else if($src.attr('name')=='logo_pos'){
+            $dest = $('select[name=wat_pos]');
+            $dest2 = $('select[name=text_pos]');
+        }
+
+        v_dest = $dest.val();
+        v2_dest = $dest2.val();
+
+
+
+        if(v_src==v_dest || v_src==v2_dest) {
+            switch (v_src) {
+                case "tr":
+                  $dest.val("br");
+                  $dest2.val("tl");
+                  break;
+                case "tl":
+                  $dest.val("br");
+                  $dest2.val("tr");
+                  break;
+                case "bl":
+                  $dest.val("tr");
+                  $dest2.val("tl");
+                  break;
+                case "br":
+                  $dest.val("bl");
+                  $dest2.val("tr");
+                  break;
+            }
+        }  
+
+    });
+}
+
+
+
+/**
+ * Extra Logo selector
+ */
+function extra_logo_selector() {
+    $('a.logo_selectable').click(function() {
+        $('.logo_selectable').removeClass('selected');
+        $(this).addClass('selected');
+        $('select[name=logo]').val($(this).find('img').attr('src'));
+    });
+}
+
+
+/**
+ * Actions for extra logo
+ */
+function add_custom_logo() {
+    $('select[name=extra_logo_yn]').change(function() {
+         if($(this).val()=='y') {
+            $('#position .col-sm-6').removeClass('col-sm-6').addClass('col-sm-4');
+            $('#logo_pos, #logo_picker').removeAttr('hidden');
+            
+            // Populate select[name=logo] with logos
+            if($('select[name=logo] option').length==0) {
+                var all_logos = $('input[name=logos]').val();
+                all_logos = all_logos.split('|');
+                var $preview =  '<ul class="logo_selector">';
+                $.each(all_logos,function(i,v){
+                    if($.trim(v)!='') {
+                        $('<option value="'+v+'">'+v+'</option').appendTo($("select[name=logo]"));
+                        $preview += '<li><a class="logo_selectable"><img class="img-fluid ns" src="'+v+'"/></a><li>';
+                    }
+                })
+
+                // Add Preview
+                $preview += '</ul>';
+                $('#logo_preview').html($preview);
+
+                // Selectable
+                extra_logo_selector();
+
+                // Select default
+                $('.logo_selector img[src="'+$('select[name=logo]').val()+'"]').closest('a').addClass('selected');
+                
+            }
+      
+        } else {
+            $('#position .col-sm-4').removeClass('col-sm-4').addClass('col-sm-6');
+            $('#logo_pos, #logo_picker').attr('hidden','hidden');
+        }
+    })
+}
+
+
+
 function add_timelapse_full_modal() {
+
+    // Init date picker with current date
+    var utcMoment = moment.utc();
+    var curD = utcMoment.format('YYYY/MM/DD');
+
+    // Get the Cam IDs for the select
+    var cam_ids = $('input[name=cam_ids]').val();
+    cam_ids = cam_ids.split('|');
+
+    var cam_select = "<select id='sel_cams' name='sel_cam[]' class='form-control'  multiple='multiple'>";
+    $.each(cam_ids,function(i,v){
+        if($.trim(v)!=='') {
+            if(i==0) sel = "selected"
+            else sel = ""
+            cam_select = cam_select + "<option "+ sel + " value='"+v+"'>Camera #" + v + "</option>";
+        }
+    });
+    cam_select = cam_select + "</select>";
+
+
     $('#full_timelapse_modal').remove(); 
     $('<div id="full_timelapse_modal" class="modal" tabindex="-1" role="dialog"> \
         <div class="modal-dialog modal-dialog-centered modal-lg" role="document"> \
@@ -11,92 +161,104 @@ function add_timelapse_full_modal() {
             </div> \
             <div class="modal-body"> \
                 <form id="timelapse_full_form"> \
-                    <div class="row"> \
-                        <div class="col-sm-6"> \
-                            <div class="form-group row mb-1"> \
-                                <label class="col-sm-4 col-form-label"><b>Date</b></label> \
-                                <div class="col-sm-8"> \
-                                <div class="input-group date datepicker" data-display-format="YYYY/MM/DD" data-action="reload" data-url-param="day" data-send-format="YYYY_MM_DD"> \
-                                    <input value="2019/07/12" type="text" class="form-control"> \
-                                    <span class="input-group-addon"><span class="icon-clock"></span></span></div> \
-                                </div> \
+                    <div class="pr-3 pl-3 pt-0"> \
+                            <div class="form-group mb-2"> \
+                                <label class="col-form-label"><b>Date</b></label> \
+                                <div class="col-sm-3 p-0">\
+                                    <input name="tl_date" value="'+curD+'" type="text" data-display-format="YYYY/MM/DD" class="datepicker form-control"> \
+                                </div>\
                             </div> \
-                            <div class="form-group row mb-1"> \
-                                <label class="col-sm-4 col-form-label"><b>Cam Id</b></label> \
-                                <div class="col-sm-8"> \
-                                    <input type="text" readonly class="form-control-plaintext" id="tl_cam_id" name="tl_cam_id" value=""> \
-                                </div> \
+                            <div class="form-group mb-2"> \
+                                <label class="col-form-label"><b>Camera</b> <i>One video per camera</i></label> \
+                                <div>'+cam_select+'</div> \
                             </div> \
-                            <div class="form-group row mb-1"> \
-                                <label class="col-sm-4 col-form-label"><b>Frame Cnt~</b></label> \
-                                <div class="col-sm-8"> \
-                                    <input type="text" readonly class="form-control-plaintext" id="tot_f" value=""> \
-                                </div> \
+                            <div class="row">\
+                                <div class="col-sm-4">\
+                                    <div class="form-group  mb-1"> \
+                                        <label for="fps" class=" col-form-label"><b>FPS</b></label> \
+                                            <select name="fps" class="form-control"> \
+                                                <option value="1">1 fps</option> \
+                                                <option value="5">5 fps</option> \
+                                                <option value="10">10 fps</option> \
+                                                <option value="15">15 fps</option> \
+                                                <option value="23.976">23.976 fps</option> \
+                                                <option value="24">24 fps</option> \
+                                                <option value="25">25 fps</option> \
+                                                <option value="29.97" >29.97 fps</option> \
+                                                <option value="30" selected>30 fps</option> \
+                                                <option value="50">50 fps</option> \
+                                                <option value="59.94">59.94 fps</option> \
+                                                <option value="60">60 fps</option> \
+                                            </select> \
+                                    </div> \
+                                </div>\
+                                <div class="col-sm-4">\
+                                    <div class="form-group mb-2"> \
+                                        <label for="dim" class="col-form-label"><b>Dimension</b></label> \
+                                            <select name="dim" class="form-control"> \
+                                                <option value="1920:1080">1920x1080</option> \
+                                                <option value="1280:720" selected>1280x720</option> \
+                                                <option value="640:320">640x320</option> \
+                                            </select> \
+                                    </div> \
+                                </div>\
+                                <div class="col-sm-4">\
+                                    <div class="form-group mb-2"> \
+                                        <label for="dim" class="col-form-label"><b>Extra Logo</b></label> \
+                                            <select name="extra_logo_yn" class="form-control"> \
+                                                <option value="n"selected >No</option> \
+                                                <option value="y" >Yes</option> \
+                                            </select> \
+                                    </div> \
+                                </div>\
+                            </div>\
+                            <div class="row" id="position">\
+                                <div class="col-sm-6" >\
+                                    <div class="form-group mb-2">\
+                                        <label for="wat_pos" class="col-form-label"><b>Position of the AMS Logo</b></label> \
+                                            <select name="wat_pos" class="form-control"> \
+                                                <option value="tr" >Top right</option> \
+                                                <option value="tl" selected>Top Left</option> \
+                                                <option value="br" >Bottom Right</option> \
+                                                <option value="bl" >Bottom Left</option> \
+                                            </select> \
+                                    </div> \
+                                </div>\
+                                <div class="col-sm-6">\
+                                    <div class="form-group mb-2"> \
+                                        <label for="text_pos" class="col-form-label"><b>Position of the Camera Info</b></label> \
+                                        <select name="text_pos" class="form-control"> \
+                                            <option value="tr">Top right</option> \
+                                            <option value="tl" >Top Left</option> \
+                                            <option value="br" >Bottom Right</option> \
+                                            <option value="bl" selected>Bottom Left</option> \
+                                        </select> \
+                                    </div>\
+                                </div>\
+                                <div id="logo_pos" class="col-sm-6" hidden>\
+                                    <div class="form-group mb-2"> \
+                                        <label for="logo_pos" class="col-form-label"><b>Position of the Logo</b></label> \
+                                        <select name="logo_pos" class="form-control"> \
+                                            <option value="tr" selected>Top right</option> \
+                                            <option value="tl" >Top Left</option> \
+                                            <option value="br" >Bottom Right</option> \
+                                            <option value="bl" >Bottom Left</option> \
+                                        </select> \
+                                    </div>\
+                                </div>\
                             </div> \
-                            <div class="form-group row mb-1"> \
-                                <label class="col-sm-4 col-form-label"><b>Duration</b></label> \
-                                <div class="col-sm-8"> \
-                                    <input type="text" readonly class="form-control-plaintext" id="tld" value=""> \
-                                </div> \
+                            <div id="logo_picker" class="form-group" hidden> \
+                                <label for="logo_pos" class="col-form-label"><b>Select Extra Logo</b></label> \
+                                <select name="logo" hidden></select> \
+                                <div id="logo_preview"></div>\
                             </div> \
-                        </div> \
-                        <div class="col-sm-6"> \
-                            <div class="form-group row mb-1"> \
-                                <label for="fps" class="col-sm-4 col-form-label"><b>FPS</b></label> \
-                                <div class="col-sm-8"> \
-                                    <select name="fps" class="form-control"> \
-                                        <option value="1">1 fps</option> \
-                                        <option value="5">5 fps</option> \
-                                        <option value="10">10 fps</option> \
-                                        <option value="15">15 fps</option> \
-                                        <option value="24.975">24.975 fps</option> \
-                                        <option value="29.97" selected>29.97 fps</option> \
-                                        <option value="54.94">54.94 fps</option> \
-                                    </select> \
-                                </div> \
-                            </div> \
-                            <div class="form-group row mb-1"> \
-                                <label for="dim" class="col-sm-4 col-form-label"><b>Dimension</b></label> \
-                                <div class="col-sm-8"> \
-                                    <select name="dim" class="form-control"> \
-                                        <option value="1920:1080">1920x1080</option> \
-                                        <option value="1280:720" selected>1280x720</option> \
-                                        <option value="640:320">640x320</option> \
-                                    </select> \
-                                </div> \
-                            </div> \
-                            <div class="form-group row mb-1"> \
-                                <label for="text_pos" class="col-sm-4 col-form-label"><b>Info pos.</b></label> \
-                                <div class="col-sm-8"> \
-                                    <select name="text_pos" class="form-control"> \
-                                        <option value="tr">Top right</option> \
-                                        <option value="tl" >Top Left</option> \
-                                        <option value="br" >Bottom Right</option> \
-                                        <option value="bl" selected>Bottom Left</option> \
-                                    </select> \
-                                </div> \
-                            </div> \
-                            <div class="form-group row mb-1"> \
-                                <label for="wat_pos" class="col-sm-4 col-form-label"><b>Logo pos.</b></label> \
-                                <div class="col-sm-8"> \
-                                    <select name="wat_pos" class="form-control"> \
-                                        <option value="tr" selected>Top right</option> \
-                                        <option value="tl" >Top Left</option> \
-                                        <option value="br" >Bottom Right</option> \
-                                        <option value="bl" >Bottom Left</option> \
-                                    </select> \
-                                </div> \
-                            </div> \
-                        </div> \
-                        <div class="col-sm-12"> \
-                            <div class="form-group">\
-                                <label for="extra_text" class="col-form-label"><b>Extra info</b></label> \
+                            <div class="form-group mb-2">\
+                                <label for="extra_text" class="col-form-label"><b>Extra info (added above the Camera Info)</b></label> \
                                 <input type="text" name="extra_text" class="form-control" value=""/> \
                             </div>\
-                        </div>\
+                        </div> \
+                     </div> \
                 </form> \
-            </div> \
-            </div> \
             <div class="modal-footer"> \
                 <button type="button" id="generate_timelapse" class="btn btn-primary">Generate</button> \
                 <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancel</button> \
@@ -104,56 +266,72 @@ function add_timelapse_full_modal() {
         </div> \
         </div>').appendTo('body').modal('show');
 
-    // How many frames 
-    hmf = $('img.lz').not('.process').length;
-    $('#tot_f').val(hmf);
+    // Multi Select cam
+    $('select#sel_cams').multiselect({includeSelectAllOption: true});
 
-    // Cam ID 
-    $('#tl_cam_id').val($('#cam_id').val());
-    console.log('CAM ID VAL ', $('#cam_id').val());
+    // Extra Text (operator info)
+    $('input[name=extra_text]').val($('input[name=operator_info]').val());
+   
+    //Start datepicker
+    load_date_pickers();
 
-    // Date
-    $('#tl_date').val($('input[name=cur_date]').val());
+    // Avoid Same Location
+    avoid_same_location();
 
-    // Init duration
-    $('#tld').val(parseFloat($('#tot_f').val()/parseFloat($('select[name=fps]').val())).toFixed(2) + ' seconds');
-
-    // Update duration 
-    $('select[name=fps]').unbind('change').bind('change',function() {
-        $('#tld').val(parseFloat($('#tot_f').val()/parseFloat($(this).val())).toFixed(2) + ' seconds');
-    });
+    // If no custom logos...
+    if($.trim($('input[name=logos]').val())=='') {
+        $('select[name=extra_logo_yn]').attr('disabled','disabled');
+    } else {
+        //UI for custom logo
+        add_custom_logo();
+    }
+   
 
     // Generate
     $('#generate_timelapse').click(function() { 
-        var cmd_data = getFormData($("#timelapse_full_form"));
+        var cmd_data =  $("#timelapse_full_form").serializeObject(); //getFormData($("#timelapse_full_form"));
         cmd_data.cmd = "generate_timelapse";
 
- 
-        $('#full_timelapse_modal').modal('hide');
-        loading({text: "Creating Video", overlay: true});
+        // AT LEAST ONE CAM NEEDS TO BE SELECTED
+        if(typeof cmd_data['sel_cam[]'] == 'undefined') {
+            bootbox.alert({
+                message: "Please, select at least one camera",
+                className: 'rubberBand animated error',
+                centerVertical: true
+            });
+            
+        } else {
+            $('#full_timelapse_modal').modal('hide');
+            loading({text: "Creating Video", overlay: true});
+            
+            $.ajax({ 
+                url:  "/pycgi/webUI.py",
+                data: cmd_data,
+                success: function(data) {
+                    var json_resp = $.parseJSON(data); 
+                    bootbox.alert({
+                        message: json_resp.msg + "<p>This page will now reload.</p>",
+                        className: 'rubberBand animated',
+                        centerVertical: true,
+                        callback: function () {
+                            location.reload();
+                        }
+                    });
+                    loading_done();
+                }, 
+                error:function(err) {
+                    bootbox.alert({
+                        message: "The process returned an error - please try again later",
+                        className: 'rubberBand animated error',
+                        centerVertical: true
+                    });
+                    
+                    loading_done();
+                }
+            });
+        }
+
         
-        $.ajax({ 
-            url:  "/pycgi/webUI.py",
-            data: cmd_data,
-            success: function(data) {
-                var json_resp = $.parseJSON(data); 
-                bootbox.alert({
-	                message: json_resp.msg,
-	                className: 'rubberBand animated',
-	                centerVertical: true
-                });
-                loading_done();
-            }, 
-            error:function(err) {
-                bootbox.alert({
-	                message: "The process returned an error - please try again later",
-	                className: 'rubberBand animated error',
-	                centerVertical: true
-                });
-                
-                loading_done();
-            }
-        });
     });
 }
 
