@@ -28,7 +28,10 @@ from lib.UtilLib import calc_radiant
 from lib.Video_Add_Job import add_video_job 
 from lib.VIDEO_VARS import * 
 from lib.Video_Tools import getLength
+from lib.LOGOS_VARS import * 
+from lib.Logo_Tools import * 
 from lib.Get_Cam_ids import get_the_cam_ids
+from lib.Get_Operator_info import get_operator_info
  
 
 NUMBER_OF_METEOR_PER_PAGE = 60
@@ -227,17 +230,29 @@ def controller(json_conf):
    #CUSTOM VIDEOS (AJAX CALL)
    if cmd == 'generate_timelapse': 
    
-      #Extra text is potional
+      #Extra text is optional
       try:
             extra_text = form.getvalue('extra_text')
       except KeyError as e:
             extra_text = ""
-     
-      add_video_job('timelapse',form.getvalue('tl_cam_id'),form.getvalue('tl_date'),form.getvalue('fps'),form.getvalue('dim'),form.getvalue('text_pos'),form.getvalue('wat_pos'),extra_text)
-      exit()
-   
-  
 
+      #Do we have an extra logo
+      try:
+            extra_logo = form.getvalue('extra_logo_yn')
+            logo = form.getvalue('logo')
+            logo_pos = form.getvalue('logo_pos')
+      except KeyError as e:
+            extra_logo = "n"
+            logo = ""
+            logo_pos = ""
+  
+      add_video_job('timelapse',form.getvalue('sel_cam[]'),form.getvalue('tl_date'),form.getvalue('fps'),form.getvalue('dim'),form.getvalue('text_pos'),form.getvalue('wat_pos'),extra_text,logo,logo_pos)
+      exit()
+
+   #CUSTOM LOGOS  (AJAX CALL)       
+   if cmd == 'upload_logo': 
+      upload_logo(form)   
+      exit()
 
    # do json ajax functions up here and bypass the exta html
    if cmd == 'override_detect':
@@ -353,6 +368,10 @@ def controller(json_conf):
    #CUSTOM VIDEOS (LIST)
    if cmd== 'video_tools':
       video_tools(json_conf,form) 
+   
+   #Custom logos (uploaded by user)
+   if cmd == 'custom_logos':
+      custom_logos(json_conf,form)
 
    if cmd == 'reduce_new':
       extra_html = reduce_meteor_new(json_conf, form)
@@ -445,6 +464,41 @@ def controller(json_conf):
    #day = form.getvalue('day')
 
 
+# CUSTOM LOGO PAGE
+def custom_logos(json_conf,form):
+   header_out = "<div class='h1_holder d-flex justify-content-between'>"      
+   header_out += "<h1>Custom Logos</h1></div>"
+   
+   header_out += '<div id="main_container" class="container-fluid h-100 mt-4 lg-l">'
+   header_out += '<div class="alert alert-info" style="max-width: 900px;margin: 0 auto 2rem;""><b>We STRONGLY recommand using clean PNG images (ideally semi-transparent) with the following max dimensions:</b>'
+   header_out += '<ul style="border-bottom: 1px solid rgba(255,255,255,.1);padding-bottom: 1rem;margin-bottom: 0;">'
+   header_out += '<li> <b>height < 250px</b> and <b>width < 400px</b> for your <b>1920x1080</b> videos</li>' 
+   header_out += '<li> <b>height < 170px</b> and <b>width < 270px</b> for your <b>1280x720</b> videos</li>'
+   header_out += '<li> <b>height < 170px</b> and <b>width < 270px</b> for your <b>640x360</b> videos</li>' 
+   header_out += '</ul><div style="max-width:300px; margin:1rem auto 0.5rem; ">'
+   header_out += '<form id="upload_logo" action="/pycgi/webUI.py?cmd=upload_logo" method="post" accept-charset="utf-8" enctype="multipart/form-data">'
+   header_out += '<div class="custom-file">'
+   header_out += '<input type="file" class="custom-file-input" id="logo_file_upload" name="logo" accept="image/x-png,image/gif,image/jpeg">'
+   header_out += '<label class="custom-file-label btn btn-primary text-left" for="logo">UPLOAD a logo</label>'
+   header_out += '</div>'
+   header_out += '</form></div>'
+
+
+   header_out += '<div class="gallery gal-resize row text-center text-lg-left mr-4 ml-4 mt-2">'
+
+   #Get the existing logos
+   all_logos = sorted(glob.glob(LOGOS_PATH + "*.*"), key=os.path.getmtime, reverse=True)
+   for logo in all_logos:
+      header_out += "<div class='col-lg-2 col-md-3 norm mb-3'>"
+      header_out += "<a class='mtt img-link nop' href='"+logo+"'>"
+      header_out += "<img class='img-fluid ns ' src='" + logo + "'/>"
+      header_out += "</a></div>"
+   
+   header_out += '</div></div>'
+   
+   print(header_out)
+      
+
 # VIDEO TOOLS PAGE
 # LIST OF PROCESS/READY VIDEOS
 def video_tools(json_conf,form):
@@ -457,7 +511,7 @@ def video_tools(json_conf,form):
    else:
       cur_page = int(cur_page)
 
-   all_vids = sorted(glob.glob(VID_FOLDER + "*.mp4"), key=os.path.getmtime)
+   all_vids = sorted(glob.glob(VID_FOLDER + "*.mp4"), key=os.path.getmtime, reverse=True)
    all_vids_out = ""
    vid_counter = 0
 
@@ -484,7 +538,7 @@ def video_tools(json_conf,form):
 
    #Get All Cam IDs
    all_cam_ids = get_the_cam_ids() 
-   out_put_all_cam_ids = ' '
+   out_put_all_cam_ids = ''
    for camid in all_cam_ids:
       out_put_all_cam_ids += camid + "|"
 
@@ -496,32 +550,67 @@ def video_tools(json_conf,form):
 
       #Open the waiting_job & Load the data
       with open(WAITING_JOBS, "r+") as jsonFile:
-            data = json.load(jsonFile)
+            try:
+                  data = json.load(jsonFile)
 
-      for jobs in data['jobs']:
+                  for jobs in data['jobs']:
             
-            if(jobs['status']=='waiting'):
-                  processing_vids += "<div class='preview col-lg-2 col-md-3 mb-3 norm'>"
-                  processing_vids += "<a class='mtt'>"
-                  processing_vids += "<img class='img-fluid ns lz' src='./dist/img/waiting.png'/>"
-                  processing_vids += "<span>" + jobs['date'].replace('_','/') + " - " + jobs['cam_id'] +"</span></a></div>"
-                  vid_counter+=1
+                        if(jobs['status']=='waiting'):
+                              processing_vids += "<div class='preview col-lg-2 col-md-3 mb-3 norm'>"
+                              processing_vids += "<a class='mtt'>"
+                              processing_vids += "<img class='img-fluid ns lz' src='./dist/img/waiting.png'/>"
+                              processing_vids += "<span>" + jobs['date'].replace('_','/') + " - " + jobs['cam_id'] +"</span></a></div>"
+                              vid_counter+=1
 
-            if(jobs['status']=='processing'):
-                  processing_vids += "<div class='preview col-lg-2 col-md-3 mb-3 norm'>"
-                  processing_vids += "<a class='mtt'>"
-                  processing_vids += "<img class='img-fluid ns lz' src='./dist/img/proccessing.png'/>"
-                  processing_vids += "<span>" + jobs['date'].replace('_','/') + " - " + jobs['cam_id'] +"</span></a></div>"
-                  vid_counter+=1
+                        jsonFile.close()
+            except Exception:
+                  data = ""
+
+
+      #Open the processing_job & Load the data
+      with open(PROCESSING_JOBS, "r+") as jsonFile:
+            try:
+                  jsonFile.seek(0)
+                  first_char = jsonFile.read(1)
+                  
+                  if not first_char:
+                        data = {}
+                        data['jobs'] = []
+                        
+                  else:  
+                        jsonFile.seek(0)
+                        data = json.loads(jsonFile.read()) 
+                  
+                  for jobs in data['jobs']: 
+
+                        if(jobs['status']=='processing'):
+                              processing_vids += "<div class='preview col-lg-2 col-md-3 mb-3 norm'>"
+                              processing_vids += "<a class='mtt'>"
+                              processing_vids += "<img class='img-fluid ns lz' src='./dist/img/proccessing.png'/>"
+                              processing_vids += "<span>" + jobs['date'].replace('_','/') + " - " + jobs['cam_id'] +"</span></a></div>"
+                              vid_counter+=1
+                  jsonFile.close()
+            except Exception:
+                  data = ""        
 
      
    header_out = "<div class='h1_holder d-flex justify-content-between'>"      
    header_out += "<h1>"+str(vid_counter)+" videos found</h1>"
    header_out += "<div class='d-flex'><button class='btn btn-primary mr-3' id='create_timelapse' style='text-transform: initial;'><span class='icon-youtube'></span> Generate Timelapse Video</button></div></div>"
-  
+   
+   #Get Operator info
+   operator = get_operator_info()
+
+   #Get Custom Logos
+   all_logos = sorted(glob.glob(LOGOS_PATH + "*.*"), key=os.path.getmtime, reverse=True)
+   out_put_all_logos = ''
+   for logo in all_logos:
+      out_put_all_logos += logo + "|"
+
    print(header_out)
-   print("<input type='hidden' name='cur_date' value='"+out_put_date+"'/>")
+   print("<input type='hidden' name='operator_info' value='"+operator['name'] + ', ' + operator['obs_name']+ ', ' + operator['city'] + ', ' + operator['state']+ ', ' + operator['country'] +"'/>")  
    print("<input type='hidden' name='cam_ids' value='"+out_put_all_cam_ids+"'/>")
+   print("<input type='hidden' name='logos' value='"+str(out_put_all_logos)+"'/>")
    print("<div class='gallery gal-resize row text-center text-lg-left mt-4'>")
    print(processing_vids)
    print(all_vids_out)
@@ -2294,7 +2383,7 @@ def main_page(json_conf,form):
       if(pending_files>0):
             to_display  = to_display + " - " + str(pending_files) + " Files Pending</a>"
 
-      to_display  = to_display +"</div><div class='gallery gal-resize row text-center text-lg-left mb-5 mr-3 ml-3'>"
+      to_display  = to_display +"</div><div class='gallery gal-resize row text-center text-lg-left mb-5 mr-5 ml-5'>"
       to_display  = to_display + html_row
       to_display = to_display + "</div>"
       counter = counter + 1
@@ -2303,6 +2392,8 @@ def main_page(json_conf,form):
 
    header_out = "<div class='h1_holder d-flex justify-content-between'><h1>Daily Dectections until "
    header_out = header_out + "<div class='input-group date datepicker' data-display-format='YYYY/MM/DD' data-action='reload' data-url-param='limit_day' data-send-format='YYYY_MM_DD'>"
+   if end_day is None:
+      end_day = ""
    header_out = header_out + "<input value='"+ end_day +"' type='text' class='form-control'>"
    header_out = header_out + "<span class='input-group-addon'><span class='icon-clock'></span></span></div></h1>"
    header_out = header_out + "<div class='page_h'>Page  " + format(cur_page) + "/" +  format(pagination[2]) + "</div></div>" 

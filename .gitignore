@@ -5,6 +5,6 @@
 *.png
 *.json
 *.swp
-!./dist/*
+!./dist/**/*.png
 !./src/*
 ./pythonv2/lib/__pycache__/
