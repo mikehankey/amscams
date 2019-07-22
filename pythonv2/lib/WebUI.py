@@ -560,6 +560,7 @@ def video_tools(json_conf,form):
                         jsonFile.close()
             except Exception:
                   #print('NO WAITING JOB LIST')
+                  data = ""
 
 
       #Open the processing_job & Load the data
@@ -586,7 +587,8 @@ def video_tools(json_conf,form):
                               vid_counter+=1
                   jsonFile.close()
             except Exception:
-                  #print('NO PROCESSING JOBS LIST')            
+                  #print('NO PROCESSING JOBS LIST')    
+                  data =""        
 
      
    header_out = "<div class='h1_holder d-flex justify-content-between'>"      
