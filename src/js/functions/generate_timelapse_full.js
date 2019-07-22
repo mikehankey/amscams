@@ -310,7 +310,7 @@ function add_timelapse_full_modal() {
                 success: function(data) {
                     var json_resp = $.parseJSON(data); 
                     bootbox.alert({
-                        message: json_resp.msg + "<p>This page will now reload.</p>",
+                        message: json_resp.msg + "<br/>This page will now reload.",
                         className: 'rubberBand animated',
                         centerVertical: true,
                         callback: function () {
