@@ -475,15 +475,15 @@ def custom_logos(json_conf,form):
    header_out += '<li> height < 250px and width < 400px for your 1920x1080 videos</li>' 
    header_out += '<li> height < 170px and width < 270px for your 1280x720 videos</li>'
    header_out += '<li> height < 170px and width < 270px for your 1280x720 videos</li>' 
-   header_out += '</ul>'
+   header_out += '</ul></div>'
    
-   header_out += "<div class='d-flex'>"
+   header_out += "<hr/>"
    header_out += '<form id="upload_logo" action="/pycgi/webUI.py?cmd=upload_logo" method="post" accept-charset="utf-8" enctype="multipart/form-data">'
    header_out += '<div class="custom-file">'
    header_out += '<input type="file" class="custom-file-input" id="logo_file_upload" name="logo" accept="image/x-png,image/gif,image/jpeg">'
    header_out += '<label class="custom-file-label btn btn-primary text-left" for="logo">UPLOAD a logo</label>'
    header_out += '</div>'
-   header_out += '</form></div>'
+   header_out += '</form>'
 
    header_out += '<div class="gallery gal-resize row text-center text-lg-left mr-4 ml-4 mt-2">'
 
