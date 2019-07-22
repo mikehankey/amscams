@@ -467,17 +467,19 @@ def controller(json_conf):
 # CUSTOM LOGO PAGE
 def custom_logos(json_conf,form):
    header_out = "<div class='h1_holder d-flex justify-content-between'>"      
-   header_out += "<h1>Custom Logos</h1></div>'
-
+   header_out += "<h1>Custom Logos</h1></div>"
+   
    header_out += '<div id="main_container" class="container-fluid h-100 mt-4 lg-l">'
    header_out += '<div class="alert alert-info" style="max-width: 900px;margin: 0 auto 2rem;"">We STRONGLY recommand using clean PNG images (ideally semi-transparent) with height < 130px and width < 400px</div>'
+   
    header_out += "<div class='d-flex'>"
    header_out += '<form id="upload_logo" action="/pycgi/webUI.py?cmd=upload_logo" method="post" accept-charset="utf-8" enctype="multipart/form-data">'
    header_out += '<div class="custom-file">'
    header_out += '<input type="file" class="custom-file-input" id="logo_file_upload" name="logo" accept="image/x-png,image/gif,image/jpeg">'
    header_out += '<label class="custom-file-label btn btn-primary text-left" for="logo">UPLOAD a logo</label>'
    header_out += '</div>'
-   header_out += '</form></div>
+   header_out += '</form></div>'
+
    header_out += '<div class="gallery gal-resize row text-center text-lg-left mr-4 ml-4 mt-2">'
 
    #Get the existing logos
