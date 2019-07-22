@@ -470,11 +470,11 @@ def custom_logos(json_conf,form):
    header_out += "<h1>Custom Logos</h1></div>"
    
    header_out += '<div id="main_container" class="container-fluid h-100 mt-4 lg-l">'
-   header_out += '<div class="alert alert-info" style="max-width: 900px;margin: 0 auto 2rem;"">We STRONGLY recommand using clean PNG images (ideally semi-transparent) with the following max dimensions:'
+   header_out += '<div class="alert alert-info" style="max-width: 900px;margin: 0 auto 2rem;""><b>We STRONGLY recommand using clean PNG images (ideally semi-transparent) with the following max dimensions:</b>'
    header_out += '<ul>'
-   header_out += '<li> height < 250px and width < 400px for your 1920x1080 videos</li>' 
-   header_out += '<li> height < 170px and width < 270px for your 1280x720 videos</li>'
-   header_out += '<li> height < 170px and width < 270px for your 1280x720 videos</li>' 
+   header_out += '<li> <b>height < 250px</b> and <b>width < 400px</b> for your <b>1920x1080</b> videos</li>' 
+   header_out += '<li> <b>height < 170px</b> and <b>width < 270px</b> for your <b>1280x720</b> videos</li>'
+   header_out += '<li> <b>height < 170px</b> and <b>width < 270px</b> for your <b>640x360</b> videos</li>' 
    header_out += '</ul></div>'
    
    header_out += "<hr/>"
