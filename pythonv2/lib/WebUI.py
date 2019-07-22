@@ -472,9 +472,9 @@ def custom_logos(json_conf,form):
    header_out += '<div id="main_container" class="container-fluid h-100 mt-4 lg-l">'
    header_out += '<div class="alert alert-info" style="max-width: 900px;margin: 0 auto 2rem;"">We STRONGLY recommand using clean PNG images (ideally semi-transparent) with the following max dimensions:'
    header_out += '<ul>'
-   header_out += '<li> height < 250px and width < 400px for your 1920x1080 videos</li> 
-   header_out += '<li> height < 170px and width < 270px for your 1280x720 videos</li> 
-   header_out += '<li> height < 170px and width < 270px for your 1280x720 videos</li> 
+   header_out += '<li> height < 250px and width < 400px for your 1920x1080 videos</li>' 
+   header_out += '<li> height < 170px and width < 270px for your 1280x720 videos</li>'
+   header_out += '<li> height < 170px and width < 270px for your 1280x720 videos</li>' 
    header_out += '</ul>'
    
    header_out += "<div class='d-flex'>"
