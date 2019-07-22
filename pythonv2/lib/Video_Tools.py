@@ -31,28 +31,33 @@ def get_meteor_date_ffmpeg(_file):
 def get_sd_frames(camID,date,limit_frame=False):
     cur_path = IMG_SD_SRC_PATH + date + "/images"
     #print(cur_path)
-    frames = [f for f in listdir(cur_path) if camID in f and "-tn" not in f and "-night" not in f and "trim" not in f and isfile(join(cur_path, f))]
-    
-    #DEBUG ONLY!! 
-    if(limit_frame is not False):
-        frames = frames[1:50]
+    if(os.path.isdir(cur_path)):
 
-    if not frames:
-        print('NO INPUT FOR VID CamID:' + camID + ' - DATE ' + date)
-        print('FOLDER: ' + cur_path)
-        return([] , cur_path)
-    else:    
-        #Move the frames to a tmp folder so we can delete them once we're done with the video
-        tmppath = r''+TMP_IMG_HD_SRC_PATH
+        frames = [f for f in listdir(cur_path) if camID in f and "-tn" not in f and "-night" not in f and "trim" not in f and isfile(join(cur_path, f))]
         
-        #Create directory if necessary
-        if not os.path.exists(tmppath):
-            os.makedirs(tmppath)  
+        #DEBUG ONLY!! 
+        if(limit_frame is not False):
+            frames = frames[1:50]
 
-        for frame in frames:
-            copyfile(cur_path+'/'+frame, tmppath+frame)
-       
-        return(sorted(frames) , tmppath)
+        if not frames:
+            print('NO INPUT FOR VID CamID:' + camID + ' - DATE ' + date)
+            print('FOLDER: ' + cur_path)
+            return([] , cur_path)
+        else:    
+            #Move the frames to a tmp folder so we can delete them once we're done with the video
+            tmppath = r''+TMP_IMG_HD_SRC_PATH
+            
+            #Create directory if necessary
+            if not os.path.exists(tmppath):
+                os.makedirs(tmppath)  
+
+            for frame in frames:
+                copyfile(cur_path+'/'+frame, tmppath+frame)
+        
+            return(sorted(frames) , tmppath)
+    
+    else:
+        return([] , cur_path)
 
 
 
