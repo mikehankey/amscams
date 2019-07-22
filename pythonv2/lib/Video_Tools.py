@@ -66,6 +66,7 @@ def get_sd_frames(camID,date,limit_frame=False):
 #ex: get_hd_frames('010040','2019_07_08')
 def get_hd_frames(camID,date,limit_frame=False):
     cur_path = IMG_HD_SRC_PATH
+    res= True
     #test if we have at least one file name - YYYY_DD_MM_HH_ii_SS[_000_]CAM_ID.mp4
     test = [f for f in listdir(cur_path) if f.startswith(date) and f.endswith(camID+'.mp4') and isfile(join(cur_path, f))]
     if not test:
@@ -91,9 +92,7 @@ def get_hd_frames(camID,date,limit_frame=False):
                 os.remove(f)
         #We extract one frame per video and add it to the array to return
         toReturn = []
-
- 
-
+        
         for idx,vid in enumerate(sorted(frames)):
             try:
                 vid_out = vid.replace('.mp4','')
@@ -101,9 +100,10 @@ def get_hd_frames(camID,date,limit_frame=False):
                 output = subprocess.check_output(cmd, shell=True).decode("utf-8")
                 toReturn.append( vid_out + '.png' )
                 #print(tmppath + '/'  + vid_out + '.png' )
-                print(toReturn)
+                #print(toReturn)
             except:
-                print('PB')
+                #print('PB')
+                res = False
         return(sorted(toReturn), tmppath)  
  
 
