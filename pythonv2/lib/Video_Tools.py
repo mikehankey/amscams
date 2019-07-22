@@ -244,9 +244,12 @@ def add_info_to_frames(frames, path, date, camID, extra_text, logo,logo_pos, dim
 
         if('l' in watermark_pos):
             if(idx<=AMS_WATERMARK_ANIM_FRAMES):
-                watermark = AMS_WATERMARK_ANIM_PATH + "AMS" + str(idx) + ".png"
+                    if(idx<10):
+                        watermark = AMS_WATERMARK_ANIM_PATH_1920x1080 + "AMS0" + str(idx) + ".png"
+                    else:
+                        watermark = AMS_WATERMARK_ANIM_PATH_1920x1080 + "AMS" + str(idx) + ".png"
             else:
-                watermark = AMS_WATERMARK_ANIM_PATH + "AMS" + str(AMS_WATERMARK_ANIM_FRAMES) + ".png"                
+                watermark = AMS_WATERMARK_ANIM_PATH_1920x1080 + "AMS" + str(AMS_WATERMARK_ANIM_FRAMES) + ".png"                
 
 
         add_info_to_frame(org_path,text,extra_text,text_position,extra_text_position,watermark,watermark_position,logo,logo_position,t_newpath,dimensions,enhancement)
