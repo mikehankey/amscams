@@ -239,7 +239,7 @@ def add_info_to_frames(frames, path, date, camID, extra_text, logo,logo_pos, dim
         elif(dimensions.startswith('1280')):
             water_path =  AMS_WATERMARK_ANIM_PATH_1280x720
         else:
-            water_path =  AMS_WATERMARK_ANIM_PATH_640x320
+            water_path =  AMS_WATERMARK_ANIM_PATH_640x360
 
 
     # Treat All frames

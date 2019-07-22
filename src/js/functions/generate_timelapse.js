@@ -76,7 +76,7 @@ function add_timelapse_modal() {
                                     <select name="dim" class="form-control"> \
                                         <option value="1920:1080">1920x1080</option> \
                                         <option value="1280:720" selected>1280x720</option> \
-                                        <option value="640:320">640x320</option> \
+                                        <option value="640:360">640x360</option> \
                                     </select> \
                                 </div> \
                             </div> \
