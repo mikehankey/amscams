@@ -3576,7 +3576,7 @@ if cmd == 'scan_hd_images':
 if cmd == 'make_hd_images':
    date = sys.argv[2]
    if date == "today":
-      day = datetime.datetime.today().strftime('%Y_%m_%d')
+      day = datetime.today().strftime('%Y_%m_%d')
       print(day)
    make_hd_images(day, json_conf)
    if date == "today":
