@@ -544,7 +544,7 @@ def video_tools(json_conf,form):
    if js_file.is_file():
 
       #Open the waiting_job & Load the data
-      with open(WAITING_JOBS, "a+") as jsonFile:
+      with open(WAITING_JOBS, "r+") as jsonFile:
             try:
                   data = json.load(jsonFile)
 
