@@ -277,20 +277,29 @@ def add_info_to_frames(frames, path, date, camID, extra_text, logo,logo_pos, dim
 def create_vid_from_frames(frames, path, date, camID, fps="25") :
     
     #Create Video based on all newly create frames
-    
-    #Destination folder
-    def_file_path =  VID_FOLDER +'/'+date +'_'+ camID +'.mp4' 
-    
-    cmd = 'ffmpeg -hide_banner -loglevel panic -y  -r '+ str(fps) +' -f image2 -s 1920x1080 -i ' + path+ '/%d.png -vcodec libx264 -crf 25 -pix_fmt yuv420p ' + def_file_path
-    output = subprocess.check_output(cmd, shell=True).decode("utf-8")
-   
-    #Rename and Move the first frame in the dest folder so we'll use it as a thumb
-    cmd = 'mv ' + path + '/0.png ' +   VID_FOLDER + '/'+date +'_'+ camID +'.png'        
-    output = subprocess.check_output(cmd, shell=True).decode("utf-8")
+    print('FRAMES**************************************')
+    print(frames)
+    exit()
 
-    #DELETING RESIZE FRAMES
-    #filelist = glob.glob(os.path.join(path, "*.png"))
-    #for f in filelist:
-    #    os.remove(f) 
 
-    return def_file_path 
+    if(frames is not None):
+
+        #Destination folder
+        def_file_path =  VID_FOLDER +'/'+date +'_'+ camID +'.mp4' 
+        
+        cmd = 'ffmpeg -hide_banner -loglevel panic -y  -r '+ str(fps) +' -f image2 -s 1920x1080 -i ' + path+ '/%d.png -vcodec libx264 -crf 25 -pix_fmt yuv420p ' + def_file_path
+        output = subprocess.check_output(cmd, shell=True).decode("utf-8")
+    
+        #Rename and Move the first frame in the dest folder so we'll use it as a thumb
+        cmd = 'mv ' + path + '/0.png ' +   VID_FOLDER + '/'+date +'_'+ camID +'.png'        
+        output = subprocess.check_output(cmd, shell=True).decode("utf-8")
+
+        #DELETING RESIZE FRAMES
+        #filelist = glob.glob(os.path.join(path, "*.png"))
+        #for f in filelist:
+        #    os.remove(f) 
+
+        return def_file_path 
+
+    else:
+        return ""
