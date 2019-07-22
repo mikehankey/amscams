@@ -149,7 +149,6 @@ def add_info_to_frame(frame, cam_text, extra_text, text_position, extra_text_pos
         with_extra_text = True 
  
   
-    #if(enhancement!=1):
     cmd = 'ffmpeg -hide_banner -loglevel panic \
             -y \
             -i ' + frame + '    \
@@ -183,28 +182,7 @@ def add_info_to_frame(frame, cam_text, extra_text, text_position, extra_text_pos
 
     cmd += ' -map "[out]"  ' + newpath + '.png'      
 
-
-    #print("CMD")
-    #print(cmd)
-
-
-    #else:
-    #    cmd = 'ffmpeg -hide_banner -loglevel panic \
-    #            -y \
-    #            -i ' + frame + '    \
-    #            -i ' + watermark + ' \
-    #            -filter_complex "[0:v]scale='+dimensions+'[scaled]; \
-    #            [scaled]eq=contrast=1.3[sat];[sat]drawtext=:text=\'' + cam_text + '\':fontcolor=white@'+FONT_TRANSPARENCY+':fontsize='+FONT_SIZE+':'+text_position 
-    #    if(with_extra_text is True):
-    #        cmd+= '[texted];' 
-    #        cmd+= '[texted]drawtext=:text=\''+ extra_text +'\':fontfile=\'/usr/share/fonts/truetype/dejavu/DejaVuSans-Bold.ttf\':fontcolor=white@'+FONT_TRANSPARENCY+':fontsize='+FONT_SIZE+':'+extra_text_position+'[texted2];[texted2]'  
-    #    else:
-    #        cmd+= '[texted]; [texted]'
-    #
-    #
-    #    cmd += 'overlay='+watermark_position+'[out]" \
-    #           -map "[out]"  ' + newpath + '.png'  
-
+  
 
     #print(cmd)
     output = subprocess.check_output(cmd, shell=True).decode("utf-8")  
@@ -254,8 +232,8 @@ def add_info_to_frames(frames, path, date, camID, extra_text, logo,logo_pos, dim
     #Watermark R or L
     if('r' in watermark_pos):
         watermark = AMS_WATERMARK_R
-    else:
-        watermark = AMS_WATERMARK
+    #else:
+    #    watermark = AMS_WATERMARK
 
     # Treat All frames
     for idx,f in enumerate(frames): 
@@ -263,6 +241,14 @@ def add_info_to_frames(frames, path, date, camID, extra_text, logo,logo_pos, dim
         text = 'AMS Cam #'+camID+ ' ' + get_meteor_date_ffmpeg(f) + 'UT'
         org_path = path+'/'+ f  
         t_newpath = newpath + '/' + str(idx)
+
+        if('l' in watermark_pos):
+            if(idx<=AMS_WATERMARK_ANIM_FRAMES):
+                watermark = AMS_WATERMARK_ANIM_PATH + "AMS" + str(idx) + ".png"
+            else:
+                watermark = AMS_WATERMARK_ANIM_PATH + "AMS" + AMS_WATERMARK_ANIM_FRAMES + ".png"                
+
+
         add_info_to_frame(org_path,text,extra_text,text_position,extra_text_position,watermark,watermark_position,logo,logo_position,t_newpath,dimensions,enhancement)
  
         #Remove the source 

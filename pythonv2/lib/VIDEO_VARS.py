@@ -21,6 +21,9 @@ AMS_WATERMARK = "/home/ams/amscams/dist/img/ams_watermark.png"
 AMS_WATERMARK_R = "/home/ams/amscams/dist/img/ams_watermark_r.png" #On the right
 
 
+AMS_WATERMARK_ANIM_FRAMES = 15
+AMS_WATERMARK_ANIM_PATH = "/home/ams/amscams/dist/img/ams_logo_vid_anim/"
+
 #Size of the FONT for the text info
 FONT_SIZE = "18"
 FONT_TRANSPARENCY = "0.85" # between 0 and 1
