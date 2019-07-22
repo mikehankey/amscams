@@ -125,18 +125,12 @@ def find_in_hist(object,x,y,object_hist, hd = 0):
       if int(oid) == 3:
          slope_diff = abs(abs(first_last_slope) - abs(first_this_slope))
          if slope_diff > 1:
-            #print("SLOPE FAILED: ", first_last_slope, first_this_slope, slope_diff)
             return(0)
-         #else:
-         #   print("SLOPE PASSED: ", first_last_slope, first_this_slope, slope_diff)
  
    if len(object_hist) >=4:
       object_hist = object_hist[-3:]
 
    for fc,ox,oy,w,h,mx,my in object_hist:
-      
-      #if int(oid) == 3:
-      #   print("MATCHING OID 3 X,Y", x,y," to ",ox,oy)
       cox = ox + int(w/2)
       coy = oy + int(h/w)
       if ox - md <= x <= ox + md and oy -md <= y <= oy + md:
@@ -149,12 +143,9 @@ def find_in_hist(object,x,y,object_hist, hd = 0):
       for fc,ox,oy,w,h,mx,my in object_hist:
          cox = ox + mx
          coy = oy + my
-         #print(cox-md,cox+md,coy-md,coy+md,x,y)
          if cox - md <= x <= cox + md and coy -md <= y <= coy + md:
             found = 1
             return(1)
-
-
    return(found)
 
 
@@ -472,4 +463,13 @@ def object_box(object, stacked_image_np):
       min_y = 0
    return(int(min_x), int(min_y), int(max_x),int(max_y))
 
+def find_min_max_dist(hist,mute_wh=0):
+   max_x = 0
+   max_y = 0
+   min_x = 10000
+   min_y = 10000
+   for fn,x,y,w,h,mx,my in hist:
+      max_x, max_y,min_x,min_y = max_xy(x,y,w,h,max_x,max_y,min_x,min_y,mute_wh)
+
+   return(max_x,max_y,min_x,min_y)
 

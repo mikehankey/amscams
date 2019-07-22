@@ -502,8 +502,6 @@ def meteor_test_cm_gaps(object):
       cm_hist_len_ratio = max_cm / len(hist)
    else:
       cm_hist_len_ratio = 0
-
-
    return(max_cm,gaps,gap_events,cm_hist_len_ratio)
 
 def meteor_test_points(points):

@@ -14,7 +14,7 @@ from lib.UtilLib import check_running, angularSeparation
 from lib.CalibLib import radec_to_azel, clean_star_bg, get_catalog_stars, find_close_stars, XYtoRADec, HMS2deg, AzEltoRADec
 
 from lib.ImageLib import mask_frame , stack_frames, preload_image_acc
-from lib.ReducerLib import setup_metframes, detect_meteor , make_crop_images
+from lib.ReducerLib import setup_metframes, detect_meteor , make_crop_images, perfect
 from lib.MeteorTests import meteor_test_cm_gaps
 
 
@@ -46,5 +46,9 @@ if cmd == 'dm' or cmd == 'detect_meteor':
 
 if cmd == 'cm' or cmd == 'crop_images':
    make_crop_images(file, json_conf)
+
+if cmd == 'pf' or cmd == 'perfect':
+   # perfect the meteor reduction!
+   perfect(file, json_conf)
 
 
