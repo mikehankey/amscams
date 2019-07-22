@@ -545,50 +545,51 @@ def video_tools(json_conf,form):
 
       #Open the waiting_job & Load the data
       with open(WAITING_JOBS, "a+") as jsonFile:
+            try:
+                  data = json.load(jsonFile)
+
+                  for jobs in data['jobs']:
             
-            data = json.load(jsonFile)
+                        if(jobs['status']=='waiting'):
+                              processing_vids += "<div class='preview col-lg-2 col-md-3 mb-3 norm'>"
+                              processing_vids += "<a class='mtt'>"
+                              processing_vids += "<img class='img-fluid ns lz' src='./dist/img/waiting.png'/>"
+                              processing_vids += "<span>" + jobs['date'].replace('_','/') + " - " + jobs['cam_id'] +"</span></a></div>"
+                              vid_counter+=1
 
-            for jobs in data['jobs']:
-      
-                  if(jobs['status']=='waiting'):
-                        processing_vids += "<div class='preview col-lg-2 col-md-3 mb-3 norm'>"
-                        processing_vids += "<a class='mtt'>"
-                        processing_vids += "<img class='img-fluid ns lz' src='./dist/img/waiting.png'/>"
-                        processing_vids += "<span>" + jobs['date'].replace('_','/') + " - " + jobs['cam_id'] +"</span></a></div>"
-                        vid_counter+=1
-
-                  jsonFile.close()
-            #try:except Exception:
-            #      #print('NO WAITING JOB LIST')
-            #      data = ""
+                        jsonFile.close()
+            except Exception:
+                  print("ERROR PARSING WAITING JOBS")
+                  print('NO WAITING JOB LIST')
+                  data = ""
 
 
       #Open the processing_job & Load the data
       with open(PROCESSING_JOBS, "a+") as jsonFile:
-            
-            jsonFile.seek(0)
-            first_char = jsonFile.read(1)
-            
-            if not first_char:
-                  data = {}
-                  data['jobs'] = []
-                  
-            else:  
+            try:
                   jsonFile.seek(0)
-                  data = json.loads(jsonFile.read()) 
-            
-            for jobs in data['jobs']: 
+                  first_char = jsonFile.read(1)
+                  
+                  if not first_char:
+                        data = {}
+                        data['jobs'] = []
+                        
+                  else:  
+                        jsonFile.seek(0)
+                        data = json.loads(jsonFile.read()) 
+                  
+                  for jobs in data['jobs']: 
 
-                  if(jobs['status']=='processing'):
-                        processing_vids += "<div class='preview col-lg-2 col-md-3 mb-3 norm'>"
-                        processing_vids += "<a class='mtt'>"
-                        processing_vids += "<img class='img-fluid ns lz' src='./dist/img/proccessing.png'/>"
-                        processing_vids += "<span>" + jobs['date'].replace('_','/') + " - " + jobs['cam_id'] +"</span></a></div>"
-                        vid_counter+=1
-            jsonFile.close()
-            #try:except Exception:
-            #      #print('NO PROCESSING JOBS LIST')    
-            #      data =""        
+                        if(jobs['status']=='processing'):
+                              processing_vids += "<div class='preview col-lg-2 col-md-3 mb-3 norm'>"
+                              processing_vids += "<a class='mtt'>"
+                              processing_vids += "<img class='img-fluid ns lz' src='./dist/img/proccessing.png'/>"
+                              processing_vids += "<span>" + jobs['date'].replace('_','/') + " - " + jobs['cam_id'] +"</span></a></div>"
+                              vid_counter+=1
+                  jsonFile.close()
+            except Exception:
+                  print("ERROR PARSING PROCESSING_JOBS JOBS")
+                  data = ""        
 
      
    header_out = "<div class='h1_holder d-flex justify-content-between'>"      
