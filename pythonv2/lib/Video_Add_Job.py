@@ -90,13 +90,13 @@ def add_video_job(name,cam_ids,date,fps,dim,text_pos,wat_pos,extra_text,logo,log
                 json.dump(data, outfile)
             outfile.close()
 
-            ok_list += '<li>Cam ID ' + cam_id + ' - ' + date + ' ADDED</li>'
+            ok_list += '<li><b>Cam ID ' + cam_id + ' - ' + date + '</b> ADDED</li>'
         
         else:
 
-            bad_list += '<li>Cam ID ' + cam_id + ' - ' + date + ' NOT ADDED - This video is already on the wainting list</li>'
+            bad_list += '<li><b>Cam ID ' + cam_id + ' - ' + date + '</b> NOT ADDED - This video is already on the wainting list</li>'
 
 
-    res['msg'] = '<h4>Video(s) added to the waiting list</h4><b>The video(s) will be ready in 5 or 10 minutes.<ul>'+ok_list+bad_list+'</ul>Go to the <a href="/pycgi/webUI.py?cmd=video_tools">Custom Videos</a> page to download the video.</b>'
+    res['msg'] = '<h4>Video(s) added to the waiting list</h4><div class="mr-3 ml-3">The video(s) will be ready in 5 or 10 minutes.<ul>'+ok_list+bad_list+'</ul>Go to the <a href="/pycgi/webUI.py?cmd=video_tools">Custom Videos</a> page to download the video.'
     print(json.dumps(res))
            

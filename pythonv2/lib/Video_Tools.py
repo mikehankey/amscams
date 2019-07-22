@@ -232,8 +232,15 @@ def add_info_to_frames(frames, path, date, camID, extra_text, logo,logo_pos, dim
     #Watermark R or L
     if('r' in watermark_pos):
         watermark = AMS_WATERMARK_R
-    #else:
-    #    watermark = AMS_WATERMARK
+    else:
+        #We defined the PATH ONLY as it's an animation
+        if(dimensions.startswith('1920')):
+            water_path =  AMS_WATERMARK_ANIM_PATH_1920x1080
+        elif(dimensions.startswith('1280')):
+            water_path =  AMS_WATERMARK_ANIM_PATH_1280x720
+        else:
+            water_path =  AMS_WATERMARK_ANIM_PATH_640x320
+
 
     # Treat All frames
     for idx,f in enumerate(frames): 
@@ -245,11 +252,11 @@ def add_info_to_frames(frames, path, date, camID, extra_text, logo,logo_pos, dim
         if('l' in watermark_pos):
             if(idx<=AMS_WATERMARK_ANIM_FRAMES):
                     if(idx<10):
-                        watermark = AMS_WATERMARK_ANIM_PATH_1920x1080 + "AMS0" + str(idx) + ".png"
+                        watermark = water_path + "AMS0" + str(idx) + ".png"
                     else:
-                        watermark = AMS_WATERMARK_ANIM_PATH_1920x1080 + "AMS" + str(idx) + ".png"
+                        watermark = water_path + "AMS" + str(idx) + ".png"
             else:
-                watermark = AMS_WATERMARK_ANIM_PATH_1920x1080 + "AMS" + str(AMS_WATERMARK_ANIM_FRAMES) + ".png"                
+                watermark = water_path + "AMS" + str(AMS_WATERMARK_ANIM_FRAMES) + ".png"                
 
 
         add_info_to_frame(org_path,text,extra_text,text_position,extra_text_position,watermark,watermark_position,logo,logo_position,t_newpath,dimensions,enhancement)
