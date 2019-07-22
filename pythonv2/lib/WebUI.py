@@ -481,7 +481,7 @@ def custom_logos(json_conf,form):
    header_out += '<input type="file" class="custom-file-input" id="logo_file_upload" name="logo" accept="image/x-png,image/gif,image/jpeg">'
    header_out += '<label class="custom-file-label btn btn-primary text-left" for="logo">UPLOAD a logo</label>'
    header_out += '</div>'
-   header_out += '</form></div>'
+   header_out += '</form></div></div>'
 
 
    header_out += '<div class="gallery gal-resize row text-center text-lg-left mr-4 ml-4 mt-2">'
