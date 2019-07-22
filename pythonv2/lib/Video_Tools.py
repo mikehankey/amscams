@@ -278,6 +278,8 @@ def create_vid_from_frames(frames, path, date, camID, fps="25") :
     
     #Create Video based on all newly create frames
     
+    print(frames)
+
     #Destination folder
     def_file_path =  VID_FOLDER +'/'+date +'_'+ camID +'.mp4' 
     
