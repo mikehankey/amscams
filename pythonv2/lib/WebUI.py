@@ -2203,7 +2203,7 @@ def browse_day(day,cams_id,json_conf):
       print('<option value="'+ccam_id+'" '+sel+'>'+ccam_id+'</option>')
    print("</select></h1>") 
    
-   print("<div class='d-flex'><a class='btn btn-primary mr-3' href='/pycgi/webUI.py?cmd=video_tools' style='text-transform: initial;'><span class='icon-youtube'></span> Generate Timelapse Video</button><button class='btn btn-primary' id='play_anim_thumb' style='text-transform: initial;'><span class='icon-youtube'></span> Timelapse Preview</button></div></div>") 
+   print("<div class='d-flex'><a class='btn btn-primary mr-3' href='/pycgi/webUI.py?cmd=video_tools' style='text-transform: initial;'><span class='icon-youtube'></span> Generate Timelapse Video</a><button class='btn btn-primary' id='play_anim_thumb' style='text-transform: initial;'><span class='icon-youtube'></span> Timelapse Preview</button></div></div>") 
   
    print("<div id='main_container' class='container-fluid h-100 mt-4 lg-l'>")
    print("<div class='gallery gal-resize row text-center text-lg-left '>")
