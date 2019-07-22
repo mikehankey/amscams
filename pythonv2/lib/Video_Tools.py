@@ -276,15 +276,9 @@ def add_info_to_frames(frames, path, date, camID, extra_text, logo,logo_pos, dim
 #Create a video based on a set of frames
 def create_vid_from_frames(frames, path, date, camID, fps="25") :
     
-    #Create Video based on all newly create frames
-    print('FRAMES**************************************')
-    print(frames)
-    print(frames is not None)
-    print(len(frames))
-    exit()
+    #Create Video based on all newly create frames 
 
-
-    if(frames is not None):
+    if(frames is not None and len(frames)!=0):
 
         #Destination folder
         def_file_path =  VID_FOLDER +'/'+date +'_'+ camID +'.mp4' 
