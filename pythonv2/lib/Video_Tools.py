@@ -279,6 +279,8 @@ def create_vid_from_frames(frames, path, date, camID, fps="25") :
     #Create Video based on all newly create frames
     print('FRAMES**************************************')
     print(frames)
+    print(frames is not None)
+    print(len(frames))
     exit()
 
 
