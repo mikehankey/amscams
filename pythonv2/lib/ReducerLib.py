@@ -14,7 +14,7 @@ from lib.CalibLib import radec_to_azel, clean_star_bg, get_catalog_stars, find_c
 
 import scipy.optimize
 
-def update_intensity(metframes, sd_frames):
+def update_intensity(metframes, sd_frames,show = 0):
    base_img = sd_frames[0].copy()
    for fn in metframes:
       sd_img = sd_frames[fn].copy()
@@ -25,11 +25,10 @@ def update_intensity(metframes, sd_frames):
       base_cnt_img = base_img[y:y+h,x:x+w]
       cnt_img = sd_img[y:y+h,x:x+w]
       min_val, max_val, min_loc, (mx,my)= cv2.minMaxLoc(cnt_img)
-      cv2.circle(sd_img,(x,y), 3, (255,255,255), 1)
-      cv2.imshow('Update Intensity', sd_img)
-      cv2.waitKey(0)
-#      cv2.imshow('pepe', cnt_img)
-#      cv2.waitKey(0)
+      if show == 1:
+         cv2.circle(sd_img,(x,y), 3, (255,255,255), 1)
+         cv2.imshow('Update Intensity', sd_img)
+         cv2.waitKey(0)
 
       print("INTENSITY:", fn, x, y, np.sum(cnt_img) , np.sum(base_cnt_img) )
       metframes[fn]['sd_intensity'] = float(np.sum(cnt_img)) - float(np.sum(base_cnt_img))
@@ -129,8 +128,6 @@ def build_thresh_frames(sd_frames):
       #   thresh = 20
       _, image_thresh = cv2.threshold(gray_frame.copy(), ithresh, 255, cv2.THRESH_BINARY)
       #show_img2 = cv2.resize(cv2.convertScaleAbs(image_thresh), (960,540))
-      #cv2.imshow('diff image', show_img2)
-      #cv2.waitKey(0)
       thresh_frames.append(image_thresh)
    return(thresh_frames)
 
@@ -207,7 +204,7 @@ def pick_best_cnt(cnts, first_x, first_y):
    return(best_cnt)
    
 
-def detect_from_bright_pixels(masked_frames):
+def detect_from_bright_pixels(masked_frames, show = 0):
    max_vals = []
    avg_vals = []
    px_diffs = []
@@ -261,8 +258,9 @@ def detect_from_bright_pixels(masked_frames):
             object, objects = id_object(cnt, objects,i, (mx,my), max_val, intensity, 0)
             #cv2.rectangle(marked_image, (x, y), (x+w, y+h), (128), 1)
             cv2.rectangle(master_marked_image, (x, y), (x+w, y+h), (128), 1)
-      cv2.imshow('Bright Pixel Detect', master_marked_image)
-      cv2.waitKey(30)
+      if show == 1:
+         cv2.imshow('Bright Pixel Detect', master_marked_image)
+         cv2.waitKey(30)
 
    meteors = []
    for obj in objects:
@@ -283,12 +281,13 @@ def detect_from_bright_pixels(masked_frames):
          w = hs[3]
          h = hs[4]
          #cv2.rectangle(marked_image, (x, y), (x+w, y+h), (128), 1)
-      cv2.imshow('Bright Pixel Detect', marked_image)
-      cv2.waitKey(30)
+      if show == 1:
+         cv2.imshow('Bright Pixel Detect', marked_image)
+         cv2.waitKey(30)
    
    return(meteors)
 
-def detect_from_thresh_diff(masked_frames):
+def detect_from_thresh_diff(masked_frames, show = 0):
    print("Detect from thresh.")
    first_gray_frame = None
    image_acc = None
@@ -330,8 +329,6 @@ def detect_from_thresh_diff(masked_frames):
 
       _, diff_thresh = cv2.threshold(image_diff.copy(), thresh, 255, cv2.THRESH_BINARY)
       #show_img2 = cv2.resize(cv2.convertScaleAbs(image_thresh_diff), (960,540))
-      #cv2.imshow('diff image', show_img2)
-      #cv2.waitKey(0)
 
       # find contours and ID objects
       diff_thresh = image_thresh
@@ -353,9 +350,9 @@ def detect_from_thresh_diff(masked_frames):
          cv2.rectangle(master_marked_image, (x, y), (x+w, y+h), (128), 1)
 
          ic = ic + 1
-
-      cv2.imshow('Detect From Thresh Diff', master_marked_image)
-      cv2.waitKey(30)
+      if show == 1:
+         cv2.imshow('Detect From Thresh Diff', master_marked_image)
+         cv2.waitKey(30)
       fc = fc + 1
    meteors = []
    for obj in objects:
@@ -484,15 +481,14 @@ def detect_meteor(video_file, json_conf, show = 0):
 
    print("MS:", mask_image.shape)
 
-   #cv2.imshow("MASK IMAGE", mask_image)
-   #cv2.waitKey(30)
 
 
    ithresh = np.max(mask_image) * .5
    avg_thresh = np.mean(mask_image) + 15
    if ithresh > 50:
       ithresh = 50
-   print("ITHRESH:", ithresh)
+
+   print("ITHRESH:", ithresh,show)
    if ithresh < 20:
       ithresh = 20
    if avg_thresh > ithresh:
@@ -500,7 +496,7 @@ def detect_meteor(video_file, json_conf, show = 0):
 
    _, mask_thresh = cv2.threshold(mask_image.copy(), ithresh, 255, cv2.THRESH_BINARY)
    mask_cnts,mask_pos_cnts = find_contours(mask_thresh, mask_thresh)
-
+   
    mask_points = []
    masks = []
    for msk in mask_pos_cnts:
@@ -511,19 +507,19 @@ def detect_meteor(video_file, json_conf, show = 0):
 
    if show == 1:
       img = mask_frame(mask_image, mask_points, masks,5)
-      #cv2.imshow('Mask Thresh', mask_thresh)
-      #cv2.waitKey(30)
-      #cv2.imshow('pepe', img)
-      #cv2.waitKey(30)
 
    masked_frames = []
    for frame in sd_frames:
       #hd_img = cv2.resize(frame, (1920,1080))
       hd_img = mask_frame(frame, mask_points, masks,5)
       masked_frames.append(hd_img)
+  
+   print("YO") 
    bp_meteors = detect_from_bright_pixels(masked_frames)
    #dtd_meteors = []
+   print("YO2") 
    dtd_meteors = detect_from_thresh_diff(masked_frames)
+   print("YO3") 
 
 
    orig_meteors = []
@@ -616,8 +612,10 @@ def detect_meteor(video_file, json_conf, show = 0):
          metframes[fn]['ty'].append(ty)
          metframes[fn]['tw'].append(int(orig_metframes[fn]['sd_w']/hdm_x))
          metframes[fn]['th'].append(int(orig_metframes[fn]['sd_h']/hdm_y))
-         cv2.imshow("Orig Points", show_img)
-         cv2.waitKey(0)
+         if show == 1:
+            print("ishow:", show)
+            cv2.imshow("Orig Points", show_img)
+            cv2.waitKey(0)
     
        
 
@@ -713,8 +711,6 @@ def detect_meteor(video_file, json_conf, show = 0):
 
       #cv2.circle(img,(x,y), 3, (255,255,255), 1)
       #cv2.rectangle(img, (x-2, y-2), (x+2, y+2), (128), 1)
-      #cv2.imshow('pepe', img)
-      #cv2.waitKey(0)
 
    # FINISH UP AND SAVE!
    print("METFRAME LEN:", len(metframes))
@@ -790,8 +786,6 @@ def detect_meteor(video_file, json_conf, show = 0):
 
       _, diff_thresh = cv2.threshold(image_diff.copy(), thresh, 255, cv2.THRESH_BINARY)
       #show_img2 = cv2.resize(cv2.convertScaleAbs(image_thresh_diff), (960,540))
-      #cv2.imshow('diff image', show_img2) 
-      #cv2.waitKey(0)
 
       # find contours and ID objects
       diff_thresh = image_thresh
@@ -819,6 +813,7 @@ def detect_meteor(video_file, json_conf, show = 0):
       if show == 1:
          show_img = cv2.resize(cv2.convertScaleAbs(diff_thresh), (960,540))
          show_img2 = cv2.resize(cv2.convertScaleAbs(marked_image), (960,540))
+         print("ishow:", show)
          cv2.imshow('diff image', show_img2) 
          cv2.waitKey(1)
       last_image_thresh = image_thresh
@@ -948,7 +943,7 @@ def detect_meteor(video_file, json_conf, show = 0):
          if show == 1:
             desc = str("FN:" + str(fc))
             cv2.putText(orig_image, desc,  (10,10), cv2.FONT_HERSHEY_SIMPLEX, .4, (255, 255, 255), 1)
-          
+            print("show", show) 
             cv2.imshow('final', orig_image)
             if m == 0:
                cv2.waitKey(10)  
@@ -1153,6 +1148,7 @@ def reduce_seg_acl(this_poly,metframes,metconf,frames,show=0):
          skip = 1
       else: 
          if show == 1:
+            print("swho", 1)
             cv2.imshow('final', orig_image)
             cv2.waitKey(1)  
       fc = fc + 1
@@ -1460,7 +1456,7 @@ def find_contours(image, orig_image):
          if w > 1 and h > 1 and max_val > 30:
             pos_cnts.append((x,y,w,h,size,mx,my,max_val,intensity))
             real_cnts.append(cnts[i])
-
+   print("find cnts")
 
    return(real_cnts,pos_cnts)
 
