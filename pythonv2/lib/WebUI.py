@@ -559,13 +559,11 @@ def video_tools(json_conf,form):
 
                         jsonFile.close()
             except Exception:
-                  print("ERROR PARSING WAITING JOBS")
-                  print('NO WAITING JOB LIST')
                   data = ""
 
 
       #Open the processing_job & Load the data
-      with open(PROCESSING_JOBS, "a+") as jsonFile:
+      with open(PROCESSING_JOBS, "r+") as jsonFile:
             try:
                   jsonFile.seek(0)
                   first_char = jsonFile.read(1)
@@ -588,7 +586,6 @@ def video_tools(json_conf,form):
                               vid_counter+=1
                   jsonFile.close()
             except Exception:
-                  print("ERROR PARSING PROCESSING_JOBS JOBS")
                   data = ""        
 
      
