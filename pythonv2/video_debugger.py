@@ -56,4 +56,4 @@ from os.path import isfile, join, exists
 #watermark_position = get_watermark_pos('br')
 #add_info_to_frame('/mnt/ams2/CUSTOM_VIDEOS/to_test.png',"TR",'Mike Hankey Rocks',text_position,extra_text_position,watermark_position,'/mnt/ams2/CUSTOM_VIDEOS/to_test_TR','1920:1080', 0)
 
-drawbox_on_vid("/mnt/ams2/meteors/2019_03_07/2019_03_07_04_47_21_000_010037-trim0989.mp4",10,30,60,120)
+drawbox_on_vid("/mnt/ams2/meteors/2019_03_07/","2019_03_07_04_47_21_000_010037-trim0989.mp4",10,30,60,120)
