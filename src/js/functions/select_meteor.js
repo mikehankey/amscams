@@ -152,10 +152,9 @@ function setup_modal_actions(fn_id,x,y) {
 
     // Add Next Help Point 
     var nextH = get_next_frame(parseInt(fn_id));
-    if(typeof nextH !== 'undefined') {
-        var meteor_chooser_offset = $('.meteor_chooser').offset(); 
-        var rX = meteor_chooser_offset.left/factor+nextH.x-thumb_dim/2;
-        var rY = meteor_chooser_offset.top/factor+nextH.y-thumb_dim/2;
+    if(typeof nextH !== 'undefined') { 
+        var rX = 250-(x-nextH.x)*factor-25;
+        var rY = 250-(y-nextH.y)*factor-25;
         $('<div class="cross_holder next" style="top:'+rX+'px; left:'+rY+'px"><div class="cross" style="border:2px solid '+nextH.color+'"></div></div>').appendTo('.meteor_chooser');
     }
      
@@ -316,7 +315,7 @@ function setup_select_meteor() {
         });
 
         // Add image 
-        $('.meteor_chooser').css('background-image','url('+$img.attr('src')+'&c='+rand+')').css('border','2px solid ' + color);
+        $('.meteor_chooser').css('background-image','url('+$img.attr('src')+'&d='+rand+')').css('border','2px solid ' + color);
 
         // Add current ID
         $('#sel_frame_id, .sel_frame_id').text(meteor_id);
