@@ -98,7 +98,7 @@ function remove_reduction_objects_from_canvas() {
      
  }
 
-function update_reduction_only() {
+function update_reduction_only(callback='') {
     var cmd_data = {
         video_file:       main_vid,          // Defined on the page 
         cmd: 'update_red_info_ajax'
@@ -123,12 +123,15 @@ function update_reduction_only() {
                 
                 // Update Add frames
                 setup_add_frames();
-
-
+ 
             }
 
             reduction_table_actions();
- 
+            
+            if(callback!='') {
+              callback();
+            }
+
             loading_done();
  
         }, error: function(data) {

@@ -29,17 +29,37 @@ function delete_frame_from_crop_modal(fn) {
     $.ajax({ 
         url:  "/pycgi/webUI.py?cmd=del_frame&meteor_json_file=" + meteor_json_file + "&fn=" + fn,
         success: function(response) { 
-                update_reduction_only();
-                $('.modal-backdrop').remove();
-                $('#select_meteor_modal').modal('hide').remove();
-                fn = fn + 1;
-                if($('tr#fr_'+fn).length!=0) {
-                    $('tr#fr_'+fn+' .select_meteor').click();
-                } else {
-                    fn = fn -2;
-                    $('tr#fr_'+fn+' .select_meteor').click();
-                }
+                var tr_fn = false;
+                var tr_id = fn; 
+                update_reduction_only(function() {
+                    $('.modal-backdrop').remove();
+                    $('#select_meteor_modal').modal('hide').remove();
+    
+                    // Try to find first next frame
+                    for(var i=fn+1;i<fn+20;i++) {
+                        if($('tr#fr_'+i).length!=0) {
+                            tr_id = i;
+                            tr_fn = true;
+                        }
+                    }
+    
+                    if(!tr_fn) {
+                        for(var i=fn-1;i<fn-20;i--) {
+                            if($('tr#fr_'+i).length!=0) {
+                                tr_id = i;
+                                tr_fn = true;
+                            }
+                        }
+                    }
 
+                    if(tr_fn) {
+                        $('tr#fr_'+tr_id+' .select_meteor').click(); 
+                    }
+
+ 
+    
+                });
+               
                 
              
         } 
