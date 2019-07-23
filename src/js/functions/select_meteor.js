@@ -94,7 +94,7 @@ function addModalTemplate(neighbor) {
         
         // Get the previews here
         $.each(neighbor, function(i,v)  {
-            c += '<div><img src="'+v.img+'" id="'+v.id+'" style="border:1px solid '+v.color+'" ></div>';
+            c += '<div><img src="'+v.img+'" id="'+v.id+'" style="border:1px solid '+v.color+'; margin:0 .2rem .2rem 0;" ></div>';
         });
 
         
@@ -112,7 +112,7 @@ function addModalTemplate(neighbor) {
         // We only update the preview
         $('#nav_prev').html('');
         $.each(neighbor, function(i,v)  {
-            $('<div><img src="'+v.img+'" id="'+v.id+'" style="border:1px solid '+v.color+'" ></div>').appendTo($('#nav_prev'));
+            $('<div><img src="'+v.img+'" id="'+v.id+'" style="border:1px solid '+v.color+'; margin:0 .2rem .2rem 0;" ></div>').appendTo($('#nav_prev'));
         });
 
 
