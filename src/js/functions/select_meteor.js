@@ -152,8 +152,8 @@ function setup_modal_actions(fn_id,x,y) {
 
     // Add Next Help Point 
     var nextH = get_help_pos('next',parseInt(fn_id));
-    if(typeof nextH !== 'undefined' ) { 
-        if(typeof nextH.x !== 'undefined' && typeof nextH.y !== 'undefined') {
+    if(typeof nextH !== 'undefined') { 
+        if( nextH.x !== null && typeof  nextH.x !== null) {
               // 225 for circle diameter
             var rX = 225+(nextH.x-x);
             var rY = 225+(nextH.y-y);
@@ -162,8 +162,8 @@ function setup_modal_actions(fn_id,x,y) {
     }
     var nextH = get_help_pos('prev',parseInt(fn_id));
     if(typeof nextH !== 'undefined' ) { 
-        if(typeof nextH.x !== 'undefined' && typeof nextH.y !== 'undefined') {
-              // 225 for circle diameter
+        if( nextH.x !== null && typeof  nextH.x !== null) {
+            // 225 for circle diameter
             var rX = 225+(nextH.x-x);
             var rY = 225+(nextH.y-y);
             $('<div class="cross_holder prev" style="top:'+rY+'px; left:'+rX+'px"><div class="cross" style="border:2px solid '+nextH.color+'"></div></div>').appendTo('.meteor_chooser');
