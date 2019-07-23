@@ -87,9 +87,9 @@ function addModalTemplate(neighbor) {
         <div class="d-flex justify-content-center" id="nav_prev">';
         
         // Get the previews here
-        $.each(neighbor, function(i,v)) {
+        $.each(neighbor, function(i,v)  {
             c += '<div><img src="'+v.img+'" id="'+v.id+'" style="border:2px solid '+v.color+'" ></div>';
-        }
+        });
 
         
         c='</div>\'
