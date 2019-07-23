@@ -237,12 +237,9 @@ function setup_select_meteor() {
         var real_width, real_height;
 
         // Get Neightbors
-        var neighbor = get_neighbor_frames(meteor_id);
-
-         
-
+        var neighbor = get_neighbor_frames(meteor_id); 
         // Add template if necessary
-        addModalTemplate(neighbor);
+        addModalTemplate(meteor_id,neighbor);
 
         // Prev Button
         $('#met-sel-prev').unbind('click').click(function() {
