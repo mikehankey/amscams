@@ -233,6 +233,7 @@ function setup_select_meteor() {
     // Click on selector (button & thumb)
     $('.select_meteor').click(function() {
         var $tr = $(this).closest('tr');
+        var rand = Math.round(Math.random(10000)*10000);
 
         // Get meteor id
         var meteor_id = $tr.attr('id');
@@ -262,7 +263,7 @@ function setup_select_meteor() {
         });
 
         // Add image 
-        $('.meteor_chooser').css('background-image','url('+$img.attr('src')+')').css('border','2px solid ' + color);
+        $('.meteor_chooser').css('background-image','url('+$img.attr('src')+'&c='+rand+')').css('border','2px solid ' + color);
 
         // Add current ID
         $('#sel_frame_id, .sel_frame_id').text(meteor_id);
