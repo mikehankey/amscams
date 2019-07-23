@@ -84,7 +84,7 @@ function addModalTemplate(meteor_id,neighbor) {
         <input type="hidden" name="thumb_w"/><input type="hidden" name="thumb_h"/>\
         <div class="modal-dialog  modal-lg modal-dialog-centered" role="document">\
         <div class="modal-content">\
-        <div class="modal-header"><div style="width:100%"><strong>FRAME #<span id="sel_frame_id"></span> - Click the center of the meteor.</strong> \
+        <div class="modal-header"><div style="width:100%"><strong>FRAME #<span class="sel_frame_id"></span> - Click the center of the meteor.</strong> \
         <span id="meteor_org_pos" class="float-right pl-3"><b>Org:</b></span> \
         <span id="meteor_pos" class="float-right"></span></div></div>\
         <div class="modal-body"><button id="met-sel-next" title="Next" type="button" class="mfp-arrow mfp-arrow-right mfp-prevent-close"></button>\
@@ -92,7 +92,8 @@ function addModalTemplate(meteor_id,neighbor) {
         <div class="d-flex justify-content-center" id="nav_prev">\
         </div><div style="box-shadow: 0 0px 8px rgba(0,0,0,.6);" class="meteor_chooser">\
         <div id="org_lh"></div><div id="org_lv"></div><div id="lh"></div><div id="lv"></div></div></div>\
-        <div class="modal-footer p-0 pb-2 pr-2"><button type="button" class="btn btn-primary" id="Save Meteor Center">Save</button>\
+        <div class="text-center pt-2"><a class="btn btn-danger delete_frame_from_modal"><i class="icon-delete"></i> Delete the frame#<span class="sel_frame_id"></span></a></div>\
+        <div class="modal-footer p-0 pb-2 pr-2"><button type="button" hidden>Save</button>\
         <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button></div></div></div></div>';
  
         $(c).appendTo('body');
@@ -248,7 +249,7 @@ function setup_select_meteor() {
         $('.meteor_chooser').css('background-image','url('+$img.attr('src')+')').css('border','2px solid ' + color);
 
         // Add current ID
-        $('#sel_frame_id').text(meteor_id);
+        $('.sel_frame_id').text(meteor_id);
   
         // Update image real dimensions 
         var img = new Image();
