@@ -113,9 +113,6 @@ function addModalTemplate(meteor_id,neighbor) {
     $('.select_frame').unbind('click').click(function() {
         $('tr#fr_'+$(this).attr('data-m') + '.select_meteor').click();
     })
-
-
-    
 }
 
 // Actions on modal 
