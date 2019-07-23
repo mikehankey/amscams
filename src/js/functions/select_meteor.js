@@ -228,6 +228,9 @@ function setup_select_meteor() {
         // Get Neightbors
         var neighbor = get_neighbor_frames(meteor_id);
 
+        console.log('neighbor')
+        console.log(neighbor)
+
         // Add template if necessary
         addModalTemplate(neighbor);
 
