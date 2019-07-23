@@ -126,7 +126,7 @@ function addModalTemplate(meteor_id,neighbor) {
 
     // Click on delete 
     $('.delete_frame_from_modal').unbind('click').click(function() {
-        delete_frame_from_modal(parseInt($('#sel_frame_id').html())
+        delete_frame_from_modal(parseInt($('#sel_frame_id').html()));
     });
 }
 
