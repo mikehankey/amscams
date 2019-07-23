@@ -351,6 +351,10 @@ def controller(json_conf):
    bottom = stf[1]
    top = top.replace("{TOP}", nav_html)
 
+   if "man" in cmd:
+      template = template.replace("<!--manred-->", "<script src=\"/pycgi/manreduce.js?\"></script>")
+
+
    obs_name = json_conf['site']['obs_name']
    op_city =  json_conf['site']['operator_city']
    op_state = json_conf['site']['operator_state']
