@@ -46,7 +46,7 @@ function delete_frame_from_crop_modal(fn) {
                     }
     
                     if(!tr_fn) {
-                        for(var i=fn-1;i<fn-20;i--) {
+                        for(var i=fn-1;i>fn-20;i--) {
                             if($('tr#fr_'+i).length!=0 &&  !tr_fn) {
                                 tr_id = i;
                                 tr_fn = true;

@@ -151,18 +151,14 @@ function setup_modal_actions(fn_id,x,y) {
     $('.cross_holder.next, .cross_holder.prev').remove();
 
     // Add Next Help Point 
-    var nextH = get_next_frame(parseInt(fn_id));
-    if(typeof nextH !== 'undefined' && typeof nextH.x !== 'undefined' && typeof nextH.y !== 'undefined') { 
-        // 225 for circle diameter
-        var rX = 225+(nextH.x-x);
-        var rY = 225+(nextH.y-y);
-        /*
-
-        var rX = 250+(nextH.x-x)*factor-25;
-        var rY = 250+(nextH.y-y)*factor-25;
-        */
-        console.log(rX + ' , ' + rY)
-        $('<div class="cross_holder next" style="top:'+rY+'px; left:'+rX+'px"><div class="cross" style="border:2px solid '+nextH.color+'"></div></div>').appendTo('.meteor_chooser');
+    var nextH = get_help_pos('next',parseInt(fn_id));
+    if(typeof nextH !== 'undefined' ) { 
+        if(typeof nextH.x !== 'undefined' && typeof nextH.y !== 'undefined') {
+              // 225 for circle diameter
+            var rX = 225+(nextH.x-x);
+            var rY = 225+(nextH.y-y);
+            $('<div class="cross_holder next" style="top:'+rY+'px; left:'+rX+'px"><div class="cross" style="border:2px solid '+nextH.color+'"></div></div>').appendTo('.meteor_chooser');
+        }
     }
      
 
@@ -207,18 +203,30 @@ function setup_modal_actions(fn_id,x,y) {
 
 
 // GET HELPERS
-function get_next_frame(org_id) {
+function get_help_pos(nextprev, org_id) {
 
     var tr_fn = false;
 
-    // Find next
-    for(var i=org_id+1;i<org_id+10;i++) {
-        if($('tr#fr_'+i).length!=0 && tr_fn==false) {
-            tr_id = i;
-            tr_fn = true;
-            break;
+    if(nextprev == 'next') {
+        // Find next
+        for(var i=org_id+1;i<org_id+10;i++) {
+            if($('tr#fr_'+i).length!=0 && tr_fn==false) {
+                tr_id = i;
+                tr_fn = true;
+                break;
+            }
+        }
+    } else {
+        // Find prev
+        for(var i=org_id-1;i>org_id-10;i++) {
+            if($('tr#fr_'+i).length!=0 && tr_fn==false) {
+                tr_id = i;
+                tr_fn = true;
+                break;
+            }
         }
     }
+    
 
     if(tr_fn) {
         // Get the info: color & position
