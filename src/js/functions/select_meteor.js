@@ -219,7 +219,7 @@ function get_help_pos(nextprev, org_id) {
     if(nextprev == 'next') {
         // Find next
         for(var i=org_id+1;i<org_id+10;i++) {
-            if($('tr#fr_'+i).length!=0 && tr_fn==false) {
+            if($('tr#fr_'+i).length!=0 && tr_fn==false && i!=org_id) {
                 tr_id = i;
                 tr_fn = true;
                 break;
@@ -228,7 +228,7 @@ function get_help_pos(nextprev, org_id) {
     } else {
         // Find prev
         for(var i=org_id-1;i>org_id-10;i++) {
-            if($('tr#fr_'+i).length!=0 && tr_fn==false) {
+            if($('tr#fr_'+i).length!=0 && tr_fn==false && i!=org_id) {
                 tr_id = i;
                 tr_fn = true;
                 break;
