@@ -113,7 +113,7 @@ function addModalTemplate(meteor_id,neighbor) {
         } else {
             _class = 'prev-th ';
         } 
-        $('<div><a class="select_frame" data-m="'+v.id+'"><img src="'+v.img+'?c='+Math.random()+'" id="'+v.id+'" style="border-color:'+v.color+';" class="'+_class+'" ></a></div>').appendTo($('#nav_prev'));
+        $('<div><a class="select_frame" data-m="'+v.id+'"><img src="'+v.img+'" id="'+v.id+'" style="border-color:'+v.color+';" class="'+_class+'" ></a></div>').appendTo($('#nav_prev'));
     });
 
     // Click on thumbs
