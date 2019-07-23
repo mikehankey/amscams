@@ -166,7 +166,7 @@ function setup_modal_actions(fn_id,x,y) {
               // 225 for circle diameter
             var rX = 225+(nextH.x-x);
             var rY = 225+(nextH.y-y);
-            $('<div class="cross_holder pev" style="top:'+rY+'px; left:'+rX+'px"><div class="cross" style="border:2px solid '+nextH.color+'"></div></div>').appendTo('.meteor_chooser');
+            $('<div class="cross_holder prev" style="top:'+rY+'px; left:'+rX+'px"><div class="cross" style="border:2px solid '+nextH.color+'"></div></div>').appendTo('.meteor_chooser');
         }
     }
      
