@@ -153,9 +153,10 @@ function setup_modal_actions(fn_id,x,y) {
     // Add Next Help Point 
     var nextH = get_next_frame(parseInt(fn_id));
     if(typeof nextH !== 'undefined') {
-        console.log('NEXT FOUND');
-        console.log(nextH);
-        // $('<div class="cross_holder next" style="top:'+x+'px; left:'+y+'px"><div class="cross" style="border:2px solid '+color+'"></div></div>').appendTo('.meteor_chooser')
+        var meteor_chooser_offset = $('.meteor_chooser_offset').offset(); 
+        var realX = parentOffset.left/factor+nextH.x-thumb_dim/2;
+        var realY = parentOffset.top/factor+nextH.y-thumb_dim/2;
+        $('<div class="cross_holder next" style="top:'+x+'px; left:'+y+'px"><div class="cross" style="border:2px solid '+color+'"></div></div>').appendTo('.meteor_chooser');
     }
      
 
@@ -199,6 +200,7 @@ function setup_modal_actions(fn_id,x,y) {
 }
 
 
+// GET HELPERS
 function get_next_frame(org_id) {
 
     var tr_fn = false;
@@ -297,17 +299,20 @@ function setup_select_meteor() {
 
         // Get Neightbors
         var neighbor = get_neighbor_frames(meteor_id); 
+
         // Add template if necessary
         addModalTemplate(meteor_id,neighbor);
 
         // Prev Button
         $('#met-sel-prev').unbind('click').click(function() {
             meteor_select("prev",all_frames_ids);
+            return false;
         });
 
         // Next Button
         $('#met-sel-next').unbind('click').click(function() {
             meteor_select("next",all_frames_ids);
+            return false;
         });
 
         // Add image 
