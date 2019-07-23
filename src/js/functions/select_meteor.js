@@ -180,7 +180,7 @@ function get_neighbor_frames(cur_id) {
     // IN #nav_prev
     var all_thb = []; 
     cur_id = parseInt(cur_id)
-    for(var i = cur_id-4; i < cur_id+5; i++) {
+    for(var i = cur_id-3; i < cur_id+4; i++) {
         var $cur_tr = $('#fr_'+i);
         var img =  $cur_tr.find('img').attr('src');
         var color = $cur_tr.find('.st').css('background-color');
