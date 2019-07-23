@@ -76,47 +76,41 @@ function meteor_select(dir,all_frames_ids) {
 
 
 // Modal for selector
-function addModalTemplate(neighbor) {
+function addModalTemplate(meteor_id,neighbor) {
     var c; 
     if($('#select_meteor_modal').length==0) {
 
-        c = '<div id="select_meteor_modal" class="modal fade" tabindex="-1">\
+        c = '<div id="selemeteor_id,ct_meteor_modal" class="modal fade" tabindex="-1">\
         <input type="hidden" name="thumb_w"/><input type="hidden" name="thumb_h"/>\
         <div class="modal-dialog  modal-lg modal-dialog-centered" role="document">\
         <div class="modal-content">\
-        <div class="modal-body">' 
-
-        c+='<button id="met-sel-next" title="Next" type="button" class="mfp-arrow mfp-arrow-right mfp-prevent-close"></button>\
+        <div class="modal-body"><button id="met-sel-next" title="Next" type="button" class="mfp-arrow mfp-arrow-right mfp-prevent-close"></button>\
         <button id="met-sel-prev" title="Prev" type="button" class="mfp-arrow mfp-arrow-left mfp-prevent-close"></button>\
         <p><strong>FRAME #<span id="sel_frame_id"></span> - Click the center of the meteor.</strong> \
         <span id="meteor_org_pos" class="float-right pl-3"><b>Org:</b></span> \
-        <span id="meteor_pos" class="float-right"></span></p><div class="d-flex justify-content-center" id="nav_prev">';
-        
-        // Get the previews here
-        $.each(neighbor, function(i,v)  {
-            c += '<div><img src="'+v.img+'" id="'+v.id+'" style="border:1px solid '+v.color+'; margin:0 .2rem .2rem 0;" ></div>';
-        });
-
-        
-        c +='</div>'
-
-        c+='<div style="box-shadow: 0 0px 8px rgba(0,0,0,.6);" class="meteor_chooser">\
+        <span id="meteor_pos" class="float-right"></span></p><div class="d-flex justify-content-center" id="nav_prev">\
+        </div><div style="box-shadow: 0 0px 8px rgba(0,0,0,.6);" class="meteor_chooser">\
         <div id="org_lh"></div><div id="org_lv"></div><div id="lh"></div><div id="lv"></div></div></div>\
         <div class="modal-footer p-0 pb-2 pr-2"><button type="button" class="btn btn-primary" id="Save Meteor Center">Save</button>\
         <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button></div></div></div></div>';
 
 
         $(c).appendTo('body');
-    } else {
+    }  
 
-        // We only update the preview
-        $('#nav_prev').html('');
-        $.each(neighbor, function(i,v)  {
-            $('<div><img src="'+v.img+'" id="'+v.id+'" style="border:1px solid '+v.color+'; margin:0 .2rem .2rem 0;" ></div>').appendTo($('#nav_prev'));
-        });
+    // We update the preview
+    $('#nav_prev').html('');
+    $.each(neighbor, function(i,v)  {
+        if(v.id==meteor_id) {
+            _class = 'cur';
+        } else {
+            _class = '';
+        }
+        $('<div><img src="'+v.img+'" id="'+v.id+'" style="border:1px solid '+v.color+';" class="'+_class+'" ></div>').appendTo($('#nav_prev'));
+    });
 
 
-    }
+    
 }
 
 // Actions on modal 
@@ -243,7 +237,7 @@ function setup_select_meteor() {
          
 
         // Add template if necessary
-        addModalTemplate(neighbor);
+        addModalTemplate(meteor_id,neighbor);
 
         // Prev Button
         $('#met-sel-prev').unbind('click').click(function() {
