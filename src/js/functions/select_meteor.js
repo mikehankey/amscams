@@ -53,7 +53,7 @@ function select_meteor_ajax(fn,x,y) {
 // Select a meteor (next/prev)
 function meteor_select(dir,all_frames_ids) {
     var next_id;
-    var cur_id = parseInt($('#sel_frame_id').text());
+    var cur_id = parseInt($('.sel_frame_id').text());
     var cur_index = all_frames_ids.indexOf(cur_id);
       
     if(dir=="prev") {
