@@ -207,8 +207,8 @@ function add_help_point(nextprev,id, cur_x, cur_y) {
         if(tr_fn) {
             // Get the info: color & position
             var $tr = $('tr#fr_'+ tr_id);
-            var x = $tr.attr('data-org-x');
-            var y = $tr.attr('data-org-y');
+            var x = parseFloat($tr.attr('data-org-x'));
+            var y = parseFloat($tr.attr('data-org-y'));
             var color = $tr.find('.st').css('background-color');
             
             $('<div class="cross_holder next" style="top:'+cur_x-x+'px; left:'+cur_y-y+'px"><div class="cross" style="border:2px solid '+color+'"></div></div>').appendTo('.meteor_chooser')
@@ -338,7 +338,7 @@ function setup_select_meteor() {
 
             
             // Add Help Points
-            add_help_point('next',meteor_id, $tr.attr('data-org-x'),$tr.attr('data-org-y'));
+            add_help_point('next',meteor_id, parseFloat($tr.attr('data-org-x')),parseFloat($tr.attr('data-org-y')));
                 
         }).attr({ src: imgSrc }); 
 
