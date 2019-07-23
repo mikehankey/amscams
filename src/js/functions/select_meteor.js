@@ -18,6 +18,11 @@ function select_meteor_ajax(fn,x,y) {
 
                 update_reduction_only();
                 loading_done();
+
+                $('#select_meteor_modal').remove();
+
+                // Relaunch at the right place
+                $('tr#fr_'+fn+' .select_meteor').click();
     
                 bootbox.alert({
                     message: "The frame as well as the corresponding reduction table row have been updated.",
