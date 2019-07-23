@@ -20,11 +20,14 @@ VID_FOLDER = WAITING_JOBS_FOLDER
 AMS_WATERMARK = "/home/ams/amscams/dist/img/ams_watermark.png"
 AMS_WATERMARK_R = "/home/ams/amscams/dist/img/ams_watermark_r.png" #On the right
 
-
+#AMS WATERMARK ANIMATED
 AMS_WATERMARK_ANIM_FRAMES = 30
 AMS_WATERMARK_ANIM_PATH_1920x1080 = "/home/ams/amscams/dist/img/ams_logo_vid_anim/1920x1080/"
 AMS_WATERMARK_ANIM_PATH_1280x720 = "/home/ams/amscams/dist/img/ams_logo_vid_anim/1280x720/"
 AMS_WATERMARK_ANIM_PATH_640x360 = "/home/ams/amscams/dist/img/ams_logo_vid_anim/640x360/"
+
+#NUMBER OF DAYS WE KEEP THE CUSTOM VIDEOS
+DELETE_VIDS_AFTER_DAYS = 7
 
 #Size of the FONT for the text info
 FONT_SIZE = "18"

@@ -611,6 +611,7 @@ def video_tools(json_conf,form):
    print("<input type='hidden' name='operator_info' value='"+operator['name'] + ', ' + operator['obs_name']+ ', ' + operator['city'] + ', ' + operator['state']+ ', ' + operator['country'] +"'/>")  
    print("<input type='hidden' name='cam_ids' value='"+out_put_all_cam_ids+"'/>")
    print("<input type='hidden' name='logos' value='"+str(out_put_all_logos)+"'/>")
+   print("<input type='hidden' name='delete_after_days' value='"+str(DELETE_VIDS_AFTER_DAYS)+"'/>")
    print("<div class='gallery gal-resize row text-center text-lg-left mt-4'>")
    print(processing_vids)
    print(all_vids_out)

@@ -134,6 +134,8 @@ function add_timelapse_full_modal() {
     var utcMoment = moment.utc();
     var curD = utcMoment.format('YYYY/MM/DD');
 
+    var delete_after_days = $('input[name=delete_after_days]').val();
+
     // Get the Cam IDs for the select
     var cam_ids = $('input[name=cam_ids]').val();
     cam_ids = cam_ids.split('|');
@@ -147,7 +149,7 @@ function add_timelapse_full_modal() {
         }
     });
     cam_select = cam_select + "</select>";
-
+ 
 
     $('#full_timelapse_modal').remove(); 
     $('<div id="full_timelapse_modal" class="modal" tabindex="-1" role="dialog"> \
@@ -160,6 +162,7 @@ function add_timelapse_full_modal() {
                 </button> \
             </div> \
             <div class="modal-body"> \
+                <div class="alert alert-info"><span class="icon-notification"></span> The videos are automatically deleted after  ' + delete_after_days + ' days</div> \
                 <form id="timelapse_full_form"> \
                     <div class="pr-3 pl-3 pt-0"> \
                             <div class="form-group mb-2"> \
