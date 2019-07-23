@@ -14,34 +14,7 @@ function select_meteor_ajax(fn,x,y) {
         data: cmd_data, 
         success: function(data) {
             
-            if($.trim(data)!='') {
-                /*
-                var data = $.parseJSON(data);
-                var nf = data.new_frame; 
-                var new_row = "";
-                var t = nf.frame_time;
-                t = t.split(' ');
-                t = t[1];
-               
-                var hd_x = nf.hd_x; 
-                var hd_y = nf.hd_y; 
-                // Get last col of current tr so we can use it in the new one without 
-                // taking care of the + frames buttons 
-    
-                // Build new table row
-                new_row += '<tr id="fr_'+fn+'" data-org-x="'+x+'" data-org-y="'+y+'">'
-                new_row += '<td><img src="'+nf.cnt_thumb+'?c='+Math.floor((Math.random() * 100) + 1)+'" width="50" height="50" class="img-fluid select_meteor"/></td>';
-                new_row += '<td>'+fn+'</td>';
-                new_row += '<td>'+t+'</td>';
-                new_row += '<td>'+nf.ra.toFixed(2) + "&deg/" + nf.dec.toFixed(2) +'&deg</td>';
-                new_row += '<td>'+nf.az.toFixed(2) + "&deg/" + nf.el.toFixed(2) +'&deg</td>';
-                new_row += '<td>'+hd_x.toFixed(1) + "/" + hd_y.toFixed(1) +'</td>';
-                new_row += '<td>'+nf.w + "x" + nf.h +'</td>';
-                new_row += '<td>'+nf.max_px +'</td>';
-                new_row += '<td><a class="btn btn-danger btn-sm delete_frame"><i class="icon-delete"></i></a></td>';
-                new_row += '<td class="position-relative">'+$('tr#fr_'+fn +' td:last-child').html()+'</td></tr>';
-                $('tr#fr_'+fn).replaceWith($(new_row));
-                */
+            if($.trim(data)!='') { 
 
                 update_reduction_only();
                
@@ -105,7 +78,19 @@ function meteor_select(dir,all_frames_ids) {
 // Modal for selector
 function addModalTemplate() {
     if($('#select_meteor_modal').length==0) {
-        $('<div id="select_meteor_modal" class="modal fade" tabindex="-1"><input type="hidden" name="thumb_w"/><input type="hidden" name="thumb_h"/><div class="modal-dialog  modal-lg modal-dialog-centered" role="document"><div class="modal-content"><div class="modal-body"><button id="met-sel-next" title="Next" type="button" class="mfp-arrow mfp-arrow-right mfp-prevent-close"></button><button id="met-sel-prev" title="Prev" type="button" class="mfp-arrow mfp-arrow-left mfp-prevent-close"></button><p><strong>FRAME #<span id="sel_frame_id"></span> - Click the center of the meteor.</strong> <span id="meteor_org_pos" class="float-right pl-3"><b>Org:</b></span> <span id="meteor_pos" class="float-right"></span></p><div style="box-shadow: 0 0px 8px rgba(0,0,0,.6);" class="meteor_chooser"><div id="org_lh"></div><div id="org_lv"></div><div id="lh"></div><div id="lv"></div></div></div><div class="modal-footer p-0 pb-2 pr-2"><button type="button" class="btn btn-primary" id="Save Meteor Center">Save</button><button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button></div></div></div></div>').appendTo('body');
+        $('<div id="select_meteor_modal" class="modal fade" tabindex="-1">\
+            <input type="hidden" name="thumb_w"/><input type="hidden" name="thumb_h"/>\
+            <div class="modal-dialog  modal-lg modal-dialog-centered" role="document">\
+            <div class="modal-content"><div class="modal-body">\
+            <button id="met-sel-next" title="Next" type="button" class="mfp-arrow mfp-arrow-right mfp-prevent-close"></button>\
+            <button id="met-sel-prev" title="Prev" type="button" class="mfp-arrow mfp-arrow-left mfp-prevent-close"></button>\
+            <p><strong>FRAME #<span id="sel_frame_id"></span> - Click the center of the meteor.</strong> \
+            <span id="meteor_org_pos" class="float-right pl-3"><b>Org:</b></span> \
+            <span id="meteor_pos" class="float-right"></span></p>\
+            <div style="box-shadow: 0 0px 8px rgba(0,0,0,.6);" class="meteor_chooser">\
+            <div id="org_lh"></div><div id="org_lv"></div><div id="lh"></div><div id="lv"></div></div></div>\
+            <div class="modal-footer p-0 pb-2 pr-2"><button type="button" class="btn btn-primary" id="Save Meteor Center">Save</button>\
+            <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button></div></div></div></div>').appendTo('body');
     }
 }
 
@@ -187,6 +172,9 @@ function setup_select_meteor() {
         // Get Image
         var $img = $tr.find('img'); 
 
+        // Get Color
+        var color = $tr.find('.st').css('background-color');
+
         var real_width, real_height;
 
         // Add template if necessary
@@ -203,7 +191,7 @@ function setup_select_meteor() {
         });
 
         // Add image 
-        $('.meteor_chooser').css('background-image','url('+$img.attr('src')+')');
+        $('.meteor_chooser').css('background-image','url('+$img.attr('src')+')').css('border','2px solid ' + color);
 
         // Add current ID
         $('#sel_frame_id').text(meteor_id);
