@@ -40,6 +40,7 @@ function delete_frame_from_crop_modal(fn) {
                         if($('tr#fr_'+i).length!=0) {
                             tr_id = i;
                             tr_fn = true;
+                            break;
                         }
                     }
     
@@ -48,6 +49,7 @@ function delete_frame_from_crop_modal(fn) {
                             if($('tr#fr_'+i).length!=0) {
                                 tr_id = i;
                                 tr_fn = true;
+                                break;
                             }
                         }
                     }

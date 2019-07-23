@@ -186,6 +186,32 @@ function setup_modal_actions(fn_id,x,y) {
 }
 
 
+function add_point(nextprev,id) {
+    var tr_fn = false;
+    var tr_id = id;
+
+    if(nextprev=='next') {
+        
+        // Find next
+        for(var i=id+1;i<id+10;i++) {
+            if($('tr#fr_'+i).length!=0 && tr_fn==false) {
+                tr_id = i;
+                tr_fn = true;
+                break;
+            }
+        }
+
+        if(tr_fn) {
+            // Get the info: color & position
+            var $tr = $('tr#fr_'+ tr_id);
+            var x = $tr.attr('data-org-x');
+            var y = $tr.attr('data-org-y');
+            var color = $tr.find('.st').css('background-color');
+        }
+    }
+}
+
+
 function get_neighbor_frames(cur_id) {
     // Get the thumbs & colors or -5 +5 frames
     // IN #nav_prev
