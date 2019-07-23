@@ -274,7 +274,8 @@ def man_reduce_canvas(frame_num,thumbs,file,cal_params_file,red_data):
       <div id="info_panel"></div>
    """)
    #extra_html = "<script>var stars = [];\n" 
-   extra_html = "<script src=manreduce.js?" + str(rand) + "></script>"
+   extra_html = ""
+   #extra_html = "<script src=manreduce.js?" + str(rand) + "></script>"
    extra_html = extra_html + "<script>\n   show_frame_image('" + str(frame_num) + "','" + frame_base + "','prev');\n</script>"
 
    extra_html = extra_html + """
