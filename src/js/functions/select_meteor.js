@@ -80,7 +80,7 @@ function addModalTemplate(meteor_id,neighbor) {
     var c; 
     if($('#select_meteor_modal').length==0) {
 
-        c = '<div id="selemeteor_id,ct_meteor_modal" class="modal fade" tabindex="-1">\
+        c = '<div id="selemeteor_id,ct_meteor_modal" class="modal in fade" tabindex="-1">\
         <input type="hidden" name="thumb_w"/><input type="hidden" name="thumb_h"/>\
         <div class="modal-dialog  modal-lg modal-dialog-centered" role="document">\
         <div class="modal-content">\
@@ -93,8 +93,7 @@ function addModalTemplate(meteor_id,neighbor) {
         <div id="org_lh"></div><div id="org_lv"></div><div id="lh"></div><div id="lv"></div></div></div>\
         <div class="modal-footer p-0 pb-2 pr-2"><button type="button" class="btn btn-primary" id="Save Meteor Center">Save</button>\
         <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button></div></div></div></div>';
-
-
+ 
         $(c).appendTo('body');
     }  
 
@@ -237,7 +236,7 @@ function setup_select_meteor() {
          
 
         // Add template if necessary
-        addModalTemplate(meteor_id,neighbor);
+        addModalTemplate(neighbor);
 
         // Prev Button
         $('#met-sel-prev').unbind('click').click(function() {
