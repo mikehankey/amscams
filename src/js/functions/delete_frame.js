@@ -33,7 +33,7 @@ function delete_frame_from_crop_modal(fn) {
                 $('.modal-backdrop').remove();
                 $('#select_meteor_modal').modal('hide').remove();
                 fn = fn + 1;
-                if($('tr#fr_'+fn).length()!=0) {
+                if($('tr#fr_'+fn).length!=0) {
                     $('tr#fr_'+fn+' .select_meteor').click();
                 } else {
                     fn = fn -2;
