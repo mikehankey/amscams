@@ -85,8 +85,15 @@ function addModalTemplate(neighbor) {
         <input type="hidden" name="thumb_w"/><input type="hidden" name="thumb_h"/>\
         <div class="modal-dialog  modal-lg modal-dialog-centered" role="document">\
         <div class="modal-content">\
-        <div class="modal-body">\
-        <div class="d-flex justify-content-center" id="nav_prev">';
+        <div class="modal-body">' 
+
+        c='<button id="met-sel-next" title="Next" type="button" class="mfp-arrow mfp-arrow-right mfp-prevent-close"></button>\
+        <button id="met-sel-prev" title="Prev" type="button" class="mfp-arrow mfp-arrow-left mfp-prevent-close"></button>\
+        <p><strong>FRAME #<span id="sel_frame_id"></span> - Click the center of the meteor.</strong> \
+        <span id="meteor_org_pos" class="float-right pl-3"><b>Org:</b></span> \
+        <span id="meteor_pos" class="float-right"></span></p>'
+
+        c='<div class="d-flex justify-content-center" id="nav_prev">';
         
         // Get the previews here
         $.each(neighbor, function(i,v)  {
@@ -94,13 +101,9 @@ function addModalTemplate(neighbor) {
         });
 
         
-        c +='</div>\
-        <button id="met-sel-next" title="Next" type="button" class="mfp-arrow mfp-arrow-right mfp-prevent-close"></button>\
-        <button id="met-sel-prev" title="Prev" type="button" class="mfp-arrow mfp-arrow-left mfp-prevent-close"></button>\
-        <p><strong>FRAME #<span id="sel_frame_id"></span> - Click the center of the meteor.</strong> \
-        <span id="meteor_org_pos" class="float-right pl-3"><b>Org:</b></span> \
-        <span id="meteor_pos" class="float-right"></span></p>\
-        <div style="box-shadow: 0 0px 8px rgba(0,0,0,.6);" class="meteor_chooser">\
+        c +='</div>'
+
+        c='<div style="box-shadow: 0 0px 8px rgba(0,0,0,.6);" class="meteor_chooser">\
         <div id="org_lh"></div><div id="org_lv"></div><div id="lh"></div><div id="lv"></div></div></div>\
         <div class="modal-footer p-0 pb-2 pr-2"><button type="button" class="btn btn-primary" id="Save Meteor Center">Save</button>\
         <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button></div></div></div></div>';
