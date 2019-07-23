@@ -17,7 +17,6 @@ function select_meteor_ajax(fn,x,y) {
             if($.trim(data)!='') { 
 
                 update_reduction_only();
-               
                 loading_done();
     
                 bootbox.alert({
@@ -92,7 +91,7 @@ function addModalTemplate(meteor_id,neighbor) {
         <div class="d-flex justify-content-center" id="nav_prev">\
         </div><div style="box-shadow: 0 0px 8px rgba(0,0,0,.6);" class="meteor_chooser">\
         <div id="org_lh"></div><div id="org_lv"></div><div id="lh"></div><div id="lv"></div></div></div>\
-        <div class="text-center pt-2"><a class="btn btn-danger delete_frame_from_modal"><i class="icon-delete"></i> Delete the frame#<span class="sel_frame_id"></span></a></div>\
+        <div class="text-center pt-2"><a class="btn btn-danger delete_frame_from_modal"><i class="icon-delete"></i> Delete the frame #<span class="sel_frame_id"></span></a></div>\
         <div class="modal-footer p-0 pb-2 pr-2"><button type="button" hidden>Save</button>\
         <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button></div></div></div></div>';
  
@@ -107,8 +106,13 @@ function addModalTemplate(meteor_id,neighbor) {
         } else {
             _class = 'prev-th ';
         } 
-        $('<div><img src="'+v.img+'" id="'+v.id+'" style="border-color:'+v.color+';" class="'+_class+'" ></div>').appendTo($('#nav_prev'));
+        $('<div><a class="select_frame" data-m="'+v.id+'"><img src="'+v.img+'" id="'+v.id+'" style="border-color:'+v.color+';" class="'+_class+'" ></a></div>').appendTo($('#nav_prev'));
     });
+
+    // Click on thumbs
+    $('.select_frame').unbind('click').click(function() {
+        $('tr#fn_'+$(this).attr('data-m')).click();
+    })
 
 
     
