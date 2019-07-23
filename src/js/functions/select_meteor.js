@@ -97,6 +97,11 @@ function addModalTemplate(meteor_id,neighbor) {
         $(c).appendTo('body');
     }  
 
+
+    console.log('METEOR ID ' + meteor_id)
+    console.log("NGI");
+    console.log(neighbor)
+
     // We update the preview
     $('#nav_prev').html('');
     $.each(neighbor, function(i,v)  {
@@ -105,6 +110,7 @@ function addModalTemplate(meteor_id,neighbor) {
         } else {
             _class = '';
         }
+        console.log("INS")
         $('<div><img src="'+v.img+'" id="'+v.id+'" style="border:1px solid '+v.color+';" class="'+_class+'" ></div>').appendTo($('#nav_prev'));
     });
 
