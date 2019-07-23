@@ -19,6 +19,7 @@ function select_meteor_ajax(fn,x,y) {
                 update_reduction_only();
                 loading_done();
 
+                $('.modal-backdrop').remove();
                 $('#select_meteor_modal').modal('hide').remove();
                 
                 bootbox.alert({
