@@ -78,6 +78,7 @@ function meteor_select(dir,all_frames_ids) {
 // Modal for selector
 function addModalTemplate(neighbor) {
     var c;
+    console.log("neighbor " + neighbor)
     if($('#select_meteor_modal').length==0) {
 
         c = '<div id="select_meteor_modal" class="modal fade" tabindex="-1">\
