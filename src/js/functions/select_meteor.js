@@ -19,15 +19,16 @@ function select_meteor_ajax(fn,x,y) {
                 update_reduction_only();
                 loading_done();
 
-                $('#select_meteor_modal').remove();
-
-                // Relaunch at the right place
-                $('tr#fr_'+fn+' .select_meteor').click();
-    
+                $('#select_meteor_modal').modal('hide').remove();
+                
                 bootbox.alert({
                     message: "The frame as well as the corresponding reduction table row have been updated.",
                     className: 'rubberBand animated',
-                    centerVertical: true 
+                    centerVertical: true,
+                    callback: function() {
+                        // Relaunch at the right place
+                        $('tr#fr_'+fn+' .select_meteor').click();
+                    }
                 });
             } else {
                 loading_done();
@@ -111,7 +112,7 @@ function addModalTemplate(meteor_id,neighbor) {
         } else {
             _class = 'prev-th ';
         } 
-        $('<div><a class="select_frame" data-m="'+v.id+'"><img src="'+v.img+'" id="'+v.id+'" style="border-color:'+v.color+';" class="'+_class+'" ></a></div>').appendTo($('#nav_prev'));
+        $('<div><a class="select_frame" data-m="'+v.id+'"><img src="'+v.img+'?c='+Math.random()+'" id="'+v.id+'" style="border-color:'+v.color+';" class="'+_class+'" ></a></div>').appendTo($('#nav_prev'));
     });
 
     // Click on thumbs
