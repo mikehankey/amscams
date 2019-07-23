@@ -155,6 +155,7 @@ function setup_modal_actions(fn_id,x,y) {
     if(typeof nextH !== 'undefined' && typeof nextH.x !== 'undefined' && typeof nextH.y !== 'undefined') { 
         var rX = (nextH.x-x)*factor-25;
         var rY = (nextH.y-y)*factor-25;
+        console.log(rX + ' , ' + rY)
         $('<div class="cross_holder next" style="top:'+rY+'px; left:'+rX+'px"><div class="cross" style="border:2px solid '+nextH.color+'"></div></div>').appendTo('.meteor_chooser');
     }
      
