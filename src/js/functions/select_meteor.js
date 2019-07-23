@@ -76,21 +76,36 @@ function meteor_select(dir,all_frames_ids) {
 
 
 // Modal for selector
-function addModalTemplate() {
+function addModalTemplate(neighbor) {
+    var c;
     if($('#select_meteor_modal').length==0) {
-        $('<div id="select_meteor_modal" class="modal fade" tabindex="-1">\
-            <input type="hidden" name="thumb_w"/><input type="hidden" name="thumb_h"/>\
-            <div class="modal-dialog  modal-lg modal-dialog-centered" role="document">\
-            <div class="modal-content"><div class="modal-body">\
-            <button id="met-sel-next" title="Next" type="button" class="mfp-arrow mfp-arrow-right mfp-prevent-close"></button>\
-            <button id="met-sel-prev" title="Prev" type="button" class="mfp-arrow mfp-arrow-left mfp-prevent-close"></button>\
-            <p><strong>FRAME #<span id="sel_frame_id"></span> - Click the center of the meteor.</strong> \
-            <span id="meteor_org_pos" class="float-right pl-3"><b>Org:</b></span> \
-            <span id="meteor_pos" class="float-right"></span></p>\
-            <div style="box-shadow: 0 0px 8px rgba(0,0,0,.6);" class="meteor_chooser">\
-            <div id="org_lh"></div><div id="org_lv"></div><div id="lh"></div><div id="lv"></div></div></div>\
-            <div class="modal-footer p-0 pb-2 pr-2"><button type="button" class="btn btn-primary" id="Save Meteor Center">Save</button>\
-            <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button></div></div></div></div>').appendTo('body');
+
+        c = '<div id="select_meteor_modal" class="modal fade" tabindex="-1">\
+        <input type="hidden" name="thumb_w"/><input type="hidden" name="thumb_h"/>\
+        <div class="modal-dialog  modal-lg modal-dialog-centered" role="document">\
+        <div class="modal-content">\
+        <div class="d-flex justify-content-center" id="nav_prev">';
+        
+        // Get the previews here
+        $.each(neighbor, function(i,v)) {
+            c += '<div><img src="'+v.img+'" id="'+v.id+'" style="border:2px solid '+v.color+'" ></div>';
+        }
+
+        
+        c='</div>\'
+        <div class="modal-body">\
+        <button id="met-sel-next" title="Next" type="button" class="mfp-arrow mfp-arrow-right mfp-prevent-close"></button>\
+        <button id="met-sel-prev" title="Prev" type="button" class="mfp-arrow mfp-arrow-left mfp-prevent-close"></button>\
+        <p><strong>FRAME #<span id="sel_frame_id"></span> - Click the center of the meteor.</strong> \
+        <span id="meteor_org_pos" class="float-right pl-3"><b>Org:</b></span> \
+        <span id="meteor_pos" class="float-right"></span></p>\
+        <div style="box-shadow: 0 0px 8px rgba(0,0,0,.6);" class="meteor_chooser">\
+        <div id="org_lh"></div><div id="org_lv"></div><div id="lh"></div><div id="lv"></div></div></div>\
+        <div class="modal-footer p-0 pb-2 pr-2"><button type="button" class="btn btn-primary" id="Save Meteor Center">Save</button>\
+        <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button></div></div></div></div>';
+
+
+        $(c).appendTo('body');
     }
 }
 
@@ -150,6 +165,38 @@ function setup_modal_actions(fn_id,x,y) {
 }
 
 
+function get_neighbor_frames(cur_id) {
+    // Get the thumbs & colors or -5 +5 frames
+    // IN #nav_prev
+    var all_thb = []; 
+    for(var i = cur_id-4; i < cur_id+5; i++) {
+        var $cur_tr = $('#fr_'+i);
+        var img =  $cur_tr.find('img').attr('src');
+        var color = $cur_tr.find('.st').css('background-color');
+        var id = i;
+
+        if(typeof img == "undefined"){
+            img = './dist/img/no-sm.png';
+            id = 0;
+        }
+
+        if(typeof color == "undefined"){
+            color = 'rgb(15,15,15)';
+        }
+
+        all_thb.push({
+            img: img,
+            color:color,
+            id:id
+        });
+    }
+
+    return all_thb;
+
+}
+
+
+
 function setup_select_meteor() {
     var viewer_dim = 500;
     var all_frames_ids = [];
@@ -177,8 +224,11 @@ function setup_select_meteor() {
 
         var real_width, real_height;
 
+        // Get Neightbors
+        var neighbor = get_neighbor_frames(meteor_id);
+
         // Add template if necessary
-        addModalTemplate();
+        addModalTemplate(neighbor);
 
         // Prev Button
         $('#met-sel-prev').unbind('click').click(function() {
