@@ -154,8 +154,8 @@ function setup_modal_actions(fn_id,x,y) {
     var nextH = get_next_frame(parseInt(fn_id));
     if(typeof nextH !== 'undefined') {
         var meteor_chooser_offset = $('.meteor_chooser_offset').offset(); 
-        var realX = parentOffset.left/factor+nextH.x-thumb_dim/2;
-        var realY = parentOffset.top/factor+nextH.y-thumb_dim/2;
+        var realX = meteor_chooser_offset.left/factor+nextH.x-thumb_dim/2;
+        var realY = meteor_chooser_offset.top/factor+nextH.y-thumb_dim/2;
         $('<div class="cross_holder next" style="top:'+x+'px; left:'+y+'px"><div class="cross" style="border:2px solid '+color+'"></div></div>').appendTo('.meteor_chooser');
     }
      
