@@ -151,6 +151,7 @@ function setup_modal_actions(fn_id,x,y) {
     $('.cross_holder.next, .cross_holder.prev').remove();
 
     // Add Next Help Point
+    console.log("search for " + fn_id)
     var nextH = get_next_frame(fn_id);
     if(typeof nextH !== 'undefined') {
         console.log('NEXT FOUND');
