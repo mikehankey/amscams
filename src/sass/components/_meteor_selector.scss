@@ -53,6 +53,13 @@ $meteor_selector_w: 500px;
     border-width:1px;
     width: 66px;
     border-style: solid;
+    cursor:pointer;
+
+    &:hover {
+        img {
+            border-color:rgba(255,255,255,.3)!important;
+        }
+    }
 
     &.cur {
         zoom: 1.2;

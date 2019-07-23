@@ -111,7 +111,7 @@ function addModalTemplate(meteor_id,neighbor) {
 
     // Click on thumbs
     $('.select_frame').unbind('click').click(function() {
-        $('tr#fr_'+$(this).attr('data-m') + '.select_meteor').click();
+        $('tr#fr_'+$(this).attr('data-m') + ' .select_meteor').click();
     })
 }
 
