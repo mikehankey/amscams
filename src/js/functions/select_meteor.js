@@ -152,7 +152,7 @@ function setup_modal_actions(fn_id,x,y) {
 
     // Add Next Help Point
     var nextH = get_next_frame(fn_id);
-    if(typeof nextH != undefined) {
+    if(typeof nextH !== 'undefined') {
         console.log('NEXT FOUND');
         console.log(nextH);
         // $('<div class="cross_holder next" style="top:'+x+'px; left:'+y+'px"><div class="cross" style="border:2px solid '+color+'"></div></div>').appendTo('.meteor_chooser')
