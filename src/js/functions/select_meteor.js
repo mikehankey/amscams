@@ -53,7 +53,7 @@ function select_meteor_ajax(fn,x,y) {
 // Select a meteor (next/prev)
 function meteor_select(dir,all_frames_ids) {
     var next_id;
-    var cur_id = parseInt($('.sel_frame_id').text());
+    var cur_id = parseInt($('#sel_frame_id').text());
     var cur_index = all_frames_ids.indexOf(cur_id);
       
     if(dir=="prev") {
@@ -84,7 +84,7 @@ function addModalTemplate(meteor_id,neighbor) {
         <input type="hidden" name="thumb_w"/><input type="hidden" name="thumb_h"/>\
         <div class="modal-dialog  modal-lg modal-dialog-centered" role="document">\
         <div class="modal-content">\
-        <div class="modal-header"><div style="width:100%"><strong>FRAME #<span class="sel_frame_id"></span> - Click the center of the meteor.</strong> \
+        <div class="modal-header"><div style="width:100%"><strong>FRAME #<span id="sel_frame_id"></span> - Click the center of the meteor.</strong> \
         <span id="meteor_org_pos" class="float-right pl-3"><b>Org:</b></span> \
         <span id="meteor_pos" class="float-right"></span></div></div>\
         <div class="modal-body"><button id="met-sel-next" title="Next" type="button" class="mfp-arrow mfp-arrow-right mfp-prevent-close"></button>\
@@ -249,7 +249,7 @@ function setup_select_meteor() {
         $('.meteor_chooser').css('background-image','url('+$img.attr('src')+')').css('border','2px solid ' + color);
 
         // Add current ID
-        $('.sel_frame_id').text(meteor_id);
+        $('#sel_frame_id, .sel_frame_id').text(meteor_id);
   
         // Update image real dimensions 
         var img = new Image();
