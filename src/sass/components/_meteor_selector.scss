@@ -50,9 +50,12 @@ $meteor_selector_w: 500px;
 
 .prev-th {
     margin: 0 .2rem .2rem 0;
-    border:1px solid;
+    border-width:1px;
+    width: 66px;
 
     &.cur {
-        zoom:1.2;
+        zoom: 1.2;
+        margin-top: -.5rem;
+        margin-bottom: .8rem;
     }
 }
