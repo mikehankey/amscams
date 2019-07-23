@@ -21,16 +21,19 @@ function select_meteor_ajax(fn,x,y) {
 
                 $('.modal-backdrop').remove();
                 $('#select_meteor_modal').modal('hide').remove();
+                $('tr#fr_'+fn+' .select_meteor').click();
                 
+                /*
                 bootbox.alert({
                     message: "The frame as well as the corresponding reduction table row have been updated.",
                     className: 'rubberBand animated',
                     centerVertical: true,
                     callback: function() {
                         // Relaunch at the right place
-                        $('tr#fr_'+fn+' .select_meteor').click();
+                        
                     }
                 });
+                */
             } else {
                 loading_done();
     
@@ -98,7 +101,7 @@ function addModalTemplate(meteor_id,neighbor) {
         <div class="d-flex justify-content-center" id="nav_prev">\
         </div><div style="box-shadow: 0 0px 8px rgba(0,0,0,.6);" class="meteor_chooser">\
         <div id="org_lh"></div><div id="org_lv"></div><div id="lh"></div><div id="lv"></div></div></div>\
-        <div class="text-center pt-2"><a class="btn btn-danger delete_frame_from_modal"><i class="icon-delete"></i> Delete the frame #<span class="sel_frame_id"></span></a></div>\
+        <div class="text-center"><a class="btn btn-danger delete_frame_from_modal"><i class="icon-delete"></i> Delete the frame #<span class="sel_frame_id"></span></a></div>\
         <div class="modal-footer p-0 pb-2 pr-2"><button type="button" hidden>Save</button>\
         <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button></div></div></div></div>';
  
@@ -120,6 +123,11 @@ function addModalTemplate(meteor_id,neighbor) {
     $('.select_frame').unbind('click').click(function() {
         $('tr#fr_'+$(this).attr('data-m') + ' .select_meteor').click();
     })
+
+    // Click on delete 
+    $('.delete_frame_from_modal').unbind('click').click(function() {
+        delete_frame_from_modal(parseInt($('#sel_frame_id').html())
+    });
 }
 
 // Actions on modal 
