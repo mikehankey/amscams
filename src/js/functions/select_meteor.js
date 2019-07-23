@@ -152,7 +152,7 @@ function setup_modal_actions(fn_id,x,y) {
 
     // Add Next Help Point 
     var nextH = get_next_frame(parseInt(fn_id));
-    if(typeof nextH !== 'undefined') { 
+    if(typeof nextH !== 'undefined' && typeof nextH.x !== 'undefined' && typeof nextH.y !== 'undefined') { 
         var rX = 250-(x-nextH.x)*factor-25;
         var rY = 250-(y-nextH.y)*factor-25;
         $('<div class="cross_holder next" style="top:'+rX+'px; left:'+rY+'px"><div class="cross" style="border:2px solid '+nextH.color+'"></div></div>').appendTo('.meteor_chooser');
