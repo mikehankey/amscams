@@ -170,6 +170,7 @@ function get_neighbor_frames(cur_id) {
     // Get the thumbs & colors or -5 +5 frames
     // IN #nav_prev
     var all_thb = []; 
+    cur_id = parseInt(cur_id)
     for(var i = cur_id-4; i < cur_id+5; i++) {
         var $cur_tr = $('#fr_'+i);
         var img =  $cur_tr.find('img').attr('src');
@@ -228,10 +229,7 @@ function setup_select_meteor() {
         // Get Neightbors
         var neighbor = get_neighbor_frames(meteor_id);
 
-        console.log('meteor_id ')
-        console.log(meteor_id)
-        console.log('neighbor')
-        console.log(neighbor)
+         
 
         // Add template if necessary
         addModalTemplate(neighbor);
