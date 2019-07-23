@@ -187,9 +187,7 @@ function get_neighbor_frames(cur_id) {
 
         if(typeof color == "undefined"){
             color = 'rgb(15,15,15)';
-        } else if(cur_id==i) {
-            color = 'rgb(255,255,255)';
-        }
+        } 
 
         all_thb.push({
             img: img,
