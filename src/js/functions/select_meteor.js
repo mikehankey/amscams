@@ -107,6 +107,7 @@ function addModalTemplate(meteor_id,neighbor) {
  
         $(c).appendTo('body');
     }  
+
  
     // We update the preview
     $('#nav_prev').html('');
@@ -186,7 +187,7 @@ function setup_modal_actions(fn_id,x,y) {
 }
 
 
-function add_point(nextprev,id) {
+function add_help_point(nextprev,id, cur_x, cur_y) {
     var tr_fn = false;
     var tr_id = id;
 
@@ -207,6 +208,8 @@ function add_point(nextprev,id) {
             var x = $tr.attr('data-org-x');
             var y = $tr.attr('data-org-y');
             var color = $tr.find('.st').css('background-color');
+            
+            $('<div class="cross_holder" style="top:'+cur_x-x+'px; left:'+cur_y-y+'px"><div class="cross" style="border:2px solid '+color+'"></div></div>')
         }
     }
 }
@@ -330,7 +333,11 @@ function setup_select_meteor() {
             $(".meteor_chooser").removeClass('done');
 
             setup_modal_actions(meteor_id, $tr.attr('data-org-x'),$tr.attr('data-org-y'));
-        
+
+            
+            // Add Help Points
+            add_help_point('next',meteor_id, $tr.attr('data-org-x'),$tr.attr('data-org-y'));
+                
         }).attr({ src: imgSrc }); 
 
         

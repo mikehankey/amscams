@@ -72,21 +72,13 @@ $meteor_selector_w: 500px;
 .cross_holder {
     position: absolute;
     z-index: 3;
-}
 
-.cross { 
-    height: 50px;
-    position: relative;
-    width: 2px;
-    background: red;
-
-    &:after { 
-        content: "";
-        height: 2px;
-        left: -25px;
-        position: absolute;
-        top: 25px;
-        width: 50px; 
+    .cross { 
+        width: 50px;
+        height: 50px;
+        border-radius: 50%
     }
 }
+
+
 
