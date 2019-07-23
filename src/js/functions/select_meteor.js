@@ -77,8 +77,7 @@ function meteor_select(dir,all_frames_ids) {
 
 // Modal for selector
 function addModalTemplate(neighbor) {
-    var c;
-    console.log("neighbor " + neighbor)
+    var c; 
     if($('#select_meteor_modal').length==0) {
 
         c = '<div id="select_meteor_modal" class="modal fade" tabindex="-1">\
@@ -108,6 +107,15 @@ function addModalTemplate(neighbor) {
 
 
         $(c).appendTo('body');
+    } else {
+
+        // We only update the preview
+        $('#nav_prev').html('');
+        $.each(neighbor, function(i,v)  {
+            $('<div><img src="'+v.img+'" id="'+v.id+'" style="border:1px solid '+v.color+'" ></div>').appendTo($('#nav_prev'));
+        });
+
+
     }
 }
 
