@@ -28,9 +28,9 @@ def get_meteor_date_ffmpeg(_file):
 
 #Drawbox
 def drawbox_on_vid(path,vid,x,y,w,h):
-    cmd = 'ffmpeg -i ' + path +'/'+ vid + ' -vf "drawbox=enable=\'between(n,28,32)\' : x='+str(x)+' : y='+str(y)+' : w='+str(w)+' : h='+str(h)+' : color=red,drawbox=enable=\'gte(t,60)\' : x='+str(x)+'  : y='+str(y)+':w='+str(w)+': h='+str(h)+' : color=green" -codec:a copy '+  path +'/boxed_'+vid
+    cmd = 'ffmpeg -i ' + path +'/'+ vid + ' -vf "drawbox=enable=\'between(n,28,32)\' : x='+str(x)+' : y='+str(y)+' : w='+str(w)+' : h='+str(h)+' : color=red" -codec:a copy '+  path +'/boxed_'+vid
     output = subprocess.check_output(cmd, shell=True).decode("utf-8")    
-    print('boxed_'+str(vid))
+    return 'boxed_'+str(vid)
 
 
 
