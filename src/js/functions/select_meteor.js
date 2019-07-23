@@ -147,6 +147,20 @@ function setup_modal_actions(fn_id,x,y) {
     $('#meteor_org_pos').html('<b>Org:</b> '+x+'/'+y);
     $('#meteor_pos').text(x+'/'+y);
 
+    // Remove Helper
+    $('.cross_holder.next, .cross_holder.prev').remove();
+
+    // Add Next Help Point
+    var nextH = get_next_frame(d_id);
+    if(typeof nextH != undefined) {
+        console.log('NEXT FOUND');
+        console.log(nextH);
+        // $('<div class="cross_holder next" style="top:'+x+'px; left:'+y+'px"><div class="cross" style="border:2px solid '+color+'"></div></div>').appendTo('.meteor_chooser')
+    }
+    
+
+      
+
     $(".meteor_chooser").unbind('click').click(function(e){
         var parentOffset = $(this).offset(); 
         var relX = parseFloat(e.pageX - parentOffset.left);
@@ -187,36 +201,37 @@ function setup_modal_actions(fn_id,x,y) {
 }
 
 
-function add_help_point(nextprev,id, cur_x, cur_y) {
-    var tr_fn = false;
-    var tr_id = id;
+function get_next_frame(org_id) {
+    // Find next
+    for(var i=id+1;i<id+10;i++) {
+        if($('tr#fr_'+i).length!=0 && tr_fn==false) {
+            tr_id = i;
+            tr_fn = true;
+            break;
+        }
+    }
 
-    if(nextprev=='next') {
+    if(tr_fn) {
+        // Get the info: color & position
+        var $tr = $('tr#fr_'+ tr_id);
+        var x = parseFloat($tr.attr('data-org-x'));
+        var y =  parseFloat($tr.attr('data-org-y'));
+        var color = $tr.find('.st').css('background-color');
+
+        return {
+            x:x,
+            y:y,
+            color:color,
+            id:tr_id
+        }
         
-        $('.cross_holder.next').remove();
-
-        // Find next
-        for(var i=id+1;i<id+10;i++) {
-            if($('tr#fr_'+i).length!=0 && tr_fn==false) {
-                tr_id = i;
-                tr_fn = true;
-                break;
-            }
-        }
-
-        if(tr_fn) {
-            // Get the info: color & position
-            var $tr = $('tr#fr_'+ tr_id);
-            var x = cur_x-parseFloat($tr.attr('data-org-x'));
-            var y = cur_y-parseFloat($tr.attr('data-org-y'));
-            var color = $tr.find('.st').css('background-color');
- 
-            
-            $('<div class="cross_holder next" style="top:'+x+'px; left:'+y+'px"><div class="cross" style="border:2px solid '+color+'"></div></div>').appendTo('.meteor_chooser')
-        }
+    } else {
+        return null;
     }
 }
 
+
+ 
 
 function get_neighbor_frames(cur_id) {
     // Get the thumbs & colors or -5 +5 frames
@@ -337,9 +352,7 @@ function setup_select_meteor() {
 
             setup_modal_actions(meteor_id, $tr.attr('data-org-x'),$tr.attr('data-org-y'));
 
-            
-            // Add Help Points
-            add_help_point('next',meteor_id, parseFloat($tr.attr('data-org-x')),parseFloat($tr.attr('data-org-y')));
+           
                 
         }).attr({ src: imgSrc }); 
 
