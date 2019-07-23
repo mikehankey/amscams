@@ -104,28 +104,30 @@ def reduce_fit(this_poly,field, cal_params, cal_params_file, fit_img, json_conf,
    total_stars = len(cal_params['cat_image_stars'])
    avg_res = total_res/total_stars
 
+   movie =0
    show_img = cv2.resize(this_fit_img, (0,0),fx=.5, fy=.5)
    cn = str(tries)
    cnp = cn.zfill(10)
    desc = field + " res: " + str(img_res) 
    cv2.putText(this_fit_img, desc, (int(50), int(50)),cv2.FONT_HERSHEY_SIMPLEX, 2, (255,255,255), 1)
-   if (field == 'xpoly' or field == 'ypoly'): 
-      if img_res > 5:
-         if tries % 1 == 0:
-            cv2.imwrite("/mnt/ams2/fitmovies/fr" + str(cnp) + ".png", this_fit_img)
-      else:
-         if tries % 5 == 0:
-            cv2.imwrite("/mnt/ams2/fitmovies/fr" + str(cnp) + ".png", this_fit_img)
-   else: 
-      if img_res > .3:
-         if tries % 1 == 0:
-            cv2.imwrite("/mnt/ams2/fitmovies/fr" + str(cnp) + ".png", this_fit_img)
-      elif .08 < img_res < .3 :
-         if tries % 5 == 0:
-            cv2.imwrite("/mnt/ams2/fitmovies/fr" + str(cnp) + ".png", this_fit_img)
+   if movie == 1:
+      if (field == 'xpoly' or field == 'ypoly'): 
+         if img_res > 5:
+            if tries % 1 == 0:
+               cv2.imwrite("/mnt/ams2/fitmovies/fr" + str(cnp) + ".png", this_fit_img)
+         else:
+            if tries % 5 == 0:
+               cv2.imwrite("/mnt/ams2/fitmovies/fr" + str(cnp) + ".png", this_fit_img)
       else: 
-         if tries % 1 == 0:
-            cv2.imwrite("/mnt/ams2/fitmovies/fr" + str(cnp) + ".png", this_fit_img)
+         if img_res > .3:
+            if tries % 1 == 0:
+               cv2.imwrite("/mnt/ams2/fitmovies/fr" + str(cnp) + ".png", this_fit_img)
+         elif .08 < img_res < .3 :
+            if tries % 5 == 0:
+               cv2.imwrite("/mnt/ams2/fitmovies/fr" + str(cnp) + ".png", this_fit_img)
+         else: 
+            if tries % 1 == 0:
+               cv2.imwrite("/mnt/ams2/fitmovies/fr" + str(cnp) + ".png", this_fit_img)
    #cv2.imshow('pepe', this_fit_img)
    #cv2.waitKey(1)
    #cv2.imshow('pepe', show_img)

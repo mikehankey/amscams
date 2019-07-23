@@ -240,7 +240,7 @@ def sat_cap(json_conf, form):
          print("no merge needed...", stack_file, next_stack_file)
          # set it up
 
-def man_reduce_canvas(frame_num,thumbs,file,cal_params_file):
+def man_reduce_canvas(frame_num,thumbs,file,cal_params_file,red_data):
    rand = time.time()
    c = 0 
    jstxt = "<script> var imgFiles = new Array(); \n "
@@ -270,7 +270,7 @@ def man_reduce_canvas(frame_num,thumbs,file,cal_params_file):
       <div id="info_panel"></div>
    """)
    #extra_html = "<script>var stars = [];\n" 
-   extra_html = "<script src=../js/manreduce.js?" + str(rand) + "></script>"
+   extra_html = "<script src=manreduce.js?" + str(rand) + "></script>"
    extra_html = extra_html + "<script>\n   show_frame_image('" + str(frame_num) + "','" + frame_base + "','prev');\n</script>"
 
    extra_html = extra_html + """
@@ -290,8 +290,9 @@ def man_reduce_canvas(frame_num,thumbs,file,cal_params_file):
    </div>
 
    """
-   extra_html = extra_html.replace("{MY_IMAGE}", half_stack_img)
+   half_stack_img= red_data['sd_video_file'].replace(".mp4", "-half-stack.png")
 
+   extra_html = extra_html.replace("{MY_IMAGE}", half_stack_img)
    return(extra_html)
 
 def calc_frame_time(video_file, frame_num):
@@ -375,7 +376,8 @@ def man_reduce(json_conf,form):
       #print("<img src=" + frame + "><br>" + str(frame_num) + " " + frame_num_str)
       #print("<a href=webUI.py?cmd=man_reduce&scmd=2&file=" + file + "&frame=" + prev_frame + "> Prev </a>")
       #print("<a href=webUI.py?cmd=man_reduce&scmd=2&file=" + file + "&frame=" + next_frame + "> Next  </a>")
-      extra = man_reduce_canvas(frame_num, thumbs,file,cal_params_file)
+      extra = man_reduce_canvas(frame_num, thumbs,file,cal_params_file, meteor_red)
+      print(extra)
       return(extra)
 
 def test_star(cnt_img, fname=None):
