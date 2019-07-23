@@ -45,10 +45,13 @@ def update_frame_ajax(json_conf, form):
    mr['metframes'][fn]['hd_x'] = int(new_x)
    mr['metframes'][fn]['hd_y'] = int(new_y)
    save_json_file(mrf, mr)
+
+   # this will make new thumbs
    # this will update all values (ra,dec etc) and make new thumbs from new point. 
    resp = {}
    resp['msg'] = "new frame added."
    resp['new_frame'] = mr['metframes'][fn]
+   os.system("cd /home/ams/amscams/pythonv2/; ./reducer3.py cm " + mrf + "> /mnt/ams2/tmp/rrr.txt")
    print(json.dumps(resp))
    os.system("cd /home/ams/amscams/pythonv2/; ./reducer3.py cm " + mrf + "> /mnt/ams2/tmp/rrr.txt")
 
@@ -155,6 +158,7 @@ def add_frame_ajax( json_conf, form):
    resp['msg'] = "new frame added."
    resp['newframe'] = mr['metframes'][new_fn] 
    print(json.dumps(resp))
+   os.system("cd /home/ams/amscams/pythonv2/; ./reducer3.py cm " + mrf + "> /mnt/ams2/tmp/rrr.txt")
 
 
 def remove_dupe_cat_stars(paired_stars):
