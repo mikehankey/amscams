@@ -92,7 +92,7 @@ function addModalTemplate(neighbor) {
         });
 
         
-        c='</div>\
+        c +='</div>\
         <div class="modal-body">\
         <button id="met-sel-next" title="Next" type="button" class="mfp-arrow mfp-arrow-right mfp-prevent-close"></button>\
         <button id="met-sel-prev" title="Prev" type="button" class="mfp-arrow mfp-arrow-left mfp-prevent-close"></button>\
