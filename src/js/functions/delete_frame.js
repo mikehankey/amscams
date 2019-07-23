@@ -29,13 +29,18 @@ function delete_frame_from_crop_modal(fn) {
     $.ajax({ 
         url:  "/pycgi/webUI.py?cmd=del_frame&meteor_json_file=" + meteor_json_file + "&fn=" + d[1],
         success: function(response) { 
-
-            
                 update_reduction_only();
                 $('.modal-backdrop').remove();
                 $('#select_meteor_modal').modal('hide').remove();
-                $('tr#fr_'+fn+' .select_meteor').click();
+                fn = fn + 1;
+                if($('tr#fr_'+fn).length()!=0) {
+                    $('tr#fr_'+fn+' .select_meteor').click();
+                } else {
+                    fn = fn -2;
+                    $('tr#fr_'+fn+' .select_meteor').click();
+                }
 
+                
              
         } 
     });
