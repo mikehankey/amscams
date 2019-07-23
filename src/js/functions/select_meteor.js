@@ -151,7 +151,7 @@ function setup_modal_actions(fn_id,x,y) {
     $('.cross_holder.next, .cross_holder.prev').remove();
 
     // Add Next Help Point
-    var nextH = get_next_frame(d_id);
+    var nextH = get_next_frame(fn_id);
     if(typeof nextH != undefined) {
         console.log('NEXT FOUND');
         console.log(nextH);
@@ -203,7 +203,7 @@ function setup_modal_actions(fn_id,x,y) {
 
 function get_next_frame(org_id) {
     // Find next
-    for(var i=id+1;i<id+10;i++) {
+    for(var i=org_id+1;i<org_id+10;i++) {
         if($('tr#fr_'+i).length!=0 && tr_fn==false) {
             tr_id = i;
             tr_fn = true;
