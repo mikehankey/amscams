@@ -31,7 +31,7 @@ def cleanup(number_of_days, path):
 
             print('FILE EXT'+ file_extension)
  
-            if stat.st_mtime <= time_in_secs and file_extension!='json':
+            if stat.st_mtime <= time_in_secs and file_extension!='.json':
                 print('REMOVED ' + full_path)
                 #remove(full_path)
  
