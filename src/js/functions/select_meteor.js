@@ -202,6 +202,9 @@ function setup_modal_actions(fn_id,x,y) {
 
 
 function get_next_frame(org_id) {
+
+    var tr_fn = false;
+
     // Find next
     for(var i=org_id+1;i<org_id+10;i++) {
         if($('tr#fr_'+i).length!=0 && tr_fn==false) {
