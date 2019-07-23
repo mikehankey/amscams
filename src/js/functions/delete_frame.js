@@ -27,7 +27,7 @@ function delete_frame_from_crop_modal(fn) {
     $row.css('opacity',0.5).find('a').hide();
 
     $.ajax({ 
-        url:  "/pycgi/webUI.py?cmd=del_frame&meteor_json_file=" + meteor_json_file + "&fn=" + d[1],
+        url:  "/pycgi/webUI.py?cmd=del_frame&meteor_json_file=" + meteor_json_file + "&fn=" + fn,
         success: function(response) { 
                 update_reduction_only();
                 $('.modal-backdrop').remove();
