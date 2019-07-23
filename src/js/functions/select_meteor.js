@@ -106,9 +106,9 @@ function addModalTemplate(meteor_id,neighbor) {
     $('#nav_prev').html('');
     $.each(neighbor, function(i,v)  {
         if(v.id==meteor_id) {
-            _class = 'cur';
+            _class = 'prev-th cur';
         } else {
-            _class = '';
+            _class = 'prev-th ';
         }
         console.log("INS")
         $('<div><img src="'+v.img+'" id="'+v.id+'" style="border:1px solid '+v.color+';" class="'+_class+'" ></div>').appendTo($('#nav_prev'));
