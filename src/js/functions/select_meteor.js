@@ -20,6 +20,7 @@ function select_meteor_ajax(fn,x,y) {
                 loading_done();
 
                 // Anti cache?
+                console.log('ANTI CACHE on ' + fn)
                 $('tr#fr_'+fn+' img.select_meteor').attr('src', $('tr#fr_'+fn+' img.select_meteor').attr('src')+'?w='+Math.round(Math.random(10000)*10000));
                 $('.modal-backdrop').remove();
                 $('#select_meteor_modal').modal('hide').remove();
