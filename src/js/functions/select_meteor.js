@@ -395,6 +395,7 @@ function setup_select_meteor(anti_cache=-1) {
             // Reset
             $(".meteor_chooser").removeClass('done');
 
+            console.log('IMG LOAD ' + meteor_id);
             setup_modal_actions(meteor_id, $tr.attr('data-org-x'),$tr.attr('data-org-y'));
 
            
