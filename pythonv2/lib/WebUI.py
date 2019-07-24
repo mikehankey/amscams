@@ -272,7 +272,7 @@ def controller(json_conf):
    if(cmd == 'get_frame'):
       fr_id = form.getvalue('fr')
       sd_vid = form.getvalue('sd_video_file')
-      return get_frame(fr_id,sd_vid)
+      print(get_frame(fr_id,sd_vid))
       exit()
    
    
