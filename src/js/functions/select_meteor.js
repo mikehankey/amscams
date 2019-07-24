@@ -285,8 +285,8 @@ function get_neighbor_frames(cur_id) {
 
         if(typeof img == "undefined"){
             img = './dist/img/no-sm.png';
-            id = '0';
             vid = id;
+            id = '0';
         }
 
         if(typeof color == "undefined"){
