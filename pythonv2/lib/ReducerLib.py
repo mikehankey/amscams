@@ -1280,6 +1280,8 @@ def setup_metframes(mfd):
    ys = []
    for fd in mfd:
       frame_time, fn, hd_x,hd_y,w,h,max_px,ra,dec,az,el = fd
+      sd_cx = int(hd_x / hdm_x)
+      sd_cy = int(hd_y / hdm_y)
       fi = fn
       xs.append(hd_x)
       ys.append(hd_y)
@@ -1290,8 +1292,12 @@ def setup_metframes(mfd):
       metframes[fi]['hd_y'] = hd_y
       metframes[fi]['sd_cx'] = int(hd_x / hdm_x)
       metframes[fi]['sd_cy'] = int(hd_y / hdm_y)
+      metframes[fi]['sd_x'] = int(sd_cx / (w/2))
+      metframes[fi]['sd_y'] = int(sd_cy / (h/2))
       metframes[fi]['w'] = w
       metframes[fi]['h'] = h
+      metframes[fi]['sd_w'] = w
+      metframes[fi]['sd_h'] = h
       metframes[fi]['max_px'] = max_px
       metframes[fi]['ra'] = ra
       metframes[fi]['dec'] = dec
@@ -1928,12 +1934,15 @@ def make_crop_images(sd_video_file, json_conf):
       print("UPDATING!", prefix + str(fn) + ".png")
       metframes[fn]['cnt_thumb'] = prefix + str(fn) + ".png"
 
+   metframes = update_intensity(metframes, frames)
+ 
    mfd, metframes,metconf = metframes_to_mfd(metframes, red_data['metconf'], sd_video_file,json_conf)
    print("LEN MET:", len(mfd), len(metframes))
    red_data['metconf'] = metconf
    red_data['metframes'] = metframes
    red_data['meteor_frame_data'] = mfd
    print("saving json:", red_file)
+   make_light_curve(metframes,sd_video_file)
    save_json_file(red_file, red_data)
 
 def sort_metframes(metframes):

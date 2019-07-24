@@ -57,6 +57,7 @@ if cmd == 'mfd' :
    metframes, metconf = setup_metframes(mfd)
    red_data['metframes'] = metframes 
    red_data['metconf'] = metconf 
+
    save_json_file(file, red_data)
 
 if cmd == 'pf' or cmd == 'perfect':
