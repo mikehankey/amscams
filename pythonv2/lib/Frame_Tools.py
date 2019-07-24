@@ -24,6 +24,6 @@ def get_frame(fr_id,sd_vid):
         return {'full_fr': name, 'id': fr_id}
     else:
         #We need to generate all the frames in TMP_FRAME_FOLDER
-        cmd =  'ffmpeg -y -hide_banner -loglevel panic -i '+ sd_vid + '  ' + TMP_FRAME_FOLDER + '/' + cur_name + '_%04d.png ' 
+        cmd =  'ffmpeg -y -hide_banner -loglevel panic -i '+ sd_vid + '  ' + TMP_FRAME_FOLDER + '/' + cur_name + '_%d.png ' 
         output = subprocess.check_output(cmd, shell=True).decode("utf-8")    
         return {'full_fr':TMP_FRAME_FOLDER + '/' + cur_name + '_' + fr_id + '.png', 'id': fr_id}
