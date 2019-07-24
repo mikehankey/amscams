@@ -27,7 +27,7 @@ def get_frame(fr_id,sd_vid):
         #We need to generate all the frames in TMP_FRAME_FOLDER
 
         #First we delete all from TMP_FRAME_FOLDER
-        filelist = glob.glob(os.path.join(TMP_FRAME_FOLDER))
+        filelist = glob.glob(os.path.join(TMP_FRAME_FOLDER,'.png'))
         for f in filelist:
             os.remove(f)
 
