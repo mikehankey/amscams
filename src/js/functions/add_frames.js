@@ -75,7 +75,7 @@ function add_reduc_row(data,before) {
         add_frame_square_on_canvas(parseFloat(new_frame.hd_x)/2,parseFloat(new_frame.hd_y)/2);
 
         // Reload the actions
-        reduction_table_actions();
+        reduction_table_actions(new_frame_id);
 
     } else {
         bootbox.alert({

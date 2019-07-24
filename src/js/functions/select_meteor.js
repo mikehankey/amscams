@@ -292,7 +292,7 @@ function get_neighbor_frames(cur_id) {
 
 
 
-function setup_select_meteor() {
+function setup_select_meteor(anti_cache=-1) {
     var viewer_dim = 500;
     var all_frames_ids = [];
 
@@ -306,7 +306,7 @@ function setup_select_meteor() {
     // Click on selector (button & thumb)
     $('.select_meteor').click(function() {
         var $tr = $(this).closest('tr');
-        var rand = Math.round(Math.random(10000)*10000);
+        var rand;
 
         // Get meteor id
         var meteor_id = $tr.attr('id');
@@ -339,7 +339,12 @@ function setup_select_meteor() {
         });
 
         // Add image 
-        $('.meteor_chooser').css('background-image','url('+$img.attr('src')+'&d='+rand+')').css('border','2px solid ' + color);
+        if(anti_cache!=1 && anti_cache==meteor_id) {
+            $('.meteor_chooser').css('background-image','url('+$img.attr('src')+'&d='+ Math.round(Math.random(10000)*10000)+')').css('border','2px solid ' + color);
+        } else {
+            $('.meteor_chooser').css('background-image','url('+$img.attr('src')+')').css('border','2px solid ' + color);
+        }
+       
 
         // Add current ID
         $('#sel_frame_id, .sel_frame_id').text(meteor_id);
