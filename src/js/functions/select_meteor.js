@@ -217,8 +217,8 @@ function setup_modal_actions(fn_id,x,y) {
 
         // Cross
         if(!$(this).hasClass('done')) {
-            $('#lh').css('top',relY);
-            $('#lv').css('left',relX);
+            $('#lh').css('top',relY-2);
+            $('#lv').css('left',relX-2);
             $('#meteor_pos').text("x:"+parseInt(realX)+'/y:'+parseInt(realY));
         }
     });
