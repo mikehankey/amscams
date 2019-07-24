@@ -125,7 +125,7 @@ function addModalTemplate(meteor_id,neighbor) {
                </div>').appendTo($('#nav_prev'));
 
         } else {
-            $('<div><a class="select_frame select_frame_btn" data-m="'+v.id+'"><span>#'+v.id+'</span><img src="'+v.img+'" id="'+v.id+'" style="border-color:'+v.color+';" class="'+_class+'" ></a></div>').appendTo($('#nav_prev'));
+            $('<div><a class="select_frame select_frame_btn '+_class+'" data-m="'+v.id+'"><span>#'+v.id+'</span><img src="'+v.img+'" id="'+v.id+'" style="border-color:'+v.color+';"  ></a></div>').appendTo($('#nav_prev'));
         }
 
     });
