@@ -4,6 +4,7 @@ import json
 import sys
 
 KEY="AllonsEnfantsDeLaPatrieAllonsEnfantsDeLaPatrie" 
+cgitb.enable()
 
 def login_page():
     cgitb.enable()
