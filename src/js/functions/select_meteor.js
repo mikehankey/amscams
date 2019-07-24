@@ -109,6 +109,10 @@ function addModalTemplate(meteor_id,neighbor) {
  
     // We update the preview
     $('#nav_prev').html('');
+
+
+    console.log("neighbors ");
+    console.log(neighbor);
     $.each(neighbor, function(i,v)  {
         
         if(v.id==meteor_id) {
