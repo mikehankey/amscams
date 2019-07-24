@@ -160,6 +160,9 @@ function setup_modal_actions(fn_id,x,y) {
 
     // Add Next Help Point 
     var nextH = get_help_pos('next',parseInt(fn_id));
+    console.log(nextH);
+    console.log(typeof nextH);
+    console.log(typeof nextH !== 'undefined');
     if(typeof nextH !== 'undefined') { 
         if( nextH.x !== null && typeof  nextH.x !== null) {
               // 225 for circle diameter
