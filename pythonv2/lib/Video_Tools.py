@@ -49,8 +49,8 @@ def get_sd_frames(camID,date,limit_frame=False):
             frames = frames[1:50]
 
         if not frames:
-            print('NO INPUT FOR VID CamID:' + camID + ' - DATE ' + date)
-            print('FOLDER: ' + cur_path)
+            #print('NO INPUT FOR VID CamID:' + camID + ' - DATE ' + date)
+            #print('FOLDER: ' + cur_path)
             return([] , cur_path)
         else:    
             #Move the frames to a tmp folder so we can delete them once we're done with the video

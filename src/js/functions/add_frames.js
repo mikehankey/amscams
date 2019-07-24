@@ -92,7 +92,7 @@ function add_a_frame(cur_fn, before) {
     var cmd_data = {
 		cmd: 'add_frame',
         sd_video_file: sd_video_file, // Defined on the page
-        fn: cur_fn
+        fr: cur_fn
     };
  
     loading({text: "Generating Frame #"+ cur_fn, overlay:true});
@@ -101,8 +101,8 @@ function add_a_frame(cur_fn, before) {
         url:  "/pycgi/webUI.py",
         data: cmd_data, 
         success: function(data) { 
-            
-            update_reduction_only();
+                
+            //update_reduction_only();
             loading_done();
             /*
             if($.trim(data)!=='') {

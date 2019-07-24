@@ -96,8 +96,8 @@ function addModalTemplate(meteor_id,neighbor) {
         <div id="org_lh"></div><div id="org_lv"></div><div id="lh"></div><div id="lv"></div></div>\
             <div class="d-flex justify-content-between mt-2" style="max-width: 500px;margin: 0 auto;">\
                 <div><a class="btn btn-danger delete_frame_from_modal"><i class="icon-delete"></i> Delete the frame #<span class="sel_frame_id"></span></a></div>\
-                <div style="line-height: 2rem;"> \
-                    <span id="meteor_org_pos"><b>Org:</b></span> \
+                <div class="select_info"> \
+                    <span id="meteor_org_pos"><b>Org:</b></span><br/>\
                     <span id="meteor_pos"></span> \
                 </div> \
         </div>\
@@ -170,7 +170,7 @@ function setup_modal_actions(fn_id,x,y) {
               // 225 for circle diameter
             var rX = (225+(nextH.x-x)*factor);
             var rY = (225+(nextH.y-y)*factor);
-            $('<div class="cross_holder next" style="top:'+rY+'px; left:'+rX+'px"><div class="cross" style="border:2px solid '+nextH.color+'"></div></div>').appendTo('.meteor_chooser');
+            $('<div class="cross_holder next" style="top:'+rY+'px; left:'+rX+'px"><div class="cross" style="border:1px solid '+nextH.color+'"></div></div>').appendTo('.meteor_chooser');
         }
     }
     nextH = get_help_pos('prev',parseInt(fn_id));
@@ -179,7 +179,7 @@ function setup_modal_actions(fn_id,x,y) {
             // 225 for circle diameter
             var rX = (225+(nextH.x-x)*factor);
             var rY = (225+(nextH.y-y)*factor);
-            $('<div class="cross_holder prev" style="top:'+rY+'px; left:'+rX+'px"><div class="cross" style="border:2px solid '+nextH.color+'"></div></div>').appendTo('.meteor_chooser');
+            $('<div class="cross_holder prev" style="top:'+rY+'px; left:'+rX+'px"><div class="cross" style="border:1px solid '+nextH.color+'"></div></div>').appendTo('.meteor_chooser');
         }
     }
      

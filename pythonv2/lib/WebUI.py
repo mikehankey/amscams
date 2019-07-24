@@ -30,6 +30,7 @@ from lib.VIDEO_VARS import *
 from lib.Video_Tools import getLength
 from lib.LOGOS_VARS import * 
 from lib.Logo_Tools import * 
+from lib.Frame_Tools import * 
 from lib.Get_Cam_ids import get_the_cam_ids
 from lib.Get_Operator_info import get_operator_info
  
@@ -267,6 +268,14 @@ def controller(json_conf):
       delete_multiple_detection(detections,json_conf)
       exit()
 
+   #Get a frame or create all of them 
+   if(cmd == 'get_frame'):
+      fr_id = form.getvalue('fr')
+      sd_vid = form.getvalue('sd_video_file')
+      return get_frame(fr_id,sd_vid)
+      exit()
+   
+   
    if cmd == 'add_frame':
       add_frame_ajax(json_conf,form)
       exit()
