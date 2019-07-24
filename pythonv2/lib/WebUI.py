@@ -351,9 +351,8 @@ def controller(json_conf):
    bottom = stf[1]
    top = top.replace("{TOP}", nav_html)
 
-   if cmd is not None:
-      if "man" in cmd:
-         template = template.replace("<!--manred-->", "<script src=\"/pycgi/manreduce.js?\"></script>")
+   if cmd is not None and "man" in cmd:
+      template = template.replace("<!--manred-->", "<script src=\"/pycgi/manreduce.js?\"></script>")
 
 
    obs_name = json_conf['site']['obs_name']
