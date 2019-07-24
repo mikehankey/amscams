@@ -18,24 +18,27 @@ def update_intensity(metframes, sd_frames,show = 0):
    base_img = sd_frames[0].copy()
    for fn in metframes:
       sd_img = sd_frames[fn].copy()
-      w = metframes[fn]['sd_w']
-      h = metframes[fn]['sd_h']
-      x = metframes[fn]['sd_x']
-      y = metframes[fn]['sd_y']
-      base_cnt_img = base_img[y:y+h,x:x+w]
-      cnt_img = sd_img[y:y+h,x:x+w]
-      min_val, max_val, min_loc, (mx,my)= cv2.minMaxLoc(cnt_img)
-      if show == 1:
-         cv2.circle(sd_img,(x,y), 3, (255,255,255), 1)
-         cv2.imshow('Update Intensity', sd_img)
-         cv2.waitKey(0)
+      if "sd_w" in metframes[fn]:
+         w = metframes[fn]['sd_w']
+         h = metframes[fn]['sd_h']
+      else:
+         w = metframes[fn]['w']
+         h = metframes[fn]['h']
+      if "sd_x" in metframes[fn]:
+         x = metframes[fn]['sd_x']
+         y = metframes[fn]['sd_y']
+         base_cnt_img = base_img[y:y+h,x:x+w]
+         cnt_img = sd_img[y:y+h,x:x+w]
+         min_val, max_val, min_loc, (mx,my)= cv2.minMaxLoc(cnt_img)
 
-      print("INTENSITY:", fn, x, y, np.sum(cnt_img) , np.sum(base_cnt_img) )
-      metframes[fn]['sd_intensity'] = float(np.sum(cnt_img)) - float(np.sum(base_cnt_img))
-      metframes[fn]['sd_max_px'] = float(max_val)
-      metframes[fn]['sd_max_x'] = float(mx) + x
-      metframes[fn]['sd_max_y'] = float(my) + y
-      print("Intensity:",  metframes[fn]['sd_intensity'])
+         print("INTENSITY:", fn, x, y, np.sum(cnt_img) , np.sum(base_cnt_img) )
+         metframes[fn]['sd_intensity'] = float(np.sum(cnt_img)) - float(np.sum(base_cnt_img))
+         metframes[fn]['sd_max_px'] = float(max_val)
+         metframes[fn]['sd_max_x'] = float(mx) + x
+         metframes[fn]['sd_max_y'] = float(my) + y
+         print("Intensity:",  metframes[fn]['sd_intensity'])
+      else:
+         print("Frame is missing:", fn)
    return(metframes)    
 
 def make_light_curve(metframes,sd_video_file):
@@ -1280,6 +1283,10 @@ def setup_metframes(mfd):
    ys = []
    for fd in mfd:
       frame_time, fn, hd_x,hd_y,w,h,max_px,ra,dec,az,el = fd
+      if w == 0:
+         w = 6
+      if h  == 0:
+         h = 6
       sd_cx = int(hd_x / hdm_x)
       sd_cy = int(hd_y / hdm_y)
       fi = fn
@@ -1292,8 +1299,8 @@ def setup_metframes(mfd):
       metframes[fi]['hd_y'] = hd_y
       metframes[fi]['sd_cx'] = int(hd_x / hdm_x)
       metframes[fi]['sd_cy'] = int(hd_y / hdm_y)
-      metframes[fi]['sd_x'] = int(sd_cx / (w/2))
-      metframes[fi]['sd_y'] = int(sd_cy / (h/2))
+      metframes[fi]['sd_x'] = int(sd_cx - (w/2))
+      metframes[fi]['sd_y'] = int(sd_cy - (h/2))
       metframes[fi]['w'] = w
       metframes[fi]['h'] = h
       metframes[fi]['sd_w'] = w
@@ -1324,6 +1331,15 @@ def setup_metframes(mfd):
 
 
    metconf['sd_seg_len'] = 2 
+
+   # fill in missing frame values with previous value
+   last_fn = None
+   for fn in metframes:
+      if last_fn is not None:
+         if metframes[fn]['hd_x'] == 0:
+            metframes[fn] = metframes[last_fn]
+            metframes[fn]['fn'] = fn
+      last_fn = fn
 
    return(metframes, metconf)
 
@@ -1805,7 +1821,7 @@ def metframes_to_mfd(metframes, metconf, sd_video_file,json_conf):
    for fn in metframes:
       frame_time,frame_time_str = calc_frame_time(sd_video_file, fn)
       metframes[fn]['frame_time'] = frame_time_str
-      if "hd_x" not in metframes[fn]:
+      if "hd_x" not in metframes[fn] or 'x1' not in metframes[fn]:
          metframes[fn]['x1'] = int(metframes[fn]['sd_x'] * hdm_x)
          metframes[fn]['y1'] = int(metframes[fn]['sd_y'] * hdm_y)
          metframes[fn]['hd_x'] = int(metframes[fn]['sd_cx'] * hdm_x)
