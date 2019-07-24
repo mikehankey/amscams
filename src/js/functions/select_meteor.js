@@ -20,26 +20,14 @@ function select_meteor_ajax(fn,x,y) {
                 loading_done();
 
                 // Anti cache?
-                console.log('ANTI CACHE on ' + fn)
+                //console.log('ANTI CACHE on ' + fn)
                 $('tr#fr_'+fn+' img.select_meteor').attr('src', $('tr#fr_'+fn+' img.select_meteor').attr('src')+'?w='+Math.round(Math.random(10000)*10000));
                 $('.modal-backdrop').remove();
                 $('#select_meteor_modal').modal('hide').remove();
                 
-                
+                // Reopen the modal at the proper place
                 $('tr#fr_'+fn+' .select_meteor').click();
-                 
-
-                /*
-                bootbox.alert({
-                    message: "The frame as well as the corresponding reduction table row have been updated.",
-                    className: 'rubberBand animated',
-                    centerVertical: true,
-                    callback: function() {
-                        // Relaunch at the right place
-                        
-                    }
-                });
-                */
+                  
             } else {
                 loading_done();
     
@@ -123,7 +111,16 @@ function addModalTemplate(meteor_id,neighbor) {
         } else {
             _class = 'prev-th ';
         } 
-        $('<div><a class="select_frame" data-m="'+v.id+'"><img src="'+v.img+'" id="'+v.id+'" style="border-color:'+v.color+';" class="'+_class+'" ></a></div>').appendTo($('#nav_prev'));
+        if(v.id==0) {
+            // We had a +
+            $('<div class="position-relative">\
+                <a title="Add a frame" class="btn btn-primary btn-sm btn-mm add_f position_absolute" data-rel="'+v.id+'"><i class="icon-plus"></i></a>\
+                <img src="'+v.img+'" id="'+v.id+'" style="border-color:'+v.color+';" class="'+_class+'" >\
+               </div>').appendTo($('#nav_prev'));
+
+        } else {
+            $('<div><a class="select_frame" data-m="'+v.id+'"><img src="'+v.img+'" id="'+v.id+'" style="border-color:'+v.color+';" class="'+_class+'" ></a></div>').appendTo($('#nav_prev'));
+        }
     });
 
     // Click on thumbs
@@ -319,10 +316,7 @@ function setup_select_meteor(anti_cache=-1) {
         // Get meteor id
         var meteor_id = $tr.attr('id');
         meteor_id = meteor_id.split('_')[1];
-
-        console.log('anti_cache',anti_cache);
-        console.log('meteor_id',meteor_id);
-      
+  
         // Get Image
         var $img = $tr.find('img'); 
 
