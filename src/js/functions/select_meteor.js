@@ -19,10 +19,15 @@ function select_meteor_ajax(fn,x,y) {
                 update_reduction_only();
                 loading_done();
 
+                // Anti cache?
+                $('tr#fr_'+fn+' img.select_meteor').attr('src', $('tr#fr_'+fn+' img.select_meteor').attr('src')+'?w='+Math.round(Math.random(10000)*10000));
                 $('.modal-backdrop').remove();
                 $('#select_meteor_modal').modal('hide').remove();
-                $('tr#fr_'+fn+' .select_meteor').click();
                 
+                
+                $('tr#fr_'+fn+' .select_meteor').click();
+                 
+
                 /*
                 bootbox.alert({
                     message: "The frame as well as the corresponding reduction table row have been updated.",
