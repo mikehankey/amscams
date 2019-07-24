@@ -315,7 +315,7 @@ function setup_select_meteor(anti_cache=-1) {
         meteor_id = meteor_id.split('_')[1];
 
         console.log('anti_cache',anti_cache);
-        console.log('meteor_id',antmeteor_idi_cache);
+        console.log('meteor_id',meteor_id);
       
         // Get Image
         var $img = $tr.find('img'); 
