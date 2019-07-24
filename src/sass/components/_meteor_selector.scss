@@ -97,11 +97,11 @@ $meteor_selector_w: 500px;
         color: rgba(255,255,255,.6);
         background: rgba(0,0,0,0.5);
         font-size: .7rem;
-    }
-    
+    } 
+}
 
-    img.cur > span {
+.ccur {
+    img span {
         bottom:14px;
-    }  
-
+    }
 }

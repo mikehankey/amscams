@@ -112,20 +112,22 @@ function addModalTemplate(meteor_id,neighbor) {
     $.each(neighbor, function(i,v)  {
         
         if(v.id==meteor_id) {
+            _hclass = 'ccur';
             _class = 'prev-th cur';
         } else {
+            _hclass = '';
             _class = 'prev-th ';
         } 
 
         if(v.id==0) {
             // We add a +
-            $('<div  class="position-relative">\
+            $('<div class="position-relative ">\
                 <a title="Add a frame" class="btn btn-primary btn-mm add_f position-absolute" data-rel="'+v.id+'"><i class="icon-plus"></i> #'+v.vid+'</a>\
                 <img src="'+v.img+'" id="'+v.id+'" style="border-color:'+v.color+';" class="'+_class+'" >\
                </div>').appendTo($('#nav_prev'));
 
         } else {
-            $('<div><a class="select_frame select_frame_btn" data-m="'+v.id+'"><img src="'+v.img+'" id="'+v.id+'" style="border-color:'+v.color+';" class="'+_class+'" ><span>#'+v.id+'</span></a></div>').appendTo($('#nav_prev'));
+            $('<div class="'+_hclass+'"><a class="select_frame select_frame_btn" data-m="'+v.id+'"><img src="'+v.img+'" id="'+v.id+'" style="border-color:'+v.color+';" class="'+_class+'" ><span>#'+v.id+'</span></a></div>').appendTo($('#nav_prev'));
         }
 
     });
