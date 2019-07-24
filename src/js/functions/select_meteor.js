@@ -94,8 +94,9 @@ function addModalTemplate(meteor_id,neighbor) {
         <button id="met-sel-prev" title="Prev" type="button" class="mfp-arrow mfp-arrow-left mfp-prevent-close"></button>\
         <div class="d-flex justify-content-center" id="nav_prev">\
         </div><div style="box-shadow: 0 0px 8px rgba(0,0,0,.6);" class="meteor_chooser">\
-        <div id="org_lh"></div><div id="org_lv"></div><div id="lh"></div><div id="lv"></div></div></div>\
-        <div class="text-center"><a class="btn btn-danger delete_frame_from_modal"><i class="icon-delete"></i> Delete the frame #<span class="sel_frame_id"></span></a></div>\
+        <div id="org_lh"></div><div id="org_lv"></div><div id="lh"></div><div id="lv"></div></div>\
+            <div class="text-center"><a class="btn btn-danger delete_frame_from_modal"><i class="icon-delete"></i> Delete the frame #<span class="sel_frame_id"></span></a></div>\
+        </div>\
         <div class="modal-footer p-0 pb-2 pr-2"><button type="button" hidden>Save</button>\
         <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button></div></div></div></div>';
  
@@ -113,7 +114,7 @@ function addModalTemplate(meteor_id,neighbor) {
         } 
         if(v.id==0) {
             // We had a +
-            $('<div class="position-relative">\
+            $('<div  class="position-relative">\
                 <a title="Add a frame" class="btn btn-primary btn-mm add_f position-absolute" data-rel="'+v.id+'"><i class="icon-plus"></i></a>\
                 <img src="'+v.img+'" id="'+v.id+'" style="border-color:'+v.color+';" class="'+_class+'" >\
                </div>').appendTo($('#nav_prev'));
