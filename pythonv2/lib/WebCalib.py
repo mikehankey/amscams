@@ -37,7 +37,6 @@ def update_frame_ajax(json_conf, form):
       os.system("cd /home/ams/amscams/pythonv2/; ./reducer3.py dm " + sd_video_file + "> /mnt/ams2/tmp/rrr.txt")
       mrf = sd_video_file.replace(".mp4", "-reduced.json")
       mr = load_json_file(mrf)   
-      mr = load_json_file(mrf)
       mr['metframes'][fn]['hd_x'] = int(new_x)
       mr['metframes'][fn]['hd_y'] = int(new_y)
 
@@ -50,7 +49,8 @@ def update_frame_ajax(json_conf, form):
    resp = {}
    resp['msg'] = "new frame added."
    resp['new_frame'] = mr['metframes'][fn]
-   os.system("cd /home/ams/amscams/pythonv2/; ./reducer3.py cm " + mrf + "> /mnt/ams2/tmp/rrr.txt")
+
+
    print(json.dumps(resp))
    os.system("cd /home/ams/amscams/pythonv2/; ./reducer3.py cm " + mrf + "> /mnt/ams2/tmp/rrr.txt")
 
@@ -88,10 +88,12 @@ def add_frame_ajax( json_conf, form):
       #print("FCC:", fcc, metconf['sd_seg_len'], metconf['sd_acl_poly'])
       est_x = int(first_x) + (metconf['x_dir_mod'] * (metconf['sd_seg_len']*fcc)) + (metconf['sd_acl_poly'] * (fcc**2))
       est_y = (metconf['sd_m']*est_x)+metconf['sd_b']
-      sd_cx = est_x
-      sd_cy = est_y
-      est_x = int(est_x *hdm_x)
-      est_y = int(est_y *hdm_y)
+      #sd_cx = est_x
+      #sd_cy = est_y
+      sd_cx = last_x
+      sd_cy = last_y
+      est_x = int(sd_cx *hdm_x)
+      est_y = int(sd_cy *hdm_y)
 
    elif str(next_fn) in metframes:
       # this frame exists before any others so need to add est in reverse. 
@@ -108,8 +110,10 @@ def add_frame_ajax( json_conf, form):
       est_y = (metconf['sd_m']*est_x)+metconf['sd_b']
       sd_cx = est_x
       sd_cy = est_y
-      est_x = int(est_x * hdm_x)
-      est_y = int(est_y * hdm_y)
+      sd_cx = last_x
+      sd_cy = last_y
+      est_x = int(sd_cx * hdm_x)
+      est_y = int(sd_cy * hdm_y)
 
    if new_fn not in metframes:
       metframes[new_fn] = {}
@@ -480,12 +484,19 @@ def check_make_half_stack(sd_file,hd_file,meteor_reduced):
 
 
    half_stack_file = sd_file.replace("-stacked", "-half-stack")
+
+
    if True :
    #if cfe(half_stack_file) == 0:
       if hd_file != 0:
          if cfe(hd_file) == 1:
             img = cv2.imread(hd_file)
             img = cv2.resize(img, (0,0),fx=.5, fy=.5)
+            sd_img = cv2.imread(sd_file)
+            sd_img = cv2.resize(sd_img, (960,540))
+            blend_image = cv2.addWeighted(img, .6, sd_img, .4, 0)
+            img = blend_image
+            #print("BLENDING")
          else:
             img = cv2.imread(sd_file)
             img = cv2.resize(img, (960,540))
@@ -2434,6 +2445,10 @@ def reduce_meteor_ajax(json_conf,meteor_json_file, cal_params_file, show = 0):
    for fn in cmp_imgs:
       cv2.imwrite(prefix  + str(fn) + ".png", cmp_imgs[fn])    
 
+   
+   mfd_file = meteor_json_file.replace(".json", "-reduced.json")
+   os.system("cd /home/ams/amscams/pythonv2/; ./reducer3.py mfd " + mfd_file + " > /dev/null")
+   os.system("cd /home/ams/amscams/pythonv2/; ./reducer3.py cm " + mfd_file + "> /dev/null")
 
    print(json.dumps(response))
   
@@ -4381,6 +4396,7 @@ def show_cat_stars(json_conf,form):
    child = 0
    cal_params = None
    hd_stack_file = form.getvalue("hd_stack_file")
+   points = form.getvalue("points")
    type = form.getvalue("type")
    points = form.getvalue("points")
    video_file = form.getvalue("video_file")
@@ -4391,6 +4407,16 @@ def show_cat_stars(json_conf,form):
       cv2.imwrite(hd_stack_file, hd_stack_img)
    # check if this meteor file has been custom fit and if it has use that info.
    meteor_red_file = video_file.replace(".mp4", "-reduced.json")
+
+   # check if there are zero stars selected and zero in cat_img
+   if cfe(meteor_red_file) == 1 and "reduced" in meteor_red_file:
+      meteor_red = load_json_file(meteor_red_file)
+      if points is None :
+         mvf = meteor_red_file.replace("-reduced.json", ".mp4")
+         cmd = "cd /home/ams/amscams/pythonv2/; ./autoCal.py imgstars " + mvf + " > /mnt/ams2/tmp/trs.txt"
+         #print(cmd)
+         os.system(cmd)
+
    meteor_mode = 0
    if cfe(meteor_red_file) == 1 and "reduced" in meteor_red_file:
       meteor_red = load_json_file(meteor_red_file)
@@ -4432,7 +4458,7 @@ def show_cat_stars(json_conf,form):
                if "cat_image_stars" not in cal_params:
                   video_json_file = video_file.replace(".mp4", ".json")
                   cmd = "cd /home/ams/amscams/pythonv2/; ./autoCal.py imgstars " + video_json_file + " > /mnt/ams2/tmp/trs.txt"
-                  #os.system(cmd)
+                  os.system(cmd)
                elif len(cal_params['cat_image_stars']) == 0:
                   video_json_file = video_file.replace(".mp4", ".json")
                   cmd = "cd /home/ams/amscams/pythonv2/; ./autoCal.py imgstars " + video_json_file + " > /mnt/ams2/tmp/trs.txt"
@@ -4459,7 +4485,6 @@ def show_cat_stars(json_conf,form):
       else:
          cal_params_file = cal_params_file_orig
 
-   points = form.getvalue("points")
    star_points = []
    if cfe(hd_stack_file) == 0:
       bad_hd = 1      
