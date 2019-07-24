@@ -280,12 +280,13 @@ function get_neighbor_frames(cur_id) {
         var $cur_tr = $('#fr_'+i);
         var img =  $cur_tr.find('img').attr('src');
         var color = $cur_tr.find('.st').css('background-color');
+        var id = i;
         vid = '';
 
         if(typeof img == "undefined"){
             img = './dist/img/no-sm.png';
-            id = 0;
-            vid = i;
+            id = '0';
+            vid = id;
         }
 
         if(typeof color == "undefined"){
@@ -295,7 +296,7 @@ function get_neighbor_frames(cur_id) {
         all_thb.push({
             img: img,
             color:color,
-            id:i,
+            id:id,
             vid:vid
         });
     }
