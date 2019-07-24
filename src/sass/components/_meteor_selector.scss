@@ -83,3 +83,19 @@ $meteor_selector_w: 500px;
 
 
 
+// Frame numbers on selector
+.select_frame_btn {
+
+    position: relative;
+    display: block;
+
+    span {
+        position: absolute;
+        bottom: 4px;
+        right: 5px;
+        padding: 0 .2rem;
+        color: rgba(255,255,255,.6);
+        background: rgba(0,0,0,0.5);
+        font-size: .7rem;
+    }
+}
