@@ -305,12 +305,17 @@ function setup_select_meteor(anti_cache=-1) {
 
     // Click on selector (button & thumb)
     $('.select_meteor').click(function() {
+ 
+
         var $tr = $(this).closest('tr');
         var rand;
 
         // Get meteor id
         var meteor_id = $tr.attr('id');
         meteor_id = meteor_id.split('_')[1];
+
+        console.log('anti_cache',anti_cache);
+        console.log('meteor_id',antmeteor_idi_cache);
       
         // Get Image
         var $img = $tr.find('img'); 
