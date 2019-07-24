@@ -163,7 +163,7 @@ function setup_modal_actions(fn_id,x,y) {
     console.log(nextH);
     console.log(typeof nextH);
     console.log(typeof nextH !== 'undefined');
-    if(typeof nextH !== 'undefined') { 
+    if(nextH && typeof nextH !== 'undefined'  ) { 
         if( nextH.x !== null && typeof  nextH.x !== null) {
               // 225 for circle diameter
             var rX = (225+(nextH.x-x)*factor);
@@ -171,8 +171,8 @@ function setup_modal_actions(fn_id,x,y) {
             $('<div class="cross_holder next" style="top:'+rY+'px; left:'+rX+'px"><div class="cross" style="border:2px solid '+nextH.color+'"></div></div>').appendTo('.meteor_chooser');
         }
     }
-    var nextH = get_help_pos('prev',parseInt(fn_id));
-    if(typeof nextH !== 'undefined' ) { 
+    nextH = get_help_pos('prev',parseInt(fn_id));
+    if(nextH && typeof nextH !== 'undefined' ) { 
         if( nextH.x !== null && typeof  nextH.x !== null) {
             // 225 for circle diameter
             var rX = (225+(nextH.x-x)*factor);
