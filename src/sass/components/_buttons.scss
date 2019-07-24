@@ -89,3 +89,37 @@
     background-color: #293952;
     z-index: 9999;
 }
+
+
+
+// ADD FRAMES
+// + -  buttons
+table .add_f {
+	position:absolute;
+	right: -1.3rem;
+	display:none;
+	
+	&.btn-mm {
+		top: -.8rem; 
+	}
+	
+	&.btn-pp {
+		bottom:-.8rem  
+	}
+}
+
+table:hover .add_f {
+	display: block;
+}
+
+
+#nav_prev .add_f {
+    display: block;
+    top: 50%;
+    transform: translateX(-50%) translateY(-68%);
+    left: 50%;
+    max-width: 3rem;
+    padding-top: .5rem;
+}
+
+
