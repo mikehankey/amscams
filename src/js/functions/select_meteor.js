@@ -103,29 +103,31 @@ function addModalTemplate(meteor_id,neighbor) {
         </div>\
         <div class="modal-footer p-0 pb-2 pr-2"><button type="button" hidden>Save</button>\
         <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button></div></div></div></div>';
- 
         $(c).appendTo('body');
     }  
 
  
     // We update the preview
-    $('#nav_prev').html('');
+    $('#nav_prev').html(''); 
     $.each(neighbor, function(i,v)  {
+        
         if(v.id==meteor_id) {
             _class = 'prev-th cur';
         } else {
             _class = 'prev-th ';
         } 
+
         if(v.id==0) {
-            // We had a +
+            // We add a +
             $('<div  class="position-relative">\
-                <a title="Add a frame" class="btn btn-primary btn-mm add_f position-absolute" data-rel="'+v.id+'"><i class="icon-plus"></i></a>\
+                <a title="Add a frame" class="btn btn-primary btn-mm add_f position-absolute" data-rel="'+v.id+'"><i class="icon-plus"></i> #'+v.vid+'</a>\
                 <img src="'+v.img+'" id="'+v.id+'" style="border-color:'+v.color+';" class="'+_class+'" >\
                </div>').appendTo($('#nav_prev'));
 
         } else {
             $('<div><a class="select_frame" data-m="'+v.id+'"><img src="'+v.img+'" id="'+v.id+'" style="border-color:'+v.color+';" class="'+_class+'" ></a></div>').appendTo($('#nav_prev'));
         }
+
     });
 
     // Click on thumbs
@@ -160,7 +162,8 @@ function setup_modal_actions(fn_id,x,y) {
 
     // Add Next Help Point 
     var nextH = get_help_pos('next',parseInt(fn_id));
-    if(typeof nextH !== 'undefined') { 
+     
+    if(nextH && typeof nextH !== 'undefined'  ) { 
         if( nextH.x !== null && typeof  nextH.x !== null) {
               // 225 for circle diameter
             var rX = (225+(nextH.x-x)*factor);
@@ -168,8 +171,8 @@ function setup_modal_actions(fn_id,x,y) {
             $('<div class="cross_holder next" style="top:'+rY+'px; left:'+rX+'px"><div class="cross" style="border:2px solid '+nextH.color+'"></div></div>').appendTo('.meteor_chooser');
         }
     }
-    var nextH = get_help_pos('prev',parseInt(fn_id));
-    if(typeof nextH !== 'undefined' ) { 
+    nextH = get_help_pos('prev',parseInt(fn_id));
+    if(nextH && typeof nextH !== 'undefined' ) { 
         if( nextH.x !== null && typeof  nextH.x !== null) {
             // 225 for circle diameter
             var rX = (225+(nextH.x-x)*factor);
@@ -196,7 +199,8 @@ function setup_modal_actions(fn_id,x,y) {
             $('#lv').css('left',relX);
             $('#meteor_pos').text("x:"+parseInt(realX)+'/y:'+parseInt(realY));
         }
-
+        
+        console.log("AJAX CALL WITH " + fn_id);
         select_meteor_ajax(fn_id,realX,realY);
  
     }).unbind('mousemove').mousemove(function(e) {
@@ -277,10 +281,12 @@ function get_neighbor_frames(cur_id) {
         var img =  $cur_tr.find('img').attr('src');
         var color = $cur_tr.find('.st').css('background-color');
         var id = i;
+        vid = '';
 
         if(typeof img == "undefined"){
             img = './dist/img/no-sm.png';
-            id = 0;
+            vid = id;
+            id = '0';
         }
 
         if(typeof color == "undefined"){
@@ -290,9 +296,13 @@ function get_neighbor_frames(cur_id) {
         all_thb.push({
             img: img,
             color:color,
-            id:id
+            id:id,
+            vid:vid
         });
     }
+
+    console.log("ALL TH");
+    console.log(all_thb);
 
     return all_thb;
 
@@ -394,6 +404,7 @@ function setup_select_meteor(anti_cache=-1) {
             // Reset
             $(".meteor_chooser").removeClass('done');
 
+            console.log('IMG LOAD ' + meteor_id);
             setup_modal_actions(meteor_id, $tr.attr('data-org-x'),$tr.attr('data-org-y'));
 
            
