@@ -196,7 +196,8 @@ function setup_modal_actions(fn_id,x,y) {
             $('#lv').css('left',relX);
             $('#meteor_pos').text("x:"+parseInt(realX)+'/y:'+parseInt(realY));
         }
-
+        
+        console.log("AJAX CALL WITH " + fn_id);
         select_meteor_ajax(fn_id,realX,realY);
  
     }).unbind('mousemove').mousemove(function(e) {
