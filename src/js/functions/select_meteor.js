@@ -103,7 +103,6 @@ function addModalTemplate(meteor_id,neighbor) {
         </div>\
         <div class="modal-footer p-0 pb-2 pr-2"><button type="button" hidden>Save</button>\
         <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button></div></div></div></div>';
- 
         $(c).appendTo('body');
     }  
 
@@ -111,21 +110,24 @@ function addModalTemplate(meteor_id,neighbor) {
     // We update the preview
     $('#nav_prev').html('');
     $.each(neighbor, function(i,v)  {
+        
         if(v.id==meteor_id) {
             _class = 'prev-th cur';
         } else {
             _class = 'prev-th ';
         } 
+
         if(v.id==0) {
-            // We had a +
+            // We add a +
             $('<div  class="position-relative">\
-                <a title="Add a frame" class="btn btn-primary btn-mm add_f position-absolute" data-rel="'+v.id+'"><i class="icon-plus"></i></a>\
+                <a title="Add a frame" class="btn btn-primary btn-mm add_f position-absolute" data-rel="'+v.id+'"><i class="icon-plus"></i>'+i+'</a>\
                 <img src="'+v.img+'" id="'+v.id+'" style="border-color:'+v.color+';" class="'+_class+'" >\
                </div>').appendTo($('#nav_prev'));
 
         } else {
-            $('<div><a class="select_frame" data-m="'+v.id+'"><img src="'+v.img+'" id="'+v.id+'" style="border-color:'+v.color+';" class="'+_class+'" ></a></div>').appendTo($('#nav_prev'));
+            $('<div><a class="select_frame" data-m="'+v.id+'"><img src="'+v.img+'" id="'+v.id+'" style="border-color:'+v.color+';" class="'+_class+'" >'+i+'</a></div>').appendTo($('#nav_prev'));
         }
+
     });
 
     // Click on thumbs
@@ -160,9 +162,7 @@ function setup_modal_actions(fn_id,x,y) {
 
     // Add Next Help Point 
     var nextH = get_help_pos('next',parseInt(fn_id));
-    console.log(nextH);
-    console.log(typeof nextH);
-    console.log(typeof nextH !== 'undefined');
+     
     if(nextH && typeof nextH !== 'undefined'  ) { 
         if( nextH.x !== null && typeof  nextH.x !== null) {
               // 225 for circle diameter
