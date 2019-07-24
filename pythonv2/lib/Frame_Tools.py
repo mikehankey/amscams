@@ -1,11 +1,14 @@
 import json
 import os 
 import subprocess 
+import cgitb
 from os.path import isfile, join, exists
 
 TMP_FRAME_FOLDER = '/mnt/ams2/TMP'
 
 def get_frame(fr_id,sd_vid):
+
+    cgitb.enable()
 
     #Get the eventual file name 
     filename = sd_vid.split("/")[-1]
