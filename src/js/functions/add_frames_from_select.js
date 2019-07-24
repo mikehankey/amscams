@@ -3,7 +3,7 @@ function get_frame(cur_fn) {
     var cmd_data = {
 		cmd: 'get_frame',
         sd_video_file: sd_video_file, // Defined on the page
-        fn: cur_fn
+        fr: cur_fn
     };
  
     loading({text: "Generating Full Frame #"+ cur_fn, overlay:true});
