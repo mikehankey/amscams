@@ -108,11 +108,7 @@ function addModalTemplate(meteor_id,neighbor) {
 
  
     // We update the preview
-    $('#nav_prev').html('');
-
-
-    console.log("neighbors ");
-    console.log(neighbor);
+    $('#nav_prev').html(''); 
     $.each(neighbor, function(i,v)  {
         
         if(v.id==meteor_id) {
@@ -124,12 +120,12 @@ function addModalTemplate(meteor_id,neighbor) {
         if(v.id==0) {
             // We add a +
             $('<div  class="position-relative">\
-                <a title="Add a frame" class="btn btn-primary btn-mm add_f position-absolute" data-rel="'+v.id+'"><i class="icon-plus"></i>'+i+'</a>\
+                <a title="Add a frame" class="btn btn-primary btn-mm add_f position-absolute" data-rel="'+v.id+'"><i class="icon-plus"></i></a>\
                 <img src="'+v.img+'" id="'+v.id+'" style="border-color:'+v.color+';" class="'+_class+'" >\
                </div>').appendTo($('#nav_prev'));
 
         } else {
-            $('<div><a class="select_frame" data-m="'+v.id+'"><img src="'+v.img+'" id="'+v.id+'" style="border-color:'+v.color+';" class="'+_class+'" >'+i+'</a></div>').appendTo($('#nav_prev'));
+            $('<div><a class="select_frame" data-m="'+v.id+'"><img src="'+v.img+'" id="'+v.id+'" style="border-color:'+v.color+';" class="'+_class+'" ></a></div>').appendTo($('#nav_prev'));
         }
 
     });
