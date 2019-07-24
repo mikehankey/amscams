@@ -426,6 +426,8 @@ def mfd_to_points(mfd):
       points.append((hs[2], hs[3]))
    return(points)
 
+
+
 def hist_to_points(hist):
    points = []
    for hs in hist:
@@ -1220,6 +1222,8 @@ def hist_to_metframes(obj,metframes,metconf):
    return(metframes,metconf)
 
 def setup_metframes(mfd):
+   hdm_x = 2.7272
+   hdm_y = 1.875
    # establish initial first x,y last x,y
    fx = mfd[0][2]
    fy = mfd[0][3]
@@ -1271,6 +1275,7 @@ def setup_metframes(mfd):
       metframes[fi]['el'] = 0
       metframes[fi]['len_from_last'] = 0
       metframes[fi]['len_from_start'] = 0
+   sd_fns = []
    xs = []
    ys = []
    for fd in mfd:
@@ -1278,10 +1283,13 @@ def setup_metframes(mfd):
       fi = fn
       xs.append(hd_x)
       ys.append(hd_y)
+      sd_fns.append(fn)
       metframes[fi]['fn'] = fi
       metframes[fi]['ft'] = frame_time
       metframes[fi]['hd_x'] = hd_x
       metframes[fi]['hd_y'] = hd_y
+      metframes[fi]['sd_cx'] = int(hd_x / hdm_x)
+      metframes[fi]['sd_cy'] = int(hd_y / hdm_y)
       metframes[fi]['w'] = w
       metframes[fi]['h'] = h
       metframes[fi]['max_px'] = max_px
@@ -1290,8 +1298,9 @@ def setup_metframes(mfd):
       metframes[fi]['az'] = az
       metframes[fi]['el'] = el
    metconf = {}
-   metconf['xs'] = xs
-   metconf['ys'] = ys
+   metconf['sd_xs'] = xs
+   metconf['sd_ys'] = ys
+   metconf['sd_fns'] = sd_fns
    metconf['fx'] = fx
    metconf['fy'] = fy
    metconf['lx'] = lx
@@ -1302,6 +1311,13 @@ def setup_metframes(mfd):
    metconf['x_incr'] = x_incr
    metconf['x_dir_mod'] = x_dir_mod
    metconf['y_dir_mod'] = y_dir_mod
+   m,b = best_fit_slope_and_intercept(xs,ys)
+   metconf['sd_m'] = m
+   metconf['sd_b'] = b
+   metconf['sd_acl_poly'] = 0
+
+
+   metconf['sd_seg_len'] = 2 
 
    return(metframes, metconf)
 
@@ -1894,6 +1910,9 @@ def make_crop_images(sd_video_file, json_conf):
    elif "-reduced.json" in sd_video_file:
       red_file = sd_video_file
       sd_video_file = red_file.replace("-reduced.json", ".mp4")
+   else:
+      red_file = sd_video_file.replace(".json", "-reduced.json")
+
 
 
    frames = load_video_frames(sd_video_file, json_conf)
