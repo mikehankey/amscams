@@ -105,8 +105,8 @@ function js() {
       './node_modules/bootstrap/dist/js/bootstrap.js',
       './src/js/plugins/bootstrap-multiselect.js', 
       './src/js/plugins/bootbox.js', 
-      './src/js/plugins/bootstrap-datetimepicker.min.js', 
-      
+      './src/js/plugins/bootstrap-datetimepicker.min.js',
+      './src/js/plugins/rcrop.js'
     ])
     .pipe(concat('amscam.min.js').on('error', function(e){
         console.log('CONCAT ' + e);

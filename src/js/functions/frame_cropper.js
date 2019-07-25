@@ -1,4 +1,6 @@
 var image_src = '/mnt/ams2/TMP/2019_03_06_06_47_25_000_010038-trim0072_23.png';
+var cursor_dim = 50;
+
 
     // Modal
     $('<div class="modal fade" id="cropper_modal" tabindex="-1">\
@@ -11,14 +13,7 @@ var image_src = '/mnt/ams2/TMP/2019_03_06_06_47_25_000_010038-trim0072_23.png';
             </button>\
           </div>\
           <div class="modal-body">\
-            <div class="img-container position-relative">\
-              <div class="cropper-crop-box">\
-                  <span class="cropper-dashed dashed-h"></span>\
-                  <span class="cropper-dashed dashed-v"></span>\
-                  <span class="cropper-center"></span>\
-              </div>\
-              <img id="frame_to_crop" src="'+image_src+'" alt="Frame to crop" class="img-fluid">\
-            </div>\
+             <img id="frame_to_crop" src="'+image_src+'" alt="Frame to crop" class="img-fluid">\
           </div>\
           <div class="modal-footer">\
             <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>\
@@ -29,38 +24,12 @@ var image_src = '/mnt/ams2/TMP/2019_03_06_06_47_25_000_010038-trim0072_23.png';
 
     $('#cropper_modal').modal('show');
 
-
-    $('.cropper-crop-box').css({ width:'50px',  height:'50px'}); 
-
-
-
-/*
-    $('#cropper_modal').on('shown.bs.modal', function () {
-        cropper = new Cropper(image, {
-            dragMode: 'move',
-            aspectRatio: 1 / 1, 
-            restore: false,
-            minCropBoxWidth: 50,
-            maxCropBoxHeight: 50,
-            guides: true,
-            center: false,
-            highlight: false,
-            cropBoxMovable: true,
-            cropBoxResizable: false,
-            toggleDragModeOnDblclick: false,
-          ready: function () {
-            //Should set crop box data first here
-            cropper.setCropBoxData(cropBoxData).setCanvasData(canvasData);
-          }
-        });
-      }).on('hidden.bs.modal', function () {
-        cropBoxData = cropper.getCropBoxData();
-        canvasData = cropper.getCanvasData();
-        cropper.destroy();
-      });
-*/
-
-  
-
-
+    $('#frame_to_crop').rcrop({
+        minSize : [50,50],
+        preserveAspectRatio : false,
+        preview : {
+            display: true,
+            size : [100,100],
+        }
+    });
  
