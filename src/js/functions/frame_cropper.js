@@ -1,22 +1,24 @@
-// Create Modal with cropper 
-function create_modal_cropper(image) {
+image_src = '/mnt/ams2/TMP/2019_03_06_06_47_25_000_010038-trim0072_23.png';
+
+
     var cropBoxData;
     var canvasData;
     var cropper;
+    var image;
 
     // Modal
-    $('<div class="modal fade" id="cropper_modal" tabindex="-1" role="dialog">\
-      <div class="modal-dialog" role="document">\
+    $('<div class="modal fade" id="cropper_modal" tabindex="-1">\
+      <div class="modal-dialog modal-lg" style="max-width: 1200px;>\
         <div class="modal-content">\
           <div class="modal-header">\
-            <h5 class="modal-title" id="modalLabel">Cropper</h5>\
+            <h5 class="modal-title" id="modalLabel">Frame cropper</h5>\
             <button type="button" class="close" data-dismiss="modal" aria-label="Close">\
               <span aria-hidden="true">×</span>\
             </button>\
           </div>\
           <div class="modal-body">\
             <div class="img-container">\
-              <img id="image" src="'+image+'" alt="Picture" class="">\
+              <img id="frame_to_crop" src="'+image_src+'" alt="Frame to crop" class="">\
             </div>\
           </div>\
           <div class="modal-footer">\
@@ -24,7 +26,9 @@ function create_modal_cropper(image) {
           </div>\
         </div>\
       </div>\
-    </div>').appendto('body');
+    </div>').appendTo('body');
+
+    var image = document.getElementById('frame_to_crop');
 
     $('#cropper_modal').on('shown.bs.modal', function () {
         cropper = new Cropper(image, {
@@ -39,12 +43,6 @@ function create_modal_cropper(image) {
         canvasData = cropper.getCanvasData();
         cropper.destroy();
       });
-    });
+
 
     $('#cropper_modal').modal('show');
-}
-
-
- 
-
-create_modal_cropper('/mnt/ams2/TMP/2019_03_06_06_47_25_000_010038-trim0072_23.png');
