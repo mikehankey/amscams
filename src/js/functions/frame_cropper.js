@@ -8,7 +8,7 @@ image_src = '/mnt/ams2/TMP/2019_03_06_06_47_25_000_010038-trim0072_23.png';
 
     // Modal
     $('<div class="modal fade" id="cropper_modal" tabindex="-1">\
-      <div class="modal-dialog modal-lg" style="max-width: 1200px;>\
+      <div class="modal-dialog modal-lg" style="max-width: 1200px;">\
         <div class="modal-content">\
           <div class="modal-header">\
             <h5 class="modal-title" id="modalLabel">Frame cropper</h5>\
@@ -32,7 +32,17 @@ image_src = '/mnt/ams2/TMP/2019_03_06_06_47_25_000_010038-trim0072_23.png';
 
     $('#cropper_modal').on('shown.bs.modal', function () {
         cropper = new Cropper(image, {
-          autoCropArea: 0.5,
+            dragMode: 'move',
+            aspectRatio: 1 / 1, 
+            restore: false,
+            minCropBoxWidth: 50,
+            maxCropBoxHeight: 50,
+            guides: true,
+            center: false,
+            highlight: false,
+            cropBoxMovable: true,
+            cropBoxResizable: false,
+            toggleDragModeOnDblclick: false,
           ready: function () {
             //Should set crop box data first here
             cropper.setCropBoxData(cropBoxData).setCanvasData(canvasData);
@@ -46,3 +56,6 @@ image_src = '/mnt/ams2/TMP/2019_03_06_06_47_25_000_010038-trim0072_23.png';
 
 
     $('#cropper_modal').modal('show');
+
+
+ 
