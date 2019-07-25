@@ -20,8 +20,8 @@
       -webkit-box-sizing: border-box;
       box-sizing: border-box; }
   .rcrop-wrapper .rcrop-outer-wrapper {
-    filter: progid:DXImageTransform.Microsoft.Alpha(Opacity=50);
-    opacity: 0.5;
+    filter: progid:DXImageTransform.Microsoft.Alpha(Opacity=20);
+    opacity: 0.2;
     position: absolute;
     top: 0;
     left: 0;
@@ -126,7 +126,7 @@
   z-index: 1000; }
 
 .clayfy-ghost-opacity {
-  opacity: .5; }
+  opacity: .2; }
 
 .clayfy-handler {
   z-index: 1001; }

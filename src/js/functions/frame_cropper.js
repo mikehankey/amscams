@@ -1,5 +1,4 @@
-var image_src = '/mnt/ams2/TMP/2019_03_06_06_47_25_000_010038-trim0072_23.png';
-var cursor_dim = 50;
+
 
 
     // Modal
@@ -13,7 +12,9 @@ var cursor_dim = 50;
             </button>\
           </div>\
           <div class="modal-body">\
-             <img id="frame_to_crop" src="'+image_src+'" alt="Frame to crop" class="img-fluid">\
+             <img id="frame_to_crop" src="'+image_src+'" alt="Frame to crop">\
+             <div id="cropped-original"></div>\
+             <div id="cropped-resized"></div>\
           </div>\
           <div class="modal-footer">\
             <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>\
@@ -22,14 +23,40 @@ var cursor_dim = 50;
       </div>\
     </div>').appendTo('body');
 
+
+
+    var image_src = '/mnt/ams2/TMP/2019_03_06_06_47_25_000_010038-trim0072_23.png';
+    var cursor_dim = 50;
+$(' <img id="frame_to_crop" src="'+image_src+'" alt="Frame to crop">').appendTo('body');
+
     $('#cropper_modal').modal('show');
 
     $('#frame_to_crop').rcrop({
         minSize : [50,50],
-        preserveAspectRatio : false,
+        maxSize: [50,50],
+        preserveAspectRatio : true,
+    
+        preview : {
+            display: true,
+            size : [100,100],
+            wrapper : '#custom-preview-wrapper'
+        }
+    });
+    
+    $('#frame_to_crop').on('rcrop-changed', function(){
+        var srcOriginal = $(this).rcrop('getDataURL');
+        var srcResized = $(this).rcrop('getDataURL', 50,50);
+    
+        $('#cropped-original').append('<img src="'+srcOriginal+'">');
+        $('#cropped-resized').append('<img src="'+srcResized+'">');
+    })
+ 
+
+
+    /*
+    .,
         preview : {
             display: true,
             size : [100,100],
         }
-    });
- 
+        */
