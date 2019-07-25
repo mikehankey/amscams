@@ -1,14 +1,8 @@
-image_src = '/mnt/ams2/TMP/2019_03_06_06_47_25_000_010038-trim0072_23.png';
-
-
-    var cropBoxData;
-    var canvasData;
-    var cropper;
-    var image;
+var image_src = '/mnt/ams2/TMP/2019_03_06_06_47_25_000_010038-trim0072_23.png';
 
     // Modal
     $('<div class="modal fade" id="cropper_modal" tabindex="-1">\
-      <div class="modal-dialog modal-lg" style="max-width: 1200px;">\
+      <div class="modal-dialog modal-lg" style="max-width:1100px;">\
         <div class="modal-content">\
           <div class="modal-header">\
             <h5 class="modal-title" id="modalLabel">Frame cropper</h5>\
@@ -17,8 +11,13 @@ image_src = '/mnt/ams2/TMP/2019_03_06_06_47_25_000_010038-trim0072_23.png';
             </button>\
           </div>\
           <div class="modal-body">\
-            <div class="img-container">\
-              <img id="frame_to_crop" src="'+image_src+'" alt="Frame to crop" class="">\
+            <div class="img-container position-relative">\
+              <div class="cropper-crop-box">\
+                  <span class="cropper-dashed dashed-h"></span>\
+                  <span class="cropper-dashed dashed-v"></span>\
+                  <span class="cropper-center"></span>\
+              </div>\
+              <img id="frame_to_crop" src="'+image_src+'" alt="Frame to crop" class="img-fluid">\
             </div>\
           </div>\
           <div class="modal-footer">\
@@ -28,8 +27,14 @@ image_src = '/mnt/ams2/TMP/2019_03_06_06_47_25_000_010038-trim0072_23.png';
       </div>\
     </div>').appendTo('body');
 
-    var image = document.getElementById('frame_to_crop');
+    $('#cropper_modal').modal('show');
 
+
+    $('.cropper-crop-box').css({ width:'50px',  height:'50px'}); 
+
+
+
+/*
     $('#cropper_modal').on('shown.bs.modal', function () {
         cropper = new Cropper(image, {
             dragMode: 'move',
@@ -53,9 +58,9 @@ image_src = '/mnt/ams2/TMP/2019_03_06_06_47_25_000_010038-trim0072_23.png';
         canvasData = cropper.getCanvasData();
         cropper.destroy();
       });
+*/
 
-
-    $('#cropper_modal').modal('show');
+  
 
 
  
