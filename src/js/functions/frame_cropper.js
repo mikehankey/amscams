@@ -31,7 +31,8 @@
              </button>\
            </div>\
            <div class="modal-body">\
-              <img id="frame_to_crop" src="'+image_src+'" alt="Frame to crop">\
+              <p>Select the area of the meteor location</p>\
+              <img id="frame_to_crop" src="'+image_src+'" alt="Select the area of the meteor">\
               <div id="cropped-original"></div>\
               <div id="cropped-resized"></div>\
            </div>\
