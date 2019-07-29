@@ -1141,6 +1141,7 @@ def minimize_fov_pos(meteor_json_file, image_file, json_conf, cal_params = None,
 
    cal_params['fov_pos_poly'] = fov_pos_poly.tolist()
    cal_params['fov_pos_fun'] = fov_pos_fun
+   cal_params['total_res_px'] = fov_pos_fun
 
    #print("FOV POS POLY:", fov_pos_poly)
    #print("EQUATION = " + str(cal_params['position_angle']) + " + " + str(fov_pos_poly[2] ))
@@ -1194,6 +1195,10 @@ def minimize_fov_pos(meteor_json_file, image_file, json_conf, cal_params = None,
    #print("END POS:", cal_params['position_angle']) 
    #print("END PIXSCALE:", cal_params['pixscale']) 
 
+   # update the reduction values with new calibration
+   video_file = meteor_json_file.replace(".json", ".mp4")
+   video_file = video_file.replace("-reduced", "")
+   os.system("cd /home/ams/amscams/pythonv2; ./reducer3.py cm " + video_file + " >/mnt/ams2/tmp/rd3.txt")
 
    return(fov_pos_poly,cal_params)
 
@@ -3538,6 +3543,7 @@ if cmd == 'imgstars' or cmd == 'imgstars_strict':
 
    #print("FILE: ", file)
    print("RES ERR: ", cam_id, tot_res, res_err, len(close_stars) )
+   cal_params['total_res_px'] = res_err
    #print("MATCH STARS: ", len(close_stars))
    if meteor_mode == 0:     
       if "cal_params" in cal_params: 

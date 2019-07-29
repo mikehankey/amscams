@@ -1081,6 +1081,7 @@ def minimize_start_len(metframes,frames,metconf,show=0):
    this_poly = np.zeros(shape=(2,), dtype=np.float64)
    if "sd_seg_len" in metconf:
       this_poly[0] = np.float64(metconf['sd_seg_len'])
+      this_poly[0] = 2
    else:
       this_poly[0] = np.float64(2)
    if "sd_acl_poly" in metconf:
@@ -1101,6 +1102,7 @@ def minimize_start_len(metframes,frames,metconf,show=0):
 
 def reduce_seg_acl(this_poly,metframes,metconf,frames,show=0):
   
+   metframes = sort_metframes(metframes)
    # update m/b
    m,b = best_fit_slope_and_intercept(metconf['sd_xs'],metconf['sd_ys'])
    metconf['sd_m'] = m
@@ -1115,14 +1117,23 @@ def reduce_seg_acl(this_poly,metframes,metconf,frames,show=0):
       orig_image = cv2.cvtColor(frame,cv2.COLOR_GRAY2RGB)
       met = 0
       if fc in metframes or str(fc) in metframes:
+         if str(fc) not in metframes:
+            fc = int(fc)
+         elif int(fc) not in metframes:
+            fc = str(fc)
+      
          x = metframes[fc]['sd_x']
          y = metframes[fc]['sd_y']
          w = metframes[fc]['sd_w']
          h = metframes[fc]['sd_h']
-         mx = metframes[fc]['sd_max_x']
-         my = metframes[fc]['sd_max_y']
-         lc_x = metframes[fc]['sd_lc_x']
-         lc_y = metframes[fc]['sd_lc_y']
+         #mx = metframes[fc]['sd_max_x']
+         #my = metframes[fc]['sd_max_y']
+         mx = metframes[fc]['sd_x']
+         my = metframes[fc]['sd_y']
+         #lc_x = metframes[fc]['sd_lc_x']
+         #lc_y = metframes[fc]['sd_lc_y']
+         lc_x = metframes[fc]['sd_x']
+         lc_y = metframes[fc]['sd_y']
          cx = int(x + (w/2))
          cy = int(y + (h/2))
          if "first_frame" not in metconf:
@@ -1155,7 +1166,7 @@ def reduce_seg_acl(this_poly,metframes,metconf,frames,show=0):
          if show == 1:
             print("swho", 1)
             cv2.imshow('final', orig_image)
-            cv2.waitKey(1)  
+            cv2.waitKey(0)  
       fc = fc + 1
    if fcc > 0:
       res_err = np.float64(tot_res_err / fcc)
@@ -1822,6 +1833,7 @@ def metframes_to_mfd(metframes, metconf, sd_video_file,json_conf):
       frame_time,frame_time_str = calc_frame_time(sd_video_file, fn)
       metframes[fn]['frame_time'] = frame_time_str
       if "hd_x" not in metframes[fn] or 'x1' not in metframes[fn]:
+         print("FRAME:", fn)
          metframes[fn]['x1'] = int(metframes[fn]['sd_x'] * hdm_x)
          metframes[fn]['y1'] = int(metframes[fn]['sd_y'] * hdm_y)
          metframes[fn]['hd_x'] = int(metframes[fn]['sd_cx'] * hdm_x)
@@ -1977,20 +1989,30 @@ def sort_metframes(metframes):
 
 def perfect(video_file, json_conf):
    red_file = video_file.replace(".mp4", "-reduced.json")
-   os.system("cd /home/ams/amscams/pythonv2/; ./autoCal.py imgstars " + video_file)
    os.system("cd /home/ams/amscams/pythonv2/; ./autoCal.py cfit " + video_file)
    os.system("cd /home/ams/amscams/pythonv2/; ./autoCal.py imgstars " + video_file)
    red_data = load_json_file(red_file)
    xres = red_data['cal_params']['total_res_px']
    total_stars = len(red_data['cal_params']['cat_image_stars'])
 
+   sd_frames = load_video_frames(video_file,json_conf)
+
    print("XY RES ERR:", xres , total_stars)
    for i in range(0,10):
       red_data = load_json_file(red_file)
       xres = red_data['cal_params']['total_res_px']
       total_stars = len(red_data['cal_params']['cat_image_stars'])
-      if total_stars > 6 and float(xres) > 1.5:
+      print("TS/XRES:", xres)
+      if total_stars > 6 and float(xres) > 2:
          os.system("cd /home/ams/amscams/pythonv2/; ./autoCal.py cfit " + video_file)
-   os.system("cd /home/ams/amscams/pythonv2/; ./reducer3.py dm " + video_file)
+   print("RED:", red_file)
+   red_data = load_json_file(red_file)
+   #metframes, metconf = minimize_start_len(red_data['metframes'],sd_frames,red_data['metconf'],1)
+   #red_data['metframes'] = metframes
+   #red_data['metconf'] = metconf
+   #save_json_file(red_file, red_data)
+
+
+   os.system("cd /home/ams/amscams/pythonv2/; ./reducer3.py cm " + video_file)
        
    

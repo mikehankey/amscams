@@ -60,7 +60,7 @@ def add_frame_ajax( json_conf, form):
    hdm_y = 1.875
 
    sd_video_file = form.getvalue("sd_video_file")
-   new_fn = form.getvalue("fn")
+   new_fn = form.getvalue("fr")
 
 
    prev_fn = str(int(new_fn) - 1)
@@ -122,6 +122,10 @@ def add_frame_ajax( json_conf, form):
       metframes[new_fn]['hd_y'] = est_y
       metframes[new_fn]['w'] = 5
       metframes[new_fn]['h'] = 5
+      metframes[new_fn]['sd_x'] = sd_cx
+      metframes[new_fn]['sd_y'] = sd_cy
+      metframes[new_fn]['sd_w'] = 6
+      metframes[new_fn]['sd_h'] = 6
       metframes[new_fn]['sd_cx'] = sd_cx
       metframes[new_fn]['sd_cy'] = sd_cy
       metframes[new_fn]['ra'] = 0
@@ -176,6 +180,21 @@ def remove_dupe_cat_stars(paired_stars):
    return(new_paired_stars)
 
 
+def clone_meteor_cal(json_conf, form):
+   print("Clone Meteor Cal.")
+   file = form.getvalue("file")
+   prefix =  file.split("/")[-1][0:30]
+   red_file = file.replace("-stacked.png", "-reduced.json") 
+   if cfe(red_file) == 1:
+      red_data = load_json_file(red_file)
+      if "cal_params" in red_data:
+         print("Cloning", prefix)
+         new_dir = "/mnt/ams2/cal/freecal/" + prefix + "/" 
+         os.system("mkdir " + new_dir)
+         new_file = new_dir + prefix + "-calparams.json"
+         save_json_file(new_file, red_data['cal_params'])
+
+
 def clone_cal(json_conf, form):
    print("Clone Cal.")
    file = form.getvalue("file")
@@ -187,7 +206,7 @@ def clone_cal(json_conf, form):
          print("Cloning", prefix)
          new_dir = "/mnt/ams2/cal/freecal/" + prefix + "/" 
          os.system("mkdir " + new_dir)
-         new_file = new_dir + prefix + "-calparams.json"
+         new_file = new_dir + prefix + "-stacked-calparams.json"
          save_json_file(new_file, red_data['cal_params'])
          hd_stack = red_data['hd_video_file']
          hd_stack = hd_stack.replace(".mp4", "-stacked.png") 
