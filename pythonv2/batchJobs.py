@@ -18,7 +18,10 @@ if sys.argv[1] == 'mkml':
    merge_kml_files(json_conf)
 
 if sys.argv[1] == 'br':
-   batch_reduce(json_conf)
+   if len(sys.argv) > 3:
+      day = sys.argv[2]
+   print("BATCH REDUCE", len(sys.argv[2]))
+   batch_reduce(json_conf, sys.argv[2])
 if sys.argv[1] == 'tn':
    batch_thumb(json_conf)
 if sys.argv[1] == 'bmt':

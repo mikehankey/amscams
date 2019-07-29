@@ -13,11 +13,17 @@ from PIL import Image
 from lib.VideoLib import load_video_frames
 from lib.UtilLib import convert_filename_to_date_cam
 
-def batch_reduce(json_conf):
+def batch_reduce(json_conf, day = None):
    meteor_dirs = glob.glob("/mnt/ams2/meteors/*")
+   if day is not None:
+      meteor_dirs = []
+      print("DAY:", day)
+      meteor_dirs.append("/mnt/ams2/meteors/" + day + "/")
    for meteor_dir in sorted(meteor_dirs, reverse=True):
       print(meteor_dir)
+      print(meteor_dir + "/" + "*.json")
       meteor_files = glob.glob(meteor_dir + "/" + "*.json")
+      print("METEOR FILES:", meteor_files)
       for json_file in sorted(meteor_files,reverse=True):
           if "reduced" not in json_file and "calparams" not in json_file and "manual" not in json_file and "starmerge" not in json_file and "master" not in json_file:
  #         if True:
@@ -34,6 +40,10 @@ def batch_reduce(json_conf):
                   cal_params_file = cal_files[0][0]
                   print("Meteor not done", json_file)
                   cmd = "./detectMeteors.py raj " + json_file + " " + cal_params_file
+                  print(cmd)
+                  os.system(cmd)
+                  video_file = json_file.replace(".json", ".mp4")
+                  cmd = "./reducer3.py pf " + video_file
                   print(cmd)
                   os.system(cmd)
                else:
