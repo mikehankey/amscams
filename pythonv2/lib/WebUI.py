@@ -278,10 +278,10 @@ def controller(json_conf):
    #Crop a frame
    if(cmd == 'crop_frame'):
       fr_id = form.getvalue('fr_id')
-      sd_vid = form.getvalue('sd_video_file')
+      src = form.getvalue('src')
       x = form.getvalue('x')
       y = form.getvalue('y')
-      print(crop_frame(fr_id,sd_vid,x,y))
+      print(crop_frame(fr_id,src,x,y))
       exit()
 
    if cmd == 'add_frame':

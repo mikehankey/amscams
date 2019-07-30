@@ -10,20 +10,20 @@ FRAME_THUMB_W = 50
 FRAME_THUMB_H = 50
 
 # Return a cropped frame
-def crop_frame(fr_id,sd_vid,x,y):
+def crop_frame(fr_id,src,x,y):
     cgitb.enable()
     w=FRAME_THUMB_W
     h=FRAME_THUMB_W
 
     # Name & Path of the frame
-    frame_name = sd_vid.split(".")[0] + "-frm" + str(fr_id) + ".png"
+    frame_name = src.split(".")[0] + "-frm" + str(fr_id) + ".png"
 
-    cmd = "ffmpeg -i " + sd_vid + " -vf \"crop="+str(w)+":"+str(h)+":"+str(x)+":"+str(y)+"\" " + frame_name
+    cmd = "ffmpeg -i " + src + " -vf \"crop="+str(w)+":"+str(h)+":"+str(x)+":"+str(y)+"\" " + frame_name
     print(cmd)
     output = subprocess.check_output(cmd, shell=True).decode("utf-8")      
     
     try:
-        cmd = "ffmpeg -y - hide_banner -loglevel panic -i " + sd_vid + " -vf \"crop="+str(w)+":"+str(h)+":"+str(x)+":"+str(y)+"\" " + frame_name
+        cmd = "ffmpeg -y - hide_banner -loglevel panic -i " + src + " -vf \"crop="+str(w)+":"+str(h)+":"+str(x)+":"+str(y)+"\" " + frame_name
         output = subprocess.check_output(cmd, shell=True).decode("utf-8")      
         return json.dumps({'fr':frame_name})
     except:
