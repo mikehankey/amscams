@@ -6,7 +6,28 @@ import glob
 from os.path import isfile, join, exists
 
 TMP_FRAME_FOLDER = '/mnt/ams2/TMP'
+FRAME_THUMB_W = 50
+FRAME_THUMB_H = 50
 
+
+# Return a cropped frame
+def crop_frame(fr_id,sd_vid,x,y,w=FRAME_THUMB_W,h=FRAME_THUMB_H)
+
+    # Name & Path of the frame
+    frame_name = sd_vid.split(".")[0] + "-frm" + str(fr_id) + '.png'
+
+    #ffmpeg -i input.png -vf  "crop=w:h:x:y" input_crop.png
+    try:
+        cmd = "ffmpeg -y - hide_banner -loglevel panic -i " + sd_vid + " -vf \"crop="+w+":"+h+":"+x+":"+y+"\" " + frame_name
+        output = subprocess.check_output(cmd, shell=True).decode("utf-8")      
+        return json.dumps({'fr':frame_name})
+    except:
+        return json.dumps({'res':'false'})
+
+
+
+# Return a given frame for a given vid
+# (create all the frames in TMP_FRAME_FOLDER if they don't exists)
 def get_frame(fr_id,sd_vid):
 
     cgitb.enable()
@@ -22,7 +43,7 @@ def get_frame(fr_id,sd_vid):
     
     #First we test if the frame already exist
     if os.path.isfile(name):
-        return {'full_fr': name, 'id': fr_id}
+        return json.dumps({'full_fr': name, 'id': fr_id})
     else:
         #We need to generate all the frames in TMP_FRAME_FOLDER
 
