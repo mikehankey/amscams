@@ -172,7 +172,25 @@ function create_meteor_selector_from_frame(frame_id, image_src) {
     
     })
 
+    
 
+    // Create CROP 
+    $('#create_frame').click(function() {
+        // Create cropped frame
+        $.ajax({ 
+            url:  "/pycgi/webUI.py",
+            data: {
+                cmd: 'crop_frame',
+                fr_id: frame_id,
+                sd_video_file: sd_video_file,
+                x: parseFloat($('#selector').css('top')),
+                y: parseFloat($('#selector').css('left'))
+            }, 
+            success: function(data) {
+                console.log(data);
+
+            }
+    });
       
 
 }
