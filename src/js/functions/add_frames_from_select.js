@@ -195,7 +195,7 @@ function get_frame(cur_fn) {
         success: function(data) { 
           
             loading_done(); 
-            data = JSON.stringify($.trim(data);
+            data = JSON.stringify($.trim(data));
             data = JSON.parse(data);
             //create_meteor_selector_from_frame(data.id,data.full_fr);
 
