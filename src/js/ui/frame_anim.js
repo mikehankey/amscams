@@ -70,6 +70,7 @@ function frame_anim() {
     $('#tot_f').text(totalFrames);
     $('#cur_sp').text('x1');
 
+    // Inpur range for animation speed
     $('#mar').val(0).on('input', function () { 
         var val = parseInt($(this).val());
  
