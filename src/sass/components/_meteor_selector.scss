@@ -126,6 +126,13 @@ $meteor_selector_w: 500px;
     background: rgba(9,27,56,.8);
     cursor:grab;
     height:20px;
+
+    small {
+        padding: 0 0 .3rem .5rem;
+        line-height: 20px;
+        margin-top: -.3rem;
+        display: block;
+    }
 }
 
 #selector {

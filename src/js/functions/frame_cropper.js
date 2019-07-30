@@ -60,7 +60,7 @@ function update_mask_position(top,left,prev_W,prev_H,cursor_dim) {
              <div id="dl"></div><div id="dt"></div><div id="dr"></div><div id="db"></div>\
              <div id="selector" style="width:'+cursor_dim+'px; height:'+cursor_dim+'px; border:'+cursor_border_width+'px solid #fff;"></div>\
              <div id="select_f_tools">\
-                <div class="drag-h"></div>\
+                <div class="drag-h"><small>Preview</small></div>\
                 <div class="p-1">\
                 <div id="select_preview" style="width:'+preview_dim+'px; height:'+preview_dim+'px"></div>\
                 <div><input type="range" value="'+transp_val+'" id="transp" min="0"  max="60" ></div>\
@@ -69,6 +69,7 @@ function update_mask_position(top,left,prev_W,prev_H,cursor_dim) {
            </div>\
         </div>\
         <div class="modal-footer">\
+          <button type="button" class="btn btn-primary" id="create_frame">Create Frame</button>\
           <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>\
         </div>\
       </div>\
@@ -155,6 +156,12 @@ function update_mask_position(top,left,prev_W,prev_H,cursor_dim) {
       containment: "parent",
       drag:function(e,u) {  
           $(this).css('position','relative')
+      },
+      start: function( event, ui ) {
+        $(this).css('opacity',0.3);
+      },
+      stop: function( event, ui ) {
+        $(this).css('opacity',1);
       }
     }
   );  
