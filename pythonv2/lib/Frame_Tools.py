@@ -12,7 +12,19 @@ FRAME_THUMB_H = 50
 
 # Return a cropped frame
 def crop_frame(fr_id,sd_vid,x,y)
-    return "toto"
+    w=FRAME_THUMB_W
+    h=FRAME_THUMB_H
+
+    # Name & Path of the frame
+    frame_name = sd_vid.split(".")[0] + "-frm" + str(fr_id) + ".png"
+
+    #ffmpeg -i input.png -vf  "crop=w:h:x:y" input_crop.png
+    try:
+        cmd = "ffmpeg -y - hide_banner -loglevel panic -i " + sd_vid + " -vf \"crop="+w+":"+h+":"+x+":"+y+"\" " + frame_name
+        output = subprocess.check_output(cmd, shell=True).decode("utf-8")      
+        return json.dumps({'fr':frame_name})
+    except:
+        return json.dumps({'res':'false'})
 
 
 
@@ -20,7 +32,7 @@ def crop_frame(fr_id,sd_vid,x,y)
 # (create all the frames in TMP_FRAME_FOLDER if they don't exists)
 def get_frame(fr_id,sd_vid):
 
-    cgitb.enable()
+    #cgitb.enable()
 
     #Get the eventual file name 
     filename = sd_vid.split("/")[-1]

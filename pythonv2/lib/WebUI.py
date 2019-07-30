@@ -275,6 +275,7 @@ def controller(json_conf):
       print(get_frame(fr_id,sd_vid))
       exit()
    
+   cgitb.enable()
    
    #Crop a frame
    if(cmd == 'crop_frame'):
