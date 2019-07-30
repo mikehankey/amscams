@@ -34,5 +34,5 @@ def get_frame(fr_id,sd_vid):
         #We generate all the frames
         cmd =  'ffmpeg -y -hide_banner -loglevel panic -i '+ sd_vid + ' -s 1280x720  ' + TMP_FRAME_FOLDER + '/' + cur_name + '_%d.png ' 
         output = subprocess.check_output(cmd, shell=True).decode("utf-8")    
-        return {'full_fr':TMP_FRAME_FOLDER + '/' + cur_name + '_' + fr_id + '.png', 'id': fr_id}
+        return json.dumps({'full_fr':TMP_FRAME_FOLDER + '/' + cur_name + '_' + fr_id + '.png', 'id': fr_id})
  
