@@ -17,7 +17,10 @@ def crop_frame(fr_id,src,x,y):
 
     # Name & Path of the frame
     frame_name = src.split(".")[0] + "-frm" + str(fr_id) + ".png"
- 
+    
+    cmd = "ffmpeg -y - hide_banner -loglevel panic -i " + src + " -vf \"crop="+str(w)+":"+str(h)+":"+str(x)+":"+str(y)+"\" " + frame_name
+    output = subprocess.check_output(cmd, shell=True).decode("utf-8")       
+    print(output)
     
     try:
         cmd = "ffmpeg -y - hide_banner -loglevel panic -i " + src + " -vf \"crop="+str(w)+":"+str(h)+":"+str(x)+":"+str(y)+"\" " + frame_name
