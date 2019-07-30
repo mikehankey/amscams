@@ -277,7 +277,7 @@ def controller(json_conf):
    
    #Crop a frame
    if(cmd == 'crop_frame'):
-      fr_id = form.getvalue('fr')
+      fr_id = form.getvalue('fr_id')
       sd_vid = form.getvalue('sd_video_file')
       x = form.getvalue('x')
       y = form.getvalue('y')
