@@ -207,6 +207,8 @@ def parse_jsid(jsid):
 
 def controller(json_conf):
 
+   cgitb.enable(display=0, logdir='.')    
+
    form = cgi.FieldStorage()
    cmd = form.getvalue('cmd')
    skin = form.getvalue('skin') 
@@ -275,7 +277,7 @@ def controller(json_conf):
       print(get_frame(fr_id,sd_vid))
       exit()
    
-   cgitb.enable()
+ 
    
    #Crop a frame
    if(cmd == 'crop_frame'):
