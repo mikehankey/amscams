@@ -40,7 +40,7 @@ function create_meteor_selector_from_frame(frame_id, image_src) {
     var prev_H = 720;
     var transp_val = 15;            // Transparency of white area
     var preview_dim = 300;          // Only squares for preview
-
+    var cursor_border_width  = 1; 
 
     loading({text: "Please Hold On", overlay:true});
 
