@@ -275,6 +275,15 @@ def controller(json_conf):
       print(get_frame(fr_id,sd_vid))
       exit()
    
+   
+   #Crop a frame
+   if(cmd == 'crop_frame'):
+      fr_id = form.getvalue('fr')
+      sd_vid = form.getvalue('sd_video_file')
+      x = form.getvalue('x')
+      y = form.getvalue('y')
+      print(crop_frame(fr_id,sd_vid,x,y)))
+      exit()
 
    if cmd == 'add_frame':
       add_frame_ajax(json_conf,form)
