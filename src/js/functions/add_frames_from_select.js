@@ -183,8 +183,8 @@ function create_meteor_selector_from_frame(frame_id, image_src) {
                 cmd: 'crop_frame',
                 fr_id: frame_id,
                 src: image_src,
-                x: parseFloat($('#selector').css('top')),
-                y: parseFloat($('#selector').css('left'))
+                x: parseFloat($('#selector').css('left')),
+                y: parseFloat($('#selector').css('top'))
             }, 
             success: function(data) {
                 console.log(data);
