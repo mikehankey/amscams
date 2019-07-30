@@ -14,7 +14,7 @@ FRAME_THUMB_H = 50
 def crop_frame(fr_id,sd_vid,x,y,w=FRAME_THUMB_W,h=FRAME_THUMB_H)
 
     # Name & Path of the frame
-    frame_name = sd_vid.split(".")[0] + "-frm" + str(fr_id) + '.png'
+    frame_name = sd_vid.split(".")[0] + "-frm" + str(fr_id) + ".png"
 
     #ffmpeg -i input.png -vf  "crop=w:h:x:y" input_crop.png
     try:
