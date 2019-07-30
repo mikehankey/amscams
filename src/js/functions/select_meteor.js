@@ -122,7 +122,7 @@ function addModalTemplate(meteor_id,neighbor) {
         if(v.id==0) {
             // We add a +
             $('<div class="position-relative ">\
-                <a title="Add a frame" class="btn btn-primary btn-mm add_f position-absolute" data-rel="'+v.id+'"><i class="icon-plus"></i> #'+v.vid+'</a>\
+                <a title="Add a frame" class="create_frame_fs btn btn-primary btn-mm add_f position-absolute" data-rel="'+v.id+'" data-fr="'+v.id+'"><i class="icon-plus"></i> #'+v.vid+'</a>\
                 <img src="'+v.img+'" id="'+v.id+'" style="border-color:'+v.color+';" class="'+_class+'" >\
                </div>').appendTo($('#nav_prev'));
 
@@ -140,6 +140,11 @@ function addModalTemplate(meteor_id,neighbor) {
     // Click on delete 
     $('.delete_frame_from_modal').unbind('click').click(function() {
         delete_frame_from_crop_modal(parseInt($('#sel_frame_id').html()));
+    });
+
+    // Click on "+"
+    $('.create_frame_fs').click(function() {
+        get_frame($(this).attr('data-fr'));
     });
 }
 
