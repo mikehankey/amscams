@@ -71,7 +71,7 @@ function create_meteor_selector_from_frame(frame_id, image_src) {
             </div>\
             </div>\
             <div class="modal-footer">\
-            <img id="tmp_img_ld" class="hidden" src="'+image_src+'"/>\
+            <img id="tmp_img_ld" hidden src="'+image_src+'"/>\
             <button type="button" class="btn btn-primary" id="create_frame">Create Frame</button>\
             <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>\
             </div>\
