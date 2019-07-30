@@ -16,7 +16,10 @@ def crop_frame(fr_id,src,x,y):
     h=FRAME_THUMB_W
 
     # Name & Path of the frame
-    frame_name = src.split(".")[0] + "-frm" + str(fr_id) + ".png"
+    frame_name = src.split(".")[0] 
+    s = frame_name.rfind('_')
+    frame_name = frame_name[:s]+ "-frm" + str(fr_id) + ".png"
+ 
     
     cmd = "ffmpeg -y -hide_banner -loglevel panic -i " + src + " -vf \"crop="+str(w)+":"+str(h)+":"+str(x)+":"+str(y)+"\" " + frame_name
     output = subprocess.check_output(cmd, shell=True).decode("utf-8")       
