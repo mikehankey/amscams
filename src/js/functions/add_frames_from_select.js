@@ -190,6 +190,7 @@ function create_meteor_selector_from_frame(frame_id, image_src) {
                 console.log(data);
 
             }
+        });
     });
       
 
