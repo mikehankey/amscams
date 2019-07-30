@@ -197,11 +197,11 @@ function get_frame(cur_fn) {
             loading_done(); 
             data = JSON.stringify(data);
             data = JSON.parse(data);
-            // Data = {'id': '44', 'full_fr': '/mnt/ams2/TMP/2019_03_16_07_19_39_000_010038-trim1245_44.png'}
-            console.log("DATA",data);
-            console.log("FRAME PATH ",data.full_fr)
-            create_meteor_selector_from_frame(data.id,data.full_fr);
+            //create_meteor_selector_from_frame(data.id,data.full_fr);
 
+            console.log("DATA ");
+            console.log(data);
+            console.log(data.full_fr);
         }, 
         error:function() { 
             console.log('ERROR');
