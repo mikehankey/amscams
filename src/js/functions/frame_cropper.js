@@ -52,7 +52,7 @@ function update_mask_position(top,left,prev_W,prev_H,cursor_dim) {
             <span aria-hidden="true">×</span>\
           </button>\
         </div>\
-        <div class="modal-body">\
+        <div class="modal-body position-relative">\
           <div class="d-flex justify-content-between">\
             <p>Move the white square to the meteor location</p>\
           </div>\
@@ -85,7 +85,7 @@ function update_mask_position(top,left,prev_W,prev_H,cursor_dim) {
 
   $('#cropper_modal').modal('show'); 
 
-
+  $('#select_f_tools').css({bottom:'2rem',right:'2rem'});
  
 
   var w_preview_dim = $('#select_preview').innerWidth()/2;
