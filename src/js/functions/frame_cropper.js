@@ -85,7 +85,7 @@ function update_mask_position(top,left,prev_W,prev_H,cursor_dim) {
 
   $('#cropper_modal').modal('show'); 
 
-$('#select_f_tools').css({"bottom":'2rem',"right":'2rem'});
+
  
 
   var w_preview_dim = $('#select_preview').innerWidth()/2;
@@ -149,7 +149,15 @@ $('#select_f_tools').css({"bottom":'2rem',"right":'2rem'});
 
 
   // Drag tools
-  $( "#select_f_tools" ).draggable({ handle: ".drag-h", containment: "parent" });  
+  $('#select_f_tools').css({"bottom":'2rem',"right":'2rem','position':'absolute'});
+  $( "#select_f_tools" ).draggable(
+    { handle: ".drag-h", 
+      containment: "parent",
+      drag:function(e,u) {  
+          $(this).css('position','relative')
+      }
+    }
+  );  
 
   
 

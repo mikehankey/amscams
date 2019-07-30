@@ -117,7 +117,7 @@ $meteor_selector_w: 500px;
 
 // Frame Preview Zoom & Selector 
 #select_f_tools {
-    width:350px;
+    width:310px;
     border: 1px solid rgba(9,27,56,.5);
     background-color: rgba(9,27,56,.3);
 }
@@ -132,7 +132,7 @@ $meteor_selector_w: 500px;
     cursor:grab;
 }
 
-.ui-draggable-handle {
+.drag-h {
     background-image: -moz-linear-gradient(45deg, #666 25%, transparent 25%), 
     -moz-linear-gradient(-45deg, #666 25%, transparent 25%), 
     -moz-linear-gradient(45deg, transparent 75%, #666 75%), 
@@ -158,3 +158,9 @@ $meteor_selector_w: 500px;
     -webkit-background-size: 2px 2.1px; /* override value for webkit */
     background-position: 0 0, 1px 0, 1px -1px, 0px 1px;
 }
+
+
+#transp{
+    display: block;
+    margin: .5rem auto;
+} 
