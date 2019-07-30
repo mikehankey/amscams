@@ -56,15 +56,15 @@ function update_mask_position(top,left,prev_W,prev_H,cursor_dim) {
           <div class="d-flex justify-content-between">\
             <p>Move the white square to the meteor location</p>\
           </div>\
-           <div style="background-image:url('+image_src+'); width:'+prev_W+'px; height:'+prev_H+'px; margin: 0 auto; position:relative">\
+           <div id="main_view" style="background-image:url('+image_src+'); width:'+prev_W+'px; height:'+prev_H+'px; margin: 0 auto; position:relative">\
              <div id="dl"></div><div id="dt"></div><div id="dr"></div><div id="db"></div>\
              <div id="selector" style="width:'+cursor_dim+'px; height:'+cursor_dim+'px; border:'+cursor_border_width+'px solid #fff;"></div>\
            </div>\
-           <div id="select_f_tools" style="width:300px">\
-              <div class="drag-h" style="height:10px; background:blue"></div>\
+           <div id="select_f_tools" style="width:350px">\
+              <div class="drag-h" style="height:20px; background:grey"></div>\
               <div style="padding:1rem">\
               <div>Mask Transparency  <input type="range" value="'+transp_val+'" id="transp" min="0"  max="60" ></div>\
-              <div id="select_preview" style="width:300px; height:300px"></div>\
+              <div id="select_preview" style="width:'+preview_dim+'px; height:'+preview_dim+'px"></div>\
               </div>\
            </div>\
         </div>\
@@ -86,22 +86,57 @@ function update_mask_position(top,left,prev_W,prev_H,cursor_dim) {
   $('#cropper_modal').modal('show'); 
 
 
+ 
+
+  var w_preview_dim = $('#select_preview').innerWidth()/2;
+  var h_preview_dim = $('#select_preview').innerHeight()/2;
+  var h_canvas_w = $('#main_view').innerWidth()/2;
+  var h_canvas_h = $('#main_view').innerHeight()/2;
+  
+  var xRatio =  w_preview_dim / h_canvas_w;
+  var yRatio =  h_preview_dim / h_canvas_h;
+  
+  var zoom = 4;
+
+   // PREVIEW SETUP
+   $('#select_preview').css({
+    'background': 'url('+image_src+') 50% 50% #000 no-repeat',
+    'background-size': h_canvas_w*zoom + 'px ' + h_canvas_h*zoom + 'px'
+  });
+
+  
+
   // Move the Selector
   $( "#selector" ).draggable(
     { containment: "parent",
       drag:function(e,u) {  
 
+        var top = u.position.top;
+        var left = u.position.left;
+        var $zoom =  $('#select_preview');
+
         // Mask
-        update_mask_position(u.position.top,u.position.left,prev_W,prev_H,cursor_dim);
+        update_mask_position(top,left,prev_W,prev_H,cursor_dim);
 
-        // Preview
-        var x_val = pointer.x | 0;
-      var y_val = pointer.y | 0;
-
-      x_val = x_val*zoom/2-w_preview_dim;
-      y_val = y_val*zoom/2-h_preview_dim;
-    
-
+        // Preview Center
+        top = top + cursor_dim/2;
+        left = left + cursor_dim/2;
+       
+        var y_val = top*zoom/2-w_preview_dim;
+        var x_val = left*zoom/2-h_preview_dim;
+      
+        if(x_val<0) {
+          if(y_val<0) {
+            $zoom.css('background-position',Math.abs(x_val)  + 'px ' + Math.abs(y_val) + 'px');
+          } else {
+            $zoom.css('background-position', Math.abs(x_val)  + 'px -' + y_val  + 'px');
+          }
+        } else if(y_val<0) {
+            $zoom.css('background-position','-' +  x_val  + 'px ' + Math.abs(y_val)  + 'px');
+        } else {
+          
+            $zoom.css('background-position', '-'+x_val  + 'px -' + y_val  + 'px');
+        }
     }
   });
  
@@ -119,48 +154,4 @@ function update_mask_position(top,left,prev_W,prev_H,cursor_dim) {
   
 
   
-
-
-
-
-
-
-
-
-  // ZOOM
-  // Hide/Show zoom when necessary
-  $('.canvas-container canvas').mouseenter(function(){ 
-    out_timer = setTimeout(function() { $('.canvas_zoom_holder').slideDown(300);},350);
-  }).mouseleave(function() { 
-    clearTimeout(out_timer);
-    out_timer = setTimeout(function() {
-      $('.canvas_zoom_holder').slideUp(300); 
-      $('#canvas_zoom').css('background-position','50% 50%');
-    }, 350); 
-  }); 
-
-  canvas.on('mouse:move', function(e) { 
-      var pointer = canvas.getPointer(event.e);
-      var $zoom   = $('#canvas_zoom');
-      var x_val = pointer.x | 0;
-      var y_val = pointer.y | 0;
-
-      x_val = x_val*zoom/2-w_preview_dim;
-      y_val = y_val*zoom/2-h_preview_dim;
-    
-      if(x_val<0) {
-        if(y_val<0) {
-          $zoom.css('background-position',Math.abs(x_val)  + 'px ' + Math.abs(y_val) + 'px');
-        } else {
-          $zoom.css('background-position', Math.abs(x_val)  + 'px -' + y_val  + 'px');
-        }
-      } else if(y_val<0) {
-          $zoom.css('background-position','-' +  x_val  + 'px ' + Math.abs(y_val)  + 'px');
-      } else {
-        
-          $zoom.css('background-position', '-'+x_val  + 'px -' + y_val  + 'px');
-      }
-      //$('#canvas_pointer_info').text(x_val +', '+ y_val); 
-      $('#canvas_pointer_info').text(Math.round(pointer.x) +', '+ Math.round(pointer.y)); 
-  }); 
-  
+ 
