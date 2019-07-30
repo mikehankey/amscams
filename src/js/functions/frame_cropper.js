@@ -52,20 +52,20 @@ function update_mask_position(top,left,prev_W,prev_H,cursor_dim) {
             <span aria-hidden="true">×</span>\
           </button>\
         </div>\
-        <div class="modal-body position-relative">\
+        <div class="modal-body">\
           <div class="d-flex justify-content-between">\
             <p>Move the white square to the meteor location</p>\
           </div>\
            <div id="main_view" style="background-image:url('+image_src+'); width:'+prev_W+'px; height:'+prev_H+'px; margin: 0 auto; position:relative">\
              <div id="dl"></div><div id="dt"></div><div id="dr"></div><div id="db"></div>\
              <div id="selector" style="width:'+cursor_dim+'px; height:'+cursor_dim+'px; border:'+cursor_border_width+'px solid #fff;"></div>\
-           </div>\
-           <div id="select_f_tools">\
-              <div class="drag-h"></div>\
-              <div class="p-1">\
-              <div id="select_preview" style="width:'+preview_dim+'px; height:'+preview_dim+'px"></div>\
-              <div><input type="range" value="'+transp_val+'" id="transp" min="0"  max="60" ></div>\
-              </div>\
+             <div id="select_f_tools">\
+                <div class="drag-h"></div>\
+                <div class="p-1">\
+                <div id="select_preview" style="width:'+preview_dim+'px; height:'+preview_dim+'px"></div>\
+                <div><input type="range" value="'+transp_val+'" id="transp" min="0"  max="60" ></div>\
+                </div>\
+            </div>\
            </div>\
         </div>\
         <div class="modal-footer">\
@@ -85,7 +85,7 @@ function update_mask_position(top,left,prev_W,prev_H,cursor_dim) {
 
   $('#cropper_modal').modal('show'); 
 
-  $('#select_f_tools').css({bottom:'2rem',right:'2rem'});
+$('#select_f_tools').css({"bottom":'2rem',"right":'2rem'});
  
 
   var w_preview_dim = $('#select_preview').innerWidth()/2;
