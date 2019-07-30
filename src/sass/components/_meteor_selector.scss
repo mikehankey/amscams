@@ -135,6 +135,10 @@ $meteor_selector_w: 500px;
     }
 }
 
+#select_preview {
+    border: 1px solid rgba(0,0,0,.2);
+}
+
 #selector {
     cursor:grab;
 }
