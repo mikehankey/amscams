@@ -34,7 +34,7 @@ function update_mask_position(top,left,prev_W,prev_H,cursor_dim) {
 
 
 // Create modal to select meteor from full frame
-function create_meteor_selector_from_frame(frame_id, frame_path) {
+function create_meteor_selector_from_frame(frame_id, image_src) {
     var cursor_dim = 50;            // Cursor dimension
     var prev_W = 1280;              // Full view
     var prev_H = 720;
