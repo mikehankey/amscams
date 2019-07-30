@@ -195,7 +195,10 @@ function get_frame(cur_fn) {
         success: function(data) { 
           
             loading_done(); 
+            console.log("DATA",data);
+            data = JSON.parse(data);
             // Data = {'id': '44', 'full_fr': '/mnt/ams2/TMP/2019_03_16_07_19_39_000_010038-trim1245_44.png'}
+            console.log("DATA",data);
             console.log("FRAME PATH ",data.full_fr)
             create_meteor_selector_from_frame(data.id,data.full_fr);
 
