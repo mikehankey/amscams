@@ -41,6 +41,8 @@ function create_meteor_selector_from_frame(frame_id, image_src) {
     var transp_val = 15;            // Transparency of white area
     var preview_dim = 300;          // Only squares for preview
     var cursor_border_width  = 1; 
+    var sel_x = 1280/2-cursor_dim/2;
+    var sel_y = 720/2-cursor_dim/2;
 
     loading({text: "Please Hold On", overlay:true});
 
@@ -118,6 +120,10 @@ function create_meteor_selector_from_frame(frame_id, image_src) {
                     var top = u.position.top;
                     var left = u.position.left;
                     var $zoom =  $('#select_preview');
+
+                    
+                    sel_x = left;
+                    sel_y = top;
     
                     // Mask
                     update_mask_position(top,left,prev_W,prev_H,cursor_dim);
@@ -141,6 +147,7 @@ function create_meteor_selector_from_frame(frame_id, image_src) {
                     
                         $zoom.css('background-position', '-'+x_val  + 'px -' + y_val  + 'px');
                     }
+
                 }
         });
     
@@ -183,8 +190,8 @@ function create_meteor_selector_from_frame(frame_id, image_src) {
                 cmd: 'crop_frame',
                 fr_id: frame_id,
                 src: image_src,
-                x: parseFloat($('#selector').css('left')),
-                y: parseFloat($('#selector').css('top'))
+                x: parseFloat(sel_x),
+                y: parseFloat(sel_y)
             }, 
             success: function(data) {
                 console.log(data);
