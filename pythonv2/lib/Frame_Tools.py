@@ -10,9 +10,9 @@ FRAME_THUMB_W = 50
 FRAME_THUMB_H = 50
 
 # Return a cropped frame
-def crop_frame(fr_id,sd_vid,x,y)
+def crop_frame(fr_id,sd_vid,x,y):
     w=FRAME_THUMB_W
-    h=FRAME_THUMB_H
+    h=FRAME_THUMB_W
 
     # Name & Path of the frame
     frame_name = sd_vid.split(".")[0] + "-frm" + str(fr_id) + ".png"
