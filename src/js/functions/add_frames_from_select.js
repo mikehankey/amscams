@@ -194,14 +194,9 @@ function get_frame(cur_fn) {
         data: cmd_data, 
         success: function(data) { 
           
-            loading_done(); 
-            data = JSON.stringify($.trim(data));
+            loading_done();  
             data = JSON.parse(data);
-            //create_meteor_selector_from_frame(data.id,data.full_fr);
-
-            console.log("DATA ");
-            console.log(data);
-            console.log(data.full_fr);
+            create_meteor_selector_from_frame(data.id,data.full_fr); 
         }, 
         error:function() { 
             console.log('ERROR');
