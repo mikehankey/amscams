@@ -114,3 +114,19 @@ $meteor_selector_w: 500px;
     line-height: 1.2;
 }
  
+
+// Frame Preview Zoom & Selector 
+#select_f_tools {
+    width:350px;
+    border: 1px solid rgba(9,27,56,.5);
+    background-color: rgba(9,27,56,.3);
+}
+
+.drag-h {
+    background: rgba(9,27,56,.8);
+    cursor:grab;
+}
+
+#selector {
+    cursor:grab;
+}
