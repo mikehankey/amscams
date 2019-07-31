@@ -40,14 +40,8 @@ def update_frame(sd_video_file,fn,new_x,new_y):
     mr['metframes'][fn]['hd_y'] = int(new_y)
     save_json_file(mrf, mr)
 
-    # this will make new thumbs
     # this will update all values (ra,dec etc) and make new thumbs from new point. 
-    resp = {}
-    resp['msg'] = "new frame added."
-    resp['new_frame'] = mr['metframes'][fn]
-    os.system("cd /home/ams/amscams/pythonv2/; ./reducer3.py cm " + mrf + "> /mnt/ams2/tmp/rrr.txt")
-    print(json.dumps(resp))
-
+    os.system("cd /home/ams/amscams/pythonv2/; ./reducer3.py cm " + mrf + "> /mnt/ams2/tmp/rrr.txt") 
 
 
 # Add a new frame or update an existing frame
