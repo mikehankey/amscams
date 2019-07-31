@@ -44,29 +44,28 @@ def add_frame(json_conf, sd_video_file, fr_id, hd_x, hd_y, w=50, h=50):
         #JSON Update
         save_json_file(mrf, mr)
         print('FRAME UPDATED')
-
-     
+ 
 
     else:
 
         # it is a new frame
-        metframes[new_fn] = {}
-        metframes[new_fn]['fn'] = fr_id 
-        metframes[new_fn]['hd_x'] = hd_x
-        metframes[new_fn]['hd_y'] = hd_y
-        metframes[new_fn]['w'] = w
-        metframes[new_fn]['h'] = h
-        metframes[new_fn]['sd_x'] = hd_x
-        metframes[new_fn]['sd_y'] = hd_y
-        metframes[new_fn]['sd_w'] = w
-        metframes[new_fn]['sd_h'] = h
-        metframes[new_fn]['sd_cx'] = hd_x
-        metframes[new_fn]['sd_cy'] = hd_y
-        metframes[new_fn]['ra'] = 0
-        metframes[new_fn]['dec'] = 0
-        metframes[new_fn]['az'] = 0
-        metframes[new_fn]['el'] = 0
-        metframes[new_fn]['max_px'] = 0
+        metframes[fr_id] = {}
+        metframes[fr_id]['fn'] = fr_id 
+        metframes[fr_id]['hd_x'] = hd_x
+        metframes[fr_id]['hd_y'] = hd_y
+        metframes[fr_id]['w'] = w
+        metframes[fr_id]['h'] = h
+        metframes[fr_id]['sd_x'] = hd_x
+        metframes[fr_id]['sd_y'] = hd_y
+        metframes[fr_id]['sd_w'] = w
+        metframes[fr_id]['sd_h'] = h
+        metframes[fr_id]['sd_cx'] = hd_x
+        metframes[fr_id]['sd_cy'] = hd_y
+        metframes[fr_id]['ra'] = 0
+        metframes[fr_id]['dec'] = 0
+        metframes[fr_id]['az'] = 0
+        metframes[fr_id]['el'] = 0
+        metframes[fr_id]['max_px'] = 0
 
         print(metframes)
  
