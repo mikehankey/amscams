@@ -60,8 +60,7 @@ def add_frame_ajax( json_conf, form):
    hdm_y = 1.875
 
    sd_video_file = form.getvalue("sd_video_file")
-   new_fn = form.getvalue("fr")
-
+   new_fn = form.getvalue("fr") 
 
    prev_fn = str(int(new_fn) - 1)
    next_fn = str(int(new_fn) + 1)
@@ -159,6 +158,8 @@ def add_frame_ajax( json_conf, form):
 
    mr['metframes'] = metframes
    save_json_file(mrf, mr)
+   print("SAVED HERE ")
+   print(mrf)
    os.system("cd /home/ams/amscams/pythonv2/; ./reducer3.py cm " + mrf + "> /mnt/ams2/tmp/rrr.txt")
    mr = load_json_file(mrf )
    resp = {}
