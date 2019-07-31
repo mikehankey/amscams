@@ -10,11 +10,17 @@ from lib.UtilLib import bound_cnt
 from lib.VideoLib import load_video_frames
 
 TMP_FRAME_FOLDER = '/mnt/ams2/TMP'
-FRAME_THUMB_W = 50
-FRAME_THUMB_H = 50
+FRAME_THUMB_W = 50  #In pixel
+FRAME_THUMB_H = 50 
 
-HDM_X = 2.7272727272727272
-HDM_Y = 1.875
+# SD Frames
+SD_W = 704
+SD_H = 576
+
+# HD Frames
+HD_W = 1920
+HD_H = 1080
+ 
 
 # Add a new frame or update an existing frame
 # based on hd_x & hd_y defined by the user 
@@ -55,8 +61,8 @@ def add_frame(json_conf, sd_video_file, fr_id, hd_x, hd_y, w=50, h=50):
         metframes[fr_id]['hd_y'] = hd_y
         metframes[fr_id]['w'] = w
         metframes[fr_id]['h'] = h
-        metframes[fr_id]['sd_x'] = 0 # hd_x
-        metframes[fr_id]['sd_y'] = 0 #hd_y
+        metframes[fr_id]['sd_x'] = hd_x*(HD_W/SD_W)
+        metframes[fr_id]['sd_y'] = hd_y*(HD_H/SD_H)
         metframes[fr_id]['sd_w'] = 0 #w
         metframes[fr_id]['sd_h'] = 0 #h
         metframes[fr_id]['sd_cx'] = 0 #hd_x
@@ -67,12 +73,14 @@ def add_frame(json_conf, sd_video_file, fr_id, hd_x, hd_y, w=50, h=50):
         metframes[fr_id]['el'] = 0
         metframes[fr_id]['max_px'] = 0
 
-        mr['metframes'] = metframes
+        mr['metframes'] = sorted(metframes)
         save_json_file(mrf, mr)
 
         print(mr)
 
-        #os.system("cd /home/ams/amscams/pythonv2/; ./reducer3.py cm " + mrf + "> /mnt/ams2/tmp/frame_update.txt")
+        os.system("cd /home/ams/amscams/pythonv2/; ./reducer3.py cm " + mrf + "> /mnt/ams2/tmp/frame_update.txt")
+            
+        
         #mr = load_json_file(mrf )
         #resp = {}
         #resp['msg'] = "new frame added."
