@@ -148,6 +148,7 @@ def real_add_frame(json_conf, sd_video_file, fr_id, hd_x, hd_y):
         resp['msg'] = "new frame added."
         resp['newframe'] = mr['metframes'][fr_id] 
         print(json.dumps(resp))
+        exit()
 
 
 # Create & Return a cropped frame image (thumb)
