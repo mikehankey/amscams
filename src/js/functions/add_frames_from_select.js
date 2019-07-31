@@ -78,7 +78,8 @@ function create_meteor_selector_from_frame(frame_id, image_src) {
         </div>\
         </div>\
     </div>').appendTo('body');
-    loading_done(); 
+
+   
      
     // Mask
     $('#dl,#dr,#dt,#db').css({background:"rgba(255,255,255,."+transp_val+")","position":"absolute"}); 
@@ -91,6 +92,9 @@ function create_meteor_selector_from_frame(frame_id, image_src) {
   
     // Show Modal
     $('#cropper_modal').modal('show'); 
+    loading_done(); 
+    loading_done(); 
+    loading_done(); 
     
     //$("#tmp_img_ld").ready(function() { 
         
