@@ -87,14 +87,13 @@ function create_meteor_selector_from_frame(frame_id, image_src) {
 
     // Update Mask position
     update_mask_position(prev_H/2-cursor_dim/2,prev_W/2-cursor_dim/2,prev_W,prev_H,cursor_dim)
-
-    console.log("IMG " + image_src);
+ 
 
     // Show Modal
-    setTimeout(function() {
+    $('#cropper_modal').modal('show'); 
+ 
         $("#tmp_img_ld").on('load', function() { 
-            $('#cropper_modal').modal('show'); 
-    
+           
             // Setup Preview
             var w_preview_dim = $('#select_preview').innerWidth()/2;
             var h_preview_dim = $('#select_preview').innerHeight()/2;
@@ -179,7 +178,7 @@ function create_meteor_selector_from_frame(frame_id, image_src) {
             loading_done(); 
         
         })
-    },2000);
+    
 
 
     // Create frame
@@ -241,8 +240,7 @@ function get_frame(cur_fn) {
         data: cmd_data, 
         success: function(data) { 
             loading_done();  
-            data = JSON.parse(data);
-            console.log("GET FRAME", data);
+            data = JSON.parse(data); 
             create_meteor_selector_from_frame(data.id,data.full_fr); 
         }, 
         error:function() { 
