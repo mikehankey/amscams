@@ -8,7 +8,7 @@ function setup_delete_frame() {
         // the id should be fr_{ID}
         var d = id.split('_');
 
-        loading({"text":"Deleting frame #"+id,"overlay":true});
+        loading({"text":"Deleting frame #"+d[1],"overlay":true});
   
         $.ajax({ 
             url:  "/pycgi/webUI.py?cmd=del_frame&meteor_json_file=" + meteor_json_file + "&fn=" + d[1],
