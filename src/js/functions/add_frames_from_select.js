@@ -180,6 +180,9 @@ function create_meteor_selector_from_frame(frame_id, image_src) {
      
     
     //})
+
+    loading_done(); 
+    
     
 
 
