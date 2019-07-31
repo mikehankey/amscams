@@ -22,10 +22,38 @@ HD_W = 1920
 HD_H = 1080
  
 
+def update_frame(sd_video_file,fn,new_x,new_y):
+     #Temporary but necessary
+    try:
+        mrf = sd_video_file.replace(".mp4", "-reduced.json")
+        mr = load_json_file(mrf)   
+        mr['metframes'][fn]['hd_x'] = int(new_x)
+        mr['metframes'][fn]['hd_y'] = int(new_y)
+    except Exception: 
+        os.system("cd /home/ams/amscams/pythonv2/; ./reducer3.py dm " + sd_video_file + "> /mnt/ams2/tmp/rrr.txt")
+        mrf = sd_video_file.replace(".mp4", "-reduced.json")
+        mr = load_json_file(mrf)   
+        mr['metframes'][fn]['hd_x'] = int(new_x)
+        mr['metframes'][fn]['hd_y'] = int(new_y)
+
+    mr['metframes'][fn]['hd_x'] = int(new_x)
+    mr['metframes'][fn]['hd_y'] = int(new_y)
+    save_json_file(mrf, mr)
+
+    # this will make new thumbs
+    # this will update all values (ra,dec etc) and make new thumbs from new point. 
+    resp = {}
+    resp['msg'] = "new frame added."
+    resp['new_frame'] = mr['metframes'][fn]
+    os.system("cd /home/ams/amscams/pythonv2/; ./reducer3.py cm " + mrf + "> /mnt/ams2/tmp/rrr.txt")
+    print(json.dumps(resp))
+
+
+
 # Add a new frame or update an existing frame
 # based on hd_x & hd_y defined by the user 
 # though the "select meteor" interface
-def add_frame(json_conf, sd_video_file, fr_id, hd_x, hd_y, w=5, h=5): 
+def add_frame(json_conf, sd_video_file, fr_id, hd_x, hd_y): 
 
     # Load the JSON from the video path
     mrf = sd_video_file.replace(".mp4", "-reduced.json")
@@ -34,95 +62,88 @@ def add_frame(json_conf, sd_video_file, fr_id, hd_x, hd_y, w=5, h=5):
     # Load existing data
     metframes = mr['metframes']
     metconf = mr['metconf']
-    
-    # Does the frame already exist in metframes?
+
+    # Does the frame, already exist?
     if fr_id in metframes:
 
-        print("HERE")
-        print(mrf)
+        print('FRAME ALREADY EXISTS => WE UPDATE')
+        update_frame(sd_video_file,fn,hd_x,hd_y)
 
-        #We erase the old data  
-        #So we can replace the frame 
-        #mr['metframes'][fr_id]['hd_x'] = int(hd_x)
-        #mr['metframes'][fr_id]['hd_y'] = int(hd_y)       
-
-        #JSON Update
-        #save_json_file(mrf, mr)
-
-        #Run to update all info, create thumb, etc.
-        #os.system("cd /home/ams/amscams/pythonv2/; ./reducer3.py cm " + mrf + "> /mnt/ams2/tmp/frame_update.txt")
-  
     else:
+        # First frame info
+        first_frame = int(mr['metconf']['sd_fns'][0])
+        first_x = int(mr['metconf']['sd_xs'][0]) 
 
-        # it is a new frame
-        metframes[fr_id] = {}
-        metframes[fr_id]['fn'] = fr_id 
-        metframes[fr_id]['hd_x'] = hd_x
-        metframes[fr_id]['hd_y'] = hd_y
-        metframes[fr_id]['w'] = w
-        metframes[fr_id]['h'] = h
-        metframes[fr_id]['sd_x'] = hd_x*(HD_W/SD_W)
-        metframes[fr_id]['sd_y'] = hd_y*(HD_H/SD_H)
-        metframes[fr_id]['sd_w'] = 6
-        metframes[fr_id]['sd_h'] = 6
-        metframes[fr_id]['sd_cx'] = 0 #hd_x?
-        metframes[fr_id]['sd_cy'] = 0 #hd_y?
-        metframes[fr_id]['ra'] = 0
-        metframes[fr_id]['dec'] = 0
-        metframes[fr_id]['az'] = 0
-        metframes[fr_id]['el'] = 0
-        metframes[fr_id]['max_px'] = 0
+        # Previous & Next frame ID
+        prev_fn = str(int(new_fn) - 1)
+        next_fn = str(int(new_fn) + 1)
 
+        # If we have a frame before
+        if prev_fn in metframes:
 
-        x1,y1,x2,y2 = bound_cnt(hd_x,hd_y,HD_W,HD_H,6)
-        frames = load_video_frames(sd_video_file, json_conf) 
-        frame = frames[int(fr_id)]
+            # frame exists before make est from prev frame info
+            last_x = metframes[prev_fn]['sd_cx']
+            last_y = metframes[prev_fn]['sd_cy']
+            fcc = (int(new_fn) - int(first_frame)) 
+            est_x = int(first_x) + (metconf['x_dir_mod'] * (metconf['sd_seg_len']*fcc)) + (metconf['sd_acl_poly'] * (fcc**2))
+            est_y = (metconf['sd_m']*est_x)+metconf['sd_b']
+            sd_cx = last_x
+            sd_cy = last_y
+            est_x = int(sd_cx *HD_W/SD_W)
+            est_y = int(sd_cy *HD_H/SD_H)
+
+        # We have a frame after
+        elif str(next_fn) in metframes:
+            # this frame exists before any others so need to add est in reverse. 
+            last_x = metframes[next_fn]['sd_cx']
+            last_y = metframes[next_fn]['sd_cy']
+            est_x = int(last_x) + (-1*metconf['x_dir_mod'] * (metconf['sd_seg_len']*1)) + (metconf['sd_acl_poly'] * 1)
+            est_y = (metconf['sd_m']*est_x)+metconf['sd_b']
+            sd_cx = est_x
+            sd_cy = est_y
+            sd_cx = last_x
+            sd_cy = last_y
+            est_x = int(sd_cx * HD_W/SD_W)
+            est_y = int(sd_cy * HD_H/SD_H)
+
+        elif
+            print('IMPOSSIBLE TO GENERATE THE FRAME')
+
+        # We got the info
+        metframes[new_fn] = {}
+        metframes[new_fn]['fn'] = new_fn 
+        metframes[new_fn]['hd_x'] = hd_x
+        metframes[new_fn]['hd_y'] = hd_y
+        metframes[new_fn]['w'] = 5
+        metframes[new_fn]['h'] = 5
+        metframes[new_fn]['sd_x'] = sd_cx
+        metframes[new_fn]['sd_y'] = sd_cy
+        metframes[new_fn]['sd_w'] = 6
+        metframes[new_fn]['sd_h'] = 6
+        metframes[new_fn]['sd_cx'] = sd_cx
+        metframes[new_fn]['sd_cy'] = sd_cy
+        metframes[new_fn]['ra'] = 0
+        metframes[new_fn]['dec'] = 0
+        metframes[new_fn]['az'] = 0
+        metframes[new_fn]['el'] = 0
+        metframes[new_fn]['max_px'] = 0
+    
+        x1,y1,x2,y2 = bound_cnt(est_x,est_y,1920,1080,6)
+        frames = load_video_frames(sd_video_file, json_conf)
+        ifn = int(new_fn)
+        frame = frames[ifn]
         frame = cv2.resize(frame, (1920,1080)) 
         
         cnt_img = frame[y1:y2,x1:x2]
-        min_val, max_val, min_loc, max_loc = cv2.minMaxLoc(cnt_img) 
+        min_val, max_val, min_loc, max_loc = cv2.minMaxLoc(cnt_img)
+        hd_x = max_loc[0] + x1  
+        hd_y = max_loc[1] + y1  
+        metframes[new_fn]['hd_x'] = hd_x
+        metframes[new_fn]['hd_y'] = hd_y 
+        metframes[new_fn]['est_x'] = est_x
+        metframes[new_fn]['est_y'] = est_y 
 
-        print("MIN VAL ", min_val)
-        print("max_val ", max_val)
-        print("min_locL ", min_loc)
-        print("max_locL ", max_loc)
 
-        metframes[fr_id]['hd_x'] = max_loc[0] + x1
-        metframes[fr_id]['hd_y'] = max_loc[1] + y1
-        metframes[fr_id]['est_x'] = hd_x
-        metframes[fr_id]['est_y'] = hd_y 
-
-        mr['metframes'] = metframes
-        save_json_file(mrf, mr)
-
-        print(mr)
-
-        #Create Frame Thumb
-        
-        os.system("cd /home/ams/amscams/pythonv2/; ./reducer3.py cm " + mrf + "> /mnt/ams2/tmp/frame_update.txt")
-        os.system("cd /home/ams/amscams/pythonv2/; ./reducer3.py cm " + mrf + "> /mnt/ams2/tmp/frame_update.txt")
-
-        
-        #mr = load_json_file(mrf )
-        #resp = {}
-        #resp['msg'] = "new frame added."
-        #resp['newframe'] = mr['metframes'][fr_id] 
-        #print(json.dumps(resp))
-        #os.system("cd /home/ams/amscams/pythonv2/; ./reducer3.py cm " + mrf + "> /mnt/ams2/tmp/frame_update.txt")
-
-        #x1,y1,x2,y2 = bound_cnt(hd_x,hd_y,1920,1080,50)
-        #frames = load_video_frames(sd_video_file, json_conf)
-        #frame = frames[int(fr_id)]
-        #frame = cv2.resize(frame, (1920,1080)) 
-
-        #cnt_img = frame[y1:y2,x1:x2]
-        #min_val, max_val, min_loc, max_loc = cv2.minMaxLoc(cnt_img)
-        #hd_x = max_loc[0] + x1  
-        #hd_y = max_loc[1] + y1  
-        #metframes[fr_id]['hd_x'] = hd_x
-        #metframes[fr_id]['hd_y'] = hd_y 
-        #metframes[fr_id]['est_x'] = est_x
-        #metframes[fr_id]['est_y'] = est_y 
  
  
 
