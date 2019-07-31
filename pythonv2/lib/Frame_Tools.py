@@ -73,7 +73,7 @@ def real_add_frame(json_conf, sd_video_file, fr_id, hd_x, hd_y):
         resp['msg'] = "frame #"+ fr_id +" updated."
         resp['newframe'] = mr['metframes'][fr_id] 
         print(json.dumps(resp))
-        exit()
+        return
 
     else:
         # First frame info
@@ -116,7 +116,7 @@ def real_add_frame(json_conf, sd_video_file, fr_id, hd_x, hd_y):
             resp = {}
             resp['error'] = "Impossible to create frame #"+ fr_id +" - please, try a frame adjacent to an existing one first."
             print(json.dumps(resp))
-            exit()
+            return
 
         # We got the info
         metframes[fr_id] = {}
@@ -151,7 +151,7 @@ def real_add_frame(json_conf, sd_video_file, fr_id, hd_x, hd_y):
         resp['msg'] = "new frame added."
         resp['newframe'] = mr['metframes'][fr_id] 
         print(json.dumps(resp))
-        exit()
+        return
 
 
 # Create & Return a cropped frame image (thumb)
