@@ -60,7 +60,7 @@ def real_add_frame(json_conf, sd_video_file, fr_id, hd_x, hd_y):
     # Does the frame, already exist?
     if fr_id in metframes:
         update_frame(sd_video_file,fr_id,hd_x,hd_y) 
-        print(json.dumps({'msg': "frame  #"+ fr_id +" updated.", 'newframe': mr['metframes'][fr_id] }))
+        print(json.dumps({'msg': "frame  #"+ fr_id +" updated.", 'newframe': mr['metframes'][fr_id]}))
         return
 
     else: 
@@ -102,7 +102,7 @@ def real_add_frame(json_conf, sd_video_file, fr_id, hd_x, hd_y):
             est_y = int(sd_cy * HD_H/SD_H)
 
         else:
-            print(json.dumps({'error': "Impossible to create frame #"+ fr_id +" - please, try a frame adjacent to an existing one first.")
+            print(json.dumps({'error': "Impossible to create frame #"+ fr_id +" - please, try a frame adjacent to an existing one first."}))
             return
 
         # We got the info
