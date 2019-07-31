@@ -145,7 +145,17 @@ def add_frame(json_conf, sd_video_file, fr_id, hd_x, hd_y):
 
         print(metframes[new_fn])
  
- 
+        mr['metframes'] = metframes
+        save_json_file(mrf, mr)
+        print("SAVED HERE ")
+        print(mrf)
+        os.system("cd /home/ams/amscams/pythonv2/; ./reducer3.py cm " + mrf + "> /mnt/ams2/tmp/rrr.txt")
+        mr = load_json_file(mrf )
+        resp = {}
+        resp['msg'] = "new frame added."
+        resp['newframe'] = mr['metframes'][new_fn] 
+        print(json.dumps(resp))
+        os.system("cd /home/ams/amscams/pythonv2/; ./reducer3.py cm " + mrf + "> /mnt/ams2/tmp/rrr.txt")
 
 
 # Create & Return a cropped frame image (thumb)
