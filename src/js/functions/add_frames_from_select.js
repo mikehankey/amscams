@@ -95,6 +95,7 @@ function create_meteor_selector_from_frame(frame_id, image_src) {
     loading_done(); 
     loading_done(); 
     loading_done(); 
+    alert('WTF!!!!');
     
     //$("#tmp_img_ld").ready(function() { 
         
