@@ -144,6 +144,8 @@ def add_frame(json_conf, sd_video_file, fr_id, hd_x, hd_y):
         metframes[new_fn]['est_y'] = est_y 
 
         print(metframes[new_fn])
+
+        exit()
  
         mr['metframes'] = metframes
         save_json_file(mrf, mr)
