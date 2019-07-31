@@ -44,7 +44,7 @@ function create_meteor_selector_from_frame(frame_id, image_src) {
     var sel_x = 1280/2-cursor_dim/2;
     var sel_y = 720/2-cursor_dim/2;
 
-    loading({text: "Please Hold On", overlay:true});
+    loading({text: "Creation of the frame picker...", overlay:true});
 
     // Create Modal
     $('<div class="modal fade" id="cropper_modal" tabindex="-1">\

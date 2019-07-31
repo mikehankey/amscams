@@ -7,10 +7,13 @@ function setup_delete_frame() {
         // Get the frame ID
         // the id should be fr_{ID}
         var d = id.split('_');
+
+        loading({"text":"Deleting frame #"+id,"overlay":true});
   
         $.ajax({ 
             url:  "/pycgi/webUI.py?cmd=del_frame&meteor_json_file=" + meteor_json_file + "&fn=" + d[1],
             success: function(response) {
+                loading_done();
                 $row.fadeOut(150, function() {$row.remove();})
             } 
         });
