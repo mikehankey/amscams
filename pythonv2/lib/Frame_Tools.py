@@ -66,9 +66,7 @@ def real_add_frame(json_conf, sd_video_file, fr_id, hd_x, hd_y):
         print(json.dumps(resp)) 
         return
 
-    else:
-
-        print("CREATE FRAME")
+    else: 
 
         # First frame info
         first_frame = int(mr['metconf']['sd_fns'][0])
