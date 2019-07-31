@@ -123,8 +123,7 @@ function addModalTemplate(meteor_id,neighbor) {
             // We add a +
             $('<div class="position-relative ">\
                 <a title="Add a frame" class="create_frame_fs btn btn-primary prev-th" data-rel="'+v.id+'" data-fr="'+v.vid+'"><i class="icon-plus display-block"></i> #'+v.vid+'</a>\
-                <img src="'+v.img+'" id="'+v.id+'" style="border-color:'+v.color+';" class="'+_class+'" >\
-               </div>').appendTo($('#nav_prev'));
+                </div>').appendTo($('#nav_prev'));
 
         } else {
             $('<div class="'+_hclass+'"><a class="select_frame select_frame_btn" data-m="'+v.id+'"><img src="'+v.img+'" id="'+v.id+'" style="border-color:'+v.color+';" class="'+_class+'" ><span>#'+v.id+'</span></a></div>').appendTo($('#nav_prev'));
