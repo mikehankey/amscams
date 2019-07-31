@@ -105,6 +105,8 @@ function create_meteor_selector_from_frame(frame_id, image_src) {
         
         var zoom = 8;
     
+        loading_done(); 
+
         // PREVIEW SETUP
         $('#select_preview').css({
             'background': 'url('+image_src+') 50% 50% #000 no-repeat',
@@ -175,7 +177,7 @@ function create_meteor_selector_from_frame(frame_id, image_src) {
             }
         );
 
-        loading_done(); 
+     
     
     //})
     
