@@ -87,7 +87,7 @@ def add_frame(json_conf, sd_video_file, fr_id, hd_x, hd_y, w=5, h=5):
         print("min_locL ", min_loc)
         print("max_locL ", max_loc)
 
-        metframes[new_fn]['hd_x'] = ax_loc[0] + x1
+        metframes[new_fn]['hd_x'] = max_loc[0] + x1
         metframes[new_fn]['hd_y'] = max_loc[1] + y1
         metframes[new_fn]['est_x'] = hd_x
         metframes[new_fn]['est_y'] = hd_y 
