@@ -41,7 +41,7 @@ def update_frame(sd_video_file,fn,new_x,new_y):
     save_json_file(mrf, mr)
 
     # this will update all values (ra,dec etc) and make new thumbs from new point. 
-    #os.system("cd /home/ams/amscams/pythonv2/; ./reducer3.py cm " + mrf + "> /mnt/ams2/tmp/rrr.txt") 
+    os.system("cd /home/ams/amscams/pythonv2/; ./reducer3.py cm " + mrf + "> /mnt/ams2/tmp/rrr.txt") 
 
 
 # Add a new frame or update an existing frame
@@ -60,11 +60,12 @@ def real_add_frame(json_conf, sd_video_file, fr_id, hd_x, hd_y):
     # Does the frame, already exist?
     if fr_id in metframes:
         update_frame(sd_video_file,fr_id,hd_x,hd_y)
-
+        print('***************************************')
         resp = {}
         resp['msg'] = "frame #"+ fr_id +" updated."
         resp['newframe'] = mr['metframes'][fr_id] 
         print(json.dumps(resp))
+        print('**************************************')
         return
 
     else:
