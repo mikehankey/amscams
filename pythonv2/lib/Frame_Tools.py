@@ -3,6 +3,7 @@ import os
 import subprocess 
 import cgitb
 import glob
+import cv2
 from os.path import isfile, join, exists
 from lib.FileIO import load_json_file, save_json_file
 from lib.UtilLib import bound_cnt
