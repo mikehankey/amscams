@@ -112,22 +112,24 @@ def add_frame(json_conf, sd_video_file, fr_id, hd_x, hd_y):
         # We got the info
         metframes[new_fn] = {}
         metframes[new_fn]['fn'] = new_fn 
-        metframes[new_fn]['hd_x'] = hd_x
-        metframes[new_fn]['hd_y'] = hd_y
+        metframes[new_fn]['hd_x'] = float(hd_x)
+        metframes[new_fn]['hd_y'] = float(hd_y)
         metframes[new_fn]['w'] = 5
         metframes[new_fn]['h'] = 5
-        metframes[new_fn]['sd_x'] = hd_x * SD_W/HD_W
-        metframes[new_fn]['sd_y'] = hd_y * SD_H/HD_H
+        metframes[new_fn]['sd_x'] = float(hd_x * SD_W/HD_W)
+        metframes[new_fn]['sd_y'] = float(hd_y * SD_H/HD_H)
         metframes[new_fn]['sd_w'] = 6
         metframes[new_fn]['sd_h'] = 6
-        metframes[new_fn]['sd_cx'] = sd_cx
-        metframes[new_fn]['sd_cy'] = sd_cy
+        metframes[new_fn]['sd_cx'] = float(sd_cx)
+        metframes[new_fn]['sd_cy'] = float(sd_cy)
         metframes[new_fn]['ra'] = 0
         metframes[new_fn]['dec'] = 0
         metframes[new_fn]['az'] = 0
         metframes[new_fn]['el'] = 0
         metframes[new_fn]['max_px'] = 0
-    
+
+ 
+
         x1,y1,x2,y2 = bound_cnt(est_x,est_y,1920,1080,6)
         frames = load_video_frames(sd_video_file, json_conf)
         ifn = int(new_fn)
@@ -144,7 +146,6 @@ def add_frame(json_conf, sd_video_file, fr_id, hd_x, hd_y):
         metframes[new_fn]['est_y'] = est_y 
 
         print(metframes[new_fn])
-
         exit()
  
         mr['metframes'] = metframes
