@@ -46,7 +46,9 @@ def add_frame(json_conf, sd_video_file, fr_id, hd_x, hd_y, w=50, h=50):
 
         #JSON Update
         save_json_file(mrf, mr)
-        print('FRAME UPDATED')
+
+        #Run to update all info, create thumb, etc.
+        os.system("cd /home/ams/amscams/pythonv2/; ./reducer3.py cm " + mrf + "> /mnt/ams2/tmp/frame_update.txt")
   
     else:
 
@@ -57,27 +59,42 @@ def add_frame(json_conf, sd_video_file, fr_id, hd_x, hd_y, w=50, h=50):
         metframes[fr_id]['hd_y'] = hd_y
         metframes[fr_id]['w'] = w
         metframes[fr_id]['h'] = h
-        metframes[fr_id]['sd_x'] = hd_x
-        metframes[fr_id]['sd_y'] = hd_y
-        metframes[fr_id]['sd_w'] = w
-        metframes[fr_id]['sd_h'] = h
-        metframes[fr_id]['sd_cx'] = hd_x
-        metframes[fr_id]['sd_cy'] = hd_y
+        metframes[fr_id]['sd_x'] = 0 # hd_x
+        metframes[fr_id]['sd_y'] = 0 #hd_y
+        metframes[fr_id]['sd_w'] = 0 #w
+        metframes[fr_id]['sd_h'] = 0 #h
+        metframes[fr_id]['sd_cx'] = 0 #hd_x
+        metframes[fr_id]['sd_cy'] = 0 #hd_y
         metframes[fr_id]['ra'] = 0
         metframes[fr_id]['dec'] = 0
         metframes[fr_id]['az'] = 0
         metframes[fr_id]['el'] = 0
         metframes[fr_id]['max_px'] = 0
 
-        x1,y1,x2,y2 = bound_cnt(hd_x,hd_y,1920,1080,50)
-        frames = load_video_frames(sd_video_file, json_conf)
-        frame = frames[int(fr_id)]
-        frame = cv2.resize(frame, (1920,1080)) 
+        mr['metframes'] = metframes
+        save_json_file(mrf, mr)
+        os.system("cd /home/ams/amscams/pythonv2/; ./reducer3.py cm " + mrf + "> /mnt/ams2/tmp/frame_update.txt")
+        mr = load_json_file(mrf )
+        resp = {}
+        resp['msg'] = "new frame added."
+        resp['newframe'] = mr['metframes'][new_fn] 
+        print(json.dumps(resp))
+        os.system("cd /home/ams/amscams/pythonv2/; ./reducer3.py cm " + mrf + "> /mnt/ams2/tmp/frame_update.txt")
 
-        print(frame)
+        #x1,y1,x2,y2 = bound_cnt(hd_x,hd_y,1920,1080,50)
+        #frames = load_video_frames(sd_video_file, json_conf)
+        #frame = frames[int(fr_id)]
+        #frame = cv2.resize(frame, (1920,1080)) 
 
-    # Generate new thumb and other stuff
-    #os.system("cd /home/ams/amscams/pythonv2/; ./reducer3.py cm " + mrf + "> /mnt/ams2/tmp/frame_update.txt")
+        #cnt_img = frame[y1:y2,x1:x2]
+        #min_val, max_val, min_loc, max_loc = cv2.minMaxLoc(cnt_img)
+        #hd_x = max_loc[0] + x1  
+        #hd_y = max_loc[1] + y1  
+        #metframes[fr_id]['hd_x'] = hd_x
+        #metframes[fr_id]['hd_y'] = hd_y 
+        #metframes[fr_id]['est_x'] = est_x
+        #metframes[fr_id]['est_y'] = est_y 
+ 
  
 
 
