@@ -129,7 +129,7 @@ def add_frame(json_conf, sd_video_file, fr_id, hd_x, hd_y):
         metframes[fr_id]['max_px'] = 0
 
         x1,y1,x2,y2 = bound_cnt(float(hd_x),float(hd_y),1920,1080,6)
-        print('X1 Y1 X2 Y2', x1 +" " +y1+" " +x2+" " +y2)
+       
 
         frames = load_video_frames(sd_video_file, json_conf)
 
