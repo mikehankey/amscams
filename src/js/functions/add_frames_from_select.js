@@ -194,13 +194,13 @@ function create_meteor_selector_from_frame(frame_id, image_src) {
                 y: parseFloat(sel_y)
             }, 
             success: function(data) {
-                data = JSON.parse(data);
-                if(typeof data.error !== 'undefined') {
+                data = JSON.parse(data); 
+                if(typeof data.error !== undefined ) {
                     loading_done();
 
                     // Everything went fine
                     update_star_and_reduction(function() {
-                        $('#fr_24 .select_meteor').click();
+                        $('#fr_'+frame_id+' .select_meteor').click();
                     });
                     
 
