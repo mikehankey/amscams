@@ -33,18 +33,18 @@ def add_frame(json_conf, sd_video_file, fr_id, hd_x, hd_y, w=50, h=50):
     if fr_id in metframes:
 
         print("HERE")
-        print(mr)
+        print(mrf)
 
         #We erase the old data  
         #So we can replace the frame 
-        mr['metframes'][fr_id]['hd_x'] = int(hd_x)
-        mr['metframes'][fr_id]['hd_y'] = int(hd_y) 
+        #mr['metframes'][fr_id]['hd_x'] = int(hd_x)
+        #mr['metframes'][fr_id]['hd_y'] = int(hd_y)       
 
         #JSON Update
-        save_json_file(mrf, mr)
+        #save_json_file(mrf, mr)
 
         #Run to update all info, create thumb, etc.
-        os.system("cd /home/ams/amscams/pythonv2/; ./reducer3.py cm " + mrf + "> /mnt/ams2/tmp/frame_update.txt")
+        #os.system("cd /home/ams/amscams/pythonv2/; ./reducer3.py cm " + mrf + "> /mnt/ams2/tmp/frame_update.txt")
   
     else:
 
