@@ -133,9 +133,7 @@ def add_frame(json_conf, sd_video_file, fr_id, hd_x, hd_y):
 
         frames = load_video_frames(sd_video_file, json_conf)
 
-        print("FRAMES")
-        print(frames)
-
+      
         ifn = int(fr_id)
         frame = frames[ifn]
         frame = cv2.resize(frame, (1920,1080)) 
@@ -149,9 +147,7 @@ def add_frame(json_conf, sd_video_file, fr_id, hd_x, hd_y):
         metframes[fr_id]['est_x'] = est_x
         metframes[fr_id]['est_y'] = est_y 
 
-        print(metframes[fr_id])
-        exit()
- 
+       
         mr['metframes'] = metframes
         save_json_file(mrf, mr)
         print("SAVED HERE ")
