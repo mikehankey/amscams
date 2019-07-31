@@ -3163,10 +3163,10 @@ def reduce_meteor_new(json_conf,form):
 
    template = template.replace("{%RED_TABLE%}", red_table)
    template = template.replace("{%STAR_TABLE%}", stars_table)
-
+ 
    light_curve_file = sd_video_file.replace('.mp4','-lightcurve.png')
    if(isfile(light_curve_file)):
-      template = template.replace("{%LIGHT_CURVE%}", '<a class="img-link d-block m-2 nop" href="'+light_curve_file+'"><img alt="" src="'+light_curve_file+'"></a>')
+      template = template.replace("{%LIGHT_CURVE%}", '<a class="d-block nop text-center " href="'+light_curve_file+'"><img  src="'+light_curve_file+'" class="mt-2 img-fluid"></a>')
    else:
       template = template.replace("{%LIGHT_CURVE%}", "<div class='alert error mt-4'>Light Curve file not found</div>")
 
