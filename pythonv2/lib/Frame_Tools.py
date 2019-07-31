@@ -77,7 +77,7 @@ def add_frame(json_conf, sd_video_file, fr_id, hd_x, hd_y, w=50, h=50):
         mr = load_json_file(mrf )
         resp = {}
         resp['msg'] = "new frame added."
-        resp['newframe'] = mr['metframes'][new_fn] 
+        resp['newframe'] = mr['metframes'][fr_id] 
         print(json.dumps(resp))
         os.system("cd /home/ams/amscams/pythonv2/; ./reducer3.py cm " + mrf + "> /mnt/ams2/tmp/frame_update.txt")
 
