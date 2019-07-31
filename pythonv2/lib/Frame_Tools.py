@@ -32,6 +32,9 @@ def add_frame(json_conf, sd_video_file, fr_id, hd_x, hd_y, w=50, h=50):
     # Does the frame already exist in metframes?
     if fr_id in metframes:
 
+        print("HERE")
+        print(mr)
+
         #We erase the old data  
         #So we can replace the frame 
         try: 
