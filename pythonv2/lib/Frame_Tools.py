@@ -110,7 +110,10 @@ def real_add_frame(json_conf, sd_video_file, fr_id, hd_x, hd_y):
             est_y = int(sd_cy * HD_H/SD_H)
 
         else:
-            print('IMPOSSIBLE TO GENERATE THE FRAME')
+            resp = {}
+            resp['error'] = "Impossible to create frame #"+ fr_id +" - please, try a frame adjacent to an existing one first."
+            print(json.dumps(resp))
+            exit()
 
         # We got the info
         metframes[fr_id] = {}

@@ -179,6 +179,9 @@ function create_meteor_selector_from_frame(frame_id, image_src) {
 
     // Create frame
     $('#create_frame').click(function() {
+
+        loading({'text':'Creating the frame','overlay':true}); 
+
         // Create cropped frame
         $.ajax({ 
             url:  "/pycgi/webUI.py",
@@ -191,8 +194,24 @@ function create_meteor_selector_from_frame(frame_id, image_src) {
                 y: parseFloat(sel_y)
             }, 
             success: function(data) {
-                console.log(data);
+                data = JSON.parse(data);
+                if(typeof data.error !== 'undefined') {
+                    loading_done();
 
+                    // Everything went fine
+                    update_star_and_reduction(function() {
+                        $('#fr_24 .select_meteor').click();
+                    });
+                    
+
+                } else {
+                    loading_done();
+                    bootbox.alert({
+                        message: "The process returned an error:<br/>"+ data.error,
+                        className: 'rubberBand animated error',
+                        centerVertical: true 
+                    });
+                }
             }
         });
     });
@@ -216,13 +235,11 @@ function get_frame(cur_fn) {
         url:  "/pycgi/webUI.py",
         data: cmd_data, 
         success: function(data) { 
-          
             loading_done();  
             data = JSON.parse(data);
             create_meteor_selector_from_frame(data.id,data.full_fr); 
         }, 
         error:function() { 
-            console.log('ERROR');
             bootbox.alert({
                 message: "The process returned an error",
                 className: 'rubberBand animated error',
