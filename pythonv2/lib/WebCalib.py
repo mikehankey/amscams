@@ -50,9 +50,11 @@ def update_frame_ajax(json_conf, form):
    resp['msg'] = "new frame added."
    resp['new_frame'] = mr['metframes'][fn]
 
+   #Twice otherwice it doesn't work
+   os.system("cd /home/ams/amscams/pythonv2/; ./reducer3.py cm " + mrf + "> /mnt/ams2/tmp/rrr.txt")
+   os.system("cd /home/ams/amscams/pythonv2/; ./reducer3.py cm " + mrf + "> /mnt/ams2/tmp/rrr.txt")   
 
    print(json.dumps(resp))
-   os.system("cd /home/ams/amscams/pythonv2/; ./reducer3.py cm " + mrf + "> /mnt/ams2/tmp/rrr.txt")
 
 
 def add_frame_ajax( json_conf, form):
