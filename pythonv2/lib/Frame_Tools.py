@@ -59,13 +59,11 @@ def real_add_frame(json_conf, sd_video_file, fr_id, hd_x, hd_y):
 
     # Does the frame, already exist?
     if fr_id in metframes:
-        update_frame(sd_video_file,fr_id,hd_x,hd_y)
-        print('***************************************')
+        update_frame(sd_video_file,fr_id,hd_x,hd_y) 
         resp = {}
         resp['msg'] = "frame #"+ fr_id +" updated."
         resp['newframe'] = mr['metframes'][fr_id] 
-        print(json.dumps(resp))
-        print('**************************************')
+        print(json.dumps(resp)) 
         return
 
     else:

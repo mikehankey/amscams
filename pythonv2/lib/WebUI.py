@@ -281,7 +281,7 @@ def controller(json_conf):
       x = form.getvalue('x')
       y = form.getvalue('y')
       sd_video_file = form.getvalue('sd_video_file')
-      print(real_add_frame(json_conf,sd_video_file,fr_id,x,y))
+      real_add_frame(json_conf,sd_video_file,fr_id,x,y)
       exit() 
 
 
