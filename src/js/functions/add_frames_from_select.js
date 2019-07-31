@@ -92,7 +92,7 @@ function create_meteor_selector_from_frame(frame_id, image_src) {
     // Show Modal
     $('#cropper_modal').modal('show'); 
  
-    $("#tmp_img_ld").ready(function() { 
+    //$("#tmp_img_ld").ready(function() { 
         
         // Setup Preview
         var w_preview_dim = $('#select_preview').innerWidth()/2;
@@ -177,7 +177,7 @@ function create_meteor_selector_from_frame(frame_id, image_src) {
 
         loading_done(); 
     
-    })
+    //})
     
 
 
