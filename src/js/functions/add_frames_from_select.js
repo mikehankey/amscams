@@ -87,10 +87,11 @@ function create_meteor_selector_from_frame(frame_id, image_src) {
 
     // Update Mask position
     update_mask_position(prev_H/2-cursor_dim/2,prev_W/2-cursor_dim/2,prev_W,prev_H,cursor_dim)
- 
-
+  
     // Show Modal
     $('#cropper_modal').modal('show'); 
+    loading_done(); 
+
  
     //$("#tmp_img_ld").ready(function() { 
         
@@ -104,9 +105,7 @@ function create_meteor_selector_from_frame(frame_id, image_src) {
         var yRatio =  h_preview_dim / h_canvas_h;
         
         var zoom = 8;
-    
-        loading_done(); 
-
+     
         // PREVIEW SETUP
         $('#select_preview').css({
             'background': 'url('+image_src+') 50% 50% #000 no-repeat',
