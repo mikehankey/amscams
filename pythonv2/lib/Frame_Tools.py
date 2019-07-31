@@ -55,7 +55,7 @@ def update_frame(sd_video_file,fn,new_x,new_y):
 # though the "select meteor" interface
 def real_add_frame(json_conf, sd_video_file, fr_id, hd_x, hd_y): 
     
-    print('real_add_frame****************************')
+    
 
     # Load the JSON from the video path
     mrf = sd_video_file.replace(".mp4", "-reduced.json")
@@ -73,6 +73,7 @@ def real_add_frame(json_conf, sd_video_file, fr_id, hd_x, hd_y):
         resp['msg'] = "frame #"+ fr_id +" updated."
         resp['newframe'] = mr['metframes'][fr_id] 
         print(json.dumps(resp))
+        exit()
 
     else:
         # First frame info
