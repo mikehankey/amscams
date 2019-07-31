@@ -25,7 +25,7 @@ HD_H = 1080
 # Add a new frame or update an existing frame
 # based on hd_x & hd_y defined by the user 
 # though the "select meteor" interface
-def add_frame(json_conf, sd_video_file, fr_id, hd_x, hd_y, w=50, h=50): 
+def add_frame(json_conf, sd_video_file, fr_id, hd_x, hd_y, w=5, h=5): 
 
     # Load the JSON from the video path
     mrf = sd_video_file.replace(".mp4", "-reduced.json")
@@ -63,15 +63,28 @@ def add_frame(json_conf, sd_video_file, fr_id, hd_x, hd_y, w=50, h=50):
         metframes[fr_id]['h'] = h
         metframes[fr_id]['sd_x'] = hd_x*(HD_W/SD_W)
         metframes[fr_id]['sd_y'] = hd_y*(HD_H/SD_H)
-        metframes[fr_id]['sd_w'] = 0 #w
-        metframes[fr_id]['sd_h'] = 0 #h
-        metframes[fr_id]['sd_cx'] = 0 #hd_x
-        metframes[fr_id]['sd_cy'] = 0 #hd_y
+        metframes[fr_id]['sd_w'] = 6
+        metframes[fr_id]['sd_h'] = 6
+        metframes[fr_id]['sd_cx'] = 0 #hd_x?
+        metframes[fr_id]['sd_cy'] = 0 #hd_y?
         metframes[fr_id]['ra'] = 0
         metframes[fr_id]['dec'] = 0
         metframes[fr_id]['az'] = 0
         metframes[fr_id]['el'] = 0
         metframes[fr_id]['max_px'] = 0
+
+
+        x1,y1,x2,y2 = bound_cnt(hd_x,hd_y,HD_W,HD_H,6)
+        frames = load_video_frames(sd_video_file, json_conf) 
+        frame = frames[int(fr_id)]
+        frame = cv2.resize(frame, (1920,1080)) 
+        
+        cnt_img = frame[y1:y2,x1:x2]
+        min_val, max_val, min_loc, max_loc = cv2.minMaxLoc(cnt_img) 
+        metframes[new_fn]['hd_x'] = ax_loc[0] + x1
+        metframes[new_fn]['hd_y'] = max_loc[1] + y1
+        metframes[new_fn]['est_x'] = hd_x
+        metframes[new_fn]['est_y'] = hd_y 
 
         mr['metframes'] = metframes
         save_json_file(mrf, mr)
@@ -79,12 +92,7 @@ def add_frame(json_conf, sd_video_file, fr_id, hd_x, hd_y, w=50, h=50):
         print(mr)
 
         #Create Frame Thumb
-        tmp = sd_video_file.split("/")[-1]
-        frame_src = TMP_FRAME_FOLDER + '/' + tmp.replace(".mp4", "_"+fr_id+".png")
-        print('FRAME SRC')
-        print(frame_src)
-        print(crop_frame(fr_id,frame_src,hd_x,hd_y))
-
+        
         os.system("cd /home/ams/amscams/pythonv2/; ./reducer3.py cm " + mrf + "> /mnt/ams2/tmp/frame_update.txt")
         os.system("cd /home/ams/amscams/pythonv2/; ./reducer3.py cm " + mrf + "> /mnt/ams2/tmp/frame_update.txt")
 
