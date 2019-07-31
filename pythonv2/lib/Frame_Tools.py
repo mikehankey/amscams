@@ -37,15 +37,8 @@ def add_frame(json_conf, sd_video_file, fr_id, hd_x, hd_y, w=50, h=50):
 
         #We erase the old data  
         #So we can replace the frame 
-        try: 
-            mr['metframes'][fr_id]['hd_x'] = int(hd_x)
-            mr['metframes'][fr_id]['hd_y'] = int(hd_y)
-        except Exception: 
-            os.system("cd /home/ams/amscams/pythonv2/; ./reducer3.py dm " + sd_video_file + "> /mnt/ams2/tmp/rrr.txt")
-            mrf = sd_video_file.replace(".mp4", "-reduced.json")
-            mr = load_json_file(mrf)   
-            mr['metframes'][fn]['hd_x'] = int(new_x)
-            mr['metframes'][fn]['hd_y'] = int(new_y)
+        mr['metframes'][fr_id]['hd_x'] = int(hd_x)
+        mr['metframes'][fr_id]['hd_y'] = int(hd_y) 
 
         #JSON Update
         save_json_file(mrf, mr)
