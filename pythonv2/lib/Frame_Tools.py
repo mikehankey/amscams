@@ -78,6 +78,11 @@ def add_frame(json_conf, sd_video_file, fr_id, hd_x, hd_y, w=50, h=50):
 
         print(mr)
 
+        #Create Frame Thumb
+        tmp = sd_video_file.split("/")[-1]
+        frame_src = TMP_FRAME_FOLDER + '/' + tmp.replace(".mp4", "_"+fr_id+".png")
+        crop_frame(fr_id,frame_src,hd_x,hd_y)
+
         os.system("cd /home/ams/amscams/pythonv2/; ./reducer3.py cm " + mrf + "> /mnt/ams2/tmp/frame_update.txt")
         os.system("cd /home/ams/amscams/pythonv2/; ./reducer3.py cm " + mrf + "> /mnt/ams2/tmp/frame_update.txt")
 
