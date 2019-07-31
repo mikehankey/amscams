@@ -52,14 +52,12 @@ function create_meteor_selector_from_frame(frame_id, image_src) {
         <div class="modal-content">\
             <div class="modal-header">\
             <h5 class="modal-title" id="modalLabel">Frame #'+  frame_id + ' cropper</h5>\
+            <div class="alert alert-info ml-4 p-1 pr-3 pl-3">Move the white square to the meteor location</div>\
             <button type="button" class="close" data-dismiss="modal" aria-label="Close">\
                 <span aria-hidden="true">×</span>\
             </button>\
             </div>\
             <div class="modal-body">\
-            <div class="d-flex justify-content-between">\
-                <p>Move the white square to the meteor location</p>\
-            </div>\
             <div id="main_view" style="background-image:url('+image_src+'); width:'+prev_W+'px; height:'+prev_H+'px; margin: 0 auto; position:relative">\
                 <div id="dl"></div><div id="dt"></div><div id="dr"></div><div id="db"></div>\
                 <div id="selector" style="width:'+cursor_dim+'px; height:'+cursor_dim+'px; border:'+cursor_border_width+'px solid #fff;"></div>\

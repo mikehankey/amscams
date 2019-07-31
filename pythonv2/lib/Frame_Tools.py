@@ -9,7 +9,7 @@ TMP_FRAME_FOLDER = '/mnt/ams2/TMP'
 FRAME_THUMB_W = 50
 FRAME_THUMB_H = 50
 
-# Return a cropped frame
+# Return a cropped frame image
 def crop_frame(fr_id,src,x,y):
     cgitb.enable()
     w=FRAME_THUMB_W
@@ -19,12 +19,7 @@ def crop_frame(fr_id,src,x,y):
     frame_name = src.split(".")[0] 
     s = frame_name.rfind('_')
     frame_name = frame_name[:s]+ "-frm" + str(fr_id) + ".png"
- 
-    
-    cmd = "ffmpeg -y -hide_banner -loglevel panic -i " + src + " -vf \"crop="+str(w)+":"+str(h)+":"+str(x)+":"+str(y)+"\" " + frame_name
-    output = subprocess.check_output(cmd, shell=True).decode("utf-8")       
-    print(output)
-    
+  
     try:
         cmd = "ffmpeg -y -hide_banner -loglevel panic -i " + src + " -vf \"crop="+str(w)+":"+str(h)+":"+str(x)+":"+str(y)+"\" " + frame_name
         output = subprocess.check_output(cmd, shell=True).decode("utf-8")      
