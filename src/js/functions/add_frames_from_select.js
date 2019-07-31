@@ -88,6 +88,8 @@ function create_meteor_selector_from_frame(frame_id, image_src) {
     // Update Mask position
     update_mask_position(prev_H/2-cursor_dim/2,prev_W/2-cursor_dim/2,prev_W,prev_H,cursor_dim)
 
+    console.log("IMG " + image_src);
+
     // Show Modal
     setTimeout(function() {
         $("#tmp_img_ld").on('load', function() { 
@@ -240,6 +242,7 @@ function get_frame(cur_fn) {
         success: function(data) { 
             loading_done();  
             data = JSON.parse(data);
+            console.log("GET FRAME", data);
             create_meteor_selector_from_frame(data.id,data.full_fr); 
         }, 
         error:function() { 
