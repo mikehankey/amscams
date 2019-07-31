@@ -58,7 +58,7 @@ function create_meteor_selector_from_frame(frame_id, image_src) {
             </button>\
             </div>\
             <div class="modal-body">\
-            <div id="main_view" style="background-image:url('+image_src+'); width:'+prev_W+'px; height:'+prev_H+'px; margin: 0 auto; position:relative">\
+            <div id="main_view" style="background-color:#000;background-image:url('+image_src+'); width:'+prev_W+'px; height:'+prev_H+'px; margin: 0 auto; position:relative">\
                 <div id="dl"></div><div id="dt"></div><div id="dr"></div><div id="db"></div>\
                 <div id="selector" style="width:'+cursor_dim+'px; height:'+cursor_dim+'px; border:'+cursor_border_width+'px solid #fff;"></div>\
                 <div id="select_f_tools">\
