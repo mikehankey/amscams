@@ -128,15 +128,12 @@ def add_frame(json_conf, sd_video_file, fr_id, hd_x, hd_y):
         metframes[fr_id]['el'] = 0
         metframes[fr_id]['max_px'] = 0
 
-        x1,y1,x2,y2 = bound_cnt(float(hd_x),float(hd_y),1920,1080,6)
-       
-
-        frames = load_video_frames(sd_video_file, json_conf)
-
+        #x1,y1,x2,y2 = bound_cnt(float(hd_x),float(hd_y),1920,1080,6)
+        #frames = load_video_frames(sd_video_file, json_conf)
       
-        ifn = int(fr_id)
-        frame = frames[ifn]
-        frame = cv2.resize(frame, (1920,1080)) 
+        #ifn = int(fr_id)
+        #frame = frames[ifn]
+        #frame = cv2.resize(frame, (1920,1080)) 
         
         #cnt_img = frame[y1:y2,x1:x2]
         #min_val, max_val, min_loc, max_loc = cv2.minMaxLoc(cnt_img)
