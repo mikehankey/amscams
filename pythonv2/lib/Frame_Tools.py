@@ -6,6 +6,7 @@ import glob
 from os.path import isfile, join, exists
 from lib.FileIO import load_json_file, save_json_file
 from lib.UtilLib import bound_cnt
+from lib.VideoLib import load_video_frames
 
 TMP_FRAME_FOLDER = '/mnt/ams2/TMP'
 FRAME_THUMB_W = 50
