@@ -9,7 +9,32 @@ TMP_FRAME_FOLDER = '/mnt/ams2/TMP'
 FRAME_THUMB_W = 50
 FRAME_THUMB_H = 50
 
-# Return a cropped frame image
+HDM_X = 2.7272727272727272
+HDM_Y = 1.875
+
+# Add a new frame 
+def add_frame(json_conf, sd_video_file, fr_id, hd_x=-1, hd_y=-1): 
+
+    # Load the JSON from the video path
+    mrf = sd_video_file.replace(".mp4", "-reduced.json")
+    mr = load_json_file(mrf)
+
+    # Load existing data
+    metframes = mr['metframes']
+    metconf = mr['metconf']
+
+    print('METFRAMES')
+    print(metframes)
+
+    print("METCONF")
+    print(metconf)
+    
+    # Does the frame already exist in metframes?
+
+
+
+
+# Create & Return a cropped frame image (thumb)
 def crop_frame(fr_id,src,x,y):
     cgitb.enable()
     w=FRAME_THUMB_W
@@ -26,8 +51,6 @@ def crop_frame(fr_id,src,x,y):
         return json.dumps({'fr':frame_name})
     except:
         return json.dumps({'res':'false'})
-
-
 
 
 # Return a given frame for a given vid
