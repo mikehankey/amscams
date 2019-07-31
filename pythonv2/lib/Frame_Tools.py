@@ -116,8 +116,8 @@ def add_frame(json_conf, sd_video_file, fr_id, hd_x, hd_y):
         metframes[new_fn]['hd_y'] = hd_y
         metframes[new_fn]['w'] = 5
         metframes[new_fn]['h'] = 5
-        metframes[new_fn]['sd_x'] = sd_cx
-        metframes[new_fn]['sd_y'] = sd_cy
+        metframes[new_fn]['sd_x'] = hd_x * SD_W/HD_W
+        metframes[new_fn]['sd_y'] = hd_y * SD_H/HD_H
         metframes[new_fn]['sd_w'] = 6
         metframes[new_fn]['sd_h'] = 6
         metframes[new_fn]['sd_cx'] = sd_cx
@@ -134,10 +134,10 @@ def add_frame(json_conf, sd_video_file, fr_id, hd_x, hd_y):
         frame = frames[ifn]
         frame = cv2.resize(frame, (1920,1080)) 
         
-        cnt_img = frame[y1:y2,x1:x2]
-        min_val, max_val, min_loc, max_loc = cv2.minMaxLoc(cnt_img)
-        hd_x = max_loc[0] + x1  
-        hd_y = max_loc[1] + y1  
+        #cnt_img = frame[y1:y2,x1:x2]
+        #min_val, max_val, min_loc, max_loc = cv2.minMaxLoc(cnt_img)
+        #hd_x = max_loc[0] + x1  
+        #hd_y = max_loc[1] + y1  
         metframes[new_fn]['hd_x'] = hd_x
         metframes[new_fn]['hd_y'] = hd_y 
         metframes[new_fn]['est_x'] = est_x
