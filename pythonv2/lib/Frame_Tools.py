@@ -75,8 +75,8 @@ def add_frame(json_conf, sd_video_file, fr_id, hd_x, hd_y):
         first_x = int(mr['metconf']['sd_xs'][0]) 
 
         # Previous & Next frame ID
-        prev_fn = str(int(new_fn) - 1)
-        next_fn = str(int(new_fn) + 1)
+        prev_fn = str(int(fr_id) - 1)
+        next_fn = str(int(fr_id) + 1)
 
         # If we have a frame before
         if prev_fn in metframes:
@@ -84,7 +84,7 @@ def add_frame(json_conf, sd_video_file, fr_id, hd_x, hd_y):
             # frame exists before make est from prev frame info
             last_x = metframes[prev_fn]['sd_cx']
             last_y = metframes[prev_fn]['sd_cy']
-            fcc = (int(new_fn) - int(first_frame)) 
+            fcc = (int(fr_id) - int(first_frame)) 
             est_x = int(first_x) + (metconf['x_dir_mod'] * (metconf['sd_seg_len']*fcc)) + (metconf['sd_acl_poly'] * (fcc**2))
             est_y = (metconf['sd_m']*est_x)+metconf['sd_b']
             sd_cx = last_x
@@ -110,23 +110,23 @@ def add_frame(json_conf, sd_video_file, fr_id, hd_x, hd_y):
             print('IMPOSSIBLE TO GENERATE THE FRAME')
 
         # We got the info
-        metframes[new_fn] = {}
-        metframes[new_fn]['fn'] = new_fn 
-        metframes[new_fn]['hd_x'] = float(hd_x)
-        metframes[new_fn]['hd_y'] = float(hd_y)
-        metframes[new_fn]['w'] = 5
-        metframes[new_fn]['h'] = 5
-        metframes[new_fn]['sd_x'] = float(hd_x * SD_W/HD_W)
-        metframes[new_fn]['sd_y'] = float(hd_y * SD_H/HD_H)
-        metframes[new_fn]['sd_w'] = 6
-        metframes[new_fn]['sd_h'] = 6
-        metframes[new_fn]['sd_cx'] = float(sd_cx)
-        metframes[new_fn]['sd_cy'] = float(sd_cy)
-        metframes[new_fn]['ra'] = 0
-        metframes[new_fn]['dec'] = 0
-        metframes[new_fn]['az'] = 0
-        metframes[new_fn]['el'] = 0
-        metframes[new_fn]['max_px'] = 0
+        metframes[fr_id] = {}
+        metframes[fr_id]['fn'] = fr_id 
+        metframes[fr_id]['hd_x'] = float(hd_x)
+        metframes[fr_id]['hd_y'] = float(hd_y)
+        metframes[fr_id]['w'] = 5
+        metframes[fr_id]['h'] = 5
+        metframes[fr_id]['sd_x'] = float(hd_x * SD_W/HD_W)
+        metframes[fr_id]['sd_y'] = float(hd_y * SD_H/HD_H)
+        metframes[fr_id]['sd_w'] = 6
+        metframes[fr_id]['sd_h'] = 6
+        metframes[fr_id]['sd_cx'] = float(sd_cx)
+        metframes[fr_id]['sd_cy'] = float(sd_cy)
+        metframes[fr_id]['ra'] = 0
+        metframes[fr_id]['dec'] = 0
+        metframes[fr_id]['az'] = 0
+        metframes[fr_id]['el'] = 0
+        metframes[fr_id]['max_px'] = 0
 
         x1,y1,x2,y2 = bound_cnt(float(hd_x),float(hd_y),1920,1080,6)
         print('X1 Y1 X2 Y2', x1 +" " +y1+" " +x2+" " +y2)
@@ -136,7 +136,7 @@ def add_frame(json_conf, sd_video_file, fr_id, hd_x, hd_y):
         print("FRAMES")
         print(frames)
 
-        ifn = int(new_fn)
+        ifn = int(fr_id)
         frame = frames[ifn]
         frame = cv2.resize(frame, (1920,1080)) 
         
@@ -144,12 +144,12 @@ def add_frame(json_conf, sd_video_file, fr_id, hd_x, hd_y):
         #min_val, max_val, min_loc, max_loc = cv2.minMaxLoc(cnt_img)
         #hd_x = max_loc[0] + x1  
         #hd_y = max_loc[1] + y1  
-        metframes[new_fn]['hd_x'] = hd_x
-        metframes[new_fn]['hd_y'] = hd_y 
-        metframes[new_fn]['est_x'] = est_x
-        metframes[new_fn]['est_y'] = est_y 
+        metframes[fr_id]['hd_x'] = hd_x
+        metframes[fr_id]['hd_y'] = hd_y 
+        metframes[fr_id]['est_x'] = est_x
+        metframes[fr_id]['est_y'] = est_y 
 
-        print(metframes[new_fn])
+        print(metframes[fr_id])
         exit()
  
         mr['metframes'] = metframes
@@ -160,7 +160,7 @@ def add_frame(json_conf, sd_video_file, fr_id, hd_x, hd_y):
         mr = load_json_file(mrf )
         resp = {}
         resp['msg'] = "new frame added."
-        resp['newframe'] = mr['metframes'][new_fn] 
+        resp['newframe'] = mr['metframes'][fr_id] 
         print(json.dumps(resp))
         os.system("cd /home/ams/amscams/pythonv2/; ./reducer3.py cm " + mrf + "> /mnt/ams2/tmp/rrr.txt")
 
