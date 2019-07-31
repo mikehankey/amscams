@@ -81,6 +81,12 @@ def add_frame(json_conf, sd_video_file, fr_id, hd_x, hd_y, w=5, h=5):
         
         cnt_img = frame[y1:y2,x1:x2]
         min_val, max_val, min_loc, max_loc = cv2.minMaxLoc(cnt_img) 
+
+        print("MIN VAL ", min_val)
+        print("max_val ", max_val)
+        print("min_locL ", min_loc)
+        print("max_locL ", max_loc)
+
         metframes[new_fn]['hd_x'] = ax_loc[0] + x1
         metframes[new_fn]['hd_y'] = max_loc[1] + y1
         metframes[new_fn]['est_x'] = hd_x
