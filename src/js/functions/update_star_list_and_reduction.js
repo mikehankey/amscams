@@ -34,9 +34,7 @@ function update_star_and_reduction(callback) {
                 // Reload the actions
                 reduction_table_actions();
 
-                if(typeof callback != "undefined") {
-                    callback();
-                }
+                typeof callback === 'function' && callback();
             }
 
             loading_done();
