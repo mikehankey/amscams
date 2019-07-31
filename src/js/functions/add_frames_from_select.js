@@ -89,93 +89,96 @@ function create_meteor_selector_from_frame(frame_id, image_src) {
     update_mask_position(prev_H/2-cursor_dim/2,prev_W/2-cursor_dim/2,prev_W,prev_H,cursor_dim)
 
     // Show Modal
-    $("#tmp_img_ld").on('load', function() { 
-        $('#cropper_modal').modal('show'); 
-
-        // Setup Preview
-        var w_preview_dim = $('#select_preview').innerWidth()/2;
-        var h_preview_dim = $('#select_preview').innerHeight()/2;
-        var h_canvas_w = $('#main_view').innerWidth()/2;
-        var h_canvas_h = $('#main_view').innerHeight()/2;
+    setTimeout(function() {
+        $("#tmp_img_ld").on('load', function() { 
+            $('#cropper_modal').modal('show'); 
+    
+            // Setup Preview
+            var w_preview_dim = $('#select_preview').innerWidth()/2;
+            var h_preview_dim = $('#select_preview').innerHeight()/2;
+            var h_canvas_w = $('#main_view').innerWidth()/2;
+            var h_canvas_h = $('#main_view').innerHeight()/2;
+            
+            var xRatio =  w_preview_dim / h_canvas_w;
+            var yRatio =  h_preview_dim / h_canvas_h;
+            
+            var zoom = 8;
         
-        var xRatio =  w_preview_dim / h_canvas_w;
-        var yRatio =  h_preview_dim / h_canvas_h;
+            // PREVIEW SETUP
+            $('#select_preview').css({
+                'background': 'url('+image_src+') 50% 50% #000 no-repeat',
+                'background-size': h_canvas_w*zoom + 'px ' + h_canvas_h*zoom + 'px'
+            });
         
-        var zoom = 8;
+        
+            // Move the Selector
+            $( "#selector" ).draggable(
+                { containment: "parent",
+                    drag:function(e,u) {  
+        
+                        var top = u.position.top;
+                        var left = u.position.left;
+                        var $zoom =  $('#select_preview');
     
-        // PREVIEW SETUP
-        $('#select_preview').css({
-            'background': 'url('+image_src+') 50% 50% #000 no-repeat',
-            'background-size': h_canvas_w*zoom + 'px ' + h_canvas_h*zoom + 'px'
-        });
+                        
+                        sel_x = left;
+                        sel_y = top;
+        
+                        // Mask
+                        update_mask_position(top,left,prev_W,prev_H,cursor_dim);
+        
+                        // Preview Center
+                        top = top + cursor_dim/2;
+                        left = left + cursor_dim/2;
+                    
+                        var y_val = top*zoom/2-w_preview_dim;
+                        var x_val = left*zoom/2-h_preview_dim;
+                    
+                        if(x_val<0) {
+                        if(y_val<0) {
+                            $zoom.css('background-position',Math.abs(x_val)  + 'px ' + Math.abs(y_val) + 'px');
+                        } else {
+                            $zoom.css('background-position', Math.abs(x_val)  + 'px -' + y_val  + 'px');
+                        }
+                        } else if(y_val<0) {
+                            $zoom.css('background-position','-' +  x_val  + 'px ' + Math.abs(y_val)  + 'px');
+                        } else {
+                        
+                            $zoom.css('background-position', '-'+x_val  + 'px -' + y_val  + 'px');
+                        }
     
-    
-        // Move the Selector
-        $( "#selector" ).draggable(
-            { containment: "parent",
+                    }
+            });
+        
+            // Change Transparency
+            $('#transp').on('input', function () { 
+                var val = parseInt($(this).val());
+                $('#dl,#dr,#dt,#db').css({background:"rgba(255,255,255,"+val/100+")"});
+              });
+          
+          
+            // Drag tools
+            $('#select_f_tools').css({"bottom":'2rem',"right":'2rem','position':'absolute'});
+            $( "#select_f_tools" ).draggable(
+              { handle: ".drag-h", 
+                containment: "parent",
                 drag:function(e,u) {  
-    
-                    var top = u.position.top;
-                    var left = u.position.left;
-                    var $zoom =  $('#select_preview');
-
-                    
-                    sel_x = left;
-                    sel_y = top;
-    
-                    // Mask
-                    update_mask_position(top,left,prev_W,prev_H,cursor_dim);
-    
-                    // Preview Center
-                    top = top + cursor_dim/2;
-                    left = left + cursor_dim/2;
-                
-                    var y_val = top*zoom/2-w_preview_dim;
-                    var x_val = left*zoom/2-h_preview_dim;
-                
-                    if(x_val<0) {
-                    if(y_val<0) {
-                        $zoom.css('background-position',Math.abs(x_val)  + 'px ' + Math.abs(y_val) + 'px');
-                    } else {
-                        $zoom.css('background-position', Math.abs(x_val)  + 'px -' + y_val  + 'px');
-                    }
-                    } else if(y_val<0) {
-                        $zoom.css('background-position','-' +  x_val  + 'px ' + Math.abs(y_val)  + 'px');
-                    } else {
-                    
-                        $zoom.css('background-position', '-'+x_val  + 'px -' + y_val  + 'px');
-                    }
-
+                    $(this).css('position','relative')
+                },
+                start: function( event, ui ) {
+                  $(this).css('opacity',0.3);
+                },
+                stop: function( event, ui ) {
+                  $(this).css('opacity',1);
                 }
-        });
+              }
+            );
     
-        // Change Transparency
-        $('#transp').on('input', function () { 
-            var val = parseInt($(this).val());
-            $('#dl,#dr,#dt,#db').css({background:"rgba(255,255,255,"+val/100+")"});
-          });
-      
-      
-        // Drag tools
-        $('#select_f_tools').css({"bottom":'2rem',"right":'2rem','position':'absolute'});
-        $( "#select_f_tools" ).draggable(
-          { handle: ".drag-h", 
-            containment: "parent",
-            drag:function(e,u) {  
-                $(this).css('position','relative')
-            },
-            start: function( event, ui ) {
-              $(this).css('opacity',0.3);
-            },
-            stop: function( event, ui ) {
-              $(this).css('opacity',1);
-            }
-          }
-        );
+            loading_done(); 
+        
+        })
+    },1000);
 
-        loading_done(); 
-    
-    })
 
     // Create frame
     $('#create_frame').click(function() {
