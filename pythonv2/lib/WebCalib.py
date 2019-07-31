@@ -27,10 +27,11 @@ def update_frame_ajax(json_conf, form):
    new_x = int(float(form.getvalue("new_x")))
    new_y = int(float(form.getvalue("new_y")))
    
+   mrf = sd_video_file.replace(".mp4", "-reduced.json")
+   mr = load_json_file(mrf)      
+
    #Temporary but necessary
    try:
-      mrf = sd_video_file.replace(".mp4", "-reduced.json")
-      mr = load_json_file(mrf)   
       mr['metframes'][fn]['hd_x'] = int(new_x)
       mr['metframes'][fn]['hd_y'] = int(new_y)
    except Exception: 
