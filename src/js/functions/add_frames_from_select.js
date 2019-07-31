@@ -44,7 +44,7 @@ function create_meteor_selector_from_frame(frame_id, image_src) {
     var sel_x = 1280/2-cursor_dim/2;
     var sel_y = 720/2-cursor_dim/2;
 
-    loading({text: "Creating the frame picker", overlay:true});
+    loading({text: "Creating frame picker", overlay:true});
 
     // Create Modal
     $('<div class="modal fade" id="cropper_modal" tabindex="-1">\
@@ -78,7 +78,8 @@ function create_meteor_selector_from_frame(frame_id, image_src) {
         </div>\
         </div>\
     </div>').appendTo('body');
-
+    loading_done(); 
+     
     // Mask
     $('#dl,#dr,#dt,#db').css({background:"rgba(255,255,255,."+transp_val+")","position":"absolute"}); 
 
@@ -90,9 +91,7 @@ function create_meteor_selector_from_frame(frame_id, image_src) {
   
     // Show Modal
     $('#cropper_modal').modal('show'); 
-    loading_done(); 
-
- 
+    
     //$("#tmp_img_ld").ready(function() { 
         
         // Setup Preview
