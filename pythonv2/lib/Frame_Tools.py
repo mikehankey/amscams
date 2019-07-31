@@ -24,15 +24,17 @@ def add_frame(json_conf, sd_video_file, fr_id, hd_x=-1, hd_y=-1):
     metframes = mr['metframes']
     metconf = mr['metconf']
 
-    print('METFRAMES')
-    print(metframes)
+    #print('METFRAMES')
+    #print(metframes)
 
-    print("METCONF")
-    print(metconf)
+    #print("METCONF")
+    #print(metconf)
     
     # Does the frame already exist in metframes?
-
-
+    if fr_id in metframes:
+        print('FRAME ALREADY EXISTS')
+    else:
+        print('NEW FRAME!')
 
 
 # Create & Return a cropped frame image (thumb)
