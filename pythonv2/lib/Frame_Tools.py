@@ -59,12 +59,12 @@ def add_frame(json_conf, sd_video_file, fr_id, hd_x, hd_y, w=50, h=50):
         metframes[fr_id]['hd_y'] = hd_y
         metframes[fr_id]['w'] = w
         metframes[fr_id]['h'] = h
-        metframes[fr_id]['sd_x'] = '0' # hd_x
-        metframes[fr_id]['sd_y'] = '0' #hd_y
-        metframes[fr_id]['sd_w'] = '0' #w
-        metframes[fr_id]['sd_h'] = '0' #h
-        metframes[fr_id]['sd_cx'] = '0' #hd_x
-        metframes[fr_id]['sd_cy'] = '0' #hd_y
+        metframes[fr_id]['sd_x'] = 0 # hd_x
+        metframes[fr_id]['sd_y'] = 0 #hd_y
+        metframes[fr_id]['sd_w'] = 0 #w
+        metframes[fr_id]['sd_h'] = 0 #h
+        metframes[fr_id]['sd_cx'] = 0 #hd_x
+        metframes[fr_id]['sd_cy'] = 0 #hd_y
         metframes[fr_id]['ra'] = 0
         metframes[fr_id]['dec'] = 0
         metframes[fr_id]['az'] = 0
@@ -73,13 +73,16 @@ def add_frame(json_conf, sd_video_file, fr_id, hd_x, hd_y, w=50, h=50):
 
         mr['metframes'] = metframes
         save_json_file(mrf, mr)
-        os.system("cd /home/ams/amscams/pythonv2/; ./reducer3.py cm " + mrf + "> /mnt/ams2/tmp/frame_update.txt")
-        mr = load_json_file(mrf )
-        resp = {}
-        resp['msg'] = "new frame added."
-        resp['newframe'] = mr['metframes'][fr_id] 
-        print(json.dumps(resp))
-        os.system("cd /home/ams/amscams/pythonv2/; ./reducer3.py cm " + mrf + "> /mnt/ams2/tmp/frame_update.txt")
+
+        print(mr)
+
+        #os.system("cd /home/ams/amscams/pythonv2/; ./reducer3.py cm " + mrf + "> /mnt/ams2/tmp/frame_update.txt")
+        #mr = load_json_file(mrf )
+        #resp = {}
+        #resp['msg'] = "new frame added."
+        #resp['newframe'] = mr['metframes'][fr_id] 
+        #print(json.dumps(resp))
+        #os.system("cd /home/ams/amscams/pythonv2/; ./reducer3.py cm " + mrf + "> /mnt/ams2/tmp/frame_update.txt")
 
         #x1,y1,x2,y2 = bound_cnt(hd_x,hd_y,1920,1080,50)
         #frames = load_video_frames(sd_video_file, json_conf)
