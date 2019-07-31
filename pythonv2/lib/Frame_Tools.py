@@ -53,7 +53,7 @@ def update_frame(sd_video_file,fn,new_x,new_y):
 # Add a new frame or update an existing frame
 # based on hd_x & hd_y defined by the user 
 # though the "select meteor" interface
-def add_frame(json_conf, sd_video_file, fr_id, hd_x, hd_y): 
+def real_add_frame(json_conf, sd_video_file, fr_id, hd_x, hd_y): 
 
     # Load the JSON from the video path
     mrf = sd_video_file.replace(".mp4", "-reduced.json")
@@ -65,9 +65,12 @@ def add_frame(json_conf, sd_video_file, fr_id, hd_x, hd_y):
 
     # Does the frame, already exist?
     if fr_id in metframes:
-
-        print('FRAME ALREADY EXISTS => WE UPDATE')
         update_frame(sd_video_file,fr_id,hd_x,hd_y)
+
+        resp = {}
+        resp['msg'] = "frame #"+ fr_id +" updated."
+        resp['newframe'] = mr['metframes'][fr_id] 
+        print(json.dumps(resp))
 
     else:
         # First frame info
@@ -126,36 +129,22 @@ def add_frame(json_conf, sd_video_file, fr_id, hd_x, hd_y):
         metframes[fr_id]['dec'] = 0
         metframes[fr_id]['az'] = 0
         metframes[fr_id]['el'] = 0
-        metframes[fr_id]['max_px'] = 0
-
-        #x1,y1,x2,y2 = bound_cnt(float(hd_x),float(hd_y),1920,1080,6)
-        #frames = load_video_frames(sd_video_file, json_conf)
-      
-        #ifn = int(fr_id)
-        #frame = frames[ifn]
-        #frame = cv2.resize(frame, (1920,1080)) 
-        
-        #cnt_img = frame[y1:y2,x1:x2]
-        #min_val, max_val, min_loc, max_loc = cv2.minMaxLoc(cnt_img)
-        #hd_x = max_loc[0] + x1  
-        #hd_y = max_loc[1] + y1  
-        metframes[fr_id]['hd_x'] = hd_x
-        metframes[fr_id]['hd_y'] = hd_y 
+        metframes[fr_id]['max_px'] = 0 
         metframes[fr_id]['est_x'] = est_x
         metframes[fr_id]['est_y'] = est_y 
-
-       
+ 
         mr['metframes'] = metframes
         save_json_file(mrf, mr)
-        print("SAVED HERE ")
-        print(mrf)
         os.system("cd /home/ams/amscams/pythonv2/; ./reducer3.py cm " + mrf + "> /mnt/ams2/tmp/rrr.txt")
-        mr = load_json_file(mrf )
+        mr = load_json_file(mrf)
+
+        # We need to do it twice
+        os.system("cd /home/ams/amscams/pythonv2/; ./reducer3.py cm " + mrf + "> /mnt/ams2/tmp/rrr.txt")
+
         resp = {}
         resp['msg'] = "new frame added."
         resp['newframe'] = mr['metframes'][fr_id] 
         print(json.dumps(resp))
-        os.system("cd /home/ams/amscams/pythonv2/; ./reducer3.py cm " + mrf + "> /mnt/ams2/tmp/rrr.txt")
 
 
 # Create & Return a cropped frame image (thumb)

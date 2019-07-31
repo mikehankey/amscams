@@ -177,9 +177,7 @@ function create_meteor_selector_from_frame(frame_id, image_src) {
     
     })
 
-    
-
-    // Create CROP 
+    // Create frame
     $('#create_frame').click(function() {
         // Create cropped frame
         $.ajax({ 
@@ -188,6 +186,7 @@ function create_meteor_selector_from_frame(frame_id, image_src) {
                 cmd: 'crop_frame',
                 fr_id: frame_id,
                 src: image_src,
+                sd_video_file: sd_video_file,
                 x: parseFloat(sel_x),
                 y: parseFloat(sel_y)
             }, 
