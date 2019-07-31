@@ -73,13 +73,13 @@ def add_frame(json_conf, sd_video_file, fr_id, hd_x, hd_y, w=50, h=50):
         metframes[fr_id]['el'] = 0
         metframes[fr_id]['max_px'] = 0
 
-        mr['metframes'] = sorted(metframes)
+        mr['metframes'] = metframes
         save_json_file(mrf, mr)
 
         print(mr)
 
         os.system("cd /home/ams/amscams/pythonv2/; ./reducer3.py cm " + mrf + "> /mnt/ams2/tmp/frame_update.txt")
-            
+
         
         #mr = load_json_file(mrf )
         #resp = {}
