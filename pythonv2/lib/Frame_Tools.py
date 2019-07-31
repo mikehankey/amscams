@@ -128,10 +128,14 @@ def add_frame(json_conf, sd_video_file, fr_id, hd_x, hd_y):
         metframes[new_fn]['el'] = 0
         metframes[new_fn]['max_px'] = 0
 
- 
+        x1,y1,x2,y2 = bound_cnt(float(hd_x),float(hd_y),1920,1080,6)
+        print('X1 Y1 X2 Y2', x1 +" " +y1+" " +x2+" " +y2)
 
-        x1,y1,x2,y2 = bound_cnt(est_x,est_y,1920,1080,6)
         frames = load_video_frames(sd_video_file, json_conf)
+
+        print("FRAMES")
+        print(frames)
+
         ifn = int(new_fn)
         frame = frames[ifn]
         frame = cv2.resize(frame, (1920,1080)) 
