@@ -5,6 +5,7 @@ import cgitb
 import glob
 from os.path import isfile, join, exists
 from lib.FileIO import load_json_file, save_json_file
+from lib.UtilLib import bound_cnt
 
 TMP_FRAME_FOLDER = '/mnt/ams2/TMP'
 FRAME_THUMB_W = 50
@@ -44,8 +45,7 @@ def add_frame(json_conf, sd_video_file, fr_id, hd_x, hd_y, w=50, h=50):
         #JSON Update
         save_json_file(mrf, mr)
         print('FRAME UPDATED')
- 
-
+  
     else:
 
         # it is a new frame
@@ -67,8 +67,12 @@ def add_frame(json_conf, sd_video_file, fr_id, hd_x, hd_y, w=50, h=50):
         metframes[fr_id]['el'] = 0
         metframes[fr_id]['max_px'] = 0
 
-        print(metframes)
- 
+        x1,y1,x2,y2 = bound_cnt(hd_x,hd_y,1920,1080,50)
+        frames = load_video_frames(sd_video_file, json_conf)
+        frame = frames[int(fr_id)]
+        frame = cv2.resize(frame, (1920,1080)) 
+
+        print(frame)
 
     # Generate new thumb and other stuff
     #os.system("cd /home/ams/amscams/pythonv2/; ./reducer3.py cm " + mrf + "> /mnt/ams2/tmp/frame_update.txt")
