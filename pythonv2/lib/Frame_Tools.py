@@ -48,29 +48,29 @@ def add_frame(json_conf, sd_video_file, fr_id, hd_x, hd_y, w=50, h=50):
         else:
             print('THE FRAME ALREADY EXISTS - PASS NEW X & Y IF YOU WANT TO UPDATE')
 
-    
     else:
 
         # it is a new frame
-        metframes[fr_id] = {
-            'fn':   fr_id,
-            'hd_x': hd_x,
-            'hd_y': hd_y,
-            'w':    w,
-            'h':    h,
-            'sd_x': hd_x #???
-            'sd_y': hd_y #???
-            'sd_w': w,  #???
-            'sd_h': h, #???
-            'sd_cx': hd_x #???
-            'sd_cy': hd_y #???
-            'ra':0,
-            'dec':0,
-            'az':0,
-            'el':0,
-            'max_px':0}
-            
-        print(metframes[fr_id])
+        metframes[new_fn] = {}
+        metframes[new_fn]['fn'] = fr_id 
+        metframes[new_fn]['hd_x'] = hd_x
+        metframes[new_fn]['hd_y'] = hd_y
+        metframes[new_fn]['w'] = w
+        metframes[new_fn]['h'] = h
+        metframes[new_fn]['sd_x'] = hd_x
+        metframes[new_fn]['sd_y'] = hd_y
+        metframes[new_fn]['sd_w'] = w
+        metframes[new_fn]['sd_h'] = h
+        metframes[new_fn]['sd_cx'] = hd_x
+        metframes[new_fn]['sd_cy'] = hd_y
+        metframes[new_fn]['ra'] = 0
+        metframes[new_fn]['dec'] = 0
+        metframes[new_fn]['az'] = 0
+        metframes[new_fn]['el'] = 0
+        metframes[new_fn]['max_px'] = 0
+
+        print(metframes)
+ 
 
     # Generate new thumb and other stuff
     #os.system("cd /home/ams/amscams/pythonv2/; ./reducer3.py cm " + mrf + "> /mnt/ams2/tmp/frame_update.txt")
