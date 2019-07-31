@@ -45,8 +45,7 @@ def add_frame(json_conf, sd_video_file, fr_id, hd_x, hd_y, w=50, h=50):
         save_json_file(mrf, mr)
         print('FRAME UPDATED')
 
-        else:
-            print('THE FRAME ALREADY EXISTS - PASS NEW X & Y IF YOU WANT TO UPDATE')
+     
 
     else:
 
