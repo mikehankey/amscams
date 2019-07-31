@@ -4,7 +4,7 @@ import subprocess
 import cgitb
 import glob
 from os.path import isfile, join, exists
-from lib.FileIO import load_json_file
+from lib.FileIO import load_json_file, save_json_file
 
 TMP_FRAME_FOLDER = '/mnt/ams2/TMP'
 FRAME_THUMB_W = 50
@@ -13,8 +13,10 @@ FRAME_THUMB_H = 50
 HDM_X = 2.7272727272727272
 HDM_Y = 1.875
 
-# Add a new frame 
-def add_frame(json_conf, sd_video_file, fr_id, hd_x=-1, hd_y=-1): 
+# Add a new frame or update an existing frame
+# based on hd_x & hd_y defined by the user 
+# though the "select meteor" interface
+def add_frame(json_conf, sd_video_file, fr_id, hd_x, hd_y, w=50, h=50): 
 
     # Load the JSON from the video path
     mrf = sd_video_file.replace(".mp4", "-reduced.json")
@@ -23,18 +25,56 @@ def add_frame(json_conf, sd_video_file, fr_id, hd_x=-1, hd_y=-1):
     # Load existing data
     metframes = mr['metframes']
     metconf = mr['metconf']
-
-    #print('METFRAMES')
-    #print(metframes)
-
-    #print("METCONF")
-    #print(metconf)
     
     # Does the frame already exist in metframes?
     if fr_id in metframes:
-        print('FRAME ALREADY EXISTS')
+
+        #We erase the old data  
+        #So we can replace the frame 
+        try: 
+            mr['metframes'][fr_id]['hd_x'] = int(hd_x)
+            mr['metframes'][fr_id]['hd_y'] = int(hd_y)
+        except Exception: 
+            os.system("cd /home/ams/amscams/pythonv2/; ./reducer3.py dm " + sd_video_file + "> /mnt/ams2/tmp/rrr.txt")
+            mrf = sd_video_file.replace(".mp4", "-reduced.json")
+            mr = load_json_file(mrf)   
+            mr['metframes'][fn]['hd_x'] = int(new_x)
+            mr['metframes'][fn]['hd_y'] = int(new_y)
+
+        #JSON Update
+        save_json_file(mrf, mr)
+        print('FRAME UPDATED')
+
+        else:
+            print('THE FRAME ALREADY EXISTS - PASS NEW X & Y IF YOU WANT TO UPDATE')
+
+    
     else:
-        print('NEW FRAME!')
+
+        # it is a new frame
+        metframes[fr_id] = {
+            'fn':   fr_id,
+            'hd_x': hd_x,
+            'hd_y': hd_y,
+            'w':    w,
+            'h':    h,
+            'sd_x': hd_x #???
+            'sd_y': hd_y #???
+            'sd_w': w,  #???
+            'sd_h': h, #???
+            'sd_cx': hd_x #???
+            'sd_cy': hd_y #???
+            'ra':0,
+            'dec':0,
+            'az':0,
+            'el':0,
+            'max_px':0}
+            
+        print(metframes[fr_id])
+
+    # Generate new thumb and other stuff
+    #os.system("cd /home/ams/amscams/pythonv2/; ./reducer3.py cm " + mrf + "> /mnt/ams2/tmp/frame_update.txt")
+ 
 
 
 # Create & Return a cropped frame image (thumb)
