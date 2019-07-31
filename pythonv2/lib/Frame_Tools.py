@@ -67,7 +67,7 @@ def add_frame(json_conf, sd_video_file, fr_id, hd_x, hd_y):
     if fr_id in metframes:
 
         print('FRAME ALREADY EXISTS => WE UPDATE')
-        update_frame(sd_video_file,fn,hd_x,hd_y)
+        update_frame(sd_video_file,fr_id,hd_x,hd_y)
 
     else:
         # First frame info
@@ -143,7 +143,7 @@ def add_frame(json_conf, sd_video_file, fr_id, hd_x, hd_y):
         metframes[new_fn]['est_x'] = est_x
         metframes[new_fn]['est_y'] = est_y 
 
-
+        print(metframes[new_fn])
  
  
 
