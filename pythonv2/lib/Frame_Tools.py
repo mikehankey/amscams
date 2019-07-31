@@ -106,7 +106,7 @@ def add_frame(json_conf, sd_video_file, fr_id, hd_x, hd_y):
             est_x = int(sd_cx * HD_W/SD_W)
             est_y = int(sd_cy * HD_H/SD_H)
 
-        elif
+        elif:
             print('IMPOSSIBLE TO GENERATE THE FRAME')
 
         # We got the info
