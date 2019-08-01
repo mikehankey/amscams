@@ -144,8 +144,8 @@ function create_meteor_selector_from_frame(frame_id, image_src) {
 
 
                     // Update X/Y
-                    $('#pos_x').text(parseInt(sel_x*W_factor));
-                    $('#pos_y').text(parseInt(sel_y*H_factor));
+                    $('#pos_x').text(parseInt(sel_x*W_factor-cursor_dim/2));
+                    $('#pos_y').text(parseInt(sel_y*H_factor-cursor_dim/2));
 
     
                     // Mask
@@ -219,8 +219,8 @@ function create_meteor_selector_from_frame(frame_id, image_src) {
                 fr_id: frame_id,
                 src: image_src,
                 sd_video_file: sd_video_file,
-                x: parseInt(sel_x*H_factor),
-                y: parseInt(sel_y*W_factor)
+                x: parseInt(sel_x*H_factor-cursor_dim/2),
+                y: parseInt(sel_y*W_factor-cursor_dim/2)
             }, 
             success: function(data) {
                 data = JSON.parse(data); 
