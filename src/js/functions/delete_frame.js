@@ -17,7 +17,9 @@ function setup_delete_frame() {
                 // Remove the related square on the canvas
                 var objects = canvas.getObjects('reduc_rect');
                 for(i=0; i<objects.length; i++) {
+                    console.log(objects)
                     if(objects[i].id !== undefined && objects[i].id == d[1]) {
+                        console.log("FOUND");
                         canvas.remove(objects[i]);
                     }
                 }
