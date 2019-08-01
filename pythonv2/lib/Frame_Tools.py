@@ -68,8 +68,8 @@ def real_add_frame(json_conf, sd_video_file, fr_id, hd_x, hd_y):
         # Create frame with some missing info that will come from reducer3
         metframes[fr_id] = {}
         metframes[fr_id]['fn'] = fr_id 
-        metframes[fr_id]['hd_x'] = float(hd_x)
-        metframes[fr_id]['hd_y'] = float(hd_y)
+        metframes[fr_id]['hd_x'] = int(hd_x)
+        metframes[fr_id]['hd_y'] = int(hd_y)
         metframes[fr_id]['w'] = 5 #????
         metframes[fr_id]['h'] = 5 #????
         metframes[fr_id]['sd_x'] = int(float(hd_x) * SD_W/HD_W)
