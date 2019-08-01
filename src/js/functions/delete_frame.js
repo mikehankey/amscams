@@ -3,8 +3,7 @@ function setup_delete_frame() {
     $('.delete_frame').click(function() {
         var  $row = $(this).closest('tr');
         var  id = $row.attr('id');
-
-        console.log("DELETING FRAME")
+ 
 
         // Get the frame ID
         // the id should be fr_{ID}
@@ -18,10 +17,8 @@ function setup_delete_frame() {
 
                 // Remove the related square on the canvas
                 var objects = canvas.getObjects('reduc_rect');
-                for(i=0; i<objects.length; i++) {
-                    console.log(objects)
-                    if(objects[i].id !== undefined && objects[i].id == "fr_"+d[1]) {
-                        console.log("FOUND");
+                for(i=0; i<objects.length; i++) { 
+                    if(objects[i].id !== undefined && objects[i].id == "fr_"+d[1]) { 
                         canvas.remove(objects[i]);
                     }
                 }
