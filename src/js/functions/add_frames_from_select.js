@@ -124,7 +124,7 @@ function create_meteor_selector_from_frame(frame_id, image_src) {
      
         // PREVIEW SETUP
         $('#select_preview').css({
-            'background': 'url('+image_src+') 50% 50% #000 no-repeat',
+            'background': 'url('+image_src+'?c='+ Math.random()+') 50% 50% #000 no-repeat',
             'background-size': h_canvas_w*zoom + 'px ' + h_canvas_h*zoom + 'px'
         });
     
