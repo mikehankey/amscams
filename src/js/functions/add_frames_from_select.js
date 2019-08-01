@@ -62,7 +62,7 @@ function create_meteor_selector_from_frame(frame_id, image_src) {
                 <div id="dl"></div><div id="dt"></div><div id="dr"></div><div id="db"></div>\
                 <div id="selector" style="width:'+cursor_dim+'px; height:'+cursor_dim+'px; border:'+cursor_border_width+'px solid #fff;"></div>\
                  <div id="select_f_tools">\
-                    <div class="drag-h d-flex justify-content-between">\
+                    <div class="drag-h d-flex justify-content-between  pt-1">\
                         <div><small>Preview</small></div>\
                         <div><small>X:<span id="pos_x"></span> / Y:<span id="pos_y"></span></small></div>\
                     </div>\
