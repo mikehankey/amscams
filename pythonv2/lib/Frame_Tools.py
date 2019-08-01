@@ -143,8 +143,8 @@ def get_frame(fr_id,sd_vid):
         for f in filelist: 
             os.remove(f)
 
-        #We generate all the frames
-        cmd =  'ffmpeg -y -hide_banner -loglevel panic -i '+ sd_vid + ' -s 1280x720  ' + TMP_FRAME_FOLDER + '/' + cur_name + '_%d.png ' 
+        #We generate all the frames at 1280x720 as they'll be used in the front-end
+        cmd =  'ffmpeg -y -hide_banner -loglevel panic -i '+ sd_vid + ' -s 1280x720 ' + TMP_FRAME_FOLDER + '/' + cur_name + '_%d.png ' 
         output = subprocess.check_output(cmd, shell=True).decode("utf-8")    
         return json.dumps({'full_fr':TMP_FRAME_FOLDER + '/' + cur_name + '_' + fr_id + '.png', 'id': fr_id})
  
