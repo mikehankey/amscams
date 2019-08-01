@@ -68,7 +68,7 @@ function update_reduction_on_canvas_and_table(json_resp) {
         }
     
 
-        // Add Rectangle
+        // Add Rectangle on canvas
         canvas.add(new fabric.Rect({
             fill: 'rgba(0,0,0,0)', 
             strokeWidth: 1, 
@@ -78,7 +78,8 @@ function update_reduction_on_canvas_and_table(json_resp) {
             width: 10,
             height: 10 ,
             selectable: false,
-            type: 'reduc_rect'
+            type: 'reduc_rect',
+            id: 'fr_' + frame_id
         }));
 
     });

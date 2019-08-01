@@ -13,6 +13,15 @@ function setup_delete_frame() {
         $.ajax({ 
             url:  "/pycgi/webUI.py?cmd=del_frame&meteor_json_file=" + meteor_json_file + "&fn=" + d[1],
             success: function(response) {
+
+                // Remove the related square on the canvas
+                var objects = canvas.getObjects('reduc_rect');
+                for(i=0; i<objects.length; i++) {
+                    if(objects[i].id !== undefined && objects[i].id == d[1]) {
+                        canvas.remove(objects[i]);
+                    }
+                }
+
                 loading_done();
                 $row.fadeOut(150, function() {$row.remove();})
             } 

@@ -1,0 +1,49 @@
+TODO:
+
+- add cron generates timelapses every morning
+- Only other thing to maybe think about, which is a finer point is, after the pin point, 
+if the 'next frame' in the sequence is missing, you should auto advance to that next frame. (we can think about this after you have this phase done. ), Just try to consider an example where 100 frames are missing and the amount of time it will take to fix the entire thing. "Advance to next frame" could be a checkbox option. 
+
+- 
+1 user clicks add frame #X
+2 do we have the frame#X to show (test on /mnt/ams2/tmp)?
+   if(frame#X doesn't exist):
+           we create all the frames from the SD vid on /mnt/ams2/tmp
+   
+3 we display the frame#X 
+4 the user defines a portion (50px*50px) of the frame where the meteor is
+5 we create a frame#X_th under /mnt/ams2/meteors/[date]/      
+6 we show frame#X_th  in the crop tool and the user has to pin point the center of the meteor there 
+
+
+*********************************
+SELECT METEOR
+1- SELECT METEOR THUMB: CROP SIZE
+    there will be bolide events that are bigger than the crop size. Not sure how hard it will be to have a different crop size, or if this needs to be on a per frame basis. Maybe a default and two other fixed sizes that are bigger. Like 50x50, 100x100, 150x150 or something like that? 
+2- POINTING SEVERAL AT ONCE 
+   (ajax call after a bunch of tasks)
+ 
+
+*********************************
+ORBIT VIEWER
+1- Add 3 variables to the json file for each entry:
+  - line thickness
+  - line color (top/bottom) 
+  - object size (scale of 1-5 would map to diameter of object). 
+
+2- Check reverse Name bug (ex: Chelyabinsk)
+
+3-  Would also be very useful to be able to to see the x,y,z or stellar coordinates for objects when clicked or somehow / mouse over?
+
+4-  Is there a way we can make a python function that will take in :
+   - orbital params you are requiring now
+   - date
+   - and get back the stellar coordinates or even X,Y,Z
+
+5- Add info to the list when multiple objects
+and in the list, would be great to show main vars (a,i,e,q,peri,node) along with the x,y,z or coordinates for the object (this might be tough/refresh wise so don't worry about it / maybe only if mouse click or something)
+
+6- regarding the object list, it would be fine to just have a link under the form that said objects. click this link it opens a pop-up and you have a list of objects with the 7 main variables (a,i,e,q,peri,node,M) and a check box
+(IT COULD BE DONE BY SELECTING THE OBJECT AND DISPLAYING THE INFO ON THE RIGHT PANEL)
+
+7- having a re-orient button that will fix the FOV position to the default which should be whatever standard is normal for 0. not sure what that is. I guess it would be looking down at the sun at 0 longitude. not sure, maybe it is the default you already have. basically i just want a quick button to reset my FOV angle back to the default. 
