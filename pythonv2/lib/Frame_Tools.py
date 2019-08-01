@@ -64,48 +64,8 @@ def real_add_frame(json_conf, sd_video_file, fr_id, hd_x, hd_y):
         return
 
     else: 
-
-        # First frame info
-        first_frame = int(mr['metconf']['sd_fns'][0])
-        first_x = int(mr['metconf']['sd_xs'][0]) 
-
-        # Previous & Next frame ID
-        prev_fn = str(int(fr_id) - 1)
-        next_fn = str(int(fr_id) + 1)
-
-        # If we have a frame before
-        if prev_fn in metframes:
-
-            # frame exists before make est from prev frame info
-            last_x = metframes[prev_fn]['sd_cx']
-            last_y = metframes[prev_fn]['sd_cy']
-            fcc = (int(fr_id) - int(first_frame)) 
-            est_x = int(first_x) + (metconf['x_dir_mod'] * (metconf['sd_seg_len']*fcc)) + (metconf['sd_acl_poly'] * (fcc**2))
-            est_y = (metconf['sd_m']*est_x)+metconf['sd_b']
-            sd_cx = last_x
-            sd_cy = last_y
-            est_x = int(sd_cx *HD_W/SD_W)
-            est_y = int(sd_cy *HD_H/SD_H)
-
-        # We have a frame after
-        elif str(next_fn) in metframes:
-            # this frame exists before any others so need to add est in reverse. 
-            last_x = metframes[next_fn]['sd_cx']
-            last_y = metframes[next_fn]['sd_cy']
-            est_x = int(last_x) + (-1*metconf['x_dir_mod'] * (metconf['sd_seg_len']*1)) + (metconf['sd_acl_poly'] * 1)
-            est_y = (metconf['sd_m']*est_x)+metconf['sd_b']
-            sd_cx = est_x
-            sd_cy = est_y
-            sd_cx = last_x
-            sd_cy = last_y
-            est_x = int(sd_cx * HD_W/SD_W)
-            est_y = int(sd_cy * HD_H/SD_H)
-
-        else:
-            print(json.dumps({'error': "Impossible to create frame #"+ fr_id +" - please, try a frame adjacent to an existing one first."}))
-            return
-
-        # We got the info
+         
+        # Create frame with some missing info that will come from reducer3
         metframes[fr_id] = {}
         metframes[fr_id]['fn'] = fr_id 
         metframes[fr_id]['hd_x'] = float(hd_x)
@@ -116,15 +76,15 @@ def real_add_frame(json_conf, sd_video_file, fr_id, hd_x, hd_y):
         metframes[fr_id]['sd_y'] = int(int(hd_y) * SD_H/HD_H)
         metframes[fr_id]['sd_w'] = 6
         metframes[fr_id]['sd_h'] = 6
-        metframes[fr_id]['sd_cx'] = float(sd_cx)
-        metframes[fr_id]['sd_cy'] = float(sd_cy)
+        metframes[fr_id]['sd_cx'] = int(int(hd_x) * SD_W/HD_W)
+        metframes[fr_id]['sd_cy'] = int(int(hd_y) * SD_H/HD_H)
         metframes[fr_id]['ra'] = 0
         metframes[fr_id]['dec'] = 0
         metframes[fr_id]['az'] = 0
         metframes[fr_id]['el'] = 0
         metframes[fr_id]['max_px'] = 0 
-        metframes[fr_id]['est_x'] = est_x
-        metframes[fr_id]['est_y'] = est_y 
+        metframes[fr_id]['est_x'] = 0
+        metframes[fr_id]['est_y'] = 0
  
         mr['metframes'] = metframes
         save_json_file(mrf, mr)
