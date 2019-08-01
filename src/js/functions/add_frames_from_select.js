@@ -62,7 +62,10 @@ function create_meteor_selector_from_frame(frame_id, image_src) {
                 <div id="dl"></div><div id="dt"></div><div id="dr"></div><div id="db"></div>\
                 <div id="selector" style="width:'+cursor_dim+'px; height:'+cursor_dim+'px; border:'+cursor_border_width+'px solid #fff;"></div>\
                 <div id="select_f_tools">\
-                    <div class="drag-h"><small>Preview</small></div>\
+                    <div class="drag-h d-flex justify-content-between">\
+                        <div><small>Preview</small></div>\
+                        <div><small>X:<span id="pos_x"></span> / Y:<span id="pos_y"></span></small>\ 
+                    </div>\
                     <div class="p-1">\
                     <div id="select_preview" style="width:'+preview_dim+'px; height:'+preview_dim+'px"></div>\
                     <div><input type="range" value="'+transp_val+'" id="transp" min="0"  max="60" ></div>\
@@ -126,6 +129,12 @@ function create_meteor_selector_from_frame(frame_id, image_src) {
                     
                     sel_x = left;
                     sel_y = top;
+
+
+                    // Update X/Y
+                    $('#pos_x').text(sel_x);
+                    $('#pos_y').text(sel_y);
+
     
                     // Mask
                     update_mask_position(top,left,prev_W,prev_H,cursor_dim);
@@ -164,9 +173,10 @@ function create_meteor_selector_from_frame(frame_id, image_src) {
         $('#select_f_tools').css({"bottom":'2rem',"right":'2rem','position':'absolute'});
         $( "#select_f_tools" ).draggable(
             { handle: ".drag-h", 
-            containment: "parent",
+              containment: "parent",
             drag:function(e,u) {  
-                $(this).css('position','relative')
+                $(this).css('position','relative');
+
             },
             start: function( event, ui ) {
                 $(this).css('opacity',0.3);
