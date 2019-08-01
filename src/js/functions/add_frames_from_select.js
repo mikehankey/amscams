@@ -144,8 +144,8 @@ function create_meteor_selector_from_frame(frame_id, image_src) {
 
 
                     // Update X/Y
-                    $('#pos_x').text(sel_x);
-                    $('#pos_y').text(sel_y);
+                    $('#pos_x').text(sel_x*W_factor);
+                    $('#pos_y').text(sel_y*H_factor);
 
     
                     // Mask
