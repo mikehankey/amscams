@@ -187,6 +187,9 @@ function create_meteor_selector_from_frame(frame_id, image_src) {
     // Create frame
     $('#create_frame').click(function() {
 
+        // Hide the modal below (it will be reopened anyway)
+        $('#select_meteor_modal').modal('hide');
+
         loading({'text':'Creating the frame','overlay':true}); 
 
         // Create cropped frame
