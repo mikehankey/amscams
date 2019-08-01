@@ -47,8 +47,12 @@ function create_meteor_selector_from_frame(frame_id, image_src) {
     var sel_y = prev_H/2-cursor_dim/2;
 
 
-    var W_factor = prev_W/real_W;
-    var H_factor = prev_H/real_H;
+    var W_factor = real_W/prev_W;
+    var H_factor = real_H/prev_H;
+
+
+    console.log('W_factor',W_factor)
+    console.log('H_factor',H_factor)
 
     //loading({text: "Creating frame picker", overlay:true});
 
@@ -94,8 +98,8 @@ function create_meteor_selector_from_frame(frame_id, image_src) {
 
     // Selector Default Location (center)
     $('#selector').css({top:prev_H/2-cursor_dim/2,left:prev_W/2-cursor_dim/2 });
-    $('#pos_x').text((prev_W/2-cursor_dim/2)*W_factor);
-    $('#pos_y').text((prev_H/2-cursor_dim/2)*H_factor);    
+    $('#pos_x').text(parseInt((prev_W/2-cursor_dim/2)*W_factor));
+    $('#pos_y').text(parseInt(prev_H/2-cursor_dim/2)*H_factor));    
 
     // Update Mask position
     update_mask_position(prev_H/2-cursor_dim/2,prev_W/2-cursor_dim/2,prev_W,prev_H,cursor_dim)
