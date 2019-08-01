@@ -4,6 +4,8 @@ function setup_delete_frame() {
         var  $row = $(this).closest('tr');
         var  id = $row.attr('id');
 
+        console.log("DELETING FRAME")
+
         // Get the frame ID
         // the id should be fr_{ID}
         var d = id.split('_');
