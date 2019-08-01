@@ -83,8 +83,8 @@ def real_add_frame(json_conf, sd_video_file, fr_id, hd_x, hd_y):
         metframes[fr_id]['az'] = 0
         metframes[fr_id]['el'] = 0
         metframes[fr_id]['max_px'] = 0 
-        metframes[fr_id]['est_x'] = 0
-        metframes[fr_id]['est_y'] = 0
+        metframes[fr_id]['est_x'] = int(hd_x)
+        metframes[fr_id]['est_y'] = int(hd_y)
  
         mr['metframes'] = metframes
         save_json_file(mrf, mr)
