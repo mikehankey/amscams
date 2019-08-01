@@ -219,8 +219,8 @@ function create_meteor_selector_from_frame(frame_id, image_src) {
                 fr_id: frame_id,
                 src: image_src,
                 sd_video_file: sd_video_file,
-                x: parseInt(sel_x*H_factor-cursor_dim/2),
-                y: parseInt(sel_y*W_factor-cursor_dim/2)
+                x: parseInt(sel_x*H_factor+cursor_dim/2),
+                y: parseInt(sel_y*W_factor+cursor_dim/2)
             }, 
             success: function(data) {
                 data = JSON.parse(data); 
