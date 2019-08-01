@@ -45,8 +45,9 @@ function update_reduction_on_canvas_and_table(json_resp) {
         table_tbody_html+= '<td><a class="btn btn-danger btn-sm delete_frame"><i class="icon-delete"></i></a></td>';
 
         if(i==0) {
+            // <a title="Add a frame" class="btn btn-primary btn-sm btn-mm add_f" data-rel="'+ (frame_id-1) +'"><i class="icon-plus"></i></a>
             // We add a "+" before and after on if necessary
-            table_tbody_html+= '<td class="position-relative"><a class="btn btn-success btn-sm select_meteor"><i class="icon-target"></i></a><a title="Add a frame" class="btn btn-primary btn-sm btn-mm add_f" data-rel="'+ (frame_id-1) +'"><i class="icon-plus"></i></a>';
+            table_tbody_html+= '<td class="position-relative"><a class="btn btn-success btn-sm select_meteor"><i class="icon-target"></i></a>';
 
             /*
             if(all_frame_ids.indexOf((frame_id+1))==-1) {
