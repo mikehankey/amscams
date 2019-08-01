@@ -187,7 +187,7 @@ function create_meteor_selector_from_frame(frame_id, image_src) {
     // Create frame
     $('#create_frame').click(function() {
 
-        loading({'text':'Creating the frame','overlay':true}); 
+        loading({'text':'Creating frame #' + frame_id,'overlay':true}); 
 
         // Create cropped frame
         $.ajax({ 
