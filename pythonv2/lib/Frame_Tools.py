@@ -76,15 +76,15 @@ def real_add_frame(json_conf, sd_video_file, fr_id, hd_x, hd_y):
         metframes[fr_id]['sd_y'] = int(int(hd_y) * SD_H/HD_H)
         metframes[fr_id]['sd_w'] = 6
         metframes[fr_id]['sd_h'] = 6
-        metframes[fr_id]['sd_cx'] = int(int(hd_x) * SD_W/HD_W)
-        metframes[fr_id]['sd_cy'] = int(int(hd_y) * SD_H/HD_H)
+        metframes[fr_id]['sd_cx'] = metframes[fr_id]['sd_x'] + 3
+        metframes[fr_id]['sd_cy'] = metframes[fr_id]['sd_y'] + 3
         metframes[fr_id]['ra'] = 0
         metframes[fr_id]['dec'] = 0
         metframes[fr_id]['az'] = 0
         metframes[fr_id]['el'] = 0
         metframes[fr_id]['max_px'] = 0 
-        metframes[fr_id]['est_x'] = int(hd_x)
-        metframes[fr_id]['est_y'] = int(hd_y)
+        metframes[fr_id]['est_x'] = 0 #int(hd_x)
+        metframes[fr_id]['est_y'] = 0 #int(hd_y)
  
         mr['metframes'] = metframes
         save_json_file(mrf, mr)
