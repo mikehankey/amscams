@@ -64,7 +64,7 @@ function create_meteor_selector_from_frame(frame_id, image_src) {
                  <div id="select_f_tools">\
                     <div class="drag-h d-flex justify-content-between  pt-1">\
                         <div><small>Preview</small></div>\
-                        <div><small>X:<span id="pos_x"></span> / Y:<span id="pos_y"></span></small></div>\
+                        <div class="pr-2"><small>X:<span id="pos_x"></span> / Y:<span id="pos_y"></span></small></div>\
                     </div>\
                     <div class="p-1">\
                     <div id="select_preview" style="width:'+preview_dim+'px; height:'+preview_dim+'px"></div>\
@@ -82,17 +82,19 @@ function create_meteor_selector_from_frame(frame_id, image_src) {
         </div>\
     </div>').appendTo('body');
 
-   
-     
+    
     // Mask
     $('#dl,#dr,#dt,#db').css({background:"rgba(255,255,255,."+transp_val+")","position":"absolute"}); 
 
-    // Selector Default Location
+    // Selector Default Location (center)
     $('#selector').css({top:prev_H/2-cursor_dim/2,left:prev_W/2-cursor_dim/2 });
+    $('#pos_x').text(prev_W/2-cursor_dim/2);
+    $('#pos_y').text(prev_H/2-cursor_dim/2);    
 
     // Update Mask position
     update_mask_position(prev_H/2-cursor_dim/2,prev_W/2-cursor_dim/2,prev_W,prev_H,cursor_dim)
-  
+
+
     // Show Modal
     $('#cropper_modal').modal('show'); 
     loading_done();   
