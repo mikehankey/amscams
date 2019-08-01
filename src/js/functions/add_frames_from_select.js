@@ -36,13 +36,19 @@ function update_mask_position(top,left,prev_W,prev_H,cursor_dim) {
 // Create modal to select meteor from full frame
 function create_meteor_selector_from_frame(frame_id, image_src) {
     var cursor_dim = 50;            // Cursor dimension
+    var real_W = 1920;
+    var real_H = 1080;
     var prev_W = 1280;              // Full view
     var prev_H = 720;
     var transp_val = 15;            // Transparency of white area
     var preview_dim = 300;          // Only squares for preview
     var cursor_border_width  = 1; 
-    var sel_x = 1280/2-cursor_dim/2;
-    var sel_y = 720/2-cursor_dim/2;
+    var sel_x = prev_W/2-cursor_dim/2;
+    var sel_y = prev_H/2-cursor_dim/2;
+
+
+    var W_factor = prev_W/real_W;
+    var H_factor = prev_H/real_H;
 
     //loading({text: "Creating frame picker", overlay:true});
 
@@ -88,8 +94,8 @@ function create_meteor_selector_from_frame(frame_id, image_src) {
 
     // Selector Default Location (center)
     $('#selector').css({top:prev_H/2-cursor_dim/2,left:prev_W/2-cursor_dim/2 });
-    $('#pos_x').text(prev_W/2-cursor_dim/2);
-    $('#pos_y').text(prev_H/2-cursor_dim/2);    
+    $('#pos_x').text((prev_W/2-cursor_dim/2)*W_factor);
+    $('#pos_y').text((prev_H/2-cursor_dim/2)*H_factor);    
 
     // Update Mask position
     update_mask_position(prev_H/2-cursor_dim/2,prev_W/2-cursor_dim/2,prev_W,prev_H,cursor_dim)
@@ -209,8 +215,8 @@ function create_meteor_selector_from_frame(frame_id, image_src) {
                 fr_id: frame_id,
                 src: image_src,
                 sd_video_file: sd_video_file,
-                x: parseFloat(sel_x),
-                y: parseFloat(sel_y)
+                x: parseFloat(sel_x*H_factor),
+                y: parseFloat(sel_y*W_factor)
             }, 
             success: function(data) {
                 data = JSON.parse(data); 
