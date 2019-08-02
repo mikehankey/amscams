@@ -48,11 +48,7 @@ function create_meteor_selector_from_frame(frame_id, image_src) {
 
 
     var W_factor = real_W/prev_W;
-    var H_factor = real_H/prev_H;
-
-
-    console.log('W_factor',W_factor)
-    console.log('H_factor',H_factor)
+    var H_factor = real_H/prev_H; 
 
     //loading({text: "Creating frame picker", overlay:true});
 
@@ -106,7 +102,9 @@ function create_meteor_selector_from_frame(frame_id, image_src) {
 
 
     // Show Modal
-    $('#cropper_modal').modal('show'); 
+    $('#cropper_modal').modal('show').on('hidden.bs.modal', function (e) {
+        $('#cropper_modal').remove();
+    });
     loading_done();   
     
     //$("#tmp_img_ld").ready(function() { 
