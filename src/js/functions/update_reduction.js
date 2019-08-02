@@ -161,12 +161,15 @@ function test_missing_thumb() {
     var we_try_how_many_times = 10;
     var cnt = 0;
     $('#reduc-tab table img').each(function() {
-        // 50 = normal size
-	    if($(this).innerWidth()!==50) {
+
+        // 50 = normal size => 48 without border
+	    if($(this).width()!==48) {
             rows_with_missing_thumbs.push($(this).closest('tr').attr('id'));
             // Replace with loading
             $(this).attr('data-src',$(this).attr('src')).attr('src','/pycgi/dist/img/anim_logo.svg');
         }
+    
+    
     });
 
     if(rows_with_missing_thumbs.length!=0) {
