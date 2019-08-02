@@ -162,7 +162,7 @@ function test_missing_thumb() {
     var cnt = 0;
     $('#reduc-tab table img').each(function() {
         // 50 = normal size
-	    if($(this).width()!==50) {
+	    if($(this).innerWidth()!==50) {
             rows_with_missing_thumbs.push($(this).closest('tr').attr('id'));
             // Replace with loading
             $(this).attr('data-src',$(this).attr('src')).attr('src','/pycgi/dist/img/anim_logo.svg');
