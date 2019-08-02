@@ -88,7 +88,7 @@ function addModalTemplate(meteor_id,neighbor) {
         <div class="modal-dialog  modal-lg modal-dialog-centered" role="document">\
         <div class="modal-content">\
         <div class="modal-header"><div><strong>FRAME #<span id="sel_frame_id"></span></strong> \
-        </div><div>Click the center of the meteor to automatically update the reduction frame.</div></div>\
+        </div><div>Click the center of the meteor to update the reduction frame.</div></div>\
         <div class="modal-body"><button id="met-sel-next" title="Next" type="button" class="mfp-arrow mfp-arrow-right mfp-prevent-close"></button>\
         <button id="met-sel-prev" title="Prev" type="button" class="mfp-arrow mfp-arrow-left mfp-prevent-close"></button>\
         <div class="d-flex justify-content-center" id="nav_prev">\
@@ -101,8 +101,9 @@ function addModalTemplate(meteor_id,neighbor) {
                     <span id="meteor_pos"></span> \
                 </div> \
         </div>\
-        <div class="modal-footer p-0 pb-2 pr-2"><button type="button" hidden>Save</button>\
-        <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button></div></div></div></div>';
+        </div>\
+        <div class="modal-footer mt-3 pt-2 pb-2 pr-2"><button type="button" hidden>Save</button>\
+        <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button></div></div></div>';
         $(c).appendTo('body');
     }  
 
