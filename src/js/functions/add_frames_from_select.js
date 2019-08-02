@@ -52,16 +52,16 @@ function create_meteor_selector_from_frame(frame_id, image_src) {
 
     //loading({text: "Creating frame picker", overlay:true});
 
+<div class="modal-header"><div><strong>FRAME #<span id="sel_frame_id">40</span></strong>         </div><div>Click the center of the meteor to automatically update the reduction frame.</div></div>
+
+
     // Create Modal
     $('<div class="modal fade" id="cropper_modal" tabindex="-1">\
         <div class="modal-dialog modal-lg" style="max-width:1350px">\
         <div class="modal-content">\
             <div class="modal-header">\
-            <h5 class="modal-title" id="modalLabel">Frame #'+  frame_id + ' cropper</h5>\
-            <div class="alert alert-info ml-4 p-1 pr-3 pl-3 mb-0">Move the white square to the meteor location</div>\
-            <button type="button" class="close" data-dismiss="modal" aria-label="Close">\
-                <span aria-hidden="true">×</span>\
-            </button>\
+            <div><strong>Frame #'+  frame_id + ' cropper</strong></div>\
+            <div>Move the white square to the meteor location</div>\ 
             </div>\
             <div class="modal-body">\
             <div id="main_view" style="background-color:#000;background-image:url('+image_src+'); width:'+prev_W+'px; height:'+prev_H+'px; margin: 0 auto; position:relative">\
@@ -207,7 +207,7 @@ function create_meteor_selector_from_frame(frame_id, image_src) {
     // Create frame
     $('#create_frame').click(function() {
 
-        loading({'text':'Creating frame #' + frame_id,'overlay':true}); 
+        loading({'text':'Creating reduction of frame #' + frame_id,'overlay':true}); 
 
         // Create cropped frame
         $.ajax({ 
