@@ -58,7 +58,7 @@ function create_meteor_selector_from_frame(frame_id, image_src) {
         <div class="modal-content">\
             <div class="modal-header">\
             <div><strong>Frame #'+  frame_id + ' cropper</strong></div>\
-            <div>Move the white square to the meteor location</div>\ 
+            <div>Move the white square to the meteor location</div>\
             </div>\
             <div class="modal-body">\
             <div id="main_view" style="background-color:#000;background-image:url('+image_src+'); width:'+prev_W+'px; height:'+prev_H+'px; margin: 0 auto; position:relative">\
