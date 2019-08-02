@@ -170,10 +170,7 @@ function test_missing_thumb() {
     });
 
     if(rows_with_missing_thumbs.length!=0) {
-        // We try to load it 
-        //console.log("We try to load " )
-        //console.log(rows_with_missing_thumbs)
-
+        // We try to load it  
         try_again = setInterval(function(){ 
             
             if(rows_with_missing_thumbs.length==0 || cnt>=we_try_how_many_times) {
