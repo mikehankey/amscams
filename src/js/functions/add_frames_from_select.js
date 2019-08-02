@@ -51,10 +51,7 @@ function create_meteor_selector_from_frame(frame_id, image_src) {
     var H_factor = real_H/prev_H; 
 
     //loading({text: "Creating frame picker", overlay:true});
-
-<div class="modal-header"><div><strong>FRAME #<span id="sel_frame_id">40</span></strong>         </div><div>Click the center of the meteor to automatically update the reduction frame.</div></div>
-
-
+ 
     // Create Modal
     $('<div class="modal fade" id="cropper_modal" tabindex="-1">\
         <div class="modal-dialog modal-lg" style="max-width:1350px">\
