@@ -92,7 +92,7 @@ function addModalTemplate(meteor_id,neighbor) {
             - Click the center of the meteor to update the reduction frame. \
             </div>\
             <div>\
-                    <button id="switch_select_mode" class="btn btn-primary">Switch to multiple mode</strong>\
+                    <button id="switch_select_mode" class="btn btn-primary btn-sm"><b>Switch to multiple mode</b></button>\
             </div>\
         </div>\
         <div class="modal-body"><button id="met-sel-next" title="Next" type="button" class="mfp-arrow mfp-arrow-right mfp-prevent-close"></button>\
