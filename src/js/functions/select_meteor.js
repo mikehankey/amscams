@@ -102,8 +102,15 @@ function addModalTemplate(meteor_id,neighbor) {
                 </div> \
         </div>\
         </div>\
-        <div class="modal-footer bd-t mt-3 pt-2 pb-2 pr-2"><button type="button" hidden>Save</button>\
-        <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button></div></div></div>';
+        <div class="modal-footer bd-t mt-3 pt-2 pb-2 pr-2 d-flex justify-content-between">\
+        <div>\
+            <button class="btn btn-primary">One by one mode</strong>\
+        </div>\
+        <div>\
+        <button type="button" hidden>Save</button>\
+        <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>\
+        </div>\
+        </div></div></div>';
         $(c).appendTo('body');
     }  
 

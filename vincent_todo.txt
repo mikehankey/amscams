@@ -19,7 +19,9 @@ if the 'next frame' in the sequence is missing, you should auto advance to that 
 *********************************
 SELECT METEOR
 1- SELECT METEOR THUMB: CROP SIZE
-    there will be bolide events that are bigger than the crop size. Not sure how hard it will be to have a different crop size, or if this needs to be on a per frame basis. Maybe a default and two other fixed sizes that are bigger. Like 50x50, 100x100, 150x150 or something like that? 
+    there will be bolide events that are bigger than the crop size. 
+    Not sure how hard it will be to have a different crop size, or if 
+    this needs to be on a per frame basis. Maybe a default and two other fixed sizes that are bigger. Like 50x50, 100x100, 150x150 or something like that? 
 2- POINTING SEVERAL AT ONCE 
    (ajax call after a bunch of tasks)
  
