@@ -226,7 +226,7 @@ json_conf = load_json_file("../conf/as6.json")
 
 
 cal_params_file = sys.argv[1]
-
+os.system("./autoCal.py cfit_hdcal " + cal_params_file)
 print(cal_params_file)
 cal_params = load_json_file(cal_params_file)
 total_res = 0
@@ -247,5 +247,7 @@ minimize_poly_params_fwd(cal_params_file, cal_params,json_conf)
 
 cmd = "./XYtoRAdecAzEl.py az_grid " + cal_params_file + ">/tmp/mike.txt 2>&1"
 print(cmd)
+os.system(cmd)
+cmd = "./autoCal.py cal_index"
 os.system(cmd)
 
