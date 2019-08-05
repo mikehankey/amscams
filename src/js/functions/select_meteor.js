@@ -321,6 +321,10 @@ function addModalTemplate(meteor_id,neighbor) {
 
     update_meteor_info_list(meteor_id);
 
+
+    // Multiselect by default
+    $('#switch_select_mode').click();
+
    
 }
 
