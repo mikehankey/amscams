@@ -233,6 +233,14 @@ $meteor_selector_w: 500px;
                 p {
                     padding-left: 1rem;
                     margin-bottom: .5rem;
+
+                    &.cur_m_s:before  {
+                        content: "\e91f";
+                        display: inline-block;
+                        padding-right: .5rem;
+                        font-size: .5rem;
+                        font-family: 'icomoon';
+                    }
                 }
             }
         }

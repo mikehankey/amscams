@@ -66,9 +66,15 @@ function select_meteor_ajax(fn,x,y) {
         $('.meteor_thumb_pos_list').html('');
         
         $.each(meteor_select_updates, function(i,v){
+            var class;
             if(v !== undefined) {
-                $('<p><strong>Frame #'+i+'</strong> new position: x=' + v.x.toFixed(0) + ', ' + 'y=' + v.y.toFixed(0) +'</p>').appendTo($('.meteor_thumb_pos_list'));
-            }
+                if(fn == i) {
+                    class="cur_m_s";
+                } else {
+                    class="";
+                }
+                $('<p class="'+class+'"><strong>Frame #'+i+'</strong> new position: x=' + v.x.toFixed(0) + ', ' + 'y=' + v.y.toFixed(0) +'</p>').appendTo($('.meteor_thumb_pos_list'));
+            } 
         });
 
         // Scroll bottom of list
