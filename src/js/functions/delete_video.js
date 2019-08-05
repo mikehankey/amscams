@@ -2,6 +2,7 @@ $(function() {
     $('.delete_video').click(function(e){
         var $t = $(this);
         e.stopImmediatePropagration();
+
         bootbox.confirm({
             message: "Are you sure you want to permanently delete this video?",
             buttons: {
@@ -32,9 +33,9 @@ $(function() {
                         error: function(e) {
                             window.location.reload();
                         }
-                });
+                    });
+                }
             }
         });
-
-    })
-);
+    }) 
+});
