@@ -28,7 +28,7 @@ function addAnimModalTemplate($allframes) {
     <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button></div></div></div></div>').appendTo('body');
     
     // Add all the frames
-    $allframes..reverse();
+    $allframes.reverse();
     $allframes.each(function(i,v) {
         $(this).clone().addClass('to_anim to_anim-'+i).appendTo('#anim_holder');
     });
