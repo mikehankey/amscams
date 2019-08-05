@@ -51,14 +51,14 @@ def update_multiple_frames_ajax(json_conf, form):
         mr['metframes'][fn]['hd_y'] = int(val['y'])
 
   
-   #save_json_file(mrf, mr)
+   save_json_file(mrf, mr)
 
-   #resp = {}
-   #resp['msg'] = "frames updated." 
+   resp = {}
+   resp['msg'] = "frames updated." 
 
    # Run twice ???
-   #os.system("cd /home/ams/amscams/pythonv2/; ./reducer3.py cm " + mrf + "> /mnt/ams2/tmp/rrr.txt") 
-   #os.system("cd /home/ams/amscams/pythonv2/; ./reducer3.py cm " + mrf + "> /mnt/ams2/tmp/rrr.txt") 
+   os.system("cd /home/ams/amscams/pythonv2/; ./reducer3.py cm " + mrf + "> /mnt/ams2/tmp/rrr.txt") 
+   os.system("cd /home/ams/amscams/pythonv2/; ./reducer3.py cm " + mrf + "> /mnt/ams2/tmp/rrr.txt") 
    
    print(json.dumps(resp))
  
