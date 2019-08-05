@@ -31,29 +31,26 @@ def update_multiple_frames_ajax(json_conf, form):
    all_frames_to_update = form.getvalue("frames") 
 
    mrf = sd_video_file.replace(".mp4", "-reduced.json")
-   mr = load_json_file(mrf)     
-
-   print('RUN RED3') 
+   mr = load_json_file(mrf)      
 
    #We run reduce3 by default as we don't know if it has already been used or  not
-   os.system("cd /home/ams/amscams/pythonv2/; ./reducer3.py dm " + sd_video_file + "> /mnt/ams2/tmp/rrr.txt")
+   #os.system("cd /home/ams/amscams/pythonv2/; ./reducer3.py dm " + sd_video_file + "> /mnt/ams2/tmp/rrr.txt")
 
    #We update all the frames
    for i,val in enumerate(all_frames_to_update):
-    
-        fn = int(json.dumps(val['fn'])) 
+        fn =  json.dumps(val['fn'])  
         mr['metframes'][fn]['hd_x'] = int(json.dumps(val['x']))
         mr['metframes'][fn]['hd_y'] = int(json.dumps(val['y']))
 
   
-   save_json_file(mrf, mr)
+   #save_json_file(mrf, mr)
 
-   resp = {}
-   resp['msg'] = "frames updated." 
+   #resp = {}
+   #resp['msg'] = "frames updated." 
 
    # Run twice ???
-   os.system("cd /home/ams/amscams/pythonv2/; ./reducer3.py cm " + mrf + "> /mnt/ams2/tmp/rrr.txt") 
-   os.system("cd /home/ams/amscams/pythonv2/; ./reducer3.py cm " + mrf + "> /mnt/ams2/tmp/rrr.txt") 
+   #os.system("cd /home/ams/amscams/pythonv2/; ./reducer3.py cm " + mrf + "> /mnt/ams2/tmp/rrr.txt") 
+   #os.system("cd /home/ams/amscams/pythonv2/; ./reducer3.py cm " + mrf + "> /mnt/ams2/tmp/rrr.txt") 
    
    print(json.dumps(resp))
  
