@@ -1,4 +1,4 @@
-var multiple_select = false;
+var multiple_select = true;
 var meteor_select_updates = [];
 
 
@@ -311,6 +311,9 @@ function addModalTemplate(meteor_id,neighbor) {
         return false;
     });
 
+    // Multiselect by default
+    $('#switch_select_mode').click();    
+
 
     // Update Multiple 
     $('#select_multiple_meteors_ajax').click(function(e){
@@ -584,9 +587,7 @@ function setup_select_meteor(anti_cache=-1) {
             $(".meteor_chooser").removeClass('done'); 
             setup_modal_actions(meteor_id, $tr.attr('data-org-x'),$tr.attr('data-org-y'));
  
-            // Multiselect by default
-            console.log('MUL');
-            $('#switch_select_mode').click();    
+         
         }).attr({ src: imgSrc }); 
 
         
