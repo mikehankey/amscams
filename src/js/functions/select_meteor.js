@@ -95,18 +95,21 @@ function addModalTemplate(meteor_id,neighbor) {
                     <button id="switch_select_mode" class="btn btn-primary btn-sm"><b>Switch to multiple mode</b></button>\
             </div>\
         </div>\
-        <div class="modal-body"><button id="met-sel-next" title="Next" type="button" class="mfp-arrow mfp-arrow-right mfp-prevent-close"></button>\
-        <button id="met-sel-prev" title="Prev" type="button" class="mfp-arrow mfp-arrow-left mfp-prevent-close"></button>\
-        <div class="d-flex justify-content-center" id="nav_prev">\
-        </div><div style="box-shadow: 0 0px 8px rgba(0,0,0,.6);" class="meteor_chooser">\
-        <div id="org_lh"></div><div id="org_lv"></div><div id="lh"></div><div id="lv"></div></div>\
-            <div class="d-flex justify-content-between mt-2" style="max-width: 500px;margin: 0 auto;">\
-                <div><a class="btn btn-danger delete_frame_from_modal"><i class="icon-delete"></i> Delete the frame #<span class="sel_frame_id"></span></a></div>\
-                <div class="select_info"> \
-                    <span id="meteor_org_pos"><b>Org:</b></span><br/>\
-                    <span id="meteor_pos"></span> \
-                </div> \
-        </div>\
+        <div class="modal-body">\
+        <div class="select_meteor_holder">\
+            <button id="met-sel-next" title="Next" type="button" class="mfp-arrow mfp-arrow-right mfp-prevent-close"></button>\
+            <button id="met-sel-prev" title="Prev" type="button" class="mfp-arrow mfp-arrow-left mfp-prevent-close"></button>\
+            <div class="d-flex justify-content-center" id="nav_prev">\
+            </div><div style="box-shadow: 0 0px 8px rgba(0,0,0,.6);" class="meteor_chooser">\
+            <div id="org_lh"></div><div id="org_lv"></div><div id="lh"></div><div id="lv"></div></div>\
+                <div class="d-flex justify-content-between mt-2" style="max-width: 500px;margin: 0 auto;">\
+                    <div><a class="btn btn-danger delete_frame_from_modal"><i class="icon-delete"></i> Delete the frame #<span class="sel_frame_id"></span></a></div>\
+                    <div class="select_info"> \
+                        <span id="meteor_org_pos"><b>Org:</b></span><br/>\
+                        <span id="meteor_pos"></span> \
+                    </div> \
+            </div>\
+            </div>\
         </div>\
         <div class="modal-footer bd-t mt-3 pt-2 pb-2 pr-2">\
         <button type="button" hidden>Save</button>\
