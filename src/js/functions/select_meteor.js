@@ -215,6 +215,17 @@ function setup_modal_actions(fn_id,x,y) {
     var thumb_dim  = 50;
     var factor = 500/50;
 
+
+    // Switch  "Multiple Mode" / "Single Mode"
+    $('#switch_select_mode').click(function() {
+        var t;
+        multiple_select = (multiple_select==true)?false:true;
+        t = $(this).text();
+        $(this).text($(this).attr('data-lbl')).attr('data-lbl', t);
+        $('#select_meteor_modal').toggleClass('multiple-select');
+    });
+    
+
     x = parseInt(x);
     y = parseInt(y);
 
@@ -460,19 +471,9 @@ function setup_select_meteor(anti_cache=-1) {
             $('#lv').css('left','50%');
             
             // Open Modal
-            $('#select_meteor_modal').one('shown.bs.modal', function (e) {
-                 // Switch  "Multiple Mode" / "Single Mode"
-                $('#switch_select_mode').click(function() {
-                    var t;
-                    multiple_select = (multiple_select==true)?false:true;
-                    t = $(this).text();
-                    $(this).text($(this).attr('data-lbl')).attr('data-lbl', t);
-                    $('#select_meteor_modal').toggleClass('multiple-select');
-                });
+            $('#select_meteor_modal').modal('show');
 
-            }).modal('show');
 
-           
     
             // Reset
             $(".meteor_chooser").removeClass('done'); 
