@@ -136,7 +136,7 @@ function select_meteor_ajax(fn,x,y) {
         update_meteor_info_list(fn);
 
         // Go to next available
-
+        $('#met-sel-next').click();
       
     }
 
