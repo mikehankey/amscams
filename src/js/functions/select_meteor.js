@@ -110,6 +110,9 @@ function addModalTemplate(meteor_id,neighbor) {
                     </div> \
             </div>\
             </div>\
+            <div class="update_meteor_thumb_pos_list">\
+                <div class="meteor_thumb_pos_list"></div>\
+            </div>\
         </div>\
         <div class="modal-footer bd-t mt-3 pt-2 pb-2 pr-2">\
         <button type="button" hidden>Save</button>\
@@ -156,6 +159,11 @@ function addModalTemplate(meteor_id,neighbor) {
     // Click on "+"
     $('.create_frame_fs').click(function() { 
         get_frame($(this).attr('data-fr'));
+    });
+
+    // Click on "Multiple Mode"
+    $('#switch_select_mode').click(function() {
+        $('#select_meteor_modal').addClass('multiple-select');
     });
 }
 

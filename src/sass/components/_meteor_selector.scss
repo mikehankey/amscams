@@ -185,3 +185,28 @@ $meteor_selector_w: 500px;
     }
  
 }
+
+
+
+// Multiple Mode
+#select_meteor_modal {
+
+    .update_meteor_thumb_pos_list {
+        display:none;
+    }
+
+
+    &.multiple-select {
+        .select_meteor_holder {
+            width:766px;
+            position:relative;
+            float:left;
+        }
+
+        .update_meteor_thumb_pos_list {
+            display:block;
+            float:right; 
+        }
+    }
+
+}
