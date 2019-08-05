@@ -38,11 +38,15 @@ function select_multiple_meteors_ajax() {
                 $('.modal-backdrop').remove();
                 $('#select_meteor_modal').modal('hide').remove();
 
+                // Reset Selection
+                meteor_select_updates = [];
                 
           
                   
             } else {
                 loading_done();
+
+                 // Reset Selection
     
                 bootbox.alert({
                     message: "Something went wrong: please contact us.",
