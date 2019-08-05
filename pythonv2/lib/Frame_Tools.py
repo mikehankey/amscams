@@ -34,11 +34,11 @@ def update_multiple_frames_ajax(json_conf, form):
    os.system("cd /home/ams/amscams/pythonv2/; ./reducer3.py dm " + sd_video_file + "> /mnt/ams2/tmp/rrr.txt")
 
    #We update all the frames
-   for i,val in enumerate(v):
+   for i,val in enumerate(all_frames_to_update):
        #ex {"y": 414, "fn": "16", "x": 880}
-       print(json.dumps(x['fn']), json.dumps(i))
-       mr['metframes'][val['fn']]['hd_x'] = int(val['x'])
-       mr['metframes'][val['fn']]['hd_y'] = int(val['y'])
+       #print(json.dumps(x['fn']), json.dumps(i))
+       mr['metframes'][val['fn']]['hd_x'] = int(json.dumps(val['x']))
+       mr['metframes'][val['fn']]['hd_y'] = int(json.dumps(val['y']))
     
    save_json_file(mrf, mr)
 
