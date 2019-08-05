@@ -322,8 +322,6 @@ function addModalTemplate(meteor_id,neighbor) {
     update_meteor_info_list(meteor_id);
 
 
-    // Multiselect by default
-    $('#switch_select_mode').click();
 
    
 }
@@ -587,7 +585,8 @@ function setup_select_meteor(anti_cache=-1) {
             // Open Modal
             $('#select_meteor_modal').modal('show');
 
-
+            // Multiselect by default
+            $('#switch_select_mode').click();
     
             // Reset
             $(".meteor_chooser").removeClass('done'); 
