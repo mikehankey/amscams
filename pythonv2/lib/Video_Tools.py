@@ -8,6 +8,15 @@ from os.path import isfile, join, exists
 from shutil import copyfile
 
 
+#Delete Video From Path
+def delete_video(vid):
+    if os.path.isfile(vid):
+        os.remove(vid)
+    else:    
+        ## Show an error ##
+        print("Error: %s file not found" % myfile)
+
+
 #Return Video length
 def getLength(filename):
     cmd = "ffprobe -i "+filename +"  -show_entries format=duration -v quiet"

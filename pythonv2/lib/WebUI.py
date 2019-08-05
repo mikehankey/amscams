@@ -27,7 +27,7 @@ from lib.WebCalib import calibrate_pic,make_plate_from_points, solve_field, chec
 from lib.UtilLib import calc_radiant
 from lib.Video_Add_Job import add_video_job 
 from lib.VIDEO_VARS import * 
-from lib.Video_Tools import getLength
+from lib.Video_Tools import getLength, delete_video
 from lib.LOGOS_VARS import * 
 from lib.Logo_Tools import * 
 from lib.Frame_Tools import * 
@@ -249,6 +249,10 @@ def controller(json_conf):
   
       add_video_job('timelapse',form.getvalue('sel_cam[]'),form.getvalue('tl_date'),form.getvalue('fps'),form.getvalue('dim'),form.getvalue('text_pos'),form.getvalue('wat_pos'),extra_text,logo,logo_pos)
       exit()
+
+   # DELETE CUSTOM VIDEO (AJAX CALL)
+   if cmd == 'delete_custom_video'
+      delete_video(form.getvalue(vid))
 
    #CUSTOM LOGOS  (AJAX CALL)       
    if cmd == 'upload_logo': 
