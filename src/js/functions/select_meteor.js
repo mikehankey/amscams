@@ -163,6 +163,8 @@ function addModalTemplate(meteor_id,neighbor) {
     // We update the preview
     $('#nav_prev').html(''); 
 
+
+    // Add the "create frames buttons"
     $.each(neighbor, function(i,v)  {
         if(v.id==meteor_id) {
             _hclass = 'ccur';
@@ -184,6 +186,16 @@ function addModalTemplate(meteor_id,neighbor) {
 
     });
 
+
+    // Click on "Multiple Mode"
+    $('#switch_select_mode').click(function() {
+        var t;
+        multiple_select = (multiple_select==true)?false:true;
+        t = $(this).text();
+        $(this).text($(this).attr('data-lbl')).attr('data-lbl', t);
+        $('#select_meteor_modal').toggleClass('multiple-select');
+    });
+
     // Click on thumbs
     $('.select_frame').unbind('click').click(function() {
         $('tr#fr_'+$(this).attr('data-m') + ' .select_meteor').click();
@@ -199,14 +211,7 @@ function addModalTemplate(meteor_id,neighbor) {
         get_frame($(this).attr('data-fr'));
     });
 
-    // Click on "Multiple Mode"
-    $('#switch_select_mode').click(function() {
-        var t;
-        multiple_select = (multiple_select==true)?false:true;
-        t = $(this).text();
-        $(this).text($(this).attr('data-lbl')).attr('data-lbl', t);
-        $('#select_meteor_modal').toggleClass('multiple-select');
-    });
+   
 }
 
 // Actions on modal 
@@ -466,9 +471,7 @@ function setup_select_meteor(anti_cache=-1) {
             $('#select_meteor_modal').modal('show');
     
             // Reset
-            $(".meteor_chooser").removeClass('done');
-
-            console.log('IMG LOAD ' + meteor_id);
+            $(".meteor_chooser").removeClass('done'); 
             setup_modal_actions(meteor_id, $tr.attr('data-org-x'),$tr.attr('data-org-y'));
 
            
