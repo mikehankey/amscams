@@ -18,23 +18,21 @@ $(function() {
             centerVertical: true,
             callback: function (result) {
                 if(result==1) {
+                   loading({text: "Deleting Video",overlay:true});
 
-                    
-                loading({text: "Deleting Video",overlay:true});
-
-                $.ajax({ 
-                    url:  "/pycgi/webUI.py",
-                    data: {
-                        cmd: "delete_custom_video";
-                        vid: $t.attr('data-rel')
-                    },
-                    success: function(data) {
-                        $t.closest('.preview').remove();
-                    }, 
-                    error: function(e) {
-                        window.location.reload();
-                    }
-                }
+                    $.ajax({ 
+                        url:  "/pycgi/webUI.py",
+                        data: {
+                            cmd: "delete_custom_video",
+                            vid: $t.attr('data-rel')
+                        },
+                        success: function(data) {
+                            $t.closest('.preview').remove();
+                        }, 
+                        error: function(e) {
+                            window.location.reload();
+                        }
+                });
             }
         });
 
