@@ -94,7 +94,7 @@ function addModalTemplate(meteor_id,neighbor) {
             - Click the center of the meteor to update the reduction frame. \
             </div>\
             <div>\
-                    <button id="switch_select_mode" class="btn btn-primary btn-sm"><b>Switch to multiple mode</b></button>\
+                    <button id="switch_select_mode" class="btn btn-primary btn-sm" data-lbl="Switch to single mode"><b>Switch to multiple mode</b></button>\
             </div>\
         </div>\
         <div class="modal-body">\
@@ -169,7 +169,10 @@ function addModalTemplate(meteor_id,neighbor) {
 
     // Click on "Multiple Mode"
     $('#switch_select_mode').click(function() {
+        var t;
         multiple_select = true;
+        t = $(this).text();
+        $(this).text($(this).attr('data-lbl')).attr('data-lbl', t);
         $('#select_meteor_modal').addClass('multiple-select');
     });
 }
