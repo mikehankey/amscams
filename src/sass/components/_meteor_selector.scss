@@ -234,6 +234,10 @@ $meteor_selector_w: 500px;
                     padding-left: 1rem;
                     margin-bottom: .5rem;
 
+                    &:before {
+                        padding-right:1rem;
+                    }
+
                     &.cur_m_s:before  {
                         content: "\e91f";
                         display: inline-block;
