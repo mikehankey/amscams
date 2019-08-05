@@ -29,9 +29,11 @@ $(function() {
                         },
                         success: function(data) {
                             $t.closest('.preview').remove();
+                            loading_done();
                         }, 
                         error: function(e) {
                             window.location.reload();
+                            loading_done();
                         }
                     });
                 }
