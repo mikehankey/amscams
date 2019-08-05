@@ -21,11 +21,6 @@ from lib.CalibLib import radec_to_azel, clean_star_bg, get_catalog_stars, find_c
 from lib.UtilLib import check_running, calc_dist, angularSeparation, bound_cnt
 
 
-def update_multiple_frames_ajax(json_conf, form):
-   sd_video_file = form.getvalue("sd_video_file")
-   all_frames_to_update = form.getvalue("frames")
-
-   print(all_frames_to_update)
   
 
 def update_frame_ajax(json_conf, form):
