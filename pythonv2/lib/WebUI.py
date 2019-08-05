@@ -2241,7 +2241,7 @@ def browse_day(day,cams_id,json_conf):
    print("<input type='hidden' name='cur_date' value='"+str(day)+"'/>")
  
 
-   for base_file in sorted(day_files,reverse=False):
+   for base_file in sorted(day_files,reverse=True):
       if cc + 1 < len(day_files) - 2:
          next_stack_file = all_files[cc+1]
       else:
