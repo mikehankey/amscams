@@ -293,6 +293,7 @@ function addModalTemplate(meteor_id,neighbor) {
     
     // Switch  "Multiple Mode" / "Single Mode"
     $('#switch_select_mode').click(function(e) {
+        console.log("SWITCH CLICKED")
         e.stopImmediatePropagation();
         var t, $t = $(this);
         multiple_select = (multiple_select==true)?false:true;
@@ -309,9 +310,9 @@ function addModalTemplate(meteor_id,neighbor) {
         }
         */
         return false;
-    }).click();  // Multiple by default
+    })
 
-
+    $('#switch_select_mode').click();  // Multiple by default
 
     // Update Multiple 
     $('#select_multiple_meteors_ajax').click(function(e){
