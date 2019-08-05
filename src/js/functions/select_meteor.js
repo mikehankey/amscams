@@ -301,6 +301,7 @@ function addModalTemplate(meteor_id,neighbor) {
 
         if(multiple_select) {
             $('.create_frame_fs').attr('hidden','true');
+            meteor_select_updates = []; // We reset the values
         } else {
             $('.create_frame_fs').removeAttr('hidden');
         }
