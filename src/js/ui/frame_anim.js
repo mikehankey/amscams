@@ -28,7 +28,6 @@ function addAnimModalTemplate($allframes) {
     <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button></div></div></div></div>').appendTo('body');
     
     // Add all the frames
-    $allframes.reverse();
     $allframes.each(function(i,v) {
         $(this).clone().addClass('to_anim to_anim-'+i).appendTo('#anim_holder');
     });
@@ -44,7 +43,7 @@ function addAnimModalTemplate($allframes) {
 function frame_anim() { 
     
     $allframes = $('table img.select_meteor');
-    $allframes = $allframes.reverse();
+    //$allframes = $allframes.reverse();
     totalFrames = $allframes.length;
     
     addAnimModalTemplate($allframes);
