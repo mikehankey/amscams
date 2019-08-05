@@ -300,7 +300,7 @@ function addModalTemplate(meteor_id,neighbor) {
         $t.text($t.attr('data-lbl')).attr('data-lbl', t);
         $('#select_meteor_modal').toggleClass('multiple-select');
 
-        /*
+        /* Hide + frames on multiple mode ?
         if(multiple_select == true) {
             $('.create_frame_fs').attr('hidden','true');
             meteor_select_updates = []; // We reset the values
@@ -309,7 +309,7 @@ function addModalTemplate(meteor_id,neighbor) {
         }
         */
         return false;
-    });
+    }).click();  // Multiple by default
 
 
 
