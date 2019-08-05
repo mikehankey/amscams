@@ -299,7 +299,7 @@ function addModalTemplate(meteor_id,neighbor) {
         $('#select_meteor_modal').toggleClass('multiple-select');
 
 
-        if(multiple_select) {
+        if(multiple_select == true) {
             $('.create_frame_fs').attr('hidden','true');
             meteor_select_updates = []; // We reset the values
         } else {
