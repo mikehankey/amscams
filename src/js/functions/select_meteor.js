@@ -196,7 +196,7 @@ function addModalTemplate(meteor_id,neighbor) {
     var c; 
     if($('#select_meteor_modal').length==0) {
 
-        c = '<div id="select_meteor_modal" class="modal fade" tabindex="-1">\
+        c = '<div id="select_meteor_modal" class="modal fade multiple-select" tabindex="-1">\
         <input type="hidden" name="thumb_w"/><input type="hidden" name="thumb_h"/>\
         <div class="modal-dialog  modal-lg modal-dialog-centered" role="document">\
         <div class="modal-content">\
@@ -311,8 +311,7 @@ function addModalTemplate(meteor_id,neighbor) {
         return false;
     })
 
-    // Multiple by default
-    $('#select_meteor_modal').toggleClass('multiple-select');
+ 
 
      
     // Update Multiple 
