@@ -7,8 +7,13 @@ function select_multiple_meteors_ajax() {
     var cmd_data = {
         cmd: 'update_multiple_frames_ajax',
         sd_video_file: sd_video_file, // Defined on the page
-        frames: JSON.stringify(meteor_select_updates)
     };
+
+    meteor_select_updates = jQuery.grep(meteor_select_updates, function(n, i){
+        return (n !== "" && n != null);
+    });
+
+    cmd_data.frames = JSON.stringify(meteor_select_updates);
 
     loading({text:"Updating the " + meteor_select_updates.length  + " frames", overlay:true});
 
