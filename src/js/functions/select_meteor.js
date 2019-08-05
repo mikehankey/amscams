@@ -113,9 +113,11 @@ function addModalTemplate(meteor_id,neighbor) {
             </div>\
             </div>\
             <div class="update_meteor_thumb_pos_list">\
-                <h4>List of updates</h4>\
-                <div class="meteor_thumb_pos_list"></div>\
-                <div><button class="btn btn-primary">Apply all updates</button></div>\
+                <div class="d-flex align-items-start flex-column update_meteor_thumb_pos_list_ins">\
+                    <h5>List of updates</h5>\
+                    <div class="meteor_thumb_pos_list"></div>\
+                    <div class="mt-auto"><button class="btn btn-primary">Apply all updates</button></div>\
+                </div>\
             </div>\
         </div>\
         <div class="modal-footer bd-t mt-3 pt-2 pb-2 pr-2">\

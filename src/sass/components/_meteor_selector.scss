@@ -229,6 +229,17 @@ $meteor_selector_w: 500px;
                 padding:.8rem; 
             }
         }
+
+        h5 {
+            border-bottom: 1px solid rgba(255,255,255,.3);
+            width: 100%;
+            padding-bottom: 1rem;
+        }
+
+        .update_meteor_thumb_pos_list_ins {
+            width: 100%;
+            padding: 1rem;
+        }
     }
 
 }
