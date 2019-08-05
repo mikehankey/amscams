@@ -1,6 +1,13 @@
 var multiple_select = false;
 var meteor_select_updates = [];
 
+
+
+function select_multiple_meteors_ajax() {
+    console.log(meteor_select_updates);
+}
+
+
 function select_meteor_ajax(fn,x,y) {
     if(!multiple_select) {
         var cmd_data = {
@@ -58,8 +65,8 @@ function select_meteor_ajax(fn,x,y) {
         
         // We add the info to meteor_select_updates
         meteor_select_updates[fn] = {
-            x:x,
-            y:y
+            x:parseInt(x),
+            y:parseInt(y)
         };
 
         // Update list 
