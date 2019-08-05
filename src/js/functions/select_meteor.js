@@ -218,10 +218,11 @@ function setup_modal_actions(fn_id,x,y) {
 
     // Switch  "Multiple Mode" / "Single Mode"
     $('#switch_select_mode').click(function() {
-        var t;
+        console.log("ACTION SETUP");
+        var t, $t = $(this);
         multiple_select = (multiple_select==true)?false:true;
-        t = $(this).text();
-        $(this).text($(this).attr('data-lbl')).attr('data-lbl', t);
+        t = $t.text();
+        $t.text($t.attr('data-lbl')).attr('data-lbl', t);
         $('#select_meteor_modal').toggleClass('multiple-select');
     });
     
