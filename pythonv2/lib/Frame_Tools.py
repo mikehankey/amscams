@@ -41,9 +41,10 @@ def update_multiple_frames_ajax(json_conf, form):
 
    #We update all the frames
    for i,val in enumerate(all_frames_to_update):
-        fn =  json.dumps(val['fn'])  
-        mr['metframes'][fn]['hd_x'] = int(json.dumps(val['x']))
-        mr['metframes'][fn]['hd_y'] = int(json.dumps(val['y']))
+        v = json.dumps(val)
+        fn =  int(v['fn'])
+        mr['metframes'][fn]['hd_x'] = int(v['x'])
+        mr['metframes'][fn]['hd_y'] = int(v['y'])
 
   
    #save_json_file(mrf, mr)
