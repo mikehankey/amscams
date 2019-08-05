@@ -2,8 +2,7 @@ import json
 import os 
 import subprocess 
 import cgitb
-import glob
-import cv2
+import glob 
 from os.path import isfile, join, exists
 from lib.FileIO import load_json_file, save_json_file
 from lib.UtilLib import bound_cnt
@@ -24,42 +23,26 @@ HD_H = 1080
 
 # Update position of multiple frames
 def update_multiple_frames_ajax(json_conf, form):
-
     cgitb.enable()  
-
     sd_video_file = form.getvalue("sd_video_file")
     all_frames_to_update = form.getvalue("frames") 
-
-    #We run reduce3 by default as we don't know if it has already been used or  not
-    os.system("cd /home/ams/amscams/pythonv2/; ./reducer3.py dm " + sd_video_file + "> /mnt/ams2/tmp/rrr.txt")
+    os.system("cd /home/ams/amscams/pythonv2/; ./reducer3.py dm " + sd_video_file + " > /mnt/ams2/tmp/rrr.txt")
     all_frames_to_update = json.loads(all_frames_to_update)
-    
     mrf = sd_video_file.replace(".mp4", "-reduced.json")
-    mr = load_json_file(mrf)      
-   
-    #print(mr['metframes'][16]['hd_x'])
-
+    mr = load_json_file(mrf)       
     #We update all the frames
     for  val in all_frames_to_update: 
         fn =  int(val['fn'])
         print("Fn " + str(fn)) 
         print('VAL X ' + str(int(val['x'])))
-        print('VAL Y ' + str(int(val['y'])))
-        #mr['metframes'][fn]['hd_x'] = int(val['x'])
-        #mr['metframes'][fn]['hd_y'] = int(val['y'])
-            
-   exit()
-  
-   save_json_file(mrf, mr)
-
-   resp = {}
-   resp['msg'] = "frames updated." 
-
-   # Run twice ???
-   os.system("cd /home/ams/amscams/pythonv2/; ./reducer3.py cm " + mrf + "> /mnt/ams2/tmp/rrr.txt") 
-   os.system("cd /home/ams/amscams/pythonv2/; ./reducer3.py cm " + mrf + "> /mnt/ams2/tmp/rrr.txt") 
-   
-   print(json.dumps(resp))
+        print('VAL Y ' + str(int(val['y']))) 
+    exit()
+    save_json_file(mrf, mr)
+    resp = {}
+    resp['msg'] = "frames updated."  
+    os.system("cd /home/ams/amscams/pythonv2/; ./reducer3.py cm " + mrf + " > /mnt/ams2/tmp/rrr.txt") 
+    os.system("cd /home/ams/amscams/pythonv2/; ./reducer3.py cm " + mrf + " > /mnt/ams2/tmp/rrr.txt") 
+    print(json.dumps(resp))
  
 
 def update_frame(sd_video_file,fn,new_x,new_y):
