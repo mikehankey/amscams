@@ -135,6 +135,8 @@ function select_meteor_ajax(fn,x,y) {
         // Update list 
         update_meteor_info_list(fn);
 
+        // Go to next available
+
       
     }
 
@@ -252,9 +254,16 @@ function addModalTemplate(meteor_id,neighbor) {
         } 
 
         if(v.id==0) { 
+
+
+            _status = ""
+            if(multiple_select) {
+                _status = "hidden"
+            }
+
             // We add a +
             $('<div class="add_fr_btn">\
-                <a title="Add a frame" class="create_frame_fs btn btn-primary prev-th" data-rel="'+v.id+'" data-fr="'+v.vid+'"><i class="icon-plus display-block"></i> #'+v.vid+'</a>\
+                <a title="Add a frame" ' + _status + ' class="create_frame_fs btn btn-primary prev-th" data-rel="'+v.id+'" data-fr="'+v.vid+'"><i class="icon-plus display-block"></i> #'+v.vid+'</a>\
                 </div>').appendTo($('#nav_prev'));
 
         } else {
