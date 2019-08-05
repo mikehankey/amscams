@@ -25,9 +25,31 @@ HD_H = 1080
 # Update position of multiple frames
 def update_multiple_frames_ajax(json_conf, form):
    sd_video_file = form.getvalue("sd_video_file")
-   all_frames_to_update = form.getvalue("frames")
+   all_frames_to_update = form.getvalue("frames") 
 
-   print(all_frames_to_update)
+   mrf = sd_video_file.replace(".mp4", "-reduced.json")
+   mr = load_json_file(mrf)     
+
+   #We run reduce3 by default as we don't know if it has already been used or  not
+   os.system("cd /home/ams/amscams/pythonv2/; ./reducer3.py dm " + sd_video_file + "> /mnt/ams2/tmp/rrr.txt")
+
+   #We update all the frames
+   for i,val in enumerate(v):
+       #ex {"y": 414, "fn": "16", "x": 880}
+       print(json.dumps(x['fn']), json.dumps(i))
+       mr['metframes'][val['fn']]['hd_x'] = int(val['x'])
+       mr['metframes'][val['fn']]['hd_y'] = int(val['y'])
+    
+   save_json_file(mrf, mr)
+
+   resp = {}
+   resp['msg'] = "frames updated." 
+
+   # Run twice ???
+   os.system("cd /home/ams/amscams/pythonv2/; ./reducer3.py cm " + mrf + "> /mnt/ams2/tmp/rrr.txt") 
+   os.system("cd /home/ams/amscams/pythonv2/; ./reducer3.py cm " + mrf + "> /mnt/ams2/tmp/rrr.txt") 
+   
+   print(json.dumps(resp))
  
 
 def update_frame(sd_video_file,fn,new_x,new_y):
