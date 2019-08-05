@@ -555,7 +555,8 @@ def video_tools(json_conf,form):
          all_vids_out += "<div class='preview col-lg-2 col-md-3 norm  mb-3'>"
          all_vids_out += "<a class='mtt vid-link nop' href='"+vid+"' title='Play the Video'>"
          all_vids_out += "<img class='img-fluid ns lz' src='" + vid.replace('.mp4','.png') + "'/>"
-         all_vids_out += "</a><span>" + date + " - Cam#" + camid +" - " +  length + "</span></div>"
+         all_vids_out += "</a><span>" + date + " - Cam#" + camid +" - " +  length + "</span>"
+         all_vids_out += "<button class='btn btn-danger btn-sm mt-1 delete_video' data-rel="vid"><i class='icon-delete'></i></button></div>"
          vid_counter+=1
 
 

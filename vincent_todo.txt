@@ -57,6 +57,7 @@ the timelapse is awesome, but need to make a few changes to really get it workin
 This is not a huge priority, but whenever you get to it. 
 
 1) Time lapse preview still seems to play backwards. 
+=> DONE
 
 2) add a delete button for old ones on the page.
 
