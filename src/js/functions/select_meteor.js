@@ -118,6 +118,7 @@ function select_meteor_ajax(fn,x,y) {
         
         // We add the info to meteor_select_updates
         meteor_select_updates[fn] = {
+            fn: fn,
             x:parseInt(x),
             y:parseInt(y)
         };
