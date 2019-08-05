@@ -38,13 +38,13 @@ def update_multiple_frames_ajax(json_conf, form):
 
    print("ALL FRAMES ")
    print(all_frames_to_update)
-   print(type(fall_frames_to_update))
+   print(type(all_frames_to_update))
 
    all_frames_to_update = json.dumps(all_frames_to_update)
    
    print("ALL FRAMES DUMPED")
    print(all_frames_to_update)
-   print(type(fall_frames_to_update))
+   print(type(all_frames_to_update))
 
    #We update all the frames
    for i,val in enumerate(all_frames_to_update):
