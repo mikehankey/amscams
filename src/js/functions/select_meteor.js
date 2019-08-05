@@ -1,4 +1,4 @@
-var multiple_select = false;
+var multiple_select = true;
 var meteor_select_updates = [];
 
 
