@@ -583,16 +583,17 @@ function setup_select_meteor(anti_cache=-1) {
             $('#lv').css('left','50%');
             
             // Open Modal
-            $('#select_meteor_modal').modal('show');
+            $('#select_meteor_modal').on('shown.bs.modal', function (e) {
+                // Multiselect by default
+                $('#switch_select_mode').click();
+            }).modal('show');
 
-            // Multiselect by default
-            $('#switch_select_mode').click();
-    
             // Reset
             $(".meteor_chooser").removeClass('done'); 
             setup_modal_actions(meteor_id, $tr.attr('data-org-x'),$tr.attr('data-org-y'));
 
-           
+            
+    
                 
         }).attr({ src: imgSrc }); 
 
