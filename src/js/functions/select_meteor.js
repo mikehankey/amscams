@@ -67,9 +67,13 @@ function select_meteor_ajax(fn,x,y) {
         
         $.each(meteor_select_updates, function(i,v){
             if(v !== undefined) {
-                $('<p><strong>Frame #'+i+'</strong> new position: x=' + v.x + ',' + 'y=' + v.y +'</p>').appendTo($('.meteor_thumb_pos_list'));
+                $('<p><strong>Frame #'+i+'</strong> new position: x=' + v.x.toFixed(0) + ', ' + 'y=' + v.y.toFixed(0) +'</p>').appendTo($('.meteor_thumb_pos_list'));
             }
         });
+
+        // Scroll bottom of list
+        var d = $('.meteor_thumb_pos_list');
+        d.scrollTop(d.prop("scrollHeight"));
       
     }
 
