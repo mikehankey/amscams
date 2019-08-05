@@ -14,7 +14,7 @@ def delete_video(vid):
         os.remove(vid)
     else:    
         ## Show an error ##
-        print("Error: %s file not found" % myfile)
+        print("Error: %s file not found" % vid)
 
 
 #Return Video length

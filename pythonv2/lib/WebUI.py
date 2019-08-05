@@ -252,7 +252,9 @@ def controller(json_conf):
 
    # DELETE CUSTOM VIDEO (AJAX CALL)
    if cmd == 'delete_custom_video':
-      delete_video(form.getvalue(vid))
+      vid = form.getvalue(vid)
+      delete_video(vid)
+      exit()
 
    #CUSTOM LOGOS  (AJAX CALL)       
    if cmd == 'upload_logo': 
