@@ -26,17 +26,23 @@ def update_multiple_frames_ajax(json_conf, form):
     cgitb.enable()  
     sd_video_file = form.getvalue("sd_video_file")
     all_frames_to_update = form.getvalue("frames") 
+    
+    #Why? In case of...
     os.system("cd /home/ams/amscams/pythonv2/; ./reducer3.py dm " + sd_video_file + " > /mnt/ams2/tmp/rrr.txt")
     all_frames_to_update = json.loads(all_frames_to_update)
     mrf = sd_video_file.replace(".mp4", "-reduced.json")
-    mr = load_json_file(mrf)       
+    mr = load_json_file(mrf)
+
     #We update all the frames
     for  val in all_frames_to_update: 
         fn =  int(val['fn'])
         print("Fn " + str(fn)) 
         print('VAL X ' + str(int(val['x'])))
         print('VAL Y ' + str(int(val['y']))) 
-    exit()
+        mr['metframes'][fn]['hd_x'] = int(val['x'])
+        mr['metframes'][fn]['hd_y'] = int(val['y'])
+
+    
     save_json_file(mrf, mr)
     resp = {}
     resp['msg'] = "frames updated."  
