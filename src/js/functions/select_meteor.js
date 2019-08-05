@@ -221,7 +221,7 @@ function addModalTemplate(meteor_id,neighbor) {
         return false;
     });
 
-    update_meteor_info_list(id);
+    update_meteor_info_list(meteor_id);
 
    
 }
