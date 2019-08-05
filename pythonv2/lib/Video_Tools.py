@@ -10,11 +10,19 @@ from shutil import copyfile
 
 #Delete Video From Path
 def delete_video(vid):
+
+    #Get path to thumb
+    thumb = vid.replace(".mp4",".png")
+
     if os.path.isfile(vid):
         os.remove(vid)
     else:    
-        ## Show an error ##
-        print("Error: %s file not found" % vid)
+        print("Error: %s video not found" % vid)
+
+    if os.path.isfile(thumb):
+        os.remove(thumb)
+    else:    
+        print("Error: %s thumb not found" % thumb)
 
 
 #Return Video length
