@@ -24,6 +24,9 @@ HD_H = 1080
 
 # Update position of multiple frames
 def update_multiple_frames_ajax(json_conf, form):
+
+   cgitb.enable()  
+
    sd_video_file = form.getvalue("sd_video_file")
    all_frames_to_update = form.getvalue("frames") 
 
