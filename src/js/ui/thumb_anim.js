@@ -41,6 +41,7 @@ function addAnimThumbModalTemplate($allthumbs) {
 function thumb_anim() { 
     
     $allthumbs = $('img.lz');
+    $allthumbs.reverse();
     totalThumbs = $allthumbs.length;
     
     addAnimThumbModalTemplate($allthumbs);
