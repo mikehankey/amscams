@@ -251,7 +251,7 @@ def controller(json_conf):
       exit()
 
    # DELETE CUSTOM VIDEO (AJAX CALL)
-   if cmd == 'delete_custom_video'
+   if cmd == 'delete_custom_video':
       delete_video(form.getvalue(vid))
 
    #CUSTOM LOGOS  (AJAX CALL)       
