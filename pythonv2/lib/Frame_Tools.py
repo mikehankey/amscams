@@ -34,18 +34,16 @@ def update_multiple_frames_ajax(json_conf, form):
    mr = load_json_file(mrf)      
 
    #We run reduce3 by default as we don't know if it has already been used or  not
-   #os.system("cd /home/ams/amscams/pythonv2/; ./reducer3.py dm " + sd_video_file + "> /mnt/ams2/tmp/rrr.txt")
+   os.system("cd /home/ams/amscams/pythonv2/; ./reducer3.py dm " + sd_video_file + "> /mnt/ams2/tmp/rrr.txt")
    all_frames_to_update = json.loads(all_frames_to_update)
-
-   print(mr)
-   print("********************")
-   print(mr['metframes'])
+ 
 
    #We update all the frames
    for i,val in enumerate(all_frames_to_update):
         print(val) 
         fn =  int(val['fn'])
         print("Fn " + str(fn))
+        print("CUR " + mr['metframes'][fn]['hd_x'] )
         mr['metframes'][fn]['hd_x'] = int(val['x'])
         mr['metframes'][fn]['hd_y'] = int(val['y'])
         print(fn + ' => ' +  int(val['x']) + ', '  + int(val['y']))
