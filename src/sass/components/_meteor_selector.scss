@@ -200,6 +200,9 @@ $meteor_selector_w: 500px;
 
         .modal-dialog {
             max-width: 1350px;
+        }
+
+        .modal-body {
             -ms-flex-wrap: wrap !important;
             flex-wrap: wrap !important;
             -ms-flex-line-pack: stretch !important;
@@ -207,17 +210,16 @@ $meteor_selector_w: 500px;
             display: -webkit-box !important;
             display: -ms-flexbox !important;
             display: flex !important;
-
         }
 
         .select_meteor_holder {
-            width:766px;
+            width: 50%;
             position:relative; 
         }
 
         .update_meteor_thumb_pos_list {
             display:block;
-            width:calc(100% - 766px);
+            width: 50%;
 
             .meteor_thumb_pos_list {
                 margin: 1rem; 
