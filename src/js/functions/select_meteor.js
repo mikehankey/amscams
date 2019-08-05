@@ -63,27 +63,34 @@ function select_meteor_ajax(fn,x,y) {
         };
 
         // Update list 
-        $('.meteor_thumb_pos_list').html('');
-        
-        $.each(meteor_select_updates, function(i,v){
-            var _class;
-            if(v !== undefined) {
-                if(fn == i) {
-                    _class="cur_m_s";
-                } else {
-                    _class="";
-                }
-                $('<p class="'+_class+'"><strong>Frame #'+i+'</strong> new position: x=' + v.x.toFixed(0) + ', ' + 'y=' + v.y.toFixed(0) +'</p>').appendTo($('.meteor_thumb_pos_list'));
-            } 
-        });
+        update_meteor_info_list(fn);
 
-        // Scroll bottom of list
-        var d = $('.meteor_thumb_pos_list');
-        d.scrollTop(d.prop("scrollHeight"));
       
     }
 
     
+}
+
+
+function update_meteor_info_list(fn) {
+
+    $('.meteor_thumb_pos_list').html('');
+            
+    $.each(meteor_select_updates, function(i,v){
+        var _class;
+        if(v !== undefined) {
+            if(fn == i) {
+                _class="cur_m_s";
+            } else {
+                _class="";
+            }
+            $('<p class="'+_class+'"><strong>Frame #'+i+'</strong> new position: x=' + v.x.toFixed(0) + ', ' + 'y=' + v.y.toFixed(0) +'</p>').appendTo($('.meteor_thumb_pos_list'));
+        } 
+    });
+
+    // Scroll bottom of list
+    var d = $('.meteor_thumb_pos_list');
+    d.scrollTop(d.prop("scrollHeight"));
 }
 
 
@@ -201,7 +208,20 @@ function addModalTemplate(meteor_id,neighbor) {
     // Click on "+"
     $('.create_frame_fs').click(function() { 
         get_frame($(this).attr('data-fr'));
+    }); 
+    
+    // Switch  "Multiple Mode" / "Single Mode"
+    $('#switch_select_mode').click(function(e) {
+        e.stopImmediatePropagation();
+        var t, $t = $(this);
+        multiple_select = (multiple_select==true)?false:true;
+        t = $t.text();
+        $t.text($t.attr('data-lbl')).attr('data-lbl', t);
+        $('#select_meteor_modal').toggleClass('multiple-select');
+        return false;
     });
+
+    update_meteor_info_list(id);
 
    
 }
@@ -216,17 +236,6 @@ function setup_modal_actions(fn_id,x,y) {
     var factor = 500/50;
 
 
-    // Switch  "Multiple Mode" / "Single Mode"
-    $('#switch_select_mode').click(function(e) {
-        console.log("ACTION SETUP");
-        e.stopImmediatePropagation();
-        var t, $t = $(this);
-        multiple_select = (multiple_select==true)?false:true;
-        t = $t.text();
-        $t.text($t.attr('data-lbl')).attr('data-lbl', t);
-        $('#select_meteor_modal').toggleClass('multiple-select');
-        return false;
-    });
     
 
     x = parseInt(x);
