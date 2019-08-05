@@ -202,7 +202,7 @@ function addModalTemplate(meteor_id,neighbor) {
     // Click on "Multiple Mode"
     $('#switch_select_mode').click(function() {
         var t;
-        multiple_select = !multiple_select;
+        multiple_select = (multiple_select==true)?false:true;
         t = $(this).text();
         $(this).text($(this).attr('data-lbl')).attr('data-lbl', t);
         $('#select_meteor_modal').toggleClass('multiple-select');
