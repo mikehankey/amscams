@@ -215,7 +215,7 @@ function addModalTemplate(meteor_id,neighbor) {
                 <div class="d-flex align-items-start flex-column update_meteor_thumb_pos_list_ins">\
                     <h5>List of updates</h5>\
                     <div class="meteor_thumb_pos_list"></div>\
-                    <div class="mt-auto"><button class="btn btn-primary">Apply all updates</button></div>\
+                    <div class="mt-auto"><button id="select_multiple_meteors_ajax" class="btn btn-primary">Apply all updates</button></div>\
                 </div>\
             </div>\
         </div>\
@@ -279,6 +279,12 @@ function addModalTemplate(meteor_id,neighbor) {
         $t.text($t.attr('data-lbl')).attr('data-lbl', t);
         $('#select_meteor_modal').toggleClass('multiple-select');
         return false;
+    });
+
+
+    // Update Multiple 
+    $('#select_multiple_meteors_ajax').click(function(){
+        select_multiple_meteors_ajax();
     });
 
     update_meteor_info_list(meteor_id);
