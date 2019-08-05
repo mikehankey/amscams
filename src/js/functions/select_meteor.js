@@ -4,7 +4,60 @@ var meteor_select_updates = [];
 
 
 function select_multiple_meteors_ajax() {
-    console.log(meteor_select_updates);
+    var cmd_data = {
+        cmd: 'update_multiple_frames_ajax',
+        sd_video_file: sd_video_file, // Defined on the page
+        frames: meteor_select_updates
+    };
+
+    loading({text:"Updating the " + meteor_select_updates.length  + " frames", overlay:true});
+
+
+    $.ajax({ 
+        url:  "/pycgi/webUI.py",
+        data: cmd_data, 
+        success: function(data) {
+            
+            if($.trim(data)!='') { 
+
+                update_reduction_only();
+                loading_done();
+
+                // Anti cache?
+                //console.log('ANTI CACHE on ' + fn)
+                $.each(meteor_select_updates,function(i,v) {
+                    $('tr#fr_'+i+' img.select_meteor').attr('src', $('tr#fr_'+i+' img.select_meteor').attr('src')+'&w='+Math.round(Math.random(10000)*10000));
+                })
+
+
+                $('.modal-backdrop').remove();
+                $('#select_meteor_modal').modal('hide').remove();
+
+                
+          
+                  
+            } else {
+                loading_done();
+    
+                bootbox.alert({
+                    message: "Something went wrong: please contact us.",
+                    className: 'rubberBand animated error',
+                    centerVertical: true 
+                });
+            }
+
+            
+        }, 
+        error:function() {
+            loading_done();
+
+            bootbox.alert({
+                message: "The process returned an error",
+                className: 'rubberBand animated error',
+                centerVertical: true 
+            });
+        }
+    });
 }
 
 

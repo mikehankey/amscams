@@ -291,6 +291,9 @@ def controller(json_conf):
    if cmd == 'update_frame_ajax':
       update_frame_ajax(json_conf,form)
       exit()
+   if cmd == "update_multiple_frames_ajax":
+      update_multiple_frames_ajax(json_conf,form)
+      exit()
    if cmd == 'update_hd_cal_ajax':
       update_hd_cal_ajax(json_conf,form)
       exit()
