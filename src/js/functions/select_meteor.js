@@ -335,9 +335,6 @@ function setup_modal_actions(fn_id,x,y) {
     var thumb_dim  = 50;
     var factor = 500/50;
 
-
-    
-
     x = parseInt(x);
     y = parseInt(y);
 
@@ -507,8 +504,7 @@ function setup_select_meteor(anti_cache=-1) {
 
     // Click on selector (button & thumb)
     $('.select_meteor').click(function() {
- 
-
+  
         var $tr = $(this).closest('tr');
         var rand;
 
@@ -548,8 +544,7 @@ function setup_select_meteor(anti_cache=-1) {
         } else {
             $('.meteor_chooser').css('background-image','url('+$img.attr('src')+')').css('border','2px solid ' + color);
         }
-       
-
+        
         // Add current ID
         $('#sel_frame_id, .sel_frame_id').text(meteor_id);
   
@@ -583,18 +578,15 @@ function setup_select_meteor(anti_cache=-1) {
             $('#lv').css('left','50%');
             
             // Open Modal
-            $('#select_meteor_modal').on('shown.bs.modal', function (e) {
-                // Multiselect by default
-                $('#switch_select_mode').click();
-            }).modal('show');
+            $('#select_meteor_modal').modal('show');
 
             // Reset
             $(".meteor_chooser").removeClass('done'); 
             setup_modal_actions(meteor_id, $tr.attr('data-org-x'),$tr.attr('data-org-y'));
-
-            
-    
-                
+ 
+            // Multiselect by default
+            console.log('MUL');
+            $('#switch_select_mode').click();    
         }).attr({ src: imgSrc }); 
 
         
