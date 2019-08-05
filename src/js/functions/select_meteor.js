@@ -1,57 +1,77 @@
 var multiple_select = false;
+var meteor_select_updates = [];
 
 function select_meteor_ajax(fn,x,y) {
-    var cmd_data = {
-		cmd: 'update_frame_ajax',
-        sd_video_file: sd_video_file, // Defined on the page
-        fn: fn,
-        new_x: x,
-        new_y: y 
-    };
-
-    loading({text:"Updating the frame", overlay:true});
-
-    $.ajax({ 
-        url:  "/pycgi/webUI.py",
-        data: cmd_data, 
-        success: function(data) {
-            
-            if($.trim(data)!='') { 
-
-                update_reduction_only();
-                loading_done();
-
-                // Anti cache?
-                //console.log('ANTI CACHE on ' + fn)
-                $('tr#fr_'+fn+' img.select_meteor').attr('src', $('tr#fr_'+fn+' img.select_meteor').attr('src')+'&w='+Math.round(Math.random(10000)*10000));
-                $('.modal-backdrop').remove();
-                $('#select_meteor_modal').modal('hide').remove();
+    if(!multiple_select) {
+        var cmd_data = {
+            cmd: 'update_frame_ajax',
+            sd_video_file: sd_video_file, // Defined on the page
+            fn: fn,
+            new_x: x,
+            new_y: y 
+        };
+    
+        loading({text:"Updating the frame", overlay:true});
+    
+        $.ajax({ 
+            url:  "/pycgi/webUI.py",
+            data: cmd_data, 
+            success: function(data) {
                 
-                // Reopen the modal at the proper place
-                $('tr#fr_'+fn+' .select_meteor').click();
-                  
-            } else {
+                if($.trim(data)!='') { 
+    
+                    update_reduction_only();
+                    loading_done();
+    
+                    // Anti cache?
+                    //console.log('ANTI CACHE on ' + fn)
+                    $('tr#fr_'+fn+' img.select_meteor').attr('src', $('tr#fr_'+fn+' img.select_meteor').attr('src')+'&w='+Math.round(Math.random(10000)*10000));
+                    $('.modal-backdrop').remove();
+                    $('#select_meteor_modal').modal('hide').remove();
+                    
+                    // Reopen the modal at the proper place
+                    $('tr#fr_'+fn+' .select_meteor').click();
+                      
+                } else {
+                    loading_done();
+        
+                    bootbox.alert({
+                        message: "Something went wrong: please contact us.",
+                        className: 'rubberBand animated error',
+                        centerVertical: true 
+                    });
+                }
+    
+                
+            }, 
+            error:function() {
                 loading_done();
     
                 bootbox.alert({
-                    message: "Something went wrong: please contact us.",
+                    message: "The process returned an error",
                     className: 'rubberBand animated error',
                     centerVertical: true 
                 });
             }
+        });
+    } else {
+        
+        // We add the info to meteor_select_updates
+        meteor_select_updates[fn] = {
+            x:x,
+            y:y
+        };
 
-            
-        }, 
-        error:function() {
-            loading_done();
+        // Update list 
+        $('.meteor_thumb_pos_list').html('');
+        
+        $.each(meteor_select_updates, function(i,v){
+            $('<p><strong>Frame #'+i+'</strong> new position: x=' + x + ',' + 'y=' + y +'</p>').appendTo($('.meteor_thumb_pos_list'));
+        });
+      
+    }
 
-            bootbox.alert({
-                message: "The process returned an error",
-                className: 'rubberBand animated error',
-                centerVertical: true 
-            });
-        }
-    });
+    
 }
 
 
@@ -235,8 +255,7 @@ function setup_modal_actions(fn_id,x,y) {
             $('#lv').css('left',relX);
             $('#meteor_pos').text("x:"+parseInt(realX)+'/y:'+parseInt(realY));
         }
-        
-        console.log("AJAX CALL WITH " + fn_id);
+         
         select_meteor_ajax(fn_id,realX,realY);
  
     }).unbind('mousemove').mousemove(function(e) {
@@ -336,10 +355,7 @@ function get_neighbor_frames(cur_id) {
             vid:vid
         });
     }
-
-    console.log("ALL TH");
-    console.log(all_thb);
-
+ 
     return all_thb;
 
 }
