@@ -37,7 +37,7 @@ def update_multiple_frames_ajax(json_conf, form):
     mrf = sd_video_file.replace(".mp4", "-reduced.json")
     mr = load_json_file(mrf)      
    
-    print(mr['metframes'][16]['hd_x'])
+    #print(mr['metframes'][16]['hd_x'])
 
     #We update all the frames
     for  val in all_frames_to_update: 
