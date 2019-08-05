@@ -42,6 +42,7 @@ def update_multiple_frames_ajax(json_conf, form):
         fn =  int(val['fn'])
         mr['metframes'][fn]['hd_x'] = int(val['x'])
         mr['metframes'][fn]['hd_y'] = int(val['y'])
+        print(fn + ' => ' +  int(val['x']) + ', '  + int(val['y']))
 
   
    save_json_file(mrf, mr)
