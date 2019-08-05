@@ -197,15 +197,33 @@ $meteor_selector_w: 500px;
 
 
     &.multiple-select {
+
+        .modal-dialog {
+            max-width: 1350px;
+            -ms-flex-wrap: wrap !important;
+            flex-wrap: wrap !important;
+            -ms-flex-line-pack: stretch !important;
+            align-content: stretch !important;
+            display: -webkit-box !important;
+            display: -ms-flexbox !important;
+            display: flex !important;
+
+        }
+
         .select_meteor_holder {
             width:766px;
-            position:relative;
-            float:left;
+            position:relative; 
         }
 
         .update_meteor_thumb_pos_list {
             display:block;
-            float:right; 
+            width:calc(100% - 766px);
+
+            .meteor_thumb_pos_list {
+                margin: 1rem; 
+                padding:.8rem;
+                background:rgba(0,0,0,.3)
+            }
         }
     }
 
