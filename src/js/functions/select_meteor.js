@@ -283,8 +283,10 @@ function addModalTemplate(meteor_id,neighbor) {
 
 
     // Update Multiple 
-    $('#select_multiple_meteors_ajax').click(function(){
+    $('#select_multiple_meteors_ajax').click(function(e){
+        e.stopImmediatePropagation();
         select_multiple_meteors_ajax();
+        return false;
     });
 
     update_meteor_info_list(meteor_id);
