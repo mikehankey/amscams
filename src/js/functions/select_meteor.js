@@ -297,6 +297,14 @@ function addModalTemplate(meteor_id,neighbor) {
         t = $t.text();
         $t.text($t.attr('data-lbl')).attr('data-lbl', t);
         $('#select_meteor_modal').toggleClass('multiple-select');
+
+
+        if(multiple_select) {
+            $('.create_frame_fs').attr('hidden','true');
+        } else {
+            $('.create_frame_fs').removeAttr('hidden');
+        }
+
         return false;
     });
 
