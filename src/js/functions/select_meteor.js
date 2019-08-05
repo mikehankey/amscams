@@ -257,9 +257,11 @@ function addModalTemplate(meteor_id,neighbor) {
 
 
             _status = ""
+            /*
             if(multiple_select) {
                 _status = "hidden"
             }
+            */
 
             // We add a +
             $('<div class="add_fr_btn">\
@@ -298,14 +300,14 @@ function addModalTemplate(meteor_id,neighbor) {
         $t.text($t.attr('data-lbl')).attr('data-lbl', t);
         $('#select_meteor_modal').toggleClass('multiple-select');
 
-
+        /*
         if(multiple_select == true) {
             $('.create_frame_fs').attr('hidden','true');
             meteor_select_updates = []; // We reset the values
         } else {
             $('.create_frame_fs').removeAttr('hidden');
         }
-
+        */
         return false;
     });
 
