@@ -43,6 +43,8 @@ def update_multiple_frames_ajax(json_conf, form):
         print(val) 
         fn =  int(val['fn'])
         print("Fn " + str(fn))
+        print('HD X ' + str( mr['metframes'][fn]['hd_x']))
+        print('VAL X ' + str(int(val['x'])))
         mr['metframes'][fn]['hd_x'] = int(val['x'])
         mr['metframes'][fn]['hd_y'] = int(val['y'])
         print(fn + ' => ' +  int(val['x']) + ', '  + int(val['y']))
