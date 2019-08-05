@@ -205,7 +205,7 @@ function addModalTemplate(meteor_id,neighbor) {
             - Click the center of the meteor to update the reduction frame. \
             </div>\
             <div>\
-                    <button id="switch_select_mode" class="btn btn-primary btn-sm" data-lbl="Switch to single mode"><b>Switch to multiple mode</b></button>\
+                    <button id="switch_select_mode" class="btn btn-primary btn-sm" data-lbl="Switch to multiple mode"><b>Switch to single mode</b></button>\
             </div>\
         </div>\
         <div class="modal-body">\
@@ -292,8 +292,7 @@ function addModalTemplate(meteor_id,neighbor) {
     }); 
     
     // Switch  "Multiple Mode" / "Single Mode"
-    $('#switch_select_mode').click(function(e) {
-        console.log("SWITCH CLICKED")
+    $('#switch_select_mode').click(function(e) { 
         e.stopImmediatePropagation();
         var t, $t = $(this);
         multiple_select = (multiple_select==true)?false:true;
@@ -312,8 +311,10 @@ function addModalTemplate(meteor_id,neighbor) {
         return false;
     })
 
-    $('#switch_select_mode').click();  // Multiple by default
+    // Multiple by default
+    $('#select_meteor_modal').toggleClass('multiple-select');
 
+     
     // Update Multiple 
     $('#select_multiple_meteors_ajax').click(function(e){
         e.stopImmediatePropagation();
