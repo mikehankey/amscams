@@ -1,4 +1,4 @@
-var multiple_select = true;
+var multiple_select = false;
 var meteor_select_updates = [];
 
 
@@ -311,8 +311,6 @@ function addModalTemplate(meteor_id,neighbor) {
         return false;
     });
 
-    // Multiselect by default
-    $('#switch_select_mode').click();    
 
 
     // Update Multiple 
