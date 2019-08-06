@@ -12,6 +12,9 @@ from lib.Video_Parameters import save_video_job_parameters
 def add_video_job(name,cam_ids,date,fps,dim,text_pos,wat_pos,extra_text,logo,logo_pos):
 
     #cgitb.enable()  
+    print("logo " + logo)
+    print("logo_pos " + logo_pos)
+    exit()
 
     #Save current params as default
     if(logo == '' ):
