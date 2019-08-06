@@ -28,7 +28,7 @@ def create_HD_TMP_FOLDER_if_necessary():
 def get_stack(org_image):
 
     #Get date from file
-    date = get_meteor_date_ffmpeg(org_image)
+    date = get_meteor_date(org_image)
     print("DATE " + date)
 
     #Get the cam id 
