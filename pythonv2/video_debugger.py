@@ -63,8 +63,6 @@ from os.path import isfile, join, exists
 #get_all_HD_pic() 
 org =  '/mnt/ams2/TIMELAPSE_IMAGES/2019_08_06_01_02_26_000_010039.png'
 stack = get_stack_from_HD_frame(org)
-
-
 print('STACK ' +  str(stack))
 print('ORG ' +  org)
 blend(org,stack,40,'/mnt/ams2/TMP/test.png')
