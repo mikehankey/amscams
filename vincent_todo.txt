@@ -100,3 +100,11 @@ So instead what we should do is :
   - if you want to span days it is no big deal cause all files are in the same dir. 
 
 Obviously it will take 3 days to build up the libary but that is fine. 
+
+
+
+************************************
+Currently working on timelapse
+
+Need to take into account hours & duration from the modal form on 
+https://sleaziest-somali-2255.dataplicity.io/pycgi/webUI.py?cmd=video_tools
