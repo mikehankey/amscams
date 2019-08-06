@@ -63,15 +63,20 @@ This is not a huge priority, but whenever you get to it.
 2) add a delete button for old ones on the page.
 => DONE
 
-3) Need to have start time and end time on the generate timelapse form. Or start time + 'duration hours'. Sometimes I only want night, sometimes, just an hour or two cloud pattern, sometimes, dawn or dusk. Maybe I want from sunset to sunrise. 
+3) Need to have start time and end time on the generate timelapse form. Or start time + 'duration hours'. Sometimes I only want night, sometimes, just an hour or two cloud pattern, sometimes, dawn or dusk. 
+Maybe I want from sunset to sunrise. 
 
 4) Change the photo creation logic:
- - one problem we have now has to do with the readiness of the videos, e.g. daytime HD videos are deleted quickly. So it is pretty difficult to time the timelapse creation just right that you can even get a full 24 hours.  
+ - one problem we have now has to do with the readiness of the videos, e.g. daytime HD videos are deleted quickly. 
+   So it is pretty difficult to time the timelapse creation just right that you can even get a full 24 hours.  
  - also making the 'pics/ stacks' at the time of time lapse is not ideal. 
 
 So instead what we should do is :
-  - have a 'time_lapse_images.py' script that runs once an hour and just makes a HD image of every HD video file for that day or the day before and put them in a directory : /mnt/ams2/TIMELAPSE_IMAGES/
-   - for night time files, (new trick), take 1 frame of the HD and then take the SD stack. Resize the SD image to HD, then 'blend' the two images with a 60/40 HD/SD mix. Now you will have the clarity of HD and all stars, but also the 'events' from the SD. The images will go by fast enough you can't notice and really, can barely notice while looking at a still. 
+  - have a 'time_lapse_images.py' script that runs once an hour and just makes a HD image of every HD video file for that day or the day before and put them in a directory :
+   /mnt/ams2/TIMELAPSE_IMAGES/
+   - for night time files, (new trick), take 1 frame of the HD and then take the SD stack. Resize the SD image to HD, then 'blend' the two images with a 60/40 HD/SD mix.
+    Now you will have the clarity of HD and all stars, but also the 'events' from the SD. 
+    The images will go by fast enough you can't notice and really, can barely notice while looking at a still. 
   - Keep all of these images in the same dir for 72 hours. Have cron script run once an hour that deletes any images that are older than 72 hours. 
 
   - now you have a library of TL images you can use from the generator much faster.
