@@ -638,15 +638,7 @@ def video_tools(json_conf,form):
    params = get_video_job_default_parameters()
    params = params['param']
    print(params['extra_text'])
-
-
-
-
-
-
-   #Get Operator info
-   operator = get_operator_info()
-
+ 
    #Get Custom Logos
    all_logos = sorted(glob.glob(LOGOS_PATH + "*.*"), key=os.path.getmtime, reverse=True)
    out_put_all_logos = ''
@@ -654,7 +646,15 @@ def video_tools(json_conf,form):
       out_put_all_logos += logo + "|"
 
    print(header_out)
-   print("<input type='hidden' name='operator_info' value='"+operator['name'] + ', ' + operator['obs_name']+ ', ' + operator['city'] + ', ' + operator['state']+ ', ' + operator['country'] +"'/>")  
+   # Parameters
+   print("<input type='hidden' name='operator_info' value='"+params['extra_text'] +"'/>")  
+   print("<input type='hidden' name='def_fps' value='"+params['fps'] +"'/>")  
+   print("<input type='hidden' name='def_wat_pos' value='"+params['wat_pos'] +"'/>")  
+   print("<input type='hidden' name='def_text_pos' value='"+params['text_pos'] +"'/>")  
+   print("<input type='hidden' name='def_logo_pos' value='"+params['logo_pos'] +"'/>")  
+   print("<input type='hidden' name='def_extra_text' value='"+params['extra_text'] +"'/>")  
+    
+   
    print("<input type='hidden' name='cam_ids' value='"+out_put_all_cam_ids+"'/>")
    print("<input type='hidden' name='logos' value='"+str(out_put_all_logos)+"'/>")
    print("<input type='hidden' name='delete_after_days' value='"+str(DELETE_VIDS_AFTER_DAYS)+"'/>")
