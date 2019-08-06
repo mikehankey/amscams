@@ -51,3 +51,6 @@ D_AMS_LOGO_POS = "tl" # top left
 D_CAM_INFO_POS = "bl" # bottom left
 D_CUS_LOGO_POS = "tr" # top right
 D_EXTRA_INFO = " " # WARNING - This is updated in Video_Parameters
+
+
+HD_DIM = D_DIM #for ffmpeg
