@@ -1,3 +1,4 @@
+import cgitb
 from lib.VIDEO_VARS import * 
 from pathlib import Path
 from os.path import isfile, join, exists
@@ -5,7 +6,9 @@ from caliblib import load_json_file, save_json_file
 from lib.Get_Operator_info import get_operator_info
 
 
+
 def get_video_job_default_parameters():
+    cgitb.enable()
 
     #Create JSON file if it doesn't exist yet 
     js_file = Path(DEFAULT_VIDEO_PARAM)
