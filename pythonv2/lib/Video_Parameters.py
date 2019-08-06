@@ -27,7 +27,7 @@ def get_video_job_default_parameters():
 
 def save_video_job_parameters(fps,dim,extra_logo,wat_pos,text_pos,logo_pos,extra_text):
     params = load_json_file(DEFAULT_VIDEO_PARAM)
-    params['param'] = []
+    params['param'] = {}
     params['param']['fps'] = fps
     params['param']['dim'] = dim  
     params['param']['extra_logo'] = extra_logo    
