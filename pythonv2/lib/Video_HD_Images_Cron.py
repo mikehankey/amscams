@@ -5,13 +5,13 @@ from os.path import isfile, join, exists
 
 # This script is call once an hour and 
 # extract one HD frame per HD video 
-# and store them in TIMELAPSE_IMAGES
+# and store them in HD_FRAMES_PATH
 
 
 #Create Directory if it doesn't exist
 def create_HD_TMP_FOLDER_if_necessary():
-    if not os.path.exists(TIMELAPSE_IMAGES):
-        os.makedirs(TIMELAPSE_IMAGES)
+    if not os.path.exists(HD_FRAMES_PATH):
+        os.makedirs(HD_FRAMES_PATH)
 
 #Get All HD images available if they don't exist
 def get_all_HD_pic():
@@ -33,7 +33,7 @@ def get_all_HD_pic():
     for idx,vid in enumerate(sorted(frames)):
             try:
                 vid_out = vid.replace('.mp4','')
-                cmd = 'ffmpeg -y -hide_banner -loglevel panic -i '+IMG_HD_SRC_PATH+'/'+vid+' -vframes 1 -f image2 '+ TIMELAPSE_IMAGES + vid_out + '.png' 
+                cmd = 'ffmpeg -y -hide_banner -loglevel panic -i '+IMG_HD_SRC_PATH+'/'+vid+' -vframes 1 -f image2 '+ HD_FRAMES_PATH + vid_out + '.png' 
                 output = subprocess.check_output(cmd, shell=True).decode("utf-8")
                 toReturn.append( vid_out + '.png' ) 
             except:
