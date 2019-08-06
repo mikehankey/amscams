@@ -19,7 +19,7 @@ def get_video_job_default_parameters():
         operator = get_operator_info()
         operator_info = operator['name'] + ', ' + operator['obs_name']+ ', ' + operator['city'] + ', ' + operator['state']+ ', ' + operator['country']
 
-        file.write('{"param": {"fps":'+ D_FPS+', "extra_logo": '+D_EXTRA_LOGO+', "wat_pos":'+ D_AMS_LOGO_POS +', "text_pos":'+D_CAM_INFO_POS+', "logo_pos":'+D_CUS_LOGO_POS+', "extra_text":'+  operator_info +'}}')
+        #file.write('{"param": {"fps":'+ D_FPS+', "extra_logo": '+D_EXTRA_LOGO+', "wat_pos":'+ D_AMS_LOGO_POS +', "text_pos":'+D_CAM_INFO_POS+', "logo_pos":'+D_CUS_LOGO_POS+', "extra_text":'+  operator_info +'}}')
         f.close()
 
 
