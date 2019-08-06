@@ -116,6 +116,7 @@ def get_hd_frames(camID,date,limit_frame=False):
             files = glob.glob(tmppath+'/*')
             for f in files:
                 os.remove(f)
+        
         #We extract one frame per video and add it to the array to return
         toReturn = []
         

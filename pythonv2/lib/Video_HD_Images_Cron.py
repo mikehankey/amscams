@@ -1,6 +1,7 @@
 import os
 import subprocess 
 from lib.VIDEO_VARS import *  
+from lib.Video_Tools import get_meteor_date_ffmpeg
 from os import listdir, remove, path
 from os.path import isfile, join, exists
 
@@ -13,6 +14,28 @@ from os.path import isfile, join, exists
 def create_HD_TMP_FOLDER_if_necessary():
     if not os.path.exists(HD_FRAMES_PATH):
         os.makedirs(HD_FRAMES_PATH)
+
+
+#Return nothing or the HD stack that correspond to the same time/cam of the time passed as parameters
+#ex:
+# get_stack('/mnt/ams2/TIMELAPSE_IMAGES/2019_08_06_01_02_26_000_010039.png')
+# return /mnt/ams2/meteors/2019_08_06/2019_08_06_01_02_26_000_010039-trim-885-HD-meteor-stacked.png
+def get_stack(org_image):
+
+    #Get date from file
+    date = get_meteor_date_ffmpeg(org_image)
+
+    #Get the cam id 
+    cam_id = org_image.split("/")[-1]
+    cam_id = cam_id.split(".")[0]
+    cam_id = cam_id.split("_")[-1]
+ 
+    #find in STACK_FOLDER/date/ all the files that starts with date and have same cam id
+    stacks = [f for f in listdir(STACK_FOLDER+date) if date in f and cam_id in f and "-tn" not in f and "-night" not in f and "trim" not in f and isfile(join(cur_path, f))]
+
+    print('STACKS FOUND')
+    print(stacks)
+
 
 #Get All HD images available if they don't exist
 def get_all_HD_pic():
@@ -27,12 +50,7 @@ def get_all_HD_pic():
         exit()
     else:
         frames = [f for f in listdir(cur_path) if f and "-tn" not in f and "-night" not in f and "trim" not in f and isfile(join(cur_path, f))]
-
-
-    print("FRAMES FOUND")
-    print(frames)
-    print("IN " + cur_path)
-
+ 
     # Create dest dir if necessary
     create_HD_TMP_FOLDER_if_necessary()
 
