@@ -8,64 +8,12 @@ from os.path import isfile, join, exists
 # extract one HD frame per HD video 
 # and store them in HD_FRAMES_PATH
 
-#Get Video date from file name 
-def get_meteor_date(_file):
-	fn = _file.split("/")[-1] 
-	fn = fn.split('_',6)
-	return fn[0] + "_" + fn[1] + "_" + fn[2]
-
-
-#Get Time from file name 
-def get_meteor_time(_file):
-    fn = _file.split("/")[-1]
-    fn = fn.split(".")[0]
-    fn = fn.split("_") 
-    return fn[3] + '_' + fn[4] + '_' + fn[5] + '_' + fn[6]
 
 
 #Create Directory if it doesn't exist
 def create_HD_TMP_FOLDER_if_necessary():
     if not os.path.exists(HD_FRAMES_PATH):
         os.makedirs(HD_FRAMES_PATH)
-
-
-#Return nothing or the HD stack that correspond to the same time/cam of the time passed as parameters
-#ex:
-# get_stack('/mnt/ams2/TIMELAPSE_IMAGES/2019_08_06_01_02_26_000_010039.png')
-# return /mnt/ams2/meteors/2019_08_06/2019_08_06_01_02_26_000_010039-trim-885-HD-meteor-stacked.png
-def get_stack(org_image):
-
-    #Get date from file
-    date = get_meteor_date(org_image)
-    #print("DATE " + date)
-
-    #Get the cam id 
-    cam_id = org_image.split("/")[-1]
-    cam_id = cam_id.split(".")[0]
-    cam_id = cam_id.split("_")[-1]
-    #print("CAM ID " + cam_id)
-
-    #Get time from fime
-    time = get_meteor_time(org_image)
-    date_and_time = date + "_" + time
-
-    #print("date_and_time " + date_and_time)
-    #print("WE SEARCH IN " + STACK_FOLDER+date)
-
-    #print(str(listdir(STACK_FOLDER+date)))
- 
-    #find in STACK_FOLDER/date/ all the files that starts with date and have same cam id
-    stacks = [f for f in listdir(STACK_FOLDER+date) if date_and_time in f and cam_id in f and "-HD" not in f and "obj" not in f and "-half" not in f and "-tn" not in f and "-night" not in f and "json" not in f and "mp4" not in f and "crop" not in f]
-
-
-    print(stacks)
-
-    #return only one
-    if(stacks is not None):
-        return stacks[0]
-    else:
-        return false
-
 
 
 #Get All HD images available if they don't exist
