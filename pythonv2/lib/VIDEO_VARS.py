@@ -20,7 +20,7 @@ DEFAULT_VIDEO_PARAM = WAITING_JOBS_FOLDER + 'default_parameters.json'
 VID_FOLDER = WAITING_JOBS_FOLDER 
 
 #Temporary store all HD frames available
-HD_FRAMES_PATH = ORG_PATH + 'TIMELAPSE_IMAGES'
+HD_FRAMES_PATH = ORG_PATH + 'TIMELAPSE_IMAGES/'
 
 #AMS WATERMARK
 AMS_WATERMARK = "/home/ams/amscams/dist/img/ams_watermark.png"
