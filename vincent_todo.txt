@@ -3,6 +3,7 @@ TODO:
 - add cron generates timelapses every morning
 - Only other thing to maybe think about, which is a finer point is, after the pin point, 
 if the 'next frame' in the sequence is missing, you should auto advance to that next frame. (we can think about this after you have this phase done. ), Just try to consider an example where 100 frames are missing and the amount of time it will take to fix the entire thing. "Advance to next frame" could be a checkbox option. 
+*********************************
 
 - 
 1 user clicks add frame #X
@@ -14,7 +15,7 @@ if the 'next frame' in the sequence is missing, you should auto advance to that 
 4 the user defines a portion (50px*50px) of the frame where the meteor is
 5 we create a frame#X_th under /mnt/ams2/meteors/[date]/      
 6 we show frame#X_th  in the crop tool and the user has to pin point the center of the meteor there 
-
+=> DONE
 
 *********************************
 SELECT METEOR
@@ -60,6 +61,7 @@ This is not a huge priority, but whenever you get to it.
 => DONE
 
 2) add a delete button for old ones on the page.
+=> DONE
 
 3) Need to have start time and end time on the generate timelapse form. Or start time + 'duration hours'. Sometimes I only want night, sometimes, just an hour or two cloud pattern, sometimes, dawn or dusk. Maybe I want from sunset to sunrise. 
 

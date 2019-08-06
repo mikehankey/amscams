@@ -175,6 +175,8 @@ function add_timelapse_full_modal() {
                                 <label class="col-form-label"><b>Camera</b> <i>One video per camera</i></label> \
                                 <div>'+cam_select+'</div> \
                             </div> \
+                            <hr class="w"/>\
+                            <p class="mt-3">The parameters below will be saved as default parameters for all automatically generated timelapse</p>\
                             <div class="row">\
                                 <div class="col-sm-4">\
                                     <div class="form-group  mb-1"> \
