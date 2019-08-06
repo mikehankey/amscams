@@ -40,9 +40,10 @@ def get_all_HD_pic():
                 vid_out = vid.replace('.mp4','')
                 cmd = 'ffmpeg -y -hide_banner -loglevel panic -i '+IMG_HD_SRC_PATH+'/'+vid+' -vframes 1 -f image2 '+ HD_FRAMES_PATH + vid_out + '.png' 
                 output = subprocess.check_output(cmd, shell=True).decode("utf-8")
+                print(HD_FRAMES_PATH + vid_out + '.png' )
                 toReturn.append( vid_out + '.png' ) 
             except:
-                #print('PB')
+                print('PB')
                 res = False
     
     print("DONE")
