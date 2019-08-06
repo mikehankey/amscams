@@ -171,7 +171,7 @@ function add_timelapse_full_modal() {
                                     <input name="tl_date" value="'+curD+'" type="text" data-display-format="YYYY/MM/DD" class="datepicker form-control"> \
                                 </div>\
                                 <div class="col-sm-3 p-0">\
-                                    <input name="tl_start_dime" value="00:00" type="text" data-display-format="HH:II" class="datepicker form-control"> \
+                                    <input name="tl_start_dime" value="00:00" type="text" data-display-format="hh:ii" class="datepicker form-control"> \
                                 </div>\
                             </div> \
                             <div class="form-group mb-2"> \
