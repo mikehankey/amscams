@@ -402,6 +402,7 @@ def controller(json_conf):
 
    #CUSTOM VIDEOS (LIST)
    if cmd== 'video_tools':
+      get_video_job_default_parameters()
       video_tools(json_conf,form) 
    
    #Custom logos (uploaded by user)
