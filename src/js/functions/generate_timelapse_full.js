@@ -165,14 +165,23 @@ function add_timelapse_full_modal() {
                 <div class="alert alert-info"><span class="icon-notification"></span> The videos will be automatically deleted after  ' + delete_after_days + ' days</div> \
                 <form id="timelapse_full_form"> \
                     <div class="pr-3 pl-3 pt-0"> \
-                            <div class="form-group mb-2"> \
-                                <label class="col-form-label"><b>Date</b></label> \
-                                <div class="col-sm-3 p-0">\
-                                    <input name="tl_date" value="'+curD+'" type="text" data-display-format="YYYY/MM/DD" class="datepicker form-control"> \
-                                </div>\
-                                <div class="col-sm-3 p-0">\
-                                    <input name="tl_start_dime" value="00:00" type="text" data-display-format="LT" class="datepicker form-control"> \
-                                </div>\
+                            <div class="row"> \
+                                <div class="col-sm-6"> \
+                                    <div class="form-group mb-2"> \
+                                        <label class="col-form-label"><b>Start Date</b></label> \
+                                        <div class="col-sm-3 p-0">\
+                                            <input name="tl_date" value="'+curD+'" type="text" data-display-format="YYYY/MM/DD" class="datepicker form-control"> \
+                                        </div>\
+                                    </div> \
+                                </div> \
+                                <div class="col-sm-6"> \
+                                    <div class="form-group mb-2"> \
+                                        <label class="col-form-label"><b>Start Time</b></label> \
+                                        <div class="col-sm-3 p-0">\
+                                            <input name="tl_time" value="00:00" type="text" data-display-format="LT" class="datepicker form-control"> \
+                                        </div>\
+                                    </div> \
+                                </div> \
                             </div> \
                             <div class="form-group mb-2"> \
                                 <label class="col-form-label"><b>Camera</b> <i>One video per camera</i></label> \
