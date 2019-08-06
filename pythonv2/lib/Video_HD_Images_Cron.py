@@ -1,5 +1,6 @@
 from lib.VIDEO_VARS import *  
 from os import listdir, remove, path
+from os.path import isfile, join, exists
 
 # This script is call once an hour and 
 # extract one HD frame per HD video 
