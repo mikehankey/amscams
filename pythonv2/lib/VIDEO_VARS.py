@@ -38,7 +38,7 @@ FONT_SIZE = "18"
 FONT_TRANSPARENCY = "0.85" # between 0 and 1
 
 #DEFAULT VALUES
-D_FPS = 30
+D_FPS = "30"
 D_DIM = "1920:1080"
 D_EXTRA_LOGO = "" # No Extra Logo 
 D_AMS_LOGO_POS = "tl" # top left
