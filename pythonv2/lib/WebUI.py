@@ -636,7 +636,7 @@ def video_tools(json_conf,form):
    
    #Get Default Parameters
    v = get_video_job_default_parameters()
-   print(v)
+   print(v['extra_text'])
 
 
 
