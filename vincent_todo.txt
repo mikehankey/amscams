@@ -63,8 +63,8 @@ This is not a huge priority, but whenever you get to it.
 2) add a delete button for old ones on the page.
 => DONE
 
-3) Need to have start time and end time on the generate timelapse form. Or start time + 'duration hours'. Sometimes I only want night, sometimes, just an hour or two cloud pattern, sometimes, dawn or dusk. 
-Maybe I want from sunset to sunrise. 
+3) Need to have start time and end time on the generate timelapse form. Or start time + 'duration hours'. Sometimes I only want night, sometimes, just an hour or two cloud pattern, 
+sometimes, dawn or dusk. Maybe I want from sunset to sunrise. 
 
 4) Change the photo creation logic:
  - one problem we have now has to do with the readiness of the videos, e.g. daytime HD videos are deleted quickly. 
@@ -81,6 +81,7 @@ So instead what we should do is :
     Now you will have the clarity of HD and all stars, but also the 'events' from the SD. 
     The images will go by fast enough you can't notice and really, can barely notice while looking at a still. 
   => The blend function is done in Video_Tools
+     get_stack_from_HD_frame allows to get a SD stack (or HD if SD doesnt exist) from a given frame
   
   
   - NOTES - FIND OUT NIGHT OR dayIn terms of day or night, there is a function 'get_sun_info' in the lib/UtilLib.py

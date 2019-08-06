@@ -170,6 +170,9 @@ function add_timelapse_full_modal() {
                                 <div class="col-sm-3 p-0">\
                                     <input name="tl_date" value="'+curD+'" type="text" data-display-format="YYYY/MM/DD" class="datepicker form-control"> \
                                 </div>\
+                                <div class="col-sm-3 p-0">\
+                                    <input name="tl_start_dime" value="00:00" type="text" data-display-format="00:00" class="datepicker form-control"> \
+                                </div>\
                             </div> \
                             <div class="form-group mb-2"> \
                                 <label class="col-form-label"><b>Camera</b> <i>One video per camera</i></label> \

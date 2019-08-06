@@ -38,7 +38,7 @@ def get_meteor_time(_file):
 # return /mnt/ams2/meteors/2019_08_06/2019_08_06_01_02_26_000_010039-trim-885-HD-meteor-stacked.png
 def get_stack_from_HD_frame(org_image):
 
-    print('ORG FILE ' + org_image)
+    #print('ORG FILE ' + org_image)
 
     #Get date from file
     date = get_meteor_date(org_image) 
@@ -47,14 +47,14 @@ def get_stack_from_HD_frame(org_image):
     cam_id = org_image.split("/")[-1]
     cam_id = cam_id.split(".")[0]
     cam_id = cam_id.split("_")[-1]
-    print("CAM ID " + cam_id)
+    #print("CAM ID " + cam_id)
 
     #Get time from fime
     time = get_meteor_time(org_image)
     date_and_time = date + "_" + time
 
-    print("date_and_time " + date_and_time)
-    print("WE SEARCH IN " + STACK_FOLDER+date)
+    #print("date_and_time " + date_and_time)
+    #print("WE SEARCH IN " + STACK_FOLDER+date)
 
     #print(str(listdir(STACK_FOLDER+date)))
  
@@ -65,13 +65,13 @@ def get_stack_from_HD_frame(org_image):
 
     #return only one
     if(stacks is not None and len(stacks)!=0):
-        print('NON HD STACK FOUND')
+        #print('NON HD STACK FOUND')
         return STACK_FOLDER+date+'/'+stacks[0]
     else:
         # We search for the HD version
         stacks = [f for f in listdir(STACK_FOLDER+date) if date_and_time in f  and cam_id in f and "obj" not in f and "-tn" not in f and "-night" not in f and "json" not in f and "mp4" not in f and "crop" not in f]
         if(stacks is not None and len(stacks)!=0):
-            print('HD STACK FOUND')
+            #print('HD STACK FOUND')
             return STACK_FOLDER+date+'/'+stacks[0]
         else: 
             return False
