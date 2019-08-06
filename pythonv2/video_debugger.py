@@ -61,6 +61,8 @@ from os.path import isfile, join, exists
 
 
 #get_all_HD_pic() 
-print('STACK ' +  get_stack_from_HD_frame('/mnt/ams2/TIMELAPSE_IMAGES/2019_08_06_01_02_29_000_010039.png'))
-print('ORG ' +  '/mnt/ams2/TIMELAPSE_IMAGES/2019_08_06_01_02_29_000_010039.png')
-blend(get_stack_from_HD_frame('/mnt/ams2/TIMELAPSE_IMAGES/2019_08_06_01_02_29_000_010039.png'),'/mnt/ams2/TIMELAPSE_IMAGES/2019_08_06_01_02_29_000_010039.png',40,'/mnt/ams2/TMP/test.png')
+org =  '/mnt/ams2/TIMELAPSE_IMAGES/2019_08_05_01_15_27_000_010040.png'
+stack = get_stack_from_HD_frame('/mnt/ams2/TIMELAPSE_IMAGES/2019_08_05_01_15_27_000_010040.png')
+print('STACK ' +  stack))
+print('ORG ' +  org)
+blend(stack,org,40,'/mnt/ams2/TMP/test.png')
