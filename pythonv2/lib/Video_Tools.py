@@ -55,7 +55,7 @@ def get_stack_from_HD_frame(org_image):
     #print(str(listdir(STACK_FOLDER+date)))
  
     #find in STACK_FOLDER/date/ all the files that starts with date and have same cam id
-    stacks = [f for f in listdir(STACK_FOLDER+date) if date_and_time in f and cam_id in f and "-HD" not in f and "obj" not in f and "-half" not in f and "-tn" not in f and "-night" not in f and "json" not in f and "mp4" not in f and "crop" not in f]
+    stacks = [f for f in listdir(STACK_FOLDER+date) if date_and_time in f and cam_id in f and "-HD" not in f and "obj" not in f and "-tn" not in f and "-night" not in f and "json" not in f and "mp4" not in f and "crop" not in f]
  
     print("STACKS FROM get_stack_from_HD_frame " + str(stacks))
 
@@ -63,7 +63,7 @@ def get_stack_from_HD_frame(org_image):
     if(stacks is not None and len(stacks)!=0):
         return STACK_FOLDER+date+'/'+stacks[0]
     else:
-        return false
+        return False
 
 
 
