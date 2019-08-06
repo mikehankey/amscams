@@ -61,4 +61,4 @@ from os.path import isfile, join, exists
 
 
 #get_all_HD_pic() 
-get_stack('/mnt/ams2/TIMELAPSE_IMAGES/2019_08_06_01_02_29_000_010039.png')
+get_stack_from_HD_frame('/mnt/ams2/TIMELAPSE_IMAGES/2019_08_06_01_02_29_000_010039.png')
