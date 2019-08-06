@@ -278,6 +278,16 @@ function add_timelapse_full_modal() {
     $('input[name=extra_text]').val($('input[name=def_extra_text]').val());
     $('select[name=fps]').val($('input[name=def_fps]').val());
     $('select[name=dim]').val($('input[name=def_dim]').val());
+
+    if($.trim($('input[name=def_dim]').val()!=='')) {
+        $('select[name=extra_logo_yn]').val('y');
+    } else {
+       $('select[name=extra_logo_yn]').val('n');
+    }
+    
+    $('select[name=wat_pos]').val($('input[name=def_wat_pos]').val());
+    $('select[name=text_pos]').val($('input[name=def_text_pos]').val());
+
    
     //Start datepicker
     load_date_pickers();
