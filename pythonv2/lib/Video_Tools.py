@@ -62,11 +62,13 @@ def get_stack_from_HD_frame(org_image):
 
     #return only one
     if(stacks is not None and len(stacks)!=0):
+        print('NON HD STACK FOUND')
         return STACK_FOLDER+date+'/'+stacks[0]
     else:
         # We search for the HD version
         stacks = [f for f in listdir(STACK_FOLDER+date) if date_and_time in f  and cam_id in f and "obj" not in f and "-tn" not in f and "-night" not in f and "json" not in f and "mp4" not in f and "crop" not in f]
         if(stacks is not None and len(stacks)!=0):
+            print('HD STACK FOUND')
             return STACK_FOLDER+date+'/'+stacks[0]
         else: 
             return False
