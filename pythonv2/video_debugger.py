@@ -67,4 +67,4 @@ stack = get_stack_from_HD_frame(org)
 
 print('STACK ' +  str(stack))
 print('ORG ' +  org)
-blend(stack,org,40,'/mnt/ams2/TMP/test.png')
+blend(org,stack,40,'/mnt/ams2/TMP/test.png')

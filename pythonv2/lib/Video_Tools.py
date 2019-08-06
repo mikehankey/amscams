@@ -10,8 +10,8 @@ from shutil import copyfile
 
 #Blend two images together
 def blend(image1, image2, perc_trans_image1, output_file):
-    other_perc = 100-int(perc_trans_image1)
-    cmd = 'ffmpeg -y -i '+image1+' -i '+image2+' -filter_complex "[0:v][1:v]overlay=0:0'+str(perc_trans_image1)+':'+str(other_perc)+'" -codec:a copy '+ output_file
+    other_perc =  int(perc_trans_image1)%100
+    cmd = 'ffmpeg -y -i '+image1+' -i '+image2+' -filter_complex "[0:v][1:v]blend=all_mode=\'overlay\':all_opacity='+other_perc+'" -codec:a copy '+ output_file
     print(cmd)
 
 #Get Video date from file name 
