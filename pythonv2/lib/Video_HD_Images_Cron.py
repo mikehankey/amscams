@@ -1,13 +1,18 @@
 import os
 import subprocess 
-from lib.VIDEO_VARS import *  
-from lib.Video_Tools import get_meteor_date_ffmpeg
+from lib.VIDEO_VARS import *   
 from os import listdir, remove, path
 from os.path import isfile, join, exists
 
 # This script is call once an hour and 
 # extract one HD frame per HD video 
 # and store them in HD_FRAMES_PATH
+
+#Get Video time from file name 
+def get_meteor_date(_file):
+	fn = _file.split("/")[-1] 
+	fn = fn.split('_',6)
+	return fn[0] + "_" + fn[1] + "_" + fn[2]
 
 
 #Create Directory if it doesn't exist
@@ -24,6 +29,7 @@ def get_stack(org_image):
 
     #Get date from file
     date = get_meteor_date_ffmpeg(org_image)
+    print("DATE " + date)
 
     #Get the cam id 
     cam_id = org_image.split("/")[-1]
