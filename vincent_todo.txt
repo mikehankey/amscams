@@ -74,9 +74,24 @@ Maybe I want from sunset to sunrise.
 So instead what we should do is :
   - have a 'time_lapse_images.py' script that runs once an hour and just makes a HD image of every HD video file for that day or the day before and put them in a directory :
    /mnt/ams2/TIMELAPSE_IMAGES/
-   - for night time files, (new trick), take 1 frame of the HD and then take the SD stack. Resize the SD image to HD, then 'blend' the two images with a 60/40 HD/SD mix.
+  => DONE (not in cron) in Video_HD_Images_Cron.py (but the result is BIG => 12Go just for one day)
+
+  - for night time files, (new trick), take 1 frame of the HD and then take the SD stack. Resize the SD image to HD, then 'blend' the two images with a 60/40 HD/SD mix.
     Now you will have the clarity of HD and all stars, but also the 'events' from the SD. 
     The images will go by fast enough you can't notice and really, can barely notice while looking at a still. 
+  => The blend function is done in Video_Tools
+  
+  
+  - NOTES - FIND OUT NIGHT OR dayIn terms of day or night, there is a function 'get_sun_info' in the lib/UtilLib.py
+         sun_status,sun_az,sun_el = get_sun_info(f_date_str, json_conf)
+
+    => if the sun_el is below a certain value it is 'night' . this really depends on what you consider night though. 
+       We are currently considering night at about 10+ degrees, but this is for detection. For the time lapse purpose 
+       it would be better to wait until the stars are out, so like -10. This will allow you to maintain nice color images 
+       until it is truly dark. If you pull the night time HD images as color, and the convert the stack to color (this should happen automatically
+        when you open the file with imread), you will be able to maintain some night time color. 
+  
+  
   - Keep all of these images in the same dir for 72 hours. Have cron script run once an hour that deletes any images that are older than 72 hours. 
 
   - now you have a library of TL images you can use from the generator much faster.
