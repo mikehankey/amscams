@@ -170,7 +170,7 @@ function add_timelapse_full_modal() {
                                 <div class="col-sm-4"> \
                                     <div class="form-group mb-2"> \
                                         <label class="col-form-label"><b>Start Date</b></label> \
-                                        <div class="col-sm-5 p-0">\
+                                        <div class="col-sm-10 p-0">\
                                             <input name="tl_date" value="'+curD+'" type="text" data-display-format="YYYY/MM/DD" class="datepicker form-control"> \
                                         </div>\
                                     </div> \
@@ -178,7 +178,7 @@ function add_timelapse_full_modal() {
                                 <div class="col-sm-4"> \
                                     <div class="form-group mb-2"> \
                                         <label class="col-form-label"><b>Start Time</b></label> \
-                                        <div class="col-sm-5 p-0">\
+                                        <div class="col-sm-10 p-0">\
                                             <input name="tl_time" value="00:00" type="text" data-display-format="LT" class="datepicker form-control"> \
                                         </div>\
                                     </div> \
