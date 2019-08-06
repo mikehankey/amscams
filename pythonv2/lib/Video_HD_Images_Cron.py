@@ -35,9 +35,13 @@ def get_stack(org_image):
     cam_id = org_image.split("/")[-1]
     cam_id = cam_id.split(".")[0]
     cam_id = cam_id.split("_")[-1]
+    print("CAM ID " + cam_id)
+
+
+    print("WE SEARCH IN " + STACK_FOLDER+date)
  
     #find in STACK_FOLDER/date/ all the files that starts with date and have same cam id
-    stacks = [f for f in listdir(STACK_FOLDER+date) if date in f and cam_id in f and "-tn" not in f and "-night" not in f and "trim" not in f and isfile(join(cur_path, f))]
+    stacks = [f for f in listdir(STACK_FOLDER+date) if date in f and cam_id in f and "-tn" not in f and "-night" not in f and "trim" not in f and isfile(join(STACK_FOLDER+date, f))]
 
     print('STACKS FOUND')
     print(stacks)
