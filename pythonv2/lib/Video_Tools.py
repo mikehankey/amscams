@@ -21,12 +21,12 @@ def get_meteor_date(_file):
 	return fn[0] + "_" + fn[1] + "_" + fn[2]
 
 
-#Get Time from file name 
+#Get Time from file name without seconds!!
 def get_meteor_time(_file):
     fn = _file.split("/")[-1]
     fn = fn.split(".")[0]
-    fn = fn.split("_") 
-    return fn[3] + '_' + fn[4] + '_' + fn[5] + '_' + fn[6]
+    fn = fn.split("_")
+    return fn[3] + '_' + fn[4] + '_' + fn[5]
 
 
 #Return nothing or the HD stack that correspond to the same time/cam of the time passed as parameters
@@ -35,24 +35,23 @@ def get_meteor_time(_file):
 # return /mnt/ams2/meteors/2019_08_06/2019_08_06_01_02_26_000_010039-trim-885-HD-meteor-stacked.png
 def get_stack_from_HD_frame(org_image):
 
+    print('ORG FILE ' + org_image)
+
     #Get date from file
-    date = get_meteor_date(org_image)
-   
+    date = get_meteor_date(org_image) 
 
     #Get the cam id 
     cam_id = org_image.split("/")[-1]
     cam_id = cam_id.split(".")[0]
     cam_id = cam_id.split("_")[-1]
-    #print("CAM ID " + cam_id)
+    print("CAM ID " + cam_id)
 
     #Get time from fime
     time = get_meteor_time(org_image)
     date_and_time = date + "_" + time
 
-    #print("date_and_time " + date_and_time)
-    
-    #print("date_and_time " + date_and_time)
-    #print("WE SEARCH IN " + STACK_FOLDER+date)
+    print("date_and_time " + date_and_time)
+    print("WE SEARCH IN " + STACK_FOLDER+date)
 
     #print(str(listdir(STACK_FOLDER+date)))
  
