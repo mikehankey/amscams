@@ -25,8 +25,7 @@ from lib.ImageLib import mask_frame , draw_stack, stack_frames
 from lib.CalibLib import radec_to_azel
 from lib.WebCalib import calibrate_pic,make_plate_from_points, solve_field, check_solve_status, free_cal, show_cat_stars, choose_file, upscale_2HD, fit_field, delete_cal, add_stars_to_fit_pool, save_add_stars_to_fit_pool, reduce_meteor, reduce_meteor_ajax, find_stars_ajax, man_reduce, pin_point, get_manual_points, del_manual_points, sat_cap, HMS2deg, custom_fit, del_frame, clone_cal, reduce_meteor_new , update_red_info_ajax, update_hd_cal_ajax, add_frame_ajax, update_frame_ajax, clone_meteor_cal
 from lib.UtilLib import calc_radiant
-from lib.Video_Add_Job import add_video_job 
-from lib.Video_Parameters import get_video_job_default_parameters
+from lib.Video_Add_Job import add_video_job  
 from lib.VIDEO_VARS import * 
 from lib.Video_Tools import getLength, delete_video
 from lib.LOGOS_VARS import * 

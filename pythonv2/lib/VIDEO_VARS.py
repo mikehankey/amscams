@@ -35,12 +35,4 @@ DELETE_VIDS_AFTER_DAYS = 7
 #Size of the FONT for the text info
 FONT_SIZE = "18"
 FONT_TRANSPARENCY = "0.85" # between 0 and 1
-
-#DEFAULT VALUES
-D_FPS = "30"
-D_DIM = "1920:1080"
-D_EXTRA_LOGO = " " #No Extra Logo 
-D_AMS_LOGO_POS = "tl" #top left
-D_CAM_INFO_POS = "bl" #bottom left
-D_CUS_LOGO_POS = "tr" #top right
-D_EXTRA_INFO = "_" #WARNING - This is updated in Video_Parameters
+ 
