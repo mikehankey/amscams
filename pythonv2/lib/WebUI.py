@@ -636,9 +636,8 @@ def video_tools(json_conf,form):
    header_out += "<div class='d-flex'><button class='btn btn-primary mr-3' id='create_timelapse' style='text-transform: initial;'><span class='icon-youtube'></span> Generate Timelapse Video</button></div></div>"
    
    #Get Default Parameters
-   params = get_video_job_default_parameters()   
-
-
+   #params = get_video_job_default_parameters()   
+   
    #Get Operator info
    operator = get_operator_info()
 
