@@ -279,7 +279,7 @@ function add_timelapse_full_modal() {
     $('select[name=fps]').val($('input[name=def_fps]').val());
     $('select[name=dim]').val($('input[name=def_dim]').val());
 
-    if($.trim($('input[name=def_dim]').val()!=='')) {
+    if($.trim($('input[name=def_extra_logo]').val()!=='')) {
         $('select[name=extra_logo_yn]').val('y');
     } else {
        $('select[name=extra_logo_yn]').val('n');

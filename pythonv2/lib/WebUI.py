@@ -637,7 +637,7 @@ def video_tools(json_conf,form):
    #Get Default Parameters
    params = get_video_job_default_parameters()
    params = params['param']
-   print(params['extra_text'])
+   #print(params['extra_text'])
  
    #Get Custom Logos
    all_logos = sorted(glob.glob(LOGOS_PATH + "*.*"), key=os.path.getmtime, reverse=True)
