@@ -1,5 +1,6 @@
 ORG_PATH = '/mnt/ams2/'
- 
+
+
 IMG_SD_SRC_PATH = ORG_PATH + 'SD/proc2/'
 IMG_HD_SRC_PATH=  ORG_PATH + 'HD/'
 
@@ -35,5 +36,3 @@ DELETE_VIDS_AFTER_DAYS = 7
 #Size of the FONT for the text info
 FONT_SIZE = "18"
 FONT_TRANSPARENCY = "0.85" # between 0 and 1
-
- 
