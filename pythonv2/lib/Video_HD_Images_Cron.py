@@ -19,7 +19,7 @@ def get_meteor_date(_file):
 def get_meteor_time(_file):
     fn = _file.split("/")[-1]
     fn = fn.split(".")[0]
-    fn = file_fname.split("_") 
+    fn = fn.split("_") 
     return fn[3] + '_' + fn[4] + '_' + fn[5] + '_' + fn[6]
 
 
