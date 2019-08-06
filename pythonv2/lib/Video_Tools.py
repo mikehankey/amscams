@@ -60,7 +60,7 @@ def get_stack_from_HD_frame(org_image):
     print("STACKS FROM get_stack_from_HD_frame " + str(stacks))
 
     #return only one
-    if(stacks is not None):
+    if(stacks is not None and len(stacks)!=0):
         return STACK_FOLDER+date+'/'+stacks[0]
     else:
         return false
