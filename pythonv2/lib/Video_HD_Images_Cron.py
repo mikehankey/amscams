@@ -38,11 +38,11 @@ def get_all_HD_pic():
 
     for idx,vid in enumerate(sorted(frames)):
         try:
-                vid_out = vid.replace('.mp4','')
-                cmd = 'ffmpeg -y -hide_banner -loglevel panic -i '+IMG_HD_SRC_PATH+'/'+vid+' -vframes 1 -f image2 '+ HD_FRAMES_PATH + vid_out + '.png' 
+                vid_out = vid.replace('.mp4','.png')
+                cmd = 'ffmpeg -y -hide_banner -loglevel panic -i '+IMG_HD_SRC_PATH+'/'+vid+' -vframes 1 -f image2 '+ HD_FRAMES_PATH + vid_out  
                 output = subprocess.check_output(cmd, shell=True).decode("utf-8")
                 print(cmd)
-                toReturn.append( vid_out + '.png' ) 
+                toReturn.append( vid_out ) 
         except:
                 print('PB')
                 res = False
