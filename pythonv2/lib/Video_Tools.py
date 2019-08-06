@@ -37,18 +37,20 @@ def get_stack_from_HD_frame(org_image):
 
     #Get date from file
     date = get_meteor_date(org_image)
-    #print("DATE " + date)
+   
 
     #Get the cam id 
     cam_id = org_image.split("/")[-1]
     cam_id = cam_id.split(".")[0]
     cam_id = cam_id.split("_")[-1]
-    #print("CAM ID " + cam_id)
+    print("CAM ID " + cam_id)
 
     #Get time from fime
     time = get_meteor_time(org_image)
     date_and_time = date + "_" + time
 
+     print("date_and_time " + date_and_time)
+    
     #print("date_and_time " + date_and_time)
     print("WE SEARCH IN " + STACK_FOLDER+date)
 
