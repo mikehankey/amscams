@@ -61,8 +61,17 @@ from os.path import isfile, join, exists
 
 
 #get_all_HD_pic() 
-org =  '/mnt/ams2/TIMELAPSE_IMAGES/2019_08_06_01_02_26_000_010039.png'
-stack = get_stack_from_HD_frame(org)
-print('STACK ' +  str(stack))
-print('ORG ' +  org)
-blend(org,stack,40,'/mnt/ams2/TMP/test.png')
+# =>SHOULD BE RUN IN CRON EVERY HOUR 
+
+#org =  '/mnt/ams2/TIMELAPSE_IMAGES/2019_08_06_01_02_26_000_010039.png'
+#stack = get_stack_from_HD_frame(org)
+#print('STACK ' +  str(stack))
+#print('ORG ' +  org)
+#blend(org,stack,40,'/mnt/ams2/TMP/test.png')
+
+
+# Create timelapse video 
+# with stack blending for night shoots
+# INPUT => result of get_all_HD_pic() for a certain date
+#       => eventual stack if found
+# OUTPUT => video with frame blended with stack if at night and stack found

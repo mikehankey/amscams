@@ -43,7 +43,7 @@ function addAnimModalTemplate($allframes) {
 function frame_anim() { 
     
     $allframes = $('table img.select_meteor');
-    $allframes = $allframes.reverse();
+    //$allframes = $allframes.reverse();
     totalFrames = $allframes.length;
     
     addAnimModalTemplate($allframes);

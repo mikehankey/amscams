@@ -75,6 +75,7 @@ So instead what we should do is :
   - have a 'time_lapse_images.py' script that runs once an hour and just makes a HD image of every HD video file for that day or the day before and put them in a directory :
    /mnt/ams2/TIMELAPSE_IMAGES/
   => DONE (not in cron) in Video_HD_Images_Cron.py (but the result is BIG => 12Go just for one day)
+     FUNCTION get_all_HD_pic()
 
   - for night time files, (new trick), take 1 frame of the HD and then take the SD stack. Resize the SD image to HD, then 'blend' the two images with a 60/40 HD/SD mix.
     Now you will have the clarity of HD and all stars, but also the 'events' from the SD. 
