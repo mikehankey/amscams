@@ -17,7 +17,7 @@ def get_all_HD_pic():
     res= True
 
     #test if we have at least one file name - YYYY_DD_MM_HH_ii_SS[_000_]CAM_ID.mp4
-    test = [f for f in listdir(cur_path) if f.endswith(camID+'.mp4') and isfile(join(cur_path, f))] 
+    test = [f for f in listdir(cur_path) if isfile(join(cur_path, f))] 
 
     if not test:
         #NOT HD FILES FOUND
