@@ -638,6 +638,7 @@ def video_tools(json_conf,form):
    t = get_video_job_default_parameters()
    v = json.loads('"'+str(t)+'"')
    print(v)
+   print(v['param'])
 
 
 
