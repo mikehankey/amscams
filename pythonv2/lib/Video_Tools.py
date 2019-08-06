@@ -26,8 +26,7 @@ def get_meteor_time(_file):
     fn = _file.split("/")[-1]
     fn = fn.split(".")[0]
     fn = fn.split("_")
-    return fn[3] + '_' + fn[4] + '_' + fn[5]
-
+    return fn[3] + '_' + fn[4] 
 
 #Return nothing or the HD stack that correspond to the same time/cam of the time passed as parameters
 #ex:
