@@ -47,14 +47,16 @@ def get_stack(org_image):
 
     #Get time from fime
     time = get_meteor_time(org_image)
+    date_and_time = date + "_" + time
 
+    print("date_and_time " + date_and_time)
 
     print("WE SEARCH IN " + STACK_FOLDER+date)
 
     #print(str(listdir(STACK_FOLDER+date)))
  
     #find in STACK_FOLDER/date/ all the files that starts with date and have same cam id
-    stacks = [f for f in listdir(STACK_FOLDER+date) if date+time in f and cam_id in f and "obj" not in f and "-half" not in f and "-tn" not in f and "-night" not in f and "json" not in f and "mp4" not in f and "crop" not in f]
+    stacks = [f for f in listdir(STACK_FOLDER+date) if date_and_time in f and cam_id in f and "obj" not in f and "-half" not in f and "-tn" not in f and "-night" not in f and "json" not in f and "mp4" not in f and "crop" not in f]
 
     print('STACKS FOUND')
     print(stacks)
