@@ -5,10 +5,6 @@
  */
  .bootstrap-datetimepicker-widget {
     list-style: none;
-
-    .btn{
-      color:#000 !important;
-    }
   }
   .bootstrap-datetimepicker-widget.dropdown-menu {
     display: block;
@@ -294,6 +290,7 @@
   .bootstrap-datetimepicker-widget table td.minute:hover,
   .bootstrap-datetimepicker-widget table td.second:hover {
     background: #f8f9fa;
+    color:red;
     cursor: pointer;
   }
   .bootstrap-datetimepicker-widget table td.old,
