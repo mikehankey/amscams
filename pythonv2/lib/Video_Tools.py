@@ -10,10 +10,8 @@ from shutil import copyfile
 
 #Blend two images together
 def blend(image1, image2, perc_trans_image1, output_file):
-    ffmpeg -i image1 -i image2 \
-        -filter_complex "[0:v][1:v] overlay=25:25" \
-        -pix_fmt yuv420p -c:a copy \
-        output.mp4
+    cmd = ' ffmpeg -i '+image1+' -i '+image2+' -filter_complex "[0:v][1:v] overlay=25:25" -codec:a copy '+output_file
+    print(cmd)
 
 #Get Video date from file name 
 def get_meteor_date(_file):
