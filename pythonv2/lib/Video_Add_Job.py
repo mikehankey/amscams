@@ -11,19 +11,11 @@ from lib.Video_Parameters import save_video_job_parameters
 #ADD Job to WAITING_JOBS
 def add_video_job(name,cam_ids,date,fps,dim,text_pos,wat_pos,extra_text,logo,logo_pos):
 
-    #cgitb.enable()  
-    if(logo is not None ):
-        print("logo " + logo)
-        print("logo_pos " + logo_pos)
-    else:
-        print("logo is None")
-    exit()
-
-    #Save current params as default
     if(logo is None ):
-        save_video_job_parameters(fps,dim,"",wat_pos,text_pos,logo_pos,extra_text)
-    else:
-        save_video_job_parameters(fps,dim,logo,wat_pos,text_pos,logo_pos,extra_text)
+        logo = ""
+   
+    #Save current params as default
+    save_video_job_parameters(fps,dim,logo,wat_pos,text_pos,logo_pos,extra_text)
  
     #If we only have one cam_id
     if(type(cam_ids) is str):
