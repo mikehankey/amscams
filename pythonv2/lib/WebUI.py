@@ -246,8 +246,7 @@ def controller(json_conf):
             extra_logo = "n"
             logo = ""
             logo_pos = ""
-      
-      update_video_job_parameters(form.getvalue('fps'),form.getvalue('dim'),form.getvalue('text_pos'),form.getvalue('wat_pos'),extra_text,logo,logo_pos)
+       
       add_video_job('timelapse',form.getvalue('sel_cam[]'),form.getvalue('tl_date'),form.getvalue('fps'),form.getvalue('dim'),form.getvalue('text_pos'),form.getvalue('wat_pos'),extra_text,logo,logo_pos)
       exit()
 
@@ -633,9 +632,6 @@ def video_tools(json_conf,form):
    header_out = "<div class='h1_holder d-flex justify-content-between'>"      
    header_out += "<h1>"+str(vid_counter)+" videos found</h1>"
    header_out += "<div class='d-flex'><button class='btn btn-primary mr-3' id='create_timelapse' style='text-transform: initial;'><span class='icon-youtube'></span> Generate Timelapse Video</button></div></div>"
-   
-   #Get Default Parameters
-   #params = get_video_job_default_parameters()   
    
    #Get Operator info
    operator = get_operator_info()
