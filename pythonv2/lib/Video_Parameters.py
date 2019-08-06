@@ -34,4 +34,4 @@ def save_video_job_parameters(fps,dim,extra_logo,wat_pos,text_pos,logo_pos,extra
     params['text_pos'] = text_pos    
     params['logo_pos'] = logo_pos    
     params['extra_text'] = extra_text      
-    save_json_file(params, DEFAULT_VIDEO_PARAM)
+    save_json_file(DEFAULT_VIDEO_PARAM,params)
