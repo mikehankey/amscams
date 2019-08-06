@@ -49,7 +49,7 @@ def get_stack_from_HD_frame(org_image):
     time = get_meteor_time(org_image)
     date_and_time = date + "_" + time
 
-     print("date_and_time " + date_and_time)
+    print("date_and_time " + date_and_time)
     
     #print("date_and_time " + date_and_time)
     print("WE SEARCH IN " + STACK_FOLDER+date)
