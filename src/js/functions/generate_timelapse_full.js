@@ -162,7 +162,7 @@ function add_timelapse_full_modal() {
                 </button> \
             </div> \
             <div class="modal-body"> \
-                <div class="alert alert-info"><span class="icon-notification"></span> The videos are automatically deleted after  ' + delete_after_days + ' days</div> \
+                <div class="alert alert-info"><span class="icon-notification"></span> The videos will be automatically deleted after  ' + delete_after_days + ' days</div> \
                 <form id="timelapse_full_form"> \
                     <div class="pr-3 pl-3 pt-0"> \
                             <div class="form-group mb-2"> \
@@ -190,7 +190,7 @@ function add_timelapse_full_modal() {
                                                 <option value="24">24 fps</option> \
                                                 <option value="25">25 fps</option> \
                                                 <option value="29.97" >29.97 fps</option> \
-                                                <option value="30" selected>30 fps</option> \
+                                                <option value="30">30 fps</option> \
                                                 <option value="50">50 fps</option> \
                                                 <option value="59.94">59.94 fps</option> \
                                                 <option value="60">60 fps</option> \
@@ -202,7 +202,7 @@ function add_timelapse_full_modal() {
                                         <label for="dim" class="col-form-label"><b>Dimension</b></label> \
                                             <select name="dim" class="form-control"> \
                                                 <option value="1920:1080">1920x1080</option> \
-                                                <option value="1280:720" selected>1280x720</option> \
+                                                <option value="1280:720">1280x720</option> \
                                                 <option value="640:360">640x360</option> \
                                             </select> \
                                     </div> \
@@ -211,7 +211,7 @@ function add_timelapse_full_modal() {
                                     <div class="form-group mb-2"> \
                                         <label for="dim" class="col-form-label"><b>Extra Logo</b></label> \
                                             <select name="extra_logo_yn" class="form-control"> \
-                                                <option value="n"selected >No</option> \
+                                                <option value="n" >No</option> \
                                                 <option value="y" >Yes</option> \
                                             </select> \
                                     </div> \
@@ -223,7 +223,7 @@ function add_timelapse_full_modal() {
                                         <label for="wat_pos" class="col-form-label"><b>Position of the AMS Logo</b></label> \
                                             <select name="wat_pos" class="form-control"> \
                                                 <option value="tr" >Top right</option> \
-                                                <option value="tl" selected>Top Left</option> \
+                                                <option value="tl" >Top Left</option> \
                                                 <option value="br" >Bottom Right</option> \
                                                 <option value="bl" >Bottom Left</option> \
                                             </select> \
@@ -236,7 +236,7 @@ function add_timelapse_full_modal() {
                                             <option value="tr">Top right</option> \
                                             <option value="tl" >Top Left</option> \
                                             <option value="br" >Bottom Right</option> \
-                                            <option value="bl" selected>Bottom Left</option> \
+                                            <option value="bl" >Bottom Left</option> \
                                         </select> \
                                     </div>\
                                 </div>\
@@ -244,7 +244,7 @@ function add_timelapse_full_modal() {
                                     <div class="form-group mb-2"> \
                                         <label for="logo_pos" class="col-form-label"><b>Position of the Logo</b></label> \
                                         <select name="logo_pos" class="form-control"> \
-                                            <option value="tr" selected>Top right</option> \
+                                            <option value="tr" >Top right</option> \
                                             <option value="tl" >Top Left</option> \
                                             <option value="br" >Bottom Right</option> \
                                             <option value="bl" >Bottom Left</option> \
@@ -274,8 +274,10 @@ function add_timelapse_full_modal() {
     // Multi Select cam
     $('select#sel_cams').multiselect({includeSelectAllOption: true});
 
-    // Extra Text (operator info)
-    $('input[name=extra_text]').val($('input[name=operator_info]').val());
+    // Default (or saved) Parameters
+    $('input[name=extra_text]').val($('input[name=def_extra_text]').val());
+    $('select[name=fps]').val($('input[name=def_fps]').val());
+    $('select[name=dim]').val($('input[name=def_dim]').val());
    
     //Start datepicker
     load_date_pickers();

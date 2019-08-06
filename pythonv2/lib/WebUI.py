@@ -646,15 +646,16 @@ def video_tools(json_conf,form):
       out_put_all_logos += logo + "|"
 
    print(header_out)
-   # Parameters
-   print("<input type='hidden' name='operator_info' value='"+params['extra_text'] +"'/>")  
+   # Parameters 
+   print("<input type='hidden' name='def_fps' value='"+str(params['fps']) +"'/>")  
    print("<input type='hidden' name='def_fps' value='"+str(params['fps']) +"'/>")  
    print("<input type='hidden' name='def_wat_pos' value='"+params['wat_pos'] +"'/>")  
    print("<input type='hidden' name='def_text_pos' value='"+params['text_pos'] +"'/>")  
    print("<input type='hidden' name='def_logo_pos' value='"+params['logo_pos'] +"'/>")  
    print("<input type='hidden' name='def_extra_text' value='"+params['extra_text'] +"'/>")  
-    
-   
+   print("<input type='hidden' name='def_extra_logo' value='"+params['extra_logo'] +"'/>")  
+
+   #Other Params 
    print("<input type='hidden' name='cam_ids' value='"+out_put_all_cam_ids+"'/>")
    print("<input type='hidden' name='logos' value='"+str(out_put_all_logos)+"'/>")
    print("<input type='hidden' name='delete_after_days' value='"+str(DELETE_VIDS_AFTER_DAYS)+"'/>")

@@ -16,7 +16,7 @@ def create_param_file_if_necessary():
         operator = get_operator_info()
         operator_info = operator['name'] + ', ' + operator['obs_name']+ ', ' + operator['city'] + ', ' + operator['state']+ ', ' + operator['country']
 
-        f.write('{"param": {"fps":'+ D_FPS+', "dim":"'+D_DIM+', "extra_logo": "'+D_EXTRA_LOGO+'", "wat_pos":"'+ D_AMS_LOGO_POS +'", "text_pos":"'+D_CAM_INFO_POS+'", "logo_pos":"'+D_CUS_LOGO_POS+'", "extra_text":"'+  operator_info + '"}}')
+        f.write('{"param": {"fps":'+ D_FPS+', "dim":"'+D_DIM+'", "extra_logo": "'+D_EXTRA_LOGO+'", "wat_pos":"'+ D_AMS_LOGO_POS +'", "text_pos":"'+D_CAM_INFO_POS+'", "logo_pos":"'+D_CUS_LOGO_POS+'", "extra_text":"'+  operator_info + '"}}')
         f.close()
     
 
