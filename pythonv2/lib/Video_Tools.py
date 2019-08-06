@@ -43,23 +43,23 @@ def get_stack_from_HD_frame(org_image):
     cam_id = org_image.split("/")[-1]
     cam_id = cam_id.split(".")[0]
     cam_id = cam_id.split("_")[-1]
-    print("CAM ID " + cam_id)
+    #print("CAM ID " + cam_id)
 
     #Get time from fime
     time = get_meteor_time(org_image)
     date_and_time = date + "_" + time
 
-    print("date_and_time " + date_and_time)
+    #print("date_and_time " + date_and_time)
     
     #print("date_and_time " + date_and_time)
-    print("WE SEARCH IN " + STACK_FOLDER+date)
+    #print("WE SEARCH IN " + STACK_FOLDER+date)
 
     #print(str(listdir(STACK_FOLDER+date)))
  
     #find in STACK_FOLDER/date/ all the files that starts with date and have same cam id
     stacks = [f for f in listdir(STACK_FOLDER+date) if date_and_time in f and cam_id in f and "-HD" not in f and "obj" not in f and "-tn" not in f and "-night" not in f and "json" not in f and "mp4" not in f and "crop" not in f]
  
-    print("STACKS FROM get_stack_from_HD_frame " + str(stacks))
+    #print("STACKS FROM get_stack_from_HD_frame " + str(stacks))
 
     #return only one
     if(stacks is not None and len(stacks)!=0):
