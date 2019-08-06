@@ -44,5 +44,5 @@ def get_all_HD_pic():
                 output = subprocess.check_output(cmd, shell=True).decode("utf-8")
         except:
                 res = False
+                print('PB with video ' +  vid.replace('.png','.mp4'))
     
-    print("DONE")
