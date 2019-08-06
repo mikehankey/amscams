@@ -27,6 +27,11 @@ def get_all_HD_pic():
     else:
         frames = [f for f in listdir(cur_path) if f and "-tn" not in f and "-night" not in f and "trim" not in f and isfile(join(cur_path, f))]
 
+
+    print("FRAMES FOUND")
+    print(frames)
+    print("IN " + cur_path)
+
     # Create dest dir if necessary
     create_HD_TMP_FOLDER_if_necessary()
 
