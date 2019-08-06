@@ -11,7 +11,7 @@ from shutil import copyfile
 #Blend two images together
 def blend(image1, image2, perc_trans_image1, output_file):
     other_perc = 100-int(perc_trans_image1)
-    cmd = 'ffmpeg -y -i '+image1+' -i '+image2+' -filter_complex "[0:v][1:v]overlay='+str(perc_trans_image1)+':'+str(other_perc)+'" -codec:a copy '+ output_file
+    cmd = 'ffmpeg -y -i '+image1+' -i '+image2+' -filter_complex "[0:v][1:v]overlay=0:0'+str(perc_trans_image1)+':'+str(other_perc)+'" -codec:a copy '+ output_file
     print(cmd)
 
 #Get Video date from file name 
@@ -66,7 +66,7 @@ def get_stack_from_HD_frame(org_image):
         return STACK_FOLDER+date+'/'+stacks[0]
     else:
         # We search for the HD version
-        stacks = [f for f in listdir(STACK_FOLDER+date) if date_and_time in f and  and "-HD" not in f and cam_id in f and "obj" not in f and "-tn" not in f and "-night" not in f and "json" not in f and "mp4" not in f and "crop" not in f]
+        stacks = [f for f in listdir(STACK_FOLDER+date) if date_and_time in f and "HD" not in f and cam_id in f and "obj" not in f and "-tn" not in f and "-night" not in f and "json" not in f and "mp4" not in f and "crop" not in f]
         if(stacks is not None and len(stacks)!=0):
             return STACK_FOLDER+date+'/'+stacks[0]
         else: 
