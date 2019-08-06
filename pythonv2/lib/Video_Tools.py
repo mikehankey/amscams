@@ -8,6 +8,13 @@ from os.path import isfile, join, exists
 from shutil import copyfile
 
 
+#Blend two images together
+def blend(image1, image2, perc_trans_image1, output_file):
+    ffmpeg -i image1 -i image2 \
+        -filter_complex "[0:v][1:v] overlay=25:25" \
+        -pix_fmt yuv420p -c:a copy \
+        output.mp4
+
 #Get Video date from file name 
 def get_meteor_date(_file):
 	fn = _file.split("/")[-1] 
@@ -53,7 +60,7 @@ def get_stack_from_HD_frame(org_image):
  
     #return only one
     if(stacks is not None):
-        return stacks[0]
+        return STACK_FOLDER+date+'/'+stacks[0]
     else:
         return false
 
