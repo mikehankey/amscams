@@ -140,6 +140,7 @@ function add_timelapse_full_modal() {
     var cam_ids = $('input[name=cam_ids]').val();
     cam_ids = cam_ids.split('|');
 
+    // CAM IDs
     var cam_select = "<select id='sel_cams' name='sel_cam[]' class='form-control'  multiple='multiple'>";
     $.each(cam_ids,function(i,v){
         if($.trim(v)!=='') {
@@ -166,20 +167,32 @@ function add_timelapse_full_modal() {
                 <form id="timelapse_full_form"> \
                     <div class="pr-3 pl-3 pt-0"> \
                             <div class="row"> \
-                                <div class="col-sm-6"> \
+                                <div class="col-sm-4"> \
                                     <div class="form-group mb-2"> \
                                         <label class="col-form-label"><b>Start Date</b></label> \
-                                        <div class="col-sm-3 p-0">\
+                                        <div class="col-sm-5 p-0">\
                                             <input name="tl_date" value="'+curD+'" type="text" data-display-format="YYYY/MM/DD" class="datepicker form-control"> \
                                         </div>\
                                     </div> \
                                 </div> \
-                                <div class="col-sm-6"> \
+                                <div class="col-sm-4"> \
                                     <div class="form-group mb-2"> \
                                         <label class="col-form-label"><b>Start Time</b></label> \
-                                        <div class="col-sm-3 p-0">\
+                                        <div class="col-sm-5 p-0">\
                                             <input name="tl_time" value="00:00" type="text" data-display-format="LT" class="datepicker form-control"> \
                                         </div>\
+                                    </div> \
+                                </div> \
+                                <div class="col-sm-4"> \
+                                    <div class="form-group mb-2"> \
+                                        <label class="col-form-label"><b>Max. Duration</b></label> \
+                                        <select class="form-control" name="duration"> \
+                                            <option value="6">6 Hours</option> \
+                                            <option value="8">8 Hours</option> \
+                                            <option value="12">12 Hours</option> \
+                                            <option value="24" selected>24 Hours</option> \
+                                            <option value="48">48 Hours</option>  \
+                                        </select> \
                                     </div> \
                                 </div> \
                             </div> \
