@@ -83,11 +83,7 @@ def add_video_job(name,cam_ids,date,time,duration,fps,dim,text_pos,wat_pos,extra
             'logo': logo,
             'logo_pos': logo_pos
         }
-
-        print("NEW JOB")
-        print(new_job)
-        exit()
-
+ 
         duplicate = False
 
         #Search if the job already exist (avoid duplicates)

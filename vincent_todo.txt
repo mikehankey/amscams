@@ -108,3 +108,5 @@ Currently working on timelapse
 
 Need to take into account hours & duration from the modal form on 
 https://sleaziest-somali-2255.dataplicity.io/pycgi/webUI.py?cmd=video_tools
+
+=> Done, start & end date & time added to the JSON

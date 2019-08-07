@@ -17,7 +17,7 @@ def remove(path):
             print("Unable to remove file: %s" % path)
 
 
-def cleanup(number_of_days, path):
+def cleanup_video_days(number_of_days, path):
     time_in_secs = time.time() - (number_of_days * 24 * 60 * 60)
     for root, dirs, files in os.walk(path, topdown=False):
         for file_ in files:
@@ -32,5 +32,7 @@ def cleanup(number_of_days, path):
         #if not os.listdir(root):
         #    #remove(root)
         #    print('REMOVED ROOT ' + root)
+
+        
  
-cleanup(DELETE_VIDS_AFTER_DAYS, VID_FOLDER)
+cleanup_video_days(DELETE_VIDS_AFTER_DAYS, VID_FOLDER)

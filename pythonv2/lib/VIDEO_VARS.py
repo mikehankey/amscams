@@ -38,6 +38,10 @@ AMS_WATERMARK_ANIM_PATH_640x360 = "/home/ams/amscams/dist/img/ams_logo_vid_anim/
 #NUMBER OF DAYS WE KEEP THE CUSTOM VIDEOS
 DELETE_VIDS_AFTER_DAYS = 7
 
+
+#NUMBER OF HOURS WE KEEP THE HD FRAMES WE GET FROM get_all_HD_pic()
+DELETE_HD_FRAMES_AFTER_HOURS = 12
+
 #Size of the FONT for the text info
 FONT_SIZE = "18"
 FONT_TRANSPARENCY = "0.85" # between 0 and 1
@@ -54,3 +58,4 @@ D_EXTRA_INFO = " " # WARNING - This is updated in Video_Parameters
 
 
 HD_DIM = D_DIM #for ffmpeg
+
