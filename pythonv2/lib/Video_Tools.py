@@ -216,7 +216,7 @@ def get_hd_frames_from_HD_repo(camID,date,start_date,end_date,limit_frame=False)
                 stack = get_stack_from_HD_frame(cur_path + '/' + f)
                 if(stack is not None):
                     print('ONE STACK FOUND')
-                    blend(cur_path + '/' + f,40,cur_path + '/' + f)
+                    blend(cur_path + '/' + f,stack,40,cur_path + '/' + f)
 
                 # Copy the frame to tmppath 
                 shutil.copy2(cur_path + '/' + f, tmppath + '/' + f)
