@@ -205,7 +205,7 @@ def get_hd_frames_from_HD_repo(camID,date,start_date,end_date,limit_frame=False)
             if(cur_date >= start_date_obj and cur_date <= end_date_obj):
                 print(f)
     else:
-        print('The Cron job for the HD frames didnt run properly - see Video_HD_Images_Cron.py )
+        print('The Cron job for the HD frames didnt run properly - see Video_HD_Images_Cron.py')
 
 
 
