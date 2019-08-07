@@ -60,7 +60,7 @@ def add_video_job(name,cam_ids,date,time,duration,fps,dim,text_pos,wat_pos,extra
 
     # Get start date & time
     # and end date & time
-    start_date = datetime.strptime(date + ' ' time, '%Y/%m/%d %H:%M')
+    start_date = datetime.strptime(date + ' ' + time, '%Y/%m/%d %H:%M')
     end_date = start_date + timedelta(hours=int(duration))
 
     print('START DATE ')
