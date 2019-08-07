@@ -184,7 +184,7 @@ def get_hd_frames_from_HD_repo(camID,date,start_date,end_date,limit_frame=False)
     test = [f for f in listdir(cur_path) if isfile(join(cur_path, f))]
    
 
-    if test is True:
+    if test:
         print('TEST IS TRUE')
 
         # We need to get all of them from start_date to end_date
