@@ -213,7 +213,7 @@ def get_hd_frames_from_HD_repo(camID,date,start_date,end_date,limit_frame=False)
                 real_frames.append(f)
 
                 # Here we eventually blend with the corresponding SD stack 
-                stack = get_stack_from_HD_frame(org)
+                stack = get_stack_from_HD_frame(cur_path + '/' + f)
                 print('STACK ' + stack)
 
                 # Copy the frame to tmppath 
