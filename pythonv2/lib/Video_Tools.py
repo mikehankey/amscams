@@ -172,12 +172,12 @@ def get_sd_frames(camID,date,limit_frame=False):
 #NEW STUFF HERE TO TAKE start_date & end_date into account and SEARCH in HD FRAMES FIRST
 #We test if we have at least one image under HD_FRAMES_PATH that matches the cam_id
 #And that has a date <= start_date
-def get_hd_frames2(camID,date,start_date,end_date,limit_frame=False):
+def get_hd_frames_from_HD_repo(camID,date,start_date,end_date,limit_frame=False):
     cur_path = HD_FRAMES_PATH
     res = True
 
     #test if we have at least one file name - YYYY_DD_MM_HH_ii_SS[_000_]CAM_ID.mp4 under HD_FRAMES_PA 
-    test = [f for f in listdir(cur_path) if f.startswith(date) and f.endswith(camID+'.mp4') and isfile(join(cur_path, f))]
+    test = [f for f in listdir(cur_path) if f.startswith(date) and f.endswith(camID+'.png') and isfile(join(cur_path, f))]
 
     if test:
         # We need to get all of them from start_date to end_date
