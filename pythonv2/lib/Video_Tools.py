@@ -216,7 +216,8 @@ def get_hd_frames_from_HD_repo(camID,date,start_date,end_date,limit_frame=False)
                     for f in files:
                         os.remove(f)
                 
-                return(sorted(real_frames), tmppath)  
+        
+        return(sorted(real_frames), tmppath)  
 
     else:
         print('The Cron job for the HD frames didnt run properly - see Video_HD_Images_Cron.py')
