@@ -63,12 +63,7 @@ def add_video_job(name,cam_ids,date,time,duration,fps,dim,text_pos,wat_pos,extra
     start_date = datetime.strptime(date + ' ' + time, '%Y/%m/%d %H:%M')
     end_date = start_date + timedelta(hours=int(duration))
 
-    print('START DATE ')
-    print(str(start_date))
-    print('END DATE ')
-    print(str(end_date))
-    exit()
-
+     
 
     for cam_id in cam_ids:
 
@@ -77,8 +72,8 @@ def add_video_job(name,cam_ids,date,time,duration,fps,dim,text_pos,wat_pos,extra
             'name': name,
             'cam_id': cam_id,
             'date': date.replace('/','_'),
-            'time': time,
-            'dur': duration,
+            'start_date': format(start_date, '%Y/%m/%d %H:%M'),
+            'end_date': format(end_date, '%Y/%m/%d %H:%M'),
             'fps': fps,
             'dim':dim,
             'text_pos':text_pos,
@@ -88,6 +83,10 @@ def add_video_job(name,cam_ids,date,time,duration,fps,dim,text_pos,wat_pos,extra
             'logo': logo,
             'logo_pos': logo_pos
         }
+
+        print("NEW JOB")
+        print(new_job)
+        exit()
 
         duplicate = False
 
