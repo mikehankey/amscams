@@ -37,7 +37,8 @@ def get_all_HD_pic():
         try:
                 vid_out = vid.replace('.mp4','.png')
                 #WARNING WE HAVE THE -n option here = Do not overwrite output files!
-                cmd = 'ffmpeg -n -hide_banner -loglevel panic -i '+IMG_HD_SRC_PATH+'/'+vid+' -vframes 1 -f image2 '+ HD_FRAMES_PATH + vid_out  
+                #-hide_banner -loglevel panic
+                cmd = 'ffmpeg -n  -i '+IMG_HD_SRC_PATH+'/'+vid+' -vframes 1 -f image2 '+ HD_FRAMES_PATH + vid_out  
                 output = subprocess.check_output(cmd, shell=True).decode("utf-8")
                 print(output)
         except:
