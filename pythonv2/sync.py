@@ -17,6 +17,7 @@ from lib.VideoLib import get_masks, find_hd_file_new, load_video_frames
 from lib.UtilLib import check_running, get_sun_info, fix_json_file, find_angle, convert_filename_to_date_cam
 
 from lib.FileIO import load_json_file, save_json_file, cfe
+API_HOST = "http://52.27.42.7"
 
 json_conf = load_json_file("../conf/as6.json")
 my_station = json_conf['site']['ams_id']
@@ -209,7 +210,7 @@ def sync_content(event_id, station_name, upload_file, file_type):
       print("FAILED UPLOAD: file doesn't exist so can't upload it!", upload_file)
       return(0)
    my_meteor_datetime, my_cam, hd_date, hd_y, hd_m, hd_d, hd_h, hd_M, hd_s = convert_filename_to_date_cam(upload_file)
-   url = "http://54.214.104.131/pycgi/api-sync-content.py"
+   url = API_HOST + "/pycgi/api-sync-content.py"
    # The File to send
    file = upload_file 
    _file = {'files': open(file, 'rb')}
@@ -246,7 +247,7 @@ def check_make_event(event_id, json_conf):
    file_type = "idx"
    meteor_day = "na"
    _data= {'api_key': api_key, 'station_name': station_name, 'event_id' : event_id }
-   url = 'http://54.214.104.131/pycgi/api-make-check-event.py'
+   url = API_HOST + '/pycgi/api-make-check-event.py'
    print(url, _data)
    session = requests.Session()
    del session.headers['User-Agent']
@@ -284,7 +285,7 @@ def sync_meteor_index(json_conf):
    file_type = "idx"
    meteor_day = "na"
    _data= {'api_key': api_key, 'meteor_day': meteor_day, 'station_name': station_name, 'device_name': device_name, 'format' : 'json', 'event_id' : event_id, 'file_type': file_type}
-   url = 'http://54.214.104.131/pycgi/api-meteor-index.py'
+   url = API_HOST + '/pycgi/api-meteor-index.py'
 
    session = requests.Session()
    del session.headers['User-Agent']
@@ -344,7 +345,7 @@ def check_for_event(day, stations, meteor, all_meteors, mse):
    # else return 0
 
 def sync_stations(json_conf):
-   api_host = "http://54.214.104.131/" 
+   api_host = API_HOST
    sync_urls = load_json_file("../conf/sync_urls.json")
    print("SYNC STATIONS")
    my_station_id = json_conf['site']['ams_id'].upper()
@@ -423,7 +424,7 @@ def sync_ms_json(day, mse, sync_urls):
                print("Already have:", url + st_video_url)
   
 def solve_events(day, json_conf):
-   remote_host = "http://54.214.104.131/"
+   remote_host = API_HOST
    my_station = json_conf['site']['ams_id']
    event_file = "/mnt/ams2/stations/data/" + day  + "_events.json"
    events = load_json_file(event_file)
