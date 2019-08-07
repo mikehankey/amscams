@@ -8,8 +8,10 @@ from os.path import isfile, join, exists
 from lib.VIDEO_VARS import * 
 from lib.Video_Parameters import save_video_job_parameters
 
+
+
 #ADD Job to WAITING_JOBS
-def add_video_job(name,cam_ids,date,fps,dim,text_pos,wat_pos,extra_text,logo,logo_pos):
+def add_video_job(name,cam_ids,date,time,duration,fps,dim,text_pos,wat_pos,extra_text,logo,logo_pos):
 
     if(logo is None ):
         logo = ""
@@ -63,6 +65,8 @@ def add_video_job(name,cam_ids,date,fps,dim,text_pos,wat_pos,extra_text,logo,log
             'name': name,
             'cam_id': cam_id,
             'date': date.replace('/','_'),
+            'time': time,
+            'dur': duration,
             'fps': fps,
             'dim':dim,
             'text_pos':text_pos,
