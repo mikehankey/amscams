@@ -214,7 +214,7 @@ def get_hd_frames_from_HD_repo(camID,date,start_date,end_date,limit_frame=False)
 
                 # Here we eventually blend with the corresponding SD stack 
                 stack = get_stack_from_HD_frame(cur_path + '/' + f)
-                if(stack is not None):
+                if(stack is not False):
                     print('ONE STACK FOUND')
                     blend(cur_path + '/' + f,stack,40,cur_path + '/' + f)
 
