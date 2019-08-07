@@ -183,11 +183,7 @@ def get_hd_frames_from_HD_repo(camID,date,start_date,end_date,limit_frame=False)
     date =  date.replace(':','_')
     #test if we have at least one file name - YYYY_DD_MM_HH_ii_SS[_000_]CAM_ID.mp4 under HD_FRAMES_PA 
     test = [f for f in listdir(cur_path) if isfile(join(cur_path, f))]
-   
-   
-    print("CAM ID " + camID)
-    
-   
+ 
     if test:
      
         # We need to get all of them from start_date to end_date

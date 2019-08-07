@@ -77,8 +77,14 @@ from os.path import isfile, join, exists
 
 
 
-array_of_frames, tmppath  = get_hd_frames_from_HD_repo("10038","2019/08/06 06:40","2019/08/06 06:40","2019/08/06 12:40")
+array_of_frames, path  = get_hd_frames_from_HD_repo("10038","2019/08/06","2019/08/06 06:40","2019/08/06 12:40")
 print("FRAMES")
 print(array_of_frames)
 print("PATH")
-print(tmppath)
+print(tmppath) 
+if(array_of_frames is None):
+    print('NO FRAME FOUND')
+    return ''
+else:
+    where_path = add_info_to_frames(array_of_frames, path, "2019/08/06", "10038", "This is a test", "/mnt/ams2//CUSTOM_LOGOS/1.png","tl","1920:1080", "bl","tr")
+    return create_vid_from_frames(frames, where_path, "2019/08/06",  "10038","30")
