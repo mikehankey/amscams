@@ -84,5 +84,5 @@ if(array_of_frames is None):
     print('NO FRAME FOUND') 
 else:
     where_path = add_info_to_frames(array_of_frames, path, "2019/08/06", "10038", "This is a test", "/mnt/ams2/CUSTOM_LOGOS/1.png","tl","1920:1080", "bl","tr")
-    t = create_vid_from_frames(array_of_frames, where_path, "2019/08/06",  "10038","30")
+    t = create_vid_from_frames(array_of_frames, where_path, "2019_08_06",  "10038","30")
     print(t)
