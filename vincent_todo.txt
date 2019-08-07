@@ -110,6 +110,4 @@ Need to take into account hours & duration from the modal form on
 https://sleaziest-somali-2255.dataplicity.io/pycgi/webUI.py?cmd=video_tools
 
 => Done, start & end date & time added to the JSON
-=> TODO NOW: change def get_hd_frames to:
-    1- SEARCH IN TIMELAPSE_IMAGES/
-    2- Take the start & end date & time into account
+=> Now, get_hd_frames_from_HD_repo has been created. It works with a start_date and end_date. I need now to blend with the corresponding SD stack (something is here but it doesn't work)
