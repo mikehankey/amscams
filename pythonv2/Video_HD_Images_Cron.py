@@ -1,5 +1,6 @@
 import os
 import subprocess 
+import time
 from lib.VIDEO_VARS import *   
 from os import listdir, remove, path
 from os.path import isfile, join, exists
