@@ -221,7 +221,7 @@ def get_hd_frames_from_HD_repo(camID,date,start_date,end_date,limit_frame=False)
                 count += 1
 
                
-        if(real_frames is not None) 
+        if(real_frames is not None):
             return(sorted(real_frames), tmppath)  
         else:
             print('No frame found for the period - see Video_HD_Images_Cron.py')
