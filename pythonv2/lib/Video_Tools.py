@@ -204,7 +204,7 @@ def get_hd_frames_from_HD_repo(camID,date,start_date,end_date,limit_frame=False)
             for f in files:
                 os.remove(f)
 
-        count = 1
+        
         for f in frames:
             cur_date = get_meteor_date_and_time_object(f)
 
@@ -213,7 +213,7 @@ def get_hd_frames_from_HD_repo(camID,date,start_date,end_date,limit_frame=False)
                 real_frames.append(f)
 
                 # Copy the frame to tmppath with name [#frame].png
-                shutil.copy2(cur_path + '/' + f, tmppath + '/' + str(count) + ".png" )
+                shutil.copy2(cur_path + '/' + f, tmppath + '/' + f + ".png" )
                 count += 1
 
                
