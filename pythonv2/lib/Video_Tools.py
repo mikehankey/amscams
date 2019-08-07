@@ -212,8 +212,8 @@ def get_hd_frames_from_HD_repo(camID,date,start_date,end_date,limit_frame=False)
             if(cur_date >= start_date_obj and cur_date <= end_date_obj):
                 real_frames.append(f)
 
-                # Copy the frame to tmppath with name [#frame].png
-                shutil.copy2(cur_path + '/' + f, tmppath + '/' + f )
+                # Copy the frame to tmppath 
+                shutil.copy2(cur_path + '/' + f, tmppath + '/' + f)
                 
                
         if(real_frames is not None):
