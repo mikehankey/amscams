@@ -77,4 +77,8 @@ from os.path import isfile, join, exists
 
 
 
-get_hd_frames_from_HD_repo("10038","2019/08/06 06:40","2019/08/06 06:40","2019/08/06 12:40")
+array_of_frames, tmppath  = get_hd_frames_from_HD_repo("10038","2019/08/06 06:40","2019/08/06 06:40","2019/08/06 12:40")
+print("FRAMES")
+print(array_of_frames)
+print("PATH")
+print(tmppath)
