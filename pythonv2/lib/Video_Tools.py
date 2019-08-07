@@ -176,10 +176,14 @@ def get_hd_frames_from_HD_repo(camID,date,start_date,end_date,limit_frame=False)
     cur_path = HD_FRAMES_PATH
     res = True
 
+    #Change date as it appears in the file names
+    date =  date.replace('/','_')
+    date =  date.replace(' ','_')
+
     #test if we have at least one file name - YYYY_DD_MM_HH_ii_SS[_000_]CAM_ID.mp4 under HD_FRAMES_PA 
     test = [f for f in listdir(cur_path) if f.startswith(date) and f.endswith(camID+'.png') and isfile(join(cur_path, f))]
     print('START WITH ' + date)
-    print("CAM ID " + camID)
+    print("CAM ID " + int(camID))
     print('TEST '  + str(test))
 
     if test is True:
