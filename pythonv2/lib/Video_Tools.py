@@ -214,8 +214,7 @@ def get_hd_frames_from_HD_repo(camID,date,start_date,end_date,limit_frame=False)
 
                 # Copy the frame to tmppath with name [#frame].png
                 shutil.copy2(cur_path + '/' + f, tmppath + '/' + f + ".png" )
-                count += 1
-
+                
                
         if(real_frames is not None):
             return(sorted(real_frames), tmppath)  
