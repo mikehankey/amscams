@@ -3,6 +3,7 @@ import glob
 import subprocess 
 import datetime
 import time
+import shutil
 from lib.VIDEO_VARS import * 
 from os import listdir, remove
 from os.path import isfile, join, exists
@@ -192,13 +193,22 @@ def get_hd_frames_from_HD_repo(camID,date,start_date,end_date,limit_frame=False)
         # We need to get all of them from start_date to end_date
         frames = [f for f in listdir(cur_path) if camID in f]
         real_frames = []
-
-        print('FRAMES')
-        print(frames)
+ 
 
         start_date_obj = time.strptime(start_date, "%Y/%m/%d %H:%M")
         end_date_obj = time.strptime(end_date, "%Y/%m/%d %H:%M")
 
+        #Check temporary folder to store the frames of all the videos
+        tmppath = r''+TMP_IMG_HD_SRC_PATH
+        if not os.path.exists(tmppath):
+            os.makedirs(tmppath)
+        else:
+            #Clean the directory (maybe necessary)
+            files = glob.glob(tmppath+'/*')
+            for f in files:
+                os.remove(f)
+
+        count = 1
         for f in frames:
             cur_date = get_meteor_date_and_time_object(f)
 
@@ -206,16 +216,11 @@ def get_hd_frames_from_HD_repo(camID,date,start_date,end_date,limit_frame=False)
             if(cur_date >= start_date_obj and cur_date <= end_date_obj):
                 real_frames.append(f)
 
-                #Check temporary folder to store the frames of all the videos
-                tmppath = r''+TMP_IMG_HD_SRC_PATH
-                if not os.path.exists(tmppath):
-                    os.makedirs(tmppath)
-                else:
-                    #Clean the directory (maybe necessary)
-                    files = glob.glob(tmppath+'/*')
-                    for f in files:
-                        os.remove(f)
-                
+                # Copy the frame to tmppath with name [#frame].png
+                shutil.copy2(f, tmppath + '/' + count + ".png" )
+                count += 1
+
+               
         if(real_frames is not None) 
             return(sorted(real_frames), tmppath)  
         else:
