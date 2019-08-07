@@ -247,8 +247,9 @@ def controller(json_conf):
             extra_logo = "n"
             logo = ""
             logo_pos = ""
-       
-      add_video_job('timelapse',form.getvalue('sel_cam[]'),form.getvalue('tl_date'),form.getvalue('fps'),form.getvalue('dim'),form.getvalue('text_pos'),form.getvalue('wat_pos'),extra_text,logo,logo_pos)
+
+      print(form) 
+      #add_video_job('timelapse',form.getvalue('sel_cam[]'),form.getvalue('tl_date'),form.getvalue('fps'),form.getvalue('dim'),form.getvalue('text_pos'),form.getvalue('wat_pos'),extra_text,logo,logo_pos)
       exit()
 
    # DELETE CUSTOM VIDEO (AJAX CALL)
