@@ -37,7 +37,7 @@ def get_all_HD_pic():
         try:
                 vid_out = vid.replace('.mp4','.png')
 
-                if(os.path.isfile(HD_FRAMES_PATH + vid_out) not True):
+                if(os.path.isfile(HD_FRAMES_PATH + vid_out) is not True):
                     #WARNING WE HAVE THE -n option here = Do not overwrite output files = double check with is file
                     cmd = 'ffmpeg -n -hide_banner -loglevel panic -i '+IMG_HD_SRC_PATH+'/'+vid+' -vframes 1 -f image2 '+ HD_FRAMES_PATH + vid_out  
                     output = subprocess.check_output(cmd, shell=True).decode("utf-8") 
