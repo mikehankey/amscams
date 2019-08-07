@@ -179,7 +179,7 @@ function add_timelapse_full_modal() {
                                     <div class="form-group mb-2"> \
                                         <label class="col-form-label"><b>Start Time</b></label> \
                                         <div class="col-sm-10 p-0">\
-                                            <input name="tl_time" value="00:00" type="text" data-display-format="HH:MM" class="datepicker form-control"> \
+                                            <input name="tl_time" value="00:00" type="text" data-display-format="HH:mm" class="datepicker form-control"> \
                                         </div>\
                                     </div> \
                                 </div> \
