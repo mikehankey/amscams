@@ -73,7 +73,7 @@ def cleanup_HD_frames_hours(number_of_hours,path):
 
             if stat.st_mtime <= time_in_secs and file_extension!='.json':
                 remove(full_path)
-                print(full_path + " deleted because it was more than " + str(number_of_hours) + " old")
+                print(full_path + " deleted because it was more than " + str(number_of_hours) + " hours old")
 
 
 get_all_HD_pic()
