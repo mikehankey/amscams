@@ -37,14 +37,12 @@ def get_all_HD_pic():
         try:
                 vid_out = vid.replace('.mp4','.png')
                 #WARNING WE HAVE THE -n option here = Do not overwrite output files!
-                #-hide_banner -loglevel panic
-                cmd = 'ffmpeg -n  -i '+IMG_HD_SRC_PATH+'/'+vid+' -vframes 1 -f image2 '+ HD_FRAMES_PATH + vid_out  
-                output = subprocess.check_output(cmd, shell=True).decode("utf-8")
-                print(output)
-                exit()
+                #
+                cmd = 'ffmpeg -n -hide_banner -loglevel panic -i '+IMG_HD_SRC_PATH+'/'+vid+' -vframes 1 -f image2 '+ HD_FRAMES_PATH + vid_out  
+                output = subprocess.check_output(cmd, shell=True).decode("utf-8") 
         except:
                 res = False
-                print('PB with video ' +  vid.replace('.png','.mp4'))
+                print('PB with video (it may simply already exist)' +  vid.replace('.png','.mp4'))
 
 # Delete files or directories
 def remove(path):
