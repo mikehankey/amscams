@@ -36,10 +36,11 @@ def get_all_HD_pic():
     for idx,vid in enumerate(sorted(frames)):
         try:
                 vid_out = vid.replace('.mp4','.png')
-                #WARNING WE HAVE THE -n option here = Do not overwrite output files!
-                #
-                cmd = 'ffmpeg -n -hide_banner -loglevel panic -i '+IMG_HD_SRC_PATH+'/'+vid+' -vframes 1 -f image2 '+ HD_FRAMES_PATH + vid_out  
-                output = subprocess.check_output(cmd, shell=True).decode("utf-8") 
+
+                if(os.path.isfile(HD_FRAMES_PATH + vid_out) not True):
+                    #WARNING WE HAVE THE -n option here = Do not overwrite output files = double check with is file
+                    cmd = 'ffmpeg -n -hide_banner -loglevel panic -i '+IMG_HD_SRC_PATH+'/'+vid+' -vframes 1 -f image2 '+ HD_FRAMES_PATH + vid_out  
+                    output = subprocess.check_output(cmd, shell=True).decode("utf-8") 
         except:
                 res = False
                 print('PB with video (it may simply already exist)' +  vid.replace('.png','.mp4'))
@@ -71,6 +72,7 @@ def cleanup_HD_frames_hours(number_of_hours,path):
 
             if stat.st_mtime <= time_in_secs and file_extension!='.json':
                 remove(full_path)
+                print(full_path + " deleted because it was more than " + number_of_hours + " old")
 
 
 get_all_HD_pic()
