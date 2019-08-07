@@ -3,7 +3,6 @@ import glob
 import subprocess 
 from lib.VIDEO_VARS import * 
 from lib.Video_Tools import * 
-from lib.Video_HD_Images_Cron import * 
 from os import listdir, remove
 from os.path import isfile, join, exists
 
