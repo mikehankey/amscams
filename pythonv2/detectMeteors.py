@@ -184,6 +184,9 @@ def junk(date):
                         cmd = "mv " + "/mnt/ams2/meteors/" + day + "/" + sd_wild + " /mnt/ams2/trash"
                         print(cmd)
                         os.system(cmd)
+                        cmd = "mv " + "/mnt/ams2/SD/proc2/" + day + "/passed/" + sd_wild + " /mnt/ams2/trash"
+                        print(cmd)
+                        os.system(cmd)
                         if 'hd_trim' in jd:
                            if jd['hd_trim'] != 0 and jd['hd_trim'] is not None:
                               print(jd['hd_trim'])

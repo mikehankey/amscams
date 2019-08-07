@@ -1,4 +1,4 @@
-function update_star_and_reduction() {
+function update_star_and_reduction(callback) {
     var cmd_data = {
         video_file:       main_vid,          // Defined on the page 
         cmd: 'update_red_info_ajax'
@@ -34,7 +34,8 @@ function update_star_and_reduction() {
                 // Reload the actions
                 reduction_table_actions();
 
-                
+                // Callback (optional)
+                typeof callback === 'function' && callback();
             }
 
             loading_done();

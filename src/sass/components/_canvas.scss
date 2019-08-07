@@ -3,41 +3,42 @@
 .canvas-container {
     position: relative;
     background: #111;
-}
 
-canvas {
-    position: absolute;
-    width: 960px;
-    height: 540px;
-    left: 0px;
-    top: 0px;
-    touch-action: none;
-    user-select: none;
-    margin: 0 auto;
-    -webkit-transition: all .3s ease;  
-    transition: all .3s ease;
 
-    &#c {
-        -webkit-box-shadow: 0 2px 5px #000;
-        box-shadow: 0 2px 5px #000;
-        cursor: url(../img/target_cur.png) 20 20, auto !important;
+    canvas {
+        position: absolute;
+        width: 960px;
+        height: 540px;
+        left: 0px;
+        top: 0px;
+        touch-action: none;
+        user-select: none;
+        margin: 0 auto;
+        -webkit-transition: all .3s ease;  
+        transition: all .3s ease;
+
+        &#c {
+            -webkit-box-shadow: 0 2px 5px #000;
+            box-shadow: 0 2px 5px #000;
+            cursor: url(../img/target_cur.png) 20 20, auto !important;
+        }
+
+        &.upper-canvas  {
+            cursor: url(../img/target_cur.png) 20 20, auto !important;
+        }
+
+        &.r-zoomed {
+            position: fixed!important;
+            z-index: 9999;
+            margin-left: 50%;
+            -webkit-transform: translateX(-50%);
+            transform: translateX(-50%);
+            padding: 2rem;
+            background: black;
+            height:100vh !important;
+            width: auto !important;
+        }
+
+    
     }
-
-    &.upper-canvas  {
-        cursor: url(../img/target_cur.png) 20 20, auto !important;
-    }
-
-    &.r-zoomed {
-        position: fixed!important;
-        z-index: 9999;
-        margin-left: 50%;
-        -webkit-transform: translateX(-50%);
-        transform: translateX(-50%);
-        padding: 2rem;
-        background: black;
-        height:100vh !important;
-        width: auto !important;
-    }
-
-   
 }

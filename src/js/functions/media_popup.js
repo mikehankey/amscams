@@ -1,5 +1,5 @@
 $(function() {
-      $('.img-link').magnificPopup({
+      $('.img-link, .img-link-n').magnificPopup({
         type: 'image' ,
         removalDelay: 300, 
         mainClass: 'mfp-fade'

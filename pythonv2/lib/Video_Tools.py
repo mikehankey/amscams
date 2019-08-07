@@ -8,6 +8,93 @@ from os.path import isfile, join, exists
 from shutil import copyfile
 
 
+# Blend two images together
+# org =  '/mnt/ams2/TIMELAPSE_IMAGES/2019_08_06_01_02_26_000_010039.png'
+# stack = get_stack_from_HD_frame(org)
+# blend(org,stack,40,'/mnt/ams2/TMP/test.png')
+def blend(image1, image2, perc_trans_image1, output_file):
+    other_perc =  int(perc_trans_image1)/100
+    cmd = 'ffmpeg -y -hide_banner -loglevel panic -i '+image2+' -i '+image1+' -filter_complex "[0:v]scale='+HD_DIM+'[scaled];[scaled]blend=all_mode=\'overlay\':all_opacity='+str(other_perc)+'[out]" -map "[out]" '+ output_file
+    output = subprocess.check_output(cmd, shell=True).decode("utf-8")    
+    return output_file
+ 
+#Get Video date from file name 
+def get_meteor_date(_file):
+	fn = _file.split("/")[-1] 
+	fn = fn.split('_',6)
+	return fn[0] + "_" + fn[1] + "_" + fn[2]
+
+
+#Get Time from file name without seconds!!
+def get_meteor_time(_file):
+    fn = _file.split("/")[-1]
+    fn = fn.split(".")[0]
+    fn = fn.split("_")
+    return fn[3] + '_' + fn[4] 
+
+#Return nothing or the HD stack that correspond to the same time/cam of the time passed as parameters
+#ex:
+# get_stack('/mnt/ams2/TIMELAPSE_IMAGES/2019_08_06_01_02_26_000_010039.png')
+# return /mnt/ams2/meteors/2019_08_06/2019_08_06_01_02_26_000_010039-trim-885-HD-meteor-stacked.png
+def get_stack_from_HD_frame(org_image):
+
+    #print('ORG FILE ' + org_image)
+
+    #Get date from file
+    date = get_meteor_date(org_image) 
+
+    #Get the cam id 
+    cam_id = org_image.split("/")[-1]
+    cam_id = cam_id.split(".")[0]
+    cam_id = cam_id.split("_")[-1]
+    #print("CAM ID " + cam_id)
+
+    #Get time from fime
+    time = get_meteor_time(org_image)
+    date_and_time = date + "_" + time
+
+    #print("date_and_time " + date_and_time)
+    #print("WE SEARCH IN " + STACK_FOLDER+date)
+
+    #print(str(listdir(STACK_FOLDER+date)))
+ 
+    #find in STACK_FOLDER/date/ all the files that starts with date and have same cam id
+    stacks = [f for f in listdir(STACK_FOLDER+date) if date_and_time in f and cam_id in f and "HD" not in f and "obj" not in f and "-tn" not in f and "-night" not in f and "json" not in f and "mp4" not in f and "crop" not in f]
+ 
+    #print("STACKS FROM get_stack_from_HD_frame " + str(stacks))
+
+    #return only one
+    if(stacks is not None and len(stacks)!=0):
+        #print('NON HD STACK FOUND')
+        return STACK_FOLDER+date+'/'+stacks[0]
+    else:
+        # We search for the HD version
+        stacks = [f for f in listdir(STACK_FOLDER+date) if date_and_time in f  and cam_id in f and "obj" not in f and "-tn" not in f and "-night" not in f and "json" not in f and "mp4" not in f and "crop" not in f]
+        if(stacks is not None and len(stacks)!=0):
+            #print('HD STACK FOUND')
+            return STACK_FOLDER+date+'/'+stacks[0]
+        else: 
+            return False
+
+
+
+#Delete Video From Path
+def delete_video(vid):
+
+    #Get path to thumb
+    thumb = vid.replace(".mp4",".png")
+
+    if os.path.isfile(vid):
+        os.remove(vid)
+    else:    
+        print("Error: %s video not found" % vid)
+
+    if os.path.isfile(thumb):
+        os.remove(thumb)
+    else:    
+        print("Error: %s thumb not found" % thumb)
+
+
 #Return Video length
 def getLength(filename):
     cmd = "ffprobe -i "+filename +"  -show_entries format=duration -v quiet"
@@ -22,6 +109,15 @@ def get_meteor_date_ffmpeg(_file):
 	fn = _file.split("/")[-1] 
 	fn = fn.split('_',6)
 	return fn[0] + "/" + fn[1] + "/" + fn[2] + " " + fn[3] + "\:" + fn[4] + "\:" + fn[5]
+
+
+
+
+#Drawbox
+def drawbox_on_vid(path,vid,x,y,w,h):
+    cmd = 'ffmpeg -i ' + path +'/'+ vid + ' -vf "drawbox=enable=\'between(n,28,32)\' : x='+str(x)+' : y='+str(y)+' : w='+str(w)+' : h='+str(h)+' : color=red" -codec:a copy '+  path +'/boxed_'+vid
+    output = subprocess.check_output(cmd, shell=True).decode("utf-8")    
+    return 'boxed_'+str(vid)
 
 
 
@@ -40,8 +136,8 @@ def get_sd_frames(camID,date,limit_frame=False):
             frames = frames[1:50]
 
         if not frames:
-            print('NO INPUT FOR VID CamID:' + camID + ' - DATE ' + date)
-            print('FOLDER: ' + cur_path)
+            #print('NO INPUT FOR VID CamID:' + camID + ' - DATE ' + date)
+            #print('FOLDER: ' + cur_path)
             return([] , cur_path)
         else:    
             #Move the frames to a tmp folder so we can delete them once we're done with the video
@@ -90,6 +186,7 @@ def get_hd_frames(camID,date,limit_frame=False):
             files = glob.glob(tmppath+'/*')
             for f in files:
                 os.remove(f)
+        
         #We extract one frame per video and add it to the array to return
         toReturn = []
         

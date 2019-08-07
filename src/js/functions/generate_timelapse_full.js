@@ -134,10 +134,13 @@ function add_timelapse_full_modal() {
     var utcMoment = moment.utc();
     var curD = utcMoment.format('YYYY/MM/DD');
 
+    var delete_after_days = $('input[name=delete_after_days]').val();
+
     // Get the Cam IDs for the select
     var cam_ids = $('input[name=cam_ids]').val();
     cam_ids = cam_ids.split('|');
 
+    // CAM IDs
     var cam_select = "<select id='sel_cams' name='sel_cam[]' class='form-control'  multiple='multiple'>";
     $.each(cam_ids,function(i,v){
         if($.trim(v)!=='') {
@@ -147,7 +150,7 @@ function add_timelapse_full_modal() {
         }
     });
     cam_select = cam_select + "</select>";
-
+ 
 
     $('#full_timelapse_modal').remove(); 
     $('<div id="full_timelapse_modal" class="modal" tabindex="-1" role="dialog"> \
@@ -160,18 +163,45 @@ function add_timelapse_full_modal() {
                 </button> \
             </div> \
             <div class="modal-body"> \
+                <div class="alert alert-info"><span class="icon-notification"></span> The videos will be automatically deleted after  ' + delete_after_days + ' days</div> \
                 <form id="timelapse_full_form"> \
                     <div class="pr-3 pl-3 pt-0"> \
-                            <div class="form-group mb-2"> \
-                                <label class="col-form-label"><b>Date</b></label> \
-                                <div class="col-sm-3 p-0">\
-                                    <input name="tl_date" value="'+curD+'" type="text" data-display-format="YYYY/MM/DD" class="datepicker form-control"> \
-                                </div>\
+                            <div class="row"> \
+                                <div class="col-sm-4"> \
+                                    <div class="form-group mb-2"> \
+                                        <label class="col-form-label"><b>Start Date</b></label> \
+                                        <div class="col-sm-10 p-0">\
+                                            <input name="tl_date" value="'+curD+'" type="text" data-display-format="YYYY/MM/DD" class="datepicker form-control"> \
+                                        </div>\
+                                    </div> \
+                                </div> \
+                                <div class="col-sm-4"> \
+                                    <div class="form-group mb-2"> \
+                                        <label class="col-form-label"><b>Start Time</b></label> \
+                                        <div class="col-sm-10 p-0">\
+                                            <input name="tl_time" value="00:00" type="text" data-display-format="LT" class="datepicker form-control"> \
+                                        </div>\
+                                    </div> \
+                                </div> \
+                                <div class="col-sm-4"> \
+                                    <div class="form-group mb-2"> \
+                                        <label class="col-form-label"><b>Max. Duration</b></label> \
+                                        <select class="form-control" name="duration"> \
+                                            <option value="6">6 Hours</option> \
+                                            <option value="8">8 Hours</option> \
+                                            <option value="12">12 Hours</option> \
+                                            <option value="24" selected>24 Hours</option> \
+                                            <option value="48">48 Hours</option>  \
+                                        </select> \
+                                    </div> \
+                                </div> \
                             </div> \
                             <div class="form-group mb-2"> \
                                 <label class="col-form-label"><b>Camera</b> <i>One video per camera</i></label> \
                                 <div>'+cam_select+'</div> \
                             </div> \
+                            <hr class="w"/>\
+                            <p class="mt-3">The parameters below will be saved as default parameters for all automatically generated timelapse</p>\
                             <div class="row">\
                                 <div class="col-sm-4">\
                                     <div class="form-group  mb-1"> \
@@ -185,7 +215,7 @@ function add_timelapse_full_modal() {
                                                 <option value="24">24 fps</option> \
                                                 <option value="25">25 fps</option> \
                                                 <option value="29.97" >29.97 fps</option> \
-                                                <option value="30" selected>30 fps</option> \
+                                                <option value="30">30 fps</option> \
                                                 <option value="50">50 fps</option> \
                                                 <option value="59.94">59.94 fps</option> \
                                                 <option value="60">60 fps</option> \
@@ -197,7 +227,7 @@ function add_timelapse_full_modal() {
                                         <label for="dim" class="col-form-label"><b>Dimension</b></label> \
                                             <select name="dim" class="form-control"> \
                                                 <option value="1920:1080">1920x1080</option> \
-                                                <option value="1280:720" selected>1280x720</option> \
+                                                <option value="1280:720">1280x720</option> \
                                                 <option value="640:360">640x360</option> \
                                             </select> \
                                     </div> \
@@ -206,7 +236,7 @@ function add_timelapse_full_modal() {
                                     <div class="form-group mb-2"> \
                                         <label for="dim" class="col-form-label"><b>Extra Logo</b></label> \
                                             <select name="extra_logo_yn" class="form-control"> \
-                                                <option value="n"selected >No</option> \
+                                                <option value="n" >No</option> \
                                                 <option value="y" >Yes</option> \
                                             </select> \
                                     </div> \
@@ -218,7 +248,7 @@ function add_timelapse_full_modal() {
                                         <label for="wat_pos" class="col-form-label"><b>Position of the AMS Logo</b></label> \
                                             <select name="wat_pos" class="form-control"> \
                                                 <option value="tr" >Top right</option> \
-                                                <option value="tl" selected>Top Left</option> \
+                                                <option value="tl" >Top Left</option> \
                                                 <option value="br" >Bottom Right</option> \
                                                 <option value="bl" >Bottom Left</option> \
                                             </select> \
@@ -231,7 +261,7 @@ function add_timelapse_full_modal() {
                                             <option value="tr">Top right</option> \
                                             <option value="tl" >Top Left</option> \
                                             <option value="br" >Bottom Right</option> \
-                                            <option value="bl" selected>Bottom Left</option> \
+                                            <option value="bl" >Bottom Left</option> \
                                         </select> \
                                     </div>\
                                 </div>\
@@ -239,7 +269,7 @@ function add_timelapse_full_modal() {
                                     <div class="form-group mb-2"> \
                                         <label for="logo_pos" class="col-form-label"><b>Position of the Logo</b></label> \
                                         <select name="logo_pos" class="form-control"> \
-                                            <option value="tr" selected>Top right</option> \
+                                            <option value="tr" >Top right</option> \
                                             <option value="tl" >Top Left</option> \
                                             <option value="br" >Bottom Right</option> \
                                             <option value="bl" >Bottom Left</option> \
@@ -269,8 +299,15 @@ function add_timelapse_full_modal() {
     // Multi Select cam
     $('select#sel_cams').multiselect({includeSelectAllOption: true});
 
-    // Extra Text (operator info)
-    $('input[name=extra_text]').val($('input[name=operator_info]').val());
+    // Default (or saved) Parameters
+    $('input[name=extra_text]').val($('input[name=def_extra_text]').val());
+    $('select[name=fps]').val($('input[name=def_fps]').val());
+    $('select[name=dim]').val($('input[name=def_dim]').val());
+
+  
+    $('select[name=wat_pos]').val($('input[name=def_wat_pos]').val());
+    $('select[name=text_pos]').val($('input[name=def_text_pos]').val());
+
    
     //Start datepicker
     load_date_pickers();
@@ -286,6 +323,14 @@ function add_timelapse_full_modal() {
         add_custom_logo();
     }
    
+    if($.trim($('input[name=def_extra_logo]').val())!=='') {
+        $('select[name=extra_logo_yn]').val('y');
+        $('select[name=extra_logo_yn]').trigger('change');
+    } else {
+       $('select[name=extra_logo_yn]').val('n');
+    }
+    
+
 
     // Generate
     $('#generate_timelapse').click(function() { 

@@ -14,7 +14,7 @@ from lib.UtilLib import check_running, angularSeparation
 from lib.CalibLib import radec_to_azel, clean_star_bg, get_catalog_stars, find_close_stars, XYtoRADec, HMS2deg, AzEltoRADec
 
 from lib.ImageLib import mask_frame , stack_frames, preload_image_acc
-from lib.ReducerLib import setup_metframes, detect_meteor , make_crop_images
+from lib.ReducerLib import setup_metframes, detect_meteor , make_crop_images, perfect
 from lib.MeteorTests import meteor_test_cm_gaps
 
 
@@ -46,5 +46,22 @@ if cmd == 'dm' or cmd == 'detect_meteor':
 
 if cmd == 'cm' or cmd == 'crop_images':
    make_crop_images(file, json_conf)
+
+#MFD TO METFRAMES
+if cmd == 'mfd' :
+   # perfect the meteor reduction!
+   if "mp4" in file:
+      file = file.replace(".mp4", "-reduced.json")
+   red_data = load_json_file(file)
+   mfd = red_data['meteor_frame_data']
+   metframes, metconf = setup_metframes(mfd)
+   red_data['metframes'] = metframes 
+   red_data['metconf'] = metconf 
+
+   save_json_file(file, red_data)
+
+if cmd == 'pf' or cmd == 'perfect':
+   # perfect the meteor reduction!
+   perfect(file, json_conf)
 
 

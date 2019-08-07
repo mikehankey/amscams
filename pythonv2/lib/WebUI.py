@@ -23,13 +23,15 @@ from lib.SolutionsLib import solutions , sol_detail
 from lib.MeteorTests import test_objects
 from lib.ImageLib import mask_frame , draw_stack, stack_frames
 from lib.CalibLib import radec_to_azel
-from lib.WebCalib import calibrate_pic,make_plate_from_points, solve_field, check_solve_status, free_cal, show_cat_stars, choose_file, upscale_2HD, fit_field, delete_cal, add_stars_to_fit_pool, save_add_stars_to_fit_pool, reduce_meteor, reduce_meteor_ajax, find_stars_ajax, man_reduce, pin_point, get_manual_points, del_manual_points, sat_cap, HMS2deg, custom_fit, del_frame, clone_cal, reduce_meteor_new , update_red_info_ajax, update_hd_cal_ajax, add_frame_ajax, update_frame_ajax
+from lib.WebCalib import calibrate_pic,make_plate_from_points, solve_field, check_solve_status, free_cal, show_cat_stars, choose_file, upscale_2HD, fit_field, delete_cal, add_stars_to_fit_pool, save_add_stars_to_fit_pool, reduce_meteor, reduce_meteor_ajax, find_stars_ajax, man_reduce, pin_point, get_manual_points, del_manual_points, sat_cap, HMS2deg, custom_fit, del_frame, clone_cal, reduce_meteor_new , update_red_info_ajax, update_hd_cal_ajax, add_frame_ajax, update_frame_ajax, clone_meteor_cal
 from lib.UtilLib import calc_radiant
-from lib.Video_Add_Job import add_video_job 
+from lib.Video_Add_Job import add_video_job   
+from lib.Video_Parameters import *
 from lib.VIDEO_VARS import * 
-from lib.Video_Tools import getLength
+from lib.Video_Tools import getLength, delete_video
 from lib.LOGOS_VARS import * 
 from lib.Logo_Tools import * 
+from lib.Frame_Tools import * 
 from lib.Get_Cam_ids import get_the_cam_ids
 from lib.Get_Operator_info import get_operator_info
  
@@ -205,7 +207,7 @@ def parse_jsid(jsid):
    return(video_file)
 
 def controller(json_conf):
-
+ 
    form = cgi.FieldStorage()
    cmd = form.getvalue('cmd')
    skin = form.getvalue('skin') 
@@ -245,8 +247,14 @@ def controller(json_conf):
             extra_logo = "n"
             logo = ""
             logo_pos = ""
-  
+       
       add_video_job('timelapse',form.getvalue('sel_cam[]'),form.getvalue('tl_date'),form.getvalue('fps'),form.getvalue('dim'),form.getvalue('text_pos'),form.getvalue('wat_pos'),extra_text,logo,logo_pos)
+      exit()
+
+   # DELETE CUSTOM VIDEO (AJAX CALL)
+   if cmd == 'delete_custom_video':
+      vid = form.getvalue('vid')
+      delete_video(vid)
       exit()
 
    #CUSTOM LOGOS  (AJAX CALL)       
@@ -267,11 +275,31 @@ def controller(json_conf):
       delete_multiple_detection(detections,json_conf)
       exit()
 
+   #Get a frame or create all of them 
+   if(cmd == 'get_frame'):
+      fr_id = form.getvalue('fr')
+      sd_vid = form.getvalue('sd_video_file')
+      print(get_frame(fr_id,sd_vid))
+      exit()
+   
+   #Add new a frame from HD image with x & y
+   if(cmd == 'crop_frame'):
+      fr_id = form.getvalue('fr_id')
+      x = form.getvalue('x')
+      y = form.getvalue('y')
+      sd_video_file = form.getvalue('sd_video_file')
+      real_add_frame(json_conf,sd_video_file,fr_id,x,y)
+      exit() 
+
+
    if cmd == 'add_frame':
       add_frame_ajax(json_conf,form)
       exit()
    if cmd == 'update_frame_ajax':
       update_frame_ajax(json_conf,form)
+      exit()
+   if cmd == "update_multiple_frames_ajax":
+      update_multiple_frames_ajax(json_conf,form)
       exit()
    if cmd == 'update_hd_cal_ajax':
       update_hd_cal_ajax(json_conf,form)
@@ -281,6 +309,9 @@ def controller(json_conf):
       exit()
    if cmd == 'clone_cal':
       clone_cal(json_conf,form)
+      exit()
+   if cmd == 'clone_meteor_cal':
+      clone_meteor_cal(json_conf,form)
       exit()
    if cmd == 'custom_fit':
       custom_fit(json_conf,form)
@@ -351,6 +382,10 @@ def controller(json_conf):
    bottom = stf[1]
    top = top.replace("{TOP}", nav_html)
 
+   if cmd is not None and "man" in cmd:
+      template = template.replace("<!--manred-->", "<script src=\"/pycgi/manreduce.js?\"></script>")
+
+
    obs_name = json_conf['site']['obs_name']
    op_city =  json_conf['site']['operator_city']
    op_state = json_conf['site']['operator_state']
@@ -366,7 +401,7 @@ def controller(json_conf):
    extra_html = ""
 
    #CUSTOM VIDEOS (LIST)
-   if cmd== 'video_tools':
+   if cmd== 'video_tools': 
       video_tools(json_conf,form) 
    
    #Custom logos (uploaded by user)
@@ -470,7 +505,7 @@ def custom_logos(json_conf,form):
    header_out += "<h1>Custom Logos</h1></div>"
    
    header_out += '<div id="main_container" class="container-fluid h-100 mt-4 lg-l">'
-   header_out += '<div class="alert alert-info" style="max-width: 900px;margin: 0 auto 2rem;""><b>We STRONGLY recommand using clean PNG images (ideally semi-transparent) with the following max dimensions:</b>'
+   header_out += '<div class="alert alert-info" style="max-width: 950px;margin: 0 auto 2rem;""><b>We STRONGLY recommand using clean PNG images (ideally semi-transparent) with the following max dimensions:</b>'
    header_out += '<ul style="border-bottom: 1px solid rgba(255,255,255,.1);padding-bottom: 1rem;margin-bottom: 0;">'
    header_out += '<li> <b>height < 250px</b> and <b>width < 400px</b> for your <b>1920x1080</b> videos</li>' 
    header_out += '<li> <b>height < 170px</b> and <b>width < 270px</b> for your <b>1280x720</b> videos</li>'
@@ -489,7 +524,7 @@ def custom_logos(json_conf,form):
    #Get the existing logos
    all_logos = sorted(glob.glob(LOGOS_PATH + "*.*"), key=os.path.getmtime, reverse=True)
    for logo in all_logos:
-      header_out += "<div class='col-lg-2 col-md-3 norm mb-3'>"
+      header_out += "<div class='col-lg-3 col-md-3 norm mb-3'>"
       header_out += "<a class='mtt img-link nop' href='"+logo+"'>"
       header_out += "<img class='img-fluid ns ' src='" + logo + "'/>"
       header_out += "</a></div>"
@@ -527,7 +562,8 @@ def video_tools(json_conf,form):
          all_vids_out += "<div class='preview col-lg-2 col-md-3 norm  mb-3'>"
          all_vids_out += "<a class='mtt vid-link nop' href='"+vid+"' title='Play the Video'>"
          all_vids_out += "<img class='img-fluid ns lz' src='" + vid.replace('.mp4','.png') + "'/>"
-         all_vids_out += "</a><span>" + date + " - Cam#" + camid +" - " +  length + "</span></div>"
+         all_vids_out += "</a><span>" + date + " - Cam#" + camid +" - " +  length + "</span>"
+         all_vids_out += "<button class='btn btn-danger btn-sm mt-1 delete_video' data-rel="+vid+"><i class='icon-delete'></i></button></div>"
          vid_counter+=1
 
 
@@ -598,9 +634,11 @@ def video_tools(json_conf,form):
    header_out += "<h1>"+str(vid_counter)+" videos found</h1>"
    header_out += "<div class='d-flex'><button class='btn btn-primary mr-3' id='create_timelapse' style='text-transform: initial;'><span class='icon-youtube'></span> Generate Timelapse Video</button></div></div>"
    
-   #Get Operator info
-   operator = get_operator_info()
-
+   #Get Default Parameters
+   params = get_video_job_default_parameters()
+   params = params['param']
+   #print(params['extra_text'])
+ 
    #Get Custom Logos
    all_logos = sorted(glob.glob(LOGOS_PATH + "*.*"), key=os.path.getmtime, reverse=True)
    out_put_all_logos = ''
@@ -608,9 +646,19 @@ def video_tools(json_conf,form):
       out_put_all_logos += logo + "|"
 
    print(header_out)
-   print("<input type='hidden' name='operator_info' value='"+operator['name'] + ', ' + operator['obs_name']+ ', ' + operator['city'] + ', ' + operator['state']+ ', ' + operator['country'] +"'/>")  
+   # Parameters 
+   print("<input type='hidden' name='def_fps' value='"+str(params['fps']) +"'/>")  
+   print("<input type='hidden' name='def_dim' value='"+str(params['dim']) +"'/>")  
+   print("<input type='hidden' name='def_wat_pos' value='"+params['wat_pos'] +"'/>")  
+   print("<input type='hidden' name='def_text_pos' value='"+params['text_pos'] +"'/>")  
+   print("<input type='hidden' name='def_logo_pos' value='"+params['logo_pos'] +"'/>")  
+   print("<input type='hidden' name='def_extra_text' value='"+params['extra_text'] +"'/>")  
+   print("<input type='hidden' name='def_extra_logo' value='"+params['extra_logo'] +"'/>")  
+
+   #Other Params 
    print("<input type='hidden' name='cam_ids' value='"+out_put_all_cam_ids+"'/>")
    print("<input type='hidden' name='logos' value='"+str(out_put_all_logos)+"'/>")
+   print("<input type='hidden' name='delete_after_days' value='"+str(DELETE_VIDS_AFTER_DAYS)+"'/>")
    print("<div class='gallery gal-resize row text-center text-lg-left mt-4'>")
    print(processing_vids)
    print(all_vids_out)

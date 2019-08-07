@@ -104,28 +104,30 @@ def reduce_fit(this_poly,field, cal_params, cal_params_file, fit_img, json_conf,
    total_stars = len(cal_params['cat_image_stars'])
    avg_res = total_res/total_stars
 
+   movie =0
    show_img = cv2.resize(this_fit_img, (0,0),fx=.5, fy=.5)
    cn = str(tries)
    cnp = cn.zfill(10)
    desc = field + " res: " + str(img_res) 
    cv2.putText(this_fit_img, desc, (int(50), int(50)),cv2.FONT_HERSHEY_SIMPLEX, 2, (255,255,255), 1)
-   if (field == 'xpoly' or field == 'ypoly'): 
-      if img_res > 5:
-         if tries % 1 == 0:
-            cv2.imwrite("/mnt/ams2/fitmovies/fr" + str(cnp) + ".png", this_fit_img)
-      else:
-         if tries % 5 == 0:
-            cv2.imwrite("/mnt/ams2/fitmovies/fr" + str(cnp) + ".png", this_fit_img)
-   else: 
-      if img_res > .3:
-         if tries % 1 == 0:
-            cv2.imwrite("/mnt/ams2/fitmovies/fr" + str(cnp) + ".png", this_fit_img)
-      elif .08 < img_res < .3 :
-         if tries % 5 == 0:
-            cv2.imwrite("/mnt/ams2/fitmovies/fr" + str(cnp) + ".png", this_fit_img)
+   if movie == 1:
+      if (field == 'xpoly' or field == 'ypoly'): 
+         if img_res > 5:
+            if tries % 1 == 0:
+               cv2.imwrite("/mnt/ams2/fitmovies/fr" + str(cnp) + ".png", this_fit_img)
+         else:
+            if tries % 5 == 0:
+               cv2.imwrite("/mnt/ams2/fitmovies/fr" + str(cnp) + ".png", this_fit_img)
       else: 
-         if tries % 1 == 0:
-            cv2.imwrite("/mnt/ams2/fitmovies/fr" + str(cnp) + ".png", this_fit_img)
+         if img_res > .3:
+            if tries % 1 == 0:
+               cv2.imwrite("/mnt/ams2/fitmovies/fr" + str(cnp) + ".png", this_fit_img)
+         elif .08 < img_res < .3 :
+            if tries % 5 == 0:
+               cv2.imwrite("/mnt/ams2/fitmovies/fr" + str(cnp) + ".png", this_fit_img)
+         else: 
+            if tries % 1 == 0:
+               cv2.imwrite("/mnt/ams2/fitmovies/fr" + str(cnp) + ".png", this_fit_img)
    #cv2.imshow('pepe', this_fit_img)
    #cv2.waitKey(1)
    #cv2.imshow('pepe', show_img)
@@ -224,7 +226,7 @@ json_conf = load_json_file("../conf/as6.json")
 
 
 cal_params_file = sys.argv[1]
-
+os.system("./autoCal.py cfit_hdcal " + cal_params_file)
 print(cal_params_file)
 cal_params = load_json_file(cal_params_file)
 total_res = 0
@@ -245,5 +247,7 @@ minimize_poly_params_fwd(cal_params_file, cal_params,json_conf)
 
 cmd = "./XYtoRAdecAzEl.py az_grid " + cal_params_file + ">/tmp/mike.txt 2>&1"
 print(cmd)
+os.system(cmd)
+cmd = "./autoCal.py cal_index"
 os.system(cmd)
 

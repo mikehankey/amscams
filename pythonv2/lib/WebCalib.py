@@ -20,6 +20,9 @@ from lib.ImageLib import mask_frame,stack_frames, adjustLevels, upscale_to_hd, m
 from lib.CalibLib import radec_to_azel, clean_star_bg, get_catalog_stars, find_close_stars, XYtoRADec, HMS2deg, AzEltoRADec, define_crop_box
 from lib.UtilLib import check_running, calc_dist, angularSeparation, bound_cnt
 
+
+  
+
 def update_frame_ajax(json_conf, form):
    
    sd_video_file = form.getvalue("sd_video_file")
@@ -27,30 +30,35 @@ def update_frame_ajax(json_conf, form):
    new_x = int(float(form.getvalue("new_x")))
    new_y = int(float(form.getvalue("new_y")))
    
+   mrf = sd_video_file.replace(".mp4", "-reduced.json")
+   mr = load_json_file(mrf)      
+
    #Temporary but necessary
    try:
-      mrf = sd_video_file.replace(".mp4", "-reduced.json")
-      mr = load_json_file(mrf)   
       mr['metframes'][fn]['hd_x'] = int(new_x)
       mr['metframes'][fn]['hd_y'] = int(new_y)
    except Exception: 
-      #os.system("cd /home/ams/amscams/pythonv2/; ./reducer3.py " + sd_video_file + "> /mnt/ams2/tmp/rrr.txt")
       os.system("cd /home/ams/amscams/pythonv2/; ./reducer3.py dm " + sd_video_file + "> /mnt/ams2/tmp/rrr.txt")
       mrf = sd_video_file.replace(".mp4", "-reduced.json")
       mr = load_json_file(mrf)   
-      mr = load_json_file(mrf)
       mr['metframes'][fn]['hd_x'] = int(new_x)
       mr['metframes'][fn]['hd_y'] = int(new_y)
 
    mr['metframes'][fn]['hd_x'] = int(new_x)
    mr['metframes'][fn]['hd_y'] = int(new_y)
    save_json_file(mrf, mr)
+
+   # this will make new thumbs
    # this will update all values (ra,dec etc) and make new thumbs from new point. 
    resp = {}
    resp['msg'] = "new frame added."
    resp['new_frame'] = mr['metframes'][fn]
-   print(json.dumps(resp))
+
+   #Twice otherwice it doesn't work
    os.system("cd /home/ams/amscams/pythonv2/; ./reducer3.py cm " + mrf + "> /mnt/ams2/tmp/rrr.txt")
+   os.system("cd /home/ams/amscams/pythonv2/; ./reducer3.py cm " + mrf + "> /mnt/ams2/tmp/rrr.txt")   
+
+   print(json.dumps(resp))
 
 
 def add_frame_ajax( json_conf, form):
@@ -58,8 +66,7 @@ def add_frame_ajax( json_conf, form):
    hdm_y = 1.875
 
    sd_video_file = form.getvalue("sd_video_file")
-   new_fn = form.getvalue("fn")
-
+   new_fn = form.getvalue("fr") 
 
    prev_fn = str(int(new_fn) - 1)
    next_fn = str(int(new_fn) + 1)
@@ -86,10 +93,12 @@ def add_frame_ajax( json_conf, form):
       #print("FCC:", fcc, metconf['sd_seg_len'], metconf['sd_acl_poly'])
       est_x = int(first_x) + (metconf['x_dir_mod'] * (metconf['sd_seg_len']*fcc)) + (metconf['sd_acl_poly'] * (fcc**2))
       est_y = (metconf['sd_m']*est_x)+metconf['sd_b']
-      sd_cx = est_x
-      sd_cy = est_y
-      est_x = int(est_x *hdm_x)
-      est_y = int(est_y *hdm_y)
+      #sd_cx = est_x
+      #sd_cy = est_y
+      sd_cx = last_x
+      sd_cy = last_y
+      est_x = int(sd_cx *hdm_x)
+      est_y = int(sd_cy *hdm_y)
 
    elif str(next_fn) in metframes:
       # this frame exists before any others so need to add est in reverse. 
@@ -106,8 +115,10 @@ def add_frame_ajax( json_conf, form):
       est_y = (metconf['sd_m']*est_x)+metconf['sd_b']
       sd_cx = est_x
       sd_cy = est_y
-      est_x = int(est_x * hdm_x)
-      est_y = int(est_y * hdm_y)
+      sd_cx = last_x
+      sd_cy = last_y
+      est_x = int(sd_cx * hdm_x)
+      est_y = int(sd_cy * hdm_y)
 
    if new_fn not in metframes:
       metframes[new_fn] = {}
@@ -116,6 +127,10 @@ def add_frame_ajax( json_conf, form):
       metframes[new_fn]['hd_y'] = est_y
       metframes[new_fn]['w'] = 5
       metframes[new_fn]['h'] = 5
+      metframes[new_fn]['sd_x'] = sd_cx
+      metframes[new_fn]['sd_y'] = sd_cy
+      metframes[new_fn]['sd_w'] = 6
+      metframes[new_fn]['sd_h'] = 6
       metframes[new_fn]['sd_cx'] = sd_cx
       metframes[new_fn]['sd_cy'] = sd_cy
       metframes[new_fn]['ra'] = 0
@@ -149,12 +164,15 @@ def add_frame_ajax( json_conf, form):
 
    mr['metframes'] = metframes
    save_json_file(mrf, mr)
+   print("SAVED HERE ")
+   print(mrf)
    os.system("cd /home/ams/amscams/pythonv2/; ./reducer3.py cm " + mrf + "> /mnt/ams2/tmp/rrr.txt")
    mr = load_json_file(mrf )
    resp = {}
    resp['msg'] = "new frame added."
    resp['newframe'] = mr['metframes'][new_fn] 
    print(json.dumps(resp))
+   os.system("cd /home/ams/amscams/pythonv2/; ./reducer3.py cm " + mrf + "> /mnt/ams2/tmp/rrr.txt")
 
 
 def remove_dupe_cat_stars(paired_stars):
@@ -169,6 +187,21 @@ def remove_dupe_cat_stars(paired_stars):
    return(new_paired_stars)
 
 
+def clone_meteor_cal(json_conf, form):
+   print("Clone Meteor Cal.")
+   file = form.getvalue("file")
+   prefix =  file.split("/")[-1][0:30]
+   red_file = file.replace("-stacked.png", "-reduced.json") 
+   if cfe(red_file) == 1:
+      red_data = load_json_file(red_file)
+      if "cal_params" in red_data:
+         print("Cloning", prefix)
+         new_dir = "/mnt/ams2/cal/freecal/" + prefix + "/" 
+         os.system("mkdir " + new_dir)
+         new_file = new_dir + prefix + "-calparams.json"
+         save_json_file(new_file, red_data['cal_params'])
+
+
 def clone_cal(json_conf, form):
    print("Clone Cal.")
    file = form.getvalue("file")
@@ -180,7 +213,7 @@ def clone_cal(json_conf, form):
          print("Cloning", prefix)
          new_dir = "/mnt/ams2/cal/freecal/" + prefix + "/" 
          os.system("mkdir " + new_dir)
-         new_file = new_dir + prefix + "-calparams.json"
+         new_file = new_dir + prefix + "-stacked-calparams.json"
          save_json_file(new_file, red_data['cal_params'])
          hd_stack = red_data['hd_video_file']
          hd_stack = hd_stack.replace(".mp4", "-stacked.png") 
@@ -240,7 +273,7 @@ def sat_cap(json_conf, form):
          print("no merge needed...", stack_file, next_stack_file)
          # set it up
 
-def man_reduce_canvas(frame_num,thumbs,file,cal_params_file):
+def man_reduce_canvas(frame_num,thumbs,file,cal_params_file,red_data):
    rand = time.time()
    c = 0 
    jstxt = "<script> var imgFiles = new Array(); \n "
@@ -270,7 +303,8 @@ def man_reduce_canvas(frame_num,thumbs,file,cal_params_file):
       <div id="info_panel"></div>
    """)
    #extra_html = "<script>var stars = [];\n" 
-   extra_html = "<script src=../js/manreduce.js?" + str(rand) + "></script>"
+   extra_html = ""
+   #extra_html = "<script src=manreduce.js?" + str(rand) + "></script>"
    extra_html = extra_html + "<script>\n   show_frame_image('" + str(frame_num) + "','" + frame_base + "','prev');\n</script>"
 
    extra_html = extra_html + """
@@ -290,8 +324,9 @@ def man_reduce_canvas(frame_num,thumbs,file,cal_params_file):
    </div>
 
    """
-   extra_html = extra_html.replace("{MY_IMAGE}", half_stack_img)
+   half_stack_img= red_data['sd_video_file'].replace(".mp4", "-half-stack.png")
 
+   extra_html = extra_html.replace("{MY_IMAGE}", half_stack_img)
    return(extra_html)
 
 def calc_frame_time(video_file, frame_num):
@@ -375,7 +410,8 @@ def man_reduce(json_conf,form):
       #print("<img src=" + frame + "><br>" + str(frame_num) + " " + frame_num_str)
       #print("<a href=webUI.py?cmd=man_reduce&scmd=2&file=" + file + "&frame=" + prev_frame + "> Prev </a>")
       #print("<a href=webUI.py?cmd=man_reduce&scmd=2&file=" + file + "&frame=" + next_frame + "> Next  </a>")
-      extra = man_reduce_canvas(frame_num, thumbs,file,cal_params_file)
+      extra = man_reduce_canvas(frame_num, thumbs,file,cal_params_file, meteor_red)
+      print(extra)
       return(extra)
 
 def test_star(cnt_img, fname=None):
@@ -474,12 +510,19 @@ def check_make_half_stack(sd_file,hd_file,meteor_reduced):
 
 
    half_stack_file = sd_file.replace("-stacked", "-half-stack")
+
+
    if True :
    #if cfe(half_stack_file) == 0:
       if hd_file != 0:
          if cfe(hd_file) == 1:
             img = cv2.imread(hd_file)
             img = cv2.resize(img, (0,0),fx=.5, fy=.5)
+            sd_img = cv2.imread(sd_file)
+            sd_img = cv2.resize(sd_img, (960,540))
+            blend_image = cv2.addWeighted(img, .6, sd_img, .4, 0)
+            img = blend_image
+            #print("BLENDING")
          else:
             img = cv2.imread(sd_file)
             img = cv2.resize(img, (960,540))
@@ -2428,6 +2471,10 @@ def reduce_meteor_ajax(json_conf,meteor_json_file, cal_params_file, show = 0):
    for fn in cmp_imgs:
       cv2.imwrite(prefix  + str(fn) + ".png", cmp_imgs[fn])    
 
+   
+   mfd_file = meteor_json_file.replace(".json", "-reduced.json")
+   os.system("cd /home/ams/amscams/pythonv2/; ./reducer3.py mfd " + mfd_file + " > /dev/null")
+   os.system("cd /home/ams/amscams/pythonv2/; ./reducer3.py cm " + mfd_file + "> /dev/null")
 
    print(json.dumps(response))
   
@@ -3119,10 +3166,10 @@ def reduce_meteor_new(json_conf,form):
 
    template = template.replace("{%RED_TABLE%}", red_table)
    template = template.replace("{%STAR_TABLE%}", stars_table)
-
+ 
    light_curve_file = sd_video_file.replace('.mp4','-lightcurve.png')
    if(isfile(light_curve_file)):
-      template = template.replace("{%LIGHT_CURVE%}", '<a class="img-link d-block m-2 nop" href="'+light_curve_file+'"><img alt="" src="'+light_curve_file+'"></a>')
+      template = template.replace("{%LIGHT_CURVE%}", '<a class="d-block nop text-center img-link-n" href="'+light_curve_file+'"><img  src="'+light_curve_file+'" class="mt-2 img-fluid"></a>')
    else:
       template = template.replace("{%LIGHT_CURVE%}", "<div class='alert error mt-4'>Light Curve file not found</div>")
 
@@ -4375,6 +4422,7 @@ def show_cat_stars(json_conf,form):
    child = 0
    cal_params = None
    hd_stack_file = form.getvalue("hd_stack_file")
+   points = form.getvalue("points")
    type = form.getvalue("type")
    points = form.getvalue("points")
    video_file = form.getvalue("video_file")
@@ -4385,6 +4433,16 @@ def show_cat_stars(json_conf,form):
       cv2.imwrite(hd_stack_file, hd_stack_img)
    # check if this meteor file has been custom fit and if it has use that info.
    meteor_red_file = video_file.replace(".mp4", "-reduced.json")
+
+   # check if there are zero stars selected and zero in cat_img
+   if cfe(meteor_red_file) == 1 and "reduced" in meteor_red_file:
+      meteor_red = load_json_file(meteor_red_file)
+      if points is None :
+         mvf = meteor_red_file.replace("-reduced.json", ".mp4")
+         cmd = "cd /home/ams/amscams/pythonv2/; ./autoCal.py imgstars " + mvf + " > /mnt/ams2/tmp/trs.txt"
+         #print(cmd)
+         os.system(cmd)
+
    meteor_mode = 0
    if cfe(meteor_red_file) == 1 and "reduced" in meteor_red_file:
       meteor_red = load_json_file(meteor_red_file)
@@ -4426,7 +4484,7 @@ def show_cat_stars(json_conf,form):
                if "cat_image_stars" not in cal_params:
                   video_json_file = video_file.replace(".mp4", ".json")
                   cmd = "cd /home/ams/amscams/pythonv2/; ./autoCal.py imgstars " + video_json_file + " > /mnt/ams2/tmp/trs.txt"
-                  #os.system(cmd)
+                  os.system(cmd)
                elif len(cal_params['cat_image_stars']) == 0:
                   video_json_file = video_file.replace(".mp4", ".json")
                   cmd = "cd /home/ams/amscams/pythonv2/; ./autoCal.py imgstars " + video_json_file + " > /mnt/ams2/tmp/trs.txt"
@@ -4453,7 +4511,6 @@ def show_cat_stars(json_conf,form):
       else:
          cal_params_file = cal_params_file_orig
 
-   points = form.getvalue("points")
    star_points = []
    if cfe(hd_stack_file) == 0:
       bad_hd = 1      

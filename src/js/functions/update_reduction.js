@@ -37,34 +37,39 @@ function update_reduction_on_canvas_and_table(json_resp) {
         var square_size = 6;
         var _time = v[0].split(' ');
   
-        // Thumb	#	Time	X/Y - W/H	Max PX	RA/DEC	AZ/EL
-        table_tbody_html+= '<tr id="fr_'+frame_id+'" data-org-x="'+v[2]+'" data-org-y="'+v[3]+'"><td><div class="st" style="background-color:'+all_colors[i]+'"></div></td>'
-        table_tbody_html+= '<td><img alt="Thumb #'+frame_id+'" src='+thumb_path+' width=50 height=50 class="img-fluid select_meteor"/></td>';
+        // Thumb	#	Time	X/Y - W/H	Max PX	RA/DEC	AZ/EL 
+        table_tbody_html+= '<tr id="fr_'+frame_id+'" data-org-x="'+v[2]+'" data-org-y="'+v[3]+'"><td><div class="st" hidden style="background-color:'+all_colors[i]+'"></div></td>'
+        table_tbody_html+= '<td><img alt="Thumb #'+frame_id+'" src='+thumb_path+'?c='+Math.random()+' width="50" height="50" class="img-fluid smi select_meteor" style="border-color:'+all_colors[i]+'"/></td>';
         table_tbody_html+= '<td>'+frame_id+'</td><td>'+_time[1]+'</td><td>'+v[7]+'&deg;/'+v[8]+'&deg;</td><td>'+v[9]+'&deg;/'+v[10]+'&deg;</td><td>'+ parseFloat(v[2])+'/'+parseFloat(v[3]) +'</td><td>'+ v[4]+'x'+v[5]+'</td>';
         table_tbody_html+= '<td>'+v[6]+'</td>';
         table_tbody_html+= '<td><a class="btn btn-danger btn-sm delete_frame"><i class="icon-delete"></i></a></td>';
 
         if(i==0) {
+            // <a title="Add a frame" class="btn btn-primary btn-sm btn-mm add_f" data-rel="'+ (frame_id-1) +'"><i class="icon-plus"></i></a>
             // We add a "+" before and after on if necessary
-            table_tbody_html+= '<td class="position-relative"><a class="btn btn-success btn-sm select_meteor"><i class="icon-target"></i></a><a title="Add a frame" class="btn btn-primary btn-sm btn-mm add_f" data-rel="'+ (frame_id-1) +'"><i class="icon-plus"></i></a>';
+            table_tbody_html+= '<td class="position-relative"><a class="btn btn-success btn-sm select_meteor"><i class="icon-target"></i></a>';
 
+            /*
             if(all_frame_ids.indexOf((frame_id+1))==-1) {
                 table_tbody_html+= '<a class="btn btn-primary btn-sm btn-pp add_f" title="Add a frame" data-rel="'+ (frame_id+1) +'"><i class="icon-plus"></i></a></td>';
             } 
+            */
 
             table_tbody_html+= '</td>';
 
         } else {
             // We add a "+" after only if we don't have the next frame in all_frame_ids
+            /*
             if(all_frame_ids.indexOf((frame_id+1))==-1) {
                 table_tbody_html+= '<td class="position-relative"><a class="btn btn-success btn-sm select_meteor"><i class="icon-target"></i></a><a title="Add a frame" class="btn btn-primary btn-sm btn-pp add_f" data-rel="'+ (frame_id+1) +'"><i class="icon-plus"></i></a></td>';
             } else {
+                */
                 table_tbody_html+= '<td class="position-relative"><a class="btn btn-success btn-sm select_meteor"><i class="icon-target"></i></a></td>';
-            }
+            //}
         }
     
 
-        // Add Rectangle
+        // Add Rectangle on canvas
         canvas.add(new fabric.Rect({
             fill: 'rgba(0,0,0,0)', 
             strokeWidth: 1, 
@@ -74,7 +79,8 @@ function update_reduction_on_canvas_and_table(json_resp) {
             width: 10,
             height: 10 ,
             selectable: false,
-            type: 'reduc_rect'
+            type: 'reduc_rect',
+            id: 'fr_' + frame_id
         }));
 
     });
@@ -98,7 +104,7 @@ function remove_reduction_objects_from_canvas() {
      
  }
 
-function update_reduction_only() {
+function update_reduction_only(callback='') {
     var cmd_data = {
         video_file:       main_vid,          // Defined on the page 
         cmd: 'update_red_info_ajax'
@@ -123,12 +129,15 @@ function update_reduction_only() {
                 
                 // Update Add frames
                 setup_add_frames();
-
-
+ 
             }
 
             reduction_table_actions();
- 
+            
+            if(callback!='') {
+              callback();
+            }
+
             loading_done();
  
         }, error: function(data) {
@@ -151,19 +160,19 @@ function test_missing_thumb() {
     var we_try_how_many_times = 10;
     var cnt = 0;
     $('#reduc-tab table img').each(function() {
-        // 50 = normal size
-	    if($(this).width()!==50) {
+
+        // 50 = normal size => 48 without border
+	    if($(this).width()!==48) {
             rows_with_missing_thumbs.push($(this).closest('tr').attr('id'));
             // Replace with loading
             $(this).attr('data-src',$(this).attr('src')).attr('src','/pycgi/dist/img/anim_logo.svg');
         }
+    
+    
     });
 
     if(rows_with_missing_thumbs.length!=0) {
-        // We try to load it 
-        //console.log("We try to load " )
-        //console.log(rows_with_missing_thumbs)
-
+        // We try to load it  
         try_again = setInterval(function(){ 
             
             if(rows_with_missing_thumbs.length==0 || cnt>=we_try_how_many_times) {

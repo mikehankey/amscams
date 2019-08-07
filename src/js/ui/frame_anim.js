@@ -7,6 +7,8 @@ var timeFromLastUpdate;
 var frameNumber; 
 var playing; 
 
+jQuery.fn.reverse = [].reverse;
+
 // Modal for selector
 function addAnimModalTemplate($allframes) {
     var realDur = parseFloat($('#dur').text());
@@ -41,7 +43,7 @@ function addAnimModalTemplate($allframes) {
 function frame_anim() { 
     
     $allframes = $('table img.select_meteor');
-    $allframes = $.grep($allframes, function (n, i) {return n;}, true);
+    //$allframes = $allframes.reverse();
     totalFrames = $allframes.length;
     
     addAnimModalTemplate($allframes);
@@ -68,6 +70,7 @@ function frame_anim() {
     $('#tot_f').text(totalFrames);
     $('#cur_sp').text('x1');
 
+    // Inpur range for animation speed
     $('#mar').val(0).on('input', function () { 
         var val = parseInt($(this).val());
  
