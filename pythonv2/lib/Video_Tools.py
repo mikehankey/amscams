@@ -206,18 +206,21 @@ def get_hd_frames_from_HD_repo(camID,date,start_date,end_date,limit_frame=False)
             if(cur_date >= start_date_obj and cur_date <= end_date_obj):
                 real_frames.append(f)
 
-                    #Check temporary folder to store the frames of all the videos
-        tmppath = r''+TMP_IMG_HD_SRC_PATH
-        if not os.path.exists(tmppath):
-            os.makedirs(tmppath)
-        else:
-            #Clean the directory (maybe necessary)
-            files = glob.glob(tmppath+'/*')
-            for f in files:
-                os.remove(f)
+                #Check temporary folder to store the frames of all the videos
+                tmppath = r''+TMP_IMG_HD_SRC_PATH
+                if not os.path.exists(tmppath):
+                    os.makedirs(tmppath)
+                else:
+                    #Clean the directory (maybe necessary)
+                    files = glob.glob(tmppath+'/*')
+                    for f in files:
+                        os.remove(f)
+                
+                return(sorted(real_frames), tmppath)  
+
     else:
         print('The Cron job for the HD frames didnt run properly - see Video_HD_Images_Cron.py')
-
+        return False
 
 
 
