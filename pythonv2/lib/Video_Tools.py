@@ -2,6 +2,7 @@ import os
 import glob
 import subprocess 
 import datetime
+import time
 from lib.VIDEO_VARS import * 
 from os import listdir, remove
 from os.path import isfile, join, exists
@@ -31,6 +32,14 @@ def get_meteor_time(_file):
     fn = fn.split(".")[0]
     fn = fn.split("_")
     return fn[3] + '_' + fn[4] 
+
+
+#Get date & time (python object from file name)
+def get_meteor_date_and_time_object(_file):
+    fn = _file.split("/")[-1] 
+	fn = fn.split('_',6)
+    date = fn[0] + '/' + fn[1] + '/' + fn[2]   +  ' ' + fn[3] + ':' + fn[4]
+    return time.strptime(date, "%Y/%m/%d %H:%M")
 
 #Return nothing or the HD stack that correspond to the same time/cam of the time passed as parameters
 #ex:
@@ -157,19 +166,43 @@ def get_sd_frames(camID,date,limit_frame=False):
 
 
 
+
+
+
+#NEW STUFF HERE TO TAKE start_date & end_date into account and SEARCH in HD FRAMES FIRST
+#We test if we have at least one image under HD_FRAMES_PATH that matches the cam_id
+#And that has a date <= start_date
+def get_hd_frames2(camID,date,start_date,end_date,limit_frame=False):
+    cur_path = HD_FRAMES_PATH
+    res = True
+
+    #test if we have at least one file name - YYYY_DD_MM_HH_ii_SS[_000_]CAM_ID.mp4 under HD_FRAMES_PA 
+    test = [f for f in listdir(cur_path) if f.startswith(date) and f.endswith(camID+'.mp4') and isfile(join(cur_path, f))]
+
+    if test:
+        # We need to get all of them from start_date to end_date
+        frames = [f for f in listdir(cur_path) if camID in f and in f and "-tn" not in f and "-night" not in f and "trim" not in f and isfile(join(cur_path, f))]
+        
+        start_date_obj = time.strptime(start_date, "%Y/%m/%d %H:%M")
+        end_date_obj = time.strptime(end_date, "%Y/%m/%d %H:%M")
+
+        for f in frames:
+            cur_date = get_meteor_date_and_time_object(f)
+
+            # We test if the frame is within the proper period
+            if(cur_date >= start_date_obj and cur_date <= end_date_obj):
+                print(f)
+
+                
+
+
+
 #Input! camID, date
 #Ouput: list of HD frames found for this date or get_sd_frames if no HD frame has been found
 #ex: get_hd_frames('010040','2019_07_08')
 def get_hd_frames(camID,date,start_date,end_date,limit_frame=False):
     cur_path = IMG_HD_SRC_PATH
     res= True
-
-
-    #NEW STUFF HERE TO TAKE start_date & end_date into account
-
-    #We test if we have at least one image under HD_FRAMES_PATH that matches the cam_id
-    #And that has a date <= start_date
-
 
     #test if we have at least one file name - YYYY_DD_MM_HH_ii_SS[_000_]CAM_ID.mp4
     test = [f for f in listdir(cur_path) if f.startswith(date) and f.endswith(camID+'.mp4') and isfile(join(cur_path, f))]

@@ -75,3 +75,7 @@ from os.path import isfile, join, exists
 # INPUT => result of get_all_HD_pic() for a certain date
 #       => eventual stack if found
 # OUTPUT => video with frame blended with stack if at night and stack found
+
+
+
+get_hd_frames2(1038,"2019/08/06 06:40","2019/08/06 06:40","2019/08/06 12:40"):
