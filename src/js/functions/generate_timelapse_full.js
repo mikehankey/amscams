@@ -185,7 +185,7 @@ function add_timelapse_full_modal() {
                                 </div> \
                                 <div class="col-sm-4"> \
                                     <div class="form-group mb-2"> \
-                                        <label class="col-form-label"><b>Max. Duration</b></label> \
+                                        <label class="col-form-label"><b>Duration</b></label> \
                                         <select class="form-control" name="duration"> \
                                             <option value="6">6 Hours</option> \
                                             <option value="8">8 Hours</option> \
@@ -205,7 +205,7 @@ function add_timelapse_full_modal() {
                             <div class="row">\
                                 <div class="col-sm-4">\
                                     <div class="form-group  mb-1"> \
-                                        <label for="fps" class=" col-form-label"><b>FPS</b></label> \
+                                        <label for="fps" class=" col-form-label"><b>FPS</b> <i>frames per seconds</i></label> \
                                             <select name="fps" class="form-control"> \
                                                 <option value="1">1 fps</option> \
                                                 <option value="5">5 fps</option> \
