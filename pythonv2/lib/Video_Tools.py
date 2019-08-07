@@ -37,7 +37,7 @@ def get_meteor_time(_file):
 #Get date & time (python object from file name)
 def get_meteor_date_and_time_object(_file):
     fn = _file.split("/")[-1] 
-	fn = fn.split('_',6)
+    fn = fn.split("_",6)
     date = fn[0] + '/' + fn[1] + '/' + fn[2]   +  ' ' + fn[3] + ':' + fn[4]
     return time.strptime(date, "%Y/%m/%d %H:%M")
 
@@ -193,7 +193,7 @@ def get_hd_frames2(camID,date,start_date,end_date,limit_frame=False):
             if(cur_date >= start_date_obj and cur_date <= end_date_obj):
                 print(f)
 
-                
+
 
 
 
