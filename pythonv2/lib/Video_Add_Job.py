@@ -2,6 +2,7 @@ import glob, os, os.path, sys
 import subprocess 
 import cgitb
 import json
+from datetime import datetime, timedelta
 from pathlib import Path
 from os import listdir,makedirs
 from os.path import isfile, join, exists
@@ -56,7 +57,18 @@ def add_video_job(name,cam_ids,date,time,duration,fps,dim,text_pos,wat_pos,extra
     res = {}
     ok_list = ''
     bad_list = '' 
-  
+
+    # Get start date & time
+    # and end date & time
+    start_date = datetime.strptime(date + ' ' time, '%Y/%m/%d %H:%M')
+    end_date = start_date + timedelta(hours=int(duration))
+
+    print('START DATE ')
+    print(str(start_date))
+    print('END DATE ')
+    print(str(end_date))
+    exit()
+
 
     for cam_id in cam_ids:
 
