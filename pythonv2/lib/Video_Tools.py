@@ -185,9 +185,14 @@ def get_hd_frames_from_HD_repo(camID,date,start_date,end_date,limit_frame=False)
    
 
     if test is True:
+        print('TEST IS TRUE')
+
         # We need to get all of them from start_date to end_date
         frames = [f for f in listdir(cur_path) if camID in f and "-tn" not in f and "-night" not in f and "trim" not in f and isfile(join(cur_path, f))]
         
+        print('FRAMES')
+        print(frames)
+
         start_date_obj = time.strptime(start_date, "%Y/%m/%d %H:%M")
         end_date_obj = time.strptime(end_date, "%Y/%m/%d %H:%M")
 
