@@ -214,12 +214,13 @@ def get_hd_frames_from_HD_repo(camID,date,start_date,end_date,limit_frame=False)
 
                 # Here we eventually blend with the corresponding SD stack 
                 stack = get_stack_from_HD_frame(cur_path + '/' + f)
-                print('STACK ' + stack)
+                if(stack is not None):
+                    print('ONE STACK FOUND')
+                    blend(cur_path + '/' + f,40,cur_path + '/' + f)
 
                 # Copy the frame to tmppath 
                 shutil.copy2(cur_path + '/' + f, tmppath + '/' + f)
-                
-        exit()
+   
 
         if(real_frames is not None):
             return(sorted(real_frames), tmppath)  
