@@ -74,13 +74,13 @@ from os.path import isfile, join, exists
 # OUTPUT => video with frame blended with stack if at night and stack found
 
 
-
-array_of_frames, path  = get_hd_frames_from_HD_repo("10038","2019/08/06","2019/08/06 06:40","2019/08/06 12:40")
+ 
+array_of_frames, path  = get_hd_frames_from_HD_repo("10038","2019/08/07","2019/08/07 06:40","2019/08/07 08:40")
 print("FRAMES")
 print(array_of_frames) 
 if(array_of_frames is None):
     print('NO FRAME FOUND') 
 else:
-    where_path = add_info_to_frames(array_of_frames, path, "2019/08/06", "10038", "This is a test", "/mnt/ams2/CUSTOM_LOGOS/1.png","tl","1920:1080", "bl","tr")
-    t = create_vid_from_frames(array_of_frames, where_path, "2019_08_06",  "10038","30")
+    where_path = add_info_to_frames(array_of_frames, path, "2019/08/07", "10038", "This is a test", "/mnt/ams2/CUSTOM_LOGOS/1.png","tl","1920:1080", "bl","tr")
+    t = create_vid_from_frames(array_of_frames, where_path, "2019_08_07",  "10038","30")
     print(t)
