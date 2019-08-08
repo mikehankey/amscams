@@ -182,7 +182,7 @@ def get_sd_frames_from_HD_video(hd_video_file, camID):
     print('camID ' + camID)
     print('date_and_time ' + date_and_time)
 
-    potential_videos = [f for f in listdir(sd_path) if camID in f and date_and_time in f and isfile(join(cur_path, f))]
+    potential_videos = [f for f in listdir(sd_path) if camID in f and date_and_time in f and isfile(join(sd_path, f))]
     print(potential_videos)
 
 
