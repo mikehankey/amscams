@@ -190,7 +190,7 @@ def get_sd_frames_from_HD_video(hd_video_file, camID):
     tmppath = r''+TMP_IMG_HD_SRC_PATH
     
     # First we seach under /mnt/ams2/SD/proc2/[DATE]/images where we only have .png
-    potential_frames = [f for f in listdir(sd_path+'/images') if camID in f and "-tn" not in f and date_and_time in f]
+    potential_frames = [f for f in listdir(sd_path+'/images') if camID in f and ".png" in f and "-tn" not in f and date_and_time in f]
     if(potential_frames is not None and len(potential_frames)!=0):
         print('FRAME FOUND UNDER '+ sd_path+'/images/' +  potential_frames[0])
         output_name = '/To_blend_' + potential_frames[0]  
@@ -205,7 +205,7 @@ def get_sd_frames_from_HD_video(hd_video_file, camID):
         print('date_and_time' + date_and_time)
         print('NOT FOUND IN ' +  sd_path+'/images')
 
-    potential_frames = [f for f in listdir(sd_path+'/passed') if camID in f and "-tn" not in f and date_and_time in f]
+    potential_frames = [f for f in listdir(sd_path+'/passed') if camID in f  and ".png" in f and "-tn" not in f and date_and_time in f]
     if(potential_frames is not None and len(potential_frames)!=0):
         print('FRAME FOUND UNDER '+ sd_path+'/passed/' +  potential_frames[0])
         output_name = '/To_blend_' + potential_frames[0]  
@@ -217,7 +217,7 @@ def get_sd_frames_from_HD_video(hd_video_file, camID):
         print('date_and_time' + date_and_time)
         print('NOT FOUND IN ' +  sd_path+'/passed')
 
-    potential_frames = [f for f in listdir(sd_path+'/failed') if camID in f and "-tn" not in f and date_and_time in f]
+    potential_frames = [f for f in listdir(sd_path+'/failed') if camID in f  and ".png" in f and "-tn" not in f and date_and_time in f]
     if(potential_frames is not None and len(potential_frames)!=0):
         print('FRAME FOUND UNDER '+ sd_path+'/failed/' +  potential_frames[0])
         output_name = '/To_blend_' + potential_frames[0] 
