@@ -50,9 +50,15 @@ def batch_reduce(json_conf, day = None):
                   continue
           else:
              print("Skipping already done", json_file)     
-             vid = json_file.replace("-reduced.json", ".mp4")
-             cmd = "./reducer3.py cm " + vid
-             os.system(cmd)
+             red_data = load_json_file(json_file)
+             if "azs" not in red_data['metconf']: 
+                # update the file!
+                print("AZS MISSING!")
+                vid = json_file.replace("-reduced.json", ".mp4")
+                cmd = "./reducer3.py cm " + vid
+                os.system(cmd)
+             else:
+                print("This file is good to go!")
 
 
 
