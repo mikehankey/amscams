@@ -195,6 +195,7 @@ def get_sd_frames_from_HD_video(hd_video_file, camID):
         print('FRAME FOUND UNDER '+ sd_path+'/images/' +  potential_frames[0])
         output_name = '/To_blend_' + potential_frames[0]  
         cmd = 'ffmpeg -y -hide_banner -loglevel panic  -i '+sd_path+'/images'+'/'+potential_frames[0]+'  -vf scale='+HD_DIM + ' ' + tmppath  + output_name
+        output = subprocess.check_output(cmd, shell=True).decode("utf-8")
         print('WE RETURN ' +  output_name)
         print(cmd)
         print('***************')
@@ -209,6 +210,7 @@ def get_sd_frames_from_HD_video(hd_video_file, camID):
         print('FRAME FOUND UNDER '+ sd_path+'/passed/' +  potential_frames[0])
         output_name = '/To_blend_' + potential_frames[0]  
         cmd = 'ffmpeg -y -hide_banner -loglevel panic  -i '+sd_path+'/passed'+'/'+potential_frames[0]+'  -vf scale='+HD_DIM + ' ' + tmppath  + output_name
+        output = subprocess.check_output(cmd, shell=True).decode("utf-8")
         return output_name   
     else: 
         print('CAM ID ' + camID)
@@ -220,6 +222,7 @@ def get_sd_frames_from_HD_video(hd_video_file, camID):
         print('FRAME FOUND UNDER '+ sd_path+'/failed/' +  potential_frames[0])
         output_name = '/To_blend_' + potential_frames[0] 
         cmd = 'ffmpeg -y -hide_banner -loglevel panic  -i '+sd_path+'/failed'+'/'+potential_frames[0]+'  -vf scale='+HD_DIM + ' ' + tmppath  + output_name
+        output = subprocess.check_output(cmd, shell=True).decode("utf-8")
         return output_name   
     else: 
         print('CAM ID ' + camID)
