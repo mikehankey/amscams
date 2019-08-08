@@ -2228,6 +2228,9 @@ def print_css():
 
 def browse_day(day,cams_id,json_conf):
    day_files = get_day_files(day,cams_id,json_conf)
+   print(day_files)
+
+
    cc = 0
    all_files = []
    for base_file in sorted(day_files,reverse=True):
@@ -2259,10 +2262,6 @@ def browse_day(day,cams_id,json_conf):
    #For timelapse anim
    print("<input type='hidden' name='cur_date' value='"+str(day)+"'/>")
 
-  
-
-   print('DAY FILES')
-   print(day_files)
 
    for base_file in sorted(day_files,reverse=True):
 
