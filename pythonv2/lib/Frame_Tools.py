@@ -28,7 +28,7 @@ def update_multiple_frames_ajax(json_conf, form):
     all_frames_to_update = form.getvalue("frames") 
     
     #Why? In case of...
-    os.system("cd /home/ams/amscams/pythonv2/; ./reducer3.py dm " + sd_video_file + " > /mnt/ams2/tmp/rrr.txt")
+    #os.system("cd /home/ams/amscams/pythonv2/; ./reducer3.py dm " + sd_video_file + " > /mnt/ams2/tmp/rrr.txt")
     all_frames_to_update = json.loads(all_frames_to_update)
     mrf = sd_video_file.replace(".mp4", "-reduced.json")
     mr = load_json_file(mrf)
@@ -46,7 +46,7 @@ def update_multiple_frames_ajax(json_conf, form):
     save_json_file(mrf, mr)
     resp = {}
     resp['msg'] = "frames updated."  
-    os.system("cd /home/ams/amscams/pythonv2/; ./reducer3.py cm " + mrf + " > /mnt/ams2/tmp/rrr.txt") 
+    #os.system("cd /home/ams/amscams/pythonv2/; ./reducer3.py cm " + mrf + " > /mnt/ams2/tmp/rrr.txt") 
     os.system("cd /home/ams/amscams/pythonv2/; ./reducer3.py cm " + mrf + " > /mnt/ams2/tmp/rrr.txt") 
     print(json.dumps(resp))
  
