@@ -183,9 +183,8 @@ def get_sd_frames_from_HD_video(hd_video_file, camID):
         #cmd = 'ffmpeg -y -hide_banner -loglevel panic -i '+image2+' -i '+image1+' -filter_complex "[0:v]scale='+HD_DIM+'[scaled];[scaled]blend=all_mode=\'overlay\':all_opacity='+str(other_perc)+'[out]" -map "[out]" '+ output_file
         #
         tmppath = r''+TMP_IMG_HD_SRC_PATH
-        output_name = tmppath + '/To_blend_' + potential_videos[0] + '.png' 
-        cmd = 'ffmpeg -y -hide_banner -loglevel panic  -i '+sd_path+'/'+potential_videos[0]+' -vframes 1 -f image2  -vf scale='+HD_DIM + ' ' + output_name
-        print(cmd)
+        output_name = '/To_blend_' + potential_videos[0] + '.png' 
+        cmd = 'ffmpeg -y -hide_banner -loglevel panic  -i '+sd_path+'/'+potential_videos[0]+' -vframes 1 -f image2  -vf scale='+HD_DIM + ' '  tmppath  + output_name
         output = subprocess.check_output(cmd, shell=True).decode("utf-8")
         return output_name
     else:
@@ -240,21 +239,10 @@ def get_hd_frames_from_HD_repo(camID,date,start_date,end_date,limit_frame=False)
                 print('BEFORE FRAME TO BLEND')
                 frame_to_blend = get_sd_frames_from_HD_video(f, camID)
                 if(frame_to_blend is not False):
-                    print('TRYING TO BLEND ')
-                    print(cur_path + '/' + f)
-                    print('WITH')
-                    print(frame_to_blend)
                     f = blend(cur_path + '/' + f,frame_to_blend,40,cur_path + '/' + f)
-                else:
-                    # Because blend return the path with the file name
-                    f = cur_path + '/' + f
+                    f = TMP_IMG_HD_SRC_PATH + f
 
-                #stack = get_stack_from_HD_frame(cur_path + '/' + f)
-                #if(stack is not False):
-                #    print('ONE STACK FOUND')
-                #    f = blend(cur_path + '/' + f,stack,40,cur_path + '/' + f)
- 
-
+                 
                 # Copy the frame to tmppath 
                 print('COPY f ' + f)
                 print('TO ' +  tmppath + '/' + f)
