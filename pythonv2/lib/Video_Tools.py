@@ -174,8 +174,8 @@ def get_sd_frames(camID,date,limit_frame=False):
 # IMPORTANT: note that the seconds are different!
 def get_sd_frames_from_HD_video(hd_video_file, camID):
     date = get_meteor_date(hd_video_file)
-    date_and_time = date + " " + get_meteor_time(hd_video_file)
-    sd_path = IMG_SD_SRC_PATH +  date
+    date_and_time = date + "_" + get_meteor_time(hd_video_file)
+    sd_path = IMG_SD_SRC_PATH +  date + '/'
 
     print('WE SEARCH IN ' + sd_path)
     print('CRITERIA')
