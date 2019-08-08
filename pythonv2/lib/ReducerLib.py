@@ -342,6 +342,9 @@ def detect_from_thresh_diff(masked_frames, show = 0):
 
       ic = 0
       marked_image = gray_frame.copy()
+
+
+      print("CNTS:", len(cnts))
   
       for cnt in cnts:
          x,y,w,h,size,mx,my,max_val,intensity = pos_cnts[ic]
@@ -357,6 +360,7 @@ def detect_from_thresh_diff(masked_frames, show = 0):
          cv2.imshow('Detect From Thresh Diff', master_marked_image)
          cv2.waitKey(30)
       fc = fc + 1
+      print("FRAME:", fc)
    meteors = []
    for obj in objects:
       obj = clean_object(obj)
@@ -524,8 +528,8 @@ def detect_meteor(video_file, json_conf, show = 0):
    #dtd_meteors = []
    print("YO2") 
    dtd_meteors = detect_from_thresh_diff(masked_frames)
+   exit()
    print("YO3") 
-
 
    orig_meteors = []
    if "meteor_frame_data" in red_data:
@@ -733,7 +737,7 @@ def detect_meteor(video_file, json_conf, show = 0):
       metframes[fn]['cnt_thumb'] = prefix + str(fn) + ".png"
 
    metframes = update_intensity(metframes, sd_frames)
-   metframes, metconf = minimize_start_len(metframes,sd_frames,metconf,show)
+   #metframes, metconf = minimize_start_len(metframes,sd_frames,metconf,show)
 
    red_data['metconf'] = metconf
    red_data['metframes'] = metframes
@@ -989,7 +993,7 @@ def detect_meteor(video_file, json_conf, show = 0):
    for key in metconf:
       print(key, metconf[key])
    metframes, metconf = clean_metframes(metframes,metconf,frames)
-   metframes, metconf = minimize_start_len(metframes,frames,metconf,show)
+   #metframes, metconf = minimize_start_len(metframes,frames,metconf,show)
 
    print("METFRAME LEN:", len(metframes))
    mfd, metframes,metconf = metframes_to_mfd(metframes, metconf, video_file,json_conf)
@@ -1078,6 +1082,7 @@ def clean_metframes(mf, metconf, frames):
    return(mf, metconf) 
 
 def minimize_start_len(metframes,frames,metconf,show=0):
+   exit()
    this_poly = np.zeros(shape=(2,), dtype=np.float64)
    if "sd_seg_len" in metconf:
       this_poly[0] = np.float64(metconf['sd_seg_len'])
@@ -1722,15 +1727,15 @@ def meteor_test_cm_gaps(object):
       #print("CM:", object['oid'], fn, last_frame, cm)
       if last_frame > 0:
          last_frame_diff = fn - last_frame - 1
-      print("LAST FRAME DIFF:", last_frame_diff) 
+      #print("LAST FRAME DIFF:", last_frame_diff) 
       if last_frame > 0 and last_frame_diff < 2:
          cm = cm + 1
          nomo = 0
-         print("YES CM!", fn, cm, nomo)
+         #print("YES CM!", fn, cm, nomo)
          if cm > max_cm:
             max_cm = cm
       else:
-         print("NO CM!", fn, cm, nomo)
+         #print("NO CM!", fn, cm, nomo)
          if last_frame != 0:
             nomo = fn - last_frame 
          
@@ -1827,8 +1832,15 @@ def metframes_to_mfd(metframes, metconf, sd_video_file,json_conf):
    hd_segs = []
    xs = []
    ys = []
+   azs = []
+   els = []
+   ras = []
+   decs = []
+   times = []
+
    hdxs = []
    hdys = []
+   fcc = 0
    for fn in metframes:
       frame_time,frame_time_str = calc_frame_time(sd_video_file, fn)
       metframes[fn]['frame_time'] = frame_time_str
@@ -1850,6 +1862,12 @@ def metframes_to_mfd(metframes, metconf, sd_video_file,json_conf):
       metframes[fn]['dec'] = dec
       metframes[fn]['az'] = az
       metframes[fn]['el'] = el
+      azs.append(az)
+      els.append(el)
+      ras.append(ra)
+      decs.append(dec)
+      ftime = fcc / 25
+      times.append(ftime)
       meteor_frame_data.append((frame_time_str,fn,int(metframes[fn]['hd_x']),int(metframes[fn]['hd_y']),int(metframes[fn]['w']),int(metframes[fn]['h']),int(metframes[fn]['max_px']),float(metframes[fn]['ra']),float(metframes[fn]['dec']),float(metframes[fn]['az']),float(metframes[fn]['el']) ))
       if last_hd_x is not None:
          hd_seg_len = calc_dist((last_hd_x, last_hd_y), (metframes[fn]['hd_x'], metframes[fn]['hd_y']))
@@ -1857,9 +1875,14 @@ def metframes_to_mfd(metframes, metconf, sd_video_file,json_conf):
          hd_segs.append(hd_seg_len)
       last_hd_x = metframes[fn]['hd_x']
       last_hd_y = metframes[fn]['hd_y']
-
+      fcc = fcc + 1
    med_seg_len = float(np.median(hd_segs))
    metconf['hd_segs'] = hd_segs
+   metconf['azs'] = azs
+   metconf['els'] = els
+   metconf['ras'] = ras
+   metconf['decs'] = decs
+   metconf['times'] = times
    #metconf['med_seg_len'] = med_seg_len 
       
    return(meteor_frame_data, metframes, metconf)
