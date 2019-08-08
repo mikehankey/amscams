@@ -166,6 +166,19 @@ def get_sd_frames(camID,date,limit_frame=False):
         return([] , cur_path)
 
 
+# Get first frame of the equivalent of the SD video from an HD video
+# ex:
+# from /mnt/ams2/HD/2019_08_06_09_09_40_000_010037.mp4
+# we get the video
+#      /mnt/ams2/SD/2019_08_06/2019_08_06_09_40_45_000_010037.mp4
+# IMPORTANT: note that the seconds are different!
+def get_sd_frames_from_HD_video(hd_video_file, camID):
+    date = get_meteor_date(hd_video_file)
+    date_and_time = date + " " + get_meteor_time(hd_video_file)
+    sd_path = IMG_SD_SRC_PATH +  date
+
+    potential_videos = [f for f in listdir(sd_path) if camID in f and date_and_time in f and isfile(join(cur_path, f))]
+    print(potential_videos)
 
 
 
@@ -212,11 +225,20 @@ def get_hd_frames_from_HD_repo(camID,date,start_date,end_date,limit_frame=False)
             if(cur_date >= start_date_obj and cur_date <= end_date_obj):
                 real_frames.append(f)
 
-                # Here we eventually blend with the corresponding SD stack 
-                stack = get_stack_from_HD_frame(cur_path + '/' + f)
-                if(stack is not False):
-                    print('ONE STACK FOUND')
-                    blend(cur_path + '/' + f,stack,40,cur_path + '/' + f)
+                # Here we eventually blend with the corresponding SD video
+                # The SD videos are under /mnt/ams2/SD/proc2/[2019_08_08]/[2019_08_08_04_58_53_000_010042.mp4]
+                # and blend it with the HD frame
+                print('BEFORE FRAME TO BLEND')
+                frame_to_blend = get_sd_frames_from_HD_video(f, camID)
+                exit()
+                
+                #stack = get_stack_from_HD_frame(cur_path + '/' + f)
+                #if(stack is not False):
+                #    print('ONE STACK FOUND')
+                #    f = blend(cur_path + '/' + f,stack,40,cur_path + '/' + f)
+
+
+                
 
                 # Copy the frame to tmppath 
                 shutil.copy2(cur_path + '/' + f, tmppath + '/' + f)
