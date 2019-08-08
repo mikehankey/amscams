@@ -206,7 +206,7 @@ def get_sd_frames_from_HD_video(hd_video_file, camID):
 
     potential_frames = [f for f in listdir(sd_path+'/failed') if camID in f and date_and_time in f and isfile(join(sd_path, f))]
     if(potential_frames is not None and len(potential_frames)!=0):
-         print('FRAME FOUND UNDER /failed ' +  potential_frames[0])
+        print('FRAME FOUND UNDER /failed ' +  potential_frames[0])
         output_name = '/To_blend_' + potential_frames[0] + '.png' 
         cmd = 'ffmpeg -y -hide_banner -loglevel panic  -i '+sd_path+'/failed'+'/'+potential_videos[0]+'  -vf scale='+HD_DIM + ' ' + tmppath  + output_name
         return output_name   
