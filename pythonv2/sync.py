@@ -80,7 +80,8 @@ def create_update_events (day, json_conf ):
 
    station_meteors = {}
    for station in all_meteor_index:
-      station_meteors[station] = all_meteor_index[station][day]
+      if day in all_meteor_index[station]:
+         station_meteors[station] = all_meteor_index[station][day]
 
    for station in station_meteors:
       for station_meteor in station_meteors[station]:
@@ -371,13 +372,14 @@ def find_events_for_day(day,json_conf):
    stations = {}
    all_meteors[my_station_id] = load_json_file("/mnt/ams2/cal/hd_images/meteor_index.json")
    for station in sync_urls['sync_urls']:
-      all_meteors[station] = load_json_file("/mnt/ams2/stations/" + station + "/meteor_index.json")
+      all_meteors[station] = load_json_file("/mnt/ams2/stations/data/" + station + "_meteor_index.json")
       stations[station] = {}
    if day not in all_meteors[my_station_id]:
       print("There are no meteors for this day!")
       exit()
    my_meteors = all_meteors[my_station_id][day]
    mse = {}
+   confirmed_meteors = [] 
    for meteor in my_meteors:
       print(meteor)
       red_meteor = meteor.replace(".json", "-reduced.json")
@@ -393,6 +395,14 @@ def find_events_for_day(day,json_conf):
             print(mse[meteor])
             save_json_file(meteor_red, red_data)
             print("SAVED:", meteor_red)
+      else:
+         mse, status = check_for_event(day, stations, meteor, all_meteors, mse)
+         print("Meteor not reduced.", status)
+         if status == 1:
+            confirmed_meteors.append(meteor)
+
+   for conf in confirmed_meteors:
+      print("METEOR:", conf)
 
    print("SAVED: /mnt/ams2/stations/data/" + day + "-multi_station_data.json")
    save_json_file("/mnt/ams2/stations/data/" + day + "-multi_station_data.json", mse)
@@ -405,7 +415,8 @@ def sync_ms_json(day, mse, sync_urls):
       print("Need to sync content for my meteor: ", my_meteor)
       for station in mse[my_meteor]['obs']: 
          if station != my_station:
-            url = sync_urls['sync_urls'][station]
+            url = sync_urls['sync_urls'][station]['sync_url']
+            print("URL:", url)
             st_video_url = mse[my_meteor]['obs'][station]['sd_video_file']
             fn = st_video_url.split("/")[-1]
             fn = fn.replace(".json", "-reduced.json") 
@@ -417,13 +428,14 @@ def sync_ms_json(day, mse, sync_urls):
             if cfe(lfn) == 0:
             #if True:
                sync_url = url + st_video_url
+
                print("NEED TO SYNC URL:", sync_url)
                cmd = "wget \"" + sync_url + "\" -O " + lfn 
                os.system(cmd)
             else: 
                print("Already have:", url + st_video_url)
   
-def solve_events(day, json_conf):
+def solve_events(day, mse, sync_urls ):
    remote_host = API_HOST
    my_station = json_conf['site']['ams_id']
    event_file = "/mnt/ams2/stations/data/" + day  + "_events.json"
