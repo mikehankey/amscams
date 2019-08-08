@@ -242,12 +242,10 @@ def get_hd_frames_from_HD_repo(camID,date,start_date,end_date,limit_frame=False)
                 print('FRAME TO BLEND ' +  frame_to_blend)
                 if(frame_to_blend is not False):
                     f = blend(cur_path + '/' + f,frame_to_blend,40,cur_path + '/' + f)
-                    
+                    shutil.copy2(f, tmppath + '/' + f)
+                else:
+                    shutil.copy2(cur_path+ f, tmppath + '/' + f)
                  
-                # Copy the frame to tmppath 
-                print('COPY f ' + f)
-                print('TO ' +  tmppath + '/' + f)
-                shutil.copy2(f, tmppath + '/' + f)
    
 
         if(real_frames is not None):
