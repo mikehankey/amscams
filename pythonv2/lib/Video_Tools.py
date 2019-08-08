@@ -230,6 +230,7 @@ def get_hd_frames_from_HD_repo(camID,date,start_date,end_date,limit_frame=False)
                 # and blend it with the HD frame
                 print('BEFORE FRAME TO BLEND')
                 frame_to_blend = get_sd_frames_from_HD_video(f, camID)
+                print(frame_to_blend)
                 exit()
                 
                 #stack = get_stack_from_HD_frame(cur_path + '/' + f)
