@@ -3468,7 +3468,14 @@ if cmd == 'imgstars' or cmd == 'imgstars_strict':
       else:
          file = meteor_json['sd_stack'].replace(".png", "-stacked.png")
    print("CAL VARS:", cal_params['center_az'], cal_params['center_el'], cal_params['position_angle'], cal_params['pixscale'])
-   cat_image_stars, img, no_match, res_err, match_per,cp_data = get_stars_from_image(file, json_conf, masks, cal_params, show, strict)
+   if "cat_image_stars" in cal_params:
+      if len(cal_params['cat_image_stars']) == 0:
+         cat_image_stars, img, no_match, res_err, match_per,cp_data = get_stars_from_image(file, json_conf, masks, cal_params, show, strict)
+      else:
+         print("We already have stars.")
+         exit()
+   else:
+      cat_image_stars, img, no_match, res_err, match_per,cp_data = get_stars_from_image(file, json_conf, masks, cal_params, show, strict)
    cal_params['total_res_px'] = res_err
    cal_params['total_res_deg'] = ((float(res_err) * float(cal_params['pixscale'])) / 60) / 60
    print("MATCH/NO MATCH: ", len(cat_image_stars), len(no_match))
