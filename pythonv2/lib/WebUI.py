@@ -926,7 +926,7 @@ def meteor_index(json_conf, form):
             fn = meteor_file.split("/")[-1]
             fn = fn.replace(".json", "")
             video_file = meteor_file.replace(".json", ".mp4")
-            link = "<a href='/pycgi/webUI.py?cmd=reduce&video_file=" + video_file + "' class='btn btn-primary'>" + get_meteor_time(video_file) + "</a>"
+            link = "<a href='/pycgi/webUI.py?cmd=reduce&video_file=" + video_file + "' class='btn btn-primary'>" + get_meteor_time(video_file) + " - " + hd_cam + "</a>"
 
             if mi[day][meteor_file]['total_res_deg'] > .5:
                   color = "lv1"

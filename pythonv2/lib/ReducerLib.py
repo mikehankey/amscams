@@ -733,7 +733,7 @@ def detect_meteor(video_file, json_conf, show = 0):
       metframes[fn]['cnt_thumb'] = prefix + str(fn) + ".png"
 
    metframes = update_intensity(metframes, sd_frames)
-   metframes, metconf = minimize_start_len(metframes,sd_frames,metconf,show)
+   #metframes, metconf = minimize_start_len(metframes,sd_frames,metconf,show)
 
    red_data['metconf'] = metconf
    red_data['metframes'] = metframes

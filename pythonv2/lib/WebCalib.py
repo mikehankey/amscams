@@ -38,11 +38,12 @@ def update_frame_ajax(json_conf, form):
       mr['metframes'][fn]['hd_x'] = int(new_x)
       mr['metframes'][fn]['hd_y'] = int(new_y)
    except Exception: 
-      os.system("cd /home/ams/amscams/pythonv2/; ./reducer3.py dm " + sd_video_file + "> /mnt/ams2/tmp/rrr.txt")
-      mrf = sd_video_file.replace(".mp4", "-reduced.json")
-      mr = load_json_file(mrf)   
-      mr['metframes'][fn]['hd_x'] = int(new_x)
-      mr['metframes'][fn]['hd_y'] = int(new_y)
+      #os.system("cd /home/ams/amscams/pythonv2/; ./reducer3.py dm " + sd_video_file + "> /mnt/ams2/tmp/rrr.txt")
+      #mrf = sd_video_file.replace(".mp4", "-reduced.json")
+      #mr = load_json_file(mrf)   
+      #mr['metframes'][fn]['hd_x'] = int(new_x)
+      #mr['metframes'][fn]['hd_y'] = int(new_y)
+      what = 1
 
    mr['metframes'][fn]['hd_x'] = int(new_x)
    mr['metframes'][fn]['hd_y'] = int(new_y)
@@ -56,7 +57,7 @@ def update_frame_ajax(json_conf, form):
 
    #Twice otherwice it doesn't work
    os.system("cd /home/ams/amscams/pythonv2/; ./reducer3.py cm " + mrf + "> /mnt/ams2/tmp/rrr.txt")
-   os.system("cd /home/ams/amscams/pythonv2/; ./reducer3.py cm " + mrf + "> /mnt/ams2/tmp/rrr.txt")   
+   #os.system("cd /home/ams/amscams/pythonv2/; ./reducer3.py cm " + mrf + "> /mnt/ams2/tmp/rrr.txt")   
 
    print(json.dumps(resp))
 
@@ -4258,7 +4259,7 @@ def free_cal(json_conf,form):
       stack_file = "/mnt/ams2/cal/freecal/" + dr + "/" + sfn 
 
       if cfe(stack_file) == 0:
-         frames = load_video_frames(input_file, json_conf, 200)
+         frames = load_video_frames(input_file, json_conf, 1000)
          stack_file, stack_img = stack_frames(frames, input_file, 1)
          input_file = input_file.replace(".mp4", ".png") 
       else:
