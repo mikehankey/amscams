@@ -181,7 +181,7 @@ def get_sd_frames_from_HD_video(hd_video_file, camID):
     if(potential_videos is not None and len(potential_videos)!=0):
         # We extract the first frame of this video and we return it
         tmppath = r''+TMP_IMG_HD_SRC_PATH
-        cmd = 'ffmpeg -y -hide_banner -loglevel panic -i '+sd_path+'/'+potential_videos[0]+' -vframes 1 -f image2 '+ hd_video_file + '_to_blend' + f + '.png' 
+        cmd = 'ffmpeg -y -hide_banner -loglevel panic -i '+sd_path+'/'+potential_videos[0]+' -vframes 1 -f image2 '+ hd_video_file + '_to_blend' + potential_videos[0] + '.png' 
         output = subprocess.check_output(cmd, shell=True).decode("utf-8")
         return  hd_video_file + '_to_blend' + vid_out + '.png' 
     else:
