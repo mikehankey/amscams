@@ -196,6 +196,10 @@ def get_sd_frames_from_HD_video(hd_video_file, camID):
         output_name = '/To_blend_' + potential_frames[0] + '.png' 
         cmd = 'ffmpeg -y -hide_banner -loglevel panic  -i '+sd_path+'/images'+'/'+potential_videos[0]+'  -vf scale='+HD_DIM + ' ' + tmppath  + output_name
         return output_name
+    else: 
+        print('CAM ID ' + camID)
+        print('date_and_time' + date_and_time)
+        print('NOT FOUND IN ' + +sd_path+'/images')
 
     potential_frames = [f for f in listdir(sd_path+'/passed') if camID in f and date_and_time in f and isfile(join(sd_path, f))]
     if(potential_frames is not None and len(potential_frames)!=0):
@@ -203,6 +207,10 @@ def get_sd_frames_from_HD_video(hd_video_file, camID):
         output_name = '/To_blend_' + potential_frames[0] + '.png' 
         cmd = 'ffmpeg -y -hide_banner -loglevel panic  -i '+sd_path+'/passed'+'/'+potential_videos[0]+'  -vf scale='+HD_DIM + ' ' + tmppath  + output_name
         return output_name   
+    else: 
+        print('CAM ID ' + camID)
+        print('date_and_time' + date_and_time)
+        print('NOT FOUND IN ' + +sd_path+'/passed')
 
     potential_frames = [f for f in listdir(sd_path+'/failed') if camID in f and date_and_time in f and isfile(join(sd_path, f))]
     if(potential_frames is not None and len(potential_frames)!=0):
@@ -210,6 +218,10 @@ def get_sd_frames_from_HD_video(hd_video_file, camID):
         output_name = '/To_blend_' + potential_frames[0] + '.png' 
         cmd = 'ffmpeg -y -hide_banner -loglevel panic  -i '+sd_path+'/failed'+'/'+potential_videos[0]+'  -vf scale='+HD_DIM + ' ' + tmppath  + output_name
         return output_name   
+    else: 
+        print('CAM ID ' + camID)
+        print('date_and_time' + date_and_time)
+        print('NOT FOUND IN ' + +sd_path+'/failed')
 
     potential_videos = [f for f in listdir(sd_path) if camID in f and date_and_time in f and isfile(join(sd_path, f))]
     if(potential_videos is not None and len(potential_videos)!=0):
