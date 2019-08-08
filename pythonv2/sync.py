@@ -520,9 +520,34 @@ def check_solutions(day, json_conf):
 
    print("TOTAL EVENTS:", len(rpts))
    print("TOTAL ORBITS:", len(orbits))
-      
-   
     
+def load_red_data(station_id, sd_video_file, day, master_idx = None):
+   if master_idx is None:
+      master_idx = {}
+
+   if station_id not in master_idx:
+      js_file = "/mnt/ams2/stations/data/" + station_id + "_meteor_index.json"
+      idx = load_json_file(js_file)
+      master_idx[station_id] = idx[day]
+
+   red_data = master_idx[station_id][sd_video_file]
+
+   return(red_data, master_idx) 
+  
+def prep_solve(day, json_conf):
+   print("Prep solve") 
+   events = load_json_file("/mnt/ams2/stations/data/" + day + "-multi_station_data.json")  
+   master_idx = {}
+   for ev in events:
+      print(ev)
+      for obs in events[ev]:
+         for station_id in events[ev][obs]:
+            print(station_id, events[ev][obs][station_id]['sd_video_file'])
+            red_data, master_idx = load_red_data(station_id, events[ev][obs][station_id]['sd_video_file'], day, master_idx )
+   print(master_idx)
+   
+if cmd == 'ps'or cmd == 'prep_solve':
+   prep_solve(sys.argv[2], json_conf) 
 if cmd == "ss":
    sync_stations( json_conf)
          
