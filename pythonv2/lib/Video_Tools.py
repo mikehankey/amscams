@@ -240,7 +240,7 @@ def get_hd_frames_from_HD_repo(camID,date,start_date,end_date,limit_frame=False)
                 frame_to_blend = get_sd_frames_from_HD_video(f, camID)
                 print('FRAME TO BLEND ' +  frame_to_blend)
                 if(frame_to_blend is not False):
-                frame_to_blend = TMP_IMG_HD_SRC_PATH + frame_to_blend
+                    frame_to_blend = TMP_IMG_HD_SRC_PATH + frame_to_blend
                     f2 = blend(cur_path + '/' + f,frame_to_blend,40,cur_path + '/' + f)
                     shutil.copy2(f2, tmppath + '/' + f)
                 else:
