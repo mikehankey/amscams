@@ -245,8 +245,9 @@ def get_hd_frames_from_HD_repo(camID,date,start_date,end_date,limit_frame=False)
                     print('WITH')
                     print(frame_to_blend)
                     f = blend(cur_path + '/' + f,frame_to_blend,40,cur_path + '/' + f)
-                    print('NEWLY CREATED : ')
-                    print(f)
+                else:
+                    # Because blend return the path with the file name
+                    f = cur_path + '/' + f
 
                 #stack = get_stack_from_HD_frame(cur_path + '/' + f)
                 #if(stack is not False):
@@ -255,7 +256,7 @@ def get_hd_frames_from_HD_repo(camID,date,start_date,end_date,limit_frame=False)
  
 
                 # Copy the frame to tmppath 
-                shutil.copy2(cur_path + '/' + f, tmppath + '/' + f)
+                shutil.copy2(f, tmppath + '/' + f)
    
 
         if(real_frames is not None):
