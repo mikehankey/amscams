@@ -169,26 +169,55 @@ def get_sd_frames(camID,date,limit_frame=False):
 # Get first frame of the equivalent of the SD video from an HD video
 # ex:
 # from /mnt/ams2/HD/2019_08_06_09_09_40_000_010037.mp4
-# we get the video
+# WE SEARCH FIRST UNDER 
+#   /mnt/ams2/SD/proc2/2019_08_06/images
+# IF WE DIDN'T FIND THE RIGHT IMAGE WE SEARCH UNDER
+#   /mnt/ams2/SD/proc2/2019_08_06/success
+# IF WE DIDN'T FIND THE RIGHT IMAGE WE SEARCH UNDER
+#   /mnt/ams2/SD/proc2/2019_08_06/success
+# IF WE DIDN'T FIND THE RIGHT IMAGE WE GET THE VIDEO 
 #      /mnt/ams2/SD/2019_08_06/2019_08_06_09_40_45_000_010037.mp4
-# IMPORTANT: note that the seconds are different!
+#      AND WE EXTRACT THE PROPER IMAGE
+# IMPORTANT: 
+# - the seconds are different in the file names
+# - we need to resize all the images to HD_DIM
 def get_sd_frames_from_HD_video(hd_video_file, camID):
     date = get_meteor_date(hd_video_file)
     date_and_time = date + "_" + get_meteor_time(hd_video_file)
+    
+    # sd_path = /mnt/ams2/SD/proc2/[DATE]/
     sd_path = IMG_SD_SRC_PATH +  date + '/'
+    tmppath = r''+TMP_IMG_HD_SRC_PATH
+    
+    # First we seach under /mnt/ams2/SD/proc2/[DATE]/images
+    potential_frames = [f for f in listdir(sd_path+'/images') if camID in f and date_and_time in f and isfile(join(sd_path, f))]
+    if(potential_frames is not None and len(potential_frames)!=0):
+        output_name = '/To_blend_' + potential_frames[0] + '.png' 
+        cmd = 'ffmpeg -y -hide_banner -loglevel panic  -i '+sd_path+'/images'+'/'+potential_videos[0]+'  -vf scale='+HD_DIM + ' ' + tmppath  + output_name
+        return output_name
+
+    potential_frames = [f for f in listdir(sd_path+'/success') if camID in f and date_and_time in f and isfile(join(sd_path, f))]
+    if(potential_frames is not None and len(potential_frames)!=0):
+        output_name = '/To_blend_' + potential_frames[0] + '.png' 
+        cmd = 'ffmpeg -y -hide_banner -loglevel panic  -i '+sd_path+'/success'+'/'+potential_videos[0]+'  -vf scale='+HD_DIM + ' ' + tmppath  + output_name
+        return output_name   
+
+    potential_frames = [f for f in listdir(sd_path+'/failed') if camID in f and date_and_time in f and isfile(join(sd_path, f))]
+    if(potential_frames is not None and len(potential_frames)!=0):
+        output_name = '/To_blend_' + potential_frames[0] + '.png' 
+        cmd = 'ffmpeg -y -hide_banner -loglevel panic  -i '+sd_path+'/success'+'/'+potential_videos[0]+'  -vf scale='+HD_DIM + ' ' + tmppath  + output_name
+        return output_name   
 
     potential_videos = [f for f in listdir(sd_path) if camID in f and date_and_time in f and isfile(join(sd_path, f))]
     if(potential_videos is not None and len(potential_videos)!=0):
         # We extract the first frame of this video and we return it with dimension = HD_DIM
-        #cmd = 'ffmpeg -y -hide_banner -loglevel panic -i '+image2+' -i '+image1+' -filter_complex "[0:v]scale='+HD_DIM+'[scaled];[scaled]blend=all_mode=\'overlay\':all_opacity='+str(other_perc)+'[out]" -map "[out]" '+ output_file
-        #
-        tmppath = r''+TMP_IMG_HD_SRC_PATH
         output_name = '/To_blend_' + potential_videos[0] + '.png' 
         cmd = 'ffmpeg -y -hide_banner -loglevel panic  -i '+sd_path+'/'+potential_videos[0]+' -vframes 1 -f image2  -vf scale='+HD_DIM + ' ' + tmppath  + output_name
         output = subprocess.check_output(cmd, shell=True).decode("utf-8")
         return output_name
-    else:
-        return False
+    
+    
+    return False
 
 
 #NEW STUFF HERE TO TAKE start_date & end_date into account and SEARCH in HD FRAMES FIRST
