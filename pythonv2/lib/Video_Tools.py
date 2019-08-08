@@ -182,13 +182,8 @@ def get_sd_frames_from_HD_video(hd_video_file, camID):
         # We extract the first frame of this video and we return it
         tmppath = r''+TMP_IMG_HD_SRC_PATH
         output_name = tmppath + '/To_blend_' + potential_videos[0] + '.png' 
-        #-y -hide_banner -loglevel panic 
-        cmd = 'ffmpeg -i '+sd_path+'/'+potential_videos[0]+' -vframes 1 -f image2 '+ output_name
+        cmd = 'ffmpeg -y -hide_banner -loglevel panic  -i '+sd_path+'/'+potential_videos[0]+' -vframes 1 -f image2 '+ output_name
         output = subprocess.check_output(cmd, shell=True).decode("utf-8")
-
-        print('OUT PUT ffmpeg ' + output)
-        print('FRAME TO BLEND FOUND ' + output_name)
-        print('FULL PATH ' + tmppath+"/"+output_name)
         return  tmppath+"/"+output_name
     else:
         return False
@@ -242,9 +237,12 @@ def get_hd_frames_from_HD_repo(camID,date,start_date,end_date,limit_frame=False)
                 print('BEFORE FRAME TO BLEND')
                 frame_to_blend = get_sd_frames_from_HD_video(f, camID)
                 if(frame_to_blend is not False):
+                    print('TRYING TO BLEND ')
+                    print(cur_path + '/' + f)
+                    print('WITH')
+                    print(frame_to_blend)
                     f = f = blend(cur_path + '/' + f,frame_to_blend,40,cur_path + '/' + f)
-                 
-                
+                  
                 #stack = get_stack_from_HD_frame(cur_path + '/' + f)
                 #if(stack is not False):
                 #    print('ONE STACK FOUND')
