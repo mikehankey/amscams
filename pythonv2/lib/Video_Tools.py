@@ -179,10 +179,13 @@ def get_sd_frames_from_HD_video(hd_video_file, camID):
 
     potential_videos = [f for f in listdir(sd_path) if camID in f and date_and_time in f and isfile(join(sd_path, f))]
     if(potential_videos is not None and len(potential_videos)!=0):
-        # We extract the first frame of this video and we return it
+        # We extract the first frame of this video and we return it with dimension = HD_DIM
+        #cmd = 'ffmpeg -y -hide_banner -loglevel panic -i '+image2+' -i '+image1+' -filter_complex "[0:v]scale='+HD_DIM+'[scaled];[scaled]blend=all_mode=\'overlay\':all_opacity='+str(other_perc)+'[out]" -map "[out]" '+ output_file
+        #
         tmppath = r''+TMP_IMG_HD_SRC_PATH
         output_name = tmppath + '/To_blend_' + potential_videos[0] + '.png' 
         cmd = 'ffmpeg -y -hide_banner -loglevel panic  -i '+sd_path+'/'+potential_videos[0]+' -vframes 1 -f image2 '+ output_name
+        print(cmd)
         output = subprocess.check_output(cmd, shell=True).decode("utf-8")
         return output_name
     else:
