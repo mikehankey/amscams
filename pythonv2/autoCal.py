@@ -275,6 +275,8 @@ def meteor_index(json_conf, extra_cmd = ""):
                      meteor_index[day][meteor]['ras'] = red_data['metconf']['ras']
                      meteor_index[day][meteor]['decs'] = red_data['metconf']['decs']
                      meteor_index[day][meteor]['times'] = red_data['metconf']['times']
+                  if "intensity" in red_data['metconf']:
+                     meteor_index[day][meteor]['intensity'] = red_data['metconf']['intensity']
                
                meteor_index[day][meteor]['center_az'] = red_data['cal_params']['center_az']
                meteor_index[day][meteor]['center_el'] = red_data['cal_params']['center_el']

@@ -1840,6 +1840,7 @@ def metframes_to_mfd(metframes, metconf, sd_video_file,json_conf):
 
    hdxs = []
    hdys = []
+   mags = []
    fcc = 0
    for fn in metframes:
       frame_time,frame_time_str = calc_frame_time(sd_video_file, fn)
@@ -1866,6 +1867,8 @@ def metframes_to_mfd(metframes, metconf, sd_video_file,json_conf):
       els.append(el)
       ras.append(ra)
       decs.append(dec)
+      if 'sd_intensity' in metframes[fn]:
+         mags.append(metframes[fn]['sd_intensity'])
       ftime = fcc / 25
       times.append(ftime)
       meteor_frame_data.append((frame_time_str,fn,int(metframes[fn]['hd_x']),int(metframes[fn]['hd_y']),int(metframes[fn]['w']),int(metframes[fn]['h']),int(metframes[fn]['max_px']),float(metframes[fn]['ra']),float(metframes[fn]['dec']),float(metframes[fn]['az']),float(metframes[fn]['el']) ))
@@ -1878,6 +1881,7 @@ def metframes_to_mfd(metframes, metconf, sd_video_file,json_conf):
       fcc = fcc + 1
    med_seg_len = float(np.median(hd_segs))
    metconf['hd_segs'] = hd_segs
+   metconf['intensity'] = mags 
    metconf['azs'] = azs
    metconf['els'] = els
    metconf['ras'] = ras

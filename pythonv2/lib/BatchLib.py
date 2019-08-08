@@ -51,7 +51,7 @@ def batch_reduce(json_conf, day = None):
           else:
              print("Skipping already done", json_file)     
              red_data = load_json_file(json_file)
-             if "azs" not in red_data['metconf']: 
+             if "intensity" not in red_data['metconf']: 
                 # update the file!
                 print("AZS MISSING!")
                 vid = json_file.replace("-reduced.json", ".mp4")
