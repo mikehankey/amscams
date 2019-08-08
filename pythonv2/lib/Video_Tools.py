@@ -242,8 +242,7 @@ def get_hd_frames_from_HD_repo(camID,date,start_date,end_date,limit_frame=False)
                 print('FRAME TO BLEND ' +  frame_to_blend)
                 if(frame_to_blend is not False):
                     f = blend(cur_path + '/' + f,frame_to_blend,40,cur_path + '/' + f)
-                    f = TMP_IMG_HD_SRC_PATH + f
-
+                    
                  
                 # Copy the frame to tmppath 
                 print('COPY f ' + f)
