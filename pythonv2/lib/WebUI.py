@@ -2261,8 +2261,8 @@ def browse_day(day,cams_id,json_conf):
 
   
 
-   print('DAY FILLES')
-   print(dayfiles)
+   print('DAY FILES')
+   print(day_files)
 
    for base_file in sorted(day_files,reverse=True):
 
