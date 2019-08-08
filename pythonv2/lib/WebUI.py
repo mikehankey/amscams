@@ -2274,7 +2274,7 @@ def browse_day(day,cams_id,json_conf):
       stack_file = stack_file_from_video(video_file)
       stack_file_tn = stack_file.replace(".png", "-tn.png") 
 
-      if day_files[base_file] == 'meteor':
+      if day_files[base_file] == 'meteor' or 'meteor' in base_file:
          htclass = "meteor"
       elif day_files[base_file] == 'failed':
          htclass = "fail"
