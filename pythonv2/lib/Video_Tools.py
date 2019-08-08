@@ -192,42 +192,42 @@ def get_sd_frames_from_HD_video(hd_video_file, camID):
     # First we seach under /mnt/ams2/SD/proc2/[DATE]/images where we only have .png
     potential_frames = [f for f in listdir(sd_path+'/images') if camID in f and ".png" in f and "-tn" not in f  and "-obj" not in f and date_and_time in f]
     if(potential_frames is not None and len(potential_frames)!=0):
-        print('FRAME FOUND UNDER '+ sd_path+'/images/' +  potential_frames[0])
+        #print('FRAME FOUND UNDER '+ sd_path+'/images/' +  potential_frames[0])
         output_name = '/To_blend_' + potential_frames[0]  
         cmd = 'ffmpeg -y -hide_banner -loglevel panic  -i '+sd_path+'/images'+'/'+potential_frames[0]+'  -vf scale='+HD_DIM + ' ' + tmppath  + output_name
         output = subprocess.check_output(cmd, shell=True).decode("utf-8")
-        print('WE RETURN ' +  output_name)
-        print(cmd)
-        print('***************')
+        #print('WE RETURN ' +  output_name)
+        #print(cmd)
+        #print('***************')
         return output_name
-    else: 
-        print('CAM ID ' + camID)
-        print('date_and_time' + date_and_time)
-        print('NOT FOUND IN ' +  sd_path+'/images')
+    #else: 
+        #print('CAM ID ' + camID)
+        #print('date_and_time' + date_and_time)
+        #print('NOT FOUND IN ' +  sd_path+'/images')
 
     potential_frames = [f for f in listdir(sd_path+'/passed') if camID in f  and ".png" in f and "-tn" not in f and "-obj" not in f and date_and_time in f]
     if(potential_frames is not None and len(potential_frames)!=0):
-        print('FRAME FOUND UNDER '+ sd_path+'/passed/' +  potential_frames[0])
+        #print('FRAME FOUND UNDER '+ sd_path+'/passed/' +  potential_frames[0])
         output_name = '/To_blend_' + potential_frames[0]  
         cmd = 'ffmpeg -y -hide_banner -loglevel panic  -i '+sd_path+'/passed'+'/'+potential_frames[0]+'  -vf scale='+HD_DIM + ' ' + tmppath  + output_name
         output = subprocess.check_output(cmd, shell=True).decode("utf-8")
         return output_name   
-    else: 
-        print('CAM ID ' + camID)
-        print('date_and_time' + date_and_time)
-        print('NOT FOUND IN ' +  sd_path+'/passed')
+    #else: 
+        #print('CAM ID ' + camID)
+        #print('date_and_time' + date_and_time)
+        #print('NOT FOUND IN ' +  sd_path+'/passed')
 
     potential_frames = [f for f in listdir(sd_path+'/failed') if camID in f  and ".png" in f and "-tn" not in f and "-obj" not in f and date_and_time in f]
     if(potential_frames is not None and len(potential_frames)!=0):
-        print('FRAME FOUND UNDER '+ sd_path+'/failed/' +  potential_frames[0])
+        #print('FRAME FOUND UNDER '+ sd_path+'/failed/' +  potential_frames[0])
         output_name = '/To_blend_' + potential_frames[0] 
         cmd = 'ffmpeg -y -hide_banner -loglevel panic  -i '+sd_path+'/failed'+'/'+potential_frames[0]+'  -vf scale='+HD_DIM + ' ' + tmppath  + output_name
         output = subprocess.check_output(cmd, shell=True).decode("utf-8")
         return output_name   
-    else: 
-        print('CAM ID ' + camID)
-        print('date_and_time' + date_and_time)
-        print('NOT FOUND IN ' +  sd_path+'/failed')
+    #else: 
+        #print('CAM ID ' + camID)
+        #print('date_and_time' + date_and_time)
+        #print('NOT FOUND IN ' +  sd_path+'/failed')
 
     potential_videos = [f for f in listdir(sd_path) if camID in f and date_and_time in f]
     if(potential_videos is not None and len(potential_videos)!=0):
