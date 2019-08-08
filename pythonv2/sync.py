@@ -407,8 +407,8 @@ def find_events_for_day(day,json_conf):
    print("SAVED: /mnt/ams2/stations/data/" + day + "-multi_station_data.json")
    save_json_file("/mnt/ams2/stations/data/" + day + "-multi_station_data.json", mse)
 
-   sync_ms_json(day, mse, sync_urls)
-   solve_events(day, mse, sync_urls)
+   #sync_ms_json(day, mse, sync_urls)
+   #solve_events(day, mse, sync_urls)
 
 def sync_ms_json(day, mse, sync_urls):
    for my_meteor in mse:
