@@ -178,7 +178,7 @@ def get_sd_frames_from_HD_video(hd_video_file, camID):
     sd_path = IMG_SD_SRC_PATH +  date + '/'
 
     potential_videos = [f for f in listdir(sd_path) if camID in f and date_and_time in f and isfile(join(sd_path, f))]
-    if(poential_videos is not None and len(poential_videos)!=0):
+    if(potential_videos is not None and len(potential_videos)!=0):
         # We extract the first frame of this video and we return it
         tmppath = r''+TMP_IMG_HD_SRC_PATH
         cmd = 'ffmpeg -y -hide_banner -loglevel panic -i '+sd_path+'/'+potential_videos[0]+' -vframes 1 -f image2 '+ hd_video_file + '_to_blend' + vid_out + '.png' 
