@@ -236,9 +236,9 @@ def get_hd_frames_from_HD_repo(camID,date,start_date,end_date,limit_frame=False)
                 # Here we eventually blend with the corresponding SD video
                 # The SD videos are under /mnt/ams2/SD/proc2/[2019_08_08]/[2019_08_08_04_58_53_000_010042.mp4]
                 # and blend it with the HD frame
-                print('BEFORE FRAME TO BLEND')
+                #print('BEFORE FRAME TO BLEND')
                 frame_to_blend = get_sd_frames_from_HD_video(f, camID)
-                print('FRAME TO BLEND ' +  frame_to_blend)
+                
                 if(frame_to_blend is not False):
                     frame_to_blend = TMP_IMG_HD_SRC_PATH + frame_to_blend
                     f2 = blend(cur_path + '/' + f,frame_to_blend,40,cur_path + '/' + f)
