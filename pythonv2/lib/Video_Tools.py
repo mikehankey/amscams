@@ -184,7 +184,7 @@ def get_sd_frames_from_HD_video(hd_video_file, camID):
         #
         tmppath = r''+TMP_IMG_HD_SRC_PATH
         output_name = '/To_blend_' + potential_videos[0] + '.png' 
-        cmd = 'ffmpeg -y -hide_banner -loglevel panic  -i '+sd_path+'/'+potential_videos[0]+' -vframes 1 -f image2  -vf scale='+HD_DIM + ' '  tmppath  + output_name
+        cmd = 'ffmpeg -y -hide_banner -loglevel panic  -i '+sd_path+'/'+potential_videos[0]+' -vframes 1 -f image2  -vf scale='+HD_DIM + ' ' + tmppath  + output_name
         output = subprocess.check_output(cmd, shell=True).decode("utf-8")
         return output_name
     else:
