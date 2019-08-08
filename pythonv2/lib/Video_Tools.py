@@ -256,6 +256,8 @@ def get_hd_frames_from_HD_repo(camID,date,start_date,end_date,limit_frame=False)
  
 
                 # Copy the frame to tmppath 
+                print('COPY f ' + f)
+                print('TO ' +  tmppath + '/' + f)
                 shutil.copy2(f, tmppath + '/' + f)
    
 
