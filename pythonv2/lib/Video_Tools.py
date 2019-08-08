@@ -236,16 +236,15 @@ def get_hd_frames_from_HD_repo(camID,date,start_date,end_date,limit_frame=False)
                 # and blend it with the HD frame
                 print('BEFORE FRAME TO BLEND')
                 frame_to_blend = get_sd_frames_from_HD_video(f, camID)
-                print(frame_to_blend)
-                exit()
+                if(frame_to_blend is not False):
+                    f = f = blend(cur_path + '/' + f,frame_to_blend,40,cur_path + '/' + f)
+                 
                 
                 #stack = get_stack_from_HD_frame(cur_path + '/' + f)
                 #if(stack is not False):
                 #    print('ONE STACK FOUND')
                 #    f = blend(cur_path + '/' + f,stack,40,cur_path + '/' + f)
-
-
-                
+ 
 
                 # Copy the frame to tmppath 
                 shutil.copy2(cur_path + '/' + f, tmppath + '/' + f)
