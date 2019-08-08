@@ -177,6 +177,11 @@ def get_sd_frames_from_HD_video(hd_video_file, camID):
     date_and_time = date + " " + get_meteor_time(hd_video_file)
     sd_path = IMG_SD_SRC_PATH +  date
 
+    print('WE SEARCH IN ' + sd_path)
+    print('CRITERIA')
+    print('camID ' + camID)
+    print('date_and_time ' + date_and_time)
+
     potential_videos = [f for f in listdir(sd_path) if camID in f and date_and_time in f and isfile(join(cur_path, f))]
     print(potential_videos)
 
