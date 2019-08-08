@@ -2260,6 +2260,10 @@ def browse_day(day,cams_id,json_conf):
    print("<input type='hidden' name='cur_date' value='"+str(day)+"'/>")
 
   
+
+   print('DAY FILLES')
+   print(dayfiles)
+
    for base_file in sorted(day_files,reverse=True):
 
       if cc + 1 < len(day_files) - 2:
@@ -2280,7 +2284,7 @@ def browse_day(day,cams_id,json_conf):
       el = base_file.split("/")
       base_js_name = el[-1].split('_')
 
-      html_out =  "<div class='preview col-lg-2 col-md-3 "+ htclass +"'>**" + day_files[base_file] + '** ' + base_file + " **"
+      html_out =  "<div class='preview col-lg-2 col-md-3 "+ htclass +"'>"
       html_out +=  "<a class='mtt mb-3' href='webUI.py?cmd=examine_min&video_file=" + video_file + "&next_stack_file=" + next_stack_file  + "' title='Examine'>"
       html_out +=  "<img class='ns lz' src='" + stack_file_tn + "'>"
       html_out +=  "<span>"+base_js_name[0] +"/" +base_js_name[1]+"/" +base_js_name[2] + " " +  base_js_name[3]+ ":" +  base_js_name[4]+ ":" +  base_js_name[5] +"</span>"
