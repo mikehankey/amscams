@@ -194,7 +194,7 @@ def get_sd_frames_from_HD_video(hd_video_file, camID):
     if(potential_frames is not None and len(potential_frames)!=0):
         print('FRAME FOUND UNDER '+ sd_path+'/images ' +  potential_frames[0])
         output_name = '/To_blend_' + potential_frames[0] + '.png' 
-        cmd = 'ffmpeg -y -hide_banner -loglevel panic  -i '+sd_path+'/images'+'/'+potential_videos[0]+'  -vf scale='+HD_DIM + ' ' + tmppath  + output_name
+        cmd = 'ffmpeg -y -hide_banner -loglevel panic  -i '+sd_path+'/images'+'/'+potential_frames[0]+'  -vf scale='+HD_DIM + ' ' + tmppath  + output_name
         return output_name
     else: 
         print('CAM ID ' + camID)
@@ -205,7 +205,7 @@ def get_sd_frames_from_HD_video(hd_video_file, camID):
     if(potential_frames is not None and len(potential_frames)!=0):
         print('FRAME FOUND UNDER '+ sd_path+'/passed ' +  potential_frames[0])
         output_name = '/To_blend_' + potential_frames[0] + '.png' 
-        cmd = 'ffmpeg -y -hide_banner -loglevel panic  -i '+sd_path+'/passed'+'/'+potential_videos[0]+'  -vf scale='+HD_DIM + ' ' + tmppath  + output_name
+        cmd = 'ffmpeg -y -hide_banner -loglevel panic  -i '+sd_path+'/passed'+'/'+potential_frames[0]+'  -vf scale='+HD_DIM + ' ' + tmppath  + output_name
         return output_name   
     else: 
         print('CAM ID ' + camID)
@@ -216,7 +216,7 @@ def get_sd_frames_from_HD_video(hd_video_file, camID):
     if(potential_frames is not None and len(potential_frames)!=0):
         print('FRAME FOUND UNDER '+ sd_path+'/failed ' +  potential_frames[0])
         output_name = '/To_blend_' + potential_frames[0] + '.png' 
-        cmd = 'ffmpeg -y -hide_banner -loglevel panic  -i '+sd_path+'/failed'+'/'+potential_videos[0]+'  -vf scale='+HD_DIM + ' ' + tmppath  + output_name
+        cmd = 'ffmpeg -y -hide_banner -loglevel panic  -i '+sd_path+'/failed'+'/'+potential_frames[0]+'  -vf scale='+HD_DIM + ' ' + tmppath  + output_name
         return output_name   
     else: 
         print('CAM ID ' + camID)
