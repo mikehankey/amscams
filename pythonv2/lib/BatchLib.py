@@ -26,7 +26,6 @@ def batch_reduce(json_conf, day = None):
       print("METEOR FILES:", meteor_files)
       for json_file in sorted(meteor_files,reverse=True):
           if "reduced" not in json_file and "calparams" not in json_file and "manual" not in json_file and "starmerge" not in json_file and "master" not in json_file:
- #         if True:
             reduced_file = json_file.replace(".json", "-reduced.json")
             failed_file = json_file.replace(".json", "-rfailed.txt")
             if cfe(reduced_file) == 1:
@@ -49,7 +48,12 @@ def batch_reduce(json_conf, day = None):
                else:
                   print("No calfile for : ", json_file)
                   continue
-               
+          else:
+             print("Skipping already done", json_file)     
+             vid = json_file.replace("-reduced.json", ".mp4")
+             cmd = "./reducer3.py cm " + vid
+             os.system(cmd)
+
 
 
 def get_kml(kml_file):
