@@ -492,7 +492,7 @@ def sync_media(day, mse):
       sd_video_file = meteor.replace(".json", ".mp4")
       sd_stack_file = meteor.replace(".json", "-stacked.png")
       hd_stack_file = hd_video_file.replace(".mp4", "-stacked.png")
-      station_name = red_data['station_name']
+      station_name = red_data['station_name'].upper()
       push_file(meteor, station_name, day)
       push_file(sd_stack_file, station_name, day)
       push_file(hd_stack_file, station_name, day)
