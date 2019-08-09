@@ -274,9 +274,11 @@ def sync_meteor_index(json_conf):
 
    # The File to send
    file = index_gz
-   _file = {'files': open(file, 'rb')}
 
    os.system("gzip -fk " + index )
+   print("gzip -fk " + index )
+
+   _file = {'files': open(file, 'rb')}
 
    # The Data to send with the file
    api_key = "test"
