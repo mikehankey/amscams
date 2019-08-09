@@ -320,7 +320,15 @@ def check_for_event(day, stations, meteor, all_meteors, mse):
          print("no meteors for this day / station.", station, day)
          continue 
       for st_meteor in all_meteors[station][day]:
-         #print(station, meteor, st_meteor)
+         print(station, meteor, all_meteors[station][day][st_meteor])
+         if "azs" in all_meteors[station][day][st_meteor]:
+            azs = all_meteors[station][day][st_meteor]['azs']
+            els = all_meteors[station][day][st_meteor]['els']
+            ras = all_meteors[station][day][st_meteor]['ras']
+            decs = all_meteors[station][day][st_meteor]['decs']
+            times = all_meteors[station][day][st_meteor]['times']
+         else:
+            print("NO AZS!", all_meteors[station][day][st_meteor])
          if st_meteor != meteor:
             st_meteor_datetime, my_cam1, hd_date, hd_y, hd_m, hd_d, hd_h, hd_M, hd_s = convert_filename_to_date_cam(st_meteor)
              
@@ -336,6 +344,11 @@ def check_for_event(day, stations, meteor, all_meteors, mse):
                   print("ADD")
                   mse[meteor]['obs'][station] = {}
                mse[meteor]['obs'][station]['sd_video_file'] = st_meteor
+               mse[meteor]['obs'][station]['azs'] = azs
+               mse[meteor]['obs'][station]['els'] = els
+               mse[meteor]['obs'][station]['ras'] = ras
+               mse[meteor]['obs'][station]['decs'] = decs
+               mse[meteor]['obs'][station]['times'] = times
                status = 1
              
 

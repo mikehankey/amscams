@@ -2396,6 +2396,8 @@ def reduce_meteor_ajax(json_conf,meteor_json_file, cal_params_file, show = 0):
    vf_type = "SD"
    fin_sd_stack = fin_sd_video_file.replace(".mp4", ".png")
    fin_hd_stack = fin_hd_video_file.replace(".mp4", ".png")
+   if "stacked-stacked" in fin_hd_stack:
+      fin_hd_stack = fin_hd_stack.replace("-stacked-stacked", "-stacked")
    fin_reduced_video = fin_sd_video_file.replace(".mp4", "-reduced.mp4")
    fin_reduced_stack = fin_sd_video_file.replace(".mp4", "-reduced.png")
 
@@ -2990,6 +2992,9 @@ def reduce_meteor_new(json_conf,form):
       mj['sd_stack'] = mj['sd_stack'].replace(".png", "-stacked.png")
       mj['hd_stack'] = mj['hd_stack'].replace(".png", "-stacked.png")
 
+
+
+
    if "hd_stack" not in mj and mj['hd_trim'] != 0: 
       mj['hd_stack'] = mj['hd_trim'].replace(".mp4", "-stacked.png")
    else:
@@ -3006,6 +3011,8 @@ def reduce_meteor_new(json_conf,form):
    mj['half_stack'] = mj['half_stack'].replace("-stacked", "")
    half_stack_file = mj['half_stack']
    hd_stack_file = mj['hd_stack']
+
+
    if cfe(hd_stack_file) == 0:
       stack_img = cv2.imread(sd_stack)
       hd_stack_file = sd_stack.replace("-stacked.png", "-HD-stacked.png")
@@ -3053,12 +3060,19 @@ def reduce_meteor_new(json_conf,form):
       template = template.replace("{EVENT_DURATION}", "<i>pending reducetion</i>")
       template = template.replace("{EVENT_MAGNITUDE}", "<i>pending reduction</i>")
 
+   print("FUCK", hd_stack)
+   if "stacked-stacked" in hd_stack:
+      hd_stack = hd_stack.replace("-stacked-stacked", "-stacked")
+
+
    if reduced == 1:
       #print(meteor_reduced.keys())
       sd_video_file = meteor_reduced['sd_video_file']
       hd_video_file = meteor_reduced['hd_video_file']
-      sd_stack = meteor_reduced['sd_stack'].replace(".png", "-stacked.png")
-      hd_stack = meteor_reduced['hd_stack'].replace(".png", "-stacked.png")
+      if "stacked" not in meteor_reduced['sd_stack']:
+         sd_stack = meteor_reduced['sd_stack'].replace(".png", "-stacked.png")
+      if "stacked" not in meteor_reduced['hd_stack']:
+         hd_stack = meteor_reduced['hd_stack'].replace(".png", "-stacked.png")
       template = template.replace("{SD_VIDEO}", sd_video_file)
       template = template.replace("{HD_VIDEO}", str(hd_video_file))
       template = template.replace("{SD_STACK}", sd_stack)
