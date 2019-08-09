@@ -2228,7 +2228,7 @@ def print_css():
 
 def browse_day(day,cams_id,json_conf):
    day_files = get_day_files(day,cams_id,json_conf)
-   print(day_files)
+#   print(day_files)
 
 
    cc = 0
