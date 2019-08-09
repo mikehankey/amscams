@@ -34,6 +34,7 @@ from lib.Logo_Tools import *
 from lib.Frame_Tools import * 
 from lib.Get_Cam_ids import get_the_cam_ids
 from lib.Get_Operator_info import get_operator_info
+from lib.MultiStationMeteors import multi_station_meteors, multi_station_meteor_detail
  
 
 NUMBER_OF_METEOR_PER_PAGE = 60
@@ -488,6 +489,10 @@ def controller(json_conf):
       #type = 'meteor'
       #day = '2019_01_27'
       browse_detects(day,type,json_conf,form)   
+   if cmd == 'msm':
+      multi_station_meteors(json_conf,form)
+   if cmd == 'msmd':
+      multi_station_meteor_detail(json_conf,form)
 
    #bottom = bottom.replace("{JQ}", jq)      
    bottom = bottom.replace("{BOTTOMNAV}", bot_html)      
