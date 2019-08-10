@@ -488,16 +488,18 @@ def sync_media(day, mse):
    for meteor in mse:
       red_file = meteor.replace(".json", "-reduced.json")
       red_data = load_json_file(red_file)
-      hd_video_file= red_data['hd_video_file']
-      sd_video_file = meteor.replace(".json", ".mp4")
-      sd_stack_file = meteor.replace(".json", "-stacked.png")
-      hd_stack_file = hd_video_file.replace(".mp4", "-stacked.png")
+      hd_video_file = meteor.replace(".json", "-archiveHD.mp4")
+      sd_video_file = meteor.replace(".json", "-archiveSD.mp4")
+      #sd_stack_file = meteor.replace(".json", "-stacked.png")
+      #hd_stack_file = hd_video_file.replace(".mp4", "-stacked.png")
       station_name = red_data['station_name'].upper()
       push_file(meteor, station_name, day)
-      push_file(sd_stack_file, station_name, day)
-      push_file(hd_stack_file, station_name, day)
-      push_file(sd_video_file, station_name, day)
-      push_file(hd_video_file, station_name, day)
+      #push_file(sd_stack_file, station_name, day)
+      #push_file(hd_stack_file, station_name, day)
+      if cfe(sd_video_file) == 0:
+         push_file(sd_video_file, station_name, day)
+      if cfe(hd_video_file) == 0:
+         push_file(hd_video_file, station_name, day)
       red_data['sync_status'] = {} 
       red_data['sync_status']['hd_vid'] = 1 
       red_data['sync_status']['sd_vid'] = 1 

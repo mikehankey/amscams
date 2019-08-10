@@ -45,6 +45,9 @@ def batch_reduce(json_conf, day = None):
                   cmd = "./reducer3.py pf " + video_file
                   print(cmd)
                   os.system(cmd)
+                  cmd = "./reducer3.py shd " + video_file
+                  print(cmd)
+                  os.system(cmd)
                else:
                   print("No calfile for : ", json_file)
                   continue
@@ -59,6 +62,18 @@ def batch_reduce(json_conf, day = None):
                 os.system(cmd)
              else:
                 print("This file is good to go!")
+            
+                video_file = json_file.replace("-reduced.json", ".mp4")
+                sd_archive_file = video_file.replace(".mp4", "-archiveSD.mp4")
+                if cfe(sd_archive_file) == 0:
+                   cmd = "./reducer3.py shd " + video_file
+                   print(cmd)
+                   os.system(cmd)
+                hd_archive_file = video_file.replace(".mp4", "-archiveHD.mp4")
+                if cfe(hd_archive_file) == 0:
+                   cmd = "./reducer3.py shd " + video_file
+                   print(cmd)
+                   os.system(cmd)
 
 
 

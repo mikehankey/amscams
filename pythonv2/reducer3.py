@@ -1,5 +1,6 @@
 #!/usr/bin/python3
 
+
 import datetime
 import time
 import glob
@@ -9,7 +10,7 @@ import cv2
 import math
 import numpy as np
 import scipy.optimize
-from lib.VideoLib import get_masks, find_hd_file_new, load_video_frames
+from lib.VideoLib import get_masks, find_hd_file_new, load_video_frames, sync_hd_frames
 from lib.UtilLib import check_running, angularSeparation
 from lib.CalibLib import radec_to_azel, clean_star_bg, get_catalog_stars, find_close_stars, XYtoRADec, HMS2deg, AzEltoRADec
 
@@ -63,5 +64,8 @@ if cmd == 'mfd' :
 if cmd == 'pf' or cmd == 'perfect':
    # perfect the meteor reduction!
    perfect(file, json_conf)
+if cmd == 'shd' or cmd == 'sync_hd':
+   # perfect the meteor reduction!
+   sync_hd_frames(file, json_conf)
 
 
