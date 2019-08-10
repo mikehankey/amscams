@@ -1,7 +1,7 @@
 #!/usr/bin/python3
 from urllib import request, parse
 import requests
-from datetime import datetime
+from datetime import datetime, timedelta
 import sys
 #import datetime
 import time
@@ -487,7 +487,11 @@ def push_file(meteor, station_name, day):
 def sync_media(day, mse):
    for meteor in mse:
       red_file = meteor.replace(".json", "-reduced.json")
-      red_data = load_json_file(red_file)
+      if cfe(red_file) == 1:
+         red_data = load_json_file(red_file)
+      else:
+         print("No reduce file.")
+         return()
       hd_video_file = meteor.replace(".json", "-archiveHD.mp4")
       sd_video_file = meteor.replace(".json", "-archiveSD.mp4")
       #sd_stack_file = meteor.replace(".json", "-stacked.png")
@@ -689,6 +693,11 @@ if cmd == "sm" or cmd == "sync_media" :
 
 if cmd == "day":
    day = datetime.now().strftime("%Y_%m_%d")
+   if len(sys.argv) == 3:
+      print("yo")
+      day = sys.argv[2]  
+      if day == 'yest':
+         day = datetime.strftime(datetime.now() - timedelta(1), '%Y_%m_%d')
    print(day)
    sync_day(day, json_conf)
 
