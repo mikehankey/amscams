@@ -646,9 +646,9 @@ def prep_solve(day, json_conf):
 def sync_day(day, json_conf):
    print("Sync day: ", day)
    cmd = "./batchJobs.py br " + day 
-   #os.system(cmd)
+   os.system(cmd)
    cmd = "./autoCal.py meteor_index" 
-   #os.system(cmd)
+   os.system(cmd)
    cmd = "./sync.py smi" 
    os.system(cmd)
    cmd = "./sync.py ss" 
