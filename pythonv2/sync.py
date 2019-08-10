@@ -642,6 +642,19 @@ def prep_solve(day, json_conf):
             print(station_id, events[ev][obs][station_id]['sd_video_file'])
             red_data, master_idx = load_red_data(station_id, events[ev][obs][station_id]['sd_video_file'], day, master_idx )
    print(master_idx)
+
+def sync_day(day, json_conf):
+   print("Sync day: ", day)
+   cmd = "./batchJobs.py br " + day 
+   #os.system(cmd)
+   cmd = "./autoCal.py meteor_index" 
+   #os.system(cmd)
+   cmd = "./sync.py smi" 
+   os.system(cmd)
+   cmd = "./sync.py ss" 
+   os.system(cmd)
+   cmd = "./sync.py fe " + day
+   os.system(cmd)
    
 if cmd == 'ps'or cmd == 'prep_solve':
    prep_solve(sys.argv[2], json_conf) 
@@ -671,4 +684,10 @@ if cmd == "sm" or cmd == "sync_media" :
    status = check_file_sync(sys.argv[2], json_conf)
    if status == 404:
       sync_content(0, my_station, sys.argv[2], "json", file_name)
+
+if cmd == "day":
+   day = datetime.now().strftime("%Y_%m_%d")
+   print(day)
+   sync_day(day, json_conf)
+
 
