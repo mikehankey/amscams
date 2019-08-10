@@ -496,9 +496,9 @@ def sync_media(day, mse):
       push_file(meteor, station_name, day)
       #push_file(sd_stack_file, station_name, day)
       #push_file(hd_stack_file, station_name, day)
-      if cfe(sd_video_file) == 0:
+      if cfe(sd_video_file) == 1:
          push_file(sd_video_file, station_name, day)
-      if cfe(hd_video_file) == 0:
+      if cfe(hd_video_file) == 1:
          push_file(hd_video_file, station_name, day)
       red_data['sync_status'] = {} 
       red_data['sync_status']['hd_vid'] = 1 
