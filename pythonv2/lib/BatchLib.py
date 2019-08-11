@@ -666,12 +666,15 @@ def thumb_mp4s(mp4_files,json_conf):
          if cfe(stack_thumb) == 0 :
             thumb(stack_file)
 
-      elif "HD" in meteor_json_file and "crop" not in meteor_json_file:
+      elif "HD" in meteor_json_file and "crop" not in meteor_json_file and "archive" not in meteor_json_file:
          if cfe(stack_file) == 0 :
             frames = load_video_frames(file,json_conf)
             stack_file, stack_image = stack_frames(frames, file)
          if cfe(stack_thumb) == 0 :
             thumb(stack_file)
+      elif "archive" in meteor_json_file:
+         print("skip archive files.")
+       
 
       else:
          meteor_json = load_json_file(meteor_json_file)
