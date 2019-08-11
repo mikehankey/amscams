@@ -30,6 +30,10 @@ def batch_reduce(json_conf, day = None):
             failed_file = json_file.replace(".json", "-rfailed.txt")
             if cfe(reduced_file) == 1:
                print("Meteor done", reduced_file)
+               red_data = load_json_file(reduced_file)
+               if "cat_image_stars" not in red_data['cal_params']:
+                  sd_video_file = reduced_file.replace("-reduced.json", ".mp4")
+                  os.system("./autoCal.py cfit " + sd_video_file)
             elif cfe(failed_file) == 1:
                print("Skip already tried and failed", failed_file)
             else:
