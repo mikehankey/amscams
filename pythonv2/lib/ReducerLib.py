@@ -2017,10 +2017,16 @@ def sort_metframes(metframes):
 def perfect(video_file, json_conf):
    red_file = video_file.replace(".mp4", "-reduced.json")
    os.system("cd /home/ams/amscams/pythonv2/; ./autoCal.py cfit " + video_file)
-   os.system("cd /home/ams/amscams/pythonv2/; ./autoCal.py imgstars " + video_file)
    red_data = load_json_file(red_file)
-   xres = red_data['cal_params']['total_res_px']
-   total_stars = len(red_data['cal_params']['cat_image_stars'])
+   if "total_res_px" in red_data:
+      xres = red_data['cal_params']['total_res_px']
+   else: 
+      xres = 9999
+   if "total_stars" in red_data['cal_params']:
+      total_stars = len(red_data['cal_params']['cat_image_stars'])
+   else:
+      print(video_file)
+      exit()
 
    sd_frames = load_video_frames(video_file,json_conf)
 
