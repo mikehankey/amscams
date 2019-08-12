@@ -676,7 +676,7 @@ def thumb_mp4s(mp4_files,json_conf):
             stack_file, stack_image = stack_frames(frames, file)
          if cfe(stack_thumb) == 0 :
             thumb(stack_file)
-      elif "archive" in meteor_json_file:
+      elif "archive" in meteor_json_file or "allmeteors" in meteor_json_file:
          print("skip archive files.")
        
 
