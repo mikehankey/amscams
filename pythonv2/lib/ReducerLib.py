@@ -205,7 +205,19 @@ def pick_best_cnt(cnts, first_x, first_y):
          max_dist = c_dist
          best_cnt = hs
    return(best_cnt)
-   
+  
+def detect_bp(video_file,json_conf) :
+   print("Bright pixel detection.")
+   sd_frames = load_video_frames(video_file, json_conf)
+
+   masked_frames = []
+   mask_points = []
+   for frame in sd_frames:
+      subframe = cv2.subtract(frame,sd_frames[0])
+      avg_val = np.mean(subframe)
+      min_val, max_val, min_loc, (mx,my)= cv2.minMaxLoc(subframe) 
+      print(max_val - avg_val)
+   print(len(sd_frames))
 
 def detect_from_bright_pixels(masked_frames, show = 0):
    max_vals = []
