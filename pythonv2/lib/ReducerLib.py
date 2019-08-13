@@ -231,10 +231,11 @@ def detect_bp(video_file,json_conf) :
       frame_data[fn] = {}
       frame_data[fn]['fn'] = fn
       subframe = cv2.subtract(frame,last_frame)
-      avg_val = np.mean(subframe)
+      avg_val = np.mean(frame)
       min_val, max_val, min_loc, (mx,my)= cv2.minMaxLoc(subframe) 
       frame_data[fn]['avg_val'] = avg_val
       frame_data[fn]['min_val'] = min_val
+      frame_data[fn]['max_val'] = max_val
       frame_data[fn]['mx'] = mx
       frame_data[fn]['my'] = my
       last_frame = frame
@@ -261,6 +262,16 @@ def detect_bp(video_file,json_conf) :
       fn = fn + 1
    print("FRAMES:", len(sd_frames))
    print("BP EVENTS:", len(events))
+   event_data = {}
+   event_data['frame_data'] = frame_data
+   event_data['events'] = events
+   if len(events) > 0:
+      event_file = video_file.replace(".mp4", "-events.json")
+   else:
+      event_file = video_file.replace(".mp4", "-noevents.json")
+
+
+   save_json_file(event_file, event_data)
 
    #for start_frame, end_frame in events:
    #   for i in range(start_frame, end_frame):
