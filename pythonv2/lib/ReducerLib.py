@@ -251,16 +251,17 @@ def detect_bp(video_file,json_conf) :
       frame_data[fn]['cm'] = cm
       frame_data[fn]['nonmo'] = nomo
       fn = fn + 1
-   print(len(sd_frames))
+   print("FRAMES:", len(sd_frames))
+   print("BP EVENTS:", len(events))
 
       
-   for start_frame, end_frame in events:
-      for i in range(start_frame, end_frame):
-         print(frame_data[i])
-         cv2.imshow('pepe', sd_frames[i])
-         cv2.waitKey(0)
-   for frame in frame_data:
-      print(frame, frame_data[frame])
+   #for start_frame, end_frame in events:
+   #   for i in range(start_frame, end_frame):
+   #      print(frame_data[i])
+   #      cv2.imshow('pepe', sd_frames[i])
+   #      cv2.waitKey(0)
+   #for frame in frame_data:
+   #   print(frame, frame_data[frame])
            
 
 def detect_from_bright_pixels(masked_frames, show = 0):
