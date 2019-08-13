@@ -26,11 +26,14 @@ def batch_reduce(json_conf, day = None):
       print("METEOR FILES:", meteor_files)
       for json_file in sorted(meteor_files,reverse=True):
           if "reduced" not in json_file and "calparams" not in json_file and "manual" not in json_file and "starmerge" not in json_file and "master" not in json_file:
- #         if True:
             reduced_file = json_file.replace(".json", "-reduced.json")
             failed_file = json_file.replace(".json", "-rfailed.txt")
             if cfe(reduced_file) == 1:
                print("Meteor done", reduced_file)
+               red_data = load_json_file(reduced_file)
+               if "cat_image_stars" not in red_data['cal_params']:
+                  sd_video_file = reduced_file.replace("-reduced.json", ".mp4")
+                  os.system("./autoCal.py cfit " + sd_video_file)
             elif cfe(failed_file) == 1:
                print("Skip already tried and failed", failed_file)
             else:
@@ -46,10 +49,36 @@ def batch_reduce(json_conf, day = None):
                   cmd = "./reducer3.py pf " + video_file
                   print(cmd)
                   os.system(cmd)
+                  cmd = "./reducer3.py shd " + video_file
+                  print(cmd)
+                  os.system(cmd)
                else:
                   print("No calfile for : ", json_file)
                   continue
-               
+          else:
+             print("Skipping already done", json_file)     
+             red_data = load_json_file(json_file)
+             if "intensity" not in red_data['metconf']: 
+                # update the file!
+                print("AZS MISSING!")
+                vid = json_file.replace("-reduced.json", ".mp4")
+                cmd = "./reducer3.py cm " + vid
+                os.system(cmd)
+             else:
+                print("This file is good to go!")
+            
+                video_file = json_file.replace("-reduced.json", ".mp4")
+                sd_archive_file = video_file.replace(".mp4", "-archiveSD.mp4")
+                if cfe(sd_archive_file) == 0:
+                   cmd = "./reducer3.py shd " + video_file
+                   print(cmd)
+                   os.system(cmd)
+                hd_archive_file = video_file.replace(".mp4", "-archiveHD.mp4")
+                if cfe(hd_archive_file) == 0:
+                   cmd = "./reducer3.py shd " + video_file
+                   print(cmd)
+                   os.system(cmd)
+
 
 
 def get_kml(kml_file):
@@ -641,12 +670,15 @@ def thumb_mp4s(mp4_files,json_conf):
          if cfe(stack_thumb) == 0 :
             thumb(stack_file)
 
-      elif "HD" in meteor_json_file and "crop" not in meteor_json_file:
+      elif "HD" in meteor_json_file and "crop" not in meteor_json_file and "archive" not in meteor_json_file:
          if cfe(stack_file) == 0 :
             frames = load_video_frames(file,json_conf)
             stack_file, stack_image = stack_frames(frames, file)
          if cfe(stack_thumb) == 0 :
             thumb(stack_file)
+      elif "archive" in meteor_json_file or "allmeteors" in meteor_json_file:
+         print("skip archive files.")
+       
 
       else:
          meteor_json = load_json_file(meteor_json_file)

@@ -4,11 +4,118 @@ import cv2
 import os
 #import time
 from lib.UtilLib import convert_filename_to_date_cam
-from lib.FileIO import load_json_file
+from lib.FileIO import load_json_file, save_json_file
 from lib.ImageLib import find_min_max_dist,bigger_box
 
+def make_movie_from_frames(frames, fns, outfile):
+   print("MAKE MOVIE!")
+   TMP_DIR = "/mnt/ams2/tmpvids/"
+   os.system("rm " + TMP_DIR + "*")
+
+   first_frame = 0
+   last_frame = len(fns)
+   start_buff = 0
+   end_buff = 0
+   if fns[0] - 5 > 0:
+      first_frame = fns[0] - 5 
+      start_buff = 5 
+   if fns[-1] + 5 <= len(frames):
+      last_frame = fns[-1] + 5
+      end_buff = 10
 
 
+   if fns[0] - 10 > 0:
+      first_frame = fns[0] - 10
+      start_buff = 10
+   if fns[-1] + 10 <= len(frames):
+      last_frame = fns[-1] + 10
+      end_buff = 10
+   #if fns[0] - 25 > 0:
+   #   first_frame = fns[0] - 25
+   #if fns[-1] + 25 <= len(frames):
+   #   last_frame = fns[0] + 25
+
+   cc = 0
+   print("Start Trim Fn:", first_frame)
+   print("Last Trim Fn:", last_frame)
+   for frame in frames:
+      filename = TMP_DIR + '{0:06d}'.format(cc) + ".png"
+      if first_frame <= cc <= last_frame:
+         print(cc, first_frame, last_frame )
+         cv2.imwrite(filename, frame)
+      cc = cc + 1
+
+   cmd = """/usr/bin/ffmpeg -y -framerate 25 -pattern_type glob -i '""" + TMP_DIR + """*.png' \
+     -c:v libx264 -r 25 -pix_fmt yuv420p """ + outfile 
+   os.system(cmd)
+   return(start_buff, end_buff)
+   
+
+def find_hd_frame(fn, hd_x, hd_y, x1,y1,x2,y2,hd_frames):
+   crops = []
+   max_hd_val = 0
+   best_hd_frame = 0
+   cc = 0
+   best_cc = 0
+   for frame in hd_frames:
+      gray_frame = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
+      crop_frame = gray_frame[y1:y2,x1:x2]
+      max_val = gray_frame[hd_y,hd_x]
+      if max_val > max_hd_val:
+         max_hd_val = max_val
+         best_hd_frame = cc 
+         best_cc = cc
+      cc = cc + 1
+      crops.append(crop_frame)
+   #cv2.imshow('pepe', crops[best_cc])
+   #cv2.waitKey(0)
+   return(best_hd_frame)
+
+def sync_hd_frames(sd_video_file, json_conf):
+   print("sync hd frames")
+   red_file = sd_video_file.replace(".mp4", "-reduced.json")
+   red_data = load_json_file(red_file)
+   hd_video_file = red_data['hd_video_file']
+   hd_frames = load_video_frames(hd_video_file, json_conf, limit=0, mask=1,crop=(),color=1)
+   sd_frames = load_video_frames(sd_video_file, json_conf, limit=0, mask=1,crop=(),color=1)
+
+   metframes = red_data['metframes']
+   first_sd_frame = None
+   first_hd_frame = None
+   hd_fns = []
+   sd_fns = []
+
+   for fn in metframes:
+      if first_sd_frame is None:
+         first_sd_fram = fn
+      x1 = metframes[fn]['x1']
+      x2 = metframes[fn]['x2']
+      y1 = metframes[fn]['y1']
+      y2 = metframes[fn]['y2']
+      hd_x = metframes[fn]['hd_x']
+      hd_y = metframes[fn]['hd_y']
+      hd_fn = find_hd_frame(fn, hd_x, hd_y, x1,y1,x2,y2,hd_frames)
+      sd_fns.append(int(fn))
+      hd_fns.append(int(hd_fn))
+      print(fn, metframes[fn]['hd_x'], metframes[fn]['hd_y'])
+
+   if len(sd_fns) == len(hd_fns):
+      # buffer the frames with 10 frames on either side if we can.
+      hd_archive_movie = sd_video_file.replace(".mp4", "-archiveHD.mp4")
+      sd_archive_movie = sd_video_file.replace(".mp4", "-archiveSD.mp4")
+      hd_start_buff, hd_end_buff = make_movie_from_frames(hd_frames, hd_fns, hd_archive_movie)
+      sd_start_buff, sd_end_buff = make_movie_from_frames(sd_frames, sd_fns, sd_archive_movie)
+      red_data['metconf']['archive_sd_pre_roll'] = sd_start_buff
+      red_data['metconf']['archive_sd_post_roll'] = sd_end_buff
+      red_data['metconf']['archive_hd_pre_roll'] = hd_start_buff
+      red_data['metconf']['archive_hd_post_roll'] = hd_end_buff
+      red_data['metconf']['hd_sync'] = 1 
+      print("Perfect HD/SD frame match up!")       
+      print("SD FRAMES:", sd_fns)
+      print("HD FRAMES:", hd_fns)
+      print("Archive HD Movie:", hd_archive_movie)
+      print("Archive SD Movie:", sd_archive_movie)
+      save_json_file(red_file, red_data)
 
 def doHD(sd_video_file, json_conf):
    sd_w = 704

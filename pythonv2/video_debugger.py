@@ -3,7 +3,6 @@ import glob
 import subprocess 
 from lib.VIDEO_VARS import * 
 from lib.Video_Tools import * 
-from lib.Video_HD_Images_Cron import * 
 from os import listdir, remove
 from os.path import isfile, join, exists
 
@@ -59,9 +58,7 @@ from os.path import isfile, join, exists
 
 #drawbox_on_vid("/mnt/ams2/meteors/2019_03_07/","2019_03_07_04_47_21_000_010037-trim0989.mp4",10,30,60,120)
 
-
-#get_all_HD_pic() 
-# =>SHOULD BE RUN IN CRON EVERY HOUR 
+ 
 
 #org =  '/mnt/ams2/TIMELAPSE_IMAGES/2019_08_06_01_02_26_000_010039.png'
 #stack = get_stack_from_HD_frame(org)
@@ -75,3 +72,15 @@ from os.path import isfile, join, exists
 # INPUT => result of get_all_HD_pic() for a certain date
 #       => eventual stack if found
 # OUTPUT => video with frame blended with stack if at night and stack found
+
+
+ 
+array_of_frames, path  = get_hd_frames_from_HD_repo("10041","2019/07/07","2019/07/07 06:40","2019/08/07 11:40")
+print("FRAMES")
+print(array_of_frames) 
+if(array_of_frames is None):
+    print('NO FRAME FOUND') 
+else:
+    where_path = add_info_to_frames(array_of_frames, path, "2019/07/07", "10041", "This is a test", "/mnt/ams2/CUSTOM_LOGOS/1.png","tl",HD_DIM, "bl","tr")
+    t = create_vid_from_frames(array_of_frames, where_path, "2019_07_07",  "10041","30")
+    print(t)

@@ -108,3 +108,31 @@ Currently working on timelapse
 
 Need to take into account hours & duration from the modal form on 
 https://sleaziest-somali-2255.dataplicity.io/pycgi/webUI.py?cmd=video_tools
+
+=> Done, start & end date & time added to the JSON
+=> Now, get_hd_frames_from_HD_repo has been created. It works with a start_date and end_date.
+=> Blending with corresponding SD frame appens in Video_Tools / get_hd_frames_from_HD_repo()
+=> What is left to do: 
+   - include the new function (see video_debugger) to the whole timelapse process
+   - test other blend more to decrease the artefacts coming from the SDs (?)
+   - add the option (checkbox) "blend night time SD stacks" on 
+   - add something to get the SD frames if the HF frames are not under HD_FRAMES_PATH!!!
+   - 'stop' the time lapse for meteors, show the obj file, and then play the meteor movie, then start the time lapse back up. 
+   
+
+
+************************************
+TASK: MANUAL REDUCTION
+Manual reduce button", -- dumps all frames if they aren't already dumped. 
+
+1st step is to define the 'crop area' of the meteor based on the stack image of the trim clip. User draws rectangle over area where meteor occurred. 
+2nd step -- dump CROPPED frames for clip from ffmpeg (can do crop on ffmpeg line). 
+3rd step -- let user see all cropped images (thumbs if needed) on one page and instruct them to click the 'first frame' and the 'last frame' of the meteor. 
+4th step -- for each frame inbetween the start and end have the user select the center point of the meteor using either the + tool you have now, or the crop tool, or a combo of both. It would be best to start with the Add tool, where they frame the crop area, but then drop them into a version of the crop tool. The 'next frame' will always be in range of the previous frame, SO if the previous frame is 100% correct, you can rely on this. In the case of a manual reduction, the 1st frame will always be correct.  Really, if you can have them pinpoint the location of the 1st meteor frame using the Add tool, the rest of the process could be inside the 'batch crop tool' and at the end, they press the button that commits all the frame info. 
+5th step -- after user has pin-pointed meteor from each frame save the reduction file, (but also make a backup of the -reduction.json file called -locked.json). (this is to prevent automated 'fixer' scripts from over-writing the manual reduction).
+
+
+*************************************
+TASK ZHR-LiKE GRAPH
+- nother thing I've been wanting to do is a ZHRish type of graph. It doesn't have to be ZHR, but just meteors per 'binned' minute. (meteors per 60 minutes, 15 minutes, day etc). 
+- Basically a graph we can put on a 'stats' page. Maybe it starts out with a monthly view and you drill in, or could be param/select for bin size. 

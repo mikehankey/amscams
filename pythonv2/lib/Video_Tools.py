@@ -2,6 +2,8 @@ import os
 import glob
 import subprocess 
 import datetime
+import time
+import shutil
 from lib.VIDEO_VARS import * 
 from os import listdir, remove
 from os.path import isfile, join, exists
@@ -31,6 +33,14 @@ def get_meteor_time(_file):
     fn = fn.split(".")[0]
     fn = fn.split("_")
     return fn[3] + '_' + fn[4] 
+
+
+#Get date & time (python object from file name)
+def get_meteor_date_and_time_object(_file):
+    fn = _file.split("/")[-1] 
+    fn = fn.split("_",6)
+    date = fn[0] + '/' + fn[1] + '/' + fn[2]   +  ' ' + fn[3] + ':' + fn[4]
+    return time.strptime(date, "%Y/%m/%d %H:%M")
 
 #Return nothing or the HD stack that correspond to the same time/cam of the time passed as parameters
 #ex:
@@ -156,13 +166,156 @@ def get_sd_frames(camID,date,limit_frame=False):
         return([] , cur_path)
 
 
+# Get first frame of the equivalent of the SD video from an HD video
+# ex:
+# from /mnt/ams2/HD/2019_08_06_09_09_40_000_010037.mp4
+# WE SEARCH FIRST UNDER 
+#   /mnt/ams2/SD/proc2/2019_08_06/images
+# IF WE DIDN'T FIND THE RIGHT IMAGE WE SEARCH UNDER
+#   /mnt/ams2/SD/proc2/2019_08_06/success
+# IF WE DIDN'T FIND THE RIGHT IMAGE WE SEARCH UNDER
+#   /mnt/ams2/SD/proc2/2019_08_06/success
+# IF WE DIDN'T FIND THE RIGHT IMAGE WE GET THE VIDEO 
+#      /mnt/ams2/SD/2019_08_06/2019_08_06_09_40_45_000_010037.mp4
+#      AND WE EXTRACT THE PROPER IMAGE
+# IMPORTANT: 
+# - the seconds are different in the file names
+# - we need to resize all the images to HD_DIM
+def get_sd_frames_from_HD_video(hd_video_file, camID):
+    date = get_meteor_date(hd_video_file)
+    date_and_time = date + "_" + get_meteor_time(hd_video_file)
+    
+    # sd_path = /mnt/ams2/SD/proc2/[DATE]/
+    sd_path = IMG_SD_SRC_PATH +  date + '/'
+    tmppath = r''+TMP_IMG_HD_SRC_PATH
+    
+    # First we seach under /mnt/ams2/SD/proc2/[DATE]/images where we only have .png
+    potential_frames = [f for f in listdir(sd_path+'/images') if camID in f and ".png" in f and "-tn" not in f  and "-obj" not in f and date_and_time in f]
+    if(potential_frames is not None and len(potential_frames)!=0):
+        #print('FRAME FOUND UNDER '+ sd_path+'/images/' +  potential_frames[0])
+        output_name = '/To_blend_' + potential_frames[0]  
+        cmd = 'ffmpeg -y -hide_banner -loglevel panic  -i '+sd_path+'/images'+'/'+potential_frames[0]+'  -vf scale='+HD_DIM + ' ' + tmppath  + output_name
+        output = subprocess.check_output(cmd, shell=True).decode("utf-8")
+        #print('WE RETURN ' +  output_name)
+        #print(cmd)
+        #print('***************')
+        return output_name
+    #else: 
+        #print('CAM ID ' + camID)
+        #print('date_and_time' + date_and_time)
+        #print('NOT FOUND IN ' +  sd_path+'/images')
+
+    potential_frames = [f for f in listdir(sd_path+'/passed') if camID in f  and ".png" in f and "-tn" not in f and "-obj" not in f and date_and_time in f]
+    if(potential_frames is not None and len(potential_frames)!=0):
+        #print('FRAME FOUND UNDER '+ sd_path+'/passed/' +  potential_frames[0])
+        output_name = '/To_blend_' + potential_frames[0]  
+        cmd = 'ffmpeg -y -hide_banner -loglevel panic  -i '+sd_path+'/passed'+'/'+potential_frames[0]+'  -vf scale='+HD_DIM + ' ' + tmppath  + output_name
+        output = subprocess.check_output(cmd, shell=True).decode("utf-8")
+        return output_name   
+    #else: 
+        #print('CAM ID ' + camID)
+        #print('date_and_time' + date_and_time)
+        #print('NOT FOUND IN ' +  sd_path+'/passed')
+
+    potential_frames = [f for f in listdir(sd_path+'/failed') if camID in f  and ".png" in f and "-tn" not in f and "-obj" not in f and date_and_time in f]
+    if(potential_frames is not None and len(potential_frames)!=0):
+        #print('FRAME FOUND UNDER '+ sd_path+'/failed/' +  potential_frames[0])
+        output_name = '/To_blend_' + potential_frames[0] 
+        cmd = 'ffmpeg -y -hide_banner -loglevel panic  -i '+sd_path+'/failed'+'/'+potential_frames[0]+'  -vf scale='+HD_DIM + ' ' + tmppath  + output_name
+        output = subprocess.check_output(cmd, shell=True).decode("utf-8")
+        return output_name   
+    #else: 
+        #print('CAM ID ' + camID)
+        #print('date_and_time' + date_and_time)
+        #print('NOT FOUND IN ' +  sd_path+'/failed')
+
+    potential_videos = [f for f in listdir(sd_path) if camID in f and date_and_time in f]
+    if(potential_videos is not None and len(potential_videos)!=0):
+        # We extract the first frame of this video and we return it with dimension = HD_DIM
+        output_name = '/To_blend_' + potential_videos[0] + '.png' 
+        cmd = 'ffmpeg -y -hide_banner -loglevel panic  -i '+sd_path+'/'+potential_videos[0]+' -vframes 1 -f image2  -vf scale='+HD_DIM + ' ' + tmppath  + output_name
+        output = subprocess.check_output(cmd, shell=True).decode("utf-8")
+        return output_name
+    
+    
+    return False
+
+
+#NEW STUFF HERE TO TAKE start_date & end_date into account and SEARCH in HD FRAMES FIRST
+#We test if we have at least one image under HD_FRAMES_PATH that matches the cam_id
+#And that has a date <= start_date
+def get_hd_frames_from_HD_repo(camID,date,start_date,end_date,limit_frame=False):
+    cur_path = HD_FRAMES_PATH
+    res = True
+
+    #Change date as it appears in the file names
+    date =  date.replace('/','_')
+    date =  date.replace(' ','_')
+    date =  date.replace(':','_')
+    #test if we have at least one file name - YYYY_DD_MM_HH_ii_SS[_000_]CAM_ID.mp4 under HD_FRAMES_PA 
+    test = [f for f in listdir(cur_path) if isfile(join(cur_path, f))]
+ 
+    if test:
+     
+        # We need to get all of them from start_date to end_date
+        frames = [f for f in listdir(cur_path) if camID in f]
+        real_frames = []
+ 
+
+        start_date_obj = time.strptime(start_date, "%Y/%m/%d %H:%M")
+        end_date_obj = time.strptime(end_date, "%Y/%m/%d %H:%M")
+
+        #Check temporary folder to store the frames of all the videos
+        tmppath = r''+TMP_IMG_HD_SRC_PATH
+        if not os.path.exists(tmppath):
+            os.makedirs(tmppath)
+        else:
+            #Clean the directory (maybe necessary)
+            files = glob.glob(tmppath+'/*')
+            for f in files:
+                os.remove(f)
+
+        
+        for f in frames:
+            cur_date = get_meteor_date_and_time_object(f)
+
+            # We test if the frame is within the proper period
+            if(cur_date >= start_date_obj and cur_date <= end_date_obj):
+                real_frames.append(f)
+
+                # Here we eventually blend with the corresponding SD video
+                # The SD videos are under /mnt/ams2/SD/proc2/[2019_08_08]/[2019_08_08_04_58_53_000_010042.mp4]
+                # and blend it with the HD frame
+                #print('BEFORE FRAME TO BLEND')
+                frame_to_blend = get_sd_frames_from_HD_video(f, camID)
+                
+                if(frame_to_blend is not False):
+                    frame_to_blend = TMP_IMG_HD_SRC_PATH + frame_to_blend
+                    f2 = blend(cur_path + '/' + f,frame_to_blend,40,cur_path + '/' + f)
+                    shutil.copy2(f2, tmppath + '/' + f)
+                else:
+                    shutil.copy2(cur_path+ f, tmppath + '/' + f)
+                 
+   
+
+        if(real_frames is not None):
+            return(sorted(real_frames), tmppath)  
+        else:
+            print('No frame found for the period - see Video_HD_Images_Cron.py')
+            return False
+    else:
+        print('The Cron job for the HD frames didnt run properly - see Video_HD_Images_Cron.py')
+        return False
+
+
 
 #Input! camID, date
 #Ouput: list of HD frames found for this date or get_sd_frames if no HD frame has been found
 #ex: get_hd_frames('010040','2019_07_08')
-def get_hd_frames(camID,date,limit_frame=False):
+def get_hd_frames(camID,date,start_date,end_date,limit_frame=False):
     cur_path = IMG_HD_SRC_PATH
     res= True
+
     #test if we have at least one file name - YYYY_DD_MM_HH_ii_SS[_000_]CAM_ID.mp4
     test = [f for f in listdir(cur_path) if f.startswith(date) and f.endswith(camID+'.mp4') and isfile(join(cur_path, f))]
     if not test:
@@ -175,8 +328,7 @@ def get_hd_frames(camID,date,limit_frame=False):
         #DEBUG ONLY!! 
         if(limit_frame is not False):
             frames = frames[1:50]
-          
-        
+           
         #Check temporary folder to store the frames of all the videos
         tmppath = r''+TMP_IMG_HD_SRC_PATH
         if not os.path.exists(tmppath):
@@ -190,6 +342,7 @@ def get_hd_frames(camID,date,limit_frame=False):
         #We extract one frame per video and add it to the array to return
         toReturn = []
         
+        #We create all the frames under TMP_IMG_HD_SRC_PATH/
         for idx,vid in enumerate(sorted(frames)):
             try:
                 vid_out = vid.replace('.mp4','')

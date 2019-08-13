@@ -34,6 +34,7 @@ from lib.Logo_Tools import *
 from lib.Frame_Tools import * 
 from lib.Get_Cam_ids import get_the_cam_ids
 from lib.Get_Operator_info import get_operator_info
+from lib.MultiStationMeteors import multi_station_meteors, multi_station_meteor_detail
  
 
 NUMBER_OF_METEOR_PER_PAGE = 60
@@ -247,8 +248,8 @@ def controller(json_conf):
             extra_logo = "n"
             logo = ""
             logo_pos = ""
-       
-      add_video_job('timelapse',form.getvalue('sel_cam[]'),form.getvalue('tl_date'),form.getvalue('fps'),form.getvalue('dim'),form.getvalue('text_pos'),form.getvalue('wat_pos'),extra_text,logo,logo_pos)
+
+      add_video_job('timelapse',form.getvalue('sel_cam[]'),form.getvalue('tl_date'),form.getvalue('tl_time'),form.getvalue('duration'),form.getvalue('fps'),form.getvalue('dim'),form.getvalue('text_pos'),form.getvalue('wat_pos'),extra_text,logo,logo_pos)
       exit()
 
    # DELETE CUSTOM VIDEO (AJAX CALL)
@@ -488,6 +489,10 @@ def controller(json_conf):
       #type = 'meteor'
       #day = '2019_01_27'
       browse_detects(day,type,json_conf,form)   
+   if cmd == 'msm':
+      multi_station_meteors(json_conf,form)
+   if cmd == 'msmd':
+      multi_station_meteor_detail(json_conf,form)
 
    #bottom = bottom.replace("{JQ}", jq)      
    bottom = bottom.replace("{BOTTOMNAV}", bot_html)      
@@ -926,7 +931,7 @@ def meteor_index(json_conf, form):
             fn = meteor_file.split("/")[-1]
             fn = fn.replace(".json", "")
             video_file = meteor_file.replace(".json", ".mp4")
-            link = "<a href='/pycgi/webUI.py?cmd=reduce&video_file=" + video_file + "' class='btn btn-primary'>" + get_meteor_time(video_file) + "</a>"
+            link = "<a href='/pycgi/webUI.py?cmd=reduce&video_file=" + video_file + "' class='btn btn-primary'>" + get_meteor_time(video_file) + " - " + hd_cam + "</a>"
 
             if mi[day][meteor_file]['total_res_deg'] > .5:
                   color = "lv1"
@@ -2228,6 +2233,9 @@ def print_css():
 
 def browse_day(day,cams_id,json_conf):
    day_files = get_day_files(day,cams_id,json_conf)
+#   print(day_files)
+
+
    cc = 0
    all_files = []
    for base_file in sorted(day_files,reverse=True):
@@ -2258,18 +2266,19 @@ def browse_day(day,cams_id,json_conf):
 
    #For timelapse anim
    print("<input type='hidden' name='cur_date' value='"+str(day)+"'/>")
- 
+
 
    for base_file in sorted(day_files,reverse=True):
+
       if cc + 1 < len(day_files) - 2:
          next_stack_file = all_files[cc+1]
       else:
          next_stack_file = all_files[cc] 
+      
       video_file = base_file + ".mp4"
       stack_file = stack_file_from_video(video_file)
-      stack_file_tn = stack_file.replace(".png", "-tn.png")
-      #stack_file = stack_file.replace(day, day + "/images/")
-      #print(day_files[base_file])
+      stack_file_tn = stack_file.replace(".png", "-tn.png") 
+
       if day_files[base_file] == 'meteor':
          htclass = "meteor"
       elif day_files[base_file] == 'failed':
@@ -2280,7 +2289,7 @@ def browse_day(day,cams_id,json_conf):
       base_js_name = el[-1].split('_')
 
       html_out =  "<div class='preview col-lg-2 col-md-3 "+ htclass +"'>"
-      html_out +=  "<a class='mtt mb-3' href='webUI.py?cmd=examine_min&video_file=" + video_file + "&next_stack_file=" + next_stack_file +"&next_stack_file=" + next_stack_file + "' title='Examine'>"
+      html_out +=  "<a class='mtt mb-3' href='webUI.py?cmd=examine_min&video_file=" + video_file + "&next_stack_file=" + next_stack_file  + "' title='Examine'>"
       html_out +=  "<img class='ns lz' src='" + stack_file_tn + "'>"
       html_out +=  "<span>"+base_js_name[0] +"/" +base_js_name[1]+"/" +base_js_name[2] + " " +  base_js_name[3]+ ":" +  base_js_name[4]+ ":" +  base_js_name[5] +"</span>"
       html_out +=  "</a></div>"

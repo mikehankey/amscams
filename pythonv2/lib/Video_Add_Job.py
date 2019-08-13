@@ -2,14 +2,17 @@ import glob, os, os.path, sys
 import subprocess 
 import cgitb
 import json
+from datetime import datetime, timedelta
 from pathlib import Path
 from os import listdir,makedirs
 from os.path import isfile, join, exists
 from lib.VIDEO_VARS import * 
 from lib.Video_Parameters import save_video_job_parameters
 
+
+
 #ADD Job to WAITING_JOBS
-def add_video_job(name,cam_ids,date,fps,dim,text_pos,wat_pos,extra_text,logo,logo_pos):
+def add_video_job(name,cam_ids,date,time,duration,fps,dim,text_pos,wat_pos,extra_text,logo,logo_pos):
 
     if(logo is None ):
         logo = ""
@@ -54,7 +57,13 @@ def add_video_job(name,cam_ids,date,fps,dim,text_pos,wat_pos,extra_text,logo,log
     res = {}
     ok_list = ''
     bad_list = '' 
-  
+
+    # Get start date & time
+    # and end date & time
+    start_date = datetime.strptime(date + ' ' + time, '%Y/%m/%d %H:%M')
+    end_date = start_date + timedelta(hours=int(duration))
+
+     
 
     for cam_id in cam_ids:
 
@@ -63,6 +72,8 @@ def add_video_job(name,cam_ids,date,fps,dim,text_pos,wat_pos,extra_text,logo,log
             'name': name,
             'cam_id': cam_id,
             'date': date.replace('/','_'),
+            'start_date': format(start_date, '%Y/%m/%d %H:%M'),
+            'end_date': format(end_date, '%Y/%m/%d %H:%M'),
             'fps': fps,
             'dim':dim,
             'text_pos':text_pos,
@@ -72,7 +83,7 @@ def add_video_job(name,cam_ids,date,fps,dim,text_pos,wat_pos,extra_text,logo,log
             'logo': logo,
             'logo_pos': logo_pos
         }
-
+ 
         duplicate = False
 
         #Search if the job already exist (avoid duplicates)

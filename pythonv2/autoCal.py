@@ -232,7 +232,9 @@ def meteor_index(json_conf, extra_cmd = ""):
    rmeteor_data = []
    meteor_index = {}
    meteor_dirs = get_meteor_dirs()
+   print("Got meteor dirs")
    for meteor_dir in meteor_dirs:
+      print("Scanning...", meteor_dir)
       meteor_Data, rmeteor_data = get_meteors(meteor_dir, meteor_data, rmeteor_data)
    jobs = []
    jobs2 = []
@@ -265,7 +267,16 @@ def meteor_index(json_conf, extra_cmd = ""):
                      save_json_file(rmeteor, red_data)
                   #cmd = "./autoCal.py imgstars " + meteor
                   #print(cmd)
- 
+
+               if "metconf" in red_data:
+                  if "azs" in red_data['metconf']:
+                     meteor_index[day][meteor]['azs'] = red_data['metconf']['azs']
+                     meteor_index[day][meteor]['els'] = red_data['metconf']['els']
+                     meteor_index[day][meteor]['ras'] = red_data['metconf']['ras']
+                     meteor_index[day][meteor]['decs'] = red_data['metconf']['decs']
+                     meteor_index[day][meteor]['times'] = red_data['metconf']['times']
+                  if "intensity" in red_data['metconf']:
+                     meteor_index[day][meteor]['intensity'] = red_data['metconf']['intensity']
                
                meteor_index[day][meteor]['center_az'] = red_data['cal_params']['center_az']
                meteor_index[day][meteor]['center_el'] = red_data['cal_params']['center_el']
@@ -338,7 +349,14 @@ def meteor_index(json_conf, extra_cmd = ""):
             meteor_index[day][meteor]['angular_separation'] = 0
             meteor_index[day][meteor]['magnitude'] = 0
             meteor_index[day][meteor]['event_duration'] = 0
-   save_json_file("/mnt/ams2/cal/hd_images/meteor_index.json", meteor_index)
+   sort_meteor_index = {}
+   for day in sorted(meteor_index, reverse=True):
+      sort_meteor_index[day] = {}
+   for day in sorted(meteor_index, reverse=True):
+      for meteor in meteor_index[day]:
+         sort_meteor_index[day][meteor] = meteor_index[day][meteor]
+
+   save_json_file("/mnt/ams2/cal/hd_images/meteor_index.json", sort_meteor_index)
 
    print(json_conf)
 
@@ -3452,7 +3470,14 @@ if cmd == 'imgstars' or cmd == 'imgstars_strict':
       else:
          file = meteor_json['sd_stack'].replace(".png", "-stacked.png")
    print("CAL VARS:", cal_params['center_az'], cal_params['center_el'], cal_params['position_angle'], cal_params['pixscale'])
-   cat_image_stars, img, no_match, res_err, match_per,cp_data = get_stars_from_image(file, json_conf, masks, cal_params, show, strict)
+   if "cat_image_stars" in cal_params:
+      if len(cal_params['cat_image_stars']) == 0:
+         cat_image_stars, img, no_match, res_err, match_per,cp_data = get_stars_from_image(file, json_conf, masks, cal_params, show, strict)
+      else:
+         print("We already have stars.")
+         exit()
+   else:
+      cat_image_stars, img, no_match, res_err, match_per,cp_data = get_stars_from_image(file, json_conf, masks, cal_params, show, strict)
    cal_params['total_res_px'] = res_err
    cal_params['total_res_deg'] = ((float(res_err) * float(cal_params['pixscale'])) / 60) / 60
    print("MATCH/NO MATCH: ", len(cat_image_stars), len(no_match))
