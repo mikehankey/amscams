@@ -210,14 +210,58 @@ def detect_bp(video_file,json_conf) :
    print("Bright pixel detection.")
    sd_frames = load_video_frames(video_file, json_conf)
 
+   cm = 0
+   nomo = 0
+   motion = 0
    masked_frames = []
    mask_points = []
+   last_frame = sd_frames[0]
+   fn = 0
+   events = []
+   frame_data = {}
    for frame in sd_frames:
-      subframe = cv2.subtract(frame,sd_frames[0])
+      frame_data[fn] = {}
+      frame_data[fn]['fn'] = fn
+      subframe = cv2.subtract(frame,last_frame)
       avg_val = np.mean(subframe)
       min_val, max_val, min_loc, (mx,my)= cv2.minMaxLoc(subframe) 
-      print(max_val - avg_val)
+      frame_data[fn]['avg_val'] = avg_val
+      frame_data[fn]['min_val'] = min_val
+      frame_data[fn]['mx'] = mx
+      frame_data[fn]['my'] = my
+      last_frame = frame
+      #cv2.imshow("pepe", subframe)
+      if max_val - avg_val > 50:
+         if motion == 1:
+            if cm == 0:
+               first_eframe = fn -1 
+            cm = cm + 1
+         motion = 1
+         if cm >= 1:
+            print(fn, max_val - avg_val, cm)
+            #cv2.waitKey(0)
+         nomo = 0
+      else:
+         #cv2.waitKey(10)
+         if cm >= 2 :
+            events.append([first_eframe, fn])
+         motion = 0
+         cm = 0
+         nomo = nomo + 1
+      frame_data[fn]['cm'] = cm
+      frame_data[fn]['nonmo'] = nomo
+      fn = fn + 1
    print(len(sd_frames))
+
+      
+   for start_frame, end_frame in events:
+      for i in range(start_frame, end_frame):
+         print(frame_data[i])
+         cv2.imshow('pepe', sd_frames[i])
+         cv2.waitKey(0)
+   for frame in frame_data:
+      print(frame, frame_data[frame])
+           
 
 def detect_from_bright_pixels(masked_frames, show = 0):
    max_vals = []
