@@ -6,8 +6,8 @@ import datetime
 from lib.FileIO import load_json_file, save_json_file, cfe
 import numpy as np
 import cv2
-from lib.UtilLib import calc_dist, better_parse_file_date, bound_cnt
-from lib.VideoLib import load_video_frames 
+from lib.UtilLib import calc_dist, better_parse_file_date, bound_cnt, convert_filename_to_date_cam
+from lib.VideoLib import load_video_frames , get_masks
 from lib.ImageLib import adjustLevels , mask_frame, median_frames
 from lib.UtilLib import find_slope 
 from lib.CalibLib import radec_to_azel, clean_star_bg, get_catalog_stars, find_close_stars, XYtoRADec, HMS2deg, AzEltoRADec
@@ -207,6 +207,12 @@ def pick_best_cnt(cnts, first_x, first_y):
    return(best_cnt)
   
 def detect_bp(video_file,json_conf) :
+
+
+   hd_datetime, hd_cam, hd_date, hd_y, hd_m, hd_d, hd_h, hd_M, hd_s = convert_filename_to_date_cam(video_file)      
+   masks = get_masks(hd_cam,json_conf)
+
+
    print("Bright pixel detection.")
    sd_frames = load_video_frames(video_file, json_conf)
 
@@ -220,6 +226,8 @@ def detect_bp(video_file,json_conf) :
    events = []
    frame_data = {}
    for frame in sd_frames:
+      frame = mask_frame(frame, [], masks,5)
+
       frame_data[fn] = {}
       frame_data[fn]['fn'] = fn
       subframe = cv2.subtract(frame,last_frame)
@@ -237,8 +245,8 @@ def detect_bp(video_file,json_conf) :
                first_eframe = fn -1 
             cm = cm + 1
          motion = 1
-         if cm >= 1:
-            print(fn, max_val - avg_val, cm)
+         #if cm >= 1:
+            #print(fn, max_val - avg_val, cm)
             #cv2.waitKey(0)
          nomo = 0
       else:
@@ -254,7 +262,6 @@ def detect_bp(video_file,json_conf) :
    print("FRAMES:", len(sd_frames))
    print("BP EVENTS:", len(events))
 
-      
    #for start_frame, end_frame in events:
    #   for i in range(start_frame, end_frame):
    #      print(frame_data[i])
