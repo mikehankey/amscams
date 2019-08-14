@@ -15,7 +15,7 @@ from lib.UtilLib import check_running, angularSeparation
 from lib.CalibLib import radec_to_azel, clean_star_bg, get_catalog_stars, find_close_stars, XYtoRADec, HMS2deg, AzEltoRADec
 
 from lib.ImageLib import mask_frame , stack_frames, preload_image_acc
-from lib.ReducerLib import setup_metframes, detect_meteor , make_crop_images, perfect
+from lib.ReducerLib import setup_metframes, detect_meteor , make_crop_images, perfect, detect_bp
 from lib.MeteorTests import meteor_test_cm_gaps
 
 
@@ -68,4 +68,7 @@ if cmd == 'shd' or cmd == 'sync_hd':
    # perfect the meteor reduction!
    sync_hd_frames(file, json_conf)
 
+if cmd == 'dbp':
+   # perfect the meteor reduction!
+   detect_bp(file, json_conf)
 
