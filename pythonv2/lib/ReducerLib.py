@@ -7,7 +7,7 @@ from lib.FileIO import load_json_file, save_json_file, cfe
 import numpy as np
 import cv2
 from lib.UtilLib import calc_dist, better_parse_file_date, bound_cnt, convert_filename_to_date_cam
-from lib.VideoLib import load_video_frames , get_masks
+from lib.VideoLib import load_video_frames , get_masks, make_movie_from_frames
 from lib.ImageLib import adjustLevels , mask_frame, median_frames
 from lib.UtilLib import find_slope 
 from lib.CalibLib import radec_to_azel, clean_star_bg, get_catalog_stars, find_close_stars, XYtoRADec, HMS2deg, AzEltoRADec
@@ -206,7 +206,7 @@ def pick_best_cnt(cnts, first_x, first_y):
          best_cnt = hs
    return(best_cnt)
   
-def detect_bp(video_file,json_conf) :
+def detect_bp(video_file,json_conf, retrim=0) :
 
 
    hd_datetime, hd_cam, hd_date, hd_y, hd_m, hd_d, hd_h, hd_M, hd_s = convert_filename_to_date_cam(video_file)      
@@ -214,23 +214,27 @@ def detect_bp(video_file,json_conf) :
 
 
    print("Bright pixel detection.")
-   sd_frames = load_video_frames(video_file, json_conf)
-
+   sd_frames = load_video_frames(video_file, json_conf, 0, 0, [], 1)
    cm = 0
    nomo = 0
    motion = 0
    masked_frames = []
    mask_points = []
-   last_frame = sd_frames[0]
+   last_frame = cv2.cvtColor(sd_frames[0], cv2.COLOR_BGR2GRAY)
    fn = 0
    events = []
    frame_data = {}
+   orig_frames = []
    for frame in sd_frames:
+      orig_frames.append(frame.copy())
+      frame = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
       frame = mask_frame(frame, [], masks,5)
 
       frame_data[fn] = {}
       frame_data[fn]['fn'] = fn
       subframe = cv2.subtract(frame,last_frame)
+
+
       avg_val = np.mean(frame)
       min_val, max_val, min_loc, (mx,my)= cv2.minMaxLoc(subframe) 
       frame_data[fn]['avg_val'] = avg_val
@@ -273,13 +277,60 @@ def detect_bp(video_file,json_conf) :
 
    save_json_file(event_file, event_data)
 
-   #for start_frame, end_frame in events:
+
+   #hd_datetime, hd_cam, hd_date, hd_y, hd_m, hd_d, hd_h, hd_M, hd_s = convert_filename_to_date_cam(video_file)      
+   orig_fn = video_file.split("/")[-1]
+   out_dir = video_file.replace(orig_fn, "")
+
+   for start_frame, end_frame in events:
+      (start_frame, end_frame, start_buff, end_buff, orig_trim_num)  = get_new_trim_num(start_frame, end_frame ,len(sd_frames), video_file)
+
+
+      new_trim_num = start_frame + orig_trim_num
+ 
+      new_fn = out_dir + "/" + hd_y + "_" + hd_m + "_" + hd_d + "_" + hd_h + "_" + hd_d + "_" + hd_M + "_" + hd_s + hd_cam + "-TRIM-" + str(new_trim_num) + ".mp4"
+
+      print("NEW:", new_fn)
+      fns = []
+      for i in range(start_frame, end_frame):
+         fns.append(i)
+      make_movie_from_frames(orig_frames, fns, new_fn)
+      print("FRAMES:", fns)
    #   for i in range(start_frame, end_frame):
    #      print(frame_data[i])
    #      cv2.imshow('pepe', sd_frames[i])
    #      cv2.waitKey(0)
    #for frame in frame_data:
    #   print(frame, frame_data[frame])
+
+def get_new_trim_num(start_frame, end_frame, total_frames, sd_video_file):
+   if "trim" in sd_video_file and "HD" not in sd_video_file:
+      el = sd_video_file.split("-trim")
+      min_file = el[0] + ".mp4"
+      ttt = el[1].split(".")
+      orig_trim_num = int(ttt[0])
+   elif "HD-meteor" in sd_video_file: 
+      el = sd_video_file.split("-trim")
+      ttt = el[1].split("-")
+      orig_trim_num = int(ttt[1])
+
+   else:
+      orig_trim_num = 0
+
+
+   if start_frame - 10 > 0:
+      first_frame = start_frame - 10
+      start_buff = 10
+   if end_frame + 10 <= total_frames-1:
+      last_frame = end_frame + 10
+      end_buff = 10
+   if start_frame - 25 > 0:
+      first_frame = start_frame - 25
+   if last_frame + 25 <= total_frames:
+      last_frame = end_frame + 25
+
+   return(first_frame, last_frame, start_buff, end_buff, orig_trim_num) 
+ 
            
 
 def detect_from_bright_pixels(masked_frames, show = 0):
