@@ -680,8 +680,11 @@ def thumb_mp4s(mp4_files,json_conf):
          print("skip archive files.")
        
 
-      else:
-         meteor_json = load_json_file(meteor_json_file)
+      else:  
+         if cfe(meteor_json_file) == 1:
+            meteor_json = load_json_file(meteor_json_file)
+         else:
+            meteor_json = {}
          try:
             objects = meteor_json['sd_objects']
          except:
