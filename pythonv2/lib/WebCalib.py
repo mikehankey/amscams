@@ -4272,7 +4272,7 @@ def free_cal(json_conf,form):
       stack_file = "/mnt/ams2/cal/freecal/" + dr + "/" + sfn 
 
       if cfe(stack_file) == 0:
-         frames = load_video_frames(input_file, json_conf, 1000)
+         frames = load_video_frames(input_file, json_conf, 100)
          stack_file, stack_img = stack_frames(frames, input_file, 1)
          input_file = input_file.replace(".mp4", ".png") 
       else:
