@@ -1938,6 +1938,35 @@ def override_detect(video_file,jsid, json_conf):
       cmd = "mv " + base + "* " + new_dir
       os.system(cmd)
       print("Files moved to meteor dir.")
+      base_fn = base.split("/")[-1]
+      sd_datetime, hd_cam, hd_date, hd_y, hd_m, hd_d, hd_h, hd_M, hd_s = convert_filename_to_date_cam(base)
+      hd_wild = "/mnt/ams2/HD/" + hd_y + "_" + hd_m + "_" + hd_d + "_" + hd_h + "_" + hd_M + "*" + hd_cam + "*.mp4"
+      print(hd_wild)
+      hd_files = glob.glob(hd_wild)
+      print(hd_files)
+      el = base.split("-trim")
+      trim_num = int(el[-1])
+      trim_sec = trim_num * (1/25)
+     
+      print("SD TRIM NUM:", trim_num)
+      if len(hd_files) > 0:
+         hd_file = hd_files[0]
+         hd_datetime, hd_cam, hd_date, hd_y, hd_m, hd_d, hd_h, hd_M, hd_s = convert_filename_to_date_cam(hd_file)
+         hd_fn = hd_file.split("/")[-1]
+         elapsed_time = sd_datetime - hd_datetime
+         print("<h1>SD-HD TIME DIFF", elapsed_time.total_seconds(), sd_datetime, hd_datetime, "<h1>")
+         hd_trim_sec = (trim_num * (1/25)) + elapsed_time.total_seconds()
+
+         hd_trim_num = 0
+         hd_outfile = "/mnt/ams2/meteors/"+ hd_y + "_" + hd_m + "_" + hd_d + "/" +  hd_fn
+         hd_outfile = hd_outfile.replace(".mp4", "-trim-" + str(hd_trim_num) + "-HD-meteor.mp4")
+
+      cmd = "/usr/bin/ffmpeg -i " + hd_file + " -ss 00:00:" + str(hd_trim_sec) + " -t 00:00:12 -c copy " + hd_outfile 
+      os.system(cmd)
+      print("HD LINK:", hd_outfile)
+      print(cmd)
+      
+      
 
 def examine(video_file):
    
