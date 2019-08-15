@@ -1198,6 +1198,7 @@ def minimize_fov_pos(meteor_json_file, image_file, json_conf, cal_params = None,
    #print("END RA:", cal_params['ra_center'], cal_params['dec_center'] )
 
    cal_params['close_stars'] = paired_stars
+   #cal_params['cat_image_stars'] =  close_stars 
    #this_poly = np.zeros(shape=(4,), dtype=np.float64)
    #this_poly[0] = 0
    #this_poly[1] = 0
