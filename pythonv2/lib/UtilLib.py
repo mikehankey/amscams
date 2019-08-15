@@ -72,7 +72,10 @@ def angularSeparation(ra1,dec1, ra2,dec2):
 
 def check_running(progname):
    cmd = "ps -aux |grep " + progname + " | grep -v grep |wc -l"
+    
    output = subprocess.check_output(cmd, shell=True).decode("utf-8")
+   #print(cmd)
+   #print(output)
    output = int(output.replace("\n", ""))
    if int(output) > 0:
       return(output)

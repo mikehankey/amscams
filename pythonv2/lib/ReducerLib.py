@@ -272,6 +272,9 @@ def detect_bp(video_file,json_conf, retrim=0) :
    objects = []
    hd_datetime, hd_cam, hd_date, hd_y, hd_m, hd_d, hd_h, hd_M, hd_s = convert_filename_to_date_cam(video_file)      
    masks = get_masks(hd_cam,json_conf)
+   if cfe(video_file) == 0:
+      print("This file does not exist!")
+      exit()
 
    print("Bright pixel detection.")
    sd_frames = load_video_frames(video_file, json_conf, 0, 0, [], 1)
@@ -390,6 +393,18 @@ def detect_bp(video_file,json_conf, retrim=0) :
    event_data['objects'] = objects
    save_json_file(event_file, event_data)
    ec = 0
+
+
+   if len(events) == 0:
+      if "proc2" in video_file and "trim" in video_file:
+         print("NO DETECTS MOVE TO FAIL!")
+         ddd = video_file.split("/")
+         dfn = ddd[-1]
+         proc_dir = video_file.replace(dfn, "")
+         cmd = "mv " + video_file + " " + proc_dir + "failed/"
+         print("COMMAND:", cmd)
+         os.system(cmd)
+
    for ev in events:
       stack_img = stacks[ec]
       real_stack_img = stack_frames(subframes[ev[0]:ev[1]])
@@ -413,35 +428,62 @@ def detect_bp(video_file,json_conf, retrim=0) :
    orig_fn = video_file.split("/")[-1]
    out_dir = video_file.replace(orig_fn, "")
 
-   for start_frame, end_frame in events:
-      status = test_frame_seq(start_frame, end_frame, frame_data, sd_frames)
-      if status == 1:
-         (start_frame, end_frame, start_buff, end_buff, orig_trim_num)  = get_new_trim_num(start_frame, end_frame ,len(sd_frames), video_file)
+
+   if retrim == 1:
+      for start_frame, end_frame in events:
+         status = test_frame_seq(start_frame, end_frame, frame_data, sd_frames)
+         if status == 1:
+            (start_frame, end_frame, start_buff, end_buff, orig_trim_num)  = get_new_trim_num(start_frame, end_frame ,len(sd_frames), video_file)
 
 
-         new_trim_num = start_frame + orig_trim_num
-         new_fn = out_dir + "/" + hd_y + "_" + hd_m + "_" + hd_d + "_" + hd_h + "_" + hd_d + "_" + hd_M + "_" + hd_s + "_000_" + hd_cam + "-TRIM-" + str(new_trim_num) + ".mp4"
-         new_json = new_fn.replace(".mp4", ".json")
-         new_json_data = {}
-         new_json_data['frame_data'] = frame_data
-         new_json_data['hough_lines'] = my_lines
-         save_json_file(new_json, new_json_data)
+            new_trim_num = start_frame + orig_trim_num
+            new_fn = out_dir + "/" + hd_y + "_" + hd_m + "_" + hd_d + "_" + hd_h + "_" + hd_d + "_" + hd_M + "_" + hd_s + "_000_" + hd_cam + "-TRIM-" + str(new_trim_num) + ".mp4"
+            new_json = new_fn.replace(".mp4", ".json")
+            new_json_data = {}
+            new_json_data['frame_data'] = frame_data
+            new_json_data['hough_lines'] = my_lines
+            save_json_file(new_json, new_json_data)
 
-         print("NEW:", new_fn)
-         fns = []
-         for i in range(start_frame, end_frame):
-            fns.append(i)
-         make_movie_from_frames(orig_frames, fns, new_fn)
-         print("FRAMES:", fns)
-         print("NEW OUT:", new_fn)
-         exit()
-      else:
-         new_trim_num = 0
-         new_fn = out_dir + "/" + hd_y + "_" + hd_m + "_" + hd_d + "_" + hd_h + "_" + hd_d + "_" + hd_M + "_" + hd_s + "_000_" + hd_cam + "-TRIM-" + str(new_trim_num) + ".mp4"
-         new_json = new_fn.replace(".mp4", ".json")
-         new_json_data = {}
-         new_json_data['frame_data'] = frame_data
-         new_json_data['hough_lines'] = my_lines
+            print("NEW:", new_fn)
+            fns = []
+            for i in range(start_frame, end_frame):
+               fns.append(i)
+            make_movie_from_frames(orig_frames, fns, new_fn)
+            print("FRAMES:", fns)
+            print("NEW OUT:", new_fn)
+            # New TRIM file has been created. Let's move the old one.
+            if "proc2" in video_file and "trim" in video_file:
+               new_new_fn = new_fn.replace("TRIM", "trim")
+               ddd = video_file.split("/")
+               dfn = ddd[-1]
+               proc_dir = video_file.replace(dfn, "")
+               cmd = "mv " + video_file + " " + proc_dir + "/failed/"
+               print(cmd)
+               #os.system(cmd)
+               cmd = "mv " + new_fn + " " + proc_dir + "/" + new_new_fn
+               print(cmd)
+               #os.system(cmd)
+            
+            exit()
+         else:
+            new_trim_num = 0
+            new_fn = out_dir + "/" + hd_y + "_" + hd_m + "_" + hd_d + "_" + hd_h + "_" + hd_d + "_" + hd_M + "_" + hd_s + "_000_" + hd_cam + "-TRIM-" + str(new_trim_num) + ".mp4"
+            new_json = new_fn.replace(".mp4", ".json")
+            new_json_data = {}
+            new_json_data['frame_data'] = frame_data
+            new_json_data['hough_lines'] = my_lines
+            if "proc2" in video_file and "trim" in video_file:
+               print("NO METEOR DETECTS MOVE TO FAIL!")
+               new_new_fn = new_fn.replace("TRIM", "trim")
+               ddd = video_file.split("/")
+               dfn = ddd[-1]
+               proc_dir = video_file.replace(dfn, "")
+               cmd = "mv " + video_file + " " + proc_dir + "/failed/"
+               print(cmd)
+               #os.system(cmd)
+               cmd = "mv " + new_fn + " " + proc_dir + "/" + new_new_fn
+               print(cmd)
+               #os.system(cmd)
 
    
 
