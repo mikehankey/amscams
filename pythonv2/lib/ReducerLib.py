@@ -309,6 +309,8 @@ def detect_bp(video_file,json_conf, retrim=0) :
       blur_last = cv2.GaussianBlur(last_frame, (7, 7), 0)
       subframe = cv2.subtract(frame,last_frame)
       subframes.append(subframe)
+      #cv2.imshow('pepe', subframe)
+      #cv2.waitKey(120)
 
       avg_val = np.mean(frame)
       sum_val = np.sum(subframe)
@@ -321,10 +323,13 @@ def detect_bp(video_file,json_conf, retrim=0) :
       frame_data[fn]['my'] = int(my)
       last_frame = frame
       #cv2.imshow("pepe", subframe)
-      if max_val - avg_val > 50:
+      print("MAX VAL: ", max_val, avg_val, max_val - avg_val)
+      if max_val - avg_val > 10:
+         motion = 1
          print("DETECTION!:")
          if motion == 1:
             if cm == 0:
+               print("START FIRST EVENT.")
                first_eframe = fn -1 
             cm = cm + 1
             object, objects = id_object(None, objects,fn, (int(mx),int(my)), int(max_val), int(sum_val), img_w, img_h)
@@ -333,7 +338,6 @@ def detect_bp(video_file,json_conf, retrim=0) :
                print("OBJECT:", object['oid'])
 
 
-         motion = 1
          blob_x, blob_y,blob_w,blob_h = find_blob_center(frame, mx,my,max_val)
          avg_x = int(blob_x + mx / 2)
          avg_y = int(blob_y + my / 2)
@@ -346,7 +350,7 @@ def detect_bp(video_file,json_conf, retrim=0) :
 
          #cv2.circle(stack_img,(blob_x,blob_y), blob_w, (255), -1)
          if last_x is not None:
-            print("LINE:", blob_x, blob_y, last_x, last_y)
+            #print("LINE:", blob_x, blob_y, last_x, last_y)
             cv2.line(stack_img, (blob_x,blob_y), (last_x,last_y), (255), 2)
             cv2.line(stack_img, (mx,my), (last_x,last_y), (255), 2)
 
@@ -359,6 +363,7 @@ def detect_bp(video_file,json_conf, retrim=0) :
       else:
          #cv2.waitKey(10)
          if cm >= 2 and nomo >=2 :
+            print("Add Event.")
             events.append([first_eframe, fn])
             stacks.append(stack_img)
             stack_img = np.zeros((h,w),dtype=np.uint8)
@@ -371,6 +376,7 @@ def detect_bp(video_file,json_conf, retrim=0) :
          blob_y = None
       frame_data[fn]['cm'] = cm
       frame_data[fn]['nonmo'] = nomo
+      print(fn, max_val, cm, nomo)
       fn = fn + 1
       if blob_x is not None:
          last_x = blob_x
@@ -378,15 +384,24 @@ def detect_bp(video_file,json_conf, retrim=0) :
       else:
          last_x = mx
          last_y = my
+      
+   if cm >= 2 :
+      print("Add Final Event.")
+      events.append([first_eframe, fn])
+      stacks.append(stack_img)
+      motion = 0
      
    print("FRAMES:", len(sd_frames))
    print("BP EVENTS:", len(events))
+
    event_data = {}
    event_data['frame_data'] = frame_data
    event_data['events'] = events
    if len(events) > 0:
+      print("Events detected.")
       event_file = video_file.replace(".mp4", "-events.json")
    else:
+      print("No events detected.")
       event_file = video_file.replace(".mp4", "-noevents.json")
 
    my_lines = []
@@ -405,6 +420,8 @@ def detect_bp(video_file,json_conf, retrim=0) :
          print("COMMAND:", cmd)
          os.system(cmd)
 
+
+   print("EVENTS:", events)
    for ev in events:
       stack_img = stacks[ec]
       real_stack_img = stack_frames(subframes[ev[0]:ev[1]])
@@ -428,8 +445,9 @@ def detect_bp(video_file,json_conf, retrim=0) :
    orig_fn = video_file.split("/")[-1]
    out_dir = video_file.replace(orig_fn, "")
 
-
+   retrim = 1
    if retrim == 1:
+      print("RETRIM")
       for start_frame, end_frame in events:
          status = test_frame_seq(start_frame, end_frame, frame_data, sd_frames)
          if status == 1:
