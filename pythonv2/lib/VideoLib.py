@@ -43,7 +43,7 @@ def make_movie_from_frames(frames, fns, outfile):
      -c:v libx264 -r 25 -pix_fmt yuv420p """ + outfile 
    os.system(cmd)
    
-   #os.system("rm -rf " + TMP_DIR )
+   os.system("rm -rf " + TMP_DIR )
    print("rm -rf " + TMP_DIR )
    return(start_buff, end_buff)
    
