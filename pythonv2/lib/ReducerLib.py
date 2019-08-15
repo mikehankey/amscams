@@ -1,4 +1,5 @@
 from scipy import signal
+from PIL import Image
 import os
 import math
 import operator
@@ -7,12 +8,24 @@ from lib.FileIO import load_json_file, save_json_file, cfe
 import numpy as np
 import cv2
 from lib.UtilLib import calc_dist, better_parse_file_date, bound_cnt, convert_filename_to_date_cam
-from lib.VideoLib import load_video_frames , get_masks
-from lib.ImageLib import adjustLevels , mask_frame, median_frames
+from lib.VideoLib import load_video_frames , get_masks, make_movie_from_frames
+from lib.ImageLib import adjustLevels , mask_frame, median_frames, stack_stack
 from lib.UtilLib import find_slope 
 from lib.CalibLib import radec_to_azel, clean_star_bg, get_catalog_stars, find_close_stars, XYtoRADec, HMS2deg, AzEltoRADec
 
 import scipy.optimize
+
+def stack_frames(frames):
+   stacked_image = None
+
+   for frame in frames:
+      frame_pil = Image.fromarray(frame)
+      if stacked_image is None:
+         stacked_image = stack_stack(frame_pil, frame_pil)
+      else:
+         stacked_image = stack_stack(stacked_image, frame_pil)
+   return(np.asarray(stacked_image))
+
 
 def update_intensity(metframes, sd_frames,show = 0):
    base_img = sd_frames[0].copy()
@@ -205,61 +218,164 @@ def pick_best_cnt(cnts, first_x, first_y):
          max_dist = c_dist
          best_cnt = hs
    return(best_cnt)
-  
-def detect_bp(video_file,json_conf) :
+ 
+
+def find_blob_center(frame, x,y,max_val):
+   h,w = frame.shape
+   size=100
+   x1,y1,x2,y2 = bound_cnt(x,y,w,h,size)
+   crop_img = frame[y1:y2,x1:x2]
+   _, image_thresh = cv2.threshold(crop_img.copy(), max_val - 10, 255, cv2.THRESH_BINARY)
+   cnt_res = cv2.findContours(image_thresh.copy(), cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
+
+   if len(cnt_res) == 3:
+      (_, cnts, xx) = cnt_res
+   elif len(cnt_res) == 2:
+      (cnts, xx) = cnt_res
+   pos_cnts = []
+   real_cnts = []
+   xs = []
+   ys = []
+   ws = []
+   hs = []
+   if len(cnts) > 0:
+      for (i,c) in enumerate(cnts):
+         x,y,w,h = cv2.boundingRect(cnts[i])
+         x = int(x + (w/2))
+         y = int(y + (h/2))
+         if w > 1 and h > 1:
+            cv2.circle(crop_img,(x,y), 5, (255), 1)
+            xs.append(x)
+            ys.append(y)
+            ws.append(w)
+            hs.append(w)
+
+   if len(xs) > 0:
+      mean_x = int(np.mean(xs)) 
+      mean_y = int(np.mean(ys)) 
+      mean_w = int(np.mean(ws))
+      mean_h = int(np.mean(hs))
+   else: 
+      mean_x = 0
+      mean_y = 0
+      mean_w = 0
+      mean_h = 0
+   cv2.circle(crop_img,(mean_x,mean_y), mean_w, (255), 1)
+   print("CNTS:", pos_cnts)
+   #cv2.imshow('pepe', crop_img)
+   #cv2.waitKey(100)
+   return(mean_x+x1,mean_y+y1,mean_w,mean_h)
 
 
+ 
+def detect_bp(video_file,json_conf, retrim=0) :
+   objects = []
    hd_datetime, hd_cam, hd_date, hd_y, hd_m, hd_d, hd_h, hd_M, hd_s = convert_filename_to_date_cam(video_file)      
    masks = get_masks(hd_cam,json_conf)
 
-
    print("Bright pixel detection.")
-   sd_frames = load_video_frames(video_file, json_conf)
-
+   sd_frames = load_video_frames(video_file, json_conf, 0, 0, [], 1)
    cm = 0
    nomo = 0
    motion = 0
    masked_frames = []
    mask_points = []
-   last_frame = sd_frames[0]
+   last_frame = cv2.cvtColor(sd_frames[0], cv2.COLOR_BGR2GRAY)
+   h,w = last_frame.shape
+   img_w = w
+   img_h = h
+   stack_img = np.zeros((h,w),dtype=np.uint8)
    fn = 0
    events = []
    frame_data = {}
+   orig_frames = []
+   stacks = []
+   subframes = []
+   max_vals = []
+   last_x = None
+   last_y = None
+
    for frame in sd_frames:
+      orig_frames.append(frame.copy())
+      frame = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
       frame = mask_frame(frame, [], masks,5)
 
       frame_data[fn] = {}
       frame_data[fn]['fn'] = fn
+      blur_frame = cv2.GaussianBlur(frame, (7, 7), 0)
+      blur_last = cv2.GaussianBlur(last_frame, (7, 7), 0)
       subframe = cv2.subtract(frame,last_frame)
+      subframes.append(subframe)
+
       avg_val = np.mean(frame)
+      sum_val = np.sum(subframe)
       min_val, max_val, min_loc, (mx,my)= cv2.minMaxLoc(subframe) 
-      frame_data[fn]['avg_val'] = avg_val
-      frame_data[fn]['min_val'] = min_val
-      frame_data[fn]['max_val'] = max_val
-      frame_data[fn]['mx'] = mx
-      frame_data[fn]['my'] = my
+      frame_data[fn]['avg_val'] = float(avg_val)
+      frame_data[fn]['min_val'] = float(min_val)
+      frame_data[fn]['max_val'] = float(max_val)
+      frame_data[fn]['sum_val'] = float(sum_val)
+      frame_data[fn]['mx'] = int(mx)
+      frame_data[fn]['my'] = int(my)
       last_frame = frame
       #cv2.imshow("pepe", subframe)
       if max_val - avg_val > 50:
+         print("DETECTION!:")
          if motion == 1:
             if cm == 0:
                first_eframe = fn -1 
             cm = cm + 1
+            object, objects = id_object(None, objects,fn, (int(mx),int(my)), int(max_val), int(sum_val), img_w, img_h)
+            frame_data[fn]['oid'] = object['oid']
+            if "oid" in object:
+               print("OBJECT:", object['oid'])
+
+
          motion = 1
+         blob_x, blob_y,blob_w,blob_h = find_blob_center(frame, mx,my,max_val)
+         avg_x = int(blob_x + mx / 2)
+         avg_y = int(blob_y + my / 2)
+         #cv2.circle(stack_img,(avg_x,avg_y), 20, (255), -1)
+
+         frame_data[fn]['blob_x'] = int(blob_x)
+         frame_data[fn]['blob_y'] = int(blob_y)
+         frame_data[fn]['blob_w'] = int(blob_w)
+         frame_data[fn]['blob_h'] = int(blob_h)
+
+         #cv2.circle(stack_img,(blob_x,blob_y), blob_w, (255), -1)
+         if last_x is not None:
+            print("LINE:", blob_x, blob_y, last_x, last_y)
+            cv2.line(stack_img, (blob_x,blob_y), (last_x,last_y), (255), 2)
+            cv2.line(stack_img, (mx,my), (last_x,last_y), (255), 2)
+
+
+         max_vals.append(max_val) 
          #if cm >= 1:
             #print(fn, max_val - avg_val, cm)
-            #cv2.waitKey(0)
+            #cv2.waitKey(100)
          nomo = 0
       else:
          #cv2.waitKey(10)
-         if cm >= 2 :
+         if cm >= 2 and nomo >=2 :
             events.append([first_eframe, fn])
-         motion = 0
-         cm = 0
+            stacks.append(stack_img)
+            stack_img = np.zeros((h,w),dtype=np.uint8)
+            motion = 0
+            cm = 0
+         if cm == 1 and nomo > 3:
+            cm = 0
          nomo = nomo + 1
+         blob_x = None
+         blob_y = None
       frame_data[fn]['cm'] = cm
       frame_data[fn]['nonmo'] = nomo
       fn = fn + 1
+      if blob_x is not None:
+         last_x = blob_x
+         last_y = blob_y
+      else:
+         last_x = mx
+         last_y = my
+     
    print("FRAMES:", len(sd_frames))
    print("BP EVENTS:", len(events))
    event_data = {}
@@ -270,16 +386,159 @@ def detect_bp(video_file,json_conf) :
    else:
       event_file = video_file.replace(".mp4", "-noevents.json")
 
-
+   my_lines = []
+   event_data['objects'] = objects
    save_json_file(event_file, event_data)
+   ec = 0
+   for ev in events:
+      stack_img = stacks[ec]
+      real_stack_img = stack_frames(subframes[ev[0]:ev[1]])
+      thresh_val = min(max_vals) 
+      _, image_thresh = cv2.threshold(real_stack_img.copy(), thresh_val, 255, cv2.THRESH_BINARY)
 
-   #for start_frame, end_frame in events:
-   #   for i in range(start_frame, end_frame):
-   #      print(frame_data[i])
-   #      cv2.imshow('pepe', sd_frames[i])
-   #      cv2.waitKey(0)
-   #for frame in frame_data:
-   #   print(frame, frame_data[frame])
+      #cv2.imshow("pepe", real_stack_img)
+      #cv2.waitKey(100)
+      #cv2.imshow("pepe", image_thresh)
+      #cv2.waitKey(100)
+
+      image_thresh_dil = cv2.dilate(image_thresh, None , iterations=1)
+      image_thresh_dil = cv2.convertScaleAbs(image_thresh_dil)
+
+      #my_lines = hough_lines(stack_img)
+      ec = ec + 1
+   my_lines = []
+   print(my_lines)
+
+   #hd_datetime, hd_cam, hd_date, hd_y, hd_m, hd_d, hd_h, hd_M, hd_s = convert_filename_to_date_cam(video_file)      
+   orig_fn = video_file.split("/")[-1]
+   out_dir = video_file.replace(orig_fn, "")
+
+   for start_frame, end_frame in events:
+      status = test_frame_seq(start_frame, end_frame, frame_data, sd_frames)
+      if status == 1:
+         (start_frame, end_frame, start_buff, end_buff, orig_trim_num)  = get_new_trim_num(start_frame, end_frame ,len(sd_frames), video_file)
+
+
+         new_trim_num = start_frame + orig_trim_num
+         new_fn = out_dir + "/" + hd_y + "_" + hd_m + "_" + hd_d + "_" + hd_h + "_" + hd_d + "_" + hd_M + "_" + hd_s + "_000_" + hd_cam + "-TRIM-" + str(new_trim_num) + ".mp4"
+         new_json = new_fn.replace(".mp4", ".json")
+         new_json_data = {}
+         new_json_data['frame_data'] = frame_data
+         new_json_data['hough_lines'] = my_lines
+         save_json_file(new_json, new_json_data)
+
+         print("NEW:", new_fn)
+         fns = []
+         for i in range(start_frame, end_frame):
+            fns.append(i)
+         make_movie_from_frames(orig_frames, fns, new_fn)
+         print("FRAMES:", fns)
+         print("NEW OUT:", new_fn)
+         exit()
+      else:
+         new_trim_num = 0
+         new_fn = out_dir + "/" + hd_y + "_" + hd_m + "_" + hd_d + "_" + hd_h + "_" + hd_d + "_" + hd_M + "_" + hd_s + "_000_" + hd_cam + "-TRIM-" + str(new_trim_num) + ".mp4"
+         new_json = new_fn.replace(".mp4", ".json")
+         new_json_data = {}
+         new_json_data['frame_data'] = frame_data
+         new_json_data['hough_lines'] = my_lines
+
+   
+
+def hough_lines(image):
+
+   #edges = cv2.Canny(image,50,150,apertureSize = 3)
+   edges = image
+   minLineLength = 2 
+   maxLineGap = 20
+   h,w = image.shape
+   hough_img = np.zeros((h,w),dtype=np.uint8)
+   hough_img = cv2.cvtColor(hough_img,cv2.COLOR_GRAY2RGB)
+   lines = cv2.HoughLinesP(edges,1,np.pi/180,50,np.array([]),minLineLength,maxLineGap)
+   x1s = [] 
+   y1s = [] 
+   x2s = [] 
+   y2s = [] 
+   mylines = []
+   if lines is not None:
+      for line in lines:
+         for x1,y1,x2,y2 in line:
+            cv2.line(hough_img,(x1,y1),(x2,y2),(255,0,0),1)
+            x1s.append(x1)
+            x2s.append(x2)
+            y1s.append(y1)
+            y2s.append(y2)
+            mylines.append(((int(x1),int(y1)),(int(x2),int(y2))))
+   
+   if len(x1s) > 0:
+      mx1 = int(np.median(x1s))
+      my1 = int(np.median(y1s))
+      mx2 = int(np.median(x2s))
+      my2 = int(np.median(y2s))
+   
+   #cv2.imshow("pepe", hough_img)
+   #cv2.waitKey(100)
+
+   return(mylines)
+
+def test_frame_seq(start_frame, end_frame, frame_data, sd_frames):
+   status = 1
+   dur = end_frame - start_frame
+   xs = []
+   ys = []
+   cms = []
+   for i in range (start_frame, end_frame):
+      xs.append(frame_data[i]['mx'])
+      ys.append(frame_data[i]['my'])
+      cms.append(frame_data[i]['cm'])
+
+   max_cm = np.max(cms)
+   max_x = np.max(xs)
+   max_y = np.max(ys)
+   min_x = np.min(xs)
+   min_y = np.min(ys)
+   print("TEST:", start_frame, end_frame)
+   print("MAX XY:", max_x, max_y)
+   print("MIN XY:", min_x, min_y)
+   print("MAX CM:", max_cm)
+   print("DUR:", dur)
+   cm_dur_ratio = max_cm / dur
+   if cm_dur_ratio < .5:
+      print("NON METEOR.")
+      status = 0
+   else:
+      print("METEOR.")
+      status = 1
+   return(status)
+
+def get_new_trim_num(start_frame, end_frame, total_frames, sd_video_file):
+   if "trim" in sd_video_file and "HD" not in sd_video_file:
+      el = sd_video_file.split("-trim")
+      min_file = el[0] + ".mp4"
+      ttt = el[1].split(".")
+      orig_trim_num = int(ttt[0])
+   elif "HD-meteor" in sd_video_file: 
+      el = sd_video_file.split("-trim")
+      ttt = el[1].split("-")
+      orig_trim_num = int(ttt[1])
+
+   else:
+      orig_trim_num = 0
+
+
+   if start_frame - 10 > 0:
+      first_frame = start_frame - 10
+      start_buff = 10
+   if end_frame + 10 <= total_frames-1:
+      last_frame = end_frame + 10
+      end_buff = 10
+   if start_frame - 25 > 0:
+      first_frame = start_frame - 25
+   if last_frame + 25 <= total_frames:
+      last_frame = end_frame + 25
+
+   return(first_frame, last_frame, start_buff, end_buff, orig_trim_num) 
+ 
            
 
 def detect_from_bright_pixels(masked_frames, show = 0):
@@ -699,7 +958,7 @@ def detect_meteor(video_file, json_conf, show = 0):
          if show == 1:
             print("ishow:", show)
             cv2.imshow("Orig Points", show_img)
-            cv2.waitKey(0)
+            cv2.waitKey(100)
     
        
 
@@ -1246,7 +1505,7 @@ def reduce_seg_acl(this_poly,metframes,metconf,frames,show=0):
          if show == 1:
             print("swho", 1)
             cv2.imshow('final', orig_image)
-            cv2.waitKey(0)  
+            cv2.waitKey(100)  
       fc = fc + 1
    if fcc > 0:
       res_err = np.float64(tot_res_err / fcc)
@@ -1434,15 +1693,25 @@ def setup_metframes(mfd):
 
    return(metframes, metconf)
 
-def id_object(cnt, objects, fc,max_loc, max_px, intensity, is_hd=0):
-
+def id_object(cnt, objects, fc,max_loc, max_px, intensity, img_w, img_h):
+   
    mx,my= max_loc
-   mx = mx
-   my = my
-   x,y,w,h = cv2.boundingRect(cnt)
-   cx,cy = center_point(x,y,w,h)
+
+   if cnt is not None:
+
+      x,y,w,h = cv2.boundingRect(cnt)
+      cx,cy = center_point(x,y,w,h)
+   else:
+      x1,y1,x2,y2 = bound_cnt(mx,my,img_w,img_h,10)
+      x = x1
+      y = y1
+      w = x2 - x1
+      h = y2 - y1
+      cx = mx
+      cy = my
    if fc < 5:
       return({},objects)
+
 
    if len(objects) == 0:
       oid = 1
@@ -1464,7 +1733,7 @@ def id_object(cnt, objects, fc,max_loc, max_px, intensity, is_hd=0):
       object_hist = obj['history']
       bx = x + mx
       by = y + my
-      found = find_in_hist(obj,x,y,object_hist, is_hd)
+      found = find_in_hist(obj,x,y,object_hist, img_w, img_h)
       if found == 1:
          matches.append(obj)
       #else:
@@ -1614,7 +1883,7 @@ def center_point(x,y,w,h):
    cy = y + (h/2)
    return(cx,cy)
 
-def find_in_hist(object,x,y,object_hist, hd = 0):
+def find_in_hist(object,x,y,object_hist, img_w, img_h):
    hd = 0
    oid = object['oid']
    found = 0
@@ -1652,6 +1921,8 @@ def find_in_hist(object,x,y,object_hist, hd = 0):
       object_hist = object_hist[-3:]
 
    for hs in object_hist:
+      w = 5
+      h = 5
       if len(hs) == 9:
          fc,ox,oy,w,h,mx,my,max_px,intensity = hs
       if len(hs) == 8:
@@ -1659,7 +1930,7 @@ def find_in_hist(object,x,y,object_hist, hd = 0):
       
      
       cox = ox + int(w/2)
-      coy = oy + int(h/w)
+      coy = oy + int(h/2)
       if ox - md <= x <= ox + md and oy -md <= y <= oy + md:
          found = 1
          return(1)
