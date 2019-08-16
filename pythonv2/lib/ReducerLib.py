@@ -333,7 +333,8 @@ def detect_bp(video_file,json_conf, retrim=0) :
                first_eframe = fn -1 
             cm = cm + 1
             object, objects = id_object(None, objects,fn, (int(mx),int(my)), int(max_val), int(sum_val), img_w, img_h)
-            frame_data[fn]['oid'] = object['oid']
+            if "oid" in frame_data[fn]:
+               frame_data[fn]['oid'] = object['oid']
             if "oid" in object:
                print("OBJECT:", object['oid'])
 
