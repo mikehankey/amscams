@@ -14,7 +14,7 @@ import scipy.optimize
 from lib.VideoLib import get_masks, find_hd_file_new, load_video_frames, sync_hd_frames, make_movie_from_frames
 
 from lib.UtilLib import check_running, angularSeparation, bound_cnt
-from lib.CalibLib import radec_to_azel, clean_star_bg, get_catalog_stars, find_close_stars, XYtoRADec, HMS2deg, AzEltoRADec
+from lib.CalibLib import radec_to_azel, clean_star_bg, get_catalog_stars, find_close_stars, XYtoRADec, HMS2deg, AzEltoRADec, get_active_cal_file
 
 from lib.ImageLib import mask_frame , stack_frames, preload_image_acc
 from lib.ReducerLib import setup_metframes, detect_meteor , make_crop_images, perfect, detect_bp, best_fit_slope_and_intercept, id_object
@@ -33,6 +33,62 @@ from lib.DetectLib import eval_cnt
 
 
 json_conf = load_json_file("../conf/as6.json")
+
+def remove_dupe_img_stars(img_stars):
+   index = {}
+   new_list = []
+   #print(img_stars)
+#   for x,y,flux in img_stars:
+   for x,y in img_stars:
+      key = str(x) + ":" + str(y)
+      if key not in index:
+         bad = 0
+         for lx,ly in new_list:
+            dist = calc_dist((x,y), (lx,ly))
+            if dist < 10:
+               bad = 1
+         if bad == 0:
+            new_list.append((x,y))
+         index[key] = 1
+   return(new_list)
+
+
+
+def lookup_star_in_cat(ix,iy,cat_stars,no_poly_cat_stars, star_dist=20,):
+   #print("LOOKUP:", ix,iy)
+   close = []
+   for cat_star in cat_stars:
+      name,mag,ra,dec,new_cat_x,new_cat_y = cat_star
+      # to get the plus do ra,dec fwd and then compare that to ix,iy to get the distance? Big improvement?
+      px_dist = calc_dist((ix,iy),(new_cat_x,new_cat_y))
+      close.append((ix,iy,px_dist,name,mag,ra,dec,new_cat_x,new_cat_y))
+   temp = sorted(close, key=lambda x: x[2], reverse=False)
+   closest = temp[0]
+   six,siy,spx_dist,sname,smag,sra,sdec,snew_cat_x,snew_cat_y = closest
+
+   key = str(closest[5]) + ":" + str(closest[6])
+   if key in no_poly_cat_stars:
+      no_poly_star = no_poly_cat_stars[key]
+      np_name,np_mag,np_ra,np_dec,np_new_cat_x,np_new_cat_y = no_poly_star
+      np_angle_to_center = find_angle((960,540), (np_new_cat_x, np_new_cat_y))
+      istar_angle_to_center = find_angle((960, 540), (ix,iy))
+      istar_dist_to_center = calc_dist((ix, iy), (960,540))
+      ang_diff =  abs(np_angle_to_center - istar_angle_to_center)
+      #if ang_diff < 30:
+      print("STAR: ", spx_dist, ang_diff)
+
+
+   else:
+      print("NO POLY CAT STAR KEY FOUND FOR KEY:", key)
+   star_dist = 20
+   if key in no_poly_cat_stars and closest[2] < star_dist and ang_diff < 10:
+      #print("NP STAR ANGLE/ I STAR ANG TO CENTER:", ix, iy, np_new_cat_x, np_new_cat_y, np_angle_to_center, istar_angle_to_center, istar_dist_to_center , closest[2] )
+      #print("CLOSEST:", closest)
+      return(1, closest)
+   else:
+      #print("FAIL NP STAR ANGLE/ I STAR ANG TO CENTER:", ix, iy, np_new_cat_x, np_new_cat_y, np_angle_to_center, istar_angle_to_center, istar_dist_to_center , closest[2] )
+
+      return(0, closest)
 
 
 def arecolinear(points ):
@@ -293,6 +349,7 @@ def process_video_frames(frames, video_file):
    print("FRAMES:", len(frames))
    print("BP EVENTS:", len(events))
    video_data = {}
+   video_data['mask_points'] = mask_points
    video_data['frame_data'] = frame_data
    video_data['events'] = events
    video_data['objects'] = objects
@@ -408,7 +465,8 @@ def run_detect(video_file, show):
 
       if is_meteor == 1:
          print("METEOR FOUND!:")
-         
+         video_data = reduce_points(video_data, frames[0])     
+         #exit()
 
          meteor_video_filename, event_start_time = make_meteor_video_filename(video_file, start, hd)
          fns, start_buff, end_buff = add_frame_buffer(len(frames), start, end)
@@ -428,6 +486,136 @@ def run_detect(video_file, show):
    video_data['meteor_found'] = meteor_found
    print("VIDEO DATA FILE:", video_data_file)
    save_json_file(video_data_file, video_data)    
+
+def reduce_points(video_data, image):
+   print("Reduce Points.")
+   # check if calparams exists in video data file 
+   if "cal_params" in video_data:
+      cal_params = video_data['cal_params']
+   else:
+      # find the best cal params file
+      print("FIND BEST CAL FILE FOR THIS METEOR")
+      video_data_file = video_data['video_data_file']
+      poss = get_active_cal_file(video_data_file)
+      cal_params_file = poss[0][0]
+      cal_params = load_json_file(cal_params_file)
+
+   center_az = cal_params['center_az']
+   center_el = cal_params['center_el']
+   rah,dech = AzEltoRADec(center_az,center_el,video_data['video_data_file'],cal_params,json_conf)
+   rah = str(rah).replace(":", " ")
+   dech = str(dech).replace(":", " ")
+   ra_center,dec_center = HMS2deg(str(rah),str(dech))
+   cal_params['ra_center'] = ra_center
+   cal_params['dec_center'] = dec_center
+
+
+
+   video_data['cal_params_file'] = cal_params_file
+   video_data['cal_params'] = cal_params
+
+
+   print("CAL PARAMS FOUND!", cal_params_file)
+   cat_img_stars, avg_res = find_cat_stars_from_points(video_data, image) 
+ 
+   cal_params['cat_img_stars'] = cat_img_stars
+   cal_params['total_res_px'] = avg_res
+
+   video_data['cal_params'] = cal_params
+    
+   return(video_data)
+
+def find_cat_stars_from_points(video_data, show_image = None):
+   show_image = cv2.cvtColor(show_image, cv2.COLOR_BGR2GRAY)
+   cal_params_file = video_data['cal_params_file']
+   in_cal_params = video_data['cal_params']
+   fov_poly = 0
+   pos_poly = 0
+   x_poly = in_cal_params['x_poly']
+   y_poly = in_cal_params['y_poly']
+   no_poly_cal_params = in_cal_params
+
+   cat_stars = get_catalog_stars(fov_poly, pos_poly, in_cal_params,"x",x_poly,y_poly,min=0)
+   cal_params = video_data['cal_params']
+   x_poly = np.zeros(shape=(15,), dtype=np.float64)
+   cal_params['x_poly'] = x_poly.tolist()
+   y_poly = np.zeros(shape=(15,), dtype=np.float64)
+   cal_params['y_poly'] = y_poly.tolist()
+
+   img_h, img_w = show_image.shape
+   # try to find some extra stars
+
+   for cat_star in cat_stars:
+      (name,mag,ra,dec,new_cat_x,new_cat_y) = cat_star
+   
+      x1,y1,x2,y2 = bound_cnt(new_cat_x,new_cat_y,img_w,img_h,10)
+      print("CROP:", x1,y1,x2,y2)
+      crop_img = show_image[y1:y2,x1:x2]
+      avg_val = np.mean(crop_img)
+      min_val, max_val, min_loc, (mx,my)= cv2.minMaxLoc(crop_img)
+      px_diff = max_val - avg_val
+      print(max_val, avg_val, px_diff)
+      if px_diff > 30:
+         video_data['mask_points'].append((new_cat_x, new_cat_y))
+
+
+
+   new_res = []
+   new_paired_stars = []
+   used = {}
+   video_data['mask_points'] = remove_dupe_img_stars(video_data['mask_points'])
+
+   #cv2.rectangle(show_image, (int(x1), int(y1)), (int(x2), int(y2)), (100,100,100), 1)
+
+   # Load NO poly cat stars
+   x_poly = np.zeros(shape=(15,), dtype=np.float64)
+   cal_params['x_poly'] = x_poly.tolist()
+   y_poly = np.zeros(shape=(15,), dtype=np.float64)
+   cal_params['y_poly'] = y_poly.tolist()
+
+   np_cat_stars = get_catalog_stars(fov_poly, pos_poly, no_poly_cal_params,"x",x_poly,y_poly,min=0)
+   no_poly_cat_stars = {}
+   for cat_star in np_cat_stars:
+      (name,mag,ra,dec,new_cat_x,new_cat_y) = cat_star
+      key = str(ra) + ":" + str(dec)
+      no_poly_cat_stars[key] = cat_star
+      #cv2.rectangle(show_image, (int(new_cat_x+5), int(new_cat_y+5)), (int(new_cat_x-5), int(new_cat_y-5)), (0,255,255), 1)
+
+   cat_image_stars = []
+   total_res = 0
+   for ix,iy in video_data['mask_points']:
+   
+      status, star_info = lookup_star_in_cat(ix,iy,cat_stars,no_poly_cat_stars, star_dist=20)
+      if status == 1:
+         (ix,iy,px_dist,iname,mag,ra,dec,new_cat_x,new_cat_y) = star_info
+         #(name,mag,ra,dec,new_cat_x,new_cat_y) = cat_star
+         iname = iname.decode("utf-8")
+         new_cat_x,new_cat_y = int(new_cat_x), int(new_cat_y)
+         total_res = total_res + px_dist
+         cat_image_stars.append((iname,mag,ra,dec,new_cat_x,new_cat_y,ix,iy,px_dist,cal_params_file))
+
+     
+
+      print("STARS:", status, star_info)
+      if show_image is not None:
+         ix, iy = int(ix), int(iy)
+         cv2.circle(show_image,(ix,iy), 10, (255), 1)
+         #cv2.circle(show_image,(star_info[0],star_info[1]), 10, (128,128), 1)
+         sx = star_info[7]
+         sy = star_info[8]
+         print("STARS:", status, star_info, ix, iy, sx, sy )
+         res = calc_dist((ix,iy), (sx,sy))
+         if res < 2:
+            cv2.rectangle(show_image, (int(sx+5), int(sy+5)), (int(sx-5), int(sy-5)), (255,255,255), 1)
+  
+   if len(cat_image_stars) > 0:
+      avg_res = float(total_res / len(cat_image_stars))
+ 
+   cv2.imshow('pepe', show_image)
+   cv2.waitKey(0)
+   return(cat_image_stars, avg_res)
+
+
 
 def make_meteor_json(event, video_data, event_start_time, meteor_video_filename):
    meteor_json = {}
