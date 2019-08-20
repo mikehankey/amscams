@@ -75,7 +75,7 @@ from os.path import isfile, join, exists
 
 
 # TEST CREATE VIDEO WITH BLENDING SD
-array_of_frames, path  = get_hd_frames_from_HD_repo("10041","2019/08/18","2019/08/18 00:00","2019/08/18 11:40")
+array_of_frames, path  = get_hd_frames_from_HD_repo("10041","2019/08/19","2019/08/19 01:00","2019/08/19 11:40")
 print("FRAMES")
 print(array_of_frames) 
 print("PATH")
@@ -83,8 +83,8 @@ print(path)
 if(array_of_frames is None):
     print('NO FRAME FOUND') 
 else:
-    where_path = add_info_to_frames(array_of_frames, path, "2019/08/18", "10041", "This is a test", "/mnt/ams2/CUSTOM_LOGOS/1.png","tl",HD_DIM, "bl","tr")
-    t = create_vid_from_frames(array_of_frames, where_path, "2019_08_18",  "10041","30")
+    where_path = add_info_to_frames(array_of_frames, path, "2019/08/19", "10041", "This is a test", "/mnt/ams2/CUSTOM_LOGOS/1.png","tl",HD_DIM, "bl","tr")
+    t = create_vid_from_frames(array_of_frames, where_path, "2019_08_19",  "10041","30")
     print(t)
 
 
