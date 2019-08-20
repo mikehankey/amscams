@@ -14,12 +14,17 @@ from shutil import copyfile
 # org =  '/mnt/ams2/TIMELAPSE_IMAGES/2019_08_06_01_02_26_000_010039.png'
 # stack = get_stack_from_HD_frame(org)
 # blend(org,stack,40,'/mnt/ams2/TMP/test.png')
+# WARNING: it only works if the images haven't the same size (HD_DIM resize)
 def blend(image1, image2, perc_trans_image1, output_file):
     other_perc =  int(perc_trans_image1)/100
-    cmd = 'ffmpeg -y -hide_banner -loglevel panic -i '+image2+' -i '+image1+' -filter_complex "[0:v]scale='+HD_DIM+'[scaled];[scaled]blend=all_mode=\'overlay\':all_opacity='+str(other_perc)+'[out]" -map "[out]" '+ output_file
+    cmd = 'ffmpeg -y -hide_banner -loglevel panic -i '+image2+' -i '+image1+' -filter_complex "[0:v]scale='+HD_DIM+'[scaled];[1:v]scale=1280x720[scaled2];[scaled][scaled2]blend=all_mode=\'multiply\':all_opacity='+str(other_perc)+'[out]" -map "[out]" '+ output_file
     output = subprocess.check_output(cmd, shell=True).decode("utf-8")    
     return output_file
  
+ 
+
+
+
 #Get Video date from file name 
 def get_meteor_date(_file):
 	fn = _file.split("/")[-1] 
@@ -291,13 +296,11 @@ def get_hd_frames_from_HD_repo(camID,date,start_date,end_date,limit_frame=False)
                 
                 if(frame_to_blend is not False):
                     frame_to_blend = TMP_IMG_HD_SRC_PATH + frame_to_blend
-                    f2 = blend(cur_path + '/' + f,frame_to_blend,40,cur_path + '/' + f)
+                    f2 = blend(cur_path + '/' + f,frame_to_blend,BLENDING_SD,cur_path + '/' + f)
                     shutil.copy2(f2, tmppath + '/' + f)
                 else:
                     shutil.copy2(cur_path+ f, tmppath + '/' + f)
-                 
-   
-
+     
         if(real_frames is not None):
             return(sorted(real_frames), tmppath)  
         else:

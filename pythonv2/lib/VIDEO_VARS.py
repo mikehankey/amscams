@@ -57,3 +57,5 @@ D_EXTRA_INFO = " " # WARNING - This is updated in Video_Parameters
 
 
 HD_DIM = "1280x720" #for ffmpeg - used to extract the HD frames in HD_FRAMES_PATH
+
+BLENDING_SD = 30 #For the amount of SD blending on HD frames (when SD is found)
