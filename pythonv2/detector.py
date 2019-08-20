@@ -34,6 +34,197 @@ from lib.DetectLib import eval_cnt
 
 json_conf = load_json_file("../conf/as6.json")
 
+def reduce_acl(this_poly, metframes,metconf,frames,mode=0,show=0):
+   xs = []
+   ys = []
+   err = []
+   fcc = 0
+   m_10 = metconf['m']
+   b_10 = metconf['b']
+   acl_poly = this_poly[1]
+
+   if "acl_med_seg_len" in metconf:
+      med_seg = (this_poly[0] + np.float64(metconf['acl_med_seg_len']))
+   else:
+      med_seg = (this_poly[0] + np.float64(metconf['med_seg_len']))
+
+   print("ACL POLY:", acl_poly, med_seg)
+
+   for fn in metframes:
+      #print(fn, metframes[fn])
+      est_res = 0
+      ifn = int(fn)
+      img = frames[ifn].copy()
+      img = cv2.resize(img, (1920,1080))
+      if len(img.shape) == 2:
+         img_gray = img
+         img = cv2.cvtColor(img,cv2.COLOR_GRAY2RGB)
+      else:
+         img_gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
+
+      est_x = int( metconf['fx'] + (metconf['x_dir_mod'] * (med_seg*fcc)) + (acl_poly * (fcc*fcc)) )
+      est_y = int((m_10*est_x)+b_10)
+
+      cv2.circle(img,(est_x,est_y), 4, (0,255,255), 1)
+      bp_x = metframes[fn]['mx']
+      bp_y = metframes[fn]['my']
+      cv2.circle(img,(bp_x,bp_y), 4, (0,0,255), 1)
+      xs.append(bp_x)
+      ys.append(bp_y)
+
+      bp_est_res = calc_dist((bp_x,bp_y), (est_x,est_y))
+      print("BP RES:", fn, bp_est_res)
+      if "hd_x" in metframes[fn]:
+         hd_x = metframes[fn]['hd_x']
+         hd_y = metframes[fn]['hd_y']
+         cv2.circle(img,(hd_x,hd_y), 4, (0,255,0), 1)
+         hd_est_res = calc_dist((hd_x,hd_y), (est_x,est_y))
+      else:
+         hd_est_res = bp_est_res
+      if mode == 1:
+         metframes[fn]['est_x'] = est_x
+         metframes[fn]['est_y'] = est_y
+         metframes[fn]['acl_res'] = hd_est_res
+
+      err.append(hd_est_res)
+
+      cv2.putText(img, str(med_seg) + " " + str(acl_poly),  (10,10), cv2.FONT_HERSHEY_SIMPLEX, .4, (0,0,255), 1)
+
+      if show == 1:
+         cv2.imshow('last', img)
+         cv2.moveWindow('last',25,25)
+         cv2.waitKey(70)
+      fcc = fcc + 1
+
+      if len(xs) > 10:
+         n_m_10,n_b_10 = best_fit_slope_and_intercept(xs[-10:],ys[-10:])
+         if abs(n_b_10 - b_10) < 200:
+            m_10 = n_m_10
+            b_10 = n_b_10
+   print("ACL RES:", np.mean(err))
+   if mode == 0:
+      return(np.mean(err))
+   else:
+      return(np.mean(err), metframes)
+
+
+def reduce_fov_pos(this_poly, cal_params, cal_params_file, oimage, json_conf, paired_stars, min_run = 1, show=0):
+   print("LEN PAIRED STARS:", len(paired_stars))
+   in_cal_params = cal_params.copy()
+   image = oimage.copy()
+   image = cv2.resize(image, (1920,1080))
+   # cal_params_file should be 'image' filename
+   #org_az = in_cal_params['center_az']
+   #org_el = in_cal_params['center_el']
+   org_pixscale = in_cal_params['orig_pixscale']
+   #org_pos_angle = in_cal_params['orig_pos_ang']
+   new_az = in_cal_params['center_az'] + this_poly[0]
+   new_el = in_cal_params['center_el'] + this_poly[1]
+
+   position_angle = float(in_cal_params['position_angle']) + this_poly[2]
+   pixscale = float(in_cal_params['orig_pixscale']) + this_poly[3]
+
+   #position_angle = float(in_cal_params['position_angle']) 
+   #pixscale = float(org_pixscale)
+
+   rah,dech = AzEltoRADec(new_az,new_el,cal_params_file,in_cal_params,json_conf)
+   rah = str(rah).replace(":", " ")
+   dech = str(dech).replace(":", " ")
+   ra_center,dec_center = HMS2deg(str(rah),str(dech))
+
+   in_cal_params['position_angle'] = position_angle
+   in_cal_params['ra_center'] = ra_center
+   in_cal_params['dec_center'] = dec_center
+   in_cal_params['center_az'] = new_az 
+   in_cal_params['center_el'] = new_el
+   in_cal_params['pixscale'] = pixscale
+   in_cal_params['device_lat'] = json_conf['site']['device_lat']
+   in_cal_params['device_lng'] = json_conf['site']['device_lng']
+   in_cal_params['device_alt'] = json_conf['site']['device_alt']
+
+   for data in paired_stars:
+      iname,mag,o_ra,o_dec,img_ra,img_dec,match_dist,new_x,new_y,img_az,img_el,old_cat_x,old_cat_y,six,siy,cat_dist  = data
+      cv2.rectangle(image, (old_cat_x-5, old_cat_y-5), (old_cat_x + 5, old_cat_y + 5), (255), 1)
+      cv2.line(image, (six,siy), (old_cat_x,old_cat_y), (255), 1)
+      cv2.circle(image,(six,siy), 10, (255), 1)
+
+   fov_poly = 0
+   pos_poly = 0
+   x_poly = in_cal_params['x_poly']
+   y_poly = in_cal_params['y_poly']
+   #print(in_cal_params['ra_center'], in_cal_params['dec_center'], in_cal_params['center_az'], in_cal_params['center_el'], in_cal_params['position_angle'], in_cal_params['pixscale'], this_poly)
+   cat_stars = get_catalog_stars(fov_poly, pos_poly, in_cal_params,"x",x_poly,y_poly,min=0)
+   new_res = []
+   new_paired_stars = []
+   used = {}
+   org_star_count = len(paired_stars)
+   for cat_star in cat_stars:
+      (name,mag,ra,dec,new_cat_x,new_cat_y) = cat_star
+      dname = name.decode("utf-8")
+      for data in paired_stars:
+         iname,mag,o_ra,o_dec,img_ra,img_dec,match_dist,new_x,new_y,img_az,img_el,old_cat_x,old_cat_y,six,siy,cat_dist  = data
+#dname == iname:
+         if (ra == o_ra and dec == o_dec) or (iname == dname and iname != ''):
+            pdist = calc_dist((six,siy),(new_cat_x,new_cat_y))
+            if pdist <= 20:
+               new_res.append(pdist)
+               used_key = str(six) + "." + str(siy)
+               if used_key not in used:
+                  new_paired_stars.append((iname,mag,ra,dec,new_cat_x,new_cat_y,six,siy,pdist))
+
+                  used[used_key] = 1
+                  new_cat_x,new_cat_y = int(new_cat_x), int(new_cat_y)
+                  cv2.rectangle(image, (new_cat_x-5, new_cat_y-5), (new_cat_x + 5, new_cat_y + 5), (255), 1)
+                  cv2.line(image, (six,siy), (new_cat_x,new_cat_y), (255), 1)
+                  cv2.circle(image,(six,siy), 10, (255), 1)
+
+   paired_stars = new_paired_stars
+   tres  =0
+   for iname,mag,ra,dec,new_cat_x,new_cat_y,six,siy,pdist in new_paired_stars:
+      tres = tres + pdist
+
+   orig_star_count = len(in_cal_params['cat_image_stars'])
+
+   if len(paired_stars) > 0:
+      avg_res = tres / len(paired_stars)
+   else:
+      avg_res = 9999999
+      res = 9999999
+
+   if orig_star_count > len(paired_stars):
+      pen = orig_star_count - len(paired_stars)
+   else:
+      pen = 0
+   pen = 0
+   avg_res = avg_res + (pen * 10)
+   show_res = avg_res - (pen*10)
+   desc = "RES: " + str(show_res) + " " + str(len(new_paired_stars)) + " " + str(orig_star_count) + " PEN:" + str(pen)
+   cv2.putText(image, desc,  (10,50), cv2.FONT_HERSHEY_SIMPLEX, .8, (255, 255, 255), 1)
+   desc2 = "CENTER AZ/EL/POS" + str(new_az) + "/" + str(new_el) + "/" + str(in_cal_params['position_angle'])
+   cv2.putText(image, desc2,  (10,80), cv2.FONT_HERSHEY_SIMPLEX, .8, (255, 255, 255), 1)
+
+   desc2 = "PX SCALE:" + str(in_cal_params['pixscale'])
+   cv2.putText(image, desc2,  (10,110), cv2.FONT_HERSHEY_SIMPLEX, 1, (255, 255, 255), 1)
+
+   print("AVG RES:", avg_res, len(paired_stars), "/", org_star_count, new_az, new_el, ra_center, dec_center, position_angle)
+   print("POLY:", x_poly, y_poly)
+   if show == 1:
+      show_img = cv2.resize(image, (960,540))
+      if "cam_id" in in_cal_params:
+         cv2.imshow(cam_id, show_img)
+      else:
+         cv2.imshow('pepe', show_img)
+      if min_run == 1:
+         cv2.waitKey(70)
+      else:
+         cv2.waitKey(1)
+
+   if min_run == 1:
+      return(avg_res)
+   else:
+      return(show_res)
+
+
 def remove_dupe_img_stars(img_stars):
    index = {}
    new_list = []
@@ -349,6 +540,7 @@ def process_video_frames(frames, video_file):
    print("FRAMES:", len(frames))
    print("BP EVENTS:", len(events))
    video_data = {}
+   video_data['masks'] = masks
    video_data['mask_points'] = mask_points
    video_data['frame_data'] = frame_data
    video_data['events'] = events
@@ -465,14 +657,32 @@ def run_detect(video_file, show):
 
       if is_meteor == 1:
          print("METEOR FOUND!:")
-         video_data = reduce_points(video_data, frames[0])     
-         #exit()
+         video_data = setup_calib(video_data, frames[0])     
 
          meteor_video_filename, event_start_time = make_meteor_video_filename(video_file, start, hd)
          fns, start_buff, end_buff = add_frame_buffer(len(frames), start, end)
 
-         meteor_json = make_meteor_json(event, video_data, event_start_time, meteor_video_filename ) 
          meteor_json_filename = meteor_video_filename.replace(".mp4", ".json")
+         if cfe(meteor_json_filename) == 0:
+            meteor_json = make_meteor_json(event, video_data, event_start_time, meteor_video_filename ) 
+         else:
+            meteor_json = load_json_file(meteor_json_filename)
+            meteor_json = post_load_mj(meteor_json)
+
+         # now smooth out the metframes and make sure all of the points are good. 
+         print("MIKE SMOTH")
+         meteor_json = smooth_points(meteor_json, frames)
+         meteor_json['metconf']['video_data_file'] = video_data_file
+         meteor_json['cal_params'] = video_data['cal_params']
+         print("MIKE SMOTH")
+
+
+         # now convert the x,y points to az,el
+
+         meteor_json = reduce_metframes(meteor_json, meteor_json_filename, video_data['cal_params'])
+         print("MIKE REDUCE")
+
+
          save_json_file(meteor_json_filename, meteor_json)
      
          if cfe(meteor_video_filename) == 0:
@@ -481,17 +691,247 @@ def run_detect(video_file, show):
          print("Meteor JSON Saved:", meteor_json_filename)
       ec = int(ec) + 1
 
-
    video_data['sd_objects'] = objects
    video_data['meteor_found'] = meteor_found
    print("VIDEO DATA FILE:", video_data_file)
    save_json_file(video_data_file, video_data)    
 
-def reduce_points(video_data, image):
+def post_load_mj(meteor_json):
+   mf = meteor_json['metframes']
+   new_mf = {}
+   for fn in mf:
+      print(fn)
+      ifn = int(fn)
+      new_mf[ifn] = mf[fn]
+   meteor_json['metframes'] = new_mf
+   return(meteor_json)
+
+def smooth_points(meteor_json, frames):
+   img_h, img_w = frames[0].shape[0], frames[0].shape[1] 
+   metframes = meteor_json['metframes']
+
+   first_fn = None
+   first_x = None
+   first_y = None
+   last_fn = None
+   last_x = None
+   last_y = None
+
+   mxs = []
+   mys = []
+
+   for fn in metframes:
+      mx = metframes[fn]['mx'] 
+      my = metframes[fn]['my'] 
+      mxs.append(mx)
+      mys.append(my)
+
+      if first_fn is None:
+         first_fn = fn
+         first_x = mx 
+         first_y = my
+      if "x1" not in metframes[fn]:
+         x1,y1,x2,y2 = bound_cnt(mx,my,img_w,img_h,100)
+         print("FRAME ", fn, "MISSING X1 VARS", mx, my ) 
+
+         metframes[fn]['x1']  = x1
+         metframes[fn]['y1']  = y1
+         metframes[fn]['x2']  = x2
+         metframes[fn]['y2']  = y2
+      else:
+         print(fn, mx, my )
+      if "last_seg_dist" in metframes[fn]:
+         print("Last Seg:", metframes[fn]['last_seg_dist'])
+      else:
+         if fn == first_fn:
+            next_fn = str(int(fn) + 1)
+            if next_fn in metframes:
+               nx = metframes[next_fn]['mx'] 
+               ny = metframes[next_fn]['my'] 
+               metframes[fn]['last_seg_dist'] = calc_dist((mx,my), (nx,ny))
+
+   min_mx = min(mxs)
+   min_my = min(mys)
+   max_mx = max(mxs)
+   max_my = max(mys)
+   crop_box = [min_mx, min_my, max_mx, max_my]
+   meteor_json['crop_box'] = crop_box
+   for fn in meteor_json['metframes']:
+      mx = metframes[fn]['mx'] 
+      my = metframes[fn]['my'] 
+      last_seg = metframes[fn]['last_seg_dist']
+      x1 = metframes[fn]['x1']
+      y1 = metframes[fn]['y1']
+      x2 = metframes[fn]['x2'] 
+      y2 = metframes[fn]['y2']  
+      ifn = int(fn)
+      show_image = frames[ifn].copy()
+      cv2.circle(show_image,(mx,my), 10, (255), 1)
+      print("CROP BOX:", crop_box)
+
+      #cv2.imshow('pepe', show_image)
+      #cv2.waitKey(10)
+      hdm_x = 1920 / 1280
+      hdm_y = 1080 / 720
+     
+      disp_image = cv2.resize(show_image, (1280,720))
+      #crop_img = show_image[min_my:max_my,min_mx:max_mx]
+      crop_img = show_image[y1:y2,x1:x2]
+      print(crop_img.shape)
+      dx1 = 5
+      dy1 = 5
+      dx2 = 5 + crop_img.shape[1]
+      dy2 = 5 + crop_img.shape[0]
+
+      if crop_img.shape[0] > 0 and crop_img.shape[1] > 0:
+
+         disp_image[dy1:dy2,dx1:dx2] = crop_img
+         #cv2.line(disp_image, (dx1,dy2), (int(min_mx/hdm_x),int(max_my/hdm_y)), (128,128,128), 1) 
+         #cv2.line(disp_image, (dx2,dy1), (int(max_mx/hdm_x),int(min_my/hdm_y)), (128,128,128), 1) 
+
+
+         cv2.rectangle(disp_image, (int(dx1), int(dy1)), (int(dx2), int(dy2)), (100,100,100), 1)
+         cv2.rectangle(disp_image, (int(min_mx/hdm_x), int(min_my/hdm_y)), (int(max_mx/hdm_x), int(max_my/hdm_y)), (100,100,100), 1)
+         cv2.imshow('pepe', disp_image)
+         cv2.waitKey(70)
+      else:
+         print("BAD CROP:", fn, y1,y2,x1,x2)
+      print(fn, mx, my, last_seg)
+
+   meteor_json['metframes'] = metframes 
+   metconf = meteor_json['metconf']
+
+   metconf = update_metconf(meteor_json)
+   meteor_json['metconf'] = metconf
+   this_poly = np.zeros(shape=(2,), dtype=np.float64)
+   if "acl_poly" in metconf:
+      this_poly[0] = np.float64(0)
+      this_poly[1] = np.float64(metconf['acl_poly'])
+   else:
+      print("NO POLY!", metconf)
+
+   avg_res = reduce_acl(this_poly, meteor_json['metframes'],meteor_json['metconf'],frames, 0,1)
+   print("AVG RES:", avg_res)
+   print("POLY:", this_poly)
+   print("ACL RES:", avg_res)
+   if "acl_med_seg_len" in metconf:
+      print("MED SEG LEN:", metconf['acl_med_seg_len'] )
+   else:
+      print("MED SEG LEN:", metconf['med_seg_len'] )
+
+   if 'acl_poly' in metconf:
+      this_poly[0] = 0
+      this_poly[1] = np.float64(metconf['acl_poly'])
+  
+   else:
+      this_poly[0] = -1
+      this_poly[1] = -.5
+
+   res = scipy.optimize.minimize(reduce_acl, this_poly, args=( metframes, metconf,frames,0,1), method='Nelder-Mead')
+   poly = res['x']
+   fun = res['fun']
+   metconf['acl_med_seg_len'] = float(metconf['med_seg_len'] + poly[0])
+   metconf['med_seg_len'] = float(metconf['med_seg_len'] + poly[0])
+   metconf['acl_poly'] = poly[1]
+   metconf['acl_res'] = float(fun)
+   print(res)
+   this_poly[0] = 0
+   this_poly[1] = poly[1] 
+
+   meteor_json['metconf'] = metconf
+
+   this_poly[0] = 0
+   avg_res,metframes = reduce_acl(this_poly, meteor_json['metframes'],meteor_json['metconf'],frames, 1,1)
+   meteor_json['metframes'] = metframes
+   print("AVG RES:", avg_res)
+   print("POLY:", this_poly)
+   print("ACL RES:", avg_res)
+   print("MED SEG LEN:", metconf['med_seg_len'] )
+
+   return(meteor_json)
+
+def update_metconf(meteor_json):
+   mxs = []
+   mys = []
+   segs = []
+   if "metconf" not in meteor_json:
+      print(meteor_json)
+      metconf = {}
+   else:
+      metconf = meteor_json['metconf']
+   mf = meteor_json['metframes']
+   for fn in mf:
+      mxs.append(mf[fn]['mx'])    
+      mys.append(mf[fn]['my'])    
+      if "last_seg_dist" in mf[fn]:
+         segs.append(mf[fn]['last_seg_dist'])
+
+   metconf['mxs'] = mxs
+   metconf['mys'] = mys
+   if "acl_med_seg_len" in metconf:
+      metconf['med_seg_len'] = metconf['acl_med_seg_len']
+   else:
+      metconf['med_seg_len'] = float(np.median(segs)) 
+   metconf['m'], metconf['b'] = best_fit_slope_and_intercept(mxs,mys)
+
+   dir_x = mxs[0] - mxs[-1] 
+   dir_y = mys[0] - mys[-1] 
+   if dir_x < 0:
+      x_dir_mod = 1
+   else:
+      x_dir_mod = -1
+   if dir_y < 0:
+      y_dir_mod = 1
+   else:
+      y_dir_mod = -1
+   metconf['x_dir_mod'] = x_dir_mod
+   metconf['y_dir_mod'] = y_dir_mod
+   metconf['fx'] = mxs[0] 
+   metconf['fy'] = mys[0] 
+
+   return(metconf)
+
+def reduce_metframes(meteor_json, meteor_json_filename, cal_params):
+   metframes = meteor_json['metframes']
+   metconf = meteor_json['metconf']
+   azs = []
+   els = []
+   ras = []
+   decs = []
+   for fn in metframes:
+      print(fn, metframes[fn])
+      if "hd_x" in metframes[fn]:
+         hd_x = metframes[fn]['hd_x']
+         hd_y = metframes[fn]['hd_y']
+      else:
+         hd_x = metframes[fn]['mx']
+         hd_y = metframes[fn]['my']
+      nx, ny, ra ,dec , az, el= XYtoRADec(hd_x,hd_y,meteor_json['metconf']['video_data_file'],meteor_json['cal_params'],json_conf)
+      metframes[fn]['ra'] = ra
+      metframes[fn]['dec'] = dec
+      metframes[fn]['az'] = az
+      metframes[fn]['el'] = el
+      azs.append(az)
+      els.append(el)
+      ras.append(ra)
+      decs.append(dec)
+
+   metconf['azs'] = azs
+   metconf['els'] = els 
+   metconf['ras'] = ras
+   metconf['decs'] = decs  
+   meteor_json['metconf'] = metconf
+   meteor_json['metframes'] = metframes
+   print("DONE REDUCE")
+   return(meteor_json)
+
+def setup_calib(video_data, image):
    print("Reduce Points.")
    # check if calparams exists in video data file 
    if "cal_params" in video_data:
       cal_params = video_data['cal_params']
+      print("Usinging the existing cal params.")
+      #exit()
    else:
       # find the best cal params file
       print("FIND BEST CAL FILE FOR THIS METEOR")
@@ -499,9 +939,17 @@ def reduce_points(video_data, image):
       poss = get_active_cal_file(video_data_file)
       cal_params_file = poss[0][0]
       cal_params = load_json_file(cal_params_file)
+      video_data['cal_params_file'] = cal_params_file
+
+      print(cal_params)
+      #exit()
+   org_x_poly = cal_params['x_poly']
+   org_y_poly = cal_params['y_poly']
 
    center_az = cal_params['center_az']
    center_el = cal_params['center_el']
+   cal_params['orig_center_az'] = center_az
+   cal_params['orig_center_el'] = center_el
    rah,dech = AzEltoRADec(center_az,center_el,video_data['video_data_file'],cal_params,json_conf)
    rah = str(rah).replace(":", " ")
    dech = str(dech).replace(":", " ")
@@ -509,21 +957,70 @@ def reduce_points(video_data, image):
    cal_params['ra_center'] = ra_center
    cal_params['dec_center'] = dec_center
 
+   new_cal_params = {}
+   new_cal_params['device_lat'] = json_conf['site']['device_lat']
+   new_cal_params['device_lng'] = json_conf['site']['device_lng']
+   new_cal_params['device_alt'] = json_conf['site']['device_alt']
+   new_cal_params['center_az'] = cal_params['center_az']
+   new_cal_params['center_el'] = cal_params['center_el']
+   new_cal_params['ra_center'] = cal_params['ra_center']
+   new_cal_params['dec_center'] = cal_params['dec_center']
+   new_cal_params['position_angle'] = cal_params['position_angle']
+   new_cal_params['pixscale'] = cal_params['pixscale']
+   new_cal_params['orig_pixscale'] = cal_params['pixscale']
+   new_cal_params['orig_center_az'] = cal_params['orig_center_az']
+   new_cal_params['orig_center_el'] = cal_params['orig_center_el']
+   new_cal_params['imagew'] = cal_params['imagew']
+   new_cal_params['imageh'] = cal_params['imageh']
+   new_cal_params['x_poly'] = cal_params['x_poly']
+   new_cal_params['y_poly'] = cal_params['y_poly']
+   new_cal_params['x_poly_fwd'] = cal_params['x_poly_fwd']
+   new_cal_params['y_poly_fwd'] = cal_params['y_poly_fwd']
+   if "cfit_tries" in cal_params:
+      new_cal_params['cfit_tries'] = cal_params['cfit_tries']
+   cal_params = new_cal_params
 
-
-   video_data['cal_params_file'] = cal_params_file
    video_data['cal_params'] = cal_params
 
 
-   print("CAL PARAMS FOUND!", cal_params_file)
+   print("CAL PARAMS FOUND!", video_data['cal_params_file'])
+
+   image = mask_frame(image, [], video_data['masks'], 10)
    cat_img_stars, avg_res = find_cat_stars_from_points(video_data, image) 
  
-   cal_params['cat_img_stars'] = cat_img_stars
+   cal_params['cat_image_stars'] = cat_img_stars
    cal_params['total_res_px'] = avg_res
+   cal_params['total_res_deg'] = 9999
 
    video_data['cal_params'] = cal_params
+   this_poly = np.zeros(shape=(4,), dtype=np.float64)
+   
+   print("CAT:", len(cal_params['cat_image_stars']))
+   cal_params['x_poly'] = org_x_poly
+   cal_params['y_poly'] = org_y_poly
+   if "cfit_tries" in cal_params:
+      cfit_tries = int(cal_params['cfit_tries'])
+   else:
+      cfit_tries = 0
+    
+   if cfit_tries < 5:
+      start_res = reduce_fov_pos(this_poly, cal_params,video_data['video_data_file'],image,json_conf, cal_params['cat_image_stars'],1,1)
+ 
+      res = scipy.optimize.minimize(reduce_fov_pos, this_poly, args=( cal_params,video_data['video_data_file'],image,json_conf, cal_params['cat_image_stars'],1,1), method='Nelder-Mead')
+      fov_pos_poly = res['x']
+
+      cal_params['center_az'] = float(cal_params['orig_center_az']) + float(fov_pos_poly[0] )
+      cal_params['center_el'] = float(cal_params['orig_center_el']) + float(fov_pos_poly[1] )
+      cal_params['position_angle'] = float(cal_params['position_angle']) + float(fov_pos_poly[2] )
+
+   cfit_tries = cfit_tries + 1
+   cal_params['cfit_tries'] = cfit_tries 
+
+   video_data['cal_params'] = cal_params 
+
     
    return(video_data)
+
 
 def find_cat_stars_from_points(video_data, show_image = None):
    show_image = cv2.cvtColor(show_image, cv2.COLOR_BGR2GRAY)
@@ -537,14 +1034,14 @@ def find_cat_stars_from_points(video_data, show_image = None):
 
    cat_stars = get_catalog_stars(fov_poly, pos_poly, in_cal_params,"x",x_poly,y_poly,min=0)
    cal_params = video_data['cal_params']
-   x_poly = np.zeros(shape=(15,), dtype=np.float64)
-   cal_params['x_poly'] = x_poly.tolist()
-   y_poly = np.zeros(shape=(15,), dtype=np.float64)
-   cal_params['y_poly'] = y_poly.tolist()
+   #x_poly = np.zeros(shape=(15,), dtype=np.float64)
+   #cal_params['x_poly'] = x_poly.tolist()
+   #y_poly = np.zeros(shape=(15,), dtype=np.float64)
+   #cal_params['y_poly'] = y_poly.tolist()
 
    img_h, img_w = show_image.shape
    # try to find some extra stars
-
+   img_points = []
    for cat_star in cat_stars:
       (name,mag,ra,dec,new_cat_x,new_cat_y) = cat_star
    
@@ -555,23 +1052,27 @@ def find_cat_stars_from_points(video_data, show_image = None):
       min_val, max_val, min_loc, (mx,my)= cv2.minMaxLoc(crop_img)
       px_diff = max_val - avg_val
       print(max_val, avg_val, px_diff)
-      if px_diff > 30:
-         video_data['mask_points'].append((new_cat_x, new_cat_y))
+      if px_diff > 10:
+         ix = x1 + mx
+         iy = y1 + my
+         video_data['mask_points'].append((ix, iy))
+         img_points.append((ix, iy))
 
 
 
    new_res = []
    new_paired_stars = []
    used = {}
-   video_data['mask_points'] = remove_dupe_img_stars(video_data['mask_points'])
+   #video_data['mask_points'] = remove_dupe_img_stars(video_data['mask_points'])
+   video_data['mask_points'] = img_points
 
    #cv2.rectangle(show_image, (int(x1), int(y1)), (int(x2), int(y2)), (100,100,100), 1)
 
    # Load NO poly cat stars
    x_poly = np.zeros(shape=(15,), dtype=np.float64)
-   cal_params['x_poly'] = x_poly.tolist()
+   no_poly_cal_params['x_poly'] = x_poly.tolist()
    y_poly = np.zeros(shape=(15,), dtype=np.float64)
-   cal_params['y_poly'] = y_poly.tolist()
+   no_poly_cal_params['y_poly'] = y_poly.tolist()
 
    np_cat_stars = get_catalog_stars(fov_poly, pos_poly, no_poly_cal_params,"x",x_poly,y_poly,min=0)
    no_poly_cat_stars = {}
@@ -591,8 +1092,9 @@ def find_cat_stars_from_points(video_data, show_image = None):
          #(name,mag,ra,dec,new_cat_x,new_cat_y) = cat_star
          iname = iname.decode("utf-8")
          new_cat_x,new_cat_y = int(new_cat_x), int(new_cat_y)
-         total_res = total_res + px_dist
-         cat_image_stars.append((iname,mag,ra,dec,new_cat_x,new_cat_y,ix,iy,px_dist,cal_params_file))
+         if px_dist < 10: 
+            total_res = total_res + px_dist
+            cat_image_stars.append((iname,mag,ra,dec,new_cat_x,new_cat_y,ix,iy,px_dist,cal_params_file))
 
      
 
@@ -605,15 +1107,19 @@ def find_cat_stars_from_points(video_data, show_image = None):
          sy = star_info[8]
          print("STARS:", status, star_info, ix, iy, sx, sy )
          res = calc_dist((ix,iy), (sx,sy))
-         if res < 2:
+         if res < 5:
             cv2.rectangle(show_image, (int(sx+5), int(sy+5)), (int(sx-5), int(sy-5)), (255,255,255), 1)
+   real_cat_image_stars = []
+   for name,mag,ra,dec,new_cat_x,new_cat_y,ix,iy,px_dist,cal_params_file in cat_image_stars:
+      real_cat_image_stars.append(( name,mag,ra,dec,0,0,px_dist,int(new_cat_x),int(new_cat_y),0,0,int(new_cat_x),int(new_cat_y),int(ix),int(iy),px_dist))
+
   
    if len(cat_image_stars) > 0:
       avg_res = float(total_res / len(cat_image_stars))
  
    cv2.imshow('pepe', show_image)
-   cv2.waitKey(0)
-   return(cat_image_stars, avg_res)
+   cv2.waitKey(1)
+   return(real_cat_image_stars, avg_res)
 
 
 
@@ -810,6 +1316,8 @@ def evaluate_frames(video_data):
       min_y = min(fxs)
       max_y = max(fxs)
       min_max_dist = calc_dist((min_x,min_y), (max_x,max_y))
+
+
         
       elp_frames = int(end) - int(start)
       print("END: ", end)
