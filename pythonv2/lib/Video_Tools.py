@@ -14,6 +14,7 @@ from shutil import copyfile
 # org =  '/mnt/ams2/TIMELAPSE_IMAGES/2019_08_06_01_02_26_000_010039.png'
 # stack = get_stack_from_HD_frame(org)
 # blend(org,stack,40,'/mnt/ams2/TMP/test.png')
+# WARNING: it only works if the images haven't the same size (HD_DIM resize)
 def blend(image1, image2, perc_trans_image1, output_file):
     other_perc =  int(perc_trans_image1)/100
     cmd = 'ffmpeg -y -hide_banner -loglevel panic -i '+image2+' -i '+image1+' -filter_complex "[0:v]scale='+HD_DIM+'[scaled];[scaled]blend=all_mode=\'overlay\':all_opacity='+str(other_perc)+'[out]" -map "[out]" '+ output_file

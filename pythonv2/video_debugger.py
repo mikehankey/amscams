@@ -87,5 +87,5 @@ from os.path import isfile, join, exists
 
 
 # TEST BLENDER
-blend('/mnt/ams2/meteors/2019_08_19/2019_08_19_07_43_54_000_010042-trim0383-half-stack.png','/mnt/ams2/meteors/2019_08_19/2019_08_19_08_26_52_000_010041-trim0183-half-stack.png',50,'/mnt/ams2/TMP/test.png')
+blend('/mnt/ams2/meteors/2019_08_19/2019_08_19_07_43_54_000_010042-trim0383-half-stack.png','/mnt/ams2/meteors/2019_08_19/2019_08_19_00_05_29_000_010041-trim0000-frm83.png',50,'/mnt/ams2/TMP/test.png')
 print('/mnt/ams2/TMP/test.png')
