@@ -90,6 +90,4 @@ from os.path import isfile, join, exists
 blend('/mnt/ams2/meteors/2019_08_19/2019_08_19_08_26_48_000_010041-trim-183-HD-meteor-stacked.png','/mnt/ams2/meteors/2019_08_19/2019_08_19_00_08_10_000_010037-trim-1-HD-meteor-crop-stacked-obj.png',50,'/mnt/ams2/TMP/test.png')
 print('/mnt/ams2/TMP/test.png')
 
-
-
-ffmpeg -y -i /mnt/ams2/meteors/2019_08_19/2019_08_19_08_26_48_000_010041-trim-183-HD-meteor-stacked.png  -i /mnt/ams2/meteors/2019_08_19/2019_08_19_00_08_10_000_010037-trim-1-HD-meteor-crop-stacked-obj.png -filter_complex "[0:v]scale=1280x720[scaled];[scaled]blend=all_mode='multiply':all_opacity=0.5[out]" -map "[out]" /mnt/ams2/TMP/test.png
+ 

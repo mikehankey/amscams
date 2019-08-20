@@ -17,10 +17,14 @@ from shutil import copyfile
 # WARNING: it only works if the images haven't the same size (HD_DIM resize)
 def blend(image1, image2, perc_trans_image1, output_file):
     other_perc =  int(perc_trans_image1)/100
-    cmd = 'ffmpeg -y -hide_banner -loglevel panic -i '+image2+' -i '+image1+' -filter_complex "[0:v]scale='+HD_DIM+'[scaled];[scaled]blend=all_mode=\'overlay\':all_opacity='+str(other_perc)+'[out]" -map "[out]" '+ output_file
+    cmd = 'ffmpeg -y -hide_banner -loglevel panic -i '+image2+' -i '+image1+' -filter_complex "[0:v]scale='+HD_DIM+'[scaled];[1:v]scale=1280x720[scaled2];[scaled][scaled2]blend=all_mode=\'multiply\':all_opacity='+str(other_perc)+'[out]" -map "[out]" '+ output_file
     output = subprocess.check_output(cmd, shell=True).decode("utf-8")    
     return output_file
  
+ 
+
+
+
 #Get Video date from file name 
 def get_meteor_date(_file):
 	fn = _file.split("/")[-1] 
