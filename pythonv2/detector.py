@@ -34,7 +34,7 @@ from lib.DetectLib import eval_cnt
 
 json_conf = load_json_file("../conf/as6.json")
 
-def reduce_acl(this_poly, metframes,metconf,frames,mode=0,show=0):
+def reduce_acl(this_poly, metframes,metconf,frames,mode=0,show=0,key_field = "m"):
    xs = []
    ys = []
    err = []
@@ -42,18 +42,19 @@ def reduce_acl(this_poly, metframes,metconf,frames,mode=0,show=0):
    m_10 = metconf['m']
    b_10 = metconf['b']
    acl_poly = this_poly[1]
+  
+   key_x = key_field + "x"
+   key_y = key_field + "y"
 
    if "acl_med_seg_len" in metconf:
       med_seg = (this_poly[0] + np.float64(metconf['acl_med_seg_len']))
    else:
       med_seg = (this_poly[0] + np.float64(metconf['med_seg_len']))
 
-   print("ACL POLY:", acl_poly, med_seg)
 
    for fn in metframes:
-      #print(fn, metframes[fn])
       est_res = 0
-      ifn = int(fn)
+      ifn = int(fn) -1
       img = frames[ifn].copy()
       img = cv2.resize(img, (1920,1080))
       if len(img.shape) == 2:
@@ -66,21 +67,15 @@ def reduce_acl(this_poly, metframes,metconf,frames,mode=0,show=0):
       est_y = int((m_10*est_x)+b_10)
 
       cv2.circle(img,(est_x,est_y), 4, (0,255,255), 1)
-      bp_x = metframes[fn]['mx']
-      bp_y = metframes[fn]['my']
+      bp_x = metframes[fn][key_x]
+      bp_y = metframes[fn][key_y]
       cv2.circle(img,(bp_x,bp_y), 4, (0,0,255), 1)
       xs.append(bp_x)
       ys.append(bp_y)
 
       bp_est_res = calc_dist((bp_x,bp_y), (est_x,est_y))
-      print("BP RES:", fn, bp_est_res)
-      if "hd_x" in metframes[fn]:
-         hd_x = metframes[fn]['hd_x']
-         hd_y = metframes[fn]['hd_y']
-         cv2.circle(img,(hd_x,hd_y), 4, (0,255,0), 1)
-         hd_est_res = calc_dist((hd_x,hd_y), (est_x,est_y))
-      else:
-         hd_est_res = bp_est_res
+      hd_est_res = bp_est_res
+
       if mode == 1:
          metframes[fn]['est_x'] = est_x
          metframes[fn]['est_y'] = est_y
@@ -91,8 +86,8 @@ def reduce_acl(this_poly, metframes,metconf,frames,mode=0,show=0):
       cv2.putText(img, str(med_seg) + " " + str(acl_poly),  (10,10), cv2.FONT_HERSHEY_SIMPLEX, .4, (0,0,255), 1)
 
       if show == 1:
-         cv2.imshow('last', img)
-         cv2.moveWindow('last',25,25)
+         cv2.imshow('pepe', img)
+         cv2.moveWindow('pepe',25,25)
          cv2.waitKey(70)
       fcc = fcc + 1
 
@@ -101,7 +96,7 @@ def reduce_acl(this_poly, metframes,metconf,frames,mode=0,show=0):
          if abs(n_b_10 - b_10) < 200:
             m_10 = n_m_10
             b_10 = n_b_10
-   print("ACL RES:", np.mean(err))
+   #print("ACL RES:", np.mean(err))
    if mode == 0:
       return(np.mean(err))
    else:
@@ -406,9 +401,7 @@ def process_video_frames(frames, video_file):
       mask_size = 8
    else:
       mask_size = 5
-   #median_frame = mask_frame(median_frame, mask_points, masks,mask_size)
-   #cv2.imshow('pepe', median_frame)
-   #cv2.waitKey(0)
+
    objects = []
    for frame in frames:
       
@@ -520,8 +513,8 @@ def process_video_frames(frames, video_file):
          nomo = nomo + 1
          #blob_x = None
          #blob_y = None
-      cv2.imshow('pepe2', subframe)
-      cv2.waitKey(70)
+      #cv2.imshow('pepe', subframe)
+      #cv2.waitKey(70)
       frame_data[fn]['cm'] = cm
       frame_data[fn]['nonmo'] = nomo
       print(fn, max_val, cm, nomo)
@@ -670,10 +663,15 @@ def run_detect(video_file, show):
             meteor_json = post_load_mj(meteor_json)
 
          # now smooth out the metframes and make sure all of the points are good. 
+         metconf = update_metconf(meteor_json)
+         meteor_json['metconf'] = metconf
          print("MIKE SMOTH")
          meteor_json = smooth_points(meteor_json, frames)
          meteor_json['metconf']['video_data_file'] = video_data_file
          meteor_json['cal_params'] = video_data['cal_params']
+         meteor_json['start_buff'] = start_buff 
+         meteor_json['end_buff'] = end_buff 
+         
          print("MIKE SMOTH")
 
 
@@ -681,7 +679,7 @@ def run_detect(video_file, show):
 
          meteor_json = reduce_metframes(meteor_json, meteor_json_filename, video_data['cal_params'])
          print("MIKE REDUCE")
-
+         meteor_json = remap_metframes(meteor_json)
 
          save_json_file(meteor_json_filename, meteor_json)
      
@@ -691,10 +689,273 @@ def run_detect(video_file, show):
          print("Meteor JSON Saved:", meteor_json_filename)
       ec = int(ec) + 1
 
+   # do final review of frames and points
+
    video_data['sd_objects'] = objects
    video_data['meteor_found'] = meteor_found
    print("VIDEO DATA FILE:", video_data_file)
    save_json_file(video_data_file, video_data)    
+   #review_meteor(meteor_json, frames)
+   os.system("./detector.py rv " + meteor_json_filename) 
+
+def remap_metframes(meteor_json):
+   start_buff = meteor_json['start_buff']
+   new_metframes = {}
+   metframes = meteor_json['metframes']
+   first_frame = None
+   remap = 0
+   for fn in metframes:    
+      if first_frame is None:
+         if int(fn) != int(start_buff):
+            print("These frames need to be remapped to line up with the meteor clip!")
+            remap = 1
+         first_frame = fn
+   new_fn = start_buff + 1
+   if remap == 1:
+      for fn in metframes:
+         new_metframes[new_fn] = metframes[fn]
+         new_fn = new_fn + 1
+         
+   
+   meteor_json['metframes'] = new_metframes
+   return(meteor_json)
+
+def quick_review(meteor_json_file, frames, video_file = None, show = 1): 
+   meteor_json = load_json_file(meteor_json_file)
+   metconf = meteor_json['metconf']
+   if frames is None:
+    
+      print("Loading: ", video_file)
+      frames = load_video_frames(video_file, json_conf, 0, 0, [], 1)
+      
+   
+   print("Review meteor.", len(frames))
+   mf = meteor_json['metframes']
+   fn = 1
+   fc = 0
+   for frame in frames:
+      ifn = int(fn)
+      sfn = str(fn)
+      #print("FN:", fn, ifn)
+      frame = frames[fc]
+      show_frame = frames[fc].copy()
+      if sfn in mf:
+         est_x = mf[sfn]['est_x'] 
+         est_y = mf[sfn]['est_y'] 
+         hd_x = mf[sfn]['hd_x'] 
+         hd_y = mf[sfn]['hd_y'] 
+         cv2.circle(show_frame,(hd_x,hd_y), 10, (0,0,255), 1)
+         cv2.circle(show_frame,(est_x,est_y), 10, (0,255,255), 1)
+         cv2.imshow('pepe', show_frame)
+         cv2.waitKey(0)
+      fn = fn + 1
+      fc = fc + 1
+
+def review_meteor(meteor_json_file, frames, video_file = None, show = 1): 
+   meteor_json = load_json_file(meteor_json_file)
+   metconf = meteor_json['metconf']
+   if frames is None:
+    
+      print("Loading: ", video_file)
+      frames = load_video_frames(video_file, json_conf, 0, 0, [], 1)
+      
+   
+   print("Review meteor.", len(frames))
+   mf = meteor_json['metframes']
+   fn = 1
+   fc = 0
+   for frame in frames:
+      ifn = int(fn)
+      sfn = str(fn)
+      print("FN:", fn, ifn)
+      frame = frames[fc]
+      show_frame = frames[fc].copy()
+      if fc + 1 < len(frames) - 1:
+         nf = fc + 1
+         next_frame = frames[nf]
+      if sfn in mf: 
+         if "mx" in mf[sfn]:
+            mx = mf[sfn]['mx'] 
+            my = mf[sfn]['my'] 
+            est_x = mf[sfn]['est_x'] 
+            est_y = mf[sfn]['est_y'] 
+            cv2.circle(show_frame,(mx,my), 10, (255,0,0), 1)
+            cv2.circle(show_frame,(est_x,est_y), 10, (255,255,0), 1)
+            fx1 = est_x
+            fy1 = est_y
+            fx2 = est_x + (metconf['x_dir_mod'] * 20)
+            fy2 = est_y + (metconf['y_dir_mod'] * 20)
+            fx1,fy1,fx2,fy2 = bound_points((fx1,fy1,fx2,fy2))
+
+            print("CROP:", fx1,fy1,fx2,fy2)
+            cv2.rectangle(show_frame, (int(fx1), int(fy1)), (int(fx2), int(fy2)), (100,100,100), 1)
+
+            img_gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
+            fine_crop = img_gray[fy1:fy2,fx1:fx2]
+            fine_crop_show = cv2.cvtColor(fine_crop,cv2.COLOR_GRAY2RGB)
+            px1 = 5
+            py1 = 5
+            px2 = 5 + fine_crop.shape[1]
+            py2 = 5 + fine_crop.shape[0]
+            show_frame[py1:py2,px1:px2] = fine_crop_show
+            cv2.rectangle(show_frame, (int(px1), int(py1)), (int(px2), int(py2)), (100,100,100), 1)
+
+            min_val, max_val, min_loc, (fx,fy)= cv2.minMaxLoc(fine_crop)
+            new_x = fx1 + fx
+            new_y = fy1 + fy
+            print("NEW XY:", new_x, new_y)
+            cv2.circle(show_frame,(new_x,new_y), 10, (0,255,0), 1)
+ 
+            ifn = fn
+            if fn not in mf:
+               ifn = str(fn)
+               
+            if "bx" not in mf[ifn]:
+               mf[ifn]['bx'] = new_x
+               mf[ifn]['by'] = new_y
+            else:
+               bx = mf[ifn]['bx']
+               by = mf[ifn]['by']
+               cv2.circle(show_frame,(bx,by), 5, (0,0,255), 1)
+
+
+      cv2.imshow('pepe', show_frame)
+      if ifn in mf:
+         cv2.waitKey(70)
+      else:
+         cv2.waitKey(50)
+      fn = fn + 1
+      fc = fc + 1
+   meteor_json['metframes'] = mf 
+
+   # test the acl_reduction with the b_key 
+   key_field = "b"
+   meteor_json['metconf']['acl_poly'] = .5
+   meteor_json['metconf']['acl_med_seg_len'] = 5
+   b_result,this_poly = test_acl_res(meteor_json,frames,key_field)
+   b_acl_res = b_result['fun']
+   key_field = "m"
+   meteor_json['metconf']['acl_poly'] = .5
+   meteor_json['metconf']['acl_med_seg_len'] = 5
+   m_result, this_poly = test_acl_res(meteor_json,frames,key_field)
+   m_acl_res = m_result['fun']
+
+
+   if float(b_acl_res) < float(m_acl_res):
+      best_key_field = "b"
+      key_x = "bx"
+      key_y = "by"
+   else:
+      best_key_field = "m"
+      key_x = "mx"
+      key_y = "my"
+
+   for fn in mf:
+      print("FN HD:", fn, key_x, key_y) 
+      mf[fn]['hd_x'] = mf[fn][key_x]
+      mf[fn]['hd_y'] = mf[fn][key_y]
+
+   key_field = "hd_"
+   hd_result,poly = test_acl_res(meteor_json,frames,key_field)
+   hd_acl_res = hd_result['fun']
+
+   print("B ACL RES IS : ", b_acl_res)
+   print("M ACL RES IS : ", m_acl_res)
+   print("HD ACL RES IS : ", hd_acl_res)
+   print("BEST KEY FIELD: ", best_key_field, key_x, key_y)
+   meteor_json['metconf']['b_acl_res'] = b_acl_res
+   meteor_json['metconf']['m_acl_res'] = m_acl_res
+   meteor_json['metconf']['hd_acl_res'] = hd_acl_res
+   meteor_json['metframes'] = mf
+
+   metconf['acl_med_seg_len'] = float(metconf['med_seg_len'] + poly[0])
+   metconf['med_seg_len'] = float(metconf['med_seg_len'] + poly[0])
+   metconf['acl_poly'] = poly[1]
+   metconf['acl_res'] = hd_result['fun']
+
+   meteor_json['metconf'] = metconf
+   metconf = update_metconf(meteor_json)
+   meteor_json['metconf'] = metconf
+
+
+
+   avg_res,metframes = reduce_acl(this_poly, meteor_json['metframes'],meteor_json['metconf'],frames, 1,1, key_field)
+   meteor_json['metframes'] = metframes
+   meteor_json['metconf']['hd_acl_res'] = avg_res 
+
+   save_json_file(meteor_json_file, meteor_json)
+   
+   # final review / step through   
+   fn = 1
+   for frame in frames:
+      ifn = int(fn)
+      sfn = str(fn)
+      print("FN:", fn, ifn)
+      show_image= frame.copy()
+      if sfn in metframes:
+         hd_x = metframes[sfn]['hd_x']
+         hd_y = metframes[sfn]['hd_y']
+         est_x = metframes[sfn]['est_x']
+         est_y = metframes[sfn]['est_y']
+         cv2.circle(show_image,(est_x,est_y), 10, (0,255,255), 1)
+         cv2.circle(show_image,(hd_x,hd_y), 10, (0,0,255), 1)
+         cv2.imshow('pepe', show_image)
+         cv2.waitKey(70)
+      fn = fn + 1
+
+
+def test_acl_res(meteor_json,frames,key_field):
+   metconf = meteor_json['metconf']
+
+   metconf = update_metconf(meteor_json)
+   meteor_json['metconf'] = metconf
+   this_poly = np.zeros(shape=(2,), dtype=np.float64)
+   #if "acl_poly" in metconf:
+   #   this_poly[0] = np.float64(0)
+   #   this_poly[1] = np.float64(metconf['acl_poly'])
+   #else:
+   #   print("NO ACL POLY!" )
+
+   #avg_res = reduce_acl(this_poly, meteor_json['metframes'],meteor_json['metconf'],frames, 0,1, key_field)
+
+   avg_res = scipy.optimize.minimize(reduce_acl, this_poly, args=( meteor_json['metframes'], meteor_json['metconf'],frames,0,1,key_field), method='Nelder-Mead')
+
+   this_poly = np.zeros(shape=(2,), dtype=np.float64)
+   if "acl_poly" in metconf:
+      this_poly[0] = np.float64(0)
+      this_poly[1] = np.float64(metconf['acl_poly'])
+   else:
+      print("NO POLY!", metconf)
+
+
+   return(avg_res, this_poly)
+      
+def bound_points(pts):
+   x1,y1,x2,y2 = pts
+   if x1 < 0:
+      x1 = 0 
+   if x2 < 0:
+      x2 = 0 
+   if x1 > 1919:
+      x1 = 1919 
+   if x2 > 1919:
+      x2 = 1919 
+   if y1 < 0:
+      y1 = 0 
+   if y1 > 1079:
+      y1 = 1079 
+   if y2 < 0:
+      y2 = 0 
+   if y2 > 1079:
+      y2 = 1079 
+ 
+   bxs = [x1,x2]
+   bys = [y1,y2]
+   bxs.sort()
+   bys.sort()
+
+   return(bxs[0],bys[0],bxs[1],bys[1])
+       
 
 def post_load_mj(meteor_json):
    mf = meteor_json['metframes']
@@ -709,6 +970,7 @@ def post_load_mj(meteor_json):
 def smooth_points(meteor_json, frames):
    img_h, img_w = frames[0].shape[0], frames[0].shape[1] 
    metframes = meteor_json['metframes']
+   metconf = meteor_json['metconf']
 
    first_fn = None
    first_x = None
@@ -719,7 +981,7 @@ def smooth_points(meteor_json, frames):
 
    mxs = []
    mys = []
-
+   fixsegs = []
    for fn in metframes:
       mx = metframes[fn]['mx'] 
       my = metframes[fn]['my'] 
@@ -742,18 +1004,70 @@ def smooth_points(meteor_json, frames):
          print(fn, mx, my )
       if "last_seg_dist" in metframes[fn]:
          print("Last Seg:", metframes[fn]['last_seg_dist'])
+         fixsegs.append(metframes[fn]['last_seg_dist']) 
       else:
          if fn == first_fn:
             next_fn = str(int(fn) + 1)
             if next_fn in metframes:
                nx = metframes[next_fn]['mx'] 
                ny = metframes[next_fn]['my'] 
-               metframes[fn]['last_seg_dist'] = calc_dist((mx,my), (nx,ny))
+               last_seg_dist = calc_dist((mx,my), (nx,ny))
+               metframes[fn]['last_seg_dist'] = last_seg_dist
+               fixsegs.append(last_seg_dist) 
 
    min_mx = min(mxs)
    min_my = min(mys)
    max_mx = max(mxs)
    max_my = max(mys)
+
+   avg_seg_dist = np.median(fixsegs)
+
+   # fix any frames where the seg_dist is > 30 px
+   last_x = None
+   first_x = None
+   fc = 0
+   img_h, img_w = frames[0].shape[0], frames[0].shape[1]
+
+   for fn in metframes:
+      ifn = int(fn)
+      pfn = ifn - 2 
+      if pfn > 0:
+         last_frame = frames[pfn]
+      
+      mx = metframes[fn]['mx']
+      my = metframes[fn]['my']
+      frame = frames[ifn].copy()
+      frame = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
+      last_frame = cv2.cvtColor(last_frame, cv2.COLOR_BGR2GRAY)
+      subframe = cv2.subtract(frame,last_frame)
+      if first_x is None:
+         first_x = mx
+         first_y = my
+      if "last_seg_dist" in metframes[fn]:
+         print("TRY TO FIX Last Seg:", metframes[fn]['last_seg_dist'], avg_seg_dist)
+         last_seg_dist = float(metframes[fn]['last_seg_dist'])
+         if last_seg_dist > avg_seg_dist * 2.5:
+            print("FIX BAD POINT!")
+            if last_x is not None:
+               fx1,fy1,fx2,fy2 = bound_cnt(last_x+ (metconf['x_dir_mod'] * 5),(last_y + metconf['y_dir_mod'] * 5),img_w,img_h,5)
+               ifn = int(fn)
+               crop_img = frame[fy1:fy2,fx1:fx2]
+               avg_val = np.mean(crop_img)
+               min_val, max_val, min_loc, (mx,my)= cv2.minMaxLoc(crop_img)
+               mx = fx1 + mx
+               my = fy1 + my
+
+               #metframes[fn]['mx'] = mx
+               #metframes[fn]['my'] = my
+               print("FIXED FRAME: ", fn, mx, my)
+               
+      cv2.imshow('pepe', subframe)
+      cv2.waitKey(70)
+      last_x = mx
+      last_y = my
+      fc = fc + 1 
+
+
    crop_box = [min_mx, min_my, max_mx, max_my]
    meteor_json['crop_box'] = crop_box
    for fn in meteor_json['metframes']:
@@ -847,8 +1161,52 @@ def smooth_points(meteor_json, frames):
    print("POLY:", this_poly)
    print("ACL RES:", avg_res)
    print("MED SEG LEN:", metconf['med_seg_len'] )
-
+   meteor_json = update_frame_est(meteor_json, frames)
    return(meteor_json)
+
+def update_frame_est(meteor_json, frames):
+   first_x = None
+   last_x = None
+   img_h, img_w = frames[0].shape[0], frames[0].shape[1]
+   metframes = meteor_json['metframes']
+   metconf = meteor_json['metconf']
+   fcc = 0
+   for fn in metframes:
+      mx = metframes[fn]['mx']
+      my = metframes[fn]['my']
+      if first_x is None:
+         first_x = mx
+         first_y = my
+         est_x = int( metconf['fx'] + (metconf['x_dir_mod'] * (metconf['acl_med_seg_len']*fcc)) + (metconf['acl_poly'] * (fcc*fcc)) )
+         est_y = int((metconf['m']*est_x)+metconf['b'])
+
+         #fx1,fy1,fx2,fy2 = bound_cnt(last_x,last_y,img_w,img_h,20)
+         fx1 = est_x
+         fy1 = est_y
+         fx2 = est_x + (metconf['x_dir_mod'] * 20)
+         fy2 = est_y + (metconf['y_dir_mod'] * 20)
+         ifn = int(fn)
+         frame = frames[ifn].copy()
+         frame = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
+         crop_img = frame[fy1:fy2,fx1:fx2]
+         avg_val = np.mean(crop_img)
+         min_val, max_val, min_loc, (mx,my)= cv2.minMaxLoc(crop_img)
+         if crop_img.shape[0] > 0 and crop_img.shape[1] > 0:
+            cv2.imshow('pepe', crop_img)
+            cv2.waitKey(70)
+         print("ESTXY:", mx,my,est_x,est_y)
+         metframes[fn]['est_x'] = est_x
+         metframes[fn]['est_y'] = est_y
+         metframes[fn]['mx'] = fx1 + mx 
+         metframes[fn]['my'] = fy1 + my 
+         metframes[fn]['acl_res'] = calc_dist((est_x,est_y),(mx,my))
+
+      last_x = mx
+      last_y = my
+      fcc = fcc + 1
+   meteor_json['metframes'] = metframes
+   return(meteor_json)
+
 
 def update_metconf(meteor_json):
    mxs = []
@@ -872,7 +1230,19 @@ def update_metconf(meteor_json):
       metconf['med_seg_len'] = metconf['acl_med_seg_len']
    else:
       metconf['med_seg_len'] = float(np.median(segs)) 
-   metconf['m'], metconf['b'] = best_fit_slope_and_intercept(mxs,mys)
+   good_xs = []
+   good_ys = []
+   for fn in mf:
+      mx = mf[fn]['mx']    
+      my = mf[fn]['my']
+      if "last_seg_dist" in mf[fn]:
+         last_seg_dist = mf[fn]['last_seg_dist']
+         if last_seg_dist < metconf['med_seg_len'] * 2.5:
+            good_xs.append(mx)
+            good_ys.append(my)
+
+
+   metconf['m'], metconf['b'] = best_fit_slope_and_intercept(good_xs,good_ys)
 
    dir_x = mxs[0] - mxs[-1] 
    dir_y = mys[0] - mys[-1] 
@@ -1003,7 +1373,7 @@ def setup_calib(video_data, image):
    else:
       cfit_tries = 0
     
-   if cfit_tries < 5:
+   if cfit_tries < 5 and len(cal_params['cat_image_stars']) >= 7:
       start_res = reduce_fov_pos(this_poly, cal_params,video_data['video_data_file'],image,json_conf, cal_params['cat_image_stars'],1,1)
  
       res = scipy.optimize.minimize(reduce_fov_pos, this_poly, args=( cal_params,video_data['video_data_file'],image,json_conf, cal_params['cat_image_stars'],1,1), method='Nelder-Mead')
@@ -1092,7 +1462,8 @@ def find_cat_stars_from_points(video_data, show_image = None):
          #(name,mag,ra,dec,new_cat_x,new_cat_y) = cat_star
          iname = iname.decode("utf-8")
          new_cat_x,new_cat_y = int(new_cat_x), int(new_cat_y)
-         if px_dist < 10: 
+         star_edge = test_star_edge(ix,iy,show_image)
+         if px_dist < 10 and star_edge == 1: 
             total_res = total_res + px_dist
             cat_image_stars.append((iname,mag,ra,dec,new_cat_x,new_cat_y,ix,iy,px_dist,cal_params_file))
 
@@ -1121,6 +1492,31 @@ def find_cat_stars_from_points(video_data, show_image = None):
    cv2.waitKey(1)
    return(real_cat_image_stars, avg_res)
 
+def test_star_edge(ix,iy,image):
+   star_edge = 1 
+   tx = ix + 20
+   ty = iy
+   try:
+      if tx > 1919 or image[ty,tx] == 0 :
+         star_edge = 0
+      tx = ix - 20
+      ty = iy
+      if tx < 0 or image[ty,tx] == 0:
+         star_edge = 0
+
+      tx = ix 
+      ty = iy + 20
+      if ty > 1079: 
+         star_edge = 0
+      elif image[ty,tx] == 0:
+         star_edge = 0
+      tx = ix 
+      ty = iy - 20
+      if ty < 0 or image[ty,tx] == 0:
+         star_edge = 0
+   except:
+      star_edge = 0
+   return(star_edge)
 
 
 def make_meteor_json(event, video_data, event_start_time, meteor_video_filename):
@@ -1144,6 +1540,14 @@ def add_frame_buffer(total_frames, start_frame, end_frame):
    last_frame = end_frame
    start_buff = 0 
    end_buff = 0 
+   if start_frame - 5 > 0:
+      first_frame = start_frame - 5
+      start_buff = 5
+   if end_frame + 5 <= total_frames-1:
+      last_frame = end_frame + 5
+      end_buff = 5
+
+
    if start_frame - 10 > 0:
       first_frame = start_frame - 10
       start_buff = 10
@@ -1152,8 +1556,10 @@ def add_frame_buffer(total_frames, start_frame, end_frame):
       end_buff = 10
    if start_frame - 25 > 0:
       first_frame = start_frame - 25
+      start_buff = 25 
    if end_frame + 25 <= total_frames:
       last_frame = end_frame + 25
+      end_buff = 25 
    fns = []
    for i in range (first_frame , last_frame ):
       fns.append(i) 
@@ -1391,6 +1797,24 @@ except:
    show = 0
 
 if cmd == 'rd' or cmd == 'run_detect':
+   if ".json" in file:
+      file = file.replace(".json", ".mp4") 
    run_detect(file,show)
+if cmd == 'rv' or cmd == 'review_meteor':
+   if cfe(file) == 1:
+      if ".mp4" in file:
+         video_file = file
+         file = file.replace(".mp4", ".json") 
+      
+      video_file = file.replace(".json", ".mp4")
+      review_meteor(file,None, video_file)
 
 
+if cmd == 'qr' or cmd == 'quick_review':
+   if cfe(file) == 1:
+      if ".mp4" in file:
+         video_file = file
+         file = file.replace(".mp4", ".json") 
+      
+      video_file = file.replace(".json", ".mp4")
+   quick_review(file,None, video_file)
