@@ -78,6 +78,8 @@ from os.path import isfile, join, exists
 array_of_frames, path  = get_hd_frames_from_HD_repo("10041","2019/08/18","2019/08/18 00:00","2019/08/18 11:40")
 print("FRAMES")
 print(array_of_frames) 
+print("PATH")
+print(path) 
 if(array_of_frames is None):
     print('NO FRAME FOUND') 
 else:
