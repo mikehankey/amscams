@@ -291,13 +291,11 @@ def get_hd_frames_from_HD_repo(camID,date,start_date,end_date,limit_frame=False)
                 
                 if(frame_to_blend is not False):
                     frame_to_blend = TMP_IMG_HD_SRC_PATH + frame_to_blend
-                    f2 = blend(cur_path + '/' + f,frame_to_blend,40,cur_path + '/' + f)
+                    f2 = blend(cur_path + '/' + f,frame_to_blend,BLENDING_SD,cur_path + '/' + f)
                     shutil.copy2(f2, tmppath + '/' + f)
                 else:
                     shutil.copy2(cur_path+ f, tmppath + '/' + f)
-                 
-   
-
+     
         if(real_frames is not None):
             return(sorted(real_frames), tmppath)  
         else:
