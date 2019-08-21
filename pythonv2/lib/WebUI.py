@@ -2477,14 +2477,11 @@ def main_page(json_conf,form):
    pagination =  get_pagination(cur_page,len(all_real_detections),"/pycgi/webUI.py?cmd=home",NUMBER_OF_DAYS_PER_PAGE)
 
    header_out = "<div class='h1_holder d-flex justify-content-between'><h1>Daily Dectections until " 
-   #header_out = header_out + "<div class='input-group date datepicker' data-display-format='YYYY/MM/DD' data-action='reload' data-url-param='limit_day' data-send-format='YYYY_MM_DD'>"
-
+ 
    if end_day is None:
       end_day = ""
-   #header_out = header_out + "<input value='"+ end_day +"' type='text' class='form-control'>"
-   #header_out = header_out + "<span class='input-group-addon'><span class='icon-clock'></span></span></div></h1>"
-   header_out = header_out + "<div class='input-group date'><input value='"+ end_day +"' type='text' data-display-format='YYYY/MM/DD'  data-action='reload' data-url-param='limit_day' data-send-format='YYYY_MM_DD' class='datepicker form-control'></div>" 
-   
+ 
+   header_out = header_out + "<input value='"+ end_day +"' type='text' data-display-format='YYYY/MM/DD'  data-action='reload' data-url-param='limit_day' data-send-format='YYYY_MM_DD' class='datepicker form-control'></h1>" 
    header_out = header_out + "<div class='page_h'>Page  " + format(cur_page) + "/" +  format(pagination[2]) + "</div></div>" 
 
    print(header_out)
