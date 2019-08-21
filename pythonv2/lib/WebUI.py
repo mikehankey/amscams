@@ -1025,13 +1025,20 @@ def meteor_index(json_conf, form):
             res_cnt+= 1
 
    results += "</tbody></table>" 
-   
-   header_out = '<div class="h1_holder d-flex justify-content-between mb-4">'
-   header_out += '<h1>Meteor Calibration Index for '
-   header_out += '<input value="'+day_limit.replace("_", "/")+'" type="text" data-display-format="YYYY/MM/DD" data-action="reload" data-url-param="limit_day" data-send-format="YYYY_MM_DD" class="datepicker form-control">'
-   header_out += '</h1><div><a href="/pycgi/webUI.py?cmd=meteor_index&opt=show_all" class="btn btn-primary">Show All</a></div></div>' 
-   print(header_out)
-   
+
+  
+   if(day_limit is not None):
+      header_out = '<div class="h1_holder d-flex justify-content-between mb-4">'
+      header_out += '<h1>Meteor Calibration Index for '
+      header_out += '<input value="'+day_limit.replace("_", "/")+'" type="text" data-display-format="YYYY/MM/DD" data-action="reload" data-url-param="limit_day" data-send-format="YYYY_MM_DD" class="datepicker form-control">'
+      header_out += '</h1><div><a href="/pycgi/webUI.py?cmd=meteor_index&opt=show_all" class="btn btn-primary">Show All</a></div></div>' 
+      print(header_out)
+   else:
+      header_out = '<div class="h1_holder d-flex justify-content-between mb-4">'
+      header_out += '<h1>Meteor Calibration Index</h1>'
+      header_out += '<div><a href="/pycgi/webUI.py?cmd=meteor_index" class="btn btn-primary">Browse by date</a>  <a href="/pycgi/webUI.py?cmd=meteor_index&multi=1" class="btn btn-primary">Multi-station only</a></div>'
+      print(header_out) 
+
    if(res_cnt>1):
       print(results)
    else:
