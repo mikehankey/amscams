@@ -175,9 +175,9 @@ def make_day_preview(day_dir, stats_data, json_conf):
       obj_stack = day_dir + "/" + "images/"+ cams_id + "-night-stack.png"
       meteor_stack = day_dir + "/" + "images/" + cams_id + "-meteors-stack.png"
       if cfe(obj_stack) == 0:
-         obj_stack = "/dist/img/proccessing.png"
+         obj_stack = "./dist/img/proccessing.png"
       if cfe(meteor_stack) == 0:
-         meteor_stack = "/dist/img/proccessing.png"
+         meteor_stack = "./dist/img/proccessing.png"
 
       day=day.replace("_","")
  
@@ -2483,7 +2483,7 @@ def main_page(json_conf,form):
       end_day = ""
    #header_out = header_out + "<input value='"+ end_day +"' type='text' class='form-control'>"
    #header_out = header_out + "<span class='input-group-addon'><span class='icon-clock'></span></span></div></h1>"
-   header_out = header_out + "<input value='"+ end_day +"' type='text' data-display-format='YYYY/MM/DD' class='datepicker form-control'>" 
+   header_out = header_out + "<input value='"+ end_day +"' type='text' data-display-format='YYYY/MM/DD'  data-action='reload' class='datepicker form-control'>" 
    
    header_out = header_out + "<div class='page_h'>Page  " + format(cur_page) + "/" +  format(pagination[2]) + "</div></div>" 
 
