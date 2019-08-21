@@ -2483,7 +2483,7 @@ def main_page(json_conf,form):
       end_day = ""
    #header_out = header_out + "<input value='"+ end_day +"' type='text' class='form-control'>"
    #header_out = header_out + "<span class='input-group-addon'><span class='icon-clock'></span></span></div></h1>"
-   header_out = header_out + "<input value='"+ end_day +"' type='text' data-display-format='YYYY/MM/DD' class='datepickerform-control'>" 
+   header_out = header_out + "<input value='"+ end_day +"' type='text' data-display-format='YYYY/MM/DD' class='datepicker form-control'>" 
    
    header_out = header_out + "<div class='page_h'>Page  " + format(cur_page) + "/" +  format(pagination[2]) + "</div></div>" 
 
