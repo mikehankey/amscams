@@ -27,10 +27,7 @@ function load_date_pickers() {
     $('.datepicker').each(function() {
         var $t = $(this);
         $t.datetimepicker({format: $t.attr('data-display-format')});
-
-        console.log('DATE PICKER FOUND');
-        console.log('ACTION ', $t.attr('data-action'));
-
+ 
         if($t.attr('data-action')=='reload') {
 
             $t.on("dp.change", function (e) {
