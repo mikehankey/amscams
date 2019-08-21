@@ -249,7 +249,7 @@ def get_sd_frames_from_HD_video(hd_video_file, camID):
 #NEW STUFF HERE TO TAKE start_date & end_date into account and SEARCH in HD FRAMES FIRST
 #We test if we have at least one image under HD_FRAMES_PATH that matches the cam_id
 #And that has a date <= start_date
-def get_hd_frames_from_HD_repo(camID,date,start_date,end_date,limit_frame=False):
+def get_hd_frames_from_HD_repo(camID,date,start_date,end_date,blend_sd=False,limit_frame=False):
     cur_path = HD_FRAMES_PATH
     res = True
 
@@ -269,7 +269,7 @@ def get_hd_frames_from_HD_repo(camID,date,start_date,end_date,limit_frame=False)
 
         start_date_obj = time.strptime(start_date, "%Y/%m/%d %H:%M")
         end_date_obj = time.strptime(end_date, "%Y/%m/%d %H:%M")
-
+ 
         #Check temporary folder to store the frames of all the videos
         tmppath = r''+TMP_IMG_HD_SRC_PATH
         if not os.path.exists(tmppath):

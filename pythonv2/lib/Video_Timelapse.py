@@ -3,7 +3,7 @@ from lib.Video_Tools import *
 
 
 #Generate Timelapse
-def generate_timelapse(cam_id,date,start_date,end_date,fps,dim,text_pos,wat_pos,extra_text,logo, logo_pos, enhancement=0): 
+def generate_timelapse(cam_id,date,start_date,end_date,fps,dim,text_pos,wat_pos,extra_text,logo,logo_pos,enhancement=0): 
     #frames are SD if HD are not found
     frames, path = get_hd_frames(cam_id,date,start_date,end_date)
     if(frames is None):

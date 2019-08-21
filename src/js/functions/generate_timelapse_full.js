@@ -286,6 +286,10 @@ function add_timelapse_full_modal() {
                                 <label for="extra_text" class="col-form-label"><b>Extra info (added above the Camera Info)</b></label> \
                                 <input type="text" name="extra_text" class="form-control" value=""/> \
                             </div>\
+                            <hr/>\
+                            <div class="form-group mb-2">\
+                            blend night time SD stacks\
+                            </div>\
                         </div> \
                      </div> \
                 </form> \

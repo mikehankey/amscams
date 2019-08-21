@@ -75,7 +75,7 @@ from os.path import isfile, join, exists
 
 
 # TEST CREATE VIDEO WITH BLENDING SD
-array_of_frames, path  = get_hd_frames_from_HD_repo("10041","2019/08/19","2019/08/19 01:00","2019/08/19 11:40")
+array_of_frames, path  = get_hd_frames_from_HD_repo("10041","2019/08/19","2019/08/19 01:00","2019/08/19 11:40",True)
 print("FRAMES")
 print(array_of_frames) 
 print("PATH")
