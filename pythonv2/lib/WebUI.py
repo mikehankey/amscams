@@ -1036,7 +1036,7 @@ def meteor_index(json_conf, form):
    else:
       header_out = '<div class="h1_holder d-flex justify-content-between mb-4">'
       header_out += '<h1>Meteor Calibration Index</h1>'
-      header_out += '<div><a href="/pycgi/webUI.py?cmd=meteor_index" class="btn btn-primary">Browse by date</a>  <a href="/pycgi/webUI.py?cmd=meteor_index&multi=1" class="btn btn-primary">Multi-station only</a></div>'
+      header_out += '<div><a href="/pycgi/webUI.py?cmd=meteor_index" class="btn btn-primary">Browse by date</a>  <a href="/pycgi/webUI.py?cmd=meteor_index&multi=1" class="btn btn-primary">Multi-station only</a></div></div>'
       print(header_out) 
 
    if(res_cnt>1):
