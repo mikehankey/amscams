@@ -567,14 +567,20 @@ def create_vid_from_frames(frames, path, date, camID, fps="25") :
 
 
 #Get all meteors detections (return mp4s) from a given date (start & end) & cam_id
+#Return an associative array that looks like
+# {'2019/08/21 00:40': '2019_08_21_00_40_16_000_010037-trim-578-HD-meteor.mp4', ...
+# And the path where to find the videos
 def get_all_meteor_detections(date,start_date,end_date,cam_id):
  
+    #Meteor Folder
+    meteor_folder = METEOR_FOLDER+date
+
     #Create Date Objects
     start_date_obj = time.strptime(start_date, "%Y/%m/%d %H:%M")
     end_date_obj = time.strptime(end_date, "%Y/%m/%d %H:%M")
 
     # Get All the detection for the cur CAM ID & Date
-    detections = [f for f in listdir(METEOR_FOLDER+date) if cam_id in f and ".mp4" in f and "-crop" not in f]
+    detections = [f for f in listdir(meteor_folder) if cam_id in f and ".mp4" in f and "-crop" not in f]
     real_detections = {}
 
     # Remove Detection outside of the timeframe
@@ -594,5 +600,4 @@ def get_all_meteor_detections(date,start_date,end_date,cam_id):
                 if("HD" not in real_detections[cur_date_string] and "HD" in detection):
                     real_detections[cur_date_string] = detection
     
-    print('DETECTIONSS FOUND')
-    print(real_detections)
+    return real_detections, meteor_folder
