@@ -588,6 +588,8 @@ def get_all_meteor_detections(date,start_date,end_date,cam_id):
             
             if cur_date_string not in real_detections: 
                 real_detections[cur_date_string] = detection
+            else:
+                print('ALR ' + detection)
     
     print('DETECTIONSS FOUND')
     print(sorted(real_detections))
