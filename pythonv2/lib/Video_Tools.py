@@ -572,7 +572,7 @@ def get_all_meteor_detections(date,start_date,end_date,cam_id):
     end_date_obj = time.strptime(end_date, "%Y/%m/%d %H:%M")
 
     # Get All the detection for the cur CAM ID & Date
-    detections = [f for f in listdir(METEOR_FOLDER+date) if cam_id in f and ".mp4" in f]
+    detections = [f for f in listdir(METEOR_FOLDER+date) if cam_id in f and ".mp4" in f and "-crop" not in f]
 
     # Remove Detection outside of the timeframe
     for detection in detections:
@@ -581,5 +581,6 @@ def get_all_meteor_detections(date,start_date,end_date,cam_id):
         cur_date = get_meteor_date_and_time_object(str(detection))
         
         if(cur_date>=start_date_obj and end_date_obj>=cur_date):
-            print("FOUND " + str(cur_date))
             print(detection)
+        else:
+            print(detection + " => NOPE")
