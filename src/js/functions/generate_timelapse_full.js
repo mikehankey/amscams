@@ -169,7 +169,7 @@ function add_timelapse_full_modal() {
                             <div class="row"> \
                                 <div class="col-sm-4"> \
                                     <div class="form-group mb-2"> \
-                                        <label class="col-form-label"><b>Start Date</b></label> \
+                                        <label class="col-form-label"><b>UT Start Date</b></label> \
                                         <div class="col-sm-10 p-0">\
                                             <input name="tl_date" value="'+curD+'" type="text" data-display-format="YYYY/MM/DD" class="datepicker form-control"> \
                                         </div>\
@@ -177,7 +177,7 @@ function add_timelapse_full_modal() {
                                 </div> \
                                 <div class="col-sm-4"> \
                                     <div class="form-group mb-2"> \
-                                        <label class="col-form-label"><b>Start Time</b></label> \
+                                        <label class="col-form-label"><b>UT Start Time</b></label> \
                                         <div class="col-sm-10 p-0">\
                                             <input name="tl_time" value="00:00" type="text" data-display-format="HH:mm" class="datepicker form-control"> \
                                         </div>\
@@ -288,7 +288,8 @@ function add_timelapse_full_modal() {
                             </div>\
                             <hr/>\
                             <div class="form-group mb-2">\
-                            blend night time SD stacks\
+                                <label for="blend_sd" class="col-form-label"><b>Blend night time SD stacks when possible</b></label> \
+                                <input type="checkbox" name="blend_sd" class="form-control"/> \
                             </div>\
                         </div> \
                      </div> \
