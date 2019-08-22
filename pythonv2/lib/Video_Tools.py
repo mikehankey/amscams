@@ -21,10 +21,7 @@ def blend(image1, image2, perc_trans_image1, output_file):
     output = subprocess.check_output(cmd, shell=True).decode("utf-8")    
     return output_file
  
- 
-
-
-
+  
 #Get Video date from file name 
 def get_meteor_date(_file):
 	fn = _file.split("/")[-1] 
@@ -570,6 +567,10 @@ def create_vid_from_frames(frames, path, date, camID, fps="25") :
 #Get all meteors detections (return mp4s) from a given date (start & end) & cam_id
 def get_all_meteor_detections(date,start_date,end_date,cam_id):
  
+    #Create Date Objects
+    start_date_obj = time.strptime(start_date, "%Y/%m/%d %H:%M")
+    end_date_obj = time.strptime(end_date, "%Y/%m/%d %H:%M")
+
     # Get All the detection for the cur CAM ID & Date
     detections = [f for f in listdir(METEOR_FOLDER+date) if cam_id in f and ".mp4" in f]
 
@@ -577,6 +578,8 @@ def get_all_meteor_detections(date,start_date,end_date,cam_id):
     for detection in detections:
 
         #Get the date & time of the video
-        print(detection)
-        date = get_meteor_date_and_time_object(str(detection))
-        print(str(date))
+        cur_date = get_meteor_date_and_time_object(str(detection))
+        
+        if(cur_date>=start_date_obj and end_date_obj>=cur_date):
+            print("FOUND " + cur_date)
+            print(detection)
