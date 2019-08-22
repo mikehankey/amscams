@@ -124,9 +124,7 @@ def get_meteor_date_ffmpeg(_file):
 	fn = fn.split('_',6)
 	return fn[0] + "/" + fn[1] + "/" + fn[2] + " " + fn[3] + "\:" + fn[4] + "\:" + fn[5]
 
-
-
-
+  
 #Drawbox
 def drawbox_on_vid(path,vid,x,y,w,h):
     cmd = 'ffmpeg -i ' + path +'/'+ vid + ' -vf "drawbox=enable=\'between(n,28,32)\' : x='+str(x)+' : y='+str(y)+' : w='+str(w)+' : h='+str(h)+' : color=red" -codec:a copy '+  path +'/boxed_'+vid
@@ -606,5 +604,21 @@ def get_all_detection_frames(path,vid):
     vid_name = vid_name[0] 
     cmd = 'ffmpeg -y -hide_banner -loglevel panic -i ' + path + '/' + vid + ' ' +  TMP_IMG_HD_SRC_PATH + '%04d' + '-' + vid_name + '.png' 
     output = subprocess.check_output(cmd, shell=True).decode("utf-8")
+
+    #We rename all the frames to the time match
+    #We have an initial fps of FPS_HD
+    #It means we had a sec every FPS_HD
+    #It means we had a micro-sec every  
+
+    #0001-2019_08_21_00_33_15_000_010037-trim-618-HD-meteor.png
+    #0002-2019_08_21_00_33_15_000_010037-trim-618-HD-meteor.png
+
+    #We get the start date
+    all_frames = [f for f in listdir(TMP_IMG_HD_SRC_PATH) if vid_name in f]
+
+    print(all_frames)
+
+    print("DATE")
+    print(get_meteor_date_ffmpeg(vid))
 
     print(TMP_IMG_HD_SRC_PATH + vid + '.png')
