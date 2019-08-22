@@ -36,13 +36,15 @@ def get_meteor_time(_file):
     fn = fn.split("_")
     return fn[3] + '_' + fn[4] 
 
+#Get date & time without second 
+def get_meteor_date_and_time_ws(_file):
+    fn = _file.split("/")[-1] 
+    fn = fn.split("_",6)
+    return fn[0] + '/' + fn[1] + '/' + fn[2]   +  ' ' + fn[3] + ':' + fn[4]
 
 #Get date & time (python object from file name)
 def get_meteor_date_and_time_object(_file):
-    fn = _file.split("/")[-1] 
-    fn = fn.split("_",6)
-    date = fn[0] + '/' + fn[1] + '/' + fn[2]   +  ' ' + fn[3] + ':' + fn[4]
-    return time.strptime(date, "%Y/%m/%d %H:%M")
+    return time.strptime(get_meteor_date_and_time_ws(_file), "%Y/%m/%d %H:%M")
 
 #Return nothing or the HD stack that correspond to the same time/cam of the time passed as parameters
 #ex:
@@ -582,7 +584,10 @@ def get_all_meteor_detections(date,start_date,end_date,cam_id):
         cur_date = get_meteor_date_and_time_object(str(detection))
         
         if(cur_date>=start_date_obj and end_date_obj>=cur_date):
-            real_detections.append(detection)
+            cur_date_string = get_meteor_date_and_time_ws(str(detection))
+
+            if(real_detections[cur_date_string] is None):
+                real_detections[cur_date_string] = detection
     
     print('DETECTIONSS FOUND')
     print(sorted(real_detections))
