@@ -585,4 +585,4 @@ def get_all_meteor_detections(date,start_date,end_date,cam_id):
             real_detections.append(detection)
     
     print('DETECTIONSS FOUND')
-    print(real_detections)
+    print(sorted(real_detections))
