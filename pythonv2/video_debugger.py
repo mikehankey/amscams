@@ -75,11 +75,11 @@ from os.path import isfile, join, exists
 
 
 # TEST CREATE VIDEO WITH BLENDING SD
-array_of_frames, path  = get_hd_frames_from_HD_repo("10041","2019/08/21","2019/08/21 01:00","2019/08/21 03:00",True)
-print("FRAMES")
-print(array_of_frames) 
-print("PATH")
-print(path) 
+array_of_frames, path  = get_hd_frames_from_HD_repo("10041","2019/08/21","2019/08/21 01:00","2019/08/21 23:00",True)
+#print("FRAMES")
+#print(array_of_frames) 
+#print("PATH")
+#print(path) 
 if(array_of_frames is None):
     print('NO FRAME FOUND') 
 else:
