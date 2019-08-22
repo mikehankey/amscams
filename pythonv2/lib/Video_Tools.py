@@ -294,9 +294,6 @@ def get_hd_frames_from_HD_repo(camID,date,start_date,end_date,blend_sd=False,lim
                 #print('BEFORE FRAME TO BLEND')
                 if(blend_sd==True):
                     frame_to_blend = get_sd_frames_from_HD_video(f, camID)
-
-                    print("FRAME TO BLEND FOUND")
-                    print(frame_to_blend)
                     
                     if(frame_to_blend is not False):
                         frame_to_blend = TMP_IMG_HD_SRC_PATH + frame_to_blend
@@ -304,7 +301,11 @@ def get_hd_frames_from_HD_repo(camID,date,start_date,end_date,blend_sd=False,lim
                         shutil.copy2(f2, tmppath + '/' + f)
                     else:
                         shutil.copy2(cur_path+ f, tmppath + '/' + f)
-     
+               
+                else:
+                    shutil.copy2(cur_path+ f, tmppath + '/' + f)
+
+
         if(real_frames is not None):
             return(sorted(real_frames), tmppath)  
         else:
