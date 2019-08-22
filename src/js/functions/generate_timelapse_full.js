@@ -278,7 +278,7 @@ function add_timelapse_full_modal() {
                                 </div>\
                             </div> \
                             <div id="logo_picker" class="form-group" hidden> \
-                                <label for="logo_pos" class="col-form-label"><b>Select Extra Logo</b></label> \
+                                <label for="logo_pos" class="col-form-label"><b>Select <a href="./webUI.py?cmd=custom_logos" target="_blank">Extra Logo</a></b></label> \
                                 <select name="logo" hidden></select> \
                                 <div id="logo_preview"></div>\
                             </div> \
