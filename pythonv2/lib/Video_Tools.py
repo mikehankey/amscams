@@ -578,5 +578,5 @@ def get_all_meteor_detections(date,start_date,end_date,cam_id):
 
         #Get the date & time of the video
         print(detection)
-        #date = get_meteor_date_and_time_object(detection)
-        #print(str(date))
+        date = get_meteor_date_and_time_object(str(detection))
+        print(str(date))
