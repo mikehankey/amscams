@@ -353,6 +353,14 @@ function add_timelapse_full_modal() {
             });
             
         } else {
+
+            // Blend or not blend?
+            if(cmd_data['blend_sd']) {
+                cmd_data['blend_sd'] = 1;
+            } else {
+                cmd_data['blend_sd'] = 0;
+            }
+ 
             $('#full_timelapse_modal').modal('hide');
             loading({text: "Creating Video", overlay: true});
             
