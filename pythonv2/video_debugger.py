@@ -75,17 +75,17 @@ from os.path import isfile, join, exists
 
 
 # TEST CREATE VIDEO WITH BLENDING SD
-array_of_frames, path  = get_hd_frames_from_HD_repo("10041","2019/08/21","2019/08/21 01:00","2019/08/21 23:00",False)
+#array_of_frames, path  = get_hd_frames_from_HD_repo("10041","2019/08/21","2019/08/21 01:00","2019/08/21 23:00",False)
 #print("FRAMES")
 #print(array_of_frames) 
 #print("PATH")
 #print(path) 
-if(array_of_frames is None):
-    print('NO FRAME FOUND') 
-else:
-    where_path = add_info_to_frames(array_of_frames, path, "2019/08/21", "10041", "This is a test", "/mnt/ams2/CUSTOM_LOGOS/1.png","tl",HD_DIM, "bl","tr")
-    t = create_vid_from_frames(array_of_frames, where_path, "2019_08_21",  "10041","30")
-    print(t)
+#if(array_of_frames is None):
+#    print('NO FRAME FOUND') 
+#else:
+#    where_path = add_info_to_frames(array_of_frames, path, "2019/08/21", "10041", "This is a test", "/mnt/ams2/CUSTOM_LOGOS/1.png","tl",HD_DIM, "bl","tr")
+#    t = create_vid_from_frames(array_of_frames, where_path, "2019_08_21",  "10041","30")
+#   print(t)
 
 
 # TEST BLENDER
@@ -93,3 +93,5 @@ else:
 #print('/mnt/ams2/TMP/test.png')
 
  
+# TEST GET METEOR DETECTIONS FROM CAM_ID START DAte / END DATE
+get_all_meteor_detections("2019_08_21","2019/08/21 00:00","2019/08/21 23:59","10041")

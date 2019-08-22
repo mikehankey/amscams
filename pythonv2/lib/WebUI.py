@@ -559,10 +559,7 @@ def video_tools(json_conf,form):
    for vid in all_vids:
          # Get Date & Cam ID
          date, camid = get_custom_video_date_and_cam_id(vid)
-
-         print("VID" + vid)
-         print("date" + date)
-         print("camid" + camid)
+ 
 
          length = getLength(vid)
          if(length=='' or length==0):

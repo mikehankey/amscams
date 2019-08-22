@@ -564,3 +564,13 @@ def create_vid_from_frames(frames, path, date, camID, fps="25") :
 
     else:
         return ""
+
+
+
+#Get all meteors detections (return mp4s) from a given date (start & end) & cam_id
+def get_all_meteor_detections(date,start_date,end_date,cam_id):
+
+    detections = [] 
+    meteor_dirs = sorted(get_meteor_dirs(METEOR_FOLDER+date), reverse=True)
+
+    print(meteor_dirs)
