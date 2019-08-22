@@ -569,8 +569,13 @@ def create_vid_from_frames(frames, path, date, camID, fps="25") :
 
 #Get all meteors detections (return mp4s) from a given date (start & end) & cam_id
 def get_all_meteor_detections(date,start_date,end_date,cam_id):
+ 
+    # Get All the detection for the cur CAM ID & Date
+    detections = [f for f in listdir(METEOR_FOLDER+date) if cam_id in f and ".mp4" in f]
 
-    detections = [] 
-    meteor_dirs = glob.glob(METEOR_FOLDER+date)
-    
-    print(meteor_dirs)
+    # Remove Detection outside of the timeframe
+     for detection in enumerate(detections):
+
+        #Get the date & time of the video
+        date = get_meteor_date_and_time_object(detection)
+        print(str(date))
