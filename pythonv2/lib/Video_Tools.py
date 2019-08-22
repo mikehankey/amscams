@@ -294,7 +294,8 @@ def get_hd_frames_from_HD_repo(camID,date,start_date,end_date,blend_sd=False,lim
                 #print('BEFORE FRAME TO BLEND')
                 if(blend_sd==True):
                     frame_to_blend = get_sd_frames_from_HD_video(f, camID)
-                    
+                    print('BLEND FRAME FOUND')
+
                     if(frame_to_blend is not False):
                         frame_to_blend = TMP_IMG_HD_SRC_PATH + frame_to_blend
                         f2 = blend(cur_path + '/' + f,frame_to_blend,BLENDING_SD,cur_path + '/' + f)
