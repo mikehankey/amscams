@@ -602,7 +602,8 @@ def get_all_meteor_detections(date,start_date,end_date,cam_id):
 def get_all_detection_frames(path,vid):
 
     #Extract all frames
-    cmd = 'ffmpeg -y -hide_banner -loglevel panic -i ' + path + '/' + vid + ' ' +  TMP_IMG_HD_SRC_PATH + vid + '%04d.png' 
+    vid_name = vid.split('.')[-1]
+    cmd = 'ffmpeg -y -hide_banner -loglevel panic -i ' + path + '/' + vid + ' ' +  TMP_IMG_HD_SRC_PATH + vid_name + '%04d.png' 
     print(cmd)
     output = subprocess.check_output(cmd, shell=True).decode("utf-8")
 
