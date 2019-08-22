@@ -574,7 +574,7 @@ def get_all_meteor_detections(date,start_date,end_date,cam_id):
     detections = [f for f in listdir(METEOR_FOLDER+date) if cam_id in f and ".mp4" in f]
 
     # Remove Detection outside of the timeframe
-     for detection in enumerate(detections):
+    for detection in enumerate(detections):
 
         #Get the date & time of the video
         date = get_meteor_date_and_time_object(detection)
