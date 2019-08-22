@@ -586,7 +586,7 @@ def get_all_meteor_detections(date,start_date,end_date,cam_id):
         if(cur_date>=start_date_obj and end_date_obj>=cur_date):
             cur_date_string = get_meteor_date_and_time_ws(str(detection))
             
-            if cur_date_stringkey not in real_detections: 
+            if cur_date_string not in real_detections: 
                 real_detections[cur_date_string] = detection
     
     print('DETECTIONSS FOUND')
