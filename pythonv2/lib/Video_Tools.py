@@ -581,5 +581,5 @@ def get_all_meteor_detections(date,start_date,end_date,cam_id):
         cur_date = get_meteor_date_and_time_object(str(detection))
         
         if(cur_date>=start_date_obj and end_date_obj>=cur_date):
-            print("FOUND " + cur_date)
+            print("FOUND " + str(cur_date))
             print(detection)
