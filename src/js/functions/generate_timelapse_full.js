@@ -290,7 +290,7 @@ function add_timelapse_full_modal() {
                             <div class="form-group mb-2">\
                                 <div class="custom-control big custom-checkbox" data-children-count="1"> \
                                     <input type="checkbox" class="custom-control-input" id="blend_sd" name="blend_sd"> \
-                                    <label for="blend_sd" class="custom-control-label pl-2 pt-1"><b>Blend night time SD stacks when possible</b></label>\
+                                    <label for="blend_sd" class="custom-control-label pl-2 pt-1"><b>Blend night time SD stacks (when possible)</b></label>\
                                 </div>\
                             </div>\
                         </div> \
