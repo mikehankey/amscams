@@ -95,3 +95,7 @@ from os.path import isfile, join, exists
  
 # TEST GET METEOR DETECTIONS FROM CAM_ID START DAte / END DATE
 videos, path = get_all_meteor_detections("2019_08_21","2019/08/21 00:00","2019/08/21 01:15","10037")
+print("VIDEOS")
+print(videos)
+print("PATH")
+print(path)
