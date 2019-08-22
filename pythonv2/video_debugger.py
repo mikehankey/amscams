@@ -99,3 +99,5 @@ print("VIDEOS")
 print(videos)
 print("PATH")
 print(path)
+
+get_all_detection_frames(path,'2019_08_21_00_33_15_000_010037-trim-618-HD-meteor.mp4')

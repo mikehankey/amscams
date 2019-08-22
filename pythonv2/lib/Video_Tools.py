@@ -406,7 +406,6 @@ def get_text_pos(text_pos, extra_text_here):
 #Add text, logo, etc.. to a frame             
 def add_info_to_frame(frame, cam_text, extra_text, text_position, extra_text_position, watermark, watermark_position, logo, logo_pos, newpath, dimensions="1920:1080",  enhancement=0):
      
-
     # Do we have extra text?
     if(extra_text is None):
         with_extra_text = False
@@ -417,7 +416,7 @@ def add_info_to_frame(frame, cam_text, extra_text, text_position, extra_text_pos
     else:
         with_extra_text = True 
  
-  
+    # Start ffmpeg
     cmd = 'ffmpeg -hide_banner -loglevel panic \
             -y \
             -i ' + frame + '    \
@@ -428,8 +427,7 @@ def add_info_to_frame(frame, cam_text, extra_text, text_position, extra_text_pos
         with_extra_logo= True
     else:
         with_extra_logo= False
- 
-    
+  
     cmd +=  ' -filter_complex "[0:v]scale='+dimensions+'[scaled]; \
             [scaled]drawtext=:text=\'' + cam_text +'\':fontfile=\'/usr/share/fonts/truetype/dejavu/DejaVuSans-Bold.ttf\':fontcolor=white@'+FONT_TRANSPARENCY+':fontsize='+FONT_SIZE+':'+text_position 
     
@@ -468,8 +466,7 @@ def add_info_to_frames(frames, path, date, camID, extra_text, logo,logo_pos, dim
     #Create destination folder if it doesn't exist yet
     if not os.path.exists(VID_FOLDER):
         os.makedirs(VID_FOLDER) 
- 
-
+  
     # Do we have extra text?
     if(extra_text is None):
         with_extra_text = False
@@ -482,9 +479,9 @@ def add_info_to_frames(frames, path, date, camID, extra_text, logo,logo_pos, dim
   
     # Info position based on options
     text_position, extra_text_position = get_text_pos(text_pos, (extra_text!=''))
+
     # Watermark position based on options
     watermark_position = get_watermark_pos(watermark_pos)
-
 
     # Do we have extra logo
     if(logo is None):
@@ -497,7 +494,6 @@ def add_info_to_frames(frames, path, date, camID, extra_text, logo,logo_pos, dim
         with_extra_logo = True 
         logo_position = get_watermark_pos(logo_pos)     
 
-
     #Watermark R or L
     if('r' in watermark_pos):
         watermark = AMS_WATERMARK_R
@@ -509,7 +505,6 @@ def add_info_to_frames(frames, path, date, camID, extra_text, logo,logo_pos, dim
             water_path =  AMS_WATERMARK_ANIM_PATH_1280x720
         else:
             water_path =  AMS_WATERMARK_ANIM_PATH_640x360
-
 
     # Treat All frames
     for idx,f in enumerate(frames): 
@@ -601,3 +596,13 @@ def get_all_meteor_detections(date,start_date,end_date,cam_id):
                     real_detections[cur_date_string] = detection
     
     return real_detections, meteor_folder
+
+
+#Extract all the frames from a video detection in order to add text, logo(s) & time
+def get_all_detection_frames(path,vid):
+
+    #Extract all frames
+    cmd = 'ffmpeg -y -hide_banner -loglevel panic -i '+path+'/'+vid+' -vframes 1 -f image2 '+ TMP_IMG_HD_SRC_PATH + vid + '%04d.png' 
+    output = subprocess.check_output(cmd, shell=True).decode("utf-8")
+
+    print(TMP_IMG_HD_SRC_PATH + vid + '.png')
