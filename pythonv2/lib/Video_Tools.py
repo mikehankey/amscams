@@ -36,15 +36,26 @@ def get_meteor_time(_file):
     fn = fn.split("_")
     return fn[3] + '_' + fn[4] 
 
-#Get date & time without second 
+#Get date & time with  second 
 def get_meteor_date_and_time_ws(_file):
+    fn = _file.split("/")[-1] 
+    fn = fn.split("_",6)
+    return fn[0] + '/' + fn[1] + '/' + fn[2]   +  ' ' + fn[3] + ':' + fn[4] + ':' + fn[5]
+
+
+#Get date & time without second 
+def get_meteor_date_and_time_wts(_file):
     fn = _file.split("/")[-1] 
     fn = fn.split("_",6)
     return fn[0] + '/' + fn[1] + '/' + fn[2]   +  ' ' + fn[3] + ':' + fn[4]
 
 #Get date & time (python object from file name)
 def get_meteor_date_and_time_object(_file):
-    return time.strptime(get_meteor_date_and_time_ws(_file), "%Y/%m/%d %H:%M")
+    return time.strptime(get_meteor_date_and_time_wts(_file), "%Y/%m/%d %H:%M")
+
+#Get date & time (python object from file name) with SECONDS
+def get_meteor_date_and_time_object_ws(_file):
+    return time.strptime(get_meteor_date_and_time_ws(_file), "%Y/%m/%d %H:%M:%s")
 
 #Return nothing or the HD stack that correspond to the same time/cam of the time passed as parameters
 #ex:
@@ -619,6 +630,6 @@ def get_all_detection_frames(path,vid):
     print(all_frames)
 
     print("DATE")
-    print(get_meteor_date_ffmpeg(vid))
+    print(get_meteor_date_and_time_object_ws(vid))
 
     print(TMP_IMG_HD_SRC_PATH + vid + '.png')
