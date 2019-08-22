@@ -603,6 +603,7 @@ def get_all_detection_frames(path,vid):
 
     #Extract all frames
     cmd = 'ffmpeg -y -hide_banner -loglevel panic -i '+path+'/'+vid+' -vframes 1 -f image2  -r '+str(FPS_HD)+ ' ' +  TMP_IMG_HD_SRC_PATH + vid + '%04d.png' 
+    print(cmd)
     output = subprocess.check_output(cmd, shell=True).decode("utf-8")
 
     print(TMP_IMG_HD_SRC_PATH + vid + '.png')
