@@ -55,7 +55,7 @@ def get_meteor_date_and_time_object(_file):
 
 #Get date & time (python object from file name) with SECONDS
 def get_meteor_date_and_time_object_ws(_file):
-    return time.strptime(get_meteor_date_and_time_ws(_file), "%Y/%m/%d %H:%M:%s")
+    return time.strptime(get_meteor_date_and_time_ws(_file), "%Y/%m/%d %H:%M:%S")
 
 #Return nothing or the HD stack that correspond to the same time/cam of the time passed as parameters
 #ex:
