@@ -1411,7 +1411,7 @@ def meteors_new(json_conf,form):
                htclass = "norm"
                norm_cnt = norm_cnt + 1
 
-            html_out +=  "<div id='"+del_id+"' class='preview col-lg-2 col-md-3  "+ htclass +"'>"
+            html_out +=  "<div id='"+del_id+"' class='preview col-lg-2 col-md-3 select-to "+ htclass +"'>"
             html_out +=  "<a class='mtt' href='webUI.py?cmd=reduce&video_file=" + video_file + "' data-obj='"+stack_obj_img+"' title='Go to Info Page'>"
             html_out +=  "<img alt='"+desc+"' class='img-fluid ns lz' src='" + stack_file_tn + "'>"
             html_out +=  "<span>" + desc + "</span></a>"  
@@ -1887,9 +1887,7 @@ def examine_min(video_file,json_conf):
 
 #Delete multiple detections at once
 def delete_multiple_detection(detections,json_conf):
-      print('DELETE MULTIPLE DETECTION')
-      print('DETECTIONS')
-      print(detections)
+      
 
       # If there's only one it's treated as a string (?)
       if(type(detections) is str):
@@ -1898,7 +1896,7 @@ def delete_multiple_detection(detections,json_conf):
             detections = det
       
       for to_delete in detections:
-            print("TO DELETE " + str(to_delete))
+            #print("TO DELETE " + str(to_delete))
             override_detect('',to_delete,'')
 
 
@@ -1916,8 +1914,6 @@ def override_detect(video_file,jsid, json_conf):
    if "meteors" in base:
       new_dir = "/mnt/ams2/trash/"
       json_file = video_file.replace(".mp4", ".json")
-      print('IN OVERRIDE DETECT')
-      print('JSON FILE ' + json_file)
       json_data = load_json_file(json_file)
       hd_trim = json_data['hd_trim']
       sd_video_file = json_data['sd_video_file']
