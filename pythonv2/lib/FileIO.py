@@ -140,9 +140,6 @@ def get_day_files(day, cams_id, json_conf):
    [failed_files, meteor_files,pending_files,min_files] = get_day_stats(day, proc_dir + day + "/", json_conf)
    day_dir = proc_dir + day + "/" + "*" + cams_id + "*.mp4"
    temp_files = glob.glob(day_dir)
-
-
-   print(temp_files)
  
    for file in sorted(temp_files, reverse=True):
       if "trim" not in file and file != "/" and cams_id in file:
