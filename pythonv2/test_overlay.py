@@ -30,7 +30,7 @@ def add_info_to_frame_cv(hd_img, date_text, extra_text, text_position, extra_tex
    # blend the two images together using transparent overlays
    res = image[:]
    cnd = overlay[:,:,3] > 0
-   res[cnd] = overlay[cdn]
+   res[cnd] = overlay[cnd]
 
    cv2.imwrite("/mnt/ams2/test2.png", res)
    #output = image.copy()
