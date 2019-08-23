@@ -1458,6 +1458,9 @@ def meteors_new(json_conf,form):
    print("</div>")
    print("</div>")
    print(html_out)
+   print("<div class='filter-header d-flex flex-row-reverse '>") 
+   print('<button id="del-all" class="btn btn-danger"><i class="icon-delete"></i> Delete <span id="sel-ctn">All</span> Selected</button>')
+   print("</div>")
    print("</div>")
    #page,total_pages,url for pagination
    if(len(meteors)>=1):
