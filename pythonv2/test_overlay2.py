@@ -36,7 +36,7 @@ def overlay_transparent(background, overlay, x, y):
     return background
 
 background = cv2.imread('/mnt/ams2/meteors/2019_08_23/2019_08_23_00_03_23_000_010040-trim-1-HD-meteor-stacked.png')
-overlay = cv2.imread('./dist/img/ams_logo_vid_anim/1920x1080/AMS30.png')
+overlay = cv2.imread('./dist/img/ams_logo_vid_anim/1920x1080/AMS30.png', cv2.IMREAD_UNCHANGED)
 
 added_image = overlay_transparent(background,overlay,0,0)
 
