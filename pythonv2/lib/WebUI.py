@@ -1888,6 +1888,8 @@ def examine_min(video_file,json_conf):
 #Delete multiple detections at once
 def delete_multiple_detection(detections,json_conf):
       print('DELETE MULTIPLE DETECTION')
+      print('DETECTIONS')
+      print(detections)
       for to_delete in detections:
             print("TO DELETE " + str(to_delete))
             override_detect('',to_delete,'')
