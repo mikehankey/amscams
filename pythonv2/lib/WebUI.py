@@ -2268,6 +2268,8 @@ def print_css():
 
 
 def browse_day(day,cams_id,json_conf):
+   cgitb.enable()
+
    day_files = get_day_files(day,cams_id,json_conf)
  
    cc = 0
