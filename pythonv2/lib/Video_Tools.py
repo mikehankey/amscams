@@ -601,7 +601,8 @@ def get_all_meteor_detections(date,start_date,end_date,cam_id):
             
             if cur_date_string not in real_detections: 
                 #We parse the JSON to get the path to the HD
-                if detection.exists():
+                detection_file = Path(detection)
+                if detection_file.exists():
                     print('THE JSON exists')
                     data = load_json_file(detection)
                     #real_detections[cur_date_string] = detection
