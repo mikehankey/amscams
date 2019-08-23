@@ -135,17 +135,20 @@ def get_trims_for_file(video_file):
 def get_day_files(day, cams_id, json_conf):
    file_info = {} 
    proc_dir = json_conf['site']['proc_dir']
+   
+   #Get all the JSON Files of the day
    [failed_files, meteor_files,pending_files,min_files] = get_day_stats(day, proc_dir + day + "/", json_conf)
-
-   print("GET DAY FILES")
-   print(meteor_files)
-
    day_dir = proc_dir + day + "/" + "*" + cams_id + "*.mp4"
    temp_files = glob.glob(day_dir)
+
+
+   print(temp_files)
+ 
    for file in sorted(temp_files, reverse=True):
       if "trim" not in file and file != "/" and cams_id in file:
          base_file = file.replace(".mp4", "")
          file_info[base_file] = ""
+ 
    for file in failed_files : 
       if cams_id in file:
          junk = file.split("-trim")
@@ -153,6 +156,7 @@ def get_day_files(day, cams_id, json_conf):
          base_file = base_file.replace("/failed/", "")
          if base_file != '/':
             file_info[base_file] = "failed"
+ 
    for file in meteor_files : 
       if cams_id in file:
          junk = file.split("-trim")
@@ -160,6 +164,7 @@ def get_day_files(day, cams_id, json_conf):
          base_file = base_file.replace("/passed/", "")
          if base_file != '/':
             file_info[base_file] = "meteor"
+ 
    for file in pending_files: 
       if cams_id in file:
          junk = file.replace("-trim", "")
