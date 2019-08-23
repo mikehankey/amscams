@@ -206,13 +206,17 @@ def reduce_fov_pos(this_poly, cal_params, cal_params_file, oimage, json_conf, pa
    if show == 1:
       show_img = cv2.resize(image, (960,540))
       if "cam_id" in in_cal_params:
-         cv2.imshow(cam_id, show_img)
+         if show == 1:
+            cv2.imshow(cam_id, show_img)
       else:
-         cv2.imshow('pepe', show_img)
+         if show == 1:
+            cv2.imshow('pepe', show_img)
       if min_run == 1:
-         cv2.waitKey(70)
+         if show == 1:
+            cv2.waitKey(70)
       else:
-         cv2.waitKey(1)
+         if show == 1:
+            cv2.waitKey(1)
 
    if min_run == 1:
       return(avg_res)
@@ -513,8 +517,7 @@ def process_video_frames(frames, video_file):
          nomo = nomo + 1
          #blob_x = None
          #blob_y = None
-      #cv2.imshow('pepe', subframe)
-      #cv2.waitKey(70)
+
       frame_data[fn]['cm'] = cm
       frame_data[fn]['nonmo'] = nomo
       print(fn, max_val, cm, nomo)
@@ -522,7 +525,6 @@ def process_video_frames(frames, video_file):
       last_x = mx
       last_y = my
       cropframes.append(crop_img)
-      #cv2.imshow('pepe', show_frame)
 
    if cm >= 2 :
       print("Add Final Event.")
@@ -594,8 +596,9 @@ def run_detect(video_file, show):
             frame = cropframes[fn]
             if fn in video_data['frame_data']:
                print(video_data['frame_data'][fn])
-            cv2.imshow('pepe', frame)
-            cv2.waitKey(70)
+            if show == 1:
+               cv2.imshow('pepe', frame)
+               cv2.waitKey(70)
          video_data['orig_video_file'] = video_file
          video_data['video_data_file'] = video_data_file
          video_data = evaluate_frames(video_data)
@@ -665,8 +668,9 @@ def run_detect(video_file, show):
          # now smooth out the metframes and make sure all of the points are good. 
          metconf = update_metconf(meteor_json)
          meteor_json['metconf'] = metconf
+         meteor_json['avg_res'] = 9999 
          print("MIKE SMOTH")
-         meteor_json = smooth_points(meteor_json, frames)
+         #meteor_json = smooth_points(meteor_json, frames)
          meteor_json['metconf']['video_data_file'] = video_data_file
          meteor_json['cal_params'] = video_data['cal_params']
          meteor_json['start_buff'] = start_buff 
@@ -696,7 +700,7 @@ def run_detect(video_file, show):
    print("VIDEO DATA FILE:", video_data_file)
    save_json_file(video_data_file, video_data)    
    #review_meteor(meteor_json, frames)
-   os.system("./detector.py rv " + meteor_json_filename) 
+   #os.system("./detector.py rv " + meteor_json_filename) 
 
 def remap_metframes(meteor_json):
    start_buff = meteor_json['start_buff']
@@ -746,8 +750,9 @@ def quick_review(meteor_json_file, frames, video_file = None, show = 1):
          hd_y = mf[sfn]['hd_y'] 
          cv2.circle(show_frame,(hd_x,hd_y), 10, (0,0,255), 1)
          cv2.circle(show_frame,(est_x,est_y), 10, (0,255,255), 1)
-         cv2.imshow('pepe', show_frame)
-         cv2.waitKey(0)
+         if show == 1:
+            cv2.imshow('pepe', show_frame)
+            cv2.waitKey(0)
       fn = fn + 1
       fc = fc + 1
 
@@ -819,11 +824,12 @@ def review_meteor(meteor_json_file, frames, video_file = None, show = 1):
                cv2.circle(show_frame,(bx,by), 5, (0,0,255), 1)
 
 
-      cv2.imshow('pepe', show_frame)
-      if ifn in mf:
-         cv2.waitKey(70)
-      else:
-         cv2.waitKey(50)
+      if show == 1:
+         cv2.imshow('pepe', show_frame)
+         if ifn in mf:
+            cv2.waitKey(70)
+         else:
+            cv2.waitKey(50)
       fn = fn + 1
       fc = fc + 1
    meteor_json['metframes'] = mf 
@@ -899,8 +905,9 @@ def review_meteor(meteor_json_file, frames, video_file = None, show = 1):
          est_y = metframes[sfn]['est_y']
          cv2.circle(show_image,(est_x,est_y), 10, (0,255,255), 1)
          cv2.circle(show_image,(hd_x,hd_y), 10, (0,0,255), 1)
-         cv2.imshow('pepe', show_image)
-         cv2.waitKey(70)
+         if show == 1:
+            cv2.imshow('pepe', show_image)
+            cv2.waitKey(70)
       fn = fn + 1
 
 
@@ -916,7 +923,7 @@ def test_acl_res(meteor_json,frames,key_field):
    #else:
    #   print("NO ACL POLY!" )
 
-   #avg_res = reduce_acl(this_poly, meteor_json['metframes'],meteor_json['metconf'],frames, 0,1, key_field)
+   avg_res = reduce_acl(this_poly, meteor_json['metframes'],meteor_json['metconf'],frames, 0,1, key_field)
 
    avg_res = scipy.optimize.minimize(reduce_acl, this_poly, args=( meteor_json['metframes'], meteor_json['metconf'],frames,0,1,key_field), method='Nelder-Mead')
 
@@ -927,7 +934,7 @@ def test_acl_res(meteor_json,frames,key_field):
    else:
       print("NO POLY!", metconf)
 
-
+   
    return(avg_res, this_poly)
       
 def bound_points(pts):
@@ -1061,8 +1068,9 @@ def smooth_points(meteor_json, frames):
                #metframes[fn]['my'] = my
                print("FIXED FRAME: ", fn, mx, my)
                
-      cv2.imshow('pepe', subframe)
-      cv2.waitKey(70)
+      if show == 1:
+         cv2.imshow('pepe', subframe)
+         cv2.waitKey(70)
       last_x = mx
       last_y = my
       fc = fc + 1 
@@ -1083,8 +1091,6 @@ def smooth_points(meteor_json, frames):
       cv2.circle(show_image,(mx,my), 10, (255), 1)
       print("CROP BOX:", crop_box)
 
-      #cv2.imshow('pepe', show_image)
-      #cv2.waitKey(10)
       hdm_x = 1920 / 1280
       hdm_y = 1080 / 720
      
@@ -1100,14 +1106,11 @@ def smooth_points(meteor_json, frames):
       if crop_img.shape[0] > 0 and crop_img.shape[1] > 0:
 
          disp_image[dy1:dy2,dx1:dx2] = crop_img
-         #cv2.line(disp_image, (dx1,dy2), (int(min_mx/hdm_x),int(max_my/hdm_y)), (128,128,128), 1) 
-         #cv2.line(disp_image, (dx2,dy1), (int(max_mx/hdm_x),int(min_my/hdm_y)), (128,128,128), 1) 
-
-
-         cv2.rectangle(disp_image, (int(dx1), int(dy1)), (int(dx2), int(dy2)), (100,100,100), 1)
-         cv2.rectangle(disp_image, (int(min_mx/hdm_x), int(min_my/hdm_y)), (int(max_mx/hdm_x), int(max_my/hdm_y)), (100,100,100), 1)
-         cv2.imshow('pepe', disp_image)
-         cv2.waitKey(70)
+         if show == 1:
+            cv2.rectangle(disp_image, (int(dx1), int(dy1)), (int(dx2), int(dy2)), (100,100,100), 1)
+            cv2.rectangle(disp_image, (int(min_mx/hdm_x), int(min_my/hdm_y)), (int(max_mx/hdm_x), int(max_my/hdm_y)), (100,100,100), 1)
+            cv2.imshow('pepe', disp_image)
+            cv2.waitKey(70)
       else:
          print("BAD CROP:", fn, y1,y2,x1,x2)
       print(fn, mx, my, last_seg)
@@ -1372,8 +1375,9 @@ def setup_calib(video_data, image):
       cfit_tries = int(cal_params['cfit_tries'])
    else:
       cfit_tries = 0
-    
-   if cfit_tries < 5 and len(cal_params['cat_image_stars']) >= 7:
+   
+   do_cfit = 0 
+   if cfit_tries < 5 and len(cal_params['cat_image_stars']) >= 7 and do_cfit == 1:
       start_res = reduce_fov_pos(this_poly, cal_params,video_data['video_data_file'],image,json_conf, cal_params['cat_image_stars'],1,1)
  
       res = scipy.optimize.minimize(reduce_fov_pos, this_poly, args=( cal_params,video_data['video_data_file'],image,json_conf, cal_params['cat_image_stars'],1,1), method='Nelder-Mead')
@@ -1383,8 +1387,8 @@ def setup_calib(video_data, image):
       cal_params['center_el'] = float(cal_params['orig_center_el']) + float(fov_pos_poly[1] )
       cal_params['position_angle'] = float(cal_params['position_angle']) + float(fov_pos_poly[2] )
 
-   cfit_tries = cfit_tries + 1
-   cal_params['cfit_tries'] = cfit_tries 
+      cfit_tries = cfit_tries + 1
+      cal_params['cfit_tries'] = cfit_tries 
 
    video_data['cal_params'] = cal_params 
 
@@ -1487,9 +1491,9 @@ def find_cat_stars_from_points(video_data, show_image = None):
   
    if len(cat_image_stars) > 0:
       avg_res = float(total_res / len(cat_image_stars))
- 
-   cv2.imshow('pepe', show_image)
-   cv2.waitKey(1)
+   if show == 1: 
+      cv2.imshow('pepe', show_image)
+      cv2.waitKey(1)
    return(real_cat_image_stars, avg_res)
 
 def test_star_edge(ix,iy,image):
@@ -1659,8 +1663,6 @@ def find_blobs_in_crops(cropframes, frame_data):
 
          print(my_cnts)
 
-         #cv2.imshow('pepe', image_thresh)
-         #cv2.waitKey(70)
    return(frame_data)
 
 def evaluate_frames(video_data):
@@ -1807,14 +1809,14 @@ if cmd == 'rv' or cmd == 'review_meteor':
          file = file.replace(".mp4", ".json") 
       
       video_file = file.replace(".json", ".mp4")
-      review_meteor(file,None, video_file)
+      review_meteor(file,None, video_file, show)
 
 
 if cmd == 'qr' or cmd == 'quick_review':
    if cfe(file) == 1:
       if ".mp4" in file:
          video_file = file
-         file = file.replace(".mp4", ".json") 
+         file = file.replace(".mp4", ".json", show) 
       
       video_file = file.replace(".json", ".mp4")
    quick_review(file,None, video_file)
