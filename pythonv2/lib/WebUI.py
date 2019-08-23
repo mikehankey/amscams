@@ -2281,8 +2281,6 @@ def browse_day(day,cams_id,json_conf):
    #cgitb.enable()
 
    day_files = get_day_files(day,cams_id,json_conf)
-
-   print(day_files)
  
    cc = 0
    all_files = []

@@ -7,9 +7,7 @@ import cv2
 def add_info_to_frame_cv(hd_img, date_text, extra_text, text_position, extra_text_position, watermark, watermark_position, logo, logo_pos, enhancement=0):
    (wH, wW) = watermark.shape[:2]
    (h, w) = hd_img.shape[:2]
-
-
-
+ 
    (B, G, R, A) = cv2.split(watermark)
    B = cv2.bitwise_and(B, B, mask=A)
    G = cv2.bitwise_and(G, G, mask=A)
@@ -38,7 +36,7 @@ def add_info_to_frame_cv(hd_img, date_text, extra_text, text_position, extra_tex
    return hd_img
 
 
-image = cv2.imread("/mnt/ams2/frame.png")
+image = cv2.imread("/mnt/ams2/meteors/2019_08_23/2019_08_23_00_03_23_000_010040-trim-1-HD-meteor-stacked.png")
 watermark = cv2.imread("/mnt/ams2/logo.png", cv2.IMREAD_UNCHANGED)
 
 print(watermark.shape)
