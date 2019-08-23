@@ -10,10 +10,10 @@ def add_info_to_frame_cv(hd_img, date_text, extra_text, text_position, extra_tex
    (wH, wW) = watermark.shape[:2]
   
    #Add 4th dimension to image to deal with watermark transparency
-   #image = np.dstack([hd_img, np.ones((h, w), dtype="uint8") * 255])
+   image = np.dstack([hd_img, np.ones((h, w), dtype="int16") * 255])
 
    #Construct overlay for watermark
-   overlay = np.zeros((h, w, 4), dtype="uint8") 
+   overlay = np.zeros((h, w, 4), dtype="int16") 
    print("OVERLAY SHAPE")
    print(overlay.shape)
     
@@ -23,7 +23,7 @@ def add_info_to_frame_cv(hd_img, date_text, extra_text, text_position, extra_tex
    #overlay[h - wH - 580:h - 580, 10:wW + 10] = watermark_image
     
    # blend the two images together using transparent overlays
-   output = hd_img.copy()
+   output = image.copy()
    cv2.addWeighted(overlay, 1, output, 1.0, 0, output)
 
    hd_img = output
@@ -56,4 +56,3 @@ logo_pos = 0
 new_frame = add_info_to_frame_cv(image, date_text, extra_text, text_position, extra_text_position, watermark, watermark_position, logo, logo_pos, enhancement=0)
 
 cv2.imwrite("/mnt/ams2/test.png", new_frame)
-print("/mnt/ams2/test.png")
