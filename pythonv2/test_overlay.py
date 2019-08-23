@@ -2,6 +2,13 @@
 
 import numpy as np
 import cv2
+
+
+
+
+
+
+
 def add_info_to_frame_cv(hd_img, date_text, extra_text, text_position, extra_text_position, watermark, watermark_position, logo, logo_pos, enhancement=0):
    # Get org img & Watermark dimensions
    (h, w) = hd_img.shape[:2]
@@ -44,41 +51,31 @@ def add_info_to_frame_cv(hd_img, date_text, extra_text, text_position, extra_tex
 
 
 def add_info_to_frame_cv_test_full_transparent(hd_img, date_text, extra_text, text_position, extra_text_position, watermark, watermark_position, logo, logo_pos, enhancement=0):
-   # Get org img & Watermark dimensions
-   (h, w) = hd_img.shape[:2]
-   (wH, wW) = watermark.shape[:2]
-  
-   #Add 4th dimension to image to deal with watermark transparency
-   image = np.dstack([hd_img, np.ones((h, w), dtype="uint8") * 255])
 
-   #Construct overlay for watermark
-   overlay = np.zeros((h, w, 4), dtype="uint8") 
-
-   #watermark_4 = np.dstack([watermark, np.ones((h, w), dtype="uint8") * 255])
-
-   print("overlay SHAPE")
-   print(overlay.shape)
-
-   print("IMAGE SHAPE")
-   print(image.shape)
    
-   overlay[0:h,0:w] = watermark 
-   #overlay[h - wH - 10:h - 10, w - wW - 10:w - 10] = watermark
-   #overlay[h - wH - 580:h - 580, w - wW - 10:w - 10] = watermark_image
-   #overlay[h - wH - 580:h - 580, 10:wW + 10] = watermark_image
-    
-   # blend the two images together using transparent overlay 
-   output = image[:]
-   cnd = overlay[:,:,1] > 0
-   print("CND ")
-   print(cnd)
-   output[cnd] = overlay[cnd]
+   bg_img = hd_img.copy()
 
-   #cv2.imwrite("/mnt/ams2/test2.png", res)
-   #output = image.copy()
-   #cv2.addWeighted(overlay, 1, output, 1.0, 0, output)
+   # Extract the alpha mask of the RGBA image, convert to RGB 
+   b,g,r,a = cv2.split(watermark)
+   overlay_color = cv2.merge((b,g,r))
 
-   hd_img = output
+   # Apply some simple filtering to remove edge noise
+   mask = cv2.medianBlur(a,5)
+
+   h, w, _ = overlay_color.shape
+   roi = bg_img[y:y+h, x:x+w]
+
+   # Black-out the area behind the watermark in our original ROI
+   img1_bg = cv2.bitwise_and(roi.copy(),roi.copy(),mask = cv2.bitwise_not(mask))
+
+   # Mask out the logo from the logo image.
+   img2_fg = cv2.bitwise_and(overlay_color,overlay_color,mask = mask)
+
+
+   # Update the original image with our new ROI
+   bg_img[y:y+h, x:x+w] = cv2.add(img1_bg, img2_fg)
+
+   hd_img = bd_img
 
    cv2.putText(hd_img, extra_text,  (10,710), cv2.FONT_HERSHEY_SIMPLEX, .4, (255, 255, 255), 1)
    cv2.putText(hd_img, date_text,  (1100,710), cv2.FONT_HERSHEY_SIMPLEX, .4, (255, 255, 255), 1)
