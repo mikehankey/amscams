@@ -67,7 +67,7 @@ def add_info_to_frame_cv_test_full_transparent(hd_img, date_text, extra_text, te
    overlay_color = cv2.merge((b,g,r))
 
    # Apply some simple filtering to remove edge noise
-   mask = cv2.medianBlur(a,10)
+   mask = cv2.medianBlur(a,5)
 
    h, w, _ = overlay_color.shape
    roi = bg_img[y:y+h, x:x+w]
