@@ -53,8 +53,8 @@ def add_info_to_frame_cv(hd_img, date_text, extra_text, text_position, extra_tex
 def add_info_to_frame_cv_test_full_transparent(hd_img, date_text, extra_text, text_position, extra_text_position, watermark, watermark_position, logo, logo_pos, enhancement=0):
    
    #Watermark position (temporarily hardcoded)
-   x = 10
-   y = 10
+   x = 0
+   y = 0
 
    #TODO: rezise watermark if necessary
    #if overlay_size is not None:
