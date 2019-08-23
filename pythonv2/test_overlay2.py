@@ -1,87 +1,43 @@
-#!/usr/bin/python3
-
-import numpy as np
 import cv2
- 
+import numpy as np
 
+def add_overlay(background, overlay, x, y):
 
-def add_info_to_frame_cv(hd_img, date_text, extra_text, text_position, extra_text_position, watermark, watermark_position, logo, logo_pos, enhancement=0):
-   # Get org img & Watermark dimensions
-   (h, w) = hd_img.shape[:2]
-   (wH, wW) = watermark.shape[:2]
-  
-   #Add 4th dimension to image to deal with watermark transparency
-   image = np.dstack([hd_img, np.ones((h, w), dtype="uint8") * 255])
+    background_width = background.shape[1]
+    background_height = background.shape[0]
 
-   #Construct overlay for watermark
-   #overlay = np.zeros((h, w, 4), dtype="uint8") 
+    if x >= background_width or y >= background_height:
+        return background
 
-   #watermark_4 = np.dstack([watermark, np.ones((h, w), dtype="uint8") * 255])
+    h, w = overlay.shape[0], overlay.shape[1]
 
-   #print("overlay SHAPE")
-   #print(overlay.shape)
+    if x + w > background_width:
+        w = background_width - x
+        overlay = overlay[:, :w]
 
-   #print("IMAGE SHAPE")
-   #print(image.shape)
-   
-   #overlay[0:h,0:w] = watermark 
-   #overlay[h - wH - 10:h - 10, w - wW - 10:w - 10] = watermark
-   #overlay[h - wH - 580:h - 580, w - wW - 10:w - 10] = watermark_image
-   #overlay[h - wH - 580:h - 580, 10:wW + 10] = watermark_image
-    
-   # blend the two images together using transparent overlay 
-   output = image[:]
-   cnd = watermark[:,:,3] > 0
-   output[cnd] = watermark[cnd]
+    if y + h > background_height:
+        h = background_height - y
+        overlay = overlay[:h]
 
-   #cv2.imwrite("/mnt/ams2/test2.png", res)
-   #output = image.copy()
-   #cv2.addWeighted(overlay, 1, output, 1.0, 0, output)
+    if overlay.shape[2] < 4:
+        overlay = np.concatenate(
+            [
+                overlay,
+                np.ones((overlay.shape[0], overlay.shape[1], 1), dtype = overlay.dtype) * 255
+            ],
+            axis = 2,
+        )
 
-   hd_img = output
+    overlay_image = overlay[..., :3]
+    mask = overlay[..., 3:] / 255.0
 
-   cv2.putText(hd_img, extra_text,  (10,710), cv2.FONT_HERSHEY_SIMPLEX, .4, (255, 255, 255), 1)
-   cv2.putText(hd_img, date_text,  (1100,710), cv2.FONT_HERSHEY_SIMPLEX, .4, (255, 255, 255), 1)
+    background[y:y+h, x:x+w] = (1.0 - mask) * background[y:y+h, x:x+w] + mask * overlay_image
 
-   return hd_img
+    return background
 
+background = cv2.imread('/mnt/ams2/meteors/2019_08_23/2019_08_23_00_03_23_000_010040-trim-1-HD-meteor-stacked.png')
+overlay = cv2.imread('../dist/img/ams_logo_vid_anim/1920x1080/AMS30.png', cv2.IMREAD_UNCHANGED)
 
-def add_info_to_frame_cv_test_full_transparent(hd_img, date_text, extra_text, text_position, extra_text_position, watermark, watermark_position, logo, logo_pos, enhancement=0):
-   
-   # Get org img & Watermark dimensions
-   (img_H, img_W)  = hd_img.shape[:2]
-   (wwat_H, wat_W) = watermark.shape[:2]
-  
-   #Add 4th dimension to image to deal with watermark transparency
-   image = np.dstack([hd_img, np.ones((img_H, img_W), dtype="uint8") * 255])
-  
-   output = image[:]
-   cnd = watermark[:,:,3] > 1
-   output[cnd] = watermark[cnd]
-  
-   hd_img = output
+added_image = add_overlay(background,overlay,10,10)
 
-
-   cv2.putText(hd_img, extra_text,  (10,710), cv2.FONT_HERSHEY_SIMPLEX, .4, (255, 255, 255), 1)
-   cv2.putText(hd_img, date_text,  (1100,710), cv2.FONT_HERSHEY_SIMPLEX, .4, (255, 255, 255), 1)
-
-   return hd_img
-
-
-image = cv2.imread("/mnt/ams2/meteors/2019_08_23/2019_08_23_00_03_23_000_010040-trim-1-HD-meteor-stacked.png")
-watermark = cv2.imread("./dist/img/ams_logo_vid_anim/1920x1080/AMS30.png", cv2.IMREAD_UNCHANGED)
-
-
-logo  = ""
-date_text = "test"
-extra_text = "test"
-text_position = 0
-watermark_position = 0
-extra_text_position = 0
-logo_pos = 0
-
-
-
-new_frame = add_info_to_frame_cv_test_full_transparent(image, date_text, extra_text, text_position, extra_text_position, watermark, watermark_position, logo, logo_pos, enhancement=0)
-
-cv2.imwrite("/mnt/ams2/test3.png", new_frame)
+cv2.imwrite('/mnt/ams2/test4.png', added_image)
