@@ -136,6 +136,10 @@ def get_day_files(day, cams_id, json_conf):
    file_info = {} 
    proc_dir = json_conf['site']['proc_dir']
    [failed_files, meteor_files,pending_files,min_files] = get_day_stats(day, proc_dir + day + "/", json_conf)
+
+   print("GET DAY FILES")
+   print(meteor_files)
+
    day_dir = proc_dir + day + "/" + "*" + cams_id + "*.mp4"
    temp_files = glob.glob(day_dir)
    for file in sorted(temp_files, reverse=True):
