@@ -20,6 +20,7 @@ $(function() {
 
      // Select one from div
      $('.select-to').click(function(e) {
+         console.log(e.target);
          e.stopImmediatePropagation();
          $(this).find('.sel-box input[type=checkbox]').click();
      })
