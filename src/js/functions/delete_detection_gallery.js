@@ -21,7 +21,6 @@ $(function() {
      // Select one from div
      $('.select-to').click(function(e) {
          if($(e.target).hasClass('select-to')) {
-            console.log('IT IS SELECT-TO')
             e.stopImmediatePropagation();
             $(this).find('.sel-box input[type=checkbox]').click();
          }
