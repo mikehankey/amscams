@@ -13,11 +13,11 @@ def add_info_to_frame_cv(hd_img, date_text, extra_text, text_position, extra_tex
    print('WAT w='+ str(wW) + ' h='+ str(wH))
 
    #Get the 4 channels to handle watermark transparency
-   (B, G, R, A) = cv2.split(watermark)
-   B = cv2.bitwise_and(B, B, mask=A)
-   G = cv2.bitwise_and(G, G, mask=A)
-   R = cv2.bitwise_and(R, R, mask=A)
-   watermark_image = cv2.merge([B, G, R, A])
+   #(B, G, R, A) = cv2.split(watermark)
+   #B = cv2.bitwise_and(B, B, mask=A)
+   #G = cv2.bitwise_and(G, G, mask=A)
+   #R = cv2.bitwise_and(R, R, mask=A)
+   #watermark_image = cv2.merge([B, G, R, A])
 
    (wH, wW) = watermark.shape[:2]
    print('WAT AFTER TRANS w='+ str(wW) + ' h='+ str(wH))
@@ -30,14 +30,12 @@ def add_info_to_frame_cv(hd_img, date_text, extra_text, text_position, extra_tex
    overlay = np.zeros((h, w, 4), dtype="uint8") 
    print("OVERLAY SHAPE")
    print(overlay.shape)
-
+    
    overlay[0:h,0:w] = watermark
    #overlay[h - wH - 10:h - 10, w - wW - 10:w - 10] = watermark
    #overlay[h - wH - 580:h - 580, w - wW - 10:w - 10] = watermark_image
    #overlay[h - wH - 580:h - 580, 10:wW + 10] = watermark_image
-   
-
-
+    
    # blend the two images together using transparent overlays
    output = image.copy()
    cv2.addWeighted(overlay, 1, output, 1.0, 0, output)
