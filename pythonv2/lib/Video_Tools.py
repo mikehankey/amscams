@@ -584,8 +584,8 @@ def get_all_meteor_detections(date,start_date,end_date,cam_id):
     end_date_obj = time.strptime(end_date, "%Y/%m/%d %H:%M")
 
     # Get All the detection for the cur CAM ID & Date
-    # Note: we don't care about the reduced here 
-    detections = [f for f in listdir(meteor_folder) if cam_id in f and ".json" in f and "-reduced" not in f]
+    # Note: WE CARE ONLY ABOUT THE REDUCED METEORS (as the json for non-reduced is full of wrong paths)
+    detections = [f for f in listdir(meteor_folder) if cam_id in f and ".json" in f and "-reduced" in f]
     real_detections = {}
 
     # Remove Detection outside of the timeframe
@@ -595,15 +595,13 @@ def get_all_meteor_detections(date,start_date,end_date,cam_id):
         cur_date = get_meteor_date_and_time_object(str(detection))
         
         if(cur_date>=start_date_obj and end_date_obj>=cur_date):
+
             # Get the date without seconds
             cur_date_string = get_meteor_date_and_time_ws(str(detection))
             
             if cur_date_string not in real_detections: 
                 real_detections[cur_date_string] = detection
-            else:
-                #Do we have the HD?
-                if("HD" not in real_detections[cur_date_string] and "HD" in detection):
-                    real_detections[cur_date_string] = detection
+            
     
     return real_detections, meteor_folder
 
