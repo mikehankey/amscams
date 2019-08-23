@@ -14,8 +14,15 @@ def add_info_to_frame_cv(hd_img, date_text, extra_text, text_position, extra_tex
 
    #Construct overlay for watermark
    overlay = np.zeros((h, w, 4), dtype="uint8") 
+
+ 
+   print("overlay SHAPE")
+   print(overlay.shape)
+
+   print("IMAGE SHAPE")
+   print(image.shape)
    
-   overlay[0:h,0:w] = watermark
+   #overlay[0:h,0:w] = watermark
    #overlay[h - wH - 10:h - 10, w - wW - 10:w - 10] = watermark
    #overlay[h - wH - 580:h - 580, w - wW - 10:w - 10] = watermark_image
    #overlay[h - wH - 580:h - 580, 10:wW + 10] = watermark_image
@@ -40,11 +47,6 @@ def add_info_to_frame_cv(hd_img, date_text, extra_text, text_position, extra_tex
 image = cv2.imread("/mnt/ams2/meteors/2019_08_23/2019_08_23_00_03_23_000_010040-trim-1-HD-meteor-stacked.png")
 watermark = cv2.imread("./dist/img/ams_logo_vid_anim/1920x1080/AMS32.png", cv2.IMREAD_UNCHANGED)
 
-print("WATERMARK SHAPE")
-print(watermark.shape)
-
-print("IMAGE SHAPE")
-print(image.shape)
 
 logo  = ""
 date_text = "test"
