@@ -8,6 +8,7 @@ from lib.VIDEO_VARS import *
 from os import listdir, remove
 from os.path import isfile, join, exists
 from shutil import copyfile
+from lib.FileIO import load_json_file
 
 
 # Blend two images together
