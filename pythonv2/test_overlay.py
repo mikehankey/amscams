@@ -56,7 +56,7 @@ def add_info_to_frame_cv_test_full_transparent(hd_img, date_text, extra_text, te
    image = np.dstack([hd_img, np.ones((img_H, img_W), dtype="uint8") * 255])
   
    output = image[:]
-   cnd = watermark[:,:,3]
+   cnd = watermark[:,:,3] > 0.5
    output[cnd] = watermark[cnd]
   
    hd_img = output
