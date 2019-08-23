@@ -90,8 +90,8 @@ def add_info_to_frame_cv_test_full_transparent(hd_img, date_text, extra_text, te
    return hd_img
 
 
-image = cv2.imread("/mnt/ams2/meteors/2019_08_23/2019_08_23_00_03_23_000_010040-trim-1-HD-meteor-stacked.png")
-watermark = cv2.imread("./dist/img/ams_logo_vid_anim/1920x1080/AMS30.png", -1)
+image = cv2.imread("/mnt/ams2/meteors/2019_08_23/2019_08_23_00_03_23_000_010040-trim-1-HD-meteor-stacked.png", cv2.IMREAD_UNCHANGED)
+watermark = cv2.imread("./dist/img/ams_logo_vid_anim/1920x1080/AMS30.png", cv2.IMREAD_UNCHANGED)
 
 
 logo  = ""
