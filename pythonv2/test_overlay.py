@@ -2,11 +2,7 @@
 
 import numpy as np
 import cv2
-
-
-
-
-
+ 
 
 
 def add_info_to_frame_cv(hd_img, date_text, extra_text, text_position, extra_text_position, watermark, watermark_position, logo, logo_pos, enhancement=0):
@@ -52,37 +48,19 @@ def add_info_to_frame_cv(hd_img, date_text, extra_text, text_position, extra_tex
 
 def add_info_to_frame_cv_test_full_transparent(hd_img, date_text, extra_text, text_position, extra_text_position, watermark, watermark_position, logo, logo_pos, enhancement=0):
    
-   #Watermark position (temporarily hardcoded)
-   x = 0
-   y = 0
+   # Get org img & Watermark dimensions
+   (img_H, img_W) = hd_img.shape[:2]
+   (wwat_H, wat_W) = watermark.shape[:2]
+  
+   #Add 4th dimension to image to deal with watermark transparency
+   image = np.dstack([hd_img, np.ones((img_H, img_W), dtype="uint8") * 255])
+  
+   output = image[:]
+   cnd = watermark[:,:,3] > 0
+   output[cnd] = watermark[cnd]
 
-   #TODO: rezise watermark if necessary
-   #if overlay_size is not None:
-   #     img_to_overlay_t = cv2.resize(img_to_overlay_t.copy(), overlay_size) 
+   hd_img = output
 
-   bg_img = hd_img.copy()
-
-   # Extract the alpha mask of the RGBA image, convert to RGB 
-   b,g,r,a = cv2.split(watermark)
-   overlay_color = cv2.merge((b,g,r))
-
-   # Apply some simple filtering to remove edge noise
-   mask = cv2.medianBlur(a,5)
-
-   h, w, _ = overlay_color.shape
-   roi = bg_img[y:y+h, x:x+w]
-
-   # Black-out the area behind the watermark in our original ROI
-   img1_bg = cv2.bitwise_and(roi.copy(),roi.copy(),mask = cv2.bitwise_not(mask))
-
-   # Mask out the logo from the logo image.
-   img2_fg = cv2.bitwise_and(overlay_color,overlay_color,mask = mask)
-
-
-   # Update the original image with our new ROI
-   bg_img[y:y+h, x:x+w] = cv2.add(img1_bg, img2_fg)
-
-   hd_img = bg_img
 
    cv2.putText(hd_img, extra_text,  (10,710), cv2.FONT_HERSHEY_SIMPLEX, .4, (255, 255, 255), 1)
    cv2.putText(hd_img, date_text,  (1100,710), cv2.FONT_HERSHEY_SIMPLEX, .4, (255, 255, 255), 1)
@@ -90,7 +68,7 @@ def add_info_to_frame_cv_test_full_transparent(hd_img, date_text, extra_text, te
    return hd_img
 
 
-image = cv2.imread("/mnt/ams2/meteors/2019_08_23/2019_08_23_00_03_23_000_010040-trim-1-HD-meteor-stacked.png", cv2.IMREAD_UNCHANGED)
+image = cv2.imread("/mnt/ams2/meteors/2019_08_23/2019_08_23_00_03_23_000_010040-trim-1-HD-meteor-stacked.png")
 watermark = cv2.imread("./dist/img/ams_logo_vid_anim/1920x1080/AMS30.png", cv2.IMREAD_UNCHANGED)
 
 
