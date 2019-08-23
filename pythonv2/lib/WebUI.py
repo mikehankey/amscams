@@ -1454,12 +1454,12 @@ def meteors_new(json_conf,form):
    print("<div class='list-onl'>")
    print("<div class='filter-header d-flex flex-row-reverse '>")
    print('<button id="sel-all" title="Select All" class="btn btn-primary ml-3"><i class="icon-checkbox-checked"></i></button>')
-   print('<button id="del-all" class="del-all btn btn-danger"><i class="icon-delete"></i> Delete <span id="sel-ctn">All</span> Selected</button>')
+   print('<button id="del-all" class="del-all btn btn-danger"><i class="icon-delete"></i> Delete <span class="sel-ctn">All</span> Selected</button>')
    print("</div>")
    print("</div>")
    print(html_out)
    print("<div class='filter-header d-flex flex-row-reverse '>") 
-   print('<button id="del-all" class="del-all btn btn-danger"><i class="icon-delete"></i> Delete <span id="sel-ctn">All</span> Selected</button>')
+   print('<button id="del-all" class="del-all btn btn-danger"><i class="icon-delete"></i> Delete <span class="sel-ctn">All</span> Selected</button>')
    print("</div>")
    print("</div>")
    #page,total_pages,url for pagination
@@ -1907,6 +1907,8 @@ def override_detect(video_file,jsid, json_conf):
    if "meteors" in base:
       new_dir = "/mnt/ams2/trash/"
       json_file = video_file.replace(".mp4", ".json")
+      print('IN OVERRIDE DETECT')
+      print('JSON FILE ' + json_file)
       json_data = load_json_file(json_file)
       hd_trim = json_data['hd_trim']
       sd_video_file = json_data['sd_video_file']

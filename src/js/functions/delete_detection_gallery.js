@@ -1,6 +1,6 @@
 // Update counter
 function update_selected_counter() {
-    $('#sel-ctn').text($('.preview.selected').length);
+    $('.sel-ctn').text($('.preview.selected').length);
 }
 
 
