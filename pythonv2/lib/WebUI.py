@@ -1890,6 +1890,13 @@ def delete_multiple_detection(detections,json_conf):
       print('DELETE MULTIPLE DETECTION')
       print('DETECTIONS')
       print(detections)
+
+      # If there's only one it's treated as a string (?)
+      if(type(detections) is str):
+            det = []
+            det.append(detections)
+            detections = det
+      
       for to_delete in detections:
             print("TO DELETE " + str(to_delete))
             override_detect('',to_delete,'')
