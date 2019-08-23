@@ -9,8 +9,8 @@ def add_info_to_frame_cv(hd_img, date_text, extra_text, text_position, extra_tex
    (h, w) = hd_img.shape[:2]
    (wH, wW) = watermark.shape[:2]
    
-   print('BG w='+w + ' h='+ h)
-   print('WAT w='+wW + ' h='+ wH)
+   print('BG w='+ str(w) + ' h='+ str(h))
+   print('WAT w='+ str(wW) + ' h='+ str(wH))
 
    #Get the 4 channels to handle watermark transparency
    (B, G, R, A) = cv2.split(watermark)
@@ -20,7 +20,9 @@ def add_info_to_frame_cv(hd_img, date_text, extra_text, text_position, extra_tex
    watermark_image = cv2.merge([B, G, R, A])
 
    (wH, wW) = watermark.shape[:2]
-   print('WAT AFTER TRANS w='+wW + ' h='+ wH)
+   print('WAT AFTER TRANS w='+ str(wW) + ' h='+ str(wH))
+   print(watermark.shape)
+
  
    #Add 4th dimension to image to deal with watermark transparency
    image = np.dstack([hd_img, np.ones((h, w), dtype="uint8") * 255])
