@@ -11,24 +11,24 @@ def add_info_to_frame_cv_test_full_transparent(hd_img, date_text, extra_text, te
    image = np.dstack([hd_img, np.ones((h, w), dtype="uint8") * 255])
 
    #Construct overlay for watermark
-   overlay = np.zeros((h, w, 4), dtype="uint8") 
+   #overlay = np.zeros((h, w, 4), dtype="uint8") 
 
    #watermark_4 = np.dstack([watermark, np.ones((h, w), dtype="uint8") * 255])
 
-   print("overlay SHAPE")
-   print(overlay.shape)
+   #print("overlay SHAPE")
+   #print(overlay.shape)
 
-   print("IMAGE SHAPE")
-   print(image.shape)
+   #print("IMAGE SHAPE")
+   #print(image.shape)
    
-   overlay[0:h,0:w] = watermark 
+   #overlay[0:h,0:w] = watermark 
    #overlay[h - wH - 10:h - 10, w - wW - 10:w - 10] = watermark
    #overlay[h - wH - 580:h - 580, w - wW - 10:w - 10] = watermark_image
    #overlay[h - wH - 580:h - 580, 10:wW + 10] = watermark_image
     
    # blend the two images together using transparent overlay 
    output = image[:]
-   cnd = overlay[:,:,3] > 0
+   cnd = watermark[:,:,3] > 0
    output[cnd] = overlay[cnd]
 
    #cv2.imwrite("/mnt/ams2/test2.png", res)
