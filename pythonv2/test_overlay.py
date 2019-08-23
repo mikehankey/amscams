@@ -15,7 +15,8 @@ def add_info_to_frame_cv(hd_img, date_text, extra_text, text_position, extra_tex
    #Construct overlay for watermark
    overlay = np.zeros((h, w, 4), dtype="uint8") 
 
- 
+   watermark = np.dstack([watermark, np.ones((h, w), dtype="uint8") * 255])
+
    print("overlay SHAPE")
    print(overlay.shape)
 
