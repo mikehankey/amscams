@@ -21,7 +21,7 @@ def add_info_to_frame_cv(hd_img, date_text, extra_text, text_position, extra_tex
    #overlay[h - wH - 580:h - 580, 10:wW + 10] = watermark_image
     
    # blend the two images together using transparent overlays
-   res = hd_img[:]
+   res = image[:]
    cnd = overlay[:,:,3] > 0
    res[cnd] = overlay[cdn]
 
@@ -39,13 +39,7 @@ def add_info_to_frame_cv(hd_img, date_text, extra_text, text_position, extra_tex
 
 image = cv2.imread("/mnt/ams2/meteors/2019_08_23/2019_08_23_00_03_23_000_010040-trim-1-HD-meteor-stacked.png")
 watermark = cv2.imread("./dist/img/ams_logo_vid_anim/1920x1080/AMS32.png", cv2.IMREAD_UNCHANGED)
-
-print("WATERMARK SHAPE")
-print(watermark.shape)
-
-print("IMAGE SHAPE")
-print(image.shape)
-
+ 
 logo  = ""
 date_text = "test"
 extra_text = "test"
