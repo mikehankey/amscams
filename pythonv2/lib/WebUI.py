@@ -2268,7 +2268,7 @@ def print_css():
 
 
 def browse_day(day,cams_id,json_conf):
-   cgitb.enable()
+   #cgitb.enable()
 
    day_files = get_day_files(day,cams_id,json_conf)
  
@@ -2281,7 +2281,7 @@ def browse_day(day,cams_id,json_conf):
    all_cam_ids = get_the_cam_ids() 
 
    print("<div class='h1_holder d-flex justify-content-between'><h1><span class='h'><span id='meteor_count'>"+format(len(day_files))+"</span> detections</span> on")
-   print("<input value='"+str(day.replace("_", "/"))+"' type='text' data-display-format='YYYY/MM/DD' data-action='reload' data-url-param='limit_day' data-send-format='YYYY_MM_DD' class'="'datepicker form-control'>")
+   print("<input value='"+str(day.replace("_", "/"))+"' type='text' data-display-format='YYYY/MM/DD' data-action='reload' data-url-param='limit_day' data-send-format='YYYY_MM_DD' class='datepicker form-control'>")
    print(" by Cam #")
    
    #Cam selector
