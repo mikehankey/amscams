@@ -69,7 +69,7 @@ def add_info_to_frame_cv_test_full_transparent(hd_img, date_text, extra_text, te
     
    # blend the two images together using transparent overlay 
    output = image[:]
-   cnd = overlay[:,:,4] > 0
+   cnd = overlay[:,:,2] > 0
    print("CND ")
    print(cnd)
    output[cnd] = overlay[cnd]
