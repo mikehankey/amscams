@@ -28,12 +28,12 @@ def add_info_to_frame_cv(hd_img, date_text, extra_text, text_position, extra_tex
    #overlay[h - wH - 580:h - 580, w - wW - 10:w - 10] = watermark_image
    #overlay[h - wH - 580:h - 580, 10:wW + 10] = watermark_image
     
-   # blend the two images together using transparent overlays
-   res = image[:]
+   # blend the two images together using transparent overlay 
+   output = image[:]
    cnd = overlay[:,:,3] > 0
-   res[cnd] = overlay[cnd]
+   output[cnd] = overlay[cnd]
 
-   cv2.imwrite("/mnt/ams2/test2.png", res)
+   #cv2.imwrite("/mnt/ams2/test2.png", res)
    #output = image.copy()
    #cv2.addWeighted(overlay, 1, output, 1.0, 0, output)
 
