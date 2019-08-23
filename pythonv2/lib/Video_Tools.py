@@ -600,8 +600,12 @@ def get_all_meteor_detections(date,start_date,end_date,cam_id):
             cur_date_string = get_meteor_date_and_time_ws(str(detection))
             
             if cur_date_string not in real_detections: 
-                real_detections[cur_date_string] = detection
-            
+                #We parse the JSON to get the path to the HD
+                if detection.exists():
+                    print('THE JSON exists')
+                    data = load_json_file(detection)
+                    #real_detections[cur_date_string] = detection
+                    print(str(data))
     
     return real_detections, meteor_folder
 
