@@ -8,6 +8,7 @@ from lib.VIDEO_VARS import *
 from os import listdir, remove
 from os.path import isfile, join, exists
 from shutil import copyfile
+from lib.FileIO import load_json_file
 
 
 # Blend two images together
@@ -584,7 +585,8 @@ def get_all_meteor_detections(date,start_date,end_date,cam_id):
     end_date_obj = time.strptime(end_date, "%Y/%m/%d %H:%M")
 
     # Get All the detection for the cur CAM ID & Date
-    detections = [f for f in listdir(meteor_folder) if cam_id in f and ".mp4" in f and "-crop" not in f]
+    # Note: WE CARE ONLY ABOUT THE REDUCED METEORS (as the json for non-reduced is full of wrong paths)
+    detections = [f for f in listdir(meteor_folder) if cam_id in f and ".json" in f and "-reduced" in f]
     real_detections = {}
 
     # Remove Detection outside of the timeframe
@@ -594,15 +596,19 @@ def get_all_meteor_detections(date,start_date,end_date,cam_id):
         cur_date = get_meteor_date_and_time_object(str(detection))
         
         if(cur_date>=start_date_obj and end_date_obj>=cur_date):
+
             # Get the date without seconds
             cur_date_string = get_meteor_date_and_time_ws(str(detection))
             
             if cur_date_string not in real_detections: 
-                real_detections[cur_date_string] = detection
-            else:
-                #Do we have the HD?
-                if("HD" not in real_detections[cur_date_string] and "HD" in detection):
-                    real_detections[cur_date_string] = detection
+                
+                #We parse the JSON to get the path to the HD
+                if os.path.isfile(meteor_folder+'/'+detection): 
+                    data = load_json_file(meteor_folder+'/'+detection)
+                    real_detections[cur_date_string] = {"hd_video_file": data['hd_video_file'],"hd_stack": data['hd_stack'],"event_start_time":data['event_start_time']}
+                   
+                else:
+                    print(detection + " is not a file")
     
     return real_detections, meteor_folder
 
@@ -626,6 +632,13 @@ def get_all_detection_frames(path,vid):
 
     #We get the start date
     all_frames = [f for f in listdir(TMP_IMG_HD_SRC_PATH) if vid_name in f]
+
+    #Initial date
+    initial_date = get_meteor_date_and_time_object_ws(vid)
+    
+    for idx,frame in enumerate(sorted(all_frames)):
+        print(frame)
+        print(initial_date)
 
     print(all_frames)
 

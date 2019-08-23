@@ -1411,7 +1411,7 @@ def meteors_new(json_conf,form):
                htclass = "norm"
                norm_cnt = norm_cnt + 1
 
-            html_out +=  "<div id='"+del_id+"' class='preview col-lg-2 col-md-3  "+ htclass +"'>"
+            html_out +=  "<div id='"+del_id+"' class='preview col-lg-2 col-md-3 select-to "+ htclass +"'>"
             html_out +=  "<a class='mtt' href='webUI.py?cmd=reduce&video_file=" + video_file + "' data-obj='"+stack_obj_img+"' title='Go to Info Page'>"
             html_out +=  "<img alt='"+desc+"' class='img-fluid ns lz' src='" + stack_file_tn + "'>"
             html_out +=  "<span>" + desc + "</span></a>"  
@@ -1454,10 +1454,13 @@ def meteors_new(json_conf,form):
    print("<div class='list-onl'>")
    print("<div class='filter-header d-flex flex-row-reverse '>")
    print('<button id="sel-all" title="Select All" class="btn btn-primary ml-3"><i class="icon-checkbox-checked"></i></button>')
-   print('<button id="del-all" class="btn btn-danger"><i class="icon-delete"></i> Delete <span id="sel-ctn">All</span> Selected</button>')
+   print('<button id="del-all" class="del-all btn btn-danger"><i class="icon-delete"></i> Delete <span class="sel-ctn">All</span> Selected</button>')
    print("</div>")
    print("</div>")
    print(html_out)
+   print("<div class='filter-header d-flex flex-row-reverse '>") 
+   print('<button id="del-all" class="del-all btn btn-danger"><i class="icon-delete"></i> Delete <span class="sel-ctn">All</span> Selected</button>')
+   print("</div>")
    print("</div>")
    #page,total_pages,url for pagination
    if(len(meteors)>=1):
@@ -1884,9 +1887,16 @@ def examine_min(video_file,json_conf):
 
 #Delete multiple detections at once
 def delete_multiple_detection(detections,json_conf):
+      
+
+      # If there's only one it's treated as a string (?)
+      if(type(detections) is str):
+            det = []
+            det.append(detections)
+            detections = det
+      
       for to_delete in detections:
             #print("TO DELETE " + str(to_delete))
-            #print("JSON " +  str(json_conf))
             override_detect('',to_delete,'')
 
 
@@ -2268,10 +2278,12 @@ def print_css():
 
 
 def browse_day(day,cams_id,json_conf):
+   #cgitb.enable()
+
    day_files = get_day_files(day,cams_id,json_conf)
-#   print(day_files)
 
-
+   print(day_files)
+ 
    cc = 0
    all_files = []
    for base_file in sorted(day_files,reverse=True):
@@ -2281,9 +2293,8 @@ def browse_day(day,cams_id,json_conf):
    all_cam_ids = get_the_cam_ids() 
 
    print("<div class='h1_holder d-flex justify-content-between'><h1><span class='h'><span id='meteor_count'>"+format(len(day_files))+"</span> detections</span> on")
-   print("<div class='input-group date datepicker' data-display-format='YYYY/MM/DD' data-action='reload' data-url-param='day' data-send-format='YYYY_MM_DD'>")
-   print("<input value='"+str(day.replace("_", "/"))+"' type='text' class='form-control'>")
-   print("<span class='input-group-addon'><span class='icon-clock'></span></span></div> by Cam #")
+   print("<input value='"+str(day.replace("_", "/"))+"' type='text' data-display-format='YYYY/MM/DD' data-action='reload' data-url-param='limit_day' data-send-format='YYYY_MM_DD' class='datepicker form-control'>")
+   print(" by Cam #")
    
    #Cam selector
    print("<select id='cam_id' name='cam_id' data-url-param='cams_id' class='cam_picker'>")
