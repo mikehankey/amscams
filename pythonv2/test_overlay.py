@@ -13,10 +13,9 @@ def add_info_to_frame_cv(hd_img, date_text, extra_text, text_position, extra_tex
    image = np.dstack([hd_img, np.ones((h, w), dtype="uint8") * 255])
 
    #Construct overlay for watermark
-   #overlay = np.zeros((h, w, 4), dtype="uint8") 
-   overlay = np.dstack([watermark, np.ones((h, w), dtype="uint8") * 255])
-  
-   #image[0:h,0:w] = overlay
+   overlay = np.zeros((h, w, 4), dtype="uint8") 
+   
+   overlay[0:h,0:w] = watermark
    #overlay[h - wH - 10:h - 10, w - wW - 10:w - 10] = watermark
    #overlay[h - wH - 580:h - 580, w - wW - 10:w - 10] = watermark_image
    #overlay[h - wH - 580:h - 580, 10:wW + 10] = watermark_image
@@ -24,7 +23,7 @@ def add_info_to_frame_cv(hd_img, date_text, extra_text, text_position, extra_tex
    # blend the two images together using transparent overlays
    res = image[:]
    cnd = overlay[:,:,3] > 0
-   res[cnd] = overlay[cnd]
+   res[cnd] = overlay[cdn]
 
    cv2.imwrite("/mnt/ams2/test2.png", res)
    #output = image.copy()
@@ -39,7 +38,7 @@ def add_info_to_frame_cv(hd_img, date_text, extra_text, text_position, extra_tex
 
 
 image = cv2.imread("/mnt/ams2/meteors/2019_08_23/2019_08_23_00_03_23_000_010040-trim-1-HD-meteor-stacked.png")
-watermark = cv2.imread("./dist/img/ams_logo_vid_anim/1920x1080/AMS30.png", cv2.IMREAD_UNCHANGED)
+watermark = cv2.imread("./dist/img/ams_logo_vid_anim/1920x1080/AMS32.png", cv2.IMREAD_UNCHANGED)
  
 logo  = ""
 date_text = "test"
