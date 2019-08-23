@@ -584,7 +584,8 @@ def get_all_meteor_detections(date,start_date,end_date,cam_id):
     end_date_obj = time.strptime(end_date, "%Y/%m/%d %H:%M")
 
     # Get All the detection for the cur CAM ID & Date
-    detections = [f for f in listdir(meteor_folder) if cam_id in f and ".mp4" in f and "-crop" not in f]
+    # Note: we don't care about the reduced here 
+    detections = [f for f in listdir(meteor_folder) if cam_id in f and ".json" in f and "-reduced" not in f]
     real_detections = {}
 
     # Remove Detection outside of the timeframe
