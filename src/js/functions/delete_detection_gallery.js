@@ -6,7 +6,7 @@ function update_selected_counter() {
 
 $(function() {
 
-    // Select one
+    // Select one from checkbox
     $('.sel-box input[type=checkbox]').change(function() {
         var $t = $(this), f = $t.attr('id'), id = f.substr(5,f.length);
         if($t.is(':checked')) {
@@ -16,6 +16,13 @@ $(function() {
         }
          update_selected_counter();
      });
+
+
+     // Select one from div
+     $('.select-to').click(function(e) {
+         e.stopImmediatePropagation();
+         $(this).find('.sel-box input[type=checkbox]').click();
+     })
     
      // Select All
      $('#sel-all').click(function() {
