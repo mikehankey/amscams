@@ -9,12 +9,18 @@ def add_info_to_frame_cv(hd_img, date_text, extra_text, text_position, extra_tex
    (h, w) = hd_img.shape[:2]
    (wH, wW) = watermark.shape[:2]
    
+   print('BG w='+w + ' h='+ h)
+   print('WAT w='+wW + ' h='+ wH)
+
    #Get the 4 channels to handle watermark transparency
    (B, G, R, A) = cv2.split(watermark)
    B = cv2.bitwise_and(B, B, mask=A)
    G = cv2.bitwise_and(G, G, mask=A)
    R = cv2.bitwise_and(R, R, mask=A)
    watermark_image = cv2.merge([B, G, R, A])
+
+   (wH, wW) = watermark.shape[:2]
+   print('WAT AFTER TRANS w='+wW + ' h='+ wH)
  
    #Add 4th dimension to image to deal with watermark transparency
    image = np.dstack([hd_img, np.ones((h, w), dtype="uint8") * 255])
@@ -44,7 +50,11 @@ def add_info_to_frame_cv(hd_img, date_text, extra_text, text_position, extra_tex
 image = cv2.imread("/mnt/ams2/meteors/2019_08_23/2019_08_23_00_03_23_000_010040-trim-1-HD-meteor-stacked.png")
 watermark = cv2.imread("./dist/img/ams_logo_vid_anim/1920x1080/AMS30.png", cv2.IMREAD_UNCHANGED)
 
+print("WATERMARK SHAPE")
 print(watermark.shape)
+
+print("IMAGE SHAPE")
+print(image.shape)
 
 logo  = ""
 date_text = "test"
