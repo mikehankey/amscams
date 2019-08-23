@@ -49,14 +49,14 @@ def add_info_to_frame_cv(hd_img, date_text, extra_text, text_position, extra_tex
 def add_info_to_frame_cv_test_full_transparent(hd_img, date_text, extra_text, text_position, extra_text_position, watermark, watermark_position, logo, logo_pos, enhancement=0):
    
    # Get org img & Watermark dimensions
-   (img_H, img_W) = hd_img.shape[:2]
+   (img_H, img_W)  = hd_img.shape[:2]
    (wwat_H, wat_W) = watermark.shape[:2]
   
    #Add 4th dimension to image to deal with watermark transparency
    image = np.dstack([hd_img, np.ones((img_H, img_W), dtype="uint8") * 255])
   
    output = image[:]
-   cnd = watermark[:,:,3] > 0.5
+   cnd = watermark[:,:,3] > 1
    output[cnd] = watermark[cnd]
   
    hd_img = output
