@@ -29,7 +29,7 @@ def add_info_to_frame_cv_test_full_transparent(hd_img, date_text, extra_text, te
    # blend the two images together using transparent overlay 
    output = image[:]
    cnd = watermark[:,:,3] > 0
-   output[cnd] = overlay[cnd]
+   output[cnd] = watermark[cnd]
 
    #cv2.imwrite("/mnt/ams2/test2.png", res)
    #output = image.copy()
