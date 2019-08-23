@@ -24,7 +24,7 @@ $(function() {
      })
 
      // Delete All
-     $('#del-all').click(function() {
+     $('.del-all').click(function() {
          // Get all id
      
          var detections = [];
