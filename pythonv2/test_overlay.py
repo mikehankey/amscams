@@ -59,7 +59,7 @@ def add_info_to_frame_cv_test_full_transparent(hd_img, date_text, extra_text, te
    #cnd = watermark[:,:,3] > 0
    #output[cnd] = watermark[cnd]
 
-   cv2.addWeighted(watermark, 1, output, 1.0, 0, output)
+   cv2.addWeighted(watermark, 0.5, output, 1.0, 0, output)
 
    hd_img = output
 
