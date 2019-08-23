@@ -627,6 +627,13 @@ def get_all_detection_frames(path,vid):
     #We get the start date
     all_frames = [f for f in listdir(TMP_IMG_HD_SRC_PATH) if vid_name in f]
 
+    #Initial date
+    initial_date = get_meteor_date_and_time_object_ws(vid)
+    
+    for idx,frame in enumerate(sorted(all_frames)):
+        print(frame)
+        print(initial_date)
+
     print(all_frames)
 
     print("DATE")
