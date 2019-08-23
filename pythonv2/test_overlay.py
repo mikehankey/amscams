@@ -37,11 +37,11 @@ def add_info_to_frame_cv(hd_img, date_text, extra_text, text_position, extra_tex
 
 
 image = cv2.imread("/mnt/ams2/meteors/2019_08_23/2019_08_23_00_03_23_000_010040-trim-1-HD-meteor-stacked.png")
-watermark = cv2.imread("/mnt/ams2/logo.png", cv2.IMREAD_UNCHANGED)
+watermark = cv2.imread("/dist/img/ams_logo_vid_anim/1920x1080/AMS30.png", cv2.IMREAD_UNCHANGED)
 
 print(watermark.shape)
 
-logo  = cv2.imread("/mnt/ams2/CUSTOM_LOGOS/AMS30.png")
+logo  = cv2.imread("./dist/img/ams_logo_vid_anim/1920x1080/AMS30.png")
 date_text = "test"
 extra_text = "test"
 text_position = 0
