@@ -22,7 +22,7 @@ def add_info_to_frame_cv(hd_img, date_text, extra_text, text_position, extra_tex
    print("IMAGE SHAPE")
    print(image.shape)
    
-   #overlay[0:h,0:w] = watermark
+   overlay[0:h,0:w] = watermark
    #overlay[h - wH - 10:h - 10, w - wW - 10:w - 10] = watermark
    #overlay[h - wH - 580:h - 580, w - wW - 10:w - 10] = watermark_image
    #overlay[h - wH - 580:h - 580, 10:wW + 10] = watermark_image
