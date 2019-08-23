@@ -82,7 +82,7 @@ def add_info_to_frame_cv_test_full_transparent(hd_img, date_text, extra_text, te
    # Update the original image with our new ROI
    bg_img[y:y+h, x:x+w] = cv2.add(img1_bg, img2_fg)
 
-   hd_img = bd_img
+   hd_img = bg_img
 
    cv2.putText(hd_img, extra_text,  (10,710), cv2.FONT_HERSHEY_SIMPLEX, .4, (255, 255, 255), 1)
    cv2.putText(hd_img, date_text,  (1100,710), cv2.FONT_HERSHEY_SIMPLEX, .4, (255, 255, 255), 1)
