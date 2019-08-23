@@ -2,7 +2,7 @@
 
 import numpy as np
 import cv2
-def add_info_to_frame_cv_test_full_transparent(hd_img, date_text, extra_text, text_position, extra_text_position, watermark, watermark_position, logo, logo_pos, enhancement=0):
+def add_info_to_frame_cv(hd_img, date_text, extra_text, text_position, extra_text_position, watermark, watermark_position, logo, logo_pos, enhancement=0):
    # Get org img & Watermark dimensions
    (h, w) = hd_img.shape[:2]
    (wH, wW) = watermark.shape[:2]
@@ -43,7 +43,7 @@ def add_info_to_frame_cv_test_full_transparent(hd_img, date_text, extra_text, te
    return hd_img
 
 
-def add_info_to_frame_cv(hd_img, date_text, extra_text, text_position, extra_text_position, watermark, watermark_position, logo, logo_pos, enhancement=0):
+def add_info_to_frame_cv_test_full_transparent(hd_img, date_text, extra_text, text_position, extra_text_position, watermark, watermark_position, logo, logo_pos, enhancement=0):
    # Get org img & Watermark dimensions
    (h, w) = hd_img.shape[:2]
    (wH, wW) = watermark.shape[:2]
