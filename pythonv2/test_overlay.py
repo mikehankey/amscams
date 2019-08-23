@@ -55,4 +55,4 @@ logo_pos = 0
 
 new_frame = add_info_to_frame_cv(image, date_text, extra_text, text_position, extra_text_position, watermark, watermark_position, logo, logo_pos, enhancement=0)
 
-cv2.imwrite("/mnt/ams2/test.png", new_frame)
+cv2.imwrite("/mnt/ams2/test2.png", new_frame)
