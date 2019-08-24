@@ -281,7 +281,7 @@ def remaster(video_file, json_conf):
       print("TEXT POS:", text_pos)
 
       cv2.putText(hd_img, extra_text,  (text_pos), cv2.FONT_HERSHEY_SIMPLEX, .8, (255, 255, 255), 1)
-      station_id = json_conf['site']['ams_id']  + "-" + sd_cam
+      station_id = json_conf['site']['ams_id'].upper  + "-" + sd_cam
       cv2.putText(hd_img, station_id + " " + frame_time_str + " UTC",  (date_pos), cv2.FONT_HERSHEY_SIMPLEX, .8, (255, 255, 255), 1)
       new_frames.append(new_frame)
 
