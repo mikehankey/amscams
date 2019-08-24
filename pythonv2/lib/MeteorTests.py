@@ -74,15 +74,16 @@ def test_objects(objects,frames):
          meteors = meteors + 1
          meteor_found = 1
    # over-riding noise test
-   if meteors > 1:
-      if len(new_objects) > 20:
-         failed_objects = []
-         for object in objects:
-            object['meteor'] = 0
-            object['test_results'].append(('Clip Noise', 0,'Too much noise.'))
-            failed_objects.append(object)
-         meteor_found = 0
-         new_objects = failed_objects
+   #if meteors > 1:
+   #   if len(new_objects) > 20:
+   #      failed_objects = []
+   #      for object in objects:
+            #object['meteor'] = 0
+   #         object['test_results'].append(('Clip Noise', 0,'Too much noise.'))
+   #         failed_objects.append(object)
+         #meteor_found = 0
+   #      new_objects = failed_objects
+
    # over-ridding big cnts test (for cars etc)
    if meteors >= 1:
       failed_objects = []
@@ -229,16 +230,16 @@ def test_object(object, total_frames):
    results.append(('Noise', noise, desc))
 
    # Fit line test   
-   fit_test = 1
-   if status == 1:
-      fit_perc = meteor_test_fit_line(object) * 100
-   else:
-      fit_perc = 0
-   if fit_perc < 50:
-      fit_test = 0
-      status = 0
-   desc = "{:0.0f}% of points fit line.".format(fit_perc) 
-   results.append(('Line Fit', fit_test, desc))
+   #fit_test = 1
+   #if status == 1:
+   #   fit_perc = meteor_test_fit_line(object) * 100
+   #else:
+   #   fit_perc = 0
+   #if fit_perc < 50:
+   #   fit_test = 0
+   #   status = 0
+   #desc = "{:0.0f}% of points fit line.".format(fit_perc) 
+   #results.append(('Line Fit', fit_test, desc))
 
    # Test Peaks
    peak_test = 1

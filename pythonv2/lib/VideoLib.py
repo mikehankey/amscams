@@ -292,7 +292,7 @@ def remaster(video_file, json_conf):
    make_movie_from_frames(new_frames, [0,len(new_frames) - 1], marked_video_file )
 
 
-def make_movie_from_frames(frames, fns, outfile ):
+def make_movie_from_frames(frames, fns, outfile , remaster = 0):
  
    ofn = outfile.split("/")[-1]
 
@@ -323,8 +323,12 @@ def make_movie_from_frames(frames, fns, outfile ):
          cv2.imwrite(filename, frame)
       cc = cc + 1
 
-   cmd = """/usr/bin/ffmpeg -y -framerate 25 -pattern_type glob -i '""" + TMP_DIR + """*.png' \
+   if remaster == 1:
+      cmd = """/usr/bin/ffmpeg -y -framerate 25 -pattern_type glob -i '""" + TMP_DIR + """*.png' \
         -c:v libx264 -r 25 -vf scale='1280x720' -pix_fmt yuv420p """ + outfile 
+   else:
+      cmd = """/usr/bin/ffmpeg -y -framerate 25 -pattern_type glob -i '""" + TMP_DIR + """*.png' \
+        -c:v libx264 -r 25 -pix_fmt yuv420p """ + outfile 
    print(cmd)
    os.system(cmd)
 

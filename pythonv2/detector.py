@@ -618,6 +618,18 @@ def run_detect(video_file, show):
       if obj['meteor'] == 1:
          meteor_in_clip = 1
          meteor_objs.append(obj['oid'])
+      else:
+         print(obj['oid']) 
+         score = 0
+         for test in obj['test_results']:
+            print(test[0], test[1], test[2])
+            score = score + int(test[1])
+         if score > 9:
+            meteor_objs.append(obj['oid'])
+            meteor_found = 1
+            meteor_in_clip = 1
+
+      print("OBJECT SCORE:", score)
    if meteor_in_clip == 0:
       save_json_file(video_data_file, video_data)
       print("NO meteors here.")
@@ -1656,11 +1668,12 @@ def find_blobs_in_crops(cropframes, frame_data):
             cnt_y = np.mean(cys)
             cnt_w = np.mean(cws)
             cnt_h = np.mean(chs)
-         frame_data[fn]['cnt_x'] = cnt_x
-         frame_data[fn]['cnt_y'] = cnt_y
-         frame_data[fn]['cnt_w'] = cnt_w
-         frame_data[fn]['cnt_h'] = cnt_h
-         cv2.rectangle(image_thresh, (x, y), (x+w, y+h), (128,128,128), 1)
+         if fn in frame_data[fn]: 
+            frame_data[fn]['cnt_x'] = cnt_x
+            frame_data[fn]['cnt_y'] = cnt_y
+            frame_data[fn]['cnt_w'] = cnt_w
+            frame_data[fn]['cnt_h'] = cnt_h
+            cv2.rectangle(image_thresh, (x, y), (x+w, y+h), (128,128,128), 1)
          
 
          print(my_cnts)
