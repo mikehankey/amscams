@@ -11,7 +11,7 @@ import math
 import numpy as np
 import scipy.optimize
 
-from lib.VideoLib import get_masks, find_hd_file_new, load_video_frames, sync_hd_frames, make_movie_from_frames
+from lib.VideoLib import get_masks, find_hd_file_new, load_video_frames, sync_hd_frames, make_movie_from_frames, remaster
 
 from lib.UtilLib import check_running, angularSeparation, bound_cnt
 from lib.CalibLib import radec_to_azel, clean_star_bg, get_catalog_stars, find_close_stars, XYtoRADec, HMS2deg, AzEltoRADec, get_active_cal_file
@@ -33,6 +33,8 @@ from lib.DetectLib import eval_cnt
 
 
 json_conf = load_json_file("../conf/as6.json")
+
+
 
 def reduce_acl(this_poly, metframes,metconf,frames,mode=0,show=0,key_field = "m"):
    xs = []
@@ -1820,3 +1822,7 @@ if cmd == 'qr' or cmd == 'quick_review':
       
       video_file = file.replace(".json", ".mp4")
    quick_review(file,None, video_file)
+
+
+if cmd == 'rm' or cmd == 'remaster':
+   remaster(file, json_conf)

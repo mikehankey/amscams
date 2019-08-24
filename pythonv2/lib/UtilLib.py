@@ -4,6 +4,20 @@ import subprocess
 import datetime
 import math
 import ephem
+import numpy as np
+def best_fit_slope_and_intercept(xs,ys):
+    xs = np.array(xs, dtype=np.float64)
+    ys = np.array(ys, dtype=np.float64)
+    m = (((np.mean(xs)*np.mean(ys)) - np.mean(xs*ys)) /
+         ((np.mean(xs)*np.mean(xs)) - np.mean(xs*xs)))
+
+    b = np.mean(ys) - m*np.mean(xs)
+    if math.isnan(m) is True:
+       m = 1
+       b = 1
+
+    return m, b
+
 
 def date_to_jd(year,month,day):
     """
