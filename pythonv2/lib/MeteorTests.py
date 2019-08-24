@@ -35,7 +35,13 @@ def find_min_max_dist(hist,mute_wh=0):
    max_y = 0
    min_x = 10000
    min_y = 10000
-   for fn,x,y,w,h,mx,my in hist:
+   for hs in hist:
+      print("HIST LEN:", len(hs))
+      print("HIST :", hs)
+      if len(hs) == 7:
+         fn,x,y,w,h,mx,my = hs
+      if len(hs) == 9:
+         fn,x,y,w,h,mx,my,max_val,sum_val = hs
       max_x, max_y,min_x,min_y = max_xy(x,y,w,h,max_x,max_y,min_x,min_y,mute_wh)
 
    return(max_x,max_y,min_x,min_y)
@@ -68,15 +74,16 @@ def test_objects(objects,frames):
          meteors = meteors + 1
          meteor_found = 1
    # over-riding noise test
-   if meteors > 1:
-      if len(new_objects) > 20:
-         failed_objects = []
-         for object in objects:
-            object['meteor'] = 0
-            object['test_results'].append(('Clip Noise', 0,'Too much noise.'))
-            failed_objects.append(object)
-         meteor_found = 0
-         new_objects = failed_objects
+   #if meteors > 1:
+   #   if len(new_objects) > 20:
+   #      failed_objects = []
+   #      for object in objects:
+            #object['meteor'] = 0
+   #         object['test_results'].append(('Clip Noise', 0,'Too much noise.'))
+   #         failed_objects.append(object)
+         #meteor_found = 0
+   #      new_objects = failed_objects
+
    # over-ridding big cnts test (for cars etc)
    if meteors >= 1:
       failed_objects = []
@@ -223,16 +230,16 @@ def test_object(object, total_frames):
    results.append(('Noise', noise, desc))
 
    # Fit line test   
-   fit_test = 1
-   if status == 1:
-      fit_perc = meteor_test_fit_line(object) * 100
-   else:
-      fit_perc = 0
-   if fit_perc < 50:
-      fit_test = 0
-      status = 0
-   desc = "{:0.0f}% of points fit line.".format(fit_perc) 
-   results.append(('Line Fit', fit_test, desc))
+   #fit_test = 1
+   #if status == 1:
+   #   fit_perc = meteor_test_fit_line(object) * 100
+   #else:
+   #   fit_perc = 0
+   #if fit_perc < 50:
+   #   fit_test = 0
+   #   status = 0
+   #desc = "{:0.0f}% of points fit line.".format(fit_perc) 
+   #results.append(('Line Fit', fit_test, desc))
 
    # Test Peaks
    peak_test = 1
@@ -257,7 +264,11 @@ def meteor_test_direction(object):
    segs = []
    st_segs = []
    avl_segs = []
-   for fn,x,y,w,h,mx,my in hist:
+   for hs in hist:
+      if len(hs) == 7:
+         fn,x,y,w,h,mx,my = hs
+      if len(hs) == 9:
+         fn,x,y,w,h,mx,my,max_val,sum_val = hs
       x = x  
       y = y  
       if fc > 0:
@@ -320,7 +331,13 @@ def meteor_test_moving(hist):
 def meteor_test_big(object):
    big = 0
    hist = object['history']
-   for fn,x,y,w,h,mx,my in hist:
+   for hs in hist:
+      if len(hs) == 7:
+         fn,x,y,w,h,mx,my = hs
+      if len(hs) == 9:
+         fn,x,y,w,h,mx,my,max_val,sum_val = hs
+
+
       if w > 50 or h > 50:
          big = big + 1
    if big > 1 and len(hist) > 0:
@@ -333,7 +350,13 @@ def meteor_test_dupe_px(object):
    hist = object['history']
    xs = []
    ys = []
-   for fn,x,y,w,h,mx,my in hist:
+   for hs in hist:
+      if len(hs) == 7:
+         fn,x,y,w,h,mx,my = hs
+      if len(hs) == 9:
+         fn,x,y,w,h,mx,my,max_val,sum_val = hs
+
+
       cx = int(x+ (w/2))
       cy = int(y+ (h/2))
       xs.append((x,y))
@@ -351,7 +374,12 @@ def meteor_test_dupe_px(object):
 def meteor_test_noise(hist):
 
    objs_per_frame = {}
-   for fn,x,y,w,h,mx,my in hist:
+   for hs in hist:
+      if len(hs) == 7:
+         fn,x,y,w,h,mx,my = hs
+      if len(hs) == 9:
+         fn,x,y,w,h,mx,my,max_val,sum_val = hs
+
       if fn not in objs_per_frame.keys():
          objs_per_frame[fn] = 1
       else:
@@ -370,7 +398,12 @@ def meteor_test_fit_line(object):
    hist = object['history']
    xs = []
    ys = []
-   for fn,x,y,w,h,mx,my in hist:
+   for hs in hist:
+      if len(hs) == 7:
+         fn,x,y,w,h,mx,my = hs
+      if len(hs) == 9:
+         fn,x,y,w,h,mx,my,max_val,sum_val = hs
+
       cx = int(x+ (w/2))
       cy = int(y+ (h/2))
       xs.append(cx)
@@ -394,7 +427,12 @@ def meteor_test_fit_line(object):
       regression_line.append((m*x)+b)
    good = 0
    for i in range(0,len(regression_line)):
-      fn,x,y,w,h,mx,my = hist[i]
+      if len(hist[i]) == 7:
+         fn,x,y,w,h,mx,my = hist[i]
+      if len(hist[i]) == 9:
+         fn,x,y,w,h,mx,my,max_val,sum_val = hist[i]
+ 
+      #fn,x,y,w,h,mx,my = hist[i]
       cx = int(x+ (w/2))
       cy = int(y+ (h/2))
       ry = regression_line[i]
@@ -420,7 +458,12 @@ def meteor_test_peaks(object):
    points = []
    sizes = []
    hist = object['history']
-   for fn,x,y,w,h,mx,my in hist:
+   for hs in hist:
+      if len(hs) == 7:
+         fn,x,y,w,h,mx,my = hs
+      if len(hs) == 9:
+         fn,x,y,w,h,mx,my,max_val,sum_val = hs
+
       size  = w * h
       sizes.append(size)
       point = x+mx,y+my
@@ -482,7 +525,12 @@ def meteor_test_cm_gaps(object):
    max_gaps = 0
    gap_events = 0
    last_frame = 0
-   for fn,x,y,w,h,mx,my in hist:
+   for hs in hist:
+      if len(hs) == 7:
+         fn,x,y,w,h,mx,my = hs
+      if len(hs) == 9:
+         fn,x,y,w,h,mx,my,max_val,sum_val = hs
+
       if ((last_frame + 1 == fn) and last_frame > 0) or last_frame == fn:
          cm = cm + 1
       else:

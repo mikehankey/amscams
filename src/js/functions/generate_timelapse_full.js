@@ -169,7 +169,7 @@ function add_timelapse_full_modal() {
                             <div class="row"> \
                                 <div class="col-sm-4"> \
                                     <div class="form-group mb-2"> \
-                                        <label class="col-form-label"><b>Start Date</b></label> \
+                                        <label class="col-form-label"><b>UT Start Date</b></label> \
                                         <div class="col-sm-10 p-0">\
                                             <input name="tl_date" value="'+curD+'" type="text" data-display-format="YYYY/MM/DD" class="datepicker form-control"> \
                                         </div>\
@@ -177,7 +177,7 @@ function add_timelapse_full_modal() {
                                 </div> \
                                 <div class="col-sm-4"> \
                                     <div class="form-group mb-2"> \
-                                        <label class="col-form-label"><b>Start Time</b></label> \
+                                        <label class="col-form-label"><b>UT Start Time</b></label> \
                                         <div class="col-sm-10 p-0">\
                                             <input name="tl_time" value="00:00" type="text" data-display-format="HH:mm" class="datepicker form-control"> \
                                         </div>\
@@ -278,13 +278,20 @@ function add_timelapse_full_modal() {
                                 </div>\
                             </div> \
                             <div id="logo_picker" class="form-group" hidden> \
-                                <label for="logo_pos" class="col-form-label"><b>Select Extra Logo</b></label> \
+                                <label for="logo_pos" class="col-form-label"><b>Select <a href="./webUI.py?cmd=custom_logos" target="_blank">Extra Logo</a></b></label> \
                                 <select name="logo" hidden></select> \
                                 <div id="logo_preview"></div>\
                             </div> \
                             <div class="form-group mb-2">\
                                 <label for="extra_text" class="col-form-label"><b>Extra info (added above the Camera Info)</b></label> \
                                 <input type="text" name="extra_text" class="form-control" value=""/> \
+                            </div>\
+                            <hr/>\
+                            <div class="form-group mb-2">\
+                                <div class="custom-control big custom-checkbox" data-children-count="1"> \
+                                    <input type="checkbox" class="custom-control-input" id="blend_sd" name="blend_sd"> \
+                                    <label for="blend_sd" class="custom-control-label pl-2 pt-1"><b>Blend night time SD stacks (when possible)</b></label>\
+                                </div>\
                             </div>\
                         </div> \
                      </div> \
@@ -346,6 +353,14 @@ function add_timelapse_full_modal() {
             });
             
         } else {
+
+            // Blend or not blend?
+            if(cmd_data['blend_sd']) {
+                cmd_data['blend_sd'] = 1;
+            } else {
+                cmd_data['blend_sd'] = 0;
+            }
+ 
             $('#full_timelapse_modal').modal('hide');
             loading({text: "Creating Video", overlay: true});
             

@@ -293,7 +293,7 @@ def mask_frame(frame, mp, masks, size=3):
    """ Mask bright pixels detected in the median 
        and also mask areas defined in the config """
    frame.setflags(write=1)
-   ih,iw = frame.shape
+   ih,iw = frame.shape[0], frame.shape[1]
    px_val = np.mean(frame)
    px_val = 0
 

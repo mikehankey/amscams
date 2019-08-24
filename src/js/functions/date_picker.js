@@ -27,8 +27,9 @@ function load_date_pickers() {
     $('.datepicker').each(function() {
         var $t = $(this);
         $t.datetimepicker({format: $t.attr('data-display-format')});
-
+ 
         if($t.attr('data-action')=='reload') {
+
             $t.on("dp.change", function (e) {
                 
                 // Convert date

@@ -1,12 +1,12 @@
 // Update counter
 function update_selected_counter() {
-    $('#sel-ctn').text($('.preview.selected').length);
+    $('.sel-ctn').text($('.preview.selected').length);
 }
 
 
 $(function() {
 
-    // Select one
+    // Select one from checkbox
     $('.sel-box input[type=checkbox]').change(function() {
         var $t = $(this), f = $t.attr('id'), id = f.substr(5,f.length);
         if($t.is(':checked')) {
@@ -16,6 +16,15 @@ $(function() {
         }
          update_selected_counter();
      });
+
+
+     // Select one from div
+     $('.select-to').click(function(e) {
+         if($(e.target).hasClass('select-to')) {
+            e.stopImmediatePropagation();
+            $(this).find('.sel-box input[type=checkbox]').click();
+         }
+     })
     
      // Select All
      $('#sel-all').click(function() {
@@ -24,7 +33,7 @@ $(function() {
      })
 
      // Delete All
-     $('#del-all').click(function() {
+     $('.del-all').click(function() {
          // Get all id
      
          var detections = [];

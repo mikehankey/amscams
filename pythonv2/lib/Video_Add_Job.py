@@ -12,7 +12,8 @@ from lib.Video_Parameters import save_video_job_parameters
 
 
 #ADD Job to WAITING_JOBS
-def add_video_job(name,cam_ids,date,time,duration,fps,dim,text_pos,wat_pos,extra_text,logo,logo_pos):
+
+def add_video_job(name,cam_ids,date,time,duration,fps,dim,text_pos,wat_pos,blend_sd,extra_text,logo,logo_pos):
 
     if(logo is None ):
         logo = ""
@@ -81,7 +82,8 @@ def add_video_job(name,cam_ids,date,time,duration,fps,dim,text_pos,wat_pos,extra
             'status': 'waiting',
             'extra_text':extra_text,
             'logo': logo,
-            'logo_pos': logo_pos
+            'logo_pos': logo_pos,
+            'blend_sd': blend_sd
         }
  
         duplicate = False
@@ -92,7 +94,7 @@ def add_video_job(name,cam_ids,date,time,duration,fps,dim,text_pos,wat_pos,extra
                 this_extra_text = job['extra_text']
             except KeyError as e:
                 this_extra_text = ""
-            if(job['logo'] == logo and job['logo_pos'] == logo_pos and this_extra_text == extra_text and job['name'] == name and job['cam_id']== cam_id and job['date']== date and job['fps']== fps and job['dim']== dim and job['text_pos']== text_pos and job['wat_pos']== wat_pos ):
+            if(job['logo'] == logo and job['logo_pos'] == logo_pos and this_extra_text == extra_text and job['name'] == name and job['cam_id']== cam_id and job['date']== date and job['fps']== fps and job['dim']== dim and job['text_pos']== text_pos and job['wat_pos']== wat_pos and job['blend_sd']== blend_sd ):
                 duplicate = True
                 break
 
