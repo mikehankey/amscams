@@ -289,7 +289,7 @@ def remaster(video_file, json_conf):
       #cv2.waitKey(10)
       fc = fc + 1
 
-   make_movie_from_frames(new_frames, [0,len(new_frames) - 1], marked_video_file )
+   make_movie_from_frames(new_frames, [0,len(new_frames) - 1], marked_video_file, 1)
 
 
 def make_movie_from_frames(frames, fns, outfile , remaster = 0):
