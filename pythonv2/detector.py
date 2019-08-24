@@ -629,7 +629,7 @@ def run_detect(video_file, show):
             meteor_found = 1
             meteor_in_clip = 1
 
-      print("OBJECT SCORE:", score)
+         print("OBJECT SCORE:", score)
    if meteor_in_clip == 0:
       save_json_file(video_data_file, video_data)
       print("NO meteors here.")
