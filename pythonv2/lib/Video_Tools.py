@@ -8,18 +8,21 @@ from lib.VIDEO_VARS import *
 from os import listdir, remove
 from os.path import isfile, join, exists
 from shutil import copyfile
+from lib.FileIO import load_json_file
 
 
 # Blend two images together
 # org =  '/mnt/ams2/TIMELAPSE_IMAGES/2019_08_06_01_02_26_000_010039.png'
 # stack = get_stack_from_HD_frame(org)
 # blend(org,stack,40,'/mnt/ams2/TMP/test.png')
+# WARNING: it only works if the images haven't the same size (HD_DIM resize)
 def blend(image1, image2, perc_trans_image1, output_file):
     other_perc =  int(perc_trans_image1)/100
-    cmd = 'ffmpeg -y -hide_banner -loglevel panic -i '+image2+' -i '+image1+' -filter_complex "[0:v]scale='+HD_DIM+'[scaled];[scaled]blend=all_mode=\'overlay\':all_opacity='+str(other_perc)+'[out]" -map "[out]" '+ output_file
+    cmd = 'ffmpeg -y -hide_banner -loglevel panic -i '+image2+' -i '+image1+' -filter_complex "[0:v]scale='+HD_DIM+'[scaled];[1:v]scale=1280x720[scaled2];[scaled][scaled2]blend=all_mode=\'multiply\':all_opacity='+str(other_perc)+'[out]" -map "[out]" '+ output_file
     output = subprocess.check_output(cmd, shell=True).decode("utf-8")    
     return output_file
  
+  
 #Get Video date from file name 
 def get_meteor_date(_file):
 	fn = _file.split("/")[-1] 
@@ -34,13 +37,26 @@ def get_meteor_time(_file):
     fn = fn.split("_")
     return fn[3] + '_' + fn[4] 
 
+#Get date & time with  second 
+def get_meteor_date_and_time_ws(_file):
+    fn = _file.split("/")[-1] 
+    fn = fn.split("_",6)
+    return fn[0] + '/' + fn[1] + '/' + fn[2]   +  ' ' + fn[3] + ':' + fn[4] + ':' + fn[5]
+
+
+#Get date & time without second 
+def get_meteor_date_and_time_wts(_file):
+    fn = _file.split("/")[-1] 
+    fn = fn.split("_",6)
+    return fn[0] + '/' + fn[1] + '/' + fn[2]   +  ' ' + fn[3] + ':' + fn[4]
 
 #Get date & time (python object from file name)
 def get_meteor_date_and_time_object(_file):
-    fn = _file.split("/")[-1] 
-    fn = fn.split("_",6)
-    date = fn[0] + '/' + fn[1] + '/' + fn[2]   +  ' ' + fn[3] + ':' + fn[4]
-    return time.strptime(date, "%Y/%m/%d %H:%M")
+    return time.strptime(get_meteor_date_and_time_wts(_file), "%Y/%m/%d %H:%M")
+
+#Get date & time (python object from file name) with SECONDS
+def get_meteor_date_and_time_object_ws(_file):
+    return time.strptime(get_meteor_date_and_time_ws(_file), "%Y/%m/%d %H:%M:%S")
 
 #Return nothing or the HD stack that correspond to the same time/cam of the time passed as parameters
 #ex:
@@ -120,9 +136,7 @@ def get_meteor_date_ffmpeg(_file):
 	fn = fn.split('_',6)
 	return fn[0] + "/" + fn[1] + "/" + fn[2] + " " + fn[3] + "\:" + fn[4] + "\:" + fn[5]
 
-
-
-
+  
 #Drawbox
 def drawbox_on_vid(path,vid,x,y,w,h):
     cmd = 'ffmpeg -i ' + path +'/'+ vid + ' -vf "drawbox=enable=\'between(n,28,32)\' : x='+str(x)+' : y='+str(y)+' : w='+str(w)+' : h='+str(h)+' : color=red" -codec:a copy '+  path +'/boxed_'+vid
@@ -244,7 +258,7 @@ def get_sd_frames_from_HD_video(hd_video_file, camID):
 #NEW STUFF HERE TO TAKE start_date & end_date into account and SEARCH in HD FRAMES FIRST
 #We test if we have at least one image under HD_FRAMES_PATH that matches the cam_id
 #And that has a date <= start_date
-def get_hd_frames_from_HD_repo(camID,date,start_date,end_date,limit_frame=False):
+def get_hd_frames_from_HD_repo(camID,date,start_date,end_date,blend_sd=False,limit_frame=False):
     cur_path = HD_FRAMES_PATH
     res = True
 
@@ -264,7 +278,7 @@ def get_hd_frames_from_HD_repo(camID,date,start_date,end_date,limit_frame=False)
 
         start_date_obj = time.strptime(start_date, "%Y/%m/%d %H:%M")
         end_date_obj = time.strptime(end_date, "%Y/%m/%d %H:%M")
-
+ 
         #Check temporary folder to store the frames of all the videos
         tmppath = r''+TMP_IMG_HD_SRC_PATH
         if not os.path.exists(tmppath):
@@ -287,16 +301,20 @@ def get_hd_frames_from_HD_repo(camID,date,start_date,end_date,limit_frame=False)
                 # The SD videos are under /mnt/ams2/SD/proc2/[2019_08_08]/[2019_08_08_04_58_53_000_010042.mp4]
                 # and blend it with the HD frame
                 #print('BEFORE FRAME TO BLEND')
-                frame_to_blend = get_sd_frames_from_HD_video(f, camID)
-                
-                if(frame_to_blend is not False):
-                    frame_to_blend = TMP_IMG_HD_SRC_PATH + frame_to_blend
-                    f2 = blend(cur_path + '/' + f,frame_to_blend,40,cur_path + '/' + f)
-                    shutil.copy2(f2, tmppath + '/' + f)
+                if(blend_sd==True):
+                    frame_to_blend = get_sd_frames_from_HD_video(f, camID)
+                    print('BLEND FRAME FOUND')
+
+                    if(frame_to_blend is not False):
+                        frame_to_blend = TMP_IMG_HD_SRC_PATH + frame_to_blend
+                        f2 = blend(cur_path + '/' + f,frame_to_blend,BLENDING_SD,cur_path + '/' + f)
+                        shutil.copy2(f2, tmppath + '/' + f)
+                    else:
+                        shutil.copy2(cur_path+ f, tmppath + '/' + f)
+               
                 else:
                     shutil.copy2(cur_path+ f, tmppath + '/' + f)
-                 
-   
+
 
         if(real_frames is not None):
             return(sorted(real_frames), tmppath)  
@@ -398,7 +416,6 @@ def get_text_pos(text_pos, extra_text_here):
 #Add text, logo, etc.. to a frame             
 def add_info_to_frame(frame, cam_text, extra_text, text_position, extra_text_position, watermark, watermark_position, logo, logo_pos, newpath, dimensions="1920:1080",  enhancement=0):
      
-
     # Do we have extra text?
     if(extra_text is None):
         with_extra_text = False
@@ -409,7 +426,7 @@ def add_info_to_frame(frame, cam_text, extra_text, text_position, extra_text_pos
     else:
         with_extra_text = True 
  
-  
+    # Start ffmpeg
     cmd = 'ffmpeg -hide_banner -loglevel panic \
             -y \
             -i ' + frame + '    \
@@ -420,8 +437,7 @@ def add_info_to_frame(frame, cam_text, extra_text, text_position, extra_text_pos
         with_extra_logo= True
     else:
         with_extra_logo= False
- 
-    
+  
     cmd +=  ' -filter_complex "[0:v]scale='+dimensions+'[scaled]; \
             [scaled]drawtext=:text=\'' + cam_text +'\':fontfile=\'/usr/share/fonts/truetype/dejavu/DejaVuSans-Bold.ttf\':fontcolor=white@'+FONT_TRANSPARENCY+':fontsize='+FONT_SIZE+':'+text_position 
     
@@ -460,8 +476,7 @@ def add_info_to_frames(frames, path, date, camID, extra_text, logo,logo_pos, dim
     #Create destination folder if it doesn't exist yet
     if not os.path.exists(VID_FOLDER):
         os.makedirs(VID_FOLDER) 
- 
-
+  
     # Do we have extra text?
     if(extra_text is None):
         with_extra_text = False
@@ -474,9 +489,9 @@ def add_info_to_frames(frames, path, date, camID, extra_text, logo,logo_pos, dim
   
     # Info position based on options
     text_position, extra_text_position = get_text_pos(text_pos, (extra_text!=''))
+
     # Watermark position based on options
     watermark_position = get_watermark_pos(watermark_pos)
-
 
     # Do we have extra logo
     if(logo is None):
@@ -489,7 +504,6 @@ def add_info_to_frames(frames, path, date, camID, extra_text, logo,logo_pos, dim
         with_extra_logo = True 
         logo_position = get_watermark_pos(logo_pos)     
 
-
     #Watermark R or L
     if('r' in watermark_pos):
         watermark = AMS_WATERMARK_R
@@ -501,7 +515,6 @@ def add_info_to_frames(frames, path, date, camID, extra_text, logo,logo_pos, dim
             water_path =  AMS_WATERMARK_ANIM_PATH_1280x720
         else:
             water_path =  AMS_WATERMARK_ANIM_PATH_640x360
-
 
     # Treat All frames
     for idx,f in enumerate(frames): 
@@ -555,3 +568,81 @@ def create_vid_from_frames(frames, path, date, camID, fps="25") :
 
     else:
         return ""
+
+
+
+#Get all meteors detections (return mp4s) from a given date (start & end) & cam_id
+#Return an associative array that looks like
+# {'2019/08/21 00:40': '2019_08_21_00_40_16_000_010037-trim-578-HD-meteor.mp4', ...
+# And the path where to find the videos
+def get_all_meteor_detections(date,start_date,end_date,cam_id):
+ 
+    #Meteor Folder
+    meteor_folder = METEOR_FOLDER+date
+
+    #Create Date Objects
+    start_date_obj = time.strptime(start_date, "%Y/%m/%d %H:%M")
+    end_date_obj = time.strptime(end_date, "%Y/%m/%d %H:%M")
+
+    # Get All the detection for the cur CAM ID & Date
+    # Note: WE CARE ONLY ABOUT THE REDUCED METEORS (as the json for non-reduced is full of wrong paths)
+    detections = [f for f in listdir(meteor_folder) if cam_id in f and ".json" in f and "-reduced" in f]
+    real_detections = {}
+
+    # Remove Detection outside of the timeframe
+    for detection in detections:
+
+        #Get the date & time of the video
+        cur_date = get_meteor_date_and_time_object(str(detection))
+        
+        if(cur_date>=start_date_obj and end_date_obj>=cur_date):
+
+            # Get the date without seconds
+            cur_date_string = get_meteor_date_and_time_ws(str(detection))
+            
+            if cur_date_string not in real_detections: 
+                
+                #We parse the JSON to get the path to the HD
+                if os.path.isfile(meteor_folder+'/'+detection): 
+                    data = load_json_file(meteor_folder+'/'+detection)
+                    real_detections[cur_date_string] = {"hd_video_file": data['hd_video_file'],"hd_stack": data['hd_stack'],"event_start_time":data['event_start_time']}
+                   
+                else:
+                    print(detection + " is not a file")
+    
+    return real_detections, meteor_folder
+
+
+#Extract all the frames from a video detection in order to add text, logo(s) & time
+def get_all_detection_frames(path,vid):
+
+    #Extract all frames
+    vid_name = vid.split('.') 
+    vid_name = vid_name[0] 
+    cmd = 'ffmpeg -y -hide_banner -loglevel panic -i ' + path + '/' + vid + ' ' +  TMP_IMG_HD_SRC_PATH + '%04d' + '-' + vid_name + '.png' 
+    output = subprocess.check_output(cmd, shell=True).decode("utf-8")
+
+    #We rename all the frames to the time match
+    #We have an initial fps of FPS_HD
+    #It means we had a sec every FPS_HD
+    #It means we had a micro-sec every  
+
+    #0001-2019_08_21_00_33_15_000_010037-trim-618-HD-meteor.png
+    #0002-2019_08_21_00_33_15_000_010037-trim-618-HD-meteor.png
+
+    #We get the start date
+    all_frames = [f for f in listdir(TMP_IMG_HD_SRC_PATH) if vid_name in f]
+
+    #Initial date
+    initial_date = get_meteor_date_and_time_object_ws(vid)
+    
+    for idx,frame in enumerate(sorted(all_frames)):
+        print(frame)
+        print(initial_date)
+
+    print(all_frames)
+
+    print("DATE")
+    print(get_meteor_date_and_time_object_ws(vid))
+
+    print(TMP_IMG_HD_SRC_PATH + vid + '.png')

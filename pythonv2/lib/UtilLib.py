@@ -4,6 +4,20 @@ import subprocess
 import datetime
 import math
 import ephem
+import numpy as np
+def best_fit_slope_and_intercept(xs,ys):
+    xs = np.array(xs, dtype=np.float64)
+    ys = np.array(ys, dtype=np.float64)
+    m = (((np.mean(xs)*np.mean(ys)) - np.mean(xs*ys)) /
+         ((np.mean(xs)*np.mean(xs)) - np.mean(xs*xs)))
+
+    b = np.mean(ys) - m*np.mean(xs)
+    if math.isnan(m) is True:
+       m = 1
+       b = 1
+
+    return m, b
+
 
 def date_to_jd(year,month,day):
     """
@@ -157,22 +171,22 @@ def bound_cnt(x,y,img_w,img_h,sz=10):
    if x - sz < 0:
       mnx = 0
    else:
-      mnx = x - sz
+      mnx = int(x - sz)
 
    if y - sz < 0:
       mny = 0
    else:
-      mny = y - sz
+      mny = int(y - sz)
 
    if x + sz > img_w - 1:
-      mxx = img_w - 1
+      mxx = int(img_w - 1)
    else:
-      mxx = x + sz
+      mxx = int(x + sz)
 
    if y + sz > img_h -1:
-      mxy = img_h - 1
+      mxy = int(img_h - 1)
    else:
-      mxy = y + sz
+      mxy = int(y + sz)
    return(mnx,mny,mxx,mxy)
 
 def better_parse_file_date(input_file):

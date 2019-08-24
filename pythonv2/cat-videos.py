@@ -11,7 +11,12 @@ if len(sys.argv) >= 3:
    cam_num = sys.argv[2]
 else:
    cam_num = ""
-cat_out = glob_dir + "/allmeteors" + cam_num + ".mp4"
+
+date = glob_dir.split("/")[-2]
+
+print("DATE:", date)
+
+cat_out = glob_dir + "/" + date + "_allmeteors_" + cam_num + ".mp4"
 cat_tmp1 = glob_dir + "/mnt/ams2/tmp/tmp1.mp4"
 cat_tmp2 = glob_dir + "/mnt/ams2/tmp/tmp2.mp4"
 cat_line = ""
@@ -19,7 +24,7 @@ count = 0
 #meteor_files = sorted(glob.glob(glob_dir + "*archiveHD.mp4"))
 #meteor_files = sorted(glob.glob(glob_dir + "*" + cam_num + "*HD-meteor.mp4"))
 #meteor_files = sorted(glob.glob(glob_dir + "*" + cam_num + "*archiveHD.mp4"))
-meteor_files = sorted(glob.glob(glob_dir + "*" + cam_num + "*TRIM*.mp4"))
+meteor_files = sorted(glob.glob(glob_dir + "*" + cam_num + "*.mp4"))
 print(glob_dir + "*" + cam_num + "*TRIM*.mp4")
 
 data = ""

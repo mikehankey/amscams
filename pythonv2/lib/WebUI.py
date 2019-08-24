@@ -175,9 +175,9 @@ def make_day_preview(day_dir, stats_data, json_conf):
       obj_stack = day_dir + "/" + "images/"+ cams_id + "-night-stack.png"
       meteor_stack = day_dir + "/" + "images/" + cams_id + "-meteors-stack.png"
       if cfe(obj_stack) == 0:
-         obj_stack = "/dist/img/proccessing.png"
+         obj_stack = "./dist/img/proccessing.png"
       if cfe(meteor_stack) == 0:
-         meteor_stack = "/dist/img/proccessing.png"
+         meteor_stack = "./dist/img/proccessing.png"
 
       day=day.replace("_","")
  
@@ -249,7 +249,7 @@ def controller(json_conf):
             logo = ""
             logo_pos = ""
 
-      add_video_job('timelapse',form.getvalue('sel_cam[]'),form.getvalue('tl_date'),form.getvalue('tl_time'),form.getvalue('duration'),form.getvalue('fps'),form.getvalue('dim'),form.getvalue('text_pos'),form.getvalue('wat_pos'),extra_text,logo,logo_pos)
+      add_video_job('timelapse',form.getvalue('sel_cam[]'),form.getvalue('tl_date'),form.getvalue('tl_time'),form.getvalue('duration'),form.getvalue('fps'),form.getvalue('dim'),form.getvalue('text_pos'),form.getvalue('wat_pos'),form.getvalue('blend_sd'),extra_text,logo,logo_pos)
       exit()
 
    # DELETE CUSTOM VIDEO (AJAX CALL)
@@ -559,6 +559,7 @@ def video_tools(json_conf,form):
    for vid in all_vids:
          # Get Date & Cam ID
          date, camid = get_custom_video_date_and_cam_id(vid)
+ 
 
          length = getLength(vid)
          if(length=='' or length==0):
@@ -1025,10 +1026,19 @@ def meteor_index(json_conf, form):
             res_cnt+= 1
 
    results += "</tbody></table>" 
+
+  
    if(day_limit is not None):
-      print('<div class="h1_holder d-flex justify-content-between mb-4"><h1>Meteor Calibration Index for <div class="input-group date datepicker" data-display-format="YYYY/MM/DD" data-action="reload" data-url-param="limit_day" data-send-format="YYYY_MM_DD"><input value="'+day_limit.replace("_", "/")+'" type="text" class="form-control"><span class="input-group-addon"><span class="icon-clock"></span></span></div></h1><div><a href="/pycgi/webUI.py?cmd=meteor_index&opt=show_all" class="btn btn-primary">Show All</a></div></div>')
+      header_out = '<div class="h1_holder d-flex justify-content-between mb-4">'
+      header_out += '<h1>Meteor Calibration Index for '
+      header_out += '<input value="'+day_limit.replace("_", "/")+'" type="text" data-display-format="YYYY/MM/DD" data-action="reload" data-url-param="limit_day" data-send-format="YYYY_MM_DD" class="datepicker form-control">'
+      header_out += '</h1><div><a href="/pycgi/webUI.py?cmd=meteor_index&opt=show_all" class="btn btn-primary">Show All</a></div></div>' 
+      print(header_out)
    else:
-      print('<div class="h1_holder d-flex justify-content-between mb-4"><h1>Meteor Calibration Index</h1><div><a href="/pycgi/webUI.py?cmd=meteor_index" class="btn btn-primary">Browse by date</a>  <a href="/pycgi/webUI.py?cmd=meteor_index&multi=1" class="btn btn-primary">Multi-station only</a></div></div>')
+      header_out = '<div class="h1_holder d-flex justify-content-between mb-4">'
+      header_out += '<h1>Meteor Calibration Index</h1>'
+      header_out += '<div><a href="/pycgi/webUI.py?cmd=meteor_index" class="btn btn-primary">Browse by date</a>  <a href="/pycgi/webUI.py?cmd=meteor_index&multi=1" class="btn btn-primary">Multi-station only</a></div></div>'
+      print(header_out) 
 
    if(res_cnt>1):
       print(results)
@@ -1343,10 +1353,9 @@ def meteors_new(json_conf,form):
       elif limit_day == this_date:
          meteors = get_meteors(meteor_dir, meteors)
          has_limit_day = 1
-         header_out = header_out + "<h1><span class='h'><span id='meteor_count'>"+format(len(meteors))+"</span> meteors</span> captured on"
-         header_out = header_out + "<div class='input-group date datepicker' data-display-format='YYYY/MM/DD' data-action='reload' data-url-param='limit_day' data-send-format='YYYY_MM_DD'>"
-         header_out = header_out + "<input value='"+str(this_date.replace("_", "/"))+"' type='text' class='form-control'>"
-         header_out = header_out + "<span class='input-group-addon'><span class='icon-clock'></span></span></div></h1>"
+         header_out += "<h1><span class='h'><span id='meteor_count'>"+format(len(meteors))+"</span> meteors</span> captured on " 
+         header_out += '<input value="'+limit_day.replace("_", "/")+'" type="text" data-display-format="YYYY/MM/DD" data-action="reload" data-url-param="limit_day" data-send-format="YYYY_MM_DD" class="datepicker form-control">'
+         header_out += "</h1>"
    
    if limit_day is None and len(meteors)>=1:
       header_out = header_out + "<h1><span class='h'><span id='meteor_count'>"+format(len(meteors))+"</span> meteors</span> captured since inception</h1>"
@@ -1402,7 +1411,7 @@ def meteors_new(json_conf,form):
                htclass = "norm"
                norm_cnt = norm_cnt + 1
 
-            html_out +=  "<div id='"+del_id+"' class='preview col-lg-2 col-md-3  "+ htclass +"'>"
+            html_out +=  "<div id='"+del_id+"' class='preview col-lg-2 col-md-3 select-to "+ htclass +"'>"
             html_out +=  "<a class='mtt' href='webUI.py?cmd=reduce&video_file=" + video_file + "' data-obj='"+stack_obj_img+"' title='Go to Info Page'>"
             html_out +=  "<img alt='"+desc+"' class='img-fluid ns lz' src='" + stack_file_tn + "'>"
             html_out +=  "<span>" + desc + "</span></a>"  
@@ -1436,10 +1445,8 @@ def meteors_new(json_conf,form):
          header_out = header_out + "<div class='page_h'>Page  " + format(cur_page) + "/" +  format(pagination[2]) + "</div>"
 
    else:
-      header_out = header_out + "<h1><span class='h'><span id='meteor_count'>0</span> meteor</span> captured on"
-      header_out = header_out + "<div class='input-group date datepicker' data-display-format='YYYY/MM/DD' data-action='reload' data-url-param='limit_day' data-send-format='YYYY_MM_DD'>"
-      header_out = header_out + "<input value='"+str(this_date.replace("_", "/"))+"' type='text' class='form-control'>"
-      header_out = header_out + "<span class='input-group-addon'><span class='icon-clock'></span></span></div>"
+      header_out = header_out + "<h1><span class='h'><span id='meteor_count'>0</span> meteor</span> captured on "
+      header_out += '<input value="'+str(this_date.replace("_", "/"))+'" type="text" data-display-format="YYYY/MM/DD" data-action="reload" data-url-param="limit_day" data-send-format="YYYY_MM_DD" class="datepicker form-control"></h1>'
 
    print(header_out+'</div></div>')
    print("<div id='main_container' class='container-fluid h-100 mt-4 lg-l'>")
@@ -1447,10 +1454,13 @@ def meteors_new(json_conf,form):
    print("<div class='list-onl'>")
    print("<div class='filter-header d-flex flex-row-reverse '>")
    print('<button id="sel-all" title="Select All" class="btn btn-primary ml-3"><i class="icon-checkbox-checked"></i></button>')
-   print('<button id="del-all" class="btn btn-danger"><i class="icon-delete"></i> Delete <span id="sel-ctn">All</span> Selected</button>')
+   print('<button id="del-all" class="del-all btn btn-danger"><i class="icon-delete"></i> Delete <span class="sel-ctn">All</span> Selected</button>')
    print("</div>")
    print("</div>")
    print(html_out)
+   print("<div class='filter-header d-flex flex-row-reverse '>") 
+   print('<button id="del-all" class="del-all btn btn-danger"><i class="icon-delete"></i> Delete <span class="sel-ctn">All</span> Selected</button>')
+   print("</div>")
    print("</div>")
    #page,total_pages,url for pagination
    if(len(meteors)>=1):
@@ -1877,9 +1887,16 @@ def examine_min(video_file,json_conf):
 
 #Delete multiple detections at once
 def delete_multiple_detection(detections,json_conf):
+      
+
+      # If there's only one it's treated as a string (?)
+      if(type(detections) is str):
+            det = []
+            det.append(detections)
+            detections = det
+      
       for to_delete in detections:
             #print("TO DELETE " + str(to_delete))
-            #print("JSON " +  str(json_conf))
             override_detect('',to_delete,'')
 
 
@@ -2261,10 +2278,10 @@ def print_css():
 
 
 def browse_day(day,cams_id,json_conf):
+   #cgitb.enable()
+
    day_files = get_day_files(day,cams_id,json_conf)
-#   print(day_files)
-
-
+ 
    cc = 0
    all_files = []
    for base_file in sorted(day_files,reverse=True):
@@ -2274,9 +2291,8 @@ def browse_day(day,cams_id,json_conf):
    all_cam_ids = get_the_cam_ids() 
 
    print("<div class='h1_holder d-flex justify-content-between'><h1><span class='h'><span id='meteor_count'>"+format(len(day_files))+"</span> detections</span> on")
-   print("<div class='input-group date datepicker' data-display-format='YYYY/MM/DD' data-action='reload' data-url-param='day' data-send-format='YYYY_MM_DD'>")
-   print("<input value='"+str(day.replace("_", "/"))+"' type='text' class='form-control'>")
-   print("<span class='input-group-addon'><span class='icon-clock'></span></span></div> by Cam #")
+   print("<input value='"+str(day.replace("_", "/"))+"' type='text' data-display-format='YYYY/MM/DD' data-action='reload' data-url-param='limit_day' data-send-format='YYYY_MM_DD' class='datepicker form-control'>")
+   print(" by Cam #")
    
    #Cam selector
    print("<select id='cam_id' name='cam_id' data-url-param='cams_id' class='cam_picker'>")
@@ -2476,12 +2492,12 @@ def main_page(json_conf,form):
  
    pagination =  get_pagination(cur_page,len(all_real_detections),"/pycgi/webUI.py?cmd=home",NUMBER_OF_DAYS_PER_PAGE)
 
-   header_out = "<div class='h1_holder d-flex justify-content-between'><h1>Daily Dectections until "
-   header_out = header_out + "<div class='input-group date datepicker' data-display-format='YYYY/MM/DD' data-action='reload' data-url-param='limit_day' data-send-format='YYYY_MM_DD'>"
+   header_out = "<div class='h1_holder d-flex justify-content-between'><h1>Daily Dectections until " 
+ 
    if end_day is None:
       end_day = ""
-   header_out = header_out + "<input value='"+ end_day +"' type='text' class='form-control'>"
-   header_out = header_out + "<span class='input-group-addon'><span class='icon-clock'></span></span></div></h1>"
+ 
+   header_out = header_out + "<input value='"+ end_day +"' type='text' data-display-format='YYYY/MM/DD'  data-action='reload' data-url-param='limit_day' data-send-format='YYYY_MM_DD' class='datepicker form-control'></h1>" 
    header_out = header_out + "<div class='page_h'>Page  " + format(cur_page) + "/" +  format(pagination[2]) + "</div></div>" 
 
    print(header_out)

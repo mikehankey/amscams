@@ -74,13 +74,29 @@ from os.path import isfile, join, exists
 # OUTPUT => video with frame blended with stack if at night and stack found
 
 
+# TEST CREATE VIDEO WITH BLENDING SD
+#array_of_frames, path  = get_hd_frames_from_HD_repo("10041","2019/08/21","2019/08/21 01:00","2019/08/21 23:00",False)
+#print("FRAMES")
+#print(array_of_frames) 
+#print("PATH")
+#print(path) 
+#if(array_of_frames is None):
+#    print('NO FRAME FOUND') 
+#else:
+#    where_path = add_info_to_frames(array_of_frames, path, "2019/08/21", "10041", "This is a test", "/mnt/ams2/CUSTOM_LOGOS/1.png","tl",HD_DIM, "bl","tr")
+#    t = create_vid_from_frames(array_of_frames, where_path, "2019_08_21",  "10041","30")
+#   print(t)
+
+
+# TEST BLENDER
+#blend('/mnt/ams2/meteors/2019_08_19/2019_08_19_08_26_48_000_010041-trim-183-HD-meteor-stacked.png','/mnt/ams2/meteors/2019_08_19/2019_08_19_00_08_10_000_010037-trim-1-HD-meteor-crop-stacked-obj.png',BLENDING_SD,'/mnt/ams2/TMP/test.png')
+#print('/mnt/ams2/TMP/test.png')
+
  
-array_of_frames, path  = get_hd_frames_from_HD_repo("10041","2019/07/07","2019/07/07 06:40","2019/08/07 11:40")
-print("FRAMES")
-print(array_of_frames) 
-if(array_of_frames is None):
-    print('NO FRAME FOUND') 
-else:
-    where_path = add_info_to_frames(array_of_frames, path, "2019/07/07", "10041", "This is a test", "/mnt/ams2/CUSTOM_LOGOS/1.png","tl",HD_DIM, "bl","tr")
-    t = create_vid_from_frames(array_of_frames, where_path, "2019_07_07",  "10041","30")
-    print(t)
+# TEST GET METEOR DETECTIONS FROM CAM_ID START DAte / END DATE
+videos, path = get_all_meteor_detections("2019_08_21","2019/08/21 00:00","2019/08/21 23:59","10041")
+print(videos)
+print("PATH")
+print(path)
+
+#get_all_detection_frames(path,'2019_08_21_00_33_15_000_010037-trim-618-HD-meteor.mp4')

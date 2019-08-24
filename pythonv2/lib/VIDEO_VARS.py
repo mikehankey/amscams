@@ -23,7 +23,8 @@ VID_FOLDER = WAITING_JOBS_FOLDER
 HD_FRAMES_PATH = ORG_PATH + 'TIMELAPSE_IMAGES/'
 
 #Where the Stacks are
-STACK_FOLDER = ORG_PATH + '/meteors/'
+METEOR_FOLDER = ORG_PATH + '/meteors/'
+STACK_FOLDER = METEOR_FOLDER 
 
 #AMS WATERMARK
 AMS_WATERMARK = "/home/ams/amscams/dist/img/ams_watermark.png"
@@ -57,3 +58,9 @@ D_EXTRA_INFO = " " # WARNING - This is updated in Video_Parameters
 
 
 HD_DIM = "1280x720" #for ffmpeg - used to extract the HD frames in HD_FRAMES_PATH
+
+BLENDING_SD = 30 #For the amount of SD blending on HD frames (when SD is found)
+
+
+#CURRENT FPS OF HD VIDEO
+FPS_HD = 25

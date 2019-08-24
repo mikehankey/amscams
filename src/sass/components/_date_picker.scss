@@ -1,40 +1,33 @@
 .h1_holder {
 
-    .datepicker {
+    .datepicker.form-control {
         width:auto;
+        display: inline-block; 
+        background: transparent;
+        border: none;
+        color: #fff;
+        font-size: 1.2rem;
+        padding: 0;
+        line-height: 1;
+        height: 2.3rem;
+        font-weight: bold;
+        width: auto;
         display: inline-block;
+        max-width: 7.2rem;
+        padding: 0 .2rem;
+        border-radius: 0;
 
-        input {
-            background: transparent;
+        &:focus {
             border: none;
-            color: #fff;
-            font-size: 1.2rem;
-            padding: 0;
-            line-height: 1;
-            height: 2.3rem;
-            font-weight: bold;
-            width: auto;
-            display: inline-block;
-            max-width: 7.2rem;
-            padding: 0 .2rem;
-            border-radius: 0;
-
-            &:focus {
-                border: none;
-                box-shadow: none;
-                background: #0e295b;
-            }
+            box-shadow: none;
+            background: #0e295b;
         }
+        
 
         &:hover {
-            input {
-                background: #0e295b;
-            }
+            background: #0e295b;
         }
-
-        .input-group-addon {
-            padding-right: .3rem;
-        }
+ 
     }
 
 }

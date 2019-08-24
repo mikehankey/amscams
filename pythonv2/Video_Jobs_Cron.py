@@ -89,11 +89,8 @@ def video_job():
 
         #TIMELAPSE
         if(job['name']=='timelapse'):
-            video_path =  generate_timelapse(job['cam_id'],job['date'],job['start_date'],job['end_date'],job['fps'],job['dim'],job['text_pos'],job['wat_pos'],job['extra_text'],job['logo'],job['logo_pos'],0) 
-            #try:
-            #except:
-            # error = True
- 
+            video_path =  generate_timelapse(job['cam_id'],job['date'],job['start_date'],job['end_date'],job['fps'],job['dim'],job['text_pos'],job['wat_pos'],job['extra_text'],job['logo'],job['logo_pos'],job['blend_sd'],0) 
+       
         if(error == False):
 
             #We empty the list of processing file  
