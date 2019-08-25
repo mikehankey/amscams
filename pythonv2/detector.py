@@ -623,6 +623,10 @@ def run_detect(video_file, show):
          score = 0
          for test in obj['test_results']:
             print(test[0], test[1], test[2])
+            if test[0] == "CM/Gaps" and test[1] == 0:
+               score = score - 10
+            if test[0] == "Dist" and test[1] == 0:
+               score = score - 10
             score = score + int(test[1])
          if score > 9:
             meteor_objs.append(obj['oid'])
