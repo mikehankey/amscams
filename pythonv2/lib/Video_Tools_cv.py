@@ -143,6 +143,9 @@ def remaster(data):
     json_file = video_file.replace(".mp4", ".json")
     meteor_data = load_json_file(json_file)
 
+    #OUTPUT FILE
+    marked_video_file = video_file.replace(".mp4", "-pub.mp4")
+
     # Add AMS Logo
     ams_logo = cv2.imread(AMS_WATERMARK, cv2.IMREAD_UNCHANGED)
 
@@ -216,7 +219,8 @@ def remaster(data):
             hd_img = add_text_to_pos(hd_img,extra_text,extra_text_pos,2) 
 
         # Add Radiant (todo)
-        new_frames.append(new_frame) 
+        new_frames.append(hd_img) 
         fc = fc + 1
 
     make_movie_from_frames(new_frames, [0,len(new_frames) - 1], marked_video_file, 1)
+    print(marked_video_file)
