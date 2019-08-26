@@ -4,13 +4,7 @@ from lib.VIDEO_VARS import *
 from lib.Video_Tools_cv_pos import *
 from PIL import ImageFont, ImageDraw, Image  
 
-
-# Add Radiant symbol + text to a given possition
-def add_radiant(background,text,x,y):
-    return False
-    
-
-
+ 
 # Add text on x,y with default small font (for radiant or other info)
 # If centered = the text is placed as if x,y is the center
 def add_text(background,text,x,y,centered=False):
@@ -101,6 +95,7 @@ def add_overlay_x_y_cv(background, overlay, x, y):
     background[y:y+h, x:x+w] = (1.0 - mask) * background[y:y+h, x:x+w] + mask * overlay_image
 
     return background
+ 
 
 # Add semi-transparent overlay over background
 # Position = br, bl, tr, tl (ex: br = bottom right)
@@ -127,5 +122,4 @@ def add_radiant_cv(background,x,y,text):
     # Add text (centered bottom)
     background = add_text(background,text,x,y+int(radiant_image.shape[1]/2),True)
 
-   
     return background

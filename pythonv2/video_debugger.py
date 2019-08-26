@@ -122,10 +122,13 @@ overlay = cv2.imread('/home/ams/amscams/dist/img/ams_logo_vid_anim/1920x1080/AMS
 #cv2.imwrite('/mnt/ams2/test_br.png', added_image)
 
 added_image = add_overlay_cv(background,overlay,'tr') 
+
+
+logo = cv2.imread('/mnt/ams2/CUSTOM_LOGOS/1.png', cv2.IMREAD_UNCHANGED)
+added_image = add_overlay_cv(background,overlay,'tl') 
+
 added_image = add_text_to_pos(added_image,'THIS IS A TEST  LINE 1 BL','bl',1)
-added_image = add_text_to_pos(added_image,'THIS IS A TEST SECOND LINE 2 BL','bl',2)
-added_image = add_text_to_pos(added_image,'THIS IS A TEST  LINE 1 TL','tl',1)
-added_image = add_text_to_pos(added_image,'THIS IS A TEST SECOND LINE 2 TL','tl',2)
+added_image = add_text_to_pos(added_image,'THIS IS A TEST SECOND LINE 2 BL','bl',2) 
 added_image = add_text_to_pos(added_image,'THIS IS A TEST  LINE 1','br',1)
 added_image = add_text_to_pos(added_image,'THIS IS A TEST SECOND LINE 2','br',2)
 
