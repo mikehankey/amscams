@@ -1,30 +1,22 @@
 import cv2
-import numpy as np
+import numpy as numpy
 from lib.VIDEO_VARS import *   
+from lib.Video_Tools_cv_lib import *
+from PIL import ImageFont, ImageDraw, Image  
 
- 
-# Get overlay position x,y 
-# based on Position = br, bl, tr, tl (ex: br = bottom right)
-# and margins (distance of the overlay from the borders of the frame)
-# return x,y position of the overlay over the background
-def get_overlay_position_cv(background, overlay, position, margins=VIDEO_MARGINS):
-    h, w = overlay.shape[0], overlay.shape[1]
 
-    print('OVERLAY ')
-    print('h ' + str(h))
-    print('w ' + str(w))
 
-    if(position=='bl'):
-        background_width,background_height  = background.shape[1], background.shape[0]
-        return VIDEO_MARGINS,background_height-VIDEO_MARGINS-h
-    elif(position=='tl'):
-        background_width,background_height  = background.shape[1], background.shape[0]
-        return background_width-VIDEO_MARGINS-w,VIDEO_MARGINS 
-    elif(position=='br'):
-        background_width,background_height  = background.shape[1], background.shape[0]
-        return background_width-VIDEO_MARGINS-w,background_height-VIDEO_MARGINS-h        
-    else:
-        return VIDEO_MARGINS,VIDEO_MARGINS
+# Add text over background
+# Position = br, bl, tr, tl (ex: br = bottom right)
+# return updated cv matrix
+def add_text(background,text,position):
+    cv2.putText(background,  
+           "Hershey Simplex : " + text,  
+           (20, 40),  
+           fontFace=cv2.FONT_HERSHEY_SIMPLEX,  
+           fontScale=1,  
+           color=(255, 255, 255))  
+    return background
   
 
 # Add semi-transparent overlay over background
@@ -34,10 +26,8 @@ def add_overlay_cv(background, overlay, position):
 
     background_width,background_height  = background.shape[1], background.shape[0]
 
-    x,y = get_overlay_position_cv(background,overlay,position)
-    print('POSITION ' +  position)
-    print('X ' + str(x))
-    print('Y'  + str(y))
+    # Get overlay position - see lib.Video_Tools_cv_lib
+    x,y = get_overlay_position_cv(background,overlay,position) 
     
     if x >= background_width or y >= background_height:
         return background
