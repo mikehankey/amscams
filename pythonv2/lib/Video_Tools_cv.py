@@ -125,7 +125,7 @@ def add_radiant_cv(background,x,y,text):
         background = background
 
     # Add text (centered bottom)
-    background = add_text(background,text,x,y,True)
+    background = add_text(background,text,x,y+radiant_image.shape[1],True)
 
    
     return background
