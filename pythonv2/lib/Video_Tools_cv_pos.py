@@ -54,7 +54,7 @@ def get_overlay_position_cv(background, overlay, position, margins=VIDEO_MARGINS
     if(position=='bl'):
         background_width,background_height  = background.shape[1], background.shape[0]
         return VIDEO_MARGINS,background_height-VIDEO_MARGINS-h
-    elif(position=='tl'):
+    elif(position=='tr'):
         background_width,background_height  = background.shape[1], background.shape[0]
         return background_width-VIDEO_MARGINS-w,VIDEO_MARGINS 
     elif(position=='br'):
