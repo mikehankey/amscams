@@ -212,9 +212,12 @@ def remaster(data):
         if color > 50:
             cv2.rectangle(hd_img, (cx1, cy1), (cx2, cy2), (color,color,color), 1)
 
-        # Add AMS Logo
-        print('AMS LOGO POS ' + ams_logo_pos)
+        # Add AMS Logo 
         hd_img = add_overlay_cv(hd_img,cv2.imread(AMS_WATERMARK, cv2.IMREAD_UNCHANGED),ams_logo_pos)
+
+        # Add Eventual Extra Logo
+        if(extra_logo is not False):
+              hd_img = add_overlay_cv(hd_img,cv2.imread(extra_logo, cv2.IMREAD_UNCHANGED),extra_logo_pos)
 
         # Add Date & Time
         frame_time_str = station_id + ' - ' + frame_time_str + ' UT'
