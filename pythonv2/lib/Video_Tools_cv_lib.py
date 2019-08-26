@@ -18,7 +18,7 @@ def get_text_position_cv(background,text,position,line_number,font,margins=VIDEO
     print("TEXT W " + str(text_w))
 
     # We start at 0
-    if(line_number==1)
+    if(line_number==1):
         line_number -= 1
 
     if(position=='bl'):
