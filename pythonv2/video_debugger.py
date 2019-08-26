@@ -121,9 +121,6 @@ overlay = cv2.imread('/home/ams/amscams/dist/img/ams_logo_vid_anim/1920x1080/AMS
 #added_image = add_overlay_cv(background,overlay,'br')
 #cv2.imwrite('/mnt/ams2/test_br.png', added_image)
 
-
-print("BACKGROUND")
-print(background)
-
+ 
 added_image = add_text(background,'THIS IS A TEST','br')
 cv2.imwrite('/mnt/ams2/test_text.png', added_image)

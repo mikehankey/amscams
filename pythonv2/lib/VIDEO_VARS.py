@@ -67,3 +67,6 @@ FPS_HD = 25
 
 #Margins between the logo & text and the border of the frames
 VIDEO_MARGINS = 10 
+
+#DEFAULT FONTS
+VIDEO_FONT = "/home/ams/amscams/dist/fonts/Roboto_Condensed/RobotoCondensed-Regular.ttf"

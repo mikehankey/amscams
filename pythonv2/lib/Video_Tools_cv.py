@@ -7,16 +7,27 @@ from PIL import ImageFont, ImageDraw, Image
 
 
 # Add text over background
+# WARNING: bg is NOT a cv image but a full path (for PIL)
 # Position = br, bl, tr, tl (ex: br = bottom right)
 # return updated cv matrix
 def add_text(background,text,position):
-    cv2.putText(background,  
-           "Hershey Simplex : " + text,  
-           (20, 40),  
-           fontFace=cv2.FONT_HERSHEY_SIMPLEX,  
-           fontScale=1,  
-           color=(255, 255, 255))  
-    return background
+    # Convert background to RGB (OpenCV uses BGR)  
+    cv2_background_rgb = cv2.cvtColor(background,cv2.COLOR_BGR2RGB)  
+    
+    # Pass the image to PIL  
+    pil_im = Image.fromarray(cv2_background_rgb)  
+    draw = ImageDraw.Draw(pil_im)  
+
+    # use DEFAULT truetype font  
+    font = ImageFont.truetype(VIDEO_FONT, 80)  
+
+    # Draw the text
+    draw.text((10, 10), text, font=font)  
+
+    # Get back the image to OpenCV  
+    cv2_im_processed = cv2.cvtColor(np.array(pil_im), cv2.COLOR_RGB2BGR)  
+    
+    return cv2_im_processed
   
 
 # Add semi-transparent overlay over background
