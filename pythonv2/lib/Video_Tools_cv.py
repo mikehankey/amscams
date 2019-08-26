@@ -21,8 +21,11 @@ def add_text(background,text,position):
     # use DEFAULT truetype font  
     font = ImageFont.truetype(VIDEO_FONT, VIDEO_FONT_SIZE)  
 
+    # Get Text position - see lib.Video_Tools_cv_lib
+    x,y = get_text_position_cv(background,text,position,font)
+
     # Draw the text
-    draw.text((10, 10), text, font=font)  
+    draw.text((x, y), text, font=font)  
 
     # Get back the image to OpenCV  
     cv2_im_processed = cv2.cvtColor(np.array(pil_im), cv2.COLOR_RGB2BGR)  
