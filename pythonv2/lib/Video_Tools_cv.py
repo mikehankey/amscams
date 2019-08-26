@@ -41,7 +41,7 @@ def add_text_to_pos(background,text,position,line_number=1):
     y,x = get_text_position_cv(background,text,position,line_number,font)
 
     # Draw the text
-    cv2_im_processed = add_text(pil_im,x,y,font)
+    cv2_im_processed = add_text(pil_im,text,x,y,font)
     
     return cv2_im_processed
   
