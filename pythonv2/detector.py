@@ -17,7 +17,7 @@ from lib.UtilLib import check_running, angularSeparation, bound_cnt
 from lib.CalibLib import radec_to_azel, clean_star_bg, get_catalog_stars, find_close_stars, XYtoRADec, HMS2deg, AzEltoRADec, get_active_cal_file
 
 from lib.ImageLib import mask_frame , stack_frames, preload_image_acc
-from lib.ReducerLib import setup_metframes, detect_meteor , make_crop_images, perfect, detect_bp, best_fit_slope_and_intercept, id_object
+from lib.ReducerLib import setup_metframes, detect_meteor , make_crop_images, perfect, detect_bp, best_fit_slope_and_intercept, id_object, metframes_to_mfd
 from lib.MeteorTests import meteor_test_cm_gaps
 
 
@@ -34,6 +34,37 @@ from lib.DetectLib import eval_cnt
 
 json_conf = load_json_file("../conf/as6.json")
 
+
+def batch_check_reject(day, json_conf):
+   files = glob.glob("/mnt/ams2/meteor_archive/" + day + "/" + day + "*.mp4")
+   for file in files:
+      if "allmeteors" not in file:
+         check_reject(file, json_conf)
+
+def check_reject(video_file, json_conf):
+   json_file = video_file.replace(".mp4", ".json")
+   json_data = load_json_file(json_file)
+   #print(json_data['metconf'])
+   #for test in json_data['objects']['test_results']:
+   #   print(test[0], test[1], test[2])
+   metconf = json_data['metconf']
+   mxs = metconf['mxs']
+   mys = metconf['mys']
+   min_x = min(mxs)
+   min_y = min(mys)
+   max_x = max(mxs)
+   max_y = max(mys)
+   dist = calc_dist((min_x, min_y), (max_x,max_y))
+   x1,y1,x2,y2,dist = make_crop_box(json_data, 1920,1080)
+   print("DIST:", dist, video_file)
+   #print("DIST PER FRAME:", dist/len(mxs))
+   if dist < 5:
+      cmd = "mv " + video_file + "/mnt/ams2/bad/"
+      print(cmd)
+      #os.system(cmd)
+      cmd = "mv " + json_file + "/mnt/ams2/bad/"
+      print(cmd)
+      #os.system(cmd)
 
 
 def reduce_acl(this_poly, metframes,metconf,frames,mode=0,show=0,key_field = "m"):
@@ -52,7 +83,6 @@ def reduce_acl(this_poly, metframes,metconf,frames,mode=0,show=0,key_field = "m"
       med_seg = (this_poly[0] + np.float64(metconf['acl_med_seg_len']))
    else:
       med_seg = (this_poly[0] + np.float64(metconf['med_seg_len']))
-
 
    for fn in metframes:
       est_res = 0
@@ -410,7 +440,7 @@ def process_video_frames(frames, video_file):
 
    objects = []
    for frame in frames:
-      
+      show_frame = frame 
       crop_img = np.zeros((200,200),dtype=np.uint8)
       orig_frames.append(frame.copy())
       frame = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
@@ -421,7 +451,7 @@ def process_video_frames(frames, video_file):
       frame_data[fn]['fn'] = fn
       blur_frame = cv2.GaussianBlur(frame, (7, 7), 0)
       blur_last = cv2.GaussianBlur(last_frame, (7, 7), 0)
-      #subframe = cv2.subtract(frame,last_frame)
+
       subframe = cv2.subtract(frame,last_frame)
       subframes.append(subframe)
 
@@ -448,18 +478,25 @@ def process_video_frames(frames, video_file):
          thresh_val = np.max(subframe) - 50
          if thresh_val < 10:
             thresh_val = 10
+         #thresh_val = 10
 
          _, subframe_thresh = cv2.threshold(subframe.copy(), thresh_val, 255, cv2.THRESH_BINARY)
+
          frame_cnts = do_contours(subframe_thresh)
          frame_data[fn]['frame_cnts'] = frame_cnts
          print("CNTS:", frame_cnts)
          obj_cnts = []
          for cnt in frame_cnts:
             cx, cy, cw, ch = cnt
-            object, objects = id_object(None, objects,fn, (int(mx),int(my)), int(max_val), int(sum_val), img_w, img_h)
+            object, objects = id_object(None, objects,fn, (int(cx),int(cy)), int(max_val), int(sum_val), img_w, img_h)
             if "oid" in object:
+               cv2.rectangle(show_frame, (cx, cy), (cx+cw, cy+ch), (128,128,128), 1)
+               cv2.putText(show_frame, str(object['oid']),  (cx,cy), cv2.FONT_HERSHEY_SIMPLEX, .4, (255, 255, 255), 1) 
                obj_cnts.append((object['oid'], cx,cy,cw,ch))
                frame_data[fn]['obj_cnts'] = obj_cnts
+
+         cv2.imshow('pepe', show_frame)
+         cv2.waitKey(0)
 
          if 1 < last_seg_dist < 20 :
             motion = 1
@@ -614,10 +651,18 @@ def run_detect(video_file, show):
    meteor_in_clip = 0
    objects,meteor_found = test_objects(video_data['objects'],frames) 
 
+   meteor_events = []
    for obj in objects:
       if obj['meteor'] == 1:
+         for test in obj['test_results']:
+            print("METEOR:", obj['oid']) 
+            print("METEOR:", test[0], test[1], test[2])
          meteor_in_clip = 1
          meteor_objs.append(obj['oid'])
+         hist = obj['history']
+         first = hist[0][0]
+         last = hist[-1][0]
+         meteor_events.append((first,last))
       else:
          print(obj['oid']) 
          score = 0
@@ -632,19 +677,30 @@ def run_detect(video_file, show):
             meteor_objs.append(obj['oid'])
             meteor_found = 1
             meteor_in_clip = 1
+            hist = obj['history']
+            first = hist[0][0]
+            last = hist[-1][0]
+            meteor_events.append((first,last))
 
          print("OBJECT SCORE:", score)
+
    if meteor_in_clip == 0:
       save_json_file(video_data_file, video_data)
       print("NO meteors here.")
       exit()
 
    print("METEOR OBJS:", meteor_objs)
+   print("METEOR EVENTS:", meteor_events)
+   video_data['events'] = meteor_events
+
+   video_data['sd_objects'] = objects
 
    # determine the blob positions if it hasn't been done yet
-   cropframes = make_cropframes(frames, video_data['frame_data'])
-   frame_data = find_blobs_in_crops(cropframes, video_data['frame_data'])
-   video_data['frame_data'] = frame_data
+   #cropframes = make_cropframes(frames, video_data['frame_data'])
+
+   #frame_data = find_blobs_in_crops(cropframes, video_data['frame_data'])
+
+   #video_data['frame_data'] = frame_data
 
 
    # TRIM OUT A VIDEO FILE FOR EACH METEOR EVENT IN THIS CLIP IF IT DOESN'T EXIST YET
@@ -652,22 +708,23 @@ def run_detect(video_file, show):
    ec = 0
    for event in video_data['events']:
       start, end = event
-      is_meteor = 0
+      is_meteor = 1
       # make sure the object inside this event is actually a meteor and not something else. 
-      for fc in range(start,end):
-         if fc not in frame_data:
-            fc = str(fc )
-         if "obj_cnts" in frame_data[fc]:
-            these_objs = []
-            for cnt in frame_data[fc]['obj_cnts']:
-               oid = cnt[0]
-               if int(oid) in meteor_objs or str(oid) in meteor_objs:
-                  is_meteor = 1
-                  if ec in video_data['event_data']:
-                     video_data['event_data'][ec]['meteor'] = 1
-                  if str(ec) in video_data['event_data']:
-                     ec = str(ec)
-                     video_data['event_data'][ec]['meteor'] = 1
+
+      #for fc in range(start,end):
+      #   if fc not in frame_data:
+      #      fc = str(fc )
+      #   if "obj_cnts" in frame_data[fc]:
+      #      these_objs = []
+      #      for cnt in frame_data[fc]['obj_cnts']:
+      #         oid = cnt[0]
+      #         if int(oid) in meteor_objs or str(oid) in meteor_objs:
+      #            is_meteor = 1
+      #            if ec in video_data['event_data']:
+      #               video_data['event_data'][ec]['meteor'] = 1
+      #            if str(ec) in video_data['event_data']:
+      #               ec = str(ec)
+      #               video_data['event_data'][ec]['meteor'] = 1
 
       if is_meteor == 1:
          print("METEOR FOUND!:")
@@ -688,7 +745,9 @@ def run_detect(video_file, show):
          meteor_json['metconf'] = metconf
          meteor_json['avg_res'] = 9999 
          print("MIKE SMOTH")
-         #meteor_json = smooth_points(meteor_json, frames)
+
+         meteor_json = smooth_points_new(meteor_json, frames)
+
          meteor_json['metconf']['video_data_file'] = video_data_file
          meteor_json['cal_params'] = video_data['cal_params']
          meteor_json['start_buff'] = start_buff 
@@ -703,12 +762,16 @@ def run_detect(video_file, show):
          print("MIKE REDUCE")
          meteor_json = remap_metframes(meteor_json)
 
-         save_json_file(meteor_json_filename, meteor_json)
      
          if cfe(meteor_video_filename) == 0:
             make_movie_from_frames(frames, fns, meteor_video_filename)
          print("Meteor Movie Made:", meteor_video_filename)
          print("Meteor JSON Saved:", meteor_json_filename)
+         
+         meteor_json = make_reduce_files(meteor_json, meteor_json_filename, json_conf)
+         meteor_json['metframes'] = update_intensity(meteor_json['metframes'], meteor_video_filename, 0)
+         meteor_json['sd_objects'] = objects
+         save_json_file(meteor_json_filename, meteor_json)
       ec = int(ec) + 1
 
    # do final review of frames and points
@@ -719,6 +782,70 @@ def run_detect(video_file, show):
    save_json_file(video_data_file, video_data)    
    #review_meteor(meteor_json, frames)
    #os.system("./detector.py rv " + meteor_json_filename) 
+
+def update_intensity(metframes, video_file,show = 0):
+   hdm_x = 2.7272
+   hdm_y = 1.875
+   sd_frames = load_video_frames(video_file, json_conf, 0, 0, [], 1)
+
+   base_img = sd_frames[0].copy()
+   base_img = cv2.cvtColor(base_img, cv2.COLOR_BGR2GRAY)
+   for fn in metframes:
+      ifn = int(fn) - 1
+      sd_img = sd_frames[ifn].copy()
+      sd_img = cv2.cvtColor(sd_img, cv2.COLOR_BGR2GRAY)
+      img_h, img_w = sd_img.shape[:2]
+      w = metframes[fn]['w']
+      h = metframes[fn]['h']
+      cnt_x = metframes[fn]['hd_x'] - int(w / 2)
+      cnt_y = metframes[fn]['hd_y'] - int(h / 2)
+      print("CNTX:", cnt_x, cnt_y, w, h, sd_img.shape)
+      #cv2.rectangle(sd_img, (int(cnt_x), int(cnt_y)), (int(cnt_x+w), int(cnt_y+h)), (100,100,100), 1)
+
+      x1,y1,x2,y2 = bound_cnt(metframes[fn]['hd_x'],metframes[fn]['hd_y'],img_w,img_h,50)
+      base_cnt_img = base_img[y1:y2,x1:x2]
+      cnt_img = sd_img[y1:y2,x1:x2]
+      subimage = cv2.subtract(cnt_img,base_cnt_img)
+
+
+      min_val, max_val, min_loc, (mx,my)= cv2.minMaxLoc(subimage)
+      cv2.imshow('pepe', subimage)
+      cv2.waitKey(0)
+      print("INTENSITY:", fn, cnt_x, cnt_y, np.sum(cnt_img) , np.sum(base_cnt_img) )
+      #metframes[fn]['sd_intensity'] = float(np.sum(cnt_img)) - float(np.sum(base_cnt_img))
+      metframes[fn]['sd_intensity'] = float(np.sum(subimage)) 
+      metframes[fn]['sd_max_px'] = float(max_val)
+      metframes[fn]['x1'] = x1 
+      metframes[fn]['y1'] = y1 
+      metframes[fn]['x2'] = x2
+      metframes[fn]['y2'] = y2
+
+      metframes[fn]['sd_x'] = int(x1/hdm_x)
+      metframes[fn]['sd_y'] = int(y1/hdm_y)
+      metframes[fn]['sd_w'] = 5
+      metframes[fn]['sd_h'] = 5
+      metframes[fn]['ft'] = metframes[fn]['frame_time'] 
+
+      cnt_thumb = video_file.replace(".mp4", "-frm" + str(fn) + ".png")
+      metframes[fn]['cnt_thumb'] = cnt_thumb
+
+      print("Intensity:",  metframes[fn]['sd_intensity'])
+   return(metframes)
+
+
+def clean_points(video_data, frames):
+   print("clean")
+   events = video_data['events']
+   for key in video_data :
+      print(key)
+   print(video_data['events'])
+   for event in events:
+      for fn in range(event[0], event[1]):
+         img = frames[fn]
+         cv2.imshow('pepe', img)
+         cv2.waitKey(0) 
+   exit()
+   return(video_data)
 
 def remap_metframes(meteor_json):
    start_buff = meteor_json['start_buff']
@@ -762,12 +889,13 @@ def quick_review(meteor_json_file, frames, video_file = None, show = 1):
       frame = frames[fc]
       show_frame = frames[fc].copy()
       if sfn in mf:
-         est_x = mf[sfn]['est_x'] 
-         est_y = mf[sfn]['est_y'] 
+         if "est_x" in mf[sfn]:
+            est_x = mf[sfn]['est_x'] 
+            est_y = mf[sfn]['est_y'] 
+            cv2.circle(show_frame,(est_x,est_y), 10, (0,255,255), 1)
          hd_x = mf[sfn]['hd_x'] 
          hd_y = mf[sfn]['hd_y'] 
          cv2.circle(show_frame,(hd_x,hd_y), 10, (0,0,255), 1)
-         cv2.circle(show_frame,(est_x,est_y), 10, (0,255,255), 1)
          if show == 1:
             cv2.imshow('pepe', show_frame)
             cv2.waitKey(0)
@@ -992,10 +1120,105 @@ def post_load_mj(meteor_json):
    meteor_json['metframes'] = new_mf
    return(meteor_json)
 
+def make_reduce_files(meteor_json, meteor_json_filename, json_conf):
+   print("REDUCE FILES")
+   video_filename = meteor_json_filename.replace(".json", ".mp4")
+   stack_filename = meteor_json_filename.replace(".json", "-stacked.png")
+   reduce_filename = meteor_json_filename.replace(".json", "-reduced.json")
+
+   video_filename = video_filename.replace("meteor_archive", "meteors")
+   stack_filename = video_filename.replace("meteor_archive", "meteors")
+   reduce_filename = video_filename.replace("meteor_archive", "meteors")
+
+   hd_datetime, hd_cam, hd_date, hd_y, hd_m, hd_d, hd_h, hd_M, hd_s = convert_filename_to_date_cam(video_filename)
+
+   meteor_json['api_key'] = json_conf['site']['api_key']
+   meteor_json['station_name'] = json_conf['site']['ams_id']
+   meteor_json['device_name'] = hd_cam 
+
+   meteor_json['sd_video_file'] = video_filename 
+   meteor_json['hd_video_file'] = video_filename 
+   meteor_json['hd_crop_file'] = video_filename 
+   meteor_json['hd_file'] = video_filename 
+   meteor_json['hd_trim'] = video_filename 
+   meteor_json['sd_stack'] = stack_filename 
+   meteor_json['hd_stack'] = stack_filename 
+   meteor_json['reduce_stack'] = stack_filename 
+   meteor_json['reduced_video'] = video_filename
+   if "HD" in meteor_json_filename:
+      meteor_json['vf_type'] = "HD" 
+   else:
+      meteor_json['vf_type'] = "SD" 
+   meteor_json['event_start_time'] = hd_y + "-" + hd_m + "-" + hd_d + " " + hd_h + ":" + hd_M + ":" + hd_s
+   meteor_json['event_duration'] = len(meteor_json['metframes'])/25
+   meteor_json['peak_magnitude'] = 0
+
+   
+   mfd, metframes,metconf = metframes_to_mfd(meteor_json['metframes'], meteor_json['metconf'], meteor_json_filename,json_conf)
+   meteor_json['meteor_frame_data'] = mfd
+   meteor_json['metframes'] = metframes
+   meteor_json['metconf'] = metconf 
+   meteor_json['start_az'] = mfd[0][7]
+   meteor_json['start_el'] = mfd[0][8]
+   meteor_json['start_ra'] = mfd[0][9]
+   meteor_json['start_dec'] = mfd[0][10]
+
+   meteor_json['end_az'] = mfd[-1][7]
+   meteor_json['end_el'] = mfd[-1][8]
+   meteor_json['end_ra'] = mfd[-1][9]
+   meteor_json['end_dec'] = mfd[-1][10]
+   return(meteor_json) 
+
+def smooth_points_new(meteor_json, frames):
+   img_h, img_w = frames[0].shape[0], frames[0].shape[1] 
+   metframes = meteor_json['metframes']
+   metconf = meteor_json['metconf']
+
+   for fn in metframes:
+      print (fn, metframes[fn]['mx'], metframes[fn]['my'], metframes[fn]['obj_cnts'])
+      oxs = []
+      oys = []
+      ows = []
+      ohs = []
+      cnt_maxpx_agree = 0
+      for obj in metframes[fn]['obj_cnts']:
+         oid, ox, oy, ow, oh = obj
+         ocx = int(ox + (ow/2))
+         ocy = int(oy + (oh/2))
+         oxs.append(ocy)
+         oys.append(ocy)
+         ows.append(ow)
+         ohs.append(oh)
+
+         # check distance from the object and brightest pixel
+         odist = calc_dist((ocx,ocy), (metframes[fn]['mx'], metframes[fn]['my']))
+         if odist < 5:
+            cnt_maxpx_agree = 1
+
+      if cnt_maxpx_agree == 1:
+         metframes[fn]['hd_x'] = metframes[fn]['mx']
+         metframes[fn]['hd_y'] = metframes[fn]['my']
+      else:
+         metframes[fn]['hd_x'] = metframes[fn]['mx'] = int(np.mean(oxs))
+         metframes[fn]['hd_y'] = metframes[fn]['my'] = int(np.mean(oys))
+      metframes[fn]['w'] = int(np.mean(ows))
+      metframes[fn]['h'] = int(np.mean(ohs))
+      metframes[fn]['max_px'] = metframes[fn]['max_val'] 
+      
+   meteor_json['metframes'] = metframes 
+   meteor_json['metconf'] = metconf
+   return(meteor_json)
+
+
 def smooth_points(meteor_json, frames):
    img_h, img_w = frames[0].shape[0], frames[0].shape[1] 
    metframes = meteor_json['metframes']
    metconf = meteor_json['metconf']
+
+   for fn in metframes:
+      print (fn, metframes[fn]['mx'], metframes[fn]['my'], metframes[fn]['obj_cnts'])
+
+
 
    first_fn = None
    first_x = None
@@ -1186,6 +1409,8 @@ def smooth_points(meteor_json, frames):
    return(meteor_json)
 
 def update_frame_est(meteor_json, frames):
+   hdm_x = 2.7272
+   hdm_y = 1.875
    first_x = None
    last_x = None
    img_h, img_w = frames[0].shape[0], frames[0].shape[1]
@@ -1843,3 +2068,9 @@ if cmd == 'qr' or cmd == 'quick_review':
 
 if cmd == 'rm' or cmd == 'remaster':
    remaster(file, json_conf)
+if cmd == 'rj' or cmd == 'reject':
+   check_reject(file, json_conf)
+if cmd == 'brj' or cmd == 'batch_reject':
+   day = sys.argv[2]
+   batch_check_reject(day, json_conf)
+
