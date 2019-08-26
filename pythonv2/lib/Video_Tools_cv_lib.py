@@ -1,6 +1,6 @@
 import cv2
 import numpy as np
-import ImageFont
+from PIL import ImageFont 
 from lib.VIDEO_VARS import *   
 
 # Get text position x,y
