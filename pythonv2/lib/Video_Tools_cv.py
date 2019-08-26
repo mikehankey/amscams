@@ -215,4 +215,4 @@ def remaster(video_file, json_conf):
         new_frames.append(new_frame) 
         fc = fc + 1
 
-   make_movie_from_frames(new_frames, [0,len(new_frames) - 1], marked_video_file, 1)
+    make_movie_from_frames(new_frames, [0,len(new_frames) - 1], marked_video_file, 1)
