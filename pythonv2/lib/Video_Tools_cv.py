@@ -30,8 +30,9 @@ def add_overlay_cv(background, overlay, position):
     background_width,background_height  = background.shape[1], background.shape[0]
 
     x,y = get_overlay_position_cv(background,overlay,position)
-    x=0
-    y=0
+    print('POSITION ' +  position)
+    print('X ' + x)
+    print('Y'  + y)
     
     if x >= background_width or y >= background_height:
         return background
