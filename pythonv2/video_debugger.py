@@ -130,6 +130,6 @@ added_image = add_text_to_pos(added_image,'THIS IS A TEST  LINE 1','br',1)
 added_image = add_text_to_pos(added_image,'THIS IS A TEST SECOND LINE 2','br',2)
 
 
-added_image = add_radiant_cv(added_image,120,120,"Perseids")
+added_image = add_radiant_cv(added_image,0,0,"Perseids")
 
 cv2.imwrite('/mnt/ams2/test_text.png', added_image)
