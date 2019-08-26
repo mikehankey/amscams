@@ -140,8 +140,8 @@ from os.path import isfile, join, exists
 
 ################### TEST NEW REMASTER
 data = {
-    'json_conf' : '/mnt/ams2/meteors/2019_08_12/2019_08_12_05_37_29_000_010037-trim0945.json',
-    'video_file' :'/mnt/ams2/meteors/2019_08_12/2019_08_12_05_37_26_000_010037-trim-945-HD-meteor.mp4'
+    'json_conf' : '/mnt/ams2/meteor_archive/2019_08_12/2019_08_12_05_38_08_880_010037_AMS7_HD.json',
+    'video_file' :'/mnt/ams2/meteor_archive/2019_08_12/2019_08_12_05_38_08_880_010037_AMS7_HD.mp4'
 }
 
 remaster(data)
