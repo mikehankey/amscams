@@ -103,9 +103,9 @@ from os.path import isfile, join, exists
 #get_all_detection_frames(path,'2019_08_21_00_33_15_000_010037-trim-618-HD-meteor.mp4')
 
 
-# TEST OVERLAY POSITION CV
-background = cv2.imread('/mnt/ams2/meteors/2019_08_23/2019_08_23_00_03_23_000_010040-trim-1-HD-meteor-stacked.png')
-overlay = cv2.imread(AMS_WATERMARK, cv2.IMREAD_UNCHANGED)
+############## TEST OVERLAY POSITION CV
+#background = cv2.imread('/mnt/ams2/meteors/2019_08_23/2019_08_23_00_03_23_000_010040-trim-1-HD-meteor-stacked.png')
+#overlay = cv2.imread(AMS_WATERMARK, cv2.IMREAD_UNCHANGED)
  
 #added_image = add_overlay_cv(background,overlay,'tl')
 #cv2.imwrite('/mnt/ams2/test_tl.png', added_image)
@@ -121,18 +121,27 @@ overlay = cv2.imread(AMS_WATERMARK, cv2.IMREAD_UNCHANGED)
 #added_image = add_overlay_cv(background,overlay,'br')
 #cv2.imwrite('/mnt/ams2/test_br.png', added_image)
 
-added_image = add_overlay_cv(background,overlay,'tr') 
+#added_image = add_overlay_cv(background,overlay,'tr') 
 
 
-logo = cv2.imread('/mnt/ams2/CUSTOM_LOGOS/1.png', cv2.IMREAD_UNCHANGED)
-added_image = add_overlay_cv(background,logo,'tl') 
+#logo = cv2.imread('/mnt/ams2/CUSTOM_LOGOS/1.png', cv2.IMREAD_UNCHANGED)
+#added_image = add_overlay_cv(background,logo,'tl') 
 
-added_image = add_text_to_pos(added_image,'THIS IS A TEST  LINE 1 BL','bl',1)
-added_image = add_text_to_pos(added_image,'THIS IS A TEST SECOND LINE 2 BL','bl',2) 
-added_image = add_text_to_pos(added_image,'THIS IS A TEST  LINE 1','br',1)
-added_image = add_text_to_pos(added_image,'THIS IS A TEST SECOND LINE 2','br',2)
+#added_image = add_text_to_pos(added_image,'THIS IS A TEST  LINE 1 BL','bl',1)
+#added_image = add_text_to_pos(added_image,'THIS IS A TEST SECOND LINE 2 BL','bl',2) 
+#added_image = add_text_to_pos(added_image,'THIS IS A TEST  LINE 1','br',1)
+#added_image = add_text_to_pos(added_image,'THIS IS A TEST SECOND LINE 2','br',2)
 
 
-added_image = add_radiant_cv(added_image,500,500,"Perseids")
+#added_image = add_radiant_cv(added_image,500,500,"Perseids")
 
-cv2.imwrite('/mnt/ams2/test_text.png', added_image)
+#cv2.imwrite('/mnt/ams2/test_text.png', added_image)
+
+
+################### TEST NEW REMASTER
+data = {
+    'json_conf' : '/mnt/ams2/meteor_archive/2019_08_12/2019_08_12_05_38_08_880_010037_AMS7_HD.json',
+    'video_file' :'/mnt/ams2/meteor_archive/2019_08_12/2019_08_12_05_38_08_880_010037_AMS7_HD.mp4'
+}
+
+remaster(data)
