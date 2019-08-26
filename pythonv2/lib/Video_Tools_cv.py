@@ -225,7 +225,8 @@ def remaster(data):
 
         # Add Extra_info
         if(extra_text is not False):
-            hd_img = add_text_to_pos(hd_img,extra_text,'br',1)  #extra_text_pos => br
+            hd_img = add_text_to_pos(hd_img,extra_text,'br',2)  #extra_text_pos => br
+ 
 
         # Add Radiant (todo)
         new_frames.append(hd_img) 
