@@ -3,6 +3,7 @@ import glob
 import subprocess 
 from lib.VIDEO_VARS import * 
 from lib.Video_Tools import * 
+from lib.Video_Tools_cv import * 
 from os import listdir, remove
 from os.path import isfile, join, exists
 
@@ -94,9 +95,33 @@ from os.path import isfile, join, exists
 
  
 # TEST GET METEOR DETECTIONS FROM CAM_ID START DAte / END DATE
-videos, path = get_all_meteor_detections("2019_08_21","2019/08/21 00:00","2019/08/21 23:59","10041")
-print(videos)
-print("PATH")
-print(path)
+#videos, path = get_all_meteor_detections("2019_08_21","2019/08/21 00:00","2019/08/21 23:59","10041")
+#print(videos)
+#print("PATH")
+#print(path)
 
 #get_all_detection_frames(path,'2019_08_21_00_33_15_000_010037-trim-618-HD-meteor.mp4')
+
+
+# TEST OVERLAY POSITION CV
+background = cv2.imread('/mnt/ams2/meteors/2019_08_23/2019_08_23_00_03_23_000_010040-trim-1-HD-meteor-stacked.png')
+overlay = cv2.imread('/home/ams/amscams/dist/img/ams_logo_vid_anim/1920x1080/AMS30.png', cv2.IMREAD_UNCHANGED)
+ 
+#added_image = add_overlay_cv(background,overlay,'tl')
+#cv2.imwrite('/mnt/ams2/test_tl.png', added_image)
+
+#added_image = add_overlay_cv(background,overlay,'tr')
+#cv2.imwrite('/mnt/ams2/test_tr.png', added_image)
+ 
+
+#added_image = add_overlay_cv(background,overlay,'bl')
+#cv2.imwrite('/mnt/ams2/test_bl.png', added_image)
+
+
+#added_image = add_overlay_cv(background,overlay,'br')
+#cv2.imwrite('/mnt/ams2/test_br.png', added_image)
+
+ 
+added_image = add_text(background,'THIS IS A TEST  LINE 1','tr',1)
+added_image = add_text(added_image,'THIS IS A TEST SECOND LINE 2','tr',2)
+cv2.imwrite('/mnt/ams2/test_text.png', added_image)
