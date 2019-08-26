@@ -105,7 +105,7 @@ from os.path import isfile, join, exists
 
 # TEST OVERLAY POSITION CV
 background = cv2.imread('/mnt/ams2/meteors/2019_08_23/2019_08_23_00_03_23_000_010040-trim-1-HD-meteor-stacked.png')
-overlay = cv2.imread('/home/ams/amscams/dist/img/ams_logo_vid_anim/1920x1080/AMS30.png', cv2.IMREAD_UNCHANGED)
+overlay = cv2.imread(AMS_WATERMARK, cv2.IMREAD_UNCHANGED)
  
 #added_image = add_overlay_cv(background,overlay,'tl')
 #cv2.imwrite('/mnt/ams2/test_tl.png', added_image)
