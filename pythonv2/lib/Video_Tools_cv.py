@@ -3,9 +3,7 @@ import numpy as numpy
 from lib.VIDEO_VARS import *   
 from lib.Video_Tools_cv_lib import *
 from PIL import ImageFont, ImageDraw, Image  
-
-
-
+  
 # Add text over background
 # WARNING: bg is NOT a cv image but a full path (for PIL)
 # Position = br, bl, tr, tl (ex: br = bottom right)
