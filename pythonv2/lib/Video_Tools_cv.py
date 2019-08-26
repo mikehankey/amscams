@@ -22,7 +22,11 @@ def add_text(background,text,position,line_number=1):
     draw = ImageDraw.Draw(pil_im)  
 
     # use DEFAULT truetype font  
-    font = ImageFont.truetype(VIDEO_FONT, VIDEO_FONT_SIZE)  
+    if(line_number==1):
+        # We go bold on the first line
+        font = ImageFont.truetype(VIDEO_FONT_BOLD, VIDEO_FONT_SIZE)  
+    else:
+        font = ImageFont.truetype(VIDEO_FONT, VIDEO_FONT_SIZE)  
 
     # Get Text position - see lib.Video_Tools_cv_lib
     y,x = get_text_position_cv(background,text,position,line_number,font)
