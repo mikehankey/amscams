@@ -5,14 +5,29 @@ from lib.VIDEO_VARS import *
 
 # Get text position x,y
 # based on Position = br, bl, tr, tl (ex: br = bottom right)
+# and line_number that corresponds to the # of the line to write
+# ex: if line_number = 1 => first line at this position
+#                    = 2 => second line at this position
 # and margins (distance of the overlay from the borders of the frame)
 # return x,y position of the overlay over the background
-def get_text_position_cv(background,text,position,font,margins=VIDEO_MARGINS):
+def get_text_position_cv(background,text,position,font,line_number=1,margins=VIDEO_MARGINS):
 
     # Get font.getsize(txt)
     text_h, text_w = font.getsize(text)
     print("TEXT H " + str(text_h))
     print("TEXT W " + str(text_w))
+
+    if(position=='bl'):
+        background_width,background_height  = background.shape[1], background.shape[0]
+        return VIDEO_MARGINS,background_height-VIDEO_MARGINS-h
+    elif(position=='tl'):
+        background_width,background_height  = background.shape[1], background.shape[0]
+        return background_width-VIDEO_MARGINS-w,VIDEO_MARGINS 
+    elif(position=='br'):
+        background_width,background_height  = background.shape[1], background.shape[0]
+        return background_width-VIDEO_MARGINS-w,background_height-VIDEO_MARGINS-h        
+    else:
+        return VIDEO_MARGINS*line_number,VIDEO_MARGINS    
 
     return 0,0
 
