@@ -64,8 +64,7 @@ def add_text_to_pos(background,text,position,line_number=1):
 def add_overlay_x_y_cv(background, overlay, x, y):
 
     background_width,background_height  = background.shape[1], background.shape[0]
-
-     
+ 
     if x >= background_width or y >= background_height:
         return background
 
@@ -115,6 +114,8 @@ def add_radiant_cv(background,x,y,text):
 
     # Add Image
     radiant_image = cv2.imread(RADIANT_IMG, cv2.IMREAD_UNCHANGED)
+    print("RADIANT IMG")
+    print(radiant_image)
     background = add_overlay_x_y_cv(background,RADIANT_IMG,x,y)
 
     return background
