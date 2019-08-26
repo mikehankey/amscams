@@ -12,13 +12,21 @@ def add_radiant(background,text,x,y):
 
 
 # Add text on x,y with default small font (for radiant or other info)
-def add_text(background,text,x,y):
+# If centered = the text is placed as if x,y is the center
+def add_text(background,text,x,y,centered=False):
+
     # Convert background to RGB (OpenCV uses BGR)  
     cv2_background_rgb = cv2.cvtColor(background,cv2.COLOR_BGR2RGB)  
-    # Pass the image to PIL  
-    pil_im = Image.fromarray(cv2_background_rgb)  
-    draw = ImageDraw.Draw(pil_im)  
-    font = ImageFont.truetype(VIDEO_FONT, VIDEO_FONT_SMALL_SIZE)  
+    
+    # Pass the image to PIL to use ttf fonts
+    pil_im  = Image.fromarray(cv2_background_rgb)  
+    draw    = ImageDraw.Draw(pil_im)  
+    font    = ImageFont.truetype(VIDEO_FONT, VIDEO_FONT_SMALL_SIZE)  
+    
+    if(centered==True):
+        # Get font.getsize(txt) 
+        x = x - font.getsize(text)[0]/2
+    
     draw.text((x, y), text, font=font, fill=VIDEO_FONT_SMALL_COLOR)  
     return  cv2.cvtColor(np.array(pil_im), cv2.COLOR_RGB2BGR)  
 
@@ -116,9 +124,8 @@ def add_radiant_cv(background,x,y,text):
     except:
         background = background
 
-    # Add text
-    background = add_text(background,text,x,y)
+    # Add text (centered bottom)
+    background = add_text(background,text,x,y,True)
 
    
-
     return background
