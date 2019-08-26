@@ -11,14 +11,10 @@ from lib.VIDEO_VARS import *
 # and margins (distance of the overlay from the borders of the frame)
 # return x,y position of the overlay over the background
 def get_text_position_cv(background,text,position,line_number,font,margins=VIDEO_MARGINS):
-
-    # Get font.getsize(txt)
-    text_h, text_w = font.getsize(text)
-    print("TEXT H " + str(text_h))
-    print("TEXT W " + str(text_w))
     
-    text = text + " LINE - " + str(line_number)
-
+    # Get font.getsize(txt)
+    text_h, text_w = font.getsize(text) 
+     
     # We start at 0
     if(line_number==1):
         line_number -= 1
