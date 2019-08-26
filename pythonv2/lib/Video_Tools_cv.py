@@ -109,7 +109,12 @@ def add_overlay_cv(background, overlay, position):
 
 # Add radiant to a frame
 def add_radiant_cv(background,x,y,text):
-    cv2.circle(background,(x,y), 25 , (128,128,128), 1)
-    background = add_text(background,text,)
-    cv2.putText(image, "Perseid Radiant",  (new_cat_x, new_cat_y), cv2.FONT_HERSHEY_SIMPLEX, .5, (145, 145, 145), 1)
 
+    # Add text
+    background = add_text(background,text,x,y)
+
+    # Add Image
+    radiant_image = cv2.imread(RADIANT_IMG, cv2.IMREAD_UNCHANGED)
+    background = add_overlay_x_y_cv(background,RADIANT_IMG,x,y)
+
+    return background
