@@ -1,6 +1,6 @@
 import cv2
 import numpy as np
-import lib.VIDEO_VARS
+from lib.VIDEO_VARS import *   
 
  
 # Get overlay position x,y 
