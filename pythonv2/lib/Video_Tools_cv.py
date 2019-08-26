@@ -221,7 +221,7 @@ def remaster(data):
 
         # Add Date & Time
         frame_time_str = station_id + ' - ' + frame_time_str + ' UT'
-        hd_img = add_text_to_pos(hd_img,frame_time_str,'bl',2) #extra_text_pos => bl
+        hd_img = add_text_to_pos(hd_img,frame_time_str,'bl',1) #extra_text_pos => bl
 
         # Add Extra_info
         if(extra_text is not False):
