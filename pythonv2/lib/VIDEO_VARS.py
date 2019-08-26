@@ -78,3 +78,6 @@ VIDEO_FONT_SMALL_COLOR = (250,250,209,255)
 
 #RADIANT IMAGE
 RADIANT_IMG = "/home/ams/amscams/dist/img/radiant.png"
+
+#NEW TEMPORARY REPO FOR FRAMES
+TMP_FRAME_FOLDER = "/home/ams/tmpvids/"

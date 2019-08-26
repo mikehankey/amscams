@@ -2,8 +2,9 @@ import cv2
 import numpy as numpy
 from lib.VIDEO_VARS import *   
 from lib.Video_Tools_cv_pos import *
-from VideoLib import load_video_frames, make_crop_box
+from VideoLib import load_video_frames, make_crop_box, make_movie_from_frames
 from lib.Video_Parameters import get_video_job_default_parameters
+from lib.UtilLib import convert_filename_to_date_cam
 from PIL import ImageFont, ImageDraw, Image  
 
  
@@ -161,9 +162,9 @@ def remaster(video_file, json_conf):
     # Extra text
     try:
         extra_text = params['extra_text']
+        extra_text_pos = params['text_pos']
     except:
-        extra_text = ""
-
+        extra_text = False
 
     #Define buffer
     start_buff = int(meteor_data['start_buff'])
@@ -186,10 +187,10 @@ def remaster(video_file, json_conf):
     # Crop box info 
     cx1, cy1, cx2, cy2 = make_crop_box(meteor_data, iw, ih)
    
-
     fc = 0
     new_frames = []
     for frame in frames:
+
         frame_sec = fc / FPS_HD
         frame_time = start_frame_time + datetime.timedelta(0,frame_sec)
         frame_time_str = frame_time.strftime('%Y-%m-%d %H:%M:%S.%f')[:-3]
@@ -200,46 +201,18 @@ def remaster(video_file, json_conf):
         if color > 50:
             cv2.rectangle(hd_img, (cx1, cy1), (cx2, cy2), (color,color,color), 1)
 
-        camID = station + "-" +sd_cam 
+        # Add AMS Logo
+        hd_img = add_overlay_cv(hd_img,AMS_WATERMARK,ams_logo_pos)
 
-        extra_text = json_conf['site']['operator_name'] + " " + json_conf['site']['obs_name'] + " " + json_conf['site']['operator_city'] + "," + json_conf['site']['operator_state'] 
+        # Add Date & Time
+        hd_img = add_text_to_pos(hd_img,frame_time_str,extra_text_pos,1)
 
- 
-      #hd_img = cv2.resize(frame, (1280,720))
-      #print("WATER:", watermark_image.shape)
-      hd_img = add_overlay(hd_img, watermark_image, 10, 10)
+        # Add Extra_info
+        if(extra_text is not False):
+            hd_img = add_text_to_pos(hd_img,extra_text,extra_text_pos,2) 
 
-
-      if logo_file is not None:
-         hd_img = add_overlay(hd_img, logo_image, logo_pos, 10)
-
-      new_frame = hd_img
-
-      #perseids radiant
-      ra = 46
-      dec = 59
-
-      new_frame = add_radiant(ra,dec,new_frame,json_file, meteor_data,json_conf)
-     
-
- 
-
-      path = "/home/ams/tmpvids/"
-      ih, iw = hd_img.shape[:2]
-
-      text_pos = (5,ih-10)
-      date_pos = (iw-620,ih-10)
-
-      print("TEXT POS:", text_pos)
-
-      cv2.putText(hd_img, extra_text,  (text_pos), cv2.FONT_HERSHEY_SIMPLEX, .8, (255, 255, 255), 1)
-      station_id = json_conf['site']['ams_id'] + "-" + sd_cam
-      station_id = station_id.upper()
-      cv2.putText(hd_img, station_id + " " + frame_time_str + " UTC",  (date_pos), cv2.FONT_HERSHEY_SIMPLEX, .8, (255, 255, 255), 1)
-      new_frames.append(new_frame)
-
-      #cv2.imshow('pepe', new_frame)
-      #cv2.waitKey(10)
-      fc = fc + 1
+        # Add Radiant (todo)
+        new_frames.append(new_frame) 
+        fc = fc + 1
 
    make_movie_from_frames(new_frames, [0,len(new_frames) - 1], marked_video_file, 1)
