@@ -165,6 +165,9 @@ def remaster(data):
         ams_logo_pos = params['wat_pos']
     except:
         ams_logo_pos = D_AMS_LOGO_POS #Default
+
+    print('AFTER TRY - AMS LOGO POS')
+    print(ams_logo_pos)
     
     # Extra text
     try:
@@ -197,9 +200,7 @@ def remaster(data):
 
     # Crop box info 
     cx1, cy1, cx2, cy2 = make_crop_box(meteor_data, iw, ih)
-   
-
-
+    
     fc = 0
     new_frames = []
     for frame in frames:
