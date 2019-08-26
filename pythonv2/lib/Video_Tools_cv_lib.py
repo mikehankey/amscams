@@ -14,10 +14,7 @@ def get_text_position_cv(background,text,position,line_number,font,margins=VIDEO
     
     # Get font.getsize(txt)
     text_w, text_h = font.getsize(text) 
-     
-    # We start at 0
-    if(line_number==1):
-        line_number -= 1
+ 
 
     if(position=='bl'):
         background_width,background_height  = background.shape[1], background.shape[0]
@@ -29,10 +26,10 @@ def get_text_position_cv(background,text,position,line_number,font,margins=VIDEO
         background_width,background_height  = background.shape[1], background.shape[0]
         return background_width-VIDEO_MARGINS-w,background_height-VIDEO_MARGINS-h        
     else:
-        if(line_number!=1):
-            return VIDEO_MARGINS+text_h*line_number,VIDEO_MARGINS    
+        if(line_number==1):
+            return VIDEO_MARGINS+text_h,VIDEO_MARGINS    
         else:
-            return  text_h*line_number,VIDEO_MARGINS    
+            return text_h*line_number,VIDEO_MARGINS    
  
 
      
