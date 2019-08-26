@@ -7,6 +7,7 @@ from PIL import ImageFont, ImageDraw, Image
 
 # Add Radiant symbol + text to a given possition
 def add_radiant(background,text,x,y):
+    return False
     
 
 
