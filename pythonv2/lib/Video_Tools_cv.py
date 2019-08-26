@@ -165,10 +165,7 @@ def remaster(data):
         ams_logo_pos = params['wat_pos']
     except:
         ams_logo_pos = D_AMS_LOGO_POS #Default
-
-    print('AFTER TRY - AMS LOGO POS')
-    print(ams_logo_pos)
-    
+ 
     # Extra text
     try:
         extra_text = params['extra_text']
@@ -216,7 +213,7 @@ def remaster(data):
             cv2.rectangle(hd_img, (cx1, cy1), (cx2, cy2), (color,color,color), 1)
 
         # Add AMS Logo
-        print('AMS LOGO POS ' + ams_log_pos)
+        print('AMS LOGO POS ' + ams_logo_pos)
         hd_img = add_overlay_cv(hd_img,cv2.imread(AMS_WATERMARK, cv2.IMREAD_UNCHANGED),ams_logo_pos)
 
         # Add Date & Time
