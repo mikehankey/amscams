@@ -5,13 +5,13 @@ from lib.Video_Tools_cv_pos import *
 from PIL import ImageFont, ImageDraw, Image  
 
 
-# Add text to x,y to PIL
-def add_text(pil_background,text,x,y,font):
-    # Draw the text
-    pil_background.text((x, y), text, font=font)  
-
-    # Return an OpenCV 
-    return cv2.cvtColor(np.array(pil_background), cv2.COLOR_RGB2BGR)  
+# Add text on x,y with default small font
+def add_text(background,text,x,y):
+    # Convert background to RGB (OpenCV uses BGR)  
+    cv2_background_rgb = cv2.cvtColor(background,cv2.COLOR_BGR2RGB)  
+    font = ImageFont.truetype(VIDEO_FONT, VIDEO_FONT_SMALL_SIZE)  
+    draw.text((x, y), text, font=font)  
+    return  cv2.cvtColor(np.array(pil_im), cv2.COLOR_RGB2BGR)  
 
 
   
@@ -29,8 +29,7 @@ def add_text_to_pos(background,text,position,line_number=1):
     # Pass the image to PIL  
     pil_im = Image.fromarray(cv2_background_rgb)  
     draw = ImageDraw.Draw(pil_im)  
-
-
+ 
     # use DEFAULT truetype font  
     if(line_number==1):
         # We go bold on the first line
@@ -41,16 +40,13 @@ def add_text_to_pos(background,text,position,line_number=1):
     # Get Text position - see lib.Video_Tools_cv_lib
     y,x = get_text_position_cv(background,text,position,line_number,font)
 
-    # Add text
-    return add_text(draw,text,x,y,font)
-
     # Draw the text
-    #draw.text((x, y), text, font=font)  
+    draw.text((x, y), text, font=font)  
 
     # Get back the image to OpenCV  
-    #cv2_im_processed = cv2.cvtColor(np.array(pil_im), cv2.COLOR_RGB2BGR)  
+    cv2_im_processed = cv2.cvtColor(np.array(pil_im), cv2.COLOR_RGB2BGR)  
     
-    #return cv2_im_processed
+    return cv2_im_processed
   
 
 # Add semi-transparent overlay over background
