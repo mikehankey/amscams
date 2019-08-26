@@ -9,6 +9,11 @@ from lib.VIDEO_VARS import *
 # return x,y position of the overlay over the background
 def get_overlay_position_cv(background, overlay, position, margins=VIDEO_MARGINS):
     h, w = overlay.shape[0], overlay.shape[1]
+
+    print('OVERLAY ')
+    print('h ' + str(h))
+    print('w ' + str(w))
+
     if(position=='bl'):
         background_width,background_height  = background.shape[1], background.shape[0]
         return VIDEO_MARGINS,background_height-VIDEO_MARGINS-h
