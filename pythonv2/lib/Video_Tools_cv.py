@@ -11,7 +11,7 @@ def add_text(pil_background,text,x,y,font):
     pil_background.text((x, y), text, font=font)  
 
     # Return an OpenCV 
-    return cv2.cvtColor(np.array(pil_im), cv2.COLOR_RGB2BGR)  
+    return cv2.cvtColor(np.array(pil_background), cv2.COLOR_RGB2BGR)  
 
 
   
