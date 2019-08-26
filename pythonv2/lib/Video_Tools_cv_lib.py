@@ -10,7 +10,7 @@ from lib.VIDEO_VARS import *
 #                    = 2 => second line at this position
 # and margins (distance of the overlay from the borders of the frame)
 # return x,y position of the overlay over the background
-def get_text_position_cv(background,text,position,font,line_number,margins=VIDEO_MARGINS):
+def get_text_position_cv(background,text,position,line_number,font,margins=VIDEO_MARGINS):
 
     # Get font.getsize(txt)
     text_h, text_w = font.getsize(text)
