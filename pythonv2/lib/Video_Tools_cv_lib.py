@@ -28,8 +28,7 @@ def get_text_position_cv(background,text,position,line_number,font,margins=VIDEO
         return background_width-VIDEO_MARGINS-w,background_height-VIDEO_MARGINS-h        
     else:
         return VIDEO_MARGINS+text_h*line_number,VIDEO_MARGINS    
-
-    return 0,0
+ 
 
      
  

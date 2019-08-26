@@ -25,7 +25,7 @@ def add_text(background,text,position,line_number=1):
     font = ImageFont.truetype(VIDEO_FONT, VIDEO_FONT_SIZE)  
 
     # Get Text position - see lib.Video_Tools_cv_lib
-    x,y = get_text_position_cv(background,text,position,line_number,font)
+    y,x = get_text_position_cv(background,text,position,line_number,font)
 
     # Draw the text
     draw.text((x, y), text, font=font)  
