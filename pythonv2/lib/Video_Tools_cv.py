@@ -19,7 +19,7 @@ def add_text(background,text,position):
     draw = ImageDraw.Draw(pil_im)  
 
     # use DEFAULT truetype font  
-    font = ImageFont.truetype(VIDEO_FONT, 80)  
+    font = ImageFont.truetype(VIDEO_FONT, VIDEO_FONT_SIZE)  
 
     # Draw the text
     draw.text((10, 10), text, font=font)  
