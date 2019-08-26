@@ -109,11 +109,13 @@ def add_overlay_cv(background, overlay, position):
 # Add radiant to a frame
 def add_radiant_cv(background,x,y,text):
 
+    # Add Image
+    radiant_image = cv2.imread(RADIANT_IMG, cv2.IMREAD_UNCHANGED) 
+    background = add_overlay_x_y_cv(background,radiant_image,x-radiant_image.shape[1],y-radiant_image.shape[2])
+
     # Add text
     background = add_text(background,text,x,y)
 
-    # Add Image
-    radiant_image = cv2.imread(RADIANT_IMG, cv2.IMREAD_UNCHANGED) 
-    background = add_overlay_x_y_cv(background,radiant_image,x,y)
+   
 
     return background
