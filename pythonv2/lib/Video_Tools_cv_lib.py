@@ -17,6 +17,9 @@ def get_text_position_cv(background,text,position,line_number,font,margins=VIDEO
     print("TEXT H " + str(text_h))
     print("TEXT W " + str(text_w))
 
+    # We start at 0
+    line_number -= 1
+
     if(position=='bl'):
         background_width,background_height  = background.shape[1], background.shape[0]
         return VIDEO_MARGINS,background_height-VIDEO_MARGINS-h
