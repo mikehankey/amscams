@@ -11,15 +11,15 @@ def get_overlay_position_cv(background, overlay, position, margins=VIDEO_MARGINS
     h, w = overlay.shape[0], overlay.shape[1]
     if(position=='bl'):
         background_width,background_height  = background.shape[1], background.shape[0]
-        retur VIDEO_MARGINS,  background_height-VIDEO_MARGINS-h
+        return VIDEO_MARGINS,background_height-VIDEO_MARGINS-h
     elif(position=='tl'):
         background_width,background_height  = background.shape[1], background.shape[0]
-        return background_width-VIDEO_MARGINS-w, VIDEO_MARGINS 
+        return background_width-VIDEO_MARGINS-w,VIDEO_MARGINS 
     elif(position=='br'):
         background_width,background_height  = background.shape[1], background.shape[0]
-        return background_width-VIDEO_MARGINS-w, background_height-VIDEO_MARGINS-h        
+        return background_width-VIDEO_MARGINS-w,background_height-VIDEO_MARGINS-h        
     else:
-        return VIDEO_MARGINS, VIDEO_MARGINS
+        return VIDEO_MARGINS,VIDEO_MARGINS
   
 
 # Add semi-transparent overlay over background
