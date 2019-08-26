@@ -143,6 +143,7 @@ def remaster(data):
     json_file = video_file.replace(".mp4", ".json")
     meteor_data = load_json_file(json_file)
 
+    
     #OUTPUT FILE
     marked_video_file = video_file.replace(".mp4", "-pub.mp4")
 
@@ -180,6 +181,11 @@ def remaster(data):
     #Get Date & time 
     (hd_datetime, sd_cam, sd_date, sd_y, sd_m, sd_d, sd_h, sd_M, sd_s) = convert_filename_to_date_cam(video_file)
    
+    # Get Stations id & Cam Id to display
+    station_id = json_conf['site']['ams_id'] + "-" + sd_cam
+    station_id = station_id.upper()
+
+
     # Get Specifc info 
     el = video_file.split("_")
     station = el[-2]   
@@ -194,6 +200,8 @@ def remaster(data):
     # Crop box info 
     cx1, cy1, cx2, cy2 = make_crop_box(meteor_data, iw, ih)
    
+
+
     fc = 0
     new_frames = []
     for frame in frames:
@@ -213,11 +221,12 @@ def remaster(data):
         hd_img = add_overlay_cv(hd_img,cv2.imread(AMS_WATERMARK, cv2.IMREAD_UNCHANGED),ams_logo_pos)
 
         # Add Date & Time
-        hd_img = add_text_to_pos(hd_img,frame_time_str,extra_text_pos,1)
+        frame_time_str = station_id + ' - ' + frame_time_str + ' UT'
+        hd_img = add_text_to_pos(hd_img,frame_time_str,extra_text_pos,2)
 
         # Add Extra_info
         if(extra_text is not False):
-            hd_img = add_text_to_pos(hd_img,extra_text,extra_text_pos,2) 
+            hd_img = add_text_to_pos(hd_img,extra_text,extra_text_pos,1) 
 
         # Add Radiant (todo)
         new_frames.append(hd_img) 
