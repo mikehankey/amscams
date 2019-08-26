@@ -5,13 +5,14 @@ from lib.Video_Tools_cv_pos import *
 from PIL import ImageFont, ImageDraw, Image  
 
 
-# Add text to x,y to a PIL image
+# Add text to x,y to PIL
 def add_text(pil_background,text,x,y,font):
     # Draw the text
     pil_background.text((x, y), text, font=font)  
 
     # Return an OpenCV 
-    return cv2.cvtColor(np.array(pil_background), cv2.COLOR_RGB2BGR)  
+    return cv2.cvtColor(np.array(pil_im), cv2.COLOR_RGB2BGR)  
+
 
   
 # Add text over background
@@ -40,10 +41,16 @@ def add_text_to_pos(background,text,position,line_number=1):
     # Get Text position - see lib.Video_Tools_cv_lib
     y,x = get_text_position_cv(background,text,position,line_number,font)
 
+    # Add text
+    return add_text(draw,text,x,y,font)
+
     # Draw the text
-    cv2_im_processed = add_text(pil_im,text,x,y,font)
+    #draw.text((x, y), text, font=font)  
+
+    # Get back the image to OpenCV  
+    #cv2_im_processed = cv2.cvtColor(np.array(pil_im), cv2.COLOR_RGB2BGR)  
     
-    return cv2_im_processed
+    #return cv2_im_processed
   
 
 # Add semi-transparent overlay over background
