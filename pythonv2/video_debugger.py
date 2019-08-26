@@ -139,3 +139,4 @@ from os.path import isfile, join, exists
 
 
 ################### TEST NEW REMASTER
+remaster('/mnt/ams2/meteors/2019_08_12/2019_08_12_05_37_29_000_010037-trim0945.json','/mnt/ams2/meteors/2019_08_12/2019_08_12_05_37_26_000_010037-trim-945-HD-meteor.mp4')
