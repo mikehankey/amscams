@@ -64,3 +64,6 @@ BLENDING_SD = 30 #For the amount of SD blending on HD frames (when SD is found)
 
 #CURRENT FPS OF HD VIDEO
 FPS_HD = 25
+
+#Margins between the logo & text and the border of the frames
+VIDEO_MARGINS = 10
