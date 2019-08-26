@@ -2,10 +2,12 @@ import cv2
 import numpy as numpy
 from lib.VIDEO_VARS import *   
 from lib.Video_Tools_cv_pos import *
-from VideoLib import load_video_frames, make_crop_box, make_movie_from_frames
 from lib.Video_Parameters import get_video_job_default_parameters
 from lib.UtilLib import convert_filename_to_date_cam
 from PIL import ImageFont, ImageDraw, Image  
+
+# From Mike
+from lib.VideoLib import load_video_frames, make_crop_box, make_movie_from_frames
 
  
 # Add text on x,y with default small font (for radiant or other info)
