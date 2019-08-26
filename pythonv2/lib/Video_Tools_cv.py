@@ -12,8 +12,8 @@ def add_text(background,text,x,y):
     # Pass the image to PIL  
     pil_im = Image.fromarray(cv2_background_rgb)  
     draw = ImageDraw.Draw(pil_im)  
-    font = ImageFont.truetype(VIDEO_FONT, VIDEO_FONT_SMALL_SIZE, fill=VIDEO_FONT_SMALL_COLOR)  
-    draw.text((x, y), text, font=font)  
+    font = ImageFont.truetype(VIDEO_FONT, VIDEO_FONT_SMALL_SIZE)  
+    draw.text((x, y), text, font=font, fill=VIDEO_FONT_SMALL_COLOR)  
     return  cv2.cvtColor(np.array(pil_im), cv2.COLOR_RGB2BGR)  
 
 
