@@ -144,8 +144,17 @@ UI
 - Meteor Delete Page:
    - add delete button to bottom
    => TODO (and bug fixed when only one meteor is selected)
-   - add div area around check box that is clickable. (when deleting lots of files, it takes extra effort to select the checkbox as it is really small. Would be better if I could click 'near' checkbox and it still work. 
-   - Minute-by-minute / nightly page -- the detections / failed etc here are still messed up. You had mentioned a function returning files, but I haven't had a chance to look at it yet, but this could be debugged. This is really the page to check and confirm all meteors were detected and none were missed. So with the files being messed up, it is causing a lot of confusion. 
+
+   - add div area around check box that is clickable. (when deleting lots of files, it takes extra effort to select the checkbox as it is really small. 
+    Would be better if I could click 'near' checkbox and it still work. 
+    => You can now click anywhere on the div (but on the play & delete buttons and the thumb since they are related to other behaviors)
+   
+   - Minute-by-minute / nightly page -- the detections / failed etc here are still messed up. 
+    You had mentioned a function returning files, but I haven't had a chance to look at it yet, but this could be debugged. 
+    This is really the page to check and confirm all meteors were detected and none were missed. So with the files being messed up, it is causing a lot of confusion. 
+   =>
+
+
    - Make customer images / watermarks compatible in 720p 
    - Calibration pages: cal_index, auto_cal, meteor_ind  -- you had started to implement filters here for dates, it would be good to have filters for : dates, cam_ids, res_error -- this is the page to confirm everything is working and values are ok. The indexes can be rebuilt with:
       ./autoCal.py cal_index

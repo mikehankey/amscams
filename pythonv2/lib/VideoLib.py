@@ -14,6 +14,7 @@ from lib.FileIO import load_json_file, save_json_file, cfe
 from lib.ImageLib import find_min_max_dist,bigger_box
 #Add text, logo, etc.. to a frame
 
+ 
 
 
 def add_radiant(ra,dec,image,json_file,json_data,json_conf):
