@@ -131,7 +131,7 @@ def add_radiant_cv(background,x,y,text):
 
 
 # Add logo, radiant(s), etc
-def remaster(video_file, json_conf):
+def remaster(data):
 
     video_file = data['video_file']
     json_conf  = data['json_conf']
