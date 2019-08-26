@@ -1954,9 +1954,9 @@ def find_in_hist(object,x,y,object_hist, img_w, img_h):
    oid = object['oid']
    found = 0
    if hd == 1:
-      md = 25
+      md = 40 
    else:
-      md = 10
+      md = 20
 
    # check if this object_hist is stationary already.
    if len(object_hist) > 1:
@@ -2258,11 +2258,12 @@ def metframes_to_mfd(metframes, metconf, sd_video_file,json_conf):
    mags = []
    fcc = 0
    for fn in metframes:
-      if "HD" in sd_video_file or "SD" in sd_video_file: 
-         frame_time,frame_time_str = calc_frame_time_new(sd_video_file, fn)
-      else:
-         frame_time,frame_time_str = calc_frame_time(sd_video_file, fn)
-      metframes[fn]['frame_time'] = frame_time_str
+      #if "HD" in sd_video_file or "SD" in sd_video_file: 
+      #   frame_time,frame_time_str = calc_frame_time_new(sd_video_file, fn)
+      #else:
+      #   frame_time,frame_time_str = calc_frame_time(sd_video_file, fn)
+      #metframes[fn]['frame_time'] = frame_time_str
+      frame_time_str = metframes[fn]['frame_time']
       if "hd_x" not in metframes[fn] or 'x1' not in metframes[fn]:
          print("FRAME:", fn)
          metframes[fn]['x1'] = int(metframes[fn]['sd_x'] * hdm_x)

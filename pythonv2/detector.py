@@ -34,6 +34,111 @@ from lib.DetectLib import eval_cnt
 
 json_conf = load_json_file("../conf/as6.json")
 
+def convert_data(sd_video_file, json_conf):
+   sd_fn = sd_video_file.split("/")[-1]
+   meteor_json_filename = sd_video_file.replace(".mp4", ".json")
+   reduced_json_filename = sd_video_file.replace(".mp4", "-reduced.json")
+   mj = load_json_file(meteor_json_filename)
+   rd = load_json_file(reduced_json_filename)
+   tmp_dir =  "/mnt/ams2/conversion/" + sd_fn
+   tmp_dir = tmp_dir.replace(".mp4", "")
+   hd_video_file = rd['hd_video_file']
+   if "hd_video_file" in rd:
+      hd_video_file = rd['hd_video_file']
+      hd_fn = hd_video_file.split("/")[-1]
+   else:
+      hd_video_file = None
+   if cfe(tmp_dir, 1) == 0:
+      os.system("mkdir " + tmp_dir)
+   if cfe(sd_video_file) :
+      cmd = "cp " + sd_video_file + " " + tmp_dir
+      os.system(cmd)
+      js = sd_video_file.replace(".mp4", "-reduced.json")
+      cmd = "cp " + js + " " + tmp_dir
+   else:
+      print("Bad file", sd_video_file)
+      exit()
+   if hd_video_file is not None: 
+      cmd = "cp " + hd_video_file + " " + tmp_dir
+      os.system(cmd)
+
+   cmd = "./detector.py rd " + tmp_dir + "/" + sd_fn
+   os.system(cmd)
+
+   if cfe(hd_video_file) :
+      cmd = "./detector.py rd " + tmp_dir + "/" + hd_fn
+      os.system(cmd)
+
+   new_sd_file = None
+   new_hd_file = None
+   all_files = glob.glob(tmp_dir + "/" + "*") 
+   for file in all_files:
+      print(file)
+      if "mp4" in file and "SD" in file:
+         new_sd_file = file
+      if "mp4" in file and "HD" in file:
+         new_hd_file = file
+   if new_sd_file is None:
+      print("FAILED TO CONVERT SD!")
+      exit()
+   if new_hd_file is None:
+      print("FAILED TO CONVERT HD!")
+      exit()
+
+   new_sd_json_file = new_sd_file.replace(".mp4", ".json")
+   new_hd_json_file = new_hd_file.replace(".mp4", ".json")
+   new_sd_json = load_json_file(new_sd_json_file)
+   new_hd_json = load_json_file(new_hd_json_file)
+   final_json = new_hd_json
+   for fn in final_json['metframes']:
+      final_json['metframes'][fn]['sd_x'] = new_sd_json['metframes'][fn]['sd_x'] 
+      final_json['metframes'][fn]['sd_y'] = new_sd_json['metframes'][fn]['sd_y'] 
+      final_json['metframes'][fn]['sd_inenstity'] = new_sd_json['metframes'][fn]['sd_intensity'] 
+      final_json['metframes'][fn]['hd_inenstity'] = new_hd_json['metframes'][fn]['sd_intensity'] 
+
+   temp = new_sd_file.replace("SD", "HD")
+   if temp != new_hd_file:
+      new_new_sd_file = new_hd_file.replace("HD", "SD")
+      os.system("mv " + new_sd_file + " " + new_new_sd_file)
+      new_sd_file = new_new_sd_file
+      os.system("rm " + new_sd_json_file)
+      new_sd_json_file = new_sd_file.replace(".mp4", ".json")
+
+   new_json_file = new_sd_json_file
+   new_json_red_file = new_sd_json_file.replace(".json", "-reduced.json")
+   save_json_file(new_json_file, final_json)
+   save_json_file(new_json_red_file, final_json)
+
+
+def update(file, json_conf):
+   # Update the new reduction files with any missing info.
+   meteor_video_filename = file 
+   meteor_json_filename = file.replace(".mp4", ".json")
+   meteor_json = load_json_file(meteor_json_filename)
+   meteor_json['metframes'] = update_intensity(meteor_json['metframes'], meteor_video_filename, 0)
+   meteor_json = make_reduce_files(meteor_json, meteor_json_filename, json_conf)
+   save_json_file(meteor_json_filename, meteor_json)
+
+
+
+def batch_best(day, json_conf):
+   files = glob.glob("/mnt/ams2/meteor_archive/" + day + "/" + day + "*.mp4")
+   for file in files:
+      if "allmeteors" not in file and "pub" not in file:
+         dist = check_dist(file, json_conf)
+         print(file, dist)
+
+def check_dist(video_file, json_conf):
+   json_file = video_file.replace(".mp4", ".json")
+   print(json_file)
+   json_data = load_json_file(json_file)
+   sx = json_data['metconf']['mxs'][0] 
+   sy = json_data['metconf']['mys'][0] 
+   ex = json_data['metconf']['mxs'][-1] 
+   ey = json_data['metconf']['mys'][-1] 
+   dist = calc_dist((sx,sy),(ex,ey))
+
+   return(dist) 
 
 def batch_check_reject(day, json_conf):
    files = glob.glob("/mnt/ams2/meteor_archive/" + day + "/" + day + "*.mp4")
@@ -120,7 +225,7 @@ def reduce_acl(this_poly, metframes,metconf,frames,mode=0,show=0,key_field = "m"
       if show == 1:
          cv2.imshow('pepe', img)
          cv2.moveWindow('pepe',25,25)
-         cv2.waitKey(70)
+         cv2.waitKey(0)
       fcc = fcc + 1
 
       if len(xs) > 10:
@@ -390,6 +495,7 @@ def make_cropframes(frames, frame_data):
    return(cropframes)
 
 def process_video_frames(frames, video_file):
+   clip_start_time, clip_start_time_str = get_clip_time(video_file)
    cm = 0
    nomo = 0
    motion = 0
@@ -440,6 +546,11 @@ def process_video_frames(frames, video_file):
 
    objects = []
    for frame in frames:
+      extra_meteor_sec = int(fn) / 25
+      meteor_frame_time = clip_start_time + datetime.timedelta(0,extra_meteor_sec)
+      meteor_frame_time_str = meteor_frame_time.strftime('%Y-%m-%d %H:%M:%S.%f')[:-3]
+
+
       show_frame = frame 
       crop_img = np.zeros((200,200),dtype=np.uint8)
       orig_frames.append(frame.copy())
@@ -449,6 +560,9 @@ def process_video_frames(frames, video_file):
 
       frame_data[fn] = {}
       frame_data[fn]['fn'] = fn
+      frame_data[fn]['ft'] = meteor_frame_time_str
+      frame_data[fn]['frame_time'] = meteor_frame_time_str
+      frame_data[fn]['frame_time_str'] = meteor_frame_time_str
       blur_frame = cv2.GaussianBlur(frame, (7, 7), 0)
       blur_last = cv2.GaussianBlur(last_frame, (7, 7), 0)
 
@@ -467,6 +581,7 @@ def process_video_frames(frames, video_file):
       frame_data[fn]['mx'] = int(mx)
       frame_data[fn]['my'] = int(my)
       last_frame = frame
+      print("MAX:", max_val, avg_val)
       if max_val - avg_val > 10:
          if last_x is not None:
             last_seg_dist = calc_dist((mx,my), (last_x,last_y))
@@ -495,8 +610,8 @@ def process_video_frames(frames, video_file):
                obj_cnts.append((object['oid'], cx,cy,cw,ch))
                frame_data[fn]['obj_cnts'] = obj_cnts
 
-         cv2.imshow('pepe', show_frame)
-         cv2.waitKey(0)
+         #cv2.imshow('pepe', show_frame)
+         #cv2.waitKey(70)
 
          if 1 < last_seg_dist < 20 :
             motion = 1
@@ -588,10 +703,14 @@ def process_video_frames(frames, video_file):
 
 
 def check_video_status(file):
-   frame_data_file = file.replace(".mp4", "-framedata.json")
+   frm_fn = file.split("/")[-1]
+   frm_dir = file.replace(frm_fn, "")
+   frm_fn = frm_fn.replace(".mp4", "-framedata.json")
+   frame_data_file = frm_dir + frm_fn
    processed = 0
    if cfe(file) == 0:
       desc = "File does not exist! " + file
+      print(desc)
       exit()
    if "trim" in file:
       mode = "trim_file"
@@ -607,19 +726,52 @@ def check_video_status(file):
    else:
       frame_data = {}
    return(1, mode, hd, processed, frame_data, frame_data_file, "file good.")
+
+def get_clip_time(video_file):
+   hd_datetime, hd_cam, hd_date, hd_y, hd_m, hd_d, hd_h, hd_M, hd_s = convert_filename_to_date_cam(video_file)
+   if "trim" not in video_file:
+      orig_trim_num = 0
+   else:
+      ttt = video_file.split("trim")
+
+      if "HD" in ttt[-1]:
+         el = ttt[-1].split("-")
+         orig_trim_num = int(el[1])
+      else:
+         orig_trim_num = int(ttt[-1].replace(".mp4", ""))
+
+   orig_trim_seconds = orig_trim_num / 25
+
+   orig_clip_start_time = hd_datetime + datetime.timedelta(0,orig_trim_seconds)
+
+   day = orig_clip_start_time.strftime('%Y_%m_%d')
+   orig_clip_start_time_str = orig_clip_start_time.strftime('%Y_%m_%d_%H_%M_%S_%f')[:-3]
    
+   return(orig_clip_start_time, orig_clip_start_time_str)
 
 def run_detect(video_file, show):
+   show = 1
    # check the file exists and current processing status
+   print("RUN DETECT")
    status, mode, hd, processed, video_data, video_data_file, desc = check_video_status(video_file)
-
    #load the frames
    frames = load_video_frames(video_file, json_conf, 0, 0, [], 1)
+   img_h, img_w = frames[0].shape[:2]
+   if img_w > 1000:
+      hd = 1
+      hdm_x = 1
+      hdm_y = 1
+   else:
+      hd = 0
+      hdm_x = 1920 / img_w
+      hdm_y = 1080  / img_h
 
    #check for a bright pixel detection inside the frame set
+   processed = 0
    if processed != 1:
       print("Not processed!")
       video_data, subframes, cropframes = process_video_frames(frames, video_file)
+      video_data['hd'] = hd
     
       meteor_objs = [] 
       # check if any of the objects are meteors
@@ -654,6 +806,7 @@ def run_detect(video_file, show):
    meteor_events = []
    for obj in objects:
       if obj['meteor'] == 1:
+         print(obj)
          for test in obj['test_results']:
             print("METEOR:", obj['oid']) 
             print("METEOR:", test[0], test[1], test[2])
@@ -665,6 +818,7 @@ def run_detect(video_file, show):
          meteor_events.append((first,last))
       else:
          print(obj['oid']) 
+         print(obj)
          score = 0
          for test in obj['test_results']:
             print(test[0], test[1], test[2])
@@ -746,6 +900,13 @@ def run_detect(video_file, show):
          meteor_json['avg_res'] = 9999 
          print("MIKE SMOTH")
 
+         meteor_json['hd'] = hd
+         if hd == 0:
+            meteor_json['hdm_x'] = hdm_x
+            meteor_json['hdm_y'] = hdm_y
+         else:
+            meteor_json['hdm_x'] = 1
+            meteor_json['hdm_y'] = 1
          meteor_json = smooth_points_new(meteor_json, frames)
 
          meteor_json['metconf']['video_data_file'] = video_data_file
@@ -767,9 +928,10 @@ def run_detect(video_file, show):
             make_movie_from_frames(frames, fns, meteor_video_filename)
          print("Meteor Movie Made:", meteor_video_filename)
          print("Meteor JSON Saved:", meteor_json_filename)
+         save_json_file(meteor_json_filename, meteor_json)
          
          meteor_json = make_reduce_files(meteor_json, meteor_json_filename, json_conf)
-         meteor_json['metframes'] = update_intensity(meteor_json['metframes'], meteor_video_filename, 0)
+         meteor_json['metframes'] = update_intensity(meteor_json['metframes'], meteor_video_filename, hd, hdm_x, hdm_y, 0)
          meteor_json['sd_objects'] = objects
          save_json_file(meteor_json_filename, meteor_json)
       ec = int(ec) + 1
@@ -783,9 +945,8 @@ def run_detect(video_file, show):
    #review_meteor(meteor_json, frames)
    #os.system("./detector.py rv " + meteor_json_filename) 
 
-def update_intensity(metframes, video_file,show = 0):
-   hdm_x = 2.7272
-   hdm_y = 1.875
+def update_intensity(metframes, video_file,hd, hdm_x, hdm_y, show = 0):
+
    sd_frames = load_video_frames(video_file, json_conf, 0, 0, [], 1)
 
    base_img = sd_frames[0].copy()
@@ -795,8 +956,12 @@ def update_intensity(metframes, video_file,show = 0):
       sd_img = sd_frames[ifn].copy()
       sd_img = cv2.cvtColor(sd_img, cv2.COLOR_BGR2GRAY)
       img_h, img_w = sd_img.shape[:2]
-      w = metframes[fn]['w']
-      h = metframes[fn]['h']
+      if "w" in metframes:
+         w = metframes[fn]['w']
+         h = metframes[fn]['h']
+      else:
+         w = 5 
+         h = 5 
       cnt_x = metframes[fn]['hd_x'] - int(w / 2)
       cnt_y = metframes[fn]['hd_y'] - int(h / 2)
       print("CNTX:", cnt_x, cnt_y, w, h, sd_img.shape)
@@ -809,27 +974,33 @@ def update_intensity(metframes, video_file,show = 0):
 
 
       min_val, max_val, min_loc, (mx,my)= cv2.minMaxLoc(subimage)
-      cv2.imshow('pepe', subimage)
-      cv2.waitKey(0)
-      print("INTENSITY:", fn, cnt_x, cnt_y, np.sum(cnt_img) , np.sum(base_cnt_img) )
+     # cv2.imshow('pepe', subimage)
+      #cv2.waitKey(80)
+      #print("INTENSITY:", fn, cnt_x, cnt_y, np.sum(cnt_img) , np.sum(base_cnt_img) )
       #metframes[fn]['sd_intensity'] = float(np.sum(cnt_img)) - float(np.sum(base_cnt_img))
-      metframes[fn]['sd_intensity'] = float(np.sum(subimage)) 
+      if subimage is not None:
+         metframes[fn]['sd_intensity'] = float(np.sum(subimage)) 
+      else:
+         metframes[fn]['sd_intensity'] = 0
       metframes[fn]['sd_max_px'] = float(max_val)
       metframes[fn]['x1'] = x1 
       metframes[fn]['y1'] = y1 
       metframes[fn]['x2'] = x2
       metframes[fn]['y2'] = y2
-
-      metframes[fn]['sd_x'] = int(x1/hdm_x)
-      metframes[fn]['sd_y'] = int(y1/hdm_y)
+      if hd == 1:
+         metframes[fn]['sd_x'] = int(x1/hdm_x)
+         metframes[fn]['sd_y'] = int(y1/hdm_y)
+      else:
+         metframes[fn]['sd_x'] = x1
+         metframes[fn]['sd_y'] = y1
       metframes[fn]['sd_w'] = 5
       metframes[fn]['sd_h'] = 5
-      metframes[fn]['ft'] = metframes[fn]['frame_time'] 
+    #  metframes[fn]['ft'] = metframes[fn]['frame_time'] 
 
       cnt_thumb = video_file.replace(".mp4", "-frm" + str(fn) + ".png")
       metframes[fn]['cnt_thumb'] = cnt_thumb
 
-      print("Intensity:",  metframes[fn]['sd_intensity'])
+      #print("Intensity:",  metframes[fn]['sd_intensity'])
    return(metframes)
 
 
@@ -1169,7 +1340,7 @@ def make_reduce_files(meteor_json, meteor_json_filename, json_conf):
    meteor_json['end_dec'] = mfd[-1][10]
    return(meteor_json) 
 
-def smooth_points_new(meteor_json, frames):
+def smooth_points_new(meteor_json, frames ):
    img_h, img_w = frames[0].shape[0], frames[0].shape[1] 
    metframes = meteor_json['metframes']
    metconf = meteor_json['metconf']
@@ -1199,11 +1370,15 @@ def smooth_points_new(meteor_json, frames):
          metframes[fn]['hd_x'] = metframes[fn]['mx']
          metframes[fn]['hd_y'] = metframes[fn]['my']
       else:
-         metframes[fn]['hd_x'] = metframes[fn]['mx'] = int(np.mean(oxs))
-         metframes[fn]['hd_y'] = metframes[fn]['my'] = int(np.mean(oys))
+         metframes[fn]['hd_x'] = int(np.mean(oxs))
+         metframes[fn]['hd_y'] = int(np.mean(oys))
       metframes[fn]['w'] = int(np.mean(ows))
       metframes[fn]['h'] = int(np.mean(ohs))
       metframes[fn]['max_px'] = metframes[fn]['max_val'] 
+      if meteor_json['hd'] == 0:
+         metframes[fn]['hd_x'] = int(metframes[fn]['hd_x'] * meteor_json['hdm_x'])
+         metframes[fn]['hd_y'] = int(metframes[fn]['hd_y'] * meteor_json['hdm_y'])
+         
       
    meteor_json['metframes'] = metframes 
    meteor_json['metconf'] = metconf
@@ -1816,6 +1991,9 @@ def add_frame_buffer(total_frames, start_frame, end_frame):
 
 def make_meteor_video_filename(video_file, start, hd):
    hd_datetime, hd_cam, hd_date, hd_y, hd_m, hd_d, hd_h, hd_M, hd_s = convert_filename_to_date_cam(video_file)
+   vid_fn = video_file.split("/")[-1]
+   vid_dir = video_file.replace(vid_fn, "")
+
    if "trim" not in video_file:
       orig_trim_num = 0
    else:
@@ -1825,13 +2003,16 @@ def make_meteor_video_filename(video_file, start, hd):
          el = ttt[-1].split("-")
          orig_trim_num = int(el[1])
       else:
-         print("SD NOT DONE YET:", ttt[-1])
-         exit()
+         orig_trim_num = int(ttt[-1].replace(".mp4", ""))
+         #print("SD NOT DONE YET:", orig_trim_num, video_file, ttt[-1])
+         #exit()
 
    new_trim_num = orig_trim_num + start
    trim_seconds = new_trim_num / 25
+   orig_trim_seconds = orig_trim_num / 25
 
    event_start_time = hd_datetime + datetime.timedelta(0,trim_seconds)
+   orig_clip_start_time = hd_datetime + datetime.timedelta(0,orig_trim_seconds)
 
    day = event_start_time.strftime('%Y_%m_%d')
    event_start_time_str = event_start_time.strftime('%Y_%m_%d_%H_%M_%S_%f')[:-3]
@@ -1841,14 +2022,17 @@ def make_meteor_video_filename(video_file, start, hd):
       hd_str = "SD"
 
    meteor_filename = event_start_time_str + "_" + hd_cam + "_" + json_conf['site']['ams_id'] + "_" + hd_str + ".mp4"
-   meteor_dir = "/mnt/ams2/meteor_archive/" + day + "/" 
+   #meteor_dir = "/mnt/ams2/meteor_archive/" + day + "/" 
+   meteor_dir = vid_dir 
+   if "json" in vid_dir:
+      vid_dir = vid_dir.replace(".json", ".mp4")
    if cfe(meteor_dir, 1) == 0:
       os.system("mkdir " + meteor_dir)
 
    print("METEOR FILENAME IS:", meteor_filename)
- 
+
    meteor_video_filename = meteor_dir + meteor_filename  
-   return(meteor_video_filename, event_start_time)
+   return(meteor_video_filename, event_start_time )
 
 
 def do_contours(image_thresh):
@@ -2067,10 +2251,24 @@ if cmd == 'qr' or cmd == 'quick_review':
 
 
 if cmd == 'rm' or cmd == 'remaster':
-   remaster(file, json_conf)
+   pub_file = file.replace(".mp4", "-pub.mp4")
+   if cfe(pub_file) == 0:
+      remaster(file, json_conf)
+   else:
+      print("Skip already done.")
 if cmd == 'rj' or cmd == 'reject':
    check_reject(file, json_conf)
 if cmd == 'brj' or cmd == 'batch_reject':
    day = sys.argv[2]
    batch_check_reject(day, json_conf)
+if cmd == 'bb' or cmd == 'batch_best':
+   day = sys.argv[2]
+   batch_best(day, json_conf)
+if cmd == 'up' or cmd == 'update':
+   file = sys.argv[2]
+   update(file, json_conf)
+if cmd == 'cn' or cmd == 'convert':
+   file = sys.argv[2]
+   convert_data(file, json_conf)
+
 
