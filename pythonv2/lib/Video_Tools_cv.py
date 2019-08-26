@@ -142,8 +142,7 @@ def remaster(data):
     frames = load_video_frames(video_file, json_conf, 0, 0, [], 1)
     json_file = video_file.replace(".mp4", ".json")
     meteor_data = load_json_file(json_file)
-
-    
+ 
     #OUTPUT FILE
     marked_video_file = video_file.replace(".mp4", "-pub.mp4")
 
@@ -182,7 +181,7 @@ def remaster(data):
     (hd_datetime, sd_cam, sd_date, sd_y, sd_m, sd_d, sd_h, sd_M, sd_s) = convert_filename_to_date_cam(video_file)
    
     # Get Stations id & Cam Id to display
-    station_id = json_conf['site']['ams_id'] + "-" + sd_cam
+    station_id = meteor_data['site']['ams_id'] + "-" + sd_cam
     station_id = station_id.upper()
 
 
