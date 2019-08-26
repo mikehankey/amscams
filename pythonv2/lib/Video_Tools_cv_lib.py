@@ -16,6 +16,8 @@ def get_text_position_cv(background,text,position,line_number,font,margins=VIDEO
     text_h, text_w = font.getsize(text)
     print("TEXT H " + str(text_h))
     print("TEXT W " + str(text_w))
+    
+    text = text + " LINE - " + line_number
 
     # We start at 0
     if(line_number==1):
