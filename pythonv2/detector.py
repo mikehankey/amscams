@@ -750,7 +750,6 @@ def get_clip_time(video_file):
    return(orig_clip_start_time, orig_clip_start_time_str)
 
 def run_detect(video_file, show):
-   show = 1
    # check the file exists and current processing status
    print("RUN DETECT")
    status, mode, hd, processed, video_data, video_data_file, desc = check_video_status(video_file)
