@@ -23,7 +23,13 @@ def get_text_position_cv(background,text,position,line_number,font,margins=VIDEO
         return background_width-VIDEO_MARGINS-w,VIDEO_MARGINS 
     elif(position=='br'):
         background_width,background_height  = background.shape[1], background.shape[0]
-        return background_width-VIDEO_MARGINS-w,background_height-VIDEO_MARGINS-h        
+
+        if(line_number==1):
+            return background_height-text_h-VIDEO_MARGINS,VIDEO_MARGINS    
+        else:
+            return VIDEO_LINE_HEIGHT+text_h*line_number,VIDEO_MARGINS    
+
+              
     else:
         if(line_number==1):
             return VIDEO_MARGINS,VIDEO_MARGINS    
