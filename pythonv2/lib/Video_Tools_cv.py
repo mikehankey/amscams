@@ -9,8 +9,11 @@ from PIL import ImageFont, ImageDraw, Image
 # Add text over background
 # WARNING: bg is NOT a cv image but a full path (for PIL)
 # Position = br, bl, tr, tl (ex: br = bottom right)
+# and line_number that corresponds to the # of the line to write
+# ex: if line_number = 1 => first line at this position
+#                    = 2 => second line at this position
 # return updated cv matrix
-def add_text(background,text,position):
+def add_text(background,text,position,line_number=1):
     # Convert background to RGB (OpenCV uses BGR)  
     cv2_background_rgb = cv2.cvtColor(background,cv2.COLOR_BGR2RGB)  
     
@@ -22,7 +25,7 @@ def add_text(background,text,position):
     font = ImageFont.truetype(VIDEO_FONT, VIDEO_FONT_SIZE)  
 
     # Get Text position - see lib.Video_Tools_cv_lib
-    x,y = get_text_position_cv(background,text,position,font)
+    x,y = get_text_position_cv(background,text,position,line_number,font)
 
     # Draw the text
     draw.text((x, y), text, font=font)  
