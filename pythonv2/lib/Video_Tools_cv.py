@@ -113,9 +113,7 @@ def add_radiant_cv(background,x,y,text):
     background = add_text(background,text,x,y)
 
     # Add Image
-    radiant_image = cv2.imread(RADIANT_IMG, cv2.IMREAD_UNCHANGED)
-    print("RADIANT IMG")
-    print(radiant_image)
-    background = add_overlay_x_y_cv(background,RADIANT_IMG,x,y)
+    radiant_image = cv2.imread(RADIANT_IMG, cv2.IMREAD_UNCHANGED) 
+    background = add_overlay_x_y_cv(background,radiant_image,x,y)
 
     return background
