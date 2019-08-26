@@ -125,7 +125,7 @@ added_image = add_overlay_cv(background,overlay,'tr')
 
 
 logo = cv2.imread('/mnt/ams2/CUSTOM_LOGOS/1.png', cv2.IMREAD_UNCHANGED)
-added_image = add_overlay_cv(background,overlay,'tl') 
+added_image = add_overlay_cv(background,logo,'tl') 
 
 added_image = add_text_to_pos(added_image,'THIS IS A TEST  LINE 1 BL','bl',1)
 added_image = add_text_to_pos(added_image,'THIS IS A TEST SECOND LINE 2 BL','bl',2) 
