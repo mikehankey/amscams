@@ -179,16 +179,15 @@ def remaster(data):
 
     #Get Date & time 
     (hd_datetime, sd_cam, sd_date, sd_y, sd_m, sd_d, sd_h, sd_M, sd_s) = convert_filename_to_date_cam(video_file)
-   
-    # Get Stations id & Cam Id to display
-    station_id = meteor_data['site']['ams_id'] + "-" + sd_cam
-    station_id = station_id.upper()
-
-
+    
     # Get Specifc info 
     el = video_file.split("_")
     station = el[-2]   
     cam = el[-3]   
+
+    # Get Stations id & Cam Id to display
+    station_id = station + "-" + sd_cam
+    station_id = station_id.upper()
  
     # Video Dimensions = as the first frame
     ih, iw = frames[0].shape[:2]
