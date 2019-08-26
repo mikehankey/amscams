@@ -9,6 +9,9 @@ from PIL import ImageFont, ImageDraw, Image
 def add_text(background,text,x,y):
     # Convert background to RGB (OpenCV uses BGR)  
     cv2_background_rgb = cv2.cvtColor(background,cv2.COLOR_BGR2RGB)  
+    # Pass the image to PIL  
+    pil_im = Image.fromarray(cv2_background_rgb)  
+    draw = ImageDraw.Draw(pil_im)  
     font = ImageFont.truetype(VIDEO_FONT, VIDEO_FONT_SMALL_SIZE)  
     draw.text((x, y), text, font=font)  
     return  cv2.cvtColor(np.array(pil_im), cv2.COLOR_RGB2BGR)  
