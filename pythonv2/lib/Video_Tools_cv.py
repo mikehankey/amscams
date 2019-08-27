@@ -6,7 +6,7 @@ from lib.Video_Tools_cv_pos import *
 from lib.Video_Parameters import get_video_job_default_parameters
 from lib.UtilLib import convert_filename_to_date_cam
 from PIL import ImageFont, ImageDraw, Image  
-from lib.FileIO import load_json_file
+from lib.FileIO import load_json_file, cfe
 
 # From Mike
 from lib.VideoLib import load_video_frames, make_crop_box, make_movie_from_frames
