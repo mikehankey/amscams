@@ -185,6 +185,7 @@ def remaster(data):
         extra_logo = False
  
     # AMS Logo default position
+    ams_logo = cv2.imread(AMS_WATERMARK, cv2.IMREAD_UNCHANGED)
     try:
         ams_logo_pos = params['wat_pos']
     except:
@@ -196,8 +197,7 @@ def remaster(data):
         extra_text_pos = params['text_pos']
     except:
         extra_text = False
-
-
+ 
     # Radiant
     try:
         rad_x = data['rad_x']
@@ -240,14 +240,21 @@ def remaster(data):
     # Before working the frames, we need to make sure 
     # the meteor doesn't go behind on of the extra elements (AMS Logo, extra logo, text = date + extra_text)
     # if it doesn't we need to move stuff around
-    
-    # We get the AMS logo box
-    ams_logo = cv2.imread(AMS_WATERMARK, cv2.IMREAD_UNCHANGED)
-    # We compare the meteor box with the logo and its position within the first frame
-    if(overlaps_with_image(cx1,cy1,cx2,cy2,ams_logo,ams_logo_pos,frames[0])): 
+    one_empty_corner_left = True 
+
+    # We compare the meteor box with the AMS logo and its position within the first frame
+    if(frames[0] is not None and overlaps_with_image(cx1,cy1,cx2,cy2,ams_logo,ams_logo_pos,frames[0])): 
         # We move the logo here since it overlaps
         ams_logo_pos = EMPTY_CORNER
- 
+        one_empty_corner_left = False
+
+    # We compare the meteor box with the eventual extra logo and its position within the first frame
+    if(one_empty_corner_left is True and extra_logo is not False and frames[0] is not None and overlaps_with_image(cx1,cy1,cx2,cy2,extra_logo,extra_logo_pos,frames[0])): 
+        # We move the logo here since it overlaps
+        extra_logo_pos = EMPTY_CORNER   
+        one_empty_corner_left = False 
+
+    # We compare the meteor box with the text and its position within the first frame
 
     fc = 0
     new_frames = []
