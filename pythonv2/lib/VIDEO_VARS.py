@@ -71,7 +71,7 @@ VIDEO_MARGINS = 10
 #DEFAULT FONTS
 VIDEO_FONT = "/home/ams/amscams/dist/fonts/Roboto_Condensed/RobotoCondensed-Regular.ttf"
 VIDEO_FONT_BOLD = "/home/ams/amscams/dist/fonts/Roboto_Condensed/RobotoCondensed-Bold.ttf"
-VIDEO_FONT_SIZE = 30 
+VIDEO_FONT_SIZE = 25
 VIDEO_FONT_SMALL_SIZE = 14
 VIDEO_LINE_HEIGHT = -5
 VIDEO_FONT_SMALL_COLOR = (250,250,209,255)
