@@ -244,13 +244,13 @@ def remaster(data):
 
         # Add Date & Time
         frame_time_str = station_id + ' - ' + frame_time_str + ' UT'
-        extra_text_pos = "br"
+        #extra_text_pos = "br"
         hd_img = add_text_to_pos(hd_img,frame_time_str,extra_text_pos,2) #extra_text_pos => bl?
 
         # Add Extra_info
-        extra_text_pos = "bl"
+        #extra_text_pos = "bl"
         if(extra_text is not False):
-            hd_img = add_text_to_pos(hd_img,extra_text,extra_text_pos,2)  #extra_text_pos => br?
+            hd_img = add_text_to_pos(hd_img,extra_text,extra_text_pos,1)  #extra_text_pos => br?
  
         new_frames.append(hd_img) 
         fc = fc + 1
