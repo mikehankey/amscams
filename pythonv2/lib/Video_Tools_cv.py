@@ -212,6 +212,7 @@ def remaster(data):
     except:
         radiant = False
         print("RADIANT NOT OK")
+        print(params)
 
     #Define buffer
     start_buff = int(meteor_data['start_buff'])
