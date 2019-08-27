@@ -238,9 +238,12 @@ def remaster(data):
               rad_y = int(rad_y * .66666)
            hd_img = add_radiant_cv(hd_img,rad_x,rad_y,"Perseids")
 
+        print("EXTRA LOGO")
+        print(extra_logo)
+        exit()
+
         # Add Eventual Extra Logo
         if(extra_logo is not False and extra_logo is not None):
-            print('WE ADD THE EXTRA LOGO')
             hd_img = add_overlay_cv(hd_img,cv2.imread(extra_logo, cv2.IMREAD_UNCHANGED),extra_logo_pos)
 
         # Add Date & Time
