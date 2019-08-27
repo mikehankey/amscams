@@ -203,7 +203,7 @@ def remaster(data):
     # Date & Time position
     try:
         date_time_pos = params['text_pos']
-    except
+    except:
         date_time_pos = D_CAM_INFO_POS
  
     # Radiant
