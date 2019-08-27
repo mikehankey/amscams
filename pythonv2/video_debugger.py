@@ -140,6 +140,7 @@ from os.path import isfile, join, exists
 
 
 ################### TEST NEW REMASTER
+# OVERLAP WITH LOGO TR
 data = {
     'json_conf' : '/mnt/ams2/meteor_archive/2019_08_12/2019_08_12_05_38_08_880_010037_AMS7_HD.json',
     'video_file' :'/mnt/ams2/meteor_archive/2019_08_12/2019_08_12_05_38_08_880_010037_AMS7_HD.mp4',
@@ -147,5 +148,15 @@ data = {
     'rad_y': 500,
     'rad_name': 'Perseids'
 }
+# DOESNT OVERLAP  
+data = {
+    'json_conf' : '/mnt/ams2/meteor_archive/2019_08_14/2019_08_14_03_19_52_640_010042_AMS7_HD.json',
+    'video_file' :'/mnt/ams2/meteor_archive/2019_08_14/2019_08_14_03_19_52_640_010042_AMS7_HD.mp4',
+    'rad_x': 500,
+    'rad_y': 500,
+    'rad_name': 'Perseids'
+}
+
+ 
 
 remaster(data)
