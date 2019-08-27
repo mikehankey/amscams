@@ -13,7 +13,7 @@ from lib.Video_Parameters import save_video_job_parameters
 
 #ADD Job to WAITING_JOBS
 
-def add_video_job(name,cam_ids,date,time,duration,fps,dim,text_pos,wat_pos,blend_sd,extra_text,logo,logo_pos):
+def add_video_job(name,cam_ids,date,time,duration,fps,dim,text_pos,wat_pos,blend_sd,extra_text,extra_text_pos,logo,logo_pos):
 
     if(logo is None ):
         logo = ""
@@ -81,6 +81,7 @@ def add_video_job(name,cam_ids,date,time,duration,fps,dim,text_pos,wat_pos,blend
             'wat_pos':wat_pos,
             'status': 'waiting',
             'extra_text':extra_text,
+            'extra_text_pos':extra_text_pos,
             'logo': logo,
             'logo_pos': logo_pos,
             'blend_sd': blend_sd
