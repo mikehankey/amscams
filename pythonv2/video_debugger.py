@@ -162,7 +162,4 @@ data = {
 }
 
 
-#remaster(data)
-background = cv2.imread('/mnt/ams2/meteors/2019_08_23/2019_08_23_00_03_23_000_010040-trim-1-HD-meteor-stacked.png')
-added_image = add_radiant_cv(background,50,50,"Perseids")
-cv2.imwrite('/mnt/ams2/test_text.png', added_image)
+remaster(data) 
