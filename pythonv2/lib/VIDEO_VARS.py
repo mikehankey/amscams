@@ -73,7 +73,7 @@ VIDEO_FONT = "/home/ams/amscams/dist/fonts/Roboto_Condensed/RobotoCondensed-Regu
 VIDEO_FONT_BOLD = "/home/ams/amscams/dist/fonts/Roboto_Condensed/RobotoCondensed-Bold.ttf"
 VIDEO_FONT_SIZE = 25
 VIDEO_FONT_SMALL_SIZE = 14
-VIDEO_LINE_HEIGHT = 10
+VIDEO_LINE_HEIGHT = 7
 VIDEO_FONT_SMALL_COLOR = (250,250,209,255) # For Radiant
 
 #RADIANT IMAGE
