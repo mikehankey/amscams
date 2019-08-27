@@ -139,9 +139,12 @@ def convert_data(sd_video_file, json_conf):
    else:
       if "hd_trim" in mj:
          hd_video_file = mj['hd_trim'] 
-         hd_fn = hd_video_file.split("/")[-1]
-         hd_video_file = sd_dir + "/" + hd_fn
-         print("TRIM", hd_video_file)
+         if hd_fn is not None:
+            hd_fn = hd_video_file.split("/")[-1]
+            hd_video_file = sd_dir + "/" + hd_fn
+            print("TRIM", hd_video_file)
+         else:
+            hd_video_file = None
        
       else:
          hd_video_file = None
