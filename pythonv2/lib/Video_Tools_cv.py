@@ -298,9 +298,8 @@ def remaster(data):
             if hd_img.shape[0] == 720 :
                 rad_x = int(rad_x * .66666)
                 rad_y = int(rad_y * .66666)  
-            hd_img = add_radiant_cv(radiant_image,hd_img,rad_x,rad_y,rad_name)
-            print('RADIANT ADDED on ' + str(rad_x) + " , " + str(rad_y) )
- 
+            hd_img = add_radiant_cv(radiant_image,hd_img,rad_x,rad_y,rad_name)  
+            
         new_frames.append(hd_img) 
         fc = fc + 1
 
