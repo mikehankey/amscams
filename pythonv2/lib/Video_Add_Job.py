@@ -19,7 +19,7 @@ def add_video_job(name,cam_ids,date,time,duration,fps,dim,text_pos,wat_pos,blend
         logo = ""
    
     #Save current params as default
-    save_video_job_parameters(fps,dim,logo,wat_pos,text_pos,logo_pos,extra_text)
+    save_video_job_parameters(fps,dim,logo,wat_pos,text_pos,logo_pos,extra_text,extra_text_pos)
  
     #If we only have one cam_id
     if(type(cam_ids) is str):
