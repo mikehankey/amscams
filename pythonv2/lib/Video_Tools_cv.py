@@ -56,7 +56,7 @@ def add_text(background,text,x,y,centered=False):
 # ex: if line_number = 1 => first line at this position
 #                    = 2 => second line at this position
 # return updated cv matrix
-def add_text_to_pos(background,text,position,line_number=1):
+def add_text_to_pos(background,text,position,line_number=1,bold=False):
     # Convert background to RGB (OpenCV uses BGR)  
     cv2_background_rgb = cv2.cvtColor(background,cv2.COLOR_BGR2RGB)  
     
@@ -65,8 +65,7 @@ def add_text_to_pos(background,text,position,line_number=1):
     draw = ImageDraw.Draw(pil_im)  
  
     # use DEFAULT truetype font  
-    if(line_number==1):
-        # We go bold on the first line
+    if(bold==True): 
         font = ImageFont.truetype(VIDEO_FONT_BOLD, VIDEO_FONT_SIZE)  
     else:
         font = ImageFont.truetype(VIDEO_FONT, VIDEO_FONT_SIZE)  
@@ -292,7 +291,7 @@ def remaster(data):
 
         # Add Extra_info 
         if(extra_text is not False):
-            hd_img,xx,yy,ww,hh = add_text_to_pos(hd_img,extra_text,extra_text_pos,2)  #extra_text_pos => br?
+            hd_img,xx,yy,ww,hh = add_text_to_pos(hd_img,extra_text,extra_text_pos,2,True)  #extra_text_pos => br?
  
         # Add Radiant
         if(radiant is not False):
