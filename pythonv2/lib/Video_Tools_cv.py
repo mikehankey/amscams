@@ -72,15 +72,17 @@ def add_text_to_pos(background,text,position,line_number=1):
         font = ImageFont.truetype(VIDEO_FONT, VIDEO_FONT_SIZE)  
 
     # Get Text position - see lib.Video_Tools_cv_lib
-    y,x = get_text_position_cv(background,text,position,line_number,font)
+    y,x,w,h = get_text_position_cv(background,text,position,line_number,font)
 
     # Draw the text
     draw.text((x, y), text, font=font)  
 
     # Get back the image to OpenCV  
     cv2_im_processed = cv2.cvtColor(np.array(pil_im), cv2.COLOR_RGB2BGR)  
-    
-    return cv2_im_processed
+
+    # We now return the image AND the box position of the text 
+    # so we can check if the meteors flies behind the text 
+    return cv2_im_processed,y,x,w,h
 
 
 
@@ -232,7 +234,7 @@ def remaster(data):
     ih, iw = frames[0].shape[:2]
  
     start_frame_time = hd_datetime + datetime.timedelta(0,start_sec)
-    start_frame_str = hd_datetime.strftime('%Y-%m-%d %H:%M:%S.%f')[:-3]
+    start_frame_str  = hd_datetime.strftime('%Y-%m-%d %H:%M:%S.%f')[:-3]
 
     # Crop box info 
     cx1, cy1, cx2, cy2 = make_crop_box(meteor_data, iw, ih)
@@ -254,7 +256,8 @@ def remaster(data):
         extra_logo_pos = EMPTY_CORNER   
         one_empty_corner_left = False 
 
-    # We compare the meteor box with the text and its position within the first frame
+    # We compare the meteor box with the text and its position within the first frame 
+
 
     fc = 0
     new_frames = []
@@ -274,8 +277,7 @@ def remaster(data):
 
         # Add AMS Logo 
         hd_img = add_overlay_cv(hd_img,ams_logo,ams_logo_pos)
-
-  
+ 
         # Add Eventual Extra Logo
         if(extra_logo is not False and extra_logo is not None):
             hd_img = add_overlay_cv(hd_img,extra_logo,extra_logo_pos)
@@ -283,12 +285,12 @@ def remaster(data):
         # Add Date & Time
         frame_time_str = station_id + ' - ' + frame_time_str + ' UT'
         #extra_text_pos = "br"
-        hd_img = add_text_to_pos(hd_img,frame_time_str,extra_text_pos,2) #extra_text_pos => bl?
+        hd_img,xx,yy,ww,hh = add_text_to_pos(hd_img,frame_time_str,extra_text_pos,2) #extra_text_pos => bl?
 
         # Add Extra_info
         #extra_text_pos = "bl"
         if(extra_text is not False):
-            hd_img = add_text_to_pos(hd_img,extra_text,extra_text_pos,1)  #extra_text_pos => br?
+            hd_img,xx,yy,ww,hh = add_text_to_pos(hd_img,extra_text,extra_text_pos,1)  #extra_text_pos => br?
  
         # Add Radiant
         if(radiant is not False):
