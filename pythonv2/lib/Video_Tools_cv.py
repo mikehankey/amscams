@@ -225,7 +225,7 @@ def remaster(data):
     ams_logo = cv2.imread(AMS_WATERMARK, cv2.IMREAD_UNCHANGED)
     logo_width,logo_height  = ams_logo.shape[1], ams_logo.shape[0]
     # Get overlay position - see lib.Video_Tools_cv_lib compare to the first frame
-    logo_x,logo_y = get_overlay_position_cv(frame[0],ams_logo,ams_logo_pos) 
+    logo_x,logo_y = get_overlay_position_cv(frames[0],ams_logo,ams_logo_pos) 
     print('LOGO BOX')
     print(str(logo_x) + ' , ' + str(logo_y) +  ' , ' +  str(logo_x + logo_width)  +  ', ' + str(logo_y + logo_height))
 
