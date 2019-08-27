@@ -50,11 +50,17 @@ def convert_day(json_conf, day):
          cmd = "./detector.py cn " + meteor
          print(cmd)
          os.system(cmd)
+      
 
 def check_conversion(json_conf, extra):
    dirs = glob.glob("/mnt/ams2/conversion/*")
    good = 0
    bad = 0
+   ndirs = []
+   for dir in dirs:
+      if "false_meteors" not in dir:
+         ndirs.append(dir)
+   dirs = ndirs
    for dir in dirs:
       sd_found = 0
       hd_found = 0
@@ -94,6 +100,7 @@ def check_conversion(json_conf, extra):
                os.system(cmd)
                print(cmd)
          elif sd_found == 0 or hd_found == 0:
+
             if extra == "fix":
                cmd = "rm " + dir + "/*framedata.json"
                os.system(cmd)
@@ -102,6 +109,11 @@ def check_conversion(json_conf, extra):
                cmd = "./detector.py cn " + orig_file 
                os.system(cmd)
                print(cmd)
+         if sd_found == 0 and hd_found == 0:
+            if extra == "false":
+               cmd = "mv " + dir + " /mnt/ams2/conversion/false_meteors/"
+               print(cmd)
+               os.system(cmd)
          
          
    print("GB:", good, bad)
@@ -665,6 +677,8 @@ def process_video_frames(frames, video_file):
       mask_size = 5
 
    objects = []
+   mean_max = []
+   mean_max_avg = None
    for frame in frames:
       extra_meteor_sec = int(fn) / 25
       meteor_frame_time = clip_start_time + datetime.timedelta(0,extra_meteor_sec)
@@ -694,6 +708,7 @@ def process_video_frames(frames, video_file):
       avg_val = np.mean(frame)
       sum_val = np.sum(subframe)
       min_val, max_val, min_loc, (mx,my)= cv2.minMaxLoc(subframe)
+       
       frame_data[fn]['avg_val'] = float(avg_val)
       frame_data[fn]['min_val'] = float(min_val)
       frame_data[fn]['max_val'] = float(max_val)
@@ -703,7 +718,9 @@ def process_video_frames(frames, video_file):
       last_frame = frame
       #cv2.imshow('pepe', frame)
       #cv2.waitKey(0)
-      if max_val - avg_val > 10:
+      if mean_max_avg is None:
+         mean_max_avg = max_val
+      if max_val - avg_val > 10 :
          if last_x is not None:
             last_seg_dist = calc_dist((mx,my), (last_x,last_y))
             frame_data[fn]['last_seg_dist'] = last_seg_dist
@@ -720,7 +737,6 @@ def process_video_frames(frames, video_file):
 
          frame_cnts = do_contours(subframe_thresh)
          frame_data[fn]['frame_cnts'] = frame_cnts
-         print("CNTS:", frame_cnts)
          obj_cnts = []
          for cnt in frame_cnts:
             cx, cy, cw, ch = cnt
@@ -734,17 +750,14 @@ def process_video_frames(frames, video_file):
 
          if 1 < last_seg_dist < 20 :
             motion = 1
-            print("DETECTION!:", fn, max_val, sum_val)
          if motion == 1:
             if cm == 0:
-               print("START FIRST EVENT.")
                first_eframe = fn -1
             cm = cm + 1
             #object, objects = id_object(None, objects,fn, (int(mx),int(my)), int(max_val), int(sum_val), img_w, img_h)
             #if "oid" in object:
             #   frame_data[fn]['oid'] = object['oid']
             #if "oid" in object:
-            #   print("OBJECT:", object['oid'])
 
          #blob_x, blob_y,blob_w,blob_h = find_blob_center(frame, mx,my,max_val)
          #avg_x = int(blob_x + mx / 2)
@@ -766,14 +779,12 @@ def process_video_frames(frames, video_file):
 
          #cv2.circle(stack_img,(blob_x,blob_y), blob_w, (255), -1)
          if last_x is not None:
-            #print("LINE:", blob_x, blob_y, last_x, last_y)
             #cv2.line(stack_img, (blob_x,blob_y), (last_x,last_y), (255), 2)
             cv2.line(stack_img, (mx,my), (last_x,last_y), (255), 2)
 
 
          max_vals.append(max_val)
          #if cm >= 1:
-            #print(fn, max_val - avg_val, cm)
             #cv2.waitKey(100)
          nomo = 0
       else:
@@ -793,8 +804,10 @@ def process_video_frames(frames, video_file):
 
       frame_data[fn]['cm'] = cm
       frame_data[fn]['nonmo'] = nomo
-      print(fn, max_val, cm, nomo)
+      print(fn, mean_max_avg, max_val, cm, nomo)
       fn = fn + 1
+      mean_max.append(max_val)
+      mean_max_avg = np.median(mean_max)
       last_x = mx
       last_y = my
       cropframes.append(crop_img)
@@ -890,7 +903,6 @@ def run_detect(video_file, show):
       print("Not processed!")
       video_data, subframes, cropframes = process_video_frames(frames, video_file)
       video_data['hd'] = hd
-    
       meteor_objs = [] 
       # check if any of the objects are meteors
       for obj in video_data['objects']:
@@ -1799,9 +1811,13 @@ def update_metconf(meteor_json):
 
 
    metconf['m'], metconf['b'] = best_fit_slope_and_intercept(good_xs,good_ys)
+   if len(mxs) > 1:
+      dir_x = mxs[0] - mxs[-1] 
+      dir_y = mys[0] - mys[-1] 
+   else:
+      dir_x = 1
+      dir_y = 1
 
-   dir_x = mxs[0] - mxs[-1] 
-   dir_y = mys[0] - mys[-1] 
    if dir_x < 0:
       x_dir_mod = 1
    else:
