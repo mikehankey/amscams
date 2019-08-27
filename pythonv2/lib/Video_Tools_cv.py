@@ -240,7 +240,7 @@ def remaster(data):
     # We get the AMS logo box
     ams_logo = cv2.imread(AMS_WATERMARK, cv2.IMREAD_UNCHANGED)
     # We compare the meteor box with the logo and its position within the first frame
-    if(overlaps_with_image(cx1,cy1,cx2,cy2, ,ams_logo,ams_logo_pos, frames[0])): 
+    if(overlaps_with_image(cx1,cy1,cx2,cy2,ams_logo,ams_logo_pos,frames[0])): 
         # We move the logo since it overlaps
         ams_logo_pos = EMPTY_CORNER
 
