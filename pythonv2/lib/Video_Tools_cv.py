@@ -139,6 +139,7 @@ def remaster(data):
 
     video_file = data['video_file']
     json_conf  = data['json_conf']
+    
     if "rad_x" in data:
        rad_x = data['rad_x']
        rad_y = data['rad_y']  
@@ -165,7 +166,6 @@ def remaster(data):
         extra_logo_pos = params['logo_pos']
         if cfe(extra_logo) == 0:
            extra_logo = False
- 
     except:
         extra_logo = False
  
@@ -253,8 +253,6 @@ def remaster(data):
         if(extra_text is not False):
             hd_img = add_text_to_pos(hd_img,extra_text,extra_text_pos,2)  #extra_text_pos => br?
  
-
-        # Add Radiant (todo)
         new_frames.append(hd_img) 
         fc = fc + 1
 
