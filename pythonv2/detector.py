@@ -832,7 +832,7 @@ def run_detect(video_file, show):
       hdm_y = 1080  / img_h
 
    #check for a bright pixel detection inside the frame set
-   processed = 0
+   #processed = 0
    if processed != 1:
       print("Not processed!")
       video_data, subframes, cropframes = process_video_frames(frames, video_file)

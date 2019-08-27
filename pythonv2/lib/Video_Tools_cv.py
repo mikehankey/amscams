@@ -56,7 +56,7 @@ def add_text(background,text,x,y,centered=False):
 # ex: if line_number = 1 => first line at this position
 #                    = 2 => second line at this position
 # return updated cv matrix
-def add_text_to_pos(background,text,position,line_number=1):
+def add_text_to_pos(background,text,position,line_number=1,bold=False):
     # Convert background to RGB (OpenCV uses BGR)  
     cv2_background_rgb = cv2.cvtColor(background,cv2.COLOR_BGR2RGB)  
     
@@ -65,8 +65,7 @@ def add_text_to_pos(background,text,position,line_number=1):
     draw = ImageDraw.Draw(pil_im)  
  
     # use DEFAULT truetype font  
-    if(line_number==1):
-        # We go bold on the first line
+    if(bold==True): 
         font = ImageFont.truetype(VIDEO_FONT_BOLD, VIDEO_FONT_SIZE)  
     else:
         font = ImageFont.truetype(VIDEO_FONT, VIDEO_FONT_SIZE)  
@@ -244,14 +243,18 @@ def remaster(data):
 
     # Before working the frames, we need to make sure 
     # the meteor doesn't go behind on of the extra elements (AMS Logo, extra logo, text = date + extra_text)
-    # if it doesn't we need to move stuff around
-    #one_empty_corner_left = True 
+    # if it doesn't we need to move stuff around 
+    something_overlaps = False
 
     # We compare the meteor box with the AMS logo and its position within the first frame
     #if(frames[0] is not None and overlaps_with_image(cx1,cy1,cx2,cy2,ams_logo,ams_logo_pos,frames[0])): 
-        # We move the logo here since it overlaps
-    #    ams_logo_pos = EMPTY_CORNER
-    #    one_empty_corner_left = False
+        # We move the logo here since it overlaps 
+    #    something_overlaps = True
+        
+        # By default, we put it on the bottom left - 50px above the bottom
+    #   ams_logo_pos_x = VIDEO_MARGINS 
+    #    ams_logo_pos_y = frames[0].shape[1] - VIDEO_MARGINS - 50
+    #    print('NEW LOGO POS ' + str(ams_logo_pos_x) +  ' , ' + str(ams_logo_pos_y))
 
     # We compare the meteor box with the eventual extra logo and its position within the first frame
     #if(one_empty_corner_left is True and extra_logo is not False and frames[0] is not None and overlaps_with_image(cx1,cy1,cx2,cy2,extra_logo,extra_logo_pos,frames[0])): 
@@ -280,7 +283,12 @@ def remaster(data):
             cv2.rectangle(hd_img, (cx1, cy1), (cx2, cy2), (color,color,color), 1)
 
         # Add AMS Logo 
-        hd_img = add_overlay_cv(hd_img,ams_logo,ams_logo_pos)
+        if(something_overlaps is False):
+            # No meteor Behind
+            hd_img = add_overlay_cv(hd_img,ams_logo,ams_logo_pos)
+        #else:
+        #    # A meteor was behind...
+        #    hd_img = add_overlay_x_y_cv(hd_img, ams_logo, ams_logo_pos_x, ams_logo_pos_y)
  
         # Add Eventual Extra Logo
         if(extra_logo is not False and extra_logo is not None):
@@ -292,7 +300,7 @@ def remaster(data):
 
         # Add Extra_info 
         if(extra_text is not False):
-            hd_img,xx,yy,ww,hh = add_text_to_pos(hd_img,extra_text,extra_text_pos,2)  #extra_text_pos => br?
+            hd_img,xx,yy,ww,hh = add_text_to_pos(hd_img,extra_text,extra_text_pos,2,True)  #extra_text_pos => br?
  
         # Add Radiant
         if(radiant is not False):
