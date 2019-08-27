@@ -137,9 +137,7 @@ def add_radiant_cv(background,x,y,text):
     try:
         radiant_image = cv2.imread(RADIANT_IMG, cv2.IMREAD_UNCHANGED) 
         background = add_overlay_x_y_cv(background,radiant_image,x-int(radiant_image.shape[1]/2),y-int(radiant_image.shape[0]/2))
-    except:
-        print("ERROR ADDING RAD")
-        exit()
+    except: 
         background = background
 
     # Add text (centered bottom)
@@ -283,8 +281,7 @@ def remaster(data):
         #extra_text_pos = "bl"
         if(extra_text is not False):
             hd_img = add_text_to_pos(hd_img,extra_text,extra_text_pos,1)  #extra_text_pos => br?
-
-        
+ 
         # Add Radiant
         if(radiant is not False):
             if hd_img.shape[0] == 720 :
@@ -297,3 +294,4 @@ def remaster(data):
         fc = fc + 1
 
     make_movie_from_frames(new_frames, [0,len(new_frames) - 1], marked_video_file, 1)
+    print('OUTPUT ' + marked_video_file)
