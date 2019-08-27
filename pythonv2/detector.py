@@ -35,6 +35,22 @@ from lib.DetectLib import eval_cnt
 
 json_conf = load_json_file("../conf/as6.json")
 
+def convert_day(json_conf, day):
+   files = glob.glob("/mnt/ams2/meteors/" + day + "/*.mp4")
+   meteors = []
+   for file in files:
+      if "HD" not in file and "archive" not in file and "pub" not in file and "trim" in file:
+         meteors.append(file)
+   for meteor in meteors:
+      fn = meteor.split("/")[-1].replace(".mp4", "")
+      if cfe("/mnt/ams2/conversion/" + fn, 1) == 1:
+         print("DONE", meteor)
+      else:
+         print("NOT DONE: ", meteor)
+         cmd = "./detector.py cn " + meteor
+         print(cmd)
+         os.system(cmd)
+
 def check_conversion(json_conf, extra):
    dirs = glob.glob("/mnt/ams2/conversion/*")
    good = 0
@@ -2415,4 +2431,6 @@ if cmd == 'cn' or cmd == 'convert':
 
 if cmd == 'cc' or cmd == 'check_conversion':
    check_conversion(json_conf, file)
+if cmd == 'cd' or cmd == 'convert_day':
+   convert_day(json_conf, file)
 
