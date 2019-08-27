@@ -269,9 +269,11 @@ def remaster(data):
 
         # Add Radiant
         if radiant is not False:
+            print('RADIANT IS THERE')
             if hd_img.shape[0] == 720 :
                 rad_x = int(rad_x * .66666)
                 rad_y = int(rad_y * .66666)
+            print('RADIANT IS ADDEDD AT ' + rad_x + ", " + rad_y)
             hd_img = add_radiant_cv(hd_img,rad_x,rad_y,rad_name)
   
         # Add Eventual Extra Logo
