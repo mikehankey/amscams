@@ -134,12 +134,13 @@ def convert_data(sd_video_file, json_conf):
    hd_video_file = mj['hd_trim']
    if "hd_video_file" in rd:
       hd_video_file = rd['hd_video_file']
-      hd_fn = hd_video_file.split("/")[-1]
-      print("FROMRED")
+      if hd_video_file is not None:
+         hd_fn = hd_video_file.split("/")[-1]
+         print("FROMRED")
    else:
       if "hd_trim" in mj:
          hd_video_file = mj['hd_trim'] 
-         if hd_fn is not None:
+         if hd_video_file is not None:
             hd_fn = hd_video_file.split("/")[-1]
             hd_video_file = sd_dir + "/" + hd_fn
             print("TRIM", hd_video_file)
