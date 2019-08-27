@@ -108,7 +108,6 @@ def add_overlay_x_y_cv(background, overlay, x, y):
 # Position = br, bl, tr, tl (ex: br = bottom right)
 # return updated cv matrix
 def add_overlay_cv(background, overlay, position):
-
     background_width,background_height  = background.shape[1], background.shape[0]
     # Get overlay position - see lib.Video_Tools_cv_lib
     x,y = get_overlay_position_cv(background,overlay,position) 
@@ -217,9 +216,23 @@ def remaster(data):
 
     # Crop box info 
     cx1, cy1, cx2, cy2 = make_crop_box(meteor_data, iw, ih)
+
+    # Before working the frames, we need to make sure 
+    # the meteor doesn't go behind on of the extra elements (AMS Logo, extra logo, text = date + extra_text)
+    # if it doesn't we need to move stuff around
     
+    # We get the AMS logo box
+    ams_logo = cv2.imread(AMS_WATERMARK, cv2.IMREAD_UNCHANGED)
+    logo_width,logo_height  = ams_logo.shape[1], ams_logo.shape[0]
+    # Get overlay position - see lib.Video_Tools_cv_lib compare to the first frame
+    logo_x,logo_y = get_overlay_position_cv(frame[0],ams_logo,ams_logo_pos) 
+    print('LOGO BOX')
+    print((str(logo_x) + ' , ' + str(logo_y) +  ' , ' +  str(logo_x + logo_width)  +  ', ' + str(logo_y + logo_height))
+
+
     fc = 0
     new_frames = []
+
     for frame in frames:
 
         frame_sec = fc / FPS_HD
@@ -234,8 +247,7 @@ def remaster(data):
             cv2.rectangle(hd_img, (cx1, cy1), (cx2, cy2), (color,color,color), 1)
 
         # Add AMS Logo 
-        overlay_img = cv2.imread(AMS_WATERMARK, cv2.IMREAD_UNCHANGED)
-        hd_img = add_overlay_cv(hd_img,overlay_img,ams_logo_pos)
+        hd_img = add_overlay_cv(hd_img,ams_logo,ams_logo_pos)
 
         # Add Radiant
         if radiant is not False:
