@@ -182,6 +182,9 @@ def remaster(data):
         extra_logo_pos = params['logo_pos']
         if cfe(extra_logo) == 0:
             extra_logo = False
+        else:
+            # We get the cv2 image here once for all
+            extra_logo = cv2.imread(extra_logo, cv2.IMREAD_UNCHANGED)
     except:
         extra_logo = False
  
@@ -241,16 +244,9 @@ def remaster(data):
     ams_logo = cv2.imread(AMS_WATERMARK, cv2.IMREAD_UNCHANGED)
     # We compare the meteor box with the logo and its position within the first frame
     if(overlaps_with_image(cx1,cy1,cx2,cy2,ams_logo,ams_logo_pos,frames[0])): 
-        # We move the logo since it overlaps
+        # We move the logo here since it overlaps
         ams_logo_pos = EMPTY_CORNER
-
-
-    #logo_width,logo_height  = ams_logo.shape[1], ams_logo.shape[0]
-    # Get overlay position - see lib.Video_Tools_cv_lib compare to the first frame
-    #logo_x,logo_y = get_overlay_position_cv(frames[0],ams_logo,ams_logo_pos) 
-    #if(do_rect_overlap(logo_x,logo_y,logo_x + logo_width,logo_y + logo_height,cx1, cy1, cx2, cy2 )):
-        # The logo overlaps, we need to move it
-        #ams_logo_pos = EMPTY_CORNER
+ 
 
     fc = 0
     new_frames = []
@@ -280,7 +276,7 @@ def remaster(data):
   
         # Add Eventual Extra Logo
         if(extra_logo is not False and extra_logo is not None):
-            hd_img = add_overlay_cv(hd_img,cv2.imread(extra_logo, cv2.IMREAD_UNCHANGED),extra_logo_pos)
+            hd_img = add_overlay_cv(hd_img,extra_logo,extra_logo_pos)
 
         # Add Date & Time
         frame_time_str = station_id + ' - ' + frame_time_str + ' UT'
