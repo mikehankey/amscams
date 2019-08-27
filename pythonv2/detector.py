@@ -40,10 +40,13 @@ def convert_data(sd_video_file, json_conf):
    meteor_json_filename = sd_video_file.replace(".mp4", ".json")
    reduced_json_filename = sd_video_file.replace(".mp4", "-reduced.json")
    mj = load_json_file(meteor_json_filename)
-   rd = load_json_file(reduced_json_filename)
+   if cfe(reduced_json_filename) == 1:
+      rd = load_json_file(reduced_json_filename)
+   else:
+      rd = {}
    tmp_dir =  "/mnt/ams2/conversion/" + sd_fn
    tmp_dir = tmp_dir.replace(".mp4", "")
-   hd_video_file = rd['hd_video_file']
+   hd_video_file = mj['hd_trim']
    if "hd_video_file" in rd:
       hd_video_file = rd['hd_video_file']
       hd_fn = hd_video_file.split("/")[-1]
@@ -65,7 +68,7 @@ def convert_data(sd_video_file, json_conf):
 
    cmd = "./detector.py rd " + tmp_dir + "/" + sd_fn
    os.system(cmd)
-
+   print(hd_video_file)
    if cfe(hd_video_file) :
       cmd = "./detector.py rd " + tmp_dir + "/" + hd_fn
       os.system(cmd)
