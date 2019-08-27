@@ -21,7 +21,7 @@ def do_rect_overlap(Ax1,Ay1,Ax2,Ay2,Bx1,By1,Bx2,By2):
 # cv2_image  is a cv2 image
 # cv2_image_pos is pos "br|bl|tl|tr"
 # bg_image is a frame (so we can test the position of the image compared to the frame)
-def overlaps_with_image(meteor_box_x1,meteor_box_y1,meteor_box_x2,meteor_box_y2, ,cv2_image,cv2_image_pos, bg_image): 
+def overlaps_with_image(meteor_box_x1,meteor_box_y1,meteor_box_x2,meteor_box_y2,cv2_image,cv2_image_pos, bg_image): 
     cv2_image_width,cv2_image_height  = cv2_image.shape[1], cv2_image.shape[0]
     # Get overlay position - see lib.Video_Tools_cv_lib compare to the first frame
     image_x,image_y = get_overlay_position_cv(bg_image,cv2_image,cv2_image_pos) 
