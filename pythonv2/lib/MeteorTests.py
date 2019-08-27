@@ -531,7 +531,7 @@ def meteor_test_cm_gaps(object):
       if len(hs) == 9:
          fn,x,y,w,h,mx,my,max_val,sum_val = hs
 
-      if ((last_frame + 1 == fn or last_frame + 2 == fn) and last_frame > 0) or last_frame == fn:
+      if ((last_frame + 1 == fn or last_frame + 2 == fn or last_frame + 3 == fn) and last_frame > 0) or last_frame == fn:
          cm = cm + 1
       else:
          if cm > max_cm:
@@ -548,6 +548,7 @@ def meteor_test_cm_gaps(object):
       last_frame = fn
 
    # max cm per hist len 1 is best score. < .5 is fail.
+   max_cm = max_cm + 1
    if max_cm > 0:
       cm_hist_len_ratio = max_cm / len(hist)
    else:

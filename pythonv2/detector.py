@@ -35,6 +35,23 @@ from lib.DetectLib import eval_cnt
 
 json_conf = load_json_file("../conf/as6.json")
 
+def check_conversion(json_conf, extra):
+   dirs = glob.glob("/mnt/ams2/conversion/*")
+   good = 0
+   bad = 0
+   for dir in dirs:
+      pub_files = glob.glob(dir + "/*pub.mp4")
+      if len(pub_files) > 0:
+         good = good + 1
+      else:
+         bad = bad + 1
+         status = "pub file missing\n"
+         hd_files = glob.glob(dir + "/*HD.mp4") 
+         if len(hd_files) < 2:
+            print("HD DETECTION FILE IS MISSING.")
+         print(dir, len(pub_files))
+   print("GB:", good, bad)
+
 def convert_data(sd_video_file, json_conf):
    sd_fn = sd_video_file.split("/")[-1]
    sd_dir = sd_video_file.replace(sd_fn, "")
@@ -659,8 +676,8 @@ def process_video_frames(frames, video_file):
                obj_cnts.append((object['oid'], cx,cy,cw,ch))
                frame_data[fn]['obj_cnts'] = obj_cnts
 
-         #cv2.imshow('pepe', show_frame)
-         #cv2.waitKey(0)
+         cv2.imshow('pepe', show_frame)
+         cv2.waitKey(0)
 
          if 1 < last_seg_dist < 20 :
             motion = 1
@@ -2359,4 +2376,6 @@ if cmd == 'cn' or cmd == 'convert':
    file = sys.argv[2]
    convert_data(file, json_conf)
 
+if cmd == 'cc' or cmd == 'check_conversion':
+   check_conversion(json_conf, file)
 
