@@ -273,6 +273,9 @@ def remaster(data):
                 rad_x = int(rad_x * .66666)
                 rad_y = int(rad_y * .66666)
                 hd_img = add_radiant_cv(hd_img,rad_x,rad_y,rad_name)
+                print('RADIANT ADDED')
+                print(str(rad_x))
+                print(str(rad_y))
   
         # Add Eventual Extra Logo
         if(extra_logo is not False and extra_logo is not None):
