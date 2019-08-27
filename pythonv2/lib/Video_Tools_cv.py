@@ -208,8 +208,11 @@ def remaster(data):
         rad_y = data['rad_y']
         rad_name = data['rad_name']
         radiant = True 
+        print("RADIANT OK")
     except:
         radiant = False 
+        print("RADIANT NOT OK")
+        print(DEFAULT_VIDEO_PARAM_PATH
 
     #Define buffer
     start_buff = int(meteor_data['start_buff'])
