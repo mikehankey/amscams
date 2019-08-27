@@ -172,6 +172,7 @@ def remaster(data):
 
     print('EXTRA LOGO ')
     print(extra_logo)
+    print(params)
  
     # AMS Logo default position
     try:
