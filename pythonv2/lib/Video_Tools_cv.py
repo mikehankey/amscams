@@ -247,14 +247,14 @@ def remaster(data):
     something_overlaps = False
 
     # We compare the meteor box with the AMS logo and its position within the first frame
-    if(frames[0] is not None and overlaps_with_image(cx1,cy1,cx2,cy2,ams_logo,ams_logo_pos,frames[0])): 
+    #if(frames[0] is not None and overlaps_with_image(cx1,cy1,cx2,cy2,ams_logo,ams_logo_pos,frames[0])): 
         # We move the logo here since it overlaps 
-        something_overlaps = True
+    #    something_overlaps = True
         
         # By default, we put it on the bottom left - 50px above the bottom
-        ams_logo_pos_x = VIDEO_MARGINS 
-        ams_logo_pos_y = frames[0].shape[1] - VIDEO_MARGINS - 50
-        print('NEW LOGO POS ' + str(ams_logo_pos_x) +  ' , ' + str(ams_logo_pos_y))
+    #   ams_logo_pos_x = VIDEO_MARGINS 
+    #    ams_logo_pos_y = frames[0].shape[1] - VIDEO_MARGINS - 50
+    #    print('NEW LOGO POS ' + str(ams_logo_pos_x) +  ' , ' + str(ams_logo_pos_y))
 
     # We compare the meteor box with the eventual extra logo and its position within the first frame
     #if(one_empty_corner_left is True and extra_logo is not False and frames[0] is not None and overlaps_with_image(cx1,cy1,cx2,cy2,extra_logo,extra_logo_pos,frames[0])): 
@@ -283,15 +283,13 @@ def remaster(data):
             cv2.rectangle(hd_img, (cx1, cy1), (cx2, cy2), (color,color,color), 1)
 
         # Add AMS Logo 
-        if(ams_logo_pos_x is None):
+        if(something_overlaps is False):
             # No meteor Behind
             hd_img = add_overlay_cv(hd_img,ams_logo,ams_logo_pos)
-        else:
-            # A meteor was behind...
-            hd_img = add_overlay_x_y_cv(hd_img, ams_logo, ams_logo_pos_x, ams_logo_pos_y)
-
-
-
+        #else:
+        #    # A meteor was behind...
+        #    hd_img = add_overlay_x_y_cv(hd_img, ams_logo, ams_logo_pos_x, ams_logo_pos_y)
+ 
         # Add Eventual Extra Logo
         if(extra_logo is not False and extra_logo is not None):
             hd_img = add_overlay_cv(hd_img,extra_logo,extra_logo_pos)
