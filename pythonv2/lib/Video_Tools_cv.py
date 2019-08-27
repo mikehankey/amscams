@@ -230,14 +230,9 @@ def remaster(data):
     logo_width,logo_height  = ams_logo.shape[1], ams_logo.shape[0]
     # Get overlay position - see lib.Video_Tools_cv_lib compare to the first frame
     logo_x,logo_y = get_overlay_position_cv(frames[0],ams_logo,ams_logo_pos) 
-    print('LOGO BOX')
-    print(str(logo_x) + ' , ' + str(logo_y) +  ' , ' +  str(logo_x + logo_width)  +  ', ' + str(logo_y + logo_height))
-
-    print('METEOR BOX')
-    print(str(cx1) + ' , ' + str(cy1) +  ' , ' +  str(cx2)  +  ', ' + str(cy2))
-
-    print('DOES IT OVERLAP WITH THE METEOR BOX?')
-    print(overlaps(logo_x,logo_y,logo_x + logo_width,logo_y + logo_height,cx1, cy1, cx2, cy2 ))
+    if(overlaps(logo_x,logo_y,logo_x + logo_width,logo_y + logo_height,cx1, cy1, cx2, cy2 )):
+        # The logo overlaps, we need to move it
+        ams_logo_pos = EMPTY_CORNER
 
     fc = 0
     new_frames = []

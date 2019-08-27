@@ -56,6 +56,7 @@ D_CAM_INFO_POS = "bl" # bottom left
 D_CUS_LOGO_POS = "tr" # top right
 D_EXTRA_INFO = " " # WARNING - This is updated in Video_Parameters
 
+EMPTY_CORNER = "br" # Where to put stuff when the meteor overlaps
 
 HD_DIM = "1280x720" #for ffmpeg - used to extract the HD frames in HD_FRAMES_PATH
 
