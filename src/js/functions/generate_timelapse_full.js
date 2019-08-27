@@ -335,6 +335,7 @@ function add_timelapse_full_modal() {
   
     $('select[name=wat_pos]').val($('input[name=def_wat_pos]').val());
     $('select[name=text_pos]').val($('input[name=def_text_pos]').val());
+    $('select[name=extra_text_pos]').val($('input[name=def_extra_text_pos]').val());
 
    
     //Start datepicker

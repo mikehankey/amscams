@@ -658,6 +658,7 @@ def video_tools(json_conf,form):
    print("<input type='hidden' name='def_wat_pos' value='"+params['wat_pos'] +"'/>")  
    print("<input type='hidden' name='def_text_pos' value='"+params['text_pos'] +"'/>")  
    print("<input type='hidden' name='def_logo_pos' value='"+params['logo_pos'] +"'/>")  
+   print("<input type='hidden' name='def_extra_text_pos' value='"+params['extra_text_pos'] +"'/>")  
    print("<input type='hidden' name='def_extra_text' value='"+params['extra_text'] +"'/>")  
    print("<input type='hidden' name='def_extra_logo' value='"+params['extra_logo'] +"'/>")  
 
