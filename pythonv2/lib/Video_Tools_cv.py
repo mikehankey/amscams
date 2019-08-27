@@ -253,7 +253,9 @@ def remaster(data):
         
         # By default, we put it on the bottom left, above the (eventual) 2 lines
         ams_logo_pos_x = VIDEO_MARGINS
+        print('HEIGHT ' + str(frames[0].shape[1]))
         ams_logo_pos_y = frames[0].shape[1] -VIDEO_MARGINS-VIDEO_LINE_HEIGHT
+        print('Y ' + str(frames[0].shape[1] -VIDEO_MARGINS-VIDEO_LINE_HEIGHT))
 
     # We compare the meteor box with the eventual extra logo and its position within the first frame
     #if(one_empty_corner_left is True and extra_logo is not False and frames[0] is not None and overlaps_with_image(cx1,cy1,cx2,cy2,extra_logo,extra_logo_pos,frames[0])): 
