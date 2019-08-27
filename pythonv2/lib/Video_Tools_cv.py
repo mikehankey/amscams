@@ -183,6 +183,16 @@ def remaster(data):
     except:
         extra_text = False
 
+
+    # Radiant
+    try:
+        rad_x = params['rad_x']
+        rad_y = params['rad_y']
+        rad_name = params['rad_name']
+        radiant = True
+    except:
+        radiant = False
+
     #Define buffer
     start_buff = int(meteor_data['start_buff'])
     start_sec = (start_buff / 25) * -1 
@@ -228,15 +238,11 @@ def remaster(data):
         hd_img = add_overlay_cv(hd_img,overlay_img,ams_logo_pos)
 
         # Add Radiant
-        if rad_x is None:
-           print("RADX!")
-           exit()
-
-        if rad_x is not None:
-           if hd_img.shape[0] == 720 :
-              rad_x = int(rad_x * .66666)
-              rad_y = int(rad_y * .66666)
-           hd_img = add_radiant_cv(hd_img,rad_x,rad_y,"Perseids")
+        if radiant is not False:
+            if hd_img.shape[0] == 720 :
+                rad_x = int(rad_x * .66666)
+                rad_y = int(rad_y * .66666)
+            hd_img = add_radiant_cv(hd_img,rad_x,rad_y,rad_name)
   
         # Add Eventual Extra Logo
         if(extra_logo is not False and extra_logo is not None):
