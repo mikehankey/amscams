@@ -243,9 +243,9 @@ function add_timelapse_full_modal() {
                                 </div>\
                             </div>\
                             <div class="row" id="position">\
-                                <div class="col-sm-4" >\
+                                <div class="col-sm-3" >\
                                     <div class="form-group mb-2">\
-                                        <label for="wat_pos" class="col-form-label">Position of<br>the <br>AMS Logo</b></label> \
+                                        <label for="wat_pos" class="col-form-label">Position of<br>the <b>AMS Logo</b></label> \
                                             <select name="wat_pos" class="form-control"> \
                                                 <option value="tr" >Top right</option> \
                                                 <option value="tl" >Top Left</option> \
@@ -254,7 +254,7 @@ function add_timelapse_full_modal() {
                                             </select> \
                                     </div> \
                                 </div>\
-                                <div class="col-sm-4">\
+                                <div class="col-sm-3">\
                                     <div class="form-group mb-2"> \
                                         <label for="text_pos" class="col-form-label">Position of <br><b>Date &amp; Time</b></label> \
                                         <select name="text_pos" class="form-control"> \
@@ -265,9 +265,9 @@ function add_timelapse_full_modal() {
                                         </select> \
                                     </div>\
                                 </div>\
-                                <div class="col-sm-4">\
+                                <div class="col-sm-3">\
                                 <div class="form-group mb-2"> \
-                                    <label for="extra_text_pos" class="col-form-label"><b>Position of<br> the Operator Info</b></label> \
+                                    <label for="extra_text_pos" class="col-form-label">Position of<br> the <b>Operator Info</b></label> \
                                     <select name="extra_text_pos" class="form-control"> \
                                         <option value="tr">Top right</option> \
                                         <option value="tl" >Top Left</option> \
@@ -276,9 +276,9 @@ function add_timelapse_full_modal() {
                                     </select> \
                                 </div>\
                             </div>\
-                                <div id="logo_pos" class="col-sm-4" hidden>\
+                                <div id="logo_pos" class="col-sm-3" hidden>\
                                     <div class="form-group mb-2"> \
-                                        <label for="logo_pos" class="col-form-label"><b>Position of the Logo</b></label> \
+                                        <label for="logo_pos" class="col-form-label">Position of<br>the <b>Logo</b></label> \
                                         <select name="logo_pos" class="form-control"> \
                                             <option value="tr" >Top right</option> \
                                             <option value="tl" >Top Left</option> \
