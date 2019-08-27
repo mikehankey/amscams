@@ -272,6 +272,8 @@ def remaster(data):
 
         # Add Radiant
         if radiant is not False:
+            print('RAD NOT FALSE')
+            print(hd_img.shape[0])
             if hd_img.shape[0] == 720 :
                 rad_x = int(rad_x * .66666)
                 rad_y = int(rad_y * .66666)
