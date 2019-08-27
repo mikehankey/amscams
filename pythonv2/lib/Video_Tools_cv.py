@@ -233,6 +233,9 @@ def remaster(data):
     print('LOGO BOX')
     print(str(logo_x) + ' , ' + str(logo_y) +  ' , ' +  str(logo_x + logo_width)  +  ', ' + str(logo_y + logo_height))
 
+    print('METEOR BOX')
+    print(str(cx1) + ' , ' + str(cy1) +  ' , ' +  str(cx2)  +  ', ' + str(cy2))
+
     print('DOES IT OVERLAP WITH THE METEOR BOX?')
     print(overlaps(logo_x,logo_y,logo_x + logo_width,logo_y + logo_height,cx1, cy1, cx2, cy2 ))
 
