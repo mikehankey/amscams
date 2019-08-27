@@ -22,6 +22,7 @@ def get_text_position_cv(background,text,position,line_number,font,margins=VIDEO
             return background_height-abs(text_h)*2-VIDEO_MARGINS-line_number*2,background_width-VIDEO_MARGINS-text_w   
         else:
             return background_height-text_h-VIDEO_MARGINS-line_number,background_width-VIDEO_MARGINS-text_w    
+    
     elif(position=='tl'):
   
         background_width,background_height  = background.shape[1], background.shape[0]
@@ -30,12 +31,15 @@ def get_text_position_cv(background,text,position,line_number,font,margins=VIDEO
             return VIDEO_MARGINS,background_width-VIDEO_MARGINS-text_w
         else:
             return VIDEO_LINE_HEIGHT+text_h*line_number,background_width-VIDEO_MARGINS-text_w     
+    
     elif(position=='bl'):
+    
         background_width,background_height  = background.shape[1], background.shape[0]
         if(line_number==1):
             return background_height-abs(text_h)*2-VIDEO_MARGINS-line_number*2,VIDEO_MARGINS   
         else:
             return background_height-text_h-VIDEO_MARGINS-line_number,VIDEO_MARGINS   
+    
     else:
         if(line_number==1):
             return VIDEO_MARGINS,VIDEO_MARGINS    
