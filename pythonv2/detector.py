@@ -37,6 +37,8 @@ json_conf = load_json_file("../conf/as6.json")
 
 def convert_data(sd_video_file, json_conf):
    sd_fn = sd_video_file.split("/")[-1]
+   sd_dir = sd_video_file.replace(sd_fn, "")
+
    meteor_json_filename = sd_video_file.replace(".mp4", ".json")
    reduced_json_filename = sd_video_file.replace(".mp4", "-reduced.json")
    mj = load_json_file(meteor_json_filename)
@@ -50,8 +52,19 @@ def convert_data(sd_video_file, json_conf):
    if "hd_video_file" in rd:
       hd_video_file = rd['hd_video_file']
       hd_fn = hd_video_file.split("/")[-1]
+      print("FROMRED")
    else:
-      hd_video_file = None
+      if "hd_trim" in mj:
+         hd_video_file = mj['hd_trim'] 
+         hd_fn = hd_video_file.split("/")[-1]
+         hd_video_file = sd_dir + "/" + hd_fn
+         print("TRIM", hd_video_file)
+       
+      else:
+         hd_video_file = None
+
+   print("HD VIDEO:", hd_video_file)
+
    if cfe(tmp_dir, 1) == 0:
       os.system("mkdir " + tmp_dir)
    if cfe(sd_video_file) :
@@ -68,10 +81,14 @@ def convert_data(sd_video_file, json_conf):
 
    cmd = "./detector.py rd " + tmp_dir + "/" + sd_fn
    os.system(cmd)
-   print(hd_video_file)
-   if cfe(hd_video_file) :
-      cmd = "./detector.py rd " + tmp_dir + "/" + hd_fn
-      os.system(cmd)
+ 
+   if hd_video_file is not None:
+      if cfe(hd_video_file) :
+         cmd = "./detector.py rd " + tmp_dir + "/" + hd_fn
+         os.system(cmd)
+      else:
+         print("HD VIDEO FILE DOES NOT EXIST?")
+         exit()
 
    new_sd_file = None
    new_hd_file = None
@@ -133,6 +150,7 @@ def convert_data(sd_video_file, json_conf):
    new_frame, rad_x, rad_y = add_radiant(ra,dec,new_frame,new_json_file, final_json,json_conf)
    data['rad_x'] = rad_x
    data['rad_y'] = rad_y
+   data['rad_name'] = "Perseids" 
 
 
    remaster(data )
