@@ -132,16 +132,11 @@ def add_overlay_cv(background, overlay, position):
 
 # Add radiant to a frame
 def add_radiant_cv(background,x,y,text):
-    print("ADDING RAD:", y,x, background.shape)
-
-    radiant_image = cv2.imread(RADIANT_IMG, cv2.IMREAD_UNCHANGED) 
-    background = add_overlay_x_y_cv(background,radiant_image,x-int(radiant_image.shape[1]/2),y-int(radiant_image.shape[0]/2))
-
+ 
     # Add Image if possible (inside the main frame)
     try:
         radiant_image = cv2.imread(RADIANT_IMG, cv2.IMREAD_UNCHANGED) 
         background = add_overlay_x_y_cv(background,radiant_image,x-int(radiant_image.shape[1]/2),y-int(radiant_image.shape[0]/2))
-        print("ADDED RADIANT OVERLAY!")
     except:
         print("ERROR ADDING RAD")
         exit()
@@ -274,12 +269,6 @@ def remaster(data):
         # Add AMS Logo 
         hd_img = add_overlay_cv(hd_img,ams_logo,ams_logo_pos)
 
-        # Add Radiant
-        if radiant is not False:
-            if hd_img.shape[0] == 720 :
-                rad_x = int(rad_x * .66666)
-                rad_y = int(rad_y * .66666) 
-            hd_img = add_radiant_cv(hd_img,rad_x,rad_y,rad_name)
   
         # Add Eventual Extra Logo
         if(extra_logo is not False and extra_logo is not None):
@@ -294,6 +283,15 @@ def remaster(data):
         #extra_text_pos = "bl"
         if(extra_text is not False):
             hd_img = add_text_to_pos(hd_img,extra_text,extra_text_pos,1)  #extra_text_pos => br?
+
+        
+        # Add Radiant
+        if(radiant is not False):
+            if hd_img.shape[0] == 720 :
+                rad_x = int(rad_x * .66666)
+                rad_y = int(rad_y * .66666) 
+            print('RAD AT ' + str(rad_x) + ' , ' + str(rad_y))
+            hd_img = add_radiant_cv(hd_img,rad_x,rad_y,rad_name)
  
         new_frames.append(hd_img) 
         fc = fc + 1
