@@ -212,7 +212,7 @@ def remaster(data):
     except:
         radiant = False 
         print("RADIANT NOT OK")
-        print(DEFAULT_VIDEO_PARAM_PATH
+        print(data)
 
     #Define buffer
     start_buff = int(meteor_data['start_buff'])
