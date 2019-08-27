@@ -162,4 +162,9 @@ data = {
 }
 
 
-remaster(data)
+#remaster(data)
+
+background = cv2.imread('/mnt/ams2/meteors/2019_08_23/2019_08_23_00_03_23_000_010040-trim-1-HD-meteor-stacked.png')
+overlay = cv2.imread(AMS_WATERMARK, cv2.IMREAD_UNCHANGED)
+added_image = add_radiant_cv(overlay,50,50,"Perseids")
+cv2.imwrite('/mnt/ams2/test_text.png', added_image)
