@@ -161,15 +161,14 @@ def remaster(data):
     # We take the default logo in DEFAULT_VIDEO_PARAM
     params = get_video_job_default_parameters()
     params = params['param']
-
-    print(params)
-    exit()
-    
+ 
     try:
         extra_logo = params['extra_logo']
         extra_logo_pos = params['logo_pos']
         if cfe(extra_logo) == 0:
-           extra_logo = False
+            print('CFE NOT')
+            exit()
+            extra_logo = False
     except:
         extra_logo = False
  
