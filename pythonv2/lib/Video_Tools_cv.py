@@ -286,12 +286,10 @@ def remaster(data):
         if(radiant is not False):
             if hd_img.shape[0] == 720 :
                 rad_x = int(rad_x * .66666)
-                rad_y = int(rad_y * .66666) 
-            print('RAD AT ' + str(rad_x) + ' , ' + str(rad_y))
+                rad_y = int(rad_y * .66666)  
             hd_img = add_radiant_cv(hd_img,rad_x,rad_y,rad_name)
  
         new_frames.append(hd_img) 
         fc = fc + 1
 
-    make_movie_from_frames(new_frames, [0,len(new_frames) - 1], marked_video_file, 1)
-    print('OUTPUT ' + marked_video_file)
+    make_movie_from_frames(new_frames, [0,len(new_frames) - 1], marked_video_file, 1) 

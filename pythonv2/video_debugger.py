@@ -156,8 +156,8 @@ data = {
 data = {
     'json_conf' : '/mnt/ams2/meteor_archive/2019_08_14/2019_08_14_03_19_52_640_010042_AMS7_HD.json',
     'video_file' :'/mnt/ams2/meteor_archive/2019_08_14/2019_08_14_03_19_52_640_010042_AMS7_HD.mp4',
-    'rad_x': 50,
-    'rad_y': 50,
+    'rad_x': 500,
+    'rad_y': 500,
     'rad_name': 'Perseids'
 }
 
