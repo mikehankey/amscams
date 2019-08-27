@@ -12,8 +12,7 @@ from lib.VIDEO_VARS import *
 # return x,y position of the overlay over the background
 # as well as the coord of the box of the text
 def get_text_position_cv(background,text,position,line_number,font,margins=VIDEO_MARGINS):
-     
-
+      
     # Get font.getsize(txt)
     text_w, text_h = font.getsize(text+',') 
  
