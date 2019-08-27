@@ -167,14 +167,21 @@ def remaster(data):
     #OUTPUT FILE
     marked_video_file = video_file.replace(".mp4", "-pub.mp4")
 
-    # Add AMS Logo
-    ams_logo = cv2.imread(AMS_WATERMARK, cv2.IMREAD_UNCHANGED)
-
-    # Custom Logo
-    # We take the default logo in DEFAULT_VIDEO_PARAM
+    
+    # We get the different element of customization of the videos
+    # from DEFAULT_VIDEO_PARAM
     params = get_video_job_default_parameters()
     params = params['param']
- 
+
+
+    # AMS Logo
+    ams_logo = cv2.imread(AMS_WATERMARK, cv2.IMREAD_UNCHANGED) 
+    try:
+        ams_logo_pos = params['wat_pos'] #From the JSON (get_video_job_default_parameters)
+    except:
+        ams_logo_pos = D_AMS_LOGO_POS #Default
+    
+    # Eventual Extra Logo
     try:
         extra_logo     = params['extra_logo']
         extra_logo_pos = params['logo_pos']
@@ -185,20 +192,19 @@ def remaster(data):
             extra_logo = cv2.imread(extra_logo, cv2.IMREAD_UNCHANGED)
     except:
         extra_logo = False
- 
-    # AMS Logo default position
-    ams_logo = cv2.imread(AMS_WATERMARK, cv2.IMREAD_UNCHANGED)
-    try:
-        ams_logo_pos = params['wat_pos']
-    except:
-        ams_logo_pos = D_AMS_LOGO_POS #Default
- 
-    # Extra text
+  
+    # Extra text (customizable through /pycgi/webUI.py?cmd=video_tools)
     try:
         extra_text = params['extra_text']
-        extra_text_pos = params['text_pos']
+        extra_text_pos = params['extra_text_pos']
     except:
         extra_text = False
+
+    # Date & Time position
+    try:
+        date_time_pos = params['text_pos']
+    except:
+        date_time_pos = D_CAM_INFO_POS
  
     # Radiant
     try:
@@ -207,12 +213,9 @@ def remaster(data):
         rad_name = data['rad_name']
         radiant = True 
         # We load it here once for all
-        radiant_image =  cv2.imread(RADIANT_IMG, cv2.IMREAD_UNCHANGED) 
-        # print("RADIANT OK")
+        radiant_image =  cv2.imread(RADIANT_IMG, cv2.IMREAD_UNCHANGED)  
     except:
-        radiant = False 
-        #print("RADIANT NOT OK")
-        #print(data)
+        radiant = False  
 
     #Define buffer
     start_buff = int(meteor_data['start_buff'])
@@ -284,12 +287,10 @@ def remaster(data):
             hd_img = add_overlay_cv(hd_img,extra_logo,extra_logo_pos)
 
         # Add Date & Time
-        frame_time_str = station_id + ' - ' + frame_time_str + ' UT'
-        extra_text_pos = "br"
-        hd_img,xx,yy,ww,hh = add_text_to_pos(hd_img,frame_time_str,extra_text_pos,2) #extra_text_pos => bl?
+        frame_time_str = station_id + ' - ' + frame_time_str + ' UT' 
+        hd_img,xx,yy,ww,hh = add_text_to_pos(hd_img,frame_time_str,date_time_pos,2) #extra_text_pos => bl?
 
-        # Add Extra_info
-        extra_text_pos = "bl"
+        # Add Extra_info 
         if(extra_text is not False):
             hd_img,xx,yy,ww,hh = add_text_to_pos(hd_img,extra_text,extra_text_pos,2)  #extra_text_pos => br?
  
@@ -299,7 +300,7 @@ def remaster(data):
                 rad_x = int(rad_x * .66666)
                 rad_y = int(rad_y * .66666)  
             hd_img = add_radiant_cv(radiant_image,hd_img,rad_x,rad_y,rad_name)  
-            
+
         new_frames.append(hd_img) 
         fc = fc + 1
 

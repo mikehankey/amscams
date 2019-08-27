@@ -52,10 +52,10 @@ D_FPS = "30"
 D_DIM = "1920:1080" #" DEFAULT DIM FOR VIDEOS " 
 D_EXTRA_LOGO = " " # No Extra Logo 
 D_AMS_LOGO_POS = "tl" # top left
-D_CAM_INFO_POS = "br" # bottom left
+D_CAM_INFO_POS = "bl" # bottom left
 D_CUS_LOGO_POS = "tr" # top right
 D_EXTRA_INFO = " " # WARNING - This is updated in Video_Parameters
-D_EXTRA_INFO_POS = "bl"
+D_EXTRA_INFO_POS = "br" # OPERATOR INFO
 
 EMPTY_CORNER = "br" # Where to put stuff when the meteor overlaps
 
