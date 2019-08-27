@@ -227,7 +227,7 @@ def remaster(data):
     # Get overlay position - see lib.Video_Tools_cv_lib compare to the first frame
     logo_x,logo_y = get_overlay_position_cv(frame[0],ams_logo,ams_logo_pos) 
     print('LOGO BOX')
-    print((str(logo_x) + ' , ' + str(logo_y) +  ' , ' +  str(logo_x + logo_width)  +  ', ' + str(logo_y + logo_height))
+    print(str(logo_x) + ' , ' + str(logo_y) +  ' , ' +  str(logo_x + logo_width)  +  ', ' + str(logo_y + logo_height))
 
 
     fc = 0
