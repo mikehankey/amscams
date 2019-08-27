@@ -14,7 +14,7 @@ from lib.VideoLib import load_video_frames, make_crop_box, make_movie_from_frame
 # Test if 2 rectangles (A & B) overlap 
 # (used to move logo or text around if a meteor is behind)
 def overlaps(Ax1,Ay1,Ax2,Ay2,Bx1,By1,Bx2,By2): 
-    return not(Ax1 < Bx2 and Ax2 > Bx1 and Ay1 < By2 and Ay2 > By1) 
+    return Ax1 < Bx2 and Ax2 > Bx1 and Ay1 < By2 and Ay2 > By1
 
 # Add text on x,y with default small font (for radiant or other info)
 # If centered = the text is placed as if x,y is the center
