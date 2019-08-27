@@ -13,8 +13,20 @@ from lib.VideoLib import load_video_frames, make_crop_box, make_movie_from_frame
 
 # Test if 2 rectangles (A & B) overlap 
 # (used to move logo or text around if a meteor is behind)
-def overlaps(Ax1,Ay1,Ax2,Ay2,Bx1,By1,Bx2,By2): 
+def do_rect_overlap(Ax1,Ay1,Ax2,Ay2,Bx1,By1,Bx2,By2): 
     return Ax1 < Bx2 and Ax2 > Bx1 and Ay1 < By2 and Ay2 > By1
+
+# Test if the meteor box overlap
+# the object passed in argment 
+# cv2_image  is a cv2 image
+# cv2_image_pos is pos "br|bl|tl|tr"
+# bg_image is a frame (so we can test the position of the image compared to the frame)
+def overlaps_with_image(meteor_box_x1,meteor_box_y1,meteor_box_x2,meteor_box_y2, ,cv2_image,cv2_image_pos, bg_image): 
+    cv2_image_width,cv2_image_height  = cv2_image.shape[1], cv2_image.shape[0]
+    # Get overlay position - see lib.Video_Tools_cv_lib compare to the first frame
+    image_x,image_y = get_overlay_position_cv(bg_image,cv2_image,cv2_image_pos) 
+    return do_rect_overlap(image_x,image_y,image_x + cv2_image_width,image_y + cv2_image_height,meteor_box_x1, meteor_box_y1, meteor_box_x2, meteor_box_y2)
+
 
 # Add text on x,y with default small font (for radiant or other info)
 # If centered = the text is placed as if x,y is the center
@@ -227,12 +239,18 @@ def remaster(data):
     
     # We get the AMS logo box
     ams_logo = cv2.imread(AMS_WATERMARK, cv2.IMREAD_UNCHANGED)
-    logo_width,logo_height  = ams_logo.shape[1], ams_logo.shape[0]
-    # Get overlay position - see lib.Video_Tools_cv_lib compare to the first frame
-    logo_x,logo_y = get_overlay_position_cv(frames[0],ams_logo,ams_logo_pos) 
-    if(overlaps(logo_x,logo_y,logo_x + logo_width,logo_y + logo_height,cx1, cy1, cx2, cy2 )):
-        # The logo overlaps, we need to move it
+    # We compare the meteor box with the logo and its position within the first frame
+    if(overlaps_with_image(cx1,cy1,cx2,cy2, ,ams_logo,ams_logo_pos, frames[0])): 
+        # We move the logo since it overlaps
         ams_logo_pos = EMPTY_CORNER
+
+
+    #logo_width,logo_height  = ams_logo.shape[1], ams_logo.shape[0]
+    # Get overlay position - see lib.Video_Tools_cv_lib compare to the first frame
+    #logo_x,logo_y = get_overlay_position_cv(frames[0],ams_logo,ams_logo_pos) 
+    #if(do_rect_overlap(logo_x,logo_y,logo_x + logo_width,logo_y + logo_height,cx1, cy1, cx2, cy2 )):
+        # The logo overlaps, we need to move it
+        #ams_logo_pos = EMPTY_CORNER
 
     fc = 0
     new_frames = []
