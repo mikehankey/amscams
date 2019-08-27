@@ -246,7 +246,7 @@ def remaster(data):
     # if it doesn't we need to move stuff around 
 
     # We compare the meteor box with the AMS logo and its position within the first frame
-    #if(frames[0] is not None and overlaps_with_image(cx1,cy1,cx2,cy2,ams_logo,ams_logo_pos,frames[0])): 
+    if(frames[0] is not None and overlaps_with_image(cx1,cy1,cx2,cy2,ams_logo,ams_logo_pos,frames[0])): 
         # We move the logo here since it overlaps
         ams_logo_pos = EMPTY_CORNER
         one_empty_corner_left = False
