@@ -163,12 +163,15 @@ def remaster(data):
     params = params['param']
  
     try:
-        extra_logo = params['extra_logo']
+        extra_logo     = params['extra_logo']
         extra_logo_pos = params['logo_pos']
         if cfe(extra_logo) == 0:
             extra_logo = False
     except:
         extra_logo = False
+
+    print('EXTRA LOGO ')
+    print(extra_logo)
  
     # AMS Logo default position
     try:
