@@ -2315,6 +2315,7 @@ if cmd == 'rm' or cmd == 'remaster':
    new_frame, rad_x, rad_y = add_radiant(ra,dec,new_frame,json_file, meteor_data,json_conf)
    data['rad_x'] = rad_x
    data['rad_y'] = rad_y
+   data['rad_name'] = "Perseids"
    print(data)
    remaster(data )
 
