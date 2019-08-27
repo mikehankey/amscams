@@ -11,7 +11,11 @@ from lib.FileIO import load_json_file, cfe
 # From Mike
 from lib.VideoLib import load_video_frames, make_crop_box, make_movie_from_frames
 
- 
+# Test if 2 rectangles (A & B) overlap 
+# (used to move logo or text around if a meteor is behind)
+def overlaps(Ax1,Ay1,Ax2,Ay2,Bx1,By1,Bx2,By2)
+    return (Ax1 < Bx2 and Ax2 > Bx1 and Ay1 > By2 and Ay2 < By1) 
+
 # Add text on x,y with default small font (for radiant or other info)
 # If centered = the text is placed as if x,y is the center
 def add_text(background,text,x,y,centered=False):
@@ -229,6 +233,8 @@ def remaster(data):
     print('LOGO BOX')
     print(str(logo_x) + ' , ' + str(logo_y) +  ' , ' +  str(logo_x + logo_width)  +  ', ' + str(logo_y + logo_height))
 
+    print('DOES IT OVERLAP WITH THE METEOR BOX?')
+    print(overlaps(logo_x,logo_y,logo_x + logo_width,logo_y + logo_height,cx1, cy1, cx2, cy2 ))
 
     fc = 0
     new_frames = []
