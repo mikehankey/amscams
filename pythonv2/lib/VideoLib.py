@@ -170,6 +170,7 @@ def make_crop_box(meteor_data, iw, ih):
 
    med_seg_dist = np.median(segs) 
    last_x = None
+   last_seg_dist = 0
    for i in range(0,len(mxs)-1):
       if last_x is not None:
          last_seg_dist = calc_dist((mxs[i], mys[i]), (last_x, last_y))
@@ -179,10 +180,16 @@ def make_crop_box(meteor_data, iw, ih):
       last_x = mxs[i]
       last_y = mys[i]
 
-   min_x = min(gxs) - 20
-   max_x = max(gxs) + 20
-   min_y = min(gys) - 20
-   max_y = max(gys) + 20
+   if len(gxs) > 0:
+      min_x = min(gxs) - 20
+      max_x = max(gxs) + 20
+      min_y = min(gys) - 20
+      max_y = max(gys) + 20
+   else:
+      min_x = min(mxs) - 20
+      max_x = max(mxs) + 20
+      min_y = min(mys) - 20
+      max_y = max(mys) + 20
 
    cx = int((min_x + max_x) / 2)
    cy = int((min_y + max_y) / 2)
