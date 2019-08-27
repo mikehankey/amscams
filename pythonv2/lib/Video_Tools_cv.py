@@ -139,7 +139,7 @@ def remaster(data):
 
     video_file = data['video_file']
     json_conf  = data['json_conf']
-    
+
     if "rad_x" in data:
        rad_x = data['rad_x']
        rad_y = data['rad_y']  
@@ -150,6 +150,7 @@ def remaster(data):
     frames = load_video_frames(video_file, json_conf, 0, 0, [], 1)
     json_file = video_file.replace(".mp4", ".json")
     meteor_data = load_json_file(json_file)
+
     #OUTPUT FILE
     marked_video_file = video_file.replace(".mp4", "-pub.mp4")
 
@@ -160,6 +161,9 @@ def remaster(data):
     # We take the default logo in DEFAULT_VIDEO_PARAM
     params = get_video_job_default_parameters()
     params = params['param']
+
+    print(params)
+    exit()
     
     try:
         extra_logo = params['extra_logo']
@@ -174,7 +178,6 @@ def remaster(data):
         ams_logo_pos = params['wat_pos']
     except:
         ams_logo_pos = D_AMS_LOGO_POS #Default
-
  
     # Extra text
     try:
