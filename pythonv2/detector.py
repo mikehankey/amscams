@@ -10,14 +10,15 @@ import cv2
 import math
 import numpy as np
 import scipy.optimize
-
-from lib.VideoLib import get_masks, find_hd_file_new, load_video_frames, sync_hd_frames, make_movie_from_frames, remaster
+from lib.Video_Tools_cv import remaster
+from lib.VideoLib import get_masks, find_hd_file_new, load_video_frames, sync_hd_frames, make_movie_from_frames, add_radiant
 
 from lib.UtilLib import check_running, angularSeparation, bound_cnt
 from lib.CalibLib import radec_to_azel, clean_star_bg, get_catalog_stars, find_close_stars, XYtoRADec, HMS2deg, AzEltoRADec, get_active_cal_file
 
 from lib.ImageLib import mask_frame , stack_frames, preload_image_acc
 from lib.ReducerLib import setup_metframes, detect_meteor , make_crop_images, perfect, detect_bp, best_fit_slope_and_intercept, id_object, metframes_to_mfd
+
 from lib.MeteorTests import meteor_test_cm_gaps
 
 
@@ -74,27 +75,36 @@ def convert_data(sd_video_file, json_conf):
    all_files = glob.glob(tmp_dir + "/" + "*") 
    for file in all_files:
       print(file)
+      file_name = file.split("/")[-1]
       if "mp4" in file and "SD" in file:
          new_sd_file = file
-      if "mp4" in file and "HD" in file:
+      if "mp4" in file and "HD" in file and "trim" not in file_name and "pub" not in file_name:
+         print("HD FOUND", file)
          new_hd_file = file
    if new_sd_file is None:
-      print("FAILED TO CONVERT SD!")
+      print("FAILED TO CONVERT SD!", new_sd_file)
       exit()
    if new_hd_file is None:
-      print("FAILED TO CONVERT HD!")
+      print("FAILED TO CONVERT HD!", new_hd_file)
       exit()
 
    new_sd_json_file = new_sd_file.replace(".mp4", ".json")
    new_hd_json_file = new_hd_file.replace(".mp4", ".json")
    new_sd_json = load_json_file(new_sd_json_file)
+   if cfe(new_hd_json_file) == 0:
+      print("FAILED TO MAKE HD JSON", new_hd_json_file) 
+      exit()
+   
    new_hd_json = load_json_file(new_hd_json_file)
+
+
    final_json = new_hd_json
    for fn in final_json['metframes']:
-      final_json['metframes'][fn]['sd_x'] = new_sd_json['metframes'][fn]['sd_x'] 
-      final_json['metframes'][fn]['sd_y'] = new_sd_json['metframes'][fn]['sd_y'] 
-      final_json['metframes'][fn]['sd_inenstity'] = new_sd_json['metframes'][fn]['sd_intensity'] 
-      final_json['metframes'][fn]['hd_inenstity'] = new_hd_json['metframes'][fn]['sd_intensity'] 
+      if fn in final_json['metframes'][fn]:
+         final_json['metframes'][fn]['sd_x'] = new_sd_json['metframes'][fn]['sd_x'] 
+         final_json['metframes'][fn]['sd_y'] = new_sd_json['metframes'][fn]['sd_y'] 
+         final_json['metframes'][fn]['sd_inenstity'] = new_sd_json['metframes'][fn]['sd_intensity'] 
+         final_json['metframes'][fn]['hd_inenstity'] = new_hd_json['metframes'][fn]['sd_intensity'] 
 
    temp = new_sd_file.replace("SD", "HD")
    if temp != new_hd_file:
@@ -108,6 +118,24 @@ def convert_data(sd_video_file, json_conf):
    new_json_red_file = new_sd_json_file.replace(".json", "-reduced.json")
    save_json_file(new_json_file, final_json)
    save_json_file(new_json_red_file, final_json)
+
+   data = {}
+   data['video_file'] = new_hd_file
+   data['json_conf'] = json_conf
+
+   #perseids radiant
+   ra = 46
+   dec = 59
+   new_frame = np.zeros((1080,1920),dtype=np.uint8)
+   new_frame, rad_x, rad_y = add_radiant(ra,dec,new_frame,new_json_file, final_json,json_conf)
+   data['rad_x'] = rad_x
+   data['rad_y'] = rad_y
+
+
+   remaster(data )
+
+   # Now move the files from this dir to the meteor_archive dir
+
 
 
 def update(file, json_conf):
@@ -611,7 +639,7 @@ def process_video_frames(frames, video_file):
                frame_data[fn]['obj_cnts'] = obj_cnts
 
          #cv2.imshow('pepe', show_frame)
-         #cv2.waitKey(70)
+         #cv2.waitKey(0)
 
          if 1 < last_seg_dist < 20 :
             motion = 1
@@ -1345,34 +1373,51 @@ def smooth_points_new(meteor_json, frames ):
    metconf = meteor_json['metconf']
 
    for fn in metframes:
-      print (fn, metframes[fn]['mx'], metframes[fn]['my'], metframes[fn]['obj_cnts'])
+      #print (fn, metframes[fn]['mx'], metframes[fn]['my'], metframes[fn]['obj_cnts'])
       oxs = []
       oys = []
       ows = []
       ohs = []
       cnt_maxpx_agree = 0
-      for obj in metframes[fn]['obj_cnts']:
-         oid, ox, oy, ow, oh = obj
-         ocx = int(ox + (ow/2))
-         ocy = int(oy + (oh/2))
-         oxs.append(ocy)
-         oys.append(ocy)
-         ows.append(ow)
-         ohs.append(oh)
+      # Hanle Non CNT Detections...
+      if "obj_cnts" in metframes[fn]:
+         for obj in metframes[fn]['obj_cnts']:
+            oid, ox, oy, ow, oh = obj
+            ocx = int(ox + (ow/2))
+            ocy = int(oy + (oh/2))
+            oxs.append(ocy)
+            oys.append(ocy)
+            ows.append(ow)
+            ohs.append(oh)
 
-         # check distance from the object and brightest pixel
-         odist = calc_dist((ocx,ocy), (metframes[fn]['mx'], metframes[fn]['my']))
-         if odist < 5:
-            cnt_maxpx_agree = 1
+            # check distance from the object and brightest pixel
+            odist = calc_dist((ocx,ocy), (metframes[fn]['mx'], metframes[fn]['my']))
+            if odist < 5:
+               cnt_maxpx_agree = 1
+
 
       if cnt_maxpx_agree == 1:
          metframes[fn]['hd_x'] = metframes[fn]['mx']
          metframes[fn]['hd_y'] = metframes[fn]['my']
       else:
-         metframes[fn]['hd_x'] = int(np.mean(oxs))
-         metframes[fn]['hd_y'] = int(np.mean(oys))
-      metframes[fn]['w'] = int(np.mean(ows))
-      metframes[fn]['h'] = int(np.mean(ohs))
+         if len(oxs) > 1:
+            metframes[fn]['hd_x'] = int(np.mean(oxs))
+            metframes[fn]['hd_y'] = int(np.mean(oys))
+         else:
+            metframes[fn]['hd_x'] = metframes[fn]['mx']
+            metframes[fn]['hd_y'] = metframes[fn]['my']
+            metframes[fn]['sd_x'] = metframes[fn]['mx']
+            metframes[fn]['sd_y'] = metframes[fn]['my']
+            metframes[fn]['sd_cx'] = metframes[fn]['mx']
+            metframes[fn]['sd_cy'] = metframes[fn]['my']
+            metframes[fn]['sd_w'] = 10 
+            metframes[fn]['sd_h'] = 10
+      if len(oxs) > 1:
+         metframes[fn]['w'] = int(np.mean(ows))
+         metframes[fn]['h'] = int(np.mean(ohs))
+      else:
+         metframes[fn]['w'] = 10 
+         metframes[fn]['h'] = 10 
       metframes[fn]['max_px'] = metframes[fn]['max_val'] 
       if meteor_json['hd'] == 0:
          metframes[fn]['hd_x'] = int(metframes[fn]['hd_x'] * meteor_json['hdm_x'])
@@ -1908,6 +1953,8 @@ def find_cat_stars_from_points(video_data, show_image = None):
   
    if len(cat_image_stars) > 0:
       avg_res = float(total_res / len(cat_image_stars))
+   else:
+      avg_res =9999
    if show == 1: 
       cv2.imshow('pepe', show_image)
       cv2.waitKey(1)
@@ -2251,10 +2298,30 @@ if cmd == 'qr' or cmd == 'quick_review':
 
 if cmd == 'rm' or cmd == 'remaster':
    pub_file = file.replace(".mp4", "-pub.mp4")
-   if cfe(pub_file) == 0:
-      remaster(file, json_conf)
-   else:
-      print("Skip already done.")
+
+   data = {}
+   data['video_file'] = file
+   data['json_conf'] = json_conf
+
+   #perseids radiant
+   ra = 46
+   dec = 59
+   json_file = file.replace(".mp4", ".json")
+   meteor_data = load_json_file(json_file)
+   new_frame = np.zeros((1080,1920),dtype=np.uint8)
+   new_frame, rad_x, rad_y = add_radiant(ra,dec,new_frame,json_file, meteor_data,json_conf)
+   data['rad_x'] = rad_x
+   data['rad_y'] = rad_y
+   print(data)
+   remaster(data )
+
+
+   #if cfe(pub_file) == 0:
+   #   remaster(file, json_conf)
+   #else:
+   #   print("Skip already done.")
+
+
 if cmd == 'rj' or cmd == 'reject':
    check_reject(file, json_conf)
 if cmd == 'brj' or cmd == 'batch_reject':

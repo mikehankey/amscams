@@ -35,9 +35,9 @@ def add_radiant(ra,dec,image,json_file,json_data,json_conf):
    xy_text_mod = 0
    x_text_mod = 0
    if new_cat_x < 0 :
-      edge_x = 0
-   elif new_cat_x > 1919 :
-      edge_x = 1919
+      edge_x = 20
+   elif new_cat_x > 1910 :
+      edge_x = 1910
       x_text_mod = -60
       xy_text_mod = -20
    else:
@@ -46,32 +46,37 @@ def add_radiant(ra,dec,image,json_file,json_data,json_conf):
    new_cat_x, new_cat_y = int(new_cat_x), int(new_cat_y)
 
    y_text_mod = 0
-   if new_cat_x < 0 or new_cat_y < 0 or new_cat_x > 1920 or new_cat_y > 1080:
+   if new_cat_x <= 10 or new_cat_y <= 10 or new_cat_x > 1900 or new_cat_y > 1070:
       center_x = int(1920 / 2)
       center_y = int(1080 / 2)
       # radiant is off screen find the slope to it from the center
       tm,tb = best_fit_slope_and_intercept((center_x,new_cat_x),(center_y,new_cat_y))
       edge_y = (tm*edge_x)+tb
       edge_y, edge_x = int(edge_y), int(edge_x)
+      print("EDGE:", edge_x, edge_y)
       if edge_y < 0:
-         edge_y = 0
+         edge_y = 10
          y_text_mod = 20
-      elif edge_y > 1079:
-         edge_y = 1079
+      elif edge_y > 1060:
+         edge_y = 1060
          y_text_mod = -20
       else:
-         edge_y = int(new_cat_y)
+         edge_y = int(edge_y)
 
       #cv2.line(image, (center_x,center_y), (edge_x,edge_y), (128,128,128), 1)
       cv2.circle(image,(edge_x,edge_y), 25 , (128,128,128), 1)
       cv2.putText(image, "Perseid Radiant",  (edge_x+x_text_mod, edge_y+y_text_mod+xy_text_mod), cv2.FONT_HERSHEY_SIMPLEX, .5, (145, 145, 145), 1)
+      new_cat_x = edge_x
+      new_cat_y = edge_y
+      print("EDGE:", edge_x, edge_y)
    else:
+      print("ACCEPTED IT")
       cv2.circle(image,(new_cat_x,new_cat_y), 25 , (128,128,128), 1)
       cv2.putText(image, "Perseid Radiant",  (new_cat_x, new_cat_y), cv2.FONT_HERSHEY_SIMPLEX, .5, (145, 145, 145), 1)
 
 
    print("RAD XY:", new_cat_x, new_cat_y)
-   return(image)
+   return(image, new_cat_x, new_cat_y)
 
 
 
@@ -268,7 +273,7 @@ def remaster(video_file, json_conf):
       ra = 46
       dec = 59
 
-      new_frame = add_radiant(ra,dec,new_frame,json_file, meteor_data,json_conf)
+      new_frame, rad_x, rad_y = add_radiant(ra,dec,new_frame,json_file, meteor_data,json_conf)
      
 
  

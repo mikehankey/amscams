@@ -524,16 +524,18 @@ def meteor_test_cm_gaps(object):
    gaps = 0
    max_gaps = 0
    gap_events = 0
-   last_frame = 0
+   last_frame = hist[0][0] - 1
    for hs in hist:
       if len(hs) == 7:
          fn,x,y,w,h,mx,my = hs
       if len(hs) == 9:
          fn,x,y,w,h,mx,my,max_val,sum_val = hs
 
-      if ((last_frame + 1 == fn) and last_frame > 0) or last_frame == fn:
+      if ((last_frame + 1 == fn or last_frame + 2 == fn) and last_frame > 0) or last_frame == fn:
          cm = cm + 1
       else:
+         if cm > max_cm:
+            max_cm = cm
          cm = 0
          if last_frame > 5 :
             gaps = gaps + (fn - last_frame)

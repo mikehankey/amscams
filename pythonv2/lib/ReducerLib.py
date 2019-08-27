@@ -1772,7 +1772,7 @@ def id_object(cnt, objects, fc,max_loc, max_px, intensity, img_w, img_h):
       cy = my
 
 
-   if fc < 5:
+   if fc < 0:
       return({},objects)
 
 

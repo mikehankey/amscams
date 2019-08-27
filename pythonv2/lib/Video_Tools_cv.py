@@ -110,7 +110,6 @@ def add_overlay_x_y_cv(background, overlay, x, y):
 def add_overlay_cv(background, overlay, position):
 
     background_width,background_height  = background.shape[1], background.shape[0]
-
     # Get overlay position - see lib.Video_Tools_cv_lib
     x,y = get_overlay_position_cv(background,overlay,position) 
     return add_overlay_x_y_cv(background, overlay, x, y)
@@ -118,12 +117,15 @@ def add_overlay_cv(background, overlay, position):
 
 # Add radiant to a frame
 def add_radiant_cv(background,x,y,text):
-
+    print("ADDING RAD:", y,x, background.shape)
     # Add Image if possible (inside the main frame)
     try:
         radiant_image = cv2.imread(RADIANT_IMG, cv2.IMREAD_UNCHANGED) 
         background = add_overlay_x_y_cv(background,radiant_image,x-int(radiant_image.shape[1]/2),y-int(radiant_image.shape[0]/2))
+        print("ADDED RADIANT OVERLAY!")
     except:
+        print("ERROR ADDING RAD")
+        exit()
         background = background
 
     # Add text (centered bottom)
@@ -137,12 +139,16 @@ def remaster(data):
 
     video_file = data['video_file']
     json_conf  = data['json_conf']
+    if "rad_x" in data:
+       rad_x = data['rad_x']
+       rad_y = data['rad_y']  
+    else:
+       rad_x = None
 
     #Get the meteor data & frames
     frames = load_video_frames(video_file, json_conf, 0, 0, [], 1)
     json_file = video_file.replace(".mp4", ".json")
     meteor_data = load_json_file(json_file)
- 
     #OUTPUT FILE
     marked_video_file = video_file.replace(".mp4", "-pub.mp4")
 
@@ -157,6 +163,9 @@ def remaster(data):
     try:
         extra_logo = params['extra_logo']
         extra_logo_pos = params['logo_pos']
+        if cfe(extra_logo) == 0:
+           extra_logo = False
+ 
     except:
         extra_logo = False
  
@@ -165,6 +174,7 @@ def remaster(data):
         ams_logo_pos = params['wat_pos']
     except:
         ams_logo_pos = D_AMS_LOGO_POS #Default
+
  
     # Extra text
     try:
@@ -205,6 +215,7 @@ def remaster(data):
         frame_sec = fc / FPS_HD
         frame_time = start_frame_time + datetime.timedelta(0,frame_sec)
         frame_time_str = frame_time.strftime('%Y-%m-%d %H:%M:%S.%f')[:-3]
+        fn = str(fc)
         hd_img = frame
 
         # Fading the box
@@ -213,19 +224,34 @@ def remaster(data):
             cv2.rectangle(hd_img, (cx1, cy1), (cx2, cy2), (color,color,color), 1)
 
         # Add AMS Logo 
-        hd_img = add_overlay_cv(hd_img,cv2.imread(AMS_WATERMARK, cv2.IMREAD_UNCHANGED),ams_logo_pos)
+        overlay_img = cv2.imread(AMS_WATERMARK, cv2.IMREAD_UNCHANGED)
+        hd_img = add_overlay_cv(hd_img,overlay_img,ams_logo_pos)
+
+        # Add Radiant
+        if rad_x is None:
+           print("RADX!")
+           exit()
+
+        if rad_x is not None:
+           if hd_img.shape[0] == 720 :
+              rad_x = int(rad_x * .66666)
+              rad_y = int(rad_y * .66666)
+           hd_img = add_radiant_cv(hd_img,rad_x,rad_y,"Perseids")
 
         # Add Eventual Extra Logo
-        if(extra_logo is not False):
-              hd_img = add_overlay_cv(hd_img,cv2.imread(extra_logo, cv2.IMREAD_UNCHANGED),extra_logo_pos)
+
+        if(extra_logo is not False and extra_logo is not None):
+            hd_img = add_overlay_cv(hd_img,cv2.imread(extra_logo, cv2.IMREAD_UNCHANGED),extra_logo_pos)
 
         # Add Date & Time
         frame_time_str = station_id + ' - ' + frame_time_str + ' UT'
+        extra_text_pos = "br"
         hd_img = add_text_to_pos(hd_img,frame_time_str,extra_text_pos,2) #extra_text_pos => bl?
 
         # Add Extra_info
+        extra_text_pos = "bl"
         if(extra_text is not False):
-            hd_img = add_text_to_pos(hd_img,extra_text,extra_text_pos,1)  #extra_text_pos => br?
+            hd_img = add_text_to_pos(hd_img,extra_text,extra_text_pos,2)  #extra_text_pos => br?
  
 
         # Add Radiant (todo)
@@ -233,4 +259,3 @@ def remaster(data):
         fc = fc + 1
 
     make_movie_from_frames(new_frames, [0,len(new_frames) - 1], marked_video_file, 1)
-    print(marked_video_file)
