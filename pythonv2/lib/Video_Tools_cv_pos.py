@@ -14,7 +14,12 @@ def get_text_position_cv(background,text,position,line_number,font,margins=VIDEO
     
     # Get font.getsize(txt)
     text_w, text_h = font.getsize(text) 
-  
+
+    print('***********')
+    print(text)
+    print('TEXT _ H ')
+    print(text_h)
+
     if(position=='br'):
         background_width,background_height  = background.shape[1], background.shape[0]
         
