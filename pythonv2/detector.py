@@ -40,16 +40,45 @@ def check_conversion(json_conf, extra):
    good = 0
    bad = 0
    for dir in dirs:
+      sd_found = 0
+      hd_found = 0
+      pub_found = 0
       pub_files = glob.glob(dir + "/*pub.mp4")
+      dir_id = dir.split("/")[-1]
+      dir_day = dir_id[0:10]
+      orig_file = "/mnt/ams2/meteors/" + dir_day + "/" + dir_id + ".mp4"
+
       if len(pub_files) > 0:
          good = good + 1
+         pub_found = 1
       else:
          bad = bad + 1
          status = "pub file missing\n"
          hd_files = glob.glob(dir + "/*HD.mp4") 
-         if len(hd_files) < 2:
-            print("HD DETECTION FILE IS MISSING.")
-         print(dir, len(pub_files))
+         sd_files = glob.glob(dir + "/*SD.mp4") 
+         print(dir, len(pub_files), "PUB FILE MISSING")
+         pub_found = 0
+         if len(hd_files) < 1:
+            print("   HD DETECTION FILE IS MISSING.", hd_files)
+         else:
+            hd_found = 1
+         if len(sd_files) < 1:
+            print("   SD DETECTION FILE IS MISSING.", sd_files)
+         else:
+            sd_found = 1
+         print(sd_found, hd_found, pub_found)
+         if sd_found == 1 and hd_found == 1 and pub_found == 0:
+            # remaster the HD file
+            if extra == "fix":
+               cmd = "rm " + dir + "/*framedata.json"
+               os.system(cmd)
+               print(cmd)
+            
+               cmd = "./detector.py cn " + orig_file 
+               os.system(cmd)
+               print(cmd)
+         
+         
    print("GB:", good, bad)
 
 def convert_data(sd_video_file, json_conf):
@@ -633,7 +662,7 @@ def process_video_frames(frames, video_file):
       blur_last = cv2.GaussianBlur(last_frame, (7, 7), 0)
 
       subframe = cv2.subtract(frame,last_frame)
-      subframes.append(subframe)
+      subframes.append(frame)
 
 
 
@@ -647,7 +676,8 @@ def process_video_frames(frames, video_file):
       frame_data[fn]['mx'] = int(mx)
       frame_data[fn]['my'] = int(my)
       last_frame = frame
-      print("MAX:", max_val, avg_val)
+      #cv2.imshow('pepe', frame)
+      #cv2.waitKey(0)
       if max_val - avg_val > 10:
          if last_x is not None:
             last_seg_dist = calc_dist((mx,my), (last_x,last_y))
@@ -676,8 +706,6 @@ def process_video_frames(frames, video_file):
                obj_cnts.append((object['oid'], cx,cy,cw,ch))
                frame_data[fn]['obj_cnts'] = obj_cnts
 
-         cv2.imshow('pepe', show_frame)
-         cv2.waitKey(0)
 
          if 1 < last_seg_dist < 20 :
             motion = 1
