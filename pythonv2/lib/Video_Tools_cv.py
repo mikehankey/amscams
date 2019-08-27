@@ -291,7 +291,7 @@ def remaster(data):
         # Add Extra_info
         extra_text_pos = "bl"
         if(extra_text is not False):
-            hd_img,xx,yy,ww,hh = add_text_to_pos(hd_img,extra_text,extra_text_pos,1)  #extra_text_pos => br?
+            hd_img,xx,yy,ww,hh = add_text_to_pos(hd_img,extra_text,extra_text_pos,2)  #extra_text_pos => br?
  
         # Add Radiant
         if(radiant is not False):
