@@ -208,8 +208,10 @@ def remaster(data):
         rad_y = params['rad_y']
         rad_name = params['rad_name']
         radiant = True
+        print("RADIANT OK")
     except:
         radiant = False
+        print("RADIANT NOT OK")
 
     #Define buffer
     start_buff = int(meteor_data['start_buff'])
