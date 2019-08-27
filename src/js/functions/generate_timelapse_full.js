@@ -23,7 +23,7 @@ $.fn.serializeObject = function() {
  */
 
 function avoid_same_location() {
-    $('select[name=wat_pos],select[name=text_pos],select[name=logo_pos]').change(function(e) {
+    $('select[name=wat_pos],select[name=text_pos],select[name=logo_pos],select[name=extra_text_pos]').change(function(e) {
 
         // Which one just changed?
         var $src = $(e.target);
@@ -35,36 +35,46 @@ function avoid_same_location() {
         if($src.attr('name')=='wat_pos') {
             $dest = $('select[name=text_pos]');
             $dest2 = $('select[name=logo_pos]');
+            $dest3 = $('select[name=extra_text_pos]');
         } else if($src.attr('name')=='text_pos'){
             $dest = $('select[name=wat_pos]');
             $dest2 = $('select[name=logo_pos]');
+            $dest3 = $('select[name=extra_text_pos]');
         } else if($src.attr('name')=='logo_pos'){
             $dest = $('select[name=wat_pos]');
             $dest2 = $('select[name=text_pos]');
+            $dest3 = $('select[name=extra_text_pos]');
+        } else if($src.attr('name')=='extra_text_pos'){
+            $dest = $('select[name=wat_pos]');
+            $dest2 = $('select[name=text_pos]');
+            $dest3 = $('select[name=logo_pos]');
         }
 
         v_dest = $dest.val();
         v2_dest = $dest2.val();
-
-
-
-        if(v_src==v_dest || v_src==v2_dest) {
+        v3_dest = $dest3.val();
+ 
+        if(v_src==v_dest || v_src==v2_dest || v_src==v3_dest) {
             switch (v_src) {
                 case "tr":
                   $dest.val("br");
                   $dest2.val("tl");
+                  $dest3.val("bl");
                   break;
                 case "tl":
                   $dest.val("br");
                   $dest2.val("tr");
+                  $dest3.val("bl");
                   break;
                 case "bl":
                   $dest.val("tr");
                   $dest2.val("tl");
+                  $dest3.val("br");
                   break;
                 case "br":
                   $dest.val("bl");
                   $dest2.val("tr");
+                  $dest3.val("tl");
                   break;
             }
         }  
@@ -278,7 +288,7 @@ function add_timelapse_full_modal() {
                             </div>\
                                 <div id="logo_pos" class="col-sm-3" hidden>\
                                     <div class="form-group mb-2"> \
-                                        <label for="logo_pos" class="col-form-label">Position of<br>the <b>Logo</b></label> \
+                                        <label for="logo_pos" class="col-form-label">Position of<br>the <b>Extra Logo</b></label> \
                                         <select name="logo_pos" class="form-control"> \
                                             <option value="tr" >Top right</option> \
                                             <option value="tl" >Top Left</option> \
