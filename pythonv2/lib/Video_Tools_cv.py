@@ -243,14 +243,13 @@ def remaster(data):
 
     # Before working the frames, we need to make sure 
     # the meteor doesn't go behind on of the extra elements (AMS Logo, extra logo, text = date + extra_text)
-    # if it doesn't we need to move stuff around
-    #one_empty_corner_left = True 
+    # if it doesn't we need to move stuff around 
 
     # We compare the meteor box with the AMS logo and its position within the first frame
     #if(frames[0] is not None and overlaps_with_image(cx1,cy1,cx2,cy2,ams_logo,ams_logo_pos,frames[0])): 
         # We move the logo here since it overlaps
-    #    ams_logo_pos = EMPTY_CORNER
-    #    one_empty_corner_left = False
+        ams_logo_pos = EMPTY_CORNER
+        one_empty_corner_left = False
 
     # We compare the meteor box with the eventual extra logo and its position within the first frame
     #if(one_empty_corner_left is True and extra_logo is not False and frames[0] is not None and overlaps_with_image(cx1,cy1,cx2,cy2,extra_logo,extra_logo_pos,frames[0])): 
