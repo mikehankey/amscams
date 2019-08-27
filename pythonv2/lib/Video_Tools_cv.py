@@ -131,11 +131,10 @@ def add_overlay_cv(background, overlay, position):
 
 
 # Add radiant to a frame
-def add_radiant_cv(background,x,y,text):
+def add_radiant_cv(radiant_image,background,x,y,text):
  
     # Add Image if possible (inside the main frame)
     try:
-        radiant_image = cv2.imread(RADIANT_IMG, cv2.IMREAD_UNCHANGED) 
         background = add_overlay_x_y_cv(background,radiant_image,x-int(radiant_image.shape[1]/2),y-int(radiant_image.shape[0]/2))
     except: 
         background = background
@@ -205,11 +204,13 @@ def remaster(data):
         rad_y = data['rad_y']
         rad_name = data['rad_name']
         radiant = True 
-        print("RADIANT OK")
+        # We load it here once for all
+        radiant_image =  cv2.imread(RADIANT_IMG, cv2.IMREAD_UNCHANGED) 
+        # print("RADIANT OK")
     except:
         radiant = False 
-        print("RADIANT NOT OK")
-        print(data)
+        #print("RADIANT NOT OK")
+        #print(data)
 
     #Define buffer
     start_buff = int(meteor_data['start_buff'])
@@ -287,9 +288,10 @@ def remaster(data):
             if hd_img.shape[0] == 720 :
                 rad_x = int(rad_x * .66666)
                 rad_y = int(rad_y * .66666)  
-            hd_img = add_radiant_cv(hd_img,rad_x,rad_y,rad_name)
+            hd_img = add_radiant_cv(radiant_image,hd_img,rad_x,rad_y,rad_name)
  
         new_frames.append(hd_img) 
         fc = fc + 1
 
     make_movie_from_frames(new_frames, [0,len(new_frames) - 1], marked_video_file, 1) 
+    print('OUTPUT ' + marked_video_file )
