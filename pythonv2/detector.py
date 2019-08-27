@@ -77,6 +77,15 @@ def check_conversion(json_conf, extra):
                cmd = "./detector.py cn " + orig_file 
                os.system(cmd)
                print(cmd)
+         elif sd_found == 0 or hd_found == 0:
+            if extra == "fix":
+               cmd = "rm " + dir + "/*framedata.json"
+               os.system(cmd)
+               print(cmd)
+            
+               cmd = "./detector.py cn " + orig_file 
+               os.system(cmd)
+               print(cmd)
          
          
    print("GB:", good, bad)
