@@ -40,7 +40,7 @@ def create_title_video(text,output):
          frame_count = frame_count + 1
     cap.release()
   
-   print(str(len(frames)) + " found")
+    print(str(len(frames)) + " found")
 
 
     #frames = load_video_frames(DEFAULT_TITLE,"")
