@@ -60,7 +60,7 @@ def create_title_video(text,text2,output):
         n_frame = add_big_text(n_frame,"AMERICAN METEOR SOCIETY", 290, (255,255,255,255), 35)
         n_frame = add_big_text(n_frame,text,370, (250,250,209,255), 60)
         #2nd ligne smaller
-        n_frame = add_big_text(n_frame,text2,420, (250,250,209,255), 20,VIDEO_FONT)
+        n_frame = add_big_text(n_frame,text2,460, (250,250,209,255), 20,VIDEO_FONT)
 
         new_frames.append(n_frame)
 
