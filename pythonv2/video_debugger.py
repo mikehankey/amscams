@@ -178,7 +178,7 @@ images = glob.glob('/home/ams/amscams/dist/vids/ams_intro/*.png')
 height , width , layers =  images[0].shape
 
 video = cv2.VideoWriter('/home/ams/amscams/dist/vids/ams_intro/test.mp4',-1,1,(width,height))
-for image in images
+for image in images:
     video.write(image) 
  
 video.release()
