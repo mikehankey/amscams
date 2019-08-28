@@ -1,5 +1,5 @@
 import cv2 
-import numpy as numpy
+import numpy as np
 from PIL import ImageFont, ImageDraw, Image
 from lib.VIDEO_VARS import * 
 from lib.Video_Tools_cv import add_text
@@ -24,8 +24,7 @@ def add_big_text(background,text,y):
     font    = ImageFont.truetype(VIDEO_FONT_BOLD, 50)  
 
     x = cv2_background_rgb.shape[1]/2 - font.getsize(text)[0]/2
-    
-    
+     
     draw.text((x, y), text, font=font, fill=VIDEO_FONT_SMALL_COLOR)  
     return  cv2.cvtColor(np.array(pil_im), cv2.COLOR_RGB2BGR)  
 
