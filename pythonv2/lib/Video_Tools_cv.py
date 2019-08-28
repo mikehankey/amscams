@@ -160,6 +160,11 @@ def remaster(data):
 
     #Get the meteor data & frames
     frames = load_video_frames(video_file, json_conf, 0, 0, [], 1)
+
+    if(frames[0] is not None):
+        print(video_file  + ' is messed up. We cannot remaster the video.')
+        exit()
+
     json_file = video_file.replace(".mp4", ".json")
     meteor_data = load_json_file(json_file)
 
@@ -244,27 +249,29 @@ def remaster(data):
     # Before working the frames, we need to make sure 
     # the meteor doesn't go behind on of the extra elements (AMS Logo, extra logo, text = date + extra_text)
     # if it doesn't we need to move stuff around 
-    something_overlaps = False
+    ams_logo_overlaps = False
 
     # We compare the meteor box with the AMS logo and its position within the first frame
-    #if(frames[0] is not None and overlaps_with_image(cx1,cy1,cx2,cy2,ams_logo,ams_logo_pos,frames[0])): 
+    if(overlaps_with_image(cx1,cy1,cx2,cy2,ams_logo,ams_logo_pos,frames[0])): 
         # We move the logo here since it overlaps 
-    #    something_overlaps = True
+        ams_logo_overlaps = True
         
-        # By default, we put it on the bottom left - 50px above the bottom
-    #   ams_logo_pos_x = VIDEO_MARGINS 
-    #    ams_logo_pos_y = frames[0].shape[1] - VIDEO_MARGINS - 50
-    #    print('NEW LOGO POS ' + str(ams_logo_pos_x) +  ' , ' + str(ams_logo_pos_y))
+        # By default, we put it on the BOTTOM LEFT - 50px above the bottom
+        ams_logo_pos_x = VIDEO_MARGINS 
+        ams_logo_pos_y = frames[0].shape[1] - ams_logo.shape[1] - VIDEO_MARGINS - 50
+ 
+    extra_logo_overlaps = False
 
     # We compare the meteor box with the eventual extra logo and its position within the first frame
-    #if(one_empty_corner_left is True and extra_logo is not False and frames[0] is not None and overlaps_with_image(cx1,cy1,cx2,cy2,extra_logo,extra_logo_pos,frames[0])): 
-        # We move the logo here since it overlaps
-    #    extra_logo_pos = EMPTY_CORNER   
-    #    one_empty_corner_left = False 
+    if(extra_logo is not False and overlaps_with_image(cx1,cy1,cx2,cy2,extra_logo,extra_logo_pos,frames[0])): 
+        # We move the extra logo here since it overlaps 
+        extra_logo_overlaps = True
 
-    # We compare the meteor box with the text and its position within the first frame 
-    # We test with a generique DATE & TIME
-
+        # By default, we put it on the BOTTOM RIGHT - 50px above the bottom
+        extra_logo_pos_x = frames[0].shape[0] - VIDEO_MARGINS - extra_logo.shape[0]
+        extra_logo_pos_y = frames[0].shape[1] - extra_logo[0].shape[1] - VIDEO_MARGINS - 50
+    
+    # We don't do shit if the meteor are over the texts for now
 
     fc = 0
     new_frames = []
@@ -280,19 +287,24 @@ def remaster(data):
         # Fading the box
         color = 150 - fc * 3
         if color > 50:
-            cv2.rectangle(hd_img, (cx1, cy1), (cx2, cy2), (color,color,color), 1)
+            cv2.rectangle(hd_img, (cx1, cy1), (cx2, cy2), (color,color,color), 1, cv2.LINE_AA)
 
         # Add AMS Logo 
-        if(something_overlaps is False):
+        if(ams_logo_overlaps is False):
             # No meteor Behind
             hd_img = add_overlay_cv(hd_img,ams_logo,ams_logo_pos)
-        #else:
-        #    # A meteor was behind...
-        #    hd_img = add_overlay_x_y_cv(hd_img, ams_logo, ams_logo_pos_x, ams_logo_pos_y)
+        else:
+            # Meteor Behind
+            hd_img = add_overlay_x_y_cv(hd_img, ams_logo, ams_logo_pos_x, ams_logo_pos_y)
  
         # Add Eventual Extra Logo
         if(extra_logo is not False and extra_logo is not None):
-            hd_img = add_overlay_cv(hd_img,extra_logo,extra_logo_pos)
+            if(extra_logo_overlaps is False):
+                # No meteor Behind
+                hd_img = add_overlay_cv(hd_img,extra_logo,extra_logo_pos)
+            else:
+                # Meteor Behind 
+                hd_img = add_overlay_x_y_cv(hd_img, extra_logo, extra_logo_pos_x, extra_logo_pos_y)
 
         # Add Date & Time
         frame_time_str = station_id + ' - ' + frame_time_str + ' UT' 
