@@ -21,7 +21,7 @@ def create_title_video(text,output):
     for frame in frames:
  
         #Add Text
-        n_frame = add_text(n_frame,text,0,0,True)
+        n_frame = add_text(frame,text,0,0,True)
         new_frames.append(n_frame)
 
     make_movie_from_frames(new_frames, [0,len(new_frames) - 1], output, 1)
