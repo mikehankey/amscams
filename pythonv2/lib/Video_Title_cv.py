@@ -47,6 +47,6 @@ def create_title_video(text,output):
 
     cap.release()
     out.release()
-     cv2.destroyAllWindows()
+    cv2.destroyAllWindows()
 
     print('OUTPUT ' + output)
