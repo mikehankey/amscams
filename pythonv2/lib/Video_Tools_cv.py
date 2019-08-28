@@ -255,13 +255,16 @@ def new_remaster(data):
     if(overlaps_with_image(cx1,cy1,cx2,cy2,ams_logo,ams_logo_pos,frames[0])): 
         # We move the logo here since it overlaps 
         ams_logo_overlaps = True
-        
-        print("AMS LOGO OVERLAPS")
-
+         
         # By default, we put it on the BOTTOM LEFT - 50px above the bottom
         ams_logo_pos_x = VIDEO_MARGINS 
         ams_logo_pos_y = frames[0].shape[1] - ams_logo.shape[1] - VIDEO_MARGINS - 50
-
+        
+        print('AMS LOGO OVERLAPS')
+        print(" ams_logo_pos_x " + str(ams_logo_pos_x))
+        print(" ams_logo_pos_y " + str(ams_logo_pos_y))
+        print("FRAME H" + str(frames[0].shape[1]))
+        print("LOGO H" + str(ams_logo.shape[1]))
     
     extra_logo_overlaps = False
 
@@ -297,14 +300,7 @@ def new_remaster(data):
             # No meteor Behind
             hd_img = add_overlay_cv(hd_img,ams_logo,ams_logo_pos)
         else:
-            # Meteor Behind
-            print('AMS LOGO OVERLAPS')
-            ams_logo_pos_x= 500
-            ams_logo_pos_y= 500
-            print(" ams_logo_pos_x " + str(ams_logo_pos_x))
-            print(" ams_logo_pos_y " + str(ams_logo_pos_y))
-            # No meteor Behind
-            hd_img = add_overlay_cv(hd_img,ams_logo,ams_logo_pos)
+            # Meteor Behind 
             hd_img = add_overlay_x_y_cv(hd_img, ams_logo, ams_logo_pos_x, ams_logo_pos_y)
  
         # Add Eventual Extra Logo
