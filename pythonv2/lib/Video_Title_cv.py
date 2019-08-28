@@ -25,8 +25,7 @@ def create_title_video(text,output):
         ret, frame = cap.read()
 
         if ret==True:
-
-
+ 
             # Add Text
             frame = add_text(frame,text,0,0,True)
 
@@ -42,3 +41,5 @@ def create_title_video(text,output):
 
     cap.release()
     out.release()
+
+    print('OUTPUT ' + output)
