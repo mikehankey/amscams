@@ -179,8 +179,8 @@ images = glob.glob('/home/ams/amscams/dist/vids/ams_intro/*.png')
 first_img = cv2.imread(images[0], cv2.IMREAD_UNCHANGED)
 
 height , width , layers =  first_img.shape
-
-video = cv2.VideoWriter('/home/ams/amscams/dist/vids/ams_intro/test.mp4',-1,1,(width,height))
+fourcc = cv2.VideoWriter_fourcc(*'mp4v')
+video = cv2.VideoWriter('/home/ams/amscams/dist/vids/ams_intro/test.mp4',fourcc,1,(width,height))
 for image in images:
     frame = cv2.imread(image, cv2.IMREAD_UNCHANGED)
     video.write(frame) 
