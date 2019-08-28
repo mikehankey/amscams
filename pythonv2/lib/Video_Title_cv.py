@@ -15,8 +15,8 @@ DEFAULT_TITLE = TITLE_1280x720
 # with the animated AMS logo and a custom text (ONE LINE TEXT ONLY)
 def create_title_video(text,output):
 
-    # Get the original frames
-    frames = load_video_frames(DEFAULT_TITLE)
+    # Get the original frames 
+    frames = load_video_frames(DEFAULT_TITLE,"")
     new_frames = []
 
     for frame in frames:
