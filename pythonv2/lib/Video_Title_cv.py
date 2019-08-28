@@ -51,17 +51,35 @@ def create_title_video(text,text2,output):
    
     new_frames = []
 
+
+    anim_duration  = 50
+    title_duration = 75
+
+    fc = -1
+
+    # Animation
     for frame in frames:
- 
-        #Convert to proper colors
-        n_frame = frame
 
-        #Add Text 
-        #n_frame = add_big_text(n_frame,"AMERICAN METEOR SOCIETY", 255, (255,255,255,255), 25)
-        n_frame = add_big_text(n_frame,text,350, (250,250,209,255), 60)
+        fc +=1
+
+        if(fc<50):
+            #Convert to proper colors
+            n_frame = frame
+
+            #Add Text 
+            #n_frame = add_big_text(n_frame,"AMERICAN METEOR SOCIETY", 255, (255,255,255,255), 25)
+
+
+            new_frames.append(n_frame)
+
+    # Title BG
+    for x in range(0, title_duration):
+
+        # Title
+        n_frame = add_big_text(frames[0],text,350, (250,250,209,255), 60)
         #2nd ligne smaller
-        n_frame = add_big_text(n_frame,text2,440, (250,250,209,255), 20,VIDEO_FONT)
-
+        n_frame = add_big_text(frames[0],text2,440, (250,250,209,255), 20,VIDEO_FONT)
+        
         new_frames.append(n_frame)
 
     make_movie_from_frames(new_frames, [0,len(new_frames) - 1], output, 1)
