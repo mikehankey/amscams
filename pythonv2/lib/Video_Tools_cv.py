@@ -452,7 +452,7 @@ def remaster(data):
             cv2.rectangle(hd_img, (cx1, cy1), (cx2, cy2), (color,color,color), 1, cv2.LINE_AA)
 
         # Add AMS Logo 
-        hd_img = add_overlay_x_y_cv(hd_img, ams_logo, ams_logo_pos)
+        hd_img = add_overlay_cv(hd_img, ams_logo, ams_logo_pos)
  
         # Add Eventual Extra Logo
         if(extra_logo is not False and extra_logo is not None):
