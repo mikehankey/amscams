@@ -9,8 +9,7 @@ from lib.VideoLib import load_video_frames, make_movie_from_frames
 
 TITLE_1280x720 = "/home/ams/amscams/dist/vids/ams_intro/1280x720.mp4"
 DEFAULT_TITLE = TITLE_1280x720
-
-
+ 
 
 # Add big text centered 
 def add_big_text(background,text,y,color,size):
