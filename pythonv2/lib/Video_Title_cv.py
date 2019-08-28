@@ -20,10 +20,11 @@ def create_title_video(text,output):
 
     for frame in frames:
         #Convert to proper colors
-        frame = cv2.cvtColor(frame,cv2.COLOR_BGR2GRAY)
+        n_frame = cv2.cvtColor(frame,cv2.COLOR_BGR2GRAY)
+        
         #Add Text
-        frame = add_text(frame,text,0,0,True)
-        new_frames.append(frame)
+        n_frame = add_text(n_frame,text,0,0,True)
+        new_frames.append(n_frame)
 
     make_movie_from_frames(new_frames, [0,len(new_frames) - 1], output, 1)
     print('OUTPUT ' + output)
