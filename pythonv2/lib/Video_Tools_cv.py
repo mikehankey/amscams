@@ -172,13 +172,11 @@ def new_remaster(data):
 
     #OUTPUT FILE
     marked_video_file = video_file.replace(".mp4", "-pub.mp4")
-
-    
+ 
     # We get the different element of customization of the videos
     # from DEFAULT_VIDEO_PARAM
     params = get_video_job_default_parameters()
-    params = params['param']
-
+    params = params['param'] 
 
     # AMS Logo
     ams_logo = cv2.imread(AMS_WATERMARK, cv2.IMREAD_UNCHANGED) 
@@ -448,7 +446,7 @@ def remaster(data):
             cv2.rectangle(hd_img, (cx1, cy1), (cx2, cy2), (color,color,color), 1, cv2.LINE_AA)
 
         # Add AMS Logo 
-        hd_img = add_overlay_x_y_cv(hd_img, ams_logo, ams_logo_pos_x, ams_logo_pos_y)
+        hd_img = add_overlay_x_y_cv(hd_img, ams_logo, ams_logo_pos)
  
         # Add Eventual Extra Logo
         if(extra_logo is not False and extra_logo is not None):
