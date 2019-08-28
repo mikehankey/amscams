@@ -164,7 +164,7 @@ data = {
 
 data = {
     'json_conf' : '/mnt/ams2/conversion/2019_08_10_06_41_52_000_010042-trim0777/2019_08_10_06_42_24_280_010042_AMS7_HD.json',
-    'video_file' :'/mnt/ams2/conversion2019_08_10_06_41_52_000_010042-trim0777/2019_08_10_06_42_24_280_010042_AMS7_HD.mp4',
+    'video_file' :'/mnt/ams2/conversion/2019_08_10_06_41_52_000_010042-trim0777/2019_08_10_06_42_24_280_010042_AMS7_HD.mp4',
     'rad_x': 500,
     'rad_y': 500,
     'rad_name': 'Perseids'
