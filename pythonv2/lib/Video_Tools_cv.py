@@ -299,6 +299,8 @@ def new_remaster(data):
         else:
             # Meteor Behind
             print('AMS LOGO OVERLAPS')
+            ams_logo_pos_x= 500
+            ams_logo_pos_y= 500
             print(" ams_logo_pos_x " + str(ams_logo_pos_x))
             print(" ams_logo_pos_y " + str(ams_logo_pos_y))
  
