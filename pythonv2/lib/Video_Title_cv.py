@@ -8,14 +8,17 @@ DEFAULT_TITLE = TITLE_1280x720
  
 # This function create a quick video (lenght of DEFAULT_TITLE ~ 3sec )
 # with the animated AMS logo and a custom text (ONE LINE TEXT ONLY)
-def create_title_video(text,output,res_w=1280, res_h=720):
+def create_title_video(text,output):
 
     # Open the blank title video
     cap = cv2.VideoCapture(TITLE_1280x720)
 
+    print('CAP')
+    print(cap)
+
     # Define the codec and create VideoWriter object
     fourcc  = cv2.VideoWriter_fourcc(*'mp4v')
-    out     = cv2.VideoWriter(output,fourcc, FPS_HD, (res_w,res_h))
+    out     = cv2.VideoWriter(output,fourcc, FPS_HD, (int(cap.get(3)),int(cap.get(4))))
     fc = 0
 
     while(cap.isOpened()):
