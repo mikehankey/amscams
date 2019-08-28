@@ -12,7 +12,7 @@ DEFAULT_TITLE = TITLE_1280x720
 
 
 # Add big text centered 
-def add_text(background,text,y):
+def add_big_text(background,text,y):
 
     # Convert background to RGB (OpenCV uses BGR)  
     cv2_background_rgb = cv2.cvtColor(background,cv2.COLOR_BGR2RGB)  
@@ -58,7 +58,7 @@ def create_title_video(text,output):
         n_frame = frame
 
         #Add Text 
-        n_frame = add_text(n_frame,text,x,y,centered=False, 50)
+        n_frame = add_big_text(n_frame,text,550)
 
         new_frames.append(n_frame)
 
