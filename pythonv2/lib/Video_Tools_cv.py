@@ -274,8 +274,8 @@ def new_remaster(data):
 
     # By default, we put it on the BOTTOM RIGHT - 50px above the bottom 
     if(extra_logo_pos == D_CUS_LOGO_POS):
-        extra_logo_pos_x = frames[0].shape[1] - VIDEO_MARGINS - extra_logo.shape[1]
-        extra_logo_pos_y = frames[0].shape[0] - extra_logo[0].shape[0] - VIDEO_MARGINS - 50
+        extra_logo_pos_x = frames[0].shape[1] - extra_logo.shape[1]  - VIDEO_MARGINS 
+        extra_logo_pos_y = frames[0].shape[0] - extra_logo.shape[0] - VIDEO_MARGINS - 50
 
         #TODO... setup different x,y when the AMS Logo is somewhere on the page (different ams_logo_pos)
     
