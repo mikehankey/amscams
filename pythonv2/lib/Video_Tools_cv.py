@@ -308,7 +308,7 @@ def new_remaster(data):
         extra_text_x,extra_text_y,extra_text_w,extra_text_h =  get_text_box(frames[0],extra_text,extra_text_pos,2,True)
 
         print("BOX OF EXTRA TEXT")
-        print(str(extra_text_x) + " , " + str(extra_text_y) + " , " + str(extra_text_x,extra_text_w) + " , " + str(extra_text_y,extra_text_h) )
+        print(str(extra_text_x) + " , " + str(extra_text_y) + " , " + str(extra_text_x+extra_text_w) + " , " + str(extra_text_y+extra_text_h) )
 
 
 
