@@ -146,9 +146,11 @@ def add_radiant_cv(radiant_image,background,x,y,text):
     return background
 
 
-# Add logo, radiant(s), etc
-def remaster(data):
 
+
+#TEMPORARTY remaster with moving logo & text
+def new_remaster(data):
+    
     video_file = data['video_file']
     json_conf  = data['json_conf']
 
@@ -306,6 +308,152 @@ def remaster(data):
                 # Meteor Behind 
                 hd_img = add_overlay_x_y_cv(hd_img, extra_logo, extra_logo_pos_x, extra_logo_pos_y)
 
+        # Add Date & Time
+        frame_time_str = station_id + ' - ' + frame_time_str + ' UT' 
+        hd_img,xx,yy,ww,hh = add_text_to_pos(hd_img,frame_time_str,date_time_pos,2) #extra_text_pos => bl?
+
+        # Add Extra_info 
+        if(extra_text is not False):
+            hd_img,xx,yy,ww,hh = add_text_to_pos(hd_img,extra_text,extra_text_pos,2,True)  #extra_text_pos => br?
+ 
+        # Add Radiant
+        if(radiant is not False):
+            if hd_img.shape[0] == 720 :
+                rad_x = int(rad_x * .66666)
+                rad_y = int(rad_y * .66666)  
+            hd_img = add_radiant_cv(radiant_image,hd_img,rad_x,rad_y,rad_name)  
+
+        new_frames.append(hd_img) 
+        fc = fc + 1
+
+    make_movie_from_frames(new_frames, [0,len(new_frames) - 1], marked_video_file, 1) 
+    print('OUTPUT ' + marked_video_file )
+
+
+# Add logo, radiant(s), etc
+def remaster(data):
+
+    video_file = data['video_file']
+    json_conf  = data['json_conf']
+
+    if "rad_x" in data:
+       rad_x = data['rad_x']
+       rad_y = data['rad_y']  
+    else:
+       rad_x = None
+
+    #Get the meteor data & frames
+    frames = load_video_frames(video_file, json_conf, 0, 0, [], 1)
+
+    if(frames[0] is not None):
+        print(video_file  + ' is messed up. We cannot remaster the video.')
+        exit()
+
+    json_file = video_file.replace(".mp4", ".json")
+    meteor_data = load_json_file(json_file)
+
+    #OUTPUT FILE
+    marked_video_file = video_file.replace(".mp4", "-pub.mp4")
+
+    
+    # We get the different element of customization of the videos
+    # from DEFAULT_VIDEO_PARAM
+    params = get_video_job_default_parameters()
+    params = params['param']
+
+
+    # AMS Logo
+    ams_logo = cv2.imread(AMS_WATERMARK, cv2.IMREAD_UNCHANGED) 
+    try:
+        ams_logo_pos = params['wat_pos'] #From the JSON (get_video_job_default_parameters)
+    except:
+        ams_logo_pos = D_AMS_LOGO_POS #Default
+    
+    # Eventual Extra Logo
+    try:
+        extra_logo     = params['extra_logo']
+        extra_logo_pos = params['logo_pos']
+        if cfe(extra_logo) == 0:
+            extra_logo = False
+        else:
+            # We get the cv2 image here once for all
+            extra_logo = cv2.imread(extra_logo, cv2.IMREAD_UNCHANGED)
+    except:
+        extra_logo = False
+  
+    # Extra text (customizable through /pycgi/webUI.py?cmd=video_tools)
+    try:
+        extra_text = params['extra_text']
+        extra_text_pos = params['extra_text_pos']
+    except:
+        extra_text = False
+
+    # Date & Time position
+    try:
+        date_time_pos = params['text_pos']
+    except:
+        date_time_pos = D_CAM_INFO_POS
+ 
+    # Radiant
+    try:
+        rad_x = data['rad_x']
+        rad_y = data['rad_y']
+        rad_name = data['rad_name']
+        radiant = True 
+        # We load it here once for all
+        radiant_image =  cv2.imread(RADIANT_IMG, cv2.IMREAD_UNCHANGED)  
+    except:
+        radiant = False  
+
+    #Define buffer
+    start_buff = int(meteor_data['start_buff'])
+    start_sec = (start_buff / 25) * -1 
+
+    #Get Date & time 
+    (hd_datetime, sd_cam, sd_date, sd_y, sd_m, sd_d, sd_h, sd_M, sd_s) = convert_filename_to_date_cam(video_file)
+    
+    # Get Specifc info 
+    el = video_file.split("_")
+    station = el[-2]   
+    cam = el[-3]   
+
+    # Get Stations id & Cam Id to display
+    station_id = station + "-" + sd_cam
+    station_id = station_id.upper()
+ 
+    # Video Dimensions = as the first frame
+    ih, iw = frames[0].shape[:2]
+ 
+    start_frame_time = hd_datetime + datetime.timedelta(0,start_sec)
+    start_frame_str  = hd_datetime.strftime('%Y-%m-%d %H:%M:%S.%f')[:-3]
+
+    # Crop box info 
+    cx1, cy1, cx2, cy2 = make_crop_box(meteor_data, iw, ih)
+
+    
+    fc = 0
+    new_frames = []
+
+    for frame in frames:
+
+        frame_sec = fc / FPS_HD
+        frame_time = start_frame_time + datetime.timedelta(0,frame_sec)
+        frame_time_str = frame_time.strftime('%Y-%m-%d %H:%M:%S.%f')[:-3]
+        fn = str(fc)
+        hd_img = frame
+
+        # Fading the box
+        color = 150 - fc * 3
+        if color > 50:
+            cv2.rectangle(hd_img, (cx1, cy1), (cx2, cy2), (color,color,color), 1, cv2.LINE_AA)
+
+        # Add AMS Logo 
+        hd_img = add_overlay_x_y_cv(hd_img, ams_logo, ams_logo_pos_x, ams_logo_pos_y)
+ 
+        # Add Eventual Extra Logo
+        if(extra_logo is not False and extra_logo is not None):
+            hd_img = add_overlay_cv(hd_img,extra_logo,extra_logo_pos)
+           
         # Add Date & Time
         frame_time_str = station_id + ' - ' + frame_time_str + ' UT' 
         hd_img,xx,yy,ww,hh = add_text_to_pos(hd_img,frame_time_str,date_time_pos,2) #extra_text_pos => bl?

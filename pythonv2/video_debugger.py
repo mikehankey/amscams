@@ -153,15 +153,15 @@ from lib.Video_Title_cv import *
 
 
 # OVERLAP WITH LOGO TR
-#data = {
-#    'json_conf' : '/mnt/ams2/meteor_archive/2019_08_12/2019_08_12_05_38_08_880_010037_AMS7_HD.json',
-#    'video_file' :'/mnt/ams2/meteor_archive/2019_08_12/2019_08_12_05_38_08_880_010037_AMS7_HD.mp4',
-#    'rad_x': 500,
-#   'rad_y': 500,
-#    'rad_name': 'Perseids'
-#}
+data = {
+    'json_conf' : '/mnt/ams2/meteor_archive/2019_08_12/2019_08_12_05_38_08_880_010037_AMS7_HD.json',
+    'video_file' :'/mnt/ams2/meteor_archive/2019_08_12/2019_08_12_05_38_08_880_010037_AMS7_HD.mp4',
+    'rad_x': 500,
+   'rad_y': 500,
+    'rad_name': 'Perseids'
+}
  
-#remaster(data) 
+new_remaster(data) 
 
 
 
@@ -169,21 +169,21 @@ from lib.Video_Title_cv import *
  
 
 #CREATE INFO VIDEO FROM FRAMES
-import cv2 
-import subprocess 
+#import cv2 
+#import subprocess 
 
 
-path = '/home/ams/amscams/dist/vids/ams_intro'
+#path = '/home/ams/amscams/dist/vids/ams_intro'
 
-def_file_path =  '/home/ams/amscams/dist/vids/ams_intro/1280x720.mp4'
+#def_file_path =  '/home/ams/amscams/dist/vids/ams_intro/1280x720.mp4'
 #-hide_banner -loglevel panic
 #cmd = 'ffmpeg  -y  -r 25 -f image2 -s 1280x720 -i ' + path+ '/Intro-1280x720-%02d.png -vcodec libx264 -crf 25 -pix_fmt yuv420p ' + def_file_path
 
-cmd = 'ffmpeg -y -r 25 -i ' + path+ '/Intro-1280x720-%02d.png -c:v libx264 -vf "fps=25,format=yuv420p" ' + def_file_path
-output = subprocess.check_output(cmd, shell=True).decode("utf-8")
+#cmd = 'ffmpeg -y -r 25 -i ' + path+ '/Intro-1280x720-%02d.png -c:v libx264 -vf "fps=25,format=yuv420p" ' + def_file_path
+#output = subprocess.check_output(cmd, shell=True).decode("utf-8")
     
  
 
-print('/home/ams/amscams/dist/vids/ams_intro/test.mp4')
-create_title_video("PERSEIDS 2019",'/mnt/ams2/test_title.mp4')
+#print('/home/ams/amscams/dist/vids/ams_intro/test.mp4')
+#create_title_video("PERSEIDS 2019",'/mnt/ams2/test_title.mp4')
 
