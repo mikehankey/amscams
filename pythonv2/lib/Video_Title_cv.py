@@ -78,7 +78,7 @@ def create_title_video(text,text2,output):
         # Title
         n_frame = add_big_text(frames[0],text,350, (250,250,209,255), 60)
         #2nd ligne smaller
-        n_frame = add_big_text(frames[0],text2,440, (250,250,209,255), 20,VIDEO_FONT)
+        n_frame = add_big_text(n_frame,text2,440, (250,250,209,255), 20,VIDEO_FONT)
         
         new_frames.append(n_frame)
 
