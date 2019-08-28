@@ -194,5 +194,5 @@ import subprocess
  
 
 #print('/home/ams/amscams/dist/vids/ams_intro/test.mp4')
-create_title_video("BEST OF PERSEIDS 2019","Music by Naked Jungle - nakedjungle.bandcamp.com", '/mnt/ams2/test_title2.mp4')
+create_title_video("BEST OF PERSEIDS 2019","Music by Naked Jungle - nakedjungle.bandcamp.com", '/mnt/ams2/test_title3.mp4')
 
