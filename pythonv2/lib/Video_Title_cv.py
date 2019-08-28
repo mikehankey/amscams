@@ -12,7 +12,7 @@ DEFAULT_TITLE = TITLE_1280x720
  
 
 # Add big text centered 
-def add_big_text(background,text,y,color,size):
+def add_big_text(background,text,y,color,size, the_font=VIDEO_FONT_BOLD):
 
     # Convert background to RGB (OpenCV uses BGR)  
     cv2_background_rgb = cv2.cvtColor(background,cv2.COLOR_BGR2RGB)  
@@ -20,7 +20,7 @@ def add_big_text(background,text,y,color,size):
     # Pass the image to PIL to use ttf fonts
     pil_im  = Image.fromarray(cv2_background_rgb)  
     draw    = ImageDraw.Draw(pil_im)  
-    font    = ImageFont.truetype(VIDEO_FONT_BOLD, size)  
+    font    = ImageFont.truetype(the_font, size)  
 
     x = cv2_background_rgb.shape[1]/2 - font.getsize(text)[0]/2
      
@@ -30,7 +30,7 @@ def add_big_text(background,text,y,color,size):
 
 # This function create a quick video (lenght of DEFAULT_TITLE ~ 3sec )
 # with the animated AMS logo and a custom text (ONE LINE TEXT ONLY)
-def create_title_video(text,output):
+def create_title_video(text,text2,output):
 
     # Get the original frames 
     cap = cv2.VideoCapture(DEFAULT_TITLE)
@@ -59,6 +59,8 @@ def create_title_video(text,output):
         #Add Text 
         n_frame = add_big_text(n_frame,"AMERICAN METEOR SOCIETY", 290, (255,255,255,255), 35)
         n_frame = add_big_text(n_frame,text,370, (250,250,209,255), 60)
+        #2nd ligne smaller
+        n_frame = add_big_text(n_frame,text2,420, (250,250,209,255), 20,VIDEO_FONT)
 
         new_frames.append(n_frame)
 
