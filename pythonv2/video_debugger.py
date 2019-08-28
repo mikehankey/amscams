@@ -169,23 +169,18 @@ from lib.Video_Title_cv import *
  
 
 #CREATE INFO VIDEO FROM FRAMES
-import cv2
-import glob
+import cv2 
+import subprocess 
 
 
-images = glob.glob('/home/ams/amscams/dist/vids/ams_intro/*.png')
+path = '/home/ams/amscams/dist/vids/ams_intro/'
+
+def_file_path =  '/home/ams/amscams/dist/vids/ams_intro/test.mp4'
+cmd = 'ffmpeg -hide_banner -loglevel panic -y  -r 25 -f image2 -s 1280x720 -i ' + path+ '/Intro-1280x720-%d.png -vcodec libx264 -crf 25 -pix_fmt yuv420p ' + def_file_path
+output = subprocess.check_output(cmd, shell=True).decode("utf-8")
+    
 
 
-first_img = cv2.imread(images[0], cv2.IMREAD_UNCHANGED)
-
-height , width , layers =  first_img.shape
-fourcc = cv2.VideoWriter_fourcc(*'mp4v')
-video = cv2.VideoWriter('/home/ams/amscams/dist/vids/ams_intro/test.mp4',fourcc,1,(width,height))
-for image in images:
-    frame = cv2.imread(image, cv2.IMREAD_UNCHANGED)
-    video.write(frame) 
- 
-video.release()
 
 print('/home/ams/amscams/dist/vids/ams_intro/test.mp4')
 #create_title_video("PERSEIDS 2019",'/mnt/ams2/test_title.mp4')
