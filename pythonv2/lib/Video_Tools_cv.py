@@ -257,14 +257,10 @@ def new_remaster(data):
         ams_logo_overlaps = True
          
         # By default, we put it on the BOTTOM LEFT - 50px above the bottom
-        ams_logo_pos_x = VIDEO_MARGINS 
-        ams_logo_pos_y = frames[0].shape[0] - ams_logo.shape[0] - VIDEO_MARGINS - 50
-        
-        print('AMS LOGO OVERLAPS')
-        print(" ams_logo_pos_x " + str(ams_logo_pos_x))
-        print(" ams_logo_pos_y " + str(ams_logo_pos_y))
-        print("FRAME H" + str(frames[0].shape[1]))
-        print("LOGO H" + str(ams_logo.shape[1]))
+        if(ams_logo_pos == D_AMS_LOGO_POS):
+            ams_logo_pos_x = VIDEO_MARGINS 
+            ams_logo_pos_y = frames[0].shape[0] - ams_logo.shape[0] - VIDEO_MARGINS - 50
+    
     
     extra_logo_overlaps = False
 
