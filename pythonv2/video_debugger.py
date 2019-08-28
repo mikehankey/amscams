@@ -167,4 +167,21 @@ from lib.Video_Title_cv import *
 
 ################### TEST CREATE TILE
  
-create_title_video("PERSEIDS 2019",'/mnt/ams2/test_title.mp4')
+
+#CREATE INFO VIDEO FROM FRAMES
+import cv2
+import glob
+
+
+images = glob.glob('/home/ams/amscams/dist/vids/ams_intro/*.png')
+ 
+height , width , layers =  images[0].shape
+
+video = cv2.VideoWriter('/home/ams/amscams/dist/vids/ams_intro/test.mp4',-1,1,(width,height))
+for image in images
+    video.write(image) 
+ 
+video.release()
+
+print('/home/ams/amscams/dist/vids/ams_intro/test.mp4')
+#create_title_video("PERSEIDS 2019",'/mnt/ams2/test_title.mp4')
