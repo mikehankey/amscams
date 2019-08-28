@@ -3,7 +3,7 @@ import numpy as numpy
 from lib.VIDEO_VARS import * 
 from lib.Video_Tools_cv import add_text
 
-TITLE_1280x720 = "/home/ams/amscams/dist/vids/ams_intro/1280x720.png"
+TITLE_1280x720 = "/home/ams/amscams/dist/vids/ams_intro/1280x720.mp4"
 DEFAULT_TITLE = TITLE_1280x720
  
 # This function create a quick video (lenght of DEFAULT_TITLE ~ 3sec )
