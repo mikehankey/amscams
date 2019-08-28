@@ -18,6 +18,9 @@ def create_title_video(text,output):
     out     = cv2.VideoWriter(output,fourcc, FPS_HD, (int(cap.get(3)),int(cap.get(4))))
     fc = 0
 
+    print("OUT")
+    print(out)
+
     while(cap.isOpened()):
         ret, frame = cap.read()
 
