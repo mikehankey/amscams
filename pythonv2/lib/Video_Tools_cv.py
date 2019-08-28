@@ -303,7 +303,8 @@ def new_remaster(data):
             ams_logo_pos_y= 500
             print(" ams_logo_pos_x " + str(ams_logo_pos_x))
             print(" ams_logo_pos_y " + str(ams_logo_pos_y))
- 
+            # No meteor Behind
+            hd_img = add_overlay_cv(hd_img,ams_logo,ams_logo_pos)
             hd_img = add_overlay_x_y_cv(hd_img, ams_logo, ams_logo_pos_x, ams_logo_pos_y)
  
         # Add Eventual Extra Logo
