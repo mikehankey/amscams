@@ -12,10 +12,7 @@ def create_title_video(text,output):
 
     # Open the blank title video
     cap = cv2.VideoCapture(TITLE_1280x720)
-
-    print('CAP')
-    print(cap)
-
+ 
     # Define the codec and create VideoWriter object
     fourcc  = cv2.VideoWriter_fourcc(*'mp4v')
     out     = cv2.VideoWriter(output,fourcc, FPS_HD, (int(cap.get(3)),int(cap.get(4))))
@@ -29,9 +26,11 @@ def create_title_video(text,output):
             # Add Text
             #frame = add_text(frame,text,0,0,True)
 
-            text = 'testing 123'
-            font = cv2.FONT_HERSHEY_SIMPLEX
-            cv2.putText(frame, text, (50, 50), font, 2, (255, 255, 0), 2)
+            #text = 'testing 123'
+            #font = cv2.FONT_HERSHEY_SIMPLEX
+            #cv2.putText(frame, text, (50, 50), font, 2, (255, 255, 0), 2)
+
+            frame = cv2.flip(frame,0)
 
             # Write the Frame
             out.write(frame)
