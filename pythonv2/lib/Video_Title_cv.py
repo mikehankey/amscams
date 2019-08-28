@@ -21,17 +21,12 @@ def create_title_video(text,output):
     frame_count = 0
     go = 1
     while go == 1:
-      _ , frame = cap.read()
+        _ , frame = cap.read()
       
-      if frame is None:
-         if frame_count <= 5 :
-            cap.release()
-            break
-         else:
-            go = 0
-      else:
-         frames.append(frame)
-         frame_count = frame_count + 1
+        if frame is not None: 
+            frame = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY) 
+            frames.append(frame) 
+    
     cap.release()
   
     print(str(len(frames)) + " found")
