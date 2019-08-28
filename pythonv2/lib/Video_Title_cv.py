@@ -58,7 +58,7 @@ def create_title_video(text,output):
         n_frame = frame
 
         #Add Text 
-        n_frame = add_big_text(n_frame,text,550)
+        n_frame = add_big_text(n_frame,text,350)
 
         new_frames.append(n_frame)
 
