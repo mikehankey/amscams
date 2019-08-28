@@ -55,7 +55,9 @@ D_AMS_LOGO_POS = "tl" # top left
 D_CAM_INFO_POS = "bl" # bottom left
 D_CUS_LOGO_POS = "tr" # top right
 D_EXTRA_INFO = " " # WARNING - This is updated in Video_Parameters
+D_EXTRA_INFO_POS = "br" # OPERATOR INFO
 
+EMPTY_CORNER = "br" # Where to put stuff when the meteor overlaps
 
 HD_DIM = "1280x720" #for ffmpeg - used to extract the HD frames in HD_FRAMES_PATH
 
@@ -64,3 +66,20 @@ BLENDING_SD = 30 #For the amount of SD blending on HD frames (when SD is found)
 
 #CURRENT FPS OF HD VIDEO
 FPS_HD = 25
+
+#Margins between the logo & text and the border of the frames
+VIDEO_MARGINS = 10 
+
+#DEFAULT FONTS
+VIDEO_FONT = "/home/ams/amscams/dist/fonts/Roboto_Condensed/RobotoCondensed-Regular.ttf"
+VIDEO_FONT_BOLD = "/home/ams/amscams/dist/fonts/Roboto_Condensed/RobotoCondensed-Bold.ttf"
+VIDEO_FONT_SIZE = 25
+VIDEO_FONT_SMALL_SIZE = 16 # For Radiant
+VIDEO_LINE_HEIGHT = 0
+VIDEO_FONT_SMALL_COLOR = (250,250,209,255) # For Radiant
+
+#RADIANT IMAGE
+RADIANT_IMG = "/home/ams/amscams/dist/img/radiant.png"
+
+#NEW TEMPORARY REPO FOR FRAMES
+TMP_FRAME_FOLDER = "/home/ams/tmpvids/"

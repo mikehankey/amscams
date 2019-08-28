@@ -1770,7 +1770,9 @@ def id_object(cnt, objects, fc,max_loc, max_px, intensity, img_w, img_h):
       h = y2 - y1
       cx = mx
       cy = my
-   if fc < 5:
+
+
+   if fc < 0:
       return({},objects)
 
 
@@ -1945,13 +1947,16 @@ def center_point(x,y,w,h):
    return(cx,cy)
 
 def find_in_hist(object,x,y,object_hist, img_w, img_h):
-   hd = 0
+   if img_w > 1000:
+      hd = 1
+   else:
+      hd = 0
    oid = object['oid']
    found = 0
    if hd == 1:
-      md = 40
+      md = 40 
    else:
-      md = 25
+      md = 20
 
    # check if this object_hist is stationary already.
    if len(object_hist) > 1:
@@ -1972,11 +1977,7 @@ def find_in_hist(object,x,y,object_hist, img_w, img_h):
       first_last_slope = find_slope((fx,fy), (lx,ly))
       first_this_slope = find_slope((fx,fy), (x,y))
       last_this_slope = find_slope((lx,ly), (x,y))
-      if int(oid) == 3:
-         slope_diff = abs(abs(first_last_slope) - abs(first_this_slope))
 
-         #if slope_diff > 1:
-         #   return(0)
 
    if len(object_hist) >=4:
       object_hist = object_hist[-3:]
@@ -1992,7 +1993,10 @@ def find_in_hist(object,x,y,object_hist, img_w, img_h):
      
       cox = ox + int(w/2)
       coy = oy + int(h/2)
-      if ox - md <= x <= ox + md and oy -md <= y <= oy + md:
+      dist = calc_dist((x,y), (cox,coy))
+      print("DIST: ", object['oid'], dist, md, x,y,cox,coy)
+
+      if dist < md:
          found = 1
          return(1)
 
@@ -2004,11 +2008,15 @@ def find_in_hist(object,x,y,object_hist, img_w, img_h):
             fc,ox,oy,w,h,mx,my,max_px, intensity = hs
          if len(hs) == 8:
             fc,ox,oy,w,h,mx,my,max_px = hs
-         cox = ox + mx
-         coy = oy + my
-         if cox - md <= x <= cox + md and coy -md <= y <= coy + md:
+         cox = ox + int(w/2)
+         coy = oy + int(h/2)
+         dist = calc_dist((x,y), (cox,coy))
+         print("DIST: ", object['oid'], dist, md, x,y,cox,coy)
+         if dist < md:
             found = 1
             return(1)
+
+
    return(found)
 
 def save_object(object,objects):
@@ -2250,8 +2258,12 @@ def metframes_to_mfd(metframes, metconf, sd_video_file,json_conf):
    mags = []
    fcc = 0
    for fn in metframes:
-      frame_time,frame_time_str = calc_frame_time(sd_video_file, fn)
-      metframes[fn]['frame_time'] = frame_time_str
+      #if "HD" in sd_video_file or "SD" in sd_video_file: 
+      #   frame_time,frame_time_str = calc_frame_time_new(sd_video_file, fn)
+      #else:
+      #   frame_time,frame_time_str = calc_frame_time(sd_video_file, fn)
+      #metframes[fn]['frame_time'] = frame_time_str
+      frame_time_str = metframes[fn]['frame_time']
       if "hd_x" not in metframes[fn] or 'x1' not in metframes[fn]:
          print("FRAME:", fn)
          metframes[fn]['x1'] = int(metframes[fn]['sd_x'] * hdm_x)
@@ -2297,6 +2309,13 @@ def metframes_to_mfd(metframes, metconf, sd_video_file,json_conf):
    #metconf['med_seg_len'] = med_seg_len 
       
    return(meteor_frame_data, metframes, metconf)
+
+def calc_frame_time_new(video_file, frame_num):
+   (f_datetime, cam_id, f_date_str,Y,M,D, H, MM, S) = better_parse_file_date(video_file)
+   extra_meteor_sec = int(frame_num) / 25
+   meteor_frame_time = f_datetime + datetime.timedelta(0,extra_meteor_sec)
+   meteor_frame_time_str = meteor_frame_time.strftime('%Y-%m-%d %H:%M:%S.%f')[:-3]
+   return(meteor_frame_time,meteor_frame_time_str)
 
 def calc_frame_time(video_file, frame_num):
    (f_datetime, cam_id, f_date_str,Y,M,D, H, MM, S) = better_parse_file_date(video_file)
@@ -2345,18 +2364,20 @@ def make_meteor_cnt_composite_images(json_conf, mfd, metframes, metconf, frames,
       cnt_w = 50
       cnt_h = 50
    #print(cnt_w,cnt_h)
+
+
    for frame_data in mfd:
       frame_time, fn, hd_x,hd_y,w,h,max_px,ra,dec,az,el = frame_data
       print("MFD:", fn)
       if fn not in metframes:
-         fn = int(fn)
+         fn = int(fn) 
       x1,y1,x2,y2 = bound_cnt(hd_x,hd_y,1920,1080,cnt_w)
       #x1 = hd_x - cnt_w
       #x2 = hd_x + cnt_w
       #y1 = hd_y - cnt_h
       #y2 = hd_y + cnt_h
       ifn = int(fn)
-      print(ifn)
+      print(ifn, len(frames))
       img = frames[ifn]
       hd_img = cv2.resize(img, (1920,1080))
       cnt_img = hd_img[y1:y2,x1:x2]

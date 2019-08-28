@@ -3,6 +3,7 @@ import glob
 import subprocess 
 from lib.VIDEO_VARS import * 
 from lib.Video_Tools import * 
+from lib.Video_Tools_cv import * 
 from os import listdir, remove
 from os.path import isfile, join, exists
 
@@ -94,9 +95,73 @@ from os.path import isfile, join, exists
 
  
 # TEST GET METEOR DETECTIONS FROM CAM_ID START DAte / END DATE
-videos, path = get_all_meteor_detections("2019_08_21","2019/08/21 00:00","2019/08/21 23:59","10041")
-print(videos)
-print("PATH")
-print(path)
+#videos, path = get_all_meteor_detections("2019_08_21","2019/08/21 00:00","2019/08/21 23:59","10041")
+#print(videos)
+#print("PATH")
+#print(path)
 
 #get_all_detection_frames(path,'2019_08_21_00_33_15_000_010037-trim-618-HD-meteor.mp4')
+
+
+############## TEST OVERLAY POSITION CV
+#background = cv2.imread('/mnt/ams2/meteors/2019_08_23/2019_08_23_00_03_23_000_010040-trim-1-HD-meteor-stacked.png')
+#overlay = cv2.imread(AMS_WATERMARK, cv2.IMREAD_UNCHANGED)
+ 
+#added_image = add_overlay_cv(background,overlay,'tl')
+#cv2.imwrite('/mnt/ams2/test_tl.png', added_image)
+
+#added_image = add_overlay_cv(background,overlay,'tr')
+#cv2.imwrite('/mnt/ams2/test_tr.png', added_image)
+ 
+
+#added_image = add_overlay_cv(background,overlay,'bl')
+#cv2.imwrite('/mnt/ams2/test_bl.png', added_image)
+
+
+#added_image = add_overlay_cv(background,overlay,'br')
+#cv2.imwrite('/mnt/ams2/test_br.png', added_image)
+
+#added_image = add_overlay_cv(background,overlay,'tr') 
+
+
+#logo = cv2.imread('/mnt/ams2/CUSTOM_LOGOS/1.png', cv2.IMREAD_UNCHANGED)
+#added_image = add_overlay_cv(background,logo,'tl') 
+
+#added_image = add_text_to_pos(added_image,'This is a line 1','bl',1)
+#added_image = add_text_to_pos(added_image,'This is a , a second line','bl',2) 
+#added_image = add_text_to_pos(added_image,'THIS IS A TEST  LINE 1','br',1)
+#added_image = add_text_to_pos(added_image,'This is a , a second line','br',2)
+
+
+#added_image = add_radiant_cv(added_image,500,500,"Perseids")
+
+#cv2.imwrite('/mnt/ams2/test_text.png', added_image)
+
+
+
+################### TEST NEW REMASTER
+
+
+# DOESNT OVERLAP  
+data = {
+    'json_conf' : '/mnt/ams2/meteor_archive/2019_08_14/2019_08_14_03_19_52_640_010042_AMS7_HD.json',
+    'video_file' :'/mnt/ams2/meteor_archive/2019_08_14/2019_08_14_03_19_52_640_010042_AMS7_HD.mp4',
+    'rad_x': 500,
+    'rad_y': 500,
+    'rad_name': 'Perseids'
+}
+
+
+# OVERLAP WITH LOGO TR
+data = {
+    'json_conf' : '/mnt/ams2/meteor_archive/2019_08_12/2019_08_12_05_38_08_880_010037_AMS7_HD.json',
+    'video_file' :'/mnt/ams2/meteor_archive/2019_08_12/2019_08_12_05_38_08_880_010037_AMS7_HD.mp4',
+    'rad_x': 500,
+    'rad_y': 500,
+    'rad_name': 'Perseids'
+}
+ 
+
+
+
+remaster(data) 

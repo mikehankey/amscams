@@ -249,7 +249,7 @@ def controller(json_conf):
             logo = ""
             logo_pos = ""
 
-      add_video_job('timelapse',form.getvalue('sel_cam[]'),form.getvalue('tl_date'),form.getvalue('tl_time'),form.getvalue('duration'),form.getvalue('fps'),form.getvalue('dim'),form.getvalue('text_pos'),form.getvalue('wat_pos'),form.getvalue('blend_sd'),extra_text,logo,logo_pos)
+      add_video_job('timelapse',form.getvalue('sel_cam[]'),form.getvalue('tl_date'),form.getvalue('tl_time'),form.getvalue('duration'),form.getvalue('fps'),form.getvalue('dim'),form.getvalue('text_pos'),form.getvalue('wat_pos'),form.getvalue('blend_sd'),extra_text,form.getvalue('extra_text_pos'),logo,logo_pos)
       exit()
 
    # DELETE CUSTOM VIDEO (AJAX CALL)
@@ -658,6 +658,7 @@ def video_tools(json_conf,form):
    print("<input type='hidden' name='def_wat_pos' value='"+params['wat_pos'] +"'/>")  
    print("<input type='hidden' name='def_text_pos' value='"+params['text_pos'] +"'/>")  
    print("<input type='hidden' name='def_logo_pos' value='"+params['logo_pos'] +"'/>")  
+   print("<input type='hidden' name='def_extra_text_pos' value='"+params['extra_text_pos'] +"'/>")  
    print("<input type='hidden' name='def_extra_text' value='"+params['extra_text'] +"'/>")  
    print("<input type='hidden' name='def_extra_logo' value='"+params['extra_logo'] +"'/>")  
 
