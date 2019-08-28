@@ -65,7 +65,7 @@ def get_text_box(background,text,position,line_number=1,bold=False):
         font = ImageFont.truetype(VIDEO_FONT, VIDEO_FONT_SIZE)  
 
     # Get Text position - see lib.Video_Tools_cv_lib
-    # it returns x,y,w,h
+    # it returns y,x,w,h
     return get_text_position_cv(background,text,position,line_number,font)
     
   
@@ -305,8 +305,8 @@ def new_remaster(data):
     if(extra_text is not False):
         # We get the coordinates of the box of the extra_text:
         # Line 2 / Font Bold
-        extra_text_x,extra_text_y,extra_text_w,extra_text_h =  get_text_box(frames[0],extra_text,extra_text_pos,2,True)
-
+        extra_text_y,extra_text_x,extra_text_w,extra_text_h =  get_text_box(frames[0],extra_text,extra_text_pos,2,True)
+ 
         print("BOX OF EXTRA TEXT")
         print(str(extra_text_x) + " , " + str(extra_text_y) + " , " + str(extra_text_x+extra_text_w) + " , " + str(extra_text_y+extra_text_h) )
 
