@@ -1,5 +1,6 @@
 import cv2 
 import numpy as numpy
+from PIL import ImageFont, ImageDraw, Image
 from lib.VIDEO_VARS import * 
 from lib.Video_Tools_cv import add_text
 
