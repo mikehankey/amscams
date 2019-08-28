@@ -13,7 +13,7 @@ DEFAULT_TITLE = TITLE_1280x720
 
 
 # Add big text centered 
-def add_big_text(background,text,y):
+def add_big_text(background,text,y,color,size):
 
     # Convert background to RGB (OpenCV uses BGR)  
     cv2_background_rgb = cv2.cvtColor(background,cv2.COLOR_BGR2RGB)  
@@ -21,11 +21,11 @@ def add_big_text(background,text,y):
     # Pass the image to PIL to use ttf fonts
     pil_im  = Image.fromarray(cv2_background_rgb)  
     draw    = ImageDraw.Draw(pil_im)  
-    font    = ImageFont.truetype(VIDEO_FONT_BOLD, 60)  
+    font    = ImageFont.truetype(VIDEO_FONT_BOLD, size)  
 
     x = cv2_background_rgb.shape[1]/2 - font.getsize(text)[0]/2
      
-    draw.text((x, y), text, font=font, fill=VIDEO_FONT_SMALL_COLOR)  
+    draw.text((x, y), text, font=font, fill=color)  
     return  cv2.cvtColor(np.array(pil_im), cv2.COLOR_RGB2BGR)  
 
 
@@ -58,7 +58,9 @@ def create_title_video(text,output):
         n_frame = frame
 
         #Add Text 
-        n_frame = add_big_text(n_frame,text,350)
+        n_frame = add_big_text(n_frame,"AMERICAN METEOR SOCIETY",30, (255,255,255,255), 40)
+
+        n_frame = add_big_text(n_frame,text,350, (250,250,209,255), 60)
 
         new_frames.append(n_frame)
 
