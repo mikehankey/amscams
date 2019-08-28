@@ -21,7 +21,7 @@ def add_big_text(background,text,y):
     # Pass the image to PIL to use ttf fonts
     pil_im  = Image.fromarray(cv2_background_rgb)  
     draw    = ImageDraw.Draw(pil_im)  
-    font    = ImageFont.truetype(VIDEO_FONT_BOLD, 50)  
+    font    = ImageFont.truetype(VIDEO_FONT_BOLD, 60)  
 
     x = cv2_background_rgb.shape[1]/2 - font.getsize(text)[0]/2
      
