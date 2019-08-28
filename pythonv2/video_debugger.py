@@ -177,11 +177,12 @@ path = '/home/ams/amscams/dist/vids/ams_intro'
 
 def_file_path =  '/home/ams/amscams/dist/vids/ams_intro/test.mp4'
 #-hide_banner -loglevel panic
-cmd = 'ffmpeg  -y  -r 25 -f image2 -s 1280x720 -i ' + path+ '/Intro-1280x720-%02d.png -vcodec libx264 -crf 25 -pix_fmt yuv420p ' + def_file_path
+#cmd = 'ffmpeg  -y  -r 25 -f image2 -s 1280x720 -i ' + path+ '/Intro-1280x720-%02d.png -vcodec libx264 -crf 25 -pix_fmt yuv420p ' + def_file_path
+
+cmd = 'ffmpeg -r 1/5 -i ' + path+ '/Intro-1280x720-%02d.png -c:v libx264 -vf "fps=25,format=yuv420p ' + def_file_path
 output = subprocess.check_output(cmd, shell=True).decode("utf-8")
     
  
-
 
 print('/home/ams/amscams/dist/vids/ams_intro/test.mp4')
 #create_title_video("PERSEIDS 2019",'/mnt/ams2/test_title.mp4')
