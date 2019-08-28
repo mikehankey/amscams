@@ -15,7 +15,35 @@ DEFAULT_TITLE = TITLE_1280x720
 def create_title_video(text,output):
 
     # Get the original frames 
-    frames = load_video_frames(DEFAULT_TITLE,"")
+    cap = cv2.VideoCapture(DEFAULT_TITLE)
+
+    frames = []
+    frame_count = 0
+    go = 1
+    while go == 1:
+      _ , frame = cap.read()
+      
+      if frame is None:
+         if frame_count <= 5 :
+            cap.release()
+            break
+         else:
+            go = 0
+      else:
+         if limit != 0 and frame_count > limit:
+            cap.release()
+            break
+         if len(frame.shape) == 3 and color == 0:
+            frame = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
+            print("CONVERSION COLOR_BGR2GRAY ")
+         frames.append(frame)
+         frame_count = frame_count + 1
+    cap.release()
+  
+   print(str(len(frames)) + " found")
+
+
+    #frames = load_video_frames(DEFAULT_TITLE,"")
     new_frames = []
 
     for frame in frames:
