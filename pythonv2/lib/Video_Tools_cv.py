@@ -310,14 +310,31 @@ def new_remaster(data):
         # Line 2 / Font Bold
         extra_text_y,extra_text_x,extra_text_w,extra_text_h =  get_text_box(frames[0],extra_text,extra_text_pos,2,True)
 
-        # We test if it overlaps with th meteor 
+        # We test if it overlaps with the meteor 
         if(do_rect_overlap(cx1,cy1,cx2,cy2,extra_text_x,extra_text_y,extra_text_x+extra_text_w,extra_text_y+extra_text_h)):
             # Here is overlaps, so we need to move the extra text (ONLY IF IT'S ON THE DEFAULT PLACE = D_EXTRA_INFO_POS)
-            if(extra_text_pos == D_EXTRA_INFO_POS):
+            if(extra_text_pos == D_CAM_INFO_POS):
                 extra_text_overlaps = True
 
-    #TEST
-    extra_text_overlaps = True
+    
+    # We compare the meteor box with the "box" for the Date & Time
+    dt_text_overlaps = False
+
+    # We get the coordinates of the box of the date & time with the longest dummy we could think of
+    # + a code like "AMS7-010042-"
+    # ex: AMS999-999999 - 9999-99-99 99:99:99.999 UT
+    # (not bold so no "True" at the end of the get_text_box call)
+    dt_y,dt_x,dt_w,dt_h =  get_text_box(frames[0],"AMS999-999999 - 9999-99-99 99:99:99.999 UT",date_time_pos,2)
+
+    # We test if it overlaps with the meteor
+    if(do_rect_overlap(cx1,cy1,cx2,cy2,dt_x,dt_y,dt_x+dt_w,dt_y+dt_h)):
+            # Here is overlaps, so we need to move the extra text (ONLY IF IT'S ON THE DEFAULT PLACE = D_EXTRA_INFO_POS)
+            if(date_time_pos == D_EXTRA_INFO_POS):
+               dt_text_overlaps = True
+
+    # TEST
+    dt_text_overlaps = True
+
 
     fc = 0
     new_frames = []
@@ -352,18 +369,32 @@ def new_remaster(data):
                 # Meteor Behind 
                 hd_img = add_overlay_x_y_cv(hd_img, extra_logo, extra_logo_pos_x, extra_logo_pos_y)
 
+
         # Add Date & Time
         frame_time_str = station_id + ' - ' + frame_time_str + ' UT' 
-        hd_img,xx,yy,ww,hh = add_text_to_pos(hd_img,frame_time_str,date_time_pos,2)  
 
-        # Add Extra_info 
-        if(extra_text is not False):
-            if(extra_text_overlaps is False):
-                hd_img,xx,yy,ww,hh = add_text_to_pos(hd_img,extra_text,extra_text_pos,2,True)  
-            else:
-                # It overlaps
-                hd_img,xx,yy,ww,hh = add_text_to_pos(hd_img,extra_text,D_EXTRA_INFO_POS,1,True)      
- 
+        # Add Date & Time & Cam Info
+        if(dt_text_overlaps):
+
+            # Here we automatically put them both on top of each other on the opposite (bottom) side
+            hd_img,xx,yy,ww,hh = add_text_to_pos(hd_img,frame_time_str,D_CAM_INFO_POS,2)  
+
+             # Add Extra_info 
+            if(extra_text is not False):
+                hd_img,xx,yy,ww,hh = add_text_to_pos(hd_img,extra_text,D_CAM_INFO_POS,1,True)      
+
+        else:
+                 
+            hd_img,xx,yy,ww,hh = add_text_to_pos(hd_img,frame_time_str,date_time_pos,2)  
+
+            # Add Extra_info 
+            if(extra_text is not False):
+                if(extra_text_overlaps is False):
+                    hd_img,xx,yy,ww,hh = add_text_to_pos(hd_img,extra_text,extra_text_pos,2,True)  
+                else:
+                    # It overlaps
+                    hd_img,xx,yy,ww,hh = add_text_to_pos(hd_img,extra_text,D_EXTRA_INFO_POS,1,True)      
+    
         # Add Radiant
         if(radiant is not False):
             if hd_img.shape[0] == 720 :
