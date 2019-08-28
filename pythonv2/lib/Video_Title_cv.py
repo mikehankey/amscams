@@ -23,7 +23,7 @@ def create_title_video(text,output):
         print(frame)
 
         #Convert to proper colors
-        n_frame = cv2.cvtColor(frame,cv2.COLOR_BGR2HSV)
+        n_frame = frame #cv2.cvtColor(frame,cv2.COLOR_BGR2HSV)
 
         #Add Text
         n_frame = add_text(n_frame,text,0,0,True)
