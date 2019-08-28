@@ -32,6 +32,12 @@ def create_title_video(text,output):
             # Write the Frame
             out.write(frame)
 
+            # Debug
+            cv2.imshow('My Frame', frame)
+            ch = cv2.waitKey(1)
+            if ch == 27:  # ESC
+                break
+
             fc+=1
         
         else:
@@ -41,5 +47,6 @@ def create_title_video(text,output):
 
     cap.release()
     out.release()
+     cv2.destroyAllWindows()
 
     print('OUTPUT ' + output)
