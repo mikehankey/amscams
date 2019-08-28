@@ -163,7 +163,7 @@ def new_remaster(data):
     #Get the meteor data & frames
     frames = load_video_frames(video_file, json_conf, 0, 0, [], 1)
 
-    if(frames[0] is not None):
+    if(len(frames <= 0):
         print(video_file  + ' is messed up. We cannot remaster the video.')
         exit()
 
@@ -345,7 +345,7 @@ def remaster(data):
     #Get the meteor data & frames
     frames = load_video_frames(video_file, json_conf, 0, 0, [], 1)
 
-    if(frames[0] is not None):
+    if(len(frames <= 0):
         print(video_file  + ' is messed up. We cannot remaster the video.')
         exit()
 
