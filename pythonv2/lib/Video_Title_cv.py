@@ -35,7 +35,7 @@ def create_title_video(text,output,res_w=1280, res_h=720):
         else:
             break
 
-    print(fc + " frames")
+    print(str(fc) + " frames")
 
     cap.release()
     out.release()
