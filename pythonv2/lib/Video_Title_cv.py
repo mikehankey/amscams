@@ -27,17 +27,15 @@ def create_title_video(text,output):
         if ret==True:
  
             # Add Text
-            frame = add_text(frame,text,0,0,True)
+            #frame = add_text(frame,text,0,0,True)
+
+            text = 'testing 123'
+            font = cv2.FONT_HERSHEY_SIMPLEX
+            cv2.putText(frame, text, (50, 50), font, 2, (255, 255, 0), 2)
 
             # Write the Frame
             out.write(frame)
-
-            # Debug
-            cv2.imshow('My Frame', frame)
-            ch = cv2.waitKey(1)
-            if ch == 27:  # ESC
-                break
-
+ 
             fc+=1
         
         else:
@@ -46,7 +44,6 @@ def create_title_video(text,output):
     print(str(fc) + " frames")
 
     cap.release()
-    out.release()
-    cv2.destroyAllWindows()
+    out.release() 
 
     print('OUTPUT ' + output)
