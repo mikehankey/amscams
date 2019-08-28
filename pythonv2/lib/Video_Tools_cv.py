@@ -26,7 +26,7 @@ def overlaps_with_image(meteor_box_x1,meteor_box_y1,meteor_box_x2,meteor_box_y2,
     # Get overlay position - see lib.Video_Tools_cv_lib compare to the first frame
     image_x,image_y = get_overlay_position_cv(bg_image,cv2_image,cv2_image_pos) 
     return do_rect_overlap(image_x,image_y,image_x + cv2_image_width,image_y + cv2_image_height,meteor_box_x1, meteor_box_y1, meteor_box_x2, meteor_box_y2)
- 
+  
 
 # Add text on x,y with default small font (for radiant or other info)
 # If centered = the text is placed as if x,y is the center
@@ -303,14 +303,16 @@ def new_remaster(data):
 
     # We compare the meteor box with the "box" for the extra_text
     if(extra_text is not False):
+
         # We get the coordinates of the box of the extra_text:
         # Line 2 / Font Bold
         extra_text_y,extra_text_x,extra_text_w,extra_text_h =  get_text_box(frames[0],extra_text,extra_text_pos,2,True)
- 
-        print("BOX OF EXTRA TEXT")
-        print(str(extra_text_x) + " , " + str(extra_text_y) + " , " + str(extra_text_x+extra_text_w) + " , " + str(extra_text_y+extra_text_h) )
 
-
+        # We test if it overlaps with th meteor 
+        if(do_rect_overlap(cx1,cy1,cx2,cy2,extra_text_x,extra_text_y,extra_text_x+extra_text_w,extra_text_y+extra_text_h)):
+            print("EXTRA TEXT OVERLAPS")
+        else:
+             print("EXTRA TEXT DOESNT OVERLAP")
 
     fc = 0
     new_frames = []
