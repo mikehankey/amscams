@@ -14,22 +14,28 @@ def create_title_video(text,output,res_w=1280, res_h=720):
     cap = cv2.VideoCapture(TITLE_1280x720)
 
     # Define the codec and create VideoWriter object
-    fourcc  = cv2.VideoWriter_fourcc(*'MP4V')
+    fourcc  = cv2.VideoWriter_fourcc(*'mp4v')
     out     = cv2.VideoWriter(output,fourcc, FPS_HD, (res_w,res_h))
-    
+    fc = 0
+
     while(cap.isOpened()):
         ret, frame = cap.read()
 
         if ret==True:
+
+
             # Add Text
             frame = add_text(frame,text,0,0,True)
 
             # Write the Frame
             out.write(frame)
+
+            fc+=1
         
         else:
             break
 
+    print(fc + " frames")
 
     cap.release()
     out.release()
