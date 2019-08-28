@@ -262,9 +262,7 @@ def new_remaster(data):
         ams_logo_pos_x = VIDEO_MARGINS 
         ams_logo_pos_y = frames[0].shape[1] - ams_logo.shape[1] - VIDEO_MARGINS - 50
 
-        print(" ams_logo_pos_x " + str(ams_logo_pos_x))
-        print(" ams_logo_pos_y " + str(ams_logo_pos_x))
- 
+    
     extra_logo_overlaps = False
 
     # We compare the meteor box with the eventual extra logo and its position within the first frame
@@ -300,6 +298,10 @@ def new_remaster(data):
             hd_img = add_overlay_cv(hd_img,ams_logo,ams_logo_pos)
         else:
             # Meteor Behind
+            print('AMS LOGO OVERLAPS')
+            print(" ams_logo_pos_x " + str(ams_logo_pos_x))
+            print(" ams_logo_pos_y " + str(ams_logo_pos_y))
+ 
             hd_img = add_overlay_x_y_cv(hd_img, ams_logo, ams_logo_pos_x, ams_logo_pos_y)
  
         # Add Eventual Extra Logo
