@@ -30,9 +30,6 @@ def create_title_video(text,output):
          else:
             go = 0
       else:
-         if len(frame.shape) == 3 and color == 0:
-            frame = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
-            print("CONVERSION COLOR_BGR2GRAY ")
          frames.append(frame)
          frame_count = frame_count + 1
     cap.release()
