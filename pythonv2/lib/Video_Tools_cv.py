@@ -26,7 +26,7 @@ def overlaps_with_image(meteor_box_x1,meteor_box_y1,meteor_box_x2,meteor_box_y2,
     # Get overlay position - see lib.Video_Tools_cv_lib compare to the first frame
     image_x,image_y = get_overlay_position_cv(bg_image,cv2_image,cv2_image_pos) 
     return do_rect_overlap(image_x,image_y,image_x + cv2_image_width,image_y + cv2_image_height,meteor_box_x1, meteor_box_y1, meteor_box_x2, meteor_box_y2)
-
+ 
 
 # Add text on x,y with default small font (for radiant or other info)
 # If centered = the text is placed as if x,y is the center
@@ -48,6 +48,26 @@ def add_text(background,text,x,y,centered=False):
     return  cv2.cvtColor(np.array(pil_im), cv2.COLOR_RGB2BGR)  
 
 
+# Return the coordinates of the box that 
+# correspond to a text inside a frame
+def get_text_box(background,text,position,line_number=1,bold=False):
+    # Convert background to RGB (OpenCV uses BGR)  
+    cv2_background_rgb = cv2.cvtColor(background,cv2.COLOR_BGR2RGB)  
+    
+    # Pass the image to PIL  
+    pil_im = Image.fromarray(cv2_background_rgb)  
+    draw = ImageDraw.Draw(pil_im)  
+ 
+    # use DEFAULT truetype font  
+    if(bold==True): 
+        font = ImageFont.truetype(VIDEO_FONT_BOLD, VIDEO_FONT_SIZE)  
+    else:
+        font = ImageFont.truetype(VIDEO_FONT, VIDEO_FONT_SIZE)  
+
+    # Get Text position - see lib.Video_Tools_cv_lib
+    # it returns x,y,w,h
+    return get_text_position_cv(background,text,position,line_number,font)
+    
   
 # Add text over background
 # WARNING: bg is NOT a cv image but a full path (for PIL)
@@ -57,6 +77,7 @@ def add_text(background,text,x,y,centered=False):
 #                    = 2 => second line at this position
 # return updated cv matrix
 def add_text_to_pos(background,text,position,line_number=1,bold=False):
+
     # Convert background to RGB (OpenCV uses BGR)  
     cv2_background_rgb = cv2.cvtColor(background,cv2.COLOR_BGR2RGB)  
     
@@ -256,7 +277,7 @@ def new_remaster(data):
         # We move the logo here since it overlaps 
         ams_logo_overlaps = True
          
-        # By default, we put it on the BOTTOM LEFT - 50px above the bottom
+        # By default, we put it on the BOTTOM LEFT - 50px above the bottom (ONLY WORK WITH 720!!)
         if(ams_logo_pos == D_AMS_LOGO_POS):
             ams_logo_pos_x = VIDEO_MARGINS 
             ams_logo_pos_y = frames[0].shape[0] - ams_logo.shape[0] - VIDEO_MARGINS - 50
@@ -272,14 +293,24 @@ def new_remaster(data):
         # We move the extra logo here since it overlaps 
         extra_logo_overlaps = True
 
-        # By default, we put it on the BOTTOM RIGHT - 50px above the bottom 
+        # By default, we put it on the BOTTOM RIGHT - 50px above the bottom (ONLY WORK WITH 720!!) 
         if(extra_logo_pos == D_CUS_LOGO_POS):
             extra_logo_pos_x = frames[0].shape[1] - extra_logo.shape[1]  - VIDEO_MARGINS 
             extra_logo_pos_y = frames[0].shape[0] - extra_logo.shape[0] - VIDEO_MARGINS - 50
 
             #TODO... setup different x,y when the AMS Logo is somewhere on the page (different ams_logo_pos)
     
-    
+
+    # We compare the meteor box with the "box" for the extra_text
+    if(extra_text is not False):
+        # We get the coordinates of the box of the extra_text:
+        # Line 2 / Font Bold
+        extra_text_x,extra_text_y,extra_text_w,extra_text_h =  get_text_box(frames[0],extra_text,extra_text_pos,2,True)
+
+        print("BOX OF EXTRA TEXT")
+        print(str(extra_text_x) + " , " + str(extra_text_y) + " , " + str(extra_text_x,extra_text_w) + " , " + str(extra_text_y,extra_text_h) )
+
+
 
     fc = 0
     new_frames = []
@@ -316,11 +347,11 @@ def new_remaster(data):
 
         # Add Date & Time
         frame_time_str = station_id + ' - ' + frame_time_str + ' UT' 
-        hd_img,xx,yy,ww,hh = add_text_to_pos(hd_img,frame_time_str,date_time_pos,2) #extra_text_pos => bl?
+        hd_img,xx,yy,ww,hh = add_text_to_pos(hd_img,frame_time_str,date_time_pos,2)  
 
         # Add Extra_info 
         if(extra_text is not False):
-            hd_img,xx,yy,ww,hh = add_text_to_pos(hd_img,extra_text,extra_text_pos,2,True)  #extra_text_pos => br?
+            hd_img,xx,yy,ww,hh = add_text_to_pos(hd_img,extra_text,extra_text_pos,2,True)  
  
         # Add Radiant
         if(radiant is not False):
