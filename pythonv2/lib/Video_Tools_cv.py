@@ -267,19 +267,19 @@ def new_remaster(data):
     extra_logo_overlaps = False
 
     # We compare the meteor box with the eventual extra logo and its position within the first frame
-    #if(extra_logo is not False and overlaps_with_image(cx1,cy1,cx2,cy2,extra_logo,extra_logo_pos,frames[0])): 
+    if(extra_logo is not False and overlaps_with_image(cx1,cy1,cx2,cy2,extra_logo,extra_logo_pos,frames[0])): 
      
-    # We move the extra logo here since it overlaps 
-    extra_logo_overlaps = True
+        # We move the extra logo here since it overlaps 
+        extra_logo_overlaps = True
 
-    # By default, we put it on the BOTTOM RIGHT - 50px above the bottom 
-    if(extra_logo_pos == D_CUS_LOGO_POS):
-        extra_logo_pos_x = frames[0].shape[1] - extra_logo.shape[1]  - VIDEO_MARGINS 
-        extra_logo_pos_y = frames[0].shape[0] - extra_logo.shape[0] - VIDEO_MARGINS - 50
+        # By default, we put it on the BOTTOM RIGHT - 50px above the bottom 
+        if(extra_logo_pos == D_CUS_LOGO_POS):
+            extra_logo_pos_x = frames[0].shape[1] - extra_logo.shape[1]  - VIDEO_MARGINS 
+            extra_logo_pos_y = frames[0].shape[0] - extra_logo.shape[0] - VIDEO_MARGINS - 50
 
-        #TODO... setup different x,y when the AMS Logo is somewhere on the page (different ams_logo_pos)
+            #TODO... setup different x,y when the AMS Logo is somewhere on the page (different ams_logo_pos)
     
-    # We don't do shit if the meteor are over the texts for now
+    
 
     fc = 0
     new_frames = []
