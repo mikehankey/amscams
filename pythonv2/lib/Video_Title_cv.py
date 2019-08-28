@@ -23,42 +23,13 @@ def get_video_frames(_input):
 # with the animated AMS logo and a custom text (ONE LINE TEXT ONLY)
 def create_title_video(text,output):
 
-    # Open the blank title video
-    cap = cv2.VideoCapture(TITLE_1280x720)
- 
-    # Define the codec and create VideoWriter object
-    fourcc  = cv2.VideoWriter_fourcc(*'mp4v')
-    out     = cv2.VideoWriter(output,fourcc, FPS_HD, (int(cap.get(3)),int(cap.get(4))))
-    fc = 0
+    # Get the original frames
+    frames = get_video_frames(DEFAULT_TITLE)
+    new_frames = []
 
-    print("OUT")
-    print(out)
+    for frame in frames:
+        frame = add_text(frame,text,0,0,True)
+        new_frames.append(frame)
 
-    while(cap.isOpened()):
-        ret, frame = cap.read()
-
-        if ret==True:
- 
-            # Add Text
-            #frame = add_text(frame,text,0,0,True)
-
-            #text = 'testing 123'
-            #font = cv2.FONT_HERSHEY_SIMPLEX
-            #cv2.putText(frame, text, (50, 50), font, 2, (255, 255, 0), 2)
-
-            frame = cv2.flip(frame,0)
-
-            # Write the Frame
-            out.write(frame)
- 
-            fc+=1
-        
-        else:
-            break
-
-    print(str(fc) + " frames")
-
-    cap.release()
-    out.release() 
-
+    make_movie_from_frames(new_frames, [0,len(new_frames) - 1], output, 1)
     print('OUTPUT ' + output)
