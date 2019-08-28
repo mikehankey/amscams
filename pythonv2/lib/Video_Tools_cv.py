@@ -301,6 +301,8 @@ def new_remaster(data):
             #TODO... setup different x,y when the AMS Logo is somewhere on the page (different ams_logo_pos)
     
 
+    extra_text_overlaps = False
+
     # We compare the meteor box with the "box" for the extra_text
     if(extra_text is not False):
 
@@ -310,9 +312,12 @@ def new_remaster(data):
 
         # We test if it overlaps with th meteor 
         if(do_rect_overlap(cx1,cy1,cx2,cy2,extra_text_x,extra_text_y,extra_text_x+extra_text_w,extra_text_y+extra_text_h)):
-            print("EXTRA TEXT OVERLAPS")
-        else:
-             print("EXTRA TEXT DOESNT OVERLAP")
+            # Here is overlaps, so we need to move the extra text (ONLY IF IT'S ON THE DEFAULT PLACE = D_EXTRA_INFO_POS)
+            if(extra_text_pos == D_EXTRA_INFO_POS):
+                extra_text_overlaps = True
+
+    #TEST
+    extra_text_overlaps = True
 
     fc = 0
     new_frames = []
@@ -353,7 +358,11 @@ def new_remaster(data):
 
         # Add Extra_info 
         if(extra_text is not False):
-            hd_img,xx,yy,ww,hh = add_text_to_pos(hd_img,extra_text,extra_text_pos,2,True)  
+            if(extra_text_overlaps is False):
+                hd_img,xx,yy,ww,hh = add_text_to_pos(hd_img,extra_text,extra_text_pos,2,True)  
+            else:
+                # It overlaps
+                hd_img,xx,yy,ww,hh = add_text_to_pos(hd_img,extra_text,D_EXTRA_INFO_POS,1,True)      
  
         # Add Radiant
         if(radiant is not False):
