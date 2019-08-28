@@ -331,11 +331,7 @@ def new_remaster(data):
             # Here is overlaps, so we need to move the extra text (ONLY IF IT'S ON THE DEFAULT PLACE = D_EXTRA_INFO_POS)
             if(date_time_pos == D_EXTRA_INFO_POS):
                dt_text_overlaps = True
-
-    # TEST
-    dt_text_overlaps = True
-
-
+ 
     fc = 0
     new_frames = []
 
