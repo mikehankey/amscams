@@ -166,5 +166,6 @@ from lib.Video_Title_cv import *
 
 
 ################### TEST CREATE TILE
-get_video_frames('/mnt/ams2/test_title.mp4')
+frames = get_video_frames('/mnt/ams2/test_title.mp4')
+print(frames)
 create_title_video("PERSEIDS 2019",'/mnt/ams2/test_title.mp4')

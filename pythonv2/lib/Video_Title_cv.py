@@ -11,10 +11,10 @@ DEFAULT_TITLE = TITLE_1280x720
 def get_video_frames(_input):
     frames = []
     vidcap = cv2.VideoCapture(_input)
-    success,image = vidcap.read() 
+    success,frame = vidcap.read() 
     while success:
         frames.append(frame)
-        success,image = vidcap.read()
+        success,frame = vidcap.read()
     vidcap.release()
     return frames
 
