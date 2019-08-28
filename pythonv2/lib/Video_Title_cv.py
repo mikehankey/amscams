@@ -19,6 +19,7 @@ def create_title_video(text,output):
     new_frames = []
 
     for frame in frames:
+        frame = cv2.cvtColor(frame,cv2.COLOR_BGR2RGB)
         frame = add_text(frame,text,0,0,True)
         new_frames.append(frame)
 
