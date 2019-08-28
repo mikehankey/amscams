@@ -154,10 +154,10 @@ from lib.Video_Title_cv import *
 
 # OVERLAP WITH LOGO TR
 data = {
-    'json_conf' : '/mnt/ams2/meteor_archive/2019_08_12/2019_08_12_05_38_08_880_010037_AMS7_HD.json',
-    'video_file' :'/mnt/ams2/meteor_archive/2019_08_12/2019_08_12_05_38_08_880_010037_AMS7_HD.mp4',
+    'json_conf' : '/mnt/ams2/conversion/2019_08_10_02_29_20_000_010037-trim0716/2019_08_10_02_29_52_040_010037_AMS7_HD.json',
+    'video_file' :'/mnt/ams2/conversion/2019_08_10_02_29_20_000_010037-trim0716/2019_08_10_02_29_18_000_010037-trim-716-HD-meteor.mp4',
     'rad_x': 500,
-   'rad_y': 500,
+    'rad_y': 500,
     'rad_name': 'Perseids'
 }
  
