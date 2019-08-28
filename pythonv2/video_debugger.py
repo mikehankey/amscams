@@ -153,24 +153,24 @@ from lib.Video_Title_cv import *
 
 
 # OVERLAP WITH LOGO TR
-data = {
-    'json_conf' : '/mnt/ams2/conversion/2019_08_10_02_29_20_000_010037-trim0716/2019_08_10_02_29_52_040_010037_AMS7_HD.json',
-    'video_file' :'/mnt/ams2/conversion/2019_08_10_02_29_20_000_010037-trim0716/2019_08_10_02_29_52_040_010037_AMS7_HD.mp4',
-    'rad_x': 500,
-    'rad_y': 500,
-    'rad_name': 'Perseids'
-}
+#data = {
+#    'json_conf' : '/mnt/ams2/conversion/2019_08_10_02_29_20_000_010037-trim0716/2019_08_10_02_29_52_040_010037_AMS7_HD.json',
+#    'video_file' :'/mnt/ams2/conversion/2019_08_10_02_29_20_000_010037-trim0716/2019_08_10_02_29_52_040_010037_AMS7_HD.mp4',
+#   'rad_x': 500,
+#   'rad_y': 500,
+#    'rad_name': 'Perseids'
+#}
 
 
-data = {
-    'json_conf' : '/mnt/ams2/conversion/2019_08_10_06_41_52_000_010042-trim0777/2019_08_10_06_42_24_280_010042_AMS7_HD.json',
-    'video_file' :'/mnt/ams2/conversion/2019_08_10_06_41_52_000_010042-trim0777/2019_08_10_06_42_24_280_010042_AMS7_HD.mp4',
-    'rad_x': 500,
-    'rad_y': 500,
-    'rad_name': 'Perseids'
-}  
+#data = {
+#    'json_conf' : '/mnt/ams2/conversion/2019_08_10_06_41_52_000_010042-trim0777/2019_08_10_06_42_24_280_010042_AMS7_HD.json',
+#    'video_file' :'/mnt/ams2/conversion/2019_08_10_06_41_52_000_010042-trim0777/2019_08_10_06_42_24_280_010042_AMS7_HD.mp4',
+#    'rad_x': 500,
+#    'rad_y': 500,
+#    'rad_name': 'Perseids'
+#}  
  
-new_remaster(data)  
+#new_remaster(data)  
 #remaster(data)  
 
 
@@ -178,8 +178,8 @@ new_remaster(data)
  
 
 #CREATE INFO VIDEO FROM FRAMES
-#import cv2 
-#import subprocess 
+import cv2 
+import subprocess 
 
 
 #path = '/home/ams/amscams/dist/vids/ams_intro'
@@ -194,5 +194,5 @@ new_remaster(data)
  
 
 #print('/home/ams/amscams/dist/vids/ams_intro/test.mp4')
-#create_title_video("PERSEIDS 2019",'/mnt/ams2/test_title.mp4')
+create_title_video("PERSEIDS 2019",'/mnt/ams2/test_title.mp4')
 

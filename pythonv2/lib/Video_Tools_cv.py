@@ -169,7 +169,8 @@ def add_radiant_cv(radiant_image,background,x,y,text):
 
 
 
-#TEMPORARTY remaster with moving logo & text
+# Add logo, text & radiant to a video 
+# with new position for all artifacts if the meteor flies behind 
 def new_remaster(data):
     
     video_file = data['video_file']
