@@ -146,7 +146,7 @@ def create_thank_operator_video(operators,duration,output,line_height=45,op_font
 
 
 # Create Allskycams Add video
-def create_allskycams_video(text1,text2):
+def create_allskycams_video(text1,text2,duration,output):
     
     # Get the original frames 
     cap = cv2.VideoCapture(ALL_SKY_CAMS_FRAME)
@@ -165,5 +165,17 @@ def create_allskycams_video(text1,text2):
     
     cap.release()
    
-    new_frames = []
-    print(frames)
+    
+
+    # Add text 1
+    frames[0] = add_big_text(frames[0],text1,350, (255,255,255,255), 60)
+
+    # Add text 2
+    frames[0] = add_big_text(frames[0],text2,380, (255,255,255,255), 50)
+
+    all_frames = []
+    for x in range(0,duration):
+        all_frames.append(frame)        
+
+    make_movie_from_frames(all_frames, [0,len(all_frames) - 1], output, 1)
+    print('OUTPUT ' + output)
