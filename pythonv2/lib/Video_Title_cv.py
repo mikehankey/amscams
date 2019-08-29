@@ -137,7 +137,7 @@ def create_thank_operator_video(operators,duration,output):
     op_c = 0
 
     for op in operators:
-        frame = add_big_text(frame,op, top_y + top_size + line_height*op_c, (255,255,255,255), op_font_size)
+        frame = add_big_text(frame,op, (top_y + top_size + line_height )+ line_height*op_c, (255,255,255,255), op_font_size)
         op_c+=1
 
 
