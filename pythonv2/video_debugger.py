@@ -182,17 +182,5 @@ import cv2
 import subprocess 
 
 
-#path = '/home/ams/amscams/dist/vids/ams_intro'
-
-#def_file_path =  '/home/ams/amscams/dist/vids/ams_intro/1280x720.mp4'
-#-hide_banner -loglevel panic
-#cmd = 'ffmpeg  -y  -r 25 -f image2 -s 1280x720 -i ' + path+ '/Intro-1280x720-%02d.png -vcodec libx264 -crf 25 -pix_fmt yuv420p ' + def_file_path
-
-#cmd = 'ffmpeg -y -r 25 -i ' + path+ '/Intro-1280x720-%02d.png -c:v libx264 -vf "fps=25,format=yuv420p" ' + def_file_path
-#output = subprocess.check_output(cmd, shell=True).decode("utf-8")
-    
- 
-
-#print('/home/ams/amscams/dist/vids/ams_intro/test.mp4')
-create_title_video("BEST OF PERSEIDS 2019","Music by Naked Jungle - nakedjungle.bandcamp.com", '/mnt/ams2/test_title3.mp4')
-
+#create_title_video("BEST OF PERSEIDS 2019","Music by Naked Jungle - nakedjungle.bandcamp.com", '/mnt/ams2/test_title3.mp4',(255,255,255,255))
+create_thank_operator_video(['Mike Hankey','Vincent Perlerin','Marcel Duchamp','The Beatles'],125, '/mnt/ams2/test_end_credits.mp4')
