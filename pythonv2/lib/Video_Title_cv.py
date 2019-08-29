@@ -75,14 +75,25 @@ def create_title_video(text,text2,output):
             new_frames.append(n_frame)
             fc += 1
 
- 
+    
+    # Initial Position of the rectangle
+    rect_x = int(1280/2)
+    rect_y = 327
+    rect_w = 0
+    rect_h = 2
+
+
     # Title BG
     for x in range(0, title_duration):
 
         # Title
         n_frame = add_big_text(frames[0],text,250, (250,250,209,255), 60)
+
         #2nd ligne smaller
         n_frame = add_big_text(n_frame,text2,340, (250,250,209,255), 20,VIDEO_FONT)
+
+        #Rectangle
+        cv2.rectangle(n_frame, (rect_x, rect_y), (rect_x+rect_w, rect_y+rect_h), (250,250,209,255), 2,cv2.CV_AA )
         
         new_frames.append(n_frame)
 
