@@ -163,6 +163,9 @@ def create_thank_operator_video(operators,duration,output,_with_line_animation,l
             rect_x = int(rect_x - fc*(rect_x-rect_min_x)/rect_anim_duration)
             rect_w = 1280-rect_x*2     
 
+
+            print("LINE " + str(rect_X) + " - " + str(rect_w))
+
             new_frame = cv2.rectangle(frame, (rect_x, rect_y), (rect_x+rect_w, rect_y+rect_h),(255,255,255,255), 1)
 
         all_frames.append(new_frame)        
