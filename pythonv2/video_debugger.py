@@ -182,6 +182,6 @@ import cv2
 import subprocess 
 
 
-create_title_video("BEST OF PERSEIDS 2019","Music by Naked Jungle - nakedjungle.bandcamp.com", '/mnt/ams2/test_title3.mp4',(255,255,255,255))
+create_title_video("BEST OF PERSEIDS 2019","Music by Naked Jungle - nakedjungle.bandcamp.com", '/mnt/ams2/test_title3.mp4',(255,255,255,255),True)
 #create_thank_operator_video(['Mike Hankey','Vincent Perlerin','Marcel Duchamp','The Beatles'],125, '/mnt/ams2/test_end_credits.mp4')
 #create_allskycams_video("Visit Allskycams.com","for more information about our all sky cameras",125, '/mnt/ams2/test_allsky.mp4')
