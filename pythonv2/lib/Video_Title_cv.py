@@ -80,7 +80,7 @@ def create_title_video(text,text2,output):
     rect_x = int(1280/2)
     rect_w = 1
     rect_y = 327
-    rect_h = 2
+    rect_h = 1
     fc = 0
     max_rect_half_width = 250 
     rect_anim_duration = int(title_duration/2)
@@ -100,6 +100,7 @@ def create_title_video(text,text2,output):
         #Rectangle
         #rect_x = rect_x - int(fc*max_rect_half_width/rect_anim_duration)  
         rect_w = int(fc*max_rect_half_width*2/(rect_anim_duration))
+        rect_x = rect_x - int(fc*max_rect_half_width/rect_anim_duration)   
         cv2.rectangle(n_frame, (rect_x, rect_y), (rect_x+rect_w, rect_y+rect_h), (250,250,209,255), 1)
         
         new_frames.append(n_frame)
