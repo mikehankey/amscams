@@ -151,7 +151,7 @@ def create_thank_operator_video(operators,duration,output,_with_line_animation,l
     rect_y = 110
     rect_h = 1
     fc = 0
-    rect_min_x = 350
+    rect_min_x = 325
     rect_max_w = 1280-(rect_min_x*2)
     rect_anim_duration = duration
 
@@ -160,9 +160,8 @@ def create_thank_operator_video(operators,duration,output,_with_line_animation,l
         if(_with_line_animation is True):
             fc +=1
 
-            if(rect_x > rect_min_x):
-                rect_x = int(rect_x - fc*(rect_x-rect_min_x)/rect_anim_duration)
-                rect_w = 1280-rect_x*2     
+            rect_x = int(rect_x - fc*(rect_x-rect_min_x)/rect_anim_duration)
+            rect_w = 1280-rect_x*2     
 
             frame = cv2.rectangle(frame, (rect_x, rect_y), (rect_x+rect_w, rect_y+rect_h),(255,255,255,255), 1)
 
