@@ -112,6 +112,7 @@ def create_title_video(text,text2,output,title_color=(255,255,255,255), rect= Fa
           
             if(rect_w < rect_max_w):
                 rect_w = int(rect_w + fc*(rect_max_w)/rect_anim_duration)
+                rect_w = int(rect_w + fc*(rect_x-rect_min_x)/rect_anim_duration)
 
             if(rect_w > rect_max_w): 
                 rect_w = rect_max_w 
