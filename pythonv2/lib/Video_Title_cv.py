@@ -78,6 +78,7 @@ def create_title_video(text,text2,output,title_color=(255,255,255,255)):
     
     # Initial Position of the rectangle
     rect_x_init = int(1280/2)  
+    rect_x = rect_x_init
     rect_w = 0
     rect_y = 327
     rect_h = 1
