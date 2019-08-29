@@ -131,6 +131,6 @@ def create_thank_operator_video(operators,duration,output):
     for x in range(0,duration):
         all_frames.append(frame)        
 
-    make_movie_from_frames(all_frames, [0,len(new_frames) - 1], output, 1)
+    make_movie_from_frames(all_frames, [0,len(all_frames) - 1], output, 1)
     print('OUTPUT ' + output)
 
