@@ -51,11 +51,12 @@ def create_title_video(text,text2,output):
    
     new_frames = []
 
-
-    anim_duration  = 75
+    #AMS LOGO
+    anim_duration  = 95
     end_fade_in_ams_logo = 45
 
-    title_duration = 75
+    # TITLE OF THE VIDEO
+    title_duration = 95
 
     fc = 0
     transp = 0
@@ -74,9 +75,7 @@ def create_title_video(text,text2,output):
             new_frames.append(n_frame)
             fc += 1
 
-
-
-
+ 
     # Title BG
     for x in range(0, title_duration):
 
