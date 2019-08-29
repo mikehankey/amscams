@@ -146,8 +146,7 @@ def create_thank_operator_video(operators,duration,output,_with_line_animation,l
     fc = 0
     rect_min_x = 350
     rect_max_w = 1280-(rect_min_x*2)
-    rect_anim_duration = int(duration/3)
-
+    rect_anim_duration = duration
 
     for op in operators:
         fc +=1
