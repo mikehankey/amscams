@@ -121,7 +121,7 @@ def create_title_video(text,text2,output,title_color=(255,255,255,255), rect= Tr
 
 
 # Create thank you video
-def create_thank_operator_video(operators,duration,output,line_height=45,op_font_size=30):
+def create_thank_operator_video(operators,duration,output,_with_line_animation,line_height=45,op_font_size=30):
 
     top_y = 50
     top_size = 40  
@@ -137,8 +137,27 @@ def create_thank_operator_video(operators,duration,output,line_height=45,op_font
 
     op_c = 0
 
+    # Initial Position of the rectangle
+    rect_x_init = int(1280/2)  
+    rect_x = rect_x_init
+    rect_w = 0
+    rect_y = 110
+    rect_h = 1
+    fc = 0
+    rect_min_x = 350
+    rect_max_w = 1280-(rect_min_x*2)
+    rect_anim_duration = int(duration/3)
+
+
     for op in operators:
         frame = add_big_text(frame,op, (top_y + top_size + line_height )+ line_height*op_c, (255,255,255,255), op_font_size)
+
+        if(rect_x > rect_min_x):
+            rect_x = int(rect_x - fc*(rect_x-rect_min_x)/rect_anim_duration)
+            rect_w = 1280-rect_x*2     
+
+            cv2.rectangle(n_frame, (rect_x, rect_y), (rect_x+rect_w, rect_y+rect_h),(255,255,255,255), 1)
+
         op_c+=1
 
 
