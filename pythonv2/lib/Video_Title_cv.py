@@ -129,7 +129,7 @@ def create_thank_operator_video(operators,duration,output):
     how_many_operators = len(operators)
 
     for x in range(0,duration):
-        new_frames.append(frame)        
+        all_frames.append(frame)        
 
     make_movie_from_frames(new_frames, [0,len(new_frames) - 1], output, 1)
     print('OUTPUT ' + output)
