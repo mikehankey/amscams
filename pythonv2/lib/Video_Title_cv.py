@@ -55,8 +55,7 @@ def create_title_video(text,text2,output):
     anim_duration  = 85
     end_fade_in_ams_logo = 65
 
-    # TITLE OF THE VIDEO
-    title_duration = 95
+   
 
     fc = 0
     transp = 0
@@ -75,9 +74,13 @@ def create_title_video(text,text2,output):
             new_frames.append(n_frame)
             fc += 1
 
+
+    # TITLE OF THE VIDEO
+    title_duration = 95
     
     # Initial Position of the rectangle
     rect_x_init = int(1280/2) 
+    rect_min_x = 450
     rect_x = rect_x_init
     rect_w = 10
     rect_y = 327
@@ -104,8 +107,8 @@ def create_title_video(text,text2,output):
         n_frame = add_big_text(n_frame,text2,sub_title_y, (250,250,209,255), sub_title_zize,VIDEO_FONT)
 
         #Rectangle
-        rect_w = int(rect_w + (fc*rect_w/(max_rect_half_width-rect_w)))
-        rect_x = int(rect_x - (fc*rect_x_init/max_rect_half_width)/rect_anim_duration)
+        #rect_w = int(rect_w + (fc*rect_w/(max_rect_half_width-rect_w)))
+        rect_x = int(fc*(rect_min_x-rect_x_init/rect_anim_duration)+rect_x_init)
         
         cv2.rectangle(n_frame, (rect_x, rect_y), (rect_x+rect_w, rect_y+rect_h), (250,250,209,255), 1)
         
