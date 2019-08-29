@@ -30,7 +30,7 @@ def add_big_text(background,text,y,color,size, the_font=VIDEO_FONT_BOLD):
 
 # This function create a quick video (lenght of DEFAULT_TITLE ~ 3sec )
 # with the animated AMS logo and a custom text (ONE LINE TEXT ONLY)
-def create_title_video(text,text2,output):
+def create_title_video(text,text2,output,title_color=(250,250,209,255)):
 
     # Get the original frames 
     cap = cv2.VideoCapture(DEFAULT_TITLE)
@@ -54,9 +54,7 @@ def create_title_video(text,text2,output):
     #AMS LOGO
     anim_duration  = 85
     end_fade_in_ams_logo = 65
-
-   
-
+ 
     fc = 0
     transp = 0
 
@@ -116,3 +114,23 @@ def create_title_video(text,text2,output):
 
     make_movie_from_frames(new_frames, [0,len(new_frames) - 1], output, 1)
     print('OUTPUT ' + output)
+
+
+# Create thank you video
+def create_thank_operator_video(operators,duration,output):
+
+    frame = np.zeros((750,1280,3), np.uint8)
+    frame = cv2.cvtColor(frame, cv2.COLOR_RGB2BGR) 
+
+    # Add "Thank you on top"
+    frame = add_big_text(frame,"Thank you to all the AMS Cam Operators", 50, (255,255,255,255), 40)
+
+    all_frames = []
+    how_many_operators = len(operators)
+
+    for x in range(0,duration):
+        new_frames.append(frame)        
+
+    make_movie_from_frames(new_frames, [0,len(new_frames) - 1], output, 1)
+    print('OUTPUT ' + output)
+
