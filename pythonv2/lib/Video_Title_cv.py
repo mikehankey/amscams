@@ -150,6 +150,8 @@ def create_thank_operator_video(operators,duration,output,_with_line_animation,l
 
 
     for op in operators:
+        fc +=1
+
         frame = add_big_text(frame,op, (top_y + top_size + line_height )+ line_height*op_c, (255,255,255,255), op_font_size)
 
         if(rect_x > rect_min_x):
