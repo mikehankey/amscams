@@ -83,8 +83,8 @@ def create_title_video(text,text2,output,title_color=(255,255,255,255), rect= Fa
     rect_y = 327
     rect_h = 1
     fc = 0
-    rect_min_x = 350
-    rect_max_w = 650
+    rect_min_x = 250
+    rect_max_w = 1280-(rect_min_x*2)
     rect_anim_duration = int(title_duration/2)
 
     title_y = 250
