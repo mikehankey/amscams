@@ -133,16 +133,13 @@ def create_thank_operator_video(operators,duration,output,_with_line_animation,l
  
     all_frames = []
     #how_many_operators = len(operators)
-
-
-
+  
     op_c = 0
 
     for op in operators:
         frame = add_big_text(frame,op, (top_y + top_size + line_height )+ line_height*op_c, (255,255,255,255), op_font_size)
         op_c +=1
- 
-    
+  
  
     # Initial Position of the rectangle
     rect_x_init = int(1280/2)  
@@ -150,12 +147,15 @@ def create_thank_operator_video(operators,duration,output,_with_line_animation,l
     rect_w = 0
     rect_y = 110
     rect_h = 1
-    fc = 0
     rect_min_x = 325
     rect_max_w = 1280-(rect_min_x*2)
     rect_anim_duration = duration
+ 
+    fc = 0
 
     for x in range(0,duration): 
+
+        new_frame = frame
         
         if(_with_line_animation is True):
             fc +=1
@@ -163,9 +163,9 @@ def create_thank_operator_video(operators,duration,output,_with_line_animation,l
             rect_x = int(rect_x - fc*(rect_x-rect_min_x)/rect_anim_duration)
             rect_w = 1280-rect_x*2     
 
-            frame = cv2.rectangle(frame, (rect_x, rect_y), (rect_x+rect_w, rect_y+rect_h),(255,255,255,255), 1)
+            new_frame = cv2.rectangle(frame, (rect_x, rect_y), (rect_x+rect_w, rect_y+rect_h),(255,255,255,255), 1)
 
-        all_frames.append(frame)        
+        all_frames.append(new_frame)        
 
     make_movie_from_frames(all_frames, [0,len(all_frames) - 1], output, 1)
     print('OUTPUT ' + output)
