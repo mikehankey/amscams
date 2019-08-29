@@ -53,7 +53,7 @@ def create_title_video(text,text2,output):
 
     #AMS LOGO
     anim_duration  = 85
-    end_fade_in_ams_logo = 35
+    end_fade_in_ams_logo = 25
 
     # TITLE OF THE VIDEO
     title_duration = 95
