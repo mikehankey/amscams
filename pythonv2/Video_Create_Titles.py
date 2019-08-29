@@ -9,8 +9,9 @@ _title = "BEST OF PERSEIDS 2019"
 _credits = "Music by Naked Jungle - nakedjungle.bandcamp.com"
 _output_path = '/mnt/ams2/vid.mp4'
 _color = (255,255,255,255) # Optional - it's white by default
+_with_line_animation = True # Optional - it's True by default
 
-create_title_video(_title,_credits,_output_path,_color)
+create_title_video(_title,_credits,_output_path,_color,_with_line_animation)
 
 # IF YOU WANT TO CREATE A VIDEO TO THANKS THE OPERATORS:
 _operators = ['Mike Hankey','Vincent Perlerin','Marcel Duchamp','The Beatles']
