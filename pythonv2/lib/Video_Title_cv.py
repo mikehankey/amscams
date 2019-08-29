@@ -77,14 +77,13 @@ def create_title_video(text,text2,output,title_color=(255,255,255,255)):
     title_duration = 95
     
     # Initial Position of the rectangle
-    rect_x_init = int(1280/2) 
-    rect_min_x = 450
-    rect_x = rect_x_init
-    rect_w = 10
+    rect_x_init = int(1280/2)  
+    rect_w = 0
     rect_y = 327
     rect_h = 1
     fc = 0
-    max_rect_half_width = 350 
+    rect_min_x = 350
+    rect_max_w = 650
     rect_anim_duration = int(title_duration/2)
 
     title_y = 250
@@ -108,7 +107,9 @@ def create_title_video(text,text2,output,title_color=(255,255,255,255)):
         #rect_x = int(fc*((rect_min_x-rect_x_init)/rect_anim_duration)+rect_x_init)
         #rect_w = int(fc*(max_rect_half_width/rect_anim_duration))
         
-        #cv2.rectangle(n_frame, (rect_x, rect_y), (rect_x+rect_w, rect_y+rect_h), (250,250,209,255), 1)
+        rect_x = rect_x - fc*(rect_x-rect_min_x)/rect_anim_duration
+
+        cv2.rectangle(n_frame, (rect_x, rect_y), (rect_x+rect_w, rect_y+rect_h),title_color, 1)
         
         new_frames.append(n_frame)
 
