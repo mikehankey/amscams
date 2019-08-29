@@ -7,7 +7,7 @@ from lib.Video_Tools_cv import add_text
 # From Mike
 from lib.VideoLib import load_video_frames, make_movie_from_frames
 
-TITLE_1280x720 = "/home/ams/amscams/dist/vids/ams_intro/1280x720.mp4"
+TITLE_1280x720 = "/home/ams/amscams/dist/vids/ams_intro/1280x720.avi"
 DEFAULT_TITLE = TITLE_1280x720
  
 
@@ -56,10 +56,10 @@ def create_title_video(text,text2,output):
     title_duration = 75
 
     fc = -1
+    transp = 0
 
-    # Animation
+    # Animation of the AMS LOGO
     for frame in frames:
-
         fc +=1
 
         if(fc<anim_duration):
@@ -67,8 +67,13 @@ def create_title_video(text,text2,output):
             n_frame = frame
 
             #Add Text 
-            #n_frame = add_big_text(n_frame,"AMERICAN METEOR SOCIETY", 255, (255,255,255,255), 25)
+            transp = int(transp + 255/fc)
+            n_frame = add_big_text(n_frame,"AMERICAN METEOR SOCIETY", 255, (255,255,255,transp), 25)
             new_frames.append(n_frame)
+            fc += 1
+
+
+
 
     # Title BG
     for x in range(0, title_duration):
