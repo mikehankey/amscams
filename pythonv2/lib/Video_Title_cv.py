@@ -30,7 +30,7 @@ def add_big_text(background,text,y,color,size, the_font=VIDEO_FONT_BOLD):
 
 # This function create a quick video (lenght of DEFAULT_TITLE ~ 3sec )
 # with the animated AMS logo and a custom text (ONE LINE TEXT ONLY)
-def create_title_video(text,text2,output,title_color=(250,250,209,255)):
+def create_title_video(text,text2,output,title_color=(255,255,255,255)):
 
     # Get the original frames 
     cap = cv2.VideoCapture(DEFAULT_TITLE)
