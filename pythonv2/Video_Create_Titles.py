@@ -8,7 +8,7 @@ from lib.Video_Title_cv import *
 _title = "BEST OF PERSEIDS 2019"
 _credits = "Music by Naked Jungle - nakedjungle.bandcamp.com"
 _output_path = '/mnt/ams2/vid.mp4'
-_color = (255,255,255,255)
+_color = (255,255,255,255) # Optional - it's white by default
 
 create_title_video(_title,_credits,_output_path,_color)
 
