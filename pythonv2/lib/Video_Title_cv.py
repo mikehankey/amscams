@@ -107,10 +107,10 @@ def create_title_video(text,text2,output):
         n_frame = add_big_text(n_frame,text2,sub_title_y, (250,250,209,255), sub_title_zize,VIDEO_FONT)
 
         #Rectangle 
-        rect_x = int(fc*((max_rect_half_width*2-rect_x_init)/rect_anim_duration)+rect_x_init)
-        rect_w = int(fc*(max_rect_half_width/rect_anim_duration))
+        #rect_x = int(fc*((rect_min_x-rect_x_init)/rect_anim_duration)+rect_x_init)
+        #rect_w = int(fc*(max_rect_half_width/rect_anim_duration))
         
-        cv2.rectangle(n_frame, (rect_x, rect_y), (rect_x+rect_w, rect_y+rect_h), (250,250,209,255), 1)
+        #cv2.rectangle(n_frame, (rect_x, rect_y), (rect_x+rect_w, rect_y+rect_h), (250,250,209,255), 1)
         
         new_frames.append(n_frame)
 
