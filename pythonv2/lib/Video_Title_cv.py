@@ -158,7 +158,7 @@ def create_allskycams_video(text1,text2,duration,output):
         _ , frame = cap.read()
       
         if frame is not None: 
-            frame = cv2.cvtColor(frame, cv2.COLOR_RGBA2BGR) 
+            #frame = cv2.cvtColor(frame, cv2.COLOR_RGBA2BGR) 
             frames.append(frame) 
         else:
             go = 0 
