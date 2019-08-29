@@ -133,10 +133,9 @@ def create_thank_operator_video(operators,duration,output,_with_line_animation,l
     frame = add_big_text(frame,"Thank you to all the AMS Cam Operators", top_y, (255,255,255,255), top_size)
  
     all_frames = []
-    how_many_operators = len(operators)
+    #how_many_operators = len(operators)
 
-    op_c = 0
-
+ 
     # Initial Position of the rectangle
     rect_x_init = int(1280/2)  
     rect_x = rect_x_init
@@ -149,20 +148,22 @@ def create_thank_operator_video(operators,duration,output,_with_line_animation,l
     rect_anim_duration = duration
 
     for op in operators:
-        fc +=1
 
         frame = add_big_text(frame,op, (top_y + top_size + line_height )+ line_height*op_c, (255,255,255,255), op_font_size)
 
+ 
+
+
+    for x in range(0,duration):
+        
+        fc +=1
+        
         if(rect_x > rect_min_x):
             rect_x = int(rect_x - fc*(rect_x-rect_min_x)/rect_anim_duration)
             rect_w = 1280-rect_x*2     
 
-            cv2.rectangle(frame, (rect_x, rect_y), (rect_x+rect_w, rect_y+rect_h),(255,255,255,255), 1)
+        cv2.rectangle(frame, (rect_x, rect_y), (rect_x+rect_w, rect_y+rect_h),(255,255,255,255), 1)
 
-        op_c+=1
-
-
-    for x in range(0,duration):
         all_frames.append(frame)        
 
     make_movie_from_frames(all_frames, [0,len(all_frames) - 1], output, 1)
