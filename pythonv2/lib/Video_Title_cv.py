@@ -156,7 +156,7 @@ def create_thank_operator_video(operators,duration,output,_with_line_animation,l
             rect_x = int(rect_x - fc*(rect_x-rect_min_x)/rect_anim_duration)
             rect_w = 1280-rect_x*2     
 
-            cv2.rectangle(n_frame, (rect_x, rect_y), (rect_x+rect_w, rect_y+rect_h),(255,255,255,255), 1)
+            cv2.rectangle(frame, (rect_x, rect_y), (rect_x+rect_w, rect_y+rect_h),(255,255,255,255), 1)
 
         op_c+=1
 
