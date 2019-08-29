@@ -297,7 +297,6 @@ def check_reject(video_file, json_conf):
    max_y = max(mys)
    dist = calc_dist((min_x, min_y), (max_x,max_y))
    x1,y1,x2,y2,dist = make_crop_box(json_data, 1920,1080)
-   print("DIST:", dist, video_file)
    #print("DIST PER FRAME:", dist/len(mxs))
    if dist < 5:
       cmd = "mv " + video_file + "/mnt/ams2/bad/"
@@ -631,6 +630,7 @@ def make_cropframes(frames, frame_data):
    return(cropframes)
 
 def process_video_frames(frames, video_file):
+   show = 0
    clip_start_time, clip_start_time_str = get_clip_time(video_file)
    cm = 0
    nomo = 0
@@ -720,8 +720,6 @@ def process_video_frames(frames, video_file):
       frame_data[fn]['mx'] = int(mx)
       frame_data[fn]['my'] = int(my)
       last_frame = frame
-      #cv2.imshow('pepe', frame)
-      #cv2.waitKey(0)
       if mean_max_avg is None:
          mean_max_avg = max_val
       if max_val - avg_val > 10 :
@@ -740,6 +738,11 @@ def process_video_frames(frames, video_file):
          _, subframe_thresh = cv2.threshold(subframe.copy(), thresh_val, 255, cv2.THRESH_BINARY)
 
          frame_cnts = do_contours(subframe_thresh)
+         if len(frame_cnts) > 1:
+            subframe_thresh_dil = cv2.dilate(subframe_thresh, None , iterations=4)
+            frame_cnts = do_contours(subframe_thresh_dil)
+            if len(frame_cnts) > 1:
+               frame_cnts = merge_cnts(frame_cnts)
          frame_data[fn]['frame_cnts'] = frame_cnts
          obj_cnts = []
          for cnt in frame_cnts:
@@ -805,7 +808,9 @@ def process_video_frames(frames, video_file):
          nomo = nomo + 1
          #blob_x = None
          #blob_y = None
-
+      if show == 1:
+         cv2.imshow('pepe', show_frame)
+         cv2.waitKey(0)
       frame_data[fn]['cm'] = cm
       frame_data[fn]['nonmo'] = nomo
       print(fn, mean_max_avg, max_val, cm, nomo)
@@ -2191,6 +2196,26 @@ def make_meteor_video_filename(video_file, start, hd):
    meteor_video_filename = meteor_dir + meteor_filename  
    return(meteor_video_filename, event_start_time )
 
+
+def merge_cnts(frame_cnts):
+   new_cnts = []
+   xs = []
+   ys = []
+   ws = []
+   hs = []
+   for cnt in frame_cnts:
+      x,y,w,h = cnt
+      xs.append(x)
+      ys.append(y)
+      ws.append(w)
+      hs.append(h)
+
+   med_x = int(np.median(xs))
+   med_y = int(np.median(ys))
+   max_w = int(np.max(ws))
+   max_h = int(np.max(hs))
+   new_cnts.append((med_x,med_y,max_w,max_h))
+   return(new_cnts)
 
 def do_contours(image_thresh):
 
