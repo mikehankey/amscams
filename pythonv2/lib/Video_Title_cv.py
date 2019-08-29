@@ -121,7 +121,7 @@ def create_thank_operator_video(operators,duration,output):
 
     top_y = 50
     top_size = 40
-    line_height = 35
+    line_height = 45
     op_font_size = 30
 
 
