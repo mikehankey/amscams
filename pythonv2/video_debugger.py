@@ -7,7 +7,7 @@ from lib.Video_Tools_cv import *
 from os import listdir, remove
 from os.path import isfile, join, exists
 
- 
+from lib.Video_Title_cv import *
 
 
 #TEST SD FRAMES
@@ -143,25 +143,45 @@ from os.path import isfile, join, exists
 
 
 # DOESNT OVERLAP  
-data = {
-    'json_conf' : '/mnt/ams2/meteor_archive/2019_08_14/2019_08_14_03_19_52_640_010042_AMS7_HD.json',
-    'video_file' :'/mnt/ams2/meteor_archive/2019_08_14/2019_08_14_03_19_52_640_010042_AMS7_HD.mp4',
-    'rad_x': 500,
-    'rad_y': 500,
-    'rad_name': 'Perseids'
-}
+#data = {
+#    'json_conf' : '/mnt/ams2/meteor_archive/2019_08_14/2019_08_14_03_19_52_640_010042_AMS7_HD.json',
+#    'video_file' :'/mnt/ams2/meteor_archive/2019_08_14/2019_08_14_03_19_52_640_010042_AMS7_HD.mp4',
+#    'rad_x': 500,
+#   'rad_y': 500,
+#    'rad_name': 'Perseids'
+#}
 
 
 # OVERLAP WITH LOGO TR
-data = {
-    'json_conf' : '/mnt/ams2/meteor_archive/2019_08_12/2019_08_12_05_38_08_880_010037_AMS7_HD.json',
-    'video_file' :'/mnt/ams2/meteor_archive/2019_08_12/2019_08_12_05_38_08_880_010037_AMS7_HD.mp4',
-    'rad_x': 500,
-    'rad_y': 500,
-    'rad_name': 'Perseids'
-}
+#data = {
+#    'json_conf' : '/mnt/ams2/conversion/2019_08_10_02_29_20_000_010037-trim0716/2019_08_10_02_29_52_040_010037_AMS7_HD.json',
+#    'video_file' :'/mnt/ams2/conversion/2019_08_10_02_29_20_000_010037-trim0716/2019_08_10_02_29_52_040_010037_AMS7_HD.mp4',
+#   'rad_x': 500,
+#   'rad_y': 500,
+#    'rad_name': 'Perseids'
+#}
+
+
+#data = {
+#    'json_conf' : '/mnt/ams2/conversion/2019_08_10_06_41_52_000_010042-trim0777/2019_08_10_06_42_24_280_010042_AMS7_HD.json',
+#    'video_file' :'/mnt/ams2/conversion/2019_08_10_06_41_52_000_010042-trim0777/2019_08_10_06_42_24_280_010042_AMS7_HD.mp4',
+#    'rad_x': 500,
+#    'rad_y': 500,
+#    'rad_name': 'Perseids'
+#}  
+ 
+#new_remaster(data)  
+#remaster(data)  
+
+
+################### TEST CREATE TILE
  
 
+#CREATE INFO VIDEO FROM FRAMES
+import cv2 
+import subprocess 
 
 
-remaster(data) 
+#create_title_video("BEST OF PERSEIDS 2019","Music by Naked Jungle - nakedjungle.bandcamp.com", '/mnt/ams2/test_title3.mp4',(255,255,255,255))
+#create_thank_operator_video(['Mike Hankey','Vincent Perlerin','Marcel Duchamp','The Beatles'],125, '/mnt/ams2/test_end_credits.mp4')
+create_allskycams_video("Visit Allskycams.com","for more information about our all sky cameras",125, '/mnt/ams2/test_allsky.mp4')
