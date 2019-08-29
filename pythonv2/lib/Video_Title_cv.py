@@ -78,13 +78,19 @@ def create_title_video(text,text2,output):
     
     # Initial Position of the rectangle
     rect_x_init = int(1280/2)
+    rect_max_w = 700
     rect_x = rect_x_init
     rect_w = 10
     rect_y = 327
     rect_h = 1
     fc = 0
-    max_rect_half_width = 250 
+    max_rect_half_width = 200 
     rect_anim_duration = int(title_duration/2)
+
+    title_y = 250
+    title_size = 60
+    sub_title_y = 340
+    sub_title_zize = 20
 
 
     # Title BG
@@ -93,15 +99,13 @@ def create_title_video(text,text2,output):
         fc +=1
 
         # Title
-        n_frame = add_big_text(frames[0],text,250, (250,250,209,255), 60)
+        n_frame = add_big_text(frames[0],text,title_y, (250,250,209,255), title_size)
 
         #2nd ligne smaller
-        n_frame = add_big_text(n_frame,text2,340, (250,250,209,255), 20,VIDEO_FONT)
+        n_frame = add_big_text(n_frame,text2,sub_title_y, (250,250,209,255), sub_title_zize,VIDEO_FONT)
 
         #Rectangle
-        #rect_x = rect_x - int(fc*max_rect_half_width/rect_anim_duration)  
-        rect_w = rect_w # rect_w + int(fc*max_rect_half_width*2/(rect_anim_duration))
-
+        rect_w = int(rect_w + (fc*rect_w/(rect_max_w-rect_w)))
         rect_x = int(rect_x - (fc*rect_x_init/max_rect_half_width)/rect_anim_duration)
         
         cv2.rectangle(n_frame, (rect_x, rect_y), (rect_x+rect_w, rect_y+rect_h), (250,250,209,255), 1)
