@@ -53,6 +53,8 @@ def create_title_video(text,text2,output):
 
 
     anim_duration  = 75
+    end_fade_in_ams_logo = 45
+
     title_duration = 75
 
     fc = 0
@@ -67,7 +69,7 @@ def create_title_video(text,text2,output):
             n_frame = frame
 
             #Add Text 
-            transp  = int(fc*255/anim_duration)
+            transp  = int(fc*255/(anim_duration-end_fade_in_ams_logo))
             n_frame = add_big_text(n_frame,"AMERICAN METEOR SOCIETY", 360, (transp,transp,transp,255), 25)
             new_frames.append(n_frame)
             fc += 1
