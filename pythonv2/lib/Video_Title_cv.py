@@ -111,7 +111,7 @@ def create_title_video(text,text2,output,title_color=(255,255,255,255)):
         rect_x = int(rect_x - fc*(rect_x-rect_min_x)/rect_anim_duration)
         rect_w = int(rect_w + fc*(rect_max_w/rect_anim_duration))
 
-        cv2.rectangle(n_frame, (rect_x, rect_y), (rect_x+rect_w, rect_y+rect_h),title_color, 1)
+        cv2.rectangle(n_frame, (rect_x, rect_y), (rect_w, rect_y+rect_h),title_color, 1)
         
         new_frames.append(n_frame)
 
