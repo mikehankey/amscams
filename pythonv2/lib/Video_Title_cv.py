@@ -112,7 +112,8 @@ def create_title_video(text,text2,output,title_color=(255,255,255,255), rect= Fa
           
             if(rect_w < rect_max_w):
                 rect_w = int(rect_w + fc*(rect_max_w)/rect_anim_duration)
-            else:
+
+            if(rect_w > rect_max_w): 
                 rect_w = rect_max_w 
 
             cv2.rectangle(n_frame, (rect_x, rect_y), (rect_x+rect_w, rect_y+rect_h),title_color, 1)
