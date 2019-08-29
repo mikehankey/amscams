@@ -99,10 +99,10 @@ def create_title_video(text,text2,output,title_color=(255,255,255,255)):
         fc +=1
 
         # Title
-        n_frame = add_big_text(frames[0],text,title_y, (250,250,209,255), title_size)
+        n_frame = add_big_text(frames[0],text,title_y, title_color, title_size)
 
         #2nd ligne smaller
-        n_frame = add_big_text(n_frame,text2,sub_title_y, (250,250,209,255), sub_title_zize,VIDEO_FONT)
+        n_frame = add_big_text(n_frame,text2,sub_title_y, title_color, sub_title_zize,VIDEO_FONT)
 
         #Rectangle 
         #rect_x = int(fc*((rect_min_x-rect_x_init)/rect_anim_duration)+rect_x_init)
