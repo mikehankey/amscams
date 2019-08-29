@@ -9,7 +9,7 @@ from lib.VideoLib import load_video_frames, make_movie_from_frames
 
 TITLE_1280x720 = "/home/ams/amscams/dist/vids/ams_intro/1280x720.mp4"
 DEFAULT_TITLE = TITLE_1280x720
- 
+ALL_SKY_CAMS_FRAME = "/home/ams/amscams/dist/vids/allskycams.png"
 
 # Add big text centered 
 def add_big_text(background,text,y,color,size, the_font=VIDEO_FONT_BOLD):
@@ -117,19 +117,16 @@ def create_title_video(text,text2,output,title_color=(250,250,209,255)):
 
 
 # Create thank you video
-def create_thank_operator_video(operators,duration,output):
+def create_thank_operator_video(operators,duration,output,line_height=45,op_font_size=30):
 
     top_y = 50
-    top_size = 40
-    line_height = 45
-    op_font_size = 30
-
+    top_size = 40  
 
     frame = np.zeros((750,1280,3), np.uint8)
     frame = cv2.cvtColor(frame, cv2.COLOR_RGB2BGR) 
 
     # Add "Thank you on top"
-    frame = add_big_text(frame,"Thank you to all the AMS Cam Operators:", top_y, (255,255,255,255), top_size)
+    frame = add_big_text(frame,"Thank you to all the AMS Cam Operators", top_y, (255,255,255,255), top_size)
  
     all_frames = []
     how_many_operators = len(operators)
@@ -147,3 +144,26 @@ def create_thank_operator_video(operators,duration,output):
     make_movie_from_frames(all_frames, [0,len(all_frames) - 1], output, 1)
     print('OUTPUT ' + output)
 
+
+# Create Allskycams Add video
+def create_allskycams_video(text1,text2):
+    
+    # Get the original frames 
+    cap = cv2.VideoCapture(ALL_SKY_CAMS_FRAME)
+
+    frames = []
+    frame_count = 0
+    go = 1
+    while go == 1:
+        _ , frame = cap.read()
+      
+        if frame is not None: 
+            frame = cv2.cvtColor(frame, cv2.COLOR_RGB2BGR) 
+            frames.append(frame) 
+        else:
+            go = 0 
+    
+    cap.release()
+   
+    new_frames = []
+    print(frames)
