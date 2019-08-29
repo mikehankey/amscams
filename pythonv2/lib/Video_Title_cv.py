@@ -123,10 +123,17 @@ def create_thank_operator_video(operators,duration,output):
     frame = cv2.cvtColor(frame, cv2.COLOR_RGB2BGR) 
 
     # Add "Thank you on top"
-    frame = add_big_text(frame,"Thank you to all the AMS Cam Operators", 50, (255,255,255,255), 40)
-
+    frame = add_big_text(frame,"Thank you to all the AMS Cam Operators:", 50, (255,255,255,255), 40)
+ 
     all_frames = []
     how_many_operators = len(operators)
+
+    op_c = 0
+
+    for op in operators:
+        frame = add_big_text(frame,op, 50 + 35*op_c, (255,255,255,255), 35)
+        op_c+=1
+
 
     for x in range(0,duration):
         all_frames.append(frame)        
