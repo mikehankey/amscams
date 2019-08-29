@@ -52,7 +52,7 @@ def create_title_video(text,text2,output):
     new_frames = []
 
 
-    anim_duration  = 45
+    anim_duration  = 75
     title_duration = 75
 
     fc = 0
