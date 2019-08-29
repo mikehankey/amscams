@@ -164,18 +164,17 @@ def create_allskycams_video(text1,text2,duration,output):
             go = 0 
     
     cap.release()
-   
     
 
     # Add text 1
-    frames[0] = add_big_text(frames[0],text1,350, (255,255,255,255), 60)
+    new_frame = add_big_text(frames[0],text1,350, (255,255,255,255), 60)
 
     # Add text 2
-    frames[0] = add_big_text(frames[0],text2,380, (255,255,255,255), 50)
+    new_frame = add_big_text(new_frame,text2,380, (255,255,255,255), 50)
 
     all_frames = []
     for x in range(0,duration):
-        all_frames.append(frame)        
+        all_frames.append(new_frame)        
 
     make_movie_from_frames(all_frames, [0,len(all_frames) - 1], output, 1)
     print('OUTPUT ' + output)
