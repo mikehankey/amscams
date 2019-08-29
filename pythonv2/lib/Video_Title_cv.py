@@ -108,7 +108,7 @@ def create_title_video(text,text2,output):
 
         #Rectangle 
         rect_x = int(fc*((rect_min_x-rect_x_init)/rect_anim_duration)+rect_x_init)
-        rect_x = int(fc*(max_rect_half_width*2)/rect_anim_duration)
+        rect_w = int(fc*(max_rect_half_width*2)/rect_anim_duration)
         
         cv2.rectangle(n_frame, (rect_x, rect_y), (rect_x+rect_w, rect_y+rect_h), (250,250,209,255), 1)
         
