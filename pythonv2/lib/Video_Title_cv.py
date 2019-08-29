@@ -55,7 +55,7 @@ def create_title_video(text,text2,output):
     anim_duration  = 45
     title_duration = 75
 
-    fc = -1
+    fc = 0
     transp = 0
 
     # Animation of the AMS LOGO
