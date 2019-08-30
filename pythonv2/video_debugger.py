@@ -184,7 +184,7 @@ from lib.Video_Title_cv import *
 _main_title = "BEST OF PERSEIDS 2019"
 _producer =  ""
 _output_path = '/mnt/ams2/opening_title.mp4'
-create_title_video(_main_title,_producer,_output_path,(255,255,255,255),True)
+#create_title_video(_main_title,_producer,_output_path,(255,255,255,255),True)
 
 
 #CREATE OPERATOR VIDEOS
@@ -209,5 +209,9 @@ _text2= "NAKED JUNGLE"
 _text3= "nakedjungle.bandcamp.com"
 _duration = 125 # In frames at 25fps
 _output = '/mnt/ams2/music_credits.mp4'
-create_credit_video(_text1,_text2,_text3,_duration,_output)
-create_credit_video("Produced by","Mike Hankey","",_duration,'/mnt/ams2/producedby.mp4')
+#create_credit_video(_text1,_text2,_text3,_duration,_output)
+#create_credit_video("Produced by","Mike Hankey","",_duration,'/mnt/ams2/producedby.mp4')
+
+
+#TEST CONCAT VIDEOS
+concat_videos_fade('/mnt/ams2/music_credits.mp4','/mnt/ams2/producedby.mp4','/mnt/ams2/merge_test.mp4'')
