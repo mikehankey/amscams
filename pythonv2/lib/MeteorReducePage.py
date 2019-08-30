@@ -38,8 +38,9 @@ def reduce_meteor2(json_conf,form):
    video_file    = form.getvalue("video_file")
    analysed_name = name_analyser(video_file)
 
-   print(analysed_name)
-   exit
+   if(len(analysed_name)==0):
+      print("FILE NAME " + video_file + " is not valid")
+      exit
    
    # Is it HD?
    if(analysed_name["HD"] is not None):
