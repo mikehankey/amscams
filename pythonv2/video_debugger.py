@@ -169,7 +169,7 @@ data = {
     'rad_y': 500,
     'rad_name': 'Perseids'
 }  
- new_remaster(data)  
+new_remaster(data)  
 #remaster(data)  
 
 
