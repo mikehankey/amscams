@@ -214,4 +214,7 @@ create_credit_video("Produced by","Mike Hankey","",_duration,'/mnt/ams2/produced
 
 
 #TEST CONCAT VIDEOS
-#concat_videos_fade('/mnt/ams2/produced.mp4','/mnt/ams2/music_credits.mp4','/mnt/ams2/merge_test.mp4')
+concat_videos_fade('/mnt/ams2/opening_title.mp4','/mnt/ams2/music_credits.mp4','/mnt/ams2/1.mp4')
+concat_videos_fade('/mnt/ams2/1.mp4','/mnt/ams2/producedby.mp4','/mnt/ams2/START.mp4')
+
+concat_videos_fade('/mnt/ams2/operator_credits.mp4','/mnt/ams2/allskycams.mp4','/mnt/ams2/END.mp4') 
