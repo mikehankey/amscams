@@ -184,7 +184,7 @@ from lib.Video_Title_cv import *
 _main_title = "BEST OF PERSEIDS 2019"
 _producer =  "produced by Mike Hankey"
 _output_path = '/mnt/ams2/opening_title.mp4'
-create_title_video(_main_title,_producer,_output_path,(255,255,255,255),True)
+#create_title_video(_main_title,_producer,_output_path,(255,255,255,255),True)
 
 
 #CREATE OPERATOR VIDEOS
@@ -194,14 +194,14 @@ _output_path =  '/mnt/ams2/operator_credits.mp4'
 _with_line_animation = True # Optional - it's True by default
 _line_height = 55 # Optional - it's 45 by default, it works well with <=12 operators (one per line)
 _operator_font_size = 40 # Optional - it's 30 by default, it works well with <=12 operators (one per line)
-create_thank_operator_video(_operators, _duration, _output_path,_with_line_animation,_line_height,_operator_font_size) 
+#create_thank_operator_video(_operators, _duration, _output_path,_with_line_animation,_line_height,_operator_font_size) 
 
 #CREATE ALL SKY CAMS VIDEOS
 _text1= "Visit Allskycams.com"
 _text2= "for more information about our all sky cameras"
 _duration = 125 # In frames at 25fps
 _output = '/mnt/ams2/allskycams.mp4'
-create_allskycams_video(_text1,_text2,_duration,_output)
+#create_allskycams_video(_text1,_text2,_duration,_output)
 
 #CREATE MUSIC CREDIT VIDEO
 _text1= "Music by"
