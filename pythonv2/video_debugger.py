@@ -207,14 +207,14 @@ _output = '/mnt/ams2/allskycams.mp4'
 _text1= "Music by"
 _text2= "NAKED JUNGLE"
 _text3= "nakedjungle.bandcamp.com"
-_duration = 100 # In frames at 25fps
+_duration = 50 # In frames at 25fps
 _output = '/mnt/ams2/music_credits.mp4'
-#create_credit_video(_text1,_text2,_text3,_duration,_output)
-#create_credit_video("Produced by","Mike Hankey","",_duration,'/mnt/ams2/producedby.mp4')
+create_credit_video(_text1,_text2,_text3,_duration,_output)
+create_credit_video("Produced by","Mike Hankey","",_duration,'/mnt/ams2/producedby.mp4')
 
 
 #TEST CONCAT VIDEOS
-concat_videos_fade('/mnt/ams2/opening_title.mp4','/mnt/ams2/music_credits.mp4','/mnt/ams2/1.mp4',5,10)
-concat_videos_fade('/mnt/ams2/1.mp4','/mnt/ams2/producedby.mp4','/mnt/ams2/START.mp4',10,15)
+concat_videos_fade('/mnt/ams2/opening_title.mp4','/mnt/ams2/music_credits.mp4','/mnt/ams2/1.mp4',5,8)
+concat_videos_fade('/mnt/ams2/1.mp4','/mnt/ams2/producedby.mp4','/mnt/ams2/START.mp4',10,12)
 
 #concat_videos_fade('/mnt/ams2/operator_credits.mp4','/mnt/ams2/allskycams.mp4','/mnt/ams2/END.mp4') 
