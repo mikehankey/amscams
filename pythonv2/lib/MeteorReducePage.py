@@ -4,3 +4,6 @@
 def reduce_meteor2(json_conf, form):
 
    form_cal_params_file = form.getvalue("cal_params_file")
+
+   print("CAL PARAMS")
+   print(form_cal_params_file)
