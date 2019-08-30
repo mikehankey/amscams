@@ -244,7 +244,7 @@ def concat_videos_fade(video1,video2,output):
 
     cmd = ' ffmpeg -i '+video2+' -i '+video2+' -f lavfi -i color=black -filter_complex \
             "[0:v]fade=t=out:st=4:d=1:alpha=1,setpts=PTS-STARTPTS[va0];\
-             [1:v]format=pix_fmts=yuva420p,fade=t=in:st=0:d=1:alpha=1,setpts=PTS-STARTPTS+4/TB[va1];\
+             [1:v]fade=t=in:st=0:d=1:alpha=1,setpts=PTS-STARTPTS+4/TB[va1];\
              [2:v]trim=duration=9[over];\
              [over][va0]overlay[outv];"\
              -map [outv] '+output        
