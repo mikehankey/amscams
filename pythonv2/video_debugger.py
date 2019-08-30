@@ -194,7 +194,7 @@ _output_path =  '/mnt/ams2/operator_credits.mp4'
 _with_line_animation = True # Optional - it's True by default
 _line_height = 55 # Optional - it's 45 by default, it works well with <=12 operators (one per line)
 _operator_font_size = 40 # Optional - it's 30 by default, it works well with <=12 operators (one per line)
-#create_thank_operator_video(_operators, _duration, _output_path,_with_line_animation,_line_height,_operator_font_size) 
+create_thank_operator_video(_operators, _duration, _output_path,_with_line_animation,_line_height,_operator_font_size) 
 
 #CREATE ALL SKY CAMS VIDEOS
 _text1= "Visit Allskycams.com"

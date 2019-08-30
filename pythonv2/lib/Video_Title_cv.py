@@ -131,7 +131,7 @@ def create_thank_operator_video(operators,duration,output,_with_line_animation,l
     frame = cv2.cvtColor(frame, cv2.COLOR_RGB2BGR) 
 
     # Add "Thank you on top"
-    frame = add_big_text(frame,"Thank you to all the AMS Cam Operators", top_y, (255,255,255,255), top_size)
+    frame = add_big_text(frame,"Thank you to all the AMS Camera Operators", top_y, (255,255,255,255), top_size)
  
     all_frames = []
     #how_many_operators = len(operators)
@@ -192,6 +192,8 @@ def create_allskycams_video(text1,text2,duration,output):
     
     cap.release()
     
+    # Add top text
+    new_frame = add_big_text(frames[0],"All meteor videos recorded with the All Sky 6 Camera System",20, (255,255,255,255), 40)
 
     # Add text 1
     new_frame = add_big_text(frames[0],text1,380, (255,255,255,255), 40)
