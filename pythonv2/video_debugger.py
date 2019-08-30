@@ -185,8 +185,7 @@ MAIN_TITLE = "BEST OF PERSEIDS 2019"
 SUB_TITLE =  "Music by Naked Jungle - nakedjungle.bandcamp.com"
  
 
-create_title_video(MAIN_TITLE,SUB_TITLE, '/mnt/ams2/test_title4.mp4',(255,255,255,255),True)
-#create_music_credit_video()
+#create_title_video(MAIN_TITLE,SUB_TITLE, '/mnt/ams2/test_title4.mp4',(255,255,255,255),True)
 
 
 _operators = ["Mike Hankey","Elizabeth Warner - UMD", "Ed Abel", "Peter Deterline", "Vishnu Reddy", "Bob Lunsford", "Mel Helm - SRO"]
