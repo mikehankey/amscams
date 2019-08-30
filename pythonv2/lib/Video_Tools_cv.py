@@ -277,11 +277,15 @@ def new_remaster(data):
     if(overlaps_with_image(cx1,cy1,cx2,cy2,ams_logo,ams_logo_pos,frames[0])): 
         # We move the logo here since it overlaps 
         ams_logo_overlaps = True
+
+
+        print("DEFAULT POS" + ams_logo_pos)
+        print("SHOULD BE " + D_AMS_LOGO_POS)
          
         # By default, we put it on the BOTTOM LEFT - 50px above the bottom (ONLY WORK WITH 720!!)
         if(ams_logo_pos == D_AMS_LOGO_POS):
             ams_logo_pos_x = VIDEO_MARGINS 
-            ams_logo_pos_y = frames[0].shape[0] - ams_logo.shape[0] - VIDEO_MARGINS - 500
+            ams_logo_pos_y = frames[0].shape[0] - ams_logo.shape[0] - VIDEO_MARGINS - 50
         
         #TODO... setup different x,y when the AMS Logo is somewhere on the page (different ams_logo_pos)
     
