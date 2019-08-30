@@ -233,13 +233,14 @@ def create_credit_video(_text1,_text2,_text3,_duration,_output):
 
 
 # Concat 2 videos with a fading effect of X frames
-def concat_videos_fade(video1,video2,output):
-    cmd = ' ffmpeg -i '+video1+' -i '+video2+' -f lavfi -i  color=black:s=1280x720 -filter_complex \
+def concat_videos_fade(video1,video2,output,dur):
+    cmd = ' ffmpeg -y -i '+video1+' -i '+video2+' -f lavfi -i  color=black:s=1280x720 -filter_complex \
             "[0:v]format=pix_fmts=yuva420p,fade=t=out:st=4:d=1:alpha=1,setpts=PTS-STARTPTS[va0];\
              [1:v]format=pix_fmts=yuva420p,fade=t=in:st=0:d=1:alpha=1,setpts=PTS-STARTPTS+4/TB[va1];\
-             [2:v]scale=1280x720,trim=duration=9[over];\
+             [2:v]scale=1280x720,trim=duration='+dur+'[over];\
              [over][va0]overlay[over1];\
              [over1][va1]overlay=format=yuv420[outv]" \
             -vcodec libx264 -map [outv] '+output
   
-    output = subprocess.check_output(cmd, shell=True).decode("utf-8")      
+    output = subprocess.check_output(cmd, shell=True).decode("utf-8")     
+    print(output) 
