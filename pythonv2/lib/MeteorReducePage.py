@@ -41,7 +41,9 @@ def reduce_meteor2(json_conf,form):
    if(len(analysed_name)==0):
       print("FILE NAME " + video_file + " is not valid")
       exit
-   
+   else:
+      print(analysed_name)
+
    # Is it HD?
    if(analysed_name["HD"] is not None):
       HD = True
@@ -50,6 +52,5 @@ def reduce_meteor2(json_conf,form):
       HD = False
       meteor_json_file = video_file.replace(".mp4", ".json") 
 
-   
-   print(meteor_json_file)
+    
 
