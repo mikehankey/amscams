@@ -162,14 +162,14 @@ from lib.Video_Title_cv import *
 #}
 
 
-data = {
-    'json_conf' : '/mnt/ams2/conversion/2019_08_12_05_37_29_000_010037-trim0945/2019_08_12_05_38_09_920_010037_AMS7_HD.json',
-    'video_file' :'/mnt/ams2/conversion/2019_08_12_05_37_29_000_010037-trim0945/2019_08_12_05_38_09_920_010037_AMS7_HD.mp4',
-    'rad_x': 500,
-    'rad_y': 500,
-    'rad_name': 'Perseids'
-}  
-new_remaster(data)  
+#data = {
+#    'json_conf' : '/mnt/ams2/conversion/2019_08_12_05_37_29_000_010037-trim0945/2019_08_12_05_38_09_920_010037_AMS7_HD.json',
+#    'video_file' :'/mnt/ams2/conversion/2019_08_12_05_37_29_000_010037-trim0945/2019_08_12_05_38_09_920_010037_AMS7_HD.mp4',
+#    'rad_x': 500,
+#    'rad_y': 500,
+#    'rad_name': 'Perseids'
+#}  
+#new_remaster(data)  
 #remaster(data)  
 
 
@@ -181,6 +181,6 @@ new_remaster(data)
 #import subprocess 
 
 
-#create_title_video("BEST OF PERSEIDS 2019","Music by Naked Jungle - nakedjungle.bandcamp.com", '/mnt/ams2/test_title3.mp4',(255,255,255,255),True)
+create_title_video("BEST OF PERSEIDS 2019","Music by Naked Jungle - nakedjungle.bandcamp.com", '/mnt/ams2/test_title3.mp4',(255,255,255,255),True)
 #create_thank_operator_video(['Mike Hankey','Vincent Perlerin','Marcel Duchamp','The Beatles','Mike Hankey','Vincent Perlerin','Marcel Duchamp','The Beatles''Mike Hankey','Vincent Perlerin','Marcel Duchamp','The Beatles'],125, '/mnt/ams2/test_end_credits.mp4',True)
 #create_allskycams_video("Visit Allskycams.com","for more information about our all sky cameras",125, '/mnt/ams2/test_allsky.mp4')
