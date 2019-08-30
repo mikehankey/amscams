@@ -209,5 +209,5 @@ _text2= "NAKED JUNGLE"
 _text3= "nakedjungle.bandcamp.com"
 _duration = 125 # In frames at 25fps
 _output = '/mnt/ams2/music_credits.mp4'
-create_music_credit_video(_text1,_text2,_text3,_duration,_output)
-create_music_credit_video("Produced by","Mike Hankey","",_duration,'/mnt/ams2/producedby.mp4')
+create_credit_video(_text1,_text2,_text3,_duration,_output)
+create_credit_video("Produced by","Mike Hankey","",_duration,'/mnt/ams2/producedby.mp4')

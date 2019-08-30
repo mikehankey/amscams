@@ -206,8 +206,7 @@ def create_allskycams_video(text1,text2,duration,output):
 
 
 # Create  
-def create_music_credit_video(_text1,_text2,_text3,_duration,_output):
-
+def create_credit_video(_text1,_text2,_text3,_duration,_output):
 
     frame = np.zeros((720,1280,3), np.uint8)
     frame = cv2.cvtColor(frame, cv2.COLOR_RGB2BGR) 
