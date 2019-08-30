@@ -163,9 +163,9 @@ def create_thank_operator_video(operators,duration,output,_with_line_animation,l
             if(rect_x > rect_min_x):
                 rect_x = int(rect_x - int(fc*(rect_x-rect_min_x)/rect_anim_duration))
             rect_w = 1280-rect_x*2     
-            all_frames.append(cv2.rectangle(init_frame, (rect_x, rect_y), (rect_x+rect_w, rect_y+rect_h),(255,255,255,255), 1))
-        else:
-            all_frames.append(new_frame)        
+            cv2.rectangle(new_frame, (rect_x, rect_y), (rect_x+rect_w, rect_y+rect_h),(255,255,255,255), 1)
+
+        all_frames.append(new_frame)           
 
     make_movie_from_frames(all_frames, [0,len(all_frames) - 1], output, 1)
     print('OUTPUT ' + output)
