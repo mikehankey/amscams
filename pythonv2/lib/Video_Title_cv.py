@@ -219,7 +219,7 @@ def create_music_credit_video(_text1,_text2,_text3,_duration,_output):
     frame = add_big_text(frame,_text2, 270, (255,255,255,255), 60)
 
     # Add _text3
-    frame = add_big_text(frame,_text3, 330, (255,255,255,255), 30)
+    frame = add_big_text(frame,_text3, 340, (255,255,255,255), 30)
 
     all_frames = []
     for x in range(0,_duration):
