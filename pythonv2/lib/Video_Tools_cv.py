@@ -401,6 +401,8 @@ def new_remaster(data):
 
                 if(extra_text_overlaps is False):
                     print("THAT DOES NOT OVERLAPS")
+                    print("SO WE HAD " + extra_text)
+                    print("AT " + extra_text_pos)
                     hd_img,xx,yy,ww,hh = add_text_to_pos(hd_img,extra_text,extra_text_pos,2,True)  
                 else:
                     # It overlaps
