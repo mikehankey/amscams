@@ -1,5 +1,5 @@
 import re
-
+import cgitb
 
 # PATTERN FOR THE FILE NAMES
 # YYYY_MM_DD_HH_MM_SS_MSS_CAM_STATION[_HD].EXTENSION
@@ -30,7 +30,11 @@ def name_analyser(file_names):
 # cmd=reduce2
 # &video_file=[VIDEO_FILE].mp4
 def reduce_meteor2(form):
+   
+   # Debug
+   cgitb.enable()
 
+   # Get Video File & Analyse the Name to get quick access to all info
    video_file    = form.getvalue("video_file")
    analysed_name = name_analyser(video_file)
    
@@ -45,6 +49,3 @@ def reduce_meteor2(form):
    
    print(meteor_json_file)
 
-
-
-reduce_meteor2()
