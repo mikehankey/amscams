@@ -375,7 +375,7 @@ def new_remaster(data):
         frame_time_str = station_id + ' - ' + frame_time_str + ' UT' 
 
         # Add Date & Time & Cam Info
-        if(dt_text_overlaps):
+        if(dt_text_overlaps is True):
 
             # Here we automatically put them both on top of each other on the opposite (bottom) side
             hd_img,xx,yy,ww,hh = add_text_to_pos(hd_img,frame_time_str,D_CAM_INFO_POS,2)  
