@@ -88,8 +88,8 @@ def create_title_video(text,text2,output,title_color=(255,255,255,255), rect= Tr
 
     title_y = 250
     title_size = 60
-    sub_title_y = 345
-    sub_title_zize = 30
+    sub_title_y = 355
+    sub_title_zize = 32
 
 
     # Title BG

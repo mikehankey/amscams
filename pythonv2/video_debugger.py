@@ -182,7 +182,7 @@ from lib.Video_Title_cv import *
 
 
 MAIN_TITLE = "BEST OF PERSEIDS 2019"
-SUB_TITLE =  "Produced by Mike Hankey"
+SUB_TITLE =  "produced by Mike Hankey"
 create_title_video(MAIN_TITLE,SUB_TITLE, '/mnt/ams2/test_title4.mp4',(255,255,255,255),True)
 
 
