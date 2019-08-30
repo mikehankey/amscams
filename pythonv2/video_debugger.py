@@ -182,9 +182,9 @@ from lib.Video_Title_cv import *
 
 #CREATE TITLE VIDEO
 _main_title = "BEST OF PERSEIDS 2019"
-_producer =  "produced by Mike Hankey"
+_producer =  ""
 _output_path = '/mnt/ams2/opening_title.mp4'
-#create_title_video(_main_title,_producer,_output_path,(255,255,255,255),True)
+create_title_video(_main_title,_producer,_output_path,(255,255,255,255),True)
 
 
 #CREATE OPERATOR VIDEOS
@@ -210,3 +210,4 @@ _text3= "nakedjungle.bandcamp.com"
 _duration = 125 # In frames at 25fps
 _output = '/mnt/ams2/music_credits.mp4'
 create_music_credit_video(_text1,_text2,_text3,_duration,_output)
+create_music_credit_video("Produced by","Mike Hankey","",'/mnt/ams2/producedby.mp4')
