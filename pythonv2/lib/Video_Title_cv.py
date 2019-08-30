@@ -153,16 +153,17 @@ def create_thank_operator_video(operators,duration,output,_with_line_animation,l
  
     fc = 0
     new_frame = frame
+    init_frame = frame
 
     for x in range(0,duration): 
  
         if(_with_line_animation is True):
             fc +=1
-            if(rect_x > rect_min_x):
-                rect_x = int(rect_x - int(fc*(rect_x-rect_min_x)/duration))
 
+            if(rect_x > rect_min_x):
+                rect_x = int(rect_x - int(fc*(rect_x-rect_min_x)/rect_anim_duration))
             rect_w = 1280-rect_x*2     
-            all_frames.append(cv2.rectangle(frame, (rect_x, rect_y), (rect_x+rect_w, rect_y+rect_h),(255,255,255,255), 1))
+            all_frames.append(cv2.rectangle(init_frame, (rect_x, rect_y), (rect_x+rect_w, rect_y+rect_h),(255,255,255,255), 1))
         else:
             all_frames.append(new_frame)        
 
