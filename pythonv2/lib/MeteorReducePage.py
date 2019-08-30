@@ -29,7 +29,7 @@ def name_analyser(file_names):
 # from a URL 
 # cmd=reduce2
 # &video_file=[VIDEO_FILE].mp4
-def reduce_meteor2(form):
+def reduce_meteor2(json_conf,form):
    
    # Debug
    cgitb.enable()
