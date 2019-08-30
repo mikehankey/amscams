@@ -213,13 +213,13 @@ def create_music_credit_video(_text1,_text2,_text3,_duration,_output):
     frame = cv2.cvtColor(frame, cv2.COLOR_RGB2BGR) 
 
     # Add _text1
-    frame = add_big_text(frame,_text1, 50, (255,255,255,255), 60)
+    frame = add_big_text(frame,_text1, 220, (255,255,255,255), 40)
 
     # Add _text2
-    frame = add_big_text(frame,_text2, 50, (255,255,255,255), 60)
+    frame = add_big_text(frame,_text2, 270, (255,255,255,255), 60)
 
     # Add _text3
-    frame = add_big_text(frame,_text3, 50, (255,255,255,255), 60)
+    frame = add_big_text(frame,_text3, 300, (255,255,255,255), 50)
 
     all_frames = []
     for x in range(0,_duration):
