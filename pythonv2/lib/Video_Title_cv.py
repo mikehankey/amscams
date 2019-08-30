@@ -125,7 +125,7 @@ def create_thank_operator_video(operators,duration,output,_with_line_animation,l
     top_y = 50
     top_size = 40  
 
-    frame = np.zeros((750,1280,3), np.uint8)
+    frame = np.zeros((720,1280,3), np.uint8)
     frame = cv2.cvtColor(frame, cv2.COLOR_RGB2BGR) 
 
     # Add "Thank you on top"
@@ -152,8 +152,7 @@ def create_thank_operator_video(operators,duration,output,_with_line_animation,l
     rect_anim_duration = duration
  
     fc = 0
-    new_frame = frame
-    init_frame = frame
+    new_frame = frame 
 
     for x in range(0,duration): 
  
@@ -201,6 +200,30 @@ def create_allskycams_video(text1,text2,duration,output):
     all_frames = []
     for x in range(0,duration):
         all_frames.append(new_frame)        
+
+    make_movie_from_frames(all_frames, [0,len(all_frames) - 1], output, 1)
+    print('OUTPUT ' + output)
+
+
+# Create  
+def create_music_credit_video(_text1,_text2,_text3,_duration,_output):
+
+
+    frame = np.zeros((720,1280,3), np.uint8)
+    frame = cv2.cvtColor(frame, cv2.COLOR_RGB2BGR) 
+
+    # Add _text1
+    frame = add_big_text(frame,_text1, 50, (255,255,255,255), 60)
+
+    # Add _text2
+    frame = add_big_text(frame,_text2, 50, (255,255,255,255), 60)
+
+    # Add _text3
+    frame = add_big_text(frame,_text3, 50, (255,255,255,255), 60)
+
+    all_frames = []
+    for x in range(0,duration):
+        all_frames.append(frame)        
 
     make_movie_from_frames(all_frames, [0,len(all_frames) - 1], output, 1)
     print('OUTPUT ' + output)

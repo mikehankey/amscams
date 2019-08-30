@@ -180,18 +180,33 @@ from lib.Video_Title_cv import *
 #import cv2 
 #import subprocess 
 
+#CREATE TITLE VIDEO
+_main_title = "BEST OF PERSEIDS 2019"
+_producer =  "produced by Mike Hankey"
+_output_path = '/mnt/ams2/opening_title.mp4'
+create_title_video(_main_title,_producer,_output_path,(255,255,255,255),True)
 
-MAIN_TITLE = "BEST OF PERSEIDS 2019"
-SUB_TITLE =  "produced by Mike Hankey"
-create_title_video(MAIN_TITLE,SUB_TITLE, '/mnt/ams2/test_title4.mp4',(255,255,255,255),True)
 
-
+#CREATE OPERATOR VIDEOS
 _operators = ["Mike Hankey","Elizabeth Warner - UMD", "Ed Abel", "Peter Deterline", "Vishnu Reddy", "Bob Lunsford", "Mel Helm - SRO"]
 _duration = 125 # In frames at 25fps
 _output_path =  '/mnt/ams2/operator_credits.mp4'
 _with_line_animation = True # Optional - it's True by default
 _line_height = 55 # Optional - it's 45 by default, it works well with <=12 operators (one per line)
 _operator_font_size = 40 # Optional - it's 30 by default, it works well with <=12 operators (one per line)
-
 create_thank_operator_video(_operators, _duration, _output_path,_with_line_animation,_line_height,_operator_font_size) 
-#create_allskycams_video("Visit Allskycams.com","for more information about our all sky cameras",125, '/mnt/ams2/test_allsky.mp4')
+
+#CREATE ALL SKY CAMS VIDEOS
+_text1= "Visit Allskycams.com"
+_text2= "for more information about our all sky cameras"
+_duration = 125 # In frames at 25fps
+_output = '/mnt/ams2/allskycams.mp4'
+create_allskycams_video(_text1,_text2,_duration,_output)
+
+#CREATE MUSIC CREDIT VIDEO
+_text1= "Music by"
+_text2= "NAKED JUNGLE"
+_text3= "nakedjungle.bandcamp.com"
+_duration = 125 # In frames at 25fps
+_output = '/mnt/ams2/music_credits.mp4'
+create_video_credit_video(_text1,_text2,_text3,_duration,_output)
