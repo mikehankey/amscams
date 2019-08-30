@@ -214,4 +214,4 @@ _output = '/mnt/ams2/music_credits.mp4'
 
 
 #TEST CONCAT VIDEOS
-concat_videos_fade('/mnt/ams2/music_credits.mp4','/mnt/ams2/producedby.mp4','/mnt/ams2/merge_test.mp4'')
+concat_videos_fade('/mnt/ams2/music_credits.mp4','/mnt/ams2/producedby.mp4','/mnt/ams2/merge_test.mp4')
