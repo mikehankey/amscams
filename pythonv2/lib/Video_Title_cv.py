@@ -222,8 +222,8 @@ def create_music_credit_video(_text1,_text2,_text3,_duration,_output):
     frame = add_big_text(frame,_text3, 50, (255,255,255,255), 60)
 
     all_frames = []
-    for x in range(0,duration):
+    for x in range(0,_duration):
         all_frames.append(frame)        
 
-    make_movie_from_frames(all_frames, [0,len(all_frames) - 1], output, 1)
-    print('OUTPUT ' + output)
+    make_movie_from_frames(all_frames, [0,len(all_frames) - 1], _output, 1)
+    print('OUTPUT ' + _output)
