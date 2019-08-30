@@ -182,10 +182,8 @@ from lib.Video_Title_cv import *
 
 
 MAIN_TITLE = "BEST OF PERSEIDS 2019"
-SUB_TITLE =  "Music by Naked Jungle - nakedjungle.bandcamp.com"
- 
-
-#create_title_video(MAIN_TITLE,SUB_TITLE, '/mnt/ams2/test_title4.mp4',(255,255,255,255),True)
+SUB_TITLE =  "Produced by Mike Hankey"
+create_title_video(MAIN_TITLE,SUB_TITLE, '/mnt/ams2/test_title4.mp4',(255,255,255,255),True)
 
 
 _operators = ["Mike Hankey","Elizabeth Warner - UMD", "Ed Abel", "Peter Deterline", "Vishnu Reddy", "Bob Lunsford", "Mel Helm - SRO"]
