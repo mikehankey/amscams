@@ -163,13 +163,12 @@ from lib.Video_Title_cv import *
 
 
 #data = {
-#    'json_conf' : '/mnt/ams2/conversion/2019_08_10_06_41_52_000_010042-trim0777/2019_08_10_06_42_24_280_010042_AMS7_HD.json',
-#    'video_file' :'/mnt/ams2/conversion/2019_08_10_06_41_52_000_010042-trim0777/2019_08_10_06_42_24_280_010042_AMS7_HD.mp4',
+#    'json_conf' : '/mnt/ams2/conversion/2019_08_12_05_37_29_000_010037-trim0945/2019_08_12_05_38_09_920_010037_AMS7_HD.json',
+#    'video_file' :'/mnt/ams2/conversion/2019_08_12_05_37_29_000_010037-trim0945/2019_08_12_05_38_09_920_010037_AMS7_HD.mp4',
 #    'rad_x': 500,
 #    'rad_y': 500,
 #    'rad_name': 'Perseids'
 #}  
- 
 #new_remaster(data)  
 #remaster(data)  
 
@@ -178,10 +177,52 @@ from lib.Video_Title_cv import *
  
 
 #CREATE INFO VIDEO FROM FRAMES
-import cv2 
-import subprocess 
+#import cv2 
+#import subprocess 
+
+#CREATE TITLE VIDEO
+_main_title = "BEST OF PERSEIDS 2019"
+_producer =  ""
+_output_path = '/mnt/ams2/opening_title.mp4'
+#create_title_video(_main_title,_producer,_output_path,(255,255,255,255),True)
 
 
-#create_title_video("BEST OF PERSEIDS 2019","Music by Naked Jungle - nakedjungle.bandcamp.com", '/mnt/ams2/test_title3.mp4',(255,255,255,255))
-#create_thank_operator_video(['Mike Hankey','Vincent Perlerin','Marcel Duchamp','The Beatles'],125, '/mnt/ams2/test_end_credits.mp4')
-create_allskycams_video("Visit Allskycams.com","for more information about our all sky cameras",125, '/mnt/ams2/test_allsky.mp4')
+#CREATE OPERATOR VIDEOS
+_operators = ["Mike Hankey","Elizabeth Warner - UMD", "Ed Abel", "Peter Deterline", "Vishnu Reddy", "Bob Lunsford", "Mel Helm - SRO"]
+_duration = 75 # In frames at 25fps
+_output_path =  '/mnt/ams2/operator_credits.mp4'
+_with_line_animation = True # Optional - it's True by default
+_line_height = 55 # Optional - it's 45 by default, it works well with <=12 operators (one per line)
+_operator_font_size = 40 # Optional - it's 30 by default, it works well with <=12 operators (one per line)
+#create_thank_operator_video(_operators, _duration, _output_path,_with_line_animation,_line_height,_operator_font_size) 
+
+#CREATE ALL SKY CAMS VIDEOS
+_text1= "Allskycams.com"
+_text2= ""
+_duration = 100 # In frames at 25fps
+_output = '/mnt/ams2/allskycams.mp4'
+create_allskycams_video(_text1,_text2,_duration,_output)
+
+#CREATE MUSIC CREDIT VIDEO
+_text1= "Music by"
+_text2= "NAKED JUNGLE"
+_text3= "nakedjungle.bandcamp.com"
+_duration = 50 # In frames at 25fps
+_output = '/mnt/ams2/music_credits.mp4'
+#create_credit_video(_text1,_text2,_text3,_duration,_output)
+# PRODUCE CREEDIT
+#create_credit_video("Produced by","Mike Hankey","",_duration,'/mnt/ams2/producedby.mp4')
+
+
+# CONCAT VIDEOS START
+_from = 5 # in seconds
+_total_duration = 8 # in seconds
+concat_videos_fade('/mnt/ams2/opening_title.mp4','/mnt/ams2/music_credits.mp4','/mnt/ams2/1.mp4',_from,_total_duration)
+_from = 10 # in seconds
+_total_duration = 12 # in seconds
+#concat_videos_fade('/mnt/ams2/1.mp4','/mnt/ams2/producedby.mp4','/mnt/ams2/START.mp4',_from,_total_duration)
+
+# CONCAT VIDEO END
+_from = 5 # in seconds
+_total_duration = 12 # in seconds
+#concat_videos_fade('/mnt/ams2/operator_credits.mp4','/mnt/ams2/allskycams.mp4','/mnt/ams2/END.mp4',_from,_total_duration) 

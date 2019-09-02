@@ -277,6 +277,10 @@ def new_remaster(data):
     if(overlaps_with_image(cx1,cy1,cx2,cy2,ams_logo,ams_logo_pos,frames[0])): 
         # We move the logo here since it overlaps 
         ams_logo_overlaps = True
+
+
+        print("DEFAULT POS" + ams_logo_pos)
+        print("SHOULD BE " + D_AMS_LOGO_POS)
          
         # By default, we put it on the BOTTOM LEFT - 50px above the bottom (ONLY WORK WITH 720!!)
         if(ams_logo_pos == D_AMS_LOGO_POS):
@@ -371,25 +375,39 @@ def new_remaster(data):
         frame_time_str = station_id + ' - ' + frame_time_str + ' UT' 
 
         # Add Date & Time & Cam Info
-        if(dt_text_overlaps):
+        if(dt_text_overlaps is True):
+
+            print("DT OVERLAPS")
 
             # Here we automatically put them both on top of each other on the opposite (bottom) side
             hd_img,xx,yy,ww,hh = add_text_to_pos(hd_img,frame_time_str,D_CAM_INFO_POS,2)  
 
              # Add Extra_info 
             if(extra_text is not False):
+                print("EXTRA INFO")
                 hd_img,xx,yy,ww,hh = add_text_to_pos(hd_img,extra_text,D_CAM_INFO_POS,1,True)      
 
         else:
+
+            print("DT DOESNT OVERLAPS")
                  
             hd_img,xx,yy,ww,hh = add_text_to_pos(hd_img,frame_time_str,date_time_pos,2)  
 
             # Add Extra_info 
             if(extra_text is not False):
+
+                
+                print("WE HAVE EXTRA INFO")
+
                 if(extra_text_overlaps is False):
+                    print("THAT DOES NOT OVERLAPS")
+                    print("SO WE HAD " + extra_text)
+                    print("AT " + extra_text_pos)
                     hd_img,xx,yy,ww,hh = add_text_to_pos(hd_img,extra_text,extra_text_pos,2,True)  
                 else:
                     # It overlaps
+                    
+                    print("THAT DOES   OVERLAPS")
                     hd_img,xx,yy,ww,hh = add_text_to_pos(hd_img,extra_text,D_EXTRA_INFO_POS,1,True)      
     
         # Add Radiant

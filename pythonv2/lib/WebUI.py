@@ -35,6 +35,9 @@ from lib.Frame_Tools import *
 from lib.Get_Cam_ids import get_the_cam_ids
 from lib.Get_Operator_info import get_operator_info
 from lib.MultiStationMeteors import multi_station_meteors, multi_station_meteor_detail
+
+# New Reduce Meteor Page
+from lib.MeteorReducePage import reduce_meteor2
  
 
 NUMBER_OF_METEOR_PER_PAGE = 60
@@ -409,10 +412,19 @@ def controller(json_conf):
    if cmd == 'custom_logos':
       custom_logos(json_conf,form)
 
-   if cmd == 'reduce_new':
-      extra_html = reduce_meteor_new(json_conf, form)
+   # REAL NEW VERSION
+   if cmd == 'reduce2':
+      extra_html = reduce_meteor2(json_conf, form)
+  
+   # OLD VERSION 
    if cmd == 'reduce':
       extra_html = reduce_meteor_new(json_conf, form)
+
+   # ANOTHER OLD VERSION
+   if cmd == 'reduce_new':
+      extra_html = reduce_meteor_new(json_conf, form)
+
+
    if cmd == 'solutions':
       solutions(json_conf, form)
    if cmd == 'sol_detail':
