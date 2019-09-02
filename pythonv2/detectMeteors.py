@@ -98,9 +98,9 @@ def scan_file(video_file, show):
          day = sd_file[0:10]
          sd_wild = sd_file.replace(".mp4", "*")
          cmd = "mv " + jd['sd_video_file'] +  " /mnt/ams2/trash"
-         os.system(cmd)
+         #os.system(cmd)
          cmd = "mv " + "/mnt/ams2/meteors/" + day + "/" + sd_wild + " /mnt/ams2/trash"
-         os.system(cmd)
+         #os.system(cmd)
          if 'hd_trim' in jd:
             hd_file = jd['hd_trim'].split("/")[-1]
             day = hd_file[0:10]

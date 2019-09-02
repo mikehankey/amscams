@@ -59,7 +59,7 @@ def validate_objects(objects,frames ):
    new_objects = []
    for object in objects:
       print(object['oid'])
-      status, intensity,px_diffs,avg_vals = intensity_test(object, frames)
+      status, intensity,px_diffs,avg_vals,hist = intensity_test(object, frames)
       if status == 0: 
          object['meteor'] = status
       if object['meteor'] == 1:
@@ -78,6 +78,7 @@ def intensity_test(object, frames):
    intensity = []
    px_diffs = []
    avg_vals = []
+   new_hist = []
    for hist in object['history']:
       print("INT HIST:", hist)
       if len(hist) == 7:
@@ -96,6 +97,7 @@ def intensity_test(object, frames):
       intensity.append(obj_val-bg_val)
       px_diffs.append(px_diff)
       avg_vals.append(avg_crop)
+      new_hist.append(hist)
    for i in intensity:
       print (i) 
       #cv2.imshow('pepe', crop)
@@ -106,7 +108,7 @@ def intensity_test(object, frames):
       status = 0
    else:
       status = 1
-   return(status, intensity, px_diffs, avg_vals)
+   return(status, intensity, px_diffs, avg_vals,hist)
 
    
 
