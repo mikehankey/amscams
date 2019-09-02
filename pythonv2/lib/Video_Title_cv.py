@@ -193,13 +193,13 @@ def create_allskycams_video(text1,text2,duration,output):
     cap.release()
     
     # Add top text
-    new_frame = add_big_text(frames[0],"All meteor videos recorded with the All Sky 6 Camera System",20, (255,255,255,255), 30)
+    new_frame = add_big_text(frames[0],"All meteor videos recorded with the All Sky 6 Camera System", 50, (255,255,255,255), 30)
 
     # Add text 1
-    new_frame = add_big_text(new_frame,text1,380, (255,255,255,255), 40)
+    new_frame = add_big_text(new_frame,text1,460, (255,255,255,255), 40)
 
     # Add text 2
-    new_frame = add_big_text(new_frame,text2,440, (255,255,255,255), 30)
+    #new_frame = add_big_text(new_frame,text2,440, (255,255,255,255), 30)
 
     all_frames = []
     for x in range(0,duration):

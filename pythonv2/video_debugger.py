@@ -197,8 +197,8 @@ _operator_font_size = 40 # Optional - it's 30 by default, it works well with <=1
 #create_thank_operator_video(_operators, _duration, _output_path,_with_line_animation,_line_height,_operator_font_size) 
 
 #CREATE ALL SKY CAMS VIDEOS
-_text1= "Visit Allskycams.com"
-_text2= "for more information about our all sky cameras"
+_text1= "Allskycams.com"
+_text2= ""
 _duration = 100 # In frames at 25fps
 _output = '/mnt/ams2/allskycams.mp4'
 create_allskycams_video(_text1,_text2,_duration,_output)
@@ -209,7 +209,7 @@ _text2= "NAKED JUNGLE"
 _text3= "nakedjungle.bandcamp.com"
 _duration = 50 # In frames at 25fps
 _output = '/mnt/ams2/music_credits.mp4'
-create_credit_video(_text1,_text2,_text3,_duration,_output)
+#create_credit_video(_text1,_text2,_text3,_duration,_output)
 # PRODUCE CREEDIT
 #create_credit_video("Produced by","Mike Hankey","",_duration,'/mnt/ams2/producedby.mp4')
 
