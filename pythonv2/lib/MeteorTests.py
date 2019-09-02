@@ -104,6 +104,9 @@ def test_objects(objects,frames):
             failed_objects.append(object)
          new_objects = failed_objects 
          meteor_found = 0
+
+   # BG / Intensity test / px diff
+   
      
    sorted_objects = sorted(new_objects, key = lambda i: i['score'], reverse=True) 
 
@@ -218,6 +221,9 @@ def test_object(object, total_frames):
    if uperc < 30:
       dupe = 0
       status = 0
+   if unq_fr < 4:
+      status = 0
+      desc = "Not enough unique frames: {:0.0f} percent unique. {:d} of {:d} ".format(uperc,unq_fr,tot_fr) 
    results.append(('Dupe Px', dupe, desc))
 
    # Noise Test
@@ -251,6 +257,7 @@ def test_object(object, total_frames):
 
    desc = "{:d} Peaks {:2.2f}% of frames.{:s}".format(len(peaks[0]), peak_perc,str(peaks[0])) 
    results.append(('Peaks', peak_test, desc))
+
 
 
    return(status, results)

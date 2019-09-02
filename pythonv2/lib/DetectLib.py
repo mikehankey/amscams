@@ -277,8 +277,8 @@ def check_for_motion2(frames, video_file, cams_id, json_conf, show = 0):
                      cv2.rectangle(nice_frame, (x, y), (x + w, y + h), (255, 0, 0,.02), 2)
          if show == 1 and fc % 2 == 0:
             show_frame = cv2.resize(nice_frame, (0,0), fx=0.5, fy=0.5)
-            cv2.imshow('pepe', frame)
-            cv2.waitKey(10)
+            cv2.imshow('pepe', nice_frame)
+            cv2.waitKey(0)
       frame_file = "/mnt/ams2/tmp/" + str(fc) + "obj.png"
       #cv2.imwrite(frame_file, thresh_obj)
       fc = fc + 1

@@ -50,7 +50,7 @@ def scan_file(video_file, show):
    if cfe(video_file) == 0:
       print("Error: Input file does not exist!", video_file)
       return()
-   frames = load_video_frames(video_file, json_conf)
+   frames = load_video_frames(video_file, json_conf, 0, 1)
    print("SHOW:", show)
    show = int(show)
    if len(frames) > 0:

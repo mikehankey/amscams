@@ -212,15 +212,16 @@ def save_meteor(video_file, objects, json_conf = None):
       el = video_file.split("/")
       day_dir = el[-1][0:10]
       passed_dir = proc_dir + day_dir + "/passed/"
-   cmd = "mv " + base_dir + base_fn + ".mp4 "  + passed_dir
-   print(cmd) 
-   os.system(cmd)
-   cmd = "mv " + base_dir + base_fn + "-stacked.png "  + passed_dir
-   print(cmd) 
-   os.system(cmd)
-   cmd = "mv " + base_dir + base_fn + "-stacked-obj.png "  + passed_dir
-   print(cmd) 
-   os.system(cmd)
+   if "failed" not in video_file:
+      cmd = "mv " + base_dir + base_fn + ".mp4 "  + passed_dir
+      print(cmd) 
+      os.system(cmd)
+      cmd = "mv " + base_dir + base_fn + "-stacked.png "  + passed_dir
+      print(cmd) 
+      os.system(cmd)
+      cmd = "mv " + base_dir + base_fn + "-stacked-obj.png "  + passed_dir
+      print(cmd) 
+      os.system(cmd)
 
    video_json_file = passed_dir + base_fn + ".json"
    print("Video JSON ", video_json_file)
@@ -233,17 +234,18 @@ def save_failed_detection(video_file, objects):
    print("MIKE: SAVE FAILED DETECTION")
    (base_fn, base_dir, image_dir, data_dir,failed_dir,passed_dir) = setup_dirs(video_file)
 
-   cmd = "mv " + base_dir + base_fn + ".mp4 "  + failed_dir
-   print(cmd) 
-   os.system(cmd)
 
-   cmd = "mv " + base_dir + base_fn + "-stacked.png "  + failed_dir
-   print(cmd) 
-   os.system(cmd)
-   print("YOYO")
-   cmd = "mv " + base_dir + base_fn + "-stacked-obj.png "  + failed_dir 
-   print(cmd) 
-   os.system(cmd)
+   if "failed" not in video_file:
+      cmd = "mv " + base_dir + base_fn + ".mp4 "  + failed_dir
+      print(cmd) 
+      os.system(cmd)
+
+      cmd = "mv " + base_dir + base_fn + "-stacked.png "  + failed_dir
+      print(cmd) 
+      os.system(cmd)
+      cmd = "mv " + base_dir + base_fn + "-stacked-obj.png "  + failed_dir 
+      print(cmd) 
+      os.system(cmd)
 
    video_json_file = failed_dir + base_fn + ".json"
    save_json_file(video_json_file, objects)
