@@ -1,4 +1,5 @@
 from scipy import signal
+import cv2
 import numpy as np
 from lib.UtilLib import calc_dist
 import math
@@ -51,6 +52,53 @@ def test_score(test_results):
    for test, result, desc in test_results:
       score = score + result
    return(score)
+
+def validate_objects(objects,frames ):
+   meteor_found = 0
+   print("VALIDATE!")
+   new_objects = []
+   for object in objects:
+      print(object['oid'])
+      status, intensity = intensity_test(object, frames)
+      if status == 0: 
+         object['meteor'] = status
+      if object['meteor'] == 1:
+         meteor_found = 1
+      object['intensity'] = intensity
+      object['test_results'].append(("intensity", status, np.mean(intensity)))
+
+      for test, result, desc in object['test_results']:
+         print(test, result, desc)
+      new_objects.append(object)
+   return(new_objects, meteor_found)
+
+def intensity_test(object, frames):
+   intensity = []
+   for hist in object['history']:
+      print("INT HIST:", hist)
+      if len(hist) == 7:
+         fn,x,y,w,h,mx,my = hist
+      if len(hist) == 9:
+         fn,x,y,w,h,mx,my,max_val,sum_val = hist
+      crop = frames[fn][y:y+h,x:x+w]
+      crop_bg = frames[0][y:y+h,x:x+w]
+      obj_val = int(np.sum(crop)) 
+      bg_val  = np.sum(crop_bg)
+      print(obj_val, bg_val)
+      intensity.append(obj_val-bg_val)
+   for i in intensity:
+      print (i) 
+      #cv2.imshow('pepe', crop)
+      #cv2.waitKey(0)
+   avg_int = int(np.mean(intensity))
+   if avg_int < 10:
+      print("INTENSITY FAILED:", avg_int)
+      status = 0
+   else:
+      status = 1
+   return(status, intensity)
+
+   
 
 def test_objects(objects,frames):
    total_frames = len(frames)
@@ -164,6 +212,13 @@ def test_object(object, total_frames):
    # CM / GAPS
    cm_gap_test = 1
    cm,gaps,gap_events,cm_hist_len_ratio = meteor_test_cm_gaps(object)
+
+   print("GAPS:", gaps)
+   if int(gaps) > 10:
+      status = 0
+      cm_gap_test = 0
+      print("GAPS:", gaps, status)
+
    if cm < 3:
       cm_gap_test = 0
       status = 0
@@ -259,7 +314,7 @@ def test_object(object, total_frames):
    results.append(('Peaks', peak_test, desc))
 
 
-
+   print("FINAL STATUS:", status)
    return(status, results)
 
 

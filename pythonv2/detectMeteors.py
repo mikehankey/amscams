@@ -8,7 +8,7 @@ import glob
 from lib.CalibLib import reduce_object
 from lib.FileIO import setup_dirs, cfe, save_failed_detection, save_meteor
 from lib.DetectLib import check_for_motion2, id_object, object_report, parse_motion 
-from lib.MeteorTests import test_objects
+from lib.MeteorTests import test_objects, validate_objects
 from lib.FileIO import load_json_file,archive_meteor 
 from lib.VideoLib import load_video_frames , doHD, get_masks
 from lib.ImageLib import stack_frames, draw_stack
@@ -60,6 +60,7 @@ def scan_file(video_file, show):
 
    if len(objects) > 0:
       objects,meteor_found = test_objects(objects,frames)
+      objects,meteor_found = validate_objects(objects,frames)
       #print(objects)
    else:
       objects = []
@@ -82,7 +83,7 @@ def scan_file(video_file, show):
          draw_stack(objects,stack_img,stack_file)
       print("SAVE FAILED")
       save_failed_detection(video_file,objects)
-   obj_report = object_report(objects)
+   obj_report = object_report(objects,0)
    print(obj_report)
    if meteor_found == 1:
       print("Meteor Test Passed.")

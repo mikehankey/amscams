@@ -212,7 +212,7 @@ def save_meteor(video_file, objects, json_conf = None):
       el = video_file.split("/")
       day_dir = el[-1][0:10]
       passed_dir = proc_dir + day_dir + "/passed/"
-   if "failed" not in video_file:
+   if "failed" not in video_file and "passed" not in video_file:
       cmd = "mv " + base_dir + base_fn + ".mp4 "  + passed_dir
       print(cmd) 
       os.system(cmd)
@@ -235,7 +235,7 @@ def save_failed_detection(video_file, objects):
    (base_fn, base_dir, image_dir, data_dir,failed_dir,passed_dir) = setup_dirs(video_file)
 
 
-   if "failed" not in video_file:
+   if "failed" not in video_file and "passed" not in video_file:
       cmd = "mv " + base_dir + base_fn + ".mp4 "  + failed_dir
       print(cmd) 
       os.system(cmd)
