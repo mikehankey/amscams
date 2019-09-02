@@ -59,12 +59,14 @@ def validate_objects(objects,frames ):
    new_objects = []
    for object in objects:
       print(object['oid'])
-      status, intensity = intensity_test(object, frames)
+      status, intensity,px_diffs,avg_vals = intensity_test(object, frames)
       if status == 0: 
          object['meteor'] = status
       if object['meteor'] == 1:
          meteor_found = 1
       object['intensity'] = intensity
+      object['px_diffs'] = px_diffs 
+      object['avg_vals'] = avg_vals 
       object['test_results'].append(("intensity", status, np.mean(intensity)))
 
       for test, result, desc in object['test_results']:
@@ -74,6 +76,8 @@ def validate_objects(objects,frames ):
 
 def intensity_test(object, frames):
    intensity = []
+   px_diffs = []
+   avg_vals = []
    for hist in object['history']:
       print("INT HIST:", hist)
       if len(hist) == 7:
@@ -82,21 +86,27 @@ def intensity_test(object, frames):
          fn,x,y,w,h,mx,my,max_val,sum_val = hist
       crop = frames[fn][y:y+h,x:x+w]
       crop_bg = frames[0][y:y+h,x:x+w]
+      avg_crop = np.mean(crop)
+      avg_bg = np.mean(crop_bg)
+      min_val, max_val, min_loc, (bmx,bmy)= cv2.minMaxLoc(crop)
+      px_diff = max_val - avg_crop 
       obj_val = int(np.sum(crop)) 
       bg_val  = np.sum(crop_bg)
       print(obj_val, bg_val)
       intensity.append(obj_val-bg_val)
+      px_diffs.append(px_diff)
+      avg_vals.append(avg_crop)
    for i in intensity:
       print (i) 
       #cv2.imshow('pepe', crop)
       #cv2.waitKey(0)
    avg_int = int(np.mean(intensity))
    if avg_int < 10:
-      print("INTENSITY FAILED:", avg_int)
+      print("INTENSITY FAILED:", avg_int, px_diff)
       status = 0
    else:
       status = 1
-   return(status, intensity)
+   return(status, intensity, px_diffs, avg_vals)
 
    
 

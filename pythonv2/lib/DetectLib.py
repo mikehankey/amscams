@@ -51,6 +51,14 @@ def object_report(objects, all = 0):
    object_report = "OBJECT REPORT\n"
    object_report = object_report + "-------------\n"
    for object in objects:
+      if object['meteor'] == 0:
+         print("FAILED: ", object['oid'])
+         for test in object['test_results']:
+            (test_name, status, test_res) = test
+            if status == 0:
+               print("   ", test_name, status, test_res)
+
+   for object in objects:
       if (object['oid'] != 'None' and object['meteor'] == 1) or all == 1:
          object_report = object_report + "Object:\t\t{:s}\n".format(str(object['oid']))
          object_report = object_report + "Clip Len:\t\t{:s}\n".format(str(object['total_frames']))
@@ -67,6 +75,10 @@ def object_report(objects, all = 0):
             object_report = object_report + "   {:d}\t{:d}\t{:d}\t{:d}\t{:d}\n".format(hist[0],hist[1],hist[2],hist[3],hist[4])
          for i in object['intensity']:
             object_report = object_report + "Intensity:" + str(i) + "\n"
+         for i in object['px_diffs']:
+            object_report = object_report + "PX Diff:" + str(i) + "\n"
+         for i in object['avg_vals']:
+            object_report = object_report + "Avg Vals:" + str(i) + "\n"
    return(object_report)
 
 
