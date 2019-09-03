@@ -51,12 +51,12 @@ def does_cache_exist(analysed_file_name,cache_type):
 
    if(os.path.isdir(cache_path)):
       # We return the glob of the folder
-      print(cache_path + " exist")
+      #print(cache_path + " exist")
       return glob.glob(cache_path)
    else:
       # We Create the Folder and return null
       os.makedirs(cache_path)
-      print(cache_path + " created")
+      # print(cache_path + " created")
       return []
 
 
@@ -97,6 +97,10 @@ def reduce_meteor2(json_conf,form):
    
    # Do we have something in the CACHE for this detection?
    frames = does_cache_exist(analysed_name,"frames")
+   
+   print(frames)
+
+
    stacks = does_cache_exist(analysed_name,"stacks")
 
     
