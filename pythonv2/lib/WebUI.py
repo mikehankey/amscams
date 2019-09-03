@@ -511,7 +511,8 @@ def controller(json_conf):
    rand=time.time()
    bottom = bottom.replace("{RAND}", str(rand))
    bottom = bottom.replace("{EXTRA_HTML}", str(extra_html))
-   print(bottom)
+   if(bottom is not None):
+      print(bottom)
    #cam_num = form.getvalue('cam_num')
    #day = form.getvalue('day')
 
