@@ -37,6 +37,9 @@ def name_analyser(file_names):
             res[FILE_NAMES_REGEX_GROUP[groupNum]] = match.group(groupNum)
          groupNum = groupNum + 1
 
+   if(res is not None and res['name'] is not None):
+      res['name_w_ext'] = res['name'].split('.')[0]
+
    return res
 
 
@@ -117,6 +120,8 @@ def reduce_meteor2(json_conf,form):
    # Get Video File & Analyse the Name to get quick access to all info
    video_full_path   = form.getvalue("video_file")
    analysed_name = name_analyser(video_full_path)
+
+   print(analysed_name)
       
    # Test if the name is ok
    if(len(analysed_name)==0):
@@ -151,6 +156,6 @@ def reduce_meteor2(json_conf,form):
    if(len(stacks)==0):
       # We need to generate the Stacks
       print('NO STACKS')
-      generate_stacks(video_full_path,get_cache_path(analysed_name,"stacks"))
+      generate_stacks(video_full_path,get_cache_path(analysed_name,"stacks")+analysed_name['name']+".png")
     
 
