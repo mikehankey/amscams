@@ -10,6 +10,7 @@ from PIL import Image
 from lib.VideoLib import load_video_frames
 from lib.FileIO import load_json_file
 from lib.ImageLib import stack_stack
+from lib.ReducerLib import stack_frames
 
 # CURRENT CONFIG
 JSON_CONFIG = "/home/ams/amscams/conf/as6.json"
@@ -82,12 +83,7 @@ def generate_stacks(video_full_path):
    print(str(len(frames)) + " found <br>")
 
    # Create Stack 
-   for frame in frames:
-      frame_pil = Image.fromarray(frame)
-      if stacked_image is None:
-         stacked_image = stack_stack(frame_pil, frame_pil)
-      else:
-         stacked_image = stack_stack(stacked_image, frame_pil) 
+   stacked_image = stack_frames(frames) 
 
    print(np.asarray(stacked_image))
 
