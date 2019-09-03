@@ -120,9 +120,7 @@ def reduce_meteor2(json_conf,form):
    # Get Video File & Analyse the Name to get quick access to all info
    video_full_path   = form.getvalue("video_file")
    analysed_name = name_analyser(video_full_path)
-
-   print(analysed_name)
-      
+ 
    # Test if the name is ok
    if(len(analysed_name)==0):
       print("<div id='main_container' class='container mt-4 lg-l'><div class='alert alert-danger'>"+ video_full_path + " <b>is not valid video file name.</b></div></div>")
@@ -153,9 +151,12 @@ def reduce_meteor2(json_conf,form):
       #generate_frames(video_full_path,meteor_json_file)
 
    stacks = does_cache_exist(analysed_name,"stacks")
+
    if(len(stacks)==0):
       # We need to generate the Stacks
       print('NO STACKS')
-      generate_stacks(video_full_path,get_cache_path(analysed_name,"stacks")+analysed_name['name']+".png")
-    
+      stack_file = generate_stacks(video_full_path,get_cache_path(analysed_name,"stacks")+analysed_name['name_w_ext']+".png")
+   else:
+      # We hope this is the first one
+      stack_file = stacks[0]
 
