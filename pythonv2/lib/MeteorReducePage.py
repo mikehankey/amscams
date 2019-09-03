@@ -62,7 +62,8 @@ def does_cache_exist(analysed_file_name,cache_type):
    # Debug
    cgitb.enable()
 
-   cache_path = cache_path(analysed_file_name,cache_type)
+   # Get Cache Path
+   cache_path = get_cache_path(analysed_file_name,cache_type)
 
    if(os.path.isdir(cache_path)):
       # We return the glob of the folder
@@ -144,4 +145,3 @@ def reduce_meteor2(json_conf,form):
       generate_stacks(video_full_path,get_cache_path(analysed_name,"stacks"))
     
 
-      
