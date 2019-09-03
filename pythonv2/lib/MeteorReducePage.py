@@ -75,7 +75,7 @@ def generate_stacks(video_full_path):
    print("GENERATING STACKS FOR " + video_full_path + "<br>")
    
    # Get All Frames
-   frames = load_video_frames(video_full_path, JSON_CONFIG, 0, 1)
+   frames = load_video_frames(video_full_path, load_json_file(JSON_CONFIG), 0, 1)
 
    print(len(frames) + " found <br>")
 
