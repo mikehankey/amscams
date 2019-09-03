@@ -5,8 +5,13 @@ from pathlib import Path
 
 # PATTERN FOR THE FILE NAMES
 # YYYY_MM_DD_HH_MM_SS_MSS_CAM_STATION[_HD].EXT
-FILE_NAMES_REGEX = r"(\d{4})_(\d{2})_(\d{2})_(\d{2})_(\d{2})_(\d{2})_(\d{3})_(\d{6})_([^_^.]+)(_HD)?(\.)?(\.[0-9a-z]+$)"
+FILE_NAMES_REGEX = r"(\d{4})_(\d{2})_(\d{2})_(\d{2})_(\d{2})_(\d{2})_(\d{3})_(\w{6})_([^_^.]+)(_HD)?(\.)?(\.[0-9a-z]+$)"
 FILE_NAMES_REGEX_GROUP = ["name","year","month","day","hour","min","sec","ms","cam_id","station_id","HD","ext"]
+
+# PATTERN FOR THE CACHE FOLDER
+ 
+
+
 
 # Parses a regexp (FILE_NAMES_REGEX) a file name
 # and returns all the info defined in FILE_NAMES_REGEX_GROUP
@@ -24,6 +29,11 @@ def name_analyser(file_names):
    return res
 
 
+# Test if a file exist in the CACHE
+# /mnt/ams2/CACHE/[STATION_ID]/[YEAR]/[MONTH]/[DAY]/FRAMES/YEAR_MONTH_DAY_HH_MM_SS_sss_[CAM_ID]-trim[xxxx]/
+
+
+
 # GENERATES THE REDUCE PAGE METEOR
 # from a URL 
 # cmd=reduce2
@@ -39,10 +49,10 @@ def reduce_meteor2(json_conf,form):
       
    # Test if the name is ok
    if(len(analysed_name)==0):
-      print("<div id='main_container' class='container mt-4 lg-l'><div class='alert alert-danger'>"+ video_full_path + " is not valid video file name.</div></div>")
+      print("<div id='main_container' class='container mt-4 lg-l'><div class='alert alert-danger'>"+ video_full_path + " <b>is not valid video file name.</b></div></div>")
       exit
    elif(os.path.isfile(video_full_path) is False):
-      print("<div id='main_container' class='container mt-4 lg-l'><div class='alert alert-danger'>"+ video_full_path + " not found.</div></div>")
+      print("<div id='main_container' class='container mt-4 lg-l'><div class='alert alert-danger'>"+ video_full_path + " <b>not found.</b></div></div>")
       exit
    else:
       print(analysed_name)
@@ -55,6 +65,11 @@ def reduce_meteor2(json_conf,form):
       HD = False
       meteor_json_file = video_full_path.replace(".mp4", ".json")
 
+
+   # Does the JSON file exists?
+   if(os.path.isfile(meteor_json_file) is False):
+      print("<div id='main_container' class='container mt-4 lg-l'><div class='alert alert-danger'>"+ meteor_json_file + " <b>not found.</b><br>This detection hasn't been reduced yet.</div></div>")
+      exit        
    
 
     
