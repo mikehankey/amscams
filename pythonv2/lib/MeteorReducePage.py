@@ -69,9 +69,11 @@ def does_cache_exist(analysed_file_name,cache_type):
 # Generate the Stacks for a meteor detection
 def generate_stacks(video_full_path):
 
-    # Debug
+   # Debug
    cgitb.enable()
 
+   print("GENRATING STACKS FOR " + video_full_path + "<br>")
+   
    # Get All Frames
    cap = cv2.VideoCapture(video_full_path)
    frames = [] 
@@ -86,6 +88,8 @@ def generate_stacks(video_full_path):
             go = 0
          frames.append(frame)
    cap.release()
+
+   print(len(frames) + " found <br>")
 
    # Create Stack 
    for frame in frames:
@@ -133,13 +137,13 @@ def reduce_meteor2(json_conf,form):
    frames = does_cache_exist(analysed_name,"frames")
    if(len(frames)==0):
       # We need to generate the Frame
-      print("NO FRAME")
+      print("NO FRAME<br>")
       #generate_frames(video_full_path,meteor_json_file)
 
    stacks = does_cache_exist(analysed_name,"stacks")
    if(len(stacks)==0):
       # We need to generate the Stacks
-      print('GENERATING STACKS')
+      print('NO STACKS')
       generate_stacks(video_full_path)
     
 
