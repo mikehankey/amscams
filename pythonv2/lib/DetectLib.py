@@ -288,7 +288,7 @@ def check_for_motion2(frames, video_file, cams_id, json_conf, show = 0):
 
                if px_diff > 10 and fc > 5 :
                   object, objects = id_object(cnts[i], objects,fc, max_loc)
-                  if show == 0 or show == 1:
+                  if show == 1:
                      nice_frame[0:bc_h,0:bc_w] = big_cnt_img
                      cv2.rectangle(nice_frame, (0, 0), (bc_w , bc_h), (255, 0, 0,.02), 2)
                      cv2.putText(nice_frame, str(object['oid']),  (x-5,y-5), cv2.FONT_HERSHEY_SIMPLEX, .4, (255, 255, 255), 1)
