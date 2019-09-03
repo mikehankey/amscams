@@ -118,7 +118,8 @@ def reduce_meteor2(json_conf,form):
    cgitb.enable()
 
    # Here we have the possibility to "empty" the cache, ie regenerate the files even if they already exists
-   if(form.getvalue("cache") is not None):
+   # we just need to add "clear_cache=1" to the URL
+   if(form.getvalue("clear_cache") is not None):
       clear_cache = True
    else:
       clear_cache = False
