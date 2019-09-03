@@ -40,6 +40,19 @@ def name_analyser(file_names):
    return res
 
 
+# Return Cache folder name based on an analysed_file (parsed video file name)
+# and cache_type = stacks | frames
+def get_cache_path(analysed_file_name, cache_type):
+    # Build the path to the proper cache folder
+   cache_path = CACHE_PATH + analysed_file_name['station_id'] +  "/" + analysed_file_name['year'] + "/" + analysed_file_name['month'] + "/" + analysed_file_name['day'] + "/" + os.path.splitext(analysed_file_name['name'])[0]
+
+   if(cache_type == "frames"):
+      cache_path += "/FRAMES/"
+   elif(cache_type == "stacks"):
+      cache_path += "/STACKS/"
+   
+   return cache_path
+
 # Get the path to the cache of a given detection 
 # create the folder if it doesn't exists
 # ex:  for frames - [MAIN_FILE_PATH]/CACHE/[STATION_ID]/[YEAR]/[MONTH]/[DAY]/YYYY_MM_DD_HH_MM_SS_MSS_CAM_STATION[_HD]/FRAMES/
@@ -49,13 +62,7 @@ def does_cache_exist(analysed_file_name,cache_type):
    # Debug
    cgitb.enable()
 
-   # Build the path to the proper cache folder
-   cache_path = CACHE_PATH + analysed_file_name['station_id'] +  "/" + analysed_file_name['year'] + "/" + analysed_file_name['month'] + "/" + analysed_file_name['day'] + "/" + os.path.splitext(analysed_file_name['name'])[0]
-
-   if(cache_type == "frames"):
-      cache_path += "/FRAMES/"
-   elif(cache_type == "stacks"):
-      cache_path += "/STACKS/"
+   cache_path = cache_path(analysed_file_name,cache_type)
 
    if(os.path.isdir(cache_path)):
       # We return the glob of the folder
@@ -134,6 +141,7 @@ def reduce_meteor2(json_conf,form):
    if(len(stacks)==0):
       # We need to generate the Stacks
       print('NO STACKS')
-      generate_stacks(video_full_path)
+      generate_stacks(video_full_path,get_cache_path(analysed_name,"stacks"))
     
 
+      
