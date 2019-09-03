@@ -92,8 +92,11 @@ def generate_stacks(video_full_path, destination):
 
    # Create Stack 
    stacked_image = stack_frames(frames) 
-   stacked_image.save(destination) 
 
+   # Save to destination 
+   if stacked_image is not None:
+      stacked_image.save(destination)
+ 
    return destination
 
 # GENERATES THE REDUCE PAGE METEOR
