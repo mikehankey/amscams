@@ -66,7 +66,22 @@ def does_cache_exist(analysed_file_name,cache_type):
 
 # Generate the Stacks for a meteor detection
 def generate_stacks(video_full_path):
-   frames = load_video_frames(video_full_path, JSON_CONFIG, 0, 1)
+
+   # Get All Frames
+   cap = cv2.VideoCapture(trim_file)
+   frames = [] 
+   go = 1
+   while go == 1:
+      _ , frame = cap.read() 
+      if frame is None:
+         if frame_count <= 5 :
+            cap.release()
+            return(frames)
+         else:
+            go = 0
+         frames.append(frame)
+
+   # Create Stack
    stack_frames(frames, video_full_path)
 
 
