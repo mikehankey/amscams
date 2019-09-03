@@ -91,7 +91,12 @@ def generate_stacks(video_full_path, destination):
    print(str(len(frames)) + " found <br>")
 
    # Create Stack 
-   stacked_image = stack_frames(frames) 
+   for frame in frames:
+      frame_pil = Image.fromarray(frame)
+      if stacked_image is None:
+         stacked_image = stack_stack(frame_pil, frame_pil)
+      else:
+         stacked_image = stack_stack(stacked_image, frame_pil)
 
    # Save to destination 
    if stacked_image is not None:
