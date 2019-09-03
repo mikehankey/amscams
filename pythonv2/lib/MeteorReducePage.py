@@ -8,6 +8,7 @@ from pathlib import Path
 from PIL import Image
 from lib.VideoLib import load_video_frames
 from lib.FileIO import load_json_file
+from lib.ImageLib import stack_stack
 
 # CURRENT CONFIG
 JSON_CONFIG = "/home/ams/amscams/conf/as6.json"
