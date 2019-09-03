@@ -75,7 +75,7 @@ def generate_stacks(video_full_path):
    while go == 1:
       _ , frame = cap.read() 
       if frame is None:
-         if frame_count <= 5 :
+         if len(frames) <= 5 :
             cap.release()
             return(frames)
          else:
