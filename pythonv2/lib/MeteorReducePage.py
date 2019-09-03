@@ -69,6 +69,9 @@ def does_cache_exist(analysed_file_name,cache_type):
 # Generate the Stacks for a meteor detection
 def generate_stacks(video_full_path):
 
+    # Debug
+   cgitb.enable()
+
    # Get All Frames
    cap = cv2.VideoCapture(video_full_path)
    frames = [] 
