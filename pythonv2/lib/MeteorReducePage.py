@@ -72,22 +72,10 @@ def generate_stacks(video_full_path):
    # Debug
    cgitb.enable()
 
-   print("GENRATING STACKS FOR " + video_full_path + "<br>")
+   print("GENERATING STACKS FOR " + video_full_path + "<br>")
    
    # Get All Frames
-   cap = cv2.VideoCapture(video_full_path)
-   frames = [] 
-   go = 1
-   while go == 1:
-      _ , frame = cap.read() 
-      if frame is None:
-         if len(frames) <= 5 :
-            cap.release()
-            return(frames)
-         else:
-            go = 0
-         frames.append(frame)
-   cap.release()
+   frames = load_video_frames(video_full_path, JSON_CONFIG, 0, 1)
 
    print(len(frames) + " found <br>")
 
