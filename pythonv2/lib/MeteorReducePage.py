@@ -4,6 +4,7 @@ import sys
 import os.path
 import cv2
 import glob
+import numpy as np
 from pathlib import Path 
 from PIL import Image
 from lib.VideoLib import load_video_frames
@@ -83,9 +84,12 @@ def generate_stacks(video_full_path):
    # Create Stack 
    for frame in frames:
       frame_pil = Image.fromarray(frame)
-      stacked_image = stack_stack(frame_pil, frame_pil)
+      if stacked_image is None:
+         stacked_image = stack_stack(frame_pil, frame_pil)
+      else:
+         stacked_image = stack_stack(stacked_image, frame_pil) 
 
-   print(stacked_image)
+   print(np.asarray(stacked_image))
 
 # GENERATES THE REDUCE PAGE METEOR
 # from a URL 
