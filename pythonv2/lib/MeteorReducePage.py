@@ -5,11 +5,14 @@ import os.path
 import glob
 from pathlib import Path 
 from lib.VideoLib import load_video_frames
+from lib.FileIO import load_json_file
+
+# CURRENT CONFIG
+JSON_CONFIG = "/home/ams/amscams/conf/as6.json"
 
 # PATH WHERE ALL THE FILES GO 
 MAIN_FILE_PATH = "/mnt/ams2/"
 CACHE_PATH = MAIN_FILE_PATH + "CACHE/"
-
 
 # PATTERN FOR THE FILE NAMES
 # YYYY_MM_DD_HH_MM_SS_MSS_CAM_STATION[_HD].EXT
@@ -63,7 +66,7 @@ def does_cache_exist(analysed_file_name,cache_type):
 
 # Generate the Stacks for a meteor detection
 def generate_stacks(video_full_path):
-   frames = load_video_frames(video_full_path, '', 0, 1)
+   frames = load_video_frames(video_full_path, JSON_CONFIG, 0, 1)
    stack_frames(frames, video_full_path)
 
 
