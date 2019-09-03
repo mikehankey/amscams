@@ -724,6 +724,8 @@ def get_masks(this_cams_id, json_conf, hd = 0):
    #hdm_y = 1.875
    my_masks = []
    cameras = json_conf['cameras']
+   print('GET MASKS')
+   print(cameras)
    for camera in cameras:
       if str(cameras[camera]['cams_id']) == str(this_cams_id):
          if hd == 1:
