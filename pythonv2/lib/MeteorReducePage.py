@@ -160,3 +160,5 @@ def reduce_meteor2(json_conf,form):
       # We hope this is the first one
       stack_file = stacks[0]
 
+   print("STACK FRAME " +  stack_file)
+
