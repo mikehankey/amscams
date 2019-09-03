@@ -39,10 +39,10 @@ def reduce_meteor2(json_conf,form):
       
    # Test if the name is ok
    if(len(analysed_name)==0):
-      print("<div class='alert alert-danger'>"+ video_full_path + " is not valid video file name.</div>")
+      print("<div id='main_container' class='container mt-4 lg-l'><div class='alert alert-danger'>"+ video_full_path + " is not valid video file name.</div></div>")
       exit
    elif(os.path.isfile(video_full_path) is False):
-      print("<div class='alert alert-danger'>"+ video_full_path + " not found.</div>")
+      print("<div id='main_container' class='container mt-4 lg-l'><div class='alert alert-danger'>"+ video_full_path + " not found.</div></div>")
       exit
    else:
       print(analysed_name)
