@@ -2,18 +2,21 @@ import re
 import cgitb
 import sys
 import os.path
+import glob
 from pathlib import Path
+
+
+# PATH WHERE ALL THE FILES GO 
+MAIN_FILE_PATH = "/mnt/ams2/"
+CACHE_PATH = MAIN_FILE_PATH + "CACHE/"
+
 
 # PATTERN FOR THE FILE NAMES
 # YYYY_MM_DD_HH_MM_SS_MSS_CAM_STATION[_HD].EXT
 FILE_NAMES_REGEX = r"(\d{4})_(\d{2})_(\d{2})_(\d{2})_(\d{2})_(\d{2})_(\d{3})_(\w{6})_([^_^.]+)(_HD)?(\.)?(\.[0-9a-z]+$)"
 FILE_NAMES_REGEX_GROUP = ["name","year","month","day","hour","min","sec","ms","cam_id","station_id","HD","ext"]
-
-# PATTERN FOR THE CACHE FOLDER
  
-
-
-
+ 
 # Parses a regexp (FILE_NAMES_REGEX) a file name
 # and returns all the info defined in FILE_NAMES_REGEX_GROUP
 def name_analyser(file_names):
@@ -21,7 +24,6 @@ def name_analyser(file_names):
    res = {}
   
    for matchNum, match in enumerate(matches, start=1):
-      
       for groupNum in range(0, len(match.groups())):
          if(match.group(groupNum) is not None):
             res[FILE_NAMES_REGEX_GROUP[groupNum]] = match.group(groupNum)
@@ -30,9 +32,30 @@ def name_analyser(file_names):
    return res
 
 
-# Test if a file exist in the CACHE
-# /mnt/ams2/CACHE/[STATION_ID]/[YEAR]/[MONTH]/[DAY]/FRAMES/YEAR_MONTH_DAY_HH_MM_SS_sss_[CAM_ID]-trim[xxxx]/
+# Get the path to the cache of a given detection 
+# create the folder if it doesn't exists
+# ex:  for frames - [MAIN_FILE_PATH]/CACHE/[STATION_ID]/[YEAR]/[MONTH]/[DAY]/YYYY_MM_DD_HH_MM_SS_MSS_CAM_STATION[_HD]/FRAMES/
+# or : for stack  - [MAIN_FILE_PATH]/CACHE/[STATION_ID]/[YEAR]/[MONTH]/[DAY]/YYYY_MM_DD_HH_MM_SS_MSS_CAM_STATION[_HD]/STACKS/
+def does_cache_exist(analysed_file_name,cache_type):
 
+   cache_path = CACHE_PATH + analysed_file_name['station_id'] +\
+      "/" + analysed_file_name['year'] +\
+      "/" + analysed_file_name['month'] +\
+      "/" + analysed_file_name['day'] +\
+      "/" + os.path.splitext(analysed_file_name['name'])[0]
+
+   if(cache_type=="frames"):
+      cache_path += "/FRAMES/"
+   elif(cache_type="stacks"):
+      cache_path += "/STACKS/"
+
+   if(os.path.isdir(cache_path)):
+      # We return the glob of the folder
+      return glob.glob(cache_path)
+   else:
+      # We Create the Folder and return null
+      os.makedirs(cache_path)
+      return []
 
 
 # GENERATES THE REDUCE PAGE METEOR
@@ -55,9 +78,7 @@ def reduce_meteor2(json_conf,form):
    elif(os.path.isfile(video_full_path) is False):
       print("<div id='main_container' class='container mt-4 lg-l'><div class='alert alert-danger'>"+ video_full_path + " <b>not found.</b></div></div>")
       sys.exit(0)
-   else:
-      print(analysed_name)
-
+  
    # Is it HD? & retrieve the related JSON file that contains the reduced data
    if("HD" in analysed_name):
       HD = True
@@ -72,6 +93,9 @@ def reduce_meteor2(json_conf,form):
       print("<div id='main_container' class='container mt-4 lg-l'><div class='alert alert-danger'>"+ meteor_json_file + " <b>not found.</b><br>This detection hasn't been reduced yet.</div></div>")
       sys.exit(0)   
    
+   # Do we have something in the CACHE for this detection?
+   frames = does_cache_exist(analysed_name,"frames")
+   stacks = does_cache_exist(analysed_name,"stach")
 
     
 
