@@ -1,5 +1,6 @@
 import re
 import cgitb
+import os.path
 
 # PATTERN FOR THE FILE NAMES
 # YYYY_MM_DD_HH_MM_SS_MSS_CAM_STATION[_HD].EXTENSION
@@ -34,6 +35,9 @@ def reduce_meteor2(json_conf,form):
    # Get Video File & Analyse the Name to get quick access to all info
    video_file    = form.getvalue("video_file")
    analysed_name = name_analyser(video_file)
+   
+
+   print(os.path.split(video_file))
 
    # Test if the name is ok
    if(len(analysed_name)==0):
