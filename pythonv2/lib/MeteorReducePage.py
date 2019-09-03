@@ -1,9 +1,10 @@
 import re
 import cgitb
 import os.path
+from pathlib import Path
 
 # PATTERN FOR THE FILE NAMES
-# YYYY_MM_DD_HH_MM_SS_MSS_CAM_STATION[_HD].EXTENSION
+# YYYY_MM_DD_HH_MM_SS_MSS_CAM_STATION[_HD].EXT
 FILE_NAMES_REGEX = r"(\d{4})_(\d{2})_(\d{2})_(\d{2})_(\d{2})_(\d{2})_(\d{3})_(\d{6})_([^_^.]+)(_HD)?(\.)?(\.[0-9a-z]+$)"
 FILE_NAMES_REGEX_GROUP = ["name","year","month","day","hour","min","sec","ms","cam_id","station_id","HD","ext"]
 
@@ -33,15 +34,15 @@ def reduce_meteor2(json_conf,form):
    cgitb.enable()
 
    # Get Video File & Analyse the Name to get quick access to all info
-   video_file    = form.getvalue("video_file")
-   analysed_name = name_analyser(video_file)
-   
-
-   print(os.path.split(video_file))
-
+   video_full_path   = form.getvalue("video_file")
+   analysed_name = name_analyser(video_full_path)
+      
    # Test if the name is ok
    if(len(analysed_name)==0):
-      print("FILE NAME " + video_file + " is not valid")
+      print("<div class='alert alert-danger'>"+ video_full_path + " is not valid video file name.</div>")
+      exit
+   elif(os.path.isfile(video_full_path) is False):
+      print("<div class='alert alert-danger'>"+ video_full_path + " not found.</div>")
       exit
    else:
       print(analysed_name)
