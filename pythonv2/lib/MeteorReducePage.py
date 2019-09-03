@@ -38,6 +38,9 @@ def name_analyser(file_names):
 # or : for stack  - [MAIN_FILE_PATH]/CACHE/[STATION_ID]/[YEAR]/[MONTH]/[DAY]/YYYY_MM_DD_HH_MM_SS_MSS_CAM_STATION[_HD]/STACKS/
 def does_cache_exist(analysed_file_name,cache_type):
 
+   # Debug
+   cgitb.enable()
+
    # Build the path to the proper cache folder
    cache_path = CACHE_PATH + analysed_file_name['station_id'] +  "/" + analysed_file_name['year'] + "/" + analysed_file_name['month'] + "/" + analysed_file_name['day'] + "/" + os.path.splitext(analysed_file_name['name'])[0]
 
