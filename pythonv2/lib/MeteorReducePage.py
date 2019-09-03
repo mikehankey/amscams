@@ -1,5 +1,6 @@
 import re
 import cgitb
+import sys
 import os.path
 from pathlib import Path
 
@@ -50,10 +51,10 @@ def reduce_meteor2(json_conf,form):
    # Test if the name is ok
    if(len(analysed_name)==0):
       print("<div id='main_container' class='container mt-4 lg-l'><div class='alert alert-danger'>"+ video_full_path + " <b>is not valid video file name.</b></div></div>")
-      exit
+      sys.exit(0)
    elif(os.path.isfile(video_full_path) is False):
       print("<div id='main_container' class='container mt-4 lg-l'><div class='alert alert-danger'>"+ video_full_path + " <b>not found.</b></div></div>")
-      exit
+      sys.exit(0)
    else:
       print(analysed_name)
 
@@ -69,7 +70,7 @@ def reduce_meteor2(json_conf,form):
    # Does the JSON file exists?
    if(os.path.isfile(meteor_json_file) is False):
       print("<div id='main_container' class='container mt-4 lg-l'><div class='alert alert-danger'>"+ meteor_json_file + " <b>not found.</b><br>This detection hasn't been reduced yet.</div></div>")
-      exit        
+      sys.exit(0)   
    
 
     
