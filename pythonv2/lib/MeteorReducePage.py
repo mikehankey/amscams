@@ -70,7 +70,7 @@ def does_cache_exist(analysed_file_name,cache_type):
 
 
 # Generate the Stacks for a meteor detection
-def generate_stacks(video_full_path):
+def generate_stacks(video_full_path, destination):
 
    # Debug
    cgitb.enable()
@@ -84,8 +84,9 @@ def generate_stacks(video_full_path):
 
    # Create Stack 
    stacked_image = stack_frames(frames) 
+   stacked_image.save(destination) 
 
-   print(np.asarray(stacked_image))
+   return destination
 
 # GENERATES THE REDUCE PAGE METEOR
 # from a URL 
