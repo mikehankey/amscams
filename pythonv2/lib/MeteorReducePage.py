@@ -44,9 +44,9 @@ def does_cache_exist(analysed_file_name,cache_type):
    # Build the path to the proper cache folder
    cache_path = CACHE_PATH + analysed_file_name['station_id'] +  "/" + analysed_file_name['year'] + "/" + analysed_file_name['month'] + "/" + analysed_file_name['day'] + "/" + os.path.splitext(analysed_file_name['name'])[0]
 
-   if(cache_type=="frames"):
+   if(cache_type == "frames"):
       cache_path += "/FRAMES/"
-   elif(cache_type="stacks"):
+   elif(cache_type == "stacks"):
       cache_path += "/STACKS/"
 
    if(os.path.isdir(cache_path)):
