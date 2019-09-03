@@ -388,8 +388,7 @@ def controller(json_conf):
 
    if cmd is not None and "man" in cmd:
       template = template.replace("<!--manred-->", "<script src=\"/pycgi/manreduce.js?\"></script>")
-
-
+ 
    obs_name = json_conf['site']['obs_name']
    op_city =  json_conf['site']['operator_city']
    op_state = json_conf['site']['operator_state']
@@ -401,7 +400,8 @@ def controller(json_conf):
    top = top.replace("{STATION_NAME}", station_name)
    top = top.replace("{JQ}", jq)
 
-   print(top)
+   if(top is not None):
+      print(top)
    extra_html = ""
 
    #CUSTOM VIDEOS (LIST)
