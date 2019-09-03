@@ -4,7 +4,8 @@ import sys
 import os.path
 import glob
 from pathlib import Path
-from lib.Videolib import load_video_frames
+from VideoLib import load_video_frames
+
  
 # PATH WHERE ALL THE FILES GO 
 MAIN_FILE_PATH = "/mnt/ams2/"
