@@ -4,8 +4,8 @@ import sys
 import os.path
 import glob
 from pathlib import Path
-
-
+from lib.Videolib import load_video_frames
+ 
 # PATH WHERE ALL THE FILES GO 
 MAIN_FILE_PATH = "/mnt/ams2/"
 CACHE_PATH = MAIN_FILE_PATH + "CACHE/"
@@ -60,6 +60,13 @@ def does_cache_exist(analysed_file_name,cache_type):
       return []
 
 
+
+# Generate the Stacks for a meteor detection
+def generate_stacks(video_full_path):
+   frames = load_video_frames(video_full_path, '', 0, 1)
+   stack_frames(frames, video_full_path)
+
+
 # GENERATES THE REDUCE PAGE METEOR
 # from a URL 
 # cmd=reduce2
@@ -97,11 +104,15 @@ def reduce_meteor2(json_conf,form):
    
    # Do we have something in the CACHE for this detection?
    frames = does_cache_exist(analysed_name,"frames")
-   
-   print(frames)
-
+   if(len(frames)==0):
+      # We need to generate the Frame
+      print("NO FRAME")
+      generate_frames(video_full_path,meteor_json_file)
 
    stacks = does_cache_exist(analysed_name,"stacks")
-
+   if(len(stacks)==0):
+      # We need to generate the Stacks
+      print('GENERATING STACKS')
+      generate_stacks(video_full_path)
     
 
