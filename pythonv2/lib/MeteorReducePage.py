@@ -51,10 +51,12 @@ def does_cache_exist(analysed_file_name,cache_type):
 
    if(os.path.isdir(cache_path)):
       # We return the glob of the folder
+      print(cache_path + " exist")
       return glob.glob(cache_path)
    else:
       # We Create the Folder and return null
       os.makedirs(cache_path)
+      print(cache_path + " created")
       return []
 
 
