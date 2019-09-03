@@ -117,6 +117,12 @@ def reduce_meteor2(json_conf,form):
    # Debug
    cgitb.enable()
 
+   # Here we have the possibility to "empty" the cache, ie regenerate the files even if they already exists
+   if(form.getvalue("cache") is not None):
+      clear_cache = True
+   else:
+      clear_cache = False
+
    # Get Video File & Analyse the Name to get quick access to all info
    video_full_path   = form.getvalue("video_file")
    analysed_name = name_analyser(video_full_path)
@@ -143,22 +149,18 @@ def reduce_meteor2(json_conf,form):
       print("<div id='main_container' class='container mt-4 lg-l'><div class='alert alert-danger'>"+ meteor_json_file + " <b>not found.</b><br>This detection hasn't been reduced yet.</div></div>")
       sys.exit(0)   
    
-   # Do we have something in the CACHE for this detection?
+   # Do we have the FRAMES for this detection?
    frames = does_cache_exist(analysed_name,"frames")
-   if(len(frames)==0):
+   if(len(frames)==0 or clear_cache is True):
       # We need to generate the Frame
       print("NO FRAME<br>")
       #generate_frames(video_full_path,meteor_json_file)
 
+   # Do we have the Stack for this detection
    stacks = does_cache_exist(analysed_name,"stacks")
-
-   if(len(stacks)==0):
-      # We need to generate the Stacks
-      print('NO STACKS')
+   if(len(stacks)==0 or clear_cache is True):
+      # We need to generate the Stacks 
       stack_file = generate_stacks(video_full_path,get_cache_path(analysed_name,"stacks")+analysed_name['name_w_ext']+".png")
    else:
-      # We hope this is the first one
+      # We hope this is the first one in the folder (it should!!)
       stack_file = stacks[0]
-
-   print("STACK FRAME " +  stack_file)
-
