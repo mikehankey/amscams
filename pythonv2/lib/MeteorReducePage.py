@@ -69,7 +69,7 @@ def does_cache_exist(analysed_file_name,cache_type):
 def generate_stacks(video_full_path):
 
    # Get All Frames
-   cap = cv2.VideoCapture(trim_file)
+   cap = cv2.VideoCapture(video_full_path)
    frames = [] 
    go = 1
    while go == 1:
@@ -81,6 +81,7 @@ def generate_stacks(video_full_path):
          else:
             go = 0
          frames.append(frame)
+   cap.release()
 
    # Create Stack
    stack_frames(frames, video_full_path)
