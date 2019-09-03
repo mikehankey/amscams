@@ -97,7 +97,7 @@ def reduce_meteor2(json_conf,form):
    
    # Do we have something in the CACHE for this detection?
    frames = does_cache_exist(analysed_name,"frames")
-   stacks = does_cache_exist(analysed_name,"stach")
+   stacks = does_cache_exist(analysed_name,"stacks")
 
     
 
