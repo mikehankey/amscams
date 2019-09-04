@@ -13,8 +13,7 @@ from lib.VideoLib import load_video_frames
 from lib.FileIO import load_json_file
 from lib.ImageLib import stack_stack
 from lib.ReducerLib import stack_frames
-from lib.VIDEO_VARS import *
-from lib.FileIO import load_config
+from lib.VIDEO_VARS import * 
 
 # CURRENT CONFIG
 JSON_CONFIG = "/home/ams/amscams/conf/as6.json"
@@ -120,7 +119,7 @@ def generate_cropped_frames(video_full_path,analysed_name,meteor_json_file,HD):
    # Get all the frames as defined in the JSON file
 
    # We parse the JSON
-   meteor_json_file = load_config(meteor_json_file)
+   meteor_json_file = load_json_file(meteor_json_file)
 
    # We get the data
    meteor_frame_data = meteor_json_file['meteor_frame_data']
