@@ -232,6 +232,8 @@ _total_duration = 12 # in seconds
 ############# TEST CV crop
 import cv2
 import numpy as np
+
+
 img = cv2.imread("/mnt/ams2/CACHE/AMS7/2019/08/30/2019_08_30_07_55_47_000_010040_AMS7hD/STACKS/2019_08_30_07_55_47_000_010040_AMS7hD.png")
 
 # Create empty thumb

@@ -124,8 +124,8 @@ def generate_cropped_frames(video_full_path,analysed_name,meteor_json_file,HD):
    # We get the data
    meteor_frame_data = meteor_json_file['meteor_frame_data']
    
-   for(frame in meteor_frame_data):
-      
+   #for(frame in meteor_frame_data):
+
 
    if(HD is True):
       print('WE CROP FROM THE HD VERSION')
@@ -264,7 +264,7 @@ def reduce_meteor2(json_conf,form):
    stack = get_stacks(video_full_path,analysed_name,clear_cache)
     
    # Get the thumbs (cropped frames)
-   thumbs = get_thumbs(video_full_path,analysed_name,meteor_json_file,HD,clear_cache)
+   #thumbs = get_thumbs(video_full_path,analysed_name,meteor_json_file,HD,clear_cache)
 
    print('THUMBS<br>')
    print(thumbs)
