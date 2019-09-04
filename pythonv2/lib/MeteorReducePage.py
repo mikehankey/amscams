@@ -35,7 +35,14 @@ FILE_NAMES_REGEX_GROUP = ["name","year","month","day","hour","min","sec","ms","c
 # EXTENSION FOR THE FRAMES
 EXT_HD_FRAMES = "_HDfr"
 EXT_CROPPED_FRAMES = "_frm"
+
+# THUMBS (CROPPED FRAMES)
+THUMB_W = 50
+THUMB_H = 50
  
+# SIZE OF THE SELECT BOX WHEN THE USER SELECTS THE METEOR FROM A HD FRAME
+THUMB_SELECT_W = 50
+THUMB_SELECT_H = 50
 
  
 # Parses a regexp (FILE_NAMES_REGEX) a file name
@@ -113,6 +120,86 @@ def get_thumbs(video_full_path,analysed_name,meteor_json_file,HD,HD_frames,clear
    return thumbs
 
 
+# Create a thumb 
+def cropped_frames(frame,x,y,dest,HD):
+   
+   img = cv2.imread(frame)
+
+   if(HD is True):
+      org_w_HD = 1920
+      org_h_HD = 1080
+   else:
+      org_w_HD = 1280
+      org_h_HD = 720
+
+   # Create empty image THUMB_WxTHUMB_H in black so we don't have any issues while working on the edges of the original frame 
+   crop_img = np.zeros((THUMB_W,THUMB_H,3), np.uint8)
+
+   # Default values
+   org_x = x
+   org_w = THUMB_SELECT_W + org_x
+   org_y = y
+   org_h = THUMB_SELECT_H + org_y   
+   thumb_dest_x = 0
+   thumb_dest_w = THUMB_W
+   thumb_dest_y = 0
+   thumb_dest_h = THUMB_H
+
+   # We don't want to crop where it isn't possible so we test the edges
+   diff_x_left  = (x-(THUMB_SELECT_W/2))
+   diff_x_right = org_w_HD-(x+(THUMB_SELECT_W/2)) 
+   diff_y_top   = (y-(THUMB_SELECT_H/2))
+   diff_y_bottom = org_h_HD - (y+(THUMB_SELECT_H/2))
+
+   # If the x is too close to the edge
+
+   # ON THE LEFT
+   if(diff_x_left<0):
+
+      # Destination in thumb (img)
+      thumb_dest_x = int(THUMB_W/2 - diff_x_left)
+
+      # Part of original image
+      org_x = 0
+      org_w = org_select_w - thumb_dest_x  
+
+   # ON RIGHT 
+   elif(diff_x_right<0):
+
+      # Destination in thumb (img) 
+      thumb_dest_w = int(THUMB_W+diff_x_right)  
+
+      # Part of original image 
+      org_x = org_w_HD - thumb_dest_w
+      org_w = org_w_HD   
+
+   # ON TOP
+   if(diff_y_top<0):
+
+      # Destination in thumb (img)
+      thumb_dest_y = int(THUMB_H/2 - diff_y_top)
+
+      # Part of the original image
+      org_y = 0
+      org_h = org_select_h - thumb_dest_y
+
+   elif(diff_y_bottom<0): 
+      
+      # Destination in thumb (img)
+      thumb_dest_h = int(THUMB_H+diff_y_bottom)  
+
+      # Part of the original image
+      org_y =  org_h_HD - thumb_dest_h   
+      org_h =  org_h_HD
+   
+      
+   crop_img[thumb_dest_y:thumb_dest_h,thumb_dest_x:thumb_dest_w] = img[org_y:org_h,org_x:org_w]
+   cv2.imwrite(dest,crop_img)
+   return dest
+
+
+
+
 # Create the cropped frames (thumbs) for a meteor detection
 def generate_cropped_frames(video_full_path,analysed_name,meteor_json_file,HD_frames,HD):
 
@@ -132,15 +219,11 @@ def generate_cropped_frames(video_full_path,analysed_name,meteor_json_file,HD_fr
       x = int(frame[2])
       y = int(frame[3])
 
-      # We crop directly from the corresponding HD_frames
-      #cropped_frames.append(new_crop_thumb(HD_frames[frame_index],x,y,get_cache_path(analysed_name,"cropped")+analysed_name['name_w_ext']+EXT_CROPPED_FRAMES))
+      # We generate the thumb from the corresponding HD_frames
+      # and add it to cropped_frames
+      cropped_frames.append(new_crop_thumb(HD_frames[frame_index],x,y,get_cache_path(analysed_name,"cropped")+analysed_name['name_w_ext']+EXT_CROPPED_FRAMES+str(frame_index)+".png"),HD)
 
-
-   if(HD is True):
-      print('WE CROP FROM THE HD VERSION')
-
-   else:
-      print('WE CROP FROM THE SD VERSION')
+   return cropped_frames
 
 
 # Get the stacks for a meteor detection
