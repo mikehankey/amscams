@@ -266,9 +266,11 @@ if(x<=0):
 
 print("CROPPED")
 print("ADD TO THUMB X " + str(thumb_x))
-print("ADD TO THUMB Y  "+ str(thumb_y))
-print("W" +  str(thumb_w*2-thumb_x))
-print("H" +  str(thumb_h*2-thumb_y))
+print("ADD TO THUMB Y  "+ str(thumb_y)) 
+print("ADD TO THUMB X - W" + str(thumb_w - thumb_x))
+print("ADD TO THUMB Y - H" + str(thumb_h - thumb_y))
+
+#crop_img[thumb_x:(thumb_w - thumb_x), thumb_y:(thumb_h - thumb_y)]  
 
 #crop_img[cropx:int(thumbw*2-cropx), cropy:int(thumbh*2-cropy)] = img[x:x+thumbw, y:y+thumbh]
 #cv2.imwrite('/mnt/ams2/test.png',crop_img)
