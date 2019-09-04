@@ -290,8 +290,7 @@ def setup_dirs(filename):
    base_fn = fn.replace(".mp4","")
    return(base_fn, working_dir, data_dir, images_dir, failed_dir,passed_dir)
 
-def load_config(json_file):
-   print("JSON FILE:", json_file)
+def load_config(json_file): 
    json_str = json_file.read()
    json_conf = json.loads(json_str)
    return(json_conf)
