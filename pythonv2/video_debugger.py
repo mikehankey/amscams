@@ -273,7 +273,7 @@ if(x<=0):
    # Part of original image
    org_x = 0
    org_y = y
-   org_w = int(x + (org_select_x/2))
+   org_w = int((x + org_select_x)/2)
    org_h = int(y + org_select_x)
 
 
