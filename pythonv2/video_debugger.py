@@ -239,7 +239,7 @@ img = cv2.imread("/mnt/ams2/CACHE/AMS7/2019/08/30/2019_08_30_07_55_47_000_010040
 # Create empty thumb
 
 # VALUES OBTAINED FROM JSON 
-x = 12
+x = 1910
 y = 500
 
 # Destination
@@ -290,16 +290,12 @@ if(diff_x_left<0):
 # ON RIGHT 
 elif(diff_x_right<0):
 
-   # Destination in thumb (img)
-   thumb_dest_x = 0
-   thumb_dest_w = int(thumb_w+diff_x_right)
-   thumb_dest_y = 0
-   thumb_dest_h = thumb_h  
+   # Destination in thumb (img) 
+   thumb_dest_w = int(thumb_w+diff_x_right)  
 
    # Part of original image 
    org_x = org_w_HD - thumb_dest_w
-   org_w = org_w_HD 
-   org_y = y
+   org_w = org_w_HD  
    org_h = org_select_h + org_y   
 
 # ON TOP
