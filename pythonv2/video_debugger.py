@@ -240,7 +240,7 @@ img = cv2.imread("/mnt/ams2/CACHE/AMS7/2019/08/30/2019_08_30_07_55_47_000_010040
 
 # VALUES OBTAINED FROM JSON 
 x = 500
-y = 5
+y = 1060
 
 # Destination
 thumb_w = 50
@@ -256,8 +256,7 @@ org_h_HD = 1080
 # Create empty image 50x50 in black so we don't have any issues while working on the edges of the original frame 
 crop_img = np.zeros((thumb_w,thumb_h,3), np.uint8)
 
-
-
+ 
 # Default values
 org_x = x
 org_w = org_select_w + org_x
@@ -272,7 +271,7 @@ thumb_dest_h = thumb_h
 diff_x_left  = (x-(org_select_w/2))
 diff_x_right = org_w_HD-(x+(org_select_w/2)) 
 diff_y_top   = (y-(org_select_h/2))
-
+diff_y_bottom = org_h_HD - (y+(org_select_h/2)
 
 # If the x is too close to the edge
 
@@ -305,8 +304,15 @@ if(diff_y_top<0):
    # Part of the original image
    org_y = 0
    org_h = org_select_h - thumb_dest_y
- 
- 
+
+elif(diff_y_bottom<0): 
+
+   # Destionation in thumb (img)
+   thumb_dest_y = int(thumb_h+diff_y_bottom)  
+
+   # Part of the original image
+   org_y = org_h_HD -  thumb_dest_h
+   org_h = org_h_HD
 
 print("IN THE CROPPED ")
 print("X : " + str(thumb_dest_x) + " =>   ")
