@@ -239,8 +239,14 @@ img = cv2.imread("/mnt/ams2/CACHE/AMS7/2019/08/30/2019_08_30_07_55_47_000_010040
 # VALUES OBTAINED FROM JSON 
 x = 0
 y = 300
+
+# Destination
 thumb_w = 50
 thumb_h = 50
+
+# Box of origin (selected by user)
+org_select_x = 50
+org_select_y = 50
 
 org_w = 1920
 org_h = 1080
@@ -272,8 +278,8 @@ print("ADD TO THUMB Y - H " + str(thumb_h - thumb_y))
 
 print("CROPP FROM HD X " + str(x))
 print("CROPP FROM HD Y " + str(y)) 
-print("CROPP FROM HD W " + str(x-thumb_w/2 - thumb_x))
-print("CROPP FROM HD H " + str(thumb_h-y))
+print("CROPP FROM HD W " + str(x+org_select_x/2))
+print("CROPP FROM HD H " + str(y+org_select_y/2))
 
 #crop_img[thumb_x:(thumb_w - thumb_x), thumb_y:(thumb_h - thumb_y)]  
 
