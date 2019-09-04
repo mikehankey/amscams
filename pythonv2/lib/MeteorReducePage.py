@@ -125,7 +125,7 @@ def generate_HD_frames(video_full_path, destination):
    cmd = 'ffmpeg -y  -hide_banner -loglevel panic  -i ' + video_full_path + ' -s ' + HD_DIM + ' ' +  destination + EXT_HD_FRAMES + '_%04d' + '.png' 
    output = subprocess.check_output(cmd, shell=True).decode("utf-8")
 
-   return glob.glob(destination+EXT_HD_FRAMES+"*.png")
+   return glob.glob(destination+"*"+EXT_HD_FRAMES+"*.png")
 
 
 # Display an error message on the page
@@ -181,7 +181,7 @@ def reduce_meteor2(json_conf,form):
    else:
       # We get the frames from the cache
       print(get_cache_path(analysed_name,"frames")+EXT_HD_FRAMES+"*.png")
-      frames = glob.glob(get_cache_path(analysed_name,"frames")+EXT_HD_FRAMES+"*.png") 
+      frames = glob.glob(get_cache_path(analysed_name,"frames")+"*"+EXT_HD_FRAMES+"*.png") 
    print(frames)
 
    # Do we have the Stack for this detection 
