@@ -242,8 +242,8 @@ y = 300
 thumb_w = 50
 thumb_h = 50
 
-orgw = 1920
-orgh = 1080
+org_w = 1920
+org_h = 1080
 
 # Create empty image 50x50 in black so we don't have any issues while working on the edges of the original frame 
 crop_img = np.zeros((thumb_w,thumb_h,3), np.uint8)
@@ -269,6 +269,10 @@ print("ADD TO THUMB X " + str(thumb_x))
 print("ADD TO THUMB Y  "+ str(thumb_y)) 
 print("ADD TO THUMB X - W" + str(thumb_w - thumb_x))
 print("ADD TO THUMB Y - H" + str(thumb_h - thumb_y))
+
+
+print("CROPP FROM HD X " + str(x))
+print("CROPP FROM HD Y " + str(y)) 
 
 #crop_img[thumb_x:(thumb_w - thumb_x), thumb_y:(thumb_h - thumb_y)]  
 
