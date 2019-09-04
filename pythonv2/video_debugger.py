@@ -274,7 +274,7 @@ if((x-(org_select_x/2))<=0):
    org_x = 0
    org_y = y
    org_w = int((x + org_select_x)/2)
-   org_h = int((y + org_select_x)/2)
+   org_h = int((y + org_select_x))
 
 print("IN THE CROPPED ")
 print("X : " + str(thumb_dest_x) + " => 25")
