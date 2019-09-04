@@ -227,7 +227,7 @@ def reduce_meteor2(json_conf,form):
     
 
    print('FRAMES<br>')
-   print(frames)
+   print(HD_frames)
 
    print('STACKS<br>')
-   print(stacks)
+   print(stack)
