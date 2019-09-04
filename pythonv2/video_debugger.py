@@ -237,8 +237,8 @@ img = cv2.imread("/mnt/ams2/CACHE/AMS7/2019/08/30/2019_08_30_07_55_47_000_010040
 # Create empty thumb
 
 # VALUES OBTAINED FROM JSON 
-_x = 1025
-_y = 112
+_x = 150
+_y = 150
 square_size = 50
 
 
