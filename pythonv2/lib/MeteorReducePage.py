@@ -119,7 +119,7 @@ def get_thumbs(video_full_path,analysed_name,meteor_json_file,HD,HD_frames,clear
 
    return thumbs
 
-
+ 
 # Create a thumb 
 def new_crop_thumb(frame,x,y,dest,HD):
 
@@ -235,7 +235,7 @@ def generate_cropped_frames(video_full_path,analysed_name,meteor_json_file,HD_fr
 
       # We generate the thumb from the corresponding HD_frames
       # and add it to cropped_frames
-      crop = new_crop_thumb(HD_frames[frame_index],x,y,get_cache_path(analysed_name,"cropped")+analysed_name['name_w_ext']+EXT_CROPPED_FRAMES+str(frame_index)+".png"),HD)
+      crop = new_crop_thumb(HD_frames[frame_index],x,y,get_cache_path(analysed_name,"cropped")+analysed_name['name_w_ext']+EXT_CROPPED_FRAMES+str(frame_index)+".png",HD)
       cropped_frames.append(crop)
 
    return cropped_frames
