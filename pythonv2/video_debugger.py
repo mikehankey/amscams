@@ -226,3 +226,15 @@ _total_duration = 12 # in seconds
 _from = 5 # in seconds
 _total_duration = 12 # in seconds
 #concat_videos_fade('/mnt/ams2/operator_credits.mp4','/mnt/ams2/allskycams.mp4','/mnt/ams2/END.mp4',_from,_total_duration) 
+
+
+
+############# TEST CV crop
+import cv2
+img = cv2.imread("/mnt/ams2/CACHE/AMS7/2019/08/30/2019_08_30_07_55_47_000_010040_AMS7_HD/STACKS/2019_08_30_07_55_47_000_010040_AMS7_HD.png")
+h= 50
+w = 50
+y = 0
+x = 0 
+crop_img = img[y:y+h, x:x+w] 
+cv2.imwrite('/mnt/ams2/test.png',crop_img)
