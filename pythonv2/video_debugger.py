@@ -237,17 +237,17 @@ img = cv2.imread("/mnt/ams2/CACHE/AMS7/2019/08/30/2019_08_30_07_55_47_000_010040
 # Create empty thumb
 
 # VALUES OBTAINED FROM JSON 
-x = 1025
-y = 112
+_x = 1025
+_y = 112
 square_size = 50
 
 
 # Create empty image 50x50 in black
 crop_img = np.zeros((50,50,3), np.uint8)
 
-x = x - square_size/2
-y = y - square_size / 2
-detection = img[x:x+square_size, y:y+square_size]
+_x = _x - square_size/2
+_y = _y - square_size / 2
+detection = img[x:_x+square_size, y:_y+square_size]
 
 
 crop_img[0:50, 0:50] = detection
