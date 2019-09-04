@@ -237,26 +237,46 @@ img = cv2.imread("/mnt/ams2/CACHE/AMS7/2019/08/30/2019_08_30_07_55_47_000_010040
 # Create empty thumb
 
 # VALUES OBTAINED FROM JSON 
-_x = 150
-_y = 150
-square_size = 50
+_x = 0
+_y = 0
+thumb_w = 50
+thumb_h = 50
+
+org_w = 1920
+org_h = 1080
+
+# Create empty image 50x50 in black so we don't have any issues while working on the edges of the original frame 
+crop_img = np.zeros((thumb_w,thumb_h,3), np.uint8)
+
+# Get the "real" x,y from the org frame
+_x = int(_x - thumb_w/2)
+_y = int(_y - thumb_h/2) 
+
+# So we don't crop the matrix where it isn't possible
+if(_x < 0) _x = 0
+if(_x > org_w) _x = org_w
+if(_y < 0) _y = 0
+if(_y > org_y) _y = org_h
 
 
-# Create empty image 50x50 in black
-crop_img = np.zeros((square_size,square_size,3), np.uint8)
 
-_x = int(_x - square_size/2)
-_y = int(_y - square_size/2) 
+
+ 
+
 print("_x" + str(_x))
 print("_y" + str(_y))
-print("_w" + str(_x+square_size))
-print("_h" + str(_y+square_size))
-print(img[_x:_x+square_size, _y:_y+square_size])
-crop_img[0:square_size, 0:square_size] = img[_x:_x+square_size, _y:_y+square_size]
+print("_w" + str(_x+thumb_w))
+print("_h" + str(_y+thumb_h))
+
+
+
+
+print(img[_x:_x+thumb_w, _y:_y+thumb_h])
+#crop_img[0:square_size, 0:square_size] = img[_x:_x+square_size, _y:_y+square_size]
 
 #h= 50
 #w = 50
 #y = -10
 #x = -10 
 #crop_img = img[y:y+h, x:x+w] 
-cv2.imwrite('/mnt/ams2/test.png',crop_img)
+#cv2.imwrite('/mnt/ams2/test.png',crop_img)
