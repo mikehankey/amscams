@@ -265,8 +265,9 @@ thumb_y = 0
 if((x-(org_select_x/2))<=0):
    # Destation in thumb (img)
    thumb_dest_x = int(thumb_w/2 + x)
-   thumb_dest_y = thumb_h
-   thumb_dest_w = int(thumb_w/2)-thumb_dest_x
+   thumb_dest_w = thumb_w - thumb_dest_x
+   
+   thumb_dest_y = 0
    thumb_dest_h = thumb_h
 
    # Part of original image
