@@ -296,5 +296,10 @@ print("Y : " + str(org_y)+ " =>  ")
 print("H : " + str(org_h)+ " =>  ")
 
 # Test Values
-crop_img[thumb_dest_y:thumb_dest_h,thumb_dest_x:thumb_dest_w] = img[org_y:org_h,org_x:org_w]
+cropped_image = crop_img[thumb_dest_y:thumb_dest_h,thumb_dest_x:thumb_dest_w] 
+original_image = img[org_y:org_h,org_x:org_w]
+
+
+crop_img[thumb_dest_y:thumb_dest_h,thumb_dest_x:thumb_dest_w] = original_image
+
 cv2.imwrite('/mnt/ams2/test.png',crop_img)
