@@ -22,6 +22,11 @@ JSON_CONFIG = "/home/ams/amscams/conf/as6.json"
 MAIN_FILE_PATH = "/mnt/ams2/"
 CACHE_PATH = MAIN_FILE_PATH + "CACHE/"
 
+# Cache subfolders
+FRAMES_SUBPATH= "/FRAMES/" # For the HD Frames
+CROPPED_FRAMES_SUBPATH = "/CROPPED_FRAMES/" # For the Cropped Frames (thumbs)
+STACKS_SUBPATH   = "/STACKS/" # For the Stacks
+
 # PATTERN FOR THE FILE NAMES
 # YYYY_MM_DD_HH_MM_SS_MSS_CAM_STATION[_HD].EXT
 FILE_NAMES_REGEX = r"(\d{4})_(\d{2})_(\d{2})_(\d{2})_(\d{2})_(\d{2})_(\d{3})_(\w{6})_([^_^.]+)(_HD)?(\.)?(\.[0-9a-z]+$)"
@@ -31,6 +36,7 @@ FILE_NAMES_REGEX_GROUP = ["name","year","month","day","hour","min","sec","ms","c
 EXT_HD_FRAMES = "_HDfr"
 EXT_CROPPED_FRAMES = "_frm"
  
+
  
 # Parses a regexp (FILE_NAMES_REGEX) a file name
 # and returns all the info defined in FILE_NAMES_REGEX_GROUP
@@ -44,29 +50,32 @@ def name_analyser(file_names):
             res[FILE_NAMES_REGEX_GROUP[groupNum]] = match.group(groupNum)
          groupNum = groupNum + 1
 
+   # Get Name without extension if possible
    if(res is not None and "name" in res):
       res['name_w_ext'] = res['name'].split('.')[0]
 
    return res
 
 
+
 # Return Cache folder name based on an analysed_file (parsed video file name)
-# and cache_type = stacks | frames
+# and cache_type = stacks | frames | cropped
 def get_cache_path(analysed_file_name, cache_type):
     # Build the path to the proper cache folder
    cache_path = CACHE_PATH + analysed_file_name['station_id'] +  "/" + analysed_file_name['year'] + "/" + analysed_file_name['month'] + "/" + analysed_file_name['day'] + "/" + os.path.splitext(analysed_file_name['name'])[0]
 
    if(cache_type == "frames"):
-      cache_path += "/FRAMES/"
+      cache_path += FRAMES_SUBPATH
    elif(cache_type == "stacks"):
-      cache_path += "/STACKS/"
+      cache_path += STACKS_SUBPATH
+   elif(cache_type == "cropped"):
+      cache_path += CROPPED_FRAMES_SUBPATH
    
    return cache_path
 
+
 # Get the path to the cache of a given detection 
-# create the folder if it doesn't exists
-# ex:  for frames - [MAIN_FILE_PATH]/CACHE/[STATION_ID]/[YEAR]/[MONTH]/[DAY]/YYYY_MM_DD_HH_MM_SS_MSS_CAM_STATION[_HD]/FRAMES/
-# or : for stack  - [MAIN_FILE_PATH]/CACHE/[STATION_ID]/[YEAR]/[MONTH]/[DAY]/YYYY_MM_DD_HH_MM_SS_MSS_CAM_STATION[_HD]/STACKS/
+# create the folder if it doesn't exists 
 def does_cache_exist(analysed_file_name,cache_type):
 
    # Debug
@@ -76,8 +85,8 @@ def does_cache_exist(analysed_file_name,cache_type):
    cache_path = get_cache_path(analysed_file_name,cache_type)
 
    if(os.path.isdir(cache_path)):
-      # We return the glob of the folder
-      #print(cache_path + " exist")
+      # We return the glob of the folder with all the images
+      # print(cache_path + " exist")
       return glob.glob(cache_path+"*.png")
    else:
       # We Create the Folder and return null
@@ -111,6 +120,23 @@ def generate_stacks(video_full_path, destination):
       stacked_image.save(destination)
  
    return destination
+
+
+# Get All HD Frames for a meteor detection
+# Generate them if they don't exist
+def get_HD_frames(analysed_name,clear_cache,):
+   # Test if folder exists / Create it if not
+   HD_frames = does_cache_exist(analysed_name,"frames")
+
+   if(len(HD_frames)==0 or clear_cache is True):
+      # We need to generate the HD Frame
+      HD_frames = generate_HD_frames(video_full_path,get_cache_path(analysed_name,"frames")+analysed_name['name_w_ext'])
+   else:
+      # We get the frames from the cache 
+      HD_frames = glob.glob(get_cache_path(analysed_name,"frames")+"*"+EXT_HD_FRAMES+"*.png") 
+   
+   return HD_frames
+
 
 # Generate HD frames for a meteor detection
 def generate_HD_frames(video_full_path, destination):
@@ -173,17 +199,9 @@ def reduce_meteor2(json_conf,form):
    if(os.path.isfile(meteor_json_file) is False):
       print_error(meteor_json_file + " <b>not found.</b><br>This detection may had not been reduced yet or the reduction failed.")
    
-   # Do we have the FRAMES for this detection?
-   frames = does_cache_exist(analysed_name,"frames")
-   if(len(frames)==0 or clear_cache is True):
-      # We need to generate the Frame
-      frames = generate_HD_frames(video_full_path,get_cache_path(analysed_name,"frames")+analysed_name['name_w_ext'])
-   else:
-      # We get the frames from the cache
-      print(get_cache_path(analysed_name,"frames")+EXT_HD_FRAMES+"*.png")
-      frames = glob.glob(get_cache_path(analysed_name,"frames")+"*"+EXT_HD_FRAMES+"*.png") 
-   print(frames)
-
+   # Get the HD frames
+   HD_frames = get_HD_frames(analysed_name,clear_cache)
+   
    # Do we have the Stack for this detection 
    stacks = does_cache_exist(analysed_name,"stacks")
    if(len(stacks)==0 or clear_cache is True):
