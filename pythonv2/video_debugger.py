@@ -201,7 +201,7 @@ _text1= "Allskycams.com"
 _text2= ""
 _duration = 100 # In frames at 25fps
 _output = '/mnt/ams2/allskycams.mp4'
-create_allskycams_video(_text1,_text2,_duration,_output)
+#create_allskycams_video(_text1,_text2,_duration,_output)
 
 #CREATE MUSIC CREDIT VIDEO
 _text1= "Music by"
@@ -234,7 +234,7 @@ import cv2
 img = cv2.imread("/mnt/ams2/CACHE/AMS7/2019/08/30/2019_08_30_07_55_47_000_010040_AMS7_HD/STACKS/2019_08_30_07_55_47_000_010040_AMS7_HD.png")
 h= 50
 w = 50
-y = 0
-x = 0 
+y = -10
+x = -10 
 crop_img = img[y:y+h, x:x+w] 
 cv2.imwrite('/mnt/ams2/test.png',crop_img)
