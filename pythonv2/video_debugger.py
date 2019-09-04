@@ -234,110 +234,119 @@ import cv2
 import numpy as np
 
 
-img = cv2.imread("/mnt/ams2/CACHE/AMS7/2019/08/30/2019_08_30_07_55_47_000_010040_AMS7_HD/STACKS/2019_08_30_07_55_47_000_010040_AMS7_HD.png")
 
-# Create empty thumb
 
-# VALUES OBTAINED FROM JSON 
-x = 500
-y = 1060
-
-# Destination
-thumb_w = 50
-thumb_h = 50
-
-# Box of origin (selected by user)
-org_select_w = 50
-org_select_h = 50
-
-org_w_HD = 1920
-org_h_HD = 1080
-
-# Create empty image 50x50 in black so we don't have any issues while working on the edges of the original frame 
-crop_img = np.zeros((thumb_w,thumb_h,3), np.uint8)
+def create_crop(file,x,y,dest):
+  img = cv2.imread(file)
  
-# Default values
-org_x = x
-org_w = org_select_w + org_x
-org_y = y
-org_h = org_select_h + org_y   
-thumb_dest_x = 0
-thumb_dest_w = thumb_w
-thumb_dest_y = 0
-thumb_dest_h = thumb_h
+   # Destination
+   thumb_w = 50
+   thumb_h = 50
 
-# We don't want to crop where it isn't possible
-diff_x_left  = (x-(org_select_w/2))
-diff_x_right = org_w_HD-(x+(org_select_w/2)) 
-diff_y_top   = (y-(org_select_h/2))
-diff_y_bottom = org_h_HD - (y+(org_select_h/2))
+   # Box of origin (selected by user)
+   org_select_w = 50
+   org_select_h = 50
 
-# If the x is too close to the edge
+   org_w_HD = 1920
+   org_h_HD = 1080
 
-# ON THE LEFT
-if(diff_x_left<0):
+   # Create empty image 50x50 in black so we don't have any issues while working on the edges of the original frame 
+   crop_img = np.zeros((thumb_w,thumb_h,3), np.uint8)
+   
+   # Default values
+   org_x = x
+   org_w = org_select_w + org_x
+   org_y = y
+   org_h = org_select_h + org_y   
+   thumb_dest_x = 0
+   thumb_dest_w = thumb_w
+   thumb_dest_y = 0
+   thumb_dest_h = thumb_h
 
-   # Destination in thumb (img)
-   thumb_dest_x = int(thumb_w/2 - diff_x_left)
+   # We don't want to crop where it isn't possible
+   diff_x_left  = (x-(org_select_w/2))
+   diff_x_right = org_w_HD-(x+(org_select_w/2)) 
+   diff_y_top   = (y-(org_select_h/2))
+   diff_y_bottom = org_h_HD - (y+(org_select_h/2))
 
-   # Part of original image
-   org_x = 0
-   org_w = org_select_w - thumb_dest_x  
+   # If the x is too close to the edge
 
-# ON RIGHT 
-elif(diff_x_right<0):
+   # ON THE LEFT
+   if(diff_x_left<0):
 
-   # Destination in thumb (img) 
-   thumb_dest_w = int(thumb_w+diff_x_right)  
+      # Destination in thumb (img)
+      thumb_dest_x = int(thumb_w/2 - diff_x_left)
 
-   # Part of original image 
-   org_x = org_w_HD - thumb_dest_w
-   org_w = org_w_HD   
+      # Part of original image
+      org_x = 0
+      org_w = org_select_w - thumb_dest_x  
 
-# ON TOP
-if(diff_y_top<0):
+   # ON RIGHT 
+   elif(diff_x_right<0):
 
-   # Destionation in thumb (img)
-   thumb_dest_y = int(thumb_h/2 - diff_y_top)
+      # Destination in thumb (img) 
+      thumb_dest_w = int(thumb_w+diff_x_right)  
 
-   # Part of the original image
-   org_y = 0
-   org_h = org_select_h - thumb_dest_y
+      # Part of original image 
+      org_x = org_w_HD - thumb_dest_w
+      org_w = org_w_HD   
 
-elif(diff_y_bottom<0): 
+   # ON TOP
+   if(diff_y_top<0):
 
-   # Destionation in thumb (img)
-   thumb_dest_y = int(thumb_h+diff_y_bottom)  
+      # Destionation in thumb (img)
+      thumb_dest_y = int(thumb_h/2 - diff_y_top)
 
-   # Part of the original image
-   org_y = org_h_HD -  thumb_dest_h
-   org_h = org_h_HD
+      # Part of the original image
+      org_y = 0
+      org_h = org_select_h - thumb_dest_y
 
-print("IN THE CROPPED ")
-print("X : " + str(thumb_dest_x) + " =>   ")
-print("W : " + str(thumb_dest_w)+ " =>    ")
-print("Y : " + str(thumb_dest_y)+ " =>    ")
-print("H : " + str(thumb_dest_h)+ " =>    ")
+   elif(diff_y_bottom<0): 
+
+      # Destionation in thumb (img)
+      thumb_dest_y = int(thumb_h+diff_y_bottom)  
+
+      # Part of the original image
+      org_y = org_h_HD -  thumb_dest_h
+      org_h = org_h_HD
+
+   print("IN THE CROPPED ")
+   print("X : " + str(thumb_dest_x) + " =>   ")
+   print("W : " + str(thumb_dest_w)+ " =>    ")
+   print("Y : " + str(thumb_dest_y)+ " =>    ")
+   print("H : " + str(thumb_dest_h)+ " =>    ")
 
 
-print("FROM THE ORIGINAL ")
-print("X : " + str(org_x)+ " =>   ")
-print("W : " + str(org_w)+ " =>   ")
-print("Y : " + str(org_y)+ " =>   ")
-print("H : " + str(org_h)+ " =>   ")
+   print("FROM THE ORIGINAL ")
+   print("X : " + str(org_x)+ " =>   ")
+   print("W : " + str(org_w)+ " =>   ")
+   print("Y : " + str(org_y)+ " =>   ")
+   print("H : " + str(org_h)+ " =>   ")
 
 
 
-# Test Values
-cropped_image  = crop_img[thumb_dest_y:thumb_dest_h,thumb_dest_x:thumb_dest_w] 
-print("CROP SHAPE")
-print("W = " + str(cropped_image.shape[1]))
-print("H = " + str(cropped_image.shape[0]))
+   # Test Values
+   cropped_image  = crop_img[thumb_dest_y:thumb_dest_h,thumb_dest_x:thumb_dest_w] 
+   print("CROP SHAPE")
+   print("W = " + str(cropped_image.shape[1]))
+   print("H = " + str(cropped_image.shape[0]))
 
-original_image = img[org_y:org_h,org_x:org_w]
-print("ORG SHAPE")
-print("W = " + str(original_image.shape[1]))
-print("H = " + str(original_image.shape[0]))
- 
-crop_img[thumb_dest_y:thumb_dest_h,thumb_dest_x:thumb_dest_w] = original_image
-cv2.imwrite('/mnt/ams2/test.png',crop_img)
+   original_image = img[org_y:org_h,org_x:org_w]
+   print("ORG SHAPE")
+   print("W = " + str(original_image.shape[1]))
+   print("H = " + str(original_image.shape[0]))
+   
+   crop_img[thumb_dest_y:thumb_dest_h,thumb_dest_x:thumb_dest_w] = original_image
+   cv2.imwrite(dest,crop_img)
+   print(dest)
+
+
+
+print("10,500")
+create_crop("/mnt/ams2/CACHE/AMS7/2019/08/30/2019_08_30_07_55_47_000_010040_AMS7_HD/STACKS/2019_08_30_07_55_47_000_010040_AMS7_HD.png",10,500,"/mnt/ams2/test1.png")  
+print("1910,500")
+create_crop("/mnt/ams2/CACHE/AMS7/2019/08/30/2019_08_30_07_55_47_000_010040_AMS7_HD/STACKS/2019_08_30_07_55_47_000_010040_AMS7_HD.png",1910,500,"/mnt/ams2/test2.png")  
+print("500,10")
+create_crop("/mnt/ams2/CACHE/AMS7/2019/08/30/2019_08_30_07_55_47_000_010040_AMS7_HD/STACKS/2019_08_30_07_55_47_000_010040_AMS7_HD.png",500,10,"/mnt/ams2/test3.png")  
+print("500,1010")
+create_crop("/mnt/ams2/CACHE/AMS7/2019/08/30/2019_08_30_07_55_47_000_010040_AMS7_HD/STACKS/2019_08_30_07_55_47_000_010040_AMS7_HD.png",500,1010,"/mnt/ams2/test4.png")  
