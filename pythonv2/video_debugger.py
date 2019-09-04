@@ -278,7 +278,19 @@ if(diff_x_left<0):
    org_w = org_select_w - thumb_dest_x 
    org_h = org_select_h + org_y
 
-exit(0) 
+elif(diff_x_right<0):
+
+   # Destination in thumb (img)
+   thumb_dest_x = 0
+   thumb_dest_w = int(thumb_w - diff_x_right)
+   thumb_dest_y = 0
+   thumb_dest_h = thumb_h  
+
+   # Part of original image
+   org_x = org_w - thumb_dest_w
+   org_y = y
+   org_w = org_select_w - thumb_dest_x 
+   org_h = org_select_h + org_y   
 
  
 
