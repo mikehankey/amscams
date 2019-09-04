@@ -246,11 +246,9 @@ square_size = 50
 crop_img = np.zeros((50,50,3), np.uint8)
 
 _x = int(_x - square_size/2)
-_y = int(_y - square_size/2)
-detection = img[_x:_x+square_size, _y:_y+square_size]
+_y = int(_y - square_size/2) 
+crop_img[0:50, 0:50] = img[_x:_x+square_size, _y:_y+square_size]
 
-
-crop_img[0:50, 0:50] = detection
 #h= 50
 #w = 50
 #y = -10
