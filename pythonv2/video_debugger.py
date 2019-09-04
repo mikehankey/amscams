@@ -239,8 +239,8 @@ img = cv2.imread("/mnt/ams2/CACHE/AMS7/2019/08/30/2019_08_30_07_55_47_000_010040
 # VALUES OBTAINED FROM JSON 
 x = 0
 y = 300
-thumbw = 50
-thumbh = 50
+thumb_w = 50
+thumb_h = 50
 
 orgw = 1920
 orgh = 1080
@@ -255,20 +255,20 @@ y = int(y - thumbh/2)
 # We don't want to crop where it isn't possible
 
 # The position where to place the cropped image inside the black one
-cropx = 0
-cropy = 0
+thumb_x = 0
+thumb_y = 0
 
 if(x<=0):
-   cropx = thumbw - x
+   thumb_x = thumb_w - x
    x = 0
 
 
 
 print("CROPPED")
-print("CROPX "+ str(cropx))
-print("CROPY "+ str(cropy))
-print("W" +  str(thumbw*2-cropx))
-print("H" +  str(thumbh*2-cropy))
+print("CROPX "+ str(thumb_x))
+print("CROPY "+ str(thumb_y))
+print("W" +  str(thumb_w*2-thumb_x))
+print("H" +  str(thumb_h*2-thumb_y))
 
 #crop_img[cropx:int(thumbw*2-cropx), cropy:int(thumbh*2-cropy)] = img[x:x+thumbw, y:y+thumbh]
 #cv2.imwrite('/mnt/ams2/test.png',crop_img)
@@ -283,7 +283,7 @@ print("H" +  str(thumbh*2-cropy))
 #   x = orgw
 #if(y < 0):
 #   y = 0
-   cropy = y + thumbh/2
+ #  cropy = y + thumbh/2
 #if(y > orgh):
 #   y = orgh
 
