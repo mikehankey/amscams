@@ -249,8 +249,8 @@ orgh = 1080
 crop_img = np.zeros((thumb_w,thumb_h,3), np.uint8)
 
 # Get the "real" x,y from the org frame
-x = int(x - thumbw/2)
-y = int(y - thumbh/2) 
+x = int(x - thumb_w/2)
+y = int(y - thumb_h/2) 
 
 # We don't want to crop where it isn't possible
 
