@@ -243,11 +243,13 @@ square_size = 50
 
 
 # Create empty image 50x50 in black
-crop_img = np.zeros((50,50,3), np.uint8)
+crop_img = np.zeros((square_size,square_size,3), np.uint8)
 
 _x = int(_x - square_size/2)
 _y = int(_y - square_size/2) 
-crop_img[0:50, 0:50] = img[_x:_x+square_size, _y:_y+square_size]
+print("_x" + x)
+print("_y" + y)
+crop_img[0:square_size, 0:square_size] = img[_x:_x+square_size, _y:_y+square_size]
 
 #h= 50
 #w = 50
