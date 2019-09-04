@@ -303,7 +303,7 @@ def create_crop(file,x,y,dest):
    elif(diff_y_bottom<0): 
       
       # Destination in thumb (img)
-      thumb_dest_y = int(thumb_h+diff_y_bottom)  
+      thumb_dest_h = int(thumb_h+diff_y_bottom)  
 
       # Part of the original image    
       org_h =  org_y + (thumb_dest_h - thumb_dest_y)
