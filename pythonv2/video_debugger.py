@@ -291,9 +291,9 @@ print("Y : " + str(org_y)+ " => 300")
 print("H : " + str(org_h)+ " => 350")
 
 
-#crop_img[thumb_dest_x:thumb_dest_w,thumb_dest_y:thumb_dest_h] = img[org_x:org_w,org_y:org_h]
-crop_img[25:50,0:50] = img[0:25,300:350]
-cv2.imwrite('/mnt/ams2/test.png',img[org_x:org_w,org_y:org_h])
+crop_img[thumb_dest_x:thumb_dest_w,thumb_dest_y:thumb_dest_h] = img[org_x:org_w,org_y:org_h]
+#crop_img[25:50,0:50] = img[0:25,300:350]
+cv2.imwrite('/mnt/ams2/test.png',crop_img)
 
 
 
