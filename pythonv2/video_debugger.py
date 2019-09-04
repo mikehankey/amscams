@@ -232,60 +232,75 @@ _total_duration = 12 # in seconds
 ############# TEST CV crop
 import cv2
 import numpy as np
-img = cv2.imread("/mnt/ams2/CACHE/AMS7/2019/08/30/2019_08_30_07_55_47_000_010040_AMS7_HD/STACKS/2019_08_30_07_55_47_000_010040_AMS7_HD.png")
+img = cv2.imread("/mnt/ams2/CACHE/AMS7/2019/08/30/2019_08_30_07_55_47_000_010040_AMS7hD/STACKS/2019_08_30_07_55_47_000_010040_AMS7hD.png")
 
 # Create empty thumb
 
 # VALUES OBTAINED FROM JSON 
-_x = 0
-_y = 0
-thumb_w = 50
-thumb_h = 50
+x = 0
+y = 300
+thumbw = 50
+thumbh = 50
 
-org_w = 1920
-org_h = 1080
+orgw = 1920
+orgh = 1080
 
 # Create empty image 50x50 in black so we don't have any issues while working on the edges of the original frame 
-crop_img = np.zeros((thumb_w,thumb_h,3), np.uint8)
+crop_img = np.zeros((thumbw,thumbh,3), np.uint8)
 
 # Get the "real" x,y from the org frame
-_x = int(_x - thumb_w/2)
-_y = int(_y - thumb_h/2) 
+x = int(x - thumbw/2)
+y = int(y - thumbh/2) 
 
-# So we don't crop the matrix where it isn't possible
-crop_x = 0
-crop_y =0
+# We don't want to crop where it isn't possible
 
-if(_x < 0): 
-   _x = 0
-   crop_x = _x + thumb_w/2
-if(_x > org_w):
-   _x = org_w
-if(_y < 0):
-   _y = 0
-   crop_y = _y + thumb_h/2
-if(_y > org_h):
-   _y = org_h
+# The position where to place the cropped image inside the black one
+cropx = 0
+cropy = 0
 
-print("INITIAL BOX")  
-print("_x" + str(_x))
-print("_y" + str(_y))
-print("_w" + str(_x+thumb_w))
-print("_h" + str(_y+thumb_h))
+if(x<=0):
+   cropx = thumbw - x
+   x = 0
+
 
 
 print("CROPPED")
-print("CROPX "+ str(crop_x))
-print("CROPY "+ str(crop_y))
-print("W" +  str(thumb_w*2-crop_x))
-print("H" +  str(thumb_h*2-crop_y))
+print("CROPX "+ str(cropx))
+print("CROPY "+ str(cropy))
+print("W" +  str(thumbw*2-cropx))
+print("H" +  str(thumbh*2-cropy))
+
+#crop_img[cropx:int(thumbw*2-cropx), cropy:int(thumbh*2-cropy)] = img[x:x+thumbw, y:y+thumbh]
+#cv2.imwrite('/mnt/ams2/test.png',crop_img)
+
+#cropx = 0
+#cropy = 0
+
+#if(x < 0): 
+ #  x = 0
+ #  cropx = x + thumbw/2
+#if(x > orgw):
+#   x = orgw
+#if(y < 0):
+#   y = 0
+   cropy = y + thumbh/2
+#if(y > orgh):
+#   y = orgh
+
+#print("INITIAL BOX")  
+#print("x" + str(x))
+#print("y" + str(y))
+#print("w" + str(x+thumbw))
+#print("h" + str(y+thumbh))
 
 
-crop_img[crop_x:int(thumb_w*2-crop_x), crop_y:int(thumb_h*2-crop_y)] = img[_x:_x+thumb_w, _y:_y+thumb_h]
-cv2.imwrite('/mnt/ams2/test.png',crop_img)
 
-#print(img[_x:_x+thumb_w, _y:_y+thumb_h])
-#crop_img[0:square_size, 0:square_size] = img[_x:_x+square_size, _y:_y+square_size]
+
+
+
+
+#print(img[x:x+thumbw, y:y+thumbh])
+#crop_img[0:square_size, 0:square_size] = img[x:x+square_size, y:y+square_size]
 
 #h= 50
 #w = 50
