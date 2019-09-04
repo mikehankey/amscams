@@ -278,7 +278,7 @@ print("ADD TO THUMB X - W " + str(thumb_w - thumb_x))
 print("ADD TO THUMB Y - H " + str(thumb_h - thumb_y))
 
 
-print("CROPP FROM HD X " + str(x))
+print("CROPP FROM HD X " + str(org_select_x-x))
 print("CROPP FROM HD Y " + str(y)) 
 print("CROPP FROM HD W " + str(x+org_select_x/2))
 print("CROPP FROM HD H " + str(y+org_select_y/2))
@@ -289,7 +289,7 @@ crop_y = thumb_y
 crop_w = (thumb_w - thumb_x)
 crop_h = (thumb_h - thumb_y)
 
-org_x = x
+org_x = int(org_select_x)
 org_y = y
 org_w = int(x+org_select_x/2)
 org_h = int(y+org_select_y/2)
