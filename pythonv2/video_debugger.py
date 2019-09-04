@@ -278,7 +278,7 @@ if(diff_x<0):
    # Part of original image
    org_x = 0
    org_y = y
-   org_w = thumb_dest_w - org_select_w
+   org_w = org_select_w - thumb_dest_w 
    org_h = org_select_h
 
 
@@ -294,3 +294,7 @@ print("X : " + str(org_x)+ " =>  ")
 print("W : " + str(org_w)+ " =>  ")
 print("Y : " + str(org_y)+ " =>  ")
 print("H : " + str(org_h)+ " =>  ")
+
+# Test Values
+crop_img[thumb_dest_y:thumb_dest_h,thumb_dest_x:thumb_dest_w] = img[org_y:org_h,org_x:org_w]
+cv2.imwrite('/mnt/ams2/test.png',crop_img)
