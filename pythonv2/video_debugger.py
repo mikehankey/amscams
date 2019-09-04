@@ -274,7 +274,7 @@ if(x<=0):
    org_x = 0
    org_y = y
    org_w = int(x + (org_select_x/2))
-   org_h = int(y + (org_select_x/2))
+   org_h = int(y + org_select_x)
 
 
 print("IN THE CROPPED ")
@@ -294,11 +294,11 @@ print("H : " + str(org_h))
  
 
 
-#cropped_org = img[org_x:org_w,org_y:org_h] 
-#crop_img[thumb_dest_x:thumb_dest_w,thumb_dest_y:thumb_dest_h] = cropped_org
+cropped_org = img[org_x:org_w,org_y:org_h] 
+crop_img[thumb_dest_x:thumb_dest_w,thumb_dest_y:thumb_dest_h] = cropped_org
 
 
-crop_img[25:50,0:50] = img[0:25,300:350]
+#crop_img[25:50,0:50] = img[0:25,300:350]
 cv2.imwrite('/mnt/ams2/test.png',img[org_x:org_w,org_y:org_h])
 
 
