@@ -121,7 +121,7 @@ def get_thumbs(video_full_path,analysed_name,meteor_json_file,HD,HD_frames,clear
 
 
 # Create a thumb 
-def cropped_frames(frame,x,y,dest,HD):
+def new_crop_thumb(frame,x,y,dest,HD):
    
    img = cv2.imread(frame)
 
@@ -211,16 +211,19 @@ def generate_cropped_frames(video_full_path,analysed_name,meteor_json_file,HD_fr
    # We get the data
    meteor_frame_data = meteor_json_file['meteor_frame_data']
    cropped_frames = []
+ 
 
-   print("IN generate_cropped_frames")
-
-   for frame in meteor_frame_data:
-      print("WE GENERE A CROP")
+   for frame in meteor_frame_data: 
 
       # Index of the frame 
       frame_index = int(frame[1])
       x = int(frame[2])
       y = int(frame[3])
+
+
+      print("FRAME " + str(frame_index) + "<br/>")
+      print("x " + str(x)+ "<br/>")
+      print("y " + str(y)+ "<br/>")
 
       # We generate the thumb from the corresponding HD_frames
       # and add it to cropped_frames
