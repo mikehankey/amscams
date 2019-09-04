@@ -309,46 +309,20 @@ def create_crop(file,x,y,dest):
       org_y =  org_h_HD - thumb_dest_h   
       org_h =  org_h_HD
 
-   print(" ")
-   print("IN THE CROPPED ")
-   print("X : " + str(thumb_dest_x) + " =>   ")
-   print("W : " + str(thumb_dest_w)+ " =>    ")
-   print("Y : " + str(thumb_dest_y)+ " =>    ")
-   print("H : " + str(thumb_dest_h)+ " =>    ")
-
-   print(" ")
-   print("FROM THE ORIGINAL ")
-   print("X : " + str(org_x)+ " =>   ")
-   print("W : " + str(org_w)+ " =>   ")
-   print("Y : " + str(org_y)+ " =>   ")
-   print("H : " + str(org_h)+ " =>   ")
-
-
-
-   # Test Values
-   cropped_image  = crop_img[thumb_dest_y:thumb_dest_h,thumb_dest_x:thumb_dest_w] 
-   print(" ")
-   print("CROP SHAPE")
-   print("W = " + str(cropped_image.shape[1]))
-   print("H = " + str(cropped_image.shape[0]))
-
-   original_image = img[org_y:org_h,org_x:org_w]
-   print(" ")
-   print("ORG SHAPE")
-   print("W = " + str(original_image.shape[1]))
-   print("H = " + str(original_image.shape[0]))
    
-   crop_img[thumb_dest_y:thumb_dest_h,thumb_dest_x:thumb_dest_w] = original_image
+   crop_img[thumb_dest_y:thumb_dest_h,thumb_dest_x:thumb_dest_w] = img[org_y:org_h,org_x:org_w]
    cv2.imwrite(dest,crop_img)
    print(dest)
 
 
 
-#print("10,500")
-#create_crop("/mnt/ams2/CACHE/AMS7/2019/08/30/2019_08_30_07_55_47_000_010040_AMS7_HD/STACKS/2019_08_30_07_55_47_000_010040_AMS7_HD.png",10,500,"/mnt/ams2/test1.png")  
-#print("1910,500")
-#create_crop("/mnt/ams2/CACHE/AMS7/2019/08/30/2019_08_30_07_55_47_000_010040_AMS7_HD/STACKS/2019_08_30_07_55_47_000_010040_AMS7_HD.png",1910,500,"/mnt/ams2/test2.png")  
-#print("500,10")
-#create_crop("/mnt/ams2/CACHE/AMS7/2019/08/30/2019_08_30_07_55_47_000_010040_AMS7_HD/STACKS/2019_08_30_07_55_47_000_010040_AMS7_HD.png",500,10,"/mnt/ams2/test3.png")  
+print("10,500")
+create_crop("/mnt/ams2/CACHE/AMS7/2019/08/30/2019_08_30_07_55_47_000_010040_AMS7_HD/STACKS/2019_08_30_07_55_47_000_010040_AMS7_HD.png",10,500,"/mnt/ams2/test1.png")  
+print("1910,500")
+create_crop("/mnt/ams2/CACHE/AMS7/2019/08/30/2019_08_30_07_55_47_000_010040_AMS7_HD/STACKS/2019_08_30_07_55_47_000_010040_AMS7_HD.png",1910,500,"/mnt/ams2/test2.png")  
+print("500,10")
+create_crop("/mnt/ams2/CACHE/AMS7/2019/08/30/2019_08_30_07_55_47_000_010040_AMS7_HD/STACKS/2019_08_30_07_55_47_000_010040_AMS7_HD.png",500,10,"/mnt/ams2/test3.png")  
 print("500,1060")
 create_crop("/mnt/ams2/CACHE/AMS7/2019/08/30/2019_08_30_07_55_47_000_010040_AMS7_HD/STACKS/2019_08_30_07_55_47_000_010040_AMS7_HD.png",500,1060,"/mnt/ams2/test4.png")  
+print("500,500")
+create_crop("/mnt/ams2/CACHE/AMS7/2019/08/30/2019_08_30_07_55_47_000_010040_AMS7_HD/STACKS/2019_08_30_07_55_47_000_010040_AMS7_HD.png",500,500,"/mnt/ams2/test5.png")  
