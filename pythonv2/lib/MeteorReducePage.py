@@ -120,7 +120,7 @@ def generate_HD_frames(video_full_path, destination):
    cmd = 'ffmpeg -y  -hide_banner -loglevel panic  -i ' + video_full_path + ' -s 1920x1080 ' +  destination + '_fr' + '_%04d' + '.png' 
    output = subprocess.check_output(cmd, shell=True).decode("utf-8")
 
-   return glob.glob(destination+"HD_fr*.png")
+   return glob.glob(destination+"_HDfr*.png")
 
 
 # Display an error message on the page
@@ -175,7 +175,7 @@ def reduce_meteor2(json_conf,form):
       frames = generate_HD_frames(video_full_path,get_cache_path(analysed_name,"frames")+analysed_name['name_w_ext'])
    else:
       # We get the frames from the cache
-      frames = glob.glob(get_cache_path(analysed_name,"frames")+"HD_fr*.png")
+      frames = glob.glob(get_cache_path(analysed_name,"frames")+"_HDfr*.png")
 
    print(frames)
 
