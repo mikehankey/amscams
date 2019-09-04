@@ -118,7 +118,7 @@ def generate_HD_frames(video_full_path, destination):
    cgitb.enable() 
    
    # Get All Frames
-   cmd = 'ffmpeg -y  -hide_banner -loglevel panic  -i ' + video_full_path + ' -s ' + HD_DIM + ' +  destination + '_fr' + '_%04d' + '.png' 
+   cmd = 'ffmpeg -y  -hide_banner -loglevel panic  -i ' + video_full_path + ' -s ' + HD_DIM + ' ' +  destination + '_fr' + '_%04d' + '.png' 
    output = subprocess.check_output(cmd, shell=True).decode("utf-8")
 
    return glob.glob(destination+"_HDfr*.png")
