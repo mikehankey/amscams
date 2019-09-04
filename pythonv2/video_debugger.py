@@ -217,7 +217,7 @@ _output = '/mnt/ams2/music_credits.mp4'
 # CONCAT VIDEOS START
 _from = 5 # in seconds
 _total_duration = 8 # in seconds
-concat_videos_fade('/mnt/ams2/opening_title.mp4','/mnt/ams2/music_credits.mp4','/mnt/ams2/1.mp4',_from,_total_duration)
+#concat_videos_fade('/mnt/ams2/opening_title.mp4','/mnt/ams2/music_credits.mp4','/mnt/ams2/1.mp4',_from,_total_duration)
 _from = 10 # in seconds
 _total_duration = 12 # in seconds
 #concat_videos_fade('/mnt/ams2/1.mp4','/mnt/ams2/producedby.mp4','/mnt/ams2/START.mp4',_from,_total_duration)
@@ -245,8 +245,8 @@ square_size = 50
 # Create empty image 50x50 in black
 crop_img = np.zeros((50,50,3), np.uint8)
 
-_x = _x - square_size/2
-_y = _y - square_size / 2
+_x = int(_x - square_size/2)
+_y = int(_y - square_size/2)
 detection = img[_x:_x+square_size, _y:_y+square_size]
 
 
