@@ -263,6 +263,11 @@ thumb_x = 0
 thumb_y = 0 
 
 
+crop_img[37:50,0:50] = img[0:13,300:350]
+cv2.imwrite('/mnt/ams2/test.png',crop_img)
+exit(0)
+
+
 diff_x = (x-(org_select_w/2))
 
 # If the x is too close to the edge
@@ -270,7 +275,7 @@ if(diff_x<0):
 
    # Destination in thumb (img)
    thumb_dest_x = int(thumb_w/2 - diff_x)
-   thumb_dest_w = int(thumb_w-thumb_dest_x)
+   thumb_dest_w = int(thumb_w-thumb_dest_x)+
    thumb_dest_y = 0
    thumb_dest_h = thumb_h
 
