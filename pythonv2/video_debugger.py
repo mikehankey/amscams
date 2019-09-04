@@ -267,17 +267,19 @@ if((x-(org_select_x/2))<=0):
    thumb_dest_x = int(thumb_w/2 + x)
    thumb_dest_y = 0
    thumb_dest_w = int(thumb_w/2)-thumb_dest_x
-   thumb_dest_h = int(thumb_h/2)-thumb_dest_y
+   thumb_dest_h = thumb_h
+
    # Part of original image
    org_x = 0
    org_y = y
    org_w = int((x + org_select_x)/2)
    org_h = int(y + org_select_x)
+
 print("IN THE CROPPED ")
-print("X : " + str(thumb_dest_x))
-print("Y : " + str(thumb_dest_y))
-print("W : " + str(thumb_dest_w))
-print("H : " + str(thumb_dest_h))
+print("X : " + str(thumb_dest_x) + " => 25")
+print("Y : " + str(thumb_dest_y)+ " => 50")
+print("W : " + str(thumb_dest_w)+ " => 0")
+print("H : " + str(thumb_dest_h)+ " => 50")
 print("FROM THE ORIGINAL ")
 print("X : " + str(org_x))
 print("Y : " + str(org_y))
