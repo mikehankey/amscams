@@ -251,6 +251,7 @@ print("_x" + str(_x))
 print("_y" + str(_y))
 print("_w" + str(_x+square_size))
 print("_h" + str(_y+square_size))
+print(img[_x:_x+square_size, _y:_y+square_size])
 crop_img[0:square_size, 0:square_size] = img[_x:_x+square_size, _y:_y+square_size]
 
 #h= 50
