@@ -257,15 +257,6 @@ org_h = 1080
 crop_img = np.zeros((thumb_w,thumb_h,3), np.uint8)
 
 # We don't want to crop where it isn't possible
-
-# The position where to place the cropped image inside the black one
-thumb_x = 0
-thumb_y = 0 
-
-
-
-
-
 diff_x = (x-(org_select_w/2))
 
 # If the x is too close to the edge
@@ -280,7 +271,7 @@ if(diff_x<0):
    # Part of original image
    org_x = 0
    org_y = y
-   org_w = org_select_w - thumb_dest_w 
+   org_w = org_select_w - thumb_dest_x 
    org_h = org_select_h + org_y
 
  
