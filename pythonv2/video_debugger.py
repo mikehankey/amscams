@@ -239,8 +239,8 @@ img = cv2.imread("/mnt/ams2/CACHE/AMS7/2019/08/30/2019_08_30_07_55_47_000_010040
 # Create empty thumb
 
 # VALUES OBTAINED FROM JSON 
-x = 1910
-y = 500
+x = 500
+y = 5
 
 # Destination
 thumb_w = 50
@@ -260,9 +260,9 @@ crop_img = np.zeros((thumb_w,thumb_h,3), np.uint8)
 
 # Default values
 org_x = x
-org_w = thumb_w
+org_w = org_select_w + org_x
 org_y = y
-org_h = thumb_h
+org_h = org_select_h + org_y   
 thumb_dest_x = 0
 thumb_dest_w = thumb_w
 thumb_dest_y = 0
@@ -304,11 +304,8 @@ if(diff_y_top<0):
 
    # Part of the original image
    org_y = 0
-
-
-   print("TOO CLOSE TOP")
-   exit(0)
-
+   org_h = org_select_h - thumb_dest_h
+ 
  
 
 print("IN THE CROPPED ")
