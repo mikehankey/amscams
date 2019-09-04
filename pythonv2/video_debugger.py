@@ -297,8 +297,8 @@ print("H : " + str(org_h))
 cropped_org = img[org_x:org_w,org_y:org_h]
 print("CROPPED ORG " + str(cropped_org.shape[0]) + " " + str(cropped_org.shape[1]))
 
-crop_img[thumb_dest_x:thumb_dest_w,thumb_dest_y:thumb_dest_h] = cropped_org
-cv2.imwrite('/mnt/ams2/test.png',crop_img)
+crop_img[thumb_dest_x:thumb_dest_w,thumb_dest_y:thumb_dest_h] = img[org_x:org_w,org_y:org_h]
+cv2.imwrite('/mnt/ams2/test.png',img[org_x:org_w,org_y:org_h])
 
 
 
