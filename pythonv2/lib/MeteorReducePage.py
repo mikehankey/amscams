@@ -172,8 +172,9 @@ def reduce_meteor2(json_conf,form):
    frames = does_cache_exist(analysed_name,"frames")
    if(len(frames)==0 or clear_cache is True):
       # We need to generate the Frame
-      frames = generate_frames(video_full_path,get_cache_path(analysed_name,"frames")+analysed_name['name_w_ext'])
+      frames = generate_HD_frames(video_full_path,get_cache_path(analysed_name,"frames")+analysed_name['name_w_ext'])
    else:
+      # We get the frames from the cache
       frames = glob.glob(get_cache_path(analysed_name,"frames")+"HD_fr*.png")
 
    print(frames)
