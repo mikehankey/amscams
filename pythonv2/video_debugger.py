@@ -304,7 +304,7 @@ if(diff_y_top<0):
 
    # Part of the original image
    org_y = 0
-   org_h = org_select_h - thumb_dest_h
+   org_h = org_select_h - thumb_dest_y
  
  
 
