@@ -6,6 +6,7 @@ import cv2
 import glob
 import numpy as np
 import subprocess 
+import datetime
 
 from pathlib import Path 
 from PIL import Image
@@ -128,10 +129,7 @@ def new_crop_thumb(frame,x,y,dest,HD):
    # Debug
    cgitb.enable()
    
-   img = cv2.imread(frame)
-
-
-   print(img)
+   img = cv2.imread(frame) 
 
    if(HD is True):
       org_w_HD = 1920
@@ -216,10 +214,21 @@ def generate_cropped_frames(video_full_path,analysed_name,meteor_json_file,HD_fr
    # We parse the JSON
    meteor_json_file = load_json_file(meteor_json_file)
 
-   # We get the data
+   # We get the frame data
    meteor_frame_data = meteor_json_file['meteor_frame_data']
    cropped_frames = []
  
+
+   # WARNING
+   # sometimes we have "event_start_time" in the JSON 
+   # that is different from the start_time in the file name
+   # (it was in "-trim" in the previous version of the reduce page)
+   # so in order to get the proper HD frame to create the thumb
+   # we need to get the proper index in HD_frames (which is not the numbered in the JSON file)
+   if(event_start_time in meteor_json_file):
+         start_video_time = datetime.datetime(int(analysed_name['year']),int(analysed_name['month']),int(analysed_name['day']),int(analysed_name['hour']),int(analysed_name['min']),int(analysed_name['sec'])) + timedelta(milliseconds=float(analysed_name['ms']))
+ 
+
 
    for frame in meteor_frame_data: 
 
