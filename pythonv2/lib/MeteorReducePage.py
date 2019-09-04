@@ -210,10 +210,13 @@ def generate_cropped_frames(video_full_path,analysed_name,meteor_json_file,HD_fr
 
    # We get the data
    meteor_frame_data = meteor_json_file['meteor_frame_data']
-   
    cropped_frames = []
 
+   print("IN generate_cropped_frames")
+
    for frame in meteor_frame_data:
+      print("WE GENERE A CROP")
+
       # Index of the frame 
       frame_index = int(frame[1])
       x = int(frame[2])
