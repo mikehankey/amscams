@@ -239,8 +239,8 @@ img = cv2.imread("/mnt/ams2/CACHE/AMS7/2019/08/30/2019_08_30_07_55_47_000_010040
 # Create empty thumb
 
 # VALUES OBTAINED FROM JSON 
-x = 1919
-y = 120
+x = 500
+y = 20
 
 # Destination
 thumb_w = 50
@@ -256,13 +256,27 @@ org_h_HD = 1080
 # Create empty image 50x50 in black so we don't have any issues while working on the edges of the original frame 
 crop_img = np.zeros((thumb_w,thumb_h,3), np.uint8)
 
-# We don't want to crop where it isn't possible
-diff_x_left = (x-(org_select_w/2))
-diff_x_right =  org_w_HD-(x+(org_select_w/2)) 
 
-print("DIFF RIGHT " + str(diff_x_right))
+
+# Default values
+org_x = x
+org_w = thumb_w
+org_y = y
+org_h = thumb_h
+thumb_dest_x = 0
+thumb_dest_w = thumb_w
+thumb_dest_y = 0
+thumb_dest_h = thumb_h
+
+# We don't want to crop where it isn't possible
+diff_x_left  = (x-(org_select_w/2))
+diff_x_right = org_w_HD-(x+(org_select_w/2)) 
+diff_y_top   = (y-(org_select_h/2))
+
 
 # If the x is too close to the edge
+
+# ON THE LEFT
 if(diff_x_left<0):
 
    # Destination in thumb (img)
@@ -277,6 +291,7 @@ if(diff_x_left<0):
    org_y = y
    org_h = org_select_h + org_y
 
+# ON RIGHT 
 elif(diff_x_right<0):
 
    # Destination in thumb (img)
@@ -290,6 +305,11 @@ elif(diff_x_right<0):
    org_w = org_w_HD 
    org_y = y
    org_h = org_select_h + org_y   
+
+# ON TOP
+if(diff_y_top<0)
+   print("TOO CLOSE TOP")
+   exit(0)
 
  
 
