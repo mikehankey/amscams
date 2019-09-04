@@ -10,8 +10,7 @@ import subprocess
 from pathlib import Path 
 from PIL import Image
 from lib.VideoLib import load_video_frames
-from lib.FileIO import load_json_file
-from lib.ImageLib import stack_stack
+from lib.FileIO import load_json_file 
 from lib.ReducerLib import stack_frames
 from lib.VIDEO_VARS import * 
 
@@ -154,6 +153,18 @@ def get_stacks(video_full_path,analysed_name,clear_cache):
 
 
 
+# Stack 2 images
+def stack_2_images(image, stacked_image): 
+   h,w = image.shape
+   for x in range(0,w-1):
+      for y in range(0,h-1):
+         sp = stacked_image[y,x]
+         ip = image[y,x]
+         if ip > sp:
+            stacked_image[y,x] = image[y,x]
+   return(stacked_image)
+
+
 # Generate the Stacks for a meteor detection
 def generate_stacks(video_full_path, destination):
 
@@ -169,9 +180,9 @@ def generate_stacks(video_full_path, destination):
    for frame in frames:
       frame_pil = Image.fromarray(frame)
       if stacked_image is None:
-         stacked_image = stack_stack(frame_pil, frame_pil)
+         stacked_image = stack_2_images(frame_pil, frame_pil)
       else:
-         stacked_image = stack_stack(stacked_image, frame_pil)
+         stacked_image = stack_2_images(stacked_image, frame_pil)
 
    # Save to destination 
    if stacked_image is not None:
@@ -266,8 +277,8 @@ def reduce_meteor2(json_conf,form):
    # Get the thumbs (cropped frames)
    #thumbs = get_thumbs(video_full_path,analysed_name,meteor_json_file,HD,clear_cache)
 
-   print('THUMBS<br>')
-   print(thumbs)
+   #print('THUMBS<br>')
+   #print(thumbs)
 
    #print('FRAMES<br>')
    #print(HD_frames)
