@@ -277,11 +277,11 @@ print("_h" + str(_y+thumb_h))
 print("CROPPED")
 print("CROPX "+ str(crop_x))
 print("CROPY "+ str(crop_y))
-print("W" +  str(thumb_w-crop_x))
-print("H" +  str(thumb_h-crop_y))
+print("W" +  str(thumb_w*2-crop_x))
+print("H" +  str(thumb_h*2-crop_y))
 
 
-crop_img[crop_x:thumb_w-crop_x, crop_y:thumb_h-crop_y] = img[_x:_x+thumb_w, _y:_y+thumb_h]
+crop_img[crop_x:int(thumb_w*2-crop_x), crop_y:int(thumb_h*2-crop_y)] = img[_x:_x+thumb_w, _y:_y+thumb_h]
 cv2.imwrite('/mnt/ams2/test.png',crop_img)
 
 #print(img[_x:_x+thumb_w, _y:_y+thumb_h])
