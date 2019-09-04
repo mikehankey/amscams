@@ -231,10 +231,17 @@ _total_duration = 12 # in seconds
 
 ############# TEST CV crop
 import cv2
+import numpy as np
 img = cv2.imread("/mnt/ams2/CACHE/AMS7/2019/08/30/2019_08_30_07_55_47_000_010040_AMS7_HD/STACKS/2019_08_30_07_55_47_000_010040_AMS7_HD.png")
-h= 50
-w = 50
-y = -10
-x = -10 
-crop_img = img[y:y+h, x:x+w] 
+
+# Create empty thumb
+
+crop_img = np.zeros((50,50,3), np.uint8)
+detection = img[0:340, 0:390]
+crop_img[0:50, 0:50] = detection
+#h= 50
+#w = 50
+#y = -10
+#x = -10 
+#crop_img = img[y:y+h, x:x+w] 
 cv2.imwrite('/mnt/ams2/test.png',crop_img)
