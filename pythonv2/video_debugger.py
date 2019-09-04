@@ -267,10 +267,16 @@ thumb_x = 0
 thumb_y = 0 
 
 if(x<=0):
+
    thumb_dest_x = thumb_w + x
    thumb_dest_y = 0
-   thumb_dest_w = int(thumb_dest_x-thumb_w)
-   thumb_dest_h = int(thumb_dest_y-thumb_h)
+   thumb_dest_w = int(thumb_w-thumb_dest_x)
+   thumb_dest_h = int(thumb_h-thumb_dest_y)
+
+   org_x = 0
+   org_y = y
+   org_w = org_select_x - x
+   org_h = org_select_y
 
 
 print("IN THE CROPPED ")
@@ -279,14 +285,22 @@ print("Y : " + str(thumb_dest_y))
 print("W : " + str(thumb_dest_w))
 print("H : " + str(thumb_dest_h))
 
-
+print("FROM THE ORIGINAL ")
+print("X : " + str(org_x))
+print("Y : " + str(org_y))
+print("W : " + str(org_w))
+print("H : " + str(org_h))
 
 #   x = 0
 #   y = int(y - org_select_y/2)
 
-#cropped_org = img[org_x:org_w,org_y:org_h]
-#print("CROPPED ORG " + str(cropped_org.shape[0]) + " " + str(cropped_org.shape[1]))
- 
+cropped_org = img[org_x:org_w,org_y:org_h]
+print("CROPPED ORG " + str(cropped_org.shape[0]) + " " + str(cropped_org.shape[1]))
+
+crop_img[thumb_dest_x:thumb_dest_w,thumb_dest_y:thumb_dest_h] = cropped_org
+cv2.imwrite('/mnt/ams2/test.png',crop_img)
+
+
 
 #print("CROPPED")
 #print("ADD TO THUMB X " + str(thumb_x))
