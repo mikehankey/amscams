@@ -218,6 +218,7 @@ def generate_cropped_frames(video_full_path,analysed_name,meteor_json_file,HD_fr
    meteor_frame_data = meteor_json_file['meteor_frame_data']
    cropped_frames = []
  
+   print(meteor_json_file)
 
    # WARNING
    # sometimes we have "event_start_time" in the JSON 
