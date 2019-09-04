@@ -273,7 +273,7 @@ if(diff_x<0):
 
    # Destination in thumb (img)
    thumb_dest_x = int(thumb_w/2 - diff_x)
-   thumb_dest_w = int(thumb_w-thumb_dest_x)
+   thumb_dest_w = thumb_w
    thumb_dest_y = 0
    thumb_dest_h = thumb_h
 
@@ -281,7 +281,7 @@ if(diff_x<0):
    org_x = 0
    org_y = y
    org_w = org_select_w - thumb_dest_w 
-   org_h = org_select_h
+   org_h = org_select_h + org_y
 
  
 
@@ -310,7 +310,6 @@ original_image = img[org_y:org_h,org_x:org_w]
 print("ORG SHAPE")
 print("W = " + str(original_image.shape[1]))
 print("H = " + str(original_image.shape[0]))
-
-exit()
+ 
 crop_img[thumb_dest_y:thumb_dest_h,thumb_dest_x:thumb_dest_w] = original_image
 cv2.imwrite('/mnt/ams2/test.png',crop_img)
