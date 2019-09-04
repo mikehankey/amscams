@@ -267,40 +267,53 @@ thumb_x = 0
 thumb_y = 0 
 
 if(x<=0):
-   thumb_x = thumb_w + x
-   x = 0
-   y = int(y - org_select_y/2)
+   thumb_dest_x = thumb_w + x
+   thumb_dest_y = 0
+   thumb_dest_w = int(thumb_dest_x-thumb_w)
+   thumb_dest_h = int(thumb_dest_y-thumb_h)
 
 
-print("CROPPED")
-print("ADD TO THUMB X " + str(thumb_x))
-print("ADD TO THUMB Y  "+ str(thumb_y)) 
-print("ADD TO THUMB X - W " + str(thumb_w - thumb_x))
-print("ADD TO THUMB Y - H " + str(thumb_h - thumb_y))
+print("IN THE CROPPED ")
+print("X : " + str(thumb_dest_x))
+print("Y : " + str(thumb_dest_y))
+print("W : " + str(thumb_dest_w))
+print("H : " + str(thumb_dest_h))
 
 
-print("CROPP FROM HD X " + str(x))
-print("CROPP FROM HD Y " + str(y)) 
-print("CROPP FROM HD W " + str(x+org_select_x/2))
-print("CROPP FROM HD H " + str(y+org_select_y/2))
 
+#   x = 0
+#   y = int(y - org_select_y/2)
 
-crop_x = thumb_x
-crop_y = thumb_y
-crop_w = (thumb_w - thumb_x)
-crop_h = (thumb_h - thumb_y)
-
-org_x = x
-org_y = y
-org_w = int(x+org_select_x/2)
-org_h = int(y+org_select_y/2)
-
-cropped_org = img[org_y:org_h,org_x:org_w]
-print("CROPPED ORG " + str(cropped_org.shape[0]) + " " + str(cropped_org.shape[1]))
+#cropped_org = img[org_x:org_w,org_y:org_h]
+#print("CROPPED ORG " + str(cropped_org.shape[0]) + " " + str(cropped_org.shape[1]))
  
-  
-crop_img[crop_y:crop_h,crop_x:crop_w] = cropped_org
-cv2.imwrite('/mnt/ams2/test.png',crop_img)
+
+#print("CROPPED")
+#print("ADD TO THUMB X " + str(thumb_x))
+#print("ADD TO THUMB Y  "+ str(thumb_y)) 
+#print("ADD TO THUMB X - W " + str(thumb_w - thumb_x))
+#print("ADD TO THUMB Y - H " + str(thumb_h - thumb_y))
+
+
+#print("CROPP FROM HD X " + str(x))
+#print("CROPP FROM HD Y " + str(y)) 
+#print("CROPP FROM HD W " + str(x+org_select_x/2))
+#print("CROPP FROM HD H " + str(y+org_select_y/2))
+
+
+#crop_x = thumb_x
+#crop_y = thumb_y
+#crop_w = (thumb_w - thumb_x)
+#crop_h = (thumb_h - thumb_y)
+
+#org_x = x
+#org_y = y
+#org_w = int(x+org_select_x/2)
+#org_h = int(y+org_select_y/2)
+
+
+#crop_img[crop_y:crop_h,crop_x:crop_w] = cropped_org
+#cv2.imwrite('/mnt/ams2/test.png',crop_img)
 
 
 
