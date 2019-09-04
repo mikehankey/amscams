@@ -294,14 +294,9 @@ org_y = y
 org_w = int(x+org_select_x/2)
 org_h = int(y+org_select_y/2)
 
-# CROPPED
-print(crop_img[crop_y:crop_h,crop_x:crop_w])
-
-#
-print(img[org_y:org_h,org_x:org_w])
-
-
-crop_img[crop_y:crop_h,crop_x:crop_w] = img[org_y:org_h,org_x:org_w]
+cropped_org = img[org_y:org_h,org_x:org_w]
+  
+crop_img[crop_y:crop_h,crop_x:crop_w] = cropped_org
 cv2.imwrite('/mnt/ams2/test.png',crop_img)
 
 
