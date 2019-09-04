@@ -269,7 +269,7 @@ thumb_y = 0
 if(x<=0):
    thumb_x = thumb_w + x
    x = 0
-   y = int(y - org_select/2)
+   y = int(y - org_select_y/2)
 
 
 print("CROPPED")
