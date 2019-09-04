@@ -108,6 +108,14 @@ def generate_stacks(video_full_path, destination):
  
    return destination
 
+
+# Display an error message on the page
+def print_error(msg):
+   print("<div id='main_container' class='container mt-4 lg-l'><div class='alert alert-danger'>"+msg+"</div></div>")
+   sys.exit(0)
+   
+
+
 # GENERATES THE REDUCE PAGE METEOR
 # from a URL 
 # cmd=reduce2
@@ -130,8 +138,7 @@ def reduce_meteor2(json_conf,form):
  
    # Test if the name is ok
    if(len(analysed_name)==0):
-      print("<div id='main_container' class='container mt-4 lg-l'><div class='alert alert-danger'>"+ video_full_path + " <b>is not valid video file name.</b></div></div>")
-      sys.exit(0)
+      print_error(video_full_path + " <b>is not valid video file name.</b>")
    elif(os.path.isfile(video_full_path) is False):
       print("<div id='main_container' class='container mt-4 lg-l'><div class='alert alert-danger'>"+ video_full_path + " <b>not found.</b></div></div>")
       sys.exit(0)
@@ -143,7 +150,6 @@ def reduce_meteor2(json_conf,form):
    else:
       HD = False
       meteor_json_file = video_full_path.replace(".mp4", ".json")
-
 
    # Does the JSON file exists?
    if(os.path.isfile(meteor_json_file) is False):
@@ -157,7 +163,7 @@ def reduce_meteor2(json_conf,form):
       print("NO FRAME<br>")
       #generate_frames(video_full_path,meteor_json_file)
 
-   # Do we have the Stack for this detection
+   # Do we have the Stack for this detection 
    stacks = does_cache_exist(analysed_name,"stacks")
    if(len(stacks)==0 or clear_cache is True):
       # We need to generate the Stacks 
