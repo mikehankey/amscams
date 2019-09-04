@@ -26,6 +26,10 @@ CACHE_PATH = MAIN_FILE_PATH + "CACHE/"
 # YYYY_MM_DD_HH_MM_SS_MSS_CAM_STATION[_HD].EXT
 FILE_NAMES_REGEX = r"(\d{4})_(\d{2})_(\d{2})_(\d{2})_(\d{2})_(\d{2})_(\d{3})_(\w{6})_([^_^.]+)(_HD)?(\.)?(\.[0-9a-z]+$)"
 FILE_NAMES_REGEX_GROUP = ["name","year","month","day","hour","min","sec","ms","cam_id","station_id","HD","ext"]
+
+# EXTENSION FOR THE FRAMES
+EXT_HD_FRAMES = "_HDfr"
+EXT_CROPPED_FRAMES = "_frm"
  
  
 # Parses a regexp (FILE_NAMES_REGEX) a file name
@@ -118,10 +122,10 @@ def generate_HD_frames(video_full_path, destination):
    cgitb.enable() 
    
    # Get All Frames
-   cmd = 'ffmpeg -y  -hide_banner -loglevel panic  -i ' + video_full_path + ' -s ' + HD_DIM + ' ' +  destination + '_fr' + '_%04d' + '.png' 
+   cmd = 'ffmpeg -y  -hide_banner -loglevel panic  -i ' + video_full_path + ' -s ' + HD_DIM + ' ' +  destination + EXT_HD_FRAMES + '_%04d' + '.png' 
    output = subprocess.check_output(cmd, shell=True).decode("utf-8")
 
-   return glob.glob(destination+"_HDfr*.png")
+   return glob.glob(destination+EXT_HD_FRAMES+"*.png")
 
 
 # Display an error message on the page
@@ -176,8 +180,7 @@ def reduce_meteor2(json_conf,form):
       frames = generate_HD_frames(video_full_path,get_cache_path(analysed_name,"frames")+analysed_name['name_w_ext'])
    else:
       # We get the frames from the cache
-      frames = glob.glob(get_cache_path(analysed_name,"frames")+"_HDfr*.png")
-
+      frames = glob.glob(get_cache_path(analysed_name,"frames")+EXT_HD_FRAMES+"*.png") 
    print(frames)
 
    # Do we have the Stack for this detection 
