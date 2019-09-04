@@ -284,8 +284,7 @@ if(diff_x_left<0):
 
    # Part of original image
    org_x = 0
-   org_w = org_select_w - thumb_dest_x 
-   org_h = org_select_h + org_y
+   org_w = org_select_w - thumb_dest_x  
 
 # ON RIGHT 
 elif(diff_x_right<0):
@@ -295,11 +294,18 @@ elif(diff_x_right<0):
 
    # Part of original image 
    org_x = org_w_HD - thumb_dest_w
-   org_w = org_w_HD  
-   org_h = org_select_h + org_y   
+   org_w = org_w_HD   
 
 # ON TOP
 if(diff_y_top<0):
+
+   # Destionation in thumb (img)
+   thumb_dest_y = int(thumb_h/2 - diff_y_top)
+
+   # Part of the original image
+   org_y = 0
+
+
    print("TOO CLOSE TOP")
    exit(0)
 
