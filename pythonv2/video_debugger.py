@@ -269,7 +269,8 @@ thumb_y = 0
 if(x<=0):
    thumb_x = thumb_w + x
    x = 0
- 
+   y = int(y - org_select/2)
+
 
 print("CROPPED")
 print("ADD TO THUMB X " + str(thumb_x))
@@ -278,7 +279,7 @@ print("ADD TO THUMB X - W " + str(thumb_w - thumb_x))
 print("ADD TO THUMB Y - H " + str(thumb_h - thumb_y))
 
 
-print("CROPP FROM HD X " + str(org_select_x-x))
+print("CROPP FROM HD X " + str(x))
 print("CROPP FROM HD Y " + str(y)) 
 print("CROPP FROM HD W " + str(x+org_select_x/2))
 print("CROPP FROM HD H " + str(y+org_select_y/2))
@@ -289,7 +290,7 @@ crop_y = thumb_y
 crop_w = (thumb_w - thumb_x)
 crop_h = (thumb_h - thumb_y)
 
-org_x = int(org_select_x)
+org_x = x
 org_y = y
 org_w = int(x+org_select_x/2)
 org_h = int(y+org_select_y/2)
