@@ -259,12 +259,9 @@ if(_x > org_w):
    _x = org_w
 if(_y < 0):
    _y = 0
-if(_y > org_y):
+if(_y > org_h):
    _y = org_h
-
-
-
-
+ 
  
 
 print("_x" + str(_x))
