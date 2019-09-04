@@ -246,7 +246,7 @@ orgw = 1920
 orgh = 1080
 
 # Create empty image 50x50 in black so we don't have any issues while working on the edges of the original frame 
-crop_img = np.zeros((thumbw,thumbh,3), np.uint8)
+crop_img = np.zeros((thumb_w,thumb_h,3), np.uint8)
 
 # Get the "real" x,y from the org frame
 x = int(x - thumbw/2)
