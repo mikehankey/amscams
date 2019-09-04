@@ -255,7 +255,6 @@ org_h_HD = 1080
 
 # Create empty image 50x50 in black so we don't have any issues while working on the edges of the original frame 
 crop_img = np.zeros((thumb_w,thumb_h,3), np.uint8)
-
  
 # Default values
 org_x = x
@@ -271,7 +270,7 @@ thumb_dest_h = thumb_h
 diff_x_left  = (x-(org_select_w/2))
 diff_x_right = org_w_HD-(x+(org_select_w/2)) 
 diff_y_top   = (y-(org_select_h/2))
-diff_y_bottom = org_h_HD - (y+(org_select_h/2)
+diff_y_bottom = org_h_HD - (y+(org_select_h/2))
 
 # If the x is too close to the edge
 
