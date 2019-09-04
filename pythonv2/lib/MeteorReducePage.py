@@ -98,21 +98,29 @@ def does_cache_exist(analysed_file_name,cache_type):
 
 # Get the thumbs (cropped frames) for a meteor detection
 # Generate them if necessary
-def get_thumbs(video_full_path,analysed_name,meteor_json_file,clear_cache):
+def get_thumbs(video_full_path,analysed_name,meteor_json_file,HD,clear_cache):
 
    # Do we have them already?
    thumbs = does_cache_exist(analysed_name,"cropped")
 
    if(len(thumbs)==0 or clear_cache is True):
-      # We need to generate the thumbs
-      print("NO THUMB FOUND")
-      thumbs = []
+      # We need to generate the thumbs 
+      generate_cropped_frames(video_full_path,analysed_name,meteor_json_file,HD)
    else:
       # We return them
       thumbs = glob.glob(get_cache_path(analysed_name,"cropped")+"*"+EXT_CROPPED_FRAMES+"*.png") 
 
    return thumbs
 
+
+# Create the cropped frames (thumbs) for a meteor detection
+def generate_cropped_frames(video_full_path,analysed_name,meteor_json_file,HD):
+
+   if(HD is True):
+      print('WE CROP FROM THE HD VERSION')
+
+   else:
+      print('WE CROP FROM THE SD VERSION')
 
 
 # Get the stacks for a meteor detection
@@ -245,7 +253,7 @@ def reduce_meteor2(json_conf,form):
    stack = get_stacks(video_full_path,analysed_name,clear_cache)
     
    # Get the thumbs (cropped frames)
-   thumbs = get_thumbs(video_full_path,analysed_name,meteor_json_file,clear_cache)
+   thumbs = get_thumbs(video_full_path,analysed_name,meteor_json_file,HD,clear_cache)
 
    print('THUMBS<br>')
    print(thumbs)
