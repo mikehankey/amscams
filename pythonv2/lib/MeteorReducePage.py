@@ -123,10 +123,15 @@ def get_thumbs(video_full_path,analysed_name,meteor_json_file,HD,HD_frames,clear
 # Create a thumb 
 def new_crop_thumb(frame,x,y,dest,HD):
 
+   print("CREATING NEW THUMB to " + dest)
+
    # Debug
    cgitb.enable()
    
    img = cv2.imread(frame)
+
+
+   print(img)
 
    if(HD is True):
       org_w_HD = 1920
