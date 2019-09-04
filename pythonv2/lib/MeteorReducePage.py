@@ -101,7 +101,7 @@ def does_cache_exist(analysed_file_name,cache_type):
 def get_thumbs(video_full_path,analysed_name,meteor_json_file,clear_cache):
 
    # Do we have them already?
-   thumbs = does_cache_exists(analysed_name,"cropped")
+   thumbs = does_cache_exist(analysed_name,"cropped")
 
    if(len(thumbs)==0 or clear_cache is True):
       # We need to generate the thumbs
