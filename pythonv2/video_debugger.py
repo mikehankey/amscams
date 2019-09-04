@@ -286,7 +286,7 @@ elif(diff_x_right<0):
    thumb_dest_y = 0
    thumb_dest_h = thumb_h  
 
-   # Part of original image
+   # Part of original image 
    org_x = org_w - thumb_dest_w
    org_y = y
    org_w = org_w - org_x
