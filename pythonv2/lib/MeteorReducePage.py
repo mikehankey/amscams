@@ -98,14 +98,14 @@ def does_cache_exist(analysed_file_name,cache_type):
 
 # Get the thumbs (cropped frames) for a meteor detection
 # Generate them if necessary
-def get_thumbs(video_full_path,analysed_name,meteor_json_file,HD,clear_cache):
+def get_thumbs(video_full_path,analysed_name,meteor_json_file,HD,HD_frames,clear_cache):
 
    # Do we have them already?
    thumbs = does_cache_exist(analysed_name,"cropped")
 
    if(len(thumbs)==0 or clear_cache is True):
       # We need to generate the thumbs 
-      generate_cropped_frames(video_full_path,analysed_name,meteor_json_file,HD)
+      generate_cropped_frames(video_full_path,analysed_name,meteor_json_file,HD_frames,HD)
    else:
       # We return them
       thumbs = glob.glob(get_cache_path(analysed_name,"cropped")+"*"+EXT_CROPPED_FRAMES+"*.png") 
@@ -114,7 +114,7 @@ def get_thumbs(video_full_path,analysed_name,meteor_json_file,HD,clear_cache):
 
 
 # Create the cropped frames (thumbs) for a meteor detection
-def generate_cropped_frames(video_full_path,analysed_name,meteor_json_file,HD):
+def generate_cropped_frames(video_full_path,analysed_name,meteor_json_file,HD_frames,HD):
 
    # Get all the frames as defined in the JSON file
 
@@ -124,8 +124,17 @@ def generate_cropped_frames(video_full_path,analysed_name,meteor_json_file,HD):
    # We get the data
    meteor_frame_data = meteor_json_file['meteor_frame_data']
    
-   for(frame in meteor_frame_data):
-      print(frame)
+   cropped_frames = []
+
+   for frame in meteor_frame_data:
+      # Index of the frame 
+      frame_index = int(frame[1])
+      x = int(frame[2])
+      y = int(frame[3])
+
+      # We crop directly from the corresponding HD_frames
+      #cropped_frames.append(new_crop_thumb(HD_frames[frame_index],x,y,get_cache_path(analysed_name,"cropped")+analysed_name['name_w_ext']+EXT_CROPPED_FRAMES))
+
 
    if(HD is True):
       print('WE CROP FROM THE HD VERSION')
@@ -264,8 +273,8 @@ def reduce_meteor2(json_conf,form):
    # Get the stacks
    stack = get_stacks(video_full_path,analysed_name,clear_cache)
     
-   # Get the thumbs (cropped frames)
-   thumbs = get_thumbs(video_full_path,analysed_name,meteor_json_file,HD,clear_cache)
+   # Get the thumbs (cropped HD frames)
+   thumbs = get_thumbs(video_full_path,analysed_name,meteor_json_file,HD,HD_frames,clear_cache)
 
    print('THUMBS<br>')
    print(thumbs)
