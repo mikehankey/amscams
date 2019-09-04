@@ -166,7 +166,7 @@ def reduce_meteor2(json_conf,form):
 
    # Does the JSON file exists?
    if(os.path.isfile(meteor_json_file) is False):
-      print_error(meteor_json_file + " <b>not found.</b><br>This detection may had not been reduced yet or the reduction failed.)
+      print_error(meteor_json_file + " <b>not found.</b><br>This detection may had not been reduced yet or the reduction failed.")
    
    # Do we have the FRAMES for this detection?
    frames = does_cache_exist(analysed_name,"frames")
