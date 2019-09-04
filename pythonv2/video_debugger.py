@@ -281,10 +281,14 @@ print("CROPP FROM HD Y " + str(y))
 print("CROPP FROM HD W " + str(x+org_select_x/2))
 print("CROPP FROM HD H " + str(y+org_select_y/2))
 
-#crop_img[thumb_x:(thumb_w - thumb_x), thumb_y:(thumb_h - thumb_y)]  
+crop_img[thumb_x:(thumb_w - thumb_x), thumb_y:(thumb_h - thumb_y)]   = img[x:int(x+org_select_x/2), y:int(y+org_select_y/2)]
+cv2.imwrite('/mnt/ams2/test.png',crop_img)
+
+
+
 
 #crop_img[cropx:int(thumbw*2-cropx), cropy:int(thumbh*2-cropy)] = img[x:x+thumbw, y:y+thumbh]
-#cv2.imwrite('/mnt/ams2/test.png',crop_img)
+#
 
 #cropx = 0
 #cropy = 0
