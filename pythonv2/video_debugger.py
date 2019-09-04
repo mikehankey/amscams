@@ -296,9 +296,16 @@ print("Y : " + str(org_y)+ " =>  ")
 print("H : " + str(org_h)+ " =>  ")
 
 # Test Values
-cropped_image = crop_img[thumb_dest_y:thumb_dest_h,thumb_dest_x:thumb_dest_w] 
-original_image = img[org_y:org_h,org_x:org_w]
+cropped_image  = crop_img[thumb_dest_y:thumb_dest_h,thumb_dest_x:thumb_dest_w] 
+print("CROP SHAPE")
+print("W = " + cropped_image.shapte[1])
+print("H = " + cropped_image.shapte[0])
 
+
+original_image = img[org_y:org_h,org_x:org_w]
+print("ORG SHAPE")
+print("W = " + original_image.shapte[1])
+print("H = " + original_image.shapte[0])
 
 crop_img[thumb_dest_y:thumb_dest_h,thumb_dest_x:thumb_dest_w] = original_image
 
