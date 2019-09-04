@@ -124,7 +124,7 @@ def generate_stacks(video_full_path, destination):
 
 # Get All HD Frames for a meteor detection
 # Generate them if they don't exist
-def get_HD_frames(analysed_name,clear_cache,):
+def get_HD_frames(video_full_path,analysed_name,clear_cache,):
    # Test if folder exists / Create it if not
    HD_frames = does_cache_exist(analysed_name,"frames")
 
@@ -200,7 +200,7 @@ def reduce_meteor2(json_conf,form):
       print_error(meteor_json_file + " <b>not found.</b><br>This detection may had not been reduced yet or the reduction failed.")
    
    # Get the HD frames
-   HD_frames = get_HD_frames(analysed_name,clear_cache)
+   HD_frames = get_HD_frames(video_full_path,analysed_name,clear_cache)
    
    # Do we have the Stack for this detection 
    stacks = does_cache_exist(analysed_name,"stacks")
