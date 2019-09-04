@@ -247,8 +247,8 @@ crop_img = np.zeros((square_size,square_size,3), np.uint8)
 
 _x = int(_x - square_size/2)
 _y = int(_y - square_size/2) 
-print("_x" + x)
-print("_y" + y)
+print("_x" + _x)
+print("_y" + _y)
 crop_img[0:square_size, 0:square_size] = img[_x:_x+square_size, _y:_y+square_size]
 
 #h= 50
