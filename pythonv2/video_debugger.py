@@ -293,7 +293,7 @@ def create_crop(file,x,y,dest):
    # ON TOP
    if(diff_y_top<0):
 
-      # Destionation in thumb (img)
+      # Destination in thumb (img)
       thumb_dest_y = int(thumb_h/2 - diff_y_top)
 
       # Part of the original image
@@ -302,7 +302,7 @@ def create_crop(file,x,y,dest):
 
    elif(diff_y_bottom<0): 
 
-      # Destionation in thumb (img)
+      # Destination in thumb (img)
       thumb_dest_y = int(thumb_h+diff_y_bottom)  
 
       # Part of the original image
@@ -341,11 +341,11 @@ def create_crop(file,x,y,dest):
 
 
 
-print("10,500")
-create_crop("/mnt/ams2/CACHE/AMS7/2019/08/30/2019_08_30_07_55_47_000_010040_AMS7_HD/STACKS/2019_08_30_07_55_47_000_010040_AMS7_HD.png",10,500,"/mnt/ams2/test1.png")  
-print("1910,500")
-create_crop("/mnt/ams2/CACHE/AMS7/2019/08/30/2019_08_30_07_55_47_000_010040_AMS7_HD/STACKS/2019_08_30_07_55_47_000_010040_AMS7_HD.png",1910,500,"/mnt/ams2/test2.png")  
-print("500,10")
-create_crop("/mnt/ams2/CACHE/AMS7/2019/08/30/2019_08_30_07_55_47_000_010040_AMS7_HD/STACKS/2019_08_30_07_55_47_000_010040_AMS7_HD.png",500,10,"/mnt/ams2/test3.png")  
-print("500,1010")
-create_crop("/mnt/ams2/CACHE/AMS7/2019/08/30/2019_08_30_07_55_47_000_010040_AMS7_HD/STACKS/2019_08_30_07_55_47_000_010040_AMS7_HD.png",500,1010,"/mnt/ams2/test4.png")  
+#print("10,500")
+#create_crop("/mnt/ams2/CACHE/AMS7/2019/08/30/2019_08_30_07_55_47_000_010040_AMS7_HD/STACKS/2019_08_30_07_55_47_000_010040_AMS7_HD.png",10,500,"/mnt/ams2/test1.png")  
+#print("1910,500")
+#create_crop("/mnt/ams2/CACHE/AMS7/2019/08/30/2019_08_30_07_55_47_000_010040_AMS7_HD/STACKS/2019_08_30_07_55_47_000_010040_AMS7_HD.png",1910,500,"/mnt/ams2/test2.png")  
+#print("500,10")
+#create_crop("/mnt/ams2/CACHE/AMS7/2019/08/30/2019_08_30_07_55_47_000_010040_AMS7_HD/STACKS/2019_08_30_07_55_47_000_010040_AMS7_HD.png",500,10,"/mnt/ams2/test3.png")  
+print("500,1060")
+create_crop("/mnt/ams2/CACHE/AMS7/2019/08/30/2019_08_30_07_55_47_000_010040_AMS7_HD/STACKS/2019_08_30_07_55_47_000_010040_AMS7_HD.png",500,1060,"/mnt/ams2/test4.png")  
