@@ -256,9 +256,7 @@ y = int(y - thumb_h/2)
 
 # The position where to place the cropped image inside the black one
 thumb_x = 0
-thumb_y = 0
-org_select_w = 50
-org_select_h = 50 
+thumb_y = 0 
 
 if(x<=0):
    thumb_x = thumb_w + x
@@ -274,7 +272,7 @@ print("ADD TO THUMB Y - H " + str(thumb_h - thumb_y))
 
 print("CROPP FROM HD X " + str(x))
 print("CROPP FROM HD Y " + str(y)) 
-print("CROPP FROM HD W " + str(org_select_w-thumb_w+x))
+print("CROPP FROM HD W " + str(x-thumb_w/2 - thumb_x))
 print("CROPP FROM HD H " + str(thumb_h-y))
 
 #crop_img[thumb_x:(thumb_w - thumb_x), thumb_y:(thumb_h - thumb_y)]  
