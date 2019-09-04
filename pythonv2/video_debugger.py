@@ -307,9 +307,8 @@ def create_crop(file,x,y,dest):
       # Destination in thumb (img)
       thumb_dest_y = int(thumb_h+diff_y_bottom)  
 
-      # Part of the original image
-      org_y = org_h_HD -  thumb_dest_h
-      org_h = org_h_HD
+      # Part of the original image 
+      org_h = org_h_HD - thumb_dest_y
 
    print(" ")
    print("IN THE CROPPED ")
