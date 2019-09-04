@@ -5,6 +5,8 @@ import os.path
 import cv2
 import glob
 import numpy as np
+import subprocess 
+
 from pathlib import Path 
 from PIL import Image
 from lib.VideoLib import load_video_frames
@@ -84,14 +86,11 @@ def does_cache_exist(analysed_file_name,cache_type):
 def generate_stacks(video_full_path, destination):
 
    # Debug
-   cgitb.enable()
-
-   print("GENERATING STACKS FOR " + video_full_path + "<br>")
+   cgitb.enable() 
    
    # Get All Frames
    frames = load_video_frames(video_full_path, load_json_file(JSON_CONFIG), 0, 1)
-
-   print(str(len(frames)) + " found <br>")
+ 
    stacked_image = None
 
    # Create Stack 
@@ -107,6 +106,21 @@ def generate_stacks(video_full_path, destination):
       stacked_image.save(destination)
  
    return destination
+
+# Generate HD frames for a meteor detection
+def generate_HD_frames(video_full_path, destination):
+
+   # Frames
+   frames  = []
+
+   # Debug
+   cgitb.enable() 
+   
+   # Get All Frames
+   cmd = 'ffmpeg -y  -i -hide_banner -loglevel panic' + video_full_path + ' ' +  destination + 'HD_fr' + '_%04d' + '.png' 
+   output = subprocess.check_output(cmd, shell=True).decode("utf-8")
+
+   return glob.glob(destination+"HD_fr*.png")
 
 
 # Display an error message on the page
@@ -140,8 +154,7 @@ def reduce_meteor2(json_conf,form):
    if(len(analysed_name)==0):
       print_error(video_full_path + " <b>is not valid video file name.</b>")
    elif(os.path.isfile(video_full_path) is False):
-      print("<div id='main_container' class='container mt-4 lg-l'><div class='alert alert-danger'>"+ video_full_path + " <b>not found.</b></div></div>")
-      sys.exit(0)
+      print_error(video_full_path + " <b>not found.</b>")
   
    # Is it HD? & retrieve the related JSON file that contains the reduced data
    if("HD" in analysed_name):
@@ -153,15 +166,17 @@ def reduce_meteor2(json_conf,form):
 
    # Does the JSON file exists?
    if(os.path.isfile(meteor_json_file) is False):
-      print("<div id='main_container' class='container mt-4 lg-l'><div class='alert alert-danger'>"+ meteor_json_file + " <b>not found.</b><br>This detection hasn't been reduced yet.</div></div>")
-      sys.exit(0)   
+      print_error(meteor_json_file + " <b>not found.</b><br>This detection may had not been reduced yet or the reduction failed.)
    
    # Do we have the FRAMES for this detection?
    frames = does_cache_exist(analysed_name,"frames")
    if(len(frames)==0 or clear_cache is True):
       # We need to generate the Frame
-      print("NO FRAME<br>")
-      #generate_frames(video_full_path,meteor_json_file)
+      frames = generate_frames(video_full_path,get_cache_path(analysed_name,"frames")+analysed_name['name_w_ext'])
+   else:
+      frames = glob.glob(get_cache_path(analysed_name,"frames")+"HD_fr*.png")
+
+   print(frames)
 
    # Do we have the Stack for this detection 
    stacks = does_cache_exist(analysed_name,"stacks")
@@ -174,4 +189,4 @@ def reduce_meteor2(json_conf,form):
       # We hope this is the first one in the folder (it should!!)
       stack_file = stacks[0]
 
-   print("<img src='"+stack_file+"'/>")
+   #print("<img src='"+stack_file+"'/>")
