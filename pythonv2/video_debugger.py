@@ -256,10 +256,6 @@ org_h = 1080
 # Create empty image 50x50 in black so we don't have any issues while working on the edges of the original frame 
 crop_img = np.zeros((thumb_w,thumb_h,3), np.uint8)
 
-# Get the "real" x,y from the org frame
-x = int(x - thumb_w/2)
-y = int(y - thumb_h/2) 
-
 # We don't want to crop where it isn't possible
 
 # The position where to place the cropped image inside the black one
@@ -297,7 +293,7 @@ print("H : " + str(org_h))
 cropped_org = img[org_x:org_w,org_y:org_h]
 print("CROPPED ORG " + str(cropped_org.shape[0]) + " " + str(cropped_org.shape[1]))
 
-crop_img[thumb_dest_x:thumb_dest_w,thumb_dest_y:thumb_dest_h] = img[org_x:org_w,org_y:org_h]
+crop_img[thumb_dest_x:thumb_dest_w,thumb_dest_y:thumb_dest_h] = cropped_org
 cv2.imwrite('/mnt/ams2/test.png',img[org_x:org_w,org_y:org_h])
 
 
