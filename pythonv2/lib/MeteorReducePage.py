@@ -23,9 +23,9 @@ MAIN_FILE_PATH = "/mnt/ams2/"
 CACHE_PATH = MAIN_FILE_PATH + "CACHE/"
 
 # Cache subfolders
-FRAMES_SUBPATH= "/FRAMES/" # For the HD Frames
-CROPPED_FRAMES_SUBPATH = "/CROPPED_FRAMES/" # For the Cropped Frames (thumbs)
-STACKS_SUBPATH   = "/STACKS/" # For the Stacks
+FRAMES_SUBPATH= "/FRAMES/"          # For the HD Frames
+CROPPED_FRAMES_SUBPATH = "/THUMBS/" # For the Cropped Frames (thumbs)
+STACKS_SUBPATH   = "/STACKS/"       # For the Stacks
 
 # PATTERN FOR THE FILE NAMES
 # YYYY_MM_DD_HH_MM_SS_MSS_CAM_STATION[_HD].EXT
@@ -93,6 +93,26 @@ def does_cache_exist(analysed_file_name,cache_type):
       os.makedirs(cache_path)
       # print(cache_path + " created")
       return []
+
+
+
+# Get the stacks for a meteor detection
+# Generate it if necessary
+def get_stacks(video_full_path,analysed_name,clear_cache):
+   
+   # Do we have the Stack for this detection 
+   stacks = does_cache_exist(analysed_name,"stacks")
+
+   if(len(stacks)==0 or clear_cache is True):
+      # We need to generate the Stacks 
+      # Destination = 
+      # get_cache_path(analysed_name,"stacks") + analysed_name['name_w_ext'] + ".png"
+      stack_file = generate_stacks(video_full_path,get_cache_path(analysed_name,"stacks")+analysed_name['name_w_ext']+".png")
+   else:
+      # We hope this is the first one in the folder (it should!!)
+      stack_file = stacks[0]
+
+   return stack_file
 
 
 
@@ -201,16 +221,13 @@ def reduce_meteor2(json_conf,form):
    
    # Get the HD frames
    HD_frames = get_HD_frames(video_full_path,analysed_name,clear_cache)
-   
-   # Do we have the Stack for this detection 
-   stacks = does_cache_exist(analysed_name,"stacks")
-   if(len(stacks)==0 or clear_cache is True):
-      # We need to generate the Stacks 
-      # Destination = 
-      # get_cache_path(analysed_name,"stacks") + analysed_name['name_w_ext'] + ".png"
-      stack_file = generate_stacks(video_full_path,get_cache_path(analysed_name,"stacks")+analysed_name['name_w_ext']+".png")
-   else:
-      # We hope this is the first one in the folder (it should!!)
-      stack_file = stacks[0]
 
-   #print("<img src='"+stack_file+"'/>")
+   # Get the stacks
+   stack = get_stacks(video_full_path,analysed_name,clear_cache)
+    
+
+   print('FRAMES<br>')
+   print(frames)
+
+   print('STACKS<br>')
+   print(stacks)
