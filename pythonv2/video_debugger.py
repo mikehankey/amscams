@@ -250,8 +250,8 @@ thumb_h = 50
 org_select_w = 50
 org_select_h = 50
 
-org_w = 1920
-org_h = 1080
+org_w_HD = 1920
+org_h_HD = 1080
 
 # Create empty image 50x50 in black so we don't have any issues while working on the edges of the original frame 
 crop_img = np.zeros((thumb_w,thumb_h,3), np.uint8)
@@ -287,9 +287,9 @@ elif(diff_x_right<0):
    thumb_dest_h = thumb_h  
 
    # Part of original image 
-   org_x = org_w - thumb_dest_w
+   org_x = org_w_HD - thumb_dest_w
    org_y = y
-   org_w = org_w - org_x
+   org_w = org_w_HD - org_x
    org_h = org_select_h + org_y   
 
  
