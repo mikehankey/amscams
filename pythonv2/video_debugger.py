@@ -258,7 +258,7 @@ crop_img = np.zeros((thumb_w,thumb_h,3), np.uint8)
 
 # We don't want to crop where it isn't possible
 diff_x_left = (x-(org_select_w/2))
-diff_x_right = org_w_HD - (x + (org_select_w/2))
+diff_x_right = org_w - (x + (org_select_w/2))
 
 
 print("DIFF RIGHT " + str(diff_x_right))
@@ -274,8 +274,8 @@ if(diff_x_left<0):
 
    # Part of original image
    org_x = 0
-   org_y = y
    org_w = org_select_w - thumb_dest_x 
+   org_y = y
    org_h = org_select_h + org_y
 
 elif(diff_x_right<0):
@@ -288,8 +288,8 @@ elif(diff_x_right<0):
 
    # Part of original image 
    org_x = org_w_HD - thumb_dest_w
-   org_y = y
    org_w = org_w_HD - org_x
+   org_y = y
    org_h = org_select_h + org_y   
 
  
