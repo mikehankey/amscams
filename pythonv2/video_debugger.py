@@ -263,7 +263,7 @@ thumb_x = 0
 thumb_y = 0 
 
 
-diff_x = (x-(org_select_x/2))
+diff_x = (x-(org_select_w/2))
 
 # If the x is too close to the edge
 if(diff_x<0):
