@@ -301,14 +301,13 @@ def create_crop(file,x,y,dest):
       org_h = org_select_h - thumb_dest_y
 
    elif(diff_y_bottom<0): 
-
-      print("CASE 4")
-
+      
       # Destination in thumb (img)
       thumb_dest_y = int(thumb_h+diff_y_bottom)  
 
       # Part of the original image   
-      org_h =  org_h_HD - org_y
+      org_h =  org_h_HD - thumb_dest_y
+      org_w = org_h_HD
 
    print(" ")
    print("IN THE CROPPED ")
