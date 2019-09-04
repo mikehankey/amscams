@@ -225,7 +225,7 @@ def generate_cropped_frames(video_full_path,analysed_name,meteor_json_file,HD_fr
    # (it was in "-trim" in the previous version of the reduce page)
    # so in order to get the proper HD frame to create the thumb
    # we need to get the proper index in HD_frames (which is not the numbered in the JSON file)
-   if(event_start_time in meteor_json_file):
+   if("event_start_time" in meteor_json_file):
          start_video_time = datetime.datetime(int(analysed_name['year']),int(analysed_name['month']),int(analysed_name['day']),int(analysed_name['hour']),int(analysed_name['min']),int(analysed_name['sec'])) + timedelta(milliseconds=float(analysed_name['ms']))
          print(str(start_video_time))
 
