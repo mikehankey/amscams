@@ -293,6 +293,8 @@ def check_for_motion2(frames, video_file, cams_id, json_conf, show = 0):
                      cv2.rectangle(nice_frame, (0, 0), (bc_w , bc_h), (255, 0, 0,.02), 2)
                      cv2.putText(nice_frame, str(object['oid']),  (x-5,y-5), cv2.FONT_HERSHEY_SIMPLEX, .4, (255, 255, 255), 1)
                      cv2.rectangle(nice_frame, (x, y), (x + w, y + h), (255, 0, 0,.02), 2)
+         #filename = "/mnt/ams2/tmp/test" + str(fc) + ".png"
+         #cv2.imwrite(filename, nice_frame)
          if show == 1 and fc % 2 == 0:
             show_frame = cv2.resize(nice_frame, (0,0), fx=0.5, fy=0.5)
             cv2.imshow('pepe', nice_frame)
