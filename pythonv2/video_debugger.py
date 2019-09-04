@@ -259,14 +259,14 @@ thumb_x = 0
 thumb_y = 0
 
 if(x<=0):
-   thumb_x = thumb_w - x
+   thumb_x = thumb_w + x
    x = 0
 
 
 
 print("CROPPED")
-print("CROPX "+ str(thumb_x))
-print("CROPY "+ str(thumb_y))
+print("ADD TO THUMB X " + str(thumb_x))
+print("ADD TO THUMB Y  "+ str(thumb_y))
 print("W" +  str(thumb_w*2-thumb_x))
 print("H" +  str(thumb_h*2-thumb_y))
 
