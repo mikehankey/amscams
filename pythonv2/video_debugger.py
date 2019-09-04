@@ -281,14 +281,10 @@ if(diff_x_left<0):
 
    # Destination in thumb (img)
    thumb_dest_x = int(thumb_w/2 - diff_x_left)
-   thumb_dest_w = thumb_w
-   thumb_dest_y = 0
-   thumb_dest_h = thumb_h
 
    # Part of original image
    org_x = 0
    org_w = org_select_w - thumb_dest_x 
-   org_y = y
    org_h = org_select_h + org_y
 
 # ON RIGHT 
