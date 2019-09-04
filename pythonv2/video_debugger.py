@@ -282,7 +282,7 @@ elif(diff_x_right<0):
 
    # Destination in thumb (img)
    thumb_dest_x = 0
-   thumb_dest_w = int(diff_x_right - thumb_w)
+   thumb_dest_w = int(thumb_w+diff_x_right)
    thumb_dest_y = 0
    thumb_dest_h = thumb_h  
 
