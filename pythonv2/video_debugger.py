@@ -278,9 +278,11 @@ if((x-(org_select_x/2))<=0):
 
 print("IN THE CROPPED ")
 print("X : " + str(thumb_dest_x) + " => 25")
-print("Y : " + str(thumb_dest_y)+ " => 0")
 print("W : " + str(thumb_dest_w)+ " => 50")
+print("Y : " + str(thumb_dest_y)+ " => 0")
 print("H : " + str(thumb_dest_h)+ " => 50")
+
+
 print("FROM THE ORIGINAL ")
 print("X : " + str(org_x))
 print("Y : " + str(org_y))
