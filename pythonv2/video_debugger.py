@@ -262,42 +262,29 @@ crop_img = np.zeros((thumb_w,thumb_h,3), np.uint8)
 thumb_x = 0
 thumb_y = 0 
 
-if(x<=0):
-
+if((x-(org_select_x/2))<=0):
    # Destation in thumb (img)
    thumb_dest_x = int(thumb_w/2 + x)
    thumb_dest_y = 0
-   thumb_dest_w = int((thumb_w/2)-thumb_dest_x))
-   thumb_dest_h = int((thumb_h/2)-thumb_dest_y))
-
+   thumb_dest_w = int(thumb_w/2)-thumb_dest_x
+   thumb_dest_h = int(thumb_h/2)-thumb_dest_y
    # Part of original image
    org_x = 0
    org_y = y
    org_w = int((x + org_select_x)/2)
    org_h = int(y + org_select_x)
-
-
 print("IN THE CROPPED ")
 print("X : " + str(thumb_dest_x))
 print("Y : " + str(thumb_dest_y))
 print("W : " + str(thumb_dest_w))
 print("H : " + str(thumb_dest_h))
-
 print("FROM THE ORIGINAL ")
 print("X : " + str(org_x))
 print("Y : " + str(org_y))
 print("W : " + str(org_w))
 print("H : " + str(org_h))
-
-#   x = 0
-#   y = int(y - org_select_y/2)
- 
-
-
 cropped_org = img[org_x:org_w,org_y:org_h] 
 crop_img[thumb_dest_x:thumb_dest_w,thumb_dest_y:thumb_dest_h] = cropped_org
-
-
 #crop_img[25:50,0:50] = img[0:25,300:350]
 cv2.imwrite('/mnt/ams2/test.png',img[org_x:org_w,org_y:org_h])
 
