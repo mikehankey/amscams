@@ -282,7 +282,7 @@ elif(diff_x_right<0):
 
    # Destination in thumb (img)
    thumb_dest_x = 0
-   thumb_dest_w = int(thumb_w - diff_x_right)
+   thumb_dest_w = int(diff_x_right - thumb_w)
    thumb_dest_y = 0
    thumb_dest_h = thumb_h  
 
@@ -295,17 +295,17 @@ elif(diff_x_right<0):
  
 
 print("IN THE CROPPED ")
-print("X : " + str(thumb_dest_x) + " =>  37")
-print("W : " + str(thumb_dest_w)+ " =>   50")
-print("Y : " + str(thumb_dest_y)+ " =>   0")
-print("H : " + str(thumb_dest_h)+ " =>   50")
+print("X : " + str(thumb_dest_x) + " =>   ")
+print("W : " + str(thumb_dest_w)+ " =>    ")
+print("Y : " + str(thumb_dest_y)+ " =>    ")
+print("H : " + str(thumb_dest_h)+ " =>    ")
 
 
 print("FROM THE ORIGINAL ")
-print("X : " + str(org_x)+ " =>  0")
-print("W : " + str(org_w)+ " =>  13")
-print("Y : " + str(org_y)+ " =>  300")
-print("H : " + str(org_h)+ " =>  350")
+print("X : " + str(org_x)+ " =>   ")
+print("W : " + str(org_w)+ " =>   ")
+print("Y : " + str(org_y)+ " =>   ")
+print("H : " + str(org_h)+ " =>   ")
 
 
 
