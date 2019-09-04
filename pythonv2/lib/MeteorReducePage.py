@@ -37,7 +37,7 @@ def name_analyser(file_names):
             res[FILE_NAMES_REGEX_GROUP[groupNum]] = match.group(groupNum)
          groupNum = groupNum + 1
 
-   if(res is not None and res['name'] is not None):
+   if(res is not None and name in res):
       res['name_w_ext'] = res['name'].split('.')[0]
 
    return res
