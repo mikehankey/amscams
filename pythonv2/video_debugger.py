@@ -234,10 +234,9 @@ import cv2
 import numpy as np
 
 
-
-
 def create_crop(file,x,y,dest):
-  img = cv2.imread(file)
+
+   img = cv2.imread(file)
  
    # Destination
    thumb_w = 50
