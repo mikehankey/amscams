@@ -284,10 +284,11 @@ print("H : " + str(thumb_dest_h)+ " => 50")
 
 
 print("FROM THE ORIGINAL ")
-print("X : " + str(org_x))
-print("Y : " + str(org_y))
-print("W : " + str(org_w))
-print("H : " + str(org_h))
+print("X : " + str(org_x)+ " => 0")
+print("W : " + str(org_w)+ " => 25")
+
+print("Y : " + str(org_y)+ " => 300")
+print("H : " + str(org_h)+ " => 350")
 cropped_org = img[org_x:org_w,org_y:org_h] 
 crop_img[thumb_dest_x:thumb_dest_w,thumb_dest_y:thumb_dest_h] = cropped_org
 #crop_img[25:50,0:50] = img[0:25,300:350]
