@@ -270,7 +270,7 @@ if(diff_x<0):
 
    # Destation in thumb (img)
    thumb_dest_x = int(thumb_w/2 - diff_x)
-   thumb_dest_w = int(thumb_w-diff_x)
+   thumb_dest_w = int(thumb_w-thumb_dest_x)
    
    thumb_dest_y = 0
    thumb_dest_h = thumb_h
