@@ -239,7 +239,7 @@ img = cv2.imread("/mnt/ams2/CACHE/AMS7/2019/08/30/2019_08_30_07_55_47_000_010040
 # Create empty thumb
 
 # VALUES OBTAINED FROM JSON 
-x = 10
+x = 1910
 y = 120
 
 # Destination
@@ -257,13 +257,17 @@ org_h = 1080
 crop_img = np.zeros((thumb_w,thumb_h,3), np.uint8)
 
 # We don't want to crop where it isn't possible
-diff_x = (x-(org_select_w/2))
+diff_x_left = (x-(org_select_w/2))
+diff_x_right = org_w- x + (org_select_w/2)
+
+
+print("DIFF RIGHT " + str(diff_x_right))
 
 # If the x is too close to the edge
-if(diff_x<0):
+if(diff_x_left<0):
 
    # Destination in thumb (img)
-   thumb_dest_x = int(thumb_w/2 - diff_x)
+   thumb_dest_x = int(thumb_w/2 - diff_x_left)
    thumb_dest_w = thumb_w
    thumb_dest_y = 0
    thumb_dest_h = thumb_h
@@ -273,6 +277,8 @@ if(diff_x<0):
    org_y = y
    org_w = org_select_w - thumb_dest_x 
    org_h = org_select_h + org_y
+
+exit(0) 
 
  
 
