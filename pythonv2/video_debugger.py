@@ -263,9 +263,7 @@ thumb_x = 0
 thumb_y = 0 
 
 
-crop_img[37:50,0:50] = img[0:13,300:350]
-cv2.imwrite('/mnt/ams2/test.png',crop_img)
-exit(0)
+
 
 
 diff_x = (x-(org_select_w/2))
@@ -285,19 +283,22 @@ if(diff_x<0):
    org_w = org_select_w - thumb_dest_w 
    org_h = org_select_h
 
+ 
 
 print("IN THE CROPPED ")
-print("X : " + str(thumb_dest_x) + " =>  ")
-print("W : " + str(thumb_dest_w)+ " =>  ")
-print("Y : " + str(thumb_dest_y)+ " =>  ")
-print("H : " + str(thumb_dest_h)+ " =>  ")
+print("X : " + str(thumb_dest_x) + " =>  37")
+print("W : " + str(thumb_dest_w)+ " =>   50")
+print("Y : " + str(thumb_dest_y)+ " =>   0")
+print("H : " + str(thumb_dest_h)+ " =>   50")
 
 
 print("FROM THE ORIGINAL ")
-print("X : " + str(org_x)+ " =>  ")
-print("W : " + str(org_w)+ " =>  ")
-print("Y : " + str(org_y)+ " =>  ")
-print("H : " + str(org_h)+ " =>  ")
+print("X : " + str(org_x)+ " =>  0")
+print("W : " + str(org_w)+ " =>  13")
+print("Y : " + str(org_y)+ " =>  300")
+print("H : " + str(org_h)+ " =>  350")
+
+
 
 # Test Values
 cropped_image  = crop_img[thumb_dest_y:thumb_dest_h,thumb_dest_x:thumb_dest_w] 
@@ -305,12 +306,11 @@ print("CROP SHAPE")
 print("W = " + str(cropped_image.shape[1]))
 print("H = " + str(cropped_image.shape[0]))
 
-
 original_image = img[org_y:org_h,org_x:org_w]
 print("ORG SHAPE")
 print("W = " + str(original_image.shape[1]))
 print("H = " + str(original_image.shape[0]))
 
+exit()
 crop_img[thumb_dest_y:thumb_dest_h,thumb_dest_x:thumb_dest_w] = original_image
-
 cv2.imwrite('/mnt/ams2/test.png',crop_img)
