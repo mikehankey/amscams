@@ -302,6 +302,8 @@ def create_crop(file,x,y,dest):
 
    elif(diff_y_bottom<0): 
 
+      print("CASE 4")
+
       # Destination in thumb (img)
       thumb_dest_y = int(thumb_h+diff_y_bottom)  
 
@@ -309,13 +311,14 @@ def create_crop(file,x,y,dest):
       org_y = org_h_HD -  thumb_dest_h
       org_h = org_h_HD
 
+   print(" ")
    print("IN THE CROPPED ")
    print("X : " + str(thumb_dest_x) + " =>   ")
    print("W : " + str(thumb_dest_w)+ " =>    ")
    print("Y : " + str(thumb_dest_y)+ " =>    ")
    print("H : " + str(thumb_dest_h)+ " =>    ")
 
-
+   print(" ")
    print("FROM THE ORIGINAL ")
    print("X : " + str(org_x)+ " =>   ")
    print("W : " + str(org_w)+ " =>   ")
@@ -326,11 +329,13 @@ def create_crop(file,x,y,dest):
 
    # Test Values
    cropped_image  = crop_img[thumb_dest_y:thumb_dest_h,thumb_dest_x:thumb_dest_w] 
+   print(" ")
    print("CROP SHAPE")
    print("W = " + str(cropped_image.shape[1]))
    print("H = " + str(cropped_image.shape[0]))
 
    original_image = img[org_y:org_h,org_x:org_w]
+   print(" ")
    print("ORG SHAPE")
    print("W = " + str(original_image.shape[1]))
    print("H = " + str(original_image.shape[0]))
