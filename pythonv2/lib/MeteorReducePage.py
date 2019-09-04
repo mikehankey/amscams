@@ -180,6 +180,7 @@ def reduce_meteor2(json_conf,form):
       frames = generate_HD_frames(video_full_path,get_cache_path(analysed_name,"frames")+analysed_name['name_w_ext'])
    else:
       # We get the frames from the cache
+      print(get_cache_path(analysed_name,"frames")+EXT_HD_FRAMES+"*.png"))
       frames = glob.glob(get_cache_path(analysed_name,"frames")+EXT_HD_FRAMES+"*.png") 
    print(frames)
 
