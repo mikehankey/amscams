@@ -264,10 +264,10 @@ thumb_y = 0
 
 if(x<=0):
 
-   thumb_dest_x = thumb_w + x
+   thumb_dest_x = thumb_w/2 + x
    thumb_dest_y = 0
-   thumb_dest_w = int(thumb_w-thumb_dest_x)
-   thumb_dest_h = int(thumb_h-thumb_dest_y)
+   thumb_dest_w = int(thumb_w*2-thumb_dest_x)
+   thumb_dest_h = int(thumb_h*2-thumb_dest_y)
 
    org_x = 0
    org_y = y
