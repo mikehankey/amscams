@@ -117,7 +117,8 @@ def get_thumbs(video_full_path,analysed_name,meteor_json_file,HD,clear_cache):
 def generate_cropped_frames(video_full_path,analysed_name,meteor_json_file,HD):
 
    # Get all the frames as defined in the JSON file
-   meteor_frame_data = meteor_json_file['meteor_json_file']
+   print(meteor_json_file)
+   meteor_frame_data = meteor_json_file['meteor_frame_data']
    print(meteor_frame_data)
 
    if(HD is True):
