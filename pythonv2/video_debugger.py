@@ -247,8 +247,8 @@ thumb_w = 50
 thumb_h = 50
 
 # Box of origin (selected by user)
-org_select_x = 50
-org_select_y = 50
+org_select_w = 50
+org_select_h = 50
 
 org_w = 1920
 org_h = 1080
@@ -268,12 +268,18 @@ diff_x = (x-(org_select_x/2))
 # If the x is too close to the edge
 if(diff_x<0):
 
-   # Destation in thumb (img)
+   # Destination in thumb (img)
    thumb_dest_x = int(thumb_w/2 - diff_x)
    thumb_dest_w = int(thumb_w-thumb_dest_x)
    
    thumb_dest_y = 0
    thumb_dest_h = thumb_h
+
+   # Part of original image
+   org_x = 0
+   org_y = y
+   org_w = thumb_dest_w - org_select_w
+   org_h = org_select_h
 
 
 print("IN THE CROPPED ")
@@ -282,4 +288,9 @@ print("W : " + str(thumb_dest_w)+ " =>  ")
 print("Y : " + str(thumb_dest_y)+ " =>  ")
 print("H : " + str(thumb_dest_h)+ " =>  ")
 
- 
+
+print("FROM THE ORIGINAL ")
+print("X : " + str(org_x)+ " =>  ")
+print("W : " + str(org_w)+ " =>  ")
+print("Y : " + str(org_y)+ " =>  ")
+print("H : " + str(org_h)+ " =>  ")
