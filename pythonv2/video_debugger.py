@@ -253,23 +253,33 @@ _x = int(_x - thumb_w/2)
 _y = int(_y - thumb_h/2) 
 
 # So we don't crop the matrix where it isn't possible
+crop_x = 0
+crop_y =0
+
 if(_x < 0): 
    _x = 0
+   crop_x = _x + thumb_w/2
 if(_x > org_w):
    _x = org_w
 if(_y < 0):
    _y = 0
+   crop_y = _y + thumb_h/2
 if(_y > org_h):
    _y = org_h
- 
- 
 
+print("INITIAL BOX")  
 print("_x" + str(_x))
 print("_y" + str(_y))
 print("_w" + str(_x+thumb_w))
 print("_h" + str(_y+thumb_h))
 
 
+print("CROPPED")
+print("CROPX "+ str(crop_x))
+print("CROPY "+ str(crop_y))
+
+
+crop_img[crop_x:thumb_w-crop_x, crop_y:thumb_h-crop_y] = img[_x:_x+thumb_w, _y:_y+thumb_h]
 
 
 print(img[_x:_x+thumb_w, _y:_y+thumb_h])
