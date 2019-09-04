@@ -275,8 +275,8 @@ if(x<=0):
 
    org_x = 0
    org_y = y
-   org_w = org_select_x - x
-   org_h = org_select_y
+   org_w = org_select_x - (x - (org_select_x/2))
+   org_h = y + org_select_y 
 
 
 print("IN THE CROPPED ")
