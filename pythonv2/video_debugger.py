@@ -267,8 +267,8 @@ if(x<=0):
    # Destation in thumb (img)
    thumb_dest_x = int(thumb_w/2 + x)
    thumb_dest_y = 0
-   thumb_dest_w = int(thumb_w-thumb_dest_x)/2
-   thumb_dest_h = int(thumb_h-thumb_dest_y)/2
+   thumb_dest_w = int((thumb_w-thumb_dest_x)/2)
+   thumb_dest_h = int((thumb_h-thumb_dest_y)/2)
 
    # Part of original image
    org_x = 0
