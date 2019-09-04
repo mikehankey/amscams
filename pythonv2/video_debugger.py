@@ -273,6 +273,8 @@ print("ADD TO THUMB Y - H" + str(thumb_h - thumb_y))
 
 print("CROPP FROM HD X " + str(x))
 print("CROPP FROM HD Y " + str(y)) 
+print("CROPP FROM HD W " + str(thumb_w-x))
+print("CROPP FROM HD W " + str(thumb_h-y))
 
 #crop_img[thumb_x:(thumb_w - thumb_x), thumb_y:(thumb_h - thumb_y)]  
 
