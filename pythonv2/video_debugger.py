@@ -253,10 +253,14 @@ _x = int(_x - thumb_w/2)
 _y = int(_y - thumb_h/2) 
 
 # So we don't crop the matrix where it isn't possible
-if(_x < 0) _x = 0
-if(_x > org_w) _x = org_w
-if(_y < 0) _y = 0
-if(_y > org_y) _y = org_h
+if(_x < 0): 
+   _x = 0
+if(_x > org_w):
+   _x = org_w
+if(_y < 0):
+   _y = 0
+if(_y > org_y):
+   _y = org_h
 
 
 
