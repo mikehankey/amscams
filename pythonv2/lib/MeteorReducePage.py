@@ -236,16 +236,9 @@ def generate_cropped_frames(video_full_path,analysed_name,meteor_json_file,HD_fr
          print ("start_video_time {:%Y-%m-%d %H:%M:%S.%f}".format(start_video_time) + "<br>")
          start_event_time = datetime.datetime.strptime(meteor_json_file['event_start_time'], "%Y-%m-%d %H:%M:%S.%f")
          print ("start_event_time {:%Y-%m-%d %H:%M:%S.%f}".format(start_event_time)  + "<br>" )
-         diff_in_sec  =  start_event_time-start_video_time
-         print('DIFF ')
+         diff  =  start_event_time-start_video_time
+         diff_in_sec = diff.split(':')[-1]
          print(diff_in_sec)
-         print("<br>")
-         print('DIFF IN SEC')
-         print(diff_in_sec.seconds)
-         print("<br>")
-         print('DIFF IN MILLISEC')
-         print(diff_in_sec.milliseconds)
-         print("<br>")
 
    for frame in meteor_frame_data: 
 
