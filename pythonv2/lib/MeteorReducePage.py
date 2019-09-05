@@ -118,7 +118,7 @@ def get_thumbs(video_full_path,analysed_name,meteor_json_file,HD,HD_frames,clear
       # We need to generate the thumbs 
       generate_cropped_frames(video_full_path,analysed_name,meteor_json_file,HD_frames,HD)
    else:
-       print("WE GOT THUMBS<br>")
+      print("WE GOT THUMBS<br>")
       # We return them
       thumbs = glob.glob(get_cache_path(analysed_name,"cropped")+"*"+EXT_CROPPED_FRAMES+"*.png") 
 
