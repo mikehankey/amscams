@@ -359,8 +359,12 @@ def reduce_meteor2(json_conf,form):
 
    # Get Video File & Analyse the Name to get quick access to all info
    video_full_path   = form.getvalue("video_file")
-   analysed_name = name_analyser(video_full_path)
- 
+
+   if(video_full_path is not None):
+      analysed_name = name_analyser(video_full_path)
+   else:
+      print_error("<b>You need to add a video file in the URL.</b>")
+
    # Test if the name is ok
    if(len(analysed_name)==0):
       print_error(video_full_path + " <b>is not valid video file name.</b>")
