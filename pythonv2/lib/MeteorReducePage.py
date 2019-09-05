@@ -226,6 +226,7 @@ def generate_cropped_frames(video_full_path,analysed_name,meteor_json_file,HD_fr
    cropped_frames = []
     
    # WARNING
+   frame_diff = 0
    # sometimes we have "event_start_time" in the JSON 
    # that is different from the start_time in the file name
    # (it was in "-trim" in the previous version of the reduce page)
@@ -242,14 +243,15 @@ def generate_cropped_frames(video_full_path,analysed_name,meteor_json_file,HD_fr
          
          # It meant the actual event stared diff_in_sec seconds after the beginning of the video
          # which corresponds to howmany frames
-         frame_diff = FPS_HD * float(diff_in_sec)
-         print("FRAME DIFF")
-         print(frame_diff)
+         frame_diff = float(diff_in_sec) /FPS_HD
+
+   print("FRAME DIFF ")
+   print(frame_diff)      
 
    for frame in meteor_frame_data: 
 
       # Index of the frame 
-      frame_index = int(frame[1])
+      frame_index = int(frame[1])+frame_diff
       x = int(frame[2])
       y = int(frame[3])
 
