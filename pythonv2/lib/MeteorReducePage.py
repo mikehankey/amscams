@@ -135,6 +135,7 @@ def new_crop_thumb(frame,x,y,dest,HD):
    
    img = cv2.imread(frame) 
 
+   # We shouldn't have the need for that... (check with VIDEO_VARS values and the way we're creating the frames from the video)
    if(HD is True):
       org_w_HD = 1920
       org_h_HD = 1080
