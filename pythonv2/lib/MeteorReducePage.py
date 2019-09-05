@@ -4,7 +4,6 @@ import sys
 import os.path
 import cv2
 import glob
-import json
 import numpy as np
 import subprocess 
 import datetime
@@ -218,20 +217,12 @@ def generate_cropped_frames(video_full_path,analysed_name,meteor_json_file,HD_fr
 
    # Debug
    cgitb.enable()
-
-   # Get all the frames as defined in the JSON file
-
-   with open(meteor_json_file, 'r') as infile:
-      json_data = json.load(infile)
-   
-   print("JSON<br>")
-   print(json_data)
-   print("<br>/JSON<br>")
-
+ 
    # We parse the JSON
    meteor_json_file = load_json_file(meteor_json_file)
 
-   print(str(meteor_json_file))
+   print(meteor_json_file['hd_video_file'])
+   print(*********************************)
 
    # We get the frame data
    meteor_frame_data = meteor_json_file['meteor_frame_data']
