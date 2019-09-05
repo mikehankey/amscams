@@ -116,7 +116,7 @@ def get_thumbs(video_full_path,analysed_name,meteor_json_file,HD,HD_frames,clear
    if(len(thumbs)==0 or clear_cache is True):
       print("NO THUMB FOUND - WE NEED TO GENERATE THEM<br>")
       # We need to generate the thumbs 
-      generate_cropped_frames(video_full_path,analysed_name,meteor_json_file,HD_frames,HD)
+      thumbs = generate_cropped_frames(video_full_path,analysed_name,meteor_json_file,HD_frames,HD)
    else:
       print("WE GOT THUMBS<br>")
       # We return them
@@ -212,6 +212,8 @@ def new_crop_thumb(frame,x,y,dest,HD):
 
 # Create the cropped frames (thumbs) for a meteor detection
 def generate_cropped_frames(video_full_path,analysed_name,meteor_json_file,HD_frames,HD):
+
+   print("IN generate_cropped_frames <br>")
 
    # Debug
    cgitb.enable()
