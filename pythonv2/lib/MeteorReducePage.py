@@ -233,13 +233,18 @@ def generate_cropped_frames(video_full_path,analysed_name,meteor_json_file,HD_fr
    # we need to get the proper index in HD_frames (which is not the numbered in the JSON file)
    if("event_start_time" in meteor_json_file): 
          start_video_time = datetime.datetime.strptime(analysed_name['year']+"-"+analysed_name['month']+"-"+analysed_name['day']+" "+analysed_name['hour']+":"+analysed_name['min']+":"+analysed_name['sec']+"."+analysed_name['ms'], "%Y-%m-%d %H:%M:%S.%f")
-         print ("start_video_time {:%Y-%m-%d %H:%M:%S.%f}".format(start_video_time) + "<br>")
          start_event_time = datetime.datetime.strptime(meteor_json_file['event_start_time'], "%Y-%m-%d %H:%M:%S.%f")
-         print ("start_event_time {:%Y-%m-%d %H:%M:%S.%f}".format(start_event_time)  + "<br>" )
+         
+         # Diff between the2
          diff  =  start_event_time-start_video_time
          diff = str(diff)
          diff_in_sec = diff.split(':')[-1]
-         print(diff_in_sec)
+         
+         # It meant the actual event stared diff_in_sec seconds after the beginning of the video
+         # which corresponds to howmany frames
+         frame_diff = FPS_HD * float(diff_in_sec)
+         print("FRAME DIFF")
+         print(frame_diff)
 
    for frame in meteor_frame_data: 
 
