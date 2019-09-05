@@ -235,7 +235,7 @@ def generate_cropped_frames(video_full_path,analysed_name,meteor_json_file,HD_fr
          start_video_time = datetime.datetime(int(analysed_name['year']),int(analysed_name['month']),int(analysed_name['day']),int(analysed_name['hour']),int(analysed_name['min']),int(analysed_name['sec'])) 
          #"+ timedelta(milliseconds=float(analysed_name['ms']))
          print("START VIDEO TIME " + str(start_video_time))
-         start_video_time += timedelta(milliseconds=float(analysed_name['ms']))
+         start_video_time += datetime.timedelta(milliseconds=float(analysed_name['ms']))
          print("START VIDEO TIME2 " + str(start_video_time))
 
 
