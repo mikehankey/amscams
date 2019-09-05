@@ -108,13 +108,17 @@ def does_cache_exist(analysed_file_name,cache_type):
 # Generate them if necessary
 def get_thumbs(video_full_path,analysed_name,meteor_json_file,HD,HD_frames,clear_cache):
 
+   print('IN GET THUMBS<br>')
+
    # Do we have them already?
    thumbs = does_cache_exist(analysed_name,"cropped")
 
    if(len(thumbs)==0 or clear_cache is True):
+      print("NO THUMB FOUND - WE NEED TO GENERATE THEM<br>")
       # We need to generate the thumbs 
       generate_cropped_frames(video_full_path,analysed_name,meteor_json_file,HD_frames,HD)
    else:
+       print("WE GOT THUMBS<br>")
       # We return them
       thumbs = glob.glob(get_cache_path(analysed_name,"cropped")+"*"+EXT_CROPPED_FRAMES+"*.png") 
 
@@ -390,7 +394,7 @@ def reduce_meteor2(json_conf,form):
    stack = get_stacks(video_full_path,analysed_name,clear_cache)
     
    # Get the thumbs (cropped HD frames)
-   #thumbs = get_thumbs(video_full_path,analysed_name,meteor_json_file,HD,HD_frames,clear_cache)
+   thumbs = get_thumbs(video_full_path,analysed_name,meteor_json_file,HD,HD_frames,clear_cache)
 
    #print('THUMBS<br>')
    #print(thumbs)
