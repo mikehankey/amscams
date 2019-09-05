@@ -390,10 +390,10 @@ def reduce_meteor2(json_conf,form):
    stack = get_stacks(video_full_path,analysed_name,clear_cache)
     
    # Get the thumbs (cropped HD frames)
-   thumbs = get_thumbs(video_full_path,analysed_name,meteor_json_file,HD,HD_frames,clear_cache)
+   #thumbs = get_thumbs(video_full_path,analysed_name,meteor_json_file,HD,HD_frames,clear_cache)
 
-   print('THUMBS<br>')
-   print(thumbs)
+   #print('THUMBS<br>')
+   #print(thumbs)
 
    #print('FRAMES<br>')
    #print(HD_frames)
