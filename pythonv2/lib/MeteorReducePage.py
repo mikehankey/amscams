@@ -220,16 +220,15 @@ def generate_cropped_frames(video_full_path,analysed_name,meteor_json_file,HD_fr
  
    # We parse the JSON
    meteor_json_file = load_json_file(meteor_json_file)
-
-   print(meteor_json_file['hd_video_file'])
-   print("*********************************")
-
+ 
    # We get the frame data
    meteor_frame_data = meteor_json_file['meteor_frame_data']
    cropped_frames = []
- 
    
-   exit(0)
+
+   print("METEOR FRAME DATA<br>")
+   print(meteor_frame_data)
+    
 
    # WARNING
    # sometimes we have "event_start_time" in the JSON 
@@ -238,8 +237,10 @@ def generate_cropped_frames(video_full_path,analysed_name,meteor_json_file,HD_fr
    # so in order to get the proper HD frame to create the thumb
    # we need to get the proper index in HD_frames (which is not the numbered in the JSON file)
    if("event_start_time" in meteor_json_file):
+         print("event_start_time Found<br>")
          start_video_time = datetime.datetime(int(analysed_name['year']),int(analysed_name['month']),int(analysed_name['day']),int(analysed_name['hour']),int(analysed_name['min']),int(analysed_name['sec'])) + timedelta(milliseconds=float(analysed_name['ms']))
-         print(str(start_video_time))
+         print("START VIDEO TIME " + str(start_video_time))
+
 
 
    for frame in meteor_frame_data: 
