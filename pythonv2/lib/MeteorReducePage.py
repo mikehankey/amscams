@@ -232,15 +232,14 @@ def generate_cropped_frames(video_full_path,analysed_name,meteor_json_file,HD_fr
    # so in order to get the proper HD frame to create the thumb
    # we need to get the proper index in HD_frames (which is not the numbered in the JSON file)
    if("event_start_time" in meteor_json_file): 
-         print(analysed_name['year']+"-"+analysed_name['month']+"-"+analysed_name['day']+" "+analysed_name['hour']+":"+analysed_name['min']+":"+analysed_name['sec'])
-         start_video_time = datetime.datetime.strptime(analysed_name['year']+"-"+analysed_name['month']+"-"+analysed_name['day']+" "+analysed_name['hour']+":"+analysed_name['min']+":"+analysed_name['sec'], "%Y-%m-%d %H:%M:%S.%f")
+         start_video_time = datetime.datetime.strptime(analysed_name['year']+"-"+analysed_name['month']+"-"+analysed_name['day']+" "+analysed_name['hour']+":"+analysed_name['min']+":"+analysed_name['sec']+"."+analysed_name['ms'], "%Y-%m-%d %H:%M:%S.%f")
          #start_video_time = datetime.datetime(int(analysed_name['year']),int(analysed_name['month']),int(analysed_name['day']),int(analysed_name['hour']),int(analysed_name['min']),int(analysed_name['sec'])) 
 
          #start_video_time = datetime.datetime(int(analysed_name['year']),int(analysed_name['month']),int(analysed_name['day']),int(analysed_name['hour']),int(analysed_name['min']),int(analysed_name['sec'])) 
          #"+ timedelta(milliseconds=float(analysed_name['ms']))
          print("START VIDEO TIME " + str(start_video_time))
-         start_video_time += datetime.timedelta(milliseconds=float(analysed_name['ms']))
-         print("START VIDEO TIME2 " + str(start_video_time))
+         #start_video_time += datetime.timedelta(milliseconds=float(analysed_name['ms']))
+         #print("START VIDEO TIME2 " + str(start_video_time))
 
 
    for frame in meteor_frame_data: 
