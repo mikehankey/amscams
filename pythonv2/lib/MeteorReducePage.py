@@ -222,7 +222,7 @@ def generate_cropped_frames(video_full_path,analysed_name,meteor_json_file,HD_fr
    meteor_json_file = load_json_file(meteor_json_file)
 
    print(meteor_json_file['hd_video_file'])
-   print(*********************************)
+   print("*********************************")
 
    # We get the frame data
    meteor_frame_data = meteor_json_file['meteor_frame_data']
