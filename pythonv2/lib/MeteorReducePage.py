@@ -234,6 +234,8 @@ def generate_cropped_frames(video_full_path,analysed_name,meteor_json_file,HD_fr
    if("event_start_time" in meteor_json_file): 
          start_video_time = datetime.datetime.strptime(analysed_name['year']+"-"+analysed_name['month']+"-"+analysed_name['day']+" "+analysed_name['hour']+":"+analysed_name['min']+":"+analysed_name['sec']+"."+analysed_name['ms'], "%Y-%m-%d %H:%M:%S.%f")
          print ("start_video_time {:%Y-%m-%d %H:%M:%S.%f}".format(start_video_time))
+         start_event_time = datetime.datetime.strptime(meteor_json_file['event_start_time'], "%Y-%m-%d %H:%M:%S.%f")
+         print ("start_event_time {:%Y-%m-%d %H:%M:%S.%f}".format(start_event_time))
          
 
    for frame in meteor_frame_data: 
