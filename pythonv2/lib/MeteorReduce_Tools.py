@@ -213,17 +213,17 @@ def new_crop_thumb(frame,x,y,dest,HD):
    
 
    print("DESTINATION IN CROP")
-   print("y " + thumb_dest_y )
-   print("h " + thumb_dest_h )
-   print("x " + thumb_dest_x )
-   print("w " + thumb_dest_w )
+   print("y " + str(thumb_dest_y) )
+   print("h " + str(thumb_dest_h) )
+   print("x " + str(thumb_dest_x) )
+   print("w " + str(thumb_dest_w) )
 
 
    print("FROM ORG IMAGE")
-   print("y " + org_y )
-   print("h " + org_h )
-   print("x " + org_x )
-   print("w " + org_w )
+   print("y " + str(org_y) )
+   print("h " + str(org_h) )
+   print("x " + str(org_x) )
+   print("w " + str(org_w) )
       
    crop_img[thumb_dest_y:thumb_dest_h,thumb_dest_x:thumb_dest_w] = img[org_y:org_h,org_x:org_w]
    
