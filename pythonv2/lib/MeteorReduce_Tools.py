@@ -209,8 +209,6 @@ def new_crop_thumb(frame,x,y,dest,HD):
    # Create the cropped frames (thumbs) for a meteor detection
 def generate_cropped_frames(video_full_path,analysed_name,meteor_json_file,HD_frames,HD):
 
-   print("IN generate_cropped_frames <br>")
-
    # Debug
    cgitb.enable()
  
@@ -222,7 +220,7 @@ def generate_cropped_frames(video_full_path,analysed_name,meteor_json_file,HD_fr
    cropped_frames = []
    
    # We get the pre_buffer (in frames)
-   pre_buffer = meteor_json_file['']
+   pre_buffer = meteor_json_file['start_buff']
 
    for frame in meteor_frame_data: 
 
