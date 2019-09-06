@@ -240,8 +240,7 @@ def create_crop(file,x,y,dest):
    HD = True
    img = cv2.imread(file)
 
-   print(img)
-   sys.exit(0)
+   
  
    # Destination
    thumb_w = 50
