@@ -195,7 +195,7 @@ def new_crop_thumb(frame,x,y,dest,HD):
       org_y = 0
       
       # Destination in thumb (img)
-      thumb_dest_y =  org_h
+      thumb_dest_y =  org_h + org_y
  
 
    #elif(diff_y_bottom<0): 
