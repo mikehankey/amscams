@@ -240,5 +240,5 @@ from lib.VIDEO_VARS import *
 
 
 print("10,10")
-new_crop_thumb("/mnt/ams2/CACHE/AMS7/2019/08/14/2019_08_14_09_32_02_520_010040_AMS7_HD/FRAMES/2019_08_14_09_32_02_520_010040_AMS7_HD_HDfr_0032.png",10,10,"/mnt/ams2/test1.png")  
+new_crop_thumb("/mnt/ams2/CACHE/AMS7/2019/08/14/2019_08_14_09_32_02_520_010040_AMS7_HD/FRAMES/2019_08_14_09_32_02_520_010040_AMS7_HD_HDfr_0032.png",10,500,"/mnt/ams2/test1.png",True)  
 print("/mnt/ams2/test1.png") 
