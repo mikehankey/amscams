@@ -191,6 +191,10 @@ def new_crop_thumb(frame,x,y,dest,HD):
    # ON TOP
    if(org_y<0):
 
+      print("ORG Y")
+      print(org_y)
+      sys.exit(0)
+
       # Part of the original image
       org_h = org_y + THUMB_SELECT_H 
       org_y = 0
