@@ -219,25 +219,19 @@ def generate_cropped_frames(video_full_path,analysed_name,meteor_json_file,HD_fr
    meteor_frame_data = meteor_json_file['meteor_frame_data']
    cropped_frames = [] 
    
-   # We get the pre_buffer (in frames)
-   pre_buffer = meteor_json_file['start_buff']
-
-   print("PRE BUFFER ")
-   print(pre_buffer)
-   print("<br>")
-   
    for frame in meteor_frame_data: 
 
       frame_index = int(frame[1]) 
       x = int(frame[2])
       y = int(frame[3])
       destination =  get_cache_path(analysed_name,"cropped")+analysed_name['name_w_ext']+EXT_CROPPED_FRAMES+str(frame_index)+".png"
+      org_HD_frame = HD_frames[frame_index-1]
 
       print("X  " + str(x) + "<br>")
       print("Y  " + str(y) + "<br>")
       print("destination  " + destination + "<br>")
       print("frame_index  " + str(frame_index) + "<br>")
-      print("ORG HD FRAME " + HD_frames[frame_index] )
+      print("ORG HD FRAME " + org_HD_frame )
 
       # We generate the thumb from the corresponding HD_frames
       # and add it to cropped_frames
