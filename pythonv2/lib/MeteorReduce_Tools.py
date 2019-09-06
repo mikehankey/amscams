@@ -120,7 +120,7 @@ def get_thumbs(video_full_path,analysed_name,meteor_json_file,HD,HD_frames,clear
 
 # Create a thumb 
 def new_crop_thumb(frame,x,y,dest,HD):
-
+   print("<br><br>**************<br>")
    print("IN NEW CROP THUMB<br>")
    print("INPUT FRAME " + frame + "<br>")
    print("CREATING NEW THUMB to " + dest + "<br>")
@@ -129,20 +129,25 @@ def new_crop_thumb(frame,x,y,dest,HD):
 
    # Debug
    cgitb.enable()
-   
    img = cv2.imread(frame) 
+   
+   print("IMG READ<br>")
 
 
    # We shouldn't have the need for that... (check with VIDEO_VARS values and the way we're creating the frames from the video)
    if(HD is True):
-      org_w_HD = 1920
-      org_h_HD = 1080
+      org_w_HD = HD_W
+      org_h_HD = HD_H
    else:
-      org_w_HD = 1280
-      org_h_HD = 720
+      org_w_HD = SD_W
+      org_h_HD = SD_H
+
+   print("CREATING EMPTY SQUARE<br>")
 
    # Create empty image THUMB_WxTHUMB_H in black so we don't have any issues while working on the edges of the original frame 
    crop_img = np.zeros((THUMB_W,THUMB_H,3), np.uint8)
+
+   print("CREATED<br>")
 
    # Default values
    org_x = x
