@@ -189,7 +189,7 @@ def new_crop_thumb(frame,x,y,dest,HD):
       org_w = org_w_HD - org_x
      
       # Destination in thumb (img) 
-      thumb_dest_w = THUMB_W - org_w
+      thumb_dest_w = THUMB_SELECT_W - org_w
 
      
    # ON TOP
