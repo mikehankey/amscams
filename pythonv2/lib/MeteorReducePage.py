@@ -51,7 +51,7 @@ def reduce_meteor2(json_conf,form):
       print_error(meteor_json_file + " <b>not found.</b><br>This detection may had not been reduced yet or the reduction failed.")
    
    # Get the HD frames
-   HD_frames = get_HD_frames(analysed_name,clear_cache)
+   HD_frames = get_HD_frames(video_full_path,analysed_name,clear_cache)
    print(get_cache_path(analysed_name,"frames") +"<br>")
 
    # Get the stacks
