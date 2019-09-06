@@ -240,7 +240,8 @@ def create_crop(file,x,y,dest):
    HD = True
    img = cv2.imread(file)
 
-   
+   print("ORG IMG")
+   print(str(img.shape[1]) + "x" + str(img.shape[0]) )
  
    # Destination
    thumb_w = 50
@@ -344,8 +345,7 @@ def create_crop(file,x,y,dest):
    print("CROP")
    print(str(img1.shape[1]) + "x" + str(img1.shape[0]) )
 
-   print("ORG IMG")
-   print(str(img.shape[1]) + "x" + str(img.shape[0]) )
+ 
    img2 = img[org_y:org_h,org_x:org_w]
    print("CROPPED IMG")
    print(str(img2.shape[1]) + "x" + str(img2.shape[0]) )
@@ -358,7 +358,7 @@ def create_crop(file,x,y,dest):
 
 
 print("1359,620")
-create_crop("/mnt/ams2/CACHE/AMS7/2019/08/14/2019_08_14_09_32_02_520_010040_AMS7_HD/THUMBS/2019_08_14_09_32_02_520_010040_AMS7_HD_frm32.png",1359,620,"/mnt/ams2/test1.png")  
+create_crop("/mnt/ams2/CACHE/AMS7/2019/08/14/2019_08_14_09_32_02_520_010040_AMS7_HD/FRAMES/2019_08_14_09_32_02_520_010040_AMS7_HD_HDfr_0032.png",1359,620,"/mnt/ams2/test1.png")  
 #print("1910,500")
 #create_crop("/mnt/ams2/CACHE/AMS7/2019/08/14/2019_08_14_09_32_02_520_010040_AMS7_HD/FRAMES/2019_08_14_09_32_02_520_010040_AMS7_HD_HDfr_0032.png",1910,500,"/mnt/ams2/test2.png")  
 #print("500,10")
