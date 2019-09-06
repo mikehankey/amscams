@@ -334,9 +334,17 @@ def create_crop(file,x,y,dest):
    print("IN ORG")
    print(" X "  + str(org_x))
    print(" W "  + str(org_w))
-   
    print(" Y "  + str(org_y))
    print(" H "  + str(org_h))
+
+   img1 = crop_img[thumb_dest_y:thumb_dest_h,thumb_dest_x:thumb_dest_w]
+   print("CROP")
+   print(str(img1.shape[1]) + "x" + str(img1.shape[0]) )
+
+   img2 = img[org_y:org_h,org_x:org_w]
+   print("IMG")
+   print(str(img2.shape[1]) + "x" + str(img2.shape[0]) )
+
 
    crop_img[thumb_dest_y:thumb_dest_h,thumb_dest_x:thumb_dest_w] = img[org_y:org_h,org_x:org_w]
    cv2.imwrite(dest,crop_img)
