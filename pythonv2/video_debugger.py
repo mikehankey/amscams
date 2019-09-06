@@ -316,16 +316,16 @@ def create_crop(file,x,y,dest):
 
 
    print("IN CROP")
-   print(" X "  + thumb_dest_x)
-   print(" W "  + thumb_dest_w)
-   print(" Y "  + thumb_dest_y)
-   print(" H "  + thumb_dest_h)
+   print(" X "  + str(thumb_dest_x))
+   print(" W "  + str(thumb_dest_w))
+   print(" Y "  + str(thumb_dest_y))
+   print(" H "  + str(thumb_dest_h))
    print(" ")
    print("IN ORG")
-   print(" X "  + org_x)
-   print(" W "  + org_h)
-   print(" Y "  + org_y)
-   print(" H "  + org_w)   
+   print(" X "  + str(org_x))
+   print(" W "  + str(org_h))
+   print(" Y "  + str(org_y))
+   print(" H "  + str(org_w))
 
    crop_img[thumb_dest_y:thumb_dest_h,thumb_dest_x:thumb_dest_w] = img[org_y:org_h,org_x:org_w]
    cv2.imwrite(dest,crop_img)
