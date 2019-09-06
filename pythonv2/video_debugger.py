@@ -262,7 +262,7 @@ def create_crop(file,x,y,dest):
    org_w = org_select_w + org_x
    org_y = y
    org_h = org_select_h + org_y   
-   
+
    thumb_dest_x = 0
    thumb_dest_w = thumb_w
    thumb_dest_y = 0
@@ -344,12 +344,12 @@ def create_crop(file,x,y,dest):
 
 
 print("1359,620")
-create_crop("/mnt/ams2/CACHE/AMS7/2019/08/14/2019_08_14_09_32_02_520_010040_AMS7_HD/FRAMES/2019_08_14_09_32_02_520_010040_AMS7_HD_HDfr_0032.png",1359,620,"/mnt/ams2/test1.png")  
-print("1910,500")
-create_crop("/mnt/ams2/CACHE/AMS7/2019/08/14/2019_08_14_09_32_02_520_010040_AMS7_HD/FRAMES/2019_08_14_09_32_02_520_010040_AMS7_HD_HDfr_0032.png",1910,500,"/mnt/ams2/test2.png")  
-print("500,10")
-create_crop("/mnt/ams2/CACHE/AMS7/2019/08/14/2019_08_14_09_32_02_520_010040_AMS7_HD/FRAMES/2019_08_14_09_32_02_520_010040_AMS7_HD_HDfr_0032.png",500,10,"/mnt/ams2/test3.png")  
-print("500,1060")
-create_crop("/mnt/ams2/CACHE/AMS7/2019/08/14/2019_08_14_09_32_02_520_010040_AMS7_HD/FRAMES/2019_08_14_09_32_02_520_010040_AMS7_HD_HDfr_0032.png",500,1060,"/mnt/ams2/test4.png")  
-print("500,500")
-create_crop("/mnt/ams2/CACHE/AMS7/2019/08/14/2019_08_14_09_32_02_520_010040_AMS7_HD/FRAMES/2019_08_14_09_32_02_520_010040_AMS7_HD_HDfr_0032.png",500,500,"/mnt/ams2/test5.png")  
+create_crop("/mnt/ams2/CACHE/AMS7/2019/08/14/2019_08_14_09_32_02_520_010040_AMS7_HD/THUMBS/2019_08_14_09_32_02_520_010040_AMS7_HD_frm32.png",1359,620,"/mnt/ams2/test1.png")  
+#print("1910,500")
+#create_crop("/mnt/ams2/CACHE/AMS7/2019/08/14/2019_08_14_09_32_02_520_010040_AMS7_HD/FRAMES/2019_08_14_09_32_02_520_010040_AMS7_HD_HDfr_0032.png",1910,500,"/mnt/ams2/test2.png")  
+#print("500,10")
+#create_crop("/mnt/ams2/CACHE/AMS7/2019/08/14/2019_08_14_09_32_02_520_010040_AMS7_HD/FRAMES/2019_08_14_09_32_02_520_010040_AMS7_HD_HDfr_0032.png",500,10,"/mnt/ams2/test3.png")  
+#print("500,1060")
+#create_crop("/mnt/ams2/CACHE/AMS7/2019/08/14/2019_08_14_09_32_02_520_010040_AMS7_HD/FRAMES/2019_08_14_09_32_02_520_010040_AMS7_HD_HDfr_0032.png",500,1060,"/mnt/ams2/test4.png")  
+#print("500,500")
+#create_crop("/mnt/ams2/CACHE/AMS7/2019/08/14/2019_08_14_09_32_02_520_010040_AMS7_HD/FRAMES/2019_08_14_09_32_02_520_010040_AMS7_HD_HDfr_0032.png",500,500,"/mnt/ams2/test5.png")  
