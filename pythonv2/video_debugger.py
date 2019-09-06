@@ -258,10 +258,10 @@ def create_crop(file,x,y,dest):
    crop_img = np.zeros((thumb_w,thumb_h,3), np.uint8)
    
    # Default values
-   org_x = x - org_select_w/2
-   org_w = org_select_w + org_x
-   org_y = y  - org_select_h/2
-   org_h = org_select_h + org_y   
+   org_x = int(x - org_select_w/2)
+   org_w = int(org_select_w + org_x)
+   org_y = int(y  - org_select_h/2)
+   org_h = int(org_select_h + org_y)   
 
    thumb_dest_x = 0
    thumb_dest_w = thumb_w
