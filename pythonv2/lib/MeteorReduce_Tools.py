@@ -238,10 +238,12 @@ def generate_cropped_frames(video_full_path,analysed_name,meteor_json_file,HD_fr
    for frame in meteor_frame_data: 
 
       #WARNING THERE IS A -1 FROM THE LIST OF HD FRAMES!!!
-      frame_index = int(frame[1])-1 
+      
+      frame_index_destination = int(frame[1])
+      frame_index = frame_index_destination-1 
       x = int(frame[2])
       y = int(frame[3])
-      destination =  get_cache_path(analysed_name,"cropped")+analysed_name['name_w_ext']+EXT_CROPPED_FRAMES+str(frame_index)+".png"
+      destination =  get_cache_path(analysed_name,"cropped")+analysed_name['name_w_ext']+EXT_CROPPED_FRAMES+str(frame_index_destination)+".png"
       org_HD_frame = HD_frames[frame_index-1]
 
       print("IN generate_cropped_frames")
