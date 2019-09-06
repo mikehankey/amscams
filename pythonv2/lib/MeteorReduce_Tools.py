@@ -207,39 +207,9 @@ def new_crop_thumb(frame,x,y,dest,HD):
 
       # Destination in thumb (img)
       thumb_dest_h = HD_H -  org_y 
-
-
-
-   #elif(diff_y_bottom<0): 
-   #   
-   #   # Destination in thumb (img)
-   #   thumb_dest_h = int(THUMB_H+diff_y_bottom)  
-   #
-   #   # Part of the original image
-   #   org_y =  org_h_HD - thumb_dest_h   
-   #   org_h =  org_h_HD
-   
-   print("FROM ORG IMAGE")
-   print("y " + str(org_y) )
-   print("h " + str(org_h) )
-   print("x " + str(org_x) )
-   print("w " + str(org_w) )
-
-   print("DESTINATION IN CROP")
-   print("y " + str(thumb_dest_y) )
-   print("h " + str(thumb_dest_h) )
-   print("x " + str(thumb_dest_x) )
-   print("w " + str(thumb_dest_w) )
-
-
-
-      
+    
    crop_img[thumb_dest_y:thumb_dest_h,thumb_dest_x:thumb_dest_w] = img[org_y:org_h,org_x:org_w]
-   
-   print("CROP MATRIX CREATED<br>")
    cv2.imwrite(dest,crop_img)
-
-   print("IMG SAVED TP <br>" + dest + "<br>")
    return dest
 
 
