@@ -209,25 +209,20 @@ def generate_cropped_frames(video_full_path,analysed_name,meteor_json_file,HD_fr
    cgitb.enable()
  
    # We parse the JSON
-   meteor_json_file = load_json_file(meteor_json_file)
-   print("JSON FILE OK")
+   meteor_json_file = load_json_file(meteor_json_file) 
  
    # We get the frame data
    meteor_frame_data = meteor_json_file['meteor_frame_data']
-   cropped_frames = []
-   print("METEOR FRAMES DATA")
-   print(meteor_frame_data)
+   cropped_frames = [] 
    
    # We get the pre_buffer (in frames)
    pre_buffer = meteor_json_file['start_buff']
-
-   print('PRE BUFFER')
-   print(pre_buffer)
+ 
 
    for frame in meteor_frame_data: 
 
       # Index of the frame 
-      frame_index = int(frame[1])+frame_diff
+      frame_index = int(frame[1])+pre_buffer
       x = int(frame[2])
       y = int(frame[3])
 
