@@ -176,10 +176,10 @@ def new_crop_thumb(frame,x,y,dest,HD):
 
       # Part of the original image
       org_x = 0
-      org_w = THUMB_SELECT_W + org_x
+      org_w = THUMB_SELECT_W - org_x
 
       # Destination in thumb (img)
-      thumb_dest_x = THUMB_W + org_x
+      thumb_dest_x = THUMB_W - org_x
        
 
    # ON RIGHT 
