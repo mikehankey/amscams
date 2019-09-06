@@ -236,7 +236,7 @@ from lib.VIDEO_VARS import *
 
 
 def create_crop(file,x,y,dest):
-
+   HD = True
    img = cv2.imread(file)
  
    # Destination
