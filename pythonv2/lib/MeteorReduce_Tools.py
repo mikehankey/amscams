@@ -163,11 +163,7 @@ def new_crop_thumb(frame,x,y,dest,HD):
    thumb_dest_y = 0
    thumb_dest_h = THUMB_H
 
-   # We don't want to crop where it isn't possible so we test the edges
-   #diff_x_left  = (x-(THUMB_SELECT_W/2))
-   diff_x_right = org_w_HD-(x+(THUMB_SELECT_W/2)) 
-   diff_y_top   = (y-(THUMB_SELECT_H/2))
-   diff_y_bottom = org_h_HD - (y+(THUMB_SELECT_H/2))
+   
 
    # If the x is too close to the edge
 
@@ -193,23 +189,23 @@ def new_crop_thumb(frame,x,y,dest,HD):
 
      
    # ON TOP
-   if(diff_y_top<0):
+   if(org_y<0):
 
-      # Destination in thumb (img)
-      thumb_dest_y = int(THUMB_H/2 - diff_y_top)
-
-      # Part of the original image
+      org_h = THUMB_SELECT_H + org_y 
       org_y = 0
-      org_h = THUMB_SELECT_H - thumb_dest_y
-
-   elif(diff_y_bottom<0): 
       
       # Destination in thumb (img)
-      thumb_dest_h = int(THUMB_H+diff_y_bottom)  
+      thumb_dest_y =  org_h
+ 
 
-      # Part of the original image
-      org_y =  org_h_HD - thumb_dest_h   
-      org_h =  org_h_HD
+   #elif(diff_y_bottom<0): 
+   #   
+   #   # Destination in thumb (img)
+   #   thumb_dest_h = int(THUMB_H+diff_y_bottom)  
+   #
+   #   # Part of the original image
+   #   org_y =  org_h_HD - thumb_dest_h   
+   #   org_h =  org_h_HD
    
    print("FROM ORG IMAGE")
    print("y " + str(org_y) )
