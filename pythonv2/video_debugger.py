@@ -262,6 +262,7 @@ def create_crop(file,x,y,dest):
    org_w = org_select_w + org_x
    org_y = y
    org_h = org_select_h + org_y   
+   
    thumb_dest_x = 0
    thumb_dest_w = thumb_w
    thumb_dest_y = 0
@@ -276,9 +277,7 @@ def create_crop(file,x,y,dest):
    # If the x is too close to the edge
 
    # ON THE LEFT
-   if(diff_x_left<0):
-      print("CASE ONE")
-
+   if(diff_x_left<0): 
 
       # Destination in thumb (img)
       thumb_dest_x = int(thumb_w/2 - diff_x_left)
