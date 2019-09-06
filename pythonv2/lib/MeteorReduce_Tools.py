@@ -121,12 +121,16 @@ def get_thumbs(video_full_path,analysed_name,meteor_json_file,HD,HD_frames,clear
 # Create a thumb 
 def new_crop_thumb(frame,x,y,dest,HD):
 
-   print("CREATING NEW THUMB to " + dest)
+   print("INPUT FRAME " + frame + "<br>")
+   print("CREATING NEW THUMB to " + dest + "<br>")
+   print("X " + str(x) + "<br>")
+   print("Y " + str(y) + "<br>")
 
    # Debug
    cgitb.enable()
    
    img = cv2.imread(frame) 
+
 
    # We shouldn't have the need for that... (check with VIDEO_VARS values and the way we're creating the frames from the video)
    if(HD is True):
