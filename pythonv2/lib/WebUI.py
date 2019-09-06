@@ -1630,25 +1630,32 @@ def as6_config(json_conf):
    print("</UL>")
 
 def get_mask_img(cams_id, json_conf):
-   proc_dir = json_conf['site']['proc_dir']
-   days = get_days(json_conf)
-   day = days[0]
-   img_dir = "/mnt/ams2/latest/"
 
-   #files = glob.glob(img_dir +  cams_id + ".jpg")
+   proc_dir = json_conf['site']['proc_dir']
+   #days = get_days(json_conf)
+   #day = days[0]
+   img_dir = "/mnt/ams2/latest/"
+   sd_dir = "/mnt/ams2/SD/"
+
+   files = glob.glob(sd_dir + "*" + cams_id + "*.mp4")
+   frames = load_video_frames(files[0], json_conf)
+   img = frames[0]
+   sd_h, sd_w = img.shape[:2]
    file = img_dir + cams_id + ".jpg"
    sfile = img_dir + cams_id + "-sm.jpg"
-   img = cv2.imread(file)
+   #img = cv2.imread(file)
    #simg = cv2.resize(img, (704,576))
    simg = img
    cv2.imwrite(sfile, simg)
    files = [sfile]
 
-   return(sfile)
+   return(sfile, sd_w, sd_h)
 
 def save_masks(form,camera,cams_id, json_conf):
-   hdm_x = 2.7272
-   hdm_y = 1.875
+   sd_w = int(form.getvalue('sd_w'))
+   sd_h = int(form.getvalue('sd_h'))
+   hdm_x = 1920 / sd_w 
+   hdm_y = 1080 / sd_h 
 
    print("<h1>SAVE MASKS</h1>")
    total_masks = int(form.getvalue('total_masks'))
@@ -1712,7 +1719,7 @@ def mask_admin(json_conf,form):
          print("<a href=webUI.py?cmd=mask_admin&camera=" + camera + "&cams_id=" + cid + ">" + cid + "<BR>")
    else:
       print("Masks for ", cams_id, "<BR>")
-      imgf = get_mask_img(cams_id, json_conf) 
+      imgf,sd_w,sd_h = get_mask_img(cams_id, json_conf) 
       #print(imgf) 
       masks = get_masks(cams_id, json_conf)
       img = cv2.imread(imgf, 0)
@@ -1744,6 +1751,8 @@ def mask_admin(json_conf,form):
       print("<input type=hidden name=subcmd value=save_mask>")
       print("<input type=hidden name=camera value=" + camera + ">")
       print("<input type=hidden name=cams_id value=" + cams_id + ">")
+      print("<input type=hidden name=sd_w value=" + str(sd_w) + ">")
+      print("<input type=hidden name=sd_h value=" + str(sd_h) + ">")
       print("<input type=hidden name=total_masks value="+str(c) +">")
       print("<input type=submit value=\"Save Masks\">")
       print("</form>")
