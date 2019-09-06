@@ -183,15 +183,17 @@ def new_crop_thumb(frame,x,y,dest,HD):
        
 
    # ON RIGHT 
-   elif(diff_x_right<0):
+   elif(org_x> org_w_HD):
 
+      print("RIGHT")
+      
+      # Part of the original image
+      org_w = org_w_HD - org_x
+     
       # Destination in thumb (img) 
-      thumb_dest_w = int(THUMB_W+diff_x_right)  
+      thumb_dest_w = THUM_W - org_w
 
-      # Part of original image 
-      org_x = org_w_HD - thumb_dest_w
-      org_w = org_w_HD   
-
+     
    # ON TOP
    if(diff_y_top<0):
 
