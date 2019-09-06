@@ -183,7 +183,7 @@ def new_crop_thumb(frame,x,y,dest,HD):
        
 
    # ON RIGHT 
-   elif(org_x> org_w_HD):
+   elif(org_x > (org_w_HD-THUMB_SELECT_W)):
 
       print("RIGHT")
       
