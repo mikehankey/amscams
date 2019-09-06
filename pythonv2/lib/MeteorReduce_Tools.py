@@ -192,11 +192,11 @@ def new_crop_thumb(frame,x,y,dest,HD):
    if(org_y<0):
 
       # Part of the original image
-      org_w = org_y + THUMB_SELECT_H 
+      org_h = org_y + THUMB_SELECT_H 
       org_y = 0
 
       # Destination in thumb (img)
-      thumb_dest_w = org_w
+      thumb_dest_w = org_h
 
 
    #elif(diff_y_bottom<0): 
