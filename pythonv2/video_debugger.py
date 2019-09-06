@@ -231,6 +231,7 @@ _total_duration = 12 # in seconds
 
 ############# TEST CV crop
 import cv2
+import sys
 import numpy as np
 from lib.VIDEO_VARS import *
 
@@ -238,6 +239,9 @@ from lib.VIDEO_VARS import *
 def create_crop(file,x,y,dest):
    HD = True
    img = cv2.imread(file)
+
+   print(img)
+   sys.exit(0)
  
    # Destination
    thumb_w = 50
