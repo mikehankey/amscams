@@ -230,6 +230,7 @@ def generate_cropped_frames(video_full_path,analysed_name,meteor_json_file,HD_fr
       print("FRAME " + str(frame_index) + "<br/>")
       print("x " + str(x)+ "<br/>")
       print("y " + str(y)+ "<br/>")
+      sys.exit(0)
 
       # We generate the thumb from the corresponding HD_frames
       # and add it to cropped_frames
