@@ -164,7 +164,7 @@ def new_crop_thumb(frame,x,y,dest,HD):
    thumb_dest_h = THUMB_H
 
    # We don't want to crop where it isn't possible so we test the edges
-   diff_x_left  = (x-(THUMB_SELECT_W/2))
+   #diff_x_left  = (x-(THUMB_SELECT_W/2))
    diff_x_right = org_w_HD-(x+(THUMB_SELECT_W/2)) 
    diff_y_top   = (y-(THUMB_SELECT_H/2))
    diff_y_bottom = org_h_HD - (y+(THUMB_SELECT_H/2))
@@ -172,10 +172,12 @@ def new_crop_thumb(frame,x,y,dest,HD):
    # If the x is too close to the edge
 
    # ON THE LEFT
-   if(diff_x_left<0):
+   if(org_x<0):
 
       # Destination in thumb (img)
-      thumb_dest_x = int(THUMB_W/2 - diff_x_left)
+      thumb_dest_x = THUMB_W + org_x
+      
+      #int(THUMB_W/2 - diff_x_left)
 
       # Part of original image
       org_x = 0
