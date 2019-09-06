@@ -1639,7 +1639,8 @@ def get_mask_img(cams_id, json_conf):
    file = img_dir + cams_id + ".jpg"
    sfile = img_dir + cams_id + "-sm.jpg"
    img = cv2.imread(file)
-   simg = cv2.resize(img, (704,576))
+   #simg = cv2.resize(img, (704,576))
+   simg = img
    cv2.imwrite(sfile, simg)
    files = [sfile]
 
