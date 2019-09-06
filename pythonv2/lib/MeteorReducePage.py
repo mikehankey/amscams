@@ -27,7 +27,7 @@ def reduce_meteor2(json_conf,form):
       clear_cache = False
 
    # Get Video File & Analyse the Name to get quick access to all info
-   video_full_path   = form.getvalue("video_file")
+   video_full_path = form.getvalue("video_file")
 
    if(video_full_path is not None):
       analysed_name = name_analyser(video_full_path)
@@ -51,7 +51,7 @@ def reduce_meteor2(json_conf,form):
       print_error(meteor_json_file + " <b>not found.</b><br>This detection may had not been reduced yet or the reduction failed.")
    
    # Get the HD frames
-   HD_frames = get_HD_frames(video_full_path,analysed_name,clear_cache)
+   HD_frames = get_HD_frames(analysed_name,clear_cache)
    print(get_cache_path(analysed_name,"frames") +"<br>")
 
    # Get the stacks
@@ -64,12 +64,7 @@ def reduce_meteor2(json_conf,form):
 
 
    # DEBUG
-  
    
-   
-
-
-
    #print('THUMBS<br>')
    #print(thumbs)
 

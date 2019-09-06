@@ -62,8 +62,11 @@ def name_analyser(file_names):
    if(res is not None and "name" in res):
       res['name_w_ext'] = res['name'].split('.')[0]
 
-   return res
+   # Add the full file_names (often a full path) to the array so we don't have to pass the original when we need it
+   res['full_path'] = file_names
 
+   return res
+file_names
 # Return Cache folder name based on an analysed_file (parsed video file name)
 # and cache_type = stacks | frames | cropped
 def get_cache_path(analysed_file_name, cache_type):
@@ -293,13 +296,13 @@ def generate_stacks(video_full_path, destination):
 
 # Get All HD Frames for a meteor detection
 # Generate them if they don't exist
-def get_HD_frames(video_full_path,analysed_name,clear_cache,):
+def get_HD_frames(analysed_name,clear_cache):
    # Test if folder exists / Create it if not
    HD_frames = does_cache_exist(analysed_name,"frames")
 
    if(len(HD_frames)==0 or clear_cache is True):
       # We need to generate the HD Frame
-      HD_frames = generate_HD_frames(video_full_path,get_cache_path(analysed_name,"frames")+analysed_name['name_w_ext'])
+      HD_frames = generate_HD_frames(analysed_name['full_path'],get_cache_path(analysed_name,"frames")+analysed_name['name_w_ext'])
    else:
       # We get the frames from the cache 
       HD_frames = glob.glob(get_cache_path(analysed_name,"frames")+"*"+EXT_HD_FRAMES+"*.png") 
