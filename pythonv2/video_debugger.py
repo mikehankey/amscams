@@ -232,6 +232,7 @@ _total_duration = 12 # in seconds
 ############# TEST CV crop
 import cv2
 import numpy as np
+from lib.VIDEO_VARS import *
 
 
 def create_crop(file,x,y,dest):
@@ -246,8 +247,12 @@ def create_crop(file,x,y,dest):
    org_select_w = 50
    org_select_h = 50
 
-   org_w_HD = 1920
-   org_h_HD = 1080
+   if(HD is True):
+      org_w_HD = HD_W
+      org_h_HD = HD_H
+   else:
+      org_w_HD = SD_W
+      org_h_HD = SD_H
 
    # Create empty image 50x50 in black so we don't have any issues while working on the edges of the original frame 
    crop_img = np.zeros((thumb_w,thumb_h,3), np.uint8)
