@@ -221,6 +221,9 @@ def generate_cropped_frames(video_full_path,analysed_name,meteor_json_file,HD_fr
    
    # We get the pre_buffer (in frames)
    pre_buffer = meteor_json_file['start_buff']
+
+
+   print(str(len(HD_Frames)) + " HD FRAMES FOUND <br>")
   
    for frame in meteor_frame_data: 
 
