@@ -179,7 +179,7 @@ def new_crop_thumb(frame,x,y,dest,HD):
 
       # Part of original image
       org_x = 0
-      org_w = org_select_w - thumb_dest_x  
+      org_w = THUMB_SELECT_W - thumb_dest_x  
 
    # ON RIGHT 
    elif(diff_x_right<0):
@@ -199,7 +199,7 @@ def new_crop_thumb(frame,x,y,dest,HD):
 
       # Part of the original image
       org_y = 0
-      org_h = org_select_h - thumb_dest_y
+      org_h = THUMB_SELECT_H - thumb_dest_y
 
    elif(diff_y_bottom<0): 
       
