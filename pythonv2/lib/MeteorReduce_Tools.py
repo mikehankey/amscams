@@ -105,17 +105,13 @@ def does_cache_exist(analysed_file_name,cache_type):
 # Generate them if necessary
 def get_thumbs(video_full_path,analysed_name,meteor_json_file,HD,HD_frames,clear_cache):
 
-   print('IN GET THUMBS<br>')
-
    # Do we have them already?
    thumbs = does_cache_exist(analysed_name,"cropped")
 
    if(len(thumbs)==0 or clear_cache is True):
-      print("NO THUMB FOUND - WE NEED TO GENERATE THEM<br>")
       # We need to generate the thumbs 
       thumbs = generate_cropped_frames(video_full_path,analysed_name,meteor_json_file,HD_frames,HD)
    else:
-      print("WE GOT THUMBS<br>")
       # We return them
       thumbs = glob.glob(get_cache_path(analysed_name,"cropped")+"*"+EXT_CROPPED_FRAMES+"*.png") 
 
@@ -214,13 +210,19 @@ def generate_cropped_frames(video_full_path,analysed_name,meteor_json_file,HD_fr
  
    # We parse the JSON
    meteor_json_file = load_json_file(meteor_json_file)
+   print("JSON FILE OK")
  
    # We get the frame data
    meteor_frame_data = meteor_json_file['meteor_frame_data']
    cropped_frames = []
+   print("METEOR FRAMES DATA")
+   print(meteor_frame_data)
    
    # We get the pre_buffer (in frames)
    pre_buffer = meteor_json_file['start_buff']
+
+   print('PRE BUFFER')
+   print(pre_buffer)
 
    for frame in meteor_frame_data: 
 
