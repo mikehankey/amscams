@@ -222,7 +222,7 @@ def generate_cropped_frames(video_full_path,analysed_name,meteor_json_file,HD_fr
    for frame in meteor_frame_data: 
 
       frame_index = int(frame[1])
-      print('FRAME INDEX ' + frame_index)
+      print('FRAME INDEX ' + str(frame_index))
 
       # Index of the frame 
       #frame_index = int(frame[1])+pre_buffer
