@@ -357,8 +357,8 @@ def create_crop(file,x,y,dest):
 
 
 
-print("1359,620")
-create_crop("/mnt/ams2/CACHE/AMS7/2019/08/14/2019_08_14_09_32_02_520_010040_AMS7_HD/FRAMES/2019_08_14_09_32_02_520_010040_AMS7_HD_HDfr_0032.png",1359,620,"/mnt/ams2/test1.png")  
+print("10,10")
+create_crop("/mnt/ams2/CACHE/AMS7/2019/08/14/2019_08_14_09_32_02_520_010040_AMS7_HD/FRAMES/2019_08_14_09_32_02_520_010040_AMS7_HD_HDfr_0032.png",10,10,"/mnt/ams2/test1.png")  
 #print("1910,500")
 #create_crop("/mnt/ams2/CACHE/AMS7/2019/08/14/2019_08_14_09_32_02_520_010040_AMS7_HD/FRAMES/2019_08_14_09_32_02_520_010040_AMS7_HD_HDfr_0032.png",1910,500,"/mnt/ams2/test2.png")  
 #print("500,10")
