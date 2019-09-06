@@ -264,12 +264,7 @@ def create_crop(file,x,y,dest):
    org_x = int(x - org_select_w/2)
    org_w = int(org_select_w + org_x)
    org_y = int(y  - org_select_h/2)
-   org_h = int(org_select_h + org_y)   
-   print("IN ORG")
-   print(" X "  + str(org_x))
-   print(" W "  + str(org_w))
-   print(" Y "  + str(org_y))
-   print(" H "  + str(org_h))
+   org_h = int(org_select_h + org_y)    
 
    thumb_dest_x = 0
    thumb_dest_w = thumb_w
@@ -349,8 +344,10 @@ def create_crop(file,x,y,dest):
    print("CROP")
    print(str(img1.shape[1]) + "x" + str(img1.shape[0]) )
 
+   print("ORG IMG")
+   print(str(img.shape[1]) + "x" + str(img.shape[0]) )
    img2 = img[org_y:org_h,org_x:org_w]
-   print("IMG")
+   print("CROPPED IMG")
    print(str(img2.shape[1]) + "x" + str(img2.shape[0]) )
 
 
