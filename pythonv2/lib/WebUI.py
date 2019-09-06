@@ -1637,12 +1637,17 @@ def get_mask_img(cams_id, json_conf):
    img_dir = "/mnt/ams2/latest/"
    sd_dir = "/mnt/ams2/SD/"
 
-   files = glob.glob(sd_dir + "*" + cams_id + "*.mp4")
-   frames = load_video_frames(files[0], json_conf)
-   img = frames[0]
+   # first look for img, if made less than 24 hours ago use it, else make new one
+   img_files = glob.glob(img_dir + cams_id + "-mask.jpg")
+   if len(img_files) == 1:
+      img = cv2.imread(img_files[0])
+   else:
+      files = glob.glob(sd_dir + "*" + cams_id + "*.mp4")
+      frames = load_video_frames(files[0], json_conf)
+      img = frames[0]
    sd_h, sd_w = img.shape[:2]
    file = img_dir + cams_id + ".jpg"
-   sfile = img_dir + cams_id + "-sm.jpg"
+   sfile = img_dir + cams_id + "-mask.jpg"
    #img = cv2.imread(file)
    #simg = cv2.resize(img, (704,576))
    simg = img
