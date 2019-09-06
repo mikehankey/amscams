@@ -277,6 +277,8 @@ def create_crop(file,x,y,dest):
 
    # ON THE LEFT
    if(diff_x_left<0):
+      print("CASE ONE")
+
 
       # Destination in thumb (img)
       thumb_dest_x = int(thumb_w/2 - diff_x_left)
@@ -288,6 +290,9 @@ def create_crop(file,x,y,dest):
    # ON RIGHT 
    elif(diff_x_right<0):
 
+      
+      print("CASE TWO")
+
       # Destination in thumb (img) 
       thumb_dest_w = int(thumb_w+diff_x_right)  
 
@@ -298,6 +303,9 @@ def create_crop(file,x,y,dest):
    # ON TOP
    if(diff_y_top<0):
 
+      
+      print("CASE THREE")
+
       # Destination in thumb (img)
       thumb_dest_y = int(thumb_h/2 - diff_y_top)
 
@@ -306,6 +314,9 @@ def create_crop(file,x,y,dest):
       org_h = org_select_h - thumb_dest_y
 
    elif(diff_y_bottom<0): 
+
+      
+      print("CASE FOUR")
       
       # Destination in thumb (img)
       thumb_dest_h = int(thumb_h+diff_y_bottom)  
@@ -333,8 +344,8 @@ def create_crop(file,x,y,dest):
 
 
 
-print("10,500")
-create_crop("/mnt/ams2/CACHE/AMS7/2019/08/14/2019_08_14_09_32_02_520_010040_AMS7_HD/FRAMES/2019_08_14_09_32_02_520_010040_AMS7_HD_HDfr_0032.png",10,500,"/mnt/ams2/test1.png")  
+print("1359,620")
+create_crop("/mnt/ams2/CACHE/AMS7/2019/08/14/2019_08_14_09_32_02_520_010040_AMS7_HD/FRAMES/2019_08_14_09_32_02_520_010040_AMS7_HD_HDfr_0032.png",1359,620,"/mnt/ams2/test1.png")  
 print("1910,500")
 create_crop("/mnt/ams2/CACHE/AMS7/2019/08/14/2019_08_14_09_32_02_520_010040_AMS7_HD/FRAMES/2019_08_14_09_32_02_520_010040_AMS7_HD_HDfr_0032.png",1910,500,"/mnt/ams2/test2.png")  
 print("500,10")
