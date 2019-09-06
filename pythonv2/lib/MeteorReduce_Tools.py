@@ -120,6 +120,10 @@ def get_thumbs(video_full_path,analysed_name,meteor_json_file,HD,HD_frames,clear
 
 # Create a thumb 
 def new_crop_thumb(frame,x,y,dest,HD):
+
+   # Debug
+   cgitb.enable()
+
    print("<br><br>**************<br>")
    print("IN NEW CROP THUMB<br>")
    print("INPUT FRAME " + frame + "<br>")
@@ -127,8 +131,7 @@ def new_crop_thumb(frame,x,y,dest,HD):
    print("X " + str(x) + "<br>")
    print("Y " + str(y) + "<br>")
 
-   # Debug
-   cgitb.enable()
+  
    img = cv2.imread(frame) 
    
    print("IMG READ<br>")
@@ -150,11 +153,11 @@ def new_crop_thumb(frame,x,y,dest,HD):
    print("CREATED<br>")
 
    # Default values
-   org_x = int(x - org_select_w/2)
-   org_w = int(org_select_w + org_x)
-   org_y = int(y  - org_select_h/2)
-   org_h = int(org_select_h + org_y)    
-   
+   org_x = int(x - THUMB_SELECT_W/2)
+   org_w = int(THUMB_SELECT_W + org_x)
+   org_y = int(y  - THUMB_SELECT_H/2)
+   org_h = int(THUMB_SELECT_H + org_y)    
+
    thumb_dest_x = 0
    thumb_dest_w = THUMB_W
    thumb_dest_y = 0
