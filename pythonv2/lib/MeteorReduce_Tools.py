@@ -299,7 +299,8 @@ def get_HD_frames(video_full_path,analysed_name,clear_cache,):
       # We get the frames from the cache 
       HD_frames = glob.glob(get_cache_path(analysed_name,"frames")+"*"+EXT_HD_FRAMES+"*.png") 
    
-   return HD_frames
+   # IMPORTANT: we need to sort the frames so we can rely on the indexes in the list to access them
+   return HD_frames.sort()
 
 
 # Generate HD frames for a meteor detection
