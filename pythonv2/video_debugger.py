@@ -265,6 +265,11 @@ def create_crop(file,x,y,dest):
    org_w = int(org_select_w + org_x)
    org_y = int(y  - org_select_h/2)
    org_h = int(org_select_h + org_y)   
+   print("IN ORG")
+   print(" X "  + str(org_x))
+   print(" W "  + str(org_w))
+   print(" Y "  + str(org_y))
+   print(" H "  + str(org_h))
 
    thumb_dest_x = 0
    thumb_dest_w = thumb_w
