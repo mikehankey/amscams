@@ -30,7 +30,7 @@ def get_reduction_info(json_file):
       if "cal_params" in mr:
          if "cat_image_stars" in mr['cal_params']:
 
-            # Get all the stars
+            # Get all the stars and compute max_res_deg & max_res_px
             rsp['cat_image_stars'] = mr['cal_params']['cat_image_stars'] 
             sc = 0
             for star in mr['cal_params']['cat_image_stars']:
@@ -43,32 +43,10 @@ def get_reduction_info(json_file):
                rsp['total_res_px']  = mr['cal_params']['total_res_px']
                rsp['total_res_deg'] = mr['cal_params']['total_res_deg']
 
-            elif len( mr['cal_params']['cat_image_stars']) > 0:
-               rsp['total_res_px'] = max_res_px/ sc
-               rsp['total_res_deg'] = (max_res_deg / sc) 
-               mr['total_res_px'] = max_res_px / sc
-               mr['total_res_deg'] = (max_res_deg  / sc ) 
+            elif len(mr['cal_params']['cat_image_stars']) > 0:
+               rsp['total_res_px']  = max_res_px/ sc
+               rsp['total_res_deg'] = (max_res_deg / sc)  
 
-
-         new_mfd = []
-         
-         if "meteor_frame_data" in mr: 
-            temp = sorted(mr['meteor_frame_data'], key=lambda x: int(x[1]), reverse=False)
-
-            for frame_data in temp:      
-               frame_time, fn, hd_x,hd_y,w,h,max_px,ra,dec,az,el = frame_data
-               if len(str(ra)) > 6:
-                  ra = str(ra)[0:6]
-               if len(str(dec)) > 6:
-                  dec = str(dec)[0:6]
-               if len(str(az)) > 6:
-                  az = str(az)[0:6]
-               if len(str(el)) > 6:
-                  el = str(el)[0:6]
-               new_mfd.append((frame_time, fn, hd_x,hd_y,w,h,max_px,ra,dec,az,el)) 
-
-            rsp['meteor_frame_data'] = new_mfd
-          
       rsp['status'] = 1
    else: 
       rsp['status'] = 0
