@@ -1651,7 +1651,7 @@ def get_mask_img(cams_id, json_conf):
       img = cv2.imread(img_files[0])
    else:
       files = glob.glob(sd_dir + "*" + cams_id + "*.mp4")
-      frames = load_video_frames(files[0], json_conf)
+      frames = load_video_frames(files[0], json_conf, 10)
       img = frames[0]
    sd_h, sd_w = img.shape[:2]
    file = img_dir + cams_id + ".jpg"
