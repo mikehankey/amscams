@@ -69,4 +69,4 @@ def reduce_meteor2(json_conf,form):
    with open(PAGE_TEMPLATE, 'r') as file:
       data = file.read()
 
-   print("data")
+   print(data)
