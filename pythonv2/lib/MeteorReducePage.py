@@ -5,12 +5,47 @@ from lib.MeteorReduce_Tools import *
 
 PAGE_TEMPLATE = "/home/ams/amscams/pythonv2/templates/reducePage.v2.html"
 
+# Return an error message
+def get_error(msg):
+   return "<div id='main_container' class='container mt-4 lg-l'><div class='alert alert-danger'>"+msg+"</div></div>"
 
 # Display an error message on the page
 def print_error(msg):
-   print("<div id='main_container' class='container mt-4 lg-l'><div class='alert alert-danger'>"+msg+"</div></div>")
+   print(get_error(msg))
    sys.exit(0)
-   
+
+
+# Create Stars table as a string to display in the template
+def get_stars_reduction_table(meteor_data):
+   stars_table = """<table class="table table-dark table-striped table-hover td-al-m"><thead>
+         <tr>
+            <th>Name</th><th>mag</th><th>Cat RA/Dec</th><th>Res &deg;</th><th>Res. Pixels</th>
+         </tr>
+      </thead>
+      <tbody>
+   """
+   if "cat_image_stars" in meteor_data['cal_params']:
+      for star in meteor_data['cal_params']['cat_image_stars']:
+         (dcname,mag,ra,dec,img_ra,img_dec,match_dist,new_x,new_y,img_az,img_el,new_cat_x,new_cat_y,six,siy,cat_dist) = star
+         good_name =  dcname.encode("ascii","xmlcharrefreplace")
+
+         good_name = str(good_name).replace("b'", "")
+         good_name = str(good_name).replace("'", "")
+         enc_name = good_name 
+
+         ra_dec = str(ra) + "/" + str(dec)
+         stars_table = stars_table + """ 
+         <tr>
+            <td>{:s}</td><td>{:s}</td><td>{:s}</td><td>{:s}</td><td>{:s}</td>
+         </tr>
+         """.format(str(enc_name), str(mag), str(ra_dec), str(match_dist), str(cat_dist))
+
+      stars_table  + stars_table + "</tbody> </table>"
+   else:
+      return get_error('No Star Found')
+
+   return starts_table
+
 
 
 # GENERATES THE REDUCE PAGE METEOR
