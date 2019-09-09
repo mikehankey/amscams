@@ -1,4 +1,6 @@
 import sys
+import cgitb
+
 from lib.FileIO import cfe, load_json_file 
 
 
@@ -6,6 +8,9 @@ from lib.FileIO import cfe, load_json_file
 # Return the JSON Files from a given reduction
 # with modified info
 def get_reduction_info(json_file):
+
+   # Debug
+   cgitb.enable()
    
    print('IN GET REDUCTION INFO')
    print("JSON FILE ")
