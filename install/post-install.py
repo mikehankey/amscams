@@ -40,3 +40,5 @@ print("Update AMS ID and device lat/lon.")
 print("Run File Index Script.")
 print("Setup camera numbers!")
 print("ADD API_HOST to as6.json!")
+
+apt-get install ntp
