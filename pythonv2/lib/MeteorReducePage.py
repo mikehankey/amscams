@@ -27,19 +27,22 @@ def get_stars_reduction_table(meteor_data):
    if "cat_image_stars" in meteor_data['cal_params']:
       for star in meteor_data['cal_params']['cat_image_stars']:
          (dcname,mag,ra,dec,img_ra,img_dec,match_dist,new_x,new_y,img_az,img_el,new_cat_x,new_cat_y,six,siy,cat_dist) = star
+         
+         # Clean the star name
          good_name =  dcname.encode("ascii","xmlcharrefreplace")
          good_name = str(good_name).replace("b'", "")
          good_name = str(good_name).replace("'", "")
          enc_name = good_name 
-
          ra_dec = str(ra) + "/" + str(dec)
+
+         # Get the Star row
          stars_table = stars_table + """ 
          <tr>
             <td>{:s}</td><td>{:s}</td><td>{:s}</td><td>{:s}</td><td>{:s}</td>
          </tr>
          """.format(str(enc_name), str(mag), str(ra_dec), str(match_dist), str(cat_dist))
 
-      stars_table += stars_table + "</tbody></table>"
+      stars_table += "</tbody></table>"
    else:
       return get_error('No Star Found')
 
@@ -112,8 +115,8 @@ def reduce_meteor2(json_conf,form):
    template = template.replace("{EVENT_START_TIME}", str(meteor_json_file['event_start_time'])) # Start time
    template = template.replace("{EVENT_DURATION}", str(meteor_json_file['event_duration']))     # Duration
    template = template.replace("{EVENT_MAGNITUDE}", str(meteor_json_file['peak_magnitude']))    # Peak_magnitude
-
    template = template.replace("{STAR_TABLE}", get_stars_reduction_table(meteor_json_file))     # Stars table
+
    #print(get_stars_reduction_table(meteor_json_file))
 
    # Display Template
