@@ -47,6 +47,17 @@ def get_reduction_info(json_file):
                rsp['total_res_px']  = max_res_px/ sc
                rsp['total_res_deg'] = (max_res_deg / sc)  
 
+         new_mfd = []
+         
+         if "meteor_frame_data" in mr: 
+            temp = sorted(mr['meteor_frame_data'], key=lambda x: int(x[1]), reverse=False)
+
+            for frame_data in temp:      
+               frame_time, fn, hd_x,hd_y,w,h,max_px,ra,dec,az,el = frame_data 
+               new_mfd.append((frame_time, fn, hd_x,hd_y,w,h,max_px,ra,dec,az,el)) 
+
+            rsp['meteor_frame_data'] = new_mfd
+          
       rsp['status'] = 1
    else: 
       rsp['status'] = 0
