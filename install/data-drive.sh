@@ -28,3 +28,9 @@ mkdir /mnt/ams2/CAMS/queue
 mkdir /mnt/ams2/stations
 mkdir /mnt/ams2/multi_station
 mkdir /mnt/ams2/meteors
+mkdir /mnt/ams2/CUSTOM_LOGOS
+mkdir /mnt/ams2/CUSTOM_VIDEOS
+mkdir /mnt/ams2/TIMELAPSE_IMAGES
+mkdir /mnt/ams2/CACHE
+mkdir /mnt/ams2/LOG
+mkdir /mnt/ams2/TMP
