@@ -19,8 +19,8 @@ def print_error(msg):
 def get_reduction_table(analysed_name,template,template_marker,meteor_data,template_marker_count):
    
    # Get the path to the thumbs
-   prefix = get_cache_path(analysed_name,"cropped")
-
+   prefix = get_cache_path(analysed_name,"cropped")+analysed_name['full_name']
+  
    red_table = """
    <table class="table table-dark table-striped table-hover td-al-m mb-2 pr-5" >
       <thead>
@@ -39,7 +39,7 @@ def get_reduction_table(analysed_name,template,template_marker,meteor_data,templ
          ra_dec    = str(ra) + "/" + str(dec) 
 
          fr_id = "fr_row" + str(fn)
-         cmp_img_url = prefix  + str(fn) + ".png"
+         cmp_img_url = prefix  + str(fn) + EXT_CROPPED_FRAMES + ".png"
          cmp_img = "<img alt=\"" + str(fn) + "\" width=\"50\" height=\"50\" src=" + cmp_img_url + " class=\"img-fluid select_meteor\">"
 
          del_frame_link = "javascript:del_frame('" + str(fn) + "')"
@@ -59,7 +59,7 @@ def get_reduction_table(analysed_name,template,template_marker,meteor_data,templ
          </tr>
          """.format(str(fn), str(cmp_img ), str(fn), str(frame_time),str(xy_wh), str(max_px),str(ra_dec),str(az_el))
 
-      red_table += "</tbody></table>"
+      red_table += "</tbody></table>"s
 
       # Add the Table to the template
       template = template.replace(template_marker, red_table)  
