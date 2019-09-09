@@ -50,12 +50,12 @@ def get_stars_reduction_table(template,template_marker,meteor_data,template_mark
       template.replace(template_marker, stars_table)  
 
       # Add the # of stars in the template
-      template.replace(template_marker_count,str(len(meteor_data['cal_params']['cat_image_stars')))
+      #template.replace(template_marker_count,str(len(meteor_data['cal_params']['cat_image_stars')))
       
    else:
       # No start found
       template.replace(template_marker, get_error('No Star Found'))  
-      template.replace(template_marker_count,"0")
+      #template.replace(template_marker_count,"0")
 
    return template
 
