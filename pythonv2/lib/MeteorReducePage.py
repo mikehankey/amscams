@@ -19,7 +19,7 @@ def print_error(msg):
 def get_reduction_table(analysed_name,template,template_marker,meteor_data,template_marker_count):
    
    # Get the path to the thumbs
-   prefix = get_cache_path(analysed_name,"cropped")+analysed_name['full_name']
+   prefix = get_cache_path(analysed_name,"cropped")+analysed_name['name_w_ext']
   
    red_table = """
    <table class="table table-dark table-striped table-hover td-al-m mb-2 pr-5" >
