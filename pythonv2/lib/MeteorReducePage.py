@@ -68,10 +68,7 @@ def reduce_meteor2(json_conf,form):
    # Build the page based on template  
    with open(PAGE_TEMPLATE, 'r') as file:
       template = file.read()
-   
-
-   print(template)
-   sys.exit(0)
+  
 
    # Fill Template with date
    template = template.replace("{VIDEO_FILE}", video_file)   # Add Video File to template
