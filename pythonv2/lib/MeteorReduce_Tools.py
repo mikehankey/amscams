@@ -111,14 +111,14 @@ def does_cache_exist(analysed_file_name,cache_type):
 
 # Get the thumbs (cropped frames) for a meteor detection
 # Generate them if necessary
-def get_thumbs(video_full_path,analysed_name,meteor_json_file,HD,HD_frames,clear_cache):
+def get_thumbs(analysed_name,meteor_json_file,HD,HD_frames,clear_cache):
 
    # Do we have them already?
    thumbs = does_cache_exist(analysed_name,"cropped")
 
    if(len(thumbs)==0 or clear_cache is True):
       # We need to generate the thumbs 
-      thumbs = generate_cropped_frames(video_full_path,analysed_name,meteor_json_file,HD_frames,HD)
+      thumbs = generate_cropped_frames(analysed_name,meteor_json_file,HD_frames,HD)
    else:
       # We return them
       thumbs = glob.glob(get_cache_path(analysed_name,"cropped")+"*"+EXT_CROPPED_FRAMES+"*.png") 
@@ -205,7 +205,7 @@ def new_crop_thumb(frame,x,y,dest,HD):
 
 
    # Create the cropped frames (thumbs) for a meteor detection
-def generate_cropped_frames(video_full_path,analysed_name,meteor_json_file,HD_frames,HD):
+def generate_cropped_frames(analysed_name,meteor_json_file,HD_frames,HD):
 
    # Debug
    cgitb.enable()

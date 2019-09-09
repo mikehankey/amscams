@@ -62,7 +62,7 @@ def reduce_meteor2(json_conf,form):
    #print(get_cache_path(analysed_name,"stacks") +"<br>")
     
    # Get the thumbs (cropped HD frames)
-   thumbs = get_thumbs(video_full_path,analysed_name,meteor_json_file,HD,HD_frames,clear_cache)
+   thumbs = get_thumbs(analysed_name,meteor_json_file,HD,HD_frames,clear_cache)
    #print(get_cache_path(analysed_name,"cropped") +"<br>")
 
    # Build the page based on template  
