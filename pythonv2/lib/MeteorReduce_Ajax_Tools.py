@@ -1,11 +1,18 @@
-from lib.FileIO import cfe
-# get_proc_days, get_day_stats, get_day_files , load_json_file, get_trims_for_file, get_days, save_json_file, 
+import sys
+from lib.FileIO import cfe, load_json_file 
+
+
 
 # Return the JSON Files from a given reduction
 # with modified info
 def get_reduction_info(json_file):
    
-  
+   print('IN GET REDUCTION INFO')
+   print("JSON FILE ")
+   print(json_file)
+
+   sys.exit(0)
+
    # Cnters
    total_res_deg = 0 
    total_res_px = 0 
