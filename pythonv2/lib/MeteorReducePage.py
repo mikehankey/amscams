@@ -15,8 +15,10 @@ def print_error(msg):
    sys.exit(0)
 
 
-# Create Stars table as a string to display in the template
-def get_stars_reduction_table(meteor_data):
+# Add Stars table and stars count to the template
+def get_stars_reduction_table(template,template_marker,meteor_data,template_marker_count):
+
+    
    stars_table = """<table class="table table-dark table-striped table-hover td-al-m"><thead>
          <tr>
             <th>Name</th><th>mag</th><th>Cat RA/Dec</th><th>Res &deg;</th><th>Res. Pixels</th>
@@ -43,10 +45,19 @@ def get_stars_reduction_table(meteor_data):
          """.format(str(enc_name), str(mag), str(ra_dec), str(match_dist), str(cat_dist))
 
       stars_table += "</tbody></table>"
-   else:
-      return get_error('No Star Found')
 
-   return stars_table
+      # Add the Table to the template
+      template.replace(template_marker, stars_table)  
+
+      # Add the # of stars in the template
+      template.replace(template_marker_count,str(len(meteor_data['cal_params']['cat_image_stars')))
+      
+   else:
+      # No start found
+      template.replace(template_marker, get_error('No Star Found'))  
+      template.replace(template_marker_count,"0")
+
+   return template
 
 
 
@@ -115,7 +126,9 @@ def reduce_meteor2(json_conf,form):
    template = template.replace("{EVENT_START_TIME}", str(meteor_json_file['event_start_time'])) # Start time
    template = template.replace("{EVENT_DURATION}", str(meteor_json_file['event_duration']))     # Duration
    template = template.replace("{EVENT_MAGNITUDE}", str(meteor_json_file['peak_magnitude']))    # Peak_magnitude
-   template = template.replace("{STAR_TABLE}", get_stars_reduction_table(meteor_json_file))     # Stars table
+   
+   template =  get_stars_reduction_table(template,"{STAR_TABLE}",meteor_json_file,'{START_COUNT}')   # Stars table
+    
 
    #print(get_stars_reduction_table(meteor_json_file))
 
