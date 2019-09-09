@@ -7,11 +7,11 @@ PAGE_TEMPLATE = "/home/ams/amscams/pythonv2/templates/reducePage.v2.html"
 
 # Return an error message
 def get_error(msg):
-   return "<div id='main_container' class='container mt-4 lg-l'><div class='alert alert-danger'>"+msg+"</div></div>"
+   return "div class='alert alert-danger'>"+msg+"</div>"
 
 # Display an error message on the page
 def print_error(msg):
-   print(get_error(msg))
+   print("<div id='main_container' class='container mt-4 lg-l'>"+get_error(msg)+"</div>")
    sys.exit(0)
 
 
@@ -39,7 +39,7 @@ def get_stars_reduction_table(meteor_data):
          </tr>
          """.format(str(enc_name), str(mag), str(ra_dec), str(match_dist), str(cat_dist))
 
-      stars_table  + stars_table + "</tbody> </table>"
+      stars_table  + stars_table + "</tbody></table>"
    else:
       return get_error('No Star Found')
 
