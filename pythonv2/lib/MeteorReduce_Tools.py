@@ -28,6 +28,11 @@ FRAMES_SUBPATH= "/FRAMES/"          # For the HD Frames
 CROPPED_FRAMES_SUBPATH = "/THUMBS/" # For the Cropped Frames (thumbs)
 STACKS_SUBPATH   = "/STACKS/"       # For the Stacks
 
+
+# STACK DIMENSIONS ("half-stack")
+STACK_W = 960
+STACK_H = 540
+
 # PATTERN FOR THE FILE NAMES
 # YYYY_MM_DD_HH_MM_SS_MSS_CAM_STATION[_HD].EXT
 FILE_NAMES_REGEX = r"(\d{4})_(\d{2})_(\d{2})_(\d{2})_(\d{2})_(\d{2})_(\d{3})_(\w{6})_([^_^.]+)(_HD)?(\.)?(\.[0-9a-z]+$)"
@@ -276,7 +281,6 @@ def generate_stacks(video_full_path, destination):
    
    # Get All Frames
    frames = load_video_frames(video_full_path, load_json_file(JSON_CONFIG), 0, 0)
- 
    stacked_image = None
 
    # Create Stack 
@@ -287,8 +291,9 @@ def generate_stacks(video_full_path, destination):
       else:
          stacked_image = stack_stack(stacked_image, frame_pil)
 
-   # Save to destination 
-   if stacked_image is not None:
+   # Resize & Save to destination 
+   if stacked_image is not None: 
+      stacked_image = cv2.resize(stacked_image, (STACK_W, STACK_H), interpolation = cv2.INTER_AREA)
       stacked_image.save(destination)
  
    return destination
