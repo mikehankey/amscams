@@ -42,7 +42,7 @@ def get_reduction_table(analysed_name,template,template_marker,meteor_data,templ
          cmp_img_url = prefix  + str(fn) + ".png"
          cmp_img = "<img alt=\"" + str(fn) + "\" width=\"50\" height=\"50\" src=" + cmp_img_url + " class=\"img-fluid select_meteor\">"
 
-         del_frame_link = "javascript:del_frame('" + str(fn) + "','" + meteor_json_file +"')"
+         del_frame_link = "javascript:del_frame('" + str(fn) + "')"
 
 
          red_table2 = red_table + """
