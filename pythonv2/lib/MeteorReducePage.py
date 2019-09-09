@@ -3,6 +3,9 @@ import cgitb
 from lib.MeteorReduce_Tools import *
 
 
+PAGE_TEMPLATE = "/home/ams/amscams/pythonv2/templates/reducePage.v2.html"
+
+
 # Display an error message on the page
 def print_error(msg):
    print("<div id='main_container' class='container mt-4 lg-l'><div class='alert alert-danger'>"+msg+"</div></div>")
@@ -52,24 +55,18 @@ def reduce_meteor2(json_conf,form):
    
    # Get the HD frames
    HD_frames = get_HD_frames(video_full_path,analysed_name,clear_cache)
-   print(get_cache_path(analysed_name,"frames") +"<br>")
+   #print(get_cache_path(analysed_name,"frames") +"<br>")
 
    # Get the stacks
    stack = get_stacks(video_full_path,analysed_name,clear_cache)
-   print(get_cache_path(analysed_name,"stacks") +"<br>")
+   #print(get_cache_path(analysed_name,"stacks") +"<br>")
     
    # Get the thumbs (cropped HD frames)
    thumbs = get_thumbs(video_full_path,analysed_name,meteor_json_file,HD,HD_frames,clear_cache)
-   print(get_cache_path(analysed_name,"cropped") +"<br>")
+   #print(get_cache_path(analysed_name,"cropped") +"<br>")
 
+   # Build the page based on template  
+   with open(PAGE_TEMPLATE, 'r') as file:
+      data = file.read()
 
-   # DEBUG
-   
-   #print('THUMBS<br>')
-   #print(thumbs)
-
-   #print('FRAMES<br>')
-   #print(HD_frames)
-
-   #print('STACKS<br>')
-   #print(stack)
+   print("data")
