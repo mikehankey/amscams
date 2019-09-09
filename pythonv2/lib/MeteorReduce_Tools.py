@@ -131,19 +131,8 @@ def new_crop_thumb(frame,x,y,dest,HD):
 
    # Debug
    cgitb.enable()
-
-   print("<br><br>**************<br>")
-   print("IN NEW CROP THUMB<br>")
-   print("INPUT FRAME " + frame + "<br>")
-   print("CREATING NEW THUMB to " + dest + "<br>")
-   print("X " + str(x) + "<br>")
-   print("Y " + str(y) + "<br>")
-
-  
    img = cv2.imread(frame) 
    
-   print("IMG READ<br>")
-
 
    # We shouldn't have the need for that... (check with VIDEO_VARS values and the way we're creating the frames from the video)
    if(HD is True):
@@ -153,12 +142,8 @@ def new_crop_thumb(frame,x,y,dest,HD):
       org_w_HD = SD_W
       org_h_HD = SD_H
 
-   print("CREATING EMPTY SQUARE<br>")
-
    # Create empty image THUMB_WxTHUMB_H in black so we don't have any issues while working on the edges of the original frame 
    crop_img = np.zeros((THUMB_W,THUMB_H,3), np.uint8)
-
-   print("CREATED<br>")
 
    # Default values
    org_x = int(x - THUMB_SELECT_W/2)
@@ -170,9 +155,7 @@ def new_crop_thumb(frame,x,y,dest,HD):
    thumb_dest_w = THUMB_W
    thumb_dest_y = 0
    thumb_dest_h = THUMB_H
-
-   
-
+ 
    # If the x is too close to the edge
 
    # ON THE LEFT
