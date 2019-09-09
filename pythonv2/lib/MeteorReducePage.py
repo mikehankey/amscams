@@ -53,6 +53,9 @@ def reduce_meteor2(json_conf,form):
    if(os.path.isfile(meteor_json_file) is False):
       print_error(meteor_json_file + " <b>not found.</b><br>This detection may had not been reduced yet or the reduction failed.")
    
+    # We parse the JSON
+   meteor_json_file = load_json_file(meteor_json_file) 
+
    # Get the HD frames
    HD_frames = get_HD_frames(analysed_name,clear_cache)
    #print(get_cache_path(analysed_name,"frames") +"<br>")
@@ -68,6 +71,7 @@ def reduce_meteor2(json_conf,form):
    # Build the page based on template  
    with open(PAGE_TEMPLATE, 'r') as file:
       template = file.read()
+  
   
 
    # Fill Template with date
