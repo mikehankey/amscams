@@ -112,7 +112,8 @@ def reduce_meteor2(json_conf,form):
    template = template.replace("{EVENT_START_TIME}", str(meteor_json_file['event_start_time'])) # Start time
    template = template.replace("{EVENT_DURATION}", str(meteor_json_file['event_duration']))     # Duration
    template = template.replace("{EVENT_MAGNITUDE}", str(meteor_json_file['peak_magnitude']))    # Peak_magnitude
-   #template = template.replace("{RED_TABLE}", get_stars_reduction_table(meteor_json_file))    # Stars table
+   
+   template = template.replace("{STAR_TABLE}", get_stars_reduction_table(meteor_json_file))     # Stars table
    
 
    # Display Template
