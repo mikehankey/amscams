@@ -34,29 +34,27 @@ def get_stars_reduction_table(template,template_marker,meteor_data,template_mark
          good_name = str(good_name).replace("b'", "")
          good_name = str(good_name).replace("'", "")
          enc_name = good_name 
-         ra_dec = str(ra) + "/" + str(dec)
+         ra_dec = str(ra) + "&deg;/" + str(dec) + "&deg;"
 
          # Get the Star row
          stars_table = stars_table + """ 
          <tr>
-            <td>{:s}</td><td>{:s}</td><td>{:s}</td><td>{:s}</td><td>{:s}</td>
+            <td>{:s}</td><td>{:s}</td><td>{:s}</td><td>{:s}&deg;</td><td>{:s}</td>
          </tr>
          """.format(str(enc_name), str(mag), str(ra_dec), str(match_dist), str(cat_dist))
 
       stars_table += "</tbody></table>"
 
       # Add the Table to the template
-      template.replace(template_marker, stars_table)  
+      template = template.replace(template_marker, stars_table)  
 
       # Add the # of stars in the template
-      template.replace(template_marker_count,str(len(meteor_data['cal_params']['cat_image_stars'])))
-
-      print(stars_table)
+      template = template.replace(template_marker_count,str(len(meteor_data['cal_params']['cat_image_stars'])))
 
    else:
       # No start found
-      template.replace(template_marker, get_error('No Star Found'))  
-      template.replace(template_marker_count,"0")
+      template = template.replace(template_marker, get_error('No Star Found'))  
+      template = template.replace(template_marker_count,"0")
 
    return template
 
