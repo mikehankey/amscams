@@ -11,13 +11,7 @@ def get_reduction_info(json_file):
 
    # Debug
    cgitb.enable()
-   
-   print("IN GET REDUCTION INFO")
-   print("JSON FILE ")
-   print(json_file)
-
-   sys.exit(0)
-
+  
    # Cnters
    total_res_deg = 0 
    total_res_px = 0 
