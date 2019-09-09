@@ -117,4 +117,4 @@ def reduce_meteor2(json_conf,form):
    print(get_stars_reduction_table(meteor_json_file))
 
    # Display Template
-   print(template)
+   # print(template)
