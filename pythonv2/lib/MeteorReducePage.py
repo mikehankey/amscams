@@ -13,6 +13,8 @@ def get_error(msg):
 def print_error(msg):
    print("<div id='main_container' class='container mt-4 lg-l'>"+get_error(msg)+"</div>")
    sys.exit(0)
+
+
  
 
 
@@ -81,11 +83,10 @@ def reduce_meteor2(json_conf,form):
    template = template.replace("{EVENT_START_TIME}", str(meteor_json_file['event_start_time'])) # Start time
    template = template.replace("{EVENT_DURATION}", str(meteor_json_file['event_duration']))     # Duration
    template = template.replace("{EVENT_MAGNITUDE}", str(meteor_json_file['peak_magnitude']))    # Peak_magnitude
- 
-
-
+   
    #template =  get_stars_table(template,"{STAR_TABLE}",meteor_json_file,"{STAR_COUNT}")   # Stars table
    #template =  get_reduction_table(analysed_name,template,"{RED_TABLE}",meteor_json_file,'{FRAME_COUNT}') # Reduction Table
+
    #print(get_stars_table(meteor_json_file))
 
    # Display Template
