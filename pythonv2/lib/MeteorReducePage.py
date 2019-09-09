@@ -16,8 +16,11 @@ def print_error(msg):
 
 
 # Add Reduction Table to the template
-def get_reduction_table(template,template_marker,meteor_data,template_marker_count):
+def get_reduction_table(analysed_name,template,template_marker,meteor_data,template_marker_count):
    
+   # Get the path to the thumbs
+   prefix = get_cache_path(analysed_name,"cropped")
+
    red_table = """
    <table class="table table-dark table-striped table-hover td-al-m mb-2 pr-5" >
       <thead>
@@ -182,7 +185,7 @@ def reduce_meteor2(json_conf,form):
    template = template.replace("{EVENT_MAGNITUDE}", str(meteor_json_file['peak_magnitude']))    # Peak_magnitude
    
    template =  get_stars_table(template,"{STAR_TABLE}",meteor_json_file,"{STAR_COUNT}")   # Stars table
-   template =  get_reduction_table(template,"{RED_TABLE}",meteor_json_file,'{FRAME_COUNT}') # Reduction Table
+   template =  get_reduction_table(analysed_name,template,"{RED_TABLE}",meteor_json_file,'{FRAME_COUNT}') # Reduction Table
 
    #print(get_stars_table(meteor_json_file))
 
