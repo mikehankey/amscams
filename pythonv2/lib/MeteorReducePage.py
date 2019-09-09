@@ -41,7 +41,7 @@ def get_stars_reduction_table(template,template_marker,meteor_data,template_mark
          <tr>
             <td>{:s}</td><td>{:s}</td><td>{:s}</td><td>{:s}&deg;</td><td>{:s}</td>
          </tr>
-         """.format(str(enc_name), str(mag), str(ra_dec), str(match_dist), str(cat_dist))
+         """.format(str(enc_name), str(mag), str(ra_dec), str('{0:.43g}'.format(match_dist)), str('{0:.43g}'.format(cat_dist)))
 
       stars_table += "</tbody></table>"
 
