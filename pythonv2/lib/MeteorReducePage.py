@@ -73,12 +73,12 @@ def reduce_meteor2(json_conf,form):
       template = file.read()
   
    # Fill Template with data
-   template = template.replace("{VIDEO_FILE}", video_full_path)   # Video File  
-   template = template.replace("{STACK}", stack)                  # Stack File 
-   template = template.replace("{EVENT_START_TIME}",meteor_json_file['event_start_time']) # Start time
-   template = template.replace("{EVENT_DURATION}",meteor_json_file['event_duration'])     # Duration
-   template = template.replace("{EVENT_MAGNITUDE}",meteor_json_file['peak_magnitude'])    # Peak_magnitude
-   
+   template = template.replace("{VIDEO_FILE}", str(video_full_path))   # Video File  
+   template = template.replace("{STACK}", str(stack))                  # Stack File 
+   template = template.replace("{EVENT_START_TIME}", str(meteor_json_file['event_start_time'])) # Start time
+   template = template.replace("{EVENT_DURATION}", str(meteor_json_file['event_duration']))     # Duration
+   template = template.replace("{EVENT_MAGNITUDE}", str(meteor_json_file['peak_magnitude']))    # Peak_magnitude
+
 
    # Display Template
    print(template)
