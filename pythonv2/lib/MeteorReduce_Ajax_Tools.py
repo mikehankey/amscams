@@ -3,7 +3,7 @@ import cgitb
 
 from lib.FileIO import cfe, load_json_file 
 
-
+ 
 
 # Return the JSON Files from a given reduction
 # with modified info
@@ -67,9 +67,7 @@ def get_reduction_info(json_file):
                new_mfd.append((frame_time, fn, hd_x,hd_y,w,h,max_px,ra,dec,az,el)) 
 
             rsp['meteor_frame_data'] = new_mfd
-            (box_min_x,box_min_y,box_max_x,box_max_y) = define_crop_box(mr['meteor_frame_data'])
-            rsp['crop_box'] = (box_min_x,box_min_y,box_max_x,box_max_y)
-            mr['crop_box'] = rsp['crop_box']
+          
       rsp['status'] = 1
    else: 
       rsp['status'] = 0
