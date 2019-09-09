@@ -43,8 +43,7 @@ def get_reduction_table(analysed_name,template,template_marker,meteor_data,templ
          cmp_img = "<img alt=\"" + str(fn) + "\" width=\"50\" height=\"50\" src=" + cmp_img_url + " class=\"img-fluid select_meteor\">"
 
          del_frame_link = "javascript:del_frame('" + str(fn) + "')"
-
-
+ 
          red_table = red_table + """
          <tr id="fr_{:s}">
          <td>{:s}</td>
@@ -59,7 +58,7 @@ def get_reduction_table(analysed_name,template,template_marker,meteor_data,templ
          </tr>
          """.format(str(fn), str(cmp_img ), str(fn), str(frame_time),str(xy_wh), str(max_px),str(ra_dec),str(az_el))
 
-      red_table += "</tbody></table>"s
+      red_table += "</tbody></table>"
 
       # Add the Table to the template
       template = template.replace(template_marker, red_table)  
