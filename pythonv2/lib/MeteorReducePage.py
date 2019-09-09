@@ -1,6 +1,6 @@
 import cgitb
 
-from lib.MeteorReduce_Tools import *
+from lib.MeteorReduce_Tools import * 
 
 
 PAGE_TEMPLATE = "/home/ams/amscams/pythonv2/templates/reducePage.v2.html"
@@ -14,8 +14,6 @@ def print_error(msg):
    print("<div id='main_container' class='container mt-4 lg-l'>"+get_error(msg)+"</div>")
    sys.exit(0)
 
-
- 
 
 
 # GENERATES THE REDUCE PAGE METEOR

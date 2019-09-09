@@ -38,6 +38,7 @@ from lib.MultiStationMeteors import multi_station_meteors, multi_station_meteor_
 
 # New Reduce Meteor Page
 from lib.MeteorReducePage import reduce_meteor2
+from lib.MeteorReducePage_Ajax_Tools import get_reduction_info
  
 
 NUMBER_OF_METEOR_PER_PAGE = 60
@@ -232,6 +233,13 @@ def controller(json_conf):
       pwd = form.getvalue("pwd")
       check_pwd_ajax(user,pwd)
       exit()
+
+
+   # GET REDUCTION JSON DATA (AJAX CALL)
+   if cmd == 'get_reduction_info':
+      get_reduction_info(form)   
+      exit()
+
 
    #CUSTOM VIDEOS (AJAX CALL)
    if cmd == 'generate_timelapse': 

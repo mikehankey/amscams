@@ -2695,21 +2695,17 @@ def update_red_info_ajax(json_conf, form):
    total_res_px = 0 
    max_res_deg = 0 
    max_res_px = 0 
-   
-
-
+     
    video_file = form.getvalue('video_file') 
    meteor_json_file = video_file.replace(".mp4", ".json")
    meteor_red_file = meteor_json_file.replace(".json", "-reduced.json")
    rsp = {}
-
-
+ 
 
    if cfe(meteor_red_file) == 1:
       mr = load_json_file(meteor_red_file)
       if "cal_params" in mr:
- 
-         if "cat_image_stars" in mr['cal_params']:
+        if "cat_image_stars" in mr['cal_params']:
             rsp['cat_image_stars'] = mr['cal_params']['cat_image_stars'] 
             sc = 0
             for star in mr['cal_params']['cat_image_stars']:

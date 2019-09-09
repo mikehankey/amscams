@@ -249,8 +249,6 @@ def get_stacks(analysed_name,clear_cache):
       stack_file = stacks[0]
 
    return stack_file
-
-
  
 
 # Generate the Stacks for a meteor detection
