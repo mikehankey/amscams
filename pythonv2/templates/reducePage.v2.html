@@ -14,7 +14,7 @@
                <a class="nav-link" id="lightc-tab-l" data-toggle="tab" href="#lightc-tab" role="tab" aria-controls="lightc" aria-selected="true">Light Curve</a>
            </li>
            <li class="nav-item">
-               <a class="nav-link" id="stars-tab-l" data-toggle="tab" href="#stars-tab" role="tab" aria-controls="stars" aria-selected="false"><span id="str_cnt">{START_COUNT}</span> Stars</a>
+               <a class="nav-link" id="stars-tab-l" data-toggle="tab" href="#stars-tab" role="tab" aria-controls="stars" aria-selected="false"><span id="str_cnt">{STAR_COUNT}</span> Stars</a>
            </li>
            <li class="nav-item">
                <a class="nav-link" id="plots-tab-l" data-toggle="tab" href="#plots-tab" role="tab" aria-controls="plots" aria-selected="false">Plots</a>
@@ -71,6 +71,12 @@
                <dt class="col-6">Start Time</dt><dd class="col-6">{EVENT_START_TIME}</dd>
                <dt class="col-6">Duration  </dt><dd class="col-6" id="dur">{EVENT_DURATION}s</dd>
                <dt class="col-6">Magnitude </dt><dd class="col-6">{EVENT_MAGNITUDE}</dd>
+           </dl>
+           <hr class="w">
+           <h2>Reduction</h2>
+           <dl class="row mb-0">
+               <dt class="col-6">Frames</dt><dd class="col-6">{FRAME_COUNT}</dd>
+               <dt class="col-6">Stars  </dt><dd class="col-6" id="dur">{STAR_COUNT}</dd> 
            </dl>
            <hr class="w">
            <div class="m-2 ml-5 mr-5">

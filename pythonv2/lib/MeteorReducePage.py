@@ -15,8 +15,65 @@ def print_error(msg):
    sys.exit(0)
 
 
+# Add Reduction Table to the template
+def get_reduction_table(template,template_marker,meteor_data,template_marker_count):
+   
+   red_table = """
+   <table class="table table-dark table-striped table-hover td-al-m mb-2 pr-5" >
+      <thead>
+         <tr>
+            <th></th><th></th><th>#</th><th>Time</th><th>RA/DEC</th><th>AZ/EL</th><th>X/Y</th><th>w/h</th><th>Max px</th><th colspan="4"></th>
+         </tr>
+      </thead>
+   """
+
+   if "meteor_frame_data" in meteor_data:
+      for frame_data in meteor_data['meteor_frame_data']:
+         frame_time, fn, hd_x,hd_y,w,h,max_px,ra,dec,az,el = frame_data
+         row_id   = "tr" + str(fn)
+         xy_wh    = str(hd_x) + "," + str(hd_y) + " " + str(w) + "," + str(h)
+         az_el    = str(az) + "/" + str(el) 
+         ra_dec    = str(ra) + "/" + str(dec) 
+
+         fr_id = "fr_row" + str(fn)
+         cmp_img_url = prefix  + str(fn) + ".png"
+         cmp_img = "<img alt=\"" + str(fn) + "\" width=\"50\" height=\"50\" src=" + cmp_img_url + " class=\"img-fluid select_meteor\">"
+
+         del_frame_link = "javascript:del_frame('" + str(fn) + "','" + meteor_json_file +"')"
+
+
+         red_table2 = red_table + """
+         <tr id="fr_{:s}">
+         <td>{:s}</td>
+         <td>{:s}</td>
+         <td>{:s}</td>
+         <td>{:s}</td>
+         <td>{:s}</td>
+         <td>{:s}</td>
+         <td>{:s}</td>
+         <td><a class="btn btn-danger btn-sm delete_frame"><i class="icon-delete"></i></a></td>
+         <td><a class="btn btn-success btn-sm select_meteor"><i class="icon-target"></i></a></td>
+         </tr>
+      """.format(str(fn), str(cmp_img ), str(fn), str(frame_time),str(xy_wh), str(max_px),str(ra_dec),str(az_el))
+
+      red_table = red_table += "</tbody></table>"
+
+      # Add the Table to the template
+      template = template.replace(template_marker, red_table)  
+
+      # Add the # of stars in the template
+      template = template.replace(template_marker_count,str(len(meteor_data['meteor_frame_data'])))
+
+   else:
+      # No start found
+      template = template.replace(template_marker, get_error('No Frame Found - Please, reduce the detection.'))  
+      template = template.replace(template_marker_count,"0")
+
+   return template
+
+
 # Add Stars table and stars count to the template
-def get_stars_reduction_table(template,template_marker,meteor_data,template_marker_count):
+def get_stars_table(template,template_marker,meteor_data,template_marker_count):
     
    stars_table = """<table class="table table-dark table-striped table-hover td-al-m"><thead>
          <tr>
@@ -124,10 +181,10 @@ def reduce_meteor2(json_conf,form):
    template = template.replace("{EVENT_DURATION}", str(meteor_json_file['event_duration']))     # Duration
    template = template.replace("{EVENT_MAGNITUDE}", str(meteor_json_file['peak_magnitude']))    # Peak_magnitude
    
-   template =  get_stars_reduction_table(template,"{STAR_TABLE}",meteor_json_file,"{START_COUNT}")   # Stars table
-    
+   template =  get_stars_table(template,"{STAR_TABLE}",meteor_json_file,"{STAR_COUNT}")   # Stars table
+   template =  get_reduction_table(template,"{RED_TABLE}",meteor_json_file,'{FRAME_COUNT}') # Reduction Table
 
-   #print(get_stars_reduction_table(meteor_json_file))
+   #print(get_stars_table(meteor_json_file))
 
    # Display Template
    print(template)
