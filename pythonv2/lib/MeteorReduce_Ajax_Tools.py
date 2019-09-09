@@ -3,21 +3,19 @@ from lib.FileIO import cfe
 
 # Return the JSON Files from a given reduction
 # with modified info
-def get_reduction_info(form):
+def get_reduction_info(json_file):
    
-   # Get Video File & Analyse the Name to get quick access to all info
-   red_json_file = form.getvalue("red_json_file")
-
+  
    # Cnters
    total_res_deg = 0 
    total_res_px = 0 
    max_res_deg = 0 
    max_res_px = 0 
 
-   if cfe(red_json_file) == 1:
+   if cfe(json_file) == 1:
 
       # We load the JSON
-      mr = load_json_file(meteor_red_file) 
+      mr = load_json_file(json_file) 
 
       if "cal_params" in mr:
          if "cat_image_stars" in mr['cal_params']:
