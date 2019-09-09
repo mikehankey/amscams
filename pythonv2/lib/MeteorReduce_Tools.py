@@ -246,7 +246,7 @@ def get_stacks(analysed_name,clear_cache):
       # We need to generate the Stacks 
       # Destination = 
       # get_cache_path(analysed_name,"stacks") + analysed_name['name_w_ext'] + ".png"
-      stack_file = generate_stacks(video_full_path['full_path'],get_cache_path(analysed_name,"stacks")+analysed_name['name_w_ext']+".png")
+      stack_file = generate_stacks(analysed_name['full_path'],get_cache_path(analysed_name,"stacks")+analysed_name['name_w_ext']+".png")
    else:
       # We hope this is the first one in the folder (it should!!)
       stack_file = stacks[0]
