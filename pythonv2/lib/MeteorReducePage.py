@@ -25,6 +25,10 @@ def reduce_meteor2(json_conf,form):
    # Debug
    cgitb.enable()
 
+   # Build the page based on template  
+   with open(PAGE_TEMPLATE, 'r') as file:
+      template = file.read()
+
    # Here we have the possibility to "empty" the cache, ie regenerate the files even if they already exists
    # we just need to add "clear_cache=1" to the URL
    if(form.getvalue("clear_cache") is not None):
@@ -56,7 +60,10 @@ def reduce_meteor2(json_conf,form):
    if(os.path.isfile(meteor_json_file) is False):
       print_error(meteor_json_file + " <b>not found.</b><br>This detection may had not been reduced yet or the reduction failed.")
    
-    # We parse the JSON
+   # Add the JSON Path to the template
+   template = template.replace("{JSON_FILE}", str(meteor_json_file))   # Video File  
+
+   # Parse the JSON
    meteor_json_file = load_json_file(meteor_json_file) 
 
    # Get the HD frames
@@ -71,9 +78,7 @@ def reduce_meteor2(json_conf,form):
    thumbs = get_thumbs(analysed_name,meteor_json_file,HD,HD_frames,clear_cache)
    #print(get_cache_path(analysed_name,"cropped") +"<br>")
 
-   # Build the page based on template  
-   with open(PAGE_TEMPLATE, 'r') as file:
-      template = file.read()
+  
   
    # Fill Template with data
    template = template.replace("{VIDEO_FILE}", str(video_full_path))   # Video File  

@@ -1,6 +1,6 @@
 function update_star_and_reduction(callback) {
    var cmd_data = {
-       video_file: main_vid,          // Defined on the page 
+       json_file: main_vid,          // Defined on the page 
        cmd: 'get_reduction_info'
    }
 
