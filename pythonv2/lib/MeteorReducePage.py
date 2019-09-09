@@ -71,8 +71,9 @@ def reduce_meteor2(json_conf,form):
   
 
    # Fill Template with date
-   template = template.replace("{VIDEO_FILE}", video_full_path)   # Add Video File to template
-   template = template.replace("{STACK}", stack)    # Add the stack File to template
+   template = template.replace("{VIDEO_FILE}", video_full_path)   # Video File  
+   template = template.replace("{STACK}", stack)                  # Stack File 
+   template = template.replace("{EVENT_START_TIME}",meteor_json_file['event_start_time'])    # Start time
 
    # Display Template
    print(template)

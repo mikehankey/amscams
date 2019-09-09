@@ -284,13 +284,13 @@ def generate_stacks(video_full_path, destination):
 
 # Get All HD Frames for a meteor detection
 # Generate them if they don't exist
-def get_HD_frames(video_full_path,analysed_name,clear_cache):
+def get_HD_frames(analysed_name,clear_cache):
    # Test if folder exists / Create it if not
    HD_frames = does_cache_exist(analysed_name,"frames")
 
    if(len(HD_frames)==0 or clear_cache is True):
       # We need to generate the HD Frame
-      HD_frames = generate_HD_frames(video_full_path,get_cache_path(analysed_name,"frames")+analysed_name['name_w_ext'])
+      HD_frames = generate_HD_frames(analysed_name,get_cache_path(analysed_name,"frames")+analysed_name['name_w_ext'])
    else:
       # We get the frames from the cache 
       HD_frames = glob.glob(get_cache_path(analysed_name,"frames")+"*"+EXT_HD_FRAMES+"*.png") 
@@ -301,7 +301,7 @@ def get_HD_frames(video_full_path,analysed_name,clear_cache):
 
 
 # Generate HD frames for a meteor detection
-def generate_HD_frames(video_full_path, destination):
+def generate_HD_frames(analysed_name, destination):
 
    # Frames
    frames  = []
@@ -310,7 +310,7 @@ def generate_HD_frames(video_full_path, destination):
    cgitb.enable() 
    
    # Get All Frames
-   cmd = 'ffmpeg -y -hide_banner -loglevel panic  -i ' + video_full_path + ' -s ' + str(HD_W) + "x" + str(HD_H) + ' ' +  destination + EXT_HD_FRAMES + '_%04d' + '.png' 
+   cmd = 'ffmpeg -y -hide_banner -loglevel panic  -i ' + analysed_name['full_path'] + ' -s ' + str(HD_W) + "x" + str(HD_H) + ' ' +  destination + EXT_HD_FRAMES + '_%04d' + '.png' 
    output = subprocess.check_output(cmd, shell=True).decode("utf-8")
 
    return glob.glob(destination+"*"+EXT_HD_FRAMES+"*.png")

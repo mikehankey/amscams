@@ -217,8 +217,7 @@ if ($('canvas#c').length!=0) {
       // End Loading Animation
       loading_done(); 
       
-
-      console.log("CANVAS DIM " + canvas.width + " " + canvas.height)
+ 
     },
     {
       width: canvas.width,
