@@ -12,7 +12,7 @@ def get_reduction_info(json_file):
    # Debug
    cgitb.enable()
    
-   print('IN GET REDUCTION INFO')
+   print("IN GET REDUCTION INFO")
    print("JSON FILE ")
    print(json_file)
 

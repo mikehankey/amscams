@@ -38,7 +38,7 @@ from lib.MultiStationMeteors import multi_station_meteors, multi_station_meteor_
 
 # New Reduce Meteor Page
 from lib.MeteorReducePage import reduce_meteor2
-from lib.MeteorReducePage_Ajax_Tools import get_reduction_info
+from lib.MeteorReduce_Ajax_Tools import get_reduction_info
  
 
 NUMBER_OF_METEOR_PER_PAGE = 60
