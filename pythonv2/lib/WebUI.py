@@ -236,8 +236,7 @@ def controller(json_conf):
 
 
    # GET REDUCTION JSON DATA (AJAX CALL)
-   if cmd == 'get_reduction_info':
-      print('HERE - get_reduction_info')
+   if cmd == 'get_reduction_info': 
       get_reduction_info(form.getvalue('json_file'))   
       exit()
 
