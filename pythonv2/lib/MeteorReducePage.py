@@ -28,7 +28,6 @@ def get_stars_reduction_table(meteor_data):
       for star in meteor_data['cal_params']['cat_image_stars']:
          (dcname,mag,ra,dec,img_ra,img_dec,match_dist,new_x,new_y,img_az,img_el,new_cat_x,new_cat_y,six,siy,cat_dist) = star
          good_name =  dcname.encode("ascii","xmlcharrefreplace")
-
          good_name = str(good_name).replace("b'", "")
          good_name = str(good_name).replace("'", "")
          enc_name = good_name 
@@ -44,7 +43,7 @@ def get_stars_reduction_table(meteor_data):
    else:
       return get_error('No Star Found')
 
-   return starts_table
+   return stars_table
 
 
 
