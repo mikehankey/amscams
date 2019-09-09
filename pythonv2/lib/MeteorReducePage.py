@@ -58,7 +58,7 @@ def reduce_meteor2(json_conf,form):
    #print(get_cache_path(analysed_name,"frames") +"<br>")
 
    # Get the stacks
-   stack = get_stacks(video_full_path,analysed_name,clear_cache)
+   stack = get_stacks(analysed_name,clear_cache)
    #print(get_cache_path(analysed_name,"stacks") +"<br>")
     
    # Get the thumbs (cropped HD frames)
@@ -73,7 +73,7 @@ def reduce_meteor2(json_conf,form):
    # Fill Template with date
    template = template.replace("{VIDEO_FILE}", video_full_path)   # Video File  
    template = template.replace("{STACK}", stack)                  # Stack File 
-   template = template.replace("{EVENT_START_TIME}",meteor_json_file['event_start_time'])    # Start time
+   #template = template.replace("{EVENT_START_TIME}",meteor_json_file['event_start_time'])    # Start time
 
    # Display Template
    print(template)
