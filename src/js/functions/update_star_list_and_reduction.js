@@ -19,6 +19,7 @@ function update_star_and_reduction(callback) {
 
             console.log('IN update_star_and_reduction')
             console.log(json_resp)
+            console.log(cmd_data)
 
             if(json_resp['status']!==0) {
              
