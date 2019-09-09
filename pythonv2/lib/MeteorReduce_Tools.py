@@ -291,9 +291,9 @@ def generate_stacks(video_full_path, destination):
       else:
          stacked_image = stack_stack(stacked_image, frame_pil)
 
-   # Resize & Save to destination 
+   # Resize  (STACK_W, STACK_H) & Save to destination 
    if stacked_image is not None: 
-      stacked_image = cv2.resize(stacked_image, (STACK_W, STACK_H), interpolation = cv2.INTER_AREA)
+      stacked_image = stacked_image.resize((STACK_W, STACK_H))
       stacked_image.save(destination)
  
    return destination
