@@ -18,6 +18,9 @@ def get_reduction_info(json_file):
    max_res_deg = 0 
    max_res_px = 0 
 
+   # Output
+   rsp = {}
+
    if cfe(json_file) == 1:
 
       # We load the JSON
