@@ -73,3 +73,6 @@ def reduce_meteor2(json_conf,form):
    # Fill Template with date
    template = template.replace("{VIDEO_FILE}", video_full_path)   # Add Video File to template
    template = template.replace("{STACK}", stack)    # Add the stack File to template
+
+   # Display Template
+   print(template)
