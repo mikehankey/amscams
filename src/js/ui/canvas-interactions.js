@@ -229,14 +229,17 @@ if ($('canvas#c').length!=0) {
   // Add Stars 
   var user_stars = [];
 
-  for (let s in stars) {
-          cx = stars[s][0] - 11;
-          cy = stars[s][1] - 11;
+  if(typeof stars !== 'undefined') {
+   for (let s in stars) {
+      cx = stars[s][0] - 11;
+      cy = stars[s][1] - 11;
 
-          var circle = new fabric.Circle({
-              radius: 5, fill: 'rgba(0,0,0,0)', strokeWidth: 1, stroke: 'rgba(100,200,200,.5)', left: cx/2, top: cy/2,
-              selectable: false
-          });
-          canvas.add(circle);
-  }  
+      var circle = new fabric.Circle({
+          radius: 5, fill: 'rgba(0,0,0,0)', strokeWidth: 1, stroke: 'rgba(100,200,200,.5)', left: cx/2, top: cy/2,
+          selectable: false
+      });
+      canvas.add(circle);
+   }  
+  }
+ 
 }
