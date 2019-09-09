@@ -39,7 +39,7 @@ print("Setup data drive.")
 print("Update AMS ID and device lat/lon.")
 print("Run File Index Script.")
 print("Setup camera numbers!")
-print("ADD API_HOST to as6.json!")
+print("ADD API_HOST to as6.json!         \"API_HOST\" : \"52.27.42.7\", ")
 print("SETUP VPN to as6.json!")
 
 os.system("apt-get install ntp")
