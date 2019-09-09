@@ -56,7 +56,7 @@ def get_reduction_table(template,template_marker,meteor_data,template_marker_cou
          </tr>
       """.format(str(fn), str(cmp_img ), str(fn), str(frame_time),str(xy_wh), str(max_px),str(ra_dec),str(az_el))
 
-      red_table = red_table += "</tbody></table>"
+      red_table += "</tbody></table>"
 
       # Add the Table to the template
       template = template.replace(template_marker, red_table)  
