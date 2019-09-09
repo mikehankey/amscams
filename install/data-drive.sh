@@ -1,3 +1,15 @@
+# First ID drive with
+# sudo blkid
+
+# Once the 1TB drive has been identified reformat it with linux ext4 file system
+# sudo mkfs -t ext4 /dev/sda1
+
+# mount the drive, chown and make the default dirs 
+# sudo mount /dev/sda1 /mnt/ams2
+# setup drive 1st time.sh
+
+
+sudo chown -R ams:ams /mnt/ams2
 mkdir /mnt/ams2/SD/
 mkdir /mnt/ams2/SD/proc2
 mkdir /mnt/ams2/SD/proc2/daytime
