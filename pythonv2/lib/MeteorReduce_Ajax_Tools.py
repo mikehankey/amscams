@@ -22,17 +22,16 @@ def delete_frame(form):
    meteor_file = form.getvalue("meteor_json_file")
    meteor_json = load_json_file(meteor_file)
 
-   #print("DELETING FRAME #" + fn)
-   #print("FROM " + meteor_file)
-
-   # Update metframes
-   if "metframes" in meteor_json:
-      if fn in meteor_json['metframes']:
-         meteor_json['metframes'].pop(fn)
+   # Update meteor_frame_data
+   if "meteor_frame_data" in meteor_json:
+      if fn in meteor_json['meteor_frame_data']:
+         meteor_json['meteor_frame_data'].pop(fn)
+         print('REMOVED FROM meteor_frame_data')
        
-      
+   # Update metframes
+   if "metframes" in meteor_json:    
+      print(meteor_json['metframes'])
  
-   print(meteor_json['metframes'])
    sys.exit(0)
       
  
