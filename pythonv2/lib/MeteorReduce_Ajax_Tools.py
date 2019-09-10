@@ -3,7 +3,6 @@ import cgitb
 import json
 
 from lib.FileIO import cfe, load_json_file 
-
  
 
 # Return the JSON Files from a given reduction
@@ -54,11 +53,20 @@ def get_reduction_info(json_file):
 
             for frame_data in temp:      
                frame_time, fn, hd_x,hd_y,w,h,max_px,ra,dec,az,el = frame_data 
-               new_mfd.append((frame_time, fn, hd_x,hd_y,w,h,max_px,ra,dec,az,el)) 
+
+
+               print("GET PATH TO FRAME ")
+               print("FROM " + json_file)
+               path_to_frame = ""
+               new_mfd.append((frame_time,fn,hd_x,hd_y,w,h,max_px,ra,dec,az,el)) 
 
             rsp['meteor_frame_data'] = new_mfd
           
       rsp['status'] = 1
+ 
+
+
+
    else: 
       rsp['status'] = 0
          
