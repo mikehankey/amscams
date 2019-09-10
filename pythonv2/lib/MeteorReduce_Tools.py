@@ -73,7 +73,7 @@ def name_analyser(file_names):
    return res
 
 # Return Cache folder name based on an analysed_file (parsed video file name)
-# and cache_type = stacks | frames | cropped
+# and cache_type = stacks | frames | cropped or thumbs
 def get_cache_path(analysed_file_name, cache_type):
     # Build the path to the proper cache folder
    cache_path = CACHE_PATH + analysed_file_name['station_id'] +  "/" + analysed_file_name['year'] + "/" + analysed_file_name['month'] + "/" + analysed_file_name['day'] + "/" + os.path.splitext(analysed_file_name['name'])[0]
@@ -82,7 +82,7 @@ def get_cache_path(analysed_file_name, cache_type):
       cache_path += FRAMES_SUBPATH
    elif(cache_type == "stacks"):
       cache_path += STACKS_SUBPATH
-   elif(cache_type == "cropped"):
+   elif(cache_type == "cropped"  or cache_type == "thumbs"):
       cache_path += CROPPED_FRAMES_SUBPATH
    
    return cache_path

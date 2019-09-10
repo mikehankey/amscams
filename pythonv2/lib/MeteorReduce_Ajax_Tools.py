@@ -3,6 +3,7 @@ import cgitb
 import json
 
 from lib.FileIO import cfe, load_json_file 
+from lib.MeteorReduce_Tools import get_cache_path, name_analyser
  
 
 # Return the JSON Files from a given reduction
@@ -51,12 +52,15 @@ def get_reduction_info(json_file):
          if "meteor_frame_data" in mr: 
             temp = sorted(mr['meteor_frame_data'], key=lambda x: int(x[1]), reverse=False)
 
+
+            # Get the folder where the thumbs are: 
+            thumb_folder = get_cache_path(name_analyser(json_file),'thumbs')
+            print("THUMB FOLDER" + thumb_folder)
+            print(EXT_CROPPED_FRAMES)
+
             for frame_data in temp:      
                frame_time, fn, hd_x,hd_y,w,h,max_px,ra,dec,az,el = frame_data 
-
-
-               print("GET PATH TO FRAME ")
-               print("FROM " + json_file)
+ 
                path_to_frame = ""
                new_mfd.append((frame_time,fn,hd_x,hd_y,w,h,max_px,ra,dec,az,el)) 
 
