@@ -9,8 +9,7 @@
     "gulp-sass": "^4.0.2"
   },
   "devDependencies": {
-    "bootstrap": "^4.2.1",
-    "browser-sync": "^2.26.3",
+    "bootstrap": "^4.2.1", 
     "gulp": "^4.0.2",
     "gulp-autoprefixer": "^6.0.0",
     "gulp-bower": "0.0.15",
