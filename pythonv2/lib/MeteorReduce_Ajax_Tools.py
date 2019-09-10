@@ -25,9 +25,12 @@ def update_multiple_frames(form):
    resp = {}
    resp['error'] = []
 
+   print("IN update_multiple_frames")
+   print(update_multiple_frames)
+
    #We update all the frames
    for val in all_frames_to_update:  
-      
+
       # Update the values in the JSON
       mr['metframes'][str(int(val['fn']))]['hd_x'] = int(val['x'])
       mr['metframes'][str(int(val['fn']))]['hd_y'] = int(val['y'])
