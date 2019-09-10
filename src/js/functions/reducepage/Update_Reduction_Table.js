@@ -30,7 +30,7 @@ function update_reduction_on_canvas_and_table(json_resp) {
 
     // We need the "middle" frame to illustrate the thumb anim button
     var middle_frame = "";
-    console.lolg("SMF LENGTH " + smf.length);
+    console.log("SMF LENGTH " + smf.length);
       
     $.each(smf, function(i,v){
   
