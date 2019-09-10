@@ -332,10 +332,10 @@ function addModalTemplate(meteor_id,neighbor) {
 function setup_modal_actions(fn_id,x,y) {
     
     // Warning: preview  = 500x500
-    //    thumb real dim = 50x50
+    //    thumb real dim = 100x100
     var thumb_prev = 500;
-    var thumb_dim  = 50;
-    var factor = 500/50;
+    var thumb_dim  = 100;
+    var factor = thumb_prev/thumb_dim;
 
     x = parseInt(x);
     y = parseInt(y);
@@ -352,7 +352,7 @@ function setup_modal_actions(fn_id,x,y) {
      
     if(nextH && typeof nextH !== 'undefined'  ) { 
         if( nextH.x !== null && typeof  nextH.x !== null) {
-              // 225 for circle diameter
+            // 225 for circle diameter
             var rX = (225+(nextH.x-x)*factor);
             var rY = (225+(nextH.y-y)*factor);
             $('<div class="cross_holder next" style="top:'+rY+'px; left:'+rX+'px"><div class="cross" style="border:1px solid '+nextH.color+'"></div></div>').appendTo('.meteor_chooser');
