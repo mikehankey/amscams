@@ -1,5 +1,6 @@
 function update_reduction_on_canvas_and_table(json_resp) {
     var smf = json_resp['meteor_frame_data'];
+    var PRECISION = 4;
 
     if(typeof smf == 'undefined') {
         smf = json_resp['sd_meteor_frame_data'];
@@ -39,7 +40,7 @@ function update_reduction_on_canvas_and_table(json_resp) {
         // Thumb	#	Time	X/Y - W/H	Max PX	RA/DEC	AZ/EL 
         table_tbody_html+= '<tr id="fr_'+frame_id+'" data-org-x="'+v[2]+'" data-org-y="'+v[3]+'"><td><div class="st" hidden style="background-color:'+all_colors[i]+'"></div></td>'
         table_tbody_html+= '<td><img alt="Thumb #'+frame_id+'" src='+thumb_path+'?c='+Math.random()+' width="50" height="50" class="img-fluid smi select_meteor" style="border-color:'+all_colors[i]+'"/></td>';
-        table_tbody_html+= '<td>'+frame_id+'</td><td>'+_time[1]+'</td><td>'+v[7]+'&deg;/'+v[8]+'&deg;</td><td>'+v[9]+'&deg;/'+v[10]+'&deg;</td><td>'+ parseFloat(v[2])+'/'+parseFloat(v[3]) +'</td><td>'+ v[4]+'x'+v[5]+'</td>';
+        table_tbody_html+= '<td>'+frame_id+'</td><td>'+_time[1]+'</td><td>'+v[7].toFixed(3)+'&deg;/'+v[8].toFixed(3)+'&deg;</td><td>'+v[9]+'&deg;/'+v[10]+'&deg;</td><td>'+ parseFloat(v[2])+'/'+parseFloat(v[3]) +'</td><td>'+ v[4]+'x'+v[5]+'</td>';
         table_tbody_html+= '<td>'+v[6]+'</td>';
         table_tbody_html+= '<td><a class="btn btn-danger btn-sm delete_frame"><i class="icon-delete"></i></a></td>';
 
