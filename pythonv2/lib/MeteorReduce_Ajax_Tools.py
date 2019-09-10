@@ -28,7 +28,9 @@ def delete_frame(form):
    # Update metframes
    new_metframes = []
    for frame in meteor_json['metframes']: 
-      if(frame[1]!=fn): 
+      print(frame[1] + " vs " + fn + "<br/>")
+      if(frame[1]!=fn):  
+         print("NOT SKIPPED <br>")
          new_metframes.append(frame)
        
       
