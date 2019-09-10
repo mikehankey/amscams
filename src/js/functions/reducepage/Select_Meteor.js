@@ -1,6 +1,9 @@
 var multiple_select = true;
 var meteor_select_updates = [];
 
+var viewer_DIM = 500;
+var viewer_border = 2; // Colored border in pixels
+var thumb_DIM = 100;
 
 
 function select_multiple_meteors_ajax() {
@@ -205,7 +208,7 @@ function addModalTemplate(meteor_id,neighbor) {
             - Click the center of the meteor to update the reduction frame. \
             </div>\
             <div>\
-                    <button id="switch_select_mode" class="btn btn-primary btn-sm" data-lbl="Switch to multiple mode"><b>Switch to single mode</b></button>\
+               <button id="switch_select_mode" class="btn btn-primary btn-sm" data-lbl="Switch to multiple mode"><b>Switch to single mode</b></button>\
             </div>\
         </div>\
         <div class="modal-body">\
@@ -215,7 +218,7 @@ function addModalTemplate(meteor_id,neighbor) {
             <div class="d-flex justify-content-center" id="nav_prev">\
             </div><div style="box-shadow: 0 0px 8px rgba(0,0,0,.6);" class="meteor_chooser">\
             <div id="org_lh"></div><div id="org_lv"></div><div id="lh"></div><div id="lv"></div></div>\
-                <div class="d-flex justify-content-between mt-2" style="max-width: 500px;margin: 0 auto;">\
+                <div class="d-flex justify-content-between mt-2" style="max-width: '+viewer_DIM+'px;margin: 0 auto;">\
                     <div><a class="btn btn-danger delete_frame_from_modal"><i class="icon-delete"></i> Delete the frame #<span class="sel_frame_id"></span></a></div>\
                     <div class="select_info"> \
                         <span id="meteor_org_pos"><b>Org:</b></span><br/>\
@@ -333,8 +336,8 @@ function setup_modal_actions(fn_id,x,y) {
     
     // Warning: preview  = 500x500
     //    thumb real dim = 100x100
-    var thumb_prev = 500;
-    var thumb_dim  = 100;
+    var thumb_prev = viewer_DIM + viewer_border*2;
+    var thumb_dim  = thumb_DIM;
     var factor = thumb_prev/thumb_dim;
 
     x = parseInt(x);
@@ -498,7 +501,7 @@ function get_neighbor_frames(cur_id) {
 
 
 function setup_select_meteor(anti_cache=-1) {
-    var viewer_dim = 500;
+    var viewer_dim = viewer_DIM;
     var all_frames_ids = [];
 
     // Get all the frame ids
