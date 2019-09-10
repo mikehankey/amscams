@@ -28,15 +28,13 @@ def delete_frame(form):
    # Update metframes
    new_metframes = []
    for frame in meteor_json['metframes']:
-      print(frame + "<br/>")
-
-
-      #if(frame!=fn): 
-      #   new_metframes.append(frame)
+ 
+      if(frame!=fn): 
+         new_metframes.append(meteor_json['metframes'][frame])
        
       
    
-   #rint(new_metframes)
+   print(new_metframes)
    sys.exit(0)
       
  
