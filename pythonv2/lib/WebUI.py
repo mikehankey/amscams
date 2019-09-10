@@ -386,8 +386,7 @@ def controller(json_conf):
    jq = do_jquery()
    
    nav_html,bot_html = nav_links(json_conf,cmd)
-   nav_html = ""
-   print("SKIN " + skin)
+   nav_html = "" 
    template = get_template(json_conf, skin)
    stf = template.split("{BODY}")
    top = stf[0]
