@@ -146,8 +146,8 @@ def manual_detect(json_conf, form):
       print("<input type=submit name=submit value='Run Detection Code On This Clip'><br>")
       print("</form>")
 
-def get_template(json_conf, skin = None  ):
-   print("IN GET TEMPLATE Skin " +  skin)
+def get_template(json_conf, skin = "as6ams"  ):
+   
    template = ""
    skin = "as6ams"
    if skin == "as6ams":
