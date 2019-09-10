@@ -30,17 +30,8 @@ def update_multiple_frames(form):
 
       # Recreate the corresponding thumb
       original_HD_frame = get_HD_frame(analysed_name,val['fn'])   
-      destination_cropped_frame = get_thumb(analysed_name,val['fn'])   
-
-      print("IN update_multiple_frames<br/>")
-      print("original_HD_frame " + str(original_HD_frame) + "<br>")
-      
-      print("destination_cropped_frame " + str(destination_cropped_frame) + "<br>")
-
-      #destination_cropped_frame = get_cache_path(analysed_name,"cropped")+"*"+EXT_CROPPED_FRAMES+"*.png" 
-      #new_crop_thumb(frame,x,y,dest,HD)
-
-   sys.exit(0)
+      destination_cropped_frame = get_thumb(analysed_name,val['fn'])    
+      new_crop_thumb(original_HD_frame,int(val['x']),int(val['y']),destination_cropped_frame)
 
    # We update the JSON 
    save_json_file(mrf, mr)
@@ -49,8 +40,8 @@ def update_multiple_frames(form):
    resp['msg'] = "frames updated."  
    
    # We compute the new stuff from the new meteor position within frames
-   os.system("cd /home/ams/amscams/pythonv2/; ./reducer3.py cm " + mrf + " > /mnt/ams2/tmp/rrr.txt") 
-   os.system("cd /home/ams/amscams/pythonv2/; ./reducer3.py cm " + mrf + " > /mnt/ams2/tmp/rrr.txt") 
+   os.system("cd /home/ams/amscams/pythonv2/; ./reducer3.py cm " + json_file + " > /mnt/ams2/tmp/rrr.txt") 
+   os.system("cd /home/ams/amscams/pythonv2/; ./reducer3.py cm " + json_file + " > /mnt/ams2/tmp/rrr.txt") 
 
    print(json.dumps(resp))
 
