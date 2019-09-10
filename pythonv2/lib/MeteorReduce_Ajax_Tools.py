@@ -26,16 +26,13 @@ def delete_frame(form):
    #print("FROM " + meteor_file)
 
    # Update metframes
-   new_metframes = []
-   for frame in meteor_json['metframes']: 
-      print(frame['fn'] + " vs " + fn + "<br/>")
-      if(frame['fn']!=fn):  
-         print("NOT SKIPPED <br>")
-         new_metframes.append(frame)
+   if "metframes" in meteor_json:
+      if fn in meteor_json['metframes']:
+         meteor_json['metframes'].pop(fn)
        
       
-   meteor_json['metframes'] = new_metframes
-   print(meteor_json)
+ 
+   print(meteor_json['metframes'])
    sys.exit(0)
       
  
