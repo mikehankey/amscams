@@ -389,7 +389,7 @@ def controller(json_conf):
    
    nav_html,bot_html = nav_links(json_conf,cmd)
    nav_html = ""
-
+   print("SKIN " + skin)
    template = get_template(json_conf, skin)
    stf = template.split("{BODY}")
    top = stf[0]
