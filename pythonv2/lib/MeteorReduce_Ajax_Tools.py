@@ -27,6 +27,7 @@ def update_multiple_frames(form):
 
    print("IN update_multiple_frames")
    print(update_multiple_frames)
+   sys.exit(0)
 
    #We update all the frames
    for val in all_frames_to_update:  
