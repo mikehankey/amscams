@@ -18,10 +18,21 @@ def delete_frame(form):
    # Frame Number
    fn = form.getvalue("fn")
 
+   print("DELETING FRAME #" + fn)
+   print("FROM " + meteor_file)
+
    # JSON File
-   meteor_file = form.getvalue("meteor_json_file")
-   meteor_json = load_json_file(meteor_file)
-   
+   meteor_json = form.getvalue("meteor_json_file")
+   meteor_json = load_json_file(meteor_json)
+
+   # Update metframes
+   new_metframes = []
+   for ind,frame in enumerate(meteor_json['metframes']):
+      if(ind == fn):
+         print("FOUND!")
+         print(frame)
+      
+ 
    # Rebuild all frame data
    new_frame_data = []
    for data in meteor_json['meteor_frame_data']:
