@@ -6,7 +6,12 @@ from lib.FileIO import cfe, load_json_file
 from lib.MeteorReduce_Tools import get_cache_path, name_analyser, EXT_CROPPED_FRAMES
  
 
+# Delete a frame
+# Input = the meteor json file & the frame #
 def delete_frame(form):
+
+   print("IN DELETE FRAME")
+
    # Frame Number
    fn = form.getvalue("fn")
 
