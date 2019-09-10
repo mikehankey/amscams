@@ -33,8 +33,8 @@ function select_multiple_meteors_ajax() {
                $('.modal-backdrop').remove();
                $('#select_meteor_modal').modal('hide').remove();
 
-                // Reset Selection
-                meteor_select_updates = [];
+               // Reset Selection
+               // meteor_select_updates = [];
 
                // Anti cache?
                //console.log('ANTI CACHE on ' + fn)
