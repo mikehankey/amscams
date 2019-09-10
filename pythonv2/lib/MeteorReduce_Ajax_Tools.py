@@ -54,15 +54,15 @@ def get_reduction_info(json_file):
 
 
             # Get the folder where the thumbs are: 
-            thumb_folder = get_cache_path(name_analyser(json_file),'thumbs')
-            print("THUMB FOLDER" + thumb_folder)
-            print(EXT_CROPPED_FRAMES)
-
+            analysed_name = name_analyser(json_file)
+            thumb_folder = get_cache_path(analysed_name,'thumbs') 
+  
             for frame_data in temp:      
                frame_time, fn, hd_x,hd_y,w,h,max_px,ra,dec,az,el = frame_data 
- 
-               path_to_frame = ""
-               new_mfd.append((frame_time,fn,hd_x,hd_y,w,h,max_px,ra,dec,az,el)) 
+
+               # Pass the path to frame to JS
+               path_to_frame = thumb_folder + analysed_name['name_w_ext']  + EXT_CROPPED_FRAMES + str(fn) + ".png"
+               new_mfd.append((frame_time,fn,hd_x,hd_y,w,h,max_px,ra,dec,az,el,path_to_frame)) 
 
             rsp['meteor_frame_data'] = new_mfd
           
