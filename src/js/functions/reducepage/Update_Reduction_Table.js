@@ -158,6 +158,9 @@ function test_missing_thumb() {
     var rows_with_missing_thumbs = [];
     var we_try_how_many_times = 10;
     var cnt = 0;
+
+
+    /*
     $('#reduc-tab table img').each(function() {
 
         // 50 = normal size => 48 without border
@@ -204,4 +207,5 @@ function test_missing_thumb() {
         
         }, 3000);
     }
+    */
 }
