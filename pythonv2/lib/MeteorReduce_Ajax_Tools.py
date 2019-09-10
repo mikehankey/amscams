@@ -42,7 +42,7 @@ def update_multiple_frames(form):
          
 
    # We update the JSON 
-   save_json_file(mrf, mr)
+   save_json_file(json_file, mr)
    
    resp['msg'] = "frames updated."  
    
