@@ -28,12 +28,12 @@ function select_multiple_meteors_ajax() {
             
             if($.trim(data)!='') { 
 
-                update_reduction_only();
+               update_reduction_only();
 
                $('.modal-backdrop').remove();
                $('#select_meteor_modal').modal('hide').remove();
 
-               // Reset Selection
+               
                // meteor_select_updates = [];
 
                // Anti cache?
@@ -44,7 +44,9 @@ function select_multiple_meteors_ajax() {
                   console.log('tr#fr_'+fn);
                   $('tr#fr_'+fn+' img.select_meteor').attr('src', $('tr#fr_'+fn+' img.select_meteor').attr('src')+'&w='+Math.round(Math.random(10000)*10000));
                })
-               
+
+               // Reset Selection
+               meteor_select_updates = [];
                
                loading_done();
 
