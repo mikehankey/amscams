@@ -22,7 +22,8 @@ def delete_frame(form):
 
    # Update meteor_frame_data
    if "meteor_frame_data" in meteor_json:
-      print(" meteor_frame_data FOUND<br>")
+      print(meteor_json['meteor_frame_data'])
+      sys.exit(0)
       if fn in meteor_json['meteor_frame_data']:
          print("FOUND IN meteor_frame_data<br>")
          meteor_json['meteor_frame_data'].pop(fn)  
