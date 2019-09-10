@@ -27,6 +27,10 @@ function update_reduction_on_canvas_and_table(json_resp) {
     for (var i = 0; i <= 255; i = i + step) {
         all_colors.push('#'+rainbow.colourAt(i));
     }
+
+    // We need the "middle" frame to illustrate the thumb anim button
+    var middle_frame = "";
+    console.lolg("SMF LENGTH " + smf.length);
       
     $.each(smf, function(i,v){
   
@@ -86,6 +90,9 @@ function update_reduction_on_canvas_and_table(json_resp) {
 
     // Replace current table content
     $('#reduc-tab tbody').html(table_tbody_html);
+
+    // Replace Thumb used for the Anim Thumbs Preview
+    $("#play_anim").css('background','url()')
 
     // Reload the actions
     reduction_table_actions();
