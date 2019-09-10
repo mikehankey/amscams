@@ -399,9 +399,9 @@ function setup_modal_actions(fn_id,x,y) {
         var realX = relX/factor+x-thumb_dim/2;
         var realY = relY/factor+y-thumb_dim/2;
 
-        console.log("RELX" + relX);
-        console.log("FACTOR " + factor);
-        console.log("REALX " + relX/factor+x-thumb_dim/2);
+        console.log("RELX :" + relX);
+        console.log("FACTOR : " + factor);
+        console.log("REALX : " + (relX/factor+x-thumb_dim/2));
 
         // Cross
         if(!$(this).hasClass('done')) {
