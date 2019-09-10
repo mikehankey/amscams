@@ -1,6 +1,6 @@
 function update_star_and_reduction(callback) {
    var cmd_data = {
-       json_file: json_file + "?c=" + new Date().getTime(),          // Defined on the page + no-cache!!
+       json_file: json_file,          // Defined on the page + no-cache!!
        cmd: 'get_reduction_info'
    }
 
@@ -9,7 +9,7 @@ function update_star_and_reduction(callback) {
    // Remove All objects from Canvas
    remove_objects();
 
-   
+   $.ajaxSetup({ cache: false });
    $.ajax({ 
        url:  "/pycgi/webUI.py",
        data: cmd_data,
