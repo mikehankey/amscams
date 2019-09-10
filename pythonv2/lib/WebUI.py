@@ -147,7 +147,7 @@ def manual_detect(json_conf, form):
       print("</form>")
 
 def get_template(json_conf, skin = None  ):
-   pritn("IN GET TEMPLATE Skin " +  skin)
+   print("IN GET TEMPLATE Skin " +  skin)
    template = ""
    skin = "as6ams"
    if skin == "as6ams":
