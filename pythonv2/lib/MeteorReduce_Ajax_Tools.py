@@ -19,7 +19,7 @@ def delete_frame(form):
    fn = form.getvalue("fn")
 
    print("DELETING FRAME #" + fn)
-   print("FROM " + meteor_file)
+   print("FROM " + meteor_json)
 
    # JSON File
    meteor_json = form.getvalue("meteor_json_file")
