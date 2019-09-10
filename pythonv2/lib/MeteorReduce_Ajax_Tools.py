@@ -6,6 +6,35 @@ from lib.FileIO import cfe, load_json_file
 from lib.MeteorReduce_Tools import get_cache_path, name_analyser, EXT_CROPPED_FRAMES
  
 
+def delete_frame(form):
+   # Frame Number
+   fn = form.getvalue("fn")
+
+   # JSON File
+   meteor_file = form.getvalue("meteor_json_file")
+   meteor_json = load_json_file(meteor_file)
+   
+   # Rebuild all frame data
+   new_frame_data = []
+   for data in meteor_json['meteor_frame_data']:
+      tfn = data[1]
+      if str(fn) == str(tfn):
+         skip = 1
+      else:
+         new_frame_data.append(data)
+   meteor_json['meteor_frame_data'] = new_frame_data
+   
+   # Rebuild metframes
+   if "metframes" in meteor_json:
+      if fn in meteor_json['metframes']:
+         meteor_json['metframes'].pop(fn)
+   response = {}
+   response['message'] = 'frame deleted'
+   response['frame_data'] = new_frame_data
+   save_json_file(meteor_file, meteor_json)
+   print(json.dumps(response))
+
+
 # Return the JSON Files from a given reduction
 # with modified info
 def get_reduction_info(json_file):
@@ -67,10 +96,7 @@ def get_reduction_info(json_file):
             rsp['meteor_frame_data'] = new_mfd
           
       rsp['status'] = 1
- 
-
-
-
+  
    else: 
       rsp['status'] = 0
          

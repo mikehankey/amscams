@@ -1,24 +1,19 @@
 function setup_delete_frame() {
     // Delete Frame
     $('.delete_frame').click(function() {
-        var  $row = $(this).closest('tr');
-        var  id = $row.attr('id');
+        var  $row = $(this).closest('tr'); 
+        var  frame_id = $row.attr('data-fn');
  
-
-        // Get the frame ID
-        // the id should be fr_{ID}
-        var d = id.split('_');
-
         loading({"text":"Deleting frame #"+d[1],"overlay":true});
   
         $.ajax({ 
-            url:  "/pycgi/webUI.py?cmd=del_frame&meteor_json_file=" + meteor_json_file + "&fn=" + d[1],
+            url:  "/pycgi/webUI.py?cmd=delete_frame&meteor_json_file=" + json_file + "&fn=" + frame_id,
             success: function(response) {
 
                 // Remove the related square on the canvas
                 var objects = canvas.getObjects('reduc_rect');
                 for(i=0; i<objects.length; i++) { 
-                    if(objects[i].id !== undefined && objects[i].id == "fr_"+d[1]) { 
+                    if(objects[i].id !== undefined && objects[i].id == "fr_"+frame_id) { 
                         canvas.remove(objects[i]);
                     }
                 }
@@ -40,7 +35,7 @@ function delete_frame_from_crop_modal(fn) {
     $row.css('opacity',0.5).find('a').hide();
 
     $.ajax({ 
-        url:  "/pycgi/webUI.py?cmd=del_frame&meteor_json_file=" + meteor_json_file + "&fn=" + fn,
+        url:  "/pycgi/webUI.py?cmd=delete_frame&meteor_json_file=" + json_file + "&fn=" + fn,
         success: function(response) { 
                 var tr_fn = false;
                 var tr_id = fn; 
