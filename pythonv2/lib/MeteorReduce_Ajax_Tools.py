@@ -28,9 +28,7 @@ def delete_frame(form):
    # Update metframes
    new_metframes = []
    for ind,frame in enumerate(meteor_json['metframes']):
-      if(ind == fn):
-         print("FOUND!")
-         print(frame)
+      print(frame + " > " + ind)
       
  
    # Rebuild all frame data
