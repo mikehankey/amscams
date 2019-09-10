@@ -30,22 +30,31 @@ function update_reduction_on_canvas_and_table(json_resp) {
 
     // We need the "middle" frame to illustrate the thumb anim button
     var middle_frame = "";
-    console.log("SMF LENGTH " + smf.length);
+    var middle_frame_index = 0
+    if(typeoof smf !== 'undefined' && smf.length>2) {
+      middle_frame_index = parseInt(smf.length/2);
+    } else {
+      middle_frame_index = smf.length-1;
+    }
       
     $.each(smf, function(i,v){
   
         // Get thumb path
         var frame_id = parseInt(v[1]);
-        var thumb_path = v[11]
+        var thumb_path = v[11] +'?c='+Math.random();
         var square_size = 6;
         var _time = v[0].split(' ');
   
         // Thumb	#	Time	X/Y - W/H	Max PX	RA/DEC	AZ/EL 
         table_tbody_html+= '<tr id="fr_'+frame_id+'" data-org-x="'+v[2]+'" data-org-y="'+v[3]+'"><td><div class="st" hidden style="background-color:'+all_colors[i]+'"></div></td>'
-        table_tbody_html+= '<td><img alt="Thumb #'+frame_id+'" src='+thumb_path+'?c='+Math.random()+' width="50" height="50" class="img-fluid smi select_meteor" style="border-color:'+all_colors[i]+'"/></td>';
+        table_tbody_html+= '<td><img alt="Thumb #'+frame_id+'" src='+thumb_path+' width="50" height="50" class="img-fluid smi select_meteor" style="border-color:'+all_colors[i]+'"/></td>';
         table_tbody_html+= '<td>'+frame_id+'</td><td>'+_time[1]+'</td><td>'+v[7].toFixed(PRECISION)+'&deg; / '+v[8].toFixed(PRECISION)+'&deg;</td><td>'+v[9].toFixed(PRECISION)+'&deg; / '+v[10].toFixed(PRECISION)+'&deg;</td><td>'+ parseFloat(v[2]) +'/'+parseFloat(v[3])  +'</td><td>'+ v[4]+'x'+v[5]+'</td>';
         table_tbody_html+= '<td>'+v[6]+'</td>';
         table_tbody_html+= '<td><a class="btn btn-danger btn-sm delete_frame"><i class="icon-delete"></i></a></td>';
+
+        if( i==middle_frame_index) {
+            middle_frame = thumb_path;
+        }
 
         if(i==0) {
             // <a title="Add a frame" class="btn btn-primary btn-sm btn-mm add_f" data-rel="'+ (frame_id-1) +'"><i class="icon-plus"></i></a>
@@ -92,7 +101,7 @@ function update_reduction_on_canvas_and_table(json_resp) {
     $('#reduc-tab tbody').html(table_tbody_html);
 
     // Replace Thumb used for the Anim Thumbs Preview
-    $("#play_anim").css('background','url()')
+    $("#play_anim").css('background','url('+middle_frame+')'),
 
     // Reload the actions
     reduction_table_actions();
