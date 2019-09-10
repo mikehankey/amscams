@@ -13,7 +13,7 @@ def update_multiple_frames(form):
    cgitb.enable()  
    
    # Get Data 
-   json_file = form.getvalue("json_file")
+   json_file = form.getvalue("meteor_json_file")
    all_frames_to_update = json.loads(form.getvalue("frames") )
    
    mr = load_json_file(json_file)
