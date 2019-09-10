@@ -387,7 +387,7 @@ function setup_modal_actions(fn_id,x,y) {
         } else {
             $('#lh').css('top',relY);
             $('#lv').css('left',relX);
-            $('#meteor_pos').text("x:"+parseInt(realX)+'/y:'+parseInt(realY));
+            $('#meteor_pos').text("x:"+Math.round(realX)+'/y:'+Math.round(realY));
         }
          
         select_meteor_ajax(fn_id,realX,realY);
@@ -402,15 +402,11 @@ function setup_modal_actions(fn_id,x,y) {
         var realX = relX/factor+x-thumb_dim/2;
         var realY = relY/factor+y-thumb_dim/2;
 
-        console.log("RELX :" + relX);
-        console.log("FACTOR : " + factor);
-        console.log("REALX : " + (relX/factor+x-thumb_dim/2));
-
         // Cross
         if(!$(this).hasClass('done')) {
             $('#lh').css('top',relY-2);
             $('#lv').css('left',relX-2);
-            $('#meteor_pos').text("x:"+parseInt(realX)+'/y:'+parseInt(realY));
+            $('#meteor_pos').text("x:"+Math.round(realX)+'/y:'+Math.round(realY));
         }
     });
 }
