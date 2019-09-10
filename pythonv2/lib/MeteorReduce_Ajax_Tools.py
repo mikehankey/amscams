@@ -26,7 +26,7 @@ def update_multiple_frames(form):
    resp['error'] = []
 
    print("IN update_multiple_frames")
-   print(update_multiple_frames)
+   print(all_frames_to_update)
    sys.exit(0)
 
    #We update all the frames
