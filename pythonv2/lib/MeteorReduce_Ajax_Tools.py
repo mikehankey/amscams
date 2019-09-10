@@ -37,6 +37,8 @@ def update_multiple_frames(form):
       destination_cropped_frame = get_thumb(analysed_name,val['fn'])    
 
       if(len(original_HD_frame)!=0 and len(destination_cropped_frame)!=0):
+         print("GENERATE NEW THUMB <br>")
+         print(destination_cropped_frame[0])
          new_crop_thumb(original_HD_frame[0],int(val['x']),int(val['y']),destination_cropped_frame[0])
       else:
          resp['error'].append("Impossible to update the frame " + str(int(val['fn'])))
