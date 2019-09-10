@@ -34,6 +34,7 @@ function select_multiple_meteors_ajax() {
                 // Anti cache?
                 //console.log('ANTI CACHE on ' + fn)
                 $.each(meteor_select_updates,function(i,v) {
+                    console.log("ANTI CACHE on tr#fr_" + i);
                     $('tr#fr_'+i+' img.select_meteor').attr('src', $('tr#fr_'+i+' img.select_meteor').attr('src')+'&w='+Math.round(Math.random(10000)*10000));
                 })
 
