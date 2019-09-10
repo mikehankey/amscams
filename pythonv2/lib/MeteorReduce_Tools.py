@@ -291,8 +291,6 @@ def generate_stacks(video_full_path, destination):
 def get_HD_frame(analysed_name,frame_id):
    # Format the frame_id so we always have 4 digits
    frame_id = str(frame_id).zfill(4)
-   print("GET FROM <br>")
-   print(get_cache_path(analysed_name,"frames")+"*"+EXT_HD_FRAMES+str(frame_id)+".png")
    return glob.glob(get_cache_path(analysed_name,"frames")+"*"+EXT_HD_FRAMES+str(frame_id)+".png") 
 
 
@@ -324,7 +322,7 @@ def generate_HD_frames(analysed_name, destination):
    cgitb.enable() 
    
    # Get All Frames
-   cmd = 'ffmpeg -y -hide_banner -loglevel panic  -i ' + analysed_name['full_path'] + ' -s ' + str(HD_W) + "x" + str(HD_H) + ' ' +  destination + EXT_HD_FRAMES + '_%04d' + '.png' 
+   cmd = 'ffmpeg -y -hide_banner -loglevel panic  -i ' + analysed_name['full_path'] + ' -s ' + str(HD_W) + "x" + str(HD_H) + ' ' +  destination + EXT_HD_FRAMES + '%04d' + '.png' 
    output = subprocess.check_output(cmd, shell=True).decode("utf-8")
 
    return glob.glob(destination+"*"+EXT_HD_FRAMES+"*.png")
