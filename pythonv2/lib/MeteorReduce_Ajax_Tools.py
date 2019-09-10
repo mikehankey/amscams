@@ -21,6 +21,9 @@ def update_multiple_frames(form):
    # Analyse the name
    analysed_name = name_analyser(json_file)
 
+   resp = {}
+   resp['error'] = []
+
    #We update all the frames
    for val in all_frames_to_update:  
       
@@ -31,12 +34,16 @@ def update_multiple_frames(form):
       # Recreate the corresponding thumb
       original_HD_frame = get_HD_frame(analysed_name,val['fn'])   
       destination_cropped_frame = get_thumb(analysed_name,val['fn'])    
-      new_crop_thumb(original_HD_frame,int(val['x']),int(val['y']),destination_cropped_frame)
+
+      if(len(original_HD_frame)!=0 and len(destination_cropped_frame)!=0):
+         new_crop_thumb(original_HD_frame[0],int(val['x']),int(val['y']),destination_cropped_frame[0])
+      else:
+         resp['error'].append("Impossible to update the frame " + str(int(val['fn'])))
+         
 
    # We update the JSON 
    save_json_file(mrf, mr)
    
-   resp = {}
    resp['msg'] = "frames updated."  
    
    # We compute the new stuff from the new meteor position within frames
