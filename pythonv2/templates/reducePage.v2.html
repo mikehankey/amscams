@@ -93,10 +93,31 @@
             <a id="zoom_canvas" class="col btn btn-secondary mt-0 mb-0 mr-1"><i class="icon-zoom-in"></i> <span>Zoom</span></a>
             <a id="show_grid" class="col btn btn-secondary mt-0 mb-0"><i class="icon-grid"></i> <span>Grid</span></a>
        </div></div>
+
+       <div class="box">
+            <h2>Media</h2>
+            <div class="d-flex mt-0 mb-0 mr-4 ml-4">
+               <div class="flex-fill p-2">
+                  <a style="background:url({STACK})" class="img-link d-block" href="{STACK}" title="View HD Stack">
+                     <img alt="" src="./dist/img/img_hstack.svg"/>
+                  </a>
+               </div>
+               <div class="flex-fill p-2">
+                  <a style="background:url({STACK})" class="vid-link d-block" href="./video_player.html?video={VIDEO_FILE}&butt=no" title="View HD Video">
+                     <img alt="" src="./dist/img/vid_hd.svg"/>
+                  </a>
+               </div>
+               <div class="flex-fill p-2">
+                  <a style="background:url({STACK})" class="vid-link-like  d-block" id="play_anim" href="#" title="View Thumb Animation">
+                     <img alt="" src="./dist/img/vid_sd.svg"/>
+                  </a>
+               </div>
+            </div> 
+        </div> 
        
        <div class="box">
                <h2>Calibration &amp; Reduction</h2>
-               <p class="mb-1">Load a calibration parameters</p>
+               <p class="mb-1">Load calibration parameters</p>
                <select id="cal_param_selected" class="custom-select">
                    <option value="{SELECTED_CAL_PARAMS_FILE}">{SELECTED_CAL_PARAMS_FILE_NAME}</option>
                </select>
@@ -133,28 +154,7 @@
               
        </div> 
 
-       <div class="box">
-           <h2>Media</h2>
-           <div class="d-flex mt-0 mb-0 mr-4 ml-4">
-                 
-                   <div class="flex-fill p-2">
-                       <a style="background:url({STACK})" class="img-link d-block" href="{STACK}" title="View HD Stack">
-                           <img alt="" src="./dist/img/img_hstack.svg"/>
-                       </a>
-                   </div>
-                   <div class="flex-fill p-2">
-                        <a style="background:url({STACK})" class="vid-link d-block" href="./video_player.html?video={VIDEO_FILE}&butt=no" title="View HD Video">
-                            <img alt="" src="./dist/img/vid_hd.svg"/>
-                        </a>
-                   </div>
-                   <div class="flex-fill p-2">
-                        <a style="background:url({STACK})" class="vid-link-like  d-block" id="play_anim" href="#" title="View Thumb Animation">
-                            <img alt="" src="./dist/img/vid_sd.svg"/>
-                        </a>
-                   </div>
-                  
-           </div>
-       </div> 
+      
 
        <div class="box">
            <h2>Observations </h2> 

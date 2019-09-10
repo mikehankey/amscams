@@ -421,6 +421,7 @@ def controller(json_conf):
 
    # REAL NEW VERSION
    if cmd == 'reduce2':
+      skin = 'v2'
       extra_html = reduce_meteor2(json_conf, form)
   
    # OLD VERSION 
