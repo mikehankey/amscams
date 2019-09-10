@@ -155,7 +155,7 @@ def get_template(json_conf, skin = "as6ams"  ):
    elif skin == "v2":
       fpt = open("/home/ams/amscams/pythonv2/templates/main_template.html", "r")
    else:
-      fpt = open("/home/ams/amscams/pythonv2/templates/as6.html", "r")
+      fpt = open("/home/ams/amscams/pythonv2/templates/as6ams.html", "r")
    for line in fpt:
       template = template + line
    return(template) 
