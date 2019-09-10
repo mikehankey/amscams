@@ -1,6 +1,6 @@
 function update_star_and_reduction(callback) {
    var cmd_data = {
-       json_file: json_file+ new Date().getTime(),          // Defined on the page + no-cache!!
+       json_file: json_file + "?c=" + new Date().getTime(),          // Defined on the page + no-cache!!
        cmd: 'get_reduction_info'
    }
 
