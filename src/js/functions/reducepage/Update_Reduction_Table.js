@@ -31,7 +31,7 @@ function update_reduction_on_canvas_and_table(json_resp) {
     // We need the "middle" frame to illustrate the thumb anim button
     var middle_frame = "";
     var middle_frame_index = 0
-    if(typeoof smf !== 'undefined' && smf.length>2) {
+    if(typeof smf !== 'undefined' && smf.length>2) {
       middle_frame_index = parseInt(smf.length/2);
     } else {
       middle_frame_index = smf.length-1;
