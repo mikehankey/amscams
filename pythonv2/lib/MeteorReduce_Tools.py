@@ -131,7 +131,7 @@ def get_thumbs(analysed_name,meteor_json_data,HD,HD_frames,clear_cache):
 
 
 # Create a thumb 
-def new_crop_thumb(frame,x,y,dest,HD):
+def new_crop_thumb(frame,x,y,dest,HD = True):
 
    # Debug
    cgitb.enable()
