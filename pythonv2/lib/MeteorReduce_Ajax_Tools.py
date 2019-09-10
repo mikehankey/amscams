@@ -10,6 +10,9 @@ from lib.MeteorReduce_Tools import get_cache_path, name_analyser, EXT_CROPPED_FR
 # Input = the meteor json file & the frame #
 def delete_frame(form):
 
+   # Because of bad use of JSON, we need to know the index of the values inside arrays
+   INDEX_OF_FRAME_NUMBER_IN_meteor_frame_data  = 1
+
    # Debug
    cgitb.enable() 
 
@@ -22,11 +25,10 @@ def delete_frame(form):
 
    # Update meteor_frame_data
    if "meteor_frame_data" in meteor_json:
-      print(meteor_json['meteor_frame_data'])
-      sys.exit(0)
-      if fn in meteor_json['meteor_frame_data']:
-         print("FOUND IN meteor_frame_data<br>")
-         meteor_json['meteor_frame_data'].pop(fn)  
+      for ind, frame in enumerate(meteor_json['meteor_frame_data']):
+         if frame[INDEX_OF_FRAME_NUMBER_IN_meteor_frame_data] == fn:
+            print("FOUND IN meteor_frame_data<br>")
+            meteor_json['meteor_frame_data'].pop(ind)  
          
    # Update metframes
    if "metframes" in meteor_json:     
