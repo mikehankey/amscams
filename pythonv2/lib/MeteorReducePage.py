@@ -7,7 +7,7 @@ PAGE_TEMPLATE = "/home/ams/amscams/pythonv2/templates/reducePage.v2.html"
 
 # Return an error message
 def get_error(msg):
-   return "div class='alert alert-danger'>"+msg+"</div>"
+   return "<div class='alert alert-danger'>"+msg+"</div>"
 
 # Display an error message on the page
 def print_error(msg):

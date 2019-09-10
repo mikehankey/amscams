@@ -14,7 +14,7 @@
                <a class="nav-link" id="lightc-tab-l" data-toggle="tab" href="#lightc-tab" role="tab" aria-controls="lightc" aria-selected="true">Light Curve</a>
            </li>
            <li class="nav-item">
-               <a class="nav-link" id="stars-tab-l" data-toggle="tab" href="#stars-tab" role="tab" aria-controls="stars" aria-selected="false"><span id="str_cnt">{STAR_COUNT}</span> Stars</a>
+               <a class="nav-link" id="stars-tab-l" data-toggle="tab" href="#stars-tab" role="tab" aria-controls="stars" aria-selected="false"><span id="str_cnt"></span> Stars</a>
            </li>
            <li class="nav-item">
                <a class="nav-link" id="plots-tab-l" data-toggle="tab" href="#plots-tab" role="tab" aria-controls="plots" aria-selected="false">Plots</a>
@@ -45,7 +45,14 @@
            </div>
 
            <div class="tab-pane fade" id="stars-tab" role="tabpanel" aria-labelledby="stars-tab-l">
-               {STAR_TABLE}               
+               <table class="table table-dark table-striped table-hover td-al-m"><thead>
+                  <tr>
+                     <th>Name</th><th>mag</th><th>Cat RA/Dec</th><th>Res °</th><th>Res. Pixels</th>
+                  </tr>
+               </thead>
+               <tbody>
+               </tbody>
+               </table>
            </div> 
 
            <div class="tab-pane fade" id="plots-tab" role="tabpanel" aria-labelledby="plots-tab-l">
