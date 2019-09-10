@@ -10,6 +10,9 @@ from lib.MeteorReduce_Tools import get_cache_path, name_analyser, EXT_CROPPED_FR
 # Input = the meteor json file & the frame #
 def delete_frame(form):
 
+   # Debug
+   cgitb.enable()
+
    print("IN DELETE FRAME")
 
    # Frame Number
