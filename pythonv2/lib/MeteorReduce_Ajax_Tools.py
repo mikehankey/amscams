@@ -3,7 +3,7 @@ import cgitb
 import json
 
 from lib.FileIO import cfe, load_json_file 
-from lib.MeteorReduce_Tools import get_cache_path, name_analyser
+from lib.MeteorReduce_Tools import get_cache_path, name_analyser, EXT_CROPPED_FRAMES
  
 
 # Return the JSON Files from a given reduction
