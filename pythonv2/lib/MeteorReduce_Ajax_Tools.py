@@ -33,9 +33,9 @@ def update_multiple_frames(form):
       destination_cropped_frame = get_thumb(analysed_name,val['fn'])   
 
       print("IN update_multiple_frames<br/>")
-      print("original_HD_frame " + original_HD_frame + "<br>")
+      print("original_HD_frame " + str(original_HD_frame) + "<br>")
       
-      print("destination_cropped_frame " + destination_cropped_frame + "<br>")
+      print("destination_cropped_frame " + str(destination_cropped_frame) + "<br>")
 
       #destination_cropped_frame = get_cache_path(analysed_name,"cropped")+"*"+EXT_CROPPED_FRAMES+"*.png" 
       #new_crop_thumb(frame,x,y,dest,HD)
