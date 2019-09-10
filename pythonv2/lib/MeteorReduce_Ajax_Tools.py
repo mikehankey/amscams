@@ -27,13 +27,11 @@ def delete_frame(form):
 
    # Update metframes
    for ind,frame in enumerate(meteor_json['metframes']):
-      print('FRAME ' +  frame  + " ind " + str(ind))
+      
+      if(frame==fn): 
+         meteor_json['metframes'].pop(ind)
        
-      if(frame==fn):
-         print('FRAME == fn ' +  frame  + " vs" + str(fn))
-         meteor_json['metframes'].pop(fn)
-      else:
-         print('FRAME != fn ' +  frame  + " vs" + str(fn))         
+      
    
    print(meteor_json['metframes'])
    sys.exit(0)
