@@ -26,7 +26,7 @@ def delete_frame(form):
    # Update meteor_frame_data
    if "meteor_frame_data" in meteor_json:
       for ind, frame in enumerate(meteor_json['meteor_frame_data']):
-         if frame[INDEX_OF_FRAME_NUMBER_IN_meteor_frame_data] == fn:
+         if int(frame[INDEX_OF_FRAME_NUMBER_IN_meteor_frame_data]) == int(fn):
             print("FOUND IN meteor_frame_data<br>")
             meteor_json['meteor_frame_data'].pop(ind)  
          
@@ -38,6 +38,9 @@ def delete_frame(form):
    response['message'] = 'frame deleted'
    save_json_file(meteor_file, meteor_json)
    print(json.dumps(response))
+
+
+
 
 
 # Return the JSON Files from a given reduction
