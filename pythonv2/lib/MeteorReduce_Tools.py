@@ -290,7 +290,7 @@ def generate_stacks(video_full_path, destination):
 # Get Specific HD Frames from a frame ID and an analysed name
 def get_HD_frame(analysed_name,frame_id):
    # Format the frame_id so we always have 4 digits
-   frame_id = "{:04d}".format(1)
+   frame_id = "{:04d}".format(frame_id)
    print("GET FROM <br>")
    print(get_cache_path(analysed_name,"frames")+"*"+EXT_HD_FRAMES+str(frame_id)+".png")
    return glob.glob(get_cache_path(analysed_name,"frames")+"*"+EXT_HD_FRAMES+str(frame_id)+".png") 
