@@ -11,10 +11,10 @@
                <a class="nav-link active" id="reduc-tab-l" data-toggle="tab" href="#reduc-tab" role="tab" aria-controls="reduction" aria-selected="true">Reduction</a>
            </li>
            <li class="nav-item">
-               <a class="nav-link" id="lightc-tab-l" data-toggle="tab" href="#lightc-tab" role="tab" aria-controls="lightc" aria-selected="true">Light Curve</a>
+               <a class="nav-link" id="stars-tab-l" data-toggle="tab" href="#stars-tab" role="tab" aria-controls="stars" aria-selected="false"><span id="str_cnt"></span> Stars</a>
            </li>
            <li class="nav-item">
-               <a class="nav-link" id="stars-tab-l" data-toggle="tab" href="#stars-tab" role="tab" aria-controls="stars" aria-selected="false"><span id="str_cnt"></span> Stars</a>
+               <a class="nav-link" id="lightc-tab-l" data-toggle="tab" href="#lightc-tab" role="tab" aria-controls="lightc" aria-selected="true">Light Curve</a>
            </li>
            <li class="nav-item">
                <a class="nav-link" id="plots-tab-l" data-toggle="tab" href="#plots-tab" role="tab" aria-controls="plots" aria-selected="false">Plots</a>
@@ -27,7 +27,7 @@
            </li>
        </ul>
 
-       <div class="tab-content box " > 
+       <div class="tab-content box"> 
 
            <div class="tab-pane fade show active pr-3" id="reduc-tab" role="tabpanel" aria-labelledby="reduc-tab-l">
                <table class="table table-dark table-striped table-hover td-al-m mb-2 pr-5">
@@ -88,19 +88,11 @@
                <dt class="col-6">Magnitude </dt><dd class="col-6">{EVENT_MAGNITUDE}</dd>
            </dl>
            <hr class="w">
-           <h2>Reduction</h2>
-           <dl class="row mb-0">
-               <dt class="col-6">Frames</dt><dd class="col-6">{FRAME_COUNT}</dd>
-               <dt class="col-6">Stars  </dt><dd class="col-6" id="dur">{STAR_COUNT}</dd> 
-           </dl>
-           <hr class="w">
-           <div class="m-2 ml-5 mr-5">
+           <div class="m-2">
                <div class="btn-holder row mt-1 mb-1">
                    <a id="zoom_canvas" class="col btn btn-secondary mt-0 mb-0"><i class="icon-zoom-in"></i> <span>Zoom</span></a>
-                   <a id="show_grid" class="col btn btn-secondary mt-0 mb-0"><i class="icon-grid"></i> <span>Show Grid</span></a>
-               </div>
-               <div class="btn-holder row mt-1">
-                   <a id="play_anim" class="col btn btn-secondary mt-0 mb-0"><i class="icon-play"></i> <span>Thumbs Anim.</span></a> 
+                   <a id="show_grid" class="col btn btn-secondary mt-0 mb-0"><i class="icon-grid"></i> <span>Grid</span></a>
+                   <a id="play_anim" class="col btn btn-secondary mt-0 mb-0"><i class="icon-play"></i> <span>Thumbs</span></a> 
                </div>
            </div>
        </div>
