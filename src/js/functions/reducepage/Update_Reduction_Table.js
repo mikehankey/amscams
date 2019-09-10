@@ -32,7 +32,7 @@ function update_reduction_on_canvas_and_table(json_resp) {
   
         // Get thumb path
         var frame_id = parseInt(v[1]);
-        var thumb_path = v[7]
+        var thumb_path = v[11]
         var square_size = 6;
         var _time = v[0].split(' ');
   
