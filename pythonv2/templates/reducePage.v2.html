@@ -200,8 +200,9 @@
 <script> 
    var my_image = '{STACK}';
    var main_vid = '{VIDEO_FILE}';
-   var json_file = '{JSON_FILE}';
+   var json_file;
    window.onload = function () {
-      update_star_and_reduction('{JSON_FILE}?c='+Math.random());
+      json_file = '{JSON_FILE}?c=' + Math.random()
+      update_star_and_reduction(json_file);
    }
 </script>
