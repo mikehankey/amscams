@@ -387,6 +387,11 @@ def controller(json_conf):
    
    nav_html,bot_html = nav_links(json_conf,cmd)
    nav_html = "" 
+
+   # New Reduce page
+   if cmd == 'reduce2':
+      skin = "v2"
+
    template = get_template(json_conf, skin)
    stf = template.split("{BODY}")
    top = stf[0]
@@ -421,7 +426,6 @@ def controller(json_conf):
 
    # REAL NEW VERSION
    if cmd == 'reduce2':
-      skin = 'v2'
       extra_html = reduce_meteor2(json_conf, form)
   
    # OLD VERSION 
