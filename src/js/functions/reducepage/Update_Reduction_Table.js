@@ -121,8 +121,8 @@ function remove_reduction_objects_from_canvas() {
 
 function update_reduction_only(callback='') {
     var cmd_data = {
-        video_file:       main_vid,          // Defined on the page 
-        cmd: 'update_red_info_ajax'
+        video_file: main_vid,          // Defined on the page 
+        cmd: 'get_reduction_info'
     }
 
     loading({text:'Updating  reduction data...', overlay:true}); 
