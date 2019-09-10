@@ -109,6 +109,10 @@ def does_cache_exist(analysed_file_name,cache_type):
       return []
 
 
+# Get Specific cropped Frames from a frame ID and an analysed name
+def get_thumb(analysed_name,frame_id):
+   return glob.glob(get_cache_path(analysed_name,"cropped")+"*"+EXT_CROPPED_FRAMES+str(frame_id)+".png") 
+
 # Get the thumbs (cropped frames) for a meteor detection
 # Generate them if necessary
 def get_thumbs(analysed_name,meteor_json_data,HD,HD_frames,clear_cache):
@@ -204,7 +208,10 @@ def new_crop_thumb(frame,x,y,dest,HD):
    return dest
 
 
-   # Create the cropped frames (thumbs) for a meteor detection
+
+
+
+# Create the cropped frames (thumbs) for a meteor detection
 def generate_cropped_frames(analysed_name,meteor_json_data,HD_frames,HD):
 
    # Debug
@@ -215,15 +222,16 @@ def generate_cropped_frames(analysed_name,meteor_json_data,HD_frames,HD):
    cropped_frames = [] 
    
    for frame in meteor_frame_data: 
-      # WARNING THERE IS A -1 FROM THE LIST OF HD FRAMES!!!
-      # BECAUSE THE JSON IS WRONG      
+
       frame_index_destination = int(frame[1])
       frame_index = frame_index_destination-1 
       x = int(frame[2])
       y = int(frame[3])
       destination =  get_cache_path(analysed_name,"cropped")+analysed_name['name_w_ext']+EXT_CROPPED_FRAMES+str(frame_index_destination)+".png"
+      
+      # WARNING THERE IS A -1 FROM THE LIST OF HD FRAMES!!!
+      # BECAUSE THE JSON IS WRONG      
       org_HD_frame = HD_frames[frame_index-1]
-
 
       # We generate the thumb from the corresponding HD_frames
       # and add it to cropped_frames
@@ -231,6 +239,7 @@ def generate_cropped_frames(analysed_name,meteor_json_data,HD_frames,HD):
       cropped_frames.append(crop)
 
    return cropped_frames
+
 
 # Get the stacks for a meteor detection
 # Generate it if necessary
@@ -275,6 +284,12 @@ def generate_stacks(video_full_path, destination):
       stacked_image.save(destination)
  
    return destination
+
+
+
+# Get Specific HD Frames from a frame ID and an analysed name
+def get_HD_frame(analysed_name,frame_id):
+   return glob.glob(get_cache_path(analysed_name,"frames")+"*"+EXT_HD_FRAMES+str(frame_id)+".png") 
 
 
 # Get All HD Frames for a meteor detection

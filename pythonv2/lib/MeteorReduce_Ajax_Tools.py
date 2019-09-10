@@ -1,10 +1,61 @@
 import sys
 import cgitb
 import json
+import sys
 
 from lib.FileIO import cfe, load_json_file, save_json_file
-from lib.MeteorReduce_Tools import get_cache_path, name_analyser, EXT_CROPPED_FRAMES
- 
+from lib.MeteorReduce_Tools import get_cache_path, name_analyser, EXT_CROPPED_FRAMES, new_crop_thumb, get_HD_frame
+
+
+# Update multiple frames 
+def update_multiple_frames(form):
+   # Debug
+   cgitb.enable()  
+   
+   # Get Data 
+   json_file = form.getvalue("json_file")
+   all_frames_to_update = json.loads(form.getvalue("frames") )
+   
+   mr = load_json_file(json_file)
+
+   # Analyse the name
+   analysed_name = name_analyser(json_file)
+
+   #We update all the frames
+   for val in all_frames_to_update:  
+      
+      # Update the values in the JSON
+      mr['metframes'][str(int(val['fn']))]['hd_x'] = int(val['x'])
+      mr['metframes'][str(int(val['fn']))]['hd_y'] = int(val['y'])
+
+      # Recreate the corresponding thumb
+      original_HD_frame = get_HD_frame(analysed_name,val['fn'])   
+      destination_cropped_frame = get_thumb(analysed_name,val['fn'])   
+
+      print("IN update_multiple_frames<br/>")
+      print("original_HD_frame " + original_HD_frame + "<br>")
+      
+      print("destination_cropped_frame " + destination_cropped_frame + "<br>")
+
+      #destination_cropped_frame = get_cache_path(analysed_name,"cropped")+"*"+EXT_CROPPED_FRAMES+"*.png" 
+      #new_crop_thumb(frame,x,y,dest,HD)
+
+   sys.exit(0)
+
+   # We update the JSON 
+   save_json_file(mrf, mr)
+   
+   resp = {}
+   resp['msg'] = "frames updated."  
+   
+   # We compute the new stuff from the new meteor position within frames
+   os.system("cd /home/ams/amscams/pythonv2/; ./reducer3.py cm " + mrf + " > /mnt/ams2/tmp/rrr.txt") 
+   os.system("cd /home/ams/amscams/pythonv2/; ./reducer3.py cm " + mrf + " > /mnt/ams2/tmp/rrr.txt") 
+
+   print(json.dumps(resp))
+
+
+
 
 # Delete a frame
 # Input = the meteor json file & the frame #
@@ -27,7 +78,6 @@ def delete_frame(form):
    if "meteor_frame_data" in meteor_json:
       for ind, frame in enumerate(meteor_json['meteor_frame_data']):
          if int(frame[INDEX_OF_FRAME_NUMBER_IN_meteor_frame_data]) == int(fn):
-            print("FOUND IN meteor_frame_data<br>")
             meteor_json['meteor_frame_data'].pop(ind)  
          
    # Update metframes

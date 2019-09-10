@@ -38,7 +38,7 @@ from lib.MultiStationMeteors import multi_station_meteors, multi_station_meteor_
 
 # New Reduce Meteor Page
 from lib.MeteorReducePage import reduce_meteor2
-from lib.MeteorReduce_Ajax_Tools import get_reduction_info, delete_frame
+from lib.MeteorReduce_Ajax_Tools import get_reduction_info, delete_frame, update_multiple_frames
  
 
 NUMBER_OF_METEOR_PER_PAGE = 60
@@ -240,6 +240,8 @@ def controller(json_conf):
       get_reduction_info(form.getvalue('json_file'))   
       exit()
 
+   
+
 
    #CUSTOM VIDEOS (AJAX CALL)
    if cmd == 'generate_timelapse': 
@@ -331,10 +333,15 @@ def controller(json_conf):
    if cmd == 'get_manual_points':
       get_manual_points(json_conf,form)
       exit()
+   
    # New Reduction Page
    if cmd == 'delete_frame':
       delete_frame(form)
       exit()
+   if cmd == 'update_multiple_frames'
+      update_multiple_frames(form)
+      exit()
+
    if cmd == 'del_frame':
       del_frame(json_conf,form)
       exit()

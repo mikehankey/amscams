@@ -5,8 +5,8 @@ var meteor_select_updates = [];
 
 function select_multiple_meteors_ajax() {
     var cmd_data = {
-        cmd: 'update_multiple_frames_ajax',
-        sd_video_file: sd_video_file, // Defined on the page
+        cmd: 'update_multiple_frames',
+        meteor_json_file: json_file, // Defined on the page
     };
 
     meteor_select_updates = jQuery.grep(meteor_select_updates, function(n, i){
