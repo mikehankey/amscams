@@ -77,15 +77,16 @@ def reduce_meteor2(json_conf,form):
    # Get the thumbs (cropped HD frames)
    thumbs = get_thumbs(analysed_name,meteor_json_file,HD,HD_frames,clear_cache)
    #print(get_cache_path(analysed_name,"cropped") +"<br>")
-
-  
-  
+ 
    # Fill Template with data
    template = template.replace("{VIDEO_FILE}", str(video_full_path))   # Video File  
    template = template.replace("{STACK}", str(stack))                  # Stack File 
    template = template.replace("{EVENT_START_TIME}", str(meteor_json_file['event_start_time'])) # Start time
    template = template.replace("{EVENT_DURATION}", str(meteor_json_file['event_duration']))     # Duration
    template = template.replace("{EVENT_MAGNITUDE}", str(meteor_json_file['peak_magnitude']))    # Peak_magnitude
+
+   # Note: the rest of the data are managed through JAVASCRIPT
+   
    
    #template =  get_stars_table(template,"{STAR_TABLE}",meteor_json_file,"{STAR_COUNT}")   # Stars table
    #template =  get_reduction_table(analysed_name,template,"{RED_TABLE}",meteor_json_file,'{FRAME_COUNT}') # Reduction Table
