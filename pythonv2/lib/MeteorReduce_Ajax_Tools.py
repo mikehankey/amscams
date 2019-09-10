@@ -11,9 +11,7 @@ from lib.MeteorReduce_Tools import get_cache_path, name_analyser, EXT_CROPPED_FR
 def delete_frame(form):
 
    # Debug
-   cgitb.enable()
-
-   print("IN DELETE FRAME")
+   cgitb.enable() 
 
    # Frame Number
    fn = form.getvalue("fn")
@@ -25,37 +23,14 @@ def delete_frame(form):
    # Update meteor_frame_data
    if "meteor_frame_data" in meteor_json:
       if fn in meteor_json['meteor_frame_data']:
-         meteor_json['meteor_frame_data'].pop(fn) 
-       
-   print(meteor_json['metframes'])
-   print("<br>********************<br>")
-
-
+         meteor_json['meteor_frame_data'].pop(fn)  
+         
    # Update metframes
    if "metframes" in meteor_json:     
       meteor_json['metframes'].pop(fn, None)
    
-   print(meteor_json['metframes'])
-   sys.exit(0)
-      
- 
-   # Rebuild all frame data
-   new_frame_data = []
-   for data in meteor_json['meteor_frame_data']:
-      tfn = data[1]
-      if str(fn) == str(tfn):
-         skip = 1
-      else:
-         new_frame_data.append(data)
-   meteor_json['meteor_frame_data'] = new_frame_data
-   
-   # Rebuild metframes
-   if "metframes" in meteor_json:
-      if fn in meteor_json['metframes']:
-         meteor_json['metframes'].pop(fn)
    response = {}
    response['message'] = 'frame deleted'
-   response['frame_data'] = new_frame_data
    save_json_file(meteor_file, meteor_json)
    print(json.dumps(response))
 
