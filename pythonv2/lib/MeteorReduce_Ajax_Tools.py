@@ -29,9 +29,12 @@ def update_multiple_frames(form):
    print(all_frames_to_update)
    print("<br>")
    print("JSON FILE")
+   print("<br>")
    print(json_file)
    print("<br>")
-   print(mr)
+   print("mr")
+   print("<br>")
+   print(str(mr))
    sys.exit(0)
 
    #We update all the frames
