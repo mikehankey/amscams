@@ -4,7 +4,7 @@ function setup_delete_frame() {
         var  $row = $(this).closest('tr'); 
         var  frame_id = $row.attr('data-fn');
  
-        loading({"text":"Deleting frame #"+d[1],"overlay":true});
+        loading({"text":"Deleting frame #"+frame_id,"overlay":true});
   
         $.ajax({ 
             url:  "/pycgi/webUI.py?cmd=delete_frame&meteor_json_file=" + json_file + "&fn=" + frame_id,
