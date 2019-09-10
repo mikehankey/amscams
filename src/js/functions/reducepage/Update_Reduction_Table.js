@@ -160,16 +160,15 @@ function test_missing_thumb() {
     var cnt = 0;
 
 
-    /*
+   
     $('#reduc-tab table img').each(function() {
 
-        // 50 = normal size => 48 without border
-	    if($(this).width()!==48) {
+        // 50 = normal size => +47 without border
+	    if($(this).width()<47) {
             rows_with_missing_thumbs.push($(this).closest('tr').attr('id'));
             // Replace with loading
             $(this).attr('data-src',$(this).attr('src')).attr('src','/pycgi/dist/img/anim_logo.svg');
         }
-    
     
     });
 
@@ -207,5 +206,5 @@ function test_missing_thumb() {
         
         }, 3000);
     }
-    */
+    
 }
