@@ -30,7 +30,7 @@ def delete_frame(form):
        
    # Update metframes
    if "metframes" in meteor_json:    
-      print(meteor_json['metframes'])
+      print(meteor_json['metframes'][fn])
  
    sys.exit(0)
       
