@@ -338,7 +338,8 @@ def controller(json_conf):
    if cmd == 'delete_frame':
       delete_frame(form)
       exit()
-   if cmd == 'update_multiple_frames'
+
+   if cmd == 'update_multiple_frames':
       update_multiple_frames(form)
       exit()
 
