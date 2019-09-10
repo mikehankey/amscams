@@ -147,9 +147,7 @@ def manual_detect(json_conf, form):
       print("</form>")
 
 def get_template(json_conf, skin = "as6ams"  ):
-   
-   template = ""
-   skin = "as6ams"
+   template = "" 
    if skin == "as6ams":
       fpt = open("/home/ams/amscams/pythonv2/templates/as6ams.html", "r")
    elif skin == "v2":
