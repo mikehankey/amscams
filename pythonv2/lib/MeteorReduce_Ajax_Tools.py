@@ -31,8 +31,8 @@ def create_thumb(form):
    # Analyse the name
    analysed_name = name_analyser(json_file)
    
-   # Create thumd destination
-   destination =  get_cache_path(analysed_name,"cropped")+analysed_name['name_w_ext']+EXT_CROPPED_FRAMES+str(frame_id)+".png"
+   # Create thumb destination
+   dest =  get_cache_path(analysed_name,"cropped")+analysed_name['name_w_ext']+EXT_CROPPED_FRAMES+str(frame_id)+".png"
 
    print(json.dumps({'fr':new_crop_thumb(org_frame,x,y,dest)}))
      
