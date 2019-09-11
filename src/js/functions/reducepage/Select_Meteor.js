@@ -559,6 +559,11 @@ function setup_select_meteor(anti_cache=-1) {
         
         // Add current ID
         $('#sel_frame_id, .sel_frame_id').text(meteor_id);
+
+        // Are we in single mode?
+        if(!multiple_select) {
+           $('#switch_select_mode').click();
+        }
   
         // Update image real dimensions 
         var img = new Image();
