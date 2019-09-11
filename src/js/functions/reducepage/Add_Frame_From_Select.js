@@ -54,6 +54,10 @@ function update_preview(top,left,margins,W_factor,H_factor,cursor_dim,w_preview_
    var y_val = top*zoom/2-w_preview_dim;
    var x_val = left*zoom/2-h_preview_dim;
 
+   console.log("PREVIEW ZOOM UPDATE POSITION")
+   console.log("X " + x_val);
+   console.log("Y " + y_val);
+
    if(x_val<0) {
       if(y_val<0) {
          $zoom.css('background-position',Math.abs(x_val)  + 'px ' + Math.abs(y_val) + 'px');
