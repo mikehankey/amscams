@@ -1762,6 +1762,7 @@ def mask_admin(json_conf,form):
       for mask in masks:
          x,y,w,h = mask.split(",")
          x,y,w,h = int(x), int(y), int(w), int(h)
+         #x,y,w,h = int(x), int(int(y) * .83), int(w), int(int(h) * .83) + 1
          cv2.rectangle(img, (x, y), (x + w, y + h), (128, 128, 128), -1)      
          tmasks.append((x,y,w,h))
       cv2.imwrite("/mnt/ams2/tmp.jpg", img)
