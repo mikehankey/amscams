@@ -384,8 +384,8 @@ function setup_modal_actions(fn_id,x,y) {
         var relY = parseFloat(e.pageY - parentOffset.top);
 
         //WARNING ONLY WORKS WITH SQUARES
-        var realX = relX/factor+x-thumb_dim/2;
-        var realY = relY/factor+y-thumb_dim/2;
+        var realX = Math.floor(relX/factor+x-thumb_dim/2);
+        var realY = Math.floor(relY/factor+y-thumb_dim/2);
 
         // Transform values
         if(!$(this).hasClass('done')) {
@@ -393,7 +393,7 @@ function setup_modal_actions(fn_id,x,y) {
         } else {
             $('#lh').css('top',relY);
             $('#lv').css('left',relX);
-            $('#meteor_pos').text("x:"+Math.floor(realX)+'/y:'+Math.floor(realY));
+            $('#meteor_pos').text("x:"+realX+'/y:'+realY);
         }
          
         select_meteor_ajax(fn_id,realX,realY);
