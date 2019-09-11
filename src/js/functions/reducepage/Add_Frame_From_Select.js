@@ -153,14 +153,9 @@ function create_meteor_selector_from_frame(frame_id, image_src) {
 
 
                    // Update X/Y
-                   $('#pos_x').text(Math.floor(sel_x*W_factor-cursor_dim/2));
-                   $('#pos_y').text(Math.floor(sel_y*H_factor-cursor_dim/2));
-
-                  console.log("SEL X" + sel_x);
-                  console.log("W_factor " + W_factor);
-                  console.log("cursor_dim " + cursor_dim);
-
-
+                   $('#pos_x').text(Math.floor(sel_x*W_factor));
+                   $('#pos_y').text(Math.floor(sel_y*H_factor));
+ 
                    // Mask
                    update_mask_position(top,left,prev_W,prev_H,cursor_dim);
    
