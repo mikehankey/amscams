@@ -72,8 +72,8 @@ function create_meteor_selector_from_frame(frame_id, image_src) {
            <div>Move the white square to the meteor location</div>\
            </div>\
            <div class="modal-body">\
-         <div id="draggable_area" style="width:'+(prev_W+margins*2) + 'px; height:' +( prev_H+margins*2) + 'px;margin:0 auto; padding-top:'+margins+'px">\
-            <div id="main_view" style="background-color:#000;background-image:url('+image_src+'); width:'+prev_W+'px; height:'+prev_H+'px; margin: 0 auto; position:relative; background-size:contain">\
+         <div id="draggable_area" style="width:'+(prev_W+margins*2) + 'px; height:' +( prev_H+margins*2) + 'px;margin:0 auto;">\
+            <div id="main_view" style="background-color:#000;background-image:url('+image_src+'); width:'+prev_W+'px; height:'+prev_H+'px; margin: 0 auto; position:relative; background-size:contain; top:'+margins+'px">\
                      <div id="dl"></div><div id="dt"></div><div id="dr"></div><div id="db"></div>\
                      <div id="selector" style="width:'+cursor_dim+'px; height:'+cursor_dim+'px; border:'+cursor_border_width+'px solid #fff;"></div>\
                      <div id="select_f_tools">\
