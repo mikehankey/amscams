@@ -61,20 +61,22 @@ function create_meteor_selector_from_frame(frame_id, image_src) {
            <div>Move the white square to the meteor location</div>\
            </div>\
            <div class="modal-body">\
-           <div id="main_view" style="background-color:#000;background-image:url('+image_src+'); width:'+prev_W+'px; height:'+prev_H+'px; margin: 0 auto; position:relative; background-size:contain">\
-               <div id="dl"></div><div id="dt"></div><div id="dr"></div><div id="db"></div>\
-               <div id="selector" style="width:'+cursor_dim+'px; height:'+cursor_dim+'px; border:'+cursor_border_width+'px solid #fff;"></div>\
-                <div id="select_f_tools">\
-                   <div class="drag-h d-flex justify-content-between  pt-1">\
-                       <div><small>Preview</small></div>\
-                       <div class="pr-2"><small>X:<span id="pos_x"></span> / Y:<span id="pos_y"></span></small></div>\
-                   </div>\
-                   <div class="p-1">\
-                   <div id="select_preview" style="width:'+preview_dim+'px; height:'+preview_dim+'px"></div>\
-                   <div><input type="range" value="'+transp_val+'" id="transp" min="0"  max="60" ></div>\
-                   </div>\
+            <div id="draggable_area">\
+               <div id="main_view" style="background-color:#000;background-image:url('+image_src+'); width:'+prev_W+'px; height:'+prev_H+'px; margin: 0 auto; position:relative; background-size:contain">\
+                     <div id="dl"></div><div id="dt"></div><div id="dr"></div><div id="db"></div>\
+                     <div id="selector" style="width:'+cursor_dim+'px; height:'+cursor_dim+'px; border:'+cursor_border_width+'px solid #fff;"></div>\
+                     <div id="select_f_tools">\
+                        <div class="drag-h d-flex justify-content-between  pt-1">\
+                           <div><small>Preview</small></div>\
+                           <div class="pr-2"><small>X:<span id="pos_x"></span> / Y:<span id="pos_y"></span></small></div>\
+                        </div>\
+                        <div class="p-1">\
+                        <div id="select_preview" style="width:'+preview_dim+'px; height:'+preview_dim+'px"></div>\
+                        <div><input type="range" value="'+transp_val+'" id="transp" min="0"  max="60" ></div>\
+                        </div>\
+                     </div>\
                </div>\
-           </div>\
+            </div>\
            </div>\
            <div class="modal-footer">\
            <img id="tmp_img_ld" hidden src="'+image_src+'"/>\
@@ -126,7 +128,7 @@ function create_meteor_selector_from_frame(frame_id, image_src) {
    
        // Move the Selector
        $( "#selector" ).draggable(
-           { containment: "parent",
+           {   containment: $('#draggable_area'),
                drag:function(e,u) {  
    
                    var top = u.position.top;
