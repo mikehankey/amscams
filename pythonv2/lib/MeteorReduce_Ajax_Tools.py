@@ -30,19 +30,19 @@ def update_frame(form):
 
    if "meteor_frame_data" in mr:
       for ind, frame in enumerate(mr['meteor_frame_data']): 
-         if int(frame[INDEX_OF_FRAME_NUMBER_IN_meteor_frame_data]) == int(val['fn']):
+         if int(frame[INDEX_OF_FRAME_NUMBER_IN_meteor_frame_data]) == int(fn):
             # It needs to be updated here!!
-            frame[HD_X_meteor_frame_data] = int(val['x'])
-            frame[HD_Y_meteor_frame_data] = int(val['y'])
+            frame[HD_X_meteor_frame_data] = int(x)
+            frame[HD_Y_meteor_frame_data] = int(y)
 
             # Recreate the corresponding thumb
-            original_HD_frame = get_HD_frame(analysed_name,val['fn'])   
-            destination_cropped_frame = get_thumb(analysed_name,val['fn'])    
+            original_HD_frame = get_HD_frame(analysed_name,fn)   
+            destination_cropped_frame = get_thumb(analysed_name,fn)    
 
             if(len(original_HD_frame)!=0 and len(destination_cropped_frame)!=0):  
-               new_crop_thumb(original_HD_frame[0],int(val['x']),int(val['y']),destination_cropped_frame[0])
+               new_crop_thumb(original_HD_frame[0],x,y,destination_cropped_frame[0])
             else:
-               resp['error'].append("Impossible to update the frame " + str(int(val['fn'])))
+               resp['error'].append("Impossible to update the frame " + str(fn))
    
    # We update the JSON 
    save_json_file(json_file, mr)
