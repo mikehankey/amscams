@@ -7,7 +7,7 @@ function setup_delete_frame() {
         loading({"text":"Deleting frame #"+frame_id,"overlay":true});
   
         $.ajax({ 
-            url:  "/pycgi/webUI.py?cmd=delete_frame&meteor_json_file=" + json_file + "&fn=" + frame_id,
+            url:  "/pycgi/webUI.py?cmd=delete_frame&json_file=" + json_file + "&fn=" + frame_id,
             success: function(response) {
 
                 // Remove the related square on the canvas

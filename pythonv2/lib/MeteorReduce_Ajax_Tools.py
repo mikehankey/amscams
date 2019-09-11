@@ -14,7 +14,12 @@ HD_X_meteor_frame_data  = 2
 HD_Y_meteor_frame_data  = 3
 
 
+# Update the meteor_json file based on the creation of the modification of a given frame
+
+
+
 # Create new cropped frame
+# and add the corresponding info to the json file
 def create_thumb(form):
 
    # Debug
@@ -24,7 +29,7 @@ def create_thumb(form):
    org_frame = form.getvalue('src')
    x = int(form.getvalue('x'))
    y = int(form.getvalue('y'))
-   frame_id = int(form.getvalue('fr_id'))
+   frame_id = int(form.getvalue('fn'))
 
    json_file = form.getvalue('json_file')
 
@@ -33,6 +38,9 @@ def create_thumb(form):
    
    # Create thumb destination
    dest =  get_cache_path(analysed_name,"cropped")+analysed_name['name_w_ext']+EXT_CROPPED_FRAMES+str(frame_id)+".png"
+
+   # Update the JSON file accordingly
+   update_frame(form)
 
    print(json.dumps({'fr':new_crop_thumb(org_frame,x,y,dest)}))
      
@@ -68,8 +76,11 @@ def update_frame(form):
    # Debug
    cgitb.enable()     
 
+   # Update or creation
+   update = False
+
    # Get Data 
-   json_file = form.getvalue("meteor_json_file")
+   json_file = form.getvalue("json_file")
    mr = load_json_file(json_file)
 
    # Analyse the name
@@ -82,6 +93,7 @@ def update_frame(form):
    x = form.getvalue("x")
    y = form.getvalue("y")
 
+   # We try to update the json file
    if "meteor_frame_data" in mr:
       for ind, frame in enumerate(mr['meteor_frame_data']): 
          if int(frame[INDEX_OF_FRAME_NUMBER_IN_meteor_frame_data]) == int(fn):
@@ -97,6 +109,14 @@ def update_frame(form):
                new_crop_thumb(original_HD_frame[0],int(x),int(y),destination_cropped_frame[0])
             else:
                resp['error'].append("Impossible to update the frame " + str(fn))
+            
+            update = True
+
+   # If it wasn't an update, it's a creation
+   if(update == False):
+      # We need to create the entry in the json file
+      print("CREATE ENTRY IN JSON FILE")
+
    
    # We update the JSON 
    save_json_file(json_file, mr)
@@ -117,7 +137,7 @@ def update_multiple_frames(form):
    cgitb.enable()  
    
    # Get Data 
-   json_file = form.getvalue("meteor_json_file")
+   json_file = form.getvalue("json_file")
    all_frames_to_update = json.loads(form.getvalue("frames") )
    
    mr = load_json_file(json_file)
@@ -174,8 +194,10 @@ def delete_frame(form):
    fn = form.getvalue("fn")
 
    # JSON File
-   meteor_file = form.getvalue("meteor_json_file")
+   meteor_file = form.getvalue("json_file")
    meteor_json = load_json_file(meteor_file)
+
+   # TODO: DELETE ALSO THE CORRESPONDING THUMB HERE?
 
    # Update meteor_frame_data
    if "meteor_frame_data" in meteor_json:

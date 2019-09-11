@@ -10,7 +10,7 @@ function select_multiple_meteors_ajax() {
 
    var cmd_data = {
       cmd: 'update_multiple_frames',
-      meteor_json_file: json_file, // Defined on the page
+      json_file: json_file, // Defined on the page
    };
 
    meteor_select_updates = jQuery.grep(meteor_select_updates, function(n, i){
@@ -81,7 +81,7 @@ function select_meteor_ajax(fn,x,y) {
     if(!multiple_select) {
         var cmd_data = {
             cmd: 'update_frame',
-            meteor_json_file: json_file, // Defined on the page
+            json_file: json_file, // Defined on the page
             fn: fn,
             x: x,
             y: y 

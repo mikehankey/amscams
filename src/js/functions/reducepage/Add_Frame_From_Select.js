@@ -227,7 +227,7 @@ function create_meteor_selector_from_frame(frame_id, image_src) {
            url:  "/pycgi/webUI.py",
            data: {
                cmd: 'create_thumb',
-               fr_id: frame_id,
+               fn: frame_id,
                src: image_src,
                json_file: json_file,
                x: Math.floor(sel_x*W_factor),
