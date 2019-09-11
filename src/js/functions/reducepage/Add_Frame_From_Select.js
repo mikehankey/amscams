@@ -191,7 +191,7 @@ function create_meteor_selector_from_frame(frame_id, image_src, neighbor) {
 
        // Simulate a drag event so the preview is fine at the beginning
        var draggable = $( "#selector" ),
-            droppableOffset = droppable.offset(),
+            droppableOffset = draggable.offset(),
             draggableOffset = draggable.offset(),
             dx = droppableOffset.left,
             dy = droppableOffset.top;
