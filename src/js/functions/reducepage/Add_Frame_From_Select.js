@@ -145,6 +145,10 @@ function create_meteor_selector_from_frame(frame_id, image_src) {
    
                    var top = u.position.top;
                    var left = u.position.left;
+
+
+                  // We move it to the floor value
+
                    var $zoom =  $('#select_preview');
 
                    
@@ -195,8 +199,7 @@ function create_meteor_selector_from_frame(frame_id, image_src) {
            { handle: ".drag-h", 
              containment: $('body'),
            drag:function(e,u) {  
-               $(this).css('position','relative');
-
+               $(this).css('position','relative').css('box-shadow','none');
            },
            start: function( event, ui ) {
                $(this).css('opacity',0.3);
