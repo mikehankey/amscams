@@ -148,13 +148,13 @@ function create_meteor_selector_from_frame(frame_id, image_src) {
                    var $zoom =  $('#select_preview');
 
                    
-                   sel_x = left;
-                   sel_y = top;
+                   sel_x = Math.floor(left)+margins;
+                   sel_y = Math.floor(top)+margins;
 
 
                    // Update X/Y
-                   $('#pos_x').text(parseInt(sel_x*W_factor-cursor_dim/2));
-                   $('#pos_y').text(parseInt(sel_y*H_factor-cursor_dim/2));
+                   $('#pos_x').text(Math.floor(sel_x*W_factor-cursor_dim/2));
+                   $('#pos_y').text(Math.floor(sel_y*H_factor-cursor_dim/2));
 
                   console.log("SEL X" + sel_x);
                   console.log("W_factor " + W_factor);
