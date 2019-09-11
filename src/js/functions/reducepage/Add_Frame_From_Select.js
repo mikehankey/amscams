@@ -224,8 +224,8 @@ function create_meteor_selector_from_frame(frame_id, image_src, neighbor) {
      
       var draggable = $( "#selector" ), 
       draggableOffset = draggable.offset(),
-      ll = draggableOffset.left,
-      tt = draggableOffset.top;
+      ll = Math.floor(draggableOffset.left / W_factor + cursor_dim),
+      tt = Math.floor(draggableOffset.top / H_factor + cursor_dim);
       console.log(tt,ll,margins,W_factor,H_factor,cursor_dim,w_preview_dim,h_preview_dim,prev_W,prev_H,zoom);
       update_preview(tt,ll,margins,W_factor,H_factor,cursor_dim,w_preview_dim,h_preview_dim,prev_W,prev_H,zoom);
 
