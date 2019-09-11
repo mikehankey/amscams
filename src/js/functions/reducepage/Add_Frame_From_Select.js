@@ -50,7 +50,7 @@ function create_meteor_selector_from_frame(frame_id, image_src) {
 
    var transp_val = 15;            // Transparency of white area
    
-   var preview_dim = 250;          // Only squares for preview
+   var preview_dim = 270;          // Only squares for preview
 
    var cursor_border_width  = 1; 
    var sel_x = Math.floor(prev_W/2-cursor_dim/2);
@@ -82,7 +82,7 @@ function create_meteor_selector_from_frame(frame_id, image_src) {
                            <div class="pr-2"><small>X:<span id="pos_x"></span> / Y:<span id="pos_y"></span></small></div>\
                         </div>\
                         <div class="p-1">\
-                        <div id="select_preview" style="width:'+preview_dim+'px; height:'+preview_dim+'px"></div>\
+                        <div id="select_preview" style="width:'+preview_dim+'px; height:'+preview_dim+'px; margin:0 auto"></div>\
                         <div><input type="range" value="'+transp_val+'" id="transp" min="0"  max="60" ></div>\
                         </div>\
                      </div>\
@@ -104,8 +104,9 @@ function create_meteor_selector_from_frame(frame_id, image_src) {
 
    // Selector Default Location (center)
    $('#selector').css({top:prev_H/2-cursor_dim/2,left:prev_W/2-cursor_dim/2 });
-   $('#pos_x').text(parseInt((prev_W/2-cursor_dim/2)*W_factor));
-   $('#pos_y').text(parseInt((prev_H/2-cursor_dim/2)*H_factor));    
+
+   $('#pos_x').text(Math.floor((prev_W/2-cursor_dim/2)*W_factor));
+   $('#pos_y').text(Math.floor((prev_H/2-cursor_dim/2)*H_factor));    
 
    // Update Mask position
    update_mask_position(prev_H/2-cursor_dim/2,prev_W/2-cursor_dim/2,prev_W,prev_H,cursor_dim)
@@ -160,7 +161,7 @@ function create_meteor_selector_from_frame(frame_id, image_src) {
                    update_mask_position(top,left,prev_W,prev_H,cursor_dim);
    
                    // Preview Center
-                   top = top + cursor_dim/2;
+                   top  = top + cursor_dim/2;
                    left = left + cursor_dim/2;
                
                    var y_val = top*zoom/2-w_preview_dim;
@@ -193,7 +194,7 @@ function create_meteor_selector_from_frame(frame_id, image_src) {
        $('#select_f_tools').css({"bottom":'2rem',"right":'2rem','position':'absolute'});
        $( "#select_f_tools" ).draggable(
            { handle: ".drag-h", 
-             containment: "parent",
+             containment: $('body'),
            drag:function(e,u) {  
                $(this).css('position','relative');
 
