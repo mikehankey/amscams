@@ -135,8 +135,8 @@ function select_meteor_ajax(fn,x,y) {
         // We add the info to meteor_select_updates
         meteor_select_updates[fn] = {
             fn: fn,
-            x:parseInt(x),
-            y:parseInt(y)
+            x:Math.floor(x),
+            y:Math.floor(y)
         };
 
         // Update list 
@@ -391,7 +391,7 @@ function setup_modal_actions(fn_id,x,y) {
         } else {
             $('#lh').css('top',relY);
             $('#lv').css('left',relX);
-            $('#meteor_pos').text("x:"+Math.round(realX)+'/y:'+Math.round(realY));
+            $('#meteor_pos').text("x:"+Math.floor(realX)+'/y:'+Math.floor(realY));
         }
          
         select_meteor_ajax(fn_id,realX,realY);
@@ -410,8 +410,8 @@ function setup_modal_actions(fn_id,x,y) {
         if(!$(this).hasClass('done')) {
             $('#lh').css('top',relY-2);
             $('#lv').css('left',relX-2);
-            //$('#meteor_pos').text("x:"+Math.round(realX)+'/y:'+Math.round(realY));
-            $('#meteor_pos').text("x:"+ realX +' / y:'+ realY);
+           $('#meteor_pos').text("x:"+Math.floor(realX)+'/y:'+Math.floor(realY));
+             //$('#meteor_pos').text("x:"+ realX +' / y:'+ realY);
         }
     });
 }
