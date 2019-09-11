@@ -106,7 +106,7 @@ function create_meteor_selector_from_frame(frame_id, image_src, neighbor) {
    if(neighbor !== null) {
       console.log("Neighbor exits");
       console.log(neighbor); 
-      $('#selector').css({top:Math.floor(y/W_factor),left:Math.floor(x/H_factor) });
+      $('#selector').css({top:Math.floor(neighbor.y/W_factor),left:Math.floor(neighbor.x/H_factor) });
    } else {
        // Selector Default Location (center)
        $('#selector').css({top:Math.floor(prev_H/2-cursor_dim/2),left:Math.floor(prev_W/2-cursor_dim/2) });
