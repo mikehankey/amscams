@@ -131,7 +131,7 @@ function create_meteor_selector_from_frame(frame_id, image_src, neighbor) {
                    $('#pos_y').text(Math.floor(sel_y*H_factor));
  
                    // Mask
-                   update_mask_position(top,left,prev_W,prev_H,cursor_dim);
+                   update_mask_position(p_top,p_left,prev_W,prev_H,cursor_dim);
    
                    // Preview Center
                    p_top  = p_top + cursor_dim/2;
