@@ -22,9 +22,9 @@ def create_thumb(form):
 
    # Get values
    org_frame = form.getvalue('src')
-   x = int(form.getvalue(x))
-   y = int(form.getvalue(y))
-   frame_id = int(form.getvalue(fr_id))
+   x = form.getvalue(x)  
+   y = form.getvalue(y)  
+   frame_id = form.getvalue(fr_id)  
 
    json_file = form.getvalue('json_file')
 
@@ -34,7 +34,7 @@ def create_thumb(form):
    # Create thumd destination
    destination =  get_cache_path(analysed_name,"cropped")+analysed_name['name_w_ext']+EXT_CROPPED_FRAMES+str(frame_id)+".png"
 
-   print(json.dumps({'fr':new_crop_thumb(frame,x,y,dest)}))
+   print(json.dumps({'fr':new_crop_thumb(org_frame,int(x),int(y),dest)}))
      
 
 # Get HD Frame
