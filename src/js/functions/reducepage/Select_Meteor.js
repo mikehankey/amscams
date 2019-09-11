@@ -103,7 +103,9 @@ function select_meteor_ajax(fn,x,y) {
                     $('#select_meteor_modal').modal('hide').remove();
                     
                     // Reopen the modal at the proper place
+                    multiple_select = false;
                     $('tr#fr_'+fn+' .select_meteor').click();
+                    
 
                     update_reduction_only();
                     loading_done();
