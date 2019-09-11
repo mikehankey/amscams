@@ -123,8 +123,8 @@ function create_meteor_selector_from_frame(frame_id, image_src, neighbor) {
    var p_left = parseInt($('#selector').css('left'));
 
    var $zoom =  $('#select_preview');
-                   sel_x = Math.floor(left)+margins;
-                   sel_y = Math.floor(top)+margins;
+                   sel_x = Math.floor(p_left)+margins;
+                   sel_y = Math.floor(p_top)+margins;
  
                    // Update X/Y
                    $('#pos_x').text(Math.floor(sel_x*W_factor));
@@ -134,11 +134,11 @@ function create_meteor_selector_from_frame(frame_id, image_src, neighbor) {
                    update_mask_position(top,left,prev_W,prev_H,cursor_dim);
    
                    // Preview Center
-                   top  = top + cursor_dim/2;
-                   left = left + cursor_dim/2;
+                   p_top  = p_top + cursor_dim/2;
+                   p_left = p_left + cursor_dim/2;
                
-                   var y_val = top*zoom/2-w_preview_dim;
-                   var x_val = left*zoom/2-h_preview_dim;
+                   var y_val = p_top*zoom/2-w_preview_dim;
+                   var x_val = p_left*zoom/2-h_preview_dim;
                
                    if(x_val<0) {
                    if(y_val<0) {
