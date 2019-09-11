@@ -33,7 +33,7 @@ function update_mask_position(top,left,prev_W,prev_H,cursor_dim) {
 }
 
 
-function update_preview(top,left,margins,W_factor,H_factor,cursor_dim,w_preview_dim,h_preview_dim,prev_W,prev_H) {
+function update_preview(top,left,margins,W_factor,H_factor,cursor_dim,w_preview_dim,h_preview_dim,prev_W,prev_H,zoom) {
    // We move it to the floor value
 
    var $zoom =  $('#select_preview');
@@ -185,7 +185,7 @@ function create_meteor_selector_from_frame(frame_id, image_src, neighbor) {
                drag:function(e,u) {   
                    var top = u.position.top;
                    var left = u.position.left;
-                   update_preview(top,left,margins,W_factor,H_factor,cursor_dim,w_preview_dim,h_preview_dim,prev_W,prev_H);
+                   update_preview(top,left,margins,W_factor,H_factor,cursor_dim,w_preview_dim,h_preview_dim,prev_W,prev_H,zoom);
                }
        });
 
