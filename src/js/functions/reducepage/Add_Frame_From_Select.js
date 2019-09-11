@@ -208,7 +208,7 @@ function create_meteor_selector_from_frame(frame_id, image_src, neighbor) {
        
        
        // Drag tools
-       $('#select_f_tools').css({top:$('#main_view').height()-280,left:-90,position:'absolute'});
+       $('#select_f_tools').css({top:$('#main_view').height()-280,left:-90,position:'absolute','z-index':2});
 
 
        $( "#select_f_tools" ).draggable(
