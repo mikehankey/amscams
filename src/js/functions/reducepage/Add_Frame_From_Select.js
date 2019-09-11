@@ -34,7 +34,7 @@ function update_mask_position(top,left,prev_W,prev_H,cursor_dim) {
 
 
 // Create modal to select meteor from full frame
-function create_meteor_selector_from_frame(frame_id, image_src) {
+function create_meteor_selector_from_frame(frame_id, image_src, neighbor) {
    
   var cursor_dim   = 50;            // Cursor dimension
   var cursor_dim_w = 50;
@@ -102,11 +102,18 @@ function create_meteor_selector_from_frame(frame_id, image_src) {
    // Mask
    $('#dl,#dr,#dt,#db').css({background:"rgba(255,255,255,."+transp_val+")","position":"absolute"}); 
 
-   // Selector Default Location (center)
-   $('#selector').css({top:prev_H/2-cursor_dim/2,left:prev_W/2-cursor_dim/2 });
 
-   $('#pos_x').text(Math.floor((prev_W/2-cursor_dim/2)*W_factor));
-   $('#pos_y').text(Math.floor((prev_H/2-cursor_dim/2)*H_factor));    
+   if(neighbor !== null) {
+      console.log("Neighbor exits");
+      console.log(neighbor); 
+      $('#selector').css({top:Math.floor(y/W_factor),left:Math.floor(x/H_factor) });
+   } else {
+       // Selector Default Location (center)
+       $('#selector').css({top:Math.floor(prev_H/2-cursor_dim/2),left:Math.floor(prev_W/2-cursor_dim/2) });
+   }
+ 
+   $('#pos_x').text(Math.floor(parseInt($('#selector').css('left'))*W_factor));
+   $('#pos_y').text(Math.floor(parseInt($('#selector').css('top'))*H_factor));    
 
    // Update Mask position
    update_mask_position(prev_H/2-cursor_dim/2,prev_W/2-cursor_dim/2,prev_W,prev_H,cursor_dim)
@@ -145,17 +152,13 @@ function create_meteor_selector_from_frame(frame_id, image_src) {
    
                    var top = u.position.top;
                    var left = u.position.left;
-
-
+ 
                   // We move it to the floor value
 
                    var $zoom =  $('#select_preview');
-
-                   
                    sel_x = Math.floor(left)+margins;
                    sel_y = Math.floor(top)+margins;
-
-
+ 
                    // Update X/Y
                    $('#pos_x').text(Math.floor(sel_x*W_factor));
                    $('#pos_y').text(Math.floor(sel_y*H_factor));
@@ -265,7 +268,10 @@ function create_meteor_selector_from_frame(frame_id, image_src) {
 
 
 // Get a frame based on #
-function get_frame(cur_fn) {
+// here we also pass the info about the prev (or next) neighbor
+// so we can place the select meteor box at the right place
+function get_frame(cur_fn, neighbor) {
+
    var cmd_data = {
       cmd: 'get_frame',
       json_file: json_file, // Defined on the page
@@ -284,7 +290,7 @@ function get_frame(cur_fn) {
            // Hide the modal below (it will be reopened anyway)
            $('#select_meteor_modal').modal('hide');
            
-           create_meteor_selector_from_frame(data.id,data.full_fr); 
+           create_meteor_selector_from_frame(data.id,data.full_fr,neighbor); 
        }, 
        error:function() { 
            bootbox.alert({
