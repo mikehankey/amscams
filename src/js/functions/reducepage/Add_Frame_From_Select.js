@@ -116,7 +116,7 @@ function create_meteor_selector_from_frame(frame_id, image_src, neighbor) {
    $('#pos_y').text(Math.floor((parseInt($('#selector').css('top'))+cursor_dim/2)*H_factor));    
 
    // Update Mask position
-   //update_mask_position(parseInt($('#selector').css('top')),parseInt($('#selector').css('left')),prev_W,prev_H,cursor_dim)
+   update_mask_position(parseInt($('#selector').css('top')),parseInt($('#selector').css('left')),prev_W,prev_H,cursor_dim)
 
    // Update the preview
    var p_top  = parseInt($('#selector').css('top'));
