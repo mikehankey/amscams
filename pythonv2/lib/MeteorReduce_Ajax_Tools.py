@@ -33,16 +33,10 @@ def get_frame(form):
    the_frame = the_frame[0]
    toReturn = {'id':fn, 'full_fr':the_frame}
   
-   return toReturn
+   print(json.dumps(toReturn))
 
 
-# Get Specific HD Frames from a frame ID and an analysed name
-def get_HD_frame(analysed_name,frame_id):
-   # Format the frame_id so we always have 4 digits
-   frame_id = str(frame_id).zfill(4)
-   return glob.glob(get_cache_path(analysed_name,"frames")+"*"+EXT_HD_FRAMES+str(frame_id)+".png") 
-
-
+ 
 
 # Update one frame at a time
 def update_frame(form):
