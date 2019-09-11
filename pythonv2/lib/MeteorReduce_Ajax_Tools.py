@@ -23,6 +23,10 @@ def update_frame(form):
    # Get Data 
    json_file = form.getvalue("meteor_json_file")
    mr = load_json_file(json_file)
+
+   # Analyse the name
+   analysed_name = name_analyser(json_file)
+
    
    fn = form.getvalue("fn")
    x = form.getvalue("x")
