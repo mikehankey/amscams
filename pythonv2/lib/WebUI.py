@@ -345,7 +345,7 @@ def controller(json_conf):
 
    #Get a frame or create all of them 
    if(cmd == 'get_frame'):
-      get_HD_frame(form)
+      get_frame(form)
       exit()
    
 
