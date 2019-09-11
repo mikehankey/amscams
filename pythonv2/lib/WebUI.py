@@ -38,7 +38,7 @@ from lib.MultiStationMeteors import multi_station_meteors, multi_station_meteor_
 
 # New Reduce Meteor Page
 from lib.MeteorReducePage import reduce_meteor2
-from lib.MeteorReduce_Ajax_Tools import get_reduction_info, delete_frame, update_multiple_frames, update_frame, get_frame
+from lib.MeteorReduce_Ajax_Tools import get_reduction_info, delete_frame, update_multiple_frames, update_frame, get_frame, create_thumb
  
 
 NUMBER_OF_METEOR_PER_PAGE = 60
@@ -343,11 +343,17 @@ def controller(json_conf):
       update_frame(form)
       exit()
 
-   #Get a frame or create all of them 
+   #  New Reduction Page =>  Get a HD frame 
    if cmd == 'get_frame':
       get_frame(form)
       exit()
    
+   #  New Reduction Page =>  Create a thumb 
+   if cmd == 'create_thumb':
+      create_thumb()
+      exit()
+
+
 
    if cmd == 'del_frame':
       del_frame(json_conf,form)

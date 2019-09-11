@@ -226,12 +226,12 @@ function create_meteor_selector_from_frame(frame_id, image_src) {
        $.ajax({ 
            url:  "/pycgi/webUI.py",
            data: {
-               cmd: 'crop_frame',
+               cmd: 'create_thumb',
                fr_id: frame_id,
                src: image_src,
-               sd_video_file: sd_video_file,
-               x: parseInt(sel_x*H_factor+cursor_dim/2),
-               y: parseInt(sel_y*W_factor+cursor_dim/2)
+               json_file: json_file,
+               x:  Math.floor(Math.floor(left)+margins)*W_factor),
+               y:  Math.floor(Math.floor(top)+margins)*H_factor),
            }, 
            success: function(data) {
                data = JSON.parse(data); 
@@ -240,8 +240,7 @@ function create_meteor_selector_from_frame(frame_id, image_src) {
 
                    // Remove modal
                    $('#cropper_modal').modal('hide').remove();
-
-
+ 
                    // Everything went fine
                    update_star_and_reduction(function() {
                        $('#fr_'+frame_id+' .select_meteor').click();

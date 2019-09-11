@@ -13,6 +13,30 @@ INDEX_OF_FRAME_NUMBER_IN_meteor_frame_data  = 1
 HD_X_meteor_frame_data  = 2
 HD_Y_meteor_frame_data  = 3
 
+
+# Create new cropped frame
+def create_thumb(form):
+
+   # Debug
+   cgitb.enable()     
+
+   # Get values
+   org_frame = form.getvalue('src')
+   x = int(form.getvalue(x))
+   y = int(form.getvalue(y))
+   frame_id = int(form.getvalue(fr_id))
+
+   json_file = form.getvalue('json_file')
+
+   # Analyse the name
+   analysed_name = name_analyser(json_file)
+   
+   # Create thumd destination
+   destination =  get_cache_path(analysed_name,"cropped")+analysed_name['name_w_ext']+EXT_CROPPED_FRAMES+str(frame_id)+".png"
+
+   print(json.dumps({'fr':new_crop_thumb(frame,x,y,dest)}))
+     
+
 # Get HD Frame
 # return the path to the given HD frames  
 def get_frame(form):
