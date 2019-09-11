@@ -33,6 +33,41 @@ function update_mask_position(top,left,prev_W,prev_H,cursor_dim) {
 }
 
 
+function update_preview(top,left,margins,W_factor,H_factor,cursor_dim,w_preview_dim,h_preview_dim) {
+   // We move it to the floor value
+
+   var $zoom =  $('#select_preview');
+   sel_x = Math.floor(left)+margins;
+   sel_y = Math.floor(top)+margins;
+
+   // Update X/Y
+   $('#pos_x').text(Math.floor(sel_x*W_factor));
+   $('#pos_y').text(Math.floor(sel_y*H_factor));
+
+   // Mask
+   update_mask_position(top,left,prev_W,prev_H,cursor_dim);
+
+   // Preview Center
+   top  = top + cursor_dim/2;
+   left = left + cursor_dim/2;
+
+   var y_val = top*zoom/2-w_preview_dim;
+   var x_val = left*zoom/2-h_preview_dim;
+
+   if(x_val<0) {
+      if(y_val<0) {
+         $zoom.css('background-position',Math.abs(x_val)  + 'px ' + Math.abs(y_val) + 'px');
+      } else {
+         $zoom.css('background-position', Math.abs(x_val)  + 'px -' + y_val  + 'px');
+      }
+   } else if(y_val<0) {
+      $zoom.css('background-position','-' +  x_val  + 'px ' + Math.abs(y_val)  + 'px');
+   } else {
+      $zoom.css('background-position', '-'+x_val  + 'px -' + y_val  + 'px');
+   }
+
+}
+
 // Create modal to select meteor from full frame
 function create_meteor_selector_from_frame(frame_id, image_src, neighbor) {
    
@@ -147,65 +182,15 @@ function create_meteor_selector_from_frame(frame_id, image_src, neighbor) {
        // Move the Selector
        $( "#selector" ).draggable(
            {   containment: $('#draggable_area'),
-               drag:function(e,u) {  
-
-                  console.log("IN DRAG")
-                  console.log("E")
-                  console.log(e)
-                  console.log("U")
-                  console.log(u)
-                  console.log(u.position)
-   
+               drag:function(e,u) {   
                    var top = u.position.top;
                    var left = u.position.left;
- 
-                  // We move it to the floor value
-
-                   var $zoom =  $('#select_preview');
-                   sel_x = Math.floor(left)+margins;
-                   sel_y = Math.floor(top)+margins;
- 
-                   // Update X/Y
-                   $('#pos_x').text(Math.floor(sel_x*W_factor));
-                   $('#pos_y').text(Math.floor(sel_y*H_factor));
- 
-                   // Mask
-                   update_mask_position(top,left,prev_W,prev_H,cursor_dim);
-   
-                   // Preview Center
-                   top  = top + cursor_dim/2;
-                   left = left + cursor_dim/2;
-               
-                   var y_val = top*zoom/2-w_preview_dim;
-                   var x_val = left*zoom/2-h_preview_dim;
-               
-                   if(x_val<0) {
-                   if(y_val<0) {
-                       $zoom.css('background-position',Math.abs(x_val)  + 'px ' + Math.abs(y_val) + 'px');
-                   } else {
-                       $zoom.css('background-position', Math.abs(x_val)  + 'px -' + y_val  + 'px');
-                   }
-                   } else if(y_val<0) {
-                       $zoom.css('background-position','-' +  x_val  + 'px ' + Math.abs(y_val)  + 'px');
-                   } else {
-                   
-                       $zoom.css('background-position', '-'+x_val  + 'px -' + y_val  + 'px');
-                   }
-
+                   update_preview(top,left,margins,W_factor,H_factor,cursor_dim,w_preview_dim,h_preview_dim)
                }
        });
 
 
-       // Simulate a drag event so the preview is fine at the beginning
-       var draggable = $( "#selector" ), 
-            draggableOffset = draggable.offset(),
-            dx = draggableOffset.left,
-            dy = draggableOffset.top;
-
-         draggable.simulate("drag", {
-            dx: Math.floor(parseInt(dx)+.5),
-            dy: Math.floor(parseInt(dy)+.5),
-         });
+       
    
        // Change Transparency
        $('#transp').on('input', function () { 
