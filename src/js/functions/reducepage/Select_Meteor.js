@@ -83,8 +83,8 @@ function select_meteor_ajax(fn,x,y) {
             cmd: 'update_frame',
             meteor_json_file: json_file, // Defined on the page
             fn: fn,
-            new_x: x,
-            new_y: y 
+            x: x,
+            y: y 
         };
     
         loading({text:"Updating the frame", overlay:true}); 
