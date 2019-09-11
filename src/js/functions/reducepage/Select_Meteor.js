@@ -163,7 +163,7 @@ function update_meteor_info_list(fn) {
             } else {
                 _class="";
             }
-            $('<p class="'+_class+'"><strong>Frame #'+i+'</strong> new position: x=' + v.x.toFixed(0) + ', ' + 'y=' + v.y.toFixed(0) +'</p>').appendTo($('.meteor_thumb_pos_list'));
+            $('<p class="'+_class+'"><strong>Frame #'+i+'</strong> new position: x=' + v.x  + ', ' + 'y=' + v.y  +'</p>').appendTo($('.meteor_thumb_pos_list'));
         } 
     });
 
