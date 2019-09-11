@@ -106,7 +106,7 @@ function create_meteor_selector_from_frame(frame_id, image_src, neighbor) {
    if(neighbor !== null) {
       console.log("Neighbor exits");
       console.log(neighbor); 
-      $('#selector').css({top:Math.floor(neighbor.y/W_factor),left:Math.floor(neighbor.x/H_factor) });
+      $('#selector').css({top:Math.floor(neighbor.y/W_factor-cursor_dim/2),left:Math.floor(neighbor.x/H_factor-cursor_dim/2) });
    } else {
        // Selector Default Location (center)
        $('#selector').css({top:Math.floor(prev_H/2-cursor_dim/2),left:Math.floor(prev_W/2-cursor_dim/2) });
@@ -116,7 +116,7 @@ function create_meteor_selector_from_frame(frame_id, image_src, neighbor) {
    $('#pos_y').text(Math.floor(parseInt($('#selector').css('top'))*H_factor));    
 
    // Update Mask position
-   update_mask_position(prev_H/2-cursor_dim/2,prev_W/2-cursor_dim/2,prev_W,prev_H,cursor_dim)
+   update_mask_position(parseInt($('#selector').css('top'),parseInt($('#selector').css('left'),prev_W,prev_H,cursor_dim)
 
 
    // Show Modal
