@@ -50,7 +50,7 @@ function create_meteor_selector_from_frame(frame_id, image_src) {
 
    var transp_val = 15;            // Transparency of white area
    
-   var preview_dim = 300;          // Only squares for preview
+   var preview_dim = 250;          // Only squares for preview
 
    var cursor_border_width  = 1; 
    var sel_x = Math.floor(prev_W/2-cursor_dim/2);
