@@ -36,13 +36,15 @@ function update_mask_position(top,left,prev_W,prev_H,cursor_dim) {
 // Create modal to select meteor from full frame
 function create_meteor_selector_from_frame(frame_id, image_src) {
    
-  var cursor_dim = 50;            // Cursor dimension
+  var cursor_dim   = 50;            // Cursor dimension
   var cursor_dim_w = 50;
   var cursor_dim_h = 50;
 
    var real_W = 1920;               // Full Dim
    var real_H = 1080;
    
+   var margins = 25;                // Max position (x,y) of the meteor inside the cursor
+
    var prev_W = 1075;              // Preview
    var prev_H = 605;
 
@@ -70,8 +72,8 @@ function create_meteor_selector_from_frame(frame_id, image_src) {
            <div>Move the white square to the meteor location</div>\
            </div>\
            <div class="modal-body">\
-            <div id="draggable_area">\
-               <div id="main_view" style="background-color:#000;background-image:url('+image_src+'); width:'+prev_W+'px; height:'+prev_H+'px; margin: 0 auto; position:relative; background-size:contain">\
+         <div id="draggable_area" style="width:'+(prev_W+margins) + 'px; height:' +( prev_H+margins) + 'px;margin:0 auto">\
+            <div id="main_view" style="background-color:#000;background-image:url('+image_src+'); width:'+prev_W+'px; height:'+prev_H+'px; margin: 0 auto; position:relative; background-size:contain">\
                      <div id="dl"></div><div id="dt"></div><div id="dr"></div><div id="db"></div>\
                      <div id="selector" style="width:'+cursor_dim+'px; height:'+cursor_dim+'px; border:'+cursor_border_width+'px solid #fff;"></div>\
                      <div id="select_f_tools">\
