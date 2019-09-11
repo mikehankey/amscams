@@ -116,7 +116,43 @@ function create_meteor_selector_from_frame(frame_id, image_src, neighbor) {
    $('#pos_y').text(Math.floor((parseInt($('#selector').css('top'))+cursor_dim/2)*H_factor));    
 
    // Update Mask position
-   update_mask_position(parseInt($('#selector').css('top')),parseInt($('#selector').css('left')),prev_W,prev_H,cursor_dim)
+   //update_mask_position(parseInt($('#selector').css('top')),parseInt($('#selector').css('left')),prev_W,prev_H,cursor_dim)
+
+   // Update the preview
+   var p_top  = parseInt($('#selector').css('top'));
+   var p_left = parseInt($('#selector').css('left'));
+
+   var $zoom =  $('#select_preview');
+                   sel_x = Math.floor(left)+margins;
+                   sel_y = Math.floor(top)+margins;
+ 
+                   // Update X/Y
+                   $('#pos_x').text(Math.floor(sel_x*W_factor));
+                   $('#pos_y').text(Math.floor(sel_y*H_factor));
+ 
+                   // Mask
+                   update_mask_position(top,left,prev_W,prev_H,cursor_dim);
+   
+                   // Preview Center
+                   top  = top + cursor_dim/2;
+                   left = left + cursor_dim/2;
+               
+                   var y_val = top*zoom/2-w_preview_dim;
+                   var x_val = left*zoom/2-h_preview_dim;
+               
+                   if(x_val<0) {
+                   if(y_val<0) {
+                       $zoom.css('background-position',Math.abs(x_val)  + 'px ' + Math.abs(y_val) + 'px');
+                   } else {
+                       $zoom.css('background-position', Math.abs(x_val)  + 'px -' + y_val  + 'px');
+                   }
+                   } else if(y_val<0) {
+                       $zoom.css('background-position','-' +  x_val  + 'px ' + Math.abs(y_val)  + 'px');
+                   } else {
+                   
+                       $zoom.css('background-position', '-'+x_val  + 'px -' + y_val  + 'px');
+                   }
+
 
 
    // Show Modal
