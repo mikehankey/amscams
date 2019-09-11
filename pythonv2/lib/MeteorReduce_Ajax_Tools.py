@@ -44,7 +44,7 @@ def update_frame(form):
             destination_cropped_frame = get_thumb(analysed_name,fn)    
 
             if(len(original_HD_frame)!=0 and len(destination_cropped_frame)!=0):  
-               new_crop_thumb(original_HD_frame[0],x,y,destination_cropped_frame[0])
+               new_crop_thumb(original_HD_frame[0],int(x),int(y),destination_cropped_frame[0])
             else:
                resp['error'].append("Impossible to update the frame " + str(fn))
    
