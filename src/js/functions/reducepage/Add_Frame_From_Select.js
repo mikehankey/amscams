@@ -139,14 +139,15 @@ function create_meteor_selector_from_frame(frame_id, image_src, neighbor) {
 
 
    if(neighbor !== null) {
-      console.log("Neighbor exits");
-      console.log(neighbor); 
-      $('#selector').css({top:Math.floor(neighbor.y/W_factor-cursor_dim/2),left:Math.floor(neighbor.x/H_factor-cursor_dim/2) });
+      selector_top = Math.floor(neighbor.y/W_factor-cursor_dim/2);
+      selector_left = Math.floor(neighbor.x/H_factor-cursor_dim/2)
    } else {
-       // Selector Default Location (center)
-       $('#selector').css({top:Math.floor(prev_H/2-cursor_dim/2),left:Math.floor(prev_W/2-cursor_dim/2) });
+      // Selector Default Location (center)
+      selector_top = Math.floor(prev_H/2-cursor_dim/2);
+      selector_left = Math.floor(prev_W/2-cursor_dim/2)
    }
- 
+   
+   $('#selector').css({top:selector_top,left:selector_left });
    $('#pos_x').text(Math.floor((parseInt($('#selector').css('left'))+cursor_dim/2)*W_factor));
    $('#pos_y').text(Math.floor((parseInt($('#selector').css('top'))+cursor_dim/2)*H_factor));    
 
@@ -221,12 +222,7 @@ function create_meteor_selector_from_frame(frame_id, image_src, neighbor) {
        
 
       // Default Preview position
-     
-      var draggable = $( "#selector" ), 
-      draggableOffset = draggable.offset(),
-      ll = Math.floor(draggableOffset.left / W_factor + cursor_dim),
-      tt = Math.floor(draggableOffset.top / H_factor + cursor_dim);
-      console.log(tt,ll,margins,W_factor,H_factor,cursor_dim,w_preview_dim,h_preview_dim,prev_W,prev_H,zoom);
+      console.log(selector_top,selector_left,margins,W_factor,H_factor,cursor_dim,w_preview_dim,h_preview_dim,prev_W,prev_H,zoom);
       update_preview(tt,ll,margins,W_factor,H_factor,cursor_dim,w_preview_dim,h_preview_dim,prev_W,prev_H,zoom);
 
 
