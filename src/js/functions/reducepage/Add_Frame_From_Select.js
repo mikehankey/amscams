@@ -112,8 +112,8 @@ function create_meteor_selector_from_frame(frame_id, image_src, neighbor) {
        $('#selector').css({top:Math.floor(prev_H/2-cursor_dim/2),left:Math.floor(prev_W/2-cursor_dim/2) });
    }
  
-   $('#pos_x').text(Math.floor(parseInt($('#selector').css('left')+cursor_dim/2)*W_factor));
-   $('#pos_y').text(Math.floor(parseInt($('#selector').css('top')+cursor_dim/2)*H_factor));    
+   $('#pos_x').text(Math.floor((parseInt($('#selector').css('left'))+cursor_dim/2)*W_factor));
+   $('#pos_y').text(Math.floor((parseInt($('#selector').css('top'))+cursor_dim/2)*H_factor));    
 
    // Update Mask position
    update_mask_position(parseInt($('#selector').css('top')),parseInt($('#selector').css('left')),prev_W,prev_H,cursor_dim)
