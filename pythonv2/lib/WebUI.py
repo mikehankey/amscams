@@ -350,7 +350,7 @@ def controller(json_conf):
    
    #  New Reduction Page =>  Create a thumb 
    if cmd == 'create_thumb':
-      create_thumb()
+      create_thumb(form)
       exit()
 
 
