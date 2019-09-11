@@ -27,6 +27,8 @@ def update_frame(form):
    # Analyse the name
    analysed_name = name_analyser(json_file)
 
+   resp = {}
+   resp['error'] = []
    
    fn = form.getvalue("fn")
    x = form.getvalue("x")
