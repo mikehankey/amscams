@@ -52,11 +52,7 @@ function update_preview(top,left,margins,W_factor,H_factor,cursor_dim,w_preview_
    left = left + cursor_dim/2;
 
    var y_val = top*zoom/2-w_preview_dim;
-   var x_val = left*zoom/2-h_preview_dim;
-
-   console.log("PREVIEW ZOOM UPDATE POSITION")
-   console.log("X " + x_val);
-   console.log("Y " + y_val);
+   var x_val = left*zoom/2-h_preview_dim; 
 
    if(x_val<0) {
       if(y_val<0) {
@@ -225,8 +221,7 @@ function create_meteor_selector_from_frame(frame_id, image_src, neighbor) {
 
        
 
-      // Default Preview position
-      console.log(selector_top,selector_left,margins,W_factor,H_factor,cursor_dim,w_preview_dim,h_preview_dim,prev_W,prev_H,zoom);
+      // Default Preview position 
       update_preview(selector_top,selector_left,margins,W_factor,H_factor,cursor_dim,w_preview_dim,h_preview_dim,prev_W,prev_H,zoom);
 
 
