@@ -291,6 +291,9 @@ def generate_stacks(video_full_path, destination):
 def get_HD_frame(analysed_name,frame_id):
    # Format the frame_id so we always have 4 digits
    frame_id = str(frame_id).zfill(4)
+
+   print("CACHE " + get_cache_path(analysed_name,"frames")+"*"+EXT_HD_FRAMES+str(frame_id)+".png")
+
    return glob.glob(get_cache_path(analysed_name,"frames")+"*"+EXT_HD_FRAMES+str(frame_id)+".png") 
 
 
