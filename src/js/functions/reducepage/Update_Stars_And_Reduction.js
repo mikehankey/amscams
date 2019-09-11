@@ -29,7 +29,7 @@ function update_star_and_reduction(callback) {
                update_reduction_on_canvas_and_table(json_resp);
                
                // Update Add frames
-               setup_add_frames();
+               // setup_add_frames();
 
                // Reload the actions
                reduction_table_actions();

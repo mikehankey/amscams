@@ -143,7 +143,7 @@ function update_reduction_only(callback='') {
                 update_reduction_on_canvas_and_table(json_resp);
                 
                 // Update Add frames
-                setup_add_frames();
+                // setup_add_frames();
  
             }
 
