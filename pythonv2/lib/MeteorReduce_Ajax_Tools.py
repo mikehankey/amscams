@@ -34,7 +34,7 @@ def create_thumb(form):
    # Create thumd destination
    destination =  get_cache_path(analysed_name,"cropped")+analysed_name['name_w_ext']+EXT_CROPPED_FRAMES+str(frame_id)+".png"
 
-   print(json.dumps({'fr':new_crop_thumb(frame,x,y,dest)}))
+   print(json.dumps({'fr':new_crop_thumb(org_frame,x,y,dest)}))
      
 
 # Get HD Frame
