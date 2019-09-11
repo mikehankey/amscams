@@ -13,6 +13,36 @@ INDEX_OF_FRAME_NUMBER_IN_meteor_frame_data  = 1
 HD_X_meteor_frame_data  = 2
 HD_Y_meteor_frame_data  = 3
 
+# Get HD Frame
+# return the path to the given HD frames  
+def get_frame(form):
+
+   # Debug
+   cgitb.enable()     
+
+   json_file = form.getvalue('json_file')
+   fn = form.getvalue('fn') # The frame ID
+
+   # Analyse the name
+   analysed_name = name_analyser(json_file)
+
+   # We should test if get_HD_frame's output is empty as the HD Frames
+   # are all created by default on page load (recude2 page)
+   # if they don't exist
+   the_frame = get_HD_frame(analysed_name,fn)
+   the_frame = the_frame[0]
+   toReturn = {'id':fn, 'full_fr':the_frame}
+  
+   return toReturn
+
+
+# Get Specific HD Frames from a frame ID and an analysed name
+def get_HD_frame(analysed_name,frame_id):
+   # Format the frame_id so we always have 4 digits
+   frame_id = str(frame_id).zfill(4)
+   return glob.glob(get_cache_path(analysed_name,"frames")+"*"+EXT_HD_FRAMES+str(frame_id)+".png") 
+
+
 
 # Update one frame at a time
 def update_frame(form):

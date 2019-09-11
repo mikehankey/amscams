@@ -252,9 +252,9 @@ function create_meteor_selector_from_frame(frame_id, image_src) {
 // Get a frame based on #
 function get_frame(cur_fn) {
    var cmd_data = {
-     cmd: 'get_frame',
-       sd_video_file: sd_video_file, // Defined on the page
-       fr: cur_fn
+      cmd: 'get_frame',
+      json_file: json_file, // Defined on the page
+      fr: cur_fn
    };
 
    loading({text: "Generating Full Frame #"+ cur_fn, overlay:true});

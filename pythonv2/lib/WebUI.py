@@ -38,7 +38,7 @@ from lib.MultiStationMeteors import multi_station_meteors, multi_station_meteor_
 
 # New Reduce Meteor Page
 from lib.MeteorReducePage import reduce_meteor2
-from lib.MeteorReduce_Ajax_Tools import get_reduction_info, delete_frame, update_multiple_frames, update_frame
+from lib.MeteorReduce_Ajax_Tools import get_reduction_info, delete_frame, update_multiple_frames, update_frame, get_frame
  
 
 NUMBER_OF_METEOR_PER_PAGE = 60
@@ -289,13 +289,7 @@ def controller(json_conf):
       delete_multiple_detection(detections,json_conf)
       exit()
 
-   #Get a frame or create all of them 
-   if(cmd == 'get_frame'):
-      fr_id = form.getvalue('fr')
-      sd_vid = form.getvalue('sd_video_file')
-      print(get_frame(fr_id,sd_vid))
-      exit()
-   
+  
    #Add new a frame from HD image with x & y
    if(cmd == 'crop_frame'):
       fr_id = form.getvalue('fr_id')
@@ -348,6 +342,12 @@ def controller(json_conf):
    if cmd == 'update_frame':
       update_frame(form)
       exit()
+
+   #Get a frame or create all of them 
+   if(cmd == 'get_frame'):
+      get_HD_frame(form)
+      exit()
+   
 
    if cmd == 'del_frame':
       del_frame(json_conf,form)
