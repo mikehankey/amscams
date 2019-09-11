@@ -148,6 +148,13 @@ function create_meteor_selector_from_frame(frame_id, image_src, neighbor) {
        $( "#selector" ).draggable(
            {   containment: $('#draggable_area'),
                drag:function(e,u) {  
+
+                  console.log("IN DRAG")
+                  console.log("E")
+                  console.log(e)
+                  console.log("U")
+                  console.log(u)
+                  console.log(u.position)
    
                    var top = u.position.top;
                    var left = u.position.left;
@@ -192,12 +199,12 @@ function create_meteor_selector_from_frame(frame_id, image_src, neighbor) {
        // Simulate a drag event so the preview is fine at the beginning
        var draggable = $( "#selector" ), 
             draggableOffset = draggable.offset(),
-            dx = draggable.left,
-            dy = draggable.top;
+            dx = draggableOffset.left,
+            dy = draggableOffset.top;
 
          draggable.simulate("drag", {
-            dx: dx,
-            dy: dy
+            dx: Math.floor(parseInt(dx)+.5),
+            dy: Math.floor(parseInt(dy)+.5),
          });
    
        // Change Transparency
