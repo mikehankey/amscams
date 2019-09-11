@@ -80,7 +80,7 @@ function select_multiple_meteors_ajax() {
 function select_meteor_ajax(fn,x,y) {
     if(!multiple_select) {
         var cmd_data = {
-            cmd: 'update_frame_ajax',
+            cmd: 'update_frame',
             meteor_json_file: json_file, // Defined on the page
             fn: fn,
             new_x: x,
