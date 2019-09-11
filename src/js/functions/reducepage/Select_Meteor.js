@@ -18,7 +18,10 @@ function select_multiple_meteors_ajax() {
 
     cmd_data.frames = JSON.stringify(meteor_select_updates);
 
-    loading({text:"Updating the " + meteor_select_updates.length  + " frames", overlay:true});
+    if(meteor_select_updates.length<=1):
+      loading({text:"Updating the frame", overlay:true});
+    else:
+      loading({text:"Updating the " + meteor_select_updates.length  + " frames", overlay:true});
 
 
     $.ajax({ 
