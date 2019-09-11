@@ -7,22 +7,23 @@ var thumb_DIM = 100;
 
 
 function select_multiple_meteors_ajax() {
-    var cmd_data = {
-        cmd: 'update_multiple_frames',
-        meteor_json_file: json_file, // Defined on the page
-    };
 
-    meteor_select_updates = jQuery.grep(meteor_select_updates, function(n, i){
-        return (n !== "" && n != null);
-    });
+   var cmd_data = {
+      cmd: 'update_multiple_frames',
+      meteor_json_file: json_file, // Defined on the page
+   };
+
+   meteor_select_updates = jQuery.grep(meteor_select_updates, function(n, i){
+      return (n !== "" && n != null);
+   });
 
     cmd_data.frames = JSON.stringify(meteor_select_updates);
 
-    if(meteor_select_updates.length<=1):
+   if(meteor_select_updates.length<=1) {
       loading({text:"Updating the frame", overlay:true});
-    else:
+   } else {
       loading({text:"Updating the " + meteor_select_updates.length  + " frames", overlay:true});
-
+   }
 
     $.ajax({ 
         url:  "/pycgi/webUI.py",
@@ -35,13 +36,10 @@ function select_multiple_meteors_ajax() {
 
                $('.modal-backdrop').remove();
                $('#select_meteor_modal').modal('hide').remove();
-
-               
-               // meteor_select_updates = [];
-
+  
                // Anti cache?
-               //console.log('ANTI CACHE on ' + fn)
-                $.each(meteor_select_updates,function(i,v) {
+               // console.log('ANTI CACHE on ' + fn)
+               $.each(meteor_select_updates,function(i,v) {
                   fn = v['fn']; 
                   $('tr#fr_'+fn+' img.select_meteor').attr('src', $('tr#fr_'+fn+' img.select_meteor').attr('src')+'&w='+Math.round(Math.random(10000)*10000));
                })
@@ -79,29 +77,25 @@ function select_multiple_meteors_ajax() {
     });
 }
 
-
 function select_meteor_ajax(fn,x,y) {
     if(!multiple_select) {
         var cmd_data = {
             cmd: 'update_frame_ajax',
-            sd_video_file: sd_video_file, // Defined on the page
+            meteor_json_file: json_file, // Defined on the page
             fn: fn,
             new_x: x,
             new_y: y 
         };
     
-        loading({text:"Updating the frame", overlay:true});
-    
+        loading({text:"Updating the frame", overlay:true}); 
+
         $.ajax({ 
             url:  "/pycgi/webUI.py",
             data: cmd_data, 
             success: function(data) {
                 
                 if($.trim(data)!='') { 
-    
-                    update_reduction_only();
-                    loading_done();
-    
+      
                     // Anti cache?
                     //console.log('ANTI CACHE on ' + fn)
                     $('tr#fr_'+fn+' img.select_meteor').attr('src', $('tr#fr_'+fn+' img.select_meteor').attr('src')+'&w='+Math.round(Math.random(10000)*10000));
@@ -110,6 +104,9 @@ function select_meteor_ajax(fn,x,y) {
                     
                     // Reopen the modal at the proper place
                     $('tr#fr_'+fn+' .select_meteor').click();
+
+                    update_reduction_only();
+                    loading_done();
                       
                 } else {
                     loading_done();

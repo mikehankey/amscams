@@ -13,8 +13,52 @@ INDEX_OF_FRAME_NUMBER_IN_meteor_frame_data  = 1
 HD_X_meteor_frame_data  = 2
 HD_Y_meteor_frame_data  = 3
 
+
+# Update one frame at a time
+def update_frame(form):
+
+   # Debug
+   cgitb.enable()     
+
+   # Get Data 
+   json_file = form.getvalue("meteor_json_file")
+   mr = load_json_file(json_file)
+   
+   fn = form.getvalue("fn")
+   x = form.getvalue("x")
+   y = form.getvalue("y")
+
+   if "meteor_frame_data" in mr:
+      for ind, frame in enumerate(mr['meteor_frame_data']): 
+         if int(frame[INDEX_OF_FRAME_NUMBER_IN_meteor_frame_data]) == int(val['fn']):
+            # It needs to be updated here!!
+            frame[HD_X_meteor_frame_data] = int(val['x'])
+            frame[HD_Y_meteor_frame_data] = int(val['y'])
+
+            # Recreate the corresponding thumb
+            original_HD_frame = get_HD_frame(analysed_name,val['fn'])   
+            destination_cropped_frame = get_thumb(analysed_name,val['fn'])    
+
+            if(len(original_HD_frame)!=0 and len(destination_cropped_frame)!=0):  
+               new_crop_thumb(original_HD_frame[0],int(val['x']),int(val['y']),destination_cropped_frame[0])
+            else:
+               resp['error'].append("Impossible to update the frame " + str(int(val['fn'])))
+   
+   # We update the JSON 
+   save_json_file(json_file, mr)
+   
+   resp['msg'] = "frame  updated."  
+   
+   # We compute the new stuff from the new meteor position within frames
+   os.system("cd /home/ams/amscams/pythonv2/; ./reducer3.py cm " + json_file + " > /mnt/ams2/tmp/rrr.txt") 
+   os.system("cd /home/ams/amscams/pythonv2/; ./reducer3.py cm " + json_file + " > /mnt/ams2/tmp/rrr.txt") 
+
+   print(json.dumps(resp))
+
+
 # Update multiple frames 
 def update_multiple_frames(form):
+   
    # Debug
    cgitb.enable()  
    
@@ -29,20 +73,7 @@ def update_multiple_frames(form):
 
    resp = {}
    resp['error'] = []
-
-   print("IN update_multiple_frames")
-   #print(all_frames_to_update)
-   #print("<br>")
-   #print("JSON FILE")
-   #print("<br>")
-   #print(json_file)
-   #print("<br>")
-   #print("mr")
-   #print("<br>")
-   #print(json.dumps(mr))
-   #sys.exit(0)
-
-
+ 
    # Update meteor_frame_data
    for val in all_frames_to_update:  
 
@@ -57,9 +88,7 @@ def update_multiple_frames(form):
                original_HD_frame = get_HD_frame(analysed_name,val['fn'])   
                destination_cropped_frame = get_thumb(analysed_name,val['fn'])    
 
-               if(len(original_HD_frame)!=0 and len(destination_cropped_frame)!=0):
-                  print("GENERATE NEW THUMB <br>")
-                  print(destination_cropped_frame[0])
+               if(len(original_HD_frame)!=0 and len(destination_cropped_frame)!=0): 
                   new_crop_thumb(original_HD_frame[0],int(val['x']),int(val['y']),destination_cropped_frame[0])
                else:
                   resp['error'].append("Impossible to update the frame " + str(int(val['fn'])))
@@ -83,9 +112,7 @@ def update_multiple_frames(form):
 # Delete a frame
 # Input = the meteor json file & the frame #
 def delete_frame(form):
-
-
-
+ 
    # Debug
    cgitb.enable() 
 

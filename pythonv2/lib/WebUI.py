@@ -38,7 +38,7 @@ from lib.MultiStationMeteors import multi_station_meteors, multi_station_meteor_
 
 # New Reduce Meteor Page
 from lib.MeteorReducePage import reduce_meteor2
-from lib.MeteorReduce_Ajax_Tools import get_reduction_info, delete_frame, update_multiple_frames
+from lib.MeteorReduce_Ajax_Tools import get_reduction_info, delete_frame, update_multiple_frames, update_frame
  
 
 NUMBER_OF_METEOR_PER_PAGE = 60
@@ -334,13 +334,19 @@ def controller(json_conf):
       get_manual_points(json_conf,form)
       exit()
    
-   # New Reduction Page
+   # New Reduction Page => DELETE A FRAME
    if cmd == 'delete_frame':
       delete_frame(form)
       exit()
 
+   # New Reduction Page => UPDATE MULTIPLE FRAMES AT ONCE
    if cmd == 'update_multiple_frames':
       update_multiple_frames(form)
+      exit()
+
+   # New Reduction Page => UPDATE ONE FRAME AT A TIME
+   if cmd == 'update_frame':
+      update_frame(form)
       exit()
 
    if cmd == 'del_frame':
