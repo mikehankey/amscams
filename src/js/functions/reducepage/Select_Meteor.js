@@ -410,7 +410,8 @@ function setup_modal_actions(fn_id,x,y) {
         if(!$(this).hasClass('done')) {
             $('#lh').css('top',relY-2);
             $('#lv').css('left',relX-2);
-            $('#meteor_pos').text("x:"+Math.round(realX)+'/y:'+Math.round(realY));
+            //$('#meteor_pos').text("x:"+Math.round(realX)+'/y:'+Math.round(realY));
+            $('#meteor_pos').text("x:"+ realX +' / y:'+ realY);
         }
     });
 }
