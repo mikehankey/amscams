@@ -42,7 +42,7 @@ def create_thumb(form):
    # Update the JSON file accordingly
    resp_frame = update_frame(form)
 
-   print(json.dumps({'fr':new_crop_thumb(org_frame,x,y,dest),'resp'; resp_frame}))
+   print(json.dumps({'fr':new_crop_thumb(org_frame,x,y,dest),'resp': resp_frame}))
      
 
 # Get HD Frame
