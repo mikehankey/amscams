@@ -41,8 +41,8 @@ def create_thumb(form):
 
    # Update the JSON file accordingly
    # And create the frame
-   print("FROM CREATE THUMB WE SEND")
-   print(str(form))
+   #print("FROM CREATE THUMB WE SEND")
+   #print(str(form))
    resp_frame = update_frame(form, True)
 
    print(json.dumps({'fr':new_crop_thumb(org_frame,x,y,dest),'resp': resp_frame}))
