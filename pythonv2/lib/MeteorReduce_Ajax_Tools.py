@@ -96,33 +96,40 @@ def update_frame(form, AjaxDirect = False):
    x = form.getvalue("x")
    y = form.getvalue("y")
  
-   original_HD_frame = []
-   destination_cropped_frame = []
+   # Recreate the corresponding thumb
+   original_HD_frame = get_HD_frame(analysed_name,fn)   
+   destination_cropped_frame = get_thumb(analysed_name,fn)  
+   thumb_path = ''
+
 
    # We try to update the json file
-   if "meteor_frame_data" in mr:
-      print("meteor_frame_data  is there")
+   if "meteor_frame_data" in mr: 
+
+      # FOR THE UDPDATES
       for ind, frame in enumerate(mr['meteor_frame_data']): 
          if int(frame[INDEX_OF_FRAME_NUMBER_IN_meteor_frame_data]) == int(fn):
-
-            print("WE FOUND THE FRAME " + str(fn))
-            
              # It needs to be updated here!!
             frame[HD_X_meteor_frame_data] = int(x)
             frame[HD_Y_meteor_frame_data] = int(y)
             update = True
 
-            # Recreate the corresponding thumb
-            original_HD_frame = get_HD_frame(analysed_name,fn)   
-            destination_cropped_frame = get_thumb(analysed_name,fn)    
-            thumb_path = ''
-
-          
-   print("FROM ")
-   print(destination_cropped_frame)
-   print("TO")
-   print(destination_cropped_frame)
-         
+      # FOR THE CREATION
+      if(update is False):
+         # We need to create the entry in meteor_frame_data       
+         new_entry = [
+            '', # Date
+            int(fn), # Fn
+            int(x), # X
+            int(y), # Y
+            50,
+            50,
+            0,
+            0,
+            0,
+            0,
+            0
+         ]
+         mr['meteor_frame_data'].append(new_entry)
 
 
    if(len(original_HD_frame)!=0 and len(destination_cropped_frame)!=0):  
