@@ -113,7 +113,7 @@ def update_frame(form):
             update = True
 
    # If it wasn't an update, it's a creation
-   if(update == False):
+   #if(update == False):
       # We need to create the entry in the json file
       # print("CREATE ENTRY IN JSON FILE")
 
