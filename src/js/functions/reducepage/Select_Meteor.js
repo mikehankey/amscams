@@ -102,13 +102,12 @@ function select_meteor_ajax(fn,x,y) {
                     $('tr#fr_'+fn+' img.select_meteor').attr('src', $('tr#fr_'+fn+' img.select_meteor').attr('src')+'&w='+Math.round(Math.random(10000)*10000));
                     $('.modal-backdrop').remove();
                     $('#select_meteor_modal').modal('hide').remove();
-                    
-                    // Reopen the modal at the proper place
-                    multiple_select = false;
-                    $('tr#fr_'+fn+' .select_meteor').click();
-                    
-
+                      
                     update_reduction_only();
+                  
+                    // Reopen the modal at the proper place
+                    $('tr#fr_'+fn+' .select_meteor').click();
+
                     loading_done();
                       
                 } else {
