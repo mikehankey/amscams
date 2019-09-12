@@ -562,7 +562,7 @@ function setup_select_meteor(anti_cache=-1) {
 
         // Are we in single mode?
         if((!multiple_select && $("#select_meteor_modal").hasClass('multiple-select')) ||
-           (multi_select && !$("#select_meteor_modal").hasClass('multiple-select'))) {
+           (multiple_select && !$("#select_meteor_modal").hasClass('multiple-select'))) {
            $('#switch_select_mode').click();
         } 
         // Update image real dimensions 
