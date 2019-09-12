@@ -127,7 +127,7 @@ def update_frame(form, AjaxDirect = False):
    #os.system("cd /home/ams/amscams/pythonv2/; ./reducer3.py cm " + json_file + " > /mnt/ams2/tmp/rrr.txt") 
 
    # Depending on how the function is used we can return the resp or display it as JSON
-   if(AjaxDirect == True)
+   if(AjaxDirect == True):
       return resp 
    else:
       print(json.dumps(resp))
