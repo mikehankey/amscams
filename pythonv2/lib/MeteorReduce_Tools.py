@@ -135,12 +135,12 @@ def get_frame_time(json,frame_id):
       diff_fn = int(frame_id) - int(fn)
 
       # We multiple the frame # difference by 1/FPS 
-      diff_fn = diff_dn * 1 / FPS_HD
+      diff_fn = diff_fn * 1 / FPS_HD
  
       dt = datetime.strptime(dt, '%Y-%m-%d %H:%M:%S.%f')
 
       # We add the diff in seconds
-      dt = dt +  timedelta(0,diff)
+      dt = dt +  timedelta(0,diff_fn)
 
       # We return the Date as a string
       return str(dt)
