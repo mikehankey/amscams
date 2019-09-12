@@ -543,12 +543,17 @@ def controller(json_conf):
       multi_station_meteor_detail(json_conf,form)
 
    #bottom = bottom.replace("{JQ}", jq)      
-   bottom = bottom.replace("{BOTTOMNAV}", bot_html)      
-   rand=time.time()
-   bottom = bottom.replace("{RAND}", str(rand))
-   bottom = bottom.replace("{EXTRA_HTML}", str(extra_html))
+   if(bot_html is not None and bottom is not None):
+      bottom = bottom.replace("{BOTTOMNAV}", bot_html)      
+    
+   if(extra_html is not None and bottom is not None):
+      bottom = bottom.replace("{EXTRA_HTML}", str(extra_html))
+
    if(bottom is not None):
+      rand=time.time()
+      bottom = bottom.replace("{RAND}", str(rand))
       print(bottom)
+     
    #cam_num = form.getvalue('cam_num')
    #day = form.getvalue('day')
 
