@@ -94,8 +94,3 @@ def reduce_meteor2(json_conf,form):
 
    # Display Template
    print(template)
-
-
-
-   # TEST DEBUG
-   get_frame_time(meteor_json_file,"29")
