@@ -40,6 +40,7 @@ def create_thumb(form):
    dest =  get_cache_path(analysed_name,"cropped")+analysed_name['name_w_ext']+EXT_CROPPED_FRAMES+str(frame_id)+".png"
 
    # Update the JSON file accordingly
+   # And create the frame
    resp_frame = update_frame(form, True)
 
    print(json.dumps({'fr':new_crop_thumb(org_frame,x,y,dest),'resp': resp_frame}))
@@ -93,39 +94,48 @@ def update_frame(form, AjaxDirect = False):
    x = form.getvalue("x")
    y = form.getvalue("y")
 
-   # We try to update the json file
-   #if "meteor_frame_data" in mr:
-   #   for ind, frame in enumerate(mr['meteor_frame_data']): 
-   #      if int(frame[INDEX_OF_FRAME_NUMBER_IN_meteor_frame_data]) == int(fn):
-   #         # It needs to be updated here!!
-   #         frame[HD_X_meteor_frame_data] = int(x)
-   #         frame[HD_Y_meteor_frame_data] = int(y)
-   #           update = True
 
-   # Recreate the corresponding thumb
-   original_HD_frame = get_HD_frame(analysed_name,fn)   
-   destination_cropped_frame = get_thumb(analysed_name,fn)    
-   thumb_path = ''
- 
+   original_HD_frame = []
+   destination_cropped_frame = []
+
+   # We try to update the json file
+   if "meteor_frame_data" in mr:
+      for ind, frame in enumerate(mr['meteor_frame_data']): 
+         if int(frame[INDEX_OF_FRAME_NUMBER_IN_meteor_frame_data]) == int(fn):
+             # It needs to be updated here!!
+            frame[HD_X_meteor_frame_data] = int(x)
+            frame[HD_Y_meteor_frame_data] = int(y)
+            update = True
+
+            # Recreate the corresponding thumb
+            original_HD_frame = get_HD_frame(analysed_name,fn)   
+            destination_cropped_frame = get_thumb(analysed_name,fn)    
+            thumb_path = ''
+
+          
+   print("FROM ")
+   print(destination_cropped_frame)
+   print("TO")
+   print(destination_cropped_frame)
+         
+
+
    if(len(original_HD_frame)!=0 and len(destination_cropped_frame)!=0):  
       thumb_path = new_crop_thumb(original_HD_frame[0],int(x),int(y),destination_cropped_frame[0])
    else:
       resp['error'].append("Impossible to update the frame " + str(fn))
 
    # If it wasn't an update, it's a creation
-   #if(update == False):
+   if(update == False and len(resp['error']==0)):
       # We need to create the entry in the json file
-      # print("CREATE ENTRY IN JSON FILE")
+      resp['msg'] = "frame updated (but the JSON has NOT been updated yet since I need a small function for that X,Y,json =>). You can see the new thumb here: <div style='margin:2rem auto'><a href='" + thumb_path +"' target='_blank'><img src='"+thumb_path+"' style='display:block'/></a></div>"
 
    # We update the JSON 
    save_json_file(json_file, mr)
    
-   if(len(resp['error'])==0):
-      resp['msg'] = "frame updated (but the JSON has NOT been updated yet since I'm missing a function for that). You can see the new thumb here: <div style='margin:2rem auto'><a href='" + thumb_path +"' target='_blank'><img src='"+thumb_path+"' style='display:block'/></a></div>"
-   
    # We compute the new stuff from the new meteor position within frames
-   #os.system("cd /home/ams/amscams/pythonv2/; ./reducer3.py cm " + json_file + " > /mnt/ams2/tmp/rrr.txt") 
-   #os.system("cd /home/ams/amscams/pythonv2/; ./reducer3.py cm " + json_file + " > /mnt/ams2/tmp/rrr.txt") 
+   os.system("cd /home/ams/amscams/pythonv2/; ./reducer3.py cm " + json_file + " > /mnt/ams2/tmp/rrr.txt") 
+   os.system("cd /home/ams/amscams/pythonv2/; ./reducer3.py cm " + json_file + " > /mnt/ams2/tmp/rrr.txt") 
 
    # Depending on how the function is used we can return the resp or display it as JSON
    if(AjaxDirect == True):
