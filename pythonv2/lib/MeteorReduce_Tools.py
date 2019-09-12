@@ -130,9 +130,9 @@ def get_frame_time(json,frame_id):
 
       # Compute the diff of frame between random_frame 
       # and frame_id
-      diff_fn = frame_id - fn
+      diff_fn = int(frame_id) - int(fn)
 
-      print("DIFF FN " + diff_fn)
+      print("DIFF FN " + str(diff_fn))
 
 
 
