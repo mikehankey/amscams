@@ -245,8 +245,8 @@ function create_meteor_selector_from_frame(frame_id, image_src, neighbor) {
                fn: frame_id,
                src: image_src,
                json_file: json_file,
-               x: Math.floor(sel_x*W_factor),
-               y: Math.floor(sel_y*H_factor),
+               x: Math.floor(parseInt($('#pos_x').text())),
+               y: Math.floor(parseInt($('#pos_y').text())),
            }, 
            success: function(data) {
                data = JSON.parse(data); 
