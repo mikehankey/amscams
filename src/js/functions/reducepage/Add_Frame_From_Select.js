@@ -257,7 +257,7 @@ function create_meteor_selector_from_frame(frame_id, image_src, neighbor) {
                   // Remove modal
                   $('#cropper_modal').modal('hide').remove();
  
-                  bootbox.alert(data.resp, function(){ 
+                  bootbox.alert(data.resp.msg, function(){ 
                      // Everything went fine
                      update_star_and_reduction(function() {
                            $('#fr_'+frame_id+' .select_meteor').click();
