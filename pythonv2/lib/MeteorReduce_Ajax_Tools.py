@@ -5,7 +5,7 @@ import sys
 import os
 
 from lib.FileIO import cfe, load_json_file, save_json_file
-from lib.MeteorReduce_Tools import get_cache_path, name_analyser, EXT_CROPPED_FRAMES, new_crop_thumb, get_HD_frame, get_thumb, FRAME_NUMBER_meteor_frame_data, HD_X_meteor_frame_data, HD_Y_meteor_frame_data
+from lib.MeteorReduce_Tools import get_cache_path, name_analyser, EXT_CROPPED_FRAMES, new_crop_thumb, get_HD_frame, get_thumb, FRAME_NUMBER_meteor_frame_data, HD_X_meteor_frame_data, HD_Y_meteor_frame_data, get_frame_time
 
  
 
