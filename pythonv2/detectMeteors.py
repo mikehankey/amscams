@@ -98,8 +98,10 @@ def scan_file(video_file, show):
          day = sd_file[0:10]
          sd_wild = sd_file.replace(".mp4", "*")
          cmd = "mv " + jd['sd_video_file'] +  " /mnt/ams2/trash"
+         print("FAILED:", cmd)
          #os.system(cmd)
          cmd = "mv " + "/mnt/ams2/meteors/" + day + "/" + sd_wild + " /mnt/ams2/trash"
+         print("FAILED:", cmd)
          #os.system(cmd)
          if 'hd_trim' in jd:
             hd_file = jd['hd_trim'].split("/")[-1]
@@ -107,8 +109,13 @@ def scan_file(video_file, show):
             (f_datetime, cam, f_date_str,fy,fm,fd, fh, fmin, fs) = convert_filename_to_date_cam(hd_file)
             hd_wild = fy + "_" + fm + "_" + fd + "_" + fh + "_" + fmin + "_*" + cam + "*" 
             cmd = "mv " + "/mnt/ams2/meteors/" + day + "/" + hd_wild + " /mnt/ams2/trash"
-            os.system(cmd)
+            print("FAILED:", cmd)
+            #os.system(cmd)
    print("done scan file")     
+   # Now lets refine and reduce the scan
+   # link and sync the HD 
+   # Remake and rename the trim file
+
 def do_all(json_conf): 
    show = 0
    proc_dir = json_conf['site']['proc_dir']
