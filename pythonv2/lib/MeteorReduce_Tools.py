@@ -122,18 +122,18 @@ def get_frame_time(json,frame_id):
 
    # We just need one existing frame and its date & time
    if("meteor_frame_data" in json):
-      random_frame = json['meteor_frame_data'][0];
+      random_frame = json['meteor_frame_data'][0]
 
       # Date & time and Frame ID for random_frame
-      dt = random_frame[DATE_TIME_meteor_frame_data];
-      fn = random_frame[FRAME_NUMBER_meteor_frame_data];
+      dt = random_frame[DATE_TIME_meteor_frame_data]
+      fn = random_frame[FRAME_NUMBER_meteor_frame_data]
 
       # Compute the diff of frame between random_frame 
       # and frame_id
       diff_fn = frame_id - fn
 
       print("DIFF FN " + diff_fn)
-      
+
 
 
 # Get Specific cropped Frames from a frame ID and an analysed name
