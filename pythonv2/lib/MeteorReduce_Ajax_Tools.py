@@ -126,7 +126,7 @@ def update_frame(form, AjaxDirect = False):
       resp['error'].append("Impossible to update the frame " + str(fn))
 
    # If it wasn't an update, it's a creation
-   if(update == False and len(resp['error']==0)):
+   if(update == False and len(resp['error'])==0):
       # We need to create the entry in the json file
       resp['msg'] = "frame updated (but the JSON has NOT been updated yet since I need a small function for that X,Y,json =>). You can see the new thumb here: <div style='margin:2rem auto'><a href='" + thumb_path +"' target='_blank'><img src='"+thumb_path+"' style='display:block'/></a></div>"
 
