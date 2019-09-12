@@ -560,6 +560,15 @@ function setup_select_meteor(anti_cache=-1) {
         $('#sel_frame_id, .sel_frame_id').text(meteor_id);
 
      
+          // Are we in single mode?
+          if((!multiple_select && $("#select_meteor_modal").hasClass('multiple-select')) ||
+            (multiple_select && !$("#select_meteor_modal").hasClass('multiple-select'))) {
+            console.log("WE SWITCH");
+            $('#switch_select_mode').click();
+         } else {
+            console.log("WE DONT SWITCH");
+         }
+
         // Update image real dimensions 
         var img = new Image();
         var imgSrc = $img.attr('src');
@@ -597,14 +606,7 @@ function setup_select_meteor(anti_cache=-1) {
             setup_modal_actions(meteor_id, $tr.attr('data-org-x'),$tr.attr('data-org-y'));
 
 
-            // Are we in single mode?
-            if((!multiple_select && $("#select_meteor_modal").hasClass('multiple-select')) ||
-               (multiple_select && !$("#select_meteor_modal").hasClass('multiple-select'))) {
-               console.log("WE SWITCH");
-               $('#switch_select_mode').click();
-            } else {
-               console.log("WE DONT SWITCH");
-            }
+          
  
          
         }).attr({ src: imgSrc }); 
