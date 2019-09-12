@@ -133,6 +133,7 @@ def get_frame_time(json,frame_id):
       diff_fn = int(frame_id) - int(fn)
 
       print("DIFF FN " + str(diff_fn))
+      print("CUR TIME " +  dt)
 
 
 
