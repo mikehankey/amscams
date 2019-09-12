@@ -255,7 +255,7 @@ function create_meteor_selector_from_frame(frame_id, image_src, neighbor) {
                   loading_done();
 
                   // Remove modal
-                  $('#cropper_modal').modal('hidden').remove();
+                  $('#cropper_modal').modal('hide').remove();
  
                   bootbox.alert(data.resp, function(){ 
                      // Everything went fine
