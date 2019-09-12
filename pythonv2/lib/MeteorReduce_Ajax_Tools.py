@@ -117,15 +117,14 @@ def update_frame(form, AjaxDirect = False):
       # We need to create the entry in the json file
       # print("CREATE ENTRY IN JSON FILE")
 
-   
    # We update the JSON 
    save_json_file(json_file, mr)
    
    resp['msg'] = "frame updated (but the JSON has been updated yet since I'm missing a function for that)."  
    
    # We compute the new stuff from the new meteor position within frames
-   os.system("cd /home/ams/amscams/pythonv2/; ./reducer3.py cm " + json_file + " > /mnt/ams2/tmp/rrr.txt") 
-   os.system("cd /home/ams/amscams/pythonv2/; ./reducer3.py cm " + json_file + " > /mnt/ams2/tmp/rrr.txt") 
+   #os.system("cd /home/ams/amscams/pythonv2/; ./reducer3.py cm " + json_file + " > /mnt/ams2/tmp/rrr.txt") 
+   #os.system("cd /home/ams/amscams/pythonv2/; ./reducer3.py cm " + json_file + " > /mnt/ams2/tmp/rrr.txt") 
 
    # Depending on how the function is used we can return the resp or display it as JSON
    if(AjaxDirect == True)
