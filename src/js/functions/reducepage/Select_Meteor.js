@@ -600,8 +600,11 @@ function setup_select_meteor(anti_cache=-1) {
             // Are we in single mode?
             if((!multiple_select && $("#select_meteor_modal").hasClass('multiple-select')) ||
                (multiple_select && !$("#select_meteor_modal").hasClass('multiple-select'))) {
+               console.log("WE SWITCH");
                $('#switch_select_mode').click();
-            } 
+            } else {
+               console.log("WE DONT SWITCH");
+            }
  
          
         }).attr({ src: imgSrc }); 
