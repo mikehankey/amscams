@@ -141,9 +141,13 @@ def get_frame_time(json,frame_id):
 
       # We add the diff in seconds
       dt = dt +  timedelta(0,diff_fn)
+      dt = str(dt)
+
+      # We remove the last 3 digits (from %f)
+      dt = dt.replace('0', '')[:-3]
 
       # We return the Date as a string
-      return str(dt)
+      return dt
 
    else:
       return ""
