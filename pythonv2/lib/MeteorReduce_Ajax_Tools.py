@@ -40,7 +40,7 @@ def create_thumb(form):
    dest =  get_cache_path(analysed_name,"cropped")+analysed_name['name_w_ext']+EXT_CROPPED_FRAMES+str(frame_id)+".png"
 
    # Update the JSON file accordingly
-   resp_frame = update_frame(form)
+   resp_frame = update_frame(form, True)
 
    print(json.dumps({'fr':new_crop_thumb(org_frame,x,y,dest),'resp': resp_frame}))
      
