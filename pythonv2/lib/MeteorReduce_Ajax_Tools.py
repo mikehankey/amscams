@@ -121,7 +121,7 @@ def update_frame(form, AjaxDirect = False):
    save_json_file(json_file, mr)
    
    if(len(resp['error'])==0):
-      resp['msg'] = "frame updated (but the JSON has NOT been updated yet since I'm missing a function for that). You can see the new thumb here: " + thumb_path
+      resp['msg'] = "frame updated (but the JSON has NOT been updated yet since I'm missing a function for that). You can see the new thumb here: <div style='margin:2rem auto'><a href='" + thumb_path +"' target='_blank'><img src='"+thumb_path+"' style='display:block'/></a></div>"
    
    # We compute the new stuff from the new meteor position within frames
    #os.system("cd /home/ams/amscams/pythonv2/; ./reducer3.py cm " + json_file + " > /mnt/ams2/tmp/rrr.txt") 
