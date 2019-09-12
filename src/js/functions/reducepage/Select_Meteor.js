@@ -561,10 +561,10 @@ function setup_select_meteor(anti_cache=-1) {
         $('#sel_frame_id, .sel_frame_id').text(meteor_id);
 
         // Are we in single mode?
-        if(!multiple_select) {
+        if((!multiple_select && $("#select_meteor_modal").hasClass('multiple-select')) ||
+           (multi_select && !$("#select_meteor_modal").hasClass('multiple-select'))) {
            $('#switch_select_mode').click();
-        }
-  
+        } 
         // Update image real dimensions 
         var img = new Image();
         var imgSrc = $img.attr('src');
