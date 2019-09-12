@@ -97,7 +97,7 @@ def update_frame(form, AjaxDirect = False):
    y = form.getvalue("y")
 
    print("IN UPDATE FRAME")
-   print(json.dumpts(mr))
+   print(json.dumps(mr))
 
    original_HD_frame = []
    destination_cropped_frame = []
