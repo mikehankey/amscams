@@ -1,8 +1,7 @@
 import cgitb
 
 from lib.MeteorReduce_Tools import * 
-
-
+ 
 PAGE_TEMPLATE = "/home/ams/amscams/pythonv2/templates/reducePage.v2.html"
 
 # Return an error message
@@ -95,3 +94,8 @@ def reduce_meteor2(json_conf,form):
 
    # Display Template
    print(template)
+
+
+
+   # TEST DEBUG
+   get_frame_time(meteor_json_file,"29")
