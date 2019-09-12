@@ -102,6 +102,17 @@ def update_frame(form, AjaxDirect = False):
    thumb_path = ''
 
 
+   print("original_HD_frame\n")
+   print(original_HD_frame)
+   print("\n")
+
+
+   print("destination_cropped_frame\n")
+   print(destination_cropped_frame)
+   print("\n")
+
+
+
    # We try to update the json file
    if "meteor_frame_data" in mr: 
 
