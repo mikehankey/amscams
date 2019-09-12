@@ -7,8 +7,10 @@ import glob
 import numpy as np
 import subprocess  
 
+from datetime import datetime,timedelta
 from pathlib import Path 
 from PIL import Image
+
 from lib.VideoLib import load_video_frames
 from lib.FileIO import load_json_file 
 from lib.ReducerLib import stack_frames
@@ -132,10 +134,19 @@ def get_frame_time(json,frame_id):
       # and frame_id
       diff_fn = int(frame_id) - int(fn)
 
-      print("DIFF FN " + str(diff_fn))
-      print("CUR TIME " +  dt)
+      # We multiple the frame # difference by 1/FPS 
+      diff_fn = diff_dn * 1 / FPS_HD
+ 
+      dt = datetime.strptime(dt, '%Y-%m-%d %H:%M:%S.%f')
 
+      # We add the diff in seconds
+      dt = dt +  timedelta(0,diff)
 
+      # We return the Date as a string
+      return str(dt)
+
+   else:
+      return ""
 
 # Get Specific cropped Frames from a frame ID and an analysed name
 def get_thumb(analysed_name,frame_id):

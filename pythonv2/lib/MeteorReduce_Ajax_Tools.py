@@ -111,9 +111,13 @@ def update_frame(form, AjaxDirect = False):
 
       # FOR THE CREATION
       if(update is False):
+
+         # Get the Frame time (as a string)
+         dt = get_frame_time(mr,fn)
+
          # We need to create the entry in meteor_frame_data       
          new_entry = [
-            '', # Date
+            dt, # Date
             int(fn), # Fn
             int(x), # X
             int(y), # Y
@@ -190,8 +194,7 @@ def update_multiple_frames(form):
                else:
                   resp['error'].append("Impossible to update the frame " + str(int(val['fn'])))
    
-         
-
+          
    # We update the JSON 
    save_json_file(json_file, mr)
    
