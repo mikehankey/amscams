@@ -101,7 +101,12 @@ def update_frame(form, AjaxDirect = False):
    destination_cropped_frame = get_thumb(analysed_name,fn)  
    thumb_path = ''
 
- 
+   if(len(destination_cropped_frame)==0):
+      # It's a creation
+      destination_cropped_frame = []
+      destination_cropped_frame.append(get_cache_path(analysed_name,"cropped")+"*"+EXT_CROPPED_FRAMES+str(frame_id)+".png")
+
+
    # We try to update the json file
    if "meteor_frame_data" in mr: 
 
@@ -131,10 +136,7 @@ def update_frame(form, AjaxDirect = False):
          ]
          mr['meteor_frame_data'].append(new_entry)
 
-   print("original_HD_frame\n")
-   print(original_HD_frame)
-   print("destination_cropped_frame\n")
-   print(destination_cropped_frame)
+ 
 
    if(len(original_HD_frame)!=0 and len(destination_cropped_frame)!=0):  
       thumb_path = new_crop_thumb(original_HD_frame[0],int(x),int(y),destination_cropped_frame[0])
