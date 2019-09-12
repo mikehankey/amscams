@@ -58,6 +58,12 @@ FRAME_NUMBER_meteor_frame_data  = 1
 DATE_TIME_meteor_frame_data = 0
 HD_X_meteor_frame_data  = 2
 HD_Y_meteor_frame_data  = 3
+Az_meteor_frame_data = 9
+EL_meteor_frame_data = 10
+
+# Default Values for Az and El
+Az_DEFAULT = 9999
+El_DEFAULT = Az_DEFAULT
 
 
 

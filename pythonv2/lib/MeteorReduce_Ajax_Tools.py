@@ -5,7 +5,7 @@ import sys
 import os
 
 from lib.FileIO import cfe, load_json_file, save_json_file
-from lib.MeteorReduce_Tools import get_cache_path, name_analyser, EXT_CROPPED_FRAMES, new_crop_thumb, get_HD_frame, get_thumb, FRAME_NUMBER_meteor_frame_data, HD_X_meteor_frame_data, HD_Y_meteor_frame_data, get_frame_time
+from lib.MeteorReduce_Tools import get_cache_path, name_analyser, EXT_CROPPED_FRAMES, new_crop_thumb, get_HD_frame, get_thumb, FRAME_NUMBER_meteor_frame_data, HD_X_meteor_frame_data, HD_Y_meteor_frame_data, get_frame_time,Az_meteor_frame_data, EL_meteor_frame_data,Az_DEFAULT,El_DEFAULT
 
  
 
@@ -116,19 +116,13 @@ def update_frame(form, AjaxDirect = False):
          dt = get_frame_time(mr,fn)
 
          # We need to create the entry in meteor_frame_data       
-         new_entry = [
-            dt, # Date
-            int(fn), # Fn
-            int(x), # X
-            int(y), # Y
-            50,
-            50,
-            0,
-            0,
-            0,
-            0,
-            0
-         ]
+         new_entry = []
+         new_entry[DATE_TIME_meteor_frame_data] = dt
+         new_entry[HD_X_meteor_frame_data] = int(x)        
+         new_entry[HD_Y_meteor_frame_data] = int(y)
+         new_entry[FRAME_NUMBER_meteor_frame_data] = int(fn)
+         new_entry[Az_meteor_frame_data] = Az_DEFAULT
+         new_entry[EL_meteor_frame_data] = El_DEFAULT     
          mr['meteor_frame_data'].append(new_entry)
 
  
