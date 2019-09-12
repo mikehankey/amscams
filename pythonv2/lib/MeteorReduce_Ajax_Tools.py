@@ -116,7 +116,7 @@ def update_frame(form, AjaxDirect = False):
          dt = get_frame_time(mr,fn)
 
          # We need to create the entry in meteor_frame_data       
-         new_entry = []
+         new_entry = [0,0,0,0,0,0,0,0,0,0]
          new_entry[DATE_TIME_meteor_frame_data] = dt
          new_entry[HD_X_meteor_frame_data] = int(x)        
          new_entry[HD_Y_meteor_frame_data] = int(y)
