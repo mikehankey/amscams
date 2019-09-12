@@ -11,10 +11,10 @@
                <a class="nav-link active" id="reduc-tab-l" data-toggle="tab" href="#reduc-tab" role="tab" aria-controls="reduction" aria-selected="true">Reduction</a>
            </li>
            <li class="nav-item">
-               <a class="nav-link" id="lightc-tab-l" data-toggle="tab" href="#lightc-tab" role="tab" aria-controls="lightc" aria-selected="true">Light Curve</a>
+               <a class="nav-link" id="stars-tab-l" data-toggle="tab" href="#stars-tab" role="tab" aria-controls="stars" aria-selected="false"><span id="str_cnt"></span> Stars</a>
            </li>
            <li class="nav-item">
-               <a class="nav-link" id="stars-tab-l" data-toggle="tab" href="#stars-tab" role="tab" aria-controls="stars" aria-selected="false"><span id="str_cnt">{STAR_COUNT}</span> Stars</a>
+               <a class="nav-link" id="lightc-tab-l" data-toggle="tab" href="#lightc-tab" role="tab" aria-controls="lightc" aria-selected="true">Light Curve</a>
            </li>
            <li class="nav-item">
                <a class="nav-link" id="plots-tab-l" data-toggle="tab" href="#plots-tab" role="tab" aria-controls="plots" aria-selected="false">Plots</a>
@@ -27,14 +27,15 @@
            </li>
        </ul>
 
-       <div class="tab-content box " > 
+       <div class="tab-content box"> 
 
            <div class="tab-pane fade show active pr-3" id="reduc-tab" role="tabpanel" aria-labelledby="reduc-tab-l">
-               <table class="table table-dark table-striped table-hover td-al-m"><thead>
-                  <tr>
-                     <th>Name</th><th>mag</th><th>Cat RA/Dec</th><th>Res &deg;</th><th>Res. Pixels</th>
-                  </tr>
-               </thead>
+               <table class="table table-dark table-striped table-hover td-al-m mb-2 pr-5">
+                  <thead>
+                     <tr>
+                        <th></th><th></th><th>#</th><th>Time</th><th>RA/Dec</th><th>Az/El</th><th>X/Y</th><th>w/h</th><th>Max&nbsp;px</th><th colspan="4"></th>
+                     </tr>
+                  </thead>
                <tbody>
                </tbody>
                </table>
@@ -45,7 +46,14 @@
            </div>
 
            <div class="tab-pane fade" id="stars-tab" role="tabpanel" aria-labelledby="stars-tab-l">
-               {STAR_TABLE}               
+               <table class="table table-dark table-striped table-hover td-al-m"><thead>
+                  <tr>
+                     <th>Name</th><th>mag</th><th>Cat&nbsp;RA/Dec</th><th>Res&nbsp;&deg;</th><th>Res.&nbsp;Pixels</th>
+                  </tr>
+               </thead>
+               <tbody>
+               </tbody>
+               </table>
            </div> 
 
            <div class="tab-pane fade" id="plots-tab" role="tabpanel" aria-labelledby="plots-tab-l">
@@ -79,28 +87,39 @@
                <dt class="col-6">Duration  </dt><dd class="col-6" id="dur">{EVENT_DURATION}s</dd>
                <dt class="col-6">Magnitude </dt><dd class="col-6">{EVENT_MAGNITUDE}</dd>
            </dl>
-           <hr class="w">
-           <h2>Reduction</h2>
-           <dl class="row mb-0">
-               <dt class="col-6">Frames</dt><dd class="col-6">{FRAME_COUNT}</dd>
-               <dt class="col-6">Stars  </dt><dd class="col-6" id="dur">{STAR_COUNT}</dd> 
-           </dl>
-           <hr class="w">
-           <div class="m-2 ml-5 mr-5">
-               <div class="btn-holder row mt-1 mb-1">
-                   <a id="zoom_canvas" class="col btn btn-secondary mt-0 mb-0"><i class="icon-zoom-in"></i> <span>Zoom</span></a>
-                   <a id="show_grid" class="col btn btn-secondary mt-0 mb-0"><i class="icon-grid"></i> <span>Show Grid</span></a>
-               </div>
-               <div class="btn-holder row mt-1">
-                   <a id="play_anim" class="col btn btn-secondary mt-0 mb-0"><i class="icon-play"></i> <span>Thumbs Anim.</span></a> 
-               </div>
-           </div>
        </div>
        
        
        <div class="box">
+            <h2>Media</h2>
+            <div class="d-flex mt-0 mb-0 mr-4 ml-4">
+               <div class="flex-fill p-2">
+                  <a style="background:url({STACK})" class="img-link d-block" href="{STACK}" title="View HD Stack">
+                     <img alt="" src="./dist/img/img_hd.svg"/>
+                  </a>
+               </div>
+               <div class="flex-fill p-2">
+                  <a style="background:url({STACK})" class="vid-link d-block" href="./video_player.html?video={VIDEO_FILE}&butt=no" title="View HD Video">
+                     <img alt="" src="./dist/img/vid_hd.svg"/>
+                  </a>
+               </div>
+               <div class="flex-fill p-2">
+                  <a style="background:url({STACK})" class="vid-link-like  d-block" id="play_anim" href="#" title="View Thumb Animation">
+                     <img alt="" src="./dist/img/vid_sd.svg"/>
+                  </a>
+               </div>
+            </div> 
+        </div> 
+
+        <div class="mt-2 mb-3 mr-3 ml-3"><div class="btn-holder row mt-1 mb-1">
+            <a id="zoom_canvas" class="col btn btn-secondary mt-0 mb-0 mr-1"><i class="icon-zoom-in"></i> <span>Zoom</span></a>
+            <a id="show_grid" class="col btn btn-secondary mt-0 mb-0"><i class="icon-grid"></i> <span>Grid</span></a>
+        </div></div>
+
+       
+       <div class="box">
                <h2>Calibration &amp; Reduction</h2>
-               <p class="mb-1">Load a calibration parameters</p>
+               <p class="mb-1">Load calibration parameters</p>
                <select id="cal_param_selected" class="custom-select">
                    <option value="{SELECTED_CAL_PARAMS_FILE}">{SELECTED_CAL_PARAMS_FILE_NAME}</option>
                </select>
@@ -137,38 +156,7 @@
               
        </div> 
 
-       <div class="box">
-           <h2>Media</h2>
-           <div class="d-flex">
-                  <!--
-                   <div class="flex-fill pr-2">
-                       <a style="background:url({SD_STACK})" class="img-link d-block" href="{HD_STACK}">
-                           <img alt="" src="./dist/img/img_hd.svg"/>
-                       </a>
-                   </div>
-                   <div class="flex-fill pr-2">
-                       <a style="background:url({SD_STACK})" class="img-link d-block" href="{SD_STACK}">
-                           <img alt="" src="./dist/img/img_sd.svg"/>
-                       </a>
-                   </div>
-                   <div class="flex-fill pr-2">
-                       <a style="background:url({SD_STACK})" class="img-link d-block" href="{HALF_STACK}">
-                           <img alt="" src="./dist/img/img_hstack.svg"/>
-                       </a>
-                   </div>
-                   <div class="flex-fill pr-2">
-                       <a style="background:url({SD_STACK})" class="vid-link d-block" href="./video_player.html?video={HD_VIDEO}&butt=no">
-                           <img alt="" src="./dist/img/vid_hd.svg"/>
-                       </a>
-                   </div>
-                   <div class="flex-fill">
-                       <a style="background:url({SD_STACK})" class="vid-link d-block" href="./video_player.html?video={SD_VIDEO}&butt=no">
-                           <img alt="" src="./dist/img/vid_sd.svg"/>
-                       </a>
-                   </div> 
-                   -->
-           </div>
-       </div> 
+      
 
        <div class="box">
            <h2>Observations </h2> 

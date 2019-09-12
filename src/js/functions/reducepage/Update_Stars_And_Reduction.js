@@ -1,6 +1,6 @@
 function update_star_and_reduction(callback) {
    var cmd_data = {
-       json_file: json_file,          // Defined on the page 
+       json_file: json_file,          // Defined on the page + no-cache!!
        cmd: 'get_reduction_info'
    }
 
@@ -9,7 +9,7 @@ function update_star_and_reduction(callback) {
    // Remove All objects from Canvas
    remove_objects();
 
-   
+   $.ajaxSetup({ cache: false });
    $.ajax({ 
        url:  "/pycgi/webUI.py",
        data: cmd_data,
@@ -29,7 +29,7 @@ function update_star_and_reduction(callback) {
                update_reduction_on_canvas_and_table(json_resp);
                
                // Update Add frames
-               setup_add_frames();
+               // setup_add_frames();
 
                // Reload the actions
                reduction_table_actions();

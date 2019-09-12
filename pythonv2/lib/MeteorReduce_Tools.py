@@ -7,8 +7,10 @@ import glob
 import numpy as np
 import subprocess  
 
+from datetime import datetime,timedelta
 from pathlib import Path 
 from PIL import Image
+
 from lib.VideoLib import load_video_frames
 from lib.FileIO import load_json_file 
 from lib.ReducerLib import stack_frames
@@ -51,6 +53,20 @@ THUMB_SELECT_W = THUMB_W
 THUMB_SELECT_H = THUMB_H
 
 
+# Because of bad use of JSON, we need to know the index of the values inside arrays 
+FRAME_NUMBER_meteor_frame_data  = 1
+DATE_TIME_meteor_frame_data = 0
+HD_X_meteor_frame_data  = 2
+HD_Y_meteor_frame_data  = 3
+Az_meteor_frame_data = 9
+EL_meteor_frame_data = 10
+
+# Default Values for Az and El
+Az_DEFAULT = 9999
+El_DEFAULT = Az_DEFAULT
+
+
+
 # Parses a regexp (FILE_NAMES_REGEX) a file name
 # and returns all the info defined in FILE_NAMES_REGEX_GROUP
 def name_analyser(file_names):
@@ -73,7 +89,7 @@ def name_analyser(file_names):
    return res
 
 # Return Cache folder name based on an analysed_file (parsed video file name)
-# and cache_type = stacks | frames | cropped
+# and cache_type = stacks | frames | cropped or thumbs
 def get_cache_path(analysed_file_name, cache_type):
     # Build the path to the proper cache folder
    cache_path = CACHE_PATH + analysed_file_name['station_id'] +  "/" + analysed_file_name['year'] + "/" + analysed_file_name['month'] + "/" + analysed_file_name['day'] + "/" + os.path.splitext(analysed_file_name['name'])[0]
@@ -82,7 +98,7 @@ def get_cache_path(analysed_file_name, cache_type):
       cache_path += FRAMES_SUBPATH
    elif(cache_type == "stacks"):
       cache_path += STACKS_SUBPATH
-   elif(cache_type == "cropped"):
+   elif(cache_type == "cropped"  or cache_type == "thumbs"):
       cache_path += CROPPED_FRAMES_SUBPATH
    
    return cache_path
@@ -109,6 +125,43 @@ def does_cache_exist(analysed_file_name,cache_type):
       return []
 
 
+# Return a date & time based on a parsed json_file and the frame id
+def get_frame_time(json,frame_id):
+
+   # We just need one existing frame and its date & time
+   if("meteor_frame_data" in json):
+      random_frame = json['meteor_frame_data'][0]
+
+      # Date & time and Frame ID for random_frame
+      dt = random_frame[DATE_TIME_meteor_frame_data]
+      fn = random_frame[FRAME_NUMBER_meteor_frame_data]
+
+      # Compute the diff of frame between random_frame 
+      # and frame_id
+      diff_fn = int(frame_id) - int(fn)
+
+      # We multiple the frame # difference by 1/FPS 
+      diff_fn = diff_fn * 1 / FPS_HD
+ 
+      dt = datetime.strptime(dt, '%Y-%m-%d %H:%M:%S.%f')
+
+      # We add the diff in seconds
+      dt = dt +  timedelta(0,diff_fn)
+      dt = str(dt)
+
+      # We remove the last 3 digits (from %f)
+      dt = dt[:-3]
+
+      # We return the Date as a string
+      return dt
+
+   else:
+      return ""
+
+# Get Specific cropped Frames from a frame ID and an analysed name
+def get_thumb(analysed_name,frame_id):
+   return glob.glob(get_cache_path(analysed_name,"cropped")+"*"+EXT_CROPPED_FRAMES+str(frame_id)+".png") 
+
 # Get the thumbs (cropped frames) for a meteor detection
 # Generate them if necessary
 def get_thumbs(analysed_name,meteor_json_data,HD,HD_frames,clear_cache):
@@ -127,7 +180,7 @@ def get_thumbs(analysed_name,meteor_json_data,HD,HD_frames,clear_cache):
 
 
 # Create a thumb 
-def new_crop_thumb(frame,x,y,dest,HD):
+def new_crop_thumb(frame,x,y,dest,HD = True):
 
    # Debug
    cgitb.enable()
@@ -204,7 +257,10 @@ def new_crop_thumb(frame,x,y,dest,HD):
    return dest
 
 
-   # Create the cropped frames (thumbs) for a meteor detection
+
+
+
+# Create the cropped frames (thumbs) for a meteor detection
 def generate_cropped_frames(analysed_name,meteor_json_data,HD_frames,HD):
 
    # Debug
@@ -215,15 +271,16 @@ def generate_cropped_frames(analysed_name,meteor_json_data,HD_frames,HD):
    cropped_frames = [] 
    
    for frame in meteor_frame_data: 
-      # WARNING THERE IS A -1 FROM THE LIST OF HD FRAMES!!!
-      # BECAUSE THE JSON IS WRONG      
+
       frame_index_destination = int(frame[1])
       frame_index = frame_index_destination-1 
       x = int(frame[2])
       y = int(frame[3])
       destination =  get_cache_path(analysed_name,"cropped")+analysed_name['name_w_ext']+EXT_CROPPED_FRAMES+str(frame_index_destination)+".png"
+      
+      # WARNING THERE IS A -1 FROM THE LIST OF HD FRAMES!!!
+      # BECAUSE THE JSON IS WRONG      
       org_HD_frame = HD_frames[frame_index-1]
-
 
       # We generate the thumb from the corresponding HD_frames
       # and add it to cropped_frames
@@ -231,6 +288,7 @@ def generate_cropped_frames(analysed_name,meteor_json_data,HD_frames,HD):
       cropped_frames.append(crop)
 
    return cropped_frames
+
 
 # Get the stacks for a meteor detection
 # Generate it if necessary
@@ -277,6 +335,14 @@ def generate_stacks(video_full_path, destination):
    return destination
 
 
+
+# Get Specific HD Frames from a frame ID and an analysed name
+def get_HD_frame(analysed_name,frame_id):
+   # Format the frame_id so we always have 4 digits
+   frame_id = str(frame_id).zfill(4)
+   return glob.glob(get_cache_path(analysed_name,"frames")+"*"+EXT_HD_FRAMES+str(frame_id)+".png") 
+
+
 # Get All HD Frames for a meteor detection
 # Generate them if they don't exist
 def get_HD_frames(analysed_name,clear_cache):
@@ -305,7 +371,7 @@ def generate_HD_frames(analysed_name, destination):
    cgitb.enable() 
    
    # Get All Frames
-   cmd = 'ffmpeg -y -hide_banner -loglevel panic  -i ' + analysed_name['full_path'] + ' -s ' + str(HD_W) + "x" + str(HD_H) + ' ' +  destination + EXT_HD_FRAMES + '_%04d' + '.png' 
+   cmd = 'ffmpeg -y -hide_banner -loglevel panic  -i ' + analysed_name['full_path'] + ' -s ' + str(HD_W) + "x" + str(HD_H) + ' ' +  destination + EXT_HD_FRAMES + '%04d' + '.png' 
    output = subprocess.check_output(cmd, shell=True).decode("utf-8")
 
    return glob.glob(destination+"*"+EXT_HD_FRAMES+"*.png")

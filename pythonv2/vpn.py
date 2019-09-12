@@ -31,6 +31,8 @@ try:
       cmd ="/etc/init.d/openvpn stop"
       os.system(cmd)
       time.sleep(3)
+      cmd ="killall openvpn"
+      os.system(cmd)
    else:
       running = check_running()
       if running == 0:

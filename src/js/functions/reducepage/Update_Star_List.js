@@ -1,8 +1,5 @@
 function update_stars_on_canvas_and_table(json_resp) {
-
-   console.log("IN update_stars_on_canvas_and_table")
-   console.log(json_resp)
-
+ 
    var cat_stars = json_resp['close_stars']; 
 
     if(typeof cat_stars == 'undefined') {
@@ -100,7 +97,7 @@ function update_stars_on_canvas_and_table(json_resp) {
 
         // Add the corresponding row
         // Name	mag	Cat RA/Dec	Res °	Res. Pixels 
-        table_tbody_html+= '<tr><td>'+v[0]+'</td><td>'+v[1]+'</td><td>'+v[2]+'/'+v[3]+'</td><td>'+v[6]+'</td><td>'+v[15]+'</td></tr>';
+        table_tbody_html+= '<tr><td>'+v[0]+'</td><td>'+v[1]+'</td><td>'+v[2].toFixed(4) +'&deg; / '+v[3].toFixed(4)+'&deg;</td><td>'+v[6].toFixed(4)+'</td><td>'+v[15].toFixed(4)+'</td></tr>';
 
     });
 

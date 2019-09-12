@@ -38,7 +38,7 @@ from lib.MultiStationMeteors import multi_station_meteors, multi_station_meteor_
 
 # New Reduce Meteor Page
 from lib.MeteorReducePage import reduce_meteor2
-from lib.MeteorReduce_Ajax_Tools import get_reduction_info
+from lib.MeteorReduce_Ajax_Tools import get_reduction_info, delete_frame, update_multiple_frames, update_frame, get_frame, create_thumb
  
 
 NUMBER_OF_METEOR_PER_PAGE = 60
@@ -146,14 +146,14 @@ def manual_detect(json_conf, form):
       print("<input type=submit name=submit value='Run Detection Code On This Clip'><br>")
       print("</form>")
 
-def get_template(json_conf, skin = None  ):
-   
-   template = ""
-   skin = "as6ams"
+def get_template(json_conf, skin = "as6ams"  ):
+   template = "" 
    if skin == "as6ams":
       fpt = open("/home/ams/amscams/pythonv2/templates/as6ams.html", "r")
+   elif skin == "v2":
+      fpt = open("/home/ams/amscams/pythonv2/templates/main_template.html", "r")
    else:
-      fpt = open("/home/ams/amscams/pythonv2/templates/as6.html", "r")
+      fpt = open("/home/ams/amscams/pythonv2/templates/as6ams.html", "r")
    for line in fpt:
       template = template + line
    return(template) 
@@ -240,6 +240,8 @@ def controller(json_conf):
       get_reduction_info(form.getvalue('json_file'))   
       exit()
 
+   
+
 
    #CUSTOM VIDEOS (AJAX CALL)
    if cmd == 'generate_timelapse': 
@@ -287,13 +289,7 @@ def controller(json_conf):
       delete_multiple_detection(detections,json_conf)
       exit()
 
-   #Get a frame or create all of them 
-   if(cmd == 'get_frame'):
-      fr_id = form.getvalue('fr')
-      sd_vid = form.getvalue('sd_video_file')
-      print(get_frame(fr_id,sd_vid))
-      exit()
-   
+  
    #Add new a frame from HD image with x & y
    if(cmd == 'crop_frame'):
       fr_id = form.getvalue('fr_id')
@@ -331,6 +327,34 @@ def controller(json_conf):
    if cmd == 'get_manual_points':
       get_manual_points(json_conf,form)
       exit()
+   
+   # New Reduction Page => DELETE A FRAME
+   if cmd == 'delete_frame':
+      delete_frame(form)
+      exit()
+
+   # New Reduction Page => UPDATE MULTIPLE FRAMES AT ONCE
+   if cmd == 'update_multiple_frames':
+      update_multiple_frames(form)
+      exit()
+
+   # New Reduction Page => UPDATE ONE FRAME AT A TIME
+   if cmd == 'update_frame':
+      update_frame(form)
+      exit()
+
+   #  New Reduction Page =>  Get a HD frame 
+   if cmd == 'get_frame':
+      get_frame(form)
+      exit()
+   
+   #  New Reduction Page =>  Create a thumb 
+   if cmd == 'create_thumb':
+      create_thumb(form)
+      exit()
+
+
+
    if cmd == 'del_frame':
       del_frame(json_conf,form)
       exit()
@@ -386,7 +410,11 @@ def controller(json_conf):
    jq = do_jquery()
    
    nav_html,bot_html = nav_links(json_conf,cmd)
-   nav_html = ""
+   nav_html = "" 
+
+   # New Reduce page
+   if cmd == 'reduce2':
+      skin = "v2"
 
    template = get_template(json_conf, skin)
    stf = template.split("{BODY}")
@@ -515,12 +543,19 @@ def controller(json_conf):
       multi_station_meteor_detail(json_conf,form)
 
    #bottom = bottom.replace("{JQ}", jq)      
-   bottom = bottom.replace("{BOTTOMNAV}", bot_html)      
-   rand=time.time()
-   bottom = bottom.replace("{RAND}", str(rand))
-   bottom = bottom.replace("{EXTRA_HTML}", str(extra_html))
+   if(bot_html is not None and bottom is not None):
+      bottom = bottom.replace("{BOTTOMNAV}", bot_html)      
+    
+   if(extra_html is not None and bottom is not None):
+      bottom = bottom.replace("{EXTRA_HTML}", str(extra_html))
+   else:
+      bottom = bottom.replace("{EXTRA_HTML}", "")
+
    if(bottom is not None):
+      rand=time.time()
+      bottom = bottom.replace("{RAND}", str(rand))
       print(bottom)
+     
    #cam_num = form.getvalue('cam_num')
    #day = form.getvalue('day')
 
@@ -1740,6 +1775,7 @@ def mask_admin(json_conf,form):
       for mask in masks:
          x,y,w,h = mask.split(",")
          x,y,w,h = int(x), int(y), int(w), int(h)
+         #x,y,w,h = int(x), int(int(y) * .83), int(w), int(int(h) * .83) + 1
          cv2.rectangle(img, (x, y), (x + w, y + h), (128, 128, 128), -1)      
          tmasks.append((x,y,w,h))
       cv2.imwrite("/mnt/ams2/tmp.jpg", img)

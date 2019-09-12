@@ -1,6 +1,6 @@
 // Load plugins
 const autoprefixer  = require("gulp-autoprefixer");
-const browsersync   = require("browser-sync").create();
+//const browsersync   = require("browser-sync").create();
 const cleanCSS      = require("gulp-clean-css");
 const gulp = require("gulp");
 const header = require("gulp-header");
@@ -75,10 +75,10 @@ function css() {
     outputStyle: "compressed"
   }))
   .on("error", sass.logError)
-  .pipe(autoprefixer({
-    browsers: ['last 2 versions'],
-    cascade: false
-  }))  
+  //.pipe(autoprefixer({
+  //  browsers: ['last 2 versions'],
+  //  cascade: false
+  //}))  
   .pipe(gulp.dest('./dist/css'))
   .pipe(rename({
     suffix: ".min"
@@ -103,7 +103,7 @@ function js() {
       './src/js/plugins/rainbowvis.js', 
       './src/js/plugins/popper.min.js', 
       './node_modules/bootstrap/dist/js/bootstrap.js',
-      './src/js/plugins/bootstrap-multiselect.js', 
+      './src/js/plugins/bootstrap-multiselect.js',  
       './src/js/plugins/bootbox.js', 
       './src/js/plugins/bootstrap-datetimepicker.min.js', 
       './src/js/plugins/jquery-ui.js'
