@@ -95,17 +95,18 @@ def update_frame(form, AjaxDirect = False):
    fn = form.getvalue("fn")
    x = form.getvalue("x")
    y = form.getvalue("y")
-
-   print("IN UPDATE FRAME")
-   print(json.dumps(mr))
-
+ 
    original_HD_frame = []
    destination_cropped_frame = []
 
    # We try to update the json file
    if "meteor_frame_data" in mr:
+      print("meteor_frame_data  is there")
       for ind, frame in enumerate(mr['meteor_frame_data']): 
          if int(frame[INDEX_OF_FRAME_NUMBER_IN_meteor_frame_data]) == int(fn):
+
+            print("WE FOUND THE FRAME " + str(fn))
+            
              # It needs to be updated here!!
             frame[HD_X_meteor_frame_data] = int(x)
             frame[HD_Y_meteor_frame_data] = int(y)
