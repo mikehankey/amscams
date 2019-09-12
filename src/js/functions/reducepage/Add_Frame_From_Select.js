@@ -254,7 +254,7 @@ function create_meteor_selector_from_frame(frame_id, image_src, neighbor) {
                    loading_done();
 
                    // Remove modal
-                   $('#cropper_modal').modal('hide').remove();
+                   $('#cropper_modal').modal('destroy').remove();
  
                    // Everything went fine
                    update_star_and_reduction(function() {
