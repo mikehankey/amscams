@@ -107,6 +107,10 @@ def update_frame(form, AjaxDirect = False):
    destination_cropped_frame = get_thumb(analysed_name,fn)    
    thumb_path = ''
 
+   print("FROM ")
+   print(str(original_HD_frame))
+   print(str(destination_cropped_frame))
+
    if(len(original_HD_frame)!=0 and len(destination_cropped_frame)!=0):  
       thumb_path = new_crop_thumb(original_HD_frame[0],int(x),int(y),destination_cropped_frame[0])
    else:
