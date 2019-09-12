@@ -40,9 +40,9 @@ def create_thumb(form):
    dest =  get_cache_path(analysed_name,"cropped")+analysed_name['name_w_ext']+EXT_CROPPED_FRAMES+str(frame_id)+".png"
 
    # Update the JSON file accordingly
-   update_frame(form)
+   resp_frame = update_frame(form)
 
-   print(json.dumps({'fr':new_crop_thumb(org_frame,x,y,dest)}))
+   print(json.dumps({'fr':new_crop_thumb(org_frame,x,y,dest),'resp'; resp_frame}))
      
 
 # Get HD Frame
@@ -71,7 +71,7 @@ def get_frame(form):
  
 
 # Update one frame at a time
-def update_frame(form):
+def update_frame(form, AjaxDirect = False):
 
    # Debug
    cgitb.enable()     
@@ -127,7 +127,11 @@ def update_frame(form):
    os.system("cd /home/ams/amscams/pythonv2/; ./reducer3.py cm " + json_file + " > /mnt/ams2/tmp/rrr.txt") 
    os.system("cd /home/ams/amscams/pythonv2/; ./reducer3.py cm " + json_file + " > /mnt/ams2/tmp/rrr.txt") 
 
-   print(json.dumps(resp))
+   # Depending on how the function is used we can return the resp or display it as JSON
+   if(AjaxDirect == True)
+      return resp 
+   else:
+      print(json.dumps(resp))
 
 
 # Update multiple frames 
