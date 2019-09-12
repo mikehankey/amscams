@@ -131,6 +131,10 @@ def update_frame(form, AjaxDirect = False):
          ]
          mr['meteor_frame_data'].append(new_entry)
 
+   print("original_HD_frame\n")
+   print(original_HD_frame)
+   print("destination_cropped_frame\n")
+   print(destination_cropped_frame)
 
    if(len(original_HD_frame)!=0 and len(destination_cropped_frame)!=0):  
       thumb_path = new_crop_thumb(original_HD_frame[0],int(x),int(y),destination_cropped_frame[0])
