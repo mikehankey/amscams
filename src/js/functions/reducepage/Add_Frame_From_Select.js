@@ -104,7 +104,7 @@ function create_meteor_selector_from_frame(frame_id, image_src, neighbor) {
        <div class="modal-content">\
            <div class="modal-header">\
            <div><strong>Frame #'+  frame_id + ' cropper</strong></div>\
-           <div>Move the white square to the meteor location</div>\
+           <div class="alert alert-info mb-0 p-1 pr-1 pl-2">Move the white square to the meteor location</div>\
            </div>\
            <div class="modal-body">\
          <div id="draggable_area" style="width:'+(prev_W+margins*2) + 'px; height:' +( prev_H+margins*2) + 'px;margin:0 auto;">\

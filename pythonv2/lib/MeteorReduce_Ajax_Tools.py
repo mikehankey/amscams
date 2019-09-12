@@ -5,18 +5,9 @@ import sys
 import os
 
 from lib.FileIO import cfe, load_json_file, save_json_file
-from lib.MeteorReduce_Tools import get_cache_path, name_analyser, EXT_CROPPED_FRAMES, new_crop_thumb, get_HD_frame, get_thumb
+from lib.MeteorReduce_Tools import get_cache_path, name_analyser, EXT_CROPPED_FRAMES, new_crop_thumb, get_HD_frame, get_thumb, FRAME_NUMBER_meteor_frame_data, HD_X_meteor_frame_data, HD_Y_meteor_frame_data
 
-
-# Because of bad use of JSON, we need to know the index of the values inside arrays 
-INDEX_OF_FRAME_NUMBER_IN_meteor_frame_data  = 1
-HD_X_meteor_frame_data  = 2
-HD_Y_meteor_frame_data  = 3
-
-
-# Update the meteor_json file based on the creation of the modification of a given frame
-
-
+ 
 
 # Create new cropped frame
 # and add the corresponding info to the json file
@@ -112,7 +103,7 @@ def update_frame(form, AjaxDirect = False):
 
       # FOR THE UDPDATES
       for ind, frame in enumerate(mr['meteor_frame_data']): 
-         if int(frame[INDEX_OF_FRAME_NUMBER_IN_meteor_frame_data]) == int(fn):
+         if int(frame[FRAME_NUMBER_meteor_frame_data]) == int(fn):
              # It needs to be updated here!!
             frame[HD_X_meteor_frame_data] = int(x)
             frame[HD_Y_meteor_frame_data] = int(y)
@@ -185,7 +176,7 @@ def update_multiple_frames(form):
 
       if "meteor_frame_data" in mr:
          for ind, frame in enumerate(mr['meteor_frame_data']):
-            if int(frame[INDEX_OF_FRAME_NUMBER_IN_meteor_frame_data]) == int(val['fn']):
+            if int(frame[FRAME_NUMBER_meteor_frame_data]) == int(val['fn']):
                # It needs to be updated here!!
                frame[HD_X_meteor_frame_data] = int(val['x'])
                frame[HD_Y_meteor_frame_data] = int(val['y'])
@@ -234,7 +225,7 @@ def delete_frame(form):
    # Update meteor_frame_data
    if "meteor_frame_data" in meteor_json:
       for ind, frame in enumerate(meteor_json['meteor_frame_data']):
-         if int(frame[INDEX_OF_FRAME_NUMBER_IN_meteor_frame_data]) == int(fn):
+         if int(frame[FRAME_NUMBER_meteor_frame_data]) == int(fn):
             meteor_json['meteor_frame_data'].pop(ind)  
          
    # Update metframes

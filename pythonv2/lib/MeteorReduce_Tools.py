@@ -51,6 +51,14 @@ THUMB_SELECT_W = THUMB_W
 THUMB_SELECT_H = THUMB_H
 
 
+# Because of bad use of JSON, we need to know the index of the values inside arrays 
+FRAME_NUMBER_meteor_frame_data  = 1
+DATE_TIME_meteor_frame_data = 0
+HD_X_meteor_frame_data  = 2
+HD_Y_meteor_frame_data  = 3
+
+
+
 # Parses a regexp (FILE_NAMES_REGEX) a file name
 # and returns all the info defined in FILE_NAMES_REGEX_GROUP
 def name_analyser(file_names):
@@ -107,6 +115,25 @@ def does_cache_exist(analysed_file_name,cache_type):
       os.makedirs(cache_path)
       # print(cache_path + " created")
       return []
+
+
+# Return a date & time based on a parsed json_file and the frame id
+def get_frame_time(json,frame_id):
+
+   # We just need one existing frame and its date & time
+   if("meteor_frame_data" in json):
+      random_frame = json['meteor_frame_data'][0];
+
+      # Date & time and Frame ID for random_frame
+      dt = random_frame[DATE_TIME_meteor_frame_data];
+      fn = random_frame[FRAME_NUMBER_meteor_frame_data];
+
+      # Compute the diff of frame between random_frame 
+      # and frame_id
+      diff_fn = frame_id - fn
+
+      print("DIFF FN " + diff_fn)
+      
 
 
 # Get Specific cropped Frames from a frame ID and an analysed name
