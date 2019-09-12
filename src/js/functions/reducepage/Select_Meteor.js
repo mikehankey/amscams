@@ -17,10 +17,10 @@ function select_multiple_meteors_ajax() {
       return (n !== "" && n != null);
    });
 
-    cmd_data.frames = JSON.stringify(meteor_select_updates);
+   cmd_data.frames = JSON.stringify(meteor_select_updates);
 
    if(meteor_select_updates.length<=1) {
-      loading({text:"Updating the frame", overlay:true});
+      loading({text:"Updating the frame #" + meteor_select_updates[0].fn , overlay:true});
    } else {
       loading({text:"Updating the " + meteor_select_updates.length  + " frames", overlay:true});
    }
