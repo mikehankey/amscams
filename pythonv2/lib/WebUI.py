@@ -548,6 +548,8 @@ def controller(json_conf):
     
    if(extra_html is not None and bottom is not None):
       bottom = bottom.replace("{EXTRA_HTML}", str(extra_html))
+   else:
+      bottom = bottom.replace("{EXTRA_HTML}", "")
 
    if(bottom is not None):
       rand=time.time()
