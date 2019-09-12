@@ -514,7 +514,9 @@ function setup_select_meteor(anti_cache=-1) {
     });
 
     // Click on selector (button & thumb)
-    $('.select_meteor').click(function() {
+    $('.select_meteor').click(function(e) {
+
+         e.stopImmediatePropagation();
   
         var $tr = $(this).closest('tr');
         var rand;
@@ -605,12 +607,10 @@ function setup_select_meteor(anti_cache=-1) {
             $(".meteor_chooser").removeClass('done'); 
             setup_modal_actions(meteor_id, $tr.attr('data-org-x'),$tr.attr('data-org-y'));
 
-
-          
- 
          
         }).attr({ src: imgSrc }); 
 
+        return false;
         
 
     });
