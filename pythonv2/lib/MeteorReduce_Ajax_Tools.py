@@ -104,7 +104,7 @@ def update_frame(form, AjaxDirect = False):
    if(len(destination_cropped_frame)==0):
       # It's a creation
       destination_cropped_frame = []
-      destination_cropped_frame.append(get_cache_path(analysed_name,"cropped")+"*"+EXT_CROPPED_FRAMES+str(frame_id)+".png")
+      destination_cropped_frame.append(get_cache_path(analysed_name,"cropped")+"*"+EXT_CROPPED_FRAMES+str(fn)+".png")
 
 
    # We try to update the json file
