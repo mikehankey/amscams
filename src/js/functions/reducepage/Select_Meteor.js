@@ -36,7 +36,8 @@ function select_multiple_meteors_ajax() {
 
                $('.modal-backdrop').remove();
                $('#select_meteor_modal').modal('hide').remove();
-  
+               $('.modal-backdrop').remove();
+               
                // Anti cache?
                // console.log('ANTI CACHE on ' + fn)
                $.each(meteor_select_updates,function(i,v) {
