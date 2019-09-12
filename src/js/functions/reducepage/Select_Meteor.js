@@ -202,7 +202,13 @@ function meteor_select(dir,all_frames_ids) {
 
 // Modal for selector
 function addModalTemplate(meteor_id,neighbor) {
-    var c; 
+    var c;
+    
+   // BUTTON FOR SINGLE MODE
+   // <div>\
+   // <button id="switch_select_mode" class="btn btn-primary btn-sm" data-lbl="Switch to multiple mode"><b>Switch to single mode</b></button>\
+   // </div>\
+
     if($('#select_meteor_modal').length==0) {
 
         c = '<div id="select_meteor_modal" class="modal fade multiple-select" tabindex="-1">\
@@ -212,9 +218,6 @@ function addModalTemplate(meteor_id,neighbor) {
         <div class="modal-header"> \
             <div><strong>FRAME #<span id="sel_frame_id"></span></strong> \
             - Click the center of the meteor to update the reduction frame. \
-            </div>\
-            <div>\
-               <button id="switch_select_mode" class="btn btn-primary btn-sm" data-lbl="Switch to multiple mode"><b>Switch to single mode</b></button>\
             </div>\
         </div>\
         <div class="modal-body">\
@@ -506,7 +509,7 @@ function setup_select_meteor(anti_cache=-1) {
     var viewer_dim = viewer_DIM;
     var all_frames_ids = [];
 
-    // Get all the frame ids
+    // Get all the known frame ids
     $('#reduc-tab table tbody tr').each(function() {
         var id = $(this).attr('id');
         id = id.split('_');
@@ -563,6 +566,7 @@ function setup_select_meteor(anti_cache=-1) {
 
      
           // Are we in single mode?
+          /*
           if((!multiple_select && $("#select_meteor_modal").hasClass('multiple-select')) ||
             (multiple_select && !$("#select_meteor_modal").hasClass('multiple-select'))) {
             console.log("WE SWITCH");
@@ -570,6 +574,7 @@ function setup_select_meteor(anti_cache=-1) {
          } else {
             console.log("WE DONT SWITCH");
          }
+         */
 
         // Update image real dimensions 
         var img = new Image();
