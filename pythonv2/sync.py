@@ -15,6 +15,7 @@ import scipy.optimize
 from fitMulti import minimize_poly_params_fwd
 from lib.VideoLib import get_masks, find_hd_file_new, load_video_frames
 from lib.UtilLib import check_running, get_sun_info, fix_json_file, find_angle, convert_filename_to_date_cam
+import subprocess
 
 from lib.FileIO import load_json_file, save_json_file, cfe
 API_HOST = "http://52.27.42.7"
@@ -477,7 +478,7 @@ def push_file(meteor, station_name, day):
       file_url = API_HOST + '/media/' + station_name + '/' + day + "/" + meteor_fn
 
       status = check_file_sync(file_url, json_conf)
-      if status == 404:
+      if status == 404 or "json" in meteor_fn:
          print("UPLOAD: ", meteor)
          sync_content(0, station_name, meteor, "json", meteor_fn)
       else:
@@ -661,8 +662,27 @@ def sync_day(day, json_conf):
    os.system(cmd)
    cmd = "./sync.py fe " + day
    os.system(cmd)
+
+def system_status(json_conf):
+
+   disk_info = {}
+   cmd = "df -H | grep -vE '^Filesystem|tmpfs|cdrom' | awk '{ print $5 \" \" $1 }'"
+   output = subprocess.check_output(cmd, shell=True).decode("utf-8")
+   lines = output.split("\n")
+   for line in lines:
+      line = line.replace("%", "")
+      if len(line) > 0:
+         perc, vol = line.split(" ")
+         disk_info[vol] = perc
+   for vol in disk_info:
+      print(vol, disk_info[vol])
+
+
    
-if cmd == 'ps'or cmd == 'prep_solve':
+if cmd == 'ss' or cmd == 'system_status':
+   system_status(json_conf) 
+   exit()
+if cmd == 'ps' or cmd == 'prep_solve':
    prep_solve(sys.argv[2], json_conf) 
 if cmd == "ss":
    sync_stations( json_conf)
