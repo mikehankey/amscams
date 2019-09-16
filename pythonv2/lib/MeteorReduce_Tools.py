@@ -264,23 +264,17 @@ def generate_cropped_frames(analysed_name,meteor_json_data,HD_frames,HD):
 
    # Debug
    cgitb.enable()
-
-   
- 
+    
    # We get the frame data
-   meteor_frame_data = meteor_json_data['meteor_frame_data']
+   meteor_frame_data = meteor_json_data['frames']
    cropped_frames = [] 
    
    for frame in meteor_frame_data: 
-      
-    
+     
       frame_index = int(frame[1]) # - 1 
  
-
-      x = int(frame[HD_X_meteor_frame_data])
-      y = int(frame[HD_Y_meteor_frame_data])
-
-    
+      x = int(frame['x'])
+      y = int(frame['y'])
 
       destination =  get_cache_path(analysed_name,"cropped")+analysed_name['name_w_ext']+EXT_CROPPED_FRAMES+str(frame_index)+".png"
 
@@ -288,7 +282,6 @@ def generate_cropped_frames(analysed_name,meteor_json_data,HD_frames,HD):
       # BECAUSE THE JSON IS WRONG      
       org_HD_frame = HD_frames[frame_index-1]
  
-
       # We generate the thumb from the corresponding HD_frames
       # and add it to cropped_frames
       crop = new_crop_thumb(org_HD_frame,x,y,destination,HD)
