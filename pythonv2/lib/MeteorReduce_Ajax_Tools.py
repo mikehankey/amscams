@@ -269,13 +269,11 @@ def get_reduction_info(json_file):
          # Copy original 
          rsp = json_file
          sc = 0
- 
-
+  
          for star in mr['calib']['stars']:
                max_res_deg = float(max_res_deg) + float(star["match_dist"])
                max_res_px = float(max_res_px) + float(star["cat_dist"])
-               sc += 1
-               stars.append(star)
+               sc += 1 
 
          if "calib" in mr and "device" in mr["calib"] and "total_res_px" in mr["calib"]['device'] and "total_res_deg" in mr["calib"]['device']:
             total_res_px  = mr['calib']['device']['total_res_px']
