@@ -276,14 +276,15 @@ def get_reduction_info(json_file):
                sc += 1
 
          if "calib" in mr and "device" in mr["calib"] and "total_res_px" in mr["calib"]['device'] and "total_res_deg" in mr["calib"]['device']:
-            rsp['total_res_px']  = mr['calib']['device']['total_res_px']
-            rsp['total_res_deg'] = mr['calib']['device']['total_res_deg']
+            total_res_px  = mr['calib']['device']['total_res_px']
+            total_res_deg = mr['calib']['device']['total_res_deg']
 
          elif len(mr['calib']['stars']) > 0:
-            rsp['total_res_px']  = max_res_px/ sc
-            rsp['total_res_deg'] = (max_res_deg / sc)  
+            total_res_px  = max_res_px/ sc
+            total_res_deg =  max_res_deg / sc   
    
-
+         rsp['total_res_px']  = total_res_px
+         rsp['total_res_deg'] = total_res_deg
          new_mfd = []
          
          if "frames" in mr: 
