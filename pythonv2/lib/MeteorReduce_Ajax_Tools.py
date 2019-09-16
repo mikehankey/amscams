@@ -259,13 +259,11 @@ def get_reduction_info(json_file):
       # We load the JSON
       mr = load_json_file(json_file) 
 
-      if "cal_params" in mr:
-         if "cat_image_stars" in mr['cal_params']:
-
-            # Get all the stars and compute max_res_deg & max_res_px
-            rsp['cat_image_stars'] = mr['cal_params']['cat_image_stars'] 
-            sc = 0
-            for star in mr['cal_params']['cat_image_stars']:
+      # Stars
+      if 'calib' not in mr or 'stars' not in mr['calib']:
+         rsp['status'] = 0
+      else:
+         for star in mr['calib']['stars']:
                (dcname,mag,ra,dec,img_ra,img_dec,match_dist,new_x,new_y,img_az,img_el,new_cat_x,new_cat_y,six,siy,cat_dist) = star
                max_res_deg = float(max_res_deg) + float(match_dist)
                max_res_px = float(max_res_px) + float(cat_dist )
