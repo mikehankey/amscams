@@ -1,6 +1,8 @@
 /* Root element */
 .json-document {
    padding: 1em 2em;
+   background:#030a15;
+   color:#fff;
  }
  
  /* Syntax highlighting for JSON objects */
@@ -11,10 +13,10 @@
    padding-left: 2em;
  }
  .json-string {
-   color: #0B7500;
+   color: #6a9955;
  }
  .json-literal {
-   color: #1A01CC;
+   color: #9cdcfe;
    font-weight: bold;
  }
  
