@@ -51,8 +51,7 @@ THUMB_H = 100
 # SIZE OF THE SELECT BOX WHEN THE USER SELECTS THE METEOR FROM A HD FRAME
 THUMB_SELECT_W = THUMB_W
 THUMB_SELECT_H = THUMB_H
-
-
+ 
 # Because of bad use of JSON, we need to know the index of the values inside arrays 
 FRAME_NUMBER_meteor_frame_data  = 1
 DATE_TIME_meteor_frame_data = 0
