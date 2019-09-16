@@ -275,7 +275,7 @@ def generate_cropped_frames(analysed_name,meteor_json_data,HD_frames,HD):
       
       # WARNING THERE IS A -1 FROM THE LIST OF HD FRAMES!!!
       # BECAUSE THE JSON IS WRONG      
-      frame_index = int(frame[1]) #-1 
+      frame_index = int(frame[1]) - 1 
 
       print("FRAME INX DES " + str(frame_index) +"<br>")
 
