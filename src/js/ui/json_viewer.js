@@ -24,11 +24,8 @@ $(function() {
             </div><div class="modal-footer d-flex justify-content-between p-0 pb-2 pr-2"></div>\
             <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button></div></div></div></div>').appendTo('body');
 
-
-            $('#json_modal').show();
-
+            $('#json_modal').modal('show');
             $('#json-renderer').jsonViewer(data);  
-
 
             loading_done();
          }, 
