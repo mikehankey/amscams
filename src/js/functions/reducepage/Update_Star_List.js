@@ -65,7 +65,7 @@ function update_stars_on_canvas_and_table(json_resp) {
         }));
 
         // Add Star Name on canvas
-        canvas.add(new fabric.Text(v[0], {
+        canvas.add(new fabric.Text(v['name'], {
                 fontFamily: 'Arial', 
                 fontSize: 12, 
                 left: (v['cat_und_pos'][POS_X] - 11)/2+5,
