@@ -267,7 +267,6 @@ def get_reduction_info(json_file):
       else:
 
          # Copy original 
-         rsp = json_file
          sc = 0
   
          for star in mr['calib']['stars']:
@@ -282,9 +281,8 @@ def get_reduction_info(json_file):
          elif len(mr['calib']['stars']) > 0:
             total_res_px  = max_res_px/ sc
             total_res_deg =  max_res_deg / sc   
-   
-         print(str(rsp))
-
+    
+         rsp['device'] = []
          rsp['device']['total_res_px']  = total_res_px
          rsp['device']['total_res_deg'] = total_res_deg 
 
