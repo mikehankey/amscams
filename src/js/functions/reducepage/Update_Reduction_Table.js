@@ -40,16 +40,16 @@ function update_reduction_on_canvas_and_table(json_resp) {
     $.each(smf, function(i,v){
   
         // Get thumb path
-        var frame_id = parseInt(v[1]);
-        var thumb_path = v[11] +'?c='+Math.random();
+        var frame_id = parseInt(v['fn']);
+        var thumb_path = v['path_to_frame'] +'?c='+Math.random();
         var square_size = 6;
-        var _time = v[0].split(' ');
+        var _time = v['dt'].split(' ');
   
         // Thumb	#	Time	X/Y - W/H	Max PX	RA/DEC	AZ/EL 
-        table_tbody_html+= '<tr id="fr_'+frame_id+'" data-fn="'+frame_id+'" data-org-x="'+v[2]+'" data-org-y="'+v[3]+'"><td><div class="st" hidden style="background-color:'+all_colors[i]+'"></div></td>'
+        table_tbody_html+= '<tr id="fr_'+frame_id+'" data-fn="'+frame_id+'" data-org-x="'+v['x']+'" data-org-y="'+v['y']+'"><td><div class="st" hidden style="background-color:'+all_colors[i]+'"></div></td>'
         table_tbody_html+= '<td><img alt="Thumb #'+frame_id+'" src='+thumb_path+' width="50" height="50" class="img-fluid smi select_meteor" style="border-color:'+all_colors[i]+'"/></td>';
-        table_tbody_html+= '<td>'+frame_id+'</td><td>'+_time[1]+'</td><td>'+v[7].toFixed(PRECISION)+'&deg; / '+v[8].toFixed(PRECISION)+'&deg;</td><td>'+v[9].toFixed(PRECISION)+'&deg; / '+v[10].toFixed(PRECISION)+'&deg;</td><td>'+ parseFloat(v[2]) +'/'+parseFloat(v[3])  +'</td><td>'+ v[4]+'x'+v[5]+'</td>';
-        table_tbody_html+= '<td>'+v[6]+'</td>';
+        table_tbody_html+= '<td>'+frame_id+'</td><td>'+_time[1]+'</td><td>'+v['ra'].toFixed(PRECISION)+'&deg; / '+v['dec'].toFixed(PRECISION)+'&deg;</td><td>'+v["az"].toFixed(PRECISION)+'&deg; / '+v["al"].toFixed(PRECISION)+'&deg;</td><td>'+ parseFloat(v['x']) +'/'+parseFloat(v['y'])  +'</td><td>'+ v['w']+'x'+v['h']+'</td>';
+        table_tbody_html+= '<td>'+v['max_px']+'</td>';
         table_tbody_html+= '<td><a class="btn btn-danger btn-sm delete_frame"><i class="icon-delete"></i></a></td>';
 
         if( i==middle_frame_index) {
@@ -86,8 +86,8 @@ function update_reduction_on_canvas_and_table(json_resp) {
             fill: 'rgba(0,0,0,0)', 
             strokeWidth: 1, 
             stroke: all_colors[i], //'rgba(230,100,200,.5)', 
-            left:  v[2]/2-rad, 
-            top:   v[3]/2-rad,
+            left:  v['x']/2-rad, 
+            top:   v['y']/2-rad,
             width: 10,
             height: 10 ,
             selectable: false,
