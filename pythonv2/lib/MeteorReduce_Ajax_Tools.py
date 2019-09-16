@@ -272,8 +272,8 @@ def get_reduction_info(json_file):
                sc += 1
 
          if "calib" in mr and "device" in mr["calib"]:
-            rsp['total_res_px']  = mr['calib']['total_res_px']
-            rsp['total_res_deg'] = mr['calib']['total_res_deg']
+            rsp['total_res_px']  = mr['calib']['device']['total_res_px']
+            rsp['total_res_deg'] = mr['calib']['device']['total_res_deg']
 
          elif len(mr['calib']['stars']) > 0:
             rsp['total_res_px']  = max_res_px/ sc
