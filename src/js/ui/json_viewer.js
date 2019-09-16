@@ -18,13 +18,12 @@ $(function() {
          type: "GET",  
          success: function (data) {
 
-            console.log(data);
-
+         
             // We create the modal
             $('#json_modal').remove();
 
             $('<div id="json_modal" class="modal fade" tabindex="-1" role="dialog"><div class="modal-dialog modal-dialog-centered modal-lg" role="document">\
-            <div class="modal-content"><div class="modal-body"><div id="json-renderer" style="background: #fff;color: #000; font-family: monospace;" class="d-flex justify-content-between"><p><b>JSON</b></p>\
+            <div class="modal-content"><h5><a href="'+json_path+'" target="_blank">JSON File</a></h5><div class="modal-body"><div id="json-renderer" class="d-flex justify-content-between"><p><b>JSON</b></p>\
             </div><div class="modal-footer d-flex justify-content-between p-0 pb-2 pr-2"></div>\
             <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button></div></div></div></div>').appendTo('body');
 
