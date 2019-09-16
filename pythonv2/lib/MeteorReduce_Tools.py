@@ -275,7 +275,7 @@ def generate_cropped_frames(analysed_name,meteor_json_data,HD_frames,HD):
       
       # WARNING THERE IS A -1 FROM THE LIST OF HD FRAMES!!!
       # BECAUSE THE JSON IS WRONG      
-      frame_index = int(frame[1])-1 
+      frame_index = int(frame[1]) #-1 
 
       print("FRAME INX DES " + str(frame_index) +"<br>")
 
@@ -285,14 +285,7 @@ def generate_cropped_frames(analysed_name,meteor_json_data,HD_frames,HD):
       print("X " + str(x) +"<br>")
       print("Y " + str(y) +"<br>")
 
- 
       destination =  get_cache_path(analysed_name,"cropped")+analysed_name['name_w_ext']+EXT_CROPPED_FRAMES+str(frame_index)+".png"
-      
-     
-
- 
-      # WARNING THERE IS A -1 FROM THE LIST OF HD FRAMES!!!
-      # BECAUSE THE JSON IS WRONG      
       org_HD_frame = HD_frames[frame_index]
 
       print("ORG " + str(org_HD_frame))
