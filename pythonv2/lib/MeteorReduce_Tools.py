@@ -272,9 +272,10 @@ def generate_cropped_frames(analysed_name,meteor_json_data,HD_frames,HD):
    cropped_frames = [] 
    
    for frame in meteor_frame_data: 
-
-      frame_index_destination = int(frame[1])
-      frame_index = frame_index_destination-1 
+      
+      # WARNING THERE IS A -1 FROM THE LIST OF HD FRAMES!!!
+      # BECAUSE THE JSON IS WRONG      
+      frame_index = int(frame[1])-1 
 
       print("FRAME INX DES " + str(frame_index) +"<br>")
 
@@ -288,7 +289,7 @@ def generate_cropped_frames(analysed_name,meteor_json_data,HD_frames,HD):
       print("CACHE  " + get_cache_path(analysed_name,"cropped") +"<br>")
       print("name_w_ext  " + analysed_name['name_w_ext'] +"<br>")
       print("EXT_CROPPED_FRAMES  " + EXT_CROPPED_FRAMES +"<br>")
-      print("frame_index_destination  " + frame_index_destination +"<br>")
+      print("frame_index_destination  " + str(frame_index_destination) +"<br>")
 
 
 
