@@ -1,6 +1,12 @@
+// FOR THE POS IN THE JSON
+// Ex:  "i_pos": [719,769], => x= 719, y=769
+POS_X = 0
+POS_Y = 1
+
+
 function update_stars_on_canvas_and_table(json_resp) {
  
-   var cat_stars = json_resp['calib']['stars']; 
+   var cat_stars = json_resp['stars']; 
 
    if(typeof cat_stars == 'undefined') {
       return;
@@ -38,8 +44,8 @@ function update_stars_on_canvas_and_table(json_resp) {
         canvas.add(
             new fabric.Circle({
                 radius: 5, fill: 'rgba(0,0,0,0)', strokeWidth: 1, stroke: 'rgba(100,200,200,.5)', 
-                left: (v[13] - 11)/2, 
-                top: (v[14] - 11)/2,
+                left: (v["i_pos"][POS_X] - 11)/2, 
+                top: (v["i_pos"][POS_Y] - 11)/2,
                 selectable: false,
                 gp_id: v[0]
         }));
@@ -49,8 +55,8 @@ function update_stars_on_canvas_and_table(json_resp) {
             new fabric.Text("+", {
                 fontFamily: 'Arial', 
                 fontSize: 12, 
-                left: ((v[7] - 11)/2)+4,   // +4 = shift text
-                top: ((v[8] - 11)/2) -4,    // -4 = shift text
+                left: ((v["cat_dist_pos"][POS_X] - 11)/2)+4,   // +4 = shift text
+                top: ((v["cat_dist_pos"][POS_Y] - 11)/2) -4,    // -4 = shift text
                 fill:'rgba(255,0,0,.75)',
                 selectable: false ,
                 gp_id: v[0]
@@ -60,8 +66,8 @@ function update_stars_on_canvas_and_table(json_resp) {
         canvas.add(new fabric.Text(v[0], {
                 fontFamily: 'Arial', 
                 fontSize: 12, 
-                left: (v[11] - 11)/2+5,
-                top: (v[12] - 11)/2+8,
+                left: (v['cat_und_pos'][POS_X] - 11)/2+5,
+                top: (v['cat_und_pos'][POS_Y] - 11)/2+8,
                 fill:'rgba(255,255,255,.45)',
                 selectable: false,
                 gp_id: v[0] 
@@ -70,8 +76,8 @@ function update_stars_on_canvas_and_table(json_resp) {
         // Add Rectangle
         canvas.add(new fabric.Rect({
             fill: 'rgba(0,0,0,0)', strokeWidth: 1, stroke: 'rgba(230,100,200,.5)', 
-            left:  (v[11] - 11)/2, 
-            top:(v[12] - 11)/2,
+            left:  (v['cat_und_pos'][POS_X] - 11)/2, 
+            top: (v['cat_und_pos'][POS_Y]  - 11)/2,
             width: 10,
             height: 10 ,
             selectable: false,
@@ -80,7 +86,7 @@ function update_stars_on_canvas_and_table(json_resp) {
 
         // Add the corresponding row
         // Name	mag	Cat RA/Dec	Res °	Res. Pixels 
-        table_tbody_html+= '<tr><td>'+v[0]+'</td><td>'+v[1]+'</td><td>'+v[2].toFixed(4) +'&deg; / '+v[3].toFixed(4)+'&deg;</td><td>'+v[6].toFixed(4)+'</td><td>'+v[15].toFixed(4)+'</td></tr>';
+        table_tbody_html+= '<tr><td>'+v['name']+'</td><td>'+v['mag']+'</td><td>'+v['ra'].toFixed(4) +'&deg; / '+v[3].toFixed('dec')+'&deg;</td><td>'+v['match_dist'].toFixed(4)+'</td><td>'+v['cat_dist'].toFixed(4)+'</td></tr>';
 
     });
 
