@@ -262,10 +262,10 @@ def new_crop_thumb(frame,x,y,dest,HD = True):
 # Create the cropped frames (thumbs) for a meteor detection
 def generate_cropped_frames(analysed_name,meteor_json_data,HD_frames,HD):
 
-   print("IN GENERATE CROPPED FRAMES")
-
    # Debug
    cgitb.enable()
+
+   print("IN GENERATE CROPPED FRAMES")
  
    # We get the frame data
    meteor_frame_data = meteor_json_data['meteor_frame_data']
@@ -280,6 +280,10 @@ def generate_cropped_frames(analysed_name,meteor_json_data,HD_frames,HD):
 
       x = int(frame[HD_X_meteor_frame_data])
       y = int(frame[HD_Y_meteor_frame_data])
+
+      print("X " + str(x))
+      print("Y " + str(y))
+
       destination =  get_cache_path(analysed_name,"cropped")+analysed_name['name_w_ext']+EXT_CROPPED_FRAMES+str(frame_index_destination)+".png"
       
       print("ORG " + str(org_HD_frame))
