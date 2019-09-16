@@ -271,7 +271,7 @@ def generate_cropped_frames(analysed_name,meteor_json_data,HD_frames,HD):
    
    for frame in meteor_frame_data: 
      
-      frame_index = int(frame[1]) # - 1 
+      frame_index = int(frame['fn']) # - 1 
  
       x = int(frame['x'])
       y = int(frame['y'])
