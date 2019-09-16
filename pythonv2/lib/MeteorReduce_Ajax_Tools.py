@@ -263,35 +263,41 @@ def get_reduction_info(json_file):
       if 'calib' not in mr or 'stars' not in mr['calib']:
          rsp['status'] = 0
       else:
+
+         sc = 0
+
          for star in mr['calib']['stars']:
                max_res_deg = float(max_res_deg) + float(star["match_dist"])
                max_res_px = float(max_res_px) + float(star["cat_dist"])
-               sc = sc + 1
+               sc += 1
 
-         if "total_res_px" in mr['cal_params']:
-            rsp['total_res_px']  = mr['cal_params']['total_res_px']
-            rsp['total_res_deg'] = mr['cal_params']['total_res_deg']
+         if "calib" in mr and "device" in mr["calib"]:
+            rsp['total_res_px']  = mr['calib']['total_res_px']
+            rsp['total_res_deg'] = mr['calib']['total_res_deg']
 
-         elif len(mr['cal_params']['cat_image_stars']) > 0:
+         elif len(mr['calib']['stars']) > 0:
             rsp['total_res_px']  = max_res_px/ sc
             rsp['total_res_deg'] = (max_res_deg / sc)  
 
          new_mfd = []
          
-         if "meteor_frame_data" in mr: 
-            temp = sorted(mr['meteor_frame_data'], key=lambda x: int(x[1]), reverse=False)
-
+         if "frames" in mr: 
+            # The frames have to be in the proper order!
+            #temp = sorted(mr['frames'], key=lambda x: int(x[1]), reverse=False)
+ 
 
             # Get the folder where the thumbs are: 
             analysed_name = name_analyser(json_file)
             thumb_folder = get_cache_path(analysed_name,'thumbs') 
   
-            for frame_data in temp:      
-               frame_time, fn, hd_x,hd_y,w,h,max_px,ra,dec,az,el = frame_data 
-
+            for frame_data in mr['frames']:      
+              
                # Pass the path to frame to JS
-               path_to_frame = thumb_folder + analysed_name['name_w_ext']  + EXT_CROPPED_FRAMES + str(fn) + ".png"
-               new_mfd.append((frame_time,fn,hd_x,hd_y,w,h,max_px,ra,dec,az,el,path_to_frame)) 
+               path_to_frame = thumb_folder + analysed_name['name_w_ext']  + EXT_CROPPED_FRAMES + str(frame_data['fn']) + ".png"
+
+               tmp_frame = frame_data
+               tmp_frame['path_to_frame'] =path_to_frame
+               new_mfd.append(tmp_frame) 
 
             rsp['meteor_frame_data'] = new_mfd
           
