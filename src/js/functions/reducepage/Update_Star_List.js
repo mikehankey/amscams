@@ -6,10 +6,9 @@ POS_Y = 1
 
 function update_stars_on_canvas_and_table(json_resp) {
 
-   console.log("update_stars_on_canvas_and_table");
-   console.log(json_resp);
+    
  
-   var cat_stars = json_resp['stars']; 
+   var cat_stars = json_resp['calib']['stars']; 
 
    if(typeof cat_stars == 'undefined') {
       return;
@@ -17,11 +16,11 @@ function update_stars_on_canvas_and_table(json_resp) {
 
     var table_tbody_html = '';
  
-    if(typeof json_resp['total_res_deg']!=='undefined' && typeof json_resp['total_res_px']!=='undefined') {
+    if(typeof json_resp['calib']['device']['total_res_deg']!=='undefined' && typeof json_resp['calib']['device']['total_res_px']!=='undefined') {
         // Updating star table info 
         // Residual Error
-        var total_res_deg = (Math.round(json_resp['total_res_deg'] * 100) / 100);
-        var total_res_px = (Math.round(json_resp['total_res_px'] *100) / 100);
+        var total_res_deg = (Math.round( json_resp['calib']['device']['total_res_deg'] * 100) / 100);
+        var total_res_px = (Math.round( json_resp['calib']['device']['total_res_px'] *100) / 100);
         $('#star_res_p').remove();
 
         // Add same text to image 

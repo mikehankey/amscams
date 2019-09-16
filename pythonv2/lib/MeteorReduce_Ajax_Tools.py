@@ -287,8 +287,7 @@ def get_reduction_info(json_file):
          mr['calib']['device']['total_res_deg'] = total_res_deg 
          
          # Pass to JSON
-         rsp['calib'] = mr['calib']
-         rsp['stars'] = mr['calib']['stars']
+         rsp['calib'] = mr['calib'] 
 
          # New Meteor Frame Data
          new_mfd = []
