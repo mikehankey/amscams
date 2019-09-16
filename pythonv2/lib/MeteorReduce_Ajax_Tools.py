@@ -266,14 +266,16 @@ def get_reduction_info(json_file):
       
       else:
 
+         # Copy original 
          rsp = json_file
-
          sc = 0
+ 
 
          for star in mr['calib']['stars']:
                max_res_deg = float(max_res_deg) + float(star["match_dist"])
                max_res_px = float(max_res_px) + float(star["cat_dist"])
                sc += 1
+               stars.append(star)
 
          if "calib" in mr and "device" in mr["calib"] and "total_res_px" in mr["calib"]['device'] and "total_res_deg" in mr["calib"]['device']:
             total_res_px  = mr['calib']['device']['total_res_px']
@@ -283,8 +285,10 @@ def get_reduction_info(json_file):
             total_res_px  = max_res_px/ sc
             total_res_deg =  max_res_deg / sc   
    
-         rsp['total_res_px']  = total_res_px
-         rsp['total_res_deg'] = total_res_deg
+         rsp['device']['total_res_px']  = total_res_px
+         rsp['device']['total_res_deg'] = total_res_deg 
+
+         # New Meteor Frame Data
          new_mfd = []
          
          if "frames" in mr: 
