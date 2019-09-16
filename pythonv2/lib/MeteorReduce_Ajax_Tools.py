@@ -264,18 +264,17 @@ def get_reduction_info(json_file):
          rsp['status'] = 0
       else:
          for star in mr['calib']['stars']:
-               (dcname,mag,ra,dec,img_ra,img_dec,match_dist,new_x,new_y,img_az,img_el,new_cat_x,new_cat_y,six,siy,cat_dist) = star
-               max_res_deg = float(max_res_deg) + float(match_dist)
-               max_res_px = float(max_res_px) + float(cat_dist )
+               max_res_deg = float(max_res_deg) + float(star["match_dist"])
+               max_res_px = float(max_res_px) + float(star["cat_dist"])
                sc = sc + 1
 
-            if "total_res_px" in mr['cal_params']:
-               rsp['total_res_px']  = mr['cal_params']['total_res_px']
-               rsp['total_res_deg'] = mr['cal_params']['total_res_deg']
+         if "total_res_px" in mr['cal_params']:
+            rsp['total_res_px']  = mr['cal_params']['total_res_px']
+            rsp['total_res_deg'] = mr['cal_params']['total_res_deg']
 
-            elif len(mr['cal_params']['cat_image_stars']) > 0:
-               rsp['total_res_px']  = max_res_px/ sc
-               rsp['total_res_deg'] = (max_res_deg / sc)  
+         elif len(mr['cal_params']['cat_image_stars']) > 0:
+            rsp['total_res_px']  = max_res_px/ sc
+            rsp['total_res_deg'] = (max_res_deg / sc)  
 
          new_mfd = []
          
