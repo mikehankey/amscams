@@ -275,14 +275,18 @@ def generate_cropped_frames(analysed_name,meteor_json_data,HD_frames,HD):
 
       frame_index_destination = int(frame[1])
       frame_index = frame_index_destination-1 
-      x = int(frame[2])
-      y = int(frame[3])
+
+      print("FRAME INX DES " + str(frame_index))
+
+      x = int(frame[HD_X_meteor_frame_data])
+      y = int(frame[HD_Y_meteor_frame_data])
       destination =  get_cache_path(analysed_name,"cropped")+analysed_name['name_w_ext']+EXT_CROPPED_FRAMES+str(frame_index_destination)+".png"
       
-      print("ORG " + org_HD_frame)
-      print("DEST " + destination)
+      print("ORG " + str(org_HD_frame))
+      print("DEST " + str(destination))
       print("***********************")
 
+ 
       # WARNING THERE IS A -1 FROM THE LIST OF HD FRAMES!!!
       # BECAUSE THE JSON IS WRONG      
       org_HD_frame = HD_frames[frame_index-1]
