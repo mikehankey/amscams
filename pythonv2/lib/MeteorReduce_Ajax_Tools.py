@@ -285,6 +285,10 @@ def get_reduction_info(json_file):
         
          mr['calib']['device']['total_res_px']  = total_res_px
          mr['calib']['device']['total_res_deg'] = total_res_deg 
+         
+         # Pass to JSON
+         resp['calib'] = mr['calib']
+         resp['stars'] = mr['calib']['stars']
 
          # New Meteor Frame Data
          new_mfd = []
@@ -308,7 +312,7 @@ def get_reduction_info(json_file):
                # Add the frame with path to frame (thumb)
                new_mfd.append(tmp_frame) 
 
-            rsp['meteor_frame_data'] = new_mfd
+            rsp['frames'] = new_mfd
           
       rsp['status'] = 1
   
