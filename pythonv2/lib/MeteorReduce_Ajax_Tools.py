@@ -270,6 +270,7 @@ def get_reduction_info(json_file):
          sc = 0
   
          for star in mr['calib']['stars']:
+               print("LOOP STAR<br>")
                max_res_deg = float(max_res_deg) + float(star["match_dist"])
                max_res_px = float(max_res_px) + float(star["cat_dist"])
                sc += 1 
