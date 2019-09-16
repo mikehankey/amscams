@@ -88,7 +88,10 @@ function update_stars_on_canvas_and_table(json_resp) {
 
         // Add the corresponding row
         // Name	mag	Cat RA/Dec	Res °	Res. Pixels 
-        table_tbody_html+= '<tr><td>'+v['name']+'</td><td>'+v['mag']+'</td><td>'+v['ra'].toFixed(4) +'&deg; / '+v[3].toFixed('dec')+'&deg;</td><td>'+v['match_dist'].toFixed(4)+'</td><td>'+v['cat_dist'].toFixed(4)+'</td></tr>';
+        table_tbody_html+= '<tr><td>'+v['name']+'</td>\
+                            <td>'+v['mag']+'</td>\
+                            <td>'+v['ra'].toFixed(4) +'&deg; / '+v['dec'].toFixed(4)+'&deg;</td>\
+                            <td>'+v['match_dist'].toFixed(4)+'</td><td>'+v['cat_dist'].toFixed(4)+'</td></tr>';
 
     });
 
