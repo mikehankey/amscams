@@ -21,11 +21,16 @@ $(function() {
 
             $('<div id="json_modal" class="modal fade" tabindex="-1" role="dialog"><div class="modal-dialog modal-dialog-centered" role="document">\
             <div class="modal-content"><div class="modal-body"><div id="json-renderer" class="d-flex justify-content-between"><p><b>JSON</b></p>\
-            </div><div class="modal-footer d-flex justify-content-between p-0 pb-2 pr-2">\
-            <div class="pt-2"><input type="range" value="1" id="mar" max="5" min="-5"/> <span id="cur_sp"></span></div>\
+            </div><div class="modal-footer d-flex justify-content-between p-0 pb-2 pr-2"></div>\
             <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button></div></div></div></div>').appendTo('body');
 
+
+            $('#json_modal').show();
+
             $('#json-renderer').jsonViewer(data);  
+
+
+            loading_done();
          }, 
          error: function(e) {
            bootbox.alert({
@@ -37,5 +42,5 @@ $(function() {
          }  
       });
    });
-   
+
 })
