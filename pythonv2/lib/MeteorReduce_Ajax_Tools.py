@@ -261,8 +261,12 @@ def get_reduction_info(json_file):
 
       # Stars
       if 'calib' not in mr or 'stars' not in mr['calib']:
+      
          rsp['status'] = 0
+      
       else:
+
+         rsp = json_file
 
          sc = 0
 
@@ -278,14 +282,14 @@ def get_reduction_info(json_file):
          elif len(mr['calib']['stars']) > 0:
             rsp['total_res_px']  = max_res_px/ sc
             rsp['total_res_deg'] = (max_res_deg / sc)  
+   
 
          new_mfd = []
          
          if "frames" in mr: 
             # The frames have to be in the proper order!
             #temp = sorted(mr['frames'], key=lambda x: int(x[1]), reverse=False)
- 
-
+  
             # Get the folder where the thumbs are: 
             analysed_name = name_analyser(json_file)
             thumb_folder = get_cache_path(analysed_name,'thumbs') 
@@ -297,6 +301,8 @@ def get_reduction_info(json_file):
 
                tmp_frame = frame_data
                tmp_frame['path_to_frame'] =path_to_frame
+
+               # Add the frame with path to frame (thumb)
                new_mfd.append(tmp_frame) 
 
             rsp['meteor_frame_data'] = new_mfd

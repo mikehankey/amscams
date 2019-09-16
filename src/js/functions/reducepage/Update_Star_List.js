@@ -1,29 +1,13 @@
 function update_stars_on_canvas_and_table(json_resp) {
  
-   var cat_stars = json_resp['close_stars']; 
+   var cat_stars = json_resp['calib']['stars']; 
 
-    if(typeof cat_stars == 'undefined') {
-        cat_stars = json_resp['cat_image_stars'];
-    }
+   if(typeof cat_stars == 'undefined') {
+      return;
+   }
 
     var table_tbody_html = '';
-  
-    // Draw New Box
-    if(typeof json_resp['crop_box'] !== 'undefined') {
-        canvas.add(
-            new fabric.Rect({
-                fill: 'rgba(0,0,0,0)', 
-                strokeWidth: 1, 
-                stroke: 'rgba(230,230,230,.2)',  
-                left: json_resp['crop_box'][0] / 2, 
-                top: json_resp['crop_box'][1] / 2,
-                width: (json_resp['crop_box'][2] - json_resp['crop_box'][0]) / 2,
-                height: (json_resp['crop_box'][3] - json_resp['crop_box'][1]) / 2,
-                selectable: false
-             })
-        );
-    }
-   
+ 
     if(typeof json_resp['total_res_deg']!=='undefined' && typeof json_resp['total_res_px']!=='undefined') {
         // Updating star table info 
         // Residual Error
@@ -48,7 +32,6 @@ function update_stars_on_canvas_and_table(json_resp) {
     }
 
     // Table - tbody (in #stars-tab) & draw on canvas
-    
     $.each(cat_stars,function(i,v) {
 
         // Add to circle canvas
