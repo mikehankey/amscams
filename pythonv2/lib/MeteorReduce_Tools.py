@@ -285,12 +285,6 @@ def generate_cropped_frames(analysed_name,meteor_json_data,HD_frames,HD):
       print("X " + str(x) +"<br>")
       print("Y " + str(y) +"<br>")
 
-
-      print("CACHE  " + get_cache_path(analysed_name,"cropped") +"<br>")
-      print("name_w_ext  " + analysed_name['name_w_ext'] +"<br>")
-      print("EXT_CROPPED_FRAMES  " + EXT_CROPPED_FRAMES +"<br>")
-      print("frame_index_destination  " + str(frame_index) +"<br>")
-
  
       destination =  get_cache_path(analysed_name,"cropped")+analysed_name['name_w_ext']+EXT_CROPPED_FRAMES+str(frame_index)+".png"
       
@@ -303,7 +297,7 @@ def generate_cropped_frames(analysed_name,meteor_json_data,HD_frames,HD):
 
       print("ORG " + str(org_HD_frame))
       print("DEST " + str(destination))
-      print("***********************")
+      print("***********************<br><br>")
 
       # We generate the thumb from the corresponding HD_frames
       # and add it to cropped_frames
