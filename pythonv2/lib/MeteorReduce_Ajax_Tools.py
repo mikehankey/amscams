@@ -283,6 +283,8 @@ def get_reduction_info(json_file):
             total_res_px  = max_res_px/ sc
             total_res_deg =  max_res_deg / sc   
    
+         print(str(rsp))
+
          rsp['device']['total_res_px']  = total_res_px
          rsp['device']['total_res_deg'] = total_res_deg 
 
