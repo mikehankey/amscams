@@ -5,6 +5,9 @@ POS_Y = 1
 
 
 function update_stars_on_canvas_and_table(json_resp) {
+
+   console.log("update_stars_on_canvas_and_table");
+   console.log(json_resp);
  
    var cat_stars = json_resp['stars']; 
 
