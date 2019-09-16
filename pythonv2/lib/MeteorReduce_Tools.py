@@ -265,7 +265,7 @@ def generate_cropped_frames(analysed_name,meteor_json_data,HD_frames,HD):
    # Debug
    cgitb.enable()
 
-   print("IN GENERATE CROPPED FRAMES")
+   print("IN GENERATE CROPPED FRAMES<br>")
  
    # We get the frame data
    meteor_frame_data = meteor_json_data['meteor_frame_data']
@@ -276,18 +276,23 @@ def generate_cropped_frames(analysed_name,meteor_json_data,HD_frames,HD):
       frame_index_destination = int(frame[1])
       frame_index = frame_index_destination-1 
 
-      print("FRAME INX DES " + str(frame_index))
+      print("FRAME INX DES " + str(frame_index) +"<br>")
 
       x = int(frame[HD_X_meteor_frame_data])
       y = int(frame[HD_Y_meteor_frame_data])
 
-      print("X " + str(x))
-      print("Y " + str(y))
+      print("X " + str(x) +"<br>")
+      print("Y " + str(y) +"<br>")
 
-      print("analysed_name " )
-      print(str(analysed_name))
 
-      destination =  get_cache_path(analysed_name,"cropped")+analysed_name['name_w_ext']+EXT_CROPPED_FRAMES+str(frame_index_destination)+".png"
+      print("CACHE  " + get_cache_path(analysed_name,"cropped") +"<br>")
+      print("name_w_ext  " + analysed_name['name_w_ext'] +"<br>")
+      print("EXT_CROPPED_FRAMES  " + EXT_CROPPED_FRAMES +"<br>")
+      print("frame_index_destination  " + frame_index_destination +"<br>")
+
+
+
+      destination =  get_cache_path(analysed_name,"cropped")+analysed_name['name_w_ext']+EXT_CROPPED_FRAMES+str(frame_index)+".png"
       
       print("ORG " + str(org_HD_frame))
       print("DEST " + str(destination))
@@ -296,7 +301,7 @@ def generate_cropped_frames(analysed_name,meteor_json_data,HD_frames,HD):
  
       # WARNING THERE IS A -1 FROM THE LIST OF HD FRAMES!!!
       # BECAUSE THE JSON IS WRONG      
-      org_HD_frame = HD_frames[frame_index-1]
+      org_HD_frame = HD_frames[frame_index]
 
       # We generate the thumb from the corresponding HD_frames
       # and add it to cropped_frames
