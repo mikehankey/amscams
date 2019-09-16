@@ -291,18 +291,19 @@ def generate_cropped_frames(analysed_name,meteor_json_data,HD_frames,HD):
       print("EXT_CROPPED_FRAMES  " + EXT_CROPPED_FRAMES +"<br>")
       print("frame_index_destination  " + str(frame_index) +"<br>")
 
-
-
+ 
       destination =  get_cache_path(analysed_name,"cropped")+analysed_name['name_w_ext']+EXT_CROPPED_FRAMES+str(frame_index)+".png"
       
-      print("ORG " + str(org_HD_frame))
-      print("DEST " + str(destination))
-      print("***********************")
+     
 
  
       # WARNING THERE IS A -1 FROM THE LIST OF HD FRAMES!!!
       # BECAUSE THE JSON IS WRONG      
       org_HD_frame = HD_frames[frame_index]
+
+      print("ORG " + str(org_HD_frame))
+      print("DEST " + str(destination))
+      print("***********************")
 
       # We generate the thumb from the corresponding HD_frames
       # and add it to cropped_frames
