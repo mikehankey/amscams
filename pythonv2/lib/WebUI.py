@@ -38,7 +38,7 @@ from lib.MultiStationMeteors import multi_station_meteors, multi_station_meteor_
 
 # New Reduce Meteor Page
 from lib.MeteorReducePage import reduce_meteor2
-from lib.MeteorReduce_Ajax_Tools import get_reduction_info, delete_frame, update_multiple_frames, update_frame, get_frame, create_thumb
+from lib.MeteorReduce_Ajax_Tools import get_reduction_info, delete_frame, update_multiple_frames, update_frame, get_frame, create_thumb, update_cat_stars
  
 
 NUMBER_OF_METEOR_PER_PAGE = 60
@@ -355,8 +355,8 @@ def controller(json_conf):
 
    # New Reduction Page => Update list of stars
    if cmd == 'update_cat_stars':
-      update_cat_stars(json_conf,form)
-      exit()'
+      update_cat_stars(form)
+      exit()
 
 
    if cmd == 'del_frame':
