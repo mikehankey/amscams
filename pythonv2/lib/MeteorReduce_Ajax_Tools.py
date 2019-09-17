@@ -99,14 +99,14 @@ def update_frame(form, AjaxDirect = False):
 
 
    # We try to update the json file
-   if "meteor_frame_data" in mr: 
+   if "frames" in mr: 
 
       # FOR THE UDPDATES
-      for ind, frame in enumerate(mr['meteor_frame_data']): 
+      for ind, frame in enumerate(mr['frames']): 
          if int(frame[FRAME_NUMBER_meteor_frame_data]) == int(fn):
              # It needs to be updated here!!
-            frame[HD_X_meteor_frame_data] = int(x)
-            frame[HD_Y_meteor_frame_data] = int(y)
+            frame['x'] = int(x)
+            frame['y'] = int(y)
             update = True
 
       # FOR THE CREATION
@@ -117,13 +117,13 @@ def update_frame(form, AjaxDirect = False):
 
          # We need to create the entry in meteor_frame_data       
          new_entry = [0,0,0,0,0,0,0,0,0,0,0]
-         new_entry[DATE_TIME_meteor_frame_data] = dt
-         new_entry[HD_X_meteor_frame_data] = int(x)        
-         new_entry[HD_Y_meteor_frame_data] = int(y)
-         new_entry[FRAME_NUMBER_meteor_frame_data] = int(fn)
-         new_entry[Az_meteor_frame_data] = Az_DEFAULT
-         new_entry[EL_meteor_frame_data] = El_DEFAULT     
-         mr['meteor_frame_data'].append(new_entry)
+         new_entry['dt'] = dt
+         new_entry['x'] = int(x)        
+         new_entry['y'] = int(y)
+         new_entry['fn'] = int(fn)
+         new_entry['az'] = Az_DEFAULT
+         new_entry['el'] = El_DEFAULT     
+         mr['frames'].append(new_entry)
 
  
 
