@@ -103,7 +103,7 @@ def update_frame(form, AjaxDirect = False):
 
       # FOR THE UDPDATES
       for ind, frame in enumerate(mr['frames']): 
-         if int(frame[FRAME_NUMBER_meteor_frame_data]) == int(fn):
+         if int(frame['fn']) == int(fn):
              # It needs to be updated here!!
             frame['x'] = int(x)
             frame['y'] = int(y)
