@@ -86,11 +86,10 @@ function update_stars_on_canvas_and_table(json_resp) {
             gp_id: v[0] 
          }));
 
-        // Add the corresponding row
-        // Name	mag	Cat RA/Dec	Res °	Res. Pixels 
+        // Add the corresponding row 
         table_tbody_html+= '<tr><td>'+v['name']+'</td>\
                             <td>'+v['mag']+'</td>\
-                            <td>'+v['ra'].toFixed(4) +'&deg; / '+v['dec'].toFixed(4)+'&deg;</td>\
+                            <td>'+v['ra'].toFixed(2) +'&deg; / '+v['dec'].toFixed(2)+'&deg;</td>\
                             <td>'+v['i_pos'][POS_X] + ' / '+ v['i_pos'][POS_Y] + '</td>\
                             <td>'+v['cat_dist_pos'][POS_X]  + ' / '+ v['cat_dist_pos'][POS_Y] +'</td>\
                             <td>'+v['cat_und_pos'][POS_X]  + ' / '+ v['cat_und_pos'][POS_Y] +'</td>\
