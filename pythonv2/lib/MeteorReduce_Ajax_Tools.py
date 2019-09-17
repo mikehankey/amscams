@@ -172,12 +172,12 @@ def update_multiple_frames(form):
    # Update meteor_frame_data
    for val in all_frames_to_update:  
 
-      if "meteor_frame_data" in mr:
-         for ind, frame in enumerate(mr['meteor_frame_data']):
-            if int(frame[FRAME_NUMBER_meteor_frame_data]) == int(val['fn']):
+      if "frames" in mr:
+         for ind, frame in enumerate(mr['frames']):
+            if int(frame['fn']) == int(val['fn']):
                # It needs to be updated here!!
-               frame[HD_X_meteor_frame_data] = int(val['x'])
-               frame[HD_Y_meteor_frame_data] = int(val['y'])
+               frame['i_pos'][0] = int(val['x'])
+               frame['i_pos'][1] = int(val['y'])
 
                # Recreate the corresponding thumb
                original_HD_frame = get_HD_frame(analysed_name,val['fn'])   
@@ -226,7 +226,7 @@ def delete_frame(form):
             meteor_json['frames'].pop(ind)  
          
    response = {}
-   response['message'] = 'frame deleted'
+   response['message'] = 'frame #' + str(fn) + ' deleted'
    save_json_file(meteor_file, meteor_json)
    print(json.dumps(response))
 
