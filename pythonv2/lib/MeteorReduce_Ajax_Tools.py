@@ -176,8 +176,8 @@ def update_multiple_frames(form):
          for ind, frame in enumerate(mr['frames']):
             if int(frame['fn']) == int(val['fn']):
                # It needs to be updated here!!
-               frame['i_pos'][0] = int(val['x'])
-               frame['i_pos'][1] = int(val['y'])
+               frame['x'] = int(val['x'])
+               frame['y'] = int(val['y'])
 
                # Recreate the corresponding thumb
                original_HD_frame = get_HD_frame(analysed_name,val['fn'])   
