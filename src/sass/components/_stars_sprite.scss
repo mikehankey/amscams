@@ -1,23 +1,21 @@
-.sprite {
-   background-image: url(/dist/img/star_sprite.png);
+.star_sprite {
+   background-image: url(../img/star_sprite.png);
    background-repeat: no-repeat;
-   display: block;
-}
-
-.distorded {
+   display: inline-block;
    width: 15px;
    height: 15px;
-   background-position: -10px -10px;
+
+   &.distorded {
+      background-position: -10px -10px;
+   }
+   
+   &.undistorded { 
+      background-position: -45px -10px;
+   }
+   
+   &.manual { 
+      background-position: -80px -10px;
+   }
+   
 }
 
-.undistorded {
-   width: 15px;
-   height: 15px;
-   background-position: -45px -10px;
-}
-
-.manual {
-   width: 15px;
-   height: 15px;
-   background-position: -80px -10px;
-}
