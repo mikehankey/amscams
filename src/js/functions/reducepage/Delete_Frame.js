@@ -35,7 +35,7 @@ function delete_frame_from_crop_modal(fn) {
     $row.css('opacity',0.5).find('a').hide();
 
     $.ajax({ 
-        url:  "/pycgi/webUI.py?cmd=delete_frame&meteor_json_file=" + json_file + "&fn=" + fn,
+        url:  "/pycgi/webUI.py?cmd=delete_frame&json_file=" + json_file + "&fn=" + fn,
         success: function(response) { 
                 var tr_fn = false;
                 var tr_id = fn; 
