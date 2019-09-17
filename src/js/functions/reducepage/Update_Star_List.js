@@ -92,8 +92,8 @@ function update_stars_on_canvas_and_table(json_resp) {
                             <td>'+v['mag']+'</td>\
                             <td>'+v['ra'].toFixed(4) +'&deg; / '+v['dec'].toFixed(4)+'&deg;</td>\
                             <td>'+v['dist_px'].toFixed(4)+'</td>\
-                            <td>'+v['cat_dist_pos'][X].toFixed(4)+'</td><td>'+v['cat_dist_pos'][Y].toFixed(4)+'</td>\
-                            <td>'+v['cat_und_pos'][X].toFixed(4)+'</td><td>'+v['cat_und_pos'][Y].toFixed(4)+'</td>\
+                            <td>'+v['cat_dist_pos'][POS_X].toFixed(4)+'</td><td>'+v['cat_dist_pos'][POS_Y].toFixed(4)+'</td>\
+                            <td>'+v['cat_und_pos'][POS_X].toFixed(4)+'</td><td>'+v['cat_und_pos'][POS_X].toFixed(4)+'</td>\
                             </tr>';
 
     });
