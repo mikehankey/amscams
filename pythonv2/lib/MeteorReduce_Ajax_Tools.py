@@ -219,16 +219,12 @@ def delete_frame(form):
 
    # TODO: DELETE ALSO THE CORRESPONDING THUMB HERE?
 
-   # Update meteor_frame_data
-   if "meteor_frame_data" in meteor_json:
-      for ind, frame in enumerate(meteor_json['meteor_frame_data']):
-         if int(frame[FRAME_NUMBER_meteor_frame_data]) == int(fn):
-            meteor_json['meteor_frame_data'].pop(ind)  
+   # Update frames
+   if "frames" in meteor_json:
+      for ind, frame in enumerate(meteor_json['frames']):
+         if int(frame['fn']) == int(fn):
+            meteor_json['frames'].pop(ind)  
          
-   # Update metframes
-   if "metframes" in meteor_json:     
-      meteor_json['metframes'].pop(fn, None)
-   
    response = {}
    response['message'] = 'frame deleted'
    save_json_file(meteor_file, meteor_json)
