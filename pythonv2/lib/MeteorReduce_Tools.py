@@ -51,14 +51,6 @@ THUMB_H = 100
 # SIZE OF THE SELECT BOX WHEN THE USER SELECTS THE METEOR FROM A HD FRAME
 THUMB_SELECT_W = THUMB_W
 THUMB_SELECT_H = THUMB_H
- 
-# Because of bad use of JSON, we need to know the index of the values inside arrays 
-FRAME_NUMBER_meteor_frame_data  = 1
-DATE_TIME_meteor_frame_data = 0
-HD_X_meteor_frame_data  = 2
-HD_Y_meteor_frame_data  = 3
-Az_meteor_frame_data = 9
-EL_meteor_frame_data = 10
 
 # Default Values for Az and El
 Az_DEFAULT = 9999
