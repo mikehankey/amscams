@@ -1,0 +1,23 @@
+.sprite {
+   background-image: url(/dist/img/star_sprite.png);
+   background-repeat: no-repeat;
+   display: block;
+}
+
+.distorded {
+   width: 15px;
+   height: 15px;
+   background-position: -10px -10px;
+}
+
+.undistorded {
+   width: 15px;
+   height: 15px;
+   background-position: -45px -10px;
+}
+
+.manual {
+   width: 15px;
+   height: 15px;
+   background-position: -80px -10px;
+}
