@@ -116,13 +116,18 @@ def update_frame(form, AjaxDirect = False):
          dt = get_frame_time(mr,fn)
 
          # We need to create the entry in meteor_frame_data       
-         new_entry = {}
-         new_entry['dt'] = dt
-         new_entry['x'] = int(x)        
-         new_entry['y'] = int(y)
-         new_entry['fn'] = int(fn)
-         new_entry['az'] = Az_DEFAULT
-         new_entry['el'] = El_DEFAULT     
+         new_entry = {
+            'dt': dt,
+            'x': int(x),
+            'y': int(y),
+            'fn': int(fn),
+            'az': Az_DEFAULT,
+            'el': El_DEFAULT,
+            'ra': Ra_DEFAULT,
+            'dec': Dec_DEFAULT,
+            'intensity': Intensity_DEFAULT,
+            'max_px': Maxpx_DEFAULT
+         }
          mr['frames'].append(new_entry)
 
  
