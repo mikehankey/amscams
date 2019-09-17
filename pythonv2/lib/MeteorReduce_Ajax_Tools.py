@@ -116,7 +116,7 @@ def update_frame(form, AjaxDirect = False):
          dt = get_frame_time(mr,fn)
 
          # We need to create the entry in meteor_frame_data       
-         new_entry = [0,0,0,0,0,0,0,0,0,0,0]
+         new_entry = {}
          new_entry['dt'] = dt
          new_entry['x'] = int(x)        
          new_entry['y'] = int(y)
