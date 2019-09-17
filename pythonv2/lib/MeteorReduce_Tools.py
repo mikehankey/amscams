@@ -128,12 +128,12 @@ def does_cache_exist(analysed_file_name,cache_type):
 def get_frame_time(json,frame_id):
 
    # We just need one existing frame and its date & time
-   if("meteor_frame_data" in json):
-      random_frame = json['meteor_frame_data'][0]
+   if("frames" in json):
+      random_frame = json['frames'][0]
 
       # Date & time and Frame ID for random_frame
-      dt = random_frame[DATE_TIME_meteor_frame_data]
-      fn = random_frame[FRAME_NUMBER_meteor_frame_data]
+      dt = random_frame['dt']
+      fn = random_frame['fn']
 
       # Compute the diff of frame between random_frame 
       # and frame_id
