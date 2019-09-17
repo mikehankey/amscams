@@ -59,6 +59,9 @@ Ra_DEFAULT= Az_DEFAULT
 Dec_DEFAULT= Az_DEFAULT
 Intensity_DEFAULT= Az_DEFAULT
 Maxpx_DEFAULT= Az_DEFAULT 
+W_DEFAULT = 50
+H_DEFAULT = 50
+
 
 
 # Parses a regexp (FILE_NAMES_REGEX) a file name
