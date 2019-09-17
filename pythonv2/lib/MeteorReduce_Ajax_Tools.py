@@ -248,6 +248,7 @@ def update_cat_stars(form):
       # I guess this function automatically find the stars
       cmd = "cd /home/ams/amscams/pythonv2/; ./autoCal.py imgstars " + video_file + " > /mnt/ams2/tmp/trs.txt"
       os.system(cmd)
+      print(cmd)
 
    meteor_mode = 0  #???
 
