@@ -36,7 +36,6 @@ def create_thumb(form):
 
    print(json.dumps({'fr':new_crop_thumb(org_frame,x,y,dest),'resp': resp_frame}))
      
-
 # Get HD Frame
 # return the path to the given HD frames  
 def get_frame(form):
@@ -58,9 +57,6 @@ def get_frame(form):
    toReturn = {'id':fn, 'full_fr':the_frame}
   
    print(json.dumps(toReturn))
-
-
- 
 
 # Update one frame at a time
 def update_frame(form, AjaxDirect = False):
@@ -154,7 +150,6 @@ def update_frame(form, AjaxDirect = False):
    else:
       print(json.dumps(resp))
 
-
 # Update multiple frames 
 def update_multiple_frames(form):
    
@@ -204,9 +199,6 @@ def update_multiple_frames(form):
 
    print(json.dumps(resp))
 
-
-
-
 # Delete a frame
 # Input = the meteor json file & the frame #
 def delete_frame(form):
@@ -234,9 +226,274 @@ def delete_frame(form):
    save_json_file(meteor_file, meteor_json)
    print(json.dumps(response))
 
+# Update Catalog Stars
+def update_cat_stars(form):
+   
+   # Get the values from the form
+   hd_stack_file = form.getvalue("hd_stack_file")   # Stack
+   points = form.getvalue("points")                 # All Stars points on the canvas
+   type = form.getvalue("type")                     # ? - 'nopick' is the default option
+   video_file = form.getvalue("video_file")         # Video file
+   cal_params = None                                # ????
+   meteor_red_file = form.getvalue("json_file")     
+   
+   # check if there are zero stars selected and zero in cat_img
+   if cfe(meteor_red_file) == 1:
+
+      meteor_red = load_json_file(meteor_red_file)
+
+      if points is None :
+         print("POINT IS NONE")
+         cmd = "cd /home/ams/amscams/pythonv2/; ./autoCal.py imgstars " + meteor_red_file + " > /mnt/ams2/tmp/trs.txt"
+         #print(cmd)
+         os.system(cmd)
+
+   meteor_mode = 0
+   if cfe(meteor_red_file) == 1 and "reduced" in meteor_red_file:
+      meteor_red = load_json_file(meteor_red_file)
+      if "cal_params" in meteor_red:
+         cal_params = meteor_red['cal_params']
+         meteor_mode = 1
+         cal_params_file = ""
+         if "cat_image_stars" not in cal_params:
+            mp4 = meteor_red_file.replace("-reduced.json", ".mp4")
+            #os.system("cd /home/ams/amscams/pythonv2/; ./autoCal.py imgstars " + mp4)
+            meteor_red = load_json_file(meteor_red_file)
+
+         if "cat_image_stars" in cal_params:
+
+            clean_close_stars = remove_dupe_cat_stars(cal_params['cat_image_stars'])
+            cal_params['close_stars']  = clean_close_stars
+            #cal_params['user_stars']  = cal_params['user_stars']
+            
+            #user_stars = cal_params['user_stars']
+            user_stars = []
+            used = {}
+            for cstar in cal_params['cat_image_stars']:
+               (iname,mag,ra,dec,tmp1,tmp2,px_dist,est_cat_x,est_cat_y,tmp3,tmp4,new_cat_x,new_cat_y,ix,iy,px_dist) = cstar
+               key = str(ix) + "." + str(iy)
+               here_now = 1
+               if px_dist < 15:
+                  for x,y in user_stars:
+                     dst = calc_dist((x,y),(ix,iy))
+                     if dst < 15:
+                        here_now = 1
+                  if here_now == 0:
+                     user_stars.append((ix,iy))
+            cal_params['user_stars']  = user_stars
+
+            if "crop_box" in meteor_red:
+               cal_params['crop_box']  = meteor_red['crop_box'] 
+            if type == "first_load" or points is None:
+               # this didn't work out the way we wanted it do. can delete
+               if "cat_image_stars" not in cal_params:
+                  video_json_file = video_file.replace(".mp4", ".json")
+                  cmd = "cd /home/ams/amscams/pythonv2/; ./autoCal.py imgstars " + video_json_file + " > /mnt/ams2/tmp/trs.txt"
+                  os.system(cmd)
+               elif len(cal_params['cat_image_stars']) == 0:
+                  video_json_file = video_file.replace(".mp4", ".json")
+                  cmd = "cd /home/ams/amscams/pythonv2/; ./autoCal.py imgstars " + video_json_file + " > /mnt/ams2/tmp/trs.txt"
+                  #os.system(cmd)
+
+            
+               print(json.dumps(cal_params))
+               exit()
+         (box_min_x,box_min_y,box_max_x,box_max_y) = define_crop_box(meteor_red['meteor_frame_data'])
+         meteor_red['crop_box'] = (box_min_x,box_min_y,box_max_x,box_max_y) 
+
+   if meteor_mode == 0:
+      cal_params_file_orig = hd_stack_file.replace(".png", "-calparams.json")
+      cpfo = cfe(cal_params_file_orig)
+
+      user_stars = {}
+      cal_params_file = form.getvalue("cal_params_file")
+
+      if cal_params_file is None and cpfo == 0:
+         cal_params_files = get_active_cal_file(hd_stack_file)
+         cal_params_file = cal_params_files[0][0]
+      elif cal_params_file is not None:
+         cal_params_file = cal_params_file
+      else:
+         cal_params_file = cal_params_file_orig
+
+   star_points = []
+   if cfe(hd_stack_file) == 0:
+      bad_hd = 1      
+      print("BAD HD LINK! Try to fix...")
+
+   #print("RED FILE:", meteor_red_file)
+   user_points = {}
+   if points is None:
+      points = ""
+      star_json = find_stars_ajax(json_conf, hd_stack_file, 0)
+      
+      #for x,y,mp in star_json['stars'][0:20]:
+      #   star_points.append((x,y))
+   else:
+      temps = points.split("|")
+      for temp in temps:
+         if len(temp) > 0:
+            (x,y) = temp.split(",")
+            x,y = int(float(x)),int(float(y))
+            x,y = int(x)+5,int(y)+5
+            x,y = x*2,y*2
+            if x >0 and y > 0 and x<1920 and y< 1080:
 
 
+               star_points.append((x,y))
+   points = star_points
+   hd_stack_img = cv2.imread(hd_stack_file,0)
+   points = pin_point_stars(hd_stack_img, points)
 
+   for x,y in points:
+      pk = str(x) + '.' + str(y)
+      user_points[pk] = 1
+
+   if meteor_mode == 0:
+      user_stars['user_stars'] = points 
+   else:
+      cal_params['user_stars'] = points 
+      user_stars = {}
+      user_stars['user_stars'] = points 
+
+   if meteor_mode == 0:
+      if cfe(cal_params_file_orig) == 1:
+         #print("CAL PARAMS:", cal_params_file_orig)
+         cal_params = load_json_file(cal_params_file_orig)
+      else:
+         #print("CAL PARAMS:", cal_params_file)
+         cal_params = load_json_file(cal_params_file)
+   
+   if meteor_mode == 1: 
+      if 'crop_box' not in meteor_red:
+         cal_params['crop_box'] = (0,0,0,0)
+      else: 
+         cal_params['crop_box'] = meteor_red['crop_box']
+   else:
+         cal_params['crop_box'] = (0,0,0,0)
+
+
+   #else:
+   #   user_star_file = hd_stack_file.replace("-stacked.png", "-user-stars.json")
+   #   user_stars = load_json_file(user_star_file)
+   #solved_file = cal_params_file.replace("-calparams.json", ".solved")
+   #cal_params = load_json_file(cal_params_file)
+   cal_params = default_cal_params(cal_params,json_conf)
+
+   if 'parent' in cal_params:
+      child = 1
+   else:
+      child = 0 
+   #print("<HR>RA/DEC:", cal_params_file, child, cal_params['ra_center'], cal_params['dec_center'])
+   if meteor_mode == 0:
+      el1 = cal_params_file.split("/")
+      el2 = hd_stack_file.split("/")
+      temp1 = el1[-1]
+      temp2 = el2[-1]
+      temp1 = temp1[0:20]
+      temp2 = temp2[0:20]
+      if temp1 != temp2:
+         child = 1
+   else:
+      child = 1
+
+   #print("<HR>RA/DEC:", child, cal_params['ra_center'], cal_params['dec_center'])
+   #print(cal_params['center_az'], cfe(solved_file))
+   if child == 1:
+      #update center/ra dec
+      if "center_az" in cal_params :
+         center_az = cal_params['center_az']
+         center_el = cal_params['center_el']
+
+         rah,dech = AzEltoRADec(center_az,center_el,hd_stack_file,cal_params,json_conf)
+         rah = str(rah).replace(":", " ")
+         dech = str(dech).replace(":", " ")
+         ra_center,dec_center = HMS2deg(str(rah),str(dech))
+      else:
+         ra_center = cal_params['ra_center']
+         dec_center = cal_params['dec_center']
+      #print("RA/DEC ADJ:", ra_center, dec_center, "<HR>")
+      #print("RA/DEC ORIG:", cal_params['ra_center'], cal_params['dec_center'], "<HR>")
+      #print("CENTER AZ/EL:", center_az, center_el, "<HR>")
+      cal_params['ra_center'] = ra_center
+      cal_params['dec_center'] = dec_center
+
+   #print("<HR>RA/DEC:", cal_params['ra_center'], cal_params['dec_center'])
+   #print("<HR>", cal_params_file, "<HR>")
+   if "imagew" not in cal_params:
+      cal_params['imagew'] = 1920
+      cal_params['imageh'] = 1080
+   cat_stars = get_catalog_stars([], [], cal_params,"x",cal_params['x_poly'],cal_params['y_poly'],min=0)
+   my_cat_stars = []
+   my_close_stars = []
+
+
+   for name,mag,ra,dec,new_cat_x,new_cat_y in cat_stars :
+      dcname = str(name.decode("utf-8"))
+      dbname = dcname.encode("utf-8")
+      my_cat_stars.append((dcname,mag,ra,dec,new_cat_x,new_cat_y))
+   #cal_params['cat_stars'] = my_cat_stars
+   #cal_params['user_stars'] = user_stars
+   total_match_dist = 0
+   total_cat_dist = 0 
+   total_matches = 0
+   for ix,iy in user_stars['user_stars']:
+   #   print(ix,iy)
+      close_stars = find_close_stars((ix,iy), cat_stars) 
+      for name,mag,ra,dec,new_cat_x,new_cat_y,six,siy,cat_dist in close_stars:
+         dcname = str(name.decode("utf-8"))
+         dbname = dcname.encode("utf-8")
+         if meteor_mode == 0:
+            new_x, new_y, img_ra,img_dec, img_az, img_el = XYtoRADec(ix,iy,cal_params_file,cal_params,json_conf)
+         else:
+            new_x, new_y, img_ra,img_dec, img_az, img_el = XYtoRADec(ix,iy,video_file,cal_params,json_conf)
+         match_dist = abs(angularSeparation(ra,dec,img_ra,img_dec))
+         ipk = str(six) + "." + str(siy)
+         if ipk in user_points.keys() :
+            my_close_stars.append((dcname,mag,ra,dec,img_ra,img_dec,match_dist,new_x,new_y,img_az,img_el,new_cat_x,new_cat_y,six,siy,cat_dist))
+         else:
+            print(ipk,"not found<BR>", user_points.keys(), "<BR>")
+         total_match_dist = total_match_dist + match_dist
+         total_cat_dist = total_cat_dist + cat_dist
+         total_matches = total_matches + 1
+
+
+      #print(close_stars,"<BR>")
+   #   print(close_stars, "<BR>")
+   clean_close_stars = remove_dupe_cat_stars(my_close_stars)
+   cal_params['close_stars'] = clean_close_stars 
+   cal_params['cat_image_stars'] = clean_close_stars 
+   #out = str(cal_params)
+   #out = out.replace("'", "\"")
+   #out = out.replace("(b", "(")
+   this_cal_params_file = hd_stack_file.replace(".png", "-calparams.json")
+   if meteor_mode == 0:
+      cal_params['parent_cal'] = cal_params_file
+   
+   if total_matches > 0 :
+      cal_params['total_res_deg'] = total_match_dist / total_matches
+      cal_params['total_res_px'] = total_cat_dist / total_matches
+   else:
+      cal_params['total_res_deg'] = 9999
+      cal_params['total_res_px'] = 9999
+   cal_params['cal_params_file'] = this_cal_params_file
+   cal_params['user_stars'] = user_stars['user_stars']
+
+   # need to remove from cat stars any stars that are not on the users list. and then add them to a banned list for the file so they don't come back. 
+   #print("NEED TO SAVE.")
+   #if meteor_mode == 0:
+   #   save_json_file(this_cal_params_file, cal_params) 
+   if meteor_mode == 1:
+      meteor_red['cal_params'] = cal_params
+      meteor_red['manual_update'] = 1 
+      save_json_file(meteor_red_file, meteor_red) 
+   if meteor_mode == 0:
+      meteor_red_file = meteor_red_file.replace(".png", "-calparams.json") 
+      if type == 'hd_cal_detail':
+         meteor_red_file = meteor_red_file.replace("reduced", "calparams")
+      cal_params['manual_update'] = 1 
+      save_json_file(meteor_red_file, cal_params) 
+   print(json.dumps(cal_params))
 
 # Return the JSON Files from a given reduction
 # with modified info

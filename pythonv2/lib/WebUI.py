@@ -353,6 +353,10 @@ def controller(json_conf):
       create_thumb(form)
       exit()
 
+   # New Reduction Page => Update list of stars
+   if cmd == 'update_cat_stars':
+      update_cat_stars(json_conf,form)
+      exit()'
 
 
    if cmd == 'del_frame':

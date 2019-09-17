@@ -134,10 +134,12 @@
        
        <div class="box">
                <h2>Calibration &amp; Reduction</h2>
+               <!--
                <p class="mb-1">Load calibration parameters</p>
                <select id="cal_param_selected" class="custom-select">
                    <option value="{SELECTED_CAL_PARAMS_FILE}">{SELECTED_CAL_PARAMS_FILE_NAME}</option>
                </select>
+               -->
                
                <div class="row mt-3">
                    <span id="star_counter" class="col-12 pb-2"></span>
@@ -217,6 +219,6 @@
    var main_vid = '{VIDEO_FILE}';
    var json_file = '{JSON_FILE}';
    window.onload = function () {
-      update_star_and_reduction('{JSON_FILE}');
+      update_star_and_reduction(json_file);
    }
 </script>
