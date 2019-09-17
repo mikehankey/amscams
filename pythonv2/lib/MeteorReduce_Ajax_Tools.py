@@ -276,7 +276,7 @@ def get_reduction_info(json_file):
          total_res_px  = max_res_px/ sc 
      
          mr['calib']['device']['total_res_px']  = total_res_px
-         mr['calib']['device']['total_res_deg'] = total_res_px*mr['calib']['device']['scale_px'] 
+         mr['calib']['device']['total_res_deg'] = total_res_px/mr['calib']['device']['scale_px'] 
          
          # Pass to JSON
          rsp['calib'] = mr['calib'] 
