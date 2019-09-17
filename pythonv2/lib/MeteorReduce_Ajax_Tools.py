@@ -237,16 +237,19 @@ def update_cat_stars(form):
    cal_params = None                                # ????
    meteor_red_file = form.getvalue("json_file")     
    
-   # check if there are zero stars selected and zero in cat_img
+   # We parse the JSON
    if cfe(meteor_red_file) == 1:
-
       meteor_red = load_json_file(meteor_red_file)
+   else:
+      return "error JSON"
 
-      if points is None :
-         print("POINT IS NONE")
-         cmd = "cd /home/ams/amscams/pythonv2/; ./autoCal.py imgstars " + meteor_red_file + " > /mnt/ams2/tmp/trs.txt"
-         #print(cmd)
-         os.system(cmd)
+   # check if there are zero stars selected and zero in cat_img
+   if points is None : 
+      # I guess this function automatically find the stars
+      cmd = "cd /home/ams/amscams/pythonv2/; ./autoCal.py imgstars " + video_file + " > /mnt/ams2/tmp/trs.txt"
+      os.system(cmd)
+
+   meteor_mode = 0  #???
 
 
 # Return the JSON Files from a given reduction
