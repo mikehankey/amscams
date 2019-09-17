@@ -87,7 +87,7 @@ function update_stars_on_canvas_and_table(json_resp) {
          }));
 
         // Add the corresponding row 
-        table_tbody_html+= '<tr><td>'+v['name']+'</td>\
+        table_tbody_html+= '<tr><td><b>'+v['name']+'</b></td>\
                             <td>'+v['mag']+'</td>\
                             <td>'+v['ra'].toFixed(2) +'&deg; / '+v['dec'].toFixed(2)+'&deg;</td>\
                             <td>'+v['i_pos'][POS_X] + ' / '+ v['i_pos'][POS_Y] + '</td>\
