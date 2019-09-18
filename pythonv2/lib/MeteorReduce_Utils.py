@@ -237,6 +237,8 @@ def find_matching_cal_files(cam_id, capture_date):
       # Build the date
       t_datetime = get_datetime_from_analysedname(analysed_name)
       tdiff = abs((capture_date-t_datetime).total_seconds())
+
+      # We dont add the seconds or milliseconds here as we shouldn't have 2 calib files within the same minute 
       td_sorted_matches.append((match,datetime.strftime(t_datetime, '%Y-%m-%d %H:%M'),tdiff))
 
    # We return the sorted list of calib file
