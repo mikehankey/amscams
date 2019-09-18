@@ -18,10 +18,13 @@ CALIB_PATH = MAIN_FILE_PATH + "cal/freecal/"
 STACK_W = 960
 STACK_H = 540
 
-# PATTERN FOR THE FILE NAMES
+# PATTERN FOR THE JSON FILE NAMES
 # YYYY_MM_DD_HH_MM_SS_MSS_CAM_STATION[_HD].EXT
 FILE_NAMES_REGEX = r"(\d{4})_(\d{2})_(\d{2})_(\d{2})_(\d{2})_(\d{2})_(\d{3})_(\w{6})_([^_^.]+)(_HD)?(\.)?(\.[0-9a-z]+$)"
 FILE_NAMES_REGEX_GROUP = ["name","year","month","day","hour","min","sec","ms","cam_id","station_id","HD","ext"]
+
+
+
 
 # EXTENSION FOR THE FRAMES
 EXT_HD_FRAMES = "_HDfr"
