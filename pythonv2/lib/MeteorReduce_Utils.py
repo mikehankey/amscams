@@ -2,7 +2,8 @@ import math
 import glob
 import re
 
-from lib.MeteorReduce_Tools import name_analyser
+from datetime import datetime,timedelta
+from lib.MeteorReduce_Tools import name_analyser, get_datetime_from_analysedname
 from lib.VIDEO_VARS import HD_W, HD_H
 from lib.REDUCE_VARS import *
 
@@ -225,13 +226,21 @@ def find_matching_cal_files(cam_id, capture_date):
 
    for match in matches:
       # We analysed the name (with without -stacked-calparams or -calparams)
-      # XX is added to match the regex defined in REDUCE_VARS and used by the name_analyser
+      # _X is added to match the regex defined in REDUCE_VARS and used by the name_analyser
       if match.endswith('-stacked-calparams.json'):
-         match = re.sub('\-stacked-calparams.json$', '', match) + "XX.json"
+         match = re.sub('\-stacked-calparams.json$', '', match) + "_X.json"
       elif match.endswith('-calparams.json'):
-         match = re.sub('\-calparams.json$', '', match) + "XX.json"
+         match = re.sub('\-calparams.json$', '', match) + _X.json"
 
       analysed_name = name_analyser(match)   
+
+      # Build the date
+      dt = get_datetime_from_analysedname(analysed_name)
+      print(dt)
+
+      #      dt = datetime.strptime(dt, '%Y-%m-%d %H:%M:%S.%f')
+
+
       print(analysed_name)
    
    #   (t_datetime, cam_id, f_date_str,Y,M,D, H, MM, S) = better_parse_file_date(match)

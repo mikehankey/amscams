@@ -17,9 +17,7 @@ from lib.ReducerLib import stack_frames
 from lib.REDUCE_VARS import *
 from lib.VIDEO_VARS import * 
 from lib.ImageLib import stack_stack
-
-
-
+ 
 
 
 # Parses a regexp (FILE_NAMES_REGEX) a file name
@@ -42,6 +40,18 @@ def name_analyser(file_names):
    res['full_path'] = file_names
 
    return res
+
+
+# Return a date & time object based on the name_analyser results
+def get_datetime_from_analysedname(analysed_name):
+   dt = ''
+   try:
+      dt = analysed_name['year']+'-'+analysed_name['month']+'-'+analysed_name['day']+' '+analysed_name['hour']+':'+analysed_name['min']+':'+analysed_name['sec']+'.'+analysed_name['ms']
+   except:
+      print("CANNOT GET THE PROPER DATE & TIME FROM THE FILE " + analyse_name['full_path'])
+      sys.exit(0)
+   return datetime.strptime(dt, '%Y-%m-%d %H:%M:%S.%f');
+ 
 
 # Return Cache folder name based on an analysed_file (parsed video file name)
 # and cache_type = stacks | frames | cropped or thumbs
