@@ -92,8 +92,17 @@ def reduce_meteor2(json_conf,form):
    calibration_files = find_matching_cal_files(analysed_name['cam_id'], datetime.strptime(str(meteor_json_file['frames'][0]['dt']), '%Y-%m-%d %H:%M:%S.%f'))
 
    # Find the one that is currently used based on meteor_json_file[calib][dt]
-   template = template.replace("{SELECTED_CAL_PARAMS_FILE}", str(meteor_json_file['calib']['dt']))    # Peak_magnitude
-   print(meteor_json_file['calib']['dt'])
+   calib_dt = meteor_json_file['calib']['dt']
+
+   # Build a human readable date & time
+   calib_dt_h = calib_dt.replace("_", "/", 2).replace("_", " ", 1).replace("_",":")[:-4]
+
+   # Get the corresponding file name 
+   find_calib_json = glob.glob(CALIB_PATH + "*"+analysed_name['cam_id']+"*"+calib_dt)
+   print("CALIB JSON " + find_calib_json)
+
+   template = template.replace("{SELECTED_CAL_PARAMS_FILE_NAME}", calib_dt_h)     
+   template = template.replace("{SELECTED_CAL_PARAMS_FILE}", str(meteor_json_file['calib']['dt']))      
 
    #template =  get_stars_table(template,"{STAR_TABLE}",meteor_json_file,"{STAR_COUNT}")   # Stars table
    #template =  get_reduction_table(analysed_name,template,"{RED_TABLE}",meteor_json_file,'{FRAME_COUNT}') # Reduction Table
