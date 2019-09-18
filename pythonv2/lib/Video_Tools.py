@@ -414,7 +414,7 @@ def get_text_pos(text_pos, extra_text_here):
 
 
 #Add text, logo, etc.. to a frame             
-def add_info_to_frame(frame, cam_text, extra_text, text_position, extra_text_position, watermark, watermark_position, logo, logo_pos, newpath, dimensions="1920:1080",  enhancement=0):
+def add_info_to_frame(frame, cam_text, extra_text, text_position, extra_text_position, watermark, watermark_position, logo, logo_pos, newpath, dimensions="1920:1080",  enhancement=0, extension="png"):
      
     # Do we have extra text?
     if(extra_text is None):
@@ -457,7 +457,7 @@ def add_info_to_frame(frame, cam_text, extra_text, text_position, extra_text_pos
     else:
         cmd+= '[out]"'
 
-    cmd += ' -map "[out]"  ' + newpath + '.png'      
+    cmd += ' -map "[out]"  ' + newpath + '.' + extension      
 
   
 
@@ -469,7 +469,7 @@ def add_info_to_frame(frame, cam_text, extra_text, text_position, extra_text_pos
 
 #Add AMS Logo, Info and eventual logo (todo)
 #Resize the frames 
-def add_info_to_frames(frames, path, date, camID, extra_text, logo,logo_pos, dimensions="1920:1080", text_pos='bl', watermark_pos='tr', enhancement=0):
+def add_info_to_frames(frames, path, date, camID, extra_text, logo, logo_pos, dimensions="1920:1080", text_pos='bl', watermark_pos='tr', enhancement=0, extension="png"):
  
     newpath = r''+path 
     
@@ -526,14 +526,14 @@ def add_info_to_frames(frames, path, date, camID, extra_text, logo,logo_pos, dim
         if('l' in watermark_pos):
             if(idx<=AMS_WATERMARK_ANIM_FRAMES):
                     if(idx<10):
-                        watermark = water_path + "AMS0" + str(idx) + ".png"
+                        watermark = water_path + "AMS0" + str(idx) + "." + extension
                     else:
-                        watermark = water_path + "AMS" + str(idx) + ".png"
+                        watermark = water_path + "AMS" + str(idx) + "." + extension
             else:
-                watermark = water_path + "AMS" + str(AMS_WATERMARK_ANIM_FRAMES) + ".png"                
+                watermark = water_path + "AMS" + str(AMS_WATERMARK_ANIM_FRAMES) + "." + extension      
 
 
-        add_info_to_frame(org_path,text,extra_text,text_position,extra_text_position,watermark,watermark_position,logo,logo_position,t_newpath,dimensions,enhancement)
+        add_info_to_frame(org_path,text,extra_text,text_position,extra_text_position,watermark,watermark_position,logo,logo_position,t_newpath,dimensions,enhancement,extension)
  
         #Remove the source 
         os.remove(path+'/'+ f)  
