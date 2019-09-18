@@ -248,7 +248,7 @@ from lib.Video_Tools import *
 job = {
    "cam_id": "010042",
    "date": "2019/09/17",
-   "stard_date": "2019/09/17 00:00:00",
+   "start_date": "2019/09/17 00:00:00",
    "end_date": "2019/09/17 23:59:59",
    "fps": 25,
    "dim":"1920x1080",
