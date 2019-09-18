@@ -90,7 +90,10 @@ def reduce_meteor2(json_conf,form):
    # Find Possible Calibration Parameters
    # Based on Date & Time of the first frame
    calibration_files = find_matching_cal_files(analysed_name['cam_id'], datetime.strptime(str(meteor_json_file['frames'][0]['dt']), '%Y-%m-%d %H:%M:%S.%f'))
-   
+
+   # Find the one that is currently used based on meteor_json_file[calib][dt]
+   template = template.replace("{SELECTED_CAL_PARAMS_FILE}", str(meteor_json_file['calib']['dt']))    # Peak_magnitude
+   print(meteor_json_file['calib']['dt'])
 
    #template =  get_stars_table(template,"{STAR_TABLE}",meteor_json_file,"{STAR_COUNT}")   # Stars table
    #template =  get_reduction_table(analysed_name,template,"{RED_TABLE}",meteor_json_file,'{FRAME_COUNT}') # Reduction Table
