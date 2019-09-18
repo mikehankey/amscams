@@ -50,7 +50,7 @@ def get_datetime_from_analysedname(analysed_name):
    except:
       print("CANNOT GET THE PROPER DATE & TIME FROM THE FILE " + analyse_name['full_path'])
       sys.exit(0)
-   return datetime.strptime(dt, '%Y-%m-%d %H:%M:%S.%f');
+   return datetime.strptime(dt, '%Y-%m-%d %H:%M:%S.%f')
  
 
 # Return Cache folder name based on an analysed_file (parsed video file name)
