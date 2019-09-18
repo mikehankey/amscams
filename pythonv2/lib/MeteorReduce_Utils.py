@@ -235,19 +235,10 @@ def find_matching_cal_files(cam_id, capture_date):
       analysed_name = name_analyser(match)   
 
       # Build the date
-      dt = get_datetime_from_analysedname(analysed_name)
-      print("DT<br>")
-      print(dt + "<br/>")
+      t_datetime = get_datetime_from_analysedname(analysed_name)
+      tdiff = abs((capture_date-t_datetime).total_seconds())
+      td_sorted_matches.append((match,datetime.strftime(t_datetime, '%Y-%m-%d %H:%M:%S.%f'),tdiff))
 
-      #      dt = datetime.strptime(dt, '%Y-%m-%d %H:%M:%S.%f')
-
-
-      #print(analysed_name)
-   
-   #   (t_datetime, cam_id, f_date_str,Y,M,D, H, MM, S) = better_parse_file_date(match)
-   #   tdiff = abs((capture_date-t_datetime).total_seconds())
-   #   td_sorted_matches.append((match,f_date_str,tdiff))
-
-   #temp = sorted(td_sorted_matches, key=lambda x: x[2], reverse=False)
-
-   #return(temp)
+   # We return the sorted list of calib file
+   return sorted(td_sorted_matches, key=lambda x: x[2], reverse=False)
+ 
