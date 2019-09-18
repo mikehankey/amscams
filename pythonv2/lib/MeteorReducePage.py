@@ -1,7 +1,7 @@
 import cgitb
 
 from lib.MeteorReduce_Tools import * 
-from lib.MeteorReduce_Utils import find_matching_cal_files
+from lib.MeteorReduce_Calib_Tools import find_matching_cal_files, find_calib_file
  
 PAGE_TEMPLATE = "/home/ams/amscams/pythonv2/templates/reducePage.v2.html"
 
@@ -96,6 +96,7 @@ def reduce_meteor2(json_conf,form):
 
    # Build a human readable date & time
    calib_dt_h = calib_dt.replace("_", "/", 2).replace("_", " ", 1).replace("_",":")[:-4]
+   find_calib_json = find_calib_file(calib_dt_string,analysed_name['cam_id'])
 
    # Get the corresponding file name 
    find_calib_json = glob.glob(CALIB_PATH + calib_dt + "*"+analysed_name['cam_id']+"*"+"/"+"*-stacked-calparams.json")

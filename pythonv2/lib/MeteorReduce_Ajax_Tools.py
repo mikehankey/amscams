@@ -6,8 +6,8 @@ import os
 
 from lib.FileIO import cfe, load_json_file, save_json_file
 from lib.REDUCE_VARS import *
-from lib.MeteorReduce_Tools import get_cache_path, name_analyser, new_crop_thumb, get_HD_frame, get_thumb, get_frame_time
-from lib.MeteorReduce_Utils import XYtoRADec 
+from lib.MeteorReduce_Tools import get_cache_path, name_analyser, new_crop_thumb, get_HD_frame, get_thumb, get_frame_time  
+from lib.MeteorReduce_Calib_Tools import XYtoRADec
 
 # Create new cropped frame
 # and add the corresponding info to the json file

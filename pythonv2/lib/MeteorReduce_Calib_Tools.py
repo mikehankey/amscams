@@ -244,3 +244,6 @@ def find_matching_cal_files(cam_id, capture_date):
    # We return the sorted list of calib file
    return sorted(td_sorted_matches, key=lambda x: x[2], reverse=False)
  
+
+# Find a calibration file based on 
+def find_calib_file()
