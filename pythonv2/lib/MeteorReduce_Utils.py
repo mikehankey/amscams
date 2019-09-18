@@ -1,4 +1,6 @@
+import math
 from lib.VIDEO_VARS import HD_W, HD_H
+
 
 # Convert Y, M, d into JD Date
 def date_to_jd(year,month,day):
@@ -65,6 +67,7 @@ def XYtoRADec(x,y,analysed_name,json_file):
    hd_d = analysed_name['day']
    hd_h = analysed_name['hour']
    hd_M = analysed_name['min']
+   
    
    # Get Calib params
    F_scale = 3600 /float(json_file['calib']['device']['scale_px'])
