@@ -254,7 +254,7 @@ def find_calib_file(calib_dt_string,cam_id):
    if(len(find_calib_json)==0):
       find_calib_json = glob.glob(CALIB_PATH + calib_dt_string + "*"+cam_id+"*"+"/"+"*-calparams.json")
    
-   if(find_calib_json==[0])
+   if(find_calib_json==[0]):
       return "ERROR: Calibration File not found"
    else:
       return find_calib_json[0]
