@@ -247,7 +247,7 @@ from lib.Video_Tools import *
 ############# TEST TIMELAPSES FROM JPEGs
 job = {
    "cam_id": "010042",
-   "date": "2019/09/17",
+   "date": "2019_09_17",
    "start_date": "2019/09/17 00:00",
    "end_date": "2019/09/17 23:59",
    "fps": 25,
