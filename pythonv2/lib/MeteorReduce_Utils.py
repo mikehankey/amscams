@@ -1,6 +1,7 @@
 import math
 import glob
 
+from lib.MeteorReduce_Tools import name_analyser
 from lib.VIDEO_VARS import HD_W, HD_H
 from lib.REDUCE_VARS import *
 
@@ -207,23 +208,24 @@ def XYtoRADec(x,y,analysed_name,json_file):
 def find_matching_cal_files(cam_id, capture_date):
    matches = []
    all_directories = glob.glob(CALIB_PATH + "*"+cam_id+"*")
-   print(all_directories)
+   
+   for directory in all_directories:
+      # Do we have a "-stacked-calparams.json" file in this directory?
+      st_cal_json = glob.glob(directory+"/*-stacked-calparams.json")
+      if(len(st_json)!=0):
+         matches.append(st_json)
+      else:
+         cal_json = glob.glob(directory+"/*-calparams.json")
+         if(len(cal_json)!=0):
+            matches.append(cal_json)
 
-   #for file in all_json_files:
-   #   if cam_id in file :
-   #      el = file.split("/")
-   #      fn = el[-1]
-   #      cal_p_file = file  + "/" + fn + "-stacked-calparams.json"
-   #      if cfe(cal_p_file) == 1:
-   #         matches.append(cal_p_file)
-   #      else:
-   #         cal_p_file = file  + "/" + fn + "-calparams.json"
-   #      if cfe(cal_p_file) == 1:
-   #         matches.append(cal_p_file)
- 
-   #td_sorted_matches = []
+   # We sort the files by date
+   td_sorted_matches = []
 
-   #for match in matches:
+   for match in matches:
+      analysed_name = name_analyser(match)
+      print(analysed_name)
+   
    #   (t_datetime, cam_id, f_date_str,Y,M,D, H, MM, S) = better_parse_file_date(match)
    #   tdiff = abs((capture_date-t_datetime).total_seconds())
    #   td_sorted_matches.append((match,f_date_str,tdiff))
