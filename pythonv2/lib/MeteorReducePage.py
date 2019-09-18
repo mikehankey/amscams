@@ -1,6 +1,7 @@
 import cgitb
 
 from lib.MeteorReduce_Tools import * 
+from lib.MeteorReduce_Utils import find_matching_cal_files
  
 PAGE_TEMPLATE = "/home/ams/amscams/pythonv2/templates/reducePage.v2.html"
 
@@ -86,7 +87,11 @@ def reduce_meteor2(json_conf,form):
  
    # Note: the rest of the data are managed through JAVASCRIPT
 
-   
+   # Find Possible Calibration Parameters
+   calibration_files = find_matching_cal_files(analysed_name['cam_id'], datetime.strptime(str(meteor_json_file['frames'][0]['dt']), '%Y-%m-%d %H:%M:%S.%f'))
+   print(calibration_files)
+
+
    #template =  get_stars_table(template,"{STAR_TABLE}",meteor_json_file,"{STAR_COUNT}")   # Stars table
    #template =  get_reduction_table(analysed_name,template,"{RED_TABLE}",meteor_json_file,'{FRAME_COUNT}') # Reduction Table
 
