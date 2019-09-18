@@ -236,12 +236,13 @@ def find_matching_cal_files(cam_id, capture_date):
 
       # Build the date
       dt = get_datetime_from_analysedname(analysed_name)
-      print(dt)
+      print("DT<br>")
+      print(dt + "<br/>")
 
       #      dt = datetime.strptime(dt, '%Y-%m-%d %H:%M:%S.%f')
 
 
-      print(analysed_name)
+      #print(analysed_name)
    
    #   (t_datetime, cam_id, f_date_str,Y,M,D, H, MM, S) = better_parse_file_date(match)
    #   tdiff = abs((capture_date-t_datetime).total_seconds())
