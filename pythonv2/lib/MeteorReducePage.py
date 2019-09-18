@@ -102,7 +102,7 @@ def reduce_meteor2(json_conf,form):
    print("CALIB JSON " + str(find_calib_json))
 
    template = template.replace("{SELECTED_CAL_PARAMS_FILE_NAME}", calib_dt_h)     
-   template = template.replace("{SELECTED_CAL_PARAMS_FILE}", str(meteor_json_file['calib']['dt']))      
+   template = template.replace("{SELECTED_CAL_PARAMS_FILE}", str(find_calib_json[0]))      
 
    #template =  get_stars_table(template,"{STAR_TABLE}",meteor_json_file,"{STAR_COUNT}")   # Stars table
    #template =  get_reduction_table(analysed_name,template,"{RED_TABLE}",meteor_json_file,'{FRAME_COUNT}') # Reduction Table
