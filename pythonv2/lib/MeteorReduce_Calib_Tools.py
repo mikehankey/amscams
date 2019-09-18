@@ -245,5 +245,16 @@ def find_matching_cal_files(cam_id, capture_date):
    return sorted(td_sorted_matches, key=lambda x: x[2], reverse=False)
  
 
-# Find a calibration file based on 
-def find_calib_file()
+# Find a calibration file based on a calib date as presented in the JSON
+# ex: 2019_08_03_07_48_45_000
+# and a cam_id
+def find_calib_file(calib_dt_string,cam_id):
+   # Get the corresponding file name 
+   find_calib_json = glob.glob(CALIB_PATH + calib_dt_string + "*"+cam_id+"*"+"/"+"*-stacked-calparams.json")
+   if(len(find_calib_json)==0):
+      find_calib_json = glob.glob(CALIB_PATH + calib_dt_string + "*"+cam_id+"*"+"/"+"*-calparams.json")
+   
+   if(find_calib_json==[0])
+      return "ERROR: Calibration File not found"
+   else:
+      return find_calib_json[0]

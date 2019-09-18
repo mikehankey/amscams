@@ -97,19 +97,8 @@ def reduce_meteor2(json_conf,form):
    # Build a human readable date & time
    calib_dt_h = calib_dt.replace("_", "/", 2).replace("_", " ", 1).replace("_",":")[:-4]
    find_calib_json = find_calib_file(calib_dt_string,analysed_name['cam_id'])
-
-   # Get the corresponding file name 
-   find_calib_json = glob.glob(CALIB_PATH + calib_dt + "*"+analysed_name['cam_id']+"*"+"/"+"*-stacked-calparams.json")
-   if(len(find_calib_json)==0):
-      find_calib_json = glob.glob(CALIB_PATH + calib_dt + "*"+analysed_name['cam_id']+"*"+"/"+"*-calparams.json")
-
-   if(len(find_calib_json)==0):
-      template = template.replace("{SELECTED_CAL_PARAMS_FILE}", "ERROR: File not found")      
-   else:
-      print("CALIB JSON " + str(find_calib_json))
-      print("GLOB " + CALIB_PATH + "*"+analysed_name['cam_id']+"*"+calib_dt)
-      template = template.replace("{SELECTED_CAL_PARAMS_FILE_NAME}", calib_dt_h)     
-      template = template.replace("{SELECTED_CAL_PARAMS_FILE}", str(find_calib_json[0]))      
+   template = template.replace("{SELECTED_CAL_PARAMS_FILE_NAME}", calib_dt_h)     
+   template = template.replace("{SELECTED_CAL_PARAMS_FILE}", str(find_calib_json))      
 
    #template =  get_stars_table(template,"{STAR_TABLE}",meteor_json_file,"{STAR_COUNT}")   # Stars table
    #template =  get_reduction_table(analysed_name,template,"{RED_TABLE}",meteor_json_file,'{FRAME_COUNT}') # Reduction Table
