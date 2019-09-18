@@ -99,7 +99,7 @@ def reduce_meteor2(json_conf,form):
 
    # Get the corresponding file name 
    find_calib_json = glob.glob(CALIB_PATH + "*"+analysed_name['cam_id']+"*"+calib_dt)
-   print("CALIB JSON " + find_calib_json)
+   print("CALIB JSON " + str(find_calib_json))
 
    template = template.replace("{SELECTED_CAL_PARAMS_FILE_NAME}", calib_dt_h)     
    template = template.replace("{SELECTED_CAL_PARAMS_FILE}", str(meteor_json_file['calib']['dt']))      
