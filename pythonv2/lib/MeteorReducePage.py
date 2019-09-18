@@ -98,7 +98,7 @@ def reduce_meteor2(json_conf,form):
    calib_dt_h = calib_dt.replace("_", "/", 2).replace("_", " ", 1).replace("_",":")[:-4]
 
    # Get the corresponding file name 
-   find_calib_json = glob.glob(CALIB_PATH + calib_dt + "*"+analysed_name['cam_id']+"*")
+   find_calib_json = glob.glob(CALIB_PATH + calib_dt + "*"+analysed_name['cam_id']+"*"+"/"+"*-stacked-calparams.json")
    print("CALIB JSON " + str(find_calib_json))
    print("GLOB " + CALIB_PATH + "*"+analysed_name['cam_id']+"*"+calib_dt)
 
