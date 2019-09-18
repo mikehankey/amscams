@@ -225,10 +225,11 @@ def find_matching_cal_files(cam_id, capture_date):
 
    for match in matches:
       # We analysed the name (with without -stacked-calparams or -calparams)
+      # XX is added to match the regex defined in REDUCE_VARS and used by the name_analyser
       if match.endswith('-stacked-calparams.json'):
-         match = re.sub('\-stacked-calparams.json$', '', match) + ".json"
+         match = re.sub('\-stacked-calparams.json$', '', match) + "XX.json"
       elif match.endswith('-calparams.json'):
-         match = re.sub('\-calparams.json$', '', match) + ".json"
+         match = re.sub('\-calparams.json$', '', match) + "XX.json"
 
       analysed_name = name_analyser(match)   
       print(analysed_name)
