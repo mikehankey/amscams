@@ -8,8 +8,7 @@ from os.path import isfile, join, exists
 # This script is call once an hour and 
 # extract one HD frame per HD video 
 # and store them in HD_FRAMES_PATH
-
-
+ 
 
 #Create Directory if it doesn't exist
 def create_HD_TMP_FOLDER_if_necessary():
@@ -40,7 +39,7 @@ def get_all_HD_pic():
 
                 if(os.path.isfile(HD_FRAMES_PATH + vid_out) is not True):
                     #WARNING WE HAVE THE -n option here = Do not overwrite output files = double check with is file
-                    cmd = 'ffmpeg -n -hide_banner -loglevel panic -i '+IMG_HD_SRC_PATH+'/'+vid+' -vframes 1 -f image2 -vf scale='+HD_DIM + ' ' + HD_FRAMES_PATH + vid_out  
+                    cmd = 'ffmpeg -n -hide_banner -loglevel panic -i '+IMG_HD_SRC_PATH+'/'+vid+' -compression_level 50 -vframes 1 -f image2 -vf scale='+HD_DIM + ' ' + HD_FRAMES_PATH + vid_out  
                     output = subprocess.check_output(cmd, shell=True).decode("utf-8") 
         except:
                 res = False
