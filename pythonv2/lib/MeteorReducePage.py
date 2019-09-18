@@ -93,10 +93,10 @@ def reduce_meteor2(json_conf,form):
 
    # Find the one that is currently used based on meteor_json_file[calib][dt]
    calib_dt = meteor_json_file['calib']['dt']
-
+   find_calib_json = find_calib_file(calib_dt,analysed_name['cam_id'])
+  
    # Build a human readable date & time
    calib_dt_h = calib_dt.replace("_", "/", 2).replace("_", " ", 1).replace("_",":")[:-4] # Ugly but not sure we can do something else
-   find_calib_json = find_calib_file(calib_dt_h,analysed_name['cam_id'])
    template = template.replace("{SELECTED_CAL_PARAMS_FILE_NAME}", calib_dt_h)     
    template = template.replace("{SELECTED_CAL_PARAMS_FILE}", str(find_calib_json))      
 
