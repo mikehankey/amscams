@@ -206,7 +206,7 @@ def XYtoRADec(x,y,analysed_name,json_file):
 # Find closest Calibration Parameters based on Cam ID and capture date 
 def find_matching_cal_files(cam_id, capture_date):
    matches = []
-   all_directories = glob.glob(CALIB_PATH + "*")
+   all_directories = glob.glob(CALIB_PATH + "*"+cam_id+"*")
    print(all_directories)
 
    #for file in all_json_files:
