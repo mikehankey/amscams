@@ -6,7 +6,8 @@ import os
 
 from lib.FileIO import cfe, load_json_file, save_json_file
 from lib.MeteorReduce_Tools import get_cache_path, name_analyser, EXT_CROPPED_FRAMES, new_crop_thumb, get_HD_frame, get_thumb,  get_frame_time,Az_DEFAULT,El_DEFAULT, Ra_DEFAULT, Dec_DEFAULT, Intensity_DEFAULT, Maxpx_DEFAULT, W_DEFAULT, H_DEFAULT
- 
+from lib.MeteorReduce_Utils import XYtoRADec 
+
 # Create new cropped frame
 # and add the corresponding info to the json file
 def create_thumb(form):
