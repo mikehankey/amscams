@@ -111,7 +111,7 @@ def update_frame(form, AjaxDirect = False):
          dt = get_frame_time(mr,fn)
 
          # Get the new RA/Dec 
-         new_x, new_y, RA, Dec, az, el =  XYtoRADec(int(x),int(y),analysed_name,json_file)
+         new_x, new_y, RA, Dec, az, el =  XYtoRADec(int(x),int(y),analysed_name,mr)
 
          # We need to create the entry in meteor_frame_data       
          new_entry = {
