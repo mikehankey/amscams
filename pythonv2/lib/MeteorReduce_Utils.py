@@ -230,7 +230,7 @@ def find_matching_cal_files(cam_id, capture_date):
       if match.endswith('-stacked-calparams.json'):
          match = re.sub('\-stacked-calparams.json$', '', match) + "_X.json"
       elif match.endswith('-calparams.json'):
-         match = re.sub('\-calparams.json$', '', match) + _X.json"
+         match = re.sub('\-calparams.json$', '', match) + "_X.json"
 
       analysed_name = name_analyser(match)   
 
