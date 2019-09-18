@@ -212,12 +212,12 @@ def find_matching_cal_files(cam_id, capture_date):
    for directory in all_directories:
       # Do we have a "-stacked-calparams.json" file in this directory?
       st_cal_json = glob.glob(directory+"/*-stacked-calparams.json")
-      if(len(st_json)!=0):
-         matches.append(st_json)
+      if(len(st_cal_json)!=0):
+         matches.append(st_cal_json[0])
       else:
          cal_json = glob.glob(directory+"/*-calparams.json")
          if(len(cal_json)!=0):
-            matches.append(cal_json)
+            matches.append(cal_json[0])
 
    # We sort the files by date
    td_sorted_matches = []
