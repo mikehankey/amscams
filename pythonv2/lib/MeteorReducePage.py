@@ -89,7 +89,7 @@ def reduce_meteor2(json_conf,form):
 
    # Find Possible Calibration Parameters
    # Based on Date & Time of the first frame
-   calibration_files = find_matching_cal_files(analysed_name['cam_id'], datetime.strptime(str(meteor_json_file['frames'][0]['dt']), '%Y-%m-%d %H:%M'))
+   calibration_files = find_matching_cal_files(analysed_name['cam_id'], datetime.strptime(str(meteor_json_file['frames'][0]['dt']), '%Y-%m-%d %H:%M:%S.%f'))
    print(calibration_files)
 
 
