@@ -96,7 +96,7 @@ def reduce_meteor2(json_conf,form):
 
    # Build a human readable date & time
    calib_dt_h = calib_dt.replace("_", "/", 2).replace("_", " ", 1).replace("_",":")[:-4]
-   find_calib_json = find_calib_file(calib_dt_string,analysed_name['cam_id'])
+   find_calib_json = find_calib_file(calib_dt_h,analysed_name['cam_id'])
    template = template.replace("{SELECTED_CAL_PARAMS_FILE_NAME}", calib_dt_h)     
    template = template.replace("{SELECTED_CAL_PARAMS_FILE}", str(find_calib_json))      
 
