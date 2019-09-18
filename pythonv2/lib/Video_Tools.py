@@ -556,7 +556,7 @@ def create_vid_from_frames(frames, path, date, camID, fps="25", ext="png") :
         output = subprocess.check_output(cmd, shell=True).decode("utf-8")
     
         #Rename and Move the first frame in the dest folder so we'll use it as a thumb
-        cmd = 'mv ' + path + '/0.png ' +   VID_FOLDER + '/'+date +'_'+ camID +'.png'        
+        cmd = 'mv ' + path + '/0.'+ ext + ' ' +   VID_FOLDER + '/'+date +'_'+ camID + '.' + ext       
         output = subprocess.check_output(cmd, shell=True).decode("utf-8")
 
         #DELETING RESIZE FRAMES
