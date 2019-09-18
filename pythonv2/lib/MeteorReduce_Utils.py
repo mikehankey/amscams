@@ -226,12 +226,12 @@ def find_matching_cal_files(cam_id, capture_date):
    for match in matches:
       # We analysed the name (with without -stacked-calparams or -calparams)
       if match.endswith('-stacked-calparams.json'):
-         print("MATCH 1 " + match + "<br/>")
-         match = re.sub('\-stacked-calparams.json$', '', match) 
-         print(match + "<br/>")
-      
-      #analysed_name = name_analyser(match)
-      #print(analysed_name)
+         match = re.sub('\-stacked-calparams.json$', '', match) + ".json"
+      elif match.endswith('-calparams.json'):
+         match = re.sub('\-calparams.json$', '', match) + ".json"
+
+      analysed_name = name_analyser(match)   
+      print(analysed_name)
    
    #   (t_datetime, cam_id, f_date_str,Y,M,D, H, MM, S) = better_parse_file_date(match)
    #   tdiff = abs((capture_date-t_datetime).total_seconds())
