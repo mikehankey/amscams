@@ -1,6 +1,6 @@
 import math
 from lib.VIDEO_VARS import HD_W, HD_H
-
+from lib.REDUCE_VARS import *
 
 # Convert Y, M, d into JD Date
 def date_to_jd(year,month,day):
@@ -199,3 +199,31 @@ def XYtoRADec(x,y,analysed_name,json_file):
 
    ### ###
    return(x_pix+x,y_pix+y,RA,dec,azimuth,altitude)
+
+
+# Find closest Calibration Parameters based on Cam ID and capture date 
+def find_matching_cal_files(cam_id, capture_date):
+   matches = []
+   all_files = glob.glob("/mnt/ams2/cal/freecal/*")
+   for file in all_files:
+      if cam_id in file :
+         el = file.split("/")
+         fn = el[-1]
+         cal_p_file = file  + "/" + fn + "-stacked-calparams.json"
+         if cfe(cal_p_file) == 1:
+            matches.append(cal_p_file)
+         else:
+            cal_p_file = file  + "/" + fn + "-calparams.json"
+         if cfe(cal_p_file) == 1:
+            matches.append(cal_p_file)
+ 
+   td_sorted_matches = []
+
+   for match in matches:
+      (t_datetime, cam_id, f_date_str,Y,M,D, H, MM, S) = better_parse_file_date(match)
+      tdiff = abs((capture_date-t_datetime).total_seconds())
+      td_sorted_matches.append((match,f_date_str,tdiff))
+
+   temp = sorted(td_sorted_matches, key=lambda x: x[2], reverse=False)
+
+   return(temp)
