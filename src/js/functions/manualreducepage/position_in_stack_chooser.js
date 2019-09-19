@@ -10,8 +10,8 @@ function update_select_preview(top,left,margins,W_factor,H_factor,cursor_dim, cu
       left: left - cursor_dim/2
    });
 
-   sel_x = Math.floor(left)+margins - cursor_dim;
-   sel_y = Math.floor(top)+margins - cursor_dim;
+   sel_x = Math.floor(left)+margins - cursor_dim/2;
+   sel_y = Math.floor(top)+margins - cursor_dim/2;
 
    if(show_pos) {
       cur_step_start = !cur_step_start
