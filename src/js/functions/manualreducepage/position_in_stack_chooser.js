@@ -31,10 +31,10 @@ function update_select_preview(top,left,margins,W_factor,H_factor,cursor_dim, cu
             left: left - cursor_dim/2
          });
 
-         /*
-         $('input[name=x_img_start]').val(top - cursor_dim/2);
-         $('input[name=y_img_start]').val(left - cursor_dim/2);
-         $('input[name=x_start]').val(Math.floor(sel_x*W_factor));
+         
+         $('input[name=x_img_start]').val(Math.floor(sel_x*W_factor));
+         $('input[name=y_img_start]').val(Math.floor(sel_y*H_factor));
+        /* $('input[name=x_start]').val(Math.floor(sel_x*W_factor));
          $('input[name=y_start]').val(Math.floor(sel_y*H_factor));
          */
 
@@ -53,10 +53,10 @@ function update_select_preview(top,left,margins,W_factor,H_factor,cursor_dim, cu
             top: top - cursor_dim/2,
             left: left - cursor_dim/2
          });
-         /*
-         $('input[name=x_img_end]').val(top - cursor_dim/2);
-         $('input[name=y_img_end]').val(left - cursor_dim/2);
-         $('input[name=x_end]').val(Math.floor(sel_x*W_factor));
+        
+         $('input[name=x_img_end]').val(Math.floor(sel_x*W_factor));
+         $('input[name=y_img_end]').val(ath.floor(sel_y*H_factor));
+         /* $('input[name=x_end]').val(Math.floor(sel_x*W_factor));
          $('input[name=y_end]').val(Math.floor(sel_y*H_factor));
          */
 
@@ -139,5 +139,38 @@ function create_meteor_selector_from_stack(image_src) {
       return false;
    });
    
+
+   // Go to next step
+   $('#step1_btn').click(function() {
+      var cmd_data = {
+         cmd: 'manual_reduction_cropper',
+         stack: stack, // Defined on the page
+         json_file: json_file, // Defined on the page
+
+      };
+    
+      loading({text: "Generating Full Frame #"+ cur_fn, overlay:true});
+    
+      $.ajax({ 
+           url:  "/pycgi/webUI.py",
+           data: cmd_data, 
+           success: function(data) { 
+               loading_done();  
+               data = JSON.parse(data); 
+               
+               // Hide the modal below (it will be reopened anyway)
+               $('#select_meteor_modal').modal('hide');
+               
+               create_meteor_selector_from_frame(data.id,data.full_fr); 
+           }, 
+           error:function() { 
+               bootbox.alert({
+                   message: "The process returned an error",
+                   className: 'rubberBand animated error',
+                   centerVertical: true 
+               });
+           }
+       });
+   })
 
 }
