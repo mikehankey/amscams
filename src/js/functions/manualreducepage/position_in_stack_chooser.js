@@ -1,9 +1,18 @@
 // Update selector position and corresponding data
 function update_select_preview(top,left,margins,W_factor,H_factor,cursor_dim) {
+   
+   // Move Selector
    $("#selector").css({
       top: top - cursor_dim/2,
       left: left - cursor_dim/2
    });
+
+   sel_x = Math.floor(left)+margins;
+   sel_y = Math.floor(top)+margins;
+
+   // Update X/Y
+   $('#pos_x').text(Math.floor(sel_x*W_factor));
+   $('#pos_y').text(Math.floor(sel_y*H_factor));
  
 }
 
@@ -21,7 +30,7 @@ function create_meteor_selector_from_stack(image_src) {
    
    var transp_val = 15;            // Transparency of white area
    var preview_dim = 300;          // Only squares for preview
-   var cursor_border_width  = 1; 
+   var cursor_border_width  = 2; 
    
    var sel_x = prev_W/2-cursor_dim/2;
    var sel_y = prev_H/2-cursor_dim/2;
