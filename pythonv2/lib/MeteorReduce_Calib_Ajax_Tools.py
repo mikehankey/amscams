@@ -1,5 +1,6 @@
 import cgitb
- 
+
+from lib.FileIO import load_json_file
 from lib.MeteorReduce_Tools import name_analyser  
 from lib.MeteorReduce_Calib_Tools import XYtoRADec
 from lib.MeteorManualReducePage import fix_old_file_name
@@ -13,7 +14,13 @@ def getRADEC(form):
    x = form.getvalue('x')
    y = form.getvalue('y')
 
-   json_file = fix_old_file_name(json_file)
+
+   json = load_json_file(json_file)
+
+   # Test if we have an old or a new JSON
+   
+
+   #json_file = fix_old_file_name(json_file)
    print(json_file)   
    
 
