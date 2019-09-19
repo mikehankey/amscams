@@ -86,7 +86,7 @@ function create_meteor_selector_from_stack(image_src) {
    var W_factor = real_W/prev_W;
    var H_factor = real_H/prev_H; 
 
-   var cur_step_start = true;
+   var cur_step_start = false;
  
    var init_top = prev_H/2-cursor_dim/2;
    var init_left = prev_W/2-cursor_dim/2;
@@ -97,7 +97,7 @@ function create_meteor_selector_from_stack(image_src) {
       <input type="hidden" name="x_end"/><input type="hidden" name="y_end"/>\
      <div class="box">\
      <div class="modal-header p-0" style="border:none!important">\
-      <div class="alert alert-info mb-3 p-1 pr-1 pl-2">Select the <span style="color:green">STARTING</span> point and the <span style="color:red">ENDING</span> point of the meteor path.</div>\
+      <div class="alert alert-info mb-3 p-1 pr-1 pl-2">Select the <b style="color:green">STARTING</b> point and the <b style="color:red">ENDING</b> point of the meteor path.</div>\
       <div id="res" class="text-right"><span class="start"></span><br/><span class="end" ></span></div>\
      </div>\
      <div id="draggable_area" style="width:'+(prev_W+margins*2) + 'px; height:' +( prev_H+margins*2) + 'px;margin:0 auto;">\
