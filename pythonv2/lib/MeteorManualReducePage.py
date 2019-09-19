@@ -7,6 +7,28 @@ from lib.REDUCE_VARS import *
 
 PAGE_TEMPLATE = "/home/ams/amscams/pythonv2/templates/manual_reduction_template.html"
 
+
+# Fix the old files names that contains "-trim"
+def fix_old_file_name(filename):
+   if("trim" in filename):
+      tmp_video_full_path_matches =  re.finditer(OLD_FILE_NAME_REGEX, filename, re.MULTILINE)
+      tmp_fixed_video_full_path = ""
+      for matchNum, match in enumerate(tmp_video_full_path_matches, start=1):
+         for groupNum in range(0, len(match.groups())): 
+            if("-" not in match.group(groupNum)):
+               tmp_fixed_video_full_path = tmp_fixed_video_full_path + "_" + match.group(groupNum)
+            groupNum = groupNum + 1
+
+         # Remove first "_"
+         tmp_fixed_video_full_path = tmp_fixed_video_full_path[1:]
+         # Add an extension
+         tmp_fixed_video_full_path += ".json"
+
+         return tmp_fixed_video_full_path
+   else:
+      return filenmae
+
+
 def manual_reduction(form):
    
    # Debug
@@ -27,35 +49,11 @@ def manual_reduction(form):
    video_full_path = form.getvalue("video_file")
 
    if(video_full_path is not None):
-
-      if("trim" in video_full_path):
-         # If we're dealing with an "old" detection, the file name can have 
-         # -trimdddd before the extension, we need to remove this part 
-         # to properly anaylyse the name
-         tmp_video_full_path_matches =  re.finditer(OLD_FILE_NAME_REGEX, video_full_path, re.MULTILINE)
-         tmp_fixed_video_full_path = ""
-         for matchNum, match in enumerate(tmp_video_full_path_matches, start=1):
-            for groupNum in range(0, len(match.groups())): 
-               if("-" not in match.group(groupNum)):
-                  tmp_fixed_video_full_path = tmp_fixed_video_full_path + "_" + match.group(groupNum)
-            groupNum = groupNum + 1
-
-         # Remove first "_"
-         tmp_fixed_video_full_path = tmp_fixed_video_full_path[1:]
-         # Add an extension
-         tmp_fixed_video_full_path += ".json"
-
-         print('NEW NAME ' + tmp_fixed_video_full_path )
-      
-      
+      tmp_fixed_video_full_path = fix_old_file_name(video_full_path)
       analysed_name = name_analyser(tmp_fixed_video_full_path)
    else:
       print_error("<b>You need to add a video file in the URL.</b>")
 
    # Get the stacks
-   #stack = get_stacks(analysed_name,clear_cache)
-   #print(get_cache_path(analysed_name,"stacks") +"<br>")
-
-  
-
-   #print("STACK " + stack)
+   stack = get_stacks(analysed_name,clear_cache)
+   print("STACK " + stack)
