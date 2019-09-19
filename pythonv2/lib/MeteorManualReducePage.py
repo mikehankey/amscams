@@ -51,7 +51,7 @@ def manual_reduction(form):
    if(video_full_path is not None):
       tmp_fixed_video_full_path = fix_old_file_name(video_full_path)
       analysed_name = name_analyser(tmp_fixed_video_full_path)
-      print(analyse_name)
+      print(analysed_name)
    else:
       print_error("<b>You need to add a video file in the URL.</b>")
 
