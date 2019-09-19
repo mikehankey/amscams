@@ -66,6 +66,10 @@ def manual_reduction(form):
    else:
       print_error("<b>You need to add a video file in the URL.</b>")
 
+   # Get the related JSON
+   json_file = video_full_path.replace('.mp4','.json')
+   template = template.replace("{JSON_FILE}", str(json_file))   # JSON File  
+
    # Get the stacks 
    # True = We automatically resize the stack to HD dims so we can use it in the UI
    stack = get_stacks(analysed_name,clear_cache, True)
