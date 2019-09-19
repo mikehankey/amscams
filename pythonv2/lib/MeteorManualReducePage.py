@@ -34,10 +34,6 @@ def fix_old_file_name(filename):
             tmp_fixed_video_full_path +=  "_HD.json"
          else:
             tmp_fixed_video_full_path +=  "_SD.json"
-
-         # We keep the original full path anyway 
-         tmp_fixed_video_full_path['full_path'] = filename
-
          return tmp_fixed_video_full_path
    else:
       return filenmae
@@ -65,6 +61,9 @@ def manual_reduction(form):
    if(video_full_path is not None):
       tmp_fixed_video_full_path = fix_old_file_name(video_full_path)
       analysed_name = name_analyser(tmp_fixed_video_full_path)
+
+      # We keep the original full_path anyway
+      analysed_name['full_path'] = video_full_path
    else:
       print_error("<b>You need to add a video file in the URL.</b>")
 
