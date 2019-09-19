@@ -23,7 +23,7 @@ function create_meteor_selector_from_stack(image_src) {
  
 
    $('<h1>Manual Reduction Step 1</h1>\
-     <div class="box"><div class="alert alert-info mb-3 p-1 pr-1 pl-2"></div><div id="main_view" style="background-color:#000;background-image:url('+image_src+'); width:'+prev_W+'px; height:'+prev_H+'px; margin: 0 auto; position:relative; background-size: contain;">\
+     <div class="box"><div class="alert alert-info mb-3 p-1 pr-1 pl-2">Select the STARTING point of the meteor path.</div><div id="main_view" style="background-color:#000;background-image:url('+image_src+'); width:'+prev_W+'px; height:'+prev_H+'px; margin: 0 auto; position:relative; background-size: contain;">\
                 <div id="selector" style="width:'+cursor_dim+'px; height:'+cursor_dim+'px; border:'+cursor_border_width+'px solid #fff;"></div>\
    </div><p class="mt-2 mb-0"><span id="pos_x"></span> <span id="pos_y"></span></p></div>').appendTo($('#step1'));
    
@@ -60,9 +60,11 @@ function create_meteor_selector_from_stack(image_src) {
   });
 
    // Move on click
+   /*
    $('#main_view').click(function(e) {
       var x = e.pageX;
       var y = e.pageY;
-      $("#draggable").simulate("drag-n-drop", {dx: x, dy: y, interpolation: { stepWidth: 1, stepDelay: 0.1}});
-   })
+      $("#selector").simulate("drag-n-drop", {dx: x, dy: y, interpolation: { stepWidth: 1, stepDelay: 0.1}});
+   });
+   */
 }
