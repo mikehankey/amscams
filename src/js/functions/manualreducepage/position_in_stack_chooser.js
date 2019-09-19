@@ -31,7 +31,8 @@ function update_select_preview(top,left,margins,W_factor,H_factor,cursor_dim, cu
             left: left - cursor_dim/2
          });
 
-
+         $('input[name=x_img_start]').val(sel_x);
+         $('input[name=y_img_start]').val(sel_y);
          $('input[name=x_start]').val(Math.floor(sel_x*W_factor));
          $('input[name=y_start]').val(Math.floor(sel_y*H_factor));
 
@@ -51,6 +52,8 @@ function update_select_preview(top,left,margins,W_factor,H_factor,cursor_dim, cu
             left: left - cursor_dim/2
          });
 
+         $('input[name=x_img_end]').val(sel_x);
+         $('input[name=y_img_end]').val(sel_y);
          $('input[name=x_end]').val(Math.floor(sel_x*W_factor));
          $('input[name=y_end]').val(Math.floor(sel_y*H_factor));
 
@@ -68,10 +71,10 @@ function update_select_preview(top,left,margins,W_factor,H_factor,cursor_dim, cu
       }
 
       $('#sel_rectangle_static').css({
-         'top': parseInt($('input[name=x_start]').val())-cursor_dim/2,
-         'left': parseInt($('input[name=y_start]').val())-cursor_dim/2,
-         'width':  parseInt($('input[name=x_start]').val())-cursor_dim/2 - parseInt($('input[name=x_end]').val())-cursor_dim/2,
-         'height':  parseInt($('input[name=y_start]').val())-cursor_dim/2 - parseInt($('input[name=y_end]').val())-cursor_dim/2,
+         'top': parseInt($('input[name=x_img_start]').val()),
+         'left': parseInt($('input[name=y_img_start]').val()),
+         'width':  parseInt($('input[name=x_img_start]').val())  - parseInt($('input[name=x_img_end]').val()) ,
+         'height':  parseInt($('input[name=y_img_start]').val())  - parseInt($('input[name=y_img_end]').val()) 
       });
    }
    
@@ -107,6 +110,8 @@ function create_meteor_selector_from_stack(image_src) {
    $('<h1>Manual Reduction Step 1</h1>\
       <input type="hidden" name="x_start"/><input type="hidden" name="y_start"/>\
       <input type="hidden" name="x_end"/><input type="hidden" name="y_end"/>\
+      <input type="hidden" name="x_img_start"/><input type="hidden" name="y_img_start"/>\
+      <input type="hidden" name="x_img_end"/><input type="hidden" name="y_img_end"/>\
      <div class="box">\
      <div class="modal-header p-0" style="border:none!important">\
       <div class="alert alert-info mb-3 p-1 pr-1 pl-2">Select the <b style="color:green">STARTING</b> point and the <b style="color:red">ENDING</b> point of the meteor path.</div>\
