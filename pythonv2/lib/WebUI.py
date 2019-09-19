@@ -42,6 +42,7 @@ from lib.MeteorReduce_Ajax_Tools import get_reduction_info, delete_frame, update
 
 # Manual Reduction page
 from lib.MeteorManualReducePage import manual_reduction
+from lib.MeteorManualRecude_Ajax_Tools import create_crop_frames
 
 
 NUMBER_OF_METEOR_PER_PAGE = 60
@@ -318,6 +319,11 @@ def controller(json_conf):
    if cmd == 'update_red_info_ajax':
       update_red_info_ajax(json_conf,form)
       exit()
+
+   if cmd == 'create_crop_frames':
+      create_crop_frames(form)
+      exit()
+
    if cmd == 'clone_cal':
       clone_cal(json_conf,form)
       exit()
