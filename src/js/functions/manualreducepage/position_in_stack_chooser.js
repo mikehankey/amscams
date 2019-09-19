@@ -33,7 +33,7 @@ function update_mask_position(top,left,prev_W,prev_H,cursor_dim) {
 }
 
 // Create  select meteor position from stack
-function create_meteor_selector_from_frame(image_src) {
+function create_meteor_selector_from_stack(image_src) {
    var cursor_dim = 25;            // Cursor dimension
    
    var real_W = 1920;
@@ -51,12 +51,14 @@ function create_meteor_selector_from_frame(image_src) {
 
    var W_factor = real_W/prev_W;
    var H_factor = real_H/prev_H; 
+
+   var cur_step_start = true;
  
 
    $('<h2>Manual Reduction Step 1</h2><p>Select the first and last point of the visible path of the meteor.</p></p><div id="main_view" style="background-color:#000;background-image:url('+image_src+'); width:'+prev_W+'px; height:'+prev_H+'px; margin: 0 auto; position:relative; background-size: contain;">\
                 <div id="dl"></div><div id="dt"></div><div id="dr"></div><div id="db"></div>\
                 <div id="selector" style="width:'+cursor_dim+'px; height:'+cursor_dim+'px; border:'+cursor_border_width+'px solid #fff;"></div>\
-   </div><div id="pos_x"></div></div id="pos_y"></div>').appendTo($('#step1'));
+   </div><div id="pos_x"></div><div id="pos_y"></div>').appendTo($('#step1'));
    
    // Mask
    $('#dl,#dr,#dt,#db').css({background:"rgba(255,255,255,."+transp_val+")","position":"absolute"}); 
@@ -86,10 +88,7 @@ function create_meteor_selector_from_frame(image_src) {
  
               // Mask
               update_mask_position(top,left,prev_W,prev_H,cursor_dim);
- 
-            
-           
-
+  
           }
   });
 }

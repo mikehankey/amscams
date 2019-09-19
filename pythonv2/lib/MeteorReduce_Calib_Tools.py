@@ -72,17 +72,16 @@ def XYtoRADec(x,y,analysed_name,json_file):
    hd_d = analysed_name['day']
    hd_h = analysed_name['hour']
    hd_M = analysed_name['min']
-   
-   
+    
    # Get Calib params
-   F_scale = 3600 /float(json_file['calib']['device']['scale_px'])
-   x_poly_fwd = json_file['calib']['device']['poly']['x_fwd']
-   y_poly_fwd = json_file['calib']['device']['poly']['y_fwd']
-   lat = float(json_file['calib']['device']['lat'])
-   lon = float(json_file['calib']['device']['lng'])
-   dec_d = float(json_file['calib']['device']['center']['dec']) 
-   RA_d = float(json_file['calib']['device']['center']['ra']) 
-   angle =  float(json_file['calib']['device']['angle']) 
+   F_scale     = 3600 /float(json_file['calib']['device']['scale_px'])
+   x_poly_fwd  = json_file['calib']['device']['poly']['x_fwd']
+   y_poly_fwd  = json_file['calib']['device']['poly']['y_fwd']
+   lat         = float(json_file['calib']['device']['lat'])
+   lon         = float(json_file['calib']['device']['lng'])
+   dec_d       = float(json_file['calib']['device']['center']['dec']) 
+   RA_d        = float(json_file['calib']['device']['center']['ra']) 
+   angle       =  float(json_file['calib']['device']['angle']) 
 
    total_min = (int(hd_h) * 60) + int(hd_M)
    day_frac = total_min / 1440 
