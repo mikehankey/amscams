@@ -39,10 +39,16 @@ def manual_reduction(form):
                if("-" not in match.group(groupNum)):
                   tmp_fixed_video_full_path = tmp_fixed_video_full_path + "_" + match.group(groupNum)
             groupNum = groupNum + 1
+
+         # Remove first "_"
+         tmp_fixed_video_full_path = tmp_fixed_video_full_path[1:]
+         # Add an extension
+         tmp_fixed_video_full_path += ".json"
+
          print('NEW NAME ' + tmp_fixed_video_full_path )
       
       
-      #analysed_name = name_analyser(video_full_path)
+      analysed_name = name_analyser(tmp_fixed_video_full_path)
    else:
       print_error("<b>You need to add a video file in the URL.</b>")
 
