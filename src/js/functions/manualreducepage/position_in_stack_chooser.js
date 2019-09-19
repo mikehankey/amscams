@@ -13,9 +13,9 @@ function update_select_preview(top,left,margins,W_factor,H_factor,cursor_dim, cu
    if(show_pos) {
       if(cur_step_start) {
          // Update START X/Y
-         $('#res .start').text('x:' + Math.floor(sel_x*W_factor)+ 'px ' + 'y:'+  Math.floor(sel_y*H_factor) +'px');
+         $('#res .start').text('<b>START</b> x:' + Math.floor(sel_x*W_factor)+ 'px ' + 'y:'+  Math.floor(sel_y*H_factor) +'px');
       } else {
-         $('#res .end').text('x:' + Math.floor(sel_x*W_factor)+ 'px ' + 'y:'+  Math.floor(sel_y*H_factor) +'px');
+         $('#res .end').text('<b>END x:</b>' + Math.floor(sel_x*W_factor)+ 'px ' + 'y:'+  Math.floor(sel_y*H_factor) +'px');
       }
    }
   
@@ -53,7 +53,7 @@ function create_meteor_selector_from_stack(image_src) {
      <div class="box">\
      <div class="modal-header p-0" style="border:none!important">\
       <div class="alert alert-info mb-3 p-1 pr-1 pl-2">Select the STARTING point of the meteor path.</div>\
-      <div id="res"><span class="start"></span> <span class="end"></span></div>\
+      <div id="res"><span class="start" style="color:green"></span> <span class="end" style="color:red"></span></div>\
      </div>\
      <div id="draggable_area" style="width:'+(prev_W+margins*2) + 'px; height:' +( prev_H+margins*2) + 'px;margin:0 auto;">\
      <div id="main_view" style="background-color:#000;background-image:url('+image_src+'); width:'+prev_W+'px; height:'+prev_H+'px; margin: 0 auto; position:relative; background-size: contain;">\
