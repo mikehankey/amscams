@@ -32,7 +32,7 @@ def fix_old_file_name(filename):
          
          if("HD" in filename):
             tmp_fixed_video_full_path +=  "_HD.json"
-         else
+         else:
             tmp_fixed_video_full_path +=  "_SD.json"
           
 
