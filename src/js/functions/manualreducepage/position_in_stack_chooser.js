@@ -66,6 +66,7 @@ function update_select_preview(top,left,margins,W_factor,H_factor,cursor_dim, cu
       $('#step1_btn').removeAttr('disabled').removeClass('disabled');
 
       // We draw a rectangle 
+      /*
       if($('#sel_rectangle_static').length==0) {
          $('<div id="sel_rectangle_static" style="position:absolute; border:1px solid rgba(255,255,255,.6)">').appendTo($('#main_view'));
       }
@@ -76,6 +77,7 @@ function update_select_preview(top,left,margins,W_factor,H_factor,cursor_dim, cu
          'width':  Math.abs(parseInt($('input[name=x_img_start]').val())  - parseInt($('input[name=x_img_end]').val())) ,
          'height': Math.abs(parseInt($('input[name=y_img_start]').val())  - parseInt($('input[name=y_img_end]').val())) 
       });
+      */
    }
    
    return cur_step_start
