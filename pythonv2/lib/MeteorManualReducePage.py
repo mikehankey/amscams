@@ -28,7 +28,13 @@ def fix_old_file_name(filename):
          # Remove first "_"
          tmp_fixed_video_full_path = tmp_fixed_video_full_path[1:]
          # Add an extension
-         tmp_fixed_video_full_path += "_" + station_id + "_HD.json"
+         tmp_fixed_video_full_path += "_" + station_id
+         
+         if("HD" in filename):
+            tmp_fixed_video_full_path +=  "_HD.json"
+         else
+            tmp_fixed_video_full_path +=  "_SD.json"
+          
 
          return tmp_fixed_video_full_path
    else:
