@@ -97,18 +97,15 @@ function create_meteor_selector_from_stack(image_src) {
       <input type="hidden" name="x_end"/><input type="hidden" name="y_end"/>\
      <div class="box">\
      <div class="modal-header p-0" style="border:none!important">\
-      <div class="alert alert-info mb-3 p-1 pr-1 pl-2">Select the STARTING point of the meteor path.</div>\
+      <div class="alert alert-info mb-3 p-1 pr-1 pl-2">Select the <span style="color:green">STARTING</span> point and the <span style="color:red">ENDING</span> point of the meteor path.</div>\
       <div id="res" class="text-right"><span class="start"></span><br/><span class="end" ></span></div>\
      </div>\
      <div id="draggable_area" style="width:'+(prev_W+margins*2) + 'px; height:' +( prev_H+margins*2) + 'px;margin:0 auto;">\
      <div id="main_view" style="background-color:#000;background-image:url('+image_src+'); width:'+prev_W+'px; height:'+prev_H+'px; margin: 0 auto; position:relative; background-size: contain;">\
-      <div id="selector" class="ng pa" style="width:'+cursor_dim+'px; height:'+cursor_dim+'px; border:'+cursor_border_width+'px solid green;"></div>\
+      <div id="selector" class="ng pa" style="top:-9999px; left:-9999px;width:'+cursor_dim+'px; height:'+cursor_dim+'px; border:'+cursor_border_width+'px solid green;"></div>\
    </div></div><div class="text-right"><button id="step1_btn" class="btn btn-lg btn-primary disabled" disabled>Continue</button></div>').appendTo($('#step1'));
    
-    
-   // Default pos
-   update_select_preview(init_top,init_left,margins,W_factor,H_factor,cursor_dim,cur_step_start,cursor_border_width,false);
-     
+   
    offset = $('#main_view').offset();
 
    // Move on click
