@@ -1,13 +1,14 @@
 
 // Create  select meteor position from stack
 function create_meteor_selector_from_stack(image_src) {
-   var cursor_dim = 25;            // Cursor dimension
-   
+   var cursor_dim = 24;            // Cursor dimension
+   var margins = 12;                // Max position (x,y) of the meteor inside the cursor
+
    var real_W = 1920;
    var real_H = 1080;
 
-   var prev_W = 1280;              // Full view
-   var prev_H = 720;
+   var prev_W = 1075;              // Preview
+   var prev_H = 605;
    
    var transp_val = 15;            // Transparency of white area
    var preview_dim = 300;          // Only squares for preview
@@ -23,7 +24,9 @@ function create_meteor_selector_from_stack(image_src) {
  
 
    $('<h1>Manual Reduction Step 1</h1>\
-     <div class="box"><div class="alert alert-info mb-3 p-1 pr-1 pl-2">Select the STARTING point of the meteor path.</div><div id="main_view" style="background-color:#000;background-image:url('+image_src+'); width:'+prev_W+'px; height:'+prev_H+'px; margin: 0 auto; position:relative; background-size: contain;">\
+     <div class="box"><div class="alert alert-info mb-3 p-1 pr-1 pl-2">Select the STARTING point of the meteor path.</div>\
+     <div id="draggable_area" style="width:'+(prev_W+margins*2) + 'px; height:' +( prev_H+margins*2) + 'px;margin:0 auto;">
+     <div id="main_view" style="background-color:#000;background-image:url('+image_src+'); width:'+prev_W+'px; height:'+prev_H+'px; margin: 0 auto; position:relative; background-size: contain;">\
                 <div id="selector" style="width:'+cursor_dim+'px; height:'+cursor_dim+'px; border:'+cursor_border_width+'px solid #fff;"></div>\
    </div><p class="mt-2 mb-0"><span id="pos_x"></span> <span id="pos_y"></span></p></div>').appendTo($('#step1'));
    
