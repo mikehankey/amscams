@@ -39,9 +39,9 @@ function create_meteor_selector_from_stack(image_src) {
    var cur_step_start = true;
  
    var init_top = prev_H/2-cursor_dim/2;
-   var init_left = left:prev_W/2-cursor_dim/2;
+   var init_left = prev_W/2-cursor_dim/2;
 
-
+ 
    $('<h1>Manual Reduction Step 1</h1>\
      <div class="box"><div class="alert alert-info mb-3 p-1 pr-1 pl-2">Select the STARTING point of the meteor path.</div>\
      <div id="draggable_area" style="width:'+(prev_W+margins*2) + 'px; height:' +( prev_H+margins*2) + 'px;margin:0 auto;">\
