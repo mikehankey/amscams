@@ -49,9 +49,7 @@ function create_meteor_selector_from_stack(image_src) {
       <div id="selector" style="position:absolute;width:'+cursor_dim+'px; height:'+cursor_dim+'px; border:'+cursor_border_width+'px solid green;"></div>\
    </div><p class="mt-2 mb-0"><span id="pos_x"></span> <span id="pos_y"></span></p></div>').appendTo($('#step1'));
    
-   // Mask
-   $('#dl,#dr,#dt,#db').css({background:"rgba(255,255,255,."+transp_val+")","position":"absolute"}); 
-
+    
    // Default pos
    update_select_preview(init_top,init_left,margins,W_factor,H_factor,cursor_dim);
      
