@@ -54,8 +54,8 @@ function create_meteor_selector_from_stack(image_src) {
          left: e.pageX - offset.left-cursor_dim/2,
          top: e.pageY - offset.top-cursor_dim/2
       });
-      $('#pos_x').text("x: " + parseInt(selector_top);
-      $('#pos_y').text("y: " + parseInt(selector_left);  
+      $('#pos_x').text("x: " + parseInt(selector_top));
+      $('#pos_y').text("y: " + parseInt(selector_left));  
    });
    
 
