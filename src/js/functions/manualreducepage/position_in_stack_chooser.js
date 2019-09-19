@@ -56,10 +56,10 @@ function create_meteor_selector_from_stack(image_src) {
  
 
    $('<h1>Manual Reduction Step 1</h1>\
-     <div class="box"><div class="alert alert-info mb-0 p-1 pr-1 pl-2">Move the white square to the meteor location</div><div id="main_view" style="background-color:#000;background-image:url('+image_src+'); width:'+prev_W+'px; height:'+prev_H+'px; margin: 0 auto; position:relative; background-size: contain;">\
+     <div class="box"><div class="alert alert-info mb-3 p-1 pr-1 pl-2">Move the white square to the meteor location</div><div id="main_view" style="background-color:#000;background-image:url('+image_src+'); width:'+prev_W+'px; height:'+prev_H+'px; margin: 0 auto; position:relative; background-size: contain;">\
                 <div id="dl"></div><div id="dt"></div><div id="dr"></div><div id="db"></div>\
                 <div id="selector" style="width:'+cursor_dim+'px; height:'+cursor_dim+'px; border:'+cursor_border_width+'px solid #fff;"></div>\
-   </div><div id="pos_x"></div><div id="pos_y"></div></div>').appendTo($('#step1'));
+   </div><p><span id="pos_x"></span> <span id="pos_y"></span></p></div>').appendTo($('#step1'));
    
    // Mask
    $('#dl,#dr,#dt,#db').css({background:"rgba(255,255,255,."+transp_val+")","position":"absolute"}); 
@@ -84,8 +84,8 @@ function create_meteor_selector_from_stack(image_src) {
               sel_y = top;
 
               // Update X/Y
-              $('#pos_x').text(parseInt(sel_x*W_factor-cursor_dim/2));
-              $('#pos_y').text(parseInt(sel_y*H_factor-cursor_dim/2));
+              $('#pos_x').text("x: " + parseInt(sel_x*W_factor-cursor_dim/2));
+              $('#pos_y').text("y: " + parseInt(sel_y*H_factor-cursor_dim/2));
  
               // Mask
               update_mask_position(top,left,prev_W,prev_H,cursor_dim);
