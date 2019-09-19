@@ -40,19 +40,11 @@ def getRADEC(form):
             "angle":  float(json['cal_params']['orig_pos_ang'])
          }      
       }}
-      print(new_json_content)
-      #x_poly_fwd  = json_file['calib']['device']['poly']['x_fwd']
-      #y_poly_fwd  = json_file['calib']['device']['poly']['y_fwd']
-      #lat         = float(json_file['calib']['device']['lat'])
-      #lon         = float(json_file['calib']['device']['lng'])
-      #dec_d       = float(json_file['calib']['device']['center']['dec']) 
-      #RA_d        = float(json_file['calib']['device']['center']['ra']) 
-      #angle       =  float(json_file['calib']['device']['angle']) 
-   #else:
-      #print("NICE JSON")
+   else:
+      new_json_content = json
+   
 
-
-   #json_file = fix_old_file_name(json_file)
-   #print(json_file)   
+   json_file = fix_old_file_name(json_file)
+   print(json_file)   
    
 
