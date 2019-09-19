@@ -14,6 +14,8 @@ function update_select_preview(top,left,margins,W_factor,H_factor,cursor_dim, cu
    sel_y = Math.floor(top)+margins;
 
    if(show_pos) {
+      cur_step_start = !cur_step_start
+
       if(cur_step_start) {
          // Update START X/Y
          $('#res .start').html('<b style="color:green">START</b> x:' + Math.floor(sel_x*W_factor)+ 'px ' + 'y:'+  Math.floor(sel_y*H_factor) +'px');
@@ -58,11 +60,10 @@ function update_select_preview(top,left,margins,W_factor,H_factor,cursor_dim, cu
 
    // Enable continue button 
    if(HAVE_END && HAVE_START) {
-      $('#step1_btn').removeAttr('disabled').removeClass('disable');
+      $('#step1_btn').removeAttr('disabled').removeClass('disabled');
    }
-  
-
-   return !cur_step_start
+   
+   return cur_step_start
 }
 
 
@@ -106,7 +107,7 @@ function create_meteor_selector_from_stack(image_src) {
    
     
    // Default pos
-   update_select_preview(init_top,init_left,margins,W_factor,H_factor,cursor_dim,cursor_border_width,false);
+   update_select_preview(init_top,init_left,margins,W_factor,H_factor,cursor_dim,cur_step_start,cursor_border_width,false);
      
    offset = $('#main_view').offset();
 
