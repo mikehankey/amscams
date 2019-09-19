@@ -61,6 +61,18 @@ function update_select_preview(top,left,margins,W_factor,H_factor,cursor_dim, cu
    // Enable continue button 
    if(HAVE_END && HAVE_START) {
       $('#step1_btn').removeAttr('disabled').removeClass('disabled');
+
+      // We draw a rectangle 
+      if($('#sel_rectangle_static').length==0) {
+         $('<div id="sel_rectangle_static" style="position:absolute; border:1px solid rgba(255,255,255,.6)">').appendTo($('#main_view'));
+      }
+
+      $('#sel_rectangle_static').css({
+         'top': parseInt($('input[name=x_start]').val())-cursor_dim/2,
+         'left': parseInt($('input[name=y_start]').val())-cursor_dim/2,
+         'width':  parseInt($('input[name=x_start]').val())-cursor_dim/2 - parseInt($('input[name=x_end]').val())-cursor_dim/2,
+         'height':  parseInt($('input[name=y_start]').val())-cursor_dim/2 - parseInt($('input[name=y_end]').val())-cursor_dim/2,
+      });
    }
    
    return cur_step_start
