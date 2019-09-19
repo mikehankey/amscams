@@ -27,14 +27,21 @@ def manual_reduction(form):
    video_full_path = form.getvalue("video_file")
 
    if(video_full_path is not None):
-      # If we're dealing with an "old" detection, the file name can have 
-      # -trimdddd before the extension, we need to remove this part 
-      # to properly anaylyse the name
-      tmp_video_full_path =  re.finditer(OLD_FILE_NAME_REGEX, video_full_path, re.MULTILINE)
-      for matchNum, match in enumerate(tmp_video_full_path, start=1):
-         for groupNum in range(0, len(match.groups())): 
-            print(match.group(groupNum))
-         groupNum = groupNum + 1
+
+      if("trim" in video_full_path):
+         # If we're dealing with an "old" detection, the file name can have 
+         # -trimdddd before the extension, we need to remove this part 
+         # to properly anaylyse the name
+         tmp_video_full_path_matches =  re.finditer(OLD_FILE_NAME_REGEX, video_full_path, re.MULTILINE)
+         tmp_fixed_video_full_path = ""
+         for matchNum, match in enumerate(tmp_video_full_path, start=1):
+            for groupNum in range(0, len(match.groups())): 
+               if("-" not in match.group(groupNum)):
+                  tmp_fixed_video_full_path = tmp_fixed_video_full_path + "_" + match.group(groupNum)
+            groupNum = groupNum + 1
+         print('NEW NAME ' + tmp_fixed_video_full_path )
+      
+      
       #analysed_name = name_analyser(video_full_path)
    else:
       print_error("<b>You need to add a video file in the URL.</b>")
