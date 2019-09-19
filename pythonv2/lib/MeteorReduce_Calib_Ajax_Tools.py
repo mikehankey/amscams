@@ -4,7 +4,7 @@ import re
  
 from lib.MeteorReduce_Tools import name_analyser  
 from lib.MeteorReduce_Calib_Tools import XYtoRADec
-from libe.MeteorManualReducePage import fix_old_file_name
+from lib.MeteorManualReducePage import fix_old_file_name
 
 # Return Ra/Dec based on X,Y  
 def getRADEC(form):
