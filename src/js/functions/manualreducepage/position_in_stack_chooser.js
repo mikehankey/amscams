@@ -55,7 +55,7 @@ function update_select_preview(top,left,margins,W_factor,H_factor,cursor_dim, cu
          });
         
          $('input[name=x_img_end]').val(Math.floor(sel_x*W_factor));
-         $('input[name=y_img_end]').val(ath.floor(sel_y*H_factor));
+         $('input[name=y_img_end]').val(Math.floor(sel_y*H_factor));
          /* $('input[name=x_end]').val(Math.floor(sel_x*W_factor));
          $('input[name=y_end]').val(Math.floor(sel_y*H_factor));
          */
