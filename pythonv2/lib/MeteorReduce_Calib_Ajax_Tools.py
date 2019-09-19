@@ -45,7 +45,7 @@ def getRADEC(form):
    
    json_file_x = fix_old_file_name(json_file)
    
-   x_pix+x,y_pix+y,RA,dec,azimuth,altitude = XYtoRADec(x,y,name_analyser(json_file_x),new_json_content)
+   x,y,RA,dec,azimuth,altitude = XYtoRADec(x,y,name_analyser(json_file_x),new_json_content)
 
    print({'ra':RA,'dec':dec,'Az':azimuth,'el':altitude})
    
