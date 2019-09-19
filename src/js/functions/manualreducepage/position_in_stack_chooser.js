@@ -1,5 +1,5 @@
 // Update selector position and corresponding data
-function update_select_preview(top,left,margins,W_factor,H_factor,cursor_dim) {
+function update_select_preview(top,left,margins,W_factor,H_factor,cursor_dim, cur_step_start) {
    
    // Move Selector
    $("#selector").css({
@@ -10,10 +10,14 @@ function update_select_preview(top,left,margins,W_factor,H_factor,cursor_dim) {
    sel_x = Math.floor(left)+margins;
    sel_y = Math.floor(top)+margins;
 
-   // Update X/Y
-   $('#pos_x').text('x:' + Math.floor(sel_x*W_factor));
-   $('#pos_y').text('y:' + Math.floor(sel_y*H_factor));
- 
+   if(cur_step_start) {
+      // Update START X/Y
+      $('#res_start').text('x:' + Math.floor(sel_x*W_factor)+ 'px ' + 'y:'+  Math.floor(sel_y*H_factor) +'px');
+   } else {
+      $('#res_end').text('x:' + Math.floor(sel_x*W_factor)+ 'px ' + 'y:'+  Math.floor(sel_y*H_factor) +'px');
+   }
+
+   return !cur_step_start
 }
 
 
@@ -43,11 +47,15 @@ function create_meteor_selector_from_stack(image_src) {
 
  
    $('<h1>Manual Reduction Step 1</h1>\
-     <div class="box"><div class="alert alert-info mb-3 p-1 pr-1 pl-2">Select the STARTING point of the meteor path.</div>\
+     <div class="box">\
+     <div class="modal-header p-0" style="border:none:important">\
+      <div class="alert alert-info mb-3 p-1 pr-1 pl-2">Select the STARTING point of the meteor path.</div>\
+      <div id="res"><span class="res_start"></span> <span class="res_end"></span></div>\
+     </div>\
      <div id="draggable_area" style="width:'+(prev_W+margins*2) + 'px; height:' +( prev_H+margins*2) + 'px;margin:0 auto;">\
      <div id="main_view" style="background-color:#000;background-image:url('+image_src+'); width:'+prev_W+'px; height:'+prev_H+'px; margin: 0 auto; position:relative; background-size: contain;">\
       <div id="selector" style="position:absolute;width:'+cursor_dim+'px; height:'+cursor_dim+'px; border:'+cursor_border_width+'px solid green;"></div>\
-   </div><p class="mt-2 mb-0"><span id="pos_x"></span> <span id="pos_y"></span></p></div>').appendTo($('#step1'));
+   </div></div>').appendTo($('#step1'));
    
     
    // Default pos
@@ -59,7 +67,8 @@ function create_meteor_selector_from_stack(image_src) {
    $('#main_view').click(function(e) {
       var top =  e.pageY - offset.top;
       var left = e.pageX - offset.left;
-      update_select_preview(top,left,margins,W_factor,H_factor,cursor_dim);
+      cur_step_start = update_select_preview(top,left,margins,W_factor,H_factor,cursor_dim,cur_step_start);
+ 
    });
    
 
