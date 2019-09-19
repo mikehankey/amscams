@@ -1,3 +1,12 @@
+// Update selector position and corresponding data
+function (top,left,margins,W_factor,H_factor,cursor_dim,w_preview_dim,h_preview_dim,prev_W,prev_H,zoom) {
+   $("#selector").css({
+      left: top-cursor_dim/2,
+      top: left - offset.top-cursor_dim/2
+   });
+ 
+}
+
 
 // Create  select meteor position from stack
 function create_meteor_selector_from_stack(image_src) {
@@ -46,24 +55,12 @@ function create_meteor_selector_from_stack(image_src) {
    // Move on click
    $('#main_view').click(function(e) {
 
-      var selector_top = Math.floor(e.pageX - offset.left/W_factor-cursor_dim/2);
-      var selector_left = Math.floor(e.pageY - offset.top/H_factor-cursor_dim/2)
- 
+      var top =  e.pageY - offset.top;
+      var left = e.pageX - offset.left;
+      update_select_preview(top,left,margins,W_factor,H_factor,cursor_dim,w_preview_dim,h_preview_dim,prev_W,prev_H,zoom);
 
-      $("#selector").css({
-         left: e.pageX - offset.left -cursor_dim/2,
-         top: e.pageY - offset.top-cursor_dim/2
-      });
-      $('#pos_x').text("x: " + parseInt(selector_top));
-      $('#pos_y').text("y: " + parseInt(selector_left));  
+      
    });
    
-
-   sel_x = Math.floor(left)+margins;
-   sel_y = Math.floor(top)+margins;
-
-   // Update X/Y
-   $('#pos_x').text(Math.floor(sel_x*W_factor));
-   $('#pos_y').text(Math.floor(sel_y*H_factor));
 
 }
