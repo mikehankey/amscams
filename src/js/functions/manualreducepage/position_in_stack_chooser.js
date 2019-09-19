@@ -38,33 +38,14 @@ function create_meteor_selector_from_stack(image_src) {
    // Update Mask position
    update_mask_position(prev_H/2-cursor_dim/2,prev_W/2-cursor_dim/2,prev_W,prev_H,cursor_dim)
 
-    // Move the Selector
-    $( "#selector" ).draggable(
-      { containment: "parent",
-          drag:function(e,u) {  
-
-              var top = u.position.top;
-              var left = u.position.left;
-              
-              sel_x = left;
-              sel_y = top;
-
-              // Update X/Y
-              $('#pos_x').text("x: " + parseInt(sel_x*W_factor-cursor_dim/2));
-              $('#pos_y').text("y: " + parseInt(sel_y*H_factor-cursor_dim/2));
- 
-              // Mask
-              update_mask_position(top,left,prev_W,prev_H,cursor_dim);
-  
-          }
-  });
+   offset = $('#main_view').offset();
 
    // Move on click
-   /*
    $('#main_view').click(function(e) {
-      var x = e.pageX;
-      var y = e.pageY;
-      $("#selector").simulate("drag-n-drop", {dx: x, dy: y, interpolation: { stepWidth: 1, stepDelay: 0.1}});
+      $("#selector").css({
+         left: e.pageX - offset.left,
+         top: e.pageY - offset.top);
+      });
    });
-   */
+   
 }
