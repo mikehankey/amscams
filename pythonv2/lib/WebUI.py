@@ -44,6 +44,8 @@ from lib.MeteorReduce_Ajax_Tools import get_reduction_info, delete_frame, update
 from lib.MeteorManualReducePage import manual_reduction
 from lib.MeteorManualReduce_Ajax_Tools import create_crop_frames
 
+# Calibration Tools
+from lib.MeteorReduce_Calib_Ajax_Tools import getRADEC
 
 NUMBER_OF_METEOR_PER_PAGE = 60
 NUMBER_OF_DAYS_PER_PAGE = 7
@@ -244,7 +246,11 @@ def controller(json_conf):
       get_reduction_info(form.getvalue('json_file'))   
       exit()
 
-   
+ 
+   # GET AZ/EL from JSON_FILE & X,Y (AJAX CALL)
+   if cmd == 's': 
+      getRADEC(form)   
+      exit()  
 
 
    #CUSTOM VIDEOS (AJAX CALL)
