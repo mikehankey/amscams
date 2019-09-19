@@ -1,5 +1,5 @@
 // Update selector position and corresponding data
-function (top,left,margins,W_factor,H_factor,cursor_dim,w_preview_dim,h_preview_dim,prev_W,prev_H,zoom) {
+function update_select_preview(top,left,margins,W_factor,H_factor,cursor_dim,w_preview_dim,h_preview_dim,prev_W,prev_H,zoom) {
    $("#selector").css({
       left: top-cursor_dim/2,
       top: left - offset.top-cursor_dim/2
