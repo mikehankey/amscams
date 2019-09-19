@@ -69,7 +69,7 @@ def manual_reduction(form):
    # Get the stacks 
    # True = We automatically resize the stack to HD dims so we can use it in the UI
    stack = get_stacks(analysed_name,clear_cache, True)
-   template = template.replace("{STACK}", str(video_full_path))   # Video File  
+   template = template.replace("{STACK}", str(stack))   # Video File  
 
    # Display Template
    print(template)
