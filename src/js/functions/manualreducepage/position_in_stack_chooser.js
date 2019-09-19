@@ -56,18 +56,18 @@ function create_meteor_selector_from_stack(image_src) {
  
 
    $('<h1>Manual Reduction Step 1</h1>\
-     <div class="box"><div class="alert alert-info mb-3 p-1 pr-1 pl-2">Move the white square to the meteor location</div><div id="main_view" style="background-color:#000;background-image:url('+image_src+'); width:'+prev_W+'px; height:'+prev_H+'px; margin: 0 auto; position:relative; background-size: contain;">\
+     <div class="box"><div class="alert alert-info mb-3 p-1 pr-1 pl-2"></div><div id="main_view" style="background-color:#000;background-image:url('+image_src+'); width:'+prev_W+'px; height:'+prev_H+'px; margin: 0 auto; position:relative; background-size: contain;">\
                 <div id="dl"></div><div id="dt"></div><div id="dr"></div><div id="db"></div>\
                 <div id="selector" style="width:'+cursor_dim+'px; height:'+cursor_dim+'px; border:'+cursor_border_width+'px solid #fff;"></div>\
-   </div><p><span id="pos_x"></span> <span id="pos_y"></span></p></div>').appendTo($('#step1'));
+   </div><p class="mt-2 mb-0"><span id="pos_x"></span> <span id="pos_y"></span></p></div>').appendTo($('#step1'));
    
    // Mask
    $('#dl,#dr,#dt,#db').css({background:"rgba(255,255,255,."+transp_val+")","position":"absolute"}); 
 
    // Selector Default Location (center)
    $('#selector').css({top:prev_H/2-cursor_dim/2,left:prev_W/2-cursor_dim/2 });
-   $('#pos_x').text(parseInt((prev_W/2-cursor_dim/2)*W_factor));
-   $('#pos_y').text(parseInt((prev_H/2-cursor_dim/2)*H_factor));  
+   $('#pos_x').text("x: " + parseInt((prev_W/2-cursor_dim/2)*W_factor));
+   $('#pos_y').text("y: " + parseInt((prev_H/2-cursor_dim/2)*H_factor));  
 
    // Update Mask position
    update_mask_position(prev_H/2-cursor_dim/2,prev_W/2-cursor_dim/2,prev_W,prev_H,cursor_dim)
@@ -92,4 +92,11 @@ function create_meteor_selector_from_stack(image_src) {
   
           }
   });
+
+   // Move on click
+   $('#main_view').click(function(e,u) {
+      var x = u.position.top;
+      var y = u.position.left;
+      $("#draggable").simulate("drag-n-drop", {dx: x, dy: y, interpolation: { stepWidth: 1, stepDelay: 0.1}});
+   })
 }
