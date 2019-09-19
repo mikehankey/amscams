@@ -1,36 +1,3 @@
-// Mask on selector
-function update_mask_position(top,left,prev_W,prev_H,cursor_dim) {
-   $('#dl').css({
-     'top':0,
-     'left':0,
-     'width': left,
-     'height': prev_H 
-   });
-
-
-   $('#dr').css({
-     'top':0,
-     'left':left+cursor_dim,
-     'width': prev_W-left-cursor_dim,
-     'height': prev_H 
-   })
-
-
-   $('#dt').css({
-     'top':0,
-     'left':left,
-     'width': cursor_dim,
-     'height':top 
-   })
-
-
-   $('#db').css({
-     'top': top + cursor_dim,
-     'left':left,
-     'width': cursor_dim,
-     'height':prev_H-top-cursor_dim 
-   })
-}
 
 // Create  select meteor position from stack
 function create_meteor_selector_from_stack(image_src) {
@@ -57,7 +24,6 @@ function create_meteor_selector_from_stack(image_src) {
 
    $('<h1>Manual Reduction Step 1</h1>\
      <div class="box"><div class="alert alert-info mb-3 p-1 pr-1 pl-2"></div><div id="main_view" style="background-color:#000;background-image:url('+image_src+'); width:'+prev_W+'px; height:'+prev_H+'px; margin: 0 auto; position:relative; background-size: contain;">\
-                <div id="dl"></div><div id="dt"></div><div id="dr"></div><div id="db"></div>\
                 <div id="selector" style="width:'+cursor_dim+'px; height:'+cursor_dim+'px; border:'+cursor_border_width+'px solid #fff;"></div>\
    </div><p class="mt-2 mb-0"><span id="pos_x"></span> <span id="pos_y"></span></p></div>').appendTo($('#step1'));
    
