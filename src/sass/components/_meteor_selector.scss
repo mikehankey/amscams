@@ -143,6 +143,14 @@ $meteor_selector_w: 500px;
 
 #selector {
     cursor:grab;
+
+    &.ng {
+       cursor: default
+    }
+
+    &.pa {
+       position: absolute;
+    }
 }
 
 .drag-h {
