@@ -92,8 +92,8 @@ function create_meteor_selector_from_stack(image_src) {
 
  
    $('<h1>Manual Reduction Step 1</h1>\
-      <input type="hidden" name="x_start"/><input type="hidden" name="y_start"/\
-      <input type="hidden" name="x_end"/><input type="hidden" name="y_end"/\
+      <input type="hidden" name="x_start"/><input type="hidden" name="y_start"/>\
+      <input type="hidden" name="x_end"/><input type="hidden" name="y_end"/>\
      <div class="box">\
      <div class="modal-header p-0" style="border:none!important">\
       <div class="alert alert-info mb-3 p-1 pr-1 pl-2">Select the STARTING point of the meteor path.</div>\
