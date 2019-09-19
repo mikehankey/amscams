@@ -73,8 +73,8 @@ function update_select_preview(top,left,margins,W_factor,H_factor,cursor_dim, cu
       $('#sel_rectangle_static').css({
          'top': parseInt($('input[name=x_img_start]').val()),
          'left': parseInt($('input[name=y_img_start]').val()),
-         'width':  math.abs(parseInt($('input[name=x_img_start]').val())  - parseInt($('input[name=x_img_end]').val())) ,
-         'height':  math.abs(parseInt($('input[name=y_img_start]').val())  - parseInt($('input[name=y_img_end]').val())) 
+         'width':  Math.abs(parseInt($('input[name=x_img_start]').val())  - parseInt($('input[name=x_img_end]').val())) ,
+         'height': Math.abs(parseInt($('input[name=y_img_start]').val())  - parseInt($('input[name=y_img_end]').val())) 
       });
    }
    
