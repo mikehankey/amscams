@@ -31,5 +31,5 @@ function create_meteor_selector_from_frame(image_src) {
                     <div><input type="range" value="'+transp_val+'" id="transp" min="0"  max="60" ></div>\
                     </div>\
                 </div>\
-            </div>').append($('#step1'));
+            </div>').appendTo($('#step1'));
 }
