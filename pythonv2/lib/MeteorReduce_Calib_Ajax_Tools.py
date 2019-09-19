@@ -16,18 +16,11 @@ def getRADEC(form):
 
 
    json = load_json_file(json_file)
-   new_json_content = {}
-
+  
    # Test if we have an old or a new JSON
-   if("reduced_stack" in json):
+   if "reduced_stack" in json:
       # It's an old we need to create the right calib json object
-      new_json_content = {
-         'calib'  : {
-            'device': {
-               'scale_px': json['pixscale']
-            }  
-         }
-      }
+      new_json_content = {'calib'  : {  'device': { 'scale_px': json['pixscale'] }    }      }
       print(new_json_content)
       #x_poly_fwd  = json_file['calib']['device']['poly']['x_fwd']
       #y_poly_fwd  = json_file['calib']['device']['poly']['y_fwd']
