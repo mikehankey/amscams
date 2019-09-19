@@ -94,9 +94,9 @@ function create_meteor_selector_from_stack(image_src) {
   });
 
    // Move on click
-   $('#main_view').click(function(e,u) {
-      var x = u.position.top;
-      var y = u.position.left;
+   $('#main_view').click(function(e) {
+      var x = e.pageX;
+      var y = e.pageY;
       $("#draggable").simulate("drag-n-drop", {dx: x, dy: y, interpolation: { stepWidth: 1, stepDelay: 0.1}});
    })
 }
