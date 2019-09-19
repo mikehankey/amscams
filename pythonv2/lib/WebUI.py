@@ -42,7 +42,7 @@ from lib.MeteorReduce_Ajax_Tools import get_reduction_info, delete_frame, update
 
 # Manual Reduction page
 from lib.MeteorManualReducePage import manual_reduction
-from lib.MeteorManualRecude_Ajax_Tools import create_crop_frames
+from lib.MeteorManualReduce_Ajax_Tools import create_crop_frames
 
 
 NUMBER_OF_METEOR_PER_PAGE = 60
