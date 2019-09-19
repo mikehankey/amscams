@@ -44,7 +44,7 @@ function create_meteor_selector_from_stack(image_src) {
    $('#main_view').click(function(e) {
       $("#selector").css({
          left: e.pageX - offset.left,
-         top: e.pageY - offset.top);
+         top: e.pageY - offset.top;
       });
    });
    
