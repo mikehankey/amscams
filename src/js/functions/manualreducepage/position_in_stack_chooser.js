@@ -1,5 +1,5 @@
 // Update selector position and corresponding data
-function update_select_preview(top,left,margins,W_factor,H_factor,cursor_dim, cur_step_start) {
+function update_select_preview(top,left,margins,W_factor,H_factor,cursor_dim, cur_step_start,show_pos) {
    
    // Move Selector
    $("#selector").css({
@@ -10,12 +10,15 @@ function update_select_preview(top,left,margins,W_factor,H_factor,cursor_dim, cu
    sel_x = Math.floor(left)+margins;
    sel_y = Math.floor(top)+margins;
 
-   if(cur_step_start) {
-      // Update START X/Y
-      $('#res .start').text('x:' + Math.floor(sel_x*W_factor)+ 'px ' + 'y:'+  Math.floor(sel_y*H_factor) +'px');
-   } else {
-      $('#res .end').text('x:' + Math.floor(sel_x*W_factor)+ 'px ' + 'y:'+  Math.floor(sel_y*H_factor) +'px');
+   if(show_pos) {
+      if(cur_step_start) {
+         // Update START X/Y
+         $('#res .start').text('x:' + Math.floor(sel_x*W_factor)+ 'px ' + 'y:'+  Math.floor(sel_y*H_factor) +'px');
+      } else {
+         $('#res .end').text('x:' + Math.floor(sel_x*W_factor)+ 'px ' + 'y:'+  Math.floor(sel_y*H_factor) +'px');
+      }
    }
+  
 
    return !cur_step_start
 }
@@ -59,7 +62,7 @@ function create_meteor_selector_from_stack(image_src) {
    
     
    // Default pos
-   update_select_preview(init_top,init_left,margins,W_factor,H_factor,cursor_dim);
+   update_select_preview(init_top,init_left,margins,W_factor,H_factor,cursor_dim,false);
      
    offset = $('#main_view').offset();
 
@@ -67,7 +70,7 @@ function create_meteor_selector_from_stack(image_src) {
    $('#main_view').click(function(e) {
       var top =  e.pageY - offset.top;
       var left = e.pageX - offset.left;
-      cur_step_start = update_select_preview(top,left,margins,W_factor,H_factor,cursor_dim,cur_step_start);
+      cur_step_start = update_select_preview(top,left,margins,W_factor,H_factor,cursor_dim,cur_step_start,true);
       e.stopImmediatePropagation();
       return false;
    });
