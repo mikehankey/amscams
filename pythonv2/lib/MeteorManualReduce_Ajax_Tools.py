@@ -8,6 +8,7 @@ from lib.REDUCE_VARS import *
 # output: the cropped frames 
 # Note: the stack is needed because is the only file name we're sure has the proper format
 def create_crop_frames(form):
+
    # Debug
    cgitb.enable() 
    
@@ -20,8 +21,8 @@ def create_crop_frames(form):
    stack = formet.getvalue('stack')
 
    # Get All Frames
-   cmd = 'ffmpeg -y -hide_banner -loglevel panic  -i ' + video_file + ' -s ' + str(HD_W) + "x" + str(HD_H) + ' ' +  destination + EXT_HD_FRAMES + '%04d' + '.png' 
-   output = subprocess.check_output(cmd, shell=True).decode("utf-8")
+   #cmd = 'ffmpeg -y -hide_banner -loglevel panic  -i ' + video_file + ' -s ' + str(HD_W) + "x" + str(HD_H) + ' ' +  destination + EXT_HD_FRAMES + '%04d' + '.png' 
+   #output = subprocess.check_output(cmd, shell=True).decode("utf-8")
 
-   return glob.glob(destination+"*"+EXT_HD_FRAMES+"*.png")
+   #return glob.glob(destination+"*"+EXT_HD_FRAMES+"*.png")
 
