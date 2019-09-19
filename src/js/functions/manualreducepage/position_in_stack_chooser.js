@@ -18,7 +18,7 @@ function update_select_preview(top,left,margins,W_factor,H_factor,cursor_dim, cu
 
          // Put the static square on the view
          if($('#sel_start_static').length==0) {
-            $('<div id="sel_start_static" style="width:'+cursor_dim+'; height:'+cursor_dim+';position:absolute; border:'+cursor_border_width+'px solid green').appendTo($('#main_view'));
+            $('<div id="sel_start_static" style="width:'+cursor_dim+'; height:'+cursor_dim+';position:absolute; border:'+cursor_border_width+'px solid green">').appendTo($('#main_view'));
          }
          
          $('#sel_start_static').css({
@@ -33,7 +33,7 @@ function update_select_preview(top,left,margins,W_factor,H_factor,cursor_dim, cu
 
           // Put the static square on the view
           if($('#sel_end_static').length==0) {
-            $('<div id="sel_end_static" style="width:'+cursor_dim+'; height:'+cursor_dim+';position:absolute; border:'+cursor_border_width+'px solid red').appendTo($('#main_view'));
+            $('<div id="sel_end_static" style="width:'+cursor_dim+'; height:'+cursor_dim+';position:absolute; border:'+cursor_border_width+'px solid red">').appendTo($('#main_view'));
           }
 
           $('#sel_end_static').css({
