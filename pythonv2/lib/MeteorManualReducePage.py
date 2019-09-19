@@ -1,6 +1,7 @@
 import cgitb
 import re
 
+from lib.FileIO import load_config
 from lib.MeteorReducePage import print_error
 from lib.MeteorReduce_Tools import *
 from lib.REDUCE_VARS import *
@@ -10,6 +11,11 @@ PAGE_TEMPLATE = "/home/ams/amscams/pythonv2/templates/manual_reduction_template.
 
 # Fix the old files names that contains "-trim"
 def fix_old_file_name(filename):
+   # We need to get the current stations ID (in as6.json)
+   json_conf = load_json_file(JSON_CONFIG)
+   print(json_conf)
+
+
    if("trim" in filename):
       tmp_video_full_path_matches =  re.finditer(OLD_FILE_NAME_REGEX, filename, re.MULTILINE)
       tmp_fixed_video_full_path = ""
