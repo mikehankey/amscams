@@ -37,7 +37,7 @@ def fix_old_file_name(filename):
             tmp_fixed_video_full_path +=  "_SD.json"
          return tmp_fixed_video_full_path
    else:
-      return filenmae
+      return filename
 
 
 def manual_reduction(form):
