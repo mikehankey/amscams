@@ -359,6 +359,14 @@ def controller(json_conf):
       exit()
 
 
+   # Old Reduction Page 
+   if(cmd == 'get_a_frame'):
+      fr_id = form.getvalue('fr')
+      sd_vid = form.getvalue('sd_video_file')
+      print(get_a_frame(fr_id,sd_vid))
+      exit()
+
+
    if cmd == 'del_frame':
       del_frame(json_conf,form)
       exit()

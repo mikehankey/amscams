@@ -148,7 +148,7 @@ def crop_frame(fr_id,src,x,y):
 
 # Return a given frame for a given vid
 # (create all the frames in TMP_FRAME_FOLDER if they don't exists)
-def get_frame(fr_id,sd_vid):
+def get_a_frame(fr_id,sd_vid):
 
     #cgitb.enable()
 
