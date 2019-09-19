@@ -13,7 +13,7 @@ PAGE_TEMPLATE = "/home/ams/amscams/pythonv2/templates/manual_reduction_template.
 def fix_old_file_name(filename):
    # We need to get the current stations ID (in as6.json)
    json_conf = load_json_file(JSON_CONFIG)
-   print(json_conf)
+   station_id = json_conf['site']['ams_id']
 
 
    if("trim" in filename):
@@ -28,7 +28,7 @@ def fix_old_file_name(filename):
          # Remove first "_"
          tmp_fixed_video_full_path = tmp_fixed_video_full_path[1:]
          # Add an extension
-         tmp_fixed_video_full_path += "_HD.json"
+         tmp_fixed_video_full_path += "_" + station_id + "_HD.json"
 
          return tmp_fixed_video_full_path
    else:
