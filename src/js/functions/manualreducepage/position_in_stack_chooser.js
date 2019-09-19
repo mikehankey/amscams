@@ -1,5 +1,5 @@
 // Update selector position and corresponding data
-function update_select_preview(top,left,margins,W_factor,H_factor,cursor_dim,w_preview_dim,h_preview_dim,prev_W,prev_H,zoom) {
+function update_select_preview(top,left,margins,W_factor,H_factor,cursor_dim) {
    $("#selector").css({
       left: top - cursor_dim/2,
       top: left - cursor_dim/2
@@ -57,7 +57,7 @@ function create_meteor_selector_from_stack(image_src) {
 
       var top =  e.pageY - offset.top;
       var left = e.pageX - offset.left;
-      update_select_preview(top,left,margins,W_factor,H_factor,cursor_dim,w_preview_dim,h_preview_dim,prev_W,prev_H,zoom);
+      update_select_preview(top,left,margins,W_factor,H_factor,cursor_dim);
 
       
    });
