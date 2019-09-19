@@ -1,7 +1,9 @@
 import cgitb
+import re
 
 from lib.MeteorReducePage import print_error
-from lib.MeteorReduce_Tools import * 
+from lib.MeteorReduce_Tools import *
+from lib.REDUCE_VARS import *
 
 PAGE_TEMPLATE = "/home/ams/amscams/pythonv2/templates/manual_reduction_template.html"
 
@@ -25,14 +27,19 @@ def manual_reduction(form):
    video_full_path = form.getvalue("video_file")
 
    if(video_full_path is not None):
-      analysed_name = name_analyser(video_full_path)
+      # If we're dealing with an "old" detection, the file name can have 
+      # -trimdddd before the extension, we need to remove this part 
+      # to properly anaylyse the name
+      tmp_video_full_path =  re.finditer(OLD_FILE_NAME_REGEX, video_full_path, re.MULTILINE)
+      print(tmp_video_full_path)
+      #analysed_name = name_analyser(video_full_path)
    else:
       print_error("<b>You need to add a video file in the URL.</b>")
 
    # Get the stacks
-   stack = get_stacks(analysed_name,clear_cache)
+   #stack = get_stacks(analysed_name,clear_cache)
    #print(get_cache_path(analysed_name,"stacks") +"<br>")
 
   
 
-   print("STACK " + stack)
+   #print("STACK " + stack)

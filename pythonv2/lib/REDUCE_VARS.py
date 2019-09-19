@@ -23,7 +23,9 @@ STACK_H = 540
 FILE_NAMES_REGEX = r"(\d{4})_(\d{2})_(\d{2})_(\d{2})_(\d{2})_(\d{2})_(\d{3})_(\w{6})_([^_^.]+)(_HD)?(\.)?(\.[0-9a-z]+$)"
 FILE_NAMES_REGEX_GROUP = ["name","year","month","day","hour","min","sec","ms","cam_id","station_id","HD","ext"]
 
-
+# PATTERN FOR "OLD" VIDEO OR JSON FILE NAMES
+# (with "-trimdddd")
+OLD_FILE_NAME_REGEX =  r"(\d{4})_(\d{2})_(\d{2})_(\d{2})_(\d{2})_(\d{2})_(\d{3})_(\w{6})(-trim\d{4})?(\.[0-9a-z]+$)"
 
 
 # EXTENSION FOR THE FRAMES
