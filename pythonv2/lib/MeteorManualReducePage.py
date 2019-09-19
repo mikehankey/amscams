@@ -14,6 +14,13 @@ def manual_reduction(form):
    with open(PAGE_TEMPLATE, 'r') as file:
       template = file.read()
 
+   # Here we have the possibility to "empty" the cache, ie regenerate the files (stacks) even if they already exists
+   # we just need to add "clear_cache=1" to the URL
+   if(form.getvalue("clear_cache") is not None):
+      clear_cache = True
+   else:
+      clear_cache = False
+
    # Get Video File & Analyse the Name to get quick access to all info
    video_full_path = form.getvalue("video_file")
 
