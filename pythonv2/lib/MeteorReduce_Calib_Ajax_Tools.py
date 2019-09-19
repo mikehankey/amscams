@@ -11,8 +11,8 @@ def getRADEC(form):
    cgitb.enable() 
 
    json_file = form.getvalue('json_file') 
-   x = form.getvalue('x')
-   y = form.getvalue('y')
+   x = int(form.getvalue('x'))
+   y = int(form.getvalue('y'))
    
    json = load_json_file(json_file)
   
