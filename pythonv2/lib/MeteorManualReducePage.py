@@ -40,6 +40,8 @@ def fix_old_file_name(filename):
 
 def manual_reduction(form):
    
+   video_file = form.getvalue('video_file')
+
    # Debug
    cgitb.enable()
 
@@ -73,7 +75,10 @@ def manual_reduction(form):
    # Get the stacks 
    # True = We automatically resize the stack to HD dims so we can use it in the UI
    stack = get_stacks(analysed_name,clear_cache, True)
-   template = template.replace("{STACK}", str(stack))   # Video File  
+   template = template.replace("{STACK}", str(stack))   
+   
+   # Add Video to template
+   template = template.replace("{VIDEO}", str(video_file))
 
    # Display Template
    print(template)
