@@ -56,5 +56,5 @@ def manual_reduction(form):
       print_error("<b>You need to add a video file in the URL.</b>")
 
    # Get the stacks
-   #stack = get_stacks(analysed_name,clear_cache)
-   #print("STACK " + stack)
+   stack = get_stacks(analysed_name,clear_cache)
+   print("STACK " + stack)
