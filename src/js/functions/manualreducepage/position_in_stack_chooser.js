@@ -11,8 +11,8 @@ function update_select_preview(top,left,margins,W_factor,H_factor,cursor_dim) {
    sel_y = Math.floor(top)+margins;
 
    // Update X/Y
-   $('#pos_x').text(Math.floor(sel_x*W_factor));
-   $('#pos_y').text(Math.floor(sel_y*H_factor));
+   $('#pos_x').text('x:' + Math.floor(sel_x*W_factor));
+   $('#pos_y').text('y:' + Math.floor(sel_y*H_factor));
  
 }
 
@@ -27,9 +27,7 @@ function create_meteor_selector_from_stack(image_src) {
 
    var prev_W = 1075;              // Preview
    var prev_H = 605;
-   
-   var transp_val = 15;            // Transparency of white area
-   var preview_dim = 300;          // Only squares for preview
+     
    var cursor_border_width  = 2; 
    
    var sel_x = prev_W/2-cursor_dim/2;
@@ -40,6 +38,9 @@ function create_meteor_selector_from_stack(image_src) {
 
    var cur_step_start = true;
  
+   var init_top = prev_H/2-cursor_dim/2;
+   var init_left = left:prev_W/2-cursor_dim/2;
+
 
    $('<h1>Manual Reduction Step 1</h1>\
      <div class="box"><div class="alert alert-info mb-3 p-1 pr-1 pl-2">Select the STARTING point of the meteor path.</div>\
@@ -51,14 +52,9 @@ function create_meteor_selector_from_stack(image_src) {
    // Mask
    $('#dl,#dr,#dt,#db').css({background:"rgba(255,255,255,."+transp_val+")","position":"absolute"}); 
 
-   // Selector Default Location (center)
-   $('#selector').css({top:prev_H/2-cursor_dim/2,left:prev_W/2-cursor_dim/2 });
-   $('#pos_x').text("x: " + parseInt((prev_W/2-cursor_dim/2)*W_factor));
-   $('#pos_y').text("y: " + parseInt((prev_H/2-cursor_dim/2)*H_factor));  
-
-   // Update Mask position
-   update_mask_position(prev_H/2-cursor_dim/2,prev_W/2-cursor_dim/2,prev_W,prev_H,cursor_dim)
-
+   // Default pos
+   update_select_preview(init_top,init_left,margins,W_factor,H_factor,cursor_dim);
+     
    offset = $('#main_view').offset();
 
    // Move on click
