@@ -14,6 +14,8 @@ def fix_old_file_name(filename):
    # We need to get the current stations ID (in as6.json)
    json_conf = load_json_file(JSON_CONFIG)
    station_id = json_conf['site']['ams_id']
+   if("-reduced" in filename):
+      filename = filename.replace("-reduced", "")
 
    if("trim" in filename):
       tmp_video_full_path_matches =  re.finditer(OLD_FILE_NAME_REGEX, filename, re.MULTILINE)
