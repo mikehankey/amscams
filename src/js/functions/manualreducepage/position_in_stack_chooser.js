@@ -27,7 +27,7 @@ function create_meteor_selector_from_stack(image_src) {
      <div class="box"><div class="alert alert-info mb-3 p-1 pr-1 pl-2">Select the STARTING point of the meteor path.</div>\
      <div id="draggable_area" style="width:'+(prev_W+margins*2) + 'px; height:' +( prev_H+margins*2) + 'px;margin:0 auto;">\
      <div id="main_view" style="background-color:#000;background-image:url('+image_src+'); width:'+prev_W+'px; height:'+prev_H+'px; margin: 0 auto; position:relative; background-size: contain;">\
-                <div id="selector" style="width:'+cursor_dim+'px; height:'+cursor_dim+'px; border:'+cursor_border_width+'px solid #fff;"></div>\
+      <div id="selector" style="position:absolute;width:'+cursor_dim+'px; height:'+cursor_dim+'px; border:'+cursor_border_width+'px solid green;"></div>\
    </div><p class="mt-2 mb-0"><span id="pos_x"></span> <span id="pos_y"></span></p></div>').appendTo($('#step1'));
    
    // Mask
