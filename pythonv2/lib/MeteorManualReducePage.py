@@ -15,7 +15,6 @@ def fix_old_file_name(filename):
    json_conf = load_json_file(JSON_CONFIG)
    station_id = json_conf['site']['ams_id']
 
-
    if("trim" in filename):
       tmp_video_full_path_matches =  re.finditer(OLD_FILE_NAME_REGEX, filename, re.MULTILINE)
       tmp_fixed_video_full_path = ""
@@ -67,6 +66,7 @@ def manual_reduction(form):
    else:
       print_error("<b>You need to add a video file in the URL.</b>")
 
-   # Get the stacks
-   stack = get_stacks(analysed_name,clear_cache)
-   print("STACK " + stack)
+   # Get the stacks 
+   # True = We automatically resize the stack to HD dims so we can use it in the UI
+   stack = get_stacks(analysed_name,clear_cache, True)
+   template = template.replace("{STACK}", str(video_full_path))   # Video File  

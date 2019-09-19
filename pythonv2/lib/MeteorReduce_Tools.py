@@ -276,7 +276,7 @@ def get_stacks(analysed_name,clear_cache):
  
 
 # Generate the Stacks for a meteor detection
-def generate_stacks(video_full_path, destination):
+def generate_stacks(video_full_path, destination, toHD= False):
 
    # Debug
    cgitb.enable() 
@@ -293,11 +293,14 @@ def generate_stacks(video_full_path, destination):
       else:
          stacked_image = stack_stack(stacked_image, frame_pil)
 
-   # Resize  (STACK_W, STACK_H) & Save to destination 
-   if stacked_image is not None: 
+   if stacked_image is not None and toHD is False: 
+      # Resize  (STACK_W, STACK_H) & Save to destination 
       stacked_image = stacked_image.resize((STACK_W, STACK_H))
       stacked_image.save(destination)
- 
+   else:
+      # Resize to HD (HD_W, HD_H)    
+      stacked_image = stacked_image.resize((HD_W, HD_H))
+      stacked_image.save(destination)
    return destination
 
 
