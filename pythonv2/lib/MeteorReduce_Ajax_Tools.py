@@ -1,7 +1,6 @@
 import sys
 import cgitb
 import json
-import sys
 import os
 
 from lib.FileIO import cfe, load_json_file, save_json_file

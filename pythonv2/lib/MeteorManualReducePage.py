@@ -40,10 +40,10 @@ def fix_old_file_name(filename):
 
 def manual_reduction(form):
    
-   video_file = form.getvalue('video_file')
-
    # Debug
    cgitb.enable()
+
+   video_file = form.getvalue('video_file')
 
    # Build the page based on template  
    with open(PAGE_TEMPLATE, 'r') as file:
