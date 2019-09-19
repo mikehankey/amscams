@@ -1,5 +1,5 @@
 // Update selector position and corresponding data
-function update_select_preview(top,left,margins,W_factor,H_factor,cursor_dim, cur_step_start,show_pos) {
+function update_select_preview(top,left,margins,W_factor,H_factor,cursor_dim, cur_step_start,cursor_border_width,show_pos) {
    
    // Move Selector
    $("#selector").css({
@@ -15,11 +15,32 @@ function update_select_preview(top,left,margins,W_factor,H_factor,cursor_dim, cu
          // Update START X/Y
          $('#res .start').html('<b style="color:green">START</b> x:' + Math.floor(sel_x*W_factor)+ 'px ' + 'y:'+  Math.floor(sel_y*H_factor) +'px');
          $('#selector').css('border-color','red');
+
+         // Put the static square on the view
+         if($('#sel_start_static').length==0) {
+            $('<div id="sel_start_static" style="width:'+cursor_dim+'; height:'+cursor_dim+';position:absolute; border:'+cursor_border_width+'px solid green').appendTo($('#main_view'));
+         }
+         
+         $('#sel_start_static').css({
+            top: top - cursor_dim/2,
+            left: left - cursor_dim/2
+         });
+         
       } else {
          // Update END X/Y
          $('#res .end').html('<b style="color:red">END</b> x:' + Math.floor(sel_x*W_factor)+ 'px ' + 'y:'+  Math.floor(sel_y*H_factor) +'px');
          $('#selector').css('border-color','green');
-      }
+
+          // Put the static square on the view
+          if($('#sel_end_static').length==0) {
+            $('<div id="sel_end_static" style="width:'+cursor_dim+'; height:'+cursor_dim+';position:absolute; border:'+cursor_border_width+'px solid red').appendTo($('#main_view'));
+          }
+
+          $('#sel_end_static').css({
+            top: top - cursor_dim/2,
+            left: left - cursor_dim/2
+         });
+      } 
    }
   
 
@@ -73,7 +94,7 @@ function create_meteor_selector_from_stack(image_src) {
    $('#main_view').click(function(e) {
       var top =  e.pageY - offset.top;
       var left = e.pageX - offset.left;
-      cur_step_start = update_select_preview(top,left,margins,W_factor,H_factor,cursor_dim,cur_step_start,true);
+      cur_step_start = update_select_preview(top,left,margins,W_factor,H_factor,cursor_dim,cur_step_start,cursor_border_width,true);
       e.stopImmediatePropagation();
       return false;
    });
