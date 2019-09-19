@@ -43,7 +43,7 @@ def getRADEC(form):
    else:
       new_json_content = json
    
-
+   print("OLD NAME " + json_file)
    json_file_x = fix_old_file_name(json_file)
    print(json_file_x)   
    
