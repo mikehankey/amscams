@@ -248,7 +248,7 @@ def controller(json_conf):
 
  
    # GET AZ/EL from JSON_FILE & X,Y (AJAX CALL)
-   if cmd == 's': 
+   if cmd == 'getRADEC': 
       getRADEC(form)   
       exit()  
 
