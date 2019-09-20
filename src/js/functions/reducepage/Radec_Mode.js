@@ -19,6 +19,7 @@ function add_stars_info_on_canvas() {
    $.each(star_info_object,function(i,v){
       canvas.add(star_info_object[i]);
    });
+   star_info_object = [];
 }
 
 
