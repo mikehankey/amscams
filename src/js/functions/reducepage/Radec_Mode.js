@@ -62,7 +62,7 @@ function build_radecpanel() {
             data: {
                 cmd: 'getRADEC',
                 json_file: json_reduced,
-                values: rad_dec_object
+                values: [rad_dec_object]
             }, 
             success: function(data) {
                data = JSON.parse(data); 
