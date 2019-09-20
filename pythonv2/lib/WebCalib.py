@@ -3219,6 +3219,7 @@ def reduce_meteor_new(json_conf,form):
        var az_grid_file = '""" + az_grid_file + """'
        var meteor_json_file = '""" + meteor_json_file + """'
        var main_vid = '""" + sd_video_file + """'
+       var json_reduced = '""" + meteor_reduced_file + """'
       var stars = [];
      </script>
    """
