@@ -96,8 +96,11 @@ function build_radecpanel() {
                      }));
                });
 
+               // Reset Panel
+               $('#radec_info').val('');
+               
                // Add info to the Panel
-               add_radec_resolved_info(data);
+               add_radec_resolved_info(v);
             }
          });
      })
