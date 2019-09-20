@@ -11,9 +11,11 @@ def getRADEC(form):
    cgitb.enable() 
 
    json_file = form.getvalue('json_file') 
-   x = int(form.getvalue('x'))
-   y = int(form.getvalue('y'))
-   
+   values = form.getvalue('values')
+
+   print("VALUES\n")
+   print(values)
+
    json = load_json_file(json_file)
    
    # Test if we have an old or a new JSON

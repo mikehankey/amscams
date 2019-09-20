@@ -247,7 +247,11 @@ def controller(json_conf):
       exit()
 
  
-   # GET AZ/EL from JSON_FILE & X,Y (AJAX CALL)
+   # GET AZ/EL from JSON_FILE & array of values
+   # like 
+   # 0: {x_org: 372, y_org: 203, x_HD: 744, y_HD: 228.375}
+   # 1: {x_org: 303, y_org: 344, x_HD: 606, y_HD: 387} 
+   #  (AJAX CALL)
    if cmd == 'getRADEC': 
       getRADEC(form)   
       exit()  
