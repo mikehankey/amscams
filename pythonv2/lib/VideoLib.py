@@ -11,7 +11,7 @@ import os
 #import time
 from lib.UtilLib import convert_filename_to_date_cam, bound_cnt
 from lib.FileIO import load_json_file, save_json_file, cfe
-from lib.ImageLib import find_min_max_dist,bigger_box
+from lib.ImageLib import find_min_max_dist,bigger_box, mask_frame
 #Add text, logo, etc.. to a frame
 
  
@@ -738,9 +738,11 @@ def get_masks(this_cams_id, json_conf, hd = 0):
    return(my_masks)
 
 
-def load_video_frames(trim_file, json_conf, limit=0, mask=1,crop=(),color=0):
+def load_video_frames(trim_file, json_conf, limit=0, mask=0,crop=(),color=0):
    (f_datetime, cam, f_date_str,fy,fm,fd, fh, fmin, fs) = convert_filename_to_date_cam(trim_file)
    cap = cv2.VideoCapture(trim_file)
+   masks = None 
+
    frames = []
    frame_count = 0
    go = 1
@@ -759,6 +761,15 @@ def load_video_frames(trim_file, json_conf, limit=0, mask=1,crop=(),color=0):
             return(frames)
          if len(frame.shape) == 3 and color == 0:
             frame = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
+
+         if mask == 1 and frame is not None:
+            if frame.shape[0] == 1080:
+               hd = 1
+            else:
+               hd = 0
+            masks = get_masks(cam, json_conf,hd)
+            frame = mask_frame(frame, [], masks, 5)
+
          if len(crop) == 4:
             ih,iw = frame.shape
             x1,y1,x2,y2 = crop

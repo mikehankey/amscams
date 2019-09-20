@@ -1,6 +1,6 @@
 function update_star_and_reduction(callback) {
     var cmd_data = {
-        video_file:       main_vid,          // Defined on the page 
+        video_file: main_vid,          // Defined on the page 
         cmd: 'update_red_info_ajax'
     }
 
@@ -16,6 +16,10 @@ function update_star_and_reduction(callback) {
         success: function(data) {
         
             var json_resp = $.parseJSON(data); 
+
+            console.log('IN update_star_and_reduction')
+            console.log(json_resp)
+            console.log(cmd_data)
 
             if(json_resp['status']!==0) {
              

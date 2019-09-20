@@ -51,7 +51,15 @@ def object_report(objects, all = 0):
    object_report = "OBJECT REPORT\n"
    object_report = object_report + "-------------\n"
    for object in objects:
-      if object['oid'] != 'None' and object['meteor'] == 1:
+      if object['meteor'] == 0:
+         print("FAILED: ", object['oid'])
+         for test in object['test_results']:
+            (test_name, status, test_res) = test
+            if status == 0:
+               print("   ", test_name, status, test_res)
+
+   for object in objects:
+      if (object['oid'] != 'None' and object['meteor'] == 1) or all == 1:
          object_report = object_report + "Object:\t\t{:s}\n".format(str(object['oid']))
          object_report = object_report + "Clip Len:\t\t{:s}\n".format(str(object['total_frames']))
          object_report = object_report + "Hist Length:\t{:d}\n".format(len(object['history']))
@@ -65,6 +73,12 @@ def object_report(objects, all = 0):
          for hist in object['history']:
              
             object_report = object_report + "   {:d}\t{:d}\t{:d}\t{:d}\t{:d}\n".format(hist[0],hist[1],hist[2],hist[3],hist[4])
+         for i in object['intensity']:
+            object_report = object_report + "Intensity:" + str(i) + "\n"
+         for i in object['px_diffs']:
+            object_report = object_report + "PX Diff:" + str(i) + "\n"
+         for i in object['avg_vals']:
+            object_report = object_report + "Avg Vals:" + str(i) + "\n"
    return(object_report)
 
 
@@ -261,6 +275,8 @@ def check_for_motion2(frames, video_file, cams_id, json_conf, show = 0):
                   x2 = x2 + 5
 
                cnt_img = gray_frame[y:y2,x:x2]
+               big_cnt_img = cv2.resize(cnt_img , (0,0), fx=4, fy=4)
+               bc_h, bc_w = big_cnt_img.shape[:2]
                max_px, avg_px, px_diff,max_loc = eval_cnt(cnt_img)
                mx,my = max_loc
                cnt_w,cnt_h = cnt_img.shape
@@ -272,13 +288,20 @@ def check_for_motion2(frames, video_file, cams_id, json_conf, show = 0):
 
                if px_diff > 10 and fc > 5 :
                   object, objects = id_object(cnts[i], objects,fc, max_loc)
-                  if show == 0 or show == 1:
+                  if show == 1:
+                     nice_frame[0:bc_h,0:bc_w] = big_cnt_img
+                     cv2.rectangle(nice_frame, (0, 0), (bc_w , bc_h), (255, 0, 0,.02), 2)
                      cv2.putText(nice_frame, str(object['oid']),  (x-5,y-5), cv2.FONT_HERSHEY_SIMPLEX, .4, (255, 255, 255), 1)
                      cv2.rectangle(nice_frame, (x, y), (x + w, y + h), (255, 0, 0,.02), 2)
+         #filename = "/mnt/ams2/tmp/test" + str(fc) + ".png"
+         #cv2.imwrite(filename, nice_frame)
          if show == 1 and fc % 2 == 0:
             show_frame = cv2.resize(nice_frame, (0,0), fx=0.5, fy=0.5)
-            cv2.imshow('pepe', frame)
-            cv2.waitKey(10)
+            cv2.imshow('pepe', nice_frame)
+            if px_diff > 10:
+               cv2.waitKey(0)
+            else:
+               cv2.waitKey(70)
       frame_file = "/mnt/ams2/tmp/" + str(fc) + "obj.png"
       #cv2.imwrite(frame_file, thresh_obj)
       fc = fc + 1

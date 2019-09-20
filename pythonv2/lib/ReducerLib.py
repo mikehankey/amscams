@@ -1954,9 +1954,9 @@ def find_in_hist(object,x,y,object_hist, img_w, img_h):
    oid = object['oid']
    found = 0
    if hd == 1:
-      md = 40 
+      md = 50 
    else:
-      md = 20
+      md = 30
 
    # check if this object_hist is stationary already.
    if len(object_hist) > 1:

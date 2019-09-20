@@ -8,7 +8,7 @@ import glob
 from lib.CalibLib import reduce_object
 from lib.FileIO import setup_dirs, cfe, save_failed_detection, save_meteor
 from lib.DetectLib import check_for_motion2, id_object, object_report, parse_motion 
-from lib.MeteorTests import test_objects
+from lib.MeteorTests import test_objects, validate_objects
 from lib.FileIO import load_json_file,archive_meteor 
 from lib.VideoLib import load_video_frames , doHD, get_masks
 from lib.ImageLib import stack_frames, draw_stack
@@ -50,7 +50,7 @@ def scan_file(video_file, show):
    if cfe(video_file) == 0:
       print("Error: Input file does not exist!", video_file)
       return()
-   frames = load_video_frames(video_file, json_conf)
+   frames = load_video_frames(video_file, json_conf, 0, 1)
    print("SHOW:", show)
    show = int(show)
    if len(frames) > 0:
@@ -60,6 +60,7 @@ def scan_file(video_file, show):
 
    if len(objects) > 0:
       objects,meteor_found = test_objects(objects,frames)
+      objects,meteor_found = validate_objects(objects,frames)
       #print(objects)
    else:
       objects = []
@@ -82,7 +83,7 @@ def scan_file(video_file, show):
          draw_stack(objects,stack_img,stack_file)
       print("SAVE FAILED")
       save_failed_detection(video_file,objects)
-   obj_report = object_report(objects)
+   obj_report = object_report(objects,0)
    print(obj_report)
    if meteor_found == 1:
       print("Meteor Test Passed.")
@@ -97,17 +98,24 @@ def scan_file(video_file, show):
          day = sd_file[0:10]
          sd_wild = sd_file.replace(".mp4", "*")
          cmd = "mv " + jd['sd_video_file'] +  " /mnt/ams2/trash"
-         os.system(cmd)
+         print("FAILED:", cmd)
+         #os.system(cmd)
          cmd = "mv " + "/mnt/ams2/meteors/" + day + "/" + sd_wild + " /mnt/ams2/trash"
-         os.system(cmd)
+         print("FAILED:", cmd)
+         #os.system(cmd)
          if 'hd_trim' in jd:
             hd_file = jd['hd_trim'].split("/")[-1]
             day = hd_file[0:10]
             (f_datetime, cam, f_date_str,fy,fm,fd, fh, fmin, fs) = convert_filename_to_date_cam(hd_file)
             hd_wild = fy + "_" + fm + "_" + fd + "_" + fh + "_" + fmin + "_*" + cam + "*" 
             cmd = "mv " + "/mnt/ams2/meteors/" + day + "/" + hd_wild + " /mnt/ams2/trash"
-            os.system(cmd)
+            print("FAILED:", cmd)
+            #os.system(cmd)
    print("done scan file")     
+   # Now lets refine and reduce the scan
+   # link and sync the HD 
+   # Remake and rename the trim file
+
 def do_all(json_conf): 
    show = 0
    proc_dir = json_conf['site']['proc_dir']

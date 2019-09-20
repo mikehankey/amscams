@@ -35,7 +35,17 @@ from lib.Frame_Tools import *
 from lib.Get_Cam_ids import get_the_cam_ids
 from lib.Get_Operator_info import get_operator_info
 from lib.MultiStationMeteors import multi_station_meteors, multi_station_meteor_detail
- 
+
+# New Reduce Meteor Page
+from lib.MeteorReducePage import reduce_meteor2
+from lib.MeteorReduce_Ajax_Tools import get_reduction_info, delete_frame, update_multiple_frames, update_frame, get_frame, create_thumb, update_cat_stars
+
+# Manual Reduction page
+from lib.MeteorManualReducePage import manual_reduction
+from lib.MeteorManualReduce_Ajax_Tools import create_crop_frames
+
+# Calibration Tools
+from lib.MeteorReduce_Calib_Ajax_Tools import getRADEC
 
 NUMBER_OF_METEOR_PER_PAGE = 60
 NUMBER_OF_DAYS_PER_PAGE = 7
@@ -142,14 +152,14 @@ def manual_detect(json_conf, form):
       print("<input type=submit name=submit value='Run Detection Code On This Clip'><br>")
       print("</form>")
 
-def get_template(json_conf, skin = None  ):
-   
-   template = ""
-   skin = "as6ams"
+def get_template(json_conf, skin = "as6ams"  ):
+   template = "" 
    if skin == "as6ams":
       fpt = open("/home/ams/amscams/pythonv2/templates/as6ams.html", "r")
+   elif skin == "v2":
+      fpt = open("/home/ams/amscams/pythonv2/templates/main_template.html", "r")
    else:
-      fpt = open("/home/ams/amscams/pythonv2/templates/as6.html", "r")
+      fpt = open("/home/ams/amscams/pythonv2/templates/as6ams.html", "r")
    for line in fpt:
       template = template + line
    return(template) 
@@ -230,6 +240,23 @@ def controller(json_conf):
       check_pwd_ajax(user,pwd)
       exit()
 
+
+   # GET REDUCTION JSON DATA (AJAX CALL)
+   if cmd == 'get_reduction_info': 
+      get_reduction_info(form.getvalue('json_file'))   
+      exit()
+
+ 
+   # GET AZ/EL from JSON_FILE & array of values
+   # like 
+   # 0: {x_org: 372, y_org: 203, x_HD: 744, y_HD: 228.375}
+   # 1: {x_org: 303, y_org: 344, x_HD: 606, y_HD: 387} 
+   #  (AJAX CALL)
+   if cmd == 'getRADEC': 
+      getRADEC(form)   
+      exit()  
+
+
    #CUSTOM VIDEOS (AJAX CALL)
    if cmd == 'generate_timelapse': 
    
@@ -276,13 +303,7 @@ def controller(json_conf):
       delete_multiple_detection(detections,json_conf)
       exit()
 
-   #Get a frame or create all of them 
-   if(cmd == 'get_frame'):
-      fr_id = form.getvalue('fr')
-      sd_vid = form.getvalue('sd_video_file')
-      print(get_frame(fr_id,sd_vid))
-      exit()
-   
+  
    #Add new a frame from HD image with x & y
    if(cmd == 'crop_frame'):
       fr_id = form.getvalue('fr_id')
@@ -308,6 +329,11 @@ def controller(json_conf):
    if cmd == 'update_red_info_ajax':
       update_red_info_ajax(json_conf,form)
       exit()
+
+   if cmd == 'create_crop_frames':
+      create_crop_frames(form)
+      exit()
+
    if cmd == 'clone_cal':
       clone_cal(json_conf,form)
       exit()
@@ -320,6 +346,46 @@ def controller(json_conf):
    if cmd == 'get_manual_points':
       get_manual_points(json_conf,form)
       exit()
+   
+   # New Reduction Page => DELETE A FRAME
+   if cmd == 'delete_frame':
+      delete_frame(form)
+      exit()
+
+   # New Reduction Page => UPDATE MULTIPLE FRAMES AT ONCE
+   if cmd == 'update_multiple_frames':
+      update_multiple_frames(form)
+      exit()
+
+   # New Reduction Page => UPDATE ONE FRAME AT A TIME
+   if cmd == 'update_frame':
+      update_frame(form)
+      exit()
+
+   #  New Reduction Page =>  Get a HD frame 
+   if cmd == 'get_frame':
+      get_frame(form)
+      exit()
+   
+   #  New Reduction Page =>  Create a thumb 
+   if cmd == 'create_thumb':
+      create_thumb(form)
+      exit()
+
+   # New Reduction Page => Update list of stars
+   if cmd == 'update_cat_stars':
+      update_cat_stars(form)
+      exit()
+
+
+   # Old Reduction Page 
+   if(cmd == 'get_a_frame'):
+      fr_id = form.getvalue('fr')
+      sd_vid = form.getvalue('sd_video_file')
+      print(get_a_frame(fr_id,sd_vid))
+      exit()
+
+
    if cmd == 'del_frame':
       del_frame(json_conf,form)
       exit()
@@ -375,7 +441,11 @@ def controller(json_conf):
    jq = do_jquery()
    
    nav_html,bot_html = nav_links(json_conf,cmd)
-   nav_html = ""
+   nav_html = "" 
+
+   # New Reduce page / Manual Reduce page
+   if cmd == 'reduce2' or cmd == 'manual_reduction':
+      skin = "v2"
 
    template = get_template(json_conf, skin)
    stf = template.split("{BODY}")
@@ -385,8 +455,7 @@ def controller(json_conf):
 
    if cmd is not None and "man" in cmd:
       template = template.replace("<!--manred-->", "<script src=\"/pycgi/manreduce.js?\"></script>")
-
-
+ 
    obs_name = json_conf['site']['obs_name']
    op_city =  json_conf['site']['operator_city']
    op_state = json_conf['site']['operator_state']
@@ -398,7 +467,8 @@ def controller(json_conf):
    top = top.replace("{STATION_NAME}", station_name)
    top = top.replace("{JQ}", jq)
 
-   print(top)
+   if(top is not None):
+      print(top)
    extra_html = ""
 
    #CUSTOM VIDEOS (LIST)
@@ -409,10 +479,24 @@ def controller(json_conf):
    if cmd == 'custom_logos':
       custom_logos(json_conf,form)
 
-   if cmd == 'reduce_new':
-      extra_html = reduce_meteor_new(json_conf, form)
+   # Manual Reduction page
+   if cmd == 'manual_reduction':
+      manual_reduction(form)
+
+
+   # REAL NEW VERSION
+   if cmd == 'reduce2':
+      extra_html = reduce_meteor2(json_conf, form)
+  
+   # OLD VERSION 
    if cmd == 'reduce':
       extra_html = reduce_meteor_new(json_conf, form)
+
+   # ANOTHER OLD VERSION
+   if cmd == 'reduce_new':
+      extra_html = reduce_meteor_new(json_conf, form)
+
+
    if cmd == 'solutions':
       solutions(json_conf, form)
    if cmd == 'sol_detail':
@@ -495,11 +579,19 @@ def controller(json_conf):
       multi_station_meteor_detail(json_conf,form)
 
    #bottom = bottom.replace("{JQ}", jq)      
-   bottom = bottom.replace("{BOTTOMNAV}", bot_html)      
-   rand=time.time()
-   bottom = bottom.replace("{RAND}", str(rand))
-   bottom = bottom.replace("{EXTRA_HTML}", str(extra_html))
-   print(bottom)
+   if(bot_html is not None and bottom is not None):
+      bottom = bottom.replace("{BOTTOMNAV}", bot_html)      
+    
+   if(extra_html is not None and bottom is not None):
+      bottom = bottom.replace("{EXTRA_HTML}", str(extra_html))
+   else:
+      bottom = bottom.replace("{EXTRA_HTML}", "")
+
+   if(bottom is not None):
+      rand=time.time()
+      bottom = bottom.replace("{RAND}", str(rand))
+      print(bottom)
+     
    #cam_num = form.getvalue('cam_num')
    #day = form.getvalue('day')
 
@@ -1617,24 +1709,37 @@ def as6_config(json_conf):
    print("</UL>")
 
 def get_mask_img(cams_id, json_conf):
-   proc_dir = json_conf['site']['proc_dir']
-   days = get_days(json_conf)
-   day = days[0]
-   img_dir = "/mnt/ams2/latest/"
 
-   #files = glob.glob(img_dir +  cams_id + ".jpg")
+   proc_dir = json_conf['site']['proc_dir']
+   #days = get_days(json_conf)
+   #day = days[0]
+   img_dir = "/mnt/ams2/latest/"
+   sd_dir = "/mnt/ams2/SD/"
+
+   # first look for img, if made less than 24 hours ago use it, else make new one
+   img_files = glob.glob(img_dir + cams_id + "-mask.jpg")
+   if len(img_files) == 1:
+      img = cv2.imread(img_files[0])
+   else:
+      files = glob.glob(sd_dir + "*" + cams_id + "*.mp4")
+      frames = load_video_frames(files[0], json_conf, 10)
+      img = frames[0]
+   sd_h, sd_w = img.shape[:2]
    file = img_dir + cams_id + ".jpg"
-   sfile = img_dir + cams_id + "-sm.jpg"
-   img = cv2.imread(file)
-   simg = cv2.resize(img, (704,576))
+   sfile = img_dir + cams_id + "-mask.jpg"
+   #img = cv2.imread(file)
+   #simg = cv2.resize(img, (704,576))
+   simg = img
    cv2.imwrite(sfile, simg)
    files = [sfile]
 
-   return(sfile)
+   return(sfile, sd_w, sd_h)
 
 def save_masks(form,camera,cams_id, json_conf):
-   hdm_x = 2.7272
-   hdm_y = 1.875
+   sd_w = int(form.getvalue('sd_w'))
+   sd_h = int(form.getvalue('sd_h'))
+   hdm_x = 1920 / sd_w 
+   hdm_y = 1080 / sd_h 
 
    print("<h1>SAVE MASKS</h1>")
    total_masks = int(form.getvalue('total_masks'))
@@ -1698,7 +1803,7 @@ def mask_admin(json_conf,form):
          print("<a href=webUI.py?cmd=mask_admin&camera=" + camera + "&cams_id=" + cid + ">" + cid + "<BR>")
    else:
       print("Masks for ", cams_id, "<BR>")
-      imgf = get_mask_img(cams_id, json_conf) 
+      imgf,sd_w,sd_h = get_mask_img(cams_id, json_conf) 
       #print(imgf) 
       masks = get_masks(cams_id, json_conf)
       img = cv2.imread(imgf, 0)
@@ -1706,6 +1811,7 @@ def mask_admin(json_conf,form):
       for mask in masks:
          x,y,w,h = mask.split(",")
          x,y,w,h = int(x), int(y), int(w), int(h)
+         #x,y,w,h = int(x), int(int(y) * .83), int(w), int(int(h) * .83) + 1
          cv2.rectangle(img, (x, y), (x + w, y + h), (128, 128, 128), -1)      
          tmasks.append((x,y,w,h))
       cv2.imwrite("/mnt/ams2/tmp.jpg", img)
@@ -1730,6 +1836,8 @@ def mask_admin(json_conf,form):
       print("<input type=hidden name=subcmd value=save_mask>")
       print("<input type=hidden name=camera value=" + camera + ">")
       print("<input type=hidden name=cams_id value=" + cams_id + ">")
+      print("<input type=hidden name=sd_w value=" + str(sd_w) + ">")
+      print("<input type=hidden name=sd_h value=" + str(sd_h) + ">")
       print("<input type=hidden name=total_masks value="+str(c) +">")
       print("<input type=submit value=\"Save Masks\">")
       print("</form>")

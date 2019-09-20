@@ -414,7 +414,7 @@ def get_text_pos(text_pos, extra_text_here):
 
 
 #Add text, logo, etc.. to a frame             
-def add_info_to_frame(frame, cam_text, extra_text, text_position, extra_text_position, watermark, watermark_position, logo, logo_pos, newpath, dimensions="1920:1080",  enhancement=0):
+def add_info_to_frame(frame, cam_text, extra_text, text_position, extra_text_position, watermark, watermark_position, logo, logo_pos, newpath, dimensions="1920:1080",  enhancement=0, extension="png"):
      
     # Do we have extra text?
     if(extra_text is None):
@@ -457,7 +457,7 @@ def add_info_to_frame(frame, cam_text, extra_text, text_position, extra_text_pos
     else:
         cmd+= '[out]"'
 
-    cmd += ' -map "[out]"  ' + newpath + '.png'      
+    cmd += ' -map "[out]"  ' + newpath + '.' + extension      
 
   
 
@@ -469,7 +469,7 @@ def add_info_to_frame(frame, cam_text, extra_text, text_position, extra_text_pos
 
 #Add AMS Logo, Info and eventual logo (todo)
 #Resize the frames 
-def add_info_to_frames(frames, path, date, camID, extra_text, logo,logo_pos, dimensions="1920:1080", text_pos='bl', watermark_pos='tr', enhancement=0):
+def add_info_to_frames(frames, path, date, camID, extra_text, logo, logo_pos, dimensions="1920:1080", text_pos='bl', watermark_pos='tr', enhancement=0, extension="png"):
  
     newpath = r''+path 
     
@@ -528,12 +528,12 @@ def add_info_to_frames(frames, path, date, camID, extra_text, logo,logo_pos, dim
                     if(idx<10):
                         watermark = water_path + "AMS0" + str(idx) + ".png"
                     else:
-                        watermark = water_path + "AMS" + str(idx) + ".png"
+                        watermark = water_path + "AMS" + str(idx)  + ".png"
             else:
-                watermark = water_path + "AMS" + str(AMS_WATERMARK_ANIM_FRAMES) + ".png"                
+                watermark = water_path + "AMS" + str(AMS_WATERMARK_ANIM_FRAMES)  + ".png"  
 
 
-        add_info_to_frame(org_path,text,extra_text,text_position,extra_text_position,watermark,watermark_position,logo,logo_position,t_newpath,dimensions,enhancement)
+        add_info_to_frame(org_path,text,extra_text,text_position,extra_text_position,watermark,watermark_position,logo,logo_position,t_newpath,dimensions,enhancement,extension)
  
         #Remove the source 
         os.remove(path+'/'+ f)  
@@ -543,7 +543,7 @@ def add_info_to_frames(frames, path, date, camID, extra_text, logo,logo_pos, dim
 
 
 #Create a video based on a set of frames
-def create_vid_from_frames(frames, path, date, camID, fps="25") :
+def create_vid_from_frames(frames, path, date, camID, fps="25", ext="png") :
     
     #Create Video based on all newly create frames 
 
@@ -552,11 +552,11 @@ def create_vid_from_frames(frames, path, date, camID, fps="25") :
         #Destination folder
         def_file_path =  VID_FOLDER +'/'+date +'_'+ camID +'.mp4' 
         
-        cmd = 'ffmpeg -hide_banner -loglevel panic -y  -r '+ str(fps) +' -f image2 -s 1920x1080 -i ' + path+ '/%d.png -vcodec libx264 -crf 25 -pix_fmt yuv420p ' + def_file_path
+        cmd = 'ffmpeg -hide_banner -loglevel panic -y  -r '+ str(fps) +' -f image2 -s 1920x1080 -i ' + path+ '/%d.'+ext+' -vcodec libx264 -crf 25 -pix_fmt yuv420p ' + def_file_path
         output = subprocess.check_output(cmd, shell=True).decode("utf-8")
     
         #Rename and Move the first frame in the dest folder so we'll use it as a thumb
-        cmd = 'mv ' + path + '/0.png ' +   VID_FOLDER + '/'+date +'_'+ camID +'.png'        
+        cmd = 'mv ' + path + '/0.'+ ext + ' ' +   VID_FOLDER + '/'+date +'_'+ camID + '.' + ext       
         output = subprocess.check_output(cmd, shell=True).decode("utf-8")
 
         #DELETING RESIZE FRAMES

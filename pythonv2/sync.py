@@ -15,6 +15,7 @@ import scipy.optimize
 from fitMulti import minimize_poly_params_fwd
 from lib.VideoLib import get_masks, find_hd_file_new, load_video_frames
 from lib.UtilLib import check_running, get_sun_info, fix_json_file, find_angle, convert_filename_to_date_cam
+import subprocess
 
 from lib.FileIO import load_json_file, save_json_file, cfe
 API_HOST = "http://52.27.42.7"
@@ -213,7 +214,7 @@ def sync_content(event_id, station_name, upload_file, file_type, file_name):
    my_meteor_datetime, my_cam, hd_date, hd_y, hd_m, hd_d, hd_h, hd_M, hd_s = convert_filename_to_date_cam(upload_file)
    meteor_day = hd_y + "_" + hd_m + "_" + hd_d
    #url = API_HOST + "/pycgi/api-sync-content.py"
-   url = API_HOST + "/pycgi/upload-media.py"
+   url = "http://" + API_HOST + "/pycgi/upload-media.py"
    # The File to send
    file = upload_file 
    _file = {'files': open(file, 'rb')}
@@ -477,7 +478,7 @@ def push_file(meteor, station_name, day):
       file_url = API_HOST + '/media/' + station_name + '/' + day + "/" + meteor_fn
 
       status = check_file_sync(file_url, json_conf)
-      if status == 404:
+      if status == 404 or "json" in meteor_fn:
          print("UPLOAD: ", meteor)
          sync_content(0, station_name, meteor, "json", meteor_fn)
       else:
@@ -661,8 +662,109 @@ def sync_day(day, json_conf):
    os.system(cmd)
    cmd = "./sync.py fe " + day
    os.system(cmd)
+
+
+def check_stream(cam_num, stream_type):
+   bad = 0
+   config = load_json_file("../conf/as6.json")
+   print("CHECKING STREAM ", stream_type, cam_num)
+   if stream_type == 'SD':
+      cmd = "find /mnt/ams2/SD/*.mp4 -mmin -5 |grep mp4 | grep -v proc | grep " + str(cam_num) + " |wc -l"
+      print(cmd)
+      output = subprocess.check_output(cmd, shell=True).decode("utf-8")
+      output.replace("\n", "")
+      if int(output) > 0:
+         print ("SD cam ", str(cam_num), " is good", output)
+         return(1)
+      else:
+         print ("SD cam ", str(cam_num), " is bad. Restart.", output)
+         return(0)
+   if stream_type == 'HD':
+      cmd = "find /mnt/ams2/HD -mmin -5 |grep " + str(cam_num) + " |wc -l"
+      output = subprocess.check_output(cmd, shell=True).decode("utf-8")
+      output.replace("\n", "")
+      if int(output) > 0:
+         print ("HD cam ", str(cam_num), " is good", output)
+         return(1)
+      else:
+         print ("HD cam ", str(cam_num), " is bad. Restart.", output)
+         return(0)
+   return(bad)
+
+
+def system_status(json_conf):
+   os_drive = None
+   data_drive = None
+   status = "Good"
+   if "os_drive" in json_conf['site']:
+      os_drive = json_conf['site']['os_drive']
+   if "data_drive" in json_conf['site']:
+      data_drive = json_conf['site']['data_drive']
+   disk_info = {}
+   cmd = "df -H | grep -vE '^Filesystem|tmpfs|cdrom' | awk '{ print $5 \" \" $1 }'"
+   output = subprocess.check_output(cmd, shell=True).decode("utf-8")
+   lines = output.split("\n")
+   for line in lines:
+      line = line.replace("%", "")
+      if len(line) > 0:
+         perc, vol = line.split(" ")
+         if vol == data_drive :
+            disk_info['data_drive'] = vol + "," + perc
+         if vol == os_drive : 
+            disk_info['os_drive'] = vol + "," + perc
+
+   # Check SD Streams
+   stream_errors = 0
+   for i in range (1,7):
+      key = "cam" + str(i)
+      cams_id = json_conf['cameras'][key]['cams_id']
+      res = check_stream(str(cams_id), "SD")
+      if res == 0:
+         errors.append("Cam " + str(cams_id) + "SD Stream not present. ")
+         stream_errors = 1
+   # Check HD Streams
+   for i in range (1,7):
+      res = check_stream(str(cams_id), "HD")
+      if res == 0:
+         errors.append("Cam " + str(cams_id) + "HD Stream not present. ")
+         stream_errors = 1
+
+   status = "good"
+   for vol in disk_info:
+      print(vol, disk_info[vol])
+      status = status + vol + "," + disk_info[vol] + ";"
+   if stream_errors == 1:
+      print("CAM IS DOWN.")
+      for err in errors:
+         print(err) 
+         status = status + err + ";"
+   else:
+      print("ALL CAMS UP.")
+
+   url = "http://" + json_conf['site']['API_HOST'] + "/pycgi/system_status.py"
+ 
+
+   # The Data to send with the file
+   api_key = json_conf['site']['api_key']
+   station_name = json_conf['site']['ams_id']
+
+   _data= {'api_key': api_key, 'station_name': station_name, 'status' : status}
+
+   print(url, _data)
+   session = requests.Session()
+   del session.headers['User-Agent']
+   del session.headers['Accept-Encoding']
+
+   with requests.Session() as session:
+       response = session.post(url, data= _data)
+
+   print(response)
+
    
-if cmd == 'ps'or cmd == 'prep_solve':
+if cmd == 'sys' or cmd == 'system_status':
+   system_status(json_conf) 
+   exit()
+if cmd == 'ps' or cmd == 'prep_solve':
    prep_solve(sys.argv[2], json_conf) 
 if cmd == "ss":
    sync_stations( json_conf)

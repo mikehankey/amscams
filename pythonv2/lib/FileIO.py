@@ -9,13 +9,14 @@ def purge_sd_nighttime_files(sd_dir,json_conf):
    days = sorted(get_days(json_conf), reverse=True)
    dc = 0 
    for day in days:
-      if dc > 38:
+      if dc > 30:
          print(day)
          files = glob.glob(sd_dir + day + "/*.mp4")
          for file in files:
             el = file.split("/")
-            if len(el) != 9:
-               continue
+            print(file, len(el))
+            #if len(el) != 9:
+            #   continue
             (f_datetime, cam, f_date_str,fy,fm,fd, fh, fmin, fs) = convert_filename_to_date_cam(file)
             sun_status,sun_az,sun_el = get_sun_info(f_date_str,json_conf)
             st = os.stat(file)
@@ -28,6 +29,8 @@ def purge_sd_nighttime_files(sd_dir,json_conf):
                   print ("Deleted 100 files from ", day)
                cmd = "rm " + file
                if "trim" not in file:
+                  #print ("Deleted ", file)
+                  print("rm " + file)
                   os.system("rm " + file)
       dc = dc + 1
 
@@ -212,15 +215,16 @@ def save_meteor(video_file, objects, json_conf = None):
       el = video_file.split("/")
       day_dir = el[-1][0:10]
       passed_dir = proc_dir + day_dir + "/passed/"
-   cmd = "mv " + base_dir + base_fn + ".mp4 "  + passed_dir
-   print(cmd) 
-   os.system(cmd)
-   cmd = "mv " + base_dir + base_fn + "-stacked.png "  + passed_dir
-   print(cmd) 
-   os.system(cmd)
-   cmd = "mv " + base_dir + base_fn + "-stacked-obj.png "  + passed_dir
-   print(cmd) 
-   os.system(cmd)
+   if "failed" not in video_file and "passed" not in video_file:
+      cmd = "mv " + base_dir + base_fn + ".mp4 "  + passed_dir
+      print(cmd) 
+      os.system(cmd)
+      cmd = "mv " + base_dir + base_fn + "-stacked.png "  + passed_dir
+      print(cmd) 
+      os.system(cmd)
+      cmd = "mv " + base_dir + base_fn + "-stacked-obj.png "  + passed_dir
+      print(cmd) 
+      os.system(cmd)
 
    video_json_file = passed_dir + base_fn + ".json"
    print("Video JSON ", video_json_file)
@@ -233,17 +237,18 @@ def save_failed_detection(video_file, objects):
    print("MIKE: SAVE FAILED DETECTION")
    (base_fn, base_dir, image_dir, data_dir,failed_dir,passed_dir) = setup_dirs(video_file)
 
-   cmd = "mv " + base_dir + base_fn + ".mp4 "  + failed_dir
-   print(cmd) 
-   os.system(cmd)
 
-   cmd = "mv " + base_dir + base_fn + "-stacked.png "  + failed_dir
-   print(cmd) 
-   os.system(cmd)
-   print("YOYO")
-   cmd = "mv " + base_dir + base_fn + "-stacked-obj.png "  + failed_dir 
-   print(cmd) 
-   os.system(cmd)
+   if "failed" not in video_file and "passed" not in video_file:
+      cmd = "mv " + base_dir + base_fn + ".mp4 "  + failed_dir
+      print(cmd) 
+      os.system(cmd)
+
+      cmd = "mv " + base_dir + base_fn + "-stacked.png "  + failed_dir
+      print(cmd) 
+      os.system(cmd)
+      cmd = "mv " + base_dir + base_fn + "-stacked-obj.png "  + failed_dir 
+      print(cmd) 
+      os.system(cmd)
 
    video_json_file = failed_dir + base_fn + ".json"
    save_json_file(video_json_file, objects)
@@ -288,8 +293,7 @@ def setup_dirs(filename):
    base_fn = fn.replace(".mp4","")
    return(base_fn, working_dir, data_dir, images_dir, failed_dir,passed_dir)
 
-def load_config(json_file):
-   print("JSON FILE:", json_file)
+def load_config(json_file): 
    json_str = json_file.read()
    json_conf = json.loads(json_str)
    return(json_conf)

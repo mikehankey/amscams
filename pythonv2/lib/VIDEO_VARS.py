@@ -2,6 +2,13 @@ ORG_PATH = '/mnt/ams2/'
 
 IMG_SD_SRC_PATH = ORG_PATH + 'SD/proc2/'
 IMG_HD_SRC_PATH=  ORG_PATH + 'HD/'
+ 
+# HD & SD resolution
+HD_W = 1920
+HD_H = 1080
+SD_W = 704
+SD_H = 480
+ 
 
 #To temporirly store the frame from the HD vids (all day timelapse)
 TMP_IMG_HD_SRC_PATH = IMG_HD_SRC_PATH + 'tmp/'
@@ -25,6 +32,7 @@ HD_FRAMES_PATH = ORG_PATH + 'TIMELAPSE_IMAGES/'
 #Where the Stacks are
 METEOR_FOLDER = ORG_PATH + '/meteors/'
 STACK_FOLDER = METEOR_FOLDER 
+ 
 
 #AMS WATERMARK
 AMS_WATERMARK = "/home/ams/amscams/dist/img/ams_watermark.png"
@@ -46,8 +54,7 @@ DELETE_HD_FRAMES_AFTER_HOURS = 36
 FONT_SIZE = "18"
 FONT_TRANSPARENCY = "0.85" # between 0 and 1
 
-
-#DEFAULT VALUES
+#DEFAULT VALUES FOR CUSTOM VIDEOS
 D_FPS = "30"
 D_DIM = "1920:1080" #" DEFAULT DIM FOR VIDEOS " 
 D_EXTRA_LOGO = " " # No Extra Logo 
@@ -58,9 +65,7 @@ D_EXTRA_INFO = " " # WARNING - This is updated in Video_Parameters
 D_EXTRA_INFO_POS = "br" # OPERATOR INFO
 
 EMPTY_CORNER = "br" # Where to put stuff when the meteor overlaps
-
 HD_DIM = "1280x720" #for ffmpeg - used to extract the HD frames in HD_FRAMES_PATH
-
 BLENDING_SD = 30 #For the amount of SD blending on HD frames (when SD is found)
 
 
