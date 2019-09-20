@@ -88,8 +88,8 @@ function build_radecpanel() {
                      "RA: " + v['ra'], {
                         fontFamily: 'Arial', 
                         fontSize: 12, 
-                        left: (v['x_org'] - 11)/2+5,
-                        top: (v['y_org'] - 11)/2+8,
+                        left: (v['y_org'] - 11)/2+5,
+                        top: (v['x_org'] - 11)/2+8,
                         fill:'rgba(255,255,255,.45)',
                         selectable: false,
                         gp_id: v[0],
