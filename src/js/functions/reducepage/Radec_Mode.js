@@ -85,11 +85,11 @@ function build_radecpanel() {
                   }));
                    
                    canvas.add(new fabric.Text(
-                     "RA: " + v['ra'], {
+                     "RA: " + v['ra'] +"\nDec: " + v['dec'], {
                         fontFamily: 'Arial', 
                         fontSize: 12, 
-                        top:  v['y_org'] ,
-                        left:  v['x_org'] ,
+                        top:  v['y_org'] + 11,
+                        left:  v['x_org'] + 11,
                         fill:'rgba(255,255,255,.45)',
                         selectable: false,
                         gp_id: v[0],
