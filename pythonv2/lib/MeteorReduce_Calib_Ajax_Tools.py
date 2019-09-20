@@ -15,7 +15,8 @@ def getRADEC(form):
    values = form.getvalue('values')
 
    print("VALUES\n")
-   print(json.loads(values))
+   v = json.loads(values)
+   print(v)
 
    json = load_json_file(json_file)
    
