@@ -1,5 +1,5 @@
 import cgitb
-import json as json
+import json 
 
 from lib.FileIO import load_json_file
 from lib.MeteorReduce_Tools import name_analyser  
@@ -57,6 +57,6 @@ def getRADEC(form):
 
 
    # Return JSON
-   print({'res':results})
+   print(json.dumps({'res':results}))
    
 
