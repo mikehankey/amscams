@@ -76,17 +76,16 @@ function add_radec_info(info) {
    if($.trim($('#radec_info').val()) == '') {
       step = '';
    }
-   $('#radec_info').val($('#radec_info').val()+ step + "x:"+info['x_org']+" ,y:"+info['y_org']+" - HD x:"+ info['x_HD'] + ", y:" + info['y_HD']);
+   $('#radec_info').val($('#radec_info').val()+ step + "x:"+info['x_org']+", y:"+info['y_org']+" - HD x:"+ info['x_HD'] + ", y:" + info['y_HD']);
 }
 
 
 $('#radec_mode').click(function() {
-
-
+ 
    if(typeof json_reduced  == "undefined") {
       loading_done();
       bootbox.alert({
-          message: "JSON file is missing. A JSON files with calibration parameters is required.<br/>",
+          message: "JSON file is missing. A JSON files with calibration parameters is required (-reduced.json).<br/>",
           className: 'rubberBand animated error',
           centerVertical: true 
       });
