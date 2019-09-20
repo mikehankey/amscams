@@ -123,17 +123,18 @@ if ($('canvas#c').length!=0) {
     }); 
     
     canvas.on('mouse:down', function(e) {
- 
-        // Remove zoom
-        if($('#c').hasClass('r-zoomed')) {
-          $('#c').removeClass('r-zoomed').removeAttr('style'); 
-          return false;
-        }
-
-        // Hide grid on click
-        if($('#c').hasClass('grid')) $('#show_grid').click();
+      // Remove zoom
+      if($('#c').hasClass('r-zoomed')) {
+         $('#c').removeClass('r-zoomed').removeAttr('style'); 
+         return false;
+      }  
       
-        // Make the update star button blinked
+      // Hide grid on click
+      if($('#c').hasClass('grid')) $('#show_grid').click();
+      
+      // Not in RADEC_MODE: it means we select stars on the canvas
+      if(RADEC_MODE==false) {
+         // Make the update star button blinked
         make_it_blink($('#update_stars'));
 
         var pointer = canvas.getPointer(event.e);
@@ -155,8 +156,7 @@ if ($('canvas#c').length!=0) {
         var clickPoint = new fabric.Point(x_val,y_val);
         var objects = canvas.getObjects('circle');
         var id;
-        
-
+         
         // Remove an existing star
         for (let i in objects) {
           if (!objFound && objects[i].containsPoint(clickPoint)) {
@@ -194,8 +194,31 @@ if ($('canvas#c').length!=0) {
         }
         
         update_user_stars();
-     
+      } else {
 
+         // Here we just point at the canvas to get RA/Dec
+         var pointer = canvas.getPointer(event.e);
+         x_val = pointer.x | 0;
+         y_val = pointer.y | 0;
+   
+         var circle = new fabric.Circle({
+           radius: 5, 
+           fill: 'rgba(0,0,0,0)', 
+           strokeWidth: 1, 
+           stroke: 'rgba(255,100,100,1)', 
+           left: x_val-5, 
+           top: y_val-5,
+           selectable: false,
+           type: "getradec"
+         }); 
+ 
+
+      }
+        
+
+        
+      
+        
     });
     
   }

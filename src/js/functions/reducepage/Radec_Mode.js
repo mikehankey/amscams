@@ -15,10 +15,6 @@ function remove_stars_info_from_canvas() {
 
 $('#radec_mode').click(function() {
    RADEC_MODE != RADEC_MODE;
-
-   // If the preview exists we turn it off
-
-   // else we turn it on
-
+ 
 
 })
