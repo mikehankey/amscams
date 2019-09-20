@@ -21,7 +21,7 @@ def getRADEC(form):
    json_f = load_json_file(json_file)
    
    # Test if we have an old or a new JSON
-   if "reduced_stack" in json:
+   if "reduced_stack" in json_f:
       
       # It's an old we need to create the right calib json object
       new_json_content = { "calib":  
