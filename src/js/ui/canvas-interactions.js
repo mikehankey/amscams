@@ -205,9 +205,9 @@ if ($('canvas#c').length!=0) {
    
          var marker = new fabric.Circle({
            radius: 5, 
-           fill: 'rgba(0,0,0,0)', 
+           fill: 'rgba(0,0,0,0.3)', 
            strokeWidth: 1, 
-           stroke: 'rgba(255,100,100,1)', 
+           stroke: 'rgba(255,0,0,1)', 
            left: x_val-5, 
            top: y_val-5,
            selectable: false,
