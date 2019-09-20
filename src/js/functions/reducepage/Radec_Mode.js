@@ -98,7 +98,7 @@ function build_radecpanel() {
 
                // Reset Panel
                $('#radec_info').val('');
-               
+
                // Add info to the Panel
                add_radec_resolved_info(v);
             }
@@ -117,6 +117,8 @@ function add_radec_info(info) {
 
 // Add resolved info to the draggable panel for RA/DEC
 function add_radec_resolved_info(info) {
+   console.log("add_radec_resolved_info")
+   console.log(info);
    var step = '\n';
    if($.trim($('#radec_info').val()) == '') {
       step = '';
