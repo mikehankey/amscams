@@ -1,5 +1,5 @@
 import cgitb
-import json
+import json as json
 
 from lib.FileIO import load_json_file
 from lib.MeteorReduce_Tools import name_analyser  
