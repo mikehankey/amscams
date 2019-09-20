@@ -67,8 +67,34 @@ function build_radecpanel() {
             success: function(data) {
                loading_done();
                data = JSON.parse(data); 
+
+               // We hide all the radec_info form the canvas
+               remove_radec_info_from_canvas();
+
+               // We add back the stuff on the canvas
                $.each(data['res'], function(i,v){
-                  console.log(i,v);
+                  canvas.add(new fabric.Circle({
+                     radius: 5, 
+                     fill: 'rgba(0,0,0,0.3)', 
+                     strokeWidth: 1, 
+                     stroke: 'rgba(0,0,255,1)', 
+                     left: v['x_org']-5, 
+                     top: v['y_org']-5,
+                     selectable: false,
+                     type: "getradec"
+                  }));
+                   
+                   canvas.add(new fabric.Text(
+                     "RA: " + v['ra'], {
+                        fontFamily: 'Arial', 
+                        fontSize: 12, 
+                        left: (v['x_org'] - 11)/2+5,
+                        top: (v['y_org'] - 11)/2+8,
+                        fill:'rgba(255,255,255,.45)',
+                        selectable: false,
+                        gp_id: v[0],
+                        type: 'star_info',
+                     }));
                })
             }
          });
