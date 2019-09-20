@@ -1,4 +1,4 @@
-var RADEC_MODE = false; // Shared with canvas-interactions
+ar RADEC_MODE = false; // Shared with canvas-interactions
 
 var star_info_object = [];  // Store the canvas objects related to the stars
 var rad_dec_object = [];    // Store the canvas objects related to the radec_mode
@@ -34,12 +34,13 @@ function remove_radec_info_from_canvas() {
 
 // Build draggable panel for RAD/DEC
 function build_radecpanel() {
-   $('#main_container').prepend($('<div id="select_f_tools" class="ui-draggable" style="position:absolute;z-index:999; color:#fff;background:#000;padding: 0.2rem .3rem;font-family: monospace;">\
+   $('#main_container').prepend($('<div id="select_f_tools" class="ui-draggable" style="position:absolute;z-index:999; color:#fff;background:#000;padding: 0.2rem .3rem;font-family: monospace; left: -150px;  top: -10px;">\
       <div class="drag-h d-flex justify-content-between pt-1 ui-draggable-handle">\
          <small>RA/Dec Mode</small>\
       </div>\
       <div class="p-1">\
-      <textarea id="radec_info" style="width: 300px; height: 300px; overflow:auto; color:#fff; background:#000"></textarea>\
+      <textarea id="radec_info" style="width: 370px; height: 300px; overflow:auto; color:#fff; background:#000"></textarea>\
+      <button id="get_radec_info" class="btn btn-primary btn-sm d-block" style="margin: 0 auto;"><span class="icon-cogs"></span> Resolve RA/Dec</button>\
       </div></div>'));
 
       // Make it draggable
