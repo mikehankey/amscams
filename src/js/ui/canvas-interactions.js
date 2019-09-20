@@ -220,7 +220,7 @@ if ($('canvas#c').length!=0) {
          canvas.add(marker); 
 
          // Add the object info in rad_dec_object
-         rad_dec_object
+         rad_dec_object.push({x: x_val, y: y_val});
          
 
       }
