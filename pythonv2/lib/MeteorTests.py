@@ -225,11 +225,11 @@ def test_object(object, total_frames):
    cm_gap_test = 1
    cm,gaps,gap_events,cm_hist_len_ratio = meteor_test_cm_gaps(object)
 
-   print("GAPS:", gaps)
+   #print("GAPS:", gaps)
    if int(gaps) > 10:
       status = 0
       cm_gap_test = 0
-      print("GAPS:", gaps, status)
+      #print("GAPS:", gaps, status)
 
    if cm < 3:
       cm_gap_test = 0
@@ -326,7 +326,7 @@ def test_object(object, total_frames):
    results.append(('Peaks', peak_test, desc))
 
 
-   print("FINAL STATUS:", status)
+   #print("FINAL STATUS:", status)
    return(status, results)
 
 
