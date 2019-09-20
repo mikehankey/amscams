@@ -15,8 +15,7 @@ def getRADEC(form):
    y = int(form.getvalue('y'))
    
    json = load_json_file(json_file)
-  
-
+   
    # Test if we have an old or a new JSON
    if "reduced_stack" in json:
       
@@ -45,8 +44,10 @@ def getRADEC(form):
    
    json_file_x = fix_old_file_name(json_file)
    
-   x,y,RA,dec,azimuth,altitude = XYtoRADec(x,y,name_analyser(json_file_x),new_json_content)
+   # Get the data
+   x,y,RA,dec,az,el = XYtoRADec(x,y,name_analyser(json_file_x),new_json_content)
 
-   print({'ra':RA,'dec':dec,'Az':azimuth,'el':altitude})
+   # Return a manual JSON
+   print({'ra':RA,'dec':dec,'Az':az,'el':el})
    
 

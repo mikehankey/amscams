@@ -37,8 +37,8 @@ def find_min_max_dist(hist,mute_wh=0):
    min_x = 10000
    min_y = 10000
    for hs in hist:
-      print("HIST LEN:", len(hs))
-      print("HIST :", hs)
+      #print("HIST LEN:", len(hs))
+      #print("HIST :", hs)
       if len(hs) == 7:
          fn,x,y,w,h,mx,my = hs
       if len(hs) == 9:

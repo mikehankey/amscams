@@ -304,7 +304,7 @@ def mask_frame(frame, mp, masks, size=3):
       #   fact = 480 / 576
       #   my = int(int(my) * fact) + 1
       #   mh = int(int(mh) * fact) + 1
-      print("MX MY:", my,my+mh,":",mx,mx+mw)
+      #print("MX MY:", my,my+mh,":",mx,mx+mw)
       frame[int(my):int(my)+int(mh),int(mx):int(mx)+int(mw)] = 0
 
    for x,y in mp:
