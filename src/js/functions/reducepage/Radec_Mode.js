@@ -65,7 +65,9 @@ function build_radecpanel() {
                 values: JSON.stringify(rad_dec_object)
             }, 
             success: function(data) {
+               loading_done();
                data = JSON.parse(data); 
+               console.log(data);
             }
          });
      })
