@@ -5,8 +5,6 @@ POS_Y = 1
 
 
 function update_stars_on_canvas_and_table(json_resp) {
-
-    
  
    var cat_stars = json_resp['calib']['stars']; 
 
@@ -49,7 +47,8 @@ function update_stars_on_canvas_and_table(json_resp) {
                 left: (v["i_pos"][POS_X] - 11)/2, 
                 top: (v["i_pos"][POS_Y] - 11)/2,
                 selectable: false,
-                gp_id: v[0]
+                gp_id: v[0],
+                type: 'start_info',
         }));
 
         // Add "+" on canvas
@@ -61,7 +60,8 @@ function update_stars_on_canvas_and_table(json_resp) {
                 top: ((v["cat_dist_pos"][POS_Y] - 11)/2) -4,    // -4 = shift text
                 fill:'rgba(255,0,0,.75)',
                 selectable: false ,
-                gp_id: v[0]
+                gp_id: v[0],
+                type: 'start_info',
         }));
 
         // Add Star Name on canvas
@@ -72,7 +72,8 @@ function update_stars_on_canvas_and_table(json_resp) {
                 top: (v['cat_und_pos'][POS_Y] - 11)/2+8,
                 fill:'rgba(255,255,255,.65)',
                 selectable: false,
-                gp_id: v[0] 
+                gp_id: v[0],
+                type: 'start_info',
         }));
 
         // Add Rectangle
@@ -83,7 +84,8 @@ function update_stars_on_canvas_and_table(json_resp) {
             width: 10,
             height: 10 ,
             selectable: false,
-            gp_id: v[0] 
+            gp_id: v[0],
+            type: 'start_info',
          }));
 
         // Add the corresponding row 

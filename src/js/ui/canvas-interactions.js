@@ -123,8 +123,7 @@ if ($('canvas#c').length!=0) {
     }); 
     
     canvas.on('mouse:down', function(e) {
-
-
+ 
         // Remove zoom
         if($('#c').hasClass('r-zoomed')) {
           $('#c').removeClass('r-zoomed').removeAttr('style'); 
