@@ -87,7 +87,7 @@ function build_radecpanel() {
                   }));
                    
                    canvas.add(new fabric.Text(
-                        "Az: " + v['az']toFixed(3)  + "\nEl: " + v['el'].toFixed(3), {
+                        "Az: " + v['az'].toFixed(3)  + "\nEl: " + v['el'].toFixed(3), {
                         fontFamily: 'Arial', 
                         fontSize: 12, 
                         top:  v['y_org'],
