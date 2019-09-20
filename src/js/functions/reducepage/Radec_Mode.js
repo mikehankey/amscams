@@ -14,7 +14,7 @@ function remove_stars_info_from_canvas() {
 
 
 $('#radec_mode').click(function() {
-   RADEC_MODE != RADEC_MODE;
+   RADEC_MODE = !RADEC_MODE;
    
    console.log("RADEC_MODE ", RADEC_MODE );
 
