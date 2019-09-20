@@ -34,7 +34,7 @@ function remove_radec_info_from_canvas() {
 
 // Build draggable panel for RAD/DEC
 function build_radecpanel() {
-   $('#main_container').prepend($('<div id="select_f_tools" class="ui-draggable" style="position:absolute;z-index:999; color:#fff;background:#000;padding: 0.2rem .3rem;font-family: monospace; left: -150px;  top: -10px;">\
+   $('#main_container').prepend($('<div id="select_f_tools" class="ui-draggable" style="width: 388px;position:absolute;z-index:999; color:#fff;background:#000;padding: 0.2rem .3rem;font-family: monospace; left: -150px;  top: -10px;">\
       <div class="drag-h d-flex justify-content-between pt-1 ui-draggable-handle">\
          <small>RA/Dec Mode</small>\
       </div>\
