@@ -18,7 +18,7 @@ def getRADEC(form):
    v = json.loads(values)
    print(v)
 
-   json = load_json_file(json_file)
+   json_f = load_json_file(json_file)
    
    # Test if we have an old or a new JSON
    if "reduced_stack" in json:
@@ -26,25 +26,25 @@ def getRADEC(form):
       # It's an old we need to create the right calib json object
       new_json_content = { "calib":  
         { "device": {
-            "alt":  float(json['cal_params']['device_alt']),
-            "lat":  float(json['cal_params']['device_lat']),
-            "lng":  float(json['cal_params']['device_lng']),
-            "scale_px":  float(json['cal_params']['pixscale']),
+            "alt":  float(json_f['cal_params']['device_alt']),
+            "lat":  float(json_f['cal_params']['device_lat']),
+            "lng":  float(json_f['cal_params']['device_lng']),
+            "scale_px":  float(json_f['cal_params']['pixscale']),
             "poly": {
-                "y_fwd": json['cal_params']['y_poly_fwd'],
-                "x_fwd": json['cal_params']['x_poly_fwd']
+                "y_fwd": json_f['cal_params']['y_poly_fwd'],
+                "x_fwd": json_f['cal_params']['x_poly_fwd']
             },
             "center": {
-                "az": float(json['cal_params']['orig_az_center']),  
-                "ra": float(json['cal_params']['orig_ra_center']), 
-                "el": float(json['cal_params']['orig_el_center']),
-                "dec": float(json['cal_params']['orig_dec_center']) 
+                "az": float(json_f['cal_params']['orig_az_center']),  
+                "ra": float(json_f['cal_params']['orig_ra_center']), 
+                "el": float(json_f['cal_params']['orig_el_center']),
+                "dec": float(json_f['cal_params']['orig_dec_center']) 
             },
-            "angle":  float(json['cal_params']['orig_pos_ang'])
+            "angle":  float(json_f['cal_params']['orig_pos_ang'])
          }      
       }}
    else:
-      new_json_content = json
+      new_json_content = json_f
    
    json_file_x = fix_old_file_name(json_file)
    
