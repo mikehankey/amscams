@@ -1,6 +1,9 @@
 var stars_added   = 0;
 var stars_removed = 0;
 
+
+
+
 // Remove or add a star to user_stars
 function update_user_stars() {
 
@@ -215,7 +218,10 @@ if ($('canvas#c').length!=0) {
          }); 
 
          canvas.add(marker); 
- 
+
+         // Add the object info in rad_dec_object
+         rad_dec_object
+         
 
       }
         
