@@ -51,8 +51,7 @@ function build_radecpanel() {
                  var left = u.position.left;
              }
      });
-
-
+ 
      // Click on resolve button 
      $('#get_radec_info').click(function() {
          loading({text: "Resolving...", overlay:true});
@@ -88,26 +87,38 @@ function build_radecpanel() {
                      "RA: " + v['ra'] +"\nDec: " + v['dec'], {
                         fontFamily: 'Arial', 
                         fontSize: 12, 
-                        top:  v['y_org'] + 11,
+                        top:  v['y_org'],
                         left:  v['x_org'] + 11,
                         fill:'rgba(255,255,255,.45)',
                         selectable: false,
                         gp_id: v[0],
-                        type: 'star_info',
+                        type: 'getradec',
                      }));
-               })
+               });
+
+               // Add info to the Panel
+               add_radec_resolved_info(data);
             }
          });
      })
 }
 
-// Add and info to the draggable panel for RA/DEC
+// Add info to the draggable panel for RA/DEC
 function add_radec_info(info) {
    var step = '\n';
    if($.trim($('#radec_info').val()) == '') {
       step = '';
    }
    $('#radec_info').val($('#radec_info').val()+ step + "x:"+info['x_org']+", y:"+info['y_org']+" - HD x:"+ info['x_HD'] + ", y:" + info['y_HD']);
+}
+
+// Add resolved info to the draggable panel for RA/DEC
+function add_radec_resolved_info(info) {
+   var step = '\n';
+   if($.trim($('#radec_info').val()) == '') {
+      step = '';
+   }
+   $('#radec_info').val($('#radec_info').val()+ step + "x:"+info['x_org']+", y:"+info['y_org']+" - RA:"+ info['ra'] + ", Dec:" + info['dec']);
 }
 
 
