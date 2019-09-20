@@ -66,6 +66,10 @@ $('#radec_mode').click(function() {
    if(RADEC_MODE) {
       // We hide the stars
       remove_stars_info_from_canvas();
+
+      // We add the radec panel
+      build_radecpanel();
+
    } else {
       // We put back the stars
       add_stars_info_on_canvas();
