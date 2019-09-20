@@ -51,6 +51,23 @@ function build_radecpanel() {
                  var left = u.position.left;
              }
      });
+
+
+     // Click on resolve button 
+     $('#get_radec_info').click(function() {
+         loading({text: "Resolving...", overlay:true});
+
+         $.ajax({ 
+            url:  "/pycgi/webUI.py",
+            data: {
+                cmd: 'getRADEC',
+                json_file: json_file,
+            }, 
+            success: function(data) {
+               data = JSON.parse(data); 
+            }
+         });
+     })
 }
 
 // Add and info to the draggable panel for RA/DEC
@@ -65,8 +82,7 @@ function add_radec_info(info) {
 
 $('#radec_mode').click(function() {
    RADEC_MODE = !RADEC_MODE;
-   
-   console.log("RADEC_MODE ", RADEC_MODE );
+    
 
    if(RADEC_MODE) {
       // We hide the stars
@@ -74,6 +90,7 @@ $('#radec_mode').click(function() {
 
       // We add the radec panel
       build_radecpanel();
+      
 
    } else {
       // We put back the stars
