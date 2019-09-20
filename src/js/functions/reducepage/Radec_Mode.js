@@ -67,7 +67,9 @@ function build_radecpanel() {
             success: function(data) {
                loading_done();
                data = JSON.parse(data); 
-               console.log(data);
+               $.each(data['res'], function(i,v){
+                  console.log(i,v);
+               })
             }
          });
      })
