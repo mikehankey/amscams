@@ -87,7 +87,7 @@ function build_radecpanel() {
                   }));
                    
                    canvas.add(new fabric.Text(
-                     "RA: " + v['ra'] +"\nDec: " + v['dec'], {
+                        "Az: " + v['az']toFixed(3)  +"\nEl: " + v['el'].toFixed(3), {
                         fontFamily: 'Arial', 
                         fontSize: 12, 
                         top:  v['y_org'],
@@ -121,13 +121,11 @@ function add_radec_info(info) {
 
 // Add resolved info to the draggable panel for RA/DEC
 function add_radec_resolved_info(info) {
-   console.log("add_radec_resolved_info")
-   console.log(info);
    var step = '\n';
    if($.trim($('#radec_info').val()) == '') {
       step = '';
    }
-   $('#radec_info').val($('#radec_info').val()+ step + "x:"+info['x_org']+", y:"+info['y_org']+" - RA:"+ info['ra'] + ", Dec:" + info['dec']);
+   $('#radec_info').val($('#radec_info').val()+ step + "x:"+info['x_org']+", y:"+info['y_org']+"\n - Az:"+ info['az'].toFixed(4) + ", El:" + info['el'].toFixed(4)+"\n - RA:"+ info['ra'].toFixed(4) + ", Dec:" + info['dec'].toFixed(4));
 }
 
 
