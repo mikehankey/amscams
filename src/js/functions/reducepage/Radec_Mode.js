@@ -55,7 +55,11 @@ function build_radecpanel() {
 
 // Add and info to the draggable panel for RA/DEC
 function add_radec_info(info) {
-   $('#radec_info').val($('#radec_info').val()+"\nx:"+info['x_org']+" ,y:"+info['y_org']+" - HD x:"+ info['x_HD'] + ", y:" + info['y_HD']);
+   var step = '\n';
+   if($.trim($('#radec_info').val()) == '') {
+      step = '';
+   }
+   $('#radec_info').val($('#radec_info').val()+ step + "x:"+info['x_org']+" ,y:"+info['y_org']+" - HD x:"+ info['x_HD'] + ", y:" + info['y_HD']);
 }
 
 
