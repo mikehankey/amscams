@@ -695,6 +695,7 @@ def check_stream(cam_num, stream_type):
 def system_status(json_conf):
    os_drive = None
    data_drive = None
+   status = "Good"
    if "os_drive" in json_conf['site']:
       os_drive = json_conf['site']['os_drive']
    if "data_drive" in json_conf['site']:
@@ -728,7 +729,7 @@ def system_status(json_conf):
          errors.append("Cam " + str(cams_id) + "HD Stream not present. ")
          stream_errors = 1
 
-   status = ""
+   status = "good"
    for vol in disk_info:
       print(vol, disk_info[vol])
       status = status + vol + "," + disk_info[vol] + ";"
@@ -760,7 +761,7 @@ def system_status(json_conf):
    print(response)
 
    
-if cmd == 'ss' or cmd == 'system_status':
+if cmd == 'sys' or cmd == 'system_status':
    system_status(json_conf) 
    exit()
 if cmd == 'ps' or cmd == 'prep_solve':
