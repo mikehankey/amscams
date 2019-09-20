@@ -21,7 +21,10 @@ def getRADEC(form):
    
    # Test if we have an old or a new JSON
    if "reduced_stack" in json_f:
-      
+      if "device_alt" not in json_f['cal_params']:
+         json_f['cal_params']['device_alt'] = json_f['cal_params']['site_alt']  
+         json_f['cal_params']['device_lat'] = json_f['cal_params']['site_lat']  
+         json_f['cal_params']['device_lng'] = json_f['cal_params']['site_lng']  
       # It's an old we need to create the right calib json object
       new_json_content = { "calib":  
         { "device": {
@@ -34,12 +37,12 @@ def getRADEC(form):
                 "x_fwd": json_f['cal_params']['x_poly_fwd']
             },
             "center": {
-                "az": float(json_f['cal_params']['orig_az_center']),  
-                "ra": float(json_f['cal_params']['orig_ra_center']), 
-                "el": float(json_f['cal_params']['orig_el_center']),
-                "dec": float(json_f['cal_params']['orig_dec_center']) 
+                "az": float(json_f['cal_params']['center_az']),  
+                "ra": float(json_f['cal_params']['ra_center']), 
+                "el": float(json_f['cal_params']['center_el']),
+                "dec": float(json_f['cal_params']['dec_center']) 
             },
-            "angle":  float(json_f['cal_params']['orig_pos_ang'])
+            "angle":  float(json_f['cal_params']['position_angle'])
          }      
       }}
    else:
