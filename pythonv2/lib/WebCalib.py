@@ -3219,10 +3219,12 @@ def reduce_meteor_new(json_conf,form):
        var az_grid_file = '""" + az_grid_file + """'
        var meteor_json_file = '""" + meteor_json_file + """'
        var main_vid = '""" + sd_video_file + """'
-       var json_reduced = '""" + meteor_reduced_file + """'
-      var stars = [];
+       var stars = [];
      </script>
    """
+
+   if(meteor_reduced_file is not None):
+       js_html = ejs + "<script>var json_reduced = " + meteor_reduced_file + "</script>")
 
    return(js_html)
 
