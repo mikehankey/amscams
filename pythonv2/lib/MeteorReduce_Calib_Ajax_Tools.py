@@ -57,6 +57,6 @@ def getRADEC(form):
 
 
    # Return JSON
-   print(results)
+   print({'res':results})
    
 
