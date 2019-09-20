@@ -203,7 +203,7 @@ if ($('canvas#c').length!=0) {
          x_val = pointer.x | 0;
          y_val = pointer.y | 0;
    
-         var circle = new fabric.Circle({
+         var marker = new fabric.Circle({
            radius: 5, 
            fill: 'rgba(0,0,0,0)', 
            strokeWidth: 1, 
@@ -213,6 +213,8 @@ if ($('canvas#c').length!=0) {
            selectable: false,
            type: "getradec"
          }); 
+
+         canvas.add(marker); 
  
 
       }
