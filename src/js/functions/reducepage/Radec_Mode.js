@@ -16,5 +16,8 @@ function remove_stars_info_from_canvas() {
 $('#radec_mode').click(function() {
    RADEC_MODE != RADEC_MODE;
  
-
+   if(RADEC_MODE) {
+      // We hide the stars
+      remove_stars_info_from_canvas();
+   }
 })

@@ -132,6 +132,8 @@ if ($('canvas#c').length!=0) {
       // Hide grid on click
       if($('#c').hasClass('grid')) $('#show_grid').click();
       
+      console.log("MOUSE DOWN - RADECMODE ", RADEC_MODE );
+
       // Not in RADEC_MODE: it means we select stars on the canvas
       if(RADEC_MODE==false) {
          // Make the update star button blinked
