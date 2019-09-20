@@ -1,4 +1,4 @@
-ar RADEC_MODE = false; // Shared with canvas-interactions
+var RADEC_MODE = false; // Shared with canvas-interactions
 
 var star_info_object = [];  // Store the canvas objects related to the stars
 var rad_dec_object = [];    // Store the canvas objects related to the radec_mode
