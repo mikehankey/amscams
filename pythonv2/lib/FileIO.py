@@ -9,13 +9,14 @@ def purge_sd_nighttime_files(sd_dir,json_conf):
    days = sorted(get_days(json_conf), reverse=True)
    dc = 0 
    for day in days:
-      if dc > 38:
+      if dc > 30:
          print(day)
          files = glob.glob(sd_dir + day + "/*.mp4")
          for file in files:
             el = file.split("/")
-            if len(el) != 9:
-               continue
+            print(file, len(el))
+            #if len(el) != 9:
+            #   continue
             (f_datetime, cam, f_date_str,fy,fm,fd, fh, fmin, fs) = convert_filename_to_date_cam(file)
             sun_status,sun_az,sun_el = get_sun_info(f_date_str,json_conf)
             st = os.stat(file)
@@ -28,6 +29,8 @@ def purge_sd_nighttime_files(sd_dir,json_conf):
                   print ("Deleted 100 files from ", day)
                cmd = "rm " + file
                if "trim" not in file:
+                  #print ("Deleted ", file)
+                  print("rm " + file)
                   os.system("rm " + file)
       dc = dc + 1
 
