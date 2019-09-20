@@ -158,6 +158,9 @@ $('#radec_mode').click(function() {
 
          // We empty rad_dec_object
          rad_dec_object = [];
+
+         // We delete the panel
+         $('#select_f_tools').remove();
       }
    }
 
