@@ -3224,7 +3224,7 @@ def reduce_meteor_new(json_conf,form):
    """
 
    if(meteor_reduced_file is not None):
-       js_html = ejs + "<script>var json_reduced = " + meteor_reduced_file + "</script>")
+      js_html += "<script>var json_reduced = " + meteor_reduced_file + "</script>"
 
    return(js_html)
 
