@@ -1,7 +1,8 @@
 var stars_added   = 0;
 var stars_removed = 0;
 
-
+var HD_w = 1920;
+var HD_h = 1080;
 
 
 // Remove or add a star to user_stars
@@ -51,18 +52,15 @@ function update_user_stars() {
 // All interactions with the canvas are defined below
 
 
-if ($('canvas#c').length!=0) {
-//&& (document.readyState === "complete")) {
+if ($('canvas#c').length!=0) { 
 
   // Defined #c canvas
   var canvas = new fabric.Canvas('c', {
     hoverCursor: 'default',
-    selection: true,
-    //fireRightClick: true  // <-- enable firing of right click events
+    selection: true 
   });
 
   var out_timer, in_timer;
-
   const render = canvas.renderAll.bind(canvas);
 
   // Loading Animation
@@ -80,6 +78,11 @@ if ($('canvas#c').length!=0) {
     var yRatio =  h_preview_dim / h_canvas_h;
     
     var zoom = 4;
+
+    // We compute the W_factor & H_factor
+    // to pass the equivalent of HD x,y on the RADEC_MODE
+    var wRatio = HD_w/$('#c').innerWidth();
+    var hRatio = HD_h/$('#c').innerWidth();
 
     $('#canvas_zoom').css({'background':'url('+my_image +') no-repeat 50% 50% #000','background-size': h_canvas_w*zoom + 'px ' + h_canvas_h*zoom + 'px' })
     $('.canvas_zoom_holder').css({'width':w_preview_dim*2, 'height':h_preview_dim*2,'position':'absolute'});
@@ -134,9 +137,7 @@ if ($('canvas#c').length!=0) {
       
       // Hide grid on click
       if($('#c').hasClass('grid')) $('#show_grid').click();
-      
-      console.log("MOUSE DOWN - RADECMODE ", RADEC_MODE );
-
+     
       // Not in RADEC_MODE: it means we select stars on the canvas
       if(RADEC_MODE==false) {
          // Make the update star button blinked
@@ -220,7 +221,7 @@ if ($('canvas#c').length!=0) {
          canvas.add(marker); 
 
          // Add the object info in rad_dec_object
-         rad_dec_object.push({x: x_val, y: y_val});
+         rad_dec_object.push({x_org: x_val, y_org: y_val, x_HD: wRatio*xval, y_HD: hRatio*yval});
          
 
       }
