@@ -12,11 +12,10 @@ def getRADEC(form):
    cgitb.enable() 
 
    json_file = form.getvalue('json_file') 
-   values = form.getvalue('values')
 
-   print("VALUES\n")
-   v = json.loads(values)
-   print(v)
+   # Get all values
+   values = form.getvalue('values')
+   _values = json.loads(values)
 
    json_f = load_json_file(json_file)
    
@@ -49,9 +48,15 @@ def getRADEC(form):
    json_file_x = fix_old_file_name(json_file)
    
    # Get the data
-   x,y,RA,dec,az,el = XYtoRADec(x,y,name_analyser(json_file_x),new_json_content)
+   #x,y,RA,dec,az,el = XYtoRADec(x,y,name_analyser(json_file_x),new_json_content)
+   results = {};
+
+   for v in _values:
+      x,y,ra,dec,az,el = XYtoRADec(_values['x_HD'],_values['y_HD']name_analyser(json_file_x),new_json_content)
+      print({'x_HD': _values['x_HD'], 'y_HD': _values['y_HD'],'y_org': _values['y_org'], 'x_org': _values['x_org'], ra':RA,'dec':dec,'Az':az,'el':el})
+
 
    # Return a manual JSON
-   print({'ra':RA,'dec':dec,'Az':az,'el':el})
+   #print({'ra':RA,'dec':dec,'Az':az,'el':el})
    
 
