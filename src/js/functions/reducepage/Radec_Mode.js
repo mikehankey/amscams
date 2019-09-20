@@ -70,6 +70,9 @@ function build_radecpanel() {
                // We hide all the radec_info form the canvas
                remove_radec_info_from_canvas();
 
+               // Reset Panel
+               $('#radec_info').val('');
+
                // We add back the stuff on the canvas
                $.each(data['res'], function(i,v){
                   canvas.add(new fabric.Circle({
@@ -94,13 +97,14 @@ function build_radecpanel() {
                         gp_id: v[0],
                         type: 'getradec',
                      }));
+
+                   // Add info to the Panel
+                     add_radec_resolved_info(v);
                });
 
-               // Reset Panel
-               $('#radec_info').val('');
+              
 
-               // Add info to the Panel
-               add_radec_resolved_info(v);
+              
             }
          });
      })
