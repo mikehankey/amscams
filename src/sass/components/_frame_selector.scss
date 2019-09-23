@@ -8,14 +8,15 @@
    zoom: 1.5;
 
    img {
-      max-width: 100%;
+      max-width: 281px;
+      max-height: 300px;
    }
    
    span {
       top: 0;
       position: absolute;
       left: .2rem;
-      font-size: .85rem;
+      font-size: .58rem;
    }
 
    &:hover {
@@ -54,7 +55,8 @@
       img {
          display: inline-block;
          margin:.25rem;
-         max-height:180px;
+         max-width: 281px;
+         max-height: 300px;
          width: auto;
       }
    }
