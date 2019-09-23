@@ -100,7 +100,9 @@ def manual_reduction_cropper(form):
 
    # Create destination folder(?)
    analysed_name = name_analyser(video_file)
-   dest_folder = does_cache_exist(analysed_file_name,'tmp_cropped')
+   dest_folder = does_cache_exist(analysed_name,'tmp_cropped')
+
+   print("DESTINATION FOLDER  " +  dest)
 
    # Create all the cropped frames
    #cmd = 'ffmpeg -i video_file -filter:v "crop='+x_start+':'+y_start+':'+x_end+':'+y_end" out.mp4'
