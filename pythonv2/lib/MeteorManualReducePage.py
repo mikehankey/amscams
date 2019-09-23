@@ -109,12 +109,10 @@ def manual_reduction_cropper(form):
    dest_folder = does_cache_exist(analysed_name,'tmp_cropped')
 
    # If we already tmp cropped frames, we need to delete them
-   if(len(dest_folder)!==0):
-      print(dest_folder)
+   print(dest_folder)
       
 
 
-   print("DESTINATION FOLDER  " +  dest_folder)
-
+   
    # Create all the cropped frames
    #cmd = 'ffmpeg -i video_file -filter:v "crop='+x_start+':'+y_start+':'+x_end+':'+y_end" out.mp4'
