@@ -138,7 +138,8 @@ def manual_reduction_cropper(form):
    # Add Thumbs to template
    thumbs_to_display = ''
    for i,img in enumerate(thumbs):
-      thumbs_to_display +=  "<a class='frame_selector' data-rel='"+str(i)+"'><span>#"+str(i)+"</span><img src='"+img+"'/></a>"
+      x = i + 1
+      thumbs_to_display +=  "<a class='frame_selector' data-rel='"+str(x)+"'><span>#"+str(x)+"</span><img src='"+img+"'/></a>"
 
    template = template.replace("{CROPPED_THUMBS_GALLERY}",  thumbs_to_display)      
 
