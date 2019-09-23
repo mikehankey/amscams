@@ -12,6 +12,7 @@ from lib.VIDEO_VARS import *
 
 MANUAL_RED_PAGE_TEMPLATE_STEP1 = "/home/ams/amscams/pythonv2/templates/manual_reduction_template_step1.html"
 MANUAL_RED_PAGE_TEMPLATE_STEP2 = "/home/ams/amscams/pythonv2/templates/manual_reduction_template_step2.html"
+MANUAL_RED_PAGE_TEMPLATE_STEP3 = "/home/ams/amscams/pythonv2/templates/manual_reduction_template_step3.html"
 
 # Fix the old files names that contains "-trim"
 def fix_old_file_name(filename):
@@ -77,9 +78,7 @@ def manual_reduction(form):
    else:
       print_error("<b>You need to add a video file in the URL.</b>")
 
-   # Get the related JSON
-   json_file = video_full_path.replace('.mp4','.json')
-   template = template.replace("{JSON_FILE}", str(json_file))   # JSON File  
+
 
    # Get the stacks 
    # True = We automatically resize the stack to HD dims so we can use it in the UI
@@ -157,6 +156,10 @@ def manual_reduction_meteor_pos_selector(form):
    h = float(form.getvalue('h'))
    f = float(form.getvalue('f'))   # Number of the first frame
 
+   # Build the page based on template  
+   with open(MANUAL_RED_PAGE_TEMPLATE_STEP3, 'r') as file:
+      template = file.read()
+
     # Fix eventual video file name (old version)
    tmp_fixed_video_full_path = fix_old_file_name(video_file)
    analysed_name = name_analyser(tmp_fixed_video_full_path)
@@ -175,6 +178,12 @@ def manual_reduction_meteor_pos_selector(form):
       if(x>=int(f)):
          real_cropped_frames.append(cropped_frame)
 
+   
+   # Add the thumbs to navigator
+   template = template.replace("{CROPPED_FRAMES_SELECTOR}",  str(real_cropped_frames))     
 
-   print("real_cropped_frames FRAMES")
-   print(real_cropped_frames)
+   
+
+ 
+   # Display Template
+   print(template)
