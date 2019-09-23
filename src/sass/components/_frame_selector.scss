@@ -30,6 +30,7 @@
    margin-right: 90px; 
    overflow: auto;
    padding-bottom: .5rem;
+   max-height:180px;
 
    button.mfp-arrow {
       margin-top: 0;
@@ -40,8 +41,11 @@
    
 }
 
-#cropped_frame_select a {
-   display: inline-block;
-   margin:.25rem;
-   border:3px solid rgba(0,0,0,0);
+#cropped_frame_select {
+   a {
+      display: inline-block;
+      margin:.25rem;
+      border:3px solid rgba(0,0,0,0);
+      max-height:180px;
+   }
 }
