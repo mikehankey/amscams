@@ -166,6 +166,10 @@ def manual_reduction_meteor_pos_selector(form):
 
    # Get the cropped frames
    cropped_frames  = does_cache_exist(analysed_name,'tmp_cropped')
+
+   print("CROPPED FRAMES")
+   print(cropped_frames)
+
    real_cropped_frames = []
 
    # We remove all the frames from cropped_frames that are before f
