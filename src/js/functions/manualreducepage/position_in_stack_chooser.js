@@ -154,7 +154,7 @@ function create_meteor_selector_from_stack(image_src) {
    $('<h1>Manual Reduction Step 1</h1>\
       <input type="hidden" name="x_start"/><input type="hidden" name="y_start"/>\
       <input type="hidden" name="x_end"/><input type="hidden" name="y_end"/>\
-      <input type="hidden" name="xs"/><input type="hidden" name="ys"/>\ 
+      <input type="hidden" name="xs"/><input type="hidden" name="ys"/>\
       <input type="hidden" name="w"/><input type="hidden" name="h"/>\
      <div class="box">\
      <div class="modal-header p-0" style="border:none!important">\
