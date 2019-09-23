@@ -81,6 +81,8 @@ def does_cache_exist(analysed_file_name,cache_type):
    # Get Cache Path
    cache_path = get_cache_path(analysed_file_name,cache_type)
 
+   print("analysed_file_name")
+   print(analysed_file_name)
    print("CACHE PATH")
    print(cache_path)
 
