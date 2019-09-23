@@ -65,6 +65,8 @@ def get_cache_path(analysed_file_name, cache_type):
       cache_path += STACKS_SUBPATH
    elif(cache_type == "cropped"  or cache_type == "thumbs"):
       cache_path += CROPPED_FRAMES_SUBPATH
+   elif(cache_type == 'tmp_cropped'):
+      cache_path += TMP_CROPPED_FRAMES_SUBPATH
    
    return cache_path
 
@@ -78,11 +80,10 @@ def does_cache_exist(analysed_file_name,cache_type):
 
    # Get Cache Path
    cache_path = get_cache_path(analysed_file_name,cache_type)
-
+ 
    if(os.path.isdir(cache_path)):
       # We return the glob of the folder with all the images
-      # print(cache_path + " exist")
-      return glob.glob(cache_path+"*.png")
+      return sorted(glob.glob(cache_path+"/*.png"))
    else:
       # We Create the Folder and return null
       os.makedirs(cache_path)

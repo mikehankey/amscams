@@ -21,10 +21,13 @@ def getRADEC(form):
    
    # Test if we have an old or a new JSON
    if "reduced_stack" in json_f:
+      
+      # If 'device_alt' isn't defined, we have to work with 'site_alt'...
       if "device_alt" not in json_f['cal_params']:
-         json_f['cal_params']['device_alt'] = json_f['cal_params']['site_alt']  
-         json_f['cal_params']['device_lat'] = json_f['cal_params']['site_lat']  
-         json_f['cal_params']['device_lng'] = json_f['cal_params']['site_lng']  
+         json_f['cal_params']['device_alt'] = float(json_f['cal_params']['site_alt'])
+         json_f['cal_params']['device_lat'] = float(json_f['cal_params']['site_lat'])  
+         json_f['cal_params']['device_lng'] = float(json_f['cal_params']['site_lng'])  
+
       # It's an old we need to create the right calib json object
       new_json_content = { "calib":  
         { "device": {
@@ -48,10 +51,10 @@ def getRADEC(form):
    else:
       new_json_content = json_f
    
+   # Eventually fix the name to be able to parse it
    json_file_x = fix_old_file_name(json_file)
    
-   # Get the data
-   #x,y,RA,dec,az,el = XYtoRADec(x,y,name_analyser(json_file_x),new_json_content)
+   # Compute the data with XYtoRADec
    results = [];
 
    for v in _values:

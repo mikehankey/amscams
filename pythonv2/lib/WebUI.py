@@ -41,8 +41,7 @@ from lib.MeteorReducePage import reduce_meteor2
 from lib.MeteorReduce_Ajax_Tools import get_reduction_info, delete_frame, update_multiple_frames, update_frame, get_frame, create_thumb, update_cat_stars
 
 # Manual Reduction page
-from lib.MeteorManualReducePage import manual_reduction
-from lib.MeteorManualReduce_Ajax_Tools import create_crop_frames
+from lib.MeteorManualReducePage import manual_reduction, manual_reduction_cropper, manual_reduction_meteor_pos_selector
 
 # Calibration Tools
 from lib.MeteorReduce_Calib_Ajax_Tools import getRADEC
@@ -290,6 +289,11 @@ def controller(json_conf):
       upload_logo(form)   
       exit()
 
+
+
+
+
+
    # do json ajax functions up here and bypass the exta html
    if cmd == 'override_detect':
       video_file = form.getvalue('video_file')
@@ -330,9 +334,6 @@ def controller(json_conf):
       update_red_info_ajax(json_conf,form)
       exit()
 
-   if cmd == 'create_crop_frames':
-      create_crop_frames(form)
-      exit()
 
    if cmd == 'clone_cal':
       clone_cal(json_conf,form)
@@ -444,8 +445,9 @@ def controller(json_conf):
    nav_html = "" 
 
    # New Reduce page / Manual Reduce page
-   if cmd == 'reduce2' or cmd == 'manual_reduction':
-      skin = "v2"
+   if cmd is not None:
+      if cmd == 'reduce2' or 'manual_reduction' in cmd:
+         skin = "v2"
 
    template = get_template(json_conf, skin)
    stf = template.split("{BODY}")
@@ -479,11 +481,18 @@ def controller(json_conf):
    if cmd == 'custom_logos':
       custom_logos(json_conf,form)
 
-   # Manual Reduction page
+   # Manual Reduction page (First step: select start / end position)
    if cmd == 'manual_reduction':
       manual_reduction(form)
 
+   # Manual Reduction (Second Step: crop frames)  
+   if cmd == 'manual_reduction_cropper': 
+      manual_reduction_cropper(form)   
 
+   # Manual Reduction (Third Step: meteor position within cropped frames)
+   if cmd == 'manual_reduction_meteor_pos_selector':
+      manual_reduction_meteor_pos_selector(form)
+   
    # REAL NEW VERSION
    if cmd == 'reduce2':
       extra_html = reduce_meteor2(json_conf, form)

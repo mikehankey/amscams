@@ -20,7 +20,9 @@ def create_crop_frames(form):
    y_end = form.getvalue('y_e')
    stack = formet.getvalue('stack')
 
-   # Get All Frames
+   # Get All Frames -y -hide_banner -loglevel panic
+   cmd = 'ffmpeg   -i ' + analysed_name['full_path'] + ' -s ' + str(HD_W) + "x" + str(HD_H) + ' ' +  destination + EXT_HD_FRAMES + '%04d' + '.png' 
+   output = subprocess.check_output(cmd, shell=True).decode("utf-8")
    #cmd = 'ffmpeg -y -hide_banner -loglevel panic  -i ' + video_file + ' -s ' + str(HD_W) + "x" + str(HD_H) + ' ' +  destination + EXT_HD_FRAMES + '%04d' + '.png' 
    #output = subprocess.check_output(cmd, shell=True).decode("utf-8")
 
