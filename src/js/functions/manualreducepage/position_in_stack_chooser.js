@@ -84,7 +84,7 @@ function update_select_preview(top,left,margins,W_factor,H_factor,cursor_dim, cu
       // Update "real w & h"
       $('input[name=w]').val(Math.abs(w)*W_factor);
       $('input[name=h]').val(Math.abs(h)*H_factor); 
-
+ 
 
       if(w<=0 && h>0) { 
          n_TOP  = parseInt($('input[name=y_start]').val());
@@ -116,7 +116,9 @@ function update_select_preview(top,left,margins,W_factor,H_factor,cursor_dim, cu
       });
 
 
-
+      // Update real x,y
+      $('input[name=xs]').val(n_TOP*W_factor);
+      $('input[name=ys]').val(n_LEFT*H_factor); 
        
    }
    
@@ -152,8 +154,7 @@ function create_meteor_selector_from_stack(image_src) {
    $('<h1>Manual Reduction Step 1</h1>\
       <input type="hidden" name="x_start"/><input type="hidden" name="y_start"/>\
       <input type="hidden" name="x_end"/><input type="hidden" name="y_end"/>\
-      <input type="hidden" name="xs"/><input type="hidden" name="ys"/>\
-      <input type="hidden" name="xe"/><input type="hidden" name="ye"/>\
+      <input type="hidden" name="xs"/><input type="hidden" name="ys"/>\ 
       <input type="hidden" name="w"/><input type="hidden" name="h"/>\
      <div class="box">\
      <div class="modal-header p-0" style="border:none!important">\
