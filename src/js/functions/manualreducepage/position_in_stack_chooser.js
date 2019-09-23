@@ -30,9 +30,7 @@ function update_select_preview(top,left,margins,W_factor,H_factor,cursor_dim, cu
             top: top - cursor_dim/2,
             left: left - cursor_dim/2
          });
- 
-         $('input[name=x_img_start]').val(Math.floor(sel_x*W_factor));
-         $('input[name=y_img_start]').val(Math.floor(sel_y*H_factor)); 
+  
          $('input[name=x_start]').val(Math.floor(left));
          $('input[name=y_start]').val(Math.floor(top)); 
 
@@ -50,14 +48,10 @@ function update_select_preview(top,left,margins,W_factor,H_factor,cursor_dim, cu
           $('#sel_end_static').css({
             top: top - cursor_dim/2,
             left: left - cursor_dim/2
-         });
-        
-         $('input[name=x_img_end]').val(Math.floor(sel_x*W_factor));
-         $('input[name=y_img_end]').val(Math.floor(sel_y*H_factor)); 
+         }); 
          $('input[name=x_end]').val(Math.floor(left));
          $('input[name=y_end]').val(Math.floor(top)); 
-         
-
+          
          HAVE_END = true;
       } 
    }
@@ -80,7 +74,6 @@ function update_select_preview(top,left,margins,W_factor,H_factor,cursor_dim, cu
          n_LEFT = parseInt($('input[name=x_end]').val());
          n_WIDTH = Math.abs(w);
          n_HEIGHT = h;
-
       } else if(h<=0 && w>0) { 
          n_TOP  = parseInt($('input[name=y_end]').val());
          n_LEFT = parseInt($('input[name=x_start]').val());
@@ -104,6 +97,13 @@ function update_select_preview(top,left,margins,W_factor,H_factor,cursor_dim, cu
          'width': n_WIDTH ,
          'height': n_HEIGHT
       });
+
+      // Update data to pass to next step
+      $('input[name=w]').val(n_WIDTH);
+      $('input[name=h]').val(n_HEIGHT);
+      $('input[name=xs]').val(n_LEFT);
+      $('input[name=ys]').val(n_TOP); 
+
        
    }
    
@@ -138,9 +138,9 @@ function create_meteor_selector_from_stack(image_src) {
  
    $('<h1>Manual Reduction Step 1</h1>\
       <input type="hidden" name="x_start"/><input type="hidden" name="y_start"/>\
-      <input type="hidden" name="x_end"/><input type="hidden" name="y_end"/>\
-      <input type="hidden" name="x_img_start"/><input type="hidden" name="y_img_start"/>\
-      <input type="hidden" name="x_img_end"/><input type="hidden" name="y_img_end"/>\
+      <input type="hidden" name="x_end"/><input type="hidden" name="y_end"/>\ 
+      <input type="hidden" name="w"/><input type="hidden" name="h"/>\
+      <input type="hidden" name="xs"/><input type="hidden" name="ys"/>\ 
      <div class="box">\
      <div class="modal-header p-0" style="border:none!important">\
       <div class="alert alert-info mb-3 p-1 pr-1 pl-2">Select the <b style="color:green">STARTING</b> point and the <b style="color:red">ENDING</b> point of the meteor path.</div>\
@@ -166,35 +166,7 @@ function create_meteor_selector_from_stack(image_src) {
 
    // Go to next step
    $('#step1_btn').click(function() {
-      var cmd_data = {
-         cmd: 'manual_reduction_cropper',
-         stack: stack, // Defined on the page
-         json_file: json_file, // Defined on the page
-
-      };
-    
-      loading({text: "Croppping the frames", overlay:true});
-    
-      $.ajax({ 
-           url:  "/pycgi/webUI.py",
-           data: cmd_data, 
-           success: function(data) { 
-               loading_done();  
-               data = JSON.parse(data); 
-               
-               // Hide the modal below (it will be reopened anyway)
-               $('#select_meteor_modal').modal('hide');
-               
-               create_meteor_selector_from_frame(data.id,data.full_fr); 
-           }, 
-           error:function() { 
-               bootbox.alert({
-                   message: "The process returned an error",
-                   className: 'rubberBand animated error',
-                   centerVertical: true 
-               });
-           }
-       });
+      window.location = './webUI.py?cmd=manual_reduction_cropper&video_file=video_file&x_start='+$('input[name=xs]').val()+'&y_start='+$('input[name=ys]').val()+'&w='+$('input[name=w]').val()+'&h='+$('input[name=h]').val()
    })
 
 }
