@@ -108,17 +108,13 @@ def manual_reduction_cropper(form):
    analysed_name['full_path'] = video_file
 
    # Create destination folder if necessary
-   cache_path = get_cache_path(analysed_name,'tmp_cropped')
-   dest_folder = does_cache_exist(analysed_name,'tmp_cropped')
+   dest_folder = get_cache_path(analysed_name,'tmp_cropped')
+   cache_path  = does_cache_exist(analysed_name,'tmp_cropped')
 
    # If we already tmp cropped frames, we need to delete them
-   if(len(dest_folder)!=0):
-      for f in dest_folder:
-         os.remove(os.path.join(dest_folder, f))
-      
+   if(len(cache_path)!=0):
+      for f in cache_path:
+         os.remove(os.path.join(cache_path, f))
 
-   print(cache_path)
-
-   
-   # Create all the cropped frames
-   #cmd = 'ffmpeg -i video_file -filter:v "crop='+x_start+':'+y_start+':'+x_end+':'+y_end" out.mp4'
+   cmd = 'ffmpeg   -i ' + analysed_name['full_path'] +  '-filter:v "crop='+x_start+':'+y_start+':'+x_end+':'+y_end+'"  +  ' + dest_folder + '/%04d' + '.png' 
+   print(cmd) 
