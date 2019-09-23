@@ -5,6 +5,52 @@ import glob
 from pathlib import Path
 from lib.UtilLib import convert_filename_to_date_cam, get_sun_info
 
+def purge_hd_cal(json_conf):
+   days = glob.glob("/mnt/ams2/cal/hd_images/*")
+   for day in days:
+      if cfe( day, 1) == 1:
+         files = glob.glob(day + "/*-stacked.png" )
+         for file in files:
+            bad = 0
+            stars = 0
+            json_file = file.replace("-stacked.png", "-calparams.json")
+            if cfe(json_file) == 1:
+               json_data = load_json_file(json_file)
+               stars = len(json_data['cat_image_stars'])
+               if len(json_data['cat_image_stars']) < 15:
+                  bad = 1
+      
+            else:
+               bad = 1
+            if bad == 1:
+               cmd = "rm " + file + ";" + "rm " + json_file
+               os.system(cmd)
+               print(cmd)
+            #print(file, json_file, bad, stars)
+
+         files = glob.glob(day + "/*-calparams.json" )
+         for file in files:
+            bad = 0
+            stars = 0
+            img_file = file.replace("-calparams.json", "-stacked.png")
+            if cfe(file) == 1:
+               json_data = load_json_file(file)
+               stars = len(json_data['cat_image_stars'])
+               if len(json_data['cat_image_stars']) < 15:
+                  bad = 1
+            else:
+               bad = 1
+            if cfe(img_file) == 0:
+               bad = 1
+            if cfe(img_file) == 0 or cfe(json_file):
+               bad = 1
+
+            if bad == 1:
+               cmd = "rm " + img_file + ";" + "rm " + file
+               os.system(cmd)
+               print(cmd)
+            print(file, img_file, bad, stars)
+
 def purge_sd_nighttime_files(sd_dir,json_conf):
    days = sorted(get_days(json_conf), reverse=True)
    dc = 0 
