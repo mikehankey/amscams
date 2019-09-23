@@ -7,6 +7,10 @@
    cursor: pointer;
    zoom: 1.5;
 
+   img {
+      max-width: 100%;
+   }
+   
    span {
       top: 0;
       position: absolute;
@@ -42,6 +46,8 @@
 }
 
 #cropped_frame_select {
+   white-space: nowrap;
+
    a {
       border:3px solid rgba(0,0,0,0);
       
