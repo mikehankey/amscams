@@ -98,9 +98,17 @@ def manual_reduction_cropper(form):
    x_end = form.getvalue('xe')
    y_end = form.getvalue('ye')
 
-   # Create destination folder(?)
-   analysed_name = name_analyser(video_file)
+   # Fix eventual video file name (old version)
+   tmp_fixed_video_full_path = fix_old_file_name(video_full_path)
+   analysed_name = name_analyser(tmp_fixed_video_full_path)
+
+   # We keep the original full_path anyway
+   analysed_name['full_path'] = video_full_path
+
+   # Create destination folder if necessary
    dest_folder = does_cache_exist(analysed_name,'tmp_cropped')
+
+
 
    print("DESTINATION FOLDER  " +  dest)
 
