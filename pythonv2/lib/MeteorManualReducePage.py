@@ -125,5 +125,5 @@ def manual_reduction_cropper(form):
    # Get all the newly created cropped frames
    thumbs = sorted(glob.glob(dest_folder+'/*.png'))
    
-   for img in thumbs:
-      print("<img src='"+img+'"/>)
+   #for img in thumbs:
+   #   print("<img src='"+img+'"/>)
