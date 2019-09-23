@@ -714,6 +714,7 @@ def system_status(json_conf):
             disk_info['os_drive'] = vol + "," + perc
 
    # Check SD Streams
+   errors = [] 
    stream_errors = 0
    for i in range (1,7):
       key = "cam" + str(i)
