@@ -81,6 +81,9 @@ def does_cache_exist(analysed_file_name,cache_type):
    # Get Cache Path
    cache_path = get_cache_path(analysed_file_name,cache_type)
 
+   print("CACHE PATH")
+   print(cache_path)
+
    if(os.path.isdir(cache_path)):
       # We return the glob of the folder with all the images
       # print(cache_path + " exist")
