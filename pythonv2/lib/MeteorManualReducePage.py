@@ -10,8 +10,8 @@ from lib.MeteorReduce_Tools import *
 from lib.REDUCE_VARS import *
 from lib.VIDEO_VARS import *
 
-MANUAL_RED_PAGE_TEMPLATE = "/home/ams/amscams/pythonv2/templates/manual_reduction_template.html"
-
+MANUAL_RED_PAGE_TEMPLATE_STEP1 = "/home/ams/amscams/pythonv2/templates/manual_reduction_template_step1.html"
+MANUAL_RED_PAGE_TEMPLATE_STEP2 = "/home/ams/amscams/pythonv2/templates/manual_reduction_template_step2.html"
 
 # Fix the old files names that contains "-trim"
 def fix_old_file_name(filename):
@@ -55,7 +55,7 @@ def manual_reduction(form):
    video_file = form.getvalue('video_file')
 
    # Build the page based on template  
-   with open(MANUAL_RED_PAGE_TEMPLATE, 'r') as file:
+   with open(MANUAL_RED_PAGE_TEMPLATE_STEP1, 'r') as file:
       template = file.read()
 
    # Here we have the possibility to "empty" the cache, ie regenerate the files (stacks) even if they already exists
@@ -96,7 +96,7 @@ def manual_reduction(form):
 # Second Step of Manual Reduction: cropp of all frames + selection of start event
 def manual_reduction_cropper(form):
 
-   video_file  = form.getvalue('video_file') 
+   video_file  = form.getvalue('video_file')  
    x_start = float(form.getvalue('x_start'))
    y_start = float(form.getvalue('y_start'))
    w = float(form.getvalue('w'))
@@ -117,18 +117,27 @@ def manual_reduction_cropper(form):
    if(len(cache_path)!=0):
       for f in cache_path:
          os.remove(os.path.join(cache_path, f))
-
-   print("CROP FROM " + str(x_start) + " , " + str(y_start))
-   print("<BR>")
-   print("W,H " + str(w) + " , " + str(h))
-   print("<BR>")
-
+ 
    # Extract all the frames, resize to HD and crop
    cmd = 'ffmpeg   -i ' + analysed_name['full_path'] +  ' -filter_complex "[0:v]scale=' + str(HD_W) + ":" + str(HD_H) + '[scale];[scale]crop='+str(w)+':'+str(h)+':'+str(x_start)+':'+str(y_start)+'[out]"  -map "[out]" ' + dest_folder + '/%04d' + '.png' 
    output = subprocess.check_output(cmd, shell=True).decode("utf-8")  
    
    # Get all the newly created cropped frames
    thumbs = sorted(glob.glob(dest_folder+'/*.png'))
+
+   # Build the page based on template  
+   with open(MANUAL_RED_PAGE_TEMPLATE_STEP2, 'r') as file:
+      template = file.read()
+
+   template = template.replace("{VIDEO}", str(video_file))
+   template = template.replace("{X}", str(x_start))   
+   template = template.replace("{Y}", str(y_start))  
+   template = template.replace("{W}", str(w))   
+   template = template.replace("{H}", str(h))       
+ 
    
    for img in thumbs:
       print("<img src='"+img+"'/>")
+
+
+      CROPPED_THUMBS_GALLERY
