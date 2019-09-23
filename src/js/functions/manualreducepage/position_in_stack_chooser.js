@@ -101,7 +101,7 @@ function update_select_preview(top,left,margins,W_factor,H_factor,cursor_dim, cu
       // Update data to pass to next step
       $('input[name=w]').val(n_WIDTH);
       $('input[name=h]').val(n_HEIGHT);
-      $('input[name=xs]').val();
+      $('input[name=xs]').val(n_LEFT);
       $('input[name=ys]').val(n_TOP); 
 
        

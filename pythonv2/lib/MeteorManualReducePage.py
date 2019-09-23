@@ -96,8 +96,8 @@ def manual_reduction(form):
 def manual_reduction_cropper(form):
 
    video_file  = form.getvalue('video_file') 
-   x_start = float(form.getvalue('xs'))
-   y_start = float(form.getvalue('ys'))
+   x_start = float(form.getvalue('x_start'))
+   y_start = float(form.getvalue('y_start'))
    w = float(form.getvalue('w'))
    h = float(form.getvalue('h'))
 
