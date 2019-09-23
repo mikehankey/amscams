@@ -446,7 +446,6 @@ def controller(json_conf):
 
    # New Reduce page / Manual Reduce page
    if cmd == 'reduce2' or 'manual_reduction' in cmd:
-      print("SKIN V2")
       skin = "v2"
 
    template = get_template(json_conf, skin)
@@ -488,9 +487,7 @@ def controller(json_conf):
    # Manual Reduction (Second Step: crop frames)  
    if cmd == 'manual_reduction_cropper': 
       manual_reduction_cropper(form)   
-      exit()
-
-
+   
    # REAL NEW VERSION
    if cmd == 'reduce2':
       extra_html = reduce_meteor2(json_conf, form)
