@@ -166,7 +166,7 @@ function create_meteor_selector_from_stack(image_src) {
 
    // Go to next step
    $('#step1_btn').click(function() {
-      window.location = './webUI.py?cmd=manual_reduction_cropper&video_file=video_file&x_start='+$('input[name=xs]').val()+'&y_start='+$('input[name=ys]').val()+'&w='+$('input[name=w]').val()+'&h='+$('input[name=h]').val()
+     
    })
 
 }
