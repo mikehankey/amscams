@@ -41,7 +41,7 @@ from lib.MeteorReducePage import reduce_meteor2
 from lib.MeteorReduce_Ajax_Tools import get_reduction_info, delete_frame, update_multiple_frames, update_frame, get_frame, create_thumb, update_cat_stars
 
 # Manual Reduction page
-from lib.MeteorManualReducePage import manual_reduction, manual_reduction_cropper 
+from lib.MeteorManualReducePage import manual_reduction, manual_reduction_cropper, manual_reduction_meteor_pos_selector
 
 # Calibration Tools
 from lib.MeteorReduce_Calib_Ajax_Tools import getRADEC
@@ -487,6 +487,10 @@ def controller(json_conf):
    # Manual Reduction (Second Step: crop frames)  
    if cmd == 'manual_reduction_cropper': 
       manual_reduction_cropper(form)   
+
+   # Manual Reduction (Third Step: meteor position within cropped frames)
+   if cmd == 'manual_reduction_meteor_pos_selector':
+      manual_reduction_meteor_pos_selector(form)
    
    # REAL NEW VERSION
    if cmd == 'reduce2':

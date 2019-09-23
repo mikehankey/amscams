@@ -145,3 +145,33 @@ def manual_reduction_cropper(form):
 
    # Display Template
    print(template)
+
+
+# Third step of Manual Reduction: manual selection of the meteor position
+def manual_reduction_meteor_pos_selector(form):
+
+   video_file  = form.getvalue('video_file')  
+   x_start = float(form.getvalue('x_start'))
+   y_start = float(form.getvalue('y_start'))
+   w = float(form.getvalue('w'))
+   h = float(form.getvalue('h'))
+   f = float(form.getvalue('f'))   # Number of the first frame
+
+    # Fix eventual video file name (old version)
+   tmp_fixed_video_full_path = fix_old_file_name(video_file)
+   analysed_name = name_analyser(tmp_fixed_video_full_path)
+
+   # We keep the original full_path anyway
+   analysed_name['full_path'] = video_file
+
+   # Get the cropped frames
+   cropped_frames  = does_cache_exist(analysed_name,'tmp_cropped')
+   real_cropped_frames = []
+
+   # We remove all the frames from cropped_frames that are before f
+   for i,cropped_frame in enumerate(cropped_frames):
+      x = i + 1
+      if(x>=int(f)):
+         real_cropped_frames.append(cropped_frame)
+
+   print(cropped_frame)
