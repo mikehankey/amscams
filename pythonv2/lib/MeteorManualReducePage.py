@@ -151,8 +151,8 @@ def manual_reduction_cropper(form):
 def manual_reduction_meteor_pos_selector(form):
 
    video_file  = form.getvalue('video_file')  
-   x_start = float(form.getvalue('x_start'))
-   y_start = float(form.getvalue('y_start'))
+   x_start = float(form.getvalue('x'))
+   y_start = float(form.getvalue('y'))
    w = float(form.getvalue('w'))
    h = float(form.getvalue('h'))
    f = float(form.getvalue('f'))   # Number of the first frame
