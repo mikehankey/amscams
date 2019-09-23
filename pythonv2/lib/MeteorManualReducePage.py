@@ -122,6 +122,8 @@ def manual_reduction_cropper(form):
    cmd = 'ffmpeg   -i ' + analysed_name['full_path'] +  ' -filter_complex "[0:v]scale=' + str(HD_W) + ":" + str(HD_H) + '[scale];[scale]crop='+str(w)+':'+str(h)+':'+str(x_start)+':'+str(y_start)+'[out]"  -map "[out]" ' + dest_folder + '/%04d' + '.png' 
    output = subprocess.check_output(cmd, shell=True).decode("utf-8")  
    
-
-   v = glob.glob(dest_folder+'/*.png')
-   print(v)
+   # Get all the newly created cropped frames
+   thumbs = sorted(glob.glob(dest_folder+'/*.png'))
+   
+   for img in thumbs
+      print("<img src='"+v+'"/>)
