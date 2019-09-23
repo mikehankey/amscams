@@ -6,7 +6,7 @@ from lib.MeteorReducePage import print_error
 from lib.MeteorReduce_Tools import *
 from lib.REDUCE_VARS import *
 
-PAGE_TEMPLATE = "/home/ams/amscams/pythonv2/templates/manual_reduction_template.html"
+MANUAL_RED_PAGE_TEMPLATE = "/home/ams/amscams/pythonv2/templates/manual_reduction_template.html"
 
 
 # Fix the old files names that contains "-trim"
@@ -40,6 +40,9 @@ def fix_old_file_name(filename):
       return filename
 
 
+
+
+# First Step of the Manual reduction: select start / end meteor position
 def manual_reduction(form):
    
    # Debug
@@ -48,7 +51,7 @@ def manual_reduction(form):
    video_file = form.getvalue('video_file')
 
    # Build the page based on template  
-   with open(PAGE_TEMPLATE, 'r') as file:
+   with open(MANUAL_RED_PAGE_TEMPLATE, 'r') as file:
       template = file.read()
 
    # Here we have the possibility to "empty" the cache, ie regenerate the files (stacks) even if they already exists
@@ -84,3 +87,20 @@ def manual_reduction(form):
 
    # Display Template
    print(template)
+
+
+# Second Step of Manual Reduction: cropp of all frames + selection of start event
+def manual_reduction_cropper(form):
+
+   video_file  = form.getvalue('video_file') 
+   x_start = form.getvalue('x_s')
+   y_start = form.getvalue('y_s')
+   x_end = form.get_value('x_e')
+   y_end = form.get_value('y_e')
+
+   # Create destination folder(?)
+   analysed_name = name_analyser(video_file)
+   dest_folder = does_cache_exist(analysed_file_name,'tmp_cropped')
+
+   # Create all the cropped frames
+   #cmd = 'ffmpeg -i video_file -filter:v "crop='+x_start+':'+y_start+':'+x_end+':'+y_end" out.mp4'

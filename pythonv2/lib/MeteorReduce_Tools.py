@@ -65,6 +65,8 @@ def get_cache_path(analysed_file_name, cache_type):
       cache_path += STACKS_SUBPATH
    elif(cache_type == "cropped"  or cache_type == "thumbs"):
       cache_path += CROPPED_FRAMES_SUBPATH
+   elif(cache_type == 'tmp_cropped'):
+      cache_path += TMP_CROPPED_FRAMES_SUBPATH
    
    return cache_path
 

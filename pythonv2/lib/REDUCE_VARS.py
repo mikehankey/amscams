@@ -10,6 +10,7 @@ CACHE_PATH = MAIN_FILE_PATH + "CACHE/"
 FRAMES_SUBPATH= "/FRAMES/"          # For the HD Frames
 CROPPED_FRAMES_SUBPATH = "/THUMBS/" # For the Cropped Frames (thumbs)
 STACKS_SUBPATH   = "/STACKS/"       # For the Stacks
+TMP_CROPPED_FRAMES_SUBPATH = "/CR_THUMBS" # For the temporary cropped fames (manual reduction)
 
 # Folder where the calibration are
 CALIB_PATH = MAIN_FILE_PATH + "cal/freecal/"

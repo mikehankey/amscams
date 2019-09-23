@@ -75,45 +75,28 @@ function update_select_preview(top,left,margins,W_factor,H_factor,cursor_dim, cu
       var h = parseInt($('input[name=y_end]').val())  - parseInt($('input[name=y_start]').val());
       var w = parseInt($('input[name=x_end]').val())  - parseInt($('input[name=x_start]').val());
 
-      console.log("H " + h)
-      console.log("W " + w)
-
-      if(w<=0 && h>0) {
-         console.log("w<=0 && h>0"); 
-         /***************************************/ 
+      if(w<=0 && h>0) { 
          n_TOP  = parseInt($('input[name=y_start]').val());
          n_LEFT = parseInt($('input[name=x_end]').val());
          n_WIDTH = Math.abs(w);
          n_HEIGHT = h;
 
-      } else if(h<=0 && w>0) {
-         
-         console.log("h<=0 && w>0");
-         /***************************************/ 
+      } else if(h<=0 && w>0) { 
          n_TOP  = parseInt($('input[name=y_end]').val());
          n_LEFT = parseInt($('input[name=x_start]').val());
          n_WIDTH = w;
          n_HEIGHT = Math.abs(h);
-
-
       } else if(h<=0 && w<=0) {
-         console.log("h<=0 && w<=0");
          n_TOP  = parseInt($('input[name=y_end]').val());
          n_LEFT = parseInt($('input[name=x_end]').val());
          n_WIDTH = Math.abs(w);
          n_HEIGHT = Math.abs(h);
-
-  
-  
       } else {
-         console.log("h & w >0");
-          /***************************************/ 
          n_TOP  = parseInt($('input[name=y_start]').val());
          n_LEFT = parseInt($('input[name=x_start]').val());
          n_WIDTH = Math.abs(parseInt($('input[name=x_start]').val())  - parseInt($('input[name=x_end]').val()));
          n_HEIGHT = Math.abs(parseInt($('input[name=y_start]').val())  - parseInt($('input[name=y_end]').val()));
       }
-
 
       $('#sel_rectangle_static').css({
          'top': n_TOP,
@@ -121,8 +104,6 @@ function update_select_preview(top,left,margins,W_factor,H_factor,cursor_dim, cu
          'width': n_WIDTH ,
          'height': n_HEIGHT
       });
-
-
        
    }
    
@@ -192,7 +173,7 @@ function create_meteor_selector_from_stack(image_src) {
 
       };
     
-      loading({text: "Generating Full Frame #"+ cur_fn, overlay:true});
+      loading({text: "Croppping the frames", overlay:true});
     
       $.ajax({ 
            url:  "/pycgi/webUI.py",
