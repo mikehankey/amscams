@@ -41,13 +41,19 @@
 
    a {
       border:3px solid rgba(0,0,0,0);
+      display: inline-block;
+      margin:.25rem;
       
       img {
          display: inline-block;
-         margin:.25rem;
+         box-shadow:none;
          max-width: 200px;
          max-height: 200px;
          width: auto;
+      }
+
+      &.cur {
+         border:3px solid rgba(255, 229, 46, 1)
       }
    }
 }
