@@ -95,8 +95,8 @@ def manual_reduction_cropper(form):
    video_file  = form.getvalue('video_file') 
    x_start = form.getvalue('xs')
    y_start = form.getvalue('ys')
-   x_end = form.get_value('xe')
-   y_end = form.get_value('ye')
+   x_end = form.getvalue('xe')
+   y_end = form.getvalue('ye')
 
    # Create destination folder(?)
    analysed_name = name_analyser(video_file)
