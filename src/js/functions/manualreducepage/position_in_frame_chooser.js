@@ -1,3 +1,4 @@
+// Fix the height of the chooser
 function fix_pifc_ui() {
    var fh =$('#footer').outerHeight();
 
@@ -6,4 +7,4 @@ function fix_pifc_ui() {
          $('#cropped_frame_selector').width($('#cropped_frame_selector').width()-1)
        }
    }
-
+}
