@@ -117,5 +117,5 @@ def manual_reduction_cropper(form):
       for f in cache_path:
          os.remove(os.path.join(cache_path, f))
 
-   cmd = 'ffmpeg   -i ' + analysed_name['full_path'] +  ' -filter_complex "[0:v]scale=' + str(HD_W) + ":" + str(HD_H) + '[scale];[scale]crop='+x_start+':'+y_start+':'+x_end+':'+y_end+'[out]"  -map "[out]" ' + dest_folder + '/%04d' + '.png' 
+   cmd = 'ffmpeg   -i ' + analysed_name['full_path'] +  ' -filter_complex "[0:v]scale=' + str(HD_W) + ":" + str(HD_H) + '[scale];[scale]crop='+y_start+':'+x_start+':'+y_end+':'+x_end+'[out]"  -map "[out]" ' + dest_folder + '/%04d' + '.png' 
    print(cmd) 
