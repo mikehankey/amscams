@@ -1,0 +1,23 @@
+.frame_selector {
+   display: block;
+   position: relative;
+   border:4px solid rgba(0,0,0,0);
+   margin: 0 .5rem .5rem;
+
+   span {
+      top: 0;
+      position: absolute;
+      left: .2rem;
+      font-size: .85rem;
+   }
+
+   &:hover {
+      span {
+         display:none;
+      }
+
+      border-color:#ffdd1e;
+   }
+
+
+}
