@@ -30,9 +30,13 @@ function update_select_preview(top,left,margins,W_factor,H_factor,cursor_dim, cu
             top: top - cursor_dim/2,
             left: left - cursor_dim/2
          });
-  
+
          $('input[name=x_start]').val(Math.floor(left));
          $('input[name=y_start]').val(Math.floor(top)); 
+         
+         
+         $('input[name=xs]').val(Math.floor(left));
+         $('input[name=ys]').val(Math.floor(top)); 
 
          HAVE_START = true;
       } else {
@@ -49,11 +53,19 @@ function update_select_preview(top,left,margins,W_factor,H_factor,cursor_dim, cu
             top: top - cursor_dim/2,
             left: left - cursor_dim/2
          }); 
+         
          $('input[name=x_end]').val(Math.floor(left));
          $('input[name=y_end]').val(Math.floor(top)); 
+
+         $('input[name=xe]').val(Math.floor(left));
+         $('input[name=ye]').val(Math.floor(top)); 
           
          HAVE_END = true;
       } 
+
+
+
+      
    }
 
    // Enable continue button 
@@ -65,15 +77,20 @@ function update_select_preview(top,left,margins,W_factor,H_factor,cursor_dim, cu
          $('<div id="sel_rectangle_static" style="position:absolute; border:1px solid rgba(255,255,255,.6)">').appendTo($('#main_view'));
       }
 
-      // We draw a rectangle 
+      // We draw a rectangle & get the proper data to pass
       var h = parseInt($('input[name=y_end]').val())  - parseInt($('input[name=y_start]').val());
       var w = parseInt($('input[name=x_end]').val())  - parseInt($('input[name=x_start]').val());
+      
+      // Update "real w & h"
+      $('input[name=w]').val(Math.abs(w)*W_factor);
+      $('input[name=h]').val(Math.abs(h)*H_factor); 
+
 
       if(w<=0 && h>0) { 
          n_TOP  = parseInt($('input[name=y_start]').val());
          n_LEFT = parseInt($('input[name=x_end]').val());
          n_WIDTH = Math.abs(w);
-         n_HEIGHT = h;
+         n_HEIGHT = h; 
       } else if(h<=0 && w>0) { 
          n_TOP  = parseInt($('input[name=y_end]').val());
          n_LEFT = parseInt($('input[name=x_start]').val());
@@ -98,11 +115,7 @@ function update_select_preview(top,left,margins,W_factor,H_factor,cursor_dim, cu
          'height': n_HEIGHT
       });
 
-      // Update data to pass to next step
-      $('input[name=w]').val(n_WIDTH);
-      $('input[name=h]').val(n_HEIGHT);
-      $('input[name=xs]').val(n_LEFT);
-      $('input[name=ys]').val(n_TOP); 
+
 
        
    }
@@ -139,8 +152,9 @@ function create_meteor_selector_from_stack(image_src) {
    $('<h1>Manual Reduction Step 1</h1>\
       <input type="hidden" name="x_start"/><input type="hidden" name="y_start"/>\
       <input type="hidden" name="x_end"/><input type="hidden" name="y_end"/>\
-      <input type="hidden" name="w"/><input type="hidden" name="h"/>\
       <input type="hidden" name="xs"/><input type="hidden" name="ys"/>\
+      <input type="hidden" name="xe"/><input type="hidden" name="ye"/>\
+      <input type="hidden" name="w"/><input type="hidden" name="h"/>\
      <div class="box">\
      <div class="modal-header p-0" style="border:none!important">\
       <div class="alert alert-info mb-3 p-1 pr-1 pl-2">Select the <b style="color:green">STARTING</b> point and the <b style="color:red">ENDING</b> point of the meteor path.</div>\
