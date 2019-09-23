@@ -2,6 +2,7 @@ import cgitb
 import re
 import os
 import sys
+import glob
 
 from lib.FileIO import load_config
 from lib.MeteorReducePage import print_error
@@ -119,4 +120,8 @@ def manual_reduction_cropper(form):
 
    # Extract all the frames, resize to HD and crop
    cmd = 'ffmpeg   -i ' + analysed_name['full_path'] +  ' -filter_complex "[0:v]scale=' + str(HD_W) + ":" + str(HD_H) + '[scale];[scale]crop='+str(w)+':'+str(h)+':'+str(x_start)+':'+str(y_start)+'[out]"  -map "[out]" ' + dest_folder + '/%04d' + '.png' 
-   print(cmd) 
+   output = subprocess.check_output(cmd, shell=True).decode("utf-8")  
+   
+
+   v = glob.glob(dest_folder)
+   print(v)
