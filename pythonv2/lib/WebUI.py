@@ -445,7 +445,8 @@ def controller(json_conf):
    nav_html = "" 
 
    # New Reduce page / Manual Reduce page
-   if cmd == 'reduce2' or  'manual_reduction' in cmd:
+   if cmd == 'reduce2' or 'manual_reduction' in cmd:
+      print("SKIN V2")
       skin = "v2"
 
    template = get_template(json_conf, skin)
