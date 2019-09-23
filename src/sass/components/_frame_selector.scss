@@ -40,7 +40,7 @@
    white-space: nowrap;
 
    a {
-      border:3px solid rgba(0,0,0,0);
+      border:3px solid rgba(0,0,0,1);
       display: inline-block;
       margin:.25rem;
       
@@ -54,6 +54,10 @@
 
       &.cur {
          border:3px solid rgba(255, 229, 46, 1)
+      }
+
+      &.done{
+         border:3px solid #1956bd
       }
    }
 }
