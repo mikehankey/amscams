@@ -30,8 +30,7 @@ function update_select_preview(top,left,margins,W_factor,H_factor,cursor_dim, cu
             top: top - cursor_dim/2,
             left: left - cursor_dim/2
          });
-
-         
+ 
          $('input[name=x_img_start]').val(Math.floor(sel_x*W_factor));
          $('input[name=y_img_start]').val(Math.floor(sel_y*H_factor));
         /* $('input[name=x_start]').val(Math.floor(sel_x*W_factor));
