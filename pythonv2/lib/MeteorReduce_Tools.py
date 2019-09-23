@@ -83,7 +83,8 @@ def does_cache_exist(analysed_file_name,cache_type):
  
    if(os.path.isdir(cache_path)):
       # We return the glob of the folder with all the images
-      print(cache_path + " exist")
+      print("RETURN BLOG")
+      print(glob.glob(cache_path+"*.png"))
       return glob.glob(cache_path+"*.png")
    else:
       # We Create the Folder and return null
