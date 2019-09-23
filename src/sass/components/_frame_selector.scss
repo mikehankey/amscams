@@ -30,20 +30,10 @@
 }
 
 // Manual Reduction step3
-#frame_select_mod {
-   margin-left: 90px;
-   margin-right: 90px; 
+#frame_select_mod { 
    overflow: auto;
    padding-bottom: .5rem;
    max-height: 210px;
-
-   button.mfp-arrow {
-      margin-top: 0;
-      top: 125px;
-      line-height: 0;
-      padding: 0;
-   }
-   
 }
 
 #cropped_frame_select {
@@ -55,8 +45,8 @@
       img {
          display: inline-block;
          margin:.25rem;
-         max-width: 281px;
-         max-height: 300px;
+         max-width: 200px;
+         max-height: 200px;
          width: auto;
       }
    }
