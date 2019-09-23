@@ -126,4 +126,4 @@ def manual_reduction_cropper(form):
    thumbs = sorted(glob.glob(dest_folder+'/*.png'))
    
    for img in thumbs:
-      print("<img src='"+img+'"/>")
+      print("<img src='"+img+"'/>")
