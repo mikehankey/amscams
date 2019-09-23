@@ -3,7 +3,7 @@
       <h1>Manual Reduction Step 2</h1>
       <div class="box">
          <div class="modal-header p-0" style="border:none!important">
-            <div class="alert alert-info mb-3 p-1 pr-1 pl-2">Select the <strong>FIRST</strong>> frame where the meteor appears</div>
+            <div class="alert alert-info mb-3 p-1 pr-1 pl-2">Select the <strong>FIRST</strong> frame where the meteor appears</div>
          </div>
          <div class="d-flex flex-wrap">
             {CROPPED_THUMBS_GALLERY}
@@ -15,7 +15,11 @@
 <script>  
    var video_file = "{VIDEO}";
    var x = "{X}";
-   var x = "{Y}";
-   var x = "{W}";
-   var x = "{H}";
+   var y = "{Y}";
+   var w = "{W}";
+   var h = "{H}";
+   // Second step:
+   window.onload = function () {
+      select_start_frame();
+   }
 </script>
