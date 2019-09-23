@@ -72,32 +72,44 @@ function update_select_preview(top,left,margins,W_factor,H_factor,cursor_dim, cu
       }
 
       // We draw a rectangle 
-      var h = parseInt($('input[name=y_start]').val())  - parseInt($('input[name=y_end]').val());
-      var w = parseInt($('input[name=x_start]').val())  - parseInt($('input[name=x_end]').val());
+      var h = parseInt($('input[name=y_end]').val())  - parseInt($('input[name=y_start]').val());
+      var w = parseInt($('input[name=x_end]').val())  - parseInt($('input[name=x_start]').val());
 
-      if(w<=0) {
-         console.log("w<0");
-         $('#sel_rectangle_static').css({
-            'width': parseInt($('input[name=y_start]').val()),
-            'height': parseInt($('input[name=x_start]').val()),
-            'top':  Math.abs(parseInt($('input[name=x_start]').val())  - parseInt($('input[name=x_end]').val())) ,
-            'left': Math.abs(parseInt($('input[name=y_start]').val())  - parseInt($('input[name=y_end]').val())) 
-         });
-      } if(h<=0) {
-         console.log("h<0");
+      console.log("H " + h)
+      console.log("W " + w)
 
+      if(w<=0 && h>0) {
+         console.log("w<=0 && h>0"); 
+         n_TOP  = parseInt($('input[name=y_start]').val())-h;
+         n_LEFT = parseInt($('input[name=x_end]').val())-w;
+         n_WIDTH = Math.abs(w);
+         n_HEIGHT = h;
+
+      } else if(h<=0 && w>0) {
+         console.log("h<=0 && w>0");
+
+      } else if(h<=0 && w<=0) {
+         console.log("h<=0 && w<=0");
+         n_TOP  = parseInt($('input[name=y_start]').val())-h;
+         n_LEFT = parseInt($('input[name=x_end]').val())-w;
+         n_WIDTH = Math.abs(w);
+         n_HEIGHT = h;
+  
       } else {
          console.log("h & w >0");
-         $('#sel_rectangle_static').css({
-            'top': parseInt($('input[name=y_start]').val()),
-            'left': parseInt($('input[name=x_start]').val()),
-            'width':  Math.abs(parseInt($('input[name=x_start]').val())  - parseInt($('input[name=x_end]').val())) ,
-            'height': Math.abs(parseInt($('input[name=y_start]').val())  - parseInt($('input[name=y_end]').val())) 
-         });
+         n_TOP  = parseInt($('input[name=y_start]').val());
+         n_LEFT = parseInt($('input[name=x_start]').val());
+         n_WIDTH = Math.abs(parseInt($('input[name=x_start]').val())  - parseInt($('input[name=x_end]').val()));
+         n_HEIGHT = Math.abs(parseInt($('input[name=y_start]').val())  - parseInt($('input[name=y_end]').val()));
       }
 
 
-
+      $('#sel_rectangle_static').css({
+         'top': n_TOP,
+         'left': n_LEFT,
+         'width': n_WIDTH ,
+         'height': n_HEIGHT
+      });
 
 
        
