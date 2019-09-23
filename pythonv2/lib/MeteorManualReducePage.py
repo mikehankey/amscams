@@ -174,4 +174,4 @@ def manual_reduction_meteor_pos_selector(form):
       if(x>=int(f)):
          real_cropped_frames.append(cropped_frame)
 
-   print(cropped_frame)
+   print(real_cropped_frames)
