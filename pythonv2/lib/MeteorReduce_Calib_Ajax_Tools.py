@@ -24,9 +24,9 @@ def getRADEC(form):
       
       # If 'device_alt' isn't defined, we have to work with 'site_alt'...
       if "device_alt" not in json_f['cal_params']:
-         json_f['cal_params']['device_alt'] = json_f['cal_params']['site_alt']  
-         json_f['cal_params']['device_lat'] = json_f['cal_params']['site_lat']  
-         json_f['cal_params']['device_lng'] = json_f['cal_params']['site_lng']  
+         json_f['cal_params']['device_alt'] = float(json_f['cal_params']['site_alt'])
+         json_f['cal_params']['device_lat'] = float(json_f['cal_params']['site_lat'])  
+         json_f['cal_params']['device_lng'] = float(json_f['cal_params']['site_lng'])  
 
       # It's an old we need to create the right calib json object
       new_json_content = { "calib":  
