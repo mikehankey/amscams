@@ -101,7 +101,7 @@ function update_select_preview(top,left,margins,W_factor,H_factor,cursor_dim, cu
       // Update data to pass to next step
       $('input[name=w]').val(n_WIDTH);
       $('input[name=h]').val(n_HEIGHT);
-      $('input[name=xs]').val(n_LEFT);
+      $('input[name=xs]').val();
       $('input[name=ys]').val(n_TOP); 
 
        
@@ -138,9 +138,9 @@ function create_meteor_selector_from_stack(image_src) {
  
    $('<h1>Manual Reduction Step 1</h1>\
       <input type="hidden" name="x_start"/><input type="hidden" name="y_start"/>\
-      <input type="hidden" name="x_end"/><input type="hidden" name="y_end"/>\ 
+      <input type="hidden" name="x_end"/><input type="hidden" name="y_end"/>\
       <input type="hidden" name="w"/><input type="hidden" name="h"/>\
-      <input type="hidden" name="xs"/><input type="hidden" name="ys"/>\ 
+      <input type="hidden" name="xs"/><input type="hidden" name="ys"/>\
      <div class="box">\
      <div class="modal-header p-0" style="border:none!important">\
       <div class="alert alert-info mb-3 p-1 pr-1 pl-2">Select the <b style="color:green">STARTING</b> point and the <b style="color:red">ENDING</b> point of the meteor path.</div>\
@@ -165,8 +165,9 @@ function create_meteor_selector_from_stack(image_src) {
    
 
    // Go to next step
+   // Go to next step
    $('#step1_btn').click(function() {
-     
+      window.location = './webUI.py?cmd=manual_reduction_cropper&video_file=video_file&x_start='+$('input[name=xs]').val()+'&y_start='+$('input[name=ys]').val()+'&w='+$('input[name=w]').val()+'&h='+$('input[name=h]').val()
    })
 
 }
