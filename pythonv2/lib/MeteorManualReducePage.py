@@ -171,16 +171,18 @@ def manual_reduction_meteor_pos_selector(form):
    cropped_frames  = does_cache_exist(analysed_name,'tmp_cropped')
 
    real_cropped_frames = []
-
+   real_cropped_frames_str = ""
+ 
    # We remove all the frames from cropped_frames that are before f
    for i,cropped_frame in enumerate(cropped_frames):
       x = i + 1
       if(x>=int(f)):
          real_cropped_frames.append(cropped_frame)
+         real_cropped_frames_str += "<a><img src='"+cropped_frame+"'/></a>"
 
    
    # Add the thumbs to navigator
-   template = template.replace("{CROPPED_FRAMES_SELECTOR}",  str(real_cropped_frames))     
+   template = template.replace("{CROPPED_FRAMES_SELECTOR}",  real_cropped_frames_str)     
 
    
 
