@@ -129,15 +129,19 @@ def manual_reduction_cropper(form):
    with open(MANUAL_RED_PAGE_TEMPLATE_STEP2, 'r') as file:
       template = file.read()
 
+   # Add Data to template
    template = template.replace("{VIDEO}", str(video_file))
    template = template.replace("{X}", str(x_start))   
    template = template.replace("{Y}", str(y_start))  
    template = template.replace("{W}", str(w))   
    template = template.replace("{H}", str(h))       
  
-   
+   # Add Thumbs to template
+   thumbs_to_display = ''
    for img in thumbs:
-      print("<img src='"+img+"'/>")
+      thumbs_to_display += print("<a><img src='"+img+"'/></a>")
 
+   template = template.replace("{CROPPED_THUMBS_GALLERY}", str(thumbs_to_display))      
 
-      CROPPED_THUMBS_GALLERY
+   # Display Template
+   print(template)
