@@ -123,5 +123,5 @@ def manual_reduction_cropper(form):
    output = subprocess.check_output(cmd, shell=True).decode("utf-8")  
    
 
-   v = glob.glob(dest_folder)
+   v = glob.glob(dest_folder+'/*.png')
    print(v)
