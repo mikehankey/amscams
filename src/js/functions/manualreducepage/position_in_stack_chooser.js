@@ -35,8 +35,7 @@ function update_select_preview(top,left,margins,W_factor,H_factor,cursor_dim, cu
          $('input[name=y_start]').val(Math.floor(top)); 
          
          
-         $('input[name=xs]').val(Math.floor(left));
-         $('input[name=ys]').val(Math.floor(top)); 
+         
 
          HAVE_START = true;
       } else {
@@ -55,10 +54,7 @@ function update_select_preview(top,left,margins,W_factor,H_factor,cursor_dim, cu
          }); 
          
          $('input[name=x_end]').val(Math.floor(left));
-         $('input[name=y_end]').val(Math.floor(top)); 
-
-         $('input[name=xe]').val(Math.floor(left));
-         $('input[name=ye]').val(Math.floor(top)); 
+         $('input[name=y_end]').val(Math.floor(top));  
           
          HAVE_END = true;
       } 
