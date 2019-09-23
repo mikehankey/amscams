@@ -33,6 +33,8 @@ function update_select_preview(top,left,margins,W_factor,H_factor,cursor_dim, cu
  
          $('input[name=x_img_start]').val(Math.floor(sel_x*W_factor));
          $('input[name=y_img_start]').val(Math.floor(sel_y*H_factor)); 
+         $('input[name=x_start]').val(Math.floor(left));
+         $('input[name=y_start]').val(Math.floor(top)); 
 
          HAVE_START = true;
       } else {
@@ -52,6 +54,8 @@ function update_select_preview(top,left,margins,W_factor,H_factor,cursor_dim, cu
         
          $('input[name=x_img_end]').val(Math.floor(sel_x*W_factor));
          $('input[name=y_img_end]').val(Math.floor(sel_y*H_factor)); 
+         $('input[name=x_end]').val(Math.floor(left));
+         $('input[name=y_end]').val(Math.floor(top)); 
          
 
          HAVE_END = true;
@@ -69,10 +73,10 @@ function update_select_preview(top,left,margins,W_factor,H_factor,cursor_dim, cu
       }
 
       $('#sel_rectangle_static').css({
-         'top': parseInt($('input[name=x_img_start]').val()),
-         'left': parseInt($('input[name=y_img_start]').val()),
-         'width':  Math.abs(parseInt($('input[name=x_img_start]').val())  - parseInt($('input[name=x_img_end]').val())) ,
-         'height': Math.abs(parseInt($('input[name=y_img_start]').val())  - parseInt($('input[name=y_img_end]').val())) 
+         'top': parseInt($('input[name=y_start]').val()),
+         'left': parseInt($('input[name=x_start]').val()),
+         'width':  Math.abs(parseInt($('input[name=x_start]').val())  - parseInt($('input[name=x_end]').val())) ,
+         'height': Math.abs(parseInt($('input[name=y_start]').val())  - parseInt($('input[name=y_end]').val())) 
       });
        
    }
