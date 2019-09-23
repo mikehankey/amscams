@@ -80,17 +80,23 @@ function update_select_preview(top,left,margins,W_factor,H_factor,cursor_dim, cu
 
       if(w<=0 && h>0) {
          console.log("w<=0 && h>0"); 
-         n_TOP  = parseInt($('input[name=x_end]').val())-Math.abs(h);
+         /***************************************/ 
+         n_TOP  = parseInt($('input[name=x_end]').val())-Math.abs(h)-cursor_dim/2;
          n_LEFT = parseInt($('input[name=x_end]').val());
          n_WIDTH = Math.abs(w);
          n_HEIGHT = h;
 
       } else if(h<=0 && w>0) {
+         
          console.log("h<=0 && w>0");
-         n_TOP  = parseInt($('input[name=y_start]').val())-h;
-         n_LEFT = parseInt($('input[name=x_end]').val());
+         
+         
+         n_TOP  = parseInt($('input[name=x_start]').val())-Math.abs(h)-cursor_dim/2;
+         n_LEFT = parseInt($('input[name=x_start]').val());
          n_WIDTH = Math.abs(w);
          n_HEIGHT = h;
+
+
       } else if(h<=0 && w<=0) {
          console.log("h<=0 && w<=0");
          n_TOP  = parseInt($('input[name=y_start]').val())-h;
@@ -102,6 +108,7 @@ function update_select_preview(top,left,margins,W_factor,H_factor,cursor_dim, cu
   
       } else {
          console.log("h & w >0");
+          /***************************************/ */
          n_TOP  = parseInt($('input[name=y_start]').val());
          n_LEFT = parseInt($('input[name=x_start]').val());
          n_WIDTH = Math.abs(parseInt($('input[name=x_start]').val())  - parseInt($('input[name=x_end]').val()));
