@@ -72,7 +72,7 @@ function update_select_preview(top,left,margins,W_factor,H_factor,cursor_dim, cu
       }
 
       // We draw a rectangle 
-      var h = parseInt($('input[name=x_start]').val())  - parseInt($('input[name=x_end]').val());
+      var h = parseInt($('input[name=y_start]').val())  - parseInt($('input[name=y_end]').val());
       var w = parseInt($('input[name=x_start]').val())  - parseInt($('input[name=x_end]').val());
 
       if(w<=0) {
@@ -87,6 +87,7 @@ function update_select_preview(top,left,margins,W_factor,H_factor,cursor_dim, cu
          console.log("h<0");
 
       } else {
+         console.log("h & w >0");
          $('#sel_rectangle_static').css({
             'top': parseInt($('input[name=y_start]').val()),
             'left': parseInt($('input[name=x_start]').val()),
