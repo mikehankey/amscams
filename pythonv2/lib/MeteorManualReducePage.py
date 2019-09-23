@@ -7,6 +7,7 @@ from lib.FileIO import load_config
 from lib.MeteorReducePage import print_error
 from lib.MeteorReduce_Tools import *
 from lib.REDUCE_VARS import *
+from lib.VIDEO_VARS import *
 
 MANUAL_RED_PAGE_TEMPLATE = "/home/ams/amscams/pythonv2/templates/manual_reduction_template.html"
 
@@ -116,5 +117,5 @@ def manual_reduction_cropper(form):
       for f in cache_path:
          os.remove(os.path.join(cache_path, f))
 
-   cmd = 'ffmpeg   -i ' + analysed_name['full_path'] +  '-filter:v "crop='+x_start+':'+y_start+':'+x_end+':'+y_end+'"  +  ' + dest_folder + '/%04d' + '.png' 
+   cmd = 'ffmpeg   -i ' + analysed_name['full_path'] +  ' -s ' + str(HD_W) + "x" + str(HD_H) + ' -filter:v "crop='+x_start+':'+y_start+':'+x_end+':'+y_end+'"  ' + dest_folder + '/%04d' + '.png' 
    print(cmd) 
