@@ -98,8 +98,8 @@ def manual_reduction_cropper(form):
    video_file  = form.getvalue('video_file') 
    x_start = float(form.getvalue('xs'))
    y_start = float(form.getvalue('ys'))
-   x_end = float(form.getvalue('xe'))
-   y_end = float(form.getvalue('ye'))
+   w = float(form.getvalue('w'))
+   h = float(form.getvalue('h'))
 
    # Fix eventual video file name (old version)
    tmp_fixed_video_full_path = fix_old_file_name(video_file)
@@ -118,5 +118,5 @@ def manual_reduction_cropper(form):
          os.remove(os.path.join(cache_path, f))
 
    # Extract all the frames, resize to HD and crop
-   cmd = 'ffmpeg   -i ' + analysed_name['full_path'] +  ' -filter_complex "[0:v]scale=' + str(HD_W) + ":" + str(HD_H) + '[scale];[scale]crop='+str(float(y_start-y_end))+':'+str(float(x_end-x_start))+':'+str(y_start)+':'+str(x_start)+'[out]"  -map "[out]" ' + dest_folder + '/%04d' + '.png' 
+   cmd = 'ffmpeg   -i ' + analysed_name['full_path'] +  ' -filter_complex "[0:v]scale=' + str(HD_W) + ":" + str(HD_H) + '[scale];[scale]crop='+str(w)+':'+str(h)+':'+str(x_start)+':'+str(y_start)+'[out]"  -map "[out]" ' + dest_folder + '/%04d' + '.png' 
    print(cmd) 
