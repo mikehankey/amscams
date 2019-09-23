@@ -113,8 +113,8 @@ function update_select_preview(top,left,margins,W_factor,H_factor,cursor_dim, cu
 
 
       // Update real x,y
-      $('input[name=xs]').val(n_TOP*W_factor);
-      $('input[name=ys]').val(n_LEFT*H_factor); 
+      $('input[name=ys]').val(n_TOP*H_factor);
+      $('input[name=xs]').val(n_LEFT*W_factor); 
        
    }
    
