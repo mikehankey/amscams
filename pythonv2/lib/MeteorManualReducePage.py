@@ -110,7 +110,7 @@ def manual_reduction_cropper(form):
 
 
 
-   print("DESTINATION FOLDER  " +  dest)
+   print("DESTINATION FOLDER  " +  dest_folder)
 
    # Create all the cropped frames
    #cmd = 'ffmpeg -i video_file -filter:v "crop='+x_start+':'+y_start+':'+x_end+':'+y_end" out.mp4'
