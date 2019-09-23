@@ -1,3 +1,7 @@
+
+var frames_done=[];  // Just for the frames done
+var frames_jobs=[];  // All the info for the frames done
+
 // Fix the height of the chooser
 function fix_pifc_ui() {
    var fh =$('#footer').outerHeight();
@@ -8,3 +12,6 @@ function fix_pifc_ui() {
        }
    }
 }
+
+
+ 
