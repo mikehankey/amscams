@@ -66,18 +66,38 @@ function update_select_preview(top,left,margins,W_factor,H_factor,cursor_dim, cu
    if(HAVE_END && HAVE_START) {
       $('#step1_btn').removeAttr('disabled').removeClass('disabled');
 
-      // We draw a rectangle 
-      
+      // Add the rectangle
       if($('#sel_rectangle_static').length==0) {
          $('<div id="sel_rectangle_static" style="position:absolute; border:1px solid rgba(255,255,255,.6)">').appendTo($('#main_view'));
       }
 
-      $('#sel_rectangle_static').css({
-         'top': parseInt($('input[name=y_start]').val()),
-         'left': parseInt($('input[name=x_start]').val()),
-         'width':  Math.abs(parseInt($('input[name=x_start]').val())  - parseInt($('input[name=x_end]').val())) ,
-         'height': Math.abs(parseInt($('input[name=y_start]').val())  - parseInt($('input[name=y_end]').val())) 
-      });
+      // We draw a rectangle 
+      var w = parseInt($('input[name=x_start]').val())  - parseInt($('input[name=x_end]').val());
+      
+      if(w<=0) {
+         console.log("w<0");
+         $('#sel_rectangle_static').css({
+            'width': parseInt($('input[name=y_start]').val()),
+            'height': parseInt($('input[name=x_start]').val()),
+            'top':  Math.abs(parseInt($('input[name=x_start]').val())  - parseInt($('input[name=x_end]').val())) ,
+            'left': Math.abs(parseInt($('input[name=y_start]').val())  - parseInt($('input[name=y_end]').val())) 
+         });
+      } if(h<=0) {
+         console.log("h<0");
+
+      } else {
+         $('#sel_rectangle_static').css({
+            'top': parseInt($('input[name=y_start]').val()),
+            'left': parseInt($('input[name=x_start]').val()),
+            'width':  Math.abs(parseInt($('input[name=x_start]').val())  - parseInt($('input[name=x_end]').val())) ,
+            'height': Math.abs(parseInt($('input[name=y_start]').val())  - parseInt($('input[name=y_end]').val())) 
+         });
+      }
+
+
+
+
+
        
    }
    
