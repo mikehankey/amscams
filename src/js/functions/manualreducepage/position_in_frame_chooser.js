@@ -97,6 +97,16 @@ function setup_init_pos_choos_actions() {
       // Which one is selected?
       var cur_fr_id = $('#cropped_frame_select .cur').attr('data-rel');
       go_to_next(parseInt(cur_fr_id)+1);
+   });
+
+   // Click "Reset"
+   $('#reset_frame').unbind('click').click(function() {
+      // Which one is selected?
+      var cur_fr_id = $('#cropped_frame_select .cur').attr('data-rel');
+      frames_done[cur_fr_id] = null;
+      frames_jobs[cur_fr_id] = null;
+      // Remove the info from the selector
+      $('#cropped_frame_select .cur').removeClass('done').find('.pos').html('');
 
    });
 
