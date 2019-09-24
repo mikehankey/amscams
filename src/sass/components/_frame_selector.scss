@@ -39,7 +39,7 @@
 #cropped_frame_select {
    white-space: nowrap;
 
-   .cur {
+   &.cur, .cur {
       border:3px solid rgba(255, 229, 46, 1)
    }
 
