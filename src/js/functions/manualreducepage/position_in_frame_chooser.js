@@ -32,7 +32,7 @@ function go_to_next(cur_id) {
    $('#cropped_frame_select .cur').removeClass('cur').addClass('done');
 
    // Does the next frame exist?
-   var $next_frame = $('.select_frame [data-rel='+(cur_id+1)+']');
+   var $next_frame = $('.select_frame[data-rel='+(cur_id+1)+']');
    console.log("NEXT FRAME ", $next_frame);
 
    if($next_frame.length != 0) {
