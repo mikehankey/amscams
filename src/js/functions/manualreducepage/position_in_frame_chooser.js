@@ -63,11 +63,11 @@ function load_frame(fd_id) {
    if($.inArray(fd_id, frames_done)!==-1) {
 
       console.log(frames_jobs[fd_id]);
-      console.log("CIERCL POS", frames_jobs[fd_id]['relX'], '  ',  frames_jobs[fd_id]['relY']);
+      console.log("CIERCL POS", frames_jobs[fd_id]['pos_x'], '  ',  frames_jobs[fd_id]['pos_y']);
 
       $('#cirl').css({
-         'top': frames_jobs[fd_id]['relX'] + 'px',
-         'left': frames_jobs[fd_id]['relY'] + 'px' 
+         'top': frames_jobs[fd_id]['pos_x'] + 'px',
+         'left': frames_jobs[fd_id]['pos_y'] + 'px' 
       }).show();
   
    }  else {
