@@ -58,8 +58,8 @@ function setup_init_pos_choos_actions() {
   }).unbind('mousemove').mousemove(function(e) {
       
       var parentOffset = $(this).offset(); 
-      var relX = e.pageX - parentOffset.left + select_border_size;
-      var relY = e.pageY - parentOffset.top + select_border_size;
+      var relX = e.pageX - parentOffset.left - select_border_size;
+      var relY = e.pageY - parentOffset.top - select_border_size;
 
       console.log("IN Image ", relX, " ", relY)
 
