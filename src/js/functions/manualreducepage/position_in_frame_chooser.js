@@ -4,7 +4,7 @@ var frames_jobs=[];  // All the info for the frames done
 
 // Fix the height of the chooser
 function fix_pifc_ui() {
-   var fh =$('#footer').outerHeight();
+   var fh = $('#footer').outerHeight();
 
    if($(window).outerHeight()-fh-$('#main_container').outerHeight() < 20) {
       while($(window).outerHeight()-fh-$('#main_container').outerHeight() < 20) {
@@ -22,14 +22,17 @@ function init_pos_choos() {
    var $first_img = $($('#cropped_frame_select').find('img').get(0))
    var $first_img_holder  = $first_img.closest('a');
   
-   $('#cropped_frame_selector').css('background-img','url('+$first_img.attr('src')+')');
+   $('#cropped_frame_selector').css({
+      'background-img':'url('+$first_img.attr('src')+')',
+      'background-size':  'cover',
+      'width': w + 'px',  // Defined on the page
+      'height': h   + 'px' // Defined on the page
+   });
+
    $first_img_holder.addClass('cur');
 
-    // Fix height
-    fix_pifc_ui();
-
-
-
+   // Fix height
+   fix_pifc_ui();
 }
 
 
