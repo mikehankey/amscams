@@ -60,7 +60,7 @@ function load_frame(fd_id) {
 
 
    // If we already have data: we move the cross
-   if($.inArray(fd_id, frames_jobs)!==-1) {
+   if(typeof frames_jobs[fd_id] !== 'undefined') {
       // Warning -5 because the circle has a 10px diameter 
       $('#cirl').css({
          'left': parseInt(frames_jobs[fd_id]['pos_x']-5) + 'px',
