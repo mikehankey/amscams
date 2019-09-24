@@ -43,6 +43,9 @@ function init_pos_choos() {
 
    // Fix height
    fix_pifc_ui();
+
+   // Stop loading (initiated in the template )
+   loading_done();
 }
 
 
