@@ -26,7 +26,7 @@ function fix_pifc_ui() {
 
 // Function Init position chooser tools
 function init_pos_choos() {
-
+   loading({text:"Creating meteor picker"});
   
    // Add first frame to picker
    var $first_img = $($('#cropped_frame_select').find('img').get(0))
@@ -44,7 +44,7 @@ function init_pos_choos() {
    // Fix height
    fix_pifc_ui();
 
-   // Stop loading (initiated in the template )
+   // Stop loading 
    loading_done();
 }
 
