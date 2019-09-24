@@ -187,10 +187,10 @@ def manual_reduction_meteor_pos_selector(form):
    template = template.replace("{CROPPED_FRAMES_SELECTOR}",  real_cropped_frames_str)     
    
    # Add info to template
-   template = template.replace("{X}",  x)    
-   template = template.replace("{Y}",  y_start)    
-   template = template.replace("{W}",  w)    
-   template = template.replace("{H}",  h)    
+   template = template.replace("{X}", str(x))    
+   template = template.replace("{Y}", str(y_start))   
+   template = template.replace("{W}", str(w))    
+   template = template.replace("{H}", str(h))  
    
    # Display Template
    print(template)
