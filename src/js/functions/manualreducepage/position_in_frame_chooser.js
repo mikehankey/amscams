@@ -30,13 +30,10 @@ function go_to_next(next_id) {
    
    // Mark frame as done
    $('#cropped_frame_select .cur').removeClass('cur').addClass('done');
-
-   // Scroll to frame on top
-   $('#frame_select_mod').scrollTo( $('.select_frame[data-rel="'+next_id+'"]'), 800 );
-
+ 
    // Does the next frame exist?
    var $next_frame = $('.select_frame[data-rel='+next_id+']');
-   console.log("NEXT FRAME ", $next_frame);
+   
 
    if($next_frame.length != 0) {
       
@@ -47,12 +44,20 @@ function go_to_next(next_id) {
 
       $next_frame.addClass('cur'); 
 
+      // Scroll to frame on top
+      $('#frame_select_mod').scrollTo( $('.select_frame[data-rel="'+next_id+'"]'), 150 );
+
    } else {
       // We select the first one 
       var $first_img = $($('#cropped_frame_select').find('img').get(0))
       var $first_img_holder  = $first_img.closest('a');
-     
+      
+      // Display the First one
       $('#cropped_frame_selector').css({'background-image':'url('+$first_img.attr('src')+')'});
+      
+      // Scroll back to min
+      $('#frame_select_mod').scrollTo( $('.select_frame[data-rel="'+Math.min.apply(Math,frames_done)+'"]'), 150 );
+   
    }
 
 }
@@ -90,7 +95,7 @@ function setup_init_pos_choos_actions() {
 
       // Add current frame to frame_done if not already there
       if($.inArray(cur_fr_id, frames_done )==-1) {
-         frames_done.push(cur_fr_id);
+         frames_done.push(parseInt(cur_fr_id));  // We push an int so we can get the min
       }
 
       // Add info to frames_jobs
