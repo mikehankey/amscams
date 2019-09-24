@@ -103,7 +103,7 @@ function setup_init_pos_choos_actions() {
       $('#cropped_frame_select .cur span').html($('#cropped_frame_select .cur span').html() + '<br>x:' + parseInt(realX) + ' y:'  + parseInt(realY));
       
       // Go to next frame
-      go_to_next(cur_fr_id);
+      go_to_next(parseInt(cur_fr_id));
       
   }).unbind('mousemove').mousemove(function(e) {
       
