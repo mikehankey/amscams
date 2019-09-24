@@ -19,7 +19,7 @@ function fix_pifc_ui() {
 
    // Change Markers 
    $('#org_lh, #lh').css('width','100%');
-   $('#org_lv, #lw').css('height','100%');
+   $('#org_lv, #lv').css('height','100%');
 
 }
 
@@ -66,6 +66,9 @@ function setup_init_pos_choos_actions() {
       if(!$(this).hasClass('done')) {
           $('#lh').css('top',relY-2);
           $('#lv').css('left',relX-2);
+          console.log("X " + Math.floor(realX));
+          console.log("Y " + Math.floor(realY));
+          
              //$('#meteor_pos').text("x:"+Math.floor(realX)+'/y:'+Math.floor(realY));
            //$('#meteor_pos').text("x:"+ realX +' / y:'+ realY);
       }
