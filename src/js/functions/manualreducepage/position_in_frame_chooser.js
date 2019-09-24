@@ -22,7 +22,7 @@ function init_pos_choos() {
    var $first_img = $($('#cropped_frame_select').find('img').get(0))
    var $first_img_holder  = $first_img.closest('a');
   
-   $('#cropped_frame_selector').find('img').attr('src',$first_img.attr('src'));
+   $('#cropped_frame_selector').css('background-img','url('+$first_img.attr('src')+')');
    $first_img_holder.addClass('cur');
 
     // Fix height
