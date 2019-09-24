@@ -26,13 +26,13 @@ function fix_pifc_ui() {
 
 
 // Go to Next Frame
-function go_to_next(cur_id) {
+function go_to_next(next_id) {
    
    // Mark frame as done
    $('#cropped_frame_select .cur').removeClass('cur').addClass('done');
 
    // Does the next frame exist?
-   var $next_frame = $('.select_frame[data-rel='+(cur_id+1)+']');
+   var $next_frame = $('.select_frame[data-rel='+next_id+']');
    console.log("NEXT FRAME ", $next_frame);
 
    if($next_frame.length != 0) {
@@ -42,9 +42,7 @@ function go_to_next(cur_id) {
          'background-image':'url('+$($next_frame.find('img')).attr('src')+')'
       });
 
-      $next_frame.addClass('cur');
-
-
+      $next_frame.addClass('cur'); 
 
    } else {
       // We select the first one 
@@ -103,7 +101,7 @@ function setup_init_pos_choos_actions() {
       $('#cropped_frame_select .cur span').html($('#cropped_frame_select .cur span').html() + '<br>x:' + parseInt(realX) + ' y:'  + parseInt(realY));
       
       // Go to next frame
-      go_to_next(parseInt(cur_fr_id));
+      go_to_next(parseInt(cur_fr_id)+1);
       
   }).unbind('mousemove').mousemove(function(e) {
       
