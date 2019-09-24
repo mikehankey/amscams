@@ -34,15 +34,16 @@ function setup_init_pos_choos_actions() {
    var factor  = w/selector_width; // Both are the same (or at least should be!)
 
    $("#cropped_frame_selector").unbind('click').click(function(e){
-      /*
+     
       var parentOffset = $(this).offset(); 
-      var relX = parseFloat(e.pageX - parentOffset.left);
-      var relY = parseFloat(e.pageY - parentOffset.top);
+      var relX = e.pageX - parentOffset.left - select_border_size;
+      var relY = e.pageY - parentOffset.top - select_border_size;
 
-      //WARNING ONLY WORKS WITH SQUARES
-      var realX = Math.floor(relX/factor+x-w/2);
-      var realY = Math.floor(relY/factor+y-h/2);
-
+      // Convert into HD_x & HD_y
+      // from x,y
+      var realX = relX*factor+x;
+      var realY = relY*factor+y;
+ 
       // Transform values
       if(!$(this).hasClass('done')) {
           $(this).addClass('done');
@@ -53,38 +54,19 @@ function setup_init_pos_choos_actions() {
       }
        
       //select_meteor_ajax(fn_id,realX,realY);
-      */
-
+      
   }).unbind('mousemove').mousemove(function(e) {
       
       var parentOffset = $(this).offset(); 
       var relX = e.pageX - parentOffset.left - select_border_size;
       var relY = e.pageY - parentOffset.top - select_border_size;
 
-      // Convert into HD_x & HD_y
-      // from x,y
-      var realX = relX*factor+x;
-      var realY = relY*factor+y;
-
-      console.log("IN Image ", relX, " ", relY);
-      console.log("IN HD ", realX, " ", realY);
-
-      /*
-      //WARNING ONLY WORKS WITH SQUARES
-      var realX = relX/factor+x-w/2;
-      var realY = relY/factor+y-h/2;
-
       // Cross
       if(!$(this).hasClass('done')) {
           $('#lh').css('top',relY-2);
-          $('#lv').css('left',relX-2);
-          console.log("X " + Math.floor(realX));
-          console.log("Y " + Math.floor(realY));
-          
-             //$('#meteor_pos').text("x:"+Math.floor(realX)+'/y:'+Math.floor(realY));
-           //$('#meteor_pos').text("x:"+ realX +' / y:'+ realY);
+          $('#lv').css('left',relX-2); 
       }
-      */
+       
   });
 }
 
