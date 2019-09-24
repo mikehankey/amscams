@@ -61,12 +61,17 @@ function load_frame(fd_id) {
 
    // If we already have data: we move the cross
    if($.inArray(fd_id, frames_done)!==-1) {
+
+      console.log("CIERCL POS", frames_jobs[fd_id]['relX'], '  ',  frames_jobs[fd_id]['relY']);
+
       $('#cirl').css({
-         'top':      frames_jobs[fd_id]['relX'] + 'px',
-         'left':      frames_jobs[fd_id]['relY'] + 'px',
-      });
+         'top': frames_jobs[fd_id]['relX'] + 'px',
+         'left': frames_jobs[fd_id]['relY'] + 'px' 
+      }).show();
   
-   }  
+   }  else {
+      $('#cirl').hide();
+   }
 }
 
 
