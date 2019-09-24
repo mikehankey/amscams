@@ -142,7 +142,7 @@ function setup_init_pos_choos_actions() {
       };
       
       // Add info to frame scroller
-      $('#cropped_frame_select .cur span').html($('#cropped_frame_select .cur span').html() + '<br>x:' + parseInt(realX) + ' y:'  + parseInt(realY));
+      $('#cropped_frame_select .cur .pos').html('<br>x:' + parseInt(realX) + ' y:'  + parseInt(realY));
       
       // Go to next frame
       go_to_next(parseInt(cur_fr_id)+1);
