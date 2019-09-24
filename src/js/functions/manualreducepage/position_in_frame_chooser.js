@@ -69,7 +69,7 @@ function setup_init_pos_choos_actions() {
       };
       
       // Add info to frame scroller
-      $('#cropped_frame_select .cur span').html($('#cropped_frame_select .cur span').html() + '<br>x:' + realX + ' y:'  + realY);
+      $('#cropped_frame_select .cur span').html($('#cropped_frame_select .cur span').html() + '<br>x:' + parseInt(realX) + ' y:'  + parseInt(realY));
       
       // Mark frame as done
       $('#cropped_frame_select .cur').removeClass('cur').addClass('done');
