@@ -25,6 +25,32 @@ function fix_pifc_ui() {
 }
 
 
+// Go to Next Frame
+function go_to_next(cur_id) {
+   
+   // Mark frame as done
+   $('#cropped_frame_select .cur').removeClass('cur').addClass('done');
+
+   // Does the next frame exist?
+   var $next_frame = $('.select_frame [data-rel='+(cur_id+)+']');
+   if($next_frame.length != 0) {
+      
+      // We select the next one
+      $('#cropped_frame_selector').css({
+         'background-image':'url('+$($next_frame.find('img')).attr('src')+')'
+      });
+
+      $next_frame.addClass('cur');
+
+
+
+   } else {
+      // We select the first one 
+   }
+
+}
+
+
 // Init actions
 function setup_init_pos_choos_actions() {
 
@@ -52,8 +78,7 @@ function setup_init_pos_choos_actions() {
           $('#lv').css('left',relX);
           $('#meteor_pos').text("x:"+realX+'/y:'+realY);
       }
-
-      
+ 
       cur_fr_id = $('#cropped_frame_select .cur').attr('data-rel');
 
       // Add current frame to frame_done if not already there
@@ -71,12 +96,8 @@ function setup_init_pos_choos_actions() {
       // Add info to frame scroller
       $('#cropped_frame_select .cur span').html($('#cropped_frame_select .cur span').html() + '<br>x:' + parseInt(realX) + ' y:'  + parseInt(realY));
       
-      // Mark frame as done
-      $('#cropped_frame_select .cur').removeClass('cur').addClass('done');
-
       // Go to next frame
-      alert("GOTO NEXT");
-      console.log(frames_jobs);
+      go_to_next(cur_fr_id);
       
   }).unbind('mousemove').mousemove(function(e) {
       
