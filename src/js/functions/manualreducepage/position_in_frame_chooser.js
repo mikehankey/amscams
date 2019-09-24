@@ -33,6 +33,7 @@ function setup_init_pos_choos_actions() {
    var factor  = w/selector_width; // Both are the same (or at least should be!)
 
    $("#cropped_frame_selector").unbind('click').click(function(e){
+      /*
       var parentOffset = $(this).offset(); 
       var relX = parseFloat(e.pageX - parentOffset.left);
       var relY = parseFloat(e.pageY - parentOffset.top);
@@ -51,6 +52,7 @@ function setup_init_pos_choos_actions() {
       }
        
       //select_meteor_ajax(fn_id,realX,realY);
+      */
 
   }).unbind('mousemove').mousemove(function(e) {
       
@@ -58,6 +60,9 @@ function setup_init_pos_choos_actions() {
       var relX = e.pageX - parentOffset.left;
       var relY = e.pageY - parentOffset.top;
 
+      console.log("IN Image ", relX, " ", relY)
+
+      /*
       //WARNING ONLY WORKS WITH SQUARES
       var realX = relX/factor+x-w/2;
       var realY = relY/factor+y-h/2;
@@ -72,6 +77,7 @@ function setup_init_pos_choos_actions() {
              //$('#meteor_pos').text("x:"+Math.floor(realX)+'/y:'+Math.floor(realY));
            //$('#meteor_pos').text("x:"+ realX +' / y:'+ realY);
       }
+      */
   });
 }
 
