@@ -59,8 +59,8 @@ function load_frame(fd_id) {
       if(typeof v !=='undefined' && v['fn']==fd_id) {
           // Warning -5 because the circle has a 10px diameter 
          $('#cirl').css({
-            'left': parseInt(frames_jobs[fd_id]['pos_x']-5) + 'px',
-            'top':  parseInt(frames_jobs[fd_id]['pos_y']-5) + 'px' 
+            'left': parseInt(v['pos_x']-5) + 'px',
+            'top':  parseInt(v['pos_y']-5) + 'px' 
          }).show();
          
          $('#reset_frame').css('visibility','visible');
