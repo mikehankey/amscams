@@ -52,7 +52,7 @@ function load_frame(fd_id) {
    $('#frame_select_mod').scrollTo($('.select_frame[data-rel="'+scroll_to+'"]'), 150 );
    
    // Show reset_frame frame only if we already have data for this one
-   if($.inArray(fd_id,frames_done)) {
+   if($.inArray(parseInt(fd_id),frames_done)) {
       $('#reset_frame').css('visibility','visible');
    } else {
       $('#reset_frame').css('visibility','hidden');
@@ -61,8 +61,7 @@ function load_frame(fd_id) {
 
    // If we already have data: we move the cross
    if($.inArray(fd_id, frames_done)!==-1) {
-      
-
+       
       // Warning -5 because the circle has a 10px diameter 
       $('#cirl').css({
          'left': parseInt(frames_jobs[fd_id]['pos_x']-5) + 'px',
