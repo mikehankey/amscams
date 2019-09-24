@@ -104,6 +104,7 @@ function js() {
       './src/js/plugins/popper.min.js', 
       './src/js/plugins/json-viewer.js', 
       './src/js/plugins/jquery.simulate.js',
+      './src/js/plugins/jquery.scrollTo.js',
       './node_modules/bootstrap/dist/js/bootstrap.js',
       './src/js/plugins/bootstrap-multiselect.js',  
       './src/js/plugins/bootbox.js', 
