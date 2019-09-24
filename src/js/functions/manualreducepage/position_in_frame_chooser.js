@@ -125,6 +125,7 @@ function setup_init_pos_choos_actions() {
       // Add current frame to frame_done if not already there
       if($.inArray(cur_fr_id, frames_done )==-1) {
          frames_done.push(parseInt(cur_fr_id));  // We push an int so we can get the min
+         $('#fr_cnt').html(parseInt($('#fr_cnt').html())+1);
       }
 
       // Add info to frames_jobs
