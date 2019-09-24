@@ -61,8 +61,11 @@ function load_frame(fd_id) {
 
    // If we already have data: we move the cross
    if($.inArray(fd_id, frames_done)!==-1) {
-      console.log("YES:");
-      console.log(frames_jobs[fd_id]);
+      $('#cirl').css({
+         'top':      frames_jobs[fd_id]['relX'] + 'px',
+         'left':      frames_jobs[fd_id]['relY'] + 'px',
+      });
+  
    }  
 }
 
@@ -114,7 +117,8 @@ function setup_init_pos_choos_actions() {
       frames_jobs[cur_fr_id] = null;
       // Remove the info from the selector
       $('#cropped_frame_select .cur').removeClass('done').find('.pos').html('');
-
+      // Update counter
+      $('#fr_cnt').html(parseInt($('#fr_cnt').html())-1);
    });
 
    // Select Meteor
@@ -149,7 +153,9 @@ function setup_init_pos_choos_actions() {
       frames_jobs[cur_fr_id] = {
          'fn': cur_fr_id,
          'x': realX,
-         'y': realY
+         'y': realY,
+         'pos_x': relX,
+         'pos_y': relY
       };
       
       // Add info to frame scroller
