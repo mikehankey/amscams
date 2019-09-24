@@ -1,6 +1,7 @@
 
 var frames_done=[];  // Just for the frames done
 var frames_jobs=[];  // All the info for the frames done
+var select_border_size = 3; // See css
 
 // Fix the height of the chooser
 function fix_pifc_ui() {
@@ -57,8 +58,8 @@ function setup_init_pos_choos_actions() {
   }).unbind('mousemove').mousemove(function(e) {
       
       var parentOffset = $(this).offset(); 
-      var relX = e.pageX - parentOffset.left;
-      var relY = e.pageY - parentOffset.top;
+      var relX = e.pageX - parentOffset.left + select_border_size;
+      var relY = e.pageY - parentOffset.top + select_border_size;
 
       console.log("IN Image ", relX, " ", relY)
 
