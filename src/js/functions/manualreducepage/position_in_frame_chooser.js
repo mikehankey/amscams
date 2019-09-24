@@ -29,6 +29,9 @@ function fix_pifc_ui() {
 function load_frame(fd_id) {
    var $frame = $('.select_frame[data-rel='+fd_id+']');
 
+   // Cur has changed
+   $('.select_frame').removeClass('cur');
+
    // We load the image
    $('#cropped_frame_selector').css({
       'background-image':'url('+$($frame.find('img')).attr('src')+')'
@@ -44,8 +47,7 @@ function load_frame(fd_id) {
 // Go to Next Frame
 function go_to_next(next_id) {
    
-   // Mark frame as done
-   $('.select_frame').removeClass('cur');
+
    
    // TODO IF TRULY DONE!!!
    //.addClass('done');
