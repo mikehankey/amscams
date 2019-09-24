@@ -74,15 +74,10 @@ function go_to_next(next_id) {
    var $next_frame = $('.select_frame[data-rel='+next_id+']');
     
    if($next_frame.length != 0) {
-      
-      load_frame(next_id);
- 
-
+      load_frame(parseInt(next_id));
    } else {
       // We select the first one 
-      var first_fn_id = $($('#cropped_frame_select .select_frame').get(0)).attr('data-rel')
-      
-      load_frame(parseInt(first_fn_id))
+      load_frame(parseInt($($('#cropped_frame_select .select_frame').get(0)).attr('data-rel')));
    }
 
 }
