@@ -31,16 +31,24 @@ function load_frame(fd_id) {
 
    // Cur has changed
    $('.select_frame').removeClass('cur');
+   $frame.addClass('cur');
+
+   // Not "done" yet
+   $('#cropped_frame_selector').removeClass('done');
 
    // We load the image
    $('#cropped_frame_selector').css({
       'background-image':'url('+$($frame.find('img')).attr('src')+')'
-   });
-
-   $frame.addClass('cur');
+   }); 
 
    // Scroll to frame on top
    $('#frame_select_mod').scrollTo( $('.select_frame[data-rel="'+fd_id+'"]'), 150 );
+
+   // If we already have data: we move the cross
+   if($.inArray(fd_id, frames_done )) {
+      console.log("ORG;");
+      console.log(frames_jobs[fd_id]);
+   }
 }
 
 
