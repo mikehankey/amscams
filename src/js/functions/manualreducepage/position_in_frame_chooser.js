@@ -34,7 +34,7 @@ function setup_init_pos_choos_actions() {
 
    console.log("FACTOR H " + factor_H);
    console.log("FACTOR W " + factor_W);
-   
+}
 
 
 
