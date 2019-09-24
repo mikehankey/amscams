@@ -17,11 +17,16 @@ function fix_pifc_ui() {
 // Function Init position chooser tools
 function init_pos_choos() {
 
-   // Fix height
-   fix_pifc_ui();
-
+  
    // Add first frame to picker
-   $('#cropped_frame_selector').find('img').attr('src',$($('#cropped_frame_select').find('img').get(0)).attr('src'))
+   var $first_img = $($('#cropped_frame_select').find('img').get(0))
+   var $first_img_holder  = $first_img.closest('a');
+  
+   $('#cropped_frame_selector').find('img').attr('src',$first_img.attr('src'));
+   $first_img_holder.addClass('cur');
+
+    // Fix height
+    fix_pifc_ui();
 
 
 
