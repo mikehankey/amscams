@@ -32,7 +32,7 @@ function go_to_next(cur_id) {
    $('#cropped_frame_select .cur').removeClass('cur').addClass('done');
 
    // Does the next frame exist?
-   var $next_frame = $('.select_frame [data-rel='+(cur_id+)+']');
+   var $next_frame = $('.select_frame [data-rel='+(cur_id+1)+']');
    if($next_frame.length != 0) {
       
       // We select the next one
@@ -46,6 +46,10 @@ function go_to_next(cur_id) {
 
    } else {
       // We select the first one 
+      var $first_img = $($('#cropped_frame_select').find('img').get(0))
+      var $first_img_holder  = $first_img.closest('a');
+     
+      $('#cropped_frame_selector').css({'background-image':'url('+$first_img.attr('src')+')'});
    }
 
 }
