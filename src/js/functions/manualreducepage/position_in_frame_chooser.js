@@ -50,32 +50,19 @@ function load_frame(fd_id) {
       }
    }
    $('#frame_select_mod').scrollTo($('.select_frame[data-rel="'+scroll_to+'"]'), 150 );
-
  
-   
-   console.log("frames_done");
-   console.log(frames_done);
-
-   console.log("frames_jobs");
-   console.log(frames_jobs);
-
-   console.log("TEST IF ", fd_id , " is in ", frames_done);
 
    // If we already have data: we move the cross
    if($.inArray(fd_id, frames_done)!==-1) {
       console.log("YES:");
       console.log(frames_jobs[fd_id]);
-   } else {
-      console.log("NO");
-   }
+   }  
 }
 
 
 // Go to Next Frame
 function go_to_next(next_id) {
-   
-
-   
+    
    // TODO IF TRULY DONE!!!
    //.addClass('done');
  
@@ -105,6 +92,13 @@ function setup_init_pos_choos_actions() {
       load_frame(parseInt($(this).attr('data-rel')));
    })
 
+   // Click "Skip"
+   $('#skip_frame').unbind('click').click(function() {
+      // Which one is selected?
+      var cur_fr_id = $('#cropped_frame_select .cur').attr('data-rel');
+      go_to_next(parseInt(cur_fr_id)+1);
+
+   });
 
    // Select Meteor
    $("#cropped_frame_selector").unbind('click').click(function(e){
