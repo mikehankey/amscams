@@ -23,7 +23,7 @@ function init_pos_choos() {
    var $first_img_holder  = $first_img.closest('a');
   
    $('#cropped_frame_selector').css({
-      'background-img':'url('+$first_img.attr('src')+')',
+      'background-image':'url('+$first_img.attr('src')+')',
       'background-size':  'cover',
       'width': w + 'px',  // Defined on the page
       'height': h   + 'px' // Defined on the page
