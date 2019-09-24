@@ -24,16 +24,52 @@ function fix_pifc_ui() {
 }
 
 
+// Init actions
 function setup_init_pos_choos_actions() {
 
    var selector_width = $('#cropped_frame_selector').outerWidth();
    var selector_height = $('#cropped_frame_selector').outerHeight();
  
-   var factor_H = w/selector_width;
-   var factor_W = h/selector_height;
+   var factor  = w/selector_width; // Both are the same (or at least should be!)
 
-   console.log("FACTOR H " + factor_H);
-   console.log("FACTOR W " + factor_W);
+   $("#cropped_frame_selector").unbind('click').click(function(e){
+      var parentOffset = $(this).offset(); 
+      var relX = parseFloat(e.pageX - parentOffset.left);
+      var relY = parseFloat(e.pageY - parentOffset.top);
+
+      //WARNING ONLY WORKS WITH SQUARES
+      var realX = Math.floor(relX/factor+x-w/2);
+      var realY = Math.floor(relY/factor+y-h/2);
+
+      // Transform values
+      if(!$(this).hasClass('done')) {
+          $(this).addClass('done');
+      } else {
+          $('#lh').css('top',relY);
+          $('#lv').css('left',relX);
+          $('#meteor_pos').text("x:"+realX+'/y:'+realY);
+      }
+       
+      //select_meteor_ajax(fn_id,realX,realY);
+
+  }).unbind('mousemove').mousemove(function(e) {
+      
+      var parentOffset = $(this).offset(); 
+      var relX = e.pageX - parentOffset.left;
+      var relY = e.pageY - parentOffset.top;
+
+      //WARNING ONLY WORKS WITH SQUARES
+      var realX = relX/factor+x-w/2;
+      var realY = relY/factor+y-h/2;
+
+      // Cross
+      if(!$(this).hasClass('done')) {
+          $('#lh').css('top',relY-2);
+          $('#lv').css('left',relX-2);
+             //$('#meteor_pos').text("x:"+Math.floor(realX)+'/y:'+Math.floor(realY));
+           //$('#meteor_pos').text("x:"+ realX +' / y:'+ realY);
+      }
+  });
 }
 
 
