@@ -5,8 +5,7 @@ var frames_jobs=[];  // All the info for the frames done
 // Fix the height of the chooser
 function fix_pifc_ui() {
    var fh = $('#footer').outerHeight();
-
-
+ 
    // It's too small...
    if($(window).outerHeight()-fh-$('#main_container').outerHeight() > 60) {
       while($(window).outerHeight()-fh-$('#main_container').outerHeight() > 60) {
@@ -17,6 +16,11 @@ function fix_pifc_ui() {
       $('#cropped_frame_selector').width($('#cropped_frame_selector').height()*w/h);
 
    }
+
+   // Change Markers 
+   $('#org_lh, #lh').css('width','100%');
+   $('#org_lv, #lw').css('height','100%');
+
 }
 
 
