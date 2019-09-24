@@ -45,7 +45,10 @@ function load_frame(fd_id) {
 function go_to_next(next_id) {
    
    // Mark frame as done
-   $('#cropped_frame_select .cur').removeClass('cur').addClass('done');
+   $('.select_frame').removeClass('cur');
+   
+   // TODO IF TRULY DONE!!!
+   //.addClass('done');
  
    // Does the next frame exist?
    var $next_frame = $('.select_frame[data-rel='+next_id+']');
@@ -73,6 +76,13 @@ function setup_init_pos_choos_actions() {
  
    var factor  = w/selector_width; // Both are the same (or at least should be!)
 
+   // Select Frame
+   $('.select_frame').unbind('click').click(function() {
+      load_frame(parseInt($(this).attr('data-rel')));
+   })
+
+
+   // Select Meteor
    $("#cropped_frame_selector").unbind('click').click(function(e){
      
       var parentOffset = $(this).offset(); 
