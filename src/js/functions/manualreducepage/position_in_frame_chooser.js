@@ -44,6 +44,12 @@ function load_frame(fd_id) {
    // Scroll to frame on top
    $('#frame_select_mod').scrollTo( $('.select_frame[data-rel="'+fd_id+'"]'), 150 );
 
+   console.log("frames_done");
+   console.log(frames_done);
+
+   console.log("frames_jobs");
+   console.log(frames_jobs);
+
    // If we already have data: we move the cross
    if($.inArray(fd_id, frames_done )) {
       console.log("ORG;");
