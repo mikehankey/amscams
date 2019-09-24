@@ -24,6 +24,20 @@ function fix_pifc_ui() {
 }
 
 
+function setup_init_pos_choos_actions() {
+
+   var selector_width = $('#cropped_frame_selector').outerWidth();
+   var selector_height = $('#cropped_frame_selector').outerHeight();
+ 
+   var factor_H = w/selector_width;
+   var factor_W = h/selector_height;
+
+   console.log("FACTOR H " + factor_H);
+   console.log("FACTOR W " + factor_W);
+   
+
+
+
 // Function Init position chooser tools
 function init_pos_choos() { 
   
@@ -42,6 +56,9 @@ function init_pos_choos() {
 
    // Fix height
    fix_pifc_ui();
+
+   // Setup action
+   setup_init_pos_choos_actions();
 
    // Stop loading 
    loading_done();
