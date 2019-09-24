@@ -66,8 +66,8 @@ function load_frame(fd_id) {
       console.log("CIERCL POS", frames_jobs[fd_id]['pos_x'], '  ',  frames_jobs[fd_id]['pos_y']);
 
       $('#cirl').css({
-         'top': frames_jobs[fd_id]['pos_x'] + 'px',
-         'left': frames_jobs[fd_id]['pos_y'] + 'px' 
+         'left': parseInt(frames_jobs[fd_id]['pos_x']) + 'px',
+         'top':  parseInt(frames_jobs[fd_id]['pos_y']) + 'px' 
       }).show();
   
    }  else {
