@@ -122,7 +122,7 @@ function setup_init_pos_choos_actions() {
          
          if(typeof v !=='undefined' && v['fn']==cur_fr_id) {
             frames_jobs.splice(i, 1);
-            breack;
+            break;
          }
           
       });
