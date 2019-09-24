@@ -6,10 +6,16 @@ var frames_jobs=[];  // All the info for the frames done
 function fix_pifc_ui() {
    var fh = $('#footer').outerHeight();
 
-   if($(window).outerHeight()-fh-$('#main_container').outerHeight() < 20) {
-      while($(window).outerHeight()-fh-$('#main_container').outerHeight() < 20) {
-         $('#cropped_frame_selector').width($('#cropped_frame_selector').width()-1)
-       }
+
+   // It's too small...
+   if($(window).outerHeight()-fh-$('#main_container').outerHeight() > 60) {
+      while($(window).outerHeight()-fh-$('#main_container').outerHeight() > 60) {
+         $('#cropped_frame_selector').height($('#cropped_frame_selector').height()+1)
+      }
+
+      // Keep Ratio
+      $('#cropped_frame_selector').width($('#cropped_frame_selector').height()*w/h);
+
    }
 }
 
