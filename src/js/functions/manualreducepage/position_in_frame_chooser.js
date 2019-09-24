@@ -68,6 +68,12 @@ function setup_init_pos_choos_actions() {
          'y': realY
       };
       
+      // Add info to frame scroller
+      $('#cropped_frame_select .cur span').html($('#cropped_frame_select .cur span').html() + '<br>x:' + realX + ' y:'  + realY);
+      
+      // Mark frame as done
+      $('#cropped_frame_select .cur').removeClass('cur').addClass('done');
+
       // Go to next frame
       alert("GOTO NEXT");
       console.log(frames_jobs);
