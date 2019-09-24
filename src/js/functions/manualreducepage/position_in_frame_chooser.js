@@ -119,12 +119,9 @@ function setup_init_pos_choos_actions() {
 
       // Remove from frames_jobs
       $.each(frames_jobs, function(i,v){
-         
          if(typeof v !=='undefined' && v['fn']==cur_fr_id) {
-            frames_jobs.splice(i, 1);
-            break;
+            frames_jobs.splice(i, 1); 
          }
-          
       });
 
       frames_done.splice(cur_fr_id, 1);
