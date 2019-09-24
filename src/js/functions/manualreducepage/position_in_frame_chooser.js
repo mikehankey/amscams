@@ -124,7 +124,11 @@ function setup_init_pos_choos_actions() {
          }
       });
 
-      frames_done.splice(cur_fr_id, 1);
+      $.each(frames_done, function(i,v){
+         if(typeof v !=='undefined' && v==cur_fr_id) {
+            frames_done.splice(i, 1); 
+         }
+      });
     
 
       // Remove the info from the selector
