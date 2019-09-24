@@ -186,6 +186,6 @@ def manual_reduction_meteor_pos_selector(form):
    # Add the thumbs to navigator
    template = template.replace("{CROPPED_FRAMES_SELECTOR}",  real_cropped_frames_str)     
  
- 
+   
    # Display Template
    print(template)
