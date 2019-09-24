@@ -41,9 +41,13 @@ function load_frame(fd_id) {
       'background-image':'url('+$($frame.find('img')).attr('src')+')'
    }); 
 
-   // Scroll to frame on top
-   $('#frame_select_mod').scrollTo( $('.select_frame[data-rel="'+fd_id+'"]'), 150 );
-
+   // Scroll to frame -1 on top if it exists
+   if($('.select_frame[data-rel="'+(fd_id-1)+'"]').length!==0) {
+      $('#frame_select_mod').scrollTo($('.select_frame[data-rel="'+(fd_id-1)+'"]'), 150 );
+   } else {
+      $('#frame_select_mod').scrollTo($('.select_frame[data-rel="'+fd_id+'"]'), 150 );
+   }
+   
    console.log("frames_done");
    console.log(frames_done);
 
@@ -53,7 +57,7 @@ function load_frame(fd_id) {
    console.log("TEST IF ", fd_id , " is in ", frames_done);
 
    // If we already have data: we move the cross
-   if($.inArray(fd_id, frames_done)!=-1) {
+   if($.inArray(fd_id, frames_done)!==-1) {
       console.log("YES:");
       console.log(frames_jobs[fd_id]);
    } else {
