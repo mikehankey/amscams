@@ -25,6 +25,22 @@ function fix_pifc_ui() {
 }
 
 
+// Load particular frame into the selecto
+function load_frame(fd_id) {
+   var $frame = $('.select_frame[data-rel='+fd_id+']');
+
+   // We load the image
+   $('#cropped_frame_selector').css({
+      'background-image':'url('+$($frame.find('img')).attr('src')+')'
+   });
+
+   $frame.addClass('cur');
+
+   // Scroll to frame on top
+   $('#frame_select_mod').scrollTo( $('.select_frame[data-rel="'+fd_id+'"]'), 150 );
+}
+
+
 // Go to Next Frame
 function go_to_next(next_id) {
    
@@ -33,31 +49,17 @@ function go_to_next(next_id) {
  
    // Does the next frame exist?
    var $next_frame = $('.select_frame[data-rel='+next_id+']');
-   
-
+    
    if($next_frame.length != 0) {
       
-      // We select the next one
-      $('#cropped_frame_selector').css({
-         'background-image':'url('+$($next_frame.find('img')).attr('src')+')'
-      });
-
-      $next_frame.addClass('cur'); 
-
-      // Scroll to frame on top
-      $('#frame_select_mod').scrollTo( $('.select_frame[data-rel="'+next_id+'"]'), 150 );
+      load_frame(next_id);
+ 
 
    } else {
       // We select the first one 
-      var $first_img = $($('#cropped_frame_select').find('img').get(0))
-      var $first_img_holder  = $first_img.closest('a');
+      var first_fn_id = $($('#cropped_frame_select .select_frame').get(0)).attr('data-rel')
       
-      // Display the First one
-      $('#cropped_frame_selector').css({'background-image':'url('+$first_img.attr('src')+')'});
-      
-      // Scroll back to min
-      $('#frame_select_mod').scrollTo( $('.select_frame[data-rel="'+Math.min.apply(Math,frames_done)+'"]'), 150 );
-   
+      load_frame(parseInt(first_fn_id))
    }
 
 }
