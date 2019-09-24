@@ -50,10 +50,14 @@ function load_frame(fd_id) {
    console.log("frames_jobs");
    console.log(frames_jobs);
 
+   console.log("TEST IF ", fd_id , " is in ", frames_done);
+
    // If we already have data: we move the cross
-   if($.inArray(fd_id, frames_done )) {
-      console.log("ORG;");
+   if($.inArray(fd_id, frames_done)) {
+      console.log("YES:");
       console.log(frames_jobs[fd_id]);
+   } else {
+      console.log("NO");
    }
 }
 
