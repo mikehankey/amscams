@@ -117,8 +117,7 @@ function setup_init_pos_choos_actions() {
           $(this).addClass('done');
       } else {
           $('#lh').css('top',relY);
-          $('#lv').css('left',relX);
-          $('#meteor_pos').text("x:"+realX+'/y:'+realY);
+          $('#lv').css('left',relX); 
       }
  
       cur_fr_id = $('#cropped_frame_select .cur').attr('data-rel');
@@ -136,7 +135,7 @@ function setup_init_pos_choos_actions() {
       };
       
       // Add info to frame scroller
-      $('#cropped_frame_select .cur .pos').html('<br>x:' + parseInt(realX) + ' y:'  + parseInt(realY));
+      $('#cropped_frame_select .cur').addClass('done').find('.pos').html('<br>x:' + parseInt(realX) + ' y:'  + parseInt(realY));
       
       // Go to next frame
       go_to_next(parseInt(cur_fr_id)+1);
