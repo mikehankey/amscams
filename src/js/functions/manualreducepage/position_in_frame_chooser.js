@@ -120,13 +120,16 @@ function setup_init_pos_choos_actions() {
    // Click "Reset"
    $('#reset_frame').unbind('click').click(function() {
       // Which one is selected?
-      var cur_fr_id = $('#cropped_frame_select .cur').attr('data-rel');
-      frames_done[cur_fr_id] = null;
-      frames_jobs[cur_fr_id] = null;
+      var cur_fr_id = $('#cropped_frame_select .cur').attr('data-rel'); 
+      frames_done.splice(cur_fr_id, 1);
+      frames_jobs.splice(cur_fr_id, 1);
+      
       // Remove the info from the selector
       $('#cropped_frame_select .cur').removeClass('done').find('.pos').html('');
       // Update counter
       $('#fr_cnt').html(parseInt($('#fr_cnt').html())-1);
+
+      $('#cirl').hide();
    });
 
    // Select Meteor
