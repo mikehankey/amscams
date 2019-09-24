@@ -58,10 +58,11 @@ function load_frame(fd_id) {
       $('#reset_frame').css('visibility','hidden');
    }
 
+   console.log("TEST DONE ", $.inArray(fd_id, frames_done));
+
 
    // If we already have data: we move the cross
    if($.inArray(fd_id, frames_done)!==-1) {
-       
       // Warning -5 because the circle has a 10px diameter 
       $('#cirl').css({
          'left': parseInt(frames_jobs[fd_id]['pos_x']-5) + 'px',
