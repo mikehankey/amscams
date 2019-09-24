@@ -50,25 +50,22 @@ function load_frame(fd_id) {
       }
    }
    $('#frame_select_mod').scrollTo($('.select_frame[data-rel="'+scroll_to+'"]'), 150 );
-   
-   // Show reset_frame frame only if we already have data for this one
-   if($.inArray(parseInt(fd_id),frames_done)) {
-      $('#reset_frame').css('visibility','visible');
-   } else {
-      $('#reset_frame').css('visibility','hidden');
-   } 
+  
 
-
-   // If we already have data: we move the cross
+   // If we already have data: we show the circle
+   // and the reset button
    if(typeof frames_jobs[fd_id] !== 'undefined') {
       // Warning -5 because the circle has a 10px diameter 
       $('#cirl').css({
          'left': parseInt(frames_jobs[fd_id]['pos_x']-5) + 'px',
          'top':  parseInt(frames_jobs[fd_id]['pos_y']-5) + 'px' 
       }).show();
+      
+      $('#reset_frame').css('visibility','visible');
   
    }  else {
       $('#cirl').hide();
+      $('#reset_frame').css('visibility','hidden');
    }
 }
 
