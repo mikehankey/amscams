@@ -56,13 +56,11 @@ function load_frame(fd_id) {
       $('#reset_frame').css('visibility','visible');
    } else {
       $('#reset_frame').css('visibility','hidden');
-   }
-
-   console.log("TEST DONE ", $.inArray(fd_id, frames_done));
+   } 
 
 
    // If we already have data: we move the cross
-   if($.inArray(fd_id, frames_done)!==-1) {
+   if($.inArray(fd_id, frames_jobs)!==-1) {
       // Warning -5 because the circle has a 10px diameter 
       $('#cirl').css({
          'left': parseInt(frames_jobs[fd_id]['pos_x']-5) + 'px',
@@ -123,7 +121,7 @@ function setup_init_pos_choos_actions() {
       var cur_fr_id = $('#cropped_frame_select .cur').attr('data-rel'); 
       frames_done.splice(cur_fr_id, 1);
       frames_jobs.splice(cur_fr_id, 1);
-      
+
       // Remove the info from the selector
       $('#cropped_frame_select .cur').removeClass('done').find('.pos').html('');
       // Update counter
