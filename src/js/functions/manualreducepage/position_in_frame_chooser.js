@@ -52,8 +52,25 @@ function setup_init_pos_choos_actions() {
           $('#lv').css('left',relX);
           $('#meteor_pos').text("x:"+realX+'/y:'+realY);
       }
-       
-      //select_meteor_ajax(fn_id,realX,realY);
+
+      
+      cur_fr_id = $('#cropped_frame_select .cur').attr('data-rel');
+
+      // Add current frame to frame_done if not already there
+      if($.inArray(cur_fr_id, frames_done )==-1) {
+         frames_done.push(cur_fr_id);
+      }
+
+      // Add info to frames_jobs
+      frames_jobs[cur_fr_id] = {
+         'fn': cur_fr_id,
+         'x': realX,
+         'y': realY
+      };
+      
+      // Go to next frame
+      alert("GOTO NEXT");
+      console.log(frames_jobs);
       
   }).unbind('mousemove').mousemove(function(e) {
       
