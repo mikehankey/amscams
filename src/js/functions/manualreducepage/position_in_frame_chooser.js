@@ -28,6 +28,7 @@ function fix_pifc_ui() {
 // Load particular frame into the selecto
 function load_frame(fd_id) {
    var $frame = $('.select_frame[data-rel='+fd_id+']');
+   var scroll_to = fd_id-4;
 
    // Cur has changed
    $('.select_frame').removeClass('cur');
@@ -42,11 +43,15 @@ function load_frame(fd_id) {
    }); 
 
    // Scroll to frame -1 on top if it exists
-   if($('.select_frame[data-rel="'+(fd_id-1)+'"]').length!==0) {
-      $('#frame_select_mod').scrollTo($('.select_frame[data-rel="'+(fd_id-1)+'"]'), 150 );
-   } else {
-      $('#frame_select_mod').scrollTo($('.select_frame[data-rel="'+fd_id+'"]'), 150 );
+   if($('.select_frame[data-rel="'+scroll_to+'"]').length==0) {
+      scroll_to-= 1;
+      while($('.select_frame[data-rel="'+scroll_to+'"]').length==0 && scroll_to>=0) {
+         scroll_to-= 1;
+      }
    }
+   $('#frame_select_mod').scrollTo($('.select_frame[data-rel="'+scroll_to+'"]'), 150 );
+
+ 
    
    console.log("frames_done");
    console.log(frames_done);
