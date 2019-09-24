@@ -31,6 +31,9 @@ function go_to_next(next_id) {
    // Mark frame as done
    $('#cropped_frame_select .cur').removeClass('cur').addClass('done');
 
+   // Scroll to frame on top
+   $('#frame_select_mod').scrollTo( $('.select_frame[data-rel="'+next_id+'"]'), 800 );
+
    // Does the next frame exist?
    var $next_frame = $('.select_frame[data-rel='+next_id+']');
    console.log("NEXT FRAME ", $next_frame);
