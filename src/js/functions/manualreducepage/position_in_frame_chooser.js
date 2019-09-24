@@ -63,8 +63,8 @@ function setup_init_pos_choos_actions() {
 
       // Convert into HD_x & HD_y
       // from x,y
-      var realX = relX*factor+x;
-      var realY = relY*factor+y;
+      var realX = relX/factor+x;
+      var realY = relY/factor+y;
 
       console.log("IN Image ", relX, " ", relY);
       console.log("IN HD ", realX, " ", realY);
