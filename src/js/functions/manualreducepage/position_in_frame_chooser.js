@@ -61,13 +61,12 @@ function load_frame(fd_id) {
 
    // If we already have data: we move the cross
    if($.inArray(fd_id, frames_done)!==-1) {
+      
 
-      console.log(frames_jobs[fd_id]);
-      console.log("CIERCL POS", frames_jobs[fd_id]['pos_x'], '  ',  frames_jobs[fd_id]['pos_y']);
-
+      // Warning -5 because the circle has a 10px diameter 
       $('#cirl').css({
-         'left': parseInt(frames_jobs[fd_id]['pos_x']) + 'px',
-         'top':  parseInt(frames_jobs[fd_id]['pos_y']) + 'px' 
+         'left': parseInt(frames_jobs[fd_id]['pos_x']-5) + 'px',
+         'top':  parseInt(frames_jobs[fd_id]['pos_y']-5) + 'px' 
       }).show();
   
    }  else {
@@ -102,6 +101,9 @@ function setup_init_pos_choos_actions() {
    var selector_height = $('#cropped_frame_selector').outerHeight();
  
    var factor  = w/selector_width; // Both are the same (or at least should be!)
+
+   // By default
+   $('#cirl').hide();
 
    // Select Frame
    $('.select_frame').unbind('click').click(function() {
