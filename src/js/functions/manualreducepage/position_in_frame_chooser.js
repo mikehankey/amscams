@@ -116,8 +116,17 @@ function setup_init_pos_choos_actions() {
    $('#reset_frame').unbind('click').click(function() {
       // Which one is selected?
       var cur_fr_id = $('#cropped_frame_select .cur').attr('data-rel'); 
+
+      // Remove from frames_jobs
+      $.each(frames_jobs, function(i,v){
+         if(v['fn']==cur_fr_id) {
+            rames_jobs.splice(i, 1);
+            beack;
+         }
+      });
+
       frames_done.splice(cur_fr_id, 1);
-      frames_jobs.splice(cur_fr_id, 1);
+    
 
       // Remove the info from the selector
       $('#cropped_frame_select .cur').removeClass('done').find('.pos').html('');
