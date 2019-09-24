@@ -54,19 +54,26 @@ function load_frame(fd_id) {
 
    // If we already have data: we show the circle
    // and the reset button
-   if(typeof frames_jobs[fd_id] !== 'undefined') {
-      // Warning -5 because the circle has a 10px diameter 
-      $('#cirl').css({
-         'left': parseInt(frames_jobs[fd_id]['pos_x']-5) + 'px',
-         'top':  parseInt(frames_jobs[fd_id]['pos_y']-5) + 'px' 
-      }).show();
-      
-      $('#reset_frame').css('visibility','visible');
-  
-   }  else {
+   var cur_f_done = false;
+   $.each(frames_jobs, function(i,v){
+      if(typeof v !=='undefined' && v['fn']==fd_id) {
+          // Warning -5 because the circle has a 10px diameter 
+         $('#cirl').css({
+            'left': parseInt(frames_jobs[fd_id]['pos_x']-5) + 'px',
+            'top':  parseInt(frames_jobs[fd_id]['pos_y']-5) + 'px' 
+         }).show();
+         
+         $('#reset_frame').css('visibility','visible');
+         cur_f_done = true;
+      }
+   });
+
+
+   if(!cur_f_done){
       $('#cirl').hide();
       $('#reset_frame').css('visibility','hidden');
    }
+ 
 }
 
 
@@ -168,13 +175,13 @@ function setup_init_pos_choos_actions() {
       }
 
       // Add info to frames_jobs
-      frames_jobs[cur_fr_id] = {
+      frames_jobs.push({
          'fn': cur_fr_id,
          'x': realX,
          'y': realY,
          'pos_x': relX,
          'pos_y': relY
-      };
+      });
       
       // Add info to frame scroller
       $('#cropped_frame_select .cur').addClass('done').find('.pos').html('<br>x:' + parseInt(realX) + ' y:'  + parseInt(realY));
