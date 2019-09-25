@@ -4,7 +4,10 @@ import json
 from lib.FileIO import load_json_file
 from lib.MeteorReduce_Tools import name_analyser  
 from lib.MeteorReduce_Calib_Tools import XYtoRADec
-from lib.MeteorManualReducePage import fix_old_file_name
+from lib.MeteorManualReducePage import fix_old_file_name, get_new_calib
+
+
+
 
 # Return Ra/Dec based on X,Y  
 def getRADEC(form):
@@ -21,33 +24,7 @@ def getRADEC(form):
    
    # Test if we have an old or a new JSON
    if "reduced_stack" in json_f:
-      
-      # If 'device_alt' isn't defined, we have to work with 'site_alt'...
-      if "device_alt" not in json_f['cal_params']:
-         json_f['cal_params']['device_alt'] = float(json_f['cal_params']['site_alt'])
-         json_f['cal_params']['device_lat'] = float(json_f['cal_params']['site_lat'])  
-         json_f['cal_params']['device_lng'] = float(json_f['cal_params']['site_lng'])  
-
-      # It's an old we need to create the right calib json object
-      new_json_content = { "calib":  
-        { "device": {
-            "alt":  float(json_f['cal_params']['device_alt']),
-            "lat":  float(json_f['cal_params']['device_lat']),
-            "lng":  float(json_f['cal_params']['device_lng']),
-            "scale_px":  float(json_f['cal_params']['pixscale']),
-            "poly": {
-                "y_fwd": json_f['cal_params']['y_poly_fwd'],
-                "x_fwd": json_f['cal_params']['x_poly_fwd']
-            },
-            "center": {
-                "az": float(json_f['cal_params']['center_az']),  
-                "ra": float(json_f['cal_params']['ra_center']), 
-                "el": float(json_f['cal_params']['center_el']),
-                "dec": float(json_f['cal_params']['dec_center']) 
-            },
-            "angle":  float(json_f['cal_params']['position_angle'])
-         }      
-      }}
+      new_json_content = get_new_calib(json_f)
    else:
       new_json_content = json_f
    
