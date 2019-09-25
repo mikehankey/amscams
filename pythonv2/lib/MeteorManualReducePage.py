@@ -264,9 +264,9 @@ def manual_reduction_create_final_json(form):
             # We need to create the new entry
             new_entry = {
                'dt': dt,
-               'x': int(x),
-               'y': int(y),
-               'fn': int(fn),
+               'x': int(frame['x']),
+               'y': int(frame['y'])),
+               'fn': int(frame['fn']),
                'az': az,
                'el': el,
                'ra': RA,
@@ -277,6 +277,9 @@ def manual_reduction_create_final_json(form):
                'h': H_DEFAULT
             }
             mr['frames'].append(new_entry)
+
+
+            print(mr['frames'])
 
       else: 
          print_error("<b>JSON File not found: " + meteor_red_file + "</b>")
