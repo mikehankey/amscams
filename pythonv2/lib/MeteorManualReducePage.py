@@ -233,18 +233,38 @@ def manual_reduction_create_final_json(form):
    frames_info  = form.getvalue('frames')  
 
    # Is it an old or a new detection?
-   if "meteor_archive" in video_file:
-      print("it's a new detection")
+   if "meteor_archive" in video_file: 
+
+      # Get JSON
+      meteor_red_file = video_file.replace('.mp4',.'json')
+
+      if cfe(meteor_red_file) == 1:
+
+         # We parse the JSON
+         meteor_red = load_json_file(meteor_red_file)
+         print(meteor_red)
+
+
+
+      else:
+         print_error("<b>JSON File not found: " + meteor_red_file + "</b>")
+ 
+         
+
+
+
    else:
       # It's an old detection, we're going to move the video file
       # And create a new json file
+      print("IT'S AN OLD DETECTION - I CANNOT DEAL WITH IT FOR NOW")
+      sys.exit(0)
 
       # First, we need to get the old reduction file path
-      old_json_file = video_file.replace('.mp4','-reduced.json')
-      if(cfe(old_json_file)==1):
-         print(old_json_file  +  " exists")
-      else:
-         print(old_json_file  +  " doesn't exist")
+      #old_json_file = video_file.replace('.mp4','-reduced.json')
+      #if(cfe(old_json_file)==1):
+      #   print(old_json_file  +  " exists")
+      #else:
+      #   print(old_json_file  +  " doesn't exist")
 
 
    # Fix eventual video file name (old version)
