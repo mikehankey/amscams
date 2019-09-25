@@ -283,7 +283,7 @@ def manual_reduction_create_final_json(form):
             # We update the JSON with the new frames
             save_json_file(meteor_red_file, mr) 
      
-            #redirectURL = "/pycgi/webUI.py?cmd=reduce2&video_file=" + video_file + "&c=" + str(random.randint(0,100000000))
+            redirectURL = "/pycgi/webUI.py?cmd=reduce2&video_file=" + video_file + "&c=" + str(random.randint(0,100000000))
 
             #print 'Content-Type: text/html'
             #print 'Location: %s' % redirectURL
