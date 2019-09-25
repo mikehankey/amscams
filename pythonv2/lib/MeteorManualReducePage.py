@@ -255,19 +255,14 @@ def manual_reduction_create_final_json(form):
          # We create the ones
          for frame in frames_info:
  
-            print(frame)
             # Get the Frame time (as a string)
             dt = get_frame_time(mr,frame['fn'],analysed_name)
-            
-            print("FRAME # " + frame['fn'] + "<br/>")
-            print("> DATE  " +  dt + "<br/>")
-            
-
+          
             # Get the new RA/Dec 
-            #new_x, new_y, RA, Dec, az, el =  XYtoRADec(int(x),int(y),analysed_name,mr)
+            new_x, new_y, RA, Dec, az, el =  XYtoRADec(int(frame['x']),int(frame['y']),analysed_name,mr)
 
- 
-      else:
+      
+      else: 
          print_error("<b>JSON File not found: " + meteor_red_file + "</b>")
  
          
