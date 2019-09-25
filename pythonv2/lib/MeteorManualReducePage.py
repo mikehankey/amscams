@@ -253,13 +253,15 @@ def manual_reduction_create_final_json(form):
          for frame in frames_info:
  
             print(frame)
+            try:
+               # Get the Frame time (as a string)
+               dt = get_frame_time(mr,frame['fn'])
+            except:
+               print('IMPOSSIBLE TO DETERMINE THE TIME OF THE FRAMES')
 
-            # Get the Frame time (as a string)
-            dt = get_frame_time(mr,frame['fn'])
-
-            print("FRAME # " + frame['fn'] + "<br/>")
-            print("> DATE  " +  dt + "<br/>")
-
+            # print("FRAME # " + frame['fn'] + "<br/>")
+            # print("> DATE  " +  dt + "<br/>")
+            
 
             # Get the new RA/Dec 
             #new_x, new_y, RA, Dec, az, el =  XYtoRADec(int(x),int(y),analysed_name,mr)
