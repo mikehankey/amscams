@@ -6,7 +6,7 @@ import glob
 import random
 import json
 
-from lib.FileIO import load_config, cfe
+from lib.FileIO import load_config, cfe, save_json_file
 from lib.MeteorReducePage import print_error
 from lib.MeteorReduce_Tools import *
 from lib.MeteorReduce_Calib_Tools import XYtoRADec
@@ -278,8 +278,10 @@ def manual_reduction_create_final_json(form):
             }
             mr['frames'].append(new_frame)
 
+            # We update the JSON with the new frames
+            save_json_file(json_file, mr) 
+     
 
-            print(mr['frames'])
 
       else: 
          print_error("<b>JSON File not found: " + meteor_red_file + "</b>")
