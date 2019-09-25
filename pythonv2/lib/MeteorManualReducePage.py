@@ -203,3 +203,7 @@ def manual_reduction_create_final_json(form):
 
    print("video_file" +  video_file + "<br/>")
    print("frames_info" +  frames_info + "<br/>")
+
+   if frames_info is not None: 
+      for frame in frames_info:
+         print(frame + "<br/>")
