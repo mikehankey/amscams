@@ -249,6 +249,9 @@ def manual_reduction_create_final_json(form):
          # We create the ones
          for frame in frames_info:
 
+
+            print(frame)
+
             # Get the Frame time (as a string)
             dt = get_frame_time(mr,frame['fn'])
 
