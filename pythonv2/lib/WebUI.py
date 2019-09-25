@@ -11,8 +11,7 @@ import json
 import cgitb
 import re
 import datetime
-import time 
-import sys
+import time  
 from pathlib import Path
 from lib.PwdProtect import login_page, check_pwd_ajax
 from lib.Pagination import get_pagination
@@ -291,6 +290,11 @@ def controller(json_conf):
       exit()
 
 
+   # Manual Reduction (Fourth Step: creation of the new JSON file for the current detection)
+   # WARNING - this page is a redirect 
+   if cmd == 'manual_reduction_create_final_json':
+      manual_reduction_create_final_json(form)
+      exit()
 
 
 
@@ -494,11 +498,6 @@ def controller(json_conf):
    if cmd == 'manual_reduction_meteor_pos_selector':
       manual_reduction_meteor_pos_selector(form)
       
-   # Manual Reduction (Fourth Step: creation of the new JSON file for the current detection)
-   # WARNING - this page is a redirect 
-   if cmd == 'manual_reduction_create_final_json':
-      manual_reduction_create_final_json(form)
-      sys.exit(0)
 
    # REAL NEW VERSION
    if cmd == 'reduce2':
