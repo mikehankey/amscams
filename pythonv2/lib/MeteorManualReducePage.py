@@ -280,23 +280,24 @@ def manual_reduction_create_final_json(form):
         
             mr['frames'].append(new_frame)
 
-            # We update the JSON with the new frames
-            save_json_file(meteor_red_file, mr) 
+         # We update the JSON with the new frames
+         save_json_file(meteor_red_file, mr) 
      
-            redirectURL = "/pycgi/webUI.py?cmd=reduce2&video_file=" + video_file + "&c=" + str(random.randint(0,100000000))
+         redirectURL = "/pycgi/webUI.py?cmd=reduce2&video_file=" + video_file + "&c=" + str(random.randint(0,100000000))
 
-            print('Content-Type: text/html')
-            print('Location: ' + redirectURL)
-            #print # HTTP says you have to have a blank line between headers and content
-            #print '<html>'
-            #print '  <head>'
-            #print '    <meta http-equiv="refresh" content="0;url=%s" />' % redirectURL
-            #print '    <title>You are going to be redirected</title>'
-            #print '  </head>' 
-            #print '  <body>'
-            #print '    Redirecting... <a href="%s">Click here if you are not redirected</a>' % redirectURL
-            #print '  </body>'
-            #print '</html>'
+         print('Content-Type: text/html')
+         print('Location: ' + redirectURL)
+         print('') # HTTP says you have to have a blank line between headers and content
+         print( '<html>')
+         print( '  <head>')
+         print( '    <meta http-equiv="refresh" content="0;url='+redirectURL+'" />' )
+         print( '    <title>You are going to be redirected</title>')
+         print( '  </head>') 
+         print( '  <body>')
+         print( '    Redirecting... <a href="'+redirectURL+'">Click here if you are not redirected</a>')
+         print( '  </body>')
+         print( '</html>')
+         sys.exit(0)
 
       else: 
          print_error("<b>JSON File not found: " + meteor_red_file + "</b>")
