@@ -194,3 +194,8 @@ def manual_reduction_meteor_pos_selector(form):
    
    # Display Template
    print(template)
+
+
+# Fourth Step : creation of the new JSON
+def manual_reduction_create_final_json(form):
+   print(form)

@@ -492,7 +492,11 @@ def controller(json_conf):
    # Manual Reduction (Third Step: meteor position within cropped frames)
    if cmd == 'manual_reduction_meteor_pos_selector':
       manual_reduction_meteor_pos_selector(form)
-   
+      
+   # Manual Reduction (Fourth Step: creation of the new JSON file for the current dection)
+   if cmd == 'manual_reduction_create_final_json':
+      manual_reduction_create_final_json(form)
+
    # REAL NEW VERSION
    if cmd == 'reduce2':
       extra_html = reduce_meteor2(json_conf, form)
