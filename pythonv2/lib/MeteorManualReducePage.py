@@ -256,12 +256,9 @@ def manual_reduction_create_final_json(form):
          for frame in frames_info:
  
             print(frame)
-            try:
-               # Get the Frame time (as a string)
-               dt = get_frame_time(mr,frame['fn'],analysed_name)
-            except:
-               print('IMPOSSIBLE TO DETERMINE THE TIME OF THE FRAMES')
-
+            # Get the Frame time (as a string)
+            dt = get_frame_time(mr,frame['fn'],analysed_name)
+            
             print("FRAME # " + frame['fn'] + "<br/>")
             print("> DATE  " +  dt + "<br/>")
             
