@@ -130,30 +130,12 @@ def get_frame_time(json,frame_id,analysed_name):
          res = False
 
    if(res is False):
-
-      print("get_frame_time HREE")
-
+ 
       # Since we didn't find the frame time based on other frame time
       # we need to rely on the name of the file
       init_dt = get_datetime_from_analysedname(analysed_name)
-
-      # We assume this is the dt of the FIRST frame
-      diff_fn = int(frame_id)
-
-      # We multiple the frame # difference by 1/FPS 
-      diff_fn = diff_fn * 1 / FPS_HD
-
-      dt = datetime.strptime(dt, '%Y-%m-%d %H:%M:%S.%f')
-
-      # We add the diff in seconds
-      dt = dt +  timedelta(0,diff_fn)
-      dt = str(dt)
-
-      # We remove the last 3 digits (from %f)
-      dt = dt[:-3]
-
-      # We return the Date as a string
-      return dt
+      return get_frame_time_from_f(frame_id,0,init_dt)
+ 
 
 
 # Get Specific cropped Frames from a frame ID and an analysed name
