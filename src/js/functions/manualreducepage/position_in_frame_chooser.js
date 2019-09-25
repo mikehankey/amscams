@@ -79,9 +79,6 @@ function load_frame(fd_id) {
 
 // Go to Next Frame
 function go_to_next(next_id) {
-    
-   // TODO IF TRULY DONE!!!
-   //.addClass('done');
  
    // Does the next frame exist?
    var $next_frame = $('.select_frame[data-rel='+next_id+']');
@@ -202,6 +199,12 @@ function setup_init_pos_choos_actions() {
       }
        
   });
+
+
+  // Create them all
+  $('#create_all').unbind('click').click(function() {
+     console.log(frames_jobs);
+  })
 }
 
 
