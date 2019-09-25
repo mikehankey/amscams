@@ -92,37 +92,58 @@ def does_cache_exist(analysed_file_name,cache_type):
 
 
 # Return a date & time based on a parsed json_file and the frame id
-def get_frame_time(json,frame_id):
+def get_frame_time(json,frame_id,analysed_name):
 
    # We just need one existing frame and its date & time
    if("frames" in json):
-      random_frame = json['frames'][0]
+      if(json['frames'][0] is not None):
+         random_frame = json['frames'][0]
 
-      # Date & time and Frame ID for random_frame
-      dt = random_frame['dt']
-      fn = random_frame['fn']
+         # Date & time and Frame ID for random_frame
+         dt = random_frame['dt']
+         fn = random_frame['fn']
 
-      # Compute the diff of frame between random_frame 
-      # and frame_id
-      diff_fn = int(frame_id) - int(fn)
+         # Compute the diff of frame between random_frame 
+         # and frame_id
+         diff_fn = int(frame_id) - int(fn)
 
-      # We multiple the frame # difference by 1/FPS 
-      diff_fn = diff_fn * 1 / FPS_HD
- 
-      dt = datetime.strptime(dt, '%Y-%m-%d %H:%M:%S.%f')
+         # We multiple the frame # difference by 1/FPS 
+         diff_fn = diff_fn * 1 / FPS_HD
+   
+         dt = datetime.strptime(dt, '%Y-%m-%d %H:%M:%S.%f')
 
-      # We add the diff in seconds
-      dt = dt +  timedelta(0,diff_fn)
-      dt = str(dt)
+         # We add the diff in seconds
+         dt = dt +  timedelta(0,diff_fn)
+         dt = str(dt)
 
-      # We remove the last 3 digits (from %f)
-      dt = dt[:-3]
+         # We remove the last 3 digits (from %f)
+         dt = dt[:-3]
 
-      # We return the Date as a string
-      return dt
+         # We return the Date as a string
+         return dt
 
-   else:
-      return ""
+   # Since we didn't find the frame time based on other frame time
+   # we need to rely on the name of the file
+   init_dt = get_datetime_from_analysedname(analysed_name)
+
+   # We assume this is the dt of the FIRST frame
+   diff_fn = int(frame_id)
+
+   # We multiple the frame # difference by 1/FPS 
+   diff_fn = diff_fn * 1 / FPS_HD
+
+   dt = datetime.strptime(dt, '%Y-%m-%d %H:%M:%S.%f')
+
+   # We add the diff in seconds
+   dt = dt +  timedelta(0,diff_fn)
+   dt = str(dt)
+
+   # We remove the last 3 digits (from %f)
+   dt = dt[:-3]
+
+   # We return the Date as a string
+   return dt
+
 
 # Get Specific cropped Frames from a frame ID and an analysed name
 def get_thumb(analysed_name,frame_id):

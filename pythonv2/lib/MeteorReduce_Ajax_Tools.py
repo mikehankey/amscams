@@ -108,7 +108,7 @@ def update_frame(form, AjaxDirect = False):
       if(update is False):
 
          # Get the Frame time (as a string)
-         dt = get_frame_time(mr,fn)
+         dt = get_frame_time(mr,fn,analysed_name)
 
          # Get the new RA/Dec 
          new_x, new_y, RA, Dec, az, el =  XYtoRADec(int(x),int(y),analysed_name,mr)

@@ -238,8 +238,11 @@ def manual_reduction_create_final_json(form):
    # Is it an old or a new detection?
    if "meteor_archive" in video_file: 
 
+      # IT'S A NEW ONE!
+
       # Get JSON
       meteor_red_file = video_file.replace('.mp4','.json')
+      analysed_name = name_analyser(meteor_red_file)
 
       if cfe(meteor_red_file) == 1:
 
@@ -255,12 +258,12 @@ def manual_reduction_create_final_json(form):
             print(frame)
             try:
                # Get the Frame time (as a string)
-               dt = get_frame_time(mr,frame['fn'])
+               dt = get_frame_time(mr,frame['fn'],analysed_name)
             except:
                print('IMPOSSIBLE TO DETERMINE THE TIME OF THE FRAMES')
 
-            # print("FRAME # " + frame['fn'] + "<br/>")
-            # print("> DATE  " +  dt + "<br/>")
+            print("FRAME # " + frame['fn'] + "<br/>")
+            print("> DATE  " +  dt + "<br/>")
             
 
             # Get the new RA/Dec 
