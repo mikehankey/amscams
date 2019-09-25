@@ -117,37 +117,43 @@ def get_frame_time_from_f(frame_id, frame_id_org, frame_dt_org):
 # Return a date & time based on a parsed json_file and the frame id
 def get_frame_time(json,frame_id,analysed_name):
 
+   res= False
+
    # We just need one existing frame and its date & time
    if("frames" in json):
  
       if(json['frames'][0] is not None):
          random_frame = json['frames'][0]
+         res = True
          return get_frame_time_from_f(frame_id,random_frame['fn'],random_frame['dt'])
+      else:
+         res = False
 
-       
-   print("get_frame_time HREE")
+   if(res is False):
 
-   # Since we didn't find the frame time based on other frame time
-   # we need to rely on the name of the file
-   init_dt = get_datetime_from_analysedname(analysed_name)
+      print("get_frame_time HREE")
 
-   # We assume this is the dt of the FIRST frame
-   diff_fn = int(frame_id)
+      # Since we didn't find the frame time based on other frame time
+      # we need to rely on the name of the file
+      init_dt = get_datetime_from_analysedname(analysed_name)
 
-   # We multiple the frame # difference by 1/FPS 
-   diff_fn = diff_fn * 1 / FPS_HD
+      # We assume this is the dt of the FIRST frame
+      diff_fn = int(frame_id)
 
-   dt = datetime.strptime(dt, '%Y-%m-%d %H:%M:%S.%f')
+      # We multiple the frame # difference by 1/FPS 
+      diff_fn = diff_fn * 1 / FPS_HD
 
-   # We add the diff in seconds
-   dt = dt +  timedelta(0,diff_fn)
-   dt = str(dt)
+      dt = datetime.strptime(dt, '%Y-%m-%d %H:%M:%S.%f')
 
-   # We remove the last 3 digits (from %f)
-   dt = dt[:-3]
+      # We add the diff in seconds
+      dt = dt +  timedelta(0,diff_fn)
+      dt = str(dt)
 
-   # We return the Date as a string
-   return dt
+      # We remove the last 3 digits (from %f)
+      dt = dt[:-3]
+
+      # We return the Date as a string
+      return dt
 
 
 # Get Specific cropped Frames from a frame ID and an analysed name
