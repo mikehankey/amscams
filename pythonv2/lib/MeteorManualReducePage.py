@@ -250,6 +250,7 @@ def manual_reduction_create_final_json(form):
          mr = load_json_file(meteor_red_file)
          
          # We remove all the current frames
+         del mr['frames']
          mr['frames'] = []
 
          # We create the ones
