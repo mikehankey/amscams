@@ -232,6 +232,12 @@ def manual_reduction_create_final_json(form):
    video_file   = form.getvalue('video_file')  
    frames_info  = form.getvalue('frames')  
 
+   # Is it an old or a new detection?
+   if "meteor_archive" in video_file:
+      print("it's a new detection")
+   else:
+      print("it's an old detection")
+
    # Fix eventual video file name (old version)
    tmp_fixed_video_full_path = fix_old_file_name(video_file)
    analysed_name = name_analyser(tmp_fixed_video_full_path)
