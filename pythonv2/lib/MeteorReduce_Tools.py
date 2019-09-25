@@ -96,7 +96,15 @@ def get_frame_time(json,frame_id,analysed_name):
 
    # We just need one existing frame and its date & time
    if("frames" in json):
+
+      print("get_frame_time 1")
+      print(json['frames'])
+      print("****************<br/>")
+
       if(json['frames'][0] is not None):
+
+         print("get_frame_time 2")
+
          random_frame = json['frames'][0]
 
          # Date & time and Frame ID for random_frame
