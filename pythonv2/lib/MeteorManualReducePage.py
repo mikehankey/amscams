@@ -261,7 +261,23 @@ def manual_reduction_create_final_json(form):
             # Get the new RA/Dec 
             new_x, new_y, RA, Dec, az, el =  XYtoRADec(int(frame['x']),int(frame['y']),analysed_name,mr)
 
-      
+            # We need to create the new entry
+            new_entry = {
+               'dt': dt,
+               'x': int(x),
+               'y': int(y),
+               'fn': int(fn),
+               'az': az,
+               'el': el,
+               'ra': RA,
+               'dec': Dec,
+               'intensity': Intensity_DEFAULT,
+               'max_px': Maxpx_DEFAULT,
+               'w': W_DEFAULT, 
+               'h': H_DEFAULT
+            }
+            mr['frames'].append(new_entry)
+
       else: 
          print_error("<b>JSON File not found: " + meteor_red_file + "</b>")
  
