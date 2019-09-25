@@ -236,16 +236,14 @@ def manual_reduction_create_final_json(form):
    if "meteor_archive" in video_file: 
 
       # Get JSON
-      meteor_red_file = video_file.replace('.mp4',.'json')
+      meteor_red_file = video_file.replace('.mp4','.json')
 
       if cfe(meteor_red_file) == 1:
 
          # We parse the JSON
          meteor_red = load_json_file(meteor_red_file)
          print(meteor_red)
-
-
-
+ 
       else:
          print_error("<b>JSON File not found: " + meteor_red_file + "</b>")
  
