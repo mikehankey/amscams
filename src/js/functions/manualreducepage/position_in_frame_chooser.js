@@ -203,7 +203,7 @@ function setup_init_pos_choos_actions() {
 
   // Create them all
   $('#create_all').unbind('click').click(function() {
-      window.location='./webUI.py?cmd=manual_reduction_create_final_json&frames=' + JSON.stringify(frames_jobs);
+      window.location='./webUI.py?cmd=manual_reduction_create_final_json&frames=' + JSON.stringify(frames_jobs)+'&video_file='+video_file;
   })
 }
 

@@ -198,4 +198,8 @@ def manual_reduction_meteor_pos_selector(form):
 
 # Fourth Step : creation of the new JSON
 def manual_reduction_create_final_json(form):
-   print(form)
+   video_file  = form.getvalue('video_file')  
+   frames_info  = form.getvalue('frames')  
+
+   print("video_file" +  video_file + "<br/>")
+   print("frames_info" +  frames_info + "<br/>")
