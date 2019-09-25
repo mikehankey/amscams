@@ -177,6 +177,7 @@ def manual_reduction_meteor_pos_selector(form):
    real_cropped_frames_str = ""
  
    # We remove all the frames from cropped_frames that are before f
+   # and create the HTML view for the top panel
    for i,cropped_frame in enumerate(cropped_frames):
       x = i + 1
       if(x>=int(f)):
