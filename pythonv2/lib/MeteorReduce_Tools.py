@@ -91,6 +91,29 @@ def does_cache_exist(analysed_file_name,cache_type):
       return []
 
 
+# Compute the date & time of a frame based on the date & time of another one
+def get_frame_time_from_f(frame_id, frame_id_org, frame_dt_org):
+   
+   # Compute the diff of frame between random_frame 
+   # and frame_id 
+   diff_fn = int(frame_id) - int(frame_id_org)
+
+   # We multiple the frame # difference by 1/FPS 
+   diff_fn = diff_fn * 1 / FPS_HD
+
+   dt = datetime.strptime(frame_dt_org, '%Y-%m-%d %H:%M:%S.%f')
+
+   # We add the diff in seconds
+   dt = dt +  timedelta(0,diff_fn)
+   dt = str(dt)
+
+   # We remove the last 3 digits (from %f)
+   dt = dt[:-3]
+
+   # We return the Date as a string
+   return dt
+
+
 # Return a date & time based on a parsed json_file and the frame id
 def get_frame_time(json,frame_id,analysed_name):
 
@@ -98,33 +121,10 @@ def get_frame_time(json,frame_id,analysed_name):
    if("frames" in json):
  
       if(json['frames'][0] is not None):
- 
-
          random_frame = json['frames'][0]
+         return get_frame_time_from_f(frame_id,random_frame['fn'],random_frame['dt'])
 
-         # Date & time and Frame ID for random_frame
-         dt = random_frame['dt']
-         fn = random_frame['fn']
-
-         # Compute the diff of frame between random_frame 
-         # and frame_id
-         diff_fn = int(frame_id) - int(fn)
-
-         # We multiple the frame # difference by 1/FPS 
-         diff_fn = diff_fn * 1 / FPS_HD
-   
-         dt = datetime.strptime(dt, '%Y-%m-%d %H:%M:%S.%f')
-
-         # We add the diff in seconds
-         dt = dt +  timedelta(0,diff_fn)
-         dt = str(dt)
-
-         # We remove the last 3 digits (from %f)
-         dt = dt[:-3]
-
-         # We return the Date as a string
-         return dt
-
+       
    print("get_frame_time HREE")
 
    # Since we didn't find the frame time based on other frame time
