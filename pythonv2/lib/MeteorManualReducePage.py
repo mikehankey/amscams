@@ -232,6 +232,9 @@ def manual_reduction_create_final_json(form):
    video_file   = form.getvalue('video_file')  
    frames_info  = form.getvalue('frames')  
 
+   # We parse the frames_info
+   frames_info = json.loads(frames_info)
+
    # Is it an old or a new detection?
    if "meteor_archive" in video_file: 
 
@@ -248,8 +251,7 @@ def manual_reduction_create_final_json(form):
 
          # We create the ones
          for frame in frames_info:
-
-
+ 
             print(frame)
 
             # Get the Frame time (as a string)
