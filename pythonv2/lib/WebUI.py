@@ -41,7 +41,7 @@ from lib.MeteorReducePage import reduce_meteor2
 from lib.MeteorReduce_Ajax_Tools import get_reduction_info, delete_frame, update_multiple_frames, update_frame, get_frame, create_thumb, update_cat_stars
 
 # Manual Reduction page
-from lib.MeteorManualReducePage import manual_reduction, manual_reduction_cropper, manual_reduction_meteor_pos_selector
+from lib.MeteorManualReducePage import manual_reduction, manual_reduction_cropper, manual_reduction_meteor_pos_selector, manual_reduction_create_final_json
 
 # Calibration Tools
 from lib.MeteorReduce_Calib_Ajax_Tools import getRADEC
