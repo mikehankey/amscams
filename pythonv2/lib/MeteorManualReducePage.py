@@ -6,7 +6,7 @@ import glob
 import random
 import json
 
-from lib.FileIO import load_config
+from lib.FileIO import load_config, cfe
 from lib.MeteorReducePage import print_error
 from lib.MeteorReduce_Tools import *
 from lib.MeteorReduce_Calib_Tools import XYtoRADec
@@ -236,7 +236,16 @@ def manual_reduction_create_final_json(form):
    if "meteor_archive" in video_file:
       print("it's a new detection")
    else:
-      print("it's an old detection")
+      # It's an old detection, we're going to move the video file
+      # And create a new json file
+
+      # First, we need to get the old reduction file path
+      old_json_file = video_file.replace('.mp4','-reduced.json')
+      if(cfe(old_json_file)==1):
+         print(old_json_file  +  " exists")
+      else:
+         print(old_json_file  +  " doesn't exist")
+
 
    # Fix eventual video file name (old version)
    tmp_fixed_video_full_path = fix_old_file_name(video_file)
