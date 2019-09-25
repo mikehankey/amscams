@@ -262,10 +262,10 @@ def manual_reduction_create_final_json(form):
             new_x, new_y, RA, Dec, az, el =  XYtoRADec(int(frame['x']),int(frame['y']),analysed_name,mr)
 
             # We need to create the new entry
-            new_entry = {
+            new_frame = {
                'dt': dt,
                'x': int(frame['x']),
-               'y': int(frame['y'])),
+               'y': int(frame['y']),
                'fn': int(frame['fn']),
                'az': az,
                'el': el,
@@ -276,7 +276,7 @@ def manual_reduction_create_final_json(form):
                'w': W_DEFAULT, 
                'h': H_DEFAULT
             }
-            mr['frames'].append(new_entry)
+            mr['frames'].append(new_frame)
 
 
             print(mr['frames'])
