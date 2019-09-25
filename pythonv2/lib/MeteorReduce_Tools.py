@@ -133,8 +133,7 @@ def get_frame_time(json,frame_id,analysed_name):
  
       # Since we didn't find the frame time based on other frame time
       # we need to rely on the name of the file
-      init_dt = get_datetime_from_analysedname(analysed_name)
-      return get_frame_time_from_f(frame_id,0,init_dt)
+      return get_frame_time_from_f(frame_id,0,analysed_name['year']+'-'+analysed_name['month']+'-'+analysed_name['day']+' '+analysed_name['hour']+':'+analysed_name['min']+':'+analysed_name['sec']+'.'+analysed_name['ms'])
  
 
 
