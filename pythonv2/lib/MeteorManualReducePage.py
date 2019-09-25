@@ -279,7 +279,7 @@ def manual_reduction_create_final_json(form):
             mr['frames'].append(new_frame)
 
             # We update the JSON with the new frames
-            save_json_file(json_file, mr) 
+            save_json_file(meteor_red_file, mr) 
      
 
 
