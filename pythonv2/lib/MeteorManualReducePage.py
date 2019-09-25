@@ -209,4 +209,4 @@ def manual_reduction_create_final_json(form):
    if frames_info is not None: 
       frames_info = json.loads(frames_info)
       for frame in frames_info:
-          
+          print(frame)
