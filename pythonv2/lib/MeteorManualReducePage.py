@@ -4,6 +4,7 @@ import os
 import sys
 import glob
 import random
+import json
 
 from lib.FileIO import load_config
 from lib.MeteorReducePage import print_error
@@ -205,5 +206,6 @@ def manual_reduction_create_final_json(form):
    print("frames_info" +  frames_info + "<br/>")
 
    if frames_info is not None: 
+      frames_info = json.loads(frames_info)
       for frame in frames_info:
          print(frame + "<br/>")
