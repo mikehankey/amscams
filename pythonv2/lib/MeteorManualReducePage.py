@@ -277,6 +277,8 @@ def manual_reduction_create_final_json(form):
                'w': W_DEFAULT, 
                'h': H_DEFAULT
             }
+
+            print("ADDED " + int(frame['fn']) + "<hr/>" )
             mr['frames'].append(new_frame)
 
             # We update the JSON with the new frames
