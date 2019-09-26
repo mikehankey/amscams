@@ -285,7 +285,7 @@ def manual_reduction_create_final_json(form):
      
          redirectURL = "/pycgi/webUI.py?cmd=reduce2&video_file=" + video_file + "&clear_cache=1&c=" + str(random.randint(0,100000000))
 
-         print('<div style="color:#000; background:#000">')
+        
          print('Content-Type: text/html')
          print('Location: ' + redirectURL)
          print('') # HTTP says you have to have a blank line between headers and content
@@ -294,11 +294,12 @@ def manual_reduction_create_final_json(form):
          print( '    <meta http-equiv="refresh" content="0;url='+redirectURL+'" />' )
          print( '    <title>You are going to be redirected</title>')
          print( '  </head>') 
-         print( '  <body>')
-         print( '    Redirecting... <a href="'+redirectURL+'">Click here if you are not redirected</a>')
+         print( '  <body style="width:100vw; height:100vh; background:#000>')
+         print('<div style="color:#000; background:#000">')
+         print( '    Redirecting... <a href="'+redirectURL+'" style="color:#000">Click here if you are not redirected</a>')
+         print('</div'); 
          print( '  </body>')
          print( '</html>')
-         print('</div'); 
          sys.exit(0)
 
       else: 
