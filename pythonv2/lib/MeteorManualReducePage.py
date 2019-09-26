@@ -289,7 +289,7 @@ def manual_reduction_create_final_json(form):
          #print('Content-Type: text/html')
          #print('Location: ' + redirectURL)
          #print('') # HTTP says you have to have a blank line between headers and content
-         print( '<html>')
+         print( '<html  style="width:100vw; height:100vh; background:#000">')
          print( '  <head>')
          print( '    <meta http-equiv="refresh" content="0;url='+redirectURL+'" />' )
          print( '    <title>You are going to be redirected</title>')
