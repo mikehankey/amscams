@@ -3,6 +3,7 @@ import re
 import os
 import glob
 import shutil
+import sys
 
 from lib.FileIO import load_json_file,save_json_file
 from lib.MeteorReduce_Tools import name_analyser, get_cache_path, get_frame_time_from_f
