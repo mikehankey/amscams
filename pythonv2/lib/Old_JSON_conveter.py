@@ -130,7 +130,7 @@ def move_old_to_archive(json_file_path):
    json_content = convert(json_file_path)
 
    # Save the new JSON with the proper name 
-   save_json_file(new_folder+analysed_name['name'], json_content):
+   save_json_file(new_folder+analysed_name['name'], json_content)
    print("SAVED TO " + new_folder+analysed_name['name'])
 
    # Try to get the related video
