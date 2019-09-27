@@ -158,6 +158,9 @@ def move_old_to_archive(json_file_path, display=False):
       # [1] = number of the frame 
       # [0] = date & time
       real_d = get_frame_time_from_f(0, first_frame[1], first_frame[0])   
+
+      print("REAL TIME OF THE FIRST FRAME")
+      print(real_d)
       
       # We need to update the "analysed name" accordingly
       new_name = analysed_name['name']
