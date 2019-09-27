@@ -87,4 +87,10 @@ def get_new_stars(json_f):
          "cat_und_pos": [float(star[13]),float(star[14])]
       })
 
-   return json.dumps(new_stars)
+   return {"stars": json.dumps(new_stars)}
+
+# Convert a whole old JSON file following the new DTD
+def convert(json_f):
+   get_new_info(json_f)
+   get_new_calib(json_f)
+   get_new_stars(json_f)
