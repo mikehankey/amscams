@@ -144,13 +144,10 @@ def move_old_to_archive(json_file_path):
 
    # Get the original dir name
    org_path = os.path.dirname(os.path.abspath(json_file_path))
-
-   print('FIRST PATH ' + json_file_path)
-
    print('ORG PATH ' + org_path)
 
    # We first try the one that ends with -HD-meteor.mp4
-   test_HD = glob.glob(org_path+t)
+   test_HD = glob.glob(org_path+t+"*")
 
    print("GLOB")
    print(test_HD)
@@ -160,4 +157,4 @@ def move_old_to_archive(json_file_path):
    #> 2019_09_27_05_27_46_000_010040-trim0277.mp4
 
 
-   print(t)
+   #print(t)
