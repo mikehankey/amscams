@@ -152,7 +152,8 @@ def move_old_to_archive(json_file_path, display=False):
    else:
       print("IMPOSSIBLE TO RETRIEVE THE RELATED VIDEO")
       sys.exit(0)
- 
+
+
    # Save the new JSON with the proper name 
    if(HD==True):
       analysed_name['name'] = analysed_name['name'].replace("SD","HD")
@@ -164,9 +165,9 @@ def move_old_to_archive(json_file_path, display=False):
       print("JSON SAVED TO " + json_file)
 
    # Move the video file
-   video_file = new_folder+analysed_name['name'].replace(".json",".mp4")
-   shutil.copy2(video_file,video_file)
+   end_video_file = new_folder+analysed_name['name'].replace(".json",".mp4")
+   shutil.copy2(video_file,end_video_file)
    if(display is True):
-      print("VIDEO FILE SAVE TO " + new_folder+analysed_name['name'].replace(".json",".mp4"))
+      print("VIDEO FILE SAVE TO " + end_video_file)
 
-   return video_file, json_file
+   return json_file,end_video_file
