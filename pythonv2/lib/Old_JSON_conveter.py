@@ -139,9 +139,25 @@ def move_old_to_archive(json_file_path):
    save_json_file(new_folder+analysed_name['name'], json_content)
    print("SAVED TO " + new_folder+analysed_name['name'])
 
-   # Try to get the related video
-   t = json_file_path.replace('-reduced.json','')
-   t = t.replace('-trim0','-trim-')
+   # Try to get the video (defined in the old json)
+   parsed_json = json.load(json_file_path)
+
+   HD = False
+   
+   if "hd_video_file" in parsed_json:
+      # We get the HD
+      video_file = parsed_json['hd_video_file']
+      HD = True
+   elif "sd_video_file" in parsed_json:
+      video_file = parsed_json['sd_video_file'] 
+   else:
+      print("IMPOSSIBLE TO RETRIEVE THE RELATED VIDEO")
+
+   
+   print("VIDEO FILE ")
+   print(video_file)
+
+
 
    # Get the original dir name
    org_path = os.path.dirname(os.path.abspath(json_file_path))
