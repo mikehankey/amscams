@@ -1,5 +1,6 @@
 import json
 import re
+import os
 
 from lib.FileIO import load_json_file,save_json_file
 from lib.MeteorReduce_Tools import name_analyser, get_cache_path
@@ -125,6 +126,10 @@ def move_old_to_archive(json_file_path):
 
    # Determine the folder where to put the files
    new_folder = get_new_archive_folder(analysed_name)
+
+   # If the new_folder doesn't exist, we create it
+   if not os.path.exists(new_folder):
+      os.makedirs(new_folder)
 
    # We create the new json file from the old one
    json_content = convert(json_file_path)
