@@ -151,7 +151,7 @@ def move_old_to_archive(json_file_path, display=False):
    # in order to get the proper name (ie with the date & time of the beginning of the video)
    if "meteor_frame_data" in parsed_json:
       # We get the first frame
-      first_frame = meteor_frame_data[0]
+      first_frame = parsed_json['meteor_frame_data'][0]
 
       # We get the dt of the first frame 
       # [1] = number of the frame 
