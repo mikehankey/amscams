@@ -59,3 +59,32 @@ def get_new_calib(json_f):
          "angle":  float(json_f['cal_params']['position_angle'])
       }      
    }}
+
+# Get new info (device & detection info) from an old JSON version
+def get_new_info(json_f):
+   return  {
+      "info": {
+         "station": json_f['station_name'],
+         "hd": 1, # We assume we have the HD vid by default (not a big deal if we dont)
+         "device": json_f['device_name'],
+         "dur": float(json_f['event_duration']),
+         "max_peak": float(json_f['peak_magnitude'])
+      }
+   }
+
+# Get new stars info from an old JSON version 
+def get_new_stars(json_f):
+   new_stars = {}
+   for star in json_f['cal_params']['cat_image_stars']:
+      new_stars.append({
+         "name": star[0],
+         "mag": float(star[1]),
+         "ra": float(star[2]),
+         "dec": float(star[3]),
+         "dist_px": float(star[6]),
+         "i_pos": [float(star[7]),float(star[8])],
+         "cat_dist_pos": [float(star[11]),float(star[12])],
+         "cat_und_pos": [float(star[13]),float(star[14])]
+      })
+
+   return json.dumps(new_stars)
