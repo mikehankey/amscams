@@ -155,7 +155,8 @@ def move_old_to_archive(json_file_path, display=False):
 
       # We get the dt of the first frame 
       # [1] = number of the frame 
-      real_d = get_frame_time_from_f(0, first_frame[1], frame_dt_org)   
+      # [0] = date & time
+      real_d = get_frame_time_from_f(0, first_frame[1], first_frame[0])   
       print("REAL DT" + str(real_d))
 
    HD = False
