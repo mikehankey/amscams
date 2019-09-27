@@ -143,7 +143,7 @@ def move_old_to_archive(json_file_path):
    t = json_file_path.replace('-reduced.json','')
 
    # Get the original dir name
-   org_path = os.path.dirname(os.path.abspath(json_file_path))
+   org_path = os.path.dirname(json_file_path)
 
    print('ORG PATH ' + org_path)
 
