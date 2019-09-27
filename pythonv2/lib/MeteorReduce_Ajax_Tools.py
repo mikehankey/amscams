@@ -327,7 +327,6 @@ def get_reduction_info(json_file):
 
             rsp['frames'] = new_mfd
  
-         else: 
           
       rsp['status'] = 1
   
