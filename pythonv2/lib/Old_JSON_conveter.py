@@ -131,10 +131,8 @@ def move_old_to_archive(json_file_path):
 
    # Save the new JSON with the proper name 
    #save_json_file(json_file, json_content):
-
-   print("ANALYSED NAME")
-   print(analysed_name)
+ 
 
    print("NEW FOLDER")
-   print(new_folder)
+   print(new_folder+analysed_name['name'])
 
