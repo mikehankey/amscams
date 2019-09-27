@@ -12,15 +12,14 @@ from lib.MeteorReduce_Tools import *
 from lib.MeteorReduce_Calib_Tools import XYtoRADec
 from lib.REDUCE_VARS import *
 from lib.VIDEO_VARS import *
-from lib.GCI_Tools import redirect_to
+from lib.CGI_Tools import redirect_to
 from lib.Old_JSON_conveter import fix_old_file_name, get_new_calib
 
 MANUAL_RED_PAGE_TEMPLATE_STEP1 = "/home/ams/amscams/pythonv2/templates/manual_reduction_template_step1.html"
 MANUAL_RED_PAGE_TEMPLATE_STEP2 = "/home/ams/amscams/pythonv2/templates/manual_reduction_template_step2.html"
 MANUAL_RED_PAGE_TEMPLATE_STEP3 = "/home/ams/amscams/pythonv2/templates/manual_reduction_template_step3.html"
 
- 
-
+  
 # First Step of the Manual reduction: select start / end meteor position
 def manual_reduction(form):
    
@@ -62,11 +61,7 @@ def manual_reduction(form):
    # Add Video to template
    template = template.replace("{VIDEO}", str(video_file))
 
-   # Display Template
-   print(template)
-
-
-# Second Step of Manual Reduction: cropp of all frames + selection of start event
+   # Display Template# Second Step of Manual Reduction: cropp of all frames + selection of start event
 def manual_reduction_cropper(form):
 
    video_file  = form.getvalue('video_file')  
@@ -119,6 +114,10 @@ def manual_reduction_cropper(form):
 
    # Display Template
    print(template)
+   print(template)
+
+
+
 
 
 # Third step of Manual Reduction: manual selection of the meteor position
