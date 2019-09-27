@@ -29,7 +29,7 @@ def manual_reduction(form):
 
 
    print("IN MANUAL RED")
-   print(form)
+   print(video_file)
 
    # Build the page based on template  
    with open(MANUAL_RED_PAGE_TEMPLATE_STEP1, 'r') as file:
