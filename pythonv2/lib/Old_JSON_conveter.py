@@ -119,9 +119,10 @@ def convert(json_file_path):
 # Move new JSON file and HD video file to meteor_archive
 # with a proper name, and in the proper folder
 def move_old_to_archive(json_file_path, display=False):
-
-   #ex:/mnt/ams2/meteors/2019_09_27/2019_09_27_05_27_46_000_010040-trim0277-reduced.json
-
+ 
+   print("IN MOVE OLD TO ARCHIVE<br>")
+   print("JSON FILE PATH " + json_file_path )
+   
    # We fix the old name to get the proper info
    fixed_json_file_path = fix_old_file_name(json_file_path)
    analysed_name = name_analyser(fixed_json_file_path) 
