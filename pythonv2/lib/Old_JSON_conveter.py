@@ -147,10 +147,10 @@ def move_old_to_archive(json_file_path):
    print('ORG PATH ' + org_path)
 
    # We first try the one that ends with -HD-meteor.mp4
-   test_HD = glob.glob(org_path+t+"*")
+   test_HD = glob.glob(org_path+os.path.basename(t)+"*")
 
    print("GLOB")
-   print(org_path+t+"*")
+   print(org_path+os.path.basename(t)+"*")
    print(test_HD)
 
    #> 2019_09_27_05_27_43_000_010040-trim-277-HD-meteor.mp4
