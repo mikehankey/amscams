@@ -186,10 +186,7 @@ def manual_reduction_create_final_json(form):
       # and move the json and the video file under /meteor_archive
       json_file, video_file = move_old_to_archive(video_file.replace('.mp4','-reduced.json'))
 
-   print("JSON FILE " +  json_file)
-   print("VIDEO FILE " +  video_file)
-   sys.exit(0)
- 
+  
    # Get JSON
    meteor_red_file = video_file.replace('.mp4','.json')
    analysed_name = name_analyser(meteor_red_file)
@@ -199,8 +196,10 @@ def manual_reduction_create_final_json(form):
       # We parse the JSON
       mr = load_json_file(meteor_red_file)
          
-      # We remove all the current frames
-      del mr['frames']
+      # We remove all the current frames if they exist
+      if('frames' in mr):
+         del mr['frames']
+         
       mr['frames'] = []
 
       # We create the ones
