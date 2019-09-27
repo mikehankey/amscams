@@ -1,6 +1,7 @@
 import json
 import re
 import os
+import glob
 
 from lib.FileIO import load_json_file,save_json_file
 from lib.MeteorReduce_Tools import name_analyser, get_cache_path
@@ -139,5 +140,22 @@ def move_old_to_archive(json_file_path):
    print("SAVED TO " + new_folder+analysed_name['name'])
 
    # Try to get the related video
-   t = json_file_path.replace('-reduced.json','mp4')
+   t = json_file_path.replace('-reduced.json','')
+
+   # Get the original dir name
+   org_path = os.path.dirname(os.path.abspath(json_file_path))
+
+   print('ORG PATH ' + org_path)
+
+   # We first try the one that ends with -HD-meteor.mp4
+   test_HD = glob.glob(org_path+t)
+
+   print("GLOB")
+   print(test_HD)
+
+   #> 2019_09_27_05_27_43_000_010040-trim-277-HD-meteor.mp4
+   #or 
+   #> 2019_09_27_05_27_46_000_010040-trim0277.mp4
+
+
    print(t)
