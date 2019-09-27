@@ -61,8 +61,6 @@ def get_new_calib(json_f):
    new_dt = new_dt.replace('.','_')
    new_dt = new_dt.replace('-','_')
 
-   print("NEW DT: " + new_dt)
-  
    return { "calib":  
       { "device": {
          "dt":   new_dt,
