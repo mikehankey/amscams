@@ -118,7 +118,7 @@ def convert(json_file_path):
 
 # Move new JSON file and HD video file to meteor_archive
 # with a proper name, and in the proper folder
-def move_old_to_archive(json_file_path):
+def move_old_to_archive(json_file_path, display=False):
 
    #ex:/mnt/ams2/meteors/2019_09_27/2019_09_27_05_27_46_000_010040-trim0277-reduced.json
 
@@ -152,17 +152,21 @@ def move_old_to_archive(json_file_path):
    else:
       print("IMPOSSIBLE TO RETRIEVE THE RELATED VIDEO")
       sys.exit(0)
-
-
+ 
    # Save the new JSON with the proper name 
    if(HD==True):
       analysed_name['name'] = analysed_name['name'].replace("SD","HD")
 
-   save_json_file(new_folder+analysed_name['name'], json_content)
+   json_file  = new_folder+analysed_name['name']
 
-
-   print("JSON SAVED TO " + new_folder+analysed_name['name'])
+   save_json_file(json_file, json_content)
+   if(display is True):
+      print("JSON SAVED TO " + json_file)
 
    # Move the video file
-   shutil.copy2(video_file,new_folder+analysed_name['name'].replace(".json",".mp4"))
-   print("VIDEO FILE SAVE TO " + new_folder+analysed_name['name'].replace(".json",".mp4"))
+   video_file = new_folder+analysed_name['name'].replace(".json",".mp4")
+   shutil.copy2(video_file,video_file)
+   if(display is True):
+      print("VIDEO FILE SAVE TO " + new_folder+analysed_name['name'].replace(".json",".mp4"))
+
+   return video_file, json_file

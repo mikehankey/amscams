@@ -231,21 +231,14 @@ def manual_reduction_create_final_json(form):
 
       else: 
          print_error("<b>JSON File not found: " + meteor_red_file + "</b>")
- 
-         
-
-
-
+  
    else:
       # It's an old detection, we're going to move the video file
       # And create a new json file
       
       # Creation of the new json file
       new_json = convert(json_file_path)
-
-            
-
-
+ 
       sys.exit(0)
 
       # First, we need to get the old reduction file path
