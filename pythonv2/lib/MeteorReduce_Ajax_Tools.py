@@ -280,7 +280,6 @@ def get_reduction_info(json_file):
 
       # Stars
       if 'calib' not in mr or 'stars' not in mr['calib']:
-      
          rsp['status'] = 0
       
       else:
@@ -323,6 +322,9 @@ def get_reduction_info(json_file):
                new_mfd.append(tmp_frame) 
 
             rsp['frames'] = new_mfd
+         
+         else:
+            print('NO FRAMES FOUND')
           
       rsp['status'] = 1
   
