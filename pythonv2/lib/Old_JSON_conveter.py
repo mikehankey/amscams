@@ -1,5 +1,7 @@
 import json
 
+from lib.FileIO import load_json_file
+
 # Fix the old files names that contains "-trim"
 # so we can use the usual name_analyser
 def fix_old_file_name(filename):
@@ -90,7 +92,8 @@ def get_new_stars(json_f):
    return {"stars": json.dumps(new_stars)}
 
 # Convert a whole old JSON file following the new DTD
-def convert(json_f):
+def convert(json_file_path):
+   json_f = load_json_file(json_file_path)
    get_new_info(json_f)
    get_new_calib(json_f)
    get_new_stars(json_f)
