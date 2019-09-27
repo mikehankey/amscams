@@ -270,15 +270,20 @@ def get_reduction_info(json_file):
    max_res_deg = 0 
    max_res_px = 0 
 
-   print("get_reduction_info for " + json_file)
+   print("get_reduction_info for " + json_file + "<br>")
 
    # Output
    rsp = {}
 
    if cfe(json_file) == 1:
 
+      print("the file exist <br>")
+
       # We load the JSON
       mr = load_json_file(json_file) 
+
+      print("JSON:")
+      print(mr)
 
       # Stars
       if 'calib' not in mr or 'stars' not in mr['calib']:
@@ -296,8 +301,12 @@ def get_reduction_info(json_file):
          total_res_px  = max_res_px/ sc 
      
          mr['calib']['device']['total_res_px']  = total_res_px
-         mr['calib']['device']['total_res_deg'] = total_res_px/mr['calib']['device']['scale_px'] 
          
+         if(float(mr['calib']['device']['scale_px'])!=0):
+            mr['calib']['device']['total_res_deg'] = total_res_px/float(mr['calib']['device']['scale_px'])
+         
+         print(mr)
+
          # Pass to JSON
          rsp['calib'] = mr['calib'] 
 
