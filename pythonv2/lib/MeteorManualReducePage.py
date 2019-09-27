@@ -18,7 +18,6 @@ from lib.Old_JSON_conveter import fix_old_file_name, get_new_calib, convert
 MANUAL_RED_PAGE_TEMPLATE_STEP1 = "/home/ams/amscams/pythonv2/templates/manual_reduction_template_step1.html"
 MANUAL_RED_PAGE_TEMPLATE_STEP2 = "/home/ams/amscams/pythonv2/templates/manual_reduction_template_step2.html"
 MANUAL_RED_PAGE_TEMPLATE_STEP3 = "/home/ams/amscams/pythonv2/templates/manual_reduction_template_step3.html"
-
   
 # First Step of the Manual reduction: select start / end meteor position
 def manual_reduction(form):

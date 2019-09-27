@@ -2,6 +2,7 @@ import json
 import re
 import os
 import glob
+import shutil
 
 from lib.FileIO import load_json_file,save_json_file
 from lib.MeteorReduce_Tools import name_analyser, get_cache_path
@@ -11,7 +12,7 @@ from lib.REDUCE_VARS import *
 # Get a new folder in meteor_archive
 # from an old json file
 def get_new_archive_folder(analysed_name):
-   return METEOR_ARCHIVE + analysed_name['year'] + "/" + analysed_name['month'] + "/" + analysed_name['day'] + "/"
+   return METEOR_ARCHIVE + "/" + analysed_name['cam_id'] + "/" + analysed_name['year'] + "/" + analysed_name['month'] + "/" + analysed_name['day'] + "/"
    
 # Fix the old files names that contains "-trim"
 # so we can use the usual name_analyser
@@ -134,11 +135,7 @@ def move_old_to_archive(json_file_path):
 
    # We create the new json file from the old one
    json_content = convert(json_file_path)
-
-   # Save the new JSON with the proper name 
-   save_json_file(new_folder+analysed_name['name'], json_content)
-   print("SAVED TO " + new_folder+analysed_name['name'])
-
+ 
    # Try to get the video (defined in the old json)
    parsed_json = load_json_file(json_file_path)
 
@@ -150,29 +147,20 @@ def move_old_to_archive(json_file_path):
       HD = True
    elif "sd_video_file" in parsed_json:
       video_file = parsed_json['sd_video_file'] 
+      # Since we don't have the HD video, we need to update the json
+      json_content['info']['hd'] = 0
    else:
       print("IMPOSSIBLE TO RETRIEVE THE RELATED VIDEO")
+      sys.exit(0)
 
-   
-   print("VIDEO FILE ")
+
+   # Save the new JSON with the proper name 
+   save_json_file(new_folder+analysed_name['name'], json_content)
+   print("JSON SAVED TO " + new_folder+analysed_name['name'])
+
+   # Move the video file
+   #shutil.copy2(video_file,new_folder+analysed_name['name']) 
+   print("COPY ")
    print(video_file)
-
-
-
-   # Get the original dir name
-   org_path = os.path.dirname(os.path.abspath(json_file_path))
-   print('ORG PATH ' + org_path)
-
-   # We first try the one that ends with -HD-meteor.mp4
-   test_HD = glob.glob(org_path+os.path.basename(t)+"*")
-
-   print("GLOB")
-   print(org_path+'/'+os.path.basename(t)+"*")
-   print(test_HD)
-
-   #> 2019_09_27_05_27_43_000_010040-trim-277-HD-meteor.mp4
-   #or 
-   #> 2019_09_27_05_27_46_000_010040-trim0277.mp4
-
-
-   #print(t)
+   print("TO ")
+   print(new_folder+analysed_name['name'])
