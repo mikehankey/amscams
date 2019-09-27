@@ -6,6 +6,8 @@ JSON_CONFIG = "/home/ams/amscams/conf/as6.json"
 MAIN_FILE_PATH = "/mnt/ams2/"
 CACHE_PATH = MAIN_FILE_PATH + "CACHE/"
 
+METEOR_ARCHIVE = MAIN_FILE_PATH + "meteor_archive/"
+
 # Cache subfolders
 FRAMES_SUBPATH= "/FRAMES/"          # For the HD Frames
 CROPPED_FRAMES_SUBPATH = "/THUMBS/" # For the Cropped Frames (thumbs)

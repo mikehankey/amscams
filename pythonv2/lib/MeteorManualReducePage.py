@@ -179,7 +179,7 @@ def manual_reduction_create_final_json(form):
    frames_info = json.loads(frames_info)
 
    # Is it an old or a new detection?
-   if "meteor_archive" in video_file: 
+   if METEOR_ARCHIVE in video_file: 
 
       # IT'S A NEW ONE!
 
