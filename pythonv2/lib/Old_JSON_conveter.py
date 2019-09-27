@@ -117,8 +117,11 @@ def move_old_to_archive(json_file_path):
    fixed_json_file_path = fix_old_file_name(json_file_path)
    analyse_name = name_analyser(fixed_json_file_path)
  
-   # Determine the folder where to put the files
-   new_folder = get_cache_path(fixed_json_file_path)
+   print("ANALYSED NAME")
+   print(analyse_name)
 
-   print(new_folder)
+   # Determine the folder where to put the files
+   #new_folder = get_cache_path(fixed_json_file_path)
+
+   #print(new_folder)
 
