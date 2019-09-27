@@ -19,7 +19,37 @@ MANUAL_RED_PAGE_TEMPLATE_STEP1 = "/home/ams/amscams/pythonv2/templates/manual_re
 MANUAL_RED_PAGE_TEMPLATE_STEP2 = "/home/ams/amscams/pythonv2/templates/manual_reduction_template_step2.html"
 MANUAL_RED_PAGE_TEMPLATE_STEP3 = "/home/ams/amscams/pythonv2/templates/manual_reduction_template_step3.html"
 
+
+
+
+# Get cal_params new version from an old JSON version 
+def get_new_calib(json_f):
+   # If 'device_alt' isn't defined, we have to work with 'site_alt'...
+   if "device_alt" not in json_f['cal_params']:
+      json_f['cal_params']['device_alt'] = float(json_f['cal_params']['site_alt'])
+      json_f['cal_params']['device_lat'] = float(json_f['cal_params']['site_lat'])  
+      json_f['cal_params']['device_lng'] = float(json_f['cal_params']['site_lng'])  
  
+   return { "calib":  
+      { "device": {
+         "alt":  float(json_f['cal_params']['device_alt']),
+         "lat":  float(json_f['cal_params']['device_lat']),
+         "lng":  float(json_f['cal_params']['device_lng']),
+         "scale_px":  float(json_f['cal_params']['pixscale']),
+         "poly": {
+               "y_fwd": json_f['cal_params']['y_poly_fwd'],
+               "x_fwd": json_f['cal_params']['x_poly_fwd']
+         },
+         "center": {
+               "az": float(json_f['cal_params']['center_az']),  
+               "ra": float(json_f['cal_params']['ra_center']), 
+               "el": float(json_f['cal_params']['center_el']),
+               "dec": float(json_f['cal_params']['dec_center']) 
+         },
+         "angle":  float(json_f['cal_params']['position_angle'])
+      }      
+   }}
+
 
 # First Step of the Manual reduction: select start / end meteor position
 def manual_reduction(form):
@@ -221,13 +251,13 @@ def manual_reduction_create_final_json(form):
                'w': W_DEFAULT, 
                'h': H_DEFAULT
             }
-            
+        
             mr['frames'].append(new_frame)
 
          # We update the JSON with the new frames
          save_json_file(meteor_red_file, mr) 
 
-         # Redirect to (new) reduce page 
+
          redirect_to("/pycgi/webUI.py?cmd=reduce2&video_file=" + video_file + "&clear_cache=1&c=" + str(random.randint(0,100000000)))
 
 
@@ -253,10 +283,10 @@ def manual_reduction_create_final_json(form):
 
 
    # Fix eventual video file name (old version)
-   #tmp_fixed_video_full_path = fix_old_file_name(video_file)
-   #analysed_name = name_analyser(tmp_fixed_video_full_path)
+   tmp_fixed_video_full_path = fix_old_file_name(video_file)
+   analysed_name = name_analyser(tmp_fixed_video_full_path)
 
-   #print('FIXED NAME')
-   #print(tmp_fixed_video_full_path)
+   print('FIXED NAME')
+   print(tmp_fixed_video_full_path)
 
    
