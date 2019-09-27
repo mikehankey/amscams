@@ -56,6 +56,7 @@ def get_new_calib(json_f):
  
    return { "calib":  
       { "device": {
+         "dt": json_f['event_start_time'].replace('/','_').replace(' ','_').replace(':','_').replace('.','_')
          "alt":  float(json_f['cal_params']['device_alt']),
          "lat":  float(json_f['cal_params']['device_lat']),
          "lng":  float(json_f['cal_params']['device_lng']),
@@ -71,7 +72,6 @@ def get_new_calib(json_f):
                "dec": float(json_f['cal_params']['dec_center']) 
          },
          "angle":  float(json_f['cal_params']['position_angle']),
-         "dt": json_f['event_start_time'].replace('/','_').replace(' ','_').replace(':','_').replace('.','_')
       }      
    }}
 
