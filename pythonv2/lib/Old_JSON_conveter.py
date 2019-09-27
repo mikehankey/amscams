@@ -140,7 +140,7 @@ def move_old_to_archive(json_file_path):
    print("SAVED TO " + new_folder+analysed_name['name'])
 
    # Try to get the video (defined in the old json)
-   parsed_json = json.load(json_file_path)
+   parsed_json = load_json_file(json_file_path)
 
    HD = False
    
