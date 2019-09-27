@@ -207,6 +207,10 @@ def manual_reduction_create_final_json(form):
  
          # Get the Frame time (as a string)
          dt = get_frame_time(mr,frame['fn'],analysed_name)
+
+         print("DT IN METEOR MANUAL REDUCE")
+         print(dt)
+         sys.exit(0)
          
          # Get the new RA/Dec 
          new_x, new_y, RA, Dec, az, el =  XYtoRADec(int(frame['x']),int(frame['y']),analysed_name,mr)
