@@ -62,8 +62,8 @@ def get_new_calib(json_f):
    new_dt = new_dt.replace('-','_')
 
    return { "calib":  
+      "dt":   new_dt,
       { "device": {
-         "dt":   new_dt,
          "alt":  float(json_f['cal_params']['device_alt']),
          "lat":  float(json_f['cal_params']['device_lat']),
          "lng":  float(json_f['cal_params']['device_lng']),
