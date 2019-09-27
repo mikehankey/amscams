@@ -70,7 +70,8 @@ def get_new_calib(json_f):
                "el": float(json_f['cal_params']['center_el']),
                "dec": float(json_f['cal_params']['dec_center']) 
          },
-         "angle":  float(json_f['cal_params']['position_angle'])
+         "angle":  float(json_f['cal_params']['position_angle']),
+         "dt": : event_start_time.replace('/','_').replace(' ','_').replace(':','_')
       }      
    }}
 
