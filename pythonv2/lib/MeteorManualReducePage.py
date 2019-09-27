@@ -211,6 +211,9 @@ def manual_reduction_create_final_json(form):
          # Get the new RA/Dec 
          new_x, new_y, RA, Dec, az, el =  XYtoRADec(int(frame['x']),int(frame['y']),analysed_name,mr)
 
+         print(frame)
+         print("DT " + dt)
+
          # We need to create the new entry
          new_frame = {
             'dt': dt,
