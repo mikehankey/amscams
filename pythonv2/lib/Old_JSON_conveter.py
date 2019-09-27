@@ -119,8 +119,11 @@ def convert(json_file_path):
    info = get_new_info(json_f)
    calib = get_new_calib(json_f)
    stars = get_new_stars(json_f)
+
+   # The stars belong to calib
+   calib['calib']['stars'] = stars['stars']
    
-   return {"info": info['info'],"calib": calib['calib'],"stars": stars['stars']}
+   return {"info": info['info'],"calib": calib['calib']}
 
 
 # Move new JSON file and HD video file to meteor_archive

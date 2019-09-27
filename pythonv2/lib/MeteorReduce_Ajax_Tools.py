@@ -287,7 +287,7 @@ def get_reduction_info(json_file):
       # Stars
       if 'calib' not in mr or 'stars' not in mr['calib']:
          rsp['status'] = 0
-      
+         
       else:
 
          # Copy original 
@@ -304,8 +304,7 @@ def get_reduction_info(json_file):
          if(float(mr['calib']['device']['scale_px'])!=0):
             mr['calib']['device']['total_res_deg'] = total_res_px/float(mr['calib']['device']['scale_px'])
          
-         print("AFTER TOTAL RES DEGG")
-         
+ 
          # Pass to JSON
          rsp['calib'] = mr['calib'] 
 
