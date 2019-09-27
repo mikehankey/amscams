@@ -53,12 +53,17 @@ def get_new_calib(json_f):
       json_f['cal_params']['device_alt'] = float(json_f['cal_params']['site_alt'])
       json_f['cal_params']['device_lat'] = float(json_f['cal_params']['site_lat'])  
       json_f['cal_params']['device_lng'] = float(json_f['cal_params']['site_lng'])  
- 
-   print("NEW DT " + json_f['event_start_time'].replace('/','_').replace(' ','_').replace(':','_').replace('.','_'))
+   
 
+   new_dt = json_f['event_start_time']
+   new_dt = new_dt.replace('/','_')
+   new_dt = new_dt.replace(' ','_')
+   new_dt = new_dt.replace(':','_')
+   new_dt = new_dt.replace('.','_')
+  
    return { "calib":  
       { "device": {
-         "dt": json_f['event_start_time'].replace('/','_').replace(' ','_').replace(':','_').replace('.','_')
+         "dt":   new_dt,
          "alt":  float(json_f['cal_params']['device_alt']),
          "lat":  float(json_f['cal_params']['device_lat']),
          "lng":  float(json_f['cal_params']['device_lng']),
