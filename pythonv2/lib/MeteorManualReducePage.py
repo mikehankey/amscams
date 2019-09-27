@@ -177,83 +177,64 @@ def manual_reduction_create_final_json(form):
    # We parse the frames_info
    frames_info = json.loads(frames_info)
 
-   # Is it an old or a new detection?
-   if METEOR_ARCHIVE in video_file: 
+   # First we test if it's an old file
+   if METEOR_ARCHIVE not in video_file: 
+      # It is an old file
+      # so we need to create the new json 
+      # and move the json and the video file under /meteor_archive
 
-      # IT'S A NEW ONE!
+      json_file, video_file = move_old_to_archive(json_file_path)
 
-      # Get JSON
-      meteor_red_file = video_file.replace('.mp4','.json')
-      analysed_name = name_analyser(meteor_red_file)
 
-      if cfe(meteor_red_file) == 1:
+   # Get JSON
+   meteor_red_file = video_file.replace('.mp4','.json')
+   analysed_name = name_analyser(meteor_red_file)
 
-         # We parse the JSON
-         mr = load_json_file(meteor_red_file)
+   if cfe(meteor_red_file) == 1:
+
+      # We parse the JSON
+      mr = load_json_file(meteor_red_file)
          
-         # We remove all the current frames
-         del mr['frames']
-         mr['frames'] = []
+      # We remove all the current frames
+      del mr['frames']
+      mr['frames'] = []
 
-         # We create the ones
-         for frame in frames_info:
+      # We create the ones
+      for frame in frames_info:
  
-            # Get the Frame time (as a string)
-            dt = get_frame_time(mr,frame['fn'],analysed_name)
-          
-            # Get the new RA/Dec 
-            new_x, new_y, RA, Dec, az, el =  XYtoRADec(int(frame['x']),int(frame['y']),analysed_name,mr)
+         # Get the Frame time (as a string)
+         dt = get_frame_time(mr,frame['fn'],analysed_name)
+         
+         # Get the new RA/Dec 
+         new_x, new_y, RA, Dec, az, el =  XYtoRADec(int(frame['x']),int(frame['y']),analysed_name,mr)
 
-            # We need to create the new entry
-            new_frame = {
-               'dt': dt,
-               'x': int(frame['x']),
-               'y': int(frame['y']),
-               'fn': int(frame['fn']),
-               'az': az,
-               'el': el,
-               'ra': RA,
-               'dec': Dec,
-               'intensity': Intensity_DEFAULT,
-               'max_px': Maxpx_DEFAULT,
-               'w': W_DEFAULT, 
-               'h': H_DEFAULT
-            }
-        
-            mr['frames'].append(new_frame)
+         # We need to create the new entry
+         new_frame = {
+            'dt': dt,
+            'x': int(frame['x']),
+            'y': int(frame['y']),
+            'fn': int(frame['fn']),
+            'az': az,
+            'el': el,
+            'ra': RA,
+            'dec': Dec,
+            'intensity': Intensity_DEFAULT,
+            'max_px': Maxpx_DEFAULT,
+            'w': W_DEFAULT, 
+            'h': H_DEFAULT
+         }
+      
+         mr['frames'].append(new_frame)
 
-         # We update the JSON with the new frames
-         save_json_file(meteor_red_file, mr) 
-
-
-         redirect_to("/pycgi/webUI.py?cmd=reduce2&video_file=" + video_file + "&clear_cache=1&c=" + str(random.randint(0,100000000)))
-
+      # We update the JSON with the new frames
+      save_json_file(meteor_red_file, mr) 
+ 
+      redirect_to("/pycgi/webUI.py?cmd=reduce2&video_file=" + video_file + "&clear_cache=1&c=" + str(random.randint(0,100000000)))
 
       else: 
          print_error("<b>JSON File not found: " + meteor_red_file + "</b>")
   
-   else:
-      # It's an old detection, we're going to move the video file
-      # And create a new json file
-      
-      # Creation of the new json file
-      new_json = convert(json_file_path)
  
-      sys.exit(0)
-
-      # First, we need to get the old reduction file path
-      #old_json_file = video_file.replace('.mp4','-reduced.json')
-      #if(cfe(old_json_file)==1):
-      #   print(old_json_file  +  " exists")
-      #else:
-      #   print(old_json_file  +  " doesn't exist")
-
-
-   # Fix eventual video file name (old version)
-   tmp_fixed_video_full_path = fix_old_file_name(video_file)
-   analysed_name = name_analyser(tmp_fixed_video_full_path)
-
-   print('FIXED NAME')
-   print(tmp_fixed_video_full_path)
+ 
 
    
