@@ -165,4 +165,4 @@ def move_old_to_archive(json_file_path):
 
    # Move the video file
    shutil.copy2(video_file,new_folder+analysed_name['name'].replace(".json",".mp4"))
-   print("VIDEO FILE SAVE TO " + new_folder+analysed_name['name'].replace(".json",".mp4")s )
+   print("VIDEO FILE SAVE TO " + new_folder+analysed_name['name'].replace(".json",".mp4"))
