@@ -95,9 +95,11 @@ def get_new_stars(json_f):
 def convert(json_file_path):
    
    json_f = load_json_file(json_file_path)
-   print (get_new_info(json_f))
-   print (get_new_calib(json_f))
-   print (get_new_stars(json_f))
+   info = get_new_info(json_f)
+   calib = get_new_calib(json_f)
+   stars = get_new_stars(json_f)
+
+   new_json = {"info": info['info'],"calib": calib['calib'],"stars": stars['stars']}
    
-   
+   print(new_json)
   
