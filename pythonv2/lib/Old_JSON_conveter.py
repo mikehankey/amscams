@@ -1,7 +1,7 @@
 import json
 import re
 
-from lib.FileIO import load_json_file
+from lib.FileIO import load_json_file,save_json_file
 from lib.MeteorReduce_Tools import name_analyser, get_cache_path
 from lib.REDUCE_VARS import *
 
@@ -9,7 +9,7 @@ from lib.REDUCE_VARS import *
 # Get a new folder in meteor_archive
 # from an old json file
 def get_new_archive_folder(analysed_name):
-   return METEOR_ARCHIVE + analysed_name['year'] + "/" + analysed_name['month'] + "/" + analysed_name['day'] 
+   return METEOR_ARCHIVE + analysed_name['year'] + "/" + analysed_name['month'] + "/" + analysed_name['day'] + "/"
    
 # Fix the old files names that contains "-trim"
 # so we can use the usual name_analyser
@@ -126,5 +126,15 @@ def move_old_to_archive(json_file_path):
    # Determine the folder where to put the files
    new_folder = get_new_archive_folder(analysed_name)
 
+   # We create the new json file from the old one
+   json_content = convert(json_file_path)
+
+   # Save the new JSON with the proper name 
+   #save_json_file(json_file, json_content):
+
+   print("ANALYSED NAME")
+   print(analysed_name)
+
+   print("NEW FOLDER")
    print(new_folder)
 
