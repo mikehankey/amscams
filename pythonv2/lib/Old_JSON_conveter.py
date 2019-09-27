@@ -150,6 +150,7 @@ def move_old_to_archive(json_file_path):
    test_HD = glob.glob(org_path+t+"*")
 
    print("GLOB")
+   print(org_path+t+"*")
    print(test_HD)
 
    #> 2019_09_27_05_27_43_000_010040-trim-277-HD-meteor.mp4
