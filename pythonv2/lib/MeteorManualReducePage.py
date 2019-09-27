@@ -27,6 +27,10 @@ def manual_reduction(form):
 
    video_file = form.getvalue('video_file')
 
+
+   print("IN MANUAL RED")
+   print(form)
+
    # Build the page based on template  
    with open(MANUAL_RED_PAGE_TEMPLATE_STEP1, 'r') as file:
       template = file.read()
@@ -50,8 +54,6 @@ def manual_reduction(form):
    else:
       print_error("<b>You need to add a video file in the URL.</b>")
 
-
-
    # Get the stacks 
    # True = We automatically resize the stack to HD dims so we can use it in the UI
    stack = get_stacks(analysed_name,clear_cache, True)
@@ -59,6 +61,7 @@ def manual_reduction(form):
    
    # Add Video to template
    template = template.replace("{VIDEO}", str(video_file))
+
 
    # Display Template# Second Step of Manual Reduction: cropp of all frames + selection of start event
 def manual_reduction_cropper(form):
