@@ -185,6 +185,58 @@ def manual_reduction_create_final_json(form):
       json_file, video_file = move_old_to_archive(json_file_path)
 
    
+
+   # Get JSON
+   meteor_red_file = video_file.replace('.mp4','.json')
+   analysed_name = name_analyser(meteor_red_file)
+
+   if cfe(meteor_red_file) == 1:
+
+      # We parse the JSON
+      mr = load_json_file(meteor_red_file)
+         
+      # We remove all the current frames
+      del mr['frames']
+      mr['frames'] = []
+
+      # We create the ones
+      for frame in frames_info:
+ 
+         # Get the Frame time (as a string)
+         dt = get_frame_time(mr,frame['fn'],analysed_name)
+         
+         # Get the new RA/Dec 
+         new_x, new_y, RA, Dec, az, el =  XYtoRADec(int(frame['x']),int(frame['y']),analysed_name,mr)
+
+         # We need to create the new entry
+         new_frame = {
+            'dt': dt,
+            'x': int(frame['x']),
+            'y': int(frame['y']),
+            'fn': int(frame['fn']),
+            'az': az,
+            'el': el,
+            'ra': RA,
+            'dec': Dec,
+            'intensity': Intensity_DEFAULT,
+            'max_px': Maxpx_DEFAULT,
+            'w': W_DEFAULT, 
+            'h': H_DEFAULT
+         }
+      
+         mr['frames'].append(new_frame)
+
+      # We update the JSON with the new frames
+      save_json_file(meteor_red_file, mr) 
+
+
+      redirect_to("/pycgi/webUI.py?cmd=reduce2&video_file=" + video_file + "&clear_cache=1&c=" + str(random.randint(0,100000000)))
+
+
+      else: 
+         print_error("<b>JSON File not found: " + meteor_red_file + "</b>")
+  
+ 
  
 
    
