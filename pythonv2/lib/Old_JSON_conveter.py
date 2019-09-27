@@ -1,6 +1,7 @@
 import json
 
 from lib.FileIO import load_json_file
+from lib.MeteorReduce_Tools import name_analyser
 
 # Fix the old files names that contains "-trim"
 # so we can use the usual name_analyser
