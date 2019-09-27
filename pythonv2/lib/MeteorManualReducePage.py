@@ -182,9 +182,9 @@ def manual_reduction_create_final_json(form):
       # It is an old file
       # so we need to create the new json 
       # and move the json and the video file under /meteor_archive
+
       json_file, video_file = move_old_to_archive(json_file_path)
 
-   
 
    # Get JSON
    meteor_red_file = video_file.replace('.mp4','.json')
@@ -229,12 +229,10 @@ def manual_reduction_create_final_json(form):
       # We update the JSON with the new frames
       save_json_file(meteor_red_file, mr) 
 
-
       redirect_to("/pycgi/webUI.py?cmd=reduce2&video_file=" + video_file + "&clear_cache=1&c=" + str(random.randint(0,100000000)))
-
-
-      else: 
-         print_error("<b>JSON File not found: " + meteor_red_file + "</b>")
+ 
+   else: 
+      print_error("<b>JSON File not found: " + meteor_red_file + "</b>")
   
  
  
