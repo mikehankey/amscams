@@ -270,6 +270,8 @@ def get_reduction_info(json_file):
    max_res_deg = 0 
    max_res_px = 0 
 
+   print("get_reduction_info for " + json_file)
+
    # Output
    rsp = {}
 
