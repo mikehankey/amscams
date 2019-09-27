@@ -62,23 +62,23 @@ def get_new_calib(json_f):
    new_dt = new_dt.replace('-','_')
 
    return { "calib":  
-      "dt":   new_dt,
-      { "device": {
-         "alt":  float(json_f['cal_params']['device_alt']),
-         "lat":  float(json_f['cal_params']['device_lat']),
-         "lng":  float(json_f['cal_params']['device_lng']),
-         "scale_px":  float(json_f['cal_params']['pixscale']),
-         "poly": {
-               "y_fwd": json_f['cal_params']['y_poly_fwd'],
-               "x_fwd": json_f['cal_params']['x_poly_fwd']
-         },
-         "center": {
-               "az": float(json_f['cal_params']['center_az']),  
-               "ra": float(json_f['cal_params']['ra_center']), 
-               "el": float(json_f['cal_params']['center_el']),
-               "dec": float(json_f['cal_params']['dec_center']) 
-         },
-         "angle":  float(json_f['cal_params']['position_angle']),
+      {  "dt":   new_dt,
+         "device": {
+            "alt":  float(json_f['cal_params']['device_alt']),
+            "lat":  float(json_f['cal_params']['device_lat']),
+            "lng":  float(json_f['cal_params']['device_lng']),
+            "scale_px":  float(json_f['cal_params']['pixscale']),
+            "poly": {
+                  "y_fwd": json_f['cal_params']['y_poly_fwd'],
+                  "x_fwd": json_f['cal_params']['x_poly_fwd']
+            },
+            "center": {
+                  "az": float(json_f['cal_params']['center_az']),  
+                  "ra": float(json_f['cal_params']['ra_center']), 
+                  "el": float(json_f['cal_params']['center_el']),
+                  "dec": float(json_f['cal_params']['dec_center']) 
+            },
+            "angle":  float(json_f['cal_params']['position_angle']),
       }      
    }}
 
