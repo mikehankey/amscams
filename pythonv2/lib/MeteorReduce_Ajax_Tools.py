@@ -316,13 +316,14 @@ def get_reduction_info(json_file):
                path_to_frame = thumb_folder + analysed_name['name_w_ext']  + EXT_CROPPED_FRAMES + str(frame_data['fn']) + ".png"
 
                tmp_frame = frame_data
-               tmp_frame['path_to_frame'] =path_to_frame
+               tmp_frame['path_to_frame'] = path_to_frame
 
                # Add the frame with path to frame (thumb)
                new_mfd.append(tmp_frame) 
 
             rsp['frames'] = new_mfd
-         
+
+            print("FRAMES FOUND")
          else:
             print('NO FRAMES FOUND')
           
