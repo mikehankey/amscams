@@ -105,24 +105,20 @@ def get_new_stars(json_f):
 
 # Convert a whole old JSON file following the new DTD
 def convert(json_file_path):
-   
    json_f = load_json_file(json_file_path)
+   
+   # Convert info 
    info = get_new_info(json_f)
    calib = get_new_calib(json_f)
    stars = get_new_stars(json_f)
-
-   new_json = {"info": info['info'],"calib": calib['calib'],"stars": stars['stars']}
    
-   return new_json
+   return {"info": info['info'],"calib": calib['calib'],"stars": stars['stars']}
 
 
 # Move new JSON file and HD video file to meteor_archive
 # with a proper name, and in the proper folder
 def move_old_to_archive(json_file_path, display=False):
- 
-   print("IN MOVE OLD TO ARCHIVE<br>")
-   print("JSON FILE PATH " + json_file_path )
-   
+  
    # We fix the old name to get the proper info
    fixed_json_file_path = fix_old_file_name(json_file_path)
    analysed_name = name_analyser(fixed_json_file_path) 
