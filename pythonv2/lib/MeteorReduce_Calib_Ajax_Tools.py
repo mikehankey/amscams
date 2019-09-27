@@ -4,8 +4,8 @@ import json
 from lib.FileIO import load_json_file
 from lib.MeteorReduce_Tools import name_analyser  
 from lib.MeteorReduce_Calib_Tools import XYtoRADec
-from lib.MeteorManualReducePage import fix_old_file_name, get_new_calib
-
+from lib.MeteorManualReducePage import get_new_calib
+from lib.Old_JSON_conveter import fix_old_file_name, get_new_calib
 
 
 
