@@ -5,7 +5,7 @@ import glob
 import shutil
 
 from lib.FileIO import load_json_file,save_json_file
-from lib.MeteorReduce_Tools import name_analyser, get_cache_path
+from lib.MeteorReduce_Tools import name_analyser, get_cache_path, get_frame_time_from_f
 from lib.REDUCE_VARS import *
 
 
@@ -129,7 +129,7 @@ def convert(json_file_path):
 # Move new JSON file and HD video file to meteor_archive
 # with a proper name, and in the proper folder
 def move_old_to_archive(json_file_path, display=False):
-  
+
    # We fix the old name to get the proper info
    fixed_json_file_path = fix_old_file_name(json_file_path)
    analysed_name = name_analyser(fixed_json_file_path) 
@@ -146,6 +146,17 @@ def move_old_to_archive(json_file_path, display=False):
  
    # Try to get the video (defined in the old json)
    parsed_json = load_json_file(json_file_path)
+
+   # We need to determine the real start of the old json 
+   # in order to get the proper name (ie with the date & time of the beginning of the video)
+   if "meteor_frame_data" in parsed_json:
+      # We get the first frame
+      first_frame = meteor_frame_data[0]
+
+      # We get the dt of the first frame 
+      # [1] = number of the frame 
+      real_d = get_frame_time_from_f(0, first_frame[1], frame_dt_org)   
+      print("REAL DT" + str(real_d))
 
    HD = False
    

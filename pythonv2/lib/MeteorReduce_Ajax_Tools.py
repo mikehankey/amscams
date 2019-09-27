@@ -298,8 +298,7 @@ def get_reduction_info(json_file):
 
          if(float(mr['calib']['device']['scale_px'])!=0):
             mr['calib']['device']['total_res_deg'] = total_res_px/float(mr['calib']['device']['scale_px'])
-         
- 
+          
          # Pass to JSON
          rsp['calib'] = mr['calib'] 
 
