@@ -180,17 +180,11 @@ def manual_reduction_create_final_json(form):
 
    # First we test if it's an old file
    if METEOR_ARCHIVE not in video_file: 
-
-      print("VIDEO FILE")
-      print(video_file)
-      print("ADD -reduced.json?")
-      sys.exit(0)
-
-
+      
       # It is an old file
       # so we need to create the new json 
       # and move the json and the video file under /meteor_archive
-      json_file, video_file = move_old_to_archive(video_file.replace('.mp4','.json'))
+      json_file, video_file = move_old_to_archive(video_file.replace('.mp4','-reduced.json'))
  
    # Get JSON
    meteor_red_file = video_file.replace('.mp4','.json')
