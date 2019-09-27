@@ -13,7 +13,7 @@ from lib.MeteorReduce_Calib_Tools import XYtoRADec
 from lib.REDUCE_VARS import *
 from lib.VIDEO_VARS import *
 from lib.CGI_Tools import redirect_to
-from lib.Old_JSON_conveter import fix_old_file_name, get_new_calib
+from lib.Old_JSON_conveter import fix_old_file_name, get_new_calib, convert
 
 MANUAL_RED_PAGE_TEMPLATE_STEP1 = "/home/ams/amscams/pythonv2/templates/manual_reduction_template_step1.html"
 MANUAL_RED_PAGE_TEMPLATE_STEP2 = "/home/ams/amscams/pythonv2/templates/manual_reduction_template_step2.html"
@@ -240,7 +240,13 @@ def manual_reduction_create_final_json(form):
    else:
       # It's an old detection, we're going to move the video file
       # And create a new json file
-      print("IT'S AN OLD DETECTION - I CANNOT DEAL WITH IT FOR NOW")
+      
+      # Creation of the new json file
+      new_json = convert(json_file_path)
+
+            
+
+
       sys.exit(0)
 
       # First, we need to get the old reduction file path

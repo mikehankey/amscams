@@ -101,5 +101,20 @@ def convert(json_file_path):
 
    new_json = {"info": info['info'],"calib": calib['calib'],"stars": stars['stars']}
    
-   print(new_json)
-  
+   return new_json
+
+
+# Move new JSON file and HD video file to meteor_archive
+# with a proper name, and in the proper folder
+def move_old_to_archive(json_file_path):
+
+   #ex:/mnt/ams2/meteors/2019_09_27/2019_09_27_05_27_46_000_010040-trim0277-reduced.json
+
+   # We fix the old name to get the proper info
+   analyse_name = name_analyser(json_file_path)
+
+   # Determine the folder where to put the files
+   new_folder = get_cache_path(analyse_name)
+
+   print(new_folder)
+
