@@ -101,7 +101,7 @@ def get_new_stars(json_f):
          "cat_und_pos": [float(star[13]),float(star[14])]
       })
 
-   return {"stars": json.dumps(new_stars)}
+   return {"stars": new_stars}
 
 # Convert a whole old JSON file following the new DTD
 def convert(json_file_path):
@@ -165,4 +165,4 @@ def move_old_to_archive(json_file_path):
 
    # Move the video file
    shutil.copy2(video_file,new_folder+analysed_name['name'].replace(".json",".mp4"))
-   print("VIDEO FILE SAVE TO " + new_folder+analysed_name['name'].replace(".json",".mp4") )
+   print("VIDEO FILE SAVE TO " + new_folder+analysed_name['name'].replace(".json",".mp4")s )
