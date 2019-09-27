@@ -93,7 +93,9 @@ def get_new_stars(json_f):
 
 # Convert a whole old JSON file following the new DTD
 def convert(json_file_path):
+   
    json_f = load_json_file(json_file_path)
-   get_new_info(json_f)
-   get_new_calib(json_f)
-   get_new_stars(json_f)
+   new_json = { get_new_info(json_f),get_new_calib(json_f), get_new_stars(json_f)}
+   print(new_json)
+   
+  
