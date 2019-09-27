@@ -26,8 +26,7 @@ def manual_reduction(form):
    cgitb.enable()
 
    video_file = form.getvalue('video_file')
-
-
+ 
    print("IN MANUAL RED")
    print(video_file)
 
