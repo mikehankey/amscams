@@ -141,6 +141,7 @@ def move_old_to_archive(json_file_path):
 
    # Try to get the related video
    t = json_file_path.replace('-reduced.json','')
+   t = t.replace('-trim0','-trim-')
 
    # Get the original dir name
    org_path = os.path.dirname(os.path.abspath(json_file_path))
