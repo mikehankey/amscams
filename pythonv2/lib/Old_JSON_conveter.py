@@ -120,11 +120,11 @@ def move_old_to_archive(json_file_path):
    print("ANALYSED NAME")
    print(analysed_name)
 
-   print(analysed_file_name['station_id'])
-   print(analysed_file_name['year'])
-   print(analysed_file_name['month'])
-   print(analysed_file_name['day'])
-   print(analysed_file_name['name']) 
+   print(analysed_name['station_id'])
+   print(analysed_name['year'])
+   print(analysed_name['month'])
+   print(analysed_name['day'])
+   print(analysed_name['name']) 
 
    # Determine the folder where to put the files
    #new_folder = get_cache_path(fixed_json_file_path)
