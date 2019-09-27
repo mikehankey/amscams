@@ -76,7 +76,7 @@ def get_new_info(json_f):
 
 # Get new stars info from an old JSON version 
 def get_new_stars(json_f):
-   new_stars = {}
+   new_stars = []
    for star in json_f['cal_params']['cat_image_stars']:
       new_stars.append({
          "name": star[0],
