@@ -12,7 +12,7 @@ from lib.REDUCE_VARS import *
 # Get a new folder in meteor_archive
 # from an old json file
 def get_new_archive_folder(analysed_name):
-   return METEOR_ARCHIVE + "/" + analysed_name['station_id'] + "/" + analysed_name['year'] + "/" + analysed_name['month'] + "/" + analysed_name['day'] + "/"
+   return METEOR_ARCHIVE + analysed_name['station_id'] + "/" METEOR + "/" + analysed_name['year'] + "/" + analysed_name['month'] + "/" + analysed_name['day'] + "/"
    
 # Fix the old files names that contains "-trim"
 # so we can use the usual name_analyser

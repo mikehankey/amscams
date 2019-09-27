@@ -7,6 +7,7 @@ MAIN_FILE_PATH = "/mnt/ams2/"
 CACHE_PATH = MAIN_FILE_PATH + "CACHE/"
 
 METEOR_ARCHIVE = MAIN_FILE_PATH + "meteor_archive/"
+METEOR = "METEOR/" # Sub folder in the archive
 
 # Cache subfolders
 FRAMES_SUBPATH= "/FRAMES/"          # For the HD Frames
