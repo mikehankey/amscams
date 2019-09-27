@@ -282,9 +282,7 @@ def get_reduction_info(json_file):
       # We load the JSON
       mr = load_json_file(json_file) 
 
-      print("JSON:")
-      utf8stdout = open(1, 'w', encoding='utf-8', closefd=False) # fd 1 is stdout
-      print(mr, file=utf8stdout) 
+    
 
       # Stars
       if 'calib' not in mr or 'stars' not in mr['calib']:
@@ -306,8 +304,8 @@ def get_reduction_info(json_file):
          if(float(mr['calib']['device']['scale_px'])!=0):
             mr['calib']['device']['total_res_deg'] = total_res_px/float(mr['calib']['device']['scale_px'])
          
-         print(mr)
-
+         print("AFTER TOTAL RES DEGG")
+         
          # Pass to JSON
          rsp['calib'] = mr['calib'] 
 
