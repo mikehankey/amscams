@@ -112,10 +112,11 @@ def move_old_to_archive(json_file_path):
    #ex:/mnt/ams2/meteors/2019_09_27/2019_09_27_05_27_46_000_010040-trim0277-reduced.json
 
    # We fix the old name to get the proper info
-   analyse_name = name_analyser(json_file_path)
-
+   fixed_json_file_path = fix_old_file_name(json_file_path)
+   analyse_name = name_analyser(fixed_json_file_path)
+ 
    # Determine the folder where to put the files
-   new_folder = get_cache_path(analyse_name)
+   new_folder = get_cache_path(fixed_json_file_path)
 
    print(new_folder)
 
