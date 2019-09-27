@@ -161,9 +161,8 @@ def move_old_to_archive(json_file_path, display=False):
       
       # We need to update the "analysed name" accordingly
       new_name = analysed_name['name']
-      new_name_part1 = new_name[23:]
-      new_name = new_name_part1 + real_d.replace('-','_').replace(' ','_').replace('.','_').replace(':','_')
-      analysed_name['name'] = new_name
+      new_name_part1 = new_name[23:] 
+      analysed_name['name'] = real_d.replace('-','_').replace(' ','_').replace('.','_').replace(':','_') + new_name_part1
 
       print(" NEW NAME " + new_name)
       sys.exit(0)
