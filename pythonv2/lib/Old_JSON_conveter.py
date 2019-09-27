@@ -115,19 +115,10 @@ def move_old_to_archive(json_file_path):
 
    # We fix the old name to get the proper info
    fixed_json_file_path = fix_old_file_name(json_file_path)
-   analysed_name = name_analyser(fixed_json_file_path)
- 
-   print("ANALYSED NAME")
-   print(analysed_name)
-
-   print(analysed_name['station_id'])
-   print(analysed_name['year'])
-   print(analysed_name['month'])
-   print(analysed_name['day'])
-   print(analysed_name['name']) 
+   analysed_name = name_analyser(fixed_json_file_path) 
 
    # Determine the folder where to put the files
    new_folder = get_cache_path(analysed_name)
 
-   #print(new_folder)
+   print(new_folder)
 
