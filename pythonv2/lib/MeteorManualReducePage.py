@@ -19,10 +19,7 @@ MANUAL_RED_PAGE_TEMPLATE_STEP1 = "/home/ams/amscams/pythonv2/templates/manual_re
 MANUAL_RED_PAGE_TEMPLATE_STEP2 = "/home/ams/amscams/pythonv2/templates/manual_reduction_template_step2.html"
 MANUAL_RED_PAGE_TEMPLATE_STEP3 = "/home/ams/amscams/pythonv2/templates/manual_reduction_template_step3.html"
 
-
-
-
-
+ 
 
 # First Step of the Manual reduction: select start / end meteor position
 def manual_reduction(form):
@@ -224,13 +221,13 @@ def manual_reduction_create_final_json(form):
                'w': W_DEFAULT, 
                'h': H_DEFAULT
             }
-        
+            
             mr['frames'].append(new_frame)
 
          # We update the JSON with the new frames
          save_json_file(meteor_red_file, mr) 
 
-
+         # Redirect to (new) reduce page 
          redirect_to("/pycgi/webUI.py?cmd=reduce2&video_file=" + video_file + "&clear_cache=1&c=" + str(random.randint(0,100000000)))
 
 
@@ -256,10 +253,10 @@ def manual_reduction_create_final_json(form):
 
 
    # Fix eventual video file name (old version)
-   tmp_fixed_video_full_path = fix_old_file_name(video_file)
-   analysed_name = name_analyser(tmp_fixed_video_full_path)
+   #tmp_fixed_video_full_path = fix_old_file_name(video_file)
+   #analysed_name = name_analyser(tmp_fixed_video_full_path)
 
-   print('FIXED NAME')
-   print(tmp_fixed_video_full_path)
+   #print('FIXED NAME')
+   #print(tmp_fixed_video_full_path)
 
    

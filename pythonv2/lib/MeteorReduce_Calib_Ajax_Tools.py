@@ -6,8 +6,7 @@ from lib.MeteorReduce_Tools import name_analyser
 from lib.MeteorReduce_Calib_Tools import XYtoRADec
 from lib.MeteorManualReducePage import get_new_calib
 from lib.Old_JSON_conveter import fix_old_file_name, get_new_calib
-
-
+ 
 
 # Return Ra/Dec based on X,Y  
 def getRADEC(form):
@@ -37,8 +36,7 @@ def getRADEC(form):
    for v in _values:
       x,y,ra,dec,az,el = XYtoRADec(v['x_HD'],v['y_HD'],name_analyser(json_file_x),new_json_content)
       results.append({'x_HD': v['x_HD'], 'y_HD': v['y_HD'],'y_org': v['y_org'], 'x_org': v['x_org'], 'ra':ra,'dec':dec,'az':az,'el':el})
-
-
+ 
    # Return JSON
    print(json.dumps({'res':results}))
    
