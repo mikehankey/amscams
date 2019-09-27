@@ -234,7 +234,7 @@ def manual_reduction_create_final_json(form):
       save_json_file(meteor_red_file, mr) 
  
 
-      redirect_to("/pycgi/webUI.py?cmd=reduce2&video_file=" + video_file + "&clear_cache=1&c=" + str(random.randint(0,100000000)))
+      redirect_to("/pycgi/webUI.py?cmd=reduce2&video_file=" + video_file + "&clear_cache=1&c=" + str(random.randint(0,100000000)), "reduction")
  
    else: 
       print_error("<b>JSON File not found: " + meteor_red_file + "</b>")

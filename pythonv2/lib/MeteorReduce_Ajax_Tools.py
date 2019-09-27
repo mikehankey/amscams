@@ -270,20 +270,15 @@ def get_reduction_info(json_file):
    max_res_deg = 0 
    max_res_px = 0 
 
-   print("get_reduction_info for " + json_file + "<br>")
-
+    
    # Output
    rsp = {}
 
-   if cfe(json_file) == 1:
-
-      print("the file exist <br>")
+   if cfe(json_file) == 1: 
 
       # We load the JSON
       mr = load_json_file(json_file) 
-
-    
-
+ 
       # Stars
       if 'calib' not in mr or 'stars' not in mr['calib']:
          rsp['status'] = 0
@@ -331,10 +326,8 @@ def get_reduction_info(json_file):
                new_mfd.append(tmp_frame) 
 
             rsp['frames'] = new_mfd
-
-            print("FRAMES FOUND")
-         else:
-            print('NO FRAMES FOUND')
+ 
+         else: 
           
       rsp['status'] = 1
   
