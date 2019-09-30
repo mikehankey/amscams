@@ -260,9 +260,7 @@ def XYtoRADec(x,y,analysed_name,json_file):
    #print('dec_d' +  str(dec_d)+"<br>")
    #print('RA_d' +  str(RA_d)+"<br>")
    #print('angle' +  str(angle)+"<br>")
-
-   print(json_file)
-   
+ 
 
 
    total_min = (int(hd_h) * 60) + int(hd_M)
@@ -383,6 +381,7 @@ def XYtoRADec(x,y,analysed_name,json_file):
    RA = (hour_angle + lon - HA)%360
    dec = math.degrees(math.asin(sl*salt + cl*calt*caz))
 
+   print(x_pix+x,y_pix+y,RA,dec,azimuth,altitude)
    ### ###
    return(x_pix+x,y_pix+y,RA,dec,azimuth,altitude)
 
