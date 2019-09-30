@@ -214,6 +214,7 @@ def move_old_detection_to_archive(json_file_path, display=False):
       # We parse the param
       param_json = load_json_file(param_files[0][0])
       print("<br>PARAM</br>")
+      print(param_files[0][0],"<br/>")
       print(param_json)
 
    else:
