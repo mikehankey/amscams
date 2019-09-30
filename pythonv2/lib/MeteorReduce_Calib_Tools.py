@@ -149,8 +149,7 @@ def XYtoRADec(x,y,analysed_name,json_file):
    #dec_d       = float(json_file['calib']['device']['center']['dec']) 
    #RA_d        = float(json_file['calib']['device']['center']['ra']) 
 
-   print("CENTER RA: ", Ra_d, "<br/>")
-   print("CENTER Dec: ", dec_d, "<br/>")
+ 
 
    total_min = (int(hd_h) * 60) + int(hd_M)
    day_frac = total_min / 1440 
