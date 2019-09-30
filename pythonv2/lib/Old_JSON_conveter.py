@@ -61,8 +61,7 @@ def get_new_calib(json_f):
    new_dt = new_dt.replace(':','_')
    new_dt = new_dt.replace('.','_')
    new_dt = new_dt.replace('-','_')
-
-   print("DEC CENTER ", str(json_f['cal_params']['dec_center']))
+ 
 
    return { "calib":  
       {  "dt":   new_dt,
