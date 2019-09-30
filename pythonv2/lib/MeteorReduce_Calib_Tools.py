@@ -122,7 +122,7 @@ def AzEltoRADec(az,el,analysed_name,json_conf):
    ra = str(ra).replace(":", " ")
    dec = str(dec).replace(":", " ")
 
-   ra, dec= HMS2deg(str(rah),str(dech))
+   ra, dec= HMS2deg(str(ra),str(dec))
  
    return(ra,dec)
 
