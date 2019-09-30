@@ -85,7 +85,12 @@ def fix_old_file_name(filename):
          toReturn +=  "_SD.json"
 
 
+      print("NEW NAME")
       print(toReturn)
+
+      return toReturn
+   else:
+      print('BAD FILE NAME')
 
 
 
