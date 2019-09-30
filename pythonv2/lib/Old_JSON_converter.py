@@ -224,6 +224,7 @@ def move_old_detection_to_archive(json_file_path, display=False):
 
    new_calib = { "calib":  
       {  "dt":   calib_dt,
+         "org_file_name": json_file_path,
          "device": {
             "alt":  float(param_json['device_alt']),
             "lat":  float(param_json['device_lat']),
@@ -242,9 +243,7 @@ def move_old_detection_to_archive(json_file_path, display=False):
             "angle":  float(param_json['position_angle']),
       }      
    }}
-
-
-   
+ 
 
    new_info = {
       "info": {
