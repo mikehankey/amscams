@@ -6,6 +6,7 @@ import shutil
 import sys
 from datetime import datetime,timedelta
 
+from lib.WebCalib import get_active_cal_file
 from lib.FileIO import load_json_file,save_json_file
 from lib.MeteorReduce_Tools import name_analyser, get_cache_path, get_frame_time_from_f, get_datetime_from_analysedname
 from lib.REDUCE_VARS import *
@@ -204,7 +205,14 @@ def move_old_detection_to_archive(json_file_path, display=False):
    
    # We fix the old name to get the proper info
    fixed_json_file_path = fix_old_file_name(json_file_path)
-   
+
+   # Get the closest param files
+   param_files = get_active_cal_file(fixed_json_file_path)
+
+   print("PARAM FILES<br/>")
+   print(param_files)
+   print("<br/>")
+
    # What info can we got from the json file
    parsed_old_file = load_json_file(json_file_path)
 
