@@ -188,16 +188,11 @@ def manual_reduction_create_final_json(form):
       # and move the json and the video file under /meteor_archive
       
       # Do we have a "-reduced.json"
-      old_json = video_file.replace('.mp4','-reduced.json')   
-      old_json_fixed_name = fix_old_file_name(old_json)
-
-      print("manual_reduction_create_final_json" + "<hr/>")
-      print("old_json : ", old_json)
-      print("old_json_fixed_name: ", old_json_fixed_name)
+      old_json = video_file.replace('.mp4','-reduced.json')    
 
 
       if(cfe(old_json)):
-         json_file, video_file = move_old_reduced_to_archive(old_json_fixed_name)
+         json_file, video_file = move_old_reduced_to_archive(old_json)
       else:
          # Here we don't have a -reduced.json, so we need to create the json from scratch 
          # TODOTODOTDO::::

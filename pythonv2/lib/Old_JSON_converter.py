@@ -17,10 +17,7 @@ def get_new_archive_folder(analysed_name):
       station_id = get_station_id()
    else:
       station_id = analysed_name['station_id'] 
-   print("ANALYSED NAME<br/>")
-   print(analysed_name)
-   print("<br/>------------------")
-
+  
    return METEOR_ARCHIVE + station_id + "/" + METEOR + analysed_name['year'] + "/" + analysed_name['month'] + "/" + analysed_name['day'] + "/"
 
 # Analysed and old file (containing "-trim")
