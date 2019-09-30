@@ -225,21 +225,21 @@ def move_old_detection_to_archive(json_file_path, display=False):
    new_calib = { "calib":  
       {  "dt":   calib_dt,
          "device": {
-            "alt":  float(param_json_analysed_name['device_alt']),
-            "lat":  float(param_json_analysed_name['device_lat']),
-            "lng":  float(param_json_analysed_name['device_lng']),
-            "scale_px":  float(param_json_analysed_name['pixscale']),
+            "alt":  float(param_json['device_alt']),
+            "lat":  float(param_json['device_lat']),
+            "lng":  float(param_json['device_lng']),
+            "scale_px":  float(param_json['pixscale']),
             "poly": {
-                  "y_fwd": param_json_analysed_name['y_poly_fwd'],
-                  "x_fwd": param_json_analysed_name['x_poly_fwd']
+                  "y_fwd": param_json['y_poly_fwd'],
+                  "x_fwd": param_json['x_poly_fwd']
             },
             "center": {
-                  "az": float(param_json_analysed_name['center_az']),  
-                  "ra": float(param_json_analysed_name['ra_center']), 
-                  "el": float(param_json_analysed_name['center_el']),
-                  "dec": float(param_json_analysed_name['dec_center']) 
+                  "az": float(param_json['center_az']),  
+                  "ra": float(param_json['ra_center']), 
+                  "el": float(param_json['center_el']),
+                  "dec": float(param_json['dec_center']) 
             },
-            "angle":  float(param_json_analysed_name['position_angle']),
+            "angle":  float(param_json['position_angle']),
       }      
    }}
 
