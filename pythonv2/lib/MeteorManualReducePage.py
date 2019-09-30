@@ -189,11 +189,9 @@ def manual_reduction_create_final_json(form):
       
       # Do we have a "-reduced.json"
       old_json = video_file.replace('.mp4','-reduced.json')    
+ 
 
-      print("OLD JSON" , old_json,"<br/>")
-
-      if(cfe(old_json)):
-         print("move_old_reduced_to_archive")
+      if(cfe(old_json)): 
          json_file, video_file = move_old_reduced_to_archive(old_json)
       else:
          # Here we don't have a -reduced.json, so we need to create the json from scratch 
