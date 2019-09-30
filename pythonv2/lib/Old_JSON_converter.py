@@ -25,7 +25,7 @@ def old_name_analyser(file_names):
    for matchNum, match in enumerate(matches, start=1):
       for groupNum in range(0, len(match.groups())):
          if(match.group(groupNum) is not None):
-            res[OLD_FILE_NAME_REGEXGROUP[groupNum]] = match.group(groupNum)
+            res[OLD_FILE_NAME_REGEX_GROUP[groupNum]] = match.group(groupNum)
          groupNum = groupNum + 1
 
    # Get Name without extension if possible
@@ -167,6 +167,8 @@ def move_old_reduced_to_archive(json_file_path, display=False):
    analysed_name = name_analyser(fixed_json_file_path) 
 
    # Determine the folder where to put the files
+   print("IN move_old_reduced_to_archive")
+   print(fixed_json_file_path)
    new_folder = get_new_archive_folder(analysed_name)
 
    # If the new_folder doesn't exist, we create it
