@@ -246,6 +246,7 @@ def XYtoRADec___(x,y,analysed_name,json_file):
    y_poly_fwd  = json_file['calib']['device']['poly']['y_fwd']
    lat         = float(json_file['calib']['device']['lat'])
    lon         = float(json_file['calib']['device']['lng'])
+
    dec_d       = float(json_file['calib']['device']['center']['dec']) 
    RA_d        = float(json_file['calib']['device']['center']['ra']) 
    angle       = float(json_file['calib']['device']['angle']) 

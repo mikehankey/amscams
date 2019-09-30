@@ -25,10 +25,7 @@ def getRADEC(form):
       new_json_content = get_new_calib(json_f)
    else:
       new_json_content = json_f
-
-   print("getRADEC<br/>")
-   print(new_json_content)
-   
+ 
    # Eventually fix the name to be able to parse it
    json_file_x = fix_old_file_name(json_file)
    

@@ -62,6 +62,8 @@ def get_new_calib(json_f):
    new_dt = new_dt.replace('.','_')
    new_dt = new_dt.replace('-','_')
 
+   print("DEC CENTER ", str(json_f['cal_params']['dec_center']))
+
    return { "calib":  
       {  "dt":   new_dt,
          "device": {
@@ -151,7 +153,7 @@ def move_old_to_archive(json_file_path, display=False):
    # We need to determine the real start of the old json 
    # in order to get the proper name (ie with the date & time of the beginning of the video)
    # we need to start with getting the -trim.json file
-   
+
 
    HD = False
    
