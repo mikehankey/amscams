@@ -60,6 +60,8 @@ def fix_old_file_name(filename):
          for groupNum in range(0, len(match.groups())):  
             if("-" not in match.group(groupNum) ):
                tmp_fixed_video_full_path = tmp_fixed_video_full_path + "_" + match.group(groupNum)
+            else:
+               print("TRIM VALUE " + match.group(groupNum))
             groupNum = groupNum + 1
 
          # Remove first "_"

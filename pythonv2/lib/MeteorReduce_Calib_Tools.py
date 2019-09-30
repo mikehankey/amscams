@@ -87,7 +87,7 @@ def AzEltoRADec(az,el,analysed_name,json_conf):
 
    device_lat = json_conf['calib']['device']['lat']
    device_lng = json_conf['calib']['device']['lng']
-   device_alt = j 
+   device_alt = json_conf['calib']['device']['alt']
 
    obs = ephem.Observer()
  
