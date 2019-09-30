@@ -201,7 +201,9 @@ def convert(json_file_path):
 # with a proper name, and in the proper folder
 # from a old -reduced.json file
 def move_old_reduced_to_archive(json_file_path, display=False):
- 
+   
+   print("ORG PATH ", json_file_path, "<br/>")
+
    # Remove the eventual "-reduced" from name
    json_file_path  = json_file_path.replace('-reduced','')
 
@@ -209,7 +211,7 @@ def move_old_reduced_to_archive(json_file_path, display=False):
    fixed_json_file_path = fix_old_file_name(json_file_path)
  
 
-   print("FIXED PATH ", fixed_json_file_path)
+   print("FIXED PATH ", fixed_json_file_path, "<br/>")
    sys.exit(0)
 
    analysed_name = name_analyser(fixed_json_file_path) 
