@@ -194,6 +194,8 @@ def manual_reduction_create_final_json(form):
       else:
          # Here we don't have a -reduced.json, so we need to create the json from scratch 
          # TODOTODOTDO::::
+         print('TODO: DEAL WITH DETECTION WITHOUT -reduced.json')
+         sys.exit(0)
 
   
    # Get JSON
