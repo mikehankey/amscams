@@ -13,7 +13,27 @@ from lib.REDUCE_VARS import *
 # TO DELETE 
 from lib.UtilLib import convert_filename_to_date_cam, bound_cnt, check_running,date_to_jd, angularSeparation , calc_dist, better_parse_file_date
 
-
+# Convert Ra, Dec in  HMS to deg
+def HMS2deg(ra='', dec=''):
+  RA, DEC, rs, ds = '', '', 1, 1
+  if dec:
+    D, M, S = [float(i) for i in dec.split()]
+    if str(D)[0] == '-':
+      ds, D = -1, abs(D)
+    deg = D + (M/60) + (S/3600)
+    DEC = '{0}'.format(deg*ds)
+  
+  if ra:
+    H, M, S = [float(i) for i in ra.split()]
+    if str(H)[0] == '-':
+      rs, H = -1, abs(H)
+    deg = (H*15) + (M/4) + (S/240)
+    RA = '{0}'.format(deg*rs)
+  
+  if ra and dec:
+    return (RA, DEC)
+  else:
+    return RA or DEC
 
 # Convert Y, M, d into JD Date
 def date_to_jd(year,month,day):
@@ -98,9 +118,12 @@ def AzEltoRADec(az,el,analysed_name,json_conf):
    obs.date = datetime.strptime(dt, '%Y-%m-%d %H:%M:%S.%f')
    ra,dec = obs.radec_of(azr,elr)
 
-   print("NEW RA DEC<br/>")
-   print(ra,dec)
+   # We need to return the ra & dec in deg
+   ra = str(ra).replace(":", " ")
+   dec = str(dec).replace(":", " ")
 
+   ra, dec= HMS2deg(str(rah),str(dech))
+ 
    return(ra,dec)
 
 
