@@ -82,7 +82,7 @@ def fix_old_file_name(filename):
             dt_with_trim = get_datetime_from_analysedname(new_name_analyser)
 
             # We convert the trim in seconds
-            trim_in_sec = float(trim_value[:4])/FPS_HD
+            trim_in_sec = float(trim_value[4:])/FPS_HD
 
             print("WE NEED TO ADD " + trim_in_sec +  " seconds")
             
