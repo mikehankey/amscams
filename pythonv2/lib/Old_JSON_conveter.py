@@ -49,6 +49,7 @@ def fix_old_file_name(filename):
 
 # Get cal_params new version from an old JSON version 
 def get_new_calib(json_f):
+   
    # If 'device_alt' isn't defined, we have to work with 'site_alt'...
    if "device_alt" not in json_f['cal_params']:
       json_f['cal_params']['device_alt'] = float(json_f['cal_params']['site_alt'])
