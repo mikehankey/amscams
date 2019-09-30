@@ -77,7 +77,7 @@ def fix_old_file_name(filename):
       org_dt = org_dt +  timedelta(0,trim_in_sec)
 
       # Create fixed name based on all data
-      toReturn =  res['year']+"_"+res['month']+'_'+res['day']+'_'+res['hour']+'_'+res['min']+'_'+res['sec']+'_'+res['ms']+'_'+res['cam_id']+'_'+res['station_id']
+      toReturn =  res['year']+"_"+res['month']+'_'+res['day']+'_'+res['hour']+'_'+res['min']+'_'+res['sec']+'_'+res['ms']+'_'+res['cam_id']+'_'+get_station_id()
 
       if("HD" in filename):
          toReturn +=  "_HD.json"
