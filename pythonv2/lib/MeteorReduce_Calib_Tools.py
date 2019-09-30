@@ -63,6 +63,11 @@ def date_to_jd(year,month,day):
     return jd
 
 
+
+
+# TEST
+
+
 # Return Ra/Dec based on X,Y for a given frame
 def XYtoRADec(x,y,analysed_name,json_file):
  
@@ -82,6 +87,13 @@ def XYtoRADec(x,y,analysed_name,json_file):
    dec_d       = float(json_file['calib']['device']['center']['dec']) 
    RA_d        = float(json_file['calib']['device']['center']['ra']) 
    angle       = float(json_file['calib']['device']['angle']) 
+
+
+   print('Year' +  str(hd_y) +"<br>")
+   print('Mpnth' +  str(hd_m)+"<br>")
+   print('Day' +  str(hd_d)+"<br>")
+   print('Hour' +  str(hd_h)+"<br>")
+   print('Minute' +  str(hd_M)+"<br>") 
 
 
    print('F_scale' +  str(F_scale) +"<br>")
