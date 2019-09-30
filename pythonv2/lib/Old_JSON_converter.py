@@ -60,47 +60,19 @@ def fix_old_file_name(filename):
 
       tmp_video_full_path_matches =  re.finditer(OLD_FILE_NAME_REGEX, filename, re.MULTILINE)
       tmp_fixed_video_full_path = ""
-      
-      for matchNum, match in enumerate(tmp_video_full_path_matches, start=1):
-         for groupNum in range(0, len(match.groups())):  
-            if("-" not in match.group(groupNum) ):
-               tmp_fixed_video_full_path = tmp_fixed_video_full_path + "_" + match.group(groupNum)
-            else:
-               trim_value = match.group(groupNum)
+
+      res = {}
+  
+      for matchNum, match in enumerate(matches, start=1):
+         for groupNum in range(0, len(match.groups())):
+            if(match.group(groupNum) is not None):
+               res[OLD_FILE_NAME_REGEX_GROUP[groupNum]] = match.group(groupNum)
             groupNum = groupNum + 1
 
-         # Remove first "_"
-         tmp_fixed_video_full_path = tmp_fixed_video_full_path[1:]
+      print(res)
 
-         # Add an extension
-         tmp_fixed_video_full_path += "_" + station_id
-         
-         if("HD" in filename):
-            tmp_fixed_video_full_path +=  "_HD.json"
-         else:
-            tmp_fixed_video_full_path +=  "_SD.json"
 
-         # If we have a trim value we update the date & time accordingly
-         if(trim_value != 0): 
-            new_name_analyser = name_analyser(tmp_fixed_video_full_path)
-            dt_with_trim = get_datetime_from_analysedname(new_name_analyser)
 
-            print(dt_with_trim)
-            print("<hr/>")
-
-            # We convert the trim in seconds 
-            # here 5: = "-trim"
-            trim_in_sec = float(trim_value[5:])/FPS_HD
-            print("WE NEED TO ADD " + str(trim_in_sec) +  " seconds<br/>")
-            
-            # We add the trim_in_sec
-            dt_with_trim = dt_with_trim +  timedelta(0,trim_in_sec)
-             
-            print(dt_with_trim)
-
-         return tmp_fixed_video_full_path
-   else:
-      return filename
 
 
 # Get cal_params new version from an old JSON version 
