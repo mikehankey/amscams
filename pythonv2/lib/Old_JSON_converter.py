@@ -215,7 +215,7 @@ def move_old_detection_to_archive(json_file_path, display=False):
       param_json = load_json_file(param_files[0][0])
       print("<br>PARAM</br>")
       print(param_files[0][0],"<br/>")
-      print(param_json)
+      print(param_json['x_poly_fwd'])
 
    else:
       print("PARAM FILES " + param_files[0][0]  + " not found" )
