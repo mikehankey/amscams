@@ -101,8 +101,8 @@ def XYtoRADec(img_x,img_y,analysed_name,json_file):
    Ho = (280.46061837 + 360.98564736629*(jd - 2451545.0) + 0.000387933*T**2 \
       - (T**3)/38710000.0)%360
 
-   x_poly_fwd = json_file['calib']['poly']['x_fwd']
-   y_poly_fwd = json_file['calib']['poly']['y_fwd']
+   x_poly_fwd = json_file['calib']['device']['poly']['x_fwd']
+   y_poly_fwd = json_file['calib']['device']['poly']['y_fwd']
    
    dec_d = float(json_file['calib']['device']['center']['dec']) 
    RA_d  = float(json_file['calib']['device']['center']['ra']) 
