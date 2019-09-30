@@ -168,8 +168,17 @@ def get_new_stars(json_f):
 
 # Convert a whole old JSON file following the new DTD
 def convert(json_file_path):
+   
+   print("IN CONVERT<br>")
+   print("INITIAL:<br/> ")
+   print(json_file_path)
+   
    json_f = load_json_file(json_file_path)
    
+   print("<br>")
+   print(json_f)
+
+
    # Convert info 
    info = get_new_info(json_f)
 
