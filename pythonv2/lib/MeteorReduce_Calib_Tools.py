@@ -2,6 +2,8 @@ import math
 import glob
 import re
 import sys
+import numpy as np
+import ephem
 
 from datetime import datetime,timedelta
 from lib.MeteorReduce_Tools import name_analyser, get_datetime_from_analysedname
@@ -68,7 +70,35 @@ def date_to_jd(year,month,day):
 
     return jd
 
+# XY To RADEC 
+# distort_xy_new (should be called RADEC to corrected xy)
+#AZ TO RA DEC (and then to XY)
+def AzEltoRADec(az,el,analysed_name,json_conf):
+   
+   azr = np.radians(az)
+   elr = np.radians(el)
+
+    # Get Data from analysed_name
+   hd_y = analysed_name['year']
+   hd_m = analysed_name['month']
+   hd_d = analysed_name['day']
+   hd_h = analysed_name['hour']
+   hd_M = analysed_name['min']
+
+   device_lat = json_conf['calib']['device']['lat']
+   device_lng = json_conf['calib']['device']['lng']
+   device_alt = j 
+
+   obs = ephem.Observer()
  
+   obs.lat = str(device_lat)
+   obs.lon = str(device_lng)
+   obs.elevation = float(device_alt)
+   obs.date = hd_datetime  
+   ra,dec = obs.radec_of(azr,elr)
+
+   return(ra,dec)
+
 
 # Return Ra/Dec based on X,Y for a given frame
 def XYtoRADec(x,y,analysed_name,json_file):
@@ -86,10 +116,14 @@ def XYtoRADec(x,y,analysed_name,json_file):
    y_poly_fwd  = json_file['calib']['device']['poly']['y_fwd']
    lat         = float(json_file['calib']['device']['lat'])
    lon         = float(json_file['calib']['device']['lng'])
-   dec_d       = float(json_file['calib']['device']['center']['dec']) 
-   RA_d        = float(json_file['calib']['device']['center']['ra']) 
    angle       = float(json_file['calib']['device']['angle']) 
-  
+   
+   # Here we get the proper Ra/Dec at the time of the detection
+   RA_d,dec_d = AzEltoRADec(float(json_file['calib']['device']['center']['az']),float(json_file['calib']['device']['center']['dec']),analysed_name,json_file)
+   
+   #dec_d       = float(json_file['calib']['device']['center']['dec']) 
+   #RA_d        = float(json_file['calib']['device']['center']['ra']) 
+
    total_min = (int(hd_h) * 60) + int(hd_M)
    day_frac = total_min / 1440 
    hd_d = int(hd_d) + day_frac
