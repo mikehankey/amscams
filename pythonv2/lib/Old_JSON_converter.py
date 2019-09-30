@@ -134,6 +134,11 @@ def get_new_calib(json_f):
 
 # Get new info (device & detection info) from an old JSON version
 def get_new_info(json_f):
+   if('station_name' not in json_f):
+      station_name = get_station_id()
+   else:
+      get_station_id = json_f['station_name']
+
    return  {
       "info": {
          "station": json_f['station_name'],
