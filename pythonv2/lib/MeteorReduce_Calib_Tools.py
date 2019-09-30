@@ -124,7 +124,7 @@ def AzEltoRADec(az,el,analysed_name,json_conf):
 
    ra, dec= HMS2deg(str(ra),str(dec))
  
-   return(ra,dec)
+   return(float(ra),float(dec))
 
 
 # Return Ra/Dec based on X,Y for a given frame
