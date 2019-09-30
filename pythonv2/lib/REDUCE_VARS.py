@@ -6,6 +6,9 @@ JSON_CONFIG = "/home/ams/amscams/conf/as6.json"
 MAIN_FILE_PATH = "/mnt/ams2/"
 CACHE_PATH = MAIN_FILE_PATH + "CACHE/"
 
+METEOR_ARCHIVE = MAIN_FILE_PATH + "meteor_archive/"
+METEOR = "METEOR/" # Sub folder in the archive
+
 # Cache subfolders
 FRAMES_SUBPATH= "/FRAMES/"          # For the HD Frames
 CROPPED_FRAMES_SUBPATH = "/THUMBS/" # For the Cropped Frames (thumbs)
@@ -26,8 +29,8 @@ FILE_NAMES_REGEX_GROUP = ["name","year","month","day","hour","min","sec","ms","c
 
 # PATTERN FOR "OLD" VIDEO OR JSON FILE NAMES
 # (with "-trimdddd")
-OLD_FILE_NAME_REGEX =  r"(\d{4})_(\d{2})_(\d{2})_(\d{2})_(\d{2})_(\d{2})_(\d{3})_(\w{6})(-trim\d{4})?(\.[0-9a-z]+$)"
-
+OLD_FILE_NAME_REGEX =  r"(\d{4})_(\d{2})_(\d{2})_(\d{2})_(\d{2})_(\d{2})_(\d{3})_(\w{6})-trim(\d{4})?(\.[0-9a-z]+$)"
+OLD_FILE_NAME_REGEX_GROUP = ["name","year","month","day","hour","min","sec","ms","cam_id","trim","ext"]
 
 # EXTENSION FOR THE FRAMES
 EXT_HD_FRAMES = "_HDfr"

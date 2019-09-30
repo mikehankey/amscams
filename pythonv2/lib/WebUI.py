@@ -11,7 +11,7 @@ import json
 import cgitb
 import re
 import datetime
-import time 
+import time  
 from pathlib import Path
 from lib.PwdProtect import login_page, check_pwd_ajax
 from lib.Pagination import get_pagination
@@ -41,7 +41,7 @@ from lib.MeteorReducePage import reduce_meteor2
 from lib.MeteorReduce_Ajax_Tools import get_reduction_info, delete_frame, update_multiple_frames, update_frame, get_frame, create_thumb, update_cat_stars
 
 # Manual Reduction page
-from lib.MeteorManualReducePage import manual_reduction, manual_reduction_cropper, manual_reduction_meteor_pos_selector
+from lib.MeteorManualReducePage import manual_reduction, manual_reduction_cropper, manual_reduction_meteor_pos_selector, manual_reduction_create_final_json
 
 # Calibration Tools
 from lib.MeteorReduce_Calib_Ajax_Tools import getRADEC
@@ -290,6 +290,11 @@ def controller(json_conf):
       exit()
 
 
+   # Manual Reduction (Fourth Step: creation of the new JSON file for the current detection)
+   # WARNING - this page is a redirect 
+   if cmd == 'manual_reduction_create_final_json':
+      manual_reduction_create_final_json(form)
+      exit()
 
 
 
@@ -492,7 +497,8 @@ def controller(json_conf):
    # Manual Reduction (Third Step: meteor position within cropped frames)
    if cmd == 'manual_reduction_meteor_pos_selector':
       manual_reduction_meteor_pos_selector(form)
-   
+      
+
    # REAL NEW VERSION
    if cmd == 'reduce2':
       extra_html = reduce_meteor2(json_conf, form)

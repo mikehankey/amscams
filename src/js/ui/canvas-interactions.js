@@ -82,7 +82,7 @@ if ($('canvas#c').length!=0) {
     // We compute the W_factor & H_factor
     // to pass the equivalent of HD x,y on the RADEC_MODE
     var wRatio = HD_w/$('#c').innerWidth();
-    var hRatio = HD_h/$('#c').innerWidth();
+    var hRatio = HD_h/$('#c').innerHeight();
 
     $('#canvas_zoom').css({'background':'url('+my_image +') no-repeat 50% 50% #000','background-size': h_canvas_w*zoom + 'px ' + h_canvas_h*zoom + 'px' })
     $('.canvas_zoom_holder').css({'width':w_preview_dim*2, 'height':h_preview_dim*2,'position':'absolute'});
@@ -200,6 +200,7 @@ if ($('canvas#c').length!=0) {
         }
         
         update_user_stars();
+
       } else {
 
          // Here we just point at the canvas to get RA/Dec
@@ -219,11 +220,12 @@ if ($('canvas#c').length!=0) {
          }); 
 
          canvas.add(marker); 
+ 
 
          // Add the object info in rad_dec_object
          new_rad_dec_obj = {x_org: x_val, y_org: y_val, x_HD: wRatio*x_val, y_HD: hRatio*y_val};
          rad_dec_object.push(new_rad_dec_obj);
-         // Add info to the panel on the page
+         // Add info to the panel on the pagew
          add_radec_info(new_rad_dec_obj)
 
       }

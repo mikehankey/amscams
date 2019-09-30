@@ -4,50 +4,21 @@ import os
 import sys
 import glob
 import random
+import json
 
-from lib.FileIO import load_config
+from lib.FileIO import load_config, cfe, save_json_file
 from lib.MeteorReducePage import print_error
 from lib.MeteorReduce_Tools import *
+from lib.MeteorReduce_Calib_Tools import XYtoRADec
 from lib.REDUCE_VARS import *
 from lib.VIDEO_VARS import *
+from lib.CGI_Tools import redirect_to
+from lib.Old_JSON_converter import fix_old_file_name, get_new_calib, convert, move_old_reduced_to_archive, old_name_analyser
 
 MANUAL_RED_PAGE_TEMPLATE_STEP1 = "/home/ams/amscams/pythonv2/templates/manual_reduction_template_step1.html"
 MANUAL_RED_PAGE_TEMPLATE_STEP2 = "/home/ams/amscams/pythonv2/templates/manual_reduction_template_step2.html"
 MANUAL_RED_PAGE_TEMPLATE_STEP3 = "/home/ams/amscams/pythonv2/templates/manual_reduction_template_step3.html"
-
-# Fix the old files names that contains "-trim"
-def fix_old_file_name(filename):
-   # We need to get the current stations ID (in as6.json)
-   json_conf = load_json_file(JSON_CONFIG)
-   station_id = json_conf['site']['ams_id']
-   if("-reduced" in filename):
-      filename = filename.replace("-reduced", "")
-
-   if("trim" in filename):
-      tmp_video_full_path_matches =  re.finditer(OLD_FILE_NAME_REGEX, filename, re.MULTILINE)
-      tmp_fixed_video_full_path = ""
-      for matchNum, match in enumerate(tmp_video_full_path_matches, start=1):
-         for groupNum in range(0, len(match.groups())): 
-            if("-" not in match.group(groupNum)):
-               tmp_fixed_video_full_path = tmp_fixed_video_full_path + "_" + match.group(groupNum)
-            groupNum = groupNum + 1
-
-         # Remove first "_"
-         tmp_fixed_video_full_path = tmp_fixed_video_full_path[1:]
-         # Add an extension
-         tmp_fixed_video_full_path += "_" + station_id
-         
-         if("HD" in filename):
-            tmp_fixed_video_full_path +=  "_HD.json"
-         else:
-            tmp_fixed_video_full_path +=  "_SD.json"
-         return tmp_fixed_video_full_path
-   else:
-      return filename
-
-
-
-
+  
 # First Step of the Manual reduction: select start / end meteor position
 def manual_reduction(form):
    
@@ -78,8 +49,7 @@ def manual_reduction(form):
       analysed_name['full_path'] = video_full_path
    else:
       print_error("<b>You need to add a video file in the URL.</b>")
-
-
+ 
 
    # Get the stacks 
    # True = We automatically resize the stack to HD dims so we can use it in the UI
@@ -90,10 +60,11 @@ def manual_reduction(form):
    template = template.replace("{VIDEO}", str(video_file))
 
    # Display Template
-   print(template)
+   print(template) 
 
 
-# Second Step of Manual Reduction: cropp of all frames + selection of start event
+
+# Display Template# Second Step of Manual Reduction: cropp of all frames + selection of start event
 def manual_reduction_cropper(form):
 
    video_file  = form.getvalue('video_file')  
@@ -145,7 +116,10 @@ def manual_reduction_cropper(form):
    template = template.replace("{CROPPED_THUMBS_GALLERY}",  thumbs_to_display)      
 
    # Display Template
-   print(template)
+   print(template) 
+
+
+
 
 
 # Third step of Manual Reduction: manual selection of the meteor position
@@ -176,16 +150,121 @@ def manual_reduction_meteor_pos_selector(form):
    real_cropped_frames_str = ""
  
    # We remove all the frames from cropped_frames that are before f
+   # and create the HTML view for the top panel
    for i,cropped_frame in enumerate(cropped_frames):
       x = i + 1
       if(x>=int(f)):
          real_cropped_frames.append(cropped_frame)
-         real_cropped_frames_str += "<a class='select_frame select_frame_btn' data-rel='"+str(x)+"'><img src='"+cropped_frame+"?c="+str(random.randint(1,1000001))+"'/></a>"
+         real_cropped_frames_str += "<a class='select_frame select_frame_btn' data-rel='"+str(x)+"'><span>#"+str(x)+"<i class='pos'></i></span><img src='"+cropped_frame+"?c="+str(random.randint(1,1000001))+"'/></a>"
 
    
    # Add the thumbs to navigator
    template = template.replace("{CROPPED_FRAMES_SELECTOR}",  real_cropped_frames_str)     
- 
- 
+   
+   # Add info to template
+   template = template.replace("{X}", str(x_start))    
+   template = template.replace("{Y}", str(y_start))   
+   template = template.replace("{W}", str(w))    
+   template = template.replace("{H}", str(h))  
+   template = template.replace("{VIDEO}", str(video_file)) 
+   
    # Display Template
    print(template)
+
+
+# Fourth Step : creation of the new JSON
+def manual_reduction_create_final_json(form):
+   video_file   = form.getvalue('video_file')  
+   frames_info  = form.getvalue('frames')  
+
+   # We parse the frames_info
+   frames_info = json.loads(frames_info)
+
+   # First we test if it's an old file
+   if METEOR_ARCHIVE not in video_file: 
+      
+      # It is an old file
+      # so we need to create the new json 
+      # and move the json and the video file under /meteor_archive
+      
+      # Do we have a "-reduced.json"
+      old_json = video_file.replace('.mp4','-reduced.json')    
+
+
+      if(cfe(old_json)):
+         json_file, video_file = move_old_reduced_to_archive(old_json)
+      else:
+         # Here we don't have a -reduced.json, so we need to create the json from scratch 
+         # TODOTODOTDO::::
+         print('TODO: DEAL WITH DETECTION WITHOUT -reduced.json')
+         sys.exit(0)
+
+  
+   # Get JSON
+   meteor_red_file = video_file.replace('.mp4','.json')
+   analysed_name = name_analyser(meteor_red_file)
+
+   if cfe(meteor_red_file) == 1:
+
+      # We parse the JSON
+      mr = load_json_file(meteor_red_file)
+         
+      # We remove all the current frames if they exist
+      if('frames' in mr):
+         del mr['frames']
+         
+      mr['frames'] = []
+
+
+      #1 minute clip starts at : 2019_09_27_05_27_46_000
+      #Trim Seconds =   0277 / 25 = 11.08
+      #Trim Clip Start Time (Frame 0 in trim clip) = 2019_09_27_05_27_46_000 + 11.08 = 2019_09_27_05_27_57_080
+
+      # We get the dt of frame #0
+      # based on the name of the file 
+      # (with trim!!)
+      print('video_file' , video_file)
+      old_name_analysed = old_name_analyser(video_file)
+      print(old_name_analysed)
+      sys.exit(0)
+
+      # We create the new frames
+      for frame in frames_info:
+ 
+         # Get the Frame time (as a string)
+         dt = get_frame_time(mr,frame['fn'],analysed_name)
+ 
+         # Get the new RA/Dec 
+         new_x, new_y, RA, Dec, az, el =  XYtoRADec(int(frame['x']),int(frame['y']),analysed_name,mr)
+ 
+         # We need to create the new entry
+         new_frame = {
+            'dt': dt,
+            'x': int(frame['x']),
+            'y': int(frame['y']),
+            'fn': int(frame['fn']),
+            'az': az,
+            'el': el,
+            'ra': RA,
+            'dec': Dec,
+            'intensity': Intensity_DEFAULT,
+            'max_px': Maxpx_DEFAULT,
+            'w': W_DEFAULT, 
+            'h': H_DEFAULT
+         }
+      
+         mr['frames'].append(new_frame)
+
+      # We update the JSON with the new frames
+      save_json_file(meteor_red_file, mr) 
+ 
+
+      redirect_to("/pycgi/webUI.py?cmd=reduce2&video_file=" + video_file + "&clear_cache=1&c=" + str(random.randint(0,100000000)), "reduction")
+ 
+   else: 
+      print_error("<b>JSON File not found: " + meteor_red_file + "</b>")
+  
+ 
+ 
+
+   
