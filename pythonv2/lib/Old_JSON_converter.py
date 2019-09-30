@@ -207,14 +207,6 @@ def move_old_reduced_to_archive(json_file_path, display=False):
    analysed_name = name_analyser(fixed_json_file_path) 
 
    # Determine the folder where to put the files
-   
-   print("IN move_old_reduced_to_archive ORG<br/>")
-   print(json_file_path)
-   print("<br/>IN move_old_reduced_to_archive FIXED<br/>")
-   print(fixed_json_file_path)
-   print("<br/>IN move_old_reduced_to_archive ANALYSED NAME<br/>")
-   print(analysed_name)
-
    new_folder = get_new_archive_folder(analysed_name)
 
    # If the new_folder doesn't exist, we create it
