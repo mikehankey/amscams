@@ -200,6 +200,7 @@ if ($('canvas#c').length!=0) {
         }
         
         update_user_stars();
+
       } else {
 
          // Here we just point at the canvas to get RA/Dec
@@ -221,6 +222,7 @@ if ($('canvas#c').length!=0) {
          canvas.add(marker); 
 
          console.log("CLICK ON ", x_val, y_val);
+         console.log("CLICK ON ", x_val*2, y_val*2);
 
          // Add the object info in rad_dec_object
          new_rad_dec_obj = {x_org: x_val, y_org: y_val, x_HD: wRatio*x_val, y_HD: hRatio*y_val};
