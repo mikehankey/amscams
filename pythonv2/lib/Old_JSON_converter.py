@@ -46,12 +46,13 @@ def old_name_analyser(file_names):
 # Fix the old files names that contains "-trim"
 # so we can use the usual name_analyser
 def fix_old_file_name(filename):
-
    # We need to get the current stations ID (in as6.json)
    json_conf = load_json_file(JSON_CONFIG)
    station_id = json_conf['site']['ams_id']
    if("-reduced" in filename):
       filename = filename.replace("-reduced", "")
+
+   trim_value = 0 
 
    if("trim" in filename):
       tmp_video_full_path_matches =  re.finditer(OLD_FILE_NAME_REGEX, filename, re.MULTILINE)
@@ -61,7 +62,7 @@ def fix_old_file_name(filename):
             if("-" not in match.group(groupNum) ):
                tmp_fixed_video_full_path = tmp_fixed_video_full_path + "_" + match.group(groupNum)
             else:
-               print("TRIM VALUE " + match.group(groupNum))
+               trim_value = match.group(groupNum)
             groupNum = groupNum + 1
 
          # Remove first "_"
@@ -74,6 +75,12 @@ def fix_old_file_name(filename):
             tmp_fixed_video_full_path +=  "_HD.json"
          else:
             tmp_fixed_video_full_path +=  "_SD.json"
+
+         # If we have a trim value we update the date & time accordingly
+         if(trim_value != 0): 
+            new_name_analyser = name_analyser(tmp_fixed_video_full_path)
+            print(new_name_analyser)
+
          return tmp_fixed_video_full_path
    else:
       return filename
