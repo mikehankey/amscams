@@ -207,12 +207,11 @@ def move_old_detection_to_archive(json_file_path, display=False):
    
    # Do we have the HD version of the video? 
    parsed_old_file = load_json_file(json_file_path)
+   HD = 0
+   if("hd_file" in parsed_old_file):
+      if(cfe(parsed_old_file["hd_file"])==1): 
+         HD = 1
    
-   if("hd_file" in parsed_old_file and cfe(hd_file)): 
-      HD = 1
-   else:
-      HD = 0
-
 
 
 
