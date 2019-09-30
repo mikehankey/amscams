@@ -72,7 +72,7 @@ def date_to_jd(year,month,day):
 
 
 # TEST
-def XYtoRADec(img_x,img_y,analysed_name,json_file):
+def XYtoRADec2(img_x,img_y,analysed_name,json_file):
 
    #def XYtoRADec(img_x,img_y,cal_file,cal_params,json_conf):
    #hd_datetime, hd_cam, hd_date, hd_y, hd_m, hd_d, hd_h, hd_M, hd_s = convert_filename_to_date_cam(cal_file)
@@ -228,7 +228,7 @@ def XYtoRADec(img_x,img_y,analysed_name,json_file):
    return(x_pix+img_x,y_pix+img_y,RA,dec,azimuth,altitude)
 
 # Return Ra/Dec based on X,Y for a given frame
-def XYtoRADec___(x,y,analysed_name,json_file):
+def XYtoRADec(x,y,analysed_name,json_file):
  
    # Get Data from analysed_name
    hd_y = analysed_name['year']
