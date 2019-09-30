@@ -88,7 +88,7 @@ def XYtoRADec(img_x,img_y,analysed_name,json_file):
   
 
    
-   F_scale = 3600/float(['calib']['device']['scale_px'])
+   F_scale = 3600/float(json_conf['calib']['device']['scale_px'])
    #F_scale = 24
 
    total_min = (int(hd_h) * 60) + int(hd_M)
