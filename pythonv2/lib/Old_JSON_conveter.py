@@ -49,7 +49,7 @@ def fix_old_file_name(filename):
 
 # Get cal_params new version from an old JSON version 
 def get_new_calib(json_f):
-   
+
    # If 'device_alt' isn't defined, we have to work with 'site_alt'...
    if "device_alt" not in json_f['cal_params']:
       json_f['cal_params']['device_alt'] = float(json_f['cal_params']['site_alt'])
@@ -120,6 +120,7 @@ def convert(json_file_path):
    
    # Convert info 
    info = get_new_info(json_f)
+   info['org_trim_file_name'] = json_file_path
    calib = get_new_calib(json_f)
    stars = get_new_stars(json_f)
 
@@ -153,8 +154,7 @@ def move_old_to_archive(json_file_path, display=False):
    # We need to determine the real start of the old json 
    # in order to get the proper name (ie with the date & time of the beginning of the video)
    # we need to start with getting the -trim.json file
-
-
+ 
    HD = False
    
    if "hd_video_file" in parsed_json:
