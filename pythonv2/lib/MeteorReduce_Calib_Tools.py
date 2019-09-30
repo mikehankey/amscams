@@ -93,8 +93,8 @@ def XYtoRADec(img_x,img_y,analysed_name,json_file):
    hd_d = int(hd_d) + day_frac
    jd = date_to_jd(int(hd_y),int(hd_m),float(hd_d))
 
-   lat = float(json_file['device']['lat'])
-   lon = float(json_file['device']['lng'])
+   lat = float(json_file['calib']['device']['lat'])
+   lon = float(json_file['calib']['device']['lng'])
 
    # Calculate the reference hour angle
    T = (jd - 2451545.0)/36525.0
