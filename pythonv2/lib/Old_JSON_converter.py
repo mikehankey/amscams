@@ -243,6 +243,10 @@ def move_old_detection_to_archive(json_file_path, display=False):
       }      
    }}
 
+
+   print(param_json_analysed_name)
+   sys.exit(0)
+
    new_info = {
       "info": {
          "station": get_station_id(),
