@@ -208,9 +208,9 @@ def move_old_detection_to_archive(json_file_path, display=False):
    # Do we have the HD version of the video? 
    parsed_old_file = oad_json_file(json_file_path)
    
-   if(hd_file in hd_file and cfe(hd_file)): 
+   if("hd_file" in parsed_old_file and cfe(hd_file)): 
       HD = 1
-   else
+   else:
       HD = 0
 
 
