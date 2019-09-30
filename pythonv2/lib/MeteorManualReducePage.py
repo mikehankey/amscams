@@ -192,6 +192,7 @@ def manual_reduction_create_final_json(form):
       old_json_fixed_name = fix_old_file_name(old_json)
 
       print("manual_reduction_create_final_json" + "<hr/>")
+      print("old_json : ", old_json)
       print("old_json_fixed_name: ", old_json_fixed_name)
 
 
