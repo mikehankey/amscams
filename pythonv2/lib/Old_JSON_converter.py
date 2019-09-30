@@ -220,7 +220,7 @@ def move_old_detection_to_archive(json_file_path, display=False):
    clean_param_json_name = param_files[0][0].replace('-stacked-calparams.json','_HD.mp4')
    param_json_analysed_name = name_analyser(clean_param_json_name)
    calib_dt = get_datetime_from_analysedname(param_json_analysed_name)
-   calib_dt = datetime.strptime(calib_dt], '%Y-%m-%d %H:%M:%S.%f')
+   calib_dt = datetime.strptime(calib_dt, '%Y-%m-%d %H:%M:%S.%f')
 
    print(calib_dt)
    sys.exit(0)
