@@ -222,7 +222,29 @@ def move_old_detection_to_archive(json_file_path, display=False):
    calib_dt = get_datetime_from_analysedname(param_json_analysed_name)
    calib_dt = datetime.strftime(calib_dt, '%Y-%m-%d %H:%M:%S')
 
-   print(param_files[0][0])
+   new_calib = { "calib":  
+      {  "dt":   calib_dt,
+         "device": {
+            "alt":  float(param_json_analysed_name['device_alt']),
+            "lat":  float(param_json_analysed_name['device_lat']),
+            "lng":  float(param_json_analysed_name['device_lng']),
+            "scale_px":  float(param_json_analysed_name['pixscale']),
+            "poly": {
+                  "y_fwd": param_json_analysed_name['y_poly_fwd'],
+                  "x_fwd": param_json_analysed_name['x_poly_fwd']
+            },
+            "center": {
+                  "az": float(param_json_analysed_name['center_az']),  
+                  "ra": float(param_json_analysed_name['ra_center']), 
+                  "el": float(param_json_analysed_name['center_el']),
+                  "dec": float(param_json_analysed_name['dec_center']) 
+            },
+            "angle":  float(param_json_analysed_name['position_angle']),
+      }      
+   }}
+
+
+   print(new_calib)
    sys.exit(0)
 
 
