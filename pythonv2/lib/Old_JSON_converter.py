@@ -89,8 +89,7 @@ def fix_old_file_name(filename):
  
       return toReturn
    else:
-      print('Error - BAD FILE NAME: "-trim" not found in an old JSON ')
-      sys.exit(0)
+      return filename
 
 
 
