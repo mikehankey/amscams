@@ -272,13 +272,7 @@ def generate_cropped_frames(analysed_name,meteor_json_data,HD_frames,HD):
 # Get the stacks for a meteor detection
 # Generate it if necessary
 def get_stacks(analysed_name,clear_cache, toHD= False):
-   
-   print("IN GET STACKS<br/>Full Path: ")
-   print(analysed_name['full_path']) 
-   print("<br/>IN GET STACKS<br/>CACHE: " + get_cache_path(analysed_name,"stacks")+analysed_name['name_w_ext']+".png")
-   
-
-   
+     
    # Do we have the Stack for this detection 
    stacks = does_cache_exist(analysed_name,"stacks")
 
@@ -301,7 +295,14 @@ def generate_stacks(video_full_path, destination, toHD= False):
    cgitb.enable() 
    
    # Get All Frames
+   print("IN generate_stacks<br/>")
+   print("video_full_path ", video_full_path, "<br/>")
+   print("load_json_file(JSON_CONFIG) ", JSON_CONFIG, "<br/>")
    frames = load_video_frames(video_full_path, load_json_file(JSON_CONFIG), 0, 0)
+   
+   print("frames")
+   print(frames)
+   
    stacked_image = None
 
    # Create Stack 
