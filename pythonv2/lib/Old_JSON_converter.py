@@ -256,7 +256,7 @@ def move_old_detection_to_archive(json_file_path, display=False):
    }
 
 
-   print(new_info)
+   print(new_calib)
    sys.exit(0)
 
 
