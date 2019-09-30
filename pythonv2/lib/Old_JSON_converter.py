@@ -56,8 +56,10 @@ def fix_old_file_name(filename):
    trim_value = 0 
 
    if("trim" in filename):
+
       tmp_video_full_path_matches =  re.finditer(OLD_FILE_NAME_REGEX, filename, re.MULTILINE)
       tmp_fixed_video_full_path = ""
+      
       for matchNum, match in enumerate(tmp_video_full_path_matches, start=1):
          for groupNum in range(0, len(match.groups())):  
             if("-" not in match.group(groupNum) ):
@@ -82,12 +84,19 @@ def fix_old_file_name(filename):
             new_name_analyser = name_analyser(tmp_fixed_video_full_path)
             dt_with_trim = get_datetime_from_analysedname(new_name_analyser)
 
+            print(dt_with_trim)
+            print("<hr/>")
+
             # We convert the trim in seconds 
             # here 5: = "-trim"
             trim_in_sec = float(trim_value[5:])/FPS_HD
-
-            print("WE NEED TO ADD " + str(trim_in_sec) +  " seconds")
+            print("WE NEED TO ADD " + str(trim_in_sec) +  " seconds<br/>")
             
+            # We add the trim_in_sec
+            dt_with_trim = dt_with_trim +  timedelta(0,trim_in_sec)
+             
+            print(dt_with_trim)
+
          return tmp_fixed_video_full_path
    else:
       return filename
