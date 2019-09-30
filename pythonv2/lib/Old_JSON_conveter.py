@@ -120,7 +120,10 @@ def convert(json_file_path):
    
    # Convert info 
    info = get_new_info(json_f)
-   info['org_trim_file_name'] = json_file_path
+
+   # Add the original name with trim in case there's an issue
+   info['info']['org_trim_file_name'] = json_file_path
+   
    calib = get_new_calib(json_f)
    stars = get_new_stars(json_f)
 
