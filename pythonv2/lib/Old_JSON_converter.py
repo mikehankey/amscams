@@ -208,6 +208,10 @@ def move_old_reduced_to_archive(json_file_path, display=False):
    # We fix the old name to get the proper info
    fixed_json_file_path = fix_old_file_name(json_file_path)
  
+
+   print("FIXED PATH ", fixed_json_file_path)
+   sys.exit(0)
+
    analysed_name = name_analyser(fixed_json_file_path) 
 
    # Determine the folder where to put the files
