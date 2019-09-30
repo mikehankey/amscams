@@ -144,13 +144,12 @@ def XYtoRADec(x,y,analysed_name,json_file):
    angle       = float(json_file['calib']['device']['angle']) 
    
    # Here we get the proper Ra/Dec at the time of the detection
-   RA_d,dec_d = AzEltoRADec_deg(float(json_file['calib']['device']['center']['az']),float(json_file['calib']['device']['center']['dec']),analysed_name,json_file)
+   RA_d,dec_d = AzEltoRADec_deg(float(json_file['calib']['device']['center']['az']),float(json_file['calib']['device']['center']['el']),analysed_name,json_file)
    
    #dec_d       = float(json_file['calib']['device']['center']['dec']) 
    #RA_d        = float(json_file['calib']['device']['center']['ra']) 
 
- 
-
+  
    total_min = (int(hd_h) * 60) + int(hd_M)
    day_frac = total_min / 1440 
    hd_d = int(hd_d) + day_frac
