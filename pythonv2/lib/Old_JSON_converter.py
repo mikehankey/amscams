@@ -58,9 +58,7 @@ def fix_old_file_name(filename):
 
    if("trim" in filename):
 
-      tmp_video_full_path_matches =  re.finditer(OLD_FILE_NAME_REGEX, filename, re.MULTILINE)
-      tmp_fixed_video_full_path = ""
-
+      matches =  re.finditer(OLD_FILE_NAME_REGEX, filename, re.MULTILINE)
       res = {}
   
       for matchNum, match in enumerate(matches, start=1):
