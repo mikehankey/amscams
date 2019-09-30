@@ -84,6 +84,9 @@ def XYtoRADec(img_x,img_y,analysed_name,json_file):
    print('Minute     ' +  str(hd_M)+"<br>") 
 
 
+   print(json_file)
+   sys.exit(0)
+
    
    F_scale = 3600/float(cal_params['pixscale'])
    #F_scale = 24
