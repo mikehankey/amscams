@@ -69,7 +69,7 @@ function update_stars_on_canvas_and_table(json_resp) {
                 fontFamily: 'Arial', 
                 fontSize: 12, 
                 left: (v['cat_und_pos'][POS_X] - 11)/2,
-                top: (v['cat_und_pos'][POS_Y] - 11)/2+20,
+                top: (v['cat_und_pos'][POS_Y] - 11)/2+25,
                 fill:'rgba(255,255,255,.65)',
                 selectable: false,
                 gp_id: v[0],
