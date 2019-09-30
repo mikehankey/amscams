@@ -84,12 +84,12 @@ def XYtoRADec(x,y,analysed_name,json_file):
    angle       = float(json_file['calib']['device']['angle']) 
 
 
-   print('F_scale' +  str(F_scale))
-   print('lat' +  str(lat))
-   print('lon' +  str(lon))
-   print('dec_d' +  str(dec_d))
-   print('RA_d' +  str(RA_d))
-   print('angle' +  str(angle))
+   print('F_scale' +  str(F_scale) +"<br>")
+   print('lat' +  str(lat)+"<br>")
+   print('lon' +  str(lon)+"<br>")
+   print('dec_d' +  str(dec_d)+"<br>")
+   print('RA_d' +  str(RA_d)+"<br>")
+   print('angle' +  str(angle)+"<br>")
 
    print(json_file)
    
