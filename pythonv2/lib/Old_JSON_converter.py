@@ -86,14 +86,11 @@ def fix_old_file_name(filename):
          toReturn +=  "_HD.json"
       else:
          toReturn +=  "_SD.json"
-
-
-      print("NEW NAME")
-      print(toReturn)
-
+ 
       return toReturn
    else:
-      print('BAD FILE NAME')
+      print('Error - BAD FILE NAME: "-trim" not found in an old JSON ')
+      sys.exit(0)
 
 
 
