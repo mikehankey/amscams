@@ -137,11 +137,11 @@ def get_new_info(json_f):
    if('station_name' not in json_f):
       station_name = get_station_id()
    else:
-      get_station_id = json_f['station_name']
+      station_name = json_f['station_name']
 
    return  {
       "info": {
-         "station": json_f['station_name'],
+         "station": station_name,
          "hd": 1, # We assume we have the HD vid by default (not a big deal if we dont)
          "device": json_f['device_name'],
          "dur": float(json_f['event_duration']),
