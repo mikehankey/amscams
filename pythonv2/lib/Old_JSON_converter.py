@@ -46,6 +46,7 @@ def old_name_analyser(file_names):
 # Fix the old files names that contains "-trim"
 # so we can use the usual name_analyser
 def fix_old_file_name(filename):
+
    # We need to get the current stations ID (in as6.json)
    json_conf = load_json_file(JSON_CONFIG)
    station_id = json_conf['site']['ams_id']
@@ -57,7 +58,7 @@ def fix_old_file_name(filename):
       tmp_fixed_video_full_path = ""
       for matchNum, match in enumerate(tmp_video_full_path_matches, start=1):
          for groupNum in range(0, len(match.groups())): 
-            if("-" not in match.group(groupNum)):
+            if("-" not in match.group(groupNum) and "trim" not in  match.group(groupNum) ):
                tmp_fixed_video_full_path = tmp_fixed_video_full_path + "_" + match.group(groupNum)
             groupNum = groupNum + 1
 
