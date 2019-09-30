@@ -86,7 +86,7 @@ def fix_old_file_name(filename):
             # here 5: = "-trim"
             trim_in_sec = float(trim_value[5:])/FPS_HD
 
-            print("WE NEED TO ADD " + trim_in_sec +  " seconds")
+            print("WE NEED TO ADD " + str(trim_in_sec) +  " seconds")
             
          return tmp_fixed_video_full_path
    else:
