@@ -62,7 +62,9 @@ def manual_reduction(form):
    # Display Template
    print(template) 
 
-   # Display Template# Second Step of Manual Reduction: cropp of all frames + selection of start event
+
+
+# Display Template# Second Step of Manual Reduction: cropp of all frames + selection of start event
 def manual_reduction_cropper(form):
 
    video_file  = form.getvalue('video_file')  
@@ -184,7 +186,14 @@ def manual_reduction_create_final_json(form):
       # It is an old file
       # so we need to create the new json 
       # and move the json and the video file under /meteor_archive
-      json_file, video_file = move_old_to_archive(video_file.replace('.mp4','-reduced.json'))
+      
+      # Do we have a "-reduced.json"
+      old_json = video_file.replace('.mp4','-reduced.json')   
+      if(cfe(old_json)):
+         json_file, video_file = move_old_reduced_to_archive(video_file.replace('.mp4','-reduced.json'))
+      else:
+         # Here we don't have a -reduced.json, so we need to create the json from scratch 
+         # TODOTODOTDO::::
 
   
    # Get JSON
@@ -202,7 +211,18 @@ def manual_reduction_create_final_json(form):
          
       mr['frames'] = []
 
-      # We create the ones
+
+      #1 minute clip starts at : 2019_09_27_05_27_46_000
+      #Trim Seconds =   0277 / 25 = 11.08
+      #Trim Clip Start Time (Frame 0 in trim clip) = 2019_09_27_05_27_46_000 + 11.08 = 2019_09_27_05_27_57_080
+
+      # We get the dt of frame #0
+      # based on the name of the file 
+      # (with trim!!)
+      print('meteor_red_file' , meteor_red_file)
+      sys.exit(0)
+
+      # We create the new frames
       for frame in frames_info:
  
          # Get the Frame time (as a string)
@@ -211,7 +231,6 @@ def manual_reduction_create_final_json(form):
          # Get the new RA/Dec 
          new_x, new_y, RA, Dec, az, el =  XYtoRADec(int(frame['x']),int(frame['y']),analysed_name,mr)
  
-
          # We need to create the new entry
          new_frame = {
             'dt': dt,

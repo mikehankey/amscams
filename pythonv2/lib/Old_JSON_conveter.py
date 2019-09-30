@@ -122,8 +122,8 @@ def convert(json_file_path):
    info = get_new_info(json_f)
 
    # Add the original name with trim in case there's an issue
-   info['info']['org_trim_file_name'] = json_file_path
-   
+   info['info']['org_file_name'] = json_file_path
+
    calib = get_new_calib(json_f)
    stars = get_new_stars(json_f)
 
@@ -135,7 +135,8 @@ def convert(json_file_path):
 
 # Move new JSON file and HD video file to meteor_archive
 # with a proper name, and in the proper folder
-def move_old_to_archive(json_file_path, display=False):
+# from a old -reduced.json file
+def move_old_reduced_to_archive(json_file_path, display=False):
 
    # We fix the old name to get the proper info
    fixed_json_file_path = fix_old_file_name(json_file_path)
