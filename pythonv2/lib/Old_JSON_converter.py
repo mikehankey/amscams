@@ -205,10 +205,11 @@ def move_old_detection_to_archive(json_file_path, display=False):
    # We fix the old name to get the proper info
    fixed_json_file_path = fix_old_file_name(json_file_path)
    
-   # Do we have the HD version of the video? 
-   #parsed_old_file = load_json_file(json_file_path)
-    
-   print("FIXED PATH ", fixed_json_file_path, "<br/>")
+   # What info can we got from the json file
+   parsed_old_file = load_json_file(json_file_path)
+
+   print(parsed_old_file)
+   print("<br/>FIXED PATH ", fixed_json_file_path, "<br/>")
    sys.exit(0)
 
    analysed_name = name_analyser(fixed_json_file_path) 
