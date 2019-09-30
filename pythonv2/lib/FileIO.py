@@ -15,7 +15,10 @@ def purge_hd_cal(json_conf):
             stars = 0
             json_file = file.replace("-stacked.png", "-calparams.json")
             if cfe(json_file) == 1:
-               json_data = load_json_file(json_file)
+               try:
+                  json_data = load_json_file(json_file)
+               except:
+                  bad = 1
                stars = len(json_data['cat_image_stars'])
                if len(json_data['cat_image_stars']) < 15:
                   bad = 1
