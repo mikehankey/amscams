@@ -85,11 +85,10 @@ def XYtoRADec(img_x,img_y,analysed_name,json_file):
    print('Minute     ' +  str(hd_M)+"<br>") 
 
 
-   print(json_file)
-   sys.exit(0)
+  
 
    
-   F_scale = 3600/float(cal_params['pixscale'])
+   F_scale = 3600/float(json_file['scale_px'])
    #F_scale = 24
 
    total_min = (int(hd_h) * 60) + int(hd_M)
@@ -105,11 +104,11 @@ def XYtoRADec(img_x,img_y,analysed_name,json_file):
    Ho = (280.46061837 + 360.98564736629*(jd - 2451545.0) + 0.000387933*T**2 \
       - (T**3)/38710000.0)%360
 
-   x_poly_fwd = cal_params['x_poly_fwd']
-   y_poly_fwd = cal_params['y_poly_fwd']
+   x_poly_fwd = json_file['calib']['poly']['x_fwd']
+   y_poly_fwd = json_file['calib']['poly']['y_fwd']
    
-   dec_d = float(cal_params['dec_center']) 
-   RA_d = float(cal_params['ra_center']) 
+   dec_d = float(json_file['calib']['device']['center']['dec']) 
+   RA_d  = float(json_file['calib']['device']['center']['ra']) 
 
    dec_d = dec_d + (x_poly_fwd[13] * 100)
    dec_d = dec_d + (y_poly_fwd[13] * 100)
@@ -117,7 +116,7 @@ def XYtoRADec(img_x,img_y,analysed_name,json_file):
    RA_d = RA_d + (x_poly_fwd[14] * 100)
    RA_d = RA_d + (y_poly_fwd[14] * 100)
 
-   pos_angle_ref = float(cal_params['position_angle']) + (1000*x_poly_fwd[12]) + (1000*y_poly_fwd[12])
+   pos_angle_ref = float(json_file['calib']['device']['angle']) + (1000*x_poly_fwd[12]) + (1000*y_poly_fwd[12])
 
    # Convert declination to radians
    dec_rad = math.radians(dec_d)
@@ -125,10 +124,9 @@ def XYtoRADec(img_x,img_y,analysed_name,json_file):
    # Precalculate some parameters
    sl = math.sin(math.radians(lat))
    cl = math.cos(math.radians(lat))
-
-
-   x_det = img_x - int(cal_params['imagew'])/2
-   y_det = img_y - int(cal_params['imageh'])/2
+ 
+   x_det = img_x - int(HD_W)/2
+   y_det = img_y - int(HD_H)/2
 
    dx = (x_poly_fwd[0]
       + x_poly_fwd[1]*x_det
