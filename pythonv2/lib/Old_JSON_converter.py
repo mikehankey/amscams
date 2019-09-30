@@ -224,8 +224,8 @@ def move_old_detection_to_archive(json_file_path, display=False):
 
    new_calib = { "calib":  
       {  "dt":   calib_dt,
-         "org_file_name": json_file_path,
-         "device": {
+         "org_file_name": os.path.basename(json_file_path),  # In case something goes wrong
+         "device": { 
             "alt":  float(param_json['device_alt']),
             "lat":  float(param_json['device_lat']),
             "lng":  float(param_json['device_lng']),
