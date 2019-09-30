@@ -14,7 +14,31 @@ from lib.REDUCE_VARS import *
 # from an old json file
 def get_new_archive_folder(analysed_name):
    return METEOR_ARCHIVE + analysed_name['station_id'] + "/" + METEOR + analysed_name['year'] + "/" + analysed_name['month'] + "/" + analysed_name['day'] + "/"
-   
+
+# Analysed and old file (containing "-trim")
+
+# Parses a regexp (FILE_NAMES_REGEX) a file name
+# and returns all the info defined in FILE_NAMES_REGEX_GROUP
+def old_name_analyser(file_names):
+   matches = re.finditer(OLD_FILE_NAME_REGEX, file_names, re.MULTILINE)
+   res = {}
+  
+   for matchNum, match in enumerate(matches, start=1):
+      for groupNum in range(0, len(match.groups())):
+         if(match.group(groupNum) is not None):
+            res[OLD_FILE_NAME_REGEXGROUP[groupNum]] = match.group(groupNum)
+         groupNum = groupNum + 1
+
+   # Get Name without extension if possible
+   if(res is not None and "name" in res):
+      res['name_w_ext'] = res['name'].split('.')[0]
+
+   # Add the full file_names (often a full path) to the array so we don't have to pass the original when we need it
+   res['full_path'] = file_names
+
+   return res
+
+
 # Fix the old files names that contains "-trim"
 # so we can use the usual name_analyser
 def fix_old_file_name(filename):
@@ -35,6 +59,7 @@ def fix_old_file_name(filename):
 
          # Remove first "_"
          tmp_fixed_video_full_path = tmp_fixed_video_full_path[1:]
+
          # Add an extension
          tmp_fixed_video_full_path += "_" + station_id
          
