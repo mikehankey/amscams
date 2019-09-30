@@ -116,11 +116,8 @@ def XYtoRADec(x,y,analysed_name,json_file):
    
    # HERE we only work with HD
    x_det = x - HD_W/2
-   y_det = y - HD_H/2
-
-   print("HD _ W" + str(HD_W))
-   print("HD _H " + str(HD_H))
-
+   y_det = y - HD_H/2 
+   
    dx = (x_poly_fwd[0]
       + x_poly_fwd[1]*x_det
       + x_poly_fwd[2]*y_det
