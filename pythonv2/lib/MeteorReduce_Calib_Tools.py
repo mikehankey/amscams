@@ -75,7 +75,7 @@ def XYtoRADec(img_x,img_y,analysed_name,json_file):
 
    #def XYtoRADec(img_x,img_y,cal_file,cal_params,json_conf):
    #hd_datetime, hd_cam, hd_date, hd_y, hd_m, hd_d, hd_h, hd_M, hd_s = convert_filename_to_date_cam(cal_file)
-   hd_datetime, hd_cam, hd_date, hd_y, hd_m, hd_d, hd_h, hd_M, hd_s = convert_filename_to_date_cam(json_file)
+   hd_datetime, hd_cam, hd_date, hd_y, hd_m, hd_d, hd_h, hd_M, hd_s = convert_filename_to_date_cam(analysed_name['name'])
    
    print('Year    ' +  str(hd_y) +"<br>")
    print('Mpnth   ' +  str(hd_m)+"<br>")
