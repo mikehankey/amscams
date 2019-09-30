@@ -81,7 +81,19 @@ def XYtoRADec(x,y,analysed_name,json_file):
    lon         = float(json_file['calib']['device']['lng'])
    dec_d       = float(json_file['calib']['device']['center']['dec']) 
    RA_d        = float(json_file['calib']['device']['center']['ra']) 
-   angle       =  float(json_file['calib']['device']['angle']) 
+   angle       = float(json_file['calib']['device']['angle']) 
+
+
+   print('F_scale' +  str(F_scale))
+   print('lat' +  str(lat))
+   print('lon' +  str(lon))
+   print('dec_d' +  str(dec_d))
+   print('RA_d' +  str(RA_d))
+   print('angle' +  str(angle))
+
+   print(json_file)
+   
+
 
    total_min = (int(hd_h) * 60) + int(hd_M)
    day_frac = total_min / 1440 
