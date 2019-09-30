@@ -90,10 +90,8 @@ def date_to_jd(year,month,day):
 
     return jd
 
-# XY To RADEC 
-# distort_xy_new (should be called RADEC to corrected xy)
-#AZ TO RA DEC (and then to XY)
-def AzEltoRADec(az,el,analysed_name,json_conf):
+# XY To RADEC  in deg
+def AzEltoRADec_deg(az,el,analysed_name,json_conf):
    
    azr = np.radians(az)
    elr = np.radians(el)
@@ -146,7 +144,7 @@ def XYtoRADec(x,y,analysed_name,json_file):
    angle       = float(json_file['calib']['device']['angle']) 
    
    # Here we get the proper Ra/Dec at the time of the detection
-   RA_d,dec_d = AzEltoRADec(float(json_file['calib']['device']['center']['az']),float(json_file['calib']['device']['center']['dec']),analysed_name,json_file)
+   RA_d,dec_d = AzEltoRADec_deg(float(json_file['calib']['device']['center']['az']),float(json_file['calib']['device']['center']['dec']),analysed_name,json_file)
    
    #dec_d       = float(json_file['calib']['device']['center']['dec']) 
    #RA_d        = float(json_file['calib']['device']['center']['ra']) 
