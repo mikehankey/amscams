@@ -57,9 +57,8 @@ def fix_old_file_name(filename):
       tmp_video_full_path_matches =  re.finditer(OLD_FILE_NAME_REGEX, filename, re.MULTILINE)
       tmp_fixed_video_full_path = ""
       for matchNum, match in enumerate(tmp_video_full_path_matches, start=1):
-         for groupNum in range(0, len(match.groups())): 
-            print("xxxxxxxxx  - " +  match.group(groupNum) + "<br/>")
-            if("-" not in match.group(groupNum) and "trim" not in  match.group(groupNum) ):
+         for groupNum in range(0, len(match.groups())):  
+            if("-" not in match.group(groupNum) ):
                tmp_fixed_video_full_path = tmp_fixed_video_full_path + "_" + match.group(groupNum)
             groupNum = groupNum + 1
 
