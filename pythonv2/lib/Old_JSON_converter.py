@@ -81,8 +81,9 @@ def fix_old_file_name(filename):
             new_name_analyser = name_analyser(tmp_fixed_video_full_path)
             dt_with_trim = get_datetime_from_analysedname(new_name_analyser)
 
-            # We convert the trim in seconds
-            trim_in_sec = float(trim_value[3:])/FPS_HD
+            # We convert the trim in seconds 
+            # here 5: = "-trim"
+            trim_in_sec = float(trim_value[5:])/FPS_HD
 
             print("WE NEED TO ADD " + trim_in_sec +  " seconds")
             
