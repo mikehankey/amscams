@@ -94,7 +94,8 @@ def AzEltoRADec(az,el,analysed_name,json_conf):
    obs.lat = str(device_lat)
    obs.lon = str(device_lng)
    obs.elevation = float(device_alt)
-   obs.date = hd_datetime  
+   dt = analysed_name['year']+'-'+analysed_name['month']+'-'+analysed_name['day']+' '+analysed_name['hour']+':'+analysed_name['min']+':'+analysed_name['sec']+'.'+analysed_name['ms']
+   obs.date = datetime.strptime(dt, '%Y-%m-%d %H:%M:%S.%f')
    ra,dec = obs.radec_of(azr,elr)
 
    return(ra,dec)
