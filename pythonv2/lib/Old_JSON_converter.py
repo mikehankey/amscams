@@ -243,8 +243,18 @@ def move_old_detection_to_archive(json_file_path, display=False):
       }      
    }}
 
+   new_info = {
+      "info": {
+         "station": get_station_id(),
+         "hd": 1, # We assume we have the HD vid by default (not a big deal?)
+         "device": param_json_analysed_name['device_name'],
+         "dur": 0,
+         "max_peak": 0
+      }
+   }
 
-   print(new_calib)
+
+   print(new_info)
    sys.exit(0)
 
 
