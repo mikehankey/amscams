@@ -16,9 +16,8 @@ def get_new_archive_folder(analysed_name):
    return METEOR_ARCHIVE + analysed_name['station_id'] + "/" + METEOR + analysed_name['year'] + "/" + analysed_name['month'] + "/" + analysed_name['day'] + "/"
 
 # Analysed and old file (containing "-trim")
-
-# Parses a regexp (FILE_NAMES_REGEX) a file name
-# and returns all the info defined in FILE_NAMES_REGEX_GROUP
+# Parses a regexp (OLD_FILE_NAME_REGEX) a file name
+# and returns all the info defined in OLD_FILE_NAME_REGEXGROUP
 def old_name_analyser(file_names):
    matches = re.finditer(OLD_FILE_NAME_REGEX, file_names, re.MULTILINE)
    res = {}
