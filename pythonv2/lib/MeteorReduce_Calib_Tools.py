@@ -88,7 +88,7 @@ def XYtoRADec(img_x,img_y,analysed_name,json_file):
   
 
    
-   F_scale = 3600/float(json_conf['calib']['device']['scale_px'])
+   F_scale = 3600/float(json_file['calib']['device']['scale_px'])
    #F_scale = 24
 
    total_min = (int(hd_h) * 60) + int(hd_M)
@@ -96,8 +96,8 @@ def XYtoRADec(img_x,img_y,analysed_name,json_file):
    hd_d = int(hd_d) + day_frac
    jd = date_to_jd(int(hd_y),int(hd_m),float(hd_d))
 
-   lat = float(json_conf['site']['device_lat'])
-   lon = float(json_conf['site']['device_lng'])
+   lat = float(json_file['site']['device_lat'])
+   lon = float(json_file['site']['device_lng'])
 
    # Calculate the reference hour angle
    T = (jd - 2451545.0)/36525.0
