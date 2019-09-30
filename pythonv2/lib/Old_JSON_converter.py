@@ -6,7 +6,7 @@ import shutil
 import sys
 
 from lib.FileIO import load_json_file,save_json_file
-from lib.MeteorReduce_Tools import name_analyser, get_cache_path, get_frame_time_from_f
+from lib.MeteorReduce_Tools import name_analyser, get_cache_path, get_frame_time_from_f, get_datetime_from_analysedname
 from lib.REDUCE_VARS import *
 from lib.Get_Station_Id import get_station_id
 
