@@ -21,14 +21,21 @@ def getRADEC(form):
    json_f = load_json_file(json_file)
    
    # Test if we have an old or a new JSON
-   if "reduced_stack" in json_f:
+   if "trim" in json_file:
       new_json_content = get_new_calib(json_f)
    else:
       new_json_content = json_f
  
-   # Eventually fix the name to be able to parse it
+   # Eventually fix the name to be able to properly parse it
    json_file_x = fix_old_file_name(json_file)
  
+
+   print("NEW JSON CONTENT<br/>")
+   print(new_json_content)
+
+   print("<br/>ANALYSED NAME<br/>")
+   print(name_analyser(json_file_x))
+
    # Compute the data with XYtoRADec
    results = [];
 
