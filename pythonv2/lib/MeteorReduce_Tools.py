@@ -295,13 +295,8 @@ def generate_stacks(video_full_path, destination, toHD= False):
    cgitb.enable() 
    
    # Get All Frames
-   print("IN generate_stacks<br/>")
-   print("video_full_path ", video_full_path, "<br/>")
-   print("load_json_file(JSON_CONFIG) ", JSON_CONFIG, "<br/>")
    frames = load_video_frames(video_full_path, load_json_file(JSON_CONFIG), 0, 0)
-   
-   print("frames")
-   print(frames)
+ 
    
    stacked_image = None
 
