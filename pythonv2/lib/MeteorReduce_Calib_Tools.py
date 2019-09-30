@@ -98,6 +98,9 @@ def AzEltoRADec(az,el,analysed_name,json_conf):
    obs.date = datetime.strptime(dt, '%Y-%m-%d %H:%M:%S.%f')
    ra,dec = obs.radec_of(azr,elr)
 
+   print("NEW RA DEC<br/>")
+   print(ra,dec)
+
    return(ra,dec)
 
 
