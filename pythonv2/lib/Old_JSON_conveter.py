@@ -150,26 +150,8 @@ def move_old_to_archive(json_file_path, display=False):
 
    # We need to determine the real start of the old json 
    # in order to get the proper name (ie with the date & time of the beginning of the video)
-   if "meteor_frame_data" in parsed_json:
-      # We get the first frame
-      first_frame = parsed_json['meteor_frame_data'][0]
-
-      # We get the dt of the first frame 
-      # [1] = number of the frame 
-      # [0] = date & time
-      real_d = get_frame_time_from_f(0, first_frame[1], first_frame[0])   
-
-      print("REAL TIME OF THE FIRST FRAME")
-      print(real_d)
-      
-      # We need to update the "analysed name" accordingly
-      new_name = analysed_name['name']
-      new_name_part1 = new_name[23:] 
-      analysed_name['name'] = real_d.replace('-','_').replace(' ','_').replace('.','_').replace(':','_') + new_name_part1
-
-      print(" NEW NAME " + analysed_name['name'])
-      sys.exit(0)
-
+   # we need to start with getting the -trim.json file
+   
 
    HD = False
    
