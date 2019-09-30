@@ -200,16 +200,21 @@ def convert(json_file_path):
 # Move new JSON file and HD video file to meteor_archive
 # with a proper name, and in the proper folder
 # from a old -reduced.json file
-def move_old_reduced_to_archive(json_file_path, display=False):
+def move_old_detection_to_archive(json_file_path, display=False):
    
-   print("ORG PATH ", json_file_path, "<br/>")
-
-   # Remove the eventual "-reduced" from name
-   json_file_path  = json_file_path.replace('-reduced','')
-
    # We fix the old name to get the proper info
    fixed_json_file_path = fix_old_file_name(json_file_path)
- 
+   
+   # Do we have the HD version of the video? 
+   parsed_old_file = oad_json_file(json_file_path)
+   
+   if(hd_file in hd_file and cfe(hd_file)): 
+      HD = 1
+   else
+      HD = 0
+
+
+
 
    print("FIXED PATH ", fixed_json_file_path, "<br/>")
    sys.exit(0)
