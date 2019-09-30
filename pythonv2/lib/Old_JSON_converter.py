@@ -8,15 +8,17 @@ import sys
 from lib.FileIO import load_json_file,save_json_file
 from lib.MeteorReduce_Tools import name_analyser, get_cache_path, get_frame_time_from_f
 from lib.REDUCE_VARS import *
-
+from lib.Get_Station_Id import get_station_id
 
 # Get a new folder in meteor_archive
 # from an old json file
 def get_new_archive_folder(analysed_name):
-   if(analysed_name['station_id'] is None):
-      print('RFYCK')
+   if('station_id' not in analysed_name):
+      station_id = get_station_id()
+   else:
+      station_id = analysed_name['station_id'] 
 
-   return METEOR_ARCHIVE + analysed_name['station_id'] + "/" + METEOR + analysed_name['year'] + "/" + analysed_name['month'] + "/" + analysed_name['day'] + "/"
+   return METEOR_ARCHIVE + station_id + "/" + METEOR + analysed_name['year'] + "/" + analysed_name['month'] + "/" + analysed_name['day'] + "/"
 
 # Analysed and old file (containing "-trim")
 # Parses a regexp (OLD_FILE_NAME_REGEX) a file name
