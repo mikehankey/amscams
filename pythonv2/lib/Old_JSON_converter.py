@@ -66,10 +66,34 @@ def fix_old_file_name(filename):
             if(match.group(groupNum) is not None):
                res[OLD_FILE_NAME_REGEX_GROUP[groupNum]] = match.group(groupNum)
             groupNum = groupNum + 1
+ 
+      # Get original Date & Time 
+      org_dt = datetime.strptime(res['year']+'-'+res['month']+'-'+res['day']+' '+res['hour']+':'+res['min']+':'+res['sec']+'.'+res['ms'], '%Y-%m-%d %H:%M:%S.%f')
 
-      print(res)
+      # We convert the trim in seconds 
+      trim_in_sec = float(res["trim"])/FPS_HD
+
+      # We add the trim_in_sec
+      org_dt = org_dt +  timedelta(0,trim_in_sec)
+
+      # Create fixed name based on all data
+      org_dt = org_dt.strftime("%Y_%m_%d_%H_%M_%S_%f")
+
+      # [:-3] to only keep 4 digits for the microseconds
+      toReturn =   org_dt[:-3] + '_'+res['cam_id']+'_'+get_station_id()
+
+      if("HD" in filename):
+         toReturn +=  "_HD.json"
+      else:
+         toReturn +=  "_SD.json"
 
 
+      print("NEW NAME")
+      print(toReturn)
+
+      return toReturn
+   else:
+      print('BAD FILE NAME')
 
 
 
