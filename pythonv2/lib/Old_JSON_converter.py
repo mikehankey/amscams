@@ -209,17 +209,21 @@ def move_old_detection_to_archive(json_file_path, display=False):
    # Get the closest param files
    param_files = get_active_cal_file(fixed_json_file_path)
 
-   if(cfe(param_files[0][0])):
-
-      # We parse the param
-      param_json = load_json_file(param_files[0][0])
-      print("<br>PARAM</br>")
-      print(param_files[0][0],"<br/>")
-      print(param_json['x_poly_fwd'])
-
-   else:
+   if(cfe(param_files[0][0])==0):
       print("PARAM FILES " + param_files[0][0]  + " not found" )
       sys.exit(0)
+
+
+   # We parse the param
+   param_json = load_json_file(param_files[0][0])
+
+   # We create a temporary clean name to get the calid['dt']
+   clean_param_json_name = param_files[0][0].replace('-stacked-calparams.json','.mp4')
+   param_json_analysed_name = name_analyser(clean_param_json_name)
+
+   print(param_json_analysed_name)
+   sys.exit(0)
+
 
    # What info can we got from the json file
    parsed_old_file = load_json_file(json_file_path)
