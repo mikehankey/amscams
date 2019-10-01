@@ -195,7 +195,7 @@ def manual_reduction_create_final_json(form):
       # so we need to create the new json 
       # and move the json and the video file under /meteor_archive
       old_json = video_file.replace('.mp4','.json')    
-      old_json = video_file.replace('-HD-meteor','')
+      old_json = old_json.replace('-HD-meteor','')
 
       print("OLD JSON " + old_json)
 
