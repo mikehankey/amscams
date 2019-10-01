@@ -299,20 +299,14 @@ def move_old_detection_to_archive(json_file_path, display=False):
    
    print("<BR>We will create the file " + tan['name'] +'<br>')
    print("IN THE DIR " + new_folder)
+
+   print("<br/>AND WE WILL MOVE THE VIDEO " + video_file)
+   print(" THERE<br/>")
+
    sys.exit(0)
 
-
-   # What info can we got from the json file
-   parsed_old_file = load_json_file(json_file_path)
-
-   print(parsed_old_file)
-   print("<br/>FIXED PATH ", fixed_json_file_path, "<br/>")
-   sys.exit(0)
-
-   analysed_name = name_analyser(fixed_json_file_path) 
 
   
-
    
 
    # We create the new json file from the old one
