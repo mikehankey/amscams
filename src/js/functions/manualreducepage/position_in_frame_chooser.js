@@ -221,7 +221,8 @@ function setup_init_pos_choos_actions() {
              if ('webkitURL' in window) {
                // Chrome allows the link to be clicked without actually adding it to the DOM.
                downloadLink.href = window.webkitURL.createObjectURL(textFileAsBlob);
-               console.log(downloadLink.href)
+               console.log(downloadLink.href);
+               alert(downloadLink.href);
              } else {
                // Firefox requires the link to be added to the DOM before it can be clicked.
                downloadLink.href = window.URL.createObjectURL(textFileAsBlob);
