@@ -199,8 +199,10 @@ def new_crop_thumb(frame,x,y,dest,HD = True):
       thumb_dest_x = org_w 
      
       if(thumb_dest_x>THUMB_SELECT_W/2):
-         thumb_dest_x = int(THUMB_SELECT_W/2)
-         org_w = int(thumb_dest_w - thumb_dest_x)
+         print("THUMB:" + str(thumb_dest_y)+':'+str(thumb_dest_h)+' ' + str(thumb_dest_x)+':'+str(thumb_dest_w))
+         print("<br>IMG:"+ str(org_y)+':'+str(org_h)+' ' + str(org_x)+':'+str(org_w))
+         print("<hr/>")
+         sys.exit(0) 
 
    # ON RIGHT 
    elif(org_x >= (org_w_HD-THUMB_SELECT_W)): 
@@ -234,9 +236,7 @@ def new_crop_thumb(frame,x,y,dest,HD = True):
       thumb_dest_h = HD_H -  org_y 
  
 
-   print("THUMB:" + str(thumb_dest_y)+':'+str(thumb_dest_h)+' ' + str(thumb_dest_x)+':'+str(thumb_dest_w))
-   print("<br>IMG:"+ str(org_y)+':'+str(org_h)+' ' + str(org_x)+':'+str(org_w))
-   print("<hr/>")
+ 
     
    crop_img[thumb_dest_y:thumb_dest_h,thumb_dest_x:thumb_dest_w] = img[org_y:org_h,org_x:org_w]
    cv2.imwrite(dest,crop_img)
