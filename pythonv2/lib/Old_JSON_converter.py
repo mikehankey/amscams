@@ -237,6 +237,7 @@ def move_old_detection_to_archive(json_file_path, display=False):
 
    
    print("4<br>")
+   print(json.dumps(param_json))
 
    new_calib = { "calib":  
       {  "dt":   calib_dt,
