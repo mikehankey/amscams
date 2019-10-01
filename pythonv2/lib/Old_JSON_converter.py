@@ -206,13 +206,15 @@ def convert(json_file_path):
 # from a old -reduced.json file
 def move_old_detection_to_archive(json_file_path, display=False):
 
-   print("IN move_old_detection_to_archive")
+   print("IN move_old_detection_to_archive<br/>")
    cgitb.enable()
 
+
+   print("1<br>")
    # We fix the old name to get the proper info
    fixed_json_file_path = fix_old_file_name(json_file_path)
 
-    
+   print("2<br>")
    # Get the closest param files
    param_files = get_active_cal_file(fixed_json_file_path)
 
