@@ -205,6 +205,8 @@ def convert(json_file_path):
 # with a proper name, and in the proper folder
 # from a old -reduced.json file
 def move_old_detection_to_archive(json_file_path, display=False):
+
+   print("IN move_old_detection_to_archive")
    cgitb.enable()
 
    # We fix the old name to get the proper info
