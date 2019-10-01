@@ -292,8 +292,11 @@ def get_reduction_info(json_file):
                max_res_px = float(max_res_px) + float(star["dist_px"])
                sc += 1 
 
-         total_res_px  = max_res_px/ sc 
-     
+         if(sc>0):
+            total_res_px  = max_res_px/ sc 
+         else:
+            total_res_px = 9999
+
          mr['calib']['device']['total_res_px']  = total_res_px
 
          if(float(mr['calib']['device']['scale_px'])!=0):
