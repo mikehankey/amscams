@@ -260,7 +260,7 @@ def move_old_detection_to_archive(json_file_path, display=False):
 
    # We search for the HD Video
    date_str = tan['year'] + '_' + tan['month']  + '_' + tan['day']
-   search_hd = glob.glob('/mnt/ams2/meteors/' + date_str + '/' + date_str + '_' + tan['hour'] + '_' + tan['minute'] + '_' + '*' + 'HD-meteor.mp4' )
+   search_hd = glob.glob('/mnt/ams2/meteors/' + date_str + '/' + date_str + '_' + tan['hour'] + '_' + tan['min'] + '_' + '*' + 'HD-meteor.mp4' )
 
    print(search_hd)
 
