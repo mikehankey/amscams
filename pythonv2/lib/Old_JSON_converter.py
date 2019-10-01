@@ -301,6 +301,7 @@ def move_old_detection_to_archive(json_file_path, display=False):
    print("IN THE DIR " + new_folder)
 
    print("<br/>AND WE WILL MOVE THE VIDEO " + video_file)
+   print("WITH THE NAME " + tan['name'].replace(".json",".mp4") )
    print(" THERE<br/>")
 
    sys.exit(0)
