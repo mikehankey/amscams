@@ -256,8 +256,16 @@ def move_old_detection_to_archive(json_file_path, display=False):
 
    # First we seach in "hd_trim"
    if('hd_trim' in data_json):
-      print("HD TRIM OK<br>")
+      
+      # We replace /HD/ by /meteors/
       tmp_hd_folder =  data_json['hd_trim'].replace('/HD/','/meteors/')
+      
+      # We add YYYY_MM_DD/ after /meteors
+      tmp_name = name_analyser(fixed_json_file_path)
+
+      print(tmp_name)
+
+      
       if(cfe(tmp_hd_folder)):
          print("YES " + tmp_hd_folder)
       else:
