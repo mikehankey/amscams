@@ -70,6 +70,7 @@ def fix_old_file_name(filename):
          for groupNum in range(0, len(match.groups())):
             if(match.group(groupNum) is not None):
                print("groupNum " + str(groupNum) +"<br>")
+               print("match groupNum " + str( match.group(groupNum)) +"<br>")
                print(OLD_FILE_NAME_REGEX_GROUP[groupNum]+"<br>")
                res[OLD_FILE_NAME_REGEX_GROUP[groupNum]] = match.group(groupNum)
             groupNum = groupNum + 1
