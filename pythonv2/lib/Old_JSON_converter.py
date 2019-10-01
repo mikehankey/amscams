@@ -284,7 +284,7 @@ def move_old_detection_to_archive(json_file_path, display=False):
 
 
 
-   print(param_json)
+   print(new_info)
    sys.exit(0)
 
 
