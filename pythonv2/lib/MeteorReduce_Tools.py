@@ -107,7 +107,7 @@ def get_frame_time_from_f(frame_id, frame_id_org, frame_dt_org):
    dt = str(dt)
  
    # We remove the last 3 digits (from %f)
-   print(dt + " > "  + len(dt) + "<br/>")
+   print(dt + " > "  + str(len(dt)) + "<br/>")
 
    if(len(dt)>18):
       dt = dt[:-3]
