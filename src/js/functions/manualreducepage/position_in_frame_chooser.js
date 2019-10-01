@@ -204,8 +204,9 @@ function setup_init_pos_choos_actions() {
   // Create them all
   $('#create_all').unbind('click').click(function() {
 
-      // Update the temporary form
-      $('#post_form input[name=frames]').val(JSON.stringify(frames_jobs)).submit();
+      // Update the temporary form and submit it (POST)
+      $('#post_form input[name=frames]').val(JSON.stringify(frames_jobs))
+      $('#post_form').submit();
 
 
       //window.location='./webUI.py?cmd=manual_reduction_create_final_json&frames=' + JSON.stringify(frames_jobs)+'&video_file='+video_file;
