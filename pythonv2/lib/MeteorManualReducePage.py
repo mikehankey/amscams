@@ -202,7 +202,7 @@ def manual_reduction_create_final_json(form):
       #Replace the seconds by a wild card
       print(tmp_video_file +"<br>>>>>>>>>>>>>>><br/>")
       tmp_video_file = tmp_video_file[0:19] + "*" + tmp_video_file[21:]
-         print(tmp_video_file)
+      print(tmp_video_file)
       tan = name_analyser(video_file)
       print(tan)
 
