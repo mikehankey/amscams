@@ -9,6 +9,7 @@ import os
 import math
 import cv2
 import math
+import cgitb
 import numpy as np
 import scipy.optimize
 from fitMulti import minimize_poly_params_fwd
@@ -3148,6 +3149,10 @@ def run_job(job, json_conf):
       os.system(job + " &")
       jc = jc + 1
 
+
+
+
+cgitb.enable()
 
 json_conf = load_json_file("../conf/as6.json")
 cmd = sys.argv[1]
