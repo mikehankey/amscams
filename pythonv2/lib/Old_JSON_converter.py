@@ -240,7 +240,7 @@ def move_old_detection_to_archive(json_file_path, display=False):
                   "el": float(param_json['center_el']),
                   "dec": float(param_json['dec_center']) 
             },
-            "angle":  float(param_json['position_angle']),
+            "angle":  float(param_json['position_angle'])
       }      
    }}
  
