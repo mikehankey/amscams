@@ -247,7 +247,7 @@ def manual_reduction_create_final_json(form):
       # based on the diff between the time of the last frame and the time of the first frame
       dt_start = datetime.strptime(mr['frames'][0]['dt'], "%Y-%m-%d %H:%M:%S.%f")
       dt_end = datetime.strptime(mr['frames'][len(mr['frames'])-1]['dt'] , "%Y-%m-%d %H:%M:%S.%f")
-      mr['info']['dur'] = abs((dt_end - dt_start).microseconds)
+      mr['info']['dur'] = abs((dt_end - dt_start).microseconds) / 1000 # /1000 to have seconds instead of milliseconds
 
       # We update the JSON with the new frames
       save_json_file(meteor_red_file, mr) 
