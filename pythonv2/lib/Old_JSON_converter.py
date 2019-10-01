@@ -304,6 +304,26 @@ def move_old_detection_to_archive(json_file_path, display=False):
    print("WITH THE NAME " + tan['name'].replace(".json",".mp4") )
    print(" THERE<br/>")
 
+
+   # Move the video file
+   end_video_file = new_folder+tan['name'].replace(".json",".mp4")
+   shutil.copy2(video_file,end_video_file)
+   if(display is True):
+      print("VIDEO FILE SAVE TO " + end_video_file)
+
+   # Create the definitive json_content
+   json_content = {}
+   json_content['calib'] = new_calib['calib']
+   json_content['info'] = new_calib['info']
+   json_content['frames'] = []
+   
+
+   # Save the new JSON file
+   save_json_file(json_file, json_content)
+   if(display is True):
+      print("JSON SAVED TO " + json_file)
+
+
    sys.exit(0)
 
 
