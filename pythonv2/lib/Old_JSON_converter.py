@@ -63,6 +63,7 @@ def fix_old_file_name(filename):
 
       matches =  re.finditer(OLD_FILE_NAME_REGEX, filename, re.MULTILINE)
 
+      print("filename " + filename + "<br/>")
       print("MATCHES<br/>")
       print(matches)
 
