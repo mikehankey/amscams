@@ -210,7 +210,6 @@ def manual_reduction_create_final_json(form):
          
       mr['frames'] = []
  
-
       # We get the dt of frame #0
       # based on the name of the file 
       # (with trim!!) 
@@ -242,6 +241,14 @@ def manual_reduction_create_final_json(form):
          }
       
          mr['frames'].append(new_frame)
+
+
+      # We need to update the total duration of the event 
+      # based on the diff between the time of the last frame and the time of the first frame
+
+      #First frame dt:
+      dt_start = mr['frames'][0]['dt']
+      dt_end  = mr['frames'][len(mr['frames'])+1]['dt'] 
 
       # We update the JSON with the new frames
       save_json_file(meteor_red_file, mr) 
