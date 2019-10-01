@@ -93,7 +93,7 @@ def reduce_meteor2(json_conf,form):
         
    # either we take the time of the file name
    if(start_time==0):
-         start_time = analysed_name['year']+'/'+analysed_name['month']+'/'+analysed_name['day']+ ' '+ analysed_name['hour']+':'+analysed_name['min']+':'+analysed_name['sec']+'.'+analysed_name['ms']
+      start_time = analysed_name['year']+'/'+analysed_name['month']+'/'+analysed_name['day']+ ' '+ analysed_name['hour']+':'+analysed_name['min']+':'+analysed_name['sec']+'.'+analysed_name['ms']
    
    # We complete the template
    template = template.replace("{EVENT_START_TIME}", start_time)
@@ -103,7 +103,7 @@ def reduce_meteor2(json_conf,form):
 
    # Find Possible Calibration Parameters
    # Based on Date & Time of the first frame
-   calibration_files = find_matching_cal_files(analysed_name['cam_id'], datetime.strptime(start_time), '%Y-%m-%d %H:%M:%S.%f'))
+   calibration_files = find_matching_cal_files(analysed_name['cam_id'], datetime.strptime(start_time, '%Y-%m-%d %H:%M:%S.%f'))
 
    # Find the one that is currently used based on meteor_json_file[calib][dt]
    calib_dt = meteor_json_file['calib']['dt']
