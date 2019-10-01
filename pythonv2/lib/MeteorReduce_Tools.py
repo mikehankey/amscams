@@ -189,7 +189,7 @@ def new_crop_thumb(frame,x,y,dest,HD = True):
    # If the x is too close to the edge
 
    # ON THE LEFT
-   if(org_x<0):
+   if(org_x<=0):
 
       # Part of the original image
       org_w = org_x + THUMB_SELECT_W 
@@ -201,7 +201,7 @@ def new_crop_thumb(frame,x,y,dest,HD = True):
       print("LEFT")
 
    # ON RIGHT 
-   elif(org_x > (org_w_HD-THUMB_SELECT_W)): 
+   elif(org_x >= (org_w_HD-THUMB_SELECT_W)): 
       
       # Part of the original image
       org_w = org_w_HD
@@ -212,7 +212,7 @@ def new_crop_thumb(frame,x,y,dest,HD = True):
       print("RIGHT")
      
    # ON TOP
-   if(org_y<0):
+   if(org_y<=0):
  
       # Part of the original image
       org_h = THUMB_SELECT_H + org_y  
@@ -225,7 +225,7 @@ def new_crop_thumb(frame,x,y,dest,HD = True):
       print("TOP")
 
    # ON BOTTOM
-   if(org_y > (org_h_HD-THUMB_SELECT_H)):
+   if(org_y >= (org_h_HD-THUMB_SELECT_H)):
 
       # Part of the original image
       org_h = org_h_HD
