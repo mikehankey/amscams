@@ -245,10 +245,9 @@ def manual_reduction_create_final_json(form):
 
       # We need to update the total duration of the event 
       # based on the diff between the time of the last frame and the time of the first frame
-
-      #First frame dt:
-      dt_start = mr['frames'][0]['dt']
-      dt_end  = mr['frames'][len(mr['frames'])-1]['dt'] 
+      dt_start = datetime.strptime(mr['frames'][0]['dt'], "%Y-%m-%d %H:%M:%S.%f")
+      dt_end = datetime.strptime(mr['frames'][len(mr['frames'])-1]['dt'] , "%Y-%m-%d %H:%M:%S.%f")
+      mr['info']['dur'] = abs((dt_end - dt_start).seconds)
 
       # We update the JSON with the new frames
       save_json_file(meteor_red_file, mr) 
