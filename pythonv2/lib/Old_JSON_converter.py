@@ -243,8 +243,9 @@ def move_old_detection_to_archive(json_file_path, display=False):
          dev_lat = float(t['device_lat'])
       else:
          # We need to look in as6.json (!!!!)
+         t = load_json_file(JSON_CONFIG)
+         print(t)   
          try:
-            t = load_json_file(JSON_CONFIG)
             dev_alt = float(t['device_alt'])
             dev_lng = float(t['device_lng'])
             dev_lat = float(t['device_lat'])
