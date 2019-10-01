@@ -199,8 +199,8 @@ def new_crop_thumb(frame,x,y,dest,HD = True):
       thumb_dest_x = org_w 
      
       if(thumb_dest_x>THUMB_SELECT_W/2):
-         thumb_dest_x = THUMB_SELECT_W/2
-         org_w = thumb_dest_w - thumb_dest_x 
+         thumb_dest_x = int(THUMB_SELECT_W/2)
+         org_w = int(thumb_dest_w - thumb_dest_x)
 
    # ON RIGHT 
    elif(org_x >= (org_w_HD-THUMB_SELECT_W)): 
