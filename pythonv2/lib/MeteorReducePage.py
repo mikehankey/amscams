@@ -93,7 +93,7 @@ def reduce_meteor2(json_conf,form):
         
    # either we take the time of the file name
    if(start_time==0):
-      start_time = analysed_name['year']+'/'+analysed_name['month']+'/'+analysed_name['day']+ ' '+ analysed_name['hour']+':'+analysed_name['min']+':'+analysed_name['sec']+'.'+analysed_name['ms']
+      start_time = analysed_name['year']+'-'+analysed_name['month']+'-'+analysed_name['day']+ ' '+ analysed_name['hour']+':'+analysed_name['min']+':'+analysed_name['sec']+'.'+analysed_name['ms']
    
    # We complete the template
    template = template.replace("{EVENT_START_TIME}", start_time)
