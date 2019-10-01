@@ -182,8 +182,14 @@ def manual_reduction_create_final_json(form):
    # We parse the frames_info
    frames_info = json.loads(frames_info)
 
+
+   print("VIDEO FILE " + video_file + "<br/>")
+   
+
    # First we test if it's an old file
    if METEOR_ARCHIVE not in video_file: 
+
+      print("IT IS A OLD ONE")
       
       # It is an old file
       # so we need to create the new json 
@@ -191,6 +197,8 @@ def manual_reduction_create_final_json(form):
       
       # Do we have a "-reduced.json"
       old_json = video_file.replace('.mp4','.json')    
+
+      print("OLD JSON " + old_json)
 
       if(cfe(old_json)):
          print("move_old_reduced_to_archive" , old_json,"<br/>")
