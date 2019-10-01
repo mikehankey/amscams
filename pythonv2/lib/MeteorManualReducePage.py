@@ -253,6 +253,8 @@ def manual_reduction_create_final_json(form):
       print(  "<br/>")
       print(diff.seconds)
       print(" seconds")
+      print(diff.microseconds)
+      print(" microseconds")
       sys.exit(0)
 
       mr['info']['dur'] = abs((dt_end - dt_start).microseconds) / 1000 # /1000 to have seconds instead of milliseconds
