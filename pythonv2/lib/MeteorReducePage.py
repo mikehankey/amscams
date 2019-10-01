@@ -84,16 +84,26 @@ def reduce_meteor2(json_conf,form):
    template = template.replace("{EVENT_DURATION}", str(meteor_json_file['info']['dur']))          # Duration
    template = template.replace("{EVENT_MAGNITUDE}", str(meteor_json_file['info']['max_peak']))    # Peak_magnitude
 
-   print(analysed_name)
-   sys.exit(0)
+   # For the Event start time
+   # either it has already been reduced and we take the time of the first frame
+   start_time = 0
+   if('frames' in meteor_json_file):
+      if(len(meteor_json_file)>0):
+         start_time = str(meteor_json_file['frames'][0]['dt'])
+        
+   # either we take the time of the file name
+   if(start_time==0):
+         start_time = analysed_name['year']+'/'+analysed_name['month']+'/'+analysed_name['day']+ ' '+ analysed_name['hour']+':'+analysed_name['min']+':'+analysed_name['sec']+'.'+analysed_name['ms']
+   
+   # We complete the template
+   template = template.replace("{EVENT_START_TIME}", start_time)
 
-   template = template.replace("{EVENT_START_TIME}", str(meteor_json_file['frames'][0]['dt']))    # Start time (time of the first frame)
-
+  
    # Note: the rest of the data are managed through JAVASCRIPT
 
    # Find Possible Calibration Parameters
    # Based on Date & Time of the first frame
-   calibration_files = find_matching_cal_files(analysed_name['cam_id'], datetime.strptime(str(meteor_json_file['frames'][0]['dt']), '%Y-%m-%d %H:%M:%S.%f'))
+   calibration_files = find_matching_cal_files(analysed_name['cam_id'], datetime.strptime(start_time), '%Y-%m-%d %H:%M:%S.%f'))
 
    # Find the one that is currently used based on meteor_json_file[calib][dt]
    calib_dt = meteor_json_file['calib']['dt']
