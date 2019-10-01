@@ -231,6 +231,8 @@ def new_crop_thumb(frame,x,y,dest,HD = True):
       thumb_dest_h = HD_H -  org_y 
  
 
+   print(str(thumb_dest_y)+':'+str(thumb_dest_h)+' ' + str(thumb_dest_x)+':'+str(thumb_dest_w))
+   print(str(org_y)+':'+str(org_h)+' ' + str(org_x)+':'+str(org_w))
     
    crop_img[thumb_dest_y:thumb_dest_h,thumb_dest_x:thumb_dest_w] = img[org_y:org_h,org_x:org_w]
    cv2.imwrite(dest,crop_img)
