@@ -203,6 +203,41 @@ function setup_init_pos_choos_actions() {
 
   // Create them all
   $('#create_all').unbind('click').click(function() {
+      
+      // We create a temporary file on the server with all the frames info
+      if ('Blob' in window) {
+         var fileName = "temp_frames.txt"
+         if (fileName) {
+            
+           var textFileAsBlob = new Blob([JSON.stringify(frames_jobs)], { type: 'text/plain' });
+     
+           if ('msSaveOrOpenBlob' in navigator) {
+             navigator.msSaveOrOpenBlob(textFileAsBlob, fileName);
+           } else {
+             var downloadLink = document.createElement('a');
+             downloadLink.download = fileName;
+             downloadLink.innerHTML = 'Download File';
+           
+             if ('webkitURL' in window) {
+               // Chrome allows the link to be clicked without actually adding it to the DOM.
+               downloadLink.href = window.webkitURL.createObjectURL(textFileAsBlob);
+             } else {
+               // Firefox requires the link to be added to the DOM before it can be clicked.
+               downloadLink.href = window.URL.createObjectURL(textFileAsBlob);
+               downloadLink.click(function(){
+                  document.body.removeChild(event.target);
+               }); 
+             
+               downloadLink.style.display = 'none';
+               document.body.appendChild(downloadLink);
+             }
+             console.log(window.URL.createObjectURL(textFileAsBlob))
+           }
+         }
+       } else {
+         alert('Your browser does not support the HTML5 Blob.');
+       }
+
       window.location='./webUI.py?cmd=manual_reduction_create_final_json&frames=' + JSON.stringify(frames_jobs)+'&video_file='+video_file;
   })
 }
