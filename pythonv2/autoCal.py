@@ -3334,9 +3334,7 @@ if cmd == 'cfit_hdcal':
    cal_params['cat_image_stars'] = close_stars 
 
    save_json_file(cal_params_file, cal_params)
-
-
-
+ 
 if cmd == "batch_fix":
    batch_fix(json_conf)
 

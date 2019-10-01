@@ -174,8 +174,22 @@ def manual_reduction_meteor_pos_selector(form):
    print(template)
 
 
-# Fourth Step : creation of the new JSON
+# Fourth Step : update of the JSON (THIS IS FOR THE OLD approach)
 def manual_reduction_create_final_json(form):
+   video_file   = form.getvalue('video_file')  
+   frames_info  = form.getvalue('frames')  
+
+   # We parse the frames_info
+   frames_info = json.loads(frames_info)
+
+   print("HERE ARE THE FRAMES INFO TO ADD:")
+   print(frames_info)
+   sys.exit(0)
+
+
+
+# Fourth Step : creation of the new JSON (THIS IS FOR THE /meteor_archive/ approach)
+def manual_reduction_create_final_json2(form):
    video_file   = form.getvalue('video_file')  
    frames_info  = form.getvalue('frames')  
   
@@ -183,9 +197,7 @@ def manual_reduction_create_final_json(form):
    frames_info = json.loads(frames_info)
 
 
-   #print("VIDEO FILE " + video_file + "<br/>")
-   
-
+   #print("VIDEO FILE " + video_file + "<br/>") 
    # First we test if it's an old file
    if METEOR_ARCHIVE not in video_file: 
  
