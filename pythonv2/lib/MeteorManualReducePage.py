@@ -206,10 +206,16 @@ def manual_reduction_create_final_json(form):
 
       print("FOLDER " + tmp_folder +"<br>")
       print("GLOB " + tmp_video_file)
-      sys.exit(0)
+     
 
       search_old_json = glob.glob(tmp_folder+'/'+tmp_video_file) 
       
+      
+      print(search_old_json)
+      sys.exit(0)
+
+
+
       if(len(search_old_json)>0):
          old_json = search_old_json[0]
       else:
