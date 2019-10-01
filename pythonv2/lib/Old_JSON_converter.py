@@ -287,12 +287,18 @@ def move_old_detection_to_archive(json_file_path, display=False):
 
    # Determine the folder where to put the files
    new_folder = get_new_archive_folder(tan)
+
+   # If the new_folder doesn't exist, we create it
+   if not os.path.exists(new_folder):
+      os.makedirs(new_folder)
+ 
   
-   print("NEW FOLDER " + new_folder)
-  
-  
-   print(new_info)
-   print(new_calib)
+   # We add the HD to the name if we have one
+   if(HD==1):
+      tan['name'] = tan['name'].replace("SD","HD")
+   
+   print("<BR>We will create the file " + tan['name'] +'<br>')
+   print("IN THE DIR " + new_folder)
    sys.exit(0)
 
 
@@ -307,9 +313,7 @@ def move_old_detection_to_archive(json_file_path, display=False):
 
   
 
-   # If the new_folder doesn't exist, we create it
-   if not os.path.exists(new_folder):
-      os.makedirs(new_folder)
+   
 
    # We create the new json file from the old one
    json_content = convert(json_file_path)
@@ -336,8 +340,7 @@ def move_old_detection_to_archive(json_file_path, display=False):
 
 
    # Save the new JSON with the proper name 
-   if(HD==True):
-      analysed_name['name'] = analysed_name['name'].replace("SD","HD")
+
 
    json_file  = new_folder+analysed_name['name']
 
