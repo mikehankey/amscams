@@ -203,35 +203,10 @@ function setup_init_pos_choos_actions() {
 
   // Create them all
   $('#create_all').unbind('click').click(function() {
-      
-      // We create a temporary file on the server with all the frames info
-      if ('Blob' in window) {
-         var fileName = "temp_frames.txt"
-         if (fileName) {
-            
-           var textFileAsBlob = new Blob([JSON.stringify(frames_jobs)], { type: 'text/plain' });
-     
-           if ('msSaveOrOpenBlob' in navigator) {
-             navigator.msSaveOrOpenBlob(textFileAsBlob, fileName);
-           } else {
-             var downloadLink = document.createElement('a');
-             downloadLink.download = fileName; 
-           
-             if ('webkitURL' in window) {
-               // Chrome allows the link to be clicked without actually adding it to the DOM.
-               downloadLink.href = window.webkitURL.createObjectURL(textFileAsBlob);
-              
-             } else {
-               alert('Your browser does not support the HTML5 Blob.');
-             }
-             
-           }
-         }
-       } else {
-         alert('Your browser does not support the HTML5 Blob.');
-       }
 
-       window.location='./webUI.py?cmd=manual_reduction_create_final_json&frames=' + downloadLink.href+'&video_file='+video_file;
+      // Update the temporary form
+      $('#post_form input[name=frames]').val(JSON.stringify(frames_jobs)).submit();
+
 
       //window.location='./webUI.py?cmd=manual_reduction_create_final_json&frames=' + JSON.stringify(frames_jobs)+'&video_file='+video_file;
   })
