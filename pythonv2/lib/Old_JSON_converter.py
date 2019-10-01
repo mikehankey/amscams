@@ -286,9 +286,7 @@ def move_old_detection_to_archive(json_file_path, display=False):
    # tan = temp analysed name
    tan = name_analyser(fixed_json_file_path)
 
-   # We search for the HD Video
-   
-   print("5<br>")
+   # We search for the HD Video  
    HD = 0
    date_str = tan['year'] + '_' + tan['month']  + '_' + tan['day']
    search_hd = glob.glob('/mnt/ams2/meteors/' + date_str + '/' + date_str + '_' + tan['hour'] + '_' + tan['min'] + '_' + '*' + 'HD-meteor.mp4' )
