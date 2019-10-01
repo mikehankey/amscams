@@ -257,7 +257,7 @@ def manual_reduction_create_final_json(form):
       print(" seconds<br/>")
       print(diff.microseconds)
       print(" microseconds<br/>")
-      print(datetime.timedelta.total_seconds(diff))
+      print(timedelta.total_seconds(diff))
       print(" seconds<br/>")
       
       sys.exit(0)
