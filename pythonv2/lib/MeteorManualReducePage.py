@@ -183,7 +183,7 @@ def manual_reduction_create_final_json(form):
    frames_info = json.loads(frames_info)
 
 
-   print("VIDEO FILE " + video_file + "<br/>")
+   #print("VIDEO FILE " + video_file + "<br/>")
    
 
    # First we test if it's an old file

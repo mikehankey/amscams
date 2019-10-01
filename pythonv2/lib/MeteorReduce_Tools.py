@@ -197,8 +197,7 @@ def new_crop_thumb(frame,x,y,dest,HD = True):
      
       # Destination in thumb (img)
       thumb_dest_x = org_w
-      
-      print("LEFT")
+       
 
    # ON RIGHT 
    elif(org_x >= (org_w_HD-THUMB_SELECT_W)): 
@@ -208,8 +207,7 @@ def new_crop_thumb(frame,x,y,dest,HD = True):
      
       # Destination in thumb (img) 
       thumb_dest_w =  HD_W - org_x
-
-      print("RIGHT")
+ 
      
    # ON TOP
    if(org_y<=0):
@@ -221,8 +219,7 @@ def new_crop_thumb(frame,x,y,dest,HD = True):
       # Destination in thumb (img)
       thumb_dest_h = THUMB_H
       thumb_dest_y = thumb_dest_h - org_h
-
-      print("TOP")
+ 
 
    # ON BOTTOM
    if(org_y >= (org_h_HD-THUMB_SELECT_H)):
@@ -232,17 +229,12 @@ def new_crop_thumb(frame,x,y,dest,HD = True):
 
       # Destination in thumb (img)
       thumb_dest_h = HD_H -  org_y 
+ 
 
-      print("BOTTOM")
-
-   try: 
-      crop_img[thumb_dest_y:thumb_dest_h,thumb_dest_x:thumb_dest_w] = img[org_y:org_h,org_x:org_w]
-      cv2.imwrite(dest,crop_img)
-   except:
-      print("ERROR THUMB")
-      print(thumb_dest_y,thumb_dest_h,thumb_dest_x,thumb_dest_w +"<br>")
-      print(org_y,org_h,org_x,org_w +"<br>")
-   
+    
+   crop_img[thumb_dest_y:thumb_dest_h,thumb_dest_x:thumb_dest_w] = img[org_y:org_h,org_x:org_w]
+   cv2.imwrite(dest,crop_img)
+  
    return dest
 
 
