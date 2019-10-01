@@ -196,7 +196,7 @@ def manual_reduction_create_final_json(form):
       old_json = old_json.replace('-HD-meteor','')
 
       # In order to get the old json file, we need to add a wild card for the seconds
-      tan = name_analyser(old_json)
+      tan = name_analyser(video_file)
       print(tan)
 
       sys.exit(0)
