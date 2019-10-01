@@ -259,35 +259,22 @@ def move_old_detection_to_archive(json_file_path, display=False):
    tan = name_analyser(fixed_json_file_path)
 
    # We search for the HD Video
+   HD = 0
    date_str = tan['year'] + '_' + tan['month']  + '_' + tan['day']
    search_hd = glob.glob('/mnt/ams2/meteors/' + date_str + '/' + date_str + '_' + tan['hour'] + '_' + tan['min'] + '_' + '*' + 'HD-meteor.mp4' )
 
-   print(search_hd)
-   sys.exit(0)
+   if(len(search_hd)>0):
+      video_file = search_hd[0]
+      HD = 1
 
+   # We we didn't find the HD yet, we can try to search somewhere else???? (TODO)
+   
 
-
-   # First we seach in "hd_trim"
-   if('hd_trim' in data_json):
-      
-      # We replace /HD/ by /meteors/
-      tmp_hd_folder =  data_json['hd_trim'].replace('/HD/','/meteors/')
-      
-      # We add YYYY_MM_DD/ after /meteors
-      
- 
-      
-      if(cfe(tmp_hd_folder)):
-         print("YES " + tmp_hd_folder)
-      else:
-         print("NO " + tmp_hd_folder)
-   else:
-      print("NO hd trim<br>")
-
+   # We build the new "info"
    new_info = {
       "info": {
          "station": get_station_id(),
-         "hd": 1, # We assume we have the HD vid by default for the moment
+         "hd": HD, # We assume we have the HD vid by default for the moment
          "device": param_json_analysed_name['cam_id'],
          "dur": 0,
          "max_peak": 0
