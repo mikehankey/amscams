@@ -18,8 +18,7 @@ from lib.REDUCE_VARS import *
 from lib.VIDEO_VARS import * 
 from lib.ImageLib import stack_stack
  
-
-
+ 
 # Parses a regexp (FILE_NAMES_REGEX) a file name
 # and returns all the info defined in FILE_NAMES_REGEX_GROUP
 def name_analyser(file_names):
@@ -55,7 +54,7 @@ def get_datetime_from_analysedname(analysed_name):
 
 # Return Cache folder name based on an analysed_file (parsed video file name)
 # and cache_type = stacks | frames | cropped or thumbs
-def get_cache_path(analysed_file_name, cache_type):
+def get_cache_path(analysed_file_name, cache_type=''):
     # Build the path to the proper cache folder
    cache_path = CACHE_PATH + analysed_file_name['station_id'] +  "/" + analysed_file_name['year'] + "/" + analysed_file_name['month'] + "/" + analysed_file_name['day'] + "/" + os.path.splitext(analysed_file_name['name'])[0]
 
@@ -65,6 +64,8 @@ def get_cache_path(analysed_file_name, cache_type):
       cache_path += STACKS_SUBPATH
    elif(cache_type == "cropped"  or cache_type == "thumbs"):
       cache_path += CROPPED_FRAMES_SUBPATH
+   elif(cache_type == 'tmp_cropped'):
+      cache_path += TMP_CROPPED_FRAMES_SUBPATH
    
    return cache_path
 
@@ -78,11 +79,10 @@ def does_cache_exist(analysed_file_name,cache_type):
 
    # Get Cache Path
    cache_path = get_cache_path(analysed_file_name,cache_type)
-
+ 
    if(os.path.isdir(cache_path)):
       # We return the glob of the folder with all the images
-      # print(cache_path + " exist")
-      return glob.glob(cache_path+"*.png")
+      return sorted(glob.glob(cache_path+"/*.png"))
    else:
       # We Create the Folder and return null
       os.makedirs(cache_path)
@@ -90,38 +90,55 @@ def does_cache_exist(analysed_file_name,cache_type):
       return []
 
 
+# Compute the date & time of a frame based on the date & time of another one
+def get_frame_time_from_f(frame_id, frame_id_org, frame_dt_org):
+   
+   # Compute the diff of frame between random_frame 
+   # and frame_id 
+   diff_fn = int(frame_id) - int(frame_id_org)
+
+   # We multiple the frame # difference by 1/FPS 
+   diff_fn = diff_fn * 1 / FPS_HD
+
+   dt = datetime.strptime(frame_dt_org, '%Y-%m-%d %H:%M:%S.%f')
+
+   # We add the diff in seconds
+   dt = dt +  timedelta(0,diff_fn)
+   dt = str(dt)
+ 
+   # We remove the last 3 digits (from %f) 
+   # or add them
+   if(len(dt)==26):
+      dt = dt[:-3]
+   else:
+      dt +=  ".000"
+
+   # We return the Date as a string
+   return dt
+
+
 # Return a date & time based on a parsed json_file and the frame id
-def get_frame_time(json,frame_id):
+def get_frame_time(json,frame_id,analysed_name):
+
+   res= False
 
    # We just need one existing frame and its date & time
    if("frames" in json):
-      random_frame = json['frames'][0]
-
-      # Date & time and Frame ID for random_frame
-      dt = random_frame['dt']
-      fn = random_frame['fn']
-
-      # Compute the diff of frame between random_frame 
-      # and frame_id
-      diff_fn = int(frame_id) - int(fn)
-
-      # We multiple the frame # difference by 1/FPS 
-      diff_fn = diff_fn * 1 / FPS_HD
  
-      dt = datetime.strptime(dt, '%Y-%m-%d %H:%M:%S.%f')
+      if(len(json['frames'])!=0):
+         random_frame = json['frames'][0]
+         res = True
+         return get_frame_time_from_f(frame_id,random_frame['fn'],random_frame['dt'])
+      else:
+         res = False
 
-      # We add the diff in seconds
-      dt = dt +  timedelta(0,diff_fn)
-      dt = str(dt)
+   if(res is False):
+ 
+      # Since we didn't find the frame time based on other frame time
+      # we need to rely on the name of the file
+      return get_frame_time_from_f(frame_id,0,analysed_name['year']+'-'+analysed_name['month']+'-'+analysed_name['day']+' '+analysed_name['hour']+':'+analysed_name['min']+':'+analysed_name['sec']+'.'+analysed_name['ms'])
+ 
 
-      # We remove the last 3 digits (from %f)
-      dt = dt[:-3]
-
-      # We return the Date as a string
-      return dt
-
-   else:
-      return ""
 
 # Get Specific cropped Frames from a frame ID and an analysed name
 def get_thumb(analysed_name,frame_id):
@@ -150,8 +167,7 @@ def new_crop_thumb(frame,x,y,dest,HD = True):
    # Debug
    cgitb.enable()
    img = cv2.imread(frame) 
-   
-
+    
    # We shouldn't have the need for that... (check with VIDEO_VARS values and the way we're creating the frames from the video)
    if(HD is True):
       org_w_HD = HD_W
@@ -177,28 +193,37 @@ def new_crop_thumb(frame,x,y,dest,HD = True):
    # If the x is too close to the edge
 
    # ON THE LEFT
-   if(org_x<0):
+   if(org_x<=0):
 
       # Part of the original image
       org_w = org_x + THUMB_SELECT_W 
       org_x = 0
      
       # Destination in thumb (img)
-      thumb_dest_x = org_w
-       
+      thumb_dest_x = org_w 
+     
+      if(thumb_dest_x>THUMB_SELECT_W/2):
+         thumb_dest_x = int(THUMB_SELECT_W/2)
+         org_w = thumb_dest_x 
+
+         #print("X,Y:"+ str(x) + ',' + str(y) +"<br/>")
+         #print("THUMB:" + str(thumb_dest_y)+':'+str(thumb_dest_h)+' ' + str(thumb_dest_x)+':'+str(thumb_dest_w))
+         #print("<br>IMG:"+ str(org_y)+':'+str(org_h)+' ' + str(org_x)+':'+str(org_w))
+         #print("<hr/>")
+         #sys.exit(0) 
 
    # ON RIGHT 
-   elif(org_x > (org_w_HD-THUMB_SELECT_W)): 
+   elif(org_x >= (org_w_HD-THUMB_SELECT_W)): 
       
       # Part of the original image
       org_w = org_w_HD
      
       # Destination in thumb (img) 
       thumb_dest_w =  HD_W - org_x
-
+ 
      
    # ON TOP
-   if(org_y<0):
+   if(org_y<=0):
  
       # Part of the original image
       org_h = THUMB_SELECT_H + org_y  
@@ -207,18 +232,23 @@ def new_crop_thumb(frame,x,y,dest,HD = True):
       # Destination in thumb (img)
       thumb_dest_h = THUMB_H
       thumb_dest_y = thumb_dest_h - org_h
+ 
 
    # ON BOTTOM
-   if(org_y > (org_h_HD-THUMB_SELECT_H)):
+   if(org_y >= (org_h_HD-THUMB_SELECT_H)):
 
       # Part of the original image
       org_h = org_h_HD
 
       # Destination in thumb (img)
       thumb_dest_h = HD_H -  org_y 
+ 
+
+ 
     
    crop_img[thumb_dest_y:thumb_dest_h,thumb_dest_x:thumb_dest_w] = img[org_y:org_h,org_x:org_w]
    cv2.imwrite(dest,crop_img)
+  
    return dest
 
 
@@ -259,7 +289,7 @@ def generate_cropped_frames(analysed_name,meteor_json_data,HD_frames,HD):
 # Get the stacks for a meteor detection
 # Generate it if necessary
 def get_stacks(analysed_name,clear_cache, toHD= False):
-   
+     
    # Do we have the Stack for this detection 
    stacks = does_cache_exist(analysed_name,"stacks")
 
@@ -283,6 +313,8 @@ def generate_stacks(video_full_path, destination, toHD= False):
    
    # Get All Frames
    frames = load_video_frames(video_full_path, load_json_file(JSON_CONFIG), 0, 0)
+ 
+   
    stacked_image = None
 
    # Create Stack 

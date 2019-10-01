@@ -1,11 +1,39 @@
 import math
 import glob
 import re
+import sys
+import numpy as np
+import ephem
 
 from datetime import datetime,timedelta
 from lib.MeteorReduce_Tools import name_analyser, get_datetime_from_analysedname
 from lib.VIDEO_VARS import HD_W, HD_H
 from lib.REDUCE_VARS import *
+
+# TO DELETE 
+from lib.UtilLib import convert_filename_to_date_cam, bound_cnt, check_running,date_to_jd, angularSeparation , calc_dist, better_parse_file_date
+
+# Convert Ra, Dec in  HMS to deg
+def HMS2deg(ra='', dec=''):
+  RA, DEC, rs, ds = '', '', 1, 1
+  if dec:
+    D, M, S = [float(i) for i in dec.split()]
+    if str(D)[0] == '-':
+      ds, D = -1, abs(D)
+    deg = D + (M/60) + (S/3600)
+    DEC = '{0}'.format(deg*ds)
+  
+  if ra:
+    H, M, S = [float(i) for i in ra.split()]
+    if str(H)[0] == '-':
+      rs, H = -1, abs(H)
+    deg = (H*15) + (M/4) + (S/240)
+    RA = '{0}'.format(deg*rs)
+  
+  if ra and dec:
+    return (RA, DEC)
+  else:
+    return RA or DEC
 
 # Convert Y, M, d into JD Date
 def date_to_jd(year,month,day):
@@ -62,6 +90,40 @@ def date_to_jd(year,month,day):
 
     return jd
 
+# XY To RADEC  in deg
+def AzEltoRADec_deg(az,el,analysed_name,json_conf):
+   
+   azr = np.radians(az)
+   elr = np.radians(el)
+
+    # Get Data from analysed_name
+   hd_y = analysed_name['year']
+   hd_m = analysed_name['month']
+   hd_d = analysed_name['day']
+   hd_h = analysed_name['hour']
+   hd_M = analysed_name['min']
+
+   device_lat = json_conf['calib']['device']['lat']
+   device_lng = json_conf['calib']['device']['lng']
+   device_alt = json_conf['calib']['device']['alt']
+
+   # Create Observer Object
+   obs = ephem.Observer()
+   obs.lat = str(device_lat)
+   obs.lon = str(device_lng)
+   obs.elevation = float(device_alt)
+   dt = analysed_name['year']+'-'+analysed_name['month']+'-'+analysed_name['day']+' '+analysed_name['hour']+':'+analysed_name['min']+':'+analysed_name['sec']+'.'+analysed_name['ms']
+   obs.date = datetime.strptime(dt, '%Y-%m-%d %H:%M:%S.%f')
+   ra,dec = obs.radec_of(azr,elr)
+
+   # We need to return the ra & dec in deg
+   ra = str(ra).replace(":", " ")
+   dec = str(dec).replace(":", " ")
+
+   ra, dec= HMS2deg(str(ra),str(dec))
+ 
+   return(float(ra),float(dec))
+
 
 # Return Ra/Dec based on X,Y for a given frame
 def XYtoRADec(x,y,analysed_name,json_file):
@@ -79,10 +141,11 @@ def XYtoRADec(x,y,analysed_name,json_file):
    y_poly_fwd  = json_file['calib']['device']['poly']['y_fwd']
    lat         = float(json_file['calib']['device']['lat'])
    lon         = float(json_file['calib']['device']['lng'])
-   dec_d       = float(json_file['calib']['device']['center']['dec']) 
-   RA_d        = float(json_file['calib']['device']['center']['ra']) 
-   angle       =  float(json_file['calib']['device']['angle']) 
-
+   angle       = float(json_file['calib']['device']['angle']) 
+   
+   # Here we get the proper Ra/Dec at the time of the detection
+   RA_d,dec_d = AzEltoRADec_deg(float(json_file['calib']['device']['center']['az']),float(json_file['calib']['device']['center']['el']),analysed_name,json_file)
+   
    total_min = (int(hd_h) * 60) + int(hd_M)
    day_frac = total_min / 1440 
    hd_d = int(hd_d) + day_frac
@@ -109,8 +172,8 @@ def XYtoRADec(x,y,analysed_name,json_file):
    
    # HERE we only work with HD
    x_det = x - HD_W/2
-   y_det = y - HD_H/2
-
+   y_det = y - HD_H/2 
+   
    dx = (x_poly_fwd[0]
       + x_poly_fwd[1]*x_det
       + x_poly_fwd[2]*y_det
@@ -201,6 +264,7 @@ def XYtoRADec(x,y,analysed_name,json_file):
    RA = (hour_angle + lon - HA)%360
    dec = math.degrees(math.asin(sl*salt + cl*calt*caz))
 
+   #print(x_pix+x,y_pix+y,RA,dec,azimuth,altitude)
    ### ###
    return(x_pix+x,y_pix+y,RA,dec,azimuth,altitude)
 
@@ -250,10 +314,11 @@ def find_matching_cal_files(cam_id, capture_date):
 def find_calib_file(calib_dt_string,cam_id):
    # Get the corresponding file name 
    find_calib_json = glob.glob(CALIB_PATH + calib_dt_string + "*"+cam_id+"*"+"/"+"*-stacked-calparams.json")
+   
    if(len(find_calib_json)==0):
       find_calib_json = glob.glob(CALIB_PATH + calib_dt_string + "*"+cam_id+"*"+"/"+"*-calparams.json")
 
-   print("GLOB " + CALIB_PATH + calib_dt_string + "*"+cam_id+"*"+"/"+"*-calparams.json")
+   #print("GLOB " + CALIB_PATH + calib_dt_string + "*"+cam_id+"*"+"/"+"*-calparams.json")
    
    if(len(find_calib_json)==0):
       return "ERROR: Calibration File not found"

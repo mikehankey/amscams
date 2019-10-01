@@ -7,7 +7,7 @@ import cv2
 import glob
 import urllib.request
 import json
-from lib.FileIO import get_day_stats, load_json_file, cfe, get_days, save_json_file,load_json_file, purge_hd_files, purge_sd_daytime_files, purge_sd_nighttime_files, update_meteor_count
+from lib.FileIO import get_day_stats, load_json_file, cfe, get_days, save_json_file,load_json_file, purge_hd_files, purge_sd_daytime_files, purge_sd_nighttime_files, update_meteor_count, purge_hd_cal
 from lib.ImageLib import draw_stack, thumb, stack_glob, stack_stack, stack_frames
 from PIL import Image
 from lib.VideoLib import load_video_frames
@@ -376,6 +376,12 @@ def sync_multi_station(json_conf, meteor_date='2019_03_20'):
          sync_event(file_url, meteor_date)
       
 
+def purge_trash(json_conf):
+   os.system("rm -rf /mnt/ams2/trash")
+   os.system("mkdir /mnt/ams2/trash")
+   
+
+
 def batch_doHD(json_conf):
    proc_dir = json_conf['site']['proc_dir']
    all_days = get_days(json_conf)
@@ -404,6 +410,9 @@ def purge_data(json_conf):
    hd_video_dir = json_conf['site']['hd_video_dir']
    disk_thresh = 80   
 
+   purge_hd_cal(json_conf)
+   purge_trash(json_conf)
+   
    try:
       cmd = "df -h | grep ams2"
       output = subprocess.check_output(cmd, shell=True).decode("utf-8")

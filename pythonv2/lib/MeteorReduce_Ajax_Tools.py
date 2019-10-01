@@ -108,7 +108,7 @@ def update_frame(form, AjaxDirect = False):
       if(update is False):
 
          # Get the Frame time (as a string)
-         dt = get_frame_time(mr,fn)
+         dt = get_frame_time(mr,fn,analysed_name)
 
          # Get the new RA/Dec 
          new_x, new_y, RA, Dec, az, el =  XYtoRADec(int(x),int(y),analysed_name,mr)
@@ -270,19 +270,19 @@ def get_reduction_info(json_file):
    max_res_deg = 0 
    max_res_px = 0 
 
+    
    # Output
    rsp = {}
 
-   if cfe(json_file) == 1:
+   if cfe(json_file) == 1: 
 
       # We load the JSON
       mr = load_json_file(json_file) 
-
+ 
       # Stars
       if 'calib' not in mr or 'stars' not in mr['calib']:
-      
          rsp['status'] = 0
-      
+         
       else:
 
          # Copy original 
@@ -292,11 +292,16 @@ def get_reduction_info(json_file):
                max_res_px = float(max_res_px) + float(star["dist_px"])
                sc += 1 
 
-         total_res_px  = max_res_px/ sc 
-     
+         if(sc>0):
+            total_res_px  = max_res_px/ sc 
+         else:
+            total_res_px = 9999
+
          mr['calib']['device']['total_res_px']  = total_res_px
-         mr['calib']['device']['total_res_deg'] = total_res_px/mr['calib']['device']['scale_px'] 
-         
+
+         if(float(mr['calib']['device']['scale_px'])!=0):
+            mr['calib']['device']['total_res_deg'] = total_res_px/float(mr['calib']['device']['scale_px'])
+          
          # Pass to JSON
          rsp['calib'] = mr['calib'] 
 
@@ -317,12 +322,13 @@ def get_reduction_info(json_file):
                path_to_frame = thumb_folder + analysed_name['name_w_ext']  + EXT_CROPPED_FRAMES + str(frame_data['fn']) + ".png"
 
                tmp_frame = frame_data
-               tmp_frame['path_to_frame'] =path_to_frame
+               tmp_frame['path_to_frame'] = path_to_frame
 
                # Add the frame with path to frame (thumb)
                new_mfd.append(tmp_frame) 
 
             rsp['frames'] = new_mfd
+ 
           
       rsp['status'] = 1
   

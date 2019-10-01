@@ -44,12 +44,24 @@ function update_stars_on_canvas_and_table(json_resp) {
         canvas.add(
             new fabric.Circle({
                 radius: 5, fill: 'rgba(0,0,0,0)', strokeWidth: 1, stroke: 'rgba(100,200,200,.5)', 
-                left: (v["i_pos"][POS_X] - 11)/2, 
-                top: (v["i_pos"][POS_Y] - 11)/2,
+                left: (v["cat_und_pos"][POS_X] - 11)/2, 
+                top: (v["cat_und_pos"][POS_Y] - 11)/2,
                 selectable: false,
                 gp_id: v[0],
                 type: 'star_info',
         }));
+
+        // Add Rectangle
+        canvas.add(new fabric.Rect({
+            fill: 'rgba(0,0,0,0)', strokeWidth: 1, stroke: 'rgba(230,100,200,.5)', 
+            left:  (v['i_pos'][POS_X] - 11)/2, 
+            top: (v['i_pos'][POS_Y]  - 11)/2,
+            width: 10,
+            height: 10 ,
+            selectable: false,
+            gp_id: v[0],
+            type: 'star_info',
+         }));
 
         // Add "+" on canvas
         canvas.add(
@@ -68,25 +80,15 @@ function update_stars_on_canvas_and_table(json_resp) {
         canvas.add(new fabric.Text(v['name'], {
                 fontFamily: 'Arial', 
                 fontSize: 12, 
-                left: (v['cat_und_pos'][POS_X] - 11)/2+5,
-                top: (v['cat_und_pos'][POS_Y] - 11)/2+8,
+                left: (v['cat_und_pos'][POS_X] - 11)/2,
+                top: (v['cat_und_pos'][POS_Y] - 11)/2+17,
                 fill:'rgba(255,255,255,.65)',
                 selectable: false,
                 gp_id: v[0],
                 type: 'star_info',
         }));
 
-        // Add Rectangle
-        canvas.add(new fabric.Rect({
-            fill: 'rgba(0,0,0,0)', strokeWidth: 1, stroke: 'rgba(230,100,200,.5)', 
-            left:  (v['cat_und_pos'][POS_X] - 11)/2, 
-            top: (v['cat_und_pos'][POS_Y]  - 11)/2,
-            width: 10,
-            height: 10 ,
-            selectable: false,
-            gp_id: v[0],
-            type: 'star_info',
-         }));
+ 
 
         // Add the corresponding row 
         table_tbody_html+= '<tr><td><b>'+v['name']+'</b></td>\
