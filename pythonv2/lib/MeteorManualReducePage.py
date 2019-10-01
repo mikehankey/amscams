@@ -203,20 +203,15 @@ def manual_reduction_create_final_json(form):
       #Replace the seconds by a wild card
       # and the stupid fucking '-' after trim by a 0
       tmp_video_file = tmp_video_file[0:17] + "*" + tmp_video_file[19:35] + "0" + tmp_video_file[36:] 
- 
       search_old_json = glob.glob(tmp_folder+'/'+tmp_video_file) 
       
-      print(search_old_json)
-
       if(len(search_old_json)>0):
          old_json = search_old_json[0]
       else:
          print_error("<b>JSON File not found: " + tmp_folder+'/'+tmp_video_file + "</b>")
          sys.exit(0)
  
-
       if(cfe(old_json)):
-         print("move_old_reduced_to_archive" , old_json,"<br/>")
          json_file, video_file = move_old_detection_to_archive(old_json)
 
   

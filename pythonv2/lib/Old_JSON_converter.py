@@ -209,6 +209,11 @@ def move_old_detection_to_archive(json_file_path, display=False):
    # We fix the old name to get the proper info
    fixed_json_file_path = fix_old_file_name(json_file_path)
 
+   print("IN move_old_detection_to_archive<br/>")
+   print("fixed_json_file_path<br/>")
+   print(fixed_json_file_path)
+   
+
    # Get the closest param files
    param_files = get_active_cal_file(fixed_json_file_path)
 
