@@ -88,7 +88,7 @@ def reduce_meteor2(json_conf,form):
    # either it has already been reduced and we take the time of the first frame
    start_time = 0
    if('frames' in meteor_json_file):
-      if(len(meteor_json_file)>0):
+      if(len(meteor_json_file['frames'])>0):
          start_time = str(meteor_json_file['frames'][0]['dt'])
         
    # either we take the time of the file name
