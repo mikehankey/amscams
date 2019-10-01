@@ -279,8 +279,8 @@ def move_old_detection_to_archive(json_file_path, display=False):
          "station": get_station_id(),
          "hd": HD, # We assume we have the HD vid by default for the moment
          "device": param_json_analysed_name['cam_id'],
-         "dur": 0,
-         "max_peak": 0
+         "dur": 9999,
+         "max_peak": 9999
       }
    }
 
