@@ -4,6 +4,7 @@ import os
 import glob
 import shutil
 import sys
+import cgitb
 from datetime import datetime,timedelta
 
 from lib.WebCalib import get_active_cal_file
@@ -203,6 +204,8 @@ def convert(json_file_path):
 # from a old -reduced.json file
 def move_old_detection_to_archive(json_file_path, display=False):
    
+   cgitb.enable()
+
    # We fix the old name to get the proper info
    fixed_json_file_path = fix_old_file_name(json_file_path)
 
