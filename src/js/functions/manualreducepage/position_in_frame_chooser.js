@@ -231,14 +231,14 @@ function setup_init_pos_choos_actions() {
                downloadLink.style.display = 'none';
                document.body.appendChild(downloadLink);
              }
-             console.log(window.URL.createObjectURL(textFileAsBlob))
+             
            }
          }
        } else {
          alert('Your browser does not support the HTML5 Blob.');
        }
 
-      window.location='./webUI.py?cmd=manual_reduction_create_final_json&frames=' + JSON.stringify(frames_jobs)+'&video_file='+video_file;
+      //window.location='./webUI.py?cmd=manual_reduction_create_final_json&frames=' + JSON.stringify(frames_jobs)+'&video_file='+video_file;
   })
 }
 
