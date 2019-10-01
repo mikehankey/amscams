@@ -106,11 +106,12 @@ def get_frame_time_from_f(frame_id, frame_id_org, frame_dt_org):
    dt = dt +  timedelta(0,diff_fn)
    dt = str(dt)
  
-   # We remove the last 3 digits (from %f)
-   print(dt + " > "  + str(len(dt)) + "<br/>")
-
-   if(len(dt)>18):
+   # We remove the last 3 digits (from %f) 
+   # or add them
+   if(len(dt)=26):
       dt = dt[:-3]
+   else
+      dt += ".000"
 
    # We return the Date as a string
    return dt
