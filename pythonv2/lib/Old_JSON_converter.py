@@ -314,9 +314,10 @@ def move_old_detection_to_archive(json_file_path, display=False):
    # Create the definitive json_content
    json_content = {}
    json_content['calib'] = new_calib['calib']
-   json_content['info'] = new_calib['info']
+   json_content['info'] = new_info['info']
    json_content['frames'] = []
    
+   print(json_file)
 
    # Save the new JSON file
    save_json_file(json_file, json_content)
