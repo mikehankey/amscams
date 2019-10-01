@@ -63,13 +63,9 @@ def fix_old_file_name(filename):
       matches =  re.finditer(OLD_FILE_NAME_REGEX, filename, re.MULTILINE)
       res = {}
  
-  
       for matchNum, match in enumerate(matches, start=1):
          for groupNum in range(0, len(match.groups())):
-            if(match.group(groupNum) is not None):
-               print("groupNum " + str(groupNum) +"<br>")
-               print("match groupNum " + str( match.group(groupNum)) +"<br>")
-               print(OLD_FILE_NAME_REGEX_GROUP[groupNum]+"<br>")
+            if(match.group(groupNum) is not None): 
                res[OLD_FILE_NAME_REGEX_GROUP[groupNum]] = match.group(groupNum)
             groupNum = groupNum + 1
    
