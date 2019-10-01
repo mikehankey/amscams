@@ -249,8 +249,10 @@ def manual_reduction_create_final_json(form):
       dt_end   = datetime.strptime(mr['frames'][len(mr['frames'])-1]['dt'] , "%Y-%m-%d %H:%M:%S.%f")
 
       diff = dt_end - dt_start 
-      print(diff + "<br/>")
-      print(diff.seconds + " seconds")
+      print(diff )
+      print(  "<br/>")
+      print(diff.seconds)
+      print(" seconds")
       sys.exit(0)
 
       mr['info']['dur'] = abs((dt_end - dt_start).microseconds) / 1000 # /1000 to have seconds instead of milliseconds
