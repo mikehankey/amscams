@@ -209,20 +209,13 @@ def manual_reduction_create_final_json(form):
          del mr['frames']
          
       mr['frames'] = []
-
-
-      #1 minute clip starts at : 2019_09_27_05_27_46_000
-      #Trim Seconds =   0277 / 25 = 11.08
-      #Trim Clip Start Time (Frame 0 in trim clip) = 2019_09_27_05_27_46_000 + 11.08 = 2019_09_27_05_27_57_080
+ 
 
       # We get the dt of frame #0
       # based on the name of the file 
-      # (with trim!!)
-      print('video_file' , video_file)
-      old_name_analysed = old_name_analyser(video_file)
-      print(old_name_analysed)
-      sys.exit(0)
-
+      # (with trim!!) 
+      name_analysed = name_analyser(video_file)
+    
       # We create the new frames
       for frame in frames_info:
  
