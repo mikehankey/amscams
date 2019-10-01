@@ -201,8 +201,8 @@ def manual_reduction_create_final_json(form):
       tmp_video_file = os.path.basename(old_json)
 
       #Replace the seconds by a wild card
-      # and the stupid fucking '-' after trim by a 0
-      tmp_video_file = tmp_video_file[0:17] + "*" + tmp_video_file[19:35] + "0" + tmp_video_file[36:] 
+      # and the stupid fucking '-' after trim by a * (since we can have extra 0 here)
+      tmp_video_file = tmp_video_file[0:17] + "*" + tmp_video_file[19:35] + "*" + tmp_video_file[36:] 
       search_old_json = glob.glob(tmp_folder+'/'+tmp_video_file) 
       
       if(len(search_old_json)>0):
