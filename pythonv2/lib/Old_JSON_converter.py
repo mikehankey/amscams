@@ -62,11 +62,7 @@ def fix_old_file_name(filename):
    if("trim" in filename):
 
       matches =  re.finditer(OLD_FILE_NAME_REGEX, filename, re.MULTILINE)
-
-      print("filename " + filename + "<br/>")
-      print("MATCHES<br/>")
-      print(matches)
-
+  
       res = {}
  
       for matchNum, match in enumerate(matches, start=1):
@@ -74,11 +70,7 @@ def fix_old_file_name(filename):
             if(match.group(groupNum) is not None): 
                res[OLD_FILE_NAME_REGEX_GROUP[groupNum]] = match.group(groupNum)
             groupNum = groupNum + 1
-   
-
-      print("FIX OLD NAME<br>")
-      print(res)
-
+    
       # Get original Date & Time 
       org_dt = datetime.strptime(res['year']+'-'+res['month']+'-'+res['day']+' '+res['hour']+':'+res['min']+':'+res['sec']+'.'+res['ms'], '%Y-%m-%d %H:%M:%S.%f')
 
@@ -218,11 +210,7 @@ def move_old_detection_to_archive(json_file_path, display=False):
    # We fix the old name to get the proper info
    fixed_json_file_path = fix_old_file_name(json_file_path)
 
-   print("IN move_old_detection_to_archive<br/>")
-   print("fixed_json_file_path<br/>")
-   print(fixed_json_file_path)
-
-
+    
    # Get the closest param files
    param_files = get_active_cal_file(fixed_json_file_path)
 
@@ -312,12 +300,11 @@ def move_old_detection_to_archive(json_file_path, display=False):
    if(HD==1):
       tan['name'] = tan['name'].replace("SD","HD")
    
-   print("<BR>We will create the file " + tan['name'] +'<br>')
-   print("IN THE DIR " + new_folder)
-
-   print("<br/>AND WE WILL MOVE THE VIDEO " + video_file)
-   print("WITH THE NAME " + tan['name'].replace(".json",".mp4") )
-   print(" THERE<br/>")
+   #print("<BR>We will create the file " + tan['name'] +'<br>')
+   #print("IN THE DIR " + new_folder)
+   #print("<br/>AND WE WILL MOVE THE VIDEO " + video_file)
+   #print("WITH THE NAME " + tan['name'].replace(".json",".mp4") )
+   #print(" THERE<br/>")
 
 
    # Move the video file
@@ -332,57 +319,13 @@ def move_old_detection_to_archive(json_file_path, display=False):
    json_content['info'] = new_info['info']
    json_content['frames'] = []
    
-   print( "<br/><br/><br/>"+ new_folder + tan['name'])
+   #print( "<br/><br/><br/>"+ new_folder + tan['name'])
 
    # Save the new JSON file
    save_json_file(new_folder + tan['name'], json_content)
    if(display is True):
       print("JSON SAVED TO " + json_file)
-
-
-   sys.exit(0)
-
-
-  
    
-
-   # We create the new json file from the old one
-   json_content = convert(json_file_path)
  
-   # Try to get the video (defined in the old json)
-   parsed_json = load_json_file(json_file_path)
-
-   # We need to determine the real start of the old json 
-   # in order to get the proper name (ie with the date & time of the beginning of the video)
-   # we need to start with getting the -trim.json file
-  
-   
-   if "hd_video_file" in parsed_json:
-      # We get the HD
-      video_file = parsed_json['hd_video_file']
-      HD = True
-   elif "sd_video_file" in parsed_json:
-      video_file = parsed_json['sd_video_file'] 
-      # Since we don't have the HD video, we need to update the json
-      json_content['info']['hd'] = 0
-   else:
-      print("IMPOSSIBLE TO RETRIEVE THE RELATED VIDEO")
-      sys.exit(0)
-
-
-   # Save the new JSON with the proper name 
-
-
-   json_file  = new_folder+analysed_name['name']
-
-   save_json_file(json_file, json_content)
-   if(display is True):
-      print("JSON SAVED TO " + json_file)
-
-   # Move the video file
-   end_video_file = new_folder+analysed_name['name'].replace(".json",".mp4")
-   shutil.copy2(video_file,end_video_file)
-   if(display is True):
-      print("VIDEO FILE SAVE TO " + end_video_file)
 
    return json_file,end_video_file
