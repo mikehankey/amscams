@@ -317,10 +317,10 @@ def move_old_detection_to_archive(json_file_path, display=False):
    json_content['info'] = new_info['info']
    json_content['frames'] = []
    
-   print(json_file)
+   print( tan['name'])
 
    # Save the new JSON file
-   save_json_file(json_file, json_content)
+   save_json_file( tan['name'], json_content)
    if(display is True):
       print("JSON SAVED TO " + json_file)
 
