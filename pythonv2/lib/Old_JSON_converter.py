@@ -263,6 +263,7 @@ def move_old_detection_to_archive(json_file_path, display=False):
    search_hd = glob.glob('/mnt/ams2/meteors/' + date_str + '/' + date_str + '_' + tan['hour'] + '_' + tan['min'] + '_' + '*' + 'HD-meteor.mp4' )
 
    print(search_hd)
+   sys.exit(0)
 
 
 
@@ -274,9 +275,7 @@ def move_old_detection_to_archive(json_file_path, display=False):
       
       # We add YYYY_MM_DD/ after /meteors
       
-
-      print(tmp_name)
-
+ 
       
       if(cfe(tmp_hd_folder)):
          print("YES " + tmp_hd_folder)
