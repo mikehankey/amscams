@@ -50,6 +50,7 @@ def old_name_analyser(file_names):
 # Fix the old files names that contains "-trim"
 # so we can use the usual name_analyser
 def fix_old_file_name(filename):
+
    # We need to get the current stations ID (in as6.json)
    json_conf = load_json_file(JSON_CONFIG)
    station_id = json_conf['site']['ams_id']
@@ -69,6 +70,9 @@ def fix_old_file_name(filename):
                res[OLD_FILE_NAME_REGEX_GROUP[groupNum]] = match.group(groupNum)
             groupNum = groupNum + 1
    
+
+      print("FIX OLD NAME<br>")
+      print(res)
 
       # Get original Date & Time 
       org_dt = datetime.strptime(res['year']+'-'+res['month']+'-'+res['day']+' '+res['hour']+':'+res['min']+':'+res['sec']+'.'+res['ms'], '%Y-%m-%d %H:%M:%S.%f')
@@ -212,7 +216,7 @@ def move_old_detection_to_archive(json_file_path, display=False):
    print("IN move_old_detection_to_archive<br/>")
    print("fixed_json_file_path<br/>")
    print(fixed_json_file_path)
-   
+
 
    # Get the closest param files
    param_files = get_active_cal_file(fixed_json_file_path)
