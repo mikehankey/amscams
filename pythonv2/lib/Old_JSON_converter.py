@@ -254,6 +254,18 @@ def move_old_detection_to_archive(json_file_path, display=False):
    # We parse the json
    data_json = load_json_file(json_file_path)
 
+   # We get the date info from the fixed name
+   # tan = temp analysed name
+   tan = name_analyser(fixed_json_file_path)
+
+   # We search for the HD Video
+   date_str = tan['year'] + '_' + tan['month']  + '_' + tan['day']
+   search_hd = glob.glob('/mnt/ams2/meteors/' + date_str + '/' + date_str + '_' + tan['hour'] + '_' + tan['minute'] + '_' + '*' + 'HD-meteor.mp4' )
+
+   print(search_hd)
+
+
+
    # First we seach in "hd_trim"
    if('hd_trim' in data_json):
       
@@ -261,7 +273,7 @@ def move_old_detection_to_archive(json_file_path, display=False):
       tmp_hd_folder =  data_json['hd_trim'].replace('/HD/','/meteors/')
       
       # We add YYYY_MM_DD/ after /meteors
-      tmp_name = name_analyser(fixed_json_file_path)
+      
 
       print(tmp_name)
 
