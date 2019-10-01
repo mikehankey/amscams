@@ -206,25 +206,18 @@ def convert(json_file_path):
 # from a old -reduced.json file
 def move_old_detection_to_archive(json_file_path, display=False):
 
-   print("IN move_old_detection_to_archive<br/>")
    cgitb.enable()
 
-
-   print("1<br>")
    # We fix the old name to get the proper info
    fixed_json_file_path = fix_old_file_name(json_file_path)
 
-   print("2<br>")
    # Get the closest param files
    param_files = get_active_cal_file(fixed_json_file_path)
 
-   print("3<br>")
-
+   
    if(cfe(param_files[0][0])==0):
       print("PARAM FILES " + param_files[0][0]  + " not found" )
       sys.exit(0)
-
-   print("CALIBRATION " + param_files[0][0] + "<br/>")
 
    # We parse the param
    param_json = load_json_file(param_files[0][0])
@@ -234,8 +227,16 @@ def move_old_detection_to_archive(json_file_path, display=False):
    param_json_analysed_name = name_analyser(clean_param_json_name)
    calib_dt = get_datetime_from_analysedname(param_json_analysed_name)
    calib_dt = datetime.strftime(calib_dt, '%Y-%m-%d %H:%M:%S')
- 
    
+
+   # Do we have the device info in param_json?
+   if('device_alt' in param_json):
+      dev_alt = float(param_json['device_alt'])
+   else:
+      # We look in the ".json" file
+      print("json_file_path " + json_file_path)
+      sys.exit(0)
+
 
    new_calib = { "calib":  
       {  "dt":   calib_dt,
