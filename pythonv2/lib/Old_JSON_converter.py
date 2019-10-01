@@ -232,26 +232,33 @@ def move_old_detection_to_archive(json_file_path, display=False):
    # Do we have the device info in param_json?
    if('device_alt' in param_json):
       dev_alt = float(param_json['device_alt'])
+      dev_lng = float(param_json['device_lng'])
+      dev_lat = float(param_json['device_lat'])
    else:
       # We look in the ".json" file
       t = load_json_file(json_file_path)
       if('device_alt' in t):
-         dev_alt = float(param_json['device_alt'])
+         dev_alt = float(t['device_alt'])
+         dev_lng = float(t['device_lng'])
+         dev_lat = float(t['device_lat'])
       else:
          # We need to look in as6.json (!!!!)
-         t = load_json_file(JSON_CONFIG)
-         print(t)
-         sys.exit(0)
-         dev_alt = float(param_json['device_alt'])
-
+         try:
+            t = load_json_file(JSON_CONFIG)
+            dev_alt = float(t['device_alt'])
+            dev_lng = float(t['device_lng'])
+            dev_lat = float(t['device_lat'])
+         except:
+            print("IMPOSSIBLE TO FIND the devivec alt, lng and lat")
+            sys.exit(0)
 
    new_calib = { "calib":  
       {  "dt":   calib_dt,
          "org_file_name": os.path.basename(json_file_path),  # In case something goes wrong
          "device": { 
-            "alt":  float(param_json['device_alt']),
-            "lat":  float(param_json['device_lat']),
-            "lng":  float(param_json['device_lng']),
+            "alt":  dev_alt,
+            "lat":  dev_lat,
+            "lng":  dev_lng,
             "scale_px":  float(param_json['pixscale']),
             "poly": {
                   "y_fwd": param_json['y_poly_fwd'],
