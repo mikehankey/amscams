@@ -205,6 +205,8 @@ def manual_reduction_create_final_json(form):
       tmp_video_file = tmp_video_file[0:17] + "*" + tmp_video_file[19:35] + "0" + tmp_video_file[36:] 
  
       search_old_json = glob.glob(tmp_video_file) 
+      
+      print(search_old_json)
 
       if(len(search_old_json)>0):
          old_json = search_old_json[0]
