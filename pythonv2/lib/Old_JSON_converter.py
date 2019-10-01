@@ -23,7 +23,7 @@ def get_new_archive_folder(analysed_name):
   
    return METEOR_ARCHIVE + station_id + "/" + METEOR + analysed_name['year'] + "/" + analysed_name['month'] + "/" + analysed_name['day'] + "/"
 
-# Analysed and old file (containing "-trim")
+# Analysed and old file (containing "-tr im")
 # Parses a regexp (OLD_FILE_NAME_REGEX) a file name
 # and returns all the info defined in OLD_FILE_NAME_REGEXGROUP
 def old_name_analyser(file_names):
@@ -244,11 +244,14 @@ def move_old_detection_to_archive(json_file_path, display=False):
       }      
    }}
  
+   # Do we have a HD video for this detection?
+
+   
 
    new_info = {
       "info": {
          "station": get_station_id(),
-         "hd": 1, # We assume we have the HD vid by default (not a big deal?)
+         "hd": 1, # We assume we have the HD vid by default for the moment
          "device": param_json_analysed_name['cam_id'],
          "dur": 0,
          "max_peak": 0
@@ -256,7 +259,9 @@ def move_old_detection_to_archive(json_file_path, display=False):
    }
 
 
-   print(new_calib)
+
+
+   print(param_json)
    sys.exit(0)
 
 
