@@ -62,6 +62,10 @@ def fix_old_file_name(filename):
    if("trim" in filename):
 
       matches =  re.finditer(OLD_FILE_NAME_REGEX, filename, re.MULTILINE)
+
+      print("MATCHES<br/>")
+      print(matches)
+
       res = {}
  
       for matchNum, match in enumerate(matches, start=1):
