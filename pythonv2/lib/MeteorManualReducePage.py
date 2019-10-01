@@ -201,8 +201,10 @@ def manual_reduction_create_final_json(form):
       tmp_video_file = os.path.basename(old_json)
 
       #Replace the seconds by a wild card
-      tmp_video_file = tmp_video_file[0:17] + "*" + tmp_video_file[19:]
-     
+      # and the stupid fucking '-' after trim by a 0
+      tmp_video_file = tmp_video_file[0:17] + "*" + tmp_video_file[19:35] + "0" + tmp_video_file[36:] 
+ 
+       
      
       print(tmp_folder+"/"+tmp_video_file)
       sys.exit(0)
