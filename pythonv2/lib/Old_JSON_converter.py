@@ -324,8 +324,8 @@ def move_old_detection_to_archive(json_file_path, display=False):
    # Save the new JSON file
    save_json_file(new_folder + tan['name'], json_content)
    if(display is True):
-      print("JSON SAVED TO " + json_file)
+      print("JSON SAVED TO " + new_folder + tan['name'])
    
  
 
-   return json_file,end_video_file
+   return new_folder + tan['name'],end_video_file
