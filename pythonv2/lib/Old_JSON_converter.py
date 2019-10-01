@@ -62,9 +62,7 @@ def fix_old_file_name(filename):
 
       matches =  re.finditer(OLD_FILE_NAME_REGEX, filename, re.MULTILINE)
       res = {}
-
-      print(OLD_FILE_NAME_REGEX_GROUP)
-      print("<br>")
+ 
   
       for matchNum, match in enumerate(matches, start=1):
          for groupNum in range(0, len(match.groups())):
@@ -74,10 +72,7 @@ def fix_old_file_name(filename):
                print(OLD_FILE_NAME_REGEX_GROUP[groupNum]+"<br>")
                res[OLD_FILE_NAME_REGEX_GROUP[groupNum]] = match.group(groupNum)
             groupNum = groupNum + 1
-      
-      print("filename" + filename + "<br/>")
-      print(res)
-      sys.exit(0)
+   
 
       # Get original Date & Time 
       org_dt = datetime.strptime(res['year']+'-'+res['month']+'-'+res['day']+' '+res['hour']+':'+res['min']+':'+res['sec']+'.'+res['ms'], '%Y-%m-%d %H:%M:%S.%f')
