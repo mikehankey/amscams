@@ -224,7 +224,7 @@ def move_old_detection_to_archive(json_file_path, display=False):
       print("PARAM FILES " + param_files[0][0]  + " not found" )
       sys.exit(0)
 
-   #print("CALIBRATION " + param_files[0][0] + "<br/>")
+   print("CALIBRATION " + param_files[0][0] + "<br/>")
 
    # We parse the param
    param_json = load_json_file(param_files[0][0])
@@ -234,10 +234,8 @@ def move_old_detection_to_archive(json_file_path, display=False):
    param_json_analysed_name = name_analyser(clean_param_json_name)
    calib_dt = get_datetime_from_analysedname(param_json_analysed_name)
    calib_dt = datetime.strftime(calib_dt, '%Y-%m-%d %H:%M:%S')
-
+ 
    
-   print("4<br>")
-   print(json.dumps(param_json))
 
    new_calib = { "calib":  
       {  "dt":   calib_dt,
