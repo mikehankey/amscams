@@ -179,6 +179,16 @@ def manual_reduction_create_final_json(form):
    video_file   = form.getvalue('video_file')  
    frames_info  = form.getvalue('frames')  
 
+   print("IN manual_reduction_create_final_json<br/>")
+   print('frames_info ' + frames_info)
+
+   # Test load json from js blob
+   test = load_json_file(frames_info)
+
+   print("TEST ")
+   print(test)
+   system.exit(0)
+
    # We parse the frames_info
    frames_info = json.loads(frames_info)
 
