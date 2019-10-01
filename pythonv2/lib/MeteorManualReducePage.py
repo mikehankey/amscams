@@ -183,7 +183,7 @@ def manual_reduction_create_final_json(form):
    frames_info = json.loads(frames_info)
 
    print("HERE ARE THE FRAMES INFO TO ADD:<br/>")
-   print(json.dumps(frames_info[0]))
+   print(json.dumps(frames_info))
    sys.exit(0)
 
 
