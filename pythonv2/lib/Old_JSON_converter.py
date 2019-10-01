@@ -244,11 +244,10 @@ def move_old_detection_to_archive(json_file_path, display=False):
       else:
          # We need to look in as6.json (!!!!)
          t = load_json_file(JSON_CONFIG)
-         print(t)   
          try:
-            dev_alt = float(t['device_alt'])
-            dev_lng = float(t['device_lng'])
-            dev_lat = float(t['device_lat'])
+            dev_alt = float(t['site']['device_alt'])
+            dev_lng = float(t['site']['device_lng'])
+            dev_lat = float(t['site']['device_lat'])
          except:
             print("IMPOSSIBLE TO FIND the devivec alt, lng and lat")
             sys.exit(0)
