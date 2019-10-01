@@ -110,7 +110,7 @@ def get_frame_time_from_f(frame_id, frame_id_org, frame_dt_org):
    # or add them
    if(len(dt)=26):
       dt = dt[:-3]
-   else
+   else:
       dt += ".000"
 
    # We return the Date as a string
