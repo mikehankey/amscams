@@ -240,6 +240,8 @@ def new_crop_thumb(frame,x,y,dest,HD = True):
       cv2.imwrite(dest,crop_img)
    except:
       print("ERROR THUMB")
+      print(thumb_dest_y,thumb_dest_h,thumb_dest_x,thumb_dest_w +"<br>")
+      print(org_y,org_h,org_x,org_w +"<br>")
    
    return dest
 
