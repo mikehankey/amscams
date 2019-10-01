@@ -234,8 +234,15 @@ def move_old_detection_to_archive(json_file_path, display=False):
       dev_alt = float(param_json['device_alt'])
    else:
       # We look in the ".json" file
-      print("json_file_path " + json_file_path)
-      sys.exit(0)
+      t = load_json_file(json_file_path)
+      if('device_alt' in t):
+         dev_alt = float(param_json['device_alt'])
+      else:
+         # We need to look in as6.json (!!!!)
+         t = load_json_file(JSON_CONFIG)
+         print(t)
+         sys.exit(0)
+         dev_alt = float(param_json['device_alt'])
 
 
    new_calib = { "calib":  
