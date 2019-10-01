@@ -208,24 +208,23 @@ def move_old_detection_to_archive(json_file_path, display=False):
 
    # We fix the old name to get the proper info
    fixed_json_file_path = fix_old_file_name(json_file_path)
-   print("1")
 
    # Get the closest param files
    param_files = get_active_cal_file(fixed_json_file_path)
-   print("2")
+
    if(cfe(param_files[0][0])==0):
       print("PARAM FILES " + param_files[0][0]  + " not found" )
       sys.exit(0)
-   print("3")
+
    # We parse the param
    param_json = load_json_file(param_files[0][0])
-   print("4")
+
    # We create a temporary clean name to get the calib['dt']
    clean_param_json_name = param_files[0][0].replace('-stacked-calparams.json','_HD.mp4')
    param_json_analysed_name = name_analyser(clean_param_json_name)
    calib_dt = get_datetime_from_analysedname(param_json_analysed_name)
    calib_dt = datetime.strftime(calib_dt, '%Y-%m-%d %H:%M:%S')
-   print("5")
+
    new_calib = { "calib":  
       {  "dt":   calib_dt,
          "org_file_name": os.path.basename(json_file_path),  # In case something goes wrong
@@ -249,7 +248,11 @@ def move_old_detection_to_archive(json_file_path, display=False):
    }}
  
    # Do we have a HD video for this detection?
-
+   # First we seach in "hd_trim"
+   if('hd_trim' in param_json):
+      tmp_hd_folder =  param_json['hd_trim'].replace('/HD/','/meteors/')
+      if(cfe(tmp_hd_folder)):
+         print("YES " + tmp_hd_folder)
    
 
    new_info = {
