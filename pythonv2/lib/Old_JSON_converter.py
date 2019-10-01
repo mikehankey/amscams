@@ -203,9 +203,6 @@ def convert(json_file_path):
 # with a proper name, and in the proper folder
 # from a old -reduced.json file
 def move_old_detection_to_archive(json_file_path, display=False):
-   
-   print("FROM JSON :" + json_file_path)
-
    cgitb.enable()
 
    # We fix the old name to get the proper info
@@ -218,7 +215,7 @@ def move_old_detection_to_archive(json_file_path, display=False):
       print("PARAM FILES " + param_files[0][0]  + " not found" )
       sys.exit(0)
 
-   print("CALIBRATION " + param_files[0][0] + "<br/>")
+   #print("CALIBRATION " + param_files[0][0] + "<br/>")
 
    # We parse the param
    param_json = load_json_file(param_files[0][0])
@@ -253,9 +250,7 @@ def move_old_detection_to_archive(json_file_path, display=False):
          },
          "stars" : []
    }}
-    
-
-
+     
    # Do we have a HD video for this detection?
 
    # We parse the json
@@ -289,6 +284,13 @@ def move_old_detection_to_archive(json_file_path, display=False):
       }
    }
 
+
+   # Determine the folder where to put the files
+   new_folder = get_new_archive_folder(tan)
+  
+   print("NEW FOLDER " + new_folder)
+  
+  
    print(new_info)
    print(new_calib)
    sys.exit(0)
@@ -303,8 +305,7 @@ def move_old_detection_to_archive(json_file_path, display=False):
 
    analysed_name = name_analyser(fixed_json_file_path) 
 
-   # Determine the folder where to put the files
-   new_folder = get_new_archive_folder(analysed_name)
+  
 
    # If the new_folder doesn't exist, we create it
    if not os.path.exists(new_folder):
