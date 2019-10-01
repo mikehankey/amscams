@@ -197,16 +197,19 @@ def manual_reduction_create_final_json(form):
 
       # In order to get the old json file, we need to add a wild card for the seconds
       # First, we get the filename
+      tmp_folder =  os.path.dirname(os.path.abspath(video_file))
       tmp_video_file = os.path.basename(video_file)
 
       #Replace the seconds by a wild card
-      print(tmp_video_file +"<br>>>>>>>>>>>>>>><br/>")
       tmp_video_file = tmp_video_file[0:17] + "*" + tmp_video_file[19:]
-      print(tmp_video_file)
+     
+     
+      print(tmp_folder+"/"+tmp_video_file)
+      sys.exit(0)
       tan = name_analyser(video_file)
       print(tan)
 
-      sys.exit(0)
+     
 
       print("OLD JSON " + old_json)
 
