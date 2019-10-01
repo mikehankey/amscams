@@ -248,7 +248,7 @@ def manual_reduction_create_final_json(form):
 
       #First frame dt:
       dt_start = mr['frames'][0]['dt']
-      dt_end  = mr['frames'][len(mr['frames'])+1]['dt'] 
+      dt_end  = mr['frames'][len(mr['frames'])]['dt'] 
 
       # We update the JSON with the new frames
       save_json_file(meteor_red_file, mr) 
