@@ -250,10 +250,14 @@ def move_old_detection_to_archive(json_file_path, display=False):
    }}
  
    # Do we have a HD video for this detection?
+
+   # We parse the json
+   data_json = load_json_file(json_file_path)
+
    # First we seach in "hd_trim"
-   if('hd_trim' in param_json):
+   if('hd_trim' in data_json):
       print("HD TRIM OK<br>")
-      tmp_hd_folder =  param_json['hd_trim'].replace('/HD/','/meteors/')
+      tmp_hd_folder =  data_json['hd_trim'].replace('/HD/','/meteors/')
       if(cfe(tmp_hd_folder)):
          print("YES " + tmp_hd_folder)
       else:
