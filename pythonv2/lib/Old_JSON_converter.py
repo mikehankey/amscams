@@ -218,6 +218,8 @@ def move_old_detection_to_archive(json_file_path, display=False):
    # Get the closest param files
    param_files = get_active_cal_file(fixed_json_file_path)
 
+   print("3<br>")
+
    if(cfe(param_files[0][0])==0):
       print("PARAM FILES " + param_files[0][0]  + " not found" )
       sys.exit(0)
@@ -232,6 +234,9 @@ def move_old_detection_to_archive(json_file_path, display=False):
    param_json_analysed_name = name_analyser(clean_param_json_name)
    calib_dt = get_datetime_from_analysedname(param_json_analysed_name)
    calib_dt = datetime.strftime(calib_dt, '%Y-%m-%d %H:%M:%S')
+
+   
+   print("4<br>")
 
    new_calib = { "calib":  
       {  "dt":   calib_dt,
@@ -268,6 +273,8 @@ def move_old_detection_to_archive(json_file_path, display=False):
    tan = name_analyser(fixed_json_file_path)
 
    # We search for the HD Video
+   
+   print("5<br>")
    HD = 0
    date_str = tan['year'] + '_' + tan['month']  + '_' + tan['day']
    search_hd = glob.glob('/mnt/ams2/meteors/' + date_str + '/' + date_str + '_' + tan['hour'] + '_' + tan['min'] + '_' + '*' + 'HD-meteor.mp4' )
@@ -275,6 +282,9 @@ def move_old_detection_to_archive(json_file_path, display=False):
    if(len(search_hd)>0):
       video_file = search_hd[0]
       HD = 1
+   else:
+      print("VIDEO NOT FOUND")
+      sys.exit(0)
 
    # We we didn't find the HD yet, we can try to search somewhere else???? (TODO)
    
