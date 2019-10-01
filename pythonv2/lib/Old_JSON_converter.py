@@ -239,7 +239,9 @@ def move_old_detection_to_archive(json_file_path, display=False):
             "scale_px":  float(param_json['pixscale']),
             "poly": {
                   "y_fwd": param_json['y_poly_fwd'],
-                  "x_fwd": param_json['x_poly_fwd']
+                  "x_fwd": param_json['x_poly_fwd'],
+                  "y": param_json['y_poly'],
+                  "x": param_json['x_poly']
             },
             "center": {
                   "az": float(param_json['center_az']),  
@@ -248,9 +250,12 @@ def move_old_detection_to_archive(json_file_path, display=False):
                   "dec": float(param_json['dec_center']) 
             },
             "angle":  float(param_json['position_angle'])
-      }      
+         },
+         "stars" : []
    }}
- 
+    
+
+
    # Do we have a HD video for this detection?
 
    # We parse the json
@@ -271,6 +276,7 @@ def move_old_detection_to_archive(json_file_path, display=False):
 
    # We we didn't find the HD yet, we can try to search somewhere else???? (TODO)
    
+   # If we don't have the HD, we assume we have the SD (???)
 
    # We build the new "info"
    new_info = {
