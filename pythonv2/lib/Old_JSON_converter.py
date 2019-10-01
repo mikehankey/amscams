@@ -256,6 +256,8 @@ def move_old_detection_to_archive(json_file_path, display=False):
          print("YES " + tmp_hd_folder)
       else:
          print("NO " + tmp_hd_folder)
+   else:
+      print("NO hd trim<br>")
 
    new_info = {
       "info": {
