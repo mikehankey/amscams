@@ -189,14 +189,13 @@ def manual_reduction_create_final_json(form):
    # First we test if it's an old file
    if METEOR_ARCHIVE not in video_file: 
 
-      print("IT IS A OLD ONE")
+  
       
       # It is an old file
       # so we need to create the new json 
       # and move the json and the video file under /meteor_archive
-      
-      # Do we have a "-reduced.json"
       old_json = video_file.replace('.mp4','.json')    
+      old_json = video_file.('-HD-meteor','')
 
       print("OLD JSON " + old_json)
 
