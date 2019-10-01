@@ -218,6 +218,8 @@ def move_old_detection_to_archive(json_file_path, display=False):
       print("PARAM FILES " + param_files[0][0]  + " not found" )
       sys.exit(0)
 
+   print("CALIBRATION " + param_files[0][0] + "<br/>")
+
    # We parse the param
    param_json = load_json_file(param_files[0][0])
 
@@ -280,9 +282,6 @@ def move_old_detection_to_archive(json_file_path, display=False):
          "max_peak": 0
       }
    }
-
-
-
 
    print(new_info)
    print(new_calib)
