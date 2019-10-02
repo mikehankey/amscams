@@ -2904,7 +2904,7 @@ def reduce_meteor_new(json_conf,form):
    meteor_obj = get_meteor_object(mj)
    ms_desc = ""
    if reduced == 1:
-      if "cal_params" in meteor_reduced['cal_params']:
+      if "cal_params" in meteor_reduced:
          if "cat_image_stars" in meteor_reduced['cal_params']:
             cat_image_stars = meteor_reduced['cal_params']['cat_image_stars']
             total_stars = len(cat_image_stars)

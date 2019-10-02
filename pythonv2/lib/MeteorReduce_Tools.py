@@ -192,7 +192,7 @@ def new_crop_thumb(frame,x,y,dest,HD = True):
  
    # If the x is too close to the edge
 
-   # ON THE LEFT
+   # ON THE LEFT (VERIFIED)
    if(org_x<=0):
 
       # Part of the original image
@@ -212,7 +212,7 @@ def new_crop_thumb(frame,x,y,dest,HD = True):
       thumb_dest_w =  HD_W - org_x
  
      
-   # ON TOP
+   # ON TOP (VERIFIED)
    if(org_y<=0):
  
       # Part of the original image
