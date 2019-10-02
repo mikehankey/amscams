@@ -199,7 +199,7 @@ def new_crop_thumb(frame,x,y,dest,HD = True):
       
       # Part of the original image
       org_x = 0
-      thumb_dest_w =  int(abs(HD_W - org_x))
+      thumb_dest_w =  int(abs(thumb_dest_w - org_x))
 
       print("THUMB_X" + str(thumb_dest_x ))
       print("THUMB_W" + str(thumb_dest_w))
