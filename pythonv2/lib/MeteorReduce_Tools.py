@@ -202,7 +202,7 @@ def new_crop_thumb(frame,x,y,dest,HD = True):
       thumb_dest_x = int(THUMB_SELECT_W/2-x)
       thumb_dest_w = int(abs(thumb_dest_w - org_x))
  
-   # ON RIGHT 
+   # ON RIGHT (VERIFIED)
    elif(org_x >= (org_w_HD-THUMB_SELECT_W)): 
       
       # Part of the original image
@@ -211,15 +211,15 @@ def new_crop_thumb(frame,x,y,dest,HD = True):
       # Destination in thumb (img) 
       thumb_dest_w =  HD_W - org_x
 
-      print("THUMB_X " + str(thumb_dest_x ))
-      print("THUMB_W " + str(thumb_dest_w))
-      print("THUMB_Y " + str(thumb_dest_y ))
-      print("THUMB_H " + str(thumb_dest_h))
-      print("----------------------")
-      print("org_x " + str(org_x) )
-      print("org_w " + str(org_w))
-      print("org_Y " + str(org_y) )
-      print("org_h " + str(org_h))
+      #print("THUMB_X " + str(thumb_dest_x ))
+      #print("THUMB_W " + str(thumb_dest_w))
+      #print("THUMB_Y " + str(thumb_dest_y ))
+      #print("THUMB_H " + str(thumb_dest_h))
+      #print("----------------------")
+      #print("org_x " + str(org_x) )
+      #print("org_w " + str(org_w))
+      #print("org_Y " + str(org_y) )
+      #print("org_h " + str(org_h))
       
  
      
