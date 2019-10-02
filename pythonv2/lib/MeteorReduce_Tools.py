@@ -198,8 +198,8 @@ def new_crop_thumb(frame,x,y,dest,HD = True):
       thumb_dest_x = int(THUMB_SELECT_W/2-x)
       
       # Part of the original image
-      org_w = thumb_dest_x - thumb_dest_w
       org_x = 0
+      thumb_dest_w =  int(abs(HD_W - org_x))
 
       print("THUMB_X" + str(thumb_dest_x ))
       print("THUMB_W" + str(thumb_dest_w))
@@ -220,7 +220,7 @@ def new_crop_thumb(frame,x,y,dest,HD = True):
       org_w = org_w_HD
      
       # Destination in thumb (img) 
-      thumb_dest_w =  int(abs(HD_W - org_x))
+      thumb_dest_w =  HD_W - org_x
  
      
    # ON TOP
