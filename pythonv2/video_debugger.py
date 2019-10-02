@@ -238,26 +238,26 @@ from lib.VIDEO_VARS import *
 from lib.Video_Timelapse import *
 from lib.Video_Tools import *
  
-#new_crop_thumb("/mnt/ams2/CACHE/AMS7/2019/08/14/2019_08_14_09_32_02_520_010040_AMS7_HD/FRAMES/2019_08_14_09_32_02_520_010040_AMS7_HD_HDfr_0032.png",500,1060,"/mnt/ams2/test1.png",True)  
-#print("/mnt/ams2/test1.png") 
+new_crop_thumb("/mnt/ams2/CACHE/AMS7/2019/08/14/2019_08_14_09_32_02_520_010040_AMS7_HD/FRAMES/2019_08_14_09_32_02_520_010040_AMS7_HD_HDfr_0032.png",500,1060,"/mnt/ams2/test1.png",True)  
+print("/mnt/ams2/test1.png") 
 
 
 
 
 ############# TEST TIMELAPSES FROM JPEGs
-job = {
-   "cam_id": "010042",
-   "date": "2019_09_17",
-   "start_date": "2019/09/17 00:00",
-   "end_date": "2019/09/17 23:59",
-   "fps": 25,
-   "dim":"1920x1080",
-   "text_pos": "bl",
-   "wat_pos": "tl",
-   "extra_text": "br",
-   "logo": "",
-   "logo_pos": "",
-   "blend_sd": 0
-}
-video_path =  generate_timelapse(job['cam_id'],job['date'],job['start_date'],job['end_date'],job['fps'],job['dim'],job['text_pos'],job['wat_pos'],job['extra_text'],job['logo'],job['logo_pos'],job['blend_sd'],0) 
-print(video_path)       
+#job = {
+#   "cam_id": "010042",
+#   "date": "2019_09_17",
+#   "start_date": "2019/09/17 00:00",
+#   "end_date": "2019/09/17 23:59",
+#   "fps": 25,
+#   "dim":"1920x1080",
+#   "text_pos": "bl",
+#   "wat_pos": "tl",
+#   "extra_text": "br",
+#  "logo": "",
+#   "logo_pos": "",
+#   "blend_sd": 0
+#}
+#video_path =  generate_timelapse(job['cam_id'],job['date'],job['start_date'],job['end_date'],job['fps'],job['dim'],job['text_pos'],job['wat_pos'],job['extra_text'],job['logo'],job['logo_pos'],job['blend_sd'],0) 
+#print(video_path)       
