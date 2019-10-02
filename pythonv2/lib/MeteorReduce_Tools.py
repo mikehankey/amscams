@@ -220,7 +220,7 @@ def new_crop_thumb(frame,x,y,dest,HD = True):
       print("org_x" + str(org_x) )
       print("org_w" + str(org_w))
       print("org_Y" + str(org_Y) )
-      print("org_h" + str(org_h)
+      print("org_h" + str(org_h))
       sys.exit(0)
    # ON TOP
    if(org_y<=0):
