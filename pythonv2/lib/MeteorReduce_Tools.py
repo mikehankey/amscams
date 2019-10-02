@@ -210,7 +210,7 @@ def new_crop_thumb(frame,x,y,dest,HD = True):
       print("org_w" + str(org_w))
       print("org_y" + str(org_y) )
       print("org_h" + str(org_h))
-      sys.exit(0)
+      #sys.exit(0)
       
 
    # ON RIGHT 
