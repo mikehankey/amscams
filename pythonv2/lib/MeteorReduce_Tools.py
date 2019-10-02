@@ -208,7 +208,7 @@ def new_crop_thumb(frame,x,y,dest,HD = True):
       print("----------------------")
       print("org_x" + str(org_x) )
       print("org_w" + str(org_w))
-      print("org_Y" + str(org_Y) )
+      print("org_y" + str(org_y) )
       print("org_h" + str(org_h))
       sys.exit(0)
       
