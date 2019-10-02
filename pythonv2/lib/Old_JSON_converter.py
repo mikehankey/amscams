@@ -204,7 +204,7 @@ def convert(json_file_path):
 # Move new JSON file and HD video file to meteor_archive
 # with a proper name, and in the proper folder
 # from a old -reduced.json file
-def move_old_detection_to_archive(json_file_path, display=False):
+def move_old_detection_to_archive(json_file_path, old_video_file, display=False):
 
    cgitb.enable()
 
@@ -286,28 +286,10 @@ def move_old_detection_to_archive(json_file_path, display=False):
    # tan = temp analysed name
    tan = name_analyser(fixed_json_file_path)
 
-   # We search for the HD Video  
-   HD = 0
-   date_str = tan['year'] + '_' + tan['month']  + '_' + tan['day']
-   search_hd = glob.glob('/mnt/ams2/meteors/' + date_str + '/' + date_str + '_' + tan['hour'] + '_' + tan['min'] + '_' + '*' + 'HD-meteor.mp4' )
+   # The video file
+   video_file = old_video_file 
 
-   if(len(search_hd)>0):
-      video_file = search_hd[0]
-      HD = 1
-   else:
-
-      # Search with min approx
-      search_hd = glob.glob('/mnt/ams2/meteors/' + date_str + '/' + date_str + '_' + tan['hour'] + '_' + '*' + '_' + tan['cam_id'] +  '*' + 'HD-meteor.mp4' )
-      if(len(search_hd)>0):
-         video_file = search_hd[0]
-         HD = 1
-      else:
-         print("VIDEO NOT FOUND - We searched for " + '/mnt/ams2/meteors/' + date_str + '/' + date_str + '_' + tan['hour'] + '_' + tan['min'] + '_' + '*' + 'HD-meteor.mp4')
-         sys.exit(0)
-
-   # We we didn't find the HD yet, we can try to search somewhere else???? (TODO)
-   
-   # If we don't have the HD, we assume we have the SD (???)
+   #TODO TEST IF VIDEO IS HD
 
    # We build the new "info"
    new_info = {

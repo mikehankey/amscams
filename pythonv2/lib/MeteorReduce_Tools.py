@@ -210,6 +210,17 @@ def new_crop_thumb(frame,x,y,dest,HD = True):
      
       # Destination in thumb (img) 
       thumb_dest_w =  HD_W - org_x
+
+      print("THUMB_X " + str(thumb_dest_x ))
+      print("THUMB_W " + str(thumb_dest_w))
+      print("THUMB_Y " + str(thumb_dest_y ))
+      print("THUMB_H " + str(thumb_dest_h))
+      print("----------------------")
+      print("org_x " + str(org_x) )
+      print("org_w " + str(org_w))
+      print("org_Y " + str(org_y) )
+      print("org_h " + str(org_h))
+      sys.exit(0)
  
      
    # ON TOP (VERIFIED)

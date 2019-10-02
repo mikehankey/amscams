@@ -225,7 +225,7 @@ def manual_reduction_create_final_json(form):
          sys.exit(0)
  
       if(cfe(old_json)):
-         json_file, video_file = move_old_detection_to_archive(old_json)
+         json_file, video_file = move_old_detection_to_archive(old_json, old_video_file)
 
   
    # Get JSON
