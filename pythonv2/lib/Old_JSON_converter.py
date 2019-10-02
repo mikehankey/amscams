@@ -278,6 +278,7 @@ def move_old_detection_to_archive(json_file_path, old_video_file, display=False)
    }}
      
    # Do we have a HD video for this detection?
+   video_file = old_video_file
 
    # We parse the json
    data_json = load_json_file(json_file_path)
@@ -286,10 +287,28 @@ def move_old_detection_to_archive(json_file_path, old_video_file, display=False)
    # tan = temp analysed name
    tan = name_analyser(fixed_json_file_path)
 
-   # The video file
-   video_file = old_video_file 
+   # We search for the HD Video  
+   #HD = 0
+   #date_str = tan['year'] + '_' + tan['month']  + '_' + tan['day']
+   #search_hd = glob.glob('/mnt/ams2/meteors/' + date_str + '/' + date_str + '_' + tan['hour'] + '_' + tan['min'] + '_' + '*' + 'HD-meteor.mp4' )
 
-   #TODO TEST IF VIDEO IS HD
+   #if(len(search_hd)>0):
+   #   video_file = search_hd[0]
+   #   HD = 1
+   #else:
+
+      # Search with min approx
+   #   search_hd = glob.glob('/mnt/ams2/meteors/' + date_str + '/' + date_str + '_' + tan['hour'] + '_' + '*' + '_' + tan['cam_id'] +  '*' + 'HD-meteor.mp4' )
+   #   if(len(search_hd)>0):
+   #      video_file = search_hd[0]
+   #      HD = 1
+   #   else:
+   #      print("VIDEO NOT FOUND - We searched for " + '/mnt/ams2/meteors/' + date_str + '/' + date_str + '_' + tan['hour'] + '_' + tan['min'] + '_' + '*' + 'HD-meteor.mp4')
+   #      sys.exit(0)
+
+   # We we didn't find the HD yet, we can try to search somewhere else???? (TODO)
+   
+   # If we don't have the HD, we assume we have the SD (???)
 
    # We build the new "info"
    new_info = {
@@ -312,6 +331,7 @@ def move_old_detection_to_archive(json_file_path, old_video_file, display=False)
  
   
    # We add the HD to the name if we have one
+   # TODO: TEST IF IT'S HD!!!
    if(HD==1):
       tan['name'] = tan['name'].replace("SD","HD")
    
