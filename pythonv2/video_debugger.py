@@ -237,8 +237,8 @@ from lib.MeteorReduce_Tools import *
 from lib.VIDEO_VARS import *
 from lib.Video_Timelapse import *
 from lib.Video_Tools import *
- 
-new_crop_thumb("/mnt/ams2/CACHE/AMS7/2019/09/30/2019_09_30_00_31_30_760_010037_AMS7_HD/FRAMES/2019_09_30_00_31_30_760_010037_AMS7_HD_HDfr0138.png",28,266,"/mnt/ams2/test1.png",True)  
+
+new_crop_thumb("https://sleaziest-somali-2255.dataplicity.io//mnt/ams2/CACHE/AMS7/2019/09/30/2019_09_30_00_36_31_400_010042_AMS7_HD/FRAMES/2019_09_30_00_36_31_400_010042_AMS7_HD_HDfr0081.png",826,7,"/mnt/ams2/test1.png",True)  
 print("/mnt/ams2/test1.png") 
 
 

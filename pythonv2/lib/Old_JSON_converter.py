@@ -295,7 +295,7 @@ def move_old_detection_to_archive(json_file_path, display=False):
       video_file = search_hd[0]
       HD = 1
    else:
-      print("VIDEO NOT FOUND")
+      print("VIDEO NOT FOUND - We searched for " + '/mnt/ams2/meteors/' + date_str + '/' + date_str + '_' + tan['hour'] + '_' + tan['min'] + '_' + '*' + 'HD-meteor.mp4')
       sys.exit(0)
 
    # We we didn't find the HD yet, we can try to search somewhere else???? (TODO)
