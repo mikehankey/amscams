@@ -286,7 +286,7 @@ def move_old_detection_to_archive(json_file_path, old_video_file, display=False)
    # We get the date info from the fixed name
    # tan = temp analysed name
    tan = name_analyser(fixed_json_file_path)
- 
+   
    # We search for the HD Video  
    #HD = 0
    #date_str = tan['year'] + '_' + tan['month']  + '_' + tan['day']
@@ -309,6 +309,9 @@ def move_old_detection_to_archive(json_file_path, old_video_file, display=False)
    # We we didn't find the HD yet, we can try to search somewhere else???? (TODO)
    
    # If we don't have the HD, we assume we have the SD (???)
+
+   # TODO: TEST IF IT'S REALLY A HD VIDEO
+   HD =  1
 
    # We build the new "info"
    new_info = {
