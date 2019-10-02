@@ -222,16 +222,7 @@ def new_crop_thumb(frame,x,y,dest,HD = True):
       thumb_dest_y = int(THUMB_SELECT_H/2-y)
       thumb_dest_h = int(abs(thumb_dest_w - org_y))
       
-      print("THUMB_X " + str(thumb_dest_x ))
-      print("THUMB_W " + str(thumb_dest_w))
-      print("THUMB_Y " + str(thumb_dest_y ))
-      print("THUMB_H " + str(thumb_dest_h))
-      print("----------------------")
-      print("org_x " + str(org_x) )
-      print("org_w " + str(org_w))
-      print("org_Y " + str(org_y) )
-      print("org_h " + str(org_h))
-      sys.exit(0)
+
  
 
    # ON BOTTOM
