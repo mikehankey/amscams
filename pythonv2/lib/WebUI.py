@@ -1477,7 +1477,7 @@ def meteors_new(json_conf,form):
       if(meteor_per_page is None):
          nompp = NUMBER_OF_METEOR_PER_PAGE
       else:
-         nompp = (int)meteor_per_page
+         nompp = int(meteor_per_page)
 
       meteors = sorted(meteors,reverse=True)
 
