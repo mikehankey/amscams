@@ -47,7 +47,9 @@ from lib.MeteorManualReducePage import manual_reduction, manual_reduction_croppe
 from lib.MeteorReduce_Calib_Ajax_Tools import getRADEC
 
 NUMBER_OF_METEOR_PER_PAGE = 60
+POSSIBLE_PER_PAGE = [20,40,60,80,100,150,200]
 NUMBER_OF_DAYS_PER_PAGE = 7
+
  
 
 def run_detect(json_conf, form):
@@ -1469,9 +1471,8 @@ def meteors_new(json_conf,form):
       header_out = header_out + "<h1><span class='h'><span id='meteor_count'>"+format(len(meteors))+"</span> meteors</span> captured since inception</h1>"
    
    if len(meteors)>=1 :
-      header_out += "<div class='d-flex'><div class='btn-group mr-3'><button id='show_gal' class='btn btn-primary act'><i class='icon-list'></i></button></div>"
-
       header_out += "<div class='mr-2'><select class='btn btn-primary'><option>10/page</option></select></div>"
+      header_out += "<div class='d-flex'><div class='btn-group mr-3'><button id='show_gal' class='btn btn-primary act'><i class='icon-list'></i></button></div>"
 
       meteors_displayed = 0
 
