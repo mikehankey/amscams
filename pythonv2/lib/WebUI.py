@@ -1434,13 +1434,13 @@ def meteors_new(json_conf,form):
 
    limit_day = form.getvalue('limit_day')
    cur_page  = form.getvalue('p')
+   meteor_per_page = form.getvalue('meteor_per_page')
 
    if (cur_page is None) or (cur_page==0):
       cur_page = 1
    else:
       cur_page = int(cur_page)
-
-
+ 
    htclass = "none"
    meteors = []
    meteor_base_dir ="/mnt/ams2/meteors/"
@@ -1469,10 +1469,8 @@ def meteors_new(json_conf,form):
       header_out = header_out + "<h1><span class='h'><span id='meteor_count'>"+format(len(meteors))+"</span> meteors</span> captured since inception</h1>"
    
    if len(meteors)>=1 :
-      
       header_out += "<div class='d-flex'><div class='btn-group mr-3'><button id='show_gal' class='btn btn-primary act'><i class='icon-list'></i></button></div>"
       
-
       meteors_displayed = 0
 
       #NUMBER_OF_METEOR_PER_PAGE
