@@ -1471,15 +1471,6 @@ def meteors_new(json_conf,form):
       header_out = header_out + "<h1><span class='h'><span id='meteor_count'>"+format(len(meteors))+"</span> meteors</span> captured since inception</h1>"
    
    if len(meteors)>=1 :
-      
-      # Build num per page selector
-      ppp_select = ''
-      for ppp in POSSIBLE_PER_PAGE:
-         ppp_select+= '<option value="'+str(ppp)+'">'+str(ppp)+' / page</option>'
-      
-      header_out += "<div class='d-flex'><div class='mr-2'><select name='rpp' id='rpp' data-rel='meteor_per_page' class='btn btn-primary'>"+ppp_select+"</select></div><div class='btn-group mr-3'><button id='show_gal' class='btn btn-primary act'><i class='icon-list'></i></button></div>"
-
-      meteors_displayed = 0
 
       #NUMBER_OF_METEOR_PER_PAGE
       if(meteor_per_page is None):
@@ -1487,6 +1478,20 @@ def meteors_new(json_conf,form):
       else:
          nompp = int(meteor_per_page)
 
+      
+      # Build num per page selector
+      ppp_select = ''
+      for ppp in POSSIBLE_PER_PAGE:
+         if(int(ppp)==nompp):
+            ppp_select+= '<option selected value="'+str(ppp)+'">'+str(ppp)+' / page</option>'
+         else:
+            ppp_select+= '<option value="'+str(ppp)+'">'+str(ppp)+' / page</option>'            
+      
+      header_out += "<div class='d-flex'><div class='mr-2'><select name='rpp' id='rpp' data-rel='meteor_per_page' class='btn btn-primary'>"+ppp_select+"</select></div><div class='btn-group mr-3'><button id='show_gal' class='btn btn-primary act'><i class='icon-list'></i></button></div>"
+
+      meteors_displayed = 0
+
+    
       meteors = sorted(meteors,reverse=True)
 
       meteor_from       = nompp*cur_page
