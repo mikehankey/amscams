@@ -1470,7 +1470,9 @@ def meteors_new(json_conf,form):
    
    if len(meteors)>=1 :
       header_out += "<div class='d-flex'><div class='btn-group mr-3'><button id='show_gal' class='btn btn-primary act'><i class='icon-list'></i></button></div>"
-      
+
+      header_out += "<div class='mr-2'><select class='btn btn-primary'><option>10/page</option></select></div>"
+
       meteors_displayed = 0
 
       #NUMBER_OF_METEOR_PER_PAGE
