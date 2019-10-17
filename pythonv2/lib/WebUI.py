@@ -1475,25 +1475,25 @@ def meteors_new(json_conf,form):
 
       #NUMBER_OF_METEOR_PER_PAGE
       if(meteor_per_page is None):
-         NUMBER_OF_METEOR_PER_PAGE = NUMBER_OF_METEOR_PER_PAGE
+         nompp = NUMBER_OF_METEOR_PER_PAGE
       else:
-         NUMBER_OF_METEOR_PER_PAGE = meteor_per_page
+         nompp = meteor_per_page
 
       meteors = sorted(meteors,reverse=True)
 
-      meteor_from       = NUMBER_OF_METEOR_PER_PAGE*cur_page
-      total_number_page = math.ceil(len(meteors) / NUMBER_OF_METEOR_PER_PAGE)
+      meteor_from       = nompp*cur_page
+      total_number_page = math.ceil(len(meteors) / nompp)
       counter = 0
  
-      meteor_start = (cur_page -1) * NUMBER_OF_METEOR_PER_PAGE 
-      meteor_end = meteor_start + NUMBER_OF_METEOR_PER_PAGE
+      meteor_start = (cur_page -1) * nompp 
+      meteor_end = meteor_start + nompp
       all_meteors = meteors
 
       meteors = meteors[meteor_start:meteor_end]
 
       for idx, meteor in enumerate(meteors):
-         # Minus 1 so we have NUMBER_OF_METEOR_PER_PAGE per page starting at 0
-         if(counter<=NUMBER_OF_METEOR_PER_PAGE-1 and idx <= meteor_from):
+         # Minus 1 so we have nompp per page starting at 0
+         if(counter<=nompp-1 and idx <= meteor_from):
             stack_file_tn = meteor.replace('.json', '-stacked-tn.png')
             video_file = meteor.replace('.json', '.mp4')
             stack_obj_img = video_file.replace(".mp4", "-stacked-obj-tn.png")
@@ -1548,9 +1548,9 @@ def meteors_new(json_conf,form):
       #header_out = header_out + '<input type="radio" name="meteor_select" id="non_reduced" autocomplete="off">All '+ format(non_rec_cnt) +'  Non-Reduced Meteors Only</label>'
        
       if(has_limit_day==0):
-         pagination = get_pagination(cur_page,len(all_meteors),"/pycgi/webUI.py?cmd=new_meteors",NUMBER_OF_METEOR_PER_PAGE)
+         pagination = get_pagination(cur_page,len(all_meteors),"/pycgi/webUI.py?cmd=new_meteors",nompp)
       else:
-         pagination = get_pagination(cur_page,len(all_meteors),"/pycgi/webUI.py?cmd=new_meteors&limit_day="+limit_day,NUMBER_OF_METEOR_PER_PAGE)
+         pagination = get_pagination(cur_page,len(all_meteors),"/pycgi/webUI.py?cmd=new_meteors&limit_day="+limit_day,nompp)
 
       if(pagination[2] != ''):
          header_out = header_out + "<div class='page_h'>Page  " + format(cur_page) + "/" +  format(pagination[2]) + "</div>"
