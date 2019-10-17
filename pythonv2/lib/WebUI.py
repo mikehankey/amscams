@@ -1474,6 +1474,9 @@ def meteors_new(json_conf,form):
       meteors_displayed = 0
 
       #NUMBER_OF_METEOR_PER_PAGE
+      if(meteor_per_page is not ""):
+         NUMBER_OF_METEOR_PER_PAGE =  meteor_per_page
+
       meteors = sorted(meteors,reverse=True)
 
       meteor_from       = NUMBER_OF_METEOR_PER_PAGE*cur_page
