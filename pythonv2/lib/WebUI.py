@@ -1475,10 +1475,9 @@ def meteors_new(json_conf,form):
       # Build num per page selector
       ppp_select = ''
       for ppp in POSSIBLE_PER_PAGE:
-         ppp_select+= '<option value="'+str(ppp)+'">'+str(ppp)+'/page</option>'
+         ppp_select+= '<option value="'+str(ppp)+'">'+str(ppp)+' / page</option>'
       
-      header_out += "<div class='mr-2'><select name='rpp' id='rpp' class='btn btn-primary'>"+ppp_select+"</select></div>"
-      header_out += "<div class='d-flex'><div class='btn-group mr-3'><button id='show_gal' class='btn btn-primary act'><i class='icon-list'></i></button></div>"
+      header_out += "<div class='d-flex'><div class='mr-2'><select name='rpp' id='rpp' class='btn btn-primary'>"+ppp_select+"</select></div><div class='btn-group mr-3'><button id='show_gal' class='btn btn-primary act'><i class='icon-list'></i></button></div>"
 
       meteors_displayed = 0
 
