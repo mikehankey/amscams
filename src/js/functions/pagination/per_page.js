@@ -22,7 +22,7 @@ $(function() {
       new_url = update_url_param(window.location.href ,'meteor_per_page',$('#rpp').val());
 
       // Back to page = 1 (so we dont have issues if the number of page is too mall)
-      window.location =  update_url_param(new_url ,'p',0);
+      window.location =  update_url_param(new_url ,'p',1);
     });
 })
 
