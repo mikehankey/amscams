@@ -18,8 +18,8 @@ function update_select_preview(top,left,margins,W_factor,H_factor,cursor_dim, cu
 
       if(cur_step_start) {
          // Update START X/Y
-         $('#res .start').html('<b>A</b> x:' + Math.floor(sel_x*W_factor)+ 'px ' + 'y:'+  Math.floor(sel_y*H_factor) +'px');
-         $('#selector').css('border-color','#ccc');
+         //$('#res .start').html('<b>A</b> x:' + Math.floor(sel_x*W_factor)+ 'px ' + 'y:'+  Math.floor(sel_y*H_factor) +'px');
+         //$('#selector').css('border-color','#ccc');
 
          // Put the static square on the view
          if($('#sel_start_static').length==0) {
@@ -37,8 +37,8 @@ function update_select_preview(top,left,margins,W_factor,H_factor,cursor_dim, cu
          HAVE_START = true;
       } else {
          // Update END X/Y
-         $('#res .end').html('<b>B</b> x:' + Math.floor(sel_x*W_factor)+ 'px ' + 'y:'+  Math.floor(sel_y*H_factor) +'px');
-         $('#selector').css('border-color','green');
+         //$('#res .end').html('<b>B</b> x:' + Math.floor(sel_x*W_factor)+ 'px ' + 'y:'+  Math.floor(sel_y*H_factor) +'px');
+         //$('#selector').css('border-color','green');
 
           // Put the static square on the view
           if($('#sel_end_static').length==0) {
