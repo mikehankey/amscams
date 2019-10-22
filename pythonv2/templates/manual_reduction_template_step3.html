@@ -44,6 +44,7 @@
    <input type="hidden" name="frames" />
    <input type="hidden" name="cmd" value="manual_reduction_create_final_json"/>
    <input type="hidden" name="video_file" value="{VIDEO}"/>
+   <input type="hidden" name="json" value="{JSON}"/>
 </form>
 
 <script>  
@@ -51,8 +52,7 @@
    var x = {X};
    var y = {Y};
    var w = {W};
-   var h = {H};
-   var json = "{JSON}";
+   var h = {H}; 
    // Third step:
    window.onload = function () {
       init_pos_choos();
