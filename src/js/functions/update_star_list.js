@@ -76,14 +76,12 @@ function update_stars_on_canvas_and_table(json_resp) {
          fill:'rgba(255,0,0,.75)',
          selectable: false ,
          gp_id: v[0],
-         type: 'star_info',
+         type: 'star_info'
       });
-      
-      
  
 
         // Add Star Name on canvas
-       name = new fabric.Text(v[0], {
+       t_name = new fabric.Text(v[0], {
          fontFamily: 'Arial', 
          fontSize: 12, 
          left: (v[11] - 11)/2+5,
@@ -91,8 +89,8 @@ function update_stars_on_canvas_and_table(json_resp) {
          fill:'rgba(255,255,255,.45)',
          selectable: false,
          gp_id: v[0],
-         type: 'star_info',
-         });
+         type: 'star_info'
+      });
 
         
          box = new fabric.Rect({
@@ -108,12 +106,12 @@ function update_stars_on_canvas_and_table(json_resp) {
         
 
         canvas.add(plus);
-        canvas.add(name);
+        canvas.add(t_name);
         //canvas.add(box);
         //canvas.add(circle);
     
 
-        all_added_stars[v[0]].push([plus,name,box,circle]);
+        all_added_stars[v[0]].push([plus,t_name,box,circle]);
 
 
         // Add the corresponding row
