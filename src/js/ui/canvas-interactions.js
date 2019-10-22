@@ -171,14 +171,12 @@ if ($('canvas#c').length!=0) {
 
         for (var i = 0; i < all_added_stars; i++) {
             console.log(all_added_stars[i]);
-            //Do something
+            for(var x=0; x<all_added_stars[i]; x++) {
+               console.log(ll_added_stars[i][x]);
+            }
          }
 
-        // Search the existing star
-        $.each(all_added_stars,function(i,v){
-            console.log("SEARCH ",v);
-          
-        });
+        
 
           /*
             var star_infos = v;
