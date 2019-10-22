@@ -30,6 +30,10 @@ def manual_reduction(form):
 
    error = False
 
+    # Get both video
+   sd_video = form.getvalue('sd_video')
+   hd_video = form.getvalue('hd_video')
+
    # Get both stacks
    sd_stack = form.getvalue('sd_stack')
    hd_stack = form.getvalue('hd_stack')
@@ -38,7 +42,7 @@ def manual_reduction(form):
    if(cfe(sd_stack)==0):
       sd_stack = ''
    if(cfe(hd_stack)==0):
-      hd_stack = ''
+      hd_stack = '' 
 
    if(sd_stack == '' and hd_stack == ''):
       print_error("<b>Stacks not found.</b>")
@@ -55,13 +59,19 @@ def manual_reduction(form):
          template = template.replace("{SD_STACK}", str(sd_stack))
       else:
          # We automatically select the HD
+         # TODO!!!
          print("NO SD")
 
       if(hd_stack is not ''):
          template = template.replace("{HD_STACK}", str(hd_stack))
       else: 
          # We automatically select the SD
+         # TODO!!!
          print("NO HD")
+
+      # We add the video to the  page
+      template = template.replace("{HD_VIDEO}", str(hd_video))
+      template = template.replace("{SD_VIDEO}", str(sd_video))
 
    # Display Template
    print(template) 
@@ -73,7 +83,10 @@ def manual_reduction_step1(form):
    # Debug
    cgitb.enable()
 
-   video_file = form.getvalue('video_file')
+   stack_file = form.getvalue('stack')
+   video_file = form.getvalue('video')
+   type_file  = form.getvalue('type')    # HD or SD
+
 
    # Build the page based on template  
    with open(MANUAL_RED_PAGE_TEMPLATE_STEP1, 'r') as file:
@@ -86,20 +99,20 @@ def manual_reduction_step1(form):
    else:
       clear_cache = False
 
-   # Get Video File & Analyse the Name to get quick access to all info
-   video_full_path = form.getvalue("video_file")
-
-   if(video_full_path is not None):
-      tmp_fixed_video_full_path = fix_old_file_name(video_full_path)
+   # Video File
+   if(video_file is not None):
+      tmp_fixed_video_full_path = fix_old_file_name(video_file)
       analysed_name = name_analyser(tmp_fixed_video_full_path)
 
       # We keep the original full_path anyway
-      analysed_name['full_path'] = video_full_path
+      analysed_name['full_path'] = video_file
    else:
       print_error("<b>You need to add a video file in the URL.</b>")
+   
+   
  
 
-   # Get the stacks 
+   # Get the stack  
    # True = We automatically resize the stack to HD dims so we can use it in the UI
    stack = get_stacks(analysed_name,clear_cache, True)
    template = template.replace("{STACK}", str(stack))   
