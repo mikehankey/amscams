@@ -167,6 +167,29 @@ if ($('canvas#c').length!=0) {
          
         console.log("DOES IT EXIST");
 
+        // Search the existing star
+        $.each(all_added_stars,function(i,v){
+            var star_infos = v;
+            var found = false;
+            var all_right_star_info;
+            $.each(star_infos,function(sv,si){
+               if(found = false && star_info[si]).containsPoint(clickPoint){
+                  objFound = true;
+                  all_right_star_info = star_infos;
+                  found = true;
+               }
+            });
+
+            if(found == true) {
+               $.each(all_right_star_info,function(sv,si){
+                  canvas.remove(all_right_star_info[si]);
+               });
+            }
+            
+        });
+
+        /*
+
         // Remove an existing star
         for (let i in objects) {
           
@@ -190,7 +213,8 @@ if ($('canvas#c').length!=0) {
                 }
           }
         }  
-  
+        
+        */
 
         if(objFound && grpFound) {
           // An existing star has been removed 

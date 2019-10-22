@@ -93,24 +93,26 @@ function update_stars_on_canvas_and_table(json_resp) {
       });
 
         
-         box = new fabric.Rect({
-            fill: 'rgba(0,0,0,0)', strokeWidth: 1, stroke: 'rgba(230,100,200,.5)', 
-            left:  (v[11] - 11)/2, 
-            top:(v[12] - 11)/2,
-            width: 10,
-            height: 10 ,
-            selectable: false,
-            gp_id: v[0],
-            type: 'star_info'
-         });
-        
+      box = new fabric.Rect({
+         fill: 'rgba(0,0,0,0)',
+         strokeWidth: 1, 
+         stroke: 'rgba(230,100,200,.5)', 
+         left:  (v[11] - 11)/2, 
+         top:(v[12] - 11)/2,
+         width: 10,
+         height: 10 ,
+         selectable: false,
+         gp_id: v[0],
+         type: 'star_info'
+      });
+      
 
-        canvas.add(plus);
-        canvas.add(t_name);
-        canvas.add(box);
-        canvas.add(circle);
-    
-        all_added_stars[v[0]].push([plus,t_name,box,circle]);
+      canvas.add(plus);
+      canvas.add(t_name);
+      canvas.add(box);
+      canvas.add(circle);
+   
+      all_added_stars[v[0]].push([plus,t_name,box,circle]);
 
 
         // Add the corresponding row
