@@ -168,6 +168,10 @@ if ($('canvas#c').length!=0) {
         console.log("DOES IT EXIST???");
         console.log(all_added_stars);
 
+        array.forEach(function (item, index) {
+         console.log(item, index);
+         });
+
         // Search the existing star
         $.each(all_added_stars,function(i,v){
             console.log("SEARCH ",v);
