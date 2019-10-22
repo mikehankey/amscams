@@ -166,7 +166,8 @@ def add_frame_ajax( json_conf, form):
    mr['metframes'] = metframes
    save_json_file(mrf, mr)
    print("SAVED HERE ")
-   print(mrf)
+   #print(mrf)
+   #print("cd /home/ams/amscams/pythonv2/; ./reducer3.py cm " + mrf + "> /mnt/ams2/tmp/rrr.txt")
    os.system("cd /home/ams/amscams/pythonv2/; ./reducer3.py cm " + mrf + "> /mnt/ams2/tmp/rrr.txt")
    mr = load_json_file(mrf )
    resp = {}
@@ -1313,16 +1314,16 @@ def detect_meteor_step2(json_conf, objects, frames, meteor_json_file,mj,show=0):
          acl_poly = res['x']
          x_fun = res['fun']
          avg_res = reduce_meteor_acl(acl_poly, metconf,metframes,frames,4,1,show)
-         print(acl_poly, x_fun)
+         #print(acl_poly, x_fun)
          metconf['acl_poly'] = acl_poly.tolist()
          metconf['acl_fun'] = x_fun 
          metconf['acl_res'] = avg_res 
          avg_res,metframes = reduce_meteor_acl(acl_poly, metconf,metframes,frames,4,1,show)
          mj['metconf'] = metconf
          mj['metframes'] = metframes
-         print("final point res:", avg_res)
+         #print("final point res:", avg_res)
          save_json_file(meteor_json_file,mj)
-         print("saved:", meteor_json_file)
+         #print("saved:", meteor_json_file)
       else:
          if "acl_res" in mj['metconf']:
             avg_res = mj['metconf']['acl_res'] 

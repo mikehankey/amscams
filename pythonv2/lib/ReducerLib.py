@@ -2286,8 +2286,8 @@ def metframes_to_mfd(metframes, metconf, sd_video_file,json_conf,frame):
       #   frame_time,frame_time_str = calc_frame_time_new(sd_video_file, fn)
       #else:
       #   frame_time,frame_time_str = calc_frame_time(sd_video_file, fn)
-      #metframes[fn]['frame_time'] = frame_time_str
-      frame_time_str = metframes[fn]['frame_time']
+      #metframes[fn]['ft'] = frame_time_str
+      frame_time_str = metframes[fn]['ft']
       if "hd_x" not in metframes[fn] or 'x1' not in metframes[fn]:
          print("FRAME:", fn)
          metframes[fn]['x1'] = int(metframes[fn]['sd_x'] * hdm_x)

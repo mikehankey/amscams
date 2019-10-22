@@ -46,7 +46,10 @@ if cmd == 'dm' or cmd == 'detect_meteor':
       print(fn, metframes[fn])
 
 if cmd == 'cm' or cmd == 'crop_images':
-   make_crop_images(file, json_conf)
+   vid_file = file.replace("-reduced.json", ".mp4")
+   frames = load_video_frames(vid_file, json_conf, 2)
+   frame = frames[0]
+   make_crop_images(file, json_conf,frame)
 
 #MFD TO METFRAMES
 if cmd == 'mfd' :
