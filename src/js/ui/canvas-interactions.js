@@ -165,12 +165,12 @@ if ($('canvas#c').length!=0) {
         var objects = canvas.getObjects('circle');
         var id;
          
-        console.log("DOES IT EXIST");
+        console.log("DOES IT EXIST???");
 
         // Search the existing star
         $.each(all_added_stars,function(i,v){
             console.log("SEARCH ",v);
-
+            /*
             var star_infos = v;
             var found = false;
             var all_right_star_info;
@@ -191,7 +191,7 @@ if ($('canvas#c').length!=0) {
                   canvas.remove(all_right_star_info[si]);
                });
             }
-            
+            */
         });
 
         /*
