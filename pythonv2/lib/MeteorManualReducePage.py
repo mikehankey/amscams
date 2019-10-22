@@ -144,6 +144,7 @@ def manual_reduction_cropper(form):
    y_start     = float(form.getvalue('y_start'))
    w           = float(form.getvalue('w'))
    h           = float(form.getvalue('h'))
+   json_file   = form.getvalue('json')
 
    # Fix eventual video file name (old version)
    tmp_fixed_video_full_path = fix_old_file_name(video_file)
