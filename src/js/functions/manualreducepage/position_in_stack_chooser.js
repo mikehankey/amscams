@@ -32,10 +32,7 @@ function update_select_preview(top,left,margins,W_factor,H_factor,cursor_dim, cu
          });
 
          $('input[name=x_start]').val(Math.floor(left));
-         $('input[name=y_start]').val(Math.floor(top)); 
-         
-         
-         
+         $('input[name=y_start]').val(Math.floor(top));  
 
          HAVE_START = true;
       } else {
@@ -57,11 +54,7 @@ function update_select_preview(top,left,margins,W_factor,H_factor,cursor_dim, cu
          $('input[name=y_end]').val(Math.floor(top));  
           
          HAVE_END = true;
-      } 
-
-
-
-      
+      }  
    }
 
    // Enable continue button 
@@ -110,8 +103,7 @@ function update_select_preview(top,left,margins,W_factor,H_factor,cursor_dim, cu
          'width': n_WIDTH ,
          'height': n_HEIGHT
       });
-
-
+ 
       // Update real x,y
       $('input[name=ys]').val(n_TOP*H_factor);
       $('input[name=xs]').val(n_LEFT*W_factor); 
@@ -125,7 +117,7 @@ function update_select_preview(top,left,margins,W_factor,H_factor,cursor_dim, cu
 // Create  select meteor position from stack
 function create_meteor_selector_from_stack(image_src) {
    var cursor_dim = 8;            // Cursor dimension
-   var margins = 12;                // Max position (x,y) of the meteor inside the cursor
+   var margins = 0;              // Max position (x,y) of the meteor inside the cursor
 
    var real_W = 1920;
    var real_H = 1080;
