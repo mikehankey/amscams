@@ -83,6 +83,8 @@ def real_add_frame(json_conf, sd_video_file, fr_id, hd_x, hd_y):
     # Load the JSON from the video path
     mrf = sd_video_file.replace(".mp4", "-reduced.json")
     mr = load_json_file(mrf)
+    #print(mr)
+    #exit()
 
     # Load existing data
     metframes = mr['metframes']
@@ -120,10 +122,12 @@ def real_add_frame(json_conf, sd_video_file, fr_id, hd_x, hd_y):
         mr['metframes'] = metframes
         save_json_file(mrf, mr)
         mr = load_json_file(mrf)
-        os.system("cd /home/ams/amscams/pythonv2/; ./reducer3.py cm " + mrf + "> /mnt/ams2/tmp/rrr.txt")
+        os.system("cd /home/ams/amscams/pythonv2/; ./reducer3.py mfd " + mrf + "> /mnt/ams2/tmp/rrr.txt")
         
         # We need to do it twice
         mr = load_json_file(mrf)
+        os.system("cd /home/ams/amscams/pythonv2/; ./reducer3.py cm " + mrf + "> /mnt/ams2/tmp/rrr.txt")
+
         os.system("cd /home/ams/amscams/pythonv2/; ./reducer3.py cm " + mrf + "> /mnt/ams2/tmp/rrr.txt")
         print(json.dumps({'msg': "new frame added.", 'newframe': mr['metframes'][fr_id]}))
         return

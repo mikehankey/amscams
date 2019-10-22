@@ -15,7 +15,7 @@ from lib.UtilLib import check_running, angularSeparation
 from lib.CalibLib import radec_to_azel, clean_star_bg, get_catalog_stars, find_close_stars, XYtoRADec, HMS2deg, AzEltoRADec
 
 from lib.ImageLib import mask_frame , stack_frames, preload_image_acc
-from lib.ReducerLib import setup_metframes, detect_meteor , make_crop_images, perfect, detect_bp
+from lib.ReducerLib import setup_metframes, detect_meteor , make_crop_images, perfect, detect_bp, sort_metframes
 from lib.MeteorTests import meteor_test_cm_gaps
 
 
@@ -49,7 +49,7 @@ if cmd == 'cm' or cmd == 'crop_images':
    vid_file = file.replace("-reduced.json", ".mp4")
    frames = load_video_frames(vid_file, json_conf, 2)
    frame = frames[0]
-   make_crop_images(file, json_conf,frame)
+   make_crop_images(file, json_conf)
 
 #MFD TO METFRAMES
 if cmd == 'mfd' :
@@ -62,7 +62,7 @@ if cmd == 'mfd' :
    red_data = load_json_file(file)
    mfd = red_data['meteor_frame_data']
    metframes, metconf = setup_metframes(mfd, frame)
-   red_data['metframes'] = metframes 
+   red_data['metframes'] = sort_metframes(metframes )
    red_data['metconf'] = metconf 
 
    save_json_file(file, red_data)

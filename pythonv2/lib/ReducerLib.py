@@ -1658,6 +1658,7 @@ def hist_to_metframes(obj,metframes,metconf,frame):
    return(metframes,metconf)
 
 def setup_metframes(mfd,frame):
+
    ih, iw = frame.shape[:2]
    hdm_x = 1920 / iw
    hdm_y = 1080 / ih
@@ -1775,6 +1776,7 @@ def setup_metframes(mfd,frame):
             metframes[fn]['fn'] = fn
       last_fn = fn
 
+   metframes = sort_metframes(metframes)
    return(metframes, metconf)
 
 def id_object(cnt, objects, fc,max_loc, max_px, intensity, img_w, img_h):
@@ -2413,6 +2415,7 @@ def make_meteor_cnt_composite_images(json_conf, mfd, metframes, metconf, frames,
       print("CNT:", cnt_img.shape)
       cmp_images[fn] = cnt_img
 
+   metframes = sort_metframes(metframes)
    mfd, metframes,metconf = metframes_to_mfd(metframes, metconf, sd_video_file,json_conf,frames[0])
 
    return(cmp_images, metframes)
@@ -2433,6 +2436,10 @@ def make_crop_images(sd_video_file, json_conf):
 
    cmp_imgs,metframes = make_meteor_cnt_composite_images(json_conf, red_data['meteor_frame_data'], red_data['metframes'], red_data['metconf'], frames, sd_video_file)
 
+   metframes = sort_metframes(metframes)
+   print("METFRAMES:", metframes)
+   exit()
+
    prefix = red_data['sd_video_file'].replace(".mp4", "-frm")
    prefix = prefix.replace("SD/proc2/", "meteors/")
    prefix = prefix.replace("/passed", "")
@@ -2443,7 +2450,7 @@ def make_crop_images(sd_video_file, json_conf):
 
    metframes = update_intensity(metframes, frames)
  
-   mfd, metframes,metconf = metframes_to_mfd(metframes, red_data['metconf'], sd_video_file,json_conf)
+   mfd, metframes,metconf = metframes_to_mfd(metframes, red_data['metconf'], sd_video_file,json_conf,frames[0])
    print("LEN MET:", len(mfd), len(metframes))
    red_data['metconf'] = metconf
    red_data['metframes'] = metframes
@@ -2454,16 +2461,30 @@ def make_crop_images(sd_video_file, json_conf):
 
 def sort_metframes(metframes):
    new_metframes = {}
+   for key, mf in sorted(metframes.items()) :
+      print("SORTED MF:", key, mf)
+      new_metframes[key] = mf
+   return(new_metframes)
+
+
+
+
+   new_metframes = {}
    fns = []
    for fn in metframes:
       fns.append(int(fn))
+
    for fn in sorted(fns):
       ifn = int(fn)
-      fn = str(fn)
-      if fn in metframes :
-         new_metframes[ifn] = metframes[fn]
-      if ifn in metframes :
+      sfn = str(fn)
+      if sfn in metframes :
+         print("FN exists in metframes:", sfn, ifn)
+         new_metframes[ifn] = metframes[sfn]
+      elif ifn in metframes :
+         print("FN int exists in metframes:", sfn, ifn)
          new_metframes[ifn] = metframes[ifn]
+      else:
+         print("FN does not exist in metframes!", sfn, ifn)
    return(new_metframes)
 
 def perfect(video_file, json_conf):
