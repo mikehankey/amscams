@@ -1,3 +1,6 @@
+var all_added_stars = [];
+
+
 function update_stars_on_canvas_and_table(json_resp) {
 
    console.log("IN update_stars_on_canvas_and_table")
@@ -53,54 +56,64 @@ function update_stars_on_canvas_and_table(json_resp) {
     // Table - tbody (in #stars-tab) & draw on canvas
     
     $.each(cat_stars,function(i,v) {
+      all_added_stars[v[0]] = []
 
-        // Add to circle canvas
-        canvas.add(
-            new fabric.Circle({
-                radius: 5, fill: 'rgba(0,0,0,0)', strokeWidth: 1, stroke: 'rgba(100,200,200,.5)', 
-                left: (v[13] - 11)/2, 
-                top: (v[14] - 11)/2,
-                selectable: false,
-                gp_id: v[0],
-                type: 'star_info',
-        }));
-
-        // Add "+" on canvas
-        canvas.add(
-            new fabric.Text("+", {
-                fontFamily: 'Arial', 
-                fontSize: 12, 
-                left: ((v[7] - 11)/2)+4,   // +4 = shift text
-                top: ((v[8] - 11)/2) -4,    // -4 = shift text
-                fill:'rgba(255,0,0,.75)',
-                selectable: false ,
-                gp_id: v[0],
-                type: 'star_info',
-        }));
+      circle =  new fabric.Circle({
+         radius: 5, fill: 'rgba(0,0,0,0)', strokeWidth: 1, stroke: 'rgba(100,200,200,.5)', 
+         left: (v[13] - 11)/2, 
+         top: (v[14] - 11)/2,
+         selectable: false,
+         gp_id: v[0],
+         type: 'star_info',
+       });
+       
+       
+      plus =  new fabric.Text("+", {
+         fontFamily: 'Arial', 
+         fontSize: 12, 
+         left: ((v[7] - 11)/2)+4,   // +4 = shift text
+         top: ((v[8] - 11)/2) -4,    // -4 = shift text
+         fill:'rgba(255,0,0,.75)',
+         selectable: false ,
+         gp_id: v[0],
+         type: 'star_info'
+      });
+ 
 
         // Add Star Name on canvas
-        canvas.add(new fabric.Text(v[0], {
-                fontFamily: 'Arial', 
-                fontSize: 12, 
-                left: (v[11] - 11)/2+5,
-                top: (v[12] - 11)/2+8,
-                fill:'rgba(255,255,255,.45)',
-                selectable: false,
-                gp_id: v[0],
-                type: 'star_info',
-        }));
+       t_name = new fabric.Text(v[0], {
+         fontFamily: 'Arial', 
+         fontSize: 12, 
+         left: (v[11] - 11)/2+5,
+         top: (v[12] - 11)/2+8,
+         fill:'rgba(255,255,255,.45)',
+         selectable: false,
+         gp_id: v[0],
+         type: 'star_info'
+      });
 
-        // Add Rectangle
-        canvas.add(new fabric.Rect({
-            fill: 'rgba(0,0,0,0)', strokeWidth: 1, stroke: 'rgba(230,100,200,.5)', 
-            left:  (v[11] - 11)/2, 
-            top:(v[12] - 11)/2,
-            width: 10,
-            height: 10 ,
-            selectable: false,
-            gp_id: v[0],
-            type: 'star_info', 
-         }));
+        
+      box = new fabric.Rect({
+         fill: 'rgba(0,0,0,0)',
+         strokeWidth: 1, 
+         stroke: 'rgba(230,100,200,.5)', 
+         left:  (v[11] - 11)/2, 
+         top:(v[12] - 11)/2,
+         width: 10,
+         height: 10 ,
+         selectable: false,
+         gp_id: v[0],
+         type: 'star_info'
+      });
+      
+
+      canvas.add(plus);
+      canvas.add(t_name);
+      canvas.add(box);
+      canvas.add(circle);
+   
+      all_added_stars[v[0]].push([plus,t_name,box,circle]);
+
 
         // Add the corresponding row
         // Name	mag	Cat RA/Dec	Res °	Res. Pixels 

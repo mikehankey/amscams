@@ -129,6 +129,7 @@ if ($('canvas#c').length!=0) {
     }); 
     
     canvas.on('mouse:down', function(e) {
+
       // Remove zoom
       if($('#c').hasClass('r-zoomed')) {
          $('#c').removeClass('r-zoomed').removeAttr('style'); 
@@ -140,7 +141,8 @@ if ($('canvas#c').length!=0) {
      
       // Not in RADEC_MODE: it means we select stars on the canvas
       if(RADEC_MODE==false) {
-         // Make the update star button blinked
+
+        // Make the update star button blinked
         make_it_blink($('#update_stars'));
 
         var pointer = canvas.getPointer(event.e);
@@ -163,10 +165,58 @@ if ($('canvas#c').length!=0) {
         var objects = canvas.getObjects('circle');
         var id;
          
+       
+        
+        for (var key in all_added_stars) {
+           console.log(all_added_stars[key]);
+           for (var i = 0; i < all_added_stars[key]; i++) {
+               console.log("CANVAS OBJECT " + all_added_stars[key][i]);
+           }
+        }   
+
+        /*
+
+        for (var i = 0; i < all_added_stars; i++) {
+            console.log(all_added_stars[i]);
+            for(var x=0; x<all_added_stars[i]; x++) {
+               console.log(ll_added_stars[i][x]);
+            }
+         }
+
+        
+
+          /*
+            var star_infos = v;
+            var found = false;
+            var all_right_star_info;
+            $.each(star_infos,function(sv,si){
+
+               console.log("star_info[si] ",star_info[si]);
+               console.log("containsPoint ", star_info[si].containsPoint(clickPoint));
+
+               if(found = false && star_info[si].containsPoint(clickPoint)) {
+                  objFound = true;
+                  all_right_star_info = star_infos;
+                  found = true;
+               }
+            });
+
+            if(found == true) {
+               $.each(all_right_star_info,function(sv,si){
+                  canvas.remove(all_right_star_info[si]);
+               });
+            }
+            */
+
+        /*
+
         // Remove an existing star
         for (let i in objects) {
-          if (!objFound && objects[i].containsPoint(clickPoint)) {
+          
+          if (!objFound && objects[i].containsPoint(clickPoint)) { 
               objFound = true;
+              console.log("YES");
+              console.log(objects[i]);
               id = objects[i].gp_id;
               canvas.remove(objects[i]);
             }
@@ -183,7 +233,8 @@ if ($('canvas#c').length!=0) {
                 }
           }
         }  
-  
+        
+        */
 
         if(objFound && grpFound) {
           // An existing star has been removed 
