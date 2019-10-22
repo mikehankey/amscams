@@ -2,10 +2,14 @@ var HAVE_START = false;
 var HAVE_END = false;
 
 // Update selector position and corresponding data
-function update_select_preview(top,left,margins,W_factor,H_factor,cursor_dim, cur_step_start,cursor_border_width,show_pos) {
+function update_select_preview(top,left,margins,W_factor,H_factor,cursor_dim, cur_step_start,cursor_border_width,prev_W,prev_H,show_pos) {
    
-   console.log("TOP", top);
-   console.log("LEFT",left);
+
+   // Maximize the values
+   if(top<=5) { top = 0; }
+   if(left<=5) { left=0; }
+   if(Math.abs(top-prev_W)<=5) { top = prev_W; }
+   if(Math.abs(left-prev_H)<=5)  { left = prev_H; }
 
    // Move Selector
    $("#selector").css({
@@ -154,7 +158,7 @@ function create_meteor_selector_from_stack(image_src) {
    $('#main_view').click(function(e) {
       var top =  e.pageY - offset.top;
       var left = e.pageX - offset.left;
-      cur_step_start = update_select_preview(top,left,margins,W_factor,H_factor,cursor_dim,cur_step_start,cursor_border_width,true);
+      cur_step_start = update_select_preview(top,left,margins,W_factor,H_factor,cursor_dim,cur_step_start,cursor_border_width,prev_W,prev_H,true);
       e.stopImmediatePropagation();
       return false;
    });
