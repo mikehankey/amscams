@@ -1,0 +1,7 @@
+a.ss {
+   border:5px solid transparent;
+
+   &:hover, &:focus {
+      border:5px solid #113c84;
+   }
+}
