@@ -15,6 +15,21 @@ from lib.CalibLib import radec_to_azel, clean_star_bg, get_catalog_stars, find_c
 
 import scipy.optimize
 
+def get_hdm_xy(sd_video_file = None, frame = None, json_conf = None):
+   if frame is not None:
+      ih, iw = frame.shape[:2]
+      hdm_x = 1920 / iw
+      hdm_y = 1080 / ih
+   if sd_video_file is not None:
+      from lib.VideoLib import load_video_frames
+      frames = load_video_frames(sd_video_file, json_conf, 2)
+      frame = frames[0]
+      ih, iw = frame.shape[:2]
+      hdm_x = 1920 / iw
+      hdm_y = 1080 / ih
+
+   return(hdm_x, hdm_y)   
+
 def stack_frames(frames):
    stacked_image = None
 
@@ -945,8 +960,9 @@ def detect_meteor(video_file, json_conf, show = 0):
 
 
    # MERGE ALL OF THE DETECT METHOD RESULTS INTO ONE FINAL 
-   hdm_x = 2.7272
-   hdm_y = 1.875
+   ih, iw = sd_frames[0].shape[:2]
+   hdm_x = 1920 / iw
+   hdm_y = 1080 / ih
    metconf = {}
    metframes = {}
    bp_metframes = {}
@@ -955,16 +971,16 @@ def detect_meteor(video_file, json_conf, show = 0):
    metconf['x_dir_mod'] = x_dir_mod 
    metconf['y_dir_mod'] = y_dir_mod
    if len(bp_meteors) > 0:
-      bp_metframes,metconf = hist_to_metframes(bp_meteors[0],bp_metframes,metconf)
+      bp_metframes,metconf = hist_to_metframes(bp_meteors[0],bp_metframes,metconf,sd_frames[0])
    else:
       bp_metframes = {}
    if len(dtd_meteors) > 0:
-      dtd_metframes,metconf = hist_to_metframes(dtd_meteors[0],dtd_metframes,metconf)
+      dtd_metframes,metconf = hist_to_metframes(dtd_meteors[0],dtd_metframes,metconf, sd_frames[0])
    else:
       dtd_metframes = {}
    orig_obj = {}
    orig_obj['history'] = orig_meteors[0]
-   orig_metframes,metconf = hist_to_metframes(orig_obj,orig_metframes,metconf)
+   orig_metframes,metconf = hist_to_metframes(orig_obj,orig_metframes,metconf, sd_frames[0])
    for fn in bp_metframes:
       if fn not in metframes:
          metframes[fn] = {}
@@ -1272,14 +1288,17 @@ def detect_meteor(video_file, json_conf, show = 0):
          print(obj['oid'], obj['debug'], obj['history'])
       exit()
    elif len(meteors) == 1:
-      hdm_x = 2.7272
-      hdm_y = 1.875
+
+      ih, iw = sd_frames[0].shape[:2]
+      hdm_x = 1920 / iw
+      hdm_y = 1080 / ih
+
       hdxs = []
       hdys = []
       metconf = {}
       metconf['x_dir_mod'] = meteors[0]['x_dir_mod']
       metconf['y_dir_mod'] = meteors[0]['y_dir_mod']
-      metframes,xs,ys,fns = hist_to_metframes(meteors[0],metconf)
+      metframes,xs,ys,fns = hist_to_metframes(meteors[0],metconf, sd_frames[0])
       m,b = best_fit_slope_and_intercept(xs,ys)
       for i in range(0,len(xs)-1):
          hd_x = xs[i] * hdm_x
@@ -1576,10 +1595,13 @@ def reduce_seg_acl(this_poly,metframes,metconf,frames,show=0):
    print("RES:", res_err, this_poly[0], this_poly[1]) 
    return(res_err)
 
-def hist_to_metframes(obj,metframes,metconf):
+def hist_to_metframes(obj,metframes,metconf,frame):
    #metframes = {}
-   hdm_x = 2.7272
-   hdm_y = 1.875
+
+   ih, iw = frame.shape[:2]
+   hdm_x = 1920 / iw
+   hdm_y = 1080 / ih
+
    xs = []
    ys = []
    fns = []
@@ -1635,9 +1657,10 @@ def hist_to_metframes(obj,metframes,metconf):
       metconf['sd_fns'] = fns
    return(metframes,metconf)
 
-def setup_metframes(mfd):
-   hdm_x = 2.7272
-   hdm_y = 1.875
+def setup_metframes(mfd,frame):
+   ih, iw = frame.shape[:2]
+   hdm_x = 1920 / iw
+   hdm_y = 1080 / ih
    # establish initial first x,y last x,y
    fx = mfd[0][2]
    fy = mfd[0][3]
@@ -2235,10 +2258,11 @@ def meteor_test_peaks(object):
 
    return(sci_peaks, peak_to_frame)
 
-def metframes_to_mfd(metframes, metconf, sd_video_file,json_conf):
+def metframes_to_mfd(metframes, metconf, sd_video_file,json_conf,frame):
    metframes = sort_metframes(metframes)
-   hdm_x = 2.7272
-   hdm_y = 1.875
+   ih, iw = frame.shape[:2]
+   hdm_x = 1920 / iw
+   hdm_y = 1080 / ih
    red_file = sd_video_file.replace(".mp4", "-reduced.json")
    mjr = load_json_file(red_file)
    meteor_frame_data = []
@@ -2262,8 +2286,8 @@ def metframes_to_mfd(metframes, metconf, sd_video_file,json_conf):
       #   frame_time,frame_time_str = calc_frame_time_new(sd_video_file, fn)
       #else:
       #   frame_time,frame_time_str = calc_frame_time(sd_video_file, fn)
-      #metframes[fn]['frame_time'] = frame_time_str
-      frame_time_str = metframes[fn]['frame_time']
+      #metframes[fn]['ft'] = frame_time_str
+      frame_time_str = metframes[fn]['ft']
       if "hd_x" not in metframes[fn] or 'x1' not in metframes[fn]:
          print("FRAME:", fn)
          metframes[fn]['x1'] = int(metframes[fn]['sd_x'] * hdm_x)
@@ -2389,7 +2413,7 @@ def make_meteor_cnt_composite_images(json_conf, mfd, metframes, metconf, frames,
       print("CNT:", cnt_img.shape)
       cmp_images[fn] = cnt_img
 
-   mfd, metframes,metconf = metframes_to_mfd(metframes, metconf, sd_video_file,json_conf)
+   mfd, metframes,metconf = metframes_to_mfd(metframes, metconf, sd_video_file,json_conf,frames[0])
 
    return(cmp_images, metframes)
 

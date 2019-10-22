@@ -768,6 +768,7 @@ def load_video_frames(trim_file, json_conf, limit=0, mask=0,crop=(),color=0):
             else:
                hd = 0
             masks = get_masks(cam, json_conf,hd)
+            print("GET MASKS HD:", hd, masks)
             frame = mask_frame(frame, [], masks, 5)
 
          if len(crop) == 4:

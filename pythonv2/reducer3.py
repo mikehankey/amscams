@@ -46,16 +46,22 @@ if cmd == 'dm' or cmd == 'detect_meteor':
       print(fn, metframes[fn])
 
 if cmd == 'cm' or cmd == 'crop_images':
-   make_crop_images(file, json_conf)
+   vid_file = file.replace("-reduced.json", ".mp4")
+   frames = load_video_frames(vid_file, json_conf, 2)
+   frame = frames[0]
+   make_crop_images(file, json_conf,frame)
 
 #MFD TO METFRAMES
 if cmd == 'mfd' :
    # perfect the meteor reduction!
+   vid_file = file.replace("-reduced.json", ".mp4")
+   frames = load_video_frames(vid_file, json_conf, 2)
+   frame = frames[0]
    if "mp4" in file:
       file = file.replace(".mp4", "-reduced.json")
    red_data = load_json_file(file)
    mfd = red_data['meteor_frame_data']
-   metframes, metconf = setup_metframes(mfd)
+   metframes, metconf = setup_metframes(mfd, frame)
    red_data['metframes'] = metframes 
    red_data['metconf'] = metconf 
 
