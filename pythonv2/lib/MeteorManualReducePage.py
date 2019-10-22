@@ -118,6 +118,9 @@ def manual_reduction_step1(form):
    # Add Video to template
    template = template.replace("{VIDEO}", str(video_file))
 
+   # Add Initial type to template
+   template = template.replace("{TYPE}", str(type_file))
+
    print(template)  
 
 
@@ -126,10 +129,12 @@ def manual_reduction_step1(form):
 def manual_reduction_cropper(form):
 
    video_file  = form.getvalue('video_file')  
-   x_start = float(form.getvalue('x_start'))
-   y_start = float(form.getvalue('y_start'))
-   w = float(form.getvalue('w'))
-   h = float(form.getvalue('h'))
+   stack_file  = form.getvalue('stack_file')  
+   type_file   = form.getvalue('type')  
+   x_start     = float(form.getvalue('x_start'))
+   y_start     = float(form.getvalue('y_start'))
+   w           = float(form.getvalue('w'))
+   h           = float(form.getvalue('h'))
 
    # Fix eventual video file name (old version)
    tmp_fixed_video_full_path = fix_old_file_name(video_file)
