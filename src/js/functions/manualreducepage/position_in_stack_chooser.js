@@ -157,8 +157,8 @@ function create_meteor_selector_from_stack(image_src) {
 
    // Move on click
    $('#main_view').click(function(e) {
-      var top =  e.pageY - offset.top;
-      var left = e.pageX - offset.left;
+      var top =  e.pageY; // - offset.top;
+      var left = e.pageX; // - offset.left;
       cur_step_start = update_select_preview(top,left,margins,W_factor,H_factor,cursor_dim,cur_step_start,cursor_border_width,true);
       e.stopImmediatePropagation();
       return false;
