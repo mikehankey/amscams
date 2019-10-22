@@ -113,7 +113,7 @@ function update_stars_on_canvas_and_table(json_resp) {
         canvas.add(circle);
     
 
-        all_added_stars[v[0]].push(['plus':plus,'name':name,'box':box,'circle':circle]);
+        all_added_stars[v[0]].push([plus,name,box,circle]);
 
 
         // Add the corresponding row
