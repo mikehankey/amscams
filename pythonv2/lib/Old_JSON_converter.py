@@ -70,16 +70,15 @@ def fix_old_file_name(filename):
             if(match.group(groupNum) is not None): 
                res[OLD_FILE_NAME_REGEX_GROUP[groupNum]] = match.group(groupNum)
             groupNum = groupNum + 1
-    
-
-      print("DEBUG<br/>")
-      print(res)
 
       # Get original Date & Time 
       org_dt = datetime.strptime(res['year']+'-'+res['month']+'-'+res['day']+' '+res['hour']+':'+res['min']+':'+res['sec']+'.'+res['ms'], '%Y-%m-%d %H:%M:%S.%f')
 
       # We convert the trim in seconds 
-      trim_in_sec = float(res["trim"])/FPS_HD
+      if(res["trim"] is not None):
+         trim_in_sec = float(res["trim"])/FPS_HD
+      else:
+         trim_in_sec = 0
 
       # We add the trim_in_sec
       org_dt = org_dt +  timedelta(0,trim_in_sec)
