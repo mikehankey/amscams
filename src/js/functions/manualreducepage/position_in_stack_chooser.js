@@ -124,7 +124,7 @@ function update_select_preview(top,left,margins,W_factor,H_factor,cursor_dim, cu
 
 // Create  select meteor position from stack
 function create_meteor_selector_from_stack(image_src) {
-   var cursor_dim = 5;            // Cursor dimension
+   var cursor_dim = 8;            // Cursor dimension
    var margins = 12;                // Max position (x,y) of the meteor inside the cursor
 
    var real_W = 1920;
