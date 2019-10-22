@@ -108,9 +108,9 @@ function update_stars_on_canvas_and_table(json_resp) {
         
 
         canvas.add(plus);
-        canvas.add(name);
-        canvas.add(box);
-        canvas.add(circle);
+        //canvas.add(name);
+        //canvas.add(box);
+        //canvas.add(circle);
     
 
         all_added_stars[v[0]].push([plus,name,box,circle]);
