@@ -169,10 +169,16 @@ if ($('canvas#c').length!=0) {
 
         // Search the existing star
         $.each(all_added_stars,function(i,v){
+            console.log("SEARCH ",v);
+
             var star_infos = v;
             var found = false;
             var all_right_star_info;
             $.each(star_infos,function(sv,si){
+
+               console.log("star_info[si] ",star_info[si]);
+               console.log("containsPoint ", star_info[si].containsPoint(clickPoint));
+
                if(found = false && star_info[si].containsPoint(clickPoint)) {
                   objFound = true;
                   all_right_star_info = star_infos;
