@@ -104,10 +104,12 @@ def manual_reduction_step1(form):
    print(video_file + "<br/>")
 
    tmp_fixed_video_full_path = fix_old_file_name(video_file)
-   print(tmp_fixed_video_full_path +  "<br/>")
+   print(tmp_fixed_video_full_path)
+   print("<br/>")
 
    analysed_name = name_analyser(tmp_fixed_video_full_path)
-   print(analysed_name + "<br/>")
+   print(analysed_name)
+   print("<br/>")
 
 
    # Video File
