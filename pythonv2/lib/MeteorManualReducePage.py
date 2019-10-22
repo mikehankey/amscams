@@ -38,6 +38,9 @@ def manual_reduction(form):
    sd_stack = form.getvalue('sd_stack')
    hd_stack = form.getvalue('hd_stack')
 
+   # Get JSON
+   json_file = form.getvalue('json_file')
+
    # Test if they really exist
    if(cfe(sd_stack)==0):
       sd_stack = ''
@@ -69,9 +72,11 @@ def manual_reduction(form):
          # TODO!!!
          print("NO HD")
 
-      # We add the video to the  page
+      # We add the videos to the  page
       template = template.replace("{HD_VIDEO}", str(hd_video))
       template = template.replace("{SD_VIDEO}", str(sd_video))
+
+      template = template.replace("{JSON_FILE}", str(json_file))
 
    # Display Template
    print(template) 
@@ -86,6 +91,7 @@ def manual_reduction_step1(form):
    stack_file = form.getvalue('stack')
    video_file = form.getvalue('video')
    type_file  = form.getvalue('type')    # HD or SD
+   json_file  = form.getvalue('json_file')
 
 
    # Build the page based on template  
@@ -120,6 +126,9 @@ def manual_reduction_step1(form):
 
    # Add Initial type to template
    template = template.replace("{TYPE}", str(type_file))
+
+   # Add json
+   template = template.replace("{JSON}",str(json_file))
 
    print(template)  
 
