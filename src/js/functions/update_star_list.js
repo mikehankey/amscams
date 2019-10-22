@@ -64,6 +64,8 @@ function update_stars_on_canvas_and_table(json_resp) {
                 gp_id: v[0],
                 type: 'star_info',
         }));
+
+        console.log("add circle " + v['0'] );
  
         // Add "+" on canvas
         canvas.add(
