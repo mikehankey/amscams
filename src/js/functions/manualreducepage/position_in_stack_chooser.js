@@ -147,17 +147,7 @@ function create_meteor_selector_from_stack(image_src) {
    var init_left = prev_W/2-cursor_dim/2;
 
  
-   $('<h1>Manual Reduction Step 1</h1>\
-      <input type="hidden" name="x_start"/><input type="hidden" name="y_start"/>\
-      <input type="hidden" name="x_end"/><input type="hidden" name="y_end"/>\
-      <input type="hidden" name="xs"/><input type="hidden" name="ys"/>\
-      <input type="hidden" name="w"/><input type="hidden" name="h"/>\
-     <div class="box">\
-     <div class="modal-header p-0" style="border:none!important">\
-      <div class="alert alert-info mb-3 p-1 pr-1 pl-2">Select the <b style="color:green">STARTING</b> point and the <b style="color:red">ENDING</b> point of the meteor path.</div>\
-      <div id="res" class="text-right"><span class="start"></span><br/><span class="end" ></span></div>\
-     </div>\
-     <div id="draggable_area" style="width:'+(prev_W+margins*2) + 'px; height:' +( prev_H+margins*2) + 'px;margin:0 auto;">\
+   $('<div id="draggable_area" style="width:'+(prev_W+margins*2) + 'px; height:' +( prev_H+margins*2) + 'px;margin:0 auto;">\
      <div id="main_view" style="background-color:#000;background-image:url('+image_src+'); width:'+prev_W+'px; height:'+prev_H+'px; margin: 0 auto; position:relative; background-size: contain;">\
       <div id="selector" class="ng pa" style="; border-radius:50%; top:-9999px; left:-9999px;width:'+cursor_dim+'px; height:'+cursor_dim+'px; border:'+cursor_border_width+'px solid green;"></div>\
    </div></div><div class="text-right"><button id="step1_btn" class="btn btn-lg btn-primary disabled" disabled>Continue</button></div>').appendTo($('#step1'));
