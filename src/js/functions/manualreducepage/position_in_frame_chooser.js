@@ -18,6 +18,8 @@ function fix_pifc_ui() {
 
    }
 
+   $('#cropped_frame_selector').css('max-width','100%');
+
    // Change Markers 
    $('#org_lh, #lh').css('width','100%');
    $('#org_lv, #lv').css('height','100%');
