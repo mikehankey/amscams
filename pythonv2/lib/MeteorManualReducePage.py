@@ -91,7 +91,7 @@ def manual_reduction_step1(form):
    stack_file = form.getvalue('stack')
    video_file = form.getvalue('video')
    type_file  = form.getvalue('type')    # HD or SD
-   json_file  = form.getvalue('json_file')
+   json_file  = form.getvalue('json')
 
 
    # Build the page based on template  
@@ -177,7 +177,8 @@ def manual_reduction_cropper(form):
    template = template.replace("{X}", str(x_start))   
    template = template.replace("{Y}", str(y_start))  
    template = template.replace("{W}", str(w))   
-   template = template.replace("{H}", str(h))       
+   template = template.replace("{H}", str(h))        
+   template = template.replace("{JSON}",str(json_file))
  
    # Add Thumbs to template
    thumbs_to_display = ''
