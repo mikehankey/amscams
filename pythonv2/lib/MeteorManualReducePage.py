@@ -38,7 +38,7 @@ def manual_reduction(form):
    if(cfe(hd_stack)==0):
       hd_stack = ''
 
-   if(sd_stack == '' and hd_stack = ''):
+   if(sd_stack == '' and hd_stack == ''):
       print_error("<b>Stacks not found.</b>")
 
    # Build the page based on template  
@@ -49,7 +49,7 @@ def manual_reduction(form):
    # Add sd_stack to template
    if(sd_stack is not ''):
       template = template.replace("{SD_STACK}", str(sd_stack))
-      
+
    if(hd_stack is not ''):
       template = template.replace("{HD_STACK}", str(hd_stack))
 
