@@ -205,6 +205,7 @@ def manual_reduction_meteor_pos_selector(form):
    w = float(form.getvalue('w'))
    h = float(form.getvalue('h'))
    f = float(form.getvalue('f'))   # Number of the first frame
+   json_file   = form.getvalue('json')
 
    # Build the page based on template  
    with open(MANUAL_RED_PAGE_TEMPLATE_STEP3, 'r') as file:
@@ -241,7 +242,8 @@ def manual_reduction_meteor_pos_selector(form):
    template = template.replace("{W}", str(w))    
    template = template.replace("{H}", str(h))  
    template = template.replace("{VIDEO}", str(video_file)) 
-   
+   template = template.replace("{JSON}", str(json_file)) 
+
    # Display Template
    print(template)
 
@@ -264,6 +266,9 @@ def manual_reduction_create_final_json2(form):
 def manual_reduction_create_final_json(form):
    video_file   = form.getvalue('video_file')  
    frames_info  = form.getvalue('frames')  
+   json_file    = form.getvalue('json')
+
+   print('JSON FILE '+  json_file)
   
    # We parse the frames_info
    frames_info = json.loads(frames_info)
