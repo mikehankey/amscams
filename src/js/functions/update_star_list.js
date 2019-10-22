@@ -101,16 +101,15 @@ function update_stars_on_canvas_and_table(json_resp) {
             height: 10 ,
             selectable: false,
             gp_id: v[0],
-            type: 'star_info', 
+            type: 'star_info'
          });
         
 
         canvas.add(plus);
         canvas.add(t_name);
-        //canvas.add(box);
-        //canvas.add(circle);
+        canvas.add(box);
+        canvas.add(circle);
     
-
         all_added_stars[v[0]].push([plus,t_name,box,circle]);
 
 
