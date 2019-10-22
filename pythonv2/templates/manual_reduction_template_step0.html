@@ -3,10 +3,13 @@
 </div>
 
 <script>
-   var stack = "{STACK}"; 
-   var video_file = "{VIDEO}";
-   // First step:
+   var sd_stack      = "{SD_STACK}"; 
+   var hd_stack      = "{HD_STACK}"; 
+   var hd_video_file = "{HD_VIDEO}";
+   var sd_video_file = "{SD_VIDEO}";
+   
+   // Step #0:
    window.onload = function () {
-      create_meteor_selector_from_stack(stack);
+      select_stack();
    }
 </script>
