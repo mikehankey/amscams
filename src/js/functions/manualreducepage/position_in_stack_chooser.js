@@ -19,11 +19,11 @@ function update_select_preview(top,left,margins,W_factor,H_factor,cursor_dim, cu
       if(cur_step_start) {
          // Update START X/Y
          $('#res .start').html('<b>A</b> x:' + Math.floor(sel_x*W_factor)+ 'px ' + 'y:'+  Math.floor(sel_y*H_factor) +'px');
-         $('#selector').css('border-color','red');
+         $('#selector').css('border-color','#ccc');
 
          // Put the static square on the view
          if($('#sel_start_static').length==0) {
-            $('<div id="sel_start_static" style="width:'+cursor_dim+'px; height:'+cursor_dim+'px;position:absolute; border:'+cursor_border_width+'px solid green; border-radius:50%">').appendTo($('#main_view'));
+            $('<div id="sel_start_static" style="width:'+cursor_dim+'px; height:'+cursor_dim+'px;position:absolute; border:'+cursor_border_width+'px solid #ccc; border-radius:50%">').appendTo($('#main_view'));
          }
          
          $('#sel_start_static').css({
@@ -45,7 +45,7 @@ function update_select_preview(top,left,margins,W_factor,H_factor,cursor_dim, cu
 
           // Put the static square on the view
           if($('#sel_end_static').length==0) {
-            $('<div id="sel_end_static" style="width:'+cursor_dim+'px; height:'+cursor_dim+'px;position:absolute; border:'+cursor_border_width+'px solid red; border-radius:50%">').appendTo($('#main_view'));
+            $('<div id="sel_end_static" style="width:'+cursor_dim+'px; height:'+cursor_dim+'px;position:absolute; border:'+cursor_border_width+'px solid #ccc; border-radius:50%">').appendTo($('#main_view'));
           }
 
           $('#sel_end_static').css({
@@ -124,7 +124,7 @@ function update_select_preview(top,left,margins,W_factor,H_factor,cursor_dim, cu
 
 // Create  select meteor position from stack
 function create_meteor_selector_from_stack(image_src) {
-   var cursor_dim = 24;            // Cursor dimension
+   var cursor_dim = 5;            // Cursor dimension
    var margins = 12;                // Max position (x,y) of the meteor inside the cursor
 
    var real_W = 1920;
@@ -149,7 +149,7 @@ function create_meteor_selector_from_stack(image_src) {
  
    $('<div id="draggable_area" style="width:'+(prev_W+margins*2) + 'px; height:' +( prev_H+margins*2) + 'px;margin:0 auto;">\
      <div id="main_view" style="background-color:#000;background-image:url('+image_src+'); width:'+prev_W+'px; height:'+prev_H+'px; margin: 0 auto; position:relative; background-size: contain;">\
-      <div id="selector" class="ng pa" style="; border-radius:50%; top:-9999px; left:-9999px;width:'+cursor_dim+'px; height:'+cursor_dim+'px; border:'+cursor_border_width+'px solid green;"></div>\
+      <div id="selector" class="ng pa" style="; border-radius:50%; top:-9999px; left:-9999px;width:'+cursor_dim+'px; height:'+cursor_dim+'px; border:'+cursor_border_width+'px solid #fff;"></div>\
      </div></div></div></div><div class="text-right"><button id="step1_btn" class="btn btn-lg btn-primary disabled" disabled>Continue</button></div>').appendTo($('#step1'));
    
    
