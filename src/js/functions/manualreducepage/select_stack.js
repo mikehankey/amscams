@@ -1,4 +1,4 @@
-$(function() {
+function select_stack() {
    // Select a stack
    $('.select_stack').click(function() {
       var type = $(this).attr('data-rel');
@@ -11,5 +11,4 @@ $(function() {
 
       }
    })
-})
- 
+} 
