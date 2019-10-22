@@ -165,9 +165,13 @@ if ($('canvas#c').length!=0) {
         var objects = canvas.getObjects('circle');
         var id;
          
-        console.log("DOES IT EXIST???");
-        console.log(all_added_stars);
+       
         
+        for (var key in all_added_stars) {
+           console.log(all_added_stars[key]);
+        }   
+
+        /*
 
         for (var i = 0; i < all_added_stars; i++) {
             console.log(all_added_stars[i]);
