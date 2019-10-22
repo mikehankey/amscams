@@ -2184,17 +2184,14 @@ def reduce_meteor_ajax(json_conf,meteor_json_file, cal_params_file, show = 0):
    if "reduced" in cal_params_file :
       if cfe(cal_params_file) == 1:
          red_data  = load_json_file(cal_params_file) 
-         #print("Using ", cal_params_file)
          cal_params = red_data['cal_params']
       else:
          if custom_fit == 0:
             cal_params_files = get_active_cal_file(sd_stack_file)
             cal_params_file = cal_params_files[0][0]
-            #print("Using ", cal_params_file)
             cal_params = load_json_file(cal_params_file) 
    else:
       if custom_fit == 0:
-         #print("Using ", cal_params_file)
          cal_params = load_json_file(cal_params_file) 
 
 
@@ -2242,13 +2239,21 @@ def reduce_meteor_ajax(json_conf,meteor_json_file, cal_params_file, show = 0):
       sd_video_file = sd_video_file.replace("/passed/", "/")
 
    frames,ofx,ofy = load_video_frames(sd_video_file,json_conf,0,0,crop)
+   
+   frs = load_video_frames(sd_video_file,json_conf,2)
+   ih, iw = frs[0].shape[:2]
+   hdm_x = 1920 / iw
+   hdm_y = 1080 / ih
+
+   print("HDMX HDMY", iw, ih, hdm_x, hdm_y)
+
+
    crop_min_x = ofx
    crop_min_y = ofy
    if end_clip > len(frames) -1 :
       end_clip = len(frames) - 1
    #frames = frames[start_clip:end_clip]
    objects = {}
-   #print("FRAMES:",len(frames))
    #objects = track_bright_objects(frames, sd_video_file, cam_id, meteor_obj, json_conf, show)
    objects = check_for_motion2(frames, sd_video_file,cam_id, json_conf,show)
    if len(objects) == 0:
@@ -2272,7 +2277,6 @@ def reduce_meteor_ajax(json_conf,meteor_json_file, cal_params_file, show = 0):
    if cfe(sd_stack_file) == 0:
       sd_stack_file = sd_stack_file.replace("SD/proc2/", "meteors/")
       sd_stack_file = sd_stack_file.replace("/passed/", "/")
-   #print(sd_stack_file)
    reduce_img = cv2.imread(sd_stack_file)
 
    reduce_img  = cv2.resize(reduce_img, (int(1920/2),int(1080/2)))
@@ -2476,6 +2480,7 @@ def reduce_meteor_ajax(json_conf,meteor_json_file, cal_params_file, show = 0):
 
    
    mfd_file = meteor_json_file.replace(".json", "-reduced.json")
+   #print("cd /home/ams/amscams/pythonv2/; ./reducer3.py mfd " + mfd_file + " > /dev/null")
    os.system("cd /home/ams/amscams/pythonv2/; ./reducer3.py mfd " + mfd_file + " > /dev/null")
    os.system("cd /home/ams/amscams/pythonv2/; ./reducer3.py cm " + mfd_file + "> /dev/null")
 

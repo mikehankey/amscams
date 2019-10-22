@@ -5,6 +5,9 @@ import datetime
 import math
 import ephem
 import numpy as np
+
+
+
 def best_fit_slope_and_intercept(xs,ys):
     xs = np.array(xs, dtype=np.float64)
     ys = np.array(ys, dtype=np.float64)
