@@ -2245,7 +2245,6 @@ def reduce_meteor_ajax(json_conf,meteor_json_file, cal_params_file, show = 0):
    hdm_x = 1920 / iw
    hdm_y = 1080 / ih
 
-   print("HDMX HDMY", iw, ih, hdm_x, hdm_y)
 
 
    crop_min_x = ofx
