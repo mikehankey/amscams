@@ -173,7 +173,7 @@ if ($('canvas#c').length!=0) {
             var found = false;
             var all_right_star_info;
             $.each(star_infos,function(sv,si){
-               if(found = false && star_info[si]).containsPoint(clickPoint){
+               if(found = false && star_info[si].containsPoint(clickPoint)) {
                   objFound = true;
                   all_right_star_info = star_infos;
                   found = true;
