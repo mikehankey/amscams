@@ -4,6 +4,9 @@ var HAVE_END = false;
 // Update selector position and corresponding data
 function update_select_preview(top,left,margins,W_factor,H_factor,cursor_dim, cur_step_start,cursor_border_width,show_pos) {
    
+   console.log("TOP", top);
+   console.log("LEFT",left);
+
    // Move Selector
    $("#selector").css({
       top: top - cursor_dim/2,
