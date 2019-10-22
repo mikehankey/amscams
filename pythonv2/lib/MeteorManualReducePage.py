@@ -99,29 +99,40 @@ def manual_reduction_step1(form):
    else:
       clear_cache = False
 
+
+   print("VIDEO FILE<br/>")
+   print(video_file . "<br/>")
+
+   tmp_fixed_video_full_path = fix_old_file_name(video_file)
+   print(tmp_fixed_video_full_path. "<br/>")
+
+   analysed_name = name_analyser(tmp_fixed_video_full_path)
+   print(analysed_name. "<br/>")
+
+
    # Video File
-   if(video_file is not None):
-      tmp_fixed_video_full_path = fix_old_file_name(video_file)
-      analysed_name = name_analyser(tmp_fixed_video_full_path)
+   #if(video_file is not None):
+   #   tmp_fixed_video_full_path = fix_old_file_name(video_file)
+   #   analysed_name = name_analyser(tmp_fixed_video_full_path)
 
       # We keep the original full_path anyway
-      analysed_name['full_path'] = video_file
-   else:
-      print_error("<b>You need to add a video file in the URL.</b>")
+   #   analysed_name['full_path'] = video_file
+   #else:
+   #   print_error("<b>You need to add a video file in the URL.</b>")
    
    
  
 
    # Get the stack  
    # True = We automatically resize the stack to HD dims so we can use it in the UI
-   stack = get_stacks(analysed_name,clear_cache, True)
-   template = template.replace("{STACK}", str(stack))   
+   #stack = get_stacks(analysed_name,clear_cache, True)
+   #template = template.replace("{STACK}", str(stack))   
    
    # Add Video to template
-   template = template.replace("{VIDEO}", str(video_file))
+   #template = template.replace("{VIDEO}", str(video_file))
 
    # Display Template
-   print(template) 
+   #print(template) 
 
 
 
