@@ -129,6 +129,7 @@ if ($('canvas#c').length!=0) {
     }); 
     
     canvas.on('mouse:down', function(e) {
+
       // Remove zoom
       if($('#c').hasClass('r-zoomed')) {
          $('#c').removeClass('r-zoomed').removeAttr('style'); 
@@ -140,7 +141,8 @@ if ($('canvas#c').length!=0) {
      
       // Not in RADEC_MODE: it means we select stars on the canvas
       if(RADEC_MODE==false) {
-         // Make the update star button blinked
+
+        // Make the update star button blinked
         make_it_blink($('#update_stars'));
 
         var pointer = canvas.getPointer(event.e);
@@ -163,9 +165,13 @@ if ($('canvas#c').length!=0) {
         var objects = canvas.getObjects('circle');
         var id;
          
+        console.log("DOES IT EXIST");
+
         // Remove an existing star
         for (let i in objects) {
           if (!objFound && objects[i].containsPoint(clickPoint)) {
+              console.log("YES");
+              console.log(objects[i]);
               objFound = true;
               id = objects[i].gp_id;
               canvas.remove(objects[i]);
