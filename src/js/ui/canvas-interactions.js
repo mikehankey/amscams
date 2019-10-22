@@ -166,6 +166,7 @@ if ($('canvas#c').length!=0) {
         var id;
          
         console.log("DOES IT EXIST???");
+        console.log(all_added_stars);
 
         // Search the existing star
         $.each(all_added_stars,function(i,v){
