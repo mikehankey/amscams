@@ -28,6 +28,8 @@ def manual_reduction(form):
    # Debug
    cgitb.enable()
 
+   error = False
+
    # Get both stacks
    sd_stack = form.getvalue('sd_stack')
    hd_stack = form.getvalue('hd_stack')
@@ -40,18 +42,26 @@ def manual_reduction(form):
 
    if(sd_stack == '' and hd_stack == ''):
       print_error("<b>Stacks not found.</b>")
+      error = True
 
    # Build the page based on template  
    with open(MANUAL_RED_PAGE_TEMPLATE_STEP0, 'r') as file:
       template = file.read()
 
-   # We display both stacks and ask the user to select which one he wants to use
-   # Add sd_stack to template
-   if(sd_stack is not ''):
-      template = template.replace("{SD_STACK}", str(sd_stack))
+   if(error is False):
+      # We display both stacks and ask the user to select which one he wants to use
+      # Add sd_stack to template
+      if(sd_stack is not ''):
+         template = template.replace("{SD_STACK}", str(sd_stack))
+      else:
+         # We automatically select the HD
+         print("NO SD")
 
-   if(hd_stack is not ''):
-      template = template.replace("{HD_STACK}", str(hd_stack))
+      if(hd_stack is not ''):
+         template = template.replace("{HD_STACK}", str(hd_stack))
+      else: 
+         # We automatically select the SD
+         print("NO HD")
 
    # Display Template
    print(template) 
