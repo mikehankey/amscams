@@ -32,7 +32,7 @@ def manual_reduction(form):
 
     # Get both video
    sd_video = form.getvalue('sd_video')
-   hd_video = form.getvalue('hd_video')
+   hd_video = form.getvalue('video_file')
 
    # Get both stacks
    sd_stack = form.getvalue('sd_stack')
