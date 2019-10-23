@@ -168,12 +168,10 @@ if ($('canvas#c').length!=0) {
         
         for (var key in all_added_stars) {
            for (var i = 0; i < all_added_stars[key].length; i++) {
-               console.log("TEST");
-               console.log(all_added_stars[key][i]);
-               console.log(all_added_stars[key][i].containsPoint(clickPoint));
                if(objFound == false && all_added_stars[key][i].containsPoint(clickPoint)) {
-                  alert("FOUND!!");
+                  alert(all_added_stars[key][i]);
                   objFound = true;
+                  break;
                }
            }
         }   
