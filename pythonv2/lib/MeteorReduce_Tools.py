@@ -12,7 +12,7 @@ from pathlib import Path
 from PIL import Image
 
 from lib.VideoLib import load_video_frames
-from lib.FileIO import load_json_file 
+from lib.FileIO import load_json_file, cfe
 from lib.ReducerLib import stack_frames
 from lib.REDUCE_VARS import *
 from lib.VIDEO_VARS import * 
