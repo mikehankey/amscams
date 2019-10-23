@@ -305,11 +305,7 @@ def generate_cropped_frames(analysed_name,meteor_json_data,HD_frames,HD):
 # Get the stacks for a meteor detection
 # Generate it if necessary
 def get_stacks(analysed_name,clear_cache,toHD):
-   
-   print("IN GET STACKS - CACHE " +  get_cache_path(analysed_name,"stacks")  + "<br/>")
-   print("ANALYSED NAME " + str(analysed_name) + "<br/>")
-
-
+ 
    # Do we have the Stack for this detection 
    if(toHD):
       stacks = glob.glob(get_cache_path(analysed_name,"stacks")+"*"+"-HD"+"*") 
