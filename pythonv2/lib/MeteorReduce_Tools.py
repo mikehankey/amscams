@@ -168,7 +168,7 @@ def get_thumbs(analysed_name,meteor_json_data,HD,HD_frames,clear_cache):
    # Do we have them already?
    thumbs = does_cache_exist(analysed_name,"cropped")
 
-   print("THUMBS SEARCHED<br/>")
+   print("THUMBS FOUND<br/>")
    print(thumbs)
    print("<br/>IN " + get_cache_path(analysed_name,"cropped") + "<br/>")
 
