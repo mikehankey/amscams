@@ -37,10 +37,7 @@ def name_analyser(file_names):
 
    # Add the full file_names (often a full path) to the array so we don't have to pass the original when we need it
    res['full_path'] = file_names
-
-   print(res)
-   sys.exit(0)
-
+ 
    return res
 
 
