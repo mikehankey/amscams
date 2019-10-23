@@ -213,11 +213,9 @@ def convert(json_file_path, sd_video_file_path, hd_video_file_path):
    info['info']['org_file_name'] = json_file_path
 
    calib = get_new_calib(reduced_info)
-
-   print(calib)
-   sys.exit(0)
-
-   stars = get_new_stars(json_f)
+ 
+   stars = get_new_stars(reduced_info)
+   print(stars)
 
    # The stars belong to calib
    calib['calib']['stars'] = stars['stars']
