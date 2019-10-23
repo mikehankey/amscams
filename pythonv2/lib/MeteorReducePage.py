@@ -78,8 +78,9 @@ def reduce_meteor2(json_conf,form):
    HD_frames = get_HD_frames(analysed_name,clear_cache)
    
    # Get the HD stack
-   hd_stack = get_stacks(analysed_name,clear_cache,True)
-   sd_stack = get_stacks(analysed_name,clear_cache,False) 
+   tmp_analysed_name = json_full_path
+   hd_stack = get_stacks(tmp_analysed_name,clear_cache,True)
+   sd_stack = get_stacks(tmp_analysed_name,clear_cache,False) 
    #print(get_cache_path(analysed_name,"stacks") +"<br>")
    print("HD STACK<br/>")
    print(hd_stack)
