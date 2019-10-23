@@ -144,8 +144,10 @@ def get_new_info(json_f):
       "info": {
          "station": json_f['station_id'],
          "hd_vid":  json_f['hd_vid'],
-         "sd_vid": json_f['sd_vid'],
-         "device": json_f['cam_id'],
+         "sd_vid":  json_f['sd_vid'],
+         "org_hd_vid":  json_f['org_hd_vid'],
+         "org_sd_vid":  json_f['org_sd_vid'],
+         "device":  json_f['cam_id'],
          "dur": float(json_f['event_duration']),
          "max_peak": float(json_f['peak_magnitude'])
       }
@@ -207,6 +209,10 @@ def convert_json(json_file_path, sd_video_file_path, hd_video_file_path):
    # Add the videos to json_f
    json_f['org_hd_vid'] = hd_video_file_path
    json_f['org_sd_vid'] = sd_video_file_path
+
+   # Temporary until we move the videos
+   json_f['hd_vid'] = hd_video_file_path
+   json_f['sd_vid'] = sd_video_file_path
 
    # Convert info 
    info = get_new_info(json_f)
