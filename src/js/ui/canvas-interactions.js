@@ -177,14 +177,22 @@ if ($('canvas#c').length!=0) {
         }   
 
         if(id != '') {
+
+         var found_i;
+
          // We remove the objects from the canvas
          for (var key in all_added_stars) {
+            found_i = '';
             for (var i = 0; i < all_added_stars[key].length; i++) {
                 if(id == all_added_stars[key][i].gp_id) {
                   canvas.remove(all_added_stars[key][i]);
-                  all_added_stars[key].splice(i, 1);
+                  found_i = key;
                 }
             }
+            if(found_id!='') {
+               all_added_stars.splice(key,1);
+            }
+
          }   
         }
 
