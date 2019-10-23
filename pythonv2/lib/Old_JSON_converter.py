@@ -277,7 +277,8 @@ def move_old_detection_to_archive(json_file_path, sd_video_file_path, hd_video_f
       print("VIDEOS FILE SAVE TO " + new_folder)
 
 
-   # Now we take care of the frames
+   # Now we take care of the frames we get from json_file_path
+   print("FRAMES IN " +  json_file_path)
   
 
    # Create the definitive json_content
@@ -297,4 +298,4 @@ def move_old_detection_to_archive(json_file_path, sd_video_file_path, hd_video_f
    
  
 
-   return new_folder + tan['name'],end_video_file
+   #return new_folder + tan['name'],end_video_file
