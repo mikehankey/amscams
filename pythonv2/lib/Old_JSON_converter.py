@@ -182,6 +182,11 @@ def convert(json_file_path):
    # Analyse the name
    analysed_name = old_name_analyser(json_file_path)
    
+   # Get the device name if it doesn't exists in the JSON
+   if('station_id' not in analysed_name):
+      # We get the station id from what??,
+      analysed_name['station_id'] = get_station_id();
+
    print("<br>")
    print(analysed_name)
    sys.exit(0)
