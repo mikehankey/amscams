@@ -203,8 +203,8 @@ def convert(json_file_path, sd_video_file_path, hd_video_file_path):
 
 
    # Add the videos to json_f
-   json_f['hd_video'] = hd_video_file_path
-   json_f['sd_video'] = sd_video_file_path
+   json_f['hd_vid'] = hd_video_file_path
+   json_f['sd_vid'] = sd_video_file_path
 
 
    # Convert info 
