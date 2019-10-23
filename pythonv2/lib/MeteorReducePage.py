@@ -17,6 +17,8 @@ def reduce_meteor2(json_conf,form):
    # Debug
    cgitb.enable()
 
+   HD = True
+
    # Build the page based on template  
    with open(PAGE_TEMPLATE, 'r') as file:
       template = file.read()
@@ -49,6 +51,7 @@ def reduce_meteor2(json_conf,form):
    
    if(cfe(video_hd_full_path)==0):
       video_hd_full_path = ''
+      HD = False
    
    if(cfe(video_sd_full_path)==0):
        print_error(video_sd_full_path + " <b>not found.</b><br/>At least one SD video is required.")
@@ -79,6 +82,7 @@ def reduce_meteor2(json_conf,form):
     
    # Get the thumbs (cropped HD frames)
    print("BEFORE THUMBS<br/>")
+
    thumbs = get_thumbs(tmp_analysed_name,meteor_json_file,HD,HD_frames,clear_cache)
    sys.exit(0)
   
