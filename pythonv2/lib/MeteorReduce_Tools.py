@@ -296,11 +296,11 @@ def generate_cropped_frames(analysed_name,meteor_json_data,HD_frames,HD):
 # Generate it if necessary
 def get_stacks(analysed_name,clear_cache,toHD):
      
-   print("IN GET STACKS<br/>")
-   print(analysed_name)
-
    # Do we have the Stack for this detection 
-   stacks = does_cache_exist(analysed_name,"stacks")
+   if(toHD):
+      stacks = glob.glob(get_cache_path(analysed_name,"stacks")+"*"+"-HD"+"*") 
+   else:
+      stacks = glob.glob(get_cache_path(analysed_name,"stacks")+"*"+"-SD"+"*") 
 
    if(len(stacks)==0 or clear_cache is True):
       # We need to generate the Stacks 
@@ -308,7 +308,6 @@ def get_stacks(analysed_name,clear_cache,toHD):
       # get_cache_path(analysed_name,"stacks") + analysed_name['name_w_ext'] + ".png"
       stack_file = generate_stacks(analysed_name['full_path'],get_cache_path(analysed_name,"stacks")+analysed_name['name_w_ext']+".png",toHD)
    else:
-      # We hope this is the first one in the folder (it should!!)
       stack_file = stacks[0]
 
    return stack_file
