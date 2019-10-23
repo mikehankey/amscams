@@ -15,7 +15,7 @@ from lib.MeteorReduce_Calib_Tools import XYtoRADec
 from lib.REDUCE_VARS import *
 from lib.VIDEO_VARS import *
 from lib.CGI_Tools import redirect_to
-from lib.Old_JSON_converter import fix_old_file_name, get_new_calib, convert, move_old_detection_to_archive, old_name_analyser
+from lib.Old_JSON_converter import fix_old_file_name, get_new_calib, move_old_detection_to_archive, old_name_analyser
 
 MANUAL_RED_PAGE_TEMPLATE_STEP0 = "/home/ams/amscams/pythonv2/templates/manual_reduction_template_step0.html"
 MANUAL_RED_PAGE_TEMPLATE_STEP1 = "/home/ams/amscams/pythonv2/templates/manual_reduction_template_step1.html"
