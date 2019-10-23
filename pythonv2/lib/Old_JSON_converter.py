@@ -206,15 +206,8 @@ def convert(json_file_path, sd_video_file_path, hd_video_file_path):
    json_f['hd_vid'] = hd_video_file_path
    json_f['sd_vid'] = sd_video_file_path
 
-
    # Convert info 
    info = get_new_info(json_f)
-
-
-   print("<br>")
-   print(info)
-   sys.exit(0)
-
 
    # Add the original name with trim in case there's an issue
    info['info']['org_file_name'] = json_file_path
