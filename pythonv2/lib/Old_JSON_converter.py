@@ -142,8 +142,7 @@ def get_new_info(json_f):
       station_name = get_station_id()
    else:
       station_name = json_f['station_name']
- 
-
+  
    return  {
       "info": {
          "station": station_name,

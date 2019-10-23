@@ -271,38 +271,6 @@ def manual_reduction_create_final_json(form):
    # We parse the frames_info
    frames_info = json.loads(frames_info)
 
-
-   #print("VIDEO FILE " + video_file + "<br/>") 
-   # First we test if it's an old file
-   #if METEOR_ARCHIVE not in video_file: 
-      
-      # It is an old file
-      # so we need to create the new json 
-      # and move the json and the video file under /meteor_archive
-      #old_json = video_file.replace('.mp4','.json')    
-      #old_json = old_json.replace('-HD-meteor','')
-
-      # In order to get the old json file, we need to add a wild card for the seconds
-      # First, we get the filename
-      #tmp_folder =  os.path.dirname(os.path.abspath(old_json))
-      #tmp_video_file = os.path.basename(old_json)
-
-      #Replace the seconds by a wild card
-      # and the stupid fucking '-' after trim by a * (since we can have extra 0 here)
-      #tmp_video_file = tmp_video_file[0:17] + "*" + tmp_video_file[19:35] + "*" + tmp_video_file[36:] 
-      #search_old_json = glob.glob(tmp_folder+'/'+tmp_video_file) 
-      
- 
-      #if(len(search_old_json)>0):
-      #   old_json = search_old_json[0]
-      #else:
-      #   print_error("<b>JSON File not found: " + tmp_folder+'/'+tmp_video_file + "</b>")
-      #   sys.exit(0)
- 
-      #if(cfe(old_json)):
-      #   json_file, video_file = move_old_detection_to_archive(old_json, video_file)
-
-  
    # Get JSON
    meteor_red_file = json_file
    analysed_name = name_analyser(meteor_red_file)
@@ -321,6 +289,8 @@ def manual_reduction_create_final_json(form):
       # We get the dt of frame #0
       # based on the name of the file 
       # (with trim!!) 
+      print("VIDEO FILE:<br/>")
+      print(video_file)
       name_analysed = name_analyser(video_file)
     
       # We create the new frames
@@ -328,6 +298,9 @@ def manual_reduction_create_final_json(form):
  
          # Get the Frame time (as a string)
          dt = get_frame_time(mr,frame['fn'],analysed_name)
+
+         print("DT<br/>")
+         print(dt)
  
          # Get the new RA/Dec 
          new_x, new_y, RA, Dec, az, el =  XYtoRADec(int(frame['x']),int(frame['y']),analysed_name,mr)
@@ -360,7 +333,6 @@ def manual_reduction_create_final_json(form):
       # We update the JSON with the new frames
       save_json_file(meteor_red_file, mr) 
  
-
       redirect_to("/pycgi/webUI.py?cmd=reduce2&video_file=" + video_file + "&clear_cache=1&c=" + str(random.randint(0,100000000)), "reduction")
  
    else: 
