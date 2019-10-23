@@ -163,18 +163,30 @@ if ($('canvas#c').length!=0) {
         var grpFound = false;
         var clickPoint = new fabric.Point(x_val,y_val);
         var objects = canvas.getObjects('circle');
-        var id;
+        var id='';
           
         
         for (var key in all_added_stars) {
            for (var i = 0; i < all_added_stars[key].length; i++) {
                if(objFound == false && all_added_stars[key][i].containsPoint(clickPoint)) {
-                  console.log(all_added_stars[key][i]);
                   objFound = true;
+                  id = all_added_stars[key][i].gp_id;
                   break;
                }
            }
         }   
+
+        if(id != '') {
+           // We remove the objects from the canvas
+           for (var key in all_added_stars) {
+            for (var i = 0; i < all_added_stars[key].length; i++) {
+                if(id == all_added_stars[key][i].gp_id) {
+                  canvas.remove( all_added_stars[key][i]);
+                }
+            }
+         }   
+        }
+
 
         /*
 
