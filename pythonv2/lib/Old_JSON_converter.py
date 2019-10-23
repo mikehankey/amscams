@@ -214,7 +214,8 @@ def convert(json_file_path, sd_video_file_path, hd_video_file_path):
 
    calib = get_new_calib(reduced_info)
 
-   sys.exit(0);
+   print(calib)
+   sys.exit(0)
 
    stars = get_new_stars(json_f)
 
