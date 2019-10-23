@@ -17,6 +17,7 @@ from lib.ReducerLib import stack_frames
 from lib.REDUCE_VARS import *
 from lib.VIDEO_VARS import * 
 from lib.ImageLib import stack_stack
+from lib.Get_Station_Id import get_station_id
  
  
 # Parses a regexp (FILE_NAMES_REGEX) a file name
@@ -37,6 +38,9 @@ def name_analyser(file_names):
 
    # Add the full file_names (often a full path) to the array so we don't have to pass the original when we need it
    res['full_path'] = file_names
+
+   # Add the station id
+   res['station_id'] = get_station_id()
  
    return res
 
