@@ -70,7 +70,9 @@ def reduce_meteor2(json_conf,form):
 
    # Get the HD frames
    HD_frames = get_HD_frames(analysed_name,clear_cache)
-   #print(get_cache_path(analysed_name,"frames") +"<br>")
+   print("HD FRAMES")
+   print(HD_frames)
+   sys.exit(0)
 
    # Get the stacks
    stack = get_stacks(analysed_name,clear_cache)
