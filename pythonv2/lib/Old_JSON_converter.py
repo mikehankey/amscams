@@ -182,6 +182,7 @@ def convert(json_file_path):
    if('station_id' not in analysed_name):
       # We get the station id from what??,
       analysed_name['station_id'] = get_station_id()
+      json_f['station_id'] = analysed_name['station_id']
     
    # Convert info 
    info = get_new_info(json_f)
