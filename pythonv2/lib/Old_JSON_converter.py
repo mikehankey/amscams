@@ -137,17 +137,13 @@ def get_new_calib(json_f):
    }}
 
 # Get new info (device & detection info) from an old JSON version
-def get_new_info(json_f):
-   if('station_name' not in json_f):
-      station_name = get_station_id()
-   else:
-      station_name = json_f['station_name']
+def get_new_info(json_f): 
   
    return  {
       "info": {
-         "station": station_name,
+         "station": json_f['station_id'],
          "hd": 1, # We assume we have the HD vid by default (not a big deal if we dont)
-         "device": json_f['device_name'],
+         "device": json_f['cam_id'],
          "dur": float(json_f['event_duration']),
          "max_peak": float(json_f['peak_magnitude'])
       }
@@ -186,6 +182,8 @@ def convert(json_file_path):
    if('station_id' not in analysed_name):
       # We get the station id from what??,
       analysed_name['station_id'] = get_station_id();
+   
+   if('')
 
    # Convert info 
    info = get_new_info(json_f)
