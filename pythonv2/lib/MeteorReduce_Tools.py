@@ -162,6 +162,9 @@ def get_thumb(analysed_name,frame_id):
 # Generate them if necessary
 def get_thumbs(analysed_name,meteor_json_data,HD,HD_frames,clear_cache):
 
+   # Debug
+   cgitb.enable()
+
    # Do we have them already?
    thumbs = does_cache_exist(analysed_name,"cropped")
 

@@ -71,19 +71,21 @@ def reduce_meteor2(json_conf,form):
    
    # Get the HD stack
    tmp_analysed_name = name_analyser(json_full_path)
-   hd_stack = get_stacks(tmp_analysed_name,clear_cache,True)
-   sd_stack = get_stacks(tmp_analysed_name,clear_cache,False) 
+   if(video_hd_full_path != '')
+      stack = get_stacks(tmp_analysed_name,clear_cache,True)
+   else:
+      stack = get_stacks(tmp_analysed_name,clear_cache,False) 
    
     
    # Get the thumbs (cropped HD frames)
    print("BEFORE THUMBS<br/>")
-   thumbs = get_thumbs(analysed_name,meteor_json_file,HD,HD_frames,clear_cache)
+   thumbs = get_thumbs(tmp_analysed_name,meteor_json_file,HD,HD_frames,clear_cache)
    print(get_cache_path(analysed_name,"cropped") +"<br>")
    sys.exit(0)
   
    # Fill Template with data
    template = template.replace("{VIDEO_FILE}", str(video_full_path))   # Video File  
-   template = template.replace("{STACK}", str(hd_stack))                  # HD Stack File 
+   template = template.replace("{STACK}", str(stack))                  # Stack File 
    template = template.replace("{EVENT_DURATION}", str(meteor_json_file['info']['dur']))          # Duration
    template = template.replace("{EVENT_MAGNITUDE}", str(meteor_json_file['info']['max_peak']))    # Peak_magnitude
 
