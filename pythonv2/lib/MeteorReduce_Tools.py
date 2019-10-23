@@ -18,6 +18,16 @@ from lib.REDUCE_VARS import *
 from lib.VIDEO_VARS import * 
 from lib.ImageLib import stack_stack
 from lib.Get_Station_Id import get_station_id
+
+# Return an error message
+def get_error(msg):
+   return "<div class='alert alert-danger'>"+msg+"</div>"
+
+# Display an error message on the page
+def print_error(msg):
+   print("<div id='main_container' class='container mt-4 lg-l'>"+get_error(msg)+"</div>")
+   sys.exit(0)
+
  
  
 # Parses a regexp (FILE_NAMES_REGEX) a file name
@@ -307,8 +317,10 @@ def get_stacks(analysed_name,clear_cache,toHD):
       # Destination = 
       # get_cache_path(analysed_name,"stacks") + analysed_name['name_w_ext'] + ".png"
       if(toHD):
+         print("GENERATE HD STACK<br/>")
          stacks =  generate_stacks(analysed_name['full_path'],get_cache_path(analysed_name,"stacks")+analysed_name['name_w_ext']+"-HD.png",toHD)
       else:
+         print("GENERATE SD STACK<br/>")
          stacks =  generate_stacks(analysed_name['full_path'],get_cache_path(analysed_name,"stacks")+analysed_name['name_w_ext']+"-SD.png",toHD)
 
       stack_file = stacks
@@ -346,6 +358,8 @@ def generate_stacks(video_full_path, destination, toHD):
       # Resize to HD (HD_W, HD_H)    
       stacked_image = stacked_image.resize((HD_W, HD_H))
       stacked_image.save(destination)
+   elif stacked_image is None:
+      print_error("Impossible to generate the stacks") 
    return destination
 
 
