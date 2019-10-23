@@ -273,7 +273,7 @@ def manual_reduction_create_final_json(form):
 
    # Get JSON
    meteor_red_file = json_file
-   analysed_name = name_analyser(meteor_red_file)
+   analysed_name = old_name_analyser(meteor_red_file)
 
    if cfe(meteor_red_file) == 1:
 
@@ -291,7 +291,7 @@ def manual_reduction_create_final_json(form):
       # (with trim!!) 
       print("VIDEO FILE:<br/>")
       print(video_file)
-      name_analysed = name_analyser(video_file)
+      name_analysed = old_name_analyser(video_file)
 
       print("ANALYSED NAME:<br/>")
       print(name_analysed)
