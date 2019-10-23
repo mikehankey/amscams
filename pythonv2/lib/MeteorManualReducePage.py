@@ -249,7 +249,7 @@ def manual_reduction_meteor_pos_selector(form):
 
 
 # Fourth Step : update of the JSON (THIS IS FOR THE OLD approach)
-def manual_reduction_create_final_json1(form):
+def manual_reduction_create_final_json(form):
    video_file   = form.getvalue('video_file')  
    frames_info  = form.getvalue('frames')  
 
@@ -278,10 +278,7 @@ def manual_reduction_create_final_json2(form):
    if cfe(meteor_red_file) == 1:
 
       # We parse the JSON
-      mr = load_json_file(meteor_red_file)
-
-      print(mr)
-      sys.exit(0)
+      mr = load_json_file(meteor_red_file) 
          
       # We remove all the current frames if they exist
       if('frames' in mr):
