@@ -49,13 +49,14 @@ def reduce_meteor2(json_conf,form):
    if(len(analysed_name)==0):
       print_error(video_full_path + " <b>is not valid video file name.</b>")
    elif(os.path.isfile(video_full_path) is False):
-      print_error(video_full_path + " <b>not found.XXXXX</b>")
+      print_error(video_full_path + " <b>not found.</b>")
   
    # Is it HD? 
    HD = ("HD" in analysed_name)
    
    # Retrieve the related JSON file that contains the reduced data
-   meteor_json_file = video_full_path.replace(".mp4", ".json") 
+   meteor_json_file = video_full_path.replace("-SD.mp4", ".json")  # In case we passed the SD
+   meteor_json_file = meteor_json_file.replace("-HD.mp4", ".json") # In case we passed the HD
 
    # Does the JSON file exists?
    if(os.path.isfile(meteor_json_file) is False):
