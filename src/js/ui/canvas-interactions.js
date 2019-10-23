@@ -178,15 +178,15 @@ if ($('canvas#c').length!=0) {
 
         if(id != '') {
 
-         var found_i;
+         var found_id;
 
          // We remove the objects from the canvas
          for (var key in all_added_stars) {
-            found_i = '';
+            found_id = '';
             for (var i = 0; i < all_added_stars[key].length; i++) {
                 if(id == all_added_stars[key][i].gp_id) {
                   canvas.remove(all_added_stars[key][i]);
-                  found_i = key;
+                  found_id = key;
                 }
             }
             if(found_id!='') {
