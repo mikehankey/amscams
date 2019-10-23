@@ -240,11 +240,8 @@ def move_old_detection_to_archive(json_file_path, sd_video_file_path, hd_video_f
       print("PARAM FILES " + param_files[0][0]  + " not found" )
       sys.exit(0)
    else:
-      print("PARAM FILE" + param_files[0][0])
-
-
-   sys.exit(0)
-
+      print("PARAM FILE: " + param_files[0][0])
+ 
    # We parse the param
    param_json = load_json_file(param_files[0][0])
 
@@ -253,7 +250,8 @@ def move_old_detection_to_archive(json_file_path, sd_video_file_path, hd_video_f
    param_json_analysed_name = name_analyser(clean_param_json_name)
    calib_dt = get_datetime_from_analysedname(param_json_analysed_name)
    calib_dt = datetime.strftime(calib_dt, '%Y-%m-%d %H:%M:%S')
-   
+
+   print("CALIB DT "  + calib_dt)   
 
    # Do we have the device info in param_json?
    if('device_alt' in param_json):
