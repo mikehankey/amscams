@@ -82,7 +82,7 @@ if ($('canvas#c').length!=0) {
     // We compute the W_factor & H_factor
     // to pass the equivalent of HD x,y on the RADEC_MODE
     var wRatio = HD_w/$('#c').innerWidth();
-    var hRatio = HD_h/$('#c').innerHeight();
+    var hRatio = HD_h/$('#c').innerWidth();
 
     $('#canvas_zoom').css({'background':'url('+my_image +') no-repeat 50% 50% #000','background-size': h_canvas_w*zoom + 'px ' + h_canvas_h*zoom + 'px' })
     $('.canvas_zoom_holder').css({'width':w_preview_dim*2, 'height':h_preview_dim*2,'position':'absolute'});
@@ -129,7 +129,6 @@ if ($('canvas#c').length!=0) {
     }); 
     
     canvas.on('mouse:down', function(e) {
-
       // Remove zoom
       if($('#c').hasClass('r-zoomed')) {
          $('#c').removeClass('r-zoomed').removeAttr('style'); 
@@ -141,8 +140,7 @@ if ($('canvas#c').length!=0) {
      
       // Not in RADEC_MODE: it means we select stars on the canvas
       if(RADEC_MODE==false) {
-
-        // Make the update star button blinked
+         // Make the update star button blinked
         make_it_blink($('#update_stars'));
 
         var pointer = canvas.getPointer(event.e);
@@ -163,83 +161,12 @@ if ($('canvas#c').length!=0) {
         var grpFound = false;
         var clickPoint = new fabric.Point(x_val,y_val);
         var objects = canvas.getObjects('circle');
-        var id='';
-          
-        
-        for (var key in all_added_stars) {
-           for (var i = 0; i < all_added_stars[key].length; i++) {
-               if(objFound == false && all_added_stars[key][i].containsPoint(clickPoint)) {
-                  objFound = true;
-                  id = all_added_stars[key][i].gp_id;
-                  break;
-               }
-           }
-        }   
-
-        if(id != '') {
-
-         var found_id;
-
-         // We remove the objects from the canvas
-         for (var key in all_added_stars) {
-            found_id = '';
-            for (var i = 0; i < all_added_stars[key].length; i++) {
-                if(id == all_added_stars[key][i].gp_id) {
-                  canvas.remove(all_added_stars[key][i]);
-                  found_id = key;
-                }
-            }
-            if(found_id!='') {
-               all_added_stars.splice(key,1);
-            }
-
-         }   
-        }
-
-
-        /*
-
-        for (var i = 0; i < all_added_stars; i++) {
-            console.log(all_added_stars[i]);
-            for(var x=0; x<all_added_stars[i]; x++) {
-               console.log(ll_added_stars[i][x]);
-            }
-         }
-
-        
-
-          /*
-            var star_infos = v;
-            var found = false;
-            var all_right_star_info;
-            $.each(star_infos,function(sv,si){
-
-               console.log("star_info[si] ",star_info[si]);
-               console.log("containsPoint ", star_info[si].containsPoint(clickPoint));
-
-               if(found = false && star_info[si].containsPoint(clickPoint)) {
-                  objFound = true;
-                  all_right_star_info = star_infos;
-                  found = true;
-               }
-            });
-
-            if(found == true) {
-               $.each(all_right_star_info,function(sv,si){
-                  canvas.remove(all_right_star_info[si]);
-               });
-            }
-            */
-
-        /*
-
+        var id;
+         
         // Remove an existing star
         for (let i in objects) {
-          
-          if (!objFound && objects[i].containsPoint(clickPoint)) { 
+          if (!objFound && objects[i].containsPoint(clickPoint)) {
               objFound = true;
-              console.log("YES");
-              console.log(objects[i]);
               id = objects[i].gp_id;
               canvas.remove(objects[i]);
             }
@@ -256,8 +183,7 @@ if ($('canvas#c').length!=0) {
                 }
           }
         }  
-        
-        */
+  
 
         if(objFound && grpFound) {
           // An existing star has been removed 
@@ -274,7 +200,6 @@ if ($('canvas#c').length!=0) {
         }
         
         update_user_stars();
-
       } else {
 
          // Here we just point at the canvas to get RA/Dec
@@ -294,12 +219,11 @@ if ($('canvas#c').length!=0) {
          }); 
 
          canvas.add(marker); 
- 
 
          // Add the object info in rad_dec_object
          new_rad_dec_obj = {x_org: x_val, y_org: y_val, x_HD: wRatio*x_val, y_HD: hRatio*y_val};
          rad_dec_object.push(new_rad_dec_obj);
-         // Add info to the panel on the pagew
+         // Add info to the panel on the page
          add_radec_info(new_rad_dec_obj)
 
       }
