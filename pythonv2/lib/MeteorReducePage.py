@@ -42,7 +42,6 @@ def reduce_meteor2(json_conf,form):
    # We need at least one video file
    if(video_full_path is not None):
       analysed_name = name_analyser(video_full_path)
-      print(analysed_name)
    else:
       print_error("<b>You need to add a video file in the URL.</b>")
 

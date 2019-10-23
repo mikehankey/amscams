@@ -306,7 +306,13 @@ def get_stacks(analysed_name,clear_cache,toHD):
       # We need to generate the Stacks 
       # Destination = 
       # get_cache_path(analysed_name,"stacks") + analysed_name['name_w_ext'] + ".png"
-      stack_file = generate_stacks(analysed_name['full_path'],get_cache_path(analysed_name,"stacks")+analysed_name['name_w_ext']+".png",toHD)
+      if(toHD):
+         stacks =  generate_stacks(analysed_name['full_path'],get_cache_path(analysed_name,"stacks")+analysed_name['name_w_ext']+"-HD.png",toHD)
+      else:
+         stacks =  generate_stacks(analysed_name['full_path'],get_cache_path(analysed_name,"stacks")+analysed_name['name_w_ext']+"-SD.png",toHD)
+
+      stack_file = stacks
+  
    else:
       stack_file = stacks[0]
 
