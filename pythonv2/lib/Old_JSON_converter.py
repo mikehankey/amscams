@@ -56,6 +56,9 @@ def fix_old_file_name(filename):
    if("-reduced" in filename):
       filename = filename.replace("-reduced", "")
 
+   if("-stacked-calparams" in filename):
+      filename = filename.replace("-stacked-calparams", "")
+
    trim_value = 0 
 
    if("trim" in filename):
