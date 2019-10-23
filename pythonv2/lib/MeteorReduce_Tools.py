@@ -337,7 +337,7 @@ def generate_stacks(video_full_path, destination, toHD):
       # Resize  (STACK_W, STACK_H) & Save to destination 
       stacked_image = stacked_image.resize((STACK_W, STACK_H))
       stacked_image.save(destination)
-   elif stacked_image is not None:
+   elif stacked_image is not None: 
       # Resize to HD (HD_W, HD_H)    
       stacked_image = stacked_image.resize((HD_W, HD_H))
       stacked_image.save(destination)
