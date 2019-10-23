@@ -27,6 +27,8 @@ def name_analyser(file_names):
   
    for matchNum, match in enumerate(matches, start=1):
       for groupNum in range(0, len(match.groups())):
+         print(FILE_NAMES_REGEX_GROUP[groupNum])
+         print(match.group(groupNum))
          if(match.group(groupNum) is not None):
             res[FILE_NAMES_REGEX_GROUP[groupNum]] = match.group(groupNum)
          groupNum = groupNum + 1
