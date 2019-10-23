@@ -229,6 +229,9 @@ def move_old_detection_to_archive(json_file_path, sd_video_file_path, hd_video_f
 
    # Get the new JSON file based on all info
    new_json_file = convert_json(json_file_path, sd_video_file_path, hd_video_file_path)
+
+   print("NEW JSON FILE")
+   print(new_json_file)
    
    # We fix the old name to get the proper info
    fixed_json_file_path = fix_old_file_name(json_file_path)
@@ -251,7 +254,7 @@ def move_old_detection_to_archive(json_file_path, sd_video_file_path, hd_video_f
    calib_dt = get_datetime_from_analysedname(param_json_analysed_name)
    calib_dt = datetime.strftime(calib_dt, '%Y-%m-%d %H:%M:%S')
 
-   print("CALIB DT "  + calib_dt)   
+   
 
    # Do we have the device info in param_json?
    if('device_alt' in param_json):
