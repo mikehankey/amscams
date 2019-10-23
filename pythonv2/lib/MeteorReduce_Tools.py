@@ -27,11 +27,13 @@ def name_analyser(file_names):
   
    for matchNum, match in enumerate(matches, start=1):
       for groupNum in range(0, len(match.groups())): 
-         if(match.group(groupNum) is not None):
-            print(match.group(groupNum) + "<br/>")
-            res[FILE_NAMES_REGEX_GROUP[groupNum]] = match.group(groupNum)
          groupNum = groupNum + 1
+         print ("Group {groupNum} found at {start}-{end}: {group}".format(groupNum = groupNum, start = match.start(groupNum), end = match.end(groupNum), group = match.group(groupNum)))
 
+         #if(match.group(groupNum) is not None):
+         #   print(match.group(groupNum) + "<br/>")
+         #   res[FILE_NAMES_REGEX_GROUP[groupNum]] = match.group(groupNum)
+         
    # Get Name without extension if possible
    if(res is not None and "name" in res):
       res['name_w_ext'] = res['name'].split('.')[0]
