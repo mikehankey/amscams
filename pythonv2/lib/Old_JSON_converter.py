@@ -258,31 +258,17 @@ def move_old_detection_to_archive(json_file_path, sd_video_file_path, hd_video_f
    new_json_file['calib']['org_file'] = param_files[0][0];
 
    # Determine the folder where to put the files
+   tan = old_name_analyser(json_file_path)
    new_folder = get_new_archive_folder(old_name_analyser(json_file_path))
-
-   print(new_folder)
-   sys.exit(0)
-
-   print(param_files[0][0])   
-   sys.exit(0)
-
 
    # If the new_folder doesn't exist, we create it
    if not os.path.exists(new_folder):
       os.makedirs(new_folder)
- 
-  
-   # We add the HD to the name if we have one
-   # TODO: TEST IF IT'S HD!!!
-   if(HD==1):
-      tan['name'] = tan['name'].replace("SD","HD")
-   
-   #print("<BR>We will create the file " + tan['name'] +'<br>')
-   #print("IN THE DIR " + new_folder)
-   #print("<br/>AND WE WILL MOVE THE VIDEO " + video_file)
-   #print("WITH THE NAME " + tan['name'].replace(".json",".mp4") )
-   #print(" THERE<br/>")
 
+   # We move the video to the folder
+   new_hd_video_file = new_folder + tan['name'] .replace(".json","-HD.mp4")
+   print(new_hd_video_file)
+   sys.exit(0)
 
    # Move the video file
    end_video_file = new_folder+tan['name'].replace(".json",".mp4")
