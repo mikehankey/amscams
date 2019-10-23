@@ -195,6 +195,11 @@ def convert(json_file_path):
 
    if('cam_id' in analysed_name):
       json_f['cam_id'] = analysed_name['cam_id']
+
+   print(reduced_info)
+
+   if('event_duration' not in json_f and reduced_info is not None):
+      json_f['event_duration'] = reduced_info['event_duration']
     
    # Convert info 
    info = get_new_info(json_f)
