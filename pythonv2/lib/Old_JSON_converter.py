@@ -193,8 +193,8 @@ def convert(json_file_path):
       analysed_name['station_id'] = get_station_id()
       json_f['station_id'] = analysed_name['station_id']
 
-   if('cam_id' not in analysed_name):
-      print("CAM ID MISSING")
+   if('cam_id' in analysed_name):
+      json_f['cam_id'] = analysed_name['cam_id']
     
    # Convert info 
    info = get_new_info(json_f)
