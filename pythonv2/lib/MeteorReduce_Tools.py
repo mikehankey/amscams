@@ -84,8 +84,6 @@ def does_cache_exist(analysed_file_name,cache_type):
    # Get Cache Path
    cache_path = get_cache_path(analysed_file_name,cache_type)
  
-   print("CACHE PATH " + cache_path)
-
    if(os.path.isdir(cache_path)):
       # We return the glob of the folder with all the images
       return sorted(glob.glob(cache_path+"/*.png"))
@@ -358,6 +356,9 @@ def get_HD_frames(analysed_name,clear_cache):
 
    # Test if folder exists / Create it if not
    HD_frames = does_cache_exist(analysed_name,"frames")
+
+   print(HD_frames)
+   sys.exit(0)
 
    if(len(HD_frames)==0 or clear_cache is True):
       # We need to generate the HD Frame
