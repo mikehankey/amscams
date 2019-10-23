@@ -36,47 +36,54 @@ def reduce_meteor2(json_conf,form):
    else:
       clear_cache = False
 
-   # Get Video File & Analyse the Name to get quick access to all info
-   video_full_path = form.getvalue("video_file")
-
+   # We need at least one video file
    if(video_full_path is not None):
       analysed_name = name_analyser(video_full_path)
       print(analysed_name)
    else:
       print_error("<b>You need to add a video file in the URL.</b>")
 
+   # Get Video File & Analyse the Name to get quick access to all info
+   video_full_path = form.getvalue("video_file")
+
+   # We get the proper json and the other video file
+   if('HD' in video_full_path):
+      video_hd_full_path = video_full_path
+      video_sd_full_path = video_full_path.replace('-HD','-SD')
+      json_full_path = video_full_path.replace('-HD.mp4','.json')
+   elif('SD' in video_full_path):
+      video_sd_full_path = video_full_path 
+      video_hd_full_path = video_full_path.replace('-SD','-HD')
+      json_full_path = video_full_path.replace('-SD.mp4','.json') 
+   
+   if(cfe(video_hd_full_path)==0):
+      video_hd_full_path = ''
+   
+   if(cfe(video_sd_full_path)==0):
+       print_error(video_sd_full_path + " <b>not found.</b><br/>At least one SD video is required.")
+
+   if(cfe(json_full_path)==0):
+       print_error(json_full_path + " <b>not found.</b><br>This detection may had not been reduced yet or the reduction failed.")
+
    # Test if the name is ok
    if(len(analysed_name)==0):
-      print_error(video_full_path + " <b>is not valid video file name.</b>")
-   elif(os.path.isfile(video_full_path) is False):
-      print_error(video_full_path + " <b>not found.</b>")
+      print_error(video_full_path + " <b>is not valid video file name.</b>") 
   
-   # Is it HD? 
-   HD = ("HD" in analysed_name)
-   
-   # Retrieve the related JSON file that contains the reduced data
-   meteor_json_file = video_full_path.replace("-SD.mp4", ".json")  # In case we passed the SD
-   meteor_json_file = meteor_json_file.replace("-HD.mp4", ".json") # In case we passed the HD
-
-   # Does the JSON file exists?
-   if(os.path.isfile(meteor_json_file) is False):
-      print_error(meteor_json_file + " <b>not found.</b><br>This detection may had not been reduced yet or the reduction failed.")
-   
    # Add the JSON Path to the template
-   template = template.replace("{JSON_FILE}", str(meteor_json_file))   # Video File  
+   template = template.replace("{JSON_FILE}", str(json_full_path))   # Video File  
 
    # Parse the JSON
-   meteor_json_file = load_json_file(meteor_json_file) 
+   meteor_json_file = load_json_file(json_full_path) 
 
    # Get the HD frames
    HD_frames = get_HD_frames(analysed_name,clear_cache)
    
-   # Get the stacks
-   stack = get_stacks(analysed_name,clear_cache)
+   # Get the HD stack
+   hd_stack = get_stacks(analysed_name,clear_cache,True)
    #print(get_cache_path(analysed_name,"stacks") +"<br>")
-
-   print("STACKS")
-   print(stack)
+   sys.exit(0)
+   #print("STACKS")
+   #print(stack)
     
    # Get the thumbs (cropped HD frames)
    thumbs = get_thumbs(analysed_name,meteor_json_file,HD,HD_frames,clear_cache)
