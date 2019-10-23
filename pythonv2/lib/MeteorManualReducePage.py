@@ -279,6 +279,9 @@ def manual_reduction_create_final_json(form):
 
       # We parse the JSON
       mr = load_json_file(meteor_red_file)
+
+      print(mr)
+      sys.exit(0)
          
       # We remove all the current frames if they exist
       if('frames' in mr):
