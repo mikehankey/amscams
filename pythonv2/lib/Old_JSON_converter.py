@@ -173,6 +173,14 @@ def get_new_stars(json_f):
 
    return {"stars": new_stars}
 
+# Get new frames from an old JSON Version
+def get_new_frames(json_f):
+   new_frames = []
+   for frame in json_f['meteor_frame_data']
+      print("FRAME")
+      print(frame)
+   sys.exit(0)
+
 # Convert a whole old JSON file following the new DTD
 def convert_json(json_file_path, sd_video_file_path, hd_video_file_path):
    
@@ -224,9 +232,12 @@ def convert_json(json_file_path, sd_video_file_path, hd_video_file_path):
    info['info']['org_file_name'] = json_file_path
 
    calib = get_new_calib(reduced_info)
- 
    stars = get_new_stars(reduced_info)
-  
+
+   # Get the frames here (from reduced_info)
+   frames = get_new_frames(reduced_info)
+
+
    # The stars belong to calib
    calib['calib']['stars'] = stars['stars']
    
@@ -278,7 +289,8 @@ def move_old_detection_to_archive(json_file_path, sd_video_file_path, hd_video_f
 
 
    # Now we take care of the frames we get from json_file_path
-   print("FRAMES IN " +  json_file_path)
+   # Get the temporary red info
+   
   
 
    # Create the definitive json_content
