@@ -279,7 +279,9 @@ def move_old_detection_to_archive(json_file_path, sd_video_file_path, hd_video_f
    new_json_file['calib']['org_file'] = param_files[0][0]
 
    # Determine the folder where to put the files
-   tan = old_name_analyser(json_file_path)
+   tan = old_name_analyser(sd_video_file_path)
+   tan['name'] = tan['name'].replace('.mp4','.json')
+   tan['name'] = tan['name'].replace('-SD','') # Eventually
    new_folder = get_new_archive_folder(old_name_analyser(json_file_path))
 
    # If the new_folder doesn't exist, we create it
@@ -288,11 +290,11 @@ def move_old_detection_to_archive(json_file_path, sd_video_file_path, hd_video_f
 
    # We move the videos to the folder
    if(cfe(hd_video_file_path)):
-      new_hd_video_file = new_folder + tan['name'] .replace(".json","-HD.mp4")
+      new_hd_video_file = new_folder + tan['name'].replace(".json","-HD.mp4")
       shutil.copy2(hd_video_file_path,new_hd_video_file)
 
    if(cfe(sd_video_file_path)):
-      new_sd_video_file = new_folder + tan['name'] .replace(".json","-SD.mp4")
+      new_sd_video_file = new_folder + tan['name'].replace(".json","-SD.mp4")
       shutil.copy2(sd_video_file_path,new_sd_video_file)   
    
    if(display is True):
