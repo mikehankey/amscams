@@ -384,9 +384,8 @@ def generate_HD_frames(analysed_name, destination):
    cgitb.enable() 
    
    # Get All Frames
-   cmd = 'ffmpeg -y -hide_banner -loglevel panic  -i ' + analysed_name['full_path'].replace('.json','-HD.mp4') + ' -s ' + str(HD_W) + "x" + str(HD_H) + ' ' +  destination + EXT_HD_FRAMES + '%04d' + '.png' 
-   print(cmd)
-   sys.exit(0)
-   output = subprocess.check_output(cmd, shell=True).decode("utf-8")
+   if(cfe(analysed_name['full_path'].replace('.json','-HD.mp4') )):
+      cmd = 'ffmpeg -y -hide_banner -loglevel panic  -i ' + analysed_name['full_path'].replace('.json','-HD.mp4') + ' -s ' + str(HD_W) + "x" + str(HD_H) + ' ' +  destination + EXT_HD_FRAMES + '%04d' + '.png' 
+      output = subprocess.check_output(cmd, shell=True).decode("utf-8")
 
    return glob.glob(destination+"*"+EXT_HD_FRAMES+"*.png")
