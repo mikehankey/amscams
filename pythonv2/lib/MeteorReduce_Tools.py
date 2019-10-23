@@ -386,7 +386,7 @@ def generate_HD_frames(analysed_name, destination):
    # Get All Frames
    cmd = 'ffmpeg -y -hide_banner -loglevel panic  -i ' + analysed_name['full_path'] + ' -s ' + str(HD_W) + "x" + str(HD_H) + ' ' +  destination + EXT_HD_FRAMES + '%04d' + '.png' 
    print(cmd)
-   sys.exit()
+   sys.exit(0)
    output = subprocess.check_output(cmd, shell=True).decode("utf-8")
 
    return glob.glob(destination+"*"+EXT_HD_FRAMES+"*.png")
