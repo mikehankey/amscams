@@ -24,7 +24,7 @@ STACK_H = 540
 
 # PATTERN FOR THE JSON FILE NAMES
 # YYYY_MM_DD_HH_MM_SS_MSS_CAM_STATION[_HD].EXT
-FILE_NAMES_REGEX = r"(\d{4})_(\d{2})_(\d{2})_(\d{2})_(\d{2})_(\d{2})_(\d{3})_(\w{6})[\-trim]*(\d{4}|\d{3}|\d{2}|\d{1})*(\W*(HD|SD))*.(\W*(mp4|json))*"
+FILE_NAMES_REGEX = r"(\d{4})_(\d{2})_(\d{2})_(\d{2})_(\d{2})_(\d{2})_(\d{3})_(\w{6})[\-trim]*(\d{4}|\d{3}|\d{2}|\d{1})(\-)*(HD|SD)*\.(\w*)*"
 #r"(\d{4})_(\d{2})_(\d{2})_(\d{2})_(\d{2})_(\d{2})_(\d{3})_(\w{6})_([^_^.]+)(_HD|_SD)?(\.)?(\.[0-9a-z]+$)"
 FILE_NAMES_REGEX_GROUP = ["name","year","month","day","hour","min","sec","ms","cam_id","trim","type","ext"]
 
