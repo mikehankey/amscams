@@ -177,7 +177,7 @@ def get_new_stars(json_f):
 def get_new_frames(json_f):
    new_frames = []
    for frame in json_f['meteor_frame_data']:
-      new_frames.append{{
+      new_frames.append({
                "fn": int(frame[1]),
                "dt": frame[0], 
                "x":  int(frame[2]),
