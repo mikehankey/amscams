@@ -74,13 +74,15 @@ def reduce_meteor2(json_conf,form):
    # Get the stacks
    stack = get_stacks(analysed_name,clear_cache)
    #print(get_cache_path(analysed_name,"stacks") +"<br>")
+
+   print("STACKS")
+   print(stack)
     
    # Get the thumbs (cropped HD frames)
    thumbs = get_thumbs(analysed_name,meteor_json_file,HD,HD_frames,clear_cache)
    #print(get_cache_path(analysed_name,"cropped") +"<br>")
 
-   print("THUMBS")
-   print(thumbs)
+ 
   
    # Fill Template with data
    template = template.replace("{VIDEO_FILE}", str(video_full_path))   # Video File  
