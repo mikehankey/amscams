@@ -169,8 +169,8 @@ def get_new_stars(json_f):
 # Convert a whole old JSON file following the new DTD
 def convert(json_file_path):
    
-   print("IN CONVERT<br>")
-   print("INITIAL:<br/> ")
+   print("IN CONVERT")
+   print("INITIAL:")
    print(json_file_path)
    
    json_f = load_json_file(json_file_path)
@@ -179,17 +179,22 @@ def convert(json_file_path):
    meteor_reduced_file = json_file_path.replace(".json", "-reduced.json")
    if(cfe(meteor_reduced_file)):
       reduced_info = load_json_file(meteor_reduced_file)
-
-   print(reduced_info)
-
+ 
    # Analyse the name
    analysed_name = old_name_analyser(json_file_path)
    
+   print("ANALYSED NAME")
+   print('****************')
+   print(analysed_name)
+
    # Get the device name if it doesn't exists in the JSON
    if('station_id' not in analysed_name):
       # We get the station id from what??,
       analysed_name['station_id'] = get_station_id()
       json_f['station_id'] = analysed_name['station_id']
+
+   if('cam_id' not in analysed_name):
+      print("CAM ID MISSING")
     
    # Convert info 
    info = get_new_info(json_f)
