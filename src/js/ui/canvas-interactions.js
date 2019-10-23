@@ -164,12 +164,11 @@ if ($('canvas#c').length!=0) {
         var clickPoint = new fabric.Point(x_val,y_val);
         var objects = canvas.getObjects('circle');
         var id;
-         
-       
+          
         
         for (var key in all_added_stars) {
            console.log(all_added_stars[key]);
-           for (var i = 0; i < all_added_stars[key]; i++) {
+           for (var i = 0; i < all_added_stars[key].length; i++) {
                console.log("CANVAS OBJECT " + all_added_stars[key][i]);
            }
         }   
