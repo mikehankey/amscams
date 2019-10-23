@@ -176,7 +176,7 @@ def get_new_stars(json_f):
 # Get new frames from an old JSON Version
 def get_new_frames(json_f):
    new_frames = []
-   for frame in json_f['meteor_frame_data']
+   for frame in json_f['meteor_frame_data']:
       print("FRAME")
       print(frame)
    sys.exit(0)
