@@ -257,13 +257,7 @@ def move_old_detection_to_archive(json_file_path, sd_video_file_path, hd_video_f
 
    new_json_file['calib']['org_file'] = param_files[0][0];
 
-
-
    # Determine the folder where to put the files
-   tan   = old_name_analyser(fixed_json_file_path)
-   print(tan)
-   sys.exit(0)
-
    new_folder = get_new_archive_folder(old_name_analyser(json_file_path))
 
    print(new_folder)
