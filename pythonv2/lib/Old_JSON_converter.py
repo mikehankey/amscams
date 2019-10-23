@@ -255,7 +255,7 @@ def move_old_detection_to_archive(json_file_path, sd_video_file_path, hd_video_f
       print("PARAM FILE: " + param_files[0][0])
 
 
-   new_json_file['calib']['org_file'] = param_files[0][0];
+   new_json_file['calib']['org_file'] = param_files[0][0]
 
    # Determine the folder where to put the files
    tan = old_name_analyser(json_file_path)
@@ -265,22 +265,27 @@ def move_old_detection_to_archive(json_file_path, sd_video_file_path, hd_video_f
    if not os.path.exists(new_folder):
       os.makedirs(new_folder)
 
-   # We move the video to the folder
-   new_hd_video_file = new_folder + tan['name'] .replace(".json","-HD.mp4")
-   print(new_hd_video_file)
-   sys.exit(0)
+   # We move the videos to the folder
+   if(cfe(new_hd_video_file)):
+      new_hd_video_file = new_folder + tan['name'] .replace(".json","-HD.mp4")
+      shutil.copy2(hd_video_file_path,new_hd_video_file)
 
-   # Move the video file
-   end_video_file = new_folder+tan['name'].replace(".json",".mp4")
-   shutil.copy2(video_file,end_video_file)
+   if(cfe(new_sd_video_file)):
+      new_sd_video_file = new_folder + tan['name'] .replace(".json","-SD.mp4")
+      shutil.copy2(sd_video_file_path,new_sd_video_file)   
+   
    if(display is True):
-      print("VIDEO FILE SAVE TO " + end_video_file)
+      print("VIDEOS FILE SAVE TO " + new_folder)
+
+
+   # Now we take care of the frames
+  
 
    # Create the definitive json_content
    json_content = {}
-   json_content['calib'] = new_calib['calib']
-   json_content['info'] = new_info['info']
-   json_content['frames'] = []
+   json_content['calib']   = new_calib['calib']
+   json_content['info']    = new_info['info']
+   json_content['frames']  = []
    
    #print( "<br/><br/><br/>"+ new_folder + tan['name'])
 
