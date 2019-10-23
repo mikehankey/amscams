@@ -138,11 +138,11 @@ def get_new_calib(json_f):
 
 # Get new info (device & detection info) from an old JSON version
 def get_new_info(json_f): 
-  
-   return  {
+  return  {
       "info": {
          "station": json_f['station_id'],
-         "hd": 1, # We assume we have the HD vid by default (not a big deal if we dont)
+         "hd_vid":  json_f['hd_vid'],
+         "sd_vid": json_f['sd_vid'],
          "device": json_f['cam_id'],
          "dur": float(json_f['event_duration']),
          "max_peak": float(json_f['peak_magnitude'])
@@ -167,42 +167,44 @@ def get_new_stars(json_f):
    return {"stars": new_stars}
 
 # Convert a whole old JSON file following the new DTD
-def convert(json_file_path):
+def convert(json_file_path, sd_video_file_path, hd_video_file_path):
    
-   print("IN CONVERT")
-   print("INITIAL:")
-   print(json_file_path)
-   
+   # Load the initial JSON
    json_f = load_json_file(json_file_path)
 
    # Do we have a -reduced file?
    meteor_reduced_file = json_file_path.replace(".json", "-reduced.json")
    if(cfe(meteor_reduced_file)):
       reduced_info = load_json_file(meteor_reduced_file)
- 
-   # Analyse the name
+   else:
+      print("ONLY REDUCED DETECTION CAN BE CONVERTED - reduce.json not found")
+      sys.exit(0)
+
+   # Analyse the json name
    analysed_name = old_name_analyser(json_file_path)
    
-   print("ANALYSED NAME")
-   print('****************')
-   print(analysed_name)
-
    # Get the device name if it doesn't exists in the JSON
    if('station_id' not in analysed_name):
       # We get the station id from what??,
       analysed_name['station_id'] = get_station_id()
       json_f['station_id'] = analysed_name['station_id']
 
+   # Add the cam id to json_f
    if('cam_id' in analysed_name):
       json_f['cam_id'] = analysed_name['cam_id']
  
-
+   # Add event duration to json_f
    if('event_duration' not in json_f and reduced_info is not None):
       json_f['event_duration'] = reduced_info['event_duration']
-    
+   
+   # Add peak_magnitude duration to json_f
    if('peak_magnitude' not in json_f and reduced_info is not None):
       json_f['peak_magnitude'] = reduced_info['peak_magnitude']
 
+
+   # Add the videos to json_f
+   json_f['hd_video'] = hd_video_file_path
+   json_f['sd_video'] = sd_video_file_path
 
 
    # Convert info 
