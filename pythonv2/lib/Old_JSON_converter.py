@@ -178,9 +178,13 @@ def convert(json_file_path):
    print(json_file_path)
    
    json_f = load_json_file(json_file_path)
+
+   # Analyse the name
+   analysed_name = old_name_analyser(json_file_path)
    
    print("<br>")
-   print(json_f)
+   print(analysed_name)
+   sys.exit(0)
 
 
    # Convert info 
