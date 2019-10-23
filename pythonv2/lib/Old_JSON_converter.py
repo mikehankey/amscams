@@ -282,18 +282,18 @@ def move_old_detection_to_archive(json_file_path, sd_video_file_path, hd_video_f
   
 
    # Create the definitive json_content
-   json_content = {}
-   json_content['calib']   = new_calib['calib']
-   json_content['info']    = new_info['info']
-   json_content['frames']  = []
+   #json_content = {}
+   #json_content['calib']   = new_calib['calib']
+   #json_content['info']    = new_info['info']
+   #json_content['frames']  = []
    
    #print( "<br/><br/><br/>"+ new_folder + tan['name'])
 
    # Save the new JSON file
-   save_json_file(new_folder + tan['name'], json_content)
-   if(display is True):
-      print("JSON SAVED TO " + new_folder + tan['name'])
+   #save_json_file(new_folder + tan['name'], json_content)
+   #if(display is True):
+   #   print("JSON SAVED TO " + new_folder + tan['name'])
    
  
 
-   return new_folder + tan['name'],end_video_file
+   #return new_folder + tan['name'],end_video_file
