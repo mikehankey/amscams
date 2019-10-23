@@ -187,13 +187,14 @@ def convert(json_file_path):
       # We get the station id from what??,
       analysed_name['station_id'] = get_station_id();
 
-   print("<br>")
-   print(analysed_name)
-   sys.exit(0)
-
-
    # Convert info 
    info = get_new_info(json_f)
+
+
+   print("<br>")
+   print(info)
+   sys.exit(0)
+
 
    # Add the original name with trim in case there's an issue
    info['info']['org_file_name'] = json_file_path
