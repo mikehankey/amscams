@@ -167,6 +167,7 @@ if ($('canvas#c').length!=0) {
           
         
         for (var key in all_added_stars) {
+           console.log("*******************************************")
            console.log(all_added_stars[key]);
            for (var i = 0; i < all_added_stars[key].length; i++) {
                console.log("CANVAS OBJECT " + all_added_stars[key][i]);
