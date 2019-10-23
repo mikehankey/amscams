@@ -172,7 +172,7 @@ if ($('canvas#c').length!=0) {
                console.log(all_added_stars[key][i]);
                console.log(all_added_stars[key][i].containsPoint(clickPoint));
                if(objFound == false && all_added_stars[key][i].containsPoint(clickPoint)) {
-                  console.log("FOUND!!");
+                  alert("FOUND!!");
                   objFound = true;
                }
            }
