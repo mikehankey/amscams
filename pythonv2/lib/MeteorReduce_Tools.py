@@ -28,8 +28,7 @@ def name_analyser(file_names):
    for matchNum, match in enumerate(matches, start=1):
       for groupNum in range(0, len(match.groups())): 
          if(match.group(groupNum) is not None):
-            print(FILE_NAMES_REGEX_GROUP[groupNum] + "  > " +  match.group(groupNum) + "<br/>")
-            res[FILE_NAMES_REGEX_GROUP[groupNum]] = match.group(groupNum)
+             res[FILE_NAMES_REGEX_GROUP[groupNum]] = match.group(groupNum)
          groupNum = groupNum + 1
 
    # Get Name without extension if possible
