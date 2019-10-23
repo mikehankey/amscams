@@ -288,22 +288,15 @@ def manual_reduction_create_final_json(form):
  
       # We get the dt of frame #0
       # based on the name of the file 
-      # (with trim!!) 
-      print("VIDEO FILE:<br/>")
-      print(video_file)
+      # (with trim!!)  
       name_analysed = old_name_analyser(video_file)
-
-      print("ANALYSED NAME:<br/>")
-      print(name_analysed)
-      sys.exit(0)
-    
+ 
       # We create the new frames
       for frame in frames_info:
  
          # Get the Frame time (as a string)
          dt = get_frame_time(mr,frame['fn'],analysed_name)
-
-          
+ 
  
          # Get the new RA/Dec 
          new_x, new_y, RA, Dec, az, el =  XYtoRADec(int(frame['x']),int(frame['y']),analysed_name,mr)
