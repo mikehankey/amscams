@@ -321,9 +321,9 @@ def get_stacks(analysed_name,clear_cache,toHD):
       # Destination = 
       # get_cache_path(analysed_name,"stacks") + analysed_name['name_w_ext'] + ".png"
       if(toHD): 
-         stacks =  generate_stacks(analysed_name['full_path'],get_cache_path(analysed_name,"stacks")+analysed_name['name_w_ext']+"-HD.png",toHD)
+         stacks =  generate_stacks(analysed_name['name_w_ext']+'-HD.mp4',get_cache_path(analysed_name,"stacks")+analysed_name['name_w_ext']+"-HD.png",toHD)
       else: 
-         stacks =  generate_stacks(analysed_name['full_path'],get_cache_path(analysed_name,"stacks")+analysed_name['name_w_ext']+"-SD.png",toHD)
+         stacks =  generate_stacks(analysed_name['full_path']+'-SD.mp4',get_cache_path(analysed_name,"stacks")+analysed_name['name_w_ext']+"-SD.png",toHD)
 
       stack_file = stacks
   
