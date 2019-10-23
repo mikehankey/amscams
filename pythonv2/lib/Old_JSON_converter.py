@@ -167,7 +167,7 @@ def get_new_stars(json_f):
    return {"stars": new_stars}
 
 # Convert a whole old JSON file following the new DTD
-def convert(json_file_path, sd_video_file_path, hd_video_file_path):
+def convert(json_file_path):
    
    # Load the initial JSON
    json_f = load_json_file(json_file_path)
@@ -215,21 +215,21 @@ def convert(json_file_path, sd_video_file_path, hd_video_file_path):
    calib = get_new_calib(reduced_info)
  
    stars = get_new_stars(reduced_info)
-   print(stars)
-
+  
    # The stars belong to calib
    calib['calib']['stars'] = stars['stars']
    
    return {"info": info['info'],"calib": calib['calib']}
 
 
-# Move new JSON file and HD video file to meteor_archive
-# with a proper name, and in the proper folder
+# Move new JSON file and  video files to meteor_archive
+# in the proper folder
 # from a old -reduced.json file
-def move_old_detection_to_archive(json_file_path, old_video_file, display=False):
+def move_old_detection_to_archive(json_file_path, sd_video_file_path, hd_video_file_path):
 
-   #cgitb.enable()
-
+   # Get the new JSON file based on all info
+   new_json_file = convert(json_file_path, sd_video_file_path, hd_video_file_path)
+   
    # We fix the old name to get the proper info
    fixed_json_file_path = fix_old_file_name(json_file_path)
 
@@ -241,6 +241,9 @@ def move_old_detection_to_archive(json_file_path, old_video_file, display=False)
       sys.exit(0)
    else:
       print("PARAM FILE" + param_files[0][0])
+
+
+   sys.exit(0)
 
    # We parse the param
    param_json = load_json_file(param_files[0][0])
