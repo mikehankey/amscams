@@ -175,6 +175,13 @@ def convert(json_file_path):
    
    json_f = load_json_file(json_file_path)
 
+   # Do we have a -reduced file?
+   meteor_reduced_file = json_file_path.replace(".json", "-reduced.json")
+   if(cfe(meteor_reduced_file)):
+      reduced_info = load_json_file(meteor_reduced_file)
+
+   print(reduced_info)
+
    # Analyse the name
    analysed_name = old_name_analyser(json_file_path)
    
