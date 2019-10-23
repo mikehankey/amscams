@@ -205,8 +205,8 @@ def convert_json(json_file_path, sd_video_file_path, hd_video_file_path):
 
 
    # Add the videos to json_f
-   json_f['hd_vid'] = hd_video_file_path
-   json_f['sd_vid'] = sd_video_file_path
+   json_f['org_hd_vid'] = hd_video_file_path
+   json_f['org_sd_vid'] = sd_video_file_path
 
    # Convert info 
    info = get_new_info(json_f)
@@ -232,9 +232,7 @@ def move_old_detection_to_archive(json_file_path, sd_video_file_path, hd_video_f
    # Get the new JSON file based on all info
    new_json_file = convert_json(json_file_path, sd_video_file_path, hd_video_file_path)
 
-   print("NEW JSON FILE")
-   print(new_json_file)
-   
+  
    # We fix the old name to get the proper info
    fixed_json_file_path = fix_old_file_name(json_file_path)
 
@@ -248,13 +246,19 @@ def move_old_detection_to_archive(json_file_path, sd_video_file_path, hd_video_f
       print("PARAM FILE: " + param_files[0][0])
 
 
+   new_json_file['calib']['org_file'] = param_files[0][0];
+
+
+
+   # Determine the folder where to put the files
+   new_folder = get_new_archive_folder(old_name_analyser(fixed_json_file_path))
+
+   print(new_folder)
+   sys.exit(0)
 
    print(param_files[0][0])   
    sys.exit(0)
 
-
-   # Determine the folder where to put the files
-   new_folder = get_new_archive_folder(tan)
 
    # If the new_folder doesn't exist, we create it
    if not os.path.exists(new_folder):
