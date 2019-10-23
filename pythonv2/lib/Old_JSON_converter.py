@@ -167,7 +167,7 @@ def get_new_stars(json_f):
    return {"stars": new_stars}
 
 # Convert a whole old JSON file following the new DTD
-def convert(json_file_path):
+def convert_json(json_file_path):
    
    # Load the initial JSON
    json_f = load_json_file(json_file_path)
@@ -228,7 +228,7 @@ def convert(json_file_path):
 def move_old_detection_to_archive(json_file_path, sd_video_file_path, hd_video_file_path):
 
    # Get the new JSON file based on all info
-   new_json_file = convert(json_file_path, sd_video_file_path, hd_video_file_path)
+   new_json_file = convert_json(json_file_path)
    
    # We fix the old name to get the proper info
    fixed_json_file_path = fix_old_file_name(json_file_path)
