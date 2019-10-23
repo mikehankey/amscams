@@ -215,6 +215,8 @@ def move_old_detection_to_archive(json_file_path, old_video_file, display=False)
    if(cfe(param_files[0][0])==0):
       print("PARAM FILES " + param_files[0][0]  + " not found" )
       sys.exit(0)
+   else:
+      print("PARAM FILE" + param_files[0][0])
 
    # We parse the param
    param_json = load_json_file(param_files[0][0])
