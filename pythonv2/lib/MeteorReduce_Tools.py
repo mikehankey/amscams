@@ -357,9 +357,6 @@ def get_HD_frames(analysed_name,clear_cache):
    # Test if folder exists / Create it if not
    HD_frames = does_cache_exist(analysed_name,"frames")
 
-   print(HD_frames)
-   sys.exit(0)
-
    if(len(HD_frames)==0 or clear_cache is True):
       # We need to generate the HD Frame
       HD_frames = generate_HD_frames(analysed_name,get_cache_path(analysed_name,"frames")+analysed_name['name_w_ext'])
@@ -374,6 +371,11 @@ def get_HD_frames(analysed_name,clear_cache):
 
 # Generate HD frames for a meteor detection
 def generate_HD_frames(analysed_name, destination):
+
+   print("IN GENERATE HD FRAMES<bt/>")
+   print("ANALYSED NAME ", analysed_name, "<br/>")
+   print("DEST ", destination, '<br/>')
+   sys.exit(0)
 
    # Frames
    frames  = []
