@@ -342,6 +342,9 @@ def generate_stacks(video_full_path, destination, toHD):
    # Get All Frames
    frames = load_video_frames(video_full_path, load_json_file(JSON_CONFIG), 0, 0)
    
+   print("FRAMES FROM VIDEO " + video_full_path + "<br/>")
+   print(frames)
+
    stacked_image = None
 
    # Create Stack 
