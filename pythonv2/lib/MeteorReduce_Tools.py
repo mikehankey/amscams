@@ -164,13 +164,15 @@ def get_thumbs(analysed_name,meteor_json_data,HD,HD_frames,clear_cache):
 
    # Debug
    cgitb.enable()
+   
+   print("<br/>IN " + get_cache_path(analysed_name,"cropped") + "<br/>")
 
    # Do we have them already?
    thumbs = does_cache_exist(analysed_name,"cropped")
 
    print("THUMBS FOUND<br/>")
    print(thumbs)
-   print("<br/>IN " + get_cache_path(analysed_name,"cropped") + "<br/>")
+  
 
    if(len(thumbs)==0 or clear_cache is True):
       # We need to generate the thumbs 

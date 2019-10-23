@@ -80,7 +80,6 @@ def reduce_meteor2(json_conf,form):
    # Get the thumbs (cropped HD frames)
    print("BEFORE THUMBS<br/>")
    thumbs = get_thumbs(tmp_analysed_name,meteor_json_file,HD,HD_frames,clear_cache)
-   print(get_cache_path(analysed_name,"cropped") +"<br>")
    sys.exit(0)
   
    # Fill Template with data
