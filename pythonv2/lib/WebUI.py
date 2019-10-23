@@ -221,7 +221,7 @@ def parse_jsid(jsid):
 def controller(json_conf):
 
 
-   cgitb.enable(0, '/home/ams/amscam/logs')
+   cgitb.enable()
  
    form = cgi.FieldStorage()
    cmd = form.getvalue('cmd')
