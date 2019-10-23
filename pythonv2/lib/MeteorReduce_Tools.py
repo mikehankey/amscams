@@ -29,7 +29,7 @@ def name_analyser(file_names):
       for groupNum in range(0, len(match.groups())): 
          groupNum = groupNum + 1
          print ("Group {groupNum}  : {group}".format(groupNum = groupNum, group = match.group(groupNum)))
-         print("<br/>"+  FILE_NAMES_REGEX_GROUP[groupNum]  "+<br/>")
+         print("<br/>"+  FILE_NAMES_REGEX_GROUP[groupNum] + "<br/>")
          #if(match.group(groupNum) is not None):
          #   print(match.group(groupNum) + "<br/>")
          #   res[FILE_NAMES_REGEX_GROUP[groupNum]] = match.group(groupNum)
