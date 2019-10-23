@@ -35,6 +35,9 @@ def reduce_meteor2(json_conf,form):
       clear_cache = True
    else:
       clear_cache = False
+ 
+   # Get Video File & Analyse the Name to get quick access to all info
+   video_full_path = form.getvalue("video_file")
 
    # We need at least one video file
    if(video_full_path is not None):
@@ -42,9 +45,6 @@ def reduce_meteor2(json_conf,form):
       print(analysed_name)
    else:
       print_error("<b>You need to add a video file in the URL.</b>")
-
-   # Get Video File & Analyse the Name to get quick access to all info
-   video_full_path = form.getvalue("video_file")
 
    # We get the proper json and the other video file
    if('HD' in video_full_path):
