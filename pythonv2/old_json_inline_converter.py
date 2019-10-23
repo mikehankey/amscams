@@ -12,4 +12,4 @@ from lib.Old_JSON_converter import convert, move_old_detection_to_archive
 
 
 # CONVERT JSON ONLY
-#convert('/mnt/ams2/meteors/2019_10_23/2019_10_23_04_33_17_000_010041-trim0594.json')
+convert('/mnt/ams2/meteors/2019_10_23/2019_10_23_04_33_17_000_010041-trim0594.json')
