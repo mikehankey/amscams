@@ -21,10 +21,9 @@ def get_new_archive_folder(analysed_name):
       station_id = get_station_id()
    else:
       station_id = analysed_name['station_id'] 
-  
    return METEOR_ARCHIVE + station_id + "/" + METEOR + analysed_name['year'] + "/" + analysed_name['month'] + "/" + analysed_name['day'] + "/"
 
-# Analysed and old file (containing "-tr im")
+# Analysed an old file (containing "-trim")
 # Parses a regexp (OLD_FILE_NAME_REGEX) a file name
 # and returns all the info defined in OLD_FILE_NAME_REGEXGROUP
 def old_name_analyser(file_names):
@@ -70,10 +69,7 @@ def fix_old_file_name(filename):
             if(match.group(groupNum) is not None): 
                res[OLD_FILE_NAME_REGEX_GROUP[groupNum]] = match.group(groupNum)
             groupNum = groupNum + 1
-
-      #print("DEBUG OLD <br/>")
-      #print(res)
-
+ 
       # Get original Date & Time 
       org_dt = datetime.strptime(res['year']+'-'+res['month']+'-'+res['day']+' '+res['hour']+':'+res['min']+':'+res['sec']+'.'+res['ms'], '%Y-%m-%d %H:%M:%S.%f')
 
@@ -118,8 +114,7 @@ def get_new_calib(json_f):
    new_dt = new_dt.replace(':','_')
    new_dt = new_dt.replace('.','_')
    new_dt = new_dt.replace('-','_')
- 
-
+  
    return { "calib":  
       {  "dt":   new_dt,
          "device": {
@@ -147,10 +142,7 @@ def get_new_info(json_f):
       station_name = get_station_id()
    else:
       station_name = json_f['station_name']
-
-   print("IN GET NEW INFO <br/>")
-   print(json_f)
-   sys.exit(0)
+ 
 
    return  {
       "info": {
@@ -219,7 +211,6 @@ def move_old_detection_to_archive(json_file_path, old_video_file, display=False)
 
    # Get the closest param files
    param_files = get_active_cal_file(fixed_json_file_path)
-
    
    if(cfe(param_files[0][0])==0):
       print("PARAM FILES " + param_files[0][0]  + " not found" )
