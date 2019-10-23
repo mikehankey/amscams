@@ -48,8 +48,8 @@ def reduce_meteor2(json_conf,form):
    # Test if the name is ok
    if(len(analysed_name)==0):
       print_error(video_full_path + " <b>is not valid video file name.</b>")
-   elif(cfe(video_full_path)==0):
-      print_error(video_full_path + " <b>not found.</b>")
+   elif(os.path.isfile(video_full_path) is False):
+      print_error(video_full_path + " <b>not found.XXXXX</b>")
   
    # Is it HD? 
    HD = ("HD" in analysed_name)
