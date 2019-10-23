@@ -218,10 +218,7 @@ def parse_jsid(jsid):
    #print(year,month,day,hour,min,sec,micro_sec,cam,trim)
    return(video_file)
 
-def controller(json_conf):
-
-
-   cgitb.enable()
+def controller(json_conf): 
  
    form = cgi.FieldStorage()
    cmd = form.getvalue('cmd')
