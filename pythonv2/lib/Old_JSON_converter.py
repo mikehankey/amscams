@@ -124,7 +124,9 @@ def get_new_calib(json_f):
             "scale_px":  float(json_f['cal_params']['pixscale']),
             "poly": {
                   "y_fwd": json_f['cal_params']['y_poly_fwd'],
-                  "x_fwd": json_f['cal_params']['x_poly_fwd']
+                  "x_fwd": json_f['cal_params']['x_poly_fwd'],
+                  "y": json_f['cal_params']['y_poly'],
+                  "x": json_f['cal_params']['x_poly']
             },
             "center": {
                   "az": float(json_f['cal_params']['center_az']),  
@@ -244,112 +246,11 @@ def move_old_detection_to_archive(json_file_path, sd_video_file_path, hd_video_f
       sys.exit(0)
    else:
       print("PARAM FILE: " + param_files[0][0])
- 
-   # We parse the param
-   param_json = load_json_file(param_files[0][0])
 
-   # We create a temporary clean name to get the calib['dt']
-   clean_param_json_name = param_files[0][0].replace('-stacked-calparams.json','_HD.mp4')
-   param_json_analysed_name = name_analyser(clean_param_json_name)
-   calib_dt = get_datetime_from_analysedname(param_json_analysed_name)
-   calib_dt = datetime.strftime(calib_dt, '%Y-%m-%d %H:%M:%S')
 
-   
 
-   # Do we have the device info in param_json?
-   if('device_alt' in param_json):
-      dev_alt = float(param_json['device_alt'])
-      dev_lng = float(param_json['device_lng'])
-      dev_lat = float(param_json['device_lat'])
-   else:
-      # We look in the ".json" file
-      t = load_json_file(json_file_path)
-      if('device_alt' in t):
-         dev_alt = float(t['device_alt'])
-         dev_lng = float(t['device_lng'])
-         dev_lat = float(t['device_lat'])
-      else:
-         # We need to look in as6.json (!!!!)
-         t = load_json_file(JSON_CONFIG)
-         try:
-            dev_alt = float(t['site']['device_alt'])
-            dev_lng = float(t['site']['device_lng'])
-            dev_lat = float(t['site']['device_lat'])
-         except:
-            print("IMPOSSIBLE TO FIND the devivec alt, lng and lat")
-            sys.exit(0)
-
-   new_calib = { "calib":  
-      {  "dt":   calib_dt,
-         "org_file_name": os.path.basename(json_file_path),  # In case something goes wrong
-         "device": { 
-            "alt":  dev_alt,
-            "lat":  dev_lat,
-            "lng":  dev_lng,
-            "scale_px":  float(param_json['pixscale']),
-            "poly": {
-                  "y_fwd": param_json['y_poly_fwd'],
-                  "x_fwd": param_json['x_poly_fwd'],
-                  "y": param_json['y_poly'],
-                  "x": param_json['x_poly']
-            },
-            "center": {
-                  "az": float(param_json['center_az']),  
-                  "ra": float(param_json['ra_center']), 
-                  "el": float(param_json['center_el']),
-                  "dec": float(param_json['dec_center']) 
-            },
-            "angle":  float(param_json['position_angle'])
-         },
-         "stars" : []
-   }}
-     
-   # Do we have a HD video for this detection?
-   video_file = old_video_file
-
-   # We parse the json
-   data_json = load_json_file(json_file_path)
-
-   # We get the date info from the fixed name
-   # tan = temp analysed name
-   tan = name_analyser(fixed_json_file_path)
-   
-   # We search for the HD Video  
-   #HD = 0
-   #date_str = tan['year'] + '_' + tan['month']  + '_' + tan['day']
-   #search_hd = glob.glob('/mnt/ams2/meteors/' + date_str + '/' + date_str + '_' + tan['hour'] + '_' + tan['min'] + '_' + '*' + 'HD-meteor.mp4' )
-
-   #if(len(search_hd)>0):
-   #   video_file = search_hd[0]
-   #   HD = 1
-   #else:
-
-      # Search with min approx
-   #   search_hd = glob.glob('/mnt/ams2/meteors/' + date_str + '/' + date_str + '_' + tan['hour'] + '_' + '*' + '_' + tan['cam_id'] +  '*' + 'HD-meteor.mp4' )
-   #   if(len(search_hd)>0):
-   #      video_file = search_hd[0]
-   #      HD = 1
-   #   else:
-   #      print("VIDEO NOT FOUND - We searched for " + '/mnt/ams2/meteors/' + date_str + '/' + date_str + '_' + tan['hour'] + '_' + tan['min'] + '_' + '*' + 'HD-meteor.mp4')
-   #      sys.exit(0)
-
-   # We we didn't find the HD yet, we can try to search somewhere else???? (TODO)
-   
-   # If we don't have the HD, we assume we have the SD (???)
-
-   # TODO: TEST IF IT'S REALLY A HD VIDEO
-   HD =  1
-
-   # We build the new "info"
-   new_info = {
-      "info": {
-         "station": get_station_id(),
-         "hd": HD, # We assume we have the HD vid by default for the moment
-         "device": param_json_analysed_name['cam_id'],
-         "dur": 9999,
-         "max_peak": 9999
-      }
-   }
+   print(param_files[0][0])   
+   sys.exit(0)
 
 
    # Determine the folder where to put the files
