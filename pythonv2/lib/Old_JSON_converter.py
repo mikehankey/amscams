@@ -305,15 +305,11 @@ def move_old_detection_to_archive(json_file_path, sd_video_file_path, hd_video_f
    json_content['info']    = new_json_file['info']
    json_content['frames']  = new_json_file['frames']
    
-   print(json_content)
-
-   #print( "<br/><br/><br/>"+ new_folder + tan['name'])
-
    # Save the new JSON file
-   #save_json_file(new_folder + tan['name'], json_content)
-   #if(display is True):
-   #   print("JSON SAVED TO " + new_folder + tan['name'])
+   save_json_file(new_folder + tan['name'], json_content)
+    
+  
+   if(display is True):
+      print("JSON SAVED TO " + new_folder + tan['name'])
    
- 
-
-   #return new_folder + tan['name'],end_video_file
+   return new_folder + tan['name'],new_hd_video_file,new_sd_video_file
