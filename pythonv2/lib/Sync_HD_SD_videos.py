@@ -158,8 +158,8 @@ def sync_hd_frames(hd_video_file,sd_video_file,json_reduction_file):
 
    if len(sd_fns) == len(hd_fns):
       print("Perfect HD/SD frame match up!")     
-      print(sd_fns)
-      print(hd_fns)  
+      print(sd_fns.sort())
+      print(hd_fns.sort())  
     
 
 def find_hd_frame(fn, hd_x, hd_y, x1,y1,x2,y2,hd_frames):
