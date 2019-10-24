@@ -277,9 +277,9 @@ def move_old_detection_to_archive(json_file_path, sd_video_file_path, hd_video_f
       print("PARAM FILE: " + param_files[0][0])
 
    # Here we try to sync the HD and the SD files
-   if(cfe(hd_video_file_path) and cfe(sd_video_file_path)):
+   if(cfe(hd_video_file_path) and cfe(sd_video_file_path) and cfe(json_file_path.replace('.json','-reduced.json'))):
       print("TRYING TO SYNC HD & SD")
-      sync_hd_frames(hd_video_file_path,sd_video_file_path,json_file_path)
+      sync_hd_frames(hd_video_file_path,sd_video_file_path,json_file_path.replace('.json','-reduced.json'))
       sys.exit(0)
 
 
