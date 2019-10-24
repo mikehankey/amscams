@@ -285,7 +285,13 @@ def generate_cropped_frames(analysed_name,meteor_json_data,HD_frames,HD):
    meteor_frame_data = meteor_json_data['frames']
 
    # Here we calculate the frame#1 based on the info from analysed_name
-   print(analysed_name)
+   # on the HD video
+   if(HD):
+      date_start_file = get_datetime_from_analysedname(analysed_name)
+
+   
+   print(date_start_file)
+   #print(analysed_name)
    sys.exit(0)
 
    cropped_frames = [] 
