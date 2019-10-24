@@ -213,8 +213,6 @@ if ($('canvas#c').length!=0) {
                   }
             }
 
-            console.log("YEP " +  id);
-
             // Remove all the related object +, name, square if
             // it's a start from the catalog
             if(objFound && $.trim(id)!=='') { 
