@@ -287,6 +287,9 @@ def generate_cropped_frames(analysed_name,meteor_json_data,HD_frames,HD):
    # Here we calculate the frame#1 based on the info from analysed_name
    # on the HD video
    if(HD):
+      print("ANALYSED NAME<br/>")
+      print(analysed_name)
+      print("<br/>")
       date_start_file = get_datetime_from_analysedname(analysed_name)
 
       # We had the trim value
