@@ -96,9 +96,11 @@ if ($('canvas#c').length!=0) {
               height: canvas.height, 
               originX: 'left',
               originY: 'top',
-              scale: canvas.width/width,
-              scale: canvas.height/height
+              scaleX: canvas.width/width,
+              scaleY: canvas.height/height
           });
+
+
    
    }
 
