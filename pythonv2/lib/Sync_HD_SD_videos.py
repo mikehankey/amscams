@@ -7,51 +7,7 @@ from lib.VIDEO_VARS import *
 from lib.UtilLib import convert_filename_to_date_cam
 from lib.Get_Cam_ids import get_the_cameras
 
-# Make temporary movies
-def make_movie_from_frames(frames, fns, outfile , remaster = 0):
  
-   ofn = outfile.split("/")[-1]
-
-   #TMP_DIR = "/mnt/ams2/tmpvids/" + ofn + "/"
-   TMP_DIR = "/home/ams/tmpvids/" + ofn + "/"
-   if cfe(TMP_DIR, 1) == 0:
-      os.system("mkdir " + TMP_DIR )
-   else:
-      os.system("rm " + TMP_DIR + "*")
-
-   first_frame = 0
-   last_frame = len(fns)
-   start_buff = 0
-   end_buff = 0
-
-   first_frame = fns[0]
-   last_frame = fns[-1]
-
-   cc = 0
-   print("Start Trim Fn:", first_frame)
-   print("Last Trim Fn:", last_frame)
-   print("Total frames :", len(frames))
-
-   for frame in frames:
-      filename = TMP_DIR + '{0:06d}'.format(cc) + ".png"
-      if first_frame <= cc <= last_frame:
-         print(cc, first_frame, last_frame )
-         cv2.imwrite(filename, frame)
-      cc = cc + 1
-
-   if remaster == 1:
-      cmd = """/usr/bin/ffmpeg -y -framerate 25 -pattern_type glob -i '""" + TMP_DIR + """*.png' \
-        -c:v libx264 -r 25 -vf scale='1280x720' -pix_fmt yuv420p """ + outfile 
-   else:
-      cmd = """/usr/bin/ffmpeg -y -framerate 25 -pattern_type glob -i '""" + TMP_DIR + """*.png' \
-        -c:v libx264 -r 25 -pix_fmt yuv420p """ + outfile 
-   print(cmd)
-   os.system(cmd)
- 
-   
-   os.system("rm -rf " + TMP_DIR )
-   print("rm -rf " + TMP_DIR )
-   return(start_buff, end_buff)
 
 
 # Define mask frame
@@ -176,17 +132,13 @@ def sync_hd_frames(hd_video_file,sd_video_file,json_reduction_file):
    
    # Get the SD Frames
    sd_frames = load_video_frames(sd_video_file, json_reduction_file,  limit=0, mask=1, color=1)
- 
-
+  
    metframes = reduction_data['metframes']
    first_sd_frame = None
    first_hd_frame = None
    hd_fns = []
    sd_fns = []
-
-   print("METFRAMES")
-   print(metframes)
-
+ 
    for fn in metframes:
       if first_sd_frame is None:
          first_sd_fram = fn
@@ -205,29 +157,8 @@ def sync_hd_frames(hd_video_file,sd_video_file,json_reduction_file):
    print("len(hd_fns): " + str(len(hd_fns)))   
 
    if len(sd_fns) == len(hd_fns):
-      # buffer the frames with 10 frames on either side if we can.
-      hd_archive_movie = sd_video_file.replace(".mp4", "-archiveHD.mp4")
-      sd_archive_movie = sd_video_file.replace(".mp4", "-archiveSD.mp4")
-      hd_start_buff, hd_end_buff = make_movie_from_frames(hd_frames, hd_fns, hd_archive_movie)
-      sd_start_buff, sd_end_buff = make_movie_from_frames(sd_frames, sd_fns, sd_archive_movie)
-     
-      print("hd_start_buff", str(hd_start_buff))
-      print("hd_end_buff", str(hd_end_buff))
-      print("sd_start_buff", str(sd_start_buff))
-      print("sd_end_buff", str(sd_end_buff))
-      
-      reduction_data['metconf']['archive_sd_pre_roll'] = sd_start_buff
-      reduction_data['metconf']['archive_sd_post_roll'] = sd_end_buff
-      reduction_data['metconf']['archive_hd_pre_roll'] = hd_start_buff
-      reduction_data['metconf']['archive_hd_post_roll'] = hd_end_buff
-      reduction_data['metconf']['hd_sync'] = 1 
       print("Perfect HD/SD frame match up!")       
-      print("SD FRAMES:", sd_fns)
-      print("HD FRAMES:", hd_fns)
-      print("Archive HD Movie:", hd_archive_movie)
-      print("Archive SD Movie:", sd_archive_movie)
-      save_json_file(json_reduction_file, reduction_data)
-
+    
 
 def find_hd_frame(fn, hd_x, hd_y, x1,y1,x2,y2,hd_frames):
    crops = []
