@@ -4,6 +4,23 @@ from lib.FileIO import load_json_file, save_json_file, cfe
 from lib.VIDEO_VARS import HD_H
 
 
+# Get frame mask
+def get_masks(this_cams_id, json_conf, hd = 0): 
+   my_masks = []
+   cameras = json_conf['cameras']
+   for camera in cameras:
+      if str(cameras[camera]['cams_id']) == str(this_cams_id):
+         if hd == 1:
+            masks = cameras[camera]['hd_masks']
+         else:
+            masks = cameras[camera]['masks']
+         for key in masks:
+            mask_el = masks[key].split(',')
+            (mx, my, mw, mh) = mask_el
+            masks[key] = str(mx) + "," + str(my) + "," + str(mw) + "," + str(mh)
+            my_masks.append((masks[key]))
+   return(my_masks)
+
 # Return video frames
 def load_video_frames(trim_file, json_conf, limit=0, mask=0, color=0):
     
