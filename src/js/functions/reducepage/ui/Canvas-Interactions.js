@@ -204,7 +204,7 @@ if ($('canvas#c').length!=0) {
          
             // Remove an existing star
             for (let i in objects) {
-               if (!objFound && objects[i].containsPoint(clickPoint) && objects[i].type == "star_info") {
+               if (!objFound && objects[i].containsPoint(clickPoint) && objects[i].type != "reduc_rect") {
                      objFound = true; 
                      id = objects[i].gp_id;
                      canvas.remove(objects[i]);
@@ -216,7 +216,7 @@ if ($('canvas#c').length!=0) {
             if(objFound && $.trim(id)!=='') { 
                objects = canvas.getObjects();
                for (let i in objects) {
-                     if(objects[i].gp_id== id && objects[i].type == "star_info") { 
+                     if(objects[i].gp_id== id && objects[i].type != "reduc_rect") { 
                         canvas.remove(objects[i]);
                         grpFound = true;
                      }
