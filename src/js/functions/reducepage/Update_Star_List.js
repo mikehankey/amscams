@@ -53,7 +53,7 @@ function update_stars_on_canvas_and_table(json_resp) {
 
         // Add Rectangle
         canvas.add(new fabric.Rect({
-            fill: 'rgba(0,0,0,0)', strokeWidth: 1, stroke: 'rgba(230,100,200,.5)', 
+            fill: 'rgba(0,0,0,0)', strokeWidth: 5, stroke: 'rgba(230,100,200,.5)', 
             left:  (v['i_pos'][POS_X] - 11)/2, 
             top: (v['i_pos'][POS_Y]  - 11)/2,
             width: 10,
