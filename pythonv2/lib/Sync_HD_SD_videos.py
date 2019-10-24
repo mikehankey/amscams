@@ -1,4 +1,5 @@
 import cv2
+import sys
 import os  
 from lib.FileIO import load_json_file, save_json_file, cfe
 from lib.VIDEO_VARS import HD_H
@@ -12,6 +13,9 @@ def get_masks(this_cams_id, hd = 0):
    my_masks = []
    cameras = get_the_cameras()
  
+   print("CAMERAS in get_masks")
+   print(cameras)
+   sys.exit(0)
 
 
    for camera in cameras:
