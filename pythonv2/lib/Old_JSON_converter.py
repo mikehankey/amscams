@@ -13,6 +13,7 @@ from lib.MeteorReduce_Tools import name_analyser, get_cache_path, get_frame_time
 from lib.REDUCE_VARS import *
 from lib.Get_Station_Id import get_station_id
 from lib.VIDEO_VARS import FPS_HD
+from lib.Sync_HD_SD_videos import *
 
 # Get a new folder in meteor_archive
 # from an old json file
@@ -274,6 +275,12 @@ def move_old_detection_to_archive(json_file_path, sd_video_file_path, hd_video_f
       sys.exit(0)
    else:
       print("PARAM FILE: " + param_files[0][0])
+
+   # Here we try to sync the HD and the SD files
+   if(cfe(hd_video_file_path) and cfe(sd_video_file_path)):
+      print("TRYING TO SYNC HD & SD")
+      sync_hd_frames(hd_video_file_path,sd_video_file_path,json_file_path)
+      sys.exit(0)
 
 
    new_json_file['calib']['org_file'] = param_files[0][0]
