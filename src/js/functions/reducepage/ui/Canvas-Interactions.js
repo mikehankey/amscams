@@ -220,7 +220,7 @@ if ($('canvas#c').length!=0) {
             if(objFound && $.trim(id)!=='') { 
                objects = canvas.getObjects();
                for (let i in objects) {
-                     if(objects[i].gp_id== id) { 
+                     if(objects[i].gp_id== id && objects[i].type == "star_info") { 
                         canvas.remove(objects[i]);
                         grpFound = true;
                      }
