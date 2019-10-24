@@ -55,16 +55,17 @@ function update_user_stars() {
  
 if ($('canvas#c').length!=0) { 
 
-  // Defined #c canvas
-  var canvas = new fabric.Canvas('c', {
+   // Defined #c canvas 
+   var canvas = new fabric.Canvas('c', {
       hoverCursor: 'default',
       selection: true 
-    
-      const render = canvas.renderAll.bind(canvas);
-      var out_timer, in_timer;
+   });
 
-      // Loading Animation
-      loading({'text':'Loading Media...','overlay':true});
+   var out_timer, in_timer;
+   const render = canvas.renderAll.bind(canvas);
+
+   // Loading Animation
+   loading({'text':'Loading Media...','overlay':true});
 
       // Add Canvas BG
       canvas.setBackgroundImage(
