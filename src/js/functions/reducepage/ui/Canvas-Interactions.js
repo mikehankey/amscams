@@ -199,7 +199,7 @@ if ($('canvas#c').length!=0) {
             var objFound = false;
             var grpFound = false;
             var clickPoint = new fabric.Point(x_val,y_val);
-            var objects = canvas.getObjects('circle');
+            var objects = canvas.getObjects();
             var id;
          
             // Remove an existing star
