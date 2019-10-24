@@ -5,8 +5,7 @@ POS_Y = 1
 
 
 function update_stars_on_canvas_and_table(json_resp) {
-
-   alert("666 ");
+ 
  
    var cat_stars = json_resp['calib']['stars']; 
 
