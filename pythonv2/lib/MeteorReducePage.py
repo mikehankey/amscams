@@ -89,7 +89,7 @@ def reduce_meteor2(json_conf,form):
    print("<br/>HD<br/>")
    print(HD)
    print("<br/>HD Frames<br/>")
-   print(HD frames)
+   print(HD_frames)
   
    thumbs = get_thumbs(tmp_analysed_name,meteor_json_file,HD,HD_frames,clear_cache)
    sys.exit(0)
