@@ -132,7 +132,7 @@ def sync_hd_frames(hd_video_file,sd_video_file,json_reduction_file):
    sd_frames = load_video_frames(sd_video_file, json_reduction_file,  limit=0, mask=1, color=1)
  
 
-   metframes = red_data['metframes']
+   metframes = reduction_data['metframes']
    first_sd_frame = None
    first_hd_frame = None
    hd_fns = []
@@ -161,17 +161,17 @@ def sync_hd_frames(hd_video_file,sd_video_file,json_reduction_file):
       sd_archive_movie = sd_video_file.replace(".mp4", "-archiveSD.mp4")
       hd_start_buff, hd_end_buff = make_movie_from_frames(hd_frames, hd_fns, hd_archive_movie)
       sd_start_buff, sd_end_buff = make_movie_from_frames(sd_frames, sd_fns, sd_archive_movie)
-      red_data['metconf']['archive_sd_pre_roll'] = sd_start_buff
-      red_data['metconf']['archive_sd_post_roll'] = sd_end_buff
-      red_data['metconf']['archive_hd_pre_roll'] = hd_start_buff
-      red_data['metconf']['archive_hd_post_roll'] = hd_end_buff
-      red_data['metconf']['hd_sync'] = 1 
+      reduction_data['metconf']['archive_sd_pre_roll'] = sd_start_buff
+      reduction_data['metconf']['archive_sd_post_roll'] = sd_end_buff
+      reduction_data['metconf']['archive_hd_pre_roll'] = hd_start_buff
+      reduction_data['metconf']['archive_hd_post_roll'] = hd_end_buff
+      reduction_data['metconf']['hd_sync'] = 1 
       print("Perfect HD/SD frame match up!")       
       print("SD FRAMES:", sd_fns)
       print("HD FRAMES:", hd_fns)
       print("Archive HD Movie:", hd_archive_movie)
       print("Archive SD Movie:", sd_archive_movie)
-      save_json_file(red_file, red_data)
+      save_json_file(json_reduction_file, reduction_data)
 
 
 def find_hd_frame(fn, hd_x, hd_y, x1,y1,x2,y2,hd_frames):
