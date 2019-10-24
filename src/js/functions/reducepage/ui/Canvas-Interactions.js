@@ -91,9 +91,7 @@ if ($('canvas#c').length!=0) {
               loading_done();  
          
             },
-            {
-              width: canvas.width,
-              height: canvas.height, 
+            { 
               originX: 'left',
               originY: 'top',
               scaleX: canvas.width/width,
