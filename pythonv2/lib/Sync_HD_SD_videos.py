@@ -7,6 +7,8 @@ from lib.UtilLib import convert_filename_to_date_cam
 
 # Get frame mask
 def get_masks(this_cams_id, json_conf, hd = 0): 
+   json_conf = load_json_file(json_conf)
+
    my_masks = []
    cameras = json_conf['cameras']
    for camera in cameras:
