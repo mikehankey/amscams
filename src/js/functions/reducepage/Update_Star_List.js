@@ -6,7 +6,7 @@ POS_Y = 1
 
 function update_stars_on_canvas_and_table(json_resp) {
 
-   alert("update_stars_on_canvas_and_table55 ");
+   alert("update_stars_on_canvas_and_table665 ");
  
    var cat_stars = json_resp['calib']['stars']; 
 
@@ -65,20 +65,22 @@ function update_stars_on_canvas_and_table(json_resp) {
             gp_id: v[0],
             type: 'star_info', 
          }));
-/* 
+  
         // Add "+" on canvas
         canvas.add(
             new fabric.Text("+", {
                 fontFamily: 'Arial', 
-                fontSize: 12, 
-                left:  (v['i_pos'][POS_X] - 11)/2, 
-                top: (v['i_pos'][POS_Y]  - 11)/2,
+                fontSize: 12,  
+                left:  (v['i_pos'][POS_X] - 11)/2+4,   // +4 = shift text
+                top: (v['i_pos'][POS_Y]  - 11)/2-4, // -4 = shift text
                 fill:'rgba(255,0,0,.75)',
                 selectable: false ,
                 gp_id: v[0],
                 type: 'star_info',
         }));
-
+        
+        
+        /*
         // Add Star Name on canvas
         canvas.add(new fabric.Text(v['name'], {
                 fontFamily: 'Arial', 
