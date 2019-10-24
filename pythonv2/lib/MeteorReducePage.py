@@ -87,7 +87,7 @@ def reduce_meteor2(json_conf,form):
    print("<br/>TMP ANALYSED NAME<br/>")
    print(tmp_analysed_name)
    print("<br/>METEOR JSON FILE<br/>")
-   print(meteor_json_file)
+   print(str(meteor_json_file))
    print("<br/>HD<br/>")
    print(HD)
    print("<br/>HD Frames<br/>")
