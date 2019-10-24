@@ -11,9 +11,7 @@ def get_masks(this_cams_id, hd = 0):
 
    my_masks = []
    cameras = get_the_cameras()
-
-   print("CAMERAS")
-   print(cameras)
+ 
 
 
    for camera in cameras:

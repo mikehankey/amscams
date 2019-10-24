@@ -1,5 +1,5 @@
 import json
-from lib.Cleanup_Json_Conf import cleanup_json
+from lib.Cleanup_Json_Conf import cleanup_json, PATH_TO_CONF_JSON
 
 def get_the_cam_ids():
     json_path = cleanup_json()
@@ -10,8 +10,9 @@ def get_the_cam_ids():
             toReturn.append(cam['id']) 
     return toReturn
 
+# GET ALL CAMERAS INFO FROM THE OLD VERSION
 def get_the_cameras():
-    json_path = cleanup_json()
+    json_path = PATH_TO_CONF_JSON
     toReturn = []
     with open(json_path, "r+") as jsonFile:
         data = json.load(jsonFile)
