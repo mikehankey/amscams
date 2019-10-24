@@ -295,6 +295,14 @@ def generate_cropped_frames(analysed_name,meteor_json_data,HD_frames,HD):
       print(date_start_file)
       print("<br/>")
       print("+" +  str(seconds_to_add))
+      
+      print("<br/>")
+      
+      # We add the diff in seconds
+      date_start_file = date_start_file +  timedelta(0,seconds_to_add)
+
+      print(date_start_file)
+    
 
 
    
