@@ -70,7 +70,8 @@ def reduce_meteor2(json_conf,form):
    meteor_json_file = load_json_file(json_full_path) 
 
    # Get the HD frames
-   HD_frames = get_HD_frames(analysed_name,clear_cache)
+   print("HD FRAMES TO UNCOMMENT!!!")
+   #HD_frames = get_HD_frames(analysed_name,clear_cache)
    
    # Get the HD or SD stack
    tmp_analysed_name = name_analyser(json_full_path)
