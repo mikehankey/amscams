@@ -65,7 +65,7 @@ function update_stars_on_canvas_and_table(json_resp) {
             gp_id: v[0],
             type: 'star_info', 
          }));
-  
+   
         // Add "+" on canvas
         canvas.add(
             new fabric.Text("+", {
