@@ -138,6 +138,9 @@ def sync_hd_frames(hd_video_file,sd_video_file,json_reduction_file):
    hd_fns = []
    sd_fns = []
 
+   print("METFRAMES")
+   print(metframes)
+
    for fn in metframes:
       if first_sd_frame is None:
          first_sd_fram = fn
