@@ -12,12 +12,7 @@ def get_masks(this_cams_id, hd = 0):
 
    my_masks = []
    cameras = get_the_cameras()
- 
-   print("CAMERAS in get_masks")
-   print(cameras)
-   sys.exit(0)
-
-
+  
    for camera in cameras:
       if str(cameras[camera]['cams_id']) == str(this_cams_id):
          if hd == 1:
