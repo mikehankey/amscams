@@ -95,7 +95,7 @@ if ($('canvas#c').length!=0) {
               width: canvas.width,
               height: canvas.height, 
               originX: 'left',
-              originY: 'top,
+              originY: 'top',
               scale: canvas.width/width,
               scale: canvas.height/height
           });
