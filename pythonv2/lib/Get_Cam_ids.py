@@ -9,3 +9,12 @@ def get_the_cam_ids():
         for cam in data['cameras']:
             toReturn.append(cam['id']) 
     return toReturn
+
+def get_the_cameras():
+    json_path = cleanup_json()
+    toReturn = []
+    with open(json_path, "r+") as jsonFile:
+        data = json.load(jsonFile)
+        for cam in data['cameras']:
+            toReturn.append(cam) 
+    return toReturn

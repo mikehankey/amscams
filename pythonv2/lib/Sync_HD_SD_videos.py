@@ -3,14 +3,14 @@ import os
 from lib.FileIO import load_json_file, save_json_file, cfe
 from lib.VIDEO_VARS import HD_H
 from lib.UtilLib import convert_filename_to_date_cam
+from lib.Get_Cam_ids import get_the_cameras
 
 
 # Get frame mask
-def get_masks(this_cams_id, json_conf, hd = 0): 
-   json_conf = load_json_file(json_conf)
+def get_masks(this_cams_id, hd = 0):  
 
    my_masks = []
-   cameras = json_conf['cameras']
+   cameras = get_the_cameras()
    for camera in cameras:
       if str(cameras[camera]['cams_id']) == str(this_cams_id):
          if hd == 1:
@@ -56,7 +56,7 @@ def load_video_frames(trim_file, json_conf, limit=0, mask=0, color=0):
                hd = 1
             else:
                hd = 0
-            masks = get_masks(cam, json_conf,hd)
+            masks = get_masks(cam, hd)
             print("GET MASKS HD:", hd, masks)
             frame = mask_frame(frame, [], masks, 5)
 
