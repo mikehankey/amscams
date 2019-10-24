@@ -289,8 +289,16 @@ def generate_cropped_frames(analysed_name,meteor_json_data,HD_frames,HD):
    if(HD):
       date_start_file = get_datetime_from_analysedname(analysed_name)
 
+      # We had the trim value
+      seconds_to_add = float(analysed_name['trim'])/FPS_HD
+
+      print(date_start_file)
+      print("<br/>")
+      print("+" +  str(seconds_to_add))
+
+
    
-   print(date_start_file)
+   
    #print(analysed_name)
    sys.exit(0)
 
