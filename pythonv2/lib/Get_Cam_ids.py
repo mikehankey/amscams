@@ -16,8 +16,4 @@ def get_the_cameras():
     toReturn = []
     with open(json_path, "r+") as jsonFile:
          data = json.load(jsonFile)
-         for cam in data['cameras']:
-            print("IN get_the_cameras")
-            print(cam)
-            toReturn.append(cam) 
-    return toReturn
+         return data['cameras']
