@@ -1,11 +1,57 @@
 import cv2
 import sys
 import os  
+import numpy as np
 from lib.FileIO import load_json_file, save_json_file, cfe
-from lib.VIDEO_VARS import HD_H
+from lib.VIDEO_VARS import *
 from lib.UtilLib import convert_filename_to_date_cam
 from lib.Get_Cam_ids import get_the_cameras
 
+
+# Define mask frame
+def mask_frame(frame, mp, masks, size=3):
+  
+   hdm_x = HD_W/SD_W
+   hdm_y = HD_H/SD_H
+   
+   # Mask bright pixels detected in the median  and also mask areas defined in the config
+   frame.setflags(write=1)
+   ih,iw = frame.shape[0], frame.shape[1]
+   px_val = np.mean(frame)
+   px_val = 0
+
+   for mask in masks:
+      mx,my,mw,mh = mask.split(",")
+      mx,my,mw,mh = int(mx), int(my), int(mw), int(mh) 
+      frame[int(my):int(my)+int(mh),int(mx):int(mx)+int(mw)] = 0
+
+   for x,y in mp:
+
+      if int(y + size) > ih:
+         y2 = int(ih - 1)
+      else:
+         y2 = int(y + size)
+      if int(x + size) > iw:
+         x2 = int(iw - 1)
+      else:
+         x2 = int(x + size)
+
+      if y - size < 0:
+         y1 = 0
+      else:
+         y1 = int(y - size)
+      if int(x - size) < 0:
+         x1 = 0
+      else:
+         x1 = int(x - size)
+
+      x1 = int(x1)
+      x2 = int(x2)
+      y1 = int(y1)
+      y2 = int(y2)
+
+      frame[y1:y2,x1:x2] = px_val
+   return(frame)
 
 # Get frame mask
 def get_masks(this_cams_id, hd = 0):  
