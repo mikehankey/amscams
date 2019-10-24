@@ -35,6 +35,8 @@ def get_masks(this_cams_id, hd = 0):
 def load_video_frames(trim_file, json_conf, limit=0, mask=0, color=0):
 
    (f_datetime, cam, f_date_str,fy,fm,fd, fh, fmin, fs) = convert_filename_to_date_cam(trim_file)
+   print("IN LOAD VIDEO FRAMES - cam:")
+   print(cam)
 
    cap = cv2.VideoCapture(trim_file)
    masks = None 
