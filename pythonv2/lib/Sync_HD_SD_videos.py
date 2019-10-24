@@ -53,10 +53,10 @@ def sync_hd_frames(hd_video_file,sd_video_file,json_reduction_file):
    reduction_data = load_json_file(json_reduction_file)
 
    # Get the HD Frames
-   hd_frames = load_video_frames(hd_video_file, limit=0, mask=1, color=1)
+   hd_frames = load_video_frames(hd_video_file, json_reduction_file, limit=0, mask=1, color=1)
    
    # Get the SD Frames
-   sd_frames = load_video_frames(sd_video_file,  limit=0, mask=1, color=1)
+   sd_frames = load_video_frames(sd_video_file, json_reduction_file,  limit=0, mask=1, color=1)
 
    sys.exit();
 
