@@ -279,9 +279,7 @@ def generate_cropped_frames(analysed_name,meteor_json_data,HD_frames,HD):
    # Debug
    cgitb.enable()
 
-   print("meteor_json_data<br/>")
-   print(str(meteor_json_data))
-
+   print("IN generate_cropped_frames<br/>")
     
    # We get the frame data
    meteor_frame_data = meteor_json_data['frames']
