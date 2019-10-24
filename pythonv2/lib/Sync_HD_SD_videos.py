@@ -2,6 +2,7 @@ import cv2
 import os  
 from lib.FileIO import load_json_file, save_json_file, cfe
 from lib.VIDEO_VARS import HD_H
+from lib.UtilLib import convert_filename_to_date_cam
 
 
 # Get frame mask
@@ -23,7 +24,9 @@ def get_masks(this_cams_id, json_conf, hd = 0):
 
 # Return video frames
 def load_video_frames(trim_file, json_conf, limit=0, mask=0, color=0):
-    
+
+   (f_datetime, cam, f_date_str,fy,fm,fd, fh, fmin, fs) = convert_filename_to_date_cam(trim_file)
+
    cap = cv2.VideoCapture(trim_file)
    masks = None 
    frames = []
