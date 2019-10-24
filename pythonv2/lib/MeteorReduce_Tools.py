@@ -284,8 +284,8 @@ def generate_cropped_frames(analysed_name,meteor_json_data,HD_frames,HD):
    # We get the frame data
    meteor_frame_data = meteor_json_data['frames']
 
-   print("FRAMES<br>")
-   print(str(meteor_frame_data))
+   # Here we calculate the frame#1 based on the info from analysed_name
+   print(analysed_name)
    sys.exit(0)
 
    cropped_frames = [] 
