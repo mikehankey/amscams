@@ -13,7 +13,7 @@ def mask_frame(frame, mp, masks, size=3):
   
    hdm_x = HD_W/SD_W
    hdm_y = HD_H/SD_H
-   
+
    # Mask bright pixels detected in the median  and also mask areas defined in the config
    frame.setflags(write=1)
    ih,iw = frame.shape[0], frame.shape[1]
@@ -76,9 +76,7 @@ def get_masks(this_cams_id, hd = 0):
 def load_video_frames(trim_file, json_conf, limit=0, mask=0, color=0):
 
    (f_datetime, cam, f_date_str,fy,fm,fd, fh, fmin, fs) = convert_filename_to_date_cam(trim_file)
-   print("IN LOAD VIDEO FRAMES - cam:")
-   print(cam)
-
+ 
    cap = cv2.VideoCapture(trim_file)
    masks = None 
    frames = []
@@ -107,10 +105,8 @@ def load_video_frames(trim_file, json_conf, limit=0, mask=0, color=0):
             else:
                hd = 0
             masks = get_masks(cam, hd)
-            print("GET MASKS HD:", hd, masks)
+            #print("GET MASKS HD:", hd, masks)
             frame = mask_frame(frame, [], masks, 5)
-
-         
 
          frames.append(frame)
          frame_count = frame_count + 1
