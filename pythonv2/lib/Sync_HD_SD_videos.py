@@ -7,6 +7,52 @@ from lib.VIDEO_VARS import *
 from lib.UtilLib import convert_filename_to_date_cam
 from lib.Get_Cam_ids import get_the_cameras
 
+# Make temporary movies
+def make_movie_from_frames(frames, fns, outfile , remaster = 0):
+ 
+   ofn = outfile.split("/")[-1]
+
+   #TMP_DIR = "/mnt/ams2/tmpvids/" + ofn + "/"
+   TMP_DIR = "/home/ams/tmpvids/" + ofn + "/"
+   if cfe(TMP_DIR, 1) == 0:
+      os.system("mkdir " + TMP_DIR )
+   else:
+      os.system("rm " + TMP_DIR + "*")
+
+   first_frame = 0
+   last_frame = len(fns)
+   start_buff = 0
+   end_buff = 0
+
+   first_frame = fns[0]
+   last_frame = fns[-1]
+
+   cc = 0
+   print("Start Trim Fn:", first_frame)
+   print("Last Trim Fn:", last_frame)
+   print("Total frames :", len(frames))
+
+   for frame in frames:
+      filename = TMP_DIR + '{0:06d}'.format(cc) + ".png"
+      if first_frame <= cc <= last_frame:
+         print(cc, first_frame, last_frame )
+         cv2.imwrite(filename, frame)
+      cc = cc + 1
+
+   if remaster == 1:
+      cmd = """/usr/bin/ffmpeg -y -framerate 25 -pattern_type glob -i '""" + TMP_DIR + """*.png' \
+        -c:v libx264 -r 25 -vf scale='1280x720' -pix_fmt yuv420p """ + outfile 
+   else:
+      cmd = """/usr/bin/ffmpeg -y -framerate 25 -pattern_type glob -i '""" + TMP_DIR + """*.png' \
+        -c:v libx264 -r 25 -pix_fmt yuv420p """ + outfile 
+   print(cmd)
+   os.system(cmd)
+ 
+   
+   os.system("rm -rf " + TMP_DIR )
+   print("rm -rf " + TMP_DIR )
+   return(start_buff, end_buff)
+
 
 # Define mask frame
 def mask_frame(frame, mp, masks, size=3):
