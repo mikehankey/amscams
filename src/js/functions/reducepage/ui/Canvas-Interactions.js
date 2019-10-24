@@ -70,7 +70,7 @@ function setup_canvas_bg() {
         width: canvas.width,
         height: canvas.height, 
         originX: 'left',
-        originY: 'top'
+        originY: 'top',
         scaleX: 0.5,
         scaleY: 0.5
     });
