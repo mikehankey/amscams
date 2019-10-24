@@ -67,30 +67,45 @@ if ($('canvas#c').length!=0) {
    // Loading Animation
    loading({'text':'Loading Media...','overlay':true});
 
-      // Add Canvas BG
-      canvas.setBackgroundImage(
-         my_image, function() {
-           
-            // Set Image 
-           render();    
-           
-           // Show Grid if grid_by_default is set to true
-           if(typeof grid_by_default !=="undefined" && grid_by_default) $('#show_grid').click();
-      
-           // Setup Interactions
-           canvas_interactions();
-      
-           // End Loading Animation
-           loading_done();  
-      
-         },
-         {
-           width: canvas.width,
-           height: canvas.height, 
-           originX: 'left',
-           originY: 'top'
-       });
+   // Get Stack dimension
+   var img = new Image();
 
+   img.onload = function(){
+      var height = img.height;
+      var width = img.width;
+
+          // Add Canvas BG
+          canvas.setBackgroundImage(
+            my_image, function() {
+              
+               // Set Image 
+              render();    
+              
+              // Show Grid if grid_by_default is set to true
+              if(typeof grid_by_default !=="undefined" && grid_by_default) $('#show_grid').click();
+         
+              // Setup Interactions
+              canvas_interactions();
+         
+              // End Loading Animation
+              loading_done();  
+         
+            },
+            {
+              width: canvas.width,
+              height: canvas.height, 
+              originX: 'left',
+              originY: 'top,
+              scale: canvas.width/width,
+              scale: canvas.height/height
+          });
+   
+   }
+
+   img.src = my_image;
+
+
+  
    // Zoom
    function canvas_interactions() {
 
