@@ -204,10 +204,8 @@ if ($('canvas#c').length!=0) {
          
             // Remove an existing star
             for (let i in objects) {
-               if (!objFound && objects[i].containsPoint(clickPoint)) {
-                     objFound = true;
-                     console.log("FOUND");
-                     console.log(objects[i]);
+               if (!objFound && objects[i].containsPoint(clickPoint) && objects[i].type == "star_info") {
+                     objFound = true; 
                      id = objects[i].gp_id;
                      canvas.remove(objects[i]);
                   }
