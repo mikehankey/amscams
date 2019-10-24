@@ -323,7 +323,7 @@ def generate_cropped_frames(analysed_name,meteor_json_data,HD_frames,HD):
    return cropped_frames 
    
    #print(analysed_name)
-   sys.exit(0)
+   
 
    #cropped_frames = [] 
    
