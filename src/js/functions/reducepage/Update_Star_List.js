@@ -40,18 +40,17 @@ function update_stars_on_canvas_and_table(json_resp) {
 
     // Table - tbody (in #stars-tab) & draw on canvas
     $.each(cat_stars,function(i,v) {
-
-
+ 
          // Add to circle canvas
          canvas.add(
-               new fabric.Circle({
-                  radius: 5, fill: 'rgba(0,0,0,0)', strokeWidth: 1, stroke: 'rgba(100,200,200,.5)', 
-                  left: (v["cat_und_pos"][POS_X] - 11)/2, 
-                  top: (v["cat_und_pos"][POS_Y] - 11)/2,
-                  selectable: false,
-                  gp_id: v[0]
-         }));
- 
+            new fabric.Circle({
+               radius: 5, fill: 'rgba(0,0,0,0)', strokeWidth: 1, stroke: 'rgba(100,200,200,.5)', 
+               left: (v["cat_und_pos"][POS_X] - 11)/2, 
+               top: (v["cat_und_pos"][POS_Y] - 11)/2,
+               selectable: false,
+               gp_id: v[0],
+               type: 'star_info',
+         })); 
 
         // Add Rectangle
         canvas.add(new fabric.Rect({

@@ -74,8 +74,8 @@ if ($('canvas#c').length!=0) {
       var height = img.height;
       var width = img.width;
 
-          // Add Canvas BG
-          canvas.setBackgroundImage(
+         // Add Canvas BG with proper scale so we can us HD or SD 
+         canvas.setBackgroundImage(
             my_image, function() {
               
                // Set Image 
@@ -97,16 +97,14 @@ if ($('canvas#c').length!=0) {
               scaleX: canvas.width/width,
               scaleY: canvas.height/height
           });
-
-
-   
+ 
    }
 
    img.src = my_image;
 
 
   
-   // Zoom
+   // Zoom & Clicks
    function canvas_interactions() {
 
       var w_preview_dim = $('#canvas_zoom').innerWidth()/2;
@@ -127,10 +125,8 @@ if ($('canvas#c').length!=0) {
       $('#canvas_zoom').css({'background':'url('+my_image +') no-repeat 50% 50% #000','background-size': h_canvas_w*zoom + 'px ' + h_canvas_h*zoom + 'px' })
       $('.canvas_zoom_holder').css({'width':w_preview_dim*2, 'height':h_preview_dim*2,'position':'absolute'});
 
-
       // Hide the option by default
       $('.canvas_zoom_holder').slideUp(250, function() { $(this).css('visibility','visible')}); 
-      
 
       // Hide/Show zoom when necessary
       $('.canvas-container canvas').mouseenter(function(){ 
@@ -143,6 +139,7 @@ if ($('canvas#c').length!=0) {
          }, 350); 
       }); 
    
+      // Move the zoom when moving over canvas
       canvas.on('mouse:move', function(e) { 
          var pointer = canvas.getPointer(event.e);
          var $zoom   = $('#canvas_zoom');
@@ -168,61 +165,65 @@ if ($('canvas#c').length!=0) {
          $('#canvas_pointer_info').text(Math.round(pointer.x) +', '+ Math.round(pointer.y)); 
       }); 
     
-    canvas.on('mouse:down', function(e) {
-      // Remove zoom
-      if($('#c').hasClass('r-zoomed')) {
-         $('#c').removeClass('r-zoomed').removeAttr('style'); 
-         return false;
-      }  
+      // Click on Canvas
+      canvas.on('mouse:down', function(e) {
+
+         // Remove zoom
+         if($('#c').hasClass('r-zoomed')) {
+            $('#c').removeClass('r-zoomed').removeAttr('style'); 
+            return false;
+         }  
       
-      // Hide grid on click
-      if($('#c').hasClass('grid')) $('#show_grid').click();
+         // Hide grid on click
+         if($('#c').hasClass('grid')) $('#show_grid').click();
      
-      // Not in RADEC_MODE: it means we select stars on the canvas
-      if(RADEC_MODE==false) {
-         // Make the update star button blinked
-        make_it_blink($('#update_stars'));
+         // Not in RADEC_MODE: it means we select stars on the canvas
+         if(RADEC_MODE==false) {
+            // Make the update star button blinked
+            make_it_blink($('#update_stars'));
 
-        var pointer = canvas.getPointer(event.e);
-        x_val = pointer.x | 0;
-        y_val = pointer.y | 0;
+            var pointer = canvas.getPointer(event.e);
+            x_val = pointer.x | 0;
+            y_val = pointer.y | 0;
   
-        var circle = new fabric.Circle({
-          radius: 5, 
-          fill: 'rgba(0,0,0,0)', 
-          strokeWidth: 1, 
-          stroke: 'rgba(100,200,200,.85)', 
-          left: x_val-5, 
-          top: y_val-5,
-          selectable: false 
-        }); 
+            var circle = new fabric.Circle({
+               radius: 5, 
+               fill: 'rgba(0,0,0,0)', 
+               strokeWidth: 1, 
+               stroke: 'rgba(100,200,200,.85)', 
+               left: x_val-5, 
+               top: y_val-5,
+               selectable: false 
+            }); 
 
-        var objFound = false;
-        var grpFound = false;
-        var clickPoint = new fabric.Point(x_val,y_val);
-        var objects = canvas.getObjects('circle');
-        var id;
+            var objFound = false;
+            var grpFound = false;
+            var clickPoint = new fabric.Point(x_val,y_val);
+            var objects = canvas.getObjects('circle');
+            var id;
          
-        // Remove an existing star
-        for (let i in objects) {
-          if (!objFound && objects[i].containsPoint(clickPoint)) {
-              objFound = true;
-              id = objects[i].gp_id;
-              canvas.remove(objects[i]);
+            // Remove an existing star
+            for (let i in objects) {
+               if (!objFound && objects[i].containsPoint(clickPoint)) {
+                     objFound = true;
+                     id = objects[i].gp_id;
+                     canvas.remove(objects[i]);
+                  }
             }
-        }
 
-        // Remove all the related object +, name, square if
-        // it's a start from the catalog
-        if(objFound && $.trim(id)!=='') { 
-          objects = canvas.getObjects();
-          for (let i in objects) {
-                if(objects[i].gp_id== id) { 
-                  canvas.remove(objects[i]);
-                  grpFound = true;
-                }
-          }
-        }  
+            console.log("YEP " +  id);
+
+            // Remove all the related object +, name, square if
+            // it's a start from the catalog
+            if(objFound && $.trim(id)!=='') { 
+               objects = canvas.getObjects();
+               for (let i in objects) {
+                     if(objects[i].gp_id== id) { 
+                        canvas.remove(objects[i]);
+                        grpFound = true;
+                     }
+               }
+            }  
   
 
         if(objFound && grpFound) {
