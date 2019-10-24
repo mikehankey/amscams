@@ -47,37 +47,7 @@ function update_user_stars() {
     
 }
  
-
-// Add Background image to canvas
-function setup_canvas_bg() {
-   canvas.setBackgroundImage(
-      my_image, function() {
-        
-         // Set Image 
-        render();    
-        
-        // Show Grid if grid_by_default is set to true
-        if(typeof grid_by_default !=="undefined" && grid_by_default) $('#show_grid').click();
-   
-        // Setup Interactions
-        canvas_interactions();
-   
-        // End Loading Animation
-        loading_done();  
-   
-      },
-      {
-        width: canvas.width,
-        height: canvas.height, 
-        originX: 'left',
-        originY: 'top',
-        scaleX: 0.5,
-        scaleY: 0.5
-    });
-} 
-
-
-
+ 
 
 
  
@@ -87,77 +57,102 @@ if ($('canvas#c').length!=0) {
 
   // Defined #c canvas
   var canvas = new fabric.Canvas('c', {
-    hoverCursor: 'default',
-    selection: true 
-  });
-
-  var out_timer, in_timer;
-  const render = canvas.renderAll.bind(canvas);
-
-  // Loading Animation
-  loading({'text':'Loading Media...','overlay':true});
-
-  // Zoom
-  function canvas_interactions() {
-
-    var w_preview_dim = $('#canvas_zoom').innerWidth()/2;
-    var h_preview_dim = $('#canvas_zoom').innerHeight()/2;
-    var h_canvas_w = $('#c').innerWidth()/2;
-    var h_canvas_h = $('#c').innerHeight()/2;
+      hoverCursor: 'default',
+      selection: true 
     
-    var xRatio =  w_preview_dim / h_canvas_w;
-    var yRatio =  h_preview_dim / h_canvas_h;
-    
-    var zoom = 4;
+      const render = canvas.renderAll.bind(canvas);
+      var out_timer, in_timer;
 
-    // We compute the W_factor & H_factor
-    // to pass the equivalent of HD x,y on the RADEC_MODE
-    var wRatio = HD_w/$('#c').innerWidth();
-    var hRatio = HD_h/$('#c').innerWidth();
+      // Loading Animation
+      loading({'text':'Loading Media...','overlay':true});
 
-    $('#canvas_zoom').css({'background':'url('+my_image +') no-repeat 50% 50% #000','background-size': h_canvas_w*zoom + 'px ' + h_canvas_h*zoom + 'px' })
-    $('.canvas_zoom_holder').css({'width':w_preview_dim*2, 'height':h_preview_dim*2,'position':'absolute'});
-
-
-    // Hide the option by default
-    $('.canvas_zoom_holder').slideUp(250, function() { $(this).css('visibility','visible')}); 
-    
-
-    // Hide/Show zoom when necessary
-    $('.canvas-container canvas').mouseenter(function(){ 
-      out_timer = setTimeout(function() { $('.canvas_zoom_holder').slideDown(300);},350);
-    }).mouseleave(function() { 
-      clearTimeout(out_timer);
-      out_timer = setTimeout(function() {
-        $('.canvas_zoom_holder').slideUp(300); 
-        $('#canvas_zoom').css('background-position','50% 50%');
-      }, 350); 
-    }); 
- 
-    canvas.on('mouse:move', function(e) { 
-        var pointer = canvas.getPointer(event.e);
-        var $zoom   = $('#canvas_zoom');
-        var x_val = pointer.x | 0;
-        var y_val = pointer.y | 0;
-  
-        x_val = x_val*zoom/2-w_preview_dim;
-        y_val = y_val*zoom/2-h_preview_dim;
+      // Add Canvas BG
+      canvas.setBackgroundImage(
+         my_image, function() {
+           
+            // Set Image 
+           render();    
+           
+           // Show Grid if grid_by_default is set to true
+           if(typeof grid_by_default !=="undefined" && grid_by_default) $('#show_grid').click();
       
-        if(x_val<0) {
-          if(y_val<0) {
-            $zoom.css('background-position',Math.abs(x_val)  + 'px ' + Math.abs(y_val) + 'px');
-          } else {
-            $zoom.css('background-position', Math.abs(x_val)  + 'px -' + y_val  + 'px');
-          }
-        } else if(y_val<0) {
-            $zoom.css('background-position','-' +  x_val  + 'px ' + Math.abs(y_val)  + 'px');
-        } else {
-          
-            $zoom.css('background-position', '-'+x_val  + 'px -' + y_val  + 'px');
-        }
-        //$('#canvas_pointer_info').text(x_val +', '+ y_val); 
-        $('#canvas_pointer_info').text(Math.round(pointer.x) +', '+ Math.round(pointer.y)); 
-    }); 
+           // Setup Interactions
+           canvas_interactions();
+      
+           // End Loading Animation
+           loading_done();  
+      
+         },
+         {
+           width: canvas.width,
+           height: canvas.height, 
+           originX: 'left',
+           originY: 'top',
+           scaleX: 0.5,
+           scaleY: 0.5
+       });
+
+   // Zoom
+   function canvas_interactions() {
+
+      var w_preview_dim = $('#canvas_zoom').innerWidth()/2;
+      var h_preview_dim = $('#canvas_zoom').innerHeight()/2;
+      var h_canvas_w = $('#c').innerWidth()/2;
+      var h_canvas_h = $('#c').innerHeight()/2;
+      
+      var xRatio =  w_preview_dim / h_canvas_w;
+      var yRatio =  h_preview_dim / h_canvas_h;
+      
+      var zoom = 4;
+
+      // We compute the W_factor & H_factor
+      // to pass the equivalent of HD x,y on the RADEC_MODE
+      var wRatio = HD_w/$('#c').innerWidth();
+      var hRatio = HD_h/$('#c').innerWidth();
+
+      $('#canvas_zoom').css({'background':'url('+my_image +') no-repeat 50% 50% #000','background-size': h_canvas_w*zoom + 'px ' + h_canvas_h*zoom + 'px' })
+      $('.canvas_zoom_holder').css({'width':w_preview_dim*2, 'height':h_preview_dim*2,'position':'absolute'});
+
+
+      // Hide the option by default
+      $('.canvas_zoom_holder').slideUp(250, function() { $(this).css('visibility','visible')}); 
+      
+
+      // Hide/Show zoom when necessary
+      $('.canvas-container canvas').mouseenter(function(){ 
+         out_timer = setTimeout(function() { $('.canvas_zoom_holder').slideDown(300);},350);
+      }).mouseleave(function() { 
+         clearTimeout(out_timer);
+         out_timer = setTimeout(function() {
+         $('.canvas_zoom_holder').slideUp(300); 
+         $('#canvas_zoom').css('background-position','50% 50%');
+         }, 350); 
+      }); 
+   
+      canvas.on('mouse:move', function(e) { 
+         var pointer = canvas.getPointer(event.e);
+         var $zoom   = $('#canvas_zoom');
+         var x_val = pointer.x | 0;
+         var y_val = pointer.y | 0;
+   
+         x_val = x_val*zoom/2-w_preview_dim;
+         y_val = y_val*zoom/2-h_preview_dim;
+         
+         if(x_val<0) {
+            if(y_val<0) {
+               $zoom.css('background-position',Math.abs(x_val)  + 'px ' + Math.abs(y_val) + 'px');
+            } else {
+               $zoom.css('background-position', Math.abs(x_val)  + 'px -' + y_val  + 'px');
+            }
+         } else if(y_val<0) {
+               $zoom.css('background-position','-' +  x_val  + 'px ' + Math.abs(y_val)  + 'px');
+         } else {
+            
+               $zoom.css('background-position', '-'+x_val  + 'px -' + y_val  + 'px');
+         }
+         //$('#canvas_pointer_info').text(x_val +', '+ y_val); 
+         $('#canvas_pointer_info').text(Math.round(pointer.x) +', '+ Math.round(pointer.y)); 
+      }); 
     
     canvas.on('mouse:down', function(e) {
       // Remove zoom
