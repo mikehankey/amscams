@@ -206,6 +206,8 @@ if ($('canvas#c').length!=0) {
             for (let i in objects) {
                if (!objFound && objects[i].containsPoint(clickPoint)) {
                      objFound = true;
+                     console.log("FOUND");
+                     console.log(objects[i]);
                      id = objects[i].gp_id;
                      canvas.remove(objects[i]);
                   }
