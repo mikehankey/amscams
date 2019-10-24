@@ -6,7 +6,6 @@ POS_Y = 1
 
 function update_stars_on_canvas_and_table(json_resp) {
  
- 
    var cat_stars = json_resp['calib']['stars']; 
 
    if(typeof cat_stars == 'undefined') {
@@ -48,7 +47,7 @@ function update_stars_on_canvas_and_table(json_resp) {
                left: (v["cat_und_pos"][POS_X] - 11)/2, 
                top: (v["cat_und_pos"][POS_Y] - 11)/2,
                selectable: false,
-               gp_id: v[0],
+               gp_id: v['name'],
                type: 'star_info',
          })); 
 
@@ -60,7 +59,7 @@ function update_stars_on_canvas_and_table(json_resp) {
             width: 10,
             height: 10 ,
             selectable: false,
-            gp_id: v[0],
+            gp_id: v['name'],
             type: 'star_info', 
          }));
    
@@ -73,7 +72,7 @@ function update_stars_on_canvas_and_table(json_resp) {
                 top: (v['i_pos'][POS_Y]  - 11)/2-4, // -4 = shift text
                 fill:'rgba(255,0,0,.75)',
                 selectable: false ,
-                gp_id: v[0],
+                gp_id: v['name'],
                 type: 'star_info',
         }));
          
@@ -85,7 +84,7 @@ function update_stars_on_canvas_and_table(json_resp) {
                 top: (v['cat_und_pos'][POS_Y] - 11)/2+17,
                 fill:'rgba(255,255,255,.55)',
                 selectable: false,
-                gp_id: v[0],
+                gp_id: v['name'],
                 type: 'star_info',
         })); 
 
