@@ -302,47 +302,48 @@ def generate_cropped_frames(analysed_name,meteor_json_data,HD_frames,HD):
       # This is the date & time of the frame #1 in the HD
       date_start_file = date_start_file +  timedelta(0,seconds_to_add)
 
-      print("FRAME #1 is at ")
-      print(date_start_file)
-      print("<br/>")
-
       # Display all frames# with their date & time (HD FRAMES)
       for frame_cnt, frame in enumerate(meteor_frame_data):
-         print("FRAME #" + str(frame['fn']))
-         print("<br/>")
-         dt = date_start_file +  timedelta(0,int(frame['fn'])/FPS_HD)
+         frame_index = int(frame['fn'])
+         dt = date_start_file +  timedelta(0,frame_index/FPS_HD)
+         print("FRAME #" + str(frame['fn']) + " => DATE: ")
          print(dt)
-         print("<br/>")
-         print("<br/>")
 
-
-
+         x = int(frame['x'])
+         y = int(frame['y'])
+         
+         destination =  get_cache_path(analysed_name,"cropped")+analysed_name['name_w_ext']+EXT_CROPPED_FRAMES+str(frame_index)+".png"
+         
+         org_HD_frame = HD_frames[frame_index-1]
+         crop = new_crop_thumb(org_HD_frame,x,y,destination,HD)
+         cropped_frames.append(crop)
    
+   return cropped_frames 
    
    #print(analysed_name)
    sys.exit(0)
 
-   cropped_frames = [] 
+   #cropped_frames = [] 
    
-   for frame in meteor_frame_data: 
+   #for frame in meteor_frame_data: 
      
-      frame_index = int(frame['fn']) # - 1 
+   #   frame_index = int(frame['fn']) # - 1 
  
-      x = int(frame['x'])
-      y = int(frame['y'])
+   #   x = int(frame['x'])
+   #   y = int(frame['y'])
 
-      destination =  get_cache_path(analysed_name,"cropped")+analysed_name['name_w_ext']+EXT_CROPPED_FRAMES+str(frame_index)+".png"
+   #   destination =  get_cache_path(analysed_name,"cropped")+analysed_name['name_w_ext']+EXT_CROPPED_FRAMES+str(frame_index)+".png"
 
       # WARNING THERE IS A -1 FROM THE LIST OF HD FRAMES!!!
       # BECAUSE THE JSON IS WRONG      
-      org_HD_frame = HD_frames[frame_index-1]
+   #   org_HD_frame = HD_frames[frame_index-1]
  
       # We generate the thumb from the corresponding HD_frames
       # and add it to cropped_frames
-      crop = new_crop_thumb(org_HD_frame,x,y,destination,HD)
-      cropped_frames.append(crop)
+   #   crop = new_crop_thumb(org_HD_frame,x,y,destination,HD)
+   #   cropped_frames.append(crop)
 
-   return cropped_frames
+   #return cropped_frames
 
 
 # Get the stacks for a meteor detection
