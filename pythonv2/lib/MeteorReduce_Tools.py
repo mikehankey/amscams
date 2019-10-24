@@ -61,7 +61,7 @@ def get_datetime_from_analysedname(analysed_name):
    try:
       dt = analysed_name['year']+'-'+analysed_name['month']+'-'+analysed_name['day']+' '+analysed_name['hour']+':'+analysed_name['min']+':'+analysed_name['sec']+'.'+analysed_name['ms']
    except:
-      print("CANNOT GET THE PROPER DATE & TIME FROM THE FILE " + analyse_name['full_path'])
+      print("CANNOT GET THE PROPER DATE & TIME FROM THE FILE " + analysed_name['full_path'])
       sys.exit(0)
    return datetime.strptime(dt, '%Y-%m-%d %H:%M:%S.%f')
  
@@ -283,7 +283,7 @@ def generate_cropped_frames(analysed_name,meteor_json_data,HD_frames,HD):
 
    print("meteor_json_data<br/>")
    print(str(meteor_json_data))
-   
+
     
    # We get the frame data
    meteor_frame_data = meteor_json_data['frames']
