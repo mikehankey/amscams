@@ -11,7 +11,7 @@ function update_stars_on_canvas_and_table(json_resp) {
    var cat_stars = json_resp['calib']['stars']; 
 
    if(typeof cat_stars == 'undefined') {
-      return;
+      return; 
    }
 
     var table_tbody_html = '';
