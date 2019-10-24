@@ -57,7 +57,13 @@ def name_analyser(file_names):
 
 # Return a date & time object based on the name_analyser results
 def get_datetime_from_analysedname(analysed_name):
+   
+   # Debug
+   cgitb.enable()
+   
    dt = ''
+   dt = analysed_name['year']+'-'+analysed_name['month']+'-'+analysed_name['day']+' '+analysed_name['hour']+':'+analysed_name['min']+':'+analysed_name['sec']+'.'+analysed_name['ms']
+
    try:
       dt = analysed_name['year']+'-'+analysed_name['month']+'-'+analysed_name['day']+' '+analysed_name['hour']+':'+analysed_name['min']+':'+analysed_name['sec']+'.'+analysed_name['ms']
    except:
