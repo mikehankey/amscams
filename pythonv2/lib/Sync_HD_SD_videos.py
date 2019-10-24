@@ -210,6 +210,12 @@ def sync_hd_frames(hd_video_file,sd_video_file,json_reduction_file):
       sd_archive_movie = sd_video_file.replace(".mp4", "-archiveSD.mp4")
       hd_start_buff, hd_end_buff = make_movie_from_frames(hd_frames, hd_fns, hd_archive_movie)
       sd_start_buff, sd_end_buff = make_movie_from_frames(sd_frames, sd_fns, sd_archive_movie)
+     
+      print("hd_start_buff", str(hd_start_buff))
+      print("hd_end_buff", str(hd_end_buff))
+      print("sd_start_buff", str(sd_start_buff))
+      print("sd_end_buff", str(sd_end_buff))
+      
       reduction_data['metconf']['archive_sd_pre_roll'] = sd_start_buff
       reduction_data['metconf']['archive_sd_post_roll'] = sd_end_buff
       reduction_data['metconf']['archive_hd_pre_roll'] = hd_start_buff
