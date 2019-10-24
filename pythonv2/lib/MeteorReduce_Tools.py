@@ -302,6 +302,8 @@ def generate_cropped_frames(analysed_name,meteor_json_data,HD_frames,HD):
       # This is the date & time of the frame #1 in the HD
       date_start_file = date_start_file +  timedelta(0,seconds_to_add)
 
+      cropped_frames = [] 
+
       # Display all frames# with their date & time (HD FRAMES)
       for frame_cnt, frame in enumerate(meteor_frame_data):
          frame_index = int(frame['fn'])
