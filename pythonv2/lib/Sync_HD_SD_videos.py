@@ -155,8 +155,8 @@ def sync_hd_frames(hd_video_file,sd_video_file,json_reduction_file):
       hd_fns.append(int(hd_fn))
       print(fn, metframes[fn]['hd_x'], metframes[fn]['hd_y'])
    
-   print("len(sd_fns): " + len(sd_fns))   
-   print("len(hd_fns): " + len(hd_fns))   
+   print("len(sd_fns): " + str(len(sd_fns)))   
+   print("len(hd_fns): " + str(len(hd_fns)))   
 
    if len(sd_fns) == len(hd_fns):
       # buffer the frames with 10 frames on either side if we can.
