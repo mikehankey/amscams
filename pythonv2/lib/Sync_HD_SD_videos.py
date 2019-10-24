@@ -147,7 +147,7 @@ def sync_hd_frames(hd_video_file,sd_video_file,json_reduction_file):
       x1 = metframes[fn]['sd_x']  
       x2 = metframes[fn]['sd_x'] +  metframes[fn]['sd_w']
       y1 = metframes[fn]['sd_y']  
-      y2 = metframes[fn]['sd_y] +  metframes[fn]['sd_h']
+      y2 = metframes[fn]['sd_y'] +  metframes[fn]['sd_h']
       hd_x = metframes[fn]['hd_x']
       hd_y = metframes[fn]['hd_y']
       hd_fn = find_hd_frame(fn, hd_x, hd_y, x1,y1,x2,y2,hd_frames)
