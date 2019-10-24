@@ -317,8 +317,10 @@ def generate_cropped_frames(analysed_name,meteor_json_data,HD_frames,HD):
       for frame_cnt, frame in enumerate(meteor_frame_data):
          frame_index = int(frame['fn'])
          dt = date_start_file +  timedelta(0,frame_index/FPS_HD)
-         print("FRAME #" + str(frame['fn']) + " => DATE: ")
+         
+         print("SD FRAME #" + str(frame['fn']) + " => DATE: ")
          print(dt)
+         print("<br/>")
 
          x = int(frame['x'])
          y = int(frame['y'])
