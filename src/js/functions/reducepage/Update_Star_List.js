@@ -6,7 +6,7 @@ POS_Y = 1
 
 function update_stars_on_canvas_and_table(json_resp) {
 
-   alert("update_stars_on_canvas_and_table ")
+   alert("update_stars_on_canvas_and_table2 ")
  
    var cat_stars = json_resp['calib']['stars']; 
 
@@ -56,8 +56,8 @@ function update_stars_on_canvas_and_table(json_resp) {
         // Add Rectangle
         canvas.add(new fabric.Rect({
             fill: 'rgba(0,0,0,0)', strokeWidth: 5, stroke: 'rgba(230,100,200,.5)', 
-            left:  (v['i_pos'][POS_X] - 11)/2, 
-            top: (v['i_pos'][POS_Y]  - 11)/2,
+            left: ((v["cat_dist_pos"][POS_X] - 11)/2)+4,   // +4 = shift text
+            top: ((v["cat_dist_pos"][POS_Y] - 11)/2) -4,    // -4 = shift text
             width: 10,
             height: 10 ,
             selectable: false,
@@ -70,8 +70,8 @@ function update_stars_on_canvas_and_table(json_resp) {
             new fabric.Text("+", {
                 fontFamily: 'Arial', 
                 fontSize: 12, 
-                left: ((v["cat_dist_pos"][POS_X] - 11)/2)+4,   // +4 = shift text
-                top: ((v["cat_dist_pos"][POS_Y] - 11)/2) -4,    // -4 = shift text
+                left:  (v['i_pos'][POS_X] - 11)/2, 
+                top: (v['i_pos'][POS_Y]  - 11)/2,
                 fill:'rgba(255,0,0,.75)',
                 selectable: false ,
                 gp_id: v[0],
