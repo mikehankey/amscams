@@ -82,6 +82,8 @@ def reduce_meteor2(json_conf,form):
     
    # Get the thumbs (cropped HD frames)
    print("MeteorReducePage - BEFORE THUMBS<br/>")
+   print("METEOR JSON FILE<br/>")
+   print(json_full_path)
    print("<br/>TMP ANALYSED NAME<br/>")
    print(tmp_analysed_name)
    print("<br/>METEOR JSON FILE<br/>")
