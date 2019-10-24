@@ -80,18 +80,9 @@ def reduce_meteor2(json_conf,form):
       stack = get_stacks(tmp_analysed_name,clear_cache,False) 
    
     
-   # Get the thumbs (cropped HD frames)
-   print("MeteorReducePage - BEFORE THUMBS<br/>")
-   print("METEOR JSON FILE<br/>")
-   print(json_full_path)
-   print("<br/>TMP ANALYSED NAME<br/>")
-   print(tmp_analysed_name)
-   print("<br/>METEOR JSON FILE<br/>")
-   print("<br/>HD<br/>")
-   print(HD)
-   print("<br/>HD Frames<br/>")
-   print(HD_frames)
-  
+   # Get the thumbs (cropped HD frames) 
+   print("METEOR REDUCE PAGE<br/>")
+   print("GET THUMBS")
    thumbs = get_thumbs(tmp_analysed_name,meteor_json_file,HD,HD_frames,clear_cache)
    sys.exit(0)
   

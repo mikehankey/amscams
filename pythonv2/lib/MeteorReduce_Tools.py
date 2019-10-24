@@ -164,7 +164,6 @@ def get_thumbs(analysed_name,meteor_json_data,HD,HD_frames,clear_cache):
 
    # Debug
    cgitb.enable()
-   
 
    # Do we have them already?
    thumbs = does_cache_exist(analysed_name,"cropped")
@@ -175,7 +174,6 @@ def get_thumbs(analysed_name,meteor_json_data,HD,HD_frames,clear_cache):
    else:
       # We return them
       thumbs = glob.glob(get_cache_path(analysed_name,"cropped")+"*"+EXT_CROPPED_FRAMES+"*.png") 
-
    return thumbs
 
 
