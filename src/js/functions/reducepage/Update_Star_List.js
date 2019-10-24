@@ -6,7 +6,7 @@ POS_Y = 1
 
 function update_stars_on_canvas_and_table(json_resp) {
 
-   alert("update_stars_on_canvas_and_table2 ")
+   alert("update_stars_on_canvas_and_table33 ");
  
    var cat_stars = json_resp['calib']['stars']; 
 
@@ -42,6 +42,20 @@ function update_stars_on_canvas_and_table(json_resp) {
     // Table - tbody (in #stars-tab) & draw on canvas
     $.each(cat_stars,function(i,v) {
 
+
+         // Add to circle canvas
+         canvas.add(
+               new fabric.Circle({
+                  radius: 5, fill: 'rgba(0,0,0,0)', strokeWidth: 1, stroke: 'rgba(100,200,200,.5)', 
+                  //left: (v[13] - 11)/2, 
+                  //top: (v[14] - 11)/2,
+                  left: (v["cat_und_pos"][POS_X] - 11)/2, 
+                  top: (v["cat_und_pos"][POS_Y] - 11)/2,
+                  selectable: false,
+                  gp_id: v[0]
+         }));
+
+         /*
         // Add to circle canvas
         canvas.add(
             new fabric.Circle({
@@ -90,7 +104,7 @@ function update_stars_on_canvas_and_table(json_resp) {
                 type: 'star_info',
         }));
 
- 
+        */
 
         // Add the corresponding row 
         table_tbody_html+= '<tr><td><b>'+v['name']+'</b></td>\
