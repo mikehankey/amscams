@@ -365,7 +365,7 @@ def generate_stacks(video_full_path, destination, toHD):
    stacked_image = None
 
    print("FrAMES FOUND<br/>")
-   print(str(frame))
+   print(frames)
 
    # Create Stack 
    for frame in frames:
