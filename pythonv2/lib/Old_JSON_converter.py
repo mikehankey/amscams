@@ -314,7 +314,8 @@ def move_old_detection_to_archive(json_file_path, sd_video_file_path, hd_video_f
    json_content['info']    = new_json_file['info']
    json_content['frames']  = new_json_file['frames']
    if(sync_res != False):
-      print("SYNC RES " + sync_res)
+      print("SYNC RES ")
+      print(sync_res)
    
    # Save the new JSON file
    save_json_file(new_folder + tan['name'], json_content)
