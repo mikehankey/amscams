@@ -301,10 +301,12 @@ def generate_cropped_frames(analysed_name,meteor_json_data,HD_frames,HD):
    if(HD):
       for frame_cnt, frame in enumerate(meteor_frame_data):
          frame_index = int(frame['fn'])+hd_frames_sd_frames_diff    
+         print("SD FRAME INDEX: " +  str(frame['fn']))
+         print("FRAME INDEX :" +  str(frame_index))
          
          destination =  get_cache_path(analysed_name,"cropped")+analysed_name['name_w_ext']+EXT_CROPPED_FRAMES+str(frame_index)+".png"
          
-         org_HD_frame = HD_frames[frame_index-1]
+         org_HD_frame = HD_frames[frame_index]
          crop = new_crop_thumb(org_HD_frame,x,y,destination,HD)
          cropped_frames.append(crop)
    
