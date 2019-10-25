@@ -294,49 +294,20 @@ def generate_cropped_frames(analysed_name,meteor_json_data,HD_frames,HD):
    hd_frames_sd_frames_diff = 0  
    if('sync' in meteor_json_data and HD is True):
       hd_frames_sd_frames_diff = int(meteor_json_data['sync']['hd_ind'])-int(meteor_json_data['sync']['sd_ind'])
-      print("DIFF " + str(hd_frames_sd_frames_diff))
-      sys.exit(0);
+   
+   # To store the cropped frames
+   cropped_frames = [] 
 
-   # Here we calculate the frame#1 based on the info from analysed_name
-   # on the HD video
    if(HD):
-      #print("ANALYSED NAME<br/>")
-      #print(analysed_name)
-      print("<br/>")
-      date_start_file = get_datetime_from_analysedname(analysed_name)
-
-      # We had the trim value
-      seconds_to_add = float(analysed_name['trim'])/FPS_HD
-
-      #print(date_start_file)
-      #print("<br/>")
-      #print("+" +  str(seconds_to_add))
-      
-      #print("<br/>")
-      
-      # We add the diff in seconds
-      # This is the date & time of the frame #1 in the HD
-      date_start_file = date_start_file +  timedelta(0,seconds_to_add)
-
-      cropped_frames = [] 
-
-      # Display all frames# with their date & time (HD FRAMES)
       for frame_cnt, frame in enumerate(meteor_frame_data):
-         frame_index = int(frame['fn'])
-         dt = date_start_file +  timedelta(0,frame_index/FPS_HD)
-         
-         print("SD FRAME #" + str(frame['fn']) + " => DATE: ")
-         print(dt)
-         print("<br/>")
-
-         x = int(frame['x'])
-         y = int(frame['y'])
+         frame_index = int(frame['fn'])+hd_frames_sd_frames_diff    
          
          destination =  get_cache_path(analysed_name,"cropped")+analysed_name['name_w_ext']+EXT_CROPPED_FRAMES+str(frame_index)+".png"
          
          org_HD_frame = HD_frames[frame_index-1]
          crop = new_crop_thumb(org_HD_frame,x,y,destination,HD)
          cropped_frames.append(crop)
+   
    
    return cropped_frames 
     
