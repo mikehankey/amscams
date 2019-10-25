@@ -159,7 +159,7 @@ def sync_hd_frames(hd_video_file,sd_video_file,json_reduction_file):
       hd_fns.sort()  
       #print(sd_fns)
       #print(hd_fns)
-      return {'sd_ind':sd_fns[0]; 'hd_ind':hd_fns[0]}
+      return {'sd_ind':sd_fns[0], 'hd_ind':hd_fns[0]}
    else:
       return False 
 
