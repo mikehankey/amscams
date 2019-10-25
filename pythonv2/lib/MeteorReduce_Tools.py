@@ -355,15 +355,17 @@ def get_stacks(analysed_name,clear_cache,toHD):
 def generate_stacks(video_full_path, destination, toHD):
 
    print("IN GENERATE STACKS<br/>")
-   print("DESTINATION " +  destination)
+  
 
    # Debug
    cgitb.enable() 
    
    # Get All Frames
    frames = load_video_frames(video_full_path, load_json_file(JSON_CONFIG), 0, 0)
- 
    stacked_image = None
+
+   print("FrAMES FOUND<br/>")
+   print(str(frame))
 
    # Create Stack 
    for frame in frames:
