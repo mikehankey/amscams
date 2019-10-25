@@ -293,8 +293,8 @@ def generate_cropped_frames(analysed_name,meteor_json_data,HD_frames,HD):
    # Do we have sync with the corresponding hd_ind for a sd_ind?
    hd_frames_sd_frames_diff = 0  
    if('sync' in meteor_json_data and HD is True):
-      hd_frames_sd_frames_diff = 
-      print(meteor_json_data['sync'])
+      hd_frames_sd_frames_diff = int(meteor_json_data['sync']['hd_ind'])-int(meteor_json_data['sync']['sd_ind'])
+      print("DIFF " + hd_frames_sd_frames_diff)
       sys.exit(0);
 
    # Here we calculate the frame#1 based on the info from analysed_name
