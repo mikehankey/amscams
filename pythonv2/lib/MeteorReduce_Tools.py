@@ -299,16 +299,21 @@ def generate_cropped_frames(analysed_name,meteor_json_data,HD_frames,HD):
    cropped_frames = [] 
 
    if(HD):
-      for frame_cnt, frame in enumerate(meteor_frame_data):
+      for  frame in meteor_frame_data:
          frame_index = int(frame['fn'])+hd_frames_sd_frames_diff    
-         #print("SD FRAME INDEX: " +  str(frame['fn']))
-         #print("FRAME INDEX :" +  str(frame_index))
-         #print("FRAME")
-         #print(frame) 
-         
+  
+         print("SD FRAME INDEX: " +  str(frame['fn']) + "<br>")
+         print("SD FRAME")
+         print(frame) 
+         print("<br>")
          destination =  get_cache_path(analysed_name,"cropped")+analysed_name['name_w_ext']+EXT_CROPPED_FRAMES+str(frame_index)+".png"
-         
+         print("DESTINATION<br/>")
+         print(destination)
+
          org_HD_frame = HD_frames[frame_index]
+
+         print("ORG HD FRAME #" + frame_index  + "<br>")
+
          crop = new_crop_thumb(org_HD_frame,frame['x'],frame['y'],destination,HD)
          cropped_frames.append(crop)
    
