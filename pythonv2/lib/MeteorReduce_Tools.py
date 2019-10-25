@@ -291,7 +291,9 @@ def generate_cropped_frames(analysed_name,meteor_json_data,HD_frames,HD):
    meteor_frame_data = meteor_json_data['frames']
 
    # Do we have sync with the corresponding hd_ind for a sd_ind?
-   if('sync' in meteor_json_data):
+   hd_frames_sd_frames_diff = 0  
+   if('sync' in meteor_json_data and HD is True):
+      hd_frames_sd_frames_diff = 
       print(meteor_json_data['sync'])
       sys.exit(0);
 
