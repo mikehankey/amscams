@@ -312,7 +312,7 @@ def generate_cropped_frames(analysed_name,meteor_json_data,HD_frames,HD):
 
          org_HD_frame = HD_frames[frame_index]
 
-         print("ORG HD FRAME #" + frame_index  + "<br>")
+         print("ORG HD FRAME #" + str(frame_index)  + "<br>")
 
          crop = new_crop_thumb(org_HD_frame,frame['x'],frame['y'],destination,HD)
          cropped_frames.append(crop)
