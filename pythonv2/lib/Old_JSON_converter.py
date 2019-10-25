@@ -277,11 +277,11 @@ def move_old_detection_to_archive(json_file_path, sd_video_file_path, hd_video_f
       print("PARAM FILE: " + param_files[0][0])
 
    # Here we try to sync the HD and the SD files
+   sync_res = False
    if(cfe(hd_video_file_path) and cfe(sd_video_file_path) and cfe(json_file_path.replace('.json','-reduced.json'))):
-      print("TRYING TO SYNC HD & SD")
-      sync_hd_frames(hd_video_file_path,sd_video_file_path,json_file_path.replace('.json','-reduced.json'))
-      sys.exit(0)
-
+      sync_res = sync_hd_frames(hd_video_file_path,sd_video_file_path,json_file_path.replace('.json','-reduced.json'))
+      if(sync_res == False):
+         print("HD & SD video not synchronized!")
 
    new_json_file['calib']['org_file'] = param_files[0][0]
 
@@ -313,6 +313,8 @@ def move_old_detection_to_archive(json_file_path, sd_video_file_path, hd_video_f
    json_content['calib']   = new_json_file['calib']
    json_content['info']    = new_json_file['info']
    json_content['frames']  = new_json_file['frames']
+   if(sync_res != False):
+      print("SYNC RES " + sync_res)
    
    # Save the new JSON file
    save_json_file(new_folder + tan['name'], json_content)
