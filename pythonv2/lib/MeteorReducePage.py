@@ -40,14 +40,14 @@ def reduce_meteor2(json_conf,form):
       print_error("<b>You need to add a video file in the URL.</b>")
 
    # We get the proper json and the other video file
-   if('HD' in video_full_path):
-      video_hd_full_path = video_full_path
-      video_sd_full_path = video_full_path.replace('-HD','-SD')
-      json_full_path = video_full_path.replace('-HD.mp4','.json')
-   elif('SD' in video_full_path):
+   if('SD' in video_full_path):
       video_sd_full_path = video_full_path 
       video_hd_full_path = video_full_path.replace('-SD','-HD')
       json_full_path = video_full_path.replace('-SD.mp4','.json') 
+   else:
+      video_hd_full_path = video_full_path
+      video_sd_full_path = video_full_path.replace('-HD','-SD')
+      json_full_path = video_full_path.replace('-HD.mp4','.json')
    
    if(cfe(video_hd_full_path)==0):
       video_hd_full_path = ''
