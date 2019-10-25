@@ -51,7 +51,7 @@ def reduce_meteor2(json_conf,form):
    
    if(cfe(video_hd_full_path)==0):
       video_hd_full_path = ''
-      HD = False
+      HD = False 
    
    if(cfe(video_sd_full_path)==0):
        print_error(video_sd_full_path + " <b>not found.</b><br/>At least one SD video is required.")
