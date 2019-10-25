@@ -306,7 +306,7 @@ def generate_cropped_frames(analysed_name,meteor_json_data,HD_frames,HD):
          print("SD FRAME")
          print(frame) 
          print("<br>")
-         destination =  get_cache_path(analysed_name,"cropped")+analysed_name['name_w_ext']+EXT_CROPPED_FRAMES+str(frame_index)+".png"
+         destination =  get_cache_path(analysed_name,"cropped")+analysed_name['name_w_ext']+EXT_CROPPED_FRAMES+str(frame['fn'])+".png"
          print("DESTINATION<br/>")
          print(destination)
 
