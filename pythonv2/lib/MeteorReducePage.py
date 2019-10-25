@@ -73,9 +73,7 @@ def reduce_meteor2(json_conf,form):
    HD_frames = get_HD_frames(analysed_name,clear_cache)
    
    # Get the HD or SD stack
-   tmp_analysed_name = name_analyser(json_full_path)
-   print("TMP ANALYSED NAME<br/>")
-   print(tmp_analysed_name)
+   tmp_analysed_name = name_analyser(json_full_path) 
    if(video_hd_full_path != ''):
       hd_stack = get_stacks(tmp_analysed_name,clear_cache,True)
    
