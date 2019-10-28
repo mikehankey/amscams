@@ -160,17 +160,19 @@ def get_new_info(json_f):
 # Get new stars info from an old JSON version 
 def get_new_stars(json_f):
    new_stars = []
-   for star in json_f['cal_params']['cat_image_stars']:
-      new_stars.append({
-         "name": star[0],
-         "mag": float(star[1]),
-         "ra": float(star[2]),
-         "dec": float(star[3]),
-         "dist_px": float(star[6]),
-         "i_pos": [float(star[7]),float(star[8])],
-         "cat_dist_pos": [float(star[11]),float(star[12])],
-         "cat_und_pos": [float(star[13]),float(star[14])]
-      })
+   if "cal_params" in json_f:
+      if "cat_image_stars" in json_f['cal_params']:
+         for star in json_f['cal_params']['cat_image_stars']:
+            new_stars.append({
+            "name": star[0],
+            "mag": float(star[1]),
+            "ra": float(star[2]),
+            "dec": float(star[3]),
+            "dist_px": float(star[6]),
+            "i_pos": [float(star[7]),float(star[8])],
+            "cat_dist_pos": [float(star[11]),float(star[12])],
+            "cat_und_pos": [float(star[13]),float(star[14])]
+            })
 
    return {"stars": new_stars}
 
@@ -333,6 +335,9 @@ def move_to_archive(form):
    hd_video = form.getvalue("video_file")
    sd_video = form.getvalue("sd_video")
    json_file = form.getvalue("json_file")
-   print("HD VIDEO" + hd_video )
-   print("HD VIDEO" + sd_video)
-   print("JSON FILE " + json_file)
+   print("JSON FILE " + json_file + "<BR>")
+   print("SD VIDEO" + sd_video + "<BR>")
+   print("HD VIDEO" + hd_video + "<BR>")
+   cmd = "cd /home/ams/amscams/; python3 pythonv2/old_json_inline_converter.py " + json_file + " " + sd_video + " " + hd_video
+   print(cmd)
+   #os.system(cmd)
