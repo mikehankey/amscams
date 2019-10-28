@@ -325,3 +325,14 @@ def move_old_detection_to_archive(json_file_path, sd_video_file_path, hd_video_f
       print("JSON SAVED TO " + new_folder + tan['name'])
    
    return new_folder + tan['name'],new_hd_video_file,new_sd_video_file
+
+
+
+
+   def move_to_archive(form):
+      hd_video = form.getValue("video_file")
+      sd_video = form.getValue("sd_video")
+      json_file = form.getValue("json_file")
+      print("HD VIDEO" + hd_video )
+      print("HD VIDEO" + sd_video)
+      print("JSON FILE " + json_file)

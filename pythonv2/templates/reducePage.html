@@ -108,7 +108,8 @@
 
                     <div class="row mt-3">
                         <div class="col pl-4 pr-4 "> 
-                           <a class="btn btn-primary d-block" href="/pycgi/webUI.py?cmd=manual_reduction&video_file={HD_VIDEO}&hd_stack={HD_STACK}&sd_stack={SD_STACK}&sd_video={SD_VIDEO}&json_file={METEOR_JSON_FILE}"><strong>NEW</strong> Manual Reduction</a>
+                              <a class="btn btn-primary d-block" href="/pycgi/webUI.py?cmd=move_to_archive&video_file={HD_VIDEO}&sd_video={SD_VIDEO}&json_file={METEOR_JSON_FILE}">Move to Archive</a>
+
                         </div>
                     </div>
 
@@ -119,7 +120,9 @@
                     <div class="row mt-3 collapse" id="extra_command">
                         <div class="col pl-4 pr-4 "> 
                             
-                            <a class="btn btn-primary d-block" id="radec_mode">RA/Dec Mode</a>
+                           <a class="btn btn-primary d-block" href="/pycgi/webUI.py?cmd=manual_reduction&video_file={HD_VIDEO}&hd_stack={HD_STACK}&sd_stack={SD_STACK}&sd_video={SD_VIDEO}&json_file={METEOR_JSON_FILE}"><strong>NEW</strong> Manual Reduction</a>
+
+                            <a class="btn btn-primary d-block mt-2" id="radec_mode">RA/Dec Mode</a>
 
                             <a class="btn btn-primary d-block mt-2" target=_blank href=/pycgi/webUI.py?cmd=custom_fit&cal_params_file={METEOR_JSON_FILE}>Minimize FOV Parms</a> 
                             <a class="btn btn-primary d-block mt-2" target=_blank href=/pycgi/webUI.py?cmd=reset_reduce&cal_params_file={METEOR_JSON_FILE}>Reset</a> 

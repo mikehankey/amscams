@@ -46,6 +46,10 @@ from lib.MeteorManualReducePage import manual_reduction, manual_reduction_croppe
 # Calibration Tools
 from lib.MeteorReduce_Calib_Ajax_Tools import getRADEC
 
+# MOVE TO ARCHIVE
+form lib.Old_JSON_converter import move_to_archive
+
+
 NUMBER_OF_METEOR_PER_PAGE = 60
 POSSIBLE_PER_PAGE = [20,40,60,80,100,150,200,500,1000,10000]
 NUMBER_OF_DAYS_PER_PAGE = 7
@@ -299,7 +303,10 @@ def controller(json_conf):
       exit()
 
 
-
+   # Move Detection to Archive
+   if cmd == 'move_to_archive'
+      move_to_archive(form)
+      exit()
 
    # do json ajax functions up here and bypass the exta html
    if cmd == 'override_detect':
