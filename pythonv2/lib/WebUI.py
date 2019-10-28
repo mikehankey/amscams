@@ -47,7 +47,7 @@ from lib.MeteorManualReducePage import manual_reduction, manual_reduction_croppe
 from lib.MeteorReduce_Calib_Ajax_Tools import getRADEC
 
 # MOVE TO ARCHIVE
-form lib.Old_JSON_converter import move_to_archive
+from lib.Old_JSON_converter import move_to_archive
 
 
 NUMBER_OF_METEOR_PER_PAGE = 60
