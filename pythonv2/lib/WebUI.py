@@ -304,7 +304,7 @@ def controller(json_conf):
 
 
    # Move Detection to Archive
-   if cmd == 'move_to_archive'
+   if cmd == 'move_to_archive':
       move_to_archive(form)
       exit()
 
