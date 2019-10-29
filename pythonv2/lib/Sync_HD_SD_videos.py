@@ -119,11 +119,9 @@ def load_video_frames(trim_file, json_conf, limit=0, mask=0, color=0):
 
 # Try so sync HD & SD video
 def sync_hd_frames(hd_video_file,sd_video_file,json_reduction_file):
- 
-
+  
    reduction_data = load_json_file(json_reduction_file)
- 
-
+  
    # Get the HD Frames
    hd_frames = load_video_frames(hd_video_file, json_reduction_file, limit=0, mask=1, color=1)
    

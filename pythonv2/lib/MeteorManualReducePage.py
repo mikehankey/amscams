@@ -83,17 +83,17 @@ def manual_reduction(form):
       # Add sd_stack to template
       if(sd_stack is not ''):
          template = template.replace("{SD_STACK}", str(sd_stack))
-      else:
+         #else:
          # We automatically select the HD
          # TODO!!!
-         print("NO SD")
+         #print("NO SD")
 
       if(hd_stack is not ''):
          template = template.replace("{HD_STACK}", str(hd_stack))
-      else: 
+         #else: 
          # We automatically select the SD
          # TODO!!!
-         print("NO HD")
+         #print("NO HD")
 
       # We add the videos to the  page
       template = template.replace("{HD_VIDEO}", str(hd_video))

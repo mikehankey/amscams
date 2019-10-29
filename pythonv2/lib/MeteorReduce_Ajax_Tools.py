@@ -44,11 +44,22 @@ def get_frame(form):
    # Debug
    cgitb.enable()     
 
+
+
    json_file = form.getvalue('json_file')
    fn = form.getvalue('fr') # The frame ID
 
+   print("IN GET FRAME")
+   print(json_file)
+   print("<br/>")
+   print("FN " +  str(fn))
+
    # Analyse the name
    analysed_name = name_analyser(json_file)
+
+   print("ANALYSED NAME<br/>")
+   print(analysed_name)
+   sys.exit(0)
 
    # We should test if get_HD_frame's output is empty as the HD Frames
    # are all created by default on page load (recude2 page)
