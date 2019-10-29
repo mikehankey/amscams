@@ -281,8 +281,8 @@ def move_old_detection_to_archive(json_file_path, sd_video_file_path, hd_video_f
    if(cfe(param_files[0][0])==0):
       print("PARAM FILES " + param_files[0][0]  + " not found" )
       sys.exit(0)
-   else:
-      #print("PARAM FILE: " + param_files[0][0])
+   #else:
+   #   print("PARAM FILE: " + param_files[0][0])
 
    # Here we try to sync the HD and the SD files
    sync_res = False

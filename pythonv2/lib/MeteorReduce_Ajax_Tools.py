@@ -43,9 +43,7 @@ def get_frame(form):
 
    # Debug
    cgitb.enable()     
-
-
-
+ 
    json_file = form.getvalue('json_file')
    fn = form.getvalue('fr') # The frame ID
 
