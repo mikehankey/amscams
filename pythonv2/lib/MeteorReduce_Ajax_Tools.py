@@ -499,9 +499,14 @@ def update_cat_stars(form):
          new_star['ra'] = ra
          new_star['dec'] = dec
          new_star['dist_px'] = cat_star_dist 
+
+         # The image x,y of the star (CIRCLE)
          new_star['i_pos'] = [ix,iy]
-         new_star['cat_und_pos'] = [cat_x,cat_y]
+         # The lens distorted catalog x,y position of the star  (PLUS SIGN)
          new_star['cat_dist_pos'] = [new_x,new_y]
+         # The undistorted catalog x,y position of the star  (SQUARE)
+         new_star['cat_und_pos'] = [cat_x,cat_y]
+
          # distorted position should be the new_x, new_y and + symbol
          my_close_stars.append(new_star)
 
