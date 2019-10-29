@@ -133,7 +133,7 @@ def manual_reduction_step1(form):
       print_error("<b>You need to add a video file in the URL.</b>")
       
     
-   analysed_name = get_analysed_name();
+   analysed_name = get_analysed_name(json_file)
    
  
    # No matter if the stack is SD or not
