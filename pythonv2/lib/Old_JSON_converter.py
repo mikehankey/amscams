@@ -263,6 +263,9 @@ def convert_json(json_file_path, sd_video_file_path, hd_video_file_path):
 # in the proper folder
 # from a old -reduced.json file
 def move_old_detection_to_archive(json_file_path, sd_video_file_path, hd_video_file_path, display=True):
+   
+   # DEBUG
+   cgitb.enable();
 
    # Get the new JSON file based on all info
    new_json_file = convert_json(json_file_path, sd_video_file_path, hd_video_file_path)
@@ -355,8 +358,8 @@ def move_to_archive(form):
       print("JSON is missing.")   
       sys.exit(0)
 
-   print("HERE") 
-   #new_json,new_hd_vid,new_sd_vid move_old_detection_to_archive(json_file,sd_video,hd_video, False)
+   
+   new_json,new_hd_vid,new_sd_vid = move_old_detection_to_archive(json_file,sd_video,hd_video, False)
    #redirect_to("/pycgi/webUI.py?cmd=reduce2&video_file=" + new_hd_vid + "&clear_cache=1&c=" + str(random.randint(0,100000000)), "reduction")
    #print("/pycgi/webUI.py?cmd=reduce2&video_file=" + new_hd_vid + "&clear_cache=1&c=" + str(random.randint(0,100000000)))
    
