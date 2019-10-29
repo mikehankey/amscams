@@ -111,7 +111,7 @@ def manual_reduction_step1(form):
 
    # Video File
    if(video_file is not None):
-      tmp_fixed_video_full_path = fix_old_file_name(video_file)
+      tmp_fixed_video_full_path =  video_file
       analysed_name = name_analyser(tmp_fixed_video_full_path)
       # We keep the original full_path anyway
       analysed_name['full_path'] = video_file
