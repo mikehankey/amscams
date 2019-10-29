@@ -225,13 +225,9 @@ def manual_reduction_meteor_pos_selector(form):
    # Build the page based on template  
    with open(MANUAL_RED_PAGE_TEMPLATE_STEP3, 'r') as file:
       template = file.read()
-
-    # Fix eventual video file name (old version)
-   tmp_fixed_video_full_path = fix_old_file_name(video_file)
-   analysed_name = name_analyser(tmp_fixed_video_full_path)
-
-   # We keep the original full_path anyway
-   analysed_name['full_path'] = video_file
+   
+   # Get Analysed name (old or new)
+   analysed_name = get_analysed_name(video_file);
 
    # Get the cropped frames
    cropped_frames  = does_cache_exist(analysed_name,'tmp_cropped')
