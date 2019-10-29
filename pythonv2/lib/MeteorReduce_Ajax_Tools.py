@@ -57,6 +57,14 @@ def get_frame(form):
    # are all created by default on page load (recude2 page)
    # if they don't exist
    the_frame = get_HD_frame(analysed_name,fn)
+
+  
+   print("IN GET FRA<br/>")
+   print(the_frame)
+   print(get_cache_path(analysed_name,"frames"))
+   
+   sys.exit(0)
+
    the_frame = the_frame[0]
    toReturn = {'id':fn, 'full_fr':the_frame}
   
