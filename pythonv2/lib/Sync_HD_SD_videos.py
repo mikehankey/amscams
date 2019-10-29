@@ -4,7 +4,7 @@ import os
 import numpy as np
 from lib.FileIO import load_json_file, save_json_file, cfe
 from lib.VIDEO_VARS import *
-from lib.UtilLib import convert_filename_to_date_cam
+from lib.UtilLib import convert_filename_to_date_cam, bound_cnt
 from lib.Get_Cam_ids import get_the_cameras
 
  
@@ -119,6 +119,7 @@ def load_video_frames(trim_file, json_conf, limit=0, mask=0, color=0):
 
 # Try so sync HD & SD video
 def sync_hd_frames(hd_video_file,sd_video_file,json_reduction_file):
+   print("SYNC HD FAMES")
   
    reduction_data = load_json_file(json_reduction_file)
   
@@ -133,20 +134,23 @@ def sync_hd_frames(hd_video_file,sd_video_file,json_reduction_file):
    first_hd_frame = None
    hd_fns = []
    sd_fns = []
- 
+
+   fc = 0 
    for fn in metframes:
       if first_sd_frame is None:
          first_sd_fram = fn
-      x1 = metframes[fn]['sd_x']  
-      x2 = metframes[fn]['sd_x'] +  metframes[fn]['sd_w']
-      y1 = metframes[fn]['sd_y']  
-      y2 = metframes[fn]['sd_y'] +  metframes[fn]['sd_h']
       hd_x = metframes[fn]['hd_x']
       hd_y = metframes[fn]['hd_y']
-      hd_fn = find_hd_frame(fn, hd_x, hd_y, x1,y1,x2,y2,hd_frames)
-      sd_fns.append(int(fn))
-      hd_fns.append(int(hd_fn))
-      #print(fn, metframes[fn]['hd_x'], metframes[fn]['hd_y'])
+      x1,y1,x2,y2 = bound_cnt(hd_x,hd_y,1920,1080,4)
+      if fc < 3:
+         hd_fn = find_hd_frame(fn, hd_x, hd_y, x1,y1,x2,y2,hd_frames)
+         print("FOUND ", fc, " HD FRAME:", fn, hd_fn, hd_x, hd_y, x1,y1,x2,y2,len(hd_frames))
+         sd_fns.append(int(fn))
+         hd_fns.append(int(hd_fn))
+         #print(fn, metframes[fn]['hd_x'], metframes[fn]['hd_y'])
+
+      fc = fc + 1
+
    
    #print("len(sd_fns): " + str(len(sd_fns)))   
    #print("len(hd_fns): " + str(len(hd_fns)))   
@@ -167,14 +171,30 @@ def find_hd_frame(fn, hd_x, hd_y, x1,y1,x2,y2,hd_frames):
    best_hd_frame = 0
    cc = 0
    best_cc = 0
+   crop_x = hd_x - x1
+   crop_y = hd_y - y1
    for frame in hd_frames:
-      gray_frame = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
+      gray_frame = frame
       crop_frame = gray_frame[y1:y2,x1:x2]
-      max_val = gray_frame[hd_y,hd_x]
+      crops.append(crop_frame) 
+
+   for frame in crops:
+      gray_frame = frame
+      show_frame = gray_frame.copy()
+
+      # to show the cuurent frame 
+      #cv2.rectangle(show_frame, (hd_x, hd_y), (hd_x+1, hd_y+1), (255, 0, 0), 1)
+      #cv2.rectangle(show_frame, (x1, y1), (x2, y2), (255, 0, 0), 1)
+      #cv2.imshow('pepe', show_frame)
+      #cv2.waitKey(30)
+
+      max_val = np.sum(gray_frame)
       if max_val > max_hd_val:
          max_hd_val = max_val
          best_hd_frame = cc 
          best_cc = cc
       cc = cc + 1
-      crops.append(crop_frame) 
+   # to show the final frame choosen
+   #cv2.imshow('pepe', crops[best_hd_frame])
+   #cv2.waitKey(0)
    return(best_hd_frame)
