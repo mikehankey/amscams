@@ -50,10 +50,22 @@ def get_frame(form):
    json_file = form.getvalue('json_file')
    fn = form.getvalue('fr') # The frame ID
  
-
    # Analyse the name
    analysed_name = get_analysed_name(json_file)
  
+   frame_hd_sd_diff = 0
+
+   # If SD & HD have been sync, we need to get the proper HD frame
+   tmp_json = load_json_file(json_file)
+   if('sync' in tmp_json):
+      if('sd_ind' in tmp_json['sync'] and 'hd_ind' in tmp_json['sync']):
+         frame_hd_sd_diff = int(tmp_json['sync']['hd_ind']) - int(tmp_json['sync']['sd_ind'])
+
+   
+   fn = frame_hd_sd_diff + int(fn)
+
+   #print("NEW FRAME FN " + str(fn) + "<br/>")
+   
    # We should test if get_HD_frame's output is empty as the HD Frames
    # are all created by default on page load (recude2 page)
    # if they don't exist
@@ -111,8 +123,7 @@ def update_frame(form, AjaxDirect = False):
             update = True
 
       # FOR THE CREATION
-      if(update is False):
-
+      if(update is False): 
          # Get the Frame time (as a string)
          dt = get_frame_time(mr,fn,analysed_name)
 
@@ -135,6 +146,8 @@ def update_frame(form, AjaxDirect = False):
             'h': H_DEFAULT
          }
          mr['frames'].append(new_entry)
+         print("NEW ENTRY")
+         print(new_entry)
  
 
    if(len(original_HD_frame)!=0 and len(destination_cropped_frame)!=0):  
