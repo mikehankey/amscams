@@ -23,6 +23,26 @@ MANUAL_RED_PAGE_TEMPLATE_STEP1 = "/home/ams/amscams/pythonv2/templates/manual_re
 MANUAL_RED_PAGE_TEMPLATE_STEP2 = "/home/ams/amscams/pythonv2/templates/manual_reduction_template_step2.html"
 MANUAL_RED_PAGE_TEMPLATE_STEP3 = "/home/ams/amscams/pythonv2/templates/manual_reduction_template_step3.html"
   
+# Return the analysed  version of the file name
+# no matter if it's an old or a new file
+def get_analysed_name(video_file):
+   # We need to get the info from the file name either if it's an old file or a new file (in the archive)
+   if(METEOR_ARCHIVE in video_file):
+      analysed_name = name_analyser(video_file)
+   else:
+      analysed_name = old_name_analyser(video_file)
+   
+   # We keep the original full_path anyway
+   analysed_name['full_path'] = video_file  
+
+   # Do we have the station ID?
+   if('station_id' not in analysed_name):
+      analysed_name['station_id'] = get_station_id()
+   
+   return analysed_name
+   
+
+
 # (new) First step of Manual Reduction: select proper stack (HD | SD)
 def manual_reduction(form):
    
@@ -110,18 +130,8 @@ def manual_reduction_step1(form):
    if(video_file is None):
       print_error("<b>You need to add a video file in the URL.</b>")
       
-   # We need to get the info from the file name either if it's an old file or a new file (in the archive)
-   if(METEOR_ARCHIVE in video_file):
-      analysed_name = name_analyser(video_file)
-   else:
-      analysed_name = old_name_analyser(video_file)
-   
-   # We keep the original full_path anyway
-   analysed_name['full_path'] = video_file  
-
-   # Do we have the station ID?
-   if('station_id' not in analysed_name):
-      analysed_name['station_id'] = get_station_id()
+    
+   analysed_name = get_analysed_name();
    
  
    # No matter if the stack is SD or not
@@ -155,9 +165,8 @@ def manual_reduction_cropper(form):
    h           = float(form.getvalue('h'))
    json_file   = form.getvalue('json')
 
-   # Fix eventual video file name (old version)
-   tmp_fixed_video_full_path = fix_old_file_name(video_file)
-   analysed_name = name_analyser(tmp_fixed_video_full_path)
+   # Get Analysed name (old or new)
+   analysed_name = get_analysed_name();
 
    # We keep the original full_path anyway
    analysed_name['full_path'] = video_file
