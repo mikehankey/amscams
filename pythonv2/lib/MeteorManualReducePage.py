@@ -16,30 +16,14 @@ from lib.REDUCE_VARS import *
 from lib.Get_Station_Id import *
 from lib.VIDEO_VARS import *
 from lib.CGI_Tools import redirect_to
-from lib.Old_JSON_converter import fix_old_file_name, get_new_calib, move_old_detection_to_archive, old_name_analyser
+from lib.Old_JSON_converter import fix_old_file_name, get_new_calib, move_old_detection_to_archive, old_name_analyser, get_analysed_name
 
 MANUAL_RED_PAGE_TEMPLATE_STEP0 = "/home/ams/amscams/pythonv2/templates/manual_reduction_template_step0.html"
 MANUAL_RED_PAGE_TEMPLATE_STEP1 = "/home/ams/amscams/pythonv2/templates/manual_reduction_template_step1.html"
 MANUAL_RED_PAGE_TEMPLATE_STEP2 = "/home/ams/amscams/pythonv2/templates/manual_reduction_template_step2.html"
 MANUAL_RED_PAGE_TEMPLATE_STEP3 = "/home/ams/amscams/pythonv2/templates/manual_reduction_template_step3.html"
   
-# Return the analysed  version of the file name
-# no matter if it's an old or a new file
-def get_analysed_name(video_file):
-   # We need to get the info from the file name either if it's an old file or a new file (in the archive)
-   if(METEOR_ARCHIVE in video_file):
-      analysed_name = name_analyser(video_file)
-   else:
-      analysed_name = old_name_analyser(video_file)
-   
-   # We keep the original full_path anyway
-   analysed_name['full_path'] = video_file  
 
-   # Do we have the station ID?
-   if('station_id' not in analysed_name):
-      analysed_name['station_id'] = get_station_id()
-   
-   return analysed_name
    
 
 
@@ -83,17 +67,17 @@ def manual_reduction(form):
       # Add sd_stack to template
       if(sd_stack is not ''):
          template = template.replace("{SD_STACK}", str(sd_stack))
-      else:
+         #else:
          # We automatically select the HD
          # TODO!!!
-         print("NO SD")
+         #print("NO SD")
 
       if(hd_stack is not ''):
          template = template.replace("{HD_STACK}", str(hd_stack))
-      else: 
+         #else: 
          # We automatically select the SD
          # TODO!!!
-         print("NO HD")
+         #print("NO HD")
 
       # We add the videos to the  page
       template = template.replace("{HD_VIDEO}", str(hd_video))

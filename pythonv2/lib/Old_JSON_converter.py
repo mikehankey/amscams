@@ -16,6 +16,26 @@ from lib.Get_Station_Id import get_station_id
 from lib.VIDEO_VARS import FPS_HD
 from lib.Sync_HD_SD_videos import * 
 from lib.CGI_Tools import redirect_to
+from lib.MeteorReduce_Tools import  name_analyser
+
+
+# Return the analysed  version of the file name
+# no matter if it's an old or a new file
+def get_analysed_name(video_file):
+   # We need to get the info from the file name either if it's an old file or a new file (in the archive)
+   if(METEOR_ARCHIVE in video_file):
+      analysed_name = name_analyser(video_file)
+   else:
+      analysed_name = old_name_analyser(video_file)
+   
+   # We keep the original full_path anyway
+   analysed_name['full_path'] = video_file  
+
+   # Do we have the station ID?
+   if('station_id' not in analysed_name):
+      analysed_name['station_id'] = get_station_id()
+   
+   return analysed_name
 
 # Get a new folder in meteor_archive
 # from an old json file
@@ -281,8 +301,8 @@ def move_old_detection_to_archive(json_file_path, sd_video_file_path, hd_video_f
    if(cfe(param_files[0][0])==0):
       print("PARAM FILES " + param_files[0][0]  + " not found" )
       sys.exit(0)
-   else:
-      print("PARAM FILE: " + param_files[0][0])
+   #else:
+   #   print("PARAM FILE: " + param_files[0][0])
 
    # Here we try to sync the HD and the SD files
    sync_res = False

@@ -7,6 +7,8 @@ from lib.FileIO import cfe, load_json_file, save_json_file
 from lib.REDUCE_VARS import *
 from lib.MeteorReduce_Tools import get_cache_path, name_analyser, new_crop_thumb, get_HD_frame, get_thumb, get_frame_time  
 from lib.MeteorReduce_Calib_Tools import XYtoRADec
+from lib.Old_JSON_converter import get_analysed_name
+
 
 # Create new cropped frame
 # and add the corresponding info to the json file
@@ -43,17 +45,20 @@ def get_frame(form):
 
    # Debug
    cgitb.enable()     
-
+ 
    json_file = form.getvalue('json_file')
    fn = form.getvalue('fr') # The frame ID
+ 
 
    # Analyse the name
-   analysed_name = name_analyser(json_file)
-
+   analysed_name = get_analysed_name(json_file)
+ 
    # We should test if get_HD_frame's output is empty as the HD Frames
    # are all created by default on page load (recude2 page)
    # if they don't exist
    the_frame = get_HD_frame(analysed_name,fn)
+ 
+
    the_frame = the_frame[0]
    toReturn = {'id':fn, 'full_fr':the_frame}
   

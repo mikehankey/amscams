@@ -358,17 +358,14 @@ def get_stacks(analysed_name,clear_cache,toHD):
 
 # Generate the Stacks for a meteor detection
 def generate_stacks(video_full_path, destination, toHD):
-
-
-   
+ 
    # Debug
    cgitb.enable() 
    
    # Get All Frames
    frames = load_video_frames(video_full_path, load_json_file(JSON_CONFIG), 0, 0)
    stacked_image = None
- 
-
+  
    # Create Stack 
    for frame in frames:
       frame_pil = Image.fromarray(frame)
@@ -400,10 +397,11 @@ def get_HD_frame(analysed_name,frame_id):
 
 # Get All HD Frames for a meteor detection
 # Generate them if they don't exist
-def get_HD_frames(analysed_name,clear_cache):
+def get_HD_frames(analysed_name,clear_cache): 
 
    # Test if folder exists / Create it if not
-   HD_frames = does_cache_exist(analysed_name,"frames")
+   HD_frames = does_cache_exist(analysed_name,"frames") 
+
 
    if(len(HD_frames)==0 or clear_cache is True):
       # We need to generate the HD Frame
