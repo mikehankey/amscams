@@ -13,6 +13,7 @@ from lib.MeteorReducePage import print_error
 from lib.MeteorReduce_Tools import *
 from lib.MeteorReduce_Calib_Tools import XYtoRADec
 from lib.REDUCE_VARS import *
+from lib.Get_Station_Id import *
 from lib.VIDEO_VARS import *
 from lib.CGI_Tools import redirect_to
 from lib.Old_JSON_converter import fix_old_file_name, get_new_calib, move_old_detection_to_archive, old_name_analyser
@@ -115,6 +116,9 @@ def manual_reduction_step1(form):
    else:
       print_error("<b>You need to add a video file in the URL.</b>")
 
+   # Do we have the station ID?
+   if('station_id' not in analysed_name):
+      analysed_name['station_id'] = get_station_id()
 
    print("VIDEO ANALYSED NAME<br/>") 
    print(analysed_name)
