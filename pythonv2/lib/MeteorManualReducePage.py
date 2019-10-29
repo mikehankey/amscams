@@ -121,15 +121,15 @@ def manual_reduction_step1(form):
       analysed_name['station_id'] = get_station_id()
 
 
-   print("ANALYSED NAME<br/>")
-   print(analysed_name)
-   sys.exit(0)
- 
    # No matter if the stack is SD or not
    # we resize it to HD
    stack = get_stacks(analysed_name,clear_cache, True)
    # We add it to the template
    template = template.replace("{STACK}", str(stack))  
+
+   print("STACK<br/>")
+   print(str(stack))
+
 
    # Add Video to template
    template = template.replace("{VIDEO}", str(video_file))
