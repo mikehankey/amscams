@@ -63,10 +63,12 @@ def manual_reduction(form):
    json_file = form.getvalue('json_file')
 
    # Test if they really exist
-   if(cfe(sd_stack)==0):
-      sd_stack = ''
-   if(cfe(hd_stack)==0):
-      hd_stack = '' 
+   if(sd_stack is not None):
+      if(cfe(sd_stack)==0):
+         sd_stack = ''
+   elif(hd_stack is not None):
+      if(cfe(hd_stack)==0):
+         hd_stack = '' 
 
    if(sd_stack == '' and hd_stack == ''):
       print_error("<b>Stacks not found.</b>")
