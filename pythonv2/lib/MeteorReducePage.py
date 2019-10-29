@@ -83,6 +83,7 @@ def reduce_meteor2(json_conf,form):
   
    # Fill Template with data
    template = template.replace("{VIDEO_FILE}", str(video_full_path))   # Video File  
+   template = template.replace("{SD_VIDEO}",str(video_sd_full_path))   # SD Video File
    template = template.replace("{STACK}", str(stack))                  # Stack File 
    if(hd_stack is not None):
       template = template.replace("{HD_STACK}", str(hd_stack))                  # HD Stack File 
