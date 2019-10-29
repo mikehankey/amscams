@@ -48,7 +48,8 @@ def get_frame(form):
  
    json_file = form.getvalue('json_file')
    fn = form.getvalue('fr') # The frame ID
-  
+ 
+
    # Analyse the name
    analysed_name = get_analysed_name(json_file)
  
