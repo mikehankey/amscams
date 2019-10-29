@@ -14,7 +14,7 @@ function fix_pifc_ui() {
       }
 
       // Keep Ratio
-      $('#cropped_frame_selector').width($('#cropped_frame_selector').height()*w/h);
+     //$('#cropped_frame_selector').width($('#cropped_frame_selector').height()*w/h);
 
    }
 
