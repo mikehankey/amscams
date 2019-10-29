@@ -400,10 +400,7 @@ def get_HD_frame(analysed_name,frame_id):
 def get_HD_frames(analysed_name,clear_cache): 
 
    # Test if folder exists / Create it if not
-   HD_frames = does_cache_exist(analysed_name,"frames")
-
-   analysed_name['name_w_ext'] = analysed_name['name_w_ext'].replace('-SD','')
-   analysed_name['name_w_ext'] = analysed_name['name_w_ext'].replace('-HD','')
+   HD_frames = does_cache_exist(analysed_name,"frames") 
 
 
    if(len(HD_frames)==0 or clear_cache is True):
