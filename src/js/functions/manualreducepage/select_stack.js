@@ -11,9 +11,7 @@ function select_one_stack(type) {
 function select_stack() {
    // Select a stack
    $('.select_stack').click(function() {
-      
       select_one_stack(type);
- 
    })
 
 
