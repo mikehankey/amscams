@@ -116,6 +116,7 @@ def manual_reduction_step1(form):
 
 
    print("VIDEO ANALYSED NAME<br/>")
+   print('tmp_fixed_video_full_path ' + tmp_fixed_video_full_path +"<br/>")
    print(analysed_name)
    sys.exit(0)
 

@@ -61,9 +61,7 @@ def fix_old_file_name(filename):
 
    if("-stacked-calparams" in filename):
       filename = filename.replace("-stacked-calparams", "")
-
-   if("-meteor" in filename):
-      filename = filename.replace("-meteor", "")
+ 
  
    trim_value = 0 
 
