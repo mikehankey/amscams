@@ -119,14 +119,7 @@ def manual_reduction_step1(form):
    # Do we have the station ID?
    if('station_id' not in analysed_name):
       analysed_name['station_id'] = get_station_id()
-
-   print("VIDEO ANALYSED NAME<br/>") 
-   print(analysed_name)
-   print("<br/>GET STACKS<br/>")
-   print(get_stacks(analysed_name,clear_cache, True))
-   sys.exit(0)
-
-
+ 
    # No matter if the stack is SD or not
    # we resize it to HD
    stack = get_stacks(analysed_name,clear_cache, True)
