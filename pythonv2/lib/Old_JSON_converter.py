@@ -17,6 +17,25 @@ from lib.VIDEO_VARS import FPS_HD
 from lib.Sync_HD_SD_videos import * 
 from lib.CGI_Tools import redirect_to
 
+
+# Return the analysed  version of the file name
+# no matter if it's an old or a new file
+def get_analysed_name(video_file):
+   # We need to get the info from the file name either if it's an old file or a new file (in the archive)
+   if(METEOR_ARCHIVE in video_file):
+      analysed_name = name_analyser(video_file)
+   else:
+      analysed_name = old_name_analyser(video_file)
+   
+   # We keep the original full_path anyway
+   analysed_name['full_path'] = video_file  
+
+   # Do we have the station ID?
+   if('station_id' not in analysed_name):
+      analysed_name['station_id'] = get_station_id()
+   
+   return analysed_name
+
 # Get a new folder in meteor_archive
 # from an old json file
 def get_new_archive_folder(analysed_name):
