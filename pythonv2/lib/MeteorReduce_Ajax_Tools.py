@@ -2,6 +2,7 @@ import sys
 import cgitb
 import json
 import os
+import cv2
 
 from lib.FileIO import cfe, load_json_file, save_json_file
 from lib.REDUCE_VARS import *
@@ -235,16 +236,51 @@ def delete_frame(form):
    save_json_file(meteor_file, meteor_json)
    print(json.dumps(response))
 
+
+# Find max px info from cnt
+def cnt_max_px(cnt_img):
+   cnt_img = cv2.GaussianBlur(cnt_img, (7, 7), 0)
+   min_val, max_val, min_loc, max_loc = cv2.minMaxLoc(cnt_img)
+
+   return(max_loc, min_val, max_val)
+
+# Pin point stars from user selection
+def pin_point_stars(image, points):   
+   star_points = []
+   for x,y in points:
+      print("XY:", x,y,"<BR>")
+      x,y = int(x),int(y)
+      y1 = y - 15
+      y2 = y + 15
+      x1 = x - 15
+      x2 = x + 15
+      cnt_img = image[y1:y2,x1:x2]
+      ch,cw = cnt_img.shape
+      try:
+         max_pnt,max_val,min_val = cnt_max_px(cnt_img)
+         mx,my = max_pnt
+         mx = mx - 15
+         my = my - 15
+         x = x + mx
+         y = y + my
+         star_points.append((x,y))
+      except:
+         print("PROB!", image.shape, x1,y1, x2,y2, "<BR>")
+         missed_star = 1
+   return(star_points)
+
 # Update Catalog Stars
 def update_cat_stars(form):
-   
+   print("UPDATE CAT STARS!<BR>") 
    # Get the values from the form
+   star_points = []
    hd_stack_file = form.getvalue("hd_stack_file")   # Stack
    points = form.getvalue("points")                 # All Stars points on the canvas
    type = form.getvalue("type")                     # ? - 'nopick' is the default option
    video_file = form.getvalue("video_file")         # Video file
    cal_params = None                                # ????
    meteor_red_file = form.getvalue("json_file")     
+   hd_image = cv2.imread(hd_stack_file, 0)
    
    # We parse the JSON
    if cfe(meteor_red_file) == 1:
@@ -261,6 +297,40 @@ def update_cat_stars(form):
 
    meteor_mode = 0  #???
 
+   #print("<PRE>", meteor_red)
+
+   if "calib" in meteor_red:
+      if "stars" in meteor_red['calib']:
+         print("CAT STARS FOUND!", len(meteor_red['calib']['stars']), "<BR>") 
+      else: 
+         print(meteor_red['calib']) 
+
+   
+   temps = points.split("|")
+   for temp in temps:
+      if len(temp) > 0:
+         (x,y) = temp.split(",")
+         x,y = int(float(x)),int(float(y))
+         x,y = int(x)+5,int(y)+5
+         x,y = x*2,y*2
+         if x >0 and y > 0 and x<1920 and y< 1080:
+            star_points.append((x,y))
+   print("POINTS:", star_points,"<BR>");
+   star_points = pin_point_stars(hd_image, star_points)
+
+   # ok we have a good set of points now. 
+   print("POINTS:", star_points,"<BR>");
+
+   print(meteor_red['calib']) 
+   # get the center ra,dec based on the center_az,el and the current timestamp from the file 
+   rah,dech = AzEltoRADec(meteor_red['calib'], video_file)
+
+def AzEltoRADec(cp, video_file):
+   #print(cp)
+   print("CP:", cp['device']['alt'], cp['device']['lat'],cp['device']['lng'],"<BR>" )
+   print("CP:", cp['device']['center']['az'], cp['device']['center']['el'] , cp['device']['scale_px'], cp['device']['angle'], "<BR>")
+
+   return(0,0)
 
 # Return the JSON Files from a given reduction
 # with modified info
