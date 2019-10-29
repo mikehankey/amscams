@@ -3,12 +3,23 @@ import cgitb
 import json
 import os
 import cv2
+import numpy as np
+import ephem 
+import math
 
 from lib.FileIO import cfe, load_json_file, save_json_file
 from lib.REDUCE_VARS import *
 from lib.MeteorReduce_Tools import get_cache_path, name_analyser, new_crop_thumb, get_HD_frame, get_thumb, get_frame_time  
 from lib.MeteorReduce_Calib_Tools import XYtoRADec
 from lib.Old_JSON_converter import get_analysed_name
+from lib.UtilLib import convert_filename_to_date_cam, angularSeparation, date_to_jd
+from lib.CalibLib import find_close_stars
+import lib.brightstardata as bsd
+
+
+mybsd = bsd.brightstardata()
+bright_stars = mybsd.bright_stars
+
 
 
 # Create new cropped frame
@@ -261,7 +272,6 @@ def cnt_max_px(cnt_img):
 def pin_point_stars(image, points):   
    star_points = []
    for x,y in points:
-      print("XY:", x,y,"<BR>")
       x,y = int(x),int(y)
       y1 = y - 15
       y2 = y + 15
@@ -282,9 +292,131 @@ def pin_point_stars(image, points):
          missed_star = 1
    return(star_points)
 
+
+def distort_xy_new(sx,sy,ra,dec,RA_center, dec_center, x_poly, y_poly, x_res, y_res, pos_angle_ref,F_scale=1):
+
+   ra_star = ra
+   dec_star = dec
+
+   #F_scale = F_scale/10
+   w_pix = 50*F_scale/3600
+   #F_scale = 158 * 2
+   #F_scale = 155
+   #F_scale = 3600/16
+   #F_scale = 3600/F_scale
+   #F_scale = 1
+
+   # Gnomonization of star coordinates to image coordinates
+   ra1 = math.radians(float(RA_center))
+   dec1 = math.radians(float(dec_center))
+   ra2 = math.radians(float(ra_star))
+   dec2 = math.radians(float(dec_star))
+   ad = math.acos(math.sin(dec1)*math.sin(dec2) + math.cos(dec1)*math.cos(dec2)*math.cos(ra2 - ra1))
+   radius = math.degrees(ad)
+   
+   try:
+      sinA = math.cos(dec2)*math.sin(ra2 - ra1)/math.sin(ad)
+      cosA = (math.sin(dec2) - math.sin(dec1)*math.cos(ad))/(math.cos(dec1)*math.sin(ad))
+   except:
+      sinA = 0
+      cosA = 0
+   theta = -math.degrees(math.atan2(sinA, cosA))
+   theta = theta + pos_angle_ref - 90.0
+   #theta = theta + pos_angle_ref - 90 + (1000*x_poly[12]) + (1000*y_poly[12])
+   #theta = theta + pos_angle_ref - 90
+
+
+
+   dist = np.degrees(math.acos(math.sin(dec1)*math.sin(dec2) + math.cos(dec1)*math.cos(dec2)*math.cos(ra1 - ra2)))
+
+   # Calculate the image coordinates (scale the F_scale from CIF resolution)
+   X1 = radius*math.cos(math.radians(theta))*F_scale
+   Y1 = radius*math.sin(math.radians(theta))*F_scale
+   # Calculate distortion in X direction
+   dX = (x_poly[0]
+      + x_poly[1]*X1
+      + x_poly[2]*Y1
+      + x_poly[3]*X1**2
+      + x_poly[4]*X1*Y1
+      + x_poly[5]*Y1**2
+      + x_poly[6]*X1**3
+      + x_poly[7]*X1**2*Y1
+      + x_poly[8]*X1*Y1**2
+      + x_poly[9]*Y1**3
+      + x_poly[10]*X1*math.sqrt(X1**2 + Y1**2)
+      + x_poly[11]*Y1*math.sqrt(X1**2 + Y1**2))
+
+   # Add the distortion correction and calculate X image coordinates
+   #x_array[i] = (X1 - dX)*x_res/384.0 + x_res/2.0
+   new_x = X1 - dX + x_res/2.0
+
+   # Calculate distortion in Y direction
+   dY = (y_poly[0]
+      + y_poly[1]*X1
+      + y_poly[2]*Y1
+      + y_poly[3]*X1**2
+      + y_poly[4]*X1*Y1
+      + y_poly[5]*Y1**2
+      + y_poly[6]*X1**3
+      + y_poly[7]*X1**2*Y1
+      + y_poly[8]*X1*Y1**2
+      + y_poly[9]*Y1**3
+      + y_poly[10]*Y1*math.sqrt(X1**2 + Y1**2)
+      + y_poly[11]*X1*math.sqrt(X1**2 + Y1**2))
+
+   # Add the distortion correction and calculate Y image coordinates
+   #y_array[i] = (Y1 - dY)*y_res/288.0 + y_res/2.0
+   new_y = Y1 - dY + y_res/2.0
+   #print("DENIS RA:", X1, Y1, sx, sy, F_scale, w_pix, dist)
+   #print("DENIS:", X1, Y1, dX, dY, sx, sy, F_scale, w_pix, dist)
+   #print("THETA:",theta)
+   #print("DENIS:", sx,sy,new_x,new_y, sx-new_x, sy-new_y)
+   return(new_x,new_y)
+
+def get_catalog_stars(cal_params):
+   
+   catalog_stars = []
+   possible_stars = 0
+   img_w = 1920
+   img_h = 1080
+   RA_center = float(cal_params['device']['center']['ra']) 
+   dec_center = float(cal_params['device']['center']['dec']) 
+   x_poly = cal_params['device']['poly']['x'] 
+   y_poly = cal_params['device']['poly']['y']
+   pos_angle_ref = float(cal_params['device']['angle']) 
+
+   F_scale = 3600/float(cal_params['device']['scale_px'])
+   fov_w = img_w / F_scale
+   fov_h = img_h / F_scale
+   fov_radius = np.sqrt((fov_w/2)**2 + (fov_h/2)**2)
+
+   pos_angle_ref = cal_params['device']['angle'] 
+   #x_res = image_w
+   #y_res = image_h
+
+
+   bright_stars_sorted = sorted(bright_stars, key=lambda x: x[4], reverse=False)
+
+   for bname, cname, ra, dec, mag in bright_stars_sorted:
+      dcname = cname.decode("utf-8")
+      dbname = bname.decode("utf-8")
+      if dcname == "":
+         name = bname
+      else:
+         name = cname
+
+      ang_sep = angularSeparation(ra,dec,RA_center,dec_center)
+      if ang_sep < fov_radius and float(mag) < 5.5:
+         new_cat_x, new_cat_y = distort_xy_new (0,0,ra,dec,RA_center, dec_center, x_poly, y_poly, img_w, img_h, pos_angle_ref,F_scale)
+
+         possible_stars = possible_stars + 1
+         catalog_stars.append((name,mag,ra,dec,new_cat_x,new_cat_y))
+
+   return(catalog_stars)
+
 # Update Catalog Stars
 def update_cat_stars(form):
-   print("UPDATE CAT STARS!<BR>") 
+   #print("UPDATE CAT STARS!<BR>") 
    # Get the values from the form
    star_points = []
    hd_stack_file = form.getvalue("hd_stack_file")   # Stack
@@ -302,21 +434,21 @@ def update_cat_stars(form):
       return "error JSON"
 
    # check if there are zero stars selected and zero in cat_img
-   if points is None : 
+   #if points is None : 
       # I guess this function automatically find the stars
-      cmd = "cd /home/ams/amscams/pythonv2/; ./autoCal.py imgstars " + video_file + " > /mnt/ams2/tmp/trs.txt"
-      os.system(cmd)
-      print(cmd)
+      #cmd = "cd /home/ams/amscams/pythonv2/; ./autoCal.py imgstars " + video_file + " > /mnt/ams2/tmp/trs.txt"
+      #os.system(cmd)
+      #print(cmd)
 
    meteor_mode = 0  #???
 
    #print("<PRE>", meteor_red)
 
-   if "calib" in meteor_red:
-      if "stars" in meteor_red['calib']:
-         print("CAT STARS FOUND!", len(meteor_red['calib']['stars']), "<BR>") 
-      else: 
-         print(meteor_red['calib']) 
+   #if "calib" in meteor_red:
+   #   if "stars" in meteor_red['calib']:
+   #      print("CAT STARS FOUND!", len(meteor_red['calib']['stars']), "<BR>") 
+   #   else: 
+   #      print(meteor_red['calib']) 
 
    
    temps = points.split("|")
@@ -328,22 +460,247 @@ def update_cat_stars(form):
          x,y = x*2,y*2
          if x >0 and y > 0 and x<1920 and y< 1080:
             star_points.append((x,y))
-   print("POINTS:", star_points,"<BR>");
+   #print("POINTS:", star_points,"<BR>");
    star_points = pin_point_stars(hd_image, star_points)
 
    # ok we have a good set of points now. 
-   print("POINTS:", star_points,"<BR>");
+   #print("POINTS:", star_points,"<BR>");
 
-   print(meteor_red['calib']) 
+   #print(meteor_red['calib']) 
    # get the center ra,dec based on the center_az,el and the current timestamp from the file 
-   rah,dech = AzEltoRADec(meteor_red['calib'], video_file)
+   ra,dec = AzEltoRADec(meteor_red['calib'], video_file)
+   meteor_red['calib']['device']['center']['ra'] = ra
+   meteor_red['calib']['device']['center']['dec'] = dec
+   meteor_red['calib']['device']['img_dim'] = [1920,1080]
+
+
+   cat_stars = get_catalog_stars(meteor_red['calib'])
+
+   my_cat_stars = []
+   my_close_stars = []
+
+   for name,mag,ra,dec,new_cat_x,new_cat_y in cat_stars :
+      dcname = str(name.decode("utf-8"))
+      dbname = dcname.encode("utf-8")
+      my_cat_stars.append((dcname,mag,ra,dec,new_cat_x,new_cat_y))
+   #print("<HR>", len(my_cat_stars), " catalog stars found inside this FOV.<BR>")
+
+   my_close_stars = []
+   for ix,iy in star_points:
+      close_stars = find_close_stars((ix,iy), cat_stars) 
+      if len(close_stars) == 1:
+         name,mag,ra,dec,cat_x,cat_y,scx,scy,cat_star_dist = close_stars[0]
+         new_x, new_y, img_ra,img_dec, img_az, img_el = XYtoRADec(ix,iy,video_file,meteor_red['calib'])
+
+
+         new_star = {}
+         new_star['name'] = name.decode("unicode_escape") 
+         new_star['mag'] = mag
+         new_star['ra'] = ra
+         new_star['dec'] = dec
+         new_star['dist_px'] = cat_star_dist 
+         new_star['i_pos'] = [ix,iy]
+         new_star['cat_und_pos'] = [cat_x,cat_y]
+         new_star['cat_dist_pos'] = [new_x,new_y]
+         # distorted position should be the new_x, new_y and + symbol
+         my_close_stars.append(new_star)
+
+   #print("<HR>", my_close_stars, "<HR>")
+   meteor_red['calib']['stars'] = my_close_stars
+   #print("<BR>Saved new json file with stars.", meteor_red_file)
+   response = {}
+   response['res'] = True
+   response['msg'] = "Stars updated"
+   print(json.dumps(response))
+   save_json_file(meteor_red_file, meteor_red)
+
+def XYtoRADec(img_x,img_y,timestamp_file,cp):
+
+   hd_datetime, hd_cam, hd_date, hd_y, hd_m, hd_d, hd_h, hd_M, hd_s = convert_filename_to_date_cam(timestamp_file)
+   F_scale = 3600/float(cp['device']['scale_px'])
+   #F_scale = 24
+
+   total_min = (int(hd_h) * 60) + int(hd_M)
+   day_frac = total_min / 1440 
+   hd_d = int(hd_d) + day_frac
+   jd = date_to_jd(int(hd_y),int(hd_m),float(hd_d))
+
+   lat = float(cp['device']['lat'])
+   lon = float(cp['device']['lng'])
+
+   # Calculate the reference hour angle
+   T = (jd - 2451545.0)/36525.0
+   Ho = (280.46061837 + 360.98564736629*(jd - 2451545.0) + 0.000387933*T**2 \
+      - (T**3)/38710000.0)%360
+
+   x_poly_fwd = cp['device']['poly']['x_fwd']
+   y_poly_fwd = cp['device']['poly']['y_fwd']
+   
+   dec_d = float(cp['device']['center']['dec']) 
+   RA_d = float(cp['device']['center']['ra']) 
+
+   dec_d = dec_d + (x_poly_fwd[13] * 100)
+   dec_d = dec_d + (y_poly_fwd[13] * 100)
+
+   RA_d = RA_d + (x_poly_fwd[14] * 100)
+   RA_d = RA_d + (y_poly_fwd[14] * 100)
+
+   pos_angle_ref = float(cp['device']['angle']) + (1000*x_poly_fwd[12]) + (1000*y_poly_fwd[12])
+
+   # Convert declination to radians
+   dec_rad = math.radians(dec_d)
+
+   # Precalculate some parameters
+   sl = math.sin(math.radians(lat))
+   cl = math.cos(math.radians(lat))
+
+
+   x_det = img_x - int(cp['device']['img_dim'][0])/2
+   y_det = img_y - int(cp['device']['img_dim'][1])/2
+
+   dx = (x_poly_fwd[0]
+      + x_poly_fwd[1]*x_det
+      + x_poly_fwd[2]*y_det
+      + x_poly_fwd[3]*x_det**2
+      + x_poly_fwd[4]*x_det*y_det
+      + x_poly_fwd[5]*y_det**2
+      + x_poly_fwd[6]*x_det**3
+      + x_poly_fwd[7]*x_det**2*y_det
+      + x_poly_fwd[8]*x_det*y_det**2
+      + x_poly_fwd[9]*y_det**3
+      + x_poly_fwd[10]*x_det*math.sqrt(x_det**2 + y_det**2)
+      + x_poly_fwd[11]*y_det*math.sqrt(x_det**2 + y_det**2))
+
+   # Add the distortion correction
+   x_pix = x_det + dx 
+
+   #print("ORIG X:", img_x)
+   #print("X DET:", x_det)
+   #print("DX :", dx)
+   #print("NEWX :", x_pix)
+
+   dy = (y_poly_fwd[0]
+      + y_poly_fwd[1]*x_det
+      + y_poly_fwd[2]*y_det
+      + y_poly_fwd[3]*x_det**2
+      + y_poly_fwd[4]*x_det*y_det
+      + y_poly_fwd[5]*y_det**2
+      + y_poly_fwd[6]*x_det**3
+      + y_poly_fwd[7]*x_det**2*y_det
+      + y_poly_fwd[8]*x_det*y_det**2
+      + y_poly_fwd[9]*y_det**3
+      + y_poly_fwd[10]*y_det*math.sqrt(x_det**2 + y_det**2)
+      + y_poly_fwd[11]*x_det*math.sqrt(x_det**2 + y_det**2))
+
+   # Add the distortion correction
+   y_pix = y_det + dy 
+
+   x_pix = x_pix / F_scale
+   y_pix = y_pix / F_scale
+
+   ### Convert gnomonic X, Y to alt, az ###
+
+   # Caulucate the needed parameters
+   radius = math.radians(math.sqrt(x_pix**2 + y_pix**2))
+   theta = math.radians((90 - pos_angle_ref + math.degrees(math.atan2(y_pix, x_pix)))%360)
+
+   sin_t = math.sin(dec_rad)*math.cos(radius) + math.cos(dec_rad)*math.sin(radius)*math.cos(theta)
+   Dec0det = math.atan2(sin_t, math.sqrt(1 - sin_t**2))
+
+   sin_t = math.sin(theta)*math.sin(radius)/math.cos(Dec0det)
+   cos_t = (math.cos(radius) - math.sin(Dec0det)*math.sin(dec_rad))/(math.cos(Dec0det)*math.cos(dec_rad))
+   RA0det = (RA_d - math.degrees(math.atan2(sin_t, cos_t)))%360
+
+   h = math.radians(Ho + lon - RA0det)
+   sh = math.sin(h)
+   sd = math.sin(Dec0det)
+   ch = math.cos(h)
+   cd = math.cos(Dec0det)
+
+   x = -ch*cd*sl + sd*cl
+   y = -sh*cd
+   z = ch*cd*cl + sd*sl
+
+   r = math.sqrt(x**2 + y**2)
+
+   # Calculate azimuth and altitude
+   azimuth = math.degrees(math.atan2(y, x))%360
+   altitude = math.degrees(math.atan2(z, r))
+
+
+
+   ### Convert alt, az to RA, Dec ###
+
+   # Never allow the altitude to be exactly 90 deg due to numerical issues
+   if altitude == 90:
+      altitude = 89.9999
+
+   # Convert altitude and azimuth to radians
+   az_rad = math.radians(azimuth)
+   alt_rad = math.radians(altitude)
+
+   saz = math.sin(az_rad)
+   salt = math.sin(alt_rad)
+   caz = math.cos(az_rad)
+   calt = math.cos(alt_rad)
+
+   x = -saz*calt
+   y = -caz*sl*calt + salt*cl
+   HA = math.degrees(math.atan2(x, y))
+
+   # Calculate the hour angle
+   T = (jd - 2451545.0)/36525.0
+   hour_angle = (280.46061837 + 360.98564736629*(jd - 2451545.0) + 0.000387933*T**2 - T**3/38710000.0)%360
+
+   RA = (hour_angle + lon - HA)%360
+   dec = math.degrees(math.asin(sl*salt + cl*calt*caz))
+
+   ### ###
+
+   return(x_pix+img_x,y_pix+img_y,RA,dec,azimuth,altitude)
+
+
 
 def AzEltoRADec(cp, video_file):
-   #print(cp)
-   print("CP:", cp['device']['alt'], cp['device']['lat'],cp['device']['lng'],"<BR>" )
-   print("CP:", cp['device']['center']['az'], cp['device']['center']['el'] , cp['device']['scale_px'], cp['device']['angle'], "<BR>")
+   (hd_datetime, sd_cam, sd_date, sd_y, sd_m, sd_d, sd_h, sd_M, sd_s) = convert_filename_to_date_cam(video_file)
+   #print("DATE:", hd_datetime)
+   #print("CP:", cp['device']['alt'], cp['device']['lat'],cp['device']['lng'],"<BR>" )
+   #print("CP:", cp['device']['center']['az'], cp['device']['center']['el'] , cp['device']['scale_px'], cp['device']['angle'], "<BR>")
+   azr = np.radians(cp['device']['center']['az'])
+   elr = np.radians(cp['device']['center']['el'])
 
-   return(0,0)
+   obs = ephem.Observer()
+   obs.lat = str(cp['device']['lat'])
+   obs.lon = str(cp['device']['lng'])
+   obs.elevation = float(cp['device']['alt'])
+   obs.date = hd_datetime
+   ra,dec = obs.radec_of(azr,elr)
+   rah = str(ra).replace(":", " ")
+   dech = str(dec).replace(":", " ")
+   ra_center,dec_center = HMS2deg(str(rah),str(dech))
+
+   return(ra_center,dec_center)
+
+def HMS2deg(ra='', dec=''):
+  RA, DEC, rs, ds = '', '', 1, 1
+  if dec:
+    D, M, S = [float(i) for i in dec.split()]
+    if str(D)[0] == '-':
+      ds, D = -1, abs(D)
+    deg = D + (M/60) + (S/3600)
+    DEC = '{0}'.format(deg*ds)
+  
+  if ra:
+    H, M, S = [float(i) for i in ra.split()]
+    if str(H)[0] == '-':
+      rs, H = -1, abs(H)
+    deg = (H*15) + (M/4) + (S/240)
+    RA = '{0}'.format(deg*rs)
+  
+  if ra and dec:
+    return (RA, DEC)
+  else:
+    return RA or DEC
 
 # Return the JSON Files from a given reduction
 # with modified info
