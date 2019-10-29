@@ -161,6 +161,12 @@ def manual_reduction_cropper(form):
    if(len(cache_path)!=0):
       for f in cache_path:
          os.remove(os.path.join(cache_path, f))
+
+   # If we passed a json, it means it's a detection from the archive
+   # we need to change full_path as the video path
+   analysed_name['full_path'] = analysed_name['full_path'].replace(".json","-HD.mp4")
+   if(cfe(analysed_name['full_path'])==0)
+         analysed_name['full_path'] = analysed_name['full_path'].replace(".json","-SD.mp4")
  
    # Extract all the frames, resize to HD and crop
    cmd = 'ffmpeg   -i ' + analysed_name['full_path'] +  ' -filter_complex "[0:v]scale=' + str(HD_W) + ":" + str(HD_H) + '[scale];[scale]crop='+str(w)+':'+str(h)+':'+str(x_start)+':'+str(y_start)+'[out]"  -map "[out]" ' + dest_folder + '/%04d' + '.png' 
