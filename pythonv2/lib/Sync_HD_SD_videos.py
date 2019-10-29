@@ -182,10 +182,11 @@ def find_hd_frame(fn, hd_x, hd_y, x1,y1,x2,y2,hd_frames):
       gray_frame = frame
       show_frame = gray_frame.copy()
 
+      # to show the cuurent frame 
       #cv2.rectangle(show_frame, (hd_x, hd_y), (hd_x+1, hd_y+1), (255, 0, 0), 1)
       #cv2.rectangle(show_frame, (x1, y1), (x2, y2), (255, 0, 0), 1)
-      cv2.imshow('pepe', show_frame)
-      cv2.waitKey(30)
+      #cv2.imshow('pepe', show_frame)
+      #cv2.waitKey(30)
 
       max_val = np.sum(gray_frame)
       if max_val > max_hd_val:
@@ -193,6 +194,7 @@ def find_hd_frame(fn, hd_x, hd_y, x1,y1,x2,y2,hd_frames):
          best_hd_frame = cc 
          best_cc = cc
       cc = cc + 1
-   cv2.imshow('pepe', crops[best_hd_frame])
-   cv2.waitKey(0)
+   # to show the final frame choosen
+   #cv2.imshow('pepe', crops[best_hd_frame])
+   #cv2.waitKey(0)
    return(best_hd_frame)
