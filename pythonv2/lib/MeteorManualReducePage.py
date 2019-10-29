@@ -105,9 +105,7 @@ def manual_reduction_step1(form):
    else:
       clear_cache = False
  
-   print("org video file<BR/>")
-   print(video_file)
-   print('<br/>')
+    
 
    # Video File
    if(video_file is not None):
@@ -117,13 +115,6 @@ def manual_reduction_step1(form):
       analysed_name['full_path'] = video_file
    else:
       print_error("<b>You need to add a video file in the URL.</b>")
-
-
-   print("VIDEO ANALYSED NAME<br/>")
-   print('tmp_fixed_video_full_path ' + tmp_fixed_video_full_path +"<br/>")
-   print(analysed_name)
-   sys.exit(0)
-
 
    # No matter if the stack is SD or not
    # we resize it to HD
