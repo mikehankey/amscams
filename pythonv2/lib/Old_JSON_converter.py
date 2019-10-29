@@ -334,6 +334,10 @@ def move_old_detection_to_archive(json_file_path, sd_video_file_path, hd_video_f
 # Move detection to Archives
 # and open the related reduce2 page
 def move_to_archive(form):
+
+   # DEBUG
+   cgitb.enable();
+
    hd_video = form.getvalue("video_file")
    sd_video = form.getvalue("sd_video")
    json_file = form.getvalue("json_file")
@@ -350,8 +354,9 @@ def move_to_archive(form):
    if(json_file is None or cfe(json_file)==0):
       print("JSON is missing.")   
       sys.exit(0)
-    
-   new_json,new_hd_vid,new_sd_vid move_old_detection_to_archive(json_file,sd_video,hd_video, False)
+
+   print("HERE") 
+   #new_json,new_hd_vid,new_sd_vid move_old_detection_to_archive(json_file,sd_video,hd_video, False)
    #redirect_to("/pycgi/webUI.py?cmd=reduce2&video_file=" + new_hd_vid + "&clear_cache=1&c=" + str(random.randint(0,100000000)), "reduction")
-   print("/pycgi/webUI.py?cmd=reduce2&video_file=" + new_hd_vid + "&clear_cache=1&c=" + str(random.randint(0,100000000)))
+   #print("/pycgi/webUI.py?cmd=reduce2&video_file=" + new_hd_vid + "&clear_cache=1&c=" + str(random.randint(0,100000000)))
    
