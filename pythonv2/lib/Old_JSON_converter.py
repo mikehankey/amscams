@@ -338,6 +338,6 @@ def move_to_archive(form):
    print("JSON FILE " + json_file + "<BR>")
    print("SD VIDEO" + sd_video + "<BR>")
    print("HD VIDEO" + hd_video + "<BR>")
-   cmd = "cd /home/ams/amscams/; python3 pythonv2/old_json_inline_converter.py " + json_file + " " + sd_video + " " + hd_video
+   cmd = "cd /home/ams/amscams/pythonv2/; python3 old_json_inline_converter.py " + json_file + " " + sd_video + " " + hd_video
    print(cmd)
-   #os.system(cmd) 
+   os.system(cmd) 
