@@ -15,7 +15,7 @@ function fix_pifc_ui() {
 
       // Keep Ratio
       $('#cropped_frame_selector').width($('#cropped_frame_selector').height()*Math.round(w)/Math.round(h));
-
+      $('#cropped_frame_selector').height($('#cropped_frame_selector').width()*Math.round(h)/Math.round(w));
    }
 
    $('#cropped_frame_selector').css('max-width','100%');
