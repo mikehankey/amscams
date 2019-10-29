@@ -262,7 +262,7 @@ def convert_json(json_file_path, sd_video_file_path, hd_video_file_path):
 # Move new JSON file and  video files to meteor_archive
 # in the proper folder
 # from a old -reduced.json file
-def move_old_detection_to_archive(json_file_path, sd_video_file_path, hd_video_file_path, display=True):
+def move_old_detection_to_archive(json_file_path, sd_video_file_path, hd_video_file_path, display=False):
 
    # Get the new JSON file based on all info
    new_json_file = convert_json(json_file_path, sd_video_file_path, hd_video_file_path)
@@ -352,8 +352,7 @@ def move_to_archive(form):
    if(json_file is None or cfe(json_file)==0):
       print_error("<b>JSON is missing.</b>")   
    
-   
-
+    
    cmd = "cd /home/ams/amscams/pythonv2/; python3 old_json_inline_converter.py " + json_file + " " + sd_video + " " + hd_video
    print(cmd)
    os.system(cmd) 
