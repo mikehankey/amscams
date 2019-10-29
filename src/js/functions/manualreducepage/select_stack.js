@@ -9,11 +9,12 @@ function select_one_stack(type) {
 }
 
 function select_stack() {
+
+   loading({'text':'Crunching existing stacks...','overlay':true});
+
    // Select a stack
    $('.select_stack').click(function() {
-      
       select_one_stack(type);
- 
    })
 
 
@@ -22,5 +23,8 @@ function select_stack() {
       select_one_stack("HD");
    } else if(hd_stack.indexOf('{') > -1) {
       select_one_stack("SD");
+   } else {
+      loading_done();
+      $('#main_container').style('display','block');
    }
 } 

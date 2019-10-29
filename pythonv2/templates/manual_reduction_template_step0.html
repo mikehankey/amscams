@@ -1,4 +1,4 @@
-<div id="main_container" class="container-fluid h-100 mt-4 position-relative"> 
+<div id="main_container" class="container-fluid h-100 mt-4 position-relative" style="display:none"> 
    <div id="step0">
       <h1>Manual Reduction Step 0: Select the right stack</h1>
       <input type="hidden" name="next_step_url" value="webUI.py?cmd=manual_reduction_pos_in_stack"/>
@@ -18,7 +18,7 @@
    var hd_video_file = "{HD_VIDEO}";
    var sd_video_file = "{SD_VIDEO}";
    var json_file     = "{JSON_FILE}";
-
+  
    // Step #0:
    window.onload = function () {
       select_stack();

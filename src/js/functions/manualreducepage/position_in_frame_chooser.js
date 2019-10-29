@@ -14,8 +14,8 @@ function fix_pifc_ui() {
       }
 
       // Keep Ratio
-      $('#cropped_frame_selector').width($('#cropped_frame_selector').height()*w/h);
-
+      $('#cropped_frame_selector').width($('#cropped_frame_selector').height()*Math.round(w)/Math.round(h));
+      $('#cropped_frame_selector').height($('#cropped_frame_selector').width()*Math.round(h)/Math.round(w));
    }
 
    $('#cropped_frame_selector').css('max-width','100%');
@@ -224,9 +224,14 @@ function init_pos_choos() {
    var $first_img = $($('#cropped_frame_select').find('img').get(0))
    var $first_img_holder  = $first_img.closest('a');
   
+   console.log("W " + x);
+   console.log("H " + y);
+   console.log("W " + w);
+   console.log("H " + h);
+ 
    $('#cropped_frame_selector').css({
       'background-image':'url('+$first_img.attr('src')+')',
-      'background-size':  'cover',
+      'background-size':  'contain',
       'width': w + 'px',  // Defined on the page
       'height': h   + 'px' // Defined on the page
    });
