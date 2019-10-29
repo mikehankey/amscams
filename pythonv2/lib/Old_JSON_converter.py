@@ -12,9 +12,8 @@ from lib.FileIO import load_json_file,save_json_file, cfe
 from lib.REDUCE_VARS import *
 from lib.Get_Station_Id import get_station_id
 from lib.VIDEO_VARS import FPS_HD
-from lib.Sync_HD_SD_videos import *
-from lib.MeteorReducePage import PAGE_TEMPLATE
-from lib.MeteorReduce_Tools import *
+from lib.Sync_HD_SD_videos import * 
+from lib.CGI_Tools import redirect_to
 
 # Get a new folder in meteor_archive
 # from an old json file
