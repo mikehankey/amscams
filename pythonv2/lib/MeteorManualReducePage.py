@@ -165,9 +165,9 @@ def manual_reduction_cropper(form):
    # If we passed a json, it means it's a detection from the archive
    # we need to change full_path as the video path
    new_full_path = analysed_name['full_path']  
-   if('json' in analysed_name['full_path']  ):
+   if('json' in analysed_name['full_path']):
       new_full_path = analysed_name['full_path'].replace(".json","-HD.mp4")
-      if(cfe(new_full_path)==0)
+      if(cfe(new_full_path)==0):
             new_full_path = new_full_path['full_path'].replace(".json","-SD.mp4")
             
  
