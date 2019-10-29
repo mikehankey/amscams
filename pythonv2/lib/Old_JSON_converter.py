@@ -5,6 +5,8 @@ import glob
 import shutil
 import sys
 import cgitb
+import random
+
 from datetime import datetime,timedelta
 
 from lib.WebCalib import get_active_cal_file
