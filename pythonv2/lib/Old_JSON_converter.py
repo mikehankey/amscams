@@ -337,22 +337,21 @@ def move_to_archive(form):
    hd_video = form.getvalue("video_file")
    sd_video = form.getvalue("sd_video")
    json_file = form.getvalue("json_file")
-
-   # Build the page based on template  
-   with open(PAGE_TEMPLATE, 'r') as file:
-      template = file.read()
-
+ 
  
    if(hd_video is None or cfe(hd_video)==0):
-      print_error("<b>HD video is missing.</b>")
+      print("HD video is missing.")
+      sys.exit(0)
 
    if(sd_video is None or cfe(sd_video)==0):
-      print_error("<b>SD video is missing.</b>")
+      print("SD video is missing.")
+      sys.exit(0)
 
    if(json_file is None or cfe(json_file)==0):
-      print_error("<b>JSON is missing.</b>")   
-   
+      print("JSON is missing.")   
+      sys.exit(0)
     
-   cmd = "cd /home/ams/amscams/pythonv2/; python3 old_json_inline_converter.py " + json_file + " " + sd_video + " " + hd_video
-   print(cmd)
-   os.system(cmd) 
+   new_json,new_hd_vid,new_sd_vid move_old_detection_to_archive(json_file,sd_video,hd_video, False)
+   redirect_to("/pycgi/webUI.py?cmd=reduce2&video_file=" + new_hd_vid + "&clear_cache=1&c=" + str(random.randint(0,100000000)), "reduction")
+
+   
