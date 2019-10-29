@@ -4,9 +4,7 @@ from lib.MeteorReduce_Tools import *
 from lib.MeteorReduce_Calib_Tools import find_matching_cal_files, find_calib_file
  
 PAGE_TEMPLATE = "/home/ams/amscams/pythonv2/templates/reducePage.v2.html"
-
-
-
+ 
 
 # GENERATES THE REDUCE PAGE METEOR
 # from a URL 

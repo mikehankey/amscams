@@ -9,11 +9,12 @@ from datetime import datetime,timedelta
 
 from lib.WebCalib import get_active_cal_file
 from lib.FileIO import load_json_file,save_json_file, cfe
-from lib.MeteorReduce_Tools import name_analyser, get_cache_path, get_frame_time_from_f, get_datetime_from_analysedname
 from lib.REDUCE_VARS import *
 from lib.Get_Station_Id import get_station_id
 from lib.VIDEO_VARS import FPS_HD
 from lib.Sync_HD_SD_videos import *
+from lib.MeteorReducePage import PAGE_TEMPLATE
+from lib.MeteorReduce_Tools import *
 
 # Get a new folder in meteor_archive
 # from an old json file
@@ -331,13 +332,28 @@ def move_old_detection_to_archive(json_file_path, sd_video_file_path, hd_video_f
 
 
 # Move detection to Archives
+# and open the related reduce2 page
 def move_to_archive(form):
    hd_video = form.getvalue("video_file")
    sd_video = form.getvalue("sd_video")
    json_file = form.getvalue("json_file")
-   print("JSON FILE " + json_file + "<BR>")
-   print("SD VIDEO" + sd_video + "<BR>")
-   print("HD VIDEO" + hd_video + "<BR>")
+
+   # Build the page based on template  
+   with open(PAGE_TEMPLATE, 'r') as file:
+      template = file.read()
+
+ 
+   if(hd_video is None or cfe(hd_video)==0):
+      print_error("<b>HD video is missing.</b>")
+
+   if(sd_video is None or cfe(sd_video)==0):
+      print_error("<b>SD video is missing.</b>")
+
+   if(json_file is None or cfe(json_file)==0):
+      print_error("<b>JSON is missing.</b>")   
+   
+   
+
    cmd = "cd /home/ams/amscams/pythonv2/; python3 old_json_inline_converter.py " + json_file + " " + sd_video + " " + hd_video
    print(cmd)
    os.system(cmd) 
