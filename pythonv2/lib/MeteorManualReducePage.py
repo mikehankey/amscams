@@ -164,12 +164,15 @@ def manual_reduction_cropper(form):
 
    # If we passed a json, it means it's a detection from the archive
    # we need to change full_path as the video path
-   analysed_name['full_path'] = analysed_name['full_path'].replace(".json","-HD.mp4")
-   if(cfe(analysed_name['full_path'])==0)
-         analysed_name['full_path'] = analysed_name['full_path'].replace(".json","-SD.mp4")
+   new_full_path = analysed_name['full_path']  
+   if('json' in analysed_name['full_path']  ):
+      new_full_path = analysed_name['full_path'].replace(".json","-HD.mp4")
+      if(cfe(new_full_path)==0)
+            new_full_path = new_full_path['full_path'].replace(".json","-SD.mp4")
+            
  
    # Extract all the frames, resize to HD and crop
-   cmd = 'ffmpeg   -i ' + analysed_name['full_path'] +  ' -filter_complex "[0:v]scale=' + str(HD_W) + ":" + str(HD_H) + '[scale];[scale]crop='+str(w)+':'+str(h)+':'+str(x_start)+':'+str(y_start)+'[out]"  -map "[out]" ' + dest_folder + '/%04d' + '.png' 
+   cmd = 'ffmpeg   -i ' + new_full_path +  ' -filter_complex "[0:v]scale=' + str(HD_W) + ":" + str(HD_H) + '[scale];[scale]crop='+str(w)+':'+str(h)+':'+str(x_start)+':'+str(y_start)+'[out]"  -map "[out]" ' + dest_folder + '/%04d' + '.png' 
    output = subprocess.check_output(cmd, shell=True).decode("utf-8")  
    
    # Get all the newly created cropped frames
