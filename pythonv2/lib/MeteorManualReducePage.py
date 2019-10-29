@@ -106,6 +106,13 @@ def manual_reduction_step1(form):
    else:
       clear_cache = False
  
+   # We need to get the info from the file name either if it's an old file or a new file (in the archive)
+   if(METEOR_ARCHIVE in video_file):
+      print("IT IS A NEW FILE")
+   else:
+      print("IT IS AN OLD FILE")
+   
+   sys.exit(0)
      
    # Video File
    if(video_file is not None):
@@ -126,11 +133,7 @@ def manual_reduction_step1(form):
    stack = get_stacks(analysed_name,clear_cache, True)
    # We add it to the template
    template = template.replace("{STACK}", str(stack))  
-
-   print("STACK<br/>")
-   print(str(stack))
-
-
+  
    # Add Video to template
    template = template.replace("{VIDEO}", str(video_file))
 
