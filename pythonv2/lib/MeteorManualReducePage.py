@@ -105,27 +105,32 @@ def manual_reduction_step1(form):
       clear_cache = True
    else:
       clear_cache = False
- 
+
+    # Video File
+   if(video_file is None):
+      print_error("<b>You need to add a video file in the URL.</b>")
+      
    # We need to get the info from the file name either if it's an old file or a new file (in the archive)
    if(METEOR_ARCHIVE in video_file):
-      print("IT IS A NEW FILE")
+      analysed_name = name_analyser(video_file)
    else:
-      print("IT IS AN OLD FILE")
+      analysed_name = old_name_analyser(video_file)
    
-   sys.exit(0)
-     
-   # Video File
-   if(video_file is not None):
-      tmp_fixed_video_full_path =  video_file
-      analysed_name = old_name_analyser(tmp_fixed_video_full_path)
-      # We keep the original full_path anyway
-      analysed_name['full_path'] = video_file
-   else:
-      print_error("<b>You need to add a video file in the URL.</b>")
+   # We keep the original full_path anyway
+   analysed_name['full_path'] = video_file  
 
    # Do we have the station ID?
    if('station_id' not in analysed_name):
       analysed_name['station_id'] = get_station_id()
+   
+
+   print(analysed_name)
+
+   sys.exit(0)
+     
+  
+
+ 
 
 
    # No matter if the stack is SD or not
