@@ -63,7 +63,7 @@ def get_frame(form):
    
    fn = frame_hd_sd_diff + int(fn)
 
-   print("NEW FRAME FN " + str(fn) + "<br/>")
+   #print("NEW FRAME FN " + str(fn) + "<br/>")
    
    # We should test if get_HD_frame's output is empty as the HD Frames
    # are all created by default on page load (recude2 page)
