@@ -122,8 +122,7 @@ def update_frame(form, AjaxDirect = False):
             update = True
 
       # FOR THE CREATION
-      if(update is False):
-
+      if(update is False): 
          # Get the Frame time (as a string)
          dt = get_frame_time(mr,fn,analysed_name)
 
@@ -146,6 +145,8 @@ def update_frame(form, AjaxDirect = False):
             'h': H_DEFAULT
          }
          mr['frames'].append(new_entry)
+         print("NEW ENTRY")
+         print(new_entry)
  
 
    if(len(original_HD_frame)!=0 and len(destination_cropped_frame)!=0):  
