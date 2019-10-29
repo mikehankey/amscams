@@ -105,6 +105,10 @@ def manual_reduction_step1(form):
    else:
       clear_cache = False
  
+   print("org video file<BR/>")
+   print(video_file)
+   print('<br/>')
+
    # Video File
    if(video_file is not None):
       tmp_fixed_video_full_path = fix_old_file_name(video_file)
