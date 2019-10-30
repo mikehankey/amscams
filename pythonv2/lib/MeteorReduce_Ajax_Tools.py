@@ -411,7 +411,7 @@ def get_catalog_stars(cal_params):
 
          enc_name = bname.decode(encoding)
          print("ENC NAME<br/>")
-         print(str(enc_name))
+         print(enc_name)
          enc_name = str(bname).encode('UTF-8')
          print("ENC NAME<br/>")
          print(enc_name)
