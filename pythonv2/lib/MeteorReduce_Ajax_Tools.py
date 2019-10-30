@@ -383,6 +383,8 @@ def convert_encoding(data, new_coding = 'UTF-8'):
    print("<br/>IN convert_encoding<br/>")
    print("<br/>DATA " + str(data))
    print("<br/>ENCODING " + str(encoding))
+   toto =  data.decode('UTF-8')
+   print("TOTO " + str(toto))
 
    if new_coding.upper() != encoding.upper():
       print("<br/>WE TRY TO ENCODE") 
