@@ -381,7 +381,7 @@ def convert_encoding(data, new_coding = 'UTF-8'):
 
    if(data[0]==206):
       print("<br/>STARTS WITH B")
-      data = data[:1]
+      data = data[1:]
 
    encoding = chardet.detect(data)['encoding']
 
