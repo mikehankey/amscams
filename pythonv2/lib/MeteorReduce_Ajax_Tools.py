@@ -424,8 +424,7 @@ def update_cat_stars(form):
    hd_stack_file = form.getvalue("hd_stack_file")   # Stack
    points = form.getvalue("points")                 # All Stars points on the canvas
    type = form.getvalue("type")                     # ? - 'nopick' is the default option
-   video_file = form.getvalue("video_file")         # Video file
-   cal_params = None                                # ????
+   video_file = form.getvalue("video_file")         # Video file 
    meteor_red_file = form.getvalue("json_file")     
    hd_image = cv2.imread(hd_stack_file, 0)
 
@@ -434,8 +433,7 @@ def update_cat_stars(form):
       meteor_red = load_json_file(meteor_red_file)
    else:
       return "error JSON"
- 
-
+  
    meteor_mode = 0  #???
    
    temps = points.split("|")
@@ -448,8 +446,7 @@ def update_cat_stars(form):
          if x >0 and y > 0 and x<HD_W and y< HD_H:
             star_points.append((x,y))
     
-   star_points = pin_point_stars(hd_image, star_points)
- 
+   star_points = pin_point_stars(hd_image, star_points) 
  
    # get the center ra,dec based on the center_az,el and the current timestamp from the file 
    ra,dec = AzEltoRADec(meteor_red['calib'], video_file)
@@ -543,8 +540,7 @@ def XYtoRADec(img_x,img_y,timestamp_file,cp):
    # Precalculate some parameters
    sl = math.sin(math.radians(lat))
    cl = math.cos(math.radians(lat))
-
-
+ 
    x_det = img_x - int(cp['device']['img_dim'][0])/2
    y_det = img_y - int(cp['device']['img_dim'][1])/2
 
@@ -616,8 +612,7 @@ def XYtoRADec(img_x,img_y,timestamp_file,cp):
    # Calculate azimuth and altitude
    azimuth = math.degrees(math.atan2(y, x))%360
    altitude = math.degrees(math.atan2(z, r))
-
-
+ 
 
    ### Convert alt, az to RA, Dec ###
 
