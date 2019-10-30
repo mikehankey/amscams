@@ -400,14 +400,13 @@ def get_catalog_stars(cal_params):
 
    for bname, cname, ra, dec, mag in bright_stars_sorted:
       print("IN get_catalog_stars<br/>")
-
       
-      dcname = cname.decode("utf-8")
-      dbname = bname.decode("utf-8")
+      dcname = str(cname.decode("utf-8"))
+      dbname = str(bname.decode("utf-8"))
       if(not dcname):
-         name = str(bname).encode("utf-8")
+         name = bname.encode("utf-8")
       else:
-         name = str(cname).encode("utf-8")
+         name = cname.encode("utf-8")
 
       print("<br/>name ****" + str(name) + "*******")
 
