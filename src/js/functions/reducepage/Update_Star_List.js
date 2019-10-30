@@ -127,6 +127,8 @@ function update_star_list() {
     $.each(canvas_stars, function(i,v) {
         if (v.get('type') == "circle" && v.get('radius') == 5) {
             cmd_data.points= cmd_data.points + v.left.toString() + "," + v.top.toString() + "|";
+            console.log("POINT ADDED")
+            console.log(v)
          }
     }); 
 
@@ -146,7 +148,7 @@ function update_star_list() {
         success: function(data) {
             var json_resp = $.parseJSON(data);
             if(json_resp['res']=='true') {
-               
+
             }
             
             if(json_resp['status']!==0) {
