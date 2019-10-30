@@ -409,12 +409,14 @@ def get_catalog_stars(cal_params):
          name = bname.decode('Latin-1') 
          name = name.encode('UTF-8')
          print("DNname " + str(name))
+         name = name.encode('Latin-1')
+         print("DNname " + str(name))
 
          
       else:
-         print("<br/>dcname<br/>")
+         #print("<br/>dcname<br/>")
          name = cname.decode('UTF-8')  
-         print("NAME " +  str(name))
+         #print("NAME " +  str(name))
 
      
 
