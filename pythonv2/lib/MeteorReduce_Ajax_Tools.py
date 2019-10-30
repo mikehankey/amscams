@@ -387,15 +387,16 @@ def convert_encoding(data, new_coding = 'UTF-8'):
    print('<br/>')
    print('<br/>')
 
+   n_data = data
 
    if new_coding.upper() != encoding.upper():
       print("<br/>WE TRY TO ENCODE") 
-      data = data.decode(encoding)
+      n_data = data.decode(encoding)
       print("DECODED " + str(data) + "<br/>")
-      data = u' '.data.encode(new_coding).strip()
+      dn_dataata =  data.encode(new_coding) 
       print("RE ENCODED " + str(data) + "<br/>")
     
-   return data
+   return n_data
 
 def get_catalog_stars(cal_params):
     # Debug
