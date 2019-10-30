@@ -444,18 +444,12 @@ def update_cat_stars(form):
          x,y = x*2,y*2
          if x >0 and y > 0 and x<HD_W and y< HD_H:
             star_points.append((x,y))
-   
-   
-   print("POINTS:", star_points,"<BR>");
-   
-   
-   
+    
    star_points = pin_point_stars(hd_image, star_points)
 
    # ok we have a good set of points now. 
-   #print("POINTS:", star_points,"<BR>");
-
-   #print(meteor_red['calib']) 
+   print("POINTS:", star_points,"<BR>");
+ 
    # get the center ra,dec based on the center_az,el and the current timestamp from the file 
    ra,dec = AzEltoRADec(meteor_red['calib'], video_file)
    meteor_red['calib']['device']['center']['ra'] = ra
