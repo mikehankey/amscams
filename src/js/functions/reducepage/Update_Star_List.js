@@ -13,7 +13,11 @@ function update_stars_on_canvas_and_table(json_resp) {
    }
 
     var table_tbody_html = ''; 
+
+    console.log(" json_resp['calib']['device']['total_res_deg'] " +  json_resp['calib']['device']['total_res_deg'])
+    console.log(" json_resp['calib']['device']['total_res_px'] " +  json_resp['calib']['device']['total_res_px'])
  
+
     if(typeof json_resp['calib']['device']['total_res_deg']!=='undefined' && typeof json_resp['calib']['device']['total_res_px']!=='undefined') {
         // Updating star table info 
         // Residual Error
