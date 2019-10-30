@@ -401,6 +401,10 @@ def get_catalog_stars(cal_params):
 
    bright_stars_sorted = sorted(bright_stars, key=lambda x: x[4], reverse=False)
 
+
+   print(str(bright_stars_sorted))
+   sys.exit(0)
+
    for bname, cname, ra, dec, mag in bright_stars_sorted:
       
     
@@ -417,7 +421,7 @@ def get_catalog_stars(cal_params):
          print("<br/>ENC NAME2<br/>")
          print(str(enc_name).encode('UTF-8'))
  
-         
+
          
       else:
          #print("<br/>dcname<br/>")
