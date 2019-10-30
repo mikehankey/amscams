@@ -379,7 +379,6 @@ def distort_xy_new(sx,sy,ra,dec,RA_center, dec_center, x_poly, y_poly, x_res, y_
 def convert_encoding(data, new_coding = 'UTF-8'):
 
 
-  data = str(data).decode('utf-8')   
   encoding = chardet.detect(data)['encoding']
 
   print("IN convert_encoding<br/>")
@@ -390,7 +389,10 @@ def convert_encoding(data, new_coding = 'UTF-8'):
    print("<br/>WE TRY TO ENCODE") 
    try:
       data = data.decode(encoding)
+      print("DECODED " + str(data) + "<br/>")
       data = data.encode(new_coding)
+      
+      print("RE ENCODED " + str(data) + "<br/>")
    except UnicodeDecodeError:
       print("ERROR")
 
