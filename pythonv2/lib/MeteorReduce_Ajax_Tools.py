@@ -377,9 +377,11 @@ def distort_xy_new(sx,sy,ra,dec,RA_center, dec_center, x_poly, y_poly, x_res, y_
 
 # Encode string to UTF8
 def convert_encoding(data, new_coding = 'UTF-8'):
+ 
 
-   print("STARTS WITH  " + str(data[0]))
-
+   if(data[0]==206):
+      print("<br/>STARTS WITH B")
+      data = data[:1]
 
    encoding = chardet.detect(data)['encoding']
 
