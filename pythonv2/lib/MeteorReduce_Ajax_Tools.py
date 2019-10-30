@@ -466,9 +466,7 @@ def update_cat_stars(form):
       dcname = str(name.decode("utf-8"))
       dbname = dcname.encode("utf-8")
       my_cat_stars.append((dcname,mag,ra,dec,new_cat_x,new_cat_y)) 
-
-
-   print(str(my_cat_stars))
+ 
 
    my_close_stars = []
    for ix,iy in star_points:
