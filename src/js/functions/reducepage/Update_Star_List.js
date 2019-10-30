@@ -2,7 +2,7 @@
 // Ex:  "i_pos": [719,769], => x= 719, y=769
 POS_X = 0
 POS_Y = 1
-
+CIRCLE_RADIUS=5
 
 function update_stars_on_canvas_and_table(json_resp) {
  
@@ -43,7 +43,7 @@ function update_stars_on_canvas_and_table(json_resp) {
          // Add to circle canvas
          canvas.add(
             new fabric.Circle({
-               radius: 5, fill: 'rgba(0,0,0,0)', strokeWidth: 1, stroke: 'rgba(100,200,200,.5)', 
+               radius: CIRCLE_RADIUS, fill: 'rgba(0,0,0,0)', strokeWidth: 1, stroke: 'rgba(100,200,200,.5)', 
                left: (v["cat_und_pos"][POS_X] - 11)/2, 
                top: (v["cat_und_pos"][POS_Y] - 11)/2,
                selectable: false,
@@ -123,9 +123,10 @@ function update_star_list() {
     }
  
     // Get Stars from canvas
-    var canvas_stars = canvas.getObjects('circle');
+    var canvas_stars = canvas.getObjects();
     $.each(canvas_stars, function(i,v) {
-         if (v.get('type') == "circle" && v.get('radius') == 5) {
+         if (v.type == "star_info" && v.radius == CIRCLE_RADIUS) {
+            console.log("STAR FOUND");
             cmd_data.points= cmd_data.points + v.left.toString() + "," + v.top.toString() + "|";
          }
     }); 
