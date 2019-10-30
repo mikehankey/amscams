@@ -415,7 +415,7 @@ def get_catalog_stars(cal_params):
 
          enc_name = enc_name.decode('UTF-8')
          print("<br/>ENC NAME2<br/>")
-         print(enc_name)
+         print(str(enc_name).encode('UTF-8'))
 
          print("<br/>dbname<br/>")
          name = bname.decode('Latin-1') 
