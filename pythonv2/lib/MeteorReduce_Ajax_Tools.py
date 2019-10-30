@@ -377,7 +377,7 @@ def distort_xy_new(sx,sy,ra,dec,RA_center, dec_center, x_poly, y_poly, x_res, y_
 def get_catalog_stars(cal_params):
     # Debug
    cgitb.enable()    
-   
+
    catalog_stars = []
    possible_stars = 0
  
@@ -400,8 +400,7 @@ def get_catalog_stars(cal_params):
 
    for bname, cname, ra, dec, mag in bright_stars_sorted:
       print("IN get_catalog_stars")
-      print("CNAME " + cname.decode("utf-8"))
-      print("BNAME " + bname.decode("utf-8"))
+     
 
       dcname = cname.decode("utf-8")
       dbname = bname.decode("utf-8")
@@ -409,6 +408,8 @@ def get_catalog_stars(cal_params):
          name = bname
       else:
          name = cname
+
+      print("name " + name)
 
       ang_sep = angularSeparation(ra,dec,RA_center,dec_center)
       if ang_sep < fov_radius and float(mag) < 5.5:
