@@ -418,6 +418,9 @@ def get_catalog_stars(cal_params):
 
    for bname, cname, ra, dec, mag in bright_stars_sorted:
       print("IN get_catalog_stars<br/>")
+      print("BNAME ")
+      print(str(bname))
+      print("<br/>")
       
       if(bname): 
          print(convert_encoding(bname))
