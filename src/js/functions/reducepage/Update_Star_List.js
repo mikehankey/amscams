@@ -116,15 +116,12 @@ function update_star_list() {
         video_file:          main_vid,                         // Defined on the page
         hd_stack_file:       my_image,                         // Defined on the page
         cmd: 'update_cat_stars',                 
-        cal_params_file:  $('#cal_param_selected').val(),      // The one selected 
+        //cal_params_file:  $('#cal_param_selected').val(),      // The one selected 
         type: typeof type !== 'undefined' ? type : 'nopick',   // 'nopick' is the default option
         points: '',
         json_file: json_file
     }
  
-    // Get user stars from array
-    // cmd_data.points = user_stars.join("|")+"|";
-
     // Get Stars from canvas
     var canvas_stars = canvas.getObjects('circle');
     $.each(canvas_stars, function(i,v) {
@@ -148,6 +145,10 @@ function update_star_list() {
         data: cmd_data,
         success: function(data) {
             var json_resp = $.parseJSON(data);
+            if(json_resp['res']=='true') {
+               
+            }
+            
             if(json_resp['status']!==0) {
                 update_stars_on_canvas_and_table(json_resp);
 

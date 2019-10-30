@@ -508,14 +508,14 @@ def update_cat_stars(form):
 
    #print("<HR>", my_close_stars, "<HR>")
    meteor_red['calib']['stars'] = my_close_stars
-   #print("<BR>Saved new json file with stars.", meteor_red_file)
-   response = {}
-   response['res'] = True
-   response['msg'] = "Stars updated"
    
    # Update JSON File
    save_json_file(meteor_red_file, meteor_red)
-   print(json.dumps(response))
+   
+   # Return the new JSON
+   print(json.dumps(load_json_file(meteor_red)))
+
+   
 
 def XYtoRADec(img_x,img_y,timestamp_file,cp):
 
