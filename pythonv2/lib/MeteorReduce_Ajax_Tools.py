@@ -409,7 +409,7 @@ def get_catalog_stars(cal_params):
          name = bname.decode('Latin-1') 
          name = name.encode('UTF-8')
          print("DNname " + str(name))
-         name = u' '.name.encode('utf-8').strip()
+         name = u' '.join((name, '')).encode('utf-8').strip()
          print("DNname " + str(name))
 
          
