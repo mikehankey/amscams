@@ -465,7 +465,7 @@ def update_cat_stars(form):
       my_cat_stars.append((dcname,mag,ra,dec,new_cat_x,new_cat_y)) 
 
 
-   print(my_cat_stars)
+   print(str(my_cat_stars))
 
    my_close_stars = []
    for ix,iy in star_points:
