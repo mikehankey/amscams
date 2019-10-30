@@ -386,7 +386,7 @@ def convert_encoding(data, new_coding = 'UTF-8'):
    print("ENCODING :" +  encoding)
    print('<br/>') 
    print("UTF-8") 
-   dd = d.decode('UTF-8')
+   dd = data.decode('UTF-8')
    print(dd) 
    print("RE ENCODED " + str(n_data) + "<br/>")
     
