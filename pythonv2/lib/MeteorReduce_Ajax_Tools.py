@@ -387,14 +387,12 @@ def convert_encoding(data, new_coding = 'UTF-8'):
 
   if new_coding.upper() != encoding.upper():
    print("<br/>WE TRY TO ENCODE") 
-   try:
-      data = data.decode(encoding)
-      print("DECODED " + str(data) + "<br/>")
-      data = data.encode(new_coding)
-      
-      print("RE ENCODED " + str(data) + "<br/>")
-   except UnicodeDecodeError:
-      print("ERROR")
+   
+   data = data.decode(encoding)
+   print("DECODED " + str(data) + "<br/>")
+   data = data.encode(new_coding)
+   print("RE ENCODED " + str(data) + "<br/>")
+   
 
   print("<br/>************************" +  str(data) + "********************<br/>")
   return data
