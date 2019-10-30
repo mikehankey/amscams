@@ -383,9 +383,7 @@ def convert_encoding(data, new_coding = 'UTF-8'):
 
 
    print("<br/>DATA<br/>")
-   print(str(data))
-   data = bytes(data, new_coding)
-   print("<br/>"+str(data))
+   print(str(data)) 
    print('<br/>')
    print("ENCODING :" +  encoding)
    print('<br/>') 
@@ -393,7 +391,7 @@ def convert_encoding(data, new_coding = 'UTF-8'):
 
    #if new_coding.upper() != encoding.upper():
    print("<br/>WE TRY TO ENCODE") 
-   n_data = data.decode(new_coding)
+   n_data = data.decode(encoding)
    print("DECODED " + str(n_data) + "<br/>")
    n_data =  data.encode(new_coding) 
    print("RE ENCODED " + str(n_data) + "<br/>")
