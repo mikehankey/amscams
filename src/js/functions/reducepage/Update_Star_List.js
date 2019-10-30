@@ -112,11 +112,11 @@ function update_stars_on_canvas_and_table(json_resp) {
 
 
 function update_star_list() {
+
     var cmd_data = {
         video_file:          main_vid,                         // Defined on the page
         hd_stack_file:       my_image,                         // Defined on the page
         cmd: 'update_cat_stars',                 
-        //cal_params_file:  $('#cal_param_selected').val(),      // The one selected 
         type: typeof type !== 'undefined' ? type : 'nopick',   // 'nopick' is the default option
         points: '',
         json_file: json_file
@@ -125,10 +125,8 @@ function update_star_list() {
     // Get Stars from canvas
     var canvas_stars = canvas.getObjects('circle');
     $.each(canvas_stars, function(i,v) {
-        if (v.get('type') == "circle" && v.get('radius') == 5) {
+         if (v.get('type') == "circle" && v.get('radius') == 5) {
             cmd_data.points= cmd_data.points + v.left.toString() + "," + v.top.toString() + "|";
-            console.log("POINT ADDED")
-            console.log(v)
          }
     }); 
 
