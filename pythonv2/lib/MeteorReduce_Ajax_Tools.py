@@ -375,6 +375,8 @@ def distort_xy_new(sx,sy,ra,dec,RA_center, dec_center, x_poly, y_poly, x_res, y_
    return(new_x,new_y)
 
 def get_catalog_stars(cal_params):
+    # Debug
+   cgitb.enable()    
    
    catalog_stars = []
    possible_stars = 0
