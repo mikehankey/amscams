@@ -380,14 +380,14 @@ def convert_encoding(data, new_coding = 'UTF-8'):
   
    encoding = chardet.detect(data)['encoding'] 
    
+   data = bytes(data, 'utf-8')
+
    print("<br/>DATA<br/>")
    print(str(data))
    print('<br/>')
    print("ENCODING :" +  encoding)
-   print('<br/>')
-   print('<br/>')
-   
-   b'\xce\xb1CMa'.decode(new_coding)
+   print('<br/>') 
+    
 
    #if new_coding.upper() != encoding.upper():
    print("<br/>WE TRY TO ENCODE") 
