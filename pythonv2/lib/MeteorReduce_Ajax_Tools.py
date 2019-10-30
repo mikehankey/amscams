@@ -375,6 +375,15 @@ def distort_xy_new(sx,sy,ra,dec,RA_center, dec_center, x_poly, y_poly, x_res, y_
    #print("DENIS:", sx,sy,new_x,new_y, sx-new_x, sy-new_y)
    return(new_x,new_y)
 
+# Encode string to UTF8
+def convert_encoding(data, new_coding = 'UTF-8'):
+  encoding = cchardet.detect(data)['encoding']
+
+  if new_coding.upper() != encoding.upper():
+    data = data.decode(encoding, data).encode(new_coding)
+
+  return data
+
 def get_catalog_stars(cal_params):
     # Debug
    cgitb.enable()    
@@ -404,21 +413,15 @@ def get_catalog_stars(cal_params):
       
       if(bname):
          print("<br/>BNAME ")
-         print(bname)
-         print("<br/>ENCODING ")
-         print(chardet.detect(bname)['encoding'])
-         encod = chardet.detect(bname)['encoding']
+         print(bname) 
          print("<br/>DECODED")
-         print(bname.decode(encod))
+         print(convert_encoding(bname))
 
       if(cname):
          print("<br/>CNAME ")
-         print(cname)
-         print("<br/>ENCODING ")
-         print(chardet.detect(cname)['encoding'])
-         encod = chardet.detect(cname)['encoding']
+         print(cname) 
          print("<br/>DECODED")
-         print(cname.decode(encod))
+         print(convert_encoding(cname))
 
       
  
