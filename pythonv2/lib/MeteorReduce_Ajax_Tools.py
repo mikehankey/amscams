@@ -384,12 +384,14 @@ def convert_encoding(data, new_coding = 'UTF-8'):
   print("<br/>ENCODING " + str(encoding))
 
   if new_coding.upper() != encoding.upper():
-   print("WE TRY TO ENCODE") 
+   print("<br/>WE TRY TO ENCODE") 
    try:
       data = data.decode(encoding)
       data = data.encode(new_coding)
    except UnicodeDecodeError:
       print("ERROR")
+
+  print("<br/>************************" +  data + "********************<br/>")
   return data
 
 def get_catalog_stars(cal_params):
