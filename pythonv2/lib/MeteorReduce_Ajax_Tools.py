@@ -409,7 +409,7 @@ def get_catalog_stars(cal_params):
          name =  bname
       else:
          print("<br/>dcname<br/>")
-         name = cname  
+         name = cname.decode('UTF-8')  
 
       print("<br/>name ****" + str(name) + "*******<br/><br/>")
 
