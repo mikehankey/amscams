@@ -2,7 +2,7 @@
 
 
 from lib.Video_Tools_cv_pos import *
-from PIL import ImageFont, ImageDraw, Image
+from PIL import ImageFont, ImageDraw, Image, ImageChops
 from lib.VIDEO_VARS import *
 from lib.UtilLib import calc_dist,find_angle, best_fit_slope_and_intercept
 from lib.MeteorTests import test_objects
@@ -167,14 +167,14 @@ def find_blob_center(fn, frame,bx,by,size,x_dir_mod,y_dir_mod):
          cv2.circle(thresh_img,(mx,my), 1, (0,0,255), 1)
          #cv2.imshow('cnt2', cnt_img)
          #cv2.imshow('cnt', thresh_img)
-         #cv2.waitKey(0)
+         #cv2.waitKey(10)
          return(int(blob_x), int(blob_y),max_val,int(blob_w),int(blob_h))
       else:
          desc = str(fn) + "NF!"
          cv2.putText(thresh_img, desc,  (3,10), cv2.FONT_HERSHEY_SIMPLEX, .4, (255, 255, 255), 1)
          #cv2.imshow('cnt2', cnt_img)
          #cv2.imshow('cnt', thresh_img)
-         #cv2.waitKey(0)
+         #cv2.waitKey(10)
          return(int(bx), int(by),max_val,10,10)
 
 
@@ -326,11 +326,21 @@ def get_station_id(video_file):
       if "AMS" in t:
          station_id = t 
          return(station_id)
+   else:
+      return("AMS1")
 
-def gray_frames(frames):
+def make_gray_frames(frames):
    gray_frames = []
    for frame in frames:
       gray_cnt = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
+      gray_frames.append(gray_cnt)
+   return(gray_frames)
+
+def make_small_gray_frames(frames):
+   gray_frames = []
+   for frame in frames:
+      gray_cnt = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
+      gray_cnt = cv2.resize(gray_cnt, (360,200))
       gray_frames.append(gray_cnt)
    return(gray_frames)
 
@@ -418,7 +428,7 @@ def detect_motion_in_frames(subframes, video_file):
       thresh_obj = cv2.dilate(threshold.copy(), None , iterations=4)
       thresh_obj = cv2.convertScaleAbs(thresh_obj)
       cv2.imshow('p', thresh_obj)
-      cv2.waitKey(0)
+      cv2.waitKey(10)
       cnt_res = cv2.findContours(thresh_obj.copy(), cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
       if len(cnt_res) == 3:
          (_, cnts, xx) = cnt_res
@@ -670,7 +680,7 @@ def show_video(frames, meteor_objects, metframes):
       desc = str(fn)
       #cv2.putText(show_frame, desc,  (3,10), cv2.FONT_HERSHEY_SIMPLEX, .4, (255, 255, 255), 1)
       cv2.imshow('Pepe', show_frame)
-      cv2.waitKey(0)
+      cv2.waitKey(10)
       fn = fn + 1
    return(show_frames)
 
@@ -793,7 +803,7 @@ def smooth_metframes(metframes, gray_frames):
          blob_y = metframes[fn]['blob_y']
          cv2.circle(subframe,(blob_x,blob_y), 10, (255,255,255), 1)
          cv2.imshow('pepe', subframe)
-         cv2.waitKey(0)
+         cv2.waitKey(10)
          fcc = fcc + 1
 
 
@@ -946,81 +956,280 @@ def reduce_acl(this_poly, metframes,metconf,frames,mode=0,show=0,key_field = "")
    else:
       return(np.mean(err), metframes)
 
-
-video_file = sys.argv[1]
-
-station_id = get_station_id(video_file)
-hd_datetime, hd_cam, hd_date, hd_y, hd_m, hd_d, hd_h, hd_M, hd_s = convert_filename_to_date_cam(video_file)
-possible_cal_files = get_cal_params(video_file, station_id)
-json_conf = load_json_conf(station_id)
-frames = load_video_frames(video_file, json_conf, 0, 0, [], 1)
-gray_frames = gray_frames(frames)
-detect_info = {}
-
-#objects = check_for_motion2(gray_frames, video_file,hd_cam, json_conf,0)
-json_file = video_file.replace(".mp4", ".json")
-manual_file = json_file.replace(".json", "-man.json")
-if cfe(manual_file) == 1:
-   manual_fixes = load_json_file(manual_file)
-else:
-   manual_fixes = {}
-   manual_fixes['fixes'] = []
-
-if cfe(json_file) == 0:
-   bp_frame_data, subframes = bp_detect(frames,gray_frames,video_file)
-   cnt_frame_data = detect_motion_in_frames(gray_frames, video_file)
-   detect_info['bp_frame_data'] = bp_frame_data
-   detect_info['cnt_frame_data'] = cnt_frame_data
-   save_json_file(json_file, detect_info)
-else:
-   detect_info = load_json_file(json_file)
-   bp_frame_data = detect_info['bp_frame_data']
-   cnt_frame_data = detect_info['cnt_frame_data']
+# Notes:
+# Pass in video file to get a detection and reduction
 
 
-objects = find_cnt_objects(cnt_frame_data)
+def flex_detect(video_file):
+   station_id = get_station_id(video_file)
+   hd_datetime, hd_cam, hd_date, hd_y, hd_m, hd_d, hd_h, hd_M, hd_s = convert_filename_to_date_cam(video_file)
+   possible_cal_files = get_cal_params(video_file, station_id)
+   json_conf = load_json_conf(station_id)
+   frames = load_video_frames(video_file, json_conf, 0, 0, [], 0)
+   gray_frames = make_gray_frames(frames)
+   detect_info = {}
 
-meteor_objects = []
+   json_file = video_file.replace(".mp4", ".json")
+   manual_file = json_file.replace(".json", "-man.json")
+   if cfe(manual_file) == 1:
+      manual_fixes = load_json_file(manual_file)
+   else:
+      manual_fixes = {}
+      manual_fixes['fixes'] = []
 
-for obj in objects:
-   if len(objects[obj]['oxs']) > 3:
-      one_dir_test_result = one_dir_test(objects[obj])
-      dist_test_result = dist_test(objects[obj])
-      gap_test_result = gap_test(objects[obj])
-
-      if one_dir_test_result == 1 and dist_test_result == 1 and gap_test_result == 1:
-         print(obj, objects[obj])
-         meteor_objects.append(objects[obj])
-
-   if len(meteor_objects) == 0:
-      print("No meteor objects.")
-      for obj in objects:
-         print(obj, objects[obj])
+   if cfe(json_file) == 0:
+      bp_frame_data, subframes = bp_detect(frames,gray_frames,video_file)
+      cnt_frame_data = detect_motion_in_frames(gray_frames, video_file)
+      detect_info['bp_frame_data'] = bp_frame_data
+      detect_info['cnt_frame_data'] = cnt_frame_data
+      save_json_file(json_file, detect_info)
+   else:
+      detect_info = load_json_file(json_file)
+      bp_frame_data = detect_info['bp_frame_data']
+      cnt_frame_data = detect_info['cnt_frame_data']
 
 
-metframes = make_metframes(meteor_objects )
-metframes = smooth_metframes(metframes, gray_frames)
+   objects = find_cnt_objects(cnt_frame_data)
 
-hdm_x = 1920 / 1280 
-hdm_y = 1080 / 720
-# apply manual corects
-for fix in manual_fixes['fixes']:
-   fix_fn = fix['fn']  
-   fix_x = int(fix['x'] * hdm_x)
-   fix_y = int(fix['y'] * hdm_y)
+   meteor_objects = []
+
+   for obj in objects:
+      if len(objects[obj]['oxs']) > 3:
+         one_dir_test_result = one_dir_test(objects[obj])
+         dist_test_result = dist_test(objects[obj])
+         gap_test_result = gap_test(objects[obj])
+
+         if one_dir_test_result == 1 and dist_test_result == 1 and gap_test_result == 1:
+            print(obj, objects[obj])
+            meteor_objects.append(objects[obj])
+
+      if len(meteor_objects) == 0:
+         print("No meteor objects.")
+         for obj in objects:
+            print(obj, objects[obj])
+
+
+   metframes = make_metframes(meteor_objects )
+   metframes = smooth_metframes(metframes, gray_frames)
+
+   hdm_x = 1920 / 1280 
+   hdm_y = 1080 / 720
+   # apply manual corects
+   for fix in manual_fixes['fixes']:
+      fix_fn = fix['fn']  
+      fix_x = int(fix['x'] * hdm_x)
+      fix_y = int(fix['y'] * hdm_y)
  
 
-   metframes[fix_fn]['blob_x'] = fix_x
-   metframes[fix_fn]['blob_y'] = fix_y
-   print("Fixing ", fix_fn)
+      metframes[fix_fn]['blob_x'] = fix_x
+      metframes[fix_fn]['blob_y'] = fix_y
+      print("Fixing ", fix_fn)
 
 
-print("START METFRAMES", len(metframes))
-for fn in metframes:
-   print(fn, metframes[fn])
-print("END METFRAMES")
-show_frames = show_video(frames, meteor_objects, metframes)
-marked_video_file = video_file.replace(".mp4", "-pub.mp4")
-remaster(show_frames, marked_video_file, station_id,meteor_objects[0])
+   print("START METFRAMES", len(metframes))
+   for fn in metframes:
+      print(fn, metframes[fn])
+   print("END METFRAMES")
+   show_frames = show_video(frames, meteor_objects, metframes)
+   marked_video_file = video_file.replace(".mp4", "-pub.mp4")
+   remaster(show_frames, marked_video_file, station_id,meteor_objects[0])
+
+def quick_scan(video_file):
+   stack_file = video_file.replace(".mp4", "-stacked.png")
+   if cfe(stack_file) == 1:
+      print("Already done this.")
+      return()
+   cm = 0
+   no_mo = 0
+   event = []
+   bright_events = []
+   station_id = get_station_id(video_file)
+   valid_events = []
+   print("STATION:", station_id)
+   hd_datetime, hd_cam, hd_date, hd_y, hd_m, hd_d, hd_h, hd_M, hd_s = convert_filename_to_date_cam(video_file)
+
+   json_conf = load_json_conf(station_id)
+   frames = load_frames_fast(video_file, json_conf, 0, 0, [], 0,[360,200])
+   #gray_frames = make_small_gray_frames(frames)
+   stacked_frame = stack_frames_fast(frames)
+
+   cv2.imwrite(stack_file, stacked_frame) 
+   bp_frame_data, subframes = bp_detect(frames,frames,video_file)
+   bin_days = []
+   bin_events = []
+   bin_avgs = []
+   bin_sums = []
+   for fn in bp_frame_data:
+      bin_days.append(fn)
+      bin_avgs.append(bp_frame_data[fn]['avg_val'])
+      bin_sums.append(bp_frame_data[fn]['sum_val'])
+      bin_events.append(bp_frame_data[fn]['max_val'])
+      if len(bin_sums) < 100:
+         running_sum = np.median(bin_sums)
+      else:
+         running_sum = np.median(bin_sums[-99:])
+
+      if bp_frame_data[fn]['sum_val'] > running_sum * 2:
+         #print("DETECT:", running_sum, fn, bp_frame_data[fn]['max_val'], bp_frame_data[fn]['avg_val'], bp_frame_data[fn]['sum_val'])
+         #cv2.imshow('pepe', frames[fn])
+         #cv2.waitKey(80)
+         event.append(fn)
+         cm = cm + 1
+         no_mo = 0
+      else:
+         #print("NONE:", running_sum, fn, bp_frame_data[fn]['max_val'], bp_frame_data[fn]['avg_val'], bp_frame_data[fn]['sum_val'])
+         no_mo = no_mo + 1
+      if cm >= 3 and no_mo >= 5:
+         bright_events.append(event)
+         cm = 0
+         event = []
+      if no_mo >= 5:
+         cm = 0
+         event = []
+
+     
+
+   import matplotlib
+   matplotlib.use('Agg')
+   import matplotlib.pyplot as plt
+   #fig = plt.figure()
+   #plt.plot(bin_days,bin_events, bin_avgs, bin_sums)
+   plt.plot(bin_days,bin_sums)
+   #plt.show()
+   curve_file = "figs/detect.png"
+   plt.savefig(curve_file)
+   if len(bright_events) > 0:
+      for event in bright_events:
+         ts_stat = []
+         fail = 0
+         for fn in range(event[0], event[-1]):
+            thresh_val = 10
+            _ , thresh_img = cv2.threshold(subframes[fn].copy(), thresh_val, 255, cv2.THRESH_BINARY)
+            thresh_sub_sum = np.sum(thresh_img)
+            if thresh_sub_sum > 0:
+               #print("THRESH SUM:", fn, thresh_sub_sum)
+               ts_stat.append(fn)
+         if len(ts_stat) < 3:
+            print("Not a valid event, just noise.")
+            fail = 1
+         else:
+            print("Possible event, Frames above thresh.", len(ts_stat))
+            elp = ts_stat[-1] - ts_stat[0]
+            
+            ratio = len(ts_stat) / elp
+            if ratio < .6:
+               print("Thresh hit to elp frame ratio to low. Not valid event. ", elp, len(ts_stat), ratio)
+               fail = 1
+
+         if fail == 0: 
+         
+            print("EVENT:", event)
+            valid_events.append(event)
+   else:
+      print("No bright events found.")
+
+   if len(valid_events) > 0:
+      data_file = video_file.replace(".mp4", "-events.json")
+      event_json = {}
+      event_json['events'] = valid_events
+
+      for event in valid_events:
+         for fn in range(event[0], event[-1]):
+            cv2.imshow('pepe', frames[fn])
+            cv2.waitKey(10)
 
 
+
+      save_json_file(data_file, event_json)
+
+
+def stack_frames_fast(frames):
+   stacked_image = None
+   fc = 0
+   for frame in frames:
+      if fc % 2 == 0:
+         frame_pil = Image.fromarray(frame)
+         if stacked_image is None:
+            stacked_image = stack_stack(frame_pil, frame_pil)
+         else:
+            stacked_image = stack_stack(stacked_image, frame_pil)
+
+      fc = fc + 1
+   return(np.asarray(stacked_image))
+
+def stack_stack(pic1, pic2):
+   stacked_image=ImageChops.lighter(pic1,pic2)
+   return(stacked_image)
+
+def load_frames_fast(trim_file, json_conf, limit=0, mask=0,crop=(),color=0,resize=[]):
+   (f_datetime, cam, f_date_str,fy,fm,fd, fh, fmin, fs) = convert_filename_to_date_cam(trim_file)
+   cap = cv2.VideoCapture(trim_file)
+   masks = None
+
+   frames = []
+   frame_count = 0
+   go = 1
+   while go == 1:
+      _ , frame = cap.read()
+      if frame is None:
+         if frame_count <= 5 :
+            cap.release()
+            return(frames)
+         else:
+            go = 0
+      else:
+         if limit != 0 and frame_count > limit:
+            cap.release()
+            return(frames)
+         if len(frame.shape) == 3 and color == 0:
+            frame = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
+
+         if mask == 1 and frame is not None:
+            if frame.shape[0] == 1080:
+               hd = 1
+            else:
+               hd = 0
+            masks = get_masks(cam, json_conf,hd)
+            print("GET MASKS HD:", hd, masks)
+            frame = mask_frame(frame, [], masks, 5)
+
+         if len(crop) == 4:
+            ih,iw = frame.shape
+            x1,y1,x2,y2 = crop
+            x1 = x1 - 25
+            y1 = y1 - 25
+            x2 = x2 + 25
+            y2 = y2 + 25
+            if x1 < 0:
+               x1 = 0
+            if y1 < 0:
+               y1 = 0
+            if x1 > iw -1:
+               x1 = iw -1
+            if y1 > ih -1:
+               y1 = ih -1
+            #print("MIKE:", x1,y2,x2,y2)
+            crop_frame = frame[y1:y2,x1:x2]
+            frame = crop_frame
+         if len(resize) == 2:
+            frame = cv2.resize(frame, (resize[0],resize[1]))
+       
+
+         frames.append(frame)
+         frame_count = frame_count + 1
+   cap.release()
+   if len(crop) == 4:
+      return(frames,x1,y1)
+   else:
+      return(frames)
+
+
+
+cmd = sys.argv[1]
+video_file = sys.argv[2]
+
+if cmd == "fd" or cmd == "flex_detect":
+   flex_detect(video_file)
+
+if cmd == "qs" or cmd == "quick_scan":
+   quick_scan(video_file)
