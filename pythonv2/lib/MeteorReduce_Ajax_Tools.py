@@ -386,8 +386,8 @@ def convert_encoding(data, new_coding = 'UTF-8'):
    print("ENCODING :" +  encoding)
    print('<br/>')
    print('<br/>')
-
-   n_data = data
+   
+   b'\xce\xb1CMa'.decode(new_coding)
 
    #if new_coding.upper() != encoding.upper():
    print("<br/>WE TRY TO ENCODE") 
@@ -431,7 +431,7 @@ def get_catalog_stars(cal_params):
       if(cname): 
          print(convert_encoding(cname))
 
-      
+      sys.exit(0)
  
       dcname = cname.decode("utf-8")
       dbname = bname.decode("utf-8")
