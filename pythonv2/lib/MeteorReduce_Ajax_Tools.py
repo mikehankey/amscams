@@ -499,7 +499,8 @@ def update_cat_stars(form):
    save_json_file(meteor_red_file, meteor_red)
    
    # Return the new JSON
-   print(json.dumps(load_json_file(meteor_red)))
+   js_f = load_json_file(meteor_red)
+   print(json.dumps(js_f))
 
 
 
