@@ -408,7 +408,11 @@ def get_catalog_stars(cal_params):
 
          encoding = chardet.detect(bname)['encoding']
          print("<br/>** ENCODING " +  encoding + "<br/>")
-         
+
+         enc_name = bname.decode('iso-8859-1').encode('utf8')
+         print("ENC NAME<br/>")
+         print(enc_name)
+
          print("<br/>dbname<br/>")
          name = bname.decode('Latin-1') 
          name = name.encode('UTF-8')
