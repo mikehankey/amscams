@@ -406,13 +406,13 @@ def get_catalog_stars(cal_params):
       dcname = cname.decode("utf-8")
       dbname = bname.decode("utf-8")
       if(not dcname):
-         print("dbname<br/>")
+         print("<br/>dbname<br/>")
          name =  str(dbname).encode("utf-8")
       else:
-         print("dcname<br/>")
+         print("<br/>dcname<br/>")
          name = dcname  
 
-      print("<br/>name ****" + str(name) + "*******")
+      print("<br/>name ****" + str(name) + "*******<br/><br/>")
 
       ang_sep = angularSeparation(ra,dec,RA_center,dec_center)
       if ang_sep < fov_radius and float(mag) < 5.5:
