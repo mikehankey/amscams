@@ -399,17 +399,23 @@ def get_catalog_stars(cal_params):
    bright_stars_sorted = sorted(bright_stars, key=lambda x: x[4], reverse=False)
 
    for bname, cname, ra, dec, mag in bright_stars_sorted:
-      print("IN get_catalog_stars")
-     
+      print("IN get_catalog_stars<br/>")
 
-      dcname = cname.decode("utf-8")
-      dbname = bname.decode("utf-8")
-      if dcname == "":
-         name = bname
+      if(cname is not None):
+         print("CNAME<br/>")
+         name = cname.decode("utf-8")
       else:
-         name = cname
+         print("bname<br/>")
+         name = bname.decode("utf-8")
 
-      print("name " + str(name))
+      #dcname = cname.decode("utf-8")
+      #dbname = bname.decode("utf-8")
+      #if dcname == "":
+      #   name = bname
+      #else:
+      #   name = cname
+
+      print("<br/>name " + str(name))
 
       ang_sep = angularSeparation(ra,dec,RA_center,dec_center)
       if ang_sep < fov_radius and float(mag) < 5.5:
