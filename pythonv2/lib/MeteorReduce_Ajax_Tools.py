@@ -390,7 +390,7 @@ def convert_encoding(data, new_coding = 'UTF-8'):
       print("<br/>WE TRY TO ENCODE") 
       data = data.decode(encoding)
       print("DECODED " + str(data) + "<br/>")
-      data = data.encode(new_coding)
+      data = u' '.data.encode(new_coding).strip()
       print("RE ENCODED " + str(data) + "<br/>")
    
 
@@ -424,16 +424,10 @@ def get_catalog_stars(cal_params):
    for bname, cname, ra, dec, mag in bright_stars_sorted:
       print("IN get_catalog_stars<br/>")
       
-      if(bname):
-         print("<br/>BNAME ")
-         print(bname) 
-         print("<br/>DECODED")
+      if(bname): 
          print(convert_encoding(bname))
 
-      if(cname):
-         print("<br/>CNAME ")
-         print(cname) 
-         print("<br/>DECODED")
+      if(cname): 
          print(convert_encoding(cname))
 
       
