@@ -388,7 +388,8 @@ def convert_encoding(data, new_coding = 'UTF-8'):
    print("ENCODING :" +  encoding)
    print('<br/>') 
    print("UTF-8")
-   print(str(data).decode('UTF-8')) 
+   d = str(data)
+   print(d.decode('UTF-8')) 
 
    #if new_coding.upper() != encoding.upper():
    print("<br/>WE TRY TO ENCODE") 
