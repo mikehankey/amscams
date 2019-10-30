@@ -425,7 +425,12 @@ def update_cat_stars(form):
    cal_params = None                                # ????
    meteor_red_file = form.getvalue("json_file")     
    hd_image = cv2.imread(hd_stack_file, 0)
-   
+
+
+   print("IN UPDATE CAT STARS")
+   print(star_points)
+
+
    # We parse the JSON
    if cfe(meteor_red_file) == 1:
       meteor_red = load_json_file(meteor_red_file)
@@ -515,7 +520,7 @@ def update_cat_stars(form):
    # Return the new JSON
    print(json.dumps(load_json_file(meteor_red)))
 
-   
+
 
 def XYtoRADec(img_x,img_y,timestamp_file,cp):
 
