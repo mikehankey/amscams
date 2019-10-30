@@ -405,23 +405,14 @@ def get_catalog_stars(cal_params):
       
       if(not cname):
 
-         print("BNAME<br/>" + str(bname))
-         print("<br/>BNAME C<br/>")
-         
+         print("BNAME: " + str(bname) + "<br/>")
+
 
          encoding = chardet.detect(bname)['encoding']
-         print(bname.decode(encoding).encode('utf-8'))
-
-
-         print("<br/>** ENCODING " +  encoding + "<br/>")
-
-         enc_name = str(bname.decode(encoding)).encode('UTF-8') 
-         print("ENC NAME<br/>")
-         print(str(enc_name))
-
-         #enc_name = enc_name.decode('UTF-8')
-         #print("<br/>ENC NAME2<br/>")
-         #print(str(enc_name).encode('UTF-8'))
+         print("ORG ENCODING " + encoding  + "<br/>")
+         
+         
+         print(str(bname.decode(encoding))) 
          sys.exit(0)
 
          
