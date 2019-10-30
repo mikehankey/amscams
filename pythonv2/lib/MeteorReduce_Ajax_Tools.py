@@ -289,7 +289,7 @@ def pin_point_stars(image, points):
          y = y + my
          star_points.append((x,y))
       except:
-         print("PROB!", image.shape, x1,y1, x2,y2, "<BR>")
+         #print("PROB!", image.shape, x1,y1, x2,y2, "<BR>")
          missed_star = 1
    return(star_points)
 
@@ -415,6 +415,9 @@ def get_catalog_stars(cal_params):
 
 # Update Catalog Stars
 def update_cat_stars(form): 
+
+   # Debug
+   cgitb.enable()    
 
    # Get the values from the form
    star_points = []
