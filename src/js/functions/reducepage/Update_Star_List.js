@@ -13,6 +13,8 @@ function update_stars_on_canvas_and_table(json_resp) {
    }
 
     var table_tbody_html = '';
+
+    console.log(json_resp);
  
     if(typeof json_resp['calib']['device']['total_res_deg']!=='undefined' && typeof json_resp['calib']['device']['total_res_px']!=='undefined') {
         // Updating star table info 
@@ -125,8 +127,7 @@ function update_star_list() {
     // Get Stars from canvas
     var canvas_stars = canvas.getObjects();
     $.each(canvas_stars, function(i,v) {
-         if (v.radius == CIRCLE_RADIUS) {
-            console.log("STAR FOUND");
+         if (v.radius == CIRCLE_RADIUS) { 
             cmd_data.points= cmd_data.points + v.left.toString() + "," + v.top.toString() + "|";
          }
     }); 
