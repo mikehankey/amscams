@@ -446,9 +446,7 @@ def update_cat_stars(form):
             star_points.append((x,y))
     
    star_points = pin_point_stars(hd_image, star_points)
-
-   # ok we have a good set of points now. 
-   print("POINTS:", star_points,"<BR>");
+ 
  
    # get the center ra,dec based on the center_az,el and the current timestamp from the file 
    ra,dec = AzEltoRADec(meteor_red['calib'], video_file)
@@ -465,6 +463,9 @@ def update_cat_stars(form):
       dcname = str(name.decode("utf-8"))
       dbname = dcname.encode("utf-8")
       my_cat_stars.append((dcname,mag,ra,dec,new_cat_x,new_cat_y)) 
+
+
+   print(my_cat_stars)
 
    my_close_stars = []
    for ix,iy in star_points:
