@@ -412,7 +412,7 @@ def get_catalog_stars(cal_params):
          print("ORG ENCODING " + encoding  + "<br/>")
          
          
-         print(bname.decode("UTF-8")) 
+         print(bname.encode('UTF-8').decode(encoding)) 
          sys.exit(0)
 
          
