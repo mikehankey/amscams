@@ -426,34 +426,14 @@ def update_cat_stars(form):
    meteor_red_file = form.getvalue("json_file")     
    hd_image = cv2.imread(hd_stack_file, 0)
 
-
-   print("IN UPDATE CAT STARS")
-   print(points)
-
-
    # We parse the JSON
    if cfe(meteor_red_file) == 1:
       meteor_red = load_json_file(meteor_red_file)
    else:
       return "error JSON"
-
-   # check if there are zero stars selected and zero in cat_img
-   #if points is None : 
-      # I guess this function automatically find the stars
-      #cmd = "cd /home/ams/amscams/pythonv2/; ./autoCal.py imgstars " + video_file + " > /mnt/ams2/tmp/trs.txt"
-      #os.system(cmd)
-      #print(cmd)
+ 
 
    meteor_mode = 0  #???
-
-   #print("<PRE>", meteor_red)
-
-   #if "calib" in meteor_red:
-   #   if "stars" in meteor_red['calib']:
-   #      print("CAT STARS FOUND!", len(meteor_red['calib']['stars']), "<BR>") 
-   #   else: 
-   #      print(meteor_red['calib']) 
- 
    
    temps = points.split("|")
    for temp in temps:
@@ -464,7 +444,12 @@ def update_cat_stars(form):
          x,y = x*2,y*2
          if x >0 and y > 0 and x<HD_W and y< HD_H:
             star_points.append((x,y))
-   #print("POINTS:", star_points,"<BR>");
+   
+   
+   print("POINTS:", star_points,"<BR>");
+   
+   
+   
    star_points = pin_point_stars(hd_image, star_points)
 
    # ok we have a good set of points now. 
