@@ -378,15 +378,18 @@ def distort_xy_new(sx,sy,ra,dec,RA_center, dec_center, x_poly, y_poly, x_res, y_
 # Encode string to UTF8
 def convert_encoding(data, new_coding = 'UTF-8'):
 
-  data = data.encode(new_coding) 
-  encoding = chardet.detect(data)['encoding']
+   if(data[0]=='b'):
+      print("STARTS WITH B")
 
-  print("IN convert_encoding<br/>")
-  print("<br/>DATA " + str(data))
-  print("<br/>ENCODING " + str(encoding))
 
-  if new_coding.upper() != encoding.upper():
-   print("<br/>WE TRY TO ENCODE") 
+   encoding = chardet.detect(data)['encoding']
+
+   print("IN convert_encoding<br/>")
+   print("<br/>DATA " + str(data))
+   print("<br/>ENCODING " + str(encoding))
+
+   if new_coding.upper() != encoding.upper():
+      print("<br/>WE TRY TO ENCODE") 
    
    data = data.decode(encoding)
    print("DECODED " + str(data) + "<br/>")
@@ -394,8 +397,8 @@ def convert_encoding(data, new_coding = 'UTF-8'):
    print("RE ENCODED " + str(data) + "<br/>")
    
 
-  print("<br/>************************" +  str(data) + "********************<br/>")
-  return data
+   print("<br/>************************" +  str(data) + "********************<br/>")
+   return data
 
 def get_catalog_stars(cal_params):
     # Debug
