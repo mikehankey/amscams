@@ -6,6 +6,7 @@ import cv2
 import numpy as np
 import ephem 
 import math
+import lib.brightstardata as bsd
 
 from lib.FileIO import cfe, load_json_file, save_json_file
 from lib.REDUCE_VARS import *
@@ -14,7 +15,7 @@ from lib.MeteorReduce_Calib_Tools import XYtoRADec
 from lib.Old_JSON_converter import get_analysed_name
 from lib.UtilLib import convert_filename_to_date_cam, angularSeparation, date_to_jd
 from lib.CalibLib import find_close_stars
-import lib.brightstardata as bsd
+from lib.VIDEO_VARS import HD_W, HD_H
 
 
 mybsd = bsd.brightstardata()
@@ -377,8 +378,9 @@ def get_catalog_stars(cal_params):
    
    catalog_stars = []
    possible_stars = 0
-   img_w = 1920
-   img_h = 1080
+ 
+   img_w = HD_W
+   img_h = HD_H
    RA_center = float(cal_params['device']['center']['ra']) 
    dec_center = float(cal_params['device']['center']['dec']) 
    x_poly = cal_params['device']['poly']['x'] 
@@ -390,10 +392,7 @@ def get_catalog_stars(cal_params):
    fov_h = img_h / F_scale
    fov_radius = np.sqrt((fov_w/2)**2 + (fov_h/2)**2)
 
-   pos_angle_ref = cal_params['device']['angle'] 
-   #x_res = image_w
-   #y_res = image_h
-
+   pos_angle_ref = cal_params['device']['angle']  
 
    bright_stars_sorted = sorted(bright_stars, key=lambda x: x[4], reverse=False)
 
@@ -415,8 +414,8 @@ def get_catalog_stars(cal_params):
    return(catalog_stars)
 
 # Update Catalog Stars
-def update_cat_stars(form):
-   #print("UPDATE CAT STARS!<BR>") 
+def update_cat_stars(form): 
+
    # Get the values from the form
    star_points = []
    hd_stack_file = form.getvalue("hd_stack_file")   # Stack
@@ -449,7 +448,7 @@ def update_cat_stars(form):
    #      print("CAT STARS FOUND!", len(meteor_red['calib']['stars']), "<BR>") 
    #   else: 
    #      print(meteor_red['calib']) 
-
+ 
    
    temps = points.split("|")
    for temp in temps:
@@ -458,7 +457,7 @@ def update_cat_stars(form):
          x,y = int(float(x)),int(float(y))
          x,y = int(x)+5,int(y)+5
          x,y = x*2,y*2
-         if x >0 and y > 0 and x<1920 and y< 1080:
+         if x >0 and y > 0 and x<HD_W and y< HD_H:
             star_points.append((x,y))
    #print("POINTS:", star_points,"<BR>");
    star_points = pin_point_stars(hd_image, star_points)
@@ -471,9 +470,8 @@ def update_cat_stars(form):
    ra,dec = AzEltoRADec(meteor_red['calib'], video_file)
    meteor_red['calib']['device']['center']['ra'] = ra
    meteor_red['calib']['device']['center']['dec'] = dec
-   meteor_red['calib']['device']['img_dim'] = [1920,1080]
-
-
+   meteor_red['calib']['device']['img_dim'] = [HD_W,HD_H]
+ 
    cat_stars = get_catalog_stars(meteor_red['calib'])
 
    my_cat_stars = []
@@ -482,8 +480,7 @@ def update_cat_stars(form):
    for name,mag,ra,dec,new_cat_x,new_cat_y in cat_stars :
       dcname = str(name.decode("utf-8"))
       dbname = dcname.encode("utf-8")
-      my_cat_stars.append((dcname,mag,ra,dec,new_cat_x,new_cat_y))
-   #print("<HR>", len(my_cat_stars), " catalog stars found inside this FOV.<BR>")
+      my_cat_stars.append((dcname,mag,ra,dec,new_cat_x,new_cat_y)) 
 
    my_close_stars = []
    for ix,iy in star_points:
@@ -491,8 +488,7 @@ def update_cat_stars(form):
       if len(close_stars) == 1:
          name,mag,ra,dec,cat_x,cat_y,scx,scy,cat_star_dist = close_stars[0]
          new_x, new_y, img_ra,img_dec, img_az, img_el = XYtoRADec(ix,iy,video_file,meteor_red['calib'])
-
-
+ 
          new_star = {}
          new_star['name'] = name.decode("unicode_escape") 
          new_star['mag'] = mag
@@ -516,8 +512,10 @@ def update_cat_stars(form):
    response = {}
    response['res'] = True
    response['msg'] = "Stars updated"
-   print(json.dumps(response))
+   
+   # Update JSON File
    save_json_file(meteor_red_file, meteor_red)
+   print(json.dumps(response))
 
 def XYtoRADec(img_x,img_y,timestamp_file,cp):
 
