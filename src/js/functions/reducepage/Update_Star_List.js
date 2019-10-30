@@ -12,9 +12,7 @@ function update_stars_on_canvas_and_table(json_resp) {
       return; 
    }
 
-    var table_tbody_html = '';
-
-    console.log(json_resp);
+    var table_tbody_html = ''; 
  
     if(typeof json_resp['calib']['device']['total_res_deg']!=='undefined' && typeof json_resp['calib']['device']['total_res_px']!=='undefined') {
         // Updating star table info 
@@ -35,9 +33,10 @@ function update_stars_on_canvas_and_table(json_resp) {
                 fill: 'rgba(255,255,255,.75)',
                 selectable: false
             })); 
-            $('#str_cnt').text(cat_stars.length);
         }
     }
+
+    $('#str_cnt').text(cat_stars.length);
 
     // Table - tbody (in #stars-tab) & draw on canvas
     $.each(cat_stars,function(i,v) {
