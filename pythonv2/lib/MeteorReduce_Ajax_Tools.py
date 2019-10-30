@@ -375,25 +375,7 @@ def distort_xy_new(sx,sy,ra,dec,RA_center, dec_center, x_poly, y_poly, x_res, y_
    #print("DENIS:", sx,sy,new_x,new_y, sx-new_x, sy-new_y)
    return(new_x,new_y)
 
-# Encode string to UTF8
-def convert_encoding(data, new_coding = 'UTF-8'):
-  
-   encoding = chardet.detect(data)['encoding'] 
-    
-   print("<br/>DATA<br/>")
-   print(str(data)) 
-   print('<br/>')
-   print("ENCODING :" +  encoding)
-   print('<br/>') 
-   print("UTF-8") 
-
-   print(bytes(data, 'UTF-8'))
-
-   dd = data.decode('UTF-8')
-   print(dd) 
-   print("RE ENCODED " + str(n_data) + "<br/>")
-    
-   return n_data
+ 
 
 def get_catalog_stars(cal_params):
     # Debug
@@ -420,19 +402,7 @@ def get_catalog_stars(cal_params):
    bright_stars_sorted = sorted(bright_stars, key=lambda x: x[4], reverse=False)
 
    for bname, cname, ra, dec, mag in bright_stars_sorted:
-      print("IN get_catalog_stars<br/>")
-      print("BNAME ")
-      print(str(bname))
-      print("<br/>")
       
-      if(bname): 
-         print(convert_encoding(bname))
-
-      if(cname): 
-         print(convert_encoding(cname))
-
-      sys.exit(0)
- 
       dcname = cname.decode("utf-8")
       dbname = bname.decode("utf-8")
       if(not dcname):
