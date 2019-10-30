@@ -391,7 +391,7 @@ def convert_encoding(data, new_coding = 'UTF-8'):
    except UnicodeDecodeError:
       print("ERROR")
 
-  print("<br/>************************" +  data + "********************<br/>")
+  print("<br/>************************" +  str(data) + "********************<br/>")
   return data
 
 def get_catalog_stars(cal_params):
