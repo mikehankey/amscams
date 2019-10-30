@@ -125,7 +125,7 @@ function update_star_list() {
     // Get Stars from canvas
     var canvas_stars = canvas.getObjects();
     $.each(canvas_stars, function(i,v) {
-         if (v.type == "star_info" && v.radius == CIRCLE_RADIUS) {
+         if (v.radius == CIRCLE_RADIUS) {
             console.log("STAR FOUND");
             cmd_data.points= cmd_data.points + v.left.toString() + "," + v.top.toString() + "|";
          }
