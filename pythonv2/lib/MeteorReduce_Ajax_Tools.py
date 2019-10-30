@@ -382,8 +382,7 @@ def convert_encoding(data, new_coding = 'UTF-8'):
 
    print("<br/>IN convert_encoding<br/>")
    print("<br/>DATA " + str(data))
-   print("<br/>ENCODING " + str(encoding))
-   data = str(data)
+   print("<br/>ENCODING " + str(encoding)) 
    toto =  data.decode(encoding)
    print("TOTO " + str(toto))
 
