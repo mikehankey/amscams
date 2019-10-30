@@ -6,7 +6,7 @@ import cv2
 import numpy as np
 import ephem 
 import math
-import cchardet
+import chardet
 import lib.brightstardata as bsd
 
 from lib.FileIO import cfe, load_json_file, save_json_file
@@ -406,9 +406,9 @@ def get_catalog_stars(cal_params):
     
       if(not cname):
 
-         encoding = cchardet.detect(bname)['encoding']
+         encoding = chardet.detect(bname)['encoding']
          print("<br/>** ENCODING " +  encoding + "<br/>")
-
+         
          print("<br/>dbname<br/>")
          name = bname.decode('Latin-1') 
          name = name.encode('UTF-8')
