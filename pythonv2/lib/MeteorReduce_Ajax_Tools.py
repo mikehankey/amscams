@@ -428,7 +428,7 @@ def update_cat_stars(form):
 
 
    print("IN UPDATE CAT STARS")
-   print(star_points)
+   print(points)
 
 
    # We parse the JSON
