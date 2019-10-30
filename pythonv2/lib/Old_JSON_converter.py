@@ -192,9 +192,9 @@ def get_new_stars(json_f):
             "ra": float(star[2]),
             "dec": float(star[3]),
             "dist_px": float(star[6]),
-            "i_pos": [float(star[7]),float(star[8])],
-            "cat_dist_pos": [float(star[11]),float(star[12])],
-            "cat_und_pos": [float(star[13]),float(star[14])]
+            "i_pos": [float(star[13]),float(star[14])],
+            "cat_dist_pos": [float(star[7]),float(star[8])],
+            "cat_und_pos": [float(star[11]),float(star[12])]
             })
 
    return {"stars": new_stars}
