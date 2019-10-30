@@ -385,8 +385,10 @@ def convert_encoding(data, new_coding = 'UTF-8'):
 
   if new_coding.upper() != encoding.upper():
    print("WE TRY TO ENCODE")
+   .decode('iso-8859-1').encode('utf8')
    try:
-      data = data.decode(encoding, data).encode(new_coding)
+      data = data.decode(encoding)
+      data = data.encode(new_coding)
    except UnicodeDecodeError:
       print("ERROR")
   return data
