@@ -400,27 +400,22 @@ def get_catalog_stars(cal_params):
    pos_angle_ref = cal_params['device']['angle']  
 
    bright_stars_sorted = sorted(bright_stars, key=lambda x: x[4], reverse=False)
-
-
-   print(str(bright_stars_sorted))
-   sys.exit(0)
-
+ 
    for bname, cname, ra, dec, mag in bright_stars_sorted:
       
-    
       if(not cname):
 
          encoding = chardet.detect(bname)['encoding']
          print("<br/>** ENCODING " +  encoding + "<br/>")
 
-         enc_name = str(bname.decode(encoding)).encode('UTF-8')
+         enc_name = str(bname.decode(encoding)) 
          print("ENC NAME<br/>")
          print(enc_name)
 
-         enc_name = enc_name.decode('UTF-8')
-         print("<br/>ENC NAME2<br/>")
-         print(str(enc_name).encode('UTF-8'))
- 
+         #enc_name = enc_name.decode('UTF-8')
+         #print("<br/>ENC NAME2<br/>")
+         #print(str(enc_name).encode('UTF-8'))
+         sys.exit(0)
 
          
       else:
