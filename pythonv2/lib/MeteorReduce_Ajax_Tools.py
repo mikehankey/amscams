@@ -389,12 +389,12 @@ def convert_encoding(data, new_coding = 'UTF-8'):
 
    n_data = data
 
-   if new_coding.upper() != encoding.upper():
-      print("<br/>WE TRY TO ENCODE") 
-      n_data = data.decode(encoding)
-      print("DECODED " + str(n_data) + "<br/>")
-      n_data =  data.encode(new_coding) 
-      print("RE ENCODED " + str(n_data) + "<br/>")
+   #if new_coding.upper() != encoding.upper():
+   print("<br/>WE TRY TO ENCODE") 
+   n_data = data.decode(new_coding)
+   print("DECODED " + str(n_data) + "<br/>")
+   n_data =  data.encode(new_coding) 
+   print("RE ENCODED " + str(n_data) + "<br/>")
     
    return n_data
 
