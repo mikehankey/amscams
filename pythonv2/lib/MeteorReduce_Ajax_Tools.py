@@ -485,6 +485,7 @@ def update_cat_stars(form):
  
 
    my_close_stars = []
+   total_res_px = 0
    for ix,iy in star_points:
       close_stars = find_close_stars((ix,iy), cat_stars) 
 
@@ -497,7 +498,7 @@ def update_cat_stars(form):
          new_star['ra'] = ra
          new_star['dec'] = dec
          new_star['dist_px'] = cat_star_dist 
-
+         total_res_px = total_res_px + cat_star_dist
          # The image x,y of the star (CIRCLE)
          new_star['i_pos'] = [ix,iy]
          # The lens distorted catalog x,y position of the star  (PLUS SIGN)
@@ -510,6 +511,19 @@ def update_cat_stars(form):
 
    #print("<HR>", my_close_stars, "<HR>")
    meteor_red['calib']['stars'] = my_close_stars
+
+    # Calculate the average res error in PX then convert to degrees
+    if len(my_close_stars) > 0:
+       avg_res_px = total_res_px / len(my_close_stars)
+       avg_res_deg = avg_res_px * (meteor_red['calib']['device']['scale_px'] / 60 / 60)
+    else:
+       avg_res_px = 9999
+       avg_res_deg = 9999
+    
+    meteor_red['calib']['device']['total_res_px'] = avg_res_px
+    meteor_red['calib']['device']['total_res_deg'] = avg_res_deg
+
+
    
    # Update JSON File
    save_json_file(meteor_red_file, meteor_red)
