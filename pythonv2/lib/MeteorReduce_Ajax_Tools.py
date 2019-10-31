@@ -19,7 +19,7 @@ from lib.CalibLib import find_close_stars
 from lib.VIDEO_VARS import HD_W, HD_H
 
 
-mybsd = bsd.brightstardata()
+mybsd = bsd.decoded_brightstardata()
 bright_stars = mybsd.bright_stars
 
 
