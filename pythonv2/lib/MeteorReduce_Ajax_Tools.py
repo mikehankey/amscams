@@ -404,7 +404,8 @@ def get_catalog_stars(cal_params):
       new_na = ''
 
       for x in name:
-         new_na = new_na + ''.join(chr(ord(x))
+         print(x)
+         #new_na = new_na + ''.join(chr(ord(x))
  
       print(new_na)
       
