@@ -402,7 +402,8 @@ def get_catalog_stars(cal_params):
    bright_stars_sorted = sorted(bright_stars, key=lambda x: x[4], reverse=False)
    print("<pre>")
    for i,star in enumerate(bright_stars_sorted):
-      print(star +"<br/>")
+      print(star)
+      print("<br/>")
 
    print(bright_stars_sorted)
    print("</pre>")
