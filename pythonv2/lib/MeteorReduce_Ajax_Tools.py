@@ -406,8 +406,7 @@ def get_catalog_stars(cal_params):
       if(not cname):
          c =  str(bname)
          print("BNAME: " + str(bname) + "<br/>")
-         c = "c"
-         print(c)
+         print(type(bname))
          sys.exit(0)
          encoding = chardet.detect(bname)
          print(encoding)
