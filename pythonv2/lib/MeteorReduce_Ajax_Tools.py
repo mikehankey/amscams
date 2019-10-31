@@ -6,6 +6,7 @@ import cv2
 import numpy as np
 import ephem 
 import math
+import chardet
 import lib.brightstardata as bsd
 
 from lib.FileIO import cfe, load_json_file, save_json_file
@@ -374,8 +375,12 @@ def distort_xy_new(sx,sy,ra,dec,RA_center, dec_center, x_poly, y_poly, x_res, y_
    #print("DENIS:", sx,sy,new_x,new_y, sx-new_x, sy-new_y)
    return(new_x,new_y)
 
+ 
+
 def get_catalog_stars(cal_params):
-   
+    # Debug
+   cgitb.enable()    
+
    catalog_stars = []
    possible_stars = 0
  
@@ -395,14 +400,28 @@ def get_catalog_stars(cal_params):
    pos_angle_ref = cal_params['device']['angle']  
 
    bright_stars_sorted = sorted(bright_stars, key=lambda x: x[4], reverse=False)
-
+ 
    for bname, cname, ra, dec, mag in bright_stars_sorted:
-      dcname = cname.decode("utf-8")
-      dbname = bname.decode("utf-8")
-      if dcname == "":
-         name = bname
+      
+      if(not cname):
+
+         print("BNAME: " + str(bname) + "<br/>")
+
+
+         encoding = chardet.detect(bname)['encoding']
+         print("ORG ENCODING " + encoding  + "<br/>")
+         
+         print(str(bname).decode("utf-8"))
+         print(bname.decode("utf-8")) 
+         sys.exit(0)
+
+         
       else:
-         name = cname
+         #print("<br/>dcname<br/>")
+         name = cname.decode('UTF-8')  
+         print("CNAME " +  str(name) + "<br/>")
+
+     
 
       ang_sep = angularSeparation(ra,dec,RA_center,dec_center)
       if ang_sep < fov_radius and float(mag) < 5.5:
@@ -460,19 +479,18 @@ def update_cat_stars(form):
    my_close_stars = []
 
    for name,mag,ra,dec,new_cat_x,new_cat_y in cat_stars :
-      #dcname = str(name.decode("utf-8"))
-      dcname = str(name.encode("utf-8"))
-      #dbname = dcname.encode("utf-8")
-      my_cat_stars.append((dcname,mag,ra,dec,new_cat_x,new_cat_y)) 
+      dcname = str(name.decode("utf-8"))
+      dbname = dcname.encode("utf-8")
+      my_cat_stars.append((dbname,mag,ra,dec,new_cat_x,new_cat_y)) 
  
 
    my_close_stars = []
    for ix,iy in star_points:
       close_stars = find_close_stars((ix,iy), cat_stars) 
+
       if len(close_stars) == 1:
          name,mag,ra,dec,cat_x,cat_y,scx,scy,cat_star_dist = close_stars[0]
          new_x, new_y, img_ra,img_dec, img_az, img_el = XYtoRADec(ix,iy,video_file,meteor_red['calib'])
- 
          new_star = {}
          new_star['name'] = name.decode("unicode_escape") 
          new_star['mag'] = mag
