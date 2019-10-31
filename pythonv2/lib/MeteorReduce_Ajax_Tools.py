@@ -403,7 +403,7 @@ def get_catalog_stars(cal_params):
    for name, cons, ra, dec, mag in bright_stars_sorted:
       print(name)
       print("<br>")
-      bname = name.encode().decode()
+      bname = name.decode().encode()
       print(bname)
       print("<br>**********<br>")
       #   #print (name.encode().decode())
