@@ -409,7 +409,7 @@ def get_catalog_stars(cal_params):
          encoding = chardet.detect(bname)['encoding']
          print("ORG ENCODING " + encoding  + "<br/>")
 
-         decoded = bname.decode(encoding,'strict')
+         decoded = bname.decode('UTF-8','strict')
          print(decoded)
          #print(bname.decode("utf-8")) 
          sys.exit(0)
