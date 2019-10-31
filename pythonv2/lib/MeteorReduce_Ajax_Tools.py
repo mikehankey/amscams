@@ -400,10 +400,9 @@ def get_catalog_stars(cal_params):
    pos_angle_ref = cal_params['device']['angle']  
 
    bright_stars_sorted = sorted(bright_stars, key=lambda x: x[4], reverse=False)
-
-
-   for bname, cname, ra, dec, mag in bright_stars_sorted:
-      print(bname) 
+ 
+   for star in bright_stars_sorted:
+      print(star) 
 
    sys.exit(0)
 
