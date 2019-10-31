@@ -401,7 +401,9 @@ def get_catalog_stars(cal_params):
 
    bright_stars_sorted = sorted(bright_stars, key=lambda x: x[4], reverse=False)
    print("<pre>")
-   [x['cname'].encode('utf-8') for x in bright_stars_sorted]
+   for x in bright_stars_sorted:
+      x[1].encode('utf-8')
+    
    print(bright_stars_sorted)
    print("</pre>")
    sys.exit(0)
