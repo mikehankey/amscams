@@ -399,15 +399,16 @@ def get_catalog_stars(cal_params):
 
    pos_angle_ref = cal_params['device']['angle']  
 
-   bright_stars_sorted = sorted(bright_stars, key=lambda x: x[4], reverse=False)
-   for bname, cname, ra, dec, mag  in bright_stars_sorted :
-      #dcname = str(cname.decode("utf-8"))
-      #dbname = bname.encode("utf-8")
-      #print(dcname)
-      #print("<br/>")
-      #print(bname)
-      test = cname.encode("ascii",'xmlcharrefreplace')
-      print(test.decode('ascii') )
+    
+
+   my_cat_stars = []
+   for name,mag,ra,dec,new_cat_x,new_cat_y in bright_stars_sorted :
+      dcname = str(name.decode("utf-8"))
+      dbname = dcname.encode("utf-8")
+      my_cat_stars.append((dcname,mag,ra,dec,new_cat_x,new_cat_y))
+
+   print(my_cat_stars)
+
    sys.exit(0)
 
    for bname, cname, ra, dec, mag in bright_stars_sorted:
