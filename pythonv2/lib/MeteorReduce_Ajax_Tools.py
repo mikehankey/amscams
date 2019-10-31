@@ -406,7 +406,7 @@ def get_catalog_stars(cal_params):
       #print(dcname)
       #print("<br/>")
       #print(bname)
-      test = bname.encode("ascii",'xmlcharrefreplace')
+      test = cname.encode("ascii",'xmlcharrefreplace')
       print(test.decode('ascii') )
    sys.exit(0)
 
