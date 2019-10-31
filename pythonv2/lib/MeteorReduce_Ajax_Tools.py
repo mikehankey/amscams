@@ -403,7 +403,7 @@ def get_catalog_stars(cal_params):
    print("<pre>")
    for i,star in enumerate(bright_stars_sorted):
       bname, cname, ra, dec, mag = star
-      pc =  bname.decode('iso-8859-1') #.encode('iso-8859-1')
+      pc =  bname.decode() #.encode('iso-8859-1')
       print(pc)
       print("<br/>")
 
