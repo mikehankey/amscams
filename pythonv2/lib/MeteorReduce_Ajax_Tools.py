@@ -401,11 +401,13 @@ def get_catalog_stars(cal_params):
 
    bright_stars_sorted = sorted(bright_stars, key=lambda x: x[4], reverse=False)
    for bname, cname, ra, dec, mag  in bright_stars_sorted :
-      dcname = str(cname.decode("utf-8"))
-      dbname = bname.encode("utf-8")
-      print(dcname)
-      print("<br/>")
+      #dcname = str(cname.decode("utf-8"))
+      #dbname = bname.encode("utf-8")
+      #print(dcname)
+      #print("<br/>")
       #print(bname)
+      test = bname.encode("ascii",'xmlcharrefreplace')
+      print(test.decode('ascii') )
    sys.exit(0)
 
    for bname, cname, ra, dec, mag in bright_stars_sorted:
