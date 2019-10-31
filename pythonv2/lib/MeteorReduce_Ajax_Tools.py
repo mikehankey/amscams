@@ -403,7 +403,7 @@ def get_catalog_stars(cal_params):
    for name, cons, ra, dec, mag in bright_stars_sorted:
       new_na = ''
 
-      for x in name:
+      for x in str(name):
          print(chr(x))
          #new_na = new_na + ''.join(chr(ord(x))
  
