@@ -411,7 +411,7 @@ def get_catalog_stars(cal_params):
          print(encoding)
 
 
-         uu = bname.decode('utf8')
+         uu = str(bname).decode('utf8')
          s = uu.encode('cp1250')
          print(s)
          #['encoding']
