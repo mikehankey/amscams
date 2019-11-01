@@ -399,9 +399,10 @@ def get_catalog_stars(cal_params):
 
    pos_angle_ref = cal_params['device']['angle']  
 
-   bright_stars_sorted = sorted(bright_stars, key=lambda x: x[4], reverse=False)
+   #bright_stars_sorted = sorted(bright_stars, key=lambda x: x[4], reverse=False)
   
    bright_stars_sorted = (('αAnd','Alpheratz',   2.0971,  29.0906,  2.0 ))
+   bright_stars_sorted = sorted(bright_stars_sorted, key=lambda x: x[4], reverse=False)
 
    for bname, cname, ra, dec, mag in bright_stars_sorted:
        
