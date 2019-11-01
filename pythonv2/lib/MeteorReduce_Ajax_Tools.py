@@ -407,7 +407,10 @@ def get_catalog_stars(cal_params):
          name = cname.decode("utf-8")
       else:
          print("BNAME = >")
-         name = bname.decode("utf-8")
+         try:
+            name = bname.decode("utf-8") 
+         except Exception as e:
+            print("ERROR " + str(e) +  "<br/>")
 
       print("NAME " + name)
       print("<br/>")
