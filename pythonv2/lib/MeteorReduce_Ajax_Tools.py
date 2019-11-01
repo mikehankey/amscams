@@ -401,54 +401,17 @@ def get_catalog_stars(cal_params):
  
    bright_stars_sorted = sorted(bright_stars, key=lambda x: x[4], reverse=False)
 
-   for bname, cname, ra, dec, mag in bright_stars_sorted:
-      print("<br/>***********<br/>")
-      try:
-         #dbname = bname.decode("utf-8")
-         #dcname = cname.decode('utf-8')
-         print("DBNAME "+  bname)
-         print("<br/>")
-         print("DCNAME "+  cname)
-         print("<br/>")
-      except Exception as e:
-         print(str(e))
-         print("<br/>")
- 
-
-
-   sys.exit(0)
+  
 
    for bname, cname, ra, dec, mag in bright_stars_sorted:
-      
-      if(not cname):
-         c =  str(bname)
-         print("BNAME: " + str(bname) + "<br/>")
-         print(type(bname))
-         sys.exit(0)
-         encoding = chardet.detect(bname)
-         print(encoding)
-
-
-         uu = str(bname).decode('utf8')
-         s = uu.encode('cp1250')
-         print(s)
-         #['encoding']
-         #print("<br/>ORG ENCODING " + encoding  + "<br/>")
-
-         print("TRY DECODING")
-         decoded = bname.decode(encoding).encode('UTF-8')
-         print(decoded)
-         #print(bname.decode("utf-8")) 
-         sys.exit(0)
-
-         
+      dcname = cname.decode("utf-8")
+      dbname = bname.decode("utf-8")
+      if dcname == "":
+         name = dbname
       else:
-         #print("<br/>dcname<br/>")
-         name = cname.decode('UTF-8')  
-         print("CNAME " +  str(name) + "<br/>")
+         name = dcname
 
      
-
       ang_sep = angularSeparation(ra,dec,RA_center,dec_center)
       if ang_sep < fov_radius and float(mag) < 5.5:
          new_cat_x, new_cat_y = distort_xy_new (0,0,ra,dec,RA_center, dec_center, x_poly, y_poly, img_w, img_h, pos_angle_ref,F_scale)
