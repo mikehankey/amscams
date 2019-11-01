@@ -1,3 +1,4 @@
+# coding=utf-8
 class brightstardata:
    def __init__(self):
       self.bright_stars = (
