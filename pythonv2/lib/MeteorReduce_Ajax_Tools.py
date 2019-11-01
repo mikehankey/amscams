@@ -427,7 +427,7 @@ def get_catalog_stars(cal_params):
             print("name: " + str(dbname))
             print("<br/>")
             name = str(dbname)
-            print("name2s: " + name.encode("utf-8"))
+            print("name2s: " + str(name.encode("utf-8")))
             print("<br/>")
          except Exception as e:
             print("ERROR " + str(e) +  "<br/>")
