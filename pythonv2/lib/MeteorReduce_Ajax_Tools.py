@@ -401,15 +401,11 @@ def get_catalog_stars(cal_params):
  
    bright_stars_sorted = sorted(bright_stars, key=lambda x: x[4], reverse=False)
 
-  
-
-   for bname, cname, ra, dec, mag in bright_stars_sorted:
-      dcname = cname.decode("utf-8")
-      dbname = bname.decode("utf-8")
+   for bname, cname, ra, dec, mag in bright_stars_sorted: 
       if dcname == "":
-         name = dbname
+         name = bname.decode("utf-8")
       else:
-         name = dcname
+         name = cname.decode("utf-8")
 
      
       ang_sep = angularSeparation(ra,dec,RA_center,dec_center)
