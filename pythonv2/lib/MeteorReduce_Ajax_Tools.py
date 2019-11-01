@@ -402,7 +402,7 @@ def get_catalog_stars(cal_params):
    bright_stars_sorted = sorted(bright_stars, key=lambda x: x[4], reverse=False)
  
    try: 
-      v = b" ".join(bright_stars_sorted.split())
+      v = b" ".join(bright_stars_sorted)
       print(str(v))
       sys.exit(0)
    except Exception as e:
