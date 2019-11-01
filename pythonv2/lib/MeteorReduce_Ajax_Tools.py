@@ -412,10 +412,8 @@ def get_catalog_stars(cal_params):
       #except:
       #   print("<br/>NO DIRECT")
 
-      try: 
-         v =  bname
-         print(str(v))
-         sys.exit(0)
+      try:  
+         print(str(bname)) 
       except Exception as e:
          print(str(e))
          print("<br/>")
