@@ -426,7 +426,7 @@ def get_catalog_stars(cal_params):
             #name = v
             print("name: " + str(name))
             print("<br/>") 
-            print("name2s: " +  name.encode("utf-8"))
+            print("name2s: " +  name.decode("utf-8"))
             print("<br/>")
             sys.exit(0)
          except Exception as e:
