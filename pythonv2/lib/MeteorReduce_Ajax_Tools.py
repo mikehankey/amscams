@@ -408,7 +408,7 @@ def get_catalog_stars(cal_params):
        
 
       try:  
-         print(bname.decode('utf8'))
+         print(bname.encode('utf8'))
          
          print("<br/>")
       except Exception as e:
