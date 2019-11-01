@@ -407,6 +407,7 @@ def get_catalog_stars(cal_params):
          name = cname.decode("utf-8")
          print("NAME " + name)
       else:
+         name = bname
          print("BNAME = >")
 
          try:
