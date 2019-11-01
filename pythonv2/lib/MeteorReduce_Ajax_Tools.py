@@ -423,6 +423,7 @@ def get_catalog_stars(cal_params):
             #print(str(type(yy)))
             name = str(dbname)
             name = name[2:]
+            print("NAME XXX2 - " + str(name))
          except Exception as e:
             print("ERROR " + str(e) +  "<br/>")
 
