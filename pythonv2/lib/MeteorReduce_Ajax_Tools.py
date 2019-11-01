@@ -407,7 +407,7 @@ def get_catalog_stars(cal_params):
       #   print("<br/>DIRECT :")
       #   print(bname)
       #except:
-      ""   print("<br/>NO DIRECT")
+      #   print("<br/>NO DIRECT")
 
       try:
          bbname = bname.decode('utf8') 
