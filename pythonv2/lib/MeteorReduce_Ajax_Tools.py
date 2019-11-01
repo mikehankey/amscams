@@ -413,7 +413,7 @@ def get_catalog_stars(cal_params):
           
          print("=><br/>")
          encoded = bname.encode('utf-8')
-         print(v)
+         print(encoded)
          print("<br/>")
          print("=><br/>")
          decoded = encoded.decode('utf-8')
