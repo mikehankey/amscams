@@ -438,7 +438,7 @@ def get_catalog_stars(cal_params):
          catalog_stars.append((name,mag,ra,dec,new_cat_x,new_cat_y))
 
     
- 
+   sys.exit(0)
    return(catalog_stars)
 
 # Update Catalog Stars
