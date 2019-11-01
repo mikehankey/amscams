@@ -416,7 +416,7 @@ def get_catalog_stars(cal_params):
          except Exception as e:
             print("ERROR " + str(e) +  "<br/>")
 
-      print("NAME " + name)
+       
       print("<br/>")
 
       ang_sep = angularSeparation(ra,dec,RA_center,dec_center)
