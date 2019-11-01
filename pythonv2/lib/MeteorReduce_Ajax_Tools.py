@@ -405,6 +405,7 @@ def get_catalog_stars(cal_params):
       if cname == "":
          name = bname.decode("utf-8")
       else:
+         print("CNAME<br/>")
          name = cname.decode("utf-8")
 
       print("NAME " + name)
