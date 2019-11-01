@@ -422,7 +422,9 @@ def get_catalog_stars(cal_params):
             v =  str(b''.dbname.decode("utf-8"), "utf-8")
             #print("<br/>TYPE")
             #print(str(type(yy))) 
-            name = v
+            #name = v
+            print("V: " + v)
+            print("<br/>")
          except Exception as e:
             print("ERROR " + str(e) +  "<br/>")
 
@@ -436,7 +438,7 @@ def get_catalog_stars(cal_params):
          catalog_stars.append((name,mag,ra,dec,new_cat_x,new_cat_y))
 
     
-
+   sys.exit(0)
    return(catalog_stars)
 
 # Update Catalog Stars
