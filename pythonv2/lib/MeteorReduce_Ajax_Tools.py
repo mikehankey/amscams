@@ -402,14 +402,14 @@ def get_catalog_stars(cal_params):
    bright_stars_sorted = sorted(bright_stars, key=lambda x: x[4], reverse=False)
 
    for bname, cname, ra, dec, mag in bright_stars_sorted:
+      print("<br/>***********<br/>")
       try:
-         print(bname)
-         #dbname = bname.decode("utf-8").encode('utf-8')
-         #dcname = cname.decode("utf-8").encode('utf-8')
-         #print("DBNAME "+ str(dbname.decode('utf-8')))
-         #print("<br/>")
-         #print("DCNAME "+ str(dcname.decode('utf-8')))
-         #print("<br/>")
+         dbname = bname.decode("utf-8").encode('utf-8')
+         dcname = cname.decode("utf-8").encode('utf-8')
+         print("DBNAME "+ str(dbname.decode('utf-8')))
+         print("<br/>")
+         print("DCNAME "+ str(dcname.decode('utf-8')))
+         print("<br/>")
       except Exception as e:
          print(str(e))
          print("<br/>")
