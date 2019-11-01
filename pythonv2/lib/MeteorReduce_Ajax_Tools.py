@@ -17,13 +17,10 @@ from lib.Old_JSON_converter import get_analysed_name
 from lib.UtilLib import convert_filename_to_date_cam, angularSeparation, date_to_jd
 from lib.CalibLib import find_close_stars
 from lib.VIDEO_VARS import HD_W, HD_H
-
-
+ 
 mybsd = bsd.brightstardata()
 bright_stars = mybsd.bright_stars
-
-sys.setdefaultencoding("utf-8")
-
+ 
 
 # Create new cropped frame
 # and add the corresponding info to the json file
