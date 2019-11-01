@@ -7,7 +7,7 @@ import numpy as np
 import ephem 
 import math
 import chardet
-import lib.Decoded_BrightStart_Data as bsd
+import lib.Decoded_BrightStar_Data as bsd
 
 from lib.FileIO import cfe, load_json_file, save_json_file
 from lib.REDUCE_VARS import *
@@ -400,6 +400,7 @@ def get_catalog_stars(cal_params):
    pos_angle_ref = cal_params['device']['angle']  
  
    bright_stars_sorted = sorted(bright_stars, key=lambda x: x[4], reverse=False)
+
    for bname, cname, ra, dec, mag in bright_stars_sorted:
       try:
          print(bname)
