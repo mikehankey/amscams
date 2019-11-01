@@ -402,7 +402,8 @@ def get_catalog_stars(cal_params):
    bright_stars_sorted = sorted(bright_stars, key=lambda x: x[4], reverse=False)
  
    for bname, cname, ra, dec, mag in bright_stars_sorted:
-      print(bname) 
+      encoding = chardet.detect(bname)
+      print("ENCODING " + encoding)
 
    sys.exit(0)
 
