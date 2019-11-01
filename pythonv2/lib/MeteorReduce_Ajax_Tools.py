@@ -403,14 +403,14 @@ def get_catalog_stars(cal_params):
  
    for bname, cname, ra, dec, mag in bright_stars_sorted:
       
-      try:
-         print("<br/>DIRECT :")
-         print(bname)
-      except:
-         print("<br/>NO DIRECT")
+      #try:
+      #   print("<br/>DIRECT :")
+      #   print(bname)
+      #except:
+      ""   print("<br/>NO DIRECT")
 
       try:
-         bbname = bname.decode().encode('utf8')
+         bbname = bname.decode('utf8') 
          print(str(bbname).encode('utf8'))
       except:
          print("NOPE <br/>")
