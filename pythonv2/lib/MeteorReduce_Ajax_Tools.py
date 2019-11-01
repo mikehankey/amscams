@@ -411,8 +411,9 @@ def get_catalog_stars(cal_params):
          print("BNAME = >")
 
          try:
-            name = name[1:]
+            
             name = bname.decode('utf-8').encode('utf-8', errors='replace')  
+            name = name[1:]
             yy = u''.join(str(name))
             print("NAME XXX - " + yy)
          except Exception as e:
