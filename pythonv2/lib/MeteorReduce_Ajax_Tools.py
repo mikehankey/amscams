@@ -410,7 +410,7 @@ def get_catalog_stars(cal_params):
          print("BNAME = >")
 
          try:
-            print(''.join(chr(x) for x in name))
+            print(''.join(chr(ord(x)) for x in name))
             #name = bname.decode('utf-8').encode('utf-8', errors='replace') 
             #name = str(name)
             print("NAME " + name)
