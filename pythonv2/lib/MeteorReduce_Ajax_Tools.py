@@ -424,9 +424,8 @@ def get_catalog_stars(cal_params):
             #print("<br/>TYPE")
             #print(str(type(yy))) 
             #name = v
-            print("name: " + str(dbname))
-            print("<br/>")
-            name = str(dbname)
+            print("name: " + str(name))
+            print("<br/>") 
             print("name2s: " +  name.decode("utf-8"))
             print("<br/>")
             sys.exit(0)
