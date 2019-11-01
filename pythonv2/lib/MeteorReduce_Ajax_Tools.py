@@ -401,13 +401,7 @@ def get_catalog_stars(cal_params):
 
    bright_stars_sorted = sorted(bright_stars, key=lambda x: x[4], reverse=False)
  
-   try: 
-      v = b" ".join(bright_stars_sorted)
-      print(str(v))
-      sys.exit(0)
-   except Exception as e:
-         print(str(e))
-         print("<br/>")
+   
 
    for bname, cname, ra, dec, mag in bright_stars_sorted:
       
@@ -418,13 +412,9 @@ def get_catalog_stars(cal_params):
       #   print("<br/>NO DIRECT")
 
       try: 
-         v = bname
-         encoded = v.encode()
-         decoded = encoded.decode()
-         print("<br/>****************************")
-         decoded =  b' '.join((decoded)).encode('utf-8') 
-         print(decoded)
-         print("<br/>")
+         v = b" ".join(bname)
+         print(str(v))
+         sys.exit(0)
       except Exception as e:
          print(str(e))
          print("<br/>")
