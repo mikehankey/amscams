@@ -22,6 +22,7 @@ from lib.VIDEO_VARS import HD_W, HD_H
 mybsd = bsd.brightstardata()
 bright_stars = mybsd.bright_stars
 
+sys.setdefaultencoding("utf-8")
 
 
 # Create new cropped frame
