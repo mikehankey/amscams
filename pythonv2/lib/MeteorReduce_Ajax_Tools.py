@@ -406,9 +406,9 @@ def get_catalog_stars(cal_params):
       try:
          dbname = bname.encode('utf-8')
          dcname = cname.encode('utf-8')
-         print("DBNAME "+ str(dbname))
+         print("DBNAME "+ str(dbname).decode('utf8'))
          print("<br/>")
-         print("DCNAME "+  str(dcname))
+         print("DCNAME "+  str(dcname).decode('utf8'))
          print("<br/>")
       except Exception as e:
          print(str(e))
