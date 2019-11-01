@@ -410,7 +410,6 @@ def get_catalog_stars(cal_params):
       #   print("<br/>NO DIRECT")
 
       try:
-         bbname = bname.decode('utf8') 
          print(str(bbname).encode('utf8'))
       except Exception as e:
          print(str(e))
