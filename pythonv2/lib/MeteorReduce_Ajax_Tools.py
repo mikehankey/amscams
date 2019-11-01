@@ -411,21 +411,10 @@ def get_catalog_stars(cal_params):
          print("BNAME = >")
 
          try:
-            dcname = str(bname.decode("utf-8"))
-            dbname = dcname.encode("utf-8")
-            
-            name = dbname.decode('utf-8').encode('utf-8', errors='replace')  
-            #name = name[1:]
-            #yy = str(name)
-             
-            #print("<br/>TYPE")
-            #print(str(type(yy))) 
-            #name = v
-            print("name: " + str(name))
-            print("<br/>") 
-            print("name2s: " +  name.decode("utf-8","strict"))
-            print("<br/>")
-            sys.exit(0)
+            #dcname = str(bname.decode("utf-8"))
+            #dbname = dcname.encode("utf-8")
+            test = bname.encode("ascii",'xmlcharrefreplace')
+            print(test.decode('ascii') )
          except Exception as e:
             print("ERROR " + str(e) +  "<br/>")
 
@@ -502,7 +491,7 @@ def update_cat_stars(form):
          name,mag,ra,dec,cat_x,cat_y,scx,scy,cat_star_dist = close_stars[0]
          new_x, new_y, img_ra,img_dec, img_az, img_el = XYtoRADec(ix,iy,video_file,meteor_red['calib'])
          new_star = {}
-         new_star['name'] = name #.decode("unicode_escape") 
+         new_star['name'] = name.decode("unicode_escape") 
          new_star['mag'] = mag
          new_star['ra'] = ra
          new_star['dec'] = dec
