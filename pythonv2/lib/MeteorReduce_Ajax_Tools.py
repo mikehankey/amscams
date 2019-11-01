@@ -417,7 +417,7 @@ def get_catalog_stars(cal_params):
             yy = str(name)
             print("NAME XXX - " + yy)
             print("<br/>TYPE")
-            print(type(yy))
+            print(str(type(yy)))
          except Exception as e:
             print("ERROR " + str(e) +  "<br/>")
 
