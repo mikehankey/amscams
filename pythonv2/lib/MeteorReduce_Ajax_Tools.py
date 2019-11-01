@@ -429,7 +429,7 @@ def get_catalog_stars(cal_params):
             print("ERROR " + str(e) +  "<br/>")
 
         
-
+      sys.exit(0)
       ang_sep = angularSeparation(ra,dec,RA_center,dec_center)
       if ang_sep < fov_radius and float(mag) < 5.5:
          new_cat_x, new_cat_y = distort_xy_new (0,0,ra,dec,RA_center, dec_center, x_poly, y_poly, img_w, img_h, pos_angle_ref,F_scale)
@@ -438,7 +438,7 @@ def get_catalog_stars(cal_params):
          catalog_stars.append((name,mag,ra,dec,new_cat_x,new_cat_y))
 
     
-   sys.exit(0)
+   
    return(catalog_stars)
 
 # Update Catalog Stars
