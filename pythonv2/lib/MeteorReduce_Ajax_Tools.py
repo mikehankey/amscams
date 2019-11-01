@@ -410,14 +410,7 @@ def get_catalog_stars(cal_params):
          print("BNAME = >")
  
          try:
-            handlers = ['ignore', 'replace', 'xmlcharrefreplace', 'namereplace']
-            for h in handlers:
-               try:
-                  print(f'Handler: {h}:', bname.encode('ascii', errors=h).decode('ascii'))
-               except Exception as e2:
-                  print("ERROR2 " + str(e2) +  "<br/>")
-
-            name = bname.decode("utf-8") 
+            name = bname.encode('ascii', errors='replace').decode('ascii') 
             print("NAME " + name)
          except Exception as e:
             print("ERROR " + str(e) +  "<br/>")
