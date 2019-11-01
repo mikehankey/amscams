@@ -462,11 +462,11 @@ def update_cat_stars(form):
    my_cat_stars = []
    my_close_stars = []
 
-   for name,mag,ra,dec,new_cat_x,new_cat_y in bright_stars_sorted: 
+   for name,mag,ra,dec,new_cat_x,new_cat_y in cat_stars: 
       #dcname = str(name.decode("utf-8"))
       #dbname = dcname.encode("utf-8")
       my_cat_stars.append((name,mag,ra,dec,new_cat_x,new_cat_y)) 
- 
+
 
    my_close_stars = []
    for ix,iy in star_points:
