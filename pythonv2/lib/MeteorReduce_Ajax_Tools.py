@@ -408,6 +408,7 @@ def get_catalog_stars(cal_params):
          name = cname.decode("utf-8")
 
       print("NAME " + name)
+      print("<br/>")
 
       ang_sep = angularSeparation(ra,dec,RA_center,dec_center)
       if ang_sep < fov_radius and float(mag) < 5.5:
@@ -415,6 +416,8 @@ def get_catalog_stars(cal_params):
 
          possible_stars = possible_stars + 1
          catalog_stars.append((name,mag,ra,dec,new_cat_x,new_cat_y))
+
+   sys.exit(0)
 
    return(catalog_stars)
 
