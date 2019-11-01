@@ -416,7 +416,7 @@ def get_catalog_stars(cal_params):
          print(v)
          print("<br/>")
          print("=><br/>")
-         vv = encoded.decode('utf-8')
+         vv = v.decode('utf-8')
          print(v)
          print("<br/>***************<br/>")
       except Exception as e:
