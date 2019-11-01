@@ -401,17 +401,14 @@ def get_catalog_stars(cal_params):
 
    #bright_stars_sorted = sorted(bright_stars, key=lambda x: x[4], reverse=False)
   
-   bright_stars_sorted = ((b'\xce\xb1And', b'Alpheratz',   2.0971,  29.0906,  2.0 ),  (b'\xce\xb23Tuc', b'',   8.1825, -63.0311,  5.0 ),)
+   bright_stars_sorted = (('\xce\xb1And', 'Alpheratz',   2.0971,  29.0906,  2.0 ),  ('\xce\xb23Tuc', '',   8.1825, -63.0311,  5.0 ),)
    bright_stars_sorted = sorted(bright_stars_sorted, key=lambda x: x[4], reverse=False)
 
    for bname, cname, ra, dec, mag in bright_stars_sorted:
-       
-
       try:  
          encoded = bname.encode('utf-8')
          v = encoded.decode('utf-8')
          print(v)
-         
          print("<br/>")
       except Exception as e:
          print(str(e))
