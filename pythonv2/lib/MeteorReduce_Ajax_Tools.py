@@ -403,9 +403,10 @@ def get_catalog_stars(cal_params):
 
    for bname, cname, ra, dec, mag in bright_stars_sorted: 
       if cname == "":
+         print("BNAME = >")
          name = bname.decode("utf-8")
       else:
-         print("CNAME<br/>")
+         print("CNAME = >")
          name = cname.decode("utf-8")
 
       print("NAME " + name)
