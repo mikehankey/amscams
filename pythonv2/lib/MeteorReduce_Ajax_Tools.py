@@ -412,8 +412,8 @@ def get_catalog_stars(cal_params):
       #   print("<br/>NO DIRECT")
 
       try: 
-         v = b" ".join(bname)
-         print(str(v))
+         #v = b" ".join(bname)
+         print(str(bname))
          sys.exit(0)
       except Exception as e:
          print(str(e))
