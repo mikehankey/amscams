@@ -1,4 +1,4 @@
-import sys as sys
+import sys  
 import cgitb
 import json
 import os
@@ -400,9 +400,7 @@ def get_catalog_stars(cal_params):
    pos_angle_ref = cal_params['device']['angle']  
 
    bright_stars_sorted = sorted(bright_stars, key=lambda x: x[4], reverse=False)
- 
-    
-   sys.setdefaultencoding('utf8')
+  
 
    for bname, cname, ra, dec, mag in bright_stars_sorted:
       
