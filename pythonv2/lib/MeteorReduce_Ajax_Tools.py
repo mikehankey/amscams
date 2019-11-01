@@ -7,7 +7,7 @@ import numpy as np
 import ephem 
 import math
 import chardet
-import lib.brightstardata as bsd
+import lib.Decoded_BrightStart_Data as bsd
 
 from lib.FileIO import cfe, load_json_file, save_json_file
 from lib.REDUCE_VARS import *
@@ -19,7 +19,7 @@ from lib.CalibLib import find_close_stars
 from lib.VIDEO_VARS import HD_W, HD_H
 
 
-mybsd = bsd.brightstardata()
+mybsd = bsd.decoded_brightstardata()
 bright_stars = mybsd.bright_stars
 
 
@@ -398,17 +398,17 @@ def get_catalog_stars(cal_params):
    fov_radius = np.sqrt((fov_w/2)**2 + (fov_h/2)**2)
 
    pos_angle_ref = cal_params['device']['angle']  
-
+ 
    bright_stars_sorted = sorted(bright_stars, key=lambda x: x[4], reverse=False)
-   
    for bname, cname, ra, dec, mag in bright_stars_sorted:
       try:
-         dbname = bname.decode("utf-8").encode('utf-8')
-         dcname = cname.decode("utf-8").encode('utf-8')
-         print("DBNAME "+ str(dbname.decode('utf-8')))
-         print("<br/>")
-         print("DCNAME "+ str(dcname.decode('utf-8')))
-         print("<br/>")
+         print(bname)
+         #dbname = bname.decode("utf-8").encode('utf-8')
+         #dcname = cname.decode("utf-8").encode('utf-8')
+         #print("DBNAME "+ str(dbname.decode('utf-8')))
+         #print("<br/>")
+         #print("DCNAME "+ str(dcname.decode('utf-8')))
+         #print("<br/>")
       except Exception as e:
          print(str(e))
          print("<br/>")
