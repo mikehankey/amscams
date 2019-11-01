@@ -7,7 +7,7 @@ import numpy as np
 import ephem 
 import math
 import chardet
-import lib.Decoded_BrightStar_Data as bsd
+import lib.brightstardata as bsd
 
 from lib.FileIO import cfe, load_json_file, save_json_file
 from lib.REDUCE_VARS import *
@@ -19,7 +19,7 @@ from lib.CalibLib import find_close_stars
 from lib.VIDEO_VARS import HD_W, HD_H
 
 
-mybsd = bsd.decoded_brightstardata()
+mybsd = bsd.brightstardata()
 bright_stars = mybsd.bright_stars
 
 
