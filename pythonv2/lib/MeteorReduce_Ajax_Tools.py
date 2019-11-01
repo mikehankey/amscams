@@ -407,7 +407,7 @@ def get_catalog_stars(cal_params):
       print(encoding)
       try:
          bbname = bname.decode().encode('utf8')
-         print(str(bbname))
+         print(str(bbname).decode('utf8'))
       except:
          print("NOPE <br/>")
 
