@@ -416,7 +416,7 @@ def get_catalog_stars(cal_params):
             dcname = str(bname.decode("utf-8"))
             dbname = dcname.encode("utf-8")
             
-            #name = bname.decode('utf-8').encode('utf-8', errors='replace')  
+            name = dbname.decode('utf-8').encode('utf-8', errors='replace')  
             #name = name[1:]
             #yy = str(name)
             
