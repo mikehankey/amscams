@@ -402,9 +402,13 @@ def get_catalog_stars(cal_params):
    bright_stars_sorted = sorted(bright_stars, key=lambda x: x[4], reverse=False)
  
    for bname, cname, ra, dec, mag in bright_stars_sorted:
-      encoding = chardet.detect(bname)
-      print("<br/>ENCODING ")
-      print(encoding)
+      
+      try:
+         print("<br/>DIRECT :")
+         print(bname)
+      except:
+         print("<br/>NO DIRECT")
+
       try:
          bbname = bname.decode().encode('utf8')
          print(str(bbname).encode('utf8'))
