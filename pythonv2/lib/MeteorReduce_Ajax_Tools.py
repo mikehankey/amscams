@@ -1,4 +1,4 @@
-import sys
+import sys as sys
 import cgitb
 import json
 import os
