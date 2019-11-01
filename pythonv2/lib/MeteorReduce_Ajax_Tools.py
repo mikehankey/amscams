@@ -412,8 +412,8 @@ def get_catalog_stars(cal_params):
          print("BNAME = >")
 
          try:
-            dcname = str(bname.decode("utf-8"))
-            dbname = dcname.encode("utf-8")
+            dcname = bname.decode("utf-8")
+            dbname = str(dcname).encode("utf-8")
             
             #name = bname.decode('utf-8').encode('utf-8', errors='replace')  
             #name = name[1:]
