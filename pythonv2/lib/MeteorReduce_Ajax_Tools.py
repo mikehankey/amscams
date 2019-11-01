@@ -401,18 +401,15 @@ def get_catalog_stars(cal_params):
 
    bright_stars_sorted = sorted(bright_stars, key=lambda x: x[4], reverse=False)
   
+   bright_stars_sorted = (('αAnd','Alpheratz',   2.0971,  29.0906,  2.0 ))
 
    for bname, cname, ra, dec, mag in bright_stars_sorted:
-      
-      #try:
-      #   print("<br/>DIRECT :")
-      #   print(bname)
-      #except:
-      #   print("<br/>NO DIRECT")
+       
 
       try:  
-         v = bname.encode('utf8')
-         print(v.decode('utf8'))
+         print(bname)
+         
+         print("<br/>")
       except Exception as e:
          print(str(e))
          print("<br/>")
