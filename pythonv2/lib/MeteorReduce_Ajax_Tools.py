@@ -401,9 +401,12 @@ def get_catalog_stars(cal_params):
 
    bright_stars_sorted = sorted(bright_stars, key=lambda x: x[4], reverse=False)
  
-
-   print(str(bright_stars_sorted))
-   sys.exit(0)
+   try: 
+      print(str(bright_stars_sorted))
+      sys.exit(0)
+   except Exception as e:
+         print(str(e))
+         print("<br/>")
 
    for bname, cname, ra, dec, mag in bright_stars_sorted:
       
