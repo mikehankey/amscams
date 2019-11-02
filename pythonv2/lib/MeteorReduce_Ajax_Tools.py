@@ -1,4 +1,4 @@
-import sys
+import sys  
 import cgitb
 import json
 import os
@@ -17,12 +17,10 @@ from lib.Old_JSON_converter import get_analysed_name
 from lib.UtilLib import convert_filename_to_date_cam, angularSeparation, date_to_jd
 from lib.CalibLib import find_close_stars
 from lib.VIDEO_VARS import HD_W, HD_H
-
-
+ 
 mybsd = bsd.brightstardata()
 bright_stars = mybsd.bright_stars
-
-
+ 
 
 # Create new cropped frame
 # and add the corresponding info to the json file
@@ -398,38 +396,39 @@ def get_catalog_stars(cal_params):
    fov_radius = np.sqrt((fov_w/2)**2 + (fov_h/2)**2)
 
    pos_angle_ref = cal_params['device']['angle']  
-
-   bright_stars_sorted = sorted(bright_stars, key=lambda x: x[4], reverse=False)
  
-   for bname, cname, ra, dec, mag in bright_stars_sorted:
-      
-      if(not cname):
+   bright_stars_sorted = sorted(bright_stars, key=lambda x: x[4], reverse=False)
 
-         print("BNAME: " + str(bname) + "<br/>")
-
-
-         encoding = chardet.detect(bname)['encoding']
-         print("ORG ENCODING " + encoding  + "<br/>")
-         
-         print(str(bname).decode("utf-8"))
-         print(bname.decode("utf-8")) 
-         sys.exit(0)
-
-         
+   for bname, cname, ra, dec, mag in bright_stars_sorted: 
+      if cname  :
+         print("CNAME = >")
+         name = cname.decode("utf-8")
+         print("NAME " + name)
+         print("<br/>")
       else:
-         #print("<br/>dcname<br/>")
-         name = cname.decode('UTF-8')  
-         print("CNAME " +  str(name) + "<br/>")
+         name = bname
+              
+         print("BNAME = >")
 
-     
+         try:
+            #dcname = str(bname.decode("utf-8"))
+            #dbname = dcname.encode("utf-8")
+            test = str(bname).encode("utf-8")
+            print(test.decode("utf-8") )
+         except Exception as e:
+            print("ERROR " + str(e) +  "<br/>")
 
-      ang_sep = angularSeparation(ra,dec,RA_center,dec_center)
-      if ang_sep < fov_radius and float(mag) < 5.5:
-         new_cat_x, new_cat_y = distort_xy_new (0,0,ra,dec,RA_center, dec_center, x_poly, y_poly, img_w, img_h, pos_angle_ref,F_scale)
+        
+       
+      #ang_sep = angularSeparation(ra,dec,RA_center,dec_center)
+      #if ang_sep < fov_radius and float(mag) < 5.5:
+      #   new_cat_x, new_cat_y = distort_xy_new (0,0,ra,dec,RA_center, dec_center, x_poly, y_poly, img_w, img_h, pos_angle_ref,F_scale)
 
-         possible_stars = possible_stars + 1
-         catalog_stars.append((name,mag,ra,dec,new_cat_x,new_cat_y))
+      #   possible_stars = possible_stars + 1
+      #   catalog_stars.append((name,mag,ra,dec,new_cat_x,new_cat_y))
 
+    
+   sys.exit(0)
    return(catalog_stars)
 
 # Update Catalog Stars
@@ -478,14 +477,13 @@ def update_cat_stars(form):
    my_cat_stars = []
    my_close_stars = []
 
-   for name,mag,ra,dec,new_cat_x,new_cat_y in cat_stars :
-      dcname = str(name.decode("utf-8"))
-      dbname = dcname.encode("utf-8")
-      my_cat_stars.append((dbname,mag,ra,dec,new_cat_x,new_cat_y)) 
- 
+   for name,mag,ra,dec,new_cat_x,new_cat_y in cat_stars: 
+      #dcname = str(name.decode("utf-8"))
+      #dbname = dcname.encode("utf-8")
+      my_cat_stars.append((name,mag,ra,dec,new_cat_x,new_cat_y)) 
+
 
    my_close_stars = []
-   total_res_px = 0
    for ix,iy in star_points:
       close_stars = find_close_stars((ix,iy), cat_stars) 
 
@@ -498,7 +496,7 @@ def update_cat_stars(form):
          new_star['ra'] = ra
          new_star['dec'] = dec
          new_star['dist_px'] = cat_star_dist 
-         total_res_px = total_res_px + cat_star_dist
+
          # The image x,y of the star (CIRCLE)
          new_star['i_pos'] = [ix,iy]
          # The lens distorted catalog x,y position of the star  (PLUS SIGN)
@@ -511,19 +509,6 @@ def update_cat_stars(form):
 
    #print("<HR>", my_close_stars, "<HR>")
    meteor_red['calib']['stars'] = my_close_stars
-
-    # Calculate the average res error in PX then convert to degrees
-    if len(my_close_stars) > 0:
-       avg_res_px = total_res_px / len(my_close_stars)
-       avg_res_deg = avg_res_px * (meteor_red['calib']['device']['scale_px'] / 60 / 60)
-    else:
-       avg_res_px = 9999
-       avg_res_deg = 9999
-    
-    meteor_red['calib']['device']['total_res_px'] = avg_res_px
-    meteor_red['calib']['device']['total_res_deg'] = avg_res_deg
-
-
    
    # Update JSON File
    save_json_file(meteor_red_file, meteor_red)
