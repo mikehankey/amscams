@@ -97,7 +97,7 @@ function update_stars_on_canvas_and_table(json_resp) {
            type: 'star_info',
         });
 
-        if(name_pos.length()!=0) {
+        if(length(name_pos)!=0) {
             $.each(name_pos,function(i,v){
                if(name_pos[i].containsPoint(name_pos_x,name_pos_y)) {
                   console.log("MOVE " + v['name']);
