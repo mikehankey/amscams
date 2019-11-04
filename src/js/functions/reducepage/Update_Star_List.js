@@ -86,7 +86,7 @@ function update_stars_on_canvas_and_table(json_resp) {
         name_pos_x = (v['i_pos'][POS_X] - 11)/2
         name_pos_y = (v['i_pos'][POS_Y] - 11)/2+17
  
-        test_object=  new fabric.Text(v['name'],{
+        test_object = new fabric.Text(v['name'],{
            fontFamily: 'Arial', 
            fontSize: 12, 
            top: name_pos_y,
@@ -108,8 +108,7 @@ function update_stars_on_canvas_and_table(json_resp) {
          
         // Add Star Name on canvas
         canvas.add(test_object); 
-
-        name_pos.push(new fabric.Point(name_pos_x,name_pos_y))
+        name_pos.push(test_object);
 
 
         // Add the corresponding row 
