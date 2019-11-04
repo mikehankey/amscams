@@ -160,9 +160,7 @@ def update_frame(form, AjaxDirect = False):
             'w': W_DEFAULT, 
             'h': H_DEFAULT
          }
-         mr['frames'].append(new_entry)
-         print("NEW ENTRY")
-         print(new_entry)
+         mr['frames'].append(new_entry) 
  
 
    if(len(original_HD_frame)!=0 and len(destination_cropped_frame)!=0):  

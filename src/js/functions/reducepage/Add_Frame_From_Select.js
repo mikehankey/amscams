@@ -218,8 +218,7 @@ function create_meteor_selector_from_frame(frame_id, image_src, neighbor) {
            }
        );
 
-
-       
+ 
 
       // Default Preview position 
       update_preview(selector_top,selector_left,margins,W_factor,H_factor,cursor_dim,w_preview_dim,h_preview_dim,prev_W,prev_H,zoom);
