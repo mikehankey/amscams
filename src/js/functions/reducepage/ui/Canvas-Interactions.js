@@ -141,7 +141,7 @@ if ($('canvas#c').length!=0) {
    
 
       // Move up over canvas
-      canvas.on('mouse.up', function(e) { 
+      canvas.on('mouse:up', function(e) { 
          var pointer = canvas.getPointer(event.e);
          var x_val = pointer.x | 0;
          var y_val = pointer.y | 0;
@@ -149,6 +149,7 @@ if ($('canvas#c').length!=0) {
          var objects = canvas.getObjects();
          var id;
          
+    
          // Remove an existing star
          for (let i in objects) {
             if (objects[i].containsPoint(clickPoint) && objects[i].type != "reduc_rect") {
