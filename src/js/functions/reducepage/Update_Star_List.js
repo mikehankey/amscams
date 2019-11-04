@@ -7,6 +7,7 @@ CIRCLE_RADIUS=5
 function update_stars_on_canvas_and_table(json_resp) {
  
    var cat_stars = json_resp['calib']['stars']; 
+   var name_pos = []; // Store the name positions
 
    if(typeof cat_stars == 'undefined') {
       return; 
@@ -14,10 +15,9 @@ function update_stars_on_canvas_and_table(json_resp) {
 
     var table_tbody_html = ''; 
 
-    console.log(" json_resp['calib']['device']['total_res_deg'] " +  json_resp['calib']['device']['total_res_deg'])
-    console.log(" json_resp['calib']['device']['total_res_px'] " +  json_resp['calib']['device']['total_res_px'])
+    //console.log(" json_resp['calib']['device']['total_res_deg'] " +  json_resp['calib']['device']['total_res_deg'])
+    //console.log(" json_resp['calib']['device']['total_res_px'] " +  json_resp['calib']['device']['total_res_px'])
  
-
     if(typeof json_resp['calib']['device']['total_res_deg']!=='undefined' && typeof json_resp['calib']['device']['total_res_px']!=='undefined') {
         // Updating star table info 
         // Residual Error
@@ -80,18 +80,27 @@ function update_stars_on_canvas_and_table(json_resp) {
                 gp_id: v['name'],
                 type: 'star_info',
         }));
-         
+        
+        
+
+        name_pos_x = (v['i_pos'][POS_X] - 11)/2
+        name_pos_y = (v['i_pos'][POS_Y] - 11)/2+17
+
+        
         // Add Star Name on canvas
         canvas.add(new fabric.Text(v['name'], {
                 fontFamily: 'Arial', 
                 fontSize: 12, 
-                left: (v['i_pos'][POS_X] - 11)/2,
-                top: (v['i_pos'][POS_Y] - 11)/2+17,
+                top: name_pos_y,
+                left: name_pos_x,
                 fill:'rgba(255,255,255,.55)',
                 selectable: false,
                 gp_id: v['name'],
                 type: 'star_info',
         })); 
+
+        name_pos.push(new fabric.Point(name_pos_x,name_pos_y))
+
 
         // Add the corresponding row 
         table_tbody_html+= '<tr><td><b>'+v['name']+'</b></td>\

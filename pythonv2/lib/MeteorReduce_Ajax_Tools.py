@@ -407,18 +407,16 @@ def get_catalog_stars(cal_params):
    for bname, cname, ra, dec, mag in bright_stars_sorted: 
       if cname  :
          name = cname 
-        
       else:
          name = bname.encode('utf-8')
          name = str(name.decode('utf-8'))     
           
       ang_sep = angularSeparation(ra,dec,RA_center,dec_center)
+      
       if ang_sep < fov_radius and float(mag) < 5.5:
          new_cat_x, new_cat_y = distort_xy_new (0,0,ra,dec,RA_center, dec_center, x_poly, y_poly, img_w, img_h, pos_angle_ref,F_scale)
-
          possible_stars = possible_stars + 1
          catalog_stars.append((name,mag,ra,dec,new_cat_x,new_cat_y))
-
      
    return(catalog_stars)
 
@@ -468,9 +466,7 @@ def update_cat_stars(form):
    my_cat_stars = []
    my_close_stars = []
 
-   for name,mag,ra,dec,new_cat_x,new_cat_y in cat_stars: 
-      #dcname = str(name.decode("utf-8"))
-      #dbname = dcname.encode("utf-8")
+   for name,mag,ra,dec,new_cat_x,new_cat_y in cat_stars:  
       my_cat_stars.append((name,mag,ra,dec,new_cat_x,new_cat_y)) 
 
 
