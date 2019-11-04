@@ -152,8 +152,8 @@ if ($('canvas#c').length!=0) {
          // Remove an existing star
          for (let i in objects) {
             if (objects[i].containsPoint(clickPoint) && objects[i].type != "reduc_rect" && typeof(objects[i].ui_type)!='undefined') {
-               objects[i].set('fontSize', 20); 
-               objects[i].set('fill', 'red');
+               e.target.set('fontSize', 20); 
+               e.target.set('fill', 'red');
                console.log("CHANGE");
                console.log(objects[i]);
             }
@@ -172,8 +172,8 @@ if ($('canvas#c').length!=0) {
          // Remove an existing star
          for (let i in objects) {
             if (objects[i].containsPoint(clickPoint) && objects[i].type != "reduc_rect" && typeof(objects[i].ui_type)!='undefined') {
-               objects[i].set('fontSize', 12); 
-               objects[i].set('fill', 'rgba(255,255,255,.55)');
+               e.target.set('fontSize', 12); 
+               e.target.set('fill', 'rgba(255,255,255,.55)');
                console.log("CHANGE");
                console.log(objects[i]);
             }
