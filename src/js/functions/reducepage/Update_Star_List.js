@@ -85,19 +85,27 @@ function update_stars_on_canvas_and_table(json_resp) {
 
         name_pos_x = (v['i_pos'][POS_X] - 11)/2
         name_pos_y = (v['i_pos'][POS_Y] - 11)/2+17
+ 
+        test_object=  new fabric.Text(v['name'],{
+           fontFamily: 'Arial', 
+           fontSize: 12, 
+           top: name_pos_y,
+           left: name_pos_x,
+           fill:'rgba(255,255,255,.55)',
+           selectable: false,
+           gp_id: v['name'],
+           type: 'star_info',
+        });
 
+        $.each(name_pos,function(i,v){
+            if(name_pos[i].containsPoint(name_pos_x,name_pos_y)) {
+               console.log("MOVE " + v['name']);
+            }
+        })
+        
         
         // Add Star Name on canvas
-        canvas.add(new fabric.Text(v['name'], {
-                fontFamily: 'Arial', 
-                fontSize: 12, 
-                top: name_pos_y,
-                left: name_pos_x,
-                fill:'rgba(255,255,255,.55)',
-                selectable: false,
-                gp_id: v['name'],
-                type: 'star_info',
-        })); 
+        canvas.add(test_object); 
 
         name_pos.push(new fabric.Point(name_pos_x,name_pos_y))
 
