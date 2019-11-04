@@ -8,6 +8,7 @@ import numpy as np
 import ephem 
 import math
 import chardet
+
 import lib.Decoded_BrightStar_Data as bsd
 
 from lib.FileIO import cfe, load_json_file, save_json_file

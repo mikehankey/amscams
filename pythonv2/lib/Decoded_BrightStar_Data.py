@@ -1,4 +1,4 @@
-# coding: utf-8
+# coding=utf-8
 class Decoded_BrightStar_Data:
    def __init__(self):
       self.bright_stars = (
