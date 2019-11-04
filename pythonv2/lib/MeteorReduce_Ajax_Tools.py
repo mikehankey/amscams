@@ -402,58 +402,25 @@ def get_catalog_stars(cal_params):
    pos_angle_ref = cal_params['device']['angle']  
    bright_stars_sorted = sorted(bright_stars, key=lambda x: x[4], reverse=False)
 
-   print('<meta charset="UTF-8">')
+   #print('<meta charset="UTF-8">')
 
    for bname, cname, ra, dec, mag in bright_stars_sorted: 
       if cname  :
-         print("CNAME = >")
-         name = cname
-         print("NAME " + name)
-         print("<br/>")
-
-         if bname:
-            name = bname.encode('utf-8')
-            name = str(name.decode('utf-8'))     
-            print("BNAME = >")
-
-            try:
-               #dcname = str(bname.decode("utf-8"))
-               #dbname = dcname.encode("utf-8")
-               #test = str(bname).encode("utf-8")
-               #print(test.decode("utf-8") )
-               print("NAME " + str(name))
-               print(" (" + cname + ")")
-               print("<br/>") 
-            except Exception as e:
-               print("ERROR " + str(e) +  "<br/>")
+         name = cname 
         
       else:
          name = bname.encode('utf-8')
          name = str(name.decode('utf-8'))     
-         print("BNAME = >")
-
-         try:
-            #dcname = str(bname.decode("utf-8"))
-            #dbname = dcname.encode("utf-8")
-            #test = str(bname).encode("utf-8")
-            #print(test.decode("utf-8") )
-            print("NAME " + str(name))
-            print(" (" + cname + ")")
-            print("<br/>") 
-         except Exception as e:
-            print("ERROR " + str(e) +  "<br/>")
-
-        
+         
        
       #ang_sep = angularSeparation(ra,dec,RA_center,dec_center)
-      #if ang_sep < fov_radius and float(mag) < 5.5:
-      #   new_cat_x, new_cat_y = distort_xy_new (0,0,ra,dec,RA_center, dec_center, x_poly, y_poly, img_w, img_h, pos_angle_ref,F_scale)
+      if ang_sep < fov_radius and float(mag) < 5.5:
+         new_cat_x, new_cat_y = distort_xy_new (0,0,ra,dec,RA_center, dec_center, x_poly, y_poly, img_w, img_h, pos_angle_ref,F_scale)
 
-      #   possible_stars = possible_stars + 1
-      #   catalog_stars.append((name,mag,ra,dec,new_cat_x,new_cat_y))
+         possible_stars = possible_stars + 1
+         catalog_stars.append((name,mag,ra,dec,new_cat_x,new_cat_y))
 
-    
-   sys.exit(0)
+     
    return(catalog_stars)
 
 # Update Catalog Stars
