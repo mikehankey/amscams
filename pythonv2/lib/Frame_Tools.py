@@ -80,6 +80,9 @@ def update_frame(sd_video_file,fn,new_x,new_y):
 # though the "select meteor" interface
 def real_add_frame(json_conf, sd_video_file, fr_id, hd_x, hd_y): 
      
+    # DEBUG 
+    cgitb.enable()
+
     # Load the JSON from the video path
     mrf = sd_video_file.replace(".mp4", "-reduced.json")
     mr = load_json_file(mrf)
@@ -103,16 +106,16 @@ def real_add_frame(json_conf, sd_video_file, fr_id, hd_x, hd_y):
         metframes[fr_id]['fn'] = fr_id 
         metframes[fr_id]['hd_x'] = int(hd_x)
         metframes[fr_id]['hd_y'] = int(hd_y)
-        metframes[fr_id]['w'] = 5 #????
-        metframes[fr_id]['h'] = 5 #????
+        metframes[fr_id]['w']    = 5 #????
+        metframes[fr_id]['h']    = 5 #????
         metframes[fr_id]['sd_x'] = int(int(hd_x) * SD_W/HD_W)
         metframes[fr_id]['sd_y'] = int(int(hd_y) * SD_H/HD_H)
         metframes[fr_id]['sd_w'] = 6 #????
         metframes[fr_id]['sd_h'] = 6 #????
         metframes[fr_id]['sd_cx'] = metframes[fr_id]['sd_x'] + metframes[fr_id]['sd_w']/2
         metframes[fr_id]['sd_cy'] = metframes[fr_id]['sd_y'] + metframes[fr_id]['sd_h']/2
-        metframes[fr_id]['ra'] = 0
-        metframes[fr_id]['dec'] = 0
+        metframes[fr_id]['ra']   = 0
+        metframes[fr_id]['dec']  = 0
         metframes[fr_id]['az'] = 0
         metframes[fr_id]['el'] = 0
         metframes[fr_id]['max_px'] = 0 
