@@ -153,6 +153,7 @@ if ($('canvas#c').length!=0) {
          for (let i in objects) {
             if (objects[i].containsPoint(clickPoint) && objects[i].type != "reduc_rect" && typeof(objects[i].ui_type)!='undefined') {
                objects[i].bringToFront();
+               objects[i].set('fill', 'red');
                console.log("TO FRONT");
             }
          }
