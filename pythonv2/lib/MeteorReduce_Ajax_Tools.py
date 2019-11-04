@@ -18,6 +18,9 @@ from lib.Old_JSON_converter import get_analysed_name
 from lib.UtilLib import convert_filename_to_date_cam, angularSeparation, date_to_jd
 from lib.CalibLib import find_close_stars
 from lib.VIDEO_VARS import HD_W, HD_H
+
+import io,sys
+sys.stdout = io.TextIOWrapper(sys.stdout.buffer, encoding='utf-8')
  
 mybsd = bsd.Decoded_BrightStar_Data()
 bright_stars = mybsd.bright_stars
