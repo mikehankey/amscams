@@ -559,9 +559,14 @@ def XYtoRADec(img_x,img_y,timestamp_file,cp):
    # Precalculate some parameters
    sl = math.sin(math.radians(lat))
    cl = math.cos(math.radians(lat))
- 
-   x_det = img_x - int(cp['device']['img_dim'][0])/2
-   y_det = img_y - int(cp['device']['img_dim'][1])/2
+   
+   if('img_dim' in cp['device']):
+      x_det = img_x - int(cp['device']['img_dim'][0])/2
+      y_det = img_y - int(cp['device']['img_dim'][1])/2
+   else:
+      # HD by default
+      x_det = img_x - int(HD_W)/2
+      y_det = img_y - int(HD_H)/2
 
    dx = (x_poly_fwd[0]
       + x_poly_fwd[1]*x_det
