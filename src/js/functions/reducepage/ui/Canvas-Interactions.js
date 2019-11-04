@@ -152,11 +152,11 @@ if ($('canvas#c').length!=0) {
          // Remove an existing star
          for (let i in objects) {
             if (objects[i].containsPoint(clickPoint) && typeof(objects[i].ui_type)!='undefined') {
-               objects[i].set('fontSize', '20'); 
-               objects[i].set('fill', 'red'); 
+               objects[i].set('fontSize', '20');  
+               objects[i].set('textBackgroundColor','rgba(0,0,0,0.8)');  
                setTimeout(function() {
-                  objects[i].set('fontSize', '12'); 
-                  objects[i].set('fill', 'rgba(255,255,255,.55)'); 
+                  objects[i].set('fontSize', '12');  
+                  objects[i].set('textBackgroundColor', 'rgba(0,0,0,0)');  
                },500)
             }
          }
