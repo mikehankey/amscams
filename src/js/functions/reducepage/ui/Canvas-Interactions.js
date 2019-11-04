@@ -151,34 +151,19 @@ if ($('canvas#c').length!=0) {
     
          // Remove an existing star
          for (let i in objects) {
-            if (objects[i].containsPoint(clickPoint) && objects[i].type != "reduc_rect" && typeof(objects[i].ui_type)!='undefined') {
+            if (objects[i].containsPoint(clickPoint) && typeof(objects[i].ui_type)!='undefined') {
                objects[i].set('fontSize', '20'); 
                objects[i].set('fill', 'red'); 
+               setTimeout(function() {
+                  objects[i].set('fontSize', '12'); 
+                  objects[i].set('fill', 'rgba(255,255,255,.55)'); 
+               },500)
             }
          }
 
          canvas.renderAll();
       });
-
-      // Move out canvas
-      canvas.on('mouse:out', function(e) { 
-         var pointer = canvas.getPointer(event.e);
-         var x_val = pointer.x | 0;
-         var y_val = pointer.y | 0;
-         var clickPoint = new fabric.Point(x_val,y_val);
-         var objects = canvas.getObjects();
-         var id; 
-      
-         // Remove an existing star
-         for (let i in objects) {
-            if (objects[i].containsPoint(clickPoint) && objects[i].type != "reduc_rect" && typeof(objects[i].ui_type)!='undefined') {
-               objects[i].set('fontSize', '12'); 
-               objects[i].set('fill', 'rgba(255,255,255,.55)'); 
-            }
-         }
-
-         canvas.renderAll();
-      });
+ 
       
 
       // Move the zoom when moving over canvas
