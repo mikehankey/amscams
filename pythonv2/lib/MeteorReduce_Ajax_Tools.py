@@ -8,8 +8,7 @@ import numpy as np
 import ephem 
 import math
 import chardet
-
-import lib.Decoded_BrightStar_Data as bsd
+import lib.brightstardata as bsd
 
 from lib.FileIO import cfe, load_json_file, save_json_file
 from lib.REDUCE_VARS import *
@@ -20,7 +19,7 @@ from lib.UtilLib import convert_filename_to_date_cam, angularSeparation, date_to
 from lib.CalibLib import find_close_stars
 from lib.VIDEO_VARS import HD_W, HD_H
  
-mybsd = bsd.bright_stars()
+mybsd = bsd.brightstardata()
 bright_stars = mybsd.bright_stars
  
 
@@ -414,10 +413,8 @@ def get_catalog_stars(cal_params):
          try:
             #dcname = str(bname.decode("utf-8"))
             #dbname = dcname.encode("utf-8")
-            #test = str(bname).encode("utf-8")
-            #v = test.decode("utf-8")
-            #print(v)
-            print("<br/>")
+            test = str(bname).encode("utf-8")
+            print(test.decode("utf-8") )
          except Exception as e:
             print("ERROR " + str(e) +  "<br/>")
 
