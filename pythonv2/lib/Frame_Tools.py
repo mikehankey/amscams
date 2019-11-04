@@ -81,7 +81,7 @@ def update_frame(sd_video_file,fn,new_x,new_y):
 def real_add_frame(json_conf, sd_video_file, fr_id, hd_x, hd_y): 
      
     # DEBUG 
-    cgitb.enable()
+    cgitb.enable() 
 
     # Load the JSON from the video path
     mrf = sd_video_file.replace(".mp4", "-reduced.json")
@@ -122,6 +122,9 @@ def real_add_frame(json_conf, sd_video_file, fr_id, hd_x, hd_y):
         metframes[fr_id]['est_x'] = 0 
         metframes[fr_id]['est_y'] = 0 
  
+        print(metframes)
+
+   
         mr['metframes'] = metframes
         save_json_file(mrf, mr)
         mr = load_json_file(mrf)
