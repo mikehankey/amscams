@@ -13,11 +13,10 @@ function select_stack() {
    loading({'text':'Crunching existing stacks...','overlay':true});
 
    // Select a stack
-   $('.select_stack').click(function() {
-      select_one_stack(type);
+   $('.select_stack').click(function() { 
+      select_one_stack($(this).attr("data-rel"));
    })
-
-
+ 
    // If the sd doesn't exist, we automatically click the HD
    if(sd_stack.indexOf('{') > -1) {
       select_one_stack("HD");
