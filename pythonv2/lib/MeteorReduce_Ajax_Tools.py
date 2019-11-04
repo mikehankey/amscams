@@ -493,10 +493,7 @@ def update_cat_stars(form):
 
          # distorted position should be the new_x, new_y and + symbol
          my_close_stars.append(new_star)
-
-   #print("<HR>", my_close_stars, "<HR>")
-   #Sort new_star by name
-   
+ 
    meteor_red['calib']['stars'] = my_close_stars
    
    # Update JSON File
