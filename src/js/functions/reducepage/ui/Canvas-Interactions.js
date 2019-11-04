@@ -152,7 +152,7 @@ if ($('canvas#c').length!=0) {
          // Remove an existing star
          for (let i in objects) {
             if (objects[i].containsPoint(clickPoint) && typeof(objects[i].gp_id)!='undefined') {
-               for(let x in object) {
+               for(let x in objects) {
                   if(objects[i].gp_id == objects[x].gp_id && typeof(objects[x].ui_type)!='undefined') {
                      objects[x].set('fontSize', '20');  
                      objects[x].set('textBackgroundColor','rgba(0,0,0,0.8)');  
