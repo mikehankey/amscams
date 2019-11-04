@@ -46,18 +46,19 @@ function update_stars_on_canvas_and_table(json_resp) {
     $.each(cat_stars,function(i,v) {
  
          // Add to circle canvas
-         canvas.add(
-            new fabric.Circle({
-               radius: CIRCLE_RADIUS, fill: 'rgba(0,0,0,0)', strokeWidth: 1, stroke: 'rgba(100,200,200,.5)', 
-               left: (v["i_pos"][POS_X] - 11)/2, 
-               top: (v["i_pos"][POS_Y] - 11)/2,
-               selectable: false,
-               gp_id: v['name'],
-               type: 'star_info',
-         })); 
+         circle =  new fabric.Circle({
+            radius: CIRCLE_RADIUS, fill: 'rgba(0,0,0,0)', strokeWidth: 1, stroke: 'rgba(100,200,200,.5)', 
+            left: (v["i_pos"][POS_X] - 11)/2, 
+            top: (v["i_pos"][POS_Y] - 11)/2,
+            selectable: false,
+            gp_id: v['name'],
+            type: 'star_info',
+         })
+         
+         canvas.add(circle); 
 
-        // Add Rectangle
-        canvas.add(new fabric.Rect({
+         // Add Rectangle
+         rect = new fabric.Rect({
             fill: 'rgba(0,0,0,0)', strokeWidth: 1, stroke: 'rgba(230,100,200,.5)', 
             left: ((v["cat_und_pos"][POS_X] - 11)/2),   
             top: ((v["cat_und_pos"][POS_Y] - 11)/2),     
@@ -66,23 +67,27 @@ function update_stars_on_canvas_and_table(json_resp) {
             selectable: false,
             gp_id: v['name'],
             type: 'star_info', 
-         }));
+         })
+         canvas.add(rect);
    
         // Add "+" on canvas
-        canvas.add(
-            new fabric.Text("+", {
-                fontFamily: 'Arial', 
-                fontSize: 12,  
-                left:  (v['cat_dist_pos'][POS_X] - 11)/2+4,   // +4 = shift text
-                top: (v['cat_dist_pos'][POS_Y]  - 11)/2-4, // -4 = shift text
-                fill:'rgba(255,0,0,.75)',
-                selectable: false ,
-                gp_id: v['name'],
-                type: 'star_info',
-        }));
+        plus = new fabric.Text("+", {
+         fontFamily: 'Arial', 
+         fontSize: 12,  
+         left:  (v['cat_dist_pos'][POS_X] - 11)/2+4,   // +4 = shift text
+         top: (v['cat_dist_pos'][POS_Y]  - 11)/2-4, // -4 = shift text
+         fill:'rgba(255,0,0,.75)',
+         selectable: false ,
+         gp_id: v['name'],
+         type: 'star_info',
+        })
         
-        
+        canvas.add(plus);
 
+        name_pos.push(circle);
+        name_pos.push(rect);
+        name_pos.push(plus);
+        
         name_pos_x = (v['i_pos'][POS_X] - 11)/2
         name_pos_y = (v['i_pos'][POS_Y] - 11)/2+17
  
