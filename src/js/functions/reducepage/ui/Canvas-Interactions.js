@@ -147,13 +147,13 @@ if ($('canvas#c').length!=0) {
          var y_val = pointer.y | 0;
          var clickPoint = new fabric.Point(x_val,y_val);
          var objects = canvas.getObjects();
-         var id;
-         
+         var id; 
     
          // Remove an existing star
          for (let i in objects) {
             if (objects[i].containsPoint(clickPoint) && objects[i].type != "reduc_rect") {
                objects[i].bringToFront();
+               console.log("TO FRONT");
             }
          }
       });
