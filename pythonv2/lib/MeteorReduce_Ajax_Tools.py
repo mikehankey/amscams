@@ -402,9 +402,10 @@ def get_catalog_stars(cal_params):
    for bname, cname, ra, dec, mag in bright_stars_sorted: 
       if cname  :
          print("CNAME = >")
-        
+         name = cname
          print("NAME " + name)
          print("<br/>")
+        
       else:
          name = bname
               
