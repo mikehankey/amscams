@@ -1,5 +1,5 @@
 # coding: utf-8
-class decoded_brightstardata:
+class Decoded_BrightStar_Data:
    def __init__(self):
       self.bright_stars = (
       ("33Psc",'',   1.3337,  -5.7075,  4.6 ),
