@@ -25,6 +25,6 @@ function select_stack() {
       select_one_stack("SD");
    } else {
       loading_done();
-      $('#main_container').style('display','block');
+      $('#main_container').css('display','block');
    }
 } 

@@ -83,8 +83,7 @@ def manual_reduction(form):
       template = template.replace("{HD_VIDEO}", str(hd_video))
       template = template.replace("{SD_VIDEO}", str(sd_video))
       template = template.replace("{JSON_FILE}", str(json_file))
-   else:
-      print_error("ERROR")
+   
 
    # Display Template
    print(template) 
