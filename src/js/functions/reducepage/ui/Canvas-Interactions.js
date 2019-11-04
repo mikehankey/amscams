@@ -152,7 +152,7 @@ if ($('canvas#c').length!=0) {
          // Remove an existing star
          for (let i in objects) {
             if (objects[i].containsPoint(clickPoint) && objects[i].type != "reduc_rect" && typeof(objects[i].ui_type)!='undefined') {
-               objects[i].set('fontSize', '20'); 
+               objects[i].set('fontSize', 20); 
             }
          }
       });
@@ -169,7 +169,7 @@ if ($('canvas#c').length!=0) {
          // Remove an existing star
          for (let i in objects) {
             if (objects[i].containsPoint(clickPoint) && objects[i].type != "reduc_rect" && typeof(objects[i].ui_type)!='undefined') {
-               objects[i].set('fontSize', '12'); 
+               objects[i].set('fontSize', 12); 
             }
          }
       });
