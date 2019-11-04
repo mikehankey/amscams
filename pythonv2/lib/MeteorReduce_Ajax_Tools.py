@@ -521,6 +521,7 @@ def XYtoRADec(img_x,img_y,timestamp_file,cp):
       hd_h = int(timestamp_file['hour'])
       hd_M = int(timestamp_file['min'])
       hd_s = int(timestamp_file['sec'])
+      cp = cp['calib']
 
    F_scale = 3600/float(cp['device']['scale_px'])
    #F_scale = 24
