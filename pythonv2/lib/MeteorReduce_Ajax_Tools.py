@@ -508,7 +508,7 @@ def update_cat_stars(form):
 def XYtoRADec(img_x,img_y,timestamp_file,cp):
 
    print("IN METEOR REDUCE AJAX TOOLS")
-   print(timestamp_file)
+   print(cp)
    try:
       # OLD Approach
       hd_datetime, hd_cam, hd_date, hd_y, hd_m, hd_d, hd_h, hd_M, hd_s = convert_filename_to_date_cam(timestamp_file)
