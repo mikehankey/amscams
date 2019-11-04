@@ -509,8 +509,19 @@ def XYtoRADec(img_x,img_y,timestamp_file,cp):
 
    print("IN METEOR REDUCE AJAX TOOLS")
    print(timestamp_file)
+   try:
+      # OLD Approach
+      hd_datetime, hd_cam, hd_date, hd_y, hd_m, hd_d, hd_h, hd_M, hd_s = convert_filename_to_date_cam(timestamp_file)
+   except:
+      # NEW Approach
+      # {'min': '25', 'month': '11', 'full_path': '/mnt/ams2/meteor_archive/AMS7/METEOR/2019/11/04/2019_11_04_08_25_15_000_010040-trim0629.json', 'hour': '08', 'day': '04', 'cam_id': '010040', 'sec': '15', 'trim': '0629', 'station_id': 'AMS7', 'name': '2019_11_04_08_25_15_000_010040-trim0629.json', 'name_w_ext': '2019_11_04_08_25_15_000_010040-trim0629', 'year': '2019', 'ms': '000'}
+      hd_y = int(timestamp_file['year'])
+      hd_m = int(timestamp_file['month'])
+      hd_d = int(timestamp_file['day'])
+      hd_h = int(timestamp_file['hour'])
+      hd_M = int(timestamp_file['min'])
+      hd_s = int(timestamp_file['sec'])
 
-   hd_datetime, hd_cam, hd_date, hd_y, hd_m, hd_d, hd_h, hd_M, hd_s = convert_filename_to_date_cam(timestamp_file)
    F_scale = 3600/float(cp['device']['scale_px'])
    #F_scale = 24
 
