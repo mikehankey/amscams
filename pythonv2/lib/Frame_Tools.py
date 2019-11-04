@@ -121,10 +121,8 @@ def real_add_frame(json_conf, sd_video_file, fr_id, hd_x, hd_y):
         metframes[fr_id]['max_px'] = 0 
         metframes[fr_id]['est_x'] = 0 
         metframes[fr_id]['est_y'] = 0 
- 
-        print(metframes)
+  
 
-   
         mr['metframes'] = metframes
         save_json_file(mrf, mr)
         mr = load_json_file(mrf)
@@ -135,7 +133,10 @@ def real_add_frame(json_conf, sd_video_file, fr_id, hd_x, hd_y):
         os.system("cd /home/ams/amscams/pythonv2/; ./reducer3.py cm " + mrf + "> /mnt/ams2/tmp/rrr.txt")
 
         os.system("cd /home/ams/amscams/pythonv2/; ./reducer3.py cm " + mrf + "> /mnt/ams2/tmp/rrr.txt")
-        print(json.dumps({'msg': "new frame added.", 'newframe': mr['metframes'][fr_id]}))
+
+        
+
+        print(json.dumps({'msg': "new frame added.", 'newframe':metframes[fr_id]}))
         return
 
 
