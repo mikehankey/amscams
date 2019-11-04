@@ -154,9 +154,12 @@ if ($('canvas#c').length!=0) {
             if (objects[i].containsPoint(clickPoint) && objects[i].type != "reduc_rect" && typeof(objects[i].ui_type)!='undefined') {
                
                objects[i].set('fontSize', '20'); 
+               objects[i].set('fill', 'red');
                console.log(objects[i].ui_type);
             }
          }
+
+         canvas.renderAll();
       });
       
 
