@@ -397,13 +397,12 @@ def get_catalog_stars(cal_params):
    fov_radius = np.sqrt((fov_w/2)**2 + (fov_h/2)**2)
 
    pos_angle_ref = cal_params['device']['angle']  
- 
    bright_stars_sorted = sorted(bright_stars, key=lambda x: x[4], reverse=False)
 
    for bname, cname, ra, dec, mag in bright_stars_sorted: 
       if cname  :
          print("CNAME = >")
-         name = cname.decode("utf-8")
+        
          print("NAME " + name)
          print("<br/>")
       else:
@@ -414,9 +413,10 @@ def get_catalog_stars(cal_params):
          try:
             #dcname = str(bname.decode("utf-8"))
             #dbname = dcname.encode("utf-8")
-            test = str(bname).encode("utf-8")
-            print(test.decode("utf-8") )
-            print("<br/>")
+            #test = str(bname).encode("utf-8")
+            #print(test.decode("utf-8") )
+            print("NAME " + name)
+            print("<br/>") 
          except Exception as e:
             print("ERROR " + str(e) +  "<br/>")
 
