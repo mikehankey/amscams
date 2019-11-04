@@ -141,7 +141,7 @@ if ($('canvas#c').length!=0) {
    
 
       // Move up over canvas
-      canvas.on('mouse:up', function(e) { 
+      canvas.on('mouse:over', function(e) { 
          var pointer = canvas.getPointer(event.e);
          var x_val = pointer.x | 0;
          var y_val = pointer.y | 0;
