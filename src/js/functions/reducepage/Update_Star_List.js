@@ -101,6 +101,7 @@ function update_stars_on_canvas_and_table(json_resp) {
            gp_id: v['name'],
            type: 'star_info',
         });
+        /*
 
         if(name_pos.length!=0) {
             $.each(name_pos,function(i,v){
@@ -109,11 +110,11 @@ function update_stars_on_canvas_and_table(json_resp) {
                }
          })
         }
-
+      */
          
         // Add Star Name on canvas
         canvas.add(test_object); 
-        name_pos.push(test_object);
+        //name_pos.push(test_object);
 
 
         // Add the corresponding row 
