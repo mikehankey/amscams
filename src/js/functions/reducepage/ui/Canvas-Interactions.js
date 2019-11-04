@@ -140,7 +140,7 @@ if ($('canvas#c').length!=0) {
       }); 
    
 
-      // Move up over canvas
+      // Move over over canvas
       canvas.on('mouse:over', function(e) { 
          var pointer = canvas.getPointer(event.e);
          var x_val = pointer.x | 0;
@@ -152,9 +152,24 @@ if ($('canvas#c').length!=0) {
          // Remove an existing star
          for (let i in objects) {
             if (objects[i].containsPoint(clickPoint) && objects[i].type != "reduc_rect" && typeof(objects[i].ui_type)!='undefined') {
-               objects[i].bringToFront();
-               objects[i].set('fill', 'red');
-               console.log("TO FRONT");
+               objects[i].set('fontSize', '20'); 
+            }
+         }
+      });
+
+      // Move up over canvas
+      canvas.on('mouse:out', function(e) { 
+         var pointer = canvas.getPointer(event.e);
+         var x_val = pointer.x | 0;
+         var y_val = pointer.y | 0;
+         var clickPoint = new fabric.Point(x_val,y_val);
+         var objects = canvas.getObjects();
+         var id; 
+      
+         // Remove an existing star
+         for (let i in objects) {
+            if (objects[i].containsPoint(clickPoint) && objects[i].type != "reduc_rect" && typeof(objects[i].ui_type)!='undefined') {
+               objects[i].set('fontSize', '12'); 
             }
          }
       });
