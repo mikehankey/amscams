@@ -223,8 +223,7 @@ function create_meteor_selector_from_frame(frame_id, image_src) {
                     loading_done();
 
                     // Remove modal
-                    $('#cropper_modal').modal('hide').remove();
-
+                    $('#cropper_modal').modal('hide').remove(); 
 
                     // Everything went fine
                     update_star_and_reduction(function() {
@@ -240,6 +239,7 @@ function create_meteor_selector_from_frame(frame_id, image_src) {
                         centerVertical: true 
                     });
                 }
+                loading_done();
             }
         });
     });
