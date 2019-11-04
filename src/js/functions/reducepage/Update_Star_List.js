@@ -100,7 +100,7 @@ function update_stars_on_canvas_and_table(json_resp) {
         if(name_pos.length!=0) {
             $.each(name_pos,function(i,v){
                if(v.containsPoint(new fabric.Point(name_pos_x,name_pos_y))) {
-                  console.log("MOVE " + v['name']);
+                  console.log("MOVE " + v.gp_id);
                }
          })
         }
