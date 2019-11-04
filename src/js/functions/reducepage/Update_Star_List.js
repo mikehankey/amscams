@@ -42,8 +42,8 @@ function update_stars_on_canvas_and_table(json_resp) {
 
     $('#str_cnt').text(cat_stars.length);
 
-    console.log("CAT STARS");
-    console.log(cat_stars);
+     
+    cat_stars.sort((a,b) => (a.name > b.name) ? 1 : ((b.name > a.name) ? -1 : 0))
 
     // Table - tbody (in #stars-tab) & draw on canvas
     $.each(cat_stars,function(i,v) {
