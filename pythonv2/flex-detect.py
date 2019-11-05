@@ -45,7 +45,7 @@ json_conf = load_json_file("../conf/as6.json")
 
 ARCHIVE_DIR = "/mnt/NAS/meteor_archive/"
 def scan_queue(dir="/mnt/ams2/CAMS/queue/"):
-   files = glob.glob(dir + "*.mp4" )
+   files = glob.glob(dir + "*002.mp4" )
    fc = 0
    for video_file in files:
       stack_file = video_file.replace(".mp4", "-stacked.png")
@@ -1954,7 +1954,7 @@ def quick_scan(video_file):
       return(0, "No meteors found.")
    else:
       meteor_file = video_file.replace(".mp4", "-meteor.json")
-      save_json_file(fail_file, meteors)
+      save_json_file(meteor_file, meteors)
       print("METEORS FOUND!", meteor_file)
       elapsed_time = time.time() - start_time
       print("ELPASED TIME:", elapsed_time)
