@@ -32,4 +32,6 @@ def archive_listing(form):
    # Get the available month for the current year 
    all_folders = glob(main_dir)
 
+   print("FOLDER " + main_dir)
+   print("<br>")
    print(all_folders)
