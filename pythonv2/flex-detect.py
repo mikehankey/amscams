@@ -1751,16 +1751,17 @@ def fast_check_events(sum_vals, subframes):
    nomo = 0
    i = 0
    med_sum = np.median(sum_vals)
-   #median_subframe = cv2.convertScaleAbs(np.median(np.array(np_imgs), axis=0))
-   print("MEDIAN SUM IS: ", med_sum)
    for sum_val in sum_vals:
       if sum_val > med_sum * 2:
-         print("ABOVE:", i, med_sum, sum_val, cm, nomo)
-         event.append(i)
-         cm = cm + 1
-         nomo = 0
+         subframe = subframes[i]
+         min_val, max_val, min_loc, (mx,my)= cv2.minMaxLoc(subframe)
+         if max_val > 10:
+            event.append(i)
+            cm = cm + 1
+            nomo = 0
+         else:
+            nomo = nomo + 1
       else:
-         print("BELOW :", i, med_sum, sum_val, cm, nomo)
          nomo = nomo + 1
       if cm > 2 and nomo > 3:
          events.append(event)
@@ -1769,9 +1770,6 @@ def fast_check_events(sum_vals, subframes):
       elif nomo > 3:
          event = []
          cm = 0
-      subframe = subframes[i]
-      cv2.imshow('pepe', subframe)
-      cv2.waitKey(50)
       i = i + 1
 
    for event in events:
