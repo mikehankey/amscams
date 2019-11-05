@@ -336,7 +336,7 @@ def controller(json_conf):
 
       
    # ARCHIVE LISTING
-   if cmd=='archive_listing':
+   if cmd == 'archive_listing':
       archive_listing(form)
       exit()
 
