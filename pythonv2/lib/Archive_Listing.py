@@ -26,5 +26,4 @@ def archive_listing(form):
    main_dir = METEOR + get_station_id() + METEOR + str(year)
    
    # Get the available month for the current year 
-   [os.path.join(main_dir, o) for o in os.listdir(main_dir) 
-      if os.path.isdir(os.path.join(main_dir,o))]
+    
