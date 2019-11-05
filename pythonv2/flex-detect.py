@@ -44,6 +44,33 @@ json_conf = load_json_file("../conf/as6.json")
 
 
 ARCHIVE_DIR = "/mnt/NAS/meteor_archive/"
+
+def confirm_meteor(meteor_json_file):
+   meteor_objects = load_json_file(meteor_json_file)
+   video_file = meteor_json_file.replace("-meteor.json", ".mp4")
+
+   for obj in meteor_objects:
+      start = obj['ofns'][0] - 25
+      if start < 0:
+         start = 0
+      end = obj['ofns'][-1] + 25
+      if end > 1499:
+         end = 1499 
+      trim_clip, trim_start, trim_end = make_trim_clip(video_file, start, end)
+      frames,color_frames,subframes,sum_vals,max_vals = load_frames_fast(trim_clip, json_conf, 0, 0, [], 0,[])
+      for f in subframes:
+         cv2.imshow('pepe', f)
+         cv2.waitKey(0)
+      print(obj) 
+
+def make_trim_clip(video_file, start, end):
+   outfile = video_file.replace(".mp4", "-trim" + str(start) + ".mp4")
+   cmd = "/usr/bin/ffmpeg -y -i " + video_file + " -vf select=\"between(n\," + str(start) + "\," + str(end) + "),setpts=PTS-STARTPTS\" " + outfile
+   
+   print(cmd)
+   os.system(cmd)
+   return(outfile, start, end)
+
 def scan_queue(cam):
    if cam != "a":
       wild = "*" + cam + ".mp4"
@@ -2782,4 +2809,6 @@ if cmd == "som" or cmd == "scan_old_meteor_dir":
    scan_old_meteor_dir(video_file)
 if cmd == "sq" or cmd == "scan_queue":
    scan_queue(video_file)
+if cmd == "cm" or cmd == "confirm_meteor":
+   confirm_meteor(video_file)
 
