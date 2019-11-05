@@ -49,6 +49,9 @@ from lib.MeteorReduce_Calib_Ajax_Tools import getRADEC
 # MOVE TO ARCHIVE
 from lib.Old_JSON_converter import move_to_archive
 
+# ARCHIVE LISTING
+from lib.Archive_Listing import *
+
 
 NUMBER_OF_METEOR_PER_PAGE = 60
 POSSIBLE_PER_PAGE = [20,40,60,80,100,150,200,500,1000,10000]
@@ -331,6 +334,11 @@ def controller(json_conf):
       real_add_frame(json_conf,sd_video_file,fr_id,x,y)
       exit() 
 
+      
+   # ARCHIVE LISTING
+   if cmd == 'archive_listing':
+      archive_listing(form)
+      exit()
 
    if cmd == 'add_frame':
       add_frame_ajax(json_conf,form)
@@ -399,6 +407,9 @@ def controller(json_conf):
       sd_vid = form.getvalue('sd_video_file')
       print(get_a_frame(fr_id,sd_vid))
       exit()
+
+
+
 
 
    if cmd == 'del_frame':
@@ -510,8 +521,7 @@ def controller(json_conf):
    # Manual Reduction (Third Step: meteor position within cropped frames)
    if cmd == 'manual_reduction_meteor_pos_selector':
       manual_reduction_meteor_pos_selector(form)
-      
-
+   
    # REAL NEW VERSION
    if cmd == 'reduce2':
       extra_html = reduce_meteor2(json_conf, form)
@@ -523,6 +533,7 @@ def controller(json_conf):
    # ANOTHER OLD VERSION
    if cmd == 'reduce_new':
       extra_html = reduce_meteor_new(json_conf, form)
+
 
 
    if cmd == 'solutions':
