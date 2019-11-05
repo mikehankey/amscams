@@ -27,7 +27,7 @@ def archive_listing(form):
   
    # MAIN DIR:METEOR
    #/mnt/ams2/meteor_archive/[STATION_ID]/METEOR/[YEAR]
-   main_dir = METEOR_ARCHIVE + get_station_id() + METEOR + str(year)
+   main_dir = METEOR_ARCHIVE + get_station_id() + '/' + METEOR + str(year)
    
    # Get the available month for the current year 
    all_folders = glob(main_dir+'/*')
