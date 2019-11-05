@@ -50,7 +50,7 @@ from lib.MeteorReduce_Calib_Ajax_Tools import getRADEC
 from lib.Old_JSON_converter import move_to_archive
 
 # ARCHIVE LISTING
-from lib.Archive_Listing import *
+#from lib.Archive_Listing import *
 
 
 NUMBER_OF_METEOR_PER_PAGE = 60
@@ -336,9 +336,9 @@ def controller(json_conf):
 
       
    # ARCHIVE LISTING
-   if cmd == 'archive_listing':
-      archive_listing(form)
-      exit()
+   #if cmd == 'archive_listing':
+   #   archive_listing(form)
+   #   exit()
 
    if cmd == 'add_frame':
       add_frame_ajax(json_conf,form)
