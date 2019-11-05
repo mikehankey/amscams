@@ -24,13 +24,18 @@ def archive_listing(form):
    if (limit_day is None):
       now = datetime.datetime.now()
       year = now.year
+      #TODO: else we get the date!
   
    # MAIN DIR:METEOR
    #/mnt/ams2/meteor_archive/[STATION_ID]/METEOR/[YEAR]
    main_dir = METEOR_ARCHIVE + get_station_id() + '/' + METEOR + str(year)
    
    # Get the available month for the current year 
-   all_folders = glob(main_dir+'/*')
+   all_months = sorted(glob(main_dir+'/*'))
+
+   for(months in all_months):
+
+
 
    print("FOLDER " + main_dir)
    print("<br>")
