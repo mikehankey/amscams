@@ -4,8 +4,10 @@ import cgitb
 import datetime
 import os
 
-from Get_Station_Id import get_station_id
-from REDUCE_VARS import METEOR
+from lib.Get_Station_Id import get_station_id
+from lib.REDUCE_VARS import *
+
+
 
 def archive_listing(form):
    limit_day = form.getvalue('limit_day')
@@ -23,7 +25,7 @@ def archive_listing(form):
   
    # MAIN DIR:METEOR
    #/mnt/ams2/meteor_archive/[STATION_ID]/METEOR/[YEAR]
-   main_dir = METEOR + get_station_id() + METEOR + str(year)
+   main_dir = METEOR_ARCHIVE + get_station_id() + METEOR + str(year)
    
    # Get the available month for the current year 
     
