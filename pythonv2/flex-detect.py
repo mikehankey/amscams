@@ -44,6 +44,19 @@ json_conf = load_json_file("../conf/as6.json")
 
 
 ARCHIVE_DIR = "/mnt/NAS/meteor_archive/"
+def scan_queue(dir="/mnt/ams2/CAMS/queue/"):
+   files = glob.glob(dir + "*.mp4" )
+   fc = 0
+   for video_file in files:
+      stack_file = video_file.replace(".mp4", "-stacked.png")
+      if cfe(stack_file) == 0:
+         cmd = "./flex-detect.py qs " + video_file
+         print(cmd)
+         os.system(cmd)
+         fc = fc + 1
+      else:
+         print("skipping")
+
 
 def scan_old_meteor_dir(dir):
    files = glob.glob(dir + "*trim*.json" )
@@ -504,6 +517,7 @@ def fast_bp_detect(gray_frames, video_file):
    #median_frame = mask_frame(median_frame, mask_points, [], 5)
    fc = 0
    last_frame = median_frame
+
    for frame in gray_frames:
       frame = mask_frame(frame, mask_points, [], 5)
       subframe = cv2.subtract(frame, last_frame)
@@ -1754,7 +1768,7 @@ def fast_check_events(sum_vals, max_vals, subframes):
    i = 0
    med_sum = np.median(sum_vals)
    med_max = np.median(max_vals)
-   median_frame = cv2.convertScaleAbs(np.median(np.array(subframes), axis=0))
+   #median_frame = cv2.convertScaleAbs(np.median(np.array(subframes), axis=0))
    for sum_val in sum_vals:
       max_val = max_vals[i]
       #print(i, med_sum, med_max, sum_val , max_val)
@@ -1798,7 +1812,7 @@ def fast_check_events(sum_vals, max_vals, subframes):
    pos_meteors = {}
    mc = 1
    for object in objects:
-      if objects[object]['report']['min_max_dist'] > 5:
+      if objects[object]['report']['min_max_dist'] > 5 and objects[object]['report']['max_cm'] >= 3 and objects[object]['report']['dist_per_elp'] > .8:
          pos_meteors[mc] = objects[object]
          mc = mc + 1
 
@@ -2681,11 +2695,12 @@ def load_frames_fast(trim_file, json_conf, limit=0, mask=0,crop=(),color=0,resiz
          if frame is None:
             if frame_count <= 5 :
                cap.release()
-               return(frames,color_frames)
+               return(frames,color_frames,sub_frames,sum_vals,max_vals)
             else:
                go = 0
          else:
-            color_frames.append(frame)
+            #print("FRMAE:", frame_count)
+            #color_frames.append(frame)
             if limit != 0 and frame_count > limit:
                cap.release()
                return(frames)
@@ -2704,8 +2719,11 @@ def load_frames_fast(trim_file, json_conf, limit=0, mask=0,crop=(),color=0,resiz
             if last_frame is not None:
                subframe = cv2.subtract(frame, last_frame)
                subframes.append(subframe)
-               min_val, max_val, min_loc, (mx,my)= cv2.minMaxLoc(subframe)
                sum_val =cv2.sumElems(subframe)[0]
+               if sum_val > 100:
+                  min_val, max_val, min_loc, (mx,my)= cv2.minMaxLoc(subframe)
+               else:
+                  max_val = 0
                sum_vals.append(sum_val)
                max_vals.append(max_val)
 
@@ -2757,4 +2775,6 @@ if cmd == "qb" or cmd == "batch":
 
 if cmd == "som" or cmd == "scan_old_meteor_dir":
    scan_old_meteor_dir(video_file)
+if cmd == "sq" or cmd == "scan_queue":
+   scan_queue()
 
