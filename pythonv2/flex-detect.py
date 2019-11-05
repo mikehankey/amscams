@@ -44,8 +44,13 @@ json_conf = load_json_file("../conf/as6.json")
 
 
 ARCHIVE_DIR = "/mnt/NAS/meteor_archive/"
-def scan_queue(dir="/mnt/ams2/CAMS/queue/"):
-   files = glob.glob(dir + "*002.mp4" )
+def scan_queue(cam):
+   if cam != "a":
+      wild = "*" + cam + ".mp4"
+   else:
+      wild = "*.mp4"
+   queue_dir="/mnt/ams2/CAMS/queue/"
+   files = glob.glob(queue_dir + wild )
    fc = 0
    for video_file in files:
       stack_file = video_file.replace(".mp4", "-stacked.png")
@@ -2776,5 +2781,5 @@ if cmd == "qb" or cmd == "batch":
 if cmd == "som" or cmd == "scan_old_meteor_dir":
    scan_old_meteor_dir(video_file)
 if cmd == "sq" or cmd == "scan_queue":
-   scan_queue()
+   scan_queue(video_file)
 
