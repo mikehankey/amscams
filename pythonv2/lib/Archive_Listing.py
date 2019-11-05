@@ -28,4 +28,4 @@ def archive_listing(form):
    main_dir = METEOR_ARCHIVE + get_station_id() + METEOR + str(year)
    
    # Get the available month for the current year 
-    
+   print(main_dir)
