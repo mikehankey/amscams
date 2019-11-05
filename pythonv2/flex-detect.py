@@ -508,11 +508,11 @@ def fast_bp_detect(gray_frames, video_file):
       frame = mask_frame(frame, mask_points, [], 5)
       subframe = cv2.subtract(frame, last_frame)
       sum_val =cv2.sumElems(subframe)[0]
-      if sum_val > 100:
-         thresh = 10
-         _, subframe = cv2.threshold(subframe.copy(), thresh, 255, cv2.THRESH_BINARY)
+      #if sum_val > 100:
+      #   thresh = 10
+      #   _, subframe = cv2.threshold(subframe.copy(), thresh, 255, cv2.THRESH_BINARY)
          #subframe = cv2.subtract(subframe, median_frame)
-         sum_val =cv2.sumElems(subframe)[0]
+      #   sum_val =cv2.sumElems(subframe)[0]
 
       #cv2.imshow('pepe', subframe)
       #cv2.waitKey(0)
@@ -1744,6 +1744,40 @@ def flex_detect(video_file):
    marked_video_file = video_file.replace(".mp4", "-pub.mp4")
    remaster(show_frames, marked_video_file, station_id,meteor_objects[0])
 
+def fast_check_events(sum_vals, subframes):
+   events = []
+   event = []
+   cm = 0
+   nomo = 0
+   i = 0
+   med_sum = np.median(sum_vals)
+   for sum_val in sum_vals:
+      if sum_val > med_sum * 2:
+         subframe = subframes[i]
+         min_val, max_val, min_loc, (mx,my)= cv2.minMaxLoc(subframe)
+         if max_val > 10:
+            event.append(i)
+            cm = cm + 1
+            nomo = 0
+         else:
+            nomo = nomo + 1
+      else:
+         nomo = nomo + 1
+      if cm > 2 and nomo > 3:
+         events.append(event)
+         event = []
+         cm = 0
+      elif nomo > 3:
+         event = []
+         cm = 0
+      i = i + 1
+
+   for event in events:
+      print(event)
+
+   return(events)
+
+
 def quick_scan(video_file):
    # 3 main parts
    # 1st scan entire clip for 'bright events' evaluating just the sub pixels in the subtracted frame
@@ -1781,13 +1815,14 @@ def quick_scan(video_file):
    print("STATION:", station_id, video_file, start_time)
 
    # load the frames
-   frames,color_frames = load_frames_fast(video_file, json_conf, 0, 0, [], 0,[])
+   frames,color_frames,subframes,sum_vals = load_frames_fast(video_file, json_conf, 0, 0, [], 0,[])
+   events = fast_check_events(sum_vals, subframes)
    
    # check time after frame load
    elapsed_time = time.time() - start_time
    print("Loaded frames.", elapsed_time)
    print("Total Frames:", len(frames))
-
+   exit()
    # check to make sure frames were loaded
    if len(frames) < 5:
       print("bad input file.")
@@ -1805,8 +1840,12 @@ def quick_scan(video_file):
    # 
    # Make the subframes and detect the total pixels per subframe 
    bp_frame_data, subframes = fast_bp_detect(frames,video_file)
+   elapsed_time = time.time() - start_time
+   print("ELPASED TIME AFTER FAST BP DETECT :", elapsed_time)
 
    # Find events and objects inside the subframe frame date
+   elapsed_time = time.time() - start_time
+   print("ELPASED TIME BEFORE FIND EVENTS FROM BP DATA:", elapsed_time)
    events, objects = find_events_from_bp_data(bp_frame_data,subframes)
 
    if debug == 1:
@@ -1818,6 +1857,9 @@ def quick_scan(video_file):
       for obj in objects:
          print("OBJ:", obj, objects[obj])
 
+   elapsed_time = time.time() - start_time
+   print("ELPASED TIME:", elapsed_time)
+   exit()
 
    # Find the meteor like objects 
    meteors = []
@@ -1840,7 +1882,6 @@ def quick_scan(video_file):
       non_meteors = meteors + non_meteors
       meteors = []
 
-   exit()
  
 
    print ("Meteor like objects.", len(meteors))
@@ -1848,8 +1889,18 @@ def quick_scan(video_file):
       fail_file = video_file.replace(".mp4", "-fail.json")
       save_json_file(fail_file, non_meteors)
       print("NO METEORS FOUND!", fail_file)
+      elapsed_time = time.time() - start_time
+      print("ELPASED TIME:", elapsed_time)
       return(0, "No meteors found.")
+   else:
+      meteor_file = video_file.replace(".mp4", "-meteor.json")
+      save_json_file(fail_file, meteors)
+      print("METEORS FOUND!", meteor_file)
+      elapsed_time = time.time() - start_time
+      print("ELPASED TIME:", elapsed_time)
+      return(0, "Meteors found.")
 
+   exit()
    ############################################################################
    # DETECTION PHASE 2
    # For each meteor like object run motion detection on the frames containing the event
@@ -2569,9 +2620,12 @@ def load_frames_fast(trim_file, json_conf, limit=0, mask=0,crop=(),color=0,resiz
    (f_datetime, cam, f_date_str,fy,fm,fd, fh, fmin, fs) = convert_filename_to_date_cam(trim_file)
    cap = cv2.VideoCapture(trim_file)
    masks = None
+   last_frame = None
 
    color_frames = []
    frames = []
+   subframes = []
+   sum_vals = []
    frame_count = 0
    go = 1
    while go == 1:
@@ -2600,6 +2654,12 @@ def load_frames_fast(trim_file, json_conf, limit=0, mask=0,crop=(),color=0,resiz
                print("GET MASKS HD:", hd, masks)
                frame = mask_frame(frame, [], masks, 5)
 
+            if last_frame is not None:
+               subframe = cv2.subtract(frame, last_frame)
+               subframes.append(subframe)
+               sum_val =cv2.sumElems(subframe)[0]
+               sum_vals.append(sum_val)
+
             if len(crop) == 4:
                ih,iw = frame.shape
                x1,y1,x2,y2 = crop
@@ -2623,12 +2683,13 @@ def load_frames_fast(trim_file, json_conf, limit=0, mask=0,crop=(),color=0,resiz
        
             if frame_count % 1 == 0:
                frames.append(frame)
+            last_frame = frame
       frame_count = frame_count + 1
    cap.release()
    if len(crop) == 4:
       return(frames,x1,y1)
    else:
-      return(frames, color_frames)
+      return(frames, color_frames, subframes, sum_vals)
 
         
 
