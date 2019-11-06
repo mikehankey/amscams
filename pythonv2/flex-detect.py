@@ -20,7 +20,7 @@ import ephem
 from lib.Video_Tools_cv import remaster
 from lib.VideoLib import get_masks, find_hd_file_new, load_video_frames, sync_hd_frames, make_movie_from_frames, add_radiant
 
-from lib.UtilLib import check_running, angularSeparation, bound_cnt
+from lib.UtilLib import check_running, angularSeparation
 from lib.CalibLib import radec_to_azel, clean_star_bg, get_catalog_stars, find_close_stars, XYtoRADec, HMS2deg, AzEltoRADec, get_active_cal_file
 
 from lib.ImageLib import mask_frame , stack_frames, preload_image_acc
@@ -44,6 +44,184 @@ json_conf = load_json_file("../conf/as6.json")
 
 
 ARCHIVE_DIR = "/mnt/NAS/meteor_archive/"
+
+def batch_move():
+   files = glob.glob("/mnt/ams2/CAMS/queue/*.mp4")
+   for video_file in files:
+      if "trim" in video_file:
+         trim = 1
+      else:
+         stack_file = video_file.replace(".mp4", "-stacked.png")
+         meteor_file = video_file.replace(".mp4", "-meteor.json")
+         fail_file = video_file.replace(".mp4", "-fail.json")
+      if cfe(stack_file) == 1:
+         # processing is done for this file
+         video_fn = video_file.split("/")[-1]
+         stack_fn = stack_file.split("/")[-1]
+         meteor_fn = meteor_file.split("/")[-1]
+         fail_fn = meteor_file.split("/")[-1]
+         (hd_datetime, cam, sd_date, sd_y, sd_m, sd_d, sd_h, sd_M, sd_s) = convert_filename_to_date_cam(video_file)
+         proc_dir = "/mnt/ams2/SD/proc2/" + sd_y + "_" + sd_m + "_" + sd_d + "/" 
+         if cfe(proc_dir, 1) == 0:
+            os.system("mkdir " + proc_dir)
+            os.system("mkdir " + proc_dir + "failed")
+            os.system("mkdir " + proc_dir + "passed")
+            os.system("mkdir " + proc_dir + "images")
+            os.system("mkdir " + proc_dir + "data")
+         if cfe(meteor_file) == 0:
+            cmd = "mv " + video_file + " " + proc_dir
+            print(cmd)
+            os.system(cmd)
+            cmd = "mv " + stack_file + " " + proc_dir + "images/"
+            print(cmd)
+            os.system(cmd)
+            if cfe(fail_file) == 1:
+               cmd = "mv " + fail_file + " " + proc_dir + "failed/"
+               print(cmd)
+               os.system(cmd)
+            #cmd = "mv " + meteor_file + " " + proc_dir + "passed/"
+
+def find_sun_alt(capture_date):
+
+   device_lat = json_conf['site']['device_lat']
+   device_lng = json_conf['site']['device_lng']
+
+   obs = ephem.Observer()
+
+   obs.pressure = 0
+   obs.horizon = '-0:34'
+   obs.lat = device_lat
+   obs.lon = device_lng
+   obs.date = capture_date
+
+   sun = ephem.Sun()
+   sun.compute(obs)
+
+   (sun_alt, x,y) = str(sun.alt).split(":")
+
+   saz = str(sun.az)
+   (sun_az, x,y) = saz.split(":")
+   if int(sun_alt) < -1:
+      sun_status = "night"
+   else:
+      sun_status = "day"
+   print("SUN AZ:", sun_az)
+   print("SUN ALT:", sun_alt)
+   return(int(sun_alt))
+
+
+def objects_to_clips(meteor_objects):
+   clips = []
+   good_objs = []
+   for obj in meteor_objects:
+      ok = 1 
+      for clip in clips:
+         if abs(obj['ofns'][0] - clip) < 25:
+            ok = 0
+      if ok == 1:
+         clips.append(obj['ofns'][0])
+         good_objs.append(obj)
+      
+   return(good_objs)
+
+def batch_confirm():
+   files = glob.glob("/mnt/ams2/CAMS/queue/*meteor.json")
+   for file in files:
+      confirm_meteor(file)
+
+def minmax_xy(obj):
+   min_x = min(obj['oxs'])
+   max_x = max(obj['oxs'])
+   min_y = min(obj['oys'])
+   max_y = max(obj['oys'])
+   return(min_x, min_y, max_x, max_y)
+
+def confirm_meteor(meteor_json_file):
+   video_file = meteor_json_file.replace("-meteor.json", ".mp4")
+   print("CONFIRM:", video_file)
+   (hd_datetime, cam, sd_date, sd_y, sd_m, sd_d, sd_h, sd_M, sd_s) = convert_filename_to_date_cam(video_file)
+   sun_alt = find_sun_alt(hd_datetime)
+   if sun_alt > -5:
+      sun_up = 1
+      print("SUN is up:", sun_alt)
+   else:
+      sun_up = 0
+   
+   meteor_objects = load_json_file(meteor_json_file)
+   meteor_objects = objects_to_clips(meteor_objects)
+
+   for obj in meteor_objects:
+      start = obj['ofns'][0] - 25
+      if start < 0:
+         start = 0
+      end = obj['ofns'][-1] + 25
+      if end > 1499:
+         end = 1499 
+      print(obj['ofns'])
+      if sun_up == 0:
+         # Run deeper detection on clip
+
+         trim_clip, trim_start, trim_end = make_trim_clip(video_file, start, end)
+         frames,color_frames,subframes,sum_vals,max_vals = load_frames_fast(trim_clip, json_conf, 0, 0, [], 0,[])
+
+         frame = frames[0]
+         min_x, min_y,max_x,max_y = minmax_xy(obj)
+         fx = int((min_x + max_x) / 2)
+         fy = int((min_y + max_y) / 2)
+         if max_x - min_x < 100 or max_y - min_y < 100:
+            print("FRAME SIZE:", frame.shape[1], frame.shape[0])
+            cx1,cy1,cx2,cy2= bound_cnt(fx,fy,frame.shape[1],frame.shape[0], 100)
+         else:
+            cx1,cy1,cx2,cy2= bound_cnt(fx,fy,frame.shape[1],frame.shape[0], 200)
+
+         for i in range (0, len(frames) - 1):
+            frame = frames[i]
+
+            w =  frame.shape[1]
+            subframe = subframes[i]
+            total_w = frame.shape[1] * 2
+            total_h = frame.shape[0] 
+            show_frame = np.zeros((total_h,total_w,3),dtype=np.uint8)
+            frame = cv2.cvtColor(frame,cv2.COLOR_GRAY2RGB)
+            subframe = cv2.cvtColor(subframe,cv2.COLOR_GRAY2RGB)
+            print("CX:", cx1,cy1, cx2,cy2)
+            cv2.rectangle(frame, (cx1, cy1), (cx2, cy2), (255,255,255), 1, cv2.LINE_AA)
+            cv2.rectangle(subframe, (cx1, cy1), (cx2, cy2), (255,255,255), 1, cv2.LINE_AA)
+
+            show_frame[0:total_h,0:w] = frame
+            show_frame[0:total_h,w:w+w] = subframe
+     
+
+            cv2.imshow('pepe', show_frame)
+            cv2.waitKey(0)
+         print(obj) 
+
+def make_trim_clip(video_file, start, end):
+   outfile = video_file.replace(".mp4", "-trim" + str(start) + ".mp4")
+   cmd = "/usr/bin/ffmpeg -y -i " + video_file + " -vf select=\"between(n\," + str(start) + "\," + str(end) + "),setpts=PTS-STARTPTS\" " + outfile
+   if cfe(outfile) == 0:   
+      print(cmd)
+      os.system(cmd)
+   return(outfile, start, end)
+
+def scan_queue(cam):
+   if cam != "a":
+      wild = "*" + cam + ".mp4"
+   else:
+      wild = "*.mp4"
+   queue_dir="/mnt/ams2/CAMS/queue/"
+   files = glob.glob(queue_dir + wild )
+   fc = 0
+   for video_file in files:
+      stack_file = video_file.replace(".mp4", "-stacked.png")
+      if cfe(stack_file) == 0:
+         cmd = "./flex-detect.py qs " + video_file
+         print(cmd)
+         os.system(cmd)
+         fc = fc + 1
+      else:
+         print("skipping")
+
 
 def scan_old_meteor_dir(dir):
    files = glob.glob(dir + "*trim*.json" )
@@ -504,6 +682,7 @@ def fast_bp_detect(gray_frames, video_file):
    #median_frame = mask_frame(median_frame, mask_points, [], 5)
    fc = 0
    last_frame = median_frame
+
    for frame in gray_frames:
       frame = mask_frame(frame, mask_points, [], 5)
       subframe = cv2.subtract(frame, last_frame)
@@ -1082,21 +1261,21 @@ def analyze_object(object):
 
    if elp > 5 and dist_per_elp < 1 or dist_per_elp < 1:
       moving = "not moving"
-      meteor_yn = "n"
+      meteor_yn = "no"
       obj_class = "star"
    else:
       moving = "moving"
    if min_max_dist > 12 and dist_per_elp < .1:
       moving = "slow moving"
-      meteor_yn = "n"
+      meteor_yn = "no"
       obj_class = "plane"
    if min_max_dist > 12 and dist_per_elp < .1:
       moving = "slow moving"
-      meteor_yn = "n"
+      meteor_yn = "no"
       obj_class = "plane"
    if dist_per_elp < .8 and dist_per_elp > .1:
       moving = "slow moving"
-      meteor_yn = "n"
+      meteor_yn = "no"
       obj_class = "plane"
 
    #cm
@@ -1744,18 +1923,25 @@ def flex_detect(video_file):
    marked_video_file = video_file.replace(".mp4", "-pub.mp4")
    remaster(show_frames, marked_video_file, station_id,meteor_objects[0])
 
-def fast_check_events(sum_vals, subframes):
+def fast_check_events(sum_vals, max_vals, subframes):
    events = []
    event = []
+   event_info = []
+   events_info = []
    cm = 0
    nomo = 0
    i = 0
    med_sum = np.median(sum_vals)
+   med_max = np.median(max_vals)
+   #median_frame = cv2.convertScaleAbs(np.median(np.array(subframes), axis=0))
    for sum_val in sum_vals:
-      if sum_val > med_sum * 2:
+      max_val = max_vals[i]
+      #print(i, med_sum, med_max, sum_val , max_val)
+      if sum_val > med_sum * 2 or max_val > med_max * 10:
          subframe = subframes[i]
          min_val, max_val, min_loc, (mx,my)= cv2.minMaxLoc(subframe)
          if max_val > 10:
+            event_info.append((sum_val, max_val, mx, my))
             event.append(i)
             cm = cm + 1
             nomo = 0
@@ -1765,17 +1951,40 @@ def fast_check_events(sum_vals, subframes):
          nomo = nomo + 1
       if cm > 2 and nomo > 3:
          events.append(event)
+         events_info.append(event_info)
          event = []
+         event_info = []
          cm = 0
       elif nomo > 3:
          event = []
+         event_info = []
          cm = 0
       i = i + 1
 
+   i = 0
+   objects = {}
    for event in events:
-      print(event)
+      object = None
+      fc = 0
+      for evi in events_info[i]:
+         sv, mv, mx, my = evi
+         fn = event[fc]
+         object, objects = find_object(objects, fn,mx, my, 5, 5)
+         fc = fc + 1
+      i = i + 1
 
-   return(events)
+
+   pos_meteors = {}
+   mc = 1
+   for object in objects:
+      if objects[object]['report']['min_max_dist'] > 5 and objects[object]['report']['max_cm'] >= 3 and objects[object]['report']['dist_per_elp'] > .8:
+         pos_meteors[mc] = objects[object]
+         mc = mc + 1
+
+   #print("EVENTS:", events)
+   #print("POS METEORS:", pos_meteors)
+
+   return(events, pos_meteors)
 
 
 def quick_scan(video_file):
@@ -1815,24 +2024,41 @@ def quick_scan(video_file):
    print("STATION:", station_id, video_file, start_time)
 
    # load the frames
-   frames,color_frames,subframes,sum_vals = load_frames_fast(video_file, json_conf, 0, 0, [], 0,[])
-   events = fast_check_events(sum_vals, subframes)
+   frames,color_frames,subframes,sum_vals,max_vals = load_frames_fast(video_file, json_conf, 0, 0, [], 0,[])
+   events,pos_meteors = fast_check_events(sum_vals, max_vals, subframes)
    
    # check time after frame load
    elapsed_time = time.time() - start_time
    print("Loaded frames.", elapsed_time)
    print("Total Frames:", len(frames))
-   exit()
+   print("Possible Meteors:", pos_meteors)
    # check to make sure frames were loaded
    if len(frames) < 5:
       print("bad input file.")
       return()
 
+
+
+
    # Stack the frames and report the run time
    stacked_frame = stack_frames_fast(frames)
-   elapsed_time = time.time() - start_time
    cv2.imwrite(stack_file, stacked_frame) 
+   elapsed_time = time.time() - start_time
    print("Stacked frames.", elapsed_time)
+
+   if len(pos_meteors) == 0:
+      elapsed_time = time.time() - start_time
+      print("ELAPSED TIME:", elapsed_time)
+      print("NO METEORS:", elapsed_time)
+      return(0, "No meteors found.")
+   else:
+      meteor_file = video_file.replace(".mp4", "-meteor.json")
+      #save_json_file(meteor_file, pos_meteors)
+      print("POSSIBL METEORS FOUND! Do deeper check.")
+      elapsed_time = time.time() - start_time
+      print("ELPASED TIME:", elapsed_time)
+
+   # Only continue if we made it past the easy / fast detection
 
 
    ############################################################################
@@ -1859,7 +2085,6 @@ def quick_scan(video_file):
 
    elapsed_time = time.time() - start_time
    print("ELPASED TIME:", elapsed_time)
-   exit()
 
    # Find the meteor like objects 
    meteors = []
@@ -1890,11 +2115,11 @@ def quick_scan(video_file):
       save_json_file(fail_file, non_meteors)
       print("NO METEORS FOUND!", fail_file)
       elapsed_time = time.time() - start_time
-      print("ELPASED TIME:", elapsed_time)
+      print("ELPASED TIME NO METEORS:", elapsed_time)
       return(0, "No meteors found.")
    else:
       meteor_file = video_file.replace(".mp4", "-meteor.json")
-      save_json_file(fail_file, meteors)
+      save_json_file(meteor_file, meteors)
       print("METEORS FOUND!", meteor_file)
       elapsed_time = time.time() - start_time
       print("ELPASED TIME:", elapsed_time)
@@ -2626,6 +2851,7 @@ def load_frames_fast(trim_file, json_conf, limit=0, mask=0,crop=(),color=0,resiz
    frames = []
    subframes = []
    sum_vals = []
+   max_vals = []
    frame_count = 0
    go = 1
    while go == 1:
@@ -2634,11 +2860,12 @@ def load_frames_fast(trim_file, json_conf, limit=0, mask=0,crop=(),color=0,resiz
          if frame is None:
             if frame_count <= 5 :
                cap.release()
-               return(frames,color_frames)
+               return(frames,color_frames,sub_frames,sum_vals,max_vals)
             else:
                go = 0
          else:
-            color_frames.append(frame)
+            #print("FRMAE:", frame_count)
+            #color_frames.append(frame)
             if limit != 0 and frame_count > limit:
                cap.release()
                return(frames)
@@ -2658,7 +2885,12 @@ def load_frames_fast(trim_file, json_conf, limit=0, mask=0,crop=(),color=0,resiz
                subframe = cv2.subtract(frame, last_frame)
                subframes.append(subframe)
                sum_val =cv2.sumElems(subframe)[0]
+               if sum_val > 100:
+                  min_val, max_val, min_loc, (mx,my)= cv2.minMaxLoc(subframe)
+               else:
+                  max_val = 0
                sum_vals.append(sum_val)
+               max_vals.append(max_val)
 
             if len(crop) == 4:
                ih,iw = frame.shape
@@ -2689,7 +2921,7 @@ def load_frames_fast(trim_file, json_conf, limit=0, mask=0,crop=(),color=0,resiz
    if len(crop) == 4:
       return(frames,x1,y1)
    else:
-      return(frames, color_frames, subframes, sum_vals)
+      return(frames, color_frames, subframes, sum_vals, max_vals)
 
         
 
@@ -2708,4 +2940,11 @@ if cmd == "qb" or cmd == "batch":
 
 if cmd == "som" or cmd == "scan_old_meteor_dir":
    scan_old_meteor_dir(video_file)
-
+if cmd == "sq" or cmd == "scan_queue":
+   scan_queue(video_file)
+if cmd == "cm" or cmd == "confirm_meteor":
+   confirm_meteor(video_file)
+if cmd == "bc" or cmd == "batch_confirm":
+   batch_confirm()
+if cmd == "mfs" or cmd == "move_files":
+   batch_move()
