@@ -28,8 +28,9 @@ def folder_analyser(folder):
             res[ARCHIVE_SUB_FOLDER_GROUP[groupNum]] = match.group(groupNum)
          groupNum = groupNum + 1
    
-   print("RES<br/>")
+   print("RES: ")
    print(res)
+   print("<br>")
 
 
 def get_archive_for_year(year):
