@@ -1415,10 +1415,7 @@ def calibration_old(json_conf,form):
          print("<figure><a href=webUI.py?cmd=free_cal&input_file=" + file + "><img width=354 src=" + az_grid_file + "><figcaption>"+ fn + "</figcaption></figure>")
    print("<div style=\"clear: both\"></div>")
    #cal_params = get_cal_params(json_conf, cams_id)
-
-
-
-
+ 
    stab,sr,sc,et,er,ec = div_table_vars()
    #print(stab)
 
@@ -1434,8 +1431,9 @@ def calibration_old(json_conf,form):
    #print(et)
 
 def get_meteor_dirs(meteor_dir):
-   meteor_dirs = []
    files = glob.glob("/mnt/ams2/meteors/*")
+   meteor_dirs = []
+   
    for f in files:
       if "trash" not in f:
          if cfe(f,1) == 1:
