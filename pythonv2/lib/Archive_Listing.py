@@ -26,7 +26,7 @@ def folder_analyser(folder):
     for groupNum in range(0, len(matches.groups())):
         groupNum = groupNum + 1
         if(matches.group(groupNum) is not None):
-           res[ARCHIVE_SUB_FOLDER_GROUP[groupNum]] = matches.group(groupNum)
+           res[ARCHIVE_SUB_FOLDER_GROUP[groupNum]] = int(matches.group(groupNum))
 
    
    return res
@@ -47,10 +47,13 @@ def get_archive_for_year(year):
       print("=> " +  file)
       print("<br/>")
 
-      #if(analysed_folder['day'] not in d[analysed_folder['month']] ):
-      #   d[int(analysed_folder['month'])][int(analysed_folder['day'])] = []
+      if(d[analysed_folder['month']] is None):
+         d[analysed_folder['month']] = []
+      
+      if(analysed_folder['day'] not in d[analysed_folder['month']] ):
+         d[analysed_folder['month']][analysed_folder['day']] = []
 
-      #d[int(analysed_folder['month'])][int(analysed_folder['day'])].append(path.basename(file))
+      d[int(analysed_folder['month'])][int(analysed_folder['day'])].append(path.basename(file))
    
    return d
 
