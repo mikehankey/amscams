@@ -63,7 +63,7 @@ def archive_listing(form):
    achr = get_archive_for_year(year)
    all = {year:achr}
 
-   #print(all)
+   print(all)
 
 
  
