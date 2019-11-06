@@ -19,7 +19,7 @@ ARCHIVE_SUB_FOLDER_GROUP = ['all','year','month','day','totot']
 # PARSE ARCHIVE FOLDER TO RETRIEVE YEAR, MONTH & DAY
 def folder_analyser(folder):
    n_folder = folder + "/"
-   matches = re.finditer(ARCHIVE_SUB_FOLDER_REGEX, n_folder, re.MULTILINE)
+   matches = re.search(ARCHIVE_SUB_FOLDER_REGEX, n_folder)
    res = {}
    
    if matches:
