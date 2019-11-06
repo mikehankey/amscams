@@ -20,7 +20,7 @@ import ephem
 from lib.Video_Tools_cv import remaster
 from lib.VideoLib import get_masks, find_hd_file_new, load_video_frames, sync_hd_frames, make_movie_from_frames, add_radiant
 
-from lib.UtilLib import check_running, angularSeparation, bound_cnt
+from lib.UtilLib import check_running, angularSeparation
 from lib.CalibLib import radec_to_azel, clean_star_bg, get_catalog_stars, find_close_stars, XYtoRADec, HMS2deg, AzEltoRADec, get_active_cal_file
 
 from lib.ImageLib import mask_frame , stack_frames, preload_image_acc
@@ -45,9 +45,110 @@ json_conf = load_json_file("../conf/as6.json")
 
 ARCHIVE_DIR = "/mnt/NAS/meteor_archive/"
 
+def batch_move():
+   files = glob.glob("/mnt/ams2/CAMS/queue/*.mp4")
+   for video_file in files:
+      if "trim" in video_file:
+         trim = 1
+      else:
+         stack_file = video_file.replace(".mp4", "-stacked.png")
+         meteor_file = video_file.replace(".mp4", "-meteor.json")
+         fail_file = video_file.replace(".mp4", "-fail.json")
+      if cfe(stack_file) == 1:
+         # processing is done for this file
+         video_fn = video_file.split("/")[-1]
+         stack_fn = stack_file.split("/")[-1]
+         meteor_fn = meteor_file.split("/")[-1]
+         fail_fn = meteor_file.split("/")[-1]
+         (hd_datetime, cam, sd_date, sd_y, sd_m, sd_d, sd_h, sd_M, sd_s) = convert_filename_to_date_cam(video_file)
+         proc_dir = "/mnt/ams2/SD/proc2/" + sd_y + "_" + sd_m + "_" + sd_d + "/" 
+         if cfe(proc_dir, 1) == 0:
+            os.system("mkdir " + proc_dir)
+            os.system("mkdir " + proc_dir + "failed")
+            os.system("mkdir " + proc_dir + "passed")
+            os.system("mkdir " + proc_dir + "images")
+            os.system("mkdir " + proc_dir + "data")
+         if cfe(meteor_file) == 0:
+            cmd = "mv " + video_file + " " + proc_dir
+            print(cmd)
+            os.system(cmd)
+            cmd = "mv " + stack_file + " " + proc_dir + "images/"
+            print(cmd)
+            os.system(cmd)
+            if cfe(fail_file) == 1:
+               cmd = "mv " + fail_file + " " + proc_dir + "failed/"
+               print(cmd)
+               os.system(cmd)
+            #cmd = "mv " + meteor_file + " " + proc_dir + "passed/"
+
+def find_sun_alt(capture_date):
+
+   device_lat = json_conf['site']['device_lat']
+   device_lng = json_conf['site']['device_lng']
+
+   obs = ephem.Observer()
+
+   obs.pressure = 0
+   obs.horizon = '-0:34'
+   obs.lat = device_lat
+   obs.lon = device_lng
+   obs.date = capture_date
+
+   sun = ephem.Sun()
+   sun.compute(obs)
+
+   (sun_alt, x,y) = str(sun.alt).split(":")
+
+   saz = str(sun.az)
+   (sun_az, x,y) = saz.split(":")
+   if int(sun_alt) < -1:
+      sun_status = "night"
+   else:
+      sun_status = "day"
+   print("SUN AZ:", sun_az)
+   print("SUN ALT:", sun_alt)
+   return(int(sun_alt))
+
+
+def objects_to_clips(meteor_objects):
+   clips = []
+   good_objs = []
+   for obj in meteor_objects:
+      ok = 1 
+      for clip in clips:
+         if abs(obj['ofns'][0] - clip) < 25:
+            ok = 0
+      if ok == 1:
+         clips.append(obj['ofns'][0])
+         good_objs.append(obj)
+      
+   return(good_objs)
+
+def batch_confirm():
+   files = glob.glob("/mnt/ams2/CAMS/queue/*meteor.json")
+   for file in files:
+      confirm_meteor(file)
+
+def minmax_xy(obj):
+   min_x = min(obj['oxs'])
+   max_x = max(obj['oxs'])
+   min_y = min(obj['oys'])
+   max_y = max(obj['oys'])
+   return(min_x, min_y, max_x, max_y)
+
 def confirm_meteor(meteor_json_file):
-   meteor_objects = load_json_file(meteor_json_file)
    video_file = meteor_json_file.replace("-meteor.json", ".mp4")
+   print("CONFIRM:", video_file)
+   (hd_datetime, cam, sd_date, sd_y, sd_m, sd_d, sd_h, sd_M, sd_s) = convert_filename_to_date_cam(video_file)
+   sun_alt = find_sun_alt(hd_datetime)
+   if sun_alt > -5:
+      sun_up = 1
+      print("SUN is up:", sun_alt)
+   else:
+      sun_up = 0
+   
+   meteor_objects = load_json_file(meteor_json_file)
+   meteor_objects = objects_to_clips(meteor_objects)
 
    for obj in meteor_objects:
       start = obj['ofns'][0] - 25
@@ -56,19 +157,51 @@ def confirm_meteor(meteor_json_file):
       end = obj['ofns'][-1] + 25
       if end > 1499:
          end = 1499 
-      trim_clip, trim_start, trim_end = make_trim_clip(video_file, start, end)
-      frames,color_frames,subframes,sum_vals,max_vals = load_frames_fast(trim_clip, json_conf, 0, 0, [], 0,[])
-      for f in subframes:
-         cv2.imshow('pepe', f)
-         cv2.waitKey(0)
-      print(obj) 
+      print(obj['ofns'])
+      if sun_up == 0:
+         # Run deeper detection on clip
+
+         trim_clip, trim_start, trim_end = make_trim_clip(video_file, start, end)
+         frames,color_frames,subframes,sum_vals,max_vals = load_frames_fast(trim_clip, json_conf, 0, 0, [], 0,[])
+
+         frame = frames[0]
+         min_x, min_y,max_x,max_y = minmax_xy(obj)
+         fx = int((min_x + max_x) / 2)
+         fy = int((min_y + max_y) / 2)
+         if max_x - min_x < 100 or max_y - min_y < 100:
+            print("FRAME SIZE:", frame.shape[1], frame.shape[0])
+            cx1,cy1,cx2,cy2= bound_cnt(fx,fy,frame.shape[1],frame.shape[0], 100)
+         else:
+            cx1,cy1,cx2,cy2= bound_cnt(fx,fy,frame.shape[1],frame.shape[0], 200)
+
+         for i in range (0, len(frames) - 1):
+            frame = frames[i]
+
+            w =  frame.shape[1]
+            subframe = subframes[i]
+            total_w = frame.shape[1] * 2
+            total_h = frame.shape[0] 
+            show_frame = np.zeros((total_h,total_w,3),dtype=np.uint8)
+            frame = cv2.cvtColor(frame,cv2.COLOR_GRAY2RGB)
+            subframe = cv2.cvtColor(subframe,cv2.COLOR_GRAY2RGB)
+            print("CX:", cx1,cy1, cx2,cy2)
+            cv2.rectangle(frame, (cx1, cy1), (cx2, cy2), (255,255,255), 1, cv2.LINE_AA)
+            cv2.rectangle(subframe, (cx1, cy1), (cx2, cy2), (255,255,255), 1, cv2.LINE_AA)
+
+            show_frame[0:total_h,0:w] = frame
+            show_frame[0:total_h,w:w+w] = subframe
+     
+
+            cv2.imshow('pepe', show_frame)
+            cv2.waitKey(0)
+         print(obj) 
 
 def make_trim_clip(video_file, start, end):
    outfile = video_file.replace(".mp4", "-trim" + str(start) + ".mp4")
    cmd = "/usr/bin/ffmpeg -y -i " + video_file + " -vf select=\"between(n\," + str(start) + "\," + str(end) + "),setpts=PTS-STARTPTS\" " + outfile
-   
-   print(cmd)
-   os.system(cmd)
+   if cfe(outfile) == 0:   
+      print(cmd)
+      os.system(cmd)
    return(outfile, start, end)
 
 def scan_queue(cam):
@@ -2811,4 +2944,7 @@ if cmd == "sq" or cmd == "scan_queue":
    scan_queue(video_file)
 if cmd == "cm" or cmd == "confirm_meteor":
    confirm_meteor(video_file)
-
+if cmd == "bc" or cmd == "batch_confirm":
+   batch_confirm()
+if cmd == "mfs" or cmd == "move_files":
+   batch_move()
