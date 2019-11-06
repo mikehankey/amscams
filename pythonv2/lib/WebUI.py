@@ -1431,7 +1431,8 @@ def calibration_old(json_conf,form):
    #print(et)
 
 def get_meteor_dirs(meteor_dir):
-   files = glob.glob("/mnt/ams2/meteors/*")
+   files = glob.glob(os.path.join('/mnt/ams2/meteors/', '*'))   
+   #glob.glob("/mnt/ams2/meteors/*")
    meteor_dirs = []
    
    for f in files:
