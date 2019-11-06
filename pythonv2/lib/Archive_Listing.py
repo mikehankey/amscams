@@ -13,7 +13,7 @@ from collections import defaultdict
 
 
 ARCHIVE_SUB_FOLDER_REGEX = r"/([0-9]{4})*?/([0-9]{2})*?/([0-9]{2})*?/"
-ARCHIVE_SUB_FOLDER_GROUP = ['all','year','month','day']
+ARCHIVE_SUB_FOLDER_GROUP = ['all','year','month','day','totot']
 
 
 # PARSE ARCHIVE FOLDER TO RETRIEVE YEAR, MONTH & DAY
@@ -22,7 +22,7 @@ def folder_analyser(folder):
    matches = re.finditer(ARCHIVE_SUB_FOLDER_REGEX, n_folder, re.MULTILINE)
    res = {}
   
-   for matchNum, match in enumerate(matches, start=0):
+   for matchNum, match in enumerate(matches, start=1):
       for groupNum in range(0, len(match.groups())): 
          if(match.group(groupNum) is not None):
             res[ARCHIVE_SUB_FOLDER_GROUP[groupNum]] = match.group(groupNum)
