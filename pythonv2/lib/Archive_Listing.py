@@ -3,13 +3,23 @@ import sys
 import cgitb
 import datetime
 import os
-
 import glob
+import json
 
+from collections import defaultdict 
 from lib.Get_Station_Id import get_station_id
 from lib.REDUCE_VARS import *
 
 
+def get_archive_for_year(year):
+   main_dir = METEOR_ARCHIVE + get_station_id() + '/' + METEOR + str(year)
+   d = defaultdict(list)
+
+   for file in glob.iglob(path.join(base_path, '**/*.json'), recursive=True):
+      print(file)
+      d[path.basename(path.dirname(file))].append(path.basename(file))
+
+   return d
 
 def archive_listing(form):
    limit_day = form.getvalue('limit_day')
@@ -28,25 +38,45 @@ def archive_listing(form):
   
    # MAIN DIR:METEOR
    #/mnt/ams2/meteor_archive/[STATION_ID]/METEOR/[YEAR]
-   main_dir = METEOR_ARCHIVE + get_station_id() + '/' + METEOR + str(year)
-   
-   # Get the available month for the current year 
-   all_ = {}
-   all_months = sorted(glob.glob(main_dir+'/*'))
-   all_days = {}
+   #main_dir = METEOR_ARCHIVE + get_station_id() + '/' + METEOR + str(year)
+
+
+
+# Get the available month for the current year 
+import glob
+import os
+main_dir  = '/mnt/ams2/meteor_archive/' + 'AMS7' + '/' + 'METEOR/' + '2019'
+year = 2019
  
-   for i,month in enumerate(all_months): 
-      all_[month] = {os.path.basename(x) for x in sorted(glob.glob(month+'/*'))}
-      for x,day in enumerate(all_[month]):
-         all_days[month] = {os.path.basename(y) for y in sorted(glob.glob(month+'/'+str(day)+'/*.json'))}
-         print(month)
-         print(" => ")
-         print(all_days[month])
-         print("<br>")
+all_months = {int(os.path.basename(x)) for x in sorted(glob.glob(main_dir+'/*'))}
+all_days = {}
+_all = {year:all_months}
+ 
 
-   print("<br>")
-   print(all_)
+for i,month in enumerate(all_months):  
+   days = {int(os.path.basename(x)) for x in sorted(glob.glob(main_dir+'/'+str(month)+'/*'))} 
+   for x,day in enumerate(days): 
+      all_detections =  [os.path.basename(y) for y in sorted(glob.glob(main_dir+'/'+str(month)+'/'+str(day)+'/*.json'))] 
+      if(month not in _all[year]):
+         _all{year:month}  = []
+      _all{year:month} = all_detections
 
-   #print("ALL MONTHS")
-   #print("<br>")
-   #print(all_months)
+print(_all)
+
+   _all = {"2019": {"01": {"23":['a','b']}}}
+
+
+
+from collections import defaultdict
+from os import path
+import glob
+import json
+
+base_path = '/mnt/ams2/meteor_archive/' + 'AMS7' + '/' + 'METEOR/' + '2019'
+d = defaultdict(list)
+
+for file in glob.iglob(path.join(base_path, '**/*.json'), recursive=True):
+  print(file)
+  d[path.basename(path.dirname(file))].append(path.basename(file))
+
+print(json.dumps(d))
