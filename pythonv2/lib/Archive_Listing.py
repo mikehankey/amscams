@@ -34,6 +34,11 @@ def archive_listing(form):
    all_months = sorted(glob.glob(main_dir+'/*'))
    all_ = {}
 
+   print("ALL MONTHS")
+   print("<br>")
+   print(all_months)
+   print("<br/>*****************<br/>")
+
    for i,month in enumerate(all_months): 
       print(month + "<br>")
       all_[month] = {int(os.path.basename(x)) for x in sorted(glob.glob(month+'/*'))}
