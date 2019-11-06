@@ -32,16 +32,13 @@ def archive_listing(form):
    
    # Get the available month for the current year 
    all_months = sorted(glob.glob(main_dir+'/*'))
-   all_ = {}
-
-   print("ALL MONTHS")
-   print("<br>")
-   print(all_months)
-   print("<br/>*****************<br/>")
-
+   all_days = {}
+ 
    for i,month in enumerate(all_months): 
       all_[month] = {os.path.basename(x) for x in sorted(glob.glob(month+'/*'))}
-      #for x,day in enumerate(all_[month]):
+      for x,day in enumerate(all_[month]):
+         all_days[month] = {os.path.basename(y) for y in sorted(glob.glob(month+'/'+str(day)+'/*.json'))}
+      
       #   all_detections = {os.path.basename(y) for y in sorted(glob.glob(month+'/'+str(day)+'/*.json'))}
       #   all_[month]['detections'] = {}
          
