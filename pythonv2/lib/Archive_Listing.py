@@ -46,7 +46,7 @@ def archive_listing(form):
          all_detections = {os.path.basename(y) for y in sorted(glob.glob(month+'/'+str(day)+'/*.json'))}
          if month[x] not in all_
             all_[month[x]] = {}
-          all_[month][x] = all_detections
+          all_[month[x]] = all_detections
          
          
          #all_[month][x] = {os.path.basename(y) for y in sorted(glob.glob(str(day)+'/*.json'))}
