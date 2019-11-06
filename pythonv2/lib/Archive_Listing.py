@@ -17,7 +17,7 @@ ARCHIVE_SUB_FOLDER_GROUP = ['year','month','day']
 
 
 # PARSE ARCHIVE FOLDER TO RETRIEVE YEAR, MONTH & DAY
-def name_analyser(folder):
+def folder_analyser(folder):
    matches = re.finditer(ARCHIVE_SUB_FOLDER_REGEX, folder, re.MULTILINE)
    res = {}
   
@@ -36,7 +36,7 @@ def get_archive_for_year(year):
    d = defaultdict(list)
 
    for file in glob.iglob(path.join(main_dir, '**/*.json'), recursive=True):
-      print(file)
+      print(folder_analyser(path.dirname(file))))
       d[path.basename(path.dirname(file))].append(path.basename(file))
 
    return d
