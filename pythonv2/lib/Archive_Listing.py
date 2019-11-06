@@ -40,13 +40,10 @@ def archive_listing(form):
    print("<br/>*****************<br/>")
 
    for i,month in enumerate(all_months): 
-      print(month + "<br>")
       all_[month] = {os.path.basename(x) for x in sorted(glob.glob(month+'/*'))}
       for x,day in enumerate(all_[month]):
          all_detections = {os.path.basename(y) for y in sorted(glob.glob(month+'/'+str(day)+'/*.json'))}
-         if month[x] not in all_
-            all_[month[x]] = {}
-          all_[month[x]] = all_detections
+         all_[month[x]]['detections'] = {}
          
          
          #all_[month][x] = {os.path.basename(y) for y in sorted(glob.glob(str(day)+'/*.json'))}
