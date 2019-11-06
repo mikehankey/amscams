@@ -22,34 +22,25 @@ def folder_analyser(folder):
    matches = re.search(ARCHIVE_SUB_FOLDER_REGEX, n_folder)
    res = {}
    
-   if matches:
-    print ("Match was found at {start}-{end}: {match}".format(start = matches.start(), end = matches.end(), match = matches.group()))
-    
+   if matches: 
     for groupNum in range(0, len(matches.groups())):
         groupNum = groupNum + 1
         if(matches.group(groupNum) is not None):
            res[ARCHIVE_SUB_FOLDER_GROUP[groupNum]] = matches.group(groupNum)
-        #print ("Group {groupNum} found at {start}-{end}: {group}".format(groupNum = groupNum, start = matches.start(groupNum), end = matches.end(groupNum), group = matches.group(groupNum)))
-   
-   print(res)
 
-   #for matchNum, match in enumerate(matches, start=1):
-   #   for groupNum in range(0, len(match.groups())): 
-   #      if(match.group(groupNum) is not None):
-   #         res[ARCHIVE_SUB_FOLDER_GROUP[groupNum]] = match.group(groupNum)
-   #      groupNum = groupNum + 1
-   
-   #return res
+      return res
+   else:
+      return {}
 
 
+# GET ALL ARCHIVES FOR A GIVEN YEAR
 def get_archive_for_year(year):
    main_dir = METEOR_ARCHIVE + get_station_id() + '/' + METEOR + str(year)
    d = defaultdict(list)
 
    for file in glob.iglob(path.join(main_dir, '**/*.json'), recursive=True):
-      print(folder_analyser(path.dirname(file)))
-      d[path.basename(path.dirname(file))].append(path.basename(file))
-
+      analysed_folder = folder_analyser(path.dirname(file)))
+      d[analysed_folder['month']].append(path.basename(file))
    return d
 
 def archive_listing(form):
