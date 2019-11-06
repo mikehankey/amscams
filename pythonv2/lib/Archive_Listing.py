@@ -34,6 +34,9 @@ def folder_analyser(folder):
 
 # GET ALL ARCHIVES FOR A GIVEN YEAR
 def get_archive_for_year(year):
+   # DEBUG
+   cgitb.enable()
+
    main_dir = METEOR_ARCHIVE + get_station_id() + '/' + METEOR + str(year)
    d = defaultdict(list)
 
