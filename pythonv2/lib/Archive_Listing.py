@@ -33,10 +33,15 @@ def archive_listing(form):
    # Get the available month for the current year 
    all_months = sorted(glob(main_dir+'/*'))
 
-   for(months in all_months):
+   for i,month in enumerate(all_months):
+      #day_dir = sorted(glob(month+'/*'))
+      print(month + "-<br>")
 
 
+   #print("ALL MONTHS")
+   #print("<br>")
+   #print(all_months)
 
-   print("FOLDER " + main_dir)
-   print("<br>")
-   print(all_folders)
+   #print("ALL MONTHS")
+   #print("<br>")
+   #print(all_months)
