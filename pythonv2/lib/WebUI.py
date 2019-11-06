@@ -1435,7 +1435,7 @@ def calibration_old(json_conf,form):
 
 def get_meteor_dirs(meteor_dir):
    meteor_dirs = []
-   files = glob.glob("/mnt/ams2/meteors/*")
+   files = glob("/mnt/ams2/meteors/*")
    for file in files:
       if "trash" not in file:
          if cfe(file,1) == 1:
