@@ -44,7 +44,8 @@ def get_archive_for_year(year):
       analysed_folder = folder_analyser(path.dirname(file))
       print(analysed_folder)
       print("<br/>")
-
+      print("=> " +  file)
+      print("<br/>")
 
       #if(analysed_folder['day'] not in d[analysed_folder['month']] ):
       #   d[int(analysed_folder['month'])][int(analysed_folder['day'])] = []
