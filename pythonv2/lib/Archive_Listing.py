@@ -42,6 +42,8 @@ def get_archive_for_year(year):
       d[analysed_folder['month']].append(path.basename(file))
    return d
 
+
+# MAIN FUNCTION FOR THE ARCHIVE LISTING PAGE
 def archive_listing(form):
    limit_day = form.getvalue('limit_day')
    cur_page  = form.getvalue('p')
@@ -63,7 +65,7 @@ def archive_listing(form):
    achr = get_archive_for_year(year)
    all = {year:achr}
 
-   print(all)
+   print(json.dumps(all))
 
 
  
