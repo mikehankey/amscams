@@ -22,7 +22,7 @@ def folder_analyser(folder):
    matches = re.finditer(ARCHIVE_SUB_FOLDER_REGEX, n_folder, re.MULTILINE)
    res = {}
   
-   for matchNum, match in enumerate(matches, start=1):
+   for matchNum, match in enumerate(matches, start=0):
       for groupNum in range(0, len(match.groups())): 
          if(match.group(groupNum) is not None):
             res[ARCHIVE_SUB_FOLDER_GROUP[groupNum]] = match.group(groupNum)
