@@ -35,7 +35,7 @@ def archive_listing(form):
 
    for i,month in enumerate(all_months):
       #day_dir = sorted(glob(month+'/*'))
-      print(month + "-<br>")
+      print(month + "<br>")
 
 
    #print("ALL MONTHS")
