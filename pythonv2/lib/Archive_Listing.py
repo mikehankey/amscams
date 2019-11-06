@@ -36,7 +36,7 @@ def get_archive_for_year(year):
    d = defaultdict(list)
 
    for file in glob.iglob(path.join(main_dir, '**/*.json'), recursive=True):
-      print(folder_analyser(path.dirname(file))))
+      print(folder_analyser(path.dirname(file)))
       d[path.basename(path.dirname(file))].append(path.basename(file))
 
    return d
