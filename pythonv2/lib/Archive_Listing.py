@@ -39,21 +39,8 @@ def archive_listing(form):
       all_[month] = {os.path.basename(x) for x in sorted(glob.glob(month+'/*'))}
       for x,day in enumerate(all_[month]):
          all_days[month] = {os.path.basename(y) for y in sorted(glob.glob(month+'/'+str(day)+'/*.json'))}
-      
-      #   all_detections = {os.path.basename(y) for y in sorted(glob.glob(month+'/'+str(day)+'/*.json'))}
-      #   all_[month]['detections'] = {}
-         
-         
-         #all_[month][x] = {os.path.basename(y) for y in sorted(glob.glob(str(day)+'/*.json'))}
-         #print("*************DAY: ")
-         #print(day)
-         #print("<br/>")
-         #print("PATH <br/>")
-         #print(month+'/'+str(day)+'/*.json')
-      #   print("<br/>")
-        
-         #all_[month][x] = {}
-         #all_[month][x].append(all_detections)
+      all_[month][day] =  all_days[month]    
+       
 
    print("<br>")
    print(all_)
