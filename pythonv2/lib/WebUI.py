@@ -1435,19 +1435,19 @@ def calibration_old(json_conf,form):
 
 def get_meteor_dirs(meteor_dir):
    meteor_dirs = []
-   files = glob("/mnt/ams2/meteors/*")
-   for file in files:
-      if "trash" not in file:
-         if cfe(file,1) == 1:
-            meteor_dirs.append(file)
+   files = glob.glob("/mnt/ams2/meteors/*")
+   for f in files:
+      if "trash" not in f:
+         if cfe(f,1) == 1:
+            meteor_dirs.append(f)
    return(meteor_dirs)
 
 def get_meteors(meteor_dir,meteors):
    glob_dir = meteor_dir + "*-trim*.mp4"
    files = glob.glob(meteor_dir + "/*-trim*.json")
-   for file in files:
-      if "calparams" not in file and "reduced" not in file and "manual" not in file:
-         meteors.append(file)
+   for f in files:
+      if "calparams" not in f and "reduced" not in f and "manual" not in f:
+         meteors.append(f)
    return(meteors)
 
  
