@@ -47,7 +47,8 @@ def archive_listing(form):
          print("DAY ")
          print(str(day))
          print("<br/>")
-
+         print({os.path.basename(y) for y in sorted(glob.glob(str(day)+'/*.json'))})
+         print("<br/>")
   
    print("<br>")
    print(all_)
