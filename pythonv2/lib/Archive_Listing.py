@@ -28,7 +28,7 @@ def folder_analyser(folder):
     for groupNum in range(0, len(matches.groups())):
         groupNum = groupNum + 1
         if(matches.group(groupNum) is not None):
-           res[ARCHIVE_SUB_FOLDER_GROUP[groupNum]] = match.group(groupNum)
+           res[ARCHIVE_SUB_FOLDER_GROUP[groupNum]] = matches.group(groupNum)
         #print ("Group {groupNum} found at {start}-{end}: {group}".format(groupNum = groupNum, start = matches.start(groupNum), end = matches.end(groupNum), group = matches.group(groupNum)))
    
    print(res)
