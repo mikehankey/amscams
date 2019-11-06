@@ -12,16 +12,15 @@ from lib.REDUCE_VARS import *
 from collections import defaultdict 
 
 
-ARCHIVE_SUB_FOLDER_REGEX = r"/((([0-9])+){4})?/((([0-9])+){2})?/((([0-9])+){2})?"
+ARCHIVE_SUB_FOLDER_REGEX = r"/([0-9]{4})*?/([0-9]{2})*?/([0-9]{2})*?/"
 ARCHIVE_SUB_FOLDER_GROUP = ['year','month','day']
 
 
 # PARSE ARCHIVE FOLDER TO RETRIEVE YEAR, MONTH & DAY
 def folder_analyser(folder):
-   matches = re.finditer(ARCHIVE_SUB_FOLDER_REGEX, folder, re.MULTILINE)
+   n_folder = folder + "/"
+   matches = re.finditer(ARCHIVE_SUB_FOLDER_REGEX, n_folder, re.MULTILINE)
    res = {}
-
-   print("ANALYSE " + folder)
   
    for matchNum, match in enumerate(matches, start=1):
       for groupNum in range(0, len(match.groups())): 
