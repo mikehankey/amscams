@@ -41,9 +41,9 @@ def archive_listing(form):
 
    for i,month in enumerate(all_months): 
       all_[month] = {os.path.basename(x) for x in sorted(glob.glob(month+'/*'))}
-      for x,day in enumerate(all_[month]):
-         all_detections = {os.path.basename(y) for y in sorted(glob.glob(month+'/'+str(day)+'/*.json'))}
-         all_[month]['detections'] = {}
+      #for x,day in enumerate(all_[month]):
+      #   all_detections = {os.path.basename(y) for y in sorted(glob.glob(month+'/'+str(day)+'/*.json'))}
+      #   all_[month]['detections'] = {}
          
          
          #all_[month][x] = {os.path.basename(y) for y in sorted(glob.glob(str(day)+'/*.json'))}
@@ -52,7 +52,7 @@ def archive_listing(form):
          #print("<br/>")
          #print("PATH <br/>")
          #print(month+'/'+str(day)+'/*.json')
-         print("<br/>")
+      #   print("<br/>")
         
          #all_[month][x] = {}
          #all_[month][x].append(all_detections)
