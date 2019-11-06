@@ -20,6 +20,8 @@ ARCHIVE_SUB_FOLDER_GROUP = ['year','month','day']
 def folder_analyser(folder):
    matches = re.finditer(ARCHIVE_SUB_FOLDER_REGEX, folder, re.MULTILINE)
    res = {}
+
+   print("ANALYSE " + folder)
   
    for matchNum, match in enumerate(matches, start=1):
       for groupNum in range(0, len(match.groups())): 
