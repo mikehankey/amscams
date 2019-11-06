@@ -21,14 +21,23 @@ def folder_analyser(folder):
    n_folder = folder + "/"
    matches = re.finditer(ARCHIVE_SUB_FOLDER_REGEX, n_folder, re.MULTILINE)
    res = {}
-  
-   for matchNum, match in enumerate(matches, start=1):
-      for groupNum in range(0, len(match.groups())): 
-         if(match.group(groupNum) is not None):
-            res[ARCHIVE_SUB_FOLDER_GROUP[groupNum]] = match.group(groupNum)
-         groupNum = groupNum + 1
    
-   return res
+   if matches:
+    print ("Match was found at {start}-{end}: {match}".format(start = matches.start(), end = matches.end(), match = matches.group()))
+    
+    for groupNum in range(0, len(matches.groups())):
+        groupNum = groupNum + 1
+        
+        print ("Group {groupNum} found at {start}-{end}: {group}".format(groupNum = groupNum, start = matches.start(groupNum), end = matches.end(groupNum), group = matches.group(groupNum)))
+ 
+
+   #for matchNum, match in enumerate(matches, start=1):
+   #   for groupNum in range(0, len(match.groups())): 
+   #      if(match.group(groupNum) is not None):
+   #         res[ARCHIVE_SUB_FOLDER_GROUP[groupNum]] = match.group(groupNum)
+   #      groupNum = groupNum + 1
+   
+   #return res
 
 
 def get_archive_for_year(year):
