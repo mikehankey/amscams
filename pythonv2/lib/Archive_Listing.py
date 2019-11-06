@@ -4,7 +4,7 @@ import cgitb
 import datetime
 import os
 
-from glob import glob
+import glob
 
 from lib.Get_Station_Id import get_station_id
 from lib.REDUCE_VARS import *
