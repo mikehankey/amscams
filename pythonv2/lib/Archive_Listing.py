@@ -41,11 +41,11 @@ def archive_listing(form):
 
    for i,month in enumerate(all_months): 
       print(month + "<br>")
-      all_[month] = {int(os.path.basename(x)) for x in sorted(glob.glob(month+'/*'))}
+      all_[month] = {os.path.basename(x) for x in sorted(glob.glob(month+'/*'))}
       for x,day in enumerate(all_[month]):
          #all_[month][x] = {os.path.basename(y) for y in sorted(glob.glob(str(day)+'/*.json'))}
          print("DAY: ")
-         print(str(day))
+         print(day)
          print("<br/>")
          #print({os.path.basename(y) for y in sorted(glob.glob(month+str(day)+'/*.json'))})
          print("PATH <br/>")
