@@ -2,19 +2,19 @@
 import sys  
 import cgitb
 import datetime
-import os
-
-from glob import glob
-
-from lib.Get_Station_Id import get_station_id
-from lib.REDUCE_VARS import *
+import re
+import glob
+import json
 
 
-
+# MAIN FUNCTION FOR THE ARCHIVE LISTING PAGE
 def archive_listing(form):
    limit_day = form.getvalue('limit_day')
    cur_page  = form.getvalue('p')
    meteor_per_page = form.getvalue('meteor_per_page')
+
+   print("NOTHING")
+   sys.exit(0)
 
    if (cur_page is None) or (cur_page==0):
       cur_page = 1
@@ -28,15 +28,11 @@ def archive_listing(form):
   
    # MAIN DIR:METEOR
    #/mnt/ams2/meteor_archive/[STATION_ID]/METEOR/[YEAR]
-   main_dir = METEOR_ARCHIVE + get_station_id() + '/' + METEOR + str(year)
-   
-   # Get the available month for the current year 
-   all_months = sorted(glob(main_dir+'/*'))
+   #main_dir = METEOR_ARCHIVE + get_station_id() + '/' + METEOR + str(year)
+   achr = get_archive_for_year(year)
+   all = {year:achr}
 
-   for(months in all_months):
-
+   print(json.dumps(all))
 
 
-   print("FOLDER " + main_dir)
-   print("<br>")
-   print(all_folders)
+ 
