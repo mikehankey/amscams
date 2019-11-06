@@ -31,7 +31,7 @@ def archive_listing(form):
    main_dir = METEOR_ARCHIVE + get_station_id() + '/' + METEOR + str(year)
    
    # Get the available month for the current year 
-   all_months = sorted(glob(main_dir+'/*'))
+   all_months = sorted(glob.glob(main_dir+'/*'))
 
    for i,month in enumerate(all_months):
       #day_dir = sorted(glob(month+'/*'))
