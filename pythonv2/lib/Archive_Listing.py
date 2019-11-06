@@ -39,7 +39,9 @@ def get_archive_for_year(year):
 
    for file in glob.iglob(path.join(main_dir, '**/*.json'), recursive=True):
       analysed_folder = folder_analyser(path.dirname(file))
-      d[analysed_folder['month']].append(path.basename(file))
+      if(analysed_folder['day'] not in d[analysed_folder['month']] )
+         d[analysed_folder['month']][analysed_folder['day']] = []
+      d[analysed_folder['month']][analysed_folder['day']].append(path.basename(file))
    return d
 
 
