@@ -28,10 +28,9 @@ def folder_analyser(folder):
         if(matches.group(groupNum) is not None):
            res[ARCHIVE_SUB_FOLDER_GROUP[groupNum]] = matches.group(groupNum)
 
-      return res
-   else:
-      return {}
-
+   
+   return res
+   
 
 # GET ALL ARCHIVES FOR A GIVEN YEAR
 def get_archive_for_year(year):
@@ -39,7 +38,7 @@ def get_archive_for_year(year):
    d = defaultdict(list)
 
    for file in glob.iglob(path.join(main_dir, '**/*.json'), recursive=True):
-      analysed_folder = folder_analyser(path.dirname(file)))
+      analysed_folder = folder_analyser(path.dirname(file))
       d[analysed_folder['month']].append(path.basename(file))
    return d
 
