@@ -13,7 +13,7 @@ from collections import defaultdict
 
 
 ARCHIVE_SUB_FOLDER_REGEX = r"/([0-9]{4})*?/([0-9]{2})*?/([0-9]{2})*?/"
-ARCHIVE_SUB_FOLDER_GROUP = ['year','month','day']
+ARCHIVE_SUB_FOLDER_GROUP = ['all','year','month','day']
 
 
 # PARSE ARCHIVE FOLDER TO RETRIEVE YEAR, MONTH & DAY
