@@ -33,7 +33,7 @@ def create_json_index_year(year):
             print("FOLDER<br/>")
             print(day +  '*' + '.json<br/>')
 
-            tmp = sorted(glob.iglob(day +  '*' + '.json', recursive=True)
+            tmp = sorted(glob.iglob(day +  '*' + '.json', recursive=True))
             print(tmp)
             prinbt("<br>")
 
