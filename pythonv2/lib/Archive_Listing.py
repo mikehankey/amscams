@@ -38,6 +38,8 @@ def create_json_index_year(year):
 def write_index(year):
    json_data = create_json_index_year(year)
 
+   print(json.dumps(json_data))
+
    # Write Index
    if(json_data is not None):
       main_dir = METEOR_ARCHIVE + get_station_id() + '/' + METEOR + str(year)
