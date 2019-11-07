@@ -44,6 +44,8 @@ def write_index(year):
 
    # Write Index
    if(json_data['months'] is not None):
+      print("NONE?<br/>")
+      print(json_data['months'])
       main_dir = METEOR_ARCHIVE + get_station_id() + '/' + METEOR + str(year)
       save_json_file(main_dir + os.sep + year + ".json", json_data)
  
