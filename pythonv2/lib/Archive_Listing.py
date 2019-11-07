@@ -93,6 +93,11 @@ def get_html_detections(res):
    for detection in res:
       det = name_analyser(detection)
       det['full_path'] = get_full_path_detection(det) + det['full_path']
+
+      # Do we have a thumb stack preview for this detection?
+      stacks_folder = does_cache_exist(det,"stacks")
+      print(stacks_folder)
+      print("<br>***********<br>")
       print(det)
       print("<br>***********<br>")
 
