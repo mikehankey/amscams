@@ -44,7 +44,7 @@ def write_index(year):
    # Write Index if we have data
    if(len(json_data['months'])>0 ): 
       main_dir = METEOR_ARCHIVE + get_station_id() + '/' + METEOR + str(year)
-      save_json_file(main_dir + os.sep + year + ".json", json_data)
+      save_json_file(main_dir + os.sep + str(year) + ".json", json_data)
       return True
    
    return False
