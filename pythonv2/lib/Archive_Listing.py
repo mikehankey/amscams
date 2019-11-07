@@ -57,7 +57,10 @@ def get_index(year):
 
 # Get results on index from a certain date
 def get_results_from_date(date,json_index):
-   print(date)
+    print(date)
+    print("<br>")
+    print(json_index)
+   
 
 
 
@@ -83,5 +86,7 @@ def archive_listing(form):
 
    # Get the index
    index =  get_index(year)
-   print(index)
 
+   # Search the index
+   if(index is not None):
+      res = get_results_from_date(the_date,index)
