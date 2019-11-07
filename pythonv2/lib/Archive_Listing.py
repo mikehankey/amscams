@@ -70,7 +70,7 @@ def get_results_from_date(date,json_index,max_res):
    res = []
    res_cnt = 0
 
-   for month in json_index['months']:
+   for month in json_index['months'].sort(reverse=True):
       #print(str(month['month'])  + " > " + str(date.month) + "<br/>")
       if(int(month['month'])<=date.month):
          for day in month['days']:
