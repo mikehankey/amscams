@@ -17,30 +17,32 @@ def create_json_index_year(year):
    index_year = {'year':year,'months':[]}
 
    print("1ALL MONTHS<br/>")
-   v = sorted(glob.iglob(main_dir + '*' + os.sep + '**', recursive=True))
+   v = sorted(glob.iglob(main_dir + '*' + os.sep + '*', recursive=True))
    print(v)
 
-   for month in sorted(glob.iglob(main_dir + '*' + os.sep + '**', recursive=True)):	
+   for month in sorted(glob.iglob(main_dir + '*' + os.sep + '*', recursive=True)):	
+
       cur_month = os.path.basename(os.path.normpath(month))
-      cur_month_data = {'month':cur_month,'days':[]}
-      print("CUR MONTH " + cur_month + "<br>")
+      if(json not in cur_month):
+         cur_month_data = {'month':cur_month,'days':[]}
+         print("CUR MONTH " + cur_month + "<br>")
 
-      for day in sorted(glob.iglob(month + '*' + os.sep, recursive=True)):	
-         print("CUR DAY " + day + "<br>")
+         for day in sorted(glob.iglob(month + '*' + os.sep, recursive=True)):	
+            print("CUR DAY " + day + "<br>")
 
-         cur_day = os.path.basename(os.path.normpath(day))		
-         cur_day_data = {'day':cur_day,'detections':[]}
-         print("FOLDER<br/>")
-         print(day +  '*' + '.json<br/>')
-         for detection in sorted(glob.iglob(day +  '*' + '.json', recursive=True)):
+            cur_day = os.path.basename(os.path.normpath(day))		
+            cur_day_data = {'day':cur_day,'detections':[]}
+            print("FOLDER<br/>")
+            print(day +  '*' + '.json<br/>')
+            for detection in sorted(glob.iglob(day +  '*' + '.json', recursive=True)):
+               
+               print(detection)
+               print("<br>")
+               cur_day_data['detections'].append(os.path.basename(detection))
             
-            print(detection)
-            print("<br>")
-            cur_day_data['detections'].append(os.path.basename(detection))
-          
-         cur_month_data['days'].append(cur_day_data)
+            cur_month_data['days'].append(cur_day_data)
       
-      index_year['months'].append(cur_month_data)
+         index_year['months'].append(cur_month_data)
 
    return index_year 
 
