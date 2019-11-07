@@ -7,6 +7,7 @@ import datetime
 from lib.REDUCE_VARS import *
 from lib.Get_Station_Id import get_station_id
 from lib.FileIO import save_json_file, cfe, load_json_file
+from lib.MeteorReduce_Tools import name_analyser
 from lib.PAGINATION_VARS import *
  
 
@@ -81,6 +82,14 @@ def get_results_from_date(date,json_index,max_res):
    return res
 
 
+# Get HTML version of each detection
+def get_html_detections(res):
+   res_html = ''
+   for detection in res:
+      det = name_analyser(detection)
+      print(det)
+      print("<br>***********<br>")
+
 # MAIN FUNCTION FOR THE ARCHIVE LISTING PAGE
 def archive_listing(form):
    limit_day = form.getvalue('limit_day')
@@ -105,7 +114,7 @@ def archive_listing(form):
 
    year = the_date.year
 
-   # Get the index
+   # Get the index of the selected or current year
    index =  get_index(year)
  
    # Search the index
@@ -123,4 +132,7 @@ def archive_listing(form):
             res2 = get_results_from_date(the_date,index,new_stop)
             res = res + res2
 
-   print(res)
+   
+   # Create HTML Version of each detection
+   res_html = get_html_detections(res)
+   print(res_html)
