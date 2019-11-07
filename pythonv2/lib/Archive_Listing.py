@@ -69,13 +69,15 @@ def get_results_from_date(date,json_index,max_res):
    res_cnt = 0
 
    for month in json_index['months']:
-      print(str(month['month'])  + " > " + str(date.month) + "<br/>")
+      #print(str(month['month'])  + " > " + str(date.month) + "<br/>")
       if(int(month['month'])>=date.month):
          for day in month['days']:
             if(int(day['day'])>=date.day and res_cnt<=max_res):
-               res.append(day['det'])
-               print(day['day'])
-               print("<br>**********<br>")
+               for dec in day['det']:
+                  if( and res_cnt<=max_res):
+                     res.append(dec)
+               #print(day['day'])
+               #print("<br>**********<br>")
    
    print(res)
 
