@@ -98,6 +98,9 @@ def archive_listing(form):
    # Get the index
    index =  get_index(year)
 
+   print("RESULT INDEX<br/>")
+   print(index)
+
    # Search the index
    if(index is not False):
       res = get_results_from_date(the_date,index)
