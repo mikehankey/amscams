@@ -18,8 +18,7 @@ def create_json_index_year(year):
    main_dir = METEOR_ARCHIVE + get_station_id() + '/' + METEOR + str(year)
    index_year = {'year':year,'months':[]}
  
-   for month in sorted(glob.iglob(main_dir + '*' + os.sep + '*', recursive=True)):	
-
+   for month in sorted(glob.iglob(main_dir + '*' + os.sep + '*', recursive=True), reverse=True):	
       cur_month = os.path.basename(os.path.normpath(month))
 
       # Test if it is an index
