@@ -7,6 +7,7 @@ import datetime
 from lib.REDUCE_VARS import *
 from lib.Get_Station_Id import get_station_id
 from lib.FileIO import save_json_file, cfe, load_json_file
+from lib.PAGINATION_VARS import *
  
 
 # Create index for a given year
@@ -63,14 +64,15 @@ def get_index(year):
          return test
 
 # Get results on index from a certain date
-def get_results_from_date(date,json_index): 
+def get_results_from_date(date,json_index,max_res): 
    res = []
+   res_cnt = 0
 
    for month in json_index['months']:
       print(str(month['month'])  + " > " + str(date.month) + "<br/>")
       if(int(month['month'])>=date.month):
          for day in month['days']:
-            if(int(day['day'])>=date.day):
+            if(int(day['day'])>=date.day and res_cnt<=max_res):
                res.append(day['det'])
                print(day['day'])
                print("<br>**********<br>")
@@ -90,6 +92,10 @@ def archive_listing(form):
    else:
       cur_page = int(cur_page)
 
+   # Meteor per page (default value)
+   if(meteor_per_page is None):
+      meteor_per_page = NUMBER_OF_METEOR_PER_PAGE
+
    # Day?
    if (limit_day is None):
       the_date = datetime.datetime.now()
@@ -106,4 +112,4 @@ def archive_listing(form):
 
    # Search the index
    if(index is not False):
-      res = get_results_from_date(the_date,index)
+      res = get_results_from_date(the_date,index,meteor_per_page)
