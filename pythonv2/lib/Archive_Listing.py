@@ -7,8 +7,9 @@ import datetime
 from lib.REDUCE_VARS import *
 from lib.Get_Station_Id import get_station_id
 from lib.FileIO import save_json_file, cfe, load_json_file
-from lib.MeteorReduce_Tools import name_analyser
+from lib.MeteorReduce_Tools import name_analyser, get_cache_path, get_thumbs
 from lib.PAGINATION_VARS import *
+
  
 
 # Create index for a given year
@@ -87,6 +88,7 @@ def get_full_path_detection(analysed_name):
    index_file = METEOR_ARCHIVE + analysed_name['station_id'] + os.sep + METEOR +  analysed_name['year'] + os.sep +  analysed_name['month'] + os.sep  +  analysed_name['day'] + os.sep 
    return index_file
 
+
 # Get HTML version of each detection
 def get_html_detections(res):
    res_html = ''
@@ -102,7 +104,7 @@ def get_html_detections(res):
       if(len(preview)==0 or clear_cache is True):
          # We need to generate the thumbs 
          #preview = generate_preview(det)
-
+         print("PREVIEW DOESNT EXISTS")
       else:
          # We return them
          preview = glob.glob(get_cache_path(det,"preview")+"*.jpg") 
