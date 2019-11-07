@@ -60,8 +60,8 @@ def get_results_from_date(date,json_index):
    print(json_index['months'])
 
    for month in json_index['months']:
-      #if(int(month)>=date.month):
-      print(month)
+      if(int(month['month'])>=date.month):
+         print(month)
    
 
 
