@@ -303,12 +303,15 @@ def generate_preview(analysed_name):
       else:
          stack = get_stacks(analysed_name,clear_cache,False)    
       
-      if(cfe(stack)==1):
+      print("STACK")
+      print(stack)
+
+
+      #if(cfe(stack)==1):
          # We resize and turn it to a jpg
-         destination = get_cache_path(analysed_name,"preview"))
+         #destination = get_cache_path(analysed_name,"preview"))
           
-         print("STACK")
-         print(stack)
+
 
 
 
