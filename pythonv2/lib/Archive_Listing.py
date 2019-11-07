@@ -55,6 +55,11 @@ def get_index(year):
    else:
       return None
 
+# Get results on index from a certain date
+def get_results_from_date(date,json_index):
+
+
+
 # MAIN FUNCTION FOR THE ARCHIVE LISTING PAGE
 def archive_listing(form):
    limit_day = form.getvalue('limit_day')
@@ -69,9 +74,11 @@ def archive_listing(form):
 
    # Day?
    if (limit_day is None):
-      now = datetime.datetime.now()
-      year = now.year
-      #TODO: else we get the date!
+      the_date = datetime.datetime.now()
+   else:
+      the_date = datetime.datetime.strptime(limit_day,"%Y_%m_%d") 
+
+   year = the_date.year
 
    # Get the index
    index =  get_index(year)
