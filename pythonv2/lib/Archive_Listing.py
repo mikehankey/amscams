@@ -103,17 +103,16 @@ def get_html_detections(res,clear_cache):
 
       if(len(preview)==0 or clear_cache is True):
          # We need to generate the thumbs 
-         # preview = generate_preview(det)
+         preview = generate_preview(det)
          print("PREVIEW NOW EXISTS <br>")
          print(preview)
       else:
          # We return them
          # print("EXISTS")
-         # preview = glob.glob(get_cache_path(det,"preview")+"*.jpg") 
          print("PREVIEW ALREADY EXISTS <br>")
          print(preview)
  
-   
+
  
 
 # MAIN FUNCTION FOR THE ARCHIVE LISTING PAGE
