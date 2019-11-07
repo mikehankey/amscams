@@ -309,7 +309,7 @@ def generate_preview(analysed_name):
       preview =  stack_PIL.resize((PREVIEW_W, PREVIEW_H))
        
 
-      print("STACK")
+      print("STACK:<br>")
       print(preview)
 
 
