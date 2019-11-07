@@ -41,4 +41,13 @@ def write_index(year):
       save_json_file(json_data, main_dir + os.sep + year + ".json")
 
 
-write_index('2019')
+# MAIN FUNCTION FOR THE ARCHIVE LISTING PAGE
+def archive_listing(form):
+
+   write_index('2019')
+   #limit_day = form.getvalue('limit_day')
+   #cur_page  = form.getvalue('p')
+   #meteor_per_page = form.getvalue('meteor_per_page')
+
+
+
