@@ -306,7 +306,7 @@ def generate_preview(analysed_name):
 
       # We resize the stack and change it to a jpg
       stack_PIL = Image.open(stack)
-      preview =  stack.resize((PREVIEW_W, PREVIEW_H))
+      preview =  stack_PIL.resize((PREVIEW_W, PREVIEW_H))
        
 
       print("STACK")
