@@ -52,7 +52,7 @@ def write_index(year):
 # MAIN FUNCTION FOR THE ARCHIVE LISTING PAGE
 def archive_listing(form):
 
-   write_index('2019')
+   write_index('2018')
    #limit_day = form.getvalue('limit_day')
    #cur_page  = form.getvalue('p')
    #meteor_per_page = form.getvalue('meteor_per_page')
