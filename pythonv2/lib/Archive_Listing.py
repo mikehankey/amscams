@@ -27,6 +27,7 @@ def create_json_index_year(year):
          for detection in sorted(glob.iglob(day +  '*' + '.json', recursive=False)):
             cur_day_data['detections'].append(os.path.basename(detection))
          
+         print(cur_day_data)
          cur_month_data['days'].append(cur_day_data)
       
       index_year['months'].append(cur_month_data)
