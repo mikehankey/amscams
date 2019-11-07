@@ -57,6 +57,7 @@ def get_index(year):
 
 # Get results on index from a certain date
 def get_results_from_date(date,json_index):
+   print(date)
 
 
 
