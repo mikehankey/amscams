@@ -112,4 +112,4 @@ def archive_listing(form):
 
    # Search the index
    if(index is not False):
-      res = get_results_from_date(the_date,index,meteor_per_page)
+      res = get_results_from_date(the_date,index,int(meteor_per_page))
