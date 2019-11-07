@@ -17,7 +17,8 @@ def create_json_index_year(year):
    index_year = {'year':year,'months':[]}
 
    print("1ALL MONTHS<br/>")
-   print(sorted(glob.iglob(main_dir + '*' + os.sep, recursive=True))
+   v = sorted(glob.iglob(main_dir + '*' + os.sep, recursive=True))
+   print(v)
 
    for month in sorted(glob.iglob(main_dir + '*' + os.sep, recursive=True)):	
       cur_month = os.path.basename(os.path.normpath(month))
