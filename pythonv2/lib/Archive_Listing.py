@@ -6,9 +6,7 @@ import json
 from lib.REDUCE_VARS import *
 from lib.Get_Station_Id import get_station_id
 from lib.FileIO import save_json_file
-
-path = "/mnt/ams2/meteor_archive/AMS7/METEOR/2019/"
-index_year = {'year':2019,'months':[]}
+ 
 
 # Create index for a given year
 def create_json_index_year(year):
@@ -23,24 +21,12 @@ def create_json_index_year(year):
       # Test if it is an index
       if('json' not in cur_month):
          cur_month_data = {'month':cur_month,'days':[]}
-         print("CUR MONTH " + cur_month + "<br>")
-
+         
          for day in sorted(glob.iglob(month + '*' + os.sep + '*', recursive=True)):	
-            print("CUR DAY " + day + "<br>")
-
             cur_day = os.path.basename(os.path.normpath(day))		
             cur_day_data = {'day':cur_day,'detections':[]}
-            print("FOLDER<br/>")
-            print(day +  '*' + '.json<br/>')
-
-            tmp = sorted(glob.iglob(day +  '*' + '.json', recursive=True))
-            print(tmp)
-            print("<br>")
-
+          
             for detection in sorted(glob.iglob(day + os.sep +  '*' + '.json', recursive=True)):
-               
-               print(detection)
-               print("<br>")
                cur_day_data['detections'].append(os.path.basename(detection))
             
             cur_month_data['days'].append(cur_day_data)
