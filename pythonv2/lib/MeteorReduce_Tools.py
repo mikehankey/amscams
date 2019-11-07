@@ -292,7 +292,7 @@ def generate_preview(analysed_name):
    cgitb.enable()
 
    # Destination
-   dest = get_cache_path(analysed_name,"preview","/*.jpg")
+   dest = does_cache_exists(analysed_name,"preview","/*.jpg")
 
    print("generate_preview - DES <br/>")
    print(dest)
