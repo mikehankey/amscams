@@ -293,12 +293,8 @@ def generate_preview(analysed_name):
 
    # Destination
    dest = get_cache_path(analysed_name,"preview")
-
-   print("DEST<br>")
-   print(dest)
-   sys.exit(0)
-
-   video_hd_full_path = dest['full_path'].replace('.json','-HD.mp4')
+ 
+   video_hd_full_path = analysed_name['full_path'].replace('.json','-HD.mp4')
 
    if(cfe(video_hd_full_path)==1):
       stack = get_stacks(tmp_analysed_name,clear_cache,True) 
