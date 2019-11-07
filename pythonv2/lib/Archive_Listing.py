@@ -18,7 +18,7 @@ def create_json_index_year(year):
    main_dir = METEOR_ARCHIVE + get_station_id() + '/' + METEOR + str(year)
    index_year = {'year':year,'months':[]}
  
-   for month in sorted(glob.iglob(main_dir + '*' + os.sep + '*', recursive=True)):	
+   for month in sorted(glob.iglob(main_dir + '*' + os.sep + '*', recursive=True), reverse=True):	
 
       cur_month = os.path.basename(os.path.normpath(month))
 
@@ -26,11 +26,11 @@ def create_json_index_year(year):
       if('json' not in cur_month):
          cur_month_data = {'month':cur_month,'days':[]}
          
-         for day in sorted(glob.iglob(month + '*' + os.sep + '*', recursive=True)):	
+         for day in sorted(glob.iglob(month + '*' + os.sep + '*', recursive=True), reverse=True):	
             cur_day = os.path.basename(os.path.normpath(day))		
             cur_day_data = {'day':cur_day,'det':[]}
           
-            for detection in sorted(glob.iglob(day + os.sep +  '*' + '.json', recursive=True)):
+            for detection in sorted(glob.iglob(day + os.sep +  '*' + '.json', recursive=True), reverse=True):
                cur_day_data['det'].append(os.path.basename(detection))
             
             cur_month_data['days'].append(cur_day_data)
@@ -70,7 +70,7 @@ def get_results_from_date(date,json_index,max_res):
    res = []
    res_cnt = 0
 
-   for month in json_index['months'].sort(reverse=True):
+   for month in json_index['months']:
       #print(str(month['month'])  + " > " + str(date.month) + "<br/>")
       if(int(month['month'])<=date.month):
          for day in month['days']:
@@ -157,7 +157,7 @@ def archive_listing(form):
 
       # If we don't have enough detection to display we try the previous year
       if(len(res)<NUMBER_OF_METEOR_PER_PAGE):
-         the_date = datetime.datetime.strptime(str(year-1)+'_01_01',"%Y_%m_%d") 
+         the_date = datetime.datetime.strp time(str(year-1)+'_01_01',"%Y_%m_%d") 
          year = year -1
          index = get_index(year)
 
