@@ -57,13 +57,16 @@ def get_index(year):
 
 # Get results on index from a certain date
 def get_results_from_date(date,json_index): 
-   print(json_index['months'])
+   res = []
 
    for month in json_index['months']:
-      if(int(month['month'])>=date.month):
-         print(month)
-   
+      if(int(month['month'])<=date.month):
+         for day in json_index['days']
+            if(int(day['day'])<=date.day()):
+               res.append(day['day']['detections'])
 
+   
+   print(res)
 
 
 # MAIN FUNCTION FOR THE ARCHIVE LISTING PAGE
