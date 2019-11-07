@@ -109,7 +109,7 @@ def get_html_detections(res,clear_cache):
 
       res_html += '<div class="preview col-lg-2 col-md-3">'
       res_html += '<a class="mtt" href="webUI.py?cmd=reduce2&video_file= '+det['full_path']+' title="Detection Reduce page">'
-      res_html += '<img alt="" class="img-fluid ns lz" src="'+preview+''"></a>'
+      res_html += '<img alt="" class="img-fluid ns lz" src="'+preview+'"></a>'
       res_html += '</div>'
 
    return res_html
