@@ -25,7 +25,7 @@ def create_json_index_year(year):
          cur_month_data = {'month':cur_month,'days':[]}
          print("CUR MONTH " + cur_month + "<br>")
 
-         for day in sorted(glob.iglob(month + '*' + os.sep, recursive=True)):	
+         for day in sorted(glob.iglob(month + '*' + os.sep + '*', recursive=True)):	
             print("CUR DAY " + day + "<br>")
 
             cur_day = os.path.basename(os.path.normpath(day))		
