@@ -86,13 +86,15 @@ def get_cache_path(analysed_file_name, cache_type=''):
       cache_path += CROPPED_FRAMES_SUBPATH
    elif(cache_type == 'tmp_cropped'):
       cache_path += TMP_CROPPED_FRAMES_SUBPATH
+   elif(cache_type == 'preview'):
+      cache_path += PREVIEW
    
    return cache_path
 
 
 # Get the path to the cache of a given detection 
 # create the folder if it doesn't exists 
-def does_cache_exist(analysed_file_name,cache_type):
+def does_cache_exist(analysed_file_name,cache_type,media_type = '/*.png'):
 
    # Debug
    cgitb.enable()
@@ -102,7 +104,7 @@ def does_cache_exist(analysed_file_name,cache_type):
  
    if(os.path.isdir(cache_path)):
       # We return the glob of the folder with all the images
-      return sorted(glob.glob(cache_path+"/*.png"))
+      return sorted(glob.glob(cache_path+media_type))
    else:
       # We Create the Folder and return null
       os.makedirs(cache_path)
@@ -279,6 +281,43 @@ def new_crop_thumb(frame,x,y,dest,HD = True):
 
 
 
+# Create a preview (small jpg thumbs for the listings)
+# based preferably from HD stack 
+# based on a JSON file
+def generate_preview(analysed_name):
+
+   clear_cache = 0
+
+   # Debug
+   cgitb.enable()
+
+   # Destination
+   dest = does_cache_exist(analysed_name,"preview","/*.jpg")
+
+   if(len(dest)==0):
+      video_hd_full_path = analysed_name['full_path'].replace('.json','-HD.mp4')
+
+      # We generate the preview from the stack (HD first)
+      if(cfe(video_hd_full_path)==1):
+         stack = get_stacks(analysed_name,clear_cache,True) 
+      else:
+         stack = get_stacks(analysed_name,clear_cache,False)    
+      
+
+      # We resize the stack and change it to a jpg
+      stack_PIL = Image.open(stack)
+      preview =  stack_PIL.resize((PREVIEW_W, PREVIEW_H))
+
+      # We save the preview as a jpg 
+      preview.save(get_cache_path(analysed_name,"preview")+analysed_name['name_w_ext']+'.jpg', 'jpeg')
+
+   # Return the preview full path
+   return get_cache_path(analysed_name,"preview")+analysed_name['name_w_ext']+'.jpg'       
+
+
+
+
+
 # Create the cropped frames (thumbs) for a meteor detection
 def generate_cropped_frames(analysed_name,meteor_json_data,HD_frames,HD):
 
@@ -346,7 +385,7 @@ def get_stacks(analysed_name,clear_cache,toHD):
       if(toHD): 
          stacks =  generate_stacks(analysed_name['full_path'].replace('.json','-HD.mp4'),get_cache_path(analysed_name,"stacks")+analysed_name['name_w_ext']+"-HD.png",toHD)
       else: 
-         stacks =  generate_stacks(analysed_name['full_path'].replace('.json','-SD.mp4'),get_cache_path(analysed_name,"stacks")+analysed_name['name_w_ext']+"-SD.png",toHD)
+         stacks =  generate_stacks(analysed_name['full_path'].replace('.json','-SD.mp4'),get_cache_path(analysed_name,"stacks")+analysed_name['name_w_ext']+"-SD.png",False)
 
       stack_file = stacks
   

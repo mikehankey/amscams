@@ -52,10 +52,9 @@ from lib.Old_JSON_converter import move_to_archive
 # ARCHIVE LISTING
 from lib.Archive_Listing import *
 
-
-NUMBER_OF_METEOR_PER_PAGE = 60
-POSSIBLE_PER_PAGE = [20,40,60,80,100,150,200,500,1000,10000]
-NUMBER_OF_DAYS_PER_PAGE = 7
+# Pagination Vars
+from lib.PAGINATION_VARS import *
+ 
 
  
 
