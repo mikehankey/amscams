@@ -76,11 +76,9 @@ def get_results_from_date(date,json_index,max_res):
                for dec in day['det']:
                   if(res_cnt<max_res):
                      res.append(dec)
-                     res_cnt+=1
-               #print(day['day'])
-               #print("<br>**********<br>")
+                     res_cnt+=1 
    
-   print(res)
+   return res
 
 
 # MAIN FUNCTION FOR THE ARCHIVE LISTING PAGE
@@ -109,10 +107,17 @@ def archive_listing(form):
 
    # Get the index
    index =  get_index(year)
-
-   #print("RESULT INDEX<br/>")
-   #print(index)
-
+ 
    # Search the index
    if(index is not False):
       res = get_results_from_date(the_date,index,int(meteor_per_page))
+
+      # If we don't have enough detection to display we try the previous year
+      if(len(res)<NUMBER_OF_METEOR_PER_PAGE):
+         the_date = datetime.datetime.strptime((year-1)+'_01_01',"%Y_%m_%d") 
+         index =  get_index(year-1)
+            if(index is not False):
+               res2 = get_results_from_date(the_date,index,int(meteor_per_page) - len(res))
+               res = res + res2
+
+   print(res)
