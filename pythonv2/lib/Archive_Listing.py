@@ -64,7 +64,7 @@ def get_results_from_date(date,json_index):
       if(int(month['month'])>=date.month):
          for day in month['days']:
             if(int(day['day'])>=date.day):
-               #res.append(day['day']['detections'])
+               res.append(day['detections'])
                print(day['day'])
                print("<br>**********<br>")
    
