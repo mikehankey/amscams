@@ -291,7 +291,7 @@ def generate_preview(analysed_name):
 
    print("IN GENERATE PREVIEW<br/>")
 
-   print(analysed_name)
+   print(get_cache_path(analysed_name,"preview"))
 
 
 # Create the cropped frames (thumbs) for a meteor detection
