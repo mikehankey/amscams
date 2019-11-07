@@ -38,14 +38,11 @@ def create_json_index_year(year):
 def write_index(year):
    json_data = create_json_index_year(year)
 
-   # Index PATH
+   # Write Index
    if(json_data is not None):
       main_dir = METEOR_ARCHIVE + get_station_id() + '/' + METEOR + str(year)
-      save_json_file(json.dumps(json_data), main_dir + os.sep + year + ".json")
-      print("SAVE")
-      print(main_dir + os.sep + year + ".json")
-      print("DATA")
-      print()
+      save_json_file(main_dir + os.sep + year + ".json", json_data)
+ 
 
 
 # MAIN FUNCTION FOR THE ARCHIVE LISTING PAGE
