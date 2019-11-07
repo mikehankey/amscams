@@ -12,8 +12,12 @@ index_year = {'year':2019,'months':[]}
 
 # Create index for a given year
 def create_json_index_year(year):
+
    main_dir = METEOR_ARCHIVE + get_station_id() + '/' + METEOR + str(year)
    index_year = {'year':year,'months':[]}
+
+   print("1ALL MONTHS<br/>")
+   print(sorted(glob.iglob(main_dir + '*' + os.sep, recursive=True))
 
    for month in sorted(glob.iglob(main_dir + '*' + os.sep, recursive=True)):	
       cur_month = os.path.basename(os.path.normpath(month))
