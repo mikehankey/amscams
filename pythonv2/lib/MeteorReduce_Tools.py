@@ -297,9 +297,9 @@ def generate_preview(analysed_name):
    video_hd_full_path = analysed_name['full_path'].replace('.json','-HD.mp4')
 
    if(cfe(video_hd_full_path)==1):
-      stack = get_stacks(tmp_analysed_name,clear_cache,True) 
+      stack = get_stacks(analysed_name,clear_cache,True) 
    else:
-      stack = get_stacks(tmp_analysed_name,clear_cache,False)    
+      stack = get_stacks(analysed_name,clear_cache,False)    
    
    print("STACK")
    print(stack)
