@@ -6,7 +6,7 @@ import datetime
 
 from lib.REDUCE_VARS import *
 from lib.Get_Station_Id import get_station_id
-from lib.FileIO import save_json_file, cfe
+from lib.FileIO import save_json_file, cfe, load_json_file
  
 
 # Create index for a given year
