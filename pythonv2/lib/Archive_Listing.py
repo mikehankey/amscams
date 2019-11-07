@@ -5,7 +5,7 @@ import json
 
 from lib.REDUCE_VARS import *
 from lib.Get_Station_Id import get_station_id
-from lib.FileIO import save_json_file
+from lib.FileIO import save_json_file, cfe
  
 
 # Create index for a given year
@@ -38,26 +38,41 @@ def create_json_index_year(year):
 
 # Write index for a given year
 def write_index(year):
-   json_data = create_json_index_year(year)
-
-   print(json.dumps(json_data))
+   json_data = create_json_index_year(year) 
 
    # Write Index if we have data
-   if(len(json_data['months'])>0 ):
-      print("NONE?<br/>")
-      print(json_data['months'])
+   if(len(json_data['months'])>0 ): 
       main_dir = METEOR_ARCHIVE + get_station_id() + '/' + METEOR + str(year)
       save_json_file(main_dir + os.sep + year + ".json", json_data)
- 
 
+
+# Get index for a given year
+def get_index(year):
+   index_file = METEOR_ARCHIVE + get_station_id() + '/' + METEOR + str(year) + os.sep + year + '.json'
+   if(cfe(index_file)):
+      return load_json_file(index_file)
+   else:
+      return None
 
 # MAIN FUNCTION FOR THE ARCHIVE LISTING PAGE
 def archive_listing(form):
+   limit_day = form.getvalue('limit_day')
+   cur_page  = form.getvalue('p')
+   meteor_per_page = form.getvalue('meteor_per_page')
 
-   write_index('2018')
-   #limit_day = form.getvalue('limit_day')
-   #cur_page  = form.getvalue('p')
-   #meteor_per_page = form.getvalue('meteor_per_page')
+   # Pagination
+   if (cur_page is None) or (cur_page==0):
+      cur_page = 1
+   else:
+      cur_page = int(cur_page)
 
+   # Day?
+   if (limit_day is None):
+      now = datetime.datetime.now()
+      year = now.year
+      #TODO: else we get the date!
 
+   # Get the index
+   index =  get_index(year)
+   print(index)
 
