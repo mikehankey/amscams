@@ -157,7 +157,7 @@ def archive_listing(form):
 
       # If we don't have enough detection to display we try the previous year
       if(len(res)<NUMBER_OF_METEOR_PER_PAGE):
-         the_date = datetime.datetime.strp time(str(year-1)+'_01_01',"%Y_%m_%d") 
+         the_date = datetime.datetime.strptime(str(year-1)+'_01_01',"%Y_%m_%d") 
          year = year -1
          index = get_index(year)
 
