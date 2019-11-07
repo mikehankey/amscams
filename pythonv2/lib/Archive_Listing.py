@@ -121,7 +121,7 @@ def archive_listing(form):
    limit_day = form.getvalue('limit_day')
    cur_page  = form.getvalue('p')
    meteor_per_page = form.getvalue('meteor_per_page')
-   clear_cache = form.getvalue(clear_cache)
+   clear_cache = form.getvalue('clear_cache')
 
    # Pagination
    if (cur_page is None) or (cur_page==0):
