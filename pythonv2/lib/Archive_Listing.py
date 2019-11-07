@@ -90,8 +90,10 @@ def get_full_path_detection(analysed_name):
 
 
 # Get HTML version of each detection
-def get_html_detections(res):
+def get_html_detections(res,clear_cache):
+
    res_html = ''
+   
    for detection in res:
       det = name_analyser(detection)
       det['full_path'] = get_full_path_detection(det) + det['full_path']
@@ -99,16 +101,15 @@ def get_html_detections(res):
       # Do we have a thumb stack preview for this detection?
       preview = does_cache_exist(det,"preview","/*.jpg")
 
-      print(preview)
-
       if(len(preview)==0 or clear_cache is True):
          # We need to generate the thumbs 
          preview = generate_preview(det)
-         print("PREVIEW DOESNT EXISTS")
+         print("PREVIEW NOW EXISTS " + preview + "<br>")
       else:
          # We return them
          print("EXISTS")
          preview = glob.glob(get_cache_path(det,"preview")+"*.jpg") 
+         print("PREVIEW ALREADY EXISTS " + preview + "<br>")
  
    
  
@@ -118,6 +119,7 @@ def archive_listing(form):
    limit_day = form.getvalue('limit_day')
    cur_page  = form.getvalue('p')
    meteor_per_page = form.getvalue('meteor_per_page')
+   clear_cache = form.getvalue(clear_cache)
 
    # Pagination
    if (cur_page is None) or (cur_page==0):
@@ -128,6 +130,12 @@ def archive_listing(form):
    # Meteor per page (default value)
    if(meteor_per_page is None):
       meteor_per_page = NUMBER_OF_METEOR_PER_PAGE
+
+   # Clear_cache
+   if(clear_cache is None):
+      clear_cache = False
+   else:
+      clear_cache = True
 
    # Day?
    if (limit_day is None):
