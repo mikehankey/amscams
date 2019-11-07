@@ -307,7 +307,12 @@ def generate_preview(analysed_name):
       # We resize the stack and change it to a jpg
       stack_PIL = Image.open(stack)
       preview =  stack_PIL.resize((PREVIEW_W, PREVIEW_H))
-       
+
+      # We save the preview as a jpg 
+      preview.save(get_cache_path(analysed_name,"preview")+analysed_name['name_w_ext']+'.jpg', 'jpeg')
+
+      print(get_cache_path(analysed_name,"preview")+analysed_name['name_w_ext'])
+
 
       print("STACK:<br>")
       print(preview)
