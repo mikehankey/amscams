@@ -17,14 +17,16 @@ def create_json_index_year(year):
 
    for month in sorted(glob.iglob(main_dir + '*' + os.sep, recursive=False)):	
       cur_month = os.path.basename(os.path.normpath(month))
-     
       cur_month_data = {'month':cur_month,'days':[]}
-      
+      print("CUR MONTH " + cur_month + "<br>")
+
       for day in sorted(glob.iglob(month + '*' + os.sep, recursive=True)):	
+         print("CUR DAY " + day + "<br>")
+
          cur_day = os.path.basename(os.path.normpath(day))		
          cur_day_data = {'day':cur_day,'detections':[]}
          print("FOLDER<br/>")
-         print(day +  '*' + '.json')
+         print(day +  '*' + '.json<br/>')
          for detection in sorted(glob.iglob(day +  '*' + '.json', recursive=False)):
             
             print(detection)
