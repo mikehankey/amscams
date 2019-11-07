@@ -3,6 +3,7 @@ import glob
 import os
 
 from lib.REDUCE_VARS import *
+from lib.Get_Station_Id import get_station_id
 from lib.FileIO import save_json_file
 
 path = "/mnt/ams2/meteor_archive/AMS7/METEOR/2019/"
