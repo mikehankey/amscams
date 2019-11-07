@@ -117,9 +117,10 @@ def archive_listing(form):
          the_date = datetime.datetime.strptime((year-1)+'_01_01',"%Y_%m_%d") 
          year = year -1
          index = get_index(year)
-            if(index is not False):
-               new_stop = int(meteor_per_page) - len(res)
-               res2 = get_results_from_date(the_date,index,new_stop)
-               res = res + res2
+         
+         if(index is not False):
+            new_stop = int(meteor_per_page) - len(res)
+            res2 = get_results_from_date(the_date,index,new_stop)
+            res = res + res2
 
    print(res)
