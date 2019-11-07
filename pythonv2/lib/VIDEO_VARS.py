@@ -68,6 +68,10 @@ EMPTY_CORNER = "br" # Where to put stuff when the meteor overlaps
 HD_DIM = "1280x720" #for ffmpeg - used to extract the HD frames in HD_FRAMES_PATH
 BLENDING_SD = 30 #For the amount of SD blending on HD frames (when SD is found)
 
+# PREVIEW FOR DETECTION IN ARCHIVE
+PREVIEW_W = 300
+PREVIEW_H = 169
+
 
 #CURRENT FPS OF HD VIDEO
 FPS_HD = 25

@@ -303,6 +303,11 @@ def generate_preview(analysed_name):
       else:
          stack = get_stacks(analysed_name,clear_cache,False)    
       
+
+      # We resize the stack and change it to a jpg
+      preview =  stack.resize((PREVIEW_W, PREVIEW_H))
+       
+      
       print("STACK")
       print(stack)
 
