@@ -92,7 +92,7 @@ def get_results_from_date(date,json_index,max_res):
                      res.append(dec)
                      print("ADDED<br/>")
                      res_cnt+=1 
-            elif(res_cnt<=max_res):
+            elif(int(month['month'])!=date.month and res_cnt<=max_res):
                for dec in day['det']:
                   if(res_cnt<=max_res):
                      res.append(dec)
