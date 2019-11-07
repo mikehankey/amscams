@@ -73,7 +73,7 @@ def get_results_from_date(date,json_index,max_res):
    print("DATE ")
    print(date)
    print("<br/>")
-   print("MAX RES " + max_res+ "<br/>")
+   print("MAX RES " + str(max_res) + "<br/>")
 
    for month in json_index['months']:
       print("CUR MONTH " +str(month['month']))
