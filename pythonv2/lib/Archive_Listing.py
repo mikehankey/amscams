@@ -49,7 +49,7 @@ def write_index(year):
 
 # Get index for a given year
 def get_index(year):
-   index_file = METEOR_ARCHIVE + get_station_id() + '/' + METEOR + str(year) + os.sep + year + '.json'
+   index_file = METEOR_ARCHIVE + get_station_id() + '/' + METEOR + str(year) + os.sep + str(year) + '.json'
    if(cfe(index_file)):
       return load_json_file(index_file)
    else:
