@@ -311,17 +311,8 @@ def generate_preview(analysed_name):
       # We save the preview as a jpg 
       preview.save(get_cache_path(analysed_name,"preview")+analysed_name['name_w_ext']+'.jpg', 'jpeg')
 
-      print(get_cache_path(analysed_name,"preview")+analysed_name['name_w_ext'])
-
-
-      print("STACK:<br>")
-      print(preview)
-
-
-      #if(cfe(stack)==1):
-         # We resize and turn it to a jpg
-         #destination = get_cache_path(analysed_name,"preview"))
-          
+   # Return the preview full path
+   return get_cache_path(analysed_name,"preview")+analysed_name['name_w_ext'])+'.jpg'        
 
 
 
