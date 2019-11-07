@@ -286,12 +286,24 @@ def new_crop_thumb(frame,x,y,dest,HD = True):
 # based on a JSON file
 def generate_preview(analysed_name):
 
+   clear_cache = 0
+
    # Debug
    cgitb.enable()
 
-   print("IN GENERATE PREVIEW<br/>")
+   # Destination
+   dest = get_cache_path(analysed_name,"preview")
 
-   print(get_cache_path(analysed_name,"preview"))
+   video_hd_full_path = dest['full_path'].replace('.json','-HD.mp4')
+
+   if(cfe(video_hd_full_path)==1):
+      stack = get_stacks(tmp_analysed_name,clear_cache,True) 
+   else:
+      stack = get_stacks(tmp_analysed_name,clear_cache,False)    
+   
+   print("STACK")
+   print(stack)
+
 
 
 # Create the cropped frames (thumbs) for a meteor detection
