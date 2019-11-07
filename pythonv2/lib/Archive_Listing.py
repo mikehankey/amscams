@@ -107,14 +107,11 @@ def get_html_detections(res):
          print("PREVIEW DOESNT EXISTS")
       else:
          # We return them
+         print("EXISTS")
          preview = glob.glob(get_cache_path(det,"preview")+"*.jpg") 
  
    
-
-      print(stacks_folder)
-      print("<br>***********<br>")
-      print(det)
-      print("<br>***********<br>")
+ 
 
 # MAIN FUNCTION FOR THE ARCHIVE LISTING PAGE
 def archive_listing(form):
