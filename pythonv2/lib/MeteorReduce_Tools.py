@@ -294,18 +294,16 @@ def generate_preview(analysed_name):
    # Destination
    dest = does_cache_exist(analysed_name,"preview","/*.jpg")
 
-   print("generate_preview - DES <br/>")
-   print(dest)
+   if(len(dest)==0):
+      video_hd_full_path = analysed_name['full_path'].replace('.json','-HD.mp4')
 
-   video_hd_full_path = analysed_name['full_path'].replace('.json','-HD.mp4')
-
-   if(cfe(video_hd_full_path)==1):
-      stack = get_stacks(analysed_name,clear_cache,True) 
-   else:
-      stack = get_stacks(analysed_name,clear_cache,False)    
-   
-   print("STACK")
-   print(stack)
+      if(cfe(video_hd_full_path)==1):
+         stack = get_stacks(analysed_name,clear_cache,True) 
+      else:
+         stack = get_stacks(analysed_name,clear_cache,False)    
+      
+      print("STACK")
+      print(stack)
 
 
 
