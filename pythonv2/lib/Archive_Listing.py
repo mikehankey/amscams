@@ -57,7 +57,10 @@ def get_index(year):
       return load_json_file(index_file)
    else:
       test = write_index(year)
-      return test
+      if(test):
+         return load_json_file(index_file)
+      else:
+         return test
 
 # Get results on index from a certain date
 def get_results_from_date(date,json_index): 
