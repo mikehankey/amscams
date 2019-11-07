@@ -25,12 +25,13 @@ def create_json_index_year(year):
          cur_day_data = {'day':cur_day,'detections':[]}
          
          for detection in sorted(glob.iglob(day +  '*' + '.json', recursive=False)):
-            
             cur_day_data['detections'].append(os.path.basename(detection))
+         
          cur_month_data['days'].append(cur_day_data)
+      
       index_year['months'].append(cur_month_data)
 
-   return json.dumps(index_year)
+   return index_year 
 
 
 # Write index for a given year
@@ -43,6 +44,8 @@ def write_index(year):
       save_json_file(json_data, main_dir + os.sep + year + ".json")
       print("SAVE")
       print(main_dir + os.sep + year + ".json")
+      print("DATA")
+      print()
 
 
 # MAIN FUNCTION FOR THE ARCHIVE LISTING PAGE
