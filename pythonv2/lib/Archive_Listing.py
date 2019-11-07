@@ -7,7 +7,7 @@ import datetime
 from lib.REDUCE_VARS import *
 from lib.Get_Station_Id import get_station_id
 from lib.FileIO import save_json_file, cfe, load_json_file
-from lib.MeteorReduce_Tools import name_analyser, get_cache_path, get_thumbs, does_cache_exist
+from lib.MeteorReduce_Tools import name_analyser, get_cache_path, get_thumbs, does_cache_exist, generate_preview, get_stacks
 from lib.PAGINATION_VARS import *
 
  
@@ -97,7 +97,7 @@ def get_html_detections(res):
       det['full_path'] = get_full_path_detection(det) + det['full_path']
 
       # Do we have a thumb stack preview for this detection?
-      preview = does_cache_exist(det,"preview")
+      preview = does_cache_exist(det,"preview","/*.jpg")
 
       print(preview)
 

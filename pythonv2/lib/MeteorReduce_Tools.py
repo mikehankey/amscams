@@ -94,7 +94,7 @@ def get_cache_path(analysed_file_name, cache_type=''):
 
 # Get the path to the cache of a given detection 
 # create the folder if it doesn't exists 
-def does_cache_exist(analysed_file_name,cache_type):
+def does_cache_exist(analysed_file_name,cache_type,media_type = '/*.png'):
 
    # Debug
    cgitb.enable()
@@ -104,7 +104,7 @@ def does_cache_exist(analysed_file_name,cache_type):
  
    if(os.path.isdir(cache_path)):
       # We return the glob of the folder with all the images
-      return sorted(glob.glob(cache_path+"/*.png"))
+      return sorted(glob.glob(cache_path+media_type))
    else:
       # We Create the Folder and return null
       os.makedirs(cache_path)
@@ -281,6 +281,18 @@ def new_crop_thumb(frame,x,y,dest,HD = True):
 
 
 
+# Create a preview (small jpg thumbs for the listings)
+# based preferably from HD stack 
+# based on a JSON file
+def generate_preview(analysed_name):
+
+   # Debug
+   cgitb.enable()
+
+
+   
+   print("IN GENETATE PREVIEW<br/>")
+
 # Create the cropped frames (thumbs) for a meteor detection
 def generate_cropped_frames(analysed_name,meteor_json_data,HD_frames,HD):
 
@@ -348,7 +360,7 @@ def get_stacks(analysed_name,clear_cache,toHD):
       if(toHD): 
          stacks =  generate_stacks(analysed_name['full_path'].replace('.json','-HD.mp4'),get_cache_path(analysed_name,"stacks")+analysed_name['name_w_ext']+"-HD.png",toHD)
       else: 
-         stacks =  generate_stacks(analysed_name['full_path'].replace('.json','-SD.mp4'),get_cache_path(analysed_name,"stacks")+analysed_name['name_w_ext']+"-SD.png",toHD)
+         stacks =  generate_stacks(analysed_name['full_path'].replace('.json','-SD.mp4'),get_cache_path(analysed_name,"stacks")+analysed_name['name_w_ext']+"-SD.png",False)
 
       stack_file = stacks
   
