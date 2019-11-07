@@ -167,5 +167,5 @@ def archive_listing(form):
 
    
    # Create HTML Version of each detection
-   res_html = get_html_detections(res)
+   res_html = get_html_detections(res,clear_cache)
    print(res_html)
