@@ -57,11 +57,11 @@ def get_index(year):
 
 # Get results on index from a certain date
 def get_results_from_date(date,json_index): 
-    print(json_index['months'])
+   print(json_index['months'])
 
-    for(month in json_index['months']):
-       if(month>=date.month):
-          print(month)
+   for(month in json_index['months']):
+      if(int(month)>=date.month):
+         print(month)
    
 
 
