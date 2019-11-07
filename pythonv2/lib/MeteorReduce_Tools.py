@@ -312,7 +312,7 @@ def generate_preview(analysed_name):
       preview.save(get_cache_path(analysed_name,"preview")+analysed_name['name_w_ext']+'.jpg', 'jpeg')
 
    # Return the preview full path
-   return get_cache_path(analysed_name,"preview")+analysed_name['name_w_ext'])+'.jpg'        
+   return get_cache_path(analysed_name,"preview")+analysed_name['name_w_ext']+'.jpg'       
 
 
 
