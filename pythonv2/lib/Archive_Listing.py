@@ -82,11 +82,17 @@ def get_results_from_date(date,json_index,max_res):
    return res
 
 
+# Return full path of a detection based on its name
+def get_full_path_detection(analysed_name):
+   index_file = METEOR_ARCHIVE + analysed_name['station_id'] + os.sep + METEOR +  analysed_name['year'] + os.sep +  analysed_name['month'] + os.sep  +  analysed_name['day'] + os.sep 
+   return index_file
+
 # Get HTML version of each detection
 def get_html_detections(res):
    res_html = ''
    for detection in res:
       det = name_analyser(detection)
+      det['full_path'] = get_full_path_detection(det) + det['full_path']
       print(det)
       print("<br>***********<br>")
 
