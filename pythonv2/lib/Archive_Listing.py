@@ -1,6 +1,7 @@
 # coding: utf-8
 import glob
 import os
+import json
 
 from lib.REDUCE_VARS import *
 from lib.Get_Station_Id import get_station_id
