@@ -95,7 +95,20 @@ def get_html_detections(res):
       det['full_path'] = get_full_path_detection(det) + det['full_path']
 
       # Do we have a thumb stack preview for this detection?
-      stacks_folder = does_cache_exist(det,"stacks")
+      preview = does_cache_exist(det,"preview")
+
+      print(preview)
+
+      if(len(preview)==0 or clear_cache is True):
+         # We need to generate the thumbs 
+         #preview = generate_preview(det)
+
+      else:
+         # We return them
+         preview = glob.glob(get_cache_path(det,"preview")+"*.jpg") 
+ 
+   
+
       print(stacks_folder)
       print("<br>***********<br>")
       print(det)

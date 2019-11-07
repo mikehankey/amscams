@@ -86,6 +86,8 @@ def get_cache_path(analysed_file_name, cache_type=''):
       cache_path += CROPPED_FRAMES_SUBPATH
    elif(cache_type == 'tmp_cropped'):
       cache_path += TMP_CROPPED_FRAMES_SUBPATH
+   elif(cache_type == 'preview'):
+      cache_path += PREVIEW
    
    return cache_path
 
