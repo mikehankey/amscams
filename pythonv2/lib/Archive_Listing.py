@@ -60,6 +60,7 @@ def get_results_from_date(date,json_index):
    res = []
 
    for month in json_index['months']:
+      print(str(month['month'])  + " vs. " + str(date.month) + "<br/>")
       if(int(month['month'])<=date.month):
          for day in month['days']:
             if(int(day['day'])<=date.day):
