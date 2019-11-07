@@ -68,7 +68,9 @@ def get_index(year):
 def get_results_from_date(date,json_index,max_res): 
    res = []
    res_cnt = 0
-
+   print("<pre>")
+   print(json_index)
+   print("</pre>")
    print("IN GET RESULTS FROM DATE")
    print("DATE ")
    print(date)
