@@ -76,6 +76,7 @@ def get_results_from_date(date,json_index,max_res):
                for dec in day['det']:
                   if(res_cnt<=max_res):
                      res.append(dec)
+                     res_cnt+=1
                #print(day['day'])
                #print("<br>**********<br>")
    
