@@ -292,8 +292,11 @@ def generate_preview(analysed_name):
    cgitb.enable()
 
    # Destination
-   dest = get_cache_path(analysed_name,"preview")
- 
+   dest = get_cache_path(analysed_name,"preview","/*.jpg")
+
+   print("generate_preview - DES <br/>")
+   print(dest)
+
    video_hd_full_path = analysed_name['full_path'].replace('.json','-HD.mp4')
 
    if(cfe(video_hd_full_path)==1):
