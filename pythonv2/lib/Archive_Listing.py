@@ -18,7 +18,7 @@ def create_json_index_year(year):
    main_dir = METEOR_ARCHIVE + get_station_id() + '/' + METEOR + str(year)
    index_year = {'year':year,'months':[]}
  
-   for month in sorted(glob.iglob(main_dir + '*' + os.sep + '*', recursive=True), reverse=True):	
+   for month in sorted(glob.iglob(main_dir + '*' + os.sep + '*', recursive=True)):	
 
       cur_month = os.path.basename(os.path.normpath(month))
 
@@ -26,11 +26,11 @@ def create_json_index_year(year):
       if('json' not in cur_month):
          cur_month_data = {'month':cur_month,'days':[]}
          
-         for day in sorted(glob.iglob(month + '*' + os.sep + '*', recursive=True), reverse=True):	
+         for day in sorted(glob.iglob(month + '*' + os.sep + '*', recursive=True)):	
             cur_day = os.path.basename(os.path.normpath(day))		
             cur_day_data = {'day':cur_day,'det':[]}
           
-            for detection in sorted(glob.iglob(day + os.sep +  '*' + '.json', recursive=True), reverse=True):
+            for detection in sorted(glob.iglob(day + os.sep +  '*' + '.json', recursive=True)):
                cur_day_data['det'].append(os.path.basename(detection))
             
             cur_month_data['days'].append(cur_day_data)
