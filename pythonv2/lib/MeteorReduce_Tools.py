@@ -297,13 +297,19 @@ def generate_preview(analysed_name):
    if(len(dest)==0):
       video_hd_full_path = analysed_name['full_path'].replace('.json','-HD.mp4')
 
+      # We generate the preview from the stack (HD first)
       if(cfe(video_hd_full_path)==1):
          stack = get_stacks(analysed_name,clear_cache,True) 
       else:
          stack = get_stacks(analysed_name,clear_cache,False)    
       
-      print("STACK")
-      print(stack)
+      if(cfe(stack)==1)
+         # We resize and turn it to a jpg
+         destination = get_cache_path(analysed_name,"preview"))
+          
+         print("STACK")
+         print(stack)
+
 
 
 
