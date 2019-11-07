@@ -285,8 +285,8 @@ def confirm_meteor(meteor_json_file):
          cv2.imwrite(old_meteor_stack_obj_file, stack_img)
          thumb(old_meteor_stack_obj_file)
    
- 
-
+         # sync HD  
+         hd_file, hd_trim,time_diff_sec, dur = find_hd_file_new(video_file, 250, 10, 0)
          
 
          oc = oc + 1
@@ -2964,6 +2964,7 @@ def load_frames_fast(trim_file, json_conf, limit=0, mask=0,crop=(),color=0,resiz
    masks = None
    last_frame = None
 
+   masks = get_masks(cam, json_conf,0)
    color_frames = []
    frames = []
    subframes = []
@@ -3000,6 +3001,7 @@ def load_frames_fast(trim_file, json_conf, limit=0, mask=0,crop=(),color=0,resiz
 
             if last_frame is not None:
                subframe = cv2.subtract(frame, last_frame)
+               subframe = mask_frame(subframe, [], masks, 5)
                subframes.append(subframe)
                sum_val =cv2.sumElems(subframe)[0]
                if sum_val > 100:

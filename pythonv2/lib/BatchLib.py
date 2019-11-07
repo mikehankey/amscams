@@ -410,7 +410,9 @@ def purge_data(json_conf):
    hd_video_dir = json_conf['site']['hd_video_dir']
    disk_thresh = 80   
 
+   print("PURGE HD CAL")
    purge_hd_cal(json_conf)
+   print("PURGE TRASH")
    purge_trash(json_conf)
    
    try:
@@ -601,8 +603,11 @@ def count_min_files(min_files,json_conf):
          skip = 1
       else:
          cams_id = el[9].replace(".mp4","")
-         cam_counts[cams_id] = cam_counts[cams_id] + 1
-         new_min_files.append(file)
+         try:
+            cam_counts[cams_id] = cam_counts[cams_id] + 1
+            new_min_files.append(file)
+         except:
+            print("bad file")
    return(new_min_files, cam_counts)
 
 
