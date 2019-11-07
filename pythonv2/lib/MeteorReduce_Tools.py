@@ -289,9 +289,10 @@ def generate_preview(analysed_name):
    # Debug
    cgitb.enable()
 
+   print("IN GENERATE PREVIEW<br/>")
 
-   
-   print("IN GENETATE PREVIEW<br/>")
+   print(analysed_name)
+
 
 # Create the cropped frames (thumbs) for a meteor detection
 def generate_cropped_frames(analysed_name,meteor_json_data,HD_frames,HD):

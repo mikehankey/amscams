@@ -103,7 +103,7 @@ def get_html_detections(res):
 
       if(len(preview)==0 or clear_cache is True):
          # We need to generate the thumbs 
-         #preview = generate_preview(det)
+         preview = generate_preview(det)
          print("PREVIEW DOESNT EXISTS")
       else:
          # We return them
