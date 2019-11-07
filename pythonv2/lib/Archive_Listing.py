@@ -103,14 +103,16 @@ def get_html_detections(res,clear_cache):
 
       if(len(preview)==0 or clear_cache is True):
          # We need to generate the thumbs 
-         preview = generate_preview(det)
-         print("PREVIEW NOW EXISTS <br>")
-         print(preview)
-      else:
-         # We return them
-         # print("EXISTS")
-         print("PREVIEW ALREADY EXISTS <br>")
-         print(preview)
+         preview = generate_preview(det) 
+       
+      # Otherwise preview = preview (:)
+
+      res_html += '<div class="preview col-lg-2 col-md-3">'
+      res_html += '<a class="mtt" href="webUI.py?cmd=reduce2&video_file= '+det['full_path']+' title="Detection Reduce page">'
+      res_html += '<img alt="" class="img-fluid ns lz" src="'+preview+''"></a>'
+      res_html += '</div>'
+
+   return res_html
  
 
  
