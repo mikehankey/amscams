@@ -80,8 +80,9 @@ def get_results_from_date(date,json_index,max_res):
    for month in json_index['months']:
       print("CUR MONTH " +str(month['month']))
       print("<br>")
-      #print(str(month['month'])  + " > " + str(date.month) + "<br/>")
+      print(str(month['month'])  + " <= " + str(date.month) + "?<br/>")
       if(int(month['month'])<=date.month):
+         print("YES<br>")
          for day in month['days']:
             if(int(day['day'])<=date.day and res_cnt<=max_res):
                print("CUR DAY " +str(day['day']))
