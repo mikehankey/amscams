@@ -2083,7 +2083,7 @@ def override_detect(video_file,jsid, json_conf):
       cmd = "mv "  + sd_wild + " " + sd_fail   
       os.system(cmd)
 
-      if hd_trim is not None:
+      if hd_trim is not None and str(hd_trim) != "0":
          el = hd_trim.split("-trim-")
          ttt = el[0]
          xxx = ttt.split("/")

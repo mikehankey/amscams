@@ -62,7 +62,7 @@ def batch_move():
          fail_fn = meteor_file.split("/")[-1]
          (hd_datetime, cam, sd_date, sd_y, sd_m, sd_d, sd_h, sd_M, sd_s) = convert_filename_to_date_cam(video_file)
          proc_dir = "/mnt/ams2/SD/proc2/" + sd_y + "_" + sd_m + "_" + sd_d + "/" 
-         if cfe(proc_dir, 1) == 0:
+         if cfe(proc_dir, 1) == 0 or cfe(proc_dir + "images", 1 ) == 0:
             os.system("mkdir " + proc_dir)
             os.system("mkdir " + proc_dir + "failed")
             os.system("mkdir " + proc_dir + "passed")
@@ -140,6 +140,15 @@ def minmax_xy(obj):
 
 def save_old_style_meteor_json(meteor_json_file, meteor_obj, trim_suffix, frames):
    #old json object
+   mfj = meteor_json_file.split("/")[-1]
+   meteor_dir = meteor_json_file.replace(mfj, "")
+   if "HD" in meteor_obj['hd_trim'] and meteor_obj['hd_trim'] != 0:
+      print("FIX HD TRIM!")
+      hdf = meteor_obj['hd_trim'].split("/")[-1]
+      hd_trim = meteor_dir + hdf 
+      print("HDF!", hdf, hd_trim)
+   else:
+      hd_trim = meteor_obj['hd_trim']
    oj = {}
    oj['sd_video_file'] = meteor_json_file.replace(".json", ".mp4")
    sd_stack = meteor_json_file.replace(".json", "-stacked.png")
@@ -147,7 +156,7 @@ def save_old_style_meteor_json(meteor_json_file, meteor_obj, trim_suffix, frames
    oj['sd_stack'] = sd_stack
    oj['hd_stack'] = sd_stack
    oj['hd_video_file'] = meteor_obj['hd_video_file']
-   oj['hd_trim'] = meteor_obj['hd_trim']
+   oj['hd_trim'] = hd_trim
    oj['hd_crop_file'] = 0
    oj['hd_box'] = [0,0,0,0]
    oj['hd_objects'] = []
@@ -214,8 +223,8 @@ def detect_meteor_in_clip(trim_clip, frames = None, fn = 0):
       thresh_obj = cv2.dilate(threshold.copy(), None , iterations=4)
       thresh_obj = cv2.convertScaleAbs(thresh_obj)
       # save this for final view
-      cv2.imshow('pepe', thresh_obj)
-      cv2.waitKey(70)
+      #cv2.imshow('pepe', thresh_obj)
+      #cv2.waitKey(70)
       #cv2.imshow('pepe', image_diff)
       #cv2.waitKey(70)
 
@@ -237,17 +246,18 @@ def detect_meteor_in_clip(trim_clip, frames = None, fn = 0):
             intensity = compute_intensity(x,y,w,h,frame,frames[0])
 
             object, objects = find_object(objects, fn,cx, cy, w, h, intensity)
+            objects[object]['trim_clip'] = trim_clip
             #print("objects:", objects[object])
             cv2.rectangle(show_frame, (x, y), (x+w, y+h), (255,255,255), 1, cv2.LINE_AA)
             desc = str(fn) + " " + str(intensity) + " " + str(objects[object]['obj_id']) + " " + str(objects[object]['report']['obj_class'])
             cv2.putText(show_frame, desc,  (x,y), cv2.FONT_HERSHEY_SIMPLEX, .4, (255, 255, 255), 1)
-            fn = fn + 1
       
       show_frame = cv2.convertScaleAbs(show_frame)
-      cv2.imshow('pepe', show_frame)
-      cv2.waitKey(70)
+      #cv2.imshow('pepe', show_frame)
+      #cv2.waitKey(70)
+      fn = fn + 1
 
-   return(objects)   
+   return(objects, frames)   
  
 
 def compute_intensity(x,y,w,h,frame, bg_frame):
@@ -303,18 +313,22 @@ def confirm_meteor(meteor_json_file):
    print("METEOR OBJECTS:", meteor_objects)
    # make trim clips for the possible meteors
    if sun_up == 0:
-      trim_clips, trim_starts, trim_ends = make_trim_clips(meteor_objects, video_file)   
+      trim_clips, trim_starts, trim_ends,meteor_objects = make_trim_clips(meteor_objects, video_file)   
    else:
-      trim_clips, trim_starts, trim_ends = make_trim_clips(meteor_objects, video_file)   
+      trim_clips, trim_starts, trim_ends,meteor_objects = make_trim_clips(meteor_objects, video_file)   
       print("Process daytime file instead.", trim_clips)
 
+   print("TRIM CLIPS!", trim_clips)
+   print("TRIM METEORS!", meteor_objects)
    motion_meteors = []
+   tc = 0
    for trim_clip in trim_clips:
-      motion_objects = detect_meteor_in_clip(trim_clip )
+      motion_objects,meteor_frames = detect_meteor_in_clip(trim_clip , None, trim_starts[tc])
       for mid in motion_objects:
          mobject = motion_objects[mid]
          if mobject['report']['meteor_yn'] == 'Y':
             motion_meteors.append(mobject)
+      tc = tc + 1
 
 
   
@@ -333,6 +347,8 @@ def confirm_meteor(meteor_json_file):
    oc = 0
    cnt_objects = {}
 
+   print("TRIM CLIPS:", trim_clips)
+
    for obj in meteor_objects:
       start = obj['ofns'][0] - 25
       if start < 0:
@@ -343,13 +359,21 @@ def confirm_meteor(meteor_json_file):
       print(obj['ofns'])
       if sun_up == 0 or sun_up == 1:
          # Run deeper detection on clip
-         trim_video_clip = trim_clips[oc] 
+         if "trim_clip" in obj:
+            trim_video_clip = obj['trim_clip']
+         else:
+            print("Messed up object!", obj)
+            continue 
          tcn = trim_video_clip.split("/")[-1]
          xxx, trim_suffix = tcn.split("-")
          trim_suffix = "-" + trim_suffix
-         start = trim_starts[oc] 
-         end = trim_ends[oc] 
+         start = trim_suffix.replace("-trim", "")
+         start = int(start.replace(".mp4", ""))
          frames,color_frames,subframes,sum_vals,max_vals = load_frames_fast(trim_video_clip, json_conf, 0, 0, [], 0,[])
+         print(":FRAMES:", len(frames))
+         print("OBNJ:", obj)
+         if len(frames) == 0:
+            next
          cnt_frame_data = detect_motion_in_frames(frames, video_file, start)
          cnt_objects = find_cnt_objects(cnt_frame_data, cnt_objects)
          print("TOTAL FRAMES:", len(frames))
@@ -387,8 +411,8 @@ def confirm_meteor(meteor_json_file):
             show_frame[0:total_h,w:w+w] = subframe
      
 
-            cv2.imshow('pepe', show_frame)
-            cv2.waitKey(70)
+            #cv2.imshow('pepe', show_frame)
+            #cv2.waitKey(70)
  
          # save object to old style archive and then move the trim file and copy the stack file to the archive as well
          # move the new json dedtect file someplace else and then do the same for the new archive style
@@ -404,7 +428,7 @@ def confirm_meteor(meteor_json_file):
 
          print("Save old meteor json", old_meteor_json_file)
          # mv the trim video
-         cmd = "mv " + trim_video_clip + " " + old_meteor_dir
+         cmd = "cp " + trim_video_clip + " " + old_meteor_dir
          print(cmd)
          os.system(cmd)
          # copy the stack file
@@ -434,12 +458,19 @@ def confirm_meteor(meteor_json_file):
          df = int ((end - start) / 25)
          hd_file, hd_trim,time_diff_sec, dur = find_hd_file_new(video_file, start, df, 1)
          print("START END:", start, end, df)
-         print("HD SYNC:", hd_file, hd_trim, time_diff_sec, dur, df)
          if hd_trim is not None:
-            os.system("mv " + hd_trim + " " + old_meteor_dir)
+            print("HD SYNC:", hd_file, hd_trim, time_diff_sec, dur, df)
             # Make the HD stack file too.  And then sync the HD to SD video file.
             obj['hd_trim'] = hd_trim
             obj['hd_video_file'] = hd_file
+            if cfe(hd_trim) == 1:
+               hd_crop, crop_box = crop_hd(obj, frames[0])
+               hd_crop_objects,hd_crop_frames = detect_meteor_in_clip(hd_crop, None, start)
+               print("HD CROP OBJECTS:", hd_crop_objects, crop_box, )
+               refine_points(hd_crop, hd_crop_frames )
+               obj['hd_crop_file'] = hd_crop
+               obj['crop_box'] = crop_box 
+            os.system("mv " + hd_trim + " " + old_meteor_dir)
          else:
             obj['hd_trim'] = 0
             obj['hd_video_file'] = 0
@@ -447,12 +478,325 @@ def confirm_meteor(meteor_json_file):
          oc = oc + 1
          print(obj)
          save_old_style_meteor_json(old_meteor_json_file, obj, trim_suffix, frames)
+
+def find_leading_edge(x_dir_mod, y_dir_mod,x,y,w,h,frame):
+   if x_dir_mod == 1:
+      leading_x = x
+   else:
+      leading_x = x + w
+   if y_dir_mod == 1:
+      leading_y = y
+   else:
+      leading_y =  y + h
+
+   if True:
+      leading_edge_x_size = int(w / 2)
+      leading_edge_y_size = int(h / 2)
+
+      le_x1 = leading_x
+      le_x2 = leading_x + (x_dir_mod*leading_edge_x_size)
+      le_y1 = leading_y
+      le_y2 = leading_y + (y_dir_mod*leading_edge_y_size)
+      tm_y = sorted([le_y1,le_y2])
+      tm_x = sorted([le_x1,le_x2])
+      le_x1 = tm_x[0]
+      le_x2 = tm_x[1]
+      le_y1 = tm_y[0]
+      le_y2 = tm_y[1]
+
+      le_cnt = frame[le_y1:le_y2,le_x1:le_x2]
+      blur_frame = cv2.GaussianBlur(le_cnt, (7, 7), 0)
+      min_val, max_val, min_loc, (mx,my)= cv2.minMaxLoc(blur_frame)
+
+      le_x = mx + (le_x1)
+      le_y = my + (le_y1)
+      cv2.circle(frame,(leading_x,leading_y), 10, (0,255,0), 1)
+      cv2.circle(frame,(le_x,le_y), 5, (255,0,0), 1)
+      #cv2.rectangle(frame, (x, y), (x+w, y+h), (255,255,255), 1, cv2.LINE_AA)
+      cv2.rectangle(frame, (leading_x, leading_y), (leading_x+(x_dir_mod*leading_edge_x_size), leading_y+(y_dir_mod*leading_edge_y_size)), (255,255,255), 1, cv2.LINE_AA)
+      #cv2.imshow("LE", frame)
+      #cv2.waitKey(0)
+
+
+
+
+
+   return(le_x, le_y)
+        
+def refine_points(hd_crop, frames = None, color_frames = None):
+   scx = 10
+   scy = 10
+   #hd_x1, hd_y1, hd_cw, hd_ch = crop_box
+   if frames is None: 
+      frames,color_frames,subframes,sum_vals,max_vals = load_frames_fast(hd_crop, json_conf, 0, 0, [], 0,[])
+   fn = 0
+
+   motion_objects,meteor_frames = detect_meteor_in_clip(hd_crop, frames, 0)
+   first_frame = frames[0]
+   for obj in motion_objects:
+      if "center_xs" not in motion_objects[obj]:
+         motion_objects[obj]['crop_center_xs'] = []
+         motion_objects[obj]['crop_center_ys'] = []
+      for i in range(0, len(motion_objects[obj]['ofns'])):
+         fn = motion_objects[obj]['ofns'][i]
+         x = motion_objects[obj]['oxs'][i] - int(motion_objects[obj]['ows'][i]/2)
+         y = motion_objects[obj]['oys'][i] - int(motion_objects[obj]['ohs'][i]/2) 
+         w = motion_objects[obj]['ows'][i] 
+         h = motion_objects[obj]['ohs'][i] 
+         if color_frames is not None:
+            show_frame = color_frames[fn].copy()
+         else:
+            show_frame = frames[fn].copy()
+         frame = frames[fn]
+         desc = str(fn) 
+
+         cx1,cy1,cx2,cy2 = bound_cnt(x,y,frames[0].shape[1],frames[0].shape[0], 20)
+
+         crop_img = frame[cy1:cy2,cx1:cx2]
+         crop_bg = first_frame[cy1:cy2,cx1:cx2]
+         crop_img_big = cv2.resize(crop_img, (0,0),fx=scx, fy=scy)
+         crop_sub = cv2.subtract(crop_img,crop_bg)
+         crop_sub_big = cv2.resize(crop_sub, (0,0),fx=scx, fy=scy)
+         #min_val, max_val, min_loc, (mx,my)= cv2.minMaxLoc(crop_sub_big)
+         min_val, max_val, min_loc, (mx,my)= cv2.minMaxLoc(crop_img_big)
+         med_val = np.median(crop_img_big)
+         px_diff = max_val - med_val
          
+         thresh = med_val + (px_diff / 3)
+         if thresh < med_val:
+            thresh = med_val + 10 
+
+         cnts = find_contours_in_frame(crop_img_big, thresh)
+         if len(cnts) > 1:
+            cnts = merge_contours(cnts)
+         for cnt in cnts:
+            x, y, w, h = cnt 
+            cv2.rectangle(crop_sub_big, (x, y), (x+w, x+h), (128,129,128), 1, cv2.LINE_AA)
+            cv2.rectangle(crop_img_big, (x, y), (x+w, x+h), (128,129,128), 1, cv2.LINE_AA)
+            main_x = int(((x+(w/2))/scx) + cx1)
+            main_y = int(((y+(h/2))/scy) + cy1)
+            mx1,my1,mx2,my2 = bound_cnt(main_x,main_y,show_frame.shape[1],show_frame.shape[0], 10)
+            motion_objects[obj]['crop_center_xs'].append(main_x)
+            motion_objects[obj]['crop_center_ys'].append(main_y) 
+
+
+            cv2.rectangle(show_frame, (mx1, my1), (mx2, my2), (0,0,128), 1, cv2.LINE_AA)
+            
+
+         #cv2.imshow('pepe2', crop_sub_big)
+         #cv2.imshow('pepe3', crop_img_big)
+
+         #cv2.circle(show_frame,(x,y), 1, (255,255,255), 1)
+         #cv2.rectangle(show_frame, (cx1, cy1), (cx2, cy2), (128,129,128), 1, cv2.LINE_AA)
+         #cv2.putText(show_frame, desc,  (3,10), cv2.FONT_HERSHEY_SIMPLEX, .4, (255, 255, 255), 1)
+         #cv2.imshow('pepe', show_frame)
+         #cv2.waitKey(0)
+
+
+
+   # Ok now that we have at least refined the main object's center, lets re-crop the frames around that 
+   # and find the leading edge!
+   cv2.destroyAllWindows()
+
+   for obj in motion_objects:
+      x_dir_mod,y_dir_mod = meteor_dir(motion_objects[obj]['oxs'][0], motion_objects[obj]['oys'][0], motion_objects[obj]['oxs'][-1], motion_objects[obj]['oys'][-1])
+      for i in range(0, len(motion_objects[obj]['ofns'])):
+         fn = motion_objects[obj]['ofns'][i]
+         x = motion_objects[obj]['oxs'][i] - int(motion_objects[obj]['ows'][i]/2)
+         y = motion_objects[obj]['oys'][i] - int(motion_objects[obj]['ohs'][i]/2)
+         w = motion_objects[obj]['ows'][i]
+         h = motion_objects[obj]['ohs'][i]
+         if "crop_center_xs" not in motion_objects[obj]:
+            print("NO CENTER X", motion_objects[obj])
+            exit() 
+         center_x = motion_objects[obj]['crop_center_xs'][i]
+         center_y = motion_objects[obj]['crop_center_ys'][i]
+         if color_frames is not None:
+            show_frame = color_frames[fn].copy()
+         else:
+            show_frame = frames[fn].copy()
+         frame = frames[fn].copy()
+         if color_frames is not None: 
+            color_frame = color_frames[fn].copy()
+         else:
+            color_frame = frames[fn].copy()
+         desc = str(fn)
+
+         cx1,cy1,cx2,cy2 = bound_cnt(center_x,center_y,frames[0].shape[1],frames[0].shape[0], 10)
+         crop_img = frame[cy1:cy2,cx1:cx2]
+         crop_img_cl = color_frame[cy1:cy2,cx1:cx2]
+         crop_img_big = cv2.resize(crop_img, (0,0),fx=scx, fy=scy)
+         crop_img_big_cl = cv2.resize(crop_img_cl, (0,0),fx=scx, fy=scy)
+
+         min_val, max_val, min_loc, (mx,my)= cv2.minMaxLoc(crop_img_big)
+         med_val = np.median(crop_img_big)
+         px_diff = max_val - med_val
+
+         thresh = med_val + (px_diff / 3)
+         if thresh < med_val:
+            thresh = med_val + 10
+
+         cnts = find_contours_in_frame(crop_img_big, thresh)
+         x,y,w,h = cnts[0]
+
+         lx, ly = find_leading_edge(x_dir_mod, y_dir_mod,x,y,w,h,crop_img_big)
+         lx = int(lx/scx) + cx1
+         ly = int(ly/scy) + cy1
+         if "leading_xs" not in motion_objects[obj]:
+            motion_objects[obj]['leading_xs'] = []
+            motion_objects[obj]['leading_ys'] = []
+         motion_objects[obj]['leading_xs'].append(lx)
+         motion_objects[obj]['leading_ys'].append(ly)
+
+
+         cv2.circle(crop_img_big_cl,(lx,ly), 1, (255,255,255), 1)
+
+         #cv2.imshow('leading edge', crop_img_big_cl)
+         #cv2.waitKey(0)
+   for obj in motion_objects:
+      motion_objects[obj] = remove_bad_frames(motion_objects[obj])
+      print("REFINED OBJECT!:", motion_objects[obj])
+
+   for obj in motion_objects:
+      xobj = motion_objects[obj]
+      for i in range(0, len(xobj['ofns'])):
+         fn = xobj['ofns'][i]
+         lx = xobj['leading_xs'][i]
+         ly = xobj['leading_ys'][i]
+         ly = xobj['leading_ys'][i]
+         if color_frames is not None:
+            show_frame = color_frames[fn].copy()
+         else:
+            show_frame = frames[fn].copy()
+         cv2.circle(show_frame,(lx,ly), 1, (0,0,255), 1)
+         cv2.imshow("REFINE", show_frame)
+         cv2.waitKey(70)
+
+   return(motion_objects)
+
+def calc_leg_segs(xobj):
+   print("OBJ:", xobj)
+   dist_from_start = []
+   line_segs = []
+   x_segs = []
+   ms = []
+   bs = []
+   fx, fy = xobj['leading_xs'][0],xobj['leading_ys'][0]
+   # find distance from start point for each frame
+   # turn that into seg_dist for each frame
+   for i in range(0, len(xobj['ofns'])):
+      tx = xobj['leading_xs'][i]
+      ty = xobj['leading_ys'][i]
+      dist = calc_dist((fx,fy),(tx,ty))
+      dist_from_start.append(dist)
+      if i > 0 and i < len(xobj['ofns']):
+         tm,tb = best_fit_slope_and_intercept([fx,tx],[fy,ty])
+         seg_len = dist_from_start[i] - dist_from_start[i-1]
+         line_segs.append(seg_len)
+         x_segs.append(xobj['oxs'][i-1] - tx)
+         ms.append(tm)
+         bs.append(tb)
+
+      else:
+         line_segs.append(9999)
+         ms.append(9999)
+         bs.append(9999)
+   xobj['dist_from_start'] = dist_from_start
+   xobj['line_segs'] = line_segs
+   xobj['x_segs'] = x_segs
+   xobj['ms'] = ms 
+   xobj['bs'] = bs
+   del(xobj['crop_center_xs'])
+   del(xobj['crop_center_ys'])
+
+
+
+   return(xobj)
+
+
+def remove_bad_frames(obj):
+   # frame bad if the intensity is negative really low 
+   # frame bad if the line seg is way off from the med_seg_len
+   print("REMOVE BAD!", obj)
+   obj = calc_leg_segs(obj)
+   new_fns, new_xs, new_ys, new_ws, new_hs, new_ints, new_lxs, new_lys,new_line_segs,new_dist_from_start = [],[],[],[],[],[],[],[],[],[]
+   med_seg = np.median(obj['line_segs'])
+   for i in range (0, len(obj['ofns'])-1):
+      fn = obj['ofns'][i]
+      x = obj['oxs'][i]
+      y = obj['oys'][i]
+      w = obj['ows'][i]
+      h = obj['ohs'][i]
+      ints = obj['oint'][i]
+      lx = obj['leading_xs'][i]
+      ly = obj['leading_ys'][i]
+      line_seg = obj['line_segs'][i]
+      dist_from_start = obj['dist_from_start'][i]
+      if abs(line_seg - med_seg) > 2 or line_seg <= 0:
+         bf = 1
+      else:
+         new_fns.append(fn)
+         new_xs.append(x)
+         new_ys.append(y)
+         new_ws.append(w)
+         new_hs.append(h)
+         new_ints.append(ints)
+         new_lxs.append(lx)
+         new_lys.append(ly)
+         new_line_segs.append(line_seg)
+         new_dist_from_start.append(dist_from_start)
+   obj['ofns'] = new_fns
+   obj['oxs'] = new_xs 
+   obj['oys'] = new_ys
+   obj['ows'] = new_ws
+   obj['ohs'] = new_hs
+   obj['oint'] = new_ints
+   obj['leading_xs'] = new_lxs
+   obj['leading_ys'] = new_lys
+   obj['line_segs'] = new_line_segs
+   obj['dist_from_start'] = new_dist_from_start
+   obj = analyze_object(obj)
+      
+   return(obj)
+     
+      
+   
+
+def crop_hd(obj, frame):
+   hd_trim = obj['hd_trim']
+   min_x, min_y,max_x,max_y = minmax_xy(obj)
+   fx = int((min_x + max_x) / 2)
+   fy = int((min_y + max_y) / 2)
+   if max_x - min_x < 100 or max_y - min_y < 100:
+      cx1,cy1,cx2,cy2= bound_cnt(fx,fy,frame.shape[1],frame.shape[0], 100)
+   else:
+      cx1,cy1,cx2,cy2= bound_cnt(fx,fy,frame.shape[1],frame.shape[0], 200)
+   w = cx2 - cx1
+   h = cy2 - cy1
+
+   scale_x = 1920 / frame.shape[1]  
+   scale_y = 1080 / frame.shape[0]  
+   hd_x = int(cx1 * scale_x)
+   hd_y = int(cy1 * scale_y)
+   w = int(w * scale_x)
+   h = int(h * scale_y)
+ 
+
+   crop = "crop=" + str(w) + ":" + str(h) + ":" + str(hd_x) + ":" + str(hd_y)
+   print("CROP: ", crop)
+   crop_out_file = hd_trim.replace(".mp4", "-crop.mp4")
+   cmd = "/usr/bin/ffmpeg -y -i " + hd_trim + " -filter:v \"" + crop + "\" " + crop_out_file + " >/dev/null 2>&1"
+   print(cmd)
+   os.system(cmd)
+   return(crop_out_file, (hd_x, hd_y, w, h))
+
+    
 
 def make_trim_clips(meteor_objects, video_file):
    trim_clips = []
    trim_starts = []
    trim_ends = []
+   new_objs = []
    for obj in meteor_objects:
       start = obj['ofns'][0] - 25
       if start < 0:
@@ -463,10 +807,14 @@ def make_trim_clips(meteor_objects, video_file):
       print(obj['ofns'])
       # Run deeper detection on clip
       trim_clip, trim_start, trim_end = make_trim_clip(video_file, start, end)
+      obj['trim_clip'] = trim_clip
+      obj['trim_start'] = trim_start
+      obj['trim_end'] = trim_end
       trim_clips.append(trim_clip)
       trim_starts.append(trim_start)
       trim_ends.append(trim_end)
-   return(trim_clips, trim_starts, trim_ends)
+      new_objs.append(obj)
+   return(trim_clips, trim_starts, trim_ends,new_objs)
 
 
 def make_trim_clip(video_file, start, end):
@@ -483,7 +831,7 @@ def scan_queue(cam):
    else:
       wild = "*.mp4"
    queue_dir="/mnt/ams2/CAMS/queue/"
-   files = glob.glob(queue_dir + wild )
+   files = sorted(glob.glob(queue_dir + wild ), reverse=True)
    fc = 0
    for video_file in files:
       stack_file = video_file.replace(".mp4", "-stacked.png")
@@ -928,8 +1276,8 @@ def find_contours_in_frame(frame, thresh=25):
    _, threshold = cv2.threshold(frame.copy(), thresh, 255, cv2.THRESH_BINARY)
    thresh_obj = cv2.dilate(threshold.copy(), None , iterations=4)
    threshold = cv2.convertScaleAbs(thresh_obj)
-  # cv2.imshow('pepe', threshold)
-  # cv2.waitKey(70)
+   #cv2.imshow('find_cnt_in_frm', threshold)
+   #cv2.waitKey(0)
    cnt_res = cv2.findContours(threshold.copy(), cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
    if len(cnt_res) == 3:
       (_, cnts, xx) = cnt_res
@@ -1521,6 +1869,22 @@ def bound_point(est_y, est_x, image):
 
 
 def analyze_object(object):
+   if "ofns" not in object:
+      if "report" not in object:
+         object['report'] = {}
+         object['report']['meteor_yn'] = "no"
+      else:
+         object['report']['meteor_yn'] = "no"
+      return(object)
+   if len(object['ofns']) == 0:
+      if "report" not in object:
+         object['report'] = {}
+         object['report']['meteor_yn'] = "no"
+      else:
+         object['report']['meteor_yn'] = "no"
+      return(object)
+
+
    id = object['obj_id']
    meteor_yn = "Y"
    obj_class = "undefined"
@@ -1600,20 +1964,16 @@ def analyze_object(object):
    if med_int < 5 and med_int != 0:
       meteor_yn = "no"
       bad_items.append("low or negative median intensity.")
-      #print("Bad intensity", med_int)
    if min_max_dist < 5:
       obj_class = "star"
       meteor_yn = "no"
       bad_items.append("not enough distance.")
-      #print("Bad pix dist", min_max_dist)
    if min_max_dist * .0416 < .3:
       meteor_yn = "no"
       bad_items.append("bad angular distance below .3.")
-      #print("Bad angular dist",  min_max_dist * .0416 )
    if (dist_per_elp * .0416) * 25 < 1:
       meteor_yn = "no"
       bad_items.append("bad angular velocity below 1")
-      #print("Bad velocity", (dist_per_elp * .0416) * 25)
 
    if len(bad_items) >= 1:
       meteor_yn = "no"
@@ -1790,7 +2150,6 @@ def gap_test(object):
    else:
       gap_to_elp_ratio = 1
 
-   #print("GAP:", gap_to_cm_ratio, gap_to_elp_ratio, cons)
 
    if cons < 3:
       print("CONS MONTION TOO LOW!")
@@ -2378,7 +2737,7 @@ def quick_scan(video_file):
       print("POS:", pos_meteors[object]['ofns'])
       start, end = buffered_start_end(pos_meteors[object]['ofns'][0],pos_meteors[object]['ofns'][1], len(frames), 25)
       print("BUFFERED START:", start, end)
-      motion_objects = detect_meteor_in_clip("", frames[start:end], start)
+      motion_objects, motion_frames = detect_meteor_in_clip("", frames[start:end], start)
       for obj in motion_objects:
          all_motion_objects.append(motion_objects[obj])
 
@@ -2405,7 +2764,7 @@ def quick_scan(video_file):
       else:
          non_meteors.append(obj)
 
-   trim_clips, trim_starts, trim_ends = make_trim_clips(meteors, video_file)   
+   trim_clips, trim_starts, trim_ends,meteors = make_trim_clips(meteors, video_file)   
    for meteor in meteors:
       print("METEOR:", meteor) 
    if len(meteors) > 10:
@@ -3191,7 +3550,7 @@ def load_frames_fast(trim_file, json_conf, limit=0, mask=0,crop=(),color=0,resiz
                go = 0
          else:
             #print("FRMAE:", frame_count)
-            #color_frames.append(frame)
+            color_frames.append(frame)
             if limit != 0 and frame_count > limit:
                cap.release()
                return(frames)
@@ -3275,3 +3634,5 @@ if cmd == "bc" or cmd == "batch_confirm":
    batch_confirm()
 if cmd == "mfs" or cmd == "move_files":
    batch_move()
+if cmd == "rp" or cmd == "refine_points":
+   refine_points(video_file)
