@@ -287,6 +287,8 @@ def convert_json(json_file_path, sd_video_file_path, hd_video_file_path):
    # Get the frames here (from reduced_info)
    frames = get_new_frames(reduced_info)
 
+   if("frames" not in frames):
+      frames['frames'] = {}
 
    # The stars belong to calib
    if("stars" in stars):
