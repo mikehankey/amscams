@@ -145,9 +145,20 @@ def archive_listing(form):
    else:
       cur_page = int(cur_page)
 
-   # Meteor per page (default value)
+   #NUMBER_OF_METEOR_PER_PAGE
    if(meteor_per_page is None):
-      meteor_per_page = NUMBER_OF_METEOR_PER_PAGE
+      nompp = NUMBER_OF_METEOR_PER_PAGE
+   else:
+      nompp = int(meteor_per_page)
+
+   
+   # Build num per page selector
+   ppp_select = ''
+   for ppp in POSSIBLE_PER_PAGE:
+      if(int(ppp)==nompp):
+         ppp_select+= '<option selected value="'+str(ppp)+'">'+str(ppp)+' / page</option>'
+      else:
+         ppp_select+= '<option value="'+str(ppp)+'">'+str(ppp)+' / page</option>'  
 
    # Clear_cache
    if(clear_cache is None):
@@ -184,13 +195,14 @@ def archive_listing(form):
             res = res + res2
 
    if(has_limit_day==0):
-      pagination = get_pagination(cur_page,len(res),"/pycgi/webUI.py?cmd=new_meteors&meteor_per_page="+str(meteor_per_page),int(meteor_per_page))
+      pagination = get_pagination(cur_page,len(res),"/pycgi/webUI.py?cmd=new_meteors&meteor_per_page="+str(nompp),int(nompp))
    else:
-      pagination = get_pagination(cur_page,len(res),"/pycgi/webUI.py?cmd=new_meteors&limit_day="+str(the_date)+"&meteor_per_page="+str(meteor_per_page),int(meteor_per_page))
+      pagination = get_pagination(cur_page,len(res),"/pycgi/webUI.py?cmd=new_meteors&limit_day="+str(the_date)+"&meteor_per_page="+str(nompp),int(nompp))
 
    if(pagination[2] != ''):
       template = template.replace("{PAGINATION_DET}", "Page  " + format(cur_page) + "/" +  format(pagination[2]))    
-
+   else:
+      template = template.replace("{PAGINATION_DET}", "")    
    
    # Create HTML Version of each detection
    res_html = get_html_detections(res,clear_cache) 
