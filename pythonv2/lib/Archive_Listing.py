@@ -188,6 +188,8 @@ def archive_listing(form):
    else:
       pagination = get_pagination(cur_page,len(res),"/pycgi/webUI.py?cmd=new_meteors&limit_day="+str(the_date)+"&meteor_per_page="+str(meteor_per_page),int(meteor_per_page))
 
+   if(pagination[2] != ''):
+      template = template.replace("{PAGINATION_DET}", "Page  " + format(cur_page) + "/" +  format(pagination[2]))    
 
    
    # Create HTML Version of each detection
