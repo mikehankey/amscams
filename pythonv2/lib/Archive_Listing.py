@@ -135,7 +135,7 @@ def get_html_detections(res,clear_cache):
       res_html += '<a class="mtt" href="webUI.py?cmd=reduce2&video_file='+det['full_path']+'" title="Detection Reduce page">'
       res_html += '<img alt="" class="img-fluid ns lz" src="'+preview[0]+'">'
       res_html += '</a>'
-      res_html += '<div class="d-flex justify-content-between"'
+      res_html += '<div class="d-flex justify-content-between">'
       res_html += '<div class="pre-b">Cam #'+det['cam_id']+' - <b>'+det['hour']+':'+det['min']+'</b></div>'
       res_html += '<div class="btn-toolbar"><div class="btn-group"><a class="vid_link_gal col btn btn-primary btn-sm" title="Play Video" href="./video_player.html?video="><i class="icon-play"></i></a>'
       res_html += '<a class="delete_meteor_gallery col btn btn-danger btn-sm" title="Delete Detection" data-meteor=""><i class="icon-delete"></i></a></div></div>'
