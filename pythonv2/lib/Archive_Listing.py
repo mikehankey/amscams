@@ -11,7 +11,7 @@ from lib.MeteorReduce_Tools import name_analyser, get_cache_path, get_thumbs, do
 from lib.PAGINATION_VARS import *
 
 
-ARCHIVE_LISTING_TEMPLATE = = "/home/ams/amscams/pythonv2/templates/archive_listing.html"
+ARCHIVE_LISTING_TEMPLATE = "/home/ams/amscams/pythonv2/templates/archive_listing.html"
  
 
 # Create index for a given year
@@ -184,5 +184,8 @@ def archive_listing(form):
 
    
    # Create HTML Version of each detection
-   res_html = get_html_detections(res,clear_cache)
-   print(res_html)
+   res_html = get_html_detections(res,clear_cache) 
+   template = template.replace("{RESULTS}", res_html)
+
+   # Display Template
+   print(template)
