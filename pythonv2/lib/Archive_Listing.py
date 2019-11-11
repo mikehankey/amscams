@@ -110,12 +110,14 @@ def get_html_detections(res,clear_cache):
       det['full_path'] = get_full_path_detection(det) + det['full_path']
       
       cur_date = get_datetime_from_analysedname(det)
-
-      print(cur_date)
-      print("<br/>")
-
+ 
       if(prev_date is None):
          prev_date = cur_date
+         res_html += '<div class="h2_holder  d-flex justify-content-between"><h2>'+cur_date.format("%Y-%m-%d")'</h2></div>'
+
+      if(cur_date.month != prev.date.month or cur_date.day != prev_date.day):
+         prev_date = cur_date
+
 
       # Do we have a thumb stack preview for this detection?
       preview = does_cache_exist(det,"preview","/*.jpg")
