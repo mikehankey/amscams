@@ -10,6 +10,8 @@ from lib.FileIO import save_json_file, cfe, load_json_file
 from lib.MeteorReduce_Tools import name_analyser, get_cache_path, get_thumbs, does_cache_exist, generate_preview, get_stacks
 from lib.PAGINATION_VARS import *
 
+
+ARCHIVE_LISTING_TEMPLATE = = "/home/ams/amscams/pythonv2/templates/archive_listing.html"
  
 
 # Create index for a given year
@@ -128,10 +130,15 @@ def get_html_detections(res,clear_cache):
 
 # MAIN FUNCTION FOR THE ARCHIVE LISTING PAGE
 def archive_listing(form):
+
    limit_day = form.getvalue('limit_day')
    cur_page  = form.getvalue('p')
    meteor_per_page = form.getvalue('meteor_per_page')
    clear_cache = form.getvalue('clear_cache')
+
+   # Build the page based on template  
+   with open(ARCHIVE_LISTING_TEMPLATE, 'r') as file:
+      template = file.read()
 
    # Pagination
    if (cur_page is None) or (cur_page==0):
