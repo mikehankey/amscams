@@ -67,36 +67,27 @@ def get_index(year):
 # Get results on index from a certain date
 def get_results_from_date(date,json_index,max_res): 
    res = []
-   res_cnt = 0
-   print("<pre>")
-   print(json_index)
-   print("</pre>")
-   print("IN GET RESULTS FROM DATE")
-   print("DATE ")
-   print(date)
-   print("<br/>")
-   print("MAX RES " + str(max_res) + "<br/>")
+   res_cnt = 0 
 
    for month in json_index['months']:
-      print("CUR MONTH " +str(month['month']))
-      print("<br>")
-      print(str(month['month'])  + " <= " + str(date.month) + "?<br/>")
+      #print("CUR MONTH " +str(month['month']))
+      #print("<br>")
+      #print(str(month['month'])  + " <= " + str(date.month) + "?<br/>")
       if(int(month['month'])<=date.month):
-         print("YES<br>")
          for day in month['days']:
             if(int(month['month'])==date.month and int(day['day'])<=date.day and res_cnt<=max_res):
-               print("CUR DAY " +str(day['day']))
-               print("<br>")
+               #print("CUR DAY " +str(day['day']))
+               #print("<br>")
                for dec in day['det']:
                   if(res_cnt<=max_res):
                      res.append(dec)
-                     print("ADDED<br/>")
+                     #print("ADDED<br/>")
                      res_cnt+=1 
             elif(int(month['month'])!=date.month and res_cnt<=max_res):
                for dec in day['det']:
                   if(res_cnt<=max_res):
                      res.append(dec)
-                     print("ADDED<br/>")
+                     #print("ADDED<br/>")
                      res_cnt+=1 
    return res
 
