@@ -179,7 +179,7 @@ def archive_listing(form):
    else:
       cur_page = int(cur_page)
 
-   #NUMBER_OF_METEOR_PER_PAGE
+   # NUMBER_OF_METEOR_PER_PAGE
    if(meteor_per_page is None):
       nompp = NUMBER_OF_METEOR_PER_PAGE
    else:
@@ -209,6 +209,8 @@ def archive_listing(form):
    else:
       the_date = datetime.datetime.strptime(limit_day,"%Y_%m_%d") 
       has_limit_day = True
+   
+   template = template.replace("{DATE}",the_date.strftime("%Y/%m/%d") )
 
    year = the_date.year
 
