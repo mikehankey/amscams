@@ -293,7 +293,7 @@ def convert_json(json_file_path, sd_video_file_path, hd_video_file_path):
       if("calib" in calib):
          calib['calib']['stars'] = stars['stars']
    else:
-      calib['calib']   {}
+      calib['calib'] = {}
    
    return {"info": info['info'],"calib": calib['calib'],"frames": frames['frames']}
 
