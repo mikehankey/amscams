@@ -135,13 +135,14 @@ def get_new_calib(json_f):
          json_f['cal_params']['device_alt'] = float(json_f['cal_params']['site_alt'])
          json_f['cal_params']['device_lat'] = float(json_f['cal_params']['site_lat'])  
          json_f['cal_params']['device_lng'] = float(json_f['cal_params']['site_lng'])  
-    
-   new_dt = json_f['event_start_time']
-   new_dt = new_dt.replace('/','_')
-   new_dt = new_dt.replace(' ','_')
-   new_dt = new_dt.replace(':','_')
-   new_dt = new_dt.replace('.','_')
-   new_dt = new_dt.replace('-','_')
+   
+   if "event_start_time" in json_f
+      new_dt = json_f['event_start_time']
+      new_dt = new_dt.replace('/','_')
+      new_dt = new_dt.replace(' ','_')
+      new_dt = new_dt.replace(':','_')
+      new_dt = new_dt.replace('.','_')
+      new_dt = new_dt.replace('-','_')
   
    return { "calib":  
       {  "dt":   new_dt,
