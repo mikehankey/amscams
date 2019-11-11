@@ -29,7 +29,14 @@ def reduce_meteor2(json_conf,form):
       clear_cache = False
  
    # Get Video File & Analyse the Name to get quick access to all info
+   # Warning we can also pass the JSON file
    video_full_path = form.getvalue("video_file")
+
+   if('.json' in video_full_path):
+      json_full_path = video_full_path
+      video_hd_full_path = video_full_path.replace('.json','-HD.mp4')
+      video_sd_full_path = video_hd_full_path.replace('-HD','-SD')
+
 
    # We need at least one video file
    if(video_full_path is not None):
