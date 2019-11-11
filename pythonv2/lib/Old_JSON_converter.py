@@ -206,21 +206,24 @@ def get_new_stars(json_f):
 # Get new frames from an old JSON Version
 def get_new_frames(json_f):
    new_frames = []
-   for frame in json_f['meteor_frame_data']:
-      new_frames.append({
-               "fn": int(frame[1]),
-               "dt": frame[0], 
-               "x":  int(frame[2]),
-               "y":  int(frame[3]),
-               "az": float(frame[9]),
-               "el": float(frame[10]),
-               "dec": float(frame[8]),
-               "ra": float(frame[7]),
-               "w": int(frame[4]),
-               "h": int(frame[5]),
-               "max_px": int(frame[6]) 
-      })
-   return {"frames": new_frames}
+   if("meteor_frame_data" in json_f):
+      for frame in json_f['meteor_frame_data']:
+         new_frames.append({
+                  "fn": int(frame[1]),
+                  "dt": frame[0], 
+                  "x":  int(frame[2]),
+                  "y":  int(frame[3]),
+                  "az": float(frame[9]),
+                  "el": float(frame[10]),
+                  "dec": float(frame[8]),
+                  "ra": float(frame[7]),
+                  "w": int(frame[4]),
+                  "h": int(frame[5]),
+                  "max_px": int(frame[6]) 
+         })
+      return {"frames": new_frames}
+   else:
+      return {}
 
 # Convert a whole old JSON file following the new DTD
 def convert_json(json_file_path, sd_video_file_path, hd_video_file_path):
