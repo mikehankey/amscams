@@ -159,6 +159,8 @@ def archive_listing(form):
          ppp_select+= '<option selected value="'+str(ppp)+'">'+str(ppp)+' / page</option>'
       else:
          ppp_select+= '<option value="'+str(ppp)+'">'+str(ppp)+' / page</option>'  
+   template = template.replace("{RPP}", ppp_select)
+
 
    # Clear_cache
    if(clear_cache is None):
