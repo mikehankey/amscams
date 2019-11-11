@@ -184,7 +184,7 @@ def archive_listing(form):
             res = res + res2
 
    if(has_limit_day==0):
-      pagination = get_pagination(cur_page,len(res),"/pycgi/webUI.py?cmd=new_meteors&meteor_per_page="+str(meteor_per_page),int(meteor_per_page)
+      pagination = get_pagination(cur_page,len(res),"/pycgi/webUI.py?cmd=new_meteors&meteor_per_page="+str(meteor_per_page),int(meteor_per_page))
    else:
       pagination = get_pagination(cur_page,len(res),"/pycgi/webUI.py?cmd=new_meteors&limit_day="+str(the_date)+"&meteor_per_page="+str(meteor_per_page),int(meteor_per_page))
 
