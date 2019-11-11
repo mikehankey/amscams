@@ -102,7 +102,7 @@ def get_full_path_detection(analysed_name):
 def get_video(_file):
    if(".json" in _file):
       video_file = _file.replace('.json','-SD.mp4')
-      if(cfe(video_file)==1)
+      if(cfe(video_file)==1):
          return video_file
       else:
          video_file = _file.replace('.json','-HD.mp4')
