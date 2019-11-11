@@ -98,6 +98,15 @@ def get_full_path_detection(analysed_name):
    index_file = METEOR_ARCHIVE + analysed_name['station_id'] + os.sep + METEOR +  analysed_name['year'] + os.sep +  analysed_name['month'] + os.sep  +  analysed_name['day'] + os.sep 
    return index_file
 
+# Return HD (or SD video) based on a file that can be anything (.json or .mp4)
+def get_video(file):
+
+   if(".json" in file):
+      video_file = file.replace('.json','-SD.mp4')
+      if(cfe(video_file)==1)
+         return video_file
+   else:
+      return file
 
 # Get HTML version of each detection
 def get_html_detections(res,clear_cache):
@@ -130,7 +139,7 @@ def get_html_detections(res,clear_cache):
          preview = generate_preview(det) 
 
       # Get Video for preview
-      print(det['full_path'])       
+      path_to_vid = get_video(det['full_path'])       
       
       # Otherwise preview = preview (:)
       res_html += '<div class="preview col-lg-2 col-md-3 select-to reduced">'
@@ -139,7 +148,7 @@ def get_html_detections(res,clear_cache):
       res_html += '</a>'
       res_html += '<div class="d-flex justify-content-between">'
       res_html += '<div class="pre-b">Cam #'+det['cam_id']+' - <b>'+det['hour']+':'+det['min']+'</b></div>'
-      res_html += '<div class="btn-toolbar pr-0 pb-0"><div class="btn-group"><a class="vid_link_gal col btn btn-primary btn-sm" title="Play Video" href="./video_player.html?video="><i class="icon-play"></i></a>'
+      res_html += '<div class="btn-toolbar pr-0 pb-0"><div class="btn-group"><a class="vid_link_gal col btn btn-primary btn-sm" title="Play Video" href="./video_player.html?video='+path_to_vid+'"><i class="icon-play"></i></a>'
       res_html += '<a class="delete_meteor_gallery col btn btn-danger btn-sm" title="Delete Detection" data-meteor=""><i class="icon-delete"></i></a></div></div>'
       res_html += '</div></div>'
 
