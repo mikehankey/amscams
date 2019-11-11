@@ -130,10 +130,11 @@ def fix_old_file_name(filename):
 def get_new_calib(json_f):
 
    # If 'device_alt' isn't defined, we have to work with 'site_alt'...
-   if "device_alt" not in json_f['cal_params']:
-      json_f['cal_params']['device_alt'] = float(json_f['cal_params']['site_alt'])
-      json_f['cal_params']['device_lat'] = float(json_f['cal_params']['site_lat'])  
-      json_f['cal_params']['device_lng'] = float(json_f['cal_params']['site_lng'])  
+   if "cal_params" in json_f:
+      if "device_alt" not in json_f['cal_params']:
+         json_f['cal_params']['device_alt'] = float(json_f['cal_params']['site_alt'])
+         json_f['cal_params']['device_lat'] = float(json_f['cal_params']['site_lat'])  
+         json_f['cal_params']['device_lng'] = float(json_f['cal_params']['site_lng'])  
     
    new_dt = json_f['event_start_time']
    new_dt = new_dt.replace('/','_')
