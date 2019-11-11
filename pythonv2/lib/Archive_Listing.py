@@ -120,8 +120,7 @@ def get_html_detections(res,clear_cache):
          prev_date = cur_date
          res_html +=  '</div><div class="h2_holder d-flex justify-content-between"><h2>'+cur_date.strftime("%Y/%m/%d")+'</h2></div>'
          res_html += '<div class="gallery gal-resize row text-center text-lg-left mb-5 mr-5 ml-5">'
-
-
+ 
 
       # Do we have a thumb stack preview for this detection?
       preview = does_cache_exist(det,"preview","/*.jpg")
@@ -129,7 +128,10 @@ def get_html_detections(res,clear_cache):
       if(len(preview)==0 or clear_cache is True):
          # We need to generate the thumbs 
          preview = generate_preview(det) 
-       
+
+      # Get Video for preview
+      print(det['full_path'])       
+      
       # Otherwise preview = preview (:)
       res_html += '<div class="preview col-lg-2 col-md-3 select-to reduced">'
       res_html += '<a class="mtt" href="webUI.py?cmd=reduce2&video_file='+det['full_path']+'" title="Detection Reduce page">'
@@ -137,7 +139,7 @@ def get_html_detections(res,clear_cache):
       res_html += '</a>'
       res_html += '<div class="d-flex justify-content-between">'
       res_html += '<div class="pre-b">Cam #'+det['cam_id']+' - <b>'+det['hour']+':'+det['min']+'</b></div>'
-      res_html += '<div class="btn-toolbar"><div class="btn-group"><a class="vid_link_gal col btn btn-primary btn-sm" title="Play Video" href="./video_player.html?video="><i class="icon-play"></i></a>'
+      res_html += '<div class="btn-toolbar pr-0 pb-0"><div class="btn-group"><a class="vid_link_gal col btn btn-primary btn-sm" title="Play Video" href="./video_player.html?video="><i class="icon-play"></i></a>'
       res_html += '<a class="delete_meteor_gallery col btn btn-danger btn-sm" title="Delete Detection" data-meteor=""><i class="icon-delete"></i></a></div></div>'
       res_html += '</div></div>'
 
