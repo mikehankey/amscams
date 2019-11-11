@@ -230,7 +230,7 @@ def convert_json(json_file_path, sd_video_file_path, hd_video_file_path):
       reduced_info = load_json_file(meteor_reduced_file)
    else:
       print("ONLY REDUCED DETECTION CAN BE CONVERTED - reduce.json not found")
-      sys.exit(0)
+      #sys.exit(0)
 
    # Analyse the json name
    analysed_name = old_name_analyser(json_file_path)
