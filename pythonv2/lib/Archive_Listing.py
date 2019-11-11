@@ -103,13 +103,13 @@ def get_full_path_detection(analysed_name):
 def get_html_detections(res,clear_cache):
 
    res_html = ''
+   prev_date = None
    
    for detection in res:
       det = name_analyser(detection)
       det['full_path'] = get_full_path_detection(det) + det['full_path']
       
       cur_date = get_datetime_from_analysedname(det)
-
 
       print(cur_date)
       print("<br/>")
