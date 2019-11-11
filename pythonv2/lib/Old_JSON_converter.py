@@ -233,9 +233,7 @@ def convert_json(json_file_path, sd_video_file_path, hd_video_file_path):
    else:
       print("ONLY REDUCED DETECTION CAN BE CONVERTED - reduce.json not found")
       #sys.exit(0)
-
-   if(reduced_info!=''):
-      print('REDUCE INFO IS NOT NONE')
+ 
 
    # Analyse the json name
    analysed_name = old_name_analyser(json_file_path)
@@ -251,14 +249,13 @@ def convert_json(json_file_path, sd_video_file_path, hd_video_file_path):
       json_f['cam_id'] = analysed_name['cam_id']
  
    # Add event duration to json_f
-   if('event_duration' not in json_f and reduced_info is not None):
+   if('event_duration' not in json_f and reduced_info!=''):
       json_f['event_duration'] = reduced_info['event_duration']
    
    # Add peak_magnitude duration to json_f
-   if('peak_magnitude' not in json_f and reduced_info is not None):
+   if('peak_magnitude' not in json_f and reduced_info!=''):
       json_f['peak_magnitude'] = reduced_info['peak_magnitude']
-
-
+ 
    # Add the videos to json_f
    json_f['org_hd_vid'] = hd_video_file_path
    json_f['org_sd_vid'] = sd_video_file_path
