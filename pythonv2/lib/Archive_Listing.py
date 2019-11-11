@@ -137,7 +137,7 @@ def get_html_detections(res,clear_cache):
       res_html += '</a>'
       res_html += '<span class="pre-b">'+det['cam_id']+' - <b>'+det['hour']+':'+det['min']+'</b></span>'
       res_html += '<div class="btn-toolbar"><div class="btn-group"><a class="vid_link_gal col btn btn-primary btn-sm" title="Play Video" href="./video_player.html?video="><i class="icon-play"></i></a>'
-      res_html += '<a class="delete_meteor_gallery col btn btn-danger btn-sm" title="Delete Detection" data-meteor=""><i class="icon-delete"></i></a></div></div>
+      res_html += '<a class="delete_meteor_gallery col btn btn-danger btn-sm" title="Delete Detection" data-meteor=""><i class="icon-delete"></i></a></div></div>'
       res_html += '</div>'
 
    
