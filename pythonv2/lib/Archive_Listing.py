@@ -113,12 +113,12 @@ def get_html_detections(res,clear_cache):
  
       if(prev_date is None):
          prev_date = cur_date
-         res_html += '<div class="h2_holder d-flex justify-content-between"><h2>'+cur_date.strftime("%Y-%m-%d")+'</h2></div>'
+         res_html += '<div class="h2_holder d-flex justify-content-between"><h2>'+cur_date.strftime("%Y/%m/%d")+'</h2></div>'
          res_html += '<div class="gallery gal-resize row text-center text-lg-left mb-5 mr-5 ml-5">'
 
       if(cur_date.month != prev_date.month or cur_date.day != prev_date.day):
          prev_date = cur_date
-         res_html +=  '</div><div class="h2_holder d-flex justify-content-between"><h2>'+cur_date.strftime("%Y-%m-%d")+'</h2></div>'
+         res_html +=  '</div><div class="h2_holder d-flex justify-content-between"><h2>'+cur_date.strftime("%Y/%m/%d")+'</h2></div>'
          res_html += '<div class="gallery gal-resize row text-center text-lg-left mb-5 mr-5 ml-5">'
 
 
@@ -134,7 +134,7 @@ def get_html_detections(res,clear_cache):
       res_html += '<div class="preview col-lg-2 col-md-3 select-to reduced">'
       res_html += '<a class="mtt" href="webUI.py?cmd=reduce2&video_file='+det['full_path']+'" title="Detection Reduce page">'
       res_html += '<img alt="" class="img-fluid ns lz" src="'+preview[0]+'">'
-      res_html += '<span>'+det['cam_id']+'</span>'
+      res_html += '<span>'+det['cam_id']+' - '+det['hour']+':'+det['min']+'</span>'
       res_html += '</a>'
       res_html += '</div>'
 
