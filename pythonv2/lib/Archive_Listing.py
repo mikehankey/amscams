@@ -115,7 +115,7 @@ def get_html_detections(res,clear_cache):
          prev_date = cur_date
          res_html += '<div class="h2_holder  d-flex justify-content-between"><h2>'+cur_date.strftime("%Y-%m-%d")+'</h2></div>'
 
-      if(cur_date.month != prev.date.month or cur_date.day != prev_date.day):
+      if(cur_date.month != prev_date.month or cur_date.day != prev_date.day):
          prev_date = cur_date
 
 
