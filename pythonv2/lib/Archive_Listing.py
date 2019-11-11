@@ -10,9 +10,7 @@ from lib.FileIO import save_json_file, cfe, load_json_file
 from lib.MeteorReduce_Tools import name_analyser, get_cache_path, get_thumbs, does_cache_exist, generate_preview, get_stacks
 from lib.PAGINATION_VARS import *
 
-
 ARCHIVE_LISTING_TEMPLATE = "/home/ams/amscams/pythonv2/templates/archive_listing.html"
- 
 
 # Create index for a given year
 def create_json_index_year(year):
@@ -157,10 +155,12 @@ def archive_listing(form):
       clear_cache = True
 
    # Day?
+   has_limit_day = False
    if (limit_day is None):
       the_date = datetime.datetime.now()
    else:
       the_date = datetime.datetime.strptime(limit_day,"%Y_%m_%d") 
+      has_limit_day = True
 
    year = the_date.year
 
@@ -182,10 +182,23 @@ def archive_listing(form):
             res2 = get_results_from_date(the_date,index,new_stop)
             res = res + res2
 
+   if(has_limit_day==0):
+      pagination = get_pagination(cur_page,len(res),"/pycgi/webUI.py?cmd=new_meteors&meteor_per_page="+str(meteor_per_page),meteor_per_page)
+   else:
+      pagination = get_pagination(cur_page,len(res),"/pycgi/webUI.py?cmd=new_meteors&limit_day="+str(the_date)+"&meteor_per_page="+str(meteor_per_page),meteor_per_page)
+
+
    
    # Create HTML Version of each detection
    res_html = get_html_detections(res,clear_cache) 
    template = template.replace("{RESULTS}", res_html)
+
+   # Pagination
+   if(len(res)>=1): 
+      template = template.replace("{PAGINATION}", pagination[0])
+   else:
+      template = template.replace("{PAGINATION}", "")
+
 
    # Display Template
    return template
