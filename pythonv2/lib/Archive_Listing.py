@@ -113,11 +113,14 @@ def get_html_detections(res,clear_cache):
  
       if(prev_date is None):
          prev_date = cur_date
-         res_html += '<div class="h2_holder d-flex justify-content-between"><h2>'+cur_date.strftime("%Y-%m-%d")+'</h2>'
+         res_html += '<div class="h2_holder d-flex justify-content-between"><h2>'+cur_date.strftime("%Y-%m-%d")+'</h2></div>'
+         res_html += '<div class="gallery gal-resize row text-center text-lg-left mb-5 mr-5 ml-5">'
 
       if(cur_date.month != prev_date.month or cur_date.day != prev_date.day):
          prev_date = cur_date
-         res_html += '</div>' + '<div class="h2_holder d-flex justify-content-between"><h2>'+cur_date.strftime("%Y-%m-%d")+'</h2>'
+         res_html +=  '</div><div class="h2_holder d-flex justify-content-between"><h2>'+cur_date.strftime("%Y-%m-%d")+'</h2></div>'
+         res_html += '<div class="gallery gal-resize row text-center text-lg-left mb-5 mr-5 ml-5">'
+
 
 
       # Do we have a thumb stack preview for this detection?
@@ -135,7 +138,7 @@ def get_html_detections(res,clear_cache):
       res_html += '</a>'
       res_html += '</div>'
 
-   res_html += '</div>'
+   
 
    return res_html
  
