@@ -164,6 +164,8 @@ def get_html_detections(res,clear_cache):
 # MAIN FUNCTION FOR THE ARCHIVE LISTING PAGE
 def archive_listing(form):
 
+   write_index(2019)
+
    limit_day = form.getvalue('limit_day')
    cur_page  = form.getvalue('p')
    meteor_per_page = form.getvalue('meteor_per_page')
