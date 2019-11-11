@@ -247,14 +247,18 @@ def convert_json(json_file_path, sd_video_file_path, hd_video_file_path):
    # Add the cam id to json_f
    if('cam_id' in analysed_name):
       json_f['cam_id'] = analysed_name['cam_id']
- 
+   
    # Add event duration to json_f
    if('event_duration' not in json_f and reduced_info!=''):
       json_f['event_duration'] = reduced_info['event_duration']
+   else:
+      json_f['event_duration'] = 0
    
    # Add peak_magnitude duration to json_f
    if('peak_magnitude' not in json_f and reduced_info!=''):
       json_f['peak_magnitude'] = reduced_info['peak_magnitude']
+   else:
+      json_f['peak_magnitude'] = 0
  
    # Add the videos to json_f
    json_f['org_hd_vid'] = hd_video_file_path
