@@ -224,6 +224,8 @@ def convert_json(json_file_path, sd_video_file_path, hd_video_file_path):
    # Load the initial JSON
    json_f = load_json_file(json_file_path)
 
+   reduced_info = ''
+
    # Do we have a -reduced file?
    meteor_reduced_file = json_file_path.replace(".json", "-reduced.json")
    if(cfe(meteor_reduced_file)):
