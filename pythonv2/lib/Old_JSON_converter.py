@@ -136,7 +136,7 @@ def get_new_calib(json_f):
          json_f['cal_params']['device_lat'] = float(json_f['cal_params']['site_lat'])  
          json_f['cal_params']['device_lng'] = float(json_f['cal_params']['site_lng'])  
    
-   if "event_start_time" in json_f
+   if "event_start_time" in json_f:
       new_dt = json_f['event_start_time']
       new_dt = new_dt.replace('/','_')
       new_dt = new_dt.replace(' ','_')
