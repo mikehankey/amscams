@@ -7,7 +7,7 @@ import datetime
 from lib.REDUCE_VARS import *
 from lib.Get_Station_Id import get_station_id
 from lib.FileIO import save_json_file, cfe, load_json_file
-from lib.MeteorReduce_Tools import name_analyser, get_cache_path, get_thumbs, does_cache_exist, generate_preview, get_stacks
+from lib.MeteorReduce_Tools import name_analyser, get_cache_path, get_thumbs, does_cache_exist, generate_preview, get_stacks, get_datetime_from_analysedname
 from lib.PAGINATION_VARS import *
 from lib.Pagination import get_pagination
 
@@ -107,7 +107,9 @@ def get_html_detections(res,clear_cache):
    for detection in res:
       det = name_analyser(detection)
       det['full_path'] = get_full_path_detection(det) + det['full_path']
+      
       cur_date = get_datetime_from_analysedname(det)
+
 
       print(cur_date)
       print("<br/>")
