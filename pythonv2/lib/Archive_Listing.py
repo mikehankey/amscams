@@ -99,14 +99,16 @@ def get_full_path_detection(analysed_name):
    return index_file
 
 # Return HD (or SD video) based on a file that can be anything (.json or .mp4)
-def get_video(file):
-
-   if(".json" in file):
-      video_file = file.replace('.json','-SD.mp4')
+def get_video(_file):
+   if(".json" in _file):
+      video_file = _file.replace('.json','-SD.mp4')
       if(cfe(video_file)==1)
          return video_file
+      else:
+         video_file = _file.replace('.json','-HD.mp4')
+         return video_file
    else:
-      return file
+      return _file
 
 # Get HTML version of each detection
 def get_html_detections(res,clear_cache):
