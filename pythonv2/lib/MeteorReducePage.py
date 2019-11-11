@@ -11,9 +11,7 @@ PAGE_TEMPLATE = "/home/ams/amscams/pythonv2/templates/reducePage.v2.html"
 # cmd=reduce2
 # &video_file=[PATH]/[VIDEO_FILE].mp4 or JSON File
 def reduce_meteor2(json_conf,form):
-   
-   print("HERE")
-
+  
    # Debug
    cgitb.enable()
 

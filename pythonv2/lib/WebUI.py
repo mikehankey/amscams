@@ -333,11 +333,7 @@ def controller(json_conf):
       real_add_frame(json_conf,sd_video_file,fr_id,x,y)
       exit() 
 
-      
-   # ARCHIVE LISTING
-   if cmd == 'archive_listing':
-      archive_listing(form)
-      exit()
+
 
    if cmd == 'add_frame':
       add_frame_ajax(json_conf,form)
@@ -533,7 +529,10 @@ def controller(json_conf):
    if cmd == 'reduce_new':
       extra_html = reduce_meteor_new(json_conf, form)
 
-
+         
+   # ARCHIVE LISTING
+   if cmd == 'archive_listing':
+      extra_html = archive_listing(form) 
 
    if cmd == 'solutions':
       solutions(json_conf, form)

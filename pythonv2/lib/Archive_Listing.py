@@ -188,4 +188,4 @@ def archive_listing(form):
    template = template.replace("{RESULTS}", res_html)
 
    # Display Template
-   print(template)
+   return template
