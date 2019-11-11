@@ -289,7 +289,8 @@ def convert_json(json_file_path, sd_video_file_path, hd_video_file_path):
 
 
    # The stars belong to calib
-   calib['calib']['stars'] = stars['stars']
+   if("stars" in stars):
+      calib['calib']['stars'] = stars['stars']
    
    return {"info": info['info'],"calib": calib['calib'],"frames": frames['frames']}
 
