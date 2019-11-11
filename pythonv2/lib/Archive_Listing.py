@@ -116,10 +116,11 @@ def get_html_detections(res,clear_cache):
          preview = generate_preview(det) 
        
       # Otherwise preview = preview (:)
-
-      res_html += '<div class="preview col-lg-2 col-md-3">'
+      res_html += '<div class="preview col-lg-2 col-md-3 select-to reduced">'
       res_html += '<a class="mtt" href="webUI.py?cmd=reduce2&video_file='+det['full_path']+'" title="Detection Reduce page">'
-      res_html += '<img alt="" class="img-fluid ns lz" src="'+preview[0]+'"></a>'
+      res_html += '<img alt="" class="img-fluid ns lz" src="'+preview[0]+'">
+      res_html += '<span>'+det['cam_id']+'</span>'
+      res_html += '</a>'
       res_html += '</div>'
 
    return res_html
