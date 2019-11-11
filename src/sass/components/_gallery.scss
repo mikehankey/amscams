@@ -49,6 +49,15 @@
                     text-align: center;
                 } 
 
+
+                span.vis {
+                  position: relative;
+                  bottom: 0;
+                  background: transparent;
+                  text-align: left;
+                  text-decoration: none!important;
+                }
+
                 &:before {
                     position: absolute;
                     top: 1.2rem;
@@ -64,6 +73,7 @@
                 
 
                 &:hover {
+                   text-decoration: none;
                     span {
                         bottom:0;
                     }
