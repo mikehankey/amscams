@@ -50,11 +50,14 @@ def batch_move():
    for video_file in files:
       if "trim" in video_file:
          trim = 1
+         stack_file = video_file.replace(".mp4", "-stacked.png")
+      
       else:
+         trim = 0
          stack_file = video_file.replace(".mp4", "-stacked.png")
          meteor_file = video_file.replace(".mp4", "-meteor.json")
          fail_file = video_file.replace(".mp4", "-fail.json")
-      if cfe(stack_file) == 1:
+      if cfe(stack_file) == 1 and trim != 1:
          # processing is done for this file
          video_fn = video_file.split("/")[-1]
          stack_fn = stack_file.split("/")[-1]
@@ -131,7 +134,6 @@ def batch_confirm():
       confirm_meteor(file)
 
 def minmax_xy(obj):
-   print("MOBJ", obj)
    min_x = min(obj['oxs'])
    max_x = max(obj['oxs'])
    min_y = min(obj['oys'])
@@ -142,13 +144,15 @@ def save_old_style_meteor_json(meteor_json_file, meteor_obj, trim_suffix, frames
    #old json object
    mfj = meteor_json_file.split("/")[-1]
    meteor_dir = meteor_json_file.replace(mfj, "")
-   if "HD" in meteor_obj['hd_trim'] and meteor_obj['hd_trim'] != 0:
-      print("FIX HD TRIM!")
-      hdf = meteor_obj['hd_trim'].split("/")[-1]
-      hd_trim = meteor_dir + hdf 
-      print("HDF!", hdf, hd_trim)
-   else:
-      hd_trim = meteor_obj['hd_trim']
+   if meteor_obj['hd_trim'] != 0:
+      if "HD" in meteor_obj['hd_trim'] :
+         print("FIX HD TRIM!")
+         hdf = meteor_obj['hd_trim'].split("/")[-1]
+         hd_trim = meteor_dir + hdf 
+         print("HDF!", hdf, hd_trim)
+      else:
+         hd_trim = meteor_obj['hd_trim']
+   hd_trim = 0
    oj = {}
    oj['sd_video_file'] = meteor_json_file.replace(".json", ".mp4")
    sd_stack = meteor_json_file.replace(".json", "-stacked.png")
@@ -192,6 +196,7 @@ def save_old_style_meteor_json(meteor_json_file, meteor_obj, trim_suffix, frames
    oj['test_results'] = []
    oj['hd_trim_dur'] = []
    oj['hd_trim_time_offset'] = []
+   oj['flex_detect'] = meteor_obj
    save_json_file(meteor_json_file, oj)
 
 def detect_meteor_in_clip(trim_clip, frames = None, fn = 0):
@@ -223,8 +228,8 @@ def detect_meteor_in_clip(trim_clip, frames = None, fn = 0):
       thresh_obj = cv2.dilate(threshold.copy(), None , iterations=4)
       thresh_obj = cv2.convertScaleAbs(thresh_obj)
       # save this for final view
-      #cv2.imshow('pepe', thresh_obj)
-      #cv2.waitKey(70)
+      cv2.imshow('pepe', thresh_obj)
+      cv2.waitKey(70)
       #cv2.imshow('pepe', image_diff)
       #cv2.waitKey(70)
 
@@ -247,7 +252,6 @@ def detect_meteor_in_clip(trim_clip, frames = None, fn = 0):
 
             object, objects = find_object(objects, fn,cx, cy, w, h, intensity)
             objects[object]['trim_clip'] = trim_clip
-            #print("objects:", objects[object])
             cv2.rectangle(show_frame, (x, y), (x+w, y+h), (255,255,255), 1, cv2.LINE_AA)
             desc = str(fn) + " " + str(intensity) + " " + str(objects[object]['obj_id']) + " " + str(objects[object]['report']['obj_class'])
             cv2.putText(show_frame, desc,  (x,y), cv2.FONT_HERSHEY_SIMPLEX, .4, (255, 255, 255), 1)
@@ -356,7 +360,6 @@ def confirm_meteor(meteor_json_file):
       end = obj['ofns'][-1] + 25
       if end > 1499:
          end = 1499 
-      print(obj['ofns'])
       if sun_up == 0 or sun_up == 1:
          # Run deeper detection on clip
          if "trim_clip" in obj:
@@ -371,19 +374,15 @@ def confirm_meteor(meteor_json_file):
          start = int(start.replace(".mp4", ""))
          frames,color_frames,subframes,sum_vals,max_vals = load_frames_fast(trim_video_clip, json_conf, 0, 0, [], 0,[])
          print(":FRAMES:", len(frames))
-         print("OBNJ:", obj)
          if len(frames) == 0:
             next
          cnt_frame_data = detect_motion_in_frames(frames, video_file, start)
          cnt_objects = find_cnt_objects(cnt_frame_data, cnt_objects)
          print("TOTAL FRAMES:", len(frames))
-         for cnt in cnt_frame_data:
-            print("CNT FRMA", cnt, cnt_frame_data[cnt])
-         for cobj in cnt_objects:
-            print("CNT OBJ", cnt, cnt_objects[cobj])
+         if len(frames) == 0:
+            continue
          frame = frames[0]
 
-         print("MX METEOR OBJECTS:", obj)
 
          min_x, min_y,max_x,max_y = minmax_xy(obj)
          fx = int((min_x + max_x) / 2)
@@ -403,7 +402,6 @@ def confirm_meteor(meteor_json_file):
             show_frame = np.zeros((total_h,total_w,3),dtype=np.uint8)
             frame = cv2.cvtColor(frame,cv2.COLOR_GRAY2RGB)
             subframe = cv2.cvtColor(subframe,cv2.COLOR_GRAY2RGB)
-            print("CX:", cx1,cy1, cx2,cy2)
             cv2.rectangle(frame, (cx1, cy1), (cx2, cy2), (255,255,255), 1, cv2.LINE_AA)
             cv2.rectangle(subframe, (cx1, cy1), (cx2, cy2), (255,255,255), 1, cv2.LINE_AA)
 
@@ -427,11 +425,15 @@ def confirm_meteor(meteor_json_file):
          old_meteor_stack_file = old_meteor_json_file.replace(".json", "-stacked.png")
 
          print("Save old meteor json", old_meteor_json_file)
+         proc_dir = "/mnt/ams2/SD/proc2/" + sd_y + "_" + sd_m + "_" + sd_d + "/"
          # mv the trim video
-         cmd = "cp " + trim_video_clip + " " + old_meteor_dir
+         cmd = "mv " + trim_video_clip + " " + old_meteor_dir
          print(cmd)
          os.system(cmd)
          # copy the stack file
+         cmd = "cp " + orig_stack_file + " " + proc_dir + "/images/" 
+         os.system(cmd)
+         print(cmd)
          cmd = "mv " + orig_stack_file + " " + old_meteor_stack_file
          print(cmd)
          os.system(cmd)
@@ -447,7 +449,6 @@ def confirm_meteor(meteor_json_file):
          print(cmd)
          os.system(cmd)
          one_min_file = meteor_json_file.replace("-meteor.json", ".mp4")
-         proc_dir = "/mnt/ams2/SD/proc2/" + sd_y + "_" + sd_m + "_" + sd_d + "/"
          if cfe(proc_dir, 1) == 0:
             os.system("mkdir " + proc_dir)
          cmd = "mv " + one_min_file + " " + proc_dir
@@ -463,20 +464,18 @@ def confirm_meteor(meteor_json_file):
             # Make the HD stack file too.  And then sync the HD to SD video file.
             obj['hd_trim'] = hd_trim
             obj['hd_video_file'] = hd_file
-            if cfe(hd_trim) == 1:
+            if hd_trim != 0 and cfe(hd_trim) == 1:
                hd_crop, crop_box = crop_hd(obj, frames[0])
                hd_crop_objects,hd_crop_frames = detect_meteor_in_clip(hd_crop, None, start)
-               print("HD CROP OBJECTS:", hd_crop_objects, crop_box, )
                refine_points(hd_crop, hd_crop_frames )
                obj['hd_crop_file'] = hd_crop
                obj['crop_box'] = crop_box 
-            os.system("mv " + hd_trim + " " + old_meteor_dir)
+               os.system("mv " + hd_trim + " " + old_meteor_dir)
          else:
             obj['hd_trim'] = 0
             obj['hd_video_file'] = 0
 
          oc = oc + 1
-         print(obj)
          save_old_style_meteor_json(old_meteor_json_file, obj, trim_suffix, frames)
 
 def find_leading_edge(x_dir_mod, y_dir_mod,x,y,w,h,frame):
@@ -717,7 +716,7 @@ def calc_leg_segs(xobj):
 def remove_bad_frames(obj):
    # frame bad if the intensity is negative really low 
    # frame bad if the line seg is way off from the med_seg_len
-   print("REMOVE BAD!", obj)
+   print("REMOVE BAD!" )
    obj = calc_leg_segs(obj)
    new_fns, new_xs, new_ys, new_ws, new_hs, new_ints, new_lxs, new_lys,new_line_segs,new_dist_from_start = [],[],[],[],[],[],[],[],[],[]
    med_seg = np.median(obj['line_segs'])
@@ -783,7 +782,7 @@ def crop_hd(obj, frame):
  
 
    crop = "crop=" + str(w) + ":" + str(h) + ":" + str(hd_x) + ":" + str(hd_y)
-   print("CROP: ", crop)
+   #print("CROP: ", crop)
    crop_out_file = hd_trim.replace(".mp4", "-crop.mp4")
    cmd = "/usr/bin/ffmpeg -y -i " + hd_trim + " -filter:v \"" + crop + "\" " + crop_out_file + " >/dev/null 2>&1"
    print(cmd)
@@ -804,7 +803,7 @@ def make_trim_clips(meteor_objects, video_file):
       end = obj['ofns'][-1] + 25
       if end > 1499:
          end = 1499
-      print(obj['ofns'])
+      #print(obj['ofns'])
       # Run deeper detection on clip
       trim_clip, trim_start, trim_end = make_trim_clip(video_file, start, end)
       obj['trim_clip'] = trim_clip
@@ -1400,10 +1399,13 @@ def bp_detect( gray_frames, video_file):
    return(frame_data, subframes, objects) 
 
 def detect_motion_in_frames(subframes, video_file, fn):
+   cnt_frames = {} 
+   if len(subframes) == 0:
+      return(cnt_frames)
 
    median_subframe = cv2.convertScaleAbs(np.median(np.array(subframes), axis=0))
 
-   cnt_frames = {} 
+   
    image_acc = np.empty(np.shape(subframes[0]))
   
    if len(image_acc.shape) > 2:
@@ -2152,11 +2154,11 @@ def gap_test(object):
 
 
    if cons < 3:
-      print("CONS MONTION TOO LOW!")
+      #print("CONS MONTION TOO LOW!")
       return(0)
 
    if gap_to_cm_ratio > .2 and gap_to_elp_ratio > .2:
-      print("GAP TEST GOOD!")
+      #print("GAP TEST GOOD!")
       return(1)
    else:
       print("GAP TEST FAILED!", gap_to_cm_ratio, gap_to_elp_ratio)
@@ -2729,13 +2731,11 @@ def quick_scan(video_file):
       return(0, "No meteors found.")
 
    meteor_file = video_file.replace(".mp4", "-meteor.json")
-   print("POSSIBL METEORS FOUND! Do deeper check.")
 
    # Only continue if we made it past the easy / fast detection
    all_motion_objects = []
    for object in pos_meteors:
-      print("POS:", pos_meteors[object]['ofns'])
-      start, end = buffered_start_end(pos_meteors[object]['ofns'][0],pos_meteors[object]['ofns'][1], len(frames), 25)
+      start, end = buffered_start_end(pos_meteors[object]['ofns'][0],pos_meteors[object]['ofns'][-1], len(frames), 50)
       print("BUFFERED START:", start, end)
       motion_objects, motion_frames = detect_meteor_in_clip("", frames[start:end], start)
       for obj in motion_objects:
@@ -2743,8 +2743,6 @@ def quick_scan(video_file):
 
 
    objects = all_motion_objects
-   for obj in objects:
-      print(obj, )
 
    elapsed_time = time.time() - start_time
    print("ELPASED TIME:", elapsed_time)
@@ -2764,7 +2762,12 @@ def quick_scan(video_file):
       else:
          non_meteors.append(obj)
 
-   trim_clips, trim_starts, trim_ends,meteors = make_trim_clips(meteors, video_file)   
+   if len(meteors) > 0:
+      trim_clips, trim_starts, trim_ends,meteors = make_trim_clips(meteors, video_file)   
+   else: 
+      detect_file = video_file.replace(".mp4", "-detect.json")
+      save_json_file(detect_file, non_meteors)
+      print("Non meteors found.")
    for meteor in meteors:
       print("METEOR:", meteor) 
    if len(meteors) > 10:
@@ -2789,8 +2792,8 @@ def quick_scan(video_file):
       print("ELPASED TIME:", elapsed_time)
 
    mjf = video_file.replace(".mp4", "-meteor.json")
-   print("Confirming meteor.", mjf)
-   confirm_meteor(mjf)
+   print("Confirm meteor.", mjf)
+   #confirm_meteor(mjf)
 
    return()
 
@@ -3224,6 +3227,7 @@ def old_detection_codes():
    print("Total Run Time.", elapsed_time)
 
 def buffered_start_end(start,end, total_frames, buf_size):
+   print("BUF: ", total_frames)
    bs = start - buf_size
    be = end + buf_size
    if bs < 0:
