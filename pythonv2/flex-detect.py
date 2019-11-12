@@ -17,6 +17,8 @@ import math
 import numpy as np
 import scipy.optimize
 import ephem
+
+
 from lib.Video_Tools_cv import remaster
 from lib.VideoLib import get_masks, find_hd_file_new, load_video_frames, sync_hd_frames, make_movie_from_frames, add_radiant
 
@@ -41,7 +43,7 @@ import lib.brightstardata as bsd
 from lib.DetectLib import eval_cnt, check_for_motion2
 
 json_conf = load_json_file("../conf/as6.json")
-
+show = 0
 
 ARCHIVE_DIR = "/mnt/NAS/meteor_archive/"
 
@@ -228,8 +230,9 @@ def detect_meteor_in_clip(trim_clip, frames = None, fn = 0):
       thresh_obj = cv2.dilate(threshold.copy(), None , iterations=4)
       thresh_obj = cv2.convertScaleAbs(thresh_obj)
       # save this for final view
-      cv2.imshow('pepe', thresh_obj)
-      cv2.waitKey(70)
+      if show == 1:
+         cv2.imshow('pepe', thresh_obj)
+         cv2.waitKey(70)
       #cv2.imshow('pepe', image_diff)
       #cv2.waitKey(70)
 
@@ -668,8 +671,9 @@ def refine_points(hd_crop, frames = None, color_frames = None):
          else:
             show_frame = frames[fn].copy()
          cv2.circle(show_frame,(lx,ly), 1, (0,0,255), 1)
-         cv2.imshow("REFINE", show_frame)
-         cv2.waitKey(70)
+         if show == 1:
+            cv2.imshow("REFINE", show_frame)
+            cv2.waitKey(70)
 
    return(motion_objects)
 
@@ -834,10 +838,11 @@ def scan_queue(cam):
    fc = 0
    for video_file in files:
       stack_file = video_file.replace(".mp4", "-stacked.png")
-      if cfe(stack_file) == 0:
-         cmd = "./flex-detect.py qs " + video_file
-         print(cmd)
-         os.system(cmd)
+      if cfe(stack_file) == 0 and "trim" not in video_file:
+         quick_scan(video_file)
+         #cmd = "./flex-detect.py qs " + video_file
+         #print(cmd)
+         #os.system(cmd)
          fc = fc + 1
       else:
          print("skipping")
@@ -2673,7 +2678,7 @@ def quick_scan(video_file):
    # and run motion detection on those frames locating the objects. 
 
    debug = 0
-   if "mp4" not in video_file:
+   if "mp4" not in video_file or cfe(video_file) == 0:
       print("BAD INPUT FILE:", video_file)
       return(0, "bad input")
  
@@ -2686,7 +2691,7 @@ def quick_scan(video_file):
    stack_file = video_file.replace(".mp4", "-stacked.png")
    if cfe(stack_file) == 1:
       print("Already done this.")
-      #return()
+      return()
 
    # setup variables
    cm = 0
@@ -2702,27 +2707,28 @@ def quick_scan(video_file):
 
    # load the frames
    frames,color_frames,subframes,sum_vals,max_vals = load_frames_fast(video_file, json_conf, 0, 0, [], 0,[])
-   events,pos_meteors = fast_check_events(sum_vals, max_vals, subframes)
-   
-   # check time after frame load
    elapsed_time = time.time() - start_time
-   print("Loaded frames.", elapsed_time)
    print("Total Frames:", len(frames))
-   print("Possible Meteors:" )
-   for pos in pos_meteors:
-      print(pos, pos_meteors[pos])      
+   print("Loaded frames.", elapsed_time)
    # check to make sure frames were loaded
    if len(frames) < 5:
       print("bad input file.")
       return()
 
-
+   events,pos_meteors = fast_check_events(sum_vals, max_vals, subframes)
 
    # Stack the frames and report the run time
    stacked_frame = stack_frames_fast(frames)
    cv2.imwrite(stack_file, stacked_frame) 
    elapsed_time = time.time() - start_time
    print("Stacked frames.", elapsed_time)
+   
+   # check time after frame load
+   elapsed_time = time.time() - start_time
+   if len(pos_meteors) > 0:
+      print("Possible Meteors:" )
+      for pos in pos_meteors:
+         print(pos, pos_meteors[pos])      
 
    if len(pos_meteors) == 0:
       elapsed_time = time.time() - start_time
@@ -2762,37 +2768,31 @@ def quick_scan(video_file):
       else:
          non_meteors.append(obj)
 
-   if len(meteors) > 0:
-      trim_clips, trim_starts, trim_ends,meteors = make_trim_clips(meteors, video_file)   
-   else: 
+      #trim_clips, trim_starts, trim_ends,meteors = make_trim_clips(meteors, video_file)   
+   if len(meteors) == 0:
+      print("No meteors found.")
       detect_file = video_file.replace(".mp4", "-detect.json")
       save_json_file(detect_file, non_meteors)
-      print("Non meteors found.")
-   for meteor in meteors:
-      print("METEOR:", meteor) 
+      elapsed_time = time.time() - start_time
+      print("ELPASED TIME:", elapsed_time)
+      return(0, "No meteors found.")
    if len(meteors) > 10:
       print("ERROR! Something like a bird.")
       non_meteors = meteors + non_meteors
-      meteors = []
+      detect_file = video_file.replace(".mp4", "-detect.json")
+      save_json_file(detect_file, non_meteors)
+      return(0, "Error too many meteors found.")
 
 
-   print ("Meteor like objects.", len(meteors))
-   if len(meteors) == 0:
-      fail_file = video_file.replace(".mp4", "-fail.json")
-      save_json_file(fail_file, non_meteors)
-      print("NO METEORS FOUND!", fail_file)
-      elapsed_time = time.time() - start_time
-      print("ELPASED TIME NO METEORS:", elapsed_time)
-      return(0, "No meteors found.")
-   else:
-      meteor_file = video_file.replace(".mp4", "-meteor.json")
-      save_json_file(meteor_file, meteors)
-      print("METEORS FOUND!", meteor_file)
-      elapsed_time = time.time() - start_time
-      print("ELPASED TIME:", elapsed_time)
+   meteor_file = video_file.replace(".mp4", "-meteor.json")
+   save_json_file(meteor_file, meteors)
+   print("METEORS FOUND!", meteor_file)
+   elapsed_time = time.time() - start_time
+   print("ELPASED TIME:", elapsed_time)
 
    mjf = video_file.replace(".mp4", "-meteor.json")
    print("Confirm meteor.", mjf)
+   # do this as a separate process.
    #confirm_meteor(mjf)
 
    return()
@@ -3553,12 +3553,12 @@ def load_frames_fast(trim_file, json_conf, limit=0, mask=0,crop=(),color=0,resiz
             else:
                go = 0
          else:
-            #print("FRMAE:", frame_count)
-            color_frames.append(frame)
+            if color == 1:
+               color_frames.append(frame)
             if limit != 0 and frame_count > limit:
                cap.release()
                return(frames)
-            if len(frame.shape) == 3 and color == 0:
+            if len(frame.shape) == 3 :
                frame = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
 
             if mask == 1 and frame is not None:
@@ -3572,7 +3572,7 @@ def load_frames_fast(trim_file, json_conf, limit=0, mask=0,crop=(),color=0,resiz
 
             if last_frame is not None:
                subframe = cv2.subtract(frame, last_frame)
-               subframe = mask_frame(subframe, [], masks, 5)
+               #subframe = mask_frame(subframe, [], masks, 5)
                subframes.append(subframe)
                sum_val =cv2.sumElems(subframe)[0]
                if sum_val > 100:
@@ -3603,8 +3603,7 @@ def load_frames_fast(trim_file, json_conf, limit=0, mask=0,crop=(),color=0,resiz
             if len(resize) == 2:
                frame = cv2.resize(frame, (resize[0],resize[1]))
        
-            if frame_count % 1 == 0:
-               frames.append(frame)
+            frames.append(frame)
             last_frame = frame
       frame_count = frame_count + 1
    cap.release()
