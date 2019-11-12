@@ -136,6 +136,10 @@ def draw_stack(objects,stack_img,stack_file):
       (max_x,max_y,min_x,min_y) = find_min_max_dist(hist)
       (min_x,min_y,max_x,max_y) = bigger_box(min_x,min_y,max_x,max_y,iw,ih,25) 
       cv2.rectangle(stack_img, (min_x, min_y), (max_x , max_y), (255, 0, 0,.02), 1)
+      if "meteor" not in obj :
+         print(obj)
+         obj['meteor'] = 1
+
       if obj['meteor'] == 1:
          cv2.putText(stack_img, str(obj['oid']) + " Meteor",  (min_x,min_y-3), cv2.FONT_HERSHEY_SIMPLEX, .4, (255, 255, 255), 1)
       else:
