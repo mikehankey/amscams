@@ -3062,7 +3062,7 @@ def reduce_meteor_new(json_conf,form):
 
    else:
       template = template.replace("{EVENT_START_TIME}", "<i>pending reduction</i>")
-      template = template.replace("{EVENT_DURATION}", "<i>pending reducetion</i>")
+      template = template.replace("{EVENT_DURATION}", "<i>pending reduction</i>")
       template = template.replace("{EVENT_MAGNITUDE}", "<i>pending reduction</i>")
 
    if "stacked-stacked" in hd_stack:
