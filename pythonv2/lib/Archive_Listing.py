@@ -221,6 +221,9 @@ def archive_listing(form):
    if(index is not False):
       res = get_results_from_date(the_date,index,int(nompp))
 
+      print("RES")
+      print(res)
+
       # If we don't have enough detection to display we try the previous year
       if(res):
          if(len(res)<NUMBER_OF_METEOR_PER_PAGE):
