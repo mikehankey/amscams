@@ -222,36 +222,38 @@ def archive_listing(form):
       res = get_results_from_date(the_date,index,int(nompp))
 
       # If we don't have enough detection to display we try the previous year
-      if(len(res)<NUMBER_OF_METEOR_PER_PAGE):
-         the_date = datetime.datetime.strptime(str(year-1)+'_01_01',"%Y_%m_%d") 
-         year = year -1
-         index = get_index(year)
+      if(res):
+         if(len(res)<NUMBER_OF_METEOR_PER_PAGE):
+            the_date = datetime.datetime.strptime(str(year-1)+'_01_01',"%Y_%m_%d") 
+            year = year -1
+            index = get_index(year)
 
-         if(index is not False):
-            new_stop = int(meteor_per_page) - len(res)
-            res2 = get_results_from_date(the_date,index,new_stop)
-            res = res + res2
+            if(index is not False):
+               new_stop = int(meteor_per_page) - len(res)
+               res2 = get_results_from_date(the_date,index,new_stop)
+               res = res + res2
 
-   if(has_limit_day==0):
-      pagination = get_pagination(cur_page,len(res),"/pycgi/webUI.py?cmd=archive_listing&meteor_per_page="+str(nompp),int(nompp))
-   else:
-      pagination = get_pagination(cur_page,len(res),"/pycgi/webUI.py?cmd=archive_listing&limit_day="+str(the_date)+"&meteor_per_page="+str(nompp),int(nompp))
+         if(has_limit_day==0):
+            pagination = get_pagination(cur_page,len(res),"/pycgi/webUI.py?cmd=archive_listing&meteor_per_page="+str(nompp),int(nompp))
+         else:
+            pagination = get_pagination(cur_page,len(res),"/pycgi/webUI.py?cmd=archive_listing&limit_day="+str(the_date)+"&meteor_per_page="+str(nompp),int(nompp))
 
-   if(pagination[2] != ''):
-      template = template.replace("{PAGINATION_DET}", "Page  " + format(cur_page) + "/" +  format(pagination[2]))    
-   else:
-      template = template.replace("{PAGINATION_DET}", "")    
-   
-   # Create HTML Version of each detection
-   res_html = get_html_detections(res,clear_cache) 
-   template = template.replace("{RESULTS}", res_html)
+         if(pagination[2] != ''):
+            template = template.replace("{PAGINATION_DET}", "Page  " + format(cur_page) + "/" +  format(pagination[2]))    
+         else:
+            template = template.replace("{PAGINATION_DET}", "")    
+         
+         # Create HTML Version of each detection
+         res_html = get_html_detections(res,clear_cache) 
+         template = template.replace("{RESULTS}", res_html)
 
-   # Pagination
-   if(len(res)>=1): 
-      template = template.replace("{PAGINATION}", pagination[0])
-   else:
-      template = template.replace("{PAGINATION}", "")
-
+         # Pagination
+         if(len(res)>=1): 
+            template = template.replace("{PAGINATION}", pagination[0])
+         else:
+            template = template.replace("{PAGINATION}", "")
+      else:
+          template = template.replace("{RESULTS}", "No detection in the archive")
 
    # Display Template
    return template
