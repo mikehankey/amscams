@@ -220,10 +220,7 @@ def archive_listing(form):
    # Search the index
    if(index is not False):
       res = get_results_from_date(the_date,index,int(nompp))
-
-      print("RES")
-      print(res)
-
+ 
       # If we don't have enough detection to display we try the previous year
       if(res):
          if(len(res)<NUMBER_OF_METEOR_PER_PAGE):
@@ -259,6 +256,11 @@ def archive_listing(form):
          template = template.replace("{RESULTS}", "No detection in the archive")
          template = template.replace("{PAGINATION_DET}", "")    
          template = template.replace("{PAGINATION}", "")
+
+   else:
+      template = template.replace("{RESULTS}", "No detection found in the archive")
+      template = template.replace("{PAGINATION_DET}", "")    
+      template = template.replace("{PAGINATION}", "")
 
    # Display Template
    return template
