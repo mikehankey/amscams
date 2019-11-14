@@ -253,7 +253,7 @@ def manual_reduction_meteor_pos_selector(form):
 
 
 # Fourth Step : update of the JSON (THIS IS FOR THE OLD approach)
-def manual_reduction_create_final_json(form):
+def manual_reduction_create_final_json2(form):
    video_file   = form.getvalue('video_file')  
    frames_info  = form.getvalue('frames')  
 
@@ -267,7 +267,7 @@ def manual_reduction_create_final_json(form):
 
 
 # Fourth Step : creation of the new JSON (THIS IS FOR THE /meteor_archive/ approach)
-def manual_reduction_create_final_json2(form):
+def manual_reduction_create_final_json(form):
    video_file   = form.getvalue('video_file')  
    frames_info  = form.getvalue('frames')  
    json_file    = form.getvalue('json')
