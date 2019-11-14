@@ -86,7 +86,11 @@ def reduce_meteor2(json_conf,form):
    #HD_frames = get_HD_frames(tmp_analysed_name,clear_cache)
     
    # Get the thumbs (cropped HD frames) 
-   if(HD_frames):
+   try:
+      HD_frames
+   except NameError:
+      print("HD FRAMES NOT DEFINED")
+   else:
       thumbs = get_thumbs(tmp_analysed_name,meteor_json_file,HD,HD_frames,clear_cache)
   
    # Fill Template with data
