@@ -336,7 +336,7 @@ def move_old_detection_to_archive(json_file_path, sd_video_file_path, hd_video_f
          print("HD & SD video not synchronized!")
 
    new_json_file['calib']['org_file'] = param_files[0][0]
-
+ 
    # Determine the folder where to put the files
    tan = old_name_analyser(sd_video_file_path)
    tan['name'] = tan['name'].replace('.mp4','.json')
@@ -366,6 +366,22 @@ def move_old_detection_to_archive(json_file_path, sd_video_file_path, hd_video_f
    json_content['info']    = new_json_file['info']
    json_content['frames']  = new_json_file['frames']
 
+
+   # Test if we have the required info in json_file['calib']['device']
+   # json_file['calib']['device']['scale_px']
+   # json_file['calib']['device']['poly']['x_fwd']
+   # json_file['calib']['device']['poly']['y_fwd']
+   if('device' not in json_content['calib']):
+      # Do we have the old params?
+      if('org_file' in json_content['calib']):
+         if(cfe(json_content['calib']['org_file'])):
+            calibration_param = load_json_file(json_content['calib']['org_file'])
+            json_file['calib']['device'] = {}
+            json_file['calib']['device']['poly'] = {}
+            json_file['calib']['device']['poly']['x_fwd'] = calibration_param['x_poly_fwd']
+            json_file['calib']['device']['poly']['y_fwd'] = calibration_param['y_poly_fwd']
+            json_file['calib']['device']['poly']['scale_px'] = calibration_param['pixscale']
+             
    # Add the sync SD/HD if we have them
    if(sync_res != False): 
       json_content['sync']  = sync_res
