@@ -18,6 +18,7 @@ from lib.Sync_HD_SD_videos import *
 from lib.CGI_Tools import redirect_to
 from lib.MeteorReduce_Tools import  name_analyser
 from lib.Get_Cam_position import get_the_cam_position
+from lib.Archive_Listing import write_index
 
 
 # Return the analysed  version of the file name
@@ -426,6 +427,10 @@ def move_old_detection_to_archive(json_file_path, sd_video_file_path, hd_video_f
   
    if(display is True):
       print("JSON SAVED TO " + new_folder + tan['name'])
+
+
+   # Here we update the index for the archive
+   write_index(int(tan['year']))
    
    return new_folder + tan['name'],new_hd_video_file,new_sd_video_file
 
@@ -457,6 +462,9 @@ def move_to_archive(form):
 
    
    new_json,new_hd_vid,new_sd_vid = move_old_detection_to_archive(json_file,sd_video,hd_video, False)
+
+
+
    redirect_to("/pycgi/webUI.py?cmd=reduce2&video_file=" + new_hd_vid + "&clear_cache=1&c=" + str(random.randint(0,100000000)), "reduction")
    #print("/pycgi/webUI.py?cmd=reduce2&video_file=" + new_hd_vid + "&clear_cache=1&c=" + str(random.randint(0,100000000)))
    
