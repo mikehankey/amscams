@@ -391,6 +391,8 @@ def move_old_detection_to_archive(json_file_path, sd_video_file_path, hd_video_f
             json_content['calib']['device']['poly'] = {}
             json_content['calib']['device']['poly']['x_fwd'] = calibration_param['x_poly_fwd']
             json_content['calib']['device']['poly']['y_fwd'] = calibration_param['y_poly_fwd']
+            json_content['calib']['device']['poly']['x'] = calibration_param['x_poly']
+            json_content['calib']['device']['poly']['y'] = calibration_param['y_poly']
 
             json_content['calib']['device']['angle'] = float(calibration_param['position_angle'])
 
@@ -412,6 +414,8 @@ def move_old_detection_to_archive(json_file_path, sd_video_file_path, hd_video_f
             json_content['calib']['device']['center'] = {}
             json_content['calib']['device']['center']['az'] = float(calibration_param['center_az'])
             json_content['calib']['device']['center']['el'] = float(calibration_param['center_el'])
+            json_content['calib']['device']['center']['ra'] = float(calibration_param['ra_center'])
+            json_content['calib']['device']['center']['dec'] = float(calibration_param['dec_center'])
 
    # Add the sync SD/HD if we have them
    if(sync_res != False): 
