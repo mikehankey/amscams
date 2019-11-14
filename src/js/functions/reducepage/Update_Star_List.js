@@ -42,8 +42,7 @@ function update_stars_on_canvas_and_table(json_resp) {
 
     $('#str_cnt').text(cat_stars.length);
 
-    if(typeof cat_stars !== 'undefined') {
-         console.log(cat_stars);
+    if(!jQuery.isEmptyObject(cat_stars)) { 
          cat_stars.sort((a,b) => (a.name > b.name) ? 1 : ((b.name > a.name) ? -1 : 0))
     } 
        
