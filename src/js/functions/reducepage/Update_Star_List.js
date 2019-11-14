@@ -18,7 +18,7 @@ function update_stars_on_canvas_and_table(json_resp) {
     //console.log(" json_resp['calib']['device']['total_res_deg'] " +  json_resp['calib']['device']['total_res_deg'])
     //console.log(" json_resp['calib']['device']['total_res_px'] " +  json_resp['calib']['device']['total_res_px'])
  
-    if(typeof json_resp['calib']['device']['total_res_deg']!=='undefined' && typeof json_resp['calib']['device']['total_res_px']!=='undefined') {
+    if(typeof json_resp['calib']!=='undefined' && typeof json_resp['calib']['device']!=='undefined' && typeof json_resp['calib']['device']['total_res_deg']!=='undefined' && typeof json_resp['calib']['device']['total_res_px']!=='undefined') {
         // Updating star table info 
         // Residual Error
         var total_res_deg = (Math.round( json_resp['calib']['device']['total_res_deg'] * 100) / 100);
