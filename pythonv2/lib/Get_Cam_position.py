@@ -7,6 +7,7 @@ def get_the_cam_position():
     toReturn = []
     with open(json_path, "r+") as jsonFile:
         data = json.load(jsonFile)
+        print("<hr>JSON CONF<hr>")
         print(data)
         sys.exit(0)
         for cam in data['cameras']:
