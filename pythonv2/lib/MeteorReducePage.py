@@ -86,7 +86,8 @@ def reduce_meteor2(json_conf,form):
    #HD_frames = get_HD_frames(tmp_analysed_name,clear_cache)
     
    # Get the thumbs (cropped HD frames) 
-   thumbs = get_thumbs(tmp_analysed_name,meteor_json_file,HD,HD_frames,clear_cache)
+   if(HD_frames):
+      thumbs = get_thumbs(tmp_analysed_name,meteor_json_file,HD,HD_frames,clear_cache)
   
    # Fill Template with data
    template = template.replace("{VIDEO_FILE}", str(video_full_path))   # Video File  
