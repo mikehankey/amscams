@@ -17,6 +17,7 @@ from lib.VIDEO_VARS import FPS_HD
 from lib.Sync_HD_SD_videos import * 
 from lib.CGI_Tools import redirect_to
 from lib.MeteorReduce_Tools import  name_analyser
+from lib.Get_Cam_position import get_the_cam_position
 
 
 # Return the analysed  version of the file name
@@ -391,10 +392,20 @@ def move_old_detection_to_archive(json_file_path, sd_video_file_path, hd_video_f
             json_content['calib']['device']['poly']['x_fwd'] = calibration_param['x_poly_fwd']
             json_content['calib']['device']['poly']['y_fwd'] = calibration_param['y_poly_fwd']
 
-            json_content['calib']['device']['lat'] = float(calibration_param['device_lat'])
-            json_content['calib']['device']['lng'] = float(calibration_param['device_lng'])
             json_content['calib']['device']['angle'] = float(calibration_param['position_angle'])
-            
+
+            # It is possible that we dont have device_lat or/and device_lng in the calibration file
+            if('device_lng' not in calibration_param):
+               pos = get_cam_position()
+            else:
+               json_content['calib']['device']['lng'] = float(calibration_param['device_lng'])   
+
+
+
+            #  json_content['calib']['device']['lat'] = float(calibration_param['device_lat'])
+                     
+
+
             json_content['calib']['device']['center'] = {}
             json_content['calib']['device']['center']['az'] = float(calibration_param['center_az'])
             json_content['calib']['device']['center']['el'] = float(calibration_param['center_el'])
