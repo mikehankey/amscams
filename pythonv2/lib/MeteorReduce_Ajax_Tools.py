@@ -746,10 +746,12 @@ def get_reduction_info(json_file):
          else:
             total_res_px = 9999
 
-         mr['calib']['device']['total_res_px']  = total_res_px
-
-         if(float(mr['calib']['device']['scale_px'])!=0):
-            mr['calib']['device']['total_res_deg'] = total_res_px/float(mr['calib']['device']['scale_px'])
+         if('device' in mr['calib']):
+            if('total_res_px' in mr['calib']['device']):
+               mr['calib']['device']['total_res_px']  = total_res_px
+            if('scale_px' in mr['calib']['device']):
+               if(float(mr['calib']['device']['scale_px'])!=0):
+               mr['calib']['device']['total_res_deg'] = total_res_px/float(mr['calib']['device']['scale_px'])
           
          # Pass to JSON
          rsp['calib'] = mr['calib'] 
