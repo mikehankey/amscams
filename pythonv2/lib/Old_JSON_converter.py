@@ -377,10 +377,10 @@ def move_old_detection_to_archive(json_file_path, sd_video_file_path, hd_video_f
          if(cfe(json_content['calib']['org_file'])):
             calibration_param = load_json_file(json_content['calib']['org_file'])
             json_content['calib']['device'] = {}
+            json_content['calib']['device']['scale_px'] = calibration_param['pixscale']
             json_content['calib']['device']['poly'] = {}
             json_content['calib']['device']['poly']['x_fwd'] = calibration_param['x_poly_fwd']
             json_content['calib']['device']['poly']['y_fwd'] = calibration_param['y_poly_fwd']
-            json_content['calib']['device']['scale_px'] = calibration_param['pixscale']
              
    # Add the sync SD/HD if we have them
    if(sync_res != False): 
