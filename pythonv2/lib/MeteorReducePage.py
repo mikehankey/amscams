@@ -74,7 +74,6 @@ def reduce_meteor2(json_conf,form):
 
    # Parse the JSON
    meteor_json_file = load_json_file(json_full_path) 
-
  
    # Get the HD or SD stack
    tmp_analysed_name = name_analyser(json_full_path) 
@@ -83,9 +82,8 @@ def reduce_meteor2(json_conf,form):
    
    stack = get_stacks(tmp_analysed_name,clear_cache,False) 
    
-     # Get the HD frames
-   HD_frames = get_HD_frames(tmp_analysed_name,clear_cache)
-   
+   # Get the HD frames 
+   #HD_frames = get_HD_frames(tmp_analysed_name,clear_cache)
     
    # Get the thumbs (cropped HD frames) 
    thumbs = get_thumbs(tmp_analysed_name,meteor_json_file,HD,HD_frames,clear_cache)
