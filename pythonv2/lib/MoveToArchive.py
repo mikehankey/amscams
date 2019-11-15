@@ -3,8 +3,8 @@
 import sys
 
 
-from lib.FileIO import cfe
-from lib.Old_JSON_converter import move_old_detection_to_archive
+from FileIO import cfe
+from Old_JSON_converter import move_old_detection_to_archive
  
 # JSON FILE 
 json_file = sys.argv[0]          
