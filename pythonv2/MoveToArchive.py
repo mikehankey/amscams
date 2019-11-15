@@ -13,11 +13,11 @@ from lib.Old_JSON_converter import move_old_detection_to_archive
 # python3 MoveToArchive.py /mnt/ams2/meteors/2019_11_15/2019_11_15_07_49_40_000_010042-trim0263.json /mnt/ams2/meteors/2019_11_15/2019_11_15_07_49_37_000_010042-trim-263-HD-meteor.mp4 /mnt/ams2/meteors/2019_11_15/2019_11_15_07_49_40_000_010042-trim0263.mp4
 
 # JSON FILE 
-json_file = sys.argv[0]          
+json_file = sys.argv[1]          
 # HD VIDEO FILE
-hd_video = sys.argv[1]
+hd_video = sys.argv[2]
 # SD VIDEO FILE
-sd_video = sys.argv[2]
+sd_video = sys.argv[3]
 
 # FOR NOW, WE NEED THE 3 FILES TO PROPERLY MOVE A DETECTION
 if(hd_video is None or cfe(hd_video)==0):
@@ -33,11 +33,7 @@ if(json_file is None or cfe(json_file)==0):
    sys.exit(0)
 
 
-print("JSON FILE")
-print(json_file)
-load_json_file(json_file)
-sys.exit(0)
-
+ 
 # Move everything
 new_json,new_hd_vid,new_sd_vid = move_old_detection_to_archive(json_file,sd_video,hd_video, False) 
 
