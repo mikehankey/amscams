@@ -52,7 +52,7 @@ try:
 except NameError:
    thumbs = ''
 else:
-   HD = true
+   HD = True
    thumbs = get_thumbs(tmp_analysed_name,new_json,HD,HD_frames,clear_cache)
    output = "THUMBS : " + thumbs
    output = "HD FRAMES : " + HD_frames
