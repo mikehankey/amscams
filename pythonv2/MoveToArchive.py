@@ -33,6 +33,8 @@ if(json_file is None or cfe(json_file)==0):
    sys.exit(0)
 
 
+print("JSON FILE")
+print(json_file)
 load_json_file(json_file)
 sys.exit(0)
 
