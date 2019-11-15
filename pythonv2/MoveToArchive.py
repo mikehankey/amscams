@@ -4,7 +4,7 @@ import sys
 
 from lib.FileIO import cfe, load_json_file
 from lib.Old_JSON_converter import move_old_detection_to_archive
-from lib.MeteorReduce_Tools import name_analyser 
+from lib.MeteorReduce_Tools import * 
 
 # EXAMPLE
 # /mnt/ams2/meteors/2019_11_15/2019_11_15_07_49_37_000_010042-trim-263-HD-meteor.mp4
