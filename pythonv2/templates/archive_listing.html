@@ -2,10 +2,15 @@
    <h1>Archive until 
       <input value="{DATE}" type="text" data-display-format="YYYY/MM/DD" data-action="reload" data-url-param="limit_day" data-send-format="YYYY_MM_DD" class="datepicker form-control">
    </h1>
-   <div class='mr-2 d-flex'>
-      <select name='rpp' id='rpp' data-rel='meteor_per_page' class='btn btn-primary mr-4'>{RPP}</select>
+   <div class='d-flex'>
+     <div class='mr-2'>
+         <select name='rpp' id='rpp' data-rel='meteor_per_page' class='btn btn-primary mr-4'>{RPP}</select>
+      </div>
+      <div class='btn-group mr-3'><button id='show_gal' class='btn btn-primary act'><i class='icon-list'></i></button></div>
       <div class="page_h">{PAGINATION_DET}</div>
    </div>
+
+
 </div>
 <div id="main_container" class="container-fluid h-100 mt-4 lg-l">
    {RESULTS} 
