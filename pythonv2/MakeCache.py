@@ -1,0 +1,50 @@
+# Move a detection (reduced or not) to the Archive
+
+import sys
+
+from lib.FileIO import cfe, load_json_file
+from lib.Old_JSON_converter import move_old_detection_to_archive
+from lib.MeteorReduce_Tools import * 
+
+# /mnt/ams2/meteors/2019_11_15/2019_11_15_07_49_40_000_010042-trim0263.json
+# python3 MakeChace.py /mnt/ams2/meteors/2019_11_15/2019_11_15_07_49_40_000_010042-trim0263.json
+
+# JSON FILE 
+new_json = sys.argv[1]           
+
+# FOR NOW, WE NEED THE 3 FILES TO PROPERLY MOVE A DETECTION
+if(hd_video is None or cfe(hd_video)==0):
+   print("HD video is missing.")
+   sys.exit(0) 
+
+# Analyse the new_json file name
+tmp_analysed_name = name_analyser(new_json) 
+
+# Generate the stuff in the cache
+clear_cache = 1
+hd_stack = get_stacks(tmp_analysed_name,clear_cache,True)
+sd_stack = get_stacks(tmp_analysed_name,clear_cache,False)
+HD_frames = get_HD_frames(tmp_analysed_name,clear_cache)
+
+output = ''
+
+# Get the thumbs for the reduced detection (cropped HD frames) 
+try:
+   HD_frames
+except NameError:
+   thumbs = ''
+else:
+   HD = True
+   thumbs = get_thumbs(tmp_analysed_name,new_json,HD,HD_frames,clear_cache)
+   output = "THUMBS : " + str(thumbs)
+   output = "HD FRAMES : " + str(HD_frames)
+
+# Create the temporary media (CACHE) for this detection
+print("NEW ARCHIVE:")
+print("NEW JSON:" + new_json)
+print("NEW HD VID:" + new_hd_vid)
+print("NEW SD VID:" +  new_sd_vid)
+print("HD STACK:" + hd_stack)
+print("SD STACK:" + sd_stack)
+print(output) 
+
