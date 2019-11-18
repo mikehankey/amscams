@@ -145,18 +145,21 @@ def get_html_detections(res,clear_cache):
       
       # Otherwise preview = preview (:)
       res_html += '<div class="preview col-lg-2 col-md-3 select-to reduced">'
-      res_html += '<a class="mtt" href="webUI.py?cmd=reduce2&video_file='+det['full_path']+'" title="Detection Reduce page">'
-      res_html += '<img alt="" class="img-fluid ns lz" src="'+preview[0]+'">'
-      res_html += '</a>'
-      res_html += '<div class="list-onl"><span>Cam #'+det['cam_id']+' - <b>'+det['hour']+':'+det['min']+'</b></span></div>'
-      res_html += '<div class="d-flex justify-content-between">'
-      res_html += '<div class="pre-b gallery-only">Cam #'+det['cam_id']+' - <b>'+det['hour']+':'+det['min']+'</b></div>'
-      res_html += '<div class="btn-toolbar pr-0 pb-0"><div class="btn-group"><a class="vid_link_gal col btn btn-primary btn-sm" title="Play Video" href="./video_player.html?video='+path_to_vid+'"><i class="icon-play"></i></a>'
-      res_html += '<a class="delete_meteor_archive_gallery col btn btn-danger btn-sm" title="Delete Detection" data-meteor="'+det['full_path']+'"><i class="icon-delete"></i></a></div></div>'
-      res_html += '</div></div>'
+      res_html += '  <a class="mtt" href="webUI.py?cmd=reduce2&video_file='+det['full_path']+'" title="Detection Reduce page">'
+      res_html += '     <img alt="" class="img-fluid ns lz" src="'+preview[0]+'">'
+      res_html += '  </a>'
+      res_html += '  <div class="list-onl"><span>Cam #'+det['cam_id']+' - <b>'+det['hour']+':'+det['min']+'</b></span></div>'
+      res_html += '  <div class="list-onl sel-box"><div class="custom-control big custom-checkbox">'
+      res_html += '     <input type="checkbox" class="custom-control-input" id="'+det['full_path']+'" name="'+det['full_path']+'">'     
+      res_html += '     <label class="custom-control-label" for="'+det['full_path']+'"></label>'
+      res_html += '  </div></div>'
+      res_html += '  <div class="d-flex justify-content-between">'
+      res_html += '     <div class="pre-b gallery-only">Cam #'+det['cam_id']+' - <b>'+det['hour']+':'+det['min']+'</b></div>'
+      res_html += '     <div class="btn-toolbar pr-0 pb-0"><div class="btn-group"><a class="vid_link_gal col btn btn-primary btn-sm" title="Play Video" href="./video_player.html?video='+path_to_vid+'"><i class="icon-play"></i></a>'
+      res_html += '     <a class="delete_meteor_archive_gallery col btn btn-danger btn-sm" title="Delete Detection" data-meteor="'+det['full_path']+'"><i class="icon-delete"></i></a></div></div>'
+      res_html += '  </div></div>' 
 
-   
-
+      
    return res_html
  
 
