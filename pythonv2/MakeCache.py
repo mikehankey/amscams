@@ -12,9 +12,8 @@ from lib.MeteorReduce_Tools import *
 # JSON FILE 
 new_json = sys.argv[1]           
 
-# FOR NOW, WE NEED THE 3 FILES TO PROPERLY MOVE A DETECTION
-if(hd_video is None or cfe(hd_video)==0):
-   print("HD video is missing.")
+if(new_json is None or cfe(new_json)==0):
+   print("JSON is missing.")
    sys.exit(0) 
 
 # Analyse the new_json file name

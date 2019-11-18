@@ -104,7 +104,7 @@ def cleanup_json():
 
         #Create new json conf file
         with open(PATH_TO_CLEAN_CONF_JSON, 'w+') as outfile:
-            json.dump(clean_data, outfile)
+            json.dump(clean_data, outfile, indent=4)
 
         #print(PATH_TO_CLEAN_CONF_JSON + " created")       
         return PATH_TO_CLEAN_CONF_JSON
