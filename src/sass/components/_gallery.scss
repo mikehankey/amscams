@@ -200,6 +200,11 @@
     text-align: center; 
  }
 
+
+ .gallery-only {
+   display:  block;
+}
+
  
 
  .gallery.list {
@@ -220,6 +225,11 @@
          width: 100%;
          margin: 0 1rem;
         }
+
+        .gallery-only {
+         display:  none;
+      }
+        
 
         .list-onl {
             display: block;
