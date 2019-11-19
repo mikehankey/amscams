@@ -212,9 +212,9 @@ def write_month_index(month, year):
    # Write Index if we have data
    if('days' in json_data): 
       main_dir = METEOR_ARCHIVE + get_station_id()  + os.sep + METEOR + str(year) + os.sep + str(month)
-      data = json.loads(json_data, object_pairs_hook=collections.OrderedDict)
+      
 
-      print(data)
+      print(json_data)
       sys.exit(0)
       save_json_file(main_dir + os.sep + str(month) + ".json", )
       return True
