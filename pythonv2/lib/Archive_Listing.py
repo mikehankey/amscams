@@ -240,7 +240,7 @@ def get_index(year):
 
 # Get index for a given month (and year)
 def get_monthly_index(month,year):
-   index_file = METEOR_ARCHIVE + get_station_id()  + os.sep + METEOR + str(year) + os.sep + str(year)  + os.sep + str(month) + os.sep + str(month) + '.json'
+   index_file = METEOR_ARCHIVE + get_station_id()  + os.sep + METEOR + str(year) + os.sep + str(month) + os.sep + str(month) + '.json'
    if(cfe(index_file)):
       return load_json_file(index_file)
    else:
