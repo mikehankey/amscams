@@ -117,6 +117,11 @@ def create_json_index_year(year):
                
             # Add the day
             cur_month_data[int(cur_day)] = cur_day_data
+ 
+         try:
+               index_year['months'][int(cur_month)]
+         except:
+               index_year['months'][int(cur_month)] = []
 
          index_year['months'][int(cur_month)].append(cur_month_data)
 
