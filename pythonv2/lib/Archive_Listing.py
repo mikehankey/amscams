@@ -123,6 +123,7 @@ def add_to_month_index(detection, insert=True):
 
 # Create Index for a given month
 def create_json_index_month(month,year):
+
    station_id = get_station_id()
    main_dir = METEOR_ARCHIVE +  station_id + os.sep + METEOR + str(year) + os.sep + str(month)
 
@@ -155,6 +156,10 @@ def create_json_index_month(month,year):
 
    for elem in sorted(index_month['days'].items()) :
       new_index_month[elem[0]] = elem[1]
+
+
+   print("new_index_month")
+   print(new_index_month)
 
    index_month['days'] = new_index_month
     
@@ -212,9 +217,7 @@ def create_json_index_year(year):
 
 # Write index for a given month
 def write_month_index(month, year):
-   json_data = create_json_index_month(month, year) 
-
-   print(json_data)
+   json_data = create_json_index_month(month, year)  
 
    # Write Index if we have data
    if('days' in json_data): 
