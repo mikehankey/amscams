@@ -86,7 +86,7 @@ def search_month_index(detection, insert=True):
          new_detect = {
             "dur": dur,
             "red": red,
-            "p": "07_20_43_000_010042-trim0892",
+            "p": det,
             "mag": mag
          }
 
