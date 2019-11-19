@@ -155,7 +155,7 @@ def create_json_index_month(month,year):
 
    # We rebuild everything
    new_day = {}
-   for k, v in index_month.items():
+   for k, v in index_month['days'].items():
     new_day[k] = v
 
    print(new_day)
