@@ -1,6 +1,6 @@
 from lib.Archive_Listing import *
 
-create_index(2019)
+create_json_index_year(2019)
 
 
 
