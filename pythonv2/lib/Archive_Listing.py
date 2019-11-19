@@ -246,7 +246,7 @@ def get_results_from_date_from_yearindex(date,json_index,max_res):
     
 
    for month in json_index['days']:
-      print("CUR MONTH " + month))
+      print("CUR MONTH " + month)
       print("<br>")
       #print(str(month['month'])  + " <= " + str(date.month) + "?<br/>")
       #if(int(month['month'])<=date.month):
