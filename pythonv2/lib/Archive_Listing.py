@@ -264,7 +264,7 @@ def get_results_from_date_from_monthly_index(date,json_index,max_res):
    res_cnt = 0 
 
    if("days" in json_index):
-      for day in json_index['days']:
+      for day in sorted(json_index['days'], reverse=True):
          print("CUR DAY " + day)
          print("<br>")
          #print(str(month['month'])  + " <= " + str(date.month) + "?<br/>")
