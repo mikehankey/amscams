@@ -180,7 +180,14 @@ def get_new_info(json_f):
          "sd_vid":  json_f['sd_vid'],
          "org_hd_vid":  json_f['org_hd_vid'],
          "org_sd_vid":  json_f['org_sd_vid'],
-         "device":  json_f['cam_id'],
+         "device":  json_f['cam_id']
+      }
+   }
+
+# Get new report form an old JSON version
+def get_new_report(json_f): 
+   return  {
+      "report": {
          "dur": float(json_f['event_duration']),
          "max_peak": float(json_f['peak_magnitude'])
       }
@@ -286,6 +293,7 @@ def convert_json(json_file_path, sd_video_file_path, hd_video_file_path):
 
    calib = get_new_calib(reduced_info)
    stars = get_new_stars(reduced_info)
+   report = get_new_report(reduced_info)
 
    # Get the frames here (from reduced_info)
    frames = get_new_frames(reduced_info)
@@ -304,7 +312,7 @@ def convert_json(json_file_path, sd_video_file_path, hd_video_file_path):
       calib['calib'] = {}
       calib['calib']['stars'] = {}
    
-   return {"info": info['info'],"calib": calib['calib'],"frames": frames['frames']}
+   return {"info": info['info'],"calib": calib['calib'],"frames": frames['frames'],"report":report['report']}
 
 
 # Move new JSON file and  video files to meteor_archive
