@@ -46,7 +46,8 @@ def create_json_index_year(year):
                   detection_data = load_json_file(detection)
 
                   for diag_field in ARCHIVE_LISTING_DIAGNOSTIC_FIELDS:
-                     print(diag_field)
+                     for values in diag_field:
+                        print(values)
                
                det = os.path.basename(detection)
                det = os.path.splitext(det)[0]
