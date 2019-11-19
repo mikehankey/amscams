@@ -17,21 +17,21 @@ ARCHIVE_LISTING_TEMPLATE = "/home/ams/amscams/pythonv2/templates/archive_listing
 def create_json_index_year(year):
 
    main_dir = METEOR_ARCHIVE + get_station_id() + '/' + METEOR + str(year)
-   index_year = {'year':year,'months':[]}
+   index_year = {'year':int(year),'months':[]}
  
    for month in sorted(glob.iglob(main_dir + '*' + os.sep + '*', recursive=True), reverse=True):	
       cur_month = os.path.basename(os.path.normpath(month))
 
       # Test if it is an index
       if('json' not in cur_month):
-         cur_month_data = {'month':cur_month,'days':[]}
+         cur_month_data = {'month':int(cur_month),'days':[]}
          
          for day in sorted(glob.iglob(month + '*' + os.sep + '*', recursive=True), reverse=True):	
             cur_day = os.path.basename(os.path.normpath(day))		
-            cur_day_data = {'day':cur_day,'det':[]}
+            cur_day_data = {'day':int(cur_day),'det':[]}
           
             for detection in sorted(glob.iglob(day + os.sep +  '*' + '.json', recursive=True), reverse=True):
-               cur_day_data['det'].append(os.path.basename(detection))
+               cur_day_data['det'].append(os.path.splitext(os.path.basename(detection)[0])
             
             cur_month_data['days'].append(cur_day_data)
       
