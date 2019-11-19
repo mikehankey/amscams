@@ -19,7 +19,7 @@ ARCHIVE_LISTING_TEMPLATE = "/home/ams/amscams/pythonv2/templates/archive_listing
 # EX:
 # {'info': ['max_peak']}
 # means det['info']['max_peak']
-ARCHIVE_LISTING_DIAGNOSTIC_FIELDS = {'info': ['max_peak','dur'],'calib':{'device':{'center':['az']}}}
+ARCHIVE_LISTING_DIAGNOSTIC_FIELDS = {'info': ['max_peak','dur']}
 
 # Function that read a json file (detection)
 # and return the values of the corresponding Diagnostic Fields 
@@ -29,7 +29,10 @@ def get_diag_fields(detection):
       for up_diag_field in ARCHIVE_LISTING_DIAGNOSTIC_FIELDS:
          print("DIAGFIELD "  + str(up_diag_field)) 
          for diag_field in ARCHIVE_LISTING_DIAGNOSTIC_FIELDS[up_diag_field]:
-            print("VALUES " + diag_field )
+            if isinstance(diag_field,list):
+               print("VALUES " + diag_field )
+            else:
+               print("VALUES2 " + diag_field )
 
 
 
