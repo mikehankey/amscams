@@ -58,15 +58,29 @@ def search_month_index(detection):
    station_id = get_station_id()
    
    # Get month index path from analysed name
-   index_path = METEOR_ARCHIVE +  station_id + os.sep + METEOR + str(analysed_detection_name['year']) + os.sep + str(analysed_detection_name['month']) + os.sep +  str(analysed_detection_name['month'])+".json"
+   index_path = METEOR_ARCHIVE +  station_id + os.sep + METEOR + str(analysed_detection_name['year']) + os.sep + str(analysed_detection_name['month']) + os.sep +  str(analysed_detection_name['day'])+".json"
    
    if(cfe(index_path)):
       index_data = load_json_file(index_path)
-      print(index_data)
+      
+      # We transform the detection to have the format stored in the index 
+      # ie 07_51_52_000_010037-trim0670
+      det = os.path.basename(detection)
+      det = os.path.splitext(det)[0]
+      det = det[11:]
 
+      try:
+         the_day = index_data['days'][str(analysed_detection_name['day'])]
+      except:
+         the_day = []
+
+      for detections in the_day:
+         if(detections['p']==det):
+            return True
    else:
       print("INDEX " + index_path + " Doesnt EXIST")
 
+   return False
 
 # Create Index for a given month
 def create_json_index_month(month,year):
