@@ -86,7 +86,7 @@ def create_json_index_year(year):
 
  
 # Write index for a given year
-def write_index(year):
+def write_year_index(year):
    json_data = create_json_index_year(year) 
 
    # Write Index if we have data
@@ -104,7 +104,7 @@ def get_index(year):
    if(cfe(index_file)):
       return load_json_file(index_file)
    else:
-      test = write_index(year)
+      test = write_year_index(year)
       if(test):
          return load_json_file(index_file)
       else:

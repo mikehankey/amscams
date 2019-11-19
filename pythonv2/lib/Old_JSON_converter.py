@@ -18,7 +18,7 @@ from lib.Sync_HD_SD_videos import *
 from lib.CGI_Tools import redirect_to
 from lib.MeteorReduce_Tools import  name_analyser
 from lib.Get_Cam_position import get_the_cam_position
-from lib.Archive_Listing import write_index
+from lib.Archive_Listing import write_year_index
 
 
 # Return the analysed  version of the file name
@@ -430,7 +430,7 @@ def move_old_detection_to_archive(json_file_path, sd_video_file_path, hd_video_f
 
 
    # Here we update the index for the archive
-   write_index(int(tan['year']))
+   write_year_index(int(tan['year']))
    
    return new_folder + tan['name'],new_hd_video_file,new_sd_video_file
 
