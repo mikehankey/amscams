@@ -24,20 +24,30 @@ def create_json_index_year(year):
 
       # Test if it is an index
       if('json' not in cur_month):
-         cur_month_data = {'month':cur_month,'days':[]}
+         cur_month_data = {'month':int(cur_month),'days':[]}
          
          for day in sorted(glob.iglob(month + '*' + os.sep + '*', recursive=True), reverse=True):	
             cur_day = os.path.basename(os.path.normpath(day))		
             cur_day_data = {'day':cur_day,'det':[]}
           
             for detection in sorted(glob.iglob(day + os.sep +  '*' + '.json', recursive=True), reverse=True):
-               cur_day_data['det'].append(os.path.basename(detection))
+               cur_day_data['det'].append(os.path.splitext(os.path.basename(detection)[0])
             
             cur_month_data['days'].append(cur_day_data)
       
          index_year['months'].append(cur_month_data)
 
    return index_year 
+
+
+# Add a detection to an index
+def add_detection_to_index(json_file):
+   # TODO
+
+# Remove a detection from an index 
+def remove_detection_from_index(json_file):
+   # TODO
+
 
 
 # Write index for a given year
@@ -66,29 +76,23 @@ def get_index(year):
          return test
 
 # Get results on index from a certain date
-def get_results_from_date(date,json_index,max_res): 
+def get_results_from_date(date,json_index,max_res,cur_page): 
    res = []
    res_cnt = 0 
 
-   for month in json_index['months']:
-      #print("CUR MONTH " +str(month['month']))
-      #print("<br>")
-      #print(str(month['month'])  + " <= " + str(date.month) + "?<br/>")
+
+   for month in json_index['months']: 
       if(int(month['month'])<=date.month):
          for day in month['days']:
-            if(int(month['month'])==date.month and int(day['day'])<=date.day and res_cnt<=max_res):
-               #print("CUR DAY " +str(day['day']))
-               #print("<br>")
+            if(int(month['month'])==date.month and int(day['day'])<=date.day and res_cnt<=max_res): 
                for dec in day['det']:
                   if(res_cnt<=max_res):
-                     res.append(dec)
-                     #print("ADDED<br/>")
+                     res.append(dec) 
                      res_cnt+=1 
             elif(int(month['month'])!=date.month and res_cnt<=max_res):
                for dec in day['det']:
                   if(res_cnt<=max_res):
-                     res.append(dec)
-                     #print("ADDED<br/>")
+                     res.append(dec) 
                      res_cnt+=1 
    return res
 
@@ -159,7 +163,7 @@ def get_html_detections(res,clear_cache):
       res_html += '     <a class="delete_meteor_archive_gallery col btn btn-danger btn-sm" title="Delete Detection" data-meteor="'+det['full_path']+'"><i class="icon-delete"></i></a></div></div>'
       res_html += '  </div></div>' 
 
-      
+
    return res_html
  
 
@@ -188,8 +192,7 @@ def archive_listing(form):
       nompp = NUMBER_OF_METEOR_PER_PAGE
    else:
       nompp = int(meteor_per_page)
-
-   
+ 
    # Build num per page selector
    ppp_select = ''
    for ppp in POSSIBLE_PER_PAGE:
@@ -198,8 +201,7 @@ def archive_listing(form):
       else:
          ppp_select+= '<option value="'+str(ppp)+'">'+str(ppp)+' / page</option>'  
    template = template.replace("{RPP}", ppp_select)
-
-
+ 
    # Clear_cache
    if(clear_cache is None):
       clear_cache = False
@@ -223,7 +225,7 @@ def archive_listing(form):
  
    # Search the index
    if(index is not False):
-      res = get_results_from_date(the_date,index,int(nompp))
+      res = get_results_from_date(the_date,index,int(nompp),cur_page)
  
       # If we don't have enough detection to display we try the previous year
       if(res):
@@ -234,7 +236,7 @@ def archive_listing(form):
 
             if(index is not False):
                new_stop = int(meteor_per_page) - len(res)
-               res2 = get_results_from_date(the_date,index,new_stop)
+               res2 = get_results_from_date(the_date,index,new_stop,cur_page)
                res = res + res2
 
          if(has_limit_day==0):
