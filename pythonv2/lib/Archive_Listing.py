@@ -17,6 +17,10 @@ ARCHIVE_LISTING_TEMPLATE = "/home/ams/amscams/pythonv2/templates/archive_listing
 def create_json_index_year(year):
 
    main_dir = METEOR_ARCHIVE + get_station_id() + '/' + METEOR + str(year)
+
+   print("MAIN DIR")
+   print(main_dir)
+
    index_year = {'year':int(year),'months':[]}
  
    for month in sorted(glob.iglob(main_dir + '*' + os.sep + '*', recursive=True), reverse=True):	
