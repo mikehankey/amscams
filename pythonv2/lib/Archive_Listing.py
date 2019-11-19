@@ -25,10 +25,7 @@ ARCHIVE_LISTING_DIAGNOSTIC_FIELDS = {'info': ['max_peak','dur']}
 def create_json_index_year(year):
 
    main_dir = METEOR_ARCHIVE + get_station_id() + '/' + METEOR + str(year)
-
-   print("MAIN DIR")
-   print(main_dir)
-
+ 
    index_year = {'year':int(year),'months':[]}
  
    for month in sorted(glob.iglob(main_dir + '*' + os.sep + '*', recursive=True), reverse=True):	
@@ -45,8 +42,11 @@ def create_json_index_year(year):
             for detection in sorted(glob.iglob(day + os.sep +  '*' + '.json', recursive=True), reverse=True):
                
                # We access the related JSON to get the DIAGNOSTIC_FIELDS values in the index
-               print(detection)
-               
+               if(cfe(detection)):
+                  detection_data = load_json_file(detection)
+
+                  for diag_field in ARCHIVE_LISTING_DIAGNOSTIC_FIELDS:
+                     print(diag_field)
                
                det = os.path.basename(detection)
                det = os.path.splitext(det)[0]
