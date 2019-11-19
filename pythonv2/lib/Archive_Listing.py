@@ -63,7 +63,7 @@ def create_json_index_month(month,year):
       if('json' not in cur_day):
          cur_day_data = {}
 
-         if(index_month['days'][int(cur_day)] is None):
+         if(int(cur_day) not in index_month['days']):
             index_month['days'][int(cur_day)] = {}
 
 
