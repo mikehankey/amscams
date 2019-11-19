@@ -31,6 +31,7 @@ def get_diag_fields(detection):
 
       for up_diag_field in ARCHIVE_LISTING_DIAGNOSTIC_FIELDS:
          print("NAME OF THE FIELD "  + str(up_diag_field)) 
+         print(up_diag_field.keys())
 
          i=0
          # We get all the included values to get the proper JSON field
