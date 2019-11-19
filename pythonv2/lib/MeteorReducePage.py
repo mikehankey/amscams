@@ -101,8 +101,8 @@ def reduce_meteor2(json_conf,form):
    if(hd_stack is not None):
       template = template.replace("{HD_STACK}", str(hd_stack))                  # HD Stack File 
  
-   template = template.replace("{EVENT_DURATION}", str(meteor_json_file['info']['dur']))          # Duration
-   template = template.replace("{EVENT_MAGNITUDE}", str(meteor_json_file['info']['max_peak']))    # Peak_magnitude
+   template = template.replace("{EVENT_DURATION}", str(meteor_json_file['report']['dur']))          # Duration
+   template = template.replace("{EVENT_MAGNITUDE}", str(meteor_json_file['report']['max_peak']))    # Peak_magnitude
 
    # For the Event start time
    # either it has already been reduced and we take the time of the first frame
