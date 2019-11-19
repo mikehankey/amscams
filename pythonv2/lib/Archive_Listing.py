@@ -25,13 +25,16 @@ ARCHIVE_LISTING_DIAGNOSTIC_FIELDS = {"dur":{'info':{'dur'}},"mag":{'info':{'max_
 # Function that read a json file (detection)
 # and return the values of the corresponding Diagnostic Fields 
 def get_diag_fields(detection):
-
-
+ 
    if(cfe(detection)):
       detection_data = load_json_file(detection)
 
       for up_diag_field in ARCHIVE_LISTING_DIAGNOSTIC_FIELDS:
          print("NAME OF THE FIELD "  + str(up_diag_field)) 
+
+         # We get all the included values to get the proper JSON field
+         while(ARCHIVE_LISTING_DIAGNOSTIC_FIELDS[up_diag_field]):
+            print("SUB VALUE " + str(ARCHIVE_LISTING_DIAGNOSTIC_FIELDS[up_diag_field])))
 
          #for diag_field in ARCHIVE_LISTING_DIAGNOSTIC_FIELDS[up_diag_field]:
             # Get the field if it isn't a list
