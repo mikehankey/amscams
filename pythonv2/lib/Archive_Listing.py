@@ -19,7 +19,7 @@ ARCHIVE_LISTING_TEMPLATE = "/home/ams/amscams/pythonv2/templates/archive_listing
 # EX:
 # {'info': ['max_peak']}
 # means det['info']['max_peak']
-ARCHIVE_LISTING_DIAGNOSTIC_FIELDS = {'info': ['max_peak','dur']}
+ARCHIVE_LISTING_DIAGNOSTIC_FIELDS = {'info': ['max_peak','dur'],'calib':{'device':{'center':{'az'}}}}
 
 # Create index for a given year
 def create_json_index_year(year):
@@ -46,8 +46,8 @@ def create_json_index_year(year):
                   detection_data = load_json_file(detection)
 
                   for up_diag_field in ARCHIVE_LISTING_DIAGNOSTIC_FIELDS:
+                     print("DIAGFIELD "  + str(up_diag_field)) 
                      for diag_field in ARCHIVE_LISTING_DIAGNOSTIC_FIELDS[up_diag_field]:
-                        print("DIAGFIELD "  + str(up_diag_field)) 
                         print("VALUES " + diag_field )
 
                det = os.path.basename(detection)
