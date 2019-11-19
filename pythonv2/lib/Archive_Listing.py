@@ -150,7 +150,7 @@ def create_json_index_month(month,year):
  
             index_month['days'][int(cur_day)].append({'p':det[11:],'mag':mag,'dur':dur,'red':red})
 
-   index_month['days'] = sorted(index_month['days'].items(), key=lambda item: item[1])
+   index_month['days'] = sorted(index_month.items(), key=lambda item: item[1])
   
    return index_month             
 
