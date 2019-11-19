@@ -240,9 +240,14 @@ def get_index(year):
 
 
 # Get results on index from a certain date
-def get_results_from_date(date,json_index,max_res): 
+def get_results_from_date_from_yearindex(date,json_index,max_res): 
    res = []
    res_cnt = 0 
+
+   print("DATE ")
+   print(date)
+   print("<br>")
+
 
    for month in json_index['months']:
       #print("CUR MONTH " +str(month['month']))
@@ -393,13 +398,14 @@ def archive_listing(form):
    # Get the index of the selected or current year
    index =  get_index(year)
    
-   print(index)
-   sys.exit(0)
-
    # Search the index
    if(index is not False):
-      res = get_results_from_date(the_date,index,int(nompp))
- 
+      res = get_results_from_date_from_yearindex(the_date,index,int(nompp))
+
+      print("I AM CURRENTLY WORKING ON THIS PAGE - PLEASE OLD ON")
+      print(res)
+      sys.exit(0)
+
       # If we don't have enough detection to display we try the previous year
       if(res):
          if(len(res)<NUMBER_OF_METEOR_PER_PAGE):
@@ -409,7 +415,7 @@ def archive_listing(form):
 
             if(index is not False):
                new_stop = int(meteor_per_page) - len(res)
-               res2 = get_results_from_date(the_date,index,new_stop)
+               res2 = get_results_from_date_from_yearindex(the_date,index,new_stop)
                res = res + res2
 
          if(has_limit_day==0):
