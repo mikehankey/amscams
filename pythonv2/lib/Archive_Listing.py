@@ -79,7 +79,7 @@ def create_json_index_year(year):
             
             cur_month_data['days'].append(cur_day_data)
       
-         index_year['months'].append(cur_month_data)
+         index_year['months'].append(sorted(cur_month_data))
 
    return index_year 
 
