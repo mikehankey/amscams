@@ -21,13 +21,13 @@ def get_diag_fields(detection):
       detection_data = load_json_file(detection)
 
       # IS REDUCED
-      red = False
+      red = 0
       try:
          if('frames' in detection_data):
             if len(detection_data['frames'])>0:
-               red = True
+               red = 1
       except:
-         red = False
+         red = 0
 
       # DURATION
       try:
@@ -45,7 +45,7 @@ def get_diag_fields(detection):
    
    else:
 
-      return "unkown","unkown"
+      return "unkown","unkown",0
                
 
 
