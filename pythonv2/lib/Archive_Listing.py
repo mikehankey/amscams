@@ -405,7 +405,7 @@ def archive_listing(form):
    month = the_date.month
 
    # Get the index of the selected or current year
-   index =  get_monthly_index(year,month)
+   index =  get_monthly_index(month,year)
    
    # Search the index
    if(index is not False):
