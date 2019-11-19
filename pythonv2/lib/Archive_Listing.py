@@ -52,8 +52,8 @@ def get_diag_fields(detection):
 # Detect if a detection already exists in a monthly index
 # Ex: search_month_index('2019_11_16_07_51_52_000_010037-trim0670.json')
 # return Frue if the detection exists in the index 11.json under /2019
-# or False if it doesn't exist
-def search_month_index(detection, insert=True):
+# or False if it doesn't exist and couldn't be inserted
+def add_to_month_index(detection, insert=True):
    analysed_detection_name = name_analyser(detection)
    station_id = get_station_id()
          
