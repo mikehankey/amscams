@@ -31,7 +31,8 @@ def create_json_index_year(year):
             cur_day_data = {'day':int(cur_day),'det':[]}
           
             for detection in sorted(glob.iglob(day + os.sep +  '*' + '.json', recursive=True), reverse=True):
-               cur_day_data['det'].append(os.path.splitext(os.path.basename(detection)[0])
+               det = os.path.basename(detection)
+               cur_day_data['det'].append(os.path.splitext(det)[0])
             
             cur_month_data['days'].append(cur_day_data)
       
