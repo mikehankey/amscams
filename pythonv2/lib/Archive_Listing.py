@@ -4,6 +4,7 @@ import os
 import json
 import datetime
 import sys
+import collections 
 
 from lib.REDUCE_VARS import *
 from lib.Get_Station_Id import get_station_id
@@ -149,6 +150,9 @@ def create_json_index_month(month,year):
  
             index_month['days'][int(cur_day)].append({'p':det[11:],'mag':mag,'dur':dur,'red':red})
 
+    
+   index_month = collections.OrderedDict(sorted(index_month.items()))
+
    return index_month             
 
 # Create index for a given year
@@ -179,8 +183,7 @@ def create_json_index_year(year):
                # det[11:] => Here we also remove the Year, Month & Day of the detection 
                # since we know them from the JSON structure
                cur_day_data.append({'p':det[11:],'mag':mag,'dur':dur,'red':red})
-            
- 
+             
             try:
                cur_month_data[int(cur_day)]
             except:
