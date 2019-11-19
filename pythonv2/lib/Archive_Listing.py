@@ -63,13 +63,9 @@ def create_json_index_month(month,year):
       if('json' not in cur_day):
          cur_day_data = {}
 
-         # Create the dict for the day if it doesn't exist yet
-         try:
-            gotdata = index_month['days'][int(cur_day)]
-         except:
-            index_month['days'][int(cur_day)] = {}
+         for detection in sorted(glob.iglob(day + os.sep +  '*' + '.json', recursive=True), reverse=True):
 
-
+            print(detection)
 
 
 # Create index for a given year
