@@ -13,6 +13,14 @@ from lib.Pagination import get_pagination
 
 ARCHIVE_LISTING_TEMPLATE = "/home/ams/amscams/pythonv2/templates/archive_listing.html"
 
+# HERE YOU DEFINED THE LIST OF DIAGNOSTIC FIELDS YOU WANT TO SEE 
+# IN THE INDEX FOR EACH DETECTION
+# IT NEEDS TO FOLLOW THE DTD OF THE JSON FILES USED FOR THE DETECTION
+# EX:
+# {'info': ['max_peak']}
+# means det['info']['max_peak']
+ARCHIVE_LISTING_DIAGNOSTIC_FIELDS = {'info': ['max_peak','dur']}
+
 # Create index for a given year
 def create_json_index_year(year):
 
@@ -35,10 +43,17 @@ def create_json_index_year(year):
             cur_day_data = {'day':int(cur_day),'det':[]}
           
             for detection in sorted(glob.iglob(day + os.sep +  '*' + '.json', recursive=True), reverse=True):
+               
+               # We access the related JSON to get the DIAGNOSTIC_FIELDS values in the index
+               print(detection)
+               
+               
                det = os.path.basename(detection)
                det = os.path.splitext(det)[0]
                # Here we also remove the Year, Month & Day of the detection 
                # since we know them from the JSON structure
+               det = det[11:]
+             
                cur_day_data['det'].append(det[11:])
             
             cur_month_data['days'].append(cur_day_data)
