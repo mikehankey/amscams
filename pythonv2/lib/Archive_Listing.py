@@ -243,32 +243,28 @@ def get_index(year):
 def get_results_from_date_from_yearindex(date,json_index,max_res): 
    res = []
    res_cnt = 0 
+    
 
-   print("DATE ")
-   print(date)
-   print("<br>")
-   sys.exit(0)
-
-   for month in json_index['months']:
-      #print("CUR MONTH " +str(month['month']))
-      #print("<br>")
+   for month in json_index['days']:
+      print("CUR MONTH " + month))
+      print("<br>")
       #print(str(month['month'])  + " <= " + str(date.month) + "?<br/>")
-      if(int(month['month'])<=date.month):
-         for day in month['days']:
-            if(int(month['month'])==date.month and int(day['day'])<=date.day and res_cnt<=max_res):
-               #print("CUR DAY " +str(day['day']))
-               #print("<br>")
-               for dec in day['det']:
-                  if(res_cnt<=max_res):
-                     res.append(dec)
-                     #print("ADDED<br/>")
-                     res_cnt+=1 
-            elif(int(month['month'])!=date.month and res_cnt<=max_res):
-               for dec in day['det']:
-                  if(res_cnt<=max_res):
-                     res.append(dec)
-                     #print("ADDED<br/>")
-                     res_cnt+=1 
+      #if(int(month['month'])<=date.month):
+      #   for day in month['days']:
+      #      if(int(month['month'])==date.month and int(day['day'])<=date.day and res_cnt<=max_res):
+      #         #print("CUR DAY " +str(day['day']))
+      #         #print("<br>")
+      #          for dec in day['det']:
+      #            if(res_cnt<=max_res):
+      #               res.append(dec)
+      #               #print("ADDED<br/>")
+      #               res_cnt+=1 
+      #      elif(int(month['month'])!=date.month and res_cnt<=max_res):
+      #         for dec in day['det']:
+      #            if(res_cnt<=max_res):
+      #               res.append(dec)
+      #               #print("ADDED<br/>")
+      #                res_cnt+=1 
    return res
 
 
@@ -400,9 +396,11 @@ def archive_listing(form):
    
    # Search the index
    if(index is not False):
-      res = get_results_from_date_from_yearindex(the_date,index,int(nompp))
 
       print("I AM CURRENTLY WORKING ON THIS PAGE - PLEASE OLD ON")
+      res = get_results_from_date_from_yearindex(the_date,index,int(nompp))
+
+      
       print(res)
       sys.exit(0)
 
