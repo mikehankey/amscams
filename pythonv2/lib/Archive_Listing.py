@@ -78,7 +78,7 @@ def create_json_index_month(month,year):
  
             index_month['days'][int(cur_day)].append({'p':det[11:],'mag':mag,'dur':dur,'red':red})
 
-   return index_year             
+   return index_month             
 
 # Create index for a given year
 def create_json_index_year(year):
