@@ -63,8 +63,12 @@ def create_json_index_month(month,year):
       if('json' not in cur_day):
          cur_day_data = {}
 
-         if(int(cur_day) not in index_month['days']):
+         # Create the dict for the day if it doesn't exist yet
+         try:
+            gotdata = index_month['days'][int(cur_day)]
+         except IndexError:
             index_month['days'][int(cur_day)] = {}
+
 
 
 
