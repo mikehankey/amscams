@@ -17,9 +17,14 @@ ARCHIVE_LISTING_TEMPLATE = "/home/ams/amscams/pythonv2/templates/archive_listing
 # IN THE INDEX FOR EACH DETECTION
 # IT NEEDS TO FOLLOW THE DTD OF THE JSON FILES USED FOR THE DETECTION
 # EX:
-# {"dur":{'info':{'dur'}}
-# means dur = det['info']['dur']
-ARCHIVE_LISTING_DIAGNOSTIC_FIELDS = {"dur":{'info':{'dur'}},"mag":{'info':{'max_peak'}}}
+# {"duration":{'info':{'dur'}}
+# means duration = det['info']['dur']
+ARCHIVE_LISTING_DIAGNOSTIC_FIELDS = {"dur":{'info':{'dur'}},"mag":{'info':{'max_peak'}},"mag":{'calib':{'device':{'center':'az'}}}}
+
+
+
+# Return a value from a json file 
+# based on a key 
 
  
 # Function that read a json file (detection)
