@@ -56,19 +56,18 @@ def get_diag_fields(detection):
 def search_month_index(detection, insert=True):
    analysed_detection_name = name_analyser(detection)
    station_id = get_station_id()
+         
+   # We transform the detection to have the format stored in the index 
+   # ie 07_51_52_000_010037-trim0670
+   det = os.path.basename(detection)
+   det = os.path.splitext(det)[0]
+   det = det[11:]
    
    # Get month index path from analysed name
    index_path = METEOR_ARCHIVE +  station_id + os.sep + METEOR + str(analysed_detection_name['year']) + os.sep + str(analysed_detection_name['month']) + os.sep +  str(analysed_detection_name['month'])+".json"
    
    if(cfe(index_path)):
       index_data = load_json_file(index_path)
-      
-      # We transform the detection to have the format stored in the index 
-      # ie 07_51_52_000_010037-trim0670
-      det = os.path.basename(detection)
-      det = os.path.splitext(det)[0]
-      det = det[11:]
-
       try:
          the_day = index_data['days'][str(analysed_detection_name['day'])]
       except:
@@ -78,12 +77,30 @@ def search_month_index(detection, insert=True):
          if(detections['p']==det):
             return True
   
-   # If we are here, it means we didn't find it 
-   # so if we want to insert it, we do it here
-   if(insert==True):
-      v =  get_diag_fields(analysed_detection_name['full_path'])
-      print("FULL PATH " + analysed_detection_name['full_path'])
-      print(v)
+      # If we are here, it means we didn't find it 
+      # so if we want to insert it, we do it here
+      if(insert==True):
+         mag, dur, red  =  get_diag_fields(analysed_detection_name['full_path'])
+         
+         new_detect = {
+            "dur": dur,
+            "red": red,
+            "p": "07_20_43_000_010042-trim0892",
+            "mag": mag
+         }
+
+         # If the days already exist
+         try:
+            index_data['days'][str(analysed_detection_name['day'])]
+         except:
+            index_data['days'][str(analysed_detection_name['day'])] = {}
+
+         index_data['days'][str(analysed_detection_name['day'])].append(new_detect)
+
+         # Update the index
+         main_dir = METEOR_ARCHIVE + station_id + os.sep + METEOR + str(year) + os.sep + str(month)
+         save_json_file(main_dir + os.sep + str(month) + ".json", index_data)
+
    return False
 
 
