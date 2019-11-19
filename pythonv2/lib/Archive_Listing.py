@@ -77,8 +77,9 @@ def create_json_index_year(year):
                # since we know them from the JSON structure
                cur_day_data['det'].append({'p':det[11:],'mag':mag,'dur':dur,'red':red})
             
-            cur_month_data['days'].append(cur_day_data)
-      
+            #cur_month_data['days'].append(cur_day_data)
+            cur_month_data[int(cur_day)] = cur_day_data
+
          index_year['months'][int(cur_month)].append(cur_month_data)
 
    return index_year 
