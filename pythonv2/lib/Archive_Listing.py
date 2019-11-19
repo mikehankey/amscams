@@ -20,6 +20,14 @@ def get_diag_fields(detection):
    if(cfe(detection)):
       detection_data = load_json_file(detection)
 
+      # IS REDUCED
+      try:
+         if('frames' in detection_data):
+            if(len(detection_data['frames']))>0:
+               red = True
+      except:
+         red = False
+
       # DURATION
       try:
          dur = detection_data['info']['dur']
@@ -32,7 +40,7 @@ def get_diag_fields(detection):
       except:
          mag = "unkown"
 
-      return mag,dur
+      return mag,dur,red
    
    else:
 
@@ -60,13 +68,13 @@ def create_json_index_year(year):
           
             for detection in sorted(glob.iglob(day + os.sep +  '*' + '.json', recursive=True), reverse=True):
                
-               mag, dur = get_diag_fields(detection)
+               mag, dur, red = get_diag_fields(detection)
                
                det = os.path.basename(detection)
                det = os.path.splitext(det)[0]
                # det[11:] => Here we also remove the Year, Month & Day of the detection 
                # since we know them from the JSON structure
-               cur_day_data['det'].append({'p':det[11:],'mag':mag,'dur':dur})
+               cur_day_data['det'].append({'p':det[11:],'mag':mag,'dur':dur,,'red':red})
             
             cur_month_data['days'].append(cur_day_data)
       
