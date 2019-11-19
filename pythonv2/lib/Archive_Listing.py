@@ -78,7 +78,8 @@ def search_month_index(detection, insert=True):
          if(detections['p']==det):
             return True
   
-
+   # If we are here, it means we didn't find it 
+   # so if we want to insert it, we do it here
    if(insert==True):
       v =  get_diag_fields(detection)
       print(v)
