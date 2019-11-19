@@ -237,6 +237,7 @@ def get_index(year):
       else:
          return test
 
+
 # Get results on index from a certain date
 def get_results_from_date(date,json_index,max_res): 
    res = []
@@ -331,7 +332,6 @@ def get_html_detections(res,clear_cache):
       res_html += '     <a class="delete_meteor_archive_gallery col btn btn-danger btn-sm" title="Delete Detection" data-meteor="'+det['full_path']+'"><i class="icon-delete"></i></a></div></div>'
       res_html += '  </div></div>' 
 
-
    return res_html
  
 
@@ -360,7 +360,6 @@ def archive_listing(form):
       nompp = NUMBER_OF_METEOR_PER_PAGE
    else:
       nompp = int(meteor_per_page)
-
    
    # Build num per page selector
    ppp_select = ''
@@ -392,7 +391,10 @@ def archive_listing(form):
 
    # Get the index of the selected or current year
    index =  get_index(year)
- 
+   
+   print(index)
+   sys.exit(0)
+
    # Search the index
    if(index is not False):
       res = get_results_from_date(the_date,index,int(nompp))
