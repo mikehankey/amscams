@@ -61,7 +61,7 @@ def create_json_index_year(year):
 
       # Test if it is an index
       if('json' not in cur_month):
-         cur_month_data = {'month':int(cur_month),'days':[]}
+         cur_month_data = {'month':{'name':int(cur_month),'days':[]}}
          
          for day in sorted(glob.iglob(month + '*' + os.sep + '*', recursive=True), reverse=True):	
             cur_day = os.path.basename(os.path.normpath(day))		
@@ -77,7 +77,7 @@ def create_json_index_year(year):
                # since we know them from the JSON structure
                cur_day_data['det'].append({'p':det[11:],'mag':mag,'dur':dur,'red':red})
             
-            cur_month_data['days'].append(cur_day_data)
+            cur_month_data['month']['days'].append(cur_day_data)
       
          index_year['months'].append(cur_month_data)
 
