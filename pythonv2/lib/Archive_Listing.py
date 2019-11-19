@@ -49,6 +49,25 @@ def get_diag_fields(detection):
 
 
 
+# Detect if a detection already exists in a monthly index
+# Ex: search_month_index('2019_11_16_07_51_52_000_010037-trim0670.json')
+# return Frue if the detection exists in the index 11.json under /2019
+# or False if it doesn't exist
+def search_month_index(detection):
+   analysed_detection_name = name_analyser(detection)
+   station_id = get_station_id()
+   
+   # Get month index path from analysed name
+   index_path = METEOR_ARCHIVE +  station_id + os.sep + METEOR + str(analysed_detection_name['year']) + os.sep + str(analysed_detection_name['month']) + os.sep +  str(analysed_detection_name['month'])+".json"
+   
+   if(cfe(index_path)):
+      index_data = load_json_file(index_path)
+      print(index_data)
+
+   else:
+      print("INDEX " + index_path + " Doesnt EXIST")
+
+
 # Create Index for a given month
 def create_json_index_month(month,year):
    station_id = get_station_id()
