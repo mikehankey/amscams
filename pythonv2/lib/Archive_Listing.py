@@ -66,6 +66,10 @@ def add_to_month_index(detection, insert=True):
    # Get month index path from analysed name
    index_path = METEOR_ARCHIVE +  station_id + os.sep + METEOR + str(analysed_detection_name['year']) + os.sep + str(analysed_detection_name['month']) + os.sep +  str(analysed_detection_name['month'])+".json"
    
+   # If the index doesn't exist, we create it
+   if(cfe(index_path) == 0):
+      write_month_index(int(analysed_detection_name['month']),int(analysed_detection_name['year']))
+
    if(cfe(index_path)):
       index_data = load_json_file(index_path)
       try:
