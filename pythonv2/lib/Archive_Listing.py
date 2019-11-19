@@ -150,19 +150,7 @@ def create_json_index_month(month,year):
                index_month['days'][int(cur_day)] = []
  
             index_month['days'][int(cur_day)].append({'p':det[11:],'mag':mag,'dur':dur,'red':red})
-
-   # We sort the day in reverse order
-   new_index_month = {}
-
-   for elem in sorted(index_month['days'].items()) :
-      new_index_month[elem[0]] = elem[1]
-
-
-   print("new_index_month")
-   print(new_index_month)
-
-   index_month['days'] = new_index_month
-    
+ 
    return index_month             
 
 
@@ -222,7 +210,9 @@ def write_month_index(month, year):
    # Write Index if we have data
    if('days' in json_data): 
       main_dir = METEOR_ARCHIVE + get_station_id()  + os.sep + METEOR + str(year) + os.sep + str(month)
-      save_json_file(main_dir + os.sep + str(month) + ".json", json_data)
+      with open(main_dir + os.sep + str(month) + ".json", 'w') as outfile:
+         json.dump(json_data, outfile, indent=4, sort_keys=True)
+      outfile.close() 
       return True
    
    return False
