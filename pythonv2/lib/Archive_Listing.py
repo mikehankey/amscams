@@ -46,7 +46,7 @@ def create_json_index_year(year):
                   detection_data = load_json_file(detection)
 
                   for up_diag_field in ARCHIVE_LISTING_DIAGNOSTIC_FIELDS:
-                     for diag_field in ARCHIVE_LISTING_DIAGNOSTIC_FIELDS[up_diag_field]
+                     for diag_field in ARCHIVE_LISTING_DIAGNOSTIC_FIELDS[up_diag_field]:
                         print("DIAGFIELD "  + str(up_diag_field)) 
                         print("VALUES " + diag_field )
 
