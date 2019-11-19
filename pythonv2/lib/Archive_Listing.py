@@ -82,6 +82,7 @@ def search_month_index(detection, insert=True):
    # so if we want to insert it, we do it here
    if(insert==True):
       v =  get_diag_fields(analysed_detection_name['full_path'])
+      print("FULL PATH " + analysed_detection_name['full_path'])
       print(v)
    return False
 
