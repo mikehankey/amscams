@@ -29,11 +29,9 @@ def get_diag_fields(detection):
       for up_diag_field in ARCHIVE_LISTING_DIAGNOSTIC_FIELDS:
          print("DIAGFIELD "  + str(up_diag_field)) 
          for diag_field in ARCHIVE_LISTING_DIAGNOSTIC_FIELDS[up_diag_field]:
-            if isinstance(diag_field,list):
-               print("VALUES " + diag_field )
-            else:
-               print("VALUES2 " + diag_field )
-
+            # Get the field if it isn't a list
+            if isinstance(diag_field,list) is False:
+               print("VALUES " + diag_field ) 
 
 
 # Create index for a given year
