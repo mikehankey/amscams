@@ -58,7 +58,7 @@ def search_month_index(detection):
    station_id = get_station_id()
    
    # Get month index path from analysed name
-   index_path = METEOR_ARCHIVE +  station_id + os.sep + METEOR + str(analysed_detection_name['year']) + os.sep + str(analysed_detection_name['month']) + os.sep +  str(analysed_detection_name['day'])+".json"
+   index_path = METEOR_ARCHIVE +  station_id + os.sep + METEOR + str(analysed_detection_name['year']) + os.sep + str(analysed_detection_name['month']) + os.sep +  str(analysed_detection_name['month'])+".json"
    
    if(cfe(index_path)):
       index_data = load_json_file(index_path)
