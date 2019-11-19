@@ -66,11 +66,16 @@ def create_json_index_month(month,year):
          for detection in sorted(glob.iglob(day + os.sep +  '*' + '.json', recursive=True), reverse=True):
              
             mag, dur, red = get_diag_fields(detection)
-
             det = os.path.basename(detection)
             det = os.path.splitext(det)[0]
+
             # det[11:] => Here we also remove the Year, Month & Day of the detection 
             # since we know them from the JSON structure
+            try:
+               index_month['days'][int(cur_day)]
+            except:
+               index_month['days'][int(cur_day)] = []
+
             if(index_month['days'][int(cur_day)]):
                print("YES")
             else:
