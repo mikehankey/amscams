@@ -238,33 +238,45 @@ def get_index(year):
       else:
          return test
 
+# Get index for a given month (and year)
+def get_monthly_index(month,year)
+   index_file = METEOR_ARCHIVE + get_station_id()  + os.sep + METEOR + str(year) + os.sep + str(year)  + os.sep + str(month) + os.sep + str(month) + '.json'
+   if(cfe(index_file)):
+      return load_json_file(index_file)
+   else:
+      test = create_json_index_month(month,year)
+      if(test):
+         return load_json_file(index_file)
+      else:
+         return test
+
 
 # Get results on index from a certain date
-def get_results_from_date_from_yearindex(date,json_index,max_res): 
+def get_results_from_date_from_monthly_index(date,json_index,max_res): 
    res = []
    res_cnt = 0 
-    
 
-   for month in json_index['days']:
-      print("CUR MONTH " + month)
-      print("<br>")
-      #print(str(month['month'])  + " <= " + str(date.month) + "?<br/>")
-      #if(int(month['month'])<=date.month):
-      #   for day in month['days']:
-      #      if(int(month['month'])==date.month and int(day['day'])<=date.day and res_cnt<=max_res):
-      #         #print("CUR DAY " +str(day['day']))
-      #         #print("<br>")
-      #          for dec in day['det']:
-      #            if(res_cnt<=max_res):
-      #               res.append(dec)
-      #               #print("ADDED<br/>")
-      #               res_cnt+=1 
-      #      elif(int(month['month'])!=date.month and res_cnt<=max_res):
-      #         for dec in day['det']:
-      #            if(res_cnt<=max_res):
-      #               res.append(dec)
-      #               #print("ADDED<br/>")
-      #                res_cnt+=1 
+   if("days" in json_index):
+      for day in json_index['days']:
+         print("CUR DAY " + day)
+         print("<br>")
+         #print(str(month['month'])  + " <= " + str(date.month) + "?<br/>")
+         #if(int(month['month'])<=date.month):
+         #   for day in month['days']:
+         #      if(int(month['month'])==date.month and int(day['day'])<=date.day and res_cnt<=max_res):
+         #         #print("CUR DAY " +str(day['day']))
+         #         #print("<br>")
+         #          for dec in day['det']:
+         #            if(res_cnt<=max_res):
+         #               res.append(dec)
+         #               #print("ADDED<br/>")
+         #               res_cnt+=1 
+         #      elif(int(month['month'])!=date.month and res_cnt<=max_res):
+         #         for dec in day['det']:
+         #            if(res_cnt<=max_res):
+         #               res.append(dec)
+         #               #print("ADDED<br/>")
+         #                res_cnt+=1 
    return res
 
 
@@ -390,15 +402,16 @@ def archive_listing(form):
    template = template.replace("{DATE}",the_date.strftime("%Y/%m/%d") )
 
    year = the_date.year
+   month = the_date.month
 
    # Get the index of the selected or current year
-   index =  get_index(year)
+   index =  get_monthly_index(year,month)
    
    # Search the index
    if(index is not False):
 
       print("I AM CURRENTLY WORKING ON THIS PAGE - PLEASE OLD ON")
-      res = get_results_from_date_from_yearindex(the_date,index,int(nompp))
+      res = get_results_from_date_from_monthly_index(the_date,index,int(nompp))
 
       
       print(res)
@@ -413,7 +426,7 @@ def archive_listing(form):
 
             if(index is not False):
                new_stop = int(meteor_per_page) - len(res)
-               res2 = get_results_from_date_from_yearindex(the_date,index,new_stop)
+               res2 = get_results_from_date_from_monthly_index(the_date,index,new_stop)
                res = res + res2
 
          if(has_limit_day==0):
