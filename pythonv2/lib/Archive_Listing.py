@@ -98,9 +98,15 @@ def search_month_index(detection, insert=True):
 
          index_data['days'][str(analysed_detection_name['day'])].append(new_detect)
 
+         print("new index")
+         print(index_data)
+
          # Update the index
          main_dir = METEOR_ARCHIVE + station_id + os.sep + METEOR + str(analysed_detection_name['year']) + os.sep + str(analysed_detection_name['month'])
          save_json_file(main_dir + os.sep + str(analysed_detection_name['month']) + ".json", index_data)
+
+         print("INDEX UPDATED")
+         print(main_dir + os.sep + str(analysed_detection_name['month']) + ".json")
 
          return True
 
