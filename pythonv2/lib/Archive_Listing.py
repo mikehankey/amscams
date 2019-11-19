@@ -53,7 +53,7 @@ def get_diag_fields(detection):
 # Ex: search_month_index('2019_11_16_07_51_52_000_010037-trim0670.json')
 # return Frue if the detection exists in the index 11.json under /2019
 # or False if it doesn't exist
-def search_month_index(detection):
+def search_month_index(detection, insert=True):
    analysed_detection_name = name_analyser(detection)
    station_id = get_station_id()
    
@@ -77,10 +77,15 @@ def search_month_index(detection):
       for detections in the_day:
          if(detections['p']==det):
             return True
-   else:
-      print("INDEX " + index_path + " Doesnt EXIST")
+  
 
+   if(insert==True):
+      v =  get_diag_fields(detection)
+      print(v)
    return False
+
+
+
 
 # Create Index for a given month
 def create_json_index_month(month,year):
