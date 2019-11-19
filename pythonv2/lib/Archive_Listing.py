@@ -153,6 +153,14 @@ def create_json_index_month(month,year):
    # We sort the day in reverse order
    index_month['days'] =  reversed(collections.OrderedDict(sorted(index_month['days'].items())))
 
+   # We rebuild everything
+   new_day = {}
+   for k, v in index_month.items():
+    new_day[k] = v
+
+   print(new_day)
+
+
    return index_month             
 
 
