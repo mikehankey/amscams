@@ -19,7 +19,7 @@ ARCHIVE_LISTING_TEMPLATE = "/home/ams/amscams/pythonv2/templates/archive_listing
 # EX:
 # {"dur":{'info':{'dur'}}
 # means dur = det['info']['dur']
-ARCHIVE_LISTING_DIAGNOSTIC_FIELDS = {"dur":{'info':{'dur'}},"mag":{'info':{'max_peak'}}
+ARCHIVE_LISTING_DIAGNOSTIC_FIELDS = {"dur":{'info':{'dur'}},"mag":{'info':{'max_peak'}}}
 
  
 # Function that read a json file (detection)
