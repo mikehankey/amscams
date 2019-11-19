@@ -151,16 +151,14 @@ def create_json_index_month(month,year):
             index_month['days'][int(cur_day)].append({'p':det[11:],'mag':mag,'dur':dur,'red':red})
 
    # We sort the day in reverse order
-   #index_month['days'] =  reversed(collections.OrderedDict(sorted(index_month['days'].items())))
-    
-   
    new_index_month = {}
 
    for elem in sorted(index_month['days'].items()) :
-      #print(elem[0] , " ::" , elem[1] )
       new_index_month[elem[0]] = elem[1]
+
+   index_month['days'] = new_index_month
     
-   return new_index_month             
+   return index_month             
 
 
 
