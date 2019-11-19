@@ -58,7 +58,14 @@ def create_json_index_month(month,year):
    
    for day in sorted(glob.iglob(main_dir + '*' + os.sep + '*', recursive=True), reverse=True):	
       cur_day = os.path.basename(os.path.normpath(day))
-      print(cur_day)
+ 
+      # Test if it is an index
+      if('json' not in cur_day):
+         cur_day_data = {}
+
+         if(index_month['days'][int(cur_day)] is None):
+            index_month['days'][int(cur_day)] = {}
+
 
 
 # Create index for a given year
