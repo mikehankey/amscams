@@ -75,11 +75,8 @@ def create_json_index_month(month,year):
                index_month['days'][int(cur_day)]
             except:
                index_month['days'][int(cur_day)] = []
-
-            if(index_month['days'][int(cur_day)]):
-               print("YES")
-            else:
-               print("NO") #.append({'p':det[11:],'mag':mag,'dur':dur,'red':red})
+ 
+            index_month['days'][int(cur_day)].append({'p':det[11:],'mag':mag,'dur':dur,'red':red})
 
              
 
