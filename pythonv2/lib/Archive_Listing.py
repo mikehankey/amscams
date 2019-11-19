@@ -55,10 +55,9 @@ def create_json_index_month(month,year):
    main_dir = METEOR_ARCHIVE +  station_id + os.sep + METEOR + str(year) + os.sep + str(month)
 
    index_month = {'station_id':station_id,'year':int(year),'month':int(month),'days':[]}
-  
-
+   
    for day in sorted(glob.iglob(main_dir + '*' + os.sep + '*', recursive=True), reverse=True):	
-      cur_day = os.path.basename(os.path.normpath(month))
+      cur_day = os.path.basename(os.path.normpath(day))
       print(cur_day)
 
 
