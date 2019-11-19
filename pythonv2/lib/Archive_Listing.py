@@ -130,7 +130,7 @@ def create_json_index_year(year):
 
 # Write index for a given month
 def write_month_index(month, year):
-   json_data = create_json_index_month(year) 
+   json_data = create_json_index_month(month, year) 
 
    # Write Index if we have data
    if('days' in json_data):
