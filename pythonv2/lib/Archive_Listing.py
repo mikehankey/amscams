@@ -78,7 +78,7 @@ def create_json_index_month(month,year):
  
             index_month['days'][int(cur_day)].append({'p':det[11:],'mag':mag,'dur':dur,'red':red})
 
-   print(index_month)             
+   return index_year             
 
 # Create index for a given year
 def create_json_index_year(year):
@@ -128,23 +128,36 @@ def create_json_index_year(year):
    return index_year 
 
 
+# Write index for a given month
+def write_month_index(month, year) 
+   json_data = create_json_index_month(year) 
+
+   # Write Index if we have data
+   if('days' in json_data):
+      if(len(json_data['days'])>0 ): 
+         main_dir = METEOR_ARCHIVE + get_station_id()  + os.sep + METEOR + str(year)
+         save_json_file(main_dir + os.sep + str(year) + ".json", json_data)
+         return True
+   
+   return False
  
 # Write index for a given year
 def write_year_index(year):
    json_data = create_json_index_year(year) 
 
    # Write Index if we have data
-   if(len(json_data['months'])>0 ): 
-      main_dir = METEOR_ARCHIVE + get_station_id() + '/' + METEOR + str(year)
-      save_json_file(main_dir + os.sep + str(year) + ".json", json_data)
-      return True
+   if('months' in json_data):
+      if(len(json_data['months'])>0 ): 
+         main_dir = METEOR_ARCHIVE + get_station_id()  + os.sep + METEOR + str(year)
+         save_json_file(main_dir + os.sep + str(year) + ".json", json_data)
+         return True
    
    return False
 
 
 # Get index for a given year
 def get_index(year):
-   index_file = METEOR_ARCHIVE + get_station_id() + '/' + METEOR + str(year) + os.sep + str(year) + '.json'
+   index_file = METEOR_ARCHIVE + get_station_id()  + os.sep + METEOR + str(year) + os.sep + str(year) + '.json'
    if(cfe(index_file)):
       return load_json_file(index_file)
    else:
