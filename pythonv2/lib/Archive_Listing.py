@@ -101,6 +101,8 @@ def search_month_index(detection, insert=True):
          main_dir = METEOR_ARCHIVE + station_id + os.sep + METEOR + str(analysed_detection_name['year']) + os.sep + str(analysed_detection_name['month'])
          save_json_file(main_dir + os.sep + str(analysed_detection_name['month']) + ".json", index_data)
 
+         return True
+
    return False
 
 
