@@ -54,7 +54,7 @@ def create_json_index_month(month,year):
    station_id = get_station_id()
    main_dir = METEOR_ARCHIVE +  station_id + os.sep + METEOR + str(year) + os.sep + str(month)
 
-   index_month = {'station_id':station_id,'year':int(year),'month':int(month),'days':[]}
+   index_month = {'station_id':station_id,'year':int(year),'month':int(month),'days':{}}}
    
    for day in sorted(glob.iglob(main_dir + '*' + os.sep + '*', recursive=True), reverse=True):	
       cur_day = os.path.basename(os.path.normpath(day))
@@ -95,7 +95,7 @@ def create_json_index_year(year):
          
          for day in sorted(glob.iglob(month + '*' + os.sep + '*', recursive=True), reverse=True):	
             cur_day = os.path.basename(os.path.normpath(day))		
-            cur_day_data = {'det':[]}
+            cur_day_data = []
           
             for detection in sorted(glob.iglob(day + os.sep +  '*' + '.json', recursive=True), reverse=True):
                
@@ -105,7 +105,7 @@ def create_json_index_year(year):
                det = os.path.splitext(det)[0]
                # det[11:] => Here we also remove the Year, Month & Day of the detection 
                # since we know them from the JSON structure
-               cur_day_data['det'].append({'p':det[11:],'mag':mag,'dur':dur,'red':red})
+               cur_day_data.append({'p':det[11:],'mag':mag,'dur':dur,'red':red})
             
             #cur_month_data['days'].append(cur_day_data)
             cur_month_data[int(cur_day)] = cur_day_data
