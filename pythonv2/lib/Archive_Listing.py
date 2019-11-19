@@ -264,9 +264,23 @@ def get_results_from_date_from_monthly_index(date,json_index,max_res):
    res_cnt = 0 
 
    if("days" in json_index):
+      cur_month = json_index['month']
+
       for day in sorted(json_index['days'], reverse=True):
-         print("CUR DAY " + day)
-         print("<br>")
+
+         print(day)
+
+         #if(int(cur_month) == date.month and int(day['day'])<=date.day and res_cnt<=max_res):
+         #   for dec in day:
+         #      if(res_cnt<=max_res):
+         #         res.append(dec)
+         #         res_cnt+=1 
+         # elif(int(cur_month) == date.month and res_cnt<=max_res):
+               
+
+
+         # print("CUR DAY " + day)
+         # print("<br>")
          #print(str(month['month'])  + " <= " + str(date.month) + "?<br/>")
          #if(int(month['month'])<=date.month):
          #   for day in month['days']:
