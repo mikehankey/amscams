@@ -66,7 +66,7 @@ def create_json_index_month(month,year):
          # Create the dict for the day if it doesn't exist yet
          try:
             gotdata = index_month['days'][int(cur_day)]
-         except IndexError:
+         except:
             index_month['days'][int(cur_day)] = {}
 
 
