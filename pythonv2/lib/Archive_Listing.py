@@ -21,9 +21,10 @@ def get_diag_fields(detection):
       detection_data = load_json_file(detection)
 
       # IS REDUCED
+      red = False
       try:
          if('frames' in detection_data):
-            if(len(detection_data['frames']))>0:
+            if len(detection_data['frames'])>0:
                red = True
       except:
          red = False
