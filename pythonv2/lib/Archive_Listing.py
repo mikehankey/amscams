@@ -39,15 +39,7 @@ def create_json_index_year(year):
 
    return index_year 
 
-
-# Add a detection to an index
-def add_detection_to_index(json_file):
-   # TODO
-
-# Remove a detection from an index 
-def remove_detection_from_index(json_file):
-   # TODO
-
+ 
 
 
 # Write index for a given year
