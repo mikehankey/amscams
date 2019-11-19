@@ -46,15 +46,26 @@ def get_diag_fields(detection):
    else:
 
       return "unkown","unkown",0
-               
+
+
+
+# Create Index for a given month
+def create_json_index_month(month,year):
+   station_id = get_station_id()
+   main_dir = METEOR_ARCHIVE +  station_id + os.sep + METEOR + str(year) + os.sep + str(month)
+
+   index_month = {'station_id':station_id,'year':int(year),'month':int(month), 'days':[31]}}
+
+   for day in sorted(glob.iglob(main_dir + '*' + os.sep + '*', recursive=True), reverse=True):	
+      cur_day = os.path.basename(os.path.normpath(month))
+      print(cur_day)
 
 
 # Create index for a given year
 def create_json_index_year(year):
 
    station_id = get_station_id()
-
-   main_dir = METEOR_ARCHIVE +  station_id + '/' + METEOR + str(year)
+   main_dir = METEOR_ARCHIVE +  station_id + os.sep + METEOR + str(year)
  
    index_year = {'station_id':station_id,'year':int(year),'months':{1:[],2:[],3:[],4:[],5:[],6:[],7:[],8:[],9:[],10:[],11:[],12:[]}}
  
