@@ -17,23 +17,28 @@ ARCHIVE_LISTING_TEMPLATE = "/home/ams/amscams/pythonv2/templates/archive_listing
 # IN THE INDEX FOR EACH DETECTION
 # IT NEEDS TO FOLLOW THE DTD OF THE JSON FILES USED FOR THE DETECTION
 # EX:
-# {'info': ['max_peak']}
-# means det['info']['max_peak']
-ARCHIVE_LISTING_DIAGNOSTIC_FIELDS = {'info': ['max_peak','dur']}
+# {"dur":{'info':{'dur'}}
+# means dur = det['info']['dur']
+ARCHIVE_LISTING_DIAGNOSTIC_FIELDS = {"dur":{'info':{'dur'}},"mag":{'info':{'max_peak'}}
 
+ 
 # Function that read a json file (detection)
 # and return the values of the corresponding Diagnostic Fields 
 def get_diag_fields(detection):
+
+
    if(cfe(detection)):
       detection_data = load_json_file(detection)
+
       for up_diag_field in ARCHIVE_LISTING_DIAGNOSTIC_FIELDS:
-         print("DIAGFIELD "  + str(up_diag_field)) 
-         for diag_field in ARCHIVE_LISTING_DIAGNOSTIC_FIELDS[up_diag_field]:
+         print("NAME OF THE FIELD "  + str(up_diag_field)) 
+
+         #for diag_field in ARCHIVE_LISTING_DIAGNOSTIC_FIELDS[up_diag_field]:
             # Get the field if it isn't a list
-            if isinstance(diag_field,list) is False:
-               print("FIELD " + up_diag_field)
-               print("SUB FIELD " + diag_field )
-               print("VALUE  " + str(detection_data[up_diag_field][diag_field])) 
+         #   if isinstance(diag_field,list) is False:
+         #      print("FIELD " + up_diag_field)
+         #       print("SUB FIELD " + diag_field )
+         #      print("VALUE  " + str(detection_data[up_diag_field][diag_field])) 
                
 
 
