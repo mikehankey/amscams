@@ -73,6 +73,7 @@ def search_month_index(detection, insert=True):
       except:
          the_day = []
 
+      # We search for the detection if it already exists in the JSON index
       for detections in the_day:
          if(detections['p']==det):
             return True
