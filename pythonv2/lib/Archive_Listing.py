@@ -19,7 +19,19 @@ ARCHIVE_LISTING_TEMPLATE = "/home/ams/amscams/pythonv2/templates/archive_listing
 # EX:
 # {'info': ['max_peak']}
 # means det['info']['max_peak']
-ARCHIVE_LISTING_DIAGNOSTIC_FIELDS = {'info': ['max_peak','dur'],'calib':{'device':{'center':{'az'}}}}
+ARCHIVE_LISTING_DIAGNOSTIC_FIELDS = {'info': ['max_peak','dur'],'calib':{'device':{'center':['az']}}}
+
+# Function that read a json file (detection)
+# and return the values of the corresponding Diagnostic Fields 
+def get_diag_fields(detection):
+   if(cfe(detection)):
+      detection_data = load_json_file(detection)
+      for up_diag_field in ARCHIVE_LISTING_DIAGNOSTIC_FIELDS:
+         print("DIAGFIELD "  + str(up_diag_field)) 
+         for diag_field in ARCHIVE_LISTING_DIAGNOSTIC_FIELDS[up_diag_field]:
+            print("VALUES " + diag_field )
+
+
 
 # Create index for a given year
 def create_json_index_year(year):
@@ -41,15 +53,8 @@ def create_json_index_year(year):
           
             for detection in sorted(glob.iglob(day + os.sep +  '*' + '.json', recursive=True), reverse=True):
                
-               # We access the related JSON to get the DIAGNOSTIC_FIELDS values in the index
-               if(cfe(detection)):
-                  detection_data = load_json_file(detection)
-
-                  for up_diag_field in ARCHIVE_LISTING_DIAGNOSTIC_FIELDS:
-                     print("DIAGFIELD "  + str(up_diag_field)) 
-                     for diag_field in ARCHIVE_LISTING_DIAGNOSTIC_FIELDS[up_diag_field]:
-                        print("VALUES " + diag_field )
-
+               diag_fields = get_diag_fields(detection)
+               
                det = os.path.basename(detection)
                det = os.path.splitext(det)[0]
                # Here we also remove the Year, Month & Day of the detection 
