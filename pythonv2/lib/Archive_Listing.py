@@ -71,7 +71,10 @@ def create_json_index_month(month,year):
             det = os.path.splitext(det)[0]
             # det[11:] => Here we also remove the Year, Month & Day of the detection 
             # since we know them from the JSON structure
-            index_month['days'][int(cur_day)].append({'p':det[11:],'mag':mag,'dur':dur,'red':red})
+            if(index_month['days'][int(cur_day)]):
+               print("YES")
+            else:
+               print("NO") #.append({'p':det[11:],'mag':mag,'dur':dur,'red':red})
 
              
 
