@@ -64,7 +64,7 @@ def create_json_index_month(month,year):
          cur_day_data = {}
 
          for detection in sorted(glob.iglob(day + os.sep +  '*' + '.json', recursive=True), reverse=True):
-
+            print("DAY " + str(day) +  " :")
             print(detection)
 
 
