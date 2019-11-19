@@ -267,7 +267,7 @@ def get_results_from_date_from_monthly_index(date,json_index,max_res):
       cur_month = json_index['month']
 
       for day in sorted(json_index['days'], reverse=True):
-
+         print("<hr/>")
          print(day)
          print( " =>")
          print(json_index['days'][day])
