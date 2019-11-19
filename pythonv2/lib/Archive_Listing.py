@@ -52,9 +52,11 @@ def get_diag_fields(detection):
 # Create index for a given year
 def create_json_index_year(year):
 
-   main_dir = METEOR_ARCHIVE + get_station_id() + '/' + METEOR + str(year)
+   station_id = get_station_id()
+
+   main_dir = METEOR_ARCHIVE +  station_id + '/' + METEOR + str(year)
  
-   index_year = {'year':int(year),'months':{1:[],2:[],3:[],4:[],5:[],6:[],7:[],8:[],9:[],10:[],11:[],12:[]}}
+   index_year = {'station_id':station_id,year':int(year),'months':{1:[],2:[],3:[],4:[],5:[],6:[],7:[],8:[],9:[],10:[],11:[],12:[]}}
  
    for month in sorted(glob.iglob(main_dir + '*' + os.sep + '*', recursive=True), reverse=True):	
       cur_month = os.path.basename(os.path.normpath(month))
