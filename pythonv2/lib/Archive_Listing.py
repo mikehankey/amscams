@@ -33,7 +33,7 @@ def get_diag_fields(detection):
             if isinstance(diag_field,list) is False:
                print("FIELD " + up_diag_field)
                print("SUB FIELD " + diag_field )
-               print("VALUE  " + detection_data[up_diag_field][diag_field] ) 
+               print("VALUE  " + str(detection_data[up_diag_field][diag_field])) 
                
 
 
