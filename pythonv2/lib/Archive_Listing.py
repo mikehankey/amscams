@@ -268,7 +268,11 @@ def get_results_from_date_from_monthly_index(date,json_index,max_res):
       all_days =  json_index['days'] 
 
       keylist = list(all_days.keys())
+      print(keylist)
       keylist.sort()
+      print("<hr/>")
+      print(keylist)
+      sys.exit(0)
 
 
       for day in keylist:
