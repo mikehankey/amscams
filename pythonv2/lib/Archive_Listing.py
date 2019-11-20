@@ -288,7 +288,7 @@ def get_results_from_date_from_monthly_index(date,json_index,max_res):
                   #      => '/mnt/ams2/meteor_archive/AMS7/METEOR/2019/11/16/2019_11_16_22_36_24_000_010042-trim0519.json'
                   print("D_DAY: " + str(d_day))
                   print("<br/>")
-                  detection['p'] = METEOR_ARCHIVE + get_station_id()  + os.sep + METEOR + str(date.year) + os.sep + str(date.month).zfill(2) + os.sep + str(d_day).zfill(2) + os.sep + str(date.year) + '_' + str(date.month).zfill(2)+ '_' + str(date.day).zfill(2) + '_' + detection['p'] + ".json"
+                  detection['p'] = METEOR_ARCHIVE + get_station_id()  + os.sep + METEOR + str(date.year) + os.sep + str(date.month).zfill(2) + os.sep + str(d_day).zfill(2) + os.sep + str(date.year) + '_' + str(date.month).zfill(2)+ '_' + str(d_day).zfill(2) + '_' + detection['p'] + ".json"
                   res.append(detection)
                   res_cnt+=1 
   
