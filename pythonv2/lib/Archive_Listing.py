@@ -282,7 +282,9 @@ def get_results_from_date_from_monthly_index(date,json_index,max_res):
          if( (cur_month_test and int(day)<=int(date.day) and res_cnt<=max_res) or (not cur_month_test and int(cur_month)<int(date.month))and res_cnt<=max_res):
             for detection in detections:
                if(res_cnt<=max_res):
-
+                  print("<br/>DETECTION:<br/>")
+                  print(detection)
+                  print("<hr/>")
                   # We complete the detection['p'] to get the full path (as the index only has compressed name)
                   # ex: 'p': '22_36_24_000_010042-trim0519'
                   #      => '/mnt/ams2/meteor_archive/AMS7/METEOR/2019/11/16/2019_11_16_22_36_24_000_010042-trim0519.json'
