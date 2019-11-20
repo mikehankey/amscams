@@ -83,12 +83,14 @@
 
                 &.has_soh:hover {
                   img {
-                     display:hidden;
+                     display:none;
                   }
                 }
 
                 &:hover {
-                   text-decoration: none;
+                    text-decoration: none;
+                    background: #000;
+
                     span {
                         bottom:0;
                     }
@@ -98,11 +100,12 @@
                         max-width: 100%;
                         max-height: 100%;
                         position: absolute;
-                        top: 0;
+                        top: 1px;
                         bottom: 0;
                         left: 0;
                         right: 0;
                         width: 100%;
+                        height: calc(100% - 1px);
                      }
 
                     &:before {
