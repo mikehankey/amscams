@@ -125,10 +125,17 @@ def reduce_meteor2(json_conf,form):
          report_details += '<dt class="col-6">Duration</dt><dd class="col-6">'+str(meteor_json_file['report']['dur'])+'s</dd>'
       if('max_peak' in meteor_json_file['report']):
          report_details += '<dt class="col-6">Magnitude</dt><dd class="col-6">'+str(meteor_json_file['report']['max_peak'])+'</dd>'
-      if('res_error' in meteor_json_file['report']):
-         report_details += '<dt class="col-6">Res. Error</dt><dd class="col-6">'+str(meteor_json_file['report']['res_error'])+'</dd>'
-      if('ang_vel' in meteor_json_file['report']):
-         report_details += '<dt class="col-6">Ang. Velocity</dt><dd class="col-6">'+str(meteor_json_file['report']['ang_vel'])+'&deg;/sec</dd>'
+      if('angular_vel' in meteor_json_file['report']):
+         report_details += '<dt class="col-6">Ang. Velocity</dt><dd class="col-6">'+str(meteor_json_file['report']['angular_vel'])+'&deg;/sec</dd>'
+
+   if('calib' in meteor_json_file):
+      if('device' in meteor_json_file['calib']):
+         if('total_res_px' in meteor_json_file['calib']['device']):
+            report_details += '<dt class="col-6">Res. Error</dt><dd class="col-6">'+str(meteor_json_file['calib']['device']['total_res_px'])+'</dd>'
+
+ 
+
+
 
    # We complete the template
    template = template.replace("{REPORT_DETAILS}", report_details)
