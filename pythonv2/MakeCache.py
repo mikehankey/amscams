@@ -41,10 +41,10 @@ else:
 
 # Create the temporary media (CACHE) for this detection
 print("NEW ARCHIVE:")
-#print("NEW JSON:" + new_json)
-#print("NEW HD VID:" + new_hd_vid)
-#print("NEW SD VID:" +  new_sd_vid)
-#print("HD STACK:" + hd_stack)
-#print("SD STACK:" + sd_stack)
+print("NEW JSON:" + new_json)
+print("NEW HD VID:" + new_hd_vid)
+print("NEW SD VID:" +  new_sd_vid)
+print("HD STACK:" + hd_stack)
+print("SD STACK:" + sd_stack)
 print(output) 
 
