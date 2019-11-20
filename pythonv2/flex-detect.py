@@ -382,7 +382,7 @@ def detect_meteor_in_clip(trim_clip, frames = None, fn = 0, crop_x = 0, crop_y =
 
                objects[object]['trim_clip'] = trim_clip
                cv2.rectangle(show_frame, (x, y), (x+w, y+h), (255,255,255), 1, cv2.LINE_AA)
-               desc = str(fn) + " " + str(intensity) + " " + str(objects[object]['obj_id']) + " " + str(objects[object]['report']['obj_class']) + " " + str(objects[object]['report']['angular_velocity'])
+               desc = str(fn) + " " + str(intensity) + " " + str(objects[object]['obj_id']) + " " + str(objects[object]['report']['obj_class']) + " " + str(objects[object]['report']['angular_vel'])
                cv2.putText(show_frame, desc,  (x,y), cv2.FONT_HERSHEY_SIMPLEX, .4, (255, 255, 255), 1)
       
       show_frame = cv2.convertScaleAbs(show_frame)
@@ -1882,6 +1882,7 @@ def cnt_size_test(object):
    return(big_perc)
 
 def analyze_object_final(object, hd=0, sd_multi=1):
+   return(object)
    id = object['obj_id']
 
    # make sure all of the frames belong to the same cluster
@@ -2288,7 +2289,7 @@ def analyze_object(object, hd = 0, sd_multi = 1):
    if hd == 1:
       deg_multi = .042
    else:
-      deg_multi = .042 * sd_multi
+      deg_multi = .042 / sd_multi
 
    if "ofns" not in object:
       if "report" not in object:
@@ -2434,15 +2435,15 @@ def analyze_object(object, hd = 0, sd_multi = 1):
       obj_class = "star"
       meteor_yn = "no"
       bad_items.append("not enough distance.")
-   if (min_max_dist * sd_multi) < .3:
+   if (min_max_dist * deg_multi) < .3:
       meteor_yn = "no"
       bad_items.append("bad angular distance below .3.")
-   if (dist_per_elp * sd_multi) * 25 < 1.3:
+   if (dist_per_elp * deg_multi) * 25 < 1.3:
       meteor_yn = "no"
       bad_items.append("bad angular velocity below 1")
 
    if elp > 0:
-      if min_max_dist * sd_multi < 1 and max_cm <= 5 and cm / elp < .75 :
+      if min_max_dist * deg_multi < 1 and max_cm <= 5 and cm / elp < .75 :
          meteor_yn = "no"
          bad_items.append("short distance, many gaps, low cm")
 
@@ -2458,8 +2459,8 @@ def analyze_object(object, hd = 0, sd_multi = 1):
       obj_class = "meteor"
   
    object['report'] = {}
-   object['report']['angular_separation'] = min_max_dist * sd_multi
-   object['report']['angular_velocity'] =  (dist_per_elp * sd_multi) * 25
+   object['report']['angular_sep'] = min_max_dist * deg_multi 
+   object['report']['angular_vel'] = (dist_per_elp * deg_multi) * 25
    object['report']['elp'] = elp
    object['report']['min_max_dist'] = min_max_dist
    object['report']['dist_per_elp'] = dist_per_elp
@@ -3293,6 +3294,7 @@ def quick_scan(video_file, old_meteor = 0):
    
    # check time after frame load
    elapsed_time = time.time() - start_time
+   print("Ending fast detection.")
    if len(pos_meteors) > 0:
       print("Possible Meteors:" )
       for pos in pos_meteors:
@@ -3309,7 +3311,6 @@ def quick_scan(video_file, old_meteor = 0):
       return([])
 
    meteor_file = video_file.replace(".mp4", "-meteor.json")
-
    # Only continue if we made it past the easy / fast detection
    all_motion_objects = []
    for object in pos_meteors:
@@ -3324,6 +3325,7 @@ def quick_scan(video_file, old_meteor = 0):
       for obj in motion_objects:
          all_motion_objects.append(motion_objects[obj])
 
+   print("Ending detecting SD in clip.", len(all_motion_objects))
 
    objects = all_motion_objects
 
@@ -3336,8 +3338,11 @@ def quick_scan(video_file, old_meteor = 0):
 
    for obj in objects:
       if len(obj['ofns']) > 2:
+         print("merge obj frames:", obj)
          obj = merge_obj_frames(obj)
+         print("merge obj frames:", obj)
          obj = analyze_object_final(obj)
+         print("analyze final obj frames:", obj)
       if obj['report']['meteor_yn'] == "Y":
          print ("********************* METEOR *********************")
          print(obj['ofns'])
@@ -3386,6 +3391,7 @@ def quick_scan(video_file, old_meteor = 0):
          obj['hd_trim'] = md['hd_trim']
          if "hd_video_file" in md:
             obj['hd_video_file'] = md['hd_video_file']
+            obj['hd_crop_file'] = md['hd_crop_file']
             obj['hd_trim'] = md['hd_video_file']
          elif "hd_trim" in md:
             obj['hd_video_file'] = md['hd_trim']
