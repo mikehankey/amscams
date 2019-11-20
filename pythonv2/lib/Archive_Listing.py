@@ -404,7 +404,7 @@ def get_html_detections(res,clear_cache):
       res_html += ' <dl class="row mb-0 def mt-1">'
       res_html += '              <dt class="col-6">Mag</dt>             <dd class="col-6">' + str(detection['mag']) + '</dd>'
       res_html += '              <dt class="col-6">Duration</dt>  	   <dd class="col-6">'+ str(detection['dur']) +'s</dd>'
-      res_html += '              <dt class="col-6">Res. Error</dt>      <dd class="col-6">'+str("{0:.2f}".format(detection['res_er']))+'</dd>'
+      res_html += '              <dt class="col-6">Res. Error</dt>      <dd class="col-6">'+ str("{0:.4f}".format(float(detection['res_er'])))+'</dd>'
       res_html += '              <dt class="col-6">Ang. Velocity</dt>   <dd class="col-6">'+str(detection['ang_v'])+'&deg;/sec</dd>'
       res_html += ' </dl>'
       
