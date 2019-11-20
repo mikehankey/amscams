@@ -523,7 +523,10 @@ def format_calib(trim_clip, cal_params, cal_params_file):
    return(calib)
 
 def apply_calib(obj ):
+   print("CAL:", obj['hd_trim'])
+   print("CAL:", obj['trim_clip'])
    if obj['hd_trim'] != 0:
+      
       hd_frames,hd_color_frames,hd_subframes,sum_vals,max_vals = load_frames_fast(obj['hd_trim'], json_conf, 0, 0, [], 0,[])
    else:
       hd_frames,hd_color_frames,hd_subframes,sum_vals,max_vals = load_frames_fast(obj['trim_clip'], json_conf, 0, 0, [], 0,[])
@@ -548,10 +551,7 @@ def apply_calib(obj ):
    cat_stars = flex_get_cat_stars(obj['trim_clip'], cal_params_file, json_conf, cal_params )
    cat_image_stars = get_cat_image_stars(cat_stars, frame, cal_params_file)
 
-   #cv2.imshow('pepe', frame)
-   #cv2.waitKey(0)
 
-   show = 1
    if len(cat_image_stars) > 4:
       this_poly = np.zeros(shape=(4,), dtype=np.float64)
       start_res = reduce_fov_pos(this_poly, cal_params, obj['hd_trim'],frame,json_conf, cat_image_stars,0,show)
@@ -824,8 +824,6 @@ def find_leading_edge(x_dir_mod, y_dir_mod,x,y,w,h,frame):
       cv2.circle(frame,(le_x,le_y), 5, (255,0,0), 1)
       #cv2.rectangle(frame, (x, y), (x+w, y+h), (255,255,255), 1, cv2.LINE_AA)
       cv2.rectangle(frame, (leading_x, leading_y), (leading_x+(x_dir_mod*leading_edge_x_size), leading_y+(y_dir_mod*leading_edge_y_size)), (255,255,255), 1, cv2.LINE_AA)
-      #cv2.imshow("LE", frame)
-      #cv2.waitKey(0)
 
 
 
@@ -900,20 +898,13 @@ def refine_points_old(hd_crop, frames = None, color_frames = None):
             cv2.rectangle(show_frame, (mx1, my1), (mx2, my2), (0,0,128), 1, cv2.LINE_AA)
             
 
-         #cv2.imshow('pepe2', crop_sub_big)
-         #cv2.imshow('pepe3', crop_img_big)
-
-         #cv2.circle(show_frame,(x,y), 1, (255,255,255), 1)
-         #cv2.rectangle(show_frame, (cx1, cy1), (cx2, cy2), (128,129,128), 1, cv2.LINE_AA)
-         #cv2.putText(show_frame, desc,  (3,10), cv2.FONT_HERSHEY_SIMPLEX, .4, (255, 255, 255), 1)
-         #cv2.imshow('pepe', show_frame)
-         #cv2.waitKey(70)
 
 
 
    # Ok now that we have at least refined the main object's center, lets re-crop the frames around that 
    # and find the leading edge!
-   cv2.destroyAllWindows()
+   if show == 1:
+      cv2.destroyAllWindows()
 
    print(motion_objects)
    exit()
@@ -972,8 +963,6 @@ def refine_points_old(hd_crop, frames = None, color_frames = None):
 
          cv2.circle(crop_img_big_cl,(lx,ly), 1, (255,255,255), 1)
 
-         #cv2.imshow('leading edge', crop_img_big_cl)
-         #cv2.waitKey(0)
    for obj in motion_objects:
       motion_objects[obj] = remove_bad_frames(motion_objects[obj])
       print("REFINED OBJECT!:", motion_objects[obj])
@@ -1451,16 +1440,10 @@ def find_blob_center(fn, frame,bx,by,size,x_dir_mod,y_dir_mod):
          desc = str(fn)
          cv2.putText(thresh_img, desc,  (3,10), cv2.FONT_HERSHEY_SIMPLEX, .4, (255, 255, 255), 1)
          cv2.circle(thresh_img,(mx,my), 1, (255,255,255), 1)
-         #cv2.imshow('cnt2', cnt_img)
-         #cv2.imshow('cnt', thresh_img)
-         #cv2.waitKey(10)
          return(int(blob_x), int(blob_y),max_val,int(blob_w),int(blob_h))
       else:
          desc = str(fn) + "NF!"
          cv2.putText(thresh_img, desc,  (3,10), cv2.FONT_HERSHEY_SIMPLEX, .4, (255, 255, 255), 1)
-         #cv2.imshow('cnt2', cnt_img)
-         #cv2.imshow('cnt', thresh_img)
-         #cv2.waitKey(10)
          return(int(bx), int(by),max_val,10,10)
 
 
@@ -1632,8 +1615,6 @@ def find_contours_in_frame(frame, thresh=25):
    _, threshold = cv2.threshold(frame.copy(), thresh, 255, cv2.THRESH_BINARY)
    thresh_obj = cv2.dilate(threshold.copy(), None , iterations=4)
    threshold = cv2.convertScaleAbs(thresh_obj)
-   #cv2.imshow('find_cnt_in_frm', threshold)
-   #cv2.waitKey(0)
    cnt_res = cv2.findContours(threshold.copy(), cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
    if len(cnt_res) == 3:
       (_, cnts, xx) = cnt_res
@@ -1705,16 +1686,7 @@ def fast_bp_detect(gray_frames, video_file):
       frame = mask_frame(frame, mask_points, [], 5)
       subframe = cv2.subtract(frame, last_frame)
       sum_val =cv2.sumElems(subframe)[0]
-      #if sum_val > 100:
-      #   thresh = 10
-      #   _, subframe = cv2.threshold(subframe.copy(), thresh, 255, cv2.THRESH_BINARY)
-         #subframe = cv2.subtract(subframe, median_frame)
-      #   sum_val =cv2.sumElems(subframe)[0]
 
-      #min_val, max_val, min_loc, (mx,my)= cv2.minMaxLoc(subframe)
-      #mask_points.append((mx,my))
-      #cv2.imshow('pepe', subframe)
-      #cv2.waitKey(0)
       frame_data.append(sum_val)
       subframes.append(subframe)
       last_frame = frame
@@ -1842,8 +1814,6 @@ def detect_motion_in_frames(subframes, video_file, fn):
          (cnts, xx) = cnt_res
       print("CNTS:", len(cnts))
 
-      #cv2.imshow('detect motion in frames', thresh_obj)
-      #cv2.waitKey(70)
 
       if len(cnts) < 50:
          for (i,c) in enumerate(cnts):
@@ -1871,8 +1841,6 @@ def detect_objects_by_motion(frames, fn) :
 
       thresh_obj = cv2.dilate(threshold.copy(), None , iterations=4)
       thresh_obj = cv2.convertScaleAbs(thresh_obj)
-      #cv2.imshow('p', thresh_obj)
-      #cv2.waitKey(10)
       cnt_res = cv2.findContours(thresh_obj.copy(), cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
       if len(cnt_res) == 3:
          (_, cnts, xx) = cnt_res
@@ -2081,9 +2049,6 @@ def remove_bad_frames_from_object(object,frames,subframes ):
    print("RES X:", res_xs)
    print("RES Y:", res_ys)
    print("RES TOTAL:", res_tot)
-  # cv2.imshow('pepe', show_frame)   
-  # cv2.imshow('pepe2', stacked_frame)   
-  # cv2.waitKey(70)
    show_frame = stacked_frame.copy()
    show_frame = cv2.resize(show_frame, (0,0),fx=scx, fy=scy)
    for i in range(0, len(new_oxs) -1):
@@ -2094,8 +2059,6 @@ def remove_bad_frames_from_object(object,frames,subframes ):
       show_frame = cv2.resize(show_frame, (0,0),fx=scx, fy=scy)
       show_frame = cv2.cvtColor(show_frame,cv2.COLOR_GRAY2RGB)
       show_frame[y*scy,x*scx] = (0,cl,0)
-     # cv2.imshow('pepe', show_frame)   
-     # cv2.waitKey(70)
 
    test_object = object
    test_object['oxs'] = new_oxs
@@ -2188,8 +2151,6 @@ def calc_point_res(object, frames):
 
       esx,esy = bound_point(est_x, est_y, show_frame)
       show_frame[esy,esx] = (0,cl,cl)
-     # cv2.imshow('pepe', show_frame)   
-     # cv2.waitKey(70)
 
 
    for i in range(0, len(object['oxs'])):
@@ -2245,8 +2206,6 @@ def calc_point_res(object, frames):
       cc = cc + 1
    for ox,oy in zip(poly_x, poly_y):
       show_frame[oy,ox] = [255,0,0]
-  # cv2.imshow('pepe3', show_frame)
-  # cv2.waitKey(70)
    print("NEW YS:", new_ys)
    print("NEW XS:", new_xs)
    plt.plot(poly_x, poly_y, 'x')
@@ -2842,9 +2801,6 @@ def show_video(frames, meteor_objects, metframes):
       show_frame[show_y1:show_y2,show_x1:show_x2] = cnt_img
       show_frames.append(show_frame)
       desc = str(fn)
-      #cv2.putText(show_frame, desc,  (3,10), cv2.FONT_HERSHEY_SIMPLEX, .4, (255, 255, 255), 1)
-      #cv2.imshow('Pepe', show_frame)
-      #cv2.waitKey(10)
       fn = fn + 1
    return(show_frames)
 
@@ -2966,8 +2922,6 @@ def smooth_metframes(metframes, gray_frames):
          blob_x = metframes[fn]['blob_x']
          blob_y = metframes[fn]['blob_y']
          cv2.circle(subframe,(blob_x,blob_y), 10, (255,255,255), 1)
-         #cv2.imshow('pepe', subframe)
-         #cv2.waitKey(10)
          fcc = fcc + 1
 
 
@@ -3040,8 +2994,6 @@ def est_frame_pos():
          cv2.circle(show_img,(blob_x,blob_y), 1, (0,0,255), 1)
          cv2.circle(show_img,(est_x,est_y), 1, (0,255,255), 1)
 
-         #cv2.imshow('pepe', show_img)
-         #cv2.waitKey(70) 
          print(fn, metframes[fn]['est_x'], metframes[fn]['est_y'], metframes[fn]['blob_x'], metframes[fn]['blob_y'])
    exit()
 
@@ -3101,10 +3053,6 @@ def reduce_acl(this_poly, metframes,metconf,frames,mode=0,show=0,key_field = "")
 
       cv2.putText(img, str(med_seg) + " " + str(acl_poly),  (10,10), cv2.FONT_HERSHEY_SIMPLEX, .4, (0,0,255), 1)
 
-      #if show == 1:
-      #   cv2.imshow('pepe', img)
-      #   cv2.moveWindow('pepe',25,25)
-      #   cv2.waitKey(1)
       last_bp_x = bp_x
       last_bp_y = bp_y
       fcc = fcc + 1
@@ -3444,6 +3392,18 @@ def quick_scan(video_file, old_meteor = 0):
          if "hd_video_file" in md:
             obj['hd_video_file'] = md['hd_video_file']
             obj['hd_crop_file'] = md['hd_crop_file']
+            obj['hd_trim'] = md['hd_video_file']
+         elif "hd_trim" in md:
+            obj['hd_video_file'] = md['hd_trim']
+            obj['hd_trim'] = md['hd_trim']
+         if "/mnt/ams2/HD" in obj['hd_video_file'] or "/mnt/ams2/HD" in obj['hd_trim']:
+            new_dir = "/mnt/ams2/meteors/" + meteor_date + "/" 
+            obj['hd_video_file'] = obj['hd_video_file'].replace("/mnt/ams2/HD/", new_dir)
+            obj['hd_trim'] = obj['hd_trim'].replace("/mnt/ams2/HD/", new_dir)
+             
+
+         obj['hd_crop_file'] = md['hd_crop_file']
+         print("OBJ:", obj)
          calib,cal_params = apply_calib(obj)
          obj['calib'] = calib
          obj['cal_params'] = cal_params 
@@ -3505,7 +3465,7 @@ def quick_scan(video_file, old_meteor = 0):
 def log_import_errors(video_file, message):
    fn = video_file.split("/")[-1]
    day = fn[0:10]
-   log_file = "/mnt/ams2/meteors/" + day + "import_errors.json"
+   log_file = "/mnt/ams2/meteors/" + day + "/import_errors.json"
    if cfe(log_file) == 1:
       log = load_json_file(log_file)
    else:
@@ -3556,11 +3516,7 @@ def sync_hd_sd_frames(obj):
          hd_frame = hd_frames[hd_fn]
          sdf.append(sd_fn)
          hdf.append(hd_fn)
-         #cv2.imshow('sd', sd_frame)
-         #cv2.waitKey(0)
          hd_frame = cv2.resize(hd_frame, (0,0),fx=.25, fy=.25)
-         #cv2.imshow('hd', hd_frame)
-         #cv2.waitKey(0)
    else:
       print("Problem sd and hd events don't match up perfectly...")
       #fp = open("/mnt/ams2/meteors/import_errors.txt", "a")
@@ -3660,10 +3616,6 @@ def sync_hd_sd_frames(obj):
          #cv2.rectangle(show_img, (cx1, cy1), (cx2, cy2), (255,255,255), 1, cv2.LINE_AA)
 
 
-         #cv2.imshow('SYNC', hd_cnt)
-         #cv2.waitKey(70)
-         #cv2.imshow('SYNC SD', sd_cnt)
-         #cv2.waitKey(70)
    else:
       print("MORE THAN ONE METEOR OBJECT! NOT COOL!")
       #fp = open("/mnt/ams2/meteors/import_errors.txt", "a")
@@ -4095,11 +4047,6 @@ def old_detection_codes():
       event_json = {}
       event_json['events'] = valid_events
 
-      #objects = []
-      #for event in valid_events:
-      #   for fn in range(event[0], event[-1]):
-      #      cv2.imshow('pepe', frames[fn])
-      #      cv2.waitKey(70)
 
 
 
@@ -4163,8 +4110,6 @@ def make_custom_frame(frame, subframe, tracker, graph, graph2, info):
    cv2.rectangle(custom_frame, (sfx1, sfy1), (sfx2, sfy2), (255,255,255), 1, cv2.LINE_AA)
    cv2.rectangle(custom_frame, (trx1, try1), (trx2, try2), (255,255,255), 1, cv2.LINE_AA)
 
-   #cv2.imshow('pepe', custom_frame)
-   #cv2.waitKey(70)
 
 def custom_graph(data_x,data_y,max_x,max_y,graph_x,graph_y,type):
 
@@ -4534,8 +4479,6 @@ def make_frame_crop_summary(frames, obj, trim_num_start):
       frame = frames[fn].copy()
      
       cv2.circle(frame,(x,y), 5, (255,255,255), 1)
-      #cv2.imshow('pepe', frame)
-      #cv2.waitKey(70)
   
  
 
@@ -4575,10 +4518,11 @@ def make_frame_crop_summary(frames, obj, trim_num_start):
       cx1,cy1,cx2,cy2 = frame_data[fn]['frame_crop']
       x =  frame_data[fn]['x']
       y =  frame_data[fn]['y']
-     
-      cv2.circle(frames[fn],(x,y), 2, (0,255,0), 1)
-      cv2.imshow("frame crop summary", frames[fn])
-      cv2.waitKey(0)
+    
+      if show == 1: 
+         cv2.circle(frames[fn],(x,y), 2, (0,255,0), 1)   
+         cv2.imshow("frame crop summary", frames[fn])
+         cv2.waitKey(0)
       crop_img = frames[fn][cy1:cy2,cx1:cx2]
 
       nx1 = cc * 100
@@ -4589,9 +4533,9 @@ def make_frame_crop_summary(frames, obj, trim_num_start):
       crop_img = cv2.cvtColor(crop_img,cv2.COLOR_GRAY2RGB)
       if crop_img.shape[0] == 100 and crop_img.shape[1] == 100:
          crop_sum_img[ny1:ny2,nx1:nx2] = crop_img 
-
-      cv2.imshow("frame crop summary", crop_img)
-      cv2.waitKey(70)
+      if show == 1:
+         cv2.imshow("frame crop summary", crop_img)
+         cv2.waitKey(70)
 
 
       fc = fc + 1
@@ -4599,8 +4543,9 @@ def make_frame_crop_summary(frames, obj, trim_num_start):
       if fc % 18 == 0 and fc > 0 :
          row_y = row_y + 100
          cc  = 0
-   cv2.imshow('frame crop summary', crop_sum_img)
-   cv2.waitKey(0)
+   if show == 1:
+      cv2.imshow('frame crop summary', crop_sum_img)
+      cv2.waitKey(0)
    return(crop_sum_img,frame_data)
 
 def get_trim_num(file):
@@ -4657,12 +4602,7 @@ def find_hd_frame(hd_crop_frames, cx1,cy1,cx2,cy2):
          max_px = max_val
          best_fn_px = fc
        
-      #print(fc, intense, max_val)
       
-      cv2.rectangle(sub_frame, (cx1, cy1), (cx2, cy2), (255,255,255), 1, cv2.LINE_AA)
-      #cv2.imshow('pepe', crop_hd_crop)
-      #cv2.imshow('pepe', sub_frame)
-      #cv2.waitKey(70) 
       last_frame = frame
       fc = fc + 1
    print("Best matching frame: ", best_fn_int, best_fn_px)
@@ -4698,9 +4638,6 @@ def refine_points(frames, frame_data):
          frame_data[fn]['max_val_bad'] = max_val - med_max_val
       cx1,cy1,cx2,cy2 = bound_cnt(max_x,max_y,frames[0].shape[1],frames[0].shape[0], 20)
       crop = frame[cy1:cy2,cx1:cx2]
-      #cv2.imshow('pepe', crop)
-      #cv2.waitKey(70)
-      print(fn, frame_data[fn])
       last_max_x = max_x
       last_max_y = max_y
  
@@ -4747,8 +4684,9 @@ def review_meteor(video_file):
          print("HDCROP: ", hd_crop_file)
          print("FRAMES:", len(hd_frames))
          hd_stack_file, hd_stack_img = stack_frames(hd_frames,hd_trim,0)
-         cv2.imshow('HD', hd_stack_img)
-         cv2.waitKey(70)
+         if show == 1:
+            cv2.imshow('HD', hd_stack_img)
+            cv2.waitKey(70)
          half_stack_img = cv2.resize(hd_stack_img, (0,0),fx=.5, fy=.5)
          cv2.imwrite(hd_stack_file, hd_stack_img) 
          cv2.imwrite(half_stack_file, half_stack_img) 
@@ -4809,9 +4747,9 @@ def review_meteor(video_file):
    print("HSI:", half_stack_img.shape)
    print("HSI:", custom_frame.shape)
    print(ih, ih+hsih,0,hsiw)
-
-   cv2.imshow('Review Meteor', custom_frame)
-   cv2.waitKey(70)
+   if show == 1:
+      cv2.imshow('Review Meteor', custom_frame)
+      cv2.waitKey(70)
        
 def draw_obj_on_frame(frame, obj):
    for i in range(0, len(obj['ofns'])):
@@ -4858,8 +4796,6 @@ def spectra(hd_stack):
       x,y,w,h = cnt
       if w > 20 or h > 20:
          cv2.rectangle(img, (x, y), (x+w, y+h), (255,255,255), 1, cv2.LINE_AA)
-   #cv2.imshow('pepe', img)
-   #cv2.waitKey(0)
 
 def rerun(video_file):
    day_dir = video_file[0:10]
