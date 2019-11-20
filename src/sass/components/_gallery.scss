@@ -42,6 +42,9 @@
                 overflow:hidden;
                 padding:56.25% 0 0 0;
 
+                .show_on_hover {
+                   display: none;
+                }
 
                 span {
                     position: absolute;
@@ -78,11 +81,29 @@
                 }
                 
 
+                &.has_soh:hover {
+                  img {
+                     display:hidden;
+                  }
+                }
+
                 &:hover {
                    text-decoration: none;
                     span {
                         bottom:0;
                     }
+
+                    .show_on_hover {
+                        display: block;
+                        max-width: 100%;
+                        max-height: 100%;
+                        position: absolute;
+                        top: 0;
+                        bottom: 0;
+                        left: 0;
+                        right: 0;
+                        width: 100%;
+                     }
 
                     &:before {
                         display: block;
