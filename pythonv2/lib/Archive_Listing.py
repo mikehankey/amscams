@@ -284,34 +284,7 @@ def get_results_from_date_from_monthly_index(date,json_index,max_res):
                if(res_cnt<=max_res):
                   res.append(detection)
                   res_cnt+=1 
- 
-
-         #if(int(cur_month) == date.month and int(day['day'])<=date.day and res_cnt<=max_res):
-         #   for dec in day:
-         #      if(res_cnt<=max_res):
-         #         res.append(dec)
-         #         res_cnt+=1 
-         # elif(int(cur_month) == date.month and res_cnt<=max_res):
-                 
-         # print("CUR DAY " + day)
-         # print("<br>")
-         #print(str(month['month'])  + " <= " + str(date.month) + "?<br/>")
-         #if(int(month['month'])<=date.month):
-         #   for day in month['days']:
-         #      if(int(month['month'])==date.month and int(day['day'])<=date.day and res_cnt<=max_res):
-         #         #print("CUR DAY " +str(day['day']))
-         #         #print("<br>")
-         #          for dec in day['det']:
-         #            if(res_cnt<=max_res):
-         #               res.append(dec)
-         #               #print("ADDED<br/>")
-         #               res_cnt+=1 
-         #      elif(int(month['month'])!=date.month and res_cnt<=max_res):
-         #         for dec in day['det']:
-         #            if(res_cnt<=max_res):
-         #               res.append(dec)
-         #               #print("ADDED<br/>")
-         #                res_cnt+=1 
+  
    return res
 
 
@@ -447,10 +420,7 @@ def archive_listing(form):
 
       print("I AM CURRENTLY WORKING ON THIS PAGE - PLEASE OLD ON")
       res = get_results_from_date_from_monthly_index(the_date,index,int(nompp))
-
       
-      print(res)
-      sys.exit(0)
 
       # If we don't have enough detection to display we try the previous year
       if(res):
