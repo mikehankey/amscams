@@ -72,7 +72,8 @@ def add_to_month_index(detection, insert=True):
    if(cfe(index_path) == 0):
       write_month_index(int(analysed_detection_name['month']),int(analysed_detection_name['year']))
 
-   if(cfe(index_path)):
+   # The next should be true after the creation og the index
+   if(cfe(index_path) ==  1):
       index_data = load_json_file(index_path)
       try:
          the_day = index_data['days'][str(analysed_detection_name['day'])]
