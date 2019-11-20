@@ -310,8 +310,7 @@ def get_video(_file):
    else:
       return _file
 
-
-
+ 
 
 # Get HTML version of each detection
 def get_html_detections(res,clear_cache):
@@ -339,13 +338,12 @@ def get_html_detections(res,clear_cache):
          res_html +=  '</div><div class="h2_holder d-flex justify-content-between"><h2>'+cur_date.strftime("%Y/%m/%d")+'</h2></div>'
          res_html += '<div class="gallery gal-resize row text-center text-lg-left mb-5 mr-5 ml-5">'
  
-
       # Do we have a thumb stack preview for this detection?
       preview = does_cache_exist(det,"preview","/*.jpg")
 
-      if(len(preview)==0 or clear_cache is True):
-         # We need to generate the thumbs 
-         preview = generate_preview(det) 
+      #if(len(preview)==0 or clear_cache is True):
+      #   # We need to generate the thumbs 
+      #   preview = generate_preview(det) 
 
       # Get Video for preview
       path_to_vid = get_video(det['full_path'])       
