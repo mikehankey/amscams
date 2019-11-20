@@ -11,7 +11,8 @@ from lib.MeteorReduce_Tools import *
 # python3 MakeChace.py /mnt/ams2/meteors/2019_11_15/2019_11_15_07_49_40_000_010042-trim0263.json
 
 # JSON FILE 
-new_json = sys.argv[1]           
+new_json = sys.argv[1]          
+new_json_data = load_json_file(new_json) 
 
 if(new_json is None or cfe(new_json)==0):
    print("JSON is missing.")
@@ -35,7 +36,7 @@ except NameError:
    thumbs = ''
 else:
    HD = True
-   thumbs = get_thumbs(tmp_analysed_name,new_json,HD,HD_frames,clear_cache)
+   thumbs = get_thumbs(tmp_analysed_name,new_json_data,HD,HD_frames,clear_cache)
    output = "THUMBS : " + str(thumbs)
    output = "HD FRAMES : " + str(HD_frames)
 
