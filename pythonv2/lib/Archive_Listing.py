@@ -267,7 +267,7 @@ def get_results_from_date_from_monthly_index(date,json_index,max_res):
       cur_month = json_index['month']
       all_days =  json_index['days'] 
 
-      keylist = all_days.keys()
+      keylist = list(all_days.keys())
       keylist.sort()
 
 
