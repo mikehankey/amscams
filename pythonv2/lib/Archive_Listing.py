@@ -262,22 +262,28 @@ def get_monthly_index(month,year):
 def get_results_from_date_from_monthly_index(date,json_index,max_res): 
    res = []
    res_cnt = 0 
+   cur_month_test = False
 
    if("days" in json_index and "month" in json_index):
       cur_month = json_index['month']
-      all_days =  json_index['days'] 
+      
+      if((int)cur_month==(int)date.month):
+         cur_month_test = True
 
+      all_days =  json_index['days'] 
       keylist = list(all_days.keys())
 
       # We sort the days
       for day in sorted(keylist, key=int, reverse=True):
 
-         print("<hr/>")
-         print(day)
-         print( " =>")
          # We sort the detections within the day
-         print(sorted(json_index['days'][day], key=lambda k: k['p'], reverse=True))
-        
+         detections = sorted(json_index['days'][day], key=lambda k: k['p'], reverse=True
+
+         if(cur_month_test and int(day['day'])<=int(date.day) and res_cnt<=max_res):
+            for detection in detections:
+               if(res_cnt<=max_res):
+                  res.append(dec)
+                  res_cnt+=1 
 
 
          #if(int(cur_month) == date.month and int(day['day'])<=date.day and res_cnt<=max_res):
