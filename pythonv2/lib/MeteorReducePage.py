@@ -101,11 +101,8 @@ def reduce_meteor2(json_conf,form):
    if(hd_stack is not None):
       template = template.replace("{HD_STACK}", str(hd_stack))                  # HD Stack File 
    
-   if('report' in meteor_json_file):
-      if('dur' in meteor_json_file['report']):
-         template = template.replace("{EVENT_DURATION}", str(meteor_json_file['report']['dur']))          # Duration
-      if('max_peak' in meteor_json_file['report']):
-         template = template.replace("{EVENT_MAGNITUDE}", str(meteor_json_file['report']['max_peak']))    # Peak_magnitude
+  
+
 
    # For the Event start time
    # either it has already been reduced and we take the time of the first frame
@@ -118,31 +115,34 @@ def reduce_meteor2(json_conf,form):
    if(start_time==0):
       start_time = analysed_name['year']+'-'+analysed_name['month']+'-'+analysed_name['day']+ ' '+ analysed_name['hour']+':'+analysed_name['min']+':'+analysed_name['sec']+'.'+analysed_name['ms']
    
+    if('report' in meteor_json_file):
+      report_details += '<dt class="col-6">Date &amp; Time</dt><dd class="col-6">'+start_time+'s</dd>'
+
+      if('dur' in meteor_json_file['report']):
+         report_details += '<dt class="col-6">Duration</dt><dd class="col-6">'+str(meteor_json_file['report']['dur'])+'s</dd>'
+      if('max_peak' in meteor_json_file['report']):
+         report_details += '<dt class="col-6">Magnitude</dt><dd class="col-6">'+str(meteor_json_file['report']['max_peak'])+'s</dd>'
+ 
+
    # We complete the template
-   template = template.replace("{EVENT_START_TIME}", start_time)
+   template = template.replace("{REPORT_DETAILS}", report_details)
 
-  
-   # Note: the rest of the data are managed through JAVASCRIPT
-
-   # Find Possible Calibration Parameters
-   # Based on Date & Time of the first frame
-   #calibration_files = find_matching_cal_files(analysed_name['cam_id'], datetime.strptime(start_time, '%Y-%m-%d %H:%M:%S.%f'))
-
-   # Find the one that is currently used based on meteor_json_file[calib][dt]
-   # calib_dt = meteor_json_file['calib']['dt']
-   #find_calib_json = find_calib_file(calib_dt,analysed_name['cam_id'])
-  
-   # Build a human readable date & time
-   #calib_dt_h = calib_dt.replace("_", "/", 2).replace("_", " ", 1).replace("_",":")[:-4] # Ugly but not sure we can do something else
-   #template = template.replace("{SELECTED_CAL_PARAMS_FILE_NAME}", calib_dt_h)     
-   #template = template.replace("{SELECTED_CAL_PARAMS_FILE}", str(find_calib_json))      
-
-   #print(str(calibration_files))
-
-   #template =  get_stars_table(template,"{STAR_TABLE}",meteor_json_file,"{STAR_COUNT}")   # Stars table
-   #template =  get_reduction_table(analysed_name,template,"{RED_TABLE}",meteor_json_file,'{FRAME_COUNT}') # Reduction Table
-
-   #print(get_stars_table(meteor_json_file))
+   # Display some of the report info directly on the page
+   #dist_per_elp: 9.661147849907783,
+   #meteor_yn: "Y",
+   #elp: 14,
+   #y_dir_mod: -1,
+   #min_max_dist: 144.91721774861674,
+   #angular_sep: 6.0865231454419035,
+   #moving: "moving",
+   #bad_items: [],
+   #max_cm: 14,
+   #obj_class: "meteor",
+   #dur: 0.56,
+   #angular_vel: 10.144205242403173,
+   #max_fns: 14,
+   #x_dir_mod: 1,
+   #max_peak: 7707
 
    # Display Template
    print(template)
