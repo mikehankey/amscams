@@ -279,7 +279,7 @@ def get_results_from_date_from_monthly_index(date,json_index,max_res):
          # We sort the detections within the day
          detections = sorted(json_index['days'][day], key=lambda k: k['p'], reverse=True)
 
-         if(cur_month_test and int(day['day'])<=int(date.day) and res_cnt<=max_res):
+         if(cur_month_test and int(day)<=int(date.day) and res_cnt<=max_res):
             for detection in detections:
                if(res_cnt<=max_res):
                   res.append(dec)
