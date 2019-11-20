@@ -119,19 +119,19 @@ def reduce_meteor2(json_conf,form):
 
    if('report' in meteor_json_file):
       report_details  =  ''
-      report_details += '<dt class="col-6">Date &amp; Time</dt><dd class="col-6">'+start_time+'s</dd>'
+      report_details += '<dt class="col-4">Date &amp; Time</dt><dd class="col-8">'+start_time+'s</dd>'
 
       if('dur' in meteor_json_file['report']):
-         report_details += '<dt class="col-6">Duration</dt><dd class="col-6">'+str(meteor_json_file['report']['dur'])+'s</dd>'
+         report_details += '<dt class="col-4">Duration</dt><dd class="col-8">'+str(meteor_json_file['report']['dur'])+'s</dd>'
       if('max_peak' in meteor_json_file['report']):
-         report_details += '<dt class="col-6">Magnitude</dt><dd class="col-6">'+str(meteor_json_file['report']['max_peak'])+'</dd>'
+         report_details += '<dt class="col-4">Magnitude</dt><dd class="col-8">'+str(meteor_json_file['report']['max_peak'])+'</dd>'
       if('angular_vel' in meteor_json_file['report']):
-         report_details += '<dt class="col-6">Ang. Velocity</dt><dd class="col-6">'+str(meteor_json_file['report']['angular_vel'])+'&deg;/sec</dd>'
+         report_details += '<dt class="col-4">Ang. Velocity</dt><dd class="col-8">'+str(meteor_json_file['report']['angular_vel'])+'&deg;/sec</dd>'
 
    if('calib' in meteor_json_file):
       if('device' in meteor_json_file['calib']):
          if('total_res_px' in meteor_json_file['calib']['device']):
-            report_details += '<dt class="col-6">Res. Error</dt><dd class="col-6">'+str(meteor_json_file['calib']['device']['total_res_px'])+'</dd>'
+            report_details += '<dt class="col-4">Res. Error</dt><dd class="col-8">'+str(meteor_json_file['calib']['device']['total_res_px'])+'</dd>'
 
  
 
