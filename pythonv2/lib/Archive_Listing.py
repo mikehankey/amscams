@@ -401,7 +401,7 @@ def get_html_detections(res,clear_cache):
       res_html += '  <div class="d-flex justify-content-between">'
       res_html += '     <div class="pre-b gallery-only"><span class="mst">Cam #'+det['cam_id']+' - <b>'+det['hour']+':'+det['min']+'</b></span>'
       
-      res_html += ' <dl class="row mb-0">'
+      res_html += ' <dl class="row mb-0 def mt-1">'
       res_html += '              <dt class="col-6">Mag</dt>             <dd class="col-6">' + str(detection['mag']) + '</dd>'
       res_html += '              <dt class="col-6">Duration</dt>  	   <dd class="col-6">'+ str(detection['dur']) +'s</dd>'
       res_html += '              <dt class="col-6">Res. Error</dt>      <dd class="col-6">'+str(detection['res_er'])+'</dd>'
