@@ -280,7 +280,7 @@ def get_results_from_date_from_monthly_index(date,json_index,max_res):
          detections = sorted(json_index['days'][day], key=lambda k: k['p'], reverse=True)
 
          if( (cur_month_test and int(day)<=int(date.day) and res_cnt<=max_res) or (not cur_month_test and int(cur_month)<int(date.month))and res_cnt<=max_res):
-            for detection, d_day in enumerate(detections):
+            for d_day, detection  in enumerate(detections):
                if(res_cnt<=max_res):
                 
                   # We complete the detection['p'] to get the full path (as the index only has compressed name)
