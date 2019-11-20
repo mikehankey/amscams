@@ -292,6 +292,9 @@ def get_results_from_date_from_monthly_index(date,json_index,max_res):
                   res.append(detection)
                   res_cnt+=1 
   
+   print(res)
+   sys.exit(0)
+
    return res
 
 
