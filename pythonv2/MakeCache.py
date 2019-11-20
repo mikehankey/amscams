@@ -27,6 +27,9 @@ hd_stack = get_stacks(tmp_analysed_name,clear_cache,True)
 sd_stack = get_stacks(tmp_analysed_name,clear_cache,False)
 HD_frames = get_HD_frames(tmp_analysed_name,clear_cache)
 
+# Generate the Preview for the archive listing
+generate_preview(tmp_analysed_name) 
+
 output = ''
 
 # Get the thumbs for the reduced detection (cropped HD frames) 
