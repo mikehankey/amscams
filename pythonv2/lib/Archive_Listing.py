@@ -352,12 +352,12 @@ def get_html_detections(res,clear_cache):
       # Otherwise preview = preview (:)
       res_html += '<div class="preview col-lg-2 col-md-3 select-to'
       
-      if(det['red']==1):
+      if(detection['red']==1):
          res_html += 'reduced">'
       else:
          res_html += '">'
 
-         
+
       res_html += '  <a class="mtt" href="webUI.py?cmd=reduce2&video_file='+det['full_path']+'" title="Detection Reduce page">'
       res_html += '     <img alt="" class="img-fluid ns lz" src="'+preview[0]+'">'
       res_html += '  </a>'
