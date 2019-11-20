@@ -174,26 +174,28 @@ def create_json_index_year(year):
          for day in sorted(glob.iglob(month + '*' + os.sep + '*', recursive=True), reverse=True):	
             cur_day = os.path.basename(os.path.normpath(day))		
             cur_day_data = []
-          
-            for detection in sorted(glob.iglob(day + os.sep +  '*' + '.json', recursive=True), reverse=True):
-               
-               mag, dur, red = get_diag_fields(detection)
-               
-               det = os.path.basename(detection)
-               det = os.path.splitext(det)[0]
-               # det[11:] => Here we also remove the Year, Month & Day of the detection 
-               # since we know them from the JSON structure
-               cur_day_data.append({'p':det[11:],'mag':mag,'dur':dur,'red':red})
 
-            print("CUR DAY ")
-            print(cur_day)
-            print(os.path.normpath(day))
-            print(day)
+            if(".json" not in cur_day):
 
-            try:
-               cur_month_data[int(cur_day)]
-            except:
-               cur_month_data[int(cur_day)] = []
+               for detection in sorted(glob.iglob(day + os.sep +  '*' + '.json', recursive=True), reverse=True):
+                  
+                  mag, dur, red = get_diag_fields(detection)
+                  
+                  det = os.path.basename(detection)
+                  det = os.path.splitext(det)[0]
+                  # det[11:] => Here we also remove the Year, Month & Day of the detection 
+                  # since we know them from the JSON structure
+                  cur_day_data.append({'p':det[11:],'mag':mag,'dur':dur,'red':red})
+
+               #print("CUR DAY ")
+               #print(cur_day)
+               #print(os.path.normpath(day))
+               #print(day)
+
+               try:
+                  cur_month_data[int(cur_day)]
+               except:
+                  cur_month_data[int(cur_day)] = []
                
             # Add the day
             cur_month_data[int(cur_day)] = cur_day_data
