@@ -46,7 +46,6 @@ def reduce_fov_pos(this_poly, in_cal_params, cal_params_file, oimage, json_conf,
    pos_poly = 0
    x_poly = in_cal_params['x_poly']
    y_poly = in_cal_params['y_poly']
-   #print(in_cal_params['ra_center'], in_cal_params['dec_center'], in_cal_params['center_az'], in_cal_params['center_el'], in_cal_params['position_angle'], in_cal_params['pixscale'], this_poly)
    cat_stars = get_catalog_stars(fov_poly, pos_poly, in_cal_params,"x",x_poly,y_poly,min=0)
    new_res = []
    new_paired_stars = []
@@ -101,7 +100,7 @@ def reduce_fov_pos(this_poly, in_cal_params, cal_params_file, oimage, json_conf,
    cv2.putText(image, desc2,  (10,110), cv2.FONT_HERSHEY_SIMPLEX, 1, (255, 255, 255), 1)
 
 
-   print("AVG RES:", show_res, len(paired_stars), "/", org_star_count, new_az, new_el, ra_center, dec_center, position_angle)
+   #print("AVG RES:", show_res, len(paired_stars), "/", org_star_count, new_az, new_el, ra_center, dec_center, position_angle)
    if show == 1:
       show_img = cv2.resize(image, (960,540))
       if "cam_id" in in_cal_params:
@@ -113,7 +112,7 @@ def reduce_fov_pos(this_poly, in_cal_params, cal_params_file, oimage, json_conf,
       else:
          cv2.waitKey(10)
    in_cal_params['position_angle'] = org_pos_angle
-   print("RES:", avg_res)
+   #print("RES:", avg_res)
    if min_run == 1:
       return(avg_res)
    else:

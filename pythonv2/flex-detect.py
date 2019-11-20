@@ -2,7 +2,9 @@
 
 from sklearn.cluster import DBSCAN
 
+from lib.REDUCE_VARS import *
 from lib.Video_Tools_cv_pos import *
+from lib.Video_Tools_cv import *
 from PIL import ImageFont, ImageDraw, Image, ImageChops
 from lib.VIDEO_VARS import *
 from lib.UtilLib import calc_dist,find_angle, best_fit_slope_and_intercept
@@ -20,7 +22,6 @@ import ephem
 from lib.flexCal import flex_get_cat_stars, reduce_fov_pos
 
 
-from lib.Video_Tools_cv import remaster
 from lib.VideoLib import get_masks, find_hd_file_new, load_video_frames, sync_hd_frames, make_movie_from_frames, add_radiant
 
 from lib.UtilLib import check_running, angularSeparation
@@ -30,7 +31,6 @@ from lib.ImageLib import mask_frame , stack_frames, preload_image_acc, thumb
 from lib.ReducerLib import setup_metframes, detect_meteor , make_crop_images, perfect, detect_bp, best_fit_slope_and_intercept, id_object, metframes_to_mfd
 
 from lib.MeteorTests import meteor_test_cm_gaps
-from lib.Video_Tools_cv import remaster
 
 
 import sys
@@ -199,6 +199,9 @@ def save_new_style_meteor_json (meteor_obj, trim_clip ):
    mj = {}
    (hd_datetime, cam, sd_date, sd_y, sd_m, sd_d, sd_h, sd_M, sd_s) = convert_filename_to_date_cam(trim_clip)
    mj['calib'] = meteor_obj['calib']
+   mj['dt'] = hd_datetime
+   tc = trim_clip.split("/")[-1]
+   mj['dt'] = meteor_obj['dt']
    mj['info'] = {}
    mj['info']['station'] = json_conf['site']['ams_id'].upper()
    mj['info']['hd_vid'] = meteor_obj['hd_file']
@@ -206,27 +209,49 @@ def save_new_style_meteor_json (meteor_obj, trim_clip ):
    mj['info']['org_hd_vid'] = meteor_obj['hd_trim']
    mj['info']['org_sd_vid'] = meteor_obj['trim_clip']
    mj['info']['device'] = cam
+   mj['info']['dur'] = meteor_obj['dur']
+   mj['info']['max_peak'] = max(meteor_obj['oint'])
+   if "report" in meteor_obj:
+      mj['report'] = meteor_obj['report']
+      mj['report']['max_peak'] = max(meteor_obj['oint'])
+      mj['report']['dur'] = meteor_obj['dur']
+
    mj['frames'] = []
    for i in range(0, len(meteor_obj['ofns'])):
       fd = {}
       fd['fn'] = meteor_obj['ofns'][i]
       fd['x'] = meteor_obj['oxs'][i]
       fd['y'] = meteor_obj['oys'][i]
-      #fd['az'] = meteor_obj['azs'][i]
-      #fd['el'] = meteor_obj['els'][i]
-      #fd['dec'] = meteor_obj['decs'][i]
-      #fd['ra'] = meteor_obj['ras'][i]
+      fd['dt'] = meteor_obj['ftimes'][i]
+      new_x, new_y, ra ,dec , az, el = XYtoRADec(fd['x'],fd['y'],fd['dt'],meteor_obj['cal_params'],json_conf)
+
+      fd['az'] = az 
+      fd['el'] = el
+      fd['dec'] = dec
+      fd['ra'] = ra 
+
       fd['w'] = meteor_obj['ows'][i]
       fd['h'] = meteor_obj['ohs'][i]
       fd['max_px'] = meteor_obj['oint'][i]
       mj['frames'].append(fd)
    mj['sync'] = {}
+   mj['sync']['sd_ind'] = meteor_obj['ofns'][0]
+   mj['sync']['hd_ind'] = meteor_obj['ofns'][0]
    #mj['sync']['sd_ind'] = sd_start_frame
    #mj['sync']['hd_ind'] = hd_start_frame
    
    print("NEW METEOR SAVE!")
    print(mj)
    return(mj)
+
+def archive_path(old_file):
+   ofn = old_file.split("/")[-1]
+   station_id = json_conf['site']['ams_id']
+   (hd_datetime, cam, sd_date, sd_y, sd_m, sd_d, sd_h, sd_M, sd_s) = convert_filename_to_date_cam(old_file)
+   new_archive_file = METEOR_ARCHIVE + station_id + "/" + METEOR + "/" + sd_y + "/" + sd_m + "/" + sd_d + "/" + ofn
+   return(new_archive_file)
+   
+   
 
 def save_old_style_meteor_json(meteor_json_file, meteor_obj, trim_clip ):
    #old json object
@@ -257,6 +282,8 @@ def save_old_style_meteor_json(meteor_json_file, meteor_obj, trim_clip ):
    oj['hd_crop_file'] = 0
    oj['hd_box'] = [0,0,0,0]
    oj['hd_objects'] = []
+   if "new_json_file" in meteor_obj:
+      oj['archive_file'] = archive_path(meteor_obj['new_json_file'])
 
    # make SD objects from new meteor
    sd_objects = {}
@@ -295,11 +322,19 @@ def save_old_style_meteor_json(meteor_json_file, meteor_obj, trim_clip ):
 def detect_meteor_in_clip(trim_clip, frames = None, fn = 0, crop_x = 0, crop_y = 0):
    objects = {}
    print("TC:", trim_clip)
+
    if frames is None: 
         
       frames,color_frames,subframes,sum_vals,max_vals = load_frames_fast(trim_clip, json_conf, 0, 1, [], 0,[])
    if len(frames) == 0:
       return(objects, []) 
+
+   if frames[0].shape[1] == 1920:
+      hd = 1
+      sd_multi = 1
+   else:
+      hd = 0
+      sd_multi = 1920 / frames[0].shape[1]
 
    image_acc = frames[0]
    image_acc = np.float32(image_acc)
@@ -321,13 +356,11 @@ def detect_meteor_in_clip(trim_clip, frames = None, fn = 0, crop_x = 0, crop_y =
       hello = cv2.accumulateWeighted(blur_frame, image_acc, alpha)
 
       show_frame = frame.copy()
-      #cv2.imshow('pepe', image_diff)
-      #cv2.waitKey(0)
       avg_px = np.mean(image_diff)
       min_val, max_val, min_loc, (mx,my)= cv2.minMaxLoc(image_diff)
       thresh = avg_px + ((max_val - avg_px) / 1.3)
-      if thresh < 25:
-         thresh = 25
+      if thresh < 5:
+         thresh = 5 
      
       cnts,rects = find_contours_in_frame(image_diff, thresh)
 
@@ -341,9 +374,8 @@ def detect_meteor_in_clip(trim_clip, frames = None, fn = 0, crop_x = 0, crop_y =
                cx = int(mx) 
                cy = int(my) 
                cv2.circle(show_frame,(cx+crop_x,cy+crop_y), 10, (255,255,255), 1)
-               print("CX, CY:", cx+crop_x,cy+crop_y)
 
-               object, objects = find_object(objects, fn,cx+crop_x, cy+crop_y, w, h, intensity)
+               object, objects = find_object(objects, fn,cx+crop_x, cy+crop_y, w, h, intensity, hd, sd_multi)
                #if len(objects[object]['ofns']) > 2:
                   #le_x, le_y = find_leading_edge(objects[object]['report']['x_dir_mod'], objects[object]['report']['y_dir_mod'],cx,cy,w,h,frame)
                   #print ("LEADING XY:", le_x, le_y)
@@ -354,9 +386,9 @@ def detect_meteor_in_clip(trim_clip, frames = None, fn = 0, crop_x = 0, crop_y =
                cv2.putText(show_frame, desc,  (x,y), cv2.FONT_HERSHEY_SIMPLEX, .4, (255, 255, 255), 1)
       
       show_frame = cv2.convertScaleAbs(show_frame)
-      #if show == 1:
-      #   cv2.imshow('Detect Meteor In Clip', show_frame)
-      #   cv2.waitKey(70)
+      if show == 1:
+         cv2.imshow('Detect Meteor In Clip', show_frame)
+         cv2.waitKey(70)
       fn = fn + 1
 
    return(objects, frames)   
@@ -379,10 +411,7 @@ def compute_intensity(x,y,w,h,frame, bg_frame):
    size=max(w,h)
    min_val, max_val, min_loc, (mx,my)= cv2.minMaxLoc(cnt)
    cx1,cy1,cx2,cy2 = bound_cnt(x+mx,y+my,frame.shape[1],frame.shape[0], size)
-   print("XYWH:", x,y,w,h)
-   print("CX:", cx1,cy1,cx2,cy2, size)
    cnt = frame[cy1:cy2,cx1:cx2]
-   print("CNT:", cnt.shape)
    bgcnt = bg_frame[cy1:cy2,cx1:cx2]
 
 
@@ -448,11 +477,11 @@ def get_cat_image_stars(cat_stars, frame,cal_params_file):
          bad = 0
 
       if star_int > 300 and px_diff > 20 and bad == 0:
-         print("star int:", star_int, px_diff)
          cv2.circle(frame,(int(new_cat_x),int(new_cat_y)), 10, (255,255,255), 1)
          cv2.circle(frame,(int(ix),int(iy)), 5, (255,255,255), 1)
          px_dist = calc_dist((ix,iy), (new_cat_x, new_cat_y))
-         cat_image_stars.append((name,mag,ra,dec,new_cat_x,new_cat_y,ix,iy,px_dist,cal_params_file))
+         #name #.decode("unicode_escape")
+         cat_image_stars.append((name.decode("unicode_escape"),mag,ra,dec,new_cat_x,new_cat_y,ix,iy,px_dist,cal_params_file))
    return(cat_image_stars)
 
 def format_calib(trim_clip, cal_params, cal_params_file):
@@ -501,7 +530,7 @@ def apply_calib(obj ):
    frame = hd_frames[0]
 
    frame = cv2.resize(frame, (1920,1080))
-   best_cal_files = get_best_cal_file(obj['hd_trim'])
+   best_cal_files = get_best_cal_file(obj['trim_clip'])
    cal_params_file = best_cal_files[0][0]
    print("BEST CAL FILE:", cal_params_file)
    cal_params = load_json_file(cal_params_file)
@@ -516,14 +545,14 @@ def apply_calib(obj ):
    cal_params['orig_pos_ang'] = cal_params['position_angle']
    cal_params['orig_pixscale'] = cal_params['pixscale']
 
-   cat_stars = flex_get_cat_stars(obj['hd_trim'], cal_params_file, json_conf, cal_params )
+   cat_stars = flex_get_cat_stars(obj['trim_clip'], cal_params_file, json_conf, cal_params )
    cat_image_stars = get_cat_image_stars(cat_stars, frame, cal_params_file)
 
    #cv2.imshow('pepe', frame)
    #cv2.waitKey(0)
 
    show = 1
-   if len(cat_image_stars) > 0:
+   if len(cat_image_stars) > 4:
       this_poly = np.zeros(shape=(4,), dtype=np.float64)
       start_res = reduce_fov_pos(this_poly, cal_params, obj['hd_trim'],frame,json_conf, cat_image_stars,0,show)
       cal_params_orig = cal_params.copy()
@@ -558,7 +587,7 @@ def apply_calib(obj ):
 
    calib = format_calib(obj['trim_clip'], cal_params, cal_params_file)
    
-   return(calib)
+   return(calib, cal_params)
 
 def get_best_cal_file(input_file):
    #print("INPUT FILE", input_file)
@@ -1144,19 +1173,11 @@ def scan_queue(cam):
 def scan_old_meteor_dir(dir):
    files = glob.glob(dir + "*trim*.json" )
    for file in files:
-      if "meteor.json" not in file and "fail.json" not in file:
+      if "meteor.json" not in file and "fail.json" not in file and "reduced" not in file:
          print(file)
          video_file = file.replace(".json", ".mp4")
-         meteor_file = file.replace(".json", "-meteor.json")
-         fail_file = file.replace(".json", "-fail.json")
-         if cfe(meteor_file) == 0 and cfe(fail_file) == 0:
-            print("Not processed yet. ", meteor_file, fail_file)
-            if cfe(video_file) == 1:
-               #quick_scan(video_file)
-               cmd = "./flex-detect.py qs " + video_file
-               print(cmd)
-               os.system(cmd)
-               #exit()
+         if cfe(video_file) == 1:
+            quick_scan(video_file)
          else:
             print("Done already.")
 
@@ -1276,17 +1297,42 @@ def batch_quick():
          print("already done.")
 
 
+def remaster_arc(video_file):
+   if "HD" in video_file: 
+      json_file = video_file.replace("-HD.mp4", ".json")
+   else:
+      json_file = video_file.replace("-SD.mp4", ".json")
+   out_file = video_file.replace(".mp4", "-pub.mp4")
+   jd = load_json_file(json_file)
+   frames,color_frames,subframes,sum_vals,max_vals = load_frames_fast(video_file, json_conf, 0, 0, [], 1,[])
+   fds = jd['frames']
+   meteor_obj = {}
+   meteor_obj['oxs'] = []
+   meteor_obj['oys'] = []
+   for fd in fds:
+      meteor_obj['oxs'].append(fd['x'])
+      meteor_obj['oys'].append(fd['y'])
+   remaster(color_frames,out_file,json_conf['site']['ams_id'], meteor_obj)
 
 def remaster(frames, marked_video_file, station,meteor_object): 
    new_frames = []
    radiant = False
    fx = meteor_object['oxs'][0]
    fy = meteor_object['oys'][0]
-   cx1,cy1,cx2,cy2= bound_cnt(fx,fy,frames[0].shape[1],frames[0].shape[0], 100)
-   hdm_x = 1920 / 1280 
-   hdm_y = 1080 / 720
+   ax = np.mean(meteor_object['oxs'])
+   ay = np.mean(meteor_object['oys'])
+
+   cx1,cy1,cx2,cy2= bound_cnt(ax,ay,frames[0].shape[1],frames[0].shape[0], 100)
+   #hdm_x = 1920 / 1280 
+   #hdm_y = 1080 / 720
+   hdm_x = 1
+   hdm_y = 1
    cx1,cy1,cx2,cy2= int(cx1/hdm_x),int(cy1/hdm_y),int(cx2/hdm_x),int(cy2/hdm_y) 
-   extra_logo = False
+   if "extra_logo" in json_conf['site']:
+      logo_file = json_conf['site']['extra_logo']
+      extra_logo = cv2.imread(logo_file, cv2.IMREAD_UNCHANGED)
+   else:
+      extra_logo = False
    #Get Date & time
    (hd_datetime, cam, sd_date, sd_y, sd_m, sd_d, sd_h, sd_M, sd_s) = convert_filename_to_date_cam(video_file)
 
@@ -1303,9 +1349,11 @@ def remaster(frames, marked_video_file, station,meteor_object):
 
    ams_logo = cv2.imread(AMS_WATERMARK, cv2.IMREAD_UNCHANGED)
    ams_logo_pos = "tl"
-   extra_text = "Sirko Molau - Ketzur, Germany"
+   if "extra_text" in json_conf['site']:
+      extra_text = json_conf['site']['extra_text']
    extra_text_pos = "bl"
    date_time_pos = "br"
+   extra_logo_pos = "tr"
    fc = 0
    for frame in frames:
 
@@ -1321,19 +1369,20 @@ def remaster(frames, marked_video_file, station,meteor_object):
          cv2.rectangle(hd_img, (cx1, cy1), (cx2, cy2), (color,color,color), 1, cv2.LINE_AA)
 
       # Add AMS Logo
-      #hd_img = add_overlay_cv(hd_img, ams_logo, ams_logo_pos)
+      hd_img = add_overlay_cv(hd_img, ams_logo, ams_logo_pos)
 
       # Add Eventual Extra Logo
       if(extra_logo is not False and extra_logo is not None):
+         print("EXTRA:", extra_logo_pos) 
          hd_img = add_overlay_cv(hd_img,extra_logo,extra_logo_pos)
 
       # Add Date & Time
       frame_time_str = station_id + ' - ' + frame_time_str + ' UT'
-      #hd_img,xx,yy,ww,hh = add_text_to_pos(hd_img,frame_time_str,date_time_pos,2) #extra_text_pos => bl?
+      hd_img,xx,yy,ww,hh = add_text_to_pos(hd_img,frame_time_str,date_time_pos,2) #extra_text_pos => bl?
 
       # Add Extra_info
-      #if(extra_text is not False):
-      #   hd_img,xx,yy,ww,hh = add_text_to_pos(hd_img,extra_text,extra_text_pos,2,True)  #extra_text_pos => br?
+      if(extra_text is not False):
+         hd_img,xx,yy,ww,hh = add_text_to_pos(hd_img,extra_text,extra_text_pos,2,True)  #extra_text_pos => br?
 
       # Add Radiant
       if(radiant is not False):
@@ -1491,13 +1540,13 @@ def add_overlay_x_y_cv(background, overlay, x, y):
 # Add semi-transparent overlay over background
 # Position = br, bl, tr, tl (ex: br = bottom right)
 # return updated cv matrix
-def add_overlay_cv(background, overlay, position):
-    background_width,background_height  = background.shape[1], background.shape[0]
-    # Get overlay position - see lib.Video_Tools_cv_lib
-    #x,y = get_overlay_position_cv(background,overlay,position)
-    x = 5
-    y = 5
-    return add_overlay_x_y_cv(background, overlay, x, y)
+#def add_overlay_cv(background, overlay, position):
+#    background_width,background_height  = background.shape[1], background.shape[0]
+#    # Get overlay position - see lib.Video_Tools_cv_lib
+#    #x,y = get_overlay_position_cv(background,overlay,position)
+#    x = 5
+#    y = 5
+#    return add_overlay_x_y_cv(background, overlay, x, y)
 
 
 # Add radiant to a frame
@@ -1864,7 +1913,7 @@ def cnt_size_test(object):
    big_perc = big / len(object['ofns'])
    return(big_perc)
 
-def analyze_object_final(object):
+def analyze_object_final(object, hd=0, sd_multi=1):
    id = object['obj_id']
 
    # make sure all of the frames belong to the same cluster
@@ -1895,7 +1944,7 @@ def analyze_object_final(object):
 
    if len(objects_by_label) == 1:
       # there is only one cluster of frames so we are good. 
-      object = analyze_object(object)
+      object = analyze_object(object, hd, sd_multi)
       return(object)
    else:
       # there is more than one cluster of frames, so we need to remove the erroneous frames 
@@ -2276,7 +2325,12 @@ def bound_point(est_y, est_x, image):
    return(est_x, est_y)
 
 
-def analyze_object(object):
+def analyze_object(object, hd = 0, sd_multi = 1):
+   if hd == 1:
+      deg_multi = .042
+   else:
+      deg_multi = .042 * sd_multi
+
    if "ofns" not in object:
       if "report" not in object:
          object['report'] = {}
@@ -2294,7 +2348,6 @@ def analyze_object(object):
 
    if len(object['ofns']) > 2:
       dir_test_perc = meteor_dir_test(object['oxs'],object['oys'])
-      #print("DIR TEST PERC:", dir_test_perc)
       big_perc = cnt_size_test(object)
    else:
       dir_test_perc = 0
@@ -2316,9 +2369,14 @@ def analyze_object(object):
    min_int = max(object['oint'])
    max_h = max(object['ohs'])
    max_w = max(object['ows'])
-   max_x = max_x + max_w
-   max_h = max_y + max_h
+   #max_x = max_x + max_w
+   #max_h = max_y + max_h
+
    med_int = float(np.median(object['oint']))
+   intense_neg = 0
+   for intense in object['oint']:
+      if intense < 0:
+         intense_neg = intense_neg + 1
    min_max_dist = calc_dist((min_x, min_y), (max_x,max_y))
    if len(object['ofns']) > 0:
       dist_per_elp = min_max_dist / len(object['ofns']) 
@@ -2389,6 +2447,9 @@ def analyze_object(object):
    #if elp > 300:
    #   meteor_yn = "no"
    #   bad_items.append("more than 300 frames in event.")
+   if intense_neg > 4:
+      meteor_yn = "no" 
+      bad_items.append("to much negative intensity." + str(intense_neg))
    if elp < 2:
       meteor_yn = "no" 
       bad_items.append("less than 2 frames in event.")
@@ -2404,7 +2465,7 @@ def analyze_object(object):
       meteor_yn = "no"
       obj_class = "bird"
       bad_items.append("low or negative median intensity.")
-   if dir_test_perc > .25 :
+   if dir_test_perc < .5 :
       meteor_yn = "no"
       obj_class = "noise"
       bad_items.append("direction test failed." + str(dir_test_perc))
@@ -2414,12 +2475,17 @@ def analyze_object(object):
       obj_class = "star"
       meteor_yn = "no"
       bad_items.append("not enough distance.")
-   if min_max_dist * .042 < .3:
+   if (min_max_dist * sd_multi) < .3:
       meteor_yn = "no"
       bad_items.append("bad angular distance below .3.")
-   if (dist_per_elp * .042) * 25 < 1.3:
+   if (dist_per_elp * sd_multi) * 25 < 1.3:
       meteor_yn = "no"
       bad_items.append("bad angular velocity below 1")
+
+   if elp > 0:
+      if min_max_dist * sd_multi < 1 and max_cm <= 5 and cm / elp < .75 :
+         meteor_yn = "no"
+         bad_items.append("short distance, many gaps, low cm")
 
    if len(bad_items) >= 1:
       meteor_yn = "no"
@@ -2433,8 +2499,8 @@ def analyze_object(object):
       obj_class = "meteor"
   
    object['report'] = {}
-   object['report']['angular_separation'] = min_max_dist * .042
-   object['report']['angular_velocity'] =  (dist_per_elp * .042) * 25
+   object['report']['angular_separation'] = min_max_dist * sd_multi
+   object['report']['angular_velocity'] =  (dist_per_elp * sd_multi) * 25
    object['report']['elp'] = elp
    object['report']['min_max_dist'] = min_max_dist
    object['report']['dist_per_elp'] = dist_per_elp
@@ -2477,9 +2543,9 @@ def calc_obj_dist(obj1, obj2):
    #print("MIN DIST:", min_dist)        
    return(min_dist) 
 
-def find_object(objects, fn, cnt_x, cnt_y, cnt_w, cnt_h, intensity=0):
+def find_object(objects, fn, cnt_x, cnt_y, cnt_w, cnt_h, intensity=0, hd=0, sd_multi=1):
    #obj_dist_thresh = 50
-   obj_dist_thresh = 20 
+   obj_dist_thresh = 40 
    center_x = cnt_x 
    center_y = cnt_y  
 
@@ -2526,7 +2592,7 @@ def find_object(objects, fn, cnt_x, cnt_y, cnt_w, cnt_h, intensity=0):
       objects[found_obj]['oint'].append(intensity)
 
    #objects[found_obj] = clean_object(objects[found_obj])
-   objects[found_obj] = analyze_object(objects[found_obj])
+   objects[found_obj] = analyze_object(objects[found_obj], hd, sd_multi)
    return(found_obj, objects)
 
 def clean_object(obj):
@@ -2579,11 +2645,11 @@ def meteor_dir_test(fxs,fys):
          nomatch = nomatch + 1
 
  
-   if match > 0: 
-      perc = nomatch / match 
+   if len(fxs) > 0: 
+      perc = match / len(fxs)
    else:
       perc = 0
-
+   #print("DIR TEST PERC:", nomatch, match, perc)
    return(perc)
 
 def meteor_dir(fx,fy,lx,ly):
@@ -3143,10 +3209,17 @@ def fast_check_events(sum_vals, max_vals, subframes):
    med_sum = np.median(sum_vals)
    med_max = np.median(max_vals)
    #median_frame = cv2.convertScaleAbs(np.median(np.array(subframes), axis=0))
+   if subframes[0].shape[1] == 1920:
+      hd = 1
+      sd_multi = 1
+   else:
+      hd = 0
+      sd_multi = 1920 / subframes[0].shape[1]
+
    for sum_val in sum_vals:
       max_val = max_vals[i]
-      #print(i, med_sum, med_max, sum_val , max_val)
-      if sum_val > med_sum * 2 or max_val > med_max * 10:
+      print(i, med_sum, med_max, sum_val , max_val)
+      if sum_val > med_sum * 2 or max_val > med_max * 4:
          subframe = subframes[i]
          min_val, max_val, min_loc, (mx,my)= cv2.minMaxLoc(subframe)
          desc = str(i)
@@ -3159,18 +3232,15 @@ def fast_check_events(sum_vals, max_vals, subframes):
             nomo = 0
          else:
             nomo = nomo + 1
-         #if show == 1:
-         #   cv2.imshow("Fast check", subframe)
-         #   cv2.waitKey(0)
       else:
          nomo = nomo + 1
-      if cm > 2 and nomo > 3:
+      if cm > 2 and nomo > 2:
          events.append(event)
          events_info.append(event_info)
          event = []
          event_info = []
          cm = 0
-      elif nomo > 3:
+      elif nomo > 2:
          event = []
          event_info = []
          cm = 0
@@ -3179,16 +3249,15 @@ def fast_check_events(sum_vals, max_vals, subframes):
    i = 0
    objects = {}
    for event in events:
-      print("EVENT:", event)
       ev_z = event[0]
       object = None
       fc = 0
       for evi in events_info[i]:
          sv, mv, mx, my = evi
          fn = event[fc]
-         object, objects = find_object(objects, fn,mx, my, 5, 5, mv)
-         if 500 <= ev_z <= 700:
-            print("OBJECT:", object, objects[object])
+         object, objects = find_object(objects, fn,mx, my, 5, 5, mv, hd, sd_multi)
+         #if 500 <= ev_z <= 700:
+         #   print("OBJECT:", object, objects[object])
          fc = fc + 1
       i = i + 1
 
@@ -3203,8 +3272,7 @@ def fast_check_events(sum_vals, max_vals, subframes):
          print("NON METEOR:", object, objects[object]['ofns'])
          print("NON METEOR:", object, objects[object]['report'])
 
-   #print("EVENTS:", events)
-   print("POS METEORS:", pos_meteors)
+   print("POS METEORS:", pos_meteors, len(subframes))
    return(events, pos_meteors)
 
 
@@ -3220,10 +3288,18 @@ def quick_scan(video_file, old_meteor = 0):
    if "mp4" not in video_file or cfe(video_file) == 0:
       print("BAD INPUT FILE:", video_file)
       return([])
+
    if "/mnt/ams2/meteors" in video_file:
       rescan = 1
    else:
       rescan = 0
+   if rescan == 1:
+      # Make sure this file is not already in the archive.
+      jsf = video_file.replace(".mp4", ".json")
+      ojs = load_json_file(jsf)
+      if "archive_file" in ojs:
+         print("File has been archived already!")
+         #return()
  
    #PREP WORK
 
@@ -3278,6 +3354,10 @@ def quick_scan(video_file, old_meteor = 0):
       elapsed_time = time.time() - start_time
       print("ELAPSED TIME:", elapsed_time)
       print("NO METEORS:", elapsed_time)
+      log_import_errors(video_file, "No meteors detected in 1st scan.")
+      #fp = open("/mnt/ams2/meteors/import_errors.txt", "a")
+      #fp.write(str(video_file) + "," + "No possible meteors found.\n")
+      #fp.close()
       return([])
 
    meteor_file = video_file.replace(".mp4", "-meteor.json")
@@ -3286,7 +3366,7 @@ def quick_scan(video_file, old_meteor = 0):
    all_motion_objects = []
    for object in pos_meteors:
       start, end = buffered_start_end(pos_meteors[object]['ofns'][0],pos_meteors[object]['ofns'][-1], len(frames), 50)
-      print("BUFFERED START:", start, end)
+      #print("BUFFERED START:", start, end)
       if rescan == 0:
          trim_clip, trim_start, trim_end = make_trim_clip(video_file, start, end)
       else:
@@ -3358,9 +3438,23 @@ def quick_scan(video_file, old_meteor = 0):
          obj['hd_trim'] = md['hd_trim']
          obj['hd_video_file'] = md['hd_video_file']
          obj['hd_crop_file'] = md['hd_crop_file']
-         calib = apply_calib(obj)
+         calib,cal_params = apply_calib(obj)
          obj['calib'] = calib
-         sync_hd_sd_frames(obj)
+         obj['cal_params'] = cal_params 
+         if obj['hd_trim'] == 0:
+            print("Crap no hd_trim for this file.", obj['trim_clip'])
+            fp = open("/mnt/ams2/meteors/import_errors.txt", "a")
+            fp.write(str(obj['trim_clip']) + "," + str(obj['hd_trim'])+ "," + "SD & HD objects don't match\n")
+            fp.close()
+
+
+            return()
+         else:
+            new_json_file = sync_hd_sd_frames(obj)
+         if new_json_file == 0:
+            return(0)
+        
+         obj['new_json_file'] = new_json_file 
          save_old_style_meteor_json(old_meteor_json_file, obj, trim_clip )
       return(meteors)
 
@@ -3385,10 +3479,11 @@ def quick_scan(video_file, old_meteor = 0):
             obj['hd_crop_file'] = hd_crop
             obj['crop_box'] = crop_box
             obj['hd_crop_objects'] = hd_crop_objects
-            print("mv " + hd_trim + " " + old_meteor_dir)
-            os.system("mv " + hd_trim + " " + old_meteor_dir)
-            print("mv " + hd_crop + " " + old_meteor_dir)
-            os.system("mv " + hd_crop + " " + old_meteor_dir)
+            if rescan == 0:
+               print("mv " + hd_trim + " " + old_meteor_dir)
+               os.system("mv " + hd_trim + " " + old_meteor_dir)
+               print("mv " + hd_crop + " " + old_meteor_dir)
+               os.system("mv " + hd_crop + " " + old_meteor_dir)
          else:
             obj['hd_trim'] = 0
             obj['hd_video_file'] = 0
@@ -3401,6 +3496,25 @@ def quick_scan(video_file, old_meteor = 0):
 
    return([])
 
+def log_import_errors(video_file, message):
+   fn = video_file.split("/")[-1]
+   day = fn[0:10]
+   log_file = "/mnt/ams2/meteors/" + day + "import_errors.json"
+   if cfe(log_file) == 1:
+      log = load_json_file(log_file)
+   else:
+      log = {}
+   print("LOG:", log_file, log)
+   log[video_file] = message
+   save_json_file(log_file, log_file)
+
+def only_meteors(objects):
+   meteors = []
+   for obj in objects:
+      if objects[obj]['report']['meteor_yn'] == "Y":
+         meteors.append(objects[obj])
+   return(meteors)
+
 def sync_hd_sd_frames(obj):
    orig_obj = obj
    print("SYNC FRAMES!")
@@ -3408,32 +3522,28 @@ def sync_hd_sd_frames(obj):
    print("SD TRIM:", obj['trim_clip'])
    sd_trim_num = get_trim_num(obj['trim_clip'])
    first_sd_frame = obj['ofns'][0]
-   sd_frames,sd_color_frames,sd_subframes,sd_sum_vals,sd_max_vals = load_frames_fast(obj['trim_clip'], json_conf, 0, 0, [], 0,[])
-   hd_frames,hd_color_frames,hd_subframes,hd_sum_vals,hd_max_vals = load_frames_fast(obj['hd_trim'], json_conf, 0, 0, [], 0,[])
-   fc = 0
-   for val in sd_max_vals:
-      print("SD VAL:", fc, val)
-      fc = fc + 1
-   fc = 0
-   for val in hd_max_vals:
-      print("HD VAL:", fc, val)
-      fc = fc + 1
-   print("HD FRAMES:", len(hd_frames))
-   print("SD FRAMES:", len(sd_frames))
-   sd_events,sd_pos_meteors = fast_check_events(sd_sum_vals, sd_max_vals, sd_subframes)
-   hd_events,hd_pos_meteors = fast_check_events(hd_sum_vals, hd_max_vals, hd_subframes)
-   print("SD EVENTS:", sd_events)
-   print("HD EVENTS:", hd_events)
-   if len(sd_events[0]) == len(hd_events[0]):
+   sd_frames,sd_color_frames,sd_subframes,sd_sum_vals,sd_max_vals = load_frames_fast(obj['trim_clip'], json_conf, 0, 0, [], 1,[])
+   hd_frames,hd_color_frames,hd_subframes,hd_sum_vals,hd_max_vals = load_frames_fast(obj['hd_trim'], json_conf, 0, 0, [], 1,[])
+
+   hd_objects,trash = detect_meteor_in_clip(obj['hd_trim'], hd_frames, 0, 0)
+   sd_objects,trash = detect_meteor_in_clip(obj['trim_clip'], sd_frames, 0, 0)
+   all = hd_objects
+   hd_objects = only_meteors(hd_objects)
+   sd_objects = only_meteors(sd_objects)
+   print("SD:", sd_objects)
+   print("HD:", hd_objects, all)
+
+
+   if len(hd_objects) == len(sd_objects):
       print("We have a match!") 
-      sd_ind = sd_events[0][0]
-      hd_ind = hd_events[0][0]
+      sd_ind = sd_objects[0]['ofns'][0]
+      hd_ind = hd_objects[0]['ofns'][0]
       sync_diff = hd_ind - sd_ind
 
       sdf = []
       hdf = []
-      for i in range(0, len(sd_events[0])):
-         sd_fn = sd_events[0][i]
+      for i in range(0, len(sd_objects[0]['ofns'])):
+         sd_fn = sd_objects[0]['ofns'][i]
          hd_fn = sd_fn + sync_diff 
          print("SD,HD SYNC:", sd_fn, hd_fn)
          sd_frame = sd_frames[sd_fn]
@@ -3445,12 +3555,29 @@ def sync_hd_sd_frames(obj):
          hd_frame = cv2.resize(hd_frame, (0,0),fx=.25, fy=.25)
          #cv2.imshow('hd', hd_frame)
          #cv2.waitKey(0)
+   else:
+      print("Problem sd and hd events don't match up perfectly...")
+      #fp = open("/mnt/ams2/meteors/import_errors.txt", "a")
+      #fp.write(orig_obj['trim_clip'] + "," + obj['hd_trim']+ "," + "SD & HD objects don't match\n")
+      #fp.close()
+      log_import_errors(orig_obj['trim_clip'], "Problem with sd and hd events don't match perfectly.")
+      show_objects(sd_objects)
+      show_objects(hd_objects)
+      return(0)
 
    buf_size = 20
    sd_bs,sd_be = buffered_start_end(sdf[0],sdf[-1], len(hd_frames), buf_size)
    hd_bs,hd_be = buffered_start_end(hdf[0],hdf[-1], len(hd_frames), buf_size)
 
+   (f_datetime, cam, f_date_str,fy,fm,fd, fh, fmin, fs) = convert_filename_to_date_cam(obj['trim_clip'])
    new_sd_trim_num = sdf[0] - buf_size + sd_trim_num
+   extra_sec = new_sd_trim_num / 25
+
+   start_trim_frame_time = f_datetime + datetime.timedelta(0,extra_sec)
+
+
+
+
    print("SD TRIM NUM OLD/NEW:", sd_trim_num, new_sd_trim_num)
    xxx = obj['trim_clip'].split("/")[-1]
    fnw = xxx.split("-trim")[0]
@@ -3463,16 +3590,22 @@ def sync_hd_sd_frames(obj):
 
    new_hd_frames = hd_frames[hd_bs:hd_be]
    new_sd_frames = sd_frames[sd_bs:sd_be]
+   new_hd_color_frames = hd_color_frames[hd_bs:hd_be]
+   new_sd_color_frames = sd_color_frames[sd_bs:sd_be]
 
    hd_objects,trash = detect_meteor_in_clip(new_hd_file_name, new_hd_frames, 0, 0)
    sd_objects,trash = detect_meteor_in_clip(new_sd_file_name, new_sd_frames, 0, 0)
    print("HD OBJ:", hd_objects)
+   
    print("SD OBJ:", sd_objects)
   
    hd_meteors = []
+   ftimes = []
    for obj in hd_objects:
       
       if hd_objects[obj]['report']['meteor_yn'] == 'Y':
+         print(hd_objects[obj]['ofns'])
+         print(hd_objects[obj]['report'])
          hd_meteors.append(hd_objects[obj])
    
    if len(hd_meteors) == 0:
@@ -3480,47 +3613,79 @@ def sync_hd_sd_frames(obj):
       exit()
    elif len(hd_meteors) == 1:
       meteor_obj = hd_meteors[0]
-      make_movie_from_frames(new_hd_frames, [0,len(new_hd_frames) - 1], new_hd_file_name, 0)
-      make_movie_from_frames(new_sd_frames, [0,len(new_hd_frames) - 1], new_sd_file_name, 0)
+      make_movie_from_frames(new_hd_color_frames, [0,len(new_hd_frames) - 1], new_hd_file_name, 0)
+      make_movie_from_frames(new_sd_color_frames, [0,len(new_hd_frames) - 1], new_sd_file_name, 0)
       meteor_obj['calib'] = orig_obj['calib']
       meteor_obj['hd_trim'] = orig_obj['hd_trim']
       meteor_obj['trim_clip'] = orig_obj['trim_clip']
       meteor_obj['hd_file'] = new_hd_file_name 
       meteor_obj['sd_file'] = new_sd_file_name 
-      save_new_style_meteor_json (meteor_obj, new_sd_file_name)
+      meteor_obj['dt'] = start_trim_frame_time.strftime('%Y-%m-%d %H:%M:%S.%f')[:-3]
+
       hdm_x = new_hd_frames[0].shape[1] / new_sd_frames[0].shape[1] 
       hdm_y = new_hd_frames[0].shape[0] / new_sd_frames[0].shape[0] 
       for i in range(0,len(meteor_obj['ofns'])):
+         if "ftimes" not in meteor_obj:
+            meteor_obj['ftimes'] = []
          fn = meteor_obj['ofns'][i]
          hd_x = meteor_obj['oxs'][i]
          hd_y = meteor_obj['oys'][i]
+
+         extra_meteor_sec = fn /  25
+         meteor_frame_time = start_trim_frame_time + datetime.timedelta(0,extra_meteor_sec)
+         meteor_frame_time_str = meteor_frame_time.strftime('%Y-%m-%d %H:%M:%S.%f')[:-3]
+         meteor_obj['ftimes'].append(meteor_frame_time_str)
+         ftimes.append(meteor_frame_time)
+         print("METEOR FRAME TIME:", meteor_frame_time_str)
+
          print("HD FN", fn)
          hd_frame = new_hd_frames[fn]
-         sd_frame = new_sd_frames[fn]
+         print("DEBUG:", len(new_sd_frames), fn)
          cx1,cy1,cx2,cy2= bound_cnt(hd_x,hd_y,new_hd_frames[0].shape[1],new_hd_frames[0].shape[0], 20)
          hd_cnt = new_hd_frames[fn][cy1:cy2,cx1:cx2]
 
          sd_x = int(hd_x / hdm_x)
          sd_y = int(hd_y / hdm_y)
          cx1,cy1,cx2,cy2= bound_cnt(sd_x,sd_y,new_sd_frames[0].shape[1],new_sd_frames[0].shape[0], 20)
-         sd_cnt = new_sd_frames[fn][cy1:cy2,cx1:cx2]
+         #sd_frame = new_sd_frames[fn]
+         #sd_cnt = new_sd_frames[fn][cy1:cy2,cx1:cx2]
 
-         show_img = sd_frame 
-         cv2.rectangle(show_img, (cx1, cy1), (cx2, cy2), (255,255,255), 1, cv2.LINE_AA)
+         #show_img = sd_frame 
+         #cv2.rectangle(show_img, (cx1, cy1), (cx2, cy2), (255,255,255), 1, cv2.LINE_AA)
 
 
-         cv2.imshow('SYNC', hd_cnt)
-         cv2.waitKey(0)
-         cv2.imshow('SYNC SD', sd_cnt)
-         cv2.waitKey(0)
+         #cv2.imshow('SYNC', hd_cnt)
+         #cv2.waitKey(70)
+         #cv2.imshow('SYNC SD', sd_cnt)
+         #cv2.waitKey(70)
    else:
       print("MORE THAN ONE METEOR OBJECT! NOT COOL!")
-      exit()
-
+      #fp = open("/mnt/ams2/meteors/import_errors.txt", "a")
+      #fp.write(str(orig_obj['trim_clip']) + "," + str(orig_obj['hd_trim'])+ "," + "MORE THAN ONE METEOR OBJECT\n")
+      #fp.close()
+      log_import_errors(orig_obj['trim_clip'], "More than one meteor object.")
+      return(0)
+   meteor_obj['dur'] = (ftimes[-1] - ftimes[0]).total_seconds()
+   meteor_obj['cal_params'] = orig_obj['cal_params'] 
+   print("METEOR OBJ:", meteor_obj)
    new_json = save_new_style_meteor_json(meteor_obj, new_hd_file_name)
    save_json_file(new_json_file_name, new_json)
+   move_to_archive(new_json_file_name)
+   write_archive_index(fy) 
+   print(new_json_file_name)
+   return(new_json_file_name)
 
-   
+def show_objects(objects):
+   for obj in objects:
+      print("Object: ", obj)
+      print("FNS:", obj['ofns'])   
+      print("XS:", obj['oxs'])   
+      print("YS:", obj['oys'])   
+      print("WS:", obj['ows'])   
+      print("HS:", obj['ohs'])   
+      print("INTS:", obj['oint'])   
+      for key in obj['report']:
+         print("   ", key, obj['report'][key])   
 
 def old_detection_codes():
    exit()
@@ -4649,6 +4814,36 @@ def draw_obj_on_frame(frame, obj):
       cv2.circle(frame,(x,y), 10, (0,255,0), 1)
    return(frame)
 
+def write_archive_index(year):
+   from lib.Archive_Listing import create_json_index_year 
+   create_json_index_year(year)
+
+   #write_index(year)
+
+def move_to_archive(json_file):
+
+   (hd_datetime, cam, sd_date, sd_y, sd_m, sd_d, sd_h, sd_M, sd_s) = convert_filename_to_date_cam(json_file)
+   hd_vid = json_file.replace(".json", "-HD.mp4")
+   sd_vid = json_file.replace(".json", "-SD.mp4")
+   station_id = json_conf['site']['ams_id'].upper()
+   meteor_dir = METEOR_ARCHIVE + station_id + "/" + METEOR + sd_y + "/" + sd_m + "/" + sd_d + "/"
+
+   # If the new_folder doesn't exist, we create it
+   if not os.path.exists(meteor_dir):
+      os.makedirs(meteor_dir)
+
+   # MOVE the files into the archive (All these files are prepped and named and ready to go.
+   cmd = "cp " + json_file + " " + meteor_dir
+   os.system(cmd)
+   cmd = "cp " + hd_vid + " " + meteor_dir
+   os.system(cmd)
+   cmd = "cp " + sd_vid + " " + meteor_dir
+   os.system(cmd)
+   cmd = "./MakeCache.py " + json_file
+   print(cmd)
+   os.system(cmd)
+
+
 def spectra(hd_stack):
    img = cv2.imread(hd_stack, 0)
    thresh_val = 100
@@ -4659,6 +4854,15 @@ def spectra(hd_stack):
          cv2.rectangle(img, (x, y), (x+w, y+h), (255,255,255), 1, cv2.LINE_AA)
    #cv2.imshow('pepe', img)
    #cv2.waitKey(0)
+
+def rerun(video_file):
+   day_dir = video_file[0:10]
+   cmd = "cp /mnt/ams2/SD/proc2/" + day_dir + "/" + video_file + " /mnt/ams2/CAMS/queue/"
+   print(cmd)
+   os.system(cmd)
+   cmd = "./flex-detect.py qs /mnt/ams2/CAMS/queue/" + video_file
+   print(cmd)
+   os.system(cmd)
 
 cmd = sys.argv[1]
 video_file = sys.argv[2]
@@ -4692,3 +4896,8 @@ if cmd == "rm" or cmd == "review_meteor":
    review_meteor(video_file)
 if cmd == "sp" or cmd == "spectra":
    spectra(video_file)
+if cmd == "rr" or cmd == "rerun":
+   rerun(video_file)
+if cmd == "remaster":
+   remaster_arc(video_file)
+
