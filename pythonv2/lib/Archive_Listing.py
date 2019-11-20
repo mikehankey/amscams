@@ -175,7 +175,7 @@ def create_json_index_year(year):
             cur_day = os.path.basename(os.path.normpath(day))		
             cur_day_data = []
 
-            if(".json" not in cur_day):
+            if('json' not in cur_day):
 
                for detection in sorted(glob.iglob(day + os.sep +  '*' + '.json', recursive=True), reverse=True):
                   
@@ -197,15 +197,16 @@ def create_json_index_year(year):
                except:
                   cur_month_data[int(cur_day)] = []
                
-            # Add the day
-            cur_month_data[int(cur_day)] = cur_day_data
+               # Add the day
+               cur_month_data[int(cur_day)] = cur_day_data
  
          try:
                index_year['months'][int(cur_month)]
          except:
                index_year['months'][int(cur_month)] = []
 
-         index_year['months'][int(cur_month)].append(cur_month_data)
+         if(cur_month_data):
+            index_year['months'][int(cur_month)].append(cur_month_data)
 
    return index_year 
 
