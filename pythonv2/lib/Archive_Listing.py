@@ -305,14 +305,22 @@ def get_video(_file):
    else:
       return _file
 
+
 # Get HTML version of each detection
 def get_html_detections(res,clear_cache):
 
    res_html = ''
    prev_date = None
    
+   print(res)
+   sys.exit()
+
    for detection in res:
-      det = name_analyser(detection)
+
+      # We add the missing info to detection['p']
+      # so the name analyser will work
+
+      det = name_analyser(detection['p'])
       det['full_path'] = get_full_path_detection(det) + det['full_path']
       
       cur_date = get_datetime_from_analysedname(det)
@@ -420,7 +428,7 @@ def archive_listing(form):
 
       print("I AM CURRENTLY WORKING ON THIS PAGE - PLEASE OLD ON")
       res = get_results_from_date_from_monthly_index(the_date,index,int(nompp))
-      
+
 
       # If we don't have enough detection to display we try the previous year
       if(res):
