@@ -267,7 +267,7 @@ def get_results_from_date_from_monthly_index(date,json_index,max_res):
    if("days" in json_index and "month" in json_index):
       cur_month = json_index['month']
       
-      if((int)cur_month==(int)date.month):
+      if(int(cur_month)==int(date.month)):
          cur_month_test = True
 
       all_days =  json_index['days'] 
