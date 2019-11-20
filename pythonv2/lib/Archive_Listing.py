@@ -269,9 +269,9 @@ def get_results_from_date_from_monthly_index(date,json_index,max_res):
 
       keylist = list(all_days.keys())
       print(keylist)
-      keylist.sort()
+    
       print("<hr/>")
-      print(keylist)
+      print(sorted(keylist))
       sys.exit(0)
 
 
