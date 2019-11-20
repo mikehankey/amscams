@@ -209,8 +209,6 @@ def save_new_style_meteor_json (meteor_obj, trim_clip ):
    mj['info']['org_hd_vid'] = meteor_obj['hd_trim']
    mj['info']['org_sd_vid'] = meteor_obj['trim_clip']
    mj['info']['device'] = cam
-   mj['info']['dur'] = meteor_obj['dur']
-   mj['info']['max_peak'] = max(meteor_obj['oint'])
    if "report" in meteor_obj:
       mj['report'] = meteor_obj['report']
       mj['report']['max_peak'] = max(meteor_obj['oint'])
@@ -3392,7 +3390,6 @@ def quick_scan(video_file, old_meteor = 0):
          if "hd_video_file" in md:
             obj['hd_video_file'] = md['hd_video_file']
             obj['hd_crop_file'] = md['hd_crop_file']
-            obj['hd_trim'] = md['hd_video_file']
          elif "hd_trim" in md:
             obj['hd_video_file'] = md['hd_trim']
             obj['hd_trim'] = md['hd_trim']
@@ -3629,7 +3626,7 @@ def sync_hd_sd_frames(obj):
    new_json = save_new_style_meteor_json(meteor_obj, new_hd_file_name)
    save_json_file(new_json_file_name, new_json)
    move_to_archive(new_json_file_name)
-   write_archive_index(fy) 
+   write_archive_index(fy,fm) 
    print(new_json_file_name)
    return(new_json_file_name)
 
@@ -4758,7 +4755,7 @@ def draw_obj_on_frame(frame, obj):
       cv2.circle(frame,(x,y), 10, (0,255,0), 1)
    return(frame)
 
-def write_archive_index(year):
+def write_archive_index(year,month):
    from lib.Archive_Listing import create_json_index_year 
    create_json_index_year(year)
 
