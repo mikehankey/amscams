@@ -323,9 +323,11 @@ def get_html_detections(res,clear_cache):
       # We add the missing info to detection['p']
       # so the name analyser will work
       det = name_analyser(detection['p'])
-     
       cur_date = get_datetime_from_analysedname(det)
- 
+
+      print(cur_date)
+
+
       if(prev_date is None):
          prev_date = cur_date
          res_html += '<div class="h2_holder d-flex justify-content-between"><h2>'+cur_date.strftime("%Y/%m/%d")+'</h2></div>'
