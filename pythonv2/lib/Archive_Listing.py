@@ -406,7 +406,7 @@ def get_html_detections(res,clear_cache):
       res_html += '              <dt class="col-6">Duration</dt>  	   <dd class="col-6">'+ str(detection['dur']) +'s</dd>'
       res_html += '              <dt class="col-6">Res. Error</dt>      <dd class="col-6">'+str(detection['res_er'])+'</dd>'
       res_html += '              <dt class="col-6">Ang. Velocity</dt>   <dd class="col-6">'+str(detection['ang_v'])+'&deg;/sec</dd>'
-      res_html += ' </dl>
+      res_html += ' </dl>'
       
       res_html += '</div>'
       res_html += '     <div class="btn-toolbar pr-0 pb-0"><div class="btn-group"><a class="vid_link_gal col btn btn-primary btn-sm" title="Play Video" href="./video_player.html?video='+path_to_vid+'"><i class="icon-play"></i></a>'
