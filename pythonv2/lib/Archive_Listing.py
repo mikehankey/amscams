@@ -400,8 +400,15 @@ def get_html_detections(res,clear_cache):
       res_html += '  </div></div>'
       res_html += '  <div class="d-flex justify-content-between">'
       res_html += '     <div class="pre-b gallery-only"><span class="mst">Cam #'+det['cam_id']+' - <b>'+det['hour']+':'+det['min']+'</b></span>'
-      res_html += '<span>Mag: ' + str(detection['mag']) + ' / Dur: '+ str(detection['dur']) +'s</span>'
-      res_html += '<span>Res. Error: ' + str(detection['res_er']) + ' / Ang. Velocity: '+ str(detection['ang_v']) +'&deg;/sec</span></div>'
+      
+      res_html += ' <dl class="row mb-0">'
+      res_html += '              <dt class="col-6">Mag</dt>             <dd class="col-6">' + str(detection['mag']) + '</dd>'
+      res_html += '              <dt class="col-6">Duration</dt>  	   <dd class="col-6">'+ str(detection['dur']) +'s</dd>'
+      res_html += '              <dt class="col-6">Res. Error</dt>      <dd class="col-6">'+str(detection['res_er'])+'</dd>'
+      res_html += '              <dt class="col-6">Ang. Velocity</dt>   <dd class="col-6">'+str(detection['ang_v'])+'&deg;/sec</dd>'
+      res_html += ' </dl>
+      
+      res_html += '</div>'
       res_html += '     <div class="btn-toolbar pr-0 pb-0"><div class="btn-group"><a class="vid_link_gal col btn btn-primary btn-sm" title="Play Video" href="./video_player.html?video='+path_to_vid+'"><i class="icon-play"></i></a>'
       res_html += '     <a class="delete_meteor_archive_gallery col btn btn-danger btn-sm" title="Delete Detection" data-meteor="'+det['full_path']+'"><i class="icon-delete"></i></a></div></div>'
       res_html += '  </div></div>' 
