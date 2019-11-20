@@ -280,13 +280,13 @@ def get_results_from_date_from_monthly_index(date,json_index,max_res):
          detections = sorted(json_index['days'][day], key=lambda k: k['p'], reverse=True)
 
          if( (cur_month_test and int(day)<=int(date.day) and res_cnt<=max_res) or (not cur_month_test and int(cur_month)<int(date.month))and res_cnt<=max_res):
-            for detection in detections:
+            for detection, d_day in enumerate(detections):
                if(res_cnt<=max_res):
                 
                   # We complete the detection['p'] to get the full path (as the index only has compressed name)
                   # ex: 'p': '22_36_24_000_010042-trim0519'
                   #      => '/mnt/ams2/meteor_archive/AMS7/METEOR/2019/11/16/2019_11_16_22_36_24_000_010042-trim0519.json'
-                  detection['p'] = METEOR_ARCHIVE + get_station_id()  + os.sep + METEOR + str(date.year) + os.sep + str(date.month).zfill(2) + os.sep + str(day).zfill(2) + os.sep + str(date.year) + '_' + str(date.month).zfill(2)+ '_' + str(date.day).zfill(2) + '_' + detection['p'] + ".json"
+                  detection['p'] = METEOR_ARCHIVE + get_station_id()  + os.sep + METEOR + str(date.year) + os.sep + str(date.month).zfill(2) + os.sep + str(d_day).zfill(2) + os.sep + str(date.year) + '_' + str(date.month).zfill(2)+ '_' + str(date.day).zfill(2) + '_' + detection['p'] + ".json"
                   res.append(detection)
                   res_cnt+=1 
   
