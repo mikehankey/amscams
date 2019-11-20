@@ -282,14 +282,12 @@ def get_results_from_date_from_monthly_index(date,json_index,max_res):
          detections = sorted(json_index['days'][day], key=lambda k: k['p'], reverse=True)
 
          if( (cur_month_test and int(day)<=int(date.day) and res_cnt<=max_res) or (not cur_month_test and int(cur_month)<int(date.month))and res_cnt<=max_res):
-            for d_day, detection  in enumerate(detections):
+            for  detection  in  detections:
                if(res_cnt<=max_res):
                 
                   # We complete the detection['p'] to get the full path (as the index only has compressed name)
                   # ex: 'p': '22_36_24_000_010042-trim0519'
-                  #      => '/mnt/ams2/meteor_archive/AMS7/METEOR/2019/11/16/2019_11_16_22_36_24_000_010042-trim0519.json'
-                  print("D_DAY: " + str(d_day))
-                  print("<br/>")
+                  #      => '/mnt/ams2/meteor_archive/AMS7/METEOR/2019/11/16/2019_11_16_22_36_24_000_010042-trim0519.json' 
                   detection['p'] = METEOR_ARCHIVE + get_station_id()  + os.sep + METEOR + str(date.year) + os.sep + str(date.month).zfill(2) + os.sep + str(day).zfill(2) + os.sep + str(date.year) + '_' + str(date.month).zfill(2)+ '_' + str(day).zfill(2) + '_' + detection['p'] + ".json"
                   res.append(detection)
                   res_cnt+=1 
@@ -330,12 +328,7 @@ def get_html_detections(res,clear_cache):
       det = name_analyser(detection['p'])
       cur_date = get_datetime_from_analysedname(det)
 
-      print("<hr/>")
-      print(det)
-      print("<br/>")
-      print(cur_date)
-
-
+   
       if(prev_date is None):
          prev_date = cur_date
          res_html += '<div class="h2_holder d-flex justify-content-between"><h2>'+cur_date.strftime("%Y/%m/%d")+'</h2></div>'
@@ -350,8 +343,8 @@ def get_html_detections(res,clear_cache):
       preview = does_cache_exist(det,"preview","/*.jpg")
 
       #if(len(preview)==0 or clear_cache is True):
-      #   # We need to generate the thumbs 
-      #   preview = generate_preview(det) 
+        # We need to generate the thumbs 
+        preview = generate_preview(det) 
 
       # Get Video for preview
       path_to_vid = get_video(det['full_path'])       
