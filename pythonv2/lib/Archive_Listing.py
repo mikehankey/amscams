@@ -403,16 +403,16 @@ def get_html_detections(res,clear_cache):
       
       res_html += ' <dl class="row mb-0 def mt-1">'
 
-      if(detection['mag']!=='unknown'):
+      if(detection['mag']!='unknown'):
          res_html += '              <dt class="col-6">Mag</dt>             <dd class="col-6">' + str(detection['mag']) + '</dd>'
       
-      if(detection['mag']!=='dur'):
+      if(detection['dur']!='unknown'):
          res_html += '              <dt class="col-6">Duration</dt>  	   <dd class="col-6">'+ str(detection['dur']) +'s</dd>'
 
-      if(detection['res_er']!=='unknown'):
+      if(detection['res_er']!='unknown'):
          res_html += '              <dt class="col-6">Res. Error</dt>      <dd class="col-6">'+ str("{0:.4f}".format(float(detection['res_er'])))+'</dd>'
       
-      if(detection['ang_v']!=='unknown'):
+      if(detection['ang_v']!='unknown'):
          res_html += '              <dt class="col-6">Ang. Velocity</dt>   <dd class="col-6">'+str("{0:.4f}".format(float(detection['ang_v'])))+'&deg;/sec</dd>'
 
       res_html += ' </dl>'
