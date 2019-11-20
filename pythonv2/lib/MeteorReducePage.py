@@ -115,7 +115,10 @@ def reduce_meteor2(json_conf,form):
    if(start_time==0):
       start_time = analysed_name['year']+'-'+analysed_name['month']+'-'+analysed_name['day']+ ' '+ analysed_name['hour']+':'+analysed_name['min']+':'+analysed_name['sec']+'.'+analysed_name['ms']
    
-    if('report' in meteor_json_file):
+
+
+   if('report' in meteor_json_file):
+      report_details  =  ''
       report_details += '<dt class="col-6">Date &amp; Time</dt><dd class="col-6">'+start_time+'s</dd>'
 
       if('dur' in meteor_json_file['report']):
