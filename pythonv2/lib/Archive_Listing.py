@@ -360,7 +360,7 @@ def get_html_detections(res,clear_cache):
 
       res_html += '  <a class="mtt" href="webUI.py?cmd=reduce2&video_file='+det['full_path']+'" title="Detection Reduce page">'
       res_html += '     <img alt="" class="img-fluid ns lz" src="'+preview[0]+'">'
-      res_html += '     <video controls="" loop="" autoplay="" name="media" src="'+ det['full_path'].replace('.json','-SD.mp4')+'><source type="video/mp4"></video>'
+      res_html += '     <video controls="" loop="" autoplay="" name="media" src="'+ det['full_path'].replace('.json','-SD.mp4')+'"><source type="video/mp4"></video>'
       res_html += '  </a>'
       res_html += '  <div class="list-onl"><span>Cam #'+det['cam_id']+' - <b>'+det['hour']+':'+det['min']+'</b></span></div>'
       res_html += '  <div class="list-onl sel-box"><div class="custom-control big custom-checkbox">'
