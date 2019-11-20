@@ -66,7 +66,7 @@ def add_to_month_index(detection, insert=True):
    det = det[11:]
    
    # Get month index path from analysed name
-   index_path = METEOR_ARCHIVE +  station_id + os.sep + METEOR + str(analysed_detection_name['year']) + os.sep + str(analysed_detection_name['month']) + os.sep +  str(analysed_detection_name['month'])+".json"
+   index_path = METEOR_ARCHIVE +  station_id + os.sep + METEOR + str(analysed_detection_name['year']) + os.sep + str(analysed_detection_name['month']).zfill(2) + os.sep +  str(analysed_detection_name['month']).zfill(2) +".json"
    
    # If the index doesn't exist, we create it
    if(cfe(index_path) == 0):
@@ -108,7 +108,7 @@ def add_to_month_index(detection, insert=True):
          #print(index_data)
 
          # Update the index
-         main_dir = METEOR_ARCHIVE + station_id + os.sep + METEOR + str(analysed_detection_name['year']) + os.sep + str(analysed_detection_name['month'])
+         main_dir = METEOR_ARCHIVE + station_id + os.sep + METEOR + str(analysed_detection_name['year']) + os.sep + str(analysed_detection_name['month']).zfill(2)
          save_json_file(main_dir + os.sep + str(analysed_detection_name['month']) + ".json", index_data)
 
          #print("INDEX UPDATED")
@@ -125,7 +125,7 @@ def add_to_month_index(detection, insert=True):
 def create_json_index_month(month,year):
 
    station_id = get_station_id()
-   main_dir = METEOR_ARCHIVE +  station_id + os.sep + METEOR + str(year) + os.sep + str(month)
+   main_dir = METEOR_ARCHIVE +  station_id + os.sep + METEOR + str(year) + os.sep + str(month).zfill(2)
 
    index_month = {'station_id':station_id,'year':int(year),'month':int(month),'days':{}}
    
@@ -209,8 +209,8 @@ def write_month_index(month, year):
 
    # Write Index if we have data
    if('days' in json_data): 
-      main_dir = METEOR_ARCHIVE + get_station_id()  + os.sep + METEOR + str(year) + os.sep + str(month)
-      with open(main_dir + os.sep + str(month) + ".json", 'w') as outfile:
+      main_dir = METEOR_ARCHIVE + get_station_id()  + os.sep + METEOR + str(year) + os.sep + str(month).zfill(2)
+      with open(main_dir + os.sep + str(month).zfill(2) + ".json", 'w') as outfile:
          json.dump(json_data, outfile, indent=4, sort_keys=True)
       outfile.close() 
       return True
@@ -247,7 +247,7 @@ def get_index(year):
 
 # Get index for a given month (and year)
 def get_monthly_index(month,year):
-   index_file = METEOR_ARCHIVE + get_station_id()  + os.sep + METEOR + str(year) + os.sep + str(month) + os.sep + str(month) + '.json'
+   index_file = METEOR_ARCHIVE + get_station_id()  + os.sep + METEOR + str(year) + os.sep + str(month).zfill(2) + os.sep + str(month).zfill(2) + '.json'
    if(cfe(index_file)):
       return load_json_file(index_file)
    else:
@@ -276,29 +276,29 @@ def get_results_from_date_from_monthly_index(date,json_index,max_res):
       # We sort the days
       for day in sorted(keylist, key=int, reverse=True):
 
+         #print("DAY " +  str(day) + "<br/>")
+
          # We sort the detections within the day
          detections = sorted(json_index['days'][day], key=lambda k: k['p'], reverse=True)
 
          if( (cur_month_test and int(day)<=int(date.day) and res_cnt<=max_res) or (not cur_month_test and int(cur_month)<int(date.month))and res_cnt<=max_res):
-            for detection in detections:
+            for  detection  in  detections:
                if(res_cnt<=max_res):
-
+                
                   # We complete the detection['p'] to get the full path (as the index only has compressed name)
                   # ex: 'p': '22_36_24_000_010042-trim0519'
-                  #      => '/mnt/ams2/meteor_archive/AMS7/METEOR/2019/11/16/2019_11_16_22_36_24_000_010042-trim0519.json'
-                  detection['p'] = METEOR_ARCHIVE + get_station_id()  + os.sep + METEOR + str(date.year) + os.sep + str(date.month).zfill(2) + os.sep + str(day).zfill(2) + os.sep + str(date.year) + '_' + str(date.month).zfill(2)+ '_' + str(date.day).zfill(2) + '_' + detection['p'] + ".json"
-                  print("<br/>NEW P")
-                  print(detection['p'])
-                  print("<hr>")
+                  #      => '/mnt/ams2/meteor_archive/AMS7/METEOR/2019/11/16/2019_11_16_22_36_24_000_010042-trim0519.json' 
+                  detection['p'] = METEOR_ARCHIVE + get_station_id()  + os.sep + METEOR + str(date.year) + os.sep + str(date.month).zfill(2) + os.sep + str(day).zfill(2) + os.sep + str(date.year) + '_' + str(date.month).zfill(2)+ '_' + str(day).zfill(2) + '_' + detection['p'] + ".json"
                   res.append(detection)
                   res_cnt+=1 
   
+
    return res
 
 
 # Return full path of a detection based on its name
 def get_full_path_detection(analysed_name):
-   index_file = METEOR_ARCHIVE + analysed_name['station_id'] + os.sep + METEOR +  analysed_name['year'] + os.sep +  analysed_name['month'] + os.sep  +  analysed_name['day'] + os.sep 
+   index_file = METEOR_ARCHIVE + analysed_name['station_id'] + os.sep + METEOR +  analysed_name['year'] + os.sep +  analysed_name['month'].zfill(2) + os.sep  +  analysed_name['day'].zfill(2) + os.sep 
    return index_file
 
 # Return HD (or SD video) based on a file that can be anything (.json or .mp4)
@@ -313,8 +313,7 @@ def get_video(_file):
    else:
       return _file
 
-
-
+ 
 
 # Get HTML version of each detection
 def get_html_detections(res,clear_cache):
@@ -326,12 +325,10 @@ def get_html_detections(res,clear_cache):
 
       # We add the missing info to detection['p']
       # so the name analyser will work
-
       det = name_analyser(detection['p'])
-      det['full_path'] = get_full_path_detection(det) + det['full_path']
-      
       cur_date = get_datetime_from_analysedname(det)
- 
+
+   
       if(prev_date is None):
          prev_date = cur_date
          res_html += '<div class="h2_holder d-flex justify-content-between"><h2>'+cur_date.strftime("%Y/%m/%d")+'</h2></div>'
@@ -342,21 +339,28 @@ def get_html_detections(res,clear_cache):
          res_html +=  '</div><div class="h2_holder d-flex justify-content-between"><h2>'+cur_date.strftime("%Y/%m/%d")+'</h2></div>'
          res_html += '<div class="gallery gal-resize row text-center text-lg-left mb-5 mr-5 ml-5">'
  
-
       # Do we have a thumb stack preview for this detection?
       preview = does_cache_exist(det,"preview","/*.jpg")
 
       if(len(preview)==0 or clear_cache is True):
-         # We need to generate the thumbs 
-         preview = generate_preview(det) 
+        # We need to generate the thumbs 
+        preview = generate_preview(det) 
 
       # Get Video for preview
       path_to_vid = get_video(det['full_path'])       
       
       # Otherwise preview = preview (:)
-      res_html += '<div class="preview col-lg-2 col-md-3 select-to reduced">'
-      res_html += '  <a class="mtt" href="webUI.py?cmd=reduce2&video_file='+det['full_path']+'" title="Detection Reduce page">'
+      res_html += '<div class="preview col-lg-3 col-md-3 select-to mb-3'
+      
+      if(detection['red']==1):
+         res_html += ' reduced">'
+      else:
+         res_html += '">'
+
+
+      res_html += '  <a class="mtt has_soh" href="webUI.py?cmd=reduce2&video_file='+det['full_path']+'" title="Detection Reduce page">'
       res_html += '     <img alt="" class="img-fluid ns lz" src="'+preview[0]+'">'
+      res_html += '     <video class="show_on_hover" loop="true" autoplay="true" name="media" src="'+ det['full_path'].replace('.json','-SD.mp4')+'"><source type="video/mp4"></video>'
       res_html += '  </a>'
       res_html += '  <div class="list-onl"><span>Cam #'+det['cam_id']+' - <b>'+det['hour']+':'+det['min']+'</b></span></div>'
       res_html += '  <div class="list-onl sel-box"><div class="custom-control big custom-checkbox">'
@@ -364,7 +368,8 @@ def get_html_detections(res,clear_cache):
       res_html += '     <label class="custom-control-label" for="'+det['full_path']+'"></label>'
       res_html += '  </div></div>'
       res_html += '  <div class="d-flex justify-content-between">'
-      res_html += '     <div class="pre-b gallery-only">Cam #'+det['cam_id']+' - <b>'+det['hour']+':'+det['min']+'</b></div>'
+      res_html += '     <div class="pre-b gallery-only">Cam #'+det['cam_id']+' - <b>'+det['hour']+':'+det['min']+'</b>'
+      res_html += '<br/>Mag: ' + str(detection['mag']) + ' / Dur: '+ str(detection['dur']) +'s </div>'
       res_html += '     <div class="btn-toolbar pr-0 pb-0"><div class="btn-group"><a class="vid_link_gal col btn btn-primary btn-sm" title="Play Video" href="./video_player.html?video='+path_to_vid+'"><i class="icon-play"></i></a>'
       res_html += '     <a class="delete_meteor_archive_gallery col btn btn-danger btn-sm" title="Delete Detection" data-meteor="'+det['full_path']+'"><i class="icon-delete"></i></a></div></div>'
       res_html += '  </div></div>' 
@@ -433,9 +438,7 @@ def archive_listing(form):
    # Search the index
    if(index is not False):
 
-      print("I AM CURRENTLY WORKING ON THIS PAGE - PLEASE OLD ON")
       res = get_results_from_date_from_monthly_index(the_date,index,int(nompp))
-
 
       # If we don't have enough detection to display we try the previous year
       if(res):
