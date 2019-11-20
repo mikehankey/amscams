@@ -353,7 +353,7 @@ def get_html_detections(res,clear_cache):
       res_html += '<div class="preview col-lg-2 col-md-3 select-to'
       
       if(detection['red']==1):
-         res_html += 'reduced">'
+         res_html += ' reduced">'
       else:
          res_html += '">'
 
