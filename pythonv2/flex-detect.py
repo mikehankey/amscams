@@ -3302,6 +3302,7 @@ def quick_scan(video_file, old_meteor = 0):
       elapsed_time = time.time() - start_time
       print("ELAPSED TIME:", elapsed_time)
       print("NO METEORS:", elapsed_time)
+      print("ERR:", video_file)
       log_import_errors(video_file, "No meteors detected in 1st scan.")
       #fp = open("/mnt/ams2/meteors/import_errors.txt", "a")
       #fp.write(str(video_file) + "," + "No possible meteors found.\n")
@@ -3465,11 +3466,13 @@ def log_import_errors(video_file, message):
    log_file = "/mnt/ams2/meteors/" + day + "/import_errors.json"
    if cfe(log_file) == 1:
       log = load_json_file(log_file)
+      if "import_errors.json" in log:
+         log = {}
    else:
       log = {}
    print("LOG:", log_file, log)
    log[video_file] = message
-   save_json_file(log_file, log_file)
+   save_json_file(log_file, log)
 
 def only_meteors(objects):
    meteors = []
@@ -4756,8 +4759,9 @@ def draw_obj_on_frame(frame, obj):
    return(frame)
 
 def write_archive_index(year,month):
-   from lib.Archive_Listing import create_json_index_year 
-   create_json_index_year(year)
+   from lib.Archive_Listing import create_json_index_year, create_json_index_month 
+   print("Create json index month:", year, month)
+   create_json_index_month(year,month)
 
    #write_index(year)
 
@@ -4839,4 +4843,6 @@ if cmd == "rr" or cmd == "rerun":
    rerun(video_file)
 if cmd == "remaster":
    remaster_arc(video_file)
+if cmd == "wi":
+   write_archive_index(sys.argv[2], sys.argv[3])
 
