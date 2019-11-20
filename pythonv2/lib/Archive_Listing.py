@@ -276,7 +276,7 @@ def get_results_from_date_from_monthly_index(date,json_index,max_res):
       # We sort the days
       for day in sorted(keylist, key=int, reverse=True):
 
-         print("DAY " +  str(day) + "<br/>")
+         #print("DAY " +  str(day) + "<br/>")
 
          # We sort the detections within the day
          detections = sorted(json_index['days'][day], key=lambda k: k['p'], reverse=True)
@@ -436,9 +436,7 @@ def archive_listing(form):
    # Search the index
    if(index is not False):
 
-      print("I AM CURRENTLY WORKING ON THIS PAGE - PLEASE OLD ON")
       res = get_results_from_date_from_monthly_index(the_date,index,int(nompp))
-
 
       # If we don't have enough detection to display we try the previous year
       if(res):
