@@ -35,33 +35,33 @@ def get_diag_fields(detection):
       try:
          dur = detection_data['info']['dur']
       except:
-         dur = "unkown"
+         dur = "unknown"
 
       # MAX PEAK (MAGNITUDE)
       try:
          mag = detection_data['info']['max_peak']
       except:
-         mag = "unkown"
+         mag = "unknown"
 
 
       # RESIDUAL ERROR OF CALIBRATION
       try:
          res_error = detection_data['calib']['device']['total_res_px']
       except:
-         res_error = "unkown"
+         res_error = "unknown"
 
       # ANGULAR VELOCITY
       try:
          ang_vel = detection_data['report']['angular_vel']
       except:
-         ang_vel = "unkown"      
+         ang_vel = "unknown"      
 
 
       return mag,dur,red, res_error, ang_vel
    
    else:
 
-      return "unkown","unkown",0
+      return "unknown","unknown",0,"unknown","unknown"
 
 
 
