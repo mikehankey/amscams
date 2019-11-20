@@ -43,7 +43,21 @@ def get_diag_fields(detection):
       except:
          mag = "unkown"
 
-      return mag,dur,red
+
+      # RESIDUAL ERROR OF CALIBRATION
+      try:
+         res_error = detection_data['calib']['device']['total_res_px']
+      except:
+         res_error = "unkown"
+
+      # ANGULAR VELOCITY
+      try:
+         ang_vel = detection_data['report']['angular_vel']
+      except:
+         ang_vel = "unkown"      
+
+
+      return mag,dur,red, res_error, ang_vel
    
    else:
 
@@ -88,13 +102,15 @@ def add_to_month_index(detection, insert=True):
       # If we are here, it means we didn't find it 
       # so if we want to insert it, we do it here
       if(insert==True):
-         mag, dur, red  =  get_diag_fields(analysed_detection_name['full_path'])
+         mag,dur,red, res_error, ang_vel  =  get_diag_fields(analysed_detection_name['full_path'])
          
          new_detect = {
             "dur": dur,
             "red": red,
             "p": det,
-            "mag": mag
+            "mag": mag,
+            "res_er":res_error,
+            "ang_v":ang_vel
          }
 
          # If the days already exist
@@ -139,7 +155,7 @@ def create_json_index_month(month,year):
 
          for detection in sorted(glob.iglob(day + os.sep +  '*' + '.json', recursive=True), reverse=True):
              
-            mag, dur, red = get_diag_fields(detection)
+            mag,dur,red, res_error, ang_vel  = get_diag_fields(detection)
             det = os.path.basename(detection)
             det = os.path.splitext(det)[0]
 
@@ -150,7 +166,7 @@ def create_json_index_month(month,year):
             except:
                index_month['days'][int(cur_day)] = []
  
-            index_month['days'][int(cur_day)].append({'p':det[11:],'mag':mag,'dur':dur,'red':red})
+            index_month['days'][int(cur_day)].append({'p':det[11:],'mag':mag,'dur':dur,'red':red,'res_er':res_error,'ang_v':ang_vel})
  
    return index_month             
 
@@ -180,13 +196,14 @@ def create_json_index_year(year):
 
                for detection in sorted(glob.iglob(day + os.sep +  '*' + '.json', recursive=True), reverse=True):
                   
-                  mag, dur, red = get_diag_fields(detection)
-                  
+                  mag,dur,red, res_error, ang_vel = get_diag_fields(detection)
+
+
                   det = os.path.basename(detection)
                   det = os.path.splitext(det)[0]
                   # det[11:] => Here we also remove the Year, Month & Day of the detection 
                   # since we know them from the JSON structure
-                  cur_day_data.append({'p':det[11:],'mag':mag,'dur':dur,'red':red})
+                  cur_day_data.append({'p':det[11:],'mag':mag,'dur':dur,'red':red,'res_er':res_error,'ang_v':ang_vel})
 
                #print("CUR DAY ")
                #print(cur_day)
