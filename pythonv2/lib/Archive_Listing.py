@@ -66,7 +66,7 @@ def add_to_month_index(detection, insert=True):
    det = det[11:]
    
    # Get month index path from analysed name
-   index_path = METEOR_ARCHIVE +  station_id + os.sep + METEOR + str(analysed_detection_name['year']) + os.sep + str(analysed_detection_name['month']) + os.sep +  str(analysed_detection_name['month'])+".json"
+   index_path = METEOR_ARCHIVE +  station_id + os.sep + METEOR + str(analysed_detection_name['year']) + os.sep + str(analysed_detection_name['month']).zfill(2) + os.sep +  str(analysed_detection_name['month']).zfill(2) +".json"
    
    # If the index doesn't exist, we create it
    if(cfe(index_path) == 0):
@@ -108,7 +108,7 @@ def add_to_month_index(detection, insert=True):
          #print(index_data)
 
          # Update the index
-         main_dir = METEOR_ARCHIVE + station_id + os.sep + METEOR + str(analysed_detection_name['year']) + os.sep + str(analysed_detection_name['month'])
+         main_dir = METEOR_ARCHIVE + station_id + os.sep + METEOR + str(analysed_detection_name['year']) + os.sep + str(analysed_detection_name['month']).zfill(2)
          save_json_file(main_dir + os.sep + str(analysed_detection_name['month']) + ".json", index_data)
 
          #print("INDEX UPDATED")
@@ -125,7 +125,7 @@ def add_to_month_index(detection, insert=True):
 def create_json_index_month(month,year):
 
    station_id = get_station_id()
-   main_dir = METEOR_ARCHIVE +  station_id + os.sep + METEOR + str(year) + os.sep + str(month)
+   main_dir = METEOR_ARCHIVE +  station_id + os.sep + METEOR + str(year) + os.sep + str(month).zfill(2)
 
    index_month = {'station_id':station_id,'year':int(year),'month':int(month),'days':{}}
    
@@ -209,8 +209,8 @@ def write_month_index(month, year):
 
    # Write Index if we have data
    if('days' in json_data): 
-      main_dir = METEOR_ARCHIVE + get_station_id()  + os.sep + METEOR + str(year) + os.sep + str(month)
-      with open(main_dir + os.sep + str(month) + ".json", 'w') as outfile:
+      main_dir = METEOR_ARCHIVE + get_station_id()  + os.sep + METEOR + str(year) + os.sep + str(month).zfill(2)
+      with open(main_dir + os.sep + str(month).zfill(2) + ".json", 'w') as outfile:
          json.dump(json_data, outfile, indent=4, sort_keys=True)
       outfile.close() 
       return True
@@ -247,7 +247,7 @@ def get_index(year):
 
 # Get index for a given month (and year)
 def get_monthly_index(month,year):
-   index_file = METEOR_ARCHIVE + get_station_id()  + os.sep + METEOR + str(year) + os.sep + str(month) + os.sep + str(month) + '.json'
+   index_file = METEOR_ARCHIVE + get_station_id()  + os.sep + METEOR + str(year) + os.sep + str(month).zfill(2) + os.sep + str(month).zfill(2) + '.json'
    if(cfe(index_file)):
       return load_json_file(index_file)
    else:
@@ -298,7 +298,7 @@ def get_results_from_date_from_monthly_index(date,json_index,max_res):
 
 # Return full path of a detection based on its name
 def get_full_path_detection(analysed_name):
-   index_file = METEOR_ARCHIVE + analysed_name['station_id'] + os.sep + METEOR +  analysed_name['year'] + os.sep +  analysed_name['month'] + os.sep  +  analysed_name['day'] + os.sep 
+   index_file = METEOR_ARCHIVE + analysed_name['station_id'] + os.sep + METEOR +  analysed_name['year'] + os.sep +  analysed_name['month'].zfill(2) + os.sep  +  analysed_name['day'].zfill(2) + os.sep 
    return index_file
 
 # Return HD (or SD video) based on a file that can be anything (.json or .mp4)
