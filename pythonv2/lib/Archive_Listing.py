@@ -342,7 +342,7 @@ def get_html_detections(res,clear_cache):
       # Do we have a thumb stack preview for this detection?
       preview = does_cache_exist(det,"preview","/*.jpg")
 
-      #if(len(preview)==0 or clear_cache is True):
+      if(len(preview)==0 or clear_cache is True):
         # We need to generate the thumbs 
         preview = generate_preview(det) 
 
