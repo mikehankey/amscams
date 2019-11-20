@@ -323,11 +323,7 @@ def get_html_detections(res,clear_cache):
       # We add the missing info to detection['p']
       # so the name analyser will work
       det = name_analyser(detection['p'])
-      det['full_path'] = get_full_path_detection(det) + det['full_path']
-
-      print(det['full_path'])
-      print("<hr/>")
-
+     
       cur_date = get_datetime_from_analysedname(det)
  
       if(prev_date is None):
