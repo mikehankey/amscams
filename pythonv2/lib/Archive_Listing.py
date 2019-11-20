@@ -325,6 +325,9 @@ def get_html_detections(res,clear_cache):
       det = name_analyser(detection['p'])
       cur_date = get_datetime_from_analysedname(det)
 
+      print("<hr/>")
+      print(det)
+      print("<br/>")
       print(cur_date)
 
 
