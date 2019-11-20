@@ -209,8 +209,17 @@
 
 
 .pre-b {
-   font-size: .9rem; 
-   line-height: 2.25rem;
+   font-size: .9rem;   
+   margin-bottom: 1.5rem;
+   margin-top: .3rem;
+
+   .span {
+      display:block;
+
+      &.mst {
+         font-size: 1.1rem;
+      }
+   }
 }
 
 
