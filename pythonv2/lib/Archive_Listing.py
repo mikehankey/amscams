@@ -608,10 +608,16 @@ def archive_listing(form):
                res2 = get_results_from_date_from_monthly_index(criteria,the_date,index,new_stop)
                res = res + res2
 
-         if(has_limit_day==0):
-            pagination = get_pagination(cur_page,len(res),"/pycgi/webUI.py?cmd=archive_listing&meteor_per_page="+str(nompp),int(nompp))
-         else:
-            pagination = get_pagination(cur_page,len(res),"/pycgi/webUI.py?cmd=archive_listing&limit_day="+str(the_date)+"&meteor_per_page="+str(nompp),int(nompp))
+         # CREATE URL FOR THE PAGINATION
+         pagination_url  = "/pycgi/webUI.py?cmd=archive_listing&meteor_per_page="+str(nompp)
+
+         if(has_limit_day!=0):
+           pagination_url += "&limit_day="+str(the_date)"
+         
+         for criter in criteria:
+            pagination_url += "&"+criter+"="+str(criteria[criter])"
+
+         pagination = get_pagination(cur_page,len(res),pagination_url,int(nompp))
 
          if(pagination[2] != ''):
             template = template.replace("{PAGINATION_DET}", "Page  " + format(cur_page) + "/" +  format(pagination[2]))    
