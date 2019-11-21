@@ -418,7 +418,7 @@ def get_html_detections(res,clear_cache):
          res_html += '              <dt class="col-6">Res. Error</dt>      <dd class="col-6">'+ str("{0:.4f}".format(float(detection['res_er'])))+'</dd>'
       
       if(detection['ang_v']!='unknown'):
-         res_html += '              <dt class="col-6">Ang. Velocity</dt>   <dd class="col-6">'+str("{0:.4f}".format(float(detection['ang_v'])))+'&deg;/sec</dd>'
+         res_html += '              <dt class="col-6">Ang. Velocity</dt>   <dd class="col-6">'+str("{0:.4f}".format(float(detection['ang_v'])))+'&deg;/s</dd>'
 
       res_html += ' </dl>'
       
@@ -514,13 +514,13 @@ def archive_listing(form):
       one_ang_vel_selected = True
       ang_vel_select+= '<option value="-1">All Ang. Velocities</option>'
    except:
-      ang_vel_select+= '<option selected value="-1">All Res. Errors</option>'
+      ang_vel_select+= '<option selected value="-1">All Ang. Velocities</option>'
    
    for ang_vel in POSSIBLE_ANG_VELOCITIES:
       if(one_ang_vel_selected and float(selected_ang_vel)==float(ang_vel)):
-         errorang_vel_select_select+= '<option selected value="'+str(ang_vel)+'">>'+str(ang_vel)+'</option>'
+         errorang_vel_select_select+= '<option selected value="'+str(ang_vel)+'">>'+str(ang_vel)+'&deg;/s</option>'
       else:
-         ang_vel_select+= '<option value="'+str(ang_vel)+'"><'+str(ang_vel)+'</option>'  
+         ang_vel_select+= '<option value="'+str(ang_vel)+'"><'+str(ang_vel)+'&deg;/s</option>'  
    template = template.replace("{ANG_VELOCITIES}", ang_vel_select)
 
 
