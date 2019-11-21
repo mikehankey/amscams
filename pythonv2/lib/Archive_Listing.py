@@ -519,11 +519,13 @@ def archive_listing(form):
    # Add Default choice
    try:
       selected_ang_vel
-      one_ang_vel_selected = True
-      ang_vel_select+= '<option value="-1">All Ang. Velocities</option>'
    except:
       ang_vel_select+= '<option selected value="-1">All Ang. Velocities</option>'
-   
+   else:
+      one_ang_vel_selected = True
+      ang_vel_select+= '<option value="-1">All Ang. Velocities</option>'
+
+
    for ang_vel in POSSIBLE_ANG_VELOCITIES:
       if(one_ang_vel_selected):
          if(float(selected_ang_vel)==float(ang_vel)):
