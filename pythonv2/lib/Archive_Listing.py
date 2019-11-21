@@ -535,7 +535,7 @@ def archive_listing(form):
    print("selected_ang_vel ")
    print(selected_ang_vel)
    print("<hr/>")
-   
+   sys.exit(0)
 
 
    for ang_vel in POSSIBLE_ANG_VELOCITIES:
