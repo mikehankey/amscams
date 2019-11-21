@@ -299,6 +299,8 @@ def get_results_from_date_from_monthly_index(criteria,date,json_index,max_res_pe
    res = []
    res_cnt = 0 
    cur_month_test = False
+
+   max_res_per_page = cur_page * max_res_per_page
  
    if("days" in json_index and "month" in json_index):
       cur_month = json_index['month']
