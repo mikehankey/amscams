@@ -324,18 +324,20 @@ def get_results_from_date_from_monthly_index(criteria,date,json_index,max_res):
                   # Here we test the criteria
                   test = True
                   for criter in criteria:
-                     if(criter=='res_er'):
-                        if(float(detection[criter])>=float(criteria[criter])):
-                           test = False
- 
-                     if(criter=='mag'):
-                        if(float(detection[criter])<=float(criteria[criter])):
-                           test = False
- 
-                     if(criter=='ang_v'):
-                        if(float(detection[criter])<=float(criteria[criter])):
-                           test = False                     
- 
+
+                     if(detection[criter]!='unknown'):
+                        if(criter=='res_er'):
+                           if(float(detection[criter])>=float(criteria[criter])):
+                              test = False
+   
+                        if(criter=='mag'):
+                           if(float(detection[criter])<=float(criteria[criter])):
+                              test = False
+   
+                        if(criter=='ang_v'):
+                           if(float(detection[criter])<=float(criteria[criter])):
+                              test = False                     
+   
 
                      if(test==False):
                         break   
