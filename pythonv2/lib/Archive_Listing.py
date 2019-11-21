@@ -612,10 +612,10 @@ def archive_listing(form):
          pagination_url  = "/pycgi/webUI.py?cmd=archive_listing&meteor_per_page="+str(nompp)
 
          if(has_limit_day!=0):
-            pagination_url += "&limit_day="+str(the_date)"
+            pagination_url += "&limit_day="+str(the_date)
          
          for criter in criteria:
-            pagination_url += "&"+criter+"="+str(criteria[criter])"
+            pagination_url += "&"+criter+"="+str(criteria[criter])
 
          pagination = get_pagination(cur_page,len(res),pagination_url,int(nompp))
 
