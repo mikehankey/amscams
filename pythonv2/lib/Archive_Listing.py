@@ -322,16 +322,32 @@ def get_results_from_date_from_monthly_index(criteria,date,json_index,max_res):
                if(res_cnt<=max_res):
 
                   # Here we test the criteria
-                  test = False
+                  test = True
                   for criter in criteria:
-                     print(str(criter) + " " + str(criteria[criter]) + "<br/>")
+                     if(criter=='res_er'):
+                        if(float(detection[criter])>=float(criteria[criter])):
+                           test = False
+ 
+                     if(criter=='mag'):
+                        if(float(detection[criter])<=float(criteria[criter])):
+                           test = False
+ 
+                     if(criter=='ang_v'):
+                        if(float(detection[criter])<=float(criteria[criter])):
+                           test = False                     
+ 
 
-                  # We complete the detection['p'] to get the full path (as the index only has compressed name)
-                  # ex: 'p': '22_36_24_000_010042-trim0519'
-                  #      => '/mnt/ams2/meteor_archive/AMS7/METEOR/2019/11/16/2019_11_16_22_36_24_000_010042-trim0519.json' 
-                  detection['p'] = METEOR_ARCHIVE + get_station_id()  + os.sep + METEOR + str(date.year) + os.sep + str(date.month).zfill(2) + os.sep + str(day).zfill(2) + os.sep + str(date.year) + '_' + str(date.month).zfill(2)+ '_' + str(day).zfill(2) + '_' + detection['p'] + ".json"
-                  res.append(detection)
-                  res_cnt+=1 
+                     if(test==False):
+                        break   
+
+
+                  if(test==True):
+                     # We complete the detection['p'] to get the full path (as the index only has compressed name)
+                     # ex: 'p': '22_36_24_000_010042-trim0519'
+                     #      => '/mnt/ams2/meteor_archive/AMS7/METEOR/2019/11/16/2019_11_16_22_36_24_000_010042-trim0519.json' 
+                     detection['p'] = METEOR_ARCHIVE + get_station_id()  + os.sep + METEOR + str(date.year) + os.sep + str(date.month).zfill(2) + os.sep + str(day).zfill(2) + os.sep + str(date.year) + '_' + str(date.month).zfill(2)+ '_' + str(day).zfill(2) + '_' + detection['p'] + ".json"
+                     res.append(detection)
+                     res_cnt+=1 
   
 
    return res
