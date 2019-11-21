@@ -484,8 +484,9 @@ def archive_listing(form):
       mag_select+= '<option selected value="-1">All Magnitudes</option>'
    
    for mag in POSSIBLE_MAGNITUDES:
-      if(one_mag_selected and float(mag)==float(selected_mag)):
-         mag_select+= '<option selected value="'+str(mag)+'">>'+str(mag)+'</option>'
+      if(one_mag_selected):
+         if(float(mag)==float(selected_mag)):
+            mag_select+= '<option selected value="'+str(mag)+'">>'+str(mag)+'</option>'
       else:
          mag_select+= '<option value="'+str(mag)+'">>'+str(mag)+'</option>'  
    template = template.replace("{MAGNITUDES}", mag_select)
@@ -503,8 +504,9 @@ def archive_listing(form):
       error_select+= '<option selected value="-1">All Res. Errors</option>'
    
    for err in POSSIBLE_ERRORS:
-      if(one_error_selected and float(err)==float(selected_error)):
-         error_select+= '<option selected value="'+str(err)+'"><'+str(err)+'</option>'
+      if(one_error_selected):
+         if(float(err)==float(selected_error)):
+            error_select+= '<option selected value="'+str(err)+'"><'+str(err)+'</option>'
       else:
          error_select+= '<option value="'+str(err)+'"><'+str(err)+'</option>'  
    template = template.replace("{RES_ERRORS}", error_select)
@@ -523,8 +525,9 @@ def archive_listing(form):
       ang_vel_select+= '<option selected value="-1">All Ang. Velocities</option>'
    
    for ang_vel in POSSIBLE_ANG_VELOCITIES:
-      if(one_ang_vel_selected and float(selected_ang_vel)==float(ang_vel)):
-         ang_vel_select+= '<option selected value="'+str(ang_vel)+'">>'+str(ang_vel)+'&deg;/s</option>'
+      if(one_ang_vel_selected):
+         if(float(selected_ang_vel)==float(ang_vel)):
+            ang_vel_select+= '<option selected value="'+str(ang_vel)+'">>'+str(ang_vel)+'&deg;/s</option>'
       else:
          ang_vel_select+= '<option value="'+str(ang_vel)+'"><'+str(ang_vel)+'&deg;/s</option>'  
    template = template.replace("{ANG_VELOCITIES}", ang_vel_select)
