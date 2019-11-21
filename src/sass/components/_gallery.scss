@@ -83,7 +83,7 @@
 
                 &.has_soh:hover {
                   img {
-                     display:none;
+                     z-index: 0;
                   }
                 }
 
@@ -106,6 +106,8 @@
                         right: 0;
                         width: 100%;
                         height: calc(100% - 1px);
+                        transform: scaleX(1.4);
+                        z-index:1;
                      }
 
                     &:before {
