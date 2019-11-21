@@ -320,7 +320,12 @@ def get_results_from_date_from_monthly_index(criteria,date,json_index,max_res):
          if( (cur_month_test and int(day)<=int(date.day) and res_cnt<=max_res) or (not cur_month_test and int(cur_month)<int(date.month))and res_cnt<=max_res):
             for  detection  in  detections:
                if(res_cnt<=max_res):
-                
+
+                  # Here we test the criteria
+                  test = False
+                  for criter in criteria:
+                     print(criter)
+
                   # We complete the detection['p'] to get the full path (as the index only has compressed name)
                   # ex: 'p': '22_36_24_000_010042-trim0519'
                   #      => '/mnt/ams2/meteor_archive/AMS7/METEOR/2019/11/16/2019_11_16_22_36_24_000_010042-trim0519.json' 
@@ -506,7 +511,7 @@ def archive_listing(form):
    else:
       one_error_selected = True 
       error_select+= '<option value="-1">All Res. Error</option>' 
-      criteria['res_error'] = float(selected_error)
+      criteria['res_er'] = float(selected_error)
 
 
    
@@ -532,7 +537,7 @@ def archive_listing(form):
    else:
       one_ang_vel_selected = True 
       ang_vel_select+= '<option value="-1">All Ang. Velocities</option>' 
-      criteria['ang_vel'] = float(selected_ang_vel)
+      criteria['ang_v'] = float(selected_ang_vel)
 
    for ang_vel in POSSIBLE_ANG_VELOCITIES:
       if(one_ang_vel_selected):
