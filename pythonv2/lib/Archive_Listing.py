@@ -324,7 +324,7 @@ def get_results_from_date_from_monthly_index(criteria,date,json_index,max_res):
                   # Here we test the criteria
                   test = False
                   for criter in criteria:
-                     print(str(criter) + " " + str(criteria['criter']) + "<br/>")
+                     print(str(criter) + " " + str(criteria[criter]) + "<br/>")
 
                   # We complete the detection['p'] to get the full path (as the index only has compressed name)
                   # ex: 'p': '22_36_24_000_010042-trim0519'
