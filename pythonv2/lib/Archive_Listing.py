@@ -300,6 +300,9 @@ def get_results_from_date_from_monthly_index(criteria,date,json_index,max_res):
    res_cnt = 0 
    cur_month_test = False
 
+   print("ALL CRITERIA<br/>")
+   print(criteria)
+
    if("days" in json_index and "month" in json_index):
       cur_month = json_index['month']
       
