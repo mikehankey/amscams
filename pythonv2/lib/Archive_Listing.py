@@ -14,6 +14,9 @@ from lib.PAGINATION_VARS import *
 from lib.Pagination import get_pagination
 
 ARCHIVE_LISTING_TEMPLATE = "/home/ams/amscams/pythonv2/templates/archive_listing.html"
+
+# QUERIES CRITERIA
+POSSIBLE_MAGNITUDES = [130,140,150,160,170,180,190,200,210,220,230,240,250,260,270,280,290,300]
  
 # Function that read a json file (detection)
 # and return the values of the corresponding Diagnostic Fields 
@@ -460,6 +463,20 @@ def archive_listing(form):
          ppp_select+= '<option value="'+str(ppp)+'">'+str(ppp)+' / page</option>'  
    template = template.replace("{RPP}", ppp_select)
 
+   # Build MAGNITUDES selector
+   mag_select = ''
+   if(not select_mag):
+      mag_select+= '<option selected value="-1">All Magnitudes</option>'
+   else:
+      mag_select+= '<option value="-1">All Magnitudes</option>'
+
+
+   for mag in POSSIBLE_MAGNITUDES:
+      if(select_mag and float(mag_select)==float(selected_mag)):
+         mag_select+= '<option selected value="'+str(mag)+'">>'+str(mag)+' / page</option>'
+      else:
+         mag_select+= '<option value="'+str(mag)+'">>'+str(mag)+' / page</option>'  
+   template = template.replace("{MAGNITUDES}", mag_select)
 
    # Clear_cache
    if(clear_cache is None):
