@@ -295,7 +295,7 @@ def get_monthly_index(month,year):
 
 
 # Get results on index from a certain date
-def get_results_from_date_from_monthly_index(date,json_index,max_res): 
+def get_results_from_date_from_monthly_index(criteria,date,json_index,max_res): 
    res = []
    res_cnt = 0 
    cur_month_test = False
@@ -471,6 +471,9 @@ def archive_listing(form):
          ppp_select+= '<option value="'+str(ppp)+'">'+str(ppp)+' / page</option>'  
    template = template.replace("{RPP}", ppp_select)
 
+   # LIST OF CRITERIA 
+   criteria = {}
+
    # Build MAGNITUDES selector
    mag_select = ''
    one_mag_selected = False
@@ -481,6 +484,7 @@ def archive_listing(form):
    else:
       one_mag_selected = True 
       mag_select+= '<option value="-1">All Magnitudes</option>'
+      criteria['mag'] = float(selected_mag)
 
    for mag in POSSIBLE_MAGNITUDES:
       if(one_mag_selected==True):
@@ -502,6 +506,8 @@ def archive_listing(form):
    else:
       one_error_selected = True 
       error_select+= '<option value="-1">All Res. Error</option>' 
+      criteria['res_error'] = float(selected_error)
+
 
    
    for err in POSSIBLE_ERRORS:
@@ -518,8 +524,7 @@ def archive_listing(form):
    # Build ANGULAR VELOCITIES selector
    ang_vel_select = ''
    one_ang_vel_selected = False
-
-
+ 
 
    # Add Default choice
    if selected_ang_vel is None:
@@ -527,7 +532,7 @@ def archive_listing(form):
    else:
       one_ang_vel_selected = True 
       ang_vel_select+= '<option value="-1">All Ang. Velocities</option>' 
-  
+      criteria['ang_vel'] = float(selected_ang_vel)
 
    for ang_vel in POSSIBLE_ANG_VELOCITIES:
       if(one_ang_vel_selected):
@@ -566,7 +571,7 @@ def archive_listing(form):
    # Search the index
    if(index is not False):
 
-      res = get_results_from_date_from_monthly_index(the_date,index,int(nompp))
+      res = get_results_from_date_from_monthly_index(criteria,the_date,index,int(nompp))
 
       # If we don't have enough detection to display we try the previous year
       if(res):
@@ -577,7 +582,7 @@ def archive_listing(form):
 
             if(index is not False):
                new_stop = int(meteor_per_page) - len(res)
-               res2 = get_results_from_date_from_monthly_index(the_date,index,new_stop)
+               res2 = get_results_from_date_from_monthly_index(criteria,the_date,index,new_stop)
                res = res + res2
 
          if(has_limit_day==0):
