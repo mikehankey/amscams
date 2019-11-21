@@ -295,7 +295,7 @@ def get_monthly_index(month,year):
 
 
 # Get results on index from a certain date
-def get_results_from_date_from_monthly_index(criteria,date,json_index,max_res): 
+def get_results_from_date_from_monthly_index(criteria,date,json_index,max_res_per_page,cur_page): 
    res = []
    res_cnt = 0 
    cur_month_test = False
@@ -317,9 +317,9 @@ def get_results_from_date_from_monthly_index(criteria,date,json_index,max_res):
          # We sort the detections within the day
          detections = sorted(json_index['days'][day], key=lambda k: k['p'], reverse=True)
 
-         if( (cur_month_test and int(day)<=int(date.day) and res_cnt<=max_res) or (not cur_month_test and int(cur_month)<int(date.month))and res_cnt<=max_res):
+         if( (cur_month_test and int(day)<=int(date.day) and res_cnt<=max_res_per_page) or (not cur_month_test and int(cur_month)<int(date.month))and res_cnt<=max_res_per_page):
             for  detection  in  detections:
-               if(res_cnt<=max_res):
+               if(res_cnt<=max_res_per_page):
 
                   # Here we test the criteria
                   test = True
@@ -594,7 +594,7 @@ def archive_listing(form):
    # Search the index
    if(index is not False):
 
-      res = get_results_from_date_from_monthly_index(criteria,the_date,index,int(nompp))
+      res = get_results_from_date_from_monthly_index(criteria,the_date,index,int(nompp),cur_page)
 
       # If we don't have enough detection to display we try the previous year
       if(res):
@@ -605,7 +605,7 @@ def archive_listing(form):
 
             if(index is not False):
                new_stop = int(meteor_per_page) - len(res)
-               res2 = get_results_from_date_from_monthly_index(criteria,the_date,index,new_stop)
+               res2 = get_results_from_date_from_monthly_index(criteria,the_date,index,new_sto,cur_page)
                res = res + res2
 
          # CREATE URL FOR THE PAGINATION
