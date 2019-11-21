@@ -524,7 +524,7 @@ def archive_listing(form):
    
    for ang_vel in POSSIBLE_ANG_VELOCITIES:
       if(one_ang_vel_selected and float(selected_ang_vel)==float(ang_vel)):
-         errorang_vel_select_select+= '<option selected value="'+str(ang_vel)+'">>'+str(ang_vel)+'&deg;/s</option>'
+         ang_vel_select+= '<option selected value="'+str(ang_vel)+'">>'+str(ang_vel)+'&deg;/s</option>'
       else:
          ang_vel_select+= '<option value="'+str(ang_vel)+'"><'+str(ang_vel)+'&deg;/s</option>'  
    template = template.replace("{ANG_VELOCITIES}", ang_vel_select)
