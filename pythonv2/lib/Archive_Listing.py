@@ -479,13 +479,15 @@ def archive_listing(form):
    try:
       selected_mag
    except:
+      print("SELECT MAG DOESNT EXIST<br/>")
       mag_select+= '<option selected value="-1">All Magnitudes</option>'
    else:
       one_mag_selected = True
+      print("SELECT MAG EXISTS<br/>")
       mag_select+= '<option value="-1">All Magnitudes</option>'
 
    for mag in POSSIBLE_MAGNITUDES:
-      if(one_mag_selected):
+      if(one_mag_selected==True):
          if(float(mag)==float(selected_mag)):
             mag_select+= '<option selected value="'+str(mag)+'">>'+str(mag)+'</option>'
       else:
