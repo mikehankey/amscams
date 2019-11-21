@@ -3,6 +3,17 @@
       <input value="{DATE}" type="text" data-display-format="YYYY/MM/DD" data-action="reload" data-url-param="limit_day" data-send-format="YYYY_MM_DD" class="datepicker form-control">
    </h1>
    <div class='d-flex'>
+      <div class='mr-2'>
+         <select name='mag' id='mag' data-rel='magnitude' class='btn btn-primary mr-4'>{MAGNITUDES}</select>
+      </div>
+      <div class='mr-2'>
+         <select name='res_error' id='res_error' data-rel='res_error' class='btn btn-primary mr-4'>{ERRORS}</select>
+      </div>
+      <div class='mr-2'>
+         <select name='ang_vel' id='ang_vel' data-rel='ang_vel' class='btn btn-primary mr-4'>{ANG_VELOCITIES}</select>
+      </div>
+   </div>
+   <div class='d-flex'>
      <div class='mr-2'>
          <select name='rpp' id='rpp' data-rel='meteor_per_page' class='btn btn-primary mr-4'>{RPP}</select>
       </div>
