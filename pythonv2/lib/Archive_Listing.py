@@ -478,11 +478,12 @@ def archive_listing(form):
    # Add Default choice
    try:
       selected_mag
-      one_mag_selected = True
-      mag_select+= '<option value="-1">All Magnitudes</option>'
    except:
       mag_select+= '<option selected value="-1">All Magnitudes</option>'
-   
+   else:
+      one_mag_selected = True
+      mag_select+= '<option value="-1">All Magnitudes</option>'
+
    for mag in POSSIBLE_MAGNITUDES:
       if(one_mag_selected):
          if(float(mag)==float(selected_mag)):
@@ -498,11 +499,12 @@ def archive_listing(form):
    # Add Default choice
    try:
       selected_error
-      one_error_selected = True
-      error_select+= '<option value="-1">All Res. Errors</option>'
    except:
       error_select+= '<option selected value="-1">All Res. Errors</option>'
-   
+   else:
+      one_error_selected = True
+      error_select+= '<option value="-1">All Res. Errors</option>'
+
    for err in POSSIBLE_ERRORS:
       if(one_error_selected):
          if(float(err)==float(selected_error)):
@@ -525,18 +527,7 @@ def archive_listing(form):
       one_ang_vel_selected = True
       ang_vel_select+= '<option value="-1">All Ang. Velocities</option>'
    
-   print("one_ang_vel_selected ")
-   print(one_ang_vel_selected)
-   print("<hr/>")
-   print("ang_vel ")
-   print(ang_vel)
-   print("<hr/>")
-   
-   print("selected_ang_vel ")
-   print(selected_ang_vel)
-   print("<hr/>")
-   sys.exit(0)
-
+ 
 
    for ang_vel in POSSIBLE_ANG_VELOCITIES:
       if(one_ang_vel_selected):
