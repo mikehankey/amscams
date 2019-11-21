@@ -466,7 +466,7 @@ def controller(json_conf):
 
    # New Reduce page / Manual Reduce page
    if cmd is not None:
-      if cmd == 'reduce2' or 'manual_reduction' in cmd:
+      if cmd == 'reduce2' or 'manual_reduction' or 'archive_listing' in cmd:
          skin = "v2"
 
    template = get_template(json_conf, skin)
@@ -528,7 +528,6 @@ def controller(json_conf):
    # ANOTHER OLD VERSION
    if cmd == 'reduce_new':
       extra_html = reduce_meteor_new(json_conf, form)
-
          
    # ARCHIVE LISTING
    if cmd == 'archive_listing':
