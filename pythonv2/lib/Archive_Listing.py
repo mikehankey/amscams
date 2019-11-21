@@ -440,6 +440,12 @@ def archive_listing(form):
    meteor_per_page = form.getvalue('meteor_per_page')
    clear_cache = form.getvalue('clear_cache')
 
+   # Criteria
+   selected_mag = form.getvalue('magnitude')
+   selected_error = form.getvalue('res_error')
+   selected_ang_vel = form.getvalue('ang_vel')
+
+
    # Build the page based on template  
    with open(ARCHIVE_LISTING_TEMPLATE, 'r') as file:
       template = file.read()
