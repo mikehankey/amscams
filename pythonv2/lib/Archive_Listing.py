@@ -465,16 +465,18 @@ def archive_listing(form):
 
    # Build MAGNITUDES selector
    mag_select = ''
+   one_mag_selected = False
 
    # Add Default choice
    try:
       selected_mag
+      one_mag_selected = True
       mag_select+= '<option value="-1">All Magnitudes</option>'
    except:
       mag_select+= '<option selected value="-1">All Magnitudes</option>'
    
    for mag in POSSIBLE_MAGNITUDES:
-      if(selected_mag and float(mag_select)==float(selected_mag)):
+      if(one_mag_selected and float(mag_select)==float(selected_mag)):
          mag_select+= '<option selected value="'+str(mag)+'">>'+str(mag)+' / page</option>'
       else:
          mag_select+= '<option value="'+str(mag)+'">>'+str(mag)+' / page</option>'  
