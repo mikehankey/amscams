@@ -17,6 +17,7 @@ ARCHIVE_LISTING_TEMPLATE = "/home/ams/amscams/pythonv2/templates/archive_listing
 
 # QUERIES CRITERIA
 POSSIBLE_MAGNITUDES = [130,140,150,160,170,180,190,200,210,220,230,240,250,260,270,280,290,300]
+POSSIBLE_ERRORS = [0.5,0.6,0.8,0.9,1,1.1,1.2,1.3,1.4,1.5,1.6,1.7,1.8,1.9,2,2.5,3,3.5,4,5]
  
 # Function that read a json file (detection)
 # and return the values of the corresponding Diagnostic Fields 
@@ -477,10 +478,30 @@ def archive_listing(form):
    
    for mag in POSSIBLE_MAGNITUDES:
       if(one_mag_selected and float(mag_select)==float(selected_mag)):
-         mag_select+= '<option selected value="'+str(mag)+'">>'+str(mag)+' / page</option>'
+         mag_select+= '<option selected value="'+str(mag)+'">>'+str(mag)+'</option>'
       else:
-         mag_select+= '<option value="'+str(mag)+'">>'+str(mag)+' / page</option>'  
+         mag_select+= '<option value="'+str(mag)+'">>'+str(mag)+'</option>'  
    template = template.replace("{MAGNITUDES}", mag_select)
+
+   # Build ERRORS selector
+   error_select = ''
+   one_error_selected = False
+
+   # Add Default choice
+   try:
+      selected_error
+      one_error_selected = True
+      error_select+= '<option value="-1">All Res. Errors</option>'
+   except:
+      error_select+= '<option selected value="-1">All Res. Errors</option>'
+   
+   for err in POSSIBLE_ERRORS:
+      if(one_error_selected and float(selected_error)==float(selected_error)):
+         error_select+= '<option selected value="'+str(err)+'">>'+str(err)+'</option>'
+      else:
+         error_select+= '<option value="'+str(err)+'">>'+str(err)+'</option>'  
+   template = template.replace("{RES_ERRORS}", error_select)
+
 
    # Clear_cache
    if(clear_cache is None):
