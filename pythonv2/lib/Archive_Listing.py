@@ -476,14 +476,10 @@ def archive_listing(form):
    one_mag_selected = False
 
    # Add Default choice
-   try:
-      selected_mag
-   except:
-      print("SELECT MAG DOESNT EXIST<br/>")
-      mag_select+= '<option selected value="-1">All Magnitudes</option>'
+   if selected_mag is None:
+       mag_select+= '<option selected value="-1">All Magnitudes</option>'
    else:
-      one_mag_selected = True
-      print("SELECT MAG EXISTS<br/>")
+      one_mag_selected = True 
       mag_select+= '<option value="-1">All Magnitudes</option>'
 
    for mag in POSSIBLE_MAGNITUDES:
@@ -499,14 +495,13 @@ def archive_listing(form):
    one_error_selected = False
 
    # Add Default choice
-   try:
-      selected_error
-   except:
-      error_select+= '<option selected value="-1">All Res. Errors</option>'
+   if selected_error is None:
+       error_select+= '<option selected value="-1">All Res. Error</option>'
    else:
-      one_error_selected = True
-      error_select+= '<option value="-1">All Res. Errors</option>'
+      one_error_selected = True 
+      error_select+= '<option value="-1">All Res. Error</option>' 
 
+   
    for err in POSSIBLE_ERRORS:
       if(one_error_selected):
          if(float(err)==float(selected_error)):
@@ -520,15 +515,15 @@ def archive_listing(form):
    ang_vel_select = ''
    one_ang_vel_selected = False
 
+
+
    # Add Default choice
-   try:
-      selected_ang_vel
-   except:
-      ang_vel_select+= '<option selected value="-1">All Ang. Velocities</option>'
+   if selected_ang_vel is None:
+       one_ang_vel_selected+= '<option selected value="-1">All Ang. Velocities</option>'
    else:
-      one_ang_vel_selected = True
-      ang_vel_select+= '<option value="-1">All Ang. Velocities</option>'
-   
+      one_error_selected = True 
+      ang_vel_select+= '<option value="-1">All Ang. Velocities</option>' 
+ 
  
 
    for ang_vel in POSSIBLE_ANG_VELOCITIES:
