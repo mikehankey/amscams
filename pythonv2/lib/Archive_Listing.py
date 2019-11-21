@@ -524,6 +524,18 @@ def archive_listing(form):
    else:
       one_ang_vel_selected = True
       ang_vel_select+= '<option value="-1">All Ang. Velocities</option>'
+   
+   print("one_ang_vel_selected ")
+   print(one_ang_vel_selected)
+   print("<hr/>")
+   print("ang_vel ")
+   print(ang_vel)
+   print("<hr/>")
+   
+   print("selected_ang_vel ")
+   print(selected_ang_vel)
+   print("<hr/>")
+
 
 
    for ang_vel in POSSIBLE_ANG_VELOCITIES:
