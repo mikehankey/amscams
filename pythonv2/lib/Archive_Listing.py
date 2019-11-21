@@ -18,6 +18,7 @@ ARCHIVE_LISTING_TEMPLATE = "/home/ams/amscams/pythonv2/templates/archive_listing
 # QUERIES CRITERIA
 POSSIBLE_MAGNITUDES = [130,140,150,160,170,180,190,200,210,220,230,240,250,260,270,280,290,300]
 POSSIBLE_ERRORS = [0.5,0.6,0.8,0.9,1,1.1,1.2,1.3,1.4,1.5,1.6,1.7,1.8,1.9,2,2.5,3,3.5,4,5]
+POSSIBLE_ANG_VELOCITIES = [1,2,3,4,5,6,7,8,9,10,11,12,13,15,16,17,18,19,20,21,22,23,24,25]
  
 # Function that read a json file (detection)
 # and return the values of the corresponding Diagnostic Fields 
@@ -477,7 +478,7 @@ def archive_listing(form):
       mag_select+= '<option selected value="-1">All Magnitudes</option>'
    
    for mag in POSSIBLE_MAGNITUDES:
-      if(one_mag_selected and float(mag_select)==float(selected_mag)):
+      if(one_mag_selected and float(mag)==float(selected_mag)):
          mag_select+= '<option selected value="'+str(mag)+'">>'+str(mag)+'</option>'
       else:
          mag_select+= '<option value="'+str(mag)+'">>'+str(mag)+'</option>'  
@@ -496,11 +497,32 @@ def archive_listing(form):
       error_select+= '<option selected value="-1">All Res. Errors</option>'
    
    for err in POSSIBLE_ERRORS:
-      if(one_error_selected and float(selected_error)==float(selected_error)):
-         error_select+= '<option selected value="'+str(err)+'">>'+str(err)+'</option>'
+      if(one_error_selected and float(err)==float(selected_error)):
+         error_select+= '<option selected value="'+str(err)+'"><'+str(err)+'</option>'
       else:
-         error_select+= '<option value="'+str(err)+'">>'+str(err)+'</option>'  
+         error_select+= '<option value="'+str(err)+'"><'+str(err)+'</option>'  
    template = template.replace("{RES_ERRORS}", error_select)
+
+
+   # Build ANGULAR VELOCITIES selector
+   ang_vel_select = ''
+   one_ang_vel_selected = False
+
+   # Add Default choice
+   try:
+      selected_ang_vel
+      one_ang_vel_selected = True
+      ang_vel_select+= '<option value="-1">All Ang. Velocities</option>'
+   except:
+      ang_vel_select+= '<option selected value="-1">All Res. Errors</option>'
+   
+   for ang_vel in POSSIBLE_ANG_VELOCITIES:
+      if(one_ang_vel_selected and float(selected_ang_vel)==float(ang_vel)):
+         errorang_vel_select_select+= '<option selected value="'+str(ang_vel)+'">>'+str(ang_vel)+'</option>'
+      else:
+         ang_vel_select+= '<option value="'+str(ang_vel)+'"><'+str(ang_vel)+'</option>'  
+   template = template.replace("{ANG_VELOCITIES}", ang_vel_select)
+
 
 
    # Clear_cache
