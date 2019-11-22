@@ -468,9 +468,9 @@ def get_html_detections(res,clear_cache):
          if(first == True):
             res_html  = cur_title.replace('%TOTAL%',str(cur_counter) +  ' detections')  + res_html
          else:
-            first = False
             res_html += cur_title.replace('%TOTAL%',str(cur_counter) +  ' detections')  
-         
+ 
+         first = False
          cur_title   = ''
          cur_counter = 0
          prev_date = cur_date
