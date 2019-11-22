@@ -469,9 +469,11 @@ def get_html_detections(res,clear_cache):
          print("THE DATE CHANGE  "+cur_date.strftime("%Y/%m/%d")+"<br/>")
 
          if(first == True):
+            print("THIS IS THE FIRST<br/>")
             res_html  = cur_title.replace('%TOTAL%',str(cur_counter) +  ' detections') + res_html
             first = False
          else:
+            print("THIS IS NOT THE FIRST<br/>")
             res_html += cur_title.replace('%TOTAL%',str(cur_counter) +  ' detections')  
  
          prev_date   = cur_date 
