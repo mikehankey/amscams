@@ -385,8 +385,7 @@ def get_video(_file):
 
 
 # GET HTML VERSION OF ONE DETECTION
-def get_html_detection(det,detection,clear_cache):
-   
+def get_html_detection(det,clear_cache):
    # Do we have a thumb stack preview for this detection?
    preview = does_cache_exist(det,"preview","/*.jpg")
 
@@ -398,7 +397,7 @@ def get_html_detection(det,detection,clear_cache):
    path_to_vid = get_video(det['full_path'])       
 
    # Otherwise preview = preview (:)
-   res_html = '<div class="preview col-lg-3 col-md-3 select-to mb-3'
+   res_html += '<div class="preview col-lg-3 col-md-3 select-to mb-3'
    
    if(detection['red']==1):
       res_html += ' reduced">'
@@ -445,11 +444,8 @@ def get_html_detection(det,detection,clear_cache):
 def get_html_detections(res,clear_cache):
 
    res_html = ''
-   cur_title = ''
-   cur_day_html = ''
    prev_date = None
-   cur_counter = 0
-   first = True
+   cur_count = 0
    
    for detection in res:
 
@@ -457,42 +453,28 @@ def get_html_detections(res,clear_cache):
       # so the name analyser will work
       det = name_analyser(detection['p'])
       cur_date = get_datetime_from_analysedname(det)
- 
-      if(prev_date is None): 
-         print("BUILD FIRST TITLE "+cur_date.strftime("%Y/%m/%d")+"<br/>")
+
+   
+      if(prev_date is None):
          prev_date = cur_date
-         # FIRST TITLE
-         cur_title  = '<div class="h2_holder d-flex justify-content-between"><h2>'+cur_date.strftime("%Y/%m/%d")+" - %TOTAL%</h2></div>"
-         cur_title  += '<div class="gallery gal-resize row text-center text-lg-left mb-5 mr-5 ml-5">' 
-      
-      if(cur_date.month != prev_date.month or cur_date.day != prev_date.day or cur_date.year != prev_date.year):
-         
-         print("---------------------------<br/>THE DATE CHANGE  "+cur_date.strftime("%Y/%m/%d")+"<br/>")
+         res_html += '<div class="h2_holder d-flex justify-content-between"><h2>'+cur_date.strftime("%Y/%m/%d")+" - %TOTAL%</h2></div>"
+         res_html += '<div class="gallery gal-resize row text-center text-lg-left mb-5 mr-5 ml-5">'
+         res_html.replace('%TOTAL%',cur_count)
+         cur_count = 0
 
-         if(first == True):
-            print("---------------------------<br/>THIS IS THE FIRST<br/>")
-            cur_day_html   = cur_title.replace('%TOTAL%',str(cur_counter) +  ' detections') + cur_day_html 
-            res_html += cur_day_html
-            cur_title      =  '</div><div class="h2_holder d-flex justify-content-between"><h2>'+cur_date.strftime("%Y/%m/%d")+" -  %TOTAL%</h2></div>"
-            cur_title      += '<div class="gallery gal-resize row text-center text-lg-left mb-5 mr-5 ml-5">'
-            first = False
-         else:
-            print("---------------------------<br/>THIS IS NOT THE FIRST<br/>")
-            cur_day_html += cur_title.replace('%TOTAL%',str(cur_counter) +  ' detections')  
-            res_html += cur_day_html
-            prev_date   = cur_date 
-            cur_counter = 0
-            cur_title  =  '</div><div class="h2_holder d-flex justify-content-between"><h2>'+cur_date.strftime("%Y/%m/%d")+" -  %TOTAL%</h2></div>"
-            cur_title  += '<div class="gallery gal-resize row text-center text-lg-left mb-5 mr-5 ml-5">'
-      #else:
-         
+      elif(cur_date.month != prev_date.month or cur_date.day != prev_date.day or cur_date.year != prev_date.year):
+         prev_date = cur_date
+         res_html +=  '</div><div class="h2_holder d-flex justify-content-between"><h2>'+cur_date.strftime("%Y/%m/%d")+" - %TOTAL%</h2></div>"
+         res_html += '<div class="gallery gal-resize row text-center text-lg-left mb-5 mr-5 ml-5">'
+         res_html.replace('%TOTAL%',cur_count)
+         cur_count = 0
 
-      print("---------------------------<br/>WE ADD A DETECTION "+cur_date.strftime("%Y/%m/%d")+"<br/>")
-      print("CT+1 "+cur_date.strftime("%Y/%m/%d")+"<br/>")
-       
-      cur_day_html += get_html_detection(det,detection,clear_cache)
-      cur_counter+=1     
-     
+ 
+      res_html += get_html_detection(det,clear_cache)
+      cur_count+=1
+   
+
+
    return res_html
  
 
