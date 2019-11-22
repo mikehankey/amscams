@@ -390,7 +390,7 @@ def get_html_detections(res,clear_cache):
    res_html = ''
    cur_title = ''
    prev_date = None
-   cur_counter = 0
+   cur_counter = 1
    
    for detection in res:
 
@@ -424,7 +424,7 @@ def get_html_detections(res,clear_cache):
       if(cur_title!=''):
          res_html += cur_title.replace('%TOTAL%',str(cur_counter) +  ' detections')
          cur_title  = ''
-         cur_counter = 0
+         cur_counter = 1
 
       
       # Otherwise preview = preview (:)
