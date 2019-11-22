@@ -472,6 +472,7 @@ def get_html_detections(res,clear_cache):
             print("THIS IS THE FIRST<br/>")
             res_html  = cur_title.replace('%TOTAL%',str(cur_counter) +  ' detections') + res_html
             first = False
+            print(res_html)
          else:
             print("THIS IS NOT THE FIRST<br/>")
             res_html += cur_title.replace('%TOTAL%',str(cur_counter) +  ' detections')  
