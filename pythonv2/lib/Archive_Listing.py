@@ -466,16 +466,16 @@ def get_html_detections(res,clear_cache):
       
       if(cur_date.month != prev_date.month or cur_date.day != prev_date.day or cur_date.year != prev_date.year):
          
-         print("THE DATE CHANGE  "+cur_date.strftime("%Y/%m/%d")+"<br/>")
+         print("---------------------------<br/>THE DATE CHANGE  "+cur_date.strftime("%Y/%m/%d")+"<br/>")
 
          if(first == True):
-            print("THIS IS THE FIRST<br/>")
+            print("---------------------------<br/>THIS IS THE FIRST<br/>")
             res_html  = cur_title.replace('%TOTAL%',str(cur_counter) +  ' detections') + res_html
             cur_title  =  '</div><div class="h2_holder d-flex justify-content-between"><h2>'+cur_date.strftime("%Y/%m/%d")+" -  %TOTAL%</h2></div>"
             cur_title  += '<div class="gallery gal-resize row text-center text-lg-left mb-5 mr-5 ml-5">'
             first = False
          else:
-            print("THIS IS NOT THE FIRST<br/>")
+            print("---------------------------<br/>THIS IS NOT THE FIRST<br/>")
             res_html += cur_title.replace('%TOTAL%',str(cur_counter) +  ' detections')  
  
             prev_date   = cur_date 
@@ -485,7 +485,7 @@ def get_html_detections(res,clear_cache):
       #else:
          
 
-      print("WE ADD A DETECTION "+cur_date.strftime("%Y/%m/%d")+"<br/>")
+      print("---------------------------<br/>WE ADD A DETECTION "+cur_date.strftime("%Y/%m/%d")+"<br/>")
       print("CT+1 "+cur_date.strftime("%Y/%m/%d")+"<br/>")
        
       res_html += get_html_detection(det,detection,clear_cache)
