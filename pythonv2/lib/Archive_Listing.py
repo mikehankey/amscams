@@ -301,7 +301,11 @@ def get_results_from_date_from_monthly_index(criteria,date,json_index,max_res_pe
    cur_month_test = False
 
    # Nb of result not to display based on cur_page
-   number_of_res_to_give_up = max_res_per_page*cur_page
+   if(cur_page==1):
+      number_of_res_to_give_up = 0
+   else:
+      number_of_res_to_give_up = max_res_per_page*cur_page
+
    print('PAGE JUMP ' + str(number_of_res_to_give_up))
  
    if("days" in json_index and "month" in json_index):
