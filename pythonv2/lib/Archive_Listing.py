@@ -443,7 +443,7 @@ def get_html_detections(res,clear_cache):
       res_html += '  <div class="list-onl sel-box"><div class="custom-control big custom-checkbox">'
       res_html += '     <input type="checkbox" class="custom-control-input" id="'+det['full_path']+'" name="'+det['full_path']+'">'     
       res_html += '     <label class="custom-control-label" for="'+det['full_path']+'"></label>'
-      res_html += '  </div></div>'
+      res_html += '  </div></div>' + cur_counter 
       res_html += '  <div class="d-flex justify-content-between">'
       res_html += '     <div class="pre-b gallery-only"><span class="mst">Cam #'+det['cam_id']+' - <b>'+det['hour']+':'+det['min']+'</b></span>'
       
