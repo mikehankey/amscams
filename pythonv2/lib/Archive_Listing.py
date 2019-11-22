@@ -400,7 +400,7 @@ def get_html_detections(res,clear_cache):
       det = name_analyser(detection['p'])
       cur_date = get_datetime_from_analysedname(det)
 
-      res_html += cur_date.strftime("%Y/%m/%d")
+      res_html += cur_date.strftime("%Y/%m/%d") +"<hr/>"
 
       #if(prev_date is None): 
       #   prev_date = cur_date
