@@ -466,17 +466,18 @@ def get_html_detections(res,clear_cache):
       if(cur_date.month != prev_date.month or cur_date.day != prev_date.day or cur_date.year != prev_date.year):
          
          if(first == True):
-            res_html  = cur_title.replace('%TOTAL%',str(cur_counter) +  ' detections')  + "FIRST " + res_html
+            res_html  = cur_title.replace('%TOTAL%',str(cur_counter) +  ' detections') + res_html
          else:
             res_html += cur_title.replace('%TOTAL%',str(cur_counter) +  ' detections')  
  
          first = False
          cur_title   = ''
          cur_counter = 0
-         prev_date = cur_date
          cur_title  +=  '</div><div class="h2_holder d-flex justify-content-between"><h2>'+cur_date.strftime("%Y/%m/%d")+" -  %TOTAL%</h2></div>"
          cur_title  += '<div class="gallery gal-resize row text-center text-lg-left mb-5 mr-5 ml-5">'
       else:
+         
+         prev_date  = cur_date
          cur_counter+=1
 
       
