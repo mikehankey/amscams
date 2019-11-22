@@ -446,6 +446,7 @@ def get_html_detections(res,clear_cache):
 
    res_html = ''
    cur_title = ''
+   cur_day_html = ''
    prev_date = None
    cur_counter = 0
    first = True
@@ -470,14 +471,15 @@ def get_html_detections(res,clear_cache):
 
          if(first == True):
             print("---------------------------<br/>THIS IS THE FIRST<br/>")
-            res_html   = cur_title.replace('%TOTAL%',str(cur_counter) +  ' detections') + res_html + "<br>--------------------------------------<br/>"
-            cur_title  =  '</div><div class="h2_holder d-flex justify-content-between"><h2>'+cur_date.strftime("%Y/%m/%d")+" -  %TOTAL%</h2></div>"
-            cur_title  += '<div class="gallery gal-resize row text-center text-lg-left mb-5 mr-5 ml-5">'
+            cur_day_html   = cur_title.replace('%TOTAL%',str(cur_counter) +  ' detections') + cur_day_html 
+            res_html += cur_day
+            cur_title      =  '</div><div class="h2_holder d-flex justify-content-between"><h2>'+cur_date.strftime("%Y/%m/%d")+" -  %TOTAL%</h2></div>"
+            cur_title      += '<div class="gallery gal-resize row text-center text-lg-left mb-5 mr-5 ml-5">'
             first = False
          else:
             print("---------------------------<br/>THIS IS NOT THE FIRST<br/>")
-            res_html += cur_title.replace('%TOTAL%',str(cur_counter) +  ' detections')  
- 
+            cur_day_html += cur_title.replace('%TOTAL%',str(cur_counter) +  ' detections')  
+            res_html += cur_day
             prev_date   = cur_date 
             cur_counter = 0
             cur_title  =  '</div><div class="h2_holder d-flex justify-content-between"><h2>'+cur_date.strftime("%Y/%m/%d")+" -  %TOTAL%</h2></div>"
@@ -488,7 +490,7 @@ def get_html_detections(res,clear_cache):
       print("---------------------------<br/>WE ADD A DETECTION "+cur_date.strftime("%Y/%m/%d")+"<br/>")
       print("CT+1 "+cur_date.strftime("%Y/%m/%d")+"<br/>")
        
-      res_html += get_html_detection(det,detection,clear_cache)
+      cur_day_html += get_html_detection(det,detection,clear_cache)
       cur_counter+=1     
      
    return res_html
