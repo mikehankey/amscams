@@ -388,7 +388,9 @@ def get_video(_file):
 def get_html_detections(res,clear_cache):
 
    res_html = ''
+   cur_title = ''
    prev_date = None
+   cur_counter = 0
    
    for detection in res:
 
@@ -396,17 +398,20 @@ def get_html_detections(res,clear_cache):
       # so the name analyser will work
       det = name_analyser(detection['p'])
       cur_date = get_datetime_from_analysedname(det)
-
-   
+ 
       if(prev_date is None):
          prev_date = cur_date
-         res_html += '<div class="h2_holder d-flex justify-content-between"><h2>'+cur_date.strftime("%Y/%m/%d")+'</h2></div>'
-         res_html += '<div class="gallery gal-resize row text-center text-lg-left mb-5 mr-5 ml-5">'
-
-      if(cur_date.month != prev_date.month or cur_date.day != prev_date.day):
+         cur_title  += '<div class="h2_holder d-flex justify-content-between"><h2>'+cur_date.strftime("%Y/%m/%d")+'</h2></div>'
+         cur_title  += '<div class="gallery gal-resize row text-center text-lg-left mb-5 mr-5 ml-5">'
+         cur_counter = 0
+      elif(cur_date.month != prev_date.month or cur_date.day != prev_date.day or cur_date.year != prev_date.year):
          prev_date = cur_date
-         res_html +=  '</div><div class="h2_holder d-flex justify-content-between"><h2>'+cur_date.strftime("%Y/%m/%d")+'</h2></div>'
-         res_html += '<div class="gallery gal-resize row text-center text-lg-left mb-5 mr-5 ml-5">'
+         cur_title  +=  '</div><div class="h2_holder d-flex justify-content-between"><h2>'+cur_date.strftime("%Y/%m/%d")+'</h2></div>'
+         cur_title  += '<div class="gallery gal-resize row text-center text-lg-left mb-5 mr-5 ml-5">'
+         cur_counter = 0
+      else:
+         cur_title  = ''
+         cur_counter+=1
  
       # Do we have a thumb stack preview for this detection?
       preview = does_cache_exist(det,"preview","/*.jpg")
@@ -425,7 +430,6 @@ def get_html_detections(res,clear_cache):
          res_html += ' reduced">'
       else:
          res_html += '">'
-
 
       res_html += '  <a class="mtt has_soh" href="webUI.py?cmd=reduce2&video_file='+det['full_path']+'" title="Detection Reduce page">'
       res_html += '     <img alt="" class="img-fluid ns lz" src="'+preview[0]+'">'
