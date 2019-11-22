@@ -458,28 +458,31 @@ def get_html_detections(res,clear_cache):
       cur_date = get_datetime_from_analysedname(det)
  
       if(prev_date is None): 
+         print("BUILD FIRST TITLE<br/>")
          prev_date = cur_date
          # FIRST TITLE
-         cur_title  += '<div class="h2_holder d-flex justify-content-between"><h2>'+cur_date.strftime("%Y/%m/%d")+" - %TOTAL%</h2></div>"
+         cur_title  = '<div class="h2_holder d-flex justify-content-between"><h2>'+cur_date.strftime("%Y/%m/%d")+" - %TOTAL%</h2></div>"
          cur_title  += '<div class="gallery gal-resize row text-center text-lg-left mb-5 mr-5 ml-5">' 
       
       if(cur_date.month != prev_date.month or cur_date.day != prev_date.day or cur_date.year != prev_date.year):
          
+         print("THE DATE CHANGE<br/>")
+
          if(first == True):
             res_html  = cur_title.replace('%TOTAL%',str(cur_counter) +  ' detections') + res_html
             first = False
          else:
             res_html += cur_title.replace('%TOTAL%',str(cur_counter) +  ' detections')  
  
-         prev_date   = cur_date
-         cur_title   = ''
+         prev_date   = cur_date 
          cur_counter = 0
-         cur_title  +=  '</div><div class="h2_holder d-flex justify-content-between"><h2>'+cur_date.strftime("%Y/%m/%d")+" -  %TOTAL%</h2></div>"
+         cur_title  =  '</div><div class="h2_holder d-flex justify-content-between"><h2>'+cur_date.strftime("%Y/%m/%d")+" -  %TOTAL%</h2></div>"
          cur_title  += '<div class="gallery gal-resize row text-center text-lg-left mb-5 mr-5 ml-5">'
       else:
+         print("CT+1<br/>")
          cur_counter+=1
 
-      
+      print("WE ADD A DETECTION<br/>")
       res_html += get_html_detection(det,detection,clear_cache)
           
      
