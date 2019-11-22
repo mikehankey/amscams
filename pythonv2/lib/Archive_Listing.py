@@ -478,11 +478,12 @@ def get_html_detections(res,clear_cache):
          cur_counter = 0
          cur_title  =  '</div><div class="h2_holder d-flex justify-content-between"><h2>'+cur_date.strftime("%Y/%m/%d")+" -  %TOTAL%</h2></div>"
          cur_title  += '<div class="gallery gal-resize row text-center text-lg-left mb-5 mr-5 ml-5">'
-      else:
-         print("CT+1 "+cur_date.strftime("%Y/%m/%d")+"<br/>")
+      #else:
          
 
       print("WE ADD A DETECTION "+cur_date.strftime("%Y/%m/%d")+"<br/>")
+      print("CT+1 "+cur_date.strftime("%Y/%m/%d")+"<br/>")
+       
       res_html += get_html_detection(det,detection,clear_cache)
       cur_counter+=1     
      
