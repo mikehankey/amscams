@@ -386,6 +386,7 @@ def get_video(_file):
 
 # GET HTML VERSION OF ONE DETECTION
 def get_html_detection(det,clear_cache):
+   
    # Do we have a thumb stack preview for this detection?
    preview = does_cache_exist(det,"preview","/*.jpg")
 
@@ -397,7 +398,7 @@ def get_html_detection(det,clear_cache):
    path_to_vid = get_video(det['full_path'])       
 
    # Otherwise preview = preview (:)
-   res_html += '<div class="preview col-lg-3 col-md-3 select-to mb-3'
+   res_html = '<div class="preview col-lg-3 col-md-3 select-to mb-3'
    
    if(detection['red']==1):
       res_html += ' reduced">'
