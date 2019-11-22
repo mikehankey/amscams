@@ -422,12 +422,10 @@ def get_html_detections(res,clear_cache):
       # Get Video for preview
       path_to_vid = get_video(det['full_path'])       
 
-
       if(cur_title!='' and first==False):
          res_html    += cur_title.replace('%TOTAL%',str(cur_counter) +  ' detections')  
          cur_title   = ''
          cur_counter = 1
-
       
       # Otherwise preview = preview (:)
       res_html += '<div class="preview col-lg-3 col-md-3 select-to mb-3'
