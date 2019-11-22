@@ -408,10 +408,11 @@ def get_html_detections(res,clear_cache):
       if(cur_date.month != prev_date.month or cur_date.day != prev_date.day or cur_date.year != prev_date.year):
 
          if(first == True):
+            res_html  = cur_title.replace('%TOTAL%',str(cur_counter) +  ' detections')  + res_html
+         else:
             res_html    += cur_title.replace('%TOTAL%',str(cur_counter) +  ' detections')  
-      
+ 
          first = False
-         res_html    += cur_title.replace('%TOTAL%',str(cur_counter) +  ' detections')  
          cur_title   = ''
          cur_counter = 1
          prev_date = cur_date
