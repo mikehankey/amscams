@@ -479,7 +479,7 @@ def get_html_detections(res,clear_cache):
          else:
             print("---------------------------<br/>THIS IS NOT THE FIRST<br/>")
             cur_day_html += cur_title.replace('%TOTAL%',str(cur_counter) +  ' detections')  
-            res_html += cur_day
+            res_html += cur_day_html
             prev_date   = cur_date 
             cur_counter = 0
             cur_title  =  '</div><div class="h2_holder d-flex justify-content-between"><h2>'+cur_date.strftime("%Y/%m/%d")+" -  %TOTAL%</h2></div>"
