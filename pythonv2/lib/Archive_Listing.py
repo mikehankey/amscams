@@ -467,17 +467,16 @@ def get_html_detections(res,clear_cache):
          
          if(first == True):
             res_html  = cur_title.replace('%TOTAL%',str(cur_counter) +  ' detections') + res_html
+            first = False
          else:
             res_html += cur_title.replace('%TOTAL%',str(cur_counter) +  ' detections')  
  
-         first = False
+         prev_date   = cur_date
          cur_title   = ''
          cur_counter = 0
          cur_title  +=  '</div><div class="h2_holder d-flex justify-content-between"><h2>'+cur_date.strftime("%Y/%m/%d")+" -  %TOTAL%</h2></div>"
          cur_title  += '<div class="gallery gal-resize row text-center text-lg-left mb-5 mr-5 ml-5">'
       else:
-         
-         prev_date  = cur_date
          cur_counter+=1
 
       
