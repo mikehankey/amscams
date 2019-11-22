@@ -472,7 +472,7 @@ def get_html_detections(res,clear_cache):
          if(first == True):
             print("---------------------------<br/>THIS IS THE FIRST<br/>")
             cur_day_html   = cur_title.replace('%TOTAL%',str(cur_counter) +  ' detections') + cur_day_html 
-            res_html += cur_day
+            res_html += cur_day_html
             cur_title      =  '</div><div class="h2_holder d-flex justify-content-between"><h2>'+cur_date.strftime("%Y/%m/%d")+" -  %TOTAL%</h2></div>"
             cur_title      += '<div class="gallery gal-resize row text-center text-lg-left mb-5 mr-5 ml-5">'
             first = False
