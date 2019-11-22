@@ -424,7 +424,7 @@ def get_html_detections(res,clear_cache):
 
 
       if(cur_title!='' and first==False):
-         res_html += cur_title.replace('%TOTAL%',str(cur_counter) +  ' detections')
+         res_html  = cur_title.replace('%TOTAL%',str(cur_counter) +  ' detections') + res_html
          cur_title  = ''
          cur_counter = 1
 
