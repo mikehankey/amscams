@@ -480,11 +480,11 @@ def get_html_detections(res,clear_cache):
          cur_title  += '<div class="gallery gal-resize row text-center text-lg-left mb-5 mr-5 ml-5">'
       else:
          print("CT+1 "+cur_date.strftime("%Y/%m/%d")+"<br/>")
-         cur_counter+=1
+         
 
       print("WE ADD A DETECTION "+cur_date.strftime("%Y/%m/%d")+"<br/>")
       res_html += get_html_detection(det,detection,clear_cache)
-          
+      cur_counter+=1     
      
    return res_html
  
