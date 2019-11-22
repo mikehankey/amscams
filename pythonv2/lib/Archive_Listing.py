@@ -385,7 +385,7 @@ def get_video(_file):
 
 
 # GET HTML VERSION OF ONE DETECTION
-def get_html_detections(det):
+def get_html_detection(det):
    # Do we have a thumb stack preview for this detection?
    preview = does_cache_exist(det,"preview","/*.jpg")
 
