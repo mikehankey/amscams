@@ -441,64 +441,68 @@ def update_cat_stars(form):
   
    meteor_mode = 0  #???
    
-   temps = points.split("|")
-   for temp in temps:
-      if len(temp) > 0:
-         (x,y) = temp.split(",")
-         x,y = int(float(x)),int(float(y))
-         x,y = int(x)+5,int(y)+5
-         x,y = x*2,y*2
-         if x >0 and y > 0 and x<HD_W and y< HD_H:
-            star_points.append((x,y))
-    
-   star_points = pin_point_stars(hd_image, star_points) 
- 
-   # get the center ra,dec based on the center_az,el and the current timestamp from the file 
-   ra,dec = AzEltoRADec(meteor_red['calib'], video_file)
-   meteor_red['calib']['device']['center']['ra'] = ra
-   meteor_red['calib']['device']['center']['dec'] = dec
-   meteor_red['calib']['device']['img_dim'] = [HD_W,HD_H]
- 
-   cat_stars = get_catalog_stars(meteor_red['calib'])
-
-   my_cat_stars = []
-   my_close_stars = []
-
-   for name,mag,ra,dec,new_cat_x,new_cat_y in cat_stars:  
-      my_cat_stars.append((name,mag,ra,dec,new_cat_x,new_cat_y)) 
-
-
-   my_close_stars = []
-   for ix,iy in star_points:
-      close_stars = find_close_stars((ix,iy), cat_stars) 
-
-      if len(close_stars) == 1:
-         name,mag,ra,dec,cat_x,cat_y,scx,scy,cat_star_dist = close_stars[0]
-         new_x, new_y, img_ra,img_dec, img_az, img_el = XYtoRADec(ix,iy,video_file,meteor_red['calib'])
-         new_star = {}
-         new_star['name'] = name #.decode("unicode_escape") 
-         new_star['mag'] = mag
-         new_star['ra'] = ra
-         new_star['dec'] = dec
-         new_star['dist_px'] = cat_star_dist 
-
-         # The image x,y of the star (CIRCLE)
-         new_star['i_pos'] = [ix,iy]
-         # The lens distorted catalog x,y position of the star  (PLUS SIGN)
-         new_star['cat_dist_pos'] = [new_x,new_y]
-         # The undistorted catalog x,y position of the star  (SQUARE)
-         new_star['cat_und_pos'] = [cat_x,cat_y]
-
-         # distorted position should be the new_x, new_y and + symbol
-         my_close_stars.append(new_star)
- 
-   meteor_red['calib']['stars'] = my_close_stars
+   if(points):
+      temps = points.split("|")
+      for temp in temps:
+         if len(temp) > 0:
+            (x,y) = temp.split(",")
+            x,y = int(float(x)),int(float(y))
+            x,y = int(x)+5,int(y)+5
+            x,y = x*2,y*2
+            if x >0 and y > 0 and x<HD_W and y< HD_H:
+               star_points.append((x,y))
+      
+      star_points = pin_point_stars(hd_image, star_points) 
    
-   # Update JSON File
-   save_json_file(meteor_red_file, meteor_red)
+      # get the center ra,dec based on the center_az,el and the current timestamp from the file 
+      ra,dec = AzEltoRADec(meteor_red['calib'], video_file)
+      meteor_red['calib']['device']['center']['ra'] = ra
+      meteor_red['calib']['device']['center']['dec'] = dec
+      meteor_red['calib']['device']['img_dim'] = [HD_W,HD_H]
+   
+      cat_stars = get_catalog_stars(meteor_red['calib'])
+
+      my_cat_stars = []
+      my_close_stars = []
+
+      for name,mag,ra,dec,new_cat_x,new_cat_y in cat_stars:  
+         my_cat_stars.append((name,mag,ra,dec,new_cat_x,new_cat_y)) 
+
+
+      my_close_stars = []
+      for ix,iy in star_points:
+         close_stars = find_close_stars((ix,iy), cat_stars) 
+
+         if len(close_stars) == 1:
+            name,mag,ra,dec,cat_x,cat_y,scx,scy,cat_star_dist = close_stars[0]
+            new_x, new_y, img_ra,img_dec, img_az, img_el = XYtoRADec(ix,iy,video_file,meteor_red['calib'])
+            new_star = {}
+            new_star['name'] = name #.decode("unicode_escape") 
+            new_star['mag'] = mag
+            new_star['ra'] = ra
+            new_star['dec'] = dec
+            new_star['dist_px'] = cat_star_dist 
+
+            # The image x,y of the star (CIRCLE)
+            new_star['i_pos'] = [ix,iy]
+            # The lens distorted catalog x,y position of the star  (PLUS SIGN)
+            new_star['cat_dist_pos'] = [new_x,new_y]
+            # The undistorted catalog x,y position of the star  (SQUARE)
+            new_star['cat_und_pos'] = [cat_x,cat_y]
+
+            # distorted position should be the new_x, new_y and + symbol
+            my_close_stars.append(new_star)
+   
+      meteor_red['calib']['stars'] = my_close_stars
+      
+      # Update JSON File
+      save_json_file(meteor_red_file, meteor_red)
+
+     
 
    # Return the new JSON
    js_f = load_json_file(meteor_red_file)
+
    print(json.dumps(js_f))
 
 

@@ -137,7 +137,7 @@ def reduce_meteor2(json_conf,form):
    if(report_details!=''):
       template = template.replace("{REPORT_DETAILS}", report_details)
    else:
-      template = template.replace("{REPORT_DETAILS}", "<div class='alert alert-danger'>Report is missing in JSON</div>")
+      template = template.replace("{REPORT_DETAILS}", "<dt class='d-block mx-auto'><div class='alert alert-danger'>Report is missing in JSON</div></div>")
 
    # Display some of the report info directly on the page
    #dist_per_elp: 9.661147849907783,
