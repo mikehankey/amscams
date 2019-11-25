@@ -122,7 +122,7 @@ def reduce_meteor2(json_conf,form):
       report_details += '<dt class="col-4">Date &amp; Time</dt><dd class="col-8">'+start_time+'s</dd>'
 
       if('dur' in meteor_json_file['report']):
-         report_details += '<dt class="col-4">Duration</dt><dd class="col-8">'+str(meteor_json_file['report']['dur'])+'s</dd>'
+         report_details += '<dt class="col-4">Duration</dt><dd class="col-8"><span id="dur">'+str(meteor_json_file['report']['dur'])+'</span>s</dd>'
       if('max_peak' in meteor_json_file['report']):
          report_details += '<dt class="col-4">Magnitude</dt><dd class="col-8">'+str(meteor_json_file['report']['max_peak'])+'</dd>'
       if('angular_vel' in meteor_json_file['report']):
