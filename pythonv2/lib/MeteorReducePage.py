@@ -132,11 +132,12 @@ def reduce_meteor2(json_conf,form):
       if('device' in meteor_json_file['calib']):
          if('total_res_px' in meteor_json_file['calib']['device']):
             report_details += '<dt class="col-4">Res. Error</dt><dd class="col-8">'+str(meteor_json_file['calib']['device']['total_res_px'])+'</dd>'
-
-  
-
+ 
    # We complete the template
-   template = template.replace("{REPORT_DETAILS}", report_details)
+   if(report_details!=''):
+      template = template.replace("{REPORT_DETAILS}", report_details)
+   else:
+      template = template.replace("{REPORT_DETAILS}", "<div class='alert alert-danger'>Report is missing in JSON</div>")
 
    # Display some of the report info directly on the page
    #dist_per_elp: 9.661147849907783,
