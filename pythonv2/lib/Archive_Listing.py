@@ -302,8 +302,8 @@ def get_results_from_date_from_monthly_index(criteria,date,json_index,max_res_pe
 
 
    print("DEBUGGING<br/>")
-   print("max_res_per_page: " + max_res_per_page)
-   print("cur_page: " + cur_page)
+   print("max_res_per_page: " + str(max_res_per_page))
+   print("cur_page: " + str(cur_page))
 
    # Nb of result not to display based on cur_page
    if(cur_page==1):
