@@ -25,4 +25,5 @@ def apply_calib(json_file):
       save_json_file(json_file,json_data)
 
 
-   return load_json_file(json_file) 
+   new_json_content = load_json_file(json_file) 
+   return new_json_content
