@@ -203,6 +203,7 @@ if ($('canvas#c').length!=0) {
     
       // Click on Canvas
       canvas.on('mouse:down', function(e) {
+         clearTimeout(mouse_over_timer);
 
          // Remove zoom
          if($('#c').hasClass('r-zoomed')) {
@@ -244,7 +245,6 @@ if ($('canvas#c').length!=0) {
                      objFound = true; 
                      id = objects[i].gp_id;
                      canvas.remove(objects[i]);
-                     clearTimeout(mouse_over_timer);
                   }
             }
 
