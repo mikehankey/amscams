@@ -173,6 +173,7 @@ def get_template(json_conf, skin = "as6ams"  ):
       fpt = open("/home/ams/amscams/pythonv2/templates/as6ams.html", "r")
    for line in fpt:
       template = template + line
+   print("SKIN  " +  skin)
    return(template) 
 
 def make_day_preview(day_dir, stats_data, json_conf):
