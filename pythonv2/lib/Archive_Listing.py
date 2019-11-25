@@ -332,7 +332,7 @@ def get_results_from_date_from_monthly_index(criteria,date,json_index,max_res_pe
           or (not cur_month_test and int(cur_month)<int(date.month)) and res_cnt<=max_res_per_page):
           
             for  detection  in  detections:
-               if(res_cnt<=max_res_per_page):
+               if(res_cnt<max_res_per_page):
  
                   # Here we test the criteria
                   test = True
