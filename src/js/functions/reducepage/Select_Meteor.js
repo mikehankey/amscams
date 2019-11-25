@@ -378,6 +378,11 @@ function setup_modal_actions(fn_id,x,y) {
             $('<div class="cross_holder prev" style="top:'+rY+'px; left:'+rX+'px"><div class="cross" style="border:1px solid '+nextH.color+'"></div></div>').appendTo('.meteor_chooser');
         }
     }
+
+    console.log("IN SETUP MODAL ACTION"):
+    console.log("X :" + x)
+    console.log("Y :" + y)
+
      
 
     $(".meteor_chooser").unbind('click').click(function(e){
