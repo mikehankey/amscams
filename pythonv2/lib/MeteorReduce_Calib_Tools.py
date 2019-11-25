@@ -137,10 +137,10 @@ def XYtoRADec(x,y,analysed_name,json_file):
    
    print("IN XYTO RADEC")
    print("<br>")
-   print("X:" + x )
+   print("X:" + str(x) )
    
    print("<br>")
-   print("Y:" + y)
+   print("Y:" + str(y))
    
    print("<br>")
    print("ANALYSED NAME")
