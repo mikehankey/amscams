@@ -3090,6 +3090,7 @@ def reduce_meteor_new(json_conf,form):
    template = template.replace("{SD_VIDEO}", sd_video_file)
    template = template.replace("{HD_VIDEO}", str(hd_video_file))
    template = template.replace("{METEOR_JSON_FILE}", meteor_json_file)
+   template = template.replace("{METEOR_JSON}", meteor_json_file)
    template = template.replace("{event_start_time}", meteor_json_file)
    template = template.replace("{HALF_STACK}", half_stack_file)
 
