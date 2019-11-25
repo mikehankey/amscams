@@ -243,7 +243,7 @@ if ($('canvas#c').length!=0) {
             for (let i in objects) {
                if (!objFound && objects[i].containsPoint(clickPoint) && objects[i].type != "reduc_rect") {
                      objFound = true; 
-                     //id = objects[i].gp_id;
+                     id = objects[i].gp_id;
                      //console.log("REMOVE OBJCT ")
                      //console.log(objects[i])
                      canvas.remove(objects[i]);
