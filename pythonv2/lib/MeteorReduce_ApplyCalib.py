@@ -1,3 +1,4 @@
+import json
 from lib.FileIO import load_json_file, save_json_file
 from lib.MeteorReduce_Calib_Ajax_Tools import XYtoRADec
 from lib.MeteorReduce_Tools import name_analyser
@@ -23,7 +24,5 @@ def apply_calib(json_file):
 
       # We save the file
       save_json_file(json_file,json_data)
-
-
-   new_json_content = load_json_file(json_file) 
-   return new_json_content
+ 
+   return json.dumps(load_json_file(json_file) ,sort_keys=True,indent=4)
