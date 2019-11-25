@@ -458,7 +458,9 @@ def update_cat_stars(form):
       ra,dec = AzEltoRADec(meteor_red['calib'], video_file)
       meteor_red['calib']['device']['center']['ra'] = ra
       meteor_red['calib']['device']['center']['dec'] = dec
-      meteor_red['calib']['device']['img_dim'] = [HD_W,HD_H]
+      
+      if('img_dim' not in meteor_red['calib']['device']):
+         meteor_red['calib']['device']['img_dim'] = [HD_W,HD_H]
    
       cat_stars = get_catalog_stars(meteor_red['calib'])
 
