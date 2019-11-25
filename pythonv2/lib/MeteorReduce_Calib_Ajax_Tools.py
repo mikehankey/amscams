@@ -33,7 +33,7 @@ def getRADEC(form):
    results = [];
 
    for v in _values:
-      x,y,ra,dec,az,el = XYtoRADec(v['x_HD'],v['y_HD'],name_analyser(json_file_x),new_json_content)
+      x,y,ra,dec,az,el = XYtoRADec(v['x_HD'],v['y_HD'],name_analyser(json_file),new_json_content)
       results.append({'x_HD': v['x_HD'], 'y_HD': v['y_HD'],'y_org': v['y_org'], 'x_org': v['x_org'], 'ra':ra,'dec':dec,'az':az,'el':el})
  
    # Return JSON
