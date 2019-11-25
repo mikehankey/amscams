@@ -18,6 +18,8 @@ def apply_calib(json_file):
 
    if('frames' in json_data):
       for frame in json_data['frames']:
+         print("BEFORE")
+         print(frame)
          new_x,new_y,RA,Dec,AZ,el = XYtoRADec(frame['x'],frame['y'],name_analyser(json_file),json_data)
          new_frame = frame
          new_frame['dec'] = Dec
@@ -25,6 +27,8 @@ def apply_calib(json_file):
          new_frame['az'] = AZ
          new_frame['el'] = el
          new_frames.append(new_frame)
+         print("AFTER")
+         print(new_frame)
    
       json_data['frames'] = new_frames   
 
