@@ -134,6 +134,26 @@ def XYtoRADec(x,y,analysed_name,json_file):
    hd_d = analysed_name['day']
    hd_h = analysed_name['hour']
    hd_M = analysed_name['min']
+   
+   print("IN XYTO RADEC")
+   print("<br>")
+   print("X:" + x )
+   
+   print("<br>")
+   print("Y:" + y)
+   
+   print("<br>")
+   print("ANALYSED NAME")
+   
+   print("<br>")
+   print(analysed_name)
+
+   print("<br>")
+   print("JSON FILE")
+   
+   print("<br>")
+   print(json_file)
+
     
    # Get Calib params
    F_scale     = 3600 /float(json_file['calib']['device']['scale_px'])
