@@ -481,8 +481,8 @@ def update_cat_stars(form):
             new_star = {}
             new_star['name'] = name 
             new_star['mag'] = mag
-            new_star['ra'] = img_ra #ra
-            new_star['dec'] = img_dec #dec
+            new_star['ra'] = ra
+            new_star['dec'] =  dec
             new_star['dist_px'] = cat_star_dist 
 
             # The image x,y of the star (CIRCLE)
