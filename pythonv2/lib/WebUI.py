@@ -481,8 +481,7 @@ def controller(json_conf):
 
       if cmd=='reduce_new' or cmd=='reduce':
          skin = 'as6ams'
-
-   print("SKIN " +  skin)
+ 
    template = get_template(json_conf, skin)
    stf = template.split("{BODY}")
    top = stf[0]
