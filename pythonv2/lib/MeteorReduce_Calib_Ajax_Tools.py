@@ -27,13 +27,8 @@ def getRADEC(form):
       new_json_content = json_f
  
    # Eventually fix the name to be able to properly parse it
-   json_file_x = fix_old_file_name(json_file)
-
-   print("IN GET RAD DEC")
-   print(json_file_x)
-   print("name_analyser(json_file_x)")
-   print(name_analyser(json_file_x))
- 
+   # json_file_x = fix_old_file_name(json_file)
+   
    # Compute the data with XYtoRADec
    results = [];
 
