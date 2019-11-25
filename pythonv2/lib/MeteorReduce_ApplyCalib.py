@@ -1,6 +1,6 @@
 from lib.FileIO import load_json_file, save_json_file
 from lib.MeteorReduce_Calib_Ajax_Tools import XYtoRADec
-
+from lib.MeteorReduce_Tools import name_analyser
 
 
 # Re-apply a calibration to a json file
