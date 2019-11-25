@@ -602,8 +602,7 @@ def archive_listing(form):
       else:
             ang_vel_select+= '<option value="'+str(ang_vel)+'"><'+str(ang_vel)+'&deg;/s</option>'  
    template = template.replace("{ANG_VELOCITIES}", ang_vel_select)
-
-
+ 
 
    # Clear_cache
    if(clear_cache is None):
@@ -634,13 +633,13 @@ def archive_listing(form):
 
       # If we don't have enough detection to display we try the previous year
       if(res):
-         if(len(res)<NUMBER_OF_METEOR_PER_PAGE):
+         if(len(res)<nompp):
             the_date = datetime.datetime.strptime(str(year-1)+'_01_01',"%Y_%m_%d") 
             year = year -1
             index = get_index(year)
 
             if(index is not False):
-               new_stop = int(meteor_per_page) - len(res)
+               new_stop = int(nompp) - len(res)
                res2 = get_results_from_date_from_monthly_index(criteria,the_date,index,new_sto,cur_page)
                res = res + res2
 
