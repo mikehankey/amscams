@@ -116,9 +116,9 @@ def reduce_meteor2(json_conf,form):
       start_time = analysed_name['year']+'-'+analysed_name['month']+'-'+analysed_name['day']+ ' '+ analysed_name['hour']+':'+analysed_name['min']+':'+analysed_name['sec']+'.'+analysed_name['ms']
    
 
+   report_details  =  ''
 
    if('report' in meteor_json_file):
-      report_details  =  ''
       report_details += '<dt class="col-4">Date &amp; Time</dt><dd class="col-8">'+start_time+'s</dd>'
 
       if('dur' in meteor_json_file['report']):
@@ -133,9 +133,7 @@ def reduce_meteor2(json_conf,form):
          if('total_res_px' in meteor_json_file['calib']['device']):
             report_details += '<dt class="col-4">Res. Error</dt><dd class="col-8">'+str(meteor_json_file['calib']['device']['total_res_px'])+'</dd>'
 
- 
-
-
+  
 
    # We complete the template
    template = template.replace("{REPORT_DETAILS}", report_details)
