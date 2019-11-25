@@ -1,6 +1,4 @@
-import json
-import cgi
-
+import json 
 from lib.FileIO import load_json_file, save_json_file
 from lib.MeteorReduce_Calib_Ajax_Tools import XYtoRADec
 from lib.MeteorReduce_Tools import name_analyser
@@ -8,17 +6,8 @@ from lib.MeteorReduce_Tools import name_analyser
 
 # AJAX CALL
 def apply_calib_ajax(form): 
-   #form = cgi.FieldStorage()
-   
-   print('FORM<br/>')
-   print(form)
-
-   print("JSON FILE<br/>")
-   print(form.getvalue('json_file'))
    json_file = form.getvalue('json_file') 
-  
-
-   apply_calib_ajax(json_file)
+   apply_calib(json_file)
 
 
 # Re-apply a calibration to a json file
