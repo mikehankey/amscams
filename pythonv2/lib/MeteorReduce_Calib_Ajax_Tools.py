@@ -31,6 +31,8 @@ def getRADEC(form):
 
    print("IN GET RAD DEC")
    print(json_file_x)
+   print("name_analyser(json_file_x)")
+   print(name_analyser(json_file_x))
  
    # Compute the data with XYtoRADec
    results = [];
