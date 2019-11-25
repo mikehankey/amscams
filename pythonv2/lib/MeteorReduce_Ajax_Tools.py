@@ -462,11 +462,11 @@ def update_cat_stars(form):
    
       cat_stars = get_catalog_stars(meteor_red['calib'])
 
-      my_cat_stars = []
+       #my_cat_stars = []
       my_close_stars = []
 
-      for name,mag,ra,dec,new_cat_x,new_cat_y in cat_stars:  
-         my_cat_stars.append((name,mag,ra,dec,new_cat_x,new_cat_y)) 
+      #for name,mag,ra,dec,new_cat_x,new_cat_y in cat_stars:  
+      #   my_cat_stars.append((name,mag,ra,dec,new_cat_x,new_cat_y)) 
 
 
       my_close_stars = []
@@ -477,7 +477,7 @@ def update_cat_stars(form):
             name,mag,ra,dec,cat_x,cat_y,scx,scy,cat_star_dist = close_stars[0]
             new_x, new_y, img_ra,img_dec, img_az, img_el = XYtoRADec(ix,iy,video_file,meteor_red['calib'])
             new_star = {}
-            new_star['name'] = name #.decode("unicode_escape") 
+            new_star['name'] = name 
             new_star['mag'] = mag
             new_star['ra'] = ra
             new_star['dec'] = dec
