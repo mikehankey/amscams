@@ -172,8 +172,7 @@ def get_template(json_conf, skin = "as6ams"  ):
    else:
       fpt = open("/home/ams/amscams/pythonv2/templates/as6ams.html", "r")
    for line in fpt:
-      template = template + line
-   print("SKIN  " +  skin)
+      template = template + line 
    return(template) 
 
 def make_day_preview(day_dir, stats_data, json_conf):
@@ -480,6 +479,10 @@ def controller(json_conf):
       else:
          skin = 'as6ams'
 
+      if cmd=='reduce_new' or cmd=='reduce':
+         skin = 'as6ams'
+
+   print("SKIN " +  skin)
    template = get_template(json_conf, skin)
    stf = template.split("{BODY}")
    top = stf[0]
