@@ -56,7 +56,7 @@ from lib.Archive_Listing import *
 from lib.PAGINATION_VARS import *
 
 # Re-APPLY CALIBRATION
-from lib.MeteorReduce_ApplyCalib import apply_calib
+from lib.MeteorReduce_ApplyCalib import apply_calib_ajax
 
  
 
