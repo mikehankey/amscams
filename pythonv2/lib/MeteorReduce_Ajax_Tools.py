@@ -18,6 +18,7 @@ from lib.Old_JSON_converter import get_analysed_name
 from lib.UtilLib import convert_filename_to_date_cam, angularSeparation, date_to_jd
 from lib.CalibLib import find_close_stars
 from lib.VIDEO_VARS import HD_W, HD_H
+from lib.MeteorReduce_ApplyCalib import apply_calib
 
 import io,sys
 sys.stdout = io.TextIOWrapper(sys.stdout.buffer, encoding='utf-8')
@@ -230,8 +231,7 @@ def update_multiple_frames(form):
    resp['msg'] = "frames updated."  
    
    # We compute the new stuff from the new meteor position within frames
-   os.system("cd /home/ams/amscams/pythonv2/; ./reducer3.py cm " + json_file + " > /mnt/ams2/tmp/rrr.txt") 
-   os.system("cd /home/ams/amscams/pythonv2/; ./reducer3.py cm " + json_file + " > /mnt/ams2/tmp/rrr.txt") 
+   apply_calib(json_file)
 
    print(json.dumps(resp))
 
@@ -500,8 +500,10 @@ def update_cat_stars(form):
       # Update JSON File
       save_json_file(meteor_red_file, meteor_red)
 
-     
 
+   # Apply the new calibration
+   apply_calib(meteor_red_file)
+      
    # Return the new JSON
    js_f = load_json_file(meteor_red_file)
 
