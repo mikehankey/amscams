@@ -2,7 +2,7 @@
 
 import sys
 
-from lib.MeteorManual_ApplyCalib import apply_calib
+from lib.MeteorReduce_ApplyCalib import apply_calib
 
 # JSON FILE 
 json_file = sys.argv[1]          
