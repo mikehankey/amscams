@@ -1,13 +1,13 @@
 import json
+import cgi
+
 from lib.FileIO import load_json_file, save_json_file
 from lib.MeteorReduce_Calib_Ajax_Tools import XYtoRADec
 from lib.MeteorReduce_Tools import name_analyser
 
 
 # AJAX CALL
-def apply_calib_ajax(form):
-   print("IN APPLY CAIB AJAX")
-   print(form)
+def apply_calib_ajax(form): 
    json_file = form.getvalue('json_file') 
   
    apply_calib_ajax(json_file)
