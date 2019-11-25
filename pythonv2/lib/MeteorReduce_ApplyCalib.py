@@ -6,7 +6,10 @@ from lib.MeteorReduce_Tools import name_analyser
 
 # AJAX CALL
 def apply_calib_ajax(form):
+   print("IN APPLY CAIB AJAX")
+   print(form)
    json_file = form.getvalue('json_file') 
+  
    apply_calib_ajax(json_file)
 
 
