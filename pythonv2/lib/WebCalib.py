@@ -2924,11 +2924,7 @@ def reduce_meteor_new(json_conf,form):
                #print(ms_desc)
          template = template.replace("{MULTI_STATION}", ms_desc)
 
-   
-
-              
-         
-
+    
 #      mj = meteor_reduced
 #      mr = mj
    else:
