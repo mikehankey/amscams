@@ -453,13 +453,11 @@ def get_html_detections(res,clear_cache):
       # so the name analyser will work
       det = name_analyser(detection['p'])
       cur_date = get_datetime_from_analysedname(det)
-
    
       if(prev_date is None):
          prev_date = cur_date
          res_html += '<div class="h2_holder d-flex justify-content-between"><h2>'+cur_date.strftime("%Y/%m/%d")+" - %TOTAL%</h2></div>"
          res_html += '<div class="gallery gal-resize row text-center text-lg-left mb-5 mr-5 ml-5">'
-          
 
       elif(cur_date.month != prev_date.month or cur_date.day != prev_date.day or cur_date.year != prev_date.year):
          prev_date = cur_date
@@ -476,6 +474,11 @@ def get_html_detections(res,clear_cache):
       res_html += get_html_detection(det,detection,clear_cache)
       cur_count+=1
    
+   if('%TOTAL%' in res_html):
+      if(cur_count>1):
+         res_html = res_html.replace('%TOTAL%',str(cur_count)+ ' detections')
+      else:
+         res_html = res_html.replace('%TOTAL%',str(cur_count)+ ' detection only')
 
 
    return res_html
