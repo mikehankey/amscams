@@ -60,7 +60,7 @@ function build_radecpanel() {
             url:  "/pycgi/webUI.py",
             data: {
                 cmd: 'getRADEC',
-                json_file: json_reduced,
+                json_file: json_file, // Defined in page
                 values: JSON.stringify(rad_dec_object)
             }, 
             success: function(data) {
