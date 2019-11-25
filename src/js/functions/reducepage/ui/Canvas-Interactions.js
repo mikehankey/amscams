@@ -117,6 +117,8 @@ if ($('canvas#c').length!=0) {
       
       var zoom = 4;
 
+      var mouse_over_timer;
+
       // We compute the W_factor & H_factor
       // to pass the equivalent of HD x,y on the RADEC_MODE
       var wRatio = HD_w/$('#c').innerWidth();
@@ -149,7 +151,7 @@ if ($('canvas#c').length!=0) {
          var objects = canvas.getObjects();
          var id; 
     
-         // Remove an existing star
+         // Show bigger star name
          for (let i in objects) {
             if (objects[i].containsPoint(clickPoint) && typeof(objects[i].gp_id)!='undefined') {
                for(let x in objects) {
@@ -157,7 +159,7 @@ if ($('canvas#c').length!=0) {
                      objects[x].set('fontSize', '20');  
                      objects[x].set('textBackgroundColor','rgba(0,0,0,0.8)');  
                      canvas.bringToFront(objects[x]);
-                     setTimeout(function() {
+                     mouse_over_timer = setTimeout(function() {
                         objects[x].set('fontSize', '12');  
                         objects[x].set('textBackgroundColor', 'rgba(0,0,0,0)'); 
                         canvas.sendBackwards(objects[x]); 
@@ -242,6 +244,7 @@ if ($('canvas#c').length!=0) {
                      objFound = true; 
                      id = objects[i].gp_id;
                      canvas.remove(objects[i]);
+                     clearTimeout(mouse_over_timer);
                   }
             }
 
