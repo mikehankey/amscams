@@ -379,9 +379,9 @@ function setup_modal_actions(fn_id,x,y) {
         }
     }
 
-    console.log("IN SETUP MODAL ACTION"):
-    console.log("X :" + x)
-    console.log("Y :" + y)
+    console.log("IN SETUP MODAL ACTION");
+    console.log("X :" + x);
+    console.log("Y :" + y);
 
      
 
