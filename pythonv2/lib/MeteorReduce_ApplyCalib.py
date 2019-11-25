@@ -4,6 +4,12 @@ from lib.MeteorReduce_Calib_Ajax_Tools import XYtoRADec
 from lib.MeteorReduce_Tools import name_analyser
 
 
+# AJAX CALL
+def apply_calib_ajax(form):
+   json_file = form.getvalue('json_file') 
+   apply_calib_ajax(json_file)
+
+
 # Re-apply a calibration to a json file
 def apply_calib(json_file):
 

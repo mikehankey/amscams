@@ -54,6 +54,10 @@ from lib.Archive_Listing import *
 
 # Pagination Vars
 from lib.PAGINATION_VARS import *
+
+# Re-APPLY CALIBRATION
+from lib.MeteorReduce_ApplyCalib import apply_calib
+
  
 
  
@@ -263,6 +267,10 @@ def controller(json_conf):
       getRADEC(form)   
       exit()  
 
+   # Reapply calibration
+   if cmd== 'apply_calib':
+      apply_calib_ajax(form)
+      exit()
 
    #CUSTOM VIDEOS (AJAX CALL)
    if cmd == 'generate_timelapse': 
