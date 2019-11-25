@@ -164,8 +164,7 @@ def manual_detect(json_conf, form):
       print("</form>")
 
 def get_template(json_conf, skin = "as6ams"  ):
-   template = "" 
-   print("SKIN " + skin)
+   template = ""  
    if skin == "as6ams":
       fpt = open("/home/ams/amscams/pythonv2/templates/as6ams.html", "r")
    elif skin == "v2":
@@ -477,6 +476,8 @@ def controller(json_conf):
    if cmd is not None:
       if cmd == 'reduce2' or 'manual_reduction' or 'archive_listing' in cmd:
          skin = "v2"
+      else:
+         skin = 'as6ams'
 
    template = get_template(json_conf, skin)
    stf = template.split("{BODY}")
