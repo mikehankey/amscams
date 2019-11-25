@@ -163,7 +163,7 @@ if ($('canvas#c').length!=0) {
                         objects[x].set('fontSize', '12');  
                         objects[x].set('textBackgroundColor', 'rgba(0,0,0,0)'); 
                         canvas.sendBackwards(objects[x]); 
-                     },850)
+                     },150)
                   }
                }
                
