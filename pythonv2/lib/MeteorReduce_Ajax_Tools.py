@@ -172,15 +172,15 @@ def update_frame(form, AjaxDirect = False):
    # If it wasn't an update, it's a creation
    if(update == False and len(resp['error'])==0):
       # We need to create the entry in the json file
-      resp['msg'] = "frame updated (but the JSON has NOT been updated yet since I need a small function for that X,Y,json =>). You can see the new thumb here: <div style='margin:2rem auto'><a href='" + thumb_path +"' target='_blank'><img src='"+thumb_path+"' style='display:block'/></a></div>"
+      #resp['msg'] = "frame updated (but the JSON has NOT been updated yet since I need a small function for that X,Y,json =>). You can see the new thumb here: <div style='margin:2rem auto'><a href='" + thumb_path +"' target='_blank'><img src='"+thumb_path+"' style='display:block'/></a></div>"
+      resp['msg'] = "New Frame created"
+
+   # We reapply the calibration for the new frame
+   apply_calib(json_file)
 
    # We update the JSON 
    save_json_file(json_file, mr)
-   
-   # We compute the new stuff from the new meteor position within frames
-   os.system("cd /home/ams/amscams/pythonv2/; ./reducer3.py cm " + json_file + " > /mnt/ams2/tmp/rrr.txt") 
-   os.system("cd /home/ams/amscams/pythonv2/; ./reducer3.py cm " + json_file + " > /mnt/ams2/tmp/rrr.txt") 
-
+  
    # Depending on how the function is used we can return the resp or display it as JSON
    if(AjaxDirect == True):
       return resp 
