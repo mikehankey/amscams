@@ -375,6 +375,7 @@ def move_old_detection_to_archive(json_file_path, sd_video_file_path, hd_video_f
    json_content['calib']   = new_json_file['calib']
    json_content['info']    = new_json_file['info']
    json_content['frames']  = new_json_file['frames']
+   json_content['report']  = new_json_file['report']
 
 
    # Test if we have the required info in json_file['calib']['device']
