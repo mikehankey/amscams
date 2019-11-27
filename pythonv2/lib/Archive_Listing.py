@@ -296,7 +296,7 @@ def get_monthly_index(month,year):
 # Get detection full path based on a the limited string in the index
 # ex: 'p': '22_36_24_000_010042-trim0519'
 #      => '/mnt/ams2/meteor_archive/AMS7/METEOR/2019/11/16/2019_11_16_22_36_24_000_010042-trim0519.json' 
-def get_full_det_path(path,station_id,date):
+def get_full_det_path(path,station_id,date,day):
    return METEOR_ARCHIVE + station_id  + os.sep + METEOR + str(date.year) + os.sep + str(date.month).zfill(2) + os.sep + str(day).zfill(2) + os.sep + str(date.year) + '_' + str(date.month).zfill(2)+ '_' + str(day).zfill(2) + '_' + path + ".json"
 
 
@@ -365,7 +365,7 @@ def get_results_from_date_from_monthly_index(criteria,date,json_index,max_res_pe
 
                   if(test==True ):
                      # We complete the detection['p'] to get the full path (as the index only has compressed name)
-                     detection['p'] = get_full_det_path(detection['p'],station_id,date)
+                     detection['p'] = get_full_det_path(detection['p'],station_id,date,day)
                      res.append(detection)
                      res_cnt+=1 
                   #else:and res_cnt<=number_of_res_to_give_up
