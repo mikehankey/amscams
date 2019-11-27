@@ -585,32 +585,8 @@ def archive_listing(form):
    template = template.replace("{RES_ERRORS}", error_select)
 
    # Build ANGULAR VELOCITIES selector
-   ang_vel_select, criteria = create_criteria_selector(selected_ang_vel, criteria,  'All Ang. Velocities', '<', unit='&deg;/s')
-   template = template.replace("{RES_ERRORS}", ang_vel_select) 
-
-
-   # Build ANGULAR VELOCITIES selector
-   ang_vel_select = ''
-   one_ang_vel_selected = False
- 
-
-   # Add Default choice
-   if selected_ang_vel is None:
-       ang_vel_select+= '<option selected value="-1">All Ang. Velocities</option>'
-   else:
-      one_ang_vel_selected = True 
-      ang_vel_select+= '<option value="-1">All Ang. Velocities</option>' 
-      criteria['ang_v'] = float(selected_ang_vel)
-
-   for ang_vel in POSSIBLE_ANG_VELOCITIES:
-      if(one_ang_vel_selected):
-         if(float(selected_ang_vel)==float(ang_vel)):
-            ang_vel_select+= '<option selected value="'+str(ang_vel)+'"><'+str(ang_vel)+'&deg;/s</option>'
-         else:
-            ang_vel_select+= '<option value="'+str(ang_vel)+'"><'+str(ang_vel)+'&deg;/s</option>'  
-      else:
-            ang_vel_select+= '<option value="'+str(ang_vel)+'"><'+str(ang_vel)+'&deg;/s</option>'  
-   template = template.replace("{ANG_VELOCITIES}", ang_vel_select)
+   ang_vel_select, criteria = create_criteria_selector(selected_ang_vel, criteria,  'All Ang. Velocities', '>', unit='&deg;/s')
+   template = template.replace("{ANG_VELOCITIES}", ang_vel_select) 
  
 
    # Clear_cache
