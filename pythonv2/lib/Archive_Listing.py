@@ -406,11 +406,11 @@ def get_results_from_date_from_monthly_index(criteria,date,max_res_per_page,cur_
          cur_month = 12
          cur_year =  cur_year - 1
          json_index =  get_monthly_index(cur_month,cur_year)
-         print("WE CHANGE THE INDEX TO " + str(cur_month) + '/' +  str(cur_year) + "<br/>")
+         print("a) WE CHANGE THE INDEX TO " + str(cur_month) + '/' +  str(cur_year) + "<br/>")
       else:
          cur_month = cur_month -1
          json_index =  get_monthly_index(cur_month,cur_year)
-         print("WE CHANGE THE INDEX TO " + str(cur_month) + '/' +  str(cur_year) + "<br/>")
+         print("b) WE CHANGE THE INDEX TO " + str(cur_month) + '/' +  str(cur_year) + "<br/>")
    
 
    sys.exit(0)
