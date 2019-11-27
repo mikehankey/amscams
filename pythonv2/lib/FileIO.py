@@ -352,7 +352,7 @@ def save_json_file(json_file, json_data, compress=False):
       if(compress==False):
          json.dump(json_data, outfile, indent=4, allow_nan=True)
       else:
-         json.dump(json_data, outfile, , allow_nan=True)
+         json.dump(json_data, outfile, indent=0, allow_nan=True)
    outfile.close()
 
 def load_json_file(json_file):
