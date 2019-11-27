@@ -303,7 +303,7 @@ def get_results_from_date_from_monthly_index(criteria,date,json_index,max_res_pe
 
    print("DEBUGGING<br/>")
    print("max_res_per_page: " + str(max_res_per_page))
-   print("cur_page: " + str(cur_page))
+   print("<br/>cur_page: " + str(cur_page))
 
    # Nb of result not to display based on cur_page
    if(cur_page==1):
@@ -311,8 +311,9 @@ def get_results_from_date_from_monthly_index(criteria,date,json_index,max_res_pe
    else:
       number_of_res_to_give_up = max_res_per_page*cur_page
 
-   
+   print("<br/>number_of_res_to_give_up " + str(number_of_res_to_give_up) + "<br/>")
  
+   
    if("days" in json_index and "month" in json_index):
       cur_month = json_index['month']
       
@@ -632,7 +633,9 @@ def archive_listing(form):
       res = get_results_from_date_from_monthly_index(criteria,the_date,index,int(nompp),cur_page)
 
       print("FIRST RES <br/>")
-      
+      print(res)
+      print("<hr/>")
+
 
 
       # If we don't have enough detection to display we try the previous year
