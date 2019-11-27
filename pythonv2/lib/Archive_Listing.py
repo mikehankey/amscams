@@ -665,6 +665,8 @@ def archive_listing(form):
 
          # Pagination
          if(len(res)>=1): 
+            print("PAGINATION<br>")
+            print(pagination)
             template = template.replace("{PAGINATION}", pagination[0])
          else:
             print("NO PAGINATION")
