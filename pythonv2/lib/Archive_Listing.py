@@ -331,14 +331,11 @@ def get_results_from_date_from_monthly_index(criteria,date,max_res_per_page,cur_
    # Get Station ID
    station_id = get_station_id()
 
+   # Counter & Res
    res_counter = 0
-   res_to_return = []
+   res_to_return = [] 
 
-
-   print("INDEX ")
-   print(index)
-
-   while(index!==False):
+   while(index!=False):
 
       print('INTO THE WHILE')
       
