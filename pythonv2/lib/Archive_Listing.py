@@ -652,7 +652,7 @@ def archive_listing(form):
          for criter in criteria:
             pagination_url += "&"+criter+"="+str(criteria[criter])
 
-         print("RES LEN :" + len(res) + "<br/>")
+         print("RES LEN :" + str(len(res)) + "<br/>")
          pagination = get_pagination(cur_page,len(res),pagination_url,int(nompp))
 
          if(pagination[2] != ''):
