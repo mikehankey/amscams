@@ -245,7 +245,8 @@ def write_month_index(month, year):
          os.makedirs(main_dir)
 
       with open(main_dir + os.sep + str(month).zfill(2) + ".json", 'w') as outfile:
-         json.dump(json_data, outfile, indent=4, sort_keys=True)
+         #Write compress format
+         json.dump(json_data, outfile)
       outfile.close() 
       return True
    
