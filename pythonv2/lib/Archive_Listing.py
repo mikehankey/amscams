@@ -300,26 +300,35 @@ def get_full_det_path(path,station_id,date,day):
    return METEOR_ARCHIVE + station_id  + os.sep + METEOR + str(date.year) + os.sep + str(date.month).zfill(2) + os.sep + str(day).zfill(2) + os.sep + str(date.year) + '_' + str(date.month).zfill(2)+ '_' + str(day).zfill(2) + '_' + path + ".json"
 
 
+
+
+# Get results on a yearly index from a certain date
+#def get_results_from_date_from_yearly_index(criteria,data,json_index,max_res_per_page)
+
+
 # Get results on index from a certain date
-def get_results_from_date_from_monthly_index(criteria,date,json_index,max_res_per_page,cur_page): 
+def get_results_from_date_from_monthly_index(criteria,date,max_res_per_page,cur_page): 
+
+   # Get the index of the selected or current year
+   index =  get_monthly_index(date.month,date.year)
+
+   print(index)
+   sys.exit(0)
+
    res = []
    res_cnt = 0 
    cur_month_test = False
-
-   print("DEBUGGING<br/>")
-   print("max_res_per_page: " + str(max_res_per_page))
-   print("<br/>cur_page: " + str(cur_page))
-
+ 
    # Nb of result not to display based on cur_page
    if(cur_page==1):
       number_of_res_to_give_up = 0
    else:
       number_of_res_to_give_up = max_res_per_page*cur_page
 
-   print("<br/>number_of_res_to_give_up " + str(number_of_res_to_give_up) + "<br/>")
-   
    station_id = get_station_id()
-   
+ 
+
+
    if("days" in json_index and "month" in json_index):
       cur_month = json_index['month']
       
@@ -626,13 +635,12 @@ def archive_listing(form):
    year = the_date.year
    month = the_date.month
 
-   # Get the index of the selected or current year
-   index =  get_monthly_index(month,year)
+ 
    
    # Search the index
    if(index is not False):
 
-      res = get_results_from_date_from_monthly_index(criteria,the_date,index,int(nompp),cur_page)
+      res = get_results_from_date_from_monthly_index(criteria,the_date,int(nompp),cur_page)
 
       print("FIRST RES <br/>")
       print(res)
@@ -647,10 +655,10 @@ def archive_listing(form):
             year = year -1
             index = get_index(year)
 
-            if(index is not False):
-               new_stop = int(nompp) - len(res)
-               res2 = get_results_from_date_from_monthly_index(criteria,the_date,index,new_sto,cur_page)
-               res = res + res2
+            #if(index is not False):
+            #   new_stop = int(nompp) - len(res)
+            #   res2 = get_results_from_date_from_monthly_index(criteria,the_date,index,new_sto,cur_page)
+            #   res = res + res2
 
          # CREATE URL FOR THE PAGINATION
          pagination_url  = "/pycgi/webUI.py?cmd=archive_listing&meteor_per_page="+str(nompp)
