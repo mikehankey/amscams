@@ -412,9 +412,11 @@ def get_results_from_date_from_monthly_index(criteria,date,max_res_per_page,cur_
          json_index =  get_monthly_index(cur_month,cur_year)
          print("b) WE CHANGE THE INDEX TO " + str(cur_month) + '/' +  str(cur_year) + "<br/>")
    
-      print("res_counter " + res_counter + "<br/>")
+      print("res_counter " + str(res_counter) + "<br/>")
   
+   print("WE ARE OUT")
    sys.exit(0)
+   
    return res_to_return, res_counter
 
 
