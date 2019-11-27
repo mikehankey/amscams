@@ -653,6 +653,10 @@ def archive_listing(form):
             pagination_url += "&"+criter+"="+str(criteria[criter])
 
          print("RES LEN :" + str(len(res)) + "<br/>")
+         print("CUR PAGE :" + str(cur_page) + "<br/>")
+         print("URL :" + str(pagination_url) + "<br/>")
+         
+         print("nompp :" + str(nompp) + "<br/>")
          pagination = get_pagination(cur_page,len(res),pagination_url,int(nompp))
 
          if(pagination[2] != ''):
@@ -665,9 +669,7 @@ def archive_listing(form):
          template = template.replace("{RESULTS}", res_html)
 
          # Pagination
-         if(len(res)>=1 and pagination and pagination[0]): 
-            print("PAGINATION<br>")
-            print(pagination)
+         if(len(res)>=1 and pagination and pagination[0]):  
             template = template.replace("{PAGINATION}", pagination[0])
          else:
             print("NO PAGINATION")
