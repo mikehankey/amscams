@@ -644,54 +644,54 @@ def archive_listing(form):
 
    # Search the results through the monthly indexes
    res = get_results_from_date_from_monthly_index(criteria,the_date,int(nompp),cur_page)
- 
+   
 
    # If we don't have enough detection to display we try the previous year
-   if(res):
-      if(len(res)<nompp):
-         the_date = datetime.datetime.strptime(str(year-1)+'_01_01',"%Y_%m_%d") 
-         year = year -1
-         index = get_index(year)
+   #if(res):
+   #   if(len(res)<nompp):
+   #      the_date = datetime.datetime.strptime(str(year-1)+'_01_01',"%Y_%m_%d") 
+   #      year = year -1
+   #      index = get_index(year)
 
          #if(index is not False):
          #   new_stop = int(nompp) - len(res)
          #   res2 = get_results_from_date_from_monthly_index(criteria,the_date,index,new_sto,cur_page)
          #   res = res + res2
 
-      # CREATE URL FOR THE PAGINATION
-      pagination_url  = "/pycgi/webUI.py?cmd=archive_listing&meteor_per_page="+str(nompp)
+   #   # CREATE URL FOR THE PAGINATION
+   #    pagination_url  = "/pycgi/webUI.py?cmd=archive_listing&meteor_per_page="+str(nompp)
 
-      if(has_limit_day!=0):
-         pagination_url += "&limit_day="+str(the_date)
+   #   if(has_limit_day!=0):
+   #      pagination_url += "&limit_day="+str(the_date)
       
-      for criter in criteria:
-         pagination_url += "&"+criter+"="+str(criteria[criter])
+   #   for criter in criteria:
+   #      pagination_url += "&"+criter+"="+str(criteria[criter])
 
-      print("RES LEN :" + str(len(res)) + "<br/>")
-      print("CUR PAGE :" + str(cur_page) + "<br/>")
-      print("URL :" + str(pagination_url) + "<br/>")
+   #   print("RES LEN :" + str(len(res)) + "<br/>")
+   #   print("CUR PAGE :" + str(cur_page) + "<br/>")
+   #   print("URL :" + str(pagination_url) + "<br/>")
       
-      print("nompp :" + str(nompp) + "<br/>")
-      pagination = get_pagination(cur_page,1000,pagination_url,int(nompp))
+   #   print("nompp :" + str(nompp) + "<br/>")
+   #   pagination = get_pagination(cur_page,1000,pagination_url,int(nompp))
 
-      if(pagination[2] != ''):
-         template = template.replace("{PAGINATION_DET}", "Page  " + format(cur_page) + "/" +  format(pagination[2]))    
-      else:
-         template = template.replace("{PAGINATION_DET}", "")    
+   #   if(pagination[2] != ''):
+   #      template = template.replace("{PAGINATION_DET}", "Page  " + format(cur_page) + "/" +  format(pagination[2]))    
+   #   else:
+   #      template = template.replace("{PAGINATION_DET}", "")    
       
-      # Create HTML Version of each detection
-      res_html = get_html_detections(res,clear_cache) 
-      template = template.replace("{RESULTS}", res_html)
+   #   # Create HTML Version of each detection
+   #   res_html = get_html_detections(res,clear_cache) 
+   #   template = template.replace("{RESULTS}", res_html)
 
-      # Pagination
-      if(len(res)>=1 and pagination and pagination[0]):  
-         template = template.replace("{PAGINATION}", pagination[0])
-      else:
-         template = template.replace("{PAGINATION}", "")
-   else:
-      template = template.replace("{RESULTS}", "<div class='alert alert-danger mx-auto'>No detection found in your the archive for your criteria.</div>")
-      template = template.replace("{PAGINATION_DET}", "")    
-      template = template.replace("{PAGINATION}", "")
+   #   # Pagination
+   #   if(len(res)>=1 and pagination and pagination[0]):  
+   #      template = template.replace("{PAGINATION}", pagination[0])
+   #   else:
+   #      template = template.replace("{PAGINATION}", "")
+   #else:
+   #   template = template.replace("{RESULTS}", "<div class='alert alert-danger mx-auto'>No detection found in your the archive for your criteria.</div>")
+   #   template = template.replace("{PAGINATION_DET}", "")    
+   #   template = template.replace("{PAGINATION}", "")
 
    
 
