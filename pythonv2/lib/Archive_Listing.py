@@ -578,7 +578,7 @@ def archive_listing(form):
 
    # Build MAGNITUDES selector
    mag_select, criteria = create_criteria_selector(selected_mag, criteria,  'All Magnitudes', '>')
-   template = template.replace("{MAGNITUDES}", mag_select))
+   template = template.replace("{MAGNITUDES}", mag_select)
    #mag_select = ''
    #one_mag_selected = False
 
