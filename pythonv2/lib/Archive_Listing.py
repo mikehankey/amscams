@@ -527,9 +527,9 @@ def create_criteria_selector(selected, criteria, all_msg, sign):
          if(float(mag)==float(selected)):
             mag_select+= '<option selected value="'+str(mag)+'">'+sign+str(mag)+'</option>'
          else:
-            mag_select+= '<option value="'+str(mag)+'">>'+sign + str(mag)+'</option>'  
+            mag_select+= '<option value="'+str(mag)+'">'+sign + str(mag)+'</option>'  
       else:
-         mag_select+= '<option value="'+str(mag)+'">>'+sign + str(mag)+'</option>'  
+         mag_select+= '<option value="'+str(mag)+'">'+sign + str(mag)+'</option>'  
    
    return mag_select, criteria
    
@@ -579,50 +579,11 @@ def archive_listing(form):
    # Build MAGNITUDES selector
    mag_select, criteria = create_criteria_selector(selected_mag, criteria,  'All Magnitudes', '>')
    template = template.replace("{MAGNITUDES}", mag_select)
-   #mag_select = ''
-   #one_mag_selected = False
-
-   # Add Default choice
-   #if selected_mag is None:
-   #    mag_select+= '<option selected value="-1">All Magnitudes</option>'
-   #else:
-   #   one_mag_selected = True 
-   #   mag_select+= '<option value="-1">All Magnitudes</option>'
-   #   criteria['mag'] = float(selected_mag)
-
-   #for mag in POSSIBLE_MAGNITUDES:
-   #   if(one_mag_selected==True):
-   #      if(float(mag)==float(selected_mag)):
-   #         mag_select+= '<option selected value="'+str(mag)+'">>'+str(mag)+'</option>'
-   #      else:
-   #         mag_select+= '<option value="'+str(mag)+'">>'+str(mag)+'</option>'  
-   #   else:
-   #      mag_select+= '<option value="'+str(mag)+'">>'+str(mag)+'</option>'  
-   #template = template.replace("{MAGNITUDES}", mag_select)
-
+    
    # Build ERRORS selector
-   error_select = ''
-   one_error_selected = False
-
-   # Add Default choice
-   if selected_error is None:
-       error_select+= '<option selected value="-1">All Res. Error</option>'
-   else:
-      one_error_selected = True 
-      error_select+= '<option value="-1">All Res. Error</option>' 
-      criteria['res_er'] = float(selected_error)
-
-
-   
-   for err in POSSIBLE_ERRORS:
-      if(one_error_selected):
-         if(float(err)==float(selected_error)):
-            error_select+= '<option selected value="'+str(err)+'"><'+str(err)+'</option>'
-         else:
-            error_select+= '<option value="'+str(err)+'"><'+str(err)+'</option>'  
-      else:
-         error_select+= '<option value="'+str(err)+'"><'+str(err)+'</option>'  
+   error_select, criteria = create_criteria_selector(selected_error, criteria,  'All Res. Error', '<')
    template = template.replace("{RES_ERRORS}", error_select)
+    
 
 
    # Build ANGULAR VELOCITIES selector
