@@ -291,7 +291,7 @@ def get_monthly_index(month,year):
          res = load_json_file(index_file)
          if(res):
             if('months' in res):
-               if(res['months']={"1": [], "2": [], "3": [], "4": [], "5": [], "6": [], "7": [], "8": [], "9": [], "10": [], "11": [], "12": []}):
+               if(res['months']=={"1": [], "2": [], "3": [], "4": [], "5": [], "6": [], "7": [], "8": [], "9": [], "10": [], "11": [], "12": []}):
                   return False
                else:
                   return test
