@@ -12,7 +12,7 @@ from lib.Archive_Listing import *
 # Create_Archive_Index YEAR MONTH
 
 year = sys.argv[1]
-
+ 
 
 try:
    sys.argv[2]
@@ -23,9 +23,10 @@ except:
 
 if(month):
    write_month_index(int(month),int(year))
-   print("INDEX FOR " + int(month) + "/" + int(year) +  " updated")
+   print("INDEX FOR " + str(month) + "/" + str(year) +  " updated")
 else:
    write_year_index(int(year))
+   print("INDEX FOR " + str(year) +  " updated")
 
  
 
