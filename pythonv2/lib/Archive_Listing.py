@@ -263,7 +263,7 @@ def write_year_index(year):
    if('months' in json_data):
       if(len(json_data['months'])>0 ): 
          main_dir = METEOR_ARCHIVE + get_station_id()  + os.sep + METEOR + str(year)
-         save_json_file(main_dir + os.sep + str(year) + ".json", json_data)
+         save_json_file(main_dir + os.sep + str(year) + ".json", json_data, compress=True)
          return True
    
    return False
@@ -299,7 +299,6 @@ def get_results_from_date_from_monthly_index(criteria,date,json_index,max_res_pe
    res = []
    res_cnt = 0 
    cur_month_test = False
-
 
    print("DEBUGGING<br/>")
    print("max_res_per_page: " + str(max_res_per_page))
