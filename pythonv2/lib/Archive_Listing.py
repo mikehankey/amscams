@@ -355,13 +355,12 @@ def get_results_from_date_from_monthly_index(criteria,date,max_res_per_page,cur_
 
    while(json_index!=False):
 
-      print('INTO THE WHILE<hr/>')
+      print('<hr/>INTO THE WHILE<br/>')
        
       cur_month = json_index['month']
       cur_year  = json_index['year']
 
       print("CUR MONTH " + str(cur_month) + "<br/>")
-   
       print("CUR YEAR " + str(cur_year) + "<br/>")
 
       if(int(cur_month)==int(date.month) and int(cur_year)==int(date.year)):
@@ -405,11 +404,15 @@ def get_results_from_date_from_monthly_index(criteria,date,max_res_per_page,cur_
          cur_month = 12
          cur_year =  cur_year - 1
          json_index =  get_monthly_index(cur_month,cur_year)
-         print("WE CHANGE THE INDEX")
+         print("WE CHANGE THE INDEX TO " + str(cur_month) + '/' +  str(cur_year) + "<br/>")
       else:
          cur_month = cur_month -1
          json_index =  get_monthly_index(cur_month,cur_year)
- 
+         print("WE CHANGE THE INDEX TO " + str(cur_month) + '/' +  str(cur_year) + "<br/>")
+   
+
+   sys.exit(0)
+
    return res_to_return, res_counter
 
 
