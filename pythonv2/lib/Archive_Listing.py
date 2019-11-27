@@ -610,7 +610,7 @@ def archive_listing(form):
 
    # Search the results through the monthly indexes
    res = get_results_from_date_from_monthly_index(criteria,the_date,int(nompp),cur_page)
-   
+   print(res)
 
    # If we don't have enough detection to display we try the previous year
    #if(res):
