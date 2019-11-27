@@ -413,10 +413,8 @@ def get_results_from_date_from_monthly_index(criteria,date,max_res_per_page,cur_
          print("b) WE CHANGE THE INDEX TO " + str(cur_month) + '/' +  str(cur_year) + "<br/>")
    
       print("res_counter " + res_counter + "<br/>")
- 
-
-   
-
+  
+   sys.exit(0)
    return res_to_return, res_counter
 
 
