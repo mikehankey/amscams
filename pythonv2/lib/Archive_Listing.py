@@ -414,7 +414,12 @@ def get_results_from_date_from_monthly_index(criteria,date,max_res_per_page,cur_
    
       print("res_counter " + str(res_counter) + "<br/>")
   
-   print("WE ARE OUT")
+   print("WE ARE OUT<br/>--------------------------<br/>")
+   print("RES:")
+   print(res_to_return)
+   print("<br>RES COUNTER:")
+   print(str(res_counter))
+
    sys.exit(0)
    
    return res_to_return, res_counter
