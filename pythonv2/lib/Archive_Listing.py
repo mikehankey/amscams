@@ -288,7 +288,17 @@ def get_monthly_index(month,year):
    else:
       test = create_json_index_month(month,year)
       if(test):
-         return load_json_file(index_file)
+         res = load_json_file(index_file)
+         if(res):
+            if('months' in res):
+               if(res['months']={"1": [], "2": [], "3": [], "4": [], "5": [], "6": [], "7": [], "8": [], "9": [], "10": [], "11": [], "12": []}):
+                  return False
+               else:
+                  return test
+            else:
+               return False
+         else:
+            return False     
       else:
          return test
 
@@ -311,13 +321,6 @@ def get_results_from_date_from_monthly_index(criteria,date,max_res_per_page,cur_
 
    # Get the index of the selected or current year
    index =  get_monthly_index(date.month,date.year)
-
-   print(index)
-   sys.exit(0)
-
-   res = []
-   res_cnt = 0 
-   cur_month_test = False
  
    # Nb of result not to display based on cur_page
    if(cur_page==1):
@@ -325,31 +328,34 @@ def get_results_from_date_from_monthly_index(criteria,date,max_res_per_page,cur_
    else:
       number_of_res_to_give_up = max_res_per_page*cur_page
 
+   # Get Station ID
    station_id = get_station_id()
- 
 
+   res_counter = 0
+   res_to_return = []
 
-   if("days" in json_index and "month" in json_index):
-      cur_month = json_index['month']
+   while(index):
       
-      if(int(cur_month)==int(date.month)):
-         cur_month_test = True
+      if("days" in json_index and "month" in json_index):
+         cur_month = json_index['month']
+      
+         if(int(cur_month)==int(date.month)):
+            cur_month_test = True
 
-      all_days =  json_index['days'] 
-      keylist = list(all_days.keys())
+         all_days =  json_index['days'] 
+         keylist = list(all_days.keys())
 
-      # We sort the days
-      for day in sorted(keylist, key=int, reverse=True):
+         # We sort the days
+         for day in sorted(keylist, key=int, reverse=True):
 
-         # We sort the detections within the day
-         detections = sorted(json_index['days'][day], key=lambda k: k['p'], reverse=True)
+            # We sort the detections within the day
+            detections = sorted(json_index['days'][day], key=lambda k: k['p'], reverse=True)
 
-         if( (cur_month_test and int(day)<=int(date.day) and res_cnt<=max_res_per_page) 
-          or (not cur_month_test and int(cur_month)<int(date.month)) and res_cnt<=max_res_per_page):
+            if( (cur_month_test and int(day)<=int(date.day)) 
+             or (not cur_month_test and int(cur_month)<int(date.month))):
           
-            for  detection  in  detections:
-               if(res_cnt<max_res_per_page):
- 
+               for  detection  in  detections:
+                
                   # Here we test the criteria
                   test = True
                   for criter in criteria:
@@ -366,8 +372,7 @@ def get_results_from_date_from_monthly_index(criteria,date,max_res_per_page,cur_
                         if(criter=='ang_v'):
                            if(float(detection[criter])<=float(criteria[criter])):
                               test = False                     
-   
-
+    
                      if(test==False):
                         break   
 
@@ -376,9 +381,11 @@ def get_results_from_date_from_monthly_index(criteria,date,max_res_per_page,cur_
                      # We complete the detection['p'] to get the full path (as the index only has compressed name)
                      detection['p'] = get_full_det_path(detection['p'],station_id,date,day)
                      res.append(detection)
-                     res_cnt+=1 
+                     res_counter+=1 
                   #else:and res_cnt<=number_of_res_to_give_up
                   #   number_of_res_to_give_up-=1
+
+ 
    return res
 
 
