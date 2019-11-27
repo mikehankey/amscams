@@ -311,10 +311,25 @@ def get_full_det_path(path,station_id,date,day):
 
 
 
+# Test if a detection matches some criteria
+def test_criteria(criter,criteria,detection):
 
-# Get results on a yearly index from a certain date
-#def get_results_from_date_from_yearly_index(criteria,data,json_index,max_res_per_page)
+   # Res. ERROR
+   if(criter=='res_er'):
+      if(float(detection[criter])>=float(criteria[criter])):
+         return False
+   
+   # Magnitude
+   if(criter=='mag'):
+      if(float(detection[criter])<=float(criteria[criter])):
+         return False
+   
+   # Angular Velocity
+   if(criter=='ang_v'):
+      if(float(detection[criter])<=float(criteria[criter])):
+         return False
 
+   return True
 
 # Get results on index from a certain date
 def get_results_from_date_from_monthly_index(criteria,date,max_res_per_page,cur_page): 
@@ -335,27 +350,31 @@ def get_results_from_date_from_monthly_index(criteria,date,max_res_per_page,cur_
    res_counter = 0
    res_to_return = [] 
 
+   # Test if we are exploring the current Month & Year
+   cur_year_and_month_test = False
+
    while(json_index!=False):
 
-      print('INTO THE WHILE')
-      
-      if("days" in json_index and "month" in json_index):
-         cur_month = json_index['month']
-         cur_year = json_index['year']
-      
-         if(int(cur_month)==int(date.month)):
-            cur_month_test = True
+      print('INTO THE WHILE<hr/>')
+       
+      cur_month = json_index['month']
+      cur_year  = json_index['year']
+   
+      if(int(cur_month)==int(date.month) and int(cur_year)==int(date.year)):
+         print("WE ARE AT THE RIGHT TIME<hr/>")
+         cur_year_and_month_test = True
 
-         all_days =  json_index['days'] 
-         keylist = list(all_days.keys())
+      all_days =  json_index['days'] 
+      keylist = list(all_days.keys())
 
-         # We sort the days
-         for day in sorted(keylist, key=int, reverse=True):
+      # We sort the days
+      for day in sorted(keylist, key=int, reverse=True):
 
             # We sort the detections within the day
             detections = sorted(json_index['days'][day], key=lambda k: k['p'], reverse=True)
 
-            if( (cur_month_test and int(day)<=int(date.day)) or (not cur_month_test and int(cur_month)<int(date.month))):
+            # If we are the current month & year, we need to take into account the days before the date.day
+            if( (cur_year_and_month_test and int(day)<=int(date.day)) or (not cur_year_and_month_test)):
           
                for detection in detections:
                 
@@ -364,35 +383,25 @@ def get_results_from_date_from_monthly_index(criteria,date,max_res_per_page,cur_
                   for criter in criteria:
 
                      if(detection[criter]!='unknown'):
-                        if(criter=='res_er'):
-                           if(float(detection[criter])>=float(criteria[criter])):
-                              test = False
-   
-                        if(criter=='mag'):
-                           if(float(detection[criter])<=float(criteria[criter])):
-                              test = False
-   
-                        if(criter=='ang_v'):
-                           if(float(detection[criter])<=float(criteria[criter])):
-                              test = False                     
+                        test = test_criteria(criter,criteria,detection)
     
                      if(test==False):
                         break   
-
-
-                  if(test==True ):
+ 
+                  if(test==True and len(res_to_return)<max_res_per_page):
                      # We complete the detection['p'] to get the full path (as the index only has compressed name)
                      detection['p'] = get_full_det_path(detection['p'],station_id,date,day)
                      res_to_return.append(detection)
                      res_counter+=1 
-                  #else:and res_cnt<=number_of_res_to_give_up
-                  #   number_of_res_to_give_up-=1
+                  elif(test==True):
+                     res_counter+=1
    
       # Change Month & Year
       if(cur_month==1):
          cur_month = 12
          cur_year =  cur_year - 1
          json_index =  get_monthly_index(cur_month,cur_year)
+         print("WE CHANGE THE INDEX")
       else:
          cur_month = cur_month -1
          json_index =  get_monthly_index(cur_month,cur_year)
