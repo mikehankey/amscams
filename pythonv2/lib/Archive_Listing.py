@@ -341,6 +341,7 @@ def get_results_from_date_from_monthly_index(criteria,date,max_res_per_page,cur_
       
       if("days" in json_index and "month" in json_index):
          cur_month = json_index['month']
+         cur_year = json_index['year']
       
          if(int(cur_month)==int(date.month)):
             cur_month_test = True
@@ -386,7 +387,15 @@ def get_results_from_date_from_monthly_index(criteria,date,max_res_per_page,cur_
                      res_counter+=1 
                   #else:and res_cnt<=number_of_res_to_give_up
                   #   number_of_res_to_give_up-=1
-
+   
+      # Change Month & Year
+      if(cur_month==1)
+         cur_month = 12
+         cur_year =  cur_year - 1
+         json_index =  get_monthly_index(cur_month,cur_year)
+      else:
+         cur_month = cur_month -1
+         json_index =  get_monthly_index(cur_month,cur_year)
  
    return res_to_return, res_counter
 
