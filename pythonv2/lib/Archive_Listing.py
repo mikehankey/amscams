@@ -662,7 +662,7 @@ def archive_listing(form):
          print("URL :" + str(pagination_url) + "<br/>")
          
          print("nompp :" + str(nompp) + "<br/>")
-         pagination = get_pagination(cur_page,len(res),pagination_url,int(nompp))
+         pagination = get_pagination(cur_page,1000,pagination_url,int(nompp))
 
          if(pagination[2] != ''):
             template = template.replace("{PAGINATION_DET}", "Page  " + format(cur_page) + "/" +  format(pagination[2]))    
@@ -677,7 +677,6 @@ def archive_listing(form):
          if(len(res)>=1 and pagination and pagination[0]):  
             template = template.replace("{PAGINATION}", pagination[0])
          else:
-            print("NO PAGINATION")
             template = template.replace("{PAGINATION}", "")
       else:
          template = template.replace("{RESULTS}", "<div class='alert alert-danger mx-auto'>No detection found in your the archive for your criteria.</div>")
