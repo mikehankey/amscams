@@ -12,7 +12,8 @@ from lib.Archive_Listing import *
 # Create_Archive_Index YEAR MONTH
 
 year = sys.argv[1]
-month = sys.argv[2]
+if(sys.argv[2]):
+   month = sys.argv[2]
 
 if(month):
    write_month_index(int(month),int(year))
