@@ -15,7 +15,7 @@ year = sys.argv[1]
 
 
 try:
-   sys.argv[2])
+   sys.argv[2]
    month = sys.argv[2]
 except:
    month = False
