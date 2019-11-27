@@ -631,6 +631,10 @@ def archive_listing(form):
 
       res = get_results_from_date_from_monthly_index(criteria,the_date,index,int(nompp),cur_page)
 
+      print("FIRST RES <br/>")
+      
+
+
       # If we don't have enough detection to display we try the previous year
       if(res):
          if(len(res)<nompp):
