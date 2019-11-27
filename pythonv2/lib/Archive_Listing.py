@@ -507,6 +507,32 @@ def get_html_detections(res,clear_cache):
    return res_html
  
 
+
+# Create Criteria Selector
+def create_criteria_selector(selected, criteria, all_msg, sign):
+   # Build MAGNITUDES selector
+   mag_select = ''
+   one_selected = False
+
+   # Add Default choice
+   if selected is None:
+       mag_select+= '<option selected value="-1">'+all_msg+'</option>'
+   else:
+      one_selected = True 
+      mag_select+= '<option value="-1">All Magnitudes</option>'
+      criteria['mag'] = float(selected)
+
+   for mag in POSSIBLE_MAGNITUDES:
+      if(one_selected==True):
+         if(float(mag)==float(selected)):
+            mag_select+= '<option selected value="'+str(mag)+'">'+sign+str(mag)+'</option>'
+         else:
+            mag_select+= '<option value="'+str(mag)+'">>'+sign + str(mag)+'</option>'  
+      else:
+         mag_select+= '<option value="'+str(mag)+'">>'+sign + str(mag)+'</option>'  
+   
+   return mag_select, criteria
+   
  
 
 # MAIN FUNCTION FOR THE ARCHIVE LISTING PAGE
@@ -521,25 +547,24 @@ def archive_listing(form):
    selected_mag = form.getvalue('magnitude')
    selected_error = form.getvalue('res_error')
    selected_ang_vel = form.getvalue('ang_vel')
-
-
+ 
    # Build the page based on template  
    with open(ARCHIVE_LISTING_TEMPLATE, 'r') as file:
       template = file.read()
 
-   # Pagination
+   # Page (for Pagination)
    if (cur_page is None) or (cur_page==0):
       cur_page = 1
    else:
       cur_page = int(cur_page)
 
-   # NUMBER_OF_METEOR_PER_PAGE
+   # NUMBER_OF_METEOR_PER_PAGE (for Pagination)
    if(meteor_per_page is None):
       nompp = NUMBER_OF_METEOR_PER_PAGE
    else:
       nompp = int(meteor_per_page)
    
-   # Build num per page selector
+   # Build num per page selector (for Pagination)
    ppp_select = ''
    for ppp in POSSIBLE_PER_PAGE:
       if(int(ppp)==nompp):
@@ -552,26 +577,28 @@ def archive_listing(form):
    criteria = {}
 
    # Build MAGNITUDES selector
-   mag_select = ''
-   one_mag_selected = False
+   mag_select, criteria = create_criteria_selector(selected_mag, criteria,  'All Magnitudes', '>')
+   template = template.replace("{MAGNITUDES}", mag_select))
+   #mag_select = ''
+   #one_mag_selected = False
 
    # Add Default choice
-   if selected_mag is None:
-       mag_select+= '<option selected value="-1">All Magnitudes</option>'
-   else:
-      one_mag_selected = True 
-      mag_select+= '<option value="-1">All Magnitudes</option>'
-      criteria['mag'] = float(selected_mag)
+   #if selected_mag is None:
+   #    mag_select+= '<option selected value="-1">All Magnitudes</option>'
+   #else:
+   #   one_mag_selected = True 
+   #   mag_select+= '<option value="-1">All Magnitudes</option>'
+   #   criteria['mag'] = float(selected_mag)
 
-   for mag in POSSIBLE_MAGNITUDES:
-      if(one_mag_selected==True):
-         if(float(mag)==float(selected_mag)):
-            mag_select+= '<option selected value="'+str(mag)+'">>'+str(mag)+'</option>'
-         else:
-            mag_select+= '<option value="'+str(mag)+'">>'+str(mag)+'</option>'  
-      else:
-         mag_select+= '<option value="'+str(mag)+'">>'+str(mag)+'</option>'  
-   template = template.replace("{MAGNITUDES}", mag_select)
+   #for mag in POSSIBLE_MAGNITUDES:
+   #   if(one_mag_selected==True):
+   #      if(float(mag)==float(selected_mag)):
+   #         mag_select+= '<option selected value="'+str(mag)+'">>'+str(mag)+'</option>'
+   #      else:
+   #         mag_select+= '<option value="'+str(mag)+'">>'+str(mag)+'</option>'  
+   #   else:
+   #      mag_select+= '<option value="'+str(mag)+'">>'+str(mag)+'</option>'  
+   #template = template.replace("{MAGNITUDES}", mag_select)
 
    # Build ERRORS selector
    error_select = ''
