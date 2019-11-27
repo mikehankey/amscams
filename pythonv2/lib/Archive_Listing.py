@@ -509,7 +509,7 @@ def get_html_detections(res,clear_cache):
 
 
 # Create Criteria Selector
-def create_criteria_selector(selected, criteria, all_msg, sign):
+def create_criteria_selector(selected, criteria, all_msg, sign, unit=''):
    # Build MAGNITUDES selector
    mag_select = ''
    one_selected = False
@@ -519,17 +519,17 @@ def create_criteria_selector(selected, criteria, all_msg, sign):
        mag_select+= '<option selected value="-1">'+all_msg+'</option>'
    else:
       one_selected = True 
-      mag_select+= '<option value="-1">All Magnitudes</option>'
+      mag_select+= '<option value="-1">'+all_msg+'</option>'
       criteria['mag'] = float(selected)
 
    for mag in POSSIBLE_MAGNITUDES:
       if(one_selected==True):
          if(float(mag)==float(selected)):
-            mag_select+= '<option selected value="'+str(mag)+'">'+sign+str(mag)+'</option>'
+            mag_select+= '<option selected value="'+str(mag)+'">'+sign+str(mag)+ unit'</option>'
          else:
-            mag_select+= '<option value="'+str(mag)+'">'+sign + str(mag)+'</option>'  
+            mag_select+= '<option value="'+str(mag)+'">'+sign + str(mag)+ unit'</option>'  
       else:
-         mag_select+= '<option value="'+str(mag)+'">'+sign + str(mag)+'</option>'  
+         mag_select+= '<option value="'+str(mag)+'">'+sign + str(mag)+ unit'</option>'  
    
    return mag_select, criteria
    
@@ -583,7 +583,10 @@ def archive_listing(form):
    # Build ERRORS selector
    error_select, criteria = create_criteria_selector(selected_error, criteria,  'All Res. Error', '<')
    template = template.replace("{RES_ERRORS}", error_select)
-    
+
+   # Build ANGULAR VELOCITIES selector
+   ang_vel_select, criteria = create_criteria_selector(selected_ang_vel, criteria,  'All Ang. Velocities', '<', unit='&deg;/s')
+   template = template.replace("{RES_ERRORS}", ang_vel_select) 
 
 
    # Build ANGULAR VELOCITIES selector
