@@ -320,7 +320,7 @@ def get_full_det_path(path,station_id,date,day):
 def get_results_from_date_from_monthly_index(criteria,date,max_res_per_page,cur_page): 
 
    # Get the index of the selected or current year
-   index =  get_monthly_index(date.month,date.year)
+   json_index =  get_monthly_index(date.month,date.year)
  
    # Nb of result not to display based on cur_page
    if(cur_page==1):
@@ -335,7 +335,7 @@ def get_results_from_date_from_monthly_index(criteria,date,max_res_per_page,cur_
    res_counter = 0
    res_to_return = [] 
 
-   while(index!=False):
+   while(json_index!=False):
 
       print('INTO THE WHILE')
       
