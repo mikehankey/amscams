@@ -370,9 +370,7 @@ def get_results_from_date_from_monthly_index(criteria,date,json_index,max_res_pe
                      res_cnt+=1 
                   #else:and res_cnt<=number_of_res_to_give_up
                   #   number_of_res_to_give_up-=1
-  
-
-   return ress
+   return res
 
 
 # Return full path of a detection based on its name
