@@ -385,7 +385,7 @@ def get_results_from_date_from_monthly_index(criteria,date,max_res_per_page,cur_
                   #   number_of_res_to_give_up-=1
 
  
-   return res_to_return
+   return res_to_return, res_counter
 
 
 # Return full path of a detection based on its name
@@ -609,7 +609,7 @@ def archive_listing(form):
    month = the_date.month
 
    # Search the results through the monthly indexes
-   res = get_results_from_date_from_monthly_index(criteria,the_date,int(nompp),cur_page)
+   res, total = get_results_from_date_from_monthly_index(criteria,the_date,int(nompp),cur_page)
    print(res)
 
    # If we don't have enough detection to display we try the previous year
