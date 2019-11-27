@@ -359,7 +359,11 @@ def get_results_from_date_from_monthly_index(criteria,date,max_res_per_page,cur_
        
       cur_month = json_index['month']
       cur_year  = json_index['year']
+
+      print("CUR MONTH " + str(cur_month) + "<br/>")
    
+      print("CUR YEAR " + str(cur_year) + "<br/>")
+
       if(int(cur_month)==int(date.month) and int(cur_year)==int(date.year)):
          print("WE ARE AT THE RIGHT TIME<hr/>")
          cur_year_and_month_test = True
