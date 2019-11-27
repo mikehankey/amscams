@@ -22,9 +22,13 @@ except:
 
 
 if(month):
+   # ONE MONTH ONLY
    write_month_index(int(month),int(year))
    print("INDEX FOR " + str(month) + "/" + str(year) +  " updated")
 else:
+   # FULL YEAR
+   for x in range(1, 12): 
+      write_month_index(int(x),int(year))
    write_year_index(int(year))
    print("INDEX FOR " + str(year) +  " updated")
 
