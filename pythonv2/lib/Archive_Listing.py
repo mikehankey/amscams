@@ -338,7 +338,7 @@ def get_results_from_date_from_monthly_index(criteria,date,max_res_per_page,cur_
    print("INDEX ")
    print(index)
 
-   while(index==True):
+   while(index!==False):
 
       print('INTO THE WHILE')
       
