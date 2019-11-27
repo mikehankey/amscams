@@ -293,6 +293,13 @@ def get_monthly_index(month,year):
          return test
 
 
+# Get detection full path based on a the limited string in the index
+# ex: 'p': '22_36_24_000_010042-trim0519'
+#      => '/mnt/ams2/meteor_archive/AMS7/METEOR/2019/11/16/2019_11_16_22_36_24_000_010042-trim0519.json' 
+def get_full_det_path(path,station_id,date):
+   return METEOR_ARCHIVE + station_id  + os.sep + METEOR + str(date.year) + os.sep + str(date.month).zfill(2) + os.sep + str(day).zfill(2) + os.sep + str(date.year) + '_' + str(date.month).zfill(2)+ '_' + str(day).zfill(2) + '_' + path + ".json"
+
+
 # Get results on index from a certain date
 def get_results_from_date_from_monthly_index(criteria,date,json_index,max_res_per_page,cur_page): 
    res = []
@@ -310,7 +317,8 @@ def get_results_from_date_from_monthly_index(criteria,date,json_index,max_res_pe
       number_of_res_to_give_up = max_res_per_page*cur_page
 
    print("<br/>number_of_res_to_give_up " + str(number_of_res_to_give_up) + "<br/>")
- 
+   
+   station_id = get_station_id()
    
    if("days" in json_index and "month" in json_index):
       cur_month = json_index['month']
@@ -357,16 +365,14 @@ def get_results_from_date_from_monthly_index(criteria,date,json_index,max_res_pe
 
                   if(test==True ):
                      # We complete the detection['p'] to get the full path (as the index only has compressed name)
-                     # ex: 'p': '22_36_24_000_010042-trim0519'
-                     #      => '/mnt/ams2/meteor_archive/AMS7/METEOR/2019/11/16/2019_11_16_22_36_24_000_010042-trim0519.json' 
-                     detection['p'] = METEOR_ARCHIVE + get_station_id()  + os.sep + METEOR + str(date.year) + os.sep + str(date.month).zfill(2) + os.sep + str(day).zfill(2) + os.sep + str(date.year) + '_' + str(date.month).zfill(2)+ '_' + str(day).zfill(2) + '_' + detection['p'] + ".json"
+                     detection['p'] = get_full_det_path(detection['p'],station_id,date)
                      res.append(detection)
                      res_cnt+=1 
                   #else:and res_cnt<=number_of_res_to_give_up
                   #   number_of_res_to_give_up-=1
   
 
-   return res
+   return ress
 
 
 # Return full path of a detection based on its name
