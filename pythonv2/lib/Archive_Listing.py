@@ -389,7 +389,7 @@ def get_results_from_date_from_monthly_index(criteria,date,max_res_per_page,cur_
                   #   number_of_res_to_give_up-=1
    
       # Change Month & Year
-      if(cur_month==1)
+      if(cur_month==1):
          cur_month = 12
          cur_year =  cur_year - 1
          json_index =  get_monthly_index(cur_month,cur_year)
