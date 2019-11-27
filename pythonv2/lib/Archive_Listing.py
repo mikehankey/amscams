@@ -125,16 +125,14 @@ def add_to_month_index(detection, insert=True):
             index_data['days'][str(analysed_detection_name['day'])] = {}
 
          index_data['days'][str(analysed_detection_name['day'])].append(new_detect)
-
-         #print("new index")
-         #print(index_data)
+ 
 
          # Update the index
          main_dir = METEOR_ARCHIVE + station_id + os.sep + METEOR + str(analysed_detection_name['year']) + os.sep + str(analysed_detection_name['month']).zfill(2)
-         save_json_file(main_dir + os.sep + str(analysed_detection_name['month']) + ".json", index_data)
+         save_json_file(main_dir + os.sep + str(analysed_detection_name['month']) + ".json", index_data, compress=True)
 
-         #print("INDEX UPDATED")
-         #print(main_dir + os.sep + str(analysed_detection_name['month']) + ".json")
+         # Update the corresponding Yearly index (?)
+         write_year_index(int(analysed_detection_name['year']))
 
          return True
 
