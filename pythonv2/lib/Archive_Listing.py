@@ -680,12 +680,12 @@ def archive_listing(form):
             print("NO PAGINATION")
             template = template.replace("{PAGINATION}", "")
       else:
-         template = template.replace("{RESULTS}", "<div class='alert alert-danger  mx-aut'>No detection found in your the archive for your criteria.</div>")
+         template = template.replace("{RESULTS}", "<div class='alert alert-danger mx-auto'>No detection found in your the archive for your criteria.</div>")
          template = template.replace("{PAGINATION_DET}", "")    
          template = template.replace("{PAGINATION}", "")
 
    else:
-      template = template.replace("{RESULTS}", "<div class='alert alert-danger  mx-aut'>No detection found in your the archive for your criteria.</div>")
+      template = template.replace("{RESULTS}", "<div class='alert alert-danger mx-auto'>No detection found in your the archive for your criteria.</div>")
       template = template.replace("{PAGINATION_DET}", "")    
       template = template.replace("{PAGINATION}", "")
 
