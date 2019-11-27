@@ -334,7 +334,13 @@ def get_results_from_date_from_monthly_index(criteria,date,max_res_per_page,cur_
    res_counter = 0
    res_to_return = []
 
+
+   print("INDEX ")
+   print(index)
+
    while(index==True):
+
+      print('INTO THE WHILE')
       
       if("days" in json_index and "month" in json_index):
          cur_month = json_index['month']
