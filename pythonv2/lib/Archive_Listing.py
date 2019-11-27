@@ -379,13 +379,13 @@ def get_results_from_date_from_monthly_index(criteria,date,max_res_per_page,cur_
                   if(test==True ):
                      # We complete the detection['p'] to get the full path (as the index only has compressed name)
                      detection['p'] = get_full_det_path(detection['p'],station_id,date,day)
-                     res.append(detection)
+                     res_to_return.append(detection)
                      res_counter+=1 
                   #else:and res_cnt<=number_of_res_to_give_up
                   #   number_of_res_to_give_up-=1
 
  
-   return res
+   return res_to_return
 
 
 # Return full path of a detection based on its name
