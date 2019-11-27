@@ -358,7 +358,7 @@ def save_json_file(json_file, json_data, compress=False):
 def load_json_file(json_file): 
    try:
       with open(json_file, 'r' ) as infile:
-          = json.load(infile)
+         json_data = json.load(infile)
    except:
       json_data = False
    return json_data 
