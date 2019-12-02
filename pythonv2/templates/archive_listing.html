@@ -1,7 +1,7 @@
 <div class="h1_holder d-flex justify-content-between">
    <h1>Archive until 
       <input value="{DATE}" type="text" data-display-format="YYYY/MM/DD" data-action="reload" data-url-param="limit_day" data-send-format="YYYY_MM_DD" class="datepicker form-control">
-      {FOUND}
+    
    </h1>
    <div class='d-flex'>
       <div class='mr-2'>
@@ -15,6 +15,7 @@
       </div>
    </div>
    <div class='d-flex'>
+      {FOUND}
      <div class='mr-2'>
          <select name='rpp' id='rpp' data-rel='meteor_per_page' class='btn btn-primary mr-4'>{RPP}</select>
       </div>
