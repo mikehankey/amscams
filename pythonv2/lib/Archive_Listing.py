@@ -356,18 +356,15 @@ def get_results_from_date_from_monthly_index(criteria,date,max_res_per_page,cur_
    cur_year_and_month_test = False
 
    while(json_index!=False):
-
-      print('<hr/>INTO THE WHILE<br/>')
-       
+ 
       cur_month = json_index['month']
       cur_year  = json_index['year']
+ 
 
-      print("CUR MONTH " + str(cur_month) + "<br/>")
-      print("CUR YEAR " + str(cur_year) + "<br/>")
-
-      if(int(cur_month)==int(date.month) and int(cur_year)==int(date.year)):
-         print("WE ARE AT THE RIGHT TIME<hr/>")
+      if(int(cur_month)==int(date.month) and int(cur_year)==int(date.year)): 
          cur_year_and_month_test = True
+      else:
+         cur_year_and_month_test = False
 
       all_days =  json_index['days'] 
       keylist = list(all_days.keys())
@@ -395,6 +392,9 @@ def get_results_from_date_from_monthly_index(criteria,date,max_res_per_page,cur_
  
                   if(test==True and len(res_to_return)<max_res_per_page):
                      # We complete the detection['p'] to get the full path (as the index only has compressed name)
+                     print("date ")
+                     print(date)
+                     print("<br/>")
                      detection['p'] = get_full_det_path(detection['p'],station_id,date,day)
                      res_to_return.append(detection)
                      res_counter+=1 
@@ -442,10 +442,7 @@ def get_video(_file):
 def get_html_detection(det,detection,clear_cache):
    # Do we have a thumb stack preview for this detection?
    preview = does_cache_exist(det,"preview","/*.jpg")
-
-   print("IN GET HTML DETECTION <br/>")
-   print(det)
-   print("<hr/>")
+ 
 
    if(len(preview)==0 or clear_cache is True):
       # We need to generate the thumbs 
