@@ -7,7 +7,7 @@ CIRCLE_RADIUS=5
 function update_stars_on_canvas_and_table(json_resp) {
    
 
-   if(typeof json_resp['calib']['stars'] != 'undefined') {
+   if(typeof json_resp['calib']!== 'undefined' &&  typeof json_resp['calib']['stars'] !== 'undefined') {
       var cat_stars = json_resp['calib']['stars']; 
       var name_pos = []; // Store the name positions
    
