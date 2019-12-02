@@ -361,7 +361,7 @@ def get_results_from_date_from_monthly_index(criteria,date,max_res_per_page,cur_
       cur_year  = json_index['year']
       
       # New current date
-      date.replace(cur_year,cur_month) 
+      date = date.replace(year=cur_year, month=cur_month) 
 
       if(int(cur_month)==int(date.month) and int(cur_year)==int(date.year)): 
          cur_year_and_month_test = True
