@@ -610,9 +610,9 @@ def archive_listing(form):
    ppp_select = ''
    for ppp in POSSIBLE_PER_PAGE:
       if(int(ppp)==nompp):
-         ppp_select+= '<option selected value="'+str(ppp)+'">'+str(ppp)+' / page</option>'
+         ppp_select+= '<option selected value="'+str(ppp)+'">'+str(ppp)+'/p.</option>'
       else:
-         ppp_select+= '<option value="'+str(ppp)+'">'+str(ppp)+' / page</option>'  
+         ppp_select+= '<option value="'+str(ppp)+'">'+str(ppp)+'/p.</option>'  
    template = template.replace("{RPP}", ppp_select)
 
    # LIST OF CRITERIA 
@@ -691,10 +691,10 @@ def archive_listing(form):
       template = template.replace("{PAGINATION_DET}", "")    
       template = template.replace("{PAGINATION}", "")
       template = template.replace("{FOUND}", "")   
-   elif((len(res)+1)!=total):
-      template = template.replace("{FOUND}", "<div class='page_h mr-2'><small>Displaying " + str(len(res)+1) + " out of " +  str(total)  + "</small></div>")
+   elif((len(res))!=total):
+      template = template.replace("{FOUND}", "<div class='page_h mr-2'><small>Displaying " + str(len(res)) + " out of " +  str(total)  + " detections.</small></div>")
    else:
-      template = template.replace("{FOUND}", "")  
+      template = template.replace("{FOUND}", "<div class='page_h mr-2'><small>Displaying all " + str(len(res)) + " detections matching your criteria.</small></div>")
 
    # Display Template
    return template
