@@ -690,7 +690,9 @@ def archive_listing(form):
       template = template.replace("{RESULTS}", "<div class='alert alert-danger mx-auto'>No detection found in your the archive for your criteria.</div>")
       template = template.replace("{PAGINATION_DET}", "")    
       template = template.replace("{PAGINATION}", "")
-
+       template = template.replace("{FOUND}", "")   
+   else:
+      template = template.replace("{FOUND}", str(len(res)) + "/" +  str(total))   
 
    # Display Template
    return template
