@@ -406,8 +406,8 @@ def get_results_from_date_from_monthly_index(criteria,date,max_res_per_page,cur_
          cur_year =  cur_year - 1
          json_index =  get_monthly_index(cur_month,cur_year)
 
-         print("NEW YEAR : " + cur_year)
-         print("NEW MONTH : " + cur_month)
+         print("NEW YEAR : " + str(cur_year))
+         print("NEW MONTH : " + str(cur_month))
          date = date.replace(year=cur_year, month=cur_month)
          print("a) WE CHANGE THE INDEX TO " + str(cur_month) + '/' +  str(cur_year) + "<br/>")
       else:
@@ -415,8 +415,8 @@ def get_results_from_date_from_monthly_index(criteria,date,max_res_per_page,cur_
          json_index =  get_monthly_index(cur_month,cur_year)
          date = date.replace(year=cur_year, month=cur_month)
          
-         print("NEW YEAR : " + cur_year)
-         print("NEW MONTH : " + cur_month)
+         print("NEW YEAR : " + str(cur_year))
+         print("NEW MONTH : " + str(cur_month))
          print("b) WE CHANGE THE INDEX TO " + str(cur_month) + '/' +  str(cur_year) + "<br/>")
    
       print("res_counter " + str(res_counter) + "<br/>")
