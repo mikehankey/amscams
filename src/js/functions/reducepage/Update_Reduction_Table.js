@@ -1,5 +1,10 @@
 function update_reduction_on_canvas_and_table(json_resp) {
-    var smf = json_resp['frames'];
+
+   if(typeof json_resp['frames'] !== 'undefined') {
+      return false;
+   }
+
+   var smf = json_resp['frames'];
     var PRECISION = 2;
  
     var lc = 0;
