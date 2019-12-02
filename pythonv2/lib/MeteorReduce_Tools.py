@@ -381,12 +381,7 @@ def get_stacks(analysed_name,clear_cache,toHD):
 # Generate the Stacks for a meteor detection
 def generate_stacks(video_full_path, destination, toHD):
    
-   print("IN GENERATE STACKS<br/>")
-   print("path " + video_full_path +"<br/>")
    
-   print("destination " + destination +"<br/>")
-   
-   print("toHD " + str(toHD) +"<br/>")
  
    # Debug
    cgitb.enable() 
