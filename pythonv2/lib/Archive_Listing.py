@@ -610,9 +610,9 @@ def archive_listing(form):
    ppp_select = ''
    for ppp in POSSIBLE_PER_PAGE:
       if(int(ppp)==nompp):
-         ppp_select+= '<option selected value="'+str(ppp)+'">'+str(ppp)+'/p.</option>'
+         ppp_select+= '<option selected value="'+str(ppp)+'">'+str(ppp)+'/page</option>'
       else:
-         ppp_select+= '<option value="'+str(ppp)+'">'+str(ppp)+'/p.</option>'  
+         ppp_select+= '<option value="'+str(ppp)+'">'+str(ppp)+'/page</option>'  
    template = template.replace("{RPP}", ppp_select)
 
    # LIST OF CRITERIA 
