@@ -346,14 +346,13 @@ def get_results_from_date_from_monthly_index(criteria,date,max_res_per_page,cur_
       number_of_res_to_give_up = 0
    else:
       number_of_res_to_give_up = max_res_per_page*(cur_page-1)
-
-   print("GIVEN UP " + str(number_of_res_to_give_up))
-
+ 
    # Get Station ID
    station_id = get_station_id()
 
    # Counter & Res
    res_counter = 0
+   res_add_counter = 0
    res_to_return = [] 
 
    # Test if we are exploring the current Month & Year
@@ -392,15 +391,14 @@ def get_results_from_date_from_monthly_index(criteria,date,max_res_per_page,cur_
     
                      if(test==False):
                         break   
+
+                  if(test==True):
+                     if(len(res_to_return)<max_res_per_page and res_counter>number_of_res_to_give_up):
+                        # We complete the detection['p'] to get the full path (as the index only has compressed name)
+                        detection['p'] = get_full_det_path(detection['p'],station_id,date,day)
+                        res_to_return.append(detection)
+                      res_counter+=1 
  
-                  if(test==True and len(res_to_return)<max_res_per_page):
-                     # We complete the detection['p'] to get the full path (as the index only has compressed name)
-                     
-                     detection['p'] = get_full_det_path(detection['p'],station_id,date,day)
-                     res_to_return.append(detection)
-                     res_counter+=1 
-                  elif(test==True):
-                     res_counter+=1
    
       # Change Month & Year
       if(cur_month==1):
