@@ -360,9 +360,6 @@ def get_results_from_date_from_monthly_index(criteria,date,max_res_per_page,cur_
       cur_month = json_index['month']
       cur_year  = json_index['year']
       
-      # New current date
-      date = date.replace(year=cur_year, month=cur_month) 
-
       if(int(cur_month)==int(date.month) and int(cur_year)==int(date.year)): 
          cur_year_and_month_test = True
       else:
@@ -408,10 +405,12 @@ def get_results_from_date_from_monthly_index(criteria,date,max_res_per_page,cur_
          cur_month = 12
          cur_year =  cur_year - 1
          json_index =  get_monthly_index(cur_month,cur_year)
+         date = date.replace(year=cur_year,month=cur_month)
          print("a) WE CHANGE THE INDEX TO " + str(cur_month) + '/' +  str(cur_year) + "<br/>")
       else:
          cur_month = cur_month -1
-         json_index =  get_monthly_index(cur_month,cur_year)
+         json_index =  get_monthly_index(cur_month,cur_year)0
+         date = date.replace(year=cur_year,month=cur_month)
          print("b) WE CHANGE THE INDEX TO " + str(cur_month) + '/' +  str(cur_year) + "<br/>")
    
       print("res_counter " + str(res_counter) + "<br/>")
