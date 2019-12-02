@@ -6,6 +6,8 @@ import datetime
 import sys
 import collections 
 
+from calendar import monthrange
+
 from lib.REDUCE_VARS import *
 from lib.Get_Station_Id import get_station_id
 from lib.FileIO import save_json_file, cfe, load_json_file
@@ -410,7 +412,10 @@ def get_results_from_date_from_monthly_index(criteria,date,max_res_per_page,cur_
             date = date.replace(year=cur_year, month=cur_month) 
          except:
             # Sometimes we have a 31 february for instance...
-            date = date.replace(year=cur_year, month=cur_month, day=date.day-1) 
+            date = date.replace(year=cur_year, month=cur_month, day=date.day-2) 
+
+         week_day, numbers_of_days =  monthrange(cur_year,cur_month)
+         date = date.replace(day=numbers_of_days) 
 
 
          print("NEW DATE1: ")
@@ -423,7 +428,10 @@ def get_results_from_date_from_monthly_index(criteria,date,max_res_per_page,cur_
             date = date.replace(year=cur_year, month=cur_month) 
          except:
             # Sometimes we have a 31 february for instance...
-            date = date.replace(year=cur_year, month=cur_month, day=date.day-1) 
+            date = date.replace(year=cur_year, month=cur_month, day=date.day-2) 
+
+         week_day, numbers_of_days =  monthrange(cur_year,cur_month)
+         date = date.replace(day=numbers_of_days) 
 
          print("NEW DATE2: ")
          print(date)
