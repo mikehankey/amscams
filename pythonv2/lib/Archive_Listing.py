@@ -410,7 +410,7 @@ def get_results_from_date_from_monthly_index(criteria,date,max_res_per_page,cur_
             date = date.replace(year=cur_year, month=cur_month) 
          except:
             # Sometimes we have a 31 february for instance...
-            date = date.replace(year=cur_year, month=cur_month,date.day-1) 
+            date = date.replace(year=cur_year, month=cur_month, day=date.day-1) 
       else:
          cur_month = cur_month -1
          json_index =  get_monthly_index(cur_month,cur_year)
@@ -419,7 +419,7 @@ def get_results_from_date_from_monthly_index(criteria,date,max_res_per_page,cur_
             date = date.replace(year=cur_year, month=cur_month) 
          except:
             # Sometimes we have a 31 february for instance...
-            date = date.replace(year=cur_year, month=cur_month,date.day-1) 
+            date = date.replace(year=cur_year, month=cur_month, day=date.day-1) 
 
       
       print("res_counter " + str(res_counter) + "<br/>")
