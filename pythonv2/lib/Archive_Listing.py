@@ -393,9 +393,7 @@ def get_results_from_date_from_monthly_index(criteria,date,max_res_per_page,cur_
  
                   if(test==True and len(res_to_return)<max_res_per_page):
                      # We complete the detection['p'] to get the full path (as the index only has compressed name)
-                     print("date ")
-                     print(date)
-                     print("<br/>")
+                     
                      detection['p'] = get_full_det_path(detection['p'],station_id,date,day)
                      res_to_return.append(detection)
                      res_counter+=1 
@@ -413,9 +411,7 @@ def get_results_from_date_from_monthly_index(criteria,date,max_res_per_page,cur_
          week_day, numbers_of_days =  monthrange(cur_year,cur_month)
          date = date.replace(year=cur_year, month=cur_month,day=numbers_of_days) 
 
-
-         print("NEW DATE1: ")
-         print(date)
+ 
       else:
          cur_month = cur_month -1
          json_index =  get_monthly_index(cur_month,cur_year)
@@ -424,10 +420,7 @@ def get_results_from_date_from_monthly_index(criteria,date,max_res_per_page,cur_
          week_day, numbers_of_days =  monthrange(cur_year,cur_month)
          date = date.replace(year=cur_year, month=cur_month,day=numbers_of_days) 
 
-         print("NEW DATE2: ")
-         print(date)
-      
-      print("res_counter " + str(res_counter) + "<br/>")
+ 
   
    
    
