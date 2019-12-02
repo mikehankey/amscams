@@ -408,14 +408,10 @@ def get_results_from_date_from_monthly_index(criteria,date,max_res_per_page,cur_
          cur_year =  cur_year - 1
          json_index =  get_monthly_index(cur_month,cur_year)
  
-         try:
-            date = date.replace(year=cur_year, month=cur_month) 
-         except:
-            # Sometimes we have a 31 february for instance...
-            date = date.replace(year=cur_year, month=cur_month, day=date.day-2) 
-
+      
+         # Change the date backward
          week_day, numbers_of_days =  monthrange(cur_year,cur_month)
-         date = date.replace(day=numbers_of_days) 
+         date = date.replace(year=cur_year, month=cur_month,day=numbers_of_days) 
 
 
          print("NEW DATE1: ")
@@ -423,15 +419,10 @@ def get_results_from_date_from_monthly_index(criteria,date,max_res_per_page,cur_
       else:
          cur_month = cur_month -1
          json_index =  get_monthly_index(cur_month,cur_year)
-         
-         try:
-            date = date.replace(year=cur_year, month=cur_month) 
-         except:
-            # Sometimes we have a 31 february for instance...
-            date = date.replace(year=cur_year, month=cur_month, day=date.day-2) 
 
+         # Change the date backward
          week_day, numbers_of_days =  monthrange(cur_year,cur_month)
-         date = date.replace(day=numbers_of_days) 
+         date = date.replace(year=cur_year, month=cur_month,day=numbers_of_days) 
 
          print("NEW DATE2: ")
          print(date)
