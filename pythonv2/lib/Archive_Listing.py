@@ -342,10 +342,10 @@ def get_results_from_date_from_monthly_index(criteria,date,max_res_per_page,cur_
    json_index =  get_monthly_index(date.month,date.year)
  
    # Nb of result not to display based on cur_page
-   if(cur_page==1):
+   if(cur_page==1 or cur_page==0 ):
       number_of_res_to_give_up = 0
    else:
-      number_of_res_to_give_up = max_res_per_page*cur_page
+      number_of_res_to_give_up = max_res_per_page*(cur_page-1)
 
    print("GIVEN UP " + str(number_of_res_to_give_up))
 
