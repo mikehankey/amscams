@@ -692,7 +692,7 @@ def archive_listing(form):
       template = template.replace("{PAGINATION}", "")
       template = template.replace("{FOUND}", "")   
    elif(len(res)+1!=total):
-      template = template.replace("{FOUND}", "<p class='page_h mr-2'><small>Displaying " + str(len(res)+1) + " out of " +  str(total))    + '</small></p>'
+      template = template.replace("{FOUND}", "<div class='page_h mr-2'><small>Displaying " + str(len(res)+1) + " out of " +  str(total))    + '</small></div>'
    else:
        template = template.replace("{FOUND}", "")  
 
