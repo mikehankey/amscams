@@ -359,13 +359,15 @@ def get_results_from_date_from_monthly_index(criteria,date,max_res_per_page,cur_
  
       cur_month = json_index['month']
       cur_year  = json_index['year']
- 
+
+      date.year = cur_year
+      date.month = cur_month
 
       if(int(cur_month)==int(date.month) and int(cur_year)==int(date.year)): 
          cur_year_and_month_test = True
       else:
          cur_year_and_month_test = False
-
+      
       all_days =  json_index['days'] 
       keylist = list(all_days.keys())
 
