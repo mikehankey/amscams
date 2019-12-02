@@ -671,7 +671,7 @@ def archive_listing(form):
    pagination = get_pagination(cur_page,total,pagination_url,int(nompp))
 
    if(pagination[2] != ''):
-      template = template.replace("{PAGINATION_DET}", "Page  " + format(cur_page) + "/" +  format(pagination[2]))    
+      template = template.replace("{PAGINATION_DET}", "<small>Page  " + format(cur_page) + "/" +  format(pagination[2])+"</small>")    
    else:
       template = template.replace("{PAGINATION_DET}", "")    
       
@@ -692,9 +692,9 @@ def archive_listing(form):
       template = template.replace("{PAGINATION}", "")
       template = template.replace("{FOUND}", "")   
    elif((len(res))!=total):
-      template = template.replace("{FOUND}", "<div class='page_h mr-2'><small>Displaying " + str(len(res)) + " out of " +  str(total)  + " detections.</small></div>")
+      template = template.replace("{FOUND}", "<div class='page_h'><small>Displaying " + str(len(res)) + " out of " +  str(total)  + " detections.</small></div>")
    else:
-      template = template.replace("{FOUND}", "<div class='page_h mr-2'><small>Displaying all " + str(len(res)) + " detections matching your criteria.</small></div>")
+      template = template.replace("{FOUND}", "<div class='page_h'><small>Displaying all " + str(len(res)) + " detections matching your criteria.</small></div>")
 
    # Display Template
    return template
