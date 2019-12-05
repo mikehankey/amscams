@@ -1,6 +1,6 @@
 function HD_fix() {
 
-   bootbox.alert({
+   bootbox.confirm({
       message: "Use this function if the meteor doesnt appear in the HD video (and the HD Stack). The HD video will be replaced by a resized version of the SD video.",
       className: 'rubberBand animated info',
       centerVertical: true,
@@ -16,7 +16,7 @@ function HD_fix() {
 }
 
 $(function() {
-   $('#hd_fix').click(funtion() {
+   $('#hd_fix').click(function() {
       HD_fix();
    })
 })
