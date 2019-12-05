@@ -7,6 +7,8 @@ import json
 from lib.FileIO import cfe, load_json_file, save_json_file
 from lib.VIDEO_VARS import HD_W, HD_H
 from lib.CGI_Tools import redirect_to
+from lib.MeteorReduce_Tools import name_analyser
+from lib.Archive_Listing import *
 
 
 # Replace HD video by the resized SD video
@@ -46,9 +48,13 @@ def replace_HD(form):
       json_data['info'] = []
 
    json_data['info']['HD_fix'] = 1
-   
    save_json_file(json_file,json_data)
-   
+
+   # We update the monthly & yearly index accordingly (not optimized but this function will be rarely called)
+   a = name_analyser(json_file)
+   write_month_index(int(a['month']),int(a['year'])
+   write_year_index(int(a['year']))
+
    # We assume everything went fine
    print(json.dumps("{'status':1}"))
 
