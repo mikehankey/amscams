@@ -185,8 +185,7 @@ def get_new_info(json_f):
    }
 
 # Get new report form an old JSON version
-def get_new_report(json_f): *
-   
+def get_new_report(json_f): 
    if('event_duration' in json_f and 'peak_magnitude' in json_f):
       return  {
          "report": {
