@@ -2221,8 +2221,9 @@ def reduce_meteor_ajax(json_conf,meteor_json_file, cal_params_file, show = 0):
 
 
    if cfe(failed_file) == 1:
-      print("This reduction was already tried and failed.", failed_file)
-      return()
+      print("{'error':'This reduction was already tried and failed: "+ failed_file +"'}")
+      sys.exit(0)
+    
 
    #cmd = "cd /home/ams/amscams/pythonv2/; ./autoCal.py cfit " + cal_params_file + " 0 > /mnt/ams2/tmp/autoCal.txt "
    #print(cmd)
