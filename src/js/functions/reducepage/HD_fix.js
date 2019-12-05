@@ -1,7 +1,7 @@
 function HD_fix() {
 
    bootbox.confirm({
-      message: "Use this function if the meteor doesnt appear in the HD video. The HD video will be permanently replaced by a resized version of the SD video.",
+      message: "Use this function if the meteor doesnt appear in the HD video. <b>The HD video will be permanently replaced by a resized version of the SD video.</b>",
       className: 'rubberBand animated info',
       centerVertical: true,
       buttons: {
