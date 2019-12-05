@@ -139,6 +139,17 @@ def reduce_meteor2(json_conf,form):
    else:
       template = template.replace("{REPORT_DETAILS}", "<dt class='d-block mx-auto'><div class='alert alert-danger'>Reduction info are missing</div></dt>")
 
+
+   # Does this detection relies only on SD data? (ie the HD video  is in fact the resized SD video)
+   if('info' in meteor_json_file):
+      if('HD_fix' in meteor_json_file):
+         template = template.replace("{HD_fix}", '<div class="box"><dl class="row mb-0 mt-2"><dt class="col-12"><span class="icon-notification"></span> This detection only relies on SD video data.</dt></dl></div>')
+      else:
+         template = template.replace(" template = template.replace("{HD_fix}", "")", "")
+
+   else:
+       template = template.replace("{HD_fix}", "")
+
    # Display some of the report info directly on the page
    #dist_per_elp: 9.661147849907783,
    #meteor_yn: "Y",
