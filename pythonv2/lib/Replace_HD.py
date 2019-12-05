@@ -2,6 +2,7 @@ import cgitb
 import sys
 import os
 import random
+import json
 
 from lib.FileIO import cfe, load_json_file, save_json_file
 from lib.VIDEO_VARS import HD_W, HD_H
@@ -50,8 +51,7 @@ def replace_HD(form):
    
 
    # We assume everything went fine
-   print("{'status':1}")
+   print json.dumps("{'status':1}")
 
    # We recreate the eventual media after we get rid of the HD video
    #redirect_to("/pycgi/webUI.py?cmd=reduce2&video_file=" + json_file + "&clear_cache=1&c=" + str(random.randint(0,100000000)), "reduction")
- 
