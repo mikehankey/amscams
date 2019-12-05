@@ -405,7 +405,7 @@ def move_old_detection_to_archive(json_file_path, sd_video_file_path, hd_video_f
             print(json_content['calib']['org_file'])
             print('<hr>')
             print(calibration_param)
-            sys.exit(0)
+           
 
             json_content['calib']['device'] = {}
             
@@ -428,11 +428,16 @@ def move_old_detection_to_archive(json_file_path, sd_video_file_path, hd_video_f
                   json_content['calib']['device']['lat'] = pos['lat']
                if('lng' in pos):
                   json_content['calib']['device']['lng'] = pos['lng']
+
+
+               print("DEVICE LNG NOT IN CALIB PARAM")   
             else:
                json_content['calib']['device']['lng'] = float(calibration_param['device_lng'])   
                json_content['calib']['device']['lng'] = float(calibration_param['device_lat'])
                json_content['calib']['device']['lng'] = float(calibration_param['device_alt'])    # TO TEST...  
- 
+               print("DEVICE LNG IN CALIB PARAM") 
+
+            sys.exit(0)
 
             json_content['calib']['device']['center'] = {}
             json_content['calib']['device']['center']['az'] = float(calibration_param['center_az'])
