@@ -3,7 +3,7 @@ import sys
 import os
 
 from lib.FileIO import cfe
-from VIDEO_VARS import HD_W, HD_H
+from lib.VIDEO_VARS import HD_W, HD_H
 
 
 # Replace HD video by the resized SD video
@@ -34,6 +34,6 @@ def replace_HD(form):
       sys.exit(0)
 
    # Resize SD and replace HD 
-   #cmd = "ffmpeg -y -i " + video_sd_full_path + " -vf scale="+HD_W+":"+HD_H+" " + video_hd_full_path
-   #os.system(cmd)
+   cmd = "ffmpeg -y -i " + video_sd_full_path + " -vf scale="+HD_W+":"+HD_H+" " + video_hd_full_path
+   os.system(cmd)
  
