@@ -3,7 +3,7 @@ import sys
 import os
 import random
 
-from lib.FileIO import cfe
+from lib.FileIO import cfe, load_json_file, save_json_file
 from lib.VIDEO_VARS import HD_W, HD_H
 from lib.CGI_Tools import redirect_to
 
@@ -40,10 +40,18 @@ def replace_HD(form):
    os.system(cmd)
  
    # We update the JSON
+   json_data = load_json_file(json_file)
+   if('info' not in json_data):
+      json_data['info'] = []
+
+   json_data['info']['HD_fix'] = True
+   
+   save_json_file(json_file,json_data)
+   
 
    # We assume everything went fine
    print("{'status':1}")
 
    # We recreate the eventual media after we get rid of the HD video
-   redirect_to("/pycgi/webUI.py?cmd=reduce2&video_file=" + json_file + "&clear_cache=1&c=" + str(random.randint(0,100000000)), "reduction")
+   #redirect_to("/pycgi/webUI.py?cmd=reduce2&video_file=" + json_file + "&clear_cache=1&c=" + str(random.randint(0,100000000)), "reduction")
  
