@@ -38,6 +38,8 @@ def replace_HD(form):
    cmd = "ffmpeg -y -i " + video_sd_full_path + " -vf scale="+str(HD_W)+":"+str(HD_H)+" " + video_hd_full_path
    os.system(cmd)
  
+   # We update the JSON
+
    # We assume everything went fine
    print("{'status':1}")
 
