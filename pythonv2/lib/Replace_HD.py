@@ -1,6 +1,7 @@
 import cgitb
 import sys
 import os
+import random
 
 from lib.FileIO import cfe
 from lib.VIDEO_VARS import HD_W, HD_H
