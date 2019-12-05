@@ -400,8 +400,7 @@ def move_old_detection_to_archive(json_file_path, sd_video_file_path, hd_video_f
             #print(json_content['calib']['org_file'])
             #print('<hr>')
             #print(calibration_param)
-           
-
+            
             json_content['calib']['device'] = {}
             
             json_content['calib']['device']['scale_px'] = float(calibration_param['pixscale'])
@@ -428,9 +427,7 @@ def move_old_detection_to_archive(json_file_path, sd_video_file_path, hd_video_f
                json_content['calib']['device']['lng'] = float(calibration_param['device_lng'])   
                json_content['calib']['device']['lat'] = float(calibration_param['device_lat'])
                json_content['calib']['device']['alt'] = float(calibration_param['device_alt'])    # TO TEST...   
-
-            sys.exit(0)
-
+ 
             json_content['calib']['device']['center'] = {}
             json_content['calib']['device']['center']['az'] = float(calibration_param['center_az'])
             json_content['calib']['device']['center']['el'] = float(calibration_param['center_el'])
