@@ -259,7 +259,7 @@ def controller(json_conf):
       exit()
 
    if cmd == 'replace_HD':
-      replace_HD(formform)   
+      replace_HD(form)   
       exit()
  
    # GET AZ/EL from JSON_FILE & array of values
