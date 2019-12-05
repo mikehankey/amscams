@@ -52,7 +52,7 @@ def replace_HD(form):
 
    # We update the monthly & yearly index accordingly (not optimized but this function will be rarely called)
    a = name_analyser(json_file)
-   write_month_index(int(a['month']),int(a['year'])
+   write_month_index(int(a['month']),int(a['year']))
    write_year_index(int(a['year']))
 
    # We assume everything went fine
