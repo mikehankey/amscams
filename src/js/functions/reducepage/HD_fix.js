@@ -1,4 +1,5 @@
-function HD_fix() {
+// Just to confirm
+function HD_fix_confirm() {
 
    bootbox.confirm({
       message: "Use this function if the meteor doesnt appear in the HD video. <b>The HD video will be permanently replaced by a resized version of the SD video.</b>",
@@ -13,13 +14,54 @@ function HD_fix() {
          }
      },
      callback: function (result) {
-      console.log('This was logged in the callback: ' + result);
+        if(result==true) {
+           HD_fix();
+        }
       }
    });
 }
 
+
+function HD_fix() {
+   var cmd_data = { 
+      json_file: json_file,          // Defined on the page 
+      cmd: 'replace_HD'
+    }
+
+    loading({text:'Replacing HD Data', overlay:true}); 
+    
+    $.ajax({ 
+        url:  "/pycgi/webUI.py",
+        data: cmd_data,
+        success: function(data) {
+        
+            var json_resp = $.parseJSON(data); 
+
+            if(json_resp['status']!==0) {
+             
+               
+ 
+            }
+
+        
+
+            loading_done();
+ 
+        }, error: function(data) {
+            
+            loading_done();
+            bootbox.alert({
+                message: "Something went wrong with the HD video deletion. Please, try again later",
+                className: 'rubberBand animated error',
+                centerVertical: true 
+            });
+        }
+    });
+}
+
+
 $(function() {
    $('#hd_fix').click(function() {
-      HD_fix();
+      HD_fix_confirm();
    })
 })
