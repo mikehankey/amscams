@@ -15,7 +15,7 @@ def replace_HD(form):
    json_file = form.getvalue('json_file')
 
    # Test if JSON exists
-   if(cfe(jsonf_file)==0):
+   if(cfe(json_file)==0):
       print("{'error':'JSON File not readable,'status':0}")
       sys.exit(0)
 
