@@ -42,7 +42,9 @@ function HD_fix() {
                window.location = v.origin + v.pathname + "?cmd=reduce2&video_file=" + json_file + "&clear_cache=1&c" + Math.floor(Math.random(100000)*100000000)
             }
 
-            loading_done();
+            // No loading done
+            //loading_done();
+            loading({text:'Recreating media and reloading page...', overlay:true});
  
         }, error: function(data) {
             
