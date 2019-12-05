@@ -142,7 +142,7 @@ def reduce_meteor2(json_conf,form):
 
    # Does this detection relies only on SD data? (ie the HD video  is in fact the resized SD video)
    if('info' in meteor_json_file):
-      if('HD_fix' in meteor_json_file):
+      if('HD_fix' in meteor_json_file['info']):
          template = template.replace("{HD_fix}", '<div class="box"><dl class="row mb-0 mt-2"><dt class="col-12"><span class="icon-notification"></span> This detection only relies on SD video data.</dt></dl></div>')
       else:
          template = template.replace("{HD_fix}", "")
