@@ -49,9 +49,8 @@ def replace_HD(form):
    
    save_json_file(json_file,json_data)
    
-
    # We assume everything went fine
-   print json.dumps("{'status':1}")
+   print(json.dumps("{'status':1}"))
 
    # We recreate the eventual media after we get rid of the HD video
    #redirect_to("/pycgi/webUI.py?cmd=reduce2&video_file=" + json_file + "&clear_cache=1&c=" + str(random.randint(0,100000000)), "reduction")
