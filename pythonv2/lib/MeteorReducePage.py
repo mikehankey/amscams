@@ -145,8 +145,7 @@ def reduce_meteor2(json_conf,form):
       if('HD_fix' in meteor_json_file):
          template = template.replace("{HD_fix}", '<div class="box"><dl class="row mb-0 mt-2"><dt class="col-12"><span class="icon-notification"></span> This detection only relies on SD video data.</dt></dl></div>')
       else:
-         template = template.replace(" template = template.replace("{HD_fix}", "")", "")
-
+         template = template.replace("{HD_fix}", "")
    else:
        template = template.replace("{HD_fix}", "")
 
