@@ -11,7 +11,10 @@ function HD_fix() {
          confirm: {
              label: '<i class="fa fa-check"></i> Continue'
          }
-     }
+     },
+     callback: function (result) {
+      console.log('This was logged in the callback: ' + result);
+      }
    });
 }
 
