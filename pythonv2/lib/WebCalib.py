@@ -2223,7 +2223,7 @@ def reduce_meteor_ajax(json_conf,meteor_json_file, cal_params_file, show = 0):
 
 
    if cfe(failed_file) == 1:
-      print("{'error':'This reduction was already tried and failed: "+ failed_file +"','status':0}")
+      print('{"error":"This reduction was already tried and failed: '+ failed_file +'","status":0}')
       sys.exit(0)
     
 
