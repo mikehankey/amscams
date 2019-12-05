@@ -33,6 +33,5 @@ def replace_HD(form):
       print("{'error':'SD file not found,'status':0}")
       sys.exit(0)
 
-   # Resize SD and replace HD
-   cmd = "ffmpeg -i " + video_sd_full_path + " -vf scale="+HD_W+":"+HD_H+" +  video_hd_full_path"
-   os.system(cmd)
+   # Resize SD and replace HD 
+   os.system("ffmpeg -i " + video_sd_full_path + " -vf scale="+HD_W+":"+HD_H+" " + video_hd_full_path)
