@@ -38,12 +38,9 @@ function HD_fix() {
             var json_resp = $.parseJSON(data); 
 
             if(json_resp['status']!==0) {
-             
-               
- 
+               v = window.location;
+               window.location = v.origin + v.pathname + "?cmd=reduce2&json_file=" + json_file + "&clear_cache=1&c" + Math.floor(Math.random(100000)*100000000)
             }
-
-        
 
             loading_done();
  

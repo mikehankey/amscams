@@ -391,10 +391,10 @@ def move_old_detection_to_archive(json_file_path, sd_video_file_path, hd_video_f
          if(cfe(json_content['calib']['org_file'])):
             calibration_param = load_json_file(json_content['calib']['org_file'])
             
-            print("<br>FILE:<br>")
-            print(json_content['calib']['org_file'])
-            print('<hr>')
-            print(calibration_param)
+            #print("<br>FILE:<br>")
+            #print(json_content['calib']['org_file'])
+            #print('<hr>')
+            #print(calibration_param)
 
 
             json_content['calib']['device'] = {}
