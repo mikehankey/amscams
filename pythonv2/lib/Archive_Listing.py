@@ -293,8 +293,8 @@ def get_monthly_index(month,year):
          res = load_json_file(index_file)
          if(res):
             if('months' in res):
-               print("GET MONTHLY INDEX<br/>")
-               print(res['months'])
+               #print("GET MONTHLY INDEX<br/>")
+               #print(res['months'])
                if(res['months']=={"1": [], "2": [], "3": [], "4": [], "5": [], "6": [], "7": [], "8": [], "9": [], "10": [], "11": [], "12": []}):
                   return False
                else:
@@ -312,7 +312,6 @@ def get_monthly_index(month,year):
 #      => '/mnt/ams2/meteor_archive/AMS7/METEOR/2019/11/16/2019_11_16_22_36_24_000_010042-trim0519.json' 
 def get_full_det_path(path,station_id,date,day):
    return METEOR_ARCHIVE + station_id  + os.sep + METEOR + str(date.year) + os.sep + str(date.month).zfill(2) + os.sep + str(day).zfill(2) + os.sep + str(date.year) + '_' + str(date.month).zfill(2)+ '_' + str(day).zfill(2) + '_' + path + ".json"
-
 
 
 # Test if a detection matches some criteria
