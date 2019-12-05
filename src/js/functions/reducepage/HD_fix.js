@@ -6,10 +6,10 @@ function HD_fix() {
       centerVertical: true,
       buttons: {
          cancel: {
-             label: '<i class="fa fa-times"></i> Cancel'
+             label: 'Cancel'
          },
          confirm: {
-             label: '<i class="fa fa-check"></i> Continue'
+             label: 'Continue'
          }
      },
      callback: function (result) {
