@@ -34,6 +34,6 @@ def replace_HD(form):
       sys.exit(0)
 
    # Resize SD and replace HD 
-   cmd = "ffmpeg -y -i " + video_sd_full_path + " -vf scale="+HD_W+":"+HD_H+" " + video_hd_full_path
+   cmd = "ffmpeg -y -i " + video_sd_full_path + " -vf scale="+str(HD_W)+":"+str(HD_H)+" " + video_hd_full_path
    os.system(cmd)
  
