@@ -45,7 +45,7 @@ def replace_HD(form):
    if('info' not in json_data):
       json_data['info'] = []
 
-   json_data['info']['HD_fix'] = True
+   json_data['info']['HD_fix'] = 1
    
    save_json_file(json_file,json_data)
    

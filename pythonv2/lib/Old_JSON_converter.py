@@ -185,13 +185,17 @@ def get_new_info(json_f):
    }
 
 # Get new report form an old JSON version
-def get_new_report(json_f): 
-   return  {
-      "report": {
-         "dur": float(json_f['event_duration']),
-         "max_peak": float(json_f['peak_magnitude'])
+def get_new_report(json_f): *
+   
+   if('event_duration' in json_f and 'peak_magnitude' in json_f):
+      return  {
+         "report": {
+            "dur": float(json_f['event_duration']),
+            "max_peak": float(json_f['peak_magnitude'])
+         }
       }
-   }
+   else:
+      return {"report":{}}
 
 # Get new stars info from an old JSON version 
 def get_new_stars(json_f):
