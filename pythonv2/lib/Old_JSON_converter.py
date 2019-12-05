@@ -412,6 +412,8 @@ def move_old_detection_to_archive(json_file_path, sd_video_file_path, hd_video_f
             # It is possible that we dont have device_lat or/and device_lng in the calibration file
             if('device_lng' not in calibration_param):
                pos = get_the_cam_position()
+               print("POS FROM GET THE CAM POSITION")
+               print(pos)
                if('alt' in pos):
                   json_content['calib']['device']['alt'] = pos['alt']
                if('lat' in pos):
