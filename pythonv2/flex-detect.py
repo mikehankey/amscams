@@ -170,7 +170,6 @@ def objects_to_clips(meteor_objects):
    good_objs = []
    for obj in meteor_objects:
       if len(obj['ofns']) > 2:
-         print("OBJ:", obj)
          ok = 1 
          for clip in clips:
             if abs(obj['ofns'][0] - clip) < 25:
@@ -215,9 +214,10 @@ def save_new_style_meteor_json (meteor_obj, trim_clip ):
       mj['report']['dur'] = meteor_obj['dur']
 
    mj['frames'] = []
+   used_fn = {}
    for i in range(0, len(meteor_obj['ofns'])):
       fd = {}
-      fd['fn'] = meteor_obj['ofns'][i]
+      fd['fn'] = meteor_obj['ofns'][i] + 1
       fd['x'] = meteor_obj['oxs'][i]
       fd['y'] = meteor_obj['oys'][i]
       fd['dt'] = meteor_obj['ftimes'][i]
@@ -231,7 +231,9 @@ def save_new_style_meteor_json (meteor_obj, trim_clip ):
       fd['w'] = meteor_obj['ows'][i]
       fd['h'] = meteor_obj['ohs'][i]
       fd['max_px'] = meteor_obj['oint'][i]
-      mj['frames'].append(fd)
+      if fd['fn'] not in used_fn:
+         mj['frames'].append(fd)
+      used_fn[fd['fn']] = 1
    mj['sync'] = {}
    mj['sync']['sd_ind'] = meteor_obj['ofns'][0]
    mj['sync']['hd_ind'] = meteor_obj['ofns'][0]
@@ -321,6 +323,7 @@ def detect_meteor_in_clip(trim_clip, frames = None, fn = 0, crop_x = 0, crop_y =
    objects = {}
    print("TC:", trim_clip)
 
+
    if frames is None: 
         
       frames,color_frames,subframes,sum_vals,max_vals = load_frames_fast(trim_clip, json_conf, 0, 1, [], 0,[])
@@ -356,10 +359,10 @@ def detect_meteor_in_clip(trim_clip, frames = None, fn = 0, crop_x = 0, crop_y =
       show_frame = frame.copy()
       avg_px = np.mean(image_diff)
       min_val, max_val, min_loc, (mx,my)= cv2.minMaxLoc(image_diff)
-      thresh = avg_px + ((max_val - avg_px) / 1.3)
+      thresh = avg_px + ((max_val - avg_px) / 2)
       if thresh < 5:
          thresh = 5 
-     
+
       cnts,rects = find_contours_in_frame(image_diff, thresh)
 
       icnts = []
@@ -368,15 +371,14 @@ def detect_meteor_in_clip(trim_clip, frames = None, fn = 0, crop_x = 0, crop_y =
             px_diff = 0
             x,y,w,h = cnt
             if w > 1 and h > 1:
-               intensity,mx,my = compute_intensity(x,y,w,h,frame,frames[0])
+               intensity,mx,my,cnt_img = compute_intensity(x,y,w,h,frame,frames[0])
                cx = int(mx) 
                cy = int(my) 
                cv2.circle(show_frame,(cx+crop_x,cy+crop_y), 10, (255,255,255), 1)
 
-               object, objects = find_object(objects, fn,cx+crop_x, cy+crop_y, w, h, intensity, hd, sd_multi)
+               object, objects = find_object(objects, fn,cx+crop_x, cy+crop_y, w, h, intensity, hd, sd_multi, cnt_img)
                #if len(objects[object]['ofns']) > 2:
                   #le_x, le_y = find_leading_edge(objects[object]['report']['x_dir_mod'], objects[object]['report']['y_dir_mod'],cx,cy,w,h,frame)
-                  #print ("LEADING XY:", le_x, le_y)
 
                objects[object]['trim_clip'] = trim_clip
                cv2.rectangle(show_frame, (x, y), (x+w, y+h), (255,255,255), 1, cv2.LINE_AA)
@@ -421,7 +423,7 @@ def compute_intensity(x,y,w,h,frame, bg_frame):
    #show_image = cv2.convertScaleAbs(cnt)
 
 
-   return(val,cx1+mx,cy1+my)
+   return(val,cx1+mx,cy1+my, cnt)
 
 def reject_meteor(meteor_json_file):
    min_file = meteor_json_file.replace("-meteor.json", ".mp4")
@@ -729,7 +731,6 @@ def confirm_meteor(meteor_json_file):
             obj['hd_video_file'] = 0
 
          print("REAL METEORS:", mm)
-
          process_meteor_files(obj, meteor_date, video_file, old_scan)
          oc = oc + 1
 
@@ -984,18 +985,17 @@ def refine_points_old(hd_crop, frames = None, color_frames = None):
    return(motion_objects)
 
 def calc_leg_segs(xobj):
-   print("OBJ:", xobj)
    dist_from_start = []
    line_segs = []
    x_segs = []
    ms = []
    bs = []
-   fx, fy = xobj['leading_xs'][0],xobj['leading_ys'][0]
+   fx, fy = xobj['oxs'][0],xobj['oys'][0]
    # find distance from start point for each frame
    # turn that into seg_dist for each frame
    for i in range(0, len(xobj['ofns'])):
-      tx = xobj['leading_xs'][i]
-      ty = xobj['leading_ys'][i]
+      tx = xobj['oxs'][i]
+      ty = xobj['oys'][i]
       dist = calc_dist((fx,fy),(tx,ty))
       dist_from_start.append(dist)
       if i > 0 and i < len(xobj['ofns']):
@@ -1007,16 +1007,16 @@ def calc_leg_segs(xobj):
          bs.append(tb)
 
       else:
-         line_segs.append(9999)
-         ms.append(9999)
-         bs.append(9999)
+         line_segs.append(0)
+         ms.append(0)
+         bs.append(0)
    xobj['dist_from_start'] = dist_from_start
    xobj['line_segs'] = line_segs
    xobj['x_segs'] = x_segs
    xobj['ms'] = ms 
    xobj['bs'] = bs
-   del(xobj['crop_center_xs'])
-   del(xobj['crop_center_ys'])
+   #del(xobj['crop_center_xs'])
+   #del(xobj['crop_center_ys'])
 
 
 
@@ -1128,7 +1128,7 @@ def make_trim_clips(meteor_objects, video_file):
 
 def make_trim_clip(video_file, start, end):
    outfile = video_file.replace(".mp4", "-trim" + str(start) + ".mp4")
-   cmd = "/usr/bin/ffmpeg -y -i " + video_file + " -vf select=\"between(n\," + str(start) + "\," + str(end) + "),setpts=PTS-STARTPTS\" " + outfile
+   cmd = "/usr/bin/ffmpeg -y -i " + video_file + " -vf select=\"between(n\," + str(start) + "\," + str(end) + "),setpts=PTS-STARTPTS\" " + outfile + " 2>&1 > /dev/null"
    if cfe(outfile) == 0:   
       print(cmd)
       os.system(cmd)
@@ -1618,6 +1618,9 @@ def find_contours_in_frame(frame, thresh=25):
       (_, cnts, xx) = cnt_res
    elif len(cnt_res) == 2:
       (cnts, xx) = cnt_res
+   show_frame = cv2.resize(threshold, (0,0),fx=.5, fy=.5)
+   #cv2.imshow('find cnts in frame', show_frame)
+   #cv2.waitKey(0)
 
    if len(cnts) > 20:
       print("RECT TOO MANY CNTS INCREASE THRESH!", len(cnts))
@@ -1626,6 +1629,7 @@ def find_contours_in_frame(frame, thresh=25):
       thresh_obj = cv2.dilate(threshold.copy(), None , iterations=4)
       threshold = cv2.convertScaleAbs(thresh_obj)
       cnt_res = cv2.findContours(threshold.copy(), cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
+
       if len(cnt_res) == 3:
          (_, cnts, xx) = cnt_res
       elif len(cnt_res) == 2:
@@ -1879,8 +1883,10 @@ def cnt_size_test(object):
    big_perc = big / len(object['ofns'])
    return(big_perc)
 
+
+
 def analyze_object_final(object, hd=0, sd_multi=1):
-   return(object)
+   #return(object)
    id = object['obj_id']
 
    # make sure all of the frames belong to the same cluster
@@ -1928,7 +1934,10 @@ def analyze_object_final(object, hd=0, sd_multi=1):
    object['oys'] = objects_by_label[best_label]['oys']
    object['ows'] = objects_by_label[best_label]['ows']
    object['ohs'] = objects_by_label[best_label]['ohs']
-   object = analyze_object(object)
+
+
+
+   object = analyze_object(object, hd, sd_multi, 1)
    return(object)
 
 def remove_bad_frames_from_object(object,frames,subframes ):
@@ -2214,18 +2223,22 @@ def calc_point_res(object, frames):
 
 
 def poly_fit(object):
-
-   print("POLYFIT")
+   #print("POLY FIT:", object['report'])
    import matplotlib
    import matplotlib.pyplot as plt
 
    poly_x = np.array(object['oxs'])
    poly_y = np.array(object['oys'])
 
-   print("POLY X:", poly_x)
-   print("POLY Y:", poly_y)
-   z = np.polyfit(poly_x,poly_y,1)
-   f = np.poly1d(z)
+   if len(poly_x) > 5:
+      try:
+         z = np.polyfit(poly_x,poly_y,1)
+         f = np.poly1d(z)
+      except:
+         return(0)
+        
+   else:
+      return(0)
 
 
    new_ys = []
@@ -2239,8 +2252,6 @@ def poly_fit(object):
       new_ys.append(int(f(i)))
       new_xs.append(i)
       cc = cc + 1
-   print("NEW YS:", new_ys)
-   print("NEW XS:", new_xs)
    plt.plot(poly_x, poly_y, 'x')
    plt.plot(new_xs, new_ys, 'go')
    plt.axis('equal')
@@ -2258,7 +2269,7 @@ def poly_fit(object):
       dist_to_line = distance((px,py),z)
       line_res.append(dist_to_line)
    avg_line_res = np.mean(line_res)
-   print("AVG LINE RES:", avg_line_res)
+   return(avg_line_res)
       
 
 def distance(point,coef):
@@ -2282,12 +2293,25 @@ def bound_point(est_y, est_x, image):
          est_0 = image.shape[0]
    return(est_x, est_y)
 
+def unq_points(object):
+   points = {}
+   tot = 0
+   for i in range(0, len(object['oxs'])):
+      x = object['oxs'][i]
+      y = object['oys'][i]
+      key = str(x) + "." + str(y)
+      points[key] = 1
+      tot = tot + 1
 
-def analyze_object(object, hd = 0, sd_multi = 1):
+   unq_tot = len(points)
+   perc = unq_tot / tot
+   return(perc)
+
+def analyze_object(object, hd = 0, sd_multi = 1, final=0):
    if hd == 1:
       deg_multi = .042
    else:
-      deg_multi = .042 / sd_multi
+      deg_multi = .042 * sd_multi
 
    if "ofns" not in object:
       if "report" not in object:
@@ -2304,6 +2328,10 @@ def analyze_object(object, hd = 0, sd_multi = 1):
          object['report']['meteor_yn'] = "no"
       return(object)
 
+   object = calc_leg_segs(object)
+   unq_perc = unq_points(object)
+   #print("UNQ POINTS PER:", unq_perc, object['oxs'], object['oys'])
+
    if len(object['ofns']) > 2:
       dir_test_perc = meteor_dir_test(object['oxs'],object['oys'])
       big_perc = cnt_size_test(object)
@@ -2311,7 +2339,6 @@ def analyze_object(object, hd = 0, sd_multi = 1):
       dir_test_perc = 0
       big_perc = 0
 
-   #print("BIG PERC:", big_perc)
 
    id = object['obj_id']
    meteor_yn = "Y"
@@ -2324,7 +2351,7 @@ def analyze_object(object, hd = 0, sd_multi = 1):
    min_y = min(object['oys'])
    max_y = max(object['oys'])
    max_int = max(object['oint'])
-   min_int = max(object['oint'])
+   min_int = min(object['oint'])
    max_h = max(object['ohs'])
    max_w = max(object['ows'])
    #max_x = max_x + max_w
@@ -2337,7 +2364,14 @@ def analyze_object(object, hd = 0, sd_multi = 1):
          intense_neg = intense_neg + 1
    min_max_dist = calc_dist((min_x, min_y), (max_x,max_y))
    if len(object['ofns']) > 0:
-      dist_per_elp = min_max_dist / len(object['ofns']) 
+      if final == 0:
+          
+         dist_per_elp = min_max_dist / len(object['ofns']) 
+      else:
+         if elp > 0:
+            dist_per_elp = min_max_dist / elp
+         else:
+            dist_per_elp = 0
    else:
       dist_per_elp = 0
 
@@ -2395,6 +2429,8 @@ def analyze_object(object, hd = 0, sd_multi = 1):
          meteor_yn = "no"
          obj_class = "plane"
 
+
+
    # classify the object
    bad_items = []
  
@@ -2402,12 +2438,16 @@ def analyze_object(object, hd = 0, sd_multi = 1):
       obj_class = "star"
    if elp > 5 and min_max_dist > 8 and dist_per_elp >= .01 and dist_per_elp < 1:
       obj_class = "plane"
-   #if elp > 300:
-   #   meteor_yn = "no"
-   #   bad_items.append("more than 300 frames in event.")
-   if intense_neg > 4:
-      meteor_yn = "no" 
-      bad_items.append("to much negative intensity." + str(intense_neg))
+   if elp > 300:
+      meteor_yn = "no"
+      bad_items.append("more than 300 frames in event.")
+   if max_cm > 0:
+      neg_perc = intense_neg / max_cm 
+      if intense_neg / max_cm > .5:
+         meteor_yn = "no" 
+         bad_items.append("too much negative intensity." + str(intense_neg))
+   else:
+      neg_perc = 0
    if elp < 2:
       meteor_yn = "no" 
       bad_items.append("less than 2 frames in event.")
@@ -2427,7 +2467,19 @@ def analyze_object(object, hd = 0, sd_multi = 1):
       meteor_yn = "no"
       obj_class = "noise"
       bad_items.append("direction test failed." + str(dir_test_perc))
+   if unq_perc < .65:
+      meteor_yn = "no"
+      obj_class = "star or plane"
+      bad_items.append("unique points test failed." + str(unq_perc))
 
+   if max_cm > 0:
+      elp_max_cm = elp / max_cm
+      if elp / max_cm >3:
+         obj_class = "plane"
+         meteor_yn = "no"
+         bad_items.append("elp to cm to high." + str(elp / max_cm))
+   else:
+      elp_max_cm = 0
 
    if min_max_dist < 5:
       obj_class = "star"
@@ -2439,11 +2491,26 @@ def analyze_object(object, hd = 0, sd_multi = 1):
    if (dist_per_elp * deg_multi) * 25 < 1.3:
       meteor_yn = "no"
       bad_items.append("bad angular velocity below 1")
+   ang_vel = (dist_per_elp * deg_multi) * 25
 
    if elp > 0:
       if min_max_dist * deg_multi < 1 and max_cm <= 5 and cm / elp < .75 :
          meteor_yn = "no"
          bad_items.append("short distance, many gaps, low cm")
+
+   if meteor_yn == "Y" and final == 1:
+      gap_result = gap_test(object)
+      if gap_result == 0:
+         meteor_yn = "no"
+         obj_class = "plane"
+         bad_items.append("gap test failed.")
+      if max_cm - elp < -10:
+         meteor_yn = "no"
+         obj_class = "plane"
+         bad_items.append("to many elp frames compared to cm.")
+      object['report']['gap_result'] = gap_result
+
+
 
    if len(bad_items) >= 1:
       meteor_yn = "no"
@@ -2455,6 +2522,35 @@ def analyze_object(object, hd = 0, sd_multi = 1):
    else: 
       meteory_yn = "Y"
       obj_class = "meteor"
+
+
+   # create meteor 'like' score 
+   score = 0
+   if meteor_yn == "Y":
+      avg_line_res = poly_fit(object) 
+   else:
+      avg_line_res = 0
+
+   if avg_line_res > 2.5:
+      meteor_yn = "no"
+      obj_class = "noise"
+
+   if max_cm == elp == len(object['ofns']):
+      score = score + 1
+   if dir_test_perc == 2:
+      score = score + 1
+   if max_cm >= 5:
+      score = score + 1
+   if avg_line_res <= 1:
+      score = score + 1
+   if ang_vel > 2:
+      score = score + 1
+   if obj_class == "meteor":
+      score = score + 5
+   else:
+      score = score - 3
+   
+
   
    object['report'] = {}
    object['report']['angular_sep'] = min_max_dist * deg_multi 
@@ -2463,13 +2559,18 @@ def analyze_object(object, hd = 0, sd_multi = 1):
    object['report']['min_max_dist'] = min_max_dist
    object['report']['dist_per_elp'] = dist_per_elp
    object['report']['moving'] = moving
+   object['report']['dir_test_perc'] = dir_test_perc
    object['report']['max_cm'] = max_cm
+   object['report']['elp_max_cm'] = elp_max_cm
    object['report']['max_fns'] = len(object['ofns']) - 1
+   object['report']['neg_perc'] = neg_perc
+   object['report']['avg_line_res'] = avg_line_res 
    object['report']['obj_class'] = obj_class 
    object['report']['meteor_yn'] = meteor_yn
    object['report']['bad_items'] = bad_items 
    object['report']['x_dir_mod'] = x_dir_mod
    object['report']['y_dir_mod'] = y_dir_mod
+   object['report']['score'] = score 
 
    return(object)
 
@@ -2494,16 +2595,21 @@ def calc_obj_dist(obj1, obj2):
       for d,e in pts2:
 
          dist = calc_dist((a,b),(d,e))
-         #print("DIST:", dist, a,b,d,e)
          all_dist.append(dist)
 
    min_dist = min(all_dist)
-   #print("MIN DIST:", min_dist)        
    return(min_dist) 
 
-def find_object(objects, fn, cnt_x, cnt_y, cnt_w, cnt_h, intensity=0, hd=0, sd_multi=1):
+def find_object(objects, fn, cnt_x, cnt_y, cnt_w, cnt_h, intensity=0, hd=0, sd_multi=1, cnt_img=None):
+   #if cnt_img is not None:
+   #   cv2.imshow("find_object", cnt_img)
+   #   cv2.waitKey(0)
    #obj_dist_thresh = 50
-   obj_dist_thresh = 40 
+   if hd == 1:
+      obj_dist_thresh = 50 
+   else:
+      obj_dist_thresh = 20
+
    center_x = cnt_x 
    center_y = cnt_y  
 
@@ -2551,6 +2657,11 @@ def find_object(objects, fn, cnt_x, cnt_y, cnt_w, cnt_h, intensity=0, hd=0, sd_m
 
    #objects[found_obj] = clean_object(objects[found_obj])
    objects[found_obj] = analyze_object(objects[found_obj], hd, sd_multi)
+   if objects[found_obj]['report']['meteor_yn'] == 'Y':
+      max_int = max(objects[found_obj]['oint'])
+      if max_int > 25000:
+         objects[found_obj]['report']['obj_class'] = "fireball"
+
    return(found_obj, objects)
 
 def clean_object(obj):
@@ -2682,6 +2793,10 @@ def dist_test(object):
 
 def gap_test(object):
    ofns = object['ofns']
+   if "oid" in object:
+      oid = object[oid]
+   else:
+      oid = "no object id"
    last_fn = None
    cons = 0
    gaps = 0
@@ -2715,7 +2830,10 @@ def gap_test(object):
       #print("CONS MONTION TOO LOW!")
       return(0)
 
-   if gap_to_cm_ratio > .2 and gap_to_elp_ratio > .2:
+   print("GAP TEST:", oid, ofns)
+   print("GAP TEST:", gap_events, gaps, cons, elp_frames, gap_to_cm_ratio, gap_to_elp_ratio)
+
+   if gap_to_cm_ratio > .2 and gap_to_elp_ratio > .2 or (gaps == 0 and gap_events == 0):
       #print("GAP TEST GOOD!")
       return(1)
    else:
@@ -2903,7 +3021,6 @@ def smooth_metframes(metframes, gray_frames):
    #this_poly = np.zeros(shape=(2,), dtype=np.float64)
    #this_poly[0] = -.05
    #this_poly[1] = -.01
-   #show = 1
    #mode = 0
    #res = scipy.optimize.minimize(reduce_acl, this_poly, args=( metframes, metconf,frames,mode,show), method='Nelder-Mead')
    #poly = res['x']
@@ -3069,8 +3186,12 @@ def reduce_acl(this_poly, metframes,metconf,frames,mode=0,show=0,key_field = "")
 # Notes:
 # Pass in video file to get a detection and reduction
 
-
 def flex_detect(video_file):
+   hd_datetime, hd_cam, hd_date, hd_y, hd_m, hd_d, hd_h, hd_M, hd_s = convert_filename_to_date_cam(video_file)
+   motion_objects, motion_frames = detect_meteor_in_clip(video_file, None, 0)
+   print(motion_objects)
+
+def flex_detect_old(video_file):
    station_id = get_station_id(video_file)
    hd_datetime, hd_cam, hd_date, hd_y, hd_m, hd_d, hd_h, hd_M, hd_s = convert_filename_to_date_cam(video_file)
    possible_cal_files = get_cal_params(video_file, station_id)
@@ -3153,6 +3274,8 @@ def fast_check_events(sum_vals, max_vals, subframes):
    cm = 0
    nomo = 0
    i = 0
+   #med_sum = np.median(sum_vals[0:10])
+   #med_max = np.median(max_vals[0:10])
    med_sum = np.median(sum_vals)
    med_max = np.median(max_vals)
    #median_frame = cv2.convertScaleAbs(np.median(np.array(subframes), axis=0))
@@ -3164,15 +3287,17 @@ def fast_check_events(sum_vals, max_vals, subframes):
       sd_multi = 1920 / subframes[0].shape[1]
 
    for sum_val in sum_vals:
+      
       max_val = max_vals[i]
       print(i, med_sum, med_max, sum_val , max_val)
-      if sum_val > med_sum * 2 or max_val > med_max * 4:
+      if sum_val > med_sum * 2 or max_val > med_max * 2:
          subframe = subframes[i]
          min_val, max_val, min_loc, (mx,my)= cv2.minMaxLoc(subframe)
          desc = str(i)
+        
          if max_val > 10:
-            cv2.putText(subframe, str(desc),  (10,10), cv2.FONT_HERSHEY_SIMPLEX, .3, (255, 255, 255), 1)
-            cv2.circle(subframe,(mx,my), 10, (255,0,0), 1)
+            #cv2.putText(subframe, str(desc),  (10,10), cv2.FONT_HERSHEY_SIMPLEX, .3, (255, 255, 255), 1)
+            #cv2.circle(subframe,(mx,my), 10, (255,0,0), 1)
             event_info.append((sum_val, max_val, mx, my))
             event.append(i)
             cm = cm + 1
@@ -3181,17 +3306,36 @@ def fast_check_events(sum_vals, max_vals, subframes):
             nomo = nomo + 1
       else:
          nomo = nomo + 1
-      if cm > 2 and nomo > 2:
+      if cm > 2 and nomo > 5:
          events.append(event)
          events_info.append(event_info)
          event = []
          event_info = []
          cm = 0
-      elif nomo > 2:
+      elif nomo > 5:
          event = []
          event_info = []
          cm = 0
       i = i + 1
+
+
+   print("TOTAL EVENTS:", len(events))
+   filtered_events = []
+   filtered_info = []
+   i = 0
+   for ev in events:
+      max_cm = calc_cm_for_event(ev)
+      if max_cm >= 3:
+         print("GOOD EVENT:", max_cm, ev)
+         filtered_events.append(ev)
+         filtered_info.append(events_info[i])
+      else:
+         print("FILTERED:", max_cm, ev)
+         print("FILTERED:", events_info[i])
+      i = i + 1
+   print("FILTERED EVENTS:", len(filtered_events))
+   events = filtered_events
+   events_info = filtered_info
 
    i = 0
    objects = {}
@@ -3203,11 +3347,14 @@ def fast_check_events(sum_vals, max_vals, subframes):
          sv, mv, mx, my = evi
          fn = event[fc]
          object, objects = find_object(objects, fn,mx, my, 5, 5, mv, hd, sd_multi)
+         #print("OBJECT:", fn, object, objects[object])
          #if 500 <= ev_z <= 700:
-         #   print("OBJECT:", object, objects[object])
          fc = fc + 1
       i = i + 1
 
+   for obj in objects:
+      object = objects[obj] 
+      objects[obj] = analyze_object_final(object, hd=0, sd_multi=1)
 
    pos_meteors = {}
    mc = 1
@@ -3217,11 +3364,30 @@ def fast_check_events(sum_vals, max_vals, subframes):
          mc = mc + 1
       else:
          print("NON METEOR:", object, objects[object]['ofns'])
+         print("NON METEOR:", object, objects[object]['oxs'])
+         print("NON METEOR:", object, objects[object]['oys'])
          print("NON METEOR:", object, objects[object]['report'])
 
-   print("POS METEORS:", pos_meteors, len(subframes))
    return(events, pos_meteors)
 
+def calc_cm_for_event(event):
+   cm = 0
+   max_cm = 0
+   last_fn = None
+   for fn in event:
+      if last_fn is not None:
+         if last_fn + 1 == fn :
+            cm = cm + 1
+         else:
+            if cm > max_cm :
+               max_cm = cm + 1
+            else:
+               cm = 0
+      last_fn = fn
+   if cm > max_cm:
+      max_cm = cm + 1
+   return(max_cm)
+   
 
 def quick_scan(video_file, old_meteor = 0):
    # 3 main parts
@@ -3245,8 +3411,9 @@ def quick_scan(video_file, old_meteor = 0):
       jsf = video_file.replace(".mp4", ".json")
       ojs = load_json_file(jsf)
       if "archive_file" in ojs:
-         print("File has been archived already!")
-         #return()
+         if cfe(ojs['archive_file']) == 1:
+            print("File has been archived already!")
+            return()
  
    #PREP WORK
 
@@ -3283,6 +3450,22 @@ def quick_scan(video_file, old_meteor = 0):
       return([])
 
    events,pos_meteors = fast_check_events(sum_vals, max_vals, subframes)
+   for event in events:
+      print("EVENT:", event)
+   mc = 1
+   print("POS METEORS:", len(pos_meteors))
+   meteors = {}
+   for meteor in pos_meteors:
+      pos_meteors[meteor] = analyze_object_final(pos_meteors[meteor])
+      if pos_meteors[meteor]['report']['meteor_yn'] == 'Y':
+         print("POS METEOR:", pos_meteors[meteor])
+         meteors[mc] = pos_meteors[meteor]
+         mc = mc + 1
+      else:
+         print("NON METEOR:", pos_meteors[meteor])
+         
+   pos_meteors = meteors
+   print("POS:", len(pos_meteors))
 
    # Stack the frames and report the run time
    stacked_frame = stack_frames_fast(frames)
@@ -3292,41 +3475,53 @@ def quick_scan(video_file, old_meteor = 0):
    
    # check time after frame load
    elapsed_time = time.time() - start_time
-   print("Ending fast detection.")
-   if len(pos_meteors) > 0:
-      print("Possible Meteors:" )
-      for pos in pos_meteors:
-         print(pos, pos_meteors[pos])      
+   print("Ending fast detection.", elapsed_time)
 
    if len(pos_meteors) == 0:
       elapsed_time = time.time() - start_time
       print("ELAPSED TIME:", elapsed_time)
       print("NO METEORS:", elapsed_time)
-      print("ERR:", video_file)
-      log_import_errors(video_file, "No meteors detected in 1st scan.")
-      #fp = open("/mnt/ams2/meteors/import_errors.txt", "a")
-      #fp.write(str(video_file) + "," + "No possible meteors found.\n")
-      #fp.close()
+        
+      if rescan == 1:
+         log_import_errors(video_file, "No meteors detected in 1st scan.")
       return([])
+   if len(pos_meteors) > 1:
+      # we may have more than 1 possible meteor.
+      if rescan == 1:
+         print("more than 1 pos meteor.", rescan)
+         log_import_errors(video_file, "More than 1 possible meteor detected.")
+         return([])
 
    meteor_file = video_file.replace(".mp4", "-meteor.json")
    # Only continue if we made it past the easy / fast detection
    all_motion_objects = []
    for object in pos_meteors:
+      pos_meteors[object] = merge_obj_frames(pos_meteors[object])
       start, end = buffered_start_end(pos_meteors[object]['ofns'][0],pos_meteors[object]['ofns'][-1], len(frames), 50)
-      #print("BUFFERED START:", start, end)
+      print("BUFFERED START:", start, end)
       if rescan == 0:
          trim_clip, trim_start, trim_end = make_trim_clip(video_file, start, end)
+         t_start = start
+         t_end = end
       else:
          trim_clip = video_file
          trim_start = start
-      motion_objects, motion_frames = detect_meteor_in_clip(trim_clip, frames[start:end], start)
+         t_start = 0
+         t_end = -1
+      motion_objects, motion_frames = detect_meteor_in_clip(trim_clip, frames[t_start:t_end], t_start)
       for obj in motion_objects:
          all_motion_objects.append(motion_objects[obj])
 
+   objects = []
    print("Ending detecting SD in clip.", len(all_motion_objects))
+   for mo in all_motion_objects:
+      mo = analyze_object_final(mo)
+      if mo['report']['meteor_yn'] == "Y":
+         print("CONFIRMED OBJECTS:", mo)
+         objects.append(mo)
 
-   objects = all_motion_objects
+
+   #objects = all_motion_objects
 
    elapsed_time = time.time() - start_time
    print("ELPASED TIME:", elapsed_time)
@@ -3338,10 +3533,9 @@ def quick_scan(video_file, old_meteor = 0):
    for obj in objects:
       if len(obj['ofns']) > 2:
          print("merge obj frames:", obj)
-         obj = merge_obj_frames(obj)
-         print("merge obj frames:", obj)
-         obj = analyze_object_final(obj)
-         print("analyze final obj frames:", obj)
+         print("merge obj frames:", obj['ofns'])
+         #obj = analyze_object_final(obj)
+         #print("analyze final obj frames:", obj)
       if obj['report']['meteor_yn'] == "Y":
          print ("********************* METEOR *********************")
          print(obj['ofns'])
@@ -3351,7 +3545,7 @@ def quick_scan(video_file, old_meteor = 0):
 
 
    if len(meteors) == 0:
-      print("No meteors found.", non_meteors)
+      print("No meteors found." )
       #for non in non_meteors:
       #   print("NON:", non, non_meteors[non])
       detect_file = video_file.replace(".mp4", "-detect.json")
@@ -3388,20 +3582,22 @@ def quick_scan(video_file, old_meteor = 0):
          old_meteor_json_file = old_meteor_dir + mf
          md = load_json_file(old_meteor_json_file)
          obj['hd_trim'] = md['hd_trim']
-         if "hd_video_file" in md:
-            obj['hd_video_file'] = md['hd_video_file']
-            obj['hd_crop_file'] = md['hd_crop_file']
-         elif "hd_trim" in md:
-            obj['hd_video_file'] = md['hd_trim']
-            obj['hd_trim'] = md['hd_trim']
-         if "/mnt/ams2/HD" in obj['hd_video_file'] or "/mnt/ams2/HD" in obj['hd_trim']:
-            new_dir = "/mnt/ams2/meteors/" + meteor_date + "/" 
-            obj['hd_video_file'] = obj['hd_video_file'].replace("/mnt/ams2/HD/", new_dir)
-            obj['hd_trim'] = obj['hd_trim'].replace("/mnt/ams2/HD/", new_dir)
+
+
+         #if "hd_video_file" in md:
+         #   obj['hd_video_file'] = md['hd_video_file']
+         #   obj['hd_crop_file'] = md['hd_crop_file']
+         #elif "hd_trim" in md:
+         #   obj['hd_video_file'] = md['hd_trim']
+         #   obj['hd_trim'] = md['hd_trim']
+         #if obj['hd_trim'] != 0 :
+         #   if "/mnt/ams2/HD" in obj['hd_video_file'] or "/mnt/ams2/HD" in obj['hd_trim']:
+         #      new_dir = "/mnt/ams2/meteors/" + meteor_date + "/" 
+         #      obj['hd_video_file'] = obj['hd_video_file'].replace("/mnt/ams2/HD/", new_dir)
+         #      obj['hd_trim'] = obj['hd_trim'].replace("/mnt/ams2/HD/", new_dir)
              
 
-         obj['hd_crop_file'] = md['hd_crop_file']
-         print("OBJ:", obj)
+         #obj['hd_crop_file'] = md['hd_crop_file']
          calib,cal_params = apply_calib(obj)
          obj['calib'] = calib
          obj['cal_params'] = cal_params 
@@ -3420,7 +3616,12 @@ def quick_scan(video_file, old_meteor = 0):
         
          obj['new_json_file'] = new_json_file 
          save_old_style_meteor_json(old_meteor_json_file, obj, trim_clip )
+         process_meteor_files(obj, meteor_date, video_file, rescan)
+         print("VIDEO FILE:", video_file)
+         print("OBJ:", obj)
       return(meteors)
+
+   final_meteors = []
 
    for obj in meteors:
       old_scan = 0
@@ -3437,28 +3638,46 @@ def quick_scan(video_file, old_meteor = 0):
          obj['hd_trim'] = hd_trim
          obj['hd_video_file'] = hd_file
          if hd_trim != 0 and cfe(hd_trim) == 1:
-            hd_crop, crop_box = crop_hd(obj, frames[0])
-            hd_crop_objects,hd_crop_frames = detect_meteor_in_clip(hd_crop, None, start, crop_box[0], crop_box[1])
+            #hd_crop, crop_box = crop_hd(obj, frames[0])
+            #hd_crop_objects,hd_crop_frames = detect_meteor_in_clip(hd_crop, None, start, crop_box[0], crop_box[1])
             #refine_points(hd_crop, hd_crop_frames )
-            obj['hd_crop_file'] = hd_crop
-            obj['crop_box'] = crop_box
-            obj['hd_crop_objects'] = hd_crop_objects
+            #obj['hd_crop_file'] = hd_crop
+            #obj['crop_box'] = crop_box
+            #obj['hd_crop_objects'] = hd_crop_objects
             if rescan == 0:
+               restack(obj['hd_trim'])
                print("mv " + hd_trim + " " + old_meteor_dir)
                os.system("mv " + hd_trim + " " + old_meteor_dir)
-               print("mv " + hd_crop + " " + old_meteor_dir)
-               os.system("mv " + hd_crop + " " + old_meteor_dir)
+               #print("mv " + hd_crop + " " + old_meteor_dir)
+               #os.system("mv " + hd_crop + " " + old_meteor_dir)
          else:
             obj['hd_trim'] = 0
             obj['hd_video_file'] = 0
 
-
+      
+      # restack the SD file
+      restack(obj['trim_clip'])
       process_meteor_files(obj, meteor_date, video_file, rescan)
+      print("VIDEO FILE:", video_file)
+      print("OBJ:", obj)
+      final_meteors.append(obj)
 
    # do this as a separate process.
    #confirm_meteor(mjf)
 
+   for obj in final_meteors:
+      print(obj)
+
    return([])
+
+def restack(file):
+
+   frames,color_frames,subframes,sum_vals,max_vals = load_frames_fast(file, json_conf, 0, 0, [], 0,[])
+   print("RESTACK: ", file, len(frames))
+   stack = stack_frames_fast(frames, 1)
+   stack_file = file.replace(".mp4", "-stacked.png")
+   print(stack.shape)
+   cv2.imwrite(stack_file, stack)
 
 def log_import_errors(video_file, message):
    fn = video_file.split("/")[-1]
@@ -3470,7 +3689,6 @@ def log_import_errors(video_file, message):
          log = {}
    else:
       log = {}
-   print("LOG:", log_file, log)
    log[video_file] = message
    save_json_file(log_file, log)
 
@@ -3491,13 +3709,16 @@ def sync_hd_sd_frames(obj):
    sd_frames,sd_color_frames,sd_subframes,sd_sum_vals,sd_max_vals = load_frames_fast(obj['trim_clip'], json_conf, 0, 0, [], 1,[])
    hd_frames,hd_color_frames,hd_subframes,hd_sum_vals,hd_max_vals = load_frames_fast(obj['hd_trim'], json_conf, 0, 0, [], 1,[])
 
-   hd_objects,trash = detect_meteor_in_clip(obj['hd_trim'], hd_frames, 0, 0)
-   sd_objects,trash = detect_meteor_in_clip(obj['trim_clip'], sd_frames, 0, 0)
+   hd_objects,trash = detect_meteor_in_clip(obj['hd_trim'], hd_frames, 0, 0, 0)
+   sd_objects,trash = detect_meteor_in_clip(obj['trim_clip'], sd_frames, 0, 0,0)
    all = hd_objects
    hd_objects = only_meteors(hd_objects)
    sd_objects = only_meteors(sd_objects)
    print("SD:", sd_objects)
-   print("HD:", hd_objects, all)
+   print("HD:", hd_objects )
+   if len(hd_objects) == 0:
+      for hdo in all:
+         print(all[hdo])
 
 
    if len(hd_objects) == len(sd_objects):
@@ -3518,13 +3739,13 @@ def sync_hd_sd_frames(obj):
          hdf.append(hd_fn)
          hd_frame = cv2.resize(hd_frame, (0,0),fx=.25, fy=.25)
    else:
-      print("Problem sd and hd events don't match up perfectly...")
+      print("Problem sd and hd events don't match up perfectly...", len(sd_objects), len(hd_objects))
       #fp = open("/mnt/ams2/meteors/import_errors.txt", "a")
       #fp.write(orig_obj['trim_clip'] + "," + obj['hd_trim']+ "," + "SD & HD objects don't match\n")
       #fp.close()
       log_import_errors(orig_obj['trim_clip'], "Problem with sd and hd events don't match perfectly.")
-      show_objects(sd_objects)
-      show_objects(hd_objects)
+      show_objects(sd_objects, "SD")
+      show_objects(hd_objects, "HD")
       return(0)
 
    buf_size = 20
@@ -3557,9 +3778,7 @@ def sync_hd_sd_frames(obj):
 
    hd_objects,trash = detect_meteor_in_clip(new_hd_file_name, new_hd_frames, 0, 0)
    sd_objects,trash = detect_meteor_in_clip(new_sd_file_name, new_sd_frames, 0, 0)
-   print("HD OBJ:", hd_objects)
    
-   print("SD OBJ:", sd_objects)
   
    hd_meteors = []
    ftimes = []
@@ -3633,17 +3852,17 @@ def sync_hd_sd_frames(obj):
    print(new_json_file_name)
    return(new_json_file_name)
 
-def show_objects(objects):
+def show_objects(objects, desc):
    for obj in objects:
-      print("Object: ", obj)
-      print("FNS:", obj['ofns'])   
-      print("XS:", obj['oxs'])   
-      print("YS:", obj['oys'])   
-      print("WS:", obj['ows'])   
-      print("HS:", obj['ohs'])   
-      print("INTS:", obj['oint'])   
+      print(desc, "Object: ", obj)
+      print(desc, "FNS:", obj['ofns'])   
+      print(desc, "XS:", obj['oxs'])   
+      print(desc, "YS:", obj['oys'])   
+      print(desc, "WS:", obj['ows'])   
+      print(desc, "HS:", obj['ohs'])   
+      print(desc, "INTS:", obj['oint'])   
       for key in obj['report']:
-         print("   ", key, obj['report'][key])   
+         print("   ", desc, key, obj['report'][key])   
 
 def old_detection_codes():
    exit()
@@ -4337,11 +4556,11 @@ def check_event_for_motion(subframes, objects, fn):
    return(motion_events, objects)      
 
 
-def stack_frames_fast(frames):
+def stack_frames_fast(frames, skip = 2):
    stacked_image = None
    fc = 0
    for frame in frames:
-      if fc % 2 == 0:
+      if fc % skip == 0:
          frame_pil = Image.fromarray(frame)
          if stacked_image is None:
             stacked_image = stack_stack(frame_pil, frame_pil)
@@ -4362,7 +4581,12 @@ def load_frames_fast(trim_file, json_conf, limit=0, mask=0,crop=(),color=0,resiz
    masks = None
    last_frame = None
 
-   masks = get_masks(cam, json_conf,0)
+   if "HD" in trim_file:
+      masks = get_masks(cam, json_conf,1)
+   else:
+      masks = get_masks(cam, json_conf,1)
+   if "crop" in trim_file:
+      masks = None
    print("MASKS:", cam, masks)
 
    color_frames = []
@@ -4759,9 +4983,10 @@ def draw_obj_on_frame(frame, obj):
    return(frame)
 
 def write_archive_index(year,month):
-   from lib.Archive_Listing import create_json_index_year, create_json_index_month 
+   from lib.Archive_Listing import write_month_index, write_year_index
    print("Create json index month:", year, month)
-   create_json_index_month(year,month)
+   write_month_index(month,year)
+   write_year_index(year)
 
    #write_index(year)
 
@@ -4803,9 +5028,82 @@ def rerun(video_file):
    cmd = "cp /mnt/ams2/SD/proc2/" + day_dir + "/" + video_file + " /mnt/ams2/CAMS/queue/"
    print(cmd)
    os.system(cmd)
-   cmd = "./flex-detect.py qs /mnt/ams2/CAMS/queue/" + video_file
+   cmd = "./flex-detect.py debug /mnt/ams2/CAMS/queue/" + video_file
    print(cmd)
    os.system(cmd)
+
+def meteor_objects(objects):
+   meteors = {}
+   nonmeteors = {}
+   mc = 1
+   nc = 1
+   for obj in objects:
+      if objects[obj]['report']['meteor_yn'] == "Y":
+         meteors[mc] = objects[obj]
+         mc = mc + 1
+      else:
+         nonmeteors[nc] = objects[obj]
+         nc = nc + 1
+   return(meteors,nonmeteors)
+
+def debug(video_file):
+   start_time = time.time() 
+   print(video_file)
+   frames,color_frames,subframes,sum_vals,max_vals = load_frames_fast(video_file, json_conf, 0, 0, [], 0,[])
+   elapsed_time = time.time() - start_time
+   print("ELAPSED TILL LOAD FRAMES:", elapsed_time)
+
+
+   events,pos_meteors = fast_check_events(sum_vals, max_vals, subframes)
+   elapsed_time = time.time() - start_time
+   print("ELAPSED TILL FAST CHECK:", elapsed_time)
+
+   fast_meteors,fast_non_meteors = meteor_objects(pos_meteors)
+   print("FAST METEORS:", fast_meteors)
+   elapsed_time = time.time() - start_time
+   print("ELAPSED:", elapsed_time)
+
+   all_meteors = []
+   for object in fast_meteors:
+      start, end = buffered_start_end(pos_meteors[object]['ofns'][0],pos_meteors[object]['ofns'][-1], len(frames), 50)
+      motion_objects, motion_frames = detect_meteor_in_clip(video_file, frames[start:end], 0)
+      meteors,non_meteors = meteor_objects(motion_objects)
+      for meteor in meteors:
+         meteors[meteor] = analyze_object(meteors[meteor])
+         all_meteors.append(meteors[meteor])
+
+   if "/mnt/ams2/meteors" in video_file:
+      if len(all_meteors) == 0:
+         for non_meteor in non_meteors:
+            print(non_meteors[non_meteor])
+
+      # this is a rescan of a previous capture. transfer to archive
+      if len(all_meteors) > 1:
+         log_import_errors(video_file, "No meteors detected in 1st scan.")
+         return()
+      # load the HD file then sync it, if possible.
+
+      meteor = all_meteors[0]
+      print(meteor)
+      jd = load_json_file(video_file.replace(".mp4", ".json"))
+      print("HD TRIM:", jd['hd_trim'])
+      meteor['trim_clip'] = video_file
+      meteor['hd_trim'] = jd['hd_trim']
+      (calib, cal_params) = apply_calib(meteor)
+      meteor['calib'] = calib
+      meteor['cal_params'] = cal_params
+      new_json_file = sync_hd_sd_frames(meteor)
+
+   
+
+   for meteor in all_meteors:
+      if meteor['report']['meteor_yn'] == "Y":
+         print("METEOR:", meteor['ofns'])
+         print("METEOR:", meteor['oxs'])
+         print("METEOR:", meteor['oys'])
+         print("METEOR:", meteor['oint'])
+         print("METEOR:", meteor['report'])
+ 
 
 cmd = sys.argv[1]
 video_file = sys.argv[2]
@@ -4845,4 +5143,6 @@ if cmd == "remaster":
    remaster_arc(video_file)
 if cmd == "wi":
    write_archive_index(sys.argv[2], sys.argv[3])
+if cmd == "debug" :
+   debug(video_file)
 
