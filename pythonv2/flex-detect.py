@@ -2225,6 +2225,7 @@ def calc_point_res(object, frames):
 def poly_fit(object):
    #print("POLY FIT:", object['report'])
    import matplotlib
+   matplotlib.use('Agg')
    import matplotlib.pyplot as plt
 
    poly_x = np.array(object['oxs'])
