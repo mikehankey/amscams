@@ -355,7 +355,14 @@ def save_json_file(json_file, json_data, compress=False):
          json.dump(json_data, outfile, allow_nan=True)
    outfile.close()
 
-def load_json_file(json_file): 
+def load_json_file(json_file):
+   with open(json_file, 'r' ) as infile:
+      json_data = json.load(infile)
+   return(json_data)
+
+
+def load_json_file_NOT_WORKING(json_file): 
+   print("JSON FILE:", json_file)
    try:
       with open(json_file, 'r' ) as infile:
          json_data = json.load(infile)
