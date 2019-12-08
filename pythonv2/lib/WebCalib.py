@@ -10,6 +10,8 @@ import time
 import glob
 import os
 import cgitb
+import sys
+
 from os.path import isfile
 from lib.PrintUtils import get_meteor_date
 from lib.FileIO import get_proc_days, get_day_stats, get_day_files , load_json_file, get_trims_for_file, get_days, save_json_file, cfe
@@ -2221,8 +2223,9 @@ def reduce_meteor_ajax(json_conf,meteor_json_file, cal_params_file, show = 0):
 
 
    if cfe(failed_file) == 1:
-      print("This reduction was already tried and failed.", failed_file)
-      return()
+      print('{"error":"This reduction was already tried and failed: '+ failed_file +'","status":0}')
+      sys.exit(0)
+    
 
    #cmd = "cd /home/ams/amscams/pythonv2/; ./autoCal.py cfit " + cal_params_file + " 0 > /mnt/ams2/tmp/autoCal.txt "
    #print(cmd)

@@ -6,6 +6,8 @@ import datetime
 import sys
 import collections 
 
+from calendar import monthrange
+
 from lib.REDUCE_VARS import *
 from lib.Get_Station_Id import get_station_id
 from lib.FileIO import save_json_file, cfe, load_json_file
@@ -125,16 +127,14 @@ def add_to_month_index(detection, insert=True):
             index_data['days'][str(analysed_detection_name['day'])] = {}
 
          index_data['days'][str(analysed_detection_name['day'])].append(new_detect)
-
-         #print("new index")
-         #print(index_data)
+ 
 
          # Update the index
          main_dir = METEOR_ARCHIVE + station_id + os.sep + METEOR + str(analysed_detection_name['year']) + os.sep + str(analysed_detection_name['month']).zfill(2)
-         save_json_file(main_dir + os.sep + str(analysed_detection_name['month']) + ".json", index_data)
+         save_json_file(main_dir + os.sep + str(analysed_detection_name['month']) + ".json", index_data, compress=True)
 
-         #print("INDEX UPDATED")
-         #print(main_dir + os.sep + str(analysed_detection_name['month']) + ".json")
+         # Update the corresponding Yearly index (?)
+         write_year_index(int(analysed_detection_name['year']))
 
          return True
 
@@ -247,7 +247,8 @@ def write_month_index(month, year):
          os.makedirs(main_dir)
 
       with open(main_dir + os.sep + str(month).zfill(2) + ".json", 'w') as outfile:
-         json.dump(json_data, outfile, indent=4, sort_keys=True)
+         #Write compress format
+         json.dump(json_data, outfile)
       outfile.close() 
       return True
    
@@ -263,7 +264,7 @@ def write_year_index(year):
    if('months' in json_data):
       if(len(json_data['months'])>0 ): 
          main_dir = METEOR_ARCHIVE + get_station_id()  + os.sep + METEOR + str(year)
-         save_json_file(main_dir + os.sep + str(year) + ".json", json_data)
+         save_json_file(main_dir + os.sep + str(year) + ".json", json_data, compress=True)
          return True
    
    return False
@@ -289,85 +290,142 @@ def get_monthly_index(month,year):
    else:
       test = create_json_index_month(month,year)
       if(test):
-         return load_json_file(index_file)
+         res = load_json_file(index_file)
+         if(res):
+            if('months' in res):
+               #print("GET MONTHLY INDEX<br/>")
+               #print(res['months'])
+               if(res['months']=={"1": [], "2": [], "3": [], "4": [], "5": [], "6": [], "7": [], "8": [], "9": [], "10": [], "11": [], "12": []}):
+                  return False
+               else:
+                  return test
+            else:
+               return False
+         else:
+            return False     
       else:
          return test
 
 
+# Get detection full path based on a the limited string in the index
+# ex: 'p': '22_36_24_000_010042-trim0519'
+#      => '/mnt/ams2/meteor_archive/AMS7/METEOR/2019/11/16/2019_11_16_22_36_24_000_010042-trim0519.json' 
+def get_full_det_path(path,station_id,date,day):
+   return METEOR_ARCHIVE + station_id  + os.sep + METEOR + str(date.year) + os.sep + str(date.month).zfill(2) + os.sep + str(day).zfill(2) + os.sep + str(date.year) + '_' + str(date.month).zfill(2)+ '_' + str(day).zfill(2) + '_' + path + ".json"
+
+
+# Test if a detection matches some criteria
+def test_criteria(criter,criteria,detection):
+
+   # Res. ERROR
+   if(criter=='res_er'):
+      if(float(detection[criter])>=float(criteria[criter])):
+         return False
+   
+   # Magnitude
+   if(criter=='mag'):
+      if(float(detection[criter])<=float(criteria[criter])):
+         return False
+   
+   # Angular Velocity
+   if(criter=='ang_v'):
+      if(float(detection[criter])<=float(criteria[criter])):
+         return False
+
+   return True
+
 # Get results on index from a certain date
-def get_results_from_date_from_monthly_index(criteria,date,json_index,max_res_per_page,cur_page): 
-   res = []
-   res_cnt = 0 
-   cur_month_test = False
+def get_results_from_date_from_monthly_index(criteria,date,max_res_per_page,cur_page): 
 
-
-   print("DEBUGGING<br/>")
-   print("max_res_per_page: " + str(max_res_per_page))
-   print("cur_page: " + str(cur_page))
-
+   # Get the index of the selected or current year
+   json_index =  get_monthly_index(date.month,date.year)
+ 
    # Nb of result not to display based on cur_page
-   if(cur_page==1):
+   if(cur_page==1 or cur_page==0 ):
       number_of_res_to_give_up = 0
    else:
-      number_of_res_to_give_up = max_res_per_page*cur_page
-
-   
+      number_of_res_to_give_up = max_res_per_page*(cur_page-1)
  
-   if("days" in json_index and "month" in json_index):
-      cur_month = json_index['month']
-      
-      if(int(cur_month)==int(date.month)):
-         cur_month_test = True
+   # Get Station ID
+   station_id = get_station_id()
 
+   # Counter & Res
+   res_counter = 0
+   res_add_counter = 0
+   res_to_return = [] 
+
+   # Test if we are exploring the current Month & Year
+   cur_year_and_month_test = False
+
+   while(json_index!=False):
+ 
+      cur_month = json_index['month']
+      cur_year  = json_index['year']
+      
+      if(int(cur_month)==int(date.month) and int(cur_year)==int(date.year)): 
+         cur_year_and_month_test = True
+      else:
+         cur_year_and_month_test = False
+      
       all_days =  json_index['days'] 
       keylist = list(all_days.keys())
 
       # We sort the days
       for day in sorted(keylist, key=int, reverse=True):
 
-         # We sort the detections within the day
-         detections = sorted(json_index['days'][day], key=lambda k: k['p'], reverse=True)
+            # We sort the detections within the day
+            detections = sorted(json_index['days'][day], key=lambda k: k['p'], reverse=True)
 
-         if( (cur_month_test and int(day)<=int(date.day) and res_cnt<=max_res_per_page) 
-          or (not cur_month_test and int(cur_month)<int(date.month)) and res_cnt<=max_res_per_page):
+            # If we are the current month & year, we need to take into account the days before the date.day
+            if( (cur_year_and_month_test and int(day)<=int(date.day)) or (not cur_year_and_month_test)):
           
-            for  detection  in  detections:
-               if(res_cnt<max_res_per_page):
- 
+               for detection in detections:
+                
                   # Here we test the criteria
                   test = True
                   for criter in criteria:
 
                      if(detection[criter]!='unknown'):
-                        if(criter=='res_er'):
-                           if(float(detection[criter])>=float(criteria[criter])):
-                              test = False
-   
-                        if(criter=='mag'):
-                           if(float(detection[criter])<=float(criteria[criter])):
-                              test = False
-   
-                        if(criter=='ang_v'):
-                           if(float(detection[criter])<=float(criteria[criter])):
-                              test = False                     
-   
-
+                        test = test_criteria(criter,criteria,detection)
+    
                      if(test==False):
                         break   
 
+                  if(test==True):
+                     
+                     if(len(res_to_return)<max_res_per_page and res_counter>number_of_res_to_give_up):
+                        # We complete the detection['p'] to get the full path (as the index only has compressed name)
+                        detection['p'] = get_full_det_path(detection['p'],station_id,date,day)
+                        res_to_return.append(detection)
+                     
+                     res_counter+=1 
+ 
+   
+      # Change Month & Year
+      if(cur_month==1):
+         cur_month = 12
+         cur_year =  cur_year - 1
+         json_index =  get_monthly_index(cur_month,cur_year)
+ 
+      
+         # Change the date backward
+         week_day, numbers_of_days =  monthrange(cur_year,cur_month)
+         date = date.replace(year=cur_year, month=cur_month,day=numbers_of_days) 
 
-                  if(test==True ):
-                     # We complete the detection['p'] to get the full path (as the index only has compressed name)
-                     # ex: 'p': '22_36_24_000_010042-trim0519'
-                     #      => '/mnt/ams2/meteor_archive/AMS7/METEOR/2019/11/16/2019_11_16_22_36_24_000_010042-trim0519.json' 
-                     detection['p'] = METEOR_ARCHIVE + get_station_id()  + os.sep + METEOR + str(date.year) + os.sep + str(date.month).zfill(2) + os.sep + str(day).zfill(2) + os.sep + str(date.year) + '_' + str(date.month).zfill(2)+ '_' + str(day).zfill(2) + '_' + detection['p'] + ".json"
-                     res.append(detection)
-                     res_cnt+=1 
-                  #else:and res_cnt<=number_of_res_to_give_up
-                  #   number_of_res_to_give_up-=1
+ 
+      else:
+         cur_month = cur_month -1
+         json_index =  get_monthly_index(cur_month,cur_year)
+
+         # Change the date backward
+         week_day, numbers_of_days =  monthrange(cur_year,cur_month)
+         date = date.replace(year=cur_year, month=cur_month,day=numbers_of_days) 
+
+ 
   
-
-   return res
+   
+   
+   return res_to_return, res_counter
 
 
 # Return full path of a detection based on its name
@@ -393,6 +451,7 @@ def get_video(_file):
 def get_html_detection(det,detection,clear_cache):
    # Do we have a thumb stack preview for this detection?
    preview = does_cache_exist(det,"preview","/*.jpg")
+ 
 
    if(len(preview)==0 or clear_cache is True):
       # We need to generate the thumbs 
@@ -489,6 +548,32 @@ def get_html_detections(res,clear_cache):
    return res_html
  
 
+
+# Create Criteria Selector
+def create_criteria_selector(selected, criteria, all_msg, sign, unit=''):
+   # Build MAGNITUDES selector
+   mag_select = ''
+   one_selected = False
+
+   # Add Default choice
+   if selected is None:
+       mag_select+= '<option selected value="-1">'+all_msg+'</option>'
+   else:
+      one_selected = True 
+      mag_select+= '<option value="-1">'+all_msg+'</option>'
+      criteria['mag'] = float(selected)
+
+   for mag in POSSIBLE_MAGNITUDES:
+      if(one_selected==True):
+         if(float(mag)==float(selected)):
+            mag_select+= '<option selected value="'+str(mag)+'">'+sign+str(mag)+ unit+'/option>'
+         else:
+            mag_select+= '<option value="'+str(mag)+'">'+sign + str(mag)+ unit+'</option>'  
+      else:
+         mag_select+= '<option value="'+str(mag)+'">'+sign + str(mag)+ unit+'</option>'  
+   
+   return mag_select, criteria
+   
  
 
 # MAIN FUNCTION FOR THE ARCHIVE LISTING PAGE
@@ -503,105 +588,46 @@ def archive_listing(form):
    selected_mag = form.getvalue('magnitude')
    selected_error = form.getvalue('res_error')
    selected_ang_vel = form.getvalue('ang_vel')
-
-
+ 
    # Build the page based on template  
    with open(ARCHIVE_LISTING_TEMPLATE, 'r') as file:
       template = file.read()
 
-   # Pagination
+   # Page (for Pagination)
    if (cur_page is None) or (cur_page==0):
       cur_page = 1
    else:
       cur_page = int(cur_page)
 
-   # NUMBER_OF_METEOR_PER_PAGE
+   # NUMBER_OF_METEOR_PER_PAGE (for Pagination)
    if(meteor_per_page is None):
       nompp = NUMBER_OF_METEOR_PER_PAGE
    else:
       nompp = int(meteor_per_page)
    
-   # Build num per page selector
+   # Build num per page selector (for Pagination)
    ppp_select = ''
    for ppp in POSSIBLE_PER_PAGE:
       if(int(ppp)==nompp):
-         ppp_select+= '<option selected value="'+str(ppp)+'">'+str(ppp)+' / page</option>'
+         ppp_select+= '<option selected value="'+str(ppp)+'">'+str(ppp)+'/page</option>'
       else:
-         ppp_select+= '<option value="'+str(ppp)+'">'+str(ppp)+' / page</option>'  
+         ppp_select+= '<option value="'+str(ppp)+'">'+str(ppp)+'/page</option>'  
    template = template.replace("{RPP}", ppp_select)
 
    # LIST OF CRITERIA 
    criteria = {}
 
    # Build MAGNITUDES selector
-   mag_select = ''
-   one_mag_selected = False
-
-   # Add Default choice
-   if selected_mag is None:
-       mag_select+= '<option selected value="-1">All Magnitudes</option>'
-   else:
-      one_mag_selected = True 
-      mag_select+= '<option value="-1">All Magnitudes</option>'
-      criteria['mag'] = float(selected_mag)
-
-   for mag in POSSIBLE_MAGNITUDES:
-      if(one_mag_selected==True):
-         if(float(mag)==float(selected_mag)):
-            mag_select+= '<option selected value="'+str(mag)+'">>'+str(mag)+'</option>'
-         else:
-            mag_select+= '<option value="'+str(mag)+'">>'+str(mag)+'</option>'  
-      else:
-         mag_select+= '<option value="'+str(mag)+'">>'+str(mag)+'</option>'  
+   mag_select, criteria = create_criteria_selector(selected_mag, criteria,  'All Magnitudes', '>')
    template = template.replace("{MAGNITUDES}", mag_select)
-
+    
    # Build ERRORS selector
-   error_select = ''
-   one_error_selected = False
-
-   # Add Default choice
-   if selected_error is None:
-       error_select+= '<option selected value="-1">All Res. Error</option>'
-   else:
-      one_error_selected = True 
-      error_select+= '<option value="-1">All Res. Error</option>' 
-      criteria['res_er'] = float(selected_error)
-
-
-   
-   for err in POSSIBLE_ERRORS:
-      if(one_error_selected):
-         if(float(err)==float(selected_error)):
-            error_select+= '<option selected value="'+str(err)+'"><'+str(err)+'</option>'
-         else:
-            error_select+= '<option value="'+str(err)+'"><'+str(err)+'</option>'  
-      else:
-         error_select+= '<option value="'+str(err)+'"><'+str(err)+'</option>'  
+   error_select, criteria = create_criteria_selector(selected_error, criteria,  'All Res. Error', '<')
    template = template.replace("{RES_ERRORS}", error_select)
 
-
    # Build ANGULAR VELOCITIES selector
-   ang_vel_select = ''
-   one_ang_vel_selected = False
- 
-
-   # Add Default choice
-   if selected_ang_vel is None:
-       ang_vel_select+= '<option selected value="-1">All Ang. Velocities</option>'
-   else:
-      one_ang_vel_selected = True 
-      ang_vel_select+= '<option value="-1">All Ang. Velocities</option>' 
-      criteria['ang_v'] = float(selected_ang_vel)
-
-   for ang_vel in POSSIBLE_ANG_VELOCITIES:
-      if(one_ang_vel_selected):
-         if(float(selected_ang_vel)==float(ang_vel)):
-            ang_vel_select+= '<option selected value="'+str(ang_vel)+'"><'+str(ang_vel)+'&deg;/s</option>'
-         else:
-            ang_vel_select+= '<option value="'+str(ang_vel)+'"><'+str(ang_vel)+'&deg;/s</option>'  
-      else:
-            ang_vel_select+= '<option value="'+str(ang_vel)+'"><'+str(ang_vel)+'&deg;/s</option>'  
-   template = template.replace("{ANG_VELOCITIES}", ang_vel_select)
+   ang_vel_select, criteria = create_criteria_selector(selected_ang_vel, criteria,  'All Ang. Velocities', '>', unit='&deg;/s')
+   template = template.replace("{ANG_VELOCITIES}", ang_vel_select) 
  
 
    # Clear_cache
@@ -623,60 +649,51 @@ def archive_listing(form):
    year = the_date.year
    month = the_date.month
 
-   # Get the index of the selected or current year
-   index =  get_monthly_index(month,year)
+   # Search the results through the monthly indexes
+   res, total = get_results_from_date_from_monthly_index(criteria,the_date,int(nompp),cur_page)
+
+   #print("RES: ")
+   #print(res)
+   #print("<br/>")
+   #print("TOTAL: ")
+   #print(total)
    
-   # Search the index
-   if(index is not False):
+   # CREATE URL FOR THE PAGINATION
+   pagination_url  = "/pycgi/webUI.py?cmd=archive_listing&meteor_per_page="+str(nompp)
 
-      res = get_results_from_date_from_monthly_index(criteria,the_date,index,int(nompp),cur_page)
+   if(has_limit_day!=0):
+      pagination_url += "&limit_day="+str(the_date)
+      
+   for criter in criteria:
+      pagination_url += "&"+criter+"="+str(criteria[criter])
 
-      # If we don't have enough detection to display we try the previous year
-      if(res):
-         if(len(res)<nompp):
-            the_date = datetime.datetime.strptime(str(year-1)+'_01_01',"%Y_%m_%d") 
-            year = year -1
-            index = get_index(year)
+   pagination = get_pagination(cur_page,total,pagination_url,int(nompp))
 
-            if(index is not False):
-               new_stop = int(nompp) - len(res)
-               res2 = get_results_from_date_from_monthly_index(criteria,the_date,index,new_sto,cur_page)
-               res = res + res2
-
-         # CREATE URL FOR THE PAGINATION
-         pagination_url  = "/pycgi/webUI.py?cmd=archive_listing&meteor_per_page="+str(nompp)
-
-         if(has_limit_day!=0):
-            pagination_url += "&limit_day="+str(the_date)
-         
-         for criter in criteria:
-            pagination_url += "&"+criter+"="+str(criteria[criter])
-
-         pagination = get_pagination(cur_page,len(res),pagination_url,int(nompp))
-
-         if(pagination[2] != ''):
-            template = template.replace("{PAGINATION_DET}", "Page  " + format(cur_page) + "/" +  format(pagination[2]))    
-         else:
-            template = template.replace("{PAGINATION_DET}", "")    
-         
-         # Create HTML Version of each detection
-         res_html = get_html_detections(res,clear_cache) 
-         template = template.replace("{RESULTS}", res_html)
-
-         # Pagination
-         if(len(res)>=1): 
-            template = template.replace("{PAGINATION}", pagination[0])
-         else:
-            template = template.replace("{PAGINATION}", "")
-      else:
-         template = template.replace("{RESULTS}", "<div class='alert alert-danger'>No detection found your the archive.</div>")
-         template = template.replace("{PAGINATION_DET}", "")    
-         template = template.replace("{PAGINATION}", "")
-
+   if(pagination[2] != ''):
+      template = template.replace("{PAGINATION_DET}", "<small>Page  " + format(cur_page) + "/" +  format(pagination[2])+"</small>")    
    else:
-      template = template.replace("{RESULTS}", "<div class='alert alert-danger'>No detection found your the archive.</div>")
+      template = template.replace("{PAGINATION_DET}", "")    
+      
+   # Create HTML Version of each detection
+   res_html = get_html_detections(res,clear_cache) 
+   template = template.replace("{RESULTS}", res_html)
+
+   #   # Pagination
+   if(len(res)>=1 and pagination and pagination[0]):  
+      template = template.replace("{PAGINATION}", pagination[0])
+   else:
+      template = template.replace("{PAGINATION}", "")
+
+
+   if(len(res)==0):
+      template = template.replace("{RESULTS}", "<div class='alert alert-danger mx-auto'>No detection found in your the archive for your criteria.</div>")
       template = template.replace("{PAGINATION_DET}", "")    
       template = template.replace("{PAGINATION}", "")
+      template = template.replace("{FOUND}", "")   
+   elif((len(res))!=total):
+      template = template.replace("{FOUND}", "<div class='page_h mr-2'><small>Displaying " + str(len(res)) + " out of " +  str(total)  + " detections.</small></div>")
+   else:
+      template = template.replace("{FOUND}", "<div class='page_h mr-2'><small>Displaying all " + str(len(res)) + " detections matching your criteria.</small></div>")
 
    # Display Template
    return template

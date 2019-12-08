@@ -1,7 +1,18 @@
 #!/usr/bin/python3
 
+
 from pathlib import Path
 import os
+import json
+
+def load_json_file(json_file):
+   try:
+      with open(json_file, 'r' ) as infile:
+         json_data = json.load(infile)
+   except:
+      json_data = False
+   return json_data
+
 
 def cfe(file,dir = 0):
    if dir == 0:
@@ -17,6 +28,7 @@ def cfe(file,dir = 0):
       else:
          return(0)
 
+json_conf = load_json_file("../conf/as6.json")
 
 
 
@@ -43,3 +55,10 @@ print("ADD API_HOST to as6.json!         \"API_HOST\" : \"52.27.42.7\", ")
 print("SETUP VPN to as6.json!")
 
 os.system("apt-get install ntp")
+
+# make default masks
+for cam in json_conf['cameras']:
+   print(json_conf['cameras'][cam]['cams_id'])
+   fp = open("../conf/mask-" + json_conf['cameras'][cam]['cams_id'] + ".txt", "a")
+   fp.write("0 0 0 0")
+   fp.close()

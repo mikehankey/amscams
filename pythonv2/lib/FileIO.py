@@ -347,13 +347,19 @@ def load_config(json_file):
    json_conf = json.loads(json_str)
    return(json_conf)
 
-def save_json_file(json_file, json_data):
+def save_json_file(json_file, json_data, compress=False):
    with open(json_file, 'w') as outfile:
-      json.dump(json_data, outfile, indent=4, allow_nan=True)
+      if(compress==False):
+         json.dump(json_data, outfile, indent=4, allow_nan=True)
+      else:
+         json.dump(json_data, outfile, allow_nan=True)
    outfile.close()
 
-def load_json_file(json_file):
-   with open(json_file, 'r' ) as infile:
-      json_data = json.load(infile)
-   return(json_data)
+def load_json_file(json_file): 
+   try:
+      with open(json_file, 'r' ) as infile:
+         json_data = json.load(infile)
+   except:
+      json_data = False
+   return json_data 
 

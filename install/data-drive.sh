@@ -19,7 +19,6 @@ mkdir /mnt/ams2/tmp
 mkdir /mnt/ams2/cal
 mkdir /mnt/ams2/cal/freecal
 mkdir /mnt/ams2/cal/hd_images
-mkdir /mnt/ams2/cal/
 mkdir /mnt/ams2/cal/tmp
 mkdir /mnt/ams2/trash
 mkdir /mnt/ams2/latest

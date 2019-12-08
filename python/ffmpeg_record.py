@@ -24,6 +24,7 @@ def check_running(cam_num, type):
       cmd = "ps -aux |grep \"ffmpeg\" | grep \"HD\" | grep " + cam_ip + " | grep -v grep | wc -l"
    else: 
       cmd = "ps -aux |grep \"ffmpeg\" | grep \"SD\" | grep " + cam_ip + " | grep -v grep | wc -l"
+   print(cmd)
    output = subprocess.check_output(cmd, shell=True).decode("utf-8")
    output = int(output.replace("\n", ""))
    return(int(output))
@@ -37,7 +38,7 @@ def start_capture(cam_num):
    cams_id = json_conf['cameras'][cam_key]['cams_id']
    running = check_running(cam_num, "HD")
    if running == 0:
-      cmd = "/usr/bin/ffmpeg -i 'rtsp://" + cam_ip + hd_url + "' -c copy -map 0 -f segment -strftime 1 -segment_time 60 -segment_format mp4 \"" + video_dir + "/HD/" + "%Y_%m_%d_%H_%M_%S_000_" + cams_id + ".mp4\" 2>&1 > /dev/null & "
+      cmd = "/usr/bin/ffmpeg -i 'rtsp://" + cam_ip + hd_url + "' -rtsp_transport tcp -c copy -map 0 -f segment -strftime 1 -segment_time 60 -segment_format mp4 \"" + video_dir + "/HD/" + "%Y_%m_%d_%H_%M_%S_000_" + cams_id + ".mp4\" 2>&1 > /dev/null & "
       print(cmd)
    
       os.system(cmd)
@@ -47,7 +48,7 @@ def start_capture(cam_num):
 
    running = check_running(cam_num, "SD")
    if running == 0:
-      cmd = "/usr/bin/ffmpeg -i 'rtsp://" + cam_ip + sd_url + "' -c copy -map 0 -f segment -strftime 1 -segment_time 60 -segment_format mp4 \"" + video_dir + "/SD/" + "%Y_%m_%d_%H_%M_%S_000_" + cams_id + ".mp4\" 2>&1 > /dev/null & "
+      cmd = "/usr/bin/ffmpeg -i 'rtsp://" + cam_ip + sd_url + "' -rtsp_transport tcp -c copy -map 0 -f segment -strftime 1 -segment_time 60 -segment_format mp4 \"" + video_dir + "/SD/" + "%Y_%m_%d_%H_%M_%S_000_" + cams_id + ".mp4\" 2>&1 > /dev/null & "
       print(cmd)
       os.system(cmd)
       time.sleep(2)
@@ -99,6 +100,8 @@ if (cmd == "start_all"):
    start_capture("4")
    start_capture("5")
    start_capture("6")
+   if "cam7" in json_conf['cameras']:
+      start_capture("7")
 
 if (cmd == "purge"):
    purge(cam_num)
@@ -116,6 +119,8 @@ if (cmd == "purge_all"):
    purge("4")
    purge("5")
    purge("6")
+   if "cam7" in json_conf['cameras']:
+      purge("7")
 
 
 

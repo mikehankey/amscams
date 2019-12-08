@@ -1,5 +1,10 @@
 function update_reduction_on_canvas_and_table(json_resp) {
-    var smf = json_resp['frames'];
+
+   if(typeof json_resp== 'undefined' || typeof json_resp['frames'] == 'undefined') {
+      return false;
+   }
+
+   var smf = json_resp['frames'];
     var PRECISION = 2;
  
     var lc = 0;
@@ -40,7 +45,6 @@ function update_reduction_on_canvas_and_table(json_resp) {
         var thumb_path = v['path_to_frame'] +'?c='+Math.random();
         var square_size = 6;
         var _time = v['dt'].split(' ');
- 
   
         // Thumb	#	Time	X/Y - W/H	Max PX	RA/DEC	AZ/EL 
         table_tbody_html+= '<tr id="fr_'+frame_id+'" data-fn="'+frame_id+'" data-org-x="'+v['x']+'" data-org-y="'+v['y']+'"><td><div class="st" hidden style="background-color:'+all_colors[i]+'"></div></td>'

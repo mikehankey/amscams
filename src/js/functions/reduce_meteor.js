@@ -16,6 +16,7 @@ function reduce_meteor() {
         data: cmd_data,
         success: function(data) {
             var json_resp = $.parseJSON(data);
+
             if(json_resp['status']!==0) {
                 update_reduction_on_canvas_and_table(json_resp);
 
@@ -24,11 +25,21 @@ function reduce_meteor() {
                 
                
             }  else {
-                bootbox.alert({
-                    message: "The reduction failed.",
-                    className: 'rubberBand animated error',
-                    centerVertical: true
-                });
+
+               if(typeof json_resp['error'] !='undefined') {
+                  bootbox.alert({
+                     message: json_resp['error'],
+                     className: 'rubberBand animated error',
+                     centerVertical: true
+                 });
+               } else {
+                  bootbox.alert({
+                     message: "The reduction failed.",
+                     className: 'rubberBand animated error',
+                     centerVertical: true
+                 });
+               }
+               
             }
             loading_done();
         }, 

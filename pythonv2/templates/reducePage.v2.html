@@ -94,6 +94,9 @@
            <div id="canvas_zoom"></div>
        </div> 
 
+       {HD_fix}
+
+
        <div class="box">
            <h2>Meteor Info</h2>
            <dl class="row mb-0 def w">
@@ -172,6 +175,7 @@
 
                         <a class="btn btn-primary d-block" href="/pycgi/webUI.py?cmd=manual_reduction&video_file={VIDEO_FILE}&hd_stack={HD_STACK}&sd_stack={SD_STACK}&sd_video={SD_VIDEO}&json_file={JSON_FILE}"><strong>NEW</strong> Manual Reduction</a>
                         <a class="btn btn-primary d-block mt-2" id="radec_mode">RA/Dec Mode</a>
+                        <a class="btn btn-primary d-block mt-2" id="hd_fix">Fix not usable HD</a>
       
 <!--
                        <a class="btn btn-primary d-block mt-2" target=_blank href=/pycgi/webUI.py?cmd=custom_fit&cal_params_file={JSON_FILE}>Minimize FOV Parms</a> 

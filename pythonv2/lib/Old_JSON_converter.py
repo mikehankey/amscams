@@ -186,12 +186,15 @@ def get_new_info(json_f):
 
 # Get new report form an old JSON version
 def get_new_report(json_f): 
-   return  {
-      "report": {
-         "dur": float(json_f['event_duration']),
-         "max_peak": float(json_f['peak_magnitude'])
+   if('event_duration' in json_f and 'peak_magnitude' in json_f):
+      return  {
+         "report": {
+            "dur": float(json_f['event_duration']),
+            "max_peak": float(json_f['peak_magnitude'])
+         }
       }
-   }
+   else:
+      return {"report":{}}
 
 # Get new stars info from an old JSON version 
 def get_new_stars(json_f):
@@ -375,6 +378,7 @@ def move_old_detection_to_archive(json_file_path, sd_video_file_path, hd_video_f
    json_content['calib']   = new_json_file['calib']
    json_content['info']    = new_json_file['info']
    json_content['frames']  = new_json_file['frames']
+   json_content['report']  = new_json_file['report']
 
 
    # Test if we have the required info in json_file['calib']['device']
@@ -382,17 +386,21 @@ def move_old_detection_to_archive(json_file_path, sd_video_file_path, hd_video_f
    # json_file['calib']['device']['poly']['x_fwd']
    # json_file['calib']['device']['poly']['y_fwd']
    if('device' not in json_content['calib']):
+ 
+
       # Do we have the old params?
       if('org_file' in json_content['calib']):
+
+          
+
          if(cfe(json_content['calib']['org_file'])):
             calibration_param = load_json_file(json_content['calib']['org_file'])
+              
+            #print("<br>FILE:<br>")
+            #print(json_content['calib']['org_file'])
+            #print('<hr>')
+            #print(calibration_param)
             
-            print("<br>FILE:<br>")
-            print(json_content['calib']['org_file'])
-            print('<hr>')
-            print(calibration_param)
-
-
             json_content['calib']['device'] = {}
             
             json_content['calib']['device']['scale_px'] = float(calibration_param['pixscale'])
@@ -414,12 +422,12 @@ def move_old_detection_to_archive(json_file_path, sd_video_file_path, hd_video_f
                   json_content['calib']['device']['lat'] = pos['lat']
                if('lng' in pos):
                   json_content['calib']['device']['lng'] = pos['lng']
+ 
             else:
                json_content['calib']['device']['lng'] = float(calibration_param['device_lng'])   
-               json_content['calib']['device']['lng'] = float(calibration_param['device_lat'])
-               json_content['calib']['device']['lng'] = float(calibration_param['device_alt'])    # TO TEST...  
+               json_content['calib']['device']['lat'] = float(calibration_param['device_lat'])
+               json_content['calib']['device']['alt'] = float(calibration_param['device_alt'])    # TO TEST...   
  
-
             json_content['calib']['device']['center'] = {}
             json_content['calib']['device']['center']['az'] = float(calibration_param['center_az'])
             json_content['calib']['device']['center']['el'] = float(calibration_param['center_el'])
