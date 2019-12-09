@@ -43,7 +43,11 @@ from lib.UtilLib import calc_dist,find_angle
 import lib.brightstardata as bsd
 from lib.DetectLib import eval_cnt, check_for_motion2
 
-json_conf = load_json_file("../conf/as6.json")
+
+from lib.Cleanup_Json_Conf import PATH_TO_CONF_JSON
+
+
+json_conf = load_json_file(PATH_TO_CONF_JSON)
 show = 0
 
 ARCHIVE_DIR = "/mnt/NAS/meteor_archive/"
@@ -4582,8 +4586,7 @@ def load_frames_fast(trim_file, json_conf, limit=0, mask=0,crop=(),color=0,resiz
    masks = None
    last_frame = None
 
-   print("IN LOAD FRAMES FAST")
-   print(json_conf)
+ 
 
    if "HD" in trim_file:
       masks = get_masks(cam, json_conf,1)
