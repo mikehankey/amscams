@@ -6,7 +6,7 @@ from lib.FileIO import *
 
 
 # TEMP TEST
-d = load_json_file_NOT_WORKING('~/amscams/conf/as6.json')
+d = load_json_file_NOT_WORKING("/home/ams/amscams/conf/as6.json")
 print(d)
 sys.exit(0)
 
