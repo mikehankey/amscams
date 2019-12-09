@@ -471,7 +471,7 @@ def get_html_detection(det,detection,clear_cache):
 
    details_html = '<dl class="row mb-0 def mt-1">'
 
-   details_html += '<span>Cam #'+det['cam_id']+' - <b>'+det['hour']+':'+det['min']+'</b></span>'
+   details_html += '<dt class="col-12">Cam #'+det['cam_id']+' - <b>'+det['hour']+':'+det['min']+'</b></dt>'
 
    if(detection['mag']!='unknown'):
       details_html += '              <dt class="col-6">Mag</dt>  <dd class="col-6">' + str(detection['mag']) + '</dd>'
