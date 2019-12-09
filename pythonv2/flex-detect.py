@@ -3438,8 +3438,8 @@ def quick_scan(video_file, old_meteor = 0):
    bright_events = []
    valid_events = []
 
-   station_id = get_station_id(video_file)
-   json_conf = load_json_conf(station_id)
+   #station_id = get_station_id(video_file)
+   #json_conf = load_json_conf(station_id)
    hd_datetime, hd_cam, hd_date, hd_y, hd_m, hd_d, hd_h, hd_M, hd_s = convert_filename_to_date_cam(video_file)
    meteor_date = hd_y + "_" + hd_m + "_" + hd_d
    print("STATION:", station_id, video_file, start_time)
