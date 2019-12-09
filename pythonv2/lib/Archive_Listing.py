@@ -452,15 +452,8 @@ def get_html_detection(det,detection,clear_cache):
    # Do we have a thumb stack preview for this detection?
    preview = does_cache_exist(det,"preview","/*.jpg")
    
-   print(det)
-   print("<hr/>")
-
-   #base_js_name = el[-1].replace("_", "")
-   #base_js_name = base_js_name.replace(".json", "")
-   #base_js_name_img = "img_" + base_js_name
-   #fig_id = "fig_" + base_js_name
-   #del_id =  base_js_name
-
+   detection_id = det['name'].replace("_", "").replace(".json", "")
+ 
    if(len(preview)==0 or clear_cache is True):
       # We need to generate the thumbs 
       preview = generate_preview(det) 
@@ -469,7 +462,7 @@ def get_html_detection(det,detection,clear_cache):
    path_to_vid = get_video(det['full_path'])       
 
    # Otherwise preview = preview (:)
-   res_html = '<div class="preview col-lg-3 col-md-3 select-to mb-3'
+   res_html = '<div id="chec_'+detection_id+'" class="preview col-lg-3 col-md-3 select-to mb-3'
    
    if(detection['red']==1):
       res_html += ' reduced">'
@@ -494,7 +487,7 @@ def get_html_detection(det,detection,clear_cache):
       details_html += '              <dt class="col-6">Ang. Velocity</dt>   <dd class="col-6">'+str("{0:.4f}".format(float(detection['ang_v'])))+'&deg;/s</dd>'
 
 
-   full_path_as_id = det['full_path'].replace('/','').replace('_','').replace('.','')
+    
 
    details_html += ' </dl>'   
 
@@ -504,8 +497,8 @@ def get_html_detection(det,detection,clear_cache):
    res_html += '  </a>'
    res_html += '  <div class="list-onl">'+ details_html + '</div>'
    res_html += '  <div class="list-onl sel-box"><div class="custom-control big custom-checkbox">'
-   res_html += '     <input type="checkbox" class="custom-control-input" id="'+full_path_as_id+'" name="'+full_path_as_id+'">'     
-   res_html += '     <label class="custom-control-label" for="'+full_path_as_id+'"></label>'
+   res_html += '     <input type="checkbox" class="custom-control-input" id="chec_'+detection_id+'" name="'+detection_id+'">'     
+   res_html += '     <label class="custom-control-label" for="chec_'+detection_id+'"></label>'
    res_html += '  </div></div>'
    res_html += '  <div class="d-flex justify-content-between">'
    res_html += '     <div class="pre-b gallery-only"><span class="mst">Cam #'+det['cam_id']+' - <b>'+det['hour']+':'+det['min']+'</b></span>'
