@@ -471,6 +471,8 @@ def get_html_detection(det,detection,clear_cache):
 
    details_html = '<dl class="row mb-0 def mt-1">'
 
+   details_html += '<span>Cam #'+det['cam_id']+' - <b>'+det['hour']+':'+det['min']+'</b></span>'
+
    if(detection['mag']!='unknown'):
       details_html += '              <dt class="col-6">Mag</dt>  <dd class="col-6">' + str(detection['mag']) + '</dd>'
    
@@ -489,7 +491,7 @@ def get_html_detection(det,detection,clear_cache):
    res_html += '     <img alt="" class="img-fluid ns lz" src="'+preview[0]+'">'
    res_html += '     <video class="show_on_hover" loop="true" autoplay="true" name="media" src="'+ det['full_path'].replace('.json','-SD.mp4')+'"><source type="video/mp4"></video>'
    res_html += '  </a>'
-   res_html += '  <div class="list-onl"><span>Cam #'+det['cam_id']+' - <b>'+det['hour']+':'+det['min']+'</b></span> '+ details_html + '</div>'
+   res_html += '  <div class="list-onl">'+ details_html + '</div>'
    res_html += '  <div class="list-onl sel-box"><div class="custom-control big custom-checkbox">'
    res_html += '     <input type="checkbox" class="custom-control-input" id="'+det['full_path']+'" name="'+det['full_path']+'">'     
    res_html += '     <label class="custom-control-label" for="'+det['full_path']+'"></label>'
