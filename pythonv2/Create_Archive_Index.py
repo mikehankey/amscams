@@ -7,6 +7,8 @@ from lib.FileIO import *
 
 # TEMP TEST
 d = load_json_file_NOT_WORKING('~/amscams/conf/as6.json')
+print(d)
+sys.exit(0)
 
 # Allows to update an index of detections in the archive
 # for a given year 
