@@ -244,7 +244,7 @@
 
  .gallery.list {
      
-        max-width: 750px; 
+        max-width: 850px; 
         -webkit-box-shadow: 0 1px 2px rgba(0,0,0,0.8);
         box-shadow: 0 1px 2px rgba(0,0,0,0.8);
         background: rgba(0,0,0,.2);
@@ -282,8 +282,8 @@
 
         .preview {
             -webkit-box-flex: 0;
-            max-width: 750px;
-            border-bottom: 1px solid rgba(255,255,255,0.3);
+            //max-width: 750px;
+            border-bottom: 1px solid rgba(255,255,255,0.1);
             padding: 0 0 1rem;
             margin-bottom: 1rem;
             position: relative;
@@ -292,6 +292,11 @@
             flex: 0 0 95%;
             margin: 0 auto 1rem;
             padding: 1rem;
+
+            margin: 0;
+            max-width: 850px;
+            width: 850px;
+            padding-left: 0;
 
             &.selected {
                 background: rgba(255,255,255,.1);
