@@ -485,6 +485,9 @@ def get_html_detection(det,detection,clear_cache):
    if(detection['ang_v']!='unknown'):
       details_html += '              <dt class="col-6">Ang. Velocity</dt>   <dd class="col-6">'+str("{0:.4f}".format(float(detection['ang_v'])))+'&deg;/s</dd>'
 
+
+   full_path_as_id = det['full_path'].replace('/','').replace('_','').replace('.','')
+
    details_html += ' </dl>'   
 
    res_html += '  <a class="mtt has_soh" href="webUI.py?cmd=reduce2&video_file='+det['full_path']+'" title="Detection Reduce page">'
@@ -493,8 +496,8 @@ def get_html_detection(det,detection,clear_cache):
    res_html += '  </a>'
    res_html += '  <div class="list-onl">'+ details_html + '</div>'
    res_html += '  <div class="list-onl sel-box"><div class="custom-control big custom-checkbox">'
-   res_html += '     <input type="checkbox" class="custom-control-input" id="'+det['full_path']+'" name="'+det['full_path']+'">'     
-   res_html += '     <label class="custom-control-label" for="'+det['full_path']+'"></label>'
+   res_html += '     <input type="checkbox" class="custom-control-input" id="'+full_path_as_id+'" name="'+full_path_as_id+'">'     
+   res_html += '     <label class="custom-control-label" for="'+full_path_as_id+'"></label>'
    res_html += '  </div></div>'
    res_html += '  <div class="d-flex justify-content-between">'
    res_html += '     <div class="pre-b gallery-only"><span class="mst">Cam #'+det['cam_id']+' - <b>'+det['hour']+':'+det['min']+'</b></span>'
