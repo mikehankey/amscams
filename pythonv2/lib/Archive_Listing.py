@@ -462,7 +462,7 @@ def get_html_detection(det,detection,clear_cache):
    path_to_vid = get_video(det['full_path'])       
 
    # Otherwise preview = preview (:)
-   res_html = '<div id="chec_'+detection_id+'" class="preview col-lg-3 col-md-3 select-to mb-3'
+   res_html = '<div id="'+detection_id+'" class="preview col-lg-3 col-md-3 select-to mb-3'
    
    if(detection['red']==1):
       res_html += ' reduced">'

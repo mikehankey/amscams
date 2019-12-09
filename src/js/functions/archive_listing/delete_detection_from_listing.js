@@ -9,6 +9,7 @@ $(function() {
    // Select one from checkbox
    $('.sel-box input[type=checkbox]').change(function() {
        var $t = $(this), f = $t.attr('id'), id = f.substr(5,f.length);
+       console.log("SELETECT ID " + id)
        if($t.is(':checked')) {
            $('#'+id).addClass('selected');
        } else {
