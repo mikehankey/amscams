@@ -468,33 +468,36 @@ def get_html_detection(det,detection,clear_cache):
    else:
       res_html += '">'
 
+
+   details_html = '<dl class="row mb-0 def mt-1">'
+
+   if(detection['mag']!='unknown'):
+      details_html += '              <dt class="col-6">Mag</dt>  <dd class="col-6">' + str(detection['mag']) + '</dd>'
+   
+   if(detection['dur']!='unknown'):
+      details_html += '              <dt class="col-6">Duration</dt>  	   <dd class="col-6">'+ str(detection['dur']) +'s</dd>'
+
+   if(detection['res_er']!='unknown'):
+      details_html += '              <dt class="col-6">Res. Error</dt>      <dd class="col-6">'+ str("{0:.4f}".format(float(detection['res_er'])))+'</dd>'
+   
+   if(detection['ang_v']!='unknown'):
+      details_html += '              <dt class="col-6">Ang. Velocity</dt>   <dd class="col-6">'+str("{0:.4f}".format(float(detection['ang_v'])))+'&deg;/s</dd>'
+
+   details_html += ' </dl>'   
+
    res_html += '  <a class="mtt has_soh" href="webUI.py?cmd=reduce2&video_file='+det['full_path']+'" title="Detection Reduce page">'
    res_html += '     <img alt="" class="img-fluid ns lz" src="'+preview[0]+'">'
    res_html += '     <video class="show_on_hover" loop="true" autoplay="true" name="media" src="'+ det['full_path'].replace('.json','-SD.mp4')+'"><source type="video/mp4"></video>'
    res_html += '  </a>'
-   res_html += '  <div class="list-onl"><span>Cam #'+det['cam_id']+' - <b>'+det['hour']+':'+det['min']+'</b></span></div>'
+   res_html += '  <div class="list-onl"><span>Cam #'+det['cam_id']+' - <b>'+det['hour']+':'+det['min']+'</b></span> '+ details_html + '</div>'
    res_html += '  <div class="list-onl sel-box"><div class="custom-control big custom-checkbox">'
    res_html += '     <input type="checkbox" class="custom-control-input" id="'+det['full_path']+'" name="'+det['full_path']+'">'     
    res_html += '     <label class="custom-control-label" for="'+det['full_path']+'"></label>'
    res_html += '  </div></div>'
    res_html += '  <div class="d-flex justify-content-between">'
    res_html += '     <div class="pre-b gallery-only"><span class="mst">Cam #'+det['cam_id']+' - <b>'+det['hour']+':'+det['min']+'</b></span>'
+   res_html += details_html
    
-   res_html += ' <dl class="row mb-0 def mt-1">'
-
-   if(detection['mag']!='unknown'):
-      res_html += '              <dt class="col-6">Mag</dt>             <dd class="col-6">' + str(detection['mag']) + '</dd>'
-   
-   if(detection['dur']!='unknown'):
-      res_html += '              <dt class="col-6">Duration</dt>  	   <dd class="col-6">'+ str(detection['dur']) +'s</dd>'
-
-   if(detection['res_er']!='unknown'):
-      res_html += '              <dt class="col-6">Res. Error</dt>      <dd class="col-6">'+ str("{0:.4f}".format(float(detection['res_er'])))+'</dd>'
-   
-   if(detection['ang_v']!='unknown'):
-      res_html += '              <dt class="col-6">Ang. Velocity</dt>   <dd class="col-6">'+str("{0:.4f}".format(float(detection['ang_v'])))+'&deg;/s</dd>'
-
-   res_html += ' </dl>'
    
    res_html += '</div>'
    res_html += '     <div class="btn-toolbar pr-0 pb-0"><div class="btn-group"><a class="vid_link_gal col btn btn-primary btn-sm" title="Play Video" href="./video_player.html?video='+path_to_vid+'"><i class="icon-play"></i></a>'
