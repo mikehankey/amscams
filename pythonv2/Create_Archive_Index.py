@@ -3,13 +3,6 @@ import sys
 from lib.Archive_Listing import *
 from lib.FileIO import *
 
-
-
-# TEMP TEST
-d = load_json_file_NOT_WORKING("/home/ams/amscams/conf/as6.json")
-print(d)
-sys.exit(0)
-
 # Allows to update an index of detections in the archive
 # for a given year 
 # or a given year & month
@@ -18,14 +11,8 @@ sys.exit(0)
 # Create_Archive_Index YEAR
 # Create_Archive_Index YEAR MONTH
 
-
-
-
-
-
 year = sys.argv[1]
  
-
 try:
    sys.argv[2]
    month = sys.argv[2]
