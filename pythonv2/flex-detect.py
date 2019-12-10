@@ -43,12 +43,8 @@ from lib.UtilLib import calc_dist,find_angle
 import lib.brightstardata as bsd
 from lib.DetectLib import eval_cnt, check_for_motion2
 
-
-from lib.Cleanup_Json_Conf import PATH_TO_CONF_JSON
-
-
-json_conf = load_json_file(PATH_TO_CONF_JSON)
-show = 0
+json_conf = load_json_file("../conf/as6.json")
+show = 1
 
 ARCHIVE_DIR = "/mnt/NAS/meteor_archive/"
 
@@ -2380,7 +2376,7 @@ def analyze_object(object, hd = 0, sd_multi = 1, final=0):
    else:
       dist_per_elp = 0
 
-   if elp > 5 and dist_per_elp < 1 or dist_per_elp < 1:
+   if elp > 5 and dist_per_elp < .1 or dist_per_elp < .11:
       moving = "not moving"
       meteor_yn = "no"
       obj_class = "star"
@@ -2493,9 +2489,9 @@ def analyze_object(object, hd = 0, sd_multi = 1, final=0):
    if (min_max_dist * deg_multi) < .3:
       meteor_yn = "no"
       bad_items.append("bad angular distance below .3.")
-   if (dist_per_elp * deg_multi) * 25 < 1.3:
+   if (dist_per_elp * deg_multi) * 25 < .9:
       meteor_yn = "no"
-      bad_items.append("bad angular velocity below 1")
+      bad_items.append("bad angular velocity below .9")
    ang_vel = (dist_per_elp * deg_multi) * 25
 
    if elp > 0:
@@ -2509,7 +2505,7 @@ def analyze_object(object, hd = 0, sd_multi = 1, final=0):
          meteor_yn = "no"
          obj_class = "plane"
          bad_items.append("gap test failed.")
-      if max_cm - elp < -10:
+      if max_cm - elp < -30:
          meteor_yn = "no"
          obj_class = "plane"
          bad_items.append("to many elp frames compared to cm.")
@@ -3200,7 +3196,7 @@ def flex_detect_old(video_file):
    station_id = get_station_id(video_file)
    hd_datetime, hd_cam, hd_date, hd_y, hd_m, hd_d, hd_h, hd_M, hd_s = convert_filename_to_date_cam(video_file)
    possible_cal_files = get_cal_params(video_file, station_id)
-   json_conf = load_json_conf(station_id)
+   #json_conf = load_json_conf(station_id)
    frames = load_video_frames(video_file, json_conf, 0, 0, [], 0)
    gray_frames = make_gray_frames(frames)
    detect_info = {}
@@ -3302,7 +3298,9 @@ def fast_check_events(sum_vals, max_vals, subframes):
         
          if max_val > 10:
             #cv2.putText(subframe, str(desc),  (10,10), cv2.FONT_HERSHEY_SIMPLEX, .3, (255, 255, 255), 1)
-            #cv2.circle(subframe,(mx,my), 10, (255,0,0), 1)
+            cv2.circle(subframe,(mx,my), 10, (255,0,0), 1)
+            cv2.imshow('pepe', subframe)
+            cv2.waitKey(0)
             event_info.append((sum_val, max_val, mx, my))
             event.append(i)
             cm = cm + 1
@@ -3368,10 +3366,10 @@ def fast_check_events(sum_vals, max_vals, subframes):
          pos_meteors[mc] = objects[object]
          mc = mc + 1
       else:
-         print("NON METEOR:", object, objects[object]['ofns'])
-         print("NON METEOR:", object, objects[object]['oxs'])
-         print("NON METEOR:", object, objects[object]['oys'])
-         print("NON METEOR:", object, objects[object]['report'])
+         print("NON METEOR FN:", object, objects[object]['ofns'])
+         print("NON METEOR XS:", object, objects[object]['oxs'])
+         print("NON METEOR YS:", object, objects[object]['oys'])
+         print("NON METEOR REPT:", object, objects[object]['report'])
 
    return(events, pos_meteors)
 
@@ -3521,7 +3519,7 @@ def quick_scan(video_file, old_meteor = 0):
    print("Ending detecting SD in clip.", len(all_motion_objects))
    for mo in all_motion_objects:
       mo = analyze_object_final(mo)
-      if mo['report']['meteor_yn'] == "Y":
+      if mo['report']['meteor_yn'] == "Y" or len(mo['ofns']) > 25:
          print("CONFIRMED OBJECTS:", mo)
          objects.append(mo)
 
@@ -3530,7 +3528,7 @@ def quick_scan(video_file, old_meteor = 0):
 
    elapsed_time = time.time() - start_time
    print("ELPASED TIME:", elapsed_time)
-
+   print("OBJECTS IN PLAY:", len(objects))
    # Find the meteor like objects 
    meteors = []
    non_meteors = []
@@ -3546,13 +3544,14 @@ def quick_scan(video_file, old_meteor = 0):
          print(obj['ofns'])
          meteors.append(obj)
       else:
+         print("NON METEOR:", obj)
          non_meteors.append(obj)
 
 
    if len(meteors) == 0:
       print("No meteors found." )
-      #for non in non_meteors:
-      #   print("NON:", non, non_meteors[non])
+      for non in non_meteors:
+         print("NON:", non )
       detect_file = video_file.replace(".mp4", "-detect.json")
  
       if rescan == 0:
@@ -3677,12 +3676,13 @@ def quick_scan(video_file, old_meteor = 0):
 
 def restack(file):
 
-   frames,color_frames,subframes,sum_vals,max_vals = load_frames_fast(file, json_conf, 0, 0, [], 0,[])
-   print("RESTACK: ", file, len(frames))
-   stack = stack_frames_fast(frames, 1)
-   stack_file = file.replace(".mp4", "-stacked.png")
-   print(stack.shape)
-   cv2.imwrite(stack_file, stack)
+   if cfe(file) == 1:
+      frames,color_frames,subframes,sum_vals,max_vals = load_frames_fast(file, json_conf, 0, 0, [], 0,[])
+      print("RESTACK: ", file, len(frames))
+      stack = stack_frames_fast(frames, 1)
+      stack_file = file.replace(".mp4", "-stacked.png")
+      print(stack.shape)
+      cv2.imwrite(stack_file, stack)
 
 def log_import_errors(video_file, message):
    fn = video_file.split("/")[-1]
@@ -4585,8 +4585,6 @@ def load_frames_fast(trim_file, json_conf, limit=0, mask=0,crop=(),color=0,resiz
    cap = cv2.VideoCapture(trim_file)
    masks = None
    last_frame = None
-
- 
 
    if "HD" in trim_file:
       masks = get_masks(cam, json_conf,1)
