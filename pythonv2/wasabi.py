@@ -12,7 +12,7 @@ json_conf = load_json_file("../conf/as6.json")
 
 def connect_wasabi():
    #sudo apt-get install build-essential libcurl4-openssl-dev libxml2-dev mime-support
-   #sudo apt-get install s3fs
+   #sudo apt-get install s3fs # This needs to be s3fs-fuse https://github.com/s3fs-fuse/s3fs-fuse/wiki/Installation-Notes
 
    # Setup credentials file /home/ams/amscams/conf/wasabi.txt
    # XXX:YYYYY
@@ -21,7 +21,7 @@ def connect_wasabi():
    #mkdir /mnt/wasabi
 
    #MOUNT COMMAND
-   cmd = "s3fs meteor-archive /mnt/wasabi -o passwd_file=/home/ams/wasabi_ams1.txt -o dbglevel=debug -o url=https://s3.wasabisys.com -o umask=0007,uid=1001,gid=1001"
+   cmd = "s3fs meteor-archive /mnt/wasabi -o passwd_file=/home/ams/amscams/conf/wasabi.txt -o dbglevel=debug -o url=https://s3.wasabisys.com -o umask=0007,uid=1000,gid=1000"
    print(cmd)
    os.system(cmd)
 
