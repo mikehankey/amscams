@@ -17,8 +17,7 @@ KEY="2e88-ec97-t36t-ec68"                                                       
 AMSIMAGE="/home/ams/amscams/dist/img/1280x720/AMS_UA.png"
 YOUTUBE_URL="rtmp://a.rtmp.youtube.com/live2/$KEY" 
 TEST = "GEMINIDS 2019 - Live from West Virginia"
-#-vf drawtext="text='GEMINIDES': fontcolor=white: fontsize=24: box=1: boxcolor=black@0.5:boxborderw=5: x=(w-text_w)/2: y=(h-text_h)/2" \
-
+ 
 ffmpeg \
       -ar 44100 -ac 2 -acodec pcm_s16le -f s16le -ac 2 -i /dev/zero -i "$SOURCE" -i "$AMSIMAGE" \
       -filter_complex "[1:v]scale=1280x720[scaled];\
