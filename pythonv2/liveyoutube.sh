@@ -23,9 +23,9 @@ AMS_IMAGE = "/home/ams/amscam/dist/img/ams_logo_vid_anim/1280x720/AMS30.png"
 ffmpeg \
     -ar 44100 -ac 2 -acodec pcm_s16le -f s16le -ac 2 -i /dev/zero  \
     -i "$SOURCE" -i "$AMS_IMAGE"  \
+     -vf scale=1280:720\
     -filter_complex "[0]yadif[m];[m][1]overlay=25:25,realtime" -af arealtime  \
     -deinterlace \
-    -vf scale=1280:720\
     -vcodec libx264 -pix_fmt yuv420p -preset $QUAL -r $FPS -g $(($FPS * 2)) -b:v $VBR \
     -acodec libmp3lame -ar 44100 -threads 6 -qscale 3 -b:a 712000 -bufsize 512k \
     -f flv "$YOUTUBE_URL"
