@@ -232,7 +232,7 @@ def manual_reduction_meteor_pos_selector(form):
    y_start = float(form.getvalue('y'))
    w = float(form.getvalue('w'))
    h = float(form.getvalue('h'))
-   f = float(form.getvalue('f'))   # Number of the first frame
+   f = float(form.getvalue('f'))   # Number of the first frame 
    json_file   = form.getvalue('json')
 
    # Build the page based on template  
@@ -251,10 +251,9 @@ def manual_reduction_meteor_pos_selector(form):
    # We remove all the frames from cropped_frames that are before f
    # and create the HTML view for the top panel
    for i,cropped_frame in enumerate(cropped_frames):
-      x = i + 1
-      if(x>=int(f)):
+      if(i>=int(f)):
          real_cropped_frames.append(cropped_frame)
-         real_cropped_frames_str += "<a class='select_frame select_frame_btn' data-rel='"+str(x)+"'><span>#"+str(x)+"<i class='pos'></i></span><img src='"+cropped_frame+"?c="+str(random.randint(1,1000001))+"'/></a>"
+         real_cropped_frames_str += "<a class='select_frame select_frame_btn' data-rel='"+str(i)+"'><span>#"+str(i)+"<i class='pos'></i></span><img src='"+cropped_frame+"?c="+str(random.randint(1,1000001))+"'/></a>"
 
    
    # Add the thumbs to navigator
