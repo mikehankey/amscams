@@ -52,9 +52,9 @@ def setup_wasabi_dirs():
    print("SETUP")
    ams_id = json_conf['site']['ams_id'].upper()
    WASABI_DIR = WASABI_ROOT + ams_id + "/" 
-   WASABI_CAL = WASABI_DIR + "cal/" 
-   WASABI_METEORS = WASABI_DIR + "meteors/" 
-   WASABI_CONF = WASABI_DIR + "conf/" 
+   WASABI_CAL = WASABI_DIR + "CAL/" 
+   WASABI_METEORS = WASABI_DIR + "METEOR/" 
+   WASABI_CONF = WASABI_DIR + "CONF/" 
    
 
 
