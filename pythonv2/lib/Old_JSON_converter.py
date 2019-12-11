@@ -347,6 +347,7 @@ def move_old_detection_to_archive(json_file_path, sd_video_file_path, hd_video_f
       sync_res = sync_hd_frames(hd_video_file_path,sd_video_file_path,json_file_path.replace('.json','-reduced.json'))
       if(sync_res == False):
          print("HD & SD video not synchronized!")
+         sys.exit(0)
 
    new_json_file['calib']['org_file'] = param_files[0][0]
  
