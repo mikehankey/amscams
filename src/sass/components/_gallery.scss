@@ -300,7 +300,7 @@
             -webkit-box-flex: 0;
             //max-width: 750px;
             border-bottom: 1px solid rgba(255,255,255,0.1);
-            padding: 0 0 1rem;
+       
             margin-bottom: 1rem;
             position: relative;
             max-height: calc(230px + 2.7rem);
@@ -311,9 +311,7 @@
 
             margin: 0;
             max-width: 850px;
-            width: 835px;
-            padding-left: 0;
-
+            width: 835px; 
             &.selected {
                 background: rgba(255,255,255,.1);
             }

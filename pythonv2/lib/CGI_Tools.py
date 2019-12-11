@@ -2,7 +2,7 @@ import sys
 
 # CGI redirect
 def redirect_to(redirectURL, page_type="proper"):
-   print( '<html  style="width:100vw; height:100vh; background:#061329">')
+   print( '<html style="width:100vw; height:100vh; background:#061329; overflow:hidden">')
    print( '  <head>')
    print( '    <meta http-equiv="refresh" content="0;url='+redirectURL+'" />' )
    print( '    <title>You are going to be redirected</title><link rel="stylesheet" href="./dist/css/main.css"/>')

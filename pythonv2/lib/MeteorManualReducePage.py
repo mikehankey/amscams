@@ -22,8 +22,7 @@ MANUAL_RED_PAGE_TEMPLATE_STEP0 = "/home/ams/amscams/pythonv2/templates/manual_re
 MANUAL_RED_PAGE_TEMPLATE_STEP1 = "/home/ams/amscams/pythonv2/templates/manual_reduction_template_step1.html"
 MANUAL_RED_PAGE_TEMPLATE_STEP2 = "/home/ams/amscams/pythonv2/templates/manual_reduction_template_step2.html"
 MANUAL_RED_PAGE_TEMPLATE_STEP3 = "/home/ams/amscams/pythonv2/templates/manual_reduction_template_step3.html"
-  
- 
+   
 
 # (new) First step of Manual Reduction: select proper stack (HD | SD)
 def manual_reduction(form):
@@ -188,12 +187,33 @@ def manual_reduction_cropper(form):
    template = template.replace("{W}", str(w))   
    template = template.replace("{H}", str(h))        
    template = template.replace("{JSON}",str(json_file))
- 
+   
+   # Do we have the values to sync SD & HD?
+   json_data = load_json_file(json_file)
+
+   try:
+      hd_ind = int(json_data['sync']['hd_ind'])
+      sd_ind = int(json_data['sync']['sd_ind'])
+   except:
+      # TODO: test when it fails...
+      hd_ind = 0
+      sd_ind = 0
+
+   # Test the diff to have the equivalent of SD#0
+   sd_ind_0 = sd_ind - hd_ind
+
    # Add Thumbs to template
    thumbs_to_display = ''
    for i,img in enumerate(thumbs):
-      x = i + 1
-      thumbs_to_display +=  '<a class="frame_selector lz" data-rel="'+str(x)+'"><span>#'+str(x)+'</span><img src="'+img+'?c='+str(random.randint(1,1000001))+'"/></a>'
+      if(sd_ind_0>=0):
+         thumbs_to_display +=  '<a class="frame_selector lz" data-rel="'+str(i)+'"><span>HD#'+str(i)+'/ SD#'+str(sd_ind_0)+'</span><img src="'+img+'?c='+str(random.randint(1,1000001))+'"/></a>'
+      
+      # We dont display the frames that arent also in the SD version
+      #else:
+      #   thumbs_to_display +=  '<a class="frame_selector lz" data-rel="'+str(i)+'"><span>HD#'+str(hd_ind_0)+'</span><img src="'+img+'?c='+str(random.randint(1,1000001))+'"/></a>'
+
+      sd_ind_0 += 1
+
 
    template = template.replace("{CROPPED_THUMBS_GALLERY}",  thumbs_to_display)      
 
@@ -212,7 +232,7 @@ def manual_reduction_meteor_pos_selector(form):
    y_start = float(form.getvalue('y'))
    w = float(form.getvalue('w'))
    h = float(form.getvalue('h'))
-   f = float(form.getvalue('f'))   # Number of the first frame
+   f = float(form.getvalue('f'))   # Number of the first frame 
    json_file   = form.getvalue('json')
 
    # Build the page based on template  
@@ -231,12 +251,10 @@ def manual_reduction_meteor_pos_selector(form):
    # We remove all the frames from cropped_frames that are before f
    # and create the HTML view for the top panel
    for i,cropped_frame in enumerate(cropped_frames):
-      x = i + 1
-      if(x>=int(f)):
+      if(i>=int(f)):
          real_cropped_frames.append(cropped_frame)
-         real_cropped_frames_str += "<a class='select_frame select_frame_btn' data-rel='"+str(x)+"'><span>#"+str(x)+"<i class='pos'></i></span><img src='"+cropped_frame+"?c="+str(random.randint(1,1000001))+"'/></a>"
-
-   
+         real_cropped_frames_str += "<a class='select_frame select_frame_btn' data-rel='"+str(i)+"'><span>HD#"+str(i)+"<i class='pos'></i></span><img src='"+cropped_frame+"?c="+str(random.randint(1,1000001))+"'/></a>"
+ 
    # Add the thumbs to navigator
    template = template.replace("{CROPPED_FRAMES_SELECTOR}",  real_cropped_frames_str)     
    
@@ -252,20 +270,6 @@ def manual_reduction_meteor_pos_selector(form):
    print(template)
 
 
-# Fourth Step : update of the JSON (THIS IS FOR THE OLD approach)
-def manual_reduction_create_final_json2(form):
-   video_file   = form.getvalue('video_file')  
-   frames_info  = form.getvalue('frames')  
-
-   # We parse the frames_info
-   frames_info = json.loads(frames_info)
-
-   print("HERE ARE THE FRAMES INFO TO ADD:<br/>")
-   print(json.dumps(frames_info))
-   sys.exit(0)
-
-
-
 # Fourth Step : creation of the new JSON (THIS IS FOR THE /meteor_archive/ approach)
 def manual_reduction_create_final_json(form):
    video_file   = form.getvalue('video_file')  
@@ -275,16 +279,16 @@ def manual_reduction_create_final_json(form):
    # We parse the frames_info
    frames_info = json.loads(frames_info)
 
-   # Get JSON
+   # Get JSON of the initial detection
    meteor_red_file = json_file
    analysed_name = old_name_analyser(meteor_red_file)
 
-   if cfe(meteor_red_file) == 1:
+   # We parse the JSON
+   mr = load_json_file(meteor_red_file) 
 
-      # We parse the JSON
-      mr = load_json_file(meteor_red_file) 
-         
-      # We remove all the current frames if they exist
+   if mr != False:
+
+      # We remove all the current frames fro the JSON if they exist
       if('frames' in mr):
          del mr['frames']
          
@@ -294,23 +298,34 @@ def manual_reduction_create_final_json(form):
       # based on the name of the file 
       # (with trim!!)  
       name_analysed = old_name_analyser(video_file)
- 
+
+      # We get the sync info  
+      try:
+         hd_ind = int(mr['sync']['hd_ind'])
+         sd_ind = int(mr['sync']['sd_ind'])
+      except:
+         # TODO: test when it fails...
+         hd_ind = 0
+         sd_ind = 0
+
+      # Test the diff to have the equivalent of SD#0
+      sd_ind_0 = sd_ind - hd_ind
+
       # We create the new frames
       for frame in frames_info:
  
          # Get the Frame time (as a string)
          dt = get_frame_time(mr,frame['fn'],analysed_name)
- 
- 
+  
          # Get the new RA/Dec 
          new_x, new_y, RA, Dec, az, el =  XYtoRADec(int(frame['x']),int(frame['y']),analysed_name,mr)
  
          # We need to create the new entry
          new_frame = {
+            'fn': int(frame['fn'])-int(sd_ind_0),
             'dt': dt,
             'x': int(frame['x']),
             'y': int(frame['y']),
-            'fn': int(frame['fn']),
             'az': az,
             'el': el,
             'ra': RA,
@@ -330,10 +345,15 @@ def manual_reduction_create_final_json(form):
       dt_end   = datetime.strptime(mr['frames'][len(mr['frames'])-1]['dt'] , "%Y-%m-%d %H:%M:%S.%f")
       mr['info']['dur'] = timedelta.total_seconds( dt_end - dt_start )  
 
+
+
+      print(mr)
+      sys.exit(0)
+
       # We update the JSON with the new frames
-      save_json_file(meteor_red_file, mr) 
+      #save_json_file(meteor_red_file, mr) 
  
-      redirect_to("/pycgi/webUI.py?cmd=reduce2&video_file=" + video_file + "&clear_cache=1&c=" + str(random.randint(0,100000000)), "reduction")
+      #redirect_to("/pycgi/webUI.py?cmd=reduce2&video_file=" + video_file + "&clear_cache=1&c=" + str(random.randint(0,100000000)), "reduction")
  
    else: 
       print_error("<b>JSON File not found: " + meteor_red_file + "</b>")
