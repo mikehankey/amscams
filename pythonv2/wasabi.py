@@ -10,9 +10,31 @@ from lib.FileIO import load_json_file, save_json_file, cfe
 WASABI_ROOT = "/mnt/wasabi/"
 json_conf = load_json_file("../conf/as6.json")
 
+def install():
+   cmd = """
+   # THESE ARE THE COMMANDS:
+   sudo mkdir /mnt/wasabi
+   sudo chown ams:ams /mnt/wasabi/
+   chmod 777 /mnt/wasabi/
+   sudo apt-get install build-essential git libfuse-dev libcurl4-openssl-dev libxml2-dev mime-support automake libtool
+   sudo apt-get install pkg-config libssl-dev
+   cd ../../
+   git clone https://github.com/s3fs-fuse/s3fs-fuse
+   cd s3fs-fuse/
+   ./autogen.sh
+   ./configure --prefix=/usr --with-openssl
+   make
+   sudo make install
+   cd ../amscams
+   cd conf
+   ADD KEY TO CONF FILE
+   vi wasabi.txt
+   chmod 600 wasabi.txt 
+   """
+
 def connect_wasabi():
    #sudo apt-get install build-essential libcurl4-openssl-dev libxml2-dev mime-support
-   #sudo apt-get install s3fs
+   #sudo apt-get install s3fs # This needs to be s3fs-fuse https://github.com/s3fs-fuse/s3fs-fuse/wiki/Installation-Notes
 
    # Setup credentials file /home/ams/amscams/conf/wasabi.txt
    # XXX:YYYYY
@@ -21,7 +43,7 @@ def connect_wasabi():
    #mkdir /mnt/wasabi
 
    #MOUNT COMMAND
-   cmd = "s3fs meteor-archive /mnt/wasabi -o passwd_file=/home/ams/wasabi_ams1.txt -o dbglevel=debug -o url=https://s3.wasabisys.com -o umask=0007,uid=1001,gid=1001"
+   cmd = "s3fs meteor-archive /mnt/wasabi -o passwd_file=/home/ams/amscams/conf/wasabi.txt -o dbglevel=debug -o url=https://s3.wasabisys.com -o umask=0007,uid=1000,gid=1000"
    print(cmd)
    os.system(cmd)
 
@@ -30,9 +52,9 @@ def setup_wasabi_dirs():
    print("SETUP")
    ams_id = json_conf['site']['ams_id'].upper()
    WASABI_DIR = WASABI_ROOT + ams_id + "/" 
-   WASABI_CAL = WASABI_DIR + "cal/" 
-   WASABI_METEORS = WASABI_DIR + "meteors/" 
-   WASABI_CONF = WASABI_DIR + "conf/" 
+   WASABI_CAL = WASABI_DIR + "CAL/" 
+   WASABI_METEORS = WASABI_DIR + "METEOR/" 
+   WASABI_CONF = WASABI_DIR + "CONF/" 
    
 
 
