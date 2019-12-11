@@ -311,6 +311,11 @@ def manual_reduction_create_final_json(form):
       # Test the diff to have the equivalent of SD#0
       sd_ind_0 = sd_ind - hd_ind
 
+
+      print("SD IND " + str(sd_ind) + "<br/>")
+      print("HD IND " + str(sd_ind) + "<br/>")
+      print("sd_ind_0 " + str(sd_ind_0) + "<br/>")
+
       # We create the new frames
       for frame in frames_info:
  
