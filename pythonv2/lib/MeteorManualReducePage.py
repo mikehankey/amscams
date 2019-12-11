@@ -189,7 +189,7 @@ def manual_reduction_cropper(form):
    template = template.replace("{JSON}",str(json_file))
    
    # Do we have the values to sync SD & HD?
-   json_data = load_json_file(json)
+   json_data = load_json_file(json_file)
 
    try:
       hd_ind = int(json_data['sync']['hd_ind'])
