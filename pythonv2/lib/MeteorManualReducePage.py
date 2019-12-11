@@ -206,9 +206,11 @@ def manual_reduction_cropper(form):
    thumbs_to_display = ''
    for i,img in enumerate(thumbs):
       if(hd_ind_0>=0):
-         thumbs_to_display +=  '<a class="frame_selector lz" data-rel="'+str(i)+'">++<span>SD#'+str(i)+'/ HD#'+str(hd_ind_0)+'</span><img src="'+img+'?c='+str(random.randint(1,1000001))+'"/></a>'
-      else:
-         thumbs_to_display +=  '<a class="frame_selector lz" data-rel="'+str(i)+'"><span>HD#'+str(hd_ind_0)+'</span><img src="'+img+'?c='+str(random.randint(1,1000001))+'"/></a>'
+         thumbs_to_display +=  '<a class="frame_selector lz" data-rel="'+str(i)+'"><span>SD#'+str(i)+'/ HD#'+str(hd_ind_0)+'</span><img src="'+img+'?c='+str(random.randint(1,1000001))+'"/></a>'
+      
+      # We dont display the frames that arent also in the SD version
+      #else:
+      #   thumbs_to_display +=  '<a class="frame_selector lz" data-rel="'+str(i)+'"><span>HD#'+str(hd_ind_0)+'</span><img src="'+img+'?c='+str(random.randint(1,1000001))+'"/></a>'
 
       hd_ind_0 += 1
 
