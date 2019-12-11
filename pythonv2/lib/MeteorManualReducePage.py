@@ -283,8 +283,8 @@ def manual_reduction_create_final_json(form):
    meteor_red_file = json_file
    analysed_name = old_name_analyser(meteor_red_file)
 
-    # We parse the JSON
-    mr = load_json_file(meteor_red_file) 
+   # We parse the JSON
+   mr = load_json_file(meteor_red_file) 
 
    if mr != False:
 
