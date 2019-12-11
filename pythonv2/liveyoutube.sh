@@ -5,9 +5,9 @@
 
 # Configurer youtube avec une résolution 720p. La vidéo n'est pas scalée.
 
-VBR="2000k"                               # Bitrate de la vidéo en sortie
+VBR="1000k"                               # Bitrate de la vidéo en sortie
 FPS="20"                                  # FPS de la vidéo en sortie
-QUAL="fast"                               # Preset de qualité FFMPEG
+QUAL="MEDIUM"                               # Preset de qualité FFMPEG
  
 
 
@@ -18,9 +18,7 @@ KEY="2e88-ec97-t36t-ec68"                                                       
 AMSIMAGE="/home/ams/amscams/dist/img/ams_logo_vid_anim/1280x720/AMS30.png"
 YOUTUBE_URL="rtmp://a.rtmp.youtube.com/live2/$KEY" 
 #-vf drawtext="text='GEMINIDES': fontcolor=white: fontsize=24: box=1: boxcolor=black@0.5:boxborderw=5: x=(w-text_w)/2: y=(h-text_h)/2" \
-
-
-
+ 
 
 ffmpeg \
       -ar 44100 -ac 2 -acodec pcm_s16le -f s16le -ac 2 -i /dev/zero -i "$SOURCE" -i "$AMSIMAGE" \
