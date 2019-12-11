@@ -24,7 +24,7 @@ YOUTUBE_URL="rtmp://a.rtmp.youtube.com/live2/$KEY"
 
 ffmpeg \
       -ar 44100 -ac 2 -acodec pcm_s16le -f s16le -ac 2 -i /dev/zero -i "$SOURCE" -i "$AMSIMAGE" \
-      -filter_complex "[1:v]scale=1280x720[scaled];[scaled]yadif[m];[m][2]overlay=25:25,realtime" \
+      -filter_complex "[1:v]scale=1280x720[scaled];[scaled]yadif[m];[m][2]overlay=25:25" \
       -vcodec libx264 -pix_fmt yuv420p -preset $QUAL -r $FPS -g $(($FPS * 2)) -b:v $VBR \
       -acodec libmp3lame -ar 44100 -threads 6 -qscale 3 -b:a 712000 -bufsize 512k \
       -f flv "$YOUTUBE_URL"
