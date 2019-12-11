@@ -199,6 +199,9 @@ def manual_reduction_cropper(form):
       hd_ind = 0
       sd_ind = 0
    
+
+   print("HD IND " +  str(hd_ind) + "<br/>")
+   print("SD IND " +  str(sd_ind) + "<br/>")
    sd_ind_0 = sd_ind - hd_ind
 
    # Add Thumbs to template
