@@ -16,14 +16,14 @@ QUAL="fast"                               # Preset de qualité FFMPEG
 SOURCE="rtsp://192.168.76.72/user=admin&password=&channel=1&stream=0.sdp"              # Source UDP (voir les annonces SAP)
 KEY="2e88-ec97-t36t-ec68"                                     # Clé à récupérer sur l'event youtube
 YOUTUBE_URL="rtmp://a.rtmp.youtube.com/live2/$KEY" 
-AMS_IMAGE = "/home/ams/amscams/dist/img/ams_logo_vid_anim/1280x720/AMS30.png"
+AMSIMAGE = "/home/ams/amscams/dist/img/ams_logo_vid_anim/1280x720/AMS30.png"
 #-vf drawtext="text='GEMINIDES': fontcolor=white: fontsize=24: box=1: boxcolor=black@0.5:boxborderw=5: x=(w-text_w)/2: y=(h-text_h)/2" \
 
 
 
 
 echo ffmpeg \
-      -ar 44100 -ac 2 -acodec pcm_s16le -f s16le -ac 2 -i /dev/zero -i "$SOURCE" -i "$AMS_IMAGE"\
+      -ar 44100 -ac 2 -acodec pcm_s16le -f s16le -ac 2 -i /dev/zero -i "$SOURCE" -i "$AMSIMAGE"\
       -filter_complex "[1:v]scale=1280x720[scaled];[scaled]yadif[m];[m][1]overlay=25:25,realtime" \
       -af arealtime  \
       -deinterlace \
