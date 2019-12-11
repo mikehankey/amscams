@@ -199,20 +199,20 @@ def manual_reduction_cropper(form):
       hd_ind = 0
       sd_ind = 0
 
-   # Test the diff 
-   hd_ind_0 = sd_ind - hd_ind
+   # Test the diff to have the equivalent of SD#0
+   sd_ind_0 = sd_ind - hd_ind
 
    # Add Thumbs to template
    thumbs_to_display = ''
    for i,img in enumerate(thumbs):
-      if(hd_ind_0>=0):
-         thumbs_to_display +=  '<a class="frame_selector lz" data-rel="'+str(i)+'"><span>SD#'+str(i)+'/ HD#'+str(hd_ind_0)+'</span><img src="'+img+'?c='+str(random.randint(1,1000001))+'"/></a>'
+      if(sd_ind_0>=0):
+         thumbs_to_display +=  '<a class="frame_selector lz" data-rel="'+str(i)+'"><span>HD#'+str(i)+'/ SD#'+str(sd_ind_0)+'</span><img src="'+img+'?c='+str(random.randint(1,1000001))+'"/></a>'
       
       # We dont display the frames that arent also in the SD version
       #else:
       #   thumbs_to_display +=  '<a class="frame_selector lz" data-rel="'+str(i)+'"><span>HD#'+str(hd_ind_0)+'</span><img src="'+img+'?c='+str(random.randint(1,1000001))+'"/></a>'
 
-      hd_ind_0 += 1
+      sd_ind_0 += 1
 
 
    template = template.replace("{CROPPED_THUMBS_GALLERY}",  thumbs_to_display)      
