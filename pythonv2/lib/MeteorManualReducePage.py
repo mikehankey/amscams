@@ -22,8 +22,7 @@ MANUAL_RED_PAGE_TEMPLATE_STEP0 = "/home/ams/amscams/pythonv2/templates/manual_re
 MANUAL_RED_PAGE_TEMPLATE_STEP1 = "/home/ams/amscams/pythonv2/templates/manual_reduction_template_step1.html"
 MANUAL_RED_PAGE_TEMPLATE_STEP2 = "/home/ams/amscams/pythonv2/templates/manual_reduction_template_step2.html"
 MANUAL_RED_PAGE_TEMPLATE_STEP3 = "/home/ams/amscams/pythonv2/templates/manual_reduction_template_step3.html"
-  
- 
+   
 
 # (new) First step of Manual Reduction: select proper stack (HD | SD)
 def manual_reduction(form):
@@ -188,12 +187,26 @@ def manual_reduction_cropper(form):
    template = template.replace("{W}", str(w))   
    template = template.replace("{H}", str(h))        
    template = template.replace("{JSON}",str(json_file))
- 
+   
+   # Do we have the values to sync SD & HD?
+   json_data = load_json_file(json)
+
+   try:
+      hd_ind = int(json_data['sync']['hd_ind'])
+      sd_ind = int(json_data['sync']['sd_ind'])
+   except:
+      # TODO: test when it fails...
+      hd_ind = 0
+      sd_ind = 0
+   
+   hd_ind_0 = sd_ind - hd_ind
+
    # Add Thumbs to template
    thumbs_to_display = ''
    for i,img in enumerate(thumbs):
-      x = i + 1
-      thumbs_to_display +=  '<a class="frame_selector lz" data-rel="'+str(x)+'"><span>#'+str(x)+'</span><img src="'+img+'?c='+str(random.randint(1,1000001))+'"/></a>'
+      thumbs_to_display +=  '<a class="frame_selector lz" data-rel="'+str(i)+'"><span>#'+str(i)+'/ HD#'+str(hd_ind_0)+'</span><img src="'+img+'?c='+str(random.randint(1,1000001))+'"/></a>'
+      hd_ind_0 += 1
+
 
    template = template.replace("{CROPPED_THUMBS_GALLERY}",  thumbs_to_display)      
 
