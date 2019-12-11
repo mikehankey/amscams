@@ -253,9 +253,8 @@ def manual_reduction_meteor_pos_selector(form):
    for i,cropped_frame in enumerate(cropped_frames):
       if(i>=int(f)):
          real_cropped_frames.append(cropped_frame)
-         real_cropped_frames_str += "<a class='select_frame select_frame_btn' data-rel='"+str(i)+"'><span>#"+str(i)+"<i class='pos'></i></span><img src='"+cropped_frame+"?c="+str(random.randint(1,1000001))+"'/></a>"
-
-   
+         real_cropped_frames_str += "<a class='select_frame select_frame_btn' data-rel='"+str(i)+"'><span>HD#"+str(i)+"<i class='pos'></i></span><img src='"+cropped_frame+"?c="+str(random.randint(1,1000001))+"'/></a>"
+ 
    # Add the thumbs to navigator
    template = template.replace("{CROPPED_FRAMES_SELECTOR}",  real_cropped_frames_str)     
    
