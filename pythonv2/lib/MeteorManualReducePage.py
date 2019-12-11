@@ -200,17 +200,17 @@ def manual_reduction_cropper(form):
       sd_ind = 0
 
    # Test the diff 
-   sd_ind_0 = sd_ind - hd_ind
+   hd_ind_0 = sd_ind - hd_ind
 
    # Add Thumbs to template
    thumbs_to_display = ''
    for i,img in enumerate(thumbs):
-      if(sd_ind_0>=0):
-         thumbs_to_display +=  '<a class="frame_selector lz" data-rel="'+str(i)+'"><span>SD#'+str(i)+'/ HD#'+str(sd_ind_0)+'</span><img src="'+img+'?c='+str(random.randint(1,1000001))+'"/></a>'
+      if(hd_ind_0>=0):
+         thumbs_to_display +=  '<a class="frame_selector lz" data-rel="'+str(i)+'"><span>SD#'+str(i)+'/ HD#'+str(hd_ind_0)+'</span><img src="'+img+'?c='+str(random.randint(1,1000001))+'"/></a>'
       else:
-         thumbs_to_display +=  '<a class="frame_selector lz" data-rel="'+str(i)+'"><span>HD#'+str(sd_ind_0)+'</span><img src="'+img+'?c='+str(random.randint(1,1000001))+'"/></a>'
+         thumbs_to_display +=  '<a class="frame_selector lz" data-rel="'+str(i)+'"><span>HD#'+str(hd_ind_0)+'</span><img src="'+img+'?c='+str(random.randint(1,1000001))+'"/></a>'
 
-      sd_ind_0 += 1
+      hd_ind_0 += 1
 
 
    template = template.replace("{CROPPED_THUMBS_GALLERY}",  thumbs_to_display)      
