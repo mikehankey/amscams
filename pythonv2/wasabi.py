@@ -21,7 +21,7 @@ def connect_wasabi():
    #mkdir /mnt/wasabi
 
    #MOUNT COMMAND
-   cmd = "s3fs meteor-archive /mnt/wasabi -o passwd_file=/home/ams/amscams/conf/wasabi.txt -o dbglevel=debug -o url=https://s3.wasabisys.com -o umask=0007,uid=1000,gid=1000"
+   cmd = "s3fs meteor-archive /mnt/wasabi -o passwd_file=/home/ams/amscams/conf/wasabi.txt -o dbglevel=debug -o url=https://s3.wasabisys.com -o umask=0007,uid=$UID,gid=$GID"
    print(cmd)
    os.system(cmd)
 
