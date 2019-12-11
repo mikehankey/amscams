@@ -322,7 +322,7 @@ def manual_reduction_create_final_json(form):
  
          # We need to create the new entry
          new_frame = {
-            'fn': int(frame['fn'])-int(sd_ind_0),
+            'fn': int(sd_ind_0)-int(frame['fn']),
             'dt': dt,
             'x': int(frame['x']),
             'y': int(frame['y']),
