@@ -15,7 +15,7 @@ QUAL="fast"                               # Preset de qualité FFMPEG
 #YOUTUBE_URL="rtmps://live-api-s.facebook.com:443/rtmp/10157538776313530?s_bl=1&s_ps=1&s_sml=0&s_sw=0&s_vt=api-s&a=AbxaYxpWnYB_oXzm"
 SOURCE="rtsp://192.168.76.72/user=admin&password=&channel=1&stream=0.sdp"              # Source UDP (voir les annonces SAP)
 KEY="2e88-ec97-t36t-ec68"                                     # Clé à récupérer sur l'event youtube
-YOUTUBE_URL="rtmp://a.rtmp.youtube.com/live2" + KEY 
+YOUTUBE_URL="rtmp://a.rtmp.youtube.com/live2/" + KEY 
 
 ffmpeg \
     -ar 44100 -ac 2 -acodec pcm_s16le -f s16le -ac 2 -i /dev/zero  \
