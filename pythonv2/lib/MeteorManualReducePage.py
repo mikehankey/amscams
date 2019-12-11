@@ -300,7 +300,6 @@ def manual_reduction_create_final_json(form):
       name_analysed = old_name_analyser(video_file)
 
       # We get the sync info  
-
       try:
          hd_ind = int(mr['sync']['hd_ind'])
          sd_ind = int(mr['sync']['sd_ind'])
@@ -323,7 +322,7 @@ def manual_reduction_create_final_json(form):
  
          # We need to create the new entry
          new_frame = {
-            'fn': int(frame['fn'])-sd_ind_0,
+            'fn': int(frame['fn'])-int(sd_ind_0),
             'dt': dt,
             'x': int(frame['x']),
             'y': int(frame['y']),
