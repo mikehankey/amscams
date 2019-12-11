@@ -349,16 +349,11 @@ def manual_reduction_create_final_json(form):
       dt_start = datetime.strptime(mr['frames'][0]['dt'], "%Y-%m-%d %H:%M:%S.%f")
       dt_end   = datetime.strptime(mr['frames'][len(mr['frames'])-1]['dt'] , "%Y-%m-%d %H:%M:%S.%f")
       mr['info']['dur'] = timedelta.total_seconds( dt_end - dt_start )  
-
-
-
-      print(mr)
-      sys.exit(0)
-
-      # We update the JSON with the new frames
-      #save_json_file(meteor_red_file, mr) 
  
-      #redirect_to("/pycgi/webUI.py?cmd=reduce2&video_file=" + video_file + "&clear_cache=1&c=" + str(random.randint(0,100000000)), "reduction")
+      # We update the JSON with the new frames
+      save_json_file(meteor_red_file, mr) 
+ 
+      redirect_to("/pycgi/webUI.py?cmd=reduce2&video_file=" + video_file + "&clear_cache=1&c=" + str(random.randint(0,100000000)), "reduction")
  
    else: 
       print_error("<b>JSON File not found: " + meteor_red_file + "</b>")
