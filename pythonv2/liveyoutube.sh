@@ -22,8 +22,8 @@ AMS_IMAGE = "/home/ams/amscams/dist/img/ams_logo_vid_anim/1280x720/AMS30.png"
 
 
 
-ffmpeg \
-      -ar 44100 -ac 2 -acodec pcm_s16le -f s16le -ac 2 -i /dev/zero -i "$SOURCE"   -i "$AMS_IMAGE"\
+echo ffmpeg \
+      -ar 44100 -ac 2 -acodec pcm_s16le -f s16le -ac 2 -i /dev/zero -i "$SOURCE" -i "$AMS_IMAGE"\
       -filter_complex "[1:v]scale=1280x720[scaled];[scaled]yadif[m];[m][1]overlay=25:25,realtime" \
       -af arealtime  \
       -deinterlace \
