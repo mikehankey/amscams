@@ -313,7 +313,7 @@ def manual_reduction_create_final_json(form):
 
 
       print("SD IND " + str(sd_ind) + "<br/>")
-      print("HD IND " + str(sd_ind) + "<br/>")
+      print("HD IND " + str(hd_ind) + "<br/>")
       print("sd_ind_0 " + str(sd_ind_0) + "<br/>")
 
       # We create the new frames
