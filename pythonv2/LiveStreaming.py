@@ -3,7 +3,7 @@ import os
 # Setup a live streaming on Youtube
 VBR="2500k"                               
 FPS="25"                              
-QUAL="fast"  
+QUAL="medium"  
  
 # CAM IP
 CAM_IP= "192.168.76.71"
@@ -29,7 +29,7 @@ cmd = 'ffmpeg \
       [scaled]drawtext=:text=\'' + TEXT +'\':fontfile=\'/usr/share/fonts/truetype/dejavu/DejaVuSans-Bold.ttf\':fontcolor=white@0.45:fontsize=14:x=20:y=20[texted]; \
       [texted]yadif[m];[m][2]overlay=25:25" \
       -vcodec libx264 -pix_fmt yuv420p -preset '+QUAL+' -r '+FPS+' -g $(('+FPS+' * 2)) -b:v '+VBR+' \
-      -acodec libmp3lame -ar 44100 -ac 2 -crf:v 3 -b:a 712000 -bufsize 256k -maxrate ' + VBR +'  \
+      -acodec libmp3lame -ar 100 -ac 2 -crf:v 3 -b:a 712000 -bufsize 256k -maxrate ' + VBR +'  \
       -f flv "'+YOUTUBE_URL+'"'
 
 
