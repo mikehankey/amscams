@@ -29,7 +29,7 @@ cmd = 'ffmpeg \
       [scaled]drawtext=:text=\'' + TEXT +'\':fontfile=\'/usr/share/fonts/truetype/dejavu/DejaVuSans-Bold.ttf\':fontcolor=white@0.45:fontsize=14:x=20:y=20[texted]; \
       [texted]yadif[m];[m][2]overlay=25:25" \
       -preset '+QUAL+' -r '+FPS+' -g $(('+FPS+'  * 2)) -b:v '+VBR+' \
-      -acodec libmp3lame -ar 44100 -threads 6 -qscale 3 -b:a 712000 -bufsize 256k \
+      -acodec libmp3lame -ar 44100 -threads 6 -qscale:v -b:a 712000 -bufsize 256k \
       -f flv "'+YOUTUBE_URL+'"'
 
 
