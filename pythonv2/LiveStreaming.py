@@ -1,4 +1,5 @@
 import os
+import time
 
 # Setup a live streaming on Youtube
 VBR="2500k"                               
@@ -58,5 +59,6 @@ cmd = 'ffmpeg \
  
 #print(cmd)
 
-for x in range(30):
-   os.system(cmd)
+while(1):
+   os.system(cmd)  
+   time.sleep(5)
