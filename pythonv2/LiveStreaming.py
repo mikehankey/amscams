@@ -6,7 +6,7 @@ FPS="25"
 QUAL="medium"  
 
 
-cur = "BOB"
+cur = "ED"
 
 #### VISHNU - AMS23 - ARIZONA  
 if(cur=="VISHNU"):
@@ -33,6 +33,13 @@ if(cur=="BOB"):
 if(cur=="KEVIN"):
    CAM_IP="192.168.76.72"
    KEY="rfs0-67vm-dtwj-6k64" # YOUTUBE Key
+   OVERLAY="/home/ams/amscams/dist/img/1280x720/AMS.png" # Overlay Image
+   TEXT = "Cam Operator\: Kevin Palivec, TX" # Text
+
+#### Ed Abel - AMS9 - wv
+if(cur=="ED"):
+   CAM_IP="192.168.76.72"
+   KEY="epm3-697a-mgzq-0dky" # YOUTUBE Key
    OVERLAY="/home/ams/amscams/dist/img/1280x720/AMS.png" # Overlay Image
    TEXT = "Cam Operator\: Kevin Palivec, TX" # Text
  
