@@ -6,7 +6,7 @@ FPS="25"
 QUAL="medium"  
 
 
-cur = "BOB"
+cur = "KEVIN"
 
 #### VISHNU - AMS23 - ARIZONA  
 if(cur=="VISHNU"):
@@ -22,12 +22,19 @@ if(cur=="ELIZABETH"):
    OVERLAY="/home/ams/amscams/dist/img/1280x720/AMS_UMD.png" # Overlay Image
    TEXT = "Cam Operator\: Elizabeth Warner, UMD" # Text
 
-#### BOB LUNDSFORD - AMS24
+#### BOB LUNDSFORD - AMS24 - CA
 if(cur=="BOB"):
    CAM_IP="192.168.76.72"
    KEY="4jv8-z9u9-ywqb-0sgu" # YOUTUBE Key
-   OVERLAY="/home/ams/amscams/dist/img/1280x720/AMS_UA.png" # Overlay Image
+   OVERLAY="/home/ams/amscams/dist/img/1280x720/AMS.png" # Overlay Image
    TEXT = "Cam Operator\: Bob Lundsford, CA" # Text
+
+#### Kevin Palivec  - AMS24 - TX
+if(cur=="KEVIN"):
+   CAM_IP="192.168.76.72"
+   KEY="rfs0-67vm-dtwj-6k64" # YOUTUBE Key
+   OVERLAY="/home/ams/amscams/dist/img/1280x720/AMS.png" # Overlay Image
+   TEXT = "Cam Operator\: Kevin Palivec, TX" # Text
  
 SOURCE="rtsp://"+CAM_IP+"/user=admin&password=&channel=1&stream=0.sdp"              # Source UDP (voir les annonces SAP)
 YOUTUBE_URL="rtmp://a.rtmp.youtube.com/live2/"+KEY
