@@ -33,7 +33,7 @@ cmd = 'ffmpeg \
       [scaled]drawtext=:text=\'' + TEXT +'\':fontfile=\'/usr/share/fonts/truetype/dejavu/DejaVuSans-Bold.ttf\':fontcolor=white@0.45:fontsize=14:x=20:y=20[texted]; \
       [texted]yadif[m];[m][2]overlay=25:25[out]" \
       -vcodec libx264 -pix_fmt yuv420p -preset '+QUAL+' -r '+FPS+' -g $(('+FPS+' * 2)) -b:v '+VBR+' \
-      -ac 1 -crf:v 3 -b:a 712000 -bufsize 256k -maxrate ' + VBR +' -map "[out]" -map 0:a -c:a copy \
+      -ac 1 -crf:v 3 -b:a 712000 -bufsize 128k -maxrate ' + VBR +' -map "[out]" -map 0:a -c:a copy \
       -f flv "'+YOUTUBE_URL+'"'
  
 #print(cmd)
