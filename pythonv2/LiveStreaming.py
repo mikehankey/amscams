@@ -6,7 +6,7 @@ FPS="25"
 QUAL="medium"  
 
 
-cur = "KEVIN"
+cur = "BOB"
 
 #### VISHNU - AMS23 - ARIZONA  
 if(cur=="VISHNU"):
