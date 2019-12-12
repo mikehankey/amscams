@@ -41,7 +41,7 @@ if(cur=="ED"):
    CAM_IP="192.168.76.72"
    KEY="epm3-697a-mgzq-0dky" # YOUTUBE Key
    OVERLAY="/home/ams/amscams/dist/img/1280x720/AMS.png" # Overlay Image
-   TEXT = "Cam Operator\: Kevin Palivec, TX" # Text
+   TEXT = "Cam Operator\: Ed Abel, WV" # Text
  
 SOURCE="rtsp://"+CAM_IP+"/user=admin&password=&channel=1&stream=0.sdp"              # Source UDP (voir les annonces SAP)
 YOUTUBE_URL="rtmp://a.rtmp.youtube.com/live2/"+KEY
