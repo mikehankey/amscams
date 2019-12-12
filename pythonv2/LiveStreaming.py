@@ -4,7 +4,6 @@ import os
 VBR="2500k"                               
 FPS="25"                              
 QUAL="fast"  
-
  
 # CAM IP
 CAM_IP= "192.168.76.71"
@@ -30,6 +29,7 @@ cmd = 'ffmpeg \
       -vcodec libx264 -pix_fmt yuv420p -preset '+QUAL+' -r '+FPS+' -g $(('+FPS+'  * 2)) -b:v '+VBR+'  \
       -acodec libmp3lame -ar 44100 -threads 6 -qscale 3 -b:a 712000 -bufsize 512k \
       -f flv "'+YOUTUBE_URL+'"'
+#print(cmd)
 
-print(cmd)
-os.system(cmd)
+for x in range(30):
+   os.system(cmd)
