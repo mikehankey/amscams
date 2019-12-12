@@ -28,13 +28,12 @@ cmd = 'ffmpeg \
       -filter_complex "[1:v]scale=1280x720[scaled];\
       [scaled]drawtext=:text=\'' + TEXT +'\':fontfile=\'/usr/share/fonts/truetype/dejavu/DejaVuSans-Bold.ttf\':fontcolor=white@0.45:fontsize=14:x=20:y=20[texted]; \
       [texted]yadif[m];[m][2]overlay=25:25" \
-      -preset '+QUAL+' -r '+FPS+' -g $(('+FPS+'  * 2)) -b:v '+VBR+' \
+      -vcodec libx264 -pix_fmt yuv420p -preset '+QUAL+' -r '+FPS+' -g $(('+FPS+'  * 2)) -b:v '+VBR+' \
       -acodec libmp3lame -ar 44100 -threads 6 -qscale:v 3 -b:a 712000 -bufsize 256k \
       -f flv "'+YOUTUBE_URL+'"'
 
 
-# # -vcodec libx264 -pix_fmt yuv420p -preset '+QUAL+' -r '+FPS+' -g $(('+FPS+'  * 2)) -b:v '+VBR+'  \
- 
+  
 
 
 #print(cmd)
