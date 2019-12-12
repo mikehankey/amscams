@@ -29,6 +29,18 @@ cmd = 'ffmpeg \
       -vcodec libx264 -pix_fmt yuv420p -preset '+QUAL+' -r '+FPS+' -g $(('+FPS+'  * 2)) -b:v '+VBR+'  \
       -acodec libmp3lame -ar 44100 -threads 6 -qscale 3 -b:a 712000 -bufsize 512k \
       -f flv "'+YOUTUBE_URL+'"'
+
+
+
+cmd = 'ffmpeg -i "'+SOURCE+'" -i "'+OVERLAY+'" -framerate 60000/1001 \
+       -filter_complex "[1:v]scale=720x480[scaled];\
+      [scaled]drawtext=:text=\'' + TEXT +'\':fontfile=\'/usr/share/fonts/truetype/dejavu/DejaVuSans-Bold.ttf\':fontcolor=white@0.45:fontsize=14:x=20:y=20[texted]; \
+      [texted]yadif[m];[m][2]overlay=25:25" \
+       -acodec libmp3lame -ar 44100 -threads 6 -qscale 3 -b:a 712000 -bufsize 512k \
+      -f flv "'+YOUTUBE_URL+'"'  
+ 
+
+
 #print(cmd)
 
 for x in range(30):
