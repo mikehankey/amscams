@@ -25,7 +25,7 @@ YOUTUBE_URL="rtmp://a.rtmp.youtube.com/live2/"+KEY
 
 cmd = 'ffmpeg \
       -ar 44100 -ac 2 -acodec pcm_s16le -f s16le -ac 2 -i /dev/zero -i "'+SOURCE+'" -i "'+OVERLAY+'" \
-      -filter_complex "[1:v]scale=1280x720[scaled];\
+      -filter_complex "[1:v]scale=720x480[scaled];\
       [scaled]drawtext=:text=\'' + TEXT +'\':fontfile=\'/usr/share/fonts/truetype/dejavu/DejaVuSans-Bold.ttf\':fontcolor=white@0.45:fontsize=14:x=20:y=20[texted]; \
       [texted]yadif[m];[m][2]overlay=25:25" \
       -vcodec libx264 -pix_fmt yuv420p -preset '+QUAL+' -r '+FPS+' -g $(('+FPS+'  * 2)) -b:v '+VBR+' \
