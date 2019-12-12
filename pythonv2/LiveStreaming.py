@@ -16,7 +16,7 @@ KEY="2e88-ec97-t36t-ec68"
 OVERLAY="/home/ams/amscams/dist/img/1280x720/AMS_UA.png"    
    
 # Text
-TEXT = "Cam Operator: Vishnu Reddy, UA"    
+TEXT = "Cam Operator\: Vishnu Reddy, UA"    
 
 
 SOURCE="rtsp://"+CAM_IP+"/user=admin&password=&channel=1&stream=0.sdp"              # Source UDP (voir les annonces SAP)
