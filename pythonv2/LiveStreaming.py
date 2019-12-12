@@ -2,8 +2,8 @@ import os
 
 # Setup a live streaming on Youtube
 VBR="2500k"                               
-FPS="13"                              
-QUAL="MEDIUM"  
+FPS="25"                              
+QUAL="fast"  
 
  
 # CAM IP
