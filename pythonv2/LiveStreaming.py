@@ -1,8 +1,8 @@
 import os
 
 # Setup a live streaming on Youtube
-VBR="1000k"                               
-FPS="20"                              
+VBR="2500k"                               
+FPS="13"                              
 QUAL="MEDIUM"  
 
  
