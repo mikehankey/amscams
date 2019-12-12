@@ -6,7 +6,7 @@ FPS="25"
 QUAL="medium"  
 
 
-cur = "ELISABETH"
+cur = "BOB"
 
 #### VISHNU - AMS23 - ARIZONA  
 if(cur=="VISHNU"):
@@ -16,13 +16,19 @@ if(cur=="VISHNU"):
    TEXT = "Cam Operator\: Vishnu Reddy, UA" # Text
 
 #### ELISABETH WARNER - AMS9 - MARYLAND
-if(cur=="ELISABETH"):
+if(cur=="ELIZABETH"):
    CAM_IP="192.168.76.73"
    KEY="3b5j-sy7c-fc12-57za" # YOUTUBE Key
    OVERLAY="/home/ams/amscams/dist/img/1280x720/AMS_UMD.png" # Overlay Image
-   TEXT = "Cam Operator\: Elisabeth Warner, UMD" # Text
+   TEXT = "Cam Operator\: Elizabeth Warner, UMD" # Text
 
-
+#### BOB LUNDSFORD - AMS24
+if(cur=="BOB"):
+   CAM_IP="192.168.76.72"
+   KEY="4jv8-z9u9-ywqb-0sgu" # YOUTUBE Key
+   OVERLAY="/home/ams/amscams/dist/img/1280x720/AMS_UA.png" # Overlay Image
+   TEXT = "Cam Operator\: Bob Lundsford, CA" # Text
+ 
 SOURCE="rtsp://"+CAM_IP+"/user=admin&password=&channel=1&stream=0.sdp"              # Source UDP (voir les annonces SAP)
 YOUTUBE_URL="rtmp://a.rtmp.youtube.com/live2/"+KEY
 
