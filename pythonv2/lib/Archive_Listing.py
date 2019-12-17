@@ -25,6 +25,11 @@ POSSIBLE_ANG_VELOCITIES = [1,2,3,4,5,6,7,8,9,10,11,12,13,15,16,17,18,19,20,21,22
 # Delete Multiple Detections at once
 def delete_multiple_archived_detection(detections):
    print("delete_multiple_archived_detection") 
+
+   # In case we only have one... it's a string
+   if(isinstance(detections, str)):
+      detections = [detections]
+
    for det in detections:
       print(det)
 

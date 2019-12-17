@@ -13,7 +13,7 @@ function reject_multiple_archived_meteor(array_of_jsid, ids) {
    $.ajax({ 
          type:"POST",
          url:  "webUI.py?cmd=delete_archive_multiple_detection",
-         data: {detections: [array_of_jsid]},
+         data: {detections: array_of_jsid},
          success: function(data) {
                
                // TODO!!!!
