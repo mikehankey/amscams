@@ -5,6 +5,7 @@ import json
 import datetime
 import sys
 import collections 
+import shutil
 
 from calendar import monthrange
 
@@ -30,14 +31,14 @@ def delete_multiple_archived_detection(detections):
       detections = [detections]
 
    for det in detections:
-      # Remove the Cache files
-      # /mnt/ams2/CACHE/AMS7/2019/11/27/2019_11_27_06_44_20_000_010042-trim0000/
-      cache_path = get_cache_path(name_analyser(det))
-      print("CACHE PATH ")
-      print(cache_path)
 
-      sys.exit(0)
+      analysed_name = name_analyser(det)
 
+      # Remove the Cache files 
+      cache_path = get_cache_path(analysed_name)
+      if os.path.isdir(cache_path):
+         shutil.rmtree(cache_path)
+     
       # Remove Json
       if os.path.isfile(det):
          os.remove(det)
@@ -51,8 +52,10 @@ def delete_multiple_archived_detection(detections):
       det = det.replace('-HD','-SD')
       if os.path.isfile(det):
          os.remove(det)
-     
-    
+
+      # Update Index (?)
+      write_month_index(int(analysed_name['month']),int(analysed_name['year']))
+      write_year_index(int(analysed_name['year']))
 
 
 # Function that read a json file (detection)
