@@ -37,12 +37,12 @@ def delete_multiple_archived_detection(detections):
          os.remove(det)
 
       # Remove HD     
-      det.replace('.json','-HD.mp4')
+      det = det.replace('.json','-HD.mp4')
       if os.path.isfile(det):
          os.remove(det)
 
       # Remove SD
-      det.replace('-HD','-SD')
+      det = det.replace('-HD','-SD')
       if os.path.isfile(det):
          os.remove(det)
      
