@@ -4,10 +4,16 @@ function update_selected_counter() {
 }
 
 // Delete multiple MEteors
-function reject_multiple_archived_meteor(array_of_jsid, ids) {
+function reject_multiple_archived_meteor(array_of_jsid, ids, multiple) {
+
+   if(multiple){
+      msg ="Are you sure you want to PERMANENTLY delete these detections?";
+   } else {
+      msg = "Are you sure you want to PERMANENTLY delete this detection?";
+   }
 
    if(array_of_jsid.length>0)  {
-      bootbox.confirm("Are you sure you want to PERMANENTLY delete these detections?", function(result){ 
+      bootbox.confirm(msg, function(result){ 
 
          if(result) {
             // Deleting
@@ -55,7 +61,7 @@ $(function() {
            }
         );
  
-        reject_multiple_archived_meteor(detections, ids);
+        reject_multiple_archived_meteor(detections, ids, false);
    })
 
    // Select one from checkbox
@@ -96,7 +102,7 @@ $(function() {
            }
         );
  
-        reject_multiple_archived_meteor(detections, ids);
+        reject_multiple_archived_meteor(detections, ids, true);
 
         
     })
