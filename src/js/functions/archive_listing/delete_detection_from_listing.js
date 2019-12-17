@@ -31,6 +31,7 @@ function reject_multiple_archived_meteor(array_of_jsid, ids) {
                }
          });
       }  
+   }
     
 }
 
