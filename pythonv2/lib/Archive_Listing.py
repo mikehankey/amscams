@@ -733,7 +733,7 @@ def archive_listing(form):
    print("LEN RES: ")
    print(str(len(res)))
    print("TOTAL: ")
-   print(str(len(total)))
+   print(str(total))
 
    if(len(res)==0):
       template = template.replace("{RESULTS}", "<div class='alert alert-danger mx-auto'>No detection found in your the archive for your criteria.</div>")
