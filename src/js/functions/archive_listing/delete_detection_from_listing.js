@@ -44,7 +44,18 @@ $(function() {
 
    // Delete one 
    $('.delete_meteor_archive_gallery').click(function() {
-      console.log($(this).closest('.preview'));
+      var $parent = $(this).closest('.preview');
+      $parent.addClass('selected');
+
+      var detections = [];  
+        var ids = [];
+        jQuery.each($('.preview.selected'), function( i, val ) { 
+               detections.push($(val).find('.delete_meteor_archive_gallery').attr('data-meteor'));
+               ids.push($(val).attr('id'));
+           }
+        );
+ 
+        reject_multiple_archived_meteor(detections, ids);
    })
 
    // Select one from checkbox
@@ -77,7 +88,7 @@ $(function() {
     $('.del-all-archive').click(function() {
         // Get all id
     
-        var detections = [];
+        var detections = [];  
         var ids = [];
         jQuery.each($('.preview.selected'), function( i, val ) { 
                detections.push($(val).find('.delete_meteor_archive_gallery').attr('data-meteor'));
