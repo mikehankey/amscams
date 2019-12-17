@@ -30,7 +30,13 @@ def delete_multiple_archived_detection(detections):
       detections = [detections]
 
    for det in detections:
-      # First we delete the /archive files
+      # Remove the Cache files
+      # /mnt/ams2/CACHE/AMS7/2019/11/27/2019_11_27_06_44_20_000_010042-trim0000/
+      cache_path = get_cache_path(name_analyser(det))
+      print("CACHE PATH ")
+      print(cache_path)
+
+      sys.exit(0)
 
       # Remove Json
       if os.path.isfile(det):
@@ -46,6 +52,7 @@ def delete_multiple_archived_detection(detections):
       if os.path.isfile(det):
          os.remove(det)
      
+    
 
 
 # Function that read a json file (detection)
