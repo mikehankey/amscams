@@ -429,6 +429,7 @@ def get_results_from_date_from_monthly_index(criteria,date,max_res_per_page,cur_
 
                   if(test==True):
                      
+                     # We add it only if it fits the pagination
                      if(len(res_to_return)<max_res_per_page and res_counter>number_of_res_to_give_up):
                         # We complete the detection['p'] to get the full path (as the index only has compressed name)
                         detection['p'] = get_full_det_path(detection['p'],station_id,date,day)
@@ -442,8 +443,7 @@ def get_results_from_date_from_monthly_index(criteria,date,max_res_per_page,cur_
          cur_month = 12
          cur_year =  cur_year - 1
          json_index =  get_monthly_index(cur_month,cur_year)
- 
-      
+  
          # Change the date backward
          week_day, numbers_of_days =  monthrange(cur_year,cur_month)
          date = date.replace(year=cur_year, month=cur_month,day=numbers_of_days) 
@@ -456,11 +456,7 @@ def get_results_from_date_from_monthly_index(criteria,date,max_res_per_page,cur_
          # Change the date backward
          week_day, numbers_of_days =  monthrange(cur_year,cur_month)
          date = date.replace(year=cur_year, month=cur_month,day=numbers_of_days) 
-
  
-  
-   
-   
    return res_to_return, res_counter
 
 
@@ -696,13 +692,11 @@ def archive_listing(form):
 
    # Search the results through the monthly indexes
    res, total = get_results_from_date_from_monthly_index(criteria,the_date,int(nompp),cur_page)
-
-   #print("RES: ")
-   #print(res)
-   #print("<br/>")
-   #print("TOTAL: ")
-   #print(total)
    
+   # To check
+   if(total>1):
+      total = total -1
+
    # CREATE URL FOR THE PAGINATION
    pagination_url  = "/pycgi/webUI.py?cmd=archive_listing&meteor_per_page="+str(nompp)
 
@@ -728,13 +722,7 @@ def archive_listing(form):
       template = template.replace("{PAGINATION}", pagination[0])
    else:
       template = template.replace("{PAGINATION}", "")
-
-
-   print("LEN RES: ")
-   print(str(len(res)))
-   print("TOTAL: ")
-   print(str(total))
-
+ 
    if(len(res)==0):
       template = template.replace("{RESULTS}", "<div class='alert alert-danger mx-auto'>No detection found in your the archive for your criteria.</div>")
       template = template.replace("{PAGINATION_DET}", "")    
