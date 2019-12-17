@@ -4,7 +4,7 @@ function update_selected_counter() {
 }
 
 // Delete multiple MEteors
-function reject_multiple_meteor(array_of_jsid, ids) {
+function reject_multiple_archived_meteor(array_of_jsid, ids) {
    // Deleting
    $.each(ids, function(i,v){ 
          loading({text:"Deleting", container:$("#"+v), overlay:true, standalone:true});
@@ -77,7 +77,7 @@ $(function() {
                ids.push($(val).attr('id'));
            }
         );
-       reject_multiple_meteor(detections, ids);
+        reject_multiple_archived_meteor(detections, ids);
 
         
     })
