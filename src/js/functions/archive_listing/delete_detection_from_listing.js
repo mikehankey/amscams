@@ -42,10 +42,14 @@ function reject_multiple_archived_meteor(array_of_jsid, ids) {
 
 $(function() {
 
+   // Delete one 
+   $('.delete_meteor_archive_gallery').click(function() {
+      console.log($(this).closest('.preview'));
+   })
+
    // Select one from checkbox
    $('.sel-box input[type=checkbox]').change(function() {
-       var $t = $(this), f = $t.attr('id'), id = f.substr(5,f.length);
-       console.log("SELETECT ID " + id)
+       var $t = $(this), f = $t.attr('id'), id = f.substr(5,f.length); 
        if($t.is(':checked')) {
            $('#'+id).addClass('selected');
        } else {
@@ -88,32 +92,4 @@ $(function() {
 })
 
 
-
-$(function() {
-
-   var $sel = $('input[name=meteor_select]');
-   if($sel.length!==0) {
-
-       $sel.on('change',function() {
-           var id = $(this).attr('id');
-           loading({"text":"Selecting meteors..."});
-           switch (id) {
-               case "reduced":
-                   // Reduced Only
-                   $('.preview.norm').fadeOut();
-                   $('.preview.reduced').fadeIn();
-                   break;
-               case "non_reduced":
-                  // Reduced Only
-                  $('.preview.norm').fadeIn();
-                  $('.preview.reduced').fadeOut();
-                  break;
-               default:
-                   $('.preview.norm').fadeIn();
-           }
-           loading_done();
-        });
-
-
-   }
-})
+ 
