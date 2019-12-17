@@ -3,6 +3,39 @@ function update_selected_counter() {
    $('.sel-ctn').text($('.preview.selected').length);
 }
 
+// Delete multiple MEteors
+function reject_multiple_meteor(array_of_jsid, ids) {
+   // Deleting
+   $.each(ids, function(i,v){ 
+         loading({text:"Deleting", container:$("#"+v), overlay:true, standalone:true});
+   }); 
+ 
+   $.ajax({ 
+         type:"POST",
+         url:  "webUI.py?cmd=delete_archive_multiple_detection",
+         data: {detections: array_of_jsid},
+         success: function(data) {
+               
+               // TODO!!!!
+               // meteor_is_deleted(id);
+               // Debug
+               //console.log(data);
+         
+               $.each(ids, function(i,v){
+                     //console.log("IS DELETED " + v);
+                     //console.log("I ", i);
+                     meteor_is_deleted(v); 
+               });
+               
+              
+         }, 
+         error: function() {
+               alert('Impossible to reject. Please, reload the page and try again later.')
+               loading_done();
+         }
+   });
+    
+}
 
 $(function() {
 
