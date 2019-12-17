@@ -5,33 +5,32 @@ function update_selected_counter() {
 
 // Delete multiple MEteors
 function reject_multiple_archived_meteor(array_of_jsid, ids) {
-   // Deleting
-   $.each(ids, function(i,v){ 
-         loading({text:"Deleting", container:$("#"+v), overlay:true, standalone:true});
-   }); 
- 
-   $.ajax({ 
-         type:"POST",
-         url:  "webUI.py?cmd=delete_archive_multiple_detection",
-         data: {detections: array_of_jsid},
-         success: function(data) {
-               
-               // TODO!!!!
-               // meteor_is_deleted(id);
-               // Debug
-               //console.log(data);
-         
-               $.each(ids, function(i,v){ 
-                     meteor_is_deleted(v); 
-               });
-               
-              
-         }, 
-         error: function() {
-               alert('Impossible to reject. Please, reload the page and try again later.')
-               loading_done();
-         }
-   });
+
+   
+   bootbox.confirm("Are you sure you want to PERMANENTLY delete these detections?", function(result){ 
+
+      if(result) {
+         // Deleting
+            $.each(ids, function(i,v){ 
+               loading({text:"Deleting", container:$("#"+v), overlay:true, standalone:true});
+         }); 
+
+         $.ajax({ 
+               type:"POST",
+               url:  "webUI.py?cmd=delete_archive_multiple_detection",
+               data: {detections: array_of_jsid},
+               success: function(data) { 
+                     $.each(ids, function(i,v){ 
+                           meteor_is_deleted(v); 
+                     });
+                     
+               }, 
+               error: function() {
+                     alert('Impossible to reject. Please, reload the page and try again later.')
+                     loading_done();
+               }
+         });
+      }  
     
 }
 
