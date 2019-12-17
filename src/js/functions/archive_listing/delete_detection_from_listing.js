@@ -21,9 +21,7 @@ function reject_multiple_archived_meteor(array_of_jsid, ids) {
                // Debug
                //console.log(data);
          
-               $.each(ids, function(i,v){
-                     //console.log("IS DELETED " + v);
-                     //console.log("I ", i);
+               $.each(ids, function(i,v){ 
                      meteor_is_deleted(v); 
                });
                
@@ -77,6 +75,12 @@ $(function() {
                ids.push($(val).attr('id'));
            }
         );
+
+
+        console.log("DETECTIONS ");
+        console.log(detections);
+        console.log("IDS");
+        console.log(ids);
         reject_multiple_archived_meteor(detections, ids);
 
         
