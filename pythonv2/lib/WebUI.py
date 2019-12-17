@@ -328,7 +328,13 @@ def controller(json_conf):
       jsid = form.getvalue('jsid')
       override_detect(video_file,jsid,json_conf)
       exit()
-   
+
+   #Delte multiple detections at once from archives
+   if cmd == 'delete_archive_multiple_detection':
+      detections = form.getvalue('detections[]')
+      delete_multiple_archived_detection(detections)
+      exit()
+
    #Delete multiple detections at once 
    if cmd == 'delete_multiple_detection':
       detections = form.getvalue('detections[]')
