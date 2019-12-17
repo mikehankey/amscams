@@ -71,7 +71,7 @@ $(function() {
         var detections = [];
         var ids = [];
         jQuery.each($('.preview.selected'), function( i, val ) { 
-               detections.push($(val).find('.delete_meteor_gallery').attr('data-meteor'));
+               detections.push($(val).find('.delete_meteor_archive_gallery').attr('data-meteor'));
                ids.push($(val).attr('id'));
            }
         );
