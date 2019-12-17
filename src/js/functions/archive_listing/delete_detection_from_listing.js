@@ -9,6 +9,9 @@ function reject_multiple_archived_meteor(array_of_jsid, ids) {
    $.each(ids, function(i,v){ 
          loading({text:"Deleting", container:$("#"+v), overlay:true, standalone:true});
    }); 
+
+   console.log("array_of_jsid ")
+   console.log(array_of_jsid);
  
    $.ajax({ 
          type:"POST",
@@ -75,12 +78,7 @@ $(function() {
                ids.push($(val).attr('id'));
            }
         );
-
-
-        console.log("DETECTIONS ");
-        console.log(detections);
-        console.log("IDS");
-        console.log(ids);
+ 
         reject_multiple_archived_meteor(detections, ids);
 
         
