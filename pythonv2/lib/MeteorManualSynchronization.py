@@ -26,15 +26,15 @@ def manual_synchronization_chooser(form):
    # Get Analysed name (old or new)
    analysed_name = get_analysed_name(video_file)
 
-   # Create destination folder if necessary
-   dest_folder = get_cache_path(analysed_name,'tmp_cropped_sync')
-   cache_path  = does_cache_exist(analysed_name,'tmp_cropped_sync')
+   # Create destination folder for the HD if necessary
+   dest_hd_folder = does_cache_exist(analysed_name,'tmp_hd_cropped_sync')
+   dest_sd_folder = does_cache_exist(analysed_name,'tmp_sd_cropped_sync')
 
-   print("DEST FOLDER<br/>")
-   print(dest_folder)
-
-   print("<br/>CACHE PATH<br/>")
-   print(cache_path)
+   print("DEST HD FOLDER<br/>")
+   print(dest_hd_folder)
+   print("DEST SD FOLDER<br/>")
+   print(dest_sd_folder)
+    
 
 
 
