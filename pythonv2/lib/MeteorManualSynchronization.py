@@ -4,9 +4,8 @@ import sys
 import json
 
 from lib.FileIO import load_json_file
-from lib.MeteorReducePage import print_error
-from lib.Old_JSON_converter import get_analysed_name
-from lib.MeteorReduce_Tools import get_stacks, get_cache_path, does_cache_exist
+from lib.MeteorReducePage import print_error 
+from lib.MeteorReduce_Tools import get_stacks, get_cache_path, does_cache_exist, name_analyser
 
 
 MANUAL_SYNC_TEMPLATE_STEP1 = "/home/ams/amscams/pythonv2/templates/manual_sync_template_step0.html"
@@ -42,6 +41,7 @@ def manual_synchronization_chooser(form):
 
    # Parse the JSON file
    mr = load_json_file(json_file)
+   analysed_name = name_analyser(json_file)
 
    # How many SD frames do we create?
    how_many_sd_frames = 4
@@ -53,6 +53,18 @@ def manual_synchronization_chooser(form):
             print(str(ind) + " > ")
             print(frame)
             print("<br/>")
+
+            # 1 we get the proper SD frame
+            SD_frame = get_HD_frame(analysed_name,frame['fn'])   
+
+            print(SD_frame)
+            print("<br>")
+
+            # we resize it to HD
+
+            # we crop it from x_start, y_start, w, h
+
+
          frame_cnt+=1
 
          # Recreate the corresponding thumb
