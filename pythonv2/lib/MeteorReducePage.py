@@ -146,8 +146,16 @@ def reduce_meteor2(json_conf,form):
          template = template.replace("{HD_fix}", '<div class="box"><dl class="row mb-0 mt-2"><dt class="col-12"><span class="icon-notification"></span> This detection only relies on SD video data.</dt></dl></div>')
       else:
          template = template.replace("{HD_fix}", "")
+         template = template.replace("{HD_fix_button}",'<a class="btn btn-primary d-block mt-2" id="hd_fix">Fix not usable HD</a>')
+         
    else:
-       template = template.replace("{HD_fix}", "")
+      template = template.replace("{HD_fix}", "")
+      template = template.replace("{HD_fix_button}",'<a class="btn btn-primary d-block mt-2" id="hd_fix">Fix not usable HD</a>')
+
+
+
+
+       
 
    # Display some of the report info directly on the page
    #dist_per_elp: 9.661147849907783,
