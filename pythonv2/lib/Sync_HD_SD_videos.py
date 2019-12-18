@@ -148,27 +148,27 @@ def sync_hd_frames(hd_video_file,sd_video_file,json_reduction_file):
       
       if fc < 3:
          hd_fn = find_hd_frame(fn, hd_x, hd_y, x1,y1,x2,y2,hd_frames)
-         print("FOUND ", fc)
-         print('<br>')
-         print(" HD FRAME:", fn, hd_fn, hd_x, hd_y, x1,y1,x2,y2,len(hd_frames))
-         print('<br>')
+         #print("FOUND ", fc)
+         #print('<br>')
+         #print(" HD FRAME:", fn, hd_fn, hd_x, hd_y, x1,y1,x2,y2,len(hd_frames))
+         #print('<br>')
+        
          sd_fns.append(int(fn))
+        
          if(int(hd_fn) not in hd_fns):
             hd_fns.append(int(hd_fn))
-         print(fn, metframes[fn]['hd_x'], metframes[fn]['hd_y'])
+         #print(fn, metframes[fn]['hd_x'], metframes[fn]['hd_y'])
 
       fc = fc + 1
  
-   print("<br>len(sd_fns): " + str(len(sd_fns)))   
-   print("<br>len(hd_fns): " + str(len(hd_fns)))   
+   #print("<br>len(sd_fns): " + str(len(sd_fns)))   
+   #print("<br>len(hd_fns): " + str(len(hd_fns)))   
 
-   print("SD FNS<br/>")
-   print(str(sd_fns))
+   #print("SD FNS<br/>")
+   #print(str(sd_fns))
 
-   print("HD FNS<br/>")
-   print(str(hd_fns))
-
-
+   #print("HD FNS<br/>")
+   #print(str(hd_fns))
  
 
    if len(sd_fns) == len(hd_fns):
