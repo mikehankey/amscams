@@ -100,10 +100,7 @@ def reduce_meteor2(json_conf,form):
    template = template.replace("{STACK}", str(stack))                  # Stack File 
    if(hd_stack is not None):
       template = template.replace("{HD_STACK}", str(hd_stack))                  # HD Stack File 
-   
-  
-
-
+    
    # For the Event start time
    # either it has already been reduced and we take the time of the first frame
    start_time = 0
@@ -155,7 +152,9 @@ def reduce_meteor2(json_conf,form):
 
 
 
-
+   # Are HD & SD sync?
+   if('sync' not in meteor_json_file):
+      print("NO SYNC")
        
 
    # Display some of the report info directly on the page
