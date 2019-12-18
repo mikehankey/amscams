@@ -45,7 +45,7 @@ def manual_synchronization_chooser(form):
 
    if "frames" in mr:
       for ind, frame in enumerate(mr['frames']):   
-         print(ind + " > ")
+         print(str(ind) + " > ")
          print(frame)
          print("<br/>")
 
