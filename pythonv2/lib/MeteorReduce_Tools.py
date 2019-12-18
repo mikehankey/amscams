@@ -479,7 +479,9 @@ def generate_SD_frames(analysed_name,destination):
       cmd = "ffmpeg -y -i " + video_sd_full_path + " -vf scale="+str(HD_W)+":"+str(HD_H)+" " + resized_video_full_path
       print(cmd)
       os.system(cmd)
-
+   else:
+      print('FAIL :<br/>')
+      print(destination)
 
 
    # Get All Frames
