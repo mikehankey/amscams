@@ -64,7 +64,7 @@ def get_frame(form):
    cgitb.enable()     
  
    json_file = form.getvalue('json_file')
-   fn = form.getvalue('fr') # The frame ID
+   fn = form.getvalue('fr') # The frame ID (SD!!)
  
    # Analyse the name
    analysed_name = get_analysed_name(json_file)
@@ -87,9 +87,8 @@ def get_frame(form):
    # if they don't exist
    the_frame = get_HD_frame(analysed_name,fn)
  
-
    the_frame = the_frame[0]
-   toReturn = {'id':fn, 'full_fr':the_frame}
+   toReturn = {'id':fn, 'full_fr':the_frame,'sd_id': int(fn)}
   
    print(json.dumps(toReturn))
 
