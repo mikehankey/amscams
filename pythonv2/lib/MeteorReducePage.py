@@ -154,7 +154,10 @@ def reduce_meteor2(json_conf,form):
 
    # Are HD & SD sync?
    if('sync' not in meteor_json_file):
-      print("NO SYNC")
+      template = template.replace("{NO_SYNC}", "<div class='alert alert-danger'>Both HD and SD videos aren't synchronized</div>")
+   else:
+      template = template.replace("{NO_SYNC}", "")
+
        
 
    # Display some of the report info directly on the page
