@@ -144,6 +144,7 @@ def reduce_meteor2(json_conf,form):
    if('info' in meteor_json_file):
       if('HD_fix' in meteor_json_file['info']):
          template = template.replace("{HD_fix}", '<div class="box"><dl class="row mb-0 mt-2"><dt class="col-12"><span class="icon-notification"></span> This detection only relies on SD video data.</dt></dl></div>')
+         template = template.replace("{HD_fix_button}",'')
       else:
          template = template.replace("{HD_fix}", "")
          template = template.replace("{HD_fix_button}",'<a class="btn btn-primary d-block mt-2" id="hd_fix">Fix not usable HD</a>')
