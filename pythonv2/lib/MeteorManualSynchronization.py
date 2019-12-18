@@ -5,7 +5,7 @@ import json
 
 from lib.FileIO import load_json_file
 from lib.MeteorReducePage import print_error 
-from lib.MeteorReduce_Tools import get_stacks, get_cache_path, does_cache_exist, name_analyser, generate_SD_frame
+from lib.MeteorReduce_Tools import get_stacks, get_cache_path, does_cache_exist, name_analyser, generate_SD_frames
 from lib.VIDEO_VARS import *
 
 MANUAL_SYNC_TEMPLATE_STEP1 = "/home/ams/amscams/pythonv2/templates/manual_sync_template_step0.html"
