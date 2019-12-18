@@ -13,6 +13,7 @@ MANUAL_SYNC_TEMPLATE_STEP2 = "/home/ams/amscams/pythonv2/templates/manual_sync_t
 
 # Second (and last step) of the manual sync
 def manual_synchronization_chooser(form):
+
    video_file  = form.getvalue('video_file')  
    stack_file  = form.getvalue('stack_file')  
    type_file   = form.getvalue('type')  
@@ -28,6 +29,10 @@ def manual_synchronization_chooser(form):
    # Create destination folder if necessary
    dest_folder = get_cache_path(analysed_name,'tmp_cropped')
    cache_path  = does_cache_exist(analysed_name,'tmp_cropped')
+
+
+
+   
 
 # First step of the manual synchronization
 def manual_synchronization(form):
