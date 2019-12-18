@@ -458,7 +458,7 @@ def generate_HD_frames(analysed_name, destination):
 
 
 # Generate SD frames for a meteor detection (warning: the SD video is first resized to HD)
-def generate_SD_frames(analysed_name,destination):
+def generate_SD_frames(analysed_name,destination,how_many_sd_frames,from_frame_fn):
    
    # Debug
    cgitb.enable() 
@@ -472,11 +472,11 @@ def generate_SD_frames(analysed_name,destination):
    # resize_sd video destination
    resized_video_full_path = destination  + os.sep + "resized_sd_video.mp4"
 
-
    # Create a resized version of the SD video 
    cmd = "ffmpeg -y -i " + video_sd_full_path + " -vf scale="+str(HD_W)+":"+str(HD_H)+" " + resized_video_full_path
-   print(cmd)
    os.system(cmd) 
+
+   # 
 
    # Get All Frames
    #if(cfe(analysed_name['full_path'].replace('.json','-HD.mp4') )):

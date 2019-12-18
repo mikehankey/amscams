@@ -43,11 +43,19 @@ def manual_synchronization_chooser(form):
    mr = load_json_file(json_file) 
 
    # How many SD frames do we create?
-   how_many_sd_frames = 4
-   frame_cnt = 0
+   how_many_sd_frames = 4 
  
+   # What is the fn of the first frame?
+   if('frames' in mr):
+      starting_from = mr['frames'][0]['fn']
+   else:
+      starting_from = 0
+
+   print("STARTING FROM:<br/>")
+   print(starting_from)
+
    # Create the SD
-   all_resized_sd = generate_SD_frames(analysed_name,dest_sd_folder)
+   all_resized_sd = generate_SD_frames(analysed_name,dest_sd_folder,how_many_sd_frames,starting_from)
    print(all_resized_sd)
    sys.exit(0)
  
