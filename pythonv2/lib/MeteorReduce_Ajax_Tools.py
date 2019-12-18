@@ -113,17 +113,27 @@ def update_frame(form, AjaxDirect = False):
 
    resp = {}
    resp['error'] = []
-   
-   print("IN UPDATE FRAME")
-   print(form)
-
+    
    fn = form.getvalue("fn")
+   sd_fn = form.getvalue("sd_fn")
    x = form.getvalue("x")
    y = form.getvalue("y")
  
    # Recreate the corresponding thumb
    original_HD_frame = get_HD_frame(analysed_name,fn)   
    destination_cropped_frame = get_thumb(analysed_name,fn)  
+
+   
+   print("IN UPDATE FRAME")
+   print("SD " + str(sd_fn))
+   print("HD " + str(fn))
+   print("ORG HD FRAME ")
+   print(original_HD_frame)
+   print("Destination_cropped_frame")
+   print(destination_cropped_frame)
+
+
+
    thumb_path = ''
 
    if(len(destination_cropped_frame)==0):
