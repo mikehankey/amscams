@@ -9,6 +9,12 @@ from lib.MeteorReduce_Tools import get_stacks
 
 
 MANUAL_SYNC_TEMPLATE_STEP1 = "/home/ams/amscams/pythonv2/templates/manual_sync_template_step0.html"
+MANUAL_SYNC_TEMPLATE_STEP2 = "/home/ams/amscams/pythonv2/templates/manual_sync_template_step1.html"
+
+# Second (and last step) of the manual sync
+def manual_synchronization_chooser(form):
+   print(form)
+
 
 # First step of the manual synchronization
 def manual_synchronization(form):

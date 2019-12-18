@@ -526,9 +526,15 @@ def controller(json_conf):
       custom_logos(json_conf,form)
 
 
-   # Manual Synchronization (HD/SD): step 0 - (First step: select start / end position)
+   # Manual Synchronization (HD/SD): step 1- (First step: select start / end position)
    if cmd == 'manual_sync':      
       manual_synchronization(form)
+
+   # Manual Synchronization (HD/SD): step 2 - Sync Chooser
+   if cmd == 'manual_sync_chooser':      
+      manual_synchronization_chooser(form)
+
+
 
    # Manual Reduction step 0: select stack
    if cmd == 'manual_reduction':
