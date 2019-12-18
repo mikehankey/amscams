@@ -43,11 +43,17 @@ def manual_synchronization_chooser(form):
    # Parse the JSON file
    mr = load_json_file(json_file)
 
+   # How many SD frames do we create?
+   how_many_sd_frames = 4
+   frame_cnt = 0
+
    if "frames" in mr:
       for ind, frame in enumerate(mr['frames']):   
-         print(str(ind) + " > ")
-         print(frame)
-         print("<br/>")
+         if(frame_cnt<how_many_sd_frames):
+            print(str(ind) + " > ")
+            print(frame)
+            print("<br/>")
+         frame_cnt+=1
 
          # Recreate the corresponding thumb
          #original_HD_frame = get_HD_frame(analysed_name,val['fn'])   
