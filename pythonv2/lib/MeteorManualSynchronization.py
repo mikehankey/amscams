@@ -5,8 +5,8 @@ import json
 
 from lib.FileIO import load_json_file
 from lib.MeteorReducePage import print_error 
-from lib.MeteorReduce_Tools import get_stacks, get_cache_path, does_cache_exist, name_analyser
-
+from lib.MeteorReduce_Tools import get_stacks, get_cache_path, does_cache_exist, name_analyser, generate_SD_frame
+from lib.VIDEO_VARS import *
 
 MANUAL_SYNC_TEMPLATE_STEP1 = "/home/ams/amscams/pythonv2/templates/manual_sync_template_step0.html"
 MANUAL_SYNC_TEMPLATE_STEP2 = "/home/ams/amscams/pythonv2/templates/manual_sync_template_step1.html"
@@ -49,15 +49,20 @@ def manual_synchronization_chooser(form):
    if "frames" in mr:
       for ind, frame in enumerate(mr['frames']):   
          if(frame_cnt<how_many_sd_frames):
-            print(str(ind) + " > ")
-            print(frame)
-            print("<br/>")
-
+            
             # 1 we get the proper SD frame
-            SD_frame = get_HD_frame(analysed_name,frame['fn'])   
-
+            SD_frame = generate_SD_frame(analysed_name,frame['fn'])   
             print(SD_frame)
             print("<br>")
+            sys.exit(0)
+             
+            # Extract all the frames, resize to HD and crop
+            cmd = 'ffmpeg   -i ' + new_full_path +  ' -filter_complex "[0:v]scale=' + str(HD_W) + ":" + str(HD_H) + '[scale];[scale]crop='+str(w)+':'+str(h)+':'+str(x_start)+':'+str(y_start)+'[out]"  -map "[out]" ' + dest_folder + '/%04d' + '.png' 
+            output = subprocess.check_output(cmd, shell=True).decode("utf-8")  
+   
+
+
+
 
             # we resize it to HD
 
