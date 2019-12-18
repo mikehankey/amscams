@@ -22,7 +22,7 @@ def manual_synchronization_chooser(form):
    h           = float(form.getvalue('h'))
    json_file   = form.getvalue('json')
 
-      # Get Analysed name (old or new)
+   # Get Analysed name (old or new)
    analysed_name = get_analysed_name(video_file)
 
    # Create destination folder if necessary
