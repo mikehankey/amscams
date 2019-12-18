@@ -470,7 +470,7 @@ def generate_SD_frames(analysed_name,destination):
    video_sd_full_path = analysed_name['full_path'].replace('.json','-SD.mp4')
 
    # resize_sd video destination
-   resized_video_full_path = destination + TMP_SD_CROPPED_SUBFRAMES_SUBPATH
+   resized_video_full_path = destination  
 
    print(" HD FULL PATH ")
    print(resized_video_full_path)

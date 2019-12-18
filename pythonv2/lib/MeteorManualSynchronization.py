@@ -47,7 +47,7 @@ def manual_synchronization_chooser(form):
    frame_cnt = 0
  
    # Create the SD
-   all_resized_sd = generate_SD_frames(analysed_name,dest_sd_folder+analysed_name['name_w_ext'])
+   all_resized_sd = generate_SD_frames(analysed_name,dest_sd_folder)
    print(all_resized_sd)
    sys.exit(0)
  
