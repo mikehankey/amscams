@@ -124,17 +124,20 @@ def update_frame(form, AjaxDirect = False):
    destination_cropped_frame = get_thumb(analysed_name,sd_fn)  
 
    
-   print("IN UPDATE FRAME")
-   print("SD " + str(sd_fn))
-   print("HD " + str(fn))
-   print("ORG HD FRAME ")
-   print(original_HD_frame)
-   print("Destination_cropped_frame")
-   print(destination_cropped_frame)
+   #print("IN UPDATE FRAME")
+   #print("SD " + str(sd_fn))
+   #print("HD " + str(fn))
+   #print("ORG HD FRAME ")
+   #print(original_HD_frame)
+   #print("Destination_cropped_frame")
+   #print(destination_cropped_frame)
 
 
 
    thumb_path = ''
+   
+   # SWITCH TO SD #
+   fn = sd_fn
 
    if(len(destination_cropped_frame)==0):
       # It's a creation
