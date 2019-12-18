@@ -153,7 +153,8 @@ def sync_hd_frames(hd_video_file,sd_video_file,json_reduction_file):
          print(" HD FRAME:", fn, hd_fn, hd_x, hd_y, x1,y1,x2,y2,len(hd_frames))
          print('<br>')
          sd_fns.append(int(fn))
-         hd_fns.append(int(hd_fn))
+         if(int(hd_fn) not in hd_fns):
+            hd_fns.append(int(hd_fn))
          print(fn, metframes[fn]['hd_x'], metframes[fn]['hd_y'])
 
       fc = fc + 1
