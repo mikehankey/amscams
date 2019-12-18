@@ -137,11 +137,15 @@ def sync_hd_frames(hd_video_file,sd_video_file,json_reduction_file):
 
    fc = 0 
    for fn in metframes:
+      
       if first_sd_frame is None:
          first_sd_fram = fn
+
       hd_x = metframes[fn]['hd_x']
       hd_y = metframes[fn]['hd_y']
+      
       x1,y1,x2,y2 = bound_cnt(hd_x,hd_y,HD_W,HD_H,4)
+      
       if fc < 3:
          hd_fn = find_hd_frame(fn, hd_x, hd_y, x1,y1,x2,y2,hd_frames)
          print("FOUND ", fc)
@@ -156,6 +160,13 @@ def sync_hd_frames(hd_video_file,sd_video_file,json_reduction_file):
  
    print("<br>len(sd_fns): " + str(len(sd_fns)))   
    print("<br>len(hd_fns): " + str(len(hd_fns)))   
+
+   print("SD FNS<br/>")
+   print(str(sd_fns))
+
+   print("HD FNS<br/>")
+   print(str(hd_fns))
+
 
    sys.exit(0)
 
