@@ -27,10 +27,14 @@ def manual_synchronization_chooser(form):
    analysed_name = get_analysed_name(video_file)
 
    # Create destination folder if necessary
-   dest_folder = get_cache_path(analysed_name,'tmp_cropped')
-   cache_path  = does_cache_exist(analysed_name,'tmp_cropped')
+   dest_folder = get_cache_path(analysed_name,'tmp_cropped_sync')
+   cache_path  = does_cache_exist(analysed_name,'tmp_cropped_sync')
 
+   print("DEST FOLDER<br/>")
+   print(dest_folder)
 
+   print("<br/>CACHE PATH<br/>")
+   print(cache_path)
 
 
 

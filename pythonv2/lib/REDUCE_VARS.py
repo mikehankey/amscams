@@ -15,6 +15,8 @@ CROPPED_FRAMES_SUBPATH = "/THUMBS/" # For the Cropped Frames (thumbs)
 STACKS_SUBPATH   = "/STACKS/"       # For the Stacks
 PREVIEW = "/PREVIEW/"               # Thumb for the listings 
 TMP_CROPPED_FRAMES_SUBPATH = "/CR_THUMBS" # For the temporary cropped fames (manual reduction)
+TMP_CROPPED_SUBFRAMES_SUBPATH = "/TMP_THUMBS" # For the temporary cropped fames (manual synchronization)
+
 
 # Folder where the calibration are
 CALIB_PATH = MAIN_FILE_PATH + "cal/freecal/"
