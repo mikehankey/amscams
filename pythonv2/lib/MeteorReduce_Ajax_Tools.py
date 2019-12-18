@@ -65,7 +65,8 @@ def get_frame(form):
  
    json_file = form.getvalue('json_file')
    fn = form.getvalue('fr') # The frame ID (SD!!)
- 
+   sd_fn = fn
+
    # Analyse the name
    analysed_name = get_analysed_name(json_file)
  
@@ -88,7 +89,7 @@ def get_frame(form):
    the_frame = get_HD_frame(analysed_name,fn)
  
    the_frame = the_frame[0]
-   toReturn = {'id':fn, 'full_fr':the_frame,'sd_id': int(fn)}
+   toReturn = {'id':fn, 'full_fr':the_frame,'sd_id': int(sd_fn)}
   
    print(json.dumps(toReturn))
 

@@ -101,7 +101,7 @@ function create_meteor_selector_from_frame(frame_id, image_src, frame_sd_id, nei
        <div class="modal-dialog modal-lg" style="max-width:1350px">\
        <div class="modal-content">\
            <div class="modal-header">\
-           <div><strong>Frame HD#'+  frame_id + '/ SD#+'+frame_sd_id+ ' cropper</strong></div>\
+           <div><strong>Frame HD#'+  frame_id + '/ SD#'+frame_sd_id+ ' cropper</strong></div>\
            <div class="alert alert-info mb-0 p-1 pr-1 pl-2">Move the white square to the meteor location</div>\
            </div>\
            <div class="modal-body">\
