@@ -45,25 +45,17 @@ def manual_synchronization_chooser(form):
    # How many SD frames do we create?
    how_many_sd_frames = 4
    frame_cnt = 0
+ 
+   # Create the SD
+   all_resized_sd = generate_SD_frames(analysed_name,get_cache_path(analysed_name,"tmp_sd_cropped_sync")+analysed_name['name_w_ext'])
+   print(all_resized_sd)
+   sys.exit(0)
+
 
    if "frames" in mr:
       for ind, frame in enumerate(mr['frames']):   
          if(frame_cnt<how_many_sd_frames):
-            
-            # 1 we get the proper SD frame
-            SD_frame = generate_SD_frame(analysed_name,frame['fn'])   
-            print(SD_frame)
-            print("<br>")
-            sys.exit(0)
-             
-            # Extract all the frames, resize to HD and crop
-            cmd = 'ffmpeg   -i ' + new_full_path +  ' -filter_complex "[0:v]scale=' + str(HD_W) + ":" + str(HD_H) + '[scale];[scale]crop='+str(w)+':'+str(h)+':'+str(x_start)+':'+str(y_start)+'[out]"  -map "[out]" ' + dest_folder + '/%04d' + '.png' 
-            output = subprocess.check_output(cmd, shell=True).decode("utf-8")  
-   
-
-
-
-
+          
             # we resize it to HD
 
             # we crop it from x_start, y_start, w, h

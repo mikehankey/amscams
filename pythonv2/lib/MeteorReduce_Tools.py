@@ -458,5 +458,34 @@ def generate_HD_frames(analysed_name, destination):
 
 
 # Generate SD frames for a meteor detection (warning: the SD video is first resized to HD)
-def generate_SD_frame(sd_fn,analysed_name,destination):
+def generate_SD_frames(analysed_name,destination)
    
+   # Debug
+   cgitb.enable() 
+
+   # Frames
+   frames  = []
+
+   # video_sd_full_path
+   video_sd_full_path = analysed_name['full_path'].replace('.json','-SD.mp4')
+
+   # resize_sd video destination
+   resized_video_full_path = destination + TMP_SD_CROPPED_SUBFRAMES_SUBPATH
+
+   print(" HD FULL PATH ")
+   print(resized_video_full_path)
+   sys.exit(0)
+
+   # Get the SD Video and create a temp resize (HD dim) video
+   if(cfe(video_sd_full_path)):
+      
+      # Create a resized version of the SD video 
+      cmd = "ffmpeg -y -i " + video_sd_full_path + " -vf scale="+str(HD_W)+":"+str(HD_H)+" " + video_hd_full_path
+      os.system(cmd)
+
+   # Get All Frames
+   if(cfe(analysed_name['full_path'].replace('.json','-HD.mp4') )):
+      cmd = 'ffmpeg -y -hide_banner -loglevel panic  -i ' + analysed_name['full_path'].replace('.json','-HD.mp4') + ' -s ' + str(HD_W) + "x" + str(HD_H) + ' ' +  destination + EXT_HD_FRAMES + '%04d' + '.png' 
+      output = subprocess.check_output(cmd, shell=True).decode("utf-8")
+
+   return glob.glob(destination+"*"+EXT_HD_SDFRAMES+"*.png")
