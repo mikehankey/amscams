@@ -52,16 +52,16 @@ def manual_synchronization_chooser(form):
    sys.exit(0)
 
 
-   if "frames" in mr:
-      for ind, frame in enumerate(mr['frames']):   
-         if(frame_cnt<how_many_sd_frames):
+   #if "frames" in mr:
+      #for ind, frame in enumerate(mr['frames']):   
+         #if(frame_cnt<how_many_sd_frames):
           
             # we resize it to HD
 
             # we crop it from x_start, y_start, w, h
 
 
-         frame_cnt+=1
+         #frame_cnt+=1
 
          # Recreate the corresponding thumb
          #original_HD_frame = get_HD_frame(analysed_name,val['fn'])   
