@@ -183,7 +183,7 @@ def update_frame(form, AjaxDirect = False):
          mr['frames'].append(new_entry) 
 
          # We sort the frames
-         mr['frames'] = sorted(mr['frames'], key=lambda student: mr['frames']['fn'])
+         mr['frames'] = sorted(mr['frames'], key=lambda k: k['fn']) 
  
 
    if(len(original_HD_frame)!=0 and len(destination_cropped_frame)!=0):  
