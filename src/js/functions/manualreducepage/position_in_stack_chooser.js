@@ -130,7 +130,7 @@ function create_meteor_selector_from_stack(image_src, is_it_for_sync) {
    var real_H = 1080;
 
    var prev_W = 1075;              // Preview
-   var prev_H = 605;
+   var prev_H = 605; 
      
    var cursor_border_width  = 2; 
    
