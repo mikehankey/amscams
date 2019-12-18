@@ -8,7 +8,7 @@ from lib.Old_JSON_converter import get_analysed_name
 from lib.MeteorReduce_Tools import get_stacks
 
 
-MANUAL_SYNC_TEMPLATE_STEP1 = "/home/ams/amscams/pythonv2/templates/manual_reduction_template_step1.html"
+MANUAL_SYNC_TEMPLATE_STEP1 = "/home/ams/amscams/pythonv2/templates/manual_sync_template_step0.html"
 
 # First step of the manual synchronization
 def manual_synchronization(form):
