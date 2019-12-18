@@ -38,7 +38,14 @@ def create_thumb(form):
    org_frame = form.getvalue('src')
    x = int(form.getvalue('x'))
    y = int(form.getvalue('y'))
-   frame_id = int(form.getvalue('fn'))
+   frame_id = int(form.getvalue('fn')) # HD ID
+   sd_frame_id = int(form.getvalue('sd_fn')) # SD ID
+
+
+   print("IN CREATE THUMB")
+   print("HD :" + str(frame_id))
+   print("SD :" + str(sd_frame_id))
+  
 
    json_file = form.getvalue('json_file')
 

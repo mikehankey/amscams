@@ -240,6 +240,7 @@ function create_meteor_selector_from_frame(frame_id, image_src, frame_sd_id, nei
            data: {
                cmd: 'create_thumb',
                fn: frame_id,
+               sd_fn: frame_sd_id,
                src: image_src,
                json_file: json_file,
                x: Math.floor(parseInt($('#pos_x').text())),
