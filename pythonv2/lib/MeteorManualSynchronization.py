@@ -23,7 +23,7 @@ def manual_synchronization_chooser(form):
    json_file   = form.getvalue('json')
 
       # Get Analysed name (old or new)
-   analysed_name = get_analysed_name(video_file);
+   analysed_name = get_analysed_name(video_file)
 
    # Create destination folder if necessary
    dest_folder = get_cache_path(analysed_name,'tmp_cropped')
