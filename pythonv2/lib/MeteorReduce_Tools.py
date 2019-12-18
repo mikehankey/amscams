@@ -384,9 +384,7 @@ def get_stacks(analysed_name,clear_cache,toHD):
 
 # Generate the Stacks for a meteor detection
 def generate_stacks(video_full_path, destination, toHD):
-   
-   
- 
+    
    # Debug
    cgitb.enable() 
    
@@ -429,8 +427,7 @@ def get_HD_frames(analysed_name,clear_cache):
 
    # Test if folder exists / Create it if not
    HD_frames = does_cache_exist(analysed_name,"frames") 
-
-
+ 
    if(len(HD_frames)==0 or clear_cache is True):
       # We need to generate the HD Frame
       HD_frames = generate_HD_frames(analysed_name,get_cache_path(analysed_name,"frames")+analysed_name['name_w_ext'])
@@ -444,12 +441,7 @@ def get_HD_frames(analysed_name,clear_cache):
 
 
 # Generate HD frames for a meteor detection
-def generate_HD_frames(analysed_name, destination):
-
-   #print("IN GENERATE HD FRAMES<bt/>")
-   #print("ANALYSED NAME ", analysed_name, "<br/>")
-   #print("DEST ", destination, '<br/>')
-   #sys.exit(0)
+def generate_HD_frames(analysed_name, destination): 
 
    # Frames
    frames  = []
@@ -463,3 +455,8 @@ def generate_HD_frames(analysed_name, destination):
       output = subprocess.check_output(cmd, shell=True).decode("utf-8")
 
    return glob.glob(destination+"*"+EXT_HD_FRAMES+"*.png")
+
+
+# Generate SD frames for a meteor detection (warning: the SD video is first resized to HD)
+def generate_SD_frame(sd_fn,analysed_name,destination):
+   
