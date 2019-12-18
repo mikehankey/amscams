@@ -232,7 +232,7 @@ function create_meteor_selector_from_frame(frame_id, image_src, frame_sd_id, nei
    // Create frame
    $('#create_frame').click(function() {
 
-       loading({'text':'Creating reduction of frame #' + frame_id,'overlay':true}); 
+       loading({'text':'Creating frame #HD' + frame_id  + " /SD#" + frame_sd_id,'overlay':true}); 
 
        // Create cropped frame
        $.ajax({ 

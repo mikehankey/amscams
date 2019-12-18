@@ -40,12 +40,7 @@ def create_thumb(form):
    y = int(form.getvalue('y'))
    frame_id = int(form.getvalue('fn')) # HD ID
    sd_frame_id = int(form.getvalue('sd_fn')) # SD ID
-
-
-   print("IN CREATE THUMB")
-   print("HD :" + str(frame_id))
-   print("SD :" + str(sd_frame_id))
-  
+ 
 
    json_file = form.getvalue('json_file')
 
@@ -119,6 +114,9 @@ def update_frame(form, AjaxDirect = False):
    resp = {}
    resp['error'] = []
    
+   print("IN UPDATE FRAME")
+   print(form)
+
    fn = form.getvalue("fn")
    x = form.getvalue("x")
    y = form.getvalue("y")
