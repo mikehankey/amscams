@@ -119,7 +119,7 @@ def load_video_frames(trim_file, json_conf, limit=0, mask=0, color=0):
 
 # Try so sync HD & SD video
 def sync_hd_frames(hd_video_file,sd_video_file,json_reduction_file):
-   #print("SYNC HD FAMES")
+   print("SYNC HD FAMES")
   
    reduction_data = load_json_file(json_reduction_file)
   
@@ -141,26 +141,25 @@ def sync_hd_frames(hd_video_file,sd_video_file,json_reduction_file):
          first_sd_fram = fn
       hd_x = metframes[fn]['hd_x']
       hd_y = metframes[fn]['hd_y']
-      x1,y1,x2,y2 = bound_cnt(hd_x,hd_y,1920,1080,4)
+      x1,y1,x2,y2 = bound_cnt(hd_x,hd_y,HD_W,HD_H,4)
       if fc < 3:
          hd_fn = find_hd_frame(fn, hd_x, hd_y, x1,y1,x2,y2,hd_frames)
-         #print("FOUND ", fc, " HD FRAME:", fn, hd_fn, hd_x, hd_y, x1,y1,x2,y2,len(hd_frames))
+         print("FOUND ", fc, " HD FRAME:", fn, hd_fn, hd_x, hd_y, x1,y1,x2,y2,len(hd_frames))
          sd_fns.append(int(fn))
          hd_fns.append(int(hd_fn))
-         #print(fn, metframes[fn]['hd_x'], metframes[fn]['hd_y'])
+         print(fn, metframes[fn]['hd_x'], metframes[fn]['hd_y'])
 
       fc = fc + 1
-
-   
-   #print("len(sd_fns): " + str(len(sd_fns)))   
-   #print("len(hd_fns): " + str(len(hd_fns)))   
+ 
+   print("len(sd_fns): " + str(len(sd_fns)))   
+   print("len(hd_fns): " + str(len(hd_fns)))   
 
    if len(sd_fns) == len(hd_fns):
-      #print("Perfect HD/SD frame match up!")     
+      print("Perfect HD/SD frame match up!")     
       sd_fns.sort()
       hd_fns.sort()  
-      #print(sd_fns)
-      #print(hd_fns)
+      print(sd_fns)
+      print(hd_fns)
       return {'sd_ind':sd_fns[0], 'hd_ind':hd_fns[0]}
    else:
       return False 
