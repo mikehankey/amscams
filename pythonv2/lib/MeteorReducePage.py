@@ -149,12 +149,10 @@ def reduce_meteor2(json_conf,form):
    else:
       template = template.replace("{HD_fix}", "")
       template = template.replace("{HD_fix_button}",'<a class="btn btn-primary d-block mt-2" id="hd_fix">Fix not usable HD</a>')
-
-
-
+ 
    # Are HD & SD sync?
    if('sync' not in meteor_json_file):
-      template = template.replace("{NO_SYNC}", "<div class='container-fluid mt-4'><div class='alert alert-danger'><span class='icon-notification'></span> <b>Both HD and SD videos aren't synchronized.</b> <a id='manual_synchronization' class='btn btn-primary'><b>Manually Synchronize Now</b></a></div></div>")
+      template = template.replace("{NO_SYNC}", "<div class='container-fluid mt-4'><div class='alert alert-danger'><span class='icon-notification'></span> <b>Both HD and SD videos aren't synchronized.</b> <a id='manual_synchronization' class='btn btn-danger ml-3'><b>Manually Synchronize Now</b></a></div></div>")
    else:
       template = template.replace("{NO_SYNC}", "")
 
