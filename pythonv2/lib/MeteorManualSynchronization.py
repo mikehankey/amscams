@@ -15,6 +15,9 @@ MANUAL_SYNC_TEMPLATE_STEP2 = "/home/ams/amscams/pythonv2/templates/manual_sync_t
 # Second (and last step) of the manual sync
 def manual_synchronization_chooser(form):
 
+   # Debug
+   cgitb.enable()
+
    video_file  = form.getvalue('video_file')  
    stack_file  = form.getvalue('stack_file')  
    type_file   = form.getvalue('type')  
@@ -43,18 +46,18 @@ def manual_synchronization_chooser(form):
     if "frames" in mr:
          for ind, frame in enumerate(mr['frames']):   
 
-               print(ind + " > ")
-               print(frame)
-               print("<br/>")
+            print(ind + " > ")
+            print(frame)
+            print("<br/>")
 
-               # Recreate the corresponding thumb
-               #original_HD_frame = get_HD_frame(analysed_name,val['fn'])   
-               #destination_cropped_frame = get_thumb(analysed_name,val['fn'])    
+            # Recreate the corresponding thumb
+            #original_HD_frame = get_HD_frame(analysed_name,val['fn'])   
+            #destination_cropped_frame = get_thumb(analysed_name,val['fn'])    
 
-               #if(len(original_HD_frame)!=0 and len(destination_cropped_frame)!=0): 
+            #if(len(original_HD_frame)!=0 and len(destination_cropped_frame)!=0): 
                #   new_crop_thumb(original_HD_frame[0],int(val['x']),int(val['y']),destination_cropped_frame[0])
-               #else:
-               #   resp['error'].append("Impossible to update the frame " + str(int(val['fn'])))
+            #else:
+            #   resp['error'].append("Impossible to update the frame " + str(int(val['fn'])))
   
 
 
