@@ -43,7 +43,7 @@ function HD_fix() {
             }
 
             // No loading done
-            //loading_done();
+            // loading_done();
             loading({text:'Recreating media and reloading page...', overlay:true});
  
         }, error: function(data) {
