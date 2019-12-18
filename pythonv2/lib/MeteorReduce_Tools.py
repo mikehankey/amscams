@@ -473,16 +473,10 @@ def generate_SD_frames(analysed_name,destination):
    resized_video_full_path = destination  + os.sep + "resized_sd_video.mp4"
 
 
-   # Get the SD Video and create a temp resize (HD dim) video
-   if(cfe(destination)):
-      # Create a resized version of the SD video 
-      cmd = "ffmpeg -y -i " + video_sd_full_path + " -vf scale="+str(HD_W)+":"+str(HD_H)+" " + resized_video_full_path
-      print(cmd)
-      os.system(cmd)
-   else:
-      print('FAIL :<br/>')
-      print(destination)
-
+   # Create a resized version of the SD video 
+   cmd = "ffmpeg -y -i " + video_sd_full_path + " -vf scale="+str(HD_W)+":"+str(HD_H)+" " + resized_video_full_path
+   print(cmd)
+   os.system(cmd) 
 
    # Get All Frames
    #if(cfe(analysed_name['full_path'].replace('.json','-HD.mp4') )):
