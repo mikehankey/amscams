@@ -1,17 +1,16 @@
 import cgitb
-import re
 import os
 import sys
-import glob
-import random
 import json
 
+from lib.MeteorReducePage import print_error
 
 
 MANUAL_SYNC_TEMPLATE_STEP1 = "/home/ams/amscams/pythonv2/templates/manual_reduction_template_step1.html"
 
 # First step of the manual synchronization
 def manual_synchronization(form):
+   
    # Debug
    cgitb.enable()
 
