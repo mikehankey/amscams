@@ -5,7 +5,7 @@ import json
 
 from lib.MeteorReducePage import print_error
 from lib.Old_JSON_converter import get_analysed_name
-from lib.MeteorReduce_Tools import get_stacks
+from lib.MeteorReduce_Tools import get_stacks, get_cache_path, dodoes_cache_exist
 
 
 MANUAL_SYNC_TEMPLATE_STEP1 = "/home/ams/amscams/pythonv2/templates/manual_sync_template_step0.html"
@@ -13,8 +13,21 @@ MANUAL_SYNC_TEMPLATE_STEP2 = "/home/ams/amscams/pythonv2/templates/manual_sync_t
 
 # Second (and last step) of the manual sync
 def manual_synchronization_chooser(form):
-   print(form)
+   video_file  = form.getvalue('video_file')  
+   stack_file  = form.getvalue('stack_file')  
+   type_file   = form.getvalue('type')  
+   x_start     = float(form.getvalue('x_start'))
+   y_start     = float(form.getvalue('y_start'))
+   w           = float(form.getvalue('w'))
+   h           = float(form.getvalue('h'))
+   json_file   = form.getvalue('json')
 
+      # Get Analysed name (old or new)
+   analysed_name = get_analysed_name(video_file);
+
+   # Create destination folder if necessary
+   dest_folder = get_cache_path(analysed_name,'tmp_cropped')
+   cache_path  = does_cache_exist(analysed_name,'tmp_cropped')
 
 # First step of the manual synchronization
 def manual_synchronization(form):
