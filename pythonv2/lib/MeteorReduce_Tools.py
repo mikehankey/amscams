@@ -458,7 +458,7 @@ def generate_HD_frames(analysed_name, destination):
 
 
 # Generate SD frames for a meteor detection (warning: the SD video is first resized to HD)
-def generate_SD_frames(analysed_name,destination)
+def generate_SD_frames(analysed_name,destination):
    
    # Debug
    cgitb.enable() 
