@@ -26,8 +26,8 @@ def manual_synchronization_chooser(form):
    h           = float(form.getvalue('h'))
    json_file   = form.getvalue('json')
 
-   # Get Analysed name (old or new)
-   analysed_name = get_analysed_name(video_file)
+   # Get Analysed name  
+   analysed_name = name_analyser(video_file)
 
    # Create destination folder for the HD if necessary
    dest_folder = get_cache_path(analysed_name,'tmp_cropped_sync')
@@ -40,8 +40,7 @@ def manual_synchronization_chooser(form):
    cache_sd_path  = does_cache_exist(analysed_name,'tmp_sd_cropped_sync')
 
    # Parse the JSON file
-   mr = load_json_file(json_file)
-   analysed_name = name_analyser(json_file)
+   mr = load_json_file(json_file) 
 
    # How many SD frames do we create?
    how_many_sd_frames = 4
