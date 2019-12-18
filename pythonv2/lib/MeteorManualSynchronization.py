@@ -22,7 +22,7 @@ def manual_synchronization(form):
 
 
    # Build the page based on template  
-   with open(MANUAL_RED_PAGE_TEMPLATE_STEP1, 'r') as file:
+   with open(MANUAL_SYNC_TEMPLATE_STEP1, 'r') as file:
       template = file.read()
 
    # Here we have the possibility to "empty" the cache, ie regenerate the files (stacks) even if they already exists
