@@ -4,6 +4,7 @@ import sys
 import json
 
 from lib.MeteorReducePage import print_error
+from lib.Old_JSON_converter import get_analysed_name
 
 
 MANUAL_SYNC_TEMPLATE_STEP1 = "/home/ams/amscams/pythonv2/templates/manual_reduction_template_step1.html"
