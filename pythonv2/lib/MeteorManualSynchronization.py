@@ -2,6 +2,7 @@ import cgitb
 import os
 import sys
 import json
+import random
 
 from lib.FileIO import load_json_file
 from lib.MeteorReducePage import print_error 
@@ -59,8 +60,15 @@ def manual_synchronization_chooser(form):
    with open(MANUAL_SYNC_TEMPLATE_STEP2, 'r') as file:
       template = file.read()
  
+
+   # Create list of SD Cropped Frames for template
+   sd_frame_html = ''
+   for frame, i in enumerate(all_resized_sd):
+      sd_frame_html+=  '<a class="select_frame select_frame_btn cur" ><span>SD#'+i+'<i class="pos"></i></span><img src="'+frame+'?c='+str(random.randint(1,1000001))+'"/></a>
+
+
    # We add ithe SD Frames to the template
-   template = template.replace("{SD_CROPPED_FRAMES_SELECTOR}", str(all_resized_sd))  
+   template = template.replace("{SD_CROPPED_FRAMES_SELECTOR}", sd_frame_html)  
 
    # We add ithe HD Frames to the template
    template = template.replace("{HD_CROPPED_FRAMES_SELECTOR}", str(all_resized_hd))  
