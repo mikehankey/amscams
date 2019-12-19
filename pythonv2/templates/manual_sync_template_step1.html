@@ -6,23 +6,31 @@
             <div class="alert alert-info mb-3 p-1 pr-1 pl-2">Select the similar SD and HD Frames.</div> 
          </div>
          <div class="d-flex flex-wrap">
-            <div class="d-flex justify-content-left" id="frame_select_mod"> 
-               <div class="cropped_frame_select d-flex justify-content-left">
-                  <div>
-                     {SD_CROPPED_FRAMES_SELECTOR}
-                  </div> 
+               <div class="d-flex flex-wrap">
+                     <div class="d-flex justify-content-left" id="frame_select_mod"> 
+                        <div class="cropped_frame_select d-flex justify-content-left">
+                           <div>
+                              {SD_CROPPED_FRAMES_SELECTOR}
+                           </div> 
+                        </div>
+                     </div>
+               </div> 
+               <div class="d-flex flex-wrap">
+                        <div class="d-flex justify-content-left" id="frame_select_mod"> 
+                           <div class="cropped_frame_select d-flex justify-content-left">
+                              <div>
+                                 {HD_CROPPED_FRAMES_SELECTOR}
+                              </div> 
+                           </div>
+                        </div>
                </div>
-            </div>
-         </div> 
-         <div class="d-flex flex-wrap">
-               <div class="d-flex justify-content-left" id="frame_select_mod"> 
-                  <div class="cropped_frame_select d-flex justify-content-left">
-                     <div>
-                        {HD_CROPPED_FRAMES_SELECTOR}
-                     </div> 
-                  </div>
-               </div>
-            </div>
+               <div class="preview d-flex" style="
+                  height: 250px;
+                  width: 250px;
+                  background: red;
+               "></div>
+         </div>
+
          <div class="d-flex justify-content-between">
             <button  class="btn btn-primary hidden" style="visibility: hidden;">Create All</button>
             <div class="d-flex justify-content-center text-center">
