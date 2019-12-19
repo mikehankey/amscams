@@ -8,6 +8,7 @@ from lib.MeteorReducePage import print_error
 from lib.MeteorReduce_Tools import get_stacks, get_cache_path, does_cache_exist, name_analyser, generate_SD_frames
 from lib.VIDEO_VARS import *
 
+
 MANUAL_SYNC_TEMPLATE_STEP1 = "/home/ams/amscams/pythonv2/templates/manual_sync_template_step0.html"
 MANUAL_SYNC_TEMPLATE_STEP2 = "/home/ams/amscams/pythonv2/templates/manual_sync_template_step1.html"
 
@@ -50,12 +51,9 @@ def manual_synchronization_chooser(form):
       starting_from = mr['frames'][0]['fn']
    else:
       starting_from = 0
-
-   print("STARTING FROM:<br/>")
-   print(starting_from)
-
+  
    # Create the SD
-   all_resized_sd = generate_SD_frames(analysed_name,dest_sd_folder,how_many_sd_frames,starting_from)
+   all_resized_sd = generate_SD_frames(analysed_name,dest_sd_folder,how_many_sd_frames,starting_from,x_start,y_start,w,h)
    print(all_resized_sd)
    sys.exit(0)
  
@@ -80,7 +78,7 @@ def manual_synchronization(form):
    if(video_file is None):
       print_error("<b>You need to add a video file in the URL.</b>")
        
-   analysed_name = get_analysed_name(json_file)
+   analysed_name = name_analyser(json_file)
    
    # No matter if the stack is SD or not
    # we resize it to HD
