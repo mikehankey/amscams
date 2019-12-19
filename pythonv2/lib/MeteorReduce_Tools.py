@@ -480,6 +480,12 @@ def generate_SD_frames(analysed_name,destination,how_many_sd_frames,from_frame_f
    print("HM " +  str(how_many_sd_frames) + "<br/>")
    print("TRIM?<br/>")
    print(analysed_name)
+   print('<br>Starting SD frame ')
+   print(int(analysed['trim'])*FPS_HD)
+
+
+   # the from_frame_fn needs to be transformed based on trim
+   
 
    sys.exit(0)
    # Now we extract how_many_sd_frames frames starting from frame # from_frame_fn
