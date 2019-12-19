@@ -468,10 +468,6 @@ def generate_SD_frames(analysed_name,destination,how_many_sd_frames,from_frame_f
 
    # video_sd_full_path
    video_sd_full_path = analysed_name['full_path'].replace('-HD.mp4','-SD.mp4')
-
-   print("SD VIDEO ")
-   print(video_sd_full_path)
-   print("<hr/>")
  
    # resize_sd video destination
    resized_video_full_path = destination  + os.sep + "resized_sd_video.mp4"
@@ -479,20 +475,14 @@ def generate_SD_frames(analysed_name,destination,how_many_sd_frames,from_frame_f
    # Create a resized version of the SD video 
    cmd = "ffmpeg -y -i " + video_sd_full_path + " -vf scale="+str(HD_W)+":"+str(HD_H)+" " + resized_video_full_path
    os.system(cmd) 
-   
-   print("FROM " +  str(from_frame_fn) + "<br/>")
-   print("HM " +  str(how_many_sd_frames) + "<br/>")
-   print("TRIM?<br/>")
-   print(analysed_name)
-   print('<br>Starting SD frame ')
-   print(int(analysed_name['trim'])/FPS_HD)
-   print("<br/>")
+    
 
    # the from_frame_fn needs to be transformed based on trim
-   
+   from_time = from_frame_fn/HD_FPS
+
    # Now we extract how_many_sd_frames frames starting from frame # from_frame_fn
    if(cfe(resized_video_full_path)): 
-      cmd = "ffmpeg -i "+ resized_video_full_path+"  -y " + destination  + os.sep + "fr%03d.png"
+      cmd = "ffmpeg -i "+ resized_video_full_path+" -ss " + from_time + " -y " + destination  + os.sep + "fr%03d.png"
       print(cmd)
       os.system(cmd)
       
