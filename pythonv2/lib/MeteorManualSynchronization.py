@@ -59,8 +59,7 @@ def manual_synchronization_chooser(form):
    # Build the page based on template  
    with open(MANUAL_SYNC_TEMPLATE_STEP2, 'r') as file:
       template = file.read()
- 
-
+  
    # Create list of SD Cropped Frames for template
    sd_frame_html = ''
    for i,frame  in enumerate(sorted(all_resized_sd)):
@@ -70,8 +69,15 @@ def manual_synchronization_chooser(form):
    # We add ithe SD Frames to the template
    template = template.replace("{SD_CROPPED_FRAMES_SELECTOR}", sd_frame_html)  
 
-   # We add ithe HD Frames to the template
-   template = template.replace("{HD_CROPPED_FRAMES_SELECTOR}", str(all_resized_hd))  
+   # Create list of SD Cropped Frames for template
+   hd_frame_html = ''
+   for i,frame  in enumerate(sorted(all_resized_hd)):
+      x = i+1
+      hd_frame_html+=  '<a class="select_frame select_frame_btn"><span>HD#'+str(x)+'<i class="pos"></i></span><img src="'+frame+'?c='+str(random.randint(1,1000001))+'"/></a>'
+ 
+   # We add ithe SD Frames to the template
+   template = template.replace("{HD_CROPPED_FRAMES_SELECTOR}", hd_frame_html)  
+ 
 
    print(template)  
 
