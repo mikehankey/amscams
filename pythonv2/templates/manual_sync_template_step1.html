@@ -31,12 +31,7 @@
            
 
          <div class="d-flex justify-content-between">
-            <button  class="btn btn-primary hidden" style="visibility: hidden;">Create All</button>
-            <div class="d-flex justify-content-center text-center">
-               <button id="reset_frame" class="btn btn-secondary mr-3" style="visibility: hidden;">Reset</button>
-               <button id="skip_frame" class="btn btn-secondary ml-3">Skip</button>
-            </div>
-            <button id="create_all" class="btn btn-primary">Create All</button>
+               <button id="synchronize" class="btn btn-primary">Synchronize</button>
          </div>
       </div>
    </div>
@@ -48,7 +43,7 @@
 <!-- Form used to POST the frames data -->
 <form id="post_form" action="./webUI.py" method="post">
    <input type="hidden" name="frames" />
-   <input type="hidden" name="cmd" value="manual_reduction_create_final_json"/>
+   <input type="hidden" name="cmd" value="final_synchronized"/>
    <input type="hidden" name="video_file" value="{VIDEO}"/>
    <input type="hidden" name="json" value="{JSON}"/>
 </form>
