@@ -54,12 +54,18 @@ def manual_synchronization_chooser(form):
   
    # Create the SD
    all_resized_sd, all_resized_hd = generate_SD_and_HD_frames_for_sync(analysed_name,dest_sd_folder,x_start,y_start,w,h)
-   print(all_resized_sd)
-   print("<br>")
-   print(all_resized_hd)
-   sys.exit(0)
+   
+   # Build the page based on template  
+   with open(MANUAL_SYNC_TEMPLATE_STEP2, 'r') as file:
+      template = file.read()
  
+   # We add ithe SD Frames to the template
+   template = template.replace("{SD_CROPPED_FRAMES_SELECTOR}", str(all_resized_sd))  
 
+   # We add ithe HD Frames to the template
+   template = template.replace("{HD_CROPPED_FRAMES_SELECTOR}", str(all_resized_hd))  
+
+   print(template)  
 
 # First step of the manual synchronization
 def manual_synchronization(form):
