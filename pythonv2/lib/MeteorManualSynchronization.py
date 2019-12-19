@@ -63,7 +63,7 @@ def manual_synchronization_chooser(form):
 
    # Create list of SD Cropped Frames for template
    sd_frame_html = ''
-   for i,frame  in enumerate(all_resized_sd):
+   for i,frame  in enumerate(sorted(all_resized_sd)):
       x = i+1
       sd_frame_html+=  '<a class="select_frame select_frame_btn"><span>SD#'+str(x)+'<i class="pos"></i></span><img src="'+frame+'?c='+str(random.randint(1,1000001))+'"/></a>'
  
