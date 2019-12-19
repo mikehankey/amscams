@@ -478,10 +478,8 @@ def generate_SD_frames(analysed_name,destination,how_many_sd_frames,from_frame_f
    
    
    # Now we extract how_many_sd_frames frames starting from frame # from_frame_fn
-   if(cfe(resized_video_full_path)):
-      _from = from_frame_fn/FPS_HD
-      print("FROM "+ str(_from) )
-      cmd = "ffmpeg -i "+ resized_video_full_path+"  -y -ss "+ str(_from) +" " + destination  + os.sep + "filename%03d.jpg"
+   if(cfe(resized_video_full_path)): 
+      cmd = "ffmpeg -i "+ resized_video_full_path+"  -y " + destination  + os.sep + "fr%03d.png"
       print(cmd)
       os.system(cmd)
       
