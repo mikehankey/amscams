@@ -469,12 +469,21 @@ def generate_SD_frames(analysed_name,destination,how_many_sd_frames,from_frame_f
    # video_sd_full_path
    video_sd_full_path = analysed_name['full_path'].replace('.json','-SD.mp4')
 
+   print("SD VIDEO PATH<br>")
+   print(video_sd_full_path)
+
    # resize_sd video destination
    resized_video_full_path = destination  + os.sep + "resized_sd_video.mp4"
+
+   print("<br>")
+   print("resized_video_full_path<br>")
+   print(resized_video_full_path)
 
    # Create a resized version of the SD video 
    cmd = "ffmpeg -y -i " + video_sd_full_path + " -vf scale="+str(HD_W)+":"+str(HD_H)+" " + resized_video_full_path
    os.system(cmd) 
+   
+   print(cmd)
 
    # Now we extract how_many_sd_frames frames starting from frame # from_frame_fn
    if(cfe(resized_video_full_path)):
