@@ -8,29 +8,29 @@
          <div class="d-flex justify-content-start">
             <div>
                   <div class="d-flex flex-wrap" style="max-width: 900px;">
-                        <div class="d-flex justify-content-left frame_select_mod"> 
-                           <div class="cropped_frame_select d-flex justify-content-left">
-                              <div>
-                                 {SD_CROPPED_FRAMES_SELECTOR}
-                              </div> 
-                           </div>
+                     <div class="d-flex justify-content-left frame_select_mod"> 
+                        <div id="sd_frame_selector" class="cropped_frame_select d-flex justify-content-left">
+                           <div>
+                              {SD_CROPPED_FRAMES_SELECTOR}
+                           </div> 
                         </div>
+                     </div>
                   </div> 
                   <div class="d-flex flex-wrap" style="max-width: 900px;">
-                           <div class="d-flex justify-content-left frame_select_mod"> 
-                              <div class="cropped_frame_select d-flex justify-content-left">
-                                 <div>
-                                    {HD_CROPPED_FRAMES_SELECTOR}
-                                 </div> 
-                              </div>
-                           </div>
+                     <div class="d-flex justify-content-left frame_select_mod"> 
+                        <div id="hd_frame_selector" class="cropped_frame_select d-flex justify-content-left">
+                           <div>
+                              {HD_CROPPED_FRAMES_SELECTOR}
+                           </div> 
+                        </div>
+                     </div>
                   </div>
             </div>
-            <div class="preview d-flex" style="width: 400px; background: red; margin: .4rem 2rem;"></div>
+            <div id="frame_selector_preview" class="d-flex" style="width: 400px; margin: .4rem 2rem;"></div>
          </div>
            
 
-         <div class="d-flex justify-content-between">
+         <div class="d-flex justify-content-end">
                <button id="synchronize" class="btn btn-primary">Synchronize</button>
          </div>
       </div>
