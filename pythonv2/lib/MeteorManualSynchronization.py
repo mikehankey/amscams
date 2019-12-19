@@ -5,7 +5,7 @@ import json
 
 from lib.FileIO import load_json_file
 from lib.MeteorReducePage import print_error 
-from lib.MeteorReduce_Tools import get_stacks, get_cache_path, does_cache_exist, name_analyser, generate_SD_frames
+from lib.MeteorReduce_Tools import get_stacks, get_cache_path, does_cache_exist, name_analyser, generate_SD_and_HD_frames_for_sync
 from lib.VIDEO_VARS import *
 
 
