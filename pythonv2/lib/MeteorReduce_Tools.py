@@ -471,22 +471,17 @@ def generate_SD_frames(analysed_name,destination,how_many_sd_frames,from_frame_f
  
    # resize_sd video destination
    resized_video_full_path = destination  + os.sep + "resized_sd_video.mp4"
- 
-   # Create a resized version of the SD video 
-   cmd = "ffmpeg -y -i " + video_sd_full_path + " -vf scale="+str(HD_W)+":"+str(HD_H)+" " + resized_video_full_path
-   os.system(cmd) 
-    
+  
 
    # the from_frame_fn needs to be transformed based on trim
    from_time = from_frame_fn/FPS_HD
 
-   # Now we extract how_many_sd_frames frames starting from frame # from_frame_fn
+   # Now we extract the frames from the SD resize video  
    if(cfe(resized_video_full_path)): 
-      cmd = "ffmpeg -i "+ resized_video_full_path+"  -y " + destination  + os.sep + "fr%03d.png"
-      #-ss " + str(from_time) + " 
+      cmd = 'ffmpeg   -i ' + video_sd_full_path +  ' -y -filter_complex "[0:v]scale=' + str(HD_W) + ":" + str(HD_H) + '[scale];[scale]crop='+str(w)+':'+str(h)+':'+str(x_start)+':'+str(y_start)+'[out]"  -map "[out]" ' +  destination  + os.sep + '/%04d' + '.png' 
       os.system(cmd)
       
-   print(destination  + os.sep + "fr"+str(from_frame_fn)+".png")
+   print(destination  + os.sep )
 
 
    sys.exit(0)
