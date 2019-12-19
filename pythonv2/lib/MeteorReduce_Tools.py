@@ -481,7 +481,7 @@ def generate_SD_frames(analysed_name,destination,how_many_sd_frames,from_frame_f
    print("TRIM?<br/>")
    print(analysed_name)
    print('<br>Starting SD frame ')
-   print(int(analysed['trim'])*FPS_HD)
+   print(int(analysed_name['trim'])*FPS_HD)
 
 
    # the from_frame_fn needs to be transformed based on trim
