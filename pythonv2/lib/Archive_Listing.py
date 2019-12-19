@@ -5,6 +5,7 @@ import json
 import datetime
 import sys
 import collections 
+import shutil
 
 from calendar import monthrange
 
@@ -22,6 +23,41 @@ POSSIBLE_MAGNITUDES = [130,140,150,160,170,180,190,200,210,220,230,240,250,260,2
 POSSIBLE_ERRORS = [0.5,0.6,0.8,0.9,1,1.1,1.2,1.3,1.4,1.5,1.6,1.7,1.8,1.9,2,2.5,3,3.5,4,5]
 POSSIBLE_ANG_VELOCITIES = [1,2,3,4,5,6,7,8,9,10,11,12,13,15,16,17,18,19,20,21,22,23,24,25]
  
+# Delete Multiple Detections at once
+def delete_multiple_archived_detection(detections):
+   
+   # In case we only have one... it's a string
+   if(isinstance(detections, str)):
+      detections = [detections]
+
+   for det in detections:
+
+      analysed_name = name_analyser(det)
+
+      # Remove the Cache files 
+      cache_path = get_cache_path(analysed_name)
+      if os.path.isdir(cache_path):
+         shutil.rmtree(cache_path)
+     
+      # Remove Json
+      if os.path.isfile(det):
+         os.remove(det)
+
+      # Remove HD     
+      det = det.replace('.json','-HD.mp4')
+      if os.path.isfile(det):
+         os.remove(det)
+
+      # Remove SD
+      det = det.replace('-HD','-SD')
+      if os.path.isfile(det):
+         os.remove(det)
+
+      # Update Index (?)
+      write_month_index(int(analysed_name['month']),int(analysed_name['year']))
+      write_year_index(int(analysed_name['year']))
+
+
 # Function that read a json file (detection)
 # and return the values of the corresponding Diagnostic Fields 
 def get_diag_fields(detection):
@@ -393,6 +429,7 @@ def get_results_from_date_from_monthly_index(criteria,date,max_res_per_page,cur_
 
                   if(test==True):
                      
+                     # We add it only if it fits the pagination
                      if(len(res_to_return)<max_res_per_page and res_counter>number_of_res_to_give_up):
                         # We complete the detection['p'] to get the full path (as the index only has compressed name)
                         detection['p'] = get_full_det_path(detection['p'],station_id,date,day)
@@ -406,8 +443,7 @@ def get_results_from_date_from_monthly_index(criteria,date,max_res_per_page,cur_
          cur_month = 12
          cur_year =  cur_year - 1
          json_index =  get_monthly_index(cur_month,cur_year)
- 
-      
+  
          # Change the date backward
          week_day, numbers_of_days =  monthrange(cur_year,cur_month)
          date = date.replace(year=cur_year, month=cur_month,day=numbers_of_days) 
@@ -420,11 +456,7 @@ def get_results_from_date_from_monthly_index(criteria,date,max_res_per_page,cur_
          # Change the date backward
          week_day, numbers_of_days =  monthrange(cur_year,cur_month)
          date = date.replace(year=cur_year, month=cur_month,day=numbers_of_days) 
-
  
-  
-   
-   
    return res_to_return, res_counter
 
 
@@ -660,13 +692,11 @@ def archive_listing(form):
 
    # Search the results through the monthly indexes
    res, total = get_results_from_date_from_monthly_index(criteria,the_date,int(nompp),cur_page)
-
-   #print("RES: ")
-   #print(res)
-   #print("<br/>")
-   #print("TOTAL: ")
-   #print(total)
    
+   # To check
+   if(total>1):
+      total = total -1
+
    # CREATE URL FOR THE PAGINATION
    pagination_url  = "/pycgi/webUI.py?cmd=archive_listing&meteor_per_page="+str(nompp)
 
@@ -692,8 +722,7 @@ def archive_listing(form):
       template = template.replace("{PAGINATION}", pagination[0])
    else:
       template = template.replace("{PAGINATION}", "")
-
-
+ 
    if(len(res)==0):
       template = template.replace("{RESULTS}", "<div class='alert alert-danger mx-auto'>No detection found in your the archive for your criteria.</div>")
       template = template.replace("{PAGINATION_DET}", "")    

@@ -100,10 +100,7 @@ def reduce_meteor2(json_conf,form):
    template = template.replace("{STACK}", str(stack))                  # Stack File 
    if(hd_stack is not None):
       template = template.replace("{HD_STACK}", str(hd_stack))                  # HD Stack File 
-   
-  
-
-
+    
    # For the Event start time
    # either it has already been reduced and we take the time of the first frame
    start_time = 0
@@ -144,10 +141,22 @@ def reduce_meteor2(json_conf,form):
    if('info' in meteor_json_file):
       if('HD_fix' in meteor_json_file['info']):
          template = template.replace("{HD_fix}", '<div class="box"><dl class="row mb-0 mt-2"><dt class="col-12"><span class="icon-notification"></span> This detection only relies on SD video data.</dt></dl></div>')
+         template = template.replace("{HD_fix_button}",'')
       else:
          template = template.replace("{HD_fix}", "")
+         template = template.replace("{HD_fix_button}",'<a class="btn btn-primary d-block mt-2" id="hd_fix">Fix not usable HD</a>')
+         
    else:
-       template = template.replace("{HD_fix}", "")
+      template = template.replace("{HD_fix}", "")
+      template = template.replace("{HD_fix_button}",'<a class="btn btn-primary d-block mt-2" id="hd_fix">Fix not usable HD</a>')
+ 
+   # Are HD & SD sync?
+   if('sync' not in meteor_json_file):
+      template = template.replace("{NO_SYNC}", "<div class='container-fluid mt-4'><div class='alert alert-danger'><span class='icon-notification'></span> <b>Both HD and SD videos aren't synchronized.</b> <a id='manual_synchronization' class='btn btn-danger ml-3'><b>Manually synchronize both videos now</b></a></div></div>")
+   else:
+      template = template.replace("{NO_SYNC}", "")
+
+       
 
    # Display some of the report info directly on the page
    #dist_per_elp: 9.661147849907783,

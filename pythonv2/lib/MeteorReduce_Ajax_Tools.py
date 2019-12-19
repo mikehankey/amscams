@@ -38,7 +38,9 @@ def create_thumb(form):
    org_frame = form.getvalue('src')
    x = int(form.getvalue('x'))
    y = int(form.getvalue('y'))
-   frame_id = int(form.getvalue('fn'))
+   frame_id = int(form.getvalue('fn')) # HD ID
+   sd_frame_id = int(form.getvalue('sd_fn')) # SD ID
+ 
 
    json_file = form.getvalue('json_file')
 
@@ -64,8 +66,9 @@ def get_frame(form):
    cgitb.enable()     
  
    json_file = form.getvalue('json_file')
-   fn = form.getvalue('fr') # The frame ID
- 
+   fn = form.getvalue('fr') # The frame ID (SD!!)
+   sd_fn = fn
+
    # Analyse the name
    analysed_name = get_analysed_name(json_file)
  
@@ -77,7 +80,7 @@ def get_frame(form):
       if('sd_ind' in tmp_json['sync'] and 'hd_ind' in tmp_json['sync']):
          frame_hd_sd_diff = int(tmp_json['sync']['hd_ind']) - int(tmp_json['sync']['sd_ind'])
 
-   
+   #print("frame_hd_sd_diff " + str(frame_hd_sd_diff))
    fn = frame_hd_sd_diff + int(fn)
 
    #print("NEW FRAME FN " + str(fn) + "<br/>")
@@ -87,9 +90,8 @@ def get_frame(form):
    # if they don't exist
    the_frame = get_HD_frame(analysed_name,fn)
  
-
    the_frame = the_frame[0]
-   toReturn = {'id':fn, 'full_fr':the_frame}
+   toReturn = {'id':fn, 'full_fr':the_frame,'sd_id': int(sd_fn)}
   
    print(json.dumps(toReturn))
 
@@ -111,15 +113,31 @@ def update_frame(form, AjaxDirect = False):
 
    resp = {}
    resp['error'] = []
-   
+    
    fn = form.getvalue("fn")
+   sd_fn = form.getvalue("sd_fn")
    x = form.getvalue("x")
    y = form.getvalue("y")
  
    # Recreate the corresponding thumb
    original_HD_frame = get_HD_frame(analysed_name,fn)   
-   destination_cropped_frame = get_thumb(analysed_name,fn)  
+   destination_cropped_frame = get_thumb(analysed_name,sd_fn)  
+
+   
+   #print("IN UPDATE FRAME")
+   #print("SD " + str(sd_fn))
+   #print("HD " + str(fn))
+   #print("ORG HD FRAME ")
+   #print(original_HD_frame)
+   #print("Destination_cropped_frame")
+   #print(destination_cropped_frame)
+
+
+
    thumb_path = ''
+   
+   # SWITCH TO SD #
+   fn = sd_fn
 
    if(len(destination_cropped_frame)==0):
       # It's a creation
@@ -161,7 +179,11 @@ def update_frame(form, AjaxDirect = False):
             'w': W_DEFAULT, 
             'h': H_DEFAULT
          }
+
          mr['frames'].append(new_entry) 
+
+         # We sort the frames
+         mr['frames'] = sorted(mr['frames'], key=lambda k: k['fn']) 
  
 
    if(len(original_HD_frame)!=0 and len(destination_cropped_frame)!=0):  

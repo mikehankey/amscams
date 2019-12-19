@@ -346,7 +346,7 @@ def move_old_detection_to_archive(json_file_path, sd_video_file_path, hd_video_f
    if(cfe(hd_video_file_path) and cfe(sd_video_file_path) and cfe(json_file_path.replace('.json','-reduced.json'))):
       sync_res = sync_hd_frames(hd_video_file_path,sd_video_file_path,json_file_path.replace('.json','-reduced.json'))
       if(sync_res == False):
-         print("HD & SD video not synchronized!") 
+         print("<div style='text-align:center;font-weight:bold'>HD & SD video not synchronized!</div>") 
          
 
    new_json_file['calib']['org_file'] = param_files[0][0]
@@ -372,7 +372,6 @@ def move_old_detection_to_archive(json_file_path, sd_video_file_path, hd_video_f
    
    if(display is True):
       print("VIDEOS FILE SAVE TO " + new_folder)
-
  
    # Create the definitive json_content
    json_content = {}
@@ -380,20 +379,16 @@ def move_old_detection_to_archive(json_file_path, sd_video_file_path, hd_video_f
    json_content['info']    = new_json_file['info']
    json_content['frames']  = new_json_file['frames']
    json_content['report']  = new_json_file['report']
-
-
+ 
    # Test if we have the required info in json_file['calib']['device']
    # json_file['calib']['device']['scale_px']
    # json_file['calib']['device']['poly']['x_fwd']
    # json_file['calib']['device']['poly']['y_fwd']
    if('device' not in json_content['calib']):
- 
-
+  
       # Do we have the old params?
       if('org_file' in json_content['calib']):
-
-          
-
+ 
          if(cfe(json_content['calib']['org_file'])):
             calibration_param = load_json_file(json_content['calib']['org_file'])
               
@@ -403,9 +398,7 @@ def move_old_detection_to_archive(json_file_path, sd_video_file_path, hd_video_f
             #print(calibration_param)
             
             json_content['calib']['device'] = {}
-            
             json_content['calib']['device']['scale_px'] = float(calibration_param['pixscale'])
-            
             json_content['calib']['device']['poly'] = {}
             json_content['calib']['device']['poly']['x_fwd'] = calibration_param['x_poly_fwd']
             json_content['calib']['device']['poly']['y_fwd'] = calibration_param['y_poly_fwd']

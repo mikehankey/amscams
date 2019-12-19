@@ -1,6 +1,6 @@
+{NO_SYNC}
 <div id="main_container" class="container-fluid d-flex h-100 mt-4 position-relative"> 
    <div class="h-100 flex-fixed-canvas">
-   
    
        <div class="canvas-container">
             <canvas id="c" width="960" height="540"></canvas> 
@@ -175,7 +175,8 @@
 
                         <a class="btn btn-primary d-block" href="/pycgi/webUI.py?cmd=manual_reduction&video_file={VIDEO_FILE}&hd_stack={HD_STACK}&sd_stack={SD_STACK}&sd_video={SD_VIDEO}&json_file={JSON_FILE}"><strong>NEW</strong> Manual Reduction</a>
                         <a class="btn btn-primary d-block mt-2" id="radec_mode">RA/Dec Mode</a>
-                        <a class="btn btn-primary d-block mt-2" id="hd_fix">Fix not usable HD</a>
+                        {HD_fix_button}
+                        
       
 <!--
                        <a class="btn btn-primary d-block mt-2" target=_blank href=/pycgi/webUI.py?cmd=custom_fit&cal_params_file={JSON_FILE}>Minimize FOV Parms</a> 

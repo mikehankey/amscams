@@ -88,7 +88,11 @@ def get_cache_path(analysed_file_name, cache_type=''):
       cache_path += TMP_CROPPED_FRAMES_SUBPATH
    elif(cache_type == 'preview'):
       cache_path += PREVIEW
-   
+   elif(cache_type == 'tmp_hd_cropped_sync'):
+      cache_path += TMP_HD_CROPPED_SUBFRAMES_SUBPATH
+   elif(cache_type == 'tmp_sd_cropped_sync'):
+      cache_path += TMP_SD_CROPPED_SUBFRAMES_SUBPATH
+ 
    return cache_path
 
 
@@ -380,9 +384,7 @@ def get_stacks(analysed_name,clear_cache,toHD):
 
 # Generate the Stacks for a meteor detection
 def generate_stacks(video_full_path, destination, toHD):
-   
-   
- 
+    
    # Debug
    cgitb.enable() 
    
@@ -425,8 +427,7 @@ def get_HD_frames(analysed_name,clear_cache):
 
    # Test if folder exists / Create it if not
    HD_frames = does_cache_exist(analysed_name,"frames") 
-
-
+ 
    if(len(HD_frames)==0 or clear_cache is True):
       # We need to generate the HD Frame
       HD_frames = generate_HD_frames(analysed_name,get_cache_path(analysed_name,"frames")+analysed_name['name_w_ext'])
@@ -440,12 +441,7 @@ def get_HD_frames(analysed_name,clear_cache):
 
 
 # Generate HD frames for a meteor detection
-def generate_HD_frames(analysed_name, destination):
-
-   #print("IN GENERATE HD FRAMES<bt/>")
-   #print("ANALYSED NAME ", analysed_name, "<br/>")
-   #print("DEST ", destination, '<br/>')
-   #sys.exit(0)
+def generate_HD_frames(analysed_name, destination): 
 
    # Frames
    frames  = []
@@ -459,3 +455,39 @@ def generate_HD_frames(analysed_name, destination):
       output = subprocess.check_output(cmd, shell=True).decode("utf-8")
 
    return glob.glob(destination+"*"+EXT_HD_FRAMES+"*.png")
+
+
+# Generate SD frames for a meteor detection (warning: the SD video is first resized to HD)
+def generate_SD_frames(analysed_name,destination,how_many_sd_frames,from_frame_fn,x_start,y_start,w,h):
+   
+   # Debug
+   cgitb.enable() 
+
+   # Frames
+   frames  = []
+
+   # video_sd_full_path
+   video_sd_full_path = analysed_name['full_path'].replace('-HD.mp4','-SD.mp4')
+   
+   # we extract the frames from the SD resize video  
+   cmd = 'ffmpeg   -i ' + video_sd_full_path +  ' -y -filter_complex "[0:v]scale=' + str(HD_W) + ":" + str(HD_H) + '[scale];[scale]crop='+str(w)+':'+str(h)+':'+str(x_start)+':'+str(y_start)+'[out]"  -map "[out]" ' +  destination  + os.sep + '/SD%04d' + '.png' 
+   print(cmd)
+   os.system(cmd)
+      
+   # We do the same with the frames from the HD video
+   cmd = 'ffmpeg   -i ' + analysed_name['full_path'] +  ' -y -filter_complex "[0:v]crop='+str(w)+':'+str(h)+':'+str(x_start)+':'+str(y_start)+'[out]"  -map "[out]" ' +  destination  + os.sep + '/HD%04d' + '.png' 
+   print("<br>")
+   print(cmd)
+   os.system(cmd)
+
+
+
+
+   sys.exit(0)
+
+   # Get All Frames
+   #if(cfe(analysed_name['full_path'].replace('.json','-HD.mp4') )):
+   #   cmd = 'ffmpeg -y -hide_banner -loglevel panic  -i ' + analysed_name['full_path'].replace('.json','-HD.mp4') + ' -s ' + str(HD_W) + "x" + str(HD_H) + ' ' +  destination + EXT_HD_FRAMES + '%04d' + '.png' 
+   #   output = subprocess.check_output(cmd, shell=True).decode("utf-8")
+
+   return glob.glob(destination+"*"+EXT_HD_SDFRAMES+"*.png")

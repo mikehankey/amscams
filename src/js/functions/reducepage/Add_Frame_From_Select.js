@@ -69,7 +69,7 @@ function update_preview(top,left,margins,W_factor,H_factor,cursor_dim,w_preview_
 }
 
 // Create modal to select meteor from full frame
-function create_meteor_selector_from_frame(frame_id, image_src, neighbor) {
+function create_meteor_selector_from_frame(frame_id, image_src, frame_sd_id, neighbor) {
    
   var cursor_dim   = 50;            // Cursor dimension
   var cursor_dim_w = 50;
@@ -94,16 +94,14 @@ function create_meteor_selector_from_frame(frame_id, image_src, neighbor) {
    var W_factor = real_W/prev_W;
    var H_factor = real_H/prev_H; 
 
-
-
-   //loading({text: "Creating frame picker", overlay:true});
+ 
 
    // Create Modal
    $('<div class="modal fade" id="cropper_modal" tabindex="-1">\
        <div class="modal-dialog modal-lg" style="max-width:1350px">\
        <div class="modal-content">\
            <div class="modal-header">\
-           <div><strong>Frame #'+  frame_id + ' cropper</strong></div>\
+           <div><strong>Frame HD#'+  frame_id + '/ SD#'+frame_sd_id+ ' cropper</strong></div>\
            <div class="alert alert-info mb-0 p-1 pr-1 pl-2">Move the white square to the meteor location</div>\
            </div>\
            <div class="modal-body">\
@@ -234,7 +232,7 @@ function create_meteor_selector_from_frame(frame_id, image_src, neighbor) {
    // Create frame
    $('#create_frame').click(function() {
 
-       loading({'text':'Creating reduction of frame #' + frame_id,'overlay':true}); 
+       loading({'text':'Creating frame #HD' + frame_id  + " /SD#" + frame_sd_id,'overlay':true}); 
 
        // Create cropped frame
        $.ajax({ 
@@ -242,6 +240,7 @@ function create_meteor_selector_from_frame(frame_id, image_src, neighbor) {
            data: {
                cmd: 'create_thumb',
                fn: frame_id,
+               sd_fn: frame_sd_id,
                src: image_src,
                json_file: json_file,
                x: Math.floor(parseInt($('#pos_x').text())),
@@ -309,7 +308,7 @@ function get_frame(cur_fn, neighbor) {
            // Hide the modal below (it will be reopened anyway)
            $('#select_meteor_modal').modal('hide');
            
-           create_meteor_selector_from_frame(data.id,data.full_fr,neighbor); 
+           create_meteor_selector_from_frame(data.id,data.full_fr,data.sd_id,neighbor); 
        }, 
        error:function() { 
            bootbox.alert({
