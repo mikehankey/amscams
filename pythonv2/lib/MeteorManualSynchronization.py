@@ -53,8 +53,10 @@ def manual_synchronization_chooser(form):
       starting_from = 0
   
    # Create the SD
-   all_resized_sd = generate_SD_frames(analysed_name,dest_sd_folder,how_many_sd_frames,starting_from,x_start,y_start,w,h)
+   all_resized_sd, all_resized_hd = generate_SD_and_HD_frames_for_sync(analysed_name,dest_sd_folder,x_start,y_start,w,h)
    print(all_resized_sd)
+   print("<br>")
+   print(all_resized_hd)
    sys.exit(0)
  
 

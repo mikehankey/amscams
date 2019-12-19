@@ -458,7 +458,7 @@ def generate_HD_frames(analysed_name, destination):
 
 
 # Generate SD frames for a meteor detection (warning: the SD video is first resized to HD)
-def generate_SD_frames(analysed_name,destination,how_many_sd_frames,from_frame_fn,x_start,y_start,w,h):
+def generate_SD_and_HD_frames_for_sync(analysed_name,destination,x_start,y_start,w,h):
    
    # Debug
    cgitb.enable() 
@@ -471,23 +471,11 @@ def generate_SD_frames(analysed_name,destination,how_many_sd_frames,from_frame_f
    
    # we extract the frames from the SD resize video  
    cmd = 'ffmpeg   -i ' + video_sd_full_path +  ' -y -filter_complex "[0:v]scale=' + str(HD_W) + ":" + str(HD_H) + '[scale];[scale]crop='+str(w)+':'+str(h)+':'+str(x_start)+':'+str(y_start)+'[out]"  -map "[out]" ' +  destination  + os.sep + '/SD%04d' + '.png' 
-   print(cmd)
    os.system(cmd)
       
    # We do the same with the frames from the HD video
    cmd = 'ffmpeg   -i ' + analysed_name['full_path'] +  ' -y -filter_complex "[0:v]crop='+str(w)+':'+str(h)+':'+str(x_start)+':'+str(y_start)+'[out]"  -map "[out]" ' +  destination  + os.sep + '/HD%04d' + '.png' 
-   print("<br>")
-   print(cmd)
    os.system(cmd)
 
-
-
-
-   sys.exit(0)
-
-   # Get All Frames
-   #if(cfe(analysed_name['full_path'].replace('.json','-HD.mp4') )):
-   #   cmd = 'ffmpeg -y -hide_banner -loglevel panic  -i ' + analysed_name['full_path'].replace('.json','-HD.mp4') + ' -s ' + str(HD_W) + "x" + str(HD_H) + ' ' +  destination + EXT_HD_FRAMES + '%04d' + '.png' 
-   #   output = subprocess.check_output(cmd, shell=True).decode("utf-8")
-
-   return glob.glob(destination+"*"+EXT_HD_SDFRAMES+"*.png")
+ 
+   return glob.glob(destination  + os.sep + '/SD*.png'), glob.glob(destination  + os.sep + '/HD*.png')
