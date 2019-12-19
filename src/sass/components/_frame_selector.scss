@@ -36,6 +36,14 @@
    max-height: 250px;
 }
 
+// Manual Synchronization step2
+.frame_select_mod {
+   overflow: auto;
+   padding-bottom: 0;
+   max-height: 250px;
+   margin-bottom: 15px;
+}
+
 #cropped_frame_select, .cropped_frame_select {
    white-space: nowrap; 
    a {
