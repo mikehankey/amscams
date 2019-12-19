@@ -467,7 +467,7 @@ def generate_SD_frames(analysed_name,destination,how_many_sd_frames,from_frame_f
    frames  = []
 
    # video_sd_full_path
-   video_sd_full_path = analysed_name['full_path'].replace('.json','-SD.mp4')
+   video_sd_full_path = analysed_name['full_path'].replace('-HD.mp4','-SD.mp4')
 
    print("SD VIDEO ")
    print(video_sd_full_path)
