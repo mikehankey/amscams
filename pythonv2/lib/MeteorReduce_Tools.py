@@ -481,9 +481,10 @@ def generate_SD_frames(analysed_name,destination,how_many_sd_frames,from_frame_f
    if(cfe(resized_video_full_path)):
       _from = from_frame_fn/FPS_HD
       print("FROM "+ str(_from) )
-      cmd = "ffmpeg -i resized_video_full_path -y -ss "+_from+" " + destination  + os.sep + "filename%03d.jpg"
-      os.system(cmd)
+      cmd = "ffmpeg -i resized_video_full_path -y -ss "+ str(_from) +" " + destination  + os.sep + "filename%03d.jpg"
       print(cmd)
+      os.system(cmd)
+      
 
    # Get All Frames
    #if(cfe(analysed_name['full_path'].replace('.json','-HD.mp4') )):
