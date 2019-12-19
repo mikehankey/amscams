@@ -17,7 +17,7 @@ MANUAL_SYNC_TEMPLATE_STEP2 = "/home/ams/amscams/pythonv2/templates/manual_sync_t
 def manual_synchronization_chooser(form):
 
    # Debug
-   cgitb.enable()
+   # cgitb.enable()
 
    video_file  = form.getvalue('video_file')  
    stack_file  = form.getvalue('stack_file')  
@@ -65,8 +65,7 @@ def manual_synchronization_chooser(form):
    sd_frame_html = ''
    for frame, i in enumerate(all_resized_sd):
       sd_frame_html+=  '<a class="select_frame select_frame_btn cur" ><span>SD#'+i+'<i class="pos"></i></span><img src="'+frame+'?c='+str(random.randint(1,1000001))+'"/></a>
-
-
+ 
    # We add ithe SD Frames to the template
    template = template.replace("{SD_CROPPED_FRAMES_SELECTOR}", sd_frame_html)  
 
@@ -74,6 +73,7 @@ def manual_synchronization_chooser(form):
    template = template.replace("{HD_CROPPED_FRAMES_SELECTOR}", str(all_resized_hd))  
 
    print(template)  
+
 
 # First step of the manual synchronization
 def manual_synchronization(form):
