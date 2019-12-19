@@ -482,10 +482,13 @@ def generate_SD_frames(analysed_name,destination,how_many_sd_frames,from_frame_f
 
    # Now we extract how_many_sd_frames frames starting from frame # from_frame_fn
    if(cfe(resized_video_full_path)): 
-      cmd = "ffmpeg -i "+ resized_video_full_path+" -ss " + str(from_time) + " -y " + destination  + os.sep + "fr%03d.png"
-      print(cmd)
+      cmd = "ffmpeg -i "+ resized_video_full_path+"  -y " + destination  + os.sep + "fr%03d.png"
+      #-ss " + str(from_time) + " 
       os.system(cmd)
       
+   print(destination  + os.sep + "fr"+str(from_frame_fn)+".png")
+
+
    sys.exit(0)
 
    # Get All Frames
