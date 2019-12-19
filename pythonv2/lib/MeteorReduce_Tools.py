@@ -487,14 +487,15 @@ def generate_SD_frames(analysed_name,destination,how_many_sd_frames,from_frame_f
    # the from_frame_fn needs to be transformed based on trim
    
 
-   sys.exit(0)
+   
    # Now we extract how_many_sd_frames frames starting from frame # from_frame_fn
    if(cfe(resized_video_full_path)): 
       cmd = "ffmpeg -i "+ resized_video_full_path+"  -y " + destination  + os.sep + "fr%03d.png"
       print(cmd)
       os.system(cmd)
       
-
+   sys.exit(0)
+   
    # Get All Frames
    #if(cfe(analysed_name['full_path'].replace('.json','-HD.mp4') )):
    #   cmd = 'ffmpeg -y -hide_banner -loglevel panic  -i ' + analysed_name['full_path'].replace('.json','-HD.mp4') + ' -s ' + str(HD_W) + "x" + str(HD_H) + ' ' +  destination + EXT_HD_FRAMES + '%04d' + '.png' 
