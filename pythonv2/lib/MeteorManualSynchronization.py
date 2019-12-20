@@ -25,7 +25,7 @@ def update_sync(form):
 
    # It's a creation
    if('sync' not in mr): 
-      mr['sync'] = []
+      mr['sync'] = {}
    
    mr['sync']['hd_ind'] = int(hd)
    mr['sync']['sd_ind'] = int(hd)
