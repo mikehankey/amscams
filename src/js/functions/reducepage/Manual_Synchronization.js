@@ -4,13 +4,15 @@ function manual_synchronization() {
    loading_done();
 
    $('#sd_frame_selector a').click(function() {
-      var $t = $(this), $img = $t.find('img');
+      var $t = $(this), $img = $t.find('img'), sd_id = $t.attr('data-rel');
       $('#sd_frame_selector a').removeClass('cur');
       $(this).addClass('cur');
  
 
       // Add image as preview bg
       $('#frame_selector_preview').css('background-image','url('+$img.attr('src')+')');
+      // Add SD # to the preview
+      $('#frame_selector_preview .sd_id').val("SD#"+sd_id).show();
 
    })
 }

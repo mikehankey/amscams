@@ -64,7 +64,7 @@ def manual_synchronization_chooser(form):
    sd_frame_html = ''
    for i,frame  in enumerate(sorted(all_resized_sd)):
       x = i+1
-      sd_frame_html+=  '<a class="select_frame select_frame_btn"><span>SD#'+str(x)+'<i class="pos"></i></span><img src="'+frame+'?c='+str(random.randint(1,1000001))+'"/></a>'
+      sd_frame_html+=  '<a class="select_frame select_frame_btn" data-rel="'+str(x)+'"><span>SD#'+str(x)+'<i class="pos"></i></span><img src="'+frame+'?c='+str(random.randint(1,1000001))+'"/></a>'
  
    # We add ithe SD Frames to the template
    template = template.replace("{SD_CROPPED_FRAMES_SELECTOR}", sd_frame_html)  
@@ -73,7 +73,7 @@ def manual_synchronization_chooser(form):
    hd_frame_html = ''
    for i,frame  in enumerate(sorted(all_resized_hd)):
       x = i+1
-      hd_frame_html+=  '<a class="select_frame select_frame_btn"><span>HD#'+str(x)+'<i class="pos"></i></span><img src="'+frame+'?c='+str(random.randint(1,1000001))+'"/></a>'
+      hd_frame_html+=  '<a class="select_frame select_frame_btn" data-rel="'+str(x)+'"><span>HD#'+str(x)+'<i class="pos"></i></span><img src="'+frame+'?c='+str(random.randint(1,1000001))+'"/></a>'
  
    # We add ithe SD Frames to the template
    template = template.replace("{HD_CROPPED_FRAMES_SELECTOR}", hd_frame_html)  
