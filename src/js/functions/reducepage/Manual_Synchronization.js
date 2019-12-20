@@ -7,14 +7,23 @@ function manual_synchronization() {
       var $t = $(this), $img = $t.find('img'), sd_id = $t.attr('data-rel');
       $('#sd_frame_selector a').removeClass('cur');
       $(this).addClass('cur');
- 
-
       // Add image as preview bg
       $('#frame_selector_preview').css('background-image','url('+$img.attr('src')+')');
       // Add SD # to the preview
-      $('#sd_id').val("SD#"+sd_id);
+      $('#sd_id').html("SD#"+sd_id);
 
    })
+
+   $('#hd_frame_selector a').click(function() {
+      var $t = $(this), $img = $t.find('img'), hd_id = $t.attr('data-rel');
+      $('#hd_frame_selector a').removeClass('cur');
+      $(this).addClass('cur');
+      // Add image as preview bg
+      $('#hd_selector_preview').css('background-image','url('+$img.attr('src')+')');
+      // Add SD # to the preview
+      $('#hd_id').html("HD#"+hd_id);
+   })  
+
 }
 
 
