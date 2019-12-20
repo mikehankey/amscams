@@ -12,7 +12,7 @@ function manual_synchronization() {
       // Add image as preview bg
       $('#frame_selector_preview').css('background-image','url('+$img.attr('src')+')');
       // Add SD # to the preview
-      $('#frame_selector_preview .sd_id').val("SD#"+sd_id).show();
+      $('#sd_id').val("SD#"+sd_id);
 
    })
 }
