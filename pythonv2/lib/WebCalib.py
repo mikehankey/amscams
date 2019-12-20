@@ -538,6 +538,8 @@ def check_make_half_stack(sd_file,hd_file,meteor_reduced):
 def make_cal_select(cal_files,video_file,cpf) :
 
    cal_select = "<SELECT onchange=\"javascript:goto('" + video_file + "', this.options[selectedIndex].value ,'reduce')\" style=\"margin: 5px; padding: 5px\" NAME=cal_param_file>"
+   if cal_files is None:
+      return("")
    for cal_file, cal_desc, cal_time_diff in cal_files:
       dif_days = abs(cal_time_diff / 86400)
       if int(abs(cal_time_diff)) < 86400:
@@ -2936,7 +2938,10 @@ def reduce_meteor_new(json_conf,form):
       #print("GETTING CAL FILES for ", mj['sd_video_file'], "<HR>")
       #for cal_file in cal_files:
       #   print(cal_file, "<BR>")
-      cal_params_file = cal_files[0][0]
+      if cal_files is not None:
+         cal_params_file = cal_files[0][0]
+      else:
+         cal_params_file = None
       #print("Meteor not reduced yet...using...", cal_params_file)
       #exit()
    if "/mnt/ams2/meteors" not in mj['sd_video_file']:
@@ -3028,21 +3033,24 @@ def reduce_meteor_new(json_conf,form):
          cal_files = get_active_cal_file(sd_stack)
       else:
          cal_files = get_active_cal_file(hd_stack_file)
-      cal_params_file = cal_files[0][0]
+      if cal_files is not None:
+         cal_params_file = cal_files[0][0]
       if form_cal_params_file is not None:
          cal_params_file = form_cal_params_file
 
       cal_select = make_cal_select(cal_files,sd_video_file,cal_params_file)
 
       mj['cal_params_file']  = cal_params_file
-      az_grid_file = cal_params_file.replace("-calparams.json", "-azgrid-half.png")
+      if cal_params_file is not None:
+         az_grid_file = cal_params_file.replace("-calparams.json", "-azgrid-half.png")
    else:
       cal_params_file = mj['cal_params_file']
       az_grid_file = cal_params_file.replace("-calparams.json", "-azgrid-half.png")
   
    # find new? 
-   if cfe(cal_params_file) == 1: 
-      cal_params = load_json_file(cal_params_file)
+   if cal_params_file is not None:
+      if cfe(cal_params_file) == 1: 
+         cal_params = load_json_file(cal_params_file)
 
    if reduced == 1: 
       meteor_js = reduce_meteor_js(meteor_reduced)
@@ -3082,8 +3090,8 @@ def reduce_meteor_new(json_conf,form):
       template = template.replace("{HD_STACK}", hd_stack)
    else:
       hd_video_file = mj['hd_trim']
-
-   template = template.replace("{CAL_PARAMS_FILE}", cal_params_file)
+   if cal_params_file is not None:
+      template = template.replace("{CAL_PARAMS_FILE}", cal_params_file)
    template = template.replace("{HD_STACK}", hd_stack)
    template = template.replace("{SD_STACK}", sd_stack)
    template = template.replace("{SD_VIDEO}", sd_video_file)
@@ -3093,9 +3101,11 @@ def reduce_meteor_new(json_conf,form):
    template = template.replace("{event_start_time}", meteor_json_file)
    template = template.replace("{HALF_STACK}", half_stack_file)
 
-   template = template.replace("{SELECTED_CAL_PARAMS_FILE}", cal_params_file)
+   if cal_params_file is not None:
+      template = template.replace("{SELECTED_CAL_PARAMS_FILE}", cal_params_file)
    #Name of the option in the <select>
-   template = template.replace("{SELECTED_CAL_PARAMS_FILE_NAME}", get_meteor_date(cal_params_file))
+   if cal_params_file is not None:
+      template = template.replace("{SELECTED_CAL_PARAMS_FILE_NAME}", get_meteor_date(cal_params_file))
 
    prefix = sd_video_file.replace(".mp4", "-frm")
    prefix = prefix.replace("SD/proc2/", "meteors/")
