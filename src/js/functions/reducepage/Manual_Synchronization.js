@@ -11,7 +11,7 @@ function manual_synchronization() {
       $('#frame_selector_preview').css('background-image','url('+$img.attr('src')+')');
       // Add SD # to the preview
       $('#sd_id').html("SD#"+sd_id);
-
+      $('#input_sd_id').val(sd_id); 
    })
 
    $('#hd_frame_selector a').click(function() {
@@ -22,6 +22,7 @@ function manual_synchronization() {
       $('#hd_selector_preview').css('background-image','url('+$img.attr('src')+')');
       // Add SD # to the preview
       $('#hd_id').html("HD#"+hd_id);
+      $('#input_hd_id').val(hd_id); 
    })  
 
 
