@@ -27,9 +27,8 @@ function manual_synchronization() {
 
    // Transparency
    $('#transparency').val(0).on('input', function () { 
-         var val = parseInt($(this).val());
-         console.log("TRANSPARENCY " + val); 
-         
+         var val = parseInt($(this).val())/10;
+         $('#hd_selector_preview').css('opacity',val);
    });  
 
 }
