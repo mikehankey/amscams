@@ -28,7 +28,7 @@ def update_sync(form):
       mr['sync'] = {}
    
    mr['sync']['hd_ind'] = int(hd)
-   mr['sync']['sd_ind'] = int(hd)
+   mr['sync']['sd_ind'] = int(sd)
 
    save_json_file(json_file,mr)
 
