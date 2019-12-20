@@ -36,6 +36,12 @@ function manual_synchronization() {
    $('#hd_selector_preview').css('opacity',.5);
 
 
+   // Click "synchronize" button
+   $('#synchronize').click(function() {
+      if($('#input_sd_id').val()!=='' && $('#input_hd_id').val()!=='') {
+         window.location='./webUI.py?cmd=update_sync&json=' + json + '&sd=' + $('#input_sd_id').val() + '&hd=' + $('#input_hd_id').val()
+      }
+   });
 }
 
 
