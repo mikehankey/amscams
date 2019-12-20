@@ -77,7 +77,10 @@ def manual_synchronization_chooser(form):
  
    # We add ithe SD Frames to the template
    template = template.replace("{HD_CROPPED_FRAMES_SELECTOR}", hd_frame_html)  
- 
+   
+   # We add the JSON file to the template too
+   template = template.replace("{JSON}", json_file)  
+   
 
    print(template)  
 
