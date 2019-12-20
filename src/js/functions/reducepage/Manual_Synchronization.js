@@ -1,5 +1,8 @@
 // Manual Sync step 2
 function manual_synchronization() {
+
+   loading_done();
+
    $('#sd_frame_selector a').click(function() {
       var $t = $(this), $img = $t.find('img');
       $('#sd_frame_selector a').removeClass('cur');
@@ -7,7 +10,7 @@ function manual_synchronization() {
  
 
       // Add image as preview bg
-      $('#frame_selector_preview').css('background','url('+$img.attr('src')+')');
+      $('#frame_selector_preview').css('background-image','url('+$img.attr('src')+')');
 
    })
 }
