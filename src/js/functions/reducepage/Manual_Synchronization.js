@@ -28,7 +28,7 @@ function manual_synchronization() {
    // Transparency
    $('#transparency').val(0).on('input', function () { 
          var val = parseInt($(this).val());
-         print(val); 
+         console.log(("TRANSPARENCY " + val); 
          
    });  
 
