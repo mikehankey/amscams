@@ -534,6 +534,9 @@ def controller(json_conf):
    if cmd == 'manual_sync_chooser':      
       manual_synchronization_chooser(form)
 
+   # Manual Synchronization (HD/SD): step 3 - Finalization
+   if cmd == 'update_sync':      
+      update_sync(form)   
 
 
    # Manual Reduction step 0: select stack

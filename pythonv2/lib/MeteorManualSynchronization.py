@@ -4,16 +4,41 @@ import sys
 import json
 import random
 
-from lib.FileIO import load_json_file
+from lib.FileIO import load_json_file, save_json_file
 from lib.MeteorReducePage import print_error 
 from lib.MeteorReduce_Tools import get_stacks, get_cache_path, does_cache_exist, name_analyser, generate_SD_and_HD_frames_for_sync
+from lib.CGI_Tools import redirect_to
 from lib.VIDEO_VARS import *
 
 
 MANUAL_SYNC_TEMPLATE_STEP1 = "/home/ams/amscams/pythonv2/templates/manual_sync_template_step0.html"
 MANUAL_SYNC_TEMPLATE_STEP2 = "/home/ams/amscams/pythonv2/templates/manual_sync_template_step1.html"
 
-# Second (and last step) of the manual sync
+# Last step of the manual sync: we update the json
+def update_sync(form):
+   json_file   = form.getvalue('json')
+   sd = form.getvalue('sd') 
+   hd = form.getvalue('hd')  
+
+   # We parse the JSON
+   mr = load_json_file(json_file)
+
+   # It's a creation
+   if('sync' not in mr): 
+      mr['sync'] = []
+   
+   mr['sync']['hd_ind'] = int(hd)
+   mr['sync']['sd_ind'] = int(hd)
+
+   save_json_file(json_file,mr)
+
+   # We redirect to the reduce page with clearing cache
+   redirect_to("/pycgi/webUI.py?cmd=reduce2&video_file=" + json_file + "&clear_cache=1&c=" + str(random.randint(0,100000000)), "reduction")
+
+
+
+
+# Second  of the manual sync
 def manual_synchronization_chooser(form):
 
    # Debug
