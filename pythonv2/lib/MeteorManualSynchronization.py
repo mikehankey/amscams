@@ -34,9 +34,7 @@ def update_sync(form):
 
    # We redirect to the reduce page with clearing cache
    redirect_to("/pycgi/webUI.py?cmd=reduce2&video_file=" + json_file + "&clear_cache=1&c=" + str(random.randint(0,100000000)), "reduction")
-
-
-
+ 
 
 # Second  of the manual sync
 def manual_synchronization_chooser(form):
