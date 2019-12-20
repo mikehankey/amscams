@@ -26,10 +26,14 @@ function manual_synchronization() {
 
 
    // Transparency
-   $('#transparency').val(0).on('input', function () { 
+   $('#transparency').val(0.5).on('input', function () { 
          var val = parseInt($(this).val())/10;
          $('#hd_selector_preview').css('opacity',val);
    });  
+
+   // Init .5 see above
+   $('#hd_selector_preview').css('opacity',.5);
+
 
 }
 
