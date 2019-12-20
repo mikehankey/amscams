@@ -24,6 +24,14 @@ function manual_synchronization() {
       $('#hd_id').html("HD#"+hd_id);
    })  
 
+
+   // Transparency
+   $('#transparency').val(0).on('input', function () { 
+         var val = parseInt($(this).val());
+         print(val); 
+         
+   });  
+
 }
 
 
