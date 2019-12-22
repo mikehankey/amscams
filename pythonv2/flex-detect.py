@@ -3451,7 +3451,7 @@ def quick_scan(video_file, old_meteor = 0):
       if "archive_file" in ojs:
          if cfe(ojs['archive_file']) == 1:
             print("File has been archived already!")
-            return()
+            #return()
  
    #PREP WORK
 
@@ -3747,6 +3747,50 @@ def only_meteors(objects):
          meteors.append(objects[obj])
    return(meteors)
 
+def refine_sync(sync_diff, sd_object, hd_object, hd_frame, sd_frame):
+   max_err_x = 9999
+   max_err_y = 9999
+   sync_obj = {}
+
+   print("SD FNS:", sd_object['ofns'])
+   print("HD FNS:", hd_object['ofns'])
+   hdm_x = hd_frame.shape[1] / sd_frame.shape[1]
+   hdm_y = hd_frame.shape[0] / sd_frame.shape[0]
+
+   # for the first SD frame, figure out which HD frame has the least error.
+
+   for i in range(0,len(sd_object['ofns'])):
+      sd_fn = sd_object['ofns'][i]
+      sync_obj[sd_fn] = {}
+      sync_obj[sd_fn]['err'] = 9999
+      sd_x = sd_object['oxs'][i]
+      sd_y = sd_object['oys'][i]
+      up_sd_x = int(sd_x * hdm_x)
+      up_sd_y = int(sd_y * hdm_y)
+      for j in range(0,len(hd_object['ofns'])):
+
+         hd_x = hd_object['oxs'][j]
+         hd_fn = hd_object['ofns'][j]
+         hd_y = hd_object['oys'][j]
+         err_x = abs(up_sd_x - hd_x)
+         err_y = abs(up_sd_y - hd_y)
+         err = err_x + err_y
+         if err < sync_obj[sd_fn]['err']:
+            sync_obj[sd_fn]['hd_fn'] = hd_fn
+            sync_obj[sd_fn]['err'] = err 
+         
+       
+         print(sd_fn, hd_fn, up_sd_x, hd_x, up_sd_y, up_sd_x, err_x, err_y)
+
+   i = 0
+   for sync in sorted(sync_obj.keys()):
+      if i == 0:
+         hd_sd_sync = sync_obj[sync]['hd_fn'] - sync
+      print(sync, sync_obj[sync])
+      i = i + 1
+
+   return(hd_sd_sync)
+
 def sync_hd_sd_frames(obj):
    orig_obj = obj
    print("SYNC FRAMES!")
@@ -3776,12 +3820,13 @@ def sync_hd_sd_frames(obj):
       sd_ind = sd_objects[0]['ofns'][0]
       hd_ind = hd_objects[0]['ofns'][0]
       sync_diff = hd_ind - sd_ind
+      sync_diff = refine_sync(sync_diff, sd_objects[0], hd_objects[0], hd_frames[0], sd_frames[0])
 
       sdf = []
       hdf = []
-      for i in range(0, len(sd_objects[0]['ofns'])):
-         sd_fn = sd_objects[0]['ofns'][i]
-         hd_fn = sd_fn + sync_diff - 1
+      for i in range(0, len(hd_objects[0]['ofns'])):
+         hd_fn = hd_objects[0]['ofns'][i]
+         sd_fn = hd_fn - sync_diff 
          print("SD,HD SYNC:", sd_fn, hd_fn)
          sd_frame = sd_frames[sd_fn]
          hd_frame = hd_frames[hd_fn]
