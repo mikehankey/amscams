@@ -44,7 +44,7 @@ import lib.brightstardata as bsd
 from lib.DetectLib import eval_cnt, check_for_motion2
 
 json_conf = load_json_file("../conf/as6.json")
-show = 1
+show = 0
 
 ARCHIVE_DIR = "/mnt/NAS/meteor_archive/"
 
@@ -366,7 +366,7 @@ def detect_meteor_in_clip(trim_clip, frames = None, fn = 0, crop_x = 0, crop_y =
       cnts,rects = find_contours_in_frame(image_diff, thresh)
 
       icnts = []
-      if len(cnts) < 5:
+      if len(cnts) < 5 and fn > 4:
          for (cnt) in cnts:
             px_diff = 0
             x,y,w,h = cnt
@@ -390,6 +390,9 @@ def detect_meteor_in_clip(trim_clip, frames = None, fn = 0, crop_x = 0, crop_y =
          cv2.imshow('Detect Meteor In Clip', show_frame)
          cv2.waitKey(70)
       fn = fn + 1
+
+   for obj in objects:
+      objects[obj] = analyze_object(objects[obj])
 
    return(objects, frames)   
 
@@ -1159,11 +1162,14 @@ def scan_queue(cam):
 
 def scan_old_meteor_dir(dir):
    files = glob.glob(dir + "*trim*.json" )
+   print(dir + "*trim*.json" )
+   print(files)
    for file in files:
       if "meteor.json" not in file and "fail.json" not in file and "reduced" not in file:
          print(file)
+         jd = load_json_file(file)
          video_file = file.replace(".json", ".mp4")
-         if cfe(video_file) == 1:
+         if cfe(video_file) == 1 and "archive_file" not in jd:
             quick_scan(video_file)
          else:
             print("Done already.")
@@ -1619,8 +1625,6 @@ def find_contours_in_frame(frame, thresh=25):
    elif len(cnt_res) == 2:
       (cnts, xx) = cnt_res
    show_frame = cv2.resize(threshold, (0,0),fx=.5, fy=.5)
-   #cv2.imshow('find cnts in frame', show_frame)
-   #cv2.waitKey(0)
 
    if len(cnts) > 20:
       print("RECT TOO MANY CNTS INCREASE THRESH!", len(cnts))
@@ -2397,8 +2401,8 @@ def analyze_object(object, hd = 0, sd_multi = 1, final=0):
 
    #cm
    fc = 0
-   cm = 0
-   max_cm = 0
+   cm = 1
+   max_cm = 1
    last_fn = None
    for fn in object['ofns']:
       if last_fn is not None:
@@ -2494,6 +2498,23 @@ def analyze_object(object, hd = 0, sd_multi = 1, final=0):
       bad_items.append("bad angular velocity below .9")
    ang_vel = (dist_per_elp * deg_multi) * 25
 
+   #YOYO
+   if dir_test_perc < 1 and max_cm < 5:
+      meteor_yn = "no"
+      obj_class = "star"
+      bad_items.append("dir test perc to low for this cm")
+
+   if max_cm < 5 and elp_max_cm > 1.5 and neg_perc > 0:
+      meteor_yn = "no"
+      obj_class = "plane"
+      bad_items.append("low max cm, high neg_perc, high elp_max_cm")
+
+   if ang_vel < 1.5 and elp_max_cm > 2:
+      meteor_yn = "no"
+      bad_items.append("short distance, many gaps, low cm")
+      obj_class = "plane"
+
+
    if elp > 0:
       if min_max_dist * deg_multi < 1 and max_cm <= 5 and cm / elp < .75 :
          meteor_yn = "no"
@@ -2535,6 +2556,7 @@ def analyze_object(object, hd = 0, sd_multi = 1, final=0):
    if avg_line_res > 2.5:
       meteor_yn = "no"
       obj_class = "noise"
+      bad_items.append("bad average line res " + str(avg_line_res))
 
    if max_cm == elp == len(object['ofns']):
       score = score + 1
@@ -2602,14 +2624,12 @@ def calc_obj_dist(obj1, obj2):
    return(min_dist) 
 
 def find_object(objects, fn, cnt_x, cnt_y, cnt_w, cnt_h, intensity=0, hd=0, sd_multi=1, cnt_img=None):
-   #if cnt_img is not None:
-   #   cv2.imshow("find_object", cnt_img)
-   #   cv2.waitKey(0)
-   #obj_dist_thresh = 50
+   #if fn < 5:
+   #   return(0, objects)
    if hd == 1:
-      obj_dist_thresh = 50 
+      obj_dist_thresh = 25 
    else:
-      obj_dist_thresh = 20
+      obj_dist_thresh = 10
 
    center_x = cnt_x 
    center_y = cnt_y  
@@ -2649,15 +2669,29 @@ def find_object(objects, fn, cnt_x, cnt_y, cnt_w, cnt_h, intensity=0, hd=0, sd_m
       objects[obj_id]['oint'].append(intensity)
       found_obj = obj_id
    if found == 1:
-      objects[found_obj]['ofns'].append(fn)
-      objects[found_obj]['oxs'].append(center_x)
-      objects[found_obj]['oys'].append(center_y)
-      objects[found_obj]['ows'].append(cnt_w)
-      objects[found_obj]['ohs'].append(cnt_h)
-      objects[found_obj]['oint'].append(intensity)
+      if objects[found_obj]['report']['obj_class'] == "meteor":
+         # only add if the intensity is positive and the forward motion compared to the last highest FM is greater. 
+         fm_last = calc_dist((objects[found_obj]['oxs'][0],objects[found_obj]['oys'][0]), (objects[found_obj]['oxs'][-1],objects[found_obj]['oys'][-1]))
+         fm_this = calc_dist((objects[found_obj]['oxs'][0],objects[found_obj]['oys'][0]), (center_x, center_y))
+         fm = fm_this - fm_last
+         if intensity > 10 and fm > 0:
+            objects[found_obj]['ofns'].append(fn)
+            objects[found_obj]['oxs'].append(center_x)
+            objects[found_obj]['oys'].append(center_y)
+            objects[found_obj]['ows'].append(cnt_w)
+            objects[found_obj]['ohs'].append(cnt_h)
+            objects[found_obj]['oint'].append(intensity)
+
+      else:
+         objects[found_obj]['ofns'].append(fn)
+         objects[found_obj]['oxs'].append(center_x)
+         objects[found_obj]['oys'].append(center_y)
+         objects[found_obj]['ows'].append(cnt_w)
+         objects[found_obj]['ohs'].append(cnt_h)
+         objects[found_obj]['oint'].append(intensity)
 
    #objects[found_obj] = clean_object(objects[found_obj])
-   objects[found_obj] = analyze_object(objects[found_obj], hd, sd_multi)
+   objects[found_obj] = analyze_object(objects[found_obj], hd, sd_multi, 1)
    if objects[found_obj]['report']['meteor_yn'] == 'Y':
       max_int = max(objects[found_obj]['oint'])
       if max_int > 25000:
@@ -3298,9 +3332,10 @@ def fast_check_events(sum_vals, max_vals, subframes):
         
          if max_val > 10:
             #cv2.putText(subframe, str(desc),  (10,10), cv2.FONT_HERSHEY_SIMPLEX, .3, (255, 255, 255), 1)
-            cv2.circle(subframe,(mx,my), 10, (255,0,0), 1)
-            cv2.imshow('pepe', subframe)
-            cv2.waitKey(0)
+            if show == 1:
+               cv2.circle(subframe,(mx,my), 10, (255,0,0), 1)
+               cv2.imshow('pepe', subframe)
+               cv2.waitKey(0)
             event_info.append((sum_val, max_val, mx, my))
             event.append(i)
             cm = cm + 1
@@ -3460,6 +3495,7 @@ def quick_scan(video_file, old_meteor = 0):
    meteors = {}
    for meteor in pos_meteors:
       pos_meteors[meteor] = analyze_object_final(pos_meteors[meteor])
+      pos_meteors[meteor] = analyze_object(pos_meteors[meteor], 1, 1)
       if pos_meteors[meteor]['report']['meteor_yn'] == 'Y':
          print("POS METEOR:", pos_meteors[meteor])
          meteors[mc] = pos_meteors[meteor]
@@ -3519,9 +3555,12 @@ def quick_scan(video_file, old_meteor = 0):
    print("Ending detecting SD in clip.", len(all_motion_objects))
    for mo in all_motion_objects:
       mo = analyze_object_final(mo)
+      
       if mo['report']['meteor_yn'] == "Y" or len(mo['ofns']) > 25:
          print("CONFIRMED OBJECTS:", mo)
          objects.append(mo)
+      else:
+         print("NON CONFIRMED OBJECTS:", mo)
 
 
    #objects = all_motion_objects
@@ -3586,6 +3625,7 @@ def quick_scan(video_file, old_meteor = 0):
          old_meteor_json_file = old_meteor_dir + mf
          md = load_json_file(old_meteor_json_file)
          obj['hd_trim'] = md['hd_trim']
+         obj['hd_video_file'] = md['hd_video_file']
 
 
          #if "hd_video_file" in md:
@@ -3721,12 +3761,14 @@ def sync_hd_sd_frames(obj):
    sd_objects = only_meteors(sd_objects)
    print("SD:", sd_objects)
    print("HD:", hd_objects )
+
+
    if len(hd_objects) == 0:
       for hdo in all:
          print(all[hdo])
 
 
-   if len(hd_objects) == len(sd_objects):
+   if len(hd_objects) == len(sd_objects) and len(sd_objects) > 0:
       print("We have a match!") 
       sd_ind = sd_objects[0]['ofns'][0]
       hd_ind = hd_objects[0]['ofns'][0]
@@ -3751,6 +3793,7 @@ def sync_hd_sd_frames(obj):
       log_import_errors(orig_obj['trim_clip'], "Problem with sd and hd events don't match perfectly.")
       show_objects(sd_objects, "SD")
       show_objects(hd_objects, "HD")
+      print("SD AND HD EVENTS DON'T LINE UP PERFECT! need to fix!", len(sd_objects), len(hd_objects))
       return(0)
 
    buf_size = 20
@@ -3788,6 +3831,8 @@ def sync_hd_sd_frames(obj):
    hd_meteors = []
    ftimes = []
    for obj in hd_objects:
+      hd_objects[obj] = analyze_object_final(hd_objects[obj])
+      hd_objects[obj] = analyze_object(hd_objects[obj], 1, 1)
       
       if hd_objects[obj]['report']['meteor_yn'] == 'Y':
          print(hd_objects[obj]['ofns'])
@@ -5043,6 +5088,7 @@ def meteor_objects(objects):
    mc = 1
    nc = 1
    for obj in objects:
+      objects[obj] = analyze_object_final(objects[obj] )
       if objects[obj]['report']['meteor_yn'] == "Y":
          meteors[mc] = objects[obj]
          mc = mc + 1
@@ -5074,14 +5120,15 @@ def debug(video_file):
       motion_objects, motion_frames = detect_meteor_in_clip(video_file, frames[start:end], 0)
       meteors,non_meteors = meteor_objects(motion_objects)
       for meteor in meteors:
-         meteors[meteor] = analyze_object(meteors[meteor])
+         meteors[meteor] = analyze_object_final(meteors[meteor] )
+         #meteors[meteor] = analyze_object(meteors[meteor] )
          all_meteors.append(meteors[meteor])
 
    if "/mnt/ams2/meteors" in video_file:
       if len(all_meteors) == 0:
          for non_meteor in non_meteors:
             print(non_meteors[non_meteor])
-
+         exit()
       # this is a rescan of a previous capture. transfer to archive
       if len(all_meteors) > 1:
          log_import_errors(video_file, "No meteors detected in 1st scan.")
@@ -5108,6 +5155,30 @@ def debug(video_file):
          print("METEOR:", meteor['oys'])
          print("METEOR:", meteor['oint'])
          print("METEOR:", meteor['report'])
+
+def check_archive(day):
+   old_meteor_files = glob.glob("/mnt/ams2/meteors/" + day + "/*trim*.json")
+   print("/mnt/ams2/meteors/" + day + "/*trim*.json")
+
+   omf = []
+   for mf in old_meteor_files:
+      if "reduced" not in old_meteor_files and "archive_report" not in old_meteor_files:
+         jd = load_json_file(mf)
+         print(mf)
+         if "archive_file" in jd:
+            archive_data = {}
+            archive_data['orig_file'] = mf
+            archive_data['archive_file'] = jd['archive_file']
+            archive_data['status'] = 1
+         else:
+            archive_data = {}
+            archive_data['orig_file'] = mf
+            archive_data['status'] = 0
+
+         omf.append(archive_data)
+   save_json_file("/mnt/ams2/meteors/" + day + "/archive_report.json", omf)
+   print("/mnt/ams2/meteors/" + day + "/archive_report.json" )
+      
  
 
 cmd = sys.argv[1]
@@ -5150,4 +5221,6 @@ if cmd == "wi":
    write_archive_index(sys.argv[2], sys.argv[3])
 if cmd == "debug" :
    debug(video_file)
+if cmd == "ca" :
+   check_archive(video_file)
 
