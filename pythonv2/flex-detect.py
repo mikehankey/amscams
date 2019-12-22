@@ -3781,7 +3781,7 @@ def sync_hd_sd_frames(obj):
       hdf = []
       for i in range(0, len(sd_objects[0]['ofns'])):
          sd_fn = sd_objects[0]['ofns'][i]
-         hd_fn = sd_fn - sync_diff 
+         hd_fn = sd_fn + sync_diff - 1
          print("SD,HD SYNC:", sd_fn, hd_fn)
          sd_frame = sd_frames[sd_fn]
          hd_frame = hd_frames[hd_fn]
