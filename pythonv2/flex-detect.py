@@ -3625,7 +3625,10 @@ def quick_scan(video_file, old_meteor = 0):
          old_meteor_json_file = old_meteor_dir + mf
          md = load_json_file(old_meteor_json_file)
          obj['hd_trim'] = md['hd_trim']
-         obj['hd_video_file'] = md['hd_video_file']
+         if "hd_video_file" in md:
+            obj['hd_video_file'] = md['hd_video_file']
+         if "hd_file" in md:
+            obj['hd_video_file'] = md['hd_file']
 
 
          #if "hd_video_file" in md:
