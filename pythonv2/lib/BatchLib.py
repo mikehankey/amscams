@@ -440,6 +440,11 @@ def purge_data(json_conf):
    purge_sd_nighttime_files(proc_dir,json_conf)
 
 
+def hd_stack_meteors(json_conf, day, cam):
+   hd_glob = "/mnt/ams2/meteors/" + day + "/*" + cam + "*HD-meteor-stacked.png"
+   out_file = "/mnt/ams2/meteors/" + day + "/hd_stack-" + cam + ".png"
+   stack_glob(hd_glob, out_file)
+
 def stack_night_all(json_conf, limit=0, tday = None):
    proc_dir = json_conf['site']['proc_dir']
    all_days = get_days(json_conf)

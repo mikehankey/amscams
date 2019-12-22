@@ -44,6 +44,9 @@ from lib.MeteorReduce_Ajax_Tools import get_reduction_info, delete_frame, update
 # Manual Reduction page
 from lib.MeteorManualReducePage import manual_reduction, manual_reduction_cropper, manual_reduction_meteor_pos_selector, manual_reduction_create_final_json, manual_reduction_step1
 
+# Manual Synchronization
+from lib.MeteorManualSynchronization import *
+
 # Calibration Tools
 from lib.MeteorReduce_Calib_Ajax_Tools import getRADEC
 
@@ -58,9 +61,7 @@ from lib.PAGINATION_VARS import *
 
 # Re-APPLY CALIBRATION
 from lib.MeteorReduce_ApplyCalib import apply_calib_ajax
-
  
-
  
 
 def run_detect(json_conf, form):
@@ -523,6 +524,20 @@ def controller(json_conf):
    #Custom logos (uploaded by user)
    if cmd == 'custom_logos':
       custom_logos(json_conf,form)
+
+
+   # Manual Synchronization (HD/SD): step 1- (First step: select start / end position)
+   if cmd == 'manual_sync':      
+      manual_synchronization(form)
+
+   # Manual Synchronization (HD/SD): step 2 - Sync Chooser
+   if cmd == 'manual_sync_chooser':      
+      manual_synchronization_chooser(form)
+
+   # Manual Synchronization (HD/SD): step 3 - Finalization
+   if cmd == 'update_sync':      
+      update_sync(form)   
+
 
    # Manual Reduction step 0: select stack
    if cmd == 'manual_reduction':

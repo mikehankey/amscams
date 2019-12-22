@@ -16,6 +16,9 @@ STACKS_SUBPATH   = "/STACKS/"       # For the Stacks
 PREVIEW = "/PREVIEW/"               # Thumb for the listings 
 TMP_CROPPED_FRAMES_SUBPATH = "/CR_THUMBS" # For the temporary cropped fames (manual reduction)
 
+TMP_HD_CROPPED_SUBFRAMES_SUBPATH = "/HD_TMP_THUMBS" # For the temporary cropped fames (manual synchronization)
+TMP_SD_CROPPED_SUBFRAMES_SUBPATH = "/SD_TMP_THUMBS" # For the temporary cropped fames (manual synchronization - the SD are resized to HD)
+
 # Folder where the calibration are
 CALIB_PATH = MAIN_FILE_PATH + "cal/freecal/"
 
@@ -37,6 +40,7 @@ OLD_FILE_NAME_REGEX_GROUP = ["name","year","month","day","hour","min","sec","ms"
 # EXTENSION FOR THE FRAMES
 EXT_HD_FRAMES = "_HDfr"
 EXT_CROPPED_FRAMES = "_frm"
+EXT_HD_SDFRAMES = "_HDSDfr" # Resized SD version
 
 # THUMBS (CROPPED FRAMES)
 THUMB_W = 100

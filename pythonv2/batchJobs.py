@@ -1,10 +1,14 @@
 #!/usr/bin/python3
 
-from lib.BatchLib import batch_thumb, make_file_index, move_images, update_file_index, stack_night, purge_data, stack_night_all, batch_meteor_thumb, batch_doHD, sync_multi_station, find_multi_station_meteors, merge_kml_files, batch_reduce, sync_events_to_cloud
+from lib.BatchLib import batch_thumb, make_file_index, move_images, update_file_index, stack_night, purge_data, stack_night_all, batch_meteor_thumb, batch_doHD, sync_multi_station, find_multi_station_meteors, merge_kml_files, batch_reduce, sync_events_to_cloud, hd_stack_meteors
 from lib.FileIO import load_json_file 
 import sys
 
 json_conf = load_json_file("../conf/as6.json")
+if sys.argv[1] == 'stack_hd':
+   date = sys.argv[2]
+   cam = sys.argv[3]
+   hd_stack_meteors(json_conf, date, cam)
 if sys.argv[1] == 'msm':
    sync_date = sys.argv[2]
    find_multi_station_meteors(json_conf, sync_date)
