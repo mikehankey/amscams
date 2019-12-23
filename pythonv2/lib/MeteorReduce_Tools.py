@@ -307,7 +307,7 @@ def generate_preview(analysed_name):
 
 # Create ONE cropped frame (thumb) for a meteor detection
 # this is use after a manual picking
-def generate_cropped_frame(analysed_name,meteor_json_data,the_HD_frame,the_SD_frame_fn,the_HD_frame_fn,x,y,HD=True):
+def generate_cropped_frame(analysed_name,meteor_json_data,the_HD_frame,the_HD_frame_fn,the_SD_frame_fn,x,y,HD=True):
 
    if(HD):
       destination =  get_cache_path(analysed_name,"cropped")+analysed_name['name_w_ext']+EXT_CROPPED_FRAMES+str(the_SD_frame_fn)+".png"
