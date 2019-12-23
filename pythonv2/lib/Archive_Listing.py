@@ -465,7 +465,7 @@ def get_results_from_date_from_monthly_index(criteria,date,max_res_per_page,cur_
 
                     
 
-                  sys.exit(0)
+                   
    
       # Change Month & Year
       if(cur_month==1):
@@ -486,6 +486,13 @@ def get_results_from_date_from_monthly_index(criteria,date,max_res_per_page,cur_
          week_day, numbers_of_days =  monthrange(cur_year,cur_month)
          date = date.replace(year=cur_year, month=cur_month,day=numbers_of_days) 
  
+
+   print("RES TO RETURN<br>")
+   print(res_to_return)
+   print("<br>RES COUNTER<br>")
+   print(res_counter)
+   sys.exit(0)
+
    return res_to_return, res_counter
 
 
