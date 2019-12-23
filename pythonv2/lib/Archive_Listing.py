@@ -458,10 +458,12 @@ def get_results_from_date_from_monthly_index(criteria,date,max_res_per_page,cur_
                      else:
                         print("WE DONT ADD IT 1")
 
-                  else:
-                        print("WE DONT ADD IT 2")
-
                      res_counter+=1 
+
+                  else:
+                        print("WE DONT ADD IT 1")
+
+                    
 
                   sys.exit(0)
    
