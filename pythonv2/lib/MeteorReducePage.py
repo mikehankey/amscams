@@ -82,7 +82,7 @@ def reduce_meteor2(json_conf,form):
    stack = get_stacks(tmp_analysed_name,clear_cache,False) 
    
    # Get the HD frames 
-   HD_frames = get_HD_frames(tmp_analysed_name,clear_cache)
+   HD_frames = def(tmp_analysed_name,clear_cache)
     
    # Get the thumbs (cropped HD frames) 
    try:
@@ -103,6 +103,7 @@ def reduce_meteor2(json_conf,form):
    # For the Event start time
    # either it has already been reduced and we take the time of the first frame
    start_time = 0
+   print(meteor_json_file)
    if('frames' in meteor_json_file):
       if(len(meteor_json_file['frames'])>0):
          start_time = str(meteor_json_file['frames'][0]['dt'])
