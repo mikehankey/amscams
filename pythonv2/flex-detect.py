@@ -529,12 +529,19 @@ def apply_calib(obj ):
    print("CAL:", obj['hd_trim'])
    print("CAL:", obj['trim_clip'])
    if obj['hd_trim'] != 0:
-      
-      hd_frames,hd_color_frames,hd_subframes,sum_vals,max_vals = load_frames_fast(obj['hd_trim'], json_conf, 0, 0, [], 0,[])
-      print("HD FRAMES:", len(hd_frames))
+      if cfe(obj['hd_trim']) == 1:   
+         hd_frames,hd_color_frames,hd_subframes,sum_vals,max_vals = load_frames_fast(obj['hd_trim'], json_conf, 0, 0, [], 0,[])
+         print("HD FRAMES:", len(hd_frames))
+      elif "/mnt/ams2/HD/" in obj['hd_trim']:
+         fl = obj['hd_trim'].split("/")[-1]
+         m_date = fl[0:10]
+         print("NEED TO UPDATE THE FILE PLEASE!", m_date, fl)
+         obj['hd_trim'] = obj['hd_trim'].replace("/mnt/ams2/HD/", "/mnt/ams2/meteors/" + m_date + "/" )
+         hd_frames,hd_color_frames,hd_subframes,sum_vals,max_vals = load_frames_fast(obj['hd_trim'], json_conf, 0, 0, [], 0,[])
    else:
       hd_frames,hd_color_frames,hd_subframes,sum_vals,max_vals = load_frames_fast(obj['trim_clip'], json_conf, 0, 0, [], 0,[])
       print("SD FRAMES:", len(hd_frames))
+
    frame = hd_frames[0]
 
    frame = cv2.resize(frame, (1920,1080))
