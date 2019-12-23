@@ -365,11 +365,11 @@ function setup_modal_actions(fn_id,x,y) {
 
     // Remove Helper
     $('.cross_holder.next, .cross_holder.prev').remove();
-
-    return false;
-
+ 
     // Add Next Help Point 
     var nextH = get_help_pos('next',parseInt(fn_id));
+
+    return false;
      
     if(nextH && typeof nextH !== 'undefined'  ) { 
         if( nextH.x !== null && typeof  nextH.x !== null) {
