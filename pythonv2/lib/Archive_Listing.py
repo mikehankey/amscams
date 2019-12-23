@@ -564,6 +564,10 @@ def get_html_detections(res,clear_cache):
    prev_date = None
    cur_count = 0
  
+   print(res)
+   print("<br><br>")
+
+
    for detection in res:
 
       # We add the missing info to detection['p']
