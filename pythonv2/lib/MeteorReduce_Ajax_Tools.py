@@ -232,14 +232,24 @@ def update_multiple_frames(form):
 
       if "frames" in mr:
          for ind, frame in enumerate(mr['frames']):
+
             if int(frame['fn']) == int(val['fn']):
+               print("WE WANT TO UPDATE THE FRAME " + str(frame['fn']))
+            
                # It needs to be updated here!!
                frame['x'] = int(val['x'])
                frame['y'] = int(val['y'])
 
                # Recreate the corresponding thumb
                original_HD_frame = get_HD_frame(analysed_name,val['fn'])   
+
+               print("ORG HD FRAME ")
+               print(original_HD_frame)
+
                destination_cropped_frame = get_thumb(analysed_name,val['fn'])    
+
+               print("DEST CROP FRAME ")
+               print(destination_cropped_frame)
 
                print("IN UPDATE MULTIPLE FRAMES")
                print(frame)
@@ -248,7 +258,7 @@ def update_multiple_frames(form):
                if(len(original_HD_frame)!=0 and len(destination_cropped_frame)!=0): 
                   print("NEW CROP THUMB")
                   print(original_HD_frame[0])
-                  new_crop_thumb(original_HD_frame[0],int(val['x']),int(val['y']),destination_cropped_frame[0], False)
+                  new_crop_thumb(original_HD_frame[0],int(val['x']),int(val['y']),destination_cropped_frame[0])
                else:
                   resp['error'].append("Impossible to update the frame " + str(int(val['fn'])))
    
