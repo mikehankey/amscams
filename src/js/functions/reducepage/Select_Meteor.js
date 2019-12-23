@@ -384,7 +384,10 @@ function setup_modal_actions(fn_id,x,y) {
  
     nextH = get_help_pos('prev',parseInt(fn_id));
  
-   
+    console.log("NEXTH ");
+    console.log(nextH);
+    console.log('*******************');
+    
     if(typeof nextH !== 'undefined' && nextH !== null ) { 
         if( nextH.x !== null && typeof  nextH.x !== null) {
             // 225 for circle diameter
@@ -468,16 +471,7 @@ function get_help_pos(nextprev, org_id) {
         }
     }
 
-
-    
-    console.log("IN GET HELP POS");
-    console.log("nextprev " + nextprev);
-    console.log("org_id " + org_id );
-    console.log("tr_fn " + tr_fn );
-    console.log("tr_id " + tr_id );
-    
-    return null;
-
+ 
     
 
     if(tr_fn == true) {
