@@ -79,7 +79,10 @@ def get_frame(form):
    if('sync' in tmp_json):
       if('sd_ind' in tmp_json['sync'] and 'hd_ind' in tmp_json['sync']):
          frame_hd_sd_diff = int(tmp_json['sync']['hd_ind']) - int(tmp_json['sync']['sd_ind']) 
+         print('frame_hd_sd_diff ' + str(tmp_json['sync']['hd_ind']) +  ' - ' + str(tmp_json['sync']['sd_ind']))      
  
+
+
    # We should test if get_HD_frame's output is empty as the HD Frames
    # are all created by default on page load (recude2 page)
    # if they don't exist
