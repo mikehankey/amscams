@@ -32,6 +32,7 @@ function select_multiple_meteors_ajax() {
             
             if($.trim(data)!='') { 
 
+               /*
                update_reduction_only();
 
                $('.modal-backdrop').remove();
@@ -47,10 +48,12 @@ function select_multiple_meteors_ajax() {
 
                // Reset Selection
                meteor_select_updates = [];
+               */
                
                loading_done();
 
-          
+               // We reload the page with clear_cache
+               window.location = window.location + "&clear_cache=1"
                   
             } else {
                 loading_done();
