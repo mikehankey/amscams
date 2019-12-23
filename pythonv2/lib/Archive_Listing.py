@@ -590,7 +590,7 @@ def get_html_detections(res,clear_cache):
       else:
          print("WTF ")
          print(detection)
-         sys.exit(0)
+         print("<hr/>") 
  
       res_html += get_html_detection(det,detection,clear_cache)
       cur_count+=1
