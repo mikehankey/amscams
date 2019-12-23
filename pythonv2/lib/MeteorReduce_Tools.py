@@ -196,6 +196,8 @@ def new_crop_thumb(frame,x,y,dest,HD = True):
    cgitb.enable()
    img = cv2.imread(frame) 
     
+   print("IN NEW CROP THUMB")
+
    # We shouldn't have the need for that... (check with VIDEO_VARS values and the way we're creating the frames from the video)
    if(HD is True):
       org_w_HD = HD_W
