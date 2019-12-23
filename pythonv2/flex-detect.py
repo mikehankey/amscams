@@ -531,8 +531,10 @@ def apply_calib(obj ):
    if obj['hd_trim'] != 0:
       
       hd_frames,hd_color_frames,hd_subframes,sum_vals,max_vals = load_frames_fast(obj['hd_trim'], json_conf, 0, 0, [], 0,[])
+      print("HD FRAMES:", len(hd_frames))
    else:
       hd_frames,hd_color_frames,hd_subframes,sum_vals,max_vals = load_frames_fast(obj['trim_clip'], json_conf, 0, 0, [], 0,[])
+      print("SD FRAMES:", len(hd_frames))
    frame = hd_frames[0]
 
    frame = cv2.resize(frame, (1920,1080))
@@ -3846,6 +3848,8 @@ def sync_hd_sd_frames(obj):
 
    buf_size = 20
    sd_bs,sd_be = buffered_start_end(sdf[0],sdf[-1], len(hd_frames), buf_size)
+   if sd_bs == 0:
+      buf_size = sdf[0]
    hd_bs,hd_be = buffered_start_end(hdf[0],hdf[-1], len(hd_frames), buf_size)
 
    (f_datetime, cam, f_date_str,fy,fm,fd, fh, fmin, fs) = convert_filename_to_date_cam(obj['trim_clip'])
@@ -5214,14 +5218,26 @@ def check_archive(day):
          jd = load_json_file(mf)
          print(mf)
          if "archive_file" in jd:
-            archive_data = {}
-            archive_data['orig_file'] = mf
-            archive_data['archive_file'] = jd['archive_file']
-            archive_data['status'] = 1
+            if cfe(jd['archive_file']) == 1:
+               archive_data = {}
+               archive_data['orig_file'] = mf
+               archive_data['archive_file'] = jd['archive_file']
+               archive_data['status'] = 1
+            else:
+               archive_data = {}
+               archive_data['orig_file'] = mf
+               archive_data['status'] = 0
          else:
             archive_data = {}
             archive_data['orig_file'] = mf
             archive_data['status'] = 0
+         # check HD
+         if cfe(jd['hd_trim']) == 0:
+            print("HD TRIM MISSING!", jd['hd_trim'])
+         hd_stack = jd['hd_trim'].replace(".mp4", "-stacked.png")
+         if cfe(hd_stack) == 0:
+            print("HD STACK NOT FOUND:", hd_stack)
+
 
          omf.append(archive_data)
    save_json_file("/mnt/ams2/meteors/" + day + "/archive_report.json", omf)
@@ -5271,4 +5287,5 @@ if cmd == "debug" :
    debug(video_file)
 if cmd == "ca" :
    check_archive(video_file)
+
 
