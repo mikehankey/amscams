@@ -356,6 +356,9 @@ function setup_modal_actions(fn_id,x,y) {
     var thumb_dim  = thumb_DIM;
     var factor = thumb_prev/thumb_dim;
 
+
+    console.log("A");
+
     x = parseInt(x);
     y = parseInt(y);
 
@@ -363,13 +366,18 @@ function setup_modal_actions(fn_id,x,y) {
     $('#meteor_org_pos').html('<b>Org:</b> x:'+x+'/y:'+y);
     $('#meteor_pos').text('x:'+x+'/y:'+y);
 
+    console.log("B");
+
     // Remove Helper
     $('.cross_holder.next, .cross_holder.prev').remove();
  
+    console.log("C");
+
     // Add Next Help Point 
     var nextH = get_help_pos('next',parseInt(fn_id));
 
-      
+    console.log("D");
+
     if(nextH && typeof nextH !== 'undefined'  ) { 
        console.log("XXXXX");
         if( nextH.x !== null && typeof  nextH.x !== null) {
