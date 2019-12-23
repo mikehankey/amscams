@@ -1,5 +1,5 @@
 from random import randint
-from sympy import Point3D, Line3D, Segment3D, Plane
+#from sympy import Point3D, Line3D, Segment3D, Plane
 import time
 import math
 import cv2
