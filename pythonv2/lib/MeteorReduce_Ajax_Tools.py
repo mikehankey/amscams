@@ -249,13 +249,13 @@ def update_multiple_frames(form):
                frame['y'] = int(val['y'])
 
                # Recreate the corresponding thumb
-               #original_HD_frame = get_HD_frame(analysed_name,int(val['fn'])+int(frame_hd_sd_diff))  
-               #destination_cropped_frame = get_thumb(analysed_name,val['fn'])    
+               original_HD_frame = get_HD_frame(analysed_name,int(val['fn'])+int(frame_hd_sd_diff))  
+               destination_cropped_frame = get_thumb(analysed_name,val['fn'])    
   
-               #if(len(original_HD_frame)!=0 and len(destination_cropped_frame)!=0): 
-               #   new_crop_thumb(original_HD_frame[0],int(val['x']),int(val['y']),destination_cropped_frame[0])
-               #else:
-               #   resp['error'].append("Impossible to update the frame " + str(int(val['fn'])))
+               if(len(original_HD_frame)!=0 and len(destination_cropped_frame)!=0): 
+                  new_crop_thumb(original_HD_frame[0],int(val['x']),int(val['y']),destination_cropped_frame[0])
+               else:
+                  resp['error'].append("Impossible to update the frame " + str(int(val['fn'])))
    
           
    # We update the JSON 
