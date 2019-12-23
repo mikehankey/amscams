@@ -315,7 +315,7 @@ def generate_cropped_frame(analysed_name,meteor_json_data,the_HD_frame,the_SD_fr
       print("DESTINATION ")
       print(destination)
  
-      out_hd_frame = destination.replace("frm", "HD-" + str(frame_index) + "-SD-")
+      out_hd_frame = destination.replace("frm", "HD-" + str(the_HD_frame_fn) + "-SD-")
 
 
       #frame,x,y,dest,HD = True
