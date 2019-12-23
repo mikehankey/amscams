@@ -291,10 +291,7 @@ def delete_frame(form):
    meteor_file = form.getvalue("json_file")
    meteor_json = load_json_file(meteor_file)
 
-   print("METEOR FILE " + meteor_file )
-   print("<br>JSON<br>")
-   print(meteor_json)
-
+   
 
    # TODO: DELETE ALSO THE CORRESPONDING THUMB HERE?
 
@@ -307,13 +304,10 @@ def delete_frame(form):
    response = {}
    response['message'] = 'frame #' + str(fn) + ' deleted'
    
-   print(meteor_json)
-
-
-   #save_json_file(meteor_file, meteor_json)
+   save_json_file(meteor_file, meteor_json)
    
    
-   #print(json.dumps(response))
+   print(json.dumps(response))
 
 
 # Find max px info from cnt
