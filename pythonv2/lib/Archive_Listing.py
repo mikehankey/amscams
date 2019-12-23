@@ -563,16 +563,17 @@ def get_html_detections(res,clear_cache):
    res_html = ''
    prev_date = None
    cur_count = 0
-
-   print(res)
-   sys.exit(0)
-
+ 
    for detection in res:
 
       # We add the missing info to detection['p']
       # so the name analyser will work
       det = name_analyser(detection['p'])
       cur_date = get_datetime_from_analysedname(det)
+
+      print("CURRENT DATE ")
+      print(cur_date.strftime("%Y/%m/%d"))
+      print("<br>")
    
       if(prev_date is None):
          prev_date = cur_date
