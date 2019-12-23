@@ -447,10 +447,6 @@ function get_help_pos(nextprev, org_id) {
 
     var tr_fn = false;
 
-    console.log("IN GET HELP POS");
-    console.log("nextprev " + nextprev);
-    console.log("org_id " + org_id );
-    return null;
 
     if(nextprev == 'next') {
         // Find next
@@ -471,6 +467,18 @@ function get_help_pos(nextprev, org_id) {
             }
         }
     }
+
+
+    
+    console.log("IN GET HELP POS");
+    console.log("nextprev " + nextprev);
+    console.log("org_id " + org_id );
+    
+    console.log("tr_id " + tr_id );
+    
+    console.log("tr_fn " + tr_fn );
+    return null;
+
     
 
     if(tr_fn == true) {
