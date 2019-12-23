@@ -429,13 +429,18 @@ def get_results_from_date_from_monthly_index(criteria,date,max_res_per_page,cur_
             detections = sorted(json_index['days'][day], key=lambda k: k['p'], reverse=True)
 
             print(detections)
-            sys.exit(0)
+            
 
             # If we are the current month & year, we need to take into account the days before the date.day
             if( (cur_year_and_month_test and int(day)<=int(date.day)) or (not cur_year_and_month_test)):
           
                for detection in detections:
-                
+
+
+                  print("ON DETECTION<br>")
+                  print(detection)
+                  sys.exit(0)
+
                   # Here we test the criteria
                   test = True
                   for criter in criteria:
