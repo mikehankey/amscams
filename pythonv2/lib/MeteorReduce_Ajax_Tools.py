@@ -226,7 +226,9 @@ def update_multiple_frames(form):
 
    resp = {}
    resp['error'] = []
- 
+   
+   all_updated = []
+
    # We get the sync values
    frame_hd_sd_diff = 0
    if('sync' in mr):
@@ -256,14 +258,17 @@ def update_multiple_frames(form):
           
                if(crop==False):
                   resp['error'].append("Impossible to update the frame " + str(int(val['fn'])))
-               else:
-                   resp['msg'] = crop  
-          
+               else: 
+                  all_updated.append(crop)
+               
    # We update the JSON 
    save_json_file(json_file, mr)
    
    # We compute the new stuff from the new meteor position within frames
    apply_calib(json_file)
+
+   # We add the result
+   resp['msg'] = json.dumps(all_updated)
 
    print(json.dumps(resp))
 
