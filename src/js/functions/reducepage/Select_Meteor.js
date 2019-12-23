@@ -344,14 +344,11 @@ function addModalTemplate(meteor_id,neighbor) {
 
 // Actions on modal 
 function setup_modal_actions(fn_id,x,y) {
-
-
-   
+ 
    console.log("IN SETUP MODAL ACTION");
    console.log("FRAME " + fn_id);
    console.log("X :" + x);
-   console.log("Y :" + y);
-   return false;
+   console.log("Y :" + y); 
     
     // Warning: preview  = 500x500
     //    thumb real dim = 100x100
@@ -368,6 +365,8 @@ function setup_modal_actions(fn_id,x,y) {
 
     // Remove Helper
     $('.cross_holder.next, .cross_holder.prev').remove();
+
+    return false;
 
     // Add Next Help Point 
     var nextH = get_help_pos('next',parseInt(fn_id));
