@@ -227,6 +227,15 @@ def update_multiple_frames(form):
    resp = {}
    resp['error'] = []
  
+   # We get the sync values
+   frame_hd_sd_diff = 0
+   if('sync' in mr):
+      if('sd_ind' in mr['sync'] and 'hd_ind' in mr['sync']):
+         frame_hd_sd_diff = int(mr['sync']['hd_ind']) - int(mr['sync']['sd_ind'])
+
+   # I pass the SD frame #
+   # I want the HD frame in get_HD_frame
+
    # Update meteor_frame_data
    for val in all_frames_to_update:  
 
@@ -241,7 +250,7 @@ def update_multiple_frames(form):
                frame['y'] = int(val['y'])
 
                # Recreate the corresponding thumb
-               original_HD_frame = get_HD_frame(analysed_name,val['fn'])   
+               original_HD_frame = get_HD_frame(analysed_name,int(val['fn']+frame_hd_sd_diff))  
 
                print("ORG HD FRAME ")
                print(original_HD_frame)
