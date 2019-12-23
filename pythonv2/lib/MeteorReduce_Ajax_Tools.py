@@ -250,16 +250,16 @@ def update_multiple_frames(form):
                frame['x'] = int(val['x'])
                frame['y'] = int(val['y'])
  
-               #print("frame_hd_sd_diff")
-               #print(frame_hd_sd_diff)
+               print("frame_hd_sd_diff")
+               print(frame_hd_sd_diff)
 
-               #print("NEW HD FRAME : " + int(val['fn'])+int(frame_hd_sd_diff))
+               print("NEW HD FRAME : " + int(val['fn'])+int(frame_hd_sd_diff))
 
                # Regenerate the proper cropped (thumb)
                original_HD_frame = get_HD_frame(analysed_name,int(val['fn'])+int(frame_hd_sd_diff)) 
 
-               #print("ORIGINAL HD FRAME ")
-               #print(original_HD_frame)
+               print("ORIGINAL HD FRAME ")
+               print(original_HD_frame)
                  
                crop = generate_cropped_frame(analysed_name,mr,original_HD_frame[0],int(val['fn'])+int(frame_hd_sd_diff),int(val['fn']),frame['x'],frame['y'])
 
