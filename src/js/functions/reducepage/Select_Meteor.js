@@ -452,6 +452,10 @@ function get_help_pos(nextprev, org_id) {
 
     if(nextprev == 'next') {
         // Find next
+        
+        console.log("LOOP NEXT");
+        console.log("FROM " + org_id+1);
+        console.log("TO " + org_id+10);
         for(var i=org_id+1;i<org_id+10;i++) {
             if($('tr#fr_'+i).length!=0 && tr_fn==false && i!=org_id) {
                 tr_id = i;
@@ -460,8 +464,14 @@ function get_help_pos(nextprev, org_id) {
             }
         }
     } else {
+
+      console.log("LOOP PREV");
+      console.log("FROM " + org_id-1);
+      console.log("TO " + org_id-10);
+
         // Find prev
         for(var i=org_id-1;i>org_id-10;i++) {
+           console.log("LOOP PREVVVVV");
             if($('tr#fr_'+i).length!=0 && tr_fn==false && i!=org_id) {
                 tr_id = i;
                 tr_fn = true;
