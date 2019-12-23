@@ -381,6 +381,8 @@ function setup_modal_actions(fn_id,x,y) {
 
     if(typeof nextH !== 'undefined') { 
        console.log("XXXXX");
+       console.log("NEXTH")
+       console.log(nextH);
         if( nextH.x !== null && typeof  nextH.x !== null) {
             console.log("YYYY");
             // 225 for circle diameter
