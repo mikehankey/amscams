@@ -440,7 +440,7 @@ def get_results_from_date_from_monthly_index(criteria,date,max_res_per_page,cur_
                         break   
 
 
-                  print("TEST<br>")
+                  print("<br>===>TEST<br>")
                   print(test)
 
 
@@ -449,7 +449,8 @@ def get_results_from_date_from_monthly_index(criteria,date,max_res_per_page,cur_
                      # We add it only if it fits the pagination
                      if(len(res_to_return)<max_res_per_page and res_counter>number_of_res_to_give_up):
 
-                        print("WE ADD IT")
+                        print("WE ADD:<br>")
+                        print(detection['p'])
 
                         # We complete the detection['p'] to get the full path (as the index only has compressed name)
                         detection['p'] = get_full_det_path(detection['p'],station_id,date,day)
