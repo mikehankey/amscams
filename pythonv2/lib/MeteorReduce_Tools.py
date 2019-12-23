@@ -305,6 +305,30 @@ def generate_preview(analysed_name):
 
 
 
+# Create ONE cropped frame (thumb) for a meteor detection
+# this is use after a manual picking
+def generate_cropped_frame(analysed_name,meteor_json_data,the_HD_frame,HD);
+
+   # We get the frame data
+   meteor_frame_data = meteor_json_data['frames']
+
+   # Do we have sync with the corresponding hd_ind for a sd_ind?
+   hd_frames_sd_frames_diff = 0  
+   if('sync' in meteor_json_data and HD is True):
+      hd_frames_sd_frames_diff = int(meteor_json_data['sync']['hd_ind'])-int(meteor_json_data['sync']['sd_ind'])
+   
+   # To store the new cropped frame 
+   the_new_cropped_frame = [] 
+
+   if(HD):
+      frame_index = int(frame['fn'])+hd_frames_sd_frames_diff    
+      destination =  get_cache_path(analysed_name,"cropped")+analysed_name['name_w_ext']+EXT_CROPPED_FRAMES+str(frame['fn'])+".png"
+      org_HD_frame = HD_frames[frame_index]
+      out_hd_frame = destination.replace("frm", "HD-" + str(frame_index) + "-SD-")
+      crop = new_crop_thumb(org_HD_frame,frame['x'],frame['y'],destination,HD)
+      return crop
+   else:
+      return {"error":"The HD video is not usable"}
 
 
 # Create the cropped frames (thumbs) for a meteor detection
