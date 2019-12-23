@@ -386,9 +386,6 @@ function setup_modal_actions(fn_id,x,y) {
  
     nextH = get_help_pos('prev',parseInt(fn_id));
  
-    console.log("NEXTH ");
-    console.log(nextH);
-    console.log('*******************');
     
     if(typeof nextH !== 'undefined' && nextH !== null ) { 
         if( nextH.x !== null && typeof  nextH.x !== null) {
@@ -472,10 +469,7 @@ function get_help_pos(nextprev, org_id) {
             }
         }
     }
-
  
-    
-
     if(tr_fn == true) {
         // Get the info: color & position
         var $tr = $('tr#fr_'+ tr_id);
@@ -491,6 +485,7 @@ function get_help_pos(nextprev, org_id) {
         }
         
     } else {
+        console.log("RETURN NULL!!!");
         return null;
     }
 }
