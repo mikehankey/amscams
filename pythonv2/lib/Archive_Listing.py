@@ -410,6 +410,9 @@ def get_results_from_date_from_monthly_index(criteria,date,max_res_per_page,cur_
       all_days =  json_index['days'] 
       keylist = list(all_days.keys())
 
+      print("<br>ALL DAYS KEY LIST")
+      print(keylist)
+
       # We sort the days
       for day in sorted(keylist, key=int, reverse=True):
 
