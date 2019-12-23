@@ -106,7 +106,7 @@ def reduce_meteor2(json_conf,form):
    start_time = 0
    
    if(meteor_json_file is False):
-      print_error("NO JSON FOUND")
+      print_error(" JSON NOT FOUND or CORRUPTED")
  
    if('frames' in meteor_json_file):
       if(len(meteor_json_file['frames'])>0):
