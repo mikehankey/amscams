@@ -725,7 +725,8 @@ def archive_listing(form):
       
    # Create HTML Version of each detection
    res_html = get_html_detections(res,clear_cache) 
-   template = template.replace("{RESULTS}", res_html)
+   if(res_html!=''):
+      template = template.replace("{RESULTS}", res_html)
 
    #   # Pagination
    if(len(res)>=1 and pagination and pagination[0]):  
