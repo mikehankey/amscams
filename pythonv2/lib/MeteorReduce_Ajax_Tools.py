@@ -78,7 +78,7 @@ def get_frame(form):
    tmp_json = load_json_file(json_file)
    if('sync' in tmp_json):
       if('sd_ind' in tmp_json['sync'] and 'hd_ind' in tmp_json['sync']):
-         frame_hd_sd_diff = int(tmp_json['sync']['hd_ind']) - int(tmp_json['sync']['sd_ind']) + int(sd_fn) 
+         frame_hd_sd_diff = int(tmp_json['sync']['hd_ind']) - int(tmp_json['sync']['sd_ind']) + int(sd_fn) +1
   
 
    # We should test if get_HD_frame's output is empty as the HD Frames
@@ -87,10 +87,9 @@ def get_frame(form):
    the_frame = get_HD_frame(analysed_name,frame_hd_sd_diff)
  
    the_frame = the_frame[0]
-   
    # For return
-   frame_hd_sd_diff = frame_hd_sd_diff 
-
+   frame_hd_sd_diff = frame_hd_sd_diff  
+   
    toReturn = {'id':frame_hd_sd_diff, 'full_fr':the_frame,'sd_id': int(sd_fn)}
   
    print(json.dumps(toReturn))
