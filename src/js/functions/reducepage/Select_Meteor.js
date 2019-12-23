@@ -379,10 +379,7 @@ function setup_modal_actions(fn_id,x,y) {
     console.log(nextH);
     console.log("D");
 
-    if(typeof nextH !== 'undefined') { 
-       console.log("XXXXX");
-       console.log("NEXTH")
-       console.log(nextH);
+    if(typeof nextH !== 'undefined' && nextH !== null) { 
         if( nextH.x !== null && typeof  nextH.x !== null) {
             console.log("YYYY");
             // 225 for circle diameter
@@ -396,7 +393,7 @@ function setup_modal_actions(fn_id,x,y) {
     console.log(nextH);
 
    
-    if(typeof nextH !== 'undefined' ) { 
+    if(typeof nextH !== 'undefined' && nextH !== null ) { 
         if( nextH.x !== null && typeof  nextH.x !== null) {
             // 225 for circle diameter
             var rX = (225+(nextH.x-x)*factor);
