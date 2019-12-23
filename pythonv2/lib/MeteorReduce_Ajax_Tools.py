@@ -253,18 +253,14 @@ def update_multiple_frames(form):
                  
                crop = generate_cropped_frame(analysed_name,mr,original_HD_frame[0],int(val['fn'])+int(frame_hd_sd_diff),int(val['fn']),frame['x'],frame['y'])
 
-               print("NEW CROP")
-               print(crop)
-
+          
                if(crop==False):
                   resp['error'].append("Impossible to update the frame " + str(int(val['fn'])))
- 
-   
+               else:
+                   resp['msg'] = crop  
           
    # We update the JSON 
    save_json_file(json_file, mr)
-   
-   resp['msg'] = "frames updated."  
    
    # We compute the new stuff from the new meteor position within frames
    apply_calib(json_file)
