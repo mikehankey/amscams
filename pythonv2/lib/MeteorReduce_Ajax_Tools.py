@@ -78,7 +78,7 @@ def get_frame(form):
    tmp_json = load_json_file(json_file)
    if('sync' in tmp_json):
       if('sd_ind' in tmp_json['sync'] and 'hd_ind' in tmp_json['sync']):
-         frame_hd_sd_diff = int(tmp_json['sync']['hd_ind']) - int(tmp_json['sync']['sd_ind']) - int(sd_fn)
+         frame_hd_sd_diff = int(tmp_json['sync']['hd_ind']) - int(tmp_json['sync']['sd_ind']) + int(sd_fn)
  
    print("frame_hd_sd_diff ")
    print(frame_hd_sd_diff)
