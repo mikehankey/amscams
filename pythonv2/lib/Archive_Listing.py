@@ -412,25 +412,14 @@ def get_results_from_date_from_monthly_index(criteria,date,max_res_per_page,cur_
 
       # We sort the days
       kk = sorted(keylist, key=int, reverse=True)
-      
-      print('KK<br/>')
-      print(kk)
-
+   
 
       # We sort the days
       for day in kk:
-
-
-            print("DAY<br>")
-            print(day)
-            print("<br>")
-
+ 
             # We sort the detections within the day
             detections = sorted(json_index['days'][day], key=lambda k: k['p'], reverse=True)
-
-            print(detections)
-            
-
+ 
             # If we are the current month & year, we need to take into account the days before the date.day
             if( (cur_year_and_month_test and int(day)<=int(date.day)) or (not cur_year_and_month_test)):
           
@@ -438,8 +427,7 @@ def get_results_from_date_from_monthly_index(criteria,date,max_res_per_page,cur_
 
 
                   print("ON DETECTION<br>")
-                  print(detection)
-                  sys.exit(0)
+                  print(detection) 
 
                   # Here we test the criteria
                   test = True
@@ -451,16 +439,31 @@ def get_results_from_date_from_monthly_index(criteria,date,max_res_per_page,cur_
                      if(test==False):
                         break   
 
+
+                  print("TEST<br>")
+                  print(test)
+
+
                   if(test==True):
                      
                      # We add it only if it fits the pagination
                      if(len(res_to_return)<max_res_per_page and res_counter>number_of_res_to_give_up):
+
+                        print("WE ADD IT")
+
                         # We complete the detection['p'] to get the full path (as the index only has compressed name)
                         detection['p'] = get_full_det_path(detection['p'],station_id,date,day)
                         res_to_return.append(detection)
                      
+                     else:
+                        print("WE DONT ADD IT 1")
+
+                  else:
+                        print("WE DONT ADD IT 2")
+
                      res_counter+=1 
- 
+
+                  sys.exit(0)
    
       # Change Month & Year
       if(cur_month==1):
