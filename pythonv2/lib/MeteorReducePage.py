@@ -73,9 +73,6 @@ def reduce_meteor2(json_conf,form):
    template = template.replace("{JSON_FILE}", str(json_full_path))   # Video File  
 
    # Parse the JSON
-   print("JSON PATH -")
-   print(json_full_path)
-   print("<br/>")
    meteor_json_file = load_json_file(json_full_path) 
  
    # Get the HD or SD stack
@@ -108,11 +105,9 @@ def reduce_meteor2(json_conf,form):
    # either it has already been reduced and we take the time of the first frame
    start_time = 0
    
-   
-   print(meteor_json_file)
-   print("<br>")
-   sys.exit(0)
-
+   if(meteor_json_file is False):
+      print_error("NO JSON FOUND")
+ 
    if('frames' in meteor_json_file):
       if(len(meteor_json_file['frames'])>0):
          start_time = str(meteor_json_file['frames'][0]['dt'])
