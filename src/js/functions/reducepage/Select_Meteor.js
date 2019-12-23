@@ -344,6 +344,14 @@ function addModalTemplate(meteor_id,neighbor) {
 
 // Actions on modal 
 function setup_modal_actions(fn_id,x,y) {
+
+
+   
+   console.log("IN SETUP MODAL ACTION");
+   console.log("FRAME " + fn_id);
+   console.log("X :" + x);
+   console.log("Y :" + y);
+   return false;
     
     // Warning: preview  = 500x500
     //    thumb real dim = 100x100
@@ -382,11 +390,6 @@ function setup_modal_actions(fn_id,x,y) {
         }
     }
 
-    console.log("IN SETUP MODAL ACTION");
-    console.log("FRAME " + fn_id);
-    console.log("X :" + x);
-    console.log("Y :" + y);
-    return false;
  
 
     $(".meteor_chooser").unbind('click').click(function(e){
