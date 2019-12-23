@@ -33,7 +33,7 @@ function select_multiple_meteors_ajax() {
             if($.trim(data)!='') { 
 
                console.log("IN SELECT METEOR");
-               print(data);
+               console.log(data);
 
                update_reduction_only();
 
