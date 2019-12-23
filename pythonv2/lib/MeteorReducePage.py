@@ -38,7 +38,6 @@ def reduce_meteor2(json_conf,form):
       video_full_path = video_hd_full_path
       video_sd_full_path = video_hd_full_path.replace('-HD','-SD')
 
-
    # We need at least one video file
    if(video_full_path is not None):
       analysed_name = name_analyser(video_full_path)
