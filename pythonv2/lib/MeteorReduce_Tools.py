@@ -323,7 +323,7 @@ def generate_cropped_frame(analysed_name,meteor_json_data,the_HD_frame,the_HD_fr
    if(HD):
       frame_index = int(the_HD_frame_fn)+hd_frames_sd_frames_diff    
       destination =  get_cache_path(analysed_name,"cropped")+analysed_name['name_w_ext']+EXT_CROPPED_FRAMES+str(the_HD_frame_fn)+".png"
-      org_HD_frame = HD_frames[frame_index]
+      org_HD_frame = the_HD_frame
       out_hd_frame = destination.replace("frm", "HD-" + str(frame_index) + "-SD-")
       crop = new_crop_thumb(org_HD_frame,frame['x'],frame['y'],destination,HD)
       return crop
