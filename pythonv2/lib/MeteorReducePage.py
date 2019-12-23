@@ -57,6 +57,8 @@ def reduce_meteor2(json_conf,form):
    if(cfe(video_hd_full_path)==0):
       video_hd_full_path = ''
       HD = False 
+
+   print(json_full_path)
    
    if(cfe(video_sd_full_path)==0):
        print_error(video_sd_full_path + " <b>not found.</b><br/>At least one SD video is required.")
@@ -103,7 +105,7 @@ def reduce_meteor2(json_conf,form):
    # For the Event start time
    # either it has already been reduced and we take the time of the first frame
    start_time = 0
-   print(meteor_json_file)
+   
    if('frames' in meteor_json_file):
       if(len(meteor_json_file['frames'])>0):
          start_time = str(meteor_json_file['frames'][0]['dt'])
