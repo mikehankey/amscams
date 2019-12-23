@@ -323,8 +323,7 @@ def generate_cropped_frame(analysed_name,meteor_json_data,the_HD_frame,the_SD_fr
       crop = new_crop_thumb(the_HD_frame,x,y,destination,HD)
       return crop
    else:
-      return {"error":"The HD video is not usable (?)"}
-
+      return False
 
 # Create the cropped frames (thumbs) for a meteor detection
 def generate_cropped_frames(analysed_name,meteor_json_data,HD_frames,HD):
