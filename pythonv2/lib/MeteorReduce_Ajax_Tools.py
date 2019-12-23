@@ -256,7 +256,7 @@ def update_multiple_frames(form):
                print("ORIGINAL HD FRAME")
                print(original_HD_frame)
 
-               crop = generate_cropped_frame(analysed_name,mr,original_HD_frame)
+               crop = generate_cropped_frame(analysed_name,mr,original_HD_frame,int(val['fn'])+int(frame_hd_sd_diff))
 
                print("NEW CROP")
                print(crop)
