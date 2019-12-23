@@ -78,15 +78,15 @@ def get_frame(form):
    tmp_json = load_json_file(json_file)
    if('sync' in tmp_json):
       if('sd_ind' in tmp_json['sync'] and 'hd_ind' in tmp_json['sync']):
-         frame_hd_sd_diff = int(tmp_json['sync']['hd_ind']) - int(tmp_json['sync']['sd_ind']) - 1
+         frame_hd_sd_diff = int(tmp_json['sync']['hd_ind']) - int(tmp_json['sync']['sd_ind']) 
  
    # We should test if get_HD_frame's output is empty as the HD Frames
    # are all created by default on page load (recude2 page)
    # if they don't exist
-   the_frame = get_HD_frame(analysed_name,fn)
+   the_frame = get_HD_frame(analysed_name,frame_hd_sd_diff)
  
    the_frame = the_frame[0]
-   toReturn = {'id':fn, 'full_fr':the_frame,'sd_id': int(sd_fn)}
+   toReturn = {'id':frame_hd_sd_diff, 'full_fr':the_frame,'sd_id': int(sd_fn)}
   
    print(json.dumps(toReturn))
 
