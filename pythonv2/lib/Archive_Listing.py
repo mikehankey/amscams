@@ -447,7 +447,7 @@ def get_results_from_date_from_monthly_index(criteria,date,max_res_per_page,cur_
                   if(test==True):
                      
                      # We add it only if it fits the pagination
-                     if(len(res_to_return)<max_res_per_page and res_counter>number_of_res_to_give_up):
+                     if(len(res_to_return)<=max_res_per_page and res_counter>=number_of_res_to_give_up):
 
                         print("WE ADD:<br>")
                         print(detection['p'])
