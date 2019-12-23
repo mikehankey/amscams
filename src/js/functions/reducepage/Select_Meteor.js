@@ -388,6 +388,8 @@ function setup_modal_actions(fn_id,x,y) {
             $('<div class="cross_holder next" style="top:'+rY+'px; left:'+rX+'px"><div class="cross" style="border:1px solid '+nextH.color+'"></div></div>').appendTo('.meteor_chooser');
         }
     }
+
+    console.log("AAAHUIO");
     nextH = get_help_pos('prev',parseInt(fn_id));
     console.log("NEXTH");
     console.log(nextH);
