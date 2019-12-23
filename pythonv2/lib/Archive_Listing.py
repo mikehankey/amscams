@@ -587,6 +587,9 @@ def get_html_detections(res,clear_cache):
         
          cur_count = 0
 
+      else:
+         print("WTF")
+
  
       res_html += get_html_detection(det,detection,clear_cache)
       cur_count+=1
@@ -704,9 +707,7 @@ def archive_listing(form):
 
    # Search the results through the monthly indexes
    res, total = get_results_from_date_from_monthly_index(criteria,the_date,int(nompp),cur_page)
-   
-   print(res)
-   sys.exit(0)
+    
 
    # CREATE URL FOR THE PAGINATION
    pagination_url  = "/pycgi/webUI.py?cmd=archive_listing&meteor_per_page="+str(nompp)
