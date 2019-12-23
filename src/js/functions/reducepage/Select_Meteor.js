@@ -386,8 +386,7 @@ function setup_modal_actions(fn_id,x,y) {
     console.log("FRAME " + fn_id);
     console.log("X :" + x);
     console.log("Y :" + y);
-
-     
+ 
 
     $(".meteor_chooser").unbind('click').click(function(e){
         var parentOffset = $(this).offset(); 
@@ -406,7 +405,10 @@ function setup_modal_actions(fn_id,x,y) {
             $('#lv').css('left',relX);
             $('#meteor_pos').text("x:"+realX+'/y:'+realY);
         }
-         
+        
+        console.log("BEFORE SELECT METEOR AJAX ");
+        console.log(fn_id);
+        console.log(realX,realY);
         select_meteor_ajax(fn_id,realX,realY);
  
     }).unbind('mousemove').mousemove(function(e) {
