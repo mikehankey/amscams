@@ -563,7 +563,10 @@ def get_html_detections(res,clear_cache):
    res_html = ''
    prev_date = None
    cur_count = 0
-   
+
+   print(res)
+   sys.exit(0)
+
    for detection in res:
 
       # We add the missing info to detection['p']
@@ -586,11 +589,7 @@ def get_html_detections(res,clear_cache):
          res_html += '<div class="gallery gal-resize row text-center text-lg-left mb-5 mr-5 ml-5">'
         
          cur_count = 0
-
-      else:
-         print("WTF ")
-         print(detection)
-         print("<hr/>") 
+ 
  
       res_html += get_html_detection(det,detection,clear_cache)
       cur_count+=1
