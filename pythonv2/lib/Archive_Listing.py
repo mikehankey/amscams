@@ -410,15 +410,17 @@ def get_results_from_date_from_monthly_index(criteria,date,max_res_per_page,cur_
       all_days =  json_index['days'] 
       keylist = list(all_days.keys())
 
-      print("<br>ALL DAYS KEY LIST<br>")
-      kk = sorted(keylist, key=int, reverse=True)
-      print(kk)
-
       # We sort the days
-      for day in sorted(keylist, key=int, reverse=True):
+      kk = sorted(keylist, key=int, reverse=True)
+      
+      # We sort the days
+      for day in kk:
 
             # We sort the detections within the day
             detections = sorted(json_index['days'][day], key=lambda k: k['p'], reverse=True)
+
+            print(detections)
+            sys.exit(0)
 
             # If we are the current month & year, we need to take into account the days before the date.day
             if( (cur_year_and_month_test and int(day)<=int(date.day)) or (not cur_year_and_month_test)):
