@@ -564,9 +564,6 @@ def get_html_detections(res,clear_cache):
    prev_date = None
    cur_count = 0
  
-   print(res)
-   print("<br><br>")
-
 
    for detection in res:
 
@@ -575,7 +572,9 @@ def get_html_detections(res,clear_cache):
       det = name_analyser(detection['p'])
       cur_date = get_datetime_from_analysedname(det)
 
-      print("CURRENT DATE ")
+      print("<br><br>DETECTION:<br>")
+      print(det)
+      print("<br>CURRENT DATE <br>")
       print(cur_date.strftime("%Y/%m/%d"))
       print("<br>")
    
