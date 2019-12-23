@@ -307,7 +307,7 @@ def generate_preview(analysed_name):
 
 # Create ONE cropped frame (thumb) for a meteor detection
 # this is use after a manual picking
-def generate_cropped_frame(analysed_name,meteor_json_data,the_HD_frame,HD):
+def generate_cropped_frame(analysed_name,meteor_json_data,the_HD_frame,HD=True):
 
    # We get the frame data
    meteor_frame_data = meteor_json_data['frames']
