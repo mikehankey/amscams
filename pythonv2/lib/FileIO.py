@@ -362,6 +362,8 @@ def load_json_file_MIKESVERSION(json_file):
 
 
 def load_json_file(json_file):  
+   with open(json_file, 'r' ) as infile:
+      json_data = json.load(infile)
    try:
       with open(json_file, 'r' ) as infile:
          json_data = json.load(infile)
