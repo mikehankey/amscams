@@ -381,10 +381,7 @@ def get_results_from_date_from_monthly_index(criteria,date,max_res_per_page,cur_
       number_of_res_to_give_up = 0
    else:
       number_of_res_to_give_up = max_res_per_page*(cur_page-1)
-   
-   print("CUR PAGE " +  str(cur_page))
-   print("<br>number_of_res_to_give_up " + str(number_of_res_to_give_up))
-
+    
 
    # Get Station ID
    station_id = get_station_id()
@@ -424,10 +421,7 @@ def get_results_from_date_from_monthly_index(criteria,date,max_res_per_page,cur_
             if( (cur_year_and_month_test and int(day)<=int(date.day)) or (not cur_year_and_month_test)):
           
                for detection in detections:
-
-
-                  print("ON DETECTION<br>")
-                  print(detection) 
+ 
 
                   # Here we test the criteria
                   test = True
@@ -438,50 +432,21 @@ def get_results_from_date_from_monthly_index(criteria,date,max_res_per_page,cur_
     
                      if(test==False):
                         break   
-
-
-                  print("<br>===>TEST<br>")
-                  print(test)
-
+ 
 
                   if(test==True):
-
-
-                     print("<br>len(res_to_return):<br>")
-                     print(str(len(res_to_return)))
-
-                     print("<br>max_res_per_page:<br>")
-                     print(str(max_res_per_page))
-
-                     print("<br>res_counter:<br>")
-                     print(str(res_counter))
-
-                     
-                     print("<br>number_of_res_to_give_up:<br>")
-                     print(str(number_of_res_to_give_up))
-
-                     
+ 
                      # We add it only if it fits the pagination
                      if(len(res_to_return)<=max_res_per_page and res_counter>=number_of_res_to_give_up):
 
-                        print("WE ADD:<br>")
-                        print(detection['p'])
-
+                       
                         # We complete the detection['p'] to get the full path (as the index only has compressed name)
                         detection['p'] = get_full_det_path(detection['p'],station_id,date,day)
                         res_to_return.append(detection)
                      
-                     else:
-                        print("WE DONT ADD IT 1")
-
+                     
                      res_counter+=1 
-
-                  else:
-                        print("WE DONT ADD IT 1")
-
-                    
-
-                   
+ 
    
       # Change Month & Year
       if(cur_month==1):
@@ -503,12 +468,7 @@ def get_results_from_date_from_monthly_index(criteria,date,max_res_per_page,cur_
          date = date.replace(year=cur_year, month=cur_month,day=numbers_of_days) 
  
 
-   print("RES TO RETURN<br>")
-   print(res_to_return)
-   print("<br>RES COUNTER<br>")
-   print(res_counter)
-   sys.exit(0)
-
+    
    return res_to_return, res_counter
 
 
@@ -744,11 +704,7 @@ def archive_listing(form):
 
    # Search the results through the monthly indexes
    res, total = get_results_from_date_from_monthly_index(criteria,the_date,int(nompp),cur_page)
-   
-   # To check
-   if(total>1):
-      total = total -1
-
+    
    # CREATE URL FOR THE PAGINATION
    pagination_url  = "/pycgi/webUI.py?cmd=archive_listing&meteor_per_page="+str(nompp)
 
