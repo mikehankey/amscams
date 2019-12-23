@@ -345,10 +345,10 @@ function addModalTemplate(meteor_id,neighbor) {
 // Actions on modal 
 function setup_modal_actions(fn_id,x,y) {
  
-   console.log("IN SETUP MODAL ACTION");
-   console.log("FRAME " + fn_id);
-   console.log("X :" + x);
-   console.log("Y :" + y); 
+   //console.log("IN SETUP MODAL ACTION");
+   //console.log("FRAME " + fn_id);
+   //console.log("X :" + x);
+   //console.log("Y :" + y); 
     
     // Warning: preview  = 500x500
     //    thumb real dim = 100x100
@@ -369,8 +369,8 @@ function setup_modal_actions(fn_id,x,y) {
     // Remove Helper
     $('.cross_holder.next, .cross_holder.prev').remove();
  
-   console.log("BEFORE GET HELP PPOS");
-   console.log(" fn_id  " + fn_id);
+   //console.log("BEFORE GET HELP PPOS");
+   //console.log(" fn_id  " + fn_id);
 
     // Add Next Help Point 
     var nextH = get_help_pos('next',parseInt(fn_id));
@@ -416,9 +416,9 @@ function setup_modal_actions(fn_id,x,y) {
             $('#meteor_pos').text("x:"+realX+'/y:'+realY);
         }
         
-        console.log("BEFORE SELECT METEOR AJAX ");
-        console.log(fn_id);
-        console.log(realX,realY);
+        //console.log("BEFORE SELECT METEOR AJAX ");
+        //console.log(fn_id);
+        //console.log(realX,realY);
         select_meteor_ajax(fn_id,realX,realY);
  
     }).unbind('mousemove').mousemove(function(e) {
@@ -486,7 +486,7 @@ function get_help_pos(nextprev, org_id) {
         }
         
     } else {
-        console.log("RETURN NULL!!!");
+       
         return null;
     }
 }
