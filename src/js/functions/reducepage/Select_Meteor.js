@@ -473,10 +473,9 @@ function get_help_pos(nextprev, org_id) {
     console.log("IN GET HELP POS");
     console.log("nextprev " + nextprev);
     console.log("org_id " + org_id );
-    
+    console.log("tr_fn " + tr_fn );
     console.log("tr_id " + tr_id );
     
-    console.log("tr_fn " + tr_fn );
     return null;
 
     
