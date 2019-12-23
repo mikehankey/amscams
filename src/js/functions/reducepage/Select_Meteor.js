@@ -446,6 +446,8 @@ function setup_modal_actions(fn_id,x,y) {
              //$('#meteor_pos').text("x:"+ realX +' / y:'+ realY);
         }
     });
+
+    return false;
 }
 
 
@@ -475,7 +477,7 @@ function get_help_pos(nextprev, org_id) {
     }
     
 
-    if(tr_fn) {
+    if(tr_fn == true) {
         // Get the info: color & position
         var $tr = $('tr#fr_'+ tr_id);
         var x = parseFloat($tr.attr('data-org-x'));
