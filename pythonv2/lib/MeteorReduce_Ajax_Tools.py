@@ -248,7 +248,6 @@ def update_multiple_frames(form):
                if(len(original_HD_frame)!=0 and len(destination_cropped_frame)!=0): 
                   print("NEW CROP THUMB")
                   print(original_HD_frame[0])
-                  print(str(val['x']) + ", " str(val['y']))
                   new_crop_thumb(original_HD_frame[0],int(val['x']),int(val['y']),destination_cropped_frame[0])
                else:
                   resp['error'].append("Impossible to update the frame " + str(int(val['fn'])))
