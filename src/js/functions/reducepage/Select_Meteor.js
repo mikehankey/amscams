@@ -386,6 +386,7 @@ function setup_modal_actions(fn_id,x,y) {
     console.log("FRAME " + fn_id);
     console.log("X :" + x);
     console.log("Y :" + y);
+    break;
  
 
     $(".meteor_chooser").unbind('click').click(function(e){
