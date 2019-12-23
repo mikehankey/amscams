@@ -445,6 +445,21 @@ def get_results_from_date_from_monthly_index(criteria,date,max_res_per_page,cur_
 
 
                   if(test==True):
+
+
+                     print("<br>len(res_to_return):<br>")
+                     print(str(len(res_to_return)))
+
+                     print("<br>max_res_per_page:<br>")
+                     print(str(max_res_per_page))
+
+                     print("<br>res_counter:<br>")
+                     print(str(res_counter))
+
+                     
+                     print("<br>number_of_res_to_give_up:<br>")
+                     print(str(number_of_res_to_give_up))
+
                      
                      # We add it only if it fits the pagination
                      if(len(res_to_return)<=max_res_per_page and res_counter>=number_of_res_to_give_up):
