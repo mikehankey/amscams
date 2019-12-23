@@ -248,9 +248,14 @@ def update_multiple_frames(form):
                frame['x'] = int(val['x'])
                frame['y'] = int(val['y'])
 
+               print("IN update_multiple_frames")
+
                # Regenerate the proper cropped (thumb)
                original_HD_frame = get_HD_frame(analysed_name,int(val['fn'])+int(frame_hd_sd_diff)) 
-               generate_cropped_frame(analysed_name,mr,original_HD_frame)
+               crop = generate_cropped_frame(analysed_name,mr,original_HD_frame)
+
+               print("NEW CROP")
+               print(crop)
 
                # Recreate the corresponding thumb
                #original_HD_frame = get_HD_frame(analysed_name,int(val['fn'])+int(frame_hd_sd_diff))  
