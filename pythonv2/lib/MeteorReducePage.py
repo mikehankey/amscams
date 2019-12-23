@@ -73,6 +73,9 @@ def reduce_meteor2(json_conf,form):
    template = template.replace("{JSON_FILE}", str(json_full_path))   # Video File  
 
    # Parse the JSON
+   print("JSON PATH -")
+   print(json_full_path)
+   print("<br/>")
    meteor_json_file = load_json_file(json_full_path) 
  
    # Get the HD or SD stack
