@@ -413,8 +413,17 @@ def get_results_from_date_from_monthly_index(criteria,date,max_res_per_page,cur_
       # We sort the days
       kk = sorted(keylist, key=int, reverse=True)
       
+      print('KK<br/>')
+      print(kk)
+
+
       # We sort the days
       for day in kk:
+
+
+            print("DAY<br>")
+            print(day)
+            print(<br>)
 
             # We sort the detections within the day
             detections = sorted(json_index['days'][day], key=lambda k: k['p'], reverse=True)
