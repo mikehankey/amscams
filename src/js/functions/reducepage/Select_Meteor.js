@@ -356,8 +356,7 @@ function setup_modal_actions(fn_id,x,y) {
     var thumb_dim  = thumb_DIM;
     var factor = thumb_prev/thumb_dim;
 
-
-    console.log("A");
+ 
 
     x = parseInt(x);
     y = parseInt(y);
@@ -366,34 +365,25 @@ function setup_modal_actions(fn_id,x,y) {
     $('#meteor_org_pos').html('<b>Org:</b> x:'+x+'/y:'+y);
     $('#meteor_pos').text('x:'+x+'/y:'+y);
 
-    console.log("B");
-
+    
     // Remove Helper
     $('.cross_holder.next, .cross_holder.prev').remove();
  
-    console.log("C");
 
     // Add Next Help Point 
     var nextH = get_help_pos('next',parseInt(fn_id));
-    console.log("NEXTH");
-    console.log(nextH);
-    console.log("D");
-
+  
     if(typeof nextH !== 'undefined' && nextH !== null) { 
         if( nextH.x !== null && typeof  nextH.x !== null) {
-            console.log("YYYY");
-            // 225 for circle diameter
+             // 225 for circle diameter
             var rX = (225+(nextH.x-x)*factor);
             var rY = (225+(nextH.y-y)*factor);
             $('<div class="cross_holder next" style="top:'+rY+'px; left:'+rX+'px"><div class="cross" style="border:1px solid '+nextH.color+'"></div></div>').appendTo('.meteor_chooser');
         }
     }
-
-    console.log("AAAHUIO");
+ 
     nextH = get_help_pos('prev',parseInt(fn_id));
-    console.log("NEXTH");
-    console.log(nextH);
-
+ 
    
     if(typeof nextH !== 'undefined' && nextH !== null ) { 
         if( nextH.x !== null && typeof  nextH.x !== null) {
@@ -456,6 +446,11 @@ function setup_modal_actions(fn_id,x,y) {
 function get_help_pos(nextprev, org_id) {
 
     var tr_fn = false;
+
+    console.log("IN GET HELP POS");
+    console.log("nextprev " + nextprev);
+    console.log("org_id " + org_id );
+    return null;
 
     if(nextprev == 'next') {
         // Find next
