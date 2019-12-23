@@ -375,10 +375,11 @@ function setup_modal_actions(fn_id,x,y) {
 
     // Add Next Help Point 
     var nextH = get_help_pos('next',parseInt(fn_id));
-
+    console.log("NEXTH");
+    console.log(nextH);
     console.log("D");
 
-    if(nextH && typeof nextH !== 'undefined'  ) { 
+    if(typeof nextH !== 'undefined') { 
        console.log("XXXXX");
         if( nextH.x !== null && typeof  nextH.x !== null) {
             console.log("YYYY");
@@ -392,9 +393,8 @@ function setup_modal_actions(fn_id,x,y) {
     console.log("NEXTH");
     console.log(nextH);
 
-    return false;
-
-    if(nextH && typeof nextH !== 'undefined' ) { 
+   
+    if(typeof nextH !== 'undefined' ) { 
         if( nextH.x !== null && typeof  nextH.x !== null) {
             // 225 for circle diameter
             var rX = (225+(nextH.x-x)*factor);
