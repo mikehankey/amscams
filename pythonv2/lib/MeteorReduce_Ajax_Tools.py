@@ -87,6 +87,9 @@ def get_frame(form):
    the_frame = get_HD_frame(analysed_name,frame_hd_sd_diff)
  
    the_frame = the_frame[0]
+   # For return
+   frame_hd_sd_diff = frame_hd_sd_diff -1
+   
    toReturn = {'id':frame_hd_sd_diff, 'full_fr':the_frame,'sd_id': int(sd_fn)}
   
    print(json.dumps(toReturn))
