@@ -80,10 +80,10 @@ def get_frame(form):
       if('sd_ind' in tmp_json['sync'] and 'hd_ind' in tmp_json['sync']):
          frame_hd_sd_diff = int(tmp_json['sync']['hd_ind']) - int(tmp_json['sync']['sd_ind'])
 
-   #print("frame_hd_sd_diff " + str(frame_hd_sd_diff))
+   print("frame_hd_sd_diff " + str(frame_hd_sd_diff))
    fn = frame_hd_sd_diff + int(fn)
 
-   #print("NEW FRAME FN " + str(fn) + "<br/>")
+   print("NEW FRAME FN " + str(fn) + "<br/>")
    
    # We should test if get_HD_frame's output is empty as the HD Frames
    # are all created by default on page load (recude2 page)
@@ -280,9 +280,7 @@ def update_multiple_frames(form):
 def delete_frame(form):
  
    # Debug
-   cgitb.enable() 
-
-   print("IN DELETE FRAME")
+   cgitb.enable()  
 
    # Frame Number
    fn = form.getvalue("fn")
@@ -290,8 +288,7 @@ def delete_frame(form):
    # JSON File
    meteor_file = form.getvalue("json_file")
    meteor_json = load_json_file(meteor_file)
-
-   
+ 
 
    # TODO: DELETE ALSO THE CORRESPONDING THUMB HERE?
 
