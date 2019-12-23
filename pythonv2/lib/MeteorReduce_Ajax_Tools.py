@@ -69,6 +69,9 @@ def get_frame(form):
    fn = form.getvalue('fr') # The frame ID (SD!!)
    sd_fn = fn
 
+   # WARNING THE +1 and -1 below are due to the fact that
+   # Mike doesn't count the same way
+
    # Analyse the name
    analysed_name = get_analysed_name(json_file)
  
@@ -88,7 +91,7 @@ def get_frame(form):
  
    the_frame = the_frame[0]
    # For return
-   frame_hd_sd_diff = frame_hd_sd_diff  
+   frame_hd_sd_diff = frame_hd_sd_diff -1 
    
    toReturn = {'id':frame_hd_sd_diff, 'full_fr':the_frame,'sd_id': int(sd_fn)}
   
