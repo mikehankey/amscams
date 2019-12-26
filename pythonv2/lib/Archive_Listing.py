@@ -632,11 +632,12 @@ def create_criteria_selector(selected, criteria, all_msg, sign, unit=''):
 
 # MAIN FUNCTION FOR THE ARCHIVE LISTING PAGE
 def archive_listing(form): 
-
-   limit_day = form.getvalue('limit_day')
+ 
    cur_page  = form.getvalue('p')
    meteor_per_page = form.getvalue('meteor_per_page')
    clear_cache = form.getvalue('clear_cache')
+   start_datetime = form.getvalue('start_DT')
+   end_datetime = form.getvalue('end_DT')
 
    # Criteria
    selected_mag = form.getvalue('magnitude')
@@ -692,8 +693,10 @@ def archive_listing(form):
 
    # Day?
    has_limit_day = False
-   if (limit_day is None):
-      the_date = datetime.datetime.now()
+
+   if (start_datetime is None and end_datetime is None):
+      start_datetime = datetime.datetime.now()
+      end_datetime = datetime.datetime.now()
    else:
       the_date = datetime.datetime.strptime(limit_day,"%Y_%m_%d") 
       has_limit_day = True
@@ -740,11 +743,11 @@ def archive_listing(form):
       template = template.replace("{PAGINATION}", "")
       template = template.replace("{FOUND}", "")   
    elif((len(res))!=total):
-      template = template.replace("{FOUND}", "<div class='page_h mr-2'><small>Displaying " + str(len(res)) + " out of " +  str(total)  + " detections.</small></div>")
+      template = template.replace("{FOUND}", "<div class='page_h ml-3'><small>Displaying " + str(len(res)) + " out of " +  str(total)  + " detections.</small></div>")
    elif(len(res)==1):
-      template = template.replace("{FOUND}", "<div class='page_h mr-2'><small>Displaying only 1 detection matching your criteria.</small></div>")
+      template = template.replace("{FOUND}", "<div class='page_h ml-3'><small>Displaying only 1 detection matching your criteria.</small></div>")
    else:
-      template = template.replace("{FOUND}", "<div class='page_h mr-2'><small>Displaying all " + str(len(res)) + " detections matching your criteria.</small></div>")
+      template = template.replace("{FOUND}", "<div class='page_h ml-3'><small>Displaying all " + str(len(res)) + " detections matching your criteria.</small></div>")
 
    # Display Template
    return template
