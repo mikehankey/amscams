@@ -702,10 +702,10 @@ def archive_listing(form):
       end_datetime  = datetime.datetime.strptime(end_datetime,"%Y_%m_%d %H:%i")  
       has_limit_day = True
    
-   template = template.replace("{DATE}",the_date.strftime("%Y/%m/%d") )
+   template = template.replace("{DATE}",start_datetime.strftime("%Y/%m/%d %H:%i") + '-' + end_datetime.strftime("%Y/%m/%d %H:%i") )
 
-   year = the_date.year
-   month = the_date.month
+   end_datetime = the_date.year
+   end_datetime = the_date.month
 
    # Search the results through the monthly indexes
    res, total = get_results_from_date_from_monthly_index(criteria,the_date,int(nompp),cur_page)
