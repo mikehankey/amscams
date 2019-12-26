@@ -695,11 +695,11 @@ def archive_listing(form):
    has_limit_day = False
 
    if (start_datetime is None and end_datetime is None):
-      start_datetime = datetime.datetime.now()- timedelta(hours=24, minutes=00)
-      end_datetime   = datetime.datetime.now()
+      start_datetime = datetime.now()- timedelta(hours=24, minutes=00)
+      end_datetime   = datetime.now()
    else:
-      start_datetime = datetime.datetime.strptime(start_datetime,"%Y_%m_%d %H:%i") 
-      end_datetime  = datetime.datetime.strptime(end_datetime,"%Y_%m_%d %H:%i")  
+      start_datetime = datetime.strptime(start_datetime,"%Y_%m_%d %H:%i") 
+      end_datetime  = datetime.strptime(end_datetime,"%Y_%m_%d %H:%i")  
       has_limit_day = True
    
    template = template.replace("{DATE}",start_datetime.strftime("%Y/%m/%d %H:%i") + '-' + end_datetime.strftime("%Y/%m/%d %H:%i") )
