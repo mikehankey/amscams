@@ -2,11 +2,11 @@
 import glob
 import os
 import json
-import datetime
 import sys
 import collections 
 import shutil
 
+from datetime import datetime, timedelta
 from calendar import monthrange
 
 from lib.REDUCE_VARS import *
@@ -695,8 +695,8 @@ def archive_listing(form):
    has_limit_day = False
 
    if (start_datetime is None and end_datetime is None):
-      start_datetime = datetime.datetime.now()
-      end_datetime = datetime.datetime.now()
+      start_datetime = datetime.datetime.now()- timedelta(hours=24, minutes=00)
+      end_datetime   = datetime.datetime.now()
    else:
       start_datetime = datetime.datetime.strptime(start_datetime,"%Y_%m_%d %H:%i") 
       end_datetime  = datetime.datetime.strptime(end_datetime,"%Y_%m_%d %H:%i")  
@@ -704,11 +704,11 @@ def archive_listing(form):
    
    template = template.replace("{DATE}",start_datetime.strftime("%Y/%m/%d %H:%i") + '-' + end_datetime.strftime("%Y/%m/%d %H:%i") )
 
-   end_datetime = the_date.year
-   end_datetime = the_date.month
+   year = start_datetime.year
+   month = start_datetime.month
 
    # Search the results through the monthly indexes
-   res, total = get_results_from_date_from_monthly_index(criteria,the_date,int(nompp),cur_page)
+   res, total = get_results_from_date_from_monthly_index(criteria,end_datetime,int(nompp),cur_page)
     
 
    # CREATE URL FOR THE PAGINATION
