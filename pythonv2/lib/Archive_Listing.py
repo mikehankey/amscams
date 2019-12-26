@@ -636,8 +636,8 @@ def archive_listing(form):
    cur_page  = form.getvalue('p')
    meteor_per_page = form.getvalue('meteor_per_page')
    clear_cache = form.getvalue('clear_cache')
-   start_datetime = form.getvalue('start_DT')
-   end_datetime = form.getvalue('end_DT')
+   start_datetime = form.getvalue('start_date')
+   end_datetime = form.getvalue('end_date')
 
    # Criteria
    selected_mag = form.getvalue('magnitude')
