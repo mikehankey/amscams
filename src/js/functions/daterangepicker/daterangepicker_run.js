@@ -7,6 +7,9 @@ $(function() {
      startDate: moment().startOf('hour'),
      endDate: moment().startOf('hour').add(24, 'hour'),
    }, function(start, end, label) {
+      console.log(start);
+      console.log(end);
+      console.log(label);
       alert("A new date selection was made: " + start.format('YYYY-MM-DD') + ' to ' + end.format('YYYY-MM-DD'));
    });
  });
