@@ -371,10 +371,11 @@ def test_criteria(criter,criteria,detection):
    return True
 
 # Get results on index from a certain date
-def get_results_from_date_from_monthly_index(criteria,date,max_res_per_page,cur_page): 
+def get_results_from_date_from_monthly_index(criteria,start_date,end_date,max_res_per_page,cur_page): 
 
    # Get the index of the selected or current year
-   json_index =  get_monthly_index(date.month,date.year)
+   # for the END DATE
+   json_index =  get_monthly_index(end_date.month,end_date.year)
  
    # Nb of result not to display based on cur_page
    if(cur_page==1 or cur_page==0 ):
@@ -382,7 +383,6 @@ def get_results_from_date_from_monthly_index(criteria,date,max_res_per_page,cur_
    else:
       number_of_res_to_give_up = max_res_per_page*(cur_page-1)
     
-
    # Get Station ID
    station_id = get_station_id()
 
@@ -399,7 +399,7 @@ def get_results_from_date_from_monthly_index(criteria,date,max_res_per_page,cur_
       cur_month = json_index['month']
       cur_year  = json_index['year']
       
-      if(int(cur_month)==int(date.month) and int(cur_year)==int(date.year)): 
+      if(int(cur_month)==int(end_date.month) and int(cur_year)==int(end_date.year)): 
          cur_year_and_month_test = True
       else:
          cur_year_and_month_test = False
@@ -408,8 +408,7 @@ def get_results_from_date_from_monthly_index(criteria,date,max_res_per_page,cur_
       keylist = list(all_days.keys())
 
       # We sort the days
-      kk = sorted(keylist, key=int, reverse=True)
-   
+      kk = sorted(keylist, key=int, reverse=True) 
 
       # We sort the days
       for day in kk:
@@ -417,12 +416,11 @@ def get_results_from_date_from_monthly_index(criteria,date,max_res_per_page,cur_
             # We sort the detections within the day
             detections = sorted(json_index['days'][day], key=lambda k: k['p'], reverse=True)
  
-            # If we are the current month & year, we need to take into account the days before the date.day
-            if( (cur_year_and_month_test and int(day)<=int(date.day)) or (not cur_year_and_month_test)):
+            # If we are the current month & year, we need to take into account the days before the end_date.day
+            if( (cur_year_and_month_test and int(day)<=int(end_date.day)) or (not cur_year_and_month_test)):
           
                for detection in detections:
- 
-
+  
                   # Here we test the criteria
                   test = True
                   for criter in criteria:
@@ -711,9 +709,8 @@ def archive_listing(form):
    month = start_datetime.month
 
    # Search the results through the monthly indexes
-   res, total = get_results_from_date_from_monthly_index(criteria,end_datetime,int(nompp),cur_page)
-    
-
+   res, total = get_results_from_date_from_monthly_index(criteria,start_datetime,end_datetime,int(nompp),cur_page)
+  
    # CREATE URL FOR THE PAGINATION
    pagination_url  = "/pycgi/webUI.py?cmd=archive_listing&meteor_per_page="+str(nompp)
 
