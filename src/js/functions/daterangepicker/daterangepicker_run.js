@@ -14,7 +14,7 @@ $(function() {
    }, function(start, end, label) {
       $('input[name=start_date]').val(start.format('YYYY/MM/DD HH:mm'));
       $('input[name=end_date]').val(end.format('YYYY/MM/DD HH:mm'));
-      new_url = update_url_param(window.location.href ,'start_date',$('#start_date').val());
-      window.location   = update_url_param(new_url ,'end_date',$('#end_date').val());
+      new_url = update_url_param(window.location.href ,'start_date',$('input[name=start_date]').val());
+      window.location   = update_url_param(new_url ,'end_date',$('input[name=end_date]').val());
    });
  });
