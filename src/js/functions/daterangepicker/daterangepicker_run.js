@@ -9,7 +9,7 @@ $(function() {
      startDate: moment($('input[name=start_date]').val()).format('YYYY/MM/DD HH:mm'),
      endDate: moment($('input[name=end_date]').val()).format('YYYY/MM/DD HH:mm'),
      locale: {
-      format: 'YYYY/MM/DD hh:mm'
+      format: 'YYYY/MM/DD HH:mm'
     }
    }, function(start, end, label) {
       $('input[name=start_date]').val(start.format('YYYY/MM/DD HH:mm'));
