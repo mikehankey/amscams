@@ -454,7 +454,7 @@ def get_results_from_date_from_monthly_index(criteria,start_date,end_date,max_re
   
          # Change the date backward
          week_day, numbers_of_days =  monthrange(cur_year,cur_month)
-         date = date.replace(year=cur_year, month=cur_month,day=numbers_of_days) 
+         end_date = end_date.replace(year=cur_year, month=cur_month,day=numbers_of_days) 
 
  
       else:
@@ -463,7 +463,7 @@ def get_results_from_date_from_monthly_index(criteria,start_date,end_date,max_re
 
          # Change the date backward
          week_day, numbers_of_days =  monthrange(cur_year,cur_month)
-         date = date.replace(year=cur_year, month=cur_month,day=numbers_of_days) 
+         end_date = end_date.replace(year=cur_year, month=cur_month,day=numbers_of_days) 
  
 
     
