@@ -464,6 +464,7 @@ def get_results_from_date_from_monthly_index(criteria,start_date,end_date,max_re
          end_date = end_date.replace(year=cur_year, month=cur_month,day=numbers_of_days) 
 
  
+      # Change Month only
       else:
          cur_month = cur_month -1
          json_index =  get_monthly_index(cur_month,cur_year)
@@ -472,7 +473,7 @@ def get_results_from_date_from_monthly_index(criteria,start_date,end_date,max_re
          week_day, numbers_of_days =  monthrange(cur_year,cur_month)
          end_date = end_date.replace(year=cur_year, month=cur_month,day=numbers_of_days) 
 
-      print("NEW END DATE IN LOOP<br>")
+      print("<br/>-----------NEW END DATE IN LOOP<br>")
       print(end_date)
       print(" vs. ")
       print(start_date)
