@@ -480,7 +480,7 @@ def get_results_from_date_from_monthly_index(criteria,start_date,end_date,max_re
 
 
       # We stop at the start_date
-      if(end_date>=start_date):
+      if(end_date<=start_date):
          print("STOP DATE TEST<br>")
          return res_to_return, res_counter
     
