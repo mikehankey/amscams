@@ -1,6 +1,6 @@
 .h1_holder {
 
-    .datepicker.form-control {
+    .datepicker.form-control, .daterangepicker.form-control {
         width:auto;
         display: inline-block; 
         background: transparent;
@@ -28,6 +28,11 @@
             background: #0e295b;
         }
  
+    }
+
+    .daterangepicker.form-control {
+       max-width: 100%;
+       white-space: nowrap;
     }
 
 }
