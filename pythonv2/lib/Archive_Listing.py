@@ -697,6 +697,8 @@ def archive_listing(form):
    if (start_datetime is None and end_datetime is None):
       start_datetime = datetime.now()- timedelta(hours=24, minutes=00)
       end_datetime   = datetime.now()
+      start_datetime.replace(hour=0, minute=0)
+      end_datetime.replace(hour=23, minute=59)
    else:
       start_datetime = datetime.strptime(start_datetime,"%Y_%m_%d %H:%M") 
       end_datetime  = datetime.strptime(end_datetime,"%Y_%m_%d %H:%M")  
