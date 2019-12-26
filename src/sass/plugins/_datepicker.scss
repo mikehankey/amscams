@@ -347,14 +347,14 @@
   }
   .bootstrap-datetimepicker-widget table td span.old,
   .bootstrap-datetimepicker-widget table td i.old {
-    color: #dee2e6;
+    color: #555;
   }
   .bootstrap-datetimepicker-widget table td span.disabled,
   .bootstrap-datetimepicker-widget table td i.disabled,
   .bootstrap-datetimepicker-widget table td span.disabled:hover,
   .bootstrap-datetimepicker-widget table td i.disabled:hover {
     background: none;
-    color: #dee2e6;
+    color: #555;
     cursor: not-allowed;
   }
   .bootstrap-datetimepicker-widget.usetwentyfour td.hour {
