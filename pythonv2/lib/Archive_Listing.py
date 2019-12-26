@@ -702,8 +702,9 @@ def archive_listing(form):
       end_datetime  = datetime.strptime(end_datetime,"%Y_%m_%d %H:%M")  
       has_limit_day = True
    
-   template = template.replace("{DATE}",start_datetime.strftime("%Y/%m/%d %H:%M") + '-' + end_datetime.strftime("%Y/%m/%d %H:%M") )
-
+   template = template.replace("{START_DATE}",start_datetime.strftime("%Y/%m/%d %H:%M"));
+   template = template.replace("{END_DATE}",end_datetime.strftime("%Y/%m/%d %H:%M"));
+   
    year = start_datetime.year
    month = start_datetime.month
 
