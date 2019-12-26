@@ -378,9 +378,7 @@ def get_results_from_date_from_monthly_index(criteria,start_date,end_date,max_re
    print(start_date)
    print("<br/>end_date : ")
    print(end_date)
-   sys.exit(0)
-   
-
+  
 
    # Get the index of the selected or current year
    # for the END DATE
