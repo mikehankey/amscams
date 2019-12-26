@@ -4,8 +4,8 @@ $(function() {
    $('input[name="daterange"]').daterangepicker({
      opens: 'right',
      timePicker: true,
-     startDate: moment().startOf('day').add(-24, 'hour'),
-     endDate: moment().startOf('day'),
+     //startDate: moment().startOf('day').add(-24, 'hour'),
+     //endDate: moment().startOf('day'),
      locale: {
       format: 'YYYY/MM/DD hh:mm'
     }
