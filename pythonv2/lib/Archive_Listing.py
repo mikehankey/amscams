@@ -100,7 +100,17 @@ def get_diag_fields(detection):
          ang_vel = "unknown"      
 
 
-      return mag,dur,red, res_error, ang_vel
+      # SYNC (HD/SD)
+      try:
+         if('sync' in detection_data):
+            if('hd_ind' in detection_data['sync'] and 'sd_ind' in detection_data['sync']):
+               sync = 1
+         else:
+            sync = 0
+      except:
+         sync = 0
+
+      return mag,dur,red, res_error, ang_vel, sync
    
    else:
 
@@ -196,7 +206,7 @@ def create_json_index_month(month,year):
 
          for detection in sorted(glob.iglob(day + os.sep +  '*' + '.json', recursive=True), reverse=True):
              
-            mag,dur,red, res_error, ang_vel  = get_diag_fields(detection)
+            mag,dur,red, res_error, ang_vel, sync  = get_diag_fields(detection)
             det = os.path.basename(detection)
             det = os.path.splitext(det)[0]
 
@@ -207,7 +217,7 @@ def create_json_index_month(month,year):
             except:
                index_month['days'][int(cur_day)] = []
  
-            index_month['days'][int(cur_day)].append({'p':det[11:],'mag':mag,'dur':dur,'red':red,'res_er':res_error,'ang_v':ang_vel})
+            index_month['days'][int(cur_day)].append({'p':det[11:],'mag':mag,'dur':dur,'red':red,'res_er':res_error,'ang_v':ang_vel,'sync':sync})
  
    return index_month             
 
@@ -237,14 +247,14 @@ def create_json_index_year(year):
 
                for detection in sorted(glob.iglob(day + os.sep +  '*' + '.json', recursive=True), reverse=True):
                   
-                  mag,dur,red, res_error, ang_vel = get_diag_fields(detection)
+                  mag,dur,red, res_error, ang_vel, sync = get_diag_fields(detection)
 
 
                   det = os.path.basename(detection)
                   det = os.path.splitext(det)[0]
                   # det[11:] => Here we also remove the Year, Month & Day of the detection 
                   # since we know them from the JSON structure
-                  cur_day_data.append({'p':det[11:],'mag':mag,'dur':dur,'red':red,'res_er':res_error,'ang_v':ang_vel})
+                  cur_day_data.append({'p':det[11:],'mag':mag,'dur':dur,'red':red,'res_er':res_error,'ang_v':ang_vel,'sync':sync})
 
                #print("CUR DAY ")
                #print(cur_day)
