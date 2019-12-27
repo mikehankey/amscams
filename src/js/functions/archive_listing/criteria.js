@@ -30,4 +30,14 @@ $(function() {
       // Back to page = 1 (so we dont have issues if the number of page is too mall)
       window.location =  update_url_param(new_url ,'p',1);
     });
+
+
+    //Sync
+    $('#sync').change(function() {
+      // Change Meteor Per page
+      new_url = update_url_param(window.location.href ,'sync',$('#sync').val());
+
+      // Back to page = 1 (so we dont have issues if the number of page is too mall)
+      window.location =  update_url_param(new_url ,'p',1);
+    });
 })
