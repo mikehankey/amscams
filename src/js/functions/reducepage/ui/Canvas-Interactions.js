@@ -150,7 +150,7 @@ if ($('canvas#c').length!=0) {
          for (let i in objects) {
             if ( typeof(objects[i].azim)!='undefined') {
                console.log("FOUND");
-               objects[i].set('fill', 'rgba(255,107,8,0)');   
+               objects[i].set('fill', 'rgba(0,0,0,0)');   
             }
          }
       });
