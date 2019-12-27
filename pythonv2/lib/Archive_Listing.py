@@ -678,19 +678,32 @@ def create_criteria_selector(values, val, selected, criteria, all_msg, sign, uni
       select+= '<option value="-1">'+all_msg+'</option>'
       criteria[val] = float(selected)
 
-   for mag in values:
-
-      if(val=='sync' and str(mag)==1):
-         mag = "Sync. Only"
-      elif(val=='sync'): 
-         mag = "NOT Sync. Only"
+   for mag in values: 
 
       if(one_selected==True):
          if(float(mag)==float(selected)):
+
+            if(val=='sync' and str(mag)==1):
+               mag = "Sync. Only"
+            elif(val=='sync'): 
+               mag = "NOT Sync. Only"
+
             select+= '<option selected value="'+str(mag)+'">'+sign+str(mag)+ unit+'</option>'
          else:
+
+            if(val=='sync' and str(mag)==1):
+               mag = "Sync. Only"
+            elif(val=='sync'): 
+               mag = "NOT Sync. Only"
+
             select+= '<option value="'+str(mag)+'">'+sign + str(mag)+ unit+'</option>'  
       else:
+
+         if(val=='sync' and str(mag)==1):
+            mag = "Sync. Only"
+         elif(val=='sync'): 
+            mag = "NOT Sync. Only"
+            
          select+= '<option value="'+str(mag)+'">'+sign + str(mag)+ unit+'</option>'  
    
    return select, criteria
