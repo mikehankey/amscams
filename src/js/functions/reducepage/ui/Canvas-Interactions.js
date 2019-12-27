@@ -156,7 +156,7 @@ if ($('canvas#c').length!=0) {
          for (let i in objects) {
 
             // Show Quadrant Bearing Value
-            if (objects[i].azim!='undefined') {
+            if ( typeof(objects[i].azim)!='undefined' && objects[i].azim==1) {
                objects[i].set('fill', 'rgba(255,107,8,.65)');   
             }
 
