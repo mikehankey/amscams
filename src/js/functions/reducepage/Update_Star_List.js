@@ -5,16 +5,15 @@ POS_Y = 1
 CIRCLE_RADIUS=5
 
 function update_stars_on_canvas_and_table(json_resp) {
-   
-
+    
    // Add AZ/EL of center camera
    if(typeof json_resp['calib']!== 'undefined' &&
       typeof json_resp['calib']['center'] !== 'undefined' &&
       typeof json_resp['calib']['center']['az'] !== 'undefined' &&
       typeof json_resp['calib']['center']['el'] !== 'undefined'  
-   ) {
-      "Center Az: " + json_resp['calib']['center']['az'] + "° / El:" + json_resp['calib']['center']['el'] + " el";
-      canvas.add(new fabric.Text(res_desc , {
+   ) { 
+      console.log("AZ EL OK");
+      canvas.add(new fabric.Text( "Center Az: " + json_resp['calib']['center']['az'] + "° / El:" + json_resp['calib']['center']['el'] + " el" , {
          fontFamily: 'Arial',
          fontSize: 12,
          left: 5,
