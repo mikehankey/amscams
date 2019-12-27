@@ -751,7 +751,7 @@ def video_tools(json_conf,form):
       out_put_all_cam_ids += camid + "|"
 
    #Get Current Date (default for datepicker)
-   now = datetime.datetime.now()
+   now = datetime.now()
    out_put_date = str(now.year) + "/" + str(now.month) + "/" + str(now.day)
  
    if js_file.is_file():
@@ -2607,7 +2607,7 @@ def main_page(json_conf,form):
       cur_page = int(cur_page)
 
    if(end_day is not None):
-      end_day_date = datetime.datetime.strptime(end_day,"%Y_%m_%d")
+      end_day_date = datetime.strptime(end_day,"%Y_%m_%d")
    
    days = sorted(get_proc_days(json_conf),reverse=True)
   
