@@ -664,7 +664,7 @@ def get_html_detections(res,clear_cache):
  
  
 # Create Criteria Selector
-def create_criteria_selector(selected, criteria, all_msg, sign, unit=''):
+def create_criteria_selector(values, selected, criteria, all_msg, sign, unit=''):
    
    # Build MAGNITUDES selector
    mag_select = ''
@@ -678,7 +678,7 @@ def create_criteria_selector(selected, criteria, all_msg, sign, unit=''):
       mag_select+= '<option value="-1">'+all_msg+'</option>'
       criteria['mag'] = float(selected)
 
-   for mag in POSSIBLE_MAGNITUDES:
+   for mag in values:
       if(one_selected==True):
          if(float(mag)==float(selected)):
             mag_select+= '<option selected value="'+str(mag)+'">'+sign+str(mag)+ unit+'/option>'
