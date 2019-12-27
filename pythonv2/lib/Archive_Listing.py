@@ -444,15 +444,17 @@ def get_results_from_date_from_monthly_index(criteria,start_date,end_date,max_re
             if(    (     cur_year_and_month_test_START == True
                      and cur_year_and_month_test_END == True
                      and int(day)<=int(end_date.day)
-                     and int(day)>=int(start_date.day))
+                     and int(day)>=int(start_date.day)
+                  )
                or (      cur_year_and_month_test_START == False 
                      and cur_year_and_month_test_END == True
                      and int(day)<=int(end_date.day)
+                  )
                or (      cur_year_and_month_test_START == False 
                      and cur_year_and_month_test_END == False
-                     and int(year)<=int(end_date.year) )
- 
-               
+                     and int(year)<=int(end_date.year) 
+                     and int(month)
+                  )
             ):
 
                for detection in detections:
