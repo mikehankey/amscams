@@ -16,9 +16,11 @@ function update_stars_on_canvas_and_table(json_resp) {
       typeof json_resp['calib']['device']['center']['az'] !== 'undefined' &&
       typeof json_resp['calib']['device']['center']['el'] !== 'undefined'  
    ) { 
-      
-      az = (float)json_resp['calib']['device']['center']['az'].toFixed(4);
-      el = (float)json_resp['calib']['device']['center']['el'].toFixed(4); 
+      az = json_resp['calib']['device']['center']['az'];
+      el = json_resp['calib']['device']['center']['el'];
+
+      az =  az.toFixed(4);
+      el =  el.toFixed(4); 
       canvas.add(new fabric.Text( "Center Az: " + az + "° / El:" + el + "°" , {
          fontFamily: 'Arial',
          fontSize: 12,
