@@ -39,7 +39,7 @@ function update_stars_on_canvas_and_table(json_resp) {
       // Transform AZ to QUADRANT and add it to the canvas
       var text = new fabric.Text( conversion_az_to_quadrantBearing(az) , {
          fontFamily: 'Arial',
-         fontSize: 24
+         fontSize: 24,
          textAlign: 'center',
          fill: 'rgba(255,107,8,.65)',
          selectable: false,
