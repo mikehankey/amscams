@@ -738,20 +738,20 @@ def archive_listing(form):
       end_datetime   = datetime.now()
       #start_datetime = start_datetime.replace(hour=0, minute=0)
       #end_datetime   = end_datetime.replace(hour=23, minute=59)
-      start_datetime = datetime.strptime(start_datetime,"%Y/%m/%d").date() 
-      end_datetime  = datetime.strptime(end_datetime,"%Y/%m/%d").date()  
+      start_datetime = datetime.strptime(start_datetime,"%Y/%m/%d") 
+      end_datetime  = datetime.strptime(end_datetime,"%Y/%m/%d") 
    else:
-      start_datetime = datetime.strptime(start_datetime,"%Y/%m/%d").date() 
-      end_datetime  = datetime.strptime(end_datetime,"%Y/%m/%d").date()  
+      start_datetime = datetime.strptime(start_datetime,"%Y/%m/%d") 
+      end_datetime  = datetime.strptime(end_datetime,"%Y/%m/%d") 
       has_limit_day = True
    
    template = template.replace("{START_DATE}",start_datetime.strftime("%Y/%m/%d"));
    template = template.replace("{END_DATE}",end_datetime.strftime("%Y/%m/%d"));
    
    print("START ")
-   print(start_datetime)
+   print(start_datetime.strftime("%Y/%m/%d"))
    print("<br>END ")
-   print(end_datetime)
+   print(end_datetime.strftime("%Y/%m/%d"))
    sys.exit(0)
 
    # Search the results through the monthly indexes
