@@ -672,10 +672,10 @@ def create_criteria_selector(values, val, selected, criteria, all_msg, sign, uni
 
    # Add Default choice
    if selected is None:
-       mag_select+= '<option selected value="-1">'+all_msg+'</option>'
+       select+= '<option selected value="-1">'+all_msg+'</option>'
    else:
       one_selected = True 
-      mag_select+= '<option value="-1">'+all_msg+'</option>'
+      select+= '<option value="-1">'+all_msg+'</option>'
       criteria[val] = float(selected)
 
    for mag in values:
