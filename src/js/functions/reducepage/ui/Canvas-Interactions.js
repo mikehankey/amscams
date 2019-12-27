@@ -155,8 +155,9 @@ if ($('canvas#c').length!=0) {
          // Show Main 
          for (let i in objects) {
 
+            // Show Quadrant Bearing Value
             if (objects[i].azim!='undefined') {
-               objects[x].set('fill', 'rgba(255,107,8,.65)');   
+               objects[i].set('fill', 'rgba(255,107,8,.65)');   
             }
 
             if (objects[i].containsPoint(clickPoint) && typeof(objects[i].gp_id)!='undefined') {
