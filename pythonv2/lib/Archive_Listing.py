@@ -750,9 +750,9 @@ def archive_listing(form):
    month = start_datetime.month
 
    print("START ")
-   print(start_datetime)
+   print(datetime.strptime(start_datetime,"%Y/%m/%d"))
    print("<br>END ")
-   print(end_datetime)
+   print(datetime.strptime(end_datetime,"%Y/%m/%d"))
    sys.exit(0)
 
    # Search the results through the monthly indexes
