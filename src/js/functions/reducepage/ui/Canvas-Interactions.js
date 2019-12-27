@@ -141,6 +141,16 @@ if ($('canvas#c').length!=0) {
          }, 350); 
       }); 
    
+      // Mouse out canvas
+      // Hide quandrant info
+      canvas.on('mouse:out', function(e) { 
+         var objects = canvas.getObjects();
+         for (let i in objects) {
+            if ( typeof(objects[i].azim)!='undefined' && objects[i].azim==1) {
+               objects[i].set('fill', 'rgba(255,107,8,0)');   
+            }
+         }
+      });
 
       // Move over canvas
       canvas.on('mouse:over', function(e) { 
