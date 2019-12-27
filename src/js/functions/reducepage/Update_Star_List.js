@@ -17,11 +17,13 @@ function update_stars_on_canvas_and_table(json_resp) {
       typeof json_resp['calib']['device']['center']['el'] !== 'undefined'  
    ) { 
       
-      canvas.add(new fabric.Text( "Center Az: " + json_resp['calib']['device']['center']['az'] + "° / El:" + json_resp['calib']['device']['center']['el'] + " el" , {
+      az = (float)json_resp['calib']['device']['center']['az'].toFixed(4);
+      el = (float)json_resp['calib']['device']['center']['el'].toFixed(4); 
+      canvas.add(new fabric.Text( "Center Az: " + az + "° / El:" + el + "°" , {
          fontFamily: 'Arial',
          fontSize: 12,
          left: 5,
-         top: 505,
+         top: 5005,
          fill: 'rgba(255,255,255,.75)',
          selectable: false
      })); 
