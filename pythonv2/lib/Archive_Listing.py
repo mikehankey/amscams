@@ -381,7 +381,7 @@ def test_criteria(criter,criteria,detection):
 
    # Sync
    if(criter=='sync'):
-      if(int(detection[sync])!=int(criteria[criter])):
+      if(int(detection[criter])!=int(criteria[criter])):
          return False
 
    return True
