@@ -731,8 +731,7 @@ def archive_listing(form):
    template = template.replace("{RPP}", ppp_select)
 
    # LIST OF CRITERIA 
-   criteria = {}
-
+   criteria = {} 
    
    # Build MAGNITUDES selector
    mag_select, criteria = create_criteria_selector(POSSIBLE_MAGNITUDES   ,selected_mag, criteria,  'All Magnitudes', '>')
@@ -750,6 +749,8 @@ def archive_listing(form):
    sync_select, criteria = create_criteria_selector(POSSIBLE_SYNC,selected_sync, criteria,  'All Sync.', '')
    template = template.replace("{SYNC}", sync_select) 
    
+
+   print("SYNC SELECT " + sync_select + "<br>" )
    print(criteria)
 
    # Clear_cache
