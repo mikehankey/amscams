@@ -4,11 +4,17 @@ POS_X = 0
 POS_Y = 1
 CIRCLE_RADIUS=5
 
-function update_stars_on_canvas_and_table(json_resp) {
-    
-   console.log("update_stars_on_canvas_and_table");
-   console.log(json_resp);
 
+function conversion_az_to_quadrantBearing(az) {
+   var primaryCardinality = (az >= 270 || az <= 90) ? 'N' : 'S';
+   var secondaryCardinality = (az <= 180) ? 'E' : 'W';
+   var angle = (az <= 90) ? az : (az <= 180) ? 180 - az : (az <= 270) ? az - 180 : 360 - az;
+   return primaryCardinality + angle + "° " + secondaryCardinality;
+} 
+
+
+function update_stars_on_canvas_and_table(json_resp) {
+ 
    // Add AZ/EL of center camera
    if(typeof json_resp['calib']!== 'undefined' &&
       typeof json_resp['calib']['device'] !== 'undefined' &&
@@ -21,14 +27,18 @@ function update_stars_on_canvas_and_table(json_resp) {
       az = json_resp['calib']['device']['center']['az'];
       el = json_resp['calib']['device']['center']['el'];
  
-      canvas.add(new fabric.Text( "Center Az: " + az.toFixed(4) + "° / El:" + el.toFixed(4) + "°" , {
+      canvas.add(new fabric.Text( "Center Az: " + az.toFixed(4) + "° / El:" + el.toFixed(4) + "°" + '('+ conversion_az_to_quadrantBearing(az) + ')') , {
          fontFamily: 'Arial',
          fontSize: 12,
          left: 5,
          top: 500,
          fill: 'rgba(255,255,255,.75)',
          selectable: false
-     })); 
+      })); 
+
+      // Transform AZ to QUADRANT
+
+
    }
 
    if(typeof json_resp['calib']!== 'undefined' &&  typeof json_resp['calib']['stars'] !== 'undefined') {
