@@ -67,6 +67,9 @@ def reduce_meteor2(json_conf,form):
    if(cfe(json_full_path)==0):
        print_error(json_full_path + " <b>not found.</b><br>This detection may had not been reduced yet or the reduction failed.")
 
+   print("JSON PATH: ")
+   print(json_full_path)
+
    # Test if the name is ok
    if(len(analysed_name)==0):
       print_error(video_full_path + " <b>is not valid video file name.</b>") 
