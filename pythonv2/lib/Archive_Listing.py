@@ -373,18 +373,18 @@ def test_criteria(criter,criteria,detection):
 # Get results on index from a certain date
 def get_results_from_date_from_monthly_index(criteria,start_date,end_date,max_res_per_page,cur_page): 
 
-   print("IN GET RESULTS --- ")
-   print("start_date : ")
-   print(start_date)
-   print("- end_date : ")
-   print(end_date) 
-   print("<br/>")
+   #print("IN GET RESULTS --- ")
+   #print("start_date : ")
+   #print(start_date)
+   #print("- end_date : ")
+   #print(end_date) 
+   #print("<br/>")
 
    # Get the index of the selected or current year
    # for the END DATE
    json_index =  get_monthly_index(end_date.month,end_date.year)
 
-   print("GET THE INDEX FOR " + str(end_date.month)  +'/' + str(end_date.year))
+   #print("GET THE INDEX FOR " + str(end_date.month)  +'/' + str(end_date.year))
 
    # Nb of result not to display based on cur_page
    if(cur_page==1 or cur_page==0 ):
@@ -409,7 +409,7 @@ def get_results_from_date_from_monthly_index(criteria,start_date,end_date,max_re
       cur_month = json_index['month']
       cur_year  = json_index['year']
 
-      print("<br>CUR MONTH " +  str(cur_month) +  " - CUR YEAR " +  str(cur_year))
+      #print("<br>CUR MONTH " +  str(cur_month) +  " - CUR YEAR " +  str(cur_year))
       
       if(int(cur_month)==int(end_date.month) and int(cur_year)==int(end_date.year)): 
          cur_year_and_month_test_END = True
@@ -481,8 +481,8 @@ def get_results_from_date_from_monthly_index(criteria,start_date,end_date,max_re
          week_day, numbers_of_days =  monthrange(cur_year,cur_month)
          end_date = end_date.replace(year=cur_year, month=cur_month,day=numbers_of_days) 
 
-         print("<br>11 - NEW END DATE ")
-         print(end_date)
+         #print("<br>11 - NEW END DATE ")
+         #print(end_date)
 
       # Change Month only
       else:
@@ -493,8 +493,8 @@ def get_results_from_date_from_monthly_index(criteria,start_date,end_date,max_re
          week_day, numbers_of_days =  monthrange(cur_year,cur_month)
          end_date = end_date.replace(year=cur_year, month=cur_month,day=numbers_of_days) 
 
-         print("<br>22 - NEW END DATE ")
-         print(end_date)
+         #print("<br>22 - NEW END DATE ")
+         #print(end_date)
 
 
   
@@ -503,11 +503,11 @@ def get_results_from_date_from_monthly_index(criteria,start_date,end_date,max_re
       # We stop at the start_date
       if(end_date<=start_date):
          
-         print(" <br> start: ")
-         print(start_date)
-         print(" vs. end: ")
-         print(end_date)
-         print("STOP DATE TEST<br>")
+         #print(" <br> start: ")
+         #print(start_date)
+         #print(" vs. end: ")
+         #print(end_date)
+         #print("STOP DATE TEST<br>")
          return res_to_return, res_counter
     
    return res_to_return, res_counter
