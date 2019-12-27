@@ -9,7 +9,7 @@ function conversion_az_to_quadrantBearing(az) {
    var primaryCardinality = (az >= 270 || az <= 90) ? 'N ' : 'S ';
    var secondaryCardinality = (az <= 180) ? 'E' : 'W';
    var angle = (az <= 90) ? az : (az <= 180) ? 180 - az : (az <= 270) ? az - 180 : 360 - az;
-   return primaryCardinality + angle.toFixed(2) + "° " + secondaryCardinality;
+   return primaryCardinality + angle.toFixed(0) + "° " + secondaryCardinality;
 } 
 
 
