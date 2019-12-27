@@ -378,6 +378,11 @@ def test_criteria(criter,criteria,detection):
       if(float(detection[criter])<=float(criteria[criter])):
          return False
 
+   # Sync
+   if(criter=='sync'):
+      if(int(detection[sync])!==int(criteria[criter])):
+         return False
+
    return True
 
 # Get results on index from a certain date
@@ -568,8 +573,7 @@ def get_html_detection(det,detection,clear_cache):
       res_html += ' reduced">'
    else:
       res_html += '">'
-
-
+ 
    details_html = '<dl class="row mb-0 def mt-1">'
 
    details_html += '<dt class="col-12 list-onl title-list">Cam #'+det['cam_id']+' - <b>'+det['hour']+':'+det['min']+'</b></dt>'
@@ -586,9 +590,9 @@ def get_html_detection(det,detection,clear_cache):
    if(detection['ang_v']!='unknown'):
       details_html += '              <dt class="col-6">Ang. Velocity</dt>   <dd class="col-6">'+str("{0:.4f}".format(float(detection['ang_v'])))+'&deg;/s</dd>'
 
-
-    
-
+   if(detection['sync']!=1):
+      details_html += '              <dt class="col-6">Sync</dt>  <dd class="col-6 text-danger">Not synchronized</dd>'
+ 
    details_html += ' </dl>'   
 
    res_html += '  <a class="mtt has_soh" href="webUI.py?cmd=reduce2&video_file='+det['full_path']+'" title="Detection Reduce page">'
