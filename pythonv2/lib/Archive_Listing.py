@@ -376,14 +376,14 @@ def get_results_from_date_from_monthly_index(criteria,start_date,end_date,max_re
    print("IN GET RESULTS <br>")
    print("start_date : ")
    print(start_date)
-   print("<br/>end_date : ")
-   print(end_date)
-  
+   print("- end_date : ")
+   print(end_date) 
+   print("<br/>")
 
    # Get the index of the selected or current year
    # for the END DATE
    json_index =  get_monthly_index(end_date.month,end_date.year)
- 
+
    # Nb of result not to display based on cur_page
    if(cur_page==1 or cur_page==0 ):
       number_of_res_to_give_up = 0
@@ -399,7 +399,8 @@ def get_results_from_date_from_monthly_index(criteria,start_date,end_date,max_re
    res_to_return = [] 
 
    # Test if we are exploring the current Month & Year
-   cur_year_and_month_test = False
+   cur_year_and_month_test_START = False
+   cur_year_and_month_test_END = False
 
    while(json_index!=False):
  
@@ -409,12 +410,15 @@ def get_results_from_date_from_monthly_index(criteria,start_date,end_date,max_re
       print("<br>CUR MONTH " +  str(cur_month) +  " - CUR YEAR " +  str(cur_year))
       
       if(int(cur_month)==int(end_date.month) and int(cur_year)==int(end_date.year)): 
-         cur_year_and_month_test = True
-         print("<br>cur_year_and_month_test  TRUE<br>")
+         cur_year_and_month_test_END = True
       else:
-         cur_year_and_month_test = False
-         print("<br>cur_year_and_month_test  FALSE<br>")
-  
+         cur_year_and_month_test_END = False
+      
+      if(int(cur_month)==int(start_date.month) and int(cur_year)==int(start_date.year)): 
+         cur_year_and_month_test_START = True
+      else:
+         cur_year_and_month_test_START = False
+
 
       all_days =  json_index['days'] 
       keylist = list(all_days.keys())
@@ -424,20 +428,20 @@ def get_results_from_date_from_monthly_index(criteria,start_date,end_date,max_re
 
       # We sort the days
       for day in kk:
-
-            print("<br>CUR DAY ")
-            print(day)
-            print("<br>")
-
+ 
             # We sort the detections within the day
             detections = sorted(json_index['days'][day], key=lambda k: k['p'], reverse=True)
- 
- 
-            # If we are the current month & year, we need to take into account the days before the end_date.day
-            if( (cur_year_and_month_test and int(day)<=int(end_date.day)) or (not cur_year_and_month_test)):
-          
+
+            # If we are the current month & year END
+            # and the current & year START
+            # we need to take into account the days before end_date.day 
+            # and the days after start_date.day
+            if(    cur_year_and_month_test_START 
+               and cur_year_and_month_test_END
+               and int(day)<=int(end_date.day))
+               and int(day)>=int(start_date.day))
+            ):
                for detection in detections:
-  
                   # Here we test the criteria
                   test = True
                   for criter in criteria:
@@ -447,20 +451,22 @@ def get_results_from_date_from_monthly_index(criteria,start_date,end_date,max_re
     
                      if(test==False):
                         break   
- 
 
                   if(test==True):
  
                      # We add it only if it fits the pagination
                      if(len(res_to_return)<=max_res_per_page and res_counter>=number_of_res_to_give_up):
-
-                       
+ 
                         # We complete the detection['p'] to get the full path (as the index only has compressed name)
                         detection['p'] = get_full_det_path(detection['p'],station_id,end_date,day)
                         res_to_return.append(detection)
                      
                      
                      res_counter+=1 
+ 
+
+
+ 
  
    
       # Change Month & Year
