@@ -664,10 +664,10 @@ def get_html_detections(res,clear_cache):
  
  
 # Create Criteria Selector
-def create_criteria_selector(values, selected, criteria, all_msg, sign, unit=''):
+def create_criteria_selector(values, val, selected, criteria, all_msg, sign, unit=''):
    
-   # Build MAGNITUDES selector
-   mag_select = ''
+   # Build   selector
+   select = ''
    one_selected = False
 
    # Add Default choice
@@ -676,18 +676,18 @@ def create_criteria_selector(values, selected, criteria, all_msg, sign, unit='')
    else:
       one_selected = True 
       mag_select+= '<option value="-1">'+all_msg+'</option>'
-      criteria['mag'] = float(selected)
+      criteria[val] = float(selected)
 
    for mag in values:
       if(one_selected==True):
          if(float(mag)==float(selected)):
-            mag_select+= '<option selected value="'+str(mag)+'">'+sign+str(mag)+ unit+'</option>'
+            select+= '<option selected value="'+str(mag)+'">'+sign+str(mag)+ unit+'</option>'
          else:
-            mag_select+= '<option value="'+str(mag)+'">'+sign + str(mag)+ unit+'</option>'  
+            select+= '<option value="'+str(mag)+'">'+sign + str(mag)+ unit+'</option>'  
       else:
-         mag_select+= '<option value="'+str(mag)+'">'+sign + str(mag)+ unit+'</option>'  
+         select+= '<option value="'+str(mag)+'">'+sign + str(mag)+ unit+'</option>'  
    
-   return mag_select, criteria
+   return select, criteria
     
 
 # MAIN FUNCTION FOR THE ARCHIVE LISTING PAGE
@@ -734,19 +734,19 @@ def archive_listing(form):
    criteria = {} 
    
    # Build MAGNITUDES selector
-   mag_select, criteria = create_criteria_selector(POSSIBLE_MAGNITUDES   ,selected_mag, criteria,  'All Magnitudes', '>')
+   mag_select, criteria = create_criteria_selector(POSSIBLE_MAGNITUDES,'mag',selected_mag, criteria,  'All Magnitudes', '>')
    template = template.replace("{MAGNITUDES}", mag_select)
     
    # Build ERRORS selector
-   error_select, criteria = create_criteria_selector(POSSIBLE_ERRORS,selected_error, criteria,  'All Res. Error', '<')
+   error_select, criteria = create_criteria_selector(POSSIBLE_ERRORS,'res_error',selected_error, criteria,  'All Res. Error', '<')
    template = template.replace("{RES_ERRORS}", error_select)
 
    # Build ANGULAR VELOCITIES selector
-   ang_vel_select, criteria = create_criteria_selector(POSSIBLE_ANG_VELOCITIES,selected_ang_vel, criteria,  'All Ang. Velocities', '>', unit='&deg;/s')
+   ang_vel_select, criteria = create_criteria_selector(POSSIBLE_ANG_VELOCITIES,'ang_vel',selected_ang_vel, criteria,  'All Ang. Velocities', '>', unit='&deg;/s')
    template = template.replace("{ANG_VELOCITIES}", ang_vel_select) 
    
    # Build SYNC selector 
-   sync_select, criteria = create_criteria_selector(POSSIBLE_SYNC,selected_sync, criteria,  'All Sync.', '')
+   sync_select, criteria = create_criteria_selector(POSSIBLE_SYNC,'sync',selected_sync, criteria,  'All Sync.', '')
    template = template.replace("{SYNC}", sync_select) 
    
 
