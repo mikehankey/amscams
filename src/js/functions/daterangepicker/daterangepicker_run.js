@@ -6,6 +6,7 @@ $(function() {
      timePicker: false,
      //startDate: moment().startOf('day').add(-24, 'hour'),
      //endDate: moment().startOf('day'),
+     maxDate: moment().format('YYYY/MM/DD'),
      startDate: moment($('input[name=start_date]').val()).format('YYYY/MM/DD'),
      endDate: moment($('input[name=end_date]').val()).format('YYYY/MM/DD'),
      locale: {

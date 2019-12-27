@@ -441,13 +441,16 @@ def get_results_from_date_from_monthly_index(criteria,start_date,end_date,max_re
             # and the current & year START
             # we need to take into account the days before end_date.day 
             # and the days after start_date.day
-            if(    (cur_year_and_month_test_START == True
-               and cur_year_and_month_test_END == True
-               and int(day)<=int(end_date.day)
-               and int(day)>=int(start_date.day))
-               or (cur_year_and_month_test_START == False 
-               and cur_year_and_month_test_END == True
-               and int(day)<=int(end_date.day) )
+            if(    (     cur_year_and_month_test_START == True
+                     and cur_year_and_month_test_END == True
+                     and int(day)<=int(end_date.day)
+                     and int(day)>=int(start_date.day))
+               or (      cur_year_and_month_test_START == False 
+                     and cur_year_and_month_test_END == True
+                     and int(day)<=int(end_date.day)
+               or (      cur_year_and_month_test_START == False 
+                     and cur_year_and_month_test_END == False
+                     and int(year)<=int(end_date.year) )
  
                
             ):
