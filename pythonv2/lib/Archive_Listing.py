@@ -746,11 +746,10 @@ def archive_listing(form):
    ang_vel_select, criteria = create_criteria_selector(POSSIBLE_ANG_VELOCITIES,selected_ang_vel, criteria,  'All Ang. Velocities', '>', unit='&deg;/s')
    template = template.replace("{ANG_VELOCITIES}", ang_vel_select) 
    
-   # Build SYNC selector
-   sync_select, criteria = create_criteria_selector(POSSIBLE_SYNC,selected_sync, criteria,  'Sync.', ' ')
+   # Build SYNC selector 
+   sync_select, criteria = create_criteria_selector(POSSIBLE_SYNC,selected_sync, criteria,  'All Sync.', '')
    template = template.replace("{SYNC}", sync_select) 
-
-
+ 
    # Clear_cache
    if(clear_cache is None):
       clear_cache = False
