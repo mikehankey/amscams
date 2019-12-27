@@ -678,14 +678,14 @@ def create_criteria_selector(values, val, selected, criteria, all_msg, sign, uni
       select+= '<option value="-1">'+all_msg+'</option>'
       criteria[val] = float(selected)
 
-   for mag in values:
+   for val in values:
       if(one_selected==True):
-         if(float(mag)==float(selected)):
-            select+= '<option selected value="'+str(mag)+'">'+sign+str(mag)+ unit+'</option>'
+         if(float(val)==float(selected)):
+            select+= '<option selected value="'+str(val)+'">'+sign+str(val)+ unit+'</option>'
          else:
-            select+= '<option value="'+str(mag)+'">'+sign + str(mag)+ unit+'</option>'  
+            select+= '<option value="'+str(val)+'">'+sign + str(val)+ unit+'</option>'  
       else:
-         select+= '<option value="'+str(mag)+'">'+sign + str(mag)+ unit+'</option>'  
+         select+= '<option value="'+str(val)+'">'+sign + str(val)+ unit+'</option>'  
    
    return select, criteria
     
