@@ -221,7 +221,7 @@ function update_star_list() {
         data: cmd_data,
         success: function(data) {
             var json_resp = $.parseJSON(data);
-            if(json_resp['res']=='true') || json_resp['status']!==0) {
+            if(json_resp['res']=='true' || json_resp['status']!==0) {
                 update_stars_on_canvas_and_table(json_resp);
 
                 // Open proper tab
