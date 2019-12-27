@@ -471,21 +471,14 @@ def get_results_from_date_from_monthly_index(criteria,start_date,end_date,max_re
                   if(test==True):
  
                      # We add it only if it fits the pagination
-                     if(len(res_to_return)<=max_res_per_page and res_counter>=number_of_res_to_give_up):
+                     #if(len(res_to_return)<=max_res_per_page and res_counter>=number_of_res_to_give_up):
  
-                        # We complete the detection['p'] to get the full path (as the index only has compressed name)
-                        detection['p'] = get_full_det_path(detection['p'],station_id,end_date,day)
-                        res_to_return.append(detection)
+                     # We complete the detection['p'] to get the full path (as the index only has compressed name)
+                     detection['p'] = get_full_det_path(detection['p'],station_id,end_date,day)
+                     res_to_return.append(detection)
                      
                      
-                     res_counter+=1 
- 
-        
-
-
-
- 
- 
+                     res_counter+=1  
    
       # Change Month & Year
       if(cur_month==1):
@@ -510,11 +503,7 @@ def get_results_from_date_from_monthly_index(criteria,start_date,end_date,max_re
          end_date = end_date.replace(year=cur_year, month=cur_month,day=numbers_of_days) 
 
          #print("<br>22 - NEW END DATE ")
-         #print(end_date)
-
-
-  
-
+         #print(end_date) 
 
       # We stop at the start_date
       if(end_date<=start_date):
