@@ -440,7 +440,7 @@ def get_results_from_date_from_monthly_index(criteria,start_date,end_date,max_re
                and cur_year_and_month_test_END
                and int(day)<=int(end_date.day)
                and int(day)>=int(start_date.day)):
-               
+
                for detection in detections:
                   # Here we test the criteria
                   test = True
@@ -739,12 +739,12 @@ def archive_listing(form):
       start_datetime = start_datetime.replace(hour=0, minute=0)
       end_datetime = end_datetime.replace(hour=23, minute=59)
    else:
-      start_datetime = datetime.strptime(start_datetime,"%Y/%m/%d %H:%M") 
-      end_datetime  = datetime.strptime(end_datetime,"%Y/%m/%d %H:%M")  
+      start_datetime = datetime.strptime(start_datetime,"%Y/%m/%d") 
+      end_datetime  = datetime.strptime(end_datetime,"%Y/%m/%d")  
       has_limit_day = True
    
-   template = template.replace("{START_DATE}",start_datetime.strftime("%Y/%m/%d %H:%M"));
-   template = template.replace("{END_DATE}",end_datetime.strftime("%Y/%m/%d %H:%M"));
+   template = template.replace("{START_DATE}",start_datetime.strftime("%Y/%m/%d"));
+   template = template.replace("{END_DATE}",end_datetime.strftime("%Y/%m/%d"));
    
    year = start_datetime.year
    month = start_datetime.month
