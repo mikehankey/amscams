@@ -746,13 +746,10 @@ def archive_listing(form):
    template = template.replace("{START_DATE}",start_datetime.strftime("%Y/%m/%d"));
    template = template.replace("{END_DATE}",end_datetime.strftime("%Y/%m/%d"));
    
-   year = start_datetime.year
-   month = start_datetime.month
-
    print("START ")
-   print(datetime.strptime(start_datetime,"%Y/%m/%d"))
+   print(start_datetime)
    print("<br>END ")
-   print(datetime.strptime(end_datetime,"%Y/%m/%d"))
+   print(end_datetime)
    sys.exit(0)
 
    # Search the results through the monthly indexes
