@@ -38,16 +38,15 @@ function update_stars_on_canvas_and_table(json_resp) {
 
       var text = new fabric.Text( conversion_az_to_quadrantBearing(az) , {
          fontFamily: 'Arial',
-         fontSize: 20,
+         fontSize: 24,
          textAlign: 'center',
-         fill: 'rgba(255,107,8,.75)',
+         fill: 'rgba(255,107,8,.65)',
          selectable: false
       });
-
-      console.log(text.width);
-      console.log(text.height);
+ 
+     
       text.top = 505;
-      text.left = 10;
+      text.left =  $('#c').width()/2-text.width;
 
       canvas.add(text); 
 
