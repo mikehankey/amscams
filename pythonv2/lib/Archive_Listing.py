@@ -738,8 +738,8 @@ def archive_listing(form):
       end_datetime   = datetime.now()
       #start_datetime = start_datetime.replace(hour=0, minute=0)
       #end_datetime   = end_datetime.replace(hour=23, minute=59)
-      start_datetime = datetime.strptime(start_datetime,"%Y/%m/%d").date() 
-      end_datetime  = datetime.strptime(end_datetime,"%Y/%m/%d").date()  
+      start_datetime = datetime.strptime(start_datetime.date() ,"%Y/%m/%d")
+      end_datetime  = datetime.strptime(end_datetime.date(),"%Y/%m/%d")  
    else:
       start_datetime = datetime.strptime(start_datetime,"%Y/%m/%d").date() 
       end_datetime  = datetime.strptime(end_datetime,"%Y/%m/%d").date()  
