@@ -22,6 +22,7 @@ ARCHIVE_LISTING_TEMPLATE = "/home/ams/amscams/pythonv2/templates/archive_listing
 POSSIBLE_MAGNITUDES = [130,140,150,160,170,180,190,200,210,220,230,240,250,260,270,280,290,300]
 POSSIBLE_ERRORS = [0.5,0.6,0.8,0.9,1,1.1,1.2,1.3,1.4,1.5,1.6,1.7,1.8,1.9,2,2.5,3,3.5,4,5]
 POSSIBLE_ANG_VELOCITIES = [1,2,3,4,5,6,7,8,9,10,11,12,13,15,16,17,18,19,20,21,22,23,24,25]
+POSSIBLE_SYNC = [0,1]
  
 # Delete Multiple Detections at once
 def delete_multiple_archived_detection(detections):
@@ -661,10 +662,10 @@ def get_html_detections(res,clear_cache):
 
    return res_html
  
-
-
+ 
 # Create Criteria Selector
 def create_criteria_selector(selected, criteria, all_msg, sign, unit=''):
+   
    # Build MAGNITUDES selector
    mag_select = ''
    one_selected = False
@@ -687,8 +688,7 @@ def create_criteria_selector(selected, criteria, all_msg, sign, unit=''):
          mag_select+= '<option value="'+str(mag)+'">'+sign + str(mag)+ unit+'</option>'  
    
    return mag_select, criteria
-   
- 
+    
 
 # MAIN FUNCTION FOR THE ARCHIVE LISTING PAGE
 def archive_listing(form): 
@@ -733,20 +733,21 @@ def archive_listing(form):
    # LIST OF CRITERIA 
    criteria = {}
 
+   
    # Build MAGNITUDES selector
-   mag_select, criteria = create_criteria_selector(selected_mag, criteria,  'All Magnitudes', '>')
+   mag_select, criteria = create_criteria_selector(POSSIBLE_MAGNITUDES   ,selected_mag, criteria,  'All Magnitudes', '>')
    template = template.replace("{MAGNITUDES}", mag_select)
     
    # Build ERRORS selector
-   error_select, criteria = create_criteria_selector(selected_error, criteria,  'All Res. Error', '<')
+   error_select, criteria = create_criteria_selector(POSSIBLE_ERRORS,selected_error, criteria,  'All Res. Error', '<')
    template = template.replace("{RES_ERRORS}", error_select)
 
    # Build ANGULAR VELOCITIES selector
-   ang_vel_select, criteria = create_criteria_selector(selected_ang_vel, criteria,  'All Ang. Velocities', '>', unit='&deg;/s')
+   ang_vel_select, criteria = create_criteria_selector(POSSIBLE_ANG_VELOCITIES,selected_ang_vel, criteria,  'All Ang. Velocities', '>', unit='&deg;/s')
    template = template.replace("{ANG_VELOCITIES}", ang_vel_select) 
    
    # Build SYNC selector
-   sync_select, criteria = create_criteria_selector(selected_sync, criteria,  'Sync.', ' ')
+   sync_select, criteria = create_criteria_selector(POSSIBLE_SYNC,selected_sync, criteria,  'Sync.', ' ')
    template = template.replace("{SYNC}", sync_select) 
 
 
