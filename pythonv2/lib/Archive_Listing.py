@@ -384,7 +384,7 @@ def get_results_from_date_from_monthly_index(criteria,start_date,end_date,max_re
    # for the END DATE
    json_index =  get_monthly_index(end_date.month,end_date.year)
 
-   print("GET THE INDEX FOR " + end_date.month  +'/' + end_date.year)
+   print("GET THE INDEX FOR " + str(end_date.month)  +'/' + str(end_date.year))
 
    # Nb of result not to display based on cur_page
    if(cur_page==1 or cur_page==0 ):
