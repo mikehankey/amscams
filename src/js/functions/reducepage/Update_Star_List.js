@@ -17,18 +17,15 @@ function update_stars_on_canvas_and_table(json_resp) {
       typeof json_resp['calib']['device']['center']['el'] !== 'undefined'  
    ) { 
 
-      console.log("HERE");
+      
       az = json_resp['calib']['device']['center']['az'];
       el = json_resp['calib']['device']['center']['el'];
-
-      console.log("AZ ", az);
-      console.log("AZ ", az.toFixed(4))
-
+ 
       canvas.add(new fabric.Text( "Center Az: " + az.toFixed(4) + "° / El:" + el.toFixed(4) + "°" , {
          fontFamily: 'Arial',
          fontSize: 12,
          left: 5,
-         top: 5005,
+         top: 500,
          fill: 'rgba(255,255,255,.75)',
          selectable: false
      })); 
