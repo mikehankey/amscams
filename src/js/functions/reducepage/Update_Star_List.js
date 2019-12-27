@@ -36,14 +36,17 @@ function update_stars_on_canvas_and_table(json_resp) {
          selectable: false
       })); 
 
-
-      canvas.add(new fabric.Text( conversion_az_to_quadrantBearing(az) , {
+      var text = new fabric.Text( conversion_az_to_quadrantBearing(az) , {
          fontFamily: 'Arial',
          fontSize: 20,
          textAlign: 'center',
          fill: 'rgba(255,107,8,.75)',
          selectable: false
-      })); 
+      });
+
+      console.log(text);
+
+      canvas.add(text); 
 
      
 
