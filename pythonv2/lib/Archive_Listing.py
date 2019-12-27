@@ -428,6 +428,10 @@ def get_results_from_date_from_monthly_index(criteria,start_date,end_date,max_re
       # We sort the days
       kk = sorted(keylist, key=int, reverse=True) 
 
+      print("cur_year_and_month_test_START " + str(cur_year_and_month_test_START) +"<br>")
+
+      print("cur_year_and_month_test_END " + str(cur_year_and_month_test_END) +"<br>")
+
       # We sort the days
       for day in kk:
  
