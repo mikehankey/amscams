@@ -147,7 +147,7 @@ if ($('canvas#c').length!=0) {
          var objects = canvas.getObjects(); 
          for (let i in objects) {
             if ( typeof(objects[i].azim)!='undefined') { 
-               objects[i].set('font-size', '0');   
+               objects[i].set('font-size',0);   
             }
          }
       });
@@ -167,7 +167,7 @@ if ($('canvas#c').length!=0) {
 
             // Show Quadrant Bearing Value
             if ( typeof(objects[i].azim)!='undefined' && objects[i].azim==1) {
-               objects[i].set('font-size', '24');   
+               objects[i].set('font-size', 24);   
             }
 
             if (objects[i].containsPoint(clickPoint) && typeof(objects[i].gp_id)!='undefined') {
