@@ -590,11 +590,14 @@ def get_html_detection(det,detection,clear_cache):
    
    if(detection['ang_v']!='unknown'):
       details_html += '              <dt class="col-6">Ang. Velocity</dt>   <dd class="col-6">'+str("{0:.4f}".format(float(detection['ang_v'])))+'&deg;/s</dd>'
-
+   
    if(detection['sync']!=1):
       details_html += '              <dt class="col-12"><div class="alert alert-danger p-1 m-0 text-center">Not synchronized</div></dt>'
  
    details_html += ' </dl>'   
+
+   print(detection)
+   print("<hr>")
 
    res_html += '  <a class="mtt has_soh" href="webUI.py?cmd=reduce2&video_file='+det['full_path']+'" title="Detection Reduce page">'
    res_html += '     <img alt="" class="img-fluid ns lz" src="'+preview[0]+'">'
@@ -748,9 +751,7 @@ def archive_listing(form):
    # Build SYNC selector 
    sync_select, criteria = create_criteria_selector(POSSIBLE_SYNC,'sync',selected_sync, criteria,  'All Sync.', '')
    template = template.replace("{SYNC}", sync_select) 
-   
-   print("CRITERIA <br>")
-   print(criteria)
+ 
 
    # Clear_cache
    if(clear_cache is None):
