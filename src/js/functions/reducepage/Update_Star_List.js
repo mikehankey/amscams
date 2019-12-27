@@ -7,6 +7,23 @@ CIRCLE_RADIUS=5
 function update_stars_on_canvas_and_table(json_resp) {
    
 
+   // Add AZ/EL of center camera
+   if(typeof json_resp['calib']!== 'undefined' &&
+      typeof json_resp['calib']['center'] !== 'undefined' &&
+      typeof json_resp['calib']['center']['az'] !== 'undefined' &&
+      typeof json_resp['calib']['center']['el'] !== 'undefined'  
+   ) {
+      "Center Az: " + json_resp['calib']['center']['az'] + "° / El:" + json_resp['calib']['center']['el'] + " el";
+      canvas.add(new fabric.Text(res_desc , {
+         fontFamily: 'Arial',
+         fontSize: 12,
+         left: 5,
+         top: 505,
+         fill: 'rgba(255,255,255,.75)',
+         selectable: false
+     })); 
+   }
+
    if(typeof json_resp['calib']!== 'undefined' &&  typeof json_resp['calib']['stars'] !== 'undefined') {
       var cat_stars = json_resp['calib']['stars']; 
       var name_pos = []; // Store the name positions
