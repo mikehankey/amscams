@@ -409,7 +409,7 @@ def get_results_from_date_from_monthly_index(criteria,start_date,end_date,max_re
       cur_month = json_index['month']
       cur_year  = json_index['year']
 
-      print("<br>CUR MONTH " +  str(cur_month) +  " - CUR YEAR " +  str(cur_year))
+      print("<br>CUR MONTH " +  str(cur_month) +  " - CUR YEAR " +  str(cur_year) + "<br>")
       
       if(int(cur_month)==int(end_date.month) and int(cur_year)==int(end_date.year)): 
          cur_year_and_month_test_END = True
