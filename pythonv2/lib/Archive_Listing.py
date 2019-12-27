@@ -681,7 +681,7 @@ def create_criteria_selector(values, selected, criteria, all_msg, sign, unit='')
    for mag in values:
       if(one_selected==True):
          if(float(mag)==float(selected)):
-            mag_select+= '<option selected value="'+str(mag)+'">'+sign+str(mag)+ unit+'/option>'
+            mag_select+= '<option selected value="'+str(mag)+'">'+sign+str(mag)+ unit+'</option>'
          else:
             mag_select+= '<option value="'+str(mag)+'">'+sign + str(mag)+ unit+'</option>'  
       else:
