@@ -46,6 +46,8 @@ function update_stars_on_canvas_and_table(json_resp) {
 
       console.log(text.width);
       console.log(text.height);
+      text.top = 505;
+      text.left = 10;
 
       canvas.add(text); 
 
