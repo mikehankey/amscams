@@ -144,14 +144,12 @@ if ($('canvas#c').length!=0) {
       // Mouse out canvas
       // Hide quandrant info
       canvas.on('mouse:out', function(e) { 
-         var objects = canvas.getObjects();
-         console.log("MOUSE OUT");
-         console.log(objects);
+         var objects = canvas.getObjects(); 
          for (let i in objects) {
             if ( typeof(objects[i].azim)!='undefined') {
                console.log("FOUND");
                console.log(objects[i]);
-               objects[i].set('fill', 'rgba(0,0,0,0)');   
+               objects[i].set('fill', 'rgba(255,255,255,1)');   
             }
          }
       });
