@@ -148,7 +148,8 @@ if ($('canvas#c').length!=0) {
          console.log("MOUSE OUT");
          console.log(objects);
          for (let i in objects) {
-            if ( typeof(objects[i].azim)!='undefined' && objects[i].azim==1) {
+            if ( typeof(objects[i].azim)!='undefined') {
+               console.log("FOUND");
                objects[i].set('fill', 'rgba(255,107,8,0)');   
             }
          }
