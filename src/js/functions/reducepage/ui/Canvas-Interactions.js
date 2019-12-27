@@ -146,6 +146,7 @@ if ($('canvas#c').length!=0) {
       canvas.on('mouse:out', function(e) { 
          var objects = canvas.getObjects();
          console.log("MOUSE OUT");
+         console.og(objects);
          for (let i in objects) {
             if ( typeof(objects[i].azim)!='undefined' && objects[i].azim==1) {
                objects[i].set('fill', 'rgba(255,107,8,0)');   
