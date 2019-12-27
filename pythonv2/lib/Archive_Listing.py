@@ -424,12 +424,14 @@ def get_results_from_date_from_monthly_index(criteria,start_date,end_date,max_re
 
       # We sort the days
       for day in kk:
- 
+
+            print("<br>CUR DAY ")
+            print(day)
+            print("<br>")
+
             # We sort the detections within the day
             detections = sorted(json_index['days'][day], key=lambda k: k['p'], reverse=True)
-
-            print(detections)
-            sys.exit(0)
+ 
  
             # If we are the current month & year, we need to take into account the days before the end_date.day
             if( (cur_year_and_month_test and int(day)<=int(end_date.day)) or (not cur_year_and_month_test)):
