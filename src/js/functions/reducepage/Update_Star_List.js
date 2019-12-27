@@ -48,8 +48,7 @@ function update_stars_on_canvas_and_table(json_resp) {
  
      
       text.top = 505;
-      text.left =  $('#c').width()/2-text.width/2;
-      text.fontSize = 0;
+      text.left =  $('#c').width()/2-text.width/2; 
       canvas.add(text);  
       canvas.moveTo(text, 9999)
 
