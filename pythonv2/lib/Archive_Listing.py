@@ -749,6 +749,12 @@ def archive_listing(form):
    year = start_datetime.year
    month = start_datetime.month
 
+   print("START ")
+   print(start_datetime)
+   print("<br>END ")
+   print(end_datetime)
+   sys.exit(0)
+
    # Search the results through the monthly indexes
    res, total = get_results_from_date_from_monthly_index(criteria,start_datetime,end_datetime,int(nompp),cur_page)
   
