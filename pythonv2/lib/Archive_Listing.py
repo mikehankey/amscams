@@ -480,14 +480,19 @@ def get_results_from_date_from_monthly_index(criteria,start_date,end_date,max_re
 
 
       print("<br/>-----------NEW END DATE IN LOOP<br>")
-      print(end_date)
-      print(" vs. ")
       print(start_date)
+      print(" vs. ")
+      print(end_date)
       print('<hr/>')
 
 
       # We stop at the start_date
       if(end_date<=start_date):
+         
+         print(" <br> ")
+         print(start_date)
+         print(" vs. ")
+         print(end_date)
          print("STOP DATE TEST<br>")
          return res_to_return, res_counter
     
