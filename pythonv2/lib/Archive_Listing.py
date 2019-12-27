@@ -743,20 +743,15 @@ def archive_listing(form):
    
    template = template.replace("{START_DATE}",start_datetime.strftime("%Y/%m/%d"));
    template = template.replace("{END_DATE}",end_datetime.strftime("%Y/%m/%d"));
-   
-   print("START ")
-   print(start_datetime.strftime("%Y/%m/%d"))
-   print("<br>END ")
-   print(end_datetime.strftime("%Y/%m/%d"))
- 
+    
    # Search the results through the monthly indexes
-   res, total = get_results_from_date_from_monthly_index(criteria,start_datetime,end_datetime,int(nompp),cur_page)
+   res, total = get_results_from_date_from_monthly_index(criteria,start_datetime.strftime("%Y/%m/%d"),end_datetime.strftime("%Y/%m/%d"),int(nompp),cur_page)
   
    # CREATE URL FOR THE PAGINATION
    pagination_url  = "/pycgi/webUI.py?cmd=archive_listing&meteor_per_page="+str(nompp)
 
    if(has_limit_day!=0):
-      pagination_url += "&start_date="+str(start_datetime)+"&end_date="+str(end_datetime)
+      pagination_url += "&start_date="+str(start_datetime.strftime("%Y/%m/%d"))+"&end_date="+str(end_datetime.strftime("%Y/%m/%d"))
       
    for criter in criteria:
       pagination_url += "&"+criter+"="+str(criteria[criter])
