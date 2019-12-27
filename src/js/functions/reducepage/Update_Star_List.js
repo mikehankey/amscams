@@ -6,14 +6,15 @@ CIRCLE_RADIUS=5
 
 function update_stars_on_canvas_and_table(json_resp) {
     
-   console.log(update_stars_on_canvas_and_table);
+   console.log("update_stars_on_canvas_and_table");
    console.log(json_resp);
 
    // Add AZ/EL of center camera
    if(typeof json_resp['calib']!== 'undefined' &&
-      typeof json_resp['calib']['center'] !== 'undefined' &&
-      typeof json_resp['calib']['center']['az'] !== 'undefined' &&
-      typeof json_resp['calib']['center']['el'] !== 'undefined'  
+      typeof json_resp['calib']['device'] !== 'undefined' &&
+      typeof json_resp['calib']['device']['center'] !== 'undefined' &&
+      typeof json_resp['calib']['device']['center']['az'] !== 'undefined' &&
+      typeof json_resp['calib']['device']['center']['el'] !== 'undefined'  
    ) { 
       console.log("AZ EL OK");
       canvas.add(new fabric.Text( "Center Az: " + json_resp['calib']['center']['az'] + "° / El:" + json_resp['calib']['center']['el'] + " el" , {
