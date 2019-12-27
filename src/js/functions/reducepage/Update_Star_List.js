@@ -27,7 +27,7 @@ function update_stars_on_canvas_and_table(json_resp) {
       az = json_resp['calib']['device']['center']['az'];
       el = json_resp['calib']['device']['center']['el'];
  
-      canvas.add(new fabric.Text( "Center Az: " + az.toFixed(4) + "° / El:" + el.toFixed(4) + "°" + '('+ conversion_az_to_quadrantBearing(az) + ')' , {
+      canvas.add(new fabric.Text( "Center Az: " + az.toFixed(4) + "° / El:" + el.toFixed(4) + "°", {
          fontFamily: 'Arial',
          fontSize: 12,
          left: 5,
@@ -35,6 +35,17 @@ function update_stars_on_canvas_and_table(json_resp) {
          fill: 'rgba(255,255,255,.75)',
          selectable: false
       })); 
+
+
+      canvas.add(new fabric.Text( conversion_az_to_quadrantBearing(az) , {
+         fontFamily: 'Arial',
+         fontSize: 20,
+         textAlign: 'center',
+         fill: 'rgba(255,107,8,.75)',
+         selectable: false
+      })); 
+
+     
 
       // Transform AZ to QUADRANT
 
