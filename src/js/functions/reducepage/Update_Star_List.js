@@ -6,7 +6,7 @@ CIRCLE_RADIUS=5
 
 function update_stars_on_canvas_and_table(json_resp) {
     
-   console.log(update_stars_on_canvas_and_table):
+   console.log(update_stars_on_canvas_and_table);
    console.log(json_resp);
 
    // Add AZ/EL of center camera
