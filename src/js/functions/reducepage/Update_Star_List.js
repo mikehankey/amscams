@@ -16,6 +16,8 @@ function update_stars_on_canvas_and_table(json_resp) {
       typeof json_resp['calib']['device']['center']['az'] !== 'undefined' &&
       typeof json_resp['calib']['device']['center']['el'] !== 'undefined'  
    ) { 
+
+      console.log("HERE");
       az = json_resp['calib']['device']['center']['az'];
       el = json_resp['calib']['device']['center']['el'];
 
