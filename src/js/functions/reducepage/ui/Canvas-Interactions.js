@@ -145,6 +145,7 @@ if ($('canvas#c').length!=0) {
       // Hide quandrant info
       canvas.on('mouse:out', function(e) { 
          var objects = canvas.getObjects();
+         console.log("MOUSE OUT");
          for (let i in objects) {
             if ( typeof(objects[i].azim)!='undefined' && objects[i].azim==1) {
                objects[i].set('fill', 'rgba(255,107,8,0)');   
