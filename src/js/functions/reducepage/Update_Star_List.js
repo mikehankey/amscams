@@ -41,8 +41,9 @@ function update_stars_on_canvas_and_table(json_resp) {
          fontFamily: 'Arial',
          fontSize: 24,
          textAlign: 'center',
-         fill: 'rgba(255,107,8,.65)',
-         selectable: false
+         fill: 'rgba(255,107,8,0)',
+         selectable: false,
+         azim : 1
       });
  
      
@@ -93,12 +94,10 @@ function update_stars_on_canvas_and_table(json_resp) {
    
        if(!jQuery.isEmptyObject(cat_stars)) { 
             cat_stars.sort((a,b) => (a.name > b.name) ? 1 : ((b.name > a.name) ? -1 : 0))
-       } 
-          
+       }  
    
        // Table - tbody (in #stars-tab) & draw on canvas
-       $.each(cat_stars,function(i,v) {
-    
+       $.each(cat_stars,function(i,v) { 
             // Add to circle canvas
             circle =  new fabric.Circle({
                radius: CIRCLE_RADIUS, fill: 'rgba(0,0,0,0)', strokeWidth: 1, stroke: 'rgba(100,200,200,.5)', 
@@ -161,8 +160,7 @@ function update_stars_on_canvas_and_table(json_resp) {
            // Add Star Name on canvas
            canvas.add(test_object); 
            //name_pos.push(test_object);
-   
-   
+    
            // Add the corresponding row 
            table_tbody_html+= '<tr><td><b>'+v['name']+'</b></td>\
                                <td>'+v['mag']+'</td>\
@@ -223,11 +221,7 @@ function update_star_list() {
         data: cmd_data,
         success: function(data) {
             var json_resp = $.parseJSON(data);
-            if(json_resp['res']=='true') {
-
-            }
-            
-            if(json_resp['status']!==0) {
+            if(json_resp['res']=='true') || json_resp['status']!==0) {
                 update_stars_on_canvas_and_table(json_resp);
 
                 // Open proper tab

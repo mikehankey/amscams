@@ -152,7 +152,13 @@ if ($('canvas#c').length!=0) {
          var id; 
     
          // Show bigger star name
+         // Show Main 
          for (let i in objects) {
+
+            if (objects[i].azim!='undefined') {
+               objects[x].set('fill', 'rgba(255,107,8,.65)');   
+            }
+
             if (objects[i].containsPoint(clickPoint) && typeof(objects[i].gp_id)!='undefined') {
                for(let x in objects) {
                   if(objects[i].gp_id == objects[x].gp_id && typeof(objects[x].ui_type)!='undefined') {
