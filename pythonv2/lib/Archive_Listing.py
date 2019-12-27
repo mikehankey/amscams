@@ -703,6 +703,7 @@ def archive_listing(form):
    selected_mag = form.getvalue('magnitude')
    selected_error = form.getvalue('res_error')
    selected_ang_vel = form.getvalue('ang_vel')
+   selected_sync = form.getvalue('sync')
  
    # Build the page based on template  
    with open(ARCHIVE_LISTING_TEMPLATE, 'r') as file:
@@ -743,7 +744,11 @@ def archive_listing(form):
    # Build ANGULAR VELOCITIES selector
    ang_vel_select, criteria = create_criteria_selector(selected_ang_vel, criteria,  'All Ang. Velocities', '>', unit='&deg;/s')
    template = template.replace("{ANG_VELOCITIES}", ang_vel_select) 
- 
+   
+   # Build SYNC selector
+   sync_select, criteria = create_criteria_selector(selected_sync, criteria,  'Sync.', ' ')
+   template = template.replace("{SYNC}", sync_select) 
+
 
    # Clear_cache
    if(clear_cache is None):
