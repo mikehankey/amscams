@@ -49,10 +49,14 @@ def reduce_meteor2(json_conf,form):
       video_hd_full_path = video_full_path
       video_sd_full_path = video_full_path.replace('-HD','-SD')
       json_full_path = video_full_path.replace('-HD.mp4','.json')
-   else:
+   elif('SD' in video_full_path):
       video_sd_full_path = video_full_path 
       video_hd_full_path = video_full_path.replace('-SD','-HD')
       json_full_path = video_full_path.replace('-SD.mp4','.json')  
+   elif('json' in video_full_path):
+      json_full_path = video_full_path
+      video_sd_full_path = video_full_path.replace('.json','-SD.mp4')  
+      video_hd_full_path = video_full_path.replace('.json','-HD.mp4') 
    
    if(cfe(video_hd_full_path)==0):
       video_hd_full_path = ''
