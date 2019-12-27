@@ -107,15 +107,7 @@ def reduce_meteor2(json_conf,form):
    # For the Event start time
    # either it has already been reduced and we take the time of the first frame
    start_time = 0
-
-
-   print("JSON PATH: ")
-   print(json_full_path)
-   print("<br>")
-   print("meteor_json_file ")
-   print(meteor_json_file)
-
-   
+ 
    if(meteor_json_file is False):
       print_error(" JSON NOT FOUND or CORRUPTED")
  
