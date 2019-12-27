@@ -44,7 +44,8 @@ function update_stars_on_canvas_and_table(json_resp) {
          selectable: false
       });
 
-      console.log(text);
+      console.log(text.width);
+      console.log(text.height);
 
       canvas.add(text); 
 
