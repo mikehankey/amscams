@@ -438,9 +438,9 @@ def get_results_from_date_from_monthly_index(criteria,start_date,end_date,max_re
             # and the days after start_date.day
             if(    cur_year_and_month_test_START 
                and cur_year_and_month_test_END
-               and int(day)<=int(end_date.day))
-               and int(day)>=int(start_date.day))
-            ):
+               and int(day)<=int(end_date.day)
+               and int(day)>=int(start_date.day)):
+               
                for detection in detections:
                   # Here we test the criteria
                   test = True
