@@ -10,6 +10,11 @@ from lib.FileIO import load_json_file, save_json_file, cfe
 WASABI_ROOT = "/mnt/wasabi/"
 json_conf = load_json_file("../conf/as6.json")
 
+def wasabi_cp(file):
+   wasabi_file = file.replace("ams2/meteor_archive", "wasabi")
+   cmd = "cp " + file + " " + wasabi_file
+   os.system(cmd)
+
 def install():
    cmd = """
    # THESE ARE THE COMMANDS:
@@ -43,7 +48,9 @@ def connect_wasabi():
    #mkdir /mnt/wasabi
 
    #MOUNT COMMAND
-   cmd = "s3fs meteor-archive /mnt/wasabi -o passwd_file=/home/ams/amscams/conf/wasabi.txt -o dbglevel=debug -o url=https://s3.wasabisys.com -o umask=0007,uid=$UID,gid=$GID"
+   uid = os.getuid()
+   gid = os.getgid()
+   cmd = "s3fs meteor-archive /mnt/wasabi -o passwd_file=/home/ams/amscams/conf/wasabi.txt -o dbglevel=debug -o url=https://s3.wasabisys.com -o umask=0007,uid="+str(uid)+",gid="+str(gid)
    print(cmd)
    os.system(cmd)
 
@@ -80,3 +87,5 @@ if sys.argv[1] == "dirs":
    setup_wasabi_dirs()
 if sys.argv[1] == "mnt":
    connect_wasabi()
+if sys.argv[1] == "cp":
+   wasabi_cp(sys.argv[2])
