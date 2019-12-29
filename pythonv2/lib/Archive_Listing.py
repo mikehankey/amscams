@@ -591,7 +591,8 @@ def get_html_detection(det,detection,clear_cache):
    if(detection['ang_v']!='unknown'):
       details_html += '              <dt class="col-6">Ang. Velocity</dt>   <dd class="col-6">'+str("{0:.4f}".format(float(detection['ang_v'])))+'&deg;/s</dd>'
    
-   if(detection['sync']!=1):
+   if "sync" not in detection: 
+   #if(detection['sync']!=1):
       details_html += '              <dt class="col-12"><div class="alert alert-danger p-1 m-0 text-center">Not synchronized</div></dt>'
  
    details_html += ' </dl>'   
