@@ -388,6 +388,8 @@ def controller(json_conf):
    if cmd == 'events':
       EventsMain(form)
       exit()
+   if cmd == 'wasabi_cp':
+      wasabi_cp(form)
    if cmd == 'event_detail':
       EventDetail(form)
       exit()
@@ -679,6 +681,11 @@ def controller(json_conf):
    #cam_num = form.getvalue('cam_num')
    #day = form.getvalue('day')
 
+def wasabi_cp(form):
+   file = form.getvalue("file")
+   cmd = "cd /home/ams/amscams/pythonv2; ./wasabi.py cp " + file
+   print(cmd)
+   os.system(cmd)
 
 # CUSTOM LOGO PAGE
 def custom_logos(json_conf,form):
