@@ -848,7 +848,7 @@ def archive_listing(form):
    
    if("archive_view" in cookies):
       tmp = cookies.split(";")
-      for cook in tmp
+      for cook in tmp:
          print(cook)
          print("<br>")
 
