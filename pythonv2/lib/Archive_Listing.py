@@ -459,11 +459,11 @@ def get_results_from_date_from_monthly_index(criteria,start_date,end_date,max_re
             # and the current & year START
             # we need to take into account the days before end_date.day 
             # and the days after start_date.day
-            if(    (     cur_year_and_month_test_START == True
+            if((     cur_year_and_month_test_START == True
                      and cur_year_and_month_test_END == True
                      and int(day)<=int(end_date.day)
                      and int(day)>=int(start_date.day)
-                  )
+               )
                or (      cur_year_and_month_test_START == False 
                      and cur_year_and_month_test_END == True
                      and int(day)<=int(end_date.day)
@@ -475,32 +475,32 @@ def get_results_from_date_from_monthly_index(criteria,start_date,end_date,max_re
                   )
             ):
 
-            for detection in detections:
+               for detection in detections:
 
-               # Here we test the criteria
-               test = True
-               for criter in criteria:
+                  # Here we test the criteria
+                  test = True
+                  for criter in criteria:
 
-                  print("<hr/>CRITER " + criter )
-                  print("<br>detection[criter] " + str(detection[criter]))
+                     print("<hr/>CRITER " + criter )
+                     print("<br>detection[criter] " + str(detection[criter]))
 
-                  if(criter in detection and detection[criter]!='unknown'):
-                     test = test_criteria(criter,criteria,detection)
-                     
-   
-                  if(test==False):
-                     break   
+                     if(criter in detection and detection[criter]!='unknown'):
+                        test = test_criteria(criter,criteria,detection)
+                        
+      
+                     if(test==False):
+                        break   
 
-               if(test==True):
+                  if(test==True):
 
-                  # We add it only if it fits the pagination
-                  #if(len(res_to_return)<=max_res_per_page and res_counter>=number_of_res_to_give_up):
+                     # We add it only if it fits the pagination
+                     #if(len(res_to_return)<=max_res_per_page and res_counter>=number_of_res_to_give_up):
 
-                  # We complete the detection['p'] to get the full path (as the index only has compressed name)
-                  detection['p'] = get_full_det_path(detection['p'],station_id,end_date,day)
-                  res_to_return.append(detection)
+                     # We complete the detection['p'] to get the full path (as the index only has compressed name)
+                     detection['p'] = get_full_det_path(detection['p'],station_id,end_date,day)
+                     res_to_return.append(detection)
 
-                  res_counter+=1  
+                     res_counter+=1  
 
       # Change Month & Year
       if(cur_month==1):
