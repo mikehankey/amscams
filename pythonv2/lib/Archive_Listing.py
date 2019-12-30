@@ -852,7 +852,7 @@ def archive_listing(form):
       for cook in tmp:
          v = cook.split(";")
          print(v)
-         if('list' in v):
+         if('list' in v[0]):
             version = 'list'
 
    print("VERSION: " + version)
