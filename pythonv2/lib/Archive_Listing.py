@@ -846,11 +846,15 @@ def archive_listing(form):
    # Do we have a cookie for gallery or list?
    cookies = os.environ.get('HTTP_COOKIE').rstrip()
    
+   version = 'gal'
    if("archive_view" in cookies):
       tmp = cookies.split(";")
       for cook in tmp:
-         print(cook)
-         print("<br>")
+         v = cook.split(";")
+         if('list' in v):
+            version = 'list'
+
+   print("VERSION: " + version)
 
    # Create HTML Version of each detection
    res_html = get_html_detections(res,clear_cache) 
