@@ -482,6 +482,9 @@ def get_results_from_date_from_monthly_index(criteria,start_date,end_date,max_re
                   for criter in criteria:
 
                      print("---------------<br>CRITER " + criter +"<br>")
+                     print(detection)
+                     print("<br>")
+
                      if(criter in detection):
                         print("<br>detection[criter] " + str(detection[criter])+"<br>")  
 
