@@ -398,9 +398,9 @@ def get_results_from_date_from_monthly_index(criteria,start_date,end_date,max_re
    #print(end_date) 
    #print("<br/>")
 
-   print("---------------<br>criteria ")
-   print(criteria)
-   print("<br>")
+   #pprint("---------------<br>criteria ")
+   #pprint(criteria)
+   #pprint("<br>")
 
    # Get the index of the selected or current year
    # for the END DATE
@@ -484,25 +484,25 @@ def get_results_from_date_from_monthly_index(criteria,start_date,end_date,max_re
                   # Here we test the criteria
                   test = True
 
-                  print("---------------<br>criteria ")
-                  print(criteria)
-                  print("<br>")
+                  #pprint("---------------<br>criteria ")
+                  #pprint(criteria)
+                  #pprint("<br>")
                   
 
                   for criter in criteria:
 
-                     print(detection)
-                     print("<br>")
+                     #pprint(detection)
+                     #pprint("<br>")
 
-                     if(criter in detection):
-                        print("<br>detection[criter] " + str(detection[criter])+"<br>")  
-                     else:
-                        print("<br> " +  str(criter) + " not in detection<br>")
+                     #pif(criter in detection):
+                     #p   print("<br>detection[criter] " + str(detection[criter])+"<br>")  
+                     #pelse:
+                     #p   print("<br> " +  str(criter) + " not in detection<br>")
 
                      if(criter in detection and detection[criter]!='unknown'):
                         test = test_criteria(criter,criteria,detection)
-                        print("<hr/>CRITER " + criter )
-                        print("<br>detection[criter] " + str(detection[criter]))      
+                     #p   print("<hr/>CRITER " + criter )
+                     #p   print("<br>detection[criter] " + str(detection[criter]))      
       
                      if(test==False):
                         break   
