@@ -174,6 +174,10 @@ def get_template(json_conf, skin = "as6ams"  ):
       fpt = open("/home/ams/amscams/pythonv2/templates/main_template.html", "r")
    else:
       fpt = open("/home/ams/amscams/pythonv2/templates/as6ams.html", "r")
+
+   print("skin: ")
+   print(skin)
+
    for line in fpt:
       template = template + line 
    return(template) 
