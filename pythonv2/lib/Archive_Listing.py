@@ -476,32 +476,32 @@ def get_results_from_date_from_monthly_index(criteria,start_date,end_date,max_re
             ):
 
             for detection in detections:
-                  # Here we test the criteria
-                  test = True
-                  for criter in criteria:
 
-                     print("<hr/>CRITER " + criter )
-                     print("<br>detection[criter] " + str(detection[criter]))
+               # Here we test the criteria
+               test = True
+               for criter in criteria:
 
-                     if(criter in detection and detection[criter]!='unknown'):
-                        test = test_criteria(criter,criteria,detection)
-                      
-    
-                     if(test==False):
-                        break   
+                  print("<hr/>CRITER " + criter )
+                  print("<br>detection[criter] " + str(detection[criter]))
 
-                  if(test==True):
- 
-                     # We add it only if it fits the pagination
-                     #if(len(res_to_return)<=max_res_per_page and res_counter>=number_of_res_to_give_up):
- 
-                     # We complete the detection['p'] to get the full path (as the index only has compressed name)
-                     detection['p'] = get_full_det_path(detection['p'],station_id,end_date,day)
-                     res_to_return.append(detection)
+                  if(criter in detection and detection[criter]!='unknown'):
+                     test = test_criteria(criter,criteria,detection)
                      
-                     
-                     res_counter+=1  
    
+                  if(test==False):
+                     break   
+
+               if(test==True):
+
+                  # We add it only if it fits the pagination
+                  #if(len(res_to_return)<=max_res_per_page and res_counter>=number_of_res_to_give_up):
+
+                  # We complete the detection['p'] to get the full path (as the index only has compressed name)
+                  detection['p'] = get_full_det_path(detection['p'],station_id,end_date,day)
+                  res_to_return.append(detection)
+
+                  res_counter+=1  
+
       # Change Month & Year
       if(cur_month==1):
          cur_month = 12
