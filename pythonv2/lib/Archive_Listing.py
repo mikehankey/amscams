@@ -846,7 +846,7 @@ def archive_listing(form):
    # Do we have a cookie for gallery or list?
    #curURL = os.environ.get('SERVER_NAME') + os.environ.get('PATH_INFO')
    
-   print(os.environ.get('HTTP_COOKIE').split(";"))
+   print(os.environ.get('HTTP_COOKIE').strip().split(";"))
    print("<br>") 
 
    # Create HTML Version of each detection
