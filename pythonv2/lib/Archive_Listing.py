@@ -636,7 +636,7 @@ def get_html_detections(res,clear_cache):
       
       if(prev_date is None):
          prev_date = cur_date
-         res_html += '<div class="h2_holder d-flex justify-content-between"><h2>'+cur_date.strftime("%Y/%m/%d")+" - %TOTAL%</h2></div>"
+         res_html += '<div class="h2_holder d-flex justify-content-between mr-5 ml-5"><h2>'+cur_date.strftime("%Y/%m/%d")+" - %TOTAL%</h2></div>"
          res_html += '<div class="gallery gal-resize row text-center text-lg-left mb-5 mr-5 ml-5">'
 
       elif(cur_date.month != prev_date.month or cur_date.day != prev_date.day or cur_date.year != prev_date.year):
@@ -645,7 +645,7 @@ def get_html_detections(res,clear_cache):
             res_html = res_html.replace('%TOTAL%',str(cur_count)+ ' detections')
          else:
             res_html = res_html.replace('%TOTAL%',str(cur_count)+ ' detection only')
-         res_html +=  '</div><div class="h2_holder d-flex justify-content-between"><h2>'+cur_date.strftime("%Y/%m/%d")+" - %TOTAL%</h2></div>"
+         res_html +=  '</div><div class="h2_holder d-flex justify-content-between mr-5 ml-5"><h2>'+cur_date.strftime("%Y/%m/%d")+" - %TOTAL%</h2></div>"
          res_html += '<div class="gallery gal-resize row text-center text-lg-left mb-5 mr-5 ml-5">'
         
          cur_count = 0
