@@ -388,12 +388,11 @@ def test_criteria(criter,criteria,detection):
    
    # Angular Velocity
    if(criter=='ang_v'):
+      print("<br>ang_v !!!!!!!!!!<br>")  
       if(float(detection[criter])<=float(criteria[criter]) or detection[criter]=='unknown'):
          print("<br>ang_v  FALSE")  
-         return False
-      else:
-         print("<br>ang_v  TRUE")  
-
+         return False 
+      print("<br>ang_v  TRUE")  
    # Sync
    if(criter=='sync' and criteria[criter]!=-1):
       if(int(detection[criter])!=int(criteria[criter]) or detection[criter]=='unknown'):
