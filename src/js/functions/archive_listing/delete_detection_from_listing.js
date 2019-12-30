@@ -85,13 +85,13 @@ $(function() {
     }) 
    
     // Select All
-    $('#sel-all-archive').click(function() {
+    $('#sel-all').click(function() {
        $('.sel-box input[type=checkbox]').click();
        update_selected_counter();
     })
 
     // Delete All
-    $('.del-all-archive').click(function() {
+    $('.del-all').click(function() {
         // Get all id
     
         var detections = [];  
