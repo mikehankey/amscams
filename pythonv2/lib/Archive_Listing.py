@@ -480,7 +480,9 @@ def get_results_from_date_from_monthly_index(criteria,start_date,end_date,max_re
                   # Here we test the criteria
                   test = True
 
-                  print("---------------<br>criteria " + criteria +"<br>")
+                  print("---------------<br>criteria ")
+                  print(criteria)
+                  print("<br>")
                   
 
                   for criter in criteria:
