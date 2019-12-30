@@ -8,7 +8,7 @@ $(function() {
       // Change Meteor Per page
       new_url = update_url_param(window.location.href ,'magnitude',$('#mag').val());
 
-      Cookies.set('filt_arch_mag', $('#mag').val(), { expires: 99999, path: '/' });
+      //Cookies.set('filt_arch_mag', $('#mag').val(), { expires: 99999, path: '/' });
 
       // Back to page = 1 (so we dont have issues if the number of page is too mall)
       window.location =  update_url_param(new_url ,'p',1);
@@ -19,7 +19,7 @@ $(function() {
       // Change Meteor Per page
       new_url = update_url_param(window.location.href ,'res_er',$('#res_er').val());
       
-      Cookies.set('filt_arch_res_er', $('#res_er').val(), { expires: 99999, path: '/' });
+      //Cookies.set('filt_arch_res_er', $('#res_er').val(), { expires: 99999, path: '/' });
 
       // Back to page = 1 (so we dont have issues if the number of page is too mall)
       window.location =  update_url_param(new_url ,'p',1);
@@ -31,7 +31,7 @@ $(function() {
       // Change Meteor Per page
       new_url = update_url_param(window.location.href ,'ang_v',$('#ang_v').val());
 
-      Cookies.set('filt_arch_ang_v', $('#ang_v').val(), { expires: 99999, path: '/' });
+      //Cookies.set('filt_arch_ang_v', $('#ang_v').val(), { expires: 99999, path: '/' });
 
       // Back to page = 1 (so we dont have issues if the number of page is too mall)
       window.location =  update_url_param(new_url ,'p',1);
@@ -43,7 +43,7 @@ $(function() {
       // Change Meteor Per page
       new_url = update_url_param(window.location.href ,'sync',$('#sync').val());
  
-      Cookies.set('filt_arch_sync', $('#sync').val(), { expires: 99999, path: '/' });
+      //Cookies.set('filt_arch_sync', $('#sync').val(), { expires: 99999, path: '/' });
 
       // Back to page = 1 (so we dont have issues if the number of page is too mall)
       window.location =  update_url_param(new_url ,'p',1);
