@@ -843,19 +843,18 @@ def archive_listing(form):
    else:
       template = template.replace("{PAGINATION_DET}", "")    
       
+   # GALLERIE or LIST are managed with cookies
    # Do we have a cookie for gallery or list?
    cookies = os.environ.get('HTTP_COOKIE').rstrip()
-   
-   version = 'gal'
+   version = ''
    if("archive_view" in cookies):
       tmp = cookies.split(";")
       for cook in tmp:
-         v = cook.split(";")
-         print(v)
+         v = cook.split(";") 
          if('list' in v[0]):
             version = 'list'
+   template = template.replace("{LIST_VIEW}", list)
 
-   print("VERSION: " + version)
 
    # Create HTML Version of each detection
    res_html = get_html_detections(res,clear_cache) 
