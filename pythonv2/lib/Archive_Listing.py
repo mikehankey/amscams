@@ -1,12 +1,10 @@
 # coding: utf-8
-import glob
-import os
-import json
-import sys
+import glob 
+import sys, os, io
+import json 
 import collections 
-import shutil 
-
-
+import shutil
+import requests
 
 from datetime import datetime, timedelta
 from calendar import monthrange
@@ -845,6 +843,11 @@ def archive_listing(form):
    else:
       template = template.replace("{PAGINATION_DET}", "")    
       
+   # Do we have a cookie for gallery or list?
+   curURL = os.environ.get('SERVER_NAME') + os.environ.get('PATH_INFO')
+   
+   print(curURL)
+
    # Create HTML Version of each detection
    res_html = get_html_detections(res,clear_cache) 
    if(res_html!=''):
