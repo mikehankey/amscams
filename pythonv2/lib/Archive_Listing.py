@@ -391,6 +391,8 @@ def test_criteria(criter,criteria,detection):
       if(float(detection[criter])<=float(criteria[criter]) or detection[criter]=='unknown'):
          print("<br>ang_v  FALSE")  
          return False
+      else:
+         print("<br>ang_v  TRUE")  
 
    # Sync
    if(criter=='sync' and criteria[criter]!=-1):
