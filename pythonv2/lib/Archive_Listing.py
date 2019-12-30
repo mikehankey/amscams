@@ -791,9 +791,7 @@ def archive_listing(form):
    sync_select, criteria = create_criteria_selector(POSSIBLE_SYNC,'sync',selected_sync, criteria,  'All Sync.', '')
    template = template.replace("{SYNC}", sync_select) 
    
-   print("CRITERIA<br>")
-   print(criteria)
-
+    
    # Clear_cache
    if(clear_cache is None):
       clear_cache = False
