@@ -853,7 +853,7 @@ def archive_listing(form):
          v = cook.split(";") 
          if('list' in v[0]):
             version = 'list'
-   template = template.replace("{LIST_VIEW}", list)
+   template = template.replace("{LIST_VIEW}", version)
 
 
    # Create HTML Version of each detection
