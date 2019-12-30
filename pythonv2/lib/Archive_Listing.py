@@ -4,7 +4,9 @@ import os
 import json
 import sys
 import collections 
-import shutil
+import shutil 
+
+
 
 from datetime import datetime, timedelta
 from calendar import monthrange
@@ -680,6 +682,9 @@ def create_criteria_selector(values, val, selected, criteria, all_msg, sign, uni
       criteria[val] = float(selected)
 
    for mag in values: 
+
+      if(val=="sync"):
+         print("SYNC")
 
       if(one_selected==True):
          if(float(mag)==float(selected)):
