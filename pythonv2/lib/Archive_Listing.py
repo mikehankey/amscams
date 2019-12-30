@@ -366,33 +366,33 @@ def get_full_det_path(path,station_id,date,day):
 # Test if a detection matches some criteria
 def test_criteria(criter,criteria,detection):
 
-   print("<br>----------------------TEST CRITERIA<br>")
-   print("CRITER ")
-   print(criter)
-   print("<br>criteria ")
-   print(criteria)
-   print("<br>detection ")
-   print(detection)
+   #print("<br>----------------------TEST CRITERIA<br>")
+   #print("CRITER ")
+   #print(criter)
+   #print("<br>criteria ")
+   #print(criteria)
+   #print("<br>detection ")
+   #print(detection)
 
    # Res. ERROR
    if(criter=='res_er'):
       if(float(detection[criter])>=float(criteria[criter]) or detection[criter]=='unknown'):
-         print("<br>RES ER  FALSE")
+         #print("<br>RES ER  FALSE")
          return False
    
    # Magnitude
    if(criter=='mag'):
       if(float(detection[criter])<=float(criteria[criter]) or detection[criter]=='unknown'):
-         print("<br>mag  FALSE")
+         #print("<br>mag  FALSE")
          return False
    
    # Angular Velocity
    if(criter=='ang_v'):
-      print("<br>ang_v !!!!!!!!!!<br>")  
+      #print("<br>ang_v !!!!!!!!!!<br>")  
       if(float(detection[criter])<=float(criteria[criter]) or detection[criter]=='unknown'):
-         print("<br>ang_v  FALSE")  
+         #print("<br>ang_v  FALSE")  
          return False 
-      print("<br>ang_v  TRUE")  
+      #print("<br>ang_v  TRUE")  
    # Sync
    if(criter=='sync' and criteria[criter]!=-1):
       if(int(detection[criter])!=int(criteria[criter]) or detection[criter]=='unknown'):
@@ -511,7 +511,7 @@ def get_results_from_date_from_monthly_index(criteria,start_date,end_date,max_re
                      #pelse:
                      #p   print("<br> " +  str(criter) + " not in detection<br>")
 
-                     if(criter in detection and detection[criter]!='unknown'):
+                     if(criter in detection):
                         test = test_criteria(criter,criteria,detection)
                      #p   print("<hr/>CRITER " + criter )
                      #p   print("<br>detection[criter] " + str(detection[criter]))      
