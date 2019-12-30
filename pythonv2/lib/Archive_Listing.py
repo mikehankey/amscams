@@ -847,8 +847,10 @@ def archive_listing(form):
    cookies = os.environ.get('HTTP_COOKIE').rstrip()
    
    if("archive_view" in cookies):
-      print("YEP: ")
-      print(cookies.split(";"))
+      tmp = cookies.split(";")
+      for cook in tmp
+         print(cook)
+         print("<br>")
 
    # Create HTML Version of each detection
    res_html = get_html_detections(res,clear_cache) 
