@@ -684,6 +684,7 @@ def create_criteria_selector(values, val, selected, criteria, all_msg, sign, uni
    for mag in values: 
 
       if(val=="sync" and mag==1):
+         print("YYyy")
          val = "NOT Synchronized only"
       elif(val=="sync" and mag==0):
          val = "Synchronized only"
