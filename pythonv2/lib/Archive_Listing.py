@@ -851,6 +851,7 @@ def archive_listing(form):
       tmp = cookies.split(";")
       for cook in tmp:
          v = cook.split(";")
+         print(v)
          if('list' in v):
             version = 'list'
 
