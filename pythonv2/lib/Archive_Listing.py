@@ -366,6 +366,14 @@ def get_full_det_path(path,station_id,date,day):
 # Test if a detection matches some criteria
 def test_criteria(criter,criteria,detection):
 
+   print("TEST CRITERIA<br>")
+   print("CRITER ")
+   print(criter)
+   print("<br>criteria ")
+   print(criteria)
+   print("<br>detection ")
+   print(detection)
+
    # Res. ERROR
    if(criter=='res_er'):
       if(float(detection[criter])>=float(criteria[criter]) or detection[criter]=='unknown'):
