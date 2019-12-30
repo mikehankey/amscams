@@ -682,22 +682,21 @@ def create_criteria_selector(values, val, selected, criteria, all_msg, sign, uni
       criteria[val] = float(selected)
 
    for mag in values: 
-
+ 
       if(val=="sync" and mag==1):
-         print("YYyy")
-         val = "NOT Synchronized only"
+         st_val = "Synchronized only"
       elif(val=="sync" and mag==0):
-         val = "Synchronized only"
+         st_val = "NOT Synchronized only"
       else:
-         val = str(mag)
+         st_val = str(mag)
 
       if(one_selected==True):
          if(float(mag)==float(selected)):
-            select+= '<option selected value="'+str(mag)+'">'+sign+val+ unit+'</option>'
+            select+= '<option selected value="'+str(mag)+'">'+sign+st_val+ unit+'</option>'
          else:
-            select+= '<option value="'+str(mag)+'">'+sign + val+ unit+'</option>'  
+            select+= '<option value="'+str(mag)+'">'+sign + st_val+ unit+'</option>'  
       else:
-         select+= '<option value="'+str(mag)+'">'+sign + val+ unit+'</option>'  
+         select+= '<option value="'+str(mag)+'">'+sign + st_val+ unit+'</option>'  
    
    return select, criteria
     
