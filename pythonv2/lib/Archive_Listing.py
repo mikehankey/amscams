@@ -479,8 +479,9 @@ def get_results_from_date_from_monthly_index(criteria,start_date,end_date,max_re
                   # Here we test the criteria
                   test = True
                   for criter in criteria:
+                     
 
-                     if(detection[criter]!='unknown'):
+                     if(criter in detetction and detection[criter]!='unknown'):
                         test = test_criteria(criter,criteria,detection)
     
                      if(test==False):
