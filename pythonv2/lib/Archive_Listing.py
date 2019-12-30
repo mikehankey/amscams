@@ -511,8 +511,10 @@ def get_results_from_date_from_monthly_index(criteria,start_date,end_date,max_re
                      #pelse:
                      #p   print("<br> " +  str(criter) + " not in detection<br>")
 
-                     if(criter in detection):
+                     if(criter in detection and detection[criter]!='unknown'):
                         test = test_criteria(criter,criteria,detection)
+                     else:
+                        test = False
                      #p   print("<hr/>CRITER " + criter )
                      #p   print("<br>detection[criter] " + str(detection[criter]))      
       
