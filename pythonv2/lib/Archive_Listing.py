@@ -368,22 +368,22 @@ def test_criteria(criter,criteria,detection):
 
    # Res. ERROR
    if(criter=='res_er'):
-      if(float(detection[criter])>=float(criteria[criter])):
+      if(float(detection[criter])>=float(criteria[criter]) or detection[criter]=='unknown'):
          return False
    
    # Magnitude
    if(criter=='mag'):
-      if(float(detection[criter])<=float(criteria[criter])):
+      if(float(detection[criter])<=float(criteria[criter]) or detection[criter]=='unknown'):
          return False
    
    # Angular Velocity
    if(criter=='ang_v'):
-      if(float(detection[criter])<=float(criteria[criter])):
+      if(float(detection[criter])<=float(criteria[criter]) or detection[criter]=='unknown'):
          return False
 
    # Sync
    if(criter=='sync' and criteria[criter]!=-1):
-      if(int(detection[criter])!=int(criteria[criter])):
+      if(int(detection[criter])!=int(criteria[criter]) or detection[criter]=='unknown'):
          return False
 
    return True
