@@ -44,7 +44,7 @@ import lib.brightstardata as bsd
 from lib.DetectLib import eval_cnt, check_for_motion2
 
 json_conf = load_json_file("../conf/as6.json")
-show = 0
+show = 1
 
 ARCHIVE_DIR = "/mnt/NAS/meteor_archive/"
 
@@ -454,14 +454,17 @@ def reject_meteor(meteor_json_file):
    os.system(cmd)
 
 def get_cat_image_stars(cat_stars, frame,cal_params_file):
+   show_frame = frame.copy()
    cat_image_stars = []
    for cat_star in cat_stars:
       name,mag,ra,dec,new_cat_x,new_cat_y = cat_star
-      cx1,cy1,cx2,cy2 = bound_cnt(new_cat_x,new_cat_y,frame.shape[1],frame.shape[0], 10)
+      cx1,cy1,cx2,cy2 = bound_cnt(new_cat_x,new_cat_y,frame.shape[1],frame.shape[0], 50)
       pos_star = frame[cy1:cy2,cx1:cx2]
       min_val, max_val, min_loc, (ix,iy)= cv2.minMaxLoc(pos_star)
+      if max_val - min_val > 20:
+         cv2.rectangle(show_frame, (cx1,cy1), (cx2, cy2), (128, 128, 128), 1)
 
-      cx1,cy1,cx2,cy2 = bound_cnt(cx1+ix,cy1+iy,frame.shape[1],frame.shape[0], 4)
+      cx1,cy1,cx2,cy2 = bound_cnt(cx1+ix,cy1+iy,frame.shape[1],frame.shape[0], 20)
       pos_star = frame[cy1:cy2,cx1:cx2]
       star_avg = np.median(pos_star)
       star_sum = np.sum(pos_star)
@@ -471,21 +474,31 @@ def get_cat_image_stars(cat_stars, frame,cal_params_file):
       ix = ix + cx1
       iy = iy + cy1
       px_diff = max_val - star_avg
-      if (new_cat_x < 5 or new_cat_x > 1915) or (new_cat_y < 5 or new_cat_y > 1075):
+      if (new_cat_x < 10 or new_cat_x > 1910) or (new_cat_y < 10 or new_cat_y > 1070):
          star_int = 0
          px_diff = 0
-      if mag >= 4 and star_int > 1000:
+      if mag >= 4 and star_int > 25000:
          bad =  1
       else:
          bad = 0
 
-      if star_int > 300 and px_diff > 20 and bad == 0:
-         cv2.circle(frame,(int(new_cat_x),int(new_cat_y)), 10, (255,255,255), 1)
-         cv2.circle(frame,(int(ix),int(iy)), 5, (255,255,255), 1)
+      if mag <= 3:
+         cv2.circle(show_frame,(int(new_cat_x),int(new_cat_y)), 20, (128,128,128), 1)
+      if star_int > 100 and px_diff > 15:
+         dist = calc_dist((ix,iy),(new_cat_x,new_cat_y))
+         cv2.line(show_frame, (ix,iy), (int(new_cat_x),int(new_cat_y)), (255), 2)
+         print("POS STAR:", name, star_int, px_diff, bad,dist)
+
+      if star_int > 50 and px_diff > 10 and bad == 0:
+         cv2.circle(show_frame,(int(ix),int(iy)), 5, (255,255,255), 1)
          px_dist = calc_dist((ix,iy), (new_cat_x, new_cat_y))
          #name #.decode("unicode_escape")
          cat_image_stars.append((name.decode("unicode_escape"),mag,ra,dec,new_cat_x,new_cat_y,ix,iy,px_dist,cal_params_file))
+   cv2.imshow('pepe', show_frame)
+   cv2.waitKey(0)
    return(cat_image_stars)
+
+
 
 def format_calib(trim_clip, cal_params, cal_params_file):
    calib = {}
@@ -503,13 +516,14 @@ def format_calib(trim_clip, cal_params, cal_params_file):
    calib['device']['center']['ra'] = cal_params['ra_center']
    calib['device']['center']['dec'] = cal_params['dec_center']
    calib['stars'] = []
-   for (name,mag,ra,dec,new_cat_x,new_cat_y,ix,iy,px_dist,cpfile) in cal_params['cat_image_stars']:
+   for (name,mag,ra,dec,new_cat_x,new_cat_y,ix,iy,intensity,px_dist,cpfile) in cal_params['cat_image_stars']:
       star = {}
       star['name'] = name
       star['mag'] = mag
       star['ra'] = ra
       star['dec'] = dec
       star['dist_px'] = px_dist
+      star['intensity'] = int(intensity)
       star['i_pos'] = [int(ix),int(iy)]
       star['cat_dist_pos'] = [int(new_cat_x),int(new_cat_y)]
       star['cat_und_pos'] = [int(new_cat_x),int(new_cat_y)]
@@ -524,6 +538,166 @@ def format_calib(trim_clip, cal_params, cal_params_file):
    calib['device']['org_file'] = cal_params_file
    calib['device']['total_res_px'] = cal_params['total_res_px']
    return(calib)
+
+def get_image_stars(file,img=None, show=0):
+   stars = []
+   if img is None:
+      img = cv2.imread(file, 0)
+   avg = np.mean(img)
+   best_thresh = avg + 12
+   _, star_bg = cv2.threshold(img, best_thresh, 255, cv2.THRESH_BINARY)
+   thresh_obj = cv2.dilate(star_bg, None , iterations=4)
+   (_, cnts, xx) = cv2.findContours(thresh_obj.copy(), cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
+   cc = 0
+   for (i,c) in enumerate(cnts):
+      x,y,w,h = cv2.boundingRect(cnts[i])
+      px_val = int(img[y,x])
+      cnt_img = img[y:y+h,x:x+w]
+      cnt_img = cv2.GaussianBlur(cnt_img, (7, 7), 0)
+      max_px, avg_px, px_diff,max_loc = eval_cnt(cnt_img.copy())
+      name = "/mnt/ams2/tmp/cnt" + str(cc) + ".png"
+      #star_test = test_star(cnt_img)
+      x = x + int(w/2)
+      y = y + int(h/2)
+      if px_diff > 5 and w > 1 and h > 1 and w < 50 and h < 50:
+          stars.append((x,y,int(max_px)))
+          cv2.circle(img,(x,y), 5, (128,128,128), 1)
+
+      cc = cc + 1
+   if show == 1:
+      cv2.imshow('pepe', img)
+      cv2.waitKey(1)
+
+   temp = sorted(stars, key=lambda x: x[2], reverse=True)
+   stars = temp[0:50]
+   return(stars)
+
+def find_best_cat_stars(cat_stars, ix,iy, frame, cp_file):
+   cx1,cy1,cx2,cy2 = bound_cnt(ix,iy,frame.shape[1],frame.shape[0], 5)
+   intensity = int(np.sum(frame[cy1:cy2,cx1:cx2]))
+   min_dist = 999 
+   min_star = None 
+   for cat_star in cat_stars:
+      name,mag,ra,dec,new_cat_x,new_cat_y = cat_star
+
+      dist = calc_dist((new_cat_x, new_cat_y), (ix,iy))
+      if dist < min_dist and mag < 4:
+         print("DIST:", dist, cat_star)
+         min_dist = dist
+         min_star = cat_star
+   name,mag,ra,dec,new_cat_x,new_cat_y = min_star
+   px_dist = 0
+   cat_image_star = ((name.decode("unicode_escape"),mag,ra,dec,new_cat_x,new_cat_y,ix,iy,intensity,min_dist,cp_file))
+   return(cat_image_star)
+
+   
+
+def refit_arc_meteor(archive_file):
+   show = 1
+   max_err = 50
+   am = load_json_file(archive_file)
+   hd_vid = am['info']['hd_vid']
+   calib = am['calib']
+   cal_params = load_cal_params_from_arc(calib)
+   cat_stars = flex_get_cat_stars(archive_file, archive_file, json_conf, cal_params )
+
+   hd_frames,hd_color_frames,hd_subframes,sum_vals,max_vals = load_frames_fast(hd_vid, json_conf, 0, 0, [], 1,[])
+   frame = hd_frames[0]
+   cframe = hd_color_frames[0]
+
+   image_stars = get_image_stars(archive_file,frame, show=1)
+   cat_image_stars = [] 
+
+   res_err = []
+   for star in image_stars:
+      print("STAR:", star)
+      best_star = find_best_cat_stars(cat_stars, star[0], star[1], frame, archive_file)
+      if best_star[9] < max_err :
+         res_err.append(best_star[9])
+
+   std_err = float(np.std(res_err))
+   med_err = float(np.median(res_err))
+   print("MED ERR / STD DEV:", med_err, std_err)
+   ac_err = med_err + std_err 
+
+   for star in image_stars:
+      print("STAR:", star)
+      best_star = find_best_cat_stars(cat_stars, star[0], star[1], frame, archive_file)
+      print("BEST:", best_star)
+      if best_star[9] <  ac_err * 1.1:
+         cv2.line(frame, (star[0], star[1]), (int(best_star[4]), int(best_star[5])), (128,128,128), 1) 
+         cat_image_stars.append(best_star)
+   cv2.imshow('pepe', frame)
+   cv2.waitKey(0)
+
+   this_poly = np.zeros(shape=(4,), dtype=np.float64)
+   cal_params['cat_image_stars'] = cat_image_stars
+   res = scipy.optimize.minimize(reduce_fov_pos, this_poly, args=( cal_params,archive_file,frame,json_conf, cat_image_stars,1,show), method='Nelder-Mead')
+   print(res)
+   fov_pos_poly = res['x']
+   fov_pos_fun = res['fun']
+   cal_params['x_poly'] = calib['device']['poly']['x']
+   cal_params['y_poly'] = calib['device']['poly']['y']
+   cal_params['fov_pos_poly'] = fov_pos_poly.tolist()
+   cal_params['fov_pos_fun'] = fov_pos_fun
+
+   cal_params['center_az'] = float(cal_params['orig_az_center']) + float(fov_pos_poly[0] )
+   cal_params['center_el'] = float(cal_params['orig_el_center']) + float(fov_pos_poly[1] )
+   cal_params['position_angle'] = float(cal_params['position_angle']) + float(fov_pos_poly[2] )
+   cal_params['pixscale'] = float(cal_params['orig_pixscale']) + float(fov_pos_poly[3] )
+   cal_params['orig_pos_angle'] = float(cal_params['position_angle']) + float(fov_pos_poly[2] )
+   cal_params['orig_pixscale'] = float(cal_params['orig_pixscale']) + float(fov_pos_poly[3] )
+
+   fov_pos_poly = np.zeros(shape=(4,), dtype=np.float64)
+   final_res = reduce_fov_pos(fov_pos_poly, cal_params,archive_file,frame,json_conf, cat_image_stars,0,show)
+   cal_params['total_res_px'] = final_res
+   print("FINAL RES:", final_res)
+
+
+   rah,dech = AzEltoRADec(cal_params['center_az'],cal_params['center_el'],archive_file,cal_params,json_conf)
+   rah = str(rah).replace(":", " ")
+   dech = str(dech).replace(":", " ")
+   ra_center,dec_center = HMS2deg(str(rah),str(dech))
+   cal_params['ra_center'] = ra_center
+   cal_params['dec_center'] = dec_center
+   cal_params['fov_fit'] = 1
+   calib = format_calib(archive_file, cal_params, archive_file)
+   am['calib'] = calib
+   save_json_file(archive_file, am)
+   print(archive_file)
+
+
+   
+def load_cal_params_from_arc(calib):
+   print(calib)
+   cal_params = {}
+   cal_params['device_lat'] = calib['device']['lat']
+   cal_params['device_lng'] = calib['device']['lng']
+   cal_params['device_alt'] = calib['device']['alt']
+   cal_params['orig_ra_center'] = calib['device']['center']['ra']
+   cal_params['orig_dec_center'] = calib['device']['center']['dec']
+   cal_params['orig_az_center'] = calib['device']['center']['az']
+   cal_params['orig_el_center'] = calib['device']['center']['el']
+   cal_params['orig_pos_ang'] = calib['device']['angle']
+   cal_params['orig_pixscale'] = calib['device']['scale_px']
+   cal_params['ra_center'] = calib['device']['center']['ra']
+   cal_params['dec_center'] = calib['device']['center']['dec']
+   cal_params['az_center'] = calib['device']['center']['az']
+   cal_params['el_center'] = calib['device']['center']['el']
+   cal_params['center_az'] = calib['device']['center']['az']
+   cal_params['center_el'] = calib['device']['center']['el']
+   cal_params['position_angle'] = calib['device']['angle']
+   cal_params['pixscale'] = calib['device']['scale_px']
+   cal_params['imagew'] = calib['img_dim'][0]
+   cal_params['imageh'] = calib['img_dim'][1]
+
+   cal_params['pixscale'] = calib['device']['scale_px']
+   cal_params['x_poly'] = calib['device']['poly']['x']
+   cal_params['y_poly'] = calib['device']['poly']['y']
+   cal_params['x_poly_fwd'] = calib['device']['poly']['x_fwd']
+   cal_params['y_poly_fwd'] = calib['device']['poly']['y_fwd']
+   return(cal_params)
+
 
 def apply_calib(obj ):
    print("CAL:", obj['hd_trim'])
@@ -561,11 +735,22 @@ def apply_calib(obj ):
    cal_params['orig_pixscale'] = cal_params['pixscale']
 
    cat_stars = flex_get_cat_stars(obj['trim_clip'], cal_params_file, json_conf, cal_params )
-   cat_image_stars = get_cat_image_stars(cat_stars, frame, cal_params_file)
+   #cat_image_stars = get_cat_image_stars(cat_stars, frame, cal_params_file)
+   archive_file = obj['hd_trim']
+   image_stars = get_image_stars(archive_file,frame, show=1)
+   cat_image_stars = [] 
+   for star in image_stars:
+      print("STAR:", star)
+      best_star = find_best_cat_stars(cat_stars, star[0], star[1], frame, archive_file)
+      print("BEST:", best_star)
+      cv2.line(frame, (star[0], star[1]), (int(best_star[4]), int(best_star[5])), (128,128,128), 1) 
+      cat_image_stars.append(best_star)
 
 
-   if len(cat_image_stars) > 4:
+
+   if len(cat_image_stars) > 100:
       this_poly = np.zeros(shape=(4,), dtype=np.float64)
+
       start_res = reduce_fov_pos(this_poly, cal_params, obj['hd_trim'],frame,json_conf, cat_image_stars,0,show)
       cal_params_orig = cal_params.copy()
       res = scipy.optimize.minimize(reduce_fov_pos, this_poly, args=( cal_params,obj['hd_trim'],frame,json_conf, cat_image_stars,1,show), method='Nelder-Mead')
@@ -1181,7 +1366,10 @@ def scan_old_meteor_dir(dir):
          if cfe(video_file) == 1 and "archive_file" not in jd:
             quick_scan(video_file)
          else:
-            print("Done already.")
+            if cfe(jd['archive_file']) == 0:
+               quick_scan(video_file)
+            else:
+               print("Done already.")
 
 def find_clusters(points):
 
@@ -3322,7 +3510,7 @@ def fast_check_events(sum_vals, max_vals, subframes):
    #med_max = np.median(max_vals[0:10])
    med_sum = np.median(sum_vals)
    med_max = np.median(max_vals)
-   #median_frame = cv2.convertScaleAbs(np.median(np.array(subframes), axis=0))
+   median_frame = cv2.convertScaleAbs(np.median(np.array(subframes), axis=0))
    if subframes[0].shape[1] == 1920:
       hd = 1
       sd_multi = 1
@@ -3332,19 +3520,17 @@ def fast_check_events(sum_vals, max_vals, subframes):
 
    for sum_val in sum_vals:
       
-      max_val = max_vals[i]
+      #max_val = max_vals[i]
+      subframe = subframes[i]
+      subframe = cv2.subtract(subframe, median_frame)
+      min_val, max_val, min_loc, (mx,my)= cv2.minMaxLoc(subframe)
       print(i, med_sum, med_max, sum_val , max_val)
       if sum_val > med_sum * 2 or max_val > med_max * 2:
-         subframe = subframes[i]
          min_val, max_val, min_loc, (mx,my)= cv2.minMaxLoc(subframe)
          desc = str(i)
         
          if max_val > 10:
             #cv2.putText(subframe, str(desc),  (10,10), cv2.FONT_HERSHEY_SIMPLEX, .3, (255, 255, 255), 1)
-            if show == 1:
-               cv2.circle(subframe,(mx,my), 10, (255,0,0), 1)
-               cv2.imshow('pepe', subframe)
-               cv2.waitKey(0)
             event_info.append((sum_val, max_val, mx, my))
             event.append(i)
             cm = cm + 1
@@ -3363,6 +3549,12 @@ def fast_check_events(sum_vals, max_vals, subframes):
          event = []
          event_info = []
          cm = 0
+
+      if show == 1:
+         cv2.circle(subframe,(mx,my), 10, (255,0,0), 1)
+         cv2.imshow('pepe', subframe)
+         cv2.waitKey(0)
+
       i = i + 1
 
 
@@ -4689,6 +4881,7 @@ def load_frames_fast(trim_file, json_conf, limit=0, mask=0,crop=(),color=0,resiz
    cap = cv2.VideoCapture(trim_file)
    masks = None
    last_frame = None
+   last_last_frame = None
 
    if "HD" in trim_file:
       masks = get_masks(cam, json_conf,1)
@@ -4733,6 +4926,8 @@ def load_frames_fast(trim_file, json_conf, limit=0, mask=0,crop=(),color=0,resiz
 
             if last_frame is not None:
                subframe = cv2.subtract(frame, last_frame)
+               if last_last_frame is not None:
+                  subframe = cv2.subtract(subframe, last_last_frame)
                #subframe = mask_frame(subframe, [], masks, 5)
                subframes.append(subframe)
                sum_val =cv2.sumElems(subframe)[0]
@@ -4765,6 +4960,8 @@ def load_frames_fast(trim_file, json_conf, limit=0, mask=0,crop=(),color=0,resiz
                frame = cv2.resize(frame, (resize[0],resize[1]))
        
             frames.append(frame)
+            if last_frame is not None:
+               last_last_frame = last_frame
             last_frame = frame
       frame_count = frame_count + 1
    cap.release()
@@ -5294,5 +5491,7 @@ if cmd == "debug" :
    debug(video_file)
 if cmd == "ca" :
    check_archive(video_file)
+if cmd == "ram" :
+   refit_arc_meteor(video_file)
 
 
