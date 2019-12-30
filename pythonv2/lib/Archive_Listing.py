@@ -398,6 +398,10 @@ def get_results_from_date_from_monthly_index(criteria,start_date,end_date,max_re
    #print(end_date) 
    #print("<br/>")
 
+   print("---------------<br>criteria ")
+   print(criteria)
+   print("<br>")
+
    # Get the index of the selected or current year
    # for the END DATE
    json_index =  get_monthly_index(end_date.month,end_date.year)
