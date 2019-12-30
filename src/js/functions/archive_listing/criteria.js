@@ -27,11 +27,11 @@ $(function() {
 
 
     //Magnitude
-    $('#ang_vel').change(function() {
+    $('#ang_v').change(function() {
       // Change Meteor Per page
-      new_url = update_url_param(window.location.href ,'ang_vel',$('#ang_vel').val());
+      new_url = update_url_param(window.location.href ,'ang_v',$('#ang_v').val());
 
-      Cookies.set('filt_arch_ang_vel', $('#ang_vel').val(), { expires: 99999, path: '/' });
+      Cookies.set('filt_arch_ang_v', $('#ang_v').val(), { expires: 99999, path: '/' });
 
       // Back to page = 1 (so we dont have issues if the number of page is too mall)
       window.location =  update_url_param(new_url ,'p',1);
