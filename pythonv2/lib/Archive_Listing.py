@@ -845,6 +845,7 @@ def archive_listing(form):
       
    # Do we have a cookie for gallery or list?
    cookies = os.environ.get('HTTP_COOKIE').rstrip().split(";")
+   print(cookies)
    if("archive_view" in cookies):
       print("YEP: ")
       print(cookies)
