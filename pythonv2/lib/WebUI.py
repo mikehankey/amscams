@@ -511,9 +511,7 @@ def controller(json_conf):
       
       if cmd=='meteors':
          skin = 'as6ams'
-
-   print("CMD ")
-   print(cmd)
+ 
  
    template = get_template(json_conf, skin)
    stf = template.split("{BODY}")
