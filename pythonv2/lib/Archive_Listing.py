@@ -844,9 +844,9 @@ def archive_listing(form):
       template = template.replace("{PAGINATION_DET}", "")    
       
    # Do we have a cookie for gallery or list?
-   curURL = os.environ.get('SERVER_NAME') + os.environ.get('PATH_INFO')
+   #curURL = os.environ.get('SERVER_NAME') + os.environ.get('PATH_INFO')
    
-   print(curURL)
+   print(os.environ)
 
    # Create HTML Version of each detection
    res_html = get_html_detections(res,clear_cache) 
