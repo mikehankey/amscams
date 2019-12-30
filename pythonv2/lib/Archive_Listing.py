@@ -689,16 +689,16 @@ def get_html_detections(res,clear_cache):
 # Create Criteria Selector
 def create_criteria_selector(values, val, selected, criteria, all_msg, sign, unit=''):
    
-   print("IN CREATE CRITERIA<br>")
-   print("<br>VALUES :")
-   print(values)
-   print("<br>val :")
-   print(val)
-   print("<br>CRITERIA :")
-   print(criteria)
-   print("<br><br>SELECTED :")
-   print(selected)
-   print("<br><br>")
+   #print("IN CREATE CRITERIA<br>")
+   #print("<br>VALUES :")
+   #print(values)
+   #print("<br>val :")
+   #print(val)
+   #print("<br>CRITERIA :")
+   #print(criteria)
+   #print("<br><br>SELECTED :")
+   #print(selected)
+   #print("<br><br>")
    
    # Build   selector
    select = ''
