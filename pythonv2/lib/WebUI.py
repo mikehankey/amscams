@@ -508,6 +508,9 @@ def controller(json_conf):
 
       if cmd=='reduce_new' or cmd=='reduce':
          skin = 'as6ams'
+
+   print("CMD ")
+   print(cmd)
  
    template = get_template(json_conf, skin)
    stf = template.split("{BODY}")
