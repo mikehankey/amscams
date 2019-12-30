@@ -743,8 +743,8 @@ def archive_listing(form):
 
    # Criteria
    selected_mag = form.getvalue('magnitude')
-   selected_error = form.getvalue('res_error')
-   selected_ang_vel = form.getvalue('ang_vel')
+   selected_error = form.getvalue('res_er')
+   selected_ang_vel = form.getvalue('ang_v')
    selected_sync = form.getvalue('sync')
  
    # Build the page based on template  
