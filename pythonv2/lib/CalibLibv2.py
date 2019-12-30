@@ -62,6 +62,7 @@ def AzEltoRADec(az,el,cal_file,cal_params,json_conf):
 
 
 def XYtoRADec(img_x,img_y,cal_file,cal_params,json_conf):
+   
    hd_datetime, hd_cam, hd_date, hd_y, hd_m, hd_d, hd_h, hd_M, hd_s = convert_filename_to_date_cam(cal_file)
    F_scale = 3600/float(cal_params['pixscale'])
    #F_scale = 24

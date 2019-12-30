@@ -109,3 +109,14 @@ h1 select {
 .multiselect-container>li>a>label.checkbox, .multiselect-container>li>a>label.radio { 
   white-space: nowrap;
 }
+
+// Dropdown menu
+.dropdown-menu {
+   background-color: #0c3867;
+   color:#fff;
+}
+
+.dropdown-item:hover, .dropdown-item:focus {
+   color: #f0f0f0;
+   background-color: #14508f;
+}
