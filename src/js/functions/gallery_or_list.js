@@ -19,9 +19,9 @@ $(function() {
    gallery_or_list();
    
    // List ?
-   if(Cookies.get('archive_view')=='list') {
-      $('#show_gal').click();
-   }
+   //if(Cookies.get('archive_view')=='list') {
+   //   $('#show_gal').click();
+   //}
 
 });
 
