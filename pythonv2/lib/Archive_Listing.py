@@ -774,18 +774,20 @@ def archive_listing(form):
    cookies = os.environ.get('HTTP_COOKIE').rstrip()
    rpp = NUMBER_OF_METEOR_PER_PAGE
    if("archive_rpp" in cookies):
-      tmp = cookies.split(";")
-      print(tmp)
+      tmp = cookies.split(";") 
       for cook in tmp:
          v = cook.split("=") 
          if('archive_rpp' in v[0]):
             rpp = v[1]
 
+   print("<br/>RPP " + str(rpp))
    
    if(meteor_per_page is None):
       nompp = rpp
    else:
       nompp = int(meteor_per_page) 
+
+   print("<br/>nompp " + str(nompp))
 
    # Build num per page selector (for Pagination)
    ppp_select = ''
