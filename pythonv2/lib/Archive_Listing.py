@@ -1,10 +1,10 @@
 # coding: utf-8
-import glob
-import os
-import json
-import sys
+import glob 
+import sys, os 
+import json 
 import collections 
 import shutil
+import requests
 
 from datetime import datetime, timedelta
 from calendar import monthrange
@@ -364,24 +364,36 @@ def get_full_det_path(path,station_id,date,day):
 # Test if a detection matches some criteria
 def test_criteria(criter,criteria,detection):
 
+   #print("<br>----------------------TEST CRITERIA<br>")
+   #print("CRITER ")
+   #print(criter)
+   #print("<br>criteria ")
+   #print(criteria)
+   #print("<br>detection ")
+   #print(detection)
+
    # Res. ERROR
    if(criter=='res_er'):
-      if(float(detection[criter])>=float(criteria[criter])):
+      if(float(detection[criter])>=float(criteria[criter]) or detection[criter]=='unknown'):
+         #print("<br>RES ER  FALSE")
          return False
    
    # Magnitude
    if(criter=='mag'):
-      if(float(detection[criter])<=float(criteria[criter])):
+      if(float(detection[criter])<=float(criteria[criter]) or detection[criter]=='unknown'):
+         #print("<br>mag  FALSE")
          return False
    
    # Angular Velocity
    if(criter=='ang_v'):
-      if(float(detection[criter])<=float(criteria[criter])):
-         return False
-
+      #print("<br>ang_v !!!!!!!!!!<br>")  
+      if(float(detection[criter])<=float(criteria[criter]) or detection[criter]=='unknown'):
+         #print("<br>ang_v  FALSE")  
+         return False 
+      #print("<br>ang_v  TRUE")  
    # Sync
    if(criter=='sync' and criteria[criter]!=-1):
-      if(int(detection[criter])!=int(criteria[criter])):
+      if(int(detection[criter])!=int(criteria[criter]) or detection[criter]=='unknown'):
          return False
 
    return True
@@ -395,6 +407,10 @@ def get_results_from_date_from_monthly_index(criteria,start_date,end_date,max_re
    #print("- end_date : ")
    #print(end_date) 
    #print("<br/>")
+
+   #pprint("---------------<br>criteria ")
+   #pprint(criteria)
+   #pprint("<br>")
 
    # Get the index of the selected or current year
    # for the END DATE
@@ -457,11 +473,11 @@ def get_results_from_date_from_monthly_index(criteria,start_date,end_date,max_re
             # and the current & year START
             # we need to take into account the days before end_date.day 
             # and the days after start_date.day
-            if(    (     cur_year_and_month_test_START == True
+            if((     cur_year_and_month_test_START == True
                      and cur_year_and_month_test_END == True
                      and int(day)<=int(end_date.day)
                      and int(day)>=int(start_date.day)
-                  )
+               )
                or (      cur_year_and_month_test_START == False 
                      and cur_year_and_month_test_END == True
                      and int(day)<=int(end_date.day)
@@ -474,28 +490,46 @@ def get_results_from_date_from_monthly_index(criteria,start_date,end_date,max_re
             ):
 
                for detection in detections:
+
                   # Here we test the criteria
                   test = True
+
+                  #pprint("---------------<br>criteria ")
+                  #pprint(criteria)
+                  #pprint("<br>")
+                  
+
                   for criter in criteria:
 
-                     if(detection[criter]!='unknown'):
+                     #pprint(detection)
+                     #pprint("<br>")
+
+                     #pif(criter in detection):
+                     #p   print("<br>detection[criter] " + str(detection[criter])+"<br>")  
+                     #pelse:
+                     #p   print("<br> " +  str(criter) + " not in detection<br>")
+
+                     if(criter in detection and detection[criter]!='unknown'):
                         test = test_criteria(criter,criteria,detection)
-    
+                     else:
+                        test = False
+                     #p   print("<hr/>CRITER " + criter )
+                     #p   print("<br>detection[criter] " + str(detection[criter]))      
+      
                      if(test==False):
                         break   
 
                   if(test==True):
- 
+
                      # We add it only if it fits the pagination
                      #if(len(res_to_return)<=max_res_per_page and res_counter>=number_of_res_to_give_up):
- 
+
                      # We complete the detection['p'] to get the full path (as the index only has compressed name)
                      detection['p'] = get_full_det_path(detection['p'],station_id,end_date,day)
                      res_to_return.append(detection)
-                     
-                     
+
                      res_counter+=1  
-   
+
       # Change Month & Year
       if(cur_month==1):
          cur_month = 12
@@ -620,13 +654,12 @@ def get_html_detection(det,detection,clear_cache):
  
 
 # Get HTML version of each detection
-def get_html_detections(res,clear_cache):
+def get_html_detections(res,clear_cache,version):
 
    res_html = ''
    prev_date = None
    cur_count = 0
- 
-
+  
    for detection in res:
 
       # We add the missing info to detection['p']
@@ -636,8 +669,8 @@ def get_html_detections(res,clear_cache):
       
       if(prev_date is None):
          prev_date = cur_date
-         res_html += '<div class="h2_holder d-flex justify-content-between"><h2>'+cur_date.strftime("%Y/%m/%d")+" - %TOTAL%</h2></div>"
-         res_html += '<div class="gallery gal-resize row text-center text-lg-left mb-5 mr-5 ml-5">'
+         res_html += '<div class="h2_holder d-flex justify-content-between mr-5 ml-5"><h2>'+cur_date.strftime("%Y/%m/%d")+" - %TOTAL%</h2></div>"
+         res_html += '<div class="gallery gal-resize row text-center text-lg-left '+version+' mb-5 mr-5 ml-5">'
 
       elif(cur_date.month != prev_date.month or cur_date.day != prev_date.day or cur_date.year != prev_date.year):
          prev_date = cur_date
@@ -645,8 +678,8 @@ def get_html_detections(res,clear_cache):
             res_html = res_html.replace('%TOTAL%',str(cur_count)+ ' detections')
          else:
             res_html = res_html.replace('%TOTAL%',str(cur_count)+ ' detection only')
-         res_html +=  '</div><div class="h2_holder d-flex justify-content-between"><h2>'+cur_date.strftime("%Y/%m/%d")+" - %TOTAL%</h2></div>"
-         res_html += '<div class="gallery gal-resize row text-center text-lg-left mb-5 mr-5 ml-5">'
+         res_html +=  '</div><div class="h2_holder d-flex justify-content-between mr-5 ml-5"><h2>'+cur_date.strftime("%Y/%m/%d")+" - %TOTAL%</h2></div>"
+         res_html += '<div class="gallery gal-resize row text-center text-lg-left '+version+' mb-5 mr-5 ml-5">'
         
          cur_count = 0
  
@@ -667,6 +700,17 @@ def get_html_detections(res,clear_cache):
 # Create Criteria Selector
 def create_criteria_selector(values, val, selected, criteria, all_msg, sign, unit=''):
    
+   #print("IN CREATE CRITERIA<br>")
+   #print("<br>VALUES :")
+   #print(values)
+   #print("<br>val :")
+   #print(val)
+   #print("<br>CRITERIA :")
+   #print(criteria)
+   #print("<br><br>SELECTED :")
+   #print(selected)
+   #print("<br><br>")
+   
    # Build   selector
    select = ''
    one_selected = False
@@ -680,14 +724,21 @@ def create_criteria_selector(values, val, selected, criteria, all_msg, sign, uni
       criteria[val] = float(selected)
 
    for mag in values: 
+ 
+      if(val=="sync" and mag==1):
+         st_val = "Synchronized only"
+      elif(val=="sync" and mag==0):
+         st_val = "NOT Synchronized only"
+      else:
+         st_val = str(mag)
 
       if(one_selected==True):
          if(float(mag)==float(selected)):
-            select+= '<option selected value="'+str(mag)+'">'+sign+str(mag)+ unit+'</option>'
+            select+= '<option selected value="'+str(mag)+'">'+sign+st_val+ unit+'</option>'
          else:
-            select+= '<option value="'+str(mag)+'">'+sign + str(mag)+ unit+'</option>'  
+            select+= '<option value="'+str(mag)+'">'+sign + st_val+ unit+'</option>'  
       else:
-         select+= '<option value="'+str(mag)+'">'+sign + str(mag)+ unit+'</option>'  
+         select+= '<option value="'+str(mag)+'">'+sign + st_val+ unit+'</option>'  
    
    return select, criteria
     
@@ -703,8 +754,8 @@ def archive_listing(form):
 
    # Criteria
    selected_mag = form.getvalue('magnitude')
-   selected_error = form.getvalue('res_error')
-   selected_ang_vel = form.getvalue('ang_vel')
+   selected_error = form.getvalue('res_er')
+   selected_ang_vel = form.getvalue('ang_v')
    selected_sync = form.getvalue('sync')
  
    # Build the page based on template  
@@ -718,15 +769,26 @@ def archive_listing(form):
       cur_page = int(cur_page)
 
    # NUMBER_OF_METEOR_PER_PAGE (for Pagination)
-   if(meteor_per_page is None):
-      nompp = NUMBER_OF_METEOR_PER_PAGE
-   else:
-      nompp = int(meteor_per_page)
+
+   # Do we have a cookie?
+   cookies = os.environ.get('HTTP_COOKIE').rstrip()
+   rpp = NUMBER_OF_METEOR_PER_PAGE
+   if("archive_rpp" in cookies):
+      tmp = cookies.split(";") 
+      for cook in tmp:
+         v = cook.split("=") 
+         if('archive_rpp' in v[0]):
+            rpp = v[1] 
    
+   if(meteor_per_page is None):
+      nompp = rpp
+   else:
+      nompp = int(meteor_per_page)  
+
    # Build num per page selector (for Pagination)
    ppp_select = ''
    for ppp in POSSIBLE_PER_PAGE:
-      if(int(ppp)==nompp):
+      if(int(ppp)==int(nompp)):
          ppp_select+= '<option selected value="'+str(ppp)+'">'+str(ppp)+'/page</option>'
       else:
          ppp_select+= '<option value="'+str(ppp)+'">'+str(ppp)+'/page</option>'  
@@ -740,18 +802,18 @@ def archive_listing(form):
    template = template.replace("{MAGNITUDES}", mag_select)
     
    # Build ERRORS selector
-   error_select, criteria = create_criteria_selector(POSSIBLE_ERRORS,'res_error',selected_error, criteria,  'All Res. Error', '<')
+   error_select, criteria = create_criteria_selector(POSSIBLE_ERRORS,'res_er',selected_error, criteria,  'All Res. Error', '<')
    template = template.replace("{RES_ERRORS}", error_select)
 
    # Build ANGULAR VELOCITIES selector
-   ang_vel_select, criteria = create_criteria_selector(POSSIBLE_ANG_VELOCITIES,'ang_vel',selected_ang_vel, criteria,  'All Ang. Velocities', '>', unit='&deg;/s')
+   ang_vel_select, criteria = create_criteria_selector(POSSIBLE_ANG_VELOCITIES,'ang_v',selected_ang_vel, criteria,  'All Ang. Velocities', '>', unit='&deg;/s')
    template = template.replace("{ANG_VELOCITIES}", ang_vel_select) 
    
    # Build SYNC selector 
    sync_select, criteria = create_criteria_selector(POSSIBLE_SYNC,'sync',selected_sync, criteria,  'All Sync.', '')
    template = template.replace("{SYNC}", sync_select) 
- 
-
+   
+    
    # Clear_cache
    if(clear_cache is None):
       clear_cache = False
@@ -791,8 +853,20 @@ def archive_listing(form):
    else:
       template = template.replace("{PAGINATION_DET}", "")    
       
+   # GALLERIE or LIST are managed with cookies
+   # Do we have a cookie for gallery or list? 
+   version = ''
+   if("archive_view" in cookies):
+      tmp = cookies.split(";")
+      for cook in tmp:
+         v = cook.split(";") 
+         if('list' in v[0]):
+            version = 'list'
+   template = template.replace("{LIST_VIEW}", version)
+
+
    # Create HTML Version of each detection
-   res_html = get_html_detections(res,clear_cache) 
+   res_html = get_html_detections(res,clear_cache,version) 
    if(res_html!=''):
       template = template.replace("{RESULTS}", res_html)
 

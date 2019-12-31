@@ -6,16 +6,16 @@
       <input type="hidden" name="end_date" value="{END_DATE}"/>
    </h1>
    <div class='d-flex'>
-      <div class='mr-2'>
+      <div>
          <select name='mag' id='mag' data-rel='magnitude' class='btn btn-primary mr-4'>{MAGNITUDES}</select>
       </div>
-      <div class='mr-2'>
-         <select name='res_error' id='res_error' data-rel='res_error' class='btn btn-primary mr-4'>{RES_ERRORS}</select>
+      <div>
+         <select name='res_er' id='res_er' data-rel='res_er' class='btn btn-primary mr-4'>{RES_ERRORS}</select>
       </div>
-      <div class='mr-2'>
-         <select name='ang_vel' id='ang_vel' data-rel='ang_vel' class='btn btn-primary mr-4'>{ANG_VELOCITIES}</select>
+      <div>
+         <select name='ang_v' id='ang_v' data-rel='ang_v' class='btn btn-primary mr-4'>{ANG_VELOCITIES}</select>
       </div>
-      <div class='mr-2'>
+      <div>
          <select name='sync' id='sync' data-rel='sync' class='btn btn-primary mr-4'>{SYNC}</select>
       </div>
    </div>
@@ -27,7 +27,7 @@
 </div>
 {FOUND}
 <div id="main_container" class="container-fluid h-100 mt-4 lg-l">
-   <div class="gallery gal-resize row text-center text-lg-left">
+   <div class="gallery gal-resize row text-center text-lg-left {LIST_VIEW}">
       <div class='list-onl'>
          <div class='filter-header d-flex flex-row-reverse '> 
             <button id="sel-all-archive" title="Select All" class="btn btn-primary ml-3"><i class="icon-checkbox-checked"></i></button> 
@@ -40,5 +40,3 @@
    
 
 {PAGINATION}
-
- 

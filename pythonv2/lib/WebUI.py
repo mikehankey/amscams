@@ -62,6 +62,9 @@ from lib.PAGINATION_VARS import *
 
 # Re-APPLY CALIBRATION
 from lib.MeteorReduce_ApplyCalib import apply_calib_ajax
+
+# Stats page
+from lib.Stats import stats_page
  
  
 
@@ -174,6 +177,8 @@ def get_template(json_conf, skin = "as6ams"  ):
       fpt = open("/home/ams/amscams/pythonv2/templates/main_template.html", "r")
    else:
       fpt = open("/home/ams/amscams/pythonv2/templates/as6ams.html", "r")
+ 
+
    for line in fpt:
       template = template + line 
    return(template) 
@@ -353,7 +358,10 @@ def controller(json_conf):
       real_add_frame(json_conf,sd_video_file,fr_id,x,y)
       exit() 
 
-
+   # STATS
+   if cmd == 'stats':
+      stats_page(form)
+      exit()
 
    if cmd == 'add_frame':
       add_frame_ajax(json_conf,form)
@@ -504,6 +512,10 @@ def controller(json_conf):
 
       if cmd=='reduce_new' or cmd=='reduce':
          skin = 'as6ams'
+      
+      if cmd=='meteors':
+         skin = 'as6ams'
+ 
  
    template = get_template(json_conf, skin)
    stf = template.split("{BODY}")
