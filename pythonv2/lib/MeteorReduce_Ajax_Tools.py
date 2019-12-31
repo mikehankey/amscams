@@ -518,6 +518,9 @@ def update_cat_stars(form):
 
 
       my_close_stars = []
+      cat_dist = []
+      used_cat_stars = {}
+      used_star_pos = {}
       for ix,iy in star_points:
          close_stars = find_close_stars((ix,iy), cat_stars) 
 
@@ -530,6 +533,7 @@ def update_cat_stars(form):
             new_star['ra'] = ra
             new_star['dec'] =  dec
             new_star['dist_px'] = cat_star_dist 
+            cat_dist.append(cat_star_dist)
 
             # The image x,y of the star (CIRCLE)
             new_star['i_pos'] = [ix,iy]
@@ -539,10 +543,16 @@ def update_cat_stars(form):
             new_star['cat_und_pos'] = [cat_x,cat_y]
 
             # distorted position should be the new_x, new_y and + symbol
-            my_close_stars.append(new_star)
+            # only add if this star/position combo has not already be used
+            used_star = 0
+            this_rakey = str(ra) + str(dec)
+            if this_rakey not in used_cat_stars:
+               my_close_stars.append(new_star)
+               used_cat_stars[this_rakey] = 1
    
       meteor_red['calib']['stars'] = my_close_stars
-      
+      meteor_red['calib']['device']['total_res_px'] = float(np.mean(cat_dist)) 
+      meteor_red['calib']['device']['total_res_deg'] = (float(np.mean(cat_dist)) * meteor_red['calib']['device']['scale_px']) / 3600
       # Update JSON File
       save_json_file(meteor_red_file, meteor_red)
 

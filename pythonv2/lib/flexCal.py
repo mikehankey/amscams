@@ -6,7 +6,7 @@ from lib.UtilLib import calc_dist
 
 def reduce_fov_pos(this_poly, in_cal_params, cal_params_file, oimage, json_conf, cat_image_stars, min_run = 1, show=0):
    paired_stars = []
-   for name,mag,ra,dec,new_cat_x,new_cat_y,ix,iy,px_dist,cp_file in cat_image_stars:
+   for name,mag,ra,dec,new_cat_x,new_cat_y,ix,iy,intensity, px_dist,cp_file in cat_image_stars:
       paired_stars.append(( name,mag,ra,dec,0,0,px_dist,new_cat_x,new_cat_y,0,0,new_cat_x,new_cat_y,ix,iy,px_dist))
 
    image = oimage.copy()
