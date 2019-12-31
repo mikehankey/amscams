@@ -776,10 +776,10 @@ def archive_listing(form):
    if("archive_rpp" in cookies):
       tmp = cookies.split(";")
       print(tmp)
-      #for cook in tmp:
-      #   v = cook.split(";") 
-      #   if('archive_rpp' in v[0]):
-      #      rpp = v[1]
+      for cook in tmp:
+         v = cook.split("=") 
+         if('archive_rpp' in v[0]):
+            rpp = v[1]
 
    print("RPP " + rpp)
 
