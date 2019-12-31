@@ -659,8 +659,7 @@ def get_html_detections(res,clear_cache,version):
    res_html = ''
    prev_date = None
    cur_count = 0
- 
-
+  
    for detection in res:
 
       # We add the missing info to detection['p']
@@ -770,6 +769,19 @@ def archive_listing(form):
       cur_page = int(cur_page)
 
    # NUMBER_OF_METEOR_PER_PAGE (for Pagination)
+
+   # Do we have a cookie?
+   cookies = os.environ.get('HTTP_COOKIE').rstrip()
+   rpp = ''
+   if("archive_rpp" in cookies):
+      tmp = cookies.split(";")
+      for cook in tmp:
+         v = cook.split(";") 
+         if('archive_rpp' in v[0]):
+            rpp = v[1]
+
+   print("RPP " + rpp)
+
    if(meteor_per_page is None):
       nompp = NUMBER_OF_METEOR_PER_PAGE
    else:
@@ -844,8 +856,7 @@ def archive_listing(form):
       template = template.replace("{PAGINATION_DET}", "")    
       
    # GALLERIE or LIST are managed with cookies
-   # Do we have a cookie for gallery or list?
-   cookies = os.environ.get('HTTP_COOKIE').rstrip()
+   # Do we have a cookie for gallery or list? 
    version = ''
    if("archive_view" in cookies):
       tmp = cookies.split(";")

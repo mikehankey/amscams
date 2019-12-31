@@ -18,8 +18,14 @@ function update_url_param(url,param,value) {
 
 $(function() {
    $('#rpp').change(function() {
+
+      var rpp = $('#rpp').val();
+
+      // Add the cookie (works only for the archive page)
+      Cookies.set('archive_rpp', rpp, { expires: 99999, path: '/' });
+
       // Change Meteor Per page
-      new_url = update_url_param(window.location.href ,'meteor_per_page',$('#rpp').val());
+      new_url = update_url_param(window.location.href ,'meteor_per_page',rpp);
 
       // Back to page = 1 (so we dont have issues if the number of page is too mall)
       window.location =  update_url_param(new_url ,'p',1);
