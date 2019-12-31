@@ -778,9 +778,7 @@ def archive_listing(form):
       for cook in tmp:
          v = cook.split("=") 
          if('archive_rpp' in v[0]):
-            rpp = v[1]
-
-   print("<br/>RPP " + str(rpp))
+            rpp = v[1] 
    
    if(meteor_per_page is None):
       nompp = rpp
@@ -792,7 +790,7 @@ def archive_listing(form):
    # Build num per page selector (for Pagination)
    ppp_select = ''
    for ppp in POSSIBLE_PER_PAGE:
-      if(int(ppp)==nompp):
+      if(int(ppp)==int(nompp)):
          ppp_select+= '<option selected value="'+str(ppp)+'">'+str(ppp)+'/page</option>'
       else:
          ppp_select+= '<option value="'+str(ppp)+'">'+str(ppp)+'/page</option>'  
