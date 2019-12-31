@@ -314,8 +314,7 @@ if ($('canvas#c').length!=0) {
          }); 
 
          canvas.add(marker); 
-
-          
+ 
 
          // Add the object info in rad_dec_object
          new_rad_dec_obj = {x_org: x_val, y_org: y_val, x_HD: wRatio*x_val, y_HD: hRatio*y_val};

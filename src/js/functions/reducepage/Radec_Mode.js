@@ -116,7 +116,7 @@ function add_radec_info(info) {
    if($.trim($('#radec_info').val()) == '') {
       step = '';
    }
-   $('#radec_info').val($('#radec_info').val()+ step + "x:"+parseFloat(info['x_org'])+", y:"+parseFloat(info['y_org'])+" - HD x:"+ info['x_HD'] + ", y:" + info['y_HD']);
+   $('#radec_info').val($('#radec_info').val() + step + "x:"+parseFloat(info['x_org'])+", y:"+parseFloat(info['y_org'])+" - HD x:"+ info['x_HD'] + ", y:" + info['y_HD']);
 }
 
 // Add resolved info to the draggable panel for RA/DEC
@@ -125,7 +125,7 @@ function add_radec_resolved_info(info) {
    if($.trim($('#radec_info').val()) == '') {
       step = '';
    }
-   $('#radec_info').val($('#radec_info').val()+ step + "x:"+parseFloat(info['x_org'])+", y:"+parseFloat(info['y_org'])+"\n - Az:"+ info['az'].toFixed(4) + ", El:" + info['el'].toFixed(4)+"\n - RA:"+ info['ra'].toFixed(4) + ", Dec:" + info['dec'].toFixed(4));
+   $('#radec_info').val($('#radec_info').val()+ step + "x:"+parseFloat(info['x_org'])+", y:"+parseFloat(info['y_org'])+"\n - Az :"+ info['az'].toFixed(4) + "°, El: " + info['el'].toFixed(4)+"°\n - RA: "+ info['ra'].toFixed(4) + "°, Dec: " + info['dec'].toFixed(4) +"°");
 }
 
 
