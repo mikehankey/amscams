@@ -6,8 +6,7 @@ from lib.FileIO import load_json_file
 
 def get_stats_from_year_index(year):
    json_data =  get_index(year)
-    
-   print("YEAR " + json_data['year'] + "<br/>")
+   print("YEAR " + str(json_data['year']) + "<br/>")
    print("STATION ID " + json_data['station_id'] + "<br/>")
    for month in json_data['months']:
       print(month)
