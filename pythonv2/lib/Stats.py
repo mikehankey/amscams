@@ -1,5 +1,4 @@
-from lib.Archive_Listing import get_index, get_stats_from_year_index
-
+from lib.Archive_Listing import get_index 
 
 def get_stats_from_year_index(year):
    json_index =  get_index(year)
