@@ -783,9 +783,7 @@ def archive_listing(form):
    if(meteor_per_page is None):
       nompp = rpp
    else:
-      nompp = int(meteor_per_page) 
-
-   print("<br/>nompp " + str(nompp))
+      nompp = int(meteor_per_page)  
 
    # Build num per page selector (for Pagination)
    ppp_select = ''
