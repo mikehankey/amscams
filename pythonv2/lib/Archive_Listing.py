@@ -781,13 +781,14 @@ def archive_listing(form):
          if('archive_rpp' in v[0]):
             rpp = v[1]
 
-   print("RPP " + rpp)
-
-   if(meteor_per_page is None):
-      nompp = NUMBER_OF_METEOR_PER_PAGE
+   if(rpp==''):
+      if(meteor_per_page is None):
+         nompp = NUMBER_OF_METEOR_PER_PAGE
+      else:
+         nompp = int(meteor_per_page)
    else:
-      nompp = int(meteor_per_page)
-   
+      nompp = rpp
+
    # Build num per page selector (for Pagination)
    ppp_select = ''
    for ppp in POSSIBLE_PER_PAGE:
