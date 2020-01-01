@@ -5746,13 +5746,16 @@ def debug(video_file):
    print(old_meteor_json_file)
    md = load_json_file(old_meteor_json_file)
    hd_trim = md['hd_trim']
+   org_sd_vid = video_file 
 
 
    # load SD & HD frames
    frames,color_frames,subframes,sum_vals,max_vals = load_frames_fast(video_file, json_conf, 0, 0, [], 1,[])
    if cfe(hd_trim) == 1:
       hd_frames,hd_color_frames,hd_subframes,hd_sum_vals,hd_max_vals = load_frames_fast(hd_trim, json_conf, 0, 0, [], 1,[])
+      org_hd_vid = hd_trim 
    else:
+      org_hd_vid = None 
       print("HD TRIM FILE NOT FOUND!")
       md['arc_fail'] = "HD TRIM FILE NOT FOUND"
       save_json_file(old_meteor_json_file, md)
@@ -5769,35 +5772,34 @@ def debug(video_file):
    print("FAST METEORS:", fast_meteors)
    print("FAST HD METEORS:", hd_fast_meteors)
 
-   if len(fast_meteors) == 0:
-      print("NO SD METEOR FOUND.", fast_non_meteors)
+   print("NO SD METEOR FOUND.", fast_non_meteors)
 
-      motion_objects,meteor_frames = detect_meteor_in_clip(video_file, frames, 0)
-      motion_found = 0
-      for obj in motion_objects:
-         if motion_objects[obj]['report']['meteor_yn'] == 'Y':
-            fast_meteors[obj] = motion_objects[obj]
-            motion_found = 1
-            print("MOTION METEOR OBJECTS!", motion_objects[obj])
-      if motion_found == 0:
-         md['arc_fail'] = "NO FAST METEORS AND NO MOTION FOUND IN SD."
-         save_json_file(old_meteor_json_file, md)
-         print("MOTION NOT FOUND!")
-         return()
-   if len(hd_fast_meteors) == 0:
-      motion_objects,meteor_frames = detect_meteor_in_clip(video_file, hd_frames, 0)
-      motion_found = 0
-      for obj in motion_objects:
-         if motion_objects[obj]['report']['meteor_yn'] == 'Y':
-            hd_fast_meteors[obj] = motion_objects[obj]
-            motion_found = 1
-            print("MOTION METEOR OBJECTS!", motion_objects[obj])
-      if motion_found == 0:
-         print("MOTION NOT FOUND IN HD CLIP!")
-         print("NO HD METEOR FOUND.", fast_non_meteors)
-         md['arc_fail'] = "NO HD METEOR FOUND"
-         save_json_file(old_meteor_json_file, md)
-         return()
+   motion_objects,meteor_frames = detect_meteor_in_clip(video_file, frames, 0)
+   motion_found = 0
+   for obj in motion_objects:
+      if motion_objects[obj]['report']['meteor_yn'] == 'Y':
+         fast_meteors[obj] = motion_objects[obj]
+         motion_found = 1
+         print("MOTION METEOR OBJECTS!", motion_objects[obj])
+   if motion_found == 0 and len(fast_meteors) == 0:
+      md['arc_fail'] = "NO FAST METEORS AND NO MOTION FOUND IN SD."
+      save_json_file(old_meteor_json_file, md)
+      print("MOTION NOT FOUND!")
+      return()
+
+   motion_objects,meteor_frames = detect_meteor_in_clip(video_file, hd_frames, 0)
+   motion_found = 0
+   for obj in motion_objects:
+      if motion_objects[obj]['report']['meteor_yn'] == 'Y':
+         hd_fast_meteors[obj] = motion_objects[obj]
+         motion_found = 1
+         print("MOTION METEOR OBJECTS!", motion_objects[obj])
+   if motion_found == 0 or len(hd_fast_meteors) == 0:
+      print("MOTION NOT FOUND IN HD CLIP!")
+      print("NO HD METEOR FOUND.", fast_non_meteors)
+      md['arc_fail'] = "NO HD METEOR FOUND"
+      save_json_file(old_meteor_json_file, md)
+      return()
 
 
 
@@ -5925,7 +5927,8 @@ def debug(video_file):
    hd_fast_meteor['calib'] = calib
    hd_fast_meteor['cal_params'] = cal_params
    new_json = save_new_style_meteor_json(hd_fast_meteor, temp_js)
-
+   new_json['info']['org_sd_vid'] = org_sd_vid
+   new_json['info']['org_hd_vid'] = org_hd_vid
    save_json_file("/mnt/ams2/matmp/" + temp_js, new_json)
    arc_dir = move_to_archive(temp_js)
    md['archive_file'] = arc_dir + temp_js
