@@ -2,7 +2,7 @@ import lib.brightstardata as bsd
 import cv2
 from lib.CalibLib import distort_xy_new, find_image_stars, distort_xy_new, XYtoRADec, radec_to_azel, get_catalog_stars,AzEltoRADec , HMS2deg, get_active_cal_file, RAdeg2HMS, clean_star_bg, define_crop_box
 from lib.UtilLib import calc_dist
-
+show = 0
 
 def reduce_fov_pos(this_poly, in_cal_params, cal_params_file, oimage, json_conf, cat_image_stars, min_run = 1, show=0):
    paired_stars = []
@@ -98,7 +98,6 @@ def reduce_fov_pos(this_poly, in_cal_params, cal_params_file, oimage, json_conf,
 
    desc2 = "PX SCALE:" + str(in_cal_params['pixscale'])
    cv2.putText(image, desc2,  (10,110), cv2.FONT_HERSHEY_SIMPLEX, 1, (255, 255, 255), 1)
-
 
    if show == 1:
       show_img = cv2.resize(image, (960,540))

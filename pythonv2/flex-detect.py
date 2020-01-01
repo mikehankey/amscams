@@ -887,7 +887,6 @@ def remove_bad_stars(stars):
    return(new_stars)
 
 def fit_arc_file(json_file):
-   show = 1
    json_data = load_json_file(json_file)
    (hd_datetime, cam, sd_date, sd_y, sd_m, sd_d, sd_h, sd_M, sd_s) = convert_filename_to_date_cam(json_file)
    station = json_file.split("/")[4]
@@ -907,6 +906,7 @@ def fit_arc_file(json_file):
       calib['device'] = last_best_calib['device']
 
    calib['stars'] = remove_bad_stars(calib['stars'])
+   print("YO")
 
    cal_params = calib_to_calparams(calib, json_file)
 
@@ -933,7 +933,9 @@ def fit_arc_file(json_file):
    if True:
       this_poly = np.zeros(shape=(4,), dtype=np.float64)
 
+      print("YOYO", show)
       start_res = reduce_fov_pos(this_poly, cal_params, json_file,frame,json_conf, cat_image_stars,0,show)
+      print("YOYOyo")
       cal_params_orig = cal_params.copy()
       res = scipy.optimize.minimize(reduce_fov_pos, this_poly, args=( cal_params,json_file,frame,json_conf, cat_image_stars,1,show), method='Nelder-Mead')
 
@@ -5966,6 +5968,9 @@ def check_archive(day, run):
                bad = bad + 1
                if "arc_fail" in jd:
                   print("ALREADY TRIED AND FAILED:", jd['arc_fail'])
+         else:
+            archive_data = {}
+            archive_data['status'] = 0
          if archive_data['status'] != 1:
             archive_data = {}
             archive_data['orig_file'] = mf
