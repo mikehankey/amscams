@@ -1,31 +1,31 @@
-./flex-detect.py ca 2019_12_31
-./flex-detect.py ca 2019_12_30
-./flex-detect.py ca 2019_12_29
-./flex-detect.py ca 2019_12_28
-./flex-detect.py ca 2019_12_27
-./flex-detect.py ca 2019_12_26
-./flex-detect.py ca 2019_12_25
-./flex-detect.py ca 2019_12_24
-./flex-detect.py ca 2019_12_23
-./flex-detect.py ca 2019_12_22
-./flex-detect.py ca 2019_12_21
-./flex-detect.py ca 2019_12_20
-./flex-detect.py ca 2019_12_19
-./flex-detect.py ca 2019_12_18
-./flex-detect.py ca 2019_12_17
-./flex-detect.py ca 2019_12_16
-./flex-detect.py ca 2019_12_15
-./flex-detect.py ca 2019_12_14
-./flex-detect.py ca 2019_12_13
-./flex-detect.py ca 2019_12_12
-./flex-detect.py ca 2019_12_11
-./flex-detect.py ca 2019_12_10
-./flex-detect.py ca 2019_12_09
-./flex-detect.py ca 2019_12_08
-./flex-detect.py ca 2019_12_07
-./flex-detect.py ca 2019_12_06
-./flex-detect.py ca 2019_12_05
-./flex-detect.py ca 2019_12_04
-./flex-detect.py ca 2019_12_03
-./flex-detect.py ca 2019_12_02
-./flex-detect.py ca 2019_12_01
+./flex-detect.py ca 2019_12_31 1
+./flex-detect.py ca 2019_12_30 1
+./flex-detect.py ca 2019_12_29 1
+./flex-detect.py ca 2019_12_28 1
+./flex-detect.py ca 2019_12_27 1
+./flex-detect.py ca 2019_12_26 1
+./flex-detect.py ca 2019_12_25 1
+./flex-detect.py ca 2019_12_24 1
+./flex-detect.py ca 2019_12_23 1
+./flex-detect.py ca 2019_12_22 1
+./flex-detect.py ca 2019_12_21 1
+./flex-detect.py ca 2019_12_20 1
+./flex-detect.py ca 2019_12_19 1
+./flex-detect.py ca 2019_12_18 1
+./flex-detect.py ca 2019_12_17 1
+./flex-detect.py ca 2019_12_16 1
+./flex-detect.py ca 2019_12_15 1
+./flex-detect.py ca 2019_12_14 1
+./flex-detect.py ca 2019_12_13 1
+./flex-detect.py ca 2019_12_12 1
+./flex-detect.py ca 2019_12_11 1
+./flex-detect.py ca 2019_12_10 1
+./flex-detect.py ca 2019_12_09 1
+./flex-detect.py ca 2019_12_08 1
+./flex-detect.py ca 2019_12_07 1
+./flex-detect.py ca 2019_12_06 1
+./flex-detect.py ca 2019_12_05 1
+./flex-detect.py ca 2019_12_04 1
+./flex-detect.py ca 2019_12_03 1
+./flex-detect.py ca 2019_12_02 1
+./flex-detect.py ca 2019_12_01 1
