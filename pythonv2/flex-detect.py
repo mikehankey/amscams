@@ -44,7 +44,7 @@ import lib.brightstardata as bsd
 from lib.DetectLib import eval_cnt, check_for_motion2
 
 json_conf = load_json_file("../conf/as6.json")
-show = 1
+show = 0
 
 ARCHIVE_DIR = "/mnt/NAS/meteor_archive/"
 
@@ -221,7 +221,9 @@ def save_new_style_meteor_json (meteor_obj, trim_clip ):
       fd['x'] = meteor_obj['oxs'][i]
       fd['y'] = meteor_obj['oys'][i]
       fd['dt'] = meteor_obj['ftimes'][i]
-      new_x, new_y, ra ,dec , az, el = XYtoRADec(fd['x'],fd['y'],fd['dt'],meteor_obj['cal_params'],json_conf)
+
+      new_x, new_y, ra ,dec , az, el = XYtoRADec(fd['x'],fd['y'],trim_clip,meteor_obj['cal_params'],json_conf)
+      print("AZ:EL", fd['x'], fd['y'], az, el, fd['dt'], meteor_obj['cal_params']['ra_center'], meteor_obj['cal_params']['dec_center']) 
 
       fd['az'] = az 
       fd['el'] = el
@@ -460,9 +462,13 @@ def reject_meteor(meteor_json_file):
 def get_cat_image_stars(cat_stars, frame,cal_params_file):
    show_frame = frame.copy()
    cat_image_stars = []
+   used_istars = {}
+   used_cstars = {}
    for cat_star in cat_stars:
       name,mag,ra,dec,new_cat_x,new_cat_y = cat_star
       cx1,cy1,cx2,cy2 = bound_cnt(new_cat_x,new_cat_y,frame.shape[1],frame.shape[0], 50)
+      c_key = str(new_cat_x) + str(new_cat_y)
+
       pos_star = frame[cy1:cy2,cx1:cx2]
       min_val, max_val, min_loc, (ix,iy)= cv2.minMaxLoc(pos_star)
       if max_val - min_val > 20:
@@ -478,6 +484,8 @@ def get_cat_image_stars(cat_stars, frame,cal_params_file):
       ix = ix + cx1
       iy = iy + cy1
       px_diff = max_val - star_avg
+      i_key = str(ix) + str(iy)
+
       if (new_cat_x < 10 or new_cat_x > 1910) or (new_cat_y < 10 or new_cat_y > 1070):
          star_int = 0
          px_diff = 0
@@ -497,7 +505,11 @@ def get_cat_image_stars(cat_stars, frame,cal_params_file):
          cv2.circle(show_frame,(int(ix),int(iy)), 5, (255,255,255), 1)
          px_dist = calc_dist((ix,iy), (new_cat_x, new_cat_y))
          #name #.decode("unicode_escape")
-         cat_image_stars.append((name.decode("unicode_escape"),mag,ra,dec,new_cat_x,new_cat_y,ix,iy,star_int,px_dist,cal_params_file))
+         if px_dist < 10 and i_key not in used_istars and c_key not in used_cstars:
+            #cat_image_stars.append((name.decode("unicode_escape"),mag,ra,dec,new_cat_x,new_cat_y,ix,iy,star_int,px_dist,cal_params_file))
+            cat_image_stars.append((name,mag,ra,dec,new_cat_x,new_cat_y,ix,iy,star_int,px_dist,cal_params_file))
+            used_istars[i_key] = 1
+            used_cstars[c_key] = 1
    if show == 1:
       cv2.imshow('cat_stars', show_frame)
       cv2.waitKey(70)
@@ -541,8 +553,14 @@ def format_calib(trim_clip, cal_params, cal_params_file):
    calib['device']['angle'] = cal_params['position_angle']
    calib['device']['scale_px'] = cal_params['pixscale']
    calib['device']['org_file'] = cal_params_file
-   calib['device']['total_res_px'] = cal_params['total_res_px']
-   calib['device']['total_res_deg'] = (cal_params['total_res_px'] * calib['device']['scale_px']) / 3600
+
+   if "total_res_px" in cal_params:
+      calib['device']['total_res_px'] = cal_params['total_res_px']
+      calib['device']['total_res_deg'] = (cal_params['total_res_px'] * calib['device']['scale_px']) / 3600
+   else:
+      cal_params['total_res_px'] = 99
+      calib['device']['total_res_px'] = 99
+      calib['device']['total_res_deg'] = (cal_params['total_res_px'] * calib['device']['scale_px']) / 3600
    return(calib)
 
 def get_image_stars(file,img=None, show=0):
@@ -593,13 +611,14 @@ def find_best_cat_stars(cat_stars, ix,iy, frame, cp_file):
          min_star = cat_star
    name,mag,ra,dec,new_cat_x,new_cat_y = min_star
    px_dist = 0
-   cat_image_star = ((name.decode("unicode_escape"),mag,ra,dec,new_cat_x,new_cat_y,ix,iy,intensity,min_dist,cp_file))
+   #cat_image_star = ((name.decode("unicode_escape"),mag,ra,dec,new_cat_x,new_cat_y,ix,iy,intensity,min_dist,cp_file))
+   cat_image_star = ((name,mag,ra,dec,new_cat_x,new_cat_y,ix,iy,intensity,min_dist,cp_file))
    return(cat_image_star)
 
    
 
 def refit_arc_meteor(archive_file):
-   show = 1
+   show = 0
    max_err = 50
    am = load_json_file(archive_file)
    hd_vid = am['info']['hd_vid']
@@ -724,12 +743,22 @@ def apply_calib(obj ):
       print("SD FRAMES:", len(hd_frames))
 
    frame = hd_frames[0]
-
    frame = cv2.resize(frame, (1920,1080))
+
+   # find best free cal files
    best_cal_files = get_best_cal_file(obj['trim_clip'])
    cal_params_file = best_cal_files[0][0]
    print("BEST CAL FILE:", cal_params_file)
-   cal_params = load_json_file(cal_params_file)
+
+   # find last_best_calib
+   last_best_calibs = find_last_best_calib(obj['hd_trim'])
+   print("Last Best Calib:", last_best_calibs)
+   if len(last_best_calibs) > 0:
+      calib = load_json_file(last_best_calibs[0][0])
+      calib['stars'] = []
+      cal_params = calib_to_calparams(calib, obj['hd_trim'])
+   else:
+      cal_params = load_json_file(cal_params_file)
    cal_params['device_lat'] = json_conf['site']['device_lat']
    cal_params['device_lng'] = json_conf['site']['device_lng']
    cal_params['device_alt'] = json_conf['site']['device_alt']
@@ -746,12 +775,19 @@ def apply_calib(obj ):
    archive_file = obj['hd_trim']
    image_stars = get_image_stars(archive_file,frame, show=1)
    cat_image_stars = [] 
+   used_cat_stars = {}
+   used_img_stars = {}
    for star in image_stars:
       print("STAR:", star)
       best_star = find_best_cat_stars(cat_stars, star[0], star[1], frame, archive_file)
       print("BEST:", best_star)
-      cv2.line(frame, (star[0], star[1]), (int(best_star[4]), int(best_star[5])), (128,128,128), 1) 
-      cat_image_stars.append(best_star)
+      istar_key = str(star[0]) + str(star[1])
+      cstar_key = str(best_star[4]) + str(best_star[5])
+      if istar_key not in used_img_stars and cstar_key not in used_cat_stars:
+         cv2.line(frame, (star[0], star[1]), (int(best_star[4]), int(best_star[5])), (128,128,128), 1) 
+         cat_image_stars.append(best_star)
+         used_img_stars[istar_key] = 1
+         used_cat_stars[cstar_key] = 1
 
 
 
@@ -792,6 +828,262 @@ def apply_calib(obj ):
    calib = format_calib(obj['trim_clip'], cal_params, cal_params_file)
    
    return(calib, cal_params)
+
+def calib_to_calparams(calib, json_file ):
+   cal_params = {}
+   cal_params['x_poly'] = calib['device']['poly']['x'] 
+   cal_params['y_poly'] = calib['device']['poly']['y'] 
+   cal_params['y_poly_fwd'] = calib['device']['poly']['y_fwd'] 
+   cal_params['x_poly_fwd'] = calib['device']['poly']['x_fwd'] 
+   cal_params['center_ra'] = calib['device']['center']['ra'] 
+   cal_params['center_dec'] = calib['device']['center']['dec'] 
+   cal_params['ra_center'] = calib['device']['center']['ra'] 
+   cal_params['dec_center'] = calib['device']['center']['dec'] 
+   cal_params['center_az'] = calib['device']['center']['az'] 
+   cal_params['center_el'] = calib['device']['center']['el'] 
+   cal_params['pixscale'] = calib['device']['scale_px']
+   cal_params['orig_pixscale'] = calib['device']['scale_px']
+   cal_params['orig_pos_ang'] = calib['device']['angle']
+   cal_params['orig_center_az'] = calib['device']['center']['az'] 
+   cal_params['orig_center_el'] = calib['device']['center']['el'] 
+   cal_params['orig_az_center'] = calib['device']['center']['az'] 
+   cal_params['orig_el_center'] = calib['device']['center']['el'] 
+   cal_params['position_angle'] = calib['device']['angle']
+   cal_params['imagew'] = calib['img_dim'][0]
+   cal_params['imageh'] = calib['img_dim'][1]
+   cat_image_stars = []
+
+   for star in calib['stars']:
+      if "intensity" not in star:
+         star['intensity'] = 0
+      cat_star = (star['name'],star['mag'],star['ra'],star['dec'],star['cat_und_pos'][0],star['cat_und_pos'][1],star['i_pos'][0],star['i_pos'][1],star['intensity'], star['dist_px'],json_file)
+      cat_image_stars.append(cat_star)
+   cal_params['cat_image_stars'] = cat_image_stars
+   return(cal_params)
+
+
+def batch_fit_arc_file(date):
+   year, mon, day = date.split("_")
+   files = glob.glob("/mnt/ams2/meteor_archive/" + json_conf['site']['ams_id'] + "/METEOR/" + year + "/" + mon + "/" + day + "/*.json" )
+   for file in files:
+      cmd = "./flex-detect.py faf " + file
+      print(cmd)
+      os.system(cmd)
+
+def remove_bad_stars(stars):
+   new_stars = []
+   err = []
+   for star in stars:
+      print(star)
+      err.append(star['dist_px'])
+
+   avg_err = np.mean(err)
+   med_err = np.median(err)
+   print("AVG STAR ERR:", avg_err)
+   print("MEDIAN STAR ERR:", med_err)
+   for star in stars:
+      if star['dist_px'] < med_err * 7 or star['dist_px'] < 2:
+         new_stars.append(star)
+   return(new_stars)
+
+def fit_arc_file(json_file):
+   show = 1
+   json_data = load_json_file(json_file)
+   (hd_datetime, cam, sd_date, sd_y, sd_m, sd_d, sd_h, sd_M, sd_s) = convert_filename_to_date_cam(json_file)
+   station = json_file.split("/")[4]
+   master_lens_file = "/mnt/ams2/meteor_archive/" + station + "/CAL/master_lens_model/master_cal_file_" + cam + ".json"
+   print("MASTER:", master_lens_file)
+
+   hd_file = json_file.replace(".json", "-HD.mp4")
+   hd_frames,hd_color_frames,hd_subframes,sum_vals,max_vals = load_frames_fast(hd_file, json_conf, 0, 0, [], 0,[])
+   frame = hd_frames[0]
+
+   calib = json_data['calib']
+
+   last_best_calibs = find_last_best_calib(json_file)
+   if len(last_best_calibs) > 0:
+      last_best_calib = load_json_file(last_best_calibs[0][0])
+      cal_params = calib_to_calparams(calib, json_file)
+      calib['device'] = last_best_calib['device']
+
+   calib['stars'] = remove_bad_stars(calib['stars'])
+
+   cal_params = calib_to_calparams(calib, json_file)
+
+   orig = {}
+   orig['center_az'] = cal_params['orig_az_center']
+   orig['center_el'] = cal_params['orig_el_center']
+   orig['pos_ang'] = cal_params['orig_pos_ang']
+   orig['pixscale'] = cal_params['orig_pixscale']
+
+
+   cat_image_stars = cal_params['cat_image_stars']
+
+   if cfe(master_lens_file) == 1:
+      mld = load_json_file(master_lens_file)
+      cal_params['x_poly'] = mld['x_poly']
+      cal_params['y_poly'] = mld['y_poly']
+      cal_params['y_poly_fwd'] = mld['y_poly_fwd']
+      cal_params['x_poly_fwd'] = mld['x_poly_fwd']
+   print(cal_params)
+
+
+
+
+   if True:
+      this_poly = np.zeros(shape=(4,), dtype=np.float64)
+
+      start_res = reduce_fov_pos(this_poly, cal_params, json_file,frame,json_conf, cat_image_stars,0,show)
+      cal_params_orig = cal_params.copy()
+      res = scipy.optimize.minimize(reduce_fov_pos, this_poly, args=( cal_params,json_file,frame,json_conf, cat_image_stars,1,show), method='Nelder-Mead')
+
+      fov_pos_poly = res['x']
+      fov_pos_fun = res['fun']
+      cal_params['x_poly'] = cal_params_orig['x_poly']
+      cal_params['y_poly'] = cal_params_orig['y_poly']
+
+      cal_params['fov_pos_poly'] = fov_pos_poly.tolist()
+      cal_params['fov_pos_fun'] = fov_pos_fun
+
+
+
+      cal_params['center_az'] = float(cal_params['orig_az_center']) + float(fov_pos_poly[0] )
+      cal_params['center_el'] = float(cal_params['orig_el_center']) + float(fov_pos_poly[1] )
+
+      cal_params['position_angle'] = float(cal_params['position_angle']) + float(fov_pos_poly[2] )
+      #cal_params['orig_pos_angle'] = float(cal_params['orig_pos_ang']) + float(fov_pos_poly[2] )
+
+      cal_params['pixscale'] = float(cal_params['orig_pixscale']) + float(fov_pos_poly[3] )
+      #cal_params['orig_pixscale'] = float(cal_params['orig_pixscale']) + float(fov_pos_poly[3] )
+
+
+
+      rah,dech = AzEltoRADec(cal_params['center_az'],cal_params['center_el'],json_file,cal_params,json_conf)
+      rah = str(rah).replace(":", " ")
+      dech = str(dech).replace(":", " ")
+      ra_center,dec_center = HMS2deg(str(rah),str(dech))
+      cal_params['ra_center'] = ra_center
+      cal_params['dec_center'] = dec_center
+      cal_params['fov_fit'] = 1
+
+      this_poly = np.zeros(shape=(4,), dtype=np.float64)
+      #final_res = reduce_fov_pos(this_poly, cal_params,json_file,frame,json_conf, cat_image_stars,0,show)
+      #print("FINAL RES:", final_res)
+
+      cal_params['total_res_px'] = fov_pos_fun
+
+      #cat_image_stars = get_cat_image_stars(cat_stars, frame,cal_params_file)
+
+   calib = format_calib(json_file, cal_params, json_file)
+   new_stars = update_arc_cat_stars(calib,json_file)
+   print(new_stars)
+   calib['stars'] = new_stars
+   save_json_file("test.json", new_stars)
+
+
+   json_data['calib'] = calib
+   save_json_file(json_file, json_data)
+   print("FOV POLY:", fov_pos_poly)
+   print("ORIG:", orig)
+   print("FINAL", calib['device']) 
+   if len(calib['stars']) > 15 and cal_params['total_res_px'] < 2.4:
+      last_best = calib
+      del last_best['stars']
+      lbf = json_file.split("/")[-1]
+      last_best_file = "/mnt/ams2/meteor_archive/" + station + "/CAL/last_best/" + lbf
+      save_json_file(last_best_file, last_best)
+
+   print(json_file)
+
+# Catalog Stars
+def update_arc_cat_stars(calib, json_file):
+   star_points = []
+   cal_params = calib_to_calparams(calib, json_file)
+   for star in calib['stars']:
+      ix = star['i_pos'][0]
+      iy = star['i_pos'][1]
+      star_points.append((ix,iy))
+
+
+   # Get the values from the form
+   #hd_stack_file = form.getvalue("hd_stack_file")   # Stack
+   #video_file = form.getvalue("video_file")         # Video file
+   #meteor_red_file = form.getvalue("json_file")
+   #hd_image = cv2.imread(hd_stack_file, 0)
+
+
+   cat_stars = flex_get_cat_stars(json_file, json_file, json_conf, cal_params )
+
+
+   my_close_stars = []
+   cat_dist = []
+   used_cat_stars = {}
+   used_star_pos = {}
+
+   if True:
+      for ix,iy in star_points:
+         close_stars = find_close_stars((ix,iy), cat_stars)
+
+         if len(close_stars) == 1:
+            name,mag,ra,dec,cat_x,cat_y,scx,scy,cat_star_dist = close_stars[0]
+            #new_x, new_y, img_ra,img_dec, img_az, img_el = XYtoRADec(ix,iy,video_file,meteor_red['calib'])
+            new_x, new_y, img_ra ,img_dec , img_az, img_el = XYtoRADec(ix,iy,json_file,cal_params,json_conf)
+            new_star = {}
+
+            new_star['name'] = name
+            new_star['mag'] = mag
+            new_star['ra'] = ra
+            new_star['dec'] =  dec
+            new_star['dist_px'] = cat_star_dist
+            cat_dist.append(cat_star_dist)
+
+            # The image x,y of the star (CIRCLE)
+            new_star['i_pos'] = [ix,iy]
+            # The lens distorted catalog x,y position of the star  (PLUS SIGN)
+            new_star['cat_dist_pos'] = [new_x,new_y]
+            # The undistorted catalog x,y position of the star  (SQUARE)
+            new_star['cat_und_pos'] = [cat_x,cat_y]
+
+            # distorted position should be the new_x, new_y and + symbol
+            # only add if this star/position combo has not already be used
+            used_star = 0
+            this_rakey = str(ra) + str(dec)
+            if this_rakey not in used_cat_stars:
+               my_close_stars.append(new_star)
+               used_cat_stars[this_rakey] = 1
+
+   return(my_close_stars)
+
+def find_last_best_calib(input_file):
+   (f_datetime, cam_id, f_date_str,Y,M,D, H, MM, S) = better_parse_file_date(input_file)
+   station_id = json_conf['site']['ams_id']
+   matches = []
+   cal_dir = "/mnt/ams2/meteor_archive/" + station_id + "/CAL/last_best/*.json"
+   print(cal_dir)
+   all_files = glob.glob(cal_dir)
+   for file in all_files:
+      if cam_id in file :
+         el = file.split("/")
+         fn = el[-1]
+         cp = file 
+         if cfe(cp) == 1:
+            matches.append(cp)
+         else:
+            print("CP NOT FOUND!", cp)
+
+   td_sorted_matches = []
+
+   for match in matches:
+      (t_datetime, cam_id, f_date_str,Y,M,D, H, MM, S) = better_parse_file_date(match)
+      tdiff = abs((f_datetime-t_datetime).total_seconds())
+      td_sorted_matches.append((match,f_date_str,tdiff))
+
+   temp = sorted(td_sorted_matches, key=lambda x: x[2], reverse=False)
+
+   return(temp)
+
+
+
 
 def get_best_cal_file(input_file):
    #print("INPUT FILE", input_file)
@@ -4645,11 +4937,14 @@ def old_detection_codes():
 def buffered_start_end(start,end, total_frames, buf_size):
    print("BUF: ", total_frames)
    bs = start - buf_size
+   if buf_size < 20:
+      buf_size = 20
    be = end + buf_size
    if bs < 0:
       bs = 0
    if be >= total_frames:
       be = total_frames - 1
+
    return(bs,be)
     
 
@@ -5457,6 +5752,8 @@ def debug(video_file):
       hd_frames,hd_color_frames,hd_subframes,hd_sum_vals,hd_max_vals = load_frames_fast(hd_trim, json_conf, 0, 0, [], 1,[])
    else:
       print("HD TRIM FILE NOT FOUND!")
+      md['arc_fail'] = "HD TRIM FILE NOT FOUND"
+      save_json_file(old_meteor_json_file, md)
       return()
 
 
@@ -5481,6 +5778,8 @@ def debug(video_file):
             motion_found = 1
             print("MOTION METEOR OBJECTS!", motion_objects[obj])
       if motion_found == 0:
+         md['arc_fail'] = "NO FAST METEORS AND NO MOTION FOUND IN SD."
+         save_json_file(old_meteor_json_file, md)
          print("MOTION NOT FOUND!")
          return()
    if len(hd_fast_meteors) == 0:
@@ -5494,6 +5793,8 @@ def debug(video_file):
       if motion_found == 0:
          print("MOTION NOT FOUND IN HD CLIP!")
          print("NO HD METEOR FOUND.", fast_non_meteors)
+         md['arc_fail'] = "NO HD METEOR FOUND"
+         save_json_file(old_meteor_json_file, md)
          return()
 
 
@@ -5514,7 +5815,7 @@ def debug(video_file):
 
    sd_bs,sd_be = buffered_start_end(sd_meteor['ofns'][0],sd_meteor['ofns'][-1], len(frames), buf_size)
    if sd_bs == 0:
-      buf_size = sd_meteor['fns'][0]
+      buf_size = sd_meteor['ofns'][0]
    hd_bs,hd_be = buffered_start_end(hd_meteor['ofns'][0],hd_meteor['ofns'][-1], len(hd_frames), buf_size)
 
    new_trim_num = orig_sd_trim_num + sd_bs
@@ -5637,44 +5938,62 @@ def debug(video_file):
 
 
 
-def check_archive(day):
+def check_archive(day, run):
    old_meteor_files = glob.glob("/mnt/ams2/meteors/" + day + "/*trim*.json")
+   mdir = "/mnt/ams2/meteors/" + day
+   if cfe(mdir, 1) == 0:
+      print("No meteors for this day.")
+      return()
    print("/mnt/ams2/meteors/" + day + "/*trim*.json")
 
    omf = []
+   good = 0
+   bad = 0
    for mf in old_meteor_files:
-      if "reduced" not in old_meteor_files and "archive_report" not in old_meteor_files:
+      if "reduced" not in mf and "archive_report" not in old_meteor_files:
          jd = load_json_file(mf)
-         print(mf)
          if "archive_file" in jd:
             if cfe(jd['archive_file']) == 1:
                archive_data = {}
                archive_data['orig_file'] = mf
                archive_data['archive_file'] = jd['archive_file']
                archive_data['status'] = 1
+               good = good + 1
             else:
                archive_data = {}
                archive_data['orig_file'] = mf
                archive_data['status'] = 0
-         else:
+               bad = bad + 1
+               if "arc_fail" in jd:
+                  print("ALREADY TRIED AND FAILED:", jd['arc_fail'])
+         if archive_data['status'] != 1:
             archive_data = {}
             archive_data['orig_file'] = mf
             archive_data['status'] = 0
+            bad = bad + 1
             mp4_file = mf.replace(".json", ".mp4")
-            print("FAILED:", mp4_file)
+            if "arc_fail" in jd:
+               print("ALREADY TRIED AND FAILED:", jd['arc_fail'])
             cmd = "./flex-detect.py debug " + mp4_file
             print(cmd) 
-            #os.system(cmd)
+            if run == 1: 
+               os.system(cmd)
          # check HD
          #if cfe(jd['hd_trim']) == 0:
          #   print("HD TRIM MISSING!", jd['hd_trim'])
-         hd_stack = jd['hd_trim'].replace(".mp4", "-stacked.png")
+         if "hd_trim" in jd:
+            hd_stack = jd['hd_trim'].replace(".mp4", "-stacked.png")
+         else:
+            print("HD TRIM MISSING FROM ORIG JS:", mp4_file)
          #if cfe(hd_stack) == 0:
          #   print("HD STACK NOT FOUND:", hd_stack)
 
 
          omf.append(archive_data)
    save_json_file("/mnt/ams2/meteors/" + day + "/archive_report.json", omf)
+   print("ARCHIVE REPORT FOR " + day)
+   print("SUCCESS:", good)
+   print("FAILED:", bad)
    print("/mnt/ams2/meteors/" + day + "/archive_report.json" )
       
  
@@ -5720,8 +6039,15 @@ if cmd == "wi":
 if cmd == "debug" :
    debug(video_file)
 if cmd == "ca" :
-   check_archive(video_file)
+   if len(sys.argv) > 3:
+      check_archive(video_file, 1)
+   else:
+      check_archive(video_file, 0)
 if cmd == "ram" :
    refit_arc_meteor(video_file)
+if cmd == "faf" :
+   fit_arc_file(video_file)
 
+if cmd == "bfaf" :
+   batch_fit_arc_file(video_file)
 
