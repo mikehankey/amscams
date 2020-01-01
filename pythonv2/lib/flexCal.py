@@ -100,7 +100,6 @@ def reduce_fov_pos(this_poly, in_cal_params, cal_params_file, oimage, json_conf,
    cv2.putText(image, desc2,  (10,110), cv2.FONT_HERSHEY_SIMPLEX, 1, (255, 255, 255), 1)
 
 
-   #print("AVG RES:", show_res, len(paired_stars), "/", org_star_count, new_az, new_el, ra_center, dec_center, position_angle)
    if show == 1:
       show_img = cv2.resize(image, (960,540))
       if "cam_id" in in_cal_params:
@@ -112,7 +111,6 @@ def reduce_fov_pos(this_poly, in_cal_params, cal_params_file, oimage, json_conf,
       else:
          cv2.waitKey(10)
    in_cal_params['position_angle'] = org_pos_angle
-   #print("RES:", avg_res)
    if min_run == 1:
       return(avg_res)
    else:
@@ -140,7 +138,6 @@ def flex_get_image_stars_from_catalog(file,json_conf,cal_params_file, masks = []
    dec_center = cal_params['dec_center']
    center_az = cal_params['center_az']
    center_el = cal_params['center_el']
-   #print("AZ CONVERT! ", file )
    rah,dech = AzEltoRADec(center_az,center_el,file,cal_params,json_conf)
    rah = str(rah).replace(":", " ")
    dech = str(dech).replace(":", " ")
@@ -149,7 +146,6 @@ def flex_get_image_stars_from_catalog(file,json_conf,cal_params_file, masks = []
    ra_center,dec_center = HMS2deg(str(rah),str(dech))
 
 
-   #print("GET IMAGE STARS FROM CATALOG: ", center_az, center_el, ra_center, dec_center, file,cal_params_file)
    cal_params['ra_center'] = ra_center
    cal_params['dec_center'] = dec_center
 
@@ -157,7 +153,6 @@ def flex_get_image_stars_from_catalog(file,json_conf,cal_params_file, masks = []
    pos_poly = 0
    x_poly = cal_params['x_poly']
    y_poly = cal_params['y_poly']
-   #print("GET CAT STARS:", ra_center, dec_center)
    cat_stars = get_catalog_stars(fov_poly, pos_poly, cal_params,"x",x_poly,y_poly,min=0)
    #cat_stars = cat_stars[0:50]
 
@@ -211,6 +206,7 @@ def flex_get_image_stars_from_catalog(file,json_conf,cal_params_file, masks = []
 
 
 def flex_get_cat_stars(file, cal_params_file, json_conf, cal_params = None):
+   good_cat_stars = []
    if cal_params == None:
       print("CAL PARAMS ARE NONE!")
       exit()
@@ -242,6 +238,11 @@ def flex_get_cat_stars(file, cal_params_file, json_conf, cal_params = None):
    y_poly = cal_params['y_poly']
 
    cat_stars = get_catalog_stars(fov_poly, pos_poly, cal_params,"x",x_poly,y_poly,min=0)
+   for (name,mag,ra,dec,new_cat_x,new_cat_y) in cat_stars:
+      #name = name.encode('utf-8')
+      name = str(name.decode('utf-8'))
 
-   return(cat_stars)
+      good_cat_stars.append((name,mag,ra,dec,new_cat_x,new_cat_y)) 
+
+   return(good_cat_stars)
 
