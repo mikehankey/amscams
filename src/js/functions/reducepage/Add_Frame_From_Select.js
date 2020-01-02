@@ -256,14 +256,14 @@ function create_meteor_selector_from_frame(frame_id, image_src, frame_sd_id, nei
                   $('#cropper_modal').modal('hide').remove();
                   $('#select_meteor_modal').modal('hide').remove();
                   $('.modal-backdrop').remove();
-
+                  
+                  // Everything went fine
+                  update_star_and_reduction(function() {
+                     $('#fr_'+frame_id+' .select_meteor').click();
+                  });
  
-                  bootbox.alert(data.resp.msg, function(){ 
-                     // Everything went fine
-                     update_star_and_reduction(function() {
-                           $('#fr_'+frame_id+' .select_meteor').click();
-                     });
-                 });
+                  // NO MOVE CONFIRM MESSAGE
+                  //bootbox.alert(data.resp.msg, function(){});
 
                  
                    
