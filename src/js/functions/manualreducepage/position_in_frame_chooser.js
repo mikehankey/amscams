@@ -227,10 +227,10 @@ function init_pos_choos() {
    
    if(w>h) {
       nw = $('#cropped_frame_selector').width();
-      nh = nw/w*h;
+      nh = (nw/w)*h;
 
       w = nw;
-      h = nw;
+      h = nh;
    }  
     
    $('#cropped_frame_selector').css({
