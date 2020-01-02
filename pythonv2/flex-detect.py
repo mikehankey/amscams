@@ -5751,6 +5751,11 @@ def debug(video_file):
 
    # load SD & HD frames
    frames,color_frames,subframes,sum_vals,max_vals = load_frames_fast(video_file, json_conf, 0, 0, [], 1,[])
+   if "/mnt/ams2/HD" in hd_trim:
+      mfn = hd_trim.split("/")[-1]
+      mday = mfn[0:10]
+      hd_trim = "/mnt/ams2/meteors/" + mday + "/" + mfn
+
    if cfe(hd_trim) == 1:
       hd_frames,hd_color_frames,hd_subframes,hd_sum_vals,hd_max_vals = load_frames_fast(hd_trim, json_conf, 0, 0, [], 1,[])
       org_hd_vid = hd_trim 
