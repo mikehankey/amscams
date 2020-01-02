@@ -234,6 +234,7 @@ function init_pos_choos() {
    $('#cropped_frame_selector').css({
       'background-image':'url('+$first_img.attr('src')+')',
       'background-size':  'contain',
+      'background-repeat': 'no-repeat',
       'width': w + 'px',  // Defined on the page
       'height': h   + 'px' // Defined on the page
    });
