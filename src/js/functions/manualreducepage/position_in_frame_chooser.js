@@ -224,12 +224,9 @@ function init_pos_choos() {
    var $first_img = $($('#cropped_frame_select').find('img').get(0))
    var $first_img_holder  = $first_img.closest('a');
   
-   /*
-   console.log("W " + x);
-   console.log("H " + y);
+  
    console.log("W " + w);
    console.log("H " + h);
-   */
 
    $('#cropped_frame_selector').css({
       'background-image':'url('+$first_img.attr('src')+')',
