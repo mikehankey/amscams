@@ -5980,7 +5980,6 @@ def check_archive(day, run):
             archive_data = {}
             archive_data['status'] = 0
          if archive_data['status'] != 1:
-            archive_data = {}
             archive_data['orig_file'] = mf
             archive_data['status'] = 0
             bad = bad + 1
