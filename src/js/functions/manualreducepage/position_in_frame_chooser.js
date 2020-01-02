@@ -224,14 +224,15 @@ function init_pos_choos() {
    // Add first frame to picker
    var $first_img = $($('#cropped_frame_select').find('img').get(0))
    var $first_img_holder  = $first_img.closest('a');
-   /*
+   
    if(w>h) {
-      new_w = $('.modal-header').width();
-      ratio = new_w/w;
-      w = new_w;
-      h = h*ratio;
+      nw = $('#cropped_frame_selector').width();
+      nh = nw/w*h;
+
+      w = nw;
+      h = nw;
    }  
-    */
+    
    $('#cropped_frame_selector').css({
       'background-image':'url('+$first_img.attr('src')+')',
       'background-size':  'contain',
