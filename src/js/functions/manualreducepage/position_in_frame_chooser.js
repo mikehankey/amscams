@@ -250,12 +250,7 @@ function init_pos_choos() {
 
    // Stop loading 
    loading_done();
-
-   // Re-set the height
-   $('#cropped_frame_selector').css({
-      'width': w + 'px',   
-      'height': h   + 'px'  
-   });
+ 
 }
 
 
