@@ -238,7 +238,7 @@ function init_pos_choos() {
       'background-repeat': 'no-repeat',
       'width': w + 'px',  // Defined on the page
       'height': h   + 'px', // Defined on the page
-      'background-position':'0% 50%',
+      'background-position':'0% 0%',
       'background-color':'#000'
    });
   
