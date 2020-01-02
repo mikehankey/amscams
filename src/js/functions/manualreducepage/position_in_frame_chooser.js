@@ -224,23 +224,24 @@ function init_pos_choos() {
    // Add first frame to picker
    var $first_img = $($('#cropped_frame_select').find('img').get(0))
    var $first_img_holder  = $first_img.closest('a');
-
+   /*
    if(w>h) {
       new_w = $('.modal-header').width();
       ratio = new_w/w;
       w = new_w;
       h = h*ratio;
    }  
-   
+    */
    $('#cropped_frame_selector').css({
       'background-image':'url('+$first_img.attr('src')+')',
       'background-size':  'contain',
       'background-repeat': 'no-repeat',
       'width': w + 'px',  // Defined on the page
       'height': h   + 'px', // Defined on the page
-      'background-position':'50% 50%',
+      'background-position':'0% 50%',
       'background-color':'#000'
    });
+  
 
    $first_img_holder.addClass('cur');
 
