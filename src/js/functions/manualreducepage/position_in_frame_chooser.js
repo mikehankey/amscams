@@ -255,9 +255,9 @@ function init_pos_choos() {
    // Stop loading 
    loading_done();
 
-   $('#cropped_frame_selector').css({
-      'height': h   + 'px'
-   });
+   //$('#cropped_frame_selector').css({
+   //   'height': h   + 'px'
+   //});
  
 }
 
