@@ -227,9 +227,9 @@ function init_pos_choos() {
 
    if(w>h) {
       new_w = $('.modal-header').width();
-      ratio = new_w/w
-      w = new_w
-      h = h*ratio
+      ratio = new_w/w;
+      w = new_w;
+      h = h*ratio;
    }  
    
    $('#cropped_frame_selector').css({
