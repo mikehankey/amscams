@@ -225,6 +225,7 @@ function init_pos_choos() {
    var $first_img = $($('#cropped_frame_select').find('img').get(0))
    var $first_img_holder  = $first_img.closest('a');
    
+   /*
    if(w>h) {
       nw = $('#cropped_frame_selector').width();
       nh = (nw/w)*h;
@@ -232,6 +233,7 @@ function init_pos_choos() {
       w = nw;
       h = nh;
    }  
+   */
     
    $('#cropped_frame_selector').css({
       'background-image':'url('+$first_img.attr('src')+')',
@@ -260,7 +262,6 @@ function init_pos_choos() {
       'height': h   + 'px'
    });
    */
- 
 }
 
 
