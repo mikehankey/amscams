@@ -182,10 +182,10 @@ def manual_reduction_cropper(form):
 
    # Add Data to template
    template = template.replace("{VIDEO}", str(video_file))
-   template = template.replace("{X}", str(x_start))   
-   template = template.replace("{Y}", str(y_start))  
-   template = template.replace("{W}", str(w))   
-   template = template.replace("{H}", str(h))        
+   template = template.replace("{X}", str(round(x_start))) 
+   template = template.replace("{Y}", str(round(y_start))) 
+   template = template.replace("{W}", str(round(w)))   
+   template = template.replace("{H}", str(round(h)))        
    template = template.replace("{JSON}",str(json_file))
    
    # Do we have the values to sync SD & HD?
