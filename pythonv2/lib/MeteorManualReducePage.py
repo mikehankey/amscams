@@ -260,7 +260,7 @@ def manual_reduction_meteor_pos_selector(form):
    
    # Add info to template
    template = template.replace("{X}", str(x_start))    
-   template = template.replace("{Y}", str(y_start))   
+   template = template.replace("{Y}", str(y_start))  
    template = template.replace("{W}", str(w))    
    template = template.replace("{H}", str(h))  
    template = template.replace("{VIDEO}", str(video_file)) 

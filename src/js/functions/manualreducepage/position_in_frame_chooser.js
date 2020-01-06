@@ -5,6 +5,7 @@ var select_border_size = 3; // See css
 
 // Fix the height of the chooser
 function fix_pifc_ui() {
+
    var fh = $('#footer').outerHeight();
  
    // It's too small...
@@ -223,20 +224,27 @@ function init_pos_choos() {
    // Add first frame to picker
    var $first_img = $($('#cropped_frame_select').find('img').get(0))
    var $first_img_holder  = $first_img.closest('a');
-  
+   
    /*
-   console.log("W " + x);
-   console.log("H " + y);
-   console.log("W " + w);
-   console.log("H " + h);
-   */
+   if(w>h) {
+      nw = $('#cropped_frame_selector').width();
+      nh = (nw/w)*h;
 
+      w = nw;
+      h = nh;
+   }  
+   */
+    
    $('#cropped_frame_selector').css({
       'background-image':'url('+$first_img.attr('src')+')',
       'background-size':  'contain',
+      'background-repeat': 'no-repeat',
       'width': w + 'px',  // Defined on the page
-      'height': h   + 'px' // Defined on the page
+      'height': h   + 'px', // Defined on the page
+      'background-position':'0% 0%',
+      'background-color':'#000'
    });
+  
 
    $first_img_holder.addClass('cur');
 
@@ -248,6 +256,12 @@ function init_pos_choos() {
 
    // Stop loading 
    loading_done();
+
+   /*
+   $('#cropped_frame_selector').css({
+      'height': h   + 'px'
+   });
+   */
 }
 
 
