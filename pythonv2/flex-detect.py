@@ -35,7 +35,7 @@ from lib.MeteorTests import meteor_test_cm_gaps
 
 import sys
 from lib.CalibLib import distort_xy_new, find_image_stars, distort_xy_new, XYtoRADec, radec_to_azel, get_catalog_stars,AzEltoRADec , HMS2deg, get_active_cal_file, RAdeg2HMS, clean_star_bg
-from lib.UtilLib import calc_dist, find_angle, bound_cnt, cnt_max_px
+from lib.UtilLib import calc_dist, find_angle, bound_cnt, cnt_max_px, bound_leading_edge_cnt 
 
 from lib.UtilLib import angularSeparation, convert_filename_to_date_cam, better_parse_file_date
 from lib.FileIO import load_json_file, save_json_file, cfe
@@ -46,7 +46,7 @@ from lib.DetectLib import eval_cnt, check_for_motion2
 json_conf = load_json_file("../conf/as6.json")
 show = 0
 
-ARCHIVE_DIR = "/mnt/NAS/meteor_archive/"
+ARCHIVE_DIR = "/mnt/ams2/meteor_archive/"
 
 def fix_missing_hd(dir):
    files = glob.glob(dir + "*.json")
@@ -195,18 +195,19 @@ def minmax_xy(obj):
 
 def save_new_style_meteor_json (meteor_obj, trim_clip ):
    print("MO:", meteor_obj)
+   print("FTIMES:", meteor_obj['ftimes'])
    mj = {}
    (hd_datetime, cam, sd_date, sd_y, sd_m, sd_d, sd_h, sd_M, sd_s) = convert_filename_to_date_cam(trim_clip)
    mj['calib'] = meteor_obj['calib']
-   mj['dt'] = hd_datetime
-   tc = trim_clip.split("/")[-1]
    mj['dt'] = meteor_obj['dt']
+   #meteor_obj['dt'] = hd_datetime
+   tc = trim_clip.split("/")[-1]
    mj['info'] = {}
    mj['info']['station'] = json_conf['site']['ams_id'].upper()
-   mj['info']['hd_vid'] = meteor_obj['hd_file']
-   mj['info']['sd_vid'] = meteor_obj['sd_file']
-   mj['info']['org_hd_vid'] = meteor_obj['hd_trim']
-   mj['info']['org_sd_vid'] = meteor_obj['trim_clip']
+   mj['info']['hd_vid'] = meteor_obj['ma_hd_file']
+   mj['info']['sd_vid'] = meteor_obj['ma_sd_file']
+   mj['info']['org_hd_vid'] = meteor_obj['orig_hd_vid']
+   mj['info']['org_sd_vid'] = meteor_obj['orig_sd_vid']
    mj['info']['device'] = cam
    if "report" in meteor_obj:
       mj['report'] = meteor_obj['report']
@@ -754,11 +755,13 @@ def apply_calib(obj ):
    last_best_calibs = find_last_best_calib(obj['hd_trim'])
    print("Last Best Calib:", last_best_calibs)
    if len(last_best_calibs) > 0:
+      print("USING LAST BEST CALIB!")
       calib = load_json_file(last_best_calibs[0][0])
       calib['stars'] = []
       cal_params = calib_to_calparams(calib, obj['hd_trim'])
    else:
       cal_params = load_json_file(cal_params_file)
+      print("USING LAST FREE CALIB!")
    cal_params['device_lat'] = json_conf['site']['device_lat']
    cal_params['device_lng'] = json_conf['site']['device_lng']
    cal_params['device_alt'] = json_conf['site']['device_alt']
@@ -826,6 +829,17 @@ def apply_calib(obj ):
    cal_params['cat_image_stars'] = cat_image_stars
 
    calib = format_calib(obj['trim_clip'], cal_params, cal_params_file)
+   if len(calib['stars']) > 15 and cal_params['total_res_px'] < 2.4:
+      last_best = calib
+      del last_best['stars']
+      json_file = obj['trim_clip'].replace(".mp4", ".json")
+      lbf = json_file.split("/")[-1]
+      station_id = json_conf['site']['ams_id']
+      last_best_file = "/mnt/ams2/meteor_archive/" + station_id + "/CAL/last_best/" + lbf 
+      last_best_file = last_best_file.replace("-SD", "")
+      print("SAVING LAST BEST CALIB.",last_best_file)
+      save_json_file(last_best_file, last_best)
+
    
    return(calib, cal_params)
 
@@ -2724,11 +2738,58 @@ def calc_point_res(object, frames):
    ax.invert_yaxis()
    plt.show()
 
+def poly_fit2(poly_x,poly_y):
+   import matplotlib
+   #matplotlib.use('Agg')
+   import matplotlib.pyplot as plt
+   print("POLY:", len(poly_x), len(poly_y))
+
+   if len(poly_x) > 5:
+      try:
+         z = np.polyfit(poly_x,poly_y,1)
+         f = np.poly1d(z)
+      except:
+         return(0)
+
+   else:
+      return(0)
+
+
+   new_ys = []
+   new_xs = []
+
+   cc = 0
+   for i in range(poly_x[0],poly_x[-1]):
+      #plt.plot(i, f(i), 'go')
+      x = i
+      y = int(f(i))
+      new_ys.append(int(f(i)))
+      new_xs.append(i)
+      cc = cc + 1
+   plt.plot(poly_x, poly_y, 'x')
+   plt.plot(new_xs, new_ys, 'go')
+   plt.axis('equal')
+   #plt.xlim(0,704)
+   #plt.ylim(0,576)
+   trendpoly = np.poly1d(z)
+   plt.plot(poly_x,trendpoly(poly_x))
+   ax = plt.gca()
+   ax.invert_yaxis()
+   plt.show()
+   line_res = []
+   for i in range(0,len(poly_x)-1):
+      px = poly_x[i]
+      py = poly_y[i]
+      dist_to_line = distance((px,py),z)
+      line_res.append(dist_to_line)
+   avg_line_res = np.mean(line_res)
+   return(avg_line_res)
+
 
 def poly_fit(object):
    #print("POLY FIT:", object['report'])
    import matplotlib
-   matplotlib.use('Agg')
+   #matplotlib.use('Agg')
    import matplotlib.pyplot as plt
 
    poly_x = np.array(object['oxs'])
@@ -3258,8 +3319,8 @@ def meteor_dir_test(fxs,fys):
 def meteor_dir(fx,fy,lx,ly):
    # positive x means right to left (leading edge = lowest x value)
    # negative x means left to right (leading edge = greatest x value)
-   # positive y means down to up (leading edge = greatest y value)
-   # negative y means left to right (leading edge = lowest y value)
+   # positive y means top to down (leading edge = greatest y value)
+   # negative y means down to top (leading edge = lowest y value)
    dir_x = lx - fx 
    dir_y = ly - fy
    if dir_x < 0:
@@ -3812,7 +3873,7 @@ def fast_check_events(sum_vals, max_vals, subframes):
    #med_max = np.median(max_vals[0:10])
    med_sum = np.median(sum_vals)
    med_max = np.median(max_vals)
-   median_frame = cv2.convertScaleAbs(np.median(np.array(subframes), axis=0))
+   median_frame = cv2.convertScaleAbs(np.median(np.array(subframes[0:25]), axis=0))
    if subframes[0].shape[1] == 1920:
       hd = 1
       sd_multi = 1
@@ -4249,11 +4310,15 @@ def log_import_errors(video_file, message):
    log[video_file] = message
    save_json_file(log_file, log)
 
-def only_meteors(objects):
+def only_meteors(objects, best_one=0):
    meteors = []
    for obj in objects:
       if objects[obj]['report']['meteor_yn'] == "Y":
          meteors.append(objects[obj])
+   if best_one == 1 and len(meteors) >= 1:
+      return(meteors[0])
+   elif len(meteors) == 0: 
+      return(None)
    return(meteors)
 
 def refine_sync(sync_diff, sd_object, hd_object, hd_frame, sd_frame):
@@ -4868,7 +4933,7 @@ def old_detection_codes():
      
    if False:
       import matplotlib
-      matplotlib.use('Agg')
+      #matplotlib.use('Agg')
       import matplotlib.pyplot as plt
       #fig = plt.figure()
       #plt.plot(bin_days,bin_events, bin_avgs, bin_sums)
@@ -5001,7 +5066,7 @@ def custom_graph(data_x,data_y,max_x,max_y,graph_x,graph_y,type):
    fig_x = graph_x / 100
    fig_y = graph_y / 100
    import matplotlib
-   matplotlib.use('Agg')
+   #matplotlib.use('Agg')
    import matplotlib.pyplot as plt
 
    fig = plt.figure(figsize=(fig_x,fig_y), dpi=100)
@@ -5105,7 +5170,7 @@ def check_fix_missing_frames(objects):
 
 def object_report(objects):
    report = ""
-   for object in meteors: 
+   for object in objects: 
       report = report + "FNs: " +str(object['ofns'] + "\n")
       report = report + "Xs: " +str(object['oxs'] + "\n")
       report = report + "Ys: " +str(object['oys'] + "\n")
@@ -5293,7 +5358,8 @@ def load_frames_fast(trim_file, json_conf, limit=0, mask=0,crop=(),color=0,resiz
                subframe = cv2.subtract(frame, last_frame)
                #subframe = mask_frame(subframe, [], masks, 5)
                sum_val =cv2.sumElems(subframe)[0]
-               if sum_val > 200 and last_last_frame is not None:
+  
+               if sum_val > 1000 and last_last_frame is not None:
                   subframe = cv2.subtract(subframe, last_last_frame)
                   sum_val =cv2.sumElems(subframe)[0]
                subframes.append(subframe)
@@ -5303,8 +5369,17 @@ def load_frames_fast(trim_file, json_conf, limit=0, mask=0,crop=(),color=0,resiz
                   min_val, max_val, min_loc, (mx,my)= cv2.minMaxLoc(subframe)
                else:
                   max_val = 0
+               if frame_count < 5:
+                  sum_val = 0
+                  max_val = 0
                sum_vals.append(sum_val)
                max_vals.append(max_val)
+            else:
+               sum_vals.append(0)
+               max_vals.append(0)
+               fh, fw = frame.shape[:2]
+               zero_img = np.zeros((fw,fh,2),dtype=np.uint8)
+               subframes.append(zero_img)
 
             if len(crop) == 4:
                ih,iw = frame.shape
@@ -5732,6 +5807,1016 @@ def meteor_objects(objects):
          nc = nc + 1
    return(meteors,nonmeteors)
 
+def plot_int(times, values,values2=None,mstart=0,mend=0):
+   print("TIMES:", len(times))
+   print("VALUES:", len(values))
+   import matplotlib
+   #matplotlib.use('Agg')
+   import matplotlib.pyplot as plt
+   fig = plt.figure()
+   if values2 is not None:
+      if len(values) != len(values2)  :
+         print("PROBLEM, unequal items in lists.")
+         return()
+
+
+   if values2 is None:
+      plt.plot(times,values)
+   else:
+      plt.plot(mstart,0,"x")
+      plt.plot(mend,0,"x")
+      plt.plot(times,values)
+      plt.plot(times,values2)
+   plt.show()
+   #curve_file = "figs/detect.png"
+   #plt.savefig(curve_file)
+
+def analyze_intensity(curve1, curve2,subframes=None):
+   int_frame_data = []
+   mstart = None
+   mend = None
+   max_c1 = max(curve1)
+   max_c2 = max(curve2)
+
+   mult_c1 = []
+   mult_c2 = []
+   peak_c1 = 0
+   peak_c2 = 0
+   max_sd = 0
+   max_hd = 0
+   for i in range(0,len(curve1)):
+      mp = curve1[i] / max_c1
+      mult_c1.append(mp)
+      if mp > peak_c1:
+         peak_c1 = mp
+         psdf = i
+      if mp > .1:
+         max_sd += 1
+
+   for i in range(0,len(curve2)):
+      mp = curve2[i] / max_c2
+      mult_c2.append(mp)
+      if mp > peak_c2:
+         peak_c2 = mp
+         phdf = i
+      if mp > .1:
+         max_hd += 1
+
+   sd_off = phdf - psdf
+
+   peak_hd = mult_c2.index(max(mult_c2))
+   peak_sd = mult_c1.index(max(mult_c1))
+   cm = 0
+   for i in range(0,len(mult_c1)):
+      met = 0
+      if subframes is not None:
+         try:
+            min_val, max_val, min_loc, (mx,my)= cv2.minMaxLoc(subframes[i])
+            if max_val - min_val < 10:
+               mx = 0
+               my = 0
+         except:
+            mx = 0
+            my = 0
+      else:
+         mx = 0
+         my = 0
+      if i + 4 < len(mult_c1):
+         if mult_c1[i+4] > .2 or mult_c2[i+4] > .2:
+            met = 1
+      if i - 4 >= 0:
+         if mult_c1[i-4] > .2 or mult_c2[i-4] > .2:
+            met = 1
+     
+      if mult_c1[i] > .04 or mult_c2[i] > .04 or met == 1:
+         cm = cm + 1
+         if cm >= 3:
+            print("METEOR:", i, mult_c1[i], mult_c2[i], cm,mx,my)
+            int_frame_data.append((i,1,mult_c1[i],mult_c2[i],cm,(mx,my)))
+         else:
+         #   mx = 0
+         #   my = 0
+            print(i, mult_c1[i], mult_c2[i], cm)
+            int_frame_data.append((i,0,mult_c1[i],mult_c2[i],cm,(mx,my)))
+         if mstart is None:
+            mstart = i
+         mend = i
+      else:
+         #mx = 0
+         #my = 0
+         cm = 0
+         print(i, mult_c1[i], mult_c2[i],cm, mx,my)
+         int_frame_data.append((i,0,mult_c1[i],mult_c2[i],cm,(mx,my)))
+   return(int_frame_data,mstart,mend)
+
+def sync_frame_curves(sd_curve, hd_curve, sd_frame, hd_frame):
+   hdm_x = hd_frame.shape[1] / sd_frame.shape[1]
+   hdm_y = hd_frame.shape[0] / sd_frame.shape[0]
+   sd_xs = []
+   sd_ys = []
+   sd_ints = []
+   sd_multi = []
+   hd_xs = []
+   hd_ys = []
+   hd_ints = []
+   hd_multi = []
+
+   for key in sd_curve:
+      if "points" in sd_curve[key]:
+         x,y = sd_curve[key]['points']
+         intensity = sd_curve[key]['intensity']
+         sd_xs.append(int(x*hdm_x))
+         sd_ys.append(int(y*hdm_y))
+         sd_ints.append(intensity)
+      else:
+         sd_xs.append(0)
+         sd_ys.append(0)
+         sd_ints.append(0)
+   sd_max_int = max(sd_ints)
+   for i in range(0, len(sd_ints)):
+      if sd_ints[i] > 0 and sd_max_int > 0:
+         sd_multi.append(sd_ints[i] / sd_max_int)
+      else:
+         sd_multi.append(0)
+
+   for key in hd_curve:
+      if "points" in hd_curve[key]:
+         x,y = hd_curve[key]['points']
+         intensity = hd_curve[key]['intensity']
+         hd_xs.append(x)
+         hd_ys.append(y)
+         hd_ints.append(intensity)
+      else:
+         hd_xs.append(0)
+         hd_ys.append(0)
+         hd_ints.append(0)
+   hd_max_int = max(hd_ints)
+
+   for i in range(0, len(hd_ints)):
+      if hd_ints[i] > 0 and hd_max_int > 0:
+         hd_multi.append(hd_ints[i] / hd_max_int)
+      else:
+         hd_multi.append(0)
+
+   peak_sd = sd_multi.index(max(sd_multi))
+   peak_hd = hd_multi.index(max(hd_multi))
+   sd_off = peak_hd - peak_sd          
+   
+   low_err = 9999
+   best_sync = None
+   for i in range(-10,10):   
+      print("YO", i)
+      sd_start = sd_off + i 
+      merr,serr = min_curve_err(sd_start, sd_multi, hd_multi)
+      print("ERROR AT SYNC POINT:", sd_start, merr, serr)
+      if serr < low_err and serr > 0 :
+         low_err = serr
+         best_sync = sd_start 
+
+   print("LEN multi:", len(sd_multi), len(hd_multi))
+   print("PEAK SD/HD:", peak_sd, peak_hd)
+   print("BEST SYNC:", best_sync)
+   print("SD OFF:", sd_off)
+
+   return(best_sync )
+
+def sync_curves(curve1, curve2):
+   print("1:", curve1)
+   print("2:", curve2)  
+   max_c1 = max(curve1)
+   max_c2 = max(curve2)
+
+   mult_c1 = []
+   mult_c2 = []
+   peak_c1 = 0
+   peak_c2 = 0
+   max_sd = 0
+   max_hd = 0
+   for i in range(0,len(curve1)):
+      if max_c1 > 0:
+         mp = curve1[i] / max_c1
+      else:
+         mp = 0
+      mult_c1.append(mp)
+      if mp > peak_c1:
+         peak_c1 = mp
+         psdf = i
+      if mp > .1:
+         max_sd += 1
+
+   for i in range(0,len(curve2)):
+      if max_c1 > 0:
+         mp = curve2[i] / max_c2
+      else:
+         mp = 0
+      mult_c2.append(mp)
+      if mp > peak_c2:
+         peak_c2 = mp
+         phdf = i
+      if mp > .1:
+         max_hd += 1
+ 
+   sd_off = phdf - psdf
+   
+   peak_hd = mult_c2.index(max(mult_c2))
+   peak_sd = mult_c1.index(max(mult_c1))
+   
+   #minimize the curve error between the two curves
+
+   low_err = 999
+   for i in range(-10,10):   
+      sd_start = sd_off + i
+      merr,serr = min_curve_err(sd_start, mult_c1, mult_c2)
+      #print("ERROR AT SYNC POINT:", sd_start, merr, serr)
+      if serr < low_err:
+         low_err = serr
+         best_sync = sd_start
+
+   print("BEST SD SYNC ADJUST IS :", best_sync)
+   print("PEAK SD SYNC ADJUST IS :", peak_hd - peak_sd)
+   print("SD EVENT LEN:", max_sd)
+   print("HD EVENT LEN:", max_hd)
+   print("SD PEAK FN:", peak_sd, psdf)
+   print("HD PEAK FN:", peak_hd, phdf)
+   print("SYNC ERR:", low_err)
+   event_len =  max([max_sd,max_hd])
+   peak_sync = peak_hd - peak_sd
+   return(best_sync, peak_sync, event_len, low_err)
+
+
+
+def min_curve_err(sd_off, c1, c2):
+   errors = []
+   for i in range(0, len(c1)):
+      if i + sd_off < len(c2) -1 and i < len(c1) -1 and i + sd_off > 0:
+         #print("sd_off", sd_off, i, i+sd_off)
+         err = abs(c1[i] - c2[i+sd_off])
+         errors.append(err)
+         #print("SYNC ERR:", i, i+sd_off, c1[i], c2[i+sd_off], err)
+      #else:
+      #   print("No suitable frames!", i, sd_off)
+   if len(errors) > 0:
+      med_err = np.median(errors)
+      sum_err = np.sum(errors) 
+   else:
+      med_err = 0
+      sum_err = 0
+
+   #print("MED ERR:", sd_off, med_err, sum_err)
+   return(med_err, sum_err)
+
+def sync_frames(sd_frames,hd_frames,sd_subframes,hd_subframes,sd_sum_vals,hd_sum_vals,sd_sync):
+   new_hd = []
+   new_sd = []
+   new_hd_sub = []
+   new_sd_sub = []
+   new_hd_sum = []
+   new_sd_sum = []
+
+   max_len = max(len(sd_frames),len(hd_frames))
+
+   # if sd_sync is > 0 then we need to take a way HD FRAMES
+   #if sd_sync > 0:
+   sd_h,sd_w=sd_frames[0].shape[:2]
+   hd_h,hd_w=hd_frames[0].shape[:2]
+   if True:
+      for i in range(0,max_len):
+         hd_stat = ""
+         sd_stat = ""
+         sd_fn = i + sd_sync 
+         hd_fn = i 
+         print("WORKING", sd_fn, hd_fn)
+         if (sd_fn < 0 or sd_fn >= len(sd_frames)) and (hd_fn > 0 and hd_fn <= len(hd_frames)):
+            #make SD frame from HD frame
+            sd_subframe = cv2.resize(hd_subframes[hd_fn], (sd_w,sd_h))
+            sd_frame = cv2.resize(hd_frames[hd_fn], (sd_w,sd_h))
+            sd_stat = "SD FRAME MADE FROM HD FRAME"
+            print(sd_stat)
+         elif sd_fn >= 0 and sd_fn < len(sd_frames):
+            sd_subframe = sd_subframes[sd_fn]
+            sd_frame = sd_frames[sd_fn]
+            print("sd frame good")
+         else:
+            sd_frame = None
+            print("no sd frame ")
+         if hd_fn < 0 or hd_fn >= len(hd_frames):
+            hd_subframe = cv2.resize(sd_subframes[hd_fn], (hd_w,hd_h))
+            hd_frame = cv2.resize(sd_frames[hd_fn], (hd_w,hd_h))
+            hd_stat = "HD FRAME MADE FROM SD FRAME"
+            print(hd_stat)
+         elif hd_fn >= 0 and hd_fn < len(hd_frames):
+            hd_subframe = hd_subframes[hd_fn]
+            hd_frame = hd_frames[hd_fn]
+            print("hd frame good")
+         else:
+            hd_frame = None
+            print("no hd frame ")
+
+         if hd_frame is not None and sd_frame is not None:
+            print(sd_fn, hd_fn, len(sd_frames), len(hd_frames), sd_stat, hd_stat)
+            new_sd.append(sd_frame)
+            new_sd_sub.append(sd_subframe)
+            new_sd_sum.append(int(np.sum(sd_subframe)))
+
+            new_hd.append(hd_frame)
+            new_hd_sub.append(hd_subframe)
+            new_hd_sum.append(int(np.sum(hd_subframe)))
+
+
+   print("SD:", new_sd_sum) 
+   print("HD:", new_hd_sum) 
+
+   return(new_sd,new_hd,new_sd_sub,new_hd_sub,new_sd_sum,new_hd_sum)
+
+def make_frame_data(buf_hd_subframes,cnt_object,bp_object):
+   frame_data = {}
+   x_dir_mod,y_dir_mod = meteor_dir(bp_object['oxs'][0], bp_object['oys'][0], bp_object['oxs'][-1], bp_object['oys'][-1])
+
+
+   for i in range(0,len(buf_hd_subframes)):
+      frame_data[i] = {}
+   for i in range(0, len(cnt_object['ofns'])):
+      fn = cnt_object['ofns'][i]
+      x = cnt_object['oxs'][i]
+      y = cnt_object['oys'][i]
+      w = cnt_object['ows'][i]
+      h = cnt_object['ohs'][i]
+      if "cnts" not in frame_data[fn]:
+         frame_data[fn]['cnts'] = []
+      frame_data[fn]['cnts'].append((x,y,w,h))
+
+   for i in range(0, len(bp_object['ofns'])):
+      fn = bp_object['ofns'][i]
+      x = bp_object['oxs'][i]
+      y = bp_object['oys'][i]
+      w = bp_object['ows'][i]
+      h = bp_object['ohs'][i]
+      if "bps" not in frame_data[fn]:
+         frame_data[fn]['bps'] = []
+     
+      frame_data[fn]['bps'].append((x,y,w,h))
+
+   # fill in any missing frames that exists between start and end
+   start = cnt_object['ofns'][0]
+   end = cnt_object['ofns'][-1]
+
+   last_best = None
+   for i in range(0,len(buf_hd_subframes)):
+      print("START,END:", start, end, last_best)
+      if start <= i <= end and "cnts" not in frame_data[i]:
+         if last_best is not None:
+            print("ADD MISSING FRAME!", i, last_best)
+            last_x, last_y,last_w,last_h = last_best
+            #lcx1,lcy1,lcx2,lcy2 = bound_cnt(last_x, last_y,buf_hd_subframes[i].shape[1],buf_hd_subframes[i].shape[0])
+            lcx1,lcy1,lcx2,lcy2 = bound_leading_edge_cnt(last_x,last_y,buf_hd_subframes[i].shape[1],buf_hd_subframes[i].shape[0], x_dir_mod,y_dir_mod,25)
+            le_cnt = buf_hd_subframes[i][lcy1:lcy2,lcx1:lcx2]
+            min_val, max_val, min_loc, (lmx,lmy)= cv2.minMaxLoc(le_cnt)
+            frame_data[i]['cnts'] = [[lcx1+lmx,lcy1+lmy,last_w,last_h]]
+
+      # remove orphan frames if they exist
+      if i - 1 in frame_data and i + 1 in frame_data:
+         if "cnts" in frame_data[i] and "cnts" not in frame_data[i-1] and "cnts" not in frame_data[i+1]:
+            print("DELETE ORPHAN FRAME!")
+            frame_data[i] = {}
+
+      if "cnts" in frame_data[i]:
+         last_best = frame_data[i]['cnts'][0]
+
+
+   # now find the leading edge
+   for i in range(0,len(buf_hd_subframes)):
+      fxs = []
+      fys = []
+      if "bps" in frame_data[i]:
+         bx,by,bw,bh = frame_data[i]['bps'][0]
+         fxs.append(bx)
+         fys.append(by)
+      if "cnts" in frame_data[i]:
+         for cx,cy,cw,ch in frame_data[i]['cnts']:
+            ccx = int(cx) 
+            ccy = int(cy) 
+            fxs.append(ccx)   
+            fys.append(ccy)   
+      if len(fxs) >= 1:
+         if x_dir_mod == 1:
+            frame_data[i]['best_x'] = int(min(fxs))
+         else:
+            frame_data[i]['best_x'] = int(max(fxs))
+         if y_dir_mod == 1:
+            frame_data[i]['best_y'] = int(max(fys))
+         else:
+            frame_data[i]['best_y'] = int(min(fys))
+
+         lcx1,lcy1,lcx2,lcy2 = bound_leading_edge_cnt(frame_data[i]['best_x'],frame_data[i]['best_y'],buf_hd_subframes[i].shape[1],buf_hd_subframes[i].shape[0], x_dir_mod,y_dir_mod,10)
+         le_cnt = buf_hd_subframes[i][lcy1:lcy2,lcx1:lcx2]
+         min_val, max_val, min_loc, (lmx,lmy)= cv2.minMaxLoc(le_cnt)
+         frame_data[i]['leading_x'] = lcx1+lmx
+         frame_data[i]['leading_y'] = lcy1+lmy
+         frame_data[i]['le_cnt'] = [lcx1,lcy1,lcx2,lcy2]
+         leading_edge_cnt = buf_hd_subframes[i][lcy1:lcy2,lcx1:lcx2]
+         #cv2.imshow('pepe', leading_edge_cnt)
+         #cv2.waitKey(0)
+
+   for fn in frame_data:
+      print(fn, frame_data[fn])
+      
+   return(frame_data)
+
+def frame_curve(meteor,frames):
+   fdc = {}
+   for i in range(0, len(frames)):
+      fdc[i] = {}
+   for i in range(0, len(meteor['ofns'])):
+      fn = meteor['ofns'][i]
+      x = meteor['oxs'][i]
+      y = meteor['oys'][i]
+      intensity = meteor['oint'][i]
+      fdc[fn]['points'] = [x,y]
+
+      fdc[fn]['intensity'] = intensity
+   return(fdc)  
+
+def debug2(video_file):
+   show = 1
+   # setup variables
+   orig_sd_trim_num = get_trim_num(video_file)
+
+   hd_datetime, hd_cam, hd_date, hd_y, hd_m, hd_d, hd_h, hd_M, hd_s = convert_filename_to_date_cam(video_file)
+   meteor_date = hd_y + "_" + hd_m + "_" + hd_d
+   old_meteor_dir = "/mnt/ams2/meteors/" + hd_y + "_" + hd_m + "_" + hd_d + "/"
+   mf = video_file.split("/")[-1]
+   mf = mf.replace(".mp4", ".json")
+   old_meteor_json_file = old_meteor_dir + mf 
+   print(old_meteor_json_file)
+   md = load_json_file(old_meteor_json_file)
+   hd_trim = md['hd_trim']
+   org_sd_vid = video_file 
+
+   # load SD frames
+   sd_frames,sd_color_frames,sd_subframes,sd_sum_vals,sd_max_vals = load_frames_fast(video_file, json_conf, 0, 0, [], 1,[])
+
+
+   # load HD frames
+   if "/mnt/ams2/HD" in hd_trim:
+      mfn = hd_trim.split("/")[-1]
+      mday = mfn[0:10]
+      hd_trim = "/mnt/ams2/meteors/" + mday + "/" + mfn
+
+   if cfe(hd_trim) == 1:
+      hd_frames,hd_color_frames,hd_subframes,hd_sum_vals,hd_max_vals = load_frames_fast(hd_trim, json_conf, 0, 0, [], 1,[])
+      org_hd_vid = hd_trim 
+   else:
+      print("NO HD TRIM FILE FOUND. ABORT FOR NOW.")
+      exit()
+   
+
+   motion_objects, motion_frames = detect_meteor_in_clip(video_file, sd_frames, 0)
+   hd_motion_objects, hd_motion_frames = detect_meteor_in_clip(video_file, hd_frames, 0)
+
+   error = 0
+   sd_meteor = only_meteors(motion_objects,1)
+   hd_meteor = only_meteors(hd_motion_objects,1)
+   if sd_meteor is None or hd_meteor is None:
+      print("Couldn't detect SD & HD meteor.", sd_meteor, hd_meteor)
+      return()
+
+   sd_frame_curve = frame_curve(sd_meteor, sd_frames)
+   hd_frame_curve = frame_curve(hd_meteor, hd_frames)
+
+   best_sync_fr = sync_frame_curves(sd_frame_curve, hd_frame_curve, sd_frames[0], hd_frames[0])
+
+   best_sync_sv,peak_sync_sv,ev_len,low_err = sync_curves(sd_sum_vals, hd_sum_vals )
+   best_sync_mv,peak_sync_mv, mv_ev_len,mv_low_err = sync_curves(sd_max_vals, hd_max_vals)
+   sd_geo_xs,sd_geo_ys,sd_geos = geo_vals(sd_meteor, hd_frames,sd_frames)
+   hd_geo_xs,hd_geo_ys,hd_geos = geo_vals(hd_meteor, hd_frames, sd_frames)
+   best_sync_geo_x,peak_sync_geo_x, geo_ev_len,geo_low_err = sync_curves(sd_geos, hd_geos)
+   print("BEST SYNC GEOX:", best_sync_geo_x, peak_sync_geo_x, geo_low_err)
+
+
+   print("BEST SYNC FR:", best_sync_fr )
+   print("BEST SYNC SV:", best_sync_sv, peak_sync_sv, ev_len, low_err)
+   print("BEST SYNC MV:", best_sync_mv, peak_sync_mv, mv_ev_len, mv_low_err)
+   best_sync = int(np.median((best_sync_fr, best_sync_sv, best_sync_mv,best_sync_geo_x)))
+   print("BEST SYNC:", best_sync)
+
+
+   med_event_length = max([len(hd_meteor['ofns']),len(sd_meteor['ofns'])])
+   ideal_buffer = int (med_event_length * 2) 
+   if ideal_buffer > 25:
+      ideal_buffer = 25 
+   if ideal_buffer < 10:
+      ideal_buffer = 10 
+   if med_event_length > 100:
+      ideal_buffer = 50
+
+   
+
+   print("*********** SYNC REPORT ************")
+   print("BEST SD SYNC:            ", best_sync)
+   print("HD FILE INFO             ")
+   print("LEN HD_FRAMES            :", len(hd_frames))
+   print("HD INITIAL START FRAME   :", hd_meteor['ofns'][0]) 
+   print("HD INITIAL END FRAME     :", hd_meteor['ofns'][-1]) 
+   print("HD EVENT LENGTH          :", hd_meteor['ofns'][-1] - hd_meteor['ofns'][0]) 
+
+   print("HD INITIAL END BUFFER    :", len(hd_frames) - hd_meteor['ofns'][-1])
+   print("HD ADJUSTED START FRAME  :", hd_meteor['ofns'][0] ) 
+   print("HD ADJUSTED END FRAME    :", hd_meteor['ofns'][-1] ) 
+   print("")
+   print("SD FILE INFO         ")
+   print("SD INITIAL START FRAME   :", sd_meteor['ofns'][0]) 
+   print("LEN SD_FRAMES            :", len(sd_frames))
+   print("SD INITIAL LAST FRAME    :", sd_meteor['ofns'][-1]) 
+
+   print("SD INITIAL END BUFFER    :", len(sd_frames) - sd_meteor['ofns'][-1])
+
+   print("SD EVENT LENGTH          :", sd_meteor['ofns'][-1] - sd_meteor['ofns'][0]) 
+   print("SD ADJUSTED START FRAME  :", sd_meteor['ofns'][0] + best_sync) 
+
+   print("SD ADJUSTED END FRAME    :", sd_meteor['ofns'][-1] + best_sync) 
+   print("")
+   print("IDEAL BUFFER             :", ideal_buffer)
+   missing_hd_frames = 0
+   # test to see if we have enough frames around the event for the ideal buffer to work
+   if sd_meteor['ofns'][0] - ideal_buffer < 0:
+      print("SD Meteor doesn't have enough frames for the ideal starting buffer!")
+      
+
+   if sd_meteor['ofns'][-1] + ideal_buffer > len(sd_frames):
+      print("SD Meteor doesn't have enough frames for the ideal ending buffer!")
+   if hd_meteor['ofns'][0] - ideal_buffer < 0:
+      print("HD Meteor doesn't have enough frames for the ideal starting buffer!")
+   
+      missing_hd_frames_start = abs(hd_meteor['ofns'][0] - ideal_buffer)
+      for extra in range(0,missing_hd_frames_start):
+
+         blank_image = np.zeros((1080,1920),dtype=np.uint8)
+         hd_frames.insert(0, blank_image)
+         hd_color_frames.insert(0,blank_image)
+         hd_subframes.insert(0,blank_image)
+         hd_sum_vals.insert(0,0)
+         hd_max_vals.insert(0,0)
+
+   if hd_meteor['ofns'][-1] + ideal_buffer > len(hd_frames):
+      missing_hd_frames_end =  abs((hd_meteor['ofns'][-1] + ideal_buffer) - len(hd_frames))
+
+      for extra in range(0,missing_hd_frames_end):
+          
+         blank_image = np.zeros((1080,1920),dtype=np.uint8)
+         hd_frames.append(blank_image)
+         hd_color_frames.append(blank_image)
+         hd_subframes.append(blank_image)
+         hd_sum_vals.append(0)
+         hd_max_vals.append(0)
+
+   min_ran = min(len(sd_sum_vals),len(hd_sum_vals))
+
+
+   ev_len = max( (sd_meteor['ofns'][-1] - sd_meteor['ofns'][0]), (hd_meteor['ofns'][-1] - hd_meteor['ofns'][0]))
+
+   print("SD BUF START		   :", sd_meteor['ofns'][0] - ideal_buffer + best_sync)
+   print("SD BUF END :", sd_meteor['ofns'][-1] + ideal_buffer +best_sync)
+   print("HD BUF START		   :", hd_meteor['ofns'][0] - ideal_buffer + missing_hd_frames)
+   print("HD BUF END :", hd_meteor['ofns'][-1] + ideal_buffer + missing_hd_frames)
+
+
+   best_sync_final_s ,pk, ev_len,low_err_s = sync_curves(sd_sum_vals, hd_sum_vals )
+   best_sync_final_m ,pk, ev_len,low_err_m = sync_curves(sd_max_vals, hd_max_vals )
+   print("FINAL BEST SYNC SUM:", best_sync_final_s, low_err_s)
+   print("FINAL BEST SYNC MAX:", best_sync_final_m, low_err_m)
+   if low_err_s < low_err_m:
+      final_sync = best_sync_final_s
+   else:
+      final_sync = best_sync_final_m
+
+   sd_bs = hd_meteor['ofns'][0] - ideal_buffer - best_sync
+   sd_be = hd_meteor['ofns'][0] + ev_len + ideal_buffer - best_sync
+
+   # MMM
+   hd_bs = (hd_meteor['ofns'][0] - missing_hd_frames - ideal_buffer)  
+   hd_be = (hd_meteor['ofns'][0] + ev_len + ideal_buffer + missing_hd_frames) 
+   if sd_bs < 0:
+      sd_bs = 0
+   if hd_bs < 0:
+      hd_bs = 0
+
+   print("SD BS:", sd_bs, sd_be, sd_be - sd_bs)
+   print("HD BS:", hd_bs, hd_be, hd_be - hd_bs)
+
+
+   # remap frame numbers of meteor objects to new sync'd buffer frames
+   hd_fns = []
+   sd_fns = []
+
+   for fn in sd_meteor['ofns']:
+      new_fn = (fn - sd_meteor['ofns'][0]) + ideal_buffer 
+      new_fn -= 1
+      sd_fns.append(new_fn)
+   for fn in hd_meteor['ofns']:
+      new_fn = (fn - hd_meteor['ofns'][0]) + ideal_buffer
+      new_fn -= 1
+      hd_fns.append(new_fn)
+
+   sd_meteor['ofns'] = sd_fns
+   hd_meteor['ofns'] = hd_fns
+   print("NEW SD FNS:", sd_fns)
+   print("NEW HD FNS:", hd_fns)
+
+
+   syncd_sd_frames = sd_frames[sd_bs:sd_be]
+   syncd_sd_color_frames = sd_color_frames[sd_bs:sd_be]
+   syncd_sd_subframes = sd_subframes[sd_bs:sd_be]
+   syncd_sd_sum_vals = sd_sum_vals[sd_bs:sd_be]
+   syncd_sd_max_vals = sd_max_vals[sd_bs:sd_be]
+
+   syncd_hd_frames = hd_frames[hd_bs:hd_be]
+   syncd_hd_color_frames = hd_color_frames[hd_bs:hd_be]
+   syncd_hd_subframes = hd_subframes[hd_bs:hd_be]
+   syncd_hd_sum_vals = hd_sum_vals[hd_bs:hd_be]
+   syncd_hd_max_vals = hd_max_vals[hd_bs:hd_be]
+
+   print("LEN SYNCD HD_FRAMES            :", len(syncd_hd_frames))
+   print("LEN SYNCD SD_FRAMES            :", len(syncd_sd_frames))
+
+   best_sync_final_s ,pk, ev_len,low_err_s = sync_curves(syncd_sd_sum_vals, syncd_hd_sum_vals )
+   best_sync_final_m ,pk, ev_len,low_err_m = sync_curves(syncd_sd_max_vals, syncd_hd_max_vals )
+   print("FINAL BEST SYNC SUM:", best_sync_final_s, low_err_s)
+   print("FINAL BEST SYNC MAX:", best_sync_final_m, low_err_m)
+
+   if low_err_s < low_err_m:
+      final_sync = best_sync_final_s
+   else:
+      final_sync = best_sync_final_m
+
+   if final_sync != 0 and abs(final_sync) < 7:
+      # if there is still some final sync error fix it by shifting things one more time
+         sd_bs -= final_sync
+         sd_be -= final_sync
+         syncd_sd_frames = sd_frames[sd_bs:sd_be]
+         syncd_sd_color_frames = sd_color_frames[sd_bs:sd_be]
+         syncd_sd_subframes = sd_subframes[sd_bs:sd_be]
+         syncd_sd_sum_vals = sd_sum_vals[sd_bs:sd_be]
+         syncd_sd_max_vals = sd_max_vals[sd_bs:sd_be]
+
+
+
+   frame_data = make_frame_data(syncd_hd_frames,hd_meteor,hd_meteor)
+   #view_syncd_frames(syncd_sd_frames, syncd_hd_frames, sd_meteor, hd_meteor)
+
+   #plot_int(range(0,len(syncd_sd_sum_vals)),syncd_sd_sum_vals, syncd_hd_sum_vals,0,len(syncd_sd_sum_vals))
+   #plot_int(range(0,len(syncd_sd_max_vals)),syncd_sd_max_vals, syncd_hd_max_vals,0,len(syncd_sd_max_vals))
+
+   print("SD FRAMES:", len(syncd_sd_frames))
+   print("SD FRAMES:", len(syncd_hd_frames))
+   print("HD SUM:", len(syncd_hd_sum_vals))
+   print("FRAME DATA:", len(frame_data))
+
+   #show_detection(syncd_sd_frames, syncd_hd_frames, syncd_hd_sum_vals, frame_data)
+
+   # if we got this far everything is good and we can save the movie clips and save the new json
+   # but we should apply calibration to the capture first!
+   print("******************************   PASSED *************************")
+   new_trim_num = orig_sd_trim_num + sd_bs 
+   save_archive_meteor(video_file, syncd_sd_frames,syncd_hd_frames,frame_data,new_trim_num) 
+   return("")
+   #exit()
+
+def frame_data_to_obj(frame_data):  
+   fns = []
+   xs = []
+   ys = []
+   ws = []
+   hs = []
+   oints = []
+   for fn in frame_data:
+      if "leading_x" in frame_data[fn]:
+         fns.append(fn)
+         xs.append(frame_data[fn]['leading_x'])
+         ys.append(frame_data[fn]['leading_y'])
+         ws.append(5)
+         hs.append(5)
+         if "intensity" in frame_data[fn]:
+            oints.append(frame_data[fn]['intensity'])
+         else:
+            oints.append(0)
+   object = {}
+   object['obj_id'] = 1
+   object['ofns'] = fns
+   object['oxs'] = xs
+   object['oys'] = ys
+   object['ows'] = ws
+   object['ohs'] = hs
+   object['oint'] = oints
+   object = analyze_object(object)
+   return(object)
+  
+   
+
+def save_archive_meteor(video_file, syncd_sd_frames,syncd_hd_frames,frame_data,new_trim_num) :
+   # Determine trim clip start time and corresponding frame times
+   # convert frames to obj
+   # Apply the calib
+   # Format the new json data
+   # Find archive dir
+   # Write out archive json
+   # Save new sync'd videos in archive
+
+   old_meteor_json_file = video_file.replace(".mp4", ".json") 
+   print(old_meteor_json_file)
+   omd = load_json_file(old_meteor_json_file)
+   if "hd_trim" in omd:
+      if omd['hd_trim'] is not None and omd['hd_trim'] != 0:
+         orig_hd_vid = omd['hd_trim']
+      else: 
+         orig_hd_vid = 0
+   else:
+      orig_hd_vid = 0
+
+
+   station_id = json_conf['site']['ams_id']
+
+   (f_datetime, cam, f_date_str,fy,fm,fd, fh, fmin, fs) = convert_filename_to_date_cam(video_file)
+   extra_sec = new_trim_num / 25
+   start_trim_frame_time = f_datetime + datetime.timedelta(0,extra_sec)
+
+
+   vfn = video_file.split("/")[-1]
+   aa,bb = vfn.split("-trim")
+   orig_file_str = aa
+   archive_base_filename = aa + "-trim" + str(new_trim_num) 
+   archive_year = archive_base_filename[0:4]
+   archive_mon = archive_base_filename[5:7]
+   archive_day = archive_base_filename[8:10]
+   hd_fast_meteor  = frame_data_to_obj(frame_data) 
+   hd_fast_meteor['dt'] = start_trim_frame_time.strftime('%Y-%m-%d %H:%M:%S.%f')
+   hd_fast_meteor['orig_hd_vid'] = orig_hd_vid
+   hd_fast_meteor['orig_sd_vid'] = video_file 
+   hd_fast_meteor['dur'] = hd_fast_meteor['ofns'][-1] - hd_fast_meteor['ofns'][0] / 25
+   for i in range(0,len(hd_fast_meteor['ofns'])):
+      if "ftimes" not in  hd_fast_meteor:
+         hd_fast_meteor['ftimes'] = []
+         fn = hd_fast_meteor['ofns'][i]
+
+      extra_meteor_sec = fn /  25
+      meteor_frame_time = start_trim_frame_time + datetime.timedelta(0,extra_meteor_sec)
+      meteor_frame_time_str = meteor_frame_time.strftime('%Y-%m-%d %H:%M:%S.%f')[:-3]
+      hd_fast_meteor['ftimes'].append(meteor_frame_time_str)
+      print("METEOR FRAME TIME:", meteor_frame_time_str)
+
+
+
+   print("FINAL OBJ:", hd_fast_meteor)
+   print("ARCHIVE BASE FILE:", archive_base_filename)
+   print("ARCHIVE DATE:", archive_year,archive_mon,archive_day)
+   ma_dir = ARCHIVE_DIR + station_id + "/METEOR/" + archive_year + "/" + archive_mon + "/" + archive_day + "/" 
+   print("ARCHIVE DIR:", ma_dir)
+   ma_json_file = ma_dir + archive_base_filename + ".json"
+   ma_sd_file = ma_dir + archive_base_filename + "-SD.mp4"
+   ma_hd_file = ma_dir + archive_base_filename + "-HD.mp4"
+
+   if not os.path.exists(ma_dir):
+      os.makedirs(ma_dir) 
+
+   hd_fast_meteor['trim_clip'] = ma_sd_file 
+   hd_fast_meteor['hd_trim'] = orig_hd_vid
+   hd_fast_meteor['ma_sd_file'] = ma_sd_file
+   hd_fast_meteor['ma_hd_file'] = ma_hd_file
+
+   
+   calib,cal_params = apply_calib(hd_fast_meteor)
+   hd_fast_meteor['calib'] = calib
+   hd_fast_meteor['cal_params'] = cal_params
+
+   new_json = save_new_style_meteor_json(hd_fast_meteor, ma_json_file)
+   new_json['info']['org_sd_vid'] = ma_sd_file 
+   new_json['info']['org_hd_vid'] = ma_hd_file 
+   save_json_file(ma_json_file, new_json)
+   omd['archive_file'] = ma_json_file
+   save_json_file(old_meteor_json_file, omd)
+
+   make_movie_from_frames(syncd_sd_frames, [0,len(syncd_sd_frames) ], ma_sd_file, 1)
+   make_movie_from_frames(syncd_hd_frames, [0,len(syncd_hd_frames) ], ma_hd_file, 1)
+
+   cmd = "./MakeCache.py " + ma_json_file
+   os.system(cmd)
+   write_archive_index(archive_year,archive_mon)
+
+   print("OLD:", old_meteor_json_file)
+   print("NEW:", ma_json_file)
+   return()
+
+
+
+
+def geo_vals(meteor, hd_frames, sd_frames):
+   sh,sw = sd_frames[0].shape[:2]
+   hh,hw = hd_frames[0].shape[:2]
+   hdm_x = hw / sw
+   hdm_y = hh / sh
+   geo_d = {}
+   geo_x = []
+   geo_y = []
+   geos = []
+   for i in range(0,len(hd_frames)):
+      geo_d[i] = [0,0]
+
+   for i in range(0,len(meteor['ofns'])):
+      fn = meteor['ofns'][i]
+      x = meteor['oxs'][i] * hdm_x
+      y = meteor['oys'][i] * hdm_y
+      geo_d[fn] = [x,y]
+   for fn in geo_d:
+      x,y = geo_d[fn]
+      geo_x.append(x)
+      geo_y.append(y)
+      geos.append(x*y)
+
+   return(geo_x, geo_y,geos)
+
+
+def show_detection(buf_sd_frames, buf_hd_frames, buf_hd_sum_vals, frame_data):
+   show = 1
+   # find the crop size area
+   xs = []
+   ys = []
+   for fn in frame_data:
+      if "leading_x" in frame_data[fn]:
+         xs.append(frame_data[fn]['leading_x'])
+         ys.append(frame_data[fn]['leading_y'])
+   print("FINAL REPORT:")
+   print("LEN SD FRAMES:", len(buf_sd_frames))
+   print("LEN HD FRAMES:", len(buf_hd_frames))
+   print("LEN SUM VALS:", len(buf_hd_sum_vals))
+   print("LEN FRAME DATA:", len(frame_data))
+   if len(buf_sd_frames) > len(buf_hd_frames):
+      hdl = len(buf_hd_frames)
+      buf_sd_frames = buf_sd_frames[0:hdl]
+
+   min_x, min_y,max_x,max_y = int(min(xs)), int(min(ys)), int(max(xs)), int(max(ys))
+   cx1,cy1,cx2,cy2,mid_x,mid_y = find_crop_size(min_x,min_y,max_x, max_y)
+
+   if show == 1:
+      for i in range(0,len(buf_sd_frames)-1):
+         #ifd = int_frame_data[i]
+         #mx,my = ifd[5]
+         sum_val = buf_hd_sum_vals[i] 
+         print("FINAL SHOW:", i,sum_val)
+         sd_show = buf_sd_frames[i].copy()
+         hd_show = buf_hd_frames[i].copy()
+         crop_hd = hd_show[cy1:cy2,cx1:cx2].copy()
+
+         hd_show = cv2.cvtColor(hd_show,cv2.COLOR_GRAY2RGB)
+         sd_show = cv2.cvtColor(sd_show,cv2.COLOR_GRAY2RGB)
+         print(i, frame_data[i])
+         if "leading_x" in frame_data[i]:
+            lecx1,lecy1,lecx2,lecy2 = bound_cnt(frame_data[i]['leading_x'],frame_data[i]['leading_y'],buf_hd_frames[i].shape[1],buf_hd_frames[i].shape[0], 25)
+            lead_cnt = buf_hd_frames[i][lecy1:lecy2,lecx1:lecx2]
+            lead_cnt = cv2.cvtColor(lead_cnt,cv2.COLOR_GRAY2RGB)
+            cv2.circle(hd_show,(frame_data[i]['leading_x'],frame_data[i]['leading_y']), 1, (0,255,0), 1)
+         else:
+            lead_cnt = None
+         if "le_cnt" in frame_data[i]:
+            lcx1,lcy1,lcx2,lcy2 = frame_data[i]['le_cnt']
+            cv2.rectangle(hd_show, (lcx1, lcy1), (lcx2, lcy2), (255, 128, 128), 1)
+         #if "best_x" in frame_data[i]:
+         #   best_x = frame_data[i]['best_x']
+         #   best_y = frame_data[i]['best_y']
+         #   cv2.circle(hd_show,(best_x,best_y), 1, (0,0,255), 1)
+      
+         cv2.rectangle(hd_show, (cx1, cy1), (cx2, cy2), (255, 128, 128), 1)
+         
+         crop_show = cv2.resize(crop_hd, (960,540))
+         crop_show = cv2.cvtColor(crop_show,cv2.COLOR_GRAY2RGB)
+         sd_show = cv2.resize(sd_show, (960,540))
+         hd_show = cv2.resize(hd_show, (960,540))
+         desc = str(i) + " " + str(sum_val)
+         cv2.putText(sd_show, desc,  (5,15), cv2.FONT_HERSHEY_SIMPLEX, .4, (255, 255, 255), 1)
+         custom_frame = np.zeros((1080,1920),dtype=np.uint8)
+         custom_frame = cv2.cvtColor(custom_frame,cv2.COLOR_GRAY2RGB)
+         custom_frame[0:540,0:960] = sd_show
+         custom_frame[540:1080,0:960] = crop_show 
+         custom_frame[0:540,960:1920] = hd_show
+         if lead_cnt is not None:
+            lead_cnt = cv2.resize(lead_cnt, (500,500))
+            custom_frame[540:1040,960:1460] = lead_cnt 
+
+         cv2.imshow('hd', custom_frame)
+         cv2.waitKey(0)
+
+
+
+def find_crop_size(min_x,min_y,max_x,max_y):
+   sizes = [[1280,720], [704, 396], [480, 270], [240, 135]]
+   w = max_x - min_x 
+   h = max_y - min_y
+   mid_x = int(((min_x + max_x) / 2))
+   mid_y = int(((min_y + max_y) / 2))
+   for mw,mh in sizes:
+      if w * 2 < mw and h < mh * 2:
+         best_w = mw
+         best_h = mh
+
+   if (best_w/2) + mid_x > 1920:
+      cx1 = mid_x + (best_w + mid_x ) - 1920 
+      cx1 = 1920 - best_w 
+   elif mid_x - (best_w/2) < 0:
+      cx1 = 0
+   else:
+      cx1 = int(mid_x - (best_w/2))
+   if (best_h/2) + mid_y > 1080:
+      cy1 = 1080 - best_h 
+   elif mid_y - (best_h/2) < 0:
+      cy1 = 0
+   else:
+      cy1 = int(mid_y -  (best_h/ 2))
+   cx1 = int(cx1)
+   cy1 = int(cy1) 
+   cx2 = int(cx1 + best_w)
+   cy2 = int(cy1 + best_h)
+   return(cx1,cy1,cx2,cy2,mid_x,mid_y)
+
+
+def frames_to_objects(frames):
+   sd_multi = 1
+   hd = 1
+   objects = {}
+   best_objects = {}
+   meteor_objects = {}
+   size = 10
+   print("frames to objects start.")
+   for i in range(0,len(frames)):
+      frame = frames[i]
+      min_val, max_val, min_loc, (mx,my)= cv2.minMaxLoc(frame)
+      thresh = max_val - 20
+      if thresh < 10:
+         thresh = 10
+      cnts,rects = find_contours_in_frame(frame, thresh)
+      cntc = 0
+      for x,y,w,h in cnts:
+         if w > 1 and h > 1 and w < 50 and h < 50:
+            cx1,cy1,cx2,cy2 = bound_cnt(x,y,frame.shape[1],frame.shape[0], size)
+            cnt_img = frame[cy1:cy2,cx1:cx2]
+            bg_cnt_img = frames[0][cy1:cy2,cx1:cx2]
+            cnt_sub = cv2.subtract(cnt_img, bg_cnt_img)
+            intensity = int(np.sum(cnt_sub))
+            cx = x + int(w/2)   
+            cy = y + int(h/2)   
+            object, objects = find_object(objects, i,cx, cy, w, h, intensity, hd, sd_multi, cnt_img)
+            cntc += 1
+   print("frames to objects dones.")
+   obj_list = []
+   for obj in objects:
+      if objects[obj]['report']['score'] > 0:
+         obj_list.append((obj,objects[obj]['report']['score']))
+   best_objects = {}
+   for id, score in sorted(obj_list, key=lambda x: x[1], reverse=True):
+      print("ID SCORE:", id,score)
+      best_objects[id] = objects[id]
+   
+   return(best_objects)
+
+
+def points_to_objects(fns,xs,ys,frames=None):
+   print("Points to objects")
+   print(fns)
+   print(xs)
+   print(ys)
+   print("FRAMES:", len(frames))
+   sd_multi = 1
+   hd = 1
+   objects = {}
+   best_objects = {}
+   meteor_objects = {}
+   size = 10
+   for i in range(0,len(fns)):
+      fn = fns[i]
+      x = xs[i]
+      y = ys[i]
+      frame = frames[i]
+      min_val, max_val, min_loc, (mx,my)= cv2.minMaxLoc(frame)
+      thresh = max_val - 20
+      if thresh < 10:
+         thresh = 10
+      cnts,rects = find_contours_in_frame(frame, thresh)
+      cx1,cy1,cx2,cy2 = bound_cnt(x,y,frame.shape[1],frame.shape[0], size)
+      cnt_img = frame[cy1:cy2,cx1:cx2]
+      object, objects = find_object(objects, fn,x, y, 5, 5, 100, hd, sd_multi, cnt_img)
+
+   obj_list = []
+   for obj in objects:
+      if objects[obj]['report']['score'] > 0:
+         obj_list.append((obj,objects[obj]['report']['score']))
+
+   best_objects = {}
+   for id, score in sorted(obj_list, key=lambda x: x[1], reverse=True):
+      best_objects[id] = objects[id]
+   return(best_objects)
+
+def obj_report(data): 
+   for key in data:
+      if key == 'ofns' or key == 'report':
+         print(key, data[key])
+
 def debug(video_file):
    orig_sd_trim_num = get_trim_num(video_file)
 
@@ -5805,7 +6890,6 @@ def debug(video_file):
       md['arc_fail'] = "NO HD METEOR FOUND"
       save_json_file(old_meteor_json_file, md)
       return()
-
 
 
 
@@ -5986,17 +7070,23 @@ def check_archive(day, run):
             mp4_file = mf.replace(".json", ".mp4")
             if "arc_fail" in jd:
                print("ALREADY TRIED AND FAILED:", jd['arc_fail'])
-            cmd = "./flex-detect.py debug " + mp4_file
+            cmd = "./flex-detect.py debug2 " + mp4_file
             print(cmd) 
             if run == 1: 
                os.system(cmd)
          # check HD
          #if cfe(jd['hd_trim']) == 0:
          #   print("HD TRIM MISSING!", jd['hd_trim'])
-         if "hd_trim" in jd:
-            hd_stack = jd['hd_trim'].replace(".mp4", "-stacked.png")
+         print(jd)
+         noHD = 0 
+         if "hd_trim" in jd: 
+            if jd['hd_trim'] is not None:
+               hd_stack = jd['hd_trim'].replace(".mp4", "-stacked.png")
+            else:
+               noHD = 1
          else:
             print("HD TRIM MISSING FROM ORIG JS:", mp4_file)
+            noHD = 1
          #if cfe(hd_stack) == 0:
          #   print("HD STACK NOT FOUND:", hd_stack)
 
@@ -6062,4 +7152,6 @@ if cmd == "faf" :
 
 if cmd == "bfaf" :
    batch_fit_arc_file(video_file)
+if cmd == "debug2" :
+   debug2(video_file)
 

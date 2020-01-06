@@ -71,8 +71,8 @@ def get_meteor_files(dir, cams):
       for file in files:
          if "reduced" not in file and "import" not in file and "star" not in file and "manual" not in file:
             jd = load_json_file(file)
-            print(file, jd['hd_trim'])
             if 'hd_trim' in jd:
+               print(file, jd['hd_trim'])
                if jd['hd_trim'] is not None and jd['hd_trim'] != 0:
                   img_file = jd['hd_trim'].replace(".mp4", "-stacked.png")
                   if "/mnt/ams2/HD" in img_file:

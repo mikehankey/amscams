@@ -326,9 +326,9 @@ def make_movie_from_frames(frames, fns, outfile , remaster = 0):
    last_frame = fns[-1]
 
    cc = 0
-   print("Start Trim Fn:", first_frame)
-   print("Last Trim Fn:", last_frame)
-   print("Total frames :", len(frames))
+   print("MM Start Trim Fn:", first_frame)
+   print("MM Last Trim Fn:", last_frame)
+   print("MM Total frames :", len(frames))
 
    for frame in frames:
       filename = TMP_DIR + '{0:06d}'.format(cc) + ".png"
@@ -616,8 +616,10 @@ def find_hd_file_new(sd_file, trim_num, dur = 5, trim_on =1):
             if time_diff_sec < 0:
                time_diff_sec = 0
             if trim_on == 1:
+               print("TRIMTRIMTIRM")
                hd_trim = ffmpeg_trim(hd_file, str(time_diff_sec), str(dur), "-trim-" + str(trim_num) + "-HD-meteor")
             else:
+               print("NOOOOOOOOOOOOOOOOOOOOOO TRIMMMMMMMMMMMMMMM")
                hd_trim = None
             return(hd_file, hd_trim, time_diff_sec, dur)
    return(None,None,None,None)
@@ -661,7 +663,7 @@ def eof_processing(sd_file, trim_num, dur):
    #hd_datetime, sd_cam, sd_date, sd_h, sd_m, sd_s = convert_filename_to_date_cam(merge_files[0])
    hd_datetime, hd_cam, hd_date, hd_y, hd_m, hd_d, hd_h, hd_M, hd_s = convert_filename_to_date_cam(merge_files[0])
    new_clip_datetime = hd_datetime + datetime.timedelta(seconds=55)
-   new_hd_outfile = new_clip_datetime.strftime("%Y_%m_%d_%H_%M_%S" + "_" + "000" + "_" + sd_cam + ".mp4")
+   new_hd_outfile = "/mnt/ams2/HD/" + new_clip_datetime.strftime("%Y_%m_%d_%H_%M_%S" + "_" + "000" + "_" + sd_cam + ".mp4")
    print("HD TRIM1,2,NEW:", hd_trim1, hd_trim2, new_hd_outfile)
    ffmpeg_cat(hd_trim1, hd_trim2, new_hd_outfile)
    hd_trim = new_hd_outfile.replace(".mp4", "-trim-0-HD-trim.mp4")
@@ -687,7 +689,7 @@ def ffmpeg_trim (filename, trim_start_sec, dur_sec, out_file_suffix):
 
    outfile = filename.replace(".mp4", out_file_suffix + ".mp4")
    cmd = "/usr/bin/ffmpeg -y -i " + filename + " -y -ss 00:00:" + str(trim_start_sec) + " -t 00:00:" + str(dur_sec) + " -c copy " + outfile+ " >/dev/null 2>&1"
-#   print (cmd)
+   print (cmd)
    os.system(cmd)
    return(outfile)
 

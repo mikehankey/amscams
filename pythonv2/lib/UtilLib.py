@@ -168,9 +168,39 @@ def convert_filename_to_date_cam(file):
    f_datetime = datetime.datetime.strptime(f_date_str, "%Y-%m-%d %H:%M:%S")
    return(f_datetime, cam, f_date_str,fy,fm,fd, fh, fmin, fs)
 
+def bound_leading_edge_cnt(x,y,img_w,img_h,x_dir_mod,y_dir_mod,sz=10):
+   # left to right meteor, so only grab pixels to the right of the x
+   if x_dir_mod == -1:
+      mnx = x
+      mxx = x + sz
+   else:
+      # right to left meteor, so only grab pixels to the left of the x
+      mxx = x
+      mnx = x - sz
+   if y_dir_mod == -1:
+      mny = y 
+      mxy = y + sz
+   else:
+      # right to left meteor, so only grab pixels to the left of the x
+      mxy = y
+      mny = y - sz
+   if mnx < 0:
+      mnx = 0
+      mxx = 0 + sz
+   if mny < 0:
+      mny = 0
+      mxy = 0 + sz
+   if mxx >= img_w:
+      mxx = img_w 
+      mnx = img_w - sz 
+   if mxy >= img_h:
+      mxy = img_h
+      mny = img_h - sz 
+
+   return(mnx,mny,mxx,mxy)
+
 
 def bound_cnt(x,y,img_w,img_h,sz=10):
-
    if x - sz < 0:
       mnx = 0
    else:
