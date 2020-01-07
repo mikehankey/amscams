@@ -79,14 +79,13 @@ def reduce_meteor2(json_conf,form):
             os.makedirs(copy_path)
 
 
-         print("THE FILE EXIST HERE : " + remote_video_file_path+video_hd_full_path)
+         print("THE FILE EXIST HERE :<br/>" + remote_video_file_path+ os.path.basename(video_hd_full_path))
          print("<br/>WE NEED TO COPY IT HERE:")
-         print(copy_path + analysed_name['name'])
-         print("AND WE NEED TO COPY<br/>")
-   
+         print(copy_path + os.path.basename(video_hd_full_path))
+
  
          # COPY HD
-         copyfile(remote_video_file_path+video_hd_full_path,copy_path + analysed_name['name'])
+         copyfile(remote_video_file_path+video_hd_full_path,copy_path + os.path.basename(video_hd_full_path))
          # COPY SD
          copyfile(remote_video_file_path+ video_sd_full_path,copy_path + os.path.basename(video_sd_full_path))
          # COPY JSON
