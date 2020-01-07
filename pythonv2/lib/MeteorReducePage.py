@@ -152,7 +152,8 @@ def reduce_meteor2(json_conf,form):
   
    # Is it remote?
    if(other_station==True):
-      template = template.replace("{WARNING_STATION}", "<div class='container-fluid mt-4'><div class='alert alert-danger'><span class='icon-notification'></span> WARNING THIS DETECTION HAS BEEN MADE FROM ANOTHER STATION " + real_station_id+"</div></div>")
+      real_station_id = can_we_get_the_station_id(analysed_name['full_path'])
+      template = template.replace("{WARNING_STATION}", "<div class='container-fluid mt-4'><div class='alert alert-danger'><span class='icon-notification'></span> WARNING THIS DETECTION HAS BEEN MADE FROM ANOTHER STATION " + str(real_station_id) +"</div></div>")
    else:
       template = template.replace("{WARNING_STATION}", "") 
 
