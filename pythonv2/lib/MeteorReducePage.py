@@ -49,8 +49,8 @@ def reduce_meteor2(json_conf,form):
 
    # Test if it's a detection from the current device
    # or another one 
-   print(analysed_name)
-   sys.exit(0)
+   if(analysed_name['station_id'] not in analysed_name['full_path']):
+      print(" THIS ONE COMES FROM SOMEWHERE ELSE")
 
    # We get the proper json and the other video file
    if('HD' in video_full_path):
