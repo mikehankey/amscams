@@ -28,6 +28,10 @@ def print_error(msg):
    print("<div id='main_container' class='container mt-4 lg-l'>"+get_error(msg)+"</div>")
    sys.exit(0)
 
+
+# Test if we can get a station id from an URL and return the station id or FALSE
+def can_we_get_the_station_id(path):
+   print(path.split(os.sep))
  
  
 # Parses a regexp (FILE_NAMES_REGEX) a file name
