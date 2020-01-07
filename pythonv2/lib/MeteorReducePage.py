@@ -79,29 +79,34 @@ def reduce_meteor2(json_conf,form):
             os.makedirs(copy_path)
 
 
-         print("THE FILE EXIST HERE :<br/>" + remote_video_file_path+ os.sep + os.path.basename(video_hd_full_path))
-         print("<br/>WE NEED TO COPY IT HERE:")
-         print(copy_path + os.path.basename(video_hd_full_path))
+         #print("THE FILE EXIST HERE :<br/>" + remote_video_file_path+ os.sep + os.path.basename(video_hd_full_path))
+         #print("<br/>WE NEED TO COPY IT HERE:")
+         #print(copy_path + os.path.basename(video_hd_full_path))
 
  
          # COPY HD
-         copyfile(remote_video_file_path+ os.sep  + os.path.basename(video_hd_full_path),copy_path + os.path.basename(video_hd_full_path))
+         try:
+            copyfile(remote_video_file_path+ os.sep  + os.path.basename(video_hd_full_path),copy_path + os.path.basename(video_hd_full_path))
+         except:
+            print_error("<b>IMPOSSIBLE TO COPY THE HD VIDEO</b>")
+
          # COPY SD
-         copyfile(remote_video_file_path+ os.sep + os.path.basename(video_sd_full_path),copy_path + os.path.basename(video_sd_full_path))
+         try:
+            copyfile(remote_video_file_path+ os.sep + os.path.basename(video_sd_full_path),copy_path + os.path.basename(video_sd_full_path))
+         except:         
+            print_error("<b>IMPOSSIBLE TO COPY THE SD VIDEO</b>")
+         
+         
          # COPY JSON
-         copyfile(remote_video_file_path+ os.sep + os.path.basename(json_full_path),copy_path + os.path.basename(json_full_path))
+         try:
+            copyfile(remote_video_file_path+ os.sep + os.path.basename(json_full_path),copy_path + os.path.basename(json_full_path))
+         except:         
+            print_error("<b>IMPOSSIBLE TO COPY THE JSON FILE</b>")
 
          
 
 
-         print(remote_video_file_path + video_sd_full_path)
-         print("<br>====><br>")
-         print(copy_path + os.path.basename(video_sd_full_path))
-         print("<br>AND<br>")
-
-         print(remote_video_file_path + json_full_path)
-         print("<br>====><br>")
-         print(copy_path + os.path.basename(json_full_path))
+          
       else:
          print_error("FILE NOT FOUND:<br>The file " + analysed_name['full_path'] + ' couldn\'t  be found on the remote folder.<br/> Please, check your remote path ('+ remote_video_file_path+ ')')
       sys.exit(0)
