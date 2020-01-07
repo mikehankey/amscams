@@ -3,6 +3,7 @@ import cgitb
 from pathlib import Path
 from shutil import copyfile
 
+from lib.CGI_Tools import redirect_to
 from lib.MeteorReduce_Tools import * 
 from lib.MeteorReduce_Calib_Tools import find_matching_cal_files, find_calib_file
 from lib.REDUCE_VARS import REMOTE_FILES_FOLDER, REMOVE_METEOR_FOLDER, METEOR_ARCHIVE
@@ -77,32 +78,28 @@ def reduce_meteor2(json_conf,form):
          # CREATE DIR IF Doesn't EXIST
          if not os.path.exists(copy_path):
             os.makedirs(copy_path)
-
-
-         #print("THE FILE EXIST HERE :<br/>" + remote_video_file_path+ os.sep + os.path.basename(video_hd_full_path))
-         #print("<br/>WE NEED TO COPY IT HERE:")
-         #print(copy_path + os.path.basename(video_hd_full_path))
-
- 
+  
          # COPY HD
          try:
             copyfile(remote_video_file_path+ os.sep  + os.path.basename(video_hd_full_path),copy_path + os.path.basename(video_hd_full_path))
          except:
-            print_error("Remote File error: <b>IMPOSSIBLE TO COPY THE HD VIDEO</b><br>Are you sure the HD video <br>"+ os.path.basename(video_hd_full_path)+" <br>is on the remote folder:<br>"+ remote_video_file_path+' ?')
+            print_error("Remote File error: <b>IMPOSSIBLE TO COPY THE HD VIDEO</b><br><br>Are you sure the HD video <br>"+ os.path.basename(video_hd_full_path)+" <br>is on the remote folder:<br>"+ remote_video_file_path+' ?')
 
          # COPY SD
          try:
             copyfile(remote_video_file_path+ os.sep + os.path.basename(video_sd_full_path),copy_path + os.path.basename(video_sd_full_path))
          except:         
-            print_error("Remote File error: <b>IMPOSSIBLE TO COPY THE HD VIDEO</b><br>Are you sure the SD video <br>"+ os.path.basename(video_sd_full_path)+" <br>is on the remote folder:<br>"+ remote_video_file_path+' ?')
-         
-         
+            print_error("Remote File error: <b>IMPOSSIBLE TO COPY THE HD VIDEO</b><br><br>Are you sure the SD video <br>"+ os.path.basename(video_sd_full_path)+" <br>is on the remote folder:<br>"+ remote_video_file_path+' ?')
+          
          # COPY JSON
          try:
             copyfile(remote_video_file_path+ os.sep + os.path.basename(json_full_path),copy_path + os.path.basename(json_full_path))
          except:         
-            print_error("Remote File error: <b>IMPOSSIBLE TO COPY THE JSON FILE</b><br>Are you sure the JSON File <br>"+ os.path.basename(json_full_path)+" <br>is on the remote folder:<br>"+ remote_video_file_path+' ?')
- 
+            print_error("Remote File error: <b>IMPOSSIBLE TO COPY THE JSON FILE</b><br><br>Are you sure the JSON File <br>"+ os.path.basename(json_full_path)+" <br>is on the remote folder:<br>"+ remote_video_file_path+' ?')
+
+         # Redirect to the Reduce page
+         redirect_to("/pycgi/webUI.py?cmd=reduce2&video_file=" + copy_path + os.path.basename(video_hd_full_path) + "&clear_cache=1&c=" + str(random.randint(0,100000000)), "reduction")
+
    
       else:
          print_error("FILE NOT FOUND:<br>The file " + analysed_name['full_path'] + ' couldn\'t  be found on the remote folder.<br/> Please, check your remote path ('+ remote_video_file_path+ ')')
