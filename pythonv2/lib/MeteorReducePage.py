@@ -77,6 +77,13 @@ def reduce_meteor2(json_conf,form):
          # CREATE DIR IF Doesn't EXIST
          if not os.path.exists(copy_path):
             os.makedirs(copy_path)
+
+
+         print("THE FILE EXIST HERE : " + remote_video_file_path)
+         print("<br/>WE NEED TO COPY IT HERE:")
+         print(copy_path + analysed_name['name'])
+         print("AND WE NEED TO COPY<br/>")
+   
  
          # COPY HD
          copyfile(remote_video_file_path,copy_path + analysed_name['name'])
@@ -86,10 +93,6 @@ def reduce_meteor2(json_conf,form):
          copyfile(remote_video_file_path,copy_path + os.path.basename(json_full_path))
 
          
-         print("THE FILE EXIST HERE : " + remote_video_file_path)
-         print("<br/>WE NEED TO COPY IT HERE:")
-         print(copy_path + analysed_name['name'])
-         print("AND WE NEED TO COPY<br/>")
 
 
          print(remote_video_file_path + video_sd_full_path)
