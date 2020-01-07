@@ -4,7 +4,7 @@ from pathlib import Path
 
 from lib.MeteorReduce_Tools import * 
 from lib.MeteorReduce_Calib_Tools import find_matching_cal_files, find_calib_file
-from lib.REDUCE_VARS import REMOTE_FILES_FOLDER, REMOVE_METEOR_FOLDER
+from lib.REDUCE_VARS import REMOTE_FILES_FOLDER, REMOVE_METEOR_FOLDER, METEOR_ARCHIVE
  
 PAGE_TEMPLATE = "/home/ams/amscams/pythonv2/templates/reducePage.v2.html"
  
@@ -64,11 +64,11 @@ def reduce_meteor2(json_conf,form):
       test_remove_video = Path(remote_video_file_path)
       if test_remove_video.is_file():
          print("THE FILE EXIST HERE : " + remote_video_file_path)
- 
          print("WE NEED TO COPY IT HERE:")
+         print(METEOR_ARCHIVE + os.sep + str(real_station_id) + REMOVE_METEOR_FOLDER + os.sep + analysed_name['year'] + os.sep + analysed_name['month']  + os.sep + analysed_name['day'] +  os.sep + analysed_name['name'])
 
       else:
-         print_error("FILE NOT FOUND:<br>The file " + analysed_name['full_path'] + ' couldn\'t  be found on the remove folder. Please, check your path ('+ remote_video_file_path+ ')')
+         print_error("FILE NOT FOUND:<br>The file " + analysed_name['full_path'] + ' couldn\'t  be found on the remote folder.<br/> Please, check your remote path ('+ remote_video_file_path+ ')')
       sys.exit(0)
 
    # We get the proper json and the other video file
