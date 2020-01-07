@@ -63,7 +63,8 @@ def reduce_meteor2(json_conf,form):
 
    # Test if it's a detection from the current device
    # or another one 
-   if(analysed_name['station_id'] != get_station_id()):
+
+   if(analysed_name['station_id'] != get_station_id() and not os.path.isfile(video_full_path)):
 
       # Can we get the real station_id?
       real_station_id = can_we_get_the_station_id(analysed_name['full_path'])
