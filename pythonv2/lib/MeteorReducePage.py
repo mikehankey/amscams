@@ -76,6 +76,7 @@ def reduce_meteor2(json_conf,form):
          remote_video_file_path = REMOTE_FILES_FOLDER + os.sep + str(real_station_id) + REMOVE_METEOR_FOLDER + os.sep + analysed_name['year'] + os.sep + analysed_name['month']  + os.sep + analysed_name['day'] 
          remote_video_file_fullpath = remote_video_file_path +  os.sep + analysed_name['name']
          test_remoTe_video = Path(remote_video_file_fullpath)
+         
          if test_remoTe_video.is_file():
             copy_path = METEOR_ARCHIVE  + str(real_station_id) + REMOVE_METEOR_FOLDER + os.sep + analysed_name['year'] + os.sep + analysed_name['month']  + os.sep + analysed_name['day'] +  os.sep
             
@@ -105,10 +106,10 @@ def reduce_meteor2(json_conf,form):
             redirect_to("/pycgi/webUI.py?cmd=reduce2&video_file=" + copy_path + os.path.basename(video_hd_full_path), "reduction")
 
       else:
-            print("WARNING THIS DETECTION HAS BEEN MADE FROM ANOTHER STATION")
+         print("WARNING THIS DETECTION HAS BEEN MADE FROM ANOTHER STATION")
    
-      else:
-         print_error("FILE NOT FOUND:<br>The file " + analysed_name['full_path'] + ' couldn\'t  be found on the remote folder.<br/> Please, check your remote path ('+ remote_video_file_path+ ')')
+   else:
+      print_error("FILE NOT FOUND:<br>The file " + analysed_name['full_path'] + ' couldn\'t  be found on the remote folder.<br/> Please, check your remote path ('+ remote_video_file_path+ ')')
       sys.exit(0)
 
 
