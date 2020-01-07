@@ -69,12 +69,15 @@ def reduce_meteor2(json_conf,form):
       
       # In this case, we copy the files from wasabi
       remote_video_file_path = REMOTE_FILES_FOLDER + os.sep + str(real_station_id) + REMOVE_METEOR_FOLDER + os.sep + analysed_name['year'] + os.sep + analysed_name['month']  + os.sep + analysed_name['day'] +  os.sep + analysed_name['name']
-      test_remove_video = Path(remote_video_file_path)
-      if test_remove_video.is_file():
+      test_remoTe_video = Path(remote_video_file_path)
+      if test_remoTe_video.is_file():
          print("THE FILE EXIST HERE : " + remote_video_file_path)
-         print("WE NEED TO COPY IT HERE:")
+         print("<br/>WE NEED TO COPY IT HERE:")
          print(METEOR_ARCHIVE  + str(real_station_id) + REMOVE_METEOR_FOLDER + os.sep + analysed_name['year'] + os.sep + analysed_name['month']  + os.sep + analysed_name['day'] +  os.sep + analysed_name['name'])
-
+         print("<br/>SD: ")
+         print(video_sd_full_path)
+         print("<br/>JSON: ")
+         print(json_full_path)
       else:
          print_error("FILE NOT FOUND:<br>The file " + analysed_name['full_path'] + ' couldn\'t  be found on the remote folder.<br/> Please, check your remote path ('+ remote_video_file_path+ ')')
       sys.exit(0)
