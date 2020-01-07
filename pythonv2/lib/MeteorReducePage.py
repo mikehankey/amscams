@@ -52,7 +52,7 @@ def reduce_meteor2(json_conf,form):
 
    # Test if it's a detection from the current device
    # or another one 
-   if(analysed_name['station_id'] not in analysed_name['full_path']):
+   if(analysed_name['station_id'] != get_station_id()):
 
       # Can we get the real station_id?
       real_station_id = can_we_get_the_station_id(analysed_name['full_path'])
@@ -64,9 +64,11 @@ def reduce_meteor2(json_conf,form):
       test_remove_video = Path(remote_video_file_path)
       if test_remove_video.is_file():
          print("THE FILE EXIST HERE : " + remote_video_file_path)
+ 
+         print("WE NEED TO COPY IT HERE:")
+
       else:
-         print("THE REMOTE FILE " + remote_video_file_path +  " NOT FOUND ")
-      
+         print_error("FILE NOT FOUND:<br>The file " + analysed_name['full_path'] + ' couldn\'t  be found on the remove folder. Please, check your path ('+ remote_video_file_path+ ')')
       sys.exit(0)
 
    # We get the proper json and the other video file

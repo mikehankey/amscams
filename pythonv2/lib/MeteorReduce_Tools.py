@@ -60,7 +60,11 @@ def name_analyser(file_names):
    res['full_path'] = file_names
 
    # Add the station id
-   res['station_id'] = get_station_id()
+   tmp_station_id = can_we_get_the_station_id(file_names)
+   if(tmp_station_id  is not False):
+      res['station_id'] = tmp_station_id
+   else:
+      res['station_id'] = get_station_id()
  
    return res
 
