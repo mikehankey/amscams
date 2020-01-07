@@ -40,8 +40,7 @@ def reduce_meteor2(json_conf,form):
       json_full_path = video_full_path
       video_sd_full_path = video_full_path.replace('.json','-SD.mp4')  
       video_hd_full_path = video_full_path.replace('.json','-HD.mp4') 
-      video_full_path = video_hd_full_path
-
+      video_full_path = video_hd_full_path 
 
    # We get the proper json and the other video file
    if('HD' in video_full_path):
@@ -68,16 +67,25 @@ def reduce_meteor2(json_conf,form):
       real_station_id = can_we_get_the_station_id(analysed_name['full_path'])
       
       # In this case, we copy the files from wasabi
-      remote_video_file_path = REMOTE_FILES_FOLDER + os.sep + str(real_station_id) + REMOVE_METEOR_FOLDER + os.sep + analysed_name['year'] + os.sep + analysed_name['month']  + os.sep + analysed_name['day'] +  os.sep + analysed_name['name']
-      test_remoTe_video = Path(remote_video_file_path)
+      remote_video_file_path = REMOTE_FILES_FOLDER + os.sep + str(real_station_id) + REMOVE_METEOR_FOLDER + os.sep + analysed_name['year'] + os.sep + analysed_name['month']  + os.sep + analysed_name['day'] 
+      remove_video_file_fillpath = remote_video_file_path +  os.sep + analysed_name['name']
+      test_remoTe_video = Path(remove_video_file_fillpath)
       if test_remoTe_video.is_file():
+         copy_path = METEOR_ARCHIVE  + str(real_station_id) + REMOVE_METEOR_FOLDER + os.sep + analysed_name['year'] + os.sep + analysed_name['month']  + os.sep + analysed_name['day'] +  os.sep
          print("THE FILE EXIST HERE : " + remote_video_file_path)
          print("<br/>WE NEED TO COPY IT HERE:")
-         print(METEOR_ARCHIVE  + str(real_station_id) + REMOVE_METEOR_FOLDER + os.sep + analysed_name['year'] + os.sep + analysed_name['month']  + os.sep + analysed_name['day'] +  os.sep + analysed_name['name'])
-         print("<br/>SD: ")
-         print(video_sd_full_path)
-         print("<br/>JSON: ")
-         print(json_full_path)
+         print(copy_path + analysed_name['name'])
+         print("AND WE NEED TO COPY<br/>")
+
+
+         print(remote_video_file_path + video_sd_full_path)
+         print("<br>====><br>")
+         print(copy_path + video_sd_full_path)
+         print("<br>AND<br>")
+
+         print(remote_video_file_path + json_full_path)
+         print("<br>====><br>")
+         print(copy_path + json_full_path)
       else:
          print_error("FILE NOT FOUND:<br>The file " + analysed_name['full_path'] + ' couldn\'t  be found on the remote folder.<br/> Please, check your remote path ('+ remote_video_file_path+ ')')
       sys.exit(0)
