@@ -80,12 +80,12 @@ def reduce_meteor2(json_conf,form):
 
          print(remote_video_file_path + video_sd_full_path)
          print("<br>====><br>")
-         print(copy_path + video_sd_full_path)
+         print(copy_path + os.path.basename(video_sd_full_path))
          print("<br>AND<br>")
 
          print(remote_video_file_path + json_full_path)
          print("<br>====><br>")
-         print(copy_path + json_full_path)
+         print(copy_path + os.path.basename(json_full_path))
       else:
          print_error("FILE NOT FOUND:<br>The file " + analysed_name['full_path'] + ' couldn\'t  be found on the remote folder.<br/> Please, check your remote path ('+ remote_video_file_path+ ')')
       sys.exit(0)
