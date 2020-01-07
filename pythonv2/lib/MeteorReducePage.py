@@ -69,8 +69,8 @@ def reduce_meteor2(json_conf,form):
       
       # In this case, we copy the files from wasabi
       remote_video_file_path = REMOTE_FILES_FOLDER + os.sep + str(real_station_id) + REMOVE_METEOR_FOLDER + os.sep + analysed_name['year'] + os.sep + analysed_name['month']  + os.sep + analysed_name['day'] 
-      remove_video_file_fillpath = remote_video_file_path +  os.sep + analysed_name['name']
-      test_remoTe_video = Path(remove_video_file_fillpath)
+      remote_video_file_fullpath = remote_video_file_path +  os.sep + analysed_name['name']
+      test_remoTe_video = Path(remote_video_file_fullpath)
       if test_remoTe_video.is_file():
          copy_path = METEOR_ARCHIVE  + str(real_station_id) + REMOVE_METEOR_FOLDER + os.sep + analysed_name['year'] + os.sep + analysed_name['month']  + os.sep + analysed_name['day'] +  os.sep
          
@@ -79,18 +79,18 @@ def reduce_meteor2(json_conf,form):
             os.makedirs(copy_path)
 
 
-         print("THE FILE EXIST HERE : " + remote_video_file_path)
+         print("THE FILE EXIST HERE : " + remote_video_file_path+video_hd_full_path)
          print("<br/>WE NEED TO COPY IT HERE:")
          print(copy_path + analysed_name['name'])
          print("AND WE NEED TO COPY<br/>")
    
  
          # COPY HD
-         copyfile(remote_video_file_path,copy_path + analysed_name['name'])
+         copyfile(remote_video_file_path+video_hd_full_path,copy_path + analysed_name['name'])
          # COPY SD
-         copyfile(remote_video_file_path,copy_path + os.path.basename(video_sd_full_path))
+         copyfile(remote_video_file_path+ video_sd_full_path,copy_path + os.path.basename(video_sd_full_path))
          # COPY JSON
-         copyfile(remote_video_file_path,copy_path + os.path.basename(json_full_path))
+         copyfile(remote_video_file_path+ json_full_path,copy_path + os.path.basename(json_full_path))
 
          
 
