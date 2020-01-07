@@ -63,6 +63,8 @@ def reduce_meteor2(json_conf,form):
    # Test if it's a detection from the current device
    # or another one 
 
+   other_station = False
+
    if(analysed_name['station_id'] != get_station_id()):
 
       # We need to retrieve the files and copy them on the current machine
@@ -105,11 +107,8 @@ def reduce_meteor2(json_conf,form):
             redirect_to("/pycgi/webUI.py?cmd=reduce2&video_file=" + copy_path + os.path.basename(video_hd_full_path), "reduction")
 
       else:
-         print("WARNING THIS DETECTION HAS BEEN MADE FROM ANOTHER STATION")
-   
- 
-
-
+         other_station = True
+    
    
    if(cfe(video_hd_full_path)==0):
       video_hd_full_path = ''
@@ -151,6 +150,10 @@ def reduce_meteor2(json_conf,form):
    else:
       thumbs = get_thumbs(tmp_analysed_name,meteor_json_file,HD,HD_frames,clear_cache)
   
+
+   if(other_station==True):
+      print("WARNING THIS DETECTION HAS BEEN MADE FROM ANOTHER STATION")
+
    # Fill Template with data
    template = template.replace("{VIDEO_FILE}", str(video_full_path))   # Video File  
    template = template.replace("{SD_VIDEO}",str(video_sd_full_path))   # SD Video File
