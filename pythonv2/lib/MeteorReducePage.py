@@ -1,5 +1,7 @@
 import cgitb
 
+from pathlib import Path
+
 from lib.MeteorReduce_Tools import * 
 from lib.MeteorReduce_Calib_Tools import find_matching_cal_files, find_calib_file
 from lib.REDUCE_VARS import REMOTE_FILES_FOLDER, REMOVE_METEOR_FOLDER
@@ -52,9 +54,13 @@ def reduce_meteor2(json_conf,form):
    # or another one 
    if(analysed_name['station_id'] not in analysed_name['full_path']):
       # In this case, we copy the files from wasabi
-      print(analysed_name)
-      print("<br>")
-      print(REMOTE_FILES_FOLDER + os.sep + analysed_name['station_id'] + REMOVE_METEOR_FOLDER + os.sep + analysed_name['year'] + os.sep + analysed_name['month'] +  os.sep + analysed_name['name'])
+      remote_video_file_path = REMOTE_FILES_FOLDER + os.sep + analysed_name['station_id'] + REMOVE_METEOR_FOLDER + os.sep + analysed_name['year'] + os.sep + analysed_name['month'] +  os.sep + analysed_name['name']
+      test_remove_video = Path(remote_video_file_path)
+      if test_remove_video.is_file():
+         print("THE FILE EXIST HERE : " + remote_video_file_path)
+      else:
+         print("THE REMOVE FILE " + remote_video_file_path +  " NOT FOUND ")
+      
       sys.exit(0)
 
    # We get the proper json and the other video file

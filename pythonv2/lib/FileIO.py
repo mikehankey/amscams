@@ -362,10 +362,10 @@ def load_json_file_MIKESVERSION(json_file):
 
 
 def load_json_file(json_file):  
-   #try:
-   with open(json_file, 'r' ) as infile:
-      json_data = json.load(infile)
-   #except:
-   #   json_data = False
+   try:
+      with open(json_file, 'r' ) as infile:
+         json_data = json.load(infile)
+   except:
+      json_data = False
    return json_data 
 
