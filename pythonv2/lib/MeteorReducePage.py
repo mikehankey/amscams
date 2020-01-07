@@ -1,6 +1,7 @@
 import cgitb
 
 from pathlib import Path
+from shutil import copyfile
 
 from lib.MeteorReduce_Tools import * 
 from lib.MeteorReduce_Calib_Tools import find_matching_cal_files, find_calib_file
@@ -72,6 +73,18 @@ def reduce_meteor2(json_conf,form):
       test_remoTe_video = Path(remove_video_file_fillpath)
       if test_remoTe_video.is_file():
          copy_path = METEOR_ARCHIVE  + str(real_station_id) + REMOVE_METEOR_FOLDER + os.sep + analysed_name['year'] + os.sep + analysed_name['month']  + os.sep + analysed_name['day'] +  os.sep
+         
+         # CREATE DIR IF Doesn't EXIST
+         Path(copy_path).mkdir(parents=True, exist_ok=True)
+
+         # COPY HD
+         copyfile(remote_video_file_path,copy_path + analysed_name['name'])
+         # COPY SD
+         copyfile(remote_video_file_path,copy_path + os.path.basename(video_sd_full_path))
+         # COPY JSON
+         copyfile(remote_video_file_path,copy_path + os.path.basename(json_full_path))
+
+         
          print("THE FILE EXIST HERE : " + remote_video_file_path)
          print("<br/>WE NEED TO COPY IT HERE:")
          print(copy_path + analysed_name['name'])
