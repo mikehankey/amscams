@@ -88,20 +88,20 @@ def reduce_meteor2(json_conf,form):
          try:
             copyfile(remote_video_file_path+ os.sep  + os.path.basename(video_hd_full_path),copy_path + os.path.basename(video_hd_full_path))
          except:
-            print_error("Remote File error: <b>IMPOSSIBLE TO COPY THE HD VIDEO</b><br>Are you sure the HD video ("+ os.path.basename(video_hd_full_path)+") is on the remote folder ("+ remote_video_file_path+')?')
+            print_error("Remote File error: <b>IMPOSSIBLE TO COPY THE HD VIDEO</b><br>Are you sure the HD video <br>"+ os.path.basename(video_hd_full_path)+" <br>is on the remote folder:<br>"+ remote_video_file_path+' ?')
 
          # COPY SD
          try:
             copyfile(remote_video_file_path+ os.sep + os.path.basename(video_sd_full_path),copy_path + os.path.basename(video_sd_full_path))
          except:         
-            print_error("Remote File error: <b>IMPOSSIBLE TO COPY THE HD VIDEO</b><br>Are you sure the SD video ("+ os.path.basename(video_sd_full_path)+") is on the remote folder ("+ remote_video_file_path+')?')
+            print_error("Remote File error: <b>IMPOSSIBLE TO COPY THE HD VIDEO</b><br>Are you sure the SD video <br>"+ os.path.basename(video_sd_full_path)+" <br>is on the remote folder:<br>"+ remote_video_file_path+' ?')
          
          
          # COPY JSON
          try:
             copyfile(remote_video_file_path+ os.sep + os.path.basename(json_full_path),copy_path + os.path.basename(json_full_path))
          except:         
-            print_error("Remote File error: <b>IMPOSSIBLE TO COPY THE JSON FILE</b><br>Are you sure the JSON File ("+ os.path.basename(json_full_path)+") is on the remote folder ("+ remote_video_file_path+')?')
+            print_error("Remote File error: <b>IMPOSSIBLE TO COPY THE JSON FILE</b><br>Are you sure the JSON File <br>"+ os.path.basename(json_full_path)+" <br>is on the remote folder:<br>"+ remote_video_file_path+' ?')
  
    
       else:
