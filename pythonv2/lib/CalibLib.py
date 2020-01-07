@@ -14,7 +14,7 @@ from lib.VideoLib import load_video_frames, get_masks
 from lib.ImageLib import stack_frames, median_frames, adjustLevels, mask_frame
 from lib.UtilLib import convert_filename_to_date_cam, bound_cnt, check_running,date_to_jd, angularSeparation , calc_dist, better_parse_file_date
 from lib.FileIO import cfe, save_json_file, load_json_file
-from lib.DetectLib import eval_cnt
+#from lib.DetectLib import eval_cnt
 from scipy import signal
 import lib.brightstardata as bsd
 
@@ -64,6 +64,7 @@ def AzEltoRADec(az,el,cal_file,cal_params,json_conf):
 
 
 def XYtoRADec(img_x,img_y,cal_file,cal_params,json_conf):
+   #print("CAL FILE IS : ", cal_file)
    hd_datetime, hd_cam, hd_date, hd_y, hd_m, hd_d, hd_h, hd_M, hd_s = convert_filename_to_date_cam(cal_file)
    F_scale = 3600/float(cal_params['pixscale'])
    #F_scale = 24
@@ -1224,9 +1225,13 @@ def get_active_cal_file(input_file):
    else:
       return(None)
 
-def find_matching_cal_files(cam_id, capture_date):
+def find_matching_cal_files(cam_id, capture_date, cal_dir = None):
    matches = []
-   all_files = glob.glob("/mnt/ams2/cal/freecal/*")
+   if cal_dir is None:
+      all_files = glob.glob("/mnt/ams2/cal/freecal/*")
+   else:
+      all_files = glob.glob(cal_dir + "/*")
+
    for file in all_files:
       if cam_id in file :
          el = file.split("/")
