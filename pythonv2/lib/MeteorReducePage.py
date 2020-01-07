@@ -41,35 +41,7 @@ def reduce_meteor2(json_conf,form):
       video_sd_full_path = video_full_path.replace('.json','-SD.mp4')  
       video_hd_full_path = video_full_path.replace('.json','-HD.mp4') 
       video_full_path = video_hd_full_path
-    
-   # We need at least one video file
-   if(video_full_path is not None):
-      analysed_name = name_analyser(video_full_path)
-   else:
-      print_error("<b>You need to add a video file in the URL.</b>")
 
-
-
-   # Test if it's a detection from the current device
-   # or another one 
-   if(analysed_name['station_id'] != get_station_id()):
-
-      # Can we get the real station_id?
-      real_station_id = can_we_get_the_station_id(analysed_name['full_path'])
-
-      print("REAL STATION ID :" + str(real_station_id))
-
-      # In this case, we copy the files from wasabi
-      remote_video_file_path = REMOTE_FILES_FOLDER + os.sep + str(real_station_id) + REMOVE_METEOR_FOLDER + os.sep + analysed_name['year'] + os.sep + analysed_name['month']  + os.sep + analysed_name['day'] +  os.sep + analysed_name['name']
-      test_remove_video = Path(remote_video_file_path)
-      if test_remove_video.is_file():
-         print("THE FILE EXIST HERE : " + remote_video_file_path)
-         print("WE NEED TO COPY IT HERE:")
-         print(METEOR_ARCHIVE + os.sep + str(real_station_id) + REMOVE_METEOR_FOLDER + os.sep + analysed_name['year'] + os.sep + analysed_name['month']  + os.sep + analysed_name['day'] +  os.sep + analysed_name['name'])
-
-      else:
-         print_error("FILE NOT FOUND:<br>The file " + analysed_name['full_path'] + ' couldn\'t  be found on the remote folder.<br/> Please, check your remote path ('+ remote_video_file_path+ ')')
-      sys.exit(0)
 
    # We get the proper json and the other video file
    if('HD' in video_full_path):
@@ -80,13 +52,39 @@ def reduce_meteor2(json_conf,form):
       video_sd_full_path = video_full_path 
       video_hd_full_path = video_full_path.replace('-SD','-HD')
       json_full_path = video_full_path.replace('-SD.mp4','.json')  
-  
+
+       
+   # We need at least one video file
+   if(video_full_path is not None):
+      analysed_name = name_analyser(video_full_path)
+   else:
+      print_error("<b>You need to add a video file in the URL.</b>")
+
+   # Test if it's a detection from the current device
+   # or another one 
+   if(analysed_name['station_id'] != get_station_id()):
+
+      # Can we get the real station_id?
+      real_station_id = can_we_get_the_station_id(analysed_name['full_path'])
+      
+      # In this case, we copy the files from wasabi
+      remote_video_file_path = REMOTE_FILES_FOLDER + os.sep + str(real_station_id) + REMOVE_METEOR_FOLDER + os.sep + analysed_name['year'] + os.sep + analysed_name['month']  + os.sep + analysed_name['day'] +  os.sep + analysed_name['name']
+      test_remove_video = Path(remote_video_file_path)
+      if test_remove_video.is_file():
+         print("THE FILE EXIST HERE : " + remote_video_file_path)
+         print("WE NEED TO COPY IT HERE:")
+         print(METEOR_ARCHIVE  + str(real_station_id) + REMOVE_METEOR_FOLDER + os.sep + analysed_name['year'] + os.sep + analysed_name['month']  + os.sep + analysed_name['day'] +  os.sep + analysed_name['name'])
+
+      else:
+         print_error("FILE NOT FOUND:<br>The file " + analysed_name['full_path'] + ' couldn\'t  be found on the remote folder.<br/> Please, check your remote path ('+ remote_video_file_path+ ')')
+      sys.exit(0)
+
+
    
    if(cfe(video_hd_full_path)==0):
       video_hd_full_path = ''
       HD = False 
- 
-   
+  
    if(cfe(video_sd_full_path)==0):
        print_error(video_sd_full_path + " <b>not found.</b><br/>At least one SD video is required.")
 
