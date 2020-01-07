@@ -146,13 +146,16 @@ def reduce_meteor2(json_conf,form):
       HD_frames
    except NameError:
       # HD FRAMES NOT DEFINED
-      print("")
+      print("Error 0112.b")
    else:
       thumbs = get_thumbs(tmp_analysed_name,meteor_json_file,HD,HD_frames,clear_cache)
   
-
+   # Is it remote?
    if(other_station==True):
-      print("WARNING THIS DETECTION HAS BEEN MADE FROM ANOTHER STATION")
+      template = template.replace("{WARNING_STATION}", "<div class='container-fluid mt-4'><div class='alert alert-danger'><span class='icon-notification'></span> WARNING THIS DETECTION HAS BEEN MADE FROM ANOTHER STATION " + real_station_id+"</div></div>")
+   else:
+      template = template.replace("{WARNING_STATION}", "") 
+
 
    # Fill Template with data
    template = template.replace("{VIDEO_FILE}", str(video_full_path))   # Video File  
