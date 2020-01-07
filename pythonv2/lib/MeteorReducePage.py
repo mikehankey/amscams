@@ -98,7 +98,7 @@ def reduce_meteor2(json_conf,form):
             print_error("Remote File error: <b>IMPOSSIBLE TO COPY THE JSON FILE</b><br><br>Are you sure the JSON File <br>"+ os.path.basename(json_full_path)+" <br>is on the remote folder:<br>"+ remote_video_file_path+' ?')
 
          # Redirect to the Reduce page
-         redirect_to("/pycgi/webUI.py?cmd=reduce2&video_file=" + copy_path + os.path.basename(video_hd_full_path) + "&clear_cache=1&c=" + str(random.randint(0,100000000)), "reduction")
+         redirect_to("/pycgi/webUI.py?cmd=reduce2&video_file=" + copy_path + os.path.basename(video_hd_full_path), "reduction")
 
    
       else:
