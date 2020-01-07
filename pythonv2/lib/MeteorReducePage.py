@@ -75,8 +75,9 @@ def reduce_meteor2(json_conf,form):
          copy_path = METEOR_ARCHIVE  + str(real_station_id) + REMOVE_METEOR_FOLDER + os.sep + analysed_name['year'] + os.sep + analysed_name['month']  + os.sep + analysed_name['day'] +  os.sep
          
          # CREATE DIR IF Doesn't EXIST
-         Path(copy_path).mkdir(parents=True, exist_ok=True)
-
+         if not os.path.exists(copy_path):
+            os.makedirs(copy_path)
+ 
          # COPY HD
          copyfile(remote_video_file_path,copy_path + analysed_name['name'])
          # COPY SD
