@@ -64,43 +64,48 @@ def reduce_meteor2(json_conf,form):
    # Test if it's a detection from the current device
    # or another one 
 
-   if(analysed_name['station_id'] != get_station_id() and not os.path.isfile(video_full_path)):
+   if(analysed_name['station_id'] != get_station_id()):
 
-      # Can we get the real station_id?
-      real_station_id = can_we_get_the_station_id(analysed_name['full_path'])
-      
-      # In this case, we copy the files from wasabi
-      remote_video_file_path = REMOTE_FILES_FOLDER + os.sep + str(real_station_id) + REMOVE_METEOR_FOLDER + os.sep + analysed_name['year'] + os.sep + analysed_name['month']  + os.sep + analysed_name['day'] 
-      remote_video_file_fullpath = remote_video_file_path +  os.sep + analysed_name['name']
-      test_remoTe_video = Path(remote_video_file_fullpath)
-      if test_remoTe_video.is_file():
-         copy_path = METEOR_ARCHIVE  + str(real_station_id) + REMOVE_METEOR_FOLDER + os.sep + analysed_name['year'] + os.sep + analysed_name['month']  + os.sep + analysed_name['day'] +  os.sep
+      # We need to retrieve the files and copy them on the current machine
+      if( not os.path.isfile(video_full_path)):
+
+         # Can we get the real station_id?
+         real_station_id = can_we_get_the_station_id(analysed_name['full_path'])
          
-         # CREATE DIR IF Doesn't EXIST
-         if not os.path.exists(copy_path):
-            os.makedirs(copy_path)
-  
-         # COPY HD
-         try:
-            copyfile(remote_video_file_path+ os.sep  + os.path.basename(video_hd_full_path),copy_path + os.path.basename(video_hd_full_path))
-         except:
-            print_error("Remote File error: <b>IMPOSSIBLE TO COPY THE HD VIDEO</b><br><br>Are you sure the HD video <br>"+ os.path.basename(video_hd_full_path)+" <br>is on the remote folder:<br>"+ remote_video_file_path+' ?')
+         # In this case, we copy the files from wasabi
+         remote_video_file_path = REMOTE_FILES_FOLDER + os.sep + str(real_station_id) + REMOVE_METEOR_FOLDER + os.sep + analysed_name['year'] + os.sep + analysed_name['month']  + os.sep + analysed_name['day'] 
+         remote_video_file_fullpath = remote_video_file_path +  os.sep + analysed_name['name']
+         test_remoTe_video = Path(remote_video_file_fullpath)
+         if test_remoTe_video.is_file():
+            copy_path = METEOR_ARCHIVE  + str(real_station_id) + REMOVE_METEOR_FOLDER + os.sep + analysed_name['year'] + os.sep + analysed_name['month']  + os.sep + analysed_name['day'] +  os.sep
+            
+            # CREATE DIR IF Doesn't EXIST
+            if not os.path.exists(copy_path):
+               os.makedirs(copy_path)
+   
+            # COPY HD
+            try:
+               copyfile(remote_video_file_path+ os.sep  + os.path.basename(video_hd_full_path),copy_path + os.path.basename(video_hd_full_path))
+            except:
+               print_error("Remote File error: <b>IMPOSSIBLE TO COPY THE HD VIDEO</b><br><br>Are you sure the HD video <br>"+ os.path.basename(video_hd_full_path)+" <br>is on the remote folder:<br>"+ remote_video_file_path+' ?')
 
-         # COPY SD
-         try:
-            copyfile(remote_video_file_path+ os.sep + os.path.basename(video_sd_full_path),copy_path + os.path.basename(video_sd_full_path))
-         except:         
-            print_error("Remote File error: <b>IMPOSSIBLE TO COPY THE HD VIDEO</b><br><br>Are you sure the SD video <br>"+ os.path.basename(video_sd_full_path)+" <br>is on the remote folder:<br>"+ remote_video_file_path+' ?')
-          
-         # COPY JSON
-         try:
-            copyfile(remote_video_file_path+ os.sep + os.path.basename(json_full_path),copy_path + os.path.basename(json_full_path))
-         except:         
-            print_error("Remote File error: <b>IMPOSSIBLE TO COPY THE JSON FILE</b><br><br>Are you sure the JSON File <br>"+ os.path.basename(json_full_path)+" <br>is on the remote folder:<br>"+ remote_video_file_path+' ?')
+            # COPY SD
+            try:
+               copyfile(remote_video_file_path+ os.sep + os.path.basename(video_sd_full_path),copy_path + os.path.basename(video_sd_full_path))
+            except:         
+               print_error("Remote File error: <b>IMPOSSIBLE TO COPY THE HD VIDEO</b><br><br>Are you sure the SD video <br>"+ os.path.basename(video_sd_full_path)+" <br>is on the remote folder:<br>"+ remote_video_file_path+' ?')
+            
+            # COPY JSON
+            try:
+               copyfile(remote_video_file_path+ os.sep + os.path.basename(json_full_path),copy_path + os.path.basename(json_full_path))
+            except:         
+               print_error("Remote File error: <b>IMPOSSIBLE TO COPY THE JSON FILE</b><br><br>Are you sure the JSON File <br>"+ os.path.basename(json_full_path)+" <br>is on the remote folder:<br>"+ remote_video_file_path+' ?')
 
-         # Redirect to the Reduce page
-         redirect_to("/pycgi/webUI.py?cmd=reduce2&video_file=" + copy_path + os.path.basename(video_hd_full_path), "reduction")
+            # Redirect to the Reduce page
+            redirect_to("/pycgi/webUI.py?cmd=reduce2&video_file=" + copy_path + os.path.basename(video_hd_full_path), "reduction")
 
+      else:
+            print("WARNING THIS DETECTION HAS BEEN MADE FROM ANOTHER STATION")
    
       else:
          print_error("FILE NOT FOUND:<br>The file " + analysed_name['full_path'] + ' couldn\'t  be found on the remote folder.<br/> Please, check your remote path ('+ remote_video_file_path+ ')')
