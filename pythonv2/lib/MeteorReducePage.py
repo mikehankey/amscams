@@ -32,18 +32,25 @@ def reduce_meteor2(json_conf,form):
    # Warning we can also pass the JSON file
    video_full_path = form.getvalue("video_file")
 
+
    if('.json' in video_full_path):
       json_full_path = video_full_path
       video_sd_full_path = video_full_path.replace('.json','-SD.mp4')  
       video_hd_full_path = video_full_path.replace('.json','-HD.mp4') 
       video_full_path = video_hd_full_path
-   
-
+    
    # We need at least one video file
    if(video_full_path is not None):
       analysed_name = name_analyser(video_full_path)
    else:
       print_error("<b>You need to add a video file in the URL.</b>")
+
+
+
+   # Test if it's a detection from the current device
+   # or another one 
+   print(analysed_name)
+   sys.exit(0)
 
    # We get the proper json and the other video file
    if('HD' in video_full_path):
