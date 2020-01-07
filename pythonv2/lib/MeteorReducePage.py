@@ -2,6 +2,7 @@ import cgitb
 
 from lib.MeteorReduce_Tools import * 
 from lib.MeteorReduce_Calib_Tools import find_matching_cal_files, find_calib_file
+from lib.REDUCE_VARS import REMOTE_FILES_FOLDER, REMOVE_METEOR_FOLDER
  
 PAGE_TEMPLATE = "/home/ams/amscams/pythonv2/templates/reducePage.v2.html"
  
@@ -50,7 +51,11 @@ def reduce_meteor2(json_conf,form):
    # Test if it's a detection from the current device
    # or another one 
    if(analysed_name['station_id'] not in analysed_name['full_path']):
-      print(" THIS ONE COMES FROM SOMEWHERE ELSE")
+      # In this case, we copy the files from wasabi
+      print(analysed_name)
+      print("<br>")
+      print(REMOTE_FILES_FOLDER + os.sep + analysed_name['station_id'] + REMOVE_METEOR_FOLDER  + os.sep + analysed_name['month'])
+      sys.exit(0)
 
    # We get the proper json and the other video file
    if('HD' in video_full_path):
