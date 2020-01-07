@@ -54,7 +54,7 @@ def reduce_meteor2(json_conf,form):
       # In this case, we copy the files from wasabi
       print(analysed_name)
       print("<br>")
-      print(REMOTE_FILES_FOLDER + os.sep + analysed_name['station_id'] + REMOVE_METEOR_FOLDER + os.sep + analysed_name['year'] + os.sep + analysed_name['month'] + + os.sep + analysed_name['name'])
+      print(REMOTE_FILES_FOLDER + os.sep + analysed_name['station_id'] + REMOVE_METEOR_FOLDER + os.sep + analysed_name['year'] + os.sep + analysed_name['month'] +  os.sep + analysed_name['name'])
       sys.exit(0)
 
    # We get the proper json and the other video file
