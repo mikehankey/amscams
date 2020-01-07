@@ -85,11 +85,11 @@ def reduce_meteor2(json_conf,form):
 
  
          # COPY HD
-         copyfile(remote_video_file_path+video_hd_full_path,copy_path + os.path.basename(video_hd_full_path))
+         copyfile(remote_video_file_path+  os.path.basename(video_hd_full_path),copy_path + os.path.basename(video_hd_full_path))
          # COPY SD
-         copyfile(remote_video_file_path+ video_sd_full_path,copy_path + os.path.basename(video_sd_full_path))
+         copyfile(remote_video_file_path+ os.path.basename(video_sd_full_path),copy_path + os.path.basename(video_sd_full_path))
          # COPY JSON
-         copyfile(remote_video_file_path+ json_full_path,copy_path + os.path.basename(json_full_path))
+         copyfile(remote_video_file_path+ os.path.basename(json_full_path),copy_path + os.path.basename(json_full_path))
 
          
 
