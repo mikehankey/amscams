@@ -55,10 +55,12 @@ def reduce_meteor2(json_conf,form):
    if(analysed_name['station_id'] not in analysed_name['full_path']):
 
       # Can we get the real station_id?
-      can_we_get_the_station_id(analysed_name['full_path'])
+      real_station_id = can_we_get_the_station_id(analysed_name['full_path'])
+
+      print("REAL STATION ID :" + str(real_station_id))
 
       # In this case, we copy the files from wasabi
-      remote_video_file_path = REMOTE_FILES_FOLDER + os.sep + analysed_name['station_id'] + REMOVE_METEOR_FOLDER + os.sep + analysed_name['year'] + os.sep + analysed_name['month'] +  os.sep + analysed_name['name']
+      remote_video_file_path = REMOTE_FILES_FOLDER + os.sep + str(real_station_id) + REMOVE_METEOR_FOLDER + os.sep + analysed_name['year'] + os.sep + analysed_name['month'] +  os.sep + analysed_name['name']
       test_remove_video = Path(remote_video_file_path)
       if test_remove_video.is_file():
          print("THE FILE EXIST HERE : " + remote_video_file_path)

@@ -31,7 +31,13 @@ def print_error(msg):
 
 # Test if we can get a station id from an URL and return the station id or FALSE
 def can_we_get_the_station_id(path):
-   print(path.split(os.sep))
+   test = path.split(os.sep)
+   try:
+      # THE STATION ID SHOULD THE 4th element
+      # ex: ['', 'mnt', 'ams2', 'meteor_archive', 'AMS8', 'METEOR', '2020', '01', '05', '2020_01_05_03_01_32_000_010038-trim0597-HD.mp4']
+      return test[4]
+   except:
+      return False
  
  
 # Parses a regexp (FILE_NAMES_REGEX) a file name
