@@ -60,7 +60,7 @@ def reduce_meteor2(json_conf,form):
       print("REAL STATION ID :" + str(real_station_id))
 
       # In this case, we copy the files from wasabi
-      remote_video_file_path = REMOTE_FILES_FOLDER + os.sep + str(real_station_id) + REMOVE_METEOR_FOLDER + os.sep + analysed_name['year'] + os.sep + analysed_name['month'] +  os.sep + analysed_name['name']
+      remote_video_file_path = REMOTE_FILES_FOLDER + os.sep + str(real_station_id) + REMOVE_METEOR_FOLDER + os.sep + analysed_name['year'] + os.sep + analysed_name['month']  + os.sep + analysed_name['day'] +  os.sep + analysed_name['name']
       test_remove_video = Path(remote_video_file_path)
       if test_remove_video.is_file():
          print("THE FILE EXIST HERE : " + remote_video_file_path)
