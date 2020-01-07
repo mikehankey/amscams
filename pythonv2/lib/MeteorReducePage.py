@@ -53,6 +53,10 @@ def reduce_meteor2(json_conf,form):
    # Test if it's a detection from the current device
    # or another one 
    if(analysed_name['station_id'] not in analysed_name['full_path']):
+
+      print(analysed_name)
+      print("<hr>")
+
       # In this case, we copy the files from wasabi
       remote_video_file_path = REMOTE_FILES_FOLDER + os.sep + analysed_name['station_id'] + REMOVE_METEOR_FOLDER + os.sep + analysed_name['year'] + os.sep + analysed_name['month'] +  os.sep + analysed_name['name']
       test_remove_video = Path(remote_video_file_path)
