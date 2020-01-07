@@ -36,8 +36,7 @@ def reduce_meteor2(json_conf,form):
    # Get Video File & Analyse the Name to get quick access to all info
    # Warning we can also pass the JSON file
    video_full_path = form.getvalue("video_file")
-
-
+ 
    if('.json' in video_full_path):
       json_full_path = video_full_path
       video_sd_full_path = video_full_path.replace('.json','-SD.mp4')  
@@ -76,7 +75,7 @@ def reduce_meteor2(json_conf,form):
          remote_video_file_path = REMOTE_FILES_FOLDER + os.sep + str(real_station_id) + REMOVE_METEOR_FOLDER + os.sep + analysed_name['year'] + os.sep + analysed_name['month']  + os.sep + analysed_name['day'] 
          remote_video_file_fullpath = remote_video_file_path +  os.sep + analysed_name['name']
          test_remoTe_video = Path(remote_video_file_fullpath)
-         
+
          if test_remoTe_video.is_file():
             copy_path = METEOR_ARCHIVE  + str(real_station_id) + REMOVE_METEOR_FOLDER + os.sep + analysed_name['year'] + os.sep + analysed_name['month']  + os.sep + analysed_name['day'] +  os.sep
             
@@ -108,9 +107,7 @@ def reduce_meteor2(json_conf,form):
       else:
          print("WARNING THIS DETECTION HAS BEEN MADE FROM ANOTHER STATION")
    
-   else:
-      print_error("FILE NOT FOUND:<br>The file " + analysed_name['full_path'] + ' couldn\'t  be found on the remote folder.<br/> Please, check your remote path ('+ remote_video_file_path+ ')')
-      sys.exit(0)
+ 
 
 
    
