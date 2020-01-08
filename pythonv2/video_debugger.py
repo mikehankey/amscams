@@ -265,11 +265,15 @@ json_conf = "/mnt/ams2/meteor_archive/AMS22/METEOR/2020/01/05/2020_01_05_03_01_2
 thumb_path = "/mnt/ams2/CACHE/AMS22/2020/01/05/2020_01_05_03_01_23_000_010029-trim736/THUMBS/"
 x = 900
 y = 250
+
 hd_sync=46
 sd_sync=208
+
+thumbs_start_at = 202-(sd_sync-hd_sync) 
+thumbs_end_at = 396-(sd_sync-hd_sync) 
+
 thumb_name = "2020_01_05_03_01_23_000_010029-trim736_frm"
-thumbs_start_at = 202 
-thumbs_end_at = 396 
+
 output_video_path = "/mnt/ams2/test6.mp4"
 zoom = 6
 

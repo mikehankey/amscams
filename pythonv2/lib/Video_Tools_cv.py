@@ -593,17 +593,14 @@ def add_thumbs_to_video(hd_sync,sd_sync,HD_video,json_conf,thumb_path,thumb_name
 
    new_frames = []
    frame_counter = 0
-
-   print(str(len(frames)) + " frames")
-   print("FRAME DIFF " +  str(frame_diff))
-
+  
    for frame in frames:
 
       hd_img = frame
+  
+      if( frame_counter  >= thumbs_start_at and  frame_counter <= thumbs_end_at):
 
-      print("frame_counter-frame_diff " + str(frame_counter-frame_diff))
- 
-      if( (frame_counter-frame_diff) >= thumbs_start_at and (frame_counter-frame_diff) <= thumbs_end_at):
+         print("AT FRAME # " + str(frame_counter)  + " add image " + str(frame_counter) )
 
          # Add thumb inside image
          thumb_full_path = thumb_path + os.sep + thumb_name +  str(frame_counter) + ".png"
