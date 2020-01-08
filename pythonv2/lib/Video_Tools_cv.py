@@ -589,8 +589,11 @@ def add_thumbs_to_video(HD_video,json_conf,thumb_path,thumbs_start_at,x,y):
    frame_counter = 0
 
    for frame in frames:
+
       if(frame_counter >= thumbs_start_at ):
          # Add thumb inside image
+         print("THUMB")
+         print(all_thumbs[frame_counter])
 
          # We load the thumb
          thumb = cv2.imread(all_thumbs[frame_counter])
