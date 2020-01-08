@@ -590,7 +590,7 @@ def add_thumbs_to_video(HD_video,json_conf,thumb_path,thumbs_start_at,thumbs_end
 
    for frame in frames:
 
-      if(frame_counter >= thumbs_start_at and frame_counter<=thumbs_end_at):
+      if(frame_counter >= thumbs_start_at and frame_counter < thumbs_end_at):
          # Add thumb inside image
          print("THUMB")
          print(all_thumbs[frame_counter])
