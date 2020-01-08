@@ -591,7 +591,7 @@ def add_thumbs_to_video(HD_video,json_conf,thumb_path,thumb_name,thumbs_start_at
    new_frames = []
    frame_counter = 0
 
-   print(len(frame) + " frames")
+   print(len(frames) + " frames")
 
    for frame in frames:
 
