@@ -5,6 +5,7 @@ import glob
 import os
 
 from lib.VIDEO_VARS import *   
+from lib.REDUCE_VARS import *
 from lib.Video_Tools_cv_pos import *
 from lib.Video_Parameters import get_video_job_default_parameters
 from lib.UtilLib import convert_filename_to_date_cam
@@ -617,7 +618,7 @@ def add_thumbs_to_video(hd_sync,sd_sync,HD_video,json_conf,thumb_path,thumb_name
          # Draw rectangle
          #cv2.rectangle(hd_img, (x_offset, y_offset), (x_offset+50, y_offset+50), (255,0,0), 1, cv2.LINE_AA)
 
-         cv2.rectangle(hd_img, (x_offset-1,y_offset-1), (60, 60), (0,255,0), 1, cv2.LINE_AA)
+         cv2.rectangle(hd_img, (x_offset-1,y_offset-1), (x_offset+1+THUMB_W*zoom,y_offset+1+THUMB_H*zoom), (0,255,0), 1, cv2.LINE_AA)
 
          hd_img[y_offset:y_offset+thumb.shape[0], x_offset:x_offset+thumb.shape[1]] = thumb
 
