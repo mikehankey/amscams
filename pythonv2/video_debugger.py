@@ -250,11 +250,11 @@ HD_video = "/mnt/ams2/meteor_archive/AMS16/METEOR/2020/01/05/2020_01_05_03_01_32
 json_conf = "/mnt/ams2/meteor_archive/AMS16/METEOR/2020/01/05/2020_01_05_03_01_32_000_010093-trim0597.json"
 thumb_path = "/mnt/ams2/CACHE/AMS16/2020/01/05/2020_01_05_03_01_32_000_010093-trim0597/THUMBS/"
 x = 900
-y = 350
+y = 250
 thumb_name = "2020_01_05_03_01_32_000_010093-trim0597_frm"
 thumbs_start_at = 100
 thumbs_end_at = 278
-output_video_path = "/mnt/ams2/test2.mp4"
+output_video_path = "/mnt/ams2/test3.mp4"
 zoom = 6
 add_thumbs_to_video(HD_video,json_conf,thumb_path,thumb_name,thumbs_start_at,thumbs_end_at,x,y,zoom,output_video_path)
 
