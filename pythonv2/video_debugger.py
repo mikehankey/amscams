@@ -249,8 +249,8 @@ from lib.Video_Tools_cv import *
 HD_video = "/mnt/ams2/meteor_archive/AMS16/METEOR/2020/01/05/2020_01_05_03_01_32_000_010093-trim0597-HD.mp4"
 json_conf = "/mnt/ams2/meteor_archive/AMS16/METEOR/2020/01/05/2020_01_05_03_01_32_000_010093-trim0597.json"
 thumb_path = "/mnt/ams2/CACHE/AMS16/2020/01/05/2020_01_05_03_01_32_000_010093-trim0597/THUMBS/"
-x = 0
-y = 0
+x = 1200
+y = 400
 thumb_name = "2020_01_05_03_01_32_000_010093-trim0597_frm"
 thumbs_start_at = 100
 thumbs_end_at = 278
