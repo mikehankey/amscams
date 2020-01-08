@@ -264,8 +264,8 @@ thumb_path = "/mnt/ams2/CACHE/AMS22/2020/01/05/2020_01_05_03_01_23_000_010029-tr
 x = 900
 y = 250
 thumb_name = "2020_01_05_03_01_23_000_010029-trim736_frm"
-thumbs_start_at = 100
-thumbs_end_at = 278
+thumbs_start_at = 202
+thumbs_end_at = 396
 output_video_path = "/mnt/ams2/test4.mp4"
 zoom = 6
 
