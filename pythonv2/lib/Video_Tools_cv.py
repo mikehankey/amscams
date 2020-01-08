@@ -1,6 +1,7 @@
 import cv2
 import datetime
 import numpy as numpy
+import glob
 from lib.VIDEO_VARS import *   
 from lib.Video_Tools_cv_pos import *
 from lib.Video_Parameters import get_video_job_default_parameters
@@ -580,6 +581,6 @@ def add_thumbs_to_video(HD_video,json_conf,thumb_path,x,y):
    frames = load_video_frames(HD_video, json_conf, 0, 0, [], 1)
    
    #Get all the thumbs
-   all_thumbs = glob.glob(thumb_path + os.sep + "*.png")
+   all_thumbs = sorted(glob.glob(thumb_path + os.sep + "*.png"))
 
    print(all_thumbs)
