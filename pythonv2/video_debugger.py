@@ -251,7 +251,8 @@ json_conf = "/mnt/ams2/meteor_archive/AMS16/METEOR/2020/01/05/2020_01_05_03_01_3
 thumb_path = "/mnt/ams2/CACHE/AMS16/2020/01/05/2020_01_05_03_01_32_000_010093-trim0597/THUMBS/"
 x = 0
 y = 0
-add_thumbs_to_video(HD_video,json_conf,thumb_path,x,y)
+thumbs_start_at = 100
+add_thumbs_to_video(HD_video,json_conf,thumb_path,thumbs_start_at,x,y)
 
 
 

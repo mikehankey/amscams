@@ -577,7 +577,7 @@ def remaster(data):
 
 # Add the thumbs at the position x,y
 # inside a given HD video
-def add_thumbs_to_video(HD_video,json_conf,thumb_path,x,y):
+def add_thumbs_to_video(HD_video,json_conf,thumb_path,thumbs_start_at,x,y):
 
    #Get the meteor data & frames
    frames = load_video_frames(HD_video, json_conf, 0, 0, [], 1)
@@ -585,4 +585,17 @@ def add_thumbs_to_video(HD_video,json_conf,thumb_path,x,y):
    #Get all the thumbs
    all_thumbs = sorted(glob.glob(thumb_path + os.sep + "*.png"))
 
-   print(all_thumbs)
+   new_frames = []
+   frame_counter = 0
+
+   for frame in frames:
+      if(frame_counter >= thumbs_start_at ):
+         # Add thumb inside image
+
+         # We load the thumb
+         thumb = cv2.imread(all_thumbs[frame_counter])
+         x_offset=y_offset=50
+         frame[y_offset:y_offset+thumb.shape[0], x_offset:x_offset+thumb.shape[1]] = thumb
+
+
+      frame_counter +=1
