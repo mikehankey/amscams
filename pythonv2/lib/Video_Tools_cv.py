@@ -585,8 +585,8 @@ def add_thumbs_to_video(HD_video,json_conf,thumb_path,thumb_name,thumbs_start_at
    #Get all the thumbs
    all_thumbs = sorted(glob.glob(thumb_path + os.sep + "*.png"))
 
-   print("ALL THUMBS")
-   print(all_thumbs)
+   #print("ALL THUMBS")
+   #print(all_thumbs)
 
    new_frames = []
    frame_counter = 0
@@ -601,11 +601,12 @@ def add_thumbs_to_video(HD_video,json_conf,thumb_path,thumb_name,thumbs_start_at
          # Add thumb inside image
          thumb_full_path = thumb_path + os.sep + thumb_name +  str(frame_counter) + ".png"
          
-          
+         #print("THUMB ("+ str(frame_counter)+ ')')
+         #print(thumb_full_path)
          # We load the thumb
          thumb = cv2.imread(thumb_full_path)
       
-         thumb = cv2.resize(src, thumb, fx = 2, fy = 2, interpolation = cv2.INTER_CUBIC)
+         thumb = cv2.resize(thumb, None, fx = 2, fy = 2, interpolation = cv2.INTER_CUBIC)
       
          x_offset=y_offset=50
          hd_img[y_offset:y_offset+thumb.shape[0], x_offset:x_offset+thumb.shape[1]] = thumb
