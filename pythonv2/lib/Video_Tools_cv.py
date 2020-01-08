@@ -606,7 +606,7 @@ def add_thumbs_to_video(HD_video,json_conf,thumb_path,thumb_name,thumbs_start_at
          # We load the thumb
          thumb = cv2.imread(thumb_full_path)
       
-         thumb = cv2.resize(thumb, None, fx = 4, fy = 4, interpolation = cv2.INTER_CUBIC)
+         thumb = cv2.resize(thumb, None, fx = 5, fy = 5, interpolation = cv2.INTER_CUBIC)
          hd_img[y_offset:y_offset+thumb.shape[0], x_offset:x_offset+thumb.shape[1]] = thumb
 
 
