@@ -615,8 +615,8 @@ def add_thumbs_to_video(hd_sync,sd_sync,HD_video,json_conf,thumb_path,thumb_name
          thumb = cv2.resize(thumb, None, fx = zoom, fy = zoom, interpolation = cv2.INTER_CUBIC)
 
          # Draw rectangle
-         color = numpy.array([110,50,50])
-         cv2.rectangle(hd_img, x_offset, y_offset, color)
+         color = numpy.array([110,50,50]) 
+         cv2.rectangle(hd_img, (x_offset, y_offset), (x_offset+50, y_offset+50), (color,color,color), 1, cv2.LINE_AA)
 
 
          hd_img[y_offset:y_offset+thumb.shape[0], x_offset:x_offset+thumb.shape[1]] = thumb
