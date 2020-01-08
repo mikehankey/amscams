@@ -251,12 +251,12 @@ json_conf = "/mnt/ams2/meteor_archive/AMS16/METEOR/2020/01/05/2020_01_05_03_01_3
 thumb_path = "/mnt/ams2/CACHE/AMS16/2020/01/05/2020_01_05_03_01_32_000_010093-trim0597/THUMBS/"
 x = 0
 y = 0
+thumb_name = "2020_01_05_03_01_32_000_010093-trim0597_frm"
 thumbs_start_at = 100
 thumbs_end_at = 278
-add_thumbs_to_video(HD_video,json_conf,thumb_path,thumbs_start_at,thumbs_end_at,x,y)
+add_thumbs_to_video(HD_video,json_conf,thumb_path,thumb_name,thumbs_start_at,thumbs_end_at,x,y)
 
-
-
+ 
 ############# TEST TIMELAPSES FROM JPEGs
 #job = {
 #   "cam_id": "010042",
