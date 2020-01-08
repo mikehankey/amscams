@@ -256,7 +256,7 @@ sd_sync=49
 thumb_name = "2020_01_05_03_01_32_000_010093-trim0597_frm"
 thumbs_start_at = 100-(sd_sync-hd_sync) 
 thumbs_end_at = 278-(sd_sync-hd_sync) 
-output_video_path = "/mnt/ams2/test185.mp4"
+output_video_path = "/mnt/ams2/abdre_with_zoom.mp4"
 zoom = 6
 
 
