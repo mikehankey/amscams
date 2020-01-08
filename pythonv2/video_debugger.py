@@ -230,17 +230,27 @@ _total_duration = 12 # in seconds
 
 
 ############# TEST CV crop
-import cv2
-import sys
-import numpy as np
-from lib.MeteorReduce_Tools import *
-from lib.VIDEO_VARS import *
-from lib.Video_Timelapse import *
-from lib.Video_Tools import *
+#import cv2
+#import sys
+#import numpy as np
+#from lib.MeteorReduce_Tools import *
+#from lib.VIDEO_VARS import *
+#from lib.Video_Timelapse import *
+#from lib.Video_Tools import *
 
-new_crop_thumb("/mnt/ams2/CACHE/AMS7/2019/09/30/2019_09_30_00_36_31_400_010042_AMS7_HD/FRAMES/2019_09_30_00_36_31_400_010042_AMS7_HD_HDfr0081.png",826,7,"/mnt/ams2/test1.png",True)  
-print("/mnt/ams2/test1.png") 
+#new_crop_thumb("/mnt/ams2/CACHE/AMS7/2019/09/30/2019_09_30_00_36_31_400_010042_AMS7_HD/FRAMES/2019_09_30_00_36_31_400_010042_AMS7_HD_HDfr0081.png",826,7,"/mnt/ams2/test1.png",True)  
+#print("/mnt/ams2/test1.png") 
 
+
+
+# ADD THUMBS TO VIDEO
+import lib.Video_Tools_cv import *
+HD_video = "/mnt/ams2/meteor_archive/AMS16/METEOR/2020/01/05/2020_01_05_03_01_32_000_010093-trim0597-HD.mp4"
+json_conf = "/mnt/ams2/meteor_archive/AMS16/METEOR/2020/01/05/2020_01_05_03_01_32_000_010093-trim0597.json"
+thumb_path = "/mnt/ams2/CACHE/AMS16/2020/01/05/2020_01_05_03_01_32_000_010093-trim0597/THUMBS/"
+x = 0
+y = 0
+add_thumbs_to_video(HD_video,json_conf,thumb_path,x,y)
 
 
 

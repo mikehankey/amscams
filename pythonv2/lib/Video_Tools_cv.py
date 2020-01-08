@@ -568,3 +568,14 @@ def remaster(data):
 
     make_movie_from_frames(new_frames, [0,len(new_frames) - 1], marked_video_file, 1) 
     print('OUTPUT ' + marked_video_file )
+
+
+
+
+# Add the thumbs at the position x,y
+# inside a given HD video
+def add_thumbs_to_video(HD_video,json_conf,thumb_path,x,y):
+
+   #Get the meteor data & frames
+   frames = load_video_frames(HD_video, json_conf, 0, 0, [], 1)
+   print(frames)
