@@ -263,7 +263,7 @@ from lib.Video_Tools_cv import *
 HD_video = "/mnt/ams2/meteor_archive/AMS22/METEOR/2020/01/05/2020_01_05_03_01_23_000_010029-trim736-HD.mp4"
 json_conf = "/mnt/ams2/meteor_archive/AMS22/METEOR/2020/01/05/2020_01_05_03_01_23_000_010029-trim736.json"
 thumb_path = "/mnt/ams2/CACHE/AMS22/2020/01/05/2020_01_05_03_01_23_000_010029-trim736/THUMBS/"
-x = 900
+x = 950
 y = 250
 
 hd_sync=46
