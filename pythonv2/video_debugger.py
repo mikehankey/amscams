@@ -270,7 +270,7 @@ sd_sync=208
 thumb_name = "2020_01_05_03_01_23_000_010029-trim736_frm"
 thumbs_start_at = 202 
 thumbs_end_at = 396 
-output_video_path = "/mnt/ams2/test5.mp4"
+output_video_path = "/mnt/ams2/test6.mp4"
 zoom = 6
 
 add_thumbs_to_video(hd_sync,sd_sync,HD_video,json_conf,thumb_path,thumb_name,thumbs_start_at,thumbs_end_at,x,y,zoom,output_video_path)
