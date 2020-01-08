@@ -585,6 +585,9 @@ def add_thumbs_to_video(HD_video,json_conf,thumb_path,thumbs_start_at,thumbs_end
    #Get all the thumbs
    all_thumbs = sorted(glob.glob(thumb_path + os.sep + "*.png"))
 
+   print("ALL THUMBS")
+   print(all_thumbs)
+
    new_frames = []
    frame_counter = 0
 
@@ -592,7 +595,7 @@ def add_thumbs_to_video(HD_video,json_conf,thumb_path,thumbs_start_at,thumbs_end
 
       if(frame_counter >= thumbs_start_at and frame_counter < thumbs_end_at):
          # Add thumb inside image
-         print("THUMB")
+         print("THUMB ("+ frame_counter+ ')')
          print(all_thumbs[frame_counter])
 
          # We load the thumb
