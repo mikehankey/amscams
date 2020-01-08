@@ -249,13 +249,14 @@ from lib.Video_Tools_cv import *
 HD_video = "/mnt/ams2/meteor_archive/AMS16/METEOR/2020/01/05/2020_01_05_03_01_32_000_010093-trim0597-HD.mp4"
 json_conf = "/mnt/ams2/meteor_archive/AMS16/METEOR/2020/01/05/2020_01_05_03_01_32_000_010093-trim0597.json"
 thumb_path = "/mnt/ams2/CACHE/AMS16/2020/01/05/2020_01_05_03_01_32_000_010093-trim0597/THUMBS/"
-x = 1000
-y = 400
+x = 900
+y = 350
 thumb_name = "2020_01_05_03_01_32_000_010093-trim0597_frm"
 thumbs_start_at = 100
 thumbs_end_at = 278
 output_video_path = "/mnt/ams2/test2.mp4"
-add_thumbs_to_video(HD_video,json_conf,thumb_path,thumb_name,thumbs_start_at,thumbs_end_at,x,y,output_video_path)
+zoom = 6
+add_thumbs_to_video(HD_video,json_conf,thumb_path,thumb_name,thumbs_start_at,thumbs_end_at,x,y,zoom,output_video_path)
 
  
 ############# TEST TIMELAPSES FROM JPEGs
