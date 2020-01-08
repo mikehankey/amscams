@@ -2,6 +2,8 @@ import cv2
 import datetime
 import numpy as numpy
 import glob
+import os
+
 from lib.VIDEO_VARS import *   
 from lib.Video_Tools_cv_pos import *
 from lib.Video_Parameters import get_video_job_default_parameters
