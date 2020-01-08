@@ -252,7 +252,8 @@ thumb_path = "/mnt/ams2/CACHE/AMS16/2020/01/05/2020_01_05_03_01_32_000_010093-tr
 x = 0
 y = 0
 thumbs_start_at = 100
-add_thumbs_to_video(HD_video,json_conf,thumb_path,thumbs_start_at,x,y)
+thumbs_end_at = 278
+add_thumbs_to_video(HD_video,json_conf,thumb_path,thumbs_start_at,thumbs_end_at,x,y)
 
 
 
