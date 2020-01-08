@@ -266,7 +266,7 @@ y = 250
 thumb_name = "2020_01_05_03_01_23_000_010029-trim736_frm"
 thumbs_start_at = 202
 thumbs_end_at = 396
-output_video_path = "/mnt/ams2/test4.mp4"
+output_video_path = "/mnt/ams2/test5.mp4"
 zoom = 6
 
 add_thumbs_to_video(HD_video,json_conf,thumb_path,thumb_name,thumbs_start_at,thumbs_end_at,x,y,zoom,output_video_path)
