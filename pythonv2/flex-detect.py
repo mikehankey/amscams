@@ -900,6 +900,59 @@ def remove_bad_stars(stars):
          new_stars.append(star)
    return(new_stars)
 
+def update_intensity(json_file):
+   data = load_json_file(json_file)
+   hd_file = json_file.replace(".json", "-HD.mp4")
+   hd_frames,hd_color_frames,hd_subframes,sum_vals,max_vals = load_frames_fast(hd_file, json_conf, 0, 0, [], 0,[])
+   frames = data['frames']
+   curve = {}
+   fx = frames[5]['x']
+   fy = frames[5]['y']
+   cx1,cy1,cx2,cy2 = bound_cnt(fx,fy,hd_frames[0].shape[1],hd_frames[0].shape[0], 20)
+   print(cx1,cy1,cx2,cy2)
+   bg_cnt = hd_frames[0][cy1:cy2,cx1:cx2] 
+
+   for i in range(0, len(hd_frames)):
+      curve[i] = {}
+      curve[i]['cnt_int'] = np.sum(bg_cnt)
+      ff_sub = cv2.subtract(hd_frames[i],hd_frames[0])
+      ff_int = np.sum(ff_sub) 
+      curve[i]['ff_int'] = ff_int
+
+   ffs= []
+   cnts= []
+   for frame in frames:   
+      fn = frame['fn']
+      x = frame['x']
+      y = frame['y']
+      cx1,cy1,cx2,cy2 = bound_cnt(x,y,hd_frames[0].shape[1],hd_frames[0].shape[0], 20)
+      cnt = hd_frames[fn][cy1:cy2,cx1:cx2] 
+      bg_cnt = hd_frames[0][cy1:cy2,cx1:cx2] 
+      cnt_sub = cv2.subtract(cnt,bg_cnt)
+      cnt_int = np.sum(cnt) - np.sum(bg_cnt)
+      ff_sub = cv2.subtract(hd_frames[fn],hd_frames[0])
+      ff_int = np.sum(ff_sub) 
+      curve[fn]['cnt_int'] = cnt_int
+      curve[fn]['ff_int'] = ff_int
+      ffs.append(ff_int)
+      cnts.append(cnt_int)
+
+   mf = max(ffs)
+   mc = max(cnts)
+   scale = mf / mc
+
+   times = []
+   values = []
+   values2 = []
+   for fn in curve:
+      times.append(fn)
+      values.append(curve[fn]['cnt_int'])
+      values2.append(curve[fn]['ff_int'] / scale)
+      print(fn, curve[fn])     
+
+   plot_int(times,values, None,0,len(values))
+   plot_int(times,values2, None,0,len(values))
+
 def fit_arc_file(json_file):
    json_data = load_json_file(json_file)
    (hd_datetime, cam, sd_date, sd_y, sd_m, sd_d, sd_h, sd_M, sd_s) = convert_filename_to_date_cam(json_file)
@@ -7155,4 +7208,6 @@ if cmd == "bfaf" :
    batch_fit_arc_file(video_file)
 if cmd == "debug2" :
    debug2(video_file)
+if cmd == "ui" :
+   update_intensity(video_file)
 
