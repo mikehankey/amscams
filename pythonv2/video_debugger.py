@@ -246,16 +246,29 @@ _total_duration = 12 # in seconds
 # ADD THUMBS TO VIDEO
 from lib.Video_Tools_cv import *
 
-HD_video = "/mnt/ams2/meteor_archive/AMS16/METEOR/2020/01/05/2020_01_05_03_01_32_000_010093-trim0597-HD.mp4"
-json_conf = "/mnt/ams2/meteor_archive/AMS16/METEOR/2020/01/05/2020_01_05_03_01_32_000_010093-trim0597.json"
-thumb_path = "/mnt/ams2/CACHE/AMS16/2020/01/05/2020_01_05_03_01_32_000_010093-trim0597/THUMBS/"
+#HD_video = "/mnt/ams2/meteor_archive/AMS16/METEOR/2020/01/05/2020_01_05_03_01_32_000_010093-trim0597-HD.mp4"
+#json_conf = "/mnt/ams2/meteor_archive/AMS16/METEOR/2020/01/05/2020_01_05_03_01_32_000_010093-trim0597.json"
+#thumb_path = "/mnt/ams2/CACHE/AMS16/2020/01/05/2020_01_05_03_01_32_000_010093-trim0597/THUMBS/"
+#x = 900
+#y = 250
+#thumb_name = "2020_01_05_03_01_32_000_010093-trim0597_frm"
+#thumbs_start_at = 100
+#thumbs_end_at = 278
+#output_video_path = "/mnt/ams2/test3.mp4"
+#zoom = 6
+
+
+HD_video = "/mnt/ams2/meteor_archive/AMS22/METEOR/2020/01/05/2020_01_05_03_01_23_000_010029-trim736-HD.mp4"
+json_conf = "/mnt/ams2/meteor_archive/AMS22/METEOR/2020/01/05/2020_01_05_03_01_23_000_010029-trim736.json"
+thumb_path = "/mnt/ams2/CACHE/AMS22/2020/01/05/2020_01_05_03_01_23_000_010029-trim736/THUMBS/"
 x = 900
 y = 250
-thumb_name = "2020_01_05_03_01_32_000_010093-trim0597_frm"
+thumb_name = "2020_01_05_03_01_23_000_010029-trim736_frm"
 thumbs_start_at = 100
 thumbs_end_at = 278
-output_video_path = "/mnt/ams2/test3.mp4"
+output_video_path = "/mnt/ams2/test4.mp4"
 zoom = 6
+
 add_thumbs_to_video(HD_video,json_conf,thumb_path,thumb_name,thumbs_start_at,thumbs_end_at,x,y,zoom,output_video_path)
 
  
