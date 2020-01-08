@@ -28,6 +28,16 @@ def print_error(msg):
    print("<div id='main_container' class='container mt-4 lg-l'>"+get_error(msg)+"</div>")
    sys.exit(0)
 
+
+# Test if we can get a station id from an URL and return the station id or FALSE
+def can_we_get_the_station_id(path):
+   test = path.split(os.sep)
+   try:
+      # THE STATION ID SHOULD THE 4th element
+      # ex: ['', 'mnt', 'ams2', 'meteor_archive', 'AMS8', 'METEOR', '2020', '01', '05', '2020_01_05_03_01_32_000_010038-trim0597-HD.mp4']
+      return test[4]
+   except:
+      return False
  
  
 # Parses a regexp (FILE_NAMES_REGEX) a file name
@@ -50,7 +60,11 @@ def name_analyser(file_names):
    res['full_path'] = file_names
 
    # Add the station id
-   res['station_id'] = get_station_id()
+   tmp_station_id = can_we_get_the_station_id(file_names)
+   if(tmp_station_id  is not False):
+      res['station_id'] = tmp_station_id
+   else:
+      res['station_id'] = get_station_id()
  
    return res
 

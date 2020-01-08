@@ -22,6 +22,10 @@ TMP_SD_CROPPED_SUBFRAMES_SUBPATH = "/SD_TMP_THUMBS" # For the temporary cropped 
 # Folder where the calibration are
 CALIB_PATH = MAIN_FILE_PATH + "cal/freecal/"
 
+# Wasabi folder
+REMOTE_FILES_FOLDER = "/mnt/wasabi"
+REMOVE_METEOR_FOLDER = "/METEOR"
+
 # STACK DIMENSIONS ("half-stack")
 STACK_W = 960
 STACK_H = 540

@@ -2246,6 +2246,8 @@ def fast_bp_detect(gray_frames, video_file):
    objects = {}
    np_imgs = np.asarray(gray_frames[0:50])
    median_frame = cv2.convertScaleAbs(np.median(np.array(np_imgs), axis=0))
+   for sf in subframes:
+      print(sf.shape)
    median_cnts,rects = find_contours_in_frame(median_frame, 100)
    mask_points = []
    for x,y,w,h in median_cnts:
@@ -2793,7 +2795,7 @@ def calc_point_res(object, frames):
 
 def poly_fit2(poly_x,poly_y):
    import matplotlib
-   #matplotlib.use('Agg')
+   matplotlib.use('Agg')
    import matplotlib.pyplot as plt
    print("POLY:", len(poly_x), len(poly_y))
 
@@ -2842,7 +2844,7 @@ def poly_fit2(poly_x,poly_y):
 def poly_fit(object):
    #print("POLY FIT:", object['report'])
    import matplotlib
-   #matplotlib.use('Agg')
+   matplotlib.use('Agg')
    import matplotlib.pyplot as plt
 
    poly_x = np.array(object['oxs'])
@@ -3927,6 +3929,9 @@ def fast_check_events(sum_vals, max_vals, subframes):
    med_sum = np.median(sum_vals)
    med_max = np.median(max_vals)
    median_frame = cv2.convertScaleAbs(np.median(np.array(subframes[0:25]), axis=0))
+   for sf in subframes:
+      print(sf.shape)
+
    if subframes[0].shape[1] == 1920:
       hd = 1
       sd_multi = 1
@@ -3938,7 +3943,8 @@ def fast_check_events(sum_vals, max_vals, subframes):
       
       #max_val = max_vals[i]
       subframe = subframes[i]
-      subframe = cv2.subtract(subframe, median_frame)
+      #subframe = cv2.subtract(subframe, median_frame)
+      print("SUB FRAME:", subframe.shape)
       min_val, max_val, min_loc, (mx,my)= cv2.minMaxLoc(subframe)
       print(i, med_sum, med_max, sum_val , max_val)
       if sum_val > med_sum * 2 or max_val > med_max * 2:
@@ -5409,6 +5415,7 @@ def load_frames_fast(trim_file, json_conf, limit=0, mask=0,crop=(),color=0,resiz
 
             if last_frame is not None:
                subframe = cv2.subtract(frame, last_frame)
+               print("LOAD FRAMES SUB:", subframe.shape)
                #subframe = mask_frame(subframe, [], masks, 5)
                sum_val =cv2.sumElems(subframe)[0]
   
@@ -5427,12 +5434,6 @@ def load_frames_fast(trim_file, json_conf, limit=0, mask=0,crop=(),color=0,resiz
                   max_val = 0
                sum_vals.append(sum_val)
                max_vals.append(max_val)
-            else:
-               sum_vals.append(0)
-               max_vals.append(0)
-               fh, fw = frame.shape[:2]
-               zero_img = np.zeros((fw,fh,2),dtype=np.uint8)
-               subframes.append(zero_img)
 
             if len(crop) == 4:
                ih,iw = frame.shape

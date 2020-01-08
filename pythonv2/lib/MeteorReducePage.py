@@ -1,7 +1,12 @@
 import cgitb
 
+from pathlib import Path
+from shutil import copyfile
+
+from lib.CGI_Tools import redirect_to
 from lib.MeteorReduce_Tools import * 
 from lib.MeteorReduce_Calib_Tools import find_matching_cal_files, find_calib_file
+from lib.REDUCE_VARS import REMOTE_FILES_FOLDER, REMOVE_METEOR_FOLDER, METEOR_ARCHIVE
  
 PAGE_TEMPLATE = "/home/ams/amscams/pythonv2/templates/reducePage.v2.html"
  
@@ -31,19 +36,12 @@ def reduce_meteor2(json_conf,form):
    # Get Video File & Analyse the Name to get quick access to all info
    # Warning we can also pass the JSON file
    video_full_path = form.getvalue("video_file")
-
+ 
    if('.json' in video_full_path):
       json_full_path = video_full_path
       video_sd_full_path = video_full_path.replace('.json','-SD.mp4')  
       video_hd_full_path = video_full_path.replace('.json','-HD.mp4') 
-      video_full_path = video_hd_full_path
-   
-
-   # We need at least one video file
-   if(video_full_path is not None):
-      analysed_name = name_analyser(video_full_path)
-   else:
-      print_error("<b>You need to add a video file in the URL.</b>")
+      video_full_path = video_hd_full_path 
 
    # We get the proper json and the other video file
    if('HD' in video_full_path):
@@ -54,13 +52,68 @@ def reduce_meteor2(json_conf,form):
       video_sd_full_path = video_full_path 
       video_hd_full_path = video_full_path.replace('-SD','-HD')
       json_full_path = video_full_path.replace('-SD.mp4','.json')  
-  
+
+       
+   # We need at least one video file
+   if(video_full_path is not None):
+      analysed_name = name_analyser(video_full_path)
+   else:
+      print_error("<b>You need to add a video file in the URL.</b>")
+
+   # Test if it's a detection from the current device
+   # or another one 
+
+   other_station = False
+
+   if(analysed_name['station_id'] != get_station_id()):
+
+      # We need to retrieve the files and copy them on the current machine
+      if( not os.path.isfile(video_full_path)):
+
+         # Can we get the real station_id?
+         real_station_id = can_we_get_the_station_id(analysed_name['full_path'])
+         
+         # In this case, we copy the files from wasabi
+         remote_video_file_path = REMOTE_FILES_FOLDER + os.sep + str(real_station_id) + REMOVE_METEOR_FOLDER + os.sep + analysed_name['year'] + os.sep + analysed_name['month']  + os.sep + analysed_name['day'] 
+         remote_video_file_fullpath = remote_video_file_path +  os.sep + analysed_name['name']
+         test_remoTe_video = Path(remote_video_file_fullpath)
+
+         if test_remoTe_video.is_file():
+            copy_path = METEOR_ARCHIVE  + str(real_station_id) + REMOVE_METEOR_FOLDER + os.sep + analysed_name['year'] + os.sep + analysed_name['month']  + os.sep + analysed_name['day'] +  os.sep
+            
+            # CREATE DIR IF Doesn't EXIST
+            if not os.path.exists(copy_path):
+               os.makedirs(copy_path)
+   
+            # COPY HD
+            try:
+               copyfile(remote_video_file_path+ os.sep  + os.path.basename(video_hd_full_path),copy_path + os.path.basename(video_hd_full_path))
+            except:
+               print_error("Remote File error: <b>IMPOSSIBLE TO COPY THE HD VIDEO</b><br><br>Are you sure the HD video <br>"+ os.path.basename(video_hd_full_path)+" <br>is on the remote folder:<br>"+ remote_video_file_path+' ?')
+
+            # COPY SD
+            try:
+               copyfile(remote_video_file_path+ os.sep + os.path.basename(video_sd_full_path),copy_path + os.path.basename(video_sd_full_path))
+            except:         
+               print_error("Remote File error: <b>IMPOSSIBLE TO COPY THE HD VIDEO</b><br><br>Are you sure the SD video <br>"+ os.path.basename(video_sd_full_path)+" <br>is on the remote folder:<br>"+ remote_video_file_path+' ?')
+            
+            # COPY JSON
+            try:
+               copyfile(remote_video_file_path+ os.sep + os.path.basename(json_full_path),copy_path + os.path.basename(json_full_path))
+            except:         
+               print_error("Remote File error: <b>IMPOSSIBLE TO COPY THE JSON FILE</b><br><br>Are you sure the JSON File <br>"+ os.path.basename(json_full_path)+" <br>is on the remote folder:<br>"+ remote_video_file_path+' ?')
+
+            # Redirect to the Reduce page
+            redirect_to("/pycgi/webUI.py?cmd=reduce2&video_file=" + copy_path + os.path.basename(video_hd_full_path), "reduction")
+
+      else:
+         other_station = True
+    
    
    if(cfe(video_hd_full_path)==0):
       video_hd_full_path = ''
       HD = False 
- 
-   
+  
    if(cfe(video_sd_full_path)==0):
        print_error(video_sd_full_path + " <b>not found.</b><br/>At least one SD video is required.")
 
@@ -93,10 +146,18 @@ def reduce_meteor2(json_conf,form):
       HD_frames
    except NameError:
       # HD FRAMES NOT DEFINED
-      print("")
+      print("Error 0112.b")
    else:
       thumbs = get_thumbs(tmp_analysed_name,meteor_json_file,HD,HD_frames,clear_cache)
   
+   # Is it remote?
+   if(other_station==True):
+      real_station_id = can_we_get_the_station_id(analysed_name['full_path'])
+      template = template.replace("{WARNING_STATION}", "<div class='container-fluid mt-4'><div class='alert alert-danger'><span class='icon-notification'></span> WARNING THIS DETECTION HAS BEEN MADE FROM ANOTHER STATION - THE STATION <b>" + str(real_station_id) +"</b></div></div>")
+   else:
+      template = template.replace("{WARNING_STATION}", "") 
+
+
    # Fill Template with data
    template = template.replace("{VIDEO_FILE}", str(video_full_path))   # Video File  
    template = template.replace("{SD_VIDEO}",str(video_sd_full_path))   # SD Video File
