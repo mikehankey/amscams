@@ -600,12 +600,12 @@ def add_thumbs_to_video(hd_sync,sd_sync,HD_video,json_conf,thumb_path,thumb_name
   
       if( frame_counter  >= thumbs_start_at and  frame_counter <= thumbs_end_at):
 
-         print("AT FRAME # " + str(frame_counter)  + " add image " + str(frame_counter+frame_diff) )
+         print("AT FRAME # " + str(frame_counter)  + " add image " + str(frame_counter-frame_diff) )
 
          # Add thumb inside image
-         thumb_full_path = thumb_path + os.sep + thumb_name +  str(frame_counter+frame_diff) + ".png"
+         thumb_full_path = thumb_path + os.sep + thumb_name +  str(frame_counter-frame_diff) + ".png"
          
-         print("THUMB ("+ str(frame_counter+frame_diff)+ ')')
+         print("THUMB ("+ str(frame_counter-frame_diff)+ ')')
          print(thumb_full_path)
          # We load the thumb
          thumb = cv2.imread(thumb_full_path)
