@@ -577,7 +577,7 @@ def remaster(data):
 
 # Add the thumbs at the position x,y
 # inside a given HD video
-def add_thumbs_to_video(HD_video,json_conf,thumb_path,thumb_name,thumbs_start_at,thumbs_end_at,x_offset,y_offset,zoom,output_video_path):
+def add_thumbs_to_video(hd_sync,sd_sync,HD_video,json_conf,thumb_path,thumb_name,thumbs_start_at,thumbs_end_at,x_offset,y_offset,zoom,output_video_path):
 
    #Get the meteor data & frames
    frames = load_video_frames(HD_video, json_conf, 0, 0, [], 1)
@@ -588,6 +588,9 @@ def add_thumbs_to_video(HD_video,json_conf,thumb_path,thumb_name,thumbs_start_at
    #print("ALL THUMBS")
    #print(all_thumbs)
 
+   # Frame diff (sync)
+   frame_diff = hd_sync - sd_sync
+
    new_frames = []
    frame_counter = 0
 
@@ -597,7 +600,7 @@ def add_thumbs_to_video(HD_video,json_conf,thumb_path,thumb_name,thumbs_start_at
 
       hd_img = frame
  
-      if(frame_counter >= thumbs_start_at and frame_counter <= thumbs_end_at):
+      if((frame_counter+frame_diff) >= thumbs_start_at and (frame_counter+frame_diff) <= thumbs_end_at):
 
          # Add thumb inside image
          thumb_full_path = thumb_path + os.sep + thumb_name +  str(frame_counter) + ".png"
