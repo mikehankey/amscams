@@ -595,6 +595,7 @@ def add_thumbs_to_video(hd_sync,sd_sync,HD_video,json_conf,thumb_path,thumb_name
    frame_counter = 0
 
    print(str(len(frames)) + " frames")
+   print("FRAME DIFF " +  str(frame_diff))
 
    for frame in frames:
 
