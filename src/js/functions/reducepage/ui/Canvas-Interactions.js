@@ -76,7 +76,7 @@ if ($('canvas#c').length!=0) {
 
          // Add Canvas BG with proper scale so we can us HD or SD 
          canvas.setBackgroundImage(
-            my_image, function() {
+            img, function() {
               
                // Set Image 
               render();    
