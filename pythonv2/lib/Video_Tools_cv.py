@@ -640,6 +640,10 @@ def add_thumbs_to_video(hd_sync,sd_sync,HD_video,json_conf,thumb_path,thumb_name
          hd_img[y_offset:y_offset+thumb.shape[0], x_offset:x_offset+thumb.shape[1]] = thumb
 
 
+      # Add Date & Time
+      frame_time_str = meteor_data['station_id'] + ' - ' + frame_time_str + ' UT' 
+      hd_img,xx,yy,ww,hh = add_text_to_pos(hd_img,frame_time_str,D_CAM_INFO_POS,2) 
+
       new_frames.append(hd_img) 
       frame_counter +=1
 
