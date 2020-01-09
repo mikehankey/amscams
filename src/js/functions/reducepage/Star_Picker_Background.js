@@ -23,6 +23,7 @@ function create_bg_picker(data) {
 
       loading({'text':'Loading new background...'})
 
+      console.log("IMAG " +  $(this).find('img').attr('src'));
       // See Canvas-Interactions.js
       canvas.setBackgroundImage( $(this).find('img').attr('src'), function() {
          loading_done();
