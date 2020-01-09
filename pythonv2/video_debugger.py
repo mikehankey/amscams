@@ -1,5 +1,6 @@
 import os
 import glob
+import sys
 import subprocess 
 from lib.VIDEO_VARS import * 
 from lib.Video_Tools import * 
@@ -258,7 +259,12 @@ thumbs_start_at = 100-(sd_sync-hd_sync)
 thumbs_end_at = 278-(sd_sync-hd_sync) 
 output_video_path = "/mnt/ams2/andre_with_zoom.mp4"
 zoom = 6
+add_thumbs_to_video(hd_sync,sd_sync,HD_video,json_conf,thumb_path,thumb_name,thumbs_start_at,thumbs_end_at,x,y,zoom,output_video_path)
+output_video_path = "/mnt/ams2/andre_without_zoom.mp4"
+zoom = 0
+add_thumbs_to_video(hd_sync,sd_sync,HD_video,json_conf,thumb_path,thumb_name,thumbs_start_at,thumbs_end_at,x,y,zoom,output_video_path)
 
+sys.exit(0)
 
 HD_video = "/mnt/ams2/meteor_archive/AMS22/METEOR/2020/01/05/2020_01_05_03_01_23_000_010029-trim736-HD.mp4"
 json_conf = "/mnt/ams2/meteor_archive/AMS22/METEOR/2020/01/05/2020_01_05_03_01_23_000_010029-trim736.json"
