@@ -12,18 +12,6 @@ from lib.REDUCE_VARS import REMOTE_FILES_FOLDER, REMOVE_METEOR_FOLDER, METEOR_AR
 PAGE_TEMPLATE = "/home/ams/amscams/pythonv2/templates/reducePage.v2.html"
 
 
-# Used for changing the background of the canvas
-# This function returns all the HD frames of a detection
-def get_all_HD_frames(json_value):
-
-   analysed_name = name_analyser(json_value)
-
-   # Get the HD frames 
-   # False=  we don't clear the cache
-   HD_frames = get_HD_frames(tmp_analysed_name,False)
-   
-   # Return JSON
-   print(json.dumps({'res':HD_frames})) 
 
 
 # GENERATES THE REDUCE PAGE METEOR
