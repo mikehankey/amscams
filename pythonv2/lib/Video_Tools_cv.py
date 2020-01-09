@@ -590,12 +590,10 @@ def add_thumbs_to_video(hd_sync,sd_sync,HD_video,json_conf,thumb_path,thumb_name
    #print("ALL THUMBS")
    #print(all_thumbs)
 
-   meteor_data = name_analyser(HD_video)
+   meteor_data = name_analyser(HD_video) 
 
-   print(meteor_data);
-
-   start_buff = int(meteor_data['start_buff'])
-   start_sec = (start_buff / 25) * -1 
+   start_buff = int(meteor_data['trim'])
+   start_sec = (start_buff / FPS_HD) * -1 
 
    # Frame diff (sync)
    frame_diff =  hd_sync - sd_sync
