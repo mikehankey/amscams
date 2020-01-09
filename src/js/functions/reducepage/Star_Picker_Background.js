@@ -8,7 +8,7 @@ function create_bg_picker(data) {
    
    // Create list of image picker
    $.each(data,function(i,v) {
-      img_list += '<div class="preview col-md-6 select-to mb-3"><a style="background:url('+v+')" class="mtt has_soh" href="'+v+'" title="Select Background"><img alt="" src="'+v+'"></a></div>';
+      img_list += '<div class="preview col-md-6 select-to mb-3"><a class="mtt has_soh"  title="Select Background"><img alt="" src="'+v+'"></a></div>';
    });
 
    img_list += "</div></div></div>";
