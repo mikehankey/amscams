@@ -35,6 +35,8 @@ function create_bg_picker(data) {
                my_image, function() { 
                 
                  $('#bg_selector').remove();
+                 canvas.renderAll();
+                 
 
                  // End Loading Animation
                  loading_done();  
