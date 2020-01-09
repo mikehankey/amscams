@@ -20,6 +20,6 @@ function change_canvas_bg() {
 
 $(function() {
    $('#star_picker_background').click(function() {
-
+      change_canvas_bg();
    });
 })
