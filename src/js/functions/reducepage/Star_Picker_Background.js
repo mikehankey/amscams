@@ -34,10 +34,10 @@ function create_bg_picker(data) {
             canvas.setBackgroundImage(
                my_image, function() { 
                 
+                 $('#bg_selector').remove();
+
                  // End Loading Animation
                  loading_done();  
-
-                 $('#bg_selector').remove();
             
                });
     
