@@ -27,8 +27,11 @@ function create_bg_picker(data) {
 
       // See Canvas-Interactions.js
       var img = new Image();
-
       img.onload = function(){
+            
+            var height = img.height;
+            var width = img.width;
+
       
             // Add Canvas BG with proper scale so we can us HD or SD 
             canvas.setBackgroundImage(
@@ -41,7 +44,13 @@ function create_bg_picker(data) {
                  // End Loading Animation
                  loading_done();  
             
-               });
+               },
+               { 
+                 originX: 'left',
+                 originY: 'top',
+                 scaleX: canvas.width/width,
+                 scaleY: canvas.height/height
+             });
     
       }
    
