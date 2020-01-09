@@ -14,9 +14,7 @@ function create_bg_picker(data) {
 
    img_list += "</div></div></div>";
 
-   $(img_list).insertTo($('.flex-fixed-r-canvas.h-100'));
-
-
+   $(img_list).prependTo($('.flex-fixed-r-canvas.h-100')); 
    
 }
 
