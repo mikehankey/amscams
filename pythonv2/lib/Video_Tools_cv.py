@@ -616,7 +616,7 @@ def add_thumbs_to_video(hd_sync,sd_sync,HD_video,json_conf,thumb_path,thumb_name
       fn = str(fc)
       hd_img = frame
   
-      if( frame_counter  >= thumbs_start_at and  frame_counter <= thumbs_end_at):
+      if( frame_counter  >= thumbs_start_at and  frame_counter <= thumbs_end_at and zoom>0):
 
         
          #print("AT FRAME # " + str(frame_counter)  + " add image " + str(frame_counter-frame_diff) )
