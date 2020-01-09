@@ -32,10 +32,7 @@ function create_bg_picker(data) {
       
             // Add Canvas BG with proper scale so we can us HD or SD 
             canvas.setBackgroundImage(
-               my_image, function() {
-                 
-                 // Set Image 
-                 render();    
+               my_image, function() { 
                 
                  // End Loading Animation
                  loading_done();  
