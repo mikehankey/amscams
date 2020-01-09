@@ -31,14 +31,18 @@ bright_stars = mybsd.bright_stars
 
 # Used for changing the background of the canvas
 # This function returns all the HD frames of a detection
+# WARNING RETURNS ONLY THE 20 first and 20 last frames
 def get_all_HD_frames(json_value):
  
    # Get the HD frames 
    # False=  we don't clear the cache
    HD_frames = get_HD_frames(name_analyser(json_value),False)
    
+   if(len(HD_frames>=20)):
+      HD_frames = HD_frames[10:] + HD_frames[:10]
+   
    # Return JSON
-   print(json.dumps({'res':HD_frames})) 
+   print(json.dumps({'res':HD_frames[:30]})) 
 
 
 # Create new cropped frame
