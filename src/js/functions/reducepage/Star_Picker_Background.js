@@ -3,7 +3,7 @@ function create_bg_picker(data) {
 
    var max_height = $(window).height() - 200;
 
-   var img_list = '<div class="box" style="position:absolute; width: 400px: top:0; heigh='+max_height+'px"> <h2 class="mb-0"><a data-toggle="collapse" href="#bg_box" role="button" class="d-block dropdown-toggle dt-title" aria-expanded="true">Background</a></h2><div id="bg_box" class="pt-2 collapse show"><div class="d-flex mt-0 mb-0">';
+   var img_list = '<div class="box" style="position:absolute; width: 400px; top:0; height:'+max_height+'px"> <h2 class="mb-0"><a data-toggle="collapse" href="#bg_box" role="button" class="d-block dropdown-toggle dt-title" aria-expanded="true">Background</a></h2><div id="bg_box" class="pt-2 collapse show"><div class="d-flex mt-0 mb-0">';
 
    $.each(data,function(i,v) { console.log(v);  console.log('*********'); });
 
