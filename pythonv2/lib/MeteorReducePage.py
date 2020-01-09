@@ -14,7 +14,7 @@ PAGE_TEMPLATE = "/home/ams/amscams/pythonv2/templates/reducePage.v2.html"
 
 # Used for changing the background of the canvas
 # This function returns all the HD frames of a detection
-def get_HD_frames(json_value):
+def get_all_HD_frames(json_value):
 
    analysed_name = name_analyser(json_value)
 
