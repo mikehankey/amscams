@@ -274,6 +274,9 @@ output_video_path = "/mnt/ams2/sirko_with_zoom.mp4"
 zoom = 6
 add_thumbs_to_video(hd_sync,sd_sync,HD_video,json_conf,thumb_path,thumb_name,thumbs_start_at,thumbs_end_at,x,y,zoom,output_video_path)
 
+output_video_path = "/mnt/ams2/sirko_without_zoom.mp4"
+zoom = 0
+add_thumbs_to_video(hd_sync,sd_sync,HD_video,json_conf,thumb_path,thumb_name,thumbs_start_at,thumbs_end_at,x,y,zoom,output_video_path)
  
 ############# TEST TIMELAPSES FROM JPEGs
 #job = {
