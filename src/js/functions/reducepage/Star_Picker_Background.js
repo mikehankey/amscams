@@ -23,7 +23,7 @@ function create_bg_picker(data) {
 
       loading({'text':'Loading new background...'})
 
-      my_image =  $(this).find('img').attr('src');
+      my_timage =  $(this).find('img').attr('src');
 
       // See Canvas-Interactions.js
       var img = new Image();
@@ -32,11 +32,11 @@ function create_bg_picker(data) {
       
             // Add Canvas BG with proper scale so we can us HD or SD 
             canvas.setBackgroundImage(
-               my_image, function() { 
+               my_timage, function() { 
                 
                  $('#bg_selector').remove();
                  canvas.renderAll();
-                 
+
 
                  // End Loading Animation
                  loading_done();  
@@ -45,7 +45,7 @@ function create_bg_picker(data) {
     
       }
    
-      img.src =  my_image;
+      img.src =  my_timage;
 
    
    });
