@@ -34,7 +34,8 @@ function change_canvas_bg() {
       }, 
       success: function(data) {
          loading_done(); 
-         create_bg_picker(JSON.parse(data.res));
+         data = JSON.parse(data);
+         create_bg_picker(data.res);
       }
    })
 
