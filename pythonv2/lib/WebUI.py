@@ -260,6 +260,11 @@ def controller(json_conf):
       exit()
 
 
+   # GET LIST OF HD FRAMES FROM A GIVEN DETECTION (AJAX CALL)
+   if cmd == 'get_HD_frames':
+      get_HD_frames(form.getvalue('json_file'))   
+      exit();
+
    # GET REDUCTION JSON DATA (AJAX CALL)
    if cmd == 'get_reduction_info': 
       get_reduction_info(form.getvalue('json_file'))   
