@@ -592,6 +592,8 @@ def add_thumbs_to_video(hd_sync,sd_sync,HD_video,json_conf,thumb_path,thumb_name
 
    meteor_data = name_analyser(HD_video)
 
+   print(meteor_data);
+
    start_buff = int(meteor_data['start_buff'])
    start_sec = (start_buff / 25) * -1 
 
