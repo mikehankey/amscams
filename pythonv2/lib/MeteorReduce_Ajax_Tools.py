@@ -8,11 +8,13 @@ import numpy as np
 import ephem 
 import math
 import chardet
+import json
+
 import lib.Decoded_BrightStar_Data as bsd
 
 from lib.FileIO import cfe, load_json_file, save_json_file
 from lib.REDUCE_VARS import *
-from lib.MeteorReduce_Tools import get_cache_path, name_analyser, new_crop_thumb, get_HD_frame, get_thumb, get_frame_time, generate_cropped_frame
+from lib.MeteorReduce_Tools import get_HD_frames, get_cache_path, name_analyser, new_crop_thumb, get_HD_frame, get_thumb, get_frame_time, generate_cropped_frame
 from lib.MeteorReduce_Calib_Tools import XYtoRADec
 from lib.Old_JSON_converter import get_analysed_name
 from lib.UtilLib import convert_filename_to_date_cam, angularSeparation, date_to_jd
