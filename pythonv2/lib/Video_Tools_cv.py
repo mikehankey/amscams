@@ -6,6 +6,7 @@ import os
 
 from lib.VIDEO_VARS import *   
 from lib.REDUCE_VARS import *
+from lib.MeteorReduce_Tools import name_analyser
 from lib.Video_Tools_cv_pos import *
 from lib.Video_Parameters import get_video_job_default_parameters
 from lib.UtilLib import convert_filename_to_date_cam
@@ -589,14 +590,30 @@ def add_thumbs_to_video(hd_sync,sd_sync,HD_video,json_conf,thumb_path,thumb_name
    #print("ALL THUMBS")
    #print(all_thumbs)
 
+   meteor_data = name_analyser(HD_video)
+
+   start_buff = int(meteor_data['start_buff'])
+   start_sec = (start_buff / 25) * -1 
+
    # Frame diff (sync)
    frame_diff =  hd_sync - sd_sync
 
+   (hd_datetime, sd_cam, sd_date, sd_y, sd_m, sd_d, sd_h, sd_M, sd_s) = convert_filename_to_date_cam(HD_video)
+
    new_frames = []
    frame_counter = 0
-  
+   
+   fc = 0
+
+   start_frame_time = hd_datetime + datetime.timedelta(0,start_sec)
+   start_frame_str  = hd_datetime.strftime('%Y-%m-%d %H:%M:%S.%f')[:-3]
+
    for frame in frames:
 
+      frame_sec = fc / FPS_HD
+      frame_time = start_frame_time + datetime.timedelta(0,frame_sec)
+      frame_time_str = frame_time.strftime('%Y-%m-%d %H:%M:%S.%f')[:-3]
+      fn = str(fc)
       hd_img = frame
   
       if( frame_counter  >= thumbs_start_at and  frame_counter <= thumbs_end_at):
