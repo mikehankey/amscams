@@ -646,6 +646,7 @@ def add_thumbs_to_video(hd_sync,sd_sync,HD_video,json_conf,thumb_path,thumb_name
 
       new_frames.append(hd_img) 
       frame_counter +=1
+      fc = fc + 1
 
    make_movie_from_frames(new_frames, [0,len(new_frames) - 1], output_video_path, 1) 
    print('OUTPUT ' + output_video_path)
