@@ -8,11 +8,13 @@ import numpy as np
 import ephem 
 import math
 import chardet
+import json
+
 import lib.Decoded_BrightStar_Data as bsd
 
 from lib.FileIO import cfe, load_json_file, save_json_file
 from lib.REDUCE_VARS import *
-from lib.MeteorReduce_Tools import get_cache_path, name_analyser, new_crop_thumb, get_HD_frame, get_thumb, get_frame_time, generate_cropped_frame
+from lib.MeteorReduce_Tools import get_HD_frames, get_cache_path, name_analyser, new_crop_thumb, get_HD_frame, get_thumb, get_frame_time, generate_cropped_frame
 from lib.MeteorReduce_Calib_Tools import XYtoRADec
 from lib.Old_JSON_converter import get_analysed_name
 from lib.UtilLib import convert_filename_to_date_cam, angularSeparation, date_to_jd
@@ -26,6 +28,22 @@ sys.stdout = io.TextIOWrapper(sys.stdout.buffer, encoding='utf-8')
 mybsd = bsd.Decoded_BrightStar_Data()
 bright_stars = mybsd.bright_stars
  
+
+# Used for changing the background of the canvas
+# This function returns all the HD frames of a detection
+# WARNING RETURNS ONLY THE 20 first and 20 last frames
+def get_all_HD_frames(json_value):
+ 
+   # Get the HD frames 
+   # False=  we don't clear the cache
+   HD_frames = get_HD_frames(name_analyser(json_value),False)
+   
+   if(len(HD_frames)>=20):
+      HD_frames = HD_frames[10:] + HD_frames[:10]
+   
+   # Return JSON
+   print(json.dumps({'res':HD_frames[:30]})) 
+
 
 # Create new cropped frame
 # and add the corresponding info to the json file

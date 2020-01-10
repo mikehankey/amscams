@@ -1,4 +1,5 @@
 import cgitb
+import json
 
 from pathlib import Path
 from shutil import copyfile
@@ -9,7 +10,9 @@ from lib.MeteorReduce_Calib_Tools import find_matching_cal_files, find_calib_fil
 from lib.REDUCE_VARS import REMOTE_FILES_FOLDER, REMOVE_METEOR_FOLDER, METEOR_ARCHIVE
  
 PAGE_TEMPLATE = "/home/ams/amscams/pythonv2/templates/reducePage.v2.html"
- 
+
+
+
 
 # GENERATES THE REDUCE PAGE METEOR
 # from a URL 
@@ -153,7 +156,7 @@ def reduce_meteor2(json_conf,form):
    # Is it remote?
    if(other_station==True):
       real_station_id = can_we_get_the_station_id(analysed_name['full_path'])
-      template = template.replace("{WARNING_STATION}", "<div class='container-fluid mt-4'><div class='alert alert-danger'><span class='icon-notification'></span> WARNING THIS DETECTION HAS BEEN MADE FROM ANOTHER STATION - THE STATION <b>" + str(real_station_id) +"</b></div></div>")
+      template = template.replace("{WARNING_STATION}", "<div class='container-fluid mt-4'><div class='alert alert-danger'><span class='icon-notification'></span> WARNING THIS DETECTION HAS BEEN MADE FROM ANOTHER STATION -  STATION: <b>" + str(real_station_id) +"</b> - CAM: <b>"+str(analysed_name['cam_id'])+"</b></div></div>")
    else:
       template = template.replace("{WARNING_STATION}", "") 
 

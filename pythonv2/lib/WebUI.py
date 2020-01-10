@@ -39,8 +39,8 @@ from lib.MultiStationMeteors import multi_station_meteors, multi_station_meteor_
 from lib.Replace_HD import replace_HD
 
 # New Reduce Meteor Page
-from lib.MeteorReducePage import reduce_meteor2
-from lib.MeteorReduce_Ajax_Tools import get_reduction_info, delete_frame, update_multiple_frames, update_frame, get_frame, create_thumb, update_cat_stars
+from lib.MeteorReducePage import reduce_meteor2 
+from lib.MeteorReduce_Ajax_Tools import get_all_HD_frames, get_reduction_info, delete_frame, update_multiple_frames, update_frame, get_frame, create_thumb, update_cat_stars
 
 # Manual Reduction page
 from lib.MeteorManualReducePage import manual_reduction, manual_reduction_cropper, manual_reduction_meteor_pos_selector, manual_reduction_create_final_json, manual_reduction_step1
@@ -259,6 +259,11 @@ def controller(json_conf):
       check_pwd_ajax(user,pwd)
       exit()
 
+
+   # GET LIST OF HD FRAMES FROM A GIVEN DETECTION (AJAX CALL)
+   if cmd == 'get_HD_frames':
+      get_all_HD_frames(form.getvalue('json_file'))   
+      exit();
 
    # GET REDUCTION JSON DATA (AJAX CALL)
    if cmd == 'get_reduction_info': 

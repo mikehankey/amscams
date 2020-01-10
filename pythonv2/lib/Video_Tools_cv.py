@@ -1,7 +1,12 @@
 import cv2
 import datetime
 import numpy as numpy
+import glob
+import os
+
 from lib.VIDEO_VARS import *   
+from lib.REDUCE_VARS import *
+from lib.MeteorReduce_Tools import name_analyser
 from lib.Video_Tools_cv_pos import *
 from lib.Video_Parameters import get_video_job_default_parameters
 from lib.UtilLib import convert_filename_to_date_cam
@@ -568,3 +573,80 @@ def remaster(data):
 
     make_movie_from_frames(new_frames, [0,len(new_frames) - 1], marked_video_file, 1) 
     print('OUTPUT ' + marked_video_file )
+
+
+
+
+# Add the thumbs at the position x,y
+# inside a given HD video
+def add_thumbs_to_video(hd_sync,sd_sync,HD_video,json_conf,thumb_path,thumb_name,thumbs_start_at,thumbs_end_at,x_offset,y_offset,zoom,output_video_path):
+
+   #Get the meteor data & frames
+   frames = load_video_frames(HD_video, json_conf, 0, 0, [], 1)
+   
+   #Get all the thumbs
+   all_thumbs = sorted(glob.glob(thumb_path + os.sep + "*.png"))
+
+   #print("ALL THUMBS")
+   #print(all_thumbs)
+
+   meteor_data = name_analyser(HD_video) 
+
+   start_buff = int(meteor_data['trim'])
+   start_sec = (start_buff / FPS_HD) * -1 
+
+   # Frame diff (sync)
+   frame_diff =  hd_sync - sd_sync
+
+   (hd_datetime, sd_cam, sd_date, sd_y, sd_m, sd_d, sd_h, sd_M, sd_s) = convert_filename_to_date_cam(HD_video)
+
+   new_frames = []
+   frame_counter = 0
+   
+   fc = 0
+
+   start_frame_time = hd_datetime + datetime.timedelta(0,start_sec)
+   start_frame_str  = hd_datetime.strftime('%Y-%m-%d %H:%M:%S.%f')[:-3]
+
+   for frame in frames:
+
+      frame_sec = fc / FPS_HD
+      frame_time = start_frame_time + datetime.timedelta(0,frame_sec)
+      frame_time_str = frame_time.strftime('%Y-%m-%d %H:%M:%S.%f')[:-3]
+      fn = str(fc)
+      hd_img = frame
+  
+      if( frame_counter  >= thumbs_start_at and  frame_counter <= thumbs_end_at and zoom>0):
+
+        
+         #print("AT FRAME # " + str(frame_counter)  + " add image " + str(frame_counter-frame_diff) )
+
+         # Add thumb inside image
+         thumb_full_path = thumb_path + os.sep + thumb_name +  str(frame_counter-frame_diff) + ".png"
+         
+         #print("THUMB ("+ str(frame_counter-frame_diff)+ ')')
+         #print(thumb_full_path)
+         # We load the thumb
+         thumb = cv2.imread(thumb_full_path)
+
+         # We resize it
+         thumb = cv2.resize(thumb, None, fx = zoom, fy = zoom, interpolation = cv2.INTER_CUBIC)
+
+         # Draw rectangle
+         #cv2.rectangle(hd_img, (x_offset, y_offset), (x_offset+50, y_offset+50), (255,0,0), 1, cv2.LINE_AA)
+
+         cv2.rectangle(hd_img, (x_offset-1,y_offset-1), (x_offset+1+THUMB_W*zoom,y_offset+1+THUMB_H*zoom), (0,255,0), 1, cv2.LINE_AA)
+
+         hd_img[y_offset:y_offset+thumb.shape[0], x_offset:x_offset+thumb.shape[1]] = thumb
+
+
+      # Add Date & Time
+      frame_time_str = meteor_data['station_id'] + ' - ' + frame_time_str + ' UT' 
+      hd_img,xx,yy,ww,hh = add_text_to_pos(hd_img,frame_time_str,D_CAM_INFO_POS,2) 
+
+      new_frames.append(hd_img) 
+      frame_counter +=1
+      fc = fc + 1
+
+   make_movie_from_frames(new_frames, [0,len(new_frames) - 1], output_video_path, 1) 
+   print('OUTPUT ' + output_video_path)

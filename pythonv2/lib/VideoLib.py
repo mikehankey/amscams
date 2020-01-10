@@ -339,7 +339,7 @@ def make_movie_from_frames(frames, fns, outfile , remaster = 0):
 
    if remaster == 1:
       cmd = """/usr/bin/ffmpeg -y -framerate 25 -pattern_type glob -i '""" + TMP_DIR + """*.png' \
-        -c:v libx264 -r 25 -vf scale='1280x720' -pix_fmt yuv420p """ + outfile 
+        -c:v libx264 -r 25 -vf scale='1920x1080' -pix_fmt yuv420p """ + outfile 
    else:
       cmd = """/usr/bin/ffmpeg -y -framerate 25 -pattern_type glob -i '""" + TMP_DIR + """*.png' \
         -c:v libx264 -r 25 -pix_fmt yuv420p """ + outfile 
