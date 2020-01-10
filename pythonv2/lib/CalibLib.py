@@ -1075,6 +1075,7 @@ def clean_star_bg(cnt_img, bg_avg):
    return(cnt_img)
 
 def get_catalog_stars(fov_poly, pos_poly, cal_params,dimension,x_poly,y_poly,min=0):
+ 
    
    catalog_stars = []
    possible_stars = 0

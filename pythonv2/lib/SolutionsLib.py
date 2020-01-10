@@ -21,13 +21,13 @@ def make_sol_index(output_dir):
          try:
             json_data = load_json_file(json_file)
          except:
-            print("BAD JSON:", json_file, "<BR>")
+            #print("BAD JSON:", json_file, "<BR>")
             good = 0
          
       if good == 1: 
          if (json_data['orbit']['a'] is not None):
             solutions[fn] = {}
-            print(json_file, good,"<BR>")     
+            #print(json_file, good,"<BR>")     
             el = dir.split("/")
             solutions[fn]['name'] = fn
             solutions[fn]['a'] = str(json_data['orbit']['a'])
@@ -46,7 +46,27 @@ def make_sol_index(output_dir):
             #solutions[fn]['epoch'] = 2451545.0 
             qs = solutions[fn]
             solutions[fn]['embed'] = "http://orbit.allskycams.com/index_emb.php?name={:s}&&epoch={:s}&a={:s}&M={:s}&e={:s}&I={:s}&Peri={:s}&Node={:s}&P={:s}&q={:s}&T={:s}".format( str(fn), str(qs['epoch']), str(qs['a']), str(qs['M']), str(qs['e']), str(qs['I']), str(qs['Peri']), str(qs['Node']), str(qs['P']), str(qs['q']), str(qs['T']))
-            print("<a href=" + solutions[fn]['embed'] + ">orbit</a>")
+            qs = solutions[fn]
+            json_data['final_solution'] = qs 
+            for key in json_data['as6_info']:
+               if "reduced" in key:
+                  #print(key, "<BR>")
+                  station_id = json_data['as6_info'][key]['station_id']
+                  sd_file = json_data['as6_info'][key]['all_red']['sd_video_file']
+                  new_file = output_dir + fn + "/" + fn + "-MOV-" + station_id + ".mp4" 
+                  if cfe(sd_file) == 0:
+                     sd_file = sd_file.replace("/meteors/", "/multi_station/")
+                     sd_file = sd_file.replace(".mp4", "-reduced.mp4")
+
+                  #if cfe(new_file) == 0:
+                     #cmd = "cp " + sd_file + " " + new_file
+                     #print(cmd,"<BR>")
+            cmd = "mv " + output_dir + fn + "/thumbs/*.png " + output_dir + fn + "/"
+            print(cmd,"<BR>")
+
+
+            #save_json_file(json_file, json_data)
+            #print("<a href=" + solutions[fn]['embed'] + ">orbit</a>")
      
    save_json_file("/var/www/html/solutions.json", solutions) 
 
@@ -69,7 +89,7 @@ def sol_detail(json_conf, form):
    print("<img src=" + summary_img + ">")
 
 def solutions(json_conf, form):
-   sol_dir = "/var/www/html/output/*"
+   sol_dir = "/var/www/html/output/"
    make_sol_index(sol_dir)
    dirs = glob.glob(sol_dir)
    for dir in sorted(dirs, reverse=True):

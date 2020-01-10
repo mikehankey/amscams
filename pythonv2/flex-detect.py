@@ -1,7 +1,7 @@
 #!/usr/bin/python3
 
 from sklearn.cluster import DBSCAN
-
+from fitPairs import reduce_fit
 from lib.REDUCE_VARS import *
 from lib.Video_Tools_cv_pos import *
 from lib.Video_Tools_cv import *
@@ -625,6 +625,9 @@ def refit_arc_meteor(archive_file):
    hd_vid = am['info']['hd_vid']
    calib = am['calib']
    cal_params = load_cal_params_from_arc(calib)
+  
+
+
    cat_stars = flex_get_cat_stars(archive_file, archive_file, json_conf, cal_params )
 
    hd_frames,hd_color_frames,hd_subframes,sum_vals,max_vals = load_frames_fast(hd_vid, json_conf, 0, 0, [], 1,[])
@@ -659,6 +662,7 @@ def refit_arc_meteor(archive_file):
 
    this_poly = np.zeros(shape=(4,), dtype=np.float64)
    cal_params['cat_image_stars'] = cat_image_stars
+   tries = 0 
    res = scipy.optimize.minimize(reduce_fov_pos, this_poly, args=( cal_params,archive_file,frame,json_conf, cat_image_stars,1,show), method='Nelder-Mead')
    print(res)
    fov_pos_poly = res['x']
@@ -863,6 +867,8 @@ def calib_to_calparams(calib, json_file ):
    cal_params['orig_az_center'] = calib['device']['center']['az'] 
    cal_params['orig_el_center'] = calib['device']['center']['el'] 
    cal_params['position_angle'] = calib['device']['angle']
+   if "img_dim" not in calib:
+      calib['img_dim'] = [1920,1080]
    cal_params['imagew'] = calib['img_dim'][0]
    cal_params['imageh'] = calib['img_dim'][1]
    cat_image_stars = []
@@ -901,9 +907,12 @@ def remove_bad_stars(stars):
    return(new_stars)
 
 def update_intensity(json_file):
+   cnt_file = json_file.replace(".json", "-lc-cnt.png")
+   ff_file = json_file.replace(".json", "-lc-ff.png")
    data = load_json_file(json_file)
    hd_file = json_file.replace(".json", "-HD.mp4")
    hd_frames,hd_color_frames,hd_subframes,sum_vals,max_vals = load_frames_fast(hd_file, json_conf, 0, 0, [], 0,[])
+   sync = data['sync']['hd_ind'] - data['sync']['sd_ind']
    frames = data['frames']
    curve = {}
    fx = frames[5]['x']
@@ -912,33 +921,49 @@ def update_intensity(json_file):
    print(cx1,cy1,cx2,cy2)
    bg_cnt = hd_frames[0][cy1:cy2,cx1:cx2] 
 
+   bg_int = []
    for i in range(0, len(hd_frames)):
       curve[i] = {}
       curve[i]['cnt_int'] = np.sum(bg_cnt)
       ff_sub = cv2.subtract(hd_frames[i],hd_frames[0])
       ff_int = np.sum(ff_sub) 
-      curve[i]['ff_int'] = ff_int
+      bg_int.append(ff_int)
+
+
+   for i in range(0, len(hd_frames)):
+      curve[i]['ff_int'] = 0 
+      curve[i]['cnt_int'] = 0
 
    ffs= []
    cnts= []
    for frame in frames:   
-      fn = frame['fn']
+      fn = frame['fn'] + sync
       x = frame['x']
       y = frame['y']
       cx1,cy1,cx2,cy2 = bound_cnt(x,y,hd_frames[0].shape[1],hd_frames[0].shape[0], 20)
+      print(fn, cy1,cy2,cx1,cx2)
       cnt = hd_frames[fn][cy1:cy2,cx1:cx2] 
       bg_cnt = hd_frames[0][cy1:cy2,cx1:cx2] 
       cnt_sub = cv2.subtract(cnt,bg_cnt)
       cnt_int = np.sum(cnt) - np.sum(bg_cnt)
       ff_sub = cv2.subtract(hd_frames[fn],hd_frames[0])
       ff_int = np.sum(ff_sub) 
+      if cnt_int > 18446744073709:
+         cnt_int = 0
+      if ff_int > 18446744073709:
+         ff_int = 0
+
       curve[fn]['cnt_int'] = cnt_int
       curve[fn]['ff_int'] = ff_int
       ffs.append(ff_int)
       cnts.append(cnt_int)
 
+   
+
    mf = max(ffs)
    mc = max(cnts)
+   medf = np.median(ffs)
+   medc = np.median(cnts)
    scale = mf / mc
 
    times = []
@@ -946,19 +971,27 @@ def update_intensity(json_file):
    values2 = []
    for fn in curve:
       times.append(fn)
-      values.append(curve[fn]['cnt_int'])
+      values.append(curve[fn]['cnt_int'] )
       values2.append(curve[fn]['ff_int'] / scale)
       print(fn, curve[fn])     
 
-   plot_int(times,values, None,0,len(values))
-   plot_int(times,values2, None,0,len(values))
+   plot_int(times,values, None,0,len(values), "Contour Intensity " , cnt_file)
+   plot_int(times,values2, None,0,len(values), "Full Frame Intensity", ff_file )
+   print(cnt_file)
+   print(ff_file)
 
 def fit_arc_file(json_file):
+   json_conf = load_json_file("../conf/as6.json")
+   st_id = json_file.split("/")[4]
+   print("JSON FILE:", json_file)
    json_data = load_json_file(json_file)
+   if st_id != json_conf['site']['ams_id']:
+      # this is a remote station, reload the json conf file!
+      json_conf_file = "/mnt/ams2/meteor_archive/" + st_id + "/CAL/as6.json"  
+      json_conf = load_json_file(json_conf_file)
    (hd_datetime, cam, sd_date, sd_y, sd_m, sd_d, sd_h, sd_M, sd_s) = convert_filename_to_date_cam(json_file)
    station = json_file.split("/")[4]
    master_lens_file = "/mnt/ams2/meteor_archive/" + station + "/CAL/master_lens_model/master_cal_file_" + cam + ".json"
-   print("MASTER:", master_lens_file)
 
    hd_file = json_file.replace(".json", "-HD.mp4")
    hd_frames,hd_color_frames,hd_subframes,sum_vals,max_vals = load_frames_fast(hd_file, json_conf, 0, 0, [], 0,[])
@@ -973,7 +1006,6 @@ def fit_arc_file(json_file):
       calib['device'] = last_best_calib['device']
 
    calib['stars'] = remove_bad_stars(calib['stars'])
-   print("YO")
 
    cal_params = calib_to_calparams(calib, json_file)
 
@@ -983,7 +1015,6 @@ def fit_arc_file(json_file):
    orig['pos_ang'] = cal_params['orig_pos_ang']
    orig['pixscale'] = cal_params['orig_pixscale']
 
-
    cat_image_stars = cal_params['cat_image_stars']
 
    if cfe(master_lens_file) == 1:
@@ -992,10 +1023,6 @@ def fit_arc_file(json_file):
       cal_params['y_poly'] = mld['y_poly']
       cal_params['y_poly_fwd'] = mld['y_poly_fwd']
       cal_params['x_poly_fwd'] = mld['x_poly_fwd']
-   print(cal_params)
-
-
-
 
    if True:
       this_poly = np.zeros(shape=(4,), dtype=np.float64)
@@ -1005,6 +1032,10 @@ def fit_arc_file(json_file):
       print("YOYOyo")
       cal_params_orig = cal_params.copy()
       res = scipy.optimize.minimize(reduce_fov_pos, this_poly, args=( cal_params,json_file,frame,json_conf, cat_image_stars,1,show), method='Nelder-Mead')
+
+   
+
+      print("RES:", res)
 
       fov_pos_poly = res['x']
       fov_pos_fun = res['fun']
@@ -1044,8 +1075,7 @@ def fit_arc_file(json_file):
       #cat_image_stars = get_cat_image_stars(cat_stars, frame,cal_params_file)
 
    calib = format_calib(json_file, cal_params, json_file)
-   new_stars = update_arc_cat_stars(calib,json_file)
-   print(new_stars)
+   new_stars = update_arc_cat_stars(calib,json_file,json_conf)
    calib['stars'] = new_stars
    save_json_file("test.json", new_stars)
 
@@ -1055,6 +1085,21 @@ def fit_arc_file(json_file):
    print("FOV POLY:", fov_pos_poly)
    print("ORIG:", orig)
    print("FINAL", calib['device']) 
+
+
+   # now do the lens fit, if requested:
+   lens_fit =  1
+   if lens_fit == 1:
+      cal_params = minimize_poly_params_fwd(json_file, cal_params,json_conf)
+   calib['device']['poly']['x'] = cal_params['x_poly']
+   calib['device']['poly']['y'] = cal_params['y_poly']
+   calib['device']['poly']['x_fwd'] = cal_params['x_poly_fwd']
+   calib['device']['poly']['y_fwd'] = cal_params['y_poly_fwd']
+
+   new_stars = update_arc_cat_stars(calib,json_file,json_conf)
+   calib['stars'] = new_stars
+   json_data['calib'] = calib
+   save_json_file(json_file, json_data)
    if len(calib['stars']) > 15 and cal_params['total_res_px'] < 2.4:
       last_best = calib
       del last_best['stars']
@@ -1062,10 +1107,11 @@ def fit_arc_file(json_file):
       last_best_file = "/mnt/ams2/meteor_archive/" + station + "/CAL/last_best/" + lbf
       save_json_file(last_best_file, last_best)
 
+
    print(json_file)
 
 # Catalog Stars
-def update_arc_cat_stars(calib, json_file):
+def update_arc_cat_stars(calib, json_file,json_conf):
    star_points = []
    cal_params = calib_to_calparams(calib, json_file)
    for star in calib['stars']:
@@ -5861,13 +5907,14 @@ def meteor_objects(objects):
          nc = nc + 1
    return(meteors,nonmeteors)
 
-def plot_int(times, values,values2=None,mstart=0,mend=0):
+def plot_int(times, values,values2=None,mstart=0,mend=0, title="", save_file=None):
    print("TIMES:", len(times))
    print("VALUES:", len(values))
    import matplotlib
    #matplotlib.use('Agg')
    import matplotlib.pyplot as plt
    fig = plt.figure()
+   fig.suptitle(title, fontsize=16)
    if values2 is not None:
       if len(values) != len(values2)  :
          print("PROBLEM, unequal items in lists.")
@@ -5884,6 +5931,7 @@ def plot_int(times, values,values2=None,mstart=0,mend=0):
    plt.show()
    #curve_file = "figs/detect.png"
    #plt.savefig(curve_file)
+   fig.savefig(save_file, dpi=100)
 
 def analyze_intensity(curve1, curve2,subframes=None):
    int_frame_data = []
@@ -7151,6 +7199,98 @@ def check_archive(day, run):
    print("SUCCESS:", good)
    print("FAILED:", bad)
    print("/mnt/ams2/meteors/" + day + "/archive_report.json" )
+
+
+def minimize_poly_params_fwd(cal_params_file, cal_params,json_conf,show=1):
+   global tries
+   tries = 0
+   #cv2.namedWindow('pepe')
+
+   fit_img_file = cal_params_file.replace("-calparams.json", ".png")
+   if cfe(fit_img_file) == 1:
+      fit_img = cv2.imread(fit_img_file)
+   else:
+      fit_img = np.zeros((1080,1920),dtype=np.uint8)
+
+   #if show == 1:
+   #   cv2.namedWindow('pepe')
+   x_poly_fwd = cal_params['x_poly_fwd']
+   y_poly_fwd = cal_params['y_poly_fwd']
+   x_poly = cal_params['x_poly']
+   y_poly = cal_params['y_poly']
+
+   close_stars = cal_params['cat_image_stars']
+   # do x poly fwd
+
+   x_poly_fwd = np.zeros(shape=(15,),dtype=np.float64)
+   y_poly_fwd = np.zeros(shape=(15,),dtype=np.float64)
+   x_poly = np.zeros(shape=(15,),dtype=np.float64)
+   y_poly = np.zeros(shape=(15,),dtype=np.float64)
+   img_az = cal_params['center_az']
+   img_el = cal_params['center_el']
+   # reshape teh cat image stars.
+   new_stars = []
+   for star in cal_params['cat_image_stars']:
+      #(star['name'],star['mag'],star['ra'],star['dec'],star['cat_und_pos'][0],star['cat_und_pos'][1],star['i_pos'][0],star['i_pos'][1],star['intensity'], star['dist_px'],json_file)
+      (dcname,mag,ra,dec,cat_x, cat_y, img_x,img_y,intensity, match_dist, json_file) = star
+      #(dcname,mag,ra,dec,img_ra,img_dec,match_dist,new_x,new_y,img_az,img_el,new_cat_x,new_cat_y,six,siy, img_res,json_file) = star
+      new_star = (dcname,mag,ra,dec,ra,dec,match_dist,cat_x,cat_y,img_az,img_el,cat_x,cat_y,img_x,img_y, match_dist) 
+      new_stars.append(new_star)
+      print("SIZE:", len(star))
+      print(star) 
+   cal_params['cat_image_stars'] = new_stars
+   #(dcname,mag,ra,dec,img_ra,img_dec,match_dist,new_x,new_y,img_az,img_el,new_cat_x,new_cat_y,six,siy, img_res) = star
+   # d o x poly
+   field = 'x_poly'
+   res = scipy.optimize.minimize(reduce_fit, x_poly, args=(field,cal_params,cal_params_file,fit_img,json_conf), method='Nelder-Mead')
+   x_poly = res['x']
+   x_fun = res['fun']
+   cal_params['x_poly'] = x_poly.tolist()
+   cal_params['x_fun'] = x_fun
+
+   # do y poly
+   field = 'y_poly'
+   res = scipy.optimize.minimize(reduce_fit, y_poly, args=(field,cal_params,cal_params_file,fit_img,json_conf), method='Nelder-Mead')
+   y_poly = res['x']
+   y_fun = res['fun']
+   cal_params['y_poly'] = y_poly.tolist()
+   cal_params['y_fun'] = y_fun
+
+   # do x poly fwd
+   field = 'x_poly_fwd'
+   res = scipy.optimize.minimize(reduce_fit, x_poly_fwd, args=(field,cal_params,cal_params_file,fit_img,json_conf), method='Nelder-Mead')
+   x_poly_fwd = res['x']
+   x_fun_fwd = res['fun']
+   cal_params['x_poly_fwd'] = x_poly_fwd.tolist()
+   cal_params['x_fun_fwd'] = x_fun_fwd
+
+   # do y poly fwd
+   field = 'y_poly_fwd'
+   res = scipy.optimize.minimize(reduce_fit, y_poly_fwd, args=(field,cal_params,cal_params_file,fit_img,json_conf), method='Nelder-Mead')
+   y_poly_fwd = res['x']
+   y_fun_fwd = res['fun']
+   cal_params['y_poly_fwd'] = y_poly_fwd.tolist()
+   cal_params['y_fun_fwd'] = y_fun_fwd
+
+
+   print("POLY PARAMS")
+   print("X_POLY", x_poly)
+   print("Y_POLY", y_poly)
+   print("X_POLY_FWD", x_poly_fwd)
+   print("Y_POLY_FWD", y_poly_fwd)
+   print("X_POLY FUN", x_fun)
+   print("Y_POLY FUN", y_fun)
+   print("X_POLY FWD FUN", x_fun_fwd)
+   print("Y_POLY FWD FUN", y_fun_fwd)
+
+
+   #img_x = 960
+   #img_y = 540
+   #new_x, new_y, img_ra,img_dec, img_az, img_el = XYtoRADec(img_x,img_y,cal_params_file,cal_params,json_conf)
+   #cal_params['center_az'] = img_az
+   #cal_params['center_el'] = img_el
+   #save_json_file(cal_params_file, cal_params)
+   return(cal_params)
       
  
 

@@ -357,7 +357,25 @@ def meteor_index(json_conf, extra_cmd = ""):
       for meteor in meteor_index[day]:
          sort_meteor_index[day][meteor] = meteor_index[day][meteor]
 
+
    save_json_file("/mnt/ams2/cal/hd_images/meteor_index.json", sort_meteor_index)
+   station_id = json_conf['site']['ams_id']
+
+   ma_dir  = "/mnt/ams2/meteor_archive/" + station_id + "/DETECTS/" 
+   wb_dir  = "/mnt/wasabi/" + station_id + "/DETECTS/" 
+   if cfe(ma_dir,1) == 0:
+      os.system("mkdir " + ma_dir)
+   if cfe(wb_dir, 1) == 0:
+      os.system("mkdir " + wb_dir)
+
+   cmd = "gzip -f /mnt/ams2/cal/hd_images/meteor_index.json"
+   os.system(cmd)
+   cmd = "cp /mnt/ams2/cal/hd_images/meteor_index.json.gz /mnt/ams2/meteor_archive/" + station_id + "/DETECTS/"
+   os.system(cmd)
+   cmd = "cp /mnt/ams2/cal/hd_images/meteor_index.json /mnt/ams2/meteor_archive/" + station_id + "/DETECTS/"
+   os.system(cmd)
+   cmd = "cp /mnt/ams2/cal/hd_images/meteor_index.json.gz /mnt/wasabi/" + station_id + "/DETECTS/"
+   os.system(cmd)
 
    print(json_conf)
 
@@ -1150,9 +1168,7 @@ def minimize_fov_pos(meteor_json_file, image_file, json_conf, cal_params = None,
 
    res = scipy.optimize.minimize(reduce_fov_pos, this_poly, args=( cal_params,image_file,oimg,json_conf, paired_stars,1,show), method='Nelder-Mead')
 
-
    fov_pos_poly = res['x']
-   #print("FOV POS POLY:", float(fov_pos_poly[0]), float(fov_pos_poly[1]), float(fov_pos_poly[2]), float(fov_pos_poly[3])) 
    fov_pos_fun = res['fun']
    cal_params['x_poly'] = cal_params_orig['x_poly']
    cal_params['y_poly'] = cal_params_orig['y_poly']
@@ -1162,15 +1178,9 @@ def minimize_fov_pos(meteor_json_file, image_file, json_conf, cal_params = None,
    cal_params['fov_pos_fun'] = fov_pos_fun
    cal_params['total_res_px'] = fov_pos_fun
 
-   #print("FOV POS POLY:", fov_pos_poly)
-   #print("EQUATION = " + str(cal_params['position_angle']) + " + " + str(fov_pos_poly[2] ))
    cal_params['center_az'] = float(cal_params['orig_az_center']) + float(fov_pos_poly[0] )
    cal_params['center_el'] = float(cal_params['orig_el_center']) + float(fov_pos_poly[1] )
-   #cal_params['ra_center'] = 
-   #cal_params['dec_center'] = 
    cal_params['position_angle'] = float(cal_params['position_angle']) + float(fov_pos_poly[2] )
-   #cal_params['pixscale'] = float(cal_params['pixscale']) + float(fov_pos_poly[3] )
-   #print("FINAL CALP VALUES: ", cal_params['center_az'], cal_params['center_el'], cal_params['position_angle'], cal_params['pixscale'])  
 
    if type(meteor_json_file) is str:
       rah,dech = AzEltoRADec(cal_params['center_az'],cal_params['center_el'],meteor_json_file,cal_params,json_conf)
@@ -1181,39 +1191,13 @@ def minimize_fov_pos(meteor_json_file, image_file, json_conf, cal_params = None,
    ra_center,dec_center = HMS2deg(str(rah),str(dech))
    cal_params['ra_center'] = ra_center
    cal_params['dec_center'] = dec_center
-
-
    cal_params['fov_fit'] = 1 
    close_stars = []
    cat_image_stars, img = get_image_stars_from_catalog(image_file,json_conf,meteor_json_file, masks, cal_params, show = 0)
-   #print("CAT IMAGE STARS:", len(cat_image_stars))
-
    for name,mag,ra,dec,new_cat_x,new_cat_y,ix,iy,px_dist,cal_params_file in cat_image_stars:
       close_stars.append(( name,mag,ra,dec,0,0,px_dist,new_cat_x,new_cat_y,0,0,new_cat_x,new_cat_y,ix,iy,px_dist))
-
    cal_params['close_stars'] =  close_stars
-
-   #print("ORIG MAZ:", cal_params['orig_az_center'], cal_params['orig_el_center'], cal_params['orig_pos_ang'])
-   #print("ORIG RA:", cal_params['orig_ra_center'], cal_params['orig_dec_center'])
-   #print("END MAZ:", cal_params['center_az'], cal_params['center_el'], cal_params['position_angle'])
-   #print("END RA:", cal_params['ra_center'], cal_params['dec_center'] )
-
    cal_params['close_stars'] = paired_stars
-   #cal_params['cat_image_stars'] =  close_stars 
-   #this_poly = np.zeros(shape=(4,), dtype=np.float64)
-   #this_poly[0] = 0
-   #this_poly[1] = 0
-   #this_poly[2] = 0
-   #this_poly[3] = 0
-
-   #final_res = reduce_fov_pos(this_poly, cal_params,image_file,oimg,json_conf, paired_stars,0,show)
-
-
-   print("END RES:", cam_id, final_res, len(paired_stars)) 
-   #print("END AZ:", cal_params['center_az']) 
-   #print("END EL:", cal_params['center_el'] ) 
-   #print("END POS:", cal_params['position_angle']) 
-   #print("END PIXSCALE:", cal_params['pixscale']) 
 
    # update the reduction values with new calibration
    video_file = meteor_json_file.replace(".json", ".mp4")
@@ -2030,12 +2014,7 @@ def get_cat_stars(file, cal_params_file, json_conf, cal_params = None):
    rah = str(rah).replace(":", " ")
    dech = str(dech).replace(":", " ")
 
-
    ra_center,dec_center = HMS2deg(str(rah),str(dech))
-
-   #print("RA/DEC:", ra_center, dec_center)
-   #print("AZ/EL:", center_az, center_el)
-
 
    cal_params['ra_center'] = ra_center
    cal_params['dec_center'] = dec_center

@@ -99,8 +99,9 @@ def reduce_fit(this_poly,field, cal_params, cal_params_file, fit_img, json_conf,
       cv2.circle(this_fit_img, (six,siy), 5, (128,128,128), 1)
 
       total_res = total_res + img_res
-   tries = tries + 1
+   #tries = tries + 1
 
+   tries = 0
    total_stars = len(cal_params['cat_image_stars'])
    avg_res = total_res/total_stars
 
@@ -221,33 +222,33 @@ def minimize_poly_params_fwd(cal_params_file, cal_params,json_conf,show=1):
 
 
 
+if __name__ == "__main__":
+   json_conf = load_json_file("../conf/as6.json")
 
-json_conf = load_json_file("../conf/as6.json")
 
+   cal_params_file = sys.argv[1]
+   os.system("./autoCal.py cfit_hdcal " + cal_params_file)
+   print(cal_params_file)
+   cal_params = load_json_file(cal_params_file)
+   total_res = 0
+   total_res_fwd = 0
+   for star in (cal_params['cat_image_stars']):
+      (dcname,mag,ra,dec,img_ra,img_dec,match_dist,new_x,new_y,img_az,img_el,new_cat_x,new_cat_y,six,siy, img_res) = star
+      img_res_fwd = abs(calc_dist((six,siy),(new_x,new_y)))
+      #  print(dcname, img_res,img_res,img_res_fwd)
+      total_res = total_res + img_res
+      total_res_fwd = total_res_fwd + img_res_fwd
 
-cal_params_file = sys.argv[1]
-os.system("./autoCal.py cfit_hdcal " + cal_params_file)
-print(cal_params_file)
-cal_params = load_json_file(cal_params_file)
-total_res = 0
-total_res_fwd = 0
-for star in (cal_params['cat_image_stars']):
-   (dcname,mag,ra,dec,img_ra,img_dec,match_dist,new_x,new_y,img_az,img_el,new_cat_x,new_cat_y,six,siy, img_res) = star
-   img_res_fwd = abs(calc_dist((six,siy),(new_x,new_y)))
-   #print(dcname, img_res,img_res,img_res_fwd)
-   total_res = total_res + img_res
-   total_res_fwd = total_res_fwd + img_res_fwd
+   total_stars = len(cal_params['cat_image_stars'])
+   avg_res = total_res/total_stars
+   avg_res_fwd = total_res_fwd/total_stars
+   print("Total Residual Error:", total_res, total_res_fwd)
+   print("Avg Residual Error:", avg_res, avg_res_fwd)
+   minimize_poly_params_fwd(cal_params_file, cal_params,json_conf)
 
-total_stars = len(cal_params['cat_image_stars'])
-avg_res = total_res/total_stars
-avg_res_fwd = total_res_fwd/total_stars
-print("Total Residual Error:", total_res, total_res_fwd)
-print("Avg Residual Error:", avg_res, avg_res_fwd)
-minimize_poly_params_fwd(cal_params_file, cal_params,json_conf)
-
-cmd = "./XYtoRAdecAzEl.py az_grid " + cal_params_file + ">/tmp/mike.txt 2>&1"
-print(cmd)
-os.system(cmd)
-cmd = "./autoCal.py cal_index"
-os.system(cmd)
+   cmd = "./XYtoRAdecAzEl.py az_grid " + cal_params_file + ">/tmp/mike.txt 2>&1"
+   print(cmd)
+   os.system(cmd)
+   cmd = "./autoCal.py cal_index"
+   os.system(cmd)
 
