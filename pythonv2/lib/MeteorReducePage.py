@@ -200,6 +200,8 @@ def reduce_meteor2(json_conf,form):
       if('device' in meteor_json_file['calib']):
          if('total_res_px' in meteor_json_file['calib']['device']):
             report_details += '<dt class="col-4">Res. Error</dt><dd class="col-8">'+str(meteor_json_file['calib']['device']['total_res_px'])+'</dd>'
+         if('point_score' in meteor_json_file['report']):
+            report_details += '<dt class="col-4">Point Score</dt><dd class="col-8">'+str(meteor_json_file['report']['point_score'])+'</dd>'
  
    # We complete the template
    if(report_details!=''):

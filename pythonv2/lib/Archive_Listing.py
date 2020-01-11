@@ -100,6 +100,12 @@ def get_diag_fields(detection):
       except:
          ang_vel = "unknown"      
 
+      # POINT SCORE 
+      try:
+         point_score = detection_data['report']['point_score']
+      except:
+         point_score = "unknown"      
+
 
       # SYNC (HD/SD)
       try:
@@ -111,11 +117,11 @@ def get_diag_fields(detection):
       except:
          sync = 0
 
-      return mag,dur,red, res_error, ang_vel, sync
+      return mag,dur,red, res_error, ang_vel, point_score, sync
    
    else:
 
-      return "unknown","unknown",0,"unknown","unknown"
+      return "unknown","unknown",0,"unknown","unknown","unknown"
 
 
 
@@ -156,7 +162,7 @@ def add_to_month_index(detection, insert=True):
       # If we are here, it means we didn't find it 
       # so if we want to insert it, we do it here
       if(insert==True):
-         mag,dur,red, res_error, ang_vel  =  get_diag_fields(analysed_detection_name['full_path'])
+         mag,dur,red, res_error, ang_vel,point_score,sync  =  get_diag_fields(analysed_detection_name['full_path'])
          
          new_detect = {
             "dur": dur,
@@ -164,6 +170,7 @@ def add_to_month_index(detection, insert=True):
             "p": det,
             "mag": mag,
             "res_er":res_error,
+            "point_score":point_score,
             "ang_v":ang_vel
          }
 
@@ -207,7 +214,7 @@ def create_json_index_month(month,year):
 
          for detection in sorted(glob.iglob(day + os.sep +  '*' + '.json', recursive=True), reverse=True):
              
-            mag,dur,red, res_error, ang_vel, sync  = get_diag_fields(detection)
+            mag,dur,red, res_error, ang_vel, point_score,sync  = get_diag_fields(detection)
             det = os.path.basename(detection)
             det = os.path.splitext(det)[0]
 
@@ -218,7 +225,7 @@ def create_json_index_month(month,year):
             except:
                index_month['days'][int(cur_day)] = []
  
-            index_month['days'][int(cur_day)].append({'p':det[11:],'mag':mag,'dur':dur,'red':red,'res_er':res_error,'ang_v':ang_vel,'sync':sync})
+            index_month['days'][int(cur_day)].append({'p':det[11:],'mag':mag,'dur':dur,'red':red,'res_er':res_error,'ang_v':ang_vel,'point_score':point_score,'sync':sync})
  
    return index_month             
 
@@ -248,14 +255,14 @@ def create_json_index_year(year):
 
                for detection in sorted(glob.iglob(day + os.sep +  '*' + '.json', recursive=True), reverse=True):
                   
-                  mag,dur,red, res_error, ang_vel, sync = get_diag_fields(detection)
+                  mag,dur,red, res_error, ang_vel, point_score,sync = get_diag_fields(detection)
 
 
                   det = os.path.basename(detection)
                   det = os.path.splitext(det)[0]
                   # det[11:] => Here we also remove the Year, Month & Day of the detection 
                   # since we know them from the JSON structure
-                  cur_day_data.append({'p':det[11:],'mag':mag,'dur':dur,'red':red,'res_er':res_error,'ang_v':ang_vel,'sync':sync})
+                  cur_day_data.append({'p':det[11:],'mag':mag,'dur':dur,'red':red,'res_er':res_error,'ang_v':ang_vel,'point_score':point_score,'sync':sync})
 
                #print("CUR DAY ")
                #print(cur_day)
@@ -621,6 +628,8 @@ def get_html_detection(det,detection,clear_cache):
 
    if(detection['res_er']!='unknown'):
       details_html += '              <dt class="col-6">Res. Error</dt>      <dd class="col-6">'+ str("{0:.4f}".format(float(detection['res_er'])))+'</dd>'
+   if(detection['point_score']!='unknown'):
+      details_html += '              <dt class="col-6">Point Score</dt>      <dd class="col-6">'+ str("{0:.4f}".format(float(detection['point_score'])))+'</dd>'
    
    if(detection['ang_v']!='unknown'):
       details_html += '              <dt class="col-6">Ang. Velocity</dt>   <dd class="col-6">'+str("{0:.4f}".format(float(detection['ang_v'])))+'&deg;/s</dd>'
@@ -756,6 +765,7 @@ def archive_listing(form):
    selected_mag = form.getvalue('magnitude')
    selected_error = form.getvalue('res_er')
    selected_ang_vel = form.getvalue('ang_v')
+   selected_point_score = form.getvalue('pnt_v')
    selected_sync = form.getvalue('sync')
  
    # Build the page based on template  
@@ -802,7 +812,7 @@ def archive_listing(form):
    template = template.replace("{MAGNITUDES}", mag_select)
     
    # Build ERRORS selector
-   error_select, criteria = create_criteria_selector(POSSIBLE_ERRORS,'res_er',selected_error, criteria,  'All Res. Error', '<')
+   error_select, criteria = create_criteria_selector(POSSIBLE_ERRORS,'res_er',selected_error, criteria,  'All Res. Error', '>')
    template = template.replace("{RES_ERRORS}", error_select)
 
    # Build ANGULAR VELOCITIES selector

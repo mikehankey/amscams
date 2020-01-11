@@ -31,6 +31,62 @@ from lib.UtilLib import calc_dist,find_angle
 import lib.brightstardata as bsd
 from lib.DetectLib import eval_cnt
 
+def run_detects(day):
+   print("RUN DETECTS")
+   network = json_conf['site']['network_sites'].split(",")
+   station = json_conf['site']['ams_id']
+   network.append(station)
+   detect_index = {}  
+   for st in network:
+      data_file = "/mnt/ams2/meteor_archive/" + st + "/DETECTS/meteor_index.json"
+      print(st, data_file)
+      data = load_json_file(data_file)
+      if day in data:
+         detect_index[st] = data[day]
+
+   files = []
+   min_meteors = {}
+   files_station = {}
+   for st in detect_index:
+      print(st)
+      for file in detect_index[st]:
+         fn = file.split("/")[-1]
+         files_station[fn] = st 
+         min_fn = fn[0:16]
+         if min_fn not in min_meteors:
+            min_meteors[min_fn] = {}
+            min_meteors[min_fn]['count'] = 0
+            min_meteors[min_fn]['obs'] = []
+            min_meteors[min_fn]['stations'] = []
+         min_meteors[min_fn]['obs'].append(fn)
+         min_meteors[min_fn]['stations'].append(st)
+         min_meteors[min_fn]['count'] = len(set(min_meteors[min_fn]['stations']))
+         files.append(file)
+
+   ms_meteors = {}
+   for min in min_meteors:
+      if min_meteors[min]['count'] > 1:
+         for i in range(0,len(min_meteors[min]['obs'])):
+            file = min_meteors[min]['obs'][i]
+            st = files_station[file]
+            if st not in ms_meteors:
+               ms_meteors[st] = {}
+            ms_meteors[st][file] = {} 
+            ms_meteors[st][file]['obs'] = min_meteors[min]['obs'] 
+            ms_meteors[st][file]['stations'] = min_meteors[min]['stations'] 
+            print(min, min_meteors[min]['count'])
+
+   for st in ms_meteors:
+      print(st)
+      master_detect_file = "/mnt/ams2/meteor_archive/" + st + "/DETECTS/ms_detects.json"
+      if cfe(master_detect_file) == 1:
+         master_detect = load_json_file(master_detect_file)
+      else:
+         master_detect = {}
+      master_detect[day] = ms_meteors[st]
+      save_json_file(master_detect_file, master_detect)
+      print(master_detect_file) 
+
 def check(day):
    red_files = glob.glob("/mnt/ams2/meteors/" + day + "/*reduced.json")
    for file in red_files:
@@ -368,11 +424,11 @@ def meteor_index(json_conf, extra_cmd = ""):
    if cfe(wb_dir, 1) == 0:
       os.system("mkdir " + wb_dir)
 
+   cmd = "cp /mnt/ams2/cal/hd_images/meteor_index.json /mnt/ams2/meteor_archive/" + station_id + "/DETECTS/"
+   os.system(cmd)
    cmd = "gzip -f /mnt/ams2/cal/hd_images/meteor_index.json"
    os.system(cmd)
    cmd = "cp /mnt/ams2/cal/hd_images/meteor_index.json.gz /mnt/ams2/meteor_archive/" + station_id + "/DETECTS/"
-   os.system(cmd)
-   cmd = "cp /mnt/ams2/cal/hd_images/meteor_index.json /mnt/ams2/meteor_archive/" + station_id + "/DETECTS/"
    os.system(cmd)
    cmd = "cp /mnt/ams2/cal/hd_images/meteor_index.json.gz /mnt/wasabi/" + station_id + "/DETECTS/"
    os.system(cmd)
@@ -3680,6 +3736,8 @@ if cmd == "star_merge_movie" or cmd == "smm":
    star_merge_movie(json_conf)
 if cmd == "check":
    check(sys.argv[2])   
+if cmd == "run_detects":
+   run_detects(sys.argv[2])   
 
 
 

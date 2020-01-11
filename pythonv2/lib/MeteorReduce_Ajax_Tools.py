@@ -273,8 +273,8 @@ def update_multiple_frames(form):
                # Regenerate the proper cropped (thumb)
                original_HD_frame = get_HD_frame(analysed_name,int(val['fn'])+int(frame_hd_sd_diff)+1) 
 
-               print("ORIGINAL HD FRAME ")
-               print(original_HD_frame)
+               #print("ORIGINAL HD FRAME ")
+               #print(original_HD_frame)
                  
                crop = generate_cropped_frame(analysed_name,mr,original_HD_frame[0],int(val['fn'])+int(frame_hd_sd_diff)+1,int(val['fn']),frame['x'],frame['y'])
 
@@ -293,7 +293,12 @@ def update_multiple_frames(form):
    # We add the result
    resp['msg'] = json.dumps(all_updated)
 
+   # re-run the point evaluator to get point score
+   #print("cd /home/ams/amscams/pythonv2/; ./flex-detect.py ep " + json_file + " > /dev/null")
+   os.system("cd /home/ams/amscams/pythonv2/; ./flex-detect.py ep " + json_file + " > /dev/null")
+
    print(json.dumps(resp))
+
 
 # Delete a frame
 # Input = the meteor json file & the frame #

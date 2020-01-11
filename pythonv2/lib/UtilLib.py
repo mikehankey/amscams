@@ -170,18 +170,22 @@ def convert_filename_to_date_cam(file):
 
 def bound_leading_edge_cnt(x,y,img_w,img_h,x_dir_mod,y_dir_mod,sz=10):
    # left to right meteor, so only grab pixels to the right of the x
+   print("XDIR MOD/YDIR MOD:", x_dir_mod, y_dir_mod)
    if x_dir_mod == -1:
+      print("LEFT TO RIGHT X DIR")
       mnx = x
       mxx = x + sz
    else:
       # right to left meteor, so only grab pixels to the left of the x
+      print("RIGHT TO LEFT X DIR")
       mxx = x
       mnx = x - sz
    if y_dir_mod == -1:
       mny = y 
       mxy = y + sz
+      print("TOP TO DOWN Y DIR ", x,y,mnx,mxx, mny, mxy)
    else:
-      # right to left meteor, so only grab pixels to the left of the x
+      print("DOWN TO TO UP Y DIR ")
       mxy = y
       mny = y - sz
    if mnx < 0:
