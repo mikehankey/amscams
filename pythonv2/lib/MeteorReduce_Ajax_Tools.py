@@ -537,7 +537,7 @@ def update_cat_stars(form):
 
       print("IN update_cat_stars<br/>")
       print(star_points)
-      sys.ext(0)
+      sys.exit(0)
    
       # get the center ra,dec based on the center_az,el and the current timestamp from the file 
       ra,dec = AzEltoRADec(meteor_red['calib'], video_file)
