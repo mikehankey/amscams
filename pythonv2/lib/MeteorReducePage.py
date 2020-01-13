@@ -226,7 +226,7 @@ def reduce_meteor2(json_conf,form):
 
 
    # Select to determine the factor of error for seg len  (Med dIST)
-   med_dist_select = '<select id="error_factor_dist_len" class="custom-select ml-4" style="width: auto;padding-top: 0;padding-bottom: 0;height: 1.8rem;">'
+   med_dist_select = '<select title="Seg. Len. error factor"  id="error_factor_dist_len" class="custom-select ml-4" style="width: auto;padding-top: 0;padding-bottom: 0;line-height: 1;height: 1.5em;">'
    for err in ERROR_FACTOR_SEG_LEN:
       med_dist_select += "<option value='"+str(err)+"'>x"+str(err)+"</option>"
    med_dist_select +="</select>"
