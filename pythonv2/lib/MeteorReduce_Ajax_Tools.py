@@ -342,6 +342,9 @@ def cnt_max_px(cnt_img):
 # Pin point stars from user selection
 def pin_point_stars(image, points):   
 
+   # DEBUG
+   cgitb.enable()
+   
    print("IN PIN POINT STARS <br>")
 
    star_points = []
@@ -364,7 +367,9 @@ def pin_point_stars(image, points):
       except:
          print("PROB!", image.shape, x1,y1, x2,y2, "<BR>")
          missed_star = 1
-   return(star_points)
+         sys.exit(0)
+
+   return star_points 
 
 
 def distort_xy_new(sx,sy,ra,dec,RA_center, dec_center, x_poly, y_poly, x_res, y_res, pos_angle_ref,F_scale=1):
