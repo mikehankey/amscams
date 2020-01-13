@@ -354,15 +354,15 @@ def pin_point_stars(image, points):
       y2 = y + 15
       x1 = x - 15
       x2 = x + 15
-      cnt_img = image[y1:y2,x1:x2]
-      ch,cw = cnt_img.shape
+      #cnt_img = image[y1:y2,x1:x2]
+      #ch,cw = cnt_img.shape
       try:
-         max_pnt,max_val,min_val = cnt_max_px(cnt_img)
-         mx,my = max_pnt
-         mx = mx - 15
-         my = my - 15
-         x = x + mx
-         y = y + my
+         #max_pnt,max_val,min_val = cnt_max_px(cnt_img)
+         #mx,my = max_pnt
+         #mx = mx - 15
+         #my = my - 15
+         #x = x + mx
+         #y = y + my
          star_points.append((x,y))
       except:
          print("PROB!", image.shape, x1,y1, x2,y2, "<BR>")
