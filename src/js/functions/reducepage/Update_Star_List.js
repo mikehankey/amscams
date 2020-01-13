@@ -161,7 +161,7 @@ function update_stars_on_canvas_and_table(json_resp) {
            //name_pos.push(test_object);
 
            if(typeof v['intensity'] !== 'undefined') {
-              intensity = '<td>'+v['intensity'].toFixed(0)+'</td>'
+              intensity = '<td>'+v['intensity'].toFixed(2)+'</td>'
            } else {
               intensity = '<td>?</td>'
            }
