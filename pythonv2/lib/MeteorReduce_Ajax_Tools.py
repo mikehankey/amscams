@@ -339,6 +339,10 @@ def cnt_max_px(cnt_img):
    #print("IN cnt_max_px<br>")
    # WTF???
    try:
+      # Make sure we only have one channel here
+      cnt_img = cv2.cvtColor(cnt_img, cv2.COLOR_BGR2GRAY)
+      # No Float
+      cnt_img = cnt_img.astype('uint8') 
       cnt_img = cv2.GaussianBlur(cnt_img, (7, 7), 0)
    except:
       cnt_img = cnt_img
