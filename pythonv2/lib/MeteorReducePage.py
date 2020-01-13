@@ -1,5 +1,6 @@
 import cgitb
 import json
+import numpy
 
 from pathlib import Path
 from shutil import copyfile
@@ -208,15 +209,13 @@ def reduce_meteor2(json_conf,form):
             if(meteor_json_file['calib']['device']['total_res_px']>3):
                pts = "<b style='color:#f00'>"+ pts +  "</b>"
             report_details += '<dt class="col-4">Res. Error</dt><dd class="col-8">'+pts+'</dd>'
-
  
    # We complete the template
    if(report_details!=''):
       template = template.replace("{REPORT_DETAILS}", report_details)
    else:
       template = template.replace("{REPORT_DETAILS}", "<dt class='d-block mx-auto'><div class='alert alert-danger'>Reduction info are missing</div></dt>")
-
-
+ 
    # Does this detection relies only on SD data? (ie the HD video  is in fact the resized SD video)
    if('info' in meteor_json_file):
       if('HD_fix' in meteor_json_file['info']):
@@ -235,25 +234,22 @@ def reduce_meteor2(json_conf,form):
       template = template.replace("{NO_SYNC}", "<div class='container-fluid mt-4'><div class='alert alert-danger'><span class='icon-notification'></span> <b>Both HD and SD videos aren't synchronized.</b> <a id='manual_synchronization' class='btn btn-danger ml-3'><b>Manually synchronize both videos now</b></a></div></div>")
    else:
       template = template.replace("{NO_SYNC}", "")
+ 
+   # We compute the MED_DIST
+   med_dist = 0
+   if('frames' in meteor_json_file):
+      if('dist_from_last' in meteor_json_file['frames'][0]):
 
-       
+         # We add all the dist_from_last to compute the median value
+         tmp_list = []
+         for(frame  as meteor_json_file['frames']):
+            tmp_list.append(frame)
 
-   # Display some of the report info directly on the page
-   #dist_per_elp: 9.661147849907783,
-   #meteor_yn: "Y",
-   #elp: 14,
-   #y_dir_mod: -1,
-   #min_max_dist: 144.91721774861674,
-   #angular_sep: 6.0865231454419035,
-   #moving: "moving",
-   #bad_items: [],
-   #max_cm: 14,
-   #obj_class: "meteor",
-   #dur: 0.56,
-   #angular_vel: 10.144205242403173,
-   #max_fns: 14,
-   #x_dir_mod: 1,
-   #max_peak: 7707
+         med_dist=numpy.median(tmp_list)
+
+   template = template.replace("{MED_DIST}", str(med_dist))
+ 
+         
 
    # Display Template
    print(template)
