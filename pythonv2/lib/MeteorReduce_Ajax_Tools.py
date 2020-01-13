@@ -526,7 +526,7 @@ def update_cat_stars(form):
 
       print("IN update_cat_stars<br/>")
       print(star_points)
-      sys.ext(0)
+      sys.exit(0)
 
       star_points = pin_point_stars(hd_image, star_points) 
 
