@@ -783,7 +783,8 @@ def archive_listing(form):
    selected_error = form.getvalue('res_er')
    selected_ang_vel = form.getvalue('ang_v')
    selected_sync = form.getvalue('sync')
- 
+   selected_pscore  = form.getvalue('point_score')
+
    # Build the page based on template  
    with open(ARCHIVE_LISTING_TEMPLATE, 'r') as file:
       template = file.read()
