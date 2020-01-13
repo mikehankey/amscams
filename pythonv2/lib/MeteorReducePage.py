@@ -226,7 +226,7 @@ def reduce_meteor2(json_conf,form):
 
    report_details += '<dt class="col-4">Med. dist</dt><dd class="col-8">'+str(med_dist)+'</dd>'
    # We add the med dist to the template
-   template = template.replace("{MED_DIST}", med_dist)
+   template = template.replace("{MED_DIST}", str(med_dist))
    
    # We complete the template
    if(report_details!=''):
