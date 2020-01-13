@@ -195,13 +195,19 @@ def reduce_meteor2(json_conf,form):
          report_details += '<dt class="col-4">Magnitude</dt><dd class="col-8">'+str(meteor_json_file['report']['max_peak'])+'</dd>'
       if('angular_vel' in meteor_json_file['report']):
          report_details += '<dt class="col-4">Ang. Velocity</dt><dd class="col-8">'+str(meteor_json_file['report']['angular_vel'])+'&deg;/sec</dd>'
+      if('point_score' in meteor_json_file['report']):
+            pts = str(meteor_json_file['report']['point_score'])
+            if(meteor_json_file['report']['point_score']>3):
+               pts = "<b style='color:#f00'>"+ pts +  "</b>"
+            report_details += '<dt class="col-4">Point Score</dt><dd class="col-8">'+pts+'</dd>'
 
    if('calib' in meteor_json_file):
       if('device' in meteor_json_file['calib']):
          if('total_res_px' in meteor_json_file['calib']['device']):
+            pts = str(meteor_json_file['calib']['device']['total_res_px'])
+            if(meteor_json_file['calib']['device']['total_res_px']>)
             report_details += '<dt class="col-4">Res. Error</dt><dd class="col-8">'+str(meteor_json_file['calib']['device']['total_res_px'])+'</dd>'
-         if('point_score' in meteor_json_file['report']):
-            report_details += '<dt class="col-4">Point Score</dt><dd class="col-8">'+str(meteor_json_file['report']['point_score'])+'</dd>'
+
  
    # We complete the template
    if(report_details!=''):
