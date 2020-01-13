@@ -850,7 +850,7 @@ def archive_listing(form):
 
    found_text = ""
    if(pagination[2] != ''):
-      found_text +=  =   "<small>Page  " + format(cur_page) + "/" +  format(pagination[2])+"</small>"     
+      found_text += "<small>Page  " + format(cur_page) + "/" +  format(pagination[2])+"</small>"     
  
       
    # GALLERIE or LIST are managed with cookies
