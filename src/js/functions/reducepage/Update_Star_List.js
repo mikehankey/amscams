@@ -168,6 +168,8 @@ function update_stars_on_canvas_and_table(json_resp) {
            } else {
               dist_err = '<td>'+v['dist_from_last'].toFixed(2)+'</td>';
            }
+
+           console.log(dist_err);
     
            // Add the corresponding row 
            table_tbody_html+= '<tr><td><b>'+v['name']+'</b></td>\
