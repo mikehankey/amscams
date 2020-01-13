@@ -23,6 +23,7 @@ POSSIBLE_MAGNITUDES = [130,140,150,160,170,180,190,200,210,220,230,240,250,260,2
 POSSIBLE_ERRORS = [0.5,0.6,0.8,0.9,1,1.1,1.2,1.3,1.4,1.5,1.6,1.7,1.8,1.9,2,2.5,3,3.5,4,5]
 POSSIBLE_ANG_VELOCITIES = [1,2,3,4,5,6,7,8,9,10,11,12,13,15,16,17,18,19,20,21,22,23,24,25]
 POSSIBLE_SYNC = [0,1]
+POSSIBLE_POINT_SCORE = [3,5,10]
  
 # Delete Multiple Detections at once
 def delete_multiple_archived_detection(detections):
@@ -823,7 +824,7 @@ def archive_listing(form):
    criteria = {} 
    
    # Build MAGNITUDES selector
-   mag_select, criteria = create_criteria_selector(POSSIBLE_MAGNITUDES,'mag',selected_mag, criteria,  'All Magnitudes', '>')
+   mag_select, criteria = create_criteria_selector(POSSIBLE_MAGNITUDES,'mag',selected_mag, criteria,  'All Mag.', '>')
    template = template.replace("{MAGNITUDES}", mag_select)
     
    # Build ERRORS selector
@@ -838,6 +839,9 @@ def archive_listing(form):
    sync_select, criteria = create_criteria_selector(POSSIBLE_SYNC,'sync',selected_sync, criteria,  'All Sync.', '')
    template = template.replace("{SYNC}", sync_select) 
    
+   # Build POINT SCORE selector 
+   point_score_select, criteria = create_criteria_selector(POSSIBLE_POINT_SCORE,'point_score',selected_pscore, criteria,  'All Score', '')
+   template = template.replace("{P_SCORE}", point_score_select) 
     
    # Clear_cache
    if(clear_cache is None):
