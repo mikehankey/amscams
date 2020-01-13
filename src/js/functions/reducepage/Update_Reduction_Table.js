@@ -47,8 +47,7 @@ function update_reduction_on_canvas_and_table(json_resp) {
       var _time = v['dt'].split(' ');
 
       // Add the medium dist value
-      // med_dist is defined on the page
-      console.log(v);
+      // med_dist is defined on the page 
       if(v['dist_from_last']>med_dist*2) {
          dist_err = '<td style="color:#f00">'+v['dist_from_last'].toFixed(2)+'</td>';
       } else {
@@ -59,6 +58,7 @@ function update_reduction_on_canvas_and_table(json_resp) {
         table_tbody_html+= '<tr id="fr_'+frame_id+'" data-fn="'+frame_id+'" data-org-x="'+v['x']+'" data-org-y="'+v['y']+'"><td><div class="st" hidden style="background-color:'+all_colors[i]+'"></div></td>'
         table_tbody_html+= '<td><img alt="Thumb #'+frame_id+'" src='+thumb_path+' width="50" height="50" class="img-fluid smi select_meteor" style="border-color:'+all_colors[i]+'"/></td>';
         table_tbody_html+= '<td>'+frame_id+'</td><td>'+_time[1]+'</td><td>'+v['ra'].toFixed(PRECISION)+'&deg; / '+v['dec'].toFixed(PRECISION)+'&deg;</td><td>'+v["az"].toFixed(PRECISION)+'&deg; / '+v["el"].toFixed(PRECISION)+'&deg;</td><td>'+ parseFloat(v['x']) +' / '+parseFloat(v['y'])  +'</td><td>'+ v['w']+'x'+v['h']+'</td>';
+        table_tbody_html+= '<td>'+v['intensity']+'</td>';
         table_tbody_html+= dist_err;
         table_tbody_html+= '<td><a class="btn btn-danger btn-sm delete_frame"><i class="icon-delete"></i></a></td>';
 
