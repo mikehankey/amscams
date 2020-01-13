@@ -841,7 +841,7 @@ def archive_listing(form):
    template = template.replace("{SYNC}", sync_select) 
    
    # Build POINT SCORE selector 
-   point_score_select, criteria = create_criteria_selector(POSSIBLE_POINT_SCORE,'point_score',selected_pscore, criteria,  'All Score', '')
+   point_score_select, criteria = create_criteria_selector(POSSIBLE_POINT_SCORE,'point_score',selected_pscore, criteria,  'All Score', '>')
    template = template.replace("{P_SCORE}", point_score_select) 
     
    # Clear_cache
