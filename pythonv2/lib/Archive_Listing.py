@@ -100,12 +100,6 @@ def get_diag_fields(detection):
       except:
          ang_vel = "unknown"      
 
-      # POINT SCORE 
-      try:
-         point_score = detection_data['report']['point_score']
-      except:
-         point_score = "unknown"      
-
 
       # SYNC (HD/SD)
       try:
@@ -117,11 +111,11 @@ def get_diag_fields(detection):
       except:
          sync = 0
 
-      return mag,dur,red, res_error, ang_vel, point_score, sync
+      return mag,dur,red, res_error, ang_vel, sync
    
    else:
 
-      return "unknown","unknown",0,"unknown","unknown","unknown"
+      return "unknown","unknown",0,"unknown","unknown"
 
 
 
@@ -162,7 +156,7 @@ def add_to_month_index(detection, insert=True):
       # If we are here, it means we didn't find it 
       # so if we want to insert it, we do it here
       if(insert==True):
-         mag,dur,red, res_error, ang_vel,point_score,sync  =  get_diag_fields(analysed_detection_name['full_path'])
+         mag,dur,red, res_error, ang_vel  =  get_diag_fields(analysed_detection_name['full_path'])
          
          new_detect = {
             "dur": dur,
@@ -170,7 +164,6 @@ def add_to_month_index(detection, insert=True):
             "p": det,
             "mag": mag,
             "res_er":res_error,
-            "point_score":point_score,
             "ang_v":ang_vel
          }
 
@@ -214,7 +207,7 @@ def create_json_index_month(month,year):
 
          for detection in sorted(glob.iglob(day + os.sep +  '*' + '.json', recursive=True), reverse=True):
              
-            mag,dur,red, res_error, ang_vel, point_score,sync  = get_diag_fields(detection)
+            mag,dur,red, res_error, ang_vel, sync  = get_diag_fields(detection)
             det = os.path.basename(detection)
             det = os.path.splitext(det)[0]
 
@@ -225,7 +218,7 @@ def create_json_index_month(month,year):
             except:
                index_month['days'][int(cur_day)] = []
  
-            index_month['days'][int(cur_day)].append({'p':det[11:],'mag':mag,'dur':dur,'red':red,'res_er':res_error,'ang_v':ang_vel,'point_score':point_score,'sync':sync})
+            index_month['days'][int(cur_day)].append({'p':det[11:],'mag':mag,'dur':dur,'red':red,'res_er':res_error,'ang_v':ang_vel,'sync':sync})
  
    return index_month             
 
@@ -255,14 +248,14 @@ def create_json_index_year(year):
 
                for detection in sorted(glob.iglob(day + os.sep +  '*' + '.json', recursive=True), reverse=True):
                   
-                  mag,dur,red, res_error, ang_vel, point_score,sync = get_diag_fields(detection)
+                  mag,dur,red, res_error, ang_vel, sync = get_diag_fields(detection)
 
 
                   det = os.path.basename(detection)
                   det = os.path.splitext(det)[0]
                   # det[11:] => Here we also remove the Year, Month & Day of the detection 
                   # since we know them from the JSON structure
-                  cur_day_data.append({'p':det[11:],'mag':mag,'dur':dur,'red':red,'res_er':res_error,'ang_v':ang_vel,'point_score':point_score,'sync':sync})
+                  cur_day_data.append({'p':det[11:],'mag':mag,'dur':dur,'red':red,'res_er':res_error,'ang_v':ang_vel,'sync':sync})
 
                #print("CUR DAY ")
                #print(cur_day)
@@ -771,7 +764,6 @@ def archive_listing(form):
    selected_mag = form.getvalue('magnitude')
    selected_error = form.getvalue('res_er')
    selected_ang_vel = form.getvalue('ang_v')
-   selected_point_score = form.getvalue('pnt_v')
    selected_sync = form.getvalue('sync')
  
    # Build the page based on template  
@@ -818,7 +810,7 @@ def archive_listing(form):
    template = template.replace("{MAGNITUDES}", mag_select)
     
    # Build ERRORS selector
-   error_select, criteria = create_criteria_selector(POSSIBLE_ERRORS,'res_er',selected_error, criteria,  'All Res. Error', '>')
+   error_select, criteria = create_criteria_selector(POSSIBLE_ERRORS,'res_er',selected_error, criteria,  'All Res. Error', '<')
    template = template.replace("{RES_ERRORS}", error_select)
 
    # Build ANGULAR VELOCITIES selector
@@ -864,10 +856,10 @@ def archive_listing(form):
 
    pagination = get_pagination(cur_page,total,pagination_url,int(nompp))
 
+   found_text = ""
    if(pagination[2] != ''):
-      template = template.replace("{PAGINATION_DET}", "<small>Page  " + format(cur_page) + "/" +  format(pagination[2])+"</small>")    
-   else:
-      template = template.replace("{PAGINATION_DET}", "")    
+      found_text += "<small>Page  " + format(cur_page) + "/" +  format(pagination[2])+"</small>"     
+ 
       
    # GALLERIE or LIST are managed with cookies
    # Do we have a cookie for gallery or list? 
@@ -894,15 +886,13 @@ def archive_listing(form):
  
    if(len(res)==0): 
       template = template.replace("{RESULTS}", "<div class='alert alert-danger mx-auto'>No detection found in your the archive for your criteria.</div>")
-      template = template.replace("{PAGINATION_DET}", "")    
-      template = template.replace("{PAGINATION}", "")
-      template = template.replace("{FOUND}", "")   
+      template = template.replace("{PAGINATION}", "") 
    elif((len(res))!=total):
-      template = template.replace("{FOUND}", "<div class='page_h ml-3'><small>Displaying " + str(len(res)) + " out of " +  str(total)  + " detections.</small></div>")
+      template = template.replace("{FOUND}", "<div class='page_h ml-3'><small>Displaying " + str(len(res)) + " out of " +  str(total)  + " detections. </small>"+ found_text + "/div>")
    elif(len(res)==1):
-      template = template.replace("{FOUND}", "<div class='page_h ml-3'><small>Displaying only 1 detection matching your criteria.</small></div>")
+      template = template.replace("{FOUND}", "<div class='page_h ml-3'><small>Displaying only 1 detection matching your criteria.</small> "+ found_text + "</div>")
    else:
-      template = template.replace("{FOUND}", "<div class='page_h ml-3'><small>Displaying all " + str(len(res)) + " detections matching your criteria.</small></div>")
+      template = template.replace("{FOUND}", "<div class='page_h ml-3'><small>Displaying all " + str(len(res)) + " detections matching your criteria.</small> "+ found_text + "</div>")
 
    # Display Template
    return template
