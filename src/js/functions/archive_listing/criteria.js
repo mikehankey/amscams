@@ -48,4 +48,15 @@ $(function() {
       // Back to page = 1 (so we dont have issues if the number of page is too mall)
       window.location =  update_url_param(new_url ,'p',1);
     });
+
+    //Score
+    $('#point_score').change(function() {
+      // Change Meteor Per page
+      new_url = update_url_param(window.location.href ,'point_score',$('#point_score').val());
+ 
+      //Cookies.set('filt_arch_sync', $('#sync').val(), { expires: 99999, path: '/' });
+
+      // Back to page = 1 (so we dont have issues if the number of page is too mall)
+      window.location =  update_url_param(new_url ,'p',1);
+    });
 })
