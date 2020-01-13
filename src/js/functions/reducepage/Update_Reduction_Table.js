@@ -48,7 +48,7 @@ function update_reduction_on_canvas_and_table(json_resp) {
 
       // Add the medium dist value
       // med_dist is defined on the page 
-      if(parseFloat(v['dist_from_last'])>parseFloat(med_dist*2)) {
+      if(parseFloat(v['dist_from_last'])>parseFloat(med_dist*parseInt($('#error_factor_dist_len').val()))) {
          dist_err = '<td style="color:#f00">'+v['dist_from_last'].toFixed(2)+'</td>';
       } else {
          dist_err = '<td>'+v['dist_from_last'].toFixed(2)+'</td>';
@@ -242,3 +242,13 @@ function test_missing_thumb() {
     }
     
 }
+
+
+
+// Change Err Select for med 
+// refresh the array of frames
+$(function() {
+   $('#error_factor_dist_len').change(function() {
+      update_reduction_only('');
+   });
+})
