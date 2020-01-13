@@ -378,6 +378,11 @@ def test_criteria(criter,criteria,detection):
    #print("<br>detection ")
    #print(detection)
 
+   # Point Score
+   if(criter=='point_score'):
+      if(int(detection[criter])>=int(criteria[criter]) or detection[criter]=='unknown'):
+         return False 
+
    # Res. ERROR
    if(criter=='res_er'):
       if(float(detection[criter])>=float(criteria[criter]) or detection[criter]=='unknown'):
@@ -397,10 +402,13 @@ def test_criteria(criter,criteria,detection):
          #print("<br>ang_v  FALSE")  
          return False 
       #print("<br>ang_v  TRUE")  
+
    # Sync
    if(criter=='sync' and criteria[criter]!=-1):
       if(int(detection[criter])!=int(criteria[criter]) or detection[criter]=='unknown'):
          return False
+
+  
 
    return True
 
