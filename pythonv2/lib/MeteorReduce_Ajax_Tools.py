@@ -334,13 +334,14 @@ def delete_frame(form):
 
 # Find max px info from cnt
 def cnt_max_px(cnt_img):
-   # DEBUG
-   cgitb.enable()
+  
 
    #print("IN cnt_max_px<br>")
    # WTF???
-   #cnt_img = cv2.GaussianBlur(cnt_img, (7, 7), 0)
-
+   try:
+      cnt_img = cv2.GaussianBlur(cnt_img, (7, 7), 0)
+   except:
+      cnt_img = cnt_img
    #print(cnt_img)
    #sys.exit(0)
 
@@ -537,8 +538,7 @@ def update_cat_stars(form):
             if x >0 and y > 0 and x<HD_W and y< HD_H:
                star_points.append((x,y))
        
-
-     
+ 
       star_points = pin_point_stars(hd_image, star_points) 
 
      
