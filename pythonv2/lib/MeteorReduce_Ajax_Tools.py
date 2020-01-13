@@ -220,6 +220,9 @@ def update_frame(form, AjaxDirect = False):
    # We reapply the calibration for the new frame
    apply_calib(json_file)
 
+   # We update the JSON with valid dist_from_last 
+   os.system("cd /home/ams/amscams/pythonv2/; ./flex-detect.py ep " + json_file + " > /dev/null")
+
    # We update the JSON 
    save_json_file(json_file, mr)
   
