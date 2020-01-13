@@ -380,7 +380,7 @@ def test_criteria(criter,criteria,detection):
 
    # Point Score
    if(criter=='point_score'):
-      if(int(detection[criter])>=int(criteria[criter]) or detection[criter]=='unknown'):
+      if(int(detection[criter])<int(criteria[criter]) or detection[criter]=='unknown'):
          return False 
 
    # Res. ERROR
