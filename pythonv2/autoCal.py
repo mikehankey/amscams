@@ -35,9 +35,11 @@ def update_arc_detects():
    station_id = json_conf['site']['ams_id']
    detect_file = "/mnt/ams2/meteor_archive/" + station_id + "/DETECTS/ms_detects.json"
    detects = load_json_file(detect_file)
+   td = 0
    for day in detects:
       for file in detects[day]:
          meteor_day = file[0:10]
+         td = td + 1
          file = "/mnt/ams2/meteors/" + meteor_day + "/" + file
          print("Update this file:", file)
          jd = load_json_file(file)
@@ -61,6 +63,7 @@ def update_arc_detects():
                save_json_file(archive_file, arc_data)
                print("SAVED:", archive_file)
                #exit()
+   print("Total arc detects so far:", td)
           
 
 def run_detects(day):
@@ -71,17 +74,44 @@ def run_detects(day):
    detect_index = {}  
    for st in network:
       data_file = "/mnt/ams2/meteor_archive/" + st + "/DETECTS/meteor_index.json"
-      print(st, data_file)
-      data = load_json_file(data_file)
-      if day in data:
-         detect_index[st] = data[day]
+      arc_station_dir = "/mnt/ams2/meteor_archive/" + st + "/"
+      if cfe(arc_station_dir, 1) == 0:
+         os.system("mkdir " + arc_station_dir)
+         os.system("mkdir " + arc_station_dir + "/METEORS/")
+         os.system("mkdir " + arc_station_dir + "/CAL/")
+         os.system("mkdir " + arc_station_dir + "/DETECTS/")
+      if cfe(data_file) == 0:
+         wasabi_file = data_file.replace("ams2/meteor_archive", "wasabi")
+         wasabi_file = wasabi_file + ".gz"
+         print("DATA FILE NOT FOUND!", data_file, wasabi_file)
+         if cfe(wasabi_file) == 1:
+            data_file_z = data_file + ".gz"
+            print("DETECT FILE MISSING FROM ARCHIVE, UPDATE.")
+            print("cp " + wasabi_file + " " + data_file_z)
+            os.system("cp " + wasabi_file + " " + data_file_z)
+            os.system("gunzip -f " + data_file_z)
+
+      if cfe(data_file) == 1:
+         print(st, data_file)
+         data = load_json_file(data_file)
+      else:
+         data = False
+      if data != 0 and data is not False:
+         if day in data:
+            detect_index[st] = data[day]
+      else:
+         print("Could not open meteor index.json!")
 
    files = []
    min_meteors = {}
    files_station = {}
+
+   print("DETECT INDEX:")
+
    for st in detect_index:
       print(st)
       for file in detect_index[st]:
+         print("ST FILE:", st, file)
          fn = file.split("/")[-1]
          files_station[fn] = st 
          min_fn = fn[0:16]
@@ -97,6 +127,7 @@ def run_detects(day):
 
    ms_meteors = {}
    for min in min_meteors:
+      print(min, min_meteors[min])
       if min_meteors[min]['count'] > 1:
          for i in range(0,len(min_meteors[min]['obs'])):
             file = min_meteors[min]['obs'][i]
