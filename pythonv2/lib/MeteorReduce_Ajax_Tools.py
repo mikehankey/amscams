@@ -341,6 +341,9 @@ def cnt_max_px(cnt_img):
 
 # Pin point stars from user selection
 def pin_point_stars(image, points):   
+
+   print("IN PIN POINT STARS <br>")
+
    star_points = []
    for x,y in points:
       x,y = int(x),int(y)
@@ -359,7 +362,7 @@ def pin_point_stars(image, points):
          y = y + my
          star_points.append((x,y))
       except:
-         #print("PROB!", image.shape, x1,y1, x2,y2, "<BR>")
+         print("PROB!", image.shape, x1,y1, x2,y2, "<BR>")
          missed_star = 1
    return(star_points)
 
@@ -524,10 +527,7 @@ def update_cat_stars(form):
                star_points.append((x,y))
        
 
-      print("IN update_cat_stars<br/>")
-      print(star_points)
-      sys.exit(0)
-
+     
       star_points = pin_point_stars(hd_image, star_points) 
 
       print("IN update_cat_stars<br/>")
