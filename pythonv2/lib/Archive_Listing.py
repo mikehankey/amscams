@@ -99,13 +99,11 @@ def get_diag_fields(detection):
          ang_vel = detection_data['report']['angular_vel']
       except:
          ang_vel = "unknown"      
-
-      # POINT SCORE
+      # ANGULAR VELOCITY
       try:
          point_score = detection_data['report']['point_score']
       except:
-         point_score = "unknown"      
-
+         point_score = "unknown"
 
       # SYNC (HD/SD)
       try:
@@ -117,7 +115,7 @@ def get_diag_fields(detection):
       except:
          sync = 0
 
-      return mag,dur,red, res_error, ang_vel, sync, point_score
+      return mag,dur,red, res_error, ang_vel, point_score, sync
    
    else:
 
@@ -162,7 +160,7 @@ def add_to_month_index(detection, insert=True):
       # If we are here, it means we didn't find it 
       # so if we want to insert it, we do it here
       if(insert==True):
-         mag,dur,red, res_error, ang_vel, point_score  =  get_diag_fields(analysed_detection_name['full_path'])
+         mag,dur,red, res_error, point_score, ang_vel  =  get_diag_fields(analysed_detection_name['full_path'])
          
          new_detect = {
             "dur": dur,
@@ -170,8 +168,8 @@ def add_to_month_index(detection, insert=True):
             "p": det,
             "mag": mag,
             "res_er":res_error,
-            "ang_v":ang_vel,
-            "point_score": point_score
+            "point_score":point_score,
+            "ang_v":ang_vel
          }
 
          # If the days already exist
@@ -214,7 +212,7 @@ def create_json_index_month(month,year):
 
          for detection in sorted(glob.iglob(day + os.sep +  '*' + '.json', recursive=True), reverse=True):
              
-            mag,dur,red, res_error, ang_vel, sync, point_score  = get_diag_fields(detection)
+            mag,dur,red, res_error, ang_vel, point_score, sync  = get_diag_fields(detection)
             det = os.path.basename(detection)
             det = os.path.splitext(det)[0]
 
@@ -225,7 +223,7 @@ def create_json_index_month(month,year):
             except:
                index_month['days'][int(cur_day)] = []
  
-            index_month['days'][int(cur_day)].append({'p':det[11:],'mag':mag,'dur':dur,'red':red,'res_er':res_error,'ang_v':ang_vel,'sync':sync,'point_score':point_score})
+            index_month['days'][int(cur_day)].append({'p':det[11:],'mag':mag,'dur':dur,'red':red,'res_er':res_error,'point_score':point_score,'ang_v':ang_vel,'sync':sync})
  
    return index_month             
 
@@ -255,14 +253,14 @@ def create_json_index_year(year):
 
                for detection in sorted(glob.iglob(day + os.sep +  '*' + '.json', recursive=True), reverse=True):
                   
-                  mag,dur,red, res_error, ang_vel, sync, point_score = get_diag_fields(detection)
+                  mag,dur,red, res_error, ang_vel, point_score, sync = get_diag_fields(detection)
 
 
                   det = os.path.basename(detection)
                   det = os.path.splitext(det)[0]
                   # det[11:] => Here we also remove the Year, Month & Day of the detection 
                   # since we know them from the JSON structure
-                  cur_day_data.append({'p':det[11:],'mag':mag,'dur':dur,'red':red,'res_er':res_error,'ang_v':ang_vel,'sync':sync,'point_score':point_score})
+                  cur_day_data.append({'p':det[11:],'mag':mag,'dur':dur,'red':red,'res_er':res_error,'point_score':point_score,'ang_v':ang_vel,'sync':sync})
 
                #print("CUR DAY ")
                #print(cur_day)
@@ -621,14 +619,28 @@ def get_html_detection(det,detection,clear_cache):
    details_html += '<dt class="col-12 list-onl title-list">Cam #'+det['cam_id']+' - <b>'+det['hour']+':'+det['min']+'</b></dt>'
 
    if(detection['mag']!='unknown'):
-      details_html += '<dt class="col-6">Mag</dt><dd class="col-6">' + str(detection['mag']) + '</dd>'
+      details_html += '              <dt class="col-6">Mag</dt>  <dd class="col-6">' + str(detection['mag']) + '</dd>'
    
    if(detection['dur']!='unknown'):
-      details_html += '<dt class="col-6">Duration</dt><dd class="col-6">'+ str(detection['dur']) +'s</dd>'
+      details_html += '              <dt class="col-6">Duration</dt>  	   <dd class="col-6">'+ str(detection['dur']) +'s</dd>'
 
    if(detection['res_er']!='unknown'):
-      details_html += '<dt class="col-6">Res. Error</dt><dd class="col-6">'+ str("{0:.4f}".format(float(detection['res_er'])))+'</dd>'
+      details_html += '              <dt class="col-6">Res. Error</dt>      <dd class="col-6">'+ str("{0:.4f}".format(float(detection['res_er'])))+'</dd>'
+   #if(detection['point_score']!='unknown'):
+   #   if detection['point_score'] > 3:
+   #      span = "<font color='#FF0000'>"
+   #      espan = "</font>"
+   #   else:
+   #      span = ""
+   #      espan = ""
+   #   details_html += '              <dt class="col-6">Point Score</dt>      <dd class="col-6">'+ span + str("{0:.4f}".format(float(detection['point_score']))) + espan +'</dd>'
    
+      #details_html += '<dt class="col-6">Res. Error</dt><dd class="col-6">'+ str("{0:.4f}".format(float(detection['res_er'])))+'</dd>'
+   
+
+   #if(detection['ang_v']!='unknown'):
+   #   details_html += '              <dt class="col-6">Ang. Velocity</dt>   <dd class="col-6">'+str("{0:.4f}".format(float(detection['ang_v'])))+'&deg;/s</dd>'
+
    if(detection['point_score']!='unknown'):
       score = str("{0:.4f}".format(float(detection['point_score'])))
       if detection['point_score'] > 3:
@@ -640,7 +652,7 @@ def get_html_detection(det,detection,clear_cache):
    
    if "sync" not in detection: 
    #if(detection['sync']!=1):
-      details_html += '<dt class="col-12"><div class="alert alert-danger p-1 m-0 text-center">Not synchronized</div></dt>'
+      details_html += '              <dt class="col-12"><div class="alert alert-danger p-1 m-0 text-center">Not synchronized</div></dt>'
  
    details_html += ' </dl>'   
 
@@ -892,7 +904,6 @@ def archive_listing(form):
    if(len(res)==0): 
       template = template.replace("{RESULTS}", "<div class='alert alert-danger mx-auto'>No detection found in your the archive for your criteria.</div>")
       template = template.replace("{PAGINATION}", "") 
-      template = template.replace("{FOUND}", "") 
    elif((len(res))!=total):
       template = template.replace("{FOUND}", "<div class='page_h ml-3'><small>Displaying " + str(len(res)) + " out of " +  str(total)  + " detections. </small>"+ found_text + "/div>")
    elif(len(res)==1):
