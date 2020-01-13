@@ -507,6 +507,9 @@ def update_cat_stars(form):
       meteor_red = load_json_file(meteor_red_file)
    else:
       return "error JSON"
+   print("IN update_cat_stars<br/>")
+   print(meteor_red)
+   sys.exit(0)
   
    meteor_mode = 0  #???
    
