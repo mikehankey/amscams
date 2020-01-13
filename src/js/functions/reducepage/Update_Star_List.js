@@ -162,7 +162,7 @@ function update_stars_on_canvas_and_table(json_resp) {
 
            // Add the medium dist value
            // med_dist is defined on the page
-         
+           console.log(v);
            if(v['dist_from_last']>med_dist*2) {
                dist_err = '<td style="color:#f00">'+v['dist_from_last'].toFixed(2)+'</td>';
            } else {
