@@ -185,6 +185,20 @@ def reduce_meteor2(json_conf,form):
       start_time = analysed_name['year']+'-'+analysed_name['month']+'-'+analysed_name['day']+ ' '+ analysed_name['hour']+':'+analysed_name['min']+':'+analysed_name['sec']+'.'+analysed_name['ms']
    
 
+   # We compute the MED_DIST (medium value of frame['dist_from_last'])
+   med_dist = 0
+   if('frames' in meteor_json_file):
+      if('dist_from_last' in meteor_json_file['frames'][0]):
+
+         # We add all the dist_from_last to compute the median value
+         tmp_list = []
+         for frame in meteor_json_file['frames']:
+            tmp_list.append(frame['dist_from_last'])
+
+         med_dist=numpy.median(tmp_list)
+
+   template = template.replace("{MED_DIST}", str(med_dist))
+
    report_details  =  ''
 
    if('report' in meteor_json_file):
@@ -200,7 +214,7 @@ def reduce_meteor2(json_conf,form):
             pts = str(meteor_json_file['report']['point_score'])
             if(meteor_json_file['report']['point_score']>3):
                pts = "<b style='color:#f00'>"+ pts +  "</b>"
-            report_details += '<dt class="col-4">Point Score</dt><dd class="col-8">'+pts+'</dd>'
+            report_details += '<br/><dt class="col-4">Point Score</dt><dd class="col-8">'+pts+'</dd>'
 
    if('calib' in meteor_json_file):
       if('device' in meteor_json_file['calib']):
@@ -209,7 +223,11 @@ def reduce_meteor2(json_conf,form):
             if(meteor_json_file['calib']['device']['total_res_px']>3):
                pts = "<b style='color:#f00'>"+ pts +  "</b>"
             report_details += '<dt class="col-4">Res. Error</dt><dd class="col-8">'+pts+'</dd>'
- 
+
+   report_details += '<dt class="col-4">Med. dist</dt><dd class="col-8">'+str(med_dist)+'</dd>'
+   # We add the med dist to the template
+   template = template.replace("{MED_DIST}", med_dist)
+   
    # We complete the template
    if(report_details!=''):
       template = template.replace("{REPORT_DETAILS}", report_details)
@@ -235,19 +253,7 @@ def reduce_meteor2(json_conf,form):
    else:
       template = template.replace("{NO_SYNC}", "")
  
-   # We compute the MED_DIST
-   med_dist = 0
-   if('frames' in meteor_json_file):
-      if('dist_from_last' in meteor_json_file['frames'][0]):
-
-         # We add all the dist_from_last to compute the median value
-         tmp_list = []
-         for frame in meteor_json_file['frames']:
-            tmp_list.append(frame['dist_from_last'])
-
-         med_dist=numpy.median(tmp_list)
-
-   template = template.replace("{MED_DIST}", str(med_dist))
+ 
  
          
 
