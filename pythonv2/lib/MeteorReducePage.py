@@ -230,9 +230,7 @@ def reduce_meteor2(json_conf,form):
    for err in ERROR_FACTOR_SEG_LEN:
       med_dist_select += "<option value='"+str(err)+"'>x"+str(err)+"</option>"
    med_dist_select +="</select>"
-
-  
-
+ 
    report_details += '<dt class="col-4">Med. dist</dt><dd class="col-8">'+str("{0:.4f}".format(float(med_dist)))+' ' + med_dist_select +'</dd>'
    # We add the med dist to the template
    template = template.replace("{MED_DIST}", str(med_dist))
