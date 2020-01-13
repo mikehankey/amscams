@@ -176,7 +176,7 @@ function update_stars_on_canvas_and_table(json_resp) {
                                <td>'+v['i_pos'][POS_X].toFixed(2) + ' / '+ v['i_pos'][POS_Y].toFixed(2) + '</td>\
                                <td>'+v['cat_und_pos'][POS_X].toFixed(2)  + ' / '+ v['cat_und_pos'][POS_Y].toFixed(2) +'</td>\
                                <td>'+v['cat_dist_pos'][POS_X].toFixed(2)  + ' / '+ v['cat_dist_pos'][POS_Y].toFixed(2) +'</td>\
-                               <td>'+v['dist_px'].toFixed(4)+'</td>\
+                               <td>'+dist_err+'</td>\
                                </tr>';
    
        });
