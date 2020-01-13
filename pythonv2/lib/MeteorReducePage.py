@@ -242,8 +242,8 @@ def reduce_meteor2(json_conf,form):
 
          # We add all the dist_from_last to compute the median value
          tmp_list = []
-         for(frame  as meteor_json_file['frames']):
-            tmp_list.append(frame)
+         for frame in meteor_json_file['frames']:
+            tmp_list.append(frame['dist_from_last'])
 
          med_dist=numpy.median(tmp_list)
 
