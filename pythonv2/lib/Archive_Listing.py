@@ -622,12 +622,13 @@ def get_html_detection(det,detection,clear_cache):
    if(detection['res_er']!='unknown'):
       details_html += '<dt class="col-6">Res. Error</dt><dd class="col-6">'+ str("{0:.4f}".format(float(detection['res_er'])))+'</dd>'
    
-   if('point_score' in detection):
-      if(detection['point_score']!='unknown'):
-         span = str("{0:.4f}".format(float(detection['point_score'])))
-         if detection['point_score'] > 3:
-            span = "<span color='#FF0000'>" + str("{0:.4f}".format(float(detection['point_score']))) + "</span>"
-         details_html += '<dt class="col-6">Point Score</dt><dd class="col-6">'+ span +'</dd>'
+   if('report' in detection):
+      if('point_score' in detection['report']):
+         if(detection['report']['point_score']!='unknown'):
+            span = str("{0:.4f}".format(float(detection['report']['point_score'])))
+            if detection['report']['point_score'] > 3:
+               span = "<span color='#FF0000'>" + str("{0:.4f}".format(float(detection['report']['point_score']))) + "</span>"
+            details_html += '<dt class="col-6">Point Score</dt><dd class="col-6">'+ span +'</dd>'
    
    if(detection['ang_v']!='unknown'):
       details_html += '<dt class="col-6">Ang. Velocity</dt>   <dd class="col-6">'+str("{0:.4f}".format(float(detection['ang_v'])))+'&deg;/s</dd>'
