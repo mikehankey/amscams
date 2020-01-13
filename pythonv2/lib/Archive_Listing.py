@@ -628,10 +628,10 @@ def get_html_detection(det,detection,clear_cache):
    details_html += '<dt class="col-12 list-onl title-list"><b>Cam #'+det['cam_id']+'</b> - <b>'+det['hour']+':'+det['min']+'</b></dt>'
 
    if(detection['mag']!='unknown'):
-      details_html += '              <dt class="col-6">Mag</dt>  <dd class="col-6">' + str(detection['mag']) + '</dd>'
+      details_html += '<dt class="col-6">Mag</dt><dd class="col-6">' + str(detection['mag']) + '</dd>'
    
    if(detection['dur']!='unknown'):
-      details_html += '              <dt class="col-6">Duration</dt>  	   <dd class="col-6">'+ str(detection['dur']) +'s</dd>'
+      details_html += '<dt class="col-6">Duration</dt><dd class="col-6">'+ str(detection['dur']) +'s</dd>'
 
    if(detection['res_er']!='unknown'):
       score =  str("{0:.4f}".format(float(detection['res_er'])))

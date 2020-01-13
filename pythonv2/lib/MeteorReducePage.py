@@ -205,7 +205,7 @@ def reduce_meteor2(json_conf,form):
       if('device' in meteor_json_file['calib']):
          if('total_res_px' in meteor_json_file['calib']['device']):
             pts = str(meteor_json_file['calib']['device']['total_res_px'])
-            if(meteor_json_file['calib']['device']['total_res_px']>)
+            if(meteor_json_file['calib']['device']['total_res_px']>3)
             report_details += '<dt class="col-4">Res. Error</dt><dd class="col-8">'+str(meteor_json_file['calib']['device']['total_res_px'])+'</dd>'
 
  
