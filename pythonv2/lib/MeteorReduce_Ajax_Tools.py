@@ -334,9 +334,11 @@ def delete_frame(form):
 
 # Find max px info from cnt
 def cnt_max_px(cnt_img):
+   # DEBUG
+   cgitb.enable()
+   
    cnt_img = cv2.GaussianBlur(cnt_img, (7, 7), 0)
    min_val, max_val, min_loc, max_loc = cv2.minMaxLoc(cnt_img)
-
    return(max_loc, min_val, max_val)
 
 # Pin point stars from user selection
@@ -354,10 +356,10 @@ def pin_point_stars(image, points):
       y2 = y + 15
       x1 = x - 15
       x2 = x + 15
-      #cnt_img = image[y1:y2,x1:x2]
-      #ch,cw = cnt_img.shape
+      cnt_img = image[y1:y2,x1:x2]
+      ch,cw = cnt_img.shape
       try:
-         #max_pnt,max_val,min_val = cnt_max_px(cnt_img)
+         max_pnt,max_val,min_val = cnt_max_px(cnt_img)
          #mx,my = max_pnt
          #mx = mx - 15
          #my = my - 15
@@ -365,9 +367,9 @@ def pin_point_stars(image, points):
          #y = y + my
          star_points.append((x,y))
       except:
-         print("PROB!", image.shape, x1,y1, x2,y2, "<BR>")
+         #print("PROB!", image.shape, x1,y1, x2,y2, "<BR>")
          missed_star = 1
-         sys.exit(0)
+         #sys.exit(0)
 
    return star_points 
 
