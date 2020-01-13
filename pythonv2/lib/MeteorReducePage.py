@@ -12,7 +12,7 @@ from lib.REDUCE_VARS import REMOTE_FILES_FOLDER, REMOVE_METEOR_FOLDER, METEOR_AR
  
 PAGE_TEMPLATE = "/home/ams/amscams/pythonv2/templates/reducePage.v2.html"
 
-
+ERROR_FACTOR_SEG_LEN = [2,3,4,5,6]
 
 
 # GENERATES THE REDUCE PAGE METEOR
@@ -223,6 +223,15 @@ def reduce_meteor2(json_conf,form):
             if(meteor_json_file['calib']['device']['total_res_px']>3):
                pts = "<b style='color:#f00'>"+ pts +  "</b>"
             report_details += '<dt class="col-4">Res. Error</dt><dd class="col-8">'+pts+'</dd>'
+
+
+   # Select to determine the factor of error for seg len  (Med dIST)
+   med_dist_select = '<select id="error_factor_dist_len" class="custom-select ml-4" style="width: auto;padding-top: 0;padding-bottom: 0;height: 1.8rem;">'
+   for err in ERROR_FACTOR_SEG_LEN:
+      med_dist_select += "<option value='"+err+"'>x"+err+"<option>"
+   med_dist_select +="</select>"
+
+  
 
    report_details += '<dt class="col-4">Med. dist</dt><dd class="col-8">'+str("{0:.4f}".format(float(med_dist)))+'</dd>'
    # We add the med dist to the template
