@@ -160,16 +160,7 @@ function update_stars_on_canvas_and_table(json_resp) {
            canvas.add(test_object); 
            //name_pos.push(test_object);
 
-           // Add the medium dist value
-           // med_dist is defined on the page
-           console.log(v);
-           if(v['dist_from_last']>med_dist*2) {
-               dist_err = '<td style="color:#f00">'+v['dist_from_last'].toFixed(2)+'</td>';
-           } else {
-              dist_err = '<td>'+v['dist_from_last'].toFixed(2)+'</td>';
-           }
-
-           console.log(dist_err);
+    
     
            // Add the corresponding row 
            table_tbody_html+= '<tr><td><b>'+v['name']+'</b></td>\
@@ -178,7 +169,7 @@ function update_stars_on_canvas_and_table(json_resp) {
                                <td>'+v['i_pos'][POS_X].toFixed(2) + ' / '+ v['i_pos'][POS_Y].toFixed(2) + '</td>\
                                <td>'+v['cat_und_pos'][POS_X].toFixed(2)  + ' / '+ v['cat_und_pos'][POS_Y].toFixed(2) +'</td>\
                                <td>'+v['cat_dist_pos'][POS_X].toFixed(2)  + ' / '+ v['cat_dist_pos'][POS_Y].toFixed(2) +'</td>\
-                               '+dist_err+' \
+                               <td>'+v['dist_px'].toFixed(4)+'</td>\
                                </tr>';
    
        });
