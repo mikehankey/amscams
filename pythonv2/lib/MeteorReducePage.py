@@ -1,6 +1,7 @@
 import cgitb
 import json
 import numpy
+import datetime
 
 from pathlib import Path
 from shutil import copyfile
@@ -199,7 +200,8 @@ def reduce_meteor2(json_conf,form):
 
    template = template.replace("{MED_DIST}", str(med_dist))
 
-   report_details  =  ''
+   start_time_datetime =  datetime.strptime(start_time,'%Y-%m-%d %H:%M:%S.%f')
+   report_details  =  '<time class="s-icon big"><em>'+start_time_datetime.strftime("%b")+'</em><span>'+analysed_name['day']+'</span><span class="y">'+analysed_name['year']+'</span></time>'
 
    if('report' in meteor_json_file):
       report_details += '<dt class="col-4">Date &amp; Time</dt><dd class="col-8">'+start_time+'s</dd>'
@@ -207,7 +209,7 @@ def reduce_meteor2(json_conf,form):
       if('dur' in meteor_json_file['report']):
          report_details += '<dt class="col-4">Duration</dt><dd class="col-8"><span id="dur">'+str(meteor_json_file['report']['dur'])+'</span>s</dd>'
       if('max_peak' in meteor_json_file['report']):
-         report_details += '<dt class="col-4">Magnitude</dt><dd class="col-8">'+str(meteor_json_file['report']['max_peak'])+'</dd>'
+         report_details += '<dt class="col-4">Max Intensity</dt><dd class="col-8">'+str(meteor_json_file['report']['max_peak'])+'</dd>'
       if('angular_vel' in meteor_json_file['report']):
          report_details += '<dt class="col-4">Ang. Velocity</dt><dd class="col-8">'+str(meteor_json_file['report']['angular_vel'])+'&deg;/sec</dd>'
       if('point_score' in meteor_json_file['report']):
