@@ -221,7 +221,8 @@ def update_frame(form, AjaxDirect = False):
    apply_calib(json_file)
 
    # We update the JSON with valid dist_from_last 
-   os.system("cd /home/ams/amscams/pythonv2/; ./flex-detect.py ep " + json_file + " > /dev/null")
+   #os.system("cd /home/ams/amscams/pythonv2/; ./flex-detect.py ep " + json_file + " > /dev/null")
+   # IT SHOULD BE DONE IN apply_calib NOW!
 
    # We update the JSON 
    save_json_file(json_file, mr)
