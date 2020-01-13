@@ -507,14 +507,13 @@ def update_cat_stars(form):
       meteor_red = load_json_file(meteor_red_file)
    else:
       return "error JSON"
-   print("IN update_cat_stars<br/>")
-   print(meteor_red)
-   sys.exit(0)
-  
+   
    meteor_mode = 0  #???
    
    if(points):
       temps = points.split("|")
+
+
       for temp in temps:
          if len(temp) > 0:
             (x,y) = temp.split(",")
@@ -524,7 +523,18 @@ def update_cat_stars(form):
             if x >0 and y > 0 and x<HD_W and y< HD_H:
                star_points.append((x,y))
       
+
+      
+
+      print("IN update_cat_stars<br/>")
+      print(star_points)
+  
+
       star_points = pin_point_stars(hd_image, star_points) 
+
+      print("IN update_cat_stars<br/>")
+      print(star_points)
+      sys.ext(0)
    
       # get the center ra,dec based on the center_az,el and the current timestamp from the file 
       ra,dec = AzEltoRADec(meteor_red['calib'], video_file)
