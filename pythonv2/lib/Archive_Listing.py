@@ -634,22 +634,11 @@ def get_html_detection(det,detection,clear_cache):
       details_html += '              <dt class="col-6">Duration</dt>  	   <dd class="col-6">'+ str(detection['dur']) +'s</dd>'
 
    if(detection['res_er']!='unknown'):
-      details_html += '              <dt class="col-6">Res. Error</dt>      <dd class="col-6">'+ str("{0:.4f}".format(float(detection['res_er'])))+'</dd>'
-   #if(detection['point_score']!='unknown'):
-   #   if detection['point_score'] > 3:
-   #      span = "<font color='#FF0000'>"
-   #      espan = "</font>"
-   #   else:
-   #      span = ""
-   #      espan = ""
-   #   details_html += '              <dt class="col-6">Point Score</dt>      <dd class="col-6">'+ span + str("{0:.4f}".format(float(detection['point_score']))) + espan +'</dd>'
-   
-      #details_html += '<dt class="col-6">Res. Error</dt><dd class="col-6">'+ str("{0:.4f}".format(float(detection['res_er'])))+'</dd>'
-   
-
-   #if(detection['ang_v']!='unknown'):
-   #   details_html += '              <dt class="col-6">Ang. Velocity</dt>   <dd class="col-6">'+str("{0:.4f}".format(float(detection['ang_v'])))+'&deg;/s</dd>'
-
+      score =  str("{0:.4f}".format(float(detection['res_er'])))
+      if detection['res_er'] > 3:
+         score = "<b style='color:#ff0000'>" + score + "</b>"
+      details_html += '<dt class="col-6">Res. Error</dt> <dd class="col-6">'+ score +'</dd>'
+  
    if(detection['point_score']!='unknown'):
       score = str("{0:.4f}".format(float(detection['point_score'])))
       if detection['point_score'] > 3:
