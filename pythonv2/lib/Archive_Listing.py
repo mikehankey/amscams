@@ -848,7 +848,7 @@ def archive_listing(form):
 
    pagination = get_pagination(cur_page,total,pagination_url,int(nompp))
 
-   
+    
       
    # GALLERIE or LIST are managed with cookies
    # Do we have a cookie for gallery or list? 
@@ -868,25 +868,21 @@ def archive_listing(form):
       template = template.replace("{RESULTS}", res_html)
 
    #   # Pagination
-   pagination_text = ""
    if(len(res)>=1 and pagination and pagination[0]):  
-      pagination_text = pagination[0]  
-   
-   if(pagination[2] != ''):
-       pagination_text +=   " <small>Page  " + format(cur_page) + "/" +  format(pagination[2])+"</small>"    
-    
-
-   template = template.replace("{PAGINATION}", pagination_text)   
-
+      template = template.replace("{PAGINATION}", pagination[0])
+   else:
+      template = template.replace("{PAGINATION}", "")
+ 
    if(len(res)==0): 
       template = template.replace("{RESULTS}", "<div class='alert alert-danger mx-auto'>No detection found in your the archive for your criteria.</div>")
-      template = template.replace("{FOUND}", "")   
+      template = template.replace("{PAGINATION_DET}", "")    
+      template = template.replace("{PAGINATION}", "") 
    elif((len(res))!=total):
-      template = template.replace("{FOUND}", "<div class='page_h ml-3'><small>Displaying " + str(len(res)) + " out of " +  str(total)  + " detections.</small></div>")
+      template = template.replace("{PAGINATION_DET}", "<div class='page_h ml-3'><small>Displaying " + str(len(res)) + " out of " +  str(total)  + " detections.</small></div>")
    elif(len(res)==1):
-      template = template.replace("{FOUND}", "<div class='page_h ml-3'><small>Displaying only 1 detection matching your criteria.</small></div>")
+      template = template.replace("{PAGINATION_DET}", "<div class='page_h ml-3'><small>Displaying only 1 detection matching your criteria.</small></div>")
    else:
-      template = template.replace("{FOUND}", "<div class='page_h ml-3'><small>Displaying all " + str(len(res)) + " detections matching your criteria.</small></div>")
+      template = template.replace("{PAGINATION_DET}", "<div class='page_h ml-3'><small>Displaying all " + str(len(res)) + " detections matching your criteria.</small></div>")
 
    # Display Template
    return template
