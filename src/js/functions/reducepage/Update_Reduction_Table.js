@@ -48,11 +48,16 @@ function update_reduction_on_canvas_and_table(json_resp) {
 
       // Add the medium dist value
       // med_dist is defined on the page 
-      if(parseFloat(v['dist_from_last'])>parseFloat(med_dist*parseInt($('#error_factor_dist_len').val()))) {
-         dist_err = '<td style="color:#f00">'+v['dist_from_last'].toFixed(2)+'</td>';
+      if(typeof v['dist_from_last'] !='undefined') {
+         if(parseFloat(v['dist_from_last'])>parseFloat(med_dist*parseInt($('#error_factor_dist_len').val()))) {
+            dist_err = '<td style="color:#f00">'+v['dist_from_last'].toFixed(2)+'</td>';
+         } else {
+            dist_err = '<td>'+v['dist_from_last'].toFixed(2)+'</td>';
+         }
       } else {
-         dist_err = '<td>'+v['dist_from_last'].toFixed(2)+'</td>';
+         dist_err = '<td>?</td>';
       }
+      
       
 
       if(typeof v['intensity']!=='undefined') {
