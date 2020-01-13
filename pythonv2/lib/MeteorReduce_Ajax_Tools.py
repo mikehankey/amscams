@@ -522,13 +522,11 @@ def update_cat_stars(form):
             x,y = x*2,y*2
             if x >0 and y > 0 and x<HD_W and y< HD_H:
                star_points.append((x,y))
-      
-
-      
+       
 
       print("IN update_cat_stars<br/>")
       print(star_points)
-  
+      sys.ext(0)
 
       star_points = pin_point_stars(hd_image, star_points) 
 
