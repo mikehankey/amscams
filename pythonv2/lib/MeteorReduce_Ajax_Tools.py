@@ -338,7 +338,7 @@ def cnt_max_px(cnt_img):
    cgitb.enable()
 
    #print("IN cnt_max_px<br>")
-   
+   # WTF???
    #cnt_img = cv2.GaussianBlur(cnt_img, (7, 7), 0)
 
    #print(cnt_img)
@@ -353,8 +353,6 @@ def pin_point_stars(image, points):
    # DEBUG
    cgitb.enable()
    
-   print("IN PIN POINT STARS <br>")
-
    star_points = []
    for x,y in points:
       x,y = int(x),int(y)
@@ -543,10 +541,7 @@ def update_cat_stars(form):
      
       star_points = pin_point_stars(hd_image, star_points) 
 
-      print("IN update_cat_stars<br/>")
-      print(star_points)
-      sys.exit(0)
-   
+     
       # get the center ra,dec based on the center_az,el and the current timestamp from the file 
       ra,dec = AzEltoRADec(meteor_red['calib'], video_file)
       meteor_red['calib']['device']['center']['ra'] = ra
