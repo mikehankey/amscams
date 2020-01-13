@@ -200,8 +200,9 @@ def reduce_meteor2(json_conf,form):
 
    template = template.replace("{MED_DIST}", str(med_dist))
 
-   start_time_datetime =  datetime.strptime(start_time,'%Y-%m-%d %H:%M:%S.%f')
-   report_details  =  '<time class="s-icon big"><em>'+start_time_datetime.strftime("%b")+'</em><span>'+analysed_name['day']+'</span><span class="y">'+analysed_name['year']+'</span></time>'
+   #start_time_datetime =  datetime.strptime(start_time,'%Y-%m-%d %H:%M:%S.%f')
+   #report_details  =  '<time class="s-icon big"><em>'+start_time_datetime.strftime("%b")+'</em><span>'+analysed_name['day']+'</span><span class="y">'+analysed_name['year']+'</span></time>'
+   report_details = ''
 
    if('report' in meteor_json_file):
       report_details += '<dt class="col-4">Date &amp; Time</dt><dd class="col-8">'+start_time+'s</dd>'
