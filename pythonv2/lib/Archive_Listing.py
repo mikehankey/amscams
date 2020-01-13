@@ -632,7 +632,7 @@ def get_html_detection(det,detection,clear_cache):
    if(detection['point_score']!='unknown'):
       score = str("{0:.4f}".format(float(detection['point_score'])))
       if detection['point_score'] > 3:
-         score = "<span color='#FF0000'>" + score + "</span>"
+         score = "<b style='color:#ff0000'>" + score + "</b>"
       details_html += '<dt class="col-6">Point Score</dt><dd class="col-6">'+ score +'</dd>'
 
    if(detection['ang_v']!='unknown'):
