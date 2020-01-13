@@ -53,7 +53,11 @@ function update_reduction_on_canvas_and_table(json_resp) {
       } else {
          dist_err = '<td>'+v['dist_from_last'].toFixed(2)+'</td>';
       }
-  
+      
+
+      console.log(v);
+
+      
         // Thumb	#	Time	X/Y - W/H	Max PX	RA/DEC	AZ/EL 
         table_tbody_html+= '<tr id="fr_'+frame_id+'" data-fn="'+frame_id+'" data-org-x="'+v['x']+'" data-org-y="'+v['y']+'"><td><div class="st" hidden style="background-color:'+all_colors[i]+'"></div></td>'
         table_tbody_html+= '<td><img alt="Thumb #'+frame_id+'" src='+thumb_path+' width="50" height="50" class="img-fluid smi select_meteor" style="border-color:'+all_colors[i]+'"/></td>';
