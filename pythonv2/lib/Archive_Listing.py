@@ -624,20 +624,17 @@ def get_html_detection(det,detection,clear_cache):
    
    if('point_score' in detection):
       if(detection['point_score']!='unknown'):
+         span = str("{0:.4f}".format(float(detection['point_score'])))
          if detection['point_score'] > 3:
-            span = "<font color='#FF0000'>"
-            espan = "</font>"
-         else:
-            span = ""
-            espan = ""
-         details_html += '<dt class="col-6">Point Score</dt><dd class="col-6">'+ span + str("{0:.4f}".format(float(detection['point_score']))) + espan +'</dd>'
+            span = "<span color='#FF0000'>" + str("{0:.4f}".format(float(detection['point_score']))) + "</span>"
+         details_html += '<dt class="col-6">Point Score</dt><dd class="col-6">'+ span +'</dd>'
    
    if(detection['ang_v']!='unknown'):
-      details_html += '              <dt class="col-6">Ang. Velocity</dt>   <dd class="col-6">'+str("{0:.4f}".format(float(detection['ang_v'])))+'&deg;/s</dd>'
+      details_html += '<dt class="col-6">Ang. Velocity</dt>   <dd class="col-6">'+str("{0:.4f}".format(float(detection['ang_v'])))+'&deg;/s</dd>'
    
    if "sync" not in detection: 
    #if(detection['sync']!=1):
-      details_html += '              <dt class="col-12"><div class="alert alert-danger p-1 m-0 text-center">Not synchronized</div></dt>'
+      details_html += '<dt class="col-12"><div class="alert alert-danger p-1 m-0 text-center">Not synchronized</div></dt>'
  
    details_html += ' </dl>'   
 
