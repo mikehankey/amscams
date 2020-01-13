@@ -31,6 +31,38 @@ from lib.UtilLib import calc_dist,find_angle
 import lib.brightstardata as bsd
 from lib.DetectLib import eval_cnt
 
+def update_arc_detects():
+   station_id = json_conf['site']['ams_id']
+   detect_file = "/mnt/ams2/meteor_archive/" + station_id + "/DETECTS/ms_detects.json"
+   detects = load_json_file(detect_file)
+   for day in detects:
+      for file in detects[day]:
+         meteor_day = file[0:10]
+         file = "/mnt/ams2/meteors/" + meteor_day + "/" + file
+         print("Update this file:", file)
+         jd = load_json_file(file)
+         if "archive_file" in jd:
+            archive_file = jd['archive_file']
+            if cfe(archive_file) == 1:
+               print("This meteor has been archived, so lets make sure the archive file has the MS detect status set.", jd['archive_file'])
+               arc_data = load_json_file(jd['archive_file'])
+               if "multi_station" not in arc_data['info']:
+                  arc_data['info']['multi_station'] = 1
+               # Also make sure the info['org_sd_vid'] and info['org_hd_vid'] are set to the correct values.
+               org_sd_vid = file.replace(".json", ".mp4")
+               if "hd_trim" in jd:
+                  if jd['hd_trim'] is not None and jd['hd_trim'] != 0:
+                     org_hd_vid = jd['hd_trim']
+                     if arc_data['info']['org_hd_vid'] != org_hd_vid:
+                        arc_data['info']['org_hd_vid'] = org_hd_vid
+               if arc_data['info']['org_sd_vid'] != org_sd_vid:
+                  arc_data['info']['org_sd_vid'] = org_sd_vid
+               # now save the arc file with the updated info!
+               save_json_file(archive_file, arc_data)
+               print("SAVED:", archive_file)
+               #exit()
+          
+
 def run_detects(day):
    print("RUN DETECTS")
    network = json_conf['site']['network_sites'].split(",")
@@ -3738,6 +3770,8 @@ if cmd == "check":
    check(sys.argv[2])   
 if cmd == "run_detects":
    run_detects(sys.argv[2])   
+if cmd == "update_arc_detects" or cmd == 'uad':
+   update_arc_detects()   
 
 
 
