@@ -626,20 +626,21 @@ def get_html_detection(det,detection,clear_cache):
 
    if(detection['res_er']!='unknown'):
       details_html += '              <dt class="col-6">Res. Error</dt>      <dd class="col-6">'+ str("{0:.4f}".format(float(detection['res_er'])))+'</dd>'
-   if(detection['point_score']!='unknown'):
-      if detection['point_score'] > 3:
-         span = "<font color='#FF0000'>"
-         espan = "</font>"
-      else:
-         span = ""
-         espan = ""
-      details_html += '              <dt class="col-6">Point Score</dt>      <dd class="col-6">'+ span + str("{0:.4f}".format(float(detection['point_score']))) + espan +'</dd>'
+   #if(detection['point_score']!='unknown'):
+   #   if detection['point_score'] > 3:
+   #      span = "<font color='#FF0000'>"
+   #      espan = "</font>"
+   #   else:
+   #      span = ""
+   #      espan = ""
+   #   details_html += '              <dt class="col-6">Point Score</dt>      <dd class="col-6">'+ span + str("{0:.4f}".format(float(detection['point_score']))) + espan +'</dd>'
    
-      details_html += '<dt class="col-6">Res. Error</dt><dd class="col-6">'+ str("{0:.4f}".format(float(detection['res_er'])))+'</dd>'
+      #details_html += '<dt class="col-6">Res. Error</dt><dd class="col-6">'+ str("{0:.4f}".format(float(detection['res_er'])))+'</dd>'
    
 
-   if(detection['ang_v']!='unknown'):
-      details_html += '              <dt class="col-6">Ang. Velocity</dt>   <dd class="col-6">'+str("{0:.4f}".format(float(detection['ang_v'])))+'&deg;/s</dd>'
+   #if(detection['ang_v']!='unknown'):
+   #   details_html += '              <dt class="col-6">Ang. Velocity</dt>   <dd class="col-6">'+str("{0:.4f}".format(float(detection['ang_v'])))+'&deg;/s</dd>'
+
    if(detection['point_score']!='unknown'):
       score = str("{0:.4f}".format(float(detection['point_score'])))
       if detection['point_score'] > 3:
