@@ -868,19 +868,18 @@ def archive_listing(form):
       template = template.replace("{RESULTS}", res_html)
 
    #   # Pagination
-   pagination = ""
+   pagination_text = ""
    if(len(res)>=1 and pagination and pagination[0]):  
-      pagination = pagination[0]  
+      pagination_text = pagination[0]  
    
    if(pagination[2] != ''):
-       pagination +=   " <small>Page  " + format(cur_page) + "/" +  format(pagination[2])+"</small>"    
+       pagination_text +=   " <small>Page  " + format(cur_page) + "/" +  format(pagination[2])+"</small>"    
     
 
-   template = template.replace("{PAGINATION}", pagination)   
+   template = template.replace("{PAGINATION}", pagination_text)   
 
    if(len(res)==0): 
       template = template.replace("{RESULTS}", "<div class='alert alert-danger mx-auto'>No detection found in your the archive for your criteria.</div>")
-      template = template.replace("{PAGINATION}", "")
       template = template.replace("{FOUND}", "")   
    elif((len(res))!=total):
       template = template.replace("{FOUND}", "<div class='page_h ml-3'><small>Displaying " + str(len(res)) + " out of " +  str(total)  + " detections.</small></div>")
