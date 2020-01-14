@@ -561,7 +561,7 @@ def get_results_from_date_from_monthly_index(criteria,start_date,end_date,max_re
          #print("<br>22 - NEW END DATE ")
          #print(end_date) 
 
-   print(all_days_details)
+      print(all_days_details)
 
 
       # We stop at the start_date
