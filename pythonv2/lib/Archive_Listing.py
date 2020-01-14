@@ -476,8 +476,8 @@ def get_results_from_date_from_monthly_index(criteria,start_date,end_date,max_re
             print("<br>************<br>")
             
             # We get the total # of detections for the current in case we don't display them all
-            print(str(cur_year)+'/'+ "{:02d}".format(int(cur_month))+'/'+"{:02d}".format(int(day)) + " ====> "  + str(len(day)) +"<br>")
-            all_days_details[str(cur_year)+'/'+ "{:02d}".format(int(cur_month))+'/'+"{:02d}".format(int(day))] = len(day) 
+            print(str(cur_year)+'/'+ "{:02d}".format(int(cur_month))+'/'+"{:02d}".format(int(day)) + " ====> "  + str(len(json_index['days'][day])) +"<br>")
+            all_days_details[str(cur_year)+'/'+ "{:02d}".format(int(cur_month))+'/'+"{:02d}".format(int(day))] = len(json_index['days'][day]) 
 
             # We sort the detections within the day
             detections = sorted(json_index['days'][day], key=lambda k: k['p'], reverse=True)
