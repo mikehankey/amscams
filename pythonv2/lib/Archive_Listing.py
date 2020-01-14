@@ -717,17 +717,17 @@ def get_html_detections(res,all_days_details,clear_cache,version,video_prev):
       cur_count+=1
    
    if('%TOTAL%' in res_html):
+
+      new_total = str(cur_count)+ ' detection only'
+
       if(cur_count>1):
-         res_html = res_html.replace('%TOTAL%',str(cur_count)+ ' detections')
-      else:
-         res_html = res_html.replace('%TOTAL%',str(cur_count)+ ' detection only')
-
+         new_total = str(cur_count)+ ' detections'
+         
       # Check if we display them all
-      if cur_date.strftime("%Y/%m/%d") in all_days_details:
-         print(" FOR " + cur_date.strftime("%Y/%m/%d")  +  " we have " + str(all_days_details[cur_date.strftime("%Y/%m/%d")]) +"<br>" )
-      else:
-         print(cur_date.strftime("%Y/%m/%d")  + " NOT FOUND")
+      if cur_date.strftime("%Y/%m/%d") in all_days_details and int(all_days_details[cur_date.strftime("%Y/%m/%d")]!=cur_count):
+         new_total += ' out of ' +  str(all_days_details[cur_date.strftime("%Y/%m/%d")])  
 
+       res_html = res_html.replace('%TOTAL%',new_total) 
 
    return res_html
  
