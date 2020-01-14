@@ -721,7 +721,7 @@ def get_html_detections(res,all_days_details,clear_cache,version,video_prev):
 
       # Check if we display them all
       if cur_date.strftime("%Y/%m/%d") in all_days_details:
-         print(" FOR " + cur_date.strftime("%Y/%m/%d")  +  " we have " + all_days_details[cur_date.strftime("%Y/%m/%d")] +"<br>" )
+         print(" FOR " + cur_date.strftime("%Y/%m/%d")  +  " we have " + str(all_days_details[cur_date.strftime("%Y/%m/%d")]) +"<br>" )
 
 
 
