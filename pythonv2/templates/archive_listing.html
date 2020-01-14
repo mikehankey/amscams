@@ -7,44 +7,38 @@
    </h1>
    <div class='d-flex has-mega-menu dropdown'>
          <ul class="nav navbar-nav navbar-right">
-         <li class="dropdown"><a href="#" class="dropdown-toggle" data-toggle="dropdown">Account
-             <b class="caret"></b></a>
-             <ul class="dropdown-menu">
-                 <li>
-                     <div class="navbar-content">
-                         <div class="row">
-                             <div class="col-md-5">
-                                 <img src="http://placehold.it/120x120"
-                                     alt="Alternate Text" class="img-responsive" />
-                                 <p class="text-center small">
-                                     <a href="#">Change Photo</a></p>
-                             </div>
-                             <div class="col-md-7">
-                                 <span>Bhaumik Patel</span>
-                                 <p class="text-muted small">
-                                     mail@gmail.com</p>
-                                 <div class="divider">
+            <li class="dropdown">
+               <a href="#" class="btn btn-primary act  dropdown-toggle" data-toggle="dropdown"><i class="icon-filters"></i></a>
+               <ul class="dropdown-menu">
+                  <li>
+                        <div class="navbar-content">
+                           <div class="row">
+                                 <div class="col-sm-6 col-md-x">
+                                       <div>
+                                             <select name='sync' id='point_score' data-rel='point_score' class='btn btn-primary mr-4'>{P_SCORE}</select>
+                                          </div>
+                                          <div>
+                                             <select name='res_er' id='res_er' data-rel='res_er' class='btn btn-primary mr-4'>{RES_ERRORS}</select>
+                                          </div>
+                                          <div>
+                                             <select name='mag' id='mag' data-rel='magnitude' class='btn btn-primary mr-4'>{MAGNITUDES}</select>
+                                          </div>
                                  </div>
-                                 <a href="#" class="btn btn-primary btn-sm active">View Profile</a>
-                             </div>
-                         </div>
-                     </div>
-                     <div class="navbar-footer">
-                         <div class="navbar-footer-content">
-                             <div class="row">
-                                 <div class="col-md-6">
-                                     <a href="#" class="btn btn-default btn-sm">Change Passowrd</a>
-                                 </div>
-                                 <div class="col-md-6">
-                                     <a href="http://www.jquery2dotnet.com" class="btn btn-default btn-sm pull-right">Sign Out</a>
-                                 </div>
-                             </div>
-                         </div>
-                     </div>
-                 </li>
-             </ul>
-         </li>
-     </ul>
+                                 <div class="col-sm-6 col-md-x">
+                                       <div>
+                                          <select name='ang_v' id='ang_v' data-rel='ang_v' class='btn btn-primary mr-4'>{ANG_VELOCITIES}</select>
+                                       </div>
+                                       <div>
+                                          <select name='sync' id='sync' data-rel='sync' class='btn btn-primary mr-4'>{SYNC}</select>
+                                       </div>
+                                    </div>
+                           </div>
+                        </div>
+                        
+                  </li>
+               </ul>
+            </li>
+      </ul>
       
       <a class="btn btn-primary act dropdown-toggle" data-toggle="dropdown" href="#" role="button" aria-haspopup="true" aria-expanded="false"><i class="icon-filters"></i></a>
       <div class="dropdown-menu">
