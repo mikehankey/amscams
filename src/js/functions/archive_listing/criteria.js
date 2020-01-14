@@ -2,61 +2,42 @@
 
 $(function() {
 
-
-   //Magnitude
-   $('#mag').change(function() {
-      // Change Meteor Per page
-      new_url = update_url_param(window.location.href ,'magnitude',$('#mag').val());
-
-      //Cookies.set('filt_arch_mag', $('#mag').val(), { expires: 99999, path: '/' });
-
-      // Back to page = 1 (so we dont have issues if the number of page is too mall)
-      window.location =  update_url_param(new_url ,'p',1);
-    });
-   
-   //Res Eror
-   $('#res_er').change(function() {
-      // Change Meteor Per page
-      new_url = update_url_param(window.location.href ,'res_er',$('#res_er').val());
+   $('#apply_archive_filters').click(function() {
       
-      //Cookies.set('filt_arch_res_er', $('#res_er').val(), { expires: 99999, path: '/' });
+      new_url = window.location.href
 
-      // Back to page = 1 (so we dont have issues if the number of page is too mall)
-      window.location =  update_url_param(new_url ,'p',1);
-    });
+      if($('#mag').val()>=0) { 
+         new_url = update_url_param(new_url ,'magnitude',$('#mag').val());
+      } else {
+         new_url = delete_url_param('magnitude');
+      }
 
+      if($('#res_er').val()>=0) { 
+         new_url = update_url_param(new_url ,'res_er',$('#res_er').val());
+      } else {
+         new_url = delete_url_param('res_er');
+      }
 
-    //Magnitude
-    $('#ang_v').change(function() {
-      // Change Meteor Per page
-      new_url = update_url_param(window.location.href ,'ang_v',$('#ang_v').val());
+      if($('#ang_v').val()>=0) { 
+         new_url = update_url_param(window.location.href ,'ang_v',$('#ang_v').val());
+      } else {
+         new_url = delete_url_param('ang_v');
+      }
 
-      //Cookies.set('filt_arch_ang_v', $('#ang_v').val(), { expires: 99999, path: '/' });
+      if($('#sync').val()>=0) { 
+         new_url = update_url_param(window.location.href ,'sync',$('#sync').val());
+      } else {
+         new_url = delete_url_param('sync');
+      }
 
-      // Back to page = 1 (so we dont have issues if the number of page is too mall)
-      window.location =  update_url_param(new_url ,'p',1);
-    });
-
-
-    //Sync
-    $('#sync').change(function() {
-      // Change Meteor Per page
-      new_url = update_url_param(window.location.href ,'sync',$('#sync').val());
+      if($('#point_score').val()>=0) { 
+         new_url = update_url_param(window.location.href ,'point_score',$('#point_score').val());
+      } else {
+         new_url = delete_url_param('point_score');
+      }
+      
+       // Back to page = 1 (so we dont have issues if the number of page is too mall)
+       window.location =  update_url_param(new_url ,'p',1);
+   });
  
-      //Cookies.set('filt_arch_sync', $('#sync').val(), { expires: 99999, path: '/' });
-
-      // Back to page = 1 (so we dont have issues if the number of page is too mall)
-      window.location =  update_url_param(new_url ,'p',1);
-    });
-
-    //Score
-    $('#point_score').change(function() {
-      // Change Meteor Per page
-      new_url = update_url_param(window.location.href ,'point_score',$('#point_score').val());
- 
-      //Cookies.set('filt_arch_sync', $('#sync').val(), { expires: 99999, path: '/' });
-
-      // Back to page = 1 (so we dont have issues if the number of page is too mall)
-      window.location =  update_url_param(new_url ,'p',1);
-    });
 })

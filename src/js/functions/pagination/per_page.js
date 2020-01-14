@@ -15,6 +15,17 @@ function update_url_param(url,param,value) {
    return new_url;
 }
 
+function delete_url_param(url,param) {
+   var url = new URL(url);
+   var query_string = url.search;
+   var search_params = new URLSearchParams(query_string); 
+   search_params.delete(param)
+   url.search = search_params.toString();
+   // the new url string
+   var new_url = url.toString();
+   return new_url;
+}
+
 
 $(function() {
    $('#rpp').change(function() {
