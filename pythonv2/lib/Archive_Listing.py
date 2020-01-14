@@ -460,8 +460,6 @@ def get_results_from_date_from_monthly_index(criteria,start_date,end_date,max_re
       cur_month = json_index['month']
       cur_year  = json_index['year']
 
-      #print("<br>--------------<br>CUR MONTH " +  str(cur_month) +  " - CUR YEAR " +  str(cur_year) + "<br>")
-      
       if(int(cur_month)==int(end_date.month) and int(cur_year)==int(end_date.year)): 
          cur_year_and_month_test_END = True
       else:
@@ -471,7 +469,6 @@ def get_results_from_date_from_monthly_index(criteria,start_date,end_date,max_re
          cur_year_and_month_test_START = True
       else:
          cur_year_and_month_test_START = False
-
 
       all_days =  json_index['days'] 
       keylist = list(all_days.keys())
@@ -484,7 +481,7 @@ def get_results_from_date_from_monthly_index(criteria,start_date,end_date,max_re
 
       # We sort the days
       for day in kk:
- 
+
             # We sort the detections within the day
             detections = sorted(json_index['days'][day], key=lambda k: k['p'], reverse=True)
 
@@ -532,11 +529,8 @@ def get_results_from_date_from_monthly_index(criteria,start_date,end_date,max_re
                         test = test_criteria(criter,criteria,detection)
                      else:
                         test = False
-                     #p   print("<hr/>CRITER " + criter )
-                     #p   print("<br>detection[criter] " + str(detection[criter]))      
-      
-                     if(test==False):
-                        break   
+                        break    
+                       
 
                   if(test==True):
 
@@ -583,6 +577,12 @@ def get_results_from_date_from_monthly_index(criteria,start_date,end_date,max_re
          #print("STOP DATE TEST<br>")
          return res_to_return, res_counter
     
+
+   print("RES TO RETURN <br/>")
+   print(res_to_return)
+   print("RES COUNTER<br>")
+   print(res_counter)
+
    return res_to_return, res_counter
 
 
