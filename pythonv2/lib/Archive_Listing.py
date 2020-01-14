@@ -663,7 +663,7 @@ def get_html_detection(det,detection,clear_cache,video_prev):
    
    # Only if option is selected
    if(int(video_prev)==1):
-      res_html += '     <video class="show_on_hover" loop="true" autoplay="true" name="media" src="'+ det['full_path'].replace('.json','-SD.mp4')+'"><source type="video/mp4"></video>'
+      res_html += '     <video class="show_on_hover" preload="none" loop="true" autoplay="true" name="media" src="'+ det['full_path'].replace('.json','-SD.mp4')+'"><source type="video/mp4"></video>'
    
    res_html += '  </a>'
    res_html += '  <div class="list-onl">'+ details_html + '</div>'
