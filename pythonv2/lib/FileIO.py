@@ -19,8 +19,11 @@ def purge_hd_cal(json_conf):
                   json_data = load_json_file(json_file)
                except:
                   bad = 1
-               stars = len(json_data['cat_image_stars'])
-               if len(json_data['cat_image_stars']) < 15:
+               try:
+                  stars = len(json_data['cat_image_stars'])
+                  if len(json_data['cat_image_stars']) < 15:
+                     bad = 1
+               except:
                   bad = 1
       
             else:
