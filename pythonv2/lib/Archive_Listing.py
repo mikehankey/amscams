@@ -776,11 +776,11 @@ def archive_listing(form):
    end_datetime = form.getvalue('end_date')
 
    # Criteria
-   selected_mag = form.getvalue('magnitude')
-   selected_error = form.getvalue('res_er')
-   selected_ang_vel = form.getvalue('ang_v')
-   selected_sync = form.getvalue('sync')
-   selected_pscore  = form.getvalue('point_score')
+   selected_mag      = form.getvalue('magnitude')
+   selected_error    = form.getvalue('res_er')
+   selected_ang_vel  = form.getvalue('ang_v')
+   selected_sync     = form.getvalue('sync')
+   selected_pscore   = form.getvalue('point_score')
 
    # Build the page based on template  
    with open(ARCHIVE_LISTING_TEMPLATE, 'r') as file:
@@ -822,19 +822,22 @@ def archive_listing(form):
    criteria = {} 
    
    # Build MAGNITUDES selector
-   mag_select, criteria = create_criteria_selector(POSSIBLE_MAGNITUDES,'mag',selected_mag, criteria,  'All Mag.', '>')
+   mag_select, criteria = create_criteria_selector(POSSIBLE_MAGNITUDES,'mag',selected_mag, criteria,  'All Magnitude (intensity)', '>')
    template = template.replace("{MAGNITUDES}", mag_select)
+
+   if(selected_mag):
+      print('selected_mag ' + str(selected_mag))
     
    # Build ERRORS selector
-   error_select, criteria = create_criteria_selector(POSSIBLE_ERRORS,'res_er',selected_error, criteria,  'All Res. Error', '<')
+   error_select, criteria = create_criteria_selector(POSSIBLE_ERRORS,'res_er',selected_error, criteria,  'All Resolution Error', '<')
    template = template.replace("{RES_ERRORS}", error_select)
 
    # Build ANGULAR VELOCITIES selector
-   ang_vel_select, criteria = create_criteria_selector(POSSIBLE_ANG_VELOCITIES,'ang_v',selected_ang_vel, criteria,  'All Ang. Vel.', '>', unit='&deg;/s')
+   ang_vel_select, criteria = create_criteria_selector(POSSIBLE_ANG_VELOCITIES,'ang_v',selected_ang_vel, criteria,  'All Angular Velocity', '>', unit='&deg;/s')
    template = template.replace("{ANG_VELOCITIES}", ang_vel_select) 
    
    # Build SYNC selector 
-   sync_select, criteria = create_criteria_selector(POSSIBLE_SYNC,'sync',selected_sync, criteria,  'All Sync.', '')
+   sync_select, criteria = create_criteria_selector(POSSIBLE_SYNC,'sync',selected_sync, criteria,  'All Synchronization', '')
    template = template.replace("{SYNC}", sync_select) 
    
    # Build POINT SCORE selector 
