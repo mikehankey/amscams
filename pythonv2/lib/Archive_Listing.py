@@ -933,7 +933,7 @@ def archive_listing(form):
    template = template.replace("{LIST_VIEW}", version)
 
    # UPDATE video_prev option
-   if(video_prev==1):
+   if(int(video_prev)==1):
       template = template.replace("{VIDEO_PREVIEW_ACTIVE}", "active")
       template = template.replace("{NO_VIDEO_PREVIEW_ACTIVE}", "")
    else:
