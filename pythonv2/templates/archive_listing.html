@@ -26,14 +26,15 @@
       <div class='mr-2'><select name='rpp' id='rpp' data-rel='meteor_per_page' class='btn btn-primary'>{RPP}</select></div>
       <div class='btn-group mr-2'><button id='show_gal' class='btn btn-primary act'><i class='icon-list'></i></button></div>
       <div class="dropdown">
-         <button class="btn btn-primary act dropdown-toggle" type="button" id="display_opts">
+         <button class="btn btn-primary act dropdown-toggle" type="button" id="display_opts" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
             <i class='icon-cog'></i>
          </button>
          <div class="dropdown-menu" aria-labelledby="display_opts">
-            <button class="dropdown-item active" type="button">Video no preview</button>
-            <button class="dropdown-item" type="button">No video preview (faster)</button> 
+           <a class="dropdown-item" href="#">Video preview</a>
+           <a class="dropdown-item" href="#">No video preview (faster)</a> 
          </div>
       </div>
+       
       
    </div>
 </div>
