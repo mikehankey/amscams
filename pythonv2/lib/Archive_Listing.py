@@ -606,6 +606,7 @@ def get_video(_file):
 
 # GET HTML VERSION OF ONE DETECTION
 def get_html_detection(det,detection,clear_cache,video_prev):
+
    # Do we have a thumb stack preview for this detection?
    preview = does_cache_exist(det,"preview","/*.jpg")
    
@@ -685,6 +686,8 @@ def get_html_detection(det,detection,clear_cache,video_prev):
 
 # Get HTML version of each detection
 def get_html_detections(res,clear_cache,version,video_prev):
+
+   print('VIDEO PREV ' + str(video_prev))
 
    res_html = ''
    prev_date = None

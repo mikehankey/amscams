@@ -8,5 +8,8 @@ $(function() {
       } else {
          Cookies.set('video_prev', 0, { expires: 99999, path: '/' });
       }
+
+      // We reload the page
+      window.location.reload();
    })
 })
