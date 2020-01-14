@@ -684,9 +684,7 @@ def get_html_detections(res,all_days_details,clear_cache,version,video_prev):
    res_html = ''
    prev_date = None
    cur_count = 0
-
-   print("FROM GET HTML DETECTIONS <br>")
-   print(all_days_details)
+ 
 
    for detection in res:
 
@@ -720,6 +718,11 @@ def get_html_detections(res,all_days_details,clear_cache,version,video_prev):
          res_html = res_html.replace('%TOTAL%',str(cur_count)+ ' detections')
       else:
          res_html = res_html.replace('%TOTAL%',str(cur_count)+ ' detection only')
+
+      # Check if we display them all
+      if cur_date.strftime("%Y/%m/%d") in all_days_details:
+         print(" FOR " + cur_date.strftime("%Y/%m/%d")  +  " we have " + all_days_details[cur_date.strftime("%Y/%m/%d")] +"<br>" )
+
 
 
    return res_html
