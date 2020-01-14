@@ -417,23 +417,10 @@ def test_criteria(criter,criteria,detection):
 
 # Get results on index from a certain date
 def get_results_from_date_from_monthly_index(criteria,start_date,end_date,max_res_per_page,cur_page): 
-
-   #print("IN GET RESULTS --- ")
-   #print("start_date : ")
-   #print(start_date)
-   #print("- end_date : ")
-   #print(end_date) 
-   #print("<br/>")
-
-   #pprint("---------------<br>criteria ")
-   #pprint(criteria)
-   #pprint("<br>")
-
+ 
    # Get the index of the selected or current year
    # for the END DATE
-   json_index =  get_monthly_index(end_date.month,end_date.year)
-
-   #print("GET THE INDEX FOR " + str(end_date.month)  +'/' + str(end_date.year) +"<br>")
+   json_index =  get_monthly_index(end_date.month,end_date.year) 
 
    # Nb of result not to display based on cur_page
    if(cur_page==1 or cur_page==0 ):
@@ -455,6 +442,12 @@ def get_results_from_date_from_monthly_index(criteria,start_date,end_date,max_re
    cur_year_and_month_test_START = False
    cur_year_and_month_test_END = False
 
+
+   # Dict of day => total detection
+   # so we can display the total # of detections for a given day 
+   # even if we don't show all the detections
+   all_days_details = {}
+
    while(json_index!=False):
  
       cur_month = json_index['month']
@@ -474,13 +467,12 @@ def get_results_from_date_from_monthly_index(criteria,start_date,end_date,max_re
       keylist = list(all_days.keys())
 
       # We sort the days
-      kk = sorted(keylist, key=int, reverse=True) 
-
-      #print("cur_year_and_month_test_START " + str(cur_year_and_month_test_START) +"<br>")
-      #print("cur_year_and_month_test_END " + str(cur_year_and_month_test_END) +"<br>")
+      kk = sorted(keylist, key=int, reverse=True)  
 
       # We sort the days
       for day in kk:
+
+            all_days_details[day] = len(day)
 
             # We sort the detections within the day
             detections = sorted(json_index['days'][day], key=lambda k: k['p'], reverse=True)
@@ -539,8 +531,8 @@ def get_results_from_date_from_monthly_index(criteria,start_date,end_date,max_re
                         # We complete the detection['p'] to get the full path (as the index only has compressed name)
                         detection['p'] = get_full_det_path(detection['p'],station_id,end_date,day)
                         res_to_return.append(detection)
-                        print("MAX " + str(max_res_per_page) + "<br>")
-                        print("len(res_to_return) " + str(len(res_to_return)) + "<br>")
+                        #print("MAX " + str(max_res_per_page) + "<br>")
+                        #print("len(res_to_return) " + str(len(res_to_return)) + "<br>")
 
                      res_counter+=1  
 
@@ -569,6 +561,9 @@ def get_results_from_date_from_monthly_index(criteria,start_date,end_date,max_re
          #print("<br>22 - NEW END DATE ")
          #print(end_date) 
 
+   print(all_days_details)
+
+
       # We stop at the start_date
       if(end_date<=start_date):
          
@@ -579,11 +574,6 @@ def get_results_from_date_from_monthly_index(criteria,start_date,end_date,max_re
          #print("STOP DATE TEST<br>")
          return res_to_return, res_counter
     
-
-   print("RES TO RETURN <br/>")
-   print(res_to_return)
-   print("RES COUNTER<br>")
-   print(res_counter)
 
    return res_to_return, res_counter
 
@@ -689,9 +679,7 @@ def get_html_detection(det,detection,clear_cache,video_prev):
 
 # Get HTML version of each detection
 def get_html_detections(res,clear_cache,version,video_prev):
-
  
-
    res_html = ''
    prev_date = None
    cur_count = 0
