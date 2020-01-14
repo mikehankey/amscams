@@ -825,8 +825,7 @@ def archive_listing(form):
    mag_select, criteria = create_criteria_selector(POSSIBLE_MAGNITUDES,'mag',selected_mag, criteria,  'All Magnitude (intensity)', '>')
    template = template.replace("{MAGNITUDES}", mag_select)
 
-   if(selected_mag):
-      print('selected_mag ' + str(selected_mag))
+   print('selected_mag ' + str(selected_mag))
     
    # Build ERRORS selector
    error_select, criteria = create_criteria_selector(POSSIBLE_ERRORS,'res_er',selected_error, criteria,  'All Resolution Error', '<')
