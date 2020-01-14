@@ -684,6 +684,9 @@ def get_html_detections(res,all_days_details,clear_cache,version,video_prev):
    res_html = ''
    prev_date = None
    cur_count = 0
+
+   print('in get_html_detections<br>')
+   print(all_days_details)
  
 
    for detection in res:
