@@ -841,14 +841,18 @@ def archive_listing(form):
    template = template.replace("{ANG_VELOCITIES}", ang_vel_select) 
    
    if selected_ang_vel is not None and int(selected_ang_vel) > -1:
-      criteria_text.append("<a data-toggle='modal' data-target='#staticBackdrop' href='#' title='Angular Velocity'>Angular Velocity >" + str(selected_ang_vel) +  "</a>")
+      criteria_text.append("<a data-toggle='modal' data-target='#staticBackdrop' href='#' title='Angular Velocity'>Angular Velocity >" + str(selected_ang_vel) +  "&deg;/s</a>")
 
    # Build SYNC selector 
    sync_select, criteria = create_criteria_selector(POSSIBLE_SYNC,'sync',selected_sync, criteria,  'All Synchronization', '')
    template = template.replace("{SYNC}", sync_select) 
 
    if selected_sync is not None and int(selected_sync) > -1:
-      criteria_text.append("<a data-toggle='modal' data-target='#staticBackdrop' href='#' title='Synchronization'>Synchronization >" + str(selected_sync) +  "</a>")
+      if(selected_sync==1):
+         sel_text = "Synchronized only"
+      else:
+         sel_text= "NOT Synchronized only"
+      criteria_text.append("<a data-toggle='modal' data-target='#staticBackdrop' href='#' title='Synchronization'>" + sel_text +  "</a>")
    
    # Build POINT SCORE selector 
    point_score_select, criteria = create_criteria_selector(POSSIBLE_POINT_SCORE,'point_score',selected_pscore, criteria,  'All Score', '>')
