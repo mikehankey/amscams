@@ -650,13 +650,13 @@ def get_html_detection(det,detection,clear_cache):
    
    if "sync" not in detection: 
    #if(detection['sync']!=1):
-      details_html += '              <dt class="col-12"><div class="alert alert-danger p-1 m-0 text-center">Not synchronized</div></dt>'
+      details_html += '<dt class="col-12"><div class="alert alert-danger p-1 m-0 text-center">Not synchronized</div></dt>'
  
    details_html += ' </dl>'   
 
    res_html += '  <a class="mtt has_soh" href="webUI.py?cmd=reduce2&video_file='+det['full_path']+'" title="Detection Reduce page">'
    res_html += '     <img alt="" class="img-fluid ns lz" src="'+preview[0]+'">'
-#   res_html += '     <video class="show_on_hover" loop="true" autoplay="true" name="media" src="'+ det['full_path'].replace('.json','-SD.mp4')+'"><source type="video/mp4"></video>'
+   #res_html += '     <video class="show_on_hover" loop="true" autoplay="true" name="media" src="'+ det['full_path'].replace('.json','-SD.mp4')+'"><source type="video/mp4"></video>'
    res_html += '  </a>'
    res_html += '  <div class="list-onl">'+ details_html + '</div>'
    res_html += '  <div class="list-onl sel-box"><div class="custom-control big custom-checkbox">'
