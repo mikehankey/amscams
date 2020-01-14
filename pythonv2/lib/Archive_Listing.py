@@ -928,12 +928,20 @@ def archive_listing(form):
       if(criteria_text==''):
          template = template.replace("{FOUND}", "<div class='page_h ml-3'><small>Displaying " + str(len(res)) + " out of " +  str(total)  + " detections. </small>"+ found_text + "/div>")
       else:
-         template = template.replace("{FOUND}", "<div class='page_h ml-3'><small>Displaying " + str(len(res)) + " out of " +  str(total)  + " detections. </small> Matching your criteria: "+criteria_text+"  " + found_text + "/div>")
+         template = template.replace("{FOUND}", "<div class='page_h ml-3'><small>Displaying " + str(len(res)) + " out of " +  str(total)  + " detections. </small> Your criteria: "+criteria_text+"  " + found_text + "/div>")
 
    elif(len(res)==1):
-      template = template.replace("{FOUND}", "<div class='page_h ml-3'><small>Displaying only 1 detection matching your criteria.</small> "+ found_text + "</div>")
+      if(criteria_text==''):
+         template = template.replace("{FOUND}", "<div class='page_h ml-3'><small>Displaying only 1 detection matching your criteria.</small> "+ found_text + "</div>")
+      else:
+         template = template.replace("{FOUND}", "<div class='page_h ml-3'><small>Displaying only 1 detection .</small> Your criteria: "+criteria_text+"  " + found_text + "/div>")
+
    else:
-      template = template.replace("{FOUND}", "<div class='page_h ml-3'><small>Displaying all " + str(len(res)) + " detections matching your criteria.</small> "+ found_text + "</div>")
+      if(criteria_text==''):
+         template = template.replace("{FOUND}", "<div class='page_h ml-3'><small>Displaying all " + str(len(res)) + " detections matching your criteria.</small> "+ found_text + "</div>")
+      else:
+         template = template.replace("{FOUND}", "<div class='page_h ml-3'><small>Displaying all " + str(len(res)) + " detections.</small> Your criteria: "+criteria_text+"  " + found_text + "</div>")
+
 
    # Display Template
    return template
