@@ -859,7 +859,7 @@ def archive_listing(form):
    template = template.replace("{P_SCORE}", point_score_select) 
     
    if selected_pscore is not None and int(selected_pscore) > -1:
-      criteria_text.append("<a data-toggle='modal' data-target='#staticBackdrop' href='#' title='Score'>Error Score >" + str(selected_pscore) +  "</a>")
+      criteria_text.append("<a data-toggle='modal' data-target='#staticBackdrop' href='#' title='Score'>Point Score >" + str(selected_pscore) +  "</a>")
 
 
    # Clear_cache
