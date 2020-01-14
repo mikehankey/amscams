@@ -924,27 +924,29 @@ def archive_listing(form):
    else:
       template = template.replace("{PAGINATION}", "")
  
+   criteria_text = ' - '.join(criteria_text)
+
    if(len(res)==0): 
-      template = template.replace("{RESULTS}", "<div class='alert alert-danger mx-auto'>No detection found in your the archive for your criteria. "+ ' - '.join(criteria_text) +"</div>")
+      template = template.replace("{RESULTS}", "<div class='alert alert-danger mx-auto'>No detection found in your the archive for your criteria. "+ criteria_text +"</div>")
       template = template.replace("{PAGINATION}", "") 
       template = template.replace("{FOUND}", "")
    elif((len(res))!=total):
       if(criteria_text==''):
          template = template.replace("{FOUND}", "<div class='page_h ml-3'>Displaying " + str(len(res)) + " out of " +  str(total)  + " detections. "+ found_text + "/div>")
       else:
-         template = template.replace("{FOUND}", "<div class='page_h ml-3'>Displaying " + str(len(res)) + " out of " +  str(total)  + " detections. Your criteria: "+' - '.join(criteria_text)+"  " + found_text + "/div>")
+         template = template.replace("{FOUND}", "<div class='page_h ml-3'>Displaying " + str(len(res)) + " out of " +  str(total)  + " detections. Your criteria: "+criteria_text+"  " + found_text + "/div>")
 
    elif(len(res)==1):
       if(criteria_text==''):
          template = template.replace("{FOUND}", "<div class='page_h ml-3'>Displaying only 1 detection matching your criteria. "+ found_text + "</div>")
       else:
-         template = template.replace("{FOUND}", "<div class='page_h ml-3'>Displaying only 1 detection. Your criteria: "+' - '.join(criteria_text)+"  " + found_text + "/div>")
+         template = template.replace("{FOUND}", "<div class='page_h ml-3'>Displaying only 1 detection. Your criteria: "+criteria_text+"  " + found_text + "/div>")
 
    else:
       if(criteria_text==''):
          template = template.replace("{FOUND}", "<div class='page_h ml-3'>Displaying all " + str(len(res)) + " detections matching your criteria. "+ found_text + "</div>")
       else:
-         template = template.replace("{FOUND}", "<div class='page_h ml-3'>Displaying all " + str(len(res)) + " detections. Your criteria: "+' - '.join(criteria_text)+"  " + found_text + "</div>")
+         template = template.replace("{FOUND}", "<div class='page_h ml-3'>Displaying all " + str(len(res)) + " detections. Your criteria: "+criteria_text+"  " + found_text + "</div>")
 
 
    # Display Template
