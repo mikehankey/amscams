@@ -14,6 +14,20 @@ import datetime
 import time
 from lib.FileIO import cfe, load_json_file
 
+def DetectsMain(form ):
+   json_conf = load_json_file("/home/ams/amscams/conf/as6.json")
+   station = json_conf['site']['ams_id']   
+   print("<h1>Multi-station detections for ", station, "</h1>")
+   detect_file = "/mnt/ams2/meteor_archive/" + station + "/DETECTS/ms_detects.json"
+   detect_data = load_json_file(detect_file)
+   for key in sorted(detect_data.keys()):
+      print("<h2>", key, "</h2>")
+      for file in detect_data[key]:
+         print(file, set(detect_data[key][file]['stations']), "<BR>")
+
+def DetectsDetail(form):
+   print("..", station)
+
 def EventsMain(form):
    print("<h1>Event Main</h1>")
    events = []

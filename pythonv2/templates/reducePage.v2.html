@@ -35,7 +35,7 @@
                <table class="table table-dark table-striped table-hover td-al-m mb-2 pr-5 mt-2">
                   <thead>
                      <tr>
-                        <th></th><th></th><th>#</th><th>Time</th><th>RA/Dec</th><th>Az/El</th><th>x/y</th><th>w/h</th><th>Max&nbsp;px</th><th colspan="4"></th>
+                        <th></th><th></th><th>#</th><th>Time</th><th>RA/Dec</th><th>Az/El</th><th>x/y</th><th>w/h</th><th>Intensity</th><th>Seg.&nbsp;Len.</th><th colspan="4"></th>
                      </tr>
                   </thead>
                <tbody>
@@ -54,6 +54,7 @@
                      <th>Star x/y <div class="star_sprite manual"></div></th>
                      <th title="Catalog Undistorded">Cat. Dist.  x/y <div class="star_sprite distorded"></div></th>
                      <th title="Catalog Distorded">Cat. x/y <div class="star_sprite undistorded"></div></th>
+                     <th title="Intensity">Intensity</th>
                      <th>Dist.</th>
                   </tr>
                </thead>
@@ -222,6 +223,7 @@
    var main_vid = '{VIDEO_FILE}';
    var json_file = '{JSON_FILE}';
    var json_reduced = '{JSON_FILE}'; // For RA/Dec mode - old v. compatibility issue
+   var med_dist = {MED_DIST}; // For Error Evaluation of the Frame pos.
    window.onload = function () {
       update_star_and_reduction(json_file);
    }

@@ -2913,6 +2913,23 @@ def reduce_meteor_new(json_conf,form):
    mj = load_json_file(meteor_json_file)
    meteor_obj = get_meteor_object(mj)
    ms_desc = ""
+   if "hd_trim" in mj:
+      if mj['hd_trim'] != 0:
+         hd_trim = mj['hd_trim']
+      else:
+         hd_trim = 0
+
+   
+   # MIKE
+   if "archive_file" not in mj:
+      move_to_archive_link = "<a class='btn btn-primary d-block' href='webUI.py?cmd=move_to_archive&video_file=" + hd_trim + "&sd_video=" + video_file + "&json_file=" + meteor_json_file + "'>Move to Archive</a>"
+      template = template.replace("{ARCHIVE_LINK}", move_to_archive_link)
+   else:
+      archive_file = mj['archive_file']
+      view_arc_link = "<a class='btn btn-primary d-block' href='webUI.py?cmd=reduce2&video_file=" + archive_file + "'>View Archived Meteor</a>"
+      template = template.replace("{ARCHIVE_LINK}", view_arc_link)
+
+
    if reduced == 1:
       if "cal_params" in meteor_reduced:
          if "cat_image_stars" in meteor_reduced['cal_params']:

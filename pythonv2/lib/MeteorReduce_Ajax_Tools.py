@@ -220,6 +220,10 @@ def update_frame(form, AjaxDirect = False):
    # We reapply the calibration for the new frame
    apply_calib(json_file)
 
+   # We update the JSON with valid dist_from_last 
+   #os.system("cd /home/ams/amscams/pythonv2/; ./flex-detect.py ep " + json_file + " > /dev/null")
+   # IT SHOULD BE DONE IN apply_calib NOW!
+
    # We update the JSON 
    save_json_file(json_file, mr)
   
@@ -273,8 +277,8 @@ def update_multiple_frames(form):
                # Regenerate the proper cropped (thumb)
                original_HD_frame = get_HD_frame(analysed_name,int(val['fn'])+int(frame_hd_sd_diff)+1) 
 
-               print("ORIGINAL HD FRAME ")
-               print(original_HD_frame)
+               #print("ORIGINAL HD FRAME ")
+               #print(original_HD_frame)
                  
                crop = generate_cropped_frame(analysed_name,mr,original_HD_frame[0],int(val['fn'])+int(frame_hd_sd_diff)+1,int(val['fn']),frame['x'],frame['y'])
 
@@ -293,7 +297,12 @@ def update_multiple_frames(form):
    # We add the result
    resp['msg'] = json.dumps(all_updated)
 
+   # re-run the point evaluator to get point score
+   #print("cd /home/ams/amscams/pythonv2/; ./flex-detect.py ep " + json_file + " > /dev/null")
+   os.system("cd /home/ams/amscams/pythonv2/; ./flex-detect.py ep " + json_file + " > /dev/null")
+
    print(json.dumps(resp))
+
 
 # Delete a frame
 # Input = the meteor json file & the frame #
@@ -329,13 +338,30 @@ def delete_frame(form):
 
 # Find max px info from cnt
 def cnt_max_px(cnt_img):
-   cnt_img = cv2.GaussianBlur(cnt_img, (7, 7), 0)
-   min_val, max_val, min_loc, max_loc = cv2.minMaxLoc(cnt_img)
+  
 
+   #print("IN cnt_max_px<br>")
+   # WTF???
+   try:
+      # Make sure we only have one channel here
+      cnt_img = cv2.cvtColor(cnt_img, cv2.COLOR_BGR2GRAY)
+      # No Float
+      cnt_img = cnt_img.astype('uint8') 
+      cnt_img = cv2.GaussianBlur(cnt_img, (7, 7), 0)
+   except:
+      cnt_img = cnt_img
+   #print(cnt_img)
+   #sys.exit(0)
+
+   min_val, max_val, min_loc, max_loc = cv2.minMaxLoc(cnt_img)
    return(max_loc, min_val, max_val)
 
 # Pin point stars from user selection
 def pin_point_stars(image, points):   
+
+   # DEBUG
+   cgitb.enable()
+   
    star_points = []
    for x,y in points:
       x,y = int(x),int(y)
@@ -356,7 +382,9 @@ def pin_point_stars(image, points):
       except:
          #print("PROB!", image.shape, x1,y1, x2,y2, "<BR>")
          missed_star = 1
-   return(star_points)
+         #sys.exit(0)
+
+   return star_points 
 
 
 def distort_xy_new(sx,sy,ra,dec,RA_center, dec_center, x_poly, y_poly, x_res, y_res, pos_angle_ref,F_scale=1):
@@ -502,11 +530,13 @@ def update_cat_stars(form):
       meteor_red = load_json_file(meteor_red_file)
    else:
       return "error JSON"
-  
+   
    meteor_mode = 0  #???
    
    if(points):
       temps = points.split("|")
+
+
       for temp in temps:
          if len(temp) > 0:
             (x,y) = temp.split(",")
@@ -515,9 +545,11 @@ def update_cat_stars(form):
             x,y = x*2,y*2
             if x >0 and y > 0 and x<HD_W and y< HD_H:
                star_points.append((x,y))
-      
+       
+ 
       star_points = pin_point_stars(hd_image, star_points) 
-   
+
+     
       # get the center ra,dec based on the center_az,el and the current timestamp from the file 
       ra,dec = AzEltoRADec(meteor_red['calib'], video_file)
       meteor_red['calib']['device']['center']['ra'] = ra

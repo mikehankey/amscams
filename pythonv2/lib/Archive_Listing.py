@@ -20,9 +20,10 @@ ARCHIVE_LISTING_TEMPLATE = "/home/ams/amscams/pythonv2/templates/archive_listing
 
 # QUERIES CRITERIA
 POSSIBLE_MAGNITUDES = [130,140,150,160,170,180,190,200,210,220,230,240,250,260,270,280,290,300]
-POSSIBLE_ERRORS = [0.5,0.6,0.8,0.9,1,1.1,1.2,1.3,1.4,1.5,1.6,1.7,1.8,1.9,2,2.5,3,3.5,4,5]
+POSSIBLE_ERRORS = [0.5,1,2,3,5]
 POSSIBLE_ANG_VELOCITIES = [1,2,3,4,5,6,7,8,9,10,11,12,13,15,16,17,18,19,20,21,22,23,24,25]
 POSSIBLE_SYNC = [0,1]
+POSSIBLE_POINT_SCORE = [3,5,10]
  
 # Delete Multiple Detections at once
 def delete_multiple_archived_detection(detections):
@@ -99,7 +100,11 @@ def get_diag_fields(detection):
          ang_vel = detection_data['report']['angular_vel']
       except:
          ang_vel = "unknown"      
-
+      # ANGULAR VELOCITY
+      try:
+         point_score = detection_data['report']['point_score']
+      except:
+         point_score = "unknown"
 
       # SYNC (HD/SD)
       try:
@@ -111,11 +116,11 @@ def get_diag_fields(detection):
       except:
          sync = 0
 
-      return mag,dur,red, res_error, ang_vel, sync
+      return mag,dur,red, res_error, ang_vel, point_score, sync
    
    else:
 
-      return "unknown","unknown",0,"unknown","unknown"
+      return "unknown","unknown",0,"unknown","unknown","unknown"
 
 
 
@@ -156,7 +161,7 @@ def add_to_month_index(detection, insert=True):
       # If we are here, it means we didn't find it 
       # so if we want to insert it, we do it here
       if(insert==True):
-         mag,dur,red, res_error, ang_vel  =  get_diag_fields(analysed_detection_name['full_path'])
+         mag,dur,red, res_error, point_score, ang_vel  =  get_diag_fields(analysed_detection_name['full_path'])
          
          new_detect = {
             "dur": dur,
@@ -164,6 +169,7 @@ def add_to_month_index(detection, insert=True):
             "p": det,
             "mag": mag,
             "res_er":res_error,
+            "point_score":point_score,
             "ang_v":ang_vel
          }
 
@@ -207,7 +213,7 @@ def create_json_index_month(month,year):
 
          for detection in sorted(glob.iglob(day + os.sep +  '*' + '.json', recursive=True), reverse=True):
              
-            mag,dur,red, res_error, ang_vel, sync  = get_diag_fields(detection)
+            mag,dur,red, res_error, ang_vel, point_score, sync  = get_diag_fields(detection)
             det = os.path.basename(detection)
             det = os.path.splitext(det)[0]
 
@@ -218,7 +224,7 @@ def create_json_index_month(month,year):
             except:
                index_month['days'][int(cur_day)] = []
  
-            index_month['days'][int(cur_day)].append({'p':det[11:],'mag':mag,'dur':dur,'red':red,'res_er':res_error,'ang_v':ang_vel,'sync':sync})
+            index_month['days'][int(cur_day)].append({'p':det[11:],'mag':mag,'dur':dur,'red':red,'res_er':res_error,'point_score':point_score,'ang_v':ang_vel,'sync':sync})
  
    return index_month             
 
@@ -248,14 +254,14 @@ def create_json_index_year(year):
 
                for detection in sorted(glob.iglob(day + os.sep +  '*' + '.json', recursive=True), reverse=True):
                   
-                  mag,dur,red, res_error, ang_vel, sync = get_diag_fields(detection)
+                  mag,dur,red, res_error, ang_vel, point_score, sync = get_diag_fields(detection)
 
 
                   det = os.path.basename(detection)
                   det = os.path.splitext(det)[0]
                   # det[11:] => Here we also remove the Year, Month & Day of the detection 
                   # since we know them from the JSON structure
-                  cur_day_data.append({'p':det[11:],'mag':mag,'dur':dur,'red':red,'res_er':res_error,'ang_v':ang_vel,'sync':sync})
+                  cur_day_data.append({'p':det[11:],'mag':mag,'dur':dur,'red':red,'res_er':res_error,'point_score':point_score,'ang_v':ang_vel,'sync':sync})
 
                #print("CUR DAY ")
                #print(cur_day)
@@ -372,6 +378,11 @@ def test_criteria(criter,criteria,detection):
    #print("<br>detection ")
    #print(detection)
 
+   # Point Score
+   if(criter=='point_score'):
+      if(int(detection[criter])<int(criteria[criter]) or detection[criter]=='unknown'):
+         return False 
+
    # Res. ERROR
    if(criter=='res_er'):
       if(float(detection[criter])>=float(criteria[criter]) or detection[criter]=='unknown'):
@@ -391,10 +402,13 @@ def test_criteria(criter,criteria,detection):
          #print("<br>ang_v  FALSE")  
          return False 
       #print("<br>ang_v  TRUE")  
+
    # Sync
    if(criter=='sync' and criteria[criter]!=-1):
       if(int(detection[criter])!=int(criteria[criter]) or detection[criter]=='unknown'):
          return False
+
+  
 
    return True
 
@@ -611,19 +625,28 @@ def get_html_detection(det,detection,clear_cache):
  
    details_html = '<dl class="row mb-0 def mt-1">'
 
-   details_html += '<dt class="col-12 list-onl title-list">Cam #'+det['cam_id']+' - <b>'+det['hour']+':'+det['min']+'</b></dt>'
+   details_html += '<dt class="col-12 list-onl title-list"><b>Cam #'+det['cam_id']+'</b> - <b>'+det['hour']+':'+det['min']+'</b></dt>'
 
    if(detection['mag']!='unknown'):
-      details_html += '              <dt class="col-6">Mag</dt>  <dd class="col-6">' + str(detection['mag']) + '</dd>'
+      details_html += '<dt class="col-6">Mag</dt><dd class="col-6">' + str(detection['mag']) + '</dd>'
    
    if(detection['dur']!='unknown'):
-      details_html += '              <dt class="col-6">Duration</dt>  	   <dd class="col-6">'+ str(detection['dur']) +'s</dd>'
+      details_html += '<dt class="col-6">Duration</dt><dd class="col-6">'+ str(detection['dur']) +'s</dd>'
 
    if(detection['res_er']!='unknown'):
-      details_html += '              <dt class="col-6">Res. Error</dt>      <dd class="col-6">'+ str("{0:.4f}".format(float(detection['res_er'])))+'</dd>'
-   
+      score =  str("{0:.4f}".format(float(detection['res_er'])))
+      if detection['res_er'] > 3:
+         score = "<b style='color:#ff0000'>" + score + "</b>"
+      details_html += '<dt class="col-6">Res. Error</dt> <dd class="col-6">'+ score +'</dd>'
+  
+   if(detection['point_score']!='unknown'):
+      score = str("{0:.4f}".format(float(detection['point_score'])))
+      if detection['point_score'] > 3:
+         score = "<b style='color:#ff0000'>" + score + "</b>"
+      details_html += '<dt class="col-6">Point Score</dt><dd class="col-6">'+ score +'</dd>'
+
    if(detection['ang_v']!='unknown'):
-      details_html += '              <dt class="col-6">Ang. Velocity</dt>   <dd class="col-6">'+str("{0:.4f}".format(float(detection['ang_v'])))+'&deg;/s</dd>'
+      details_html += '<dt class="col-6">Ang. Velocity</dt><dd class="col-6">'+str("{0:.4f}".format(float(detection['ang_v'])))+'&deg;/s</dd>'
    
    if "sync" not in detection: 
    #if(detection['sync']!=1):
@@ -757,7 +780,8 @@ def archive_listing(form):
    selected_error = form.getvalue('res_er')
    selected_ang_vel = form.getvalue('ang_v')
    selected_sync = form.getvalue('sync')
- 
+   selected_pscore  = form.getvalue('point_score')
+
    # Build the page based on template  
    with open(ARCHIVE_LISTING_TEMPLATE, 'r') as file:
       template = file.read()
@@ -798,7 +822,7 @@ def archive_listing(form):
    criteria = {} 
    
    # Build MAGNITUDES selector
-   mag_select, criteria = create_criteria_selector(POSSIBLE_MAGNITUDES,'mag',selected_mag, criteria,  'All Magnitudes', '>')
+   mag_select, criteria = create_criteria_selector(POSSIBLE_MAGNITUDES,'mag',selected_mag, criteria,  'All Mag.', '>')
    template = template.replace("{MAGNITUDES}", mag_select)
     
    # Build ERRORS selector
@@ -806,13 +830,16 @@ def archive_listing(form):
    template = template.replace("{RES_ERRORS}", error_select)
 
    # Build ANGULAR VELOCITIES selector
-   ang_vel_select, criteria = create_criteria_selector(POSSIBLE_ANG_VELOCITIES,'ang_v',selected_ang_vel, criteria,  'All Ang. Velocities', '>', unit='&deg;/s')
+   ang_vel_select, criteria = create_criteria_selector(POSSIBLE_ANG_VELOCITIES,'ang_v',selected_ang_vel, criteria,  'All Ang. Vel.', '>', unit='&deg;/s')
    template = template.replace("{ANG_VELOCITIES}", ang_vel_select) 
    
    # Build SYNC selector 
    sync_select, criteria = create_criteria_selector(POSSIBLE_SYNC,'sync',selected_sync, criteria,  'All Sync.', '')
    template = template.replace("{SYNC}", sync_select) 
    
+   # Build POINT SCORE selector 
+   point_score_select, criteria = create_criteria_selector(POSSIBLE_POINT_SCORE,'point_score',selected_pscore, criteria,  'All Score', '>')
+   template = template.replace("{P_SCORE}", point_score_select) 
     
    # Clear_cache
    if(clear_cache is None):
@@ -848,10 +875,10 @@ def archive_listing(form):
 
    pagination = get_pagination(cur_page,total,pagination_url,int(nompp))
 
+   found_text = ""
    if(pagination[2] != ''):
-      template = template.replace("{PAGINATION_DET}", "<small>Page  " + format(cur_page) + "/" +  format(pagination[2])+"</small>")    
-   else:
-      template = template.replace("{PAGINATION_DET}", "")    
+      found_text += "<small>Page  " + format(cur_page) + "/" +  format(pagination[2])+"</small>"     
+ 
       
    # GALLERIE or LIST are managed with cookies
    # Do we have a cookie for gallery or list? 
@@ -878,15 +905,14 @@ def archive_listing(form):
  
    if(len(res)==0): 
       template = template.replace("{RESULTS}", "<div class='alert alert-danger mx-auto'>No detection found in your the archive for your criteria.</div>")
-      template = template.replace("{PAGINATION_DET}", "")    
-      template = template.replace("{PAGINATION}", "")
-      template = template.replace("{FOUND}", "")   
+      template = template.replace("{PAGINATION}", "") 
+      template = template.replace("{FOUND}", "")
    elif((len(res))!=total):
-      template = template.replace("{FOUND}", "<div class='page_h ml-3'><small>Displaying " + str(len(res)) + " out of " +  str(total)  + " detections.</small></div>")
+      template = template.replace("{FOUND}", "<div class='page_h ml-3'><small>Displaying " + str(len(res)) + " out of " +  str(total)  + " detections. </small>"+ found_text + "/div>")
    elif(len(res)==1):
-      template = template.replace("{FOUND}", "<div class='page_h ml-3'><small>Displaying only 1 detection matching your criteria.</small></div>")
+      template = template.replace("{FOUND}", "<div class='page_h ml-3'><small>Displaying only 1 detection matching your criteria.</small> "+ found_text + "</div>")
    else:
-      template = template.replace("{FOUND}", "<div class='page_h ml-3'><small>Displaying all " + str(len(res)) + " detections matching your criteria.</small></div>")
+      template = template.replace("{FOUND}", "<div class='page_h ml-3'><small>Displaying all " + str(len(res)) + " detections matching your criteria.</small> "+ found_text + "</div>")
 
    # Display Template
    return template

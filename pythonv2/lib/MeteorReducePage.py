@@ -1,5 +1,7 @@
 import cgitb
 import json
+import numpy
+import datetime
 
 from pathlib import Path
 from shutil import copyfile
@@ -11,7 +13,7 @@ from lib.REDUCE_VARS import REMOTE_FILES_FOLDER, REMOVE_METEOR_FOLDER, METEOR_AR
  
 PAGE_TEMPLATE = "/home/ams/amscams/pythonv2/templates/reducePage.v2.html"
 
-
+ERROR_FACTOR_SEG_LEN = [2,3,4,5,6]
 
 
 # GENERATES THE REDUCE PAGE METEOR
@@ -184,7 +186,23 @@ def reduce_meteor2(json_conf,form):
       start_time = analysed_name['year']+'-'+analysed_name['month']+'-'+analysed_name['day']+ ' '+ analysed_name['hour']+':'+analysed_name['min']+':'+analysed_name['sec']+'.'+analysed_name['ms']
    
 
-   report_details  =  ''
+   # We compute the MED_DIST (medium value of frame['dist_from_last'])
+   med_dist = 0
+   if('frames' in meteor_json_file):
+      if('dist_from_last' in meteor_json_file['frames'][0]):
+
+         # We add all the dist_from_last to compute the median value
+         tmp_list = []
+         for frame in meteor_json_file['frames']:
+            tmp_list.append(frame['dist_from_last'])
+
+         med_dist=numpy.median(tmp_list)
+
+   template = template.replace("{MED_DIST}", str(med_dist))
+
+   #start_time_datetime =  datetime.strptime(start_time,'%Y-%m-%d %H:%M:%S.%f')
+   #report_details  =  '<time class="s-icon big"><em>'+start_time_datetime.strftime("%b")+'</em><span>'+analysed_name['day']+'</span><span class="y">'+analysed_name['year']+'</span></time>'
+   report_details = ''
 
    if('report' in meteor_json_file):
       report_details += '<dt class="col-4">Date &amp; Time</dt><dd class="col-8">'+start_time+'s</dd>'
@@ -192,22 +210,40 @@ def reduce_meteor2(json_conf,form):
       if('dur' in meteor_json_file['report']):
          report_details += '<dt class="col-4">Duration</dt><dd class="col-8"><span id="dur">'+str(meteor_json_file['report']['dur'])+'</span>s</dd>'
       if('max_peak' in meteor_json_file['report']):
-         report_details += '<dt class="col-4">Magnitude</dt><dd class="col-8">'+str(meteor_json_file['report']['max_peak'])+'</dd>'
+         report_details += '<dt class="col-4">Max Intensity</dt><dd class="col-8">'+str(meteor_json_file['report']['max_peak'])+'</dd>'
       if('angular_vel' in meteor_json_file['report']):
          report_details += '<dt class="col-4">Ang. Velocity</dt><dd class="col-8">'+str(meteor_json_file['report']['angular_vel'])+'&deg;/sec</dd>'
+      if('point_score' in meteor_json_file['report']):
+            pts = str(meteor_json_file['report']['point_score'])
+            if(meteor_json_file['report']['point_score']>3):
+               pts = "<b style='color:#f00'>"+ pts +  "</b>"
+            report_details += '<br/><dt class="col-4">Point Score</dt><dd class="col-8">'+pts+'</dd>'
 
    if('calib' in meteor_json_file):
       if('device' in meteor_json_file['calib']):
          if('total_res_px' in meteor_json_file['calib']['device']):
-            report_details += '<dt class="col-4">Res. Error</dt><dd class="col-8">'+str(meteor_json_file['calib']['device']['total_res_px'])+'</dd>'
+            pts = str(meteor_json_file['calib']['device']['total_res_px'])
+            if(meteor_json_file['calib']['device']['total_res_px']>3):
+               pts = "<b style='color:#f00'>"+ pts +  "</b>"
+            report_details += '<dt class="col-4">Res. Error</dt><dd class="col-8">'+pts+'</dd>'
+
+
+   # Select to determine the factor of error for seg len  (Med dIST)
+   med_dist_select = '<select title="Seg. Len. error factor"  id="error_factor_dist_len" class="custom-select ml-4" style="width: auto;padding-top: 0;padding-bottom: 0;line-height: 1;height: 1.5em;">'
+   for err in ERROR_FACTOR_SEG_LEN:
+      med_dist_select += "<option value='"+str(err)+"'>x"+str(err)+"</option>"
+   med_dist_select +="</select>"
  
+   report_details += '<dt class="col-4">Med. dist</dt><dd class="col-8">'+str("{0:.4f}".format(float(med_dist)))+' ' + med_dist_select +'</dd>'
+   # We add the med dist to the template
+   template = template.replace("{MED_DIST}", str(med_dist))
+   
    # We complete the template
    if(report_details!=''):
       template = template.replace("{REPORT_DETAILS}", report_details)
    else:
       template = template.replace("{REPORT_DETAILS}", "<dt class='d-block mx-auto'><div class='alert alert-danger'>Reduction info are missing</div></dt>")
-
-
+ 
    # Does this detection relies only on SD data? (ie the HD video  is in fact the resized SD video)
    if('info' in meteor_json_file):
       if('HD_fix' in meteor_json_file['info']):
@@ -226,25 +262,10 @@ def reduce_meteor2(json_conf,form):
       template = template.replace("{NO_SYNC}", "<div class='container-fluid mt-4'><div class='alert alert-danger'><span class='icon-notification'></span> <b>Both HD and SD videos aren't synchronized.</b> <a id='manual_synchronization' class='btn btn-danger ml-3'><b>Manually synchronize both videos now</b></a></div></div>")
    else:
       template = template.replace("{NO_SYNC}", "")
-
-       
-
-   # Display some of the report info directly on the page
-   #dist_per_elp: 9.661147849907783,
-   #meteor_yn: "Y",
-   #elp: 14,
-   #y_dir_mod: -1,
-   #min_max_dist: 144.91721774861674,
-   #angular_sep: 6.0865231454419035,
-   #moving: "moving",
-   #bad_items: [],
-   #max_cm: 14,
-   #obj_class: "meteor",
-   #dur: 0.56,
-   #angular_vel: 10.144205242403173,
-   #max_fns: 14,
-   #x_dir_mod: 1,
-   #max_peak: 7707
+ 
+ 
+ 
+         
 
    # Display Template
    print(template)

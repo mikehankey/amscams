@@ -159,6 +159,12 @@ function update_stars_on_canvas_and_table(json_resp) {
            // Add Star Name on canvas
            canvas.add(test_object); 
            //name_pos.push(test_object);
+
+           if(typeof v['intensity'] !== 'undefined') {
+              intensity = '<td>'+v['intensity'].toFixed(2)+'</td>'
+           } else {
+              intensity = '<td>?</td>'
+           }
     
            // Add the corresponding row 
            table_tbody_html+= '<tr><td><b>'+v['name']+'</b></td>\
@@ -168,6 +174,7 @@ function update_stars_on_canvas_and_table(json_resp) {
                                <td>'+v['cat_und_pos'][POS_X].toFixed(2)  + ' / '+ v['cat_und_pos'][POS_Y].toFixed(2) +'</td>\
                                <td>'+v['cat_dist_pos'][POS_X].toFixed(2)  + ' / '+ v['cat_dist_pos'][POS_Y].toFixed(2) +'</td>\
                                <td>'+v['dist_px'].toFixed(4)+'</td>\
+                               '+intensity+'\
                                </tr>';
    
        });
