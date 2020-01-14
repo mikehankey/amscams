@@ -803,6 +803,8 @@ def archive_listing(form):
          v = cook.split("=") 
          if('archive_rpp' in v[0]):
             rpp = v[1] 
+         if('video_prev' in v[0]):
+            video_prev = v[1]
    
    if(meteor_per_page is None):
       nompp = rpp
