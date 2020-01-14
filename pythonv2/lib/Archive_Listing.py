@@ -727,7 +727,7 @@ def get_html_detections(res,all_days_details,clear_cache,version,video_prev):
       if cur_date.strftime("%Y/%m/%d") in all_days_details and int(all_days_details[cur_date.strftime("%Y/%m/%d")]!=cur_count):
          new_total += ' out of ' +  str(all_days_details[cur_date.strftime("%Y/%m/%d")])  
 
-       res_html = res_html.replace('%TOTAL%',new_total) 
+      res_html = res_html.replace('%TOTAL%',new_total) 
 
    return res_html
  
