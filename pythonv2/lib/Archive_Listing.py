@@ -826,7 +826,7 @@ def archive_listing(form):
    mag_select, criteria = create_criteria_selector(POSSIBLE_MAGNITUDES,'mag',selected_mag, criteria,  'All Magnitude', '>')
    template = template.replace("{MAGNITUDES}", mag_select)
 
-   if selected_mag is not None and selected_mag > -1:
+   if selected_mag is not None and int(selected_mag) > -1:
       criteria_text = "<a data-toggle='modal' data-target='#staticBackdrop' href='#' title='Magnitude'>Magnitude >" + str(selected_mag) +  "</a>"
    
    
