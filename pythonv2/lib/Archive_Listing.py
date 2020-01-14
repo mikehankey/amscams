@@ -820,42 +820,42 @@ def archive_listing(form):
 
    # LIST OF CRITERIA 
    criteria = {} 
-   criteria_text = ''
+   criteria_text = []
    
    # Build MAGNITUDES selector
    mag_select, criteria = create_criteria_selector(POSSIBLE_MAGNITUDES,'mag',selected_mag, criteria,  'All Magnitude', '>')
    template = template.replace("{MAGNITUDES}", mag_select)
 
    if selected_mag is not None and int(selected_mag) > -1:
-      criteria_text += "<a data-toggle='modal' data-target='#staticBackdrop' href='#' title='Magnitude'>Magnitude >" + str(selected_mag) +  "</a> "
+      criteria_text.append("<a data-toggle='modal' data-target='#staticBackdrop' href='#' title='Magnitude'>Magnitude >" + str(selected_mag) +  "</a>")
     
    # Build ERRORS selector
    error_select, criteria = create_criteria_selector(POSSIBLE_ERRORS,'res_er',selected_error, criteria,  'All Resolution Error', '<')
    template = template.replace("{RES_ERRORS}", error_select)
 
    if selected_error is not None and int(selected_error) > -1:
-      criteria_text += "<a data-toggle='modal' data-target='#staticBackdrop' href='#' title='Resolution Error'>Resolution Error >" + str(selected_error) +  "</a> "
+      criteria_text.append("<a data-toggle='modal' data-target='#staticBackdrop' href='#' title='Resolution Error'>Resolution Error >" + str(selected_error) +  "</a>")
 
    # Build ANGULAR VELOCITIES selector
    ang_vel_select, criteria = create_criteria_selector(POSSIBLE_ANG_VELOCITIES,'ang_v',selected_ang_vel, criteria,  'All Angular Velocity', '>', unit='&deg;/s')
    template = template.replace("{ANG_VELOCITIES}", ang_vel_select) 
    
    if selected_ang_vel is not None and int(selected_ang_vel) > -1:
-      criteria_text += "<a data-toggle='modal' data-target='#staticBackdrop' href='#' title='Angular Velocity'>Angular Velocity >" + str(selected_ang_vel) +  "</a> "
+      criteria_text.append("<a data-toggle='modal' data-target='#staticBackdrop' href='#' title='Angular Velocity'>Angular Velocity >" + str(selected_ang_vel) +  "</a>")
 
    # Build SYNC selector 
    sync_select, criteria = create_criteria_selector(POSSIBLE_SYNC,'sync',selected_sync, criteria,  'All Synchronization', '')
    template = template.replace("{SYNC}", sync_select) 
 
    if selected_sync is not None and int(selected_sync) > -1:
-      criteria_text += "<a data-toggle='modal' data-target='#staticBackdrop' href='#' title='Synchronization'>Synchronization >" + str(selected_sync) +  "</a> "
+      criteria_text.append("<a data-toggle='modal' data-target='#staticBackdrop' href='#' title='Synchronization'>Synchronization >" + str(selected_sync) +  "</a>")
    
    # Build POINT SCORE selector 
    point_score_select, criteria = create_criteria_selector(POSSIBLE_POINT_SCORE,'point_score',selected_pscore, criteria,  'All Score', '>')
    template = template.replace("{P_SCORE}", point_score_select) 
     
    if selected_pscore is not None and int(selected_pscore) > -1:
-      criteria_text += "<a data-toggle='modal' data-target='#staticBackdrop' href='#' title='Score'>Error Score >" + str(selected_pscore) +  "</a> "
+      criteria_text.append("<a data-toggle='modal' data-target='#staticBackdrop' href='#' title='Score'>Error Score >" + str(selected_pscore) +  "</a>")
 
 
    # Clear_cache
@@ -921,26 +921,26 @@ def archive_listing(form):
       template = template.replace("{PAGINATION}", "")
  
    if(len(res)==0): 
-      template = template.replace("{RESULTS}", "<div class='alert alert-danger mx-auto'>No detection found in your the archive for your criteria. "+criteria_text+"</div>")
+      template = template.replace("{RESULTS}", "<div class='alert alert-danger mx-auto'>No detection found in your the archive for your criteria. "+ ' - '.join(criteria_text) +"</div>")
       template = template.replace("{PAGINATION}", "") 
       template = template.replace("{FOUND}", "")
    elif((len(res))!=total):
       if(criteria_text==''):
          template = template.replace("{FOUND}", "<div class='page_h ml-3'><small>Displaying " + str(len(res)) + " out of " +  str(total)  + " detections. </small>"+ found_text + "/div>")
       else:
-         template = template.replace("{FOUND}", "<div class='page_h ml-3'><small>Displaying " + str(len(res)) + " out of " +  str(total)  + " detections. </small> Your criteria: "+criteria_text+"  " + found_text + "/div>")
+         template = template.replace("{FOUND}", "<div class='page_h ml-3'><small>Displaying " + str(len(res)) + " out of " +  str(total)  + " detections. </small> Your criteria: "+' - '.join(criteria_text)+"  " + found_text + "/div>")
 
    elif(len(res)==1):
       if(criteria_text==''):
          template = template.replace("{FOUND}", "<div class='page_h ml-3'><small>Displaying only 1 detection matching your criteria.</small> "+ found_text + "</div>")
       else:
-         template = template.replace("{FOUND}", "<div class='page_h ml-3'><small>Displaying only 1 detection .</small> Your criteria: "+criteria_text+"  " + found_text + "/div>")
+         template = template.replace("{FOUND}", "<div class='page_h ml-3'><small>Displaying only 1 detection .</small> Your criteria: "+' - '.join(criteria_text)+"  " + found_text + "/div>")
 
    else:
       if(criteria_text==''):
          template = template.replace("{FOUND}", "<div class='page_h ml-3'><small>Displaying all " + str(len(res)) + " detections matching your criteria.</small> "+ found_text + "</div>")
       else:
-         template = template.replace("{FOUND}", "<div class='page_h ml-3'><small>Displaying all " + str(len(res)) + " detections.</small> Your criteria: "+criteria_text+"  " + found_text + "</div>")
+         template = template.replace("{FOUND}", "<div class='page_h ml-3'><small>Displaying all " + str(len(res)) + " detections.</small> Your criteria: "+' - '.join(criteria_text)+"  " + found_text + "</div>")
 
 
    # Display Template
