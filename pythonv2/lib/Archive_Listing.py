@@ -662,7 +662,7 @@ def get_html_detection(det,detection,clear_cache,video_prev):
    res_html += '     <img alt="" class="img-fluid ns lz" src="'+preview[0]+'">'
    
    # Only if option is selected
-   if(video_prev==1):
+   if(int(video_prev)==1):
       res_html += '     <video class="show_on_hover" loop="true" autoplay="true" name="media" src="'+ det['full_path'].replace('.json','-SD.mp4')+'"><source type="video/mp4"></video>'
    
    res_html += '  </a>'
@@ -687,7 +687,7 @@ def get_html_detection(det,detection,clear_cache,video_prev):
 # Get HTML version of each detection
 def get_html_detections(res,clear_cache,version,video_prev):
 
-   print('VIDEO PREV ' + str(video_prev))
+ 
 
    res_html = ''
    prev_date = None
