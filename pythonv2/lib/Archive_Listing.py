@@ -472,7 +472,7 @@ def get_results_from_date_from_monthly_index(criteria,start_date,end_date,max_re
       # We sort the days
       for day in kk:
 
-            all_days_details[cur_year+'/'+cur_month+'/'+day] = len(day)
+            all_days_details[str(cur_year)+'/'+str(cur_month)+'/'+str(day)] = len(day)
 
             # We sort the detections within the day
             detections = sorted(json_index['days'][day], key=lambda k: k['p'], reverse=True)
