@@ -24,6 +24,9 @@ POSSIBLE_ERRORS = [0.5,1,2,3,5]
 POSSIBLE_ANG_VELOCITIES = [1,2,3,4,5,6,7,8,9,10,11,12,13,15,16,17,18,19,20,21,22,23,24,25]
 POSSIBLE_SYNC = [0,1]
 POSSIBLE_POINT_SCORE = [3,5,10]
+
+# VIDEO PREVIEW
+DEFAULT_VIDEO_PREV_ON_ARCHIVE = 0
  
 # Delete Multiple Detections at once
 def delete_multiple_archived_detection(detections):
@@ -602,7 +605,7 @@ def get_video(_file):
 
 
 # GET HTML VERSION OF ONE DETECTION
-def get_html_detection(det,detection,clear_cache):
+def get_html_detection(det,detection,clear_cache,video_prev):
    # Do we have a thumb stack preview for this detection?
    preview = does_cache_exist(det,"preview","/*.jpg")
    
@@ -656,7 +659,11 @@ def get_html_detection(det,detection,clear_cache):
 
    res_html += '  <a class="mtt has_soh" href="webUI.py?cmd=reduce2&video_file='+det['full_path']+'" title="Detection Reduce page">'
    res_html += '     <img alt="" class="img-fluid ns lz" src="'+preview[0]+'">'
-   #res_html += '     <video class="show_on_hover" loop="true" autoplay="true" name="media" src="'+ det['full_path'].replace('.json','-SD.mp4')+'"><source type="video/mp4"></video>'
+   
+   # Only if option is selected
+   if(video_prev==1):
+      res_html += '     <video class="show_on_hover" loop="true" autoplay="true" name="media" src="'+ det['full_path'].replace('.json','-SD.mp4')+'"><source type="video/mp4"></video>'
+   
    res_html += '  </a>'
    res_html += '  <div class="list-onl">'+ details_html + '</div>'
    res_html += '  <div class="list-onl sel-box"><div class="custom-control big custom-checkbox">'
@@ -677,7 +684,7 @@ def get_html_detection(det,detection,clear_cache):
  
 
 # Get HTML version of each detection
-def get_html_detections(res,clear_cache,version):
+def get_html_detections(res,clear_cache,version,video_prev):
 
    res_html = ''
    prev_date = None
@@ -707,7 +714,7 @@ def get_html_detections(res,clear_cache,version):
          cur_count = 0
  
  
-      res_html += get_html_detection(det,detection,clear_cache)
+      res_html += get_html_detection(det,detection,clear_cache,video_prev)
       cur_count+=1
    
    if('%TOTAL%' in res_html):
@@ -797,15 +804,23 @@ def archive_listing(form):
    # Do we have a cookie?
    cookies = os.environ.get('HTTP_COOKIE').rstrip()
    rpp = NUMBER_OF_METEOR_PER_PAGE
+   video_prev = DEFAULT_VIDEO_PREV_ON_ARCHIVE
+
    if("archive_rpp" in cookies):
       tmp = cookies.split(";") 
       for cook in tmp:
          v = cook.split("=") 
          if('archive_rpp' in v[0]):
             rpp = v[1] 
+         
+   if("video_prev" in cookies):
+      tmp = cookies.split(";") 
+      for cook in tmp:
+         v = cook.split("=") 
          if('video_prev' in v[0]):
-            video_prev = v[1]
-   
+            video_prev = v[1]       
+
+
    if(meteor_per_page is None):
       nompp = rpp
    else:
@@ -914,9 +929,17 @@ def archive_listing(form):
             version = 'list'
    template = template.replace("{LIST_VIEW}", version)
 
+   # UPDATE video_prev option
+   if(video_prev==1):
+      template = template.replace("{VIDEO_PREVIEW_ACTIVE}", "active")
+      template = template.replace("{NO_VIDEO_PREVIEW_ACTIVE}", "")
+   else:
+      template = template.replace("{VIDEO_PREVIEW_ACTIVE}", "")
+      template = template.replace("{NO_VIDEO_PREVIEW_ACTIVE}", "active")      
+ 
 
    # Create HTML Version of each detection
-   res_html = get_html_detections(res,clear_cache,version) 
+   res_html = get_html_detections(res,clear_cache,version,video_prev) 
    if(res_html!=''):
       template = template.replace("{RESULTS}", res_html)
 

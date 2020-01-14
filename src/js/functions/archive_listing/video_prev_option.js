@@ -1,1 +1,12 @@
-//Cookies.set('archive_rpp', rpp, { expires: 99999, path: '/' });
+//
+
+$(function() {
+   $('.chg_arc_opts').click(function() {
+      var rel = $(this).attr('data-rel');
+      if(rel=='y') {
+         Cookies.set('video_prev', 1, { expires: 99999, path: '/' });
+      } else {
+         Cookies.set('video_prev', 0, { expires: 99999, path: '/' });
+      }
+   })
+})
