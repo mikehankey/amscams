@@ -5,21 +5,34 @@
       <input type="hidden" name="start_date" value="{START_DATE}"/>
       <input type="hidden" name="end_date" value="{END_DATE}"/>
    </h1>
-   <div class='d-flex'>
-      <div>
-         <select name='sync' id='point_score' data-rel='point_score' class='btn btn-primary mr-4'>{P_SCORE}</select>
-      </div>
-      <div>
-         <select name='res_er' id='res_er' data-rel='res_er' class='btn btn-primary mr-4'>{RES_ERRORS}</select>
-      </div>
-      <div>
-         <select name='mag' id='mag' data-rel='magnitude' class='btn btn-primary mr-4'>{MAGNITUDES}</select>
-      </div>
-      <div>
-         <select name='ang_v' id='ang_v' data-rel='ang_v' class='btn btn-primary mr-4'>{ANG_VELOCITIES}</select>
-      </div>
-      <div>
-         <select name='sync' id='sync' data-rel='sync' class='btn btn-primary mr-4'>{SYNC}</select>
+   <div class='d-flex has-mega-menu dropdown'>
+      <a class="nav-link dropdown-toggle" data-toggle="dropdown" href="#" role="button" aria-haspopup="true" aria-expanded="false">Dropdown</a>
+      <div class="dropdown-menu">
+            <div class="px-0 container container-sm">
+               <div class="row">
+                  <div class="col-sm-6 col-md-x">
+                        <div>
+                              <select name='sync' id='point_score' data-rel='point_score' class='btn btn-primary mr-4'>{P_SCORE}</select>
+                           </div>
+                           <div>
+                              <select name='res_er' id='res_er' data-rel='res_er' class='btn btn-primary mr-4'>{RES_ERRORS}</select>
+                           </div>
+                           <div>
+                              <select name='mag' id='mag' data-rel='magnitude' class='btn btn-primary mr-4'>{MAGNITUDES}</select>
+                           </div>
+                  </div>
+               </div>
+               <div class="row">
+                     <div class="col-sm-6 col-md-x">
+                        <div>
+                           <select name='ang_v' id='ang_v' data-rel='ang_v' class='btn btn-primary mr-4'>{ANG_VELOCITIES}</select>
+                        </div>
+                        <div>
+                           <select name='sync' id='sync' data-rel='sync' class='btn btn-primary mr-4'>{SYNC}</select>
+                        </div>
+                     </div>
+               </div>
+            </div>
       </div>
    </div>
    <div class='d-flex'>
