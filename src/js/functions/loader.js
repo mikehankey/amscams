@@ -1,5 +1,7 @@
 function loading(options) {
 
+   $('body').css({'cursor':'wait'});
+
     // Avoir multiple loader
     if(options == undefined || options.standalone == undefined) {
        $('#bottom_overlay').remove();
@@ -56,7 +58,7 @@ function loading_done() {
     $('#overlay').each(function() {
         $(this).fadeOut(150, function() {$('#overlay').remove();})
     });
-    $('body').css('overflow','auto');
+    $('body').css('overflow','auto').css({'cursor':'default'});
     $('#bottom_overlay').removeClass('dlp').remove();  
 } 
 

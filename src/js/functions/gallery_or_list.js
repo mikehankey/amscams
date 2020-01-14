@@ -2,7 +2,7 @@ function gallery_or_list() {
     $('#show_gal').click(function() {
         var $t = $(this);
 
-         loading({'container':'moncul'})
+         loading({'container':'moncul'});
 
          $('.gallery').toggleClass('list');
          if($('.gallery').hasClass('list')) {
