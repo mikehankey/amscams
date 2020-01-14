@@ -539,6 +539,8 @@ def get_results_from_date_from_monthly_index(criteria,start_date,end_date,max_re
                         # We complete the detection['p'] to get the full path (as the index only has compressed name)
                         detection['p'] = get_full_det_path(detection['p'],station_id,end_date,day)
                         res_to_return.append(detection)
+                        print("MAX " + str(max_res_per_page) + "<br>")
+                        print("len(res_to_return) " + str(len(res_to_return)) + "<br>")
 
                      res_counter+=1  
 
