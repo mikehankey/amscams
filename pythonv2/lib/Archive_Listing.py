@@ -820,13 +820,16 @@ def archive_listing(form):
 
    # LIST OF CRITERIA 
    criteria = {} 
+   criteria_text = ''
    
    # Build MAGNITUDES selector
-   mag_select, criteria = create_criteria_selector(POSSIBLE_MAGNITUDES,'mag',selected_mag, criteria,  'All Magnitude (intensity)', '>')
+   mag_select, criteria = create_criteria_selector(POSSIBLE_MAGNITUDES,'mag',selected_mag, criteria,  'All Magnitude', '>')
    template = template.replace("{MAGNITUDES}", mag_select)
 
-   print('selected_mag ' + str(selected_mag))
-    
+   if(selected_mag is not None or selected_mag>-1) {
+      criteria_text = "<a data-toggle='modal' data-target='#staticBackdrop' href='#' title='Magnitude'>Magnitude >" + str(selected_mag) +  "</a>"
+   }
+   
    # Build ERRORS selector
    error_select, criteria = create_criteria_selector(POSSIBLE_ERRORS,'res_er',selected_error, criteria,  'All Resolution Error', '<')
    template = template.replace("{RES_ERRORS}", error_select)
@@ -910,7 +913,11 @@ def archive_listing(form):
       template = template.replace("{PAGINATION}", "") 
       template = template.replace("{FOUND}", "")
    elif((len(res))!=total):
-      template = template.replace("{FOUND}", "<div class='page_h ml-3'><small>Displaying " + str(len(res)) + " out of " +  str(total)  + " detections. </small>"+ found_text + "/div>")
+      if(criteria_text==''):
+         template = template.replace("{FOUND}", "<div class='page_h ml-3'><small>Displaying " + str(len(res)) + " out of " +  str(total)  + " detections. </small>"+ found_text + "/div>")
+      else:
+         template = template.replace("{FOUND}", "<div class='page_h ml-3'><small>Displaying " + str(len(res)) + " out of " +  str(total)  + " detections. </small> Matching your criteria: "+criteria_text+"  " + found_text + "/div>")
+
    elif(len(res)==1):
       template = template.replace("{FOUND}", "<div class='page_h ml-3'><small>Displaying only 1 detection matching your criteria.</small> "+ found_text + "</div>")
    else:
