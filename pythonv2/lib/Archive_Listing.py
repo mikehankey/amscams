@@ -909,7 +909,7 @@ def archive_listing(form):
       template = template.replace("{PAGINATION}", "")
  
    if(len(res)==0): 
-      template = template.replace("{RESULTS}", "<div class='alert alert-danger mx-auto'>No detection found in your the archive for your criteria.</div>")
+      template = template.replace("{RESULTS}", "<div class='alert alert-danger mx-auto'>No detection found in your the archive for your criteria. "+criteria_text+"</div>")
       template = template.replace("{PAGINATION}", "") 
       template = template.replace("{FOUND}", "")
    elif((len(res))!=total):
