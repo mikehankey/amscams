@@ -440,6 +440,8 @@ def get_results_from_date_from_monthly_index(criteria,start_date,end_date,max_re
       number_of_res_to_give_up = 0
    else:
       number_of_res_to_give_up = max_res_per_page*(cur_page-1)
+
+   print("NUMBER OF RES TO GIVE UP " + str(number_of_res_to_give_up))
     
    # Get Station ID
    station_id = get_station_id()
