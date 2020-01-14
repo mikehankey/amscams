@@ -833,29 +833,29 @@ def archive_listing(form):
    error_select, criteria = create_criteria_selector(POSSIBLE_ERRORS,'res_er',selected_error, criteria,  'All Resolution Error', '<')
    template = template.replace("{RES_ERRORS}", error_select)
 
-   if error_select is not None and int(error_select) > -1:
-      criteria_text += "<a data-toggle='modal' data-target='#staticBackdrop' href='#' title='Resolution Error'>Resolution Error >" + str(error_select) +  "</a> "
+   if selected_error is not None and int(selected_error) > -1:
+      criteria_text += "<a data-toggle='modal' data-target='#staticBackdrop' href='#' title='Resolution Error'>Resolution Error >" + str(selected_error) +  "</a> "
 
    # Build ANGULAR VELOCITIES selector
    ang_vel_select, criteria = create_criteria_selector(POSSIBLE_ANG_VELOCITIES,'ang_v',selected_ang_vel, criteria,  'All Angular Velocity', '>', unit='&deg;/s')
    template = template.replace("{ANG_VELOCITIES}", ang_vel_select) 
    
-   if ang_vel_select is not None and int(ang_vel_select) > -1:
-      criteria_text += "<a data-toggle='modal' data-target='#staticBackdrop' href='#' title='Angular Velocity'>Angular Velocity >" + str(ang_vel_select) +  "</a> "
+   if selected_ang_vel is not None and int(selected_ang_vel) > -1:
+      criteria_text += "<a data-toggle='modal' data-target='#staticBackdrop' href='#' title='Angular Velocity'>Angular Velocity >" + str(selected_ang_vel) +  "</a> "
 
    # Build SYNC selector 
    sync_select, criteria = create_criteria_selector(POSSIBLE_SYNC,'sync',selected_sync, criteria,  'All Synchronization', '')
    template = template.replace("{SYNC}", sync_select) 
 
-   if sync_select is not None and int(sync_select) > -1:
-      criteria_text += "<a data-toggle='modal' data-target='#staticBackdrop' href='#' title='Synchronization'>Synchronization >" + str(sync_select) +  "</a> "
+   if selected_sync is not None and int(selected_sync) > -1:
+      criteria_text += "<a data-toggle='modal' data-target='#staticBackdrop' href='#' title='Synchronization'>Synchronization >" + str(selected_sync) +  "</a> "
    
    # Build POINT SCORE selector 
    point_score_select, criteria = create_criteria_selector(POSSIBLE_POINT_SCORE,'point_score',selected_pscore, criteria,  'All Score', '>')
    template = template.replace("{P_SCORE}", point_score_select) 
     
-   if point_score_select is not None and int(point_score_select) > -1:
-      criteria_text += "<a data-toggle='modal' data-target='#staticBackdrop' href='#' title='Score'>Error Score >" + str(point_score_select) +  "</a> "
+   if selected_pscore is not None and int(selected_pscore) > -1:
+      criteria_text += "<a data-toggle='modal' data-target='#staticBackdrop' href='#' title='Score'>Error Score >" + str(selected_pscore) +  "</a> "
 
 
    # Clear_cache
