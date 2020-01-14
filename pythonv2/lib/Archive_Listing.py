@@ -471,7 +471,8 @@ def get_results_from_date_from_monthly_index(criteria,start_date,end_date,max_re
 
       # We sort the days
       for day in kk:
-
+            
+            # We get the total # of detections for the current in case we don't display them all
             all_days_details[str(cur_year)+'/'+ "{:02d}".format(int(cur_month))+'/'+"{:02d}".format(int(day))] = len(day)
 
             # We sort the detections within the day
@@ -561,8 +562,7 @@ def get_results_from_date_from_monthly_index(criteria,start_date,end_date,max_re
          #print("<br>22 - NEW END DATE ")
          #print(end_date) 
 
-      print("ALL DAYS <br>")
-      print(all_days_details)
+     
 
 
       # We stop at the start_date
@@ -573,10 +573,10 @@ def get_results_from_date_from_monthly_index(criteria,start_date,end_date,max_re
          #print(" vs. end: ")
          #print(end_date)
          #print("STOP DATE TEST<br>")
-         return res_to_return, res_counter
+         return res_to_return, res_counter, all_days_details
     
 
-   return res_to_return, res_counter
+   return res_to_return, res_counter, all_days_details
 
 
 # Return full path of a detection based on its name
@@ -679,12 +679,15 @@ def get_html_detection(det,detection,clear_cache,video_prev):
  
 
 # Get HTML version of each detection
-def get_html_detections(res,clear_cache,version,video_prev):
+def get_html_detections(res,all_days_details,clear_cache,version,video_prev):
  
    res_html = ''
    prev_date = None
    cur_count = 0
-  
+
+   print("FROM GET HTML DETECTIONS <br>")
+   print(all_days_details)
+
    for detection in res:
 
       # We add the missing info to detection['p']
@@ -693,12 +696,10 @@ def get_html_detections(res,clear_cache,version,video_prev):
       cur_date = get_datetime_from_analysedname(det) 
       
       if(prev_date is None):
-         prev_date = cur_date
          res_html += '<div class="h2_holder d-flex justify-content-between mr-5 ml-5"><h2>'+cur_date.strftime("%Y/%m/%d")+" - %TOTAL%</h2></div>"
          res_html += '<div class="gallery gal-resize row text-center text-lg-left '+version+' mb-5 mr-5 ml-5">'
 
       elif(cur_date.month != prev_date.month or cur_date.day != prev_date.day or cur_date.year != prev_date.year):
-         prev_date = cur_date
          if(cur_count>1):
             res_html = res_html.replace('%TOTAL%',str(cur_count)+ ' detections')
          else:
@@ -707,7 +708,9 @@ def get_html_detections(res,clear_cache,version,video_prev):
          res_html += '<div class="gallery gal-resize row text-center text-lg-left '+version+' mb-5 mr-5 ml-5">'
         
          cur_count = 0
- 
+
+      
+      prev_date = cur_date
  
       res_html += get_html_detection(det,detection,clear_cache,video_prev)
       cur_count+=1
@@ -895,7 +898,7 @@ def archive_listing(form):
    template = template.replace("{END_DATE}",end_datetime.strftime("%Y/%m/%d"));
     
    # Search the results through the monthly indexes
-   res, total = get_results_from_date_from_monthly_index(criteria,start_datetime,end_datetime,int(nompp),cur_page)
+   res, total, all_days_details = get_results_from_date_from_monthly_index(criteria,start_datetime,end_datetime,int(nompp),cur_page)
   
    # CREATE URL FOR THE PAGINATION
    pagination_url  = "/pycgi/webUI.py?cmd=archive_listing&meteor_per_page="+str(nompp)
@@ -934,7 +937,7 @@ def archive_listing(form):
  
 
    # Create HTML Version of each detection
-   res_html = get_html_detections(res,clear_cache,version,video_prev) 
+   res_html = get_html_detections(res,all_days_details,clear_cache,version,video_prev) 
    if(res_html!=''):
       template = template.replace("{RESULTS}", res_html)
 
