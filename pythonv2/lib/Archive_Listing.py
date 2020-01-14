@@ -473,7 +473,7 @@ def get_results_from_date_from_monthly_index(criteria,start_date,end_date,max_re
       for day in kk:
             
             # We get the total # of detections for the current in case we don't display them all
-            all_days_details[str(cur_year)+'/'+ "{:02d}".format(int(cur_month))+'/'+"{:02d}".format(int(day))] = len(day)
+            all_days_details[str(cur_year)+'/'+ "{:02d}".format(int(cur_month))+'/'+"{:02d}".format(int(day))] = len(day)+1
 
             # We sort the detections within the day
             detections = sorted(json_index['days'][day], key=lambda k: k['p'], reverse=True)
@@ -561,9 +561,7 @@ def get_results_from_date_from_monthly_index(criteria,start_date,end_date,max_re
 
          #print("<br>22 - NEW END DATE ")
          #print(end_date) 
-
-     
-
+ 
 
       # We stop at the start_date
       if(end_date<=start_date):
@@ -683,11 +681,7 @@ def get_html_detections(res,all_days_details,clear_cache,version,video_prev):
  
    res_html = ''
    prev_date = None
-   cur_count = 0
-
-   print('in get_html_detections<br>')
-   print(all_days_details)
- 
+   cur_count = 0 
 
    for detection in res:
 
