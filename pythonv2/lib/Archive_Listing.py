@@ -759,6 +759,10 @@ def create_criteria_selector(values, val, selected, criteria, all_msg, sign, uni
          st_val = "Synchronized only"
       elif(val=="sync" and mag==0):
          st_val = "NOT Synchronized only"
+      elif(val=='multi' and mag=1):
+         st_val = "Multi-detections only"
+      elif(val=='multi' and mag=0):
+         st_val = "Single detections only"
       else:
          st_val = str(mag)
 
