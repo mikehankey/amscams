@@ -38,11 +38,14 @@ def get_all_HD_frames(json_value):
    # False=  we don't clear the cache
    HD_frames = get_HD_frames(name_analyser(json_value),False)
    
-   if(len(HD_frames)>=20):
-      HD_frames = HD_frames[10:] + HD_frames[:10]
+   if(len(HD_frames)>=21):
+      HD_frames = HD_frames[11:] + HD_frames[:10]
+   else:
+      v = len(HD_frames)
+      HD_frames = HD_frames[v:]
    
    # Return JSON
-   print(json.dumps({'res':HD_frames[:30]})) 
+   print(json.dumps({'res':HD_frames})) 
 
 
 # Create new cropped frame
