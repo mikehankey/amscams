@@ -429,7 +429,7 @@ def test_criteria(criter,criteria,detection):
          return False
 
    # Multi
-   if(criter=='multi' and criteria[criter]!=1):
+   if(criter=='multi' and criteria[criter]!=-1):
 
       print("<br>detection ")
       print(detection)
