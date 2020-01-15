@@ -429,8 +429,16 @@ def test_criteria(criter,criteria,detection):
 
    # Multi
    if(criter=='multi' and criteria[criter]!=1):
-      if(int(detection[criter])!=int(criteria[criter]) or detection[criter]=='unknown'):
-         return False
+      if(criteria[criter]==1):
+         if(int(detection[criter])!=1):
+            return False
+         else:
+            return True
+      elif(criteria[criter]==0):
+         if(int(detection[criter])!=0):
+            return False
+         else:
+            return True        
 
    return True
 
