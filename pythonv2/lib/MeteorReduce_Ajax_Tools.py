@@ -38,6 +38,8 @@ def get_all_HD_frames(json_value):
    # False=  we don't clear the cache
    HD_frames = get_HD_frames(name_analyser(json_value),False)
    
+   print("LENGHT HD " + len(HD_frames))
+
    if(len(HD_frames)>=11):
       HD_frames = HD_frames[6:] + HD_frames[:5]
    
