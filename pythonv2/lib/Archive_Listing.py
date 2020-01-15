@@ -894,7 +894,7 @@ def archive_listing(form):
    error_select, criteria = create_criteria_selector(POSSIBLE_ERRORS,'res_er',selected_error, criteria,  'All Resolution Error', '>')
    template = template.replace("{RES_ERRORS}", error_select)
 
-   if selected_error is not None and int(selected_error) > -1:
+   if selected_error is not None and float(selected_error) > -1:
       criteria_text.append("<a data-toggle='modal' data-target='#staticBackdrop' href='#' title='Resolution Error'>Resolution Error >" + str(selected_error) +  "</a>")
 
    # Build ANGULAR VELOCITIES selector
