@@ -429,6 +429,16 @@ def test_criteria(criter,criteria,detection):
 
    # Multi
    if(criter=='multi' and criteria[criter]!=1):
+
+      print("<br>detection ")
+      print(detection)
+      print("<br>CRITER ")
+      print(str(criteria[criter]))
+      print("<br>VAL ")
+      print(str(detection[criter]))
+      prin("<br><br>")
+
+
       if(criteria[criter]==1):
          if(int(detection[criter])!=1):
             return False
@@ -439,6 +449,9 @@ def test_criteria(criter,criteria,detection):
             return False
          else:
             return True        
+
+
+
 
    return True
 
