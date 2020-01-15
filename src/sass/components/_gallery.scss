@@ -264,7 +264,7 @@
 
 .gallery {
    .pr {
-      position:static;
+      position:relative;
    }
 }
 
@@ -283,7 +283,7 @@
         }
 
         .pr {
-           position:relative;
+           position:static;
         }
 
         .h2_holder  {
