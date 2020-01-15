@@ -13,33 +13,33 @@ $(function() {
       } else {
          new_url = delete_url_param(new_url ,'magnitude');
       }
-
+      console.log(update_url_param(new_url ,'p',1))
       if($('#res_er').val()>=0) { 
          new_url = update_url_param(new_url ,'res_er',$('#res_er').val());
       } else {
          new_url = delete_url_param(new_url ,'res_er');
       }
-
+      console.log(update_url_param(new_url ,'p',1))
       if($('#ang_v').val()>=0) { 
          new_url = update_url_param(window.location.href ,'ang_v',$('#ang_v').val());
       } else {
          new_url = delete_url_param(new_url ,'ang_v');
       }
-
+      console.log(update_url_param(new_url ,'p',1))
       if($('#sync').val()>=0) { 
-         new_url = update_url_param(window.location.href ,'sync',$('#sync').val());
+         new_url = update_url_param(new_url ,'sync',$('#sync').val());
       } else {
          new_url = delete_url_param(new_url ,'sync');
       }
 
       if($('#point_score').val()>=0) { 
-         new_url = update_url_param(window.location.href ,'point_score',$('#point_score').val());
+         new_url = update_url_param(new_url,'point_score',$('#point_score').val());
       } else {
          new_url = delete_url_param(new_url ,'point_score');
       }
 
       if($('#multi').val()>=0) { 
-         new_url = update_url_param(window.location.href ,'multi',$('#multi').val());
+         new_url = update_url_param(new_url ,'multi',$('#multi').val());
       } else {
          new_url = delete_url_param(new_url ,'multi');
       }
