@@ -23,6 +23,7 @@ POSSIBLE_MAGNITUDES = [130,140,150,160,170,180,190,200,210,220,230,240,250,260,2
 POSSIBLE_ERRORS = [0.5,1,2,3,5]
 POSSIBLE_ANG_VELOCITIES = [1,2,3,4,5,6,7,8,9,10,11,12,13,15,16,17,18,19,20,21,22,23,24,25]
 POSSIBLE_SYNC = [0,1]
+POSSIBLE_MULTI = [0,1]
 POSSIBLE_POINT_SCORE = [3,5,10]
 
 # VIDEO PREVIEW
@@ -780,13 +781,14 @@ def archive_listing(form):
    clear_cache = form.getvalue('clear_cache')
    start_datetime = form.getvalue('start_date')
    end_datetime = form.getvalue('end_date')
-
-   # Criteria
+ 
+   # Criteria (filters)
    selected_mag      = form.getvalue('magnitude')
    selected_error    = form.getvalue('res_er')
    selected_ang_vel  = form.getvalue('ang_v')
    selected_sync     = form.getvalue('sync')
    selected_pscore   = form.getvalue('point_score')
+   selected_multi    = form.getvalue('multi')
 
    # Build the page based on template  
    with open(ARCHIVE_LISTING_TEMPLATE, 'r') as file:
@@ -863,6 +865,7 @@ def archive_listing(form):
    sync_select, criteria = create_criteria_selector(POSSIBLE_SYNC,'sync',selected_sync, criteria,  'All Synchronization', '')
    template = template.replace("{SYNC}", sync_select) 
 
+
    if selected_sync is not None and int(selected_sync) > -1:
       if(selected_sync==1):
          sel_text = "Synchronized only"
@@ -870,6 +873,18 @@ def archive_listing(form):
          sel_text= "NOT Synchronized only"
       criteria_text.append("<a data-toggle='modal' data-target='#staticBackdrop' href='#' title='Synchronization'>" + sel_text +  "</a>")
    
+   
+   # Build MULTI selector
+   multi_select, criteria = create_criteria_selector(POSSIBLE_MULTI,'multi',selected_multi, criteria,  'All kind of detections', '')
+   template = template.replace("{MULTI}", multi_select) 
+
+   if selected_multi is not None and int(selected_multi) > -1:
+      if(selected_multi==1):
+         sel_text = "Multi-detections only"
+      else:
+         sel_text= "Single detections only"
+      criteria_text.append("<a data-toggle='modal' data-target='#staticBackdrop' href='#' title='Detection type'>" + sel_text +  "</a>")
+ 
    # Build POINT SCORE selector 
    point_score_select, criteria = create_criteria_selector(POSSIBLE_POINT_SCORE,'point_score',selected_pscore, criteria,  'All Score', '>')
    template = template.replace("{P_SCORE}", point_score_select) 
