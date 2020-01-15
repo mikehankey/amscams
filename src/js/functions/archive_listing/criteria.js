@@ -2,9 +2,11 @@
 
 $(function() {
 
+   new_url = window.location.href
+
    $('#apply_archive_filters').click(function() {
       
-      new_url = window.location.href
+      
 
       if($('#mag').val()>=0) { 
          new_url = update_url_param(new_url ,'magnitude',$('#mag').val());
