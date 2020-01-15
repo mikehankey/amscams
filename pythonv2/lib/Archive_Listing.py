@@ -396,7 +396,7 @@ def test_criteria(criter,criteria,detection):
    print(str(criteria[criter]))
    print("<br>VAL ")
    print(str(detection[criter]))
-   prin("<br><br>")
+   print("<br><br>")
 
    # Point Score
    if(criter=='point_score'):
