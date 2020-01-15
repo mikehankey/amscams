@@ -67,6 +67,7 @@ def batch_archive_msm(mode):
             desc = file.replace(".json", "")
             out += "<figure style=\"float: left\"><a href=/pycgi/webUI.py?cmd=reduce&video_file=" + video_file + "><img src=" + stack_thumb + "><figcaption>" + desc + "</figcaption></a></figure>\n"
          else:
+            desc = file.replace(".json", "")
             out += "<figure style=\"float: left; background-color: coral;\"><a href=/pycgi/webUI.py?cmd=reduce&video_file=" + video_file + "><img src=" + stack_thumb + "><figcaption>" + desc + "</figcaption></a> </figure>\n"
             cmd = "./flex-detect.py debug2 " + video_file
             print(cmd)
@@ -7160,7 +7161,8 @@ def debug2(video_file):
    # but we should apply calibration to the capture first!
    print("******************************   PASSED *************************")
    new_trim_num = orig_sd_trim_num + sd_bs 
-   save_archive_meteor(video_file, syncd_sd_frames,syncd_hd_frames,frame_data,new_trim_num) 
+   arc_json_file = save_archive_meteor(video_file, syncd_sd_frames,syncd_hd_frames,frame_data,new_trim_num) 
+   os.system("./flex-detect.py faa " + arc_json_file)
    return("")
    #exit()
 
@@ -7321,7 +7323,7 @@ def save_archive_meteor(video_file, syncd_sd_frames,syncd_hd_frames,frame_data,n
 
    print("OLD:", old_meteor_json_file)
    print("NEW:", ma_json_file)
-   return()
+   return(ma_json_file)
 
 
 
