@@ -686,8 +686,7 @@ def get_html_detection(det,detection,clear_cache,video_prev):
    
    details_html += ' </dl>'   
 
-   if "info" in detection:     
-      if "multi_station" in detection['info']:
+   if "multi" in detection:      
          details_html += "<div class='badge'>MULTI</div>"
          
 
