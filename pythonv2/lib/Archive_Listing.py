@@ -123,8 +123,8 @@ def get_diag_fields(detection):
 
       # IS MULTI (TEMPORARY SOLUTION WITH ONLY A BOOLEAN)
       try: 
-         if('multi' in detection_data):
-            if('multi' in detection_data['info']):
+         if('info' in detection_data):
+            if('multi_station' in detection_data['info']):
                multi = 1
          else:
             multi = 0
