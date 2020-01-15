@@ -671,11 +671,14 @@ def get_html_detection(det,detection,clear_cache,video_prev):
    if(detection['ang_v']!='unknown'):
       details_html += '<dt class="col-6">Ang. Velocity</dt><dd class="col-6">'+str("{0:.4f}".format(float(detection['ang_v'])))+'&deg;/s</dd>'
    
-   if "sync" not in detection: 
-   #if(detection['sync']!=1):
+   if "sync" not in detection:  
       details_html += '<dt class="col-12"><div class="alert alert-danger p-1 m-0 text-center">Not synchronized</div></dt>'
- 
+   
    details_html += ' </dl>'   
+
+   if "info" in detection:     
+      if "multi" in detection['info']:
+         details_html += "<div class='badge'>MULTI</div>"
 
    res_html += '  <a class="mtt has_soh" href="webUI.py?cmd=reduce2&video_file='+det['full_path']+'" title="Detection Reduce page">'
    res_html += '     <img alt="" class="img-fluid ns lz" src="'+preview[0]+'">'
