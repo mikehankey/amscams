@@ -687,8 +687,9 @@ def get_html_detection(det,detection,clear_cache,video_prev):
    details_html += ' </dl>'   
 
    if "info" in detection:     
-      if "multi" in detection['info']:
+      if "multi_station" in detection['info']:
          details_html += "<div class='badge'>MULTI</div>"
+         
 
    res_html += '  <a class="mtt has_soh" href="webUI.py?cmd=reduce2&video_file='+det['full_path']+'" title="Detection Reduce page">'
    res_html += '     <img alt="" class="img-fluid ns lz" src="'+preview[0]+'">'
