@@ -120,11 +120,22 @@ def get_diag_fields(detection):
       except:
          sync = 0
 
-      return mag,dur,red, res_error, ang_vel, point_score, sync
+
+      # IS MULTI (TEMPORARY SOLUTION WITH ONLY A BOOLEAN)
+      try: 
+         if('multi' in detection_data):
+            if('multi' in detection_data['info']):
+               multi = 1
+         else:
+            multi = 0
+      except:
+         multi = 0
+
+      return mag,dur,red, res_error, ang_vel, point_score, sync, multi
    
    else:
 
-      return "unknown","unknown",0,"unknown","unknown","unknown"
+      return "unknown","unknown",0,"unknown","unknown","unknown", "unknown"
 
 
 
@@ -165,7 +176,7 @@ def add_to_month_index(detection, insert=True):
       # If we are here, it means we didn't find it 
       # so if we want to insert it, we do it here
       if(insert==True):
-         mag,dur,red, res_error, point_score, ang_vel  =  get_diag_fields(analysed_detection_name['full_path'])
+         mag,dur,red, res_error, point_score, ang_vel, multi  =  get_diag_fields(analysed_detection_name['full_path'])
          
          new_detect = {
             "dur": dur,
@@ -174,7 +185,8 @@ def add_to_month_index(detection, insert=True):
             "mag": mag,
             "res_er":res_error,
             "point_score":point_score,
-            "ang_v":ang_vel
+            "ang_v":ang_vel,
+            "multi":multi
          }
 
          # If the days already exist
@@ -217,7 +229,7 @@ def create_json_index_month(month,year):
 
          for detection in sorted(glob.iglob(day + os.sep +  '*' + '.json', recursive=True), reverse=True):
              
-            mag,dur,red, res_error, ang_vel, point_score, sync  = get_diag_fields(detection)
+            mag,dur,red, res_error, ang_vel, point_score, sync, multi  = get_diag_fields(detection)
             det = os.path.basename(detection)
             det = os.path.splitext(det)[0]
 
@@ -228,7 +240,7 @@ def create_json_index_month(month,year):
             except:
                index_month['days'][int(cur_day)] = []
  
-            index_month['days'][int(cur_day)].append({'p':det[11:],'mag':mag,'dur':dur,'red':red,'res_er':res_error,'point_score':point_score,'ang_v':ang_vel,'sync':sync})
+            index_month['days'][int(cur_day)].append({'p':det[11:],'mag':mag,'dur':dur,'red':red,'res_er':res_error,'point_score':point_score,'ang_v':ang_vel,'sync':sync,'multi':multi})
  
    return index_month             
 
@@ -258,14 +270,14 @@ def create_json_index_year(year):
 
                for detection in sorted(glob.iglob(day + os.sep +  '*' + '.json', recursive=True), reverse=True):
                   
-                  mag,dur,red, res_error, ang_vel, point_score, sync = get_diag_fields(detection)
+                  mag,dur,red, res_error, ang_vel, point_score, sync, multi = get_diag_fields(detection)
 
 
                   det = os.path.basename(detection)
                   det = os.path.splitext(det)[0]
                   # det[11:] => Here we also remove the Year, Month & Day of the detection 
                   # since we know them from the JSON structure
-                  cur_day_data.append({'p':det[11:],'mag':mag,'dur':dur,'red':red,'res_er':res_error,'point_score':point_score,'ang_v':ang_vel,'sync':sync})
+                  cur_day_data.append({'p':det[11:],'mag':mag,'dur':dur,'red':red,'res_er':res_error,'point_score':point_score,'ang_v':ang_vel,'sync':sync,'multi':multi})
 
                #print("CUR DAY ")
                #print(cur_day)
@@ -306,6 +318,7 @@ def write_month_index(month, year):
       with open(main_dir + os.sep + str(month).zfill(2) + ".json", 'w') as outfile:
          #Write compress format
          json.dump(json_data, outfile)
+
       outfile.close() 
       return True
    
