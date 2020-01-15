@@ -37,6 +37,7 @@ def update_arc_detects():
    detects = load_json_file(detect_file)
    td = 0
    for day in detects:
+      print(day)
       for file in detects[day]:
          meteor_day = file[0:10]
          td = td + 1
