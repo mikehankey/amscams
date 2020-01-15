@@ -602,7 +602,7 @@ def update_cat_stars(form):
    
       meteor_red['calib']['stars'] = my_close_stars
       meteor_red['calib']['device']['total_res_px'] = float(np.mean(cat_dist)) 
-      meteor_red['calib']['device']['total_res_deg'] = (float(np.mean(cat_dist)) * meteor_red['calib']['device']['scale_px']) / 3600
+      meteor_red['calib']['device']['total_res_deg'] = (float(np.mean(cat_dist)) * float(meteor_red['calib']['device']['scale_px'])) / 3600
       # Update JSON File
       save_json_file(meteor_red_file, meteor_red)
 

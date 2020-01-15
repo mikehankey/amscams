@@ -305,6 +305,7 @@ def save_old_style_meteor_json(meteor_json_file, meteor_obj, trim_clip ):
       meteor_obj['hd_trim'] = 0
       meteor_obj['hd_video_file'] = 0
       meteor_obj['hd_crop'] = 0
+      hd_trim = 0
    oj = {}
    oj['sd_video_file'] = meteor_json_file.replace(".json", ".mp4")
    sd_stack = meteor_json_file.replace(".json", "-stacked.png")
@@ -907,11 +908,14 @@ def calib_to_calparams(calib, json_file ):
    cal_params['imageh'] = calib['img_dim'][1]
    cat_image_stars = []
 
-   for star in calib['stars']:
-      if "intensity" not in star:
-         star['intensity'] = 0
-      cat_star = (star['name'],star['mag'],star['ra'],star['dec'],star['cat_und_pos'][0],star['cat_und_pos'][1],star['i_pos'][0],star['i_pos'][1],star['intensity'], star['dist_px'],json_file)
-      cat_image_stars.append(cat_star)
+   if "stars" in calib:
+      for star in calib['stars']:
+         if "intensity" not in star:
+            star['intensity'] = 0
+         cat_star = (star['name'],star['mag'],star['ra'],star['dec'],star['cat_und_pos'][0],star['cat_und_pos'][1],star['i_pos'][0],star['i_pos'][1],star['intensity'], star['dist_px'],json_file)
+         cat_image_stars.append(cat_star)
+   else:
+      calib['stars'] = [] 
    cal_params['cat_image_stars'] = cat_image_stars
    return(cal_params)
 
@@ -1014,13 +1018,16 @@ def update_intensity(json_file):
    print(cnt_file)
    print(ff_file)
 
-def eval_points(json_file):
-   data = load_json_file(json_file)
+def eval_points(json_file, frames=None, save=1):
+   if save == 1:
+      jd = load_json_file(json_file)
+   if frames is None:
+      data = load_json_file(json_file)
+      frames = data['frames']
    xs = []
    ys = []
    fn = []
    new_frames = []
-   frames = data['frames']
    first_x = None
    first_fn = None
    last_x = None
@@ -1059,11 +1066,386 @@ def eval_points(json_file):
       print(frame['fn'], med_dist, frame['dist_from_last'], med_err)
    score = (max(med_errs)/min(med_errs)) * np.mean(med_errs)
    print("Min,Max,Mean line err:", min(med_errs), max(med_errs),np.mean(med_errs), score)
-   data['frames'] = new_frames 
-   data['report']['point_score'] = (max(med_errs)/min(med_errs)) * np.mean(med_errs)
-   data['report']['mean_dist_err'] = np.mean(med_errs)
-   save_json_file(json_file,data)
+   if save == 1:
+      jd['report']['point_score'] = (max(med_errs)/min(med_errs)) * np.mean(med_errs)
+      jd['report']['mean_dist_err'] = np.mean(med_errs)
+      jd['report']['mean_line_seg'] = np.mean(dists)
+      jd['frames'] = new_frames
+      save_json_file(json_file, jd)
+   return(score) 
+
+def find_best_cnt(cnts, xd,yd):
+   hx = 0
+   hy = 0
+   lx = 99
+   ly = 99
+   cnt_tmp = [] 
+   for x,y,w,h in cnts:
+      my = y + h
+      mx = x + w
+      cnt_tmp.append((x,y,w,h,mx,my))
+   if xd == 1 and yd == -1:
+      # we want the cnt with the highest (y+h) and lowest x  (left to right top down)
+      temp = sorted(cnt_tmp, key=lambda x: x[5], reverse=True)
+      best_cnt = temp[0][0:4]
+   if xd == -1 and yd == -1:
+      # we want the cnt with the highest (y+h) and highest x (right to left top down)
+      temp = sorted(cnt_tmp, key=lambda x: x[4], reverse=True)
+      best_cnt = temp[0][0:4]
+
+   if xd == -1 and yd == 1:
+      print("TOP DOWN RIGHT TO LEFT")
+      # we want the cnt with the lowest (y) and lowest x (right to left down to top)
+      temp = sorted(cnt_tmp, key=lambda x: x[5], reverse=False)
+      best_cnt = temp[0][0:4]
+   if xd == 1 and yd == 1:
+      # we want the cnt with the lowest (y) and lowest x (right to left down to top)
+      temp = sorted(cnt_tmp, key=lambda x: x[5], reverse=False)
+      best_cnt = temp[0][0:4]
+   print("XD:", xd,yd)
+   return([best_cnt] )
+
+def abline(slope, intercept):
+   """Plot a line from slope and intercept"""
+   x_vals = np.array((0,1920))
+   y_vals = intercept + slope * x_vals
+   return(x_vals,y_vals)
+   
+      
+def line_info(frames):
+   xs = []
+   ys = []
+   line_segs = []
+   xdiffs = []
+   ydiffs = []
+   last_x = None
+   for frame in frames:
+       x = frame['x']
+       y = frame['y']
+       if last_x is not None:
+          xdiffs.append(x - last_x)
+          ydiffs.append(y - last_y)
+       xs.append(frame['x'])
+       ys.append(frame['y'])
+       line_segs.append(frame['dist_from_last'])
+       last_x = x
+       last_y = y
+   tx = abs(xs[0] - xs[-1])
+   ty = abs(ys[0] - ys[-1])
+   med_seg = np.median(line_segs)
+
+   mxd = np.median(xdiffs)
+   myd = np.median(ydiffs)
+
+   (dist_to_line, z, med_dist) = poly_fit_check(xs,ys, xs[0],ys[0])
+
+   if ty > tx:
+      return("y", z, med_dist,med_seg,mxd,myd)
+   else:
+      return("x", z, med_dist,med_seg,mxd,myd)
+
+def fix_arc_points(json_file):
+   json_conf = load_json_file("../conf/as6.json")
+   st_id = json_file.split("/")[4]
+   print("JSON FILE:", json_file)
+   json_data = load_json_file(json_file)
+
+
+   if st_id != json_conf['site']['ams_id']:
+      # this is a remote station, reload the json conf file!
+      json_conf_file = "/mnt/ams2/meteor_archive/" + st_id + "/CAL/as6.json"  
+      json_conf = load_json_file(json_conf_file)
+   hd_file = json_file.replace(".json", "-HD.mp4")
+   hd_frames,hd_color_frames,hd_subframes,sum_vals,max_vals = load_frames_fast(hd_file, json_conf, 0, 0, [], 0,[])
+   print("HD FRAMES:", len(hd_frames))
+   print("HD SUB FRAMES FRAMES:", len(hd_subframes))
+   if 'x_dir_mod' in json_data['report']:
+      xd = json_data['report']['x_dir_mod']
+      yd = json_data['report']['y_dir_mod']
+   else:
+      fd = json_data['frames']
+      print(fd, json_data)
+      xd, yd = meteor_dir(fd[0]['x'],fd[0]['y'],fd[-1]['x'],fd[-1]['y'])
+      json_data['report']['x_dir_mod'] = xd
+      json_data['report']['y_dir_mod'] = yd
+
+   # x=1 = right to left x=-1 left to rught
+   # y=-1 = top to bottom y =1 bottom to top
+   dom,z,med_dist,med_seg,mxd,myd = line_info(json_data['frames']) 
+   new_frame_data = []
+   frames = json_data['frames']
+   ep_res = eval_points(json_file, frames, 0)
+   for fd in frames:
+      found = 1
+      fn = fd['fn']
+      x = fd['x']
+      y = fd['y']
+      cx1,cy1,cx2,cy2 = bound_cnt(x,y,hd_frames[0].shape[1],hd_frames[0].shape[0], 20)
+      frame = hd_frames[fn]
+      print("FRAME SHAPE: ", frame.shape)
+      if frame.shape[0] != 1080:
+         print("FRAME SIZE IS 1280x720 !")
+         exit()
+      cnt = frame[cy1:cy2,cx1:cx2]
+      big_cnt = cv2.resize(cnt, (0,0),fx=10, fy=10)
+
+      min_val, max_val, min_loc, (mx,my)= cv2.minMaxLoc(big_cnt)
+      thresh = max_val - 20
+      avg_val = np.mean(big_cnt)
+      #if thresh < avg_val:
+      thresh = avg_val + 10
+            
+      blur_cnt= cv2.GaussianBlur(big_cnt, (7, 7), 0)
+      cnts,rects = find_contours_in_frame(blur_cnt, thresh)
+      if len(cnts) == 0:
+         thresh = avg_val + 5
+         cnts,rects = find_contours_in_frame(blur_cnt, thresh)
+         print("CNTS 2nd try:", len(cnts))
+         if len(cnts) == 0:
+            cnts = [[200,200,5,5]]
+            found = 0
+
+      if len(cnts) > 1:
+         thresh += 10
+         cnts2,rects = find_contours_in_frame(big_cnt, thresh)
+         if len(cnts2) > 1:
+            max_val - 10
+            cnts2,rects = find_contours_in_frame(big_cnt, thresh)
+
+         if len(cnts2) == 1:
+            cnts = cnts2
+      if len(cnts) > 1:
+         cnts = find_best_cnt(cnts, xd,yd) 
+
+      # plot slope line 
+      x_vals, y_vals = abline(z[0],z[1])
+      ny_vals = []
+      for yv in y_vals:
+         ny_vals.append((yv))
+      y_vals = ny_vals
+      #cv2.line(frame, (int(x_vals[0]),int(y_vals[0])), (int(x_vals[-1]),int(y_vals[-1])), (255), 1)
+      cnt = frame[cy1:cy2,cx1:cx2]
+      big_cnt = cv2.resize(cnt, (0,0),fx=10, fy=10)
+
+      cx,cy,cw,ch = cnts[0]
+      # Now find offset from leading corner to center
+      if xd == 1:
+         # we want the corner with the lowest x 
+         x_corner = cx
+         x_corner2 = cx + int(cw / 2)
+      else:
+         x_corner = cx + cw - int(cw/2)
+         x_corner2 = cx + cw 
+      if yd == -1:
+         y_corner = cy + ch - int(ch/2)
+         y_corner2 = cy + ch
+      else:
+         y_corner = cy  
+         y_corner2 = cy  + int(ch/2)
+
+      small_cnt = big_cnt[y_corner:y_corner2,x_corner:x_corner2]
+      blur_cnt= cv2.GaussianBlur(small_cnt, (7, 7), 0)
+      avg_val = np.mean(blur_cnt)
+      #if thresh < avg_val:
+      thresh = avg_val + 5
+      small_cnts,rects = find_contours_in_frame(small_cnt, thresh)
+
+      if len(small_cnts) == 1 and found == 1:
+         if xd == -1:
+            # we want the corner with the highest x (because we are going backwards now)
+            sadj_x = small_cnts[0][0] + int(small_cnts[0][2]) + x_corner
+         else:
+            sadj_x = small_cnts[0][0] + x_corner
+         if yd == -1:
+            #Bottom to top, we want the highest y (backwards)
+            sadj_y = small_cnts[0][1] + int(small_cnts[0][3]) + y_corner
+         else:
+            sadj_y = small_cnts[0][1] + y_corner 
+      else:
+         sadj_x = 200
+         sadj_y = 200
+
+      # Now re-grab the CNT
+      real_x = int((sadj_x / 10) + cx1)
+      real_y = int((sadj_y / 10) + cy1)
+      ncx1,ncy1,ncx2,ncy2 = bound_cnt(real_x,real_y,frame.shape[1],frame.shape[0], 20)
+      fd['adj_x'] = real_x
+      fd['adj_y'] = real_y
+      fd['x'] = real_x
+      fd['y'] = real_y
+      new_frame_data.append(fd)
+      adj_cnt = frame[ncy1:ncy2,ncx1:ncx2]
+      adj_cnt = cv2.resize(adj_cnt, (0,0),fx=10, fy=10)
+
+      # build small box around corner
+
+      cv2.rectangle(big_cnt, (cx, cy), (cx+cw, cy+ch), (255,255,255), 1, cv2.LINE_AA)
+      cv2.rectangle(big_cnt, (x_corner, y_corner), (x_corner2, y_corner2), (255,255,255), 1, cv2.LINE_AA)
+
+      cv2.circle(big_cnt,(sadj_x,sadj_y), 10, (0,255,0), 2)
+      cv2.line(big_cnt, (200,0), (200,400), (100), 1)
+      cv2.line(big_cnt, (0,200), (400,200), (100), 2)
+      cv2.line(adj_cnt, (200,0), (200,400), (100), 1)
+      cv2.line(adj_cnt, (0,200), (400,200), (100), 2)
+      print(big_cnt.shape)
+      #cv2.imshow('pepe', big_cnt)
+      #cv2.waitKey(0)
+  
+      bch, bcw = big_cnt.shape[:2]
+      ach, acw = adj_cnt.shape[:2]
+      if bch != bcw :
+         big_cnt = cv2.resize(big_cnt, (400,400))
+      if ach != acw:
+         adj_cnt = cv2.resize(adj_cnt, (400,400))
+
+      try: 
+         if show == 1:
+            frame[0:400,0:400] = big_cnt
+            frame[400:800,0:400] = adj_cnt
+            show_frame = cv2.resize(frame.copy(), (1280,720))
+            cv2.imshow('pepe', show_frame)
+            cv2.waitKey(50)
+      except:
+         print("failed to show frame")
+
+   # parse trim_num
+   video_file = json_file.replace(".json", "-HD.mp4")
+   xxx = video_file.split("-")
+   trim_num = xxx[-1].replace("trim", "")
+   trim_num = trim_num.replace(".mp4", "")
+
+   for fd in new_frame_data:
+      print(fd)
+   
+   new_frame_data = fix_missing_frames(new_frame_data)
+   new_frame_data = fix_bad_frames(new_frame_data)
+   dur = len(new_frame_data) / 25
+   json_data['report']['dur'] = dur
+
+   res2 = eval_points(json_file, new_frame_data, 0)
+   print("EP OLD NEW:", ep_res, res2)
+   if res2 < ep_res:
+      print("New points are better than old!")
+      json_data['frames'] = new_frame_data
+      save_json_file(json_file, json_data)
+      res2 = eval_points(json_file, new_frame_data, 1)
+   else:
+      print("Old points are better than new!")
+
+def fix_missing_frames(frame_data):
+   new_frames = []
+   last_fn = None
+   fdiff = 0
+   dom,z,med_dist,med_seg,mxd,myd = line_info(frame_data) 
+   for frame in frame_data:
+      fn = frame['fn']
+      if last_fn is not None:
+         fdiff = fn - last_fn
+      if fdiff > 1:
+         print("Missing frame detected!", fdiff)
+         for i in range(0,fdiff-1):
+            new_frame = frame.copy()
+            new_fn = fn - (fdiff - i) + 1
+            print("NEW FN:", new_fn, i)
+            new_frame['fn'] = new_fn
+            new_frame['x'] = frame['x'] - mxd
+            new_frame['y'] = frame['y'] - mxd
+            new_frames.append(new_frame) 
+      last_frame = frame
+      new_frames.append(frame)
+      last_fn = fn
+   return(new_frames)
+ 
+
+def fix_bad_frames(frame_data):
+   dom,z,med_dist,med_seg,mxd,myd = line_info(frame_data) 
+   fc = 0
+   xs = []
+   ys = []
+   last_x = None
+   new_frames = []
+   last_x = None
+   for frame in frame_data:
+      x = frame['x']
+      y = frame['y']
+      if fc > 0:
+         err = abs(1 - (frame['dist_from_last'] / med_seg))
+         if err < .3:
+            print("FRAME GOOD:", frame['fn'], med_dist, med_seg, frame['dist_from_last'], err, x,y)
+         else:
+            if last_x is not None: 
+               better_x = int(last_x + mxd)
+               better_y = int(last_y + myd)
+               print("FRAME BAD:", frame['fn'], med_dist, med_seg, frame['dist_from_last'], err, x,y, better_x, better_y, mxd,myd)
+               x = better_x
+               y = better_y
+               frame['x'] = x
+               frame['y'] = y 
+                  
+
+            else:
+               print("FIRST FRAME :", frame['fn'], med_dist, med_seg, frame['dist_from_last'], err, x, y)
+         new_frames.append(frame)
     
+      xs.append(frame['x'])
+      ys.append(frame['y'])
+      fc += 1
+      last_x = x
+      last_y = y
+   return(new_frames)
+
+def frame_data_to_arc_frames(frame_data):
+   frames = []
+   for fn in frame_data :
+      if "leading_x" in frame_data[fn]:
+
+
+         frame = {}
+         frame['fn'] = fn
+         frame['x'] =  frame_data[fn]['leading_x']
+         frame['y'] =  frame_data[fn]['leading_y']
+         frame['w'] =  frame_data[fn]['blob_w']
+         frame['h'] =  frame_data[fn]['blob_h']
+         frame['intensity'] =  frame_data[fn]['blob_int']
+         frame['dist_from_last'] =  frame_data[fn]['dist_from_last']
+         frame['dist_from_start'] =  frame_data[fn]['dist_from_start']
+         frames.append(frame)
+   return(frames)
+
+def add_arc_stars(cal_params):
+   cal_params['device_lat'] = cal_params['site']['device_lat']
+   cal_params['device_lng'] = cal_params['site']['device_lng']
+   cal_params['device_alt'] = cal_params['site']['device_alt']
+   cal_params['orig_ra_center'] = cal_params['ra_center']
+   cal_params['orig_dec_center'] = cal_params['dec_center']
+
+   cal_params['orig_az_center'] = cal_params['center_az']
+   cal_params['orig_el_center'] = cal_params['center_el']
+   cal_params['orig_pos_ang'] = cal_params['position_angle']
+   cal_params['orig_pixscale'] = cal_params['pixscale']
+   cal_params['cat_image_stars'] = []
+
+   cat_stars = flex_get_cat_stars(obj['trim_clip'], cal_params_file, json_conf, cal_params )
+   #cat_image_stars = get_cat_image_stars(cat_stars, frame, cal_params_file)
+   archive_file = obj['hd_trim']
+   image_stars = get_image_stars(archive_file,frame, show=1)
+   cat_image_stars = []
+   calib_stars = []
+   used_cat_stars = {}
+   used_img_stars = {}
+   for star in image_stars:
+      print("STAR:", star)
+      best_star = find_best_cat_stars(cat_stars, star[0], star[1], frame, archive_file)
+      print("BEST:", best_star)
+      istar_key = str(star[0]) + str(star[1])
+      cstar_key = str(best_star[4]) + str(best_star[5])
+      if istar_key not in used_img_stars and cstar_key not in used_cat_stars:
+         cv2.line(frame, (star[0], star[1]), (int(best_star[4]), int(best_star[5])), (128,128,128), 1)
+         calib_star = {}
+         cat_image_stars.append(best_star)
+         used_img_stars[istar_key] = 1
+         used_cat_stars[cstar_key] = 1
+
 
 def fit_arc_file(json_file):
    json_conf = load_json_file("../conf/as6.json")
@@ -2454,7 +2836,6 @@ def bp_detect( gray_frames, video_file):
          if len(contours) > 0:
             for ct in contours:
                object, objects = find_object(objects, fn,ct[0], ct[1], ct[2], ct[3])
-            #print("CNTS:", contours, object)
       else:
          contours = []
  
@@ -2517,7 +2898,6 @@ def detect_motion_in_frames(subframes, video_file, fn):
          (_, cnts, xx) = cnt_res
       elif len(cnt_res) == 2:
          (cnts, xx) = cnt_res
-      print("CNTS:", len(cnts))
 
 
       if len(cnts) < 50:
@@ -5568,7 +5948,6 @@ def load_frames_fast(trim_file, json_conf, limit=0, mask=0,crop=(),color=0,resiz
 
             if last_frame is not None:
                subframe = cv2.subtract(frame, last_frame)
-               print("LOAD FRAMES SUB:", subframe.shape)
                #subframe = mask_frame(subframe, [], masks, 5)
                sum_val =cv2.sumElems(subframe)[0]
   
@@ -6351,6 +6730,9 @@ def make_frame_data(buf_hd_subframes,buf_hd_frames,cnt_object,bp_object):
       y = cnt_object['oys'][i]
       w = cnt_object['ows'][i]
       h = cnt_object['ohs'][i]
+      if 'ftimes' in cnt_object:
+         dt  = cnt_object['ftimes'][i]
+         frame_data[fn]['dt'] = dt
       if "cnts" not in frame_data[fn]:
          frame_data[fn]['cnts'] = []
       frame_data[fn]['cnts'].append((x,y,w,h))
@@ -6401,26 +6783,29 @@ def make_frame_data(buf_hd_subframes,buf_hd_frames,cnt_object,bp_object):
    last_dist_from_start = None
    max_dist_from_start = 0
    last_dists = []
-   for i in range(0,len(buf_hd_subframes)):
+   for i in range(0,len(buf_hd_frames)):
       bx = None
       if "bps" in frame_data[i]:
          bx,by,bw,bh = frame_data[i]['bps'][0]
       elif "cnts" in frame_data[i]:
          bx,by,bw,bh = frame_data[i]['cnts'][0]
-      if bx is not None: 
+      if bx is not None : 
          if first_bx is None:
             first_bx = bx
             first_by = by
             last_dist_from_start = 0
-         cx1,cy1,cx2,cy2 = bound_cnt(bx,by,buf_hd_frames[i].shape[1],buf_hd_frames[i].shape[0], 25)
+         print(i)
+         cx1,cy1,cx2,cy2 = bound_cnt(bx,by,buf_hd_frames[0].shape[1],buf_hd_frames[0].shape[0], 25)
          blob_cnt = buf_hd_frames[i][cy1:cy2,cx1:cx2]
-         blob_x, blob_y, max_val, blob_w, blob_h = find_blob_center(i, buf_hd_frames[i],bx,by,20, x_dir_mod, y_dir_mod)
+         blob_int = int(np.sum(blob_cnt))
+         blob_x, blob_y, max_val, blob_w, blob_h= find_blob_center(i, buf_hd_frames[i],bx,by,20, x_dir_mod, y_dir_mod)
          frame_data[i]['leading_x'] = blob_x
          frame_data[i]['leading_y'] = blob_y 
          frame_data[i]['blob_x'] = blob_x
          frame_data[i]['blob_y'] = blob_y 
          frame_data[i]['blob_w'] = blob_w
          frame_data[i]['blob_h'] = blob_h
+         frame_data[i]['blob_int'] = blob_int
          frame_data[i]['dist_from_start'] = calc_dist((blob_x,blob_y),(first_bx,first_by))
          frame_data[i]['dist_from_last'] = frame_data[i]['dist_from_start'] - last_dist_from_start
          last_dist_from_start = frame_data[i]['dist_from_start']
@@ -6434,6 +6819,7 @@ def make_frame_data(buf_hd_subframes,buf_hd_frames,cnt_object,bp_object):
    diff = abs(med_dist - frame_data[last_fn]['dist_from_last'])
    print("LAST DIFF ERROR:", med_dist, diff)
    if diff > 5:
+      print("BAD LAST FRAME!", last_fn)
       frame_data[last_fn] = {}
    poly_x,poly_y = frame_data_to_poly_xy(frame_data)
    print("POLYX:", poly_x)
@@ -6454,7 +6840,7 @@ def make_frame_data(buf_hd_subframes,buf_hd_frames,cnt_object,bp_object):
          
          if dist_from_line > 2 * med_dist:
             print("BAD FRAME!")
-            frame_data[last_fn] = {}
+            #frame_data[last_fn] = {}
       
 
 
@@ -6500,9 +6886,9 @@ def make_frame_data(buf_hd_subframes,buf_hd_frames,cnt_object,bp_object):
             #leading_edge_cnt = buf_hd_subframes[i][lcy1:lcy2,lcx1:lcx2]
             cv2.circle(le_cnt,(lmx,lmy), 3, (255,255,255), 1)
             cv2.imshow('blob', blob_cnt)
-            cv2.waitKey(50)
+            cv2.waitKey(0)
             cv2.imshow('leading edge', le_cnt)
-            cv2.waitKey(50)
+            cv2.waitKey(0)
 
    # Remove bad frames from end of meteor
 
@@ -6778,6 +7164,36 @@ def debug2(video_file):
    return("")
    #exit()
 
+def arc_frames_to_obj(frames):
+   fns = []
+   xs = []
+   ys = []
+   ws = []
+   hs = []
+   oint = []
+   ftimes = []
+   for frame in frames:
+      fns.append(frame['fn'])
+      xs.append(frame['x'])
+      ys.append(frame['y'])
+      ws.append(frame['w'])
+      hs.append(frame['w'])
+      ftimes.append(frame['dt'])
+      if "intensity" in frame:
+         oint.append(frame['intensity'])
+      else:
+         oint.append(0)
+   object = {}
+   object['oid'] = 1 
+   object['ofns'] = fns 
+   object['oxs'] = xs
+   object['oys'] = ys
+   object['ows'] = ws
+   object['ohs'] = hs
+   object['oint'] = oint
+   object['ftimes'] = ftimes
+   return(object)
+
 def frame_data_to_obj(frame_data):  
    fns = []
    xs = []
@@ -6810,7 +7226,7 @@ def frame_data_to_obj(frame_data):
   
    
 
-def save_archive_meteor(video_file, syncd_sd_frames,syncd_hd_frames,frame_data,new_trim_num) :
+def save_archive_meteor(video_file, syncd_sd_frames,syncd_hd_frames,frame_data,new_trim_num, save_vids=1) :
    # Determine trim clip start time and corresponding frame times
    # convert frames to obj
    # Apply the calib
@@ -6894,11 +7310,13 @@ def save_archive_meteor(video_file, syncd_sd_frames,syncd_hd_frames,frame_data,n
    omd['archive_file'] = ma_json_file
    save_json_file(old_meteor_json_file, omd)
 
-   make_movie_from_frames(syncd_sd_frames, [0,len(syncd_sd_frames) ], ma_sd_file, 1)
-   make_movie_from_frames(syncd_hd_frames, [0,len(syncd_hd_frames) ], ma_hd_file, 1)
+   if save_vids == 1:
+      make_movie_from_frames(syncd_sd_frames, [0,len(syncd_sd_frames) ], ma_sd_file, 1)
+      make_movie_from_frames(syncd_hd_frames, [0,len(syncd_hd_frames) ], ma_hd_file, 1)
 
    cmd = "./MakeCache.py " + ma_json_file
    os.system(cmd)
+
    write_archive_index(archive_year,archive_mon)
 
    print("OLD:", old_meteor_json_file)
@@ -7552,4 +7970,13 @@ if cmd == "batch_archive_msm" or cmd == "bams" :
    batch_archive_msm(video_file)
 if cmd == "eval_points" or cmd == "ep" :
    eval_points(video_file)
+if cmd == "fix_arc_points" or cmd == "fap" :
+   fix_arc_points(video_file)
+if cmd == "fix_arc_all" or cmd == "faa" :
+   eval_points(video_file)
+   fix_arc_points(video_file)
+   fit_arc_file(video_file)
+   os.system("cd /home/ams/amscams/pythonv2; /usr/bin/python3 Apply_calib.py " + video_file)
+   os.system("cd /home/ams/amscams/pythonv2; /usr/bin/python3 MakeCache.py " + video_file)
+   os.system("cd /home/ams/amscams/pythonv2; /usr/bin/python3 Create_Archive_Index.py 2019" )
 
