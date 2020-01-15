@@ -189,14 +189,15 @@ def reduce_meteor2(json_conf,form):
    # We compute the MED_DIST (medium value of frame['dist_from_last'])
    med_dist = 0
    if('frames' in meteor_json_file):
-      if('dist_from_last' in meteor_json_file['frames'][0]):
+      if(meteor_json_file['frames'][0]):
+         if('dist_from_last' in meteor_json_file['frames'][0]):
 
-         # We add all the dist_from_last to compute the median value
-         tmp_list = []
-         for frame in meteor_json_file['frames']:
-            tmp_list.append(frame['dist_from_last'])
+            # We add all the dist_from_last to compute the median value
+            tmp_list = []
+            for frame in meteor_json_file['frames']:
+               tmp_list.append(frame['dist_from_last'])
 
-         med_dist=numpy.median(tmp_list)
+            med_dist=numpy.median(tmp_list)
 
    template = template.replace("{MED_DIST}", str(med_dist))
 
