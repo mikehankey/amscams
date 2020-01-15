@@ -664,7 +664,7 @@ def get_html_detection(det,detection,clear_cache,video_prev):
    res_html += '     <input type="checkbox" class="custom-control-input" id="chec_'+detection_id+'" name="'+detection_id+'">'     
    res_html += '     <label class="custom-control-label" for="chec_'+detection_id+'"></label>'
    res_html += '  </div></div>'
-   res_html += '  <div class="d-flex justify-content-between">'
+   res_html += '  <div class="d-flex justify-content-between pr">'
    res_html += '     <div class="pre-b gallery-only"><span class="mst">Cam #'+det['cam_id']+' - <b>'+det['hour']+':'+det['min']+'</b></span>'
    res_html += details_html
    

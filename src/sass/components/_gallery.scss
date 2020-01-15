@@ -233,6 +233,16 @@
          font-size: 1.1rem;
       }
    }
+
+   // For Multi
+   .badge  {
+      position: absolute;
+      right: 0.2rem;
+      top: 2.5rem;
+      font-size: 1rem;
+      color: #061329;
+      background-color: #4491e3;
+   }
 }
 
 
@@ -251,7 +261,13 @@
    display:  block;
 }
 
- 
+
+.gallery {
+   .pr {
+      position:static;
+   }
+}
+
 
  .gallery.list {
      
@@ -264,6 +280,10 @@
          -webkit-box-shadow: 0 1px 2px rgba(0,0,0,0);
         box-shadow: 0 1px 2px rgba(0,0,0,0);
         background: rgba(0,0,0,0);
+        }
+
+        .pr {
+           position:relative;
         }
 
         .h2_holder  {
