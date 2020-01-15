@@ -7973,6 +7973,7 @@ if cmd == "eval_points" or cmd == "ep" :
 if cmd == "fix_arc_points" or cmd == "fap" :
    fix_arc_points(video_file)
 if cmd == "fix_arc_all" or cmd == "faa" :
+   eval_points(video_file)
    fix_arc_points(video_file)
    fit_arc_file(video_file)
    os.system("cd /home/ams/amscams/pythonv2; /usr/bin/python3 Apply_calib.py " + video_file)
