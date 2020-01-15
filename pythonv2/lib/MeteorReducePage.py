@@ -188,10 +188,8 @@ def reduce_meteor2(json_conf,form):
 
    # We compute the MED_DIST (medium value of frame['dist_from_last'])
    med_dist = 0
-   if('frames' in meteor_json_file):
-      print(meteor_json_file['frames'])
-      sys.exit(0)
-      if(meteor_json_file['frames'][0] is not None):
+   if('frames' in meteor_json_file):  
+      if(meteor_json_file['frames'] != {}):
          if('dist_from_last' in meteor_json_file['frames'][0]):
 
             # We add all the dist_from_last to compute the median value
