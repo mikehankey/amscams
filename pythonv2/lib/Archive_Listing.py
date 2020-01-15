@@ -126,6 +126,8 @@ def get_diag_fields(detection):
          if('info' in detection_data):
             if('multi_station' in detection_data['info']):
                multi = 1
+            else:
+               multi = 0
          else:
             multi = 0
       except:
