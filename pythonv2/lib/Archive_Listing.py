@@ -912,7 +912,7 @@ def archive_listing(form):
    template = template.replace("{MULTI}", multi_select) 
 
    if selected_multi is not None and int(selected_multi) > -1:
-      if(selected_multi==1):
+      if(int(selected_multi)==1):
          sel_text = "Multi-detections only"
       else:
          sel_text= "Single detections only"
