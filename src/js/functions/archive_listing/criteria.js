@@ -35,6 +35,12 @@ $(function() {
       } else {
          new_url = delete_url_param(new_url ,'point_score');
       }
+
+      if($('#multi').val()>=0) { 
+         new_url = update_url_param(window.location.href ,'multi',$('#multi').val());
+      } else {
+         new_url = delete_url_param(new_url ,'multi');
+      }
       
        // Back to page = 1 (so we dont have issues if the number of page is too mall)
        window.location =  update_url_param(new_url ,'p',1);
