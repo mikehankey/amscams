@@ -946,7 +946,7 @@ def archive_listing(form):
    has_limit_day = False
 
    if (start_datetime is None and end_datetime is None):
-      start_datetime = datetime.now()- timedelta(days=1)
+      start_datetime = datetime.now()- timedelta(days=30)
       end_datetime   = datetime.now() 
    else:
       start_datetime = datetime.strptime(start_datetime,"%Y/%m/%d") 
