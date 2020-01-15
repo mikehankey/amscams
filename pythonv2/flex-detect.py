@@ -1159,8 +1159,16 @@ def fix_arc_points(json_file):
    hd_frames,hd_color_frames,hd_subframes,sum_vals,max_vals = load_frames_fast(hd_file, json_conf, 0, 0, [], 0,[])
    print("HD FRAMES:", len(hd_frames))
    print("HD SUB FRAMES FRAMES:", len(hd_subframes))
-   xd = json_data['report']['x_dir_mod']
-   yd = json_data['report']['y_dir_mod']
+   if 'x_dir_mod' in json_data['report']:
+      xd = json_data['report']['x_dir_mod']
+      yd = json_data['report']['y_dir_mod']
+   else:
+      fd = json_data['frames']
+      print(fd, json_data)
+      xd, yd = meteor_dir(fd[0]['x'],fd[0]['y'],fd[-1]['x'],fd[-1]['y'])
+      json_data['report']['x_dir_mod'] = xd
+      json_data['report']['y_dir_mod'] = yd
+
    # x=1 = right to left x=-1 left to rught
    # y=-1 = top to bottom y =1 bottom to top
    dom,z,med_dist,med_seg,mxd,myd = line_info(json_data['frames']) 
@@ -1291,11 +1299,12 @@ def fix_arc_points(json_file):
          adj_cnt = cv2.resize(adj_cnt, (400,400))
 
       try: 
-         frame[0:400,0:400] = big_cnt
-         frame[400:800,0:400] = adj_cnt
-         show_frame = cv2.resize(frame.copy(), (1280,720))
-         cv2.imshow('pepe', show_frame)
-         cv2.waitKey(50)
+         if show == 1:
+            frame[0:400,0:400] = big_cnt
+            frame[400:800,0:400] = adj_cnt
+            show_frame = cv2.resize(frame.copy(), (1280,720))
+            cv2.imshow('pepe', show_frame)
+            cv2.waitKey(50)
       except:
          print("failed to show frame")
 
