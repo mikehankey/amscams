@@ -2,12 +2,12 @@
 
 $(function() {
 
-   new_url = window.location.href
+   
 
    $('#apply_archive_filters').click(function() {
-      
-      
 
+      new_url = window.location.href
+      
       if($('#mag').val()>=0) { 
          new_url = update_url_param(new_url ,'magnitude',$('#mag').val());
       } else {
@@ -44,8 +44,9 @@ $(function() {
          new_url = delete_url_param(new_url ,'multi');
       }
       
+      console.log(update_url_param(new_url ,'p',1))
        // Back to page = 1 (so we dont have issues if the number of page is too mall)
-       window.location =  update_url_param(new_url ,'p',1);
+       //window.location =  update_url_param(new_url ,'p',1);
    });
  
 })
