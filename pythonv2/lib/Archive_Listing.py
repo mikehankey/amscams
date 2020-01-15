@@ -388,7 +388,7 @@ def test_criteria(criter,criteria,detection):
 
    # Res. ERROR
    if(criter=='res_er'):
-      if(float(detection[criter])>=float(criteria[criter]) or detection[criter]=='unknown'):
+      if(float(detection[criter])<=float(criteria[criter]) or detection[criter]=='unknown'):
          #print("<br>RES ER  FALSE")
          return False
    
