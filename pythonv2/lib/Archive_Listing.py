@@ -846,7 +846,7 @@ def archive_listing(form):
       criteria_text.append("<a data-toggle='modal' data-target='#staticBackdrop' href='#' title='Magnitude'>Magnitude >" + str(selected_mag) +  "</a>")
     
    # Build ERRORS selector
-   error_select, criteria = create_criteria_selector(POSSIBLE_ERRORS,'res_er',selected_error, criteria,  'All Resolution Error', '<')
+   error_select, criteria = create_criteria_selector(POSSIBLE_ERRORS,'res_er',selected_error, criteria,  'All Resolution Error', '>')
    template = template.replace("{RES_ERRORS}", error_select)
 
    if selected_error is not None and int(selected_error) > -1:
