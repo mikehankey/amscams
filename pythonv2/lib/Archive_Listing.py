@@ -390,13 +390,13 @@ def get_full_det_path(path,station_id,date,day):
 def test_criteria(criter,criteria,detection):
 
 
-   print("<br>detection ")
-   print(detection)
-   print("<br>CRITER ")
-   print(str(criteria[criter]))
-   print("<br>VAL ")
-   print(str(detection[criter]))
-   print("<br><br>")
+   #print("<br>detection ")
+   #print(detection)
+   #print("<br>CRITER ")
+   #print(str(criteria[criter]))
+   #print("<br>VAL ")
+   #print(str(detection[criter]))
+   #print("<br><br>")
 
    # Point Score
    if(criter=='point_score'):
