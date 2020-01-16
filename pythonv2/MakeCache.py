@@ -41,10 +41,9 @@ except NameError:
 else:
    HD = True
    thumbs = get_thumbs(tmp_analysed_name,new_json_data,HD,HD_frames,clear_cache)
-   output = "THUMBS : " + str(thumbs)
-   output += "HD FRAMES : " + str(HD_frames)
+   output = "THUMBS : \n" + str(thumbs) + "\n"
+   output += "HD FRAMES \n: " + str(HD_frames) + "\n"
 
 # Create the temporary media (CACHE) for this detection
-print("NEW ARCHIVE:")
 print(output) 
 
