@@ -436,7 +436,7 @@ def test_criteria(criter,criteria,detection):
       print("<br>CRITER")
       print(str(criter))
       print("<br>CRITER VALUE ")
-      print(str(criteria[criter]))
+      print(str(int(criteria[criter])))
       print("<br>DETECT VALUE ")
       print(str(int(detection[criter])))
       print("<br>")
