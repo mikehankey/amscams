@@ -47,6 +47,7 @@
 
                     if(!butt) {
                         $('<a id="delete_link" class="col btn btn-danger" title="Delete detection"><i class="icon-delete"></i></a><a id="info_link"  target="_parent"  class="col btn btn-primary" title="Go to Info Page"><i class="icon-question"></i></a>').insertBefore('video')
+                        $('#info_link').attr('href','/pycgi/webUI.py?cmd=reduce2&video_file='+video )
                     }
 
                     $('#delete_link').unbind('click').on('click',function() {
