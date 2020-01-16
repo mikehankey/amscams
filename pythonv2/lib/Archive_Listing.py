@@ -439,16 +439,20 @@ def test_criteria(criter,criteria,detection):
       print(str(criteria[criter]))
       print("<br>DETECT VALUE ")
       print(str(detection[criter]))
-      print("<br><br>")
+      print("<br>")
 
       if(int(criteria[criter])==1):
          if(int(detection[criter])!=1):
-            print("False")
+            print("False<br>")
             return False 
       elif(int(criteria[criter])==0):
          if(int(detection[criter])!=0):
-            print("False")
+            print("False<br>")
             return False 
+      else:
+         print("TRUE<br>")
+
+
    return True
 
 # Get results on index from a certain date
