@@ -218,7 +218,7 @@ def reduce_meteor2(json_conf,form):
             pts = str(meteor_json_file['report']['point_score'])
             if(meteor_json_file['report']['point_score']>3):
                pts = "<b style='color:#f00'>"+ pts +  "</b>"
-            report_details += '<br/><dt class="col-4">Point Score</dt><dd class="col-8">'+pts+'</dd>'
+            report_details += '<br/><dt class="col-4">Point Score</dt><dd class="col-8" id="point_score_val">'+pts+'</dd>'
 
    if('calib' in meteor_json_file):
       if('device' in meteor_json_file['calib']):

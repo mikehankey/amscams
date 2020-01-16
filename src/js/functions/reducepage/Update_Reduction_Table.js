@@ -14,6 +14,12 @@ function update_reduction_on_canvas_and_table(json_resp) {
 
     var all_frame_ids = [];
 
+    // If we have a "point_score", we update the value on the page
+    if(json_resp['point_score'])  {
+       $('#point_score_val').val(json_resp['point_score']);
+    }
+
+
     // Get all the frame IDs so we know which one are missing
     $.each(smf, function(i,v){
         all_frame_ids.push(parseInt(v[1]));
