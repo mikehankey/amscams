@@ -13,18 +13,24 @@ function active_tool_bar_menu(id) {
 }
 
 $(function() {
-   $('#star_picker_background').click(function() {
+   $('#star_picker_background').click(function(e) {
+      e.stopImmediatePropagation();
       active_tool_bar_menu('star_picker_background');
       change_canvas_bg();
+      return false;
    });
 
-   $('#radec_mode').click(function() {
+   $('#radec_mode').click(function(e) {
+      e.stopImmediatePropagation();
       active_tool_bar_menu('radec_mode');
       radec_action();
+      return false;
    });
 
-   $('#star_mode').click(function() {
+   $('#star_mode').click(function(e) {
+      e.stopImmediatePropagation();
       active_tool_bar_menu('star_mode'); 
+      return false;
    });
 
 
