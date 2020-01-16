@@ -11,6 +11,7 @@ function active_tool_bar_menu(id) {
 
       // We delete the panel
       console.log("REMOVE 1");
+      console.log(RADEC_MODE);
       RADEC_MODE = false;
       $('#select_f_tools').remove();
 
