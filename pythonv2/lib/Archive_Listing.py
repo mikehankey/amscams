@@ -451,7 +451,7 @@ def test_criteria(criter,criteria,detection):
             return False 
       else:
          print("TRUE<br>")
-
+      sys.exit(0)
 
    return True
 
