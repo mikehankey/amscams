@@ -25,6 +25,7 @@ function create_bg_picker(data) {
    $(document).unbind('click').click(function (e) { 
       var container = $("#bg_selector"); 
       if(!container.is(e.target) && container.has(e.target).length === 0 && !RADEC_MODE) { 
+         console.log('CLICK OUTSIDE');
          container.remove();  
          active_tool_bar_menu('star_mode');
       } 
