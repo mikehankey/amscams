@@ -196,6 +196,7 @@ def get_thumbs(analysed_name,meteor_json_data,HD,HD_frames,clear_cache):
   
    if(len(thumbs)==0 or clear_cache is True):
       # We need to generate the thumbs 
+      print("WE GENERATE THEM ALL")
       thumbs = generate_cropped_frames(analysed_name,meteor_json_data,HD_frames,HD,clear_cache)
    else:
       # We return them

@@ -23,8 +23,8 @@ tmp_analysed_name = name_analyser(new_json)
 
 # Generate the stuff in the cache
 clear_cache = 1
-hd_stack = get_stacks(tmp_analysed_name,clear_cache,True)
-sd_stack = get_stacks(tmp_analysed_name,clear_cache,False)
+hd_stack  = get_stacks(tmp_analysed_name,clear_cache,True)
+sd_stack  = get_stacks(tmp_analysed_name,clear_cache,False)
 HD_frames = get_HD_frames(tmp_analysed_name,clear_cache)
 
 # Generate the Preview for the archive listing
