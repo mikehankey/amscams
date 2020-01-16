@@ -159,8 +159,7 @@ function radec_action() {
          rad_dec_object = [];
 
          // We delete the panel
-         $('#select_f_tools').remove();
-         console.log("REMOVE 2");
+         $('#select_f_tools').remove(); 
       }
    }
 
