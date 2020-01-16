@@ -8,7 +8,7 @@ from lib.Old_JSON_converter import move_old_detection_to_archive
 from lib.MeteorReduce_Tools import * 
 
 # /mnt/ams2/meteors/2019_11_15/2019_11_15_07_49_40_000_010042-trim0263.json
-# python3 MakeChace.py /mnt/ams2/meteors/2019_11_15/2019_11_15_07_49_40_000_010042-trim0263.json
+# python3 MakeCache.py /mnt/ams2/meteors/2019_11_15/2019_11_15_07_49_40_000_010042-trim0263.json
 
 # JSON FILE 
 new_json = sys.argv[1]          
@@ -37,6 +37,7 @@ try:
    HD_frames
 except NameError:
    thumbs = ''
+   print("ERROR WITH HD FRAMES => THUMBS")
 else:
    HD = True
    thumbs = get_thumbs(tmp_analysed_name,new_json_data,HD,HD_frames,clear_cache)
