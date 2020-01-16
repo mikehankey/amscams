@@ -1,20 +1,12 @@
 function active_tool_bar_menu(id) {
-   // Remove RA/Dec Mode
-      // We put back the stars
-      add_stars_info_on_canvas();
+   
+   // Reset the RA/DEC Mode 
+   if(RADEC_MODE) {
+      radec_action();
+   }
 
-      // Remove the radec info from canvas
-      remove_radec_info_from_canvas();
-
-      // We empty rad_dec_object
-      rad_dec_object = [];
-
-      // We delete the panel RA/Dec
-      radec_action()
-
-      // Remove the Star Background Picker
-     
-      $("#bg_selector").remove();
+   // Remove the Star Background Picker
+   $("#bg_selector").remove();
 
    $('#canvas_toolbar .btn').removeClass('active');
    $('#canvas_toolbar .btn#'+ id).addClass('active');
