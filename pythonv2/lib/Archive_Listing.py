@@ -431,25 +431,25 @@ def test_criteria(criter,criteria,detection):
    # Multi
    if(criter=='multi'):
 
-      print("<br>detection ")
-      print(detection)
-      print("<br>CRITER")
-      print(str(criter))
-      print("<br>CRITER VALUE ")
-      print(str(int(criteria[criter])))
-      print("<br>DETECT VALUE ")
-      print(str(int(detection[criter])))
-      print("<br>")
+      #print("<br>detection ")
+      #print(detection)
+      #print("<br>CRITER")
+      #print(str(criter))
+      #print("<br>CRITER VALUE ")
+      #print(str(int(criteria[criter])))
+      #print("<br>DETECT VALUE ")
+      #print(str(int(detection[criter])))
+      #print("<br>")
 
       if(int(criteria[criter])!=int(detection[criter])):
-            print("False<br>")
-            sys.exit(0)
+            #print("False<br>")
+            #sys.exit(0)
             return False 
-      else:
-         print("TRUE<br>")
+      #else:
+         #print("TRUE<br>")
 
 
-      sys.exit(0)
+      #sys.exit(0)
 
    return True
 
