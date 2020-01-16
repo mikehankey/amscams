@@ -169,10 +169,10 @@ function update_stars_on_canvas_and_table(json_resp) {
            // Add the corresponding row 
            table_tbody_html+= '<tr><td><b>'+v['name']+'</b></td>\
                                <td>'+v['mag']+'</td>\
-                               <td>'+v['ra'].toFixed(2) +'&deg&bnsp;/&bnsp;'+v['dec'].toFixed(2)+'&deg;</td>\
-                               <td>'+v['i_pos'][POS_X].toFixed(2) + '&bnsp;/&bnsp;'+ v['i_pos'][POS_Y].toFixed(2) + '</td>\
-                               <td>'+v['cat_und_pos'][POS_X].toFixed(2)  + '&bnsp;/&bnsp;'+ v['cat_und_pos'][POS_Y].toFixed(2) +'</td>\
-                               <td>'+v['cat_dist_pos'][POS_X].toFixed(2)  + '&bnsp;/&bnsp;'+ v['cat_dist_pos'][POS_Y].toFixed(2) +'</td>\
+                               <td>'+v['ra'].toFixed(2) +'&deg&nbsp;/&nbsp;'+v['dec'].toFixed(2)+'&deg;</td>\
+                               <td>'+v['i_pos'][POS_X].toFixed(2) + '&nbsp;/&nbsp;'+ v['i_pos'][POS_Y].toFixed(2) + '</td>\
+                               <td>'+v['cat_und_pos'][POS_X].toFixed(2)  + '&nbsp;/&nbsp;'+ v['cat_und_pos'][POS_Y].toFixed(2) +'</td>\
+                               <td>'+v['cat_dist_pos'][POS_X].toFixed(2)  + '&nbsp;/&nbsp;'+ v['cat_dist_pos'][POS_Y].toFixed(2) +'</td>\
                                <td>'+v['dist_px'].toFixed(4)+'</td>\
                                '+intensity+'\
                                </tr>';
