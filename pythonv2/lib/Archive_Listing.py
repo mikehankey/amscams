@@ -438,19 +438,23 @@ def test_criteria(criter,criteria,detection):
       print("<br>CRITER VALUE ")
       print(str(criteria[criter]))
       print("<br>DETECT VALUE ")
-      print(str(detection[criter]))
+      print(str(int(detection[criter])))
       print("<br>")
 
       if(int(criteria[criter])==1):
          if(int(detection[criter])!=1):
             print("False<br>")
+            sys.exit(0)
             return False 
       elif(int(criteria[criter])==0):
          if(int(detection[criter])!=0):
             print("False<br>")
+            sys.exit(0)
             return False 
       else:
          print("TRUE<br>")
+
+
       sys.exit(0)
 
    return True
