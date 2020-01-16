@@ -200,6 +200,7 @@ def get_thumbs(analysed_name,meteor_json_data,HD,HD_frames,clear_cache):
       thumbs = generate_cropped_frames(analysed_name,meteor_json_data,HD_frames,HD,clear_cache)
    else:
       # We return them
+      print("WE RETURN THEM")
       thumbs = glob.glob(get_cache_path(analysed_name,"cropped")+"*"+EXT_CROPPED_FRAMES+"*.png") 
    return thumbs
 
