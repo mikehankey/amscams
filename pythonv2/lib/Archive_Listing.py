@@ -441,11 +441,11 @@ def test_criteria(criter,criteria,detection):
       print(str(detection[criter]))
       print("<br><br>")
 
-      if(criteria[criter]==1):
+      if(int(criteria[criter])==1):
          if(int(detection[criter])!=1):
             print("False")
             return False 
-      elif(criteria[criter]==0):
+      elif(int(criteria[criter])==0):
          if(int(detection[criter])!=0):
             print("False")
             return False 
