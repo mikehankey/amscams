@@ -25,7 +25,7 @@ function create_bg_picker(data) {
    $(document).unbind('mouseup').mouseup(function (e) { 
       var container = $("#bg_selector"); 
       if(!container.is(e.target) && container.has(e.target).length === 0) { 
-         container.hide(); 
+         container.remove(); 
       } 
   }); 
     
