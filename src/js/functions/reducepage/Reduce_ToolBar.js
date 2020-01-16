@@ -1,7 +1,7 @@
 function active_tool_bar_menu(id) {
    
    // Reset the RA/DEC Mode 
-   if(!RADEC_MODE) {
+   if(RADEC_MODE) {
       radec_action();
    }
 
