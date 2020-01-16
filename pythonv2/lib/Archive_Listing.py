@@ -922,8 +922,8 @@ def archive_listing(form):
    multi_select, criteria = create_criteria_selector(POSSIBLE_MULTI,'multi',selected_multi, criteria,  'All kind of detections', '')
    template = template.replace("{MULTI}", multi_select) 
 
-   if selected_multi is not None and int(selected_multi) > -1:
-      if(int(selected_multi)==1):
+   if selected_multi is not None and float(selected_multi) > -1:
+      if(float(selected_multi)==1.0):
          sel_text = "Multi-detections only"
       else:
          sel_text= "Single detections only"
