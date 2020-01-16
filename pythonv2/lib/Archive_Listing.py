@@ -431,25 +431,22 @@ def test_criteria(criter,criteria,detection):
    # Multi
    if(criter=='multi' and criteria[criter]!=-1):
 
-      #print("<br>detection ")
-      #print(detection)
-      #print("<br>CRITER ")
-      #print(str(criteria[criter]))
-      #print("<br>VAL ")
-      #print(str(detection[criter]))
-      #print("<br><br>")
+      print("<br>detection ")
+      print(detection)
+      print("<br>CRITER ")
+      print(str(criteria[criter]))
+      print("<br>VAL ")
+      print(str(detection[criter]))
+      print("<br><br>")
 
       if(criteria[criter]==1):
          if(int(detection[criter])!=1):
+            print("False")
             return False 
       elif(criteria[criter]==0):
          if(int(detection[criter])!=0):
-            return False
-         
-
-
-
-
+            print("False")
+            return False 
    return True
 
 # Get results on index from a certain date
