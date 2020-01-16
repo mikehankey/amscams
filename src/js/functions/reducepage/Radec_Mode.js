@@ -164,5 +164,4 @@ function radec_action() {
    }
 
    
-})
 }
