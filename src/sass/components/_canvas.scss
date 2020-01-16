@@ -53,8 +53,8 @@
          border-top-left-radius: 0;
          border-top-right-radius: 0;
          font-size: .9rem;
-         border-top:0 medium;
          border: 1px solid rgba(0, 98, 204,.15);
+         border-top:none !important;
 
          &.active {
             background-color: rgba(41, 57, 82, .5);
