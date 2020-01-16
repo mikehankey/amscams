@@ -10,6 +10,7 @@ function active_tool_bar_menu(id) {
       rad_dec_object = [];
 
       // We delete the panel
+      console.log("REMOVE 1");
       $('#select_f_tools').remove();
 
    // Remove the Star Background Picker
