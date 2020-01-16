@@ -245,7 +245,7 @@ def reduce_meteor2(json_conf,form):
    if('info' in meteor_json_file):
       if('org_sd_vid' in meteor_json_file['info']):
          to = meteor_json_file['info']['org_sd_vid'].replace('.mp4','.json')
-         template = template.replace("{GO_TO_OLD_VERSION}","<a class='btn btn-primary d-block mt-4' href='/pycgi/webUI.py?cmd=reduce&video_file="+to +"'>Old Version</a>")
+         template = template.replace("{GO_TO_OLD_VERSION}","<a class='btn btn-primary d-block mt-4' href='/pycgi/webUI.py?cmd=reduce&video_file="+to +"'>Go to Old Version</a>")
 
 
    # We complete the template
