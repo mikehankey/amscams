@@ -22,6 +22,7 @@ function create_bg_picker(data) {
    $(img_list).prependTo($('.flex-fixed-r-canvas.h-100')); 
 
    // Hide on click outside
+   /*
    $(document).unbind('click').click(function (e) { 
       var container = $("#bg_selector"); 
       if(!container.is(e.target) && container.has(e.target).length === 0 && !RADEC_MODE) { 
@@ -30,6 +31,7 @@ function create_bg_picker(data) {
          active_tool_bar_menu('star_mode');
       } 
   }); 
+  */
     
    // Click on image
    $('.select_bg').unbind('click').click(function() {
