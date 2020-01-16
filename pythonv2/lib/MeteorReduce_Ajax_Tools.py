@@ -894,10 +894,10 @@ def get_reduction_info(json_file):
 
             rsp['frames'] = new_mfd
 
-         # Meteor Report Data
+         # Meteor Report Data (POINT SCORE)
          if('report' in mr):
             if('point_score' in mr['report']):
-               resp['point_score'] = str(mr['report']['point_score'])
+               rsp['point_score'] = str(mr['report']['point_score'])
            
       rsp['status'] = 1
   
