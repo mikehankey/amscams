@@ -45,5 +45,4 @@ else:
    output += "HD FRAMES \n: " + str(HD_frames) + "\n"
 
 # Create the temporary media (CACHE) for this detection
-print(output) 
-
+print(output)

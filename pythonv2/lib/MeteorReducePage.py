@@ -151,6 +151,7 @@ def reduce_meteor2(json_conf,form):
       HD_frames
    except NameError:
       # HD FRAMES NOT DEFINED
+      thumbs = ''
       print("Error 0112.b")
    else:
       thumbs = get_thumbs(tmp_analysed_name,meteor_json_file,HD,HD_frames,clear_cache)

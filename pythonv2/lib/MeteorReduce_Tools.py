@@ -196,7 +196,7 @@ def get_thumbs(analysed_name,meteor_json_data,HD,HD_frames,clear_cache):
   
    if(len(thumbs)==0 or clear_cache is True):
       # We need to generate the thumbs 
-      thumbs = generate_cropped_frames(analysed_name,meteor_json_data,HD_frames,HD)
+      thumbs = generate_cropped_frames(analysed_name,meteor_json_data,HD_frames,HD,clear_cache)
    else:
       # We return them
       thumbs = glob.glob(get_cache_path(analysed_name,"cropped")+"*"+EXT_CROPPED_FRAMES+"*.png") 
@@ -338,7 +338,7 @@ def generate_cropped_frame(analysed_name,meteor_json_data,the_HD_frame,the_HD_fr
       return False
 
 # Create the cropped frames (thumbs) for a meteor detection
-def generate_cropped_frames(analysed_name,meteor_json_data,HD_frames,HD):
+def generate_cropped_frames(analysed_name,meteor_json_data,HD_frames,HD,clear_cache):
 
    # Debug
    cgitb.enable()
@@ -355,6 +355,13 @@ def generate_cropped_frames(analysed_name,meteor_json_data,HD_frames,HD):
    
    # To store the cropped frames
    cropped_frames = [] 
+   
+   # If clear_cache, we delete all the files in the frame directory first
+   if(clear_cache==1):
+      fold = get_cache_path(analysed_name,"cropped")
+      filelist = glob.glob(os.path.join(fold, "*.png"))
+      for f in filelist:
+         os.remove(f)
 
    if(HD):
       for frame in meteor_frame_data:
