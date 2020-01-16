@@ -11,10 +11,11 @@ function active_tool_bar_menu(id) {
 
       // We delete the panel
       console.log("REMOVE 1");
+      RADEC_MODE = false;
       $('#select_f_tools').remove();
 
-   // Remove the Star Background Picker
-      RADEC_MODE = false;
+      // Remove the Star Background Picker
+     
       $("#bg_selector").remove();
 
    $('#canvas_toolbar .btn').removeClass('active');
