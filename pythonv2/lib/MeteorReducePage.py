@@ -240,6 +240,14 @@ def reduce_meteor2(json_conf,form):
    # We add the med dist to the template
    template = template.replace("{MED_DIST}", str(med_dist))
    
+
+   # Link to old version
+   if('info' in meteor_json_file):
+      if('org_sd_vid' in meteor_json_file['info']):
+         to = meteor_json_file['info']['org_sd_vid'].replace('.mp4','.json')
+         template = template.replace("{GO_TO_OLD_VERSION}","<a href='/pycgi/webUI.py?cmd=reduce&video_file="+to +"'>Old Version</a>")
+
+
    # We complete the template
    if(report_details!=''):
       template = template.replace("{REPORT_DETAILS}", report_details)
