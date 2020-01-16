@@ -893,8 +893,12 @@ def get_reduction_info(json_file):
                new_mfd.append(tmp_frame) 
 
             rsp['frames'] = new_mfd
- 
-          
+
+         # Meteor Report Data
+         if('report' in mr):
+            if('point_score' in mr['report']):
+               resp['point_score'] = str(mr['report']['point_score'])
+           
       rsp['status'] = 1
   
    else: 
