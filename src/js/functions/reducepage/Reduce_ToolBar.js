@@ -13,6 +13,7 @@ function active_tool_bar_menu(id) {
       $('#select_f_tools').remove();
 
    // Remove the Star Background Picker
+      RADEC_MODE = false;
       $("#bg_selector").remove();
 
    $('#canvas_toolbar .btn').removeClass('active');
