@@ -8,6 +8,12 @@
             <canvas id="c" width="960" height="540"></canvas> 
        </div>
 
+       <div id="canvas_toolbar" class="btn-group">
+         <a class="btn btn-primary d-block active" id="star_mode">Star Mode</a>
+         <a class="btn btn-primary d-block" id="radec_mode">RA/Dec Mode</a>
+         <a class="btn btn-primary d-block" id="star_picker_background">Star Background Picker </a>
+       </div>
+
        <ul class="nav nav-tabs mt-3">
            <li class="nav-item">
                <a class="nav-link active" id="reduc-tab-l" data-toggle="tab" href="#reduc-tab" role="tab" aria-controls="reduction" aria-selected="true">Reduction</a>
@@ -172,10 +178,7 @@
                </div>
 
                <div class="row mt-3 collapse" id="extra_command">
-                   <div class="col pl-4 pr-4 "> 
-                        <a class="btn btn-primary d-block mt-2" id="radec_mode">RA/Dec Mode</a>
-                        <a class="btn btn-primary d-block mt-2" id="star_picker_background">Star Picker Background</a>
-                        <hr/>
+                   <div class="col pl-4 pr-4 ">  
                         <a class="btn btn-primary d-block" href="/pycgi/webUI.py?cmd=manual_reduction&video_file={VIDEO_FILE}&hd_stack={HD_STACK}&sd_stack={SD_STACK}&sd_video={SD_VIDEO}&json_file={JSON_FILE}"><strong>NEW</strong> Manual Reduction</a>
                         <a class="btn btn-primary d-block mt-2 manual_synchronization" id="">Manually Video Sync.</a>
                         {HD_fix_button}
