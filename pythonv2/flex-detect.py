@@ -1019,7 +1019,385 @@ def update_intensity(json_file):
    print(cnt_file)
    print(ff_file)
 
+def find_bad_line_points(xs,ys):
+
+   fits_when_removed = []
+   doesnt_fit_when_removed = []
+
+   for i in range(0,len(xs)):
+      temp_xs = xs.copy()
+      temp_ys = ys.copy()
+      temp_xs.pop(i)
+      temp_ys.pop(i)
+      (dist_to_line, z, med_dist) = poly_fit_check(temp_xs,temp_ys, xs[i],ys[i])
+      if float(med_dist) < 5:
+         print("FIT!", med_dist)
+         fits_when_removed.append(i)   
+      else:
+         print("NO FIT!", med_dist)
+         doesnt_fit_when_removed.append(i)   
+      print(i, "INFO:", dist_to_line, med_dist)
+
+   print("The line fits when these frames are removed:", fits_when_removed)   
+   print("The doesn't fit when these frames are removed:", doesnt_fit_when_removed)   
+
+def find_point_on_line(p1, p2, p3):
+   x1, y1 = p1
+   x2, y2 = p2
+   x3, y3 = p3
+   dx, dy = x2-x1, y2-y1
+   det = dx*dx + dy*dy
+   a = (dy*(y3-y1)+dx*(x3-x1))/det
+   return x1+a*dx, y1+a*dy   
+
+def plot_points(frames):
+   print("PLOT POINTS!", frames)
+
+   import matplotlib
+   import matplotlib.pyplot as plt
+   xs = []
+   ys = []
+   dists = []
+   x_dists = []
+   y_dists = []
+   last_x = None
+   for frame in frames:
+      xs.append(frame['x'])
+      ys.append(frame['y'])
+      dists.append(frame['dist_from_last'])
+      if last_x is not None:
+         x_dists.append(frame['x'] - last_x)
+         y_dists.append(frame['y'] - last_y)
+      last_x = frame['x']
+      last_y = frame['y']
+   poly_x = np.array(xs)
+   poly_y = np.array(ys)
+
+   med_dist = np.median(dists)
+   med_x_dist = np.median(x_dists)
+   med_y_dist = np.median(y_dists)
+ 
+   if len(y_dists) > 30:
+      third = int(len(y_dists) / 3)
+      med_y_dist1 = np.median(y_dists[0:third])
+      med_y_dist2 = np.median(y_dists[third:third*2])
+      med_y_dist3 = np.median(y_dists[third*3:-1])
+      print("*****")
+      print("MED Y DISTS:", med_y_dist1, med_y_dist2,med_y_dist3)
+
+   # First check if these points can fit a line or not. If not there must be a bad point(s) in there.
+   (dist_to_line, z, med_dist) = poly_fit_check(xs,ys, xs[0],ys[0])
+   if med_dist > 2:
+      print("This line can't be plotted!, There must be a bad frame somwhere")
+      bad_frames = find_bad_line_points(xs,ys)
+      print("BAD FRAMES:", bad_frames)
+      #return(0)
+
+   if len(poly_x) > 3:
+      try:
+         z = np.polyfit(poly_x,poly_y,1)
+         f = np.poly1d(z)
+      except:
+         print("FAILED PLOTTING! not enough frames?")
+         return(0)
+   
+   else:
+      return(0)
+
+
+   new_ys = []
+   new_xs = []
+   est_ys = []
+   est_xs = []
+   l_ys = []
+   l_xs = []
+ 
+   print("MED X DIST:", med_x_dist)
+   print("MED Y DIST:", med_y_dist)
+
+   ls_x = poly_x[0] 
+   ls_y = int(f(ls_x))
+   le_x = poly_x[-1] 
+   le_y = int(f(le_x))
+
+
+   cc = 0
+   first_x = poly_x[0]
+   last_x = None
+   last_y = None
+   for i in range(0,len(poly_x)):
+      #plt.plot(i, f(i), 'go')
+      ox = poly_x[i]
+      oy = poly_y[i]
+      x = poly_x[i]
+      y = int(f(x))
+      if i > 0:
+         est_x = poly_x[i-1] + med_x_dist
+      else:
+         est_x = x
+      est_y = int(f(est_x))
+      # align y / vert distance with last frame
+      y_fixed = 0
+      med_y_dist = np.median(y_dists)
+      if i - 10 > 0:
+         #med_y_dist = np.median(y_dists[i-10:i])
+         med_y_dist = np.median(y_dists[i-10:i])
+         #print("* MED Y DIST:", med_y_dist)
+
+      if last_x is not None:
+         if abs(oy - last_y) > abs(med_y_dist) * 1:
+            adj_y = last_y + float(med_y_dist)
+            #print("ALIGN Y:", last_y, oy, adj_y, med_y_dist)
+            oy = adj_y
+            y_fixed = 1
+         else:
+            adj_y = oy
+      else:
+         adj_y = oy
+
+      lx,ly = find_point_on_line((ls_x,ls_y),(le_x,le_y),(ox,adj_y))
+      l_xs.append(lx)
+      l_ys.append(ly)
+      new_ys.append(int(f(x)))
+      new_xs.append(x)
+      est_xs.append(est_x)
+      est_ys.append(est_y)
+      cc = cc + 1
+      last_x = ox
+      if y_fixed == 1:
+         last_y = adj_y
+      else:
+         last_y = oy
+   print("LXS:", l_xs)
+   print("LyS:", l_ys)
+   show = 0
+   if show == 1:
+      plt.plot(poly_x, poly_y, 'x')
+      plt.plot(np.array(l_xs), np.array(l_ys), 'bs')
+      plt.axis('equal')
+      trendpoly = np.poly1d(z)
+      plt.plot(poly_x,trendpoly(poly_x))
+      ax = plt.gca()
+      ax.invert_yaxis()
+      plt.show()
+
+   return(l_xs,l_ys)
+
+def find_best_thresh(image ) :
+   min_val, max_val, min_loc, (mx,my)= cv2.minMaxLoc(image)
+   avg_val = np.mean(image)
+   px_diff = max_val - avg_val
+   thresh = avg_val + (px_diff * .5)
+   othresh = thresh
+  
+   cnts,rects = find_contours_in_frame(image, thresh)
+   if len(cnts) == 1 and cnts[0][2] != image.shape[1] and cnts[0][2] > 1 and cnts[0][3] > 1:
+      return(thresh)
+   for i in range(0, int(px_diff)):
+      thresh = max_val - i
+
+      cnts,rects = find_contours_in_frame(image, thresh-10)
+      print("BEST THRESH:", thresh, cnts)
+      if len(cnts) == 1 and cnts[0][2] != image.shape[1]:
+         return(thresh)
+   return(othresh)
+
+def center_cnt(image, x_dir_mod, y_dir_mod, dom):
+   print("CENTER CNT!")
+   min_val, max_val, min_loc, (mx,my)= cv2.minMaxLoc(image)
+   avg_val = np.mean(image)
+   px_diff = max_val - avg_val
+   #thresh = int(avg_val + (px_diff * .25))
+   thresh = find_best_thresh(image)
+   adj_x = 0
+   adj_y = 0
+   lcx = None
+
+   #blur_cnt= cv2.GaussianBlur(image, (7, 7), 0)
+   cnts,rects = find_contours_in_frame(image, thresh)
+
+   print("CNTS:", cnts)
+   if len(cnts) == 0:
+      thresh = thresh - 10
+      cnts,rects = find_contours_in_frame(image, thresh)
+      print("CNTS 2nd try:", len(cnts), cnts)
+      if len(cnts) == 0:
+         print("NO CNT FOUND")
+         cnts = [[200,200,5,5]]
+         found = 0
+      else:
+         x,y,w,h = cnts[0]
+         lcx,lcy = find_leading_corner(x,y,w,h,x_dir_mod,y_dir_mod,dom)
+         cv2.rectangle(image, (x, y), (x+w, y+h), (255,255,255), 1, cv2.LINE_AA)
+         cv2.circle(image,(lcx,lcy), 10, (0,255,0), 2)
+   elif len(cnts) == 1:
+      x,y,w,h = cnts[0]
+      print("1 CNT FOUND", x,y,w,h)
+      cv2.rectangle(image, (x, y), (x+w, y+h), (255,255,255), 1, cv2.LINE_AA)
+      lcx,lcy = find_leading_corner(x,y,w,h,x_dir_mod,y_dir_mod,dom)
+      cv2.circle(image,(lcx,lcy), 10, (0,255,0), 2)
+   else:
+      print("MANY CNTS:", len(cnts))
+      cnt = find_best_cnt(cnts, x_dir_mod,y_dir_mod)
+      x,y,w,h = cnt[0]
+      print("CNT FOUND", x,y,w,h)
+      cv2.rectangle(image, (x, y), (x+w, y+h), (255,255,255), 1, cv2.LINE_AA)
+      lcx,lcy = find_leading_corner(x,y,w,h,x_dir_mod,y_dir_mod,dom)
+      cv2.circle(image,(lcx,lcy), 10, (0,255,0), 2)
+
+   if lcx is not None:
+      adj_x = 200 - lcx - (int(w/2) * x_dir_mod)
+      adj_y = 200 - lcy 
+   else:
+      print("NO ADJ X!")
+
+   #cv2.imshow('pepe', image)
+   #cv2.waitKey(0)
+
+   return(adj_x,adj_y)
+
+def find_leading_corner(x,y,w,h,x_dir_mod,y_dir_mod,dom):
+   if y_dir_mod == -1:
+      ly = y + h 
+   else:
+      ly = y
+   if x_dir_mod == -1:
+      lx = x + w 
+   else:
+      lx = x 
+   return(lx,ly)   
+
+def reduce_point_error(this_poly, frames, type):
+   global tries
+   errs = []
+   # get line info
+   x_dir_mod,y_dir_mod = meteor_dir(frames[0]['x'], frames[0]['y'], frames[-1]['x'], frames[-1]['y'])
+   dom,z,med_dist,med_seg,mxd,myd = line_info(frames) 
+   print("MXD:", mxd)
+   print("MYD:", myd)
+   i = 0
+   last_x = None
+   last_y = None
+   xs = []
+   ys = []
+   for frame in frames:
+      x = frame['x']
+      y = frame['y']
+      xs.append(x)
+      ys.append(x)
+   i = 0
+   for frame in frames:
+      if this_poly[i] > 5 :
+         this_poly[i] =  5
+
+      if this_poly[i] < -5:
+         this_poly[i] = -5 
+   
+      x = frame['x']
+      y = frame['y']
+      fn = frame['fn']
+      if type == 'x':
+         x = x + this_poly[i] 
+              
+         if last_x is not None:
+
+            (dist_to_line, z, med_dist) = poly_fit_check(xs,ys, x,ys[i])
+
+            err = abs((x-last_x) - abs(mxd) ) + (dist_to_line*0)
+            err = dist_to_line
+            #print("ERR:",  abs(x-last_x) , abs(mxd),dist_to_line, err) 
+            if fn == 28:
+               print("FRAME X:", fn, x)
+            errs.append(err)
+             
+      else:
+         y = y + this_poly[i] 
+         (dist_to_line, z, med_dist) = poly_fit_check(xs,ys, xs[i],y)
+         if last_y is not None:
+            err = abs((y-last_y) - abs(myd)) + (dist_to_line*0)
+            err = dist_to_line
+            errs.append(err)
+      last_x = x 
+      last_y = y
+      i =i + 1
+   print(type, tries, "RES ERR:", np.mean(errs))
+ 
+   return(np.mean(errs))
+      
+def reduce_one_point_error(this_poly, frames, mfn):
+   err = 0
+   new_frames = []
+   for frame in frames:
+      if frame['fn'] == mfn:
+         mx = frame['x'] + (this_poly[0]*1000)
+         my = frame['y'] + (this_poly[1]*1000)
+         frame['x'] = int(mx)
+         frame['y'] = int(my)
+      new_frames.append(frame)
+   ps, new_frames = calc_score(new_frames)
+   print("RES: ", ps)
+   return(ps)
+
+def minimize_one_point_error(frames,mfn):
+
+   ps_old, new_frames = calc_score(frames)
+   print("SCORE ORIG:", ps_old)
+   this_poly = np.zeros(shape=(2,), dtype=np.float64)
+   scipy.optimize.Bounds(-5,5)
+   res = scipy.optimize.minimize(reduce_one_point_error, this_poly, args=( frames, mfn), method='Nelder-Mead')
+   this_poly = res['x'].tolist()
+   print("XY ADJ:", this_poly)
+   return(this_poly)
+
+def minimize_point_error(frames):
+
+   global tries
+   tries = 0
+   new_frames = []
+   fixes = []
+   for frame in frames:
+      fn = frame['fn']
+      fx,fy = minimize_one_point_error(frames,fn)
+      fx = int(fx * 1000)
+      fy = int(fy * 1000)
+      print("FIX:", fn,int(fx),int(fy))
+      fixes.append((fx,fy))
+   for fx,fy in fixes:
+      print(fx,fy)
+   exit()
+   #res = plot_points(new_frames)
+   return(new_frames)
+
 def eval_points(json_file, frames=None, save=1):
+   jd = load_json_file(json_file)
+   if frames is None:
+      frames = jd['frames']
+
+   ps_old, new_frames = calc_score(frames)
+   print("ORIG P SCORE:", ps_old)
+   #new_frames = minimize_point_error(frames)
+   ps_new, new_frames = calc_score(frames)
+   print("OLD P SCORE:", ps_old)
+   print("NEW P SCORE:", ps_new)
+
+
+   x_dir_mod,y_dir_mod = meteor_dir(frames[0]['x'], frames[0]['y'], frames[-1]['x'], frames[-1]['y'])
+   dom,z,med_dist,med_seg,mxd,myd = line_info(frames) 
+   ps_new, new_frames = calc_score(new_frames)
+   print("OLD/NEW SCORE:", ps_old, ps_new)
+   jd['report']['point_score'] = ps_new 
+   jd['frames'] = new_frames 
+   save = 0
+   if save == 1:
+      save_json_file(json_file,jd)
+   #l_xs, l_ys = plot_points(frames)
+   #l_xs, l_ys = plot_points(new_frames )
+   print("SCORE:", ps_new)
+   for frame in frames:
+      print(frame['fn'], frames
+   return(ps_new,new_frames)
+
+def fix_up_points(json_file, frames=None, save=1):
    if save == 1:
       jd = load_json_file(json_file)
    if frames is None:
@@ -1034,7 +1412,142 @@ def eval_points(json_file, frames=None, save=1):
    last_x = None
    last_dist_from_start = None
    dists = []
+   point_score, new_frames = calc_score(frames)
+   orig_point_score = point_score
+
+   #print("Min,Max,Mean line err:", min(med_errs), max(med_errs),np.mean(med_errs), score)
+   print("START SCORE: ", point_score)
+   print("PLOT!")
+   l_xs, l_ys = plot_points(new_frames )
+   i = 0
+  
+   hd_file = json_file.replace(".json", "-HD.mp4") 
+    
+   hd_frames,hd_color_frames,hd_subframes,sum_vals,max_vals = load_frames_fast(hd_file, json_conf, 0, 0, [], 0,[])
+   x_dir_mod,y_dir_mod = meteor_dir(new_frames[0]['x'], new_frames[0]['y'], new_frames[-1]['x'], new_frames[-1]['y'])
+   dom,z,med_dist,med_seg,mxd,myd = line_info(new_frames) 
+   avg_dist = calc_dist((new_frames[0]['x'],new_frames[0]['y']),(new_frames[-1]['x'], new_frames[-1]['y'])) / len(new_frames)
+   adj_frames = []
+   last_x = None
+   temp_frames = []
+   l_xs, l_ys = plot_points(new_frames )
+   print("NEW MED SEG LEN:", med_seg)
+   print("NEW AVG LEN:", avg_dist)
+
+   for frame in new_frames:
+      fn = frame['fn']
+      lx  = int(l_xs[i])
+      ly  = int(l_ys[i])
+      if last_x is not None:
+         last_dist = calc_dist((lx,ly),(last_x,last_y))
+         if abs(last_dist - avg_dist) > 2:
+            lx = last_x + mxd
+            ly = last_y + myd
+
+      print("FN:", fn, len(hd_frames))
+      img = hd_frames[fn]
+      cx1,cy1,cx2,cy2 = bound_cnt(lx,ly,img.shape[1],img.shape[0], 20)
+      crop= img[cy1:cy2,cx1:cx2]
+      big_cnt = cv2.resize(crop, (0,0),fx=10, fy=10)
+      cv2.line(big_cnt, (200,0), (200,400), (100), 1)
+      cv2.line(big_cnt, (0,200), (400,200), (100), 2)
+      adj_x, adj_y = center_cnt(big_cnt, x_dir_mod, y_dir_mod, dom)
+      adj_x = int(adj_x / 10)
+      adj_y = int(adj_y / 10)
+      cx1,cy1,cx2,cy2 = bound_cnt(lx-adj_x,ly-adj_y,img.shape[1],img.shape[0], 20)
+      crop2 = img[cy1:cy2,cx1:cx2]
+      big_cnt2 = cv2.resize(crop2, (0,0),fx=10, fy=10)
+      cv2.line(big_cnt2, (200,0), (200,400), (100), 1)
+      cv2.line(big_cnt2, (0,200), (400,200), (100), 2)
+      if last_x is not None:
+         last_dist = calc_dist((lx-adj_x,ly-adj_y),(last_x,last_y))
+         if abs(last_dist - avg_dist) < 2:
+            # new centered frame distance is ok to update
+            print("Update frame with new value")
+            frame['x'] = lx-adj_x
+            frame['y'] = ly-adj_y
+         else:
+            print("Don't update with center adj, no good.", avg_dist, med_dist, last_dist)
+            if last_x is None:
+               frame['x'] = lx
+               frame['y'] = ly
+            else:
+               frame['x'] = last_x + mxd
+               frame['y'] = last_y + myd
+          
+
+      cv2.imshow('orig', big_cnt)
+      cv2.imshow('center', big_cnt2)
+      cv2.waitKey(0)
+      i = i + 1
+      adj_frames.append(frame)
+      last_x = frame['x']
+      last_y = frame['y']
+      temp_frames.append(frame)
+ 
+   new_frames = temp_frames
+   l_xs, l_ys = plot_points(new_frames )
+   point_score, new_frames = calc_score(new_frames)
+   new_frames = fix_one_bad_frame(new_frames, avg_dist, mxd,myd)
+   for frame in new_frames:
+      print(frame)
+
+
+   if save == 1:
+      jd['report']['point_score'] = point_score 
+      point_score, new_frames = calc_score(adj_frames)
+      if point_score < orig_point_score:
+         print("updateing frames with better score:", orig_point_score, point_score)
+         jd['frames'] = new_frames 
+         jd['report']['point_score'] = point_score 
+      else:
+         print("not saving new frames, old is better.", orig_point_score, point_score) 
+      print("SAVED:", json_file)
+      save_json_file(json_file, jd)
+
+
+   return(point_score, new_frames) 
+
+def fix_one_bad_frame(frames,avg_dist,mxd,myd):
+   fix = 0
+   last_x = None
+   new_frames = []
+   
    for frame in frames:
+      x = frame['x']
+      y = frame['y']
+      if last_x is not None:
+         dist = calc_dist((last_x,last_y),(x,y))
+         if abs(dist - avg_dist) > 2 and fix == 0:
+            print("FIX THIS FRAME!:", frame['fn'])
+            print("DIST:", dist) 
+            print("AVG DIST:", avg_dist) 
+            print("ERROR :", abs(dist - avg_dist)) 
+            new_x = last_x + mxd
+            new_y = last_y + myd
+            frame['x'] = new_x
+            frame['y'] = new_y
+            fix = 1
+      last_x = x
+      last_y = y
+      new_frames.append(frame)
+   return(new_frames)
+
+def calc_score(frames):
+   first_x = None
+   last_x = None
+   last_dist_from_start = None
+   dists = []
+   new_frames = []
+   xs = []
+   ys = []
+   for frame in frames:
+      x = frame['x']
+      y = frame['y']
+      xs.append(x)
+      ys.append(y)
+   for frame in frames:
+      (dist_to_line, z, med_dist) = poly_fit_check(xs,ys, frame['x'],frame['y'])
       if first_x is None:
          first_x = frame['x']
          first_y = frame['y']
@@ -1047,33 +1560,38 @@ def eval_points(json_file, frames=None, save=1):
          dist_from_last = dist_from_start - last_dist_from_start
       else:
          last_dist_from_start = 0
+         dist_from_last = 0
       last_x = frame['x']
       last_x = frame['y']
-      last_dist_from_start = dist_from_start 
+      last_dist_from_start = dist_from_start
       frame['dist_from_start'] = dist_from_start
       frame['dist_from_last'] = dist_from_last
+      frame['dist_to_line'] = dist_to_line
       dists.append(dist_from_last)
       new_frames.append(frame)
 
    med_dist = np.median(dists)
    med_errs = []
+   final_frames = []
    for frame in new_frames:
       if med_dist > 0 and frame['dist_from_last'] > 0:
-         med_err = med_dist / frame['dist_from_last'] 
+         med_err = abs(med_dist - frame['dist_from_last']) + frame['dist_to_line']
+         frame['med_err'] = med_err 
+         print("MED ERR:", med_err)
+         if med_err > 2:
+            print("MED ERROR HIGH, TRY TO MINIMIZE!")
+ 
       else:
          med_err = 0
-      if med_err > 0:
-         med_errs.append(med_err)
-      print(frame['fn'], med_dist, frame['dist_from_last'], med_err)
-   score = (max(med_errs)/min(med_errs)) * np.mean(med_errs)
-   print("Min,Max,Mean line err:", min(med_errs), max(med_errs),np.mean(med_errs), score)
-   if save == 1:
-      jd['report']['point_score'] = (max(med_errs)/min(med_errs)) * np.mean(med_errs)
-      jd['report']['mean_dist_err'] = np.mean(med_errs)
-      jd['report']['mean_line_seg'] = np.mean(dists)
-      jd['frames'] = new_frames
-      save_json_file(json_file, jd)
-   return(score) 
+      med_errs.append(med_err)
+      final_frames.append(frame)
+   if len(med_errs) == 0:
+      score = 999 
+   else:
+      #score = (max(med_errs)/min(med_errs)) * np.mean(med_errs)
+      score = np.mean(med_errs)
+   return(score, final_frames)
+
 
 def find_best_cnt(cnts, xd,yd):
    hx = 0
@@ -1084,7 +1602,8 @@ def find_best_cnt(cnts, xd,yd):
    for x,y,w,h in cnts:
       my = y + h
       mx = x + w
-      cnt_tmp.append((x,y,w,h,mx,my))
+      if w > 1 and h > 1:
+         cnt_tmp.append((x,y,w,h,mx,my))
    if xd == 1 and yd == -1:
       # we want the cnt with the highest (y+h) and lowest x  (left to right top down)
       temp = sorted(cnt_tmp, key=lambda x: x[5], reverse=True)
@@ -1151,6 +1670,8 @@ def fix_arc_points(json_file):
    print("JSON FILE:", json_file)
    json_data = load_json_file(json_file)
 
+   
+   l_xs, l_ys = plot_points(json_data['frames'])
 
    if st_id != json_conf['site']['ams_id']:
       # this is a remote station, reload the json conf file!
@@ -2696,6 +3217,7 @@ def get_station_id(video_file):
 def find_contours_in_frame(frame, thresh=25):
    contours = [] 
    result = []
+   print("USING THRESH:", thresh)
    _, threshold = cv2.threshold(frame.copy(), thresh, 255, cv2.THRESH_BINARY)
    thresh_obj = cv2.dilate(threshold.copy(), None , iterations=4)
    threshold = cv2.convertScaleAbs(thresh_obj)
@@ -2718,6 +3240,7 @@ def find_contours_in_frame(frame, thresh=25):
          (_, cnts, xx) = cnt_res
       elif len(cnt_res) == 2:
          (cnts, xx) = cnt_res
+      print("CNTS:", len(cnts))
 
    # now of these contours, remove any that are too small or don't have a recognizable blob
    # or have a px_diff that is too small
@@ -2727,14 +3250,16 @@ def find_contours_in_frame(frame, thresh=25):
    if len(cnts) < 50:
       for (i,c) in enumerate(cnts):
          px_diff = 0
+
          x,y,w,h = cv2.boundingRect(cnts[i])
         
 
-         if w > 1 or h > 1:
+         if w > 1 or h > 1 and (x > 0 and y > 0):
+
             cnt_frame = frame[y:y+h, x:x+w]
             min_val, max_val, min_loc, (mx,my)= cv2.minMaxLoc(cnt_frame)
             avg_val = np.mean(cnt_frame)
-            if max_val - avg_val > 5:
+            if max_val - avg_val > 5 and (x > 0 and y > 0):
                rects.append([x,y,x+w,y+h])
                contours.append([x,y,w,h])
 
@@ -3316,7 +3841,7 @@ def poly_fit_check(poly_x,poly_y, x,y, z=None):
 
       else:
          return(0)
-   print("Z:", z)
+   #print("Z:", z)
    dist_to_line = distance((x,y),z)
 
    all_dist = []
@@ -3325,6 +3850,22 @@ def poly_fit_check(poly_x,poly_y, x,y, z=None):
       all_dist.append(ddd)
 
    med_dist = np.median(all_dist)
+   show = 0
+   if show == 1:
+      import matplotlib
+      import matplotlib.pyplot as plt
+
+      plt.plot(poly_x, poly_y, 'x')
+
+      plt.axis('equal')
+      trendpoly = np.poly1d(z)
+      plt.plot(poly_x,trendpoly(poly_x))
+      ax = plt.gca()
+      ax.invert_yaxis()
+      plt.show()
+
+
+
    return(dist_to_line, z, med_dist)
 
 def poly_fit2(poly_x,poly_y):
@@ -6395,6 +6936,8 @@ def meteor_objects(objects):
    return(meteors,nonmeteors)
 
 def plot_int(times, values,values2=None,mstart=0,mend=0, title="", save_file=None):
+
+
    print("TIMES:", len(times))
    print("VALUES:", len(values))
    import matplotlib
@@ -6745,10 +7288,11 @@ def make_frame_data(buf_hd_subframes,buf_hd_frames,cnt_object,bp_object):
       y = bp_object['oys'][i]
       w = bp_object['ows'][i]
       h = bp_object['ohs'][i]
-      if "bps" not in frame_data[fn]:
-         frame_data[fn]['bps'] = []
+      if fn in frame_data:
+         if "bps" not in frame_data[fn]:
+            frame_data[fn]['bps'] = []
      
-      frame_data[fn]['bps'].append((x,y,w,h))
+         frame_data[fn]['bps'].append((x,y,w,h))
       print("BP FRAME DATA:", fn, frame_data[fn])
 
    # fill in any missing frames that exists between start and end
@@ -6786,6 +7330,8 @@ def make_frame_data(buf_hd_subframes,buf_hd_frames,cnt_object,bp_object):
    last_dists = []
    for i in range(0,len(buf_hd_frames)):
       bx = None
+      if i not in frame_data:
+         frame_data[i] = {}
       if "bps" in frame_data[i]:
          bx,by,bw,bh = frame_data[i]['bps'][0]
       elif "cnts" in frame_data[i]:
@@ -6922,7 +7468,7 @@ def frame_curve(meteor,frames):
    return(fdc)  
 
 def debug2(video_file):
-   show = 1
+   show = 0
    # setup variables
    orig_sd_trim_num = get_trim_num(video_file)
 
@@ -7979,6 +8525,12 @@ if cmd == "fix_arc_all" or cmd == "faa" :
    fix_arc_points(video_file)
    fit_arc_file(video_file)
    os.system("cd /home/ams/amscams/pythonv2; /usr/bin/python3 Apply_calib.py " + video_file)
+   cache_file = video_file.replace("meteor_archive", "CACHE")
+   el = cache_file.split("/")[-1]
+   cache_dir = cache_file.replace(el, "")
+   cmd = "rm " + cache_dir + "/THUMBS/*"
+   print(cmd)
+   #os.system(cmd)
    os.system("cd /home/ams/amscams/pythonv2; /usr/bin/python3 MakeCache.py " + video_file)
    os.system("cd /home/ams/amscams/pythonv2; /usr/bin/python3 Create_Archive_Index.py 2019" )
 
