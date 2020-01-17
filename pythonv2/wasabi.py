@@ -10,6 +10,33 @@ from lib.FileIO import load_json_file, save_json_file, cfe
 WASABI_ROOT = "/mnt/wasabi/"
 json_conf = load_json_file("../conf/as6.json")
 
+def sync_archive():
+   station_id = json_conf['site']['ams_id']
+   os.system("find /mnt/ams2/meteor_archive/" + station_id + " |grep METEOR | grep json  |grep trim > /mnt/ams2/tmp/arc.txt") 
+   fp = open("/mnt/ams2/tmp/arc.txt", "r")
+   for line in fp:
+      line = line.replace("\n", "")
+      wasabi_json = line.replace("ams2/meteor_archive", "wasabi")
+      if cfe(wasabi_json) == 0: 
+         # need to copy files
+         wf = wasabi_json.split("/")[-1]
+         wd = wasabi_json.replace(wf, "")
+         if cfe(wd, 1) == 0:
+            print("make dir ", wd)
+            os.makedirs(wd)
+        
+         cmd = "cp " + line + " " + wasabi_json
+
+         os.system(cmd)
+            
+         print(cmd)
+      else:
+         print("Already exists!", wasabi_json)
+
+      #print(line)
+      #print(wasabi_json)
+   
+
 def wasabi_cp(file):
    wasabi_file = file.replace("ams2/meteor_archive", "wasabi")
    cmd = "cp " + file + " " + wasabi_file
@@ -89,3 +116,5 @@ if sys.argv[1] == "mnt":
    connect_wasabi()
 if sys.argv[1] == "cp":
    wasabi_cp(sys.argv[2])
+if sys.argv[1] == "sa":
+   sync_archive()

@@ -1394,7 +1394,7 @@ def eval_points(json_file, frames=None, save=1):
    #l_xs, l_ys = plot_points(new_frames )
    print("SCORE:", ps_new)
    for frame in frames:
-      print(frame['fn'], frames
+      print(frame['fn'], frame['dist_to_line'],frame['dist_from_last'])
    return(ps_new,new_frames)
 
 def fix_up_points(json_file, frames=None, save=1):
