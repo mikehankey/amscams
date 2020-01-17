@@ -25,8 +25,15 @@ def sync_archive():
             print("make dir ", wd)
             os.makedirs(wd)
         
-         cmd = "cp " + line + " " + wasabi_json
+         cmd = "cp " + line + " " + wd
+         os.system(cmd)
 
+         sd_file = line.replace(".json", "-SD.mp4")
+         cmd = "cp " + sd_file + " " + wd
+         os.system(cmd)
+
+         hd_file = line.replace(".json", "-HD.mp4")
+         cmd = "cp " + hd_file + " " + wd
          os.system(cmd)
             
          print(cmd)
