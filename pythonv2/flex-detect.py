@@ -1061,7 +1061,8 @@ def plot_points(frames):
    x_dists = []
    y_dists = []
    last_x = None
-   for frame in frames:
+   ps, new_frames = calc_score(frames)
+   for frame in new_frames:
       xs.append(frame['x'])
       ys.append(frame['y'])
       dists.append(frame['dist_from_last'])
@@ -1387,7 +1388,7 @@ def eval_points(json_file, frames=None, save=1):
    print("OLD/NEW SCORE:", ps_old, ps_new)
    jd['report']['point_score'] = ps_new 
    jd['frames'] = new_frames 
-   save = 0
+   #save = 0
    if save == 1:
       save_json_file(json_file,jd)
    #l_xs, l_ys = plot_points(frames)
@@ -2285,7 +2286,7 @@ def confirm_meteor(meteor_json_file):
 
    print("Total motion meteors:", len(motion_meteors))
    for mm in motion_meteors:
-      poly_fit(mm) 
+      poly_fit(mm, motion_objects) 
    print("Total non motion meteors:", len(no_motion_meteors))
    for mo in no_motion_meteors:
       print(mo['report']['bad_items'])
@@ -3214,7 +3215,7 @@ def get_station_id(video_file):
    else:
       return("AMS1")
 
-def find_contours_in_frame(frame, thresh=25):
+def find_contours_in_frame(frame, thresh=25 ):
    contours = [] 
    result = []
    print("USING THRESH:", thresh)
@@ -3227,7 +3228,7 @@ def find_contours_in_frame(frame, thresh=25):
    elif len(cnt_res) == 2:
       (cnts, xx) = cnt_res
    show_frame = cv2.resize(threshold, (0,0),fx=.5, fy=.5)
-
+   print("CNTS FOUND:", len(cnts))
    if len(cnts) > 20:
       print("RECT TOO MANY CNTS INCREASE THRESH!", len(cnts))
       thresh = thresh +5 
@@ -4162,7 +4163,7 @@ def analyze_object(object, hd = 0, sd_multi = 1, final=0):
       meteor_yn = "no"
       obj_class = "noise"
       bad_items.append("direction test failed." + str(dir_test_perc))
-   if unq_perc < .65:
+   if unq_perc < .5:
       meteor_yn = "no"
       obj_class = "star or plane"
       bad_items.append("unique points test failed." + str(unq_perc))
@@ -7431,11 +7432,13 @@ def make_frame_data(buf_hd_subframes,buf_hd_frames,cnt_object,bp_object):
                frame_data[i]['leading_y'] = lcy1+lmy
             frame_data[i]['le_cnt'] = [lcx1,lcy1,lcx2,lcy2]
             #leading_edge_cnt = buf_hd_subframes[i][lcy1:lcy2,lcx1:lcx2]
-            cv2.circle(le_cnt,(lmx,lmy), 3, (255,255,255), 1)
-            cv2.imshow('blob', blob_cnt)
-            cv2.waitKey(0)
-            cv2.imshow('leading edge', le_cnt)
-            cv2.waitKey(0)
+            show = 0
+            if show == 1:
+               cv2.circle(le_cnt,(lmx,lmy), 3, (255,255,255), 1)
+               cv2.imshow('blob', blob_cnt)
+               cv2.waitKey(0)
+               cv2.imshow('leading edge', le_cnt)
+               cv2.waitKey(0)
 
    # Remove bad frames from end of meteor
 
@@ -7509,6 +7512,16 @@ def debug2(video_file):
    hd_meteor = only_meteors(hd_motion_objects,1)
    if sd_meteor is None or hd_meteor is None:
       print("Couldn't detect SD & HD meteor.", sd_meteor, hd_meteor)
+      print("SD:", sd_meteor)
+      print("HD:", hd_meteor)
+      if sd_meteor is None:
+         for mm in motion_objects:
+            print(mm, motion_objects[mm]['ofns'])
+            print(mm, motion_objects[mm]['report'])
+      if hd_meteor is None:
+         for mm in hd_motion_objects:
+            print(mm, hd_motion_objects[mm]['ofns'])
+            print(mm, hd_motion_objects[mm]['report'])
       return()
 
    sd_frame_curve = frame_curve(sd_meteor, sd_frames)
