@@ -2010,6 +2010,9 @@ def fit_arc_file(json_file):
    orig['pixscale'] = cal_params['orig_pixscale']
 
    cat_image_stars = cal_params['cat_image_stars']
+   if len(cat_image_stars) < 3:
+      print("Not enough stars to fit!")
+      return()
 
    if cfe(master_lens_file) == 1:
       mld = load_json_file(master_lens_file)
@@ -4163,9 +4166,9 @@ def analyze_object(object, hd = 0, sd_multi = 1, final=0):
       meteor_yn = "no"
       obj_class = "bird"
       bad_items.append("low or negative median intensity.")
-   if dir_test_perc < .5 and dir_test_perc != 0:
-      meteor_yn = "no"
-      obj_class = "noise"
+   if dir_test_perc < .5 and dir_test_perc != 0 and elp > 10:
+      #meteor_yn = "no"
+      #obj_class = "noise"
       bad_items.append("direction test failed." + str(dir_test_perc))
    if unq_perc < .5:
       meteor_yn = "no"
@@ -4185,16 +4188,16 @@ def analyze_object(object, hd = 0, sd_multi = 1, final=0):
       obj_class = "star"
       meteor_yn = "no"
       bad_items.append("not enough distance.")
-   if (min_max_dist * deg_multi) < .3:
+   if (min_max_dist * deg_multi) < .2:
       meteor_yn = "no"
-      bad_items.append("bad angular distance below .3.")
+      bad_items.append("bad angular distance below .2.")
    if (dist_per_elp * deg_multi) * 25 < .9:
       meteor_yn = "no"
       bad_items.append("bad angular velocity below .9")
    ang_vel = (dist_per_elp * deg_multi) * 25
 
    #YOYO
-   if dir_test_perc < .6 and max_cm > 5:
+   if dir_test_perc < .6 and max_cm > 10:
       meteor_yn = "no"
       obj_class = "star"
       bad_items.append("dir test perc to low for this cm")
@@ -4248,7 +4251,7 @@ def analyze_object(object, hd = 0, sd_multi = 1, final=0):
    else:
       avg_line_res = 0
 
-   if avg_line_res > 2.5:
+   if avg_line_res > 13:
       meteor_yn = "no"
       obj_class = "noise"
       bad_items.append("bad average line res " + str(avg_line_res))
@@ -7129,6 +7132,8 @@ def sync_curves(curve1, curve2):
    peak_c2 = 0
    max_sd = 0
    max_hd = 0
+   phdf = 0
+   psdf = 0
    for i in range(0,len(curve1)):
       if max_c1 > 0:
          mp = curve1[i] / max_c1
@@ -7142,7 +7147,7 @@ def sync_curves(curve1, curve2):
          max_sd += 1
 
    for i in range(0,len(curve2)):
-      if max_c1 > 0:
+      if max_c1 > 0 and max_c2 > 0:
          mp = curve2[i] / max_c2
       else:
          mp = 0
@@ -7269,9 +7274,10 @@ def make_frame_data(buf_hd_subframes,buf_hd_frames,cnt_object,bp_object):
    frame_data = {}
    x_dir_mod,y_dir_mod = meteor_dir(bp_object['oxs'][0], bp_object['oys'][0], bp_object['oxs'][-1], bp_object['oys'][-1])
 
+
    print("cnt_object:", cnt_object)
    print("bp_object:", bp_object)
-   for i in range(0,len(buf_hd_subframes)):
+   for i in range(0,len(buf_hd_frames)+1):
       frame_data[i] = {}
    for i in range(0, len(cnt_object['ofns'])):
       fn = cnt_object['ofns'][i]
@@ -7279,13 +7285,15 @@ def make_frame_data(buf_hd_subframes,buf_hd_frames,cnt_object,bp_object):
       y = cnt_object['oys'][i]
       w = cnt_object['ows'][i]
       h = cnt_object['ohs'][i]
-      if 'ftimes' in cnt_object:
-         dt  = cnt_object['ftimes'][i]
-         frame_data[fn]['dt'] = dt
-      if "cnts" not in frame_data[fn]:
-         frame_data[fn]['cnts'] = []
-      frame_data[fn]['cnts'].append((x,y,w,h))
-      print("CNT FRAME DATA:", fn, frame_data[fn])
+      if fn in frame_data:
+         if 'ftimes' in cnt_object:
+            dt  = cnt_object['ftimes'][i]
+            frame_data[fn]['dt'] = dt
+     
+         if "cnts" not in frame_data[fn]:
+            frame_data[fn]['cnts'] = []
+         frame_data[fn]['cnts'].append((x,y,w,h))
+         print("CNT FRAME DATA:", fn, frame_data[fn])
 
    for i in range(0, len(bp_object['ofns'])):
       fn = bp_object['ofns'][i] 
@@ -7298,7 +7306,8 @@ def make_frame_data(buf_hd_subframes,buf_hd_frames,cnt_object,bp_object):
             frame_data[fn]['bps'] = []
      
          frame_data[fn]['bps'].append((x,y,w,h))
-      print("BP FRAME DATA:", fn, frame_data[fn])
+      if fn in frame_data:
+         print("BP FRAME DATA:", fn, frame_data[fn])
 
    # fill in any missing frames that exists between start and end
    start = cnt_object['ofns'][0]
