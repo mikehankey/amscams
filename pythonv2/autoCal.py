@@ -31,6 +31,28 @@ from lib.UtilLib import calc_dist,find_angle
 import lib.brightstardata as bsd
 from lib.DetectLib import eval_cnt
 
+def month_detects(date_str):
+   import calendar
+   y,m,d = date_str.split("_")
+   year = y
+   month = m
+   day = d
+   m,d,y = int(m),int(d),int(y)
+   date_dt = datetime.strptime(date_str, "%Y_%m_%d")
+   print("Month", y,m,d)
+   num_days = calendar.monthrange(y, m)[1]
+   print(num_days)
+   for day in range(1,num_days+1):
+      if day < 10:
+         day_str = "0" + str(day)
+      else:
+         day_str = str(day)
+      run_date = str(y) + "_" + str(m) + "_" + day_str
+      cmd = "./autoCal.py run_detects " + run_date
+      os.system(cmd)
+      print(cmd)
+
+
 def update_arc_detects():
    station_id = json_conf['site']['ams_id']
    detect_file = "/mnt/ams2/meteor_archive/" + station_id + "/DETECTS/ms_detects.json"
@@ -3804,6 +3826,9 @@ if cmd == "run_detects":
    run_detects(sys.argv[2])   
 if cmd == "update_arc_detects" or cmd == 'uad':
    update_arc_detects()   
+if cmd == "md" or cmd == 'month_detects':
+   print("MD")
+   month_detects(sys.argv[2])   
 
 
 
