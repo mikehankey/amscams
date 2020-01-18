@@ -236,15 +236,15 @@ def save_new_style_meteor_json (meteor_obj, trim_clip ):
    tc = trim_clip.split("/")[-1]
    mj['info'] = {}
    mj['info']['station'] = json_conf['site']['ams_id'].upper()
-   mj['info']['hd_vid'] = meteor_obj['ma_hd_file']
-   mj['info']['sd_vid'] = meteor_obj['ma_sd_file']
-   mj['info']['org_hd_vid'] = meteor_obj['orig_hd_vid']
-   mj['info']['org_sd_vid'] = meteor_obj['orig_sd_vid']
+   #mj['info']['hd_vid'] = meteor_obj['ma_hd_file']
+   #mj['info']['sd_vid'] = meteor_obj['ma_sd_file']
+   #mj['info']['org_hd_vid'] = meteor_obj['orig_hd_vid']
+   #mj['info']['org_sd_vid'] = meteor_obj['orig_sd_vid']
    mj['info']['device'] = cam
    if "report" in meteor_obj:
       mj['report'] = meteor_obj['report']
       mj['report']['max_peak'] = max(meteor_obj['oint'])
-      mj['report']['dur'] = meteor_obj['dur']
+      mj['report']['dur'] = len(meteor_obj['ofns'])/ 25
 
    mj['frames'] = []
    used_fn = {}
@@ -7380,15 +7380,16 @@ def make_frame_data(buf_hd_subframes,buf_hd_frames,cnt_object,bp_object):
          print("PX:", poly_x[0:-2],poly_y[0:-2])
          print(frame_data[last_fn]['leading_x'],frame_data[last_fn]['leading_y'])
          results = poly_fit_check(poly_x[0:-2],poly_y[0:-2], frame_data[last_fn]['leading_x'],frame_data[last_fn]['leading_y'] )
-         if len(results) == 3:
-            dist_from_line,z,med_dist = results
-         else: 
-            dist_from_line,z,med_dist = 0,(0,0),0
-         print("LAST POINT DIST FROM LINE:", dist_from_line, med_dist)
+         if results != 0:
+            if len(results) == 3:
+               dist_from_line,z,med_dist = results
+            else: 
+               dist_from_line,z,med_dist = 0,(0,0),0
+            print("LAST POINT DIST FROM LINE:", dist_from_line, med_dist)
          
-         if dist_from_line > 2 * med_dist:
-            print("BAD FRAME!")
-            #frame_data[last_fn] = {}
+            if dist_from_line > 2 * med_dist:
+               print("BAD FRAME!")
+               #frame_data[last_fn] = {}
       
 
 
@@ -7722,6 +7723,7 @@ def debug2(video_file):
    new_trim_num = orig_sd_trim_num + sd_bs 
    arc_json_file = save_archive_meteor(video_file, syncd_sd_frames,syncd_hd_frames,frame_data,new_trim_num) 
    os.system("./flex-detect.py faa " + arc_json_file)
+   print("ARC FILE:", arc_json_file)
    return("")
    #exit()
 
@@ -8275,8 +8277,8 @@ def debug(video_file):
    hd_fast_meteor['dt'] = start_trim_frame_time.strftime('%Y-%m-%d %H:%M:%S.%f')
    hd_fast_meteor['hd_file'] = temp_hd 
    hd_fast_meteor['sd_file'] = temp_sd 
-   #hd_fast_meteor['report']['dur'] = hd_fast_meteor['ofns'][-1] - hd_fast_meteor['ofns'][0] / 25 
-   hd_fast_meteor['dur'] = hd_fast_meteor['ofns'][-1] - hd_fast_meteor['ofns'][0] / 25 
+   hd_fast_meteor['report']['dur'] = hd_fast_meteor['ofns'][-1] - hd_fast_meteor['ofns'][0] / 25 
+   #hd_fast_meteor['dur'] = hd_fast_meteor['ofns'][-1] - hd_fast_meteor['ofns'][0] / 25 
    for i in range(0,len(hd_fast_meteor['ofns'])):
       if "ftimes" not in hd_fast_meteor:
          hd_fast_meteor['ftimes'] = []
@@ -8294,6 +8296,7 @@ def debug(video_file):
    calib,cal_params = apply_calib(hd_fast_meteor)
    hd_fast_meteor['calib'] = calib
    hd_fast_meteor['cal_params'] = cal_params
+   print(hd_fast_meteor)
    new_json = save_new_style_meteor_json(hd_fast_meteor, temp_js)
    new_json['info']['org_sd_vid'] = org_sd_vid
    new_json['info']['org_hd_vid'] = org_hd_vid
