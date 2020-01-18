@@ -49,7 +49,8 @@ show = 0
 ARCHIVE_DIR = "/mnt/ams2/meteor_archive/"
 
 def batch_archive_msm(mode):
-
+   total_files = 0
+   total_arc = 0
    station = json_conf['site']['ams_id']
    ms_detect_file = ARCHIVE_DIR + station + "/DETECTS/" + "ms_detects.json"
    ms_detect_report_file = ARCHIVE_DIR + station + "/DETECTS/" + "ms_detects_report.html"
@@ -66,6 +67,7 @@ def batch_archive_msm(mode):
             print(orig_meteor_json_file + " ARCHIVED") 
             desc = file.replace(".json", "")
             out += "<figure style=\"float: left\"><a href=/pycgi/webUI.py?cmd=reduce&video_file=" + video_file + "><img src=" + stack_thumb + "><figcaption>" + desc + "</figcaption></a></figure>\n"
+            total_arc +=1
          else:
             desc = file.replace(".json", "")
             out += "<figure style=\"float: left; background-color: coral;\"><a href=/pycgi/webUI.py?cmd=reduce&video_file=" + video_file + "><img src=" + stack_thumb + "><figcaption>" + desc + "</figcaption></a> </figure>\n"
@@ -74,7 +76,9 @@ def batch_archive_msm(mode):
             if mode == "1":
                os.system(cmd)
                #exit()
+         total_files += 1
    print(ms_detect_report_file)
+   out = "<h1>Archive Report</h1> Total Meteors: " + str(total_files) + " Total Archived: " + str(total_arc) + "<P>" + out
    fp = open(ms_detect_report_file, "w")
    fp.write(out) 
    fp.close()
@@ -4028,7 +4032,7 @@ def analyze_object(object, hd = 0, sd_multi = 1, final=0):
    unq_perc = unq_points(object)
    #print("UNQ POINTS PER:", unq_perc, object['oxs'], object['oys'])
 
-   if len(object['ofns']) > 2:
+   if len(object['ofns']) > 4:
       dir_test_perc = meteor_dir_test(object['oxs'],object['oys'])
       big_perc = cnt_size_test(object)
    else:
@@ -4159,7 +4163,7 @@ def analyze_object(object, hd = 0, sd_multi = 1, final=0):
       meteor_yn = "no"
       obj_class = "bird"
       bad_items.append("low or negative median intensity.")
-   if dir_test_perc < .5 :
+   if dir_test_perc < .5 and dir_test_perc != 0:
       meteor_yn = "no"
       obj_class = "noise"
       bad_items.append("direction test failed." + str(dir_test_perc))
@@ -4190,7 +4194,7 @@ def analyze_object(object, hd = 0, sd_multi = 1, final=0):
    ang_vel = (dist_per_elp * deg_multi) * 25
 
    #YOYO
-   if dir_test_perc < 1 and max_cm < 5:
+   if dir_test_perc < .6 and max_cm > 5:
       meteor_yn = "no"
       obj_class = "star"
       bad_items.append("dir test perc to low for this cm")
@@ -7512,17 +7516,17 @@ def debug2(video_file):
    sd_meteor = only_meteors(motion_objects,1)
    hd_meteor = only_meteors(hd_motion_objects,1)
    if sd_meteor is None or hd_meteor is None:
-      print("Couldn't detect SD & HD meteor.", sd_meteor, hd_meteor)
+      print("Couldn't detect SD & HD meteor.")
       print("SD:", sd_meteor)
       print("HD:", hd_meteor)
       if sd_meteor is None:
          for mm in motion_objects:
-            print(mm, motion_objects[mm]['ofns'])
-            print(mm, motion_objects[mm]['report'])
+            print("SD",mm, motion_objects[mm]['ofns'])
+            print("SD",mm, motion_objects[mm]['report'])
       if hd_meteor is None:
          for mm in hd_motion_objects:
-            print(mm, hd_motion_objects[mm]['ofns'])
-            print(mm, hd_motion_objects[mm]['report'])
+            print("HD",mm, hd_motion_objects[mm]['ofns'])
+            print("HD",mm, hd_motion_objects[mm]['report'])
       return()
 
    sd_frame_curve = frame_curve(sd_meteor, sd_frames)
