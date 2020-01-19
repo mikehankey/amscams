@@ -70,7 +70,14 @@ def batch_archive_msm(mode):
             total_arc +=1
          else:
             desc = file.replace(".json", "")
-            out += "<figure style=\"float: left; background-color: coral;\"><a href=/pycgi/webUI.py?cmd=reduce&video_file=" + video_file + "><img src=" + stack_thumb + "><figcaption>" + desc + "</figcaption></a> </figure>\n"
+#/pycgi/webUI.py?cmd=override_detect&jsid=20200110120246000010005-trim928
+            jsid = video_file.split("/")[-1]
+            jsid = jsid.replace("_", "")
+            jsid = jsid.replace(".mp4", "")
+
+            del_link = "<a href=/pycgi/webUI.py?cmd=override_detect&jsid=" + jsid + "><BR>DEL</a>"
+            print(del_link)
+            out += "<figure style=\"float: left; background-color: coral;\"><a href=/pycgi/webUI.py?cmd=reduce&video_file=" + video_file + "><img src=" + stack_thumb + "><figcaption>" + desc + "</a>" + del_link + "</figcaption></a> </figure>\n"
             cmd = "./flex-detect.py debug2 " + video_file
             print(cmd)
             if mode == "1":
