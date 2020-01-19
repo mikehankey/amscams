@@ -63,6 +63,8 @@ def batch_archive_msm(mode):
          mjd = load_json_file(orig_meteor_json_file)
          video_file = orig_meteor_json_file.replace(".json", ".mp4")
          stack_thumb = orig_meteor_json_file.replace(".json", "-stacked-tn.png")
+         if mjd == 0:
+            continue
          if "archive_file" in mjd:
             print(orig_meteor_json_file + " ARCHIVED") 
             desc = file.replace(".json", "")
