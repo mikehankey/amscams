@@ -1,8 +1,8 @@
 #!/usr/bin/python3
-from datetime import datetime
+#from datetime import datetime
 from PIL import Image, ImageDraw, ImageFont
 
-#import datetime
+import datetime
 import time
 import glob
 import os
@@ -31,6 +31,16 @@ from lib.UtilLib import calc_dist,find_angle
 import lib.brightstardata as bsd
 from lib.DetectLib import eval_cnt
 
+def get_trim_num(video_file):
+   # parse trim_num
+   #video_file = json_file.replace(".json", "-HD.mp4")
+   xxx = video_file.split("-")
+   trim_num = xxx[-1].replace("trim", "")
+   trim_num = trim_num.replace(".mp4", "")
+   trim_num = trim_num.replace(".json", "")
+   return(trim_num)
+
+
 def month_detects(date_str):
    import calendar
    y,m,d = date_str.split("_")
@@ -43,11 +53,15 @@ def month_detects(date_str):
    num_days = calendar.monthrange(y, m)[1]
    print(num_days)
    for day in range(1,num_days+1):
+      if m < 10:
+         mon_str = "0" + str(m)
+      else:
+         mon_str = str(m)
       if day < 10:
          day_str = "0" + str(day)
       else:
          day_str = str(day)
-      run_date = str(y) + "_" + str(m) + "_" + day_str
+      run_date = str(y) + "_" + str(mon_str) + "_" + day_str
       cmd = "./autoCal.py run_detects " + run_date
       os.system(cmd)
       print(cmd)
@@ -138,16 +152,35 @@ def run_detects(day):
          fn = file.split("/")[-1]
          files_station[fn] = st 
          min_fn = fn[0:16]
+         (file_date, cam_id, f_date_str,fy,fm,fd, fh, fmin, fs) = convert_filename_to_date_cam(file)
+         trim_num = get_trim_num(file)
+         extra_sec = int(trim_num) / 25
+         clip_start = file_date + datetime.timedelta(0,extra_sec)
+         clip_start_str= clip_start.strftime('%Y-%m-%d %H:%M:%S.%f')[:-3]
+         min_fn = int(clip_start.minute)
+
+         print("TRIM NUM:", trim_num)
          if min_fn not in min_meteors:
             min_meteors[min_fn] = {}
             min_meteors[min_fn]['count'] = 0
             min_meteors[min_fn]['obs'] = []
             min_meteors[min_fn]['stations'] = []
+            min_meteors[min_fn]['clip_starts'] = []
          min_meteors[min_fn]['obs'].append(fn)
          min_meteors[min_fn]['stations'].append(st)
+         min_meteors[min_fn]['clip_starts'].append(clip_start_str)
          min_meteors[min_fn]['count'] = len(set(min_meteors[min_fn]['stations']))
          files.append(file)
 
+   for min in min_meteors:
+      if min_meteors[min]['count'] > 1:
+         for i in range(0, len(min_meteors[min]['obs'])):
+            station = min_meteors[min]['stations'][i]
+            station_file = min_meteors[min]['obs'][i]
+            clip_start = min_meteors[min]['clip_starts'][i]
+            print(min, station, station_file, clip_start)
+         
+   exit()
    ms_meteors = {}
    for min in min_meteors:
       print(min, min_meteors[min])
@@ -157,6 +190,7 @@ def run_detects(day):
             st = files_station[file]
             if st not in ms_meteors:
                ms_meteors[st] = {}
+
             ms_meteors[st][file] = {} 
             ms_meteors[st][file]['obs'] = min_meteors[min]['obs'] 
             ms_meteors[st][file]['stations'] = min_meteors[min]['stations'] 
@@ -167,9 +201,13 @@ def run_detects(day):
       master_detect_file = "/mnt/ams2/meteor_archive/" + st + "/DETECTS/ms_detects.json"
       if cfe(master_detect_file) == 1:
          master_detect = load_json_file(master_detect_file)
+         if master_detect == 0:
+            print("ERROR: can't load master detect file!", master_detect_file)
       else:
          master_detect = {}
-      master_detect[day] = ms_meteors[st]
+      print("DAY:", day, ms_meteors[st])
+      if st in ms_meteors:
+         master_detect[day] = ms_meteors[st]
       save_json_file(master_detect_file, master_detect)
       print(master_detect_file) 
 
@@ -383,115 +421,34 @@ def meteor_index(json_conf, extra_cmd = ""):
    jobs2 = []
    for meteor in sorted(meteor_data, reverse=True):
       day = meteor.split("/")[4]
-      if "reduced" not in meteor:
+      if "reduced" not in meteor and "events" not in meteor and "framedata" not in meteor:
          if day not in meteor_index:
             meteor_index[day] = {}
          meteor_index[day][meteor] = {}
          rmeteor = meteor.replace(".json", "-reduced.json")
-         if cfe(rmeteor) == 1:
-            print("loading:", rmeteor)
-            meteor_index[day][meteor]['reduced'] = 1
-            try:
-               red_data = load_json_file(rmeteor)
-            except:
-               os.system("mv " + rmeteor + " /mnt/ams2/trash")
-            if "red_seg_res" in red_data:
-               meteor_index[day][meteor]['red_seg_res'] = red_data['red_seg_res']
-            if "frames_missing_before" in red_data:
-               meteor_index[day][meteor]['frames_missing_before'] = red_data['frames_missing_before']
-            if "event_start_time" in red_data:
-               meteor_index[day][meteor]['event_start_time'] = red_data['event_start_time']
-
-            if "cal_params" in red_data:
-               if "center_az" not in red_data['cal_params']:
-                  if "az_center" in red_data['cal_params']:
-                     red_data['cal_params']['center_az'] = red_data['cal_params']['az_center']
-                     red_data['cal_params']['center_el'] = red_data['cal_params']['el_center']
-                     save_json_file(rmeteor, red_data)
-                  #cmd = "./autoCal.py imgstars " + meteor
-                  #print(cmd)
-
-               if "metconf" in red_data:
-                  if "azs" in red_data['metconf']:
-                     meteor_index[day][meteor]['azs'] = red_data['metconf']['azs']
-                     meteor_index[day][meteor]['els'] = red_data['metconf']['els']
-                     meteor_index[day][meteor]['ras'] = red_data['metconf']['ras']
-                     meteor_index[day][meteor]['decs'] = red_data['metconf']['decs']
-                     meteor_index[day][meteor]['times'] = red_data['metconf']['times']
-                  if "intensity" in red_data['metconf']:
-                     meteor_index[day][meteor]['intensity'] = red_data['metconf']['intensity']
-               
-               meteor_index[day][meteor]['center_az'] = red_data['cal_params']['center_az']
-               meteor_index[day][meteor]['center_el'] = red_data['cal_params']['center_el']
-               meteor_index[day][meteor]['position_angle'] = red_data['cal_params']['position_angle']
-               if 'event_start_time' in red_data:
-                  meteor_index[day][meteor]['event_start_time'] = red_data['event_start_time']
-               if 'pixscale' in red_data['cal_params']:
-                  meteor_index[day][meteor]['pixscale'] = red_data['cal_params']['pixscale']
-               else:
-                  meteor_index[day][meteor]['pixscale'] = 999 
-               if "cat_image_stars" in red_data['cal_params']:
-                  meteor_index[day][meteor]['total_stars'] = len(red_data['cal_params']['cat_image_stars'])
-               else:
-                  meteor_index[day][meteor]['total_stars'] = 0
-
-
-               #if meteor_index[day][meteor]['total_stars'] == 0:
-               #   os.system("./autoCal.py imgstars " + meteor)
-
-               if "total_res_px" in red_data['cal_params']:
-                  meteor_index[day][meteor]['total_res_px'] = red_data['cal_params']['total_res_px']
-                  meteor_index[day][meteor]['total_res_deg'] = red_data['cal_params']['total_res_deg']
-                  if red_data['cal_params']['total_res_deg'] >= .3:
-                     print("REDO!", meteor)
-                     #os.system("./autoCal.py rr " + meteor)
-                     #os.system("./autoCal.py rr " + meteor)
-
-               else:
-                  meteor_index[day][meteor]['total_res_px'] = 0 
-                  meteor_index[day][meteor]['total_res_deg'] = 0 
-
-               if extra_cmd == "cfit" and meteor_index[day][meteor]['total_res_deg'] > .2 and meteor_index[day][meteor]['total_stars'] > 15:
-                  jobs.append("./autoCal.py cfit " + meteor)
-               if extra_cmd == "imgstars" and meteor_index[day][meteor]['total_res_deg'] > .2 and meteor_index[day][meteor]['total_stars'] > 15:
-                  jobs.append("./autoCal.py imgstars " + meteor)
-
-            else:
-               print("CP NOT IN METEOR YET")
-               meteor_index[day][meteor]['total_res_px'] = 999
-               meteor_index[day][meteor]['total_res_deg'] = 999
-               if extra_cmd == "imgstars":
-                  jobs.append("./autoCal.py cfit " + meteor)
-            
-
-            if 'multi_station' in red_data:
-               meteor_index[day][meteor]['multi_station'] = red_data['multi_station']
-          
-            if 'metconf' in red_data: 
-               if 'angular_separation' in red_data['metconf']:
-                  meteor_index[day][meteor]['angular_separation'] = red_data['metconf']['angular_separation']
-               else:
-                  meteor_index[day][meteor]['angular_separation'] = 9999
-            else:
-               meteor_index[day][meteor]['angular_separation'] = 9999
-
-            if 'peak_magnitude' in red_data:
-               meteor_index[day][meteor]['peak_magnitude'] = red_data['peak_magnitude']
-            else:
-               meteor_index[day][meteor]['peak_magnitude'] = 0
-
-            if 'event_duation ' in red_data:
-               meteor_index[day][meteor]['event_duration'] = red_data['event_duration']
-            else:
-               meteor_index[day][meteor]['event_duration'] = 0
-         else:
+         meteor_data = load_json_file(meteor)
+         if "archive_file" in meteor_data:
+            if cfe(meteor_data['archive_file']) == 1:
+               archived = 1
+               meteor_index[day][meteor]['archive_file'] = meteor_data['archive_file']
+               azs, els,ints = get_az_el_from_arc(meteor_data['archive_file'])
+               meteor_index[day][meteor]['azs'] = azs
+               meteor_index[day][meteor]['els'] = els
+               meteor_index[day][meteor]['ints'] = ints 
+         if "sd_objects" not in meteor_data:
+            print("NO SD OBJ!", meteor )
+            continue 
+         for obj in meteor_data['sd_objects']:
+            print("OBJ:", obj)
+            event_start_fn = obj['history'][0][0]
+            print("EVENT START FN:", event_start_fn, meteor)
+            (file_date, cam_id, f_date_str,fy,fm,fd, fh, fmin, fs) = convert_filename_to_date_cam(meteor)
+            extra_sec = int(event_start_fn) / 25
+            event_start = file_date + datetime.timedelta(0,extra_sec)
+            event_start_str = event_start.strftime('%Y-%m-%d %H:%M:%S.%f')[:-3]
+            meteor_index[day][meteor]['event_start_time'] = event_start_str
+         # if the archive file exists, get the az,el values and add to the index     
  
-            meteor_index[day][meteor]['reduced'] = 0
-            meteor_index[day][meteor]['total_res_px'] = 0
-            meteor_index[day][meteor]['total_res_deg'] = 0
-            meteor_index[day][meteor]['angular_separation'] = 0
-            meteor_index[day][meteor]['magnitude'] = 0
-            meteor_index[day][meteor]['event_duration'] = 0
    sort_meteor_index = {}
    for day in sorted(meteor_index, reverse=True):
       sort_meteor_index[day] = {}
@@ -500,7 +457,7 @@ def meteor_index(json_conf, extra_cmd = ""):
          sort_meteor_index[day][meteor] = meteor_index[day][meteor]
 
 
-   save_json_file("/mnt/ams2/cal/hd_images/meteor_index.json", sort_meteor_index)
+   save_json_file("/mnt/ams2/cal/hd_images/meteor_index.json", sort_meteor_index, False)
    station_id = json_conf['site']['ams_id']
 
    ma_dir  = "/mnt/ams2/meteor_archive/" + station_id + "/DETECTS/" 
@@ -576,6 +533,23 @@ def meteor_index(json_conf, extra_cmd = ""):
       jc = jc + 1
  
    exit()
+
+def get_az_el_from_arc(arc_file):
+   arc_data = load_json_file(arc_file)
+   azs = []
+   els = []
+   ints = []
+   for frame in arc_data['frames']:
+      az = frame['az']
+      el = frame['el']
+      if "intensity" in frame:
+         intensity = frame['intensity']
+      else:
+         intensity = 0
+      azs.append(az)
+      els.append(el)
+      ints.append(intensity)
+   return(azs,els,ints)
 
 def find_best_fov(meteor_json_file, json_conf):
    found = 0
