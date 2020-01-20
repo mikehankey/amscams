@@ -311,18 +311,11 @@ function addModalTemplate(meteor_id,neighbor) {
         // or the next one if the previous doesn't exist
         // so we automatically place the meteor selector "near" the right place
         var frame_id = $(this).attr('data-fr');
-        console.log("FRAME ID " + frame_id);
         var neighbor =  get_help_pos('next', frame_id);
-
-        console.log("NEXT NEIGHBOR ");
-        console.log(neighbor);
-         
+  
         if(neighbor == null) {
             neighbor =  get_help_pos('prev', frame_id);
         }
-        
-        console.log("PREV  neighbor ");
-        console.log(neighbor);
         
         get_frame(frame_id, neighbor);
         return false;
@@ -462,13 +455,11 @@ function get_help_pos(nextprev, org_id) {
 
     var tr_fn = false;
     org_id = parseInt(org_id)
-   
-   console.log("NEXTPREV " + nextprev)
+    
 
     if(nextprev == 'next') {
         // Find next
-        for(var i=org_id+1;i<org_id+10;i++) {
-            console.log("TEST $('tr#fr_"+i+")");
+        for(var i=org_id+1;i<org_id+10;i++) { 
             if($('tr#fr_'+i).length!=0 && tr_fn==false && i!=org_id) {
                 tr_id = i;
                 tr_fn = true; 
@@ -477,9 +468,7 @@ function get_help_pos(nextprev, org_id) {
         }
     } else { 
         // Find prev
-        for(var i=org_id-1;i>org_id-10;i--) { 
-           
-            console.log("TEST $('tr#fr_"+i+")");
+        for(var i=org_id-1;i>org_id-10;i--) {  
             if($('tr#fr_'+i).length!=0 && tr_fn==false && i!=org_id) {
                 tr_id = i;
                 tr_fn = true; 
@@ -496,8 +485,7 @@ function get_help_pos(nextprev, org_id) {
         var y =  parseFloat($tr.attr('data-org-y'));
         var color = $tr.find('.st').css('background-color');
 
-        console.log("NEXT/PREV FOUND");
-        console.log({ x:x, y:y, color:color, id:tr_id });
+     
 
         return { x:x, y:y, color:color, id:tr_id };
          
