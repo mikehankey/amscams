@@ -81,6 +81,9 @@ def update_arc_detects():
          file = "/mnt/ams2/meteors/" + meteor_day + "/" + file
          print("Update this file:", file)
          jd = load_json_file(file)
+         if jd == 0:
+            print("ERR:", file)
+            continue
          if "archive_file" in jd:
             archive_file = jd['archive_file']
             if cfe(archive_file) == 1:
@@ -106,7 +109,6 @@ def update_arc_detects():
                # now save the arc file with the updated info!
                save_json_file(archive_file, arc_data)
                print("SAVED:", archive_file)
-      exit()
    print("Total arc detects so far:", td)
           
 def get_old_meteor_dir(file):
