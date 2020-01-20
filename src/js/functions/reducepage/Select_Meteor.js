@@ -313,7 +313,7 @@ function addModalTemplate(meteor_id,neighbor) {
 
         console.log("NEXT NEIGHBOR ");
         console.log(neighbor);
-        break;
+        return false;
 
         if(neighbor == null) {
             neighbor =  get_help_pos('prev', frame_id);
