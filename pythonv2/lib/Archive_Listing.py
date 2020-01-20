@@ -53,23 +53,22 @@ def delete_multiple_archived_detection(detections):
 
       #We move all the other files to TRASH_FOLDER
 
-
-      # Remove Json
+      # MOVE Json tço trash
       if os.path.isfile(det): 
-         cmd = "mv " + det +  " " + TRASH_FOLDER 
-         print(det + " moved to " + TRASH_FOLDER)
-         sys.cmd(cmd)
-         os.remove(det)
+         cmd = "mv " + det +  " " + TRASH_FOLDER  
+         os.system(cmd) 
 
       # Remove HD     
-      #det = det.replace('.json','-HD.mp4')
-      #if os.path.isfile(det):
-      #   os.remove(det)
+      det = det.replace('.json','-HD.mp4')
+      if os.path.isfile(det):
+         cmd = "mv " + det +  " " + TRASH_FOLDER  
+         os.system(cmd) 
 
       # Remove SD
-      #det = det.replace('-HD','-SD')
-      #if os.path.isfile(det):
-      #   os.remove(det)
+      det = det.replace('-HD','-SD')
+      if os.path.isfile(det):
+         cmd = "mv " + det +  " " + TRASH_FOLDER  
+         os.system(cmd) 
 
       # Update Index (?)
       write_month_index(int(analysed_name['month']),int(analysed_name['year']))
