@@ -35,7 +35,7 @@ function show_stacks_to_fix() {
          </div>\
          <div class="col-6">\
            Below is the SD stack. Click the image if you want to replace the <b>SD video by the HD video</b>.\
-           <img src="'+hd_stack+' class="img-fluid"/>\
+           <img src="'+hd_stack+'" class="img-fluid"/>\
          </div>\
      </div>\
    </div>\
