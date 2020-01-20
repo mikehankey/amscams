@@ -36,7 +36,7 @@ from lib.Frame_Tools import *
 from lib.Get_Cam_ids import get_the_cam_ids
 from lib.Get_Operator_info import get_operator_info
 from lib.MultiStationMeteors import multi_station_meteors, multi_station_meteor_detail
-from lib.Replace_HD import replace_HD
+from lib.Replace_HD_or_SD import replace_HD, replace_SD
 
 # New Reduce Meteor Page
 from lib.MeteorReducePage import reduce_meteor2 
@@ -272,6 +272,10 @@ def controller(json_conf):
 
    if cmd == 'replace_HD':
       replace_HD(form)   
+      exit()
+
+   if cmd == 'replace_SD':
+      replace_SD(form)   
       exit()
  
    # GET AZ/EL from JSON_FILE & array of values

@@ -28,6 +28,11 @@ POSSIBLE_POINT_SCORE = [3,5,10]
 
 # VIDEO PREVIEW
 DEFAULT_VIDEO_PREV_ON_ARCHIVE = 0
+
+# TRASH FOLDER
+TRASH_FOLDER = '/mnt/ams2/trash'
+
+
  
 # Delete Multiple Detections at once
 def delete_multiple_archived_detection(detections):
@@ -45,19 +50,25 @@ def delete_multiple_archived_detection(detections):
       if os.path.isdir(cache_path):
          shutil.rmtree(cache_path)
      
-      # Remove Json
-      if os.path.isfile(det):
-         os.remove(det)
+
+      #We move all the other files to TRASH_FOLDER
+
+      # MOVE Json tço trash
+      if os.path.isfile(det): 
+         cmd = "mv " + det +  " " + TRASH_FOLDER  
+         os.system(cmd) 
 
       # Remove HD     
       det = det.replace('.json','-HD.mp4')
       if os.path.isfile(det):
-         os.remove(det)
+         cmd = "mv " + det +  " " + TRASH_FOLDER  
+         os.system(cmd) 
 
       # Remove SD
       det = det.replace('-HD','-SD')
       if os.path.isfile(det):
-         os.remove(det)
+         cmd = "mv " + det +  " " + TRASH_FOLDER  
+         os.system(cmd) 
 
       # Update Index (?)
       write_month_index(int(analysed_name['month']),int(analysed_name['year']))

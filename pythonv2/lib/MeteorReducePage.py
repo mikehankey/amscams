@@ -168,10 +168,12 @@ def reduce_meteor2(json_conf,form):
    # Fill Template with data
    template = template.replace("{VIDEO_FILE}", str(video_full_path))   # Video File  
    template = template.replace("{SD_VIDEO}",str(video_sd_full_path))   # SD Video File
-   template = template.replace("{STACK}", str(stack))                  # Stack File 
+   template = template.replace("{STACK}", str(stack))                  # SD Stack File 
    if(hd_stack is not None):
       template = template.replace("{HD_STACK}", str(hd_stack))                  # HD Stack File 
-    
+   else:
+      template = template.replace("{HD_STACK}", "")  
+
    # For the Event start time
    # either it has already been reduced and we take the time of the first frame
    start_time = 0
@@ -264,18 +266,21 @@ def reduce_meteor2(json_conf,form):
    else:
       template = template.replace("{REPORT_DETAILS}", "<dt class='d-block mx-auto'><div class='alert alert-danger'>Reduction info are missing</div></dt>")
  
-   # Does this detection relies only on SD data? (ie the HD video  is in fact the resized SD video)
+   # Does this detection relies only on SD data? (ie the HD video is in fact the resized SD video)
    if('info' in meteor_json_file):
       if('HD_fix' in meteor_json_file['info']):
          template = template.replace("{HD_fix}", '<div class="box"><dl class="row mb-0 mt-2"><dt class="col-12"><span class="icon-notification"></span> This detection only relies on SD video data.</dt></dl></div>')
          template = template.replace("{HD_fix_button}",'')
+      elif('SD_fix' in  meteor_json_file['info']):
+         template = template.replace("{HD_fix}", '<div class="box"><dl class="row mb-0 mt-2"><dt class="col-12"><span class="icon-notification"></span> This detection only relies on HD video data.</dt></dl></div>')
+         template = template.replace("{HD_fix_button}",'')
       else:
          template = template.replace("{HD_fix}", "")
-         template = template.replace("{HD_fix_button}",'<a class="btn btn-primary d-block mt-2" id="hd_fix">Fix not usable HD</a>')
+         template = template.replace("{HD_fix_button}",'<a class="btn btn-primary d-block mt-2" id="hd_fix">Fix Video</a>')
          
    else:
       template = template.replace("{HD_fix}", "")
-      template = template.replace("{HD_fix_button}",'<a class="btn btn-primary d-block mt-2" id="hd_fix">Fix not usable HD</a>')
+      template = template.replace("{HD_fix_button}",'<a class="btn btn-primary d-block mt-2" id="hd_fix">Fix Video</a>')
  
    # Are HD & SD sync?
    if('sync' not in meteor_json_file):
