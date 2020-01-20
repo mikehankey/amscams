@@ -455,24 +455,26 @@ function setup_modal_actions(fn_id,x,y) {
 function get_help_pos(nextprev, org_id) {
 
     var tr_fn = false;
-
-
+ 
     if(nextprev == 'next') {
         // Find next
         for(var i=org_id+1;i<org_id+10;i++) {
             if($('tr#fr_'+i).length!=0 && tr_fn==false && i!=org_id) {
                 tr_id = i;
                 tr_fn = true;
+                console.log("FOUD NEXT ")
+                console.log(tr_id)
                 break;
             }
         }
-    } else {
- 
+    } else { 
         // Find prev
         for(var i=org_id-1;i>org_id-10;i--) { 
             if($('tr#fr_'+i).length!=0 && tr_fn==false && i!=org_id) {
                 tr_id = i;
                 tr_fn = true;
+                console.log("FOUD PREV ")
+                console.log(tr_id)
                 break;
             }
         }
