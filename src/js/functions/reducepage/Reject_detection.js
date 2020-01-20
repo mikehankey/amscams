@@ -4,6 +4,7 @@ function reject_detection_from_archive(detections) {
       if(result) {
          // Deleting
          
+         loading({'text': 'Moving the detection to Trash'});
 
          $.ajax({ 
                type:"POST",
@@ -25,7 +26,6 @@ function reject_detection_from_archive(detections) {
 
 
 function reject_detection(json_file) { 
-   loading({'text': 'Moving the detection to Trash'});
  
    var detections = [];  
    var ids = [];
