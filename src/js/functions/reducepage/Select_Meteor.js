@@ -461,7 +461,7 @@ function setup_modal_actions(fn_id,x,y) {
 function get_help_pos(nextprev, org_id) {
 
     var tr_fn = false;
-    org_id = int(org_id)
+    org_id = parseInt(org_id)
    
    console.log("NEXTPREV " + nextprev)
 
