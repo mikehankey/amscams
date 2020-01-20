@@ -49,8 +49,7 @@ def delete_multiple_archived_detection(detections):
       cache_path = get_cache_path(analysed_name)
       if os.path.isdir(cache_path):
          shutil.rmtree(cache_path)
-     
-
+      
       #We move all the other files to TRASH_FOLDER
 
       # MOVE Json tço trash
