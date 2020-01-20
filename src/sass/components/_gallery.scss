@@ -399,3 +399,17 @@
 }
 
 
+
+
+
+// Image selectable
+.selectab {
+   border:4px solid rgba(0,0,0,0);
+   margin: 0 auto .5rem;
+   cursor: pointer;
+
+   &:hover {
+      border-color:#ffdd1e;
+   }
+}
+ 

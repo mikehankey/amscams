@@ -38,11 +38,11 @@ function show_stacks_to_fix() {
        <div class="row">\
          <div class="col-6">\
             <p>Below is the HD stack. Click the image if you want to<br><b>replace the HD video by the SD video</b>.</p>\
-            <img src="'+sd_stack+'" class="img-fluid"/>\
+            <img src="'+sd_stack+'" class="img-fluid selectab"/>\
          </div>\
          <div class="col-6">\
             <p>Below is the SD stack. Click the image if you want to<br><b>replace the SD video by the HD video</b>.</p>\
-           <img src="'+hd_stack+'" class="img-fluid"/>\
+           <img src="'+hd_stack+'" class="img-fluid selectab"/>\
          </div>\
         </div>\
      </div>\
