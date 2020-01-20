@@ -10,6 +10,38 @@ from lib.FileIO import load_json_file, save_json_file, cfe
 WASABI_ROOT = "/mnt/wasabi/"
 json_conf = load_json_file("../conf/as6.json")
 
+def cp_msd_from_wasabi():
+   # all stations other than the master station need to do this 
+   network_sites = json_conf['site']['network_sites'].split(",")
+   for st in network_sites:
+      cmd = "cp mnt/wasabi/" + st + "/DETECTS/ms_detects.json.gz /mnt/ams2/meteor_archive/" + st + "/DETECTS/"
+      print(cmd)
+      #os.system(cmd)
+
+
+      cmd = "guzip -f /mnt/ams2/meteor_archive/" + st + "/DETECTS/ms_detects.json.gz"
+      print(cmd)
+      #os.system(cmd)
+
+def cp_msd2wasabi():
+   # this should only be run from the central solving host for now...
+   this_station = json_conf['site']['ams_id']
+   cmd = "gzip -fk /mnt/ams2/meteor_archive/" + this_station + "/DETECTS/ms_detects.json"
+   print(cmd)
+   #os.system(cmd)
+   cmd = "cp /mnt/ams2/meteor_archive/" + this_station + "/DETECTS/ms_detects.json.gz /mnt/wasabi/" + this_station + "/DETECTS/"
+   print(cmd)
+   #os.system(cmd)
+
+   network_sites = json_conf['site']['network_sites'].split(",")
+   for st in network_sites:
+      cmd = "gzip -fk /mnt/ams2/meteor_archive/" + st + "/DETECTS/ms_detects.json"
+      print(cmd)
+      os.system(cmd)
+      cmd = "cp /mnt/ams2/meteor_archive/" + st + "/DETECTS/ms_detects.json.gz /mnt/wasabi/" + st + "/DETECTS/"
+      print(cmd)
+      os.system(cmd)
+
 def sync_archive():
    station_id = json_conf['site']['ams_id']
    os.system("find /mnt/ams2/meteor_archive/" + station_id + " |grep METEOR | grep json  |grep trim > /mnt/ams2/tmp/arc.txt") 
@@ -125,3 +157,7 @@ if sys.argv[1] == "cp":
    wasabi_cp(sys.argv[2])
 if sys.argv[1] == "sa":
    sync_archive()
+if sys.argv[1] == "ms2w" or sys.argv[1] == "cp_msd2wasabi":
+   cp_msd2wasabi()
+if sys.argv[1] == "cp_msd" or sys.argv[1] == "cp_msd_from_wasabi":
+   cp_msd_from_wasabi()
