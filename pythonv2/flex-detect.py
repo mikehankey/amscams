@@ -65,20 +65,32 @@ def batch_archive_msm(mode):
          stack_thumb = orig_meteor_json_file.replace(".json", "-stacked-tn.png")
          if mjd == 0:
             continue
+         jsid = video_file.split("/")[-1]
+         jsid = jsid.replace("_", "")
+         jsid = jsid.replace(".mp4", "")
+         del_link = " - <a href=/pycgi/webUI.py?cmd=override_detect&jsid=" + jsid + ">DEL</a>"
+
+         if "archive_file" in mjd:
+            if cfe(mjd['archive_file']) == 0:
+               del(mjd['archive_file'])
+
          if "archive_file" in mjd:
             print(orig_meteor_json_file + " ARCHIVED") 
             desc_long = file.replace(".json", "")
             desc = desc_long.split("-trim")[0]
             out += "<figure style=\"float: left; text-align: center\"><a href=/pycgi/webUI.py?cmd=reduce&video_file=" + video_file + "><img src=" + stack_thumb + "><figcaption style=\"font-size: x-medium\">" + desc + "</figcaption></a></figure>\n"
             total_arc +=1
+         elif "arc_fail" in mjd:
+            print(orig_meteor_json_file + " ARCHIVED") 
+            desc_long = file.replace(".json", "")
+            desc = desc_long.split("-trim")[0]
+            out += "<figure style=\"float: left; background-color: red; text-align: center\"><a href=/pycgi/webUI.py?cmd=reduce&video_file=" + video_file + "><img src=" + stack_thumb + "><figcaption style=\"font-size: x-medium\">" + desc + "</a> " + del_link + "</figcaption></figure>\n"
+            total_arc +=1
+
+
          else:
             desc = file.replace(".json", "")
-#/pycgi/webUI.py?cmd=override_detect&jsid=20200110120246000010005-trim928
-            jsid = video_file.split("/")[-1]
-            jsid = jsid.replace("_", "")
-            jsid = jsid.replace(".mp4", "")
 
-            del_link = " - <a href=/pycgi/webUI.py?cmd=override_detect&jsid=" + jsid + ">DEL</a>"
             print(del_link)
             out += "<figure style=\"float: left; background-color: coral; text-align: center\"><a href=/pycgi/webUI.py?cmd=reduce&video_file=" + video_file + "><img src=" + stack_thumb + "><figcaption style=\"font-size: x-medium\">" + desc + "</a>" + del_link + "</figcaption></a> </figure>\n"
             cmd = "./flex-detect.py debug2 " + video_file
