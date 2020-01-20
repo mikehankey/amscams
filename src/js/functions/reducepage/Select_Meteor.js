@@ -314,7 +314,7 @@ function addModalTemplate(meteor_id,neighbor) {
         console.log("NEXT NEIGHBOR ");
         console.log(neighbor);
 
-        if(neighbor== null) {
+        if(neighbor == null) {
             neighbor =  get_help_pos('prev', frame_id);
         }
         
@@ -496,12 +496,7 @@ function get_help_pos(nextprev, org_id) {
             id:tr_id
        });
 
-        return {
-            x:x,
-            y:y,
-            color:color,
-            id:tr_id
-        }
+        return { x:x, y:y, color:color, id:tr_id };
         
     } else {
         console.log("WE RETURN NULL")
