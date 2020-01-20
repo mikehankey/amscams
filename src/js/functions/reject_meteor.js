@@ -24,6 +24,7 @@ function reject_meteor(id) {
  
 
 
+
 function reject_multiple_meteor(array_of_jsid, ids) {
       // Deleting
       $.each(ids, function(i,v){ 
