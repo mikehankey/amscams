@@ -2,7 +2,7 @@
 function HD_fix_confirm() {
 
    bootbox.confirm({
-      message: "Use this function if the meteor doesnt appear in the HD video. <b>The HD video will be permanently replaced by a resized version of the SD video.</b>",
+      message: "Use this function if the meteor doesnt appear in the HD OR in the SD video. <b>The defecting video will be permanently replaced by a resized version of the SD or HD video.</b>",
       className: 'rubberBand animated info',
       centerVertical: true,
       buttons: {
@@ -19,6 +19,26 @@ function HD_fix_confirm() {
         }
       }
    });
+}
+
+
+function show_stacks_to_fix() {
+   // Build the modal
+   $modal= $('<div id="fix_video_modal class="modal fade" tabindex="-1" role="dialog" aria-hidden="true">\
+   <div class="modal-dialog modal-xl" role="document">\
+     <div class="modal-content">\
+       <div class="row">\
+         <div class="col-6">\
+            Below is the HD stack. Click the image if you want to replace the <b>HD video by the SD video</b>.\
+            <img src=""/>\
+         </div>\
+         <div class="col-6">\
+           Below is the SD stack. Click the image if you want to replace the <b>SD video by the HD video</b>.\
+           <img src=""/>\
+         </div>\
+     </div>\
+   </div>\
+ </div>').appendTo('body')
 }
 
 
