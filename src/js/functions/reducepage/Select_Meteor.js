@@ -313,6 +313,7 @@ function addModalTemplate(meteor_id,neighbor) {
 
         console.log("NEXT NEIGHBOR ");
         console.log(neighbor);
+        break;
 
         if(neighbor == null) {
             neighbor =  get_help_pos('prev', frame_id);
@@ -461,9 +462,7 @@ function get_help_pos(nextprev, org_id) {
         for(var i=org_id+1;i<org_id+10;i++) {
             if($('tr#fr_'+i).length!=0 && tr_fn==false && i!=org_id) {
                 tr_id = i;
-                tr_fn = true;
-                console.log("FOUND NEXT ")
-                console.log(tr_id)
+                tr_fn = true; 
                 break;
             }
         }
@@ -472,9 +471,7 @@ function get_help_pos(nextprev, org_id) {
         for(var i=org_id-1;i>org_id-10;i--) { 
             if($('tr#fr_'+i).length!=0 && tr_fn==false && i!=org_id) {
                 tr_id = i;
-                tr_fn = true;
-                console.log("FOUND PREV ")
-                console.log(tr_id)
+                tr_fn = true; 
                 break;
             }
         }
@@ -488,18 +485,12 @@ function get_help_pos(nextprev, org_id) {
         var y =  parseFloat($tr.attr('data-org-y'));
         var color = $tr.find('.st').css('background-color');
 
-        console.log("WE RETURN");
-        console.log({
-            x:x,
-            y:y,
-            color:color,
-            id:tr_id
-       });
+         
 
         return { x:x, y:y, color:color, id:tr_id };
-        
-    } else {
-        console.log("WE RETURN NULL")
+         
+
+    } else { 
         return null;
     }
 }
