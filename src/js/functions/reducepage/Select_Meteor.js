@@ -490,7 +490,8 @@ function get_help_pos(nextprev, org_id) {
         var y =  parseFloat($tr.attr('data-org-y'));
         var color = $tr.find('.st').css('background-color');
 
-         
+        console.log("NEXT/PREV FOUND");
+        console.log({ x:x, y:y, color:color, id:tr_id });
 
         return { x:x, y:y, color:color, id:tr_id };
          
