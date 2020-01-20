@@ -2927,7 +2927,7 @@ def reduce_meteor_new(json_conf,form):
    else:
       archive_file = mj['archive_file']
       view_arc_link = "<a class='btn btn-primary d-block mb-2' href='/pycgi/webUI.py?cmd=reduce2&video_file=" + archive_file + "'>View Archived Meteor</a>"
-      view_arc_link += "<a class='btn btn-primary d-block' href='/pycgi/webUI.py?cmd=move_to_archive&video_file=" + hd_trim + "&sd_video=" + video_file + "&json_file=" + meteor_json_file + "'>Replace the Archive</a> "
+      view_arc_link += "<a class='btn btn-primary d-block' href='/pycgi/webUI.py?cmd=move_to_archive&video_file=" + hd_trim + "&sd_video=" + video_file + "&json_file=" + meteor_json_file + "'>Replace Archived Meteor</a> "
 
       template = template.replace("{ARCHIVE_LINK}", view_arc_link)
 
