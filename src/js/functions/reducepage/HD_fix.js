@@ -58,16 +58,18 @@ function HD_SD_fix(which) {
       var cmd_data = { 
          json_file: json_file,          // Defined on the page 
          cmd: 'replace_HD'
-       };
+      };
+      loading({text:'Replacing HD Data', overlay:true}); 
    } else {
       var cmd_data = { 
          json_file: json_file,          // Defined on the page 
          cmd: 'replace_SD'
        };
+       loading({text:'Replacing SD Data', overlay:true}); 
    }
   
 
-    loading({text:'Replacing HD Data', overlay:true}); 
+   
     
     $.ajax({ 
         url:  "/pycgi/webUI.py",
