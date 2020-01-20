@@ -106,6 +106,7 @@ def update_arc_detects():
                # now save the arc file with the updated info!
                save_json_file(archive_file, arc_data)
                print("SAVED:", archive_file)
+      exit()
    print("Total arc detects so far:", td)
           
 def get_old_meteor_dir(file):

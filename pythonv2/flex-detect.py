@@ -56,7 +56,7 @@ def batch_archive_msm(mode):
    ms_detect_report_file = ARCHIVE_DIR + station + "/DETECTS/" + "ms_detects_report.html"
    ms_data = load_json_file(ms_detect_file)
    out = ""
-   for day in ms_data:
+   for day in sorted(ms_data):
       for file in ms_data[day]:
          meteor_day = file[0:10]
          orig_meteor_json_file = "/mnt/ams2/meteors/" + meteor_day + "/" + file
