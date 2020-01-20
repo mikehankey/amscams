@@ -302,7 +302,10 @@ function addModalTemplate(meteor_id,neighbor) {
     });
 
     // Click on "+"
-    $('.create_frame_fs').click(function() { 
+    $('.create_frame_fs').click(function(e) { 
+
+       e.stopImmediatePropagation();
+
         // Create the modal with the new frame
         // Here we get the values of the previous frame
         // or the next one if the previous doesn't exist
@@ -321,8 +324,9 @@ function addModalTemplate(meteor_id,neighbor) {
         
         console.log("PREV  neighbor ");
         console.log(neighbor);
-        return false;
         get_frame(frame_id, neighbor);
+        return false;
+        
     }); 
     
     // Switch  "Multiple Mode" / "Single Mode"
