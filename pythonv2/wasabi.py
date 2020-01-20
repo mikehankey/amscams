@@ -12,14 +12,23 @@ json_conf = load_json_file("../conf/as6.json")
 
 def cp_msd_from_wasabi():
    # all stations other than the master station need to do this 
+   st = json_conf['site']['ams_id']
+   cmd = "cp /mnt/wasabi/" + st + "/DETECTS/ms_detects.json.gz /mnt/ams2/meteor_archive/" + st + "/DETECTS/"
+   print(cmd)
+   os.system(cmd)
+
+   cmd = "gunzip -f /mnt/ams2/meteor_archive/" + st + "/DETECTS/ms_detects.json.gz"
+   print(cmd)
+   os.system(cmd)
+
+
    network_sites = json_conf['site']['network_sites'].split(",")
    for st in network_sites:
-      cmd = "cp mnt/wasabi/" + st + "/DETECTS/ms_detects.json.gz /mnt/ams2/meteor_archive/" + st + "/DETECTS/"
+      cmd = "cp /mnt/wasabi/" + st + "/DETECTS/ms_detects.json.gz /mnt/ams2/meteor_archive/" + st + "/DETECTS/"
       print(cmd)
       os.system(cmd)
 
-
-      cmd = "guzip -f /mnt/ams2/meteor_archive/" + st + "/DETECTS/ms_detects.json.gz"
+      cmd = "gunzip -f /mnt/ams2/meteor_archive/" + st + "/DETECTS/ms_detects.json.gz"
       print(cmd)
       os.system(cmd)
 
