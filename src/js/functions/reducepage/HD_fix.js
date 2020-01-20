@@ -37,11 +37,11 @@ function show_stacks_to_fix() {
       <div class="modal-body">\
        <div class="row">\
          <div class="col-6">\
-            Below is the HD stack. Click the image if you want to replace the <b>HD video by the SD video</b>.\
+            <p>Below is the HD stack. Click the image if you want to<br><b>replace the HD video by the SD video</b>.</p>\
             <img src="'+sd_stack+'" class="img-fluid"/>\
          </div>\
          <div class="col-6">\
-           Below is the SD stack. Click the image if you want to replace the <b>SD video by the HD video</b>.\
+            <p>Below is the SD stack. Click the image if you want to<br><b>replace the SD video by the HD video</b>.</p>\
            <img src="'+hd_stack+'" class="img-fluid"/>\
          </div>\
         </div>\
