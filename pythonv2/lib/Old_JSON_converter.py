@@ -431,6 +431,13 @@ def move_old_detection_to_archive(json_file_path, sd_video_file_path, hd_video_f
    # Add the sync SD/HD if we have them
    if(sync_res != False): 
       json_content['sync']  = sync_res
+
+
+   # We update the old json file with a link to the new json file
+   json_file_path_data = load_json_file(json_file_path)
+   json_file_path_data['archive_file'] = new_folder + tan['name']
+   # Save the OLD JSON
+   save_json_file(json_file_path,json_file_path_data)
    
    # Save the new JSON file
    save_json_file(new_folder + tan['name'], json_content)
@@ -441,6 +448,9 @@ def move_old_detection_to_archive(json_file_path, sd_video_file_path, hd_video_f
 
    # Here we update the index for the archive
    write_year_index(int(tan['year']))
+
+
+
    
    return new_folder + tan['name'],new_hd_video_file,new_sd_video_file
 
@@ -473,7 +483,7 @@ def move_to_archive(form):
    
    new_json,new_hd_vid,new_sd_vid = move_old_detection_to_archive(json_file,sd_video,hd_video, False)
 
-
+  
 
    redirect_to("/pycgi/webUI.py?cmd=reduce2&video_file=" + new_hd_vid + "&clear_cache=1&c=" + str(random.randint(0,100000000)), "reduction")
    #print("/pycgi/webUI.py?cmd=reduce2&video_file=" + new_hd_vid + "&clear_cache=1&c=" + str(random.randint(0,100000000)))
