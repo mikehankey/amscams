@@ -345,17 +345,12 @@ def controller(json_conf):
       override_detect(video_file,jsid,json_conf)
       exit()
 
-   #Delete multiple detections at once from archives
-   if cmd == 'delete_archive_multiple_detection':
+   #Delete multiple detections at once from archives or reduce2 page
+   if cmd == 'delete_archive_multiple_detection' or cmd == 'reject_meteor':
       detections = form.getvalue('detections[]')
       delete_multiple_archived_detection(detections)
       exit()
-
-   #Delete a detection from a reduce2 page
-   if cmd == 'reject_meteor:':
-      detections = form.getvalue('json_file')
-      delete_multiple_archived_detection([detections])
-      exit()
+ 
 
 
    #Delete multiple detections at once 
