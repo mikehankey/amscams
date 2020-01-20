@@ -26,13 +26,7 @@ function reject_detection_from_archive(detections) {
 
 
 function reject_detection(json_file) { 
- 
-   var detections = [];  
-   var ids = [];
-   detections.push(json_file);
-   
-
-   reject_detection_from_archive(detections);
+   reject_detection_from_archive(json_file);
 }
 
 
