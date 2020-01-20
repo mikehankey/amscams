@@ -129,13 +129,14 @@ def reduce_meteor2(json_conf,form):
    # Test if the name is ok
    if(len(analysed_name)==0):
       print_error(video_full_path + " <b>is not valid video file name.</b>") 
-  
+
    # Add the JSON Path to the template
    template = template.replace("{JSON_FILE}", str(json_full_path))   # Video File  
 
    # Parse the JSON
    meteor_json_file = load_json_file(json_full_path) 
- 
+
+
    # Get the HD or SD stack
    tmp_analysed_name = name_analyser(json_full_path) 
    if(video_hd_full_path != ''):
@@ -208,7 +209,6 @@ def reduce_meteor2(json_conf,form):
 
    if('report' in meteor_json_file):
       report_details += '<dt class="col-4">Date &amp; Time</dt><dd class="col-8">'+start_time+'s</dd>'
-
       if('dur' in meteor_json_file['report']):
          report_details += '<dt class="col-4">Duration</dt><dd class="col-8"><span id="dur">'+str(meteor_json_file['report']['dur'])+'</span>s</dd>'
       if('max_peak' in meteor_json_file['report']):
@@ -237,9 +237,23 @@ def reduce_meteor2(json_conf,form):
    med_dist_select +="</select>"
  
    report_details += '<dt class="col-4">Med. dist</dt><dd class="col-8">'+str("{0:.4f}".format(float(med_dist)))+' ' + med_dist_select +'</dd>'
+
    # We add the med dist to the template
    template = template.replace("{MED_DIST}", str(med_dist))
    
+
+
+
+   # IS IT A MULTI DETECTION?
+   if('info' in meteor_json_file):
+      if('multi' in meteor_json_file['info']):
+
+         # We build {MULTI_DETAILS}
+         multi_box = '<div class="box"><h2>Multi-detection</h2><dl class="row mb-0"><dt class="col-6"> NO INFO IN THE JSON FOR THE MOMENT </dt></dl></div>'
+         template = template.replace("{MULTI_DETAILS}",multi_box)
+
+
+
 
    # Link to old version
    if('info' in meteor_json_file):

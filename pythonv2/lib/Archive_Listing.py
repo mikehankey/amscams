@@ -640,11 +640,12 @@ def get_html_detection(det,detection,clear_cache,video_prev):
    # Do we have a thumb stack preview for this detection?
    preview = does_cache_exist(det,"preview","/*.jpg")
    
-   detection_id = det['name'].replace("_", "").replace(".json", "")
- 
    if(len(preview)==0 or clear_cache is True):
       # We need to generate the thumbs 
       preview = generate_preview(det) 
+   
+   detection_id = det['name'].replace("_", "").replace(".json", "")
+ 
 
    # Get Video for preview
    path_to_vid = get_video(det['full_path'])       

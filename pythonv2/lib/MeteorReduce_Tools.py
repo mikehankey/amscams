@@ -304,9 +304,8 @@ def generate_preview(analysed_name):
       if(cfe(video_hd_full_path)==1):
          stack = get_stacks(analysed_name,clear_cache,True) 
       else:
-         stack = get_stacks(analysed_name,clear_cache,False)    
-      
-
+         stack = get_stacks(analysed_name,clear_cache,False)     
+         
       # We resize the stack and change it to a jpg
       stack_PIL = Image.open(stack)
       preview =  stack_PIL.resize((PREVIEW_W, PREVIEW_H))
