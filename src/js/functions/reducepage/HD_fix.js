@@ -15,7 +15,7 @@ function HD_fix_confirm() {
      },
      callback: function (result) {
         if(result==true) {
-           HD_fix();
+            show_stacks_to_fix();
         }
       }
    });
@@ -24,21 +24,21 @@ function HD_fix_confirm() {
 
 function show_stacks_to_fix() {
    // Build the modal
-   $modal= $('<div id="fix_video_modal class="modal fade" tabindex="-1" role="dialog" aria-hidden="true">\
+   $('<div id="fix_video_modal class="modal fade" tabindex="-1" role="dialog" aria-hidden="true">\
    <div class="modal-dialog modal-xl" role="document">\
      <div class="modal-content">\
        <div class="row">\
          <div class="col-6">\
             Below is the HD stack. Click the image if you want to replace the <b>HD video by the SD video</b>.\
-            <img src=""/>\
+            <img src="'+sd_stack+'"/>\
          </div>\
          <div class="col-6">\
            Below is the SD stack. Click the image if you want to replace the <b>SD video by the HD video</b>.\
-           <img src=""/>\
+           <img src="'+hd_stack+'/>\
          </div>\
      </div>\
    </div>\
- </div>').appendTo('body')
+ </div>').appendTo('body');
 }
 
 
