@@ -2922,11 +2922,11 @@ def reduce_meteor_new(json_conf,form):
    
    # MIKE
    if "archive_file" not in mj:
-      move_to_archive_link = "<a class='btn btn-primary d-block' href='webUI.py?cmd=move_to_archive&video_file=" + hd_trim + "&sd_video=" + video_file + "&json_file=" + meteor_json_file + "'>Move to Archive</a>"
+      move_to_archive_link = "<a class='btn btn-primary d-block' href='/pycgi/webUI.py?cmd=move_to_archive&video_file=" + hd_trim + "&sd_video=" + video_file + "&json_file=" + meteor_json_file + "'>Move to Archive</a>"
       template = template.replace("{ARCHIVE_LINK}", move_to_archive_link)
    else:
       archive_file = mj['archive_file']
-      view_arc_link = "<a class='btn btn-primary d-block' href='webUI.py?cmd=reduce2&video_file=" + archive_file + "'>View Archived Meteor</a>"
+      view_arc_link = "<a class='btn btn-primary d-block' href='/pycgi/webUI.py?cmd=reduce2&video_file=" + archive_file + "'>View Archived Meteor</a>"
       template = template.replace("{ARCHIVE_LINK}", view_arc_link)
 
 
@@ -3120,6 +3120,7 @@ def reduce_meteor_new(json_conf,form):
 
    if cal_params_file is not None:
       template = template.replace("{SELECTED_CAL_PARAMS_FILE}", cal_params_file)
+
    #Name of the option in the <select>
    if cal_params_file is not None:
       template = template.replace("{SELECTED_CAL_PARAMS_FILE_NAME}", get_meteor_date(cal_params_file))
