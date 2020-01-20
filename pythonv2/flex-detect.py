@@ -56,7 +56,7 @@ def batch_archive_msm(mode):
    ms_detect_report_file = ARCHIVE_DIR + station + "/DETECTS/" + "ms_detects_report.html"
    ms_data = load_json_file(ms_detect_file)
    out = ""
-   for day in sorted(ms_data):
+   for day in sorted(ms_data, reverse=True):
       for file in ms_data[day]:
          meteor_day = file[0:10]
          orig_meteor_json_file = "/mnt/ams2/meteors/" + meteor_day + "/" + file
@@ -67,8 +67,9 @@ def batch_archive_msm(mode):
             continue
          if "archive_file" in mjd:
             print(orig_meteor_json_file + " ARCHIVED") 
-            desc = file.replace(".json", "")
-            out += "<figure style=\"float: left\"><a href=/pycgi/webUI.py?cmd=reduce&video_file=" + video_file + "><img src=" + stack_thumb + "><figcaption>" + desc + "</figcaption></a></figure>\n"
+            desc_long = file.replace(".json", "")
+            desc = desc_long.split("-trim")[0]
+            out += "<figure style=\"float: left; text-align: center\"><a href=/pycgi/webUI.py?cmd=reduce&video_file=" + video_file + "><img src=" + stack_thumb + "><figcaption style=\"font-size: x-medium\">" + desc + "</figcaption></a></figure>\n"
             total_arc +=1
          else:
             desc = file.replace(".json", "")
@@ -77,9 +78,9 @@ def batch_archive_msm(mode):
             jsid = jsid.replace("_", "")
             jsid = jsid.replace(".mp4", "")
 
-            del_link = "<a href=/pycgi/webUI.py?cmd=override_detect&jsid=" + jsid + "><BR>DEL</a>"
+            del_link = " - <a href=/pycgi/webUI.py?cmd=override_detect&jsid=" + jsid + ">DEL</a>"
             print(del_link)
-            out += "<figure style=\"float: left; background-color: coral;\"><a href=/pycgi/webUI.py?cmd=reduce&video_file=" + video_file + "><img src=" + stack_thumb + "><figcaption>" + desc + "</a>" + del_link + "</figcaption></a> </figure>\n"
+            out += "<figure style=\"float: left; background-color: coral; text-align: center\"><a href=/pycgi/webUI.py?cmd=reduce&video_file=" + video_file + "><img src=" + stack_thumb + "><figcaption style=\"font-size: x-medium\">" + desc + "</a>" + del_link + "</figcaption></a> </figure>\n"
             cmd = "./flex-detect.py debug2 " + video_file
             print(cmd)
             if mode == "1":
@@ -847,7 +848,7 @@ def apply_calib(obj ):
 
 
 
-   if len(cat_image_stars) > 7:
+   if len(cat_image_stars) > 9999:
       this_poly = np.zeros(shape=(4,), dtype=np.float64)
 
       start_res = reduce_fov_pos(this_poly, cal_params, obj['hd_trim'],frame,json_conf, cat_image_stars,0,show)
@@ -7525,6 +7526,8 @@ def debug2(video_file):
       org_hd_vid = hd_trim 
    else:
       print("NO HD TRIM FILE FOUND. ABORT FOR NOW.")
+      md['arc_fail'] = "No HD trim file exists."
+      save_json_file(old_meteor_json_file, md)
       exit()
    
 
@@ -7546,6 +7549,13 @@ def debug2(video_file):
          for mm in hd_motion_objects:
             print("HD",mm, hd_motion_objects[mm]['ofns'])
             print("HD",mm, hd_motion_objects[mm]['report'])
+      if sd_meteor is None:
+         md['arc_fail'] = "SD detection failed."
+      if sd_meteor is None:
+         md['arc_fail'] = "HD detection failed."
+      if sd_meteor is None and hd_meteor is None:
+         md['arc_fail'] = "HD and SD detection failed."
+      save_json_file(old_meteor_json_file, md)
       return()
 
    sd_frame_curve = frame_curve(sd_meteor, sd_frames)
@@ -7745,7 +7755,7 @@ def debug2(video_file):
    print("******************************   PASSED *************************")
    new_trim_num = orig_sd_trim_num + sd_bs 
    arc_json_file = save_archive_meteor(video_file, syncd_sd_frames,syncd_hd_frames,frame_data,new_trim_num) 
-   os.system("./flex-detect.py faa " + arc_json_file)
+   #os.system("./flex-detect.py faa " + arc_json_file)
    print("ARC FILE:", arc_json_file)
    return("")
    #exit()
@@ -7894,6 +7904,8 @@ def save_archive_meteor(video_file, syncd_sd_frames,syncd_hd_frames,frame_data,n
    new_json['info']['org_hd_vid'] = ma_hd_file 
    save_json_file(ma_json_file, new_json)
    omd['archive_file'] = ma_json_file
+   if "arc_fail" in omd:
+      del(omd['arc_fail'])
    save_json_file(old_meteor_json_file, omd)
 
    if save_vids == 1:
@@ -7903,7 +7915,7 @@ def save_archive_meteor(video_file, syncd_sd_frames,syncd_hd_frames,frame_data,n
    cmd = "./MakeCache.py " + ma_json_file
    os.system(cmd)
 
-   write_archive_index(archive_year,archive_mon)
+   #write_archive_index(archive_year,archive_mon)
 
    print("OLD:", old_meteor_json_file)
    print("NEW:", ma_json_file)
