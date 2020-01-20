@@ -10,10 +10,12 @@ function fix_pifc_ui() {
  
    // It's too small...
    if($(window).outerHeight()-fh-$('#main_container').outerHeight() > 60) {
+      /*
       while($(window).outerHeight()-fh-$('#main_container').outerHeight() > 60) {
          $('#cropped_frame_selector').height($('#cropped_frame_selector').height()+1)
-      }
-
+      } 
+      */
+       console.log("YER");
       // Keep Ratio
       $('#cropped_frame_selector').width($('#cropped_frame_selector').height()*Math.round(w)/Math.round(h));
       $('#cropped_frame_selector').height($('#cropped_frame_selector').width()*Math.round(h)/Math.round(w));
