@@ -40,11 +40,19 @@ function HD_fix() {
             if(json_resp['status']!==0) {
                v = window.location;
                window.location = v.origin + v.pathname + "?cmd=reduce2&video_file=" + json_file + "&clear_cache=1&c" + Math.floor(Math.random(100000)*100000000)
+               loading({text:'Recreating media and reloading page...', overlay:true});
+            
+            } else {
+               loading_done();
+               
+               bootbox.alert({
+                  message: json_resp['msg'],
+                  className: 'rubberBand animated error',
+                  centerVertical: true 
+              });
             }
 
-            // No loading done
-            // loading_done();
-            loading({text:'Recreating media and reloading page...', overlay:true});
+          
  
         }, error: function(data) {
             
