@@ -310,6 +310,10 @@ function addModalTemplate(meteor_id,neighbor) {
         var frame_id = $(this).attr('data-fr');
         console.log("FRAME ID " + frame_id);
         var neighbor =  get_help_pos('next', frame_id);
+
+        console.log("NEXT NEIGHBOR ");
+        console.log(neighbor);
+
         if(neighbor== null) {
             neighbor =  get_help_pos('prev', frame_id);
         }
