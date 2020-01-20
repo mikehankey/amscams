@@ -462,7 +462,7 @@ function get_help_pos(nextprev, org_id) {
             if($('tr#fr_'+i).length!=0 && tr_fn==false && i!=org_id) {
                 tr_id = i;
                 tr_fn = true;
-                console.log("FOUD NEXT ")
+                console.log("FOUND NEXT ")
                 console.log(tr_id)
                 break;
             }
@@ -473,7 +473,7 @@ function get_help_pos(nextprev, org_id) {
             if($('tr#fr_'+i).length!=0 && tr_fn==false && i!=org_id) {
                 tr_id = i;
                 tr_fn = true;
-                console.log("FOUD PREV ")
+                console.log("FOUND PREV ")
                 console.log(tr_id)
                 break;
             }
@@ -481,11 +481,20 @@ function get_help_pos(nextprev, org_id) {
     }
  
     if(tr_fn == true) {
+
         // Get the info: color & position
         var $tr = $('tr#fr_'+ tr_id);
-        var x = parseFloat($tr.attr('data-org-x'));
+        var x =  parseFloat($tr.attr('data-org-x'));
         var y =  parseFloat($tr.attr('data-org-y'));
         var color = $tr.find('.st').css('background-color');
+
+        console.log("WE RETURN");
+        console.log({
+            x:x,
+            y:y,
+            color:color,
+            id:tr_id
+       });
 
         return {
             x:x,
@@ -495,7 +504,7 @@ function get_help_pos(nextprev, org_id) {
         }
         
     } else {
-       
+        console.log("WE RETURN NULL")
         return null;
     }
 }
