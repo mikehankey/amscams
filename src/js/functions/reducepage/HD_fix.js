@@ -28,6 +28,13 @@ function show_stacks_to_fix() {
    $('<div id="fix_video_modal" class="modal fade" tabindex="-1" role="dialog" aria-hidden="true">\
    <div class="modal-dialog modal-xl" role="document">\
      <div class="modal-content">\
+      <div class="modal-header">\
+        <h5 class="modal-title">Fix Video</h5>\
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close">\
+          <span aria-hidden="true">&times;</span>\
+        </button>\
+      </div>\
+      <div class="modal-body">\
        <div class="row">\
          <div class="col-6">\
             Below is the HD stack. Click the image if you want to replace the <b>HD video by the SD video</b>.\
@@ -37,6 +44,7 @@ function show_stacks_to_fix() {
            Below is the SD stack. Click the image if you want to replace the <b>SD video by the HD video</b>.\
            <img src="'+hd_stack+'" class="img-fluid"/>\
          </div>\
+        </div>\
      </div>\
    </div>\
  </div>').appendTo('body');
