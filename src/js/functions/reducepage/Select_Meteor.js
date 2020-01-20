@@ -308,11 +308,14 @@ function addModalTemplate(meteor_id,neighbor) {
         // or the next one if the previous doesn't exist
         // so we automatically place the meteor selector "near" the right place
         var frame_id = $(this).attr('data-fr');
+        console.log("FRAME ID " + frame_id);
         var neighbor =  get_help_pos('next', frame_id);
         if(neighbor== null) {
-         neighbor =  get_help_pos('prev', frame_id);
+            neighbor =  get_help_pos('prev', frame_id);
         }
         
+        console.log("neighbor ");
+        console.log(neighbor);
         get_frame(frame_id, neighbor);
     }); 
     

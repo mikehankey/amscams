@@ -201,10 +201,10 @@ def reduce_meteor2(json_conf,form):
 
             med_dist=numpy.median(tmp_list)
 
+   # We add the med dist to the template
    template = template.replace("{MED_DIST}", str(med_dist))
-
-   #start_time_datetime =  datetime.strptime(start_time,'%Y-%m-%d %H:%M:%S.%f')
-   #report_details  =  '<time class="s-icon big"><em>'+start_time_datetime.strftime("%b")+'</em><span>'+analysed_name['day']+'</span><span class="y">'+analysed_name['year']+'</span></time>'
+ 
+   # Build the report details
    report_details = ''
 
    if('report' in meteor_json_file):
@@ -238,12 +238,9 @@ def reduce_meteor2(json_conf,form):
  
    report_details += '<dt class="col-4">Med. dist</dt><dd class="col-8">'+str("{0:.4f}".format(float(med_dist)))+' ' + med_dist_select +'</dd>'
 
-   # We add the med dist to the template
-   template = template.replace("{MED_DIST}", str(med_dist))
-   
 
-
-
+ 
+    
    # IS IT A MULTI DETECTION?
    if('info' in meteor_json_file):
       if('multi_station' in meteor_json_file['info']):
