@@ -248,7 +248,7 @@ def reduce_meteor2(json_conf,form):
    if('info' in meteor_json_file):
       if('multi_station' in meteor_json_file['info']):
          # We build {MULTI_DETAILS}
-         multi_box = '<div class="box"><h2>Multi-detection</h2><dl class="row mb-0"><dt class="col-6"> NO INFO IN THE JSON FOR THE MOMENT </dt></dl></div>'
+         multi_box = '<div class="box"><h2>Multi-detection</h2><div class="alert alert-danger">NO INFO IN THE JSON FOR THE MOMENT</div></div>'
          template = template.replace("{MULTI_DETAILS}",multi_box)
       else:
          template = template.replace("{MULTI_DETAILS}",'')
