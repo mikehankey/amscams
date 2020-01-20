@@ -413,6 +413,7 @@ function setup_modal_actions(fn_id,x,y) {
 function get_help_pos(nextprev, org_id) {
 
     var tr_fn = false;
+    org_id = parseInt(org_id);
 
     if(nextprev == 'next') {
         // Find next
