@@ -48,7 +48,7 @@ def month_detects(date_str):
    month = m
    day = d
    m,d,y = int(m),int(d),int(y)
-   date_dt = datetime.strptime(date_str, "%Y_%m_%d")
+   date_dt = datetime.datetime.strptime(date_str, "%Y_%m_%d")
    print("Month", y,m,d)
    num_days = calendar.monthrange(y, m)[1]
    print(num_days)
@@ -77,6 +77,7 @@ def update_arc_detects():
       for file in detects[day]:
          meteor_day = file[0:10]
          td = td + 1
+         key_file = file
          file = "/mnt/ams2/meteors/" + meteor_day + "/" + file
          print("Update this file:", file)
          jd = load_json_file(file)
@@ -87,6 +88,11 @@ def update_arc_detects():
                arc_data = load_json_file(jd['archive_file'])
                if "multi_station" not in arc_data['info']:
                   arc_data['info']['multi_station'] = 1
+               if "multi" not in arc_data:
+                  arc_data['multi'] = {}
+               print("DEBUG:", detects[day][key_file])
+               multi = build_multi(detects[day][key_file])
+               print("MULTI:", multi)
                # Also make sure the info['org_sd_vid'] and info['org_hd_vid'] are set to the correct values.
                org_sd_vid = file.replace(".json", ".mp4")
                if "hd_trim" in jd:
@@ -96,14 +102,50 @@ def update_arc_detects():
                         arc_data['info']['org_hd_vid'] = org_hd_vid
                if arc_data['info']['org_sd_vid'] != org_sd_vid:
                   arc_data['info']['org_sd_vid'] = org_sd_vid
+               arc_data['multi'] = multi
                # now save the arc file with the updated info!
                save_json_file(archive_file, arc_data)
                print("SAVED:", archive_file)
-               #exit()
    print("Total arc detects so far:", td)
           
+def get_old_meteor_dir(file):
+   meteor_day = file[0:10]
+   new_file = "/mnt/ams2/meteors/" + meteor_day + "/" + file
+   return(new_file)
+
+
+def build_multi(data):
+   multi = {}
+   work = {}
+   print("BUILD MULTI FROM:", data)
+
+   multi['event_id'] = "pending" 
+   cs = []
+   for e_start in data['clip_starts']:
+      dt_start = datetime.datetime.strptime(e_start, "%Y-%m-%d %H:%M:%S.%f")
+      cs.append(int(dt_start.timestamp()))
+
+   med_start = np.median(cs)
+   med_datetime = datetime.datetime.fromtimestamp(med_start)
+   multi['event_start'] = med_datetime.strftime("%Y-%m-%d %H:%M:%S.%f")
+
+   multi['obs'] = [] 
+   for i in range(0, len(data['stations'])):
+      station = data['stations'][i]
+      org_file = data['obs'][i] 
+      arc_file = data['arc_files'][i] 
+
+      if station not in work:
+         work[station] = {}
+         work[station]['station'] = station
+         work[station]['files'] = []
+      work[station]['files'].append((arc_file,org_file))
+   for station in work:
+      multi['obs'].append(work[station])
+   return(multi)   
 
 def run_detects(day):
+   recopy = 0
    print("RUN DETECTS")
    network = json_conf['site']['network_sites'].split(",")
    station = json_conf['site']['ams_id']
@@ -117,7 +159,7 @@ def run_detects(day):
          os.system("mkdir " + arc_station_dir + "/METEORS/")
          os.system("mkdir " + arc_station_dir + "/CAL/")
          os.system("mkdir " + arc_station_dir + "/DETECTS/")
-      if cfe(data_file) == 0:
+      if cfe(data_file) == 0 or recopy == 1:
          wasabi_file = data_file.replace("ams2/meteor_archive", "wasabi")
          wasabi_file = wasabi_file + ".gz"
          print("DATA FILE NOT FOUND!", data_file, wasabi_file)
@@ -148,28 +190,39 @@ def run_detects(day):
    for st in detect_index:
       print(st)
       for file in detect_index[st]:
-         print("ST FILE:", st, file)
+         print("ST FILE:", st, file, detect_index[st][file])
+         
+         if "archive_file" in detect_index[st][file]:
+            arc_file = detect_index[st][file]['archive_file']
+         else:
+            arc_file = "pending"
+      
          fn = file.split("/")[-1]
          files_station[fn] = st 
-         min_fn = fn[0:16]
          (file_date, cam_id, f_date_str,fy,fm,fd, fh, fmin, fs) = convert_filename_to_date_cam(file)
          trim_num = get_trim_num(file)
          extra_sec = int(trim_num) / 25
          clip_start = file_date + datetime.timedelta(0,extra_sec)
          clip_start_str= clip_start.strftime('%Y-%m-%d %H:%M:%S.%f')[:-3]
-         min_fn = int(clip_start.minute)
+         min_fn = detect_index[st][file]['event_start_time'][0:16]
+         min_fn = min_fn.replace("-","_")
+         min_fn = min_fn.replace(":","_")
+         min_fn = min_fn.replace(" ","_")
 
-         print("TRIM NUM:", trim_num)
          if min_fn not in min_meteors:
             min_meteors[min_fn] = {}
             min_meteors[min_fn]['count'] = 0
             min_meteors[min_fn]['obs'] = []
             min_meteors[min_fn]['stations'] = []
             min_meteors[min_fn]['clip_starts'] = []
+            min_meteors[min_fn]['arc_files'] = []
          min_meteors[min_fn]['obs'].append(fn)
          min_meteors[min_fn]['stations'].append(st)
          min_meteors[min_fn]['clip_starts'].append(clip_start_str)
+         arc_fn = arc_file.split("/")[-1]
+         min_meteors[min_fn]['arc_files'].append(arc_fn)
          min_meteors[min_fn]['count'] = len(set(min_meteors[min_fn]['stations']))
+         min_meteors[min_fn]['event_start_time'] = detect_index[st][file]['event_start_time']
          files.append(file)
 
    for min in min_meteors:
@@ -180,13 +233,13 @@ def run_detects(day):
             clip_start = min_meteors[min]['clip_starts'][i]
             print(min, station, station_file, clip_start)
          
-   exit()
    ms_meteors = {}
    for min in min_meteors:
       print(min, min_meteors[min])
       if min_meteors[min]['count'] > 1:
          for i in range(0,len(min_meteors[min]['obs'])):
             file = min_meteors[min]['obs'][i]
+            clip_start = min_meteors[min]['clip_starts'][i]
             st = files_station[file]
             if st not in ms_meteors:
                ms_meteors[st] = {}
@@ -194,6 +247,8 @@ def run_detects(day):
             ms_meteors[st][file] = {} 
             ms_meteors[st][file]['obs'] = min_meteors[min]['obs'] 
             ms_meteors[st][file]['stations'] = min_meteors[min]['stations'] 
+            ms_meteors[st][file]['clip_starts'] = min_meteors[min]['clip_starts'] 
+            ms_meteors[st][file]['arc_files'] = min_meteors[min]['arc_files'] 
             print(min, min_meteors[min]['count'])
 
    for st in ms_meteors:
