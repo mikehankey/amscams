@@ -237,15 +237,14 @@ function init_pos_choos() {
     
    $('#cropped_frame_selector').css({
       'background-image':'url('+$first_img.attr('src')+')',
-      'background-size':  'contain',
+      'background-size':  'cover',
       'background-repeat': 'no-repeat',
       'width': w + 'px',  // Defined on the page
       'height': h   + 'px', // Defined on the page
       'background-position':'0% 0%',
       'background-color':'#000'
    });
-  
-
+   
    $first_img_holder.addClass('cur');
 
    // Fix height
