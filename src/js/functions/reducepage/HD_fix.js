@@ -38,11 +38,11 @@ function show_stacks_to_fix() {
        <div class="row">\
          <div class="col-6">\
             <p>Below is the HD stack. Click the image if you want to<br><b>replace the HD video by the SD video</b>.</p>\
-            <img src="'+sd_stack+'" class="img-fluid selectab"/>\
+            <img src="'+sd_stack+'" class="img-fluid selectab" onclick="HD_SD_fix(\'SD\')"/>\
          </div>\
          <div class="col-6">\
             <p>Below is the SD stack. Click the image if you want to<br><b>replace the SD video by the HD video</b>.</p>\
-           <img src="'+hd_stack+'" class="img-fluid selectab"/>\
+           <img src="'+hd_stack+'" class="img-fluid selectab" onclick="HD_SD_fix(\'HD\')"/>\
          </div>\
         </div>\
      </div>\
@@ -52,11 +52,20 @@ function show_stacks_to_fix() {
 }
 
 
-function HD_fix() {
-   var cmd_data = { 
-      json_file: json_file,          // Defined on the page 
-      cmd: 'replace_HD'
-    }
+function HD_SD_fix(which) {
+
+   if(which == 'SD') {
+      var cmd_data = { 
+         json_file: json_file,          // Defined on the page 
+         cmd: 'replace_HD'
+       };
+   } else {
+      var cmd_data = { 
+         json_file: json_file,          // Defined on the page 
+         cmd: 'replace_SD'
+       };
+   }
+  
 
     loading({text:'Replacing HD Data', overlay:true}); 
     
@@ -82,8 +91,7 @@ function HD_fix() {
               });
             }
 
-          
- 
+           
         }, error: function(data) {
             
             loading_done();
