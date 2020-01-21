@@ -16,10 +16,10 @@ function getQueryVariable(variable) {
    return(false);
 }
 
-plot_title = getQueryVariable("plot_title").replace(/_/g, ' ');
-xat = getQueryVariable("xat")
-yat = getQueryVariable("yat")
-ry = getQueryVariable("ry")
+plot_title = getQueryVariable("plot_title").replace(/_/g, ' '); // Graph Name
+xat = getQueryVariable("xat")  // Text X
+yat = getQueryVariable("yat")  // Text Y
+ry = getQueryVariable("ry")    // If true =>
 x1 = getQueryVariable("x1")
 y1 = getQueryVariable("y1")
 tx1 = getQueryVariable("tx1")
@@ -63,11 +63,7 @@ var data = [trace1  ]
 if (ry != false) {
    var layout = {
        title: {
-         text: plot_title,
-         font: {
-            family: 'Courier New, monospace',
-            size: 24
-         },
+         text: plot_title, 
          xref: 'paper',
          x: 0.05,
        },
@@ -77,7 +73,7 @@ if (ry != false) {
           title: {
             text: xat,
             font: {
-               family: 'Courier New, monospace',
+               
                size: 18,
                color: '#7f7f7f'
             }
@@ -87,8 +83,7 @@ if (ry != false) {
        yaxis:{
           title: {
              text: yat,
-             font: {
-               family: 'Courier New, monospace',
+             font: { 
                size: 18,
                color: '#7f7f7f'
              }
@@ -103,8 +98,7 @@ else {
    var layout = {
   title: {
     text: plot_title,
-    font: {
-      family: 'Courier New, monospace',
+    font: { 
       size: 24
     },
     xref: 'paper',
@@ -115,8 +109,7 @@ else {
        xaxis:{
        title: {
             text: xat,
-            font: {
-               family: 'Courier New, monospace',
+            font: { 
                size: 18,
                color: '#7f7f7f'
             }
@@ -127,8 +120,7 @@ else {
        yaxis:{
            title: {
              text: yat,
-             font: {
-               family: 'Courier New, monospace',
+             font: { 
                size: 18,
                color: '#7f7f7f'
              }
