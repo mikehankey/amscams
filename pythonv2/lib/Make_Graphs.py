@@ -42,6 +42,7 @@ def make_lc_plot(frames):
 
 
 def make_xy_point_plot(frames):
+
    xs = []
    ys = []
  
@@ -49,7 +50,6 @@ def make_xy_point_plot(frames):
       xs.append(frame['x']) 
       ys.append(frame['y']) 
  
-
    if(len(xs)>1):
       trend_x, trend_y = poly_fit_points(xs,ys)
    
