@@ -3101,7 +3101,12 @@ def reduce_meteor_new(json_conf,form):
       hd_video_file = mj['hd_trim']
    if cal_params_file is not None:
       template = template.replace("{CAL_PARAMS_FILE}", cal_params_file)
- 
+   
+
+   # We test if an important file is missing
+   if(cfe(hd_trim)==0):
+      print("<div class='alert alert-danger'>HD TRIM " +  hd_trim + " as defined in the JSON is missing.</div>")
+
       
    # MIKE
    if "archive_file" not in mj:
