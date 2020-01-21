@@ -1,6 +1,9 @@
 import sys
 import numpy as np
 
+
+DEFAULT_IFRAME = "<iframe width='100%' height='540' frameborder='false' src='{CONTENT}'></iframe>"
+
 def poly_fit_points(poly_x,poly_y, z = None):
    if z is None:
       if len(poly_x) >= 3:
@@ -32,8 +35,9 @@ def make_lc_plot(frames):
    link = link.replace("[", "")
    link = link.replace("]", "")
    link = link.replace(" ", "")
-   iframe = "<iframe width=100% height=538 src=" + link + "></iframe>" 
-   return(iframe)
+   iframe =   DEFAULT_IFRAME.replace('{CONTENT}', link)
+    
+   return iframe 
 
 
 
@@ -58,9 +62,9 @@ def make_xy_point_plot(frames):
       link = "/pycgi/graph.html?xat=X&yat=Y&t1d=Point&t2d=Fit&ry=1&plot_title=XY_Points_and_Line_Fit&x1=" + str(xs) + "&y1=" + str(ys) + "&tx1=" + str(tx1) + "&ty1=" + str(ty1)
       link = link.replace("[", "")
       link = link.replace("]", "")
-      link = link.replace(" ", "")
-      iframe = "<iframe width='100%' height='538' src=" + link + "></iframe>" 
-      return(iframe)
+      link = link.replace(" ", "") 
+      iframe =   DEFAULT_IFRAME.replace('{CONTENT}', link) 
+      return iframe
    return ''
 
 
