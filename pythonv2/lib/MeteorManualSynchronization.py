@@ -69,12 +69,14 @@ def manual_synchronization_chooser(form):
 
    # How many SD frames do we create?
    how_many_sd_frames = 4 
- 
+   
+   starting_from = 0
    # What is the fn of the first frame?
    if('frames' in mr):
-      starting_from = mr['frames'][0]['fn']
-   else:
-      starting_from = 0
+      if(mr['frames'][0]):
+         if('fn' in mr['frames'][0])
+            starting_from = mr['frames'][0]['fn']
+   
   
    # Create the SD
    all_resized_sd, all_resized_hd = generate_SD_and_HD_frames_for_sync(analysed_name,dest_sd_folder,x_start,y_start,w,h)
