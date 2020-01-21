@@ -73,23 +73,20 @@ if (ry != false) {
        },
        height: 517,
        width: 937,
-       paper_bgcolor: "rgba(9,29,63,0)", 
-       plot_bgcolor: "rgba(9,29,63,0)", 
+       paper_bgcolor: "rgba(9,29,63,1)",  // For exporting in PNG!
+       plot_bgcolor: "rgba(9,29,63,1)",   // For exporting in PNG!
        xaxis:{
          zerolinecolor: '#cccccc',
          zerolinewidth: 2,
-         gridcolor: 'rgba(255,0,0,1)', 
-         
-         linecolor: 'rgba(0,255,0,1)', 
-         tickangle: 45,
+         gridcolor: 'rgba(96,96,96,.4)', 
+         linecolor: 'rgba(96,96,96,.4)',  
          title: {  text: xat, font: { size: 15, color: '#b1b1b1' } } 
        },
        yaxis:{
          zerolinecolor: '#cccccc',
-         zerolinewidth: 2,
-         tickangle: 45,
-         gridcolor: '#b1b1b1', 
-         tickangle: 45,
+         zerolinewidth: 2, 
+         gridcolor: 'rgba(96,96,96,.4)', 
+         linecolor: 'rgba(96,96,96,.4)',
          title: { text: yat, font: {  size: 15, color: '#b1b1b1' }},
          autorange: 'reversed' 
        },
