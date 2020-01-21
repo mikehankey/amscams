@@ -337,7 +337,7 @@ def controller(json_conf):
 
 
    # Fix an "old" json with a bad link to HD video
-   if cmd=='fix_hd_vid'
+   if cmd=='fix_hd_vid':
       fix_hd_vid(form)
       exit()
 
