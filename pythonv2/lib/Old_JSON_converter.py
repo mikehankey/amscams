@@ -471,15 +471,15 @@ def move_to_archive(form):
  
  
    if(hd_video is None or cfe(hd_video)==0):
-      print_error(("HD video is missing " + hd_video + " not found.")
+      print_error("HD video is missing " + hd_video + " not found.")
       sys.exit(0)
 
    if(sd_video is None or cfe(sd_video)==0):
-      print_error(("SD video is missing." + sd_video + " not found.")
+      print_error("SD video is missing." + sd_video + " not found.")
       sys.exit(0)
 
    if(json_file is None or cfe(json_file)==0):
-      print_error(("JSON is missing." + json_file + "not found.")   
+      print_error("JSON is missing." + json_file + "not found.")   
       sys.exit(0)
 
    
