@@ -3107,14 +3107,14 @@ def reduce_meteor_new(json_conf,form):
    errors = ""
 
    if(cfe(hd_trim)==0):
-      errors += "<p>HD TRIM - <b><a href='" +  hd_trim + "'> " +  hd_trim + "</a></b> as defined in the JSON is missing.</p>"
+      errors += "<p>HD TRIM - <b><a href='" +  hd_trim + "'> " +  hd_trim + "</a></b> as defined in the JSON is missing. <br> Do you want to replace it with: <a href='" +  hd_video_file + "'> " +  hd_video_file + "</a> </p>"
    if(cfe(video_file)==0):
       errors += "<p>SD VIDEO - <b><a href='" +  video_file + "'> " +  video_file + "</a></b> as defined in the JSON is missing.</p>"
    if(cfe(meteor_json_file)==0):
       errors += "<p>JSON FILE - <b><a href='" +  meteor_json_file + "'> " +  meteor_json_file + "</a></b> as defined in the JSON is missing.</p>"
 
    if(errors!=''):
-      print("<div id='main_container' class='container mt-4 lg-l'><div class='alert alert-danger'>"+errors+"</div></div>")
+      print("<div id='main_container' class='container mt-4 lg-l pt-4'><div class='alert alert-danger'>"+errors+"</div></div>")
       
    # MIKE
    if "archive_file" not in mj:
