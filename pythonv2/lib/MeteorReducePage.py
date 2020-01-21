@@ -256,9 +256,7 @@ def reduce_meteor2(json_conf,form):
 
    # Basic X,Y of points
    plots = make_basic_plot(meteor_json_file) 
-   print("PLOTS")
-   print(plots)
-   template = template.replace("{%PLOTS_TABLE%}", plots)
+   #template = template.replace("{%PLOTS_TABLE%}", plots)
 
    # Link to old version
    if('info' in meteor_json_file):
