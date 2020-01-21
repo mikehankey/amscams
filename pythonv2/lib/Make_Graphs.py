@@ -39,9 +39,7 @@ def make_lc_plot(frames):
 def make_xy_point_plot(frames):
    xs = []
    ys = []
-
-   print(frames)
-   sys.exit(0)
+ 
    for frame in frames:
       xs.append(frame['x']) 
       ys.append(frame['y']) 
