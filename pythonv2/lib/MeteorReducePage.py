@@ -273,7 +273,6 @@ def reduce_meteor2(json_conf,form):
 
    # Basic X,Y of points
    plots = make_basic_plot(meteor_json_file) 
-   plots = ''
    if plots!='' :
       extra_tabs, extra_content = create_tab_and_content(extra_tabs,extra_content,'basic_plot','Graphs',plots)
    
