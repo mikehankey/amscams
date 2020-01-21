@@ -34,6 +34,8 @@ def make_lc_plot(frames):
    iframe = "<iframe width=100% height=538 src=" + link + "></iframe>" 
    return(iframe)
 
+
+
 def make_xy_point_plot(frames):
    xs = []
    ys = []
@@ -58,3 +60,14 @@ def make_xy_point_plot(frames):
    link = link.replace(" ", "")
    iframe = "<iframe width='100%' height='538' src=" + link + "></iframe>" 
    return(iframe)
+
+
+def make_basic_plot(meteor_json_file):
+   plots = ''
+   if 'frames' in meteor_json_file:  
+      if len(meteor_json_file['frames']) > 0:
+         xy_point_plot = make_xy_point_plot(meteor_json_file['frames'])
+         cnt_light_curve = make_lc_plot(meteor_json_file['frames'])
+         plots = xy_point_plot + "<P>" + cnt_light_curve
+   
+   return plots
