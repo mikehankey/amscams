@@ -272,9 +272,8 @@ def reduce_meteor2(json_conf,form):
    extra_content = ""
 
    # Basic X,Y of points
-   plots = make_basic_plot(meteor_json_file) 
-   if plots!='' :
-      extra_tabs, extra_content = create_tab_and_content(extra_tabs,extra_content,'basic_plot','Graphs',plots)
+   plots = make_basic_plots(meteor_json_file) 
+   extra_tabs, extra_content = create_tab_and_content(extra_tabs,extra_content,'basic_plot','Graphs',plots)
    
    # After CREATING ALL THE GRAPHS WE INCLUDE THEM
    template = template.replace("{EXTRA_TAB}",extra_tabs)
