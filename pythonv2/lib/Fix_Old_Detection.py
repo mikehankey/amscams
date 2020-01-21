@@ -2,10 +2,11 @@ import sys
 
 from lib.FileIO import load_json_file,save_json_file, cfe
 from lib.CGI_Tools import redirect_to
+from lib.Get_Station_Id import get_station_id
+from lib.REDUCE_VARS import METEOR_ARCHIVE
 
 def fix_hd_vid(form):
- 
-
+  
    hd_video_file = form.getvalue("hd_video_file")
    json_file = form.getvalue("json_file")
    cur_video_file = form.getvalue("cur_video_file")
@@ -29,3 +30,19 @@ def fix_hd_vid(form):
    else:
       print("ERROR PARSING JSON FILE " + json_file)
       sys.error(0)
+
+
+def fix_hd_vid_inline(): 
+   station_id = get_station_id()
+   ms_detect_file = METEOR_ARCHIVE + station_id + "/DETECTS/" + "ms_detects.json" 
+   ms_data = load_json_file(ms_detect_file) 
+   for day in sorted(ms_data, reverse=True):
+      for f in ms_data[day]:
+         meteor_day = file[0:10]
+         orig_meteor_json_file = "/mnt/ams2/meteors/" + meteor_day + "/" + f
+         video_file = orig_meteor_json_file.replace(".json", ".mp4") 
+         json_data = load_json_file(orig_meteor_json_file)
+         if 'archive_file' not in json_data:
+            if 'hd_trim' in json_data:
+               if cfe(json_data['hd_trim']==0):
+                  print(json_data['hd_trim']  + " > " + video_file)
