@@ -474,8 +474,10 @@ def move_to_archive(form):
       print("HD video is missing " + hd_video + " not found.")
 
       # We try to replace the path by /mnt/ams2/meteors/meteor_date/file 
-      analysed_name = name_analyser(hd_video)
-      print(analysed_name)
+      file_name_only = os.path.basename(hd_video)
+      
+      orig_meteor_json_file = "/mnt/ams2/meteors/" +  file_name_only[0:10] + "/" + file_name_only
+      print(orig_meteor_json_file)
       sys.exit(0)
 
    if sd_video is None or cfe(sd_video)==0 :
