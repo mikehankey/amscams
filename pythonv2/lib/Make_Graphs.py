@@ -2,7 +2,7 @@ import sys
 import numpy as np
 
 
-DEFAULT_IFRAME = "<iframe width='100%' height='540' frameborder='false' src='{CONTENT}'></iframe>"
+DEFAULT_IFRAME = "<iframe width='100%' height='540' style='margin:.5rem auto' frameborder='false' src='{CONTENT}'></iframe>"
 
 def poly_fit_points(poly_x,poly_y, z = None):
    if z is None:
