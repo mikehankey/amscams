@@ -5,9 +5,6 @@ def poly_fit_points(poly_x,poly_y, z = None):
    if z is None:
       if len(poly_x) >= 3:
          try:
-            print("IN MAKE FIT POINTS")
-            print(poly_x)
-            print(poly_y)
             z = np.polyfit(poly_x,poly_y,1)
             f = np.poly1d(z)
          except:
@@ -47,12 +44,7 @@ def make_xy_point_plot(frames):
    for frame in frames:
       xs.append(frame['x']) 
       ys.append(frame['y']) 
-
-
-   print("make_xy_point_plot<br>")
-   print(xs)
-   print("<br>")
-   print(ys)
+ 
 
    if(len(xs)>1):
       trend_x, trend_y = poly_fit_points(xs,ys)
