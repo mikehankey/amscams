@@ -44,5 +44,5 @@ def fix_hd_vid_inline():
          json_data = load_json_file(orig_meteor_json_file)
          if 'archive_file' not in json_data:
             if 'hd_trim' in json_data:
-               if cfe(json_data['hd_trim']==0):
+               if cfe(json_data['hd_trim'])==0:
                   print(json_data['hd_trim']  + " > " + video_file)
