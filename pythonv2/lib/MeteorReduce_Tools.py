@@ -433,7 +433,7 @@ def generate_stacks(video_full_path, destination, toHD):
       stacked_image = stacked_image.resize((HD_W, HD_H))
       stacked_image.save(destination)
    elif stacked_image is None:
-      print_error("Impossible to generate the stacks") 
+      print("Impossible to generate the stacks for " + video_full_path) 
    return destination
 
 
