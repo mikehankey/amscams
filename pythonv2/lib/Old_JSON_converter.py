@@ -476,9 +476,19 @@ def move_to_archive(form):
       # We try to replace the path by /mnt/ams2/meteors/meteor_date/file 
       file_name_only = os.path.basename(hd_video)
       
-      orig_meteor_json_file = "/mnt/ams2/meteors/" +  file_name_only[0:10] + "/" + file_name_only
-      print(orig_meteor_json_file)
-      sys.exit(0)
+      orig_meteor_video_file = "/mnt/ams2/meteors/" +  file_name_only[0:10] + "/" + file_name_only
+      
+      if(cfe(orig_meteor_json_file)==1 and json_file is not None and cfe(json_file)==1):
+         # We upate the json_file
+         json_data = load_json_file(json_file)
+         json_data['hd_trim'] = orig_meteor_video_file
+         # Save the json
+         save_json_file(json_file,json_data)
+         hd_video = orig_meteor_video_file
+
+      else:   
+         print("2nd change HD video file not found " + orig_meteor_json_file)
+         sys.exit(0)
 
    if sd_video is None or cfe(sd_video)==0 :
       print_error("SD video is missing." + sd_video + " not found.")
