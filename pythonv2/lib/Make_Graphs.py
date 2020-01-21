@@ -46,7 +46,7 @@ def make_xy_point_plot(frames):
 
    #print(link)
    trend_x, trend_y = poly_fit_points(xs,ys)
-   if(len(trend_x)>0)
+   if(len(trend_x)>0):
       tx1 = []
       ty1 = []
       for i in range(0,len(trend_x)):
