@@ -62,30 +62,16 @@ var data = [trace1]
 if (ry != false) {
    var layout = {
        title: {
-         text: plot_title, 
-         xref: 'x',
-         yref: 'y', 
-         x: 0.05,
+         text: plot_title, xref: 'x',   yref: 'y',  x: 0.05,
        },
        height: 517,
        width: 937,
+       paper_bgcolor: "rgba(9,29,63,0)", 
        xaxis:{
-          title: {
-            text: xat,
-            font: {
-               size: 15,
-               color: '#7f7f7f'
-            }
-          }, 
-          side:'right'
+          title: {  text: xat, font: { size: 15, color: '#b1b1b1' } } 
        },
        yaxis:{
-          title: {
-             text: yat,
-             font: { 
-               size: 15,
-               color: '#7f7f7f'
-             }
+          title: { text: yat, font: {  size: 15, color: '#b1b1b1' }
            },
            autorange: 'reversed' 
        },
@@ -131,7 +117,7 @@ else {
 
 }
 
-Plotly.newPlot("myDiv", data, layout) 
+Plotly.newPlot("myDiv", data, layout, {responsive: true}) 
 if (tx1 != false) {
    Plotly.addTraces("myDiv", trace2)
 }
