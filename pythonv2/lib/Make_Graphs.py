@@ -46,18 +46,20 @@ def make_xy_point_plot(frames):
 
    #print(link)
    trend_x, trend_y = poly_fit_points(xs,ys)
-   tx1 = []
-   ty1 = []
-   for i in range(0,len(trend_x)):
-      tx1.append(int(trend_x[i]))
-      ty1.append(int(trend_y[i]))
+   if(len(trend_x)>0)
+      tx1 = []
+      ty1 = []
+      for i in range(0,len(trend_x)):
+         tx1.append(int(trend_x[i]))
+         ty1.append(int(trend_y[i]))
 
-   link = "/pycgi/graph.html?xat=X&yat=Y&t1d=Point&t2d=Fit&ry=1&plot_title=XY_Points_and_Line_Fit&x1=" + str(xs) + "&y1=" + str(ys) + "&tx1=" + str(tx1) + "&ty1=" + str(ty1)
-   link = link.replace("[", "")
-   link = link.replace("]", "")
-   link = link.replace(" ", "")
-   iframe = "<iframe width='100%' height='538' src=" + link + "></iframe>" 
-   return(iframe)
+      link = "/pycgi/graph.html?xat=X&yat=Y&t1d=Point&t2d=Fit&ry=1&plot_title=XY_Points_and_Line_Fit&x1=" + str(xs) + "&y1=" + str(ys) + "&tx1=" + str(tx1) + "&ty1=" + str(ty1)
+      link = link.replace("[", "")
+      link = link.replace("]", "")
+      link = link.replace(" ", "")
+      iframe = "<iframe width='100%' height='538' src=" + link + "></iframe>" 
+      return(iframe)
+   return ''
 
 
 def make_basic_plot(meteor_json_file):
