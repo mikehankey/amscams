@@ -300,6 +300,8 @@ def generate_preview(analysed_name):
    if(len(dest)==0):
       video_hd_full_path = analysed_name['full_path'].replace('.json','-HD.mp4')
 
+      stack = ''
+
       # We generate the preview from the stack (HD first)
       if(cfe(video_hd_full_path)==1):
          stack = get_stacks(analysed_name,clear_cache,True) 
@@ -308,7 +310,7 @@ def generate_preview(analysed_name):
          if(cfe(video_sd_full_path)==1):
             stack = get_stacks(analysed_name,clear_cache,False)     
 
-      if(stack is not None):   
+      if(stack!=''):   
 
          # We resize the stack and change it to a jpg
          stack_PIL = Image.open(stack)
