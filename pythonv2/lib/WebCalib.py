@@ -2880,8 +2880,6 @@ def reduce_meteor_js(meteor_reduced):
 def reduce_meteor_new(json_conf,form):
 
    #cgitb.enable()
-
-   print("THIS ONE IS MESSED UP")
       
    fp = open("/home/ams/amscams/pythonv2/templates/reducePage.html")
    template = ""
@@ -2928,10 +2926,9 @@ def reduce_meteor_new(json_conf,form):
       template = template.replace("{ARCHIVE_LINK}", move_to_archive_link)
    else:
       archive_file = mj['archive_file']
-      view_arc_link = "<a class='btn btn-primary d-block mb-2' href='/pycgi/webUI.py?cmd=reduce2&video_file=" + archive_file + "'>View Archived Meteor</a>"
-      view_arc_link += "<a class='btn btn-primary d-block' href='/pycgi/webUI.py?cmd=move_to_archive&video_file=" + hd_trim + "&sd_video=" + video_file + "&json_file=" + meteor_json_file + "'>Replace Archived Meteor</a> "
-
-      template = template.replace("{ARCHIVE_LINK}", view_arc_link)
+      view_arc_link_and_back = "<a class='btn btn-primary d-block mb-2' href='/pycgi/webUI.py?cmd=reduce2&video_file=" + archive_file + "'>View Archived Meteor</a>"
+      view_arc_link_and_back += "<a class='btn btn-primary d-block' href='/pycgi/webUI.py?cmd=move_to_archive&video_file=" + hd_trim + "&sd_video=" + video_file + "&json_file=" + meteor_json_file + "'>Replace Archived Meteor</a> "
+      template = template.replace("{ARCHIVE_LINK}", view_arc_link_and_back)
 
 
    if reduced == 1:
@@ -3113,6 +3110,13 @@ def reduce_meteor_new(json_conf,form):
       hd_video_file = mj['hd_trim']
    if cal_params_file is not None:
       template = template.replace("{CAL_PARAMS_FILE}", cal_params_file)
+
+
+   print("<br>HD STACK " + hd_stack)
+   print("<br>SD STACK " + st_stack)
+   print("<br>JSON " + meteor_json_file) 
+ 
+
    template = template.replace("{HD_STACK}", hd_stack)
    template = template.replace("{SD_STACK}", sd_stack)
    template = template.replace("{SD_VIDEO}", sd_video_file)
