@@ -48,6 +48,13 @@ show = 0
 
 ARCHIVE_DIR = "/mnt/ams2/meteor_archive/"
 
+def run_archive():
+   if check_running("flex-detect.py bams") == 0:
+      print("Archiver is not running.")
+      os.system("./flex-detect.py bams 1 &")
+   else:
+      print("Archiver is running.")
+
 def batch_archive_msm(mode):
    total_files = 0
    total_arc = 0
@@ -2885,7 +2892,7 @@ def convert_filename_to_date_cam(file):
    f_datetime = datetime.datetime.strptime(f_date_str, "%Y-%m-%d %H:%M:%S")
    return(f_datetime, cam, f_date_str,fy,fm,fd, fh, fmin, fs)
 
-def check_running():
+def check_running_proc():
    cmd = "ps -aux |grep \"process_data.py\" | grep -v grep"
    output = subprocess.check_output(cmd, shell=True).decode("utf-8")
    print(output)
@@ -4234,14 +4241,14 @@ def analyze_object(object, hd = 0, sd_multi = 1, final=0):
       obj_class = "plane"
       bad_items.append("low max cm, high neg_perc, high elp_max_cm")
 
-   if ang_vel < 1.5 and elp_max_cm > 2:
+   if ang_vel < 1.5 and elp_max_cm > 2 and cm < 3:
       meteor_yn = "no"
       bad_items.append("short distance, many gaps, low cm")
       obj_class = "plane"
 
 
    if elp > 0:
-      if min_max_dist * deg_multi < 1 and max_cm <= 5 and cm / elp < .75 :
+      if min_max_dist * deg_multi < 1 and max_cm <= 3 and cm / elp < .75 :
          meteor_yn = "no"
          bad_items.append("short distance, many gaps, low cm")
 
@@ -7543,9 +7550,19 @@ def debug2(video_file):
       org_hd_vid = hd_trim 
    else:
       print("NO HD TRIM FILE FOUND. ABORT FOR NOW.")
-      md['arc_fail'] = "No HD trim file exists."
+      new_video_file = video_file.replace(".mp4", "-HD-meteor.mp4")
+      cmd = "/usr/bin/ffmpeg -i " + video_file + " -vf scale=1920:1080 " + new_video_file 
+      os.system(cmd)
+      md['hd_trim'] = new_video_file
+      if "arc_fail" in md:
+         del(md['arc_fail'])
       save_json_file(old_meteor_json_file, md)
-      exit()
+      hd_trim = new_video_file
+      if cfe(hd_trim) == 1:
+         hd_frames,hd_color_frames,hd_subframes,hd_sum_vals,hd_max_vals = load_frames_fast(hd_trim, json_conf, 0, 0, [], 1,[])
+      else:
+         print("HD FIX FAILED!")
+         exit()
    
 
    motion_objects, motion_frames = detect_meteor_in_clip(video_file, sd_frames, 0)
@@ -8586,6 +8603,8 @@ if cmd == "batch_archive_msm" or cmd == "bams" :
    batch_archive_msm(video_file)
 if cmd == "eval_points" or cmd == "ep" :
    eval_points(video_file)
+if cmd == "ra" or cmd == "run_archive" :
+   run_archive()
 if cmd == "fix_arc_points" or cmd == "fap" :
    fix_arc_points(video_file)
 if cmd == "fix_arc_all" or cmd == "faa" :
