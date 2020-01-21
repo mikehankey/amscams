@@ -3104,9 +3104,17 @@ def reduce_meteor_new(json_conf,form):
    
 
    # We test if an important file is missing
-   if(cfe(hd_trim)==0):
-      print("<div class='alert alert-danger'>HD TRIM " +  hd_trim + " as defined in the JSON is missing.</div>")
+   errors = ""
 
+   if(cfe(hd_trim)==0):
+      errors += "<p>HD TRIM - <b><a href='" +  hd_trim + "'> " +  hd_trim + "</a></b> as defined in the JSON is missing.</p>"
+   if(cfe(video_file)==0):
+      errors += "<p>SD VIDEO - <b><a href='" +  video_file + "'> " +  video_file + "</a></b> as defined in the JSON is missing.</p>"
+   if(cfe(meteor_json_file)==0):
+      errors += "<p>JSON FILE - <b><a href='" +  meteor_json_file + "'> " +  meteor_json_file + "</a></b> as defined in the JSON is missing.</p>"
+
+   if(errors!=''):
+      print("<div id='main_container' class='container mt-4 lg-l'><div class='alert alert-danger'>"+errors+"</div></div>")
       
    # MIKE
    if "archive_file" not in mj:
