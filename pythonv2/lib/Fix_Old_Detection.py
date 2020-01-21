@@ -32,6 +32,9 @@ def fix_hd_vid(form):
       sys.error(0)
 
 
+
+# Fix the old detection where the hd_trim file (defined in the JSON) is messed up
+# replace the wrong value of hd_trim by replace(".json", ".mp4") 
 def fix_hd_vid_inline(): 
    station_id = get_station_id()
    ms_detect_file = METEOR_ARCHIVE + station_id + "/DETECTS/" + "ms_detects.json" 
@@ -44,5 +47,6 @@ def fix_hd_vid_inline():
          json_data = load_json_file(orig_meteor_json_file)
          if 'archive_file' not in json_data:
             if 'hd_trim' in json_data:
-               if cfe(json_data['hd_trim'])==0:
-                  print(json_data['hd_trim']  + " > " + video_file)
+               if(json_data['hd_trim'] is not None):
+                  if cfe(json_data['hd_trim'])==0:
+                     print(json_data['hd_trim']  + " > " + video_file)
