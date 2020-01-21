@@ -304,14 +304,21 @@ def generate_preview(analysed_name):
       if(cfe(video_hd_full_path)==1):
          stack = get_stacks(analysed_name,clear_cache,True) 
       else:
-         stack = get_stacks(analysed_name,clear_cache,False)     
-         
-      # We resize the stack and change it to a jpg
-      stack_PIL = Image.open(stack)
-      preview =  stack_PIL.resize((PREVIEW_W, PREVIEW_H))
+         video_sd_full_path = analysed_name['full_path'].replace('.json','-SD.mp4')
+         if(cfe(video_sd_full_path)==1):
+            stack = get_stacks(analysed_name,clear_cache,False)     
 
-      # We save the preview as a jpg 
-      preview.save(get_cache_path(analysed_name,"preview")+analysed_name['name_w_ext']+'.jpg', 'jpeg')
+      if(stack is not None):   
+
+         # We resize the stack and change it to a jpg
+         stack_PIL = Image.open(stack)
+         preview =  stack_PIL.resize((PREVIEW_W, PREVIEW_H))
+
+         # We save the preview as a jpg 
+         preview.save(get_cache_path(analysed_name,"preview")+analysed_name['name_w_ext']+'.jpg', 'jpeg')
+      
+      else:
+         return "IMPOSSIBLE TO GENERATE THE PREVIEW"
 
    # Return the preview full path
    return get_cache_path(analysed_name,"preview")+analysed_name['name_w_ext']+'.jpg'       
