@@ -296,8 +296,6 @@ def reduce_meteor2(json_conf,form):
    med_dist_select +="</select>"
  
    report_details += '<dt class="col-4">Med. dist</dt><dd class="col-8">'+str("{0:.4f}".format(float(med_dist)))+' ' + med_dist_select +'</dd>'
-
-
  
     
    # IS IT A MULTI DETECTION?
@@ -311,14 +309,15 @@ def reduce_meteor2(json_conf,form):
 
    # Plots added by mike
    # Basic X,Y of points
-   plots = ""
-   if('frames' in meteor_json_file ):  
-      if len(meteor_json_file['frames']) > 0:
-         xy_point_plot = make_xy_point_plot(meteor_json_file['frames'])
-         cnt_light_curve = make_lc_plot(meteor_json_file['frames'])
-
-         plots = xy_point_plot + "<P>" + cnt_light_curve
-   template = template.replace("{%PLOTS_TABLE%}", plots)
+   #plots = ""
+   #if 'frames' in meteor_json_file:  
+   #   if len(meteor_json_file['frames']) > 0:
+   #      # If we only have one frame 
+   #      xy_point_plot = make_xy_point_plot(meteor_json_file['frames'])
+   #      cnt_light_curve = make_lc_plot(meteor_json_file['frames'])
+   #
+   #      plots = xy_point_plot + "<P>" + cnt_light_curve
+   #template = template.replace("{%PLOTS_TABLE%}", plots)
 
    # Link to old version
    if('info' in meteor_json_file):
