@@ -52,7 +52,7 @@ def fix_hd_vid_inline():
                   if cfe(json_data['hd_trim'])==0:
                      print(json_data['hd_trim']  + " > " + video_file)
                      json_data['hd_trim']  = video_file
-                     #save_json_file(orig_meteor_json_file,json_data)
+                     save_json_file(orig_meteor_json_file,json_data)
                      ct +=1 
 
-   print(str(ct) + " detection have been fixed: the old hd_trim path in the JSON has been replace by the proper HD one.")
+   print(str(ct) + " detection have been fixed: the old hd_trim path in the JSON has been replaced by the right one.")
