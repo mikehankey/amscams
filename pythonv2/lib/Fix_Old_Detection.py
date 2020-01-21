@@ -1,13 +1,10 @@
-import sys
-import cgitb
+import sys 
 
 from lib.FileIO import load_json_file,save_json_file, cfe
 from lib.CGI_Tools import redirect_to
 
 def fix_hd_vid(form):
-
-   # DEBUG
-   cgitb.enable();
+ 
 
    hd_video_file = form.getvalue("hd_video_file")
    json_file = form.getvalue("json_file")
