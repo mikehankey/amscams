@@ -55,4 +55,4 @@ def fix_hd_vid_inline():
                      #save_json_file(orig_meteor_json_file,json_data)
                      ct +=1 
 
-   print(ct + " detection have been fixed: the old hd_trim path in the JSON has been replace by the proper HD one.")
+   print(str(ct) + " detection have been fixed: the old hd_trim path in the JSON has been replace by the proper HD one.")
