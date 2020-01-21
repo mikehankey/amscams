@@ -72,9 +72,9 @@ def manual_synchronization_chooser(form):
    
    starting_from = 0
    # What is the fn of the first frame?
-   if('frames' in mr):
-      if(mr['frames'][0]):
-         if('fn' in mr['frames'][0])
+   if 'frames' in mr :
+      if mr['frames'][0] :
+         if 'fn' in mr['frames'][0]:
             starting_from = mr['frames'][0]['fn']
    
   
