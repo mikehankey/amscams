@@ -63,6 +63,9 @@ from lib.PAGINATION_VARS import *
 # Re-APPLY CALIBRATION
 from lib.MeteorReduce_ApplyCalib import apply_calib_ajax
 
+# Fix OLD Detections
+from lib.Fix_Old_Detection import fix_hd_vid
+
 # Stats page
 from lib.Stats import stats_page
  
@@ -332,6 +335,11 @@ def controller(json_conf):
       manual_reduction_create_final_json(form)
       exit()
 
+
+   # Fix an "old" json with a bad link to HD video
+   if cmd=='fix_hd_vid'
+      fix_hd_vid(form)
+      exit()
 
    # Move Detection to Archive
    if cmd == 'move_to_archive':
