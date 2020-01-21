@@ -4,7 +4,6 @@ import sys
 import os.path
 import cv2
 import glob
-import numpy as np
 import subprocess  
 
 from datetime import datetime,timedelta

@@ -1,16 +1,20 @@
 import sys
+import numpy as np
 
 def poly_fit_points(poly_x,poly_y, z = None):
    if z is None:
       if len(poly_x) >= 3:
          try:
+            print("IN MAKE FIT POINTS")
+            print(poly_x)
+            print(poly_y)
             z = np.polyfit(poly_x,poly_y,1)
             f = np.poly1d(z)
          except:
-            return(0)
+            return 0
 
       else:
-         return(0)
+         return 0
 
       trendpoly = np.poly1d(z)
       new_ys = trendpoly(poly_x)
