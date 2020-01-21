@@ -3107,9 +3107,14 @@ def reduce_meteor_new(json_conf,form):
    errors = ""
 
    if(cfe(hd_trim)==0):
-      errors += "<p>HD TRIM - <b><a href='" +  hd_trim + "'> " +  hd_trim + "</a></b> as defined in the JSON is missing. <br> Do you want to replace it with: <a href='" +  hd_video_file + "'><b> " +  hd_video_file + "</b></a>?</p>"
+      if(cfe(hd_video_file)):
+         errors += "<p>HD TRIM - <b><a href='" +  hd_trim + "'> " +  hd_trim + "</a></b> as defined in the JSON is missing. <br> Do you want to replace it with: <a href='" +  hd_video_file + "'><b> " +  hd_video_file + "</b></a>?<br><a href='' class='btn btn-primary'>FIX THIS</a></p>"
+      else:
+         errors += "<p>HD TRIM - <b><a href='" +  hd_trim + "'> " +  hd_trim + "</a></b> as defined in the JSON is missing.</p>"
+
    if(cfe(video_file)==0):
       errors += "<p>SD VIDEO - <b><a href='" +  video_file + "'> " +  video_file + "</a></b> as defined in the JSON is missing.</p>"
+   
    if(cfe(meteor_json_file)==0):
       errors += "<p>JSON FILE - <b><a href='" +  meteor_json_file + "'> " +  meteor_json_file + "</a></b> as defined in the JSON is missing.</p>"
 
