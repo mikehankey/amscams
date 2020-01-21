@@ -39,6 +39,7 @@ def fix_hd_vid_inline():
    station_id = get_station_id()
    ms_detect_file = METEOR_ARCHIVE + station_id + "/DETECTS/" + "ms_detects.json" 
    ms_data = load_json_file(ms_detect_file) 
+   ct = 0
    for day in sorted(ms_data, reverse=True):
       for f in ms_data[day]:
          meteor_day = f[0:10]
@@ -50,3 +51,8 @@ def fix_hd_vid_inline():
                if(json_data['hd_trim'] is not None):
                   if cfe(json_data['hd_trim'])==0:
                      print(json_data['hd_trim']  + " > " + video_file)
+                     json_data['hd_trim']  = video_file
+                     save_json_file(orig_meteor_json_file,json_data)
+                     ct +=1 
+
+   print(ct + " detection have been fixed: the old hd_trim path in the JSON has been replace by the proper HD one.")
