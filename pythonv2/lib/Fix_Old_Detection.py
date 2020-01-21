@@ -38,7 +38,7 @@ def fix_hd_vid_inline():
    ms_data = load_json_file(ms_detect_file) 
    for day in sorted(ms_data, reverse=True):
       for f in ms_data[day]:
-         meteor_day = file[0:10]
+         meteor_day = f[0:10]
          orig_meteor_json_file = "/mnt/ams2/meteors/" + meteor_day + "/" + f
          video_file = orig_meteor_json_file.replace(".json", ".mp4") 
          json_data = load_json_file(orig_meteor_json_file)
