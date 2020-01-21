@@ -307,17 +307,20 @@ def reduce_meteor2(json_conf,form):
       else:
          template = template.replace("{MULTI_DETAILS}",'')
 
-   # Plots added by mike
    # Basic X,Y of points
-   #plots = ""
-   #if 'frames' in meteor_json_file:  
-   #   if len(meteor_json_file['frames']) > 0:
-   #      # If we only have one frame 
-   #      xy_point_plot = make_xy_point_plot(meteor_json_file['frames'])
-   #      cnt_light_curve = make_lc_plot(meteor_json_file['frames'])
-   #
-   #      plots = xy_point_plot + "<P>" + cnt_light_curve
-   #template = template.replace("{%PLOTS_TABLE%}", plots)
+   plots = ""
+   if 'frames' in meteor_json_file:  
+      if len(meteor_json_file['frames']) > 0:
+         
+         # If we only have one frame ???????
+         if len(meteor_json_file['frames'])==1:
+            meteor_json_file['frames'] =[meteor_json_file['frames']]
+   
+   
+         xy_point_plot = make_xy_point_plot(meteor_json_file['frames'])
+         cnt_light_curve = make_lc_plot(meteor_json_file['frames'])
+         plots = xy_point_plot + "<P>" + cnt_light_curve
+   template = template.replace("{%PLOTS_TABLE%}", plots)
 
    # Link to old version
    if('info' in meteor_json_file):
