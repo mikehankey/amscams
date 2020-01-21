@@ -7,7 +7,7 @@ from lib.REDUCE_VARS import METEOR_ARCHIVE
 
 
 def fix_hd_vid_form(hd_video_file,json_file,cur_video_file):
-    if(cfe(hd_video_file)!=1):
+   if(cfe(hd_video_file)!=1):
       print("ERROR " + hd_video_file + " is missing")
       sys.exit(0)
 
