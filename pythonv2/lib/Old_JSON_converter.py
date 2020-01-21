@@ -19,6 +19,8 @@ from lib.CGI_Tools import redirect_to
 from lib.MeteorReduce_Tools import  name_analyser
 from lib.Get_Cam_position import get_the_cam_position
 from lib.Archive_Listing import write_year_index
+from lib.MeteorReducePage import print_error
+
 
 
 # Return the analysed  version of the file name
@@ -469,15 +471,15 @@ def move_to_archive(form):
  
  
    if(hd_video is None or cfe(hd_video)==0):
-      print("HD video is missing.")
+      print_error(("HD video is missing " + hd_video + " not found.")
       sys.exit(0)
 
    if(sd_video is None or cfe(sd_video)==0):
-      print("SD video is missing.")
+      print_error(("SD video is missing." + sd_video + " not found.")
       sys.exit(0)
 
    if(json_file is None or cfe(json_file)==0):
-      print("JSON is missing.")   
+      print_error(("JSON is missing." + json_file + "not found.")   
       sys.exit(0)
 
    
