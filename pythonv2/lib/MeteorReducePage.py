@@ -17,12 +17,24 @@ PAGE_TEMPLATE = "/home/ams/amscams/pythonv2/templates/reducePage.v2.html"
 ERROR_FACTOR_SEG_LEN = [2,3,4,5,6]
 
 
+# Create a tab and its content on the template (return the newly updated template)
+def create_tab_and_content(extra_tabs,extra_content,id,name,html_content):
+
+   if(html_content!=''):
+
+      #We create the tab
+      extra_tabs  +=  '<li class="nav-item"><a class="nav-link" id="'+id+'-l" data-toggle="tab" href="#'+id+'--tab" role="tab" aria-controls="'+id+'-" aria-selected="true">'+name+'-</a></li>'
+ 
+      #We create the new content
+      extra_content += '<div class="tab-pane fade" id="'+id+'-tab" role="tabpanel" aria-labelledby="'+id+'-tab-l">'+html_content+'</div>'
+
+   return extra_tabs, extra_content
+
+
 # GENERATES THE REDUCE PAGE METEOR
 # from a URL 
 # cmd=reduce2
 # &video_file=[PATH]/[VIDEO_FILE].mp4 or JSON File
-
-
 def reduce_meteor2(json_conf,form):
   
    # Debug
@@ -254,9 +266,25 @@ def reduce_meteor2(json_conf,form):
       else:
          template = template.replace("{MULTI_DETAILS}",'')
 
+
+   # CREATE EXTRA CONTENT
+   extra_tabs = ""
+   extra_content = ""
+
    # Basic X,Y of points
    plots = make_basic_plot(meteor_json_file) 
-   #template = template.replace("{%PLOTS_TABLE%}", plots)
+   plots = ''
+   if(plots!='') {
+      extra_tabs, extra_content = create_tab_and_content(extra_tabs,extra_content,'basic_plot','Graphs',plots)
+   }
+ 
+
+   # After CREATING ALL THE GRAPHS WE INCLUDE THEM
+   template = template.replace("{EXTRA_TAB}",extra_tabs)
+   template = template.replace("{EXTRA_TAB_CONTENT}",extra_content)
+
+
+
 
    # Link to old version
    if('info' in meteor_json_file):

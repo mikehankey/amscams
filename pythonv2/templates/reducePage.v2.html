@@ -24,6 +24,7 @@
            <li class="nav-item">
                <a class="nav-link" id="plots-tab-l" data-toggle="tab" href="#plots-tab" role="tab" aria-controls="plots" aria-selected="false">Plots</a>
            </li>
+           {EXTRA_TAB}
            <!--
            <li class="nav-item">
                <a class="nav-link" id="lightc-tab-l" data-toggle="tab" href="#lightc-tab" role="tab" aria-controls="lightc" aria-selected="true">Light Curve</a>
@@ -81,7 +82,11 @@
 
            </div> 
            
+
+           
+           {EXTRA_TAB_CONTENT}
          
+         <!--
            <div class="tab-pane fade" id="plots-tab" role="tabpanel" aria-labelledby="plots-tab-l">
                {%PLOTS_TABLE%}
            </div> 
@@ -93,6 +98,7 @@
            <div class="tab-pane fade" id="orbit-tab" role="tabpanel" aria-labelledby="orbit-tab-l">
                {%PLOTS_TABLE%}
            </div>  
+         -->
 
        </div>
 
