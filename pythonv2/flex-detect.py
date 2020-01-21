@@ -980,8 +980,8 @@ def update_intensity(json_file):
    sync = data['sync']['hd_ind'] - data['sync']['sd_ind']
    frames = data['frames']
    curve = {}
-   fx = frames[5]['x']
-   fy = frames[5]['y']
+   fx = frames[0]['x']
+   fy = frames[0]['y']
    cx1,cy1,cx2,cy2 = bound_cnt(fx,fy,hd_frames[0].shape[1],hd_frames[0].shape[0], 20)
    print(cx1,cy1,cx2,cy2)
    bg_cnt = hd_frames[0][cy1:cy2,cx1:cx2] 
