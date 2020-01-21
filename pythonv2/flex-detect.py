@@ -1001,6 +1001,7 @@ def update_intensity(json_file):
 
    ffs= []
    cnts= []
+   new_frames = []
    for frame in frames:   
       fn = frame['fn'] + sync
       x = frame['x']
@@ -1018,13 +1019,17 @@ def update_intensity(json_file):
       if ff_int > 18446744073709:
          ff_int = 0
 
+      frame['intensity'] = int(cnt_int)
+      frame['intensity_ff'] = int(ff_int)
       curve[fn]['cnt_int'] = cnt_int
       curve[fn]['ff_int'] = ff_int
       ffs.append(ff_int)
       cnts.append(cnt_int)
+      new_frames.append(frame)
 
-   
-
+   data['frames'] = new_frames 
+   save_json_file(json_file,data)
+   print("Saved:", json_file)
    mf = max(ffs)
    mc = max(cnts)
    medf = np.median(ffs)
@@ -1040,8 +1045,8 @@ def update_intensity(json_file):
       values2.append(curve[fn]['ff_int'] / scale)
       print(fn, curve[fn])     
 
-   plot_int(times,values, None,0,len(values), "Contour Intensity " , cnt_file)
-   plot_int(times,values2, None,0,len(values), "Full Frame Intensity", ff_file )
+   #plot_int(times,values, None,0,len(values), "Contour Intensity " , cnt_file)
+   #plot_int(times,values2, None,0,len(values), "Full Frame Intensity", ff_file )
    print(cnt_file)
    print(ff_file)
 
