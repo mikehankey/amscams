@@ -415,9 +415,7 @@ def generate_stacks(video_full_path, destination, toHD):
    # Get All Frames
    frames = load_video_frames(video_full_path, load_json_file(JSON_CONFIG), 0, 0)
    stacked_image = None
-
-   print(video_full_path)
-  
+ 
    # Create Stack 
    for frame in frames:
       frame_pil = Image.fromarray(frame)

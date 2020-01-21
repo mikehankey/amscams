@@ -280,9 +280,7 @@ def reduce_meteor2(json_conf,form):
    # After CREATING ALL THE GRAPHS WE INCLUDE THEM
    template = template.replace("{EXTRA_TAB}",extra_tabs)
    template = template.replace("{EXTRA_TAB_CONTENT}",extra_content)
-
-
-
+ 
 
    # Link to old version
    if('info' in meteor_json_file):
