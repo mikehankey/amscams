@@ -35,6 +35,7 @@ if (t2d == false) {
 }
 x1a = x1.split(",")
 y1a = y1.split(",")
+
 if (tx1 != false) {
    tx1a = tx1.split(",")
    ty1a = ty1.split(",")
@@ -62,21 +63,26 @@ var data = [trace1]
 if (ry != false) {
    var layout = {
        title: {
-         text: plot_title, xref: 'x',   yref: 'y',  x: 0.05, color:'#ffffff'
+         text: plot_title, 
+         font: {
+            color:'#ffffff'
+         },
+         xref: 'x',   
+         yref: 'y',  
+         x: 0.05, 
        },
        height: 517,
        width: 937,
        paper_bgcolor: "rgba(9,29,63,0)", 
        plot_bgcolor: "rgba(9,29,63,0)", 
        xaxis:{
-         color: '#b1b1b1',
+          gridcolor: '#b1b1b1',
           title: {  text: xat, font: { size: 15, color: '#b1b1b1' } } 
        },
        yaxis:{
-          color: '#b1b1b1',
-          title: { text: yat, font: {  size: 15, color: '#b1b1b1' }
-           },
-           autorange: 'reversed' 
+          gridcolor: '#b1b1b1',
+          title: { text: yat, font: {  size: 15, color: '#b1b1b1' }},
+          autorange: 'reversed' 
        },
        showlegend: false
     }
