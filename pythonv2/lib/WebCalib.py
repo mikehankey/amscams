@@ -2880,6 +2880,8 @@ def reduce_meteor_js(meteor_reduced):
 def reduce_meteor_new(json_conf,form):
 
    #cgitb.enable()
+
+   print("THIS ONE IS MESSED UP")
       
    fp = open("/home/ams/amscams/pythonv2/templates/reducePage.html")
    template = ""
