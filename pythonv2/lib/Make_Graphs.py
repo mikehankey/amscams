@@ -68,12 +68,15 @@ def make_xy_point_plot(frames):
    return ''
 
 
-def make_basic_plot(meteor_json_file):
+# Create 3 different plots when possible
+# 1- X,Y position 
+# 2- Light Curves
+def make_basic_plots(meteor_json_file):
    plots = ''
    if 'frames' in meteor_json_file:   
       if len(meteor_json_file['frames']) > 0: 
          xy_point_plot = make_xy_point_plot(meteor_json_file['frames'])
          cnt_light_curve = make_lc_plot(meteor_json_file['frames'])
-         plots = xy_point_plot + "<P>" + cnt_light_curve
+         plots = xy_point_plot + " " + cnt_light_curve
    
    return plots
