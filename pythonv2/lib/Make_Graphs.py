@@ -65,7 +65,9 @@ def make_xy_point_plot(frames):
 def make_basic_plot(meteor_json_file):
    plots = ''
    if 'frames' in meteor_json_file:  
+      print("FRAMES<br/>")
       if len(meteor_json_file['frames']) > 0:
+         print("SEVERAL FRAMES<br/>")
          xy_point_plot = make_xy_point_plot(meteor_json_file['frames'])
          cnt_light_curve = make_lc_plot(meteor_json_file['frames'])
          plots = xy_point_plot + "<P>" + cnt_light_curve
