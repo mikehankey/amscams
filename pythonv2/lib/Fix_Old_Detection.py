@@ -5,6 +5,28 @@ from lib.CGI_Tools import redirect_to
 from lib.Get_Station_Id import get_station_id
 from lib.REDUCE_VARS import METEOR_ARCHIVE
 
+
+def fix_hd_vid_form(hd_video_file,json_file,cur_video_file):
+    if(cfe(hd_video_file)!=1):
+      print("ERROR " + hd_video_file + " is missing")
+      sys.exit(0)
+
+   if(cfe(json_file)!=1):
+      print("ERROR " + json_file + " is missing")
+      sys.exit(0)
+
+   # We replace hd_trim by hd_video_file in the json
+   md = load_json_file(json_file)
+   if(md):
+      md['hd_trim'] =  hd_video_file
+      save_json_file(json_file,md)
+
+      # Redirect to reduce page (not reduce2!)
+      redirect_to('/pycgi/webUI.py?cmd=reduce&video_file='+ cur_video_file)
+   else:
+      print("ERROR PARSING JSON FILE " + json_file)
+      sys.error(0)
+
 def fix_hd_vid(form):
   
    hd_video_file = form.getvalue("hd_video_file")
