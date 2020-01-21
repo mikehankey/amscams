@@ -478,7 +478,7 @@ def move_to_archive(form):
       
       orig_meteor_video_file = "/mnt/ams2/meteors/" +  file_name_only[0:10] + "/" + file_name_only
       
-      if(cfe(orig_meteor_json_file)==1 and json_file is not None and cfe(json_file)==1):
+      if(cfe(orig_meteor_video_file)==1 and json_file is not None and cfe(json_file)==1):
          # We upate the json_file
          json_data = load_json_file(json_file)
          json_data['hd_trim'] = orig_meteor_video_file
