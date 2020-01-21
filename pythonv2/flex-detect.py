@@ -4234,14 +4234,14 @@ def analyze_object(object, hd = 0, sd_multi = 1, final=0):
       obj_class = "plane"
       bad_items.append("low max cm, high neg_perc, high elp_max_cm")
 
-   if ang_vel < 1.5 and elp_max_cm > 2:
+   if ang_vel < 1.5 and elp_max_cm > 2 and cm < 3:
       meteor_yn = "no"
       bad_items.append("short distance, many gaps, low cm")
       obj_class = "plane"
 
 
    if elp > 0:
-      if min_max_dist * deg_multi < 1 and max_cm <= 5 and cm / elp < .75 :
+      if min_max_dist * deg_multi < 1 and max_cm <= 3 and cm / elp < .75 :
          meteor_yn = "no"
          bad_items.append("short distance, many gaps, low cm")
 
@@ -7543,9 +7543,19 @@ def debug2(video_file):
       org_hd_vid = hd_trim 
    else:
       print("NO HD TRIM FILE FOUND. ABORT FOR NOW.")
-      md['arc_fail'] = "No HD trim file exists."
+      new_video_file = video_file.replace(".mp4", "-HD-meteor.mp4")
+      cmd = "/usr/bin/ffmpeg -i " + video_file + " -vf scale=1920:1080 " + new_video_file 
+      os.system(cmd)
+      md['hd_trim'] = new_video_file
+      if "arc_fail" in md:
+         del(md['arc_fail'])
       save_json_file(old_meteor_json_file, md)
-      exit()
+      hd_trim = new_video_file
+      if cfe(hd_trim) == 1:
+         hd_frames,hd_color_frames,hd_subframes,hd_sum_vals,hd_max_vals = load_frames_fast(hd_trim, json_conf, 0, 0, [], 1,[])
+      else:
+         print("HD FIX FAILED!")
+         exit()
    
 
    motion_objects, motion_frames = detect_meteor_in_clip(video_file, sd_frames, 0)
