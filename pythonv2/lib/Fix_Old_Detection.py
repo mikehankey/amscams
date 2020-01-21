@@ -1,4 +1,5 @@
 import sys
+import cgitb
 
 from lib.FileIO import load_json_file,save_json_file, cfe
 from lib.CGI_Tools import redirect_to
