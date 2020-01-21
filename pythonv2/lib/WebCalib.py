@@ -3113,7 +3113,7 @@ def reduce_meteor_new(json_conf,form):
 
 
    print("<br>HD STACK " + hd_stack)
-   print("<br>SD STACK " + st_stack)
+   print("<br>SD STACK " + sd_stack)
    print("<br>JSON " + meteor_json_file) 
  
 
