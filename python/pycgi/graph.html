@@ -76,13 +76,19 @@ if (ry != false) {
        paper_bgcolor: "rgba(9,29,63,0)", 
        plot_bgcolor: "rgba(9,29,63,0)", 
        xaxis:{
-          gridcolor: '#b1b1b1',
-          title: {  text: xat, font: { size: 15, color: '#b1b1b1' } } 
+         zerolinecolor: '#cccccc',
+         zerolinewidth: 2,
+         gridcolor: '#b1b1b1',
+         gridwidth: 1,
+         title: {  text: xat, font: { size: 15, color: '#b1b1b1' } } 
        },
        yaxis:{
-          gridcolor: '#b1b1b1',
-          title: { text: yat, font: {  size: 15, color: '#b1b1b1' }},
-          autorange: 'reversed' 
+         zerolinecolor: '#cccccc',
+         zerolinewidth: 2,
+         gridcolor: '#b1b1b1',
+         gridwidth: 1,
+         title: { text: yat, font: {  size: 15, color: '#b1b1b1' }},
+         autorange: 'reversed' 
        },
        showlegend: false
     }
