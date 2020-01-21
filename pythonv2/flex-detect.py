@@ -48,6 +48,13 @@ show = 0
 
 ARCHIVE_DIR = "/mnt/ams2/meteor_archive/"
 
+def run_archive():
+   if check_running("flex-detect.py bams") == 0:
+      print("Archiver is not running.")
+      os.system("./flex-detect.py bams 1 &")
+   else:
+      print("Archiver is running.")
+
 def batch_archive_msm(mode):
    total_files = 0
    total_arc = 0
@@ -2885,7 +2892,7 @@ def convert_filename_to_date_cam(file):
    f_datetime = datetime.datetime.strptime(f_date_str, "%Y-%m-%d %H:%M:%S")
    return(f_datetime, cam, f_date_str,fy,fm,fd, fh, fmin, fs)
 
-def check_running():
+def check_running_proc():
    cmd = "ps -aux |grep \"process_data.py\" | grep -v grep"
    output = subprocess.check_output(cmd, shell=True).decode("utf-8")
    print(output)
@@ -8596,6 +8603,8 @@ if cmd == "batch_archive_msm" or cmd == "bams" :
    batch_archive_msm(video_file)
 if cmd == "eval_points" or cmd == "ep" :
    eval_points(video_file)
+if cmd == "ra" or cmd == "run_archive" :
+   run_archive()
 if cmd == "fix_arc_points" or cmd == "fap" :
    fix_arc_points(video_file)
 if cmd == "fix_arc_all" or cmd == "faa" :
