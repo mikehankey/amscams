@@ -47,7 +47,7 @@ var trace1 = {
   y: all_data.y1_vals, 
   mode: 'markers',   // lines+
   type: 'scatter',
-  //marker : { symbol: 'star-diamond'  },
+  marker : { symbol: 'star-diamond'  },
   xaxis: "x1",
   yaxis: "y1",
   name: all_data.title1
@@ -55,14 +55,14 @@ var trace1 = {
 
 
 // We had the color scale to X
-trace1.colorscale =  [[Math.min.apply(Math,all_data.x1_vals),'rgb(255,0.0,0.0)'], [Math.max.apply(Math,all_data.x1_vals),'rgba(0.0,0.0,255,1)']];
+trace1.marker.colorscale =  [[Math.min.apply(Math,all_data.x1_vals),'rgb(255,0.0,0.0)'], [Math.max.apply(Math,all_data.x1_vals),'rgb(0.0,0.0,255)']];
 
 // Build colors array
 colors= [];
 for(var i=0;i<= all_data.x1_vals.length; i++) {
    colors[i] = i;
 }
-trace1.color = colors;
+trace1.marker.color = colors;
      
 var layout = {
    title: {
