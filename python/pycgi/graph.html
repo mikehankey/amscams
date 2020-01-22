@@ -369,10 +369,11 @@ rainbow.setNumberRange(0, 255);
 var all_colors = [];
 var total = all_data.x1_vals.length; 
 var step = parseInt(255/total); 
+var counter = 0;
 for (var i = 0; i <= 255; i = i + step) {
-   all_colors.push('#'+rainbow.colourAt(i));
+   all_colors.push([all_data.x1_vals[counter] ,'#'+rainbow.colourAt(i)]);
 }
-
+ 
 // We had the color scale to X
 trace1.marker.colorscale =  [all_colors];
 
