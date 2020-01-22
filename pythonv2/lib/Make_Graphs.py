@@ -3,6 +3,58 @@ import numpy as np
 
 
 DEFAULT_IFRAME = "<iframe width='100%' height='540' style='margin:.5rem auto' frameborder='false' src='{CONTENT}'></iframe>"
+DEFAULT_PATH_TO_GRAPH = "/pycgi/graph.html?"
+
+
+# Build the iFrame (proper URL) for a given graph
+def create_iframe_to_graph(data):
+   link = DEFAULT_PATH_TO_GRAPH
+   
+   if(data.x_title is not None):
+      link += "x_title=" + data.x_title
+   if(data.y_title is not None):
+      link += "y_title=" + data.y_title
+   if(data.title is not None):
+      link += "title=" + data.title
+   if(data.x1_vals is not None):
+      link += "x1_vals=" + data.x1_vals
+   if(data.y1_vals is not None):
+      link += "y1_vals=" + data.y1_vals
+   
+   link = link.replace("[", "").replace("]", "").replace(" ", "")
+
+   return DEFAULT_IFRAME.replace('{CONTENT}', link) 
+
+# Basic X,Y Plot with regression (?)
+def make_xy_point_plot(frames):
+
+   xs = []
+   ys = []
+ 
+   for frame in frames:
+      xs.append(frame['x']) 
+      ys.append(frame['y']) 
+ 
+   if(len(xs)>1):
+      trend_x, trend_y = poly_fit_points(xs,ys)
+   
+      tx1 = []
+      ty1 = []
+
+      for i in range(0,len(trend_x)):
+         tx1.append(int(trend_x[i]))
+         ty1.append(int(trend_y[i]))
+
+      return create_iframe_to_graph({'title':'XY Points and Line Fit','x1_vals': str(xs), 'y1_vals':str(ys)})
+
+      #link = "/pycgi/graph.html?xat=X&yat=Y&t1d=Point&t2d=Fit&ry=1&plot_title=XY_Points_and_Line_Fit&x1=" + str(xs) + "&y1=" + str(ys) + "&tx1=" + str(tx1) + "&ty1=" + str(ty1)
+      #link = link.replace("[", "").replace("]", "").replace(" ", "") 
+      #iframe =   DEFAULT_IFRAME.replace('{CONTENT}', link) 
+      #return iframe
+   return ''
+
+
+
 
 def poly_fit_points(poly_x,poly_y, z = None):
    if z is None:
@@ -12,7 +64,6 @@ def poly_fit_points(poly_x,poly_y, z = None):
             f = np.poly1d(z)
          except:
             return 0
-
       else:
          return 0
 
@@ -41,31 +92,7 @@ def make_lc_plot(frames):
 
 
 
-def make_xy_point_plot(frames):
 
-   xs = []
-   ys = []
- 
-   for frame in frames:
-      xs.append(frame['x']) 
-      ys.append(frame['y']) 
- 
-   if(len(xs)>1):
-      trend_x, trend_y = poly_fit_points(xs,ys)
-   
-      tx1 = []
-      ty1 = []
-      for i in range(0,len(trend_x)):
-         tx1.append(int(trend_x[i]))
-         ty1.append(int(trend_y[i]))
-
-      link = "/pycgi/graph.html?xat=X&yat=Y&t1d=Point&t2d=Fit&ry=1&plot_title=XY_Points_and_Line_Fit&x1=" + str(xs) + "&y1=" + str(ys) + "&tx1=" + str(tx1) + "&ty1=" + str(ty1)
-      link = link.replace("[", "")
-      link = link.replace("]", "")
-      link = link.replace(" ", "") 
-      iframe =   DEFAULT_IFRAME.replace('{CONTENT}', link) 
-      return iframe
-   return ''
 
 
 # Create 3 different plots when possible
@@ -76,7 +103,7 @@ def make_basic_plots(meteor_json_file):
    if 'frames' in meteor_json_file:   
       if len(meteor_json_file['frames']) > 0: 
          xy_point_plot = make_xy_point_plot(meteor_json_file['frames'])
-         cnt_light_curve = make_lc_plot(meteor_json_file['frames'])
-         plots = xy_point_plot + " " + cnt_light_curve
+         #cnt_light_curve = make_lc_plot(meteor_json_file['frames'])
+         plots = xy_point_plot #+ " " + cnt_light_curve
    
    return plots
