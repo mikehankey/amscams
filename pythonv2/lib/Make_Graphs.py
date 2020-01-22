@@ -31,6 +31,37 @@ def create_iframe_to_graph(data):
 
    return DEFAULT_IFRAME.replace('{CONTENT}', link) 
 
+
+# Curve Light
+def make_light_curve(frames):
+   lc_cnt = []
+   lc_ff = []
+   lc_count = []
+   
+   if(len(frames)>1):
+      for frame in frames:
+         if "intensity" in frame and "intensity_ff" in frame :
+            lc_count.append(frame['fn'])
+            lc_cnt.append(frame['intensity']) 
+            lc_ff.append(frame['intensity_ff']) 
+
+      #link = "/pycgi/graph.html?xat=frame&yat=intensity&plot_title=Blob_Light_Curve&x1=" + str(lc_count) + "&y1=" + str(lc_cnt) 
+      #link = link.replace("[", "")
+      #link = link.replace("]", "")
+      #link = link.replace(" ", "")
+      #iframe =   DEFAULT_IFRAME.replace('{CONTENT}', link)
+      
+      return create_iframe_to_graph(
+            {'title':'Blob Light Curve',
+            'x1_vals': str(lc_count),
+            'y1_vals': str(lc_cnt) ,
+            'x2_vals': str(tx1),
+            'y2_vals':str(ty1),
+            'title1': 'Meteor position'})
+   return ''
+
+
+
 # Basic X,Y Plot with regression (?)
 def make_xy_point_plot(frames):
 
@@ -62,7 +93,7 @@ def make_xy_point_plot(frames):
 
 
 
-
+# Compute the fit line of a set of data
 def poly_fit_points(poly_x,poly_y, z = None):
    if z is None:
       if len(poly_x) >= 3:
@@ -79,23 +110,6 @@ def poly_fit_points(poly_x,poly_y, z = None):
 
    return(poly_x, new_ys)
 
-def make_lc_plot(frames):
-   lc_cnt = []
-   lc_ff = []
-   lc_count = []
-   
-   for frame in frames:
-      if "intensity" in frame and "intensity_ff" in frame :
-         lc_count.append(frame['fn'])
-         lc_cnt.append(frame['intensity']) 
-         lc_ff.append(frame['intensity_ff']) 
-   link = "/pycgi/graph.html?xat=frame&yat=intensity&plot_title=Blob_Light_Curve&x1=" + str(lc_count) + "&y1=" + str(lc_cnt) 
-   link = link.replace("[", "")
-   link = link.replace("]", "")
-   link = link.replace(" ", "")
-   iframe =   DEFAULT_IFRAME.replace('{CONTENT}', link)
-    
-   return iframe 
 
 
 
@@ -108,9 +122,8 @@ def make_lc_plot(frames):
 def make_basic_plots(meteor_json_file):
    plots = ''
    if 'frames' in meteor_json_file:   
-      if len(meteor_json_file['frames']) > 0: 
-         xy_point_plot = make_xy_point_plot(meteor_json_file['frames'])
-         #cnt_light_curve = make_lc_plot(meteor_json_file['frames'])
-         plots = xy_point_plot #+ " " + cnt_light_curve
+      if len(meteor_json_file['frames']) > 0:  
+         # Main x,y plot + Curve Light
+         plots = make_xy_point_plot(meteor_json_file['frames'])+ " " + make_light_curve(meteor_json_file['frames'])
    
    return plots
