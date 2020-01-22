@@ -1305,7 +1305,6 @@ def center_cnt(image, x_dir_mod, y_dir_mod, dom):
          cv2.circle(image,(lcx,lcy), 10, (0,255,0), 2)
    elif len(cnts) == 1:
       x,y,w,h = cnts[0]
-      print("1 CNT FOUND", x,y,w,h)
       cv2.rectangle(image, (x, y), (x+w, y+h), (255,255,255), 1, cv2.LINE_AA)
       lcx,lcy = find_leading_corner(x,y,w,h,x_dir_mod,y_dir_mod,dom)
       cv2.circle(image,(lcx,lcy), 10, (0,255,0), 2)
@@ -1313,7 +1312,6 @@ def center_cnt(image, x_dir_mod, y_dir_mod, dom):
       print("MANY CNTS:", len(cnts))
       cnt = find_best_cnt(cnts, x_dir_mod,y_dir_mod)
       x,y,w,h = cnt[0]
-      print("CNT FOUND", x,y,w,h)
       cv2.rectangle(image, (x, y), (x+w, y+h), (255,255,255), 1, cv2.LINE_AA)
       lcx,lcy = find_leading_corner(x,y,w,h,x_dir_mod,y_dir_mod,dom)
       cv2.circle(image,(lcx,lcy), 10, (0,255,0), 2)
@@ -3319,7 +3317,6 @@ def get_station_id(video_file):
 def find_contours_in_frame(frame, thresh=25 ):
    contours = [] 
    result = []
-   print("USING THRESH:", thresh)
    _, threshold = cv2.threshold(frame.copy(), thresh, 255, cv2.THRESH_BINARY)
    thresh_obj = cv2.dilate(threshold.copy(), None , iterations=4)
    threshold = cv2.convertScaleAbs(thresh_obj)
@@ -3329,7 +3326,6 @@ def find_contours_in_frame(frame, thresh=25 ):
    elif len(cnt_res) == 2:
       (cnts, xx) = cnt_res
    show_frame = cv2.resize(threshold, (0,0),fx=.5, fy=.5)
-   print("CNTS FOUND:", len(cnts))
    if len(cnts) > 20:
       print("RECT TOO MANY CNTS INCREASE THRESH!", len(cnts))
       thresh = thresh +5 
@@ -3342,7 +3338,6 @@ def find_contours_in_frame(frame, thresh=25 ):
          (_, cnts, xx) = cnt_res
       elif len(cnt_res) == 2:
          (cnts, xx) = cnt_res
-      print("CNTS:", len(cnts))
 
    # now of these contours, remove any that are too small or don't have a recognizable blob
    # or have a px_diff that is too small
@@ -4109,7 +4104,6 @@ def analyze_object(object, hd = 0, sd_multi = 1, final=0):
    # SD scale pix is .072 * sd_multi
    pix_scale = .072  # for HD
 
-   print("SD MULTI IS:", sd_multi)
    if hd == 1:
       deg_multi = 1
    else:
@@ -4133,7 +4127,6 @@ def analyze_object(object, hd = 0, sd_multi = 1, final=0):
 
    object = calc_leg_segs(object)
    unq_perc = unq_points(object)
-   #print("UNQ POINTS PER:", unq_perc, object['oxs'], object['oys'])
 
    if len(object['ofns']) > 4:
       dir_test_perc = meteor_dir_test(object['oxs'],object['oys'])
@@ -4278,11 +4271,11 @@ def analyze_object(object, hd = 0, sd_multi = 1, final=0):
       elp_max_cm = 0
    ang_vel = ((dist_per_elp * deg_multi) * pix_scale) * 25
    ang_dist = ((min_max_dist * deg_multi) * pix_scale) 
-   print("HD:", hd)
-   print("OBJ ID:", id)
-   print("FINAL:", final)
-   print("ANG VEL = ((", dist_per_elp, " * ", deg_multi, ") * ", pix_scale, ") * 25 =  ", ang_vel)
-   print("ANG DIST = ((", min_max_dist , " * ", deg_multi, ") * ", pix_scale, ") = ", ang_dist)
+   #print("HD:", hd)
+   #print("OBJ ID:", id)
+   #print("FINAL:", final)
+   #print("ANG VEL = ((", dist_per_elp, " * ", deg_multi, ") * ", pix_scale, ") * 25 =  ", ang_vel)
+   #print("ANG DIST = ((", min_max_dist , " * ", deg_multi, ") * ", pix_scale, ") = ", ang_dist)
 
    if ang_dist < .2:
       meteor_yn = "no"
@@ -4665,7 +4658,7 @@ def gap_test(object):
       #print("GAP TEST GOOD!")
       return(1)
    else:
-      print("GAP TEST FAILED!", gap_to_cm_ratio, gap_to_elp_ratio)
+      #print("GAP TEST FAILED!", gap_to_cm_ratio, gap_to_elp_ratio)
       return(0)
 
 
@@ -7651,10 +7644,12 @@ def debug2(video_file):
             print("HD",mm, hd_motion_objects[mm]['report'])
       if sd_meteor is None:
          md['arc_fail'] = "SD detection failed."
-      if sd_meteor is None:
+      if hd_meteor is None:
          md['arc_fail'] = "HD detection failed."
       if sd_meteor is None and hd_meteor is None:
          md['arc_fail'] = "HD and SD detection failed."
+
+      print("Saving arc fail.", md['arc_fail'])
       save_json_file(old_meteor_json_file, md)
       return()
 
