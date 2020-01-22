@@ -22,10 +22,10 @@ all_data = {
    'y_title': getQueryVariable("yat")?getQueryVariable("yat").replace(/_/g, ' '):'',                  // Title for Y
    'x1_vals': getQueryVariable("x1_vals")?getQueryVariable("x1_vals").split(","):'',                  // X Values
    'y1_vals': getQueryVariable("y1_vals")?getQueryVariable("y1_vals").split(","):'',                  // Y Values
-   'x_texts': getQueryVariable("tx1")?getQueryVariable("tx1").split(","):all_data['x1_vals'],        // Name of the X values (?)
-   'y_texts': getQueryVariable("ty1")?getQueryVariable("ty1").split(","):all_data['y1_vals'],         // Name of the Y values (?)
+   'x_texts': getQueryVariable("tx1")?getQueryVariable("tx1").split(","):'',                          // Name of the X values (?)
+   'y_texts': getQueryVariable("ty1")?getQueryVariable("ty1").split(","):'',                          // Name of the Y values (?)
    't1d': getQueryVariable("t1d")?getQueryVariable("t1d"):"points",                                   // Type of line 1
-   't2d': getQueryVariable("t2d")?getQueryVariable("t1d"):"fit",                                      // Type of line 2
+   't2d': getQueryVariable("t2d")?getQueryVariable("t2d"):"fit",                                      // Type of line 2
    'wtf' : getQueryVariable("ry"),                                                                    // No fucking clue
 }
 
