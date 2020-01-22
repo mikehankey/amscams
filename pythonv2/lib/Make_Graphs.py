@@ -25,7 +25,7 @@ def create_iframe_to_graph(data):
    if('y2_vals' in data):
       link += "&y2_vals=" + data['y2_vals']   
    if('title1' in data):
-      link += "&title1=" + data['title1']   
+      link += "&title1=" + data['title1'].replace(" ","_")   
    
    link = link.replace("[", "").replace("]", "").replace(" ", "")
 
