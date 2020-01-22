@@ -56,7 +56,13 @@ var trace1 = {
 
 // We had the color scale to X
 trace1.colorscale =  [[Math.min.apply(Math,all_data.x1_vals),'rgb(255,0.0,0.0)'], [Math.max.apply(Math,all_data.x1_vals),'rgba(0.0,0.0,255,1)']];
-trace1.color = all_data.x1_vals;
+
+// Build colors array
+colors= [];
+for(var i=0;i<= all_data.x1_vals.length; i++) {
+   colors[i] = i;
+}
+trace1.color = colors;
      
 var layout = {
    title: {
