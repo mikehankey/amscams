@@ -52,9 +52,11 @@ def make_light_curve(frames):
  
       return create_iframe_to_graph(
             {'title':'Blob Light Curve',
+            'title1': 'Blob Int.',
             'x1_vals': str(lc_count),
             'y1_vals': str(lc_cnt),
-            'y2_vals': str(lc_ff)})
+            'y2_vals': str(lc_ff) 
+            })
    return ''
 
 
@@ -68,9 +70,24 @@ def make_xy_point_plot(frames):
    for frame in frames:
       xs.append(frame['x']) 
       ys.append(frame['y']) 
+
+
  
+
    if(len(xs)>1):
-      trend_x, trend_y = poly_fit_points(xs,ys)
+
+
+      print("FIT LINE")
+      trend_x, trend_y = poly_fit_points(xs,ys) 
+      print("<br>X:<br>")
+      print(trend_x)
+      print("<br>Y:<br>")
+      print(trend_y)
+      trend_x, trend_y = get_fit_line(xs,ys)
+      print("<br>X:<br>")
+      print(trend_x)
+      print("<br>Y:<br>")
+      print(trend_y)
    
       tx1 = []
       ty1 = []
@@ -93,7 +110,11 @@ def make_xy_point_plot(frames):
 
 
 
-# Compute the fit line of a set of data
+def get_fit_line(poly_x, poly_y):
+  return np.unique(poly_x), np.poly1d(np.polyfit(poly_x, poly_y, 1))(np.unique(poly_x))
+
+
+# Compute the fit line of a set of data (MIKE VERSION)
 def poly_fit_points(poly_x,poly_y, z = None):
    if z is None:
       if len(poly_x) >= 3:
