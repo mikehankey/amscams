@@ -2,7 +2,7 @@ import sys
 import numpy as np
 
 
-DEFAULT_IFRAME = "<iframe width='100%' height='540' frameborder='false' src='{CONTENT}'></iframe>"
+DEFAULT_IFRAME = "<iframe width='100%' height='540' style='margin:.5rem auto' frameborder='false' src='{CONTENT}'></iframe>"
 
 def poly_fit_points(poly_x,poly_y, z = None):
    if z is None:
@@ -42,6 +42,7 @@ def make_lc_plot(frames):
 
 
 def make_xy_point_plot(frames):
+
    xs = []
    ys = []
  
@@ -49,7 +50,6 @@ def make_xy_point_plot(frames):
       xs.append(frame['x']) 
       ys.append(frame['y']) 
  
-
    if(len(xs)>1):
       trend_x, trend_y = poly_fit_points(xs,ys)
    

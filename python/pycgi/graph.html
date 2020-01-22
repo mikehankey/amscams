@@ -2,7 +2,7 @@
 	<script src="/js/plotly-latest.min.js"></script>
 </head>
 <body style="margin:0;padding:0;background:transparent">
-<div id="myDiv" ></div>
+<div id="myDiv" style="width:100%; margin: 0 auto" ></div>
 </body>
 
 <script>
@@ -16,10 +16,10 @@ function getQueryVariable(variable) {
    return(false);
 }
 
-plot_title = getQueryVariable("plot_title").replace(/_/g, ' ');
-xat = getQueryVariable("xat")
-yat = getQueryVariable("yat")
-ry = getQueryVariable("ry")
+plot_title = getQueryVariable("plot_title").replace(/_/g, ' '); // Graph Name
+xat = getQueryVariable("xat")  // Text X
+yat = getQueryVariable("yat")  // Text Y
+ry = getQueryVariable("ry")    // If true =>
 x1 = getQueryVariable("x1")
 y1 = getQueryVariable("y1")
 tx1 = getQueryVariable("tx1")
@@ -35,6 +35,7 @@ if (t2d == false) {
 }
 x1a = x1.split(",")
 y1a = y1.split(",")
+
 if (tx1 != false) {
    tx1a = tx1.split(",")
    ty1a = ty1.split(",")
@@ -56,46 +57,40 @@ var trace1 = {
   type: 'scatter'
 };
 
-
-
-var data = [trace1  ]
+ 
+var data = [trace1]
 
 if (ry != false) {
    var layout = {
        title: {
-         text: plot_title,
+         text: plot_title, 
          font: {
-            family: 'Courier New, monospace',
-            size: 24
+            color:'#ffffff'
          },
-         xref: 'paper',
-         x: 0.05,
+         xref: 'x',   
+         yref: 'y',  
+         x: 0.05, 
        },
        height: 517,
-       width: 920,
+       width: 937,
+       paper_bgcolor: "rgba(9,29,63,1)",  // For exporting in PNG!
+       plot_bgcolor: "rgba(9,29,63,1)",   // For exporting in PNG!
        xaxis:{
-          title: {
-            text: xat,
-            font: {
-               family: 'Courier New, monospace',
-               size: 18,
-               color: '#7f7f7f'
-            }
-          }, 
-          side:'right'
+         zerolinecolor: '#cccccc',
+         zerolinewidth: 2,
+         gridcolor: 'rgba(96,96,96,.8)', 
+         linecolor: 'rgba(96,96,96,.8)',  
+         title: {  text: xat, font: { size: 15, color: '#b1b1b1' } } 
        },
        yaxis:{
-          title: {
-             text: yat,
-             font: {
-               family: 'Courier New, monospace',
-               size: 18,
-               color: '#7f7f7f'
-             }
-           },
-           autorange: 'reversed' 
+         zerolinecolor: '#cccccc',
+         zerolinewidth: 2, 
+         gridcolor: 'rgba(96,96,96,.8)', 
+         linecolor: 'rgba(96,96,96,.8)',
+         title: { text: yat, font: {  size: 15, color: '#b1b1b1' }},
+         autorange: 'reversed' 
        },
-
+       showlegend: false
     }
 }
 else {
@@ -103,8 +98,7 @@ else {
    var layout = {
   title: {
     text: plot_title,
-    font: {
-      family: 'Courier New, monospace',
+    font: { 
       size: 24
     },
     xref: 'paper',
@@ -115,8 +109,7 @@ else {
        xaxis:{
        title: {
             text: xat,
-            font: {
-               family: 'Courier New, monospace',
+            font: { 
                size: 18,
                color: '#7f7f7f'
             }
@@ -127,8 +120,7 @@ else {
        yaxis:{
            title: {
              text: yat,
-             font: {
-               family: 'Courier New, monospace',
+             font: { 
                size: 18,
                color: '#7f7f7f'
              }
@@ -140,7 +132,7 @@ else {
 
 }
 
-Plotly.newPlot("myDiv", data, layout) 
+Plotly.newPlot("myDiv", data, layout, {responsive: true}) 
 if (tx1 != false) {
    Plotly.addTraces("myDiv", trace2)
 }
