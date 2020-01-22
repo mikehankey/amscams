@@ -17,11 +17,11 @@ function getQueryVariable(variable) {
 }
 
 all_data = {
-   'title': getQueryVariable("title").replace(/_/g, ' '),         // Main Title
-   'x_title': getQueryVariable("xat").replace(/_/g, ' '),                   // Title for X
-   'y_title': getQueryVariable("yat").replace(/_/g, ' '),                   // Title for Y
-   'x1_vals': getQueryVariable("x1_vals"),                                        // X Values
-   'y1_vals': getQueryVariable("y1_vals"),                                        // Y Values
+   'title': getQueryVariable("title")?getQueryVariable("title").replace(/_/g, ' '):'No Title',        // Main Title
+   'x_title': getQueryVariable("xat")?getQueryVariable("xat").replace(/_/g, ' '):'',                  // Title for X
+   'y_title': getQueryVariable("yat")?getQueryVariable("yat").replace(/_/g, ' '):'',                  // Title for Y
+   'x1_vals': getQueryVariable("x1_vals"),                                                            // X Values
+   'y1_vals': getQueryVariable("y1_vals"),                                                            // Y Values
    'x_texts': getQueryVariable("tx1"),                                      // Name of the X values (?)
    'y_texts': getQueryVariable("ty1"),                                      // Name of the Y values (?)
    't1d': getQueryVariable("t1d"),                                          // Type of line 1
