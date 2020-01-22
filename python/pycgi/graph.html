@@ -363,6 +363,15 @@ var trace1 = {
 };
 
 
+function hexToRgb(hex) {
+    var bigint = parseInt(hex, 16);
+    var r = (bigint >> 16) & 255;
+    var g = (bigint >> 8) & 255;
+    var b = bigint & 255;
+
+    return r + "," + g + "," + b + ",1";
+}
+
 // Create all Colors
 var rainbow = new Rainbow();
 rainbow.setNumberRange(0, 255);
@@ -370,18 +379,12 @@ var all_colors = [];
 var total = all_data.x1_vals.length; 
 var step = parseInt(255/total);  
 for (var i = 0; i <= 255; i = i + step) {
-   all_colors.push('#'+rainbow.colourAt(i)); 
+   all_colors.push('rgba('+hexToRgb(rainbow.colourAt(i)+')'); 
 }
  
 // We had the color scale to X
 trace1.marker.color  =  [all_colors];
-
-// Build colors array
-colors= [];
-for(var i=0;i<= all_data.x1_vals.length; i++) {
-   colors[i] = i;
-}
-trace1.marker.color = all_data.x1_vals;
+ 
      
 var layout = {
    title: {
