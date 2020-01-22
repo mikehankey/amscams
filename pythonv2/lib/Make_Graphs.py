@@ -78,8 +78,16 @@ def make_xy_point_plot(frames):
 
 
       print("FIT LINE")
-      #trend_x, trend_y = poly_fit_points(xs,ys) 
+      trend_x, trend_y = poly_fit_points(xs,ys) 
+      print("<br>X:<br>")
+      print(trend_x)
+      print("<br>Y:<br>")
+      print(trend_y)
       trend_x, trend_y = get_fit_line(xs,ys)
+      print("<br>X:<br>")
+      print(trend_x)
+      print("<br>Y:<br>")
+      print(trend_y)
    
       tx1 = []
       ty1 = []
