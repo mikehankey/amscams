@@ -461,7 +461,7 @@ def detect_meteor_in_clip(trim_clip, frames = None, fn = 0, crop_x = 0, crop_y =
       fn = fn + 1
 
    for obj in objects:
-      objects[obj] = analyze_object(objects[obj])
+      objects[obj] = analyze_object(objects[obj], hd)
 
 
    if show == 1:
@@ -600,30 +600,51 @@ def format_calib(trim_clip, cal_params, cal_params_file):
    calib['device']['center']['ra'] = cal_params['ra_center']
    calib['device']['center']['dec'] = cal_params['dec_center']
    calib['stars'] = []
-   for (name,mag,ra,dec,new_cat_x,new_cat_y,ix,iy,intensity,px_dist,cpfile) in cal_params['cat_image_stars']:
-      star = {}
-      star['name'] = name
-      star['mag'] = mag
-      star['ra'] = ra
-      star['dec'] = dec
-      star['dist_px'] = px_dist
-      star['intensity'] = int(intensity)
-      star['i_pos'] = [int(ix),int(iy)]
-      star['cat_dist_pos'] = [int(new_cat_x),int(new_cat_y)]
-      star['cat_und_pos'] = [int(new_cat_x),int(new_cat_y)]
-      calib['stars'].append(star)
+
+   if "cat_image_stars" in cal_params:
+      for data in cal_params['cat_image_stars']:
+         print("DATA LEN:", len(data), data)
+         if len(data) == 11:
+            (name,mag,ra,dec,new_cat_x,new_cat_y,ix,iy,intensity,px_dist,cpfile) = data
+         if len(data) == 10:
+            (name,mag,ra,dec,new_cat_x,new_cat_y,ix,iy,px_dist,cpfile) = data
+         if len(data) == 16:
+            (name,mag,ra,dec,img_ra,img_dec,px_dist,new_x,new_y,img_az,img_el,new_cat_x,new_cat_y,ix,iy,cat_dist) = data
+     
+         star = {}
+         star['name'] = name
+         star['mag'] = mag
+         star['ra'] = ra
+         star['dec'] = dec
+         star['dist_px'] = px_dist
+         if "intensity" in star:
+            star['intensity'] = int(intensity)
+         else:
+            star['intensity'] = 0 
+         star['i_pos'] = [int(ix),int(iy)]
+         star['cat_dist_pos'] = [int(new_cat_x),int(new_cat_y)]
+         star['cat_und_pos'] = [int(new_cat_x),int(new_cat_y)]
+         calib['stars'].append(star)
 
    calib['img_dim'] = [1920,1080]
-   calib['device']['alt'] = cal_params['device_alt']
-   calib['device']['lat'] = cal_params['device_lat']
-   calib['device']['lng'] = cal_params['device_lng']
+   print(cal_params)
+
+   if 'device_lat' in cal_params:
+      calib['device']['alt'] = cal_params['device_alt']
+      calib['device']['lat'] = cal_params['device_lat']
+      calib['device']['lng'] = cal_params['device_lng']
+   else:
+      calib['device']['alt'] = json_conf['site']['device_alt']
+      calib['device']['lat'] = json_conf['site']['device_lat']
+      calib['device']['lng'] = json_conf['site']['device_lng']
    calib['device']['angle'] = cal_params['position_angle']
    calib['device']['scale_px'] = cal_params['pixscale']
    calib['device']['org_file'] = cal_params_file
 
    if "total_res_px" in cal_params:
+      print("SCALE:", calib['device']['scale_px'], cal_params['total_res_px'])
       calib['device']['total_res_px'] = cal_params['total_res_px']
-      calib['device']['total_res_deg'] = (cal_params['total_res_px'] * calib['device']['scale_px']) / 3600
+      calib['device']['total_res_deg'] = (float(cal_params['total_res_px']) * float(calib['device']['scale_px'])) / 3600
    else:
       cal_params['total_res_px'] = 99
       calib['device']['total_res_px'] = 99
@@ -820,18 +841,28 @@ def apply_calib(obj ):
    best_cal_files = get_best_cal_file(obj['trim_clip'])
    cal_params_file = best_cal_files[0][0]
    print("BEST CAL FILE:", cal_params_file)
+   (cp_datetime, cam, sd_date, sd_y, sd_m, sd_d, sd_h, sd_M, sd_s) = convert_filename_to_date_cam(cal_params_file)
 
    # find last_best_calib
    last_best_calibs = find_last_best_calib(obj['hd_trim'])
    print("Last Best Calib:", last_best_calibs)
    if len(last_best_calibs) > 0:
-      print("USING LAST BEST CALIB!")
-      calib = load_json_file(last_best_calibs[0][0])
-      calib['stars'] = []
-      cal_params = calib_to_calparams(calib, obj['hd_trim'])
+      (lp_datetime, cam, sd_date, sd_y, sd_m, sd_d, sd_h, sd_M, sd_s) = convert_filename_to_date_cam(last_best_calibs[0][0])
+      (hd_datetime, cam, sd_date, sd_y, sd_m, sd_d, sd_h, sd_M, sd_s) = convert_filename_to_date_cam(obj['hd_trim'])
+      delta1 = hd_datetime - lp_datetime
+      delta2 = hd_datetime - cp_datetime
+      if lp_datetime < cp_datetime:
+         print("USE LAST BEST INSTEAD!")
+         calib = load_json_file(last_best_calibs[0][0])
+         calib['stars'] = []
+         cal_params = calib_to_calparams(calib, obj['hd_trim'])
+      else:
+         print("USE STANDARD CALL!")
+         cal_params = load_json_file(cal_params_file)
    else:
       cal_params = load_json_file(cal_params_file)
       print("USING LAST FREE CALIB!")
+
    cal_params['device_lat'] = json_conf['site']['device_lat']
    cal_params['device_lng'] = json_conf['site']['device_lng']
    cal_params['device_alt'] = json_conf['site']['device_alt']
@@ -2030,6 +2061,7 @@ def fit_arc_file(json_file):
    last_best_calibs = find_last_best_calib(json_file)
    if len(last_best_calibs) > 0:
       last_best_calib = load_json_file(last_best_calibs[0][0])
+      print("LAST BEST CALIB IS:", last_best_calib)
       cal_params = calib_to_calparams(calib, json_file)
       calib['device'] = last_best_calib['device']
 
@@ -2229,6 +2261,31 @@ def find_last_best_calib(input_file):
    return(temp)
 
 
+def convert_old_cal_files():
+   station_id = json_conf['site']['ams_id']
+   cal_dir = "/mnt/ams2/cal/freecal/*"
+   all_files = glob.glob(cal_dir)
+   matches = []
+   for file in all_files:
+      el = file.split("/")
+      fn = el[-1]
+      cp = file + "/" + fn + "-stacked-calparams.json"
+      if cfe(cp) == 1:
+         matches.append(cp)
+      else:
+         cp = file + "/" + fn + "-calparams.json"
+         if cfe(cp) == 1:
+            matches.append(cp)
+   for cal_params_file in matches:
+      cal_params = load_json_file(cal_params_file)
+      print(cal_params_file)
+      calib = format_calib(cal_params_file, cal_params, cal_params_file)
+      print(calib)
+      cf = cal_params_file.split("/")[-1]
+      cf = cf.replace("-stacked", "")
+      cf = cf.replace("-calparams", "")
+      new_file = "/mnt/ams2/meteor_archive/" + station_id + "/CAL/last_best/" + cf
+      save_json_file(new_file, calib)
 
 
 def get_best_cal_file(input_file):
@@ -4045,11 +4102,17 @@ def unq_points(object):
    return(perc)
 
 def analyze_object(object, hd = 0, sd_multi = 1, final=0):
-   if hd == 1:
-      deg_multi = .042
-   else:
-      deg_multi = .042 * sd_multi
+   # HD scale pix is .072 degrees per px
+   # SD scale pix is .072 * sd_multi
+   pix_scale = .072  # for HD
 
+   print("SD MULTI IS:", sd_multi)
+   if hd == 1:
+      deg_multi = 1
+   else:
+      deg_multi = 3 
+
+   bad_items = []
    if "ofns" not in object:
       if "report" not in object:
          object['report'] = {}
@@ -4112,24 +4175,18 @@ def analyze_object(object, hd = 0, sd_multi = 1, final=0):
    else:
       dist_per_elp = 0
 
-   if elp > 5 and dist_per_elp < .1 or dist_per_elp < .11:
+   if elp > 5 and dist_per_elp < .1 :
       moving = "not moving"
       meteor_yn = "no"
       obj_class = "star"
+      bad_items.append("too short and too slow")
    else:
       moving = "moving"
    if min_max_dist > 12 and dist_per_elp < .1:
       moving = "slow moving"
       meteor_yn = "no"
       obj_class = "plane"
-   if min_max_dist > 12 and dist_per_elp < .1:
-      moving = "slow moving"
-      meteor_yn = "no"
-      obj_class = "plane"
-   if dist_per_elp < .8 and dist_per_elp > .1:
-      moving = "slow moving"
-      meteor_yn = "no"
-      obj_class = "plane"
+      bad_items.append("too long and too slow")
 
    #cm
    fc = 0
@@ -4169,7 +4226,6 @@ def analyze_object(object, hd = 0, sd_multi = 1, final=0):
 
 
    # classify the object
-   bad_items = []
  
    if max_cm <= 3 and elp > 5 and min_max_dist < 8 and dist_per_elp < .01:
       obj_class = "star"
@@ -4217,18 +4273,20 @@ def analyze_object(object, hd = 0, sd_multi = 1, final=0):
          bad_items.append("elp to cm to high." + str(elp / max_cm))
    else:
       elp_max_cm = 0
+   ang_vel = ((dist_per_elp * deg_multi) * pix_scale) * 25
+   ang_dist = ((min_max_dist * deg_multi) * pix_scale) 
+   print("HD:", hd)
+   print("OBJ ID:", id)
+   print("FINAL:", final)
+   print("ANG VEL = ((", dist_per_elp, " * ", deg_multi, ") * ", pix_scale, ") * 25 =  ", ang_vel)
+   print("ANG DIST = ((", min_max_dist , " * ", deg_multi, ") * ", pix_scale, ") = ", ang_dist)
 
-   if min_max_dist < 5:
-      obj_class = "star"
-      meteor_yn = "no"
-      bad_items.append("not enough distance.")
-   if (min_max_dist * deg_multi) < .2:
+   if ang_dist < .2:
       meteor_yn = "no"
       bad_items.append("bad angular distance below .2.")
-   if (dist_per_elp * deg_multi) * 25 < .9:
+   if ang_vel < .9:
       meteor_yn = "no"
       bad_items.append("bad angular velocity below .9")
-   ang_vel = (dist_per_elp * deg_multi) * 25
 
    #YOYO
    if dir_test_perc < .6 and max_cm > 10:
@@ -4308,8 +4366,8 @@ def analyze_object(object, hd = 0, sd_multi = 1, final=0):
 
   
    object['report'] = {}
-   object['report']['angular_sep'] = min_max_dist * deg_multi 
-   object['report']['angular_vel'] = (dist_per_elp * deg_multi) * 25
+   object['report']['angular_sep'] = ang_dist
+   object['report']['angular_vel'] = ang_vel
    object['report']['elp'] = elp
    object['report']['min_max_dist'] = min_max_dist
    object['report']['dist_per_elp'] = dist_per_elp
@@ -8597,6 +8655,8 @@ if cmd == "bfaf" :
    batch_fit_arc_file(video_file)
 if cmd == "debug2" :
    debug2(video_file)
+if cmd == "coc" :
+   convert_old_cal_files()
 if cmd == "ui" :
    update_intensity(video_file)
 if cmd == "batch_archive_msm" or cmd == "bams" :
