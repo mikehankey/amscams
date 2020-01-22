@@ -22,6 +22,7 @@ all_data = {
    'y_title': getQueryVariable("yat")?getQueryVariable("yat").replace(/_/g, ' '):'',                  // Title for Y
    'x1_vals': getQueryVariable("x1_vals")?getQueryVariable("x1_vals").split(","):'',                  // X Values
    'y1_vals': getQueryVariable("y1_vals")?getQueryVariable("y1_vals").split(","):'',                  // Y Values
+   'title1': getQueryVariable("title1")?.replace(/_/g, ' '):'',             
    'x_texts': getQueryVariable("tx1")?getQueryVariable("tx1").split(","):'',                          // Name of the X values (?)
    'y_texts': getQueryVariable("ty1")?getQueryVariable("ty1").split(","):'',                          // Name of the Y values (?)
    't1d': getQueryVariable("t1d")?getQueryVariable("t1d"):"points",                                   // Type of line 1
@@ -30,14 +31,17 @@ all_data = {
 }
 
 // Build the graph based on options
+
+// Point Data
 var trace1 = {
   x: all_data.x1_vals,
   y: all_data.y1_vals, 
   mode: 'markers',   // lines+
   type: 'scatter',
-  marker : { symbol: 'cross-open-dot' },
+  marker : { symbol: 'star-triangle-up', color:'orange' },
   xaxis: "x1",
   yaxis: "y1",
+  name: all_data.title1
 };
 
 var layout = {

@@ -24,6 +24,8 @@ def create_iframe_to_graph(data):
       link += "&x2_vals=" + data['x2_vals']
    if('y2_vals' in data):
       link += "&y2_vals=" + data['y2_vals']   
+   if('title1' in data):
+      link += "&title1=" + data['title1']   
    
    link = link.replace("[", "").replace("]", "").replace(" ", "")
 
@@ -49,7 +51,7 @@ def make_xy_point_plot(frames):
          tx1.append(int(trend_x[i]))
          ty1.append(int(trend_y[i]))
 
-      return create_iframe_to_graph({'title':'XY Points and Line Fit','x1_vals': str(xs), 'y1_vals':str(ys),'x2_vals': str(tx1), 'y2_vals':str(ty1)})
+      return create_iframe_to_graph({'title':'XY Points and Line Fit','x1_vals': str(xs), 'y1_vals':str(ys),'x2_vals': str(tx1), 'y2_vals':str(ty1), 'title1': 'Meteor position'})
    return ''
 
 
