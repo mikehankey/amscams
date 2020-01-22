@@ -90,17 +90,15 @@ if(all_data.s_ratio1) {
    layout.yaxis.scaleanchor = "x";
    layout.yaxis.scaleratio = 1;  
 }
-
-
-console.log("y1_reverse")
-console.log(all_data.y1_reverse?"true":"false")
+ 
 
 // If we reverse the Y1 axis
 if(all_data.y1_reverse) {
    layout.yaxis.autorange = 'reversed';
 }
 
-
+// We had the color scale to X
+layout.xaxis.colorscale =  [[Math.min.apply(Math,all_data.x1_vals),'rgb(255,0.0,0.0)'], [Math.max.apply(Math,all_data.x1_vals),'rgba(0.0,0.0,255,1)']]
 var data = [trace1];
 Plotly.newPlot("graph", data, layout, {responsive: true});
  
