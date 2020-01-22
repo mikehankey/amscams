@@ -25,6 +25,9 @@ all_data = {
    's_ratio1': getQueryVariable("s_ratio1")?true:false,                                                  // Same Axis ratio for SERIE 1
    'title1': getQueryVariable("title1")?getQueryVariable("title1").replace(/_/g, ' '):'',                // Name SERIE 1
    'y1_reverse': getQueryVariable("y1_reverse")?true:false,                                              // Reverse Y on SERIE 1
+
+
+   
    'x2_vals': getQueryVariable("x2_vals")?getQueryVariable("x2_vals").split(","):false,                  // X Values - SERIE 2
    'y2_vals': getQueryVariable("y2_vals")?getQueryVariable("y2_vals").split(","):false,                  // Y Values - SERIE 2
    'title2': getQueryVariable("title2")?getQueryVariable("title2").replace(/_/g, ' '):'',                // Name SERIE 2
@@ -87,6 +90,10 @@ if(all_data.s_ratio1) {
    layout.yaxis.scaleanchor = "x";
    layout.yaxis.scaleratio = 1;  
 }
+
+
+console.log("y1_reverse")
+console.log(all_data.y1_reverse?"true":"false")
 
 // If we reverse the Y1 axis
 if(all_data.y1_reverse) {
