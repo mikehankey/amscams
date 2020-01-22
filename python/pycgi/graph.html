@@ -30,31 +30,50 @@ all_data = {
 }
 
 // Build the graph based on options
-
- 
-if (tx1 != false) {
-   tx1a = tx1.split(",")
-   ty1a = ty1.split(",")
-   var trace2 = {
-      x: tx1a,
-      y: ty1a,
-      mode: 'lines',
-      type: 'scatter',
-      name: t2d,
-      yaxis: "x2"
-   };
-
-   console.log('HERE');
-}
-
-
 var trace1 = {
-  x: x1a,
-  y: y1a,
-  name: t1d,
+  x: all_data.x1_vals,
+  y: all_data.y1_vals, 
   mode: 'lines+markers',
   type: 'scatter'
 };
+
+var layout = {
+   title: {
+      text: all_data.title, 
+      font: {  color:'#ffffff' },
+      xref: 'x',   
+      yref: 'y',  
+      x: 0.05, 
+   },
+   height: 517,
+   width: 937,
+   paper_bgcolor: "rgba(9,29,63,1)",  // For exporting in PNG!
+   plot_bgcolor: "rgba(9,29,63,1)",   // For exporting in PNG!
+   xaxis:{
+         autorange: true,
+         zerolinecolor: 'rgba(255,255,255,.8)', 
+         zerolinewidth: 1,
+         gridcolor: 'rgba(255,255,255,.5)', 
+         linecolor: 'rgba(255,255,255,.8)',  
+         title: { font: { size: 15, color: '#b1b1b1' } } 
+   },
+   yaxis:{
+         zerolinecolor: 'rgba(255,255,255,.8)', 
+         zerolinewidth: 1, 
+         gridcolor: 'rgba(255,255,255,.5)', 
+         linecolor: 'rgba(255,255,255,.8)',
+         title: { font: {  size: 15, color: '#b1b1b1' }},
+         autorange: 'reversed',
+         //scaleanchor: "x"
+   },
+   showlegend: false
+   }
+
+
+ 
+
+
+
 
  
 var data = [trace1]
@@ -133,8 +152,23 @@ else {
 
 }
 
-Plotly.newPlot("myDiv", data, layout, {responsive: true}) 
-if (tx1 != false) {
+Plotly.newPlot("graph", data, layout, {responsive: true}) 
+/*if (tx1 != false) {
    Plotly.addTraces("myDiv", trace2)
+   
+if (tx1 != false) {
+   tx1a = tx1.split(",")
+   ty1a = ty1.split(",")
+   var trace2 = {
+      x: tx1a,
+      y: ty1a,
+      mode: 'lines',
+      type: 'scatter',
+      name: t2d,
+      yaxis: "x2"
+   };
+
+   console.log('HERE');
 }
+}*/
 </script>
