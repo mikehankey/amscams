@@ -54,7 +54,9 @@ def make_light_curve(frames):
             {'title':'Blob Light Curve',
             'x1_vals': str(lc_count),
             'y1_vals': str(lc_cnt),
-            'y2_vals': str(lc_ff)})
+            'y2_vals': str(lc_ff),
+            's_ratio1':'1'}
+      )
    return ''
 
 
