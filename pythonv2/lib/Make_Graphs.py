@@ -2,7 +2,7 @@ import sys
 import numpy as np
 
 
-DEFAULT_IFRAME = "<iframe width='100%' height='540' style='margin:.5rem auto' frameborder='false' src='{CONTENT}'></iframe>"
+DEFAULT_IFRAME = "<iframe width='100%' height='517' style='margin:.5rem auto' frameborder='false' src='{CONTENT}'></iframe>"
 DEFAULT_PATH_TO_GRAPH = "/pycgi/graph.html?"
 
 
@@ -44,16 +44,10 @@ def make_light_curve(frames):
    if(len(frames)>1):
       for frame in frames:
          if "intensity" in frame and "intensity_ff" in frame :
-            lc_count.append(frame['fn'])
+            lc_count.append(frame['y'])
             lc_cnt.append(frame['intensity']) 
             lc_ff.append(frame['intensity_ff']) 
-
-      #link = "/pycgi/graph.html?xat=frame&yat=intensity&plot_title=Blob_Light_Curve&x1=" + str(lc_count) + "&y1=" + str(lc_cnt) 
-      #link = link.replace("[", "")
-      #link = link.replace("]", "")
-      #link = link.replace(" ", "")
-      #iframe =   DEFAULT_IFRAME.replace('{CONTENT}', link)
-      
+ 
       return create_iframe_to_graph(
             {'title':'Blob Light Curve',
             'x1_vals': str(lc_count),
