@@ -54,10 +54,7 @@ def make_light_curve(frames):
       return create_iframe_to_graph(
             {'title':'Blob Light Curve',
             'x1_vals': str(lc_count),
-            'y1_vals': str(lc_cnt) ,
-            'x2_vals': str(tx1),
-            'y2_vals':str(ty1),
-            'title1': 'Meteor position'})
+            'y1_vals': str(lc_cnt)})
    return ''
 
 
