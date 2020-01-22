@@ -55,14 +55,14 @@ var trace1 = {
 
 
 // We had the color scale to X
-trace1.marker.colorscale =  [[Math.min.apply(Math,all_data.x1_vals),'rgb(255,0.0,0.0)'], [Math.max.apply(Math,all_data.x1_vals),'rgb(0.0,0.0,255)']];
+trace1.marker.colorscale =  [[Math.min.apply(Math,all_data.x1_vals),'rgb(255,0,0)'], [Math.max.apply(Math,all_data.x1_vals),'rgb(0,0,255)']];
 
 // Build colors array
 colors= [];
 for(var i=0;i<= all_data.x1_vals.length; i++) {
    colors[i] = i;
 }
-trace1.marker.color = colors;
+trace1.marker.color = all_data.x1_vals;
      
 var layout = {
    title: {
