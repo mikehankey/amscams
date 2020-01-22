@@ -356,7 +356,7 @@ var trace1 = {
   y: all_data.y1_vals, 
   mode: 'markers',   // lines+
   type: 'scatter',
-  marker : { symbol: 'star-diamond'  },
+  marker : { symbol: 'square-open', size:10  },
   xaxis: "x1",
   yaxis: "y1",
   name: all_data.title1
@@ -368,7 +368,6 @@ function hexToRgb(hex) {
     var r = (bigint >> 16) & 255;
     var g = (bigint >> 8) & 255;
     var b = bigint & 255;
-
     return r + "," + g + "," + b + ",1";
 }
 
