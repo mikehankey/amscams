@@ -52,11 +52,11 @@ def make_light_curve(frames):
  
       return create_iframe_to_graph(
             {'title':'Blob Light Curve',
+            'title1': 'Blob Int.',
             'x1_vals': str(lc_count),
             'y1_vals': str(lc_cnt),
-            'y2_vals': str(lc_ff),
-            's_ratio1':'1'}
-      )
+            'y2_vals': str(lc_ff) 
+            })
    return ''
 
 
