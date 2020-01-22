@@ -20,9 +20,12 @@ all_data = {
    'title': getQueryVariable("title")?getQueryVariable("title").replace(/_/g, ' '):'No Title',        // Main Title
    'x_title': getQueryVariable("xat")?getQueryVariable("xat").replace(/_/g, ' '):'',                  // Title for X
    'y_title': getQueryVariable("yat")?getQueryVariable("yat").replace(/_/g, ' '):'',                  // Title for Y
-   'x1_vals': getQueryVariable("x1_vals")?getQueryVariable("x1_vals").split(","):'',                  // X Values
-   'y1_vals': getQueryVariable("y1_vals")?getQueryVariable("y1_vals").split(","):'',                  // Y Values
-   'title1': getQueryVariable("title1")?getQueryVariable("title1").replace(/_/g, ' '):'',             
+   'x1_vals': getQueryVariable("x1_vals")?getQueryVariable("x1_vals").split(","):false,                  // X Values - SERIE 1
+   'y1_vals': getQueryVariable("y1_vals")?getQueryVariable("y1_vals").split(","):false,                  // Y Values - SERIE 1 
+   'title1': getQueryVariable("title1")?getQueryVariable("title1").replace(/_/g, ' '):'',                // Name SERIE 1
+   'x2_vals': getQueryVariable("x2_vals")?getQueryVariable("x2_vals").split(","):false,                  // X Values - SERIE 2
+   'y2_vals': getQueryVariable("y2_vals")?getQueryVariable("y2_vals").split(","):false,                  // Y Values - SERIE 2
+   'title2': getQueryVariable("title2")?getQueryVariable("title2").replace(/_/g, ' '):'',                // Name SERIE 2
    'x_texts': getQueryVariable("tx1")?getQueryVariable("tx1").split(","):'',                          // Name of the X values (?)
    'y_texts': getQueryVariable("ty1")?getQueryVariable("ty1").split(","):'',                          // Name of the Y values (?)
    't1d': getQueryVariable("t1d")?getQueryVariable("t1d"):"points",                                   // Type of line 1
@@ -38,7 +41,7 @@ var trace1 = {
   y: all_data.y1_vals, 
   mode: 'markers',   // lines+
   type: 'scatter',
-  marker : { symbol: 'star', color:'orange' },
+  marker : { symbol: 'star-diamond', color:'orange' },
   xaxis: "x1",
   yaxis: "y1",
   name: all_data.title1
@@ -81,6 +84,23 @@ var layout = {
 
 var data = [trace1];
 Plotly.newPlot("graph", data, layout, {responsive: true});
+ 
+
+//If we have 2 set of data
+if (x2_vals != false && y2_vals != false) {
+
+   // We add the 2nd "trace"
+   Plotly.addTraces("graph", {
+      x: x2_vals,
+      y: y2_vals,
+      mode: 'lines',
+      type: 'scatter',
+      color:'blue',
+      name: all_data.title2
+      yaxis: "x2"
+   });
+}
+
 
 /*
 

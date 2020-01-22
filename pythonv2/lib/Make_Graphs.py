@@ -51,7 +51,13 @@ def make_xy_point_plot(frames):
          tx1.append(int(trend_x[i]))
          ty1.append(int(trend_y[i]))
 
-      return create_iframe_to_graph({'title':'XY Points and Line Fit','x1_vals': str(xs), 'y1_vals':str(ys),'x2_vals': str(tx1), 'y2_vals':str(ty1), 'title1': 'Meteor position'})
+      return create_iframe_to_graph(
+         {'title':'XY Points and Line Fit',
+          'x1_vals': str(xs),
+          'y1_vals':str(ys),
+          'x2_vals': str(tx1),
+          'y2_vals':str(ty1),
+          'title1': 'Meteor position'})
    return ''
 
 
