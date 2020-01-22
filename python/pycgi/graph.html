@@ -20,37 +20,18 @@ all_data = {
    'title': getQueryVariable("title")?getQueryVariable("title").replace(/_/g, ' '):'No Title',        // Main Title
    'x_title': getQueryVariable("xat")?getQueryVariable("xat").replace(/_/g, ' '):'',                  // Title for X
    'y_title': getQueryVariable("yat")?getQueryVariable("yat").replace(/_/g, ' '):'',                  // Title for Y
-   'x1_vals': getQueryVariable("x1_vals"),                                                            // X Values
-   'y1_vals': getQueryVariable("y1_vals"),                                                            // Y Values
-   'x_texts': getQueryVariable("tx1"),                                      // Name of the X values (?)
-   'y_texts': getQueryVariable("ty1"),                                      // Name of the Y values (?)
-   't1d': getQueryVariable("t1d"),                                          // Type of line 1
-   't2d': getQueryVariable("t2d"),                                          // Type of line 2
-   'wtf' : getQueryVariable("ry"),                                          // No fucking clue
+   'x1_vals': getQueryVariable("x1_vals")?getQueryVariable("x1_vals").split(","):'',                  // X Values
+   'y1_vals': getQueryVariable("y1_vals")?getQueryVariable("y1_vals").split(","):'',                  // Y Values
+   'x_texts': getQueryVariable("tx1")?getQueryVariable("tx1").split(","):all_data['x1_vals'],        // Name of the X values (?)
+   'y_texts': getQueryVariable("ty1")?getQueryVariable("ty1").split(","):all_data['y1_vals'],         // Name of the Y values (?)
+   't1d': getQueryVariable("t1d")?getQueryVariable("t1d"):"points",                                   // Type of line 1
+   't2d': getQueryVariable("t2d")?getQueryVariable("t1d"):"fit",                                      // Type of line 2
+   'wtf' : getQueryVariable("ry"),                                                                    // No fucking clue
 }
 
 // Build the graph based on options
 
-
-
-
-
  
-   
- 
-
-
-
-
-if (t1d == false) {
-   t1d = "points"
-}
-if (t2d == false) {
-   t1d = "fit"
-}
-x1a = x1.split(",")
-y1a = y1.split(",")
-
 if (tx1 != false) {
    tx1a = tx1.split(",")
    ty1a = ty1.split(",")
