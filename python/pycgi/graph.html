@@ -1,5 +1,6 @@
 <head>
-	<script src="/js/plotly-latest.min.js"></script>
+   <script src="/js/plotly-latest.min.js"></script>
+   <script src="../src/plugins/rainbowwis.js"></script>
 </head>
 <body style="margin:0;padding:0;background:transparent">
 <div id="graph" style="width:100%; margin: 0 auto" ></div>
@@ -53,6 +54,16 @@ var trace1 = {
   name: all_data.title1
 };
 
+
+
+var rainbow = new Rainbow();
+    rainbow.setNumberRange(0, 255);
+    var all_colors = [];
+    var total = all_frame_ids.length; 
+    var step = parseInt(255/total); 
+    for (var i = 0; i <= 255; i = i + step) {
+        all_colors.push('#'+rainbow.colourAt(i));
+    }
 
 // We had the color scale to X
 trace1.marker.colorscale =  [[Math.min.apply(Math,all_data.x1_vals),'rgb(255,0,0)'], [Math.max.apply(Math,all_data.x1_vals),'rgb(0,0,255)']];
