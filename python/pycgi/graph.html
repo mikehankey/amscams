@@ -94,10 +94,12 @@ if (all_data.x2_vals != false && all_data.y2_vals != false) {
       x: all_data.x2_vals,
       y: all_data.y2_vals,
       mode: 'lines',
-      type: 'scatter',
-      color:'blue',
+      type: 'scatter', 
       name: all_data.title2,
-      yaxis: "x2"
+      yaxis: "x2",
+      line: {
+         color: 'rgba(42,123,224,.8)' 
+      }
    });
 }
 
