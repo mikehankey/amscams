@@ -72,12 +72,14 @@ def make_xy_point_plot(frames):
       ys.append(frame['y']) 
 
 
-   print("FIT LINE")
-   v = get_fit_line(xs,ys)
-   print(v)
+ 
 
    if(len(xs)>1):
-      trend_x, trend_y = poly_fit_points(xs,ys)
+
+
+      print("FIT LINE")
+      #trend_x, trend_y = poly_fit_points(xs,ys) 
+      trend_x, trend_y = get_fit_line(xs,ys)
    
       tx1 = []
       ty1 = []
@@ -101,7 +103,7 @@ def make_xy_point_plot(frames):
 
 
 def get_fit_line(poly_x, poly_y):
-  return plt.plot(np.unique(poly_x), np.poly1d(np.polyfit(poly_x, poly_y, 1))(np.unique(poly_x)))
+  return np.unique(poly_x), np.poly1d(np.polyfit(poly_x, poly_y, 1))(np.unique(poly_x))
 
 
 # Compute the fit line of a set of data (MIKE VERSION)
