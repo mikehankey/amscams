@@ -22,6 +22,7 @@ all_data = {
    'y_title': getQueryVariable("yat")?getQueryVariable("yat").replace(/_/g, ' '):'',                  // Title for Y
    'x1_vals': getQueryVariable("x1_vals")?getQueryVariable("x1_vals").split(","):false,                  // X Values - SERIE 1
    'y1_vals': getQueryVariable("y1_vals")?getQueryVariable("y1_vals").split(","):false,                  // Y Values - SERIE 1 
+   'same_ratio1': getQueryVariable("s_ratio1")?true:false,                                               // Same Axis ratio for SERIE 1
    'title1': getQueryVariable("title1")?getQueryVariable("title1").replace(/_/g, ' '):'',                // Name SERIE 1
    'x2_vals': getQueryVariable("x2_vals")?getQueryVariable("x2_vals").split(","):false,                  // X Values - SERIE 2
    'y2_vals': getQueryVariable("y2_vals")?getQueryVariable("y2_vals").split(","):false,                  // Y Values - SERIE 2
@@ -75,12 +76,21 @@ var layout = {
          linecolor: 'rgba(255,255,255,.8)',
          title: { font: {  size: 15, color: '#b1b1b1' }},
          autorange: 'reversed' ,
-         tickfont: { color: 'rgba(255,255,255,.5)'},
-         scaleanchor:"x", 
-         scaleratio:1
+         tickfont: { color: 'rgba(255,255,255,.5)'}
+         //scaleanchor:"x", 
+         //scaleratio:1
    },
    showlegend: false
+};
+
+// If it's the same ratio on the SERIE 1
+if(data.same_ratio1) {
+   layout.yaxis.scaleanchor = "x";
+   layout.yaxis.scaleratio = 1;  
 }
+
+
+
 
 var data = [trace1];
 Plotly.newPlot("graph", data, layout, {responsive: true});
