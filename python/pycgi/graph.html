@@ -28,6 +28,7 @@ all_data = {
    'x2_vals': getQueryVariable("x2_vals")?getQueryVariable("x2_vals").split(","):false,                  // X Values - SERIE 2
    'y2_vals': getQueryVariable("y2_vals")?getQueryVariable("y2_vals").split(","):false,                  // Y Values - SERIE 2
    'title2': getQueryVariable("title2")?getQueryVariable("title2").replace(/_/g, ' '):'',                // Name SERIE 2
+
    'x_texts': getQueryVariable("tx1")?getQueryVariable("tx1").split(","):'',                          // Name of the X values (?)
    'y_texts': getQueryVariable("ty1")?getQueryVariable("ty1").split(","):'',                          // Name of the Y values (?)
    't1d': getQueryVariable("t1d")?getQueryVariable("t1d"):"points",                                   // Type of line 1
@@ -112,70 +113,5 @@ if (all_data.x2_vals != false && all_data.y2_vals != false) {
          color: 'rgba(42,123,224,.8)' 
       }
    });
-}
-
-
-/*
-
-if (ry != false) {
-   
-}
-else {
-
-   var layout = {
-  title: {
-    text: plot_title,
-    font: { 
-      size: 24
-    },
-    xref: 'paper',
-    x: 0.05,
-  },
-       height: 517,
-       width: 920,
-       xaxis:{
-       title: {
-            text: xat,
-            font: { 
-               size: 18,
-               color: '#7f7f7f'
-            }
-          },
-
-           side:'left'
-       },
-       yaxis:{
-           title: {
-             text: yat,
-             font: { 
-               size: 18,
-               color: '#7f7f7f'
-             }
-           },
-
-           side: 'right'
-       }
-   }
-
-}
-*/
-Plotly.newPlot("graph", data, layout, {responsive: true}) 
-/*if (tx1 != false) {
-   Plotly.addTraces("myDiv", trace2)
-   
-if (tx1 != false) {
-   tx1a = tx1.split(",")
-   ty1a = ty1.split(",")
-   var trace2 = {
-      x: tx1a,
-      y: ty1a,
-      mode: 'lines',
-      type: 'scatter',
-      name: t2d,
-      yaxis: "x2"
-   };
-
-   console.log('HERE');
-}
-}*/
+} 
 </script>
