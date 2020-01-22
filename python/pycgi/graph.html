@@ -67,46 +67,8 @@ var layout = {
          //scaleanchor: "x"
    },
    showlegend: false
-   }
+}
 
-
- 
-
-var layout = {
-       title: {
-         text: plot_title, 
-         font: {
-            color:'#ffffff'
-         },
-         xref: 'x',   
-         yref: 'y',  
-         x: 0.05, 
-       },
-       height: 517,
-       width: 937,
-       paper_bgcolor: "rgba(9,29,63,1)",  // For exporting in PNG!
-       plot_bgcolor: "rgba(9,29,63,1)",   // For exporting in PNG!
-       xaxis:{
-         autorange: true,
-         zerolinecolor: 'rgba(255,255,255,.8)', 
-         zerolinewidth: 1,
-         gridcolor: 'rgba(255,255,255,.5)', 
-         linecolor: 'rgba(255,255,255,.8)',  
-         title: {  text: xat, font: { size: 15, color: '#b1b1b1' } } 
-       },
-       yaxis:{
-         zerolinecolor: 'rgba(255,255,255,.8)', 
-         zerolinewidth: 1, 
-         gridcolor: 'rgba(255,255,255,.5)', 
-         linecolor: 'rgba(255,255,255,.8)',
-         title: { text: yat, font: {  size: 15, color: '#b1b1b1' }},
-         autorange: 'reversed',
-         //scaleanchor: "x"
-       },
-       showlegend: false
-    }
-
- 
 var data = [trace1];
 Plotly.newPlot("graph", data, layout, {responsive: true});
 
