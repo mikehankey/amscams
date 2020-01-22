@@ -34,7 +34,9 @@ var trace1 = {
   x: all_data.x1_vals,
   y: all_data.y1_vals, 
   mode: 'lines+markers',
-  type: 'scatter'
+  type: 'scatter',
+  xaxis: "x1",
+  yaxis: "y1",
 };
 
 var layout = {
@@ -56,7 +58,7 @@ var layout = {
          gridcolor: 'rgba(255,255,255,.5)', 
          linecolor: 'rgba(255,255,255,.8)',  
          title: { font: { size: 15, color: '#b1b1b1' } },
-         domain: [0, 3000]
+         tickfont: { color: 'rgba(255,255,255,.5)'}
    },
    yaxis:{
          zerolinecolor: 'rgba(255,255,255,.8)', 
@@ -64,9 +66,10 @@ var layout = {
          gridcolor: 'rgba(255,255,255,.5)', 
          linecolor: 'rgba(255,255,255,.8)',
          title: { font: {  size: 15, color: '#b1b1b1' }},
-         autorange: 'reversed',
-         domain: [0, 3000]
-         //scaleanchor: "x"
+         autorange: 'reversed' ,
+         tickfont: { color: 'rgba(255,255,255,.5)'}
+         scaleanchor:"x", 
+         scaleratio:1
    },
    showlegend: false
 }
