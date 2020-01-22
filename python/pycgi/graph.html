@@ -87,12 +87,12 @@ Plotly.newPlot("graph", data, layout, {responsive: true});
  
 
 //If we have 2 set of data
-if (x2_vals != false && y2_vals != false) {
+if (all_data.x2_vals != false && all_data.y2_vals != false) {
 
    // We add the 2nd "trace"
    Plotly.addTraces("graph", {
-      x: x2_vals,
-      y: y2_vals,
+      x: all_data.x2_vals,
+      y: all_data.y2_vals,
       mode: 'lines',
       type: 'scatter',
       color:'blue',
