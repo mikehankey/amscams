@@ -26,8 +26,8 @@ def create_iframe_to_graph(data):
       link += "&y2_vals=" + data['y2_vals']   
    if('title1' in data):
       link += "&title1=" + data['title1'].replace(" ","_")   
-   if('same_ratio1' in data):
-      link += "&same_ratio1=" + data['same_ratio1']
+   if('s_ratio1' in data):
+      link += "&s_ratio1=" + data['s_ratio1']
    
    
    link = link.replace("[", "").replace("]", "").replace(" ", "")
@@ -89,7 +89,7 @@ def make_xy_point_plot(frames):
           'x2_vals': str(tx1),
           'y2_vals':str(ty1),
           'title1': 'Meteor position',
-          'same_ratio1':'1'})
+          's_ratio1':'1'})
    return ''
 
 

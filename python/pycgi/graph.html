@@ -22,7 +22,7 @@ all_data = {
    'y_title': getQueryVariable("yat")?getQueryVariable("yat").replace(/_/g, ' '):'',                  // Title for Y
    'x1_vals': getQueryVariable("x1_vals")?getQueryVariable("x1_vals").split(","):false,                  // X Values - SERIE 1
    'y1_vals': getQueryVariable("y1_vals")?getQueryVariable("y1_vals").split(","):false,                  // Y Values - SERIE 1 
-   'same_ratio1': getQueryVariable("s_ratio1")?true:false,                                               // Same Axis ratio for SERIE 1
+   's_ratio1': getQueryVariable("s_ratio1")?true:false,                                                  // Same Axis ratio for SERIE 1
    'title1': getQueryVariable("title1")?getQueryVariable("title1").replace(/_/g, ' '):'',                // Name SERIE 1
    'x2_vals': getQueryVariable("x2_vals")?getQueryVariable("x2_vals").split(","):false,                  // X Values - SERIE 2
    'y2_vals': getQueryVariable("y2_vals")?getQueryVariable("y2_vals").split(","):false,                  // Y Values - SERIE 2
@@ -84,7 +84,7 @@ var layout = {
 };
 
 // If it's the same ratio on the SERIE 1
-if(all_data.same_ratio1) {
+if(all_data.s_ratio1) {
    layout.yaxis.scaleanchor = "x";
    layout.yaxis.scaleratio = 1;  
 }
