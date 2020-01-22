@@ -16,7 +16,7 @@ function getQueryVariable(variable) {
    return(false);
 }
 
-all_data = {
+var data = {
    'title': getQueryVariable("title")?getQueryVariable("title").replace(/_/g, ' '):'No Title',        // Main Title
    'x_title': getQueryVariable("xat")?getQueryVariable("xat").replace(/_/g, ' '):'',                  // Title for X
    'y_title': getQueryVariable("yat")?getQueryVariable("yat").replace(/_/g, ' '):'',                  // Title for Y
@@ -38,19 +38,19 @@ all_data = {
 
 // Point Data
 var trace1 = {
-  x: all_data.x1_vals,
-  y: all_data.y1_vals, 
+  x: data.x1_vals,
+  y: data.y1_vals, 
   mode: 'markers',   // lines+
   type: 'scatter',
   marker : { symbol: 'star-diamond', color:'orange' },
   xaxis: "x1",
   yaxis: "y1",
-  name: all_data.title1
+  name: data.title1
 };
 
 var layout = {
    title: {
-      text: all_data.title, 
+      text: data.title, 
       font: {  color:'#ffffff' },
       xref: 'x',   
       yref: 'y',  
@@ -97,15 +97,15 @@ Plotly.newPlot("graph", data, layout, {responsive: true});
  
 
 //If we have 2 set of data
-if (all_data.x2_vals != false && all_data.y2_vals != false) {
+if (data.x2_vals != false && data.y2_vals != false) {
 
    // We add the 2nd "trace"
    Plotly.addTraces("graph", {
-      x: all_data.x2_vals,
-      y: all_data.y2_vals,
+      x: data.x2_vals,
+      y: data.y2_vals,
       mode: 'lines',
       type: 'scatter', 
-      name: all_data.title2,
+      name: data.title2,
       yaxis: "x2",
       line: {
          color: 'rgba(42,123,224,.8)' 
