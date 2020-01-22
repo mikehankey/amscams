@@ -89,7 +89,7 @@ def make_xy_point_plot(frames):
           'x2_vals': str(tx1),
           'y2_vals':str(ty1),
           'title1': 'Meteor position',
-          'same_ratio1':1})
+          'same_ratio1':'1'})
    return ''
 
 
