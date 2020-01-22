@@ -104,6 +104,9 @@ def batch_archive_msm(mode):
             print(cmd)
             if mode == "1":
                os.system(cmd)
+               if total_files > 25:
+                  print("Finsihed run of 25 files. Exiting for now.")
+                  exit()
                #exit()
          total_files += 1
    print(ms_detect_report_file)
@@ -7598,15 +7601,20 @@ def debug2(video_file):
 
    # load HD frames
    if hd_trim is not None and hd_trim != 0:
+      hd_good = 1
       if "/mnt/ams2/HD" in hd_trim:
          mfn = hd_trim.split("/")[-1]
          mday = mfn[0:10]
          hd_trim = "/mnt/ams2/meteors/" + mday + "/" + mfn
-
-   if cfe(hd_trim) == 1:
-      hd_frames,hd_color_frames,hd_subframes,hd_sum_vals,hd_max_vals = load_frames_fast(hd_trim, json_conf, 0, 0, [], 1,[])
-      org_hd_vid = hd_trim 
    else:
+      hd_good = 0
+   if hd_good == 1:
+      if cfe(hd_trim) == 1 and hd_good == 1:
+         hd_frames,hd_color_frames,hd_subframes,hd_sum_vals,hd_max_vals = load_frames_fast(hd_trim, json_conf, 0, 0, [], 1,[])
+         org_hd_vid = hd_trim 
+      else:
+         hd_good = 0
+   if hd_good == 0:
       print("NO HD TRIM FILE FOUND. ABORT FOR NOW.")
       new_video_file = video_file.replace(".mp4", "-HD-meteor.mp4")
       cmd = "/usr/bin/ffmpeg -i " + video_file + " -vf scale=1920:1080 " + new_video_file 
