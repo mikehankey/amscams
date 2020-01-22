@@ -55,7 +55,8 @@ var layout = {
          zerolinewidth: 1,
          gridcolor: 'rgba(255,255,255,.5)', 
          linecolor: 'rgba(255,255,255,.8)',  
-         title: { font: { size: 15, color: '#b1b1b1' } } 
+         title: { font: { size: 15, color: '#b1b1b1' } },
+         domain: [0, 3000]
    },
    yaxis:{
          zerolinecolor: 'rgba(255,255,255,.8)', 
@@ -64,6 +65,7 @@ var layout = {
          linecolor: 'rgba(255,255,255,.8)',
          title: { font: {  size: 15, color: '#b1b1b1' }},
          autorange: 'reversed',
+         domain: [0, 3000]
          //scaleanchor: "x"
    },
    showlegend: false
