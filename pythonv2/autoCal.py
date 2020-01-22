@@ -252,6 +252,10 @@ def run_detects(day):
             ms_meteors[st][file]['stations'] = min_meteors[min]['stations'] 
             ms_meteors[st][file]['clip_starts'] = min_meteors[min]['clip_starts'] 
             ms_meteors[st][file]['arc_files'] = min_meteors[min]['arc_files'] 
+            ms_meteors[st][file]['event_start'] = min_meteors[min]['event_start_time'] 
+            ms_meteors[st][file]['count'] = min_meteors[min]['count'] 
+            event_id, event_dir = check_add_event(ms_meteors[st][file])
+            ms_meteors[st][file]['event_id'] = event_id
             print(min, min_meteors[min]['count'])
 
    for st in ms_meteors:
@@ -268,6 +272,40 @@ def run_detects(day):
          master_detect[day] = ms_meteors[st]
       save_json_file(master_detect_file, master_detect)
       print(master_detect_file) 
+
+def check_add_event(ms_info):
+   event_start = ms_info['event_start'].split(".")[0]
+   obs_count = ms_info['count']
+   
+   event_start = event_start.replace("-","_")
+   event_start = event_start.replace(":","_")
+   event_start = event_start.replace(" ","_")
+
+   if obs_count == 1:
+      return(event_start, None)
+
+   event_year = event_start[0:4]
+   event_day = event_start[0:10]
+   event_dir = "/mnt/ams2/meteor_archive/events/" + event_year + "/" + event_day + "/" + event_start
+   event_id = event_start 
+   check_existing = 0
+    
+   if cfe(event_dir, 1) == 0:
+      # check to make sure there isn't another dir here within 1-3 seconds in the event the start time has changed due to an added obs      
+      # that wasn't there
+      check_existing = 0
+   if check_existing == 0 and cfe(event_dir, 1) == 0:
+      # safe to make a new event here
+      print("Making: ", event_dir)
+      os.makedirs(event_dir)
+   else:
+      print("Check lat lon for simultaneous meteors")
+      # make sure this is the event by checking the existing epicenter lat/lon with this one. 
+      # if the lat/lons are too far we have 2 events at the same time. Add a counter to the end of the timestamp /event id. 
+ 
+   return(event_id, event_dir)
+   
+
 
 def check(day):
    red_files = glob.glob("/mnt/ams2/meteors/" + day + "/*reduced.json")
