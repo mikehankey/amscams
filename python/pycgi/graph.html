@@ -16,6 +16,8 @@ function getQueryVariable(variable) {
    return(false);
 }
 
+
+
 plot_title = getQueryVariable("plot_title").replace(/_/g, ' '); // Graph Name
 xat = getQueryVariable("xat")  // Text X
 yat = getQueryVariable("yat")  // Text Y
@@ -44,8 +46,11 @@ if (tx1 != false) {
       y: ty1a,
       mode: 'lines',
       type: 'scatter',
-      name: t2d
+      name: t2d,
+      yaxis:"y2"
    };
+
+   console.log('HERE');
 }
 
 
