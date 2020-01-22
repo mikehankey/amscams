@@ -10,15 +10,15 @@ DEFAULT_PATH_TO_GRAPH = "/pycgi/graph.html?"
 def create_iframe_to_graph(data):
    link = DEFAULT_PATH_TO_GRAPH
    
-   if(data['x_title'] is not None):
+   if('x_title' in data):
       link += "x_title=" + data['x_title']
-   if(data['y_title'] is not None):
+   if('y_title' in data):
       link += "y_title=" + data['y_title']
-   if(data['title'] is not None):
+   if('title' in data):
       link += "title=" + data['title']
-   if(data['x1_vals'] is not None):
+   if('x1_vals' in data):
       link += "x1_vals=" + data['x1_vals']
-   if(data['y1_vals'] is not None):
+   if('y1_vals' in data):
       link += "y1_vals=" + data['y1_vals']
    
    link = link.replace("[", "").replace("]", "").replace(" ", "")
