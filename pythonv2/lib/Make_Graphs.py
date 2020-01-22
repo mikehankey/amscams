@@ -11,7 +11,7 @@ def create_iframe_to_graph(data):
    link = DEFAULT_PATH_TO_GRAPH + '?w=7'  # w=7 for the next &
    
    if('x_title' in data):
-      link += "&x_title=" + data['x_title']
+      link += "&x_title=" + data['x_title'].replace(' ','_')
    if('y_title' in data):
       link += "&y_title=" + data['y_title']
    if('title' in data):
