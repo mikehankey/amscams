@@ -9,21 +9,14 @@ DEFAULT_PATH_TO_GRAPH = "/pycgi/graph.html?"
 # Build the iFrame (proper URL) for a given graph
 def create_iframe_to_graph(data):
    link = DEFAULT_PATH_TO_GRAPH + '?w=7'  # w=7 for the next &
-
-   print("len(data['x1_vals'])" + str(len(data['x1_vals'])))
-   print("<br>")
-   print("len(data['y1_vals'])" + str(len(data['y1_vals'])))
-   print("<br>")
-   print(data['x1_vals'])
-   print("<br>")
-   print(data['y1_vals'])
-   print("<br>")
-
+ 
    # Suprise: we need data to display
    if 'x1_vals' in data and 'y1_vals' in data :
-      if len(data['x1_vals'])==0: 
+      # Here we test <=2 because the list are passed as string 
+      # and an empty list = [] => 2 chararcters
+      if len(data['x1_vals'])<=2: 
          return ""
-      if len(data['y1_vals'])==0:
+      if len(data['y1_vals'])<=2:
          return ""
 
    if('title' in data):
