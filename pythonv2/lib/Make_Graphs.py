@@ -12,9 +12,10 @@ def create_iframe_to_graph(data):
 
    # Suprise: we need data to display
    if 'x1_vals' in data and 'y1_vals' in data :
-      if len(data['x1_vals'])==0 or len(data['y1_vals'])==0:
+      if len(data['x1_vals'])==0: 
          return ""
-
+      if len(data['y1_vals'])==0:
+         return ""
 
    if('title' in data):
       link += "&title=" + data['title'].replace(" ","_")
