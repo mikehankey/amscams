@@ -388,7 +388,11 @@ for (var i = 0; i <= 255; i = i + step) {
  
 // We had the color scale to X
 trace1.marker.color  =  all_colors;
- 
+
+// Add the line shape  
+trace1.line = {}
+trace1.line.shape = all_data.lineshape1;
+
      
 var layout = {
    title: {
@@ -434,9 +438,7 @@ if(all_data.y1_reverse) {
    layout.yaxis.autorange = 'reversed';
 }
  
-// Add the line shape  
-layout.line = {}
-layout.line.shape = all_data.lineshape1;
+
 
 
 var data = [trace1];
