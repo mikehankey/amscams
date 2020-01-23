@@ -1,6 +1,7 @@
 import sys
 import numpy as np
 import cv2
+import statistics
 
 from lib.FileIO import cfe
 
@@ -164,7 +165,7 @@ def make3D_light_curve(meteor_json_file,hd_stack):
 
          for f in meteor_json_file['frames']:   
             try:
-               toReturn.append({'x':f['x'],'y':f['y'],'z':image[int(f['y']),int(f['x'])]}) 
+               toReturn.append({'x':f['x'],'y':f['y'],'z':statistics.mean(image[int(f['y']),int(f['x'])])}) 
             except:
                partial = True
 
