@@ -173,6 +173,8 @@ def make3D_light_curve(meteor_json_file,hd_stack):
    for z in range(0, 255):
       zvals.append(0)
 
+   image = cv2.imread(hd_stack)
+
    for f in meteor_json_file['frames']:   
       try:
          #xvals.append(f['x'])
