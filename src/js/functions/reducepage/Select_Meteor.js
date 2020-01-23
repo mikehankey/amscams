@@ -28,6 +28,7 @@ function select_multiple_meteors_ajax() {
     $.ajax({ 
         url:  "/pycgi/webUI.py",
         data: cmd_data, 
+        type: "POST",
         success: function(data) {
             
             if($.trim(data)!='') { 
