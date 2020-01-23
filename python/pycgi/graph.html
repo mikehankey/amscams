@@ -356,7 +356,7 @@ all_data = {
 var trace1 = {
   x: all_data.x1_vals,
   y: all_data.y1_vals, 
-  mode: linetype1,   // lines+
+  mode: all_data.linetype1,   // lines+
   type: 'scatter',
   marker : { symbol: 'square-open-dot', size:10  },
   xaxis: "x1",
@@ -450,7 +450,7 @@ if (all_data.x2_vals != false && all_data.y2_vals != false) {
       yaxis: "x2",
       line: {
          color: 'rgba(213,42,224,.5)',
-         shape: linetype2
+         shape: all_data.linetype2
       }
    };
  
