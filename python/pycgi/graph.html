@@ -393,6 +393,10 @@ trace1.marker.color  =  all_colors;
 trace1.line = {}
 trace1.line.shape = all_data.lineshape1;
 
+
+var GRID_COLOR = 'rgba(255,255,255,.1)';
+var TICK_FONT_COLOR = 'rgba(255,255,255,.5)';
+var LINE_COLOR = 'rgba(255,255,255,.4)';
      
 var layout = {
    title: {
@@ -408,20 +412,20 @@ var layout = {
    plot_bgcolor: "rgba(9,29,63,1)",   // For exporting in PNG!
    xaxis:{
          autorange: true,
-         zerolinecolor: 'rgba(255,255,255,.8)', 
+         zerolinecolor: LINE_COLOR, 
          zerolinewidth: 1,
-         gridcolor: 'rgba(255,255,255,.5)', 
-         linecolor: 'rgba(255,255,255,.8)',  
+         gridcolor: GRID_COLOR, 
+         linecolor: LINE_COLOR,  
          title: { font: { size: 15, color: '#b1b1b1' } },
-         tickfont: { color: 'rgba(255,255,255,.5)'}
+         tickfont: { color: TICK_FONT_COLOR}
    },
    yaxis:{
-         zerolinecolor: 'rgba(255,255,255,.8)', 
+         zerolinecolor: LINE_COLOR, 
          zerolinewidth: 1, 
-         gridcolor: 'rgba(255,255,255,.5)', 
-         linecolor: 'rgba(255,255,255,.8)',
+         gridcolor: GRID_COLOR, 
+         linecolor: LINE_COLOR,
          title: { font: {  size: 15, color: '#b1b1b1' }}, 
-         tickfont: { color: 'rgba(255,255,255,.5)'} 
+         tickfont: { color: TICK_FONT_COLOR} 
    },
    showlegend: false
 };
