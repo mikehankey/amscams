@@ -277,7 +277,7 @@ def reduce_meteor2(json_conf,form):
    # 3D Light Curve
    if(hd_stack is not None):
       threeDlightCurve = make3D_light_curve(meteor_json_file, hd_stack)
-      print(threeDlightCurve)
+      plots += threeDlightCurve 
 
    extra_tabs, extra_content = create_tab_and_content(extra_tabs,extra_content,'basic_plot','PLOTS',plots)
    

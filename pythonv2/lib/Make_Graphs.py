@@ -32,6 +32,8 @@ def create_iframe_to_graph(data):
       link += "&x1_vals=" + data['x1_vals']
    if('y1_vals' in data):
       link += "&y1_vals=" + data['y1_vals']
+   if('z1_vals' in data):
+      link += "&z1_vals=" + data['z1_vals']
    if('x2_vals' in data):
       link += "&x2_vals=" + data['x2_vals']
    if('y2_vals' in data):
@@ -155,9 +157,10 @@ def make_basic_plots(meteor_json_file):
 # Create 3D Light Curve Graph
 def make3D_light_curve(meteor_json_file,hd_stack):
 
-   toReturn = []
-   partial = False
-   print("HD STACK " + hd_stack)
+   xvals = []
+   yvals = []
+   zvals = []
+   partial = False 
    if 'frames' in meteor_json_file:   
       if len(meteor_json_file['frames']) > 0:  
 
@@ -165,8 +168,20 @@ def make3D_light_curve(meteor_json_file,hd_stack):
 
          for f in meteor_json_file['frames']:   
             try:
-               toReturn.append({'x':f['x'],'y':f['y'],'z':statistics.mean(image[int(f['y']),int(f['x'])])}) 
+               xvals.append(f['x'])
+               yvals.append(f['y'])
+               zvals.append(statistics.mean(image[int(f['y']),int(f['x'])]))  # Average of the 3 colors
             except:
                partial = True
+
+      if len(xvals)>0 and len(yvals)>0 and len(zvals)>0:
+         return create_iframe_to_graph({
+            'title':'3D Light Evolution',
+            'x1_vals': str(xvals),
+            'y1_vals':str(yvals),
+            'z1_vals':str(zvals) 
+         })
+
+            
 
    return toReturn

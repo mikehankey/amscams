@@ -7,6 +7,17 @@
 </body>
 
 <script>
+
+// HEx to RGBA 
+function hexToRgb(hex) {
+    var bigint = parseInt(hex, 16);
+    var r = (bigint >> 16) & 255;
+    var g = (bigint >> 8) & 255;
+    var b = bigint & 255;
+    return r + "," + g + "," + b + ",1";
+}
+
+// get GET Variables
 function getQueryVariable(variable) {
    var query = window.location.search.substring(1);
    var vars = query.split("&");
@@ -17,12 +28,16 @@ function getQueryVariable(variable) {
    return(false);
 }
 
+
+// Data from URL
 all_data = {
    'title': getQueryVariable("title")?getQueryVariable("title").replace(/_/g, ' '):'No Title',        // Main Title
    'x_title': getQueryVariable("xat")?getQueryVariable("xat").replace(/_/g, ' '):'',                  // Title for X
    'y_title': getQueryVariable("yat")?getQueryVariable("yat").replace(/_/g, ' '):'',                  // Title for Y
    'x1_vals': getQueryVariable("x1_vals")?getQueryVariable("x1_vals").split(","):false,                  // X Values - SERIE 1
    'y1_vals': getQueryVariable("y1_vals")?getQueryVariable("y1_vals").split(","):false,                  // Y Values - SERIE 1 
+   'z1_vals': getQueryVariable("z1_vals")?getQueryVariable("z1_vals").split(","):false,                  // Z Values - SERIE 1 
+
    's_ratio1': getQueryVariable("s_ratio1")?true:false,                                                  // Same Axis ratio for SERIE 1
    'title1': getQueryVariable("title1")?getQueryVariable("title1").replace(/_/g, ' '):'',                // Name SERIE 1
    'y1_reverse': getQueryVariable("y1_reverse")?true:false,                                              // Reverse Y on SERIE 1
@@ -59,14 +74,14 @@ var trace1 = {
   name: all_data.title1
 };
 
-
-function hexToRgb(hex) {
-    var bigint = parseInt(hex, 16);
-    var r = (bigint >> 16) & 255;
-    var g = (bigint >> 8) & 255;
-    var b = bigint & 255;
-    return r + "," + g + "," + b + ",1";
+// Do we have Z values?
+if(all_data.z1_vals != false) {
+   trace1.z = all_data.z1_vals;
+   trace1.type = 'surface'
 }
+
+ 
+
 
 // Create all Colors (same than on the canvas)
 var rainbow = new Rainbow();
