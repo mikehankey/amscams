@@ -52,18 +52,19 @@ def make_light_curve(frames):
    
    if(len(frames)>1):
       for frame in frames:
-         if "intensity" in frame and "intensity_ff" in frame :
-            lc_count.append(frame['dt'][14:]) # Get Min & Sec from dt
-            lc_cnt.append(frame['intensity']) 
-            lc_ff.append(frame['intensity_ff']) 
+         if "intensity" in frame and "intensity_ff" in frame:
+            if frame['intensity']!= '?':
+               lc_count.append(frame['dt'][14:]) # Get Min & Sec from dt
+               lc_cnt.append(frame['intensity']) 
+               lc_ff.append(frame['intensity_ff']) 
  
       return create_iframe_to_graph(
-            {'title':'Light Intensity',
-            'title1': 'Intensity',
-            'x1_vals': str(lc_count),
-            'y1_vals': str(lc_cnt), 
-            'linetype1': 'lines+markers',
-            'lineshape1': 'spline'
+            {  'title':'Light Intensity',
+               'title1': 'Intensity',
+               'x1_vals': str(lc_count),
+               'y1_vals': str(lc_cnt), 
+               'linetype1': 'lines+markers',
+               'lineshape1': 'spline'
             })
    return ''
 
