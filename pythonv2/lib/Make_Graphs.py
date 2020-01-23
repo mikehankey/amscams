@@ -39,7 +39,7 @@ def create_iframe_to_graph(data):
 
    
    
-   link = link.replace("[", "").replace("]", "").replace(" ", "").replace("\"", "")
+   link = link.replace("[", "").replace("]", "").replace(" ", "").replace("\"", "").replace("\'", "")
 
    return DEFAULT_IFRAME.replace('{CONTENT}', link) 
 
