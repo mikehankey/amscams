@@ -61,7 +61,7 @@ def make_light_curve(frames):
             'x1_vals': str(lc_count),
             'y1_vals': str(lc_cnt),
             'y2_vals': str(lc_cnt),
-            'linetype1': 'marker+spline'
+            'linetype2': 'spline'
             })
    return ''
 
