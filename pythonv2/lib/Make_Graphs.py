@@ -177,7 +177,7 @@ def make3D_light_curve(meteor_json_file,hd_stack):
       try:
          #xvals.append(f['x'])
          #yvals.append(f['y'])
-         zvals.append(statistics.mean(image[int(f['y']),int(f['x'])]))  # Average of the 3 colors
+         zvals.append(statistics.mean(image[int(f['y']),int(f['x'])]))  # Average of the 3 VALUES
       except:
          partial = True
    
@@ -206,4 +206,3 @@ def make3D_light_curve(meteor_json_file,hd_stack):
     #        except:
     #           partial = True
  
-
