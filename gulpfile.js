@@ -110,7 +110,8 @@ function js() {
       './src/js/plugins/bootbox.js', 
       './src/js/plugins/bootstrap-datetimepicker.min.js', 
       './src/js/plugins/jquery-ui.js',
-      './src/js/ui/json_viewer.js'
+      './src/js/ui/json_viewer.js',
+      './src/js/plugins/plotly.js'
     ])
     .pipe(concat('amscam.min.js').on('error', function(e){
         console.log('CONCAT ' + e);
