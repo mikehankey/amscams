@@ -60,7 +60,7 @@ def make_light_curve(frames):
    if(len(frames)>1):
       for frame in frames:
          if "intensity" in frame and "intensity_ff" in frame:
-            if frame['intensity']!= '?':
+            if frame['intensity']!= '?' and frame['intensity']!= '9999':
                lc_count.append(frame['dt'][14:]) # Get Min & Sec from dt
                lc_cnt.append(frame['intensity']) 
                lc_ff.append(frame['intensity_ff']) 
