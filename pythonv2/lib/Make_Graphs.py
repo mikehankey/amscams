@@ -53,7 +53,7 @@ def make_light_curve(frames):
    if(len(frames)>1):
       for frame in frames:
          if "intensity" in frame and "intensity_ff" in frame :
-            lc_count.append(frame['dt'].replace(' ':'_'))
+            lc_count.append(frame['dt'].replace(' ','_'))
             lc_cnt.append(frame['intensity']) 
             lc_ff.append(frame['intensity_ff']) 
  
