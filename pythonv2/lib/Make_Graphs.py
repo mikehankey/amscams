@@ -174,6 +174,10 @@ def make3D_light_curve(meteor_json_file,hd_stack):
             except:
                partial = True
 
+      print(xvals)
+      print(yvals)
+      print(zvals)
+
       if len(xvals)>0 and len(yvals)>0 and len(zvals)>0:
          return create_iframe_to_graph({
             'title':'3D Light Evolution',
