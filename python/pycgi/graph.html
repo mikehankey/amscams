@@ -430,8 +430,7 @@ if(all_data.s_ratio1) {
 if(all_data.y1_reverse) {
    layout.yaxis.autorange = 'reversed';
 }
-
-
+ 
 
 
 var data = [trace1];
@@ -443,12 +442,13 @@ if (all_data.x2_vals != false && all_data.y2_vals != false) {
 
    var trace2 = {
       x: all_data.x2_vals,
-      y: all_data.y2_vals, 
+      y: all_data.y2_vals,
+      mode: 'lines',
+      type: 'scatter', 
       name: all_data.title2,
       yaxis: "x2",
       line: {
-         color: 'rgba(213,42,224,.5)',
-         shape: all_data.linetype2
+         color: 'rgba(213,42,224,.5)' 
       }
    };
  

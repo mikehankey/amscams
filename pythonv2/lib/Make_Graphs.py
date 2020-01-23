@@ -59,9 +59,8 @@ def make_light_curve(frames):
             {'title':'Light Intensity',
             'title1': 'Intensity',
             'x1_vals': str(lc_count),
-            'y1_vals': str(lc_cnt),
-            'y2_vals': str(lc_cnt),
-            'linetype2': 'spline'
+            'y1_vals': str(lc_cnt), 
+            'linetype1': 'lines+markers'
             })
    return ''
 
