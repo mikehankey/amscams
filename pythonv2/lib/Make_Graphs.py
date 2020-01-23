@@ -2,6 +2,7 @@ import sys
 import numpy as np
 import cv2
 import statistics
+import cgitb
 
 from lib.FileIO import cfe
 from VIDEO_VARS import HD_W, HD_H
@@ -158,6 +159,8 @@ def make_basic_plots(meteor_json_file):
 
 # Create 3D Light Curve Graph
 def make3D_light_curve(meteor_json_file,hd_stack):
+
+   cgitb.enable()
 
    xvals = []
    yvals = []
