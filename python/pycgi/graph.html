@@ -334,12 +334,13 @@ all_data = {
    's_ratio1': getQueryVariable("s_ratio1")?true:false,                                                  // Same Axis ratio for SERIE 1
    'title1': getQueryVariable("title1")?getQueryVariable("title1").replace(/_/g, ' '):'',                // Name SERIE 1
    'y1_reverse': getQueryVariable("y1_reverse")?true:false,                                              // Reverse Y on SERIE 1
-
-
-   
+ 
    'x2_vals': getQueryVariable("x2_vals")?getQueryVariable("x2_vals").split(","):false,                  // X Values - SERIE 2
    'y2_vals': getQueryVariable("y2_vals")?getQueryVariable("y2_vals").split(","):false,                  // Y Values - SERIE 2
    'title2': getQueryVariable("title2")?getQueryVariable("title2").replace(/_/g, ' '):'',                // Name SERIE 2
+   'linetype2': getQueryVariable("linetype2")?getQueryVariable("linetype2"):'linear',                     // LINE TYPE FOR SERIE 2
+
+
 
    'x_texts': getQueryVariable("tx1")?getQueryVariable("tx1").split(","):'',                          // Name of the X values (?)
    'y_texts': getQueryVariable("ty1")?getQueryVariable("ty1").split(","):'',                          // Name of the Y values (?)
@@ -439,8 +440,7 @@ Plotly.newPlot("graph", data, layout, {responsive: true});
 //If we have 2 set of data
 if (all_data.x2_vals != false && all_data.y2_vals != false) {
 
-   // We add the 2nd "trace"
-   Plotly.addTraces("graph", {
+   var trace2 = {
       x: all_data.x2_vals,
       y: all_data.y2_vals,
       mode: 'lines',
@@ -448,8 +448,13 @@ if (all_data.x2_vals != false && all_data.y2_vals != false) {
       name: all_data.title2,
       yaxis: "x2",
       line: {
-         color: 'rgba(213,42,224,.5)' 
+         color: 'rgba(213,42,224,.5)',
+         shape: linetype2
       }
-   });
+   };
+ 
+
+   // We add the 2nd "trace"
+   Plotly.addTraces("graph",trace2 );
 } 
 </script>

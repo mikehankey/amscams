@@ -30,6 +30,9 @@ def create_iframe_to_graph(data):
       link += "&title1=" + data['title1'].replace(" ","_")   
    if('s_ratio1' in data):
       link += "&s_ratio1=" + data['s_ratio1']
+   if('linetype2' in data):
+       link += "&linetype2=" + data['linetype2']     
+
    
    
    link = link.replace("[", "").replace("]", "").replace(" ", "")
@@ -51,11 +54,12 @@ def make_light_curve(frames):
             lc_ff.append(frame['intensity_ff']) 
  
       return create_iframe_to_graph(
-            {'title':'Blob Light Curve',
-            'title1': 'Blob Int.',
+            {'title':'Light Intensity',
+            'title1': 'Intensity',
             'x1_vals': str(lc_count),
             'y1_vals': str(lc_cnt),
-            'y2_vals': str(lc_ff) 
+            'y2_vals': str(lc_cnt),
+            'linetype2': 'spline'
             })
    return ''
 
@@ -70,10 +74,7 @@ def make_xy_point_plot(frames):
    for frame in frames:
       xs.append(frame['x']) 
       ys.append(frame['y']) 
-
-
  
-
    if(len(xs)>1):
 
       trend_x, trend_y = poly_fit_points(xs,ys) 
@@ -88,7 +89,7 @@ def make_xy_point_plot(frames):
          ty1.append(int(trend_y[i]))
 
       return create_iframe_to_graph(
-         {'title':'XY Points and Line Fit',
+         {'title':'XY Points and Trendline',
           'x1_vals': str(xs),
           'y1_vals':str(ys),
           'x2_vals': str(tx1),
