@@ -9,7 +9,15 @@ DEFAULT_PATH_TO_GRAPH = "/pycgi/graph.html?"
 # Build the iFrame (proper URL) for a given graph
 def create_iframe_to_graph(data):
    link = DEFAULT_PATH_TO_GRAPH + '?w=7'  # w=7 for the next &
- 
+
+   print("len(data['x1_vals'])" + str(len(data['x1_vals'])))
+   print("<br>")
+   print("len(data['y1_vals'])" + str(len(data['y1_vals'])))
+   print("<br>")
+   print(data['x1_vals'])
+   print("<br>")
+   print(data['y1_vals'])
+   print("<br>")
 
    # Suprise: we need data to display
    if 'x1_vals' in data and 'y1_vals' in data :
@@ -60,7 +68,7 @@ def make_light_curve(frames):
    if(len(frames)>1):
       for frame in frames:
          if "intensity" in frame and "intensity_ff" in frame:
-            if frame['intensity']!= '?' and frame['intensity']!= '9999':
+             if frame['intensity']!= '?' and frame['intensity']!= '9999':
                lc_count.append(frame['dt'][14:]) # Get Min & Sec from dt
                lc_cnt.append(frame['intensity']) 
                lc_ff.append(frame['intensity_ff']) 
