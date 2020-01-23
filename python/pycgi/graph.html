@@ -68,7 +68,7 @@ function hexToRgb(hex) {
     return r + "," + g + "," + b + ",1";
 }
 
-// Create all Colors
+// Create all Colors (same than on the canvas)
 var rainbow = new Rainbow();
 rainbow.setNumberRange(0, 255);
 var all_colors = [];
@@ -84,12 +84,11 @@ trace1.marker.color  =  all_colors;
 // Add the line shape  
 trace1.line = {}
 trace1.line.shape = all_data.lineshape1;
-
-
+ 
 var GRID_COLOR = 'rgba(255,255,255,.1)';
-var TICK_FONT_COLOR = 'rgba(255,255,255,.5)';
+var TICK_FONT_COLOR = 'rgba(255,255,255,.75)';
 var H_LINE_COLOR = 'rgba(255,255,255,.4)';
-var V_LINE_COLOR = 'rgba(255,255,255,.2)';
+var V_LINE_COLOR = 'rgba(255,255,255,.1)';
      
 var layout = {
    title: {

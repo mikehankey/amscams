@@ -271,9 +271,15 @@ def reduce_meteor2(json_conf,form):
    extra_tabs = ""
    extra_content = ""
 
-   # Basic X,Y of points
+   # Basic X,Y of points & light curve
    plots = make_basic_plots(meteor_json_file) 
-   extra_tabs, extra_content = create_tab_and_content(extra_tabs,extra_content,'basic_plot','Graphs',plots)
+
+   # 3D Light Curve
+   if(hd_stack is not None):
+      threeDlightCurve = make3D_light_curve(meteor_json_file, hd_stack)
+      print(threeDlightCurve)
+
+   extra_tabs, extra_content = create_tab_and_content(extra_tabs,extra_content,'basic_plot','PLOTS',plots)
    
    # After CREATING ALL THE GRAPHS WE INCLUDE THEM
    template = template.replace("{EXTRA_TAB}",extra_tabs)

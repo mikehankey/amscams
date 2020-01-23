@@ -1,6 +1,8 @@
 import sys
 import numpy as np
+import cv2
 
+from lib.FileIO import cfe
 
 DEFAULT_IFRAME = "<iframe width='100%' height='517' style='margin:.5rem auto' frameborder='false' src='{CONTENT}'></iframe>"
 DEFAULT_PATH_TO_GRAPH = "/pycgi/graph.html?"
@@ -114,11 +116,10 @@ def make_xy_point_plot(frames):
    return ''
 
 
-
+# Get "trendingline"
 def get_fit_line(poly_x, poly_y):
   return np.unique(poly_x), np.poly1d(np.polyfit(poly_x, poly_y, 1))(np.unique(poly_x))
-
-
+ 
 # Compute the fit line of a set of data (MIKE VERSION)
 def poly_fit_points(poly_x,poly_y, z = None):
    if z is None:
@@ -135,14 +136,9 @@ def poly_fit_points(poly_x,poly_y, z = None):
       new_ys = trendpoly(poly_x)
 
    return(poly_x, new_ys)
+ 
 
-
-
-
-
-
-
-# Create 3 different plots when possible
+# Create 2 different plots when possible
 # 1- X,Y position 
 # 2- Light Curves
 def make_basic_plots(meteor_json_file):
@@ -153,3 +149,18 @@ def make_basic_plots(meteor_json_file):
          plots = make_xy_point_plot(meteor_json_file['frames'])+ " " + make_light_curve(meteor_json_file['frames'])
    
    return plots
+
+
+# Create 3D Light Curve Graph
+def make3D_light_curve(meteor_json_file,hd_stack):
+
+   toReturn = []
+   if 'frames' in meteor_json_file:   
+      if len(meteor_json_file['frames']) > 0:  
+
+         image = cv2.imread(HD_stack)
+
+         for f in meteor_json_file['frames']:   
+            toReturn.append({'x':f['x'],'y':f['y'],'z':image[int(f['x']),int(f['y'])]}) 
+
+   return toReturn
