@@ -156,6 +156,7 @@ def make3D_light_curve(meteor_json_file,hd_stack):
 
    toReturn = []
    partial = False
+   print("HD STACK " + hd_stack)
    if 'frames' in meteor_json_file:   
       if len(meteor_json_file['frames']) > 0:  
 
