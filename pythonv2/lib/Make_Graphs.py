@@ -1,8 +1,7 @@
 import sys
 import numpy as np
 import cv2
-import statistics
-import cgitb
+import statistics 
 
 from lib.FileIO import cfe
 from VIDEO_VARS import HD_W, HD_H
@@ -156,58 +155,3 @@ def make_basic_plots(meteor_json_file):
    
    return plots
 
-
-# Create 3D Light Curve Graph
-def make3D_light_curve(meteor_json_file,hd_stack):
-
-   cgitb.enable()
-
-   xvals = []
-   yvals = []
-   zvals = []
-
-
-   for x in range(0, HD_W):
-      xvals.append(x)
-   
-   for y in range(0, HD_H):
-      yvals.append(y)
-
-   for z in range(0, 255):
-      zvals.append(0)
-
-   image = cv2.imread(hd_stack)
-
-   for f in meteor_json_file['frames']:   
-      try:
-         #xvals.append(f['x'])
-         #yvals.append(f['y'])
-         zvals.append(statistics.mean(image[int(f['y']),int(f['x'])]))  # Average of the 3 VALUES
-      except:
-         partial = True
-   
-   if len(xvals)>0 and len(yvals)>0 and len(zvals)>0:
-      return create_iframe_to_graph({
-         'title':'3D Light Topography',
-         'x1_vals': str(xvals),
-         'y1_vals':str(yvals),
-         'z1_vals':str(zvals) 
-      })
-   else:
-      return ''
-
-
-
-   #partial = False 
-   #if 'frames' in meteor_json_file:   
-   #   if len(meteor_json_file['frames']) > 0:  
-#
-   #      image = cv2.imread(hd_stack)
-#      for f in meteor_json_file['frames']:   
-   #         try:
-   #            xvals.append(f['x'])
-   #            yvals.append(f['y'])
-   #            zvals.append(statistics.mean(image[int(f['y']),int(f['x'])]))  # Average of the 3 colors
-    #        except:
-    #           partial = True
- 
