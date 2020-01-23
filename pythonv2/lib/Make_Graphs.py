@@ -158,7 +158,7 @@ def make3D_light_curve(meteor_json_file,hd_stack):
    if 'frames' in meteor_json_file:   
       if len(meteor_json_file['frames']) > 0:  
 
-         image = cv2.imread(HD_stack)
+         image = cv2.imread(hd_stack)
 
          for f in meteor_json_file['frames']:   
             toReturn.append({'x':f['x'],'y':f['y'],'z':image[int(f['x']),int(f['y'])]}) 
