@@ -334,6 +334,7 @@ all_data = {
    's_ratio1': getQueryVariable("s_ratio1")?true:false,                                                  // Same Axis ratio for SERIE 1
    'title1': getQueryVariable("title1")?getQueryVariable("title1").replace(/_/g, ' '):'',                // Name SERIE 1
    'y1_reverse': getQueryVariable("y1_reverse")?true:false,                                              // Reverse Y on SERIE 1
+   'linetype1': getQueryVariable("linetype1")?getQueryVariable("linetype1"):'markers',                   // LINE TYPE FOR SERIE 1
  
    'x2_vals': getQueryVariable("x2_vals")?getQueryVariable("x2_vals").split(","):false,                  // X Values - SERIE 2
    'y2_vals': getQueryVariable("y2_vals")?getQueryVariable("y2_vals").split(","):false,                  // Y Values - SERIE 2
@@ -355,7 +356,7 @@ all_data = {
 var trace1 = {
   x: all_data.x1_vals,
   y: all_data.y1_vals, 
-  mode: 'markers',   // lines+
+  mode: linetype1,   // lines+
   type: 'scatter',
   marker : { symbol: 'square-open-dot', size:10  },
   xaxis: "x1",

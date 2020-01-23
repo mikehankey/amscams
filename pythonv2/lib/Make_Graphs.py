@@ -30,6 +30,8 @@ def create_iframe_to_graph(data):
       link += "&title1=" + data['title1'].replace(" ","_")   
    if('s_ratio1' in data):
       link += "&s_ratio1=" + data['s_ratio1']
+   if('linetype1' in data):
+       link += "&linetype1=" + data['linetype1']   
    if('linetype2' in data):
        link += "&linetype2=" + data['linetype2']     
 
@@ -59,7 +61,7 @@ def make_light_curve(frames):
             'x1_vals': str(lc_count),
             'y1_vals': str(lc_cnt),
             'y2_vals': str(lc_cnt),
-            'linetype2': 'spline'
+            'linetype1': 'marker+spline'
             })
    return ''
 
