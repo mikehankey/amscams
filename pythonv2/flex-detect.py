@@ -987,6 +987,14 @@ def calib_to_calparams(calib, json_file ):
    cal_params['cat_image_stars'] = cat_image_stars
    return(cal_params)
 
+def batch_fit_all_arc_files():
+   station_id = json_conf['site']['ams_id']
+   os.system("find /mnt/ams2/meteor_archive/" + station_id + "/METEOR/ | grep .json |grep trim > /mnt/ams2/tmp/arc_files.txt")
+   fp = open("/mnt/ams2/tmp/arc_files.txt", "r")
+   for line in fp:
+      line = line.replace("\n", "")
+      fit_arc_file(line)
+      os.system("cd /home/ams/amscams/pythonv2/; /usr/bin/python3 Apply_calib.py " + line)
 
 def batch_fit_arc_file(date):
    year, mon, day = date.split("_")
@@ -2039,12 +2047,25 @@ def add_arc_stars(cal_params):
          used_img_stars[istar_key] = 1
          used_cat_stars[cstar_key] = 1
 
+def get_stars_res(stars):
+   dist = []
+   for star in stars:
+      dist.append(star['dist_px'])
+   return(float(np.mean(dist)))
+
 
 def fit_arc_file(json_file):
    json_conf = load_json_file("../conf/as6.json")
    st_id = json_file.split("/")[4]
    print("JSON FILE:", json_file)
    json_data = load_json_file(json_file)
+   if "calib" in json_data:
+      orig_calib = json_data['calib']
+      orig_stars = json_data['calib']['stars']
+      new_stars = update_arc_cat_stars(orig_calib,json_file,json_conf)
+      star_res = get_stars_res(new_stars)
+      print("Current star res is: ", star_res)
+
    if st_id != json_conf['site']['ams_id']:
       # this is a remote station, reload the json conf file!
       json_conf_file = "/mnt/ams2/meteor_archive/" + st_id + "/CAL/as6.json"  
@@ -2059,11 +2080,22 @@ def fit_arc_file(json_file):
 
    calib = json_data['calib']
 
-   last_best_calibs = find_last_best_calib(json_file)
+   last_best_calibs = find_last_best_calib(json_file,orig_stars)
    if len(last_best_calibs) > 0:
-      last_best_calib = load_json_file(last_best_calibs[0][0])
+      last_best_calib = load_json_file(last_best_calibs[0][0] )
       print("LAST BEST CALIB IS:", last_best_calib)
-      cal_params = calib_to_calparams(calib, json_file)
+      last_best_calib['stars'] = orig_stars
+      new_stars = update_arc_cat_stars(last_best_calib,json_file,json_conf)
+      new_star_res = get_stars_res(new_stars)
+      print("Star res with last best calib: ", new_star_res)
+      if new_star_res < star_res: 
+         print("Use last best!", last_best_calibs[0][0])
+         calib['device'] = last_best_calib['device']
+         calib['stars'] = new_stars
+         cal_params = calib_to_calparams(calib, json_file)
+      else:
+         print("Use originla params !")
+         cal_params = calib_to_calparams(calib, json_file)
       calib['device'] = last_best_calib['device']
 
    calib['stars'] = remove_bad_stars(calib['stars'])
@@ -2082,6 +2114,7 @@ def fit_arc_file(json_file):
       return()
 
    if cfe(master_lens_file) == 1:
+      print("Using master lens file")
       mld = load_json_file(master_lens_file)
       cal_params['x_poly'] = mld['x_poly']
       cal_params['y_poly'] = mld['y_poly']
@@ -2091,9 +2124,11 @@ def fit_arc_file(json_file):
    if True:
       this_poly = np.zeros(shape=(4,), dtype=np.float64)
 
-      print("YOYO", show)
+      print(calib['device'])
+      print(cal_params)
+
       start_res = reduce_fov_pos(this_poly, cal_params, json_file,frame,json_conf, cat_image_stars,0,show)
-      print("YOYOyo")
+      print("Start Res:", start_res)
       cal_params_orig = cal_params.copy()
       res = scipy.optimize.minimize(reduce_fov_pos, this_poly, args=( cal_params,json_file,frame,json_conf, cat_image_stars,1,show), method='Nelder-Mead')
 
@@ -2233,7 +2268,7 @@ def update_arc_cat_stars(calib, json_file,json_conf):
 
    return(my_close_stars)
 
-def find_last_best_calib(input_file):
+def find_last_best_calib(input_file, orig_stars = None ):
    (f_datetime, cam_id, f_date_str,Y,M,D, H, MM, S) = better_parse_file_date(input_file)
    station_id = json_conf['site']['ams_id']
    matches = []
@@ -2241,6 +2276,7 @@ def find_last_best_calib(input_file):
    print(cal_dir)
    all_files = glob.glob(cal_dir)
    for file in all_files:
+
       if cam_id in file :
          el = file.split("/")
          fn = el[-1]
@@ -2257,7 +2293,23 @@ def find_last_best_calib(input_file):
       tdiff = abs((f_datetime-t_datetime).total_seconds())
       td_sorted_matches.append((match,f_date_str,tdiff))
 
+
    temp = sorted(td_sorted_matches, key=lambda x: x[2], reverse=False)
+
+   if orig_stars is not None:
+      res_sorted = []
+      for td in temp:
+         file = td[0]
+         temp_calib = load_json_file(file)
+         temp_calib['stars'] = orig_stars
+         new_stars = update_arc_cat_stars(temp_calib,input_file,json_conf)
+         star_res = get_stars_res(new_stars)
+         res_sorted.append((file,star_res))
+
+      temp = sorted(res_sorted, key=lambda x: x[1], reverse=False)
+
+   for file,res in temp:
+      print(file,res)
 
    return(temp)
 
@@ -8684,3 +8736,5 @@ if cmd == "fix_arc_all" or cmd == "faa" :
    os.system("cd /home/ams/amscams/pythonv2; /usr/bin/python3 MakeCache.py " + video_file)
    os.system("cd /home/ams/amscams/pythonv2; /usr/bin/python3 Create_Archive_Index.py 2019" )
 
+if cmd == "bfa" or cmd == "batch_fit_all_arc_files" :
+   batch_fit_all_arc_files()

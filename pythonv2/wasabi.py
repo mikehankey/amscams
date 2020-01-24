@@ -86,8 +86,13 @@ def sync_archive():
    
 
 def wasabi_cp(file):
-   wasabi_file = file.replace("ams2/meteor_archive", "wasabi")
-   cmd = "cp " + file + " " + wasabi_file
+   if "meteor_archive" in file:
+      wasabi_file = file.replace("ams2/meteor_archive", "wasabi")
+      cmd = "cp " + file + " " + wasabi_file
+   else:
+      ma_file = file.replace("wasabi", "ams2/meteor_archive")
+      cmd = "cp " + file + " " + ma_file
+   print(cmd)
    os.system(cmd)
 
 def install():
@@ -157,6 +162,16 @@ def setup_wasabi_dirs():
       os.system("mkdir " + WASABI_CONF)
    print("DONE SETUP")
 
+def make_indexes():
+   make_ma_index()
+   #make_wasabi_index()
+
+def make_wasabi_index():
+   os.system("find /mnt/wasabi/ -ls > /mnt/wasabi/wasbi_index.txt")
+
+def make_ma_index():
+   os.system("find /mnt/ams2/meteor_archive/ -ls > /mnt/ams2/meteor_archive/ma_index.txt")
+
 if sys.argv[1] == "dirs":
    print("SETUP")
    setup_wasabi_dirs()
@@ -170,3 +185,5 @@ if sys.argv[1] == "ms2w" or sys.argv[1] == "cp_msd2wasabi":
    cp_msd2wasabi()
 if sys.argv[1] == "cp_msd" or sys.argv[1] == "cp_msd_from_wasabi":
    cp_msd_from_wasabi()
+if sys.argv[1] == "make_indexes" or sys.argv[1] == "mi":
+   make_indexes()
