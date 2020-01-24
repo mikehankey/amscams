@@ -2,6 +2,7 @@ import sys
 import numpy as np
 import cv2
 import statistics 
+import requests 
 
 from lib.FileIO import cfe
 from lib.VIDEO_VARS import HD_W, HD_H
@@ -11,8 +12,18 @@ DEFAULT_IFRAME = "<iframe width='100%' height='517' style='margin:.5rem auto' fr
 DEFAULT_PATH_TO_GRAPH = "/pycgi/plot.html?"
 
 
-# Build the iFrame (proper URL) for a given graph
+# Build the iFrame and POST data to the corresponding page
+# for a given graph
 def create_iframe_to_graph(data):
+
+   r = requests.post(url = DEFAULT_PATH_TO_GRAPH, data = data)
+   print(r)
+
+   sys.exit(0)
+
+
+
+
    link = DEFAULT_PATH_TO_GRAPH + '?w=7'  # w=7 for the next &
  
    # Suprise: we need data to display
