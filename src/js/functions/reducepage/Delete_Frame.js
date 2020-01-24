@@ -1,6 +1,8 @@
 function setup_delete_frame() {
     // Delete Frame
-    $('.delete_frame').click(function() {
+    $('.delete_frame').click(function(e) {
+        e.stopImmediatePropation();
+
         var  $row = $(this).closest('tr'); 
         var  frame_id = $row.attr('data-fn');
  
@@ -20,8 +22,11 @@ function setup_delete_frame() {
 
                 loading_done();
                 $row.fadeOut(150, function() {$row.remove();})
+                return false;
             } 
         });
+
+        
     
     });
 
