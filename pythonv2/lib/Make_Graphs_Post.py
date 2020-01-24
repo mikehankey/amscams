@@ -1,4 +1,5 @@
 import sys
+import os
 import numpy as np
 import cv2
 import statistics 
@@ -15,6 +16,12 @@ DEFAULT_PATH_TO_GRAPH = "/pycgi/plot.html?"
 # Build the iFrame and POST data to the corresponding page
 # for a given graph
 def create_iframe_to_graph(data):
+
+
+   print("SERVER NAME " + os.environ.get('SERVER_NAME'))
+   print("<br>PATH_INFO NAME " + os.environ.get('PATH_INFO'))
+
+   sys.exit(0)
 
    r = requests.post(url = DEFAULT_PATH_TO_GRAPH, data = data)
    print(r)
