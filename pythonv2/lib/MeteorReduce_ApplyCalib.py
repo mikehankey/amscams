@@ -1,8 +1,10 @@
 import json 
+import os
+import sys
 from lib.FileIO import load_json_file, save_json_file
 from lib.MeteorReduce_Calib_Ajax_Tools import XYtoRADec
 from lib.MeteorReduce_Tools import name_analyser
-import os
+
 
 # AJAX CALL
 def apply_calib_ajax(form): 
@@ -15,6 +17,7 @@ def apply_calib(json_file):
 
    json_data = load_json_file(json_file)
    new_frames = []
+   tmp_dt = []
 
    if('frames' in json_data):
       for frame in json_data['frames']:
@@ -25,9 +28,19 @@ def apply_calib(json_file):
          new_frame['ra'] = RA
          new_frame['az'] = AZ
          new_frame['el'] = el
+         tmp_dt.append(frame['dt'])
          new_frames.append(new_frame) 
    
       json_data['frames'] = new_frames   
+
+
+
+      # Here we check if there's an issue with the dt
+      if(list(set(tmp_dt))!=tmp_dt):
+         # It means we have a Date & Time issue!
+         print("DT ERROR")
+         sys.exit(0)
+
 
       # We save the file
       save_json_file(json_file,json_data)
