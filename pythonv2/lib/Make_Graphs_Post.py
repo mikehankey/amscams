@@ -32,42 +32,43 @@ def create_iframe_to_graph(data):
    
    # If we have actual data, we create the corresponding JSON file
    print(json.dumps(data))
-   sys.exit(0)
+   #sys.exit(0)
+ 
 
-
-
-   if('title' in data):
-      link += "&title=" + data['title'].replace(" ","_")
-   if('x_title' in data):
-      link += "&x_title=" + data['x_title']
-   if('y_title' in data):
-      link += "&y_title=" + data['y_title']
-   if('x1_vals' in data):
-      link += "&x1_vals=" + data['x1_vals']
-   if('y1_vals' in data):
-      link += "&y1_vals=" + data['y1_vals']
-   if('z1_vals' in data):
-      link += "&z1_vals=" + data['z1_vals']
-   if('x2_vals' in data):
-      link += "&x2_vals=" + data['x2_vals']
-   if('y2_vals' in data):
-      link += "&y2_vals=" + data['y2_vals']   
-   if('y1_reverse' in data):
-      link += "&y1_reverse=" + data['y1_reverse']   
-   if('title1' in data):
-      link += "&title1=" + data['title1'].replace(" ","_")   
-   if('s_ratio1' in data):
-      link += "&s_ratio1=" + data['s_ratio1']
-   if('linetype1' in data):
-       link += "&linetype1=" + data['linetype1']   
-   if('lineshape1' in data):
-       link += "&lineshape1=" + data['lineshape1']   
-   if('linetype2' in data):
-       link += "&linetype2=" + data['linetype2']     
+   #if('title' in data):
+   #   link += "&title=" + data['title'].replace(" ","_")
+   #if('x_title' in data):
+   #   link += "&x_title=" + data['x_title']
+   #if('y_title' in data):
+   #   link += "&y_title=" + data['y_title']
+   #if('x1_vals' in data):
+   #   link += "&x1_vals=" + data['x1_vals']
+   #if('y1_vals' in data):
+   #   link += "&y1_vals=" + data['y1_vals']
+   #if('z1_vals' in data):
+   #   link += "&z1_vals=" + data['z1_vals']
+   #if('x2_vals' in data):
+   #   link += "&x2_vals=" + data['x2_vals']
+   #if('y2_vals' in data):
+   #   link += "&y2_vals=" + data['y2_vals']   
+   #if('y1_reverse' in data):
+   #   link += "&y1_reverse=" + data['y1_reverse']   
+   #if('title1' in data):
+   #   link += "&title1=" + data['title1'].replace(" ","_")   
+   #if('s_ratio1' in data):
+   #   link += "&s_ratio1=" + data['s_ratio1']
+   #if('linetype1' in data):
+   #    link += "&linetype1=" + data['linetype1']   
+   #if('lineshape1' in data):
+   #    link += "&lineshape1=" + data['lineshape1']   
+   #if('linetype2' in data):
+   #    link += "&linetype2=" + data['linetype2']     
   
-   link = link.replace("[", "").replace("]", "").replace(" ", "").replace("\"", "").replace("\'", "")
+   #link = link.replace("[", "").replace("]", "").replace(" ", "").replace("\"", "").replace("\'", "")
 
-   return DEFAULT_IFRAME.replace('{CONTENT}', link) 
+   #return DEFAULT_IFRAME.replace('{CONTENT}', link) 
+
+   return ''
 
 
 # Curve Light
