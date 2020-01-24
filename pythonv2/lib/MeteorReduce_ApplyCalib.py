@@ -48,7 +48,7 @@ def apply_calib(json_file):
             new_frame['dt'] = get_frame_time(json_file,frame['fn'],analysed_name) 
             new_frames.append(new_frame) 
    
-          json_data['frames'] = new_frames   
+         json_data['frames'] = new_frames   
 
 
       # We save the file
