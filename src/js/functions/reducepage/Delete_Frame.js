@@ -1,7 +1,7 @@
 function setup_delete_frame() {
     // Delete Frame
     $('.delete_frame').click(function(e) {
-        e.stopImmediatePropation();
+        e.stopImmediatePropagation();
 
         var  $row = $(this).closest('tr'); 
         var  frame_id = $row.attr('data-fn');
