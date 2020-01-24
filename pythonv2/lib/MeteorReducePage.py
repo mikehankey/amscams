@@ -10,7 +10,7 @@ from lib.CGI_Tools import redirect_to
 from lib.MeteorReduce_Tools import * 
 from lib.MeteorReduce_Calib_Tools import find_matching_cal_files, find_calib_file
 from lib.REDUCE_VARS import REMOTE_FILES_FOLDER, REMOVE_METEOR_FOLDER, METEOR_ARCHIVE
-from lib.Make_Graphs import *
+from lib.Make_Graphs_Post import *
  
 PAGE_TEMPLATE = "/home/ams/amscams/pythonv2/templates/reducePage.v2.html"
 

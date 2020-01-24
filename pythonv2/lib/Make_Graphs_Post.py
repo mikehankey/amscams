@@ -1,11 +1,12 @@
 import sys
 import os
+import json
 import numpy as np
 import cv2
 import statistics 
 import requests 
 
-from lib.FileIO import cfe
+from lib.FileIO import cfe, save_json_file
 from lib.VIDEO_VARS import HD_W, HD_H
 
 
@@ -13,25 +14,12 @@ DEFAULT_IFRAME = "<iframe width='100%' height='517' style='margin:.5rem auto' fr
 DEFAULT_PATH_TO_GRAPH = "/pycgi/plot.html?"
 
 
-# Build the iFrame and POST data to the corresponding page
-# for a given graph
+# Build the iFrame 
+# Create the corresponding JSON file for the Graph
+# and create the iframe with file=this json
 def create_iframe_to_graph(data):
 
-
-   print("SERVER NAME " + os.environ.get('SERVER_NAME'))
-   print("<br>PATH_INFO NAME " + os.environ.get('PATH_INFO'))
-
-   sys.exit(0)
-
-   r = requests.post(url = DEFAULT_PATH_TO_GRAPH, data = data)
-   print(r)
-
-   sys.exit(0)
-
-
-
-
-   link = DEFAULT_PATH_TO_GRAPH + '?w=7'  # w=7 for the next &
+   link = DEFAULT_PATH_TO_GRAPH  
  
    # Suprise: we need data to display
    if 'x1_vals' in data and 'y1_vals' in data :
@@ -41,6 +29,12 @@ def create_iframe_to_graph(data):
          return ""
       if len(data['y1_vals'])<=2:
          return ""
+   
+   # If we have actual data, we create the corresponding JSON file
+   print(json.dumps(data))
+   sys.exit(0)
+
+
 
    if('title' in data):
       link += "&title=" + data['title'].replace(" ","_")

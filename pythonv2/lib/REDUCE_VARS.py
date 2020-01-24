@@ -14,6 +14,7 @@ FRAMES_SUBPATH= "/FRAMES/"          # For the HD Frames
 CROPPED_FRAMES_SUBPATH = "/THUMBS/" # For the Cropped Frames (thumbs)
 STACKS_SUBPATH   = "/STACKS/"       # For the Stacks
 PREVIEW = "/PREVIEW/"               # Thumb for the listings 
+GRAPHS = "/GRAPHS/"                 # JSON Files for the graphs
 TMP_CROPPED_FRAMES_SUBPATH = "/CR_THUMBS" # For the temporary cropped fames (manual reduction)
 
 TMP_HD_CROPPED_SUBFRAMES_SUBPATH = "/HD_TMP_THUMBS" # For the temporary cropped fames (manual synchronization)
