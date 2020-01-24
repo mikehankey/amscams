@@ -1,11 +1,12 @@
 import sys
 import os
+import json
 import numpy as np
 import cv2
 import statistics 
 import requests 
 
-from lib.FileIO import cfe
+from lib.FileIO import cfe, save_json_file
 from lib.VIDEO_VARS import HD_W, HD_H
 
 
@@ -13,25 +14,12 @@ DEFAULT_IFRAME = "<iframe width='100%' height='517' style='margin:.5rem auto' fr
 DEFAULT_PATH_TO_GRAPH = "/pycgi/plot.html?"
 
 
-# Build the iFrame and POST data to the corresponding page
-# for a given graph
+# Build the iFrame 
+# Create the corresponding JSON file for the Graph
+# and create the iframe with file=this json
 def create_iframe_to_graph(data):
 
-
-   print("SERVER NAME " + os.environ.get('SERVER_NAME'))
-   print("<br>PATH_INFO NAME " + os.environ.get('PATH_INFO'))
-
-   sys.exit(0)
-
-   r = requests.post(url = DEFAULT_PATH_TO_GRAPH, data = data)
-   print(r)
-
-   sys.exit(0)
-
-
-
-
-   link = DEFAULT_PATH_TO_GRAPH + '?w=7'  # w=7 for the next &
+   link = DEFAULT_PATH_TO_GRAPH  
  
    # Suprise: we need data to display
    if 'x1_vals' in data and 'y1_vals' in data :
@@ -41,39 +29,46 @@ def create_iframe_to_graph(data):
          return ""
       if len(data['y1_vals'])<=2:
          return ""
+   
+   # If we have actual data, we create the corresponding JSON file
+   print(json.dumps(data))
+   #sys.exit(0)
+ 
 
-   if('title' in data):
-      link += "&title=" + data['title'].replace(" ","_")
-   if('x_title' in data):
-      link += "&x_title=" + data['x_title']
-   if('y_title' in data):
-      link += "&y_title=" + data['y_title']
-   if('x1_vals' in data):
-      link += "&x1_vals=" + data['x1_vals']
-   if('y1_vals' in data):
-      link += "&y1_vals=" + data['y1_vals']
-   if('z1_vals' in data):
-      link += "&z1_vals=" + data['z1_vals']
-   if('x2_vals' in data):
-      link += "&x2_vals=" + data['x2_vals']
-   if('y2_vals' in data):
-      link += "&y2_vals=" + data['y2_vals']   
-   if('y1_reverse' in data):
-      link += "&y1_reverse=" + data['y1_reverse']   
-   if('title1' in data):
-      link += "&title1=" + data['title1'].replace(" ","_")   
-   if('s_ratio1' in data):
-      link += "&s_ratio1=" + data['s_ratio1']
-   if('linetype1' in data):
-       link += "&linetype1=" + data['linetype1']   
-   if('lineshape1' in data):
-       link += "&lineshape1=" + data['lineshape1']   
-   if('linetype2' in data):
-       link += "&linetype2=" + data['linetype2']     
+   #if('title' in data):
+   #   link += "&title=" + data['title'].replace(" ","_")
+   #if('x_title' in data):
+   #   link += "&x_title=" + data['x_title']
+   #if('y_title' in data):
+   #   link += "&y_title=" + data['y_title']
+   #if('x1_vals' in data):
+   #   link += "&x1_vals=" + data['x1_vals']
+   #if('y1_vals' in data):
+   #   link += "&y1_vals=" + data['y1_vals']
+   #if('z1_vals' in data):
+   #   link += "&z1_vals=" + data['z1_vals']
+   #if('x2_vals' in data):
+   #   link += "&x2_vals=" + data['x2_vals']
+   #if('y2_vals' in data):
+   #   link += "&y2_vals=" + data['y2_vals']   
+   #if('y1_reverse' in data):
+   #   link += "&y1_reverse=" + data['y1_reverse']   
+   #if('title1' in data):
+   #   link += "&title1=" + data['title1'].replace(" ","_")   
+   #if('s_ratio1' in data):
+   #   link += "&s_ratio1=" + data['s_ratio1']
+   #if('linetype1' in data):
+   #    link += "&linetype1=" + data['linetype1']   
+   #if('lineshape1' in data):
+   #    link += "&lineshape1=" + data['lineshape1']   
+   #if('linetype2' in data):
+   #    link += "&linetype2=" + data['linetype2']     
   
-   link = link.replace("[", "").replace("]", "").replace(" ", "").replace("\"", "").replace("\'", "")
+   #link = link.replace("[", "").replace("]", "").replace(" ", "").replace("\"", "").replace("\'", "")
 
-   return DEFAULT_IFRAME.replace('{CONTENT}', link) 
+   #return DEFAULT_IFRAME.replace('{CONTENT}', link) 
+
+   return ''
 
 
 # Curve Light
@@ -90,13 +85,13 @@ def make_light_curve(frames):
                lc_cnt.append(frame['intensity']) 
                lc_ff.append(frame['intensity_ff']) 
  
-      return create_iframe_to_graph(
-            {  'title':'Light Intensity',
-               'title1': 'Intensity',
-               'x1_vals': str(lc_count),
-               'y1_vals': str(lc_cnt), 
-               'linetype1': 'lines+markers',
-               'lineshape1': 'spline'
+      return create_iframe_to_graph({
+           'title':'Light Intensity',
+           'title1': 'Intensity',
+           'x1_vals':  lc_count,
+           'y1_vals':  lc_cnt, 
+           'linetype1': 'lines+markers',
+           'lineshape1': 'spline'
             })
    return ''
 

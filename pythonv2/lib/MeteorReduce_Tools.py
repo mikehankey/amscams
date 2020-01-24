@@ -107,7 +107,8 @@ def get_cache_path(analysed_file_name, cache_type=''):
       cache_path += TMP_HD_CROPPED_SUBFRAMES_SUBPATH
    elif(cache_type == 'tmp_sd_cropped_sync'):
       cache_path += TMP_SD_CROPPED_SUBFRAMES_SUBPATH
- 
+   elif(cache_type == 'graphs'):
+      cache_path += GRAPHS
    return cache_path
 
 

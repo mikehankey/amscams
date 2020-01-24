@@ -8,7 +8,7 @@ from lib.VIDEO_VARS import HD_W, HD_H
 
 
 DEFAULT_IFRAME = "<iframe width='100%' height='517' style='margin:.5rem auto' frameborder='false' src='{CONTENT}'></iframe>"
-DEFAULT_PATH_TO_GRAPH = "/pycgi/plot.html?"
+DEFAULT_PATH_TO_GRAPH = "/pycgi/graph.html?"
 
 
 # Build the iFrame (proper URL) for a given graph
