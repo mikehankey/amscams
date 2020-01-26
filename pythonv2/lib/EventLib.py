@@ -12,7 +12,7 @@ import cgitb
 import re
 import datetime
 import time
-from lib.FileIO import cfe, load_json_file
+from lib.FileIO import cfe, load_json_file, save_json_file
 
 def DetectsMain(form ):
    json_conf = load_json_file("/home/ams/amscams/conf/as6.json")
@@ -20,24 +20,120 @@ def DetectsMain(form ):
    print("<h1>Multi-station detections for ", station, "</h1>")
    detect_file = "/mnt/ams2/meteor_archive/" + station + "/DETECTS/ms_detects.json"
    detect_data = load_json_file(detect_file)
-   for key in sorted(detect_data.keys()):
-      print("<h2>", key, "</h2>")
+   events = {}
+   for key in sorted(detect_data.keys(), reverse=True):
       for file in detect_data[key]:
-         print(file, set(detect_data[key][file]['stations']), "<BR>")
+         stations = detect_data[key][file]['stations']
+         files = detect_data[key][file]['obs']
+         arc_files = detect_data[key][file]['arc_files']
+         event_id = detect_data[key][file]['event_id']
+         event_start = detect_data[key][file]['event_start']
+         count = detect_data[key][file]['count']
+         if event_id not in events:
+            events[event_id] = {} 
+
+         events[event_id]['event_id'] = event_id
+         events[event_id]['event_start'] = event_start 
+         events[event_id]['count'] = count 
+         events[event_id]['stations'] = stations
+         events[event_id]['files'] = files 
+         events[event_id]['arc_files'] = arc_files 
+        
+   for event_id in events:
+      event_year = event_id[0:4]
+      event_day = event_id[0:10]
+      event_dir = "/mnt/ams2/meteor_archive/" + station + "/EVENTS/" + event_year + "/" + event_day + "/" + event_id + "/" 
+      year,mon,day,hour,min,sec = event_id.split("_")
+      report_base = year + mon + day + "_" + hour + min + sec
+      report_file = report_base + "_report.txt"
+      print(event_dir + report_file)
+      if cfe(event_dir + report_file) == 1:
+         print("<h1> <a href=" + event_dir + ">" + str(event_id) + "<a/></h1>")
+      else:
+         print("<h1> " + str(event_id) + "</h1>")
+      print("Event Start Time: " + str(events[event_id]['event_start']) + "<BR>")
+      pc = 0
+      for af in events[event_id]['arc_files']:
+         if af == 'pending':
+            pc += 1
+         #print("<span style='color: red'>Arc Files Pending: " + str(pc) + "</span><BR>")
+      print("<table><tr><td>#</td><td>Station</td><td>Detect File</td><td>Arc File</td></tr>")
+      for i in range(0,len(events[event_id]['arc_files'])):
+         if pc > 0:
+            style = "<span style='color: red'>"
+         print("<tr><td>" + str(i) +  "</td><td>" + events[event_id]['stations'][i] + "</td><td>" +  events[event_id]['files'][i] + "</td><td><a href=/pycgi/webUI.py?cmd=goto&station="+ events[event_id]['stations'][i] + "&" + "file=" + events[event_id]['arc_files'][i] + ">" + events[event_id]['arc_files'][i] + "</a> </td></tr>");
+      print("</table>")
+
+
+
+   event_dir = "/mnt/ams2/meteor_archive/" + station + "/EVENTS/" + str(event_year) + "/"
+   if cfe(event_dir, 1) == 0:
+      os.makedirs(event_dir)
+   save_json_file(event_dir + str(event_year) + "-events.json", events)
+   print("Saved:" + event_dir + str(event_year) + "-events.json") 
+ 
 
 def DetectsDetail(form):
    print("..", station)
 
-def EventsMain(form):
-   print("<h1>Event Main</h1>")
-   events = []
-   files = glob.glob("/mnt/ams2/events/*")
-   for file in files: 
-      if cfe(file, 1) == 1:
-         ev = file.split("/")[-1]
-         events.append(ev)
-   for event in events:
-      print("<a href=webUI.py?cmd=event_detail&event=" + event + ">" + event + "</a><BR>")
+def EventsMain(json_conf, form):
+   station_id = json_conf['site']['ams_id']
+   year = form.getvalue("year")
+   show_solved = form.getvalue("show_solved")
+   events_dir = "/mnt/ams2/meteor_archive/" + station_id + "/EVENTS/"
+   print("<h1>Events Main</h1>")
+   if year is None:
+      print("Select Event Year: <UL>")
+      years = glob.glob("/mnt/ams2/meteor_archive/" + station_id + "/EVENTS/*")
+      for file in years:
+         tyear = file.split("/")[-1]
+         print("<a href=webUI.py?cmd=events&year=" + tyear + ">" + tyear + "</a><br>")
+      exit()
+
+   events_file = events_dir + year + "/" + year + "-events.json"
+   events = load_json_file(events_file)
+   print("<table border=1>")
+   print("<tr><td>Event ID</td><td>Observations</td><td>Event Status</td></tr>")
+  
+   for event_id in events:
+      row = ""
+      event = events[event_id]
+
+      status = "unsolved"
+      slink = ""
+      if "solutions" in event:
+         status = ""
+         for sol in event['solutions']:
+            solver, solve_status, report_file = sol
+            if solve_status == 0:
+               ss = "failed"
+            else:
+               ss = "success"
+               slink = "<a href=webUI.py?cmd=event_detail&event_id=" + event_id + ">"
+            status = status + solver + " " + ss  + "<BR>"
+
+      row += "<tr><td>" + slink  + event_id + "</a></td><td>"
+      for i in range(0, len(event['stations'])):
+         arc_file = event['arc_files'][i]
+         station = event['stations'][i]
+         if arc_file == "pending": 
+            obs_desc = event['stations'][i] + "-pending"
+            link = ""
+         else:
+            el = arc_file.split("_")[7]
+            other = el.split("-")
+            cam_id = other[0]
+            obs_desc = event['stations'][i] + "-" + cam_id
+            link = "<a href=webUI.py?cmd=goto&file=" + arc_file + "&station_id=" + station + ">"
+         row += link + obs_desc + "</a><br>"
+      row += "</td>"
+      row += "<td>" + str(status) + "</td></tr>"
+      if status == 1 and show_solved == 1:
+         print(row)
+      else:
+         print(row)
+   print("</table>")
+
 
 def ymd(file):
    y = file[0:4]
@@ -45,7 +141,35 @@ def ymd(file):
    d = file[6:8]
    return(y,m,d)
 
-def EventDetail(form):
+def EventDetail(json_conf, form):
+   event_id = form.getvalue("event_id")
+   station_id = json_conf['site']['ams_id']
+   event_year = event_id[0:4]
+   event_day = event_id[0:10]
+   event_dir = "/mnt/ams2/meteor_archive/" + station_id + "/EVENTS/" + event_year + "/" + event_day + "/" + event_id + "/" 
+   year,mon,day,hour,min,sec = event_id.split("_")
+   report_base = year + mon + day + "_" + hour + min + sec
+   report_file = report_base + "_report.txt"
+   plots = glob.glob(event_dir + "*.png")
+   reports = glob.glob(event_dir + "*.json")
+   plot_list = ""
+   for plot in sorted(plots):
+      plot_name = plot.split("/")[-1]
+      plot_list += "<a href=" + plot + ">" + plot_name + "</a><br>"
+   report_list = ""
+   for report in sorted(reports):
+      report_name = report.split("/")[-1]
+      report_list += "<a href=" + report + ">" + report_name + "</a><br>"
+
+   print("<table>")
+   print("<tr><td><b>Event ID:</b></td><td>" + event_id + "</td></tr>")
+   print("<tr><td><b>Event Dir:</b></td><td>" + event_dir + "</td></tr>")
+   print("<tr><td><b>Plots:</b></td><td>" + plot_list + "</td></tr>")
+   print("<tr><td><b>Reports:</b></td><td>" + report_list + "</td></tr>")
+   print("</table>")
+   
+
+def EventDetailOld(form):
    sync_urls = load_json_file("/home/ams/amscams/conf/sync_urls.json")
    event = form.getvalue("event")
    out = ""

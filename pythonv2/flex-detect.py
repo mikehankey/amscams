@@ -2111,6 +2111,11 @@ def fit_arc_file(json_file):
    cat_image_stars = cal_params['cat_image_stars']
    if len(cat_image_stars) < 3:
       print("Not enough stars to fit!")
+      if "stars" not in calib:
+         calib['stars'] = []
+      json_data['calib'] = calib
+      print("Replacing calib with last best calib and saving.")
+      save_json_file(json_file, json_data)
       return()
 
    if cfe(master_lens_file) == 1:
