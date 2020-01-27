@@ -16,17 +16,7 @@ function hexToRgb(hex) {
     var b = bigint & 255;
     return r + "," + g + "," + b + ",1";
 }
-
-// get GET Variables
-function getQueryVariable(variable) {
-   var query = window.location.search.substring(1);
-   var vars = query.split("&");
-   for (var i=0;i<vars.length;i++) {
-      var pair = vars[i].split("=");
-      if(pair[0] == variable){return pair[1];}
-   }
-   return(false);
-}
+ 
 
 // GET ALL QUERY PARAMETERS
 function getQueryParams(qs) {
@@ -44,6 +34,17 @@ function getQueryParams(qs) {
 
 var  all_variables = getQueryParams(document.location.search);
 
+// Do we have a json_file
+if(typeof all_variables['json_file']!='undefined') {
+   // We parse the JSON File
+   $.ajax({
+      dataType: "json",
+      url:  all_variables['json_file'],
+      success: function(data) {
+         console.log(data)
+      }
+   });
+}
 
 
 // Data from URL
