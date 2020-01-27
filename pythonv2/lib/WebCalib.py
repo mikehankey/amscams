@@ -3109,13 +3109,14 @@ def reduce_meteor_new(json_conf,form):
    if(cfe(hd_trim)==0):
 
       print("FIXING HD TRIM<br>")
-      print("TRY " + hd_video_file)
+      print("TRIED AND FAILED: " + hd_trim)
+      print("<br>NOW TRYING " + hd_video_file)
 
       if(cfe(hd_video_file)):
 
          # We automatically fix the issue
          fix_hd_vid_real_inline(hd_video_file,video_file,meteor_json_file) 
-         print('HD FIXED')
+         print("HD===> FIXED")
          #errors += "<p>HD TRIM - <b><a href='" +  hd_trim + "'> " +  hd_trim + "</a></b> as defined in the JSON is missing. <br> Do you want to replace it with: <a href='" +  hd_video_file + "'><b> " +  hd_video_file + "</b></a>?<br><a href='/pycgi/webUI.py?cmd=fix_hd_vid&json_file="+meteor_json_file+"&hd_video_file="+hd_video_file+"&cur_video_file="+video_file+"' class='btn btn-primary mt-2'>FIX THIS</a></p>"
       else:
          print("<br>===> FAILED")
