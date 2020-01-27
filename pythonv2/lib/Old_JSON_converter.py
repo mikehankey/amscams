@@ -487,7 +487,7 @@ def move_to_archive(form):
          hd_video = orig_meteor_video_file
 
       else:   
-         print("2nd change HD video file not found " + orig_meteor_json_file)
+         print("2nd change HD video file not found " + orig_meteor_video_file)
          sys.exit(0)
 
    # Sometimes, instead of the SD video we have the json in sd
