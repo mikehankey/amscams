@@ -272,7 +272,7 @@ def reduce_meteor2(json_conf,form):
    extra_content = ""
 
    # Basic X,Y of points & light curve
-   plots = make_basic_plots(meteor_json_file) 
+   plots = make_basic_plots(meteor_json_file,analysed_name) 
 
    # 3D Light Curve
    #if(hd_stack is not None):
