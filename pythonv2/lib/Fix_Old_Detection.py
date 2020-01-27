@@ -32,8 +32,13 @@ def fix_hd_vid(form):
    hd_video_file = form.getvalue("hd_video_file")
    json_file = form.getvalue("json_file")
    cur_video_file = form.getvalue("cur_video_file")
+   
+   fix_hd_vid_real_inline(hd_video_file,cur_video_file,json_file) 
 
-   if(cfe(hd_video_file)!=1):
+
+# Inline video fix HD Vid
+def fix_hd_vid_real_inline(hd_video_file,cur_video_file,json_file):
+    if(cfe(hd_video_file)!=1):
       print("ERROR " + hd_video_file + " is missing")
       sys.exit(0)
 

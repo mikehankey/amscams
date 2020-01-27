@@ -21,8 +21,8 @@ from lib.MeteorTests import test_objects, meteor_test_elp_frames, meteor_test_cm
 from lib.ImageLib import mask_frame,stack_frames, adjustLevels, upscale_to_hd, median_frames
 from lib.CalibLib import radec_to_azel, clean_star_bg, get_catalog_stars, find_close_stars, XYtoRADec, HMS2deg, AzEltoRADec, define_crop_box
 from lib.UtilLib import check_running, calc_dist, angularSeparation, bound_cnt
-
-
+from lib.Fix_Old_Detection import fix_hd_vid_real_inline
+ 
   
 
 def update_frame_ajax(json_conf, form):
@@ -3108,7 +3108,11 @@ def reduce_meteor_new(json_conf,form):
 
    if(cfe(hd_trim)==0):
       if(cfe(hd_video_file)):
-         errors += "<p>HD TRIM - <b><a href='" +  hd_trim + "'> " +  hd_trim + "</a></b> as defined in the JSON is missing. <br> Do you want to replace it with: <a href='" +  hd_video_file + "'><b> " +  hd_video_file + "</b></a>?<br><a href='/pycgi/webUI.py?cmd=fix_hd_vid&json_file="+meteor_json_file+"&hd_video_file="+hd_video_file+"&cur_video_file="+video_file+"' class='btn btn-primary mt-2'>FIX THIS</a></p>"
+
+         # We automatically fix the issue
+         fix_hd_vid_real_inline(hd_video_file,cur_video_file,json_file) 
+
+         #errors += "<p>HD TRIM - <b><a href='" +  hd_trim + "'> " +  hd_trim + "</a></b> as defined in the JSON is missing. <br> Do you want to replace it with: <a href='" +  hd_video_file + "'><b> " +  hd_video_file + "</b></a>?<br><a href='/pycgi/webUI.py?cmd=fix_hd_vid&json_file="+meteor_json_file+"&hd_video_file="+hd_video_file+"&cur_video_file="+video_file+"' class='btn btn-primary mt-2'>FIX THIS</a></p>"
       else:
          errors += "<p>HD TRIM - <b><a href='" +  hd_trim + "'> " +  hd_trim + "</a></b> as defined in the JSON is missing.</p>"
 
