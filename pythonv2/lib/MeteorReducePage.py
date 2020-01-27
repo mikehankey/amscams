@@ -10,7 +10,7 @@ from lib.CGI_Tools import redirect_to
 from lib.MeteorReduce_Tools import * 
 from lib.MeteorReduce_Calib_Tools import find_matching_cal_files, find_calib_file
 from lib.REDUCE_VARS import REMOTE_FILES_FOLDER, REMOVE_METEOR_FOLDER, METEOR_ARCHIVE
-from lib.Make_Graphs import *
+from lib.Make_Graphs_JSON import *
  
 PAGE_TEMPLATE = "/home/ams/amscams/pythonv2/templates/reducePage.v2.html"
 
@@ -272,7 +272,7 @@ def reduce_meteor2(json_conf,form):
    extra_content = ""
 
    # Basic X,Y of points & light curve
-   plots = make_basic_plots(meteor_json_file) 
+   plots = make_basic_plots(meteor_json_file,analysed_name) 
 
    # 3D Light Curve
    #if(hd_stack is not None):

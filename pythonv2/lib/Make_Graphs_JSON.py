@@ -8,16 +8,54 @@ import requests
 
 from lib.FileIO import cfe, save_json_file
 from lib.VIDEO_VARS import HD_W, HD_H
+from lib.MeteorReduce_Tools import get_cache_path
 
 
 DEFAULT_IFRAME = "<iframe width='100%' height='517' style='margin:.5rem auto' frameborder='false' src='{CONTENT}'></iframe>"
 DEFAULT_PATH_TO_GRAPH = "/pycgi/plot.html?"
 
 
+# Basic X,Y Plot with regression (actually a "trending line")
+def make_xy_point_plot(frames,analysed_name):
+
+   xs = []
+   ys = []
+ 
+   for frame in frames:
+      xs.append(frame['x']) 
+      ys.append(frame['y']) 
+ 
+   if(len(xs)>1):
+
+      trend_x, trend_y = poly_fit_points(xs,ys) 
+      
+      # trend_x, trend_y = get_fit_line(xs,ys)
+    
+      tx1 = []
+      ty1 = []
+
+      for i in range(0,len(trend_x)):
+         tx1.append(int(trend_x[i]))
+         ty1.append(int(trend_y[i]))
+
+      return create_iframe_to_graph(
+         analysed_name,
+         {'title':'XY Points and Trendline',
+          'x1_vals': str(xs),
+          'y1_vals':str(ys),
+          'x2_vals': str(tx1),
+          'y2_vals':str(ty1),
+          'y1_reverse':'1',
+          'title1': 'Meteor pos.',
+          'title2': 'Fit val',
+          's_ratio1':'1'})
+   return ''
+
+
 # Build the iFrame 
 # Create the corresponding JSON file for the Graph
 # and create the iframe with file=this json
-def create_iframe_to_graph(data):
+def create_iframe_to_graph(analysed_name,data):
 
    link = DEFAULT_PATH_TO_GRAPH  
  
@@ -30,8 +68,13 @@ def create_iframe_to_graph(data):
       if len(data['y1_vals'])<=2:
          return ""
    
-   # If we have actual data, we create the corresponding JSON file
-   print(json.dumps(data))
+   # CREATE TMP JSON FILE UNDER /GRAPH (see REDUCE_VARS) 
+   path = get_cache_path(analysed_name,'graphs')
+   print(path)
+   sys.exit(0)
+
+
+   save_json_file('file',json.dumps(data));
    #sys.exit(0)
  
 
@@ -97,40 +140,7 @@ def make_light_curve(frames):
 
 
 
-# Basic X,Y Plot with regression (?)
-def make_xy_point_plot(frames):
 
-   xs = []
-   ys = []
- 
-   for frame in frames:
-      xs.append(frame['x']) 
-      ys.append(frame['y']) 
- 
-   if(len(xs)>1):
-
-      trend_x, trend_y = poly_fit_points(xs,ys) 
-      
-      # trend_x, trend_y = get_fit_line(xs,ys)
-    
-      tx1 = []
-      ty1 = []
-
-      for i in range(0,len(trend_x)):
-         tx1.append(int(trend_x[i]))
-         ty1.append(int(trend_y[i]))
-
-      return create_iframe_to_graph(
-         {'title':'XY Points and Trendline',
-          'x1_vals': str(xs),
-          'y1_vals':str(ys),
-          'x2_vals': str(tx1),
-          'y2_vals':str(ty1),
-          'y1_reverse':'1',
-          'title1': 'Meteor pos.',
-          'title2': 'Fit val',
-          's_ratio1':'1'})
-   return ''
 
 
 # Get "trendingline"
@@ -158,12 +168,12 @@ def poly_fit_points(poly_x,poly_y, z = None):
 # Create 2 different plots when possible
 # 1- X,Y position 
 # 2- Light Curves
-def make_basic_plots(meteor_json_file):
+def make_basic_plots(meteor_json_file, analysed_name):
    plots = ''
    if 'frames' in meteor_json_file:   
       if len(meteor_json_file['frames']) > 0:  
          # Main x,y plot + Curve Light
-         plots = make_xy_point_plot(meteor_json_file['frames'])+ " " + make_light_curve(meteor_json_file['frames'])
+         plots = make_xy_point_plot(meteor_json_file['frames'],analysed_name)+ " " + make_light_curve(meteor_json_file['frames'],analysed_name)
    
    return plots
 
