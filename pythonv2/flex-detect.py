@@ -7939,7 +7939,7 @@ def debug2(video_file):
       if md['arc_fail'] == "HD detection failed." or md['arc_fail'] == "No HD trim file exists.":
          new_video_file = video_file.replace(".mp4", "-HD-meteor.mp4")
          if cfe(new_video_file) == 0:
-            cmd = "/usr/bin/ffmpeg -f -i " + video_file + " -vf scale=1920:1080 " + new_video_file 
+            cmd = "/usr/bin/ffmpeg -i " + video_file + " -vf scale=1920:1080 " + new_video_file 
             os.system(cmd)
             del md['arc_fail']
             md['hd_trim'] = new_video_file
