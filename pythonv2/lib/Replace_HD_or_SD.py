@@ -104,7 +104,7 @@ def replace_HD(form):
    # Are the SD & HD videos sync'd 
    json_data = load_json_file(json_file)
    # We artificially sync the videos
-   json_data['sync'] = {hd_ind:1,sd_ind1}
+   json_data['sync'] = {'hd_ind':1,'sd_ind':1}
      
   
    # The video has been sync' 
@@ -112,10 +112,7 @@ def replace_HD(form):
    cmd = "ffmpeg -y -i " + video_sd_full_path + " -vf scale="+str(HD_W)+":"+str(HD_H)+" " + video_hd_full_path
    os.system(cmd)
 
-   # We DONT update the JSON!!!
-   # if('info' not in json_data):
-   #    json_data['info'] = []
-
+   
    json_data['info']['HD_fix'] = 1
    save_json_file(json_file,json_data)
 
