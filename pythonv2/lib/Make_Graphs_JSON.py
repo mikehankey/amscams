@@ -84,7 +84,7 @@ def create_iframe_to_graph(analysed_name,data,name,graph_config,clear_cache=Fals
    else:
       # We return them 
       path_to_json = glob.glob(get_cache_path(analysed_name,"graphs")+name+'.json') 
-   
+      path_to_json = path_to_json[0]
 
    print("PATH TO JSON <br>")
    print(path_to_json)
