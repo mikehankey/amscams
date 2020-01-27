@@ -13,8 +13,10 @@ from lib.MeteorReduce_Tools import get_cache_path, does_cache_exist
 
 
 DEFAULT_IFRAME = "<iframe width='100%' height='517' style='margin:.5rem auto' frameborder='false' src='{CONTENT}'></iframe>"
-DEFAULT_PATH_TO_GRAPH = "/pycgi/plot.html?"
+DEFAULT_PATH_TO_GRAPH = "/pycgi/plot.html?json_file={JSONPATH}&graph_config={GRAPH_CONFIG}"
 
+# Predefined GRAPH LAYOUT
+LINETREND_GRAPHICS = '/pycgi/dist/graphics/trendline.json'
 
 # Basic X,Y Plot with regression (actually a "trending line")
 def make_xy_point_plot(frames,analysed_name):
@@ -50,14 +52,15 @@ def make_xy_point_plot(frames,analysed_name):
           'title1': 'Meteor pos.',
           'title2': 'Fit val',
           's_ratio1':'1'},
-          'xy')
+          'xy',
+          LINETREND_GRAPHICS)
    return ''
 
 
 # Build the iFrame 
 # Create the corresponding JSON file for the Graph
 # and create the iframe with file=this json
-def create_iframe_to_graph(analysed_name,data,name,clear_cache=False):
+def create_iframe_to_graph(analysed_name,data,name,graph_config,clear_cache=False):
 
    link = DEFAULT_PATH_TO_GRAPH  
  
@@ -81,50 +84,10 @@ def create_iframe_to_graph(analysed_name,data,name,clear_cache=False):
    else:
       # We return them 
       path_to_json = glob.glob(get_cache_path(analysed_name,"graphs")+name+'.json') 
- 
-   print("PATH TO GRAPH JSON :<br>")
-   print(path_to_json)
-   sys.exit(0)
-
- 
    
-   #sys.exit(0)
+
+   return DEFAULT_IFRAME.replace('{JSONPATH}', path_to_json).replace('{GRAPH_CONFIG}',graph_config)
  
-
-   #if('title' in data):
-   #   link += "&title=" + data['title'].replace(" ","_")
-   #if('x_title' in data):
-   #   link += "&x_title=" + data['x_title']
-   #if('y_title' in data):
-   #   link += "&y_title=" + data['y_title']
-   #if('x1_vals' in data):
-   #   link += "&x1_vals=" + data['x1_vals']
-   #if('y1_vals' in data):
-   #   link += "&y1_vals=" + data['y1_vals']
-   #if('z1_vals' in data):
-   #   link += "&z1_vals=" + data['z1_vals']
-   #if('x2_vals' in data):
-   #   link += "&x2_vals=" + data['x2_vals']
-   #if('y2_vals' in data):
-   #   link += "&y2_vals=" + data['y2_vals']   
-   #if('y1_reverse' in data):
-   #   link += "&y1_reverse=" + data['y1_reverse']   
-   #if('title1' in data):
-   #   link += "&title1=" + data['title1'].replace(" ","_")   
-   #if('s_ratio1' in data):
-   #   link += "&s_ratio1=" + data['s_ratio1']
-   #if('linetype1' in data):
-   #    link += "&linetype1=" + data['linetype1']   
-   #if('lineshape1' in data):
-   #    link += "&lineshape1=" + data['lineshape1']   
-   #if('linetype2' in data):
-   #    link += "&linetype2=" + data['linetype2']     
-  
-   #link = link.replace("[", "").replace("]", "").replace(" ", "").replace("\"", "").replace("\'", "")
-
-   #return DEFAULT_IFRAME.replace('{CONTENT}', link) 
-
-   return ''
 
 
 # Curve Light

@@ -45,6 +45,12 @@
    var  all_variables = getQueryParams(document.location.search);
    
    
+   $.getScript(all_variables['graph_config'], function() {
+      console.log(all_variables['graph_config'])
+   });
+
+
+
    
    // Data from URL
    all_data = {
