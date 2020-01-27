@@ -68,12 +68,12 @@ def create_iframe_to_graph(analysed_name,data):
       if len(data['y1_vals'])<=2:
          return ""
    
-   # CREATE TMP JSON FILE UNDER /GRAPH (see REDUCE_VARS) 
-   path = get_cache_path(analysed_name,'graphs')
-   print(path)
+   # CREATE TMP JSON FILE UNDER /GRAPH (see REDUCE_VARS)  
+   graph_cache_folder = does_cache_exist(analysed_name,'graphs','.json')
+   print(graph_cache_folder)
    sys.exit(0)
 
-
+s
    save_json_file('file',json.dumps(data));
    #sys.exit(0)
  
