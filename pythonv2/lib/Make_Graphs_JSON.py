@@ -28,8 +28,8 @@ def make_basic_plots(meteor_json_file, analysed_name):
    if 'frames' in meteor_json_file:   
       if len(meteor_json_file['frames']) > 0:  
          # Main x,y plot + Curve Light
-         plots = make_xy_point_plot(meteor_json_file['frames'],analysed_name))
-         #+ " " + make_light_curve(meteor_json_file['frames'],analysed_name)
+         plots = make_xy_point_plot(meteor_json_file['frames'],analysed_name)
+         #)+ " " + make_light_curve(meteor_json_file['frames'],analysed_name)
    
    return plots
 
