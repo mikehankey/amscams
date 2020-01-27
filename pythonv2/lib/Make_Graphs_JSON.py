@@ -14,6 +14,42 @@ DEFAULT_IFRAME = "<iframe width='100%' height='517' style='margin:.5rem auto' fr
 DEFAULT_PATH_TO_GRAPH = "/pycgi/plot.html?"
 
 
+# Basic X,Y Plot with regression (actually a "trending line")
+def make_xy_point_plot(frames):
+
+   xs = []
+   ys = []
+ 
+   for frame in frames:
+      xs.append(frame['x']) 
+      ys.append(frame['y']) 
+ 
+   if(len(xs)>1):
+
+      trend_x, trend_y = poly_fit_points(xs,ys) 
+      
+      # trend_x, trend_y = get_fit_line(xs,ys)
+    
+      tx1 = []
+      ty1 = []
+
+      for i in range(0,len(trend_x)):
+         tx1.append(int(trend_x[i]))
+         ty1.append(int(trend_y[i]))
+
+      return create_iframe_to_graph(
+         {'title':'XY Points and Trendline',
+          'x1_vals': str(xs),
+          'y1_vals':str(ys),
+          'x2_vals': str(tx1),
+          'y2_vals':str(ty1),
+          'y1_reverse':'1',
+          'title1': 'Meteor pos.',
+          'title2': 'Fit val',
+          's_ratio1':'1'})
+   return ''
+
+
 # Build the iFrame 
 # Create the corresponding JSON file for the Graph
 # and create the iframe with file=this json
@@ -97,40 +133,7 @@ def make_light_curve(frames):
 
 
 
-# Basic X,Y Plot with regression (?)
-def make_xy_point_plot(frames):
 
-   xs = []
-   ys = []
- 
-   for frame in frames:
-      xs.append(frame['x']) 
-      ys.append(frame['y']) 
- 
-   if(len(xs)>1):
-
-      trend_x, trend_y = poly_fit_points(xs,ys) 
-      
-      # trend_x, trend_y = get_fit_line(xs,ys)
-    
-      tx1 = []
-      ty1 = []
-
-      for i in range(0,len(trend_x)):
-         tx1.append(int(trend_x[i]))
-         ty1.append(int(trend_y[i]))
-
-      return create_iframe_to_graph(
-         {'title':'XY Points and Trendline',
-          'x1_vals': str(xs),
-          'y1_vals':str(ys),
-          'x2_vals': str(tx1),
-          'y2_vals':str(ty1),
-          'y1_reverse':'1',
-          'title1': 'Meteor pos.',
-          'title2': 'Fit val',
-          's_ratio1':'1'})
-   return ''
 
 
 # Get "trendingline"
