@@ -48,14 +48,15 @@ def make_xy_point_plot(frames,analysed_name):
           'y1_reverse':'1',
           'title1': 'Meteor pos.',
           'title2': 'Fit val',
-          's_ratio1':'1'})
+          's_ratio1':'1'},
+          'xy')
    return ''
 
 
 # Build the iFrame 
 # Create the corresponding JSON file for the Graph
 # and create the iframe with file=this json
-def create_iframe_to_graph(analysed_name,data):
+def create_iframe_to_graph(analysed_name,data,name):
 
    link = DEFAULT_PATH_TO_GRAPH  
  
@@ -69,7 +70,7 @@ def create_iframe_to_graph(analysed_name,data):
          return ""
    
    # CREATE TMP JSON FILE UNDER /GRAPH (see REDUCE_VARS)  
-   graph_cache_folder = does_cache_exist(analysed_name,'graphs','.json')
+   graph_cache_folder = does_cache_exist(analysed_name,'graphs',name+'.json')
    print(graph_cache_folder)
    sys.exit(0)
 
