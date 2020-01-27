@@ -16,7 +16,7 @@ DEFAULT_PATH_TO_GRAPH = "/pycgi/plot.html?"
 
 
 # Basic X,Y Plot with regression (actually a "trending line")
-def make_xy_point_plot(analysed_name, frames):
+def make_xy_point_plot(frames,analysed_name):
 
    xs = []
    ys = []
@@ -38,7 +38,8 @@ def make_xy_point_plot(analysed_name, frames):
          tx1.append(int(trend_x[i]))
          ty1.append(int(trend_y[i]))
 
-      return create_iframe_to_graph(analysed_name,
+      return create_iframe_to_graph(
+         analysed_name,
          {'title':'XY Points and Trendline',
           'x1_vals': str(xs),
           'y1_vals':str(ys),
