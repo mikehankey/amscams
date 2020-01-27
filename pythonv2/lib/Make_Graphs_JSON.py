@@ -74,12 +74,12 @@ def create_iframe_to_graph(analysed_name,data,name,clear_cache=False):
    
    if(len(json_graph)==0 or clear_cache is True or (clear_cache is True)):
       # We need to create the JSON
-      path_to_json = get_cache_path(analysed_name,"graphs")+os.sep+name+'.json'
+      path_to_json = get_cache_path(analysed_name,"graphs")+name+'.json'
       save_json_file(path_to_json,json.dumps(data))
       print(path_to_json)
    else:
       # We return them 
-      json_graph = glob.glob(get_cache_path(analysed_name,"graphs")+os.sep+name+'.json') 
+      json_graph = glob.glob(get_cache_path(analysed_name,"graphs")+name+'.json') 
 
 
    sys.exit(0)
