@@ -4162,6 +4162,55 @@ def unq_points(object):
    perc = unq_tot / tot
    return(perc)
 
+
+def big_cnt_test(object,hd=0):
+   sizes = []
+   big = 0
+   sz_thresh = 10
+   if hd == 1:
+      sz_thresh = 20
+
+   for i in range(0, len(object['ofns'])):
+      w = object['ows'][i]
+      h = object['ohs'][i]
+      print("SIZE:", w,h)
+      if w > sz_thresh:
+         big += 1
+      if h > sz_thresh:
+         big += 1
+      sizes.append(w)
+      sizes.append(h)
+   tot = len(sizes)
+   if len(sizes) > 0:
+      print("BIG:", big)
+      perc_big = big / len(sizes)
+   return(perc_big)
+
+  
+def anal_int(ints):
+   pos_vals = []
+   neg_vals = []
+   for int_val in ints:
+      if int_val > 0:
+         pos_vals.append(int_val)
+      else:
+         neg_vals.append(int_val)
+   if len(neg_vals) > 0:
+      pos_neg_perc = len(pos_vals) / len(neg_vals)
+   else:
+      pos_neg_perc = 0
+   if len(pos_vals) == 0:
+      return(0, 1, [])
+
+   max_int = max(pos_vals)
+   min_int = min(pos_vals)
+   max_times = max_int / min_int
+   perc_val = []
+   for int_val in pos_vals:
+      mxt = max_int / int_val
+      perc_val.append(mxt)
+   return(max_times, pos_neg_perc, perc_val)
+
 def analyze_object(object, hd = 0, sd_multi = 1, final=0):
    # HD scale pix is .072 degrees per px
    # SD scale pix is .072 * sd_multi
@@ -4173,6 +4222,8 @@ def analyze_object(object, hd = 0, sd_multi = 1, final=0):
       deg_multi = 3 
 
    bad_items = []
+   perc_big = big_cnt_test(object, hd)
+   print("PERC BIG:", perc_big)
    if "ofns" not in object:
       if "report" not in object:
          object['report'] = {}
@@ -4193,10 +4244,8 @@ def analyze_object(object, hd = 0, sd_multi = 1, final=0):
 
    if len(object['ofns']) > 4:
       dir_test_perc = meteor_dir_test(object['oxs'],object['oys'])
-      big_perc = cnt_size_test(object)
    else:
       dir_test_perc = 0
-      big_perc = 0
 
 
    id = object['obj_id']
@@ -4216,6 +4265,9 @@ def analyze_object(object, hd = 0, sd_multi = 1, final=0):
    #max_x = max_x + max_w
    #max_h = max_y + max_h
 
+   int_max_times, int_neg_perc, int_perc_list = anal_int(object['oint'])
+   print("INT MAX TIMES:", int_max_times)
+
    med_int = float(np.median(object['oint']))
    intense_neg = 0
    for intense in object['oint']:
@@ -4233,6 +4285,12 @@ def analyze_object(object, hd = 0, sd_multi = 1, final=0):
             dist_per_elp = 0
    else:
       dist_per_elp = 0
+
+   if len(object['ofns']) > 3 and perc_big >= .75 and len(object['ofns']) < 10:
+      moving = "moving"
+      meteor_yn = "no"
+      obj_class = "car or object"
+      bad_items.append("too many big percs")
 
    if elp > 5 and dist_per_elp < .1 :
       moving = "not moving"
@@ -4293,6 +4351,12 @@ def analyze_object(object, hd = 0, sd_multi = 1, final=0):
    if elp > 300:
       meteor_yn = "no"
       bad_items.append("more than 300 frames in event.")
+   if max_cm < 4:
+      neg_perc = intense_neg / max_cm 
+      if intense_neg / max_cm > .3:
+         meteor_yn = "no" 
+         bad_items.append("too much negative intensity for short event." + str(intense_neg))
+
    if max_cm > 0:
       neg_perc = intense_neg / max_cm 
       if intense_neg / max_cm > .5:
@@ -4303,9 +4367,9 @@ def analyze_object(object, hd = 0, sd_multi = 1, final=0):
    if elp < 2:
       meteor_yn = "no" 
       bad_items.append("less than 2 frames in event.")
-   if big_perc > .3:
+   if perc_big > .75 and len(object['ofns']) < 10:
       meteor_yn = "no"
-      bad_items.append("too many big cnts." + str(big_perc))
+      bad_items.append("too many big cnts." + str(perc_big))
    if max_cm < 3:
       meteor_yn = "no"
       bad_items.append("less than 2 consecutive motion.")
@@ -5288,7 +5352,219 @@ def calc_cm_for_event(event):
    if cm > max_cm:
       max_cm = cm + 1
    return(max_cm)
+
+def proc_move(video_file):
+   fn = video_file.split("/")[-1]
+   day = fn[0:10]
+   stack_file = video_file.replace(".mp4", "-stacked.png")
+   proc_dir = "/mnt/ams2/SD/proc2/" + day + "/" 
+   if cfe(proc_dir + "images/", 1) == 0:
+      os.makedirs(proc_dir + "images")
+   cmd = "mv " + video_file + " " + proc_dir
+   cmd2 = "mv " + stack_file + " " + proc_dir + "images/"
+   os.system(cmd)
+   os.system(cmd2)
+
+def batch_quickest_scan(cam=0):
+   if cam == "0":
+      files = glob.glob("/mnt/ams2/CAMS/queue/*.mp4")
+   else:
+      files = glob.glob("/mnt/ams2/CAMS/queue/*" + cam + "*.mp4")
+   for file in sorted(files, reverse=True):
+      # start performance timer
+      start_time = time.time()
+      st = os.stat(file)
+      size = st.st_size
+      if size < 100:
+         print("SIZE:", size)
+ 
+         print("corrupt: rm " + file)
+         os.system("rm " + file)
+      else:
+         quickest_scan(file)
+      elapsed_time = time.time() - start_time
+      print("SCAN TIME:", elapsed_time)
+
+def quickest_scan(video_file):
+   # only used for 1-minute incoming clips!
+   if "mp4" not in video_file or cfe(video_file) == 0:
+      print("BAD INPUT FILE:", video_file)
+      return([])
+
+   # start performance timer
+   start_time = time.time()
+
+   # set stack file and skip if it alread exists.
+   stack_file = video_file.replace(".mp4", "-stacked.png")
+   if cfe(stack_file) == 1 :
+      print("Already done this.")
+      #return()
+
+   # load the frames
+   frames,color_frames,subframes,sum_vals,max_vals = load_frames_fast(video_file, json_conf, 0, 0, [], 0,[])
+   elapsed_time = time.time() - start_time
+   print("Total Frames:", len(frames))
+   print("Total Sub Frames:", len(subframes))
+   print("Loaded frames.", elapsed_time)
+   if len(max_vals) > 0:
+      if max(max_vals) < 10:
+         detects_found = 0
+         # stack fast (skip 10) and return. 
+         stacked_frame = stack_frames_fast(frames, 10)
+         cv2.imwrite(stack_file, stacked_frame) 
+         print("NO BRIGHT PX. SAVE STACK, move files AND QUIT!")
+         proc_move(video_file)
+         return()
+   events,meteor_objs,non_meteor_objs = detect_with_max_vals(max_vals,sum_vals,subframes)
+   # if no events exist fast stack and go
+   if len(events) == 0:
+      detects_found = 0
+      # stack fast (skip 10) and return. 
+      stacked_frame = stack_frames_fast(frames, 10)
+      cv2.imwrite(stack_file, stacked_frame) 
+      print("NO EVENTS. SAVE STACK, move files AND QUIT!")
+      proc_move(video_file)
+      return()
+
+   # if no meteors exist fast stack and go
+   if len(meteor_objs) == 0:
+      detects_found = 0
+      # stack fast (skip 10) and return. 
+      stacked_frame = stack_frames_fast(frames, 10)
+      cv2.imwrite(stack_file, stacked_frame) 
+      proc_move(video_file)
+      print("NO METEORS FOUND. SAVE STACK, move files AND QUIT!")
+      print("MIGHT AS WELL SAVE NON-METEOR OBJECTS too?. ")
+      return()
+
+   if len(meteor_objs) >= 1:
+      print("More than 1 potential meteor detected. Examine all clips as one")
+      allfn = []
+      for obj in meteor_objs:
+         print("POSSIBLE METEOR FOUND:", obj['ofns'])
+         allfn.append(min(obj['ofns']))
+         allfn.append(max(obj['ofns']))
+   t_start = min(allfn)
+   t_end = max(allfn)
+   motion_objects, motion_frames = detect_meteor_in_clip(video_file, subframes[t_start:t_end], t_start)
+   sd_meteors = only_meteors(motion_objects)
    
+   if sd_meteors is None :
+      detects_found = 0
+      # stack fast (skip 10) and return. 
+      stacked_frame = stack_frames_fast(frames, 10)
+      cv2.imwrite(stack_file, stacked_frame) 
+      print("NO METEORS FOUND. SAVE STACK, move files AND QUIT!")
+      print("MIGHT AS WELL SAVE NON-METEOR OBJECTS too?. ")
+      proc_move(video_file)
+      return()
+   if len(sd_meteors) > 3:
+      detects_found = 0
+      # stack fast (skip 10) and return. 
+      stacked_frame = stack_frames_fast(frames, 10)
+      cv2.imwrite(stack_file, stacked_frame) 
+      print("TOO MANY METEORS FOUND. THIS IS A CAR OR SOMETHING LIKE A CAR!")
+      proc_move(video_file)
+      return()
+
+   print("METEOR FOUND!")  
+   for meteor in sd_meteors:
+      id = meteor['obj_id']
+      print(id, meteor['ofns'])
+      print(id, meteor['oxs'])
+      print(id, meteor['oys'])
+      print(id, meteor['ows'])
+      print(id, meteor['ohs'])
+      print(id, meteor['report'])
+      start = meteor['ofns'][0]
+      df = meteor['ofns'][-1] - meteor['ofns'][0]
+      hd_file, hd_trim,time_diff_sec, dur = find_hd_file_new(video_file, start, df, 1)
+      motion_objects, motion_frames = detect_meteor_in_clip(hd_trim)
+      hd_meteors = only_meteors(motion_objects)
+   stacked_frame = stack_frames_fast(frames, 1)
+   cv2.imwrite(stack_file, stacked_frame) 
+   print(stack_file)
+   print("SD METEORS:", sd_meteors)
+   print("HD METEORS:", hd_meteors)
+   print("NON HD METEORS:")
+   for obj_id in motion_objects:
+      obj = motion_objects[obj_id]
+      print(obj['ofns'])
+      print(obj['oint'])
+      print(obj['report'])
+
+   exit()
+
+   # METEOR EXISTS AND NEEDS TO BE PROCESSED!
+   # FIND THE HD FILE
+   # TRIM THE HD FILE
+   # DETECT METEOR IN HD FILE
+   # SYNC SD AND HD FRAMES 
+   # SAVE SYNCD SD AND HD FILES AND NEW JSON IN METEOR ARCHIVE
+   # CREATE CACHE FOR NEW ARCHIVE FILE  (in BG)
+   # COPY BOTH FULL MIN SD AND HD FILE TO /mnt/ams2/min_saved/YEAR/DAY/FILE-HD or FILE-SD
+   # Stack all frames in the full min file and move to PROC2 dir
+   # Stack all frames in just the meteor CLIP and save that (somewhere (in archive) / tied to preview image
+   # Apply the calib (find stars and find last best (but that's it))
+    
+
+   elapsed_time = time.time() - start_time
+   print("Elapsed Time:", elapsed_time)
+   
+
+def detect_with_max_vals(max_vals, sum_vals,subframes):
+
+   med_max = np.median(max_vals)
+   if med_max < 5:
+      med_max = 5
+
+   cm = 0
+   nomo = 0
+   event = []
+   events = []
+   last_bp = 0
+   objects = {}
+   for i in range(0,len(max_vals)):
+      if max_vals[i] > med_max:
+         bp = 1
+         nomo = 0
+         # get the cnts (or bp) and track it as an object? 
+         if i - 1 == last_bp:
+            cm += 1
+            event.append(i)
+         last_bp = i
+      else:
+         bp = 0
+
+      if bp == 0:
+         if len(event) >= 3:
+            events.append(event)
+         event = []
+         nomo = nomo + 1
+         cm = 0
+   if len(event) >= 3:
+      events.append(event)
+
+   for event in events:
+      print("EVENT:", event)
+      for i in event:
+         min_val, max_val, min_loc, (mx,my)= cv2.minMaxLoc(subframes[i])
+         print("BRIGHT PIXEL:", i, sum_vals[i], max_vals[i], mx,my)
+         cx1,cy1,cx2,cy2= bound_cnt(mx,my,subframes[0].shape[1],subframes[0].shape[0], 10)
+         cnt_img = subframes[i][cy1:cy2,cx1:cx2]
+         object, objects = find_object(objects, i,mx, my, 5, 5, 0, 0, 0, cnt_img)
+
+   meteor_objs = []
+   non_meteor_objs = []
+   for obj in objects:
+      print(obj, objects[obj])
+      if objects[obj]['report']['meteor_yn'] == "Y":
+         meteor_objs.append(objects[obj])
+      else: 
+         if len(objects[obj]['ofns']) > 3:
+            print(obj, objects[obj])
+            non_meteor_objs.append(objects[obj])
+   return(events, meteor_objs,non_meteor_objs)   
 
 def quick_scan(video_file, old_meteor = 0):
    # 3 main parts
@@ -6580,7 +6856,7 @@ def check_event_for_motion(subframes, objects, fn):
    return(motion_events, objects)      
 
 
-def stack_frames_fast(frames, skip = 2):
+def stack_frames_fast(frames, skip = 0):
    stacked_image = None
    fc = 0
    for frame in frames:
@@ -8770,3 +9046,7 @@ if cmd == "fix_arc_all" or cmd == "faa" :
 
 if cmd == "bfa" or cmd == "batch_fit_all_arc_files" :
    batch_fit_all_arc_files()
+if cmd == "qqs" :
+   quickest_scan(sys.argv[2])
+if cmd == "bqqs" :
+   batch_quickest_scan(sys.argv[2])
