@@ -3135,6 +3135,13 @@ def reduce_meteor_new(json_conf,form):
       view_arc_link_and_back += "<a class='btn btn-primary d-block' href='/pycgi/webUI.py?cmd=move_to_archive&video_file=" + hd_trim + "&sd_video=" + video_file + "&json_file=" + meteor_json_file + "'>Replace Archived Meteor</a> "
       template = template.replace("{ARCHIVE_LINK}", view_arc_link_and_back)
 
+   jsid = video_file.split("/")[-1]
+   jsid = jsid.replace("_", "")
+   jsid = jsid.replace(".mp4", "")
+
+   template = template.replace("{JSID}", jsid)
+
+
    template = template.replace("{HD_STACK}", hd_stack)
    template = template.replace("{SD_STACK}", sd_stack)
    template = template.replace("{SD_VIDEO}", sd_video_file)

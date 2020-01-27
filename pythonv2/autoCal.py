@@ -31,6 +31,32 @@ from lib.UtilLib import calc_dist,find_angle
 import lib.brightstardata as bsd
 from lib.DetectLib import eval_cnt
 
+def cp_meteor_index():
+   recopy = 1
+   network = json_conf['site']['network_sites'].split(",")
+   station = json_conf['site']['ams_id']
+   network.append(station)
+   detect_index = {}
+   for st in network:
+      data_file = "/mnt/ams2/meteor_archive/" + st + "/DETECTS/meteor_index.json"
+      arc_station_dir = "/mnt/ams2/meteor_archive/" + st + "/"
+      if cfe(arc_station_dir, 1) == 0:
+         os.system("mkdir " + arc_station_dir)
+         os.system("mkdir " + arc_station_dir + "/METEORS/")
+         os.system("mkdir " + arc_station_dir + "/CAL/")
+         os.system("mkdir " + arc_station_dir + "/DETECTS/")
+      if cfe(data_file) == 0 or recopy == 1:
+         wasabi_file = data_file.replace("ams2/meteor_archive", "wasabi")
+         wasabi_file = wasabi_file + ".gz"
+         print("DATA FILE NOT FOUND!", data_file, wasabi_file)
+         if cfe(wasabi_file) == 1:
+            data_file_z = data_file + ".gz"
+            print("DETECT FILE MISSING FROM ARCHIVE, UPDATE.")
+            print("cp " + wasabi_file + " " + data_file_z)
+            os.system("cp " + wasabi_file + " " + data_file_z)
+            os.system("gunzip -f " + data_file_z)
+
+
 def get_trim_num(video_file):
    # parse trim_num
    #video_file = json_file.replace(".json", "-HD.mp4")
@@ -3900,6 +3926,8 @@ if cmd == "update_arc_detects" or cmd == 'uad':
 if cmd == "md" or cmd == 'month_detects':
    print("MD")
    month_detects(sys.argv[2])   
+if cmd == "cp_mi" or cmd == 'cp_meteor_index':
+   cp_meteor_index()
 
 
 
