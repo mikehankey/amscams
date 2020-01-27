@@ -19,7 +19,7 @@ DEFAULT_PATH_TO_GRAPH = "/pycgi/graph.html?json_file={JSONPATH}&graph_config={GR
 PATH_TO_GRAPH_LAYOUTS = "/pycgi/dist/graphics/"
 
 # Predefined GRAPH LAYOUT
-LINETREND_GRAPHICS = PATH_TO_GRAPH_LAYOUTS + 'trendline.json'
+LINETREND_GRAPHICS = PATH_TO_GRAPH_LAYOUTS + 'trendline.js'
 
 
 
