@@ -63,6 +63,7 @@ def batch_archive_msm(mode):
    ms_detect_report_file = ARCHIVE_DIR + station + "/DETECTS/" + "ms_detects_report.html"
    ms_data = load_json_file(ms_detect_file)
    out = ""
+   failed_files = []
    for day in sorted(ms_data, reverse=True):
       for file in ms_data[day]:
          meteor_day = file[0:10]
@@ -80,6 +81,7 @@ def batch_archive_msm(mode):
          if "archive_file" in mjd:
             if cfe(mjd['archive_file']) == 0:
                del(mjd['archive_file'])
+               save_json_file(orig_meteor_json_file, mjd)
 
          if "archive_file" in mjd:
             print(orig_meteor_json_file + " ARCHIVED") 
@@ -88,6 +90,7 @@ def batch_archive_msm(mode):
             out += "<figure style=\"float: left; text-align: center\"><a href=/pycgi/webUI.py?cmd=reduce&video_file=" + video_file + "><img src=" + stack_thumb + "><figcaption style=\"font-size: x-medium\">" + desc + "</figcaption></a></figure>\n"
             total_arc +=1
          elif "arc_fail" in mjd:
+            failed_files.append((file, mjd['arc_fail']))
             print(orig_meteor_json_file + " ARCHIVED") 
             desc_long = file.replace(".json", "")
             desc = desc_long.split("-trim")[0]
@@ -104,16 +107,19 @@ def batch_archive_msm(mode):
             print(cmd)
             if mode == "1":
                os.system(cmd)
-               if total_files > 25:
-                  print("Finsihed run of 25 files. Exiting for now.")
+               if total_files > 200:
+                  print("Finsihed run of 25 files. Exiting for now.", mode, total_files)
                   exit()
                #exit()
-         total_files += 1
+         if "archive_file" not in mjd:
+            total_files += 1
    print(ms_detect_report_file)
    out = "<h1>Archive Report</h1> Total Meteors: " + str(total_files) + " Total Archived: " + str(total_arc) + "<P>" + out
    fp = open(ms_detect_report_file, "w")
    fp.write(out) 
    fp.close()
+   for failed in failed_files:
+      print(failed)
 
 def fix_missing_hd(dir):
    files = glob.glob(dir + "*.json")
@@ -2313,8 +2319,8 @@ def find_last_best_calib(input_file, orig_stars = None ):
 
       temp = sorted(res_sorted, key=lambda x: x[1], reverse=False)
 
-   for file,res in temp:
-      print(file,res)
+   #for file,res in temp:
+   #   print(file,res)
 
    return(temp)
 
@@ -7646,6 +7652,31 @@ def debug2(video_file):
    md = load_json_file(old_meteor_json_file)
    hd_trim = md['hd_trim']
    org_sd_vid = video_file 
+   if "arc_fail" in md:
+      print("PREV ARC FAIL:", md['arc_fail'])
+      if md['arc_fail'] == "HD detection failed.":
+         new_video_file = video_file.replace(".mp4", "-HD-meteor.mp4")
+         if cfe(new_video_file) == 0:
+            cmd = "/usr/bin/ffmpeg -f -i " + video_file + " -vf scale=1920:1080 " + new_video_file 
+            os.system(cmd)
+            del md['arc_fail']
+            md['hd_trim'] = new_video_file
+            hd_trim = new_video_file
+            print("HD FILE FIXED:", new_video_file)
+            save_json_file(old_meteor_json_file, md)
+         else:
+            print("HD DETECT FAILED EVEN AFTER SD FIX.:", md['arc_fail'])
+            return()
+      elif md['arc_fail'] == "HD TRIM FILE NOT FOUND":
+         # make sure this is true.
+         if 'hd_trim' in md:
+            if md['hd_trim'] != 0 and md['hd_trim'] != None:
+               if cfe(md['hd_trim']) == 1:
+                  del md['arc_fail']
+                  save_json_file(old_meteor_json_file, md)
+      else:
+         print("THE FILE FAILED THE ARC ALREADY:", md['arc_fail'])
+         return()
 
    # load SD frames
    sd_frames,sd_color_frames,sd_subframes,sd_sum_vals,sd_max_vals = load_frames_fast(video_file, json_conf, 0, 0, [], 1,[])
@@ -7667,7 +7698,7 @@ def debug2(video_file):
       else:
          hd_good = 0
    if hd_good == 0:
-      print("NO HD TRIM FILE FOUND. ABORT FOR NOW.")
+      print("NO HD TRIM FILE FOUND. ")
       new_video_file = video_file.replace(".mp4", "-HD-meteor.mp4")
       cmd = "/usr/bin/ffmpeg -i " + video_file + " -vf scale=1920:1080 " + new_video_file 
       os.system(cmd)
@@ -7690,7 +7721,7 @@ def debug2(video_file):
    sd_meteor = only_meteors(motion_objects,1)
    hd_meteor = only_meteors(hd_motion_objects,1)
    if sd_meteor is None or hd_meteor is None:
-      print("Couldn't detect SD & HD meteor.")
+      print("Couldn't detect SD or HD meteor.")
       print("SD:", sd_meteor)
       print("HD:", hd_meteor)
       if sd_meteor is None:
@@ -8316,8 +8347,8 @@ def debug(video_file):
       org_hd_vid = hd_trim 
    else:
       org_hd_vid = None 
-      print("HD TRIM FILE NOT FOUND!")
-      md['arc_fail'] = "HD TRIM FILE NOT FOUND"
+      print("HD TRIM FILE NOT FOUND!", hd_trim)
+      md['arc_fail'] = "HD TRIM FILE NOT FOUND" + str(hd_trim)
       save_json_file(old_meteor_json_file, md)
       return()
 
