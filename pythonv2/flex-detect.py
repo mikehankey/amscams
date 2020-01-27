@@ -7120,6 +7120,8 @@ def analyze_intensity(curve1, curve2,subframes=None):
    int_frame_data = []
    mstart = None
    mend = None
+   if len(curve1) <= 3 or len(curve2) <= 3:
+      return(0,0,0,0)
    max_c1 = max(curve1)
    max_c2 = max(curve2)
 
