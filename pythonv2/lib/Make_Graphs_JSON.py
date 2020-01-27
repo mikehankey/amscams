@@ -56,7 +56,7 @@ def make_xy_point_plot(frames,analysed_name):
 # Build the iFrame 
 # Create the corresponding JSON file for the Graph
 # and create the iframe with file=this json
-def create_iframe_to_graph(analysed_name,data,name):
+def create_iframe_to_graph(analysed_name,data,name,clear_cache=False):
 
    link = DEFAULT_PATH_TO_GRAPH  
  
@@ -69,9 +69,17 @@ def create_iframe_to_graph(analysed_name,data,name):
       if len(data['y1_vals'])<=2:
          return ""
    
-   # CREATE TMP JSON FILE UNDER /GRAPH (see REDUCE_VARS)  
-   graph_cache_folder = does_cache_exist(analysed_name,'graphs',name+'.json')
-   print(graph_cache_folder)
+   # CREATE or RETRIEVE TMP JSON FILE UNDER /GRAPH (see REDUCE_VARS)  
+   json_graph = does_cache_exist(analysed_name,'graphs',name+'.json')
+   
+   if(len(json_graph)==0 or clear_cache is True or (clear_cache is True)):
+      # We need to create the JSON
+      print("WE NEEED TO CREATE THE JSON") 
+   else:
+      # We return them 
+      thumbs = glob.glob(get_cache_path(analysed_name,"graphs")+os.sep+name+'.json') 
+
+
    sys.exit(0)
 
  
