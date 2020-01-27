@@ -490,6 +490,12 @@ def move_to_archive(form):
          print("2nd change HD video file not found " + orig_meteor_json_file)
          sys.exit(0)
 
+   # Sometimes, instead of the SD video we have the json in sd
+   if('.json' in sd_video):
+      tmp_sd = sd_video.replace('.json','.mp4')
+      if(cfe(tmp_sd)):
+         sd_video = tmp_sd
+
    if sd_video is None or cfe(sd_video)==0 :
       print_error("SD video is missing." + sd_video + " not found.")
       sys.exit(0)
@@ -498,12 +504,7 @@ def move_to_archive(form):
       print_error("JSON is missing." + json_file + "not found.")   
       sys.exit(0)
 
-
-
-   print("JSON FILE " + json_file + "<br>")
-   print("SD VIDEO " + sd_video + "<br>")
-   print("HD VIDEO " + hd_video + "<br>")
-   sys.exit(0)
+ 
    new_json,new_hd_vid,new_sd_vid = move_old_detection_to_archive(json_file,sd_video,hd_video, False)
 
   
