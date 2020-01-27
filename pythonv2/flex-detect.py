@@ -64,6 +64,7 @@ def batch_archive_msm(mode):
    ms_data = load_json_file(ms_detect_file)
    out = ""
    failed_files = []
+   no_reruns = 0
    for day in sorted(ms_data, reverse=True):
       for file in ms_data[day]:
          meteor_day = file[0:10]
@@ -89,7 +90,7 @@ def batch_archive_msm(mode):
             desc = desc_long.split("-trim")[0]
             out += "<figure style=\"float: left; text-align: center\"><a href=/pycgi/webUI.py?cmd=reduce&video_file=" + video_file + "><img src=" + stack_thumb + "><figcaption style=\"font-size: x-medium\">" + desc + "</figcaption></a></figure>\n"
             total_arc +=1
-         elif "arc_fail" in mjd:
+         elif "arc_fail" in mjd and no_reruns == 1:
             failed_files.append((file, mjd['arc_fail']))
             print(orig_meteor_json_file + " ARCHIVED") 
             desc_long = file.replace(".json", "")
@@ -4551,6 +4552,7 @@ def find_object(objects, fn, cnt_x, cnt_y, cnt_w, cnt_h, intensity=0, hd=0, sd_m
    max_obj = 0
    for obj in objects:
       if 'oxs' in objects[obj]:
+         ofns = objects[obj]['ofns']
          oxs = objects[obj]['oxs']
          oys = objects[obj]['oys']
          ows = objects[obj]['ows']
@@ -4558,8 +4560,12 @@ def find_object(objects, fn, cnt_x, cnt_y, cnt_w, cnt_h, intensity=0, hd=0, sd_m
          for oi in range(0, len(oxs)):
             hm = int(ohs[oi] / 2)
             wm = int(ows[oi] / 2)
+            lfn = int(ofns[-1] )
             dist = calc_obj_dist((cnt_x,cnt_y,cnt_w,cnt_h),(oxs[oi], oys[oi], ows[oi], ohs[oi]))
-            if dist < obj_dist_thresh:
+        
+            last_frame_diff = fn - lfn 
+            print("LAST FRAME DIFF:", fn, lfn, last_frame_diff)
+            if dist < obj_dist_thresh and last_frame_diff < 10:
                found = 1
                found_obj = obj
       if obj > max_obj:
@@ -7930,7 +7936,7 @@ def debug2(video_file):
    org_sd_vid = video_file 
    if "arc_fail" in md:
       print("PREV ARC FAIL:", md['arc_fail'])
-      if md['arc_fail'] == "HD detection failed.":
+      if md['arc_fail'] == "HD detection failed." or md['arc_fail'] == "No HD trim file exists.":
          new_video_file = video_file.replace(".mp4", "-HD-meteor.mp4")
          if cfe(new_video_file) == 0:
             cmd = "/usr/bin/ffmpeg -f -i " + video_file + " -vf scale=1920:1080 " + new_video_file 
@@ -7943,7 +7949,7 @@ def debug2(video_file):
          else:
             print("HD DETECT FAILED EVEN AFTER SD FIX.:", md['arc_fail'])
             return()
-      elif md['arc_fail'] == "HD TRIM FILE NOT FOUND":
+      elif md['arc_fail'] == "HD TRIM FILE NOT FOUND" :
          # make sure this is true.
          if 'hd_trim' in md:
             if md['hd_trim'] != 0 and md['hd_trim'] != None:
