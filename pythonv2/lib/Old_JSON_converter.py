@@ -504,15 +504,17 @@ def move_to_archive(form):
       print_error("JSON is missing." + json_file + "not found.")   
       sys.exit(0)
 
-
-
    print("JSON FILE " + json_file + "<br>")
    print("SD VIDEO " + sd_video + "<br>")
    print("HD VIDEO " + hd_video + "<br>")
-   sys.exit(0)
+    
+   
    new_json,new_hd_vid,new_sd_vid = move_old_detection_to_archive(json_file,sd_video,hd_video, False)
 
-  
+   print("NJSON FILE " + new_json + "<br>")
+   print("NSD VIDEO " + new_sd_vid + "<br>")
+   print("NHD VIDEO " + new_hd_vid + "<br>")
+   sys.exit(0)
 
    redirect_to("/pycgi/webUI.py?cmd=reduce2&video_file=" + new_hd_vid + "&clear_cache=1&c=" + str(random.randint(0,100000000)), "reduction")
    #print("/pycgi/webUI.py?cmd=reduce2&video_file=" + new_hd_vid + "&clear_cache=1&c=" + str(random.randint(0,100000000)))
