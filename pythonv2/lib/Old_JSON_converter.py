@@ -498,7 +498,12 @@ def move_to_archive(form):
       print_error("JSON is missing." + json_file + "not found.")   
       sys.exit(0)
 
-   
+
+
+   print("JSON FILE " + json_file + "<br>")
+   print("SD VIDEO " + sd_video + "<br>")
+   print("HD VIDEO " + hd_video + "<br>")
+   sys.exit(0)
    new_json,new_hd_vid,new_sd_vid = move_old_detection_to_archive(json_file,sd_video,hd_video, False)
 
   
