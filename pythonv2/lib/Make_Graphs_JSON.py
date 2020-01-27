@@ -8,7 +8,7 @@ import requests
 
 from lib.FileIO import cfe, save_json_file
 from lib.VIDEO_VARS import HD_W, HD_H
-from lib.MeteorReduce_Tools import get_cache_path
+from lib.MeteorReduce_Tools import get_cache_path, does_cache_exist
 
 
 DEFAULT_IFRAME = "<iframe width='100%' height='517' style='margin:.5rem auto' frameborder='false' src='{CONTENT}'></iframe>"
@@ -73,7 +73,7 @@ def create_iframe_to_graph(analysed_name,data):
    print(graph_cache_folder)
    sys.exit(0)
 
-s
+ 
    save_json_file('file',json.dumps(data));
    #sys.exit(0)
  
