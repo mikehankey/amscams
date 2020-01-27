@@ -86,7 +86,8 @@ def create_iframe_to_graph(analysed_name,data,name,graph_config,clear_cache=Fals
       path_to_json = glob.glob(get_cache_path(analysed_name,"graphs")+name+'.json') 
    
 
-   return DEFAULT_IFRAME.replace('{JSONPATH}', path_to_json).replace('{GRAPH_CONFIG}',graph_config)
+   toReturn =  DEFAULT_IFRAME.replace('{JSONPATH}', path_to_json)
+   return toReturn.replace('{GRAPH_CONFIG}',graph_config)
  
 
 
