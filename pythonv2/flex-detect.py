@@ -7667,7 +7667,13 @@ def debug2(video_file):
          else:
             print("HD DETECT FAILED EVEN AFTER SD FIX.:", md['arc_fail'])
             return()
-
+      elif md['arc_fail'] == "HD TRIM FILE NOT FOUND":
+         # make sure this is true.
+         if 'hd_trim' in md:
+            if md['hd_trim'] != 0 and md['hd_trim'] != None:
+               if cfe(md['hd_trim']) == 1:
+                  del md['arc_fail']
+                  save_json_file(old_meteor_json_file, md)
       else:
          print("THE FILE FAILED THE ARC ALREADY:", md['arc_fail'])
          return()
@@ -7692,7 +7698,7 @@ def debug2(video_file):
       else:
          hd_good = 0
    if hd_good == 0:
-      print("NO HD TRIM FILE FOUND. ABORT FOR NOW.")
+      print("NO HD TRIM FILE FOUND. ")
       new_video_file = video_file.replace(".mp4", "-HD-meteor.mp4")
       cmd = "/usr/bin/ffmpeg -i " + video_file + " -vf scale=1920:1080 " + new_video_file 
       os.system(cmd)
@@ -8341,8 +8347,8 @@ def debug(video_file):
       org_hd_vid = hd_trim 
    else:
       org_hd_vid = None 
-      print("HD TRIM FILE NOT FOUND!")
-      md['arc_fail'] = "HD TRIM FILE NOT FOUND"
+      print("HD TRIM FILE NOT FOUND!", hd_trim)
+      md['arc_fail'] = "HD TRIM FILE NOT FOUND" + str(hd_trim)
       save_json_file(old_meteor_json_file, md)
       return()
 
