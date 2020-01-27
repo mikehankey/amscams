@@ -47,10 +47,19 @@ if(typeof all_variables['json_file']!='undefined') {
          
 
          console.log("ALL DATA");
+         console.log(all_data)
 
          // We get the corresponding graph layout definition
          if(typeof all_variables['json_file']!='undefined') {
             console.log("ALL DATA");
+            $.getScript(all_variables['json_file'], function( data, textStatus, jqxhr ) {
+               console.log( data ); // Data returned
+               console.log( textStatus ); // Success
+               console.log( jqxhr.status ); // 200
+               console.log( "Load was performed." );
+            });
+
+            )
          }
 
       }
