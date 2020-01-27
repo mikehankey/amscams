@@ -18,6 +18,22 @@ DEFAULT_PATH_TO_GRAPH = "/pycgi/plot.html?json_file={JSONPATH}&graph_config={GRA
 # Predefined GRAPH LAYOUT
 LINETREND_GRAPHICS = '/pycgi/dist/graphics/trendline.json'
 
+
+
+# Create 2 different plots when possible
+# 1- X,Y position 
+# 2- Light Curves
+def make_basic_plots(meteor_json_file, analysed_name):
+   plots = ''
+   if 'frames' in meteor_json_file:   
+      if len(meteor_json_file['frames']) > 0:  
+         # Main x,y plot + Curve Light
+         plots = make_xy_point_plot(meteor_json_file['frames'],analysed_name))
+         #+ " " + make_light_curve(meteor_json_file['frames'],analysed_name)
+   
+   return plots
+
+
 # Basic X,Y Plot with regression (actually a "trending line")
 def make_xy_point_plot(frames,analysed_name):
 
@@ -146,18 +162,6 @@ def poly_fit_points(poly_x,poly_y, z = None):
 
    return(poly_x, new_ys)
  
-
-# Create 2 different plots when possible
-# 1- X,Y position 
-# 2- Light Curves
-def make_basic_plots(meteor_json_file, analysed_name):
-   plots = ''
-   if 'frames' in meteor_json_file:   
-      if len(meteor_json_file['frames']) > 0:  
-         # Main x,y plot + Curve Light
-         plots = make_xy_point_plot(meteor_json_file['frames'],analysed_name)+ " " + make_light_curve(meteor_json_file['frames'],analysed_name)
-   
-   return plots
 
 
 # Create 3D Light Curve Graph
