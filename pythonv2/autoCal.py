@@ -635,16 +635,17 @@ def get_az_el_from_arc(arc_file):
    azs = []
    els = []
    ints = []
-   for frame in arc_data['frames']:
-      az = frame['az']
-      el = frame['el']
-      if "intensity" in frame:
-         intensity = frame['intensity']
-      else:
-         intensity = 0
-      azs.append(az)
-      els.append(el)
-      ints.append(intensity)
+   if arc_data != 0:
+      for frame in arc_data['frames']:
+         az = frame['az']
+         el = frame['el']
+         if "intensity" in frame:
+            intensity = frame['intensity']
+         else:
+            intensity = 0
+         azs.append(az)
+         els.append(el)
+         ints.append(intensity)
    return(azs,els,ints)
 
 def find_best_fov(meteor_json_file, json_conf):
