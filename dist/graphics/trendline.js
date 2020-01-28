@@ -10,16 +10,7 @@ var trace1 =  {
       yaxis: "y1",
       mode: 'lines+markers'
 };
-
-var trace2 = { 
-   mode: 'lines',
-   type: 'scatter',  
-   yaxis: "x2",
-   line: {
-      color: 'rgba(213,42,224,.5)' 
-   }
-};
-
+  
 var layout = {
    title: { 
       font: {  color:'#ffffff' },
@@ -53,7 +44,7 @@ var layout = {
          autorange: "reversed" 
    },
    showlegend: false }; 
-   
+
 // Create all Colors (same than on the canvas)
 var rainbow = new Rainbow();
 rainbow.setNumberRange(0, 255);

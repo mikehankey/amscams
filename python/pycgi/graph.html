@@ -54,30 +54,10 @@ if(typeof all_variables['json_file']!='undefined') {
                trace1.x = all_data.x1_vals;
                trace1.y = all_data.y1_vals; 
                trace1.name = all_data.title1;
-               layout.title.text =  all_data.title;
+               layout.title.text =  all_data.title; 
    
                Plotly.newPlot("graph", [trace1], layout, {responsive: true});
-
-               /*
-               if (all_data.x2_vals != false && all_data.y2_vals != false) {
-
-                  var trace2 = {
-                     x: all_data.x2_vals,
-                     y: all_data.y2_vals,
-                     mode: 'lines',
-                     type: 'scatter', 
-                     name: all_data.title2,
-                     yaxis: "x2",
-                     line: {
-                        color: 'rgba(213,42,224,.5)' 
-                     }
-                  };
-
-
-                  // We add the 2nd "trace"
-                  Plotly.addTraces("graph",trace2 );
-               } 
-               */
+ 
 
             });
 
