@@ -48,7 +48,7 @@ var layout = {
          title: { font: {  size: 15, color: '#b1b1b1' }}, 
          tickfont: { color: TICK_FONT_COLOR},
          scaleanchor: "x",
-         scaleratio: 1,
+         scaleratio: .5,
          autorange: "reverse"
    },
    showlegend: false };
