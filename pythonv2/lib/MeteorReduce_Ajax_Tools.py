@@ -58,8 +58,7 @@ def create_thumb(form):
    y = int(form.getvalue('y'))
    frame_id = int(form.getvalue('fn')) # HD ID
    sd_frame_id = int(form.getvalue('sd_fn')) # SD ID
- 
-
+  
    json_file = form.getvalue('json_file')
 
    # Analyse the name
@@ -144,16 +143,14 @@ def update_frame(form, AjaxDirect = False):
    destination_cropped_frame = get_thumb(analysed_name,sd_fn)  
 
    
-   #print("IN UPDATE FRAME")
-   #print("SD " + str(sd_fn))
-   #print("HD " + str(fn))
-   #print("ORG HD FRAME ")
-   #print(original_HD_frame)
-   #print("Destination_cropped_frame")
-   #print(destination_cropped_frame)
-
-
-
+   print("IN UPDATE FRAME")
+   print("SD " + str(sd_fn))
+   print("HD " + str(fn))
+   print("ORG HD FRAME ")
+   print(original_HD_frame)
+   print("Destination_cropped_frame")
+   print(destination_cropped_frame)
+ 
    thumb_path = ''
    
    # SWITCH TO SD #

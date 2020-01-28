@@ -211,9 +211,7 @@ def new_crop_thumb(frame,x,y,dest,HD = True):
    # Debug
    cgitb.enable()
    img = cv2.imread(frame) 
-     
-   
-
+      
    # We shouldn't have the need for that... (check with VIDEO_VARS values and the way we're creating the frames from the video)
    if(HD is True):
       org_w_HD = HD_W
@@ -282,8 +280,7 @@ def new_crop_thumb(frame,x,y,dest,HD = True):
   
    return dest
 
-
-
+ 
 
 
 # Create a preview (small jpg thumbs for the listings)

@@ -4,4 +4,3 @@ var trace1 =  {
       xaxis: "x1",
       yaxis: "y1" 
 };
- 
