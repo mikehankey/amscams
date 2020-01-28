@@ -8,7 +8,7 @@ var trace1 =  {
       marker : { symbol: 'square-open-dot', size:10  },
       xaxis: "x1",
       yaxis: "y1",
-      mode: 'lines+markers'
+      mode: 'markers'
 };
   
 var layout = {
@@ -42,7 +42,8 @@ var layout = {
          scaleratio: 1,
          autorange: "reversed" 
    },
-   showlegend: false }; 
+   showlegend: true 
+}; 
 
 // Create all Colors (same than on the canvas)
 var rainbow = new Rainbow();
