@@ -61,3 +61,6 @@ var step = parseInt(255/total);
 for (var i = 0; i <= 255; i = i + step) {
    all_colors.push('rgba('+hexToRgb(rainbow.colourAt(i))+')'); 
 }
+
+var data = [trace1];
+Plotly.newPlot("graph", data, layout, {responsive: true});
