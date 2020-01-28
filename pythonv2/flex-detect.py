@@ -9091,6 +9091,10 @@ def make_preview_image(json_file):
          hd_stack = None
          hd_stack_img = None
 
+   if hd_stack is not None:
+      if cfe(hd_stack) == 0:
+         hd_stack = None
+
    if sd_stack is None or hd_stack is None:
       print("MISSING STACKS!", sd_stack, hd_stack)
       if sd_stack is not None:
@@ -9179,12 +9183,21 @@ def make_preview_image(json_file):
          exit()
    
 
-   if hd_stack is not None:
+   if hd_stack is not None and hd_stack_img is not None:
       print(cy1,cy2,cx1,cx2)
       prev_img = hd_stack_img[cy1:cy2,cx1:cx2]
-
-      prev_img = cv2.resize(prev_img, (240,135))
-      prev_img_full = cv2.resize(hd_stack_img, (240,135))
+      print("HD STACK:", hd_stack)
+      print("SD STACK:", sd_stack)
+      try:
+         prev_img = cv2.resize(prev_img, (240,135))
+         prev_img_full = cv2.resize(hd_stack_img, (240,135))
+      except:
+         sd_stack_img = cv2.imread(sd_stack, 0)
+         hd_stack_img = cv2.resize(sd_stack_img, (1920,1080))
+         print(sd_stack_img.shape)
+         prev_img = hd_stack_img[cy1:cy2,cx1:cx2]
+         prev_img = cv2.resize(prev_img, (240,135))
+         prev_img_full = cv2.resize(sd_stack_img, (240,135))
       cv2.rectangle(hd_stack_img, (cx1, cy1), (cx2, cy2), (255,255,255), 1, cv2.LINE_AA)
       #cv2.imshow('pepe', prev_img)
       #cv2.waitKey(30)
