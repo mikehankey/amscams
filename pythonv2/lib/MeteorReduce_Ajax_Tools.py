@@ -139,7 +139,14 @@ def update_frame(form, AjaxDirect = False):
    y = form.getvalue("y")
  
    # Recreate the corresponding thumb
-   original_HD_frame = get_HD_frame(analysed_name,fn)   
+   original_HD_frame = get_HD_frame(analysed_name,fn) 
+
+
+   print("ANALYSED NAME")
+   print(analysed_name)
+   print("SD FN")
+   print(str(sd_fn))
+
    destination_cropped_frame = get_thumb(analysed_name,sd_fn)  
 
    
