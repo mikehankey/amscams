@@ -7,7 +7,8 @@ var trace1 =  {
       type: 'scatter',
       marker : { symbol: 'square-open-dot', size:10  },
       xaxis: "x1",
-      yaxis: "y1" 
+      yaxis: "y1",
+      mode: 'lines+markers'
 };
 
 var trace2 = { 
@@ -67,3 +68,7 @@ for (var i = 0; i <= 255; i = i + step) {
 
 // We had the color scale for X
 trace1.marker.color  =  all_colors;
+
+
+
+
