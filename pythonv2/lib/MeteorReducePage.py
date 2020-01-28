@@ -23,7 +23,7 @@ def create_tab_and_content(extra_tabs,extra_content,id,name,html_content):
    if(html_content!=''):
 
       #We create the tab
-      extra_tabs  +=  '<li class="nav-item"><a class="nav-link" id="'+id+'-l" data-toggle="tab" href="#'+id+'-tab" role="tab" aria-controls="'+id+'-" aria-selected="true">'+name+'</a></li>'
+      extra_tabs  +=  '<li class="nav-item"><a class="nav-link load-frames-on-active" id="'+id+'-l" data-toggle="tab" href="#'+id+'-tab" role="tab" aria-controls="'+id+'-" aria-selected="true">'+name+'</a></li>'
  
       #We create the new content
       extra_content += '<div class="tab-pane fade" id="'+id+'-tab" role="tabpanel" aria-labelledby="'+id+'-tab-l">'+html_content+'</div>'
