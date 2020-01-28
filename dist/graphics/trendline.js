@@ -59,3 +59,13 @@ for (var i = 0; i <= 255; i = i + step) {
 
 // We had the color scale for X
 trace1.marker.color  =  all_colors; 
+
+
+var trace2 = {
+   mode: 'lines',
+   type: 'scatter', 
+   yaxis: "x2",
+   line: {
+      color: 'rgba(213,42,224,.5)' 
+   }
+};
