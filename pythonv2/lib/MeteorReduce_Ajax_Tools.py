@@ -168,7 +168,8 @@ def update_frame(form, AjaxDirect = False):
       print("IT IS A CREATION")
       destination_cropped_frame = []
       destination_cropped_frame.append(get_cache_path(analysed_name,"cropped")+"*"+EXT_CROPPED_FRAMES+str(fn)+".png")
-
+      print("<br>DESTINATION:<br>")
+      print(destination_cropped_frame)
 
    # We try to update the json file
    if "frames" in mr: 
