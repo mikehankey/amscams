@@ -53,8 +53,43 @@ if(typeof all_variables['json_file']!='undefined') {
                trace1.mode = all_data.linetype1;
                trace1.name = all_data.title1;
                layout.title.text =  all_data.title;
+
+               // If it's the same ratio on the SERIE 1
+               if(all_data.s_ratio1) {
+                  layout.yaxis.scaleanchor = "x";
+                  layout.yaxis.scaleratio = 1;  
+               }
+
+               // If we reverse the Y1 axis
+               if(all_data.y1_reverse) {
+                  layout.yaxis.autorange = 'reversed';
+               }
+ 
+
+
                var data = [trace1];
                Plotly.newPlot("graph", data, layout, {responsive: true});
+
+
+               if (all_data.x2_vals != false && all_data.y2_vals != false) {
+
+                  var trace2 = {
+                     x: all_data.x2_vals,
+                     y: all_data.y2_vals,
+                     mode: 'lines',
+                     type: 'scatter', 
+                     name: all_data.title2,
+                     yaxis: "x2",
+                     line: {
+                        color: 'rgba(213,42,224,.5)' 
+                     }
+                  };
+
+
+                  // We add the 2nd "trace"
+                  Plotly.addTraces("graph",trace2 );
+               } 
+               
             });
 
          
