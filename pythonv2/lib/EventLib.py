@@ -115,10 +115,11 @@ def EventsMain(json_conf, form):
       row += "<tr><td>" + slink  + event_id + "</a></td><td>"
       for i in range(0, len(event['stations'])):
          arc_file = event['arc_files'][i]
+         old_file = event['files'][i]
          station = event['stations'][i]
          if arc_file == "pending": 
+            link = "<a href=webUI.py?cmd=goto&old=1&file=" + old_file + "&station_id=" + station + ">"
             obs_desc = event['stations'][i] + "-pending"
-            link = ""
          else:
             el = arc_file.split("_")[7]
             other = el.split("-")
