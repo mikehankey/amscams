@@ -42,7 +42,9 @@ if(typeof all_variables['json_file']!='undefined') {
    $.ajax({
       dataType: "json",
       url:  all_variables['json_file'],
-      success: function(all_data) { 
+      success: function(ddd) { 
+
+         all_data = ddd;
         
          // We get the corresponding graph layout definition
          if(typeof all_variables['graph_config']!='undefined') {
