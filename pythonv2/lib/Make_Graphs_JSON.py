@@ -19,7 +19,7 @@ DEFAULT_PATH_TO_GRAPH = "/pycgi/graph.html?json_file={JSONPATH}&graph_config={GR
 PATH_TO_GRAPH_LAYOUTS = "/pycgi/dist/graphics/"
 
 # Predefined GRAPH LAYOUT
-LINETREND_GRAPHICS = PATH_TO_GRAPH_LAYOUTS + 'trendline.js'
+TRENDLINE_GRAPHICS = PATH_TO_GRAPH_LAYOUTS + 'trendline.js'
 
 
 
@@ -72,7 +72,7 @@ def make_xy_point_plot(frames,analysed_name):
           'title2': 'Fit val',
           's_ratio1':1},
           'xy',
-          LINETREND_GRAPHICS)
+          TRENDLINE_GRAPHICS)
    return ''
 
 

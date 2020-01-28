@@ -45,7 +45,10 @@ var layout = {
          gridcolor: GRID_COLOR, 
          linecolor: V_LINE_COLOR,
          title: { font: {  size: 15, color: '#b1b1b1' }}, 
-         tickfont: { color: TICK_FONT_COLOR} 
+         tickfont: { color: TICK_FONT_COLOR},
+         scaleanchor: "x",
+         scaleratio: 1,
+         autorange: "reverse"
    },
    showlegend: false };
 
