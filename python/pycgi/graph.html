@@ -55,6 +55,8 @@ if(typeof all_variables['json_file']!='undefined') {
                trace1.y = all_data.y1_vals; 
                trace1.name = all_data.title1;
                layout.title.text =  all_data.title; 
+
+               console.log("TRACE1 NAME " + trace1.name);
    
                Plotly.newPlot("graph", [trace1], layout, {responsive: true});
  
