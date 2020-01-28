@@ -52,12 +52,10 @@ if(typeof all_variables['json_file']!='undefined') {
 
                // When the graph config is loaded
                trace1.x = all_data.x1_vals;
-               trace1.y = all_data.y1_vals;
-               trace1.mode = all_data.linetype1;
+               trace1.y = all_data.y1_vals; 
                trace1.name = all_data.title1;
                layout.title.text =  all_data.title;
-  
-  
+   
                Plotly.newPlot("graph", [trace1], layout, {responsive: true});
 
                /*
