@@ -67,11 +67,10 @@ if(typeof all_variables['json_file']!='undefined') {
                if(all_data.y1_reverse==1) {
                   layout.yaxis.autorange = 'reversed';
                }
- 
-               var data = [trace1];
-               Plotly.newPlot("graph", data, layout, {responsive: true});
+  
+               Plotly.newPlot("graph", [trace1], layout, {responsive: true});
 
-
+               /*
                if (all_data.x2_vals != false && all_data.y2_vals != false) {
 
                   var trace2 = {
@@ -90,6 +89,7 @@ if(typeof all_variables['json_file']!='undefined') {
                   // We add the 2nd "trace"
                   Plotly.addTraces("graph",trace2 );
                } 
+               */
 
             });
 
