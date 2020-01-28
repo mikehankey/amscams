@@ -188,6 +188,7 @@ def get_thumb(analysed_name,frame_id):
    print(get_cache_path(analysed_name,"cropped")+"*"+EXT_CROPPED_FRAMES+str(frame_id)+".png")
    print("<br>GLOB:<br/>")
    print(glob.glob(get_cache_path(analysed_name,"cropped")+"*"+EXT_CROPPED_FRAMES+str(frame_id)+".png") )
+   sys.exit(0)
    return glob.glob(get_cache_path(analysed_name,"cropped")+"*"+EXT_CROPPED_FRAMES+str(frame_id)+".png") 
 
 # Get the thumbs (cropped frames) for a meteor detection
