@@ -42,8 +42,7 @@ if(typeof all_variables['json_file']!='undefined') {
    $.ajax({
       dataType: "json",
       url:  all_variables['json_file'],
-      success: function(data) {
-         all_data = data;
+      success: function(all_data) { 
         
          // We get the corresponding graph layout definition
          if(typeof all_variables['graph_config']!='undefined') {
@@ -69,6 +68,8 @@ if(typeof all_variables['json_file']!='undefined') {
                if(all_data.y1_reverse==1) {
                   layout.yaxis.autorange = 'reversed';
                }
+
+               console.log(all_data)
    
                var data = [trace1];
                Plotly.newPlot("graph", data, layout, {responsive: true});
