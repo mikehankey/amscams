@@ -42,7 +42,13 @@ var layout = {
          scaleratio: 1,
          autorange: "reversed" 
    },
-   showlegend: true 
+   showlegend: true,
+   legend: {
+      traceorder: 'normal',
+      font: {
+       color: '#fff'
+      } 
+    }
 }; 
 
 // Create all Colors (same than on the canvas)
