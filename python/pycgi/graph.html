@@ -51,7 +51,7 @@ if(typeof all_variables['json_file']!='undefined') {
          // We get the corresponding graph layout definition
          if(typeof all_variables['json_file']!='undefined') {
             console.log(all_variables['json_file']);
-            $.getScript(all_variables['json_file'], function( d, textStatus, jqxhr ) {
+            $.getScript(all_variables['json_file']+'?w=', function( d, textStatus, jqxhr ) {
                console.log( "Load was performed." );
             });
 
