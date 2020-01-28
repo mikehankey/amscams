@@ -64,7 +64,7 @@ def make_xy_point_plot(frames,analysed_name):
          analysed_name,
          {'title':'XY Points and Trendline',
           'x1_vals':  xs,
-          'y1_vals': ys),
+          'y1_vals': ys,
           'x2_vals': tx1,
           'y2_vals': ty1,
           'y1_reverse':'1',
