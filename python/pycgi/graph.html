@@ -44,8 +44,7 @@ if(typeof all_variables['json_file']!='undefined') {
       url:  all_variables['json_file'],
       success: function(data) {
          all_data = data;
-       
-
+        
          // We get the corresponding graph layout definition
          if(typeof all_variables['graph_config']!='undefined') {
             $.getScript(all_variables['graph_config'], function( d, textStatus, jqxhr ) {
@@ -53,6 +52,8 @@ if(typeof all_variables['json_file']!='undefined') {
                trace1.y = all_data.y1_vals;
                trace1.mode = all_data.linetype1;
                trace1.name = all_data.title1 
+               var data = [trace1];
+               Plotly.newPlot("graph", data, layout, {responsive: true});
             });
 
          
