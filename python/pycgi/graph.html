@@ -60,14 +60,14 @@ if(typeof all_variables['json_file']!='undefined') {
                trace1.marker.color  =  all_colors;
 
                // If it's the same ratio on the SERIE 1
-               if(all_data.s_ratio1) {
+               if(all_data.s_ratio1==1) {
                   layout.yaxis.scaleanchor = "x";
                   layout.yaxis.scaleratio = 1;  
                }
 
                // If we reverse the Y1 axis
-               if(all_data.y1_reverse=='1') {
-                 
+               if(all_data.y1_reverse==1) {
+                  layout.yaxis.autorange = 'reversed';
                }
    
                var data = [trace1];

@@ -67,10 +67,10 @@ def make_xy_point_plot(frames,analysed_name):
           'y1_vals': ys,
           'x2_vals': tx1,
           'y2_vals': ty1,
-          'y1_reverse':'1',
+          'y1_reverse':1,
           'title1': 'Meteor pos.',
           'title2': 'Fit val',
-          's_ratio1':'1'},
+          's_ratio1':1},
           'xy',
           LINETREND_GRAPHICS)
    return ''
