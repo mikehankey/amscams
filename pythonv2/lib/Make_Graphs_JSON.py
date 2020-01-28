@@ -69,7 +69,7 @@ def make_xy_point_plot(frames,analysed_name):
           'y2_vals': ty1,
           'y1_reverse':1,
           'title1': 'Meteor pos.',
-          'title2': 'Fit val',
+          'title2': 'Trend. val.',
           's_ratio1':1},
           'xy',
           TRENDLINE_GRAPHICS)
