@@ -142,20 +142,20 @@ def update_frame(form, AjaxDirect = False):
    original_HD_frame = get_HD_frame(analysed_name,fn) 
 
 
-   print("ANALYSED NAME")
+   print("ANALYSED NAME<br/>")
    print(analysed_name)
-   print("SD FN")
+   print("<br/>SD FN<br/>")
    print(str(sd_fn))
 
    destination_cropped_frame = get_thumb(analysed_name,sd_fn)  
 
    
-   print("IN UPDATE FRAME")
-   print("SD " + str(sd_fn))
-   print("HD " + str(fn))
-   print("ORG HD FRAME ")
+   print("IN UPDATE FRAME<br/>")
+   print("<br/>SD " + str(sd_fn))
+   print("<br/>HD " + str(fn))
+   print("<br/>ORG HD FRAME<br/>")
    print(original_HD_frame)
-   print("Destination_cropped_frame")
+   print("<br/>Destination_cropped_frame<br/>")
    print(destination_cropped_frame)
  
    thumb_path = ''

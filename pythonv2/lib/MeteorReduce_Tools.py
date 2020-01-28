@@ -184,11 +184,6 @@ def get_frame_time(json,frame_id,analysed_name):
 
 # Get Specific cropped Frames from a frame ID and an analysed name
 def get_thumb(analysed_name,frame_id):
-   print(" IN GET THUMB<br>")
-   print(get_cache_path(analysed_name,"cropped")+"*"+EXT_CROPPED_FRAMES+str(frame_id)+".png")
-   print("<br>GLOB:<br/>")
-   print(glob.glob(get_cache_path(analysed_name,"cropped")+"*"+EXT_CROPPED_FRAMES+str(frame_id)+".png") )
-   sys.exit(0)
    return glob.glob(get_cache_path(analysed_name,"cropped")+"*"+EXT_CROPPED_FRAMES+str(frame_id)+".png") 
 
 # Get the thumbs (cropped frames) for a meteor detection
