@@ -64,11 +64,10 @@ if(typeof all_variables['json_file']!='undefined') {
                }
 
                // If we reverse the Y1 axis
-               if(all_data.y1_reverse) {
+               if(all_data.y1_reverse=='1') {
                   layout.yaxis.autorange = 'reversed';
                }
- 
-
+  
 
                var data = [trace1];
                Plotly.newPlot("graph", data, layout, {responsive: true});
