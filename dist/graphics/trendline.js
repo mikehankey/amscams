@@ -38,8 +38,7 @@ var layout = {
          gridcolor: GRID_COLOR, 
          linecolor: H_LINE_COLOR,  
          title: { font: { size: 15, color: '#b1b1b1' } },
-         tickfont: { color: TICK_FONT_COLOR},
-         autorange: "reverse"
+         tickfont: { color: TICK_FONT_COLOR}
    },
    yaxis:{
          zerolinecolor: V_LINE_COLOR, 
@@ -49,7 +48,8 @@ var layout = {
          title: { font: {  size: 15, color: '#b1b1b1' }}, 
          tickfont: { color: TICK_FONT_COLOR},
          scaleanchor: "x",
-         scaleratio: 1 
+         scaleratio: 1,
+         autorange: "reverse" 
    },
    showlegend: false };
 
