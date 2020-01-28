@@ -18,7 +18,7 @@ function hexToRgb(hex) {
 }
  
 
-// GET ALL QUERY PARAMETERS
+// GET ALL QUERY PARAMETERS 
 function getQueryParams(qs) {
     qs = qs.split("+").join(" ");
     var params = {},
@@ -44,18 +44,14 @@ if(typeof all_variables['json_file']!='undefined') {
       url:  all_variables['json_file'],
       success: function(data) {
          all_data = data;
-         
-
+          
          console.log("ALL DATA");
          console.log(all_data)
 
          // We get the corresponding graph layout definition
          if(typeof all_variables['json_file']!='undefined') {
             console.log("ALL DATA");
-            $.getScript(all_variables['json_file'], function( data, textStatus, jqxhr ) {
-               console.log( data ); // Data returned
-               console.log( textStatus ); // Success
-               console.log( jqxhr.status ); // 200
+            $.getScript(all_variables['json_file'], function( d, textStatus, jqxhr ) {
                console.log( "Load was performed." );
             });
 
