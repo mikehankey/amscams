@@ -48,6 +48,8 @@ if(typeof all_variables['json_file']!='undefined') {
          // We get the corresponding graph layout definition
          if(typeof all_variables['graph_config']!='undefined') {
             $.getScript(all_variables['graph_config'], function( d, textStatus, jqxhr ) {
+
+               // When the graph config is loaded
                trace1.x = all_data.x1_vals;
                trace1.y = all_data.y1_vals;
                trace1.mode = all_data.linetype1;
@@ -65,10 +67,9 @@ if(typeof all_variables['json_file']!='undefined') {
 
                // If we reverse the Y1 axis
                if(all_data.y1_reverse=='1') {
-                  layout.yaxis.autorange = 'reversed';
+                 
                }
-  
-
+   
                var data = [trace1];
                Plotly.newPlot("graph", data, layout, {responsive: true});
 
