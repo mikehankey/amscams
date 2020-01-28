@@ -12,7 +12,7 @@ from lib.VIDEO_VARS import HD_W, HD_H
 from lib.MeteorReduce_Tools import get_cache_path, does_cache_exist
 
 
-DEFAULT_IFRAME = "<iframe width='100%' height='517' style='margin:.5rem auto' frameborder='false' data-src='{CONTENT}'></iframe>"
+DEFAULT_IFRAME = "<div class='load_if'><iframe width='100%' height='517' style='margin:.5rem auto' frameborder='false' data-src='{CONTENT}'></iframe></div>"
 DEFAULT_PATH_TO_GRAPH = "/pycgi/graph.html?json_file={JSONPATH}&graph_config={GRAPH_CONFIG}"
 PATH_TO_GRAPH_LAYOUTS = "/pycgi/dist/graphics/"
 
