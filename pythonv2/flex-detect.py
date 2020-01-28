@@ -4167,9 +4167,9 @@ def unq_points(object):
 def big_cnt_test(object,hd=0):
    sizes = []
    big = 0
-   sz_thresh = 10
+   sz_thresh = 20
    if hd == 1:
-      sz_thresh = 20
+      sz_thresh = 40
 
    for i in range(0, len(object['ofns'])):
       w = object['ows'][i]
@@ -7937,6 +7937,7 @@ def debug2(video_file):
    if "arc_fail" in md:
       print("PREV ARC FAIL:", md['arc_fail'])
       if md['arc_fail'] == "HD detection failed." or md['arc_fail'] == "No HD trim file exists.":
+         print("TRY TO FIX!")
          new_video_file = video_file.replace(".mp4", "-HD-meteor.mp4")
          if cfe(new_video_file) == 0:
             cmd = "/usr/bin/ffmpeg -i " + video_file + " -vf scale=1920:1080 " + new_video_file 
@@ -7962,7 +7963,6 @@ def debug2(video_file):
 
    # load SD frames
    sd_frames,sd_color_frames,sd_subframes,sd_sum_vals,sd_max_vals = load_frames_fast(video_file, json_conf, 0, 0, [], 1,[])
-
 
    # load HD frames
    if hd_trim is not None and hd_trim != 0:
