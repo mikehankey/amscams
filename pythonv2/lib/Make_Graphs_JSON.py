@@ -106,7 +106,7 @@ def create_iframe_to_graph(analysed_name,data,name,graph_config,clear_cache=Fals
       if(path_to_json is not None):
          path_to_json = path_to_json[0]
  
-
+   # Create iframe src
    src =  DEFAULT_PATH_TO_GRAPH.replace('{JSONPATH}', path_to_json)
    src = src.replace('{GRAPH_CONFIG}',graph_config)
 

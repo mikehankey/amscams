@@ -56,10 +56,7 @@ if(typeof all_variables['json_file']!='undefined') {
                trace1.mode = all_data.linetype1;
                trace1.name = all_data.title1;
                layout.title.text =  all_data.title;
-
-               // We had the color scale for X
-               trace1.marker.color  =  all_colors;
-
+ 
                // If it's the same ratio on the SERIE 1
                if(all_data.s_ratio1==1) {
                   layout.yaxis.scaleanchor = "x";
@@ -70,9 +67,7 @@ if(typeof all_variables['json_file']!='undefined') {
                if(all_data.y1_reverse==1) {
                   layout.yaxis.autorange = 'reversed';
                }
-
-               console.log(all_data)
-   
+ 
                var data = [trace1];
                Plotly.newPlot("graph", data, layout, {responsive: true});
 
