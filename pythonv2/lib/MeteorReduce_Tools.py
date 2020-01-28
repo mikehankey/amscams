@@ -184,6 +184,10 @@ def get_frame_time(json,frame_id,analysed_name):
 
 # Get Specific cropped Frames from a frame ID and an analysed name
 def get_thumb(analysed_name,frame_id):
+   print(" IN GET THUMB<br>")
+   print(get_cache_path(analysed_name,"cropped")+"*"+EXT_CROPPED_FRAMES+str(frame_id)+".png")
+   print("<br>")
+   print(glob.glob(get_cache_path(analysed_name,"cropped")+"*"+EXT_CROPPED_FRAMES+str(frame_id)+".png") )
    return glob.glob(get_cache_path(analysed_name,"cropped")+"*"+EXT_CROPPED_FRAMES+str(frame_id)+".png") 
 
 # Get the thumbs (cropped frames) for a meteor detection
@@ -211,7 +215,9 @@ def new_crop_thumb(frame,x,y,dest,HD = True):
    # Debug
    cgitb.enable()
    img = cv2.imread(frame) 
-      
+     
+   
+
    # We shouldn't have the need for that... (check with VIDEO_VARS values and the way we're creating the frames from the video)
    if(HD is True):
       org_w_HD = HD_W
@@ -280,7 +286,8 @@ def new_crop_thumb(frame,x,y,dest,HD = True):
   
    return dest
 
- 
+
+
 
 
 # Create a preview (small jpg thumbs for the listings)
