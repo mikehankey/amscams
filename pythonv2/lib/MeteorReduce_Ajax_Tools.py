@@ -142,21 +142,21 @@ def update_frame(form, AjaxDirect = False):
    original_HD_frame = get_HD_frame(analysed_name,fn) 
 
 
-   print("ANALYSED NAME<br/>")
-   print(analysed_name)
-   print("<br/>SD FN<br/>")
-   print(str(sd_fn))
+   #print("ANALYSED NAME<br/>")
+   #print(analysed_name)
+   #print("<br/>SD FN<br/>")
+   #print(str(sd_fn))
 
    destination_cropped_frame = get_thumb(analysed_name,sd_fn)  
 
    
-   print("IN UPDATE FRAME<br/>")
-   print("<br/>SD " + str(sd_fn))
-   print("<br/>HD " + str(fn))
-   print("<br/>ORG HD FRAME<br/>")
-   print(original_HD_frame)
-   print("<br/>Destination_cropped_frame<br/>")
-   print(destination_cropped_frame)
+   #print("IN UPDATE FRAME<br/>")
+   #print("<br/>SD " + str(sd_fn))
+   #print("<br/>HD " + str(fn))
+   #print("<br/>ORG HD FRAME<br/>")
+   #print(original_HD_frame)
+   #print("<br/>Destination_cropped_frame<br/>")
+   #print(destination_cropped_frame)
  
    thumb_path = ''
    
@@ -165,11 +165,11 @@ def update_frame(form, AjaxDirect = False):
 
    if(len(destination_cropped_frame)==0):
       # It's a creation
-      print("IT IS A CREATION")
+      #print("IT IS A CREATION")
       destination_cropped_frame = []
       destination_cropped_frame.append(get_cache_path(analysed_name,"cropped")+analysed_name['name_w_ext']+EXT_CROPPED_FRAMES+str(fn)+".png")
-      print("<br>DESTINATION:<br>")
-      print(destination_cropped_frame)
+      #print("<br>DESTINATION:<br>")
+      #print(destination_cropped_frame)
 
    # We try to update the json file
    if "frames" in mr: 
