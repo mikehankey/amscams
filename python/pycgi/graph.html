@@ -46,12 +46,15 @@ if(typeof all_variables['json_file']!='undefined') {
          all_data = data;
           
          console.log("ALL DATA");
-         console.log(all_data)
+         console.log(all_data);
+
+         console.log("NOW LOAD SCRIPT:");
+         console.log(all_variables['json_file'])
 
          // We get the corresponding graph layout definition
          if(typeof all_variables['json_file']!='undefined') {
             console.log(all_variables['json_file']);
-            $.getScript(all_variables['json_file']+'?w=', function( d, textStatus, jqxhr ) {
+            $.getScript(all_variables['json_file'], function( d, textStatus, jqxhr ) {
                console.log( "Load was performed." );
             });
 
