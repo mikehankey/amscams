@@ -50,15 +50,14 @@ var layout = {
    showlegend: false };
 
 
+// Create all Colors (same than on the canvas)
+var rainbow = new Rainbow();
+rainbow.setNumberRange(0, 255);
 
-// If it's the same ratio on the SERIE 1
-if(all_data.s_ratio1) {
-   layout.yaxis.scaleanchor = "x";
-   layout.yaxis.scaleratio = 1;  
-}
- 
+var all_colors = [];
+var total = all_data.x1_vals.length; 
+var step = parseInt(255/total);  
 
-// If we reverse the Y1 axis
-if(all_data.y1_reverse) {
-   layout.yaxis.autorange = 'reversed';
+for (var i = 0; i <= 255; i = i + step) {
+   all_colors.push('rgba('+hexToRgb(rainbow.colourAt(i))+')'); 
 }

@@ -49,8 +49,10 @@ if(typeof all_variables['json_file']!='undefined') {
          // We get the corresponding graph layout definition
          if(typeof all_variables['graph_config']!='undefined') {
             $.getScript(all_variables['graph_config'], function( d, textStatus, jqxhr ) {
-               // Build the graph now
-               
+               trace1.x = all_data.x1_vals;
+               trace1.y = all_data.y1_vals;
+               trace1.mode = all_data.linetype1;
+               trace1.name = all_data.title1 
             });
 
          
