@@ -186,7 +186,7 @@ def get_frame_time(json,frame_id,analysed_name):
 def get_thumb(analysed_name,frame_id):
    print(" IN GET THUMB<br>")
    print(get_cache_path(analysed_name,"cropped")+"*"+EXT_CROPPED_FRAMES+str(frame_id)+".png")
-   print("<br>")
+   print("<br>GLOB:<br/>")
    print(glob.glob(get_cache_path(analysed_name,"cropped")+"*"+EXT_CROPPED_FRAMES+str(frame_id)+".png") )
    return glob.glob(get_cache_path(analysed_name,"cropped")+"*"+EXT_CROPPED_FRAMES+str(frame_id)+".png") 
 
