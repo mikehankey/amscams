@@ -165,6 +165,7 @@ def update_frame(form, AjaxDirect = False):
 
    if(len(destination_cropped_frame)==0):
       # It's a creation
+      print("IT IS A CREATION")
       destination_cropped_frame = []
       destination_cropped_frame.append(get_cache_path(analysed_name,"cropped")+"*"+EXT_CROPPED_FRAMES+str(fn)+".png")
 
