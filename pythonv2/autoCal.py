@@ -549,6 +549,7 @@ def meteor_index(json_conf, day = None, extra_cmd = ""):
    jobs2 = []
    for meteor in sorted(meteor_data, reverse=True):
       day = meteor.split("/")[4]
+      event_start_time = None
       if "reduced" not in meteor and "events" not in meteor and "framedata" not in meteor:
          if day not in meteor_index:
             meteor_index[day] = {}
@@ -571,7 +572,7 @@ def meteor_index(json_conf, day = None, extra_cmd = ""):
             print("OBJ:", obj)
             #only do this on the meteor object!)
             # add event start time estimate only if arc time is not set!
-            if "archive_file" not in meteor_data:
+            if event_start_time is None:
                trim_num = get_trim_num(meteor)
                print("TRIM NUM:", trim_num)
                extra_start_file_sec = int(trim_num) / 25
@@ -681,6 +682,7 @@ def meteor_index(json_conf, day = None, extra_cmd = ""):
    exit()
 
 def get_az_el_from_arc(arc_file):
+   event_start_time = None
    arc_data = load_json_file(arc_file)
    azs = []
    els = []
