@@ -18,8 +18,10 @@ def get_json_for_3Dlight_curve(frames,analysed_name):
    all_y = []
    for frame in frames:
       if('x' in frame):
+         print(frame['x'])
          all_x.append(frame['x'])
       if('y' in frame):
+         print(frame['y'])
          all_y.append(frame['y'])   
 
    try:
