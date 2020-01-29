@@ -27,7 +27,6 @@ def make_plot(graph_name,meteor_json_data,analysed_name,clear_cache):
    # Do we have a JSON ready this graph?
    path_to_json = get_graph_file(meteor_json_data,analysed_name,graph_name,clear_cache)
   
-  
    if(path_to_json is None or cfe(path_to_json)==0):
 
       if(graph_name=="xy"):
@@ -45,7 +44,24 @@ def make_plot(graph_name,meteor_json_data,analysed_name,clear_cache):
                   save_json_file(path_to_json,json_graph_content)
 
                   return create_iframe_to_graph(analysed_name,graph_name,path_to_json,TRENDLINE_GRAPHICS)
- 
+
+      elif(graph_name=='curvelight'):
+         # Get the data
+         if('frames' in meteor_json_data):
+            if len(meteor_json_data['frames']) > 2:
+               json_graph_content = create_light_curve_graph(meteor_json_data['frames'])
+               
+               if(json_graph_content is not None):
+                  
+                  # We save it at the right place
+                  path_to_json = get_cache_path(analysed_name,"graphs")+graph_name+'.json'
+
+                  # We save it
+                  save_json_file(path_to_json,json_graph_content)
+
+                  return create_iframe_to_graph(analysed_name,graph_name,path_to_json,TRENDLINE_GRAPHICS)
+
+
    else:
       if(graph_name=="xy"):
          return create_iframe_to_graph(analysed_name,graph_name,path_to_json,TRENDLINE_GRAPHICS)
@@ -102,21 +118,7 @@ def clear_graph_cache(meteor_json_file,analysed_name,graph_type):
       make_basic_plots(meteor_json_file, analysed_name, True)
 
  
-# Create 2 different plots when possible
-# 1- X,Y position 
-# 2- Light Curves
-def make_basic_plots(meteor_json_file, analysed_name, clear_cache):
-   plots = ''
-   if 'frames' in meteor_json_file:   
-      if len(meteor_json_file['frames']) > 0:  
-         # Main x,y plot 
-         plots = make_xy_point_plot(meteor_json_file['frames'],analysed_name, clear_cache)
-         # + Curve Light
-         plots += make_light_curve(meteor_json_file['frames'],analysed_name, clear_cache)
-   
-   return plots
-
-
+ 
 
 # Create BASIC x,y plot with regression (actually a "trending line")
 def create_xy_graph(frames):
@@ -151,11 +153,10 @@ def create_xy_graph(frames):
    return None
 
  
-   
-
+    
 
 # Curve Light
-def make_light_curve(frames, analysed_name, clear_graph_cache):
+def create_light_curve_graph(frames):
    lc_cnt = []
    lc_ff = []
    lc_count = []
@@ -168,15 +169,15 @@ def make_light_curve(frames, analysed_name, clear_graph_cache):
                lc_cnt.append(frame['intensity']) 
                lc_ff.append(frame['intensity_ff']) 
  
-      return create_iframe_to_graph({
+      return {
            'title':'Light Intensity',
            'title1': 'Intensity',
            'x1_vals':  lc_count,
            'y1_vals':  lc_cnt, 
            'linetype1': 'lines+markers',
            'lineshape1': 'spline'
-            })
-   return ''
+            }
+   return None
 
 
 
