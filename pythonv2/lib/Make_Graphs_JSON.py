@@ -69,7 +69,8 @@ def get_graph_file(meteor_json_file,analysed_name,name,clear_cache):
    path_to_json = None
    
    if  len(json_graph)==0  and clear_cache is True :
-      
+      print("COND1<br>")
+
       # We need to create the JSON
       path_to_json = get_cache_path(analysed_name,"graphs")+name+'.json'
 
@@ -80,6 +81,10 @@ def get_graph_file(meteor_json_file,analysed_name,name,clear_cache):
          x=0 # Nothing here as if it fails, it means the file wasn't there anyway (?)
   
    else:
+
+      print("COND2<br>")
+
+
       # We return them 
       path_to_json = glob.glob(get_cache_path(analysed_name,"graphs")+name+'.json') 
 
@@ -87,7 +92,7 @@ def get_graph_file(meteor_json_file,analysed_name,name,clear_cache):
          path_to_json = path_to_json[0]
    
 
-   print("FROM GET GRAPH FILE")
+   print("FROM GET GRAPH FILE - PATH TO JSON<br>")
    print(path_to_json)
    sys.exit(0)
 
