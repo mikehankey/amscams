@@ -58,7 +58,7 @@ if(typeof all_variables['json_file']!='undefined') {
    
                Plotly.newPlot("graph", [trace1], layout, {responsive: true});
  
-               if (all_data.x2_vals != false && all_data.y2_vals != false) {
+               if (typeof all_data.x2_vals != "undefined" && typeof all_data.y2_vals != "undefined") {
                   trace2.x = all_data.x2_vals;
                   trace2.y = all_data.y2_vals;
                   trace2.name=all_data.title2;
