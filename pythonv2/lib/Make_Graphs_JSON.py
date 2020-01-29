@@ -27,18 +27,15 @@ def make_plot(graph_name,meteor_json_data,analysed_name,clear_cache):
    # Do we have a JSON ready this graph?
    path_to_json = get_graph_file(meteor_json_data,analysed_name,graph_name,clear_cache)
   
-   print("IN MAKE PLOT<br>PATH TO JSON: <br>")
-   print(path_to_json)
-
+ 
 
    if(path_to_json is None or cfe(path_to_json)==0):
 
       if(graph_name=="xy"):
-
          # Get the data
          if('frames' in meteor_json_data):
             if len(meteor_json_data['frames']) > 2:
-               json_graph_content = create_xy_graph(meteor_json_data['frames'],analysed_name,clear_cache)
+               json_graph_content = create_xy_graph(meteor_json_data['frames'])
                
                if(json_graph_content is not None):
                   
@@ -119,12 +116,9 @@ def make_basic_plots(meteor_json_file, analysed_name, clear_cache):
 
 
 
-
-# Basic X,Y Plot with regression (actually a "trending line")
-def make_xy_point_plot(frames,analysed_name, clear_cache):
-
+# Create BASIC x,y plot with regression (actually a "trending line")
+def create_xy_graph(frames):
    # Do we have the json ready?
-
    xs = []
    ys = []
  
@@ -153,6 +147,9 @@ def make_xy_point_plot(frames,analysed_name, clear_cache):
                 'title2': 'Trend. val.',
                 's_ratio1':1} 
    return None
+
+ 
+   
 
 
 # Curve Light
