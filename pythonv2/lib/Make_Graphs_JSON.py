@@ -19,14 +19,95 @@ PATH_TO_GRAPH_LAYOUTS = "/pycgi/dist/graphics/"
 # Predefined GRAPH LAYOUT
 TRENDLINE_GRAPHICS = PATH_TO_GRAPH_LAYOUTS + 'trendline.js'
 
+
+# Return an iframe with a graph or nothing if we don't have enough data
+# for this graph type
+def make_plot(graph_name,meteor_json_data,analysed_name,clear_cache):
+
+   # Do we have a JSON ready this graph?
+   path_to_json = get_graph_file(meteor_json_data,analysed_name,graph_name,clear_cache)
+
+   if(path_to_json is None):
+
+      if(graph_name=="xy"):
+
+         # Get the data
+         if('frames' in meteor_json_data):
+            if(len(meteor_json_data['frames']) > 2:
+               json_graph_content = create_xy_graph(meteor_json_data['frames'],analysed_name,clear_cache)
+               
+               if(json_graph_content is not None):
+                  
+                  # We save it at the right place
+                  path_to_json = get_cache_path(analysed_name,"graphs")+graph_name+'.json'
+
+                  # We save it
+                  save_json_file(path_to_json,json_graph_content)
+
+                  return create_iframe_to_graph(analysed_name,json_graph_content,TRENDLINE_GRAPHICS);
+ 
+
+
+# Build the iFrame 
+# Create the corresponding JSON file for the Graph
+# and create the iframe with file=this json
+def create_iframe_to_graph(analysed_name,name,graph_config,clear_cache=False):
+ 
+   link = DEFAULT_PATH_TO_GRAPH  
+ 
+   # Suprise: we need data to display
+   if 'x1_vals' in data and 'y1_vals' in data :
+      # Here we test <=2 because the list are passed as string 
+      # and an empty list = [] => 2 chararcters
+      if len(data['x1_vals'])<=2: 
+         return ""
+      if len(data['y1_vals'])<=2:
+         return ""
+   
+  
+   # Create iframe src
+   src =  DEFAULT_PATH_TO_GRAPH.replace('{JSONPATH}', path_to_json)
+   src = src.replace('{GRAPH_CONFIG}',graph_config)
+
+   return DEFAULT_IFRAME.replace('{CONTENT}',src)
+
+
+# Get a graph.json or create it 
+def get_graph_file(meteor_json_file,analysed_name,graph_type,clear_cache):
+    # CREATE or RETRIEVE TMP JSON FILE UNDER /GRAPH (see REDUCE_VARS)  
+   json_graph = does_cache_exist(analysed_name,'graphs',name+'.json')
+   path_to_json = None
+   
+   if((len(json_graph)==0 and clear_cache is True) is True or (clear_cache is True)):
+      
+      # We need to create the JSON
+      path_to_json = get_cache_path(analysed_name,"graphs")+name+'.json'
+
+      # We delete the file  
+      try:
+         os.remove(path_to_json) 
+      except:
+         x=0 # Nothing here as if it fails, it means the file wasn't there anyway (?)
+     
+      save_json_file(path_to_json,data)
+   
+   else:
+      # We return them 
+      path_to_json = glob.glob(get_cache_path(analysed_name,"graphs")+name+'.json') 
+      if(path_to_json is not None):
+         path_to_json = path_to_json[0]
+   
+   return path_to_json
+ 
+
+
 # Clear GRAPH CACHE
 def clear_graph_cache(meteor_json_file,analysed_name,graph_type):
    # Clear basic plot
    if(graph_type=='xy'):
       make_basic_plots(meteor_json_file, analysed_name, True)
 
-
-
+ 
 # Create 2 different plots when possible
 # 1- X,Y position 
 # 2- Light Curves
@@ -34,15 +115,20 @@ def make_basic_plots(meteor_json_file, analysed_name, clear_cache):
    plots = ''
    if 'frames' in meteor_json_file:   
       if len(meteor_json_file['frames']) > 0:  
-         # Main x,y plot + Curve Light
+         # Main x,y plot 
          plots = make_xy_point_plot(meteor_json_file['frames'],analysed_name, clear_cache)
-         #)+ " " + make_light_curve(meteor_json_file['frames'],analysed_name)
+         # + Curve Light
+         plots += make_light_curve(meteor_json_file['frames'],analysed_name, clear_cache)
    
    return plots
 
 
+
+
 # Basic X,Y Plot with regression (actually a "trending line")
 def make_xy_point_plot(frames,analysed_name, clear_cache):
+
+   # Do we have the json ready?
 
    xs = []
    ys = []
@@ -61,68 +147,21 @@ def make_xy_point_plot(frames,analysed_name, clear_cache):
       for i in range(0,len(trend_x)):
          tx1.append(int(trend_x[i]))
          ty1.append(int(trend_y[i]))
- 
-
-      return create_iframe_to_graph(
-         analysed_name,
-         {'title':'XY Points and Trendline',
-          'x1_vals':  xs,
-          'y1_vals': ys,
-          'x2_vals': tx1,
-          'y2_vals': ty1,
-          'y1_reverse':1,
-          'title1': 'Meteor pos.',
-          'title2': 'Trend. val.',
-          's_ratio1':1},
-          'xy',
-          TRENDLINE_GRAPHICS, clear_cache)
-   return ''
-
-
-# Build the iFrame 
-# Create the corresponding JSON file for the Graph
-# and create the iframe with file=this json
-def create_iframe_to_graph(analysed_name,data,name,graph_config,clear_cache=False):
- 
-   link = DEFAULT_PATH_TO_GRAPH  
- 
-   # Suprise: we need data to display
-   if 'x1_vals' in data and 'y1_vals' in data :
-      # Here we test <=2 because the list are passed as string 
-      # and an empty list = [] => 2 chararcters
-      if len(data['x1_vals'])<=2: 
-         return ""
-      if len(data['y1_vals'])<=2:
-         return ""
-   
-   # CREATE or RETRIEVE TMP JSON FILE UNDER /GRAPH (see REDUCE_VARS)  
-   json_graph = does_cache_exist(analysed_name,'graphs',name+'.json')
-   
-   if((len(json_graph)==0 and clear_cache is True) is True or (clear_cache is True)):
-      # We need to create the JSON
-      path_to_json = get_cache_path(analysed_name,"graphs")+name+'.json'
-      # We delete the file  
-      try:
-         os.remove(path_to_json) 
-      except:
-         x=0 # Nothing here as if it fails, it means the file wasn't there anyway (?)
-      save_json_file(path_to_json,data)
-   else:
-      # We return them 
-      path_to_json = glob.glob(get_cache_path(analysed_name,"graphs")+name+'.json') 
-      if(path_to_json is not None):
-         path_to_json = path_to_json[0]
- 
-   # Create iframe src
-   src =  DEFAULT_PATH_TO_GRAPH.replace('{JSONPATH}', path_to_json)
-   src = src.replace('{GRAPH_CONFIG}',graph_config)
-
-   return DEFAULT_IFRAME.replace('{CONTENT}',src)
- 
+  
+      return   {'title':'XY Points and Trendline',
+                'x1_vals':  xs,
+                'y1_vals': ys,
+                'x2_vals': tx1,
+                'y2_vals': ty1,
+                'y1_reverse':1,
+                'title1': 'Meteor pos.',
+                'title2': 'Trend. val.',
+                's_ratio1':1} 
+   return None
 
 
 # Curve Light
-def make_light_curve(frames):
+def make_light_curve(frames, analysed_name, clear_graph_cache):
    lc_cnt = []
    lc_ff = []
    lc_count = []
@@ -144,6 +183,15 @@ def make_light_curve(frames):
            'lineshape1': 'spline'
             })
    return ''
+
+
+
+
+
+
+ 
+
+
 
 
 
