@@ -69,7 +69,7 @@ def make_plot(graph_name,meteor_json_data,analysed_name,clear_cache):
       elif(graph_name=='3Dlight'):
          if('frames' in meteor_json_data):
             if len(meteor_json_data['frames']) > 2:
-               json_graph_content = create_3Dlight_curve_graph(meteor_json_data,analysed_name)
+               json_graph_content = create_3Dlight_curve_graph(meteor_json_data['frames'],analysed_name)
                
                if(json_graph_content is not None):
                   
