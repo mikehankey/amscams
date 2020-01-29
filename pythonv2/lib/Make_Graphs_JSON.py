@@ -85,7 +85,7 @@ def get_graph_file(meteor_json_file,analysed_name,name,clear_cache):
       path_to_json = glob.glob(get_cache_path(analysed_name,"graphs")+name+'.json') 
 
       print("PATH TO JSON FROM GLOB <br>")
-      print(get_cache_path(analysed_name,"graphs")+name+'.json'))
+      print(get_cache_path(analysed_name,"graphs")+name+'.json')
       print("<br>PATH:<br>")
       print(path_to_json)
 
