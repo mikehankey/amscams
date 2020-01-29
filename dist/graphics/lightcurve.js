@@ -24,8 +24,7 @@ var layout = {
    width: 937,
    paper_bgcolor: "rgba(9,29,63,1)",  // For exporting in PNG!
    plot_bgcolor: "rgba(9,29,63,1)",   // For exporting in PNG!
-   xaxis:{
-         //autorange: true,
+   xaxis:{ 
          zerolinecolor: H_LINE_COLOR, 
          zerolinewidth: 1,
          gridcolor: GRID_COLOR, 

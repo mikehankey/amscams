@@ -29,7 +29,8 @@ var layout = {
          gridcolor: GRID_COLOR, 
          linecolor: H_LINE_COLOR,  
          title: { font: { size: 15, color: '#b1b1b1' } },
-         tickfont: { color: TICK_FONT_COLOR} 
+         tickfont: { color: TICK_FONT_COLOR},
+         side:'top'
    },
    yaxis:{
          zerolinecolor: V_LINE_COLOR, 
