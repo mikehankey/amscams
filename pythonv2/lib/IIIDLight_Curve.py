@@ -23,16 +23,12 @@ def get_json_for_3Dlight_curve(frames,analysed_name):
          all_x.append(frame['x'])
       if('y' in frame): 
          all_y.append(frame['y'])   
-
-   try:
-      min_pos_x = min(all_x)
-      max_pos_x = max(all_x)
-      min_pos_y = min(all_y)
-      max_pos_y = max(all_y)
-   except:
-      print("FUCKING FUCK")
-      sys.exit(0)
-
+ 
+   min_pos_x = min(all_x)
+   max_pos_x = max(all_x)
+   min_pos_y = min(all_y)
+   max_pos_y = max(all_y)
+  
    # Get the stack
    hd_stack = get_stacks(analysed_name,0,True)
    if(hd_stack is not None):
@@ -43,4 +39,4 @@ def get_json_for_3Dlight_curve(frames,analysed_name):
          for y in range(min_pos_y,max_pos_y):
             z_vals.append(statistics.mean(image[y,x]))  # Average of the 3 VALUES
 
- 
+   return {'x':json.dumps(x_vals),'y':json.dumps(y_vals),'z':json.dumps(z_vals)}

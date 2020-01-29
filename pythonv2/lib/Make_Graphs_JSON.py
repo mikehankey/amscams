@@ -87,7 +87,8 @@ def make_plot(graph_name,meteor_json_data,analysed_name,clear_cache):
          return create_iframe_to_graph(analysed_name,graph_name,path_to_json,TRENDLINE_GRAPHICS)
       elif(graph_name=="curvelight"):
          return create_iframe_to_graph(analysed_name,graph_name,path_to_json,LIGTHCURVE_GRAPHICS)
-
+      elif(graph_name=="3Dlight"):
+         return create_iframe_to_graph(analysed_name,graph_name,path_to_json,IIIDLIGTHCURVE_GRAPHICS)
    return ""
 
 # Build the iFrame 
