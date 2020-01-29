@@ -35,12 +35,24 @@ def get_json_for_3Dlight_curve(frames,analysed_name):
    if(hd_stack is not None):
       image = cv2.imread(hd_stack)
 
-      # We get the pixel value for each x,y 
-      for x in range(min_pos_x,max_pos_x):
+      if(min(min_pos_x,max_pos_x)>min((min_pos_y,max_pos_y):
+
+         # We get the pixel value for each x,y 
+         for x in range(min_pos_x,max_pos_x):
+            for y in range(min_pos_y,max_pos_y):
+               z_vals.append(statistics.mean(image[y,x]))  # Average of the 3 VALUES
+               x_vals.append(x)
+               y_vals.append(y)
+
+      else:
+
+         # We get the pixel value for each x,y 
          for y in range(min_pos_y,max_pos_y):
-            z_vals.append(statistics.mean(image[y,x]))  # Average of the 3 VALUES
-            x_vals.append(x)
-            y_vals.append(y)
+            for x in range(min_pos_x,max_pos_x):
+               z_vals.append(statistics.mean(image[y,x]))  # Average of the 3 VALUES
+               x_vals.append(x)
+               y_vals.append(y)
+
 
    print(x_vals)
    print("<hr/>")
@@ -48,5 +60,5 @@ def get_json_for_3Dlight_curve(frames,analysed_name):
    print("<hr/>")
    print(z_vals)
 
-   return {'x':json.dumps(x_vals),'y':json.dumps(y_vals),'z':json.dumps(z_vals)}
+   #return {'x':json.dumps(x_vals),'y':json.dumps(y_vals),'z':json.dumps(z_vals)}
 
