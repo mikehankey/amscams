@@ -33,7 +33,7 @@ def make_plot(graph_name,meteor_json_data,analysed_name,clear_cache):
 
          # Get the data
          if('frames' in meteor_json_data):
-            if(len(meteor_json_data['frames']) > 2:
+            if len(meteor_json_data['frames']) > 2:
                json_graph_content = create_xy_graph(meteor_json_data['frames'],analysed_name,clear_cache)
                
                if(json_graph_content is not None):
