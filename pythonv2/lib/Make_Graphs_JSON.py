@@ -87,6 +87,11 @@ def get_graph_file(meteor_json_file,analysed_name,name,clear_cache):
       if(path_to_json is not None and len(path_to_json)>0):
          path_to_json = path_to_json[0]
    
+
+   print("FROM GET GRAPH FILE")
+   print(path_to_json)
+   sys.exit(0)
+
    return path_to_json
  
 
