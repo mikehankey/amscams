@@ -48,16 +48,16 @@ def make_plot(graph_name,meteor_json_data,analysed_name,clear_cache):
  
    else:
       if(graph_name=="xy"):
-         return create_iframe_to_graph(analysed_name,load_json_file(path_to_json),TRENDLINE_GRAPHICS)
+         return create_iframe_to_graph(analysed_name,graph_name,path_to_json,TRENDLINE_GRAPHICS)
 
 
 # Build the iFrame 
 # Create the corresponding JSON file for the Graph
 # and create the iframe with file=this json
-def create_iframe_to_graph(analysed_name,name,graph_config,clear_cache=False):
+def create_iframe_to_graph(analysed_name,name,path_to_json,graph_config):
  
    link = DEFAULT_PATH_TO_GRAPH   
-   
+
    # Create iframe src
    src =  DEFAULT_PATH_TO_GRAPH.replace('{JSONPATH}', path_to_json)
    src = src.replace('{GRAPH_CONFIG}',graph_config)
