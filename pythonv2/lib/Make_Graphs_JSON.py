@@ -58,9 +58,7 @@ def make_xy_point_plot(frames,analysed_name, clear_cache):
       for i in range(0,len(trend_x)):
          tx1.append(int(trend_x[i]))
          ty1.append(int(trend_y[i]))
-
-      print("FROM MAKEYX:<br>")
-      print(clear_cache)
+ 
 
       return create_iframe_to_graph(
          analysed_name,
