@@ -27,6 +27,10 @@ def make_plot(graph_name,meteor_json_data,analysed_name,clear_cache):
    # Do we have a JSON ready this graph?
    path_to_json = get_graph_file(meteor_json_data,analysed_name,graph_name,clear_cache)
   
+   print("IN MAKE PLOT<br>PATH TO JSON: <br>")
+   print(path_to_json)
+
+
    if(path_to_json is None):
 
       if(graph_name=="xy"):
@@ -65,14 +69,7 @@ def get_graph_file(meteor_json_file,analysed_name,name,clear_cache):
 
     # CREATE or RETRIEVE TMP JSON FILE UNDER /GRAPH (see REDUCE_VARS)  
    json_graph = does_cache_exist(analysed_name,'graphs',name+'.json')
-   
-   #print("JSON GRAPH<br>")
-   #print(json_graph)
-   #print("<br>len(json_graph)<br>")
-   #print(str(len(json_graph)))
-   #print("<br>clear_cache<br>")
-   #print(str(clear_cache)) 
-
+    
    path_to_json = None
    
    if  len(json_graph)==0  or clear_cache is True :
