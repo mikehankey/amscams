@@ -56,18 +56,8 @@ def make_plot(graph_name,meteor_json_data,analysed_name,clear_cache):
 # and create the iframe with file=this json
 def create_iframe_to_graph(analysed_name,name,graph_config,clear_cache=False):
  
-   link = DEFAULT_PATH_TO_GRAPH  
- 
-   # Suprise: we need data to display
-   if 'x1_vals' in data and 'y1_vals' in data :
-      # Here we test <=2 because the list are passed as string 
-      # and an empty list = [] => 2 chararcters
-      if len(data['x1_vals'])<=2: 
-         return ""
-      if len(data['y1_vals'])<=2:
-         return ""
+   link = DEFAULT_PATH_TO_GRAPH   
    
-  
    # Create iframe src
    src =  DEFAULT_PATH_TO_GRAPH.replace('{JSONPATH}', path_to_json)
    src = src.replace('{GRAPH_CONFIG}',graph_config)
