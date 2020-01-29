@@ -31,7 +31,7 @@ def make_plot(graph_name,meteor_json_data,analysed_name,clear_cache):
    print(path_to_json)
 
 
-   if(path_to_json is None):
+   if(path_to_json is None or cfe(path_to_json)==0):
 
       if(graph_name=="xy"):
 
@@ -72,16 +72,11 @@ def get_graph_file(meteor_json_file,analysed_name,name,clear_cache):
    path_to_json = None
  
    if  len(json_graph)==0  or clear_cache is True :
-
-      print("CON1<br>")
+ 
 
       # We need to create the JSON
       path_to_json = get_cache_path(analysed_name,"graphs")+name+'.json'
-
-      print("PATH TO JSON<br>:")
-
-      print(path_to_json)
-
+ 
       # We delete the file  
       try:
          os.remove(path_to_json) 
