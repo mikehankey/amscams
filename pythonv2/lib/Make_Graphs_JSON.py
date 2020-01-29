@@ -19,6 +19,9 @@ PATH_TO_GRAPH_LAYOUTS = "/pycgi/dist/graphics/"
 # Predefined GRAPH LAYOUT
 TRENDLINE_GRAPHICS = PATH_TO_GRAPH_LAYOUTS + 'trendline.js'
 
+# Clear GRAPH CACHE
+def clear_graph_cache(meteor_json_file,analysed_name,graph_type):
+   return ''
 
 
 # Create 2 different plots when possible
@@ -47,9 +50,7 @@ def make_xy_point_plot(frames,analysed_name):
  
    if(len(xs)>2):
 
-      trend_x, trend_y = poly_fit_points(xs,ys) 
-      
-      # trend_x, trend_y = get_fit_line(xs,ys)
+      trend_x, trend_y = poly_fit_points(xs,ys)  
     
       tx1 = []
       ty1 = []
@@ -93,11 +94,10 @@ def create_iframe_to_graph(analysed_name,data,name,graph_config,clear_cache=Fals
    # CREATE or RETRIEVE TMP JSON FILE UNDER /GRAPH (see REDUCE_VARS)  
    json_graph = does_cache_exist(analysed_name,'graphs',name+'.json')
    
-   if(len(json_graph)==0 or clear_cache is True or (clear_cache is True)):
+   if((len(json_graph)==0 and clear_cache) is True or (clear_cache is True)):
       # We need to create the JSON
       path_to_json = get_cache_path(analysed_name,"graphs")+name+'.json'
       save_json_file(path_to_json,data)
-    
    else:
       # We return them 
       path_to_json = glob.glob(get_cache_path(analysed_name,"graphs")+name+'.json') 
