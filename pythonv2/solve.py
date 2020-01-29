@@ -45,13 +45,18 @@ from sympy import Point3D, Line3D, Segment3D, Plane
 json_conf = load_json_file("../conf/as6.json")
 
 
-def build_events():
+def build_events(year):
    json_conf = load_json_file("/home/ams/amscams/conf/as6.json")
    station = json_conf['site']['ams_id']
    print("<h1>Multi-station detections for ", station, "</h1>")
    detect_file = "/mnt/ams2/meteor_archive/" + station + "/DETECTS/ms_detects.json"
    detect_data = load_json_file(detect_file)
-   events = {}
+   main_event_file = "/mnt/ams2/meteor_archive/" + station + "/EVENTS/" + year + "/" + year + "-events.json"
+   main_event_dir = "/mnt/ams2/meteor_archive/" + station + "/EVENTS/" + year + "/" 
+   if cfe(main_event_file) == 1:
+      events = load_json_file(main_event_file)
+   else:
+      events = {}
    for key in sorted(detect_data.keys(), reverse=True):
       for file in detect_data[key]:
          stations = detect_data[key][file]['stations']
@@ -71,7 +76,11 @@ def build_events():
          events[event_id]['files'] = files
          events[event_id]['clip_starts'] = clip_starts
          events[event_id]['arc_files'] = arc_files
+
+   updated_events = {}
+   station_id = json_conf['site']['ams_id']
    for event_id in events:
+      event = events[event_id]
       print("<h1>" + str(event_id) + "</h1>")
       print("Station Count: " + str(events[event_id]['count']) + "<BR>")
       print("Event Start Time: " + str(len(events[event_id]['event_start'])) + "<BR>")
@@ -81,14 +90,50 @@ def build_events():
 
       event_year = event_id[0:4]
       event_day = event_id[0:10]
-      event_dir = "/mnt/ams2/meteor_archive/events/" + event_year + "/" + event_day + "/" + event_id + "/"
-      event_obs_file = event_dir + event_id + "-obs.json"
-      print("OBS File:" + event_obs_file + "<BR>")
-   event_dir = "/mnt/ams2/meteor_archive/" + station + "/EVENTS/" + str(event_year) + "/"
-   if cfe(event_dir, 1) == 0:
-      os.makedirs(event_dir)
-   save_json_file(event_dir + str(event_year) + "-events.json", events)
-   print("Saved:" + event_dir + str(event_year) + "-events.json")
+
+      event_dir = "/mnt/ams2/meteor_archive/" + station_id + "/EVENTS/" + event_year + "/" + event_day + "/" + event_id + "/"
+      solutions = []
+      print(event_dir)
+      if cfe(event_dir,1) == 1:
+         print("EVENT DIR EXISTS! " + event_dir + "/*.json")
+         # a solving attmpt was made
+         sol = glob.glob(event_dir + "/*.json")
+         if len(sol) <= 1:
+            status = "failed"
+         else:
+            for sfile in sol:
+               sf = sfile.split("/")[-1]
+               print(sfile)
+               if "_report" in sfile:
+                  rd = load_json_file(sfile)
+                  if "rbeg_lat" in rd:
+                     if rd['rbeg_lat'] < 0 or rd['rbeg_lon'] < 0:
+                        solutions.append(('vida_ip', sf, 0))
+                     else:
+                        solutions.append(('vida_ip', sf, 1))
+               if "-simple" in sfile:
+                  sf = sfile.split("/")[-1]
+                  status = 1
+                  sd = load_json_file(sfile)
+                  for key in sd['simple_solve']:
+                
+                     if "status" in sd['simple_solve'][key]:
+                        if sd['simple_solve'][key]['status'] == "FAILED TO SOLVE":
+                           status = 0 
+                
+                  solutions.append(('hankey_ip', sf, status))
+            if len(solutions) > 0:
+               event['solutions'] = solutions
+         print("SOL:", solutions)
+      updated_events[event_id] = event
+
+      
+   main_event_dir = "/mnt/ams2/meteor_archive/" + station + "/EVENTS/" + str(event_year) + "/"
+
+   save_json_file(main_event_dir + str(event_year) + "-events.json", updated_events)
+   print("Saved:" + main_event_dir + str(event_year) + "-events.json")
+
+
 
 
 def look_for_file(station_id, main_meteor):
@@ -470,6 +515,10 @@ def simple_solve(event_file):
       meteor['simple_solve'][key]['track_distance'] = track_distance
       meteor['simple_solve'][key]['event_duration'] = meteor['observations'][st1]['duration'] 
       meteor['simple_solve'][key]['velocity_avg'] = avg_vel 
+      if ealt < 0 or salt < 0:
+         meteor['simple_solve'][key]['status'] = "FAILED TO SOLVE"
+      else:
+         meteor['simple_solve'][key]['status'] = "SOLVED"
 
 
     
@@ -699,9 +748,11 @@ def run_event_cmd(event_id):
    station_id = json_conf['site']['ams_id']  
 
    events_file = "/mnt/ams2/meteor_archive/" + station_id + "/EVENTS/" + year + "/" + year + "-events.json"
-
- 
-   events = load_json_file(events_file)
+   print(events_file)
+   if cfe(events_file) == 1: 
+      events = load_json_file(events_file)
+   else:
+      events = {}
    event = events[event_id]
    args = []
    for i in range(0,len(event['arc_files'])):
@@ -1313,10 +1364,13 @@ def update_event_index(year):
          for log in event_status_desc:
             print(log)
 
-def get_event_status(event_id, event_file):
+def get_event_status(event_id ):
    # check if solution was attempted
-   ef = event_file.split("/")[-1]
-   event_dir = event_file.replace(ef,"") 
+   #ef = event_file.split("/")[-1]
+   station_id = json_conf['station_id']
+   event_year = event_id[0:4]
+   event_dir = "/mnt/ams2/meteor_archive/" + station_id + "/EVENTS/" + event_year + "/" + event_id + "/"
+   
    year,mon,day,hour,min,sec = event_id.split("_") 
    report_base = year + mon + day + "_" + hour + min + sec 
    report_file = event_dir + report_base + "_report.txt"
@@ -1365,6 +1419,52 @@ def get_event_status(event_id, event_file):
          logger.append("FAIL: Bad residuals from." + str(bad_obs))
    return(status, logger, rd)
 
+def sync_ms_previews(year):
+   this_station = json_conf['site']['ams_id']
+   events_dir = "/mnt/ams2/meteor_archive/" + this_station + "/EVENTS/" 
+   events_file = events_dir + year + "/" + year + "-events.json"
+   events = load_json_file(events_file)
+   print("<table border=1>")
+   print("<tr><td>Event ID</td><td>Observations</td><td>Event Status</td></tr>")
+
+   for event_id in events:
+      row = ""
+      event = events[event_id]
+
+      status = "unsolved"
+      slink = ""
+      if "solutions" in event:
+         status = ""
+         for sol in event['solutions']:
+            solver, solve_status, report_file = sol
+            if solve_status == 0:
+               ss = "failed"
+            else:
+               ss = "success"
+               slink = "<a href=webUI.py?cmd=event_detail&event_id=" + event_id + ">"
+            status = status + solver + " " + ss  + "<BR>"
+
+      row += "<tr><td>" + slink  + event_id + "</a></td><td>"
+      for i in range(0, len(event['stations'])):
+         arc_file = event['arc_files'][i]
+         old_file = event['files'][i]
+         of = old_file.split("/")[-1]
+         year = of[0:4]
+         day = of[0:10]
+         station = event['stations'][i]
+         prev_fn = of.replace(".json", "-prev-crop.jpg")
+         if station != this_station:      
+            prev_dir = "/mnt/ams2/meteor_archive/" + station + "/DETECTS/PREVIEW/" + year + "/" + day + "/"  
+            prev_img = "/mnt/ams2/meteor_archive/" + station + "/DETECTS/PREVIEW/" + year + "/" + day + "/"  + prev_fn
+            wb_prev_img = "/mnt/wasabi/" + station + "/DETECTS/PREVIEW/" + year + "/" + day + "/"  + prev_fn
+            prev_imgs = ""
+            if cfe(prev_dir, 1) == 0:
+               os.makedirs(prev_dir)
+            if cfe(prev_img) == 0:
+               cmd = "cp " + wb_prev_img + " " + prev_img
+               print(cmd)
+               os.system(cmd)
+
 
 if sys.argv[1] == "file":
    find_multi_station_matches(sys.argv[2])
@@ -1377,10 +1477,12 @@ if sys.argv[1] == "make_event_kml":
 if sys.argv[1] == "sync_detects":
    sync_detects()
 if sys.argv[1] == "be":
-   build_events()
+   build_events(sys.argv[2])
 if sys.argv[1] == "re":
    run_events(sys.argv[2])
 if sys.argv[1] == "uei":
    update_event_index(sys.argv[2])
 if sys.argv[1] == "rec":
    run_event_cmd(sys.argv[2])
+if sys.argv[1] == "smp":
+   sync_ms_previews(sys.argv[2])
