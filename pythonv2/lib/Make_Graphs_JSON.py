@@ -171,15 +171,16 @@ def create_light_curve_graph(frames):
                lc_count.append(frame['dt'][14:]) # Get Min & Sec from dt
                lc_cnt.append(frame['intensity']) 
                lc_ff.append(frame['intensity_ff']) 
- 
-      return {
-           'title':'Light Intensity',
-           'title1': 'Intensity',
-           'x1_vals':  lc_count,
-           'y1_vals':  lc_cnt, 
-           'linetype1': 'lines+markers',
-           'lineshape1': 'spline'
-            }
+
+      if(len(lc_count)>2 and len(lc_cnt)>2):
+         return {
+            'title':'Light Intensity',
+            'title1': 'Intensity',
+            'x1_vals':  lc_count,
+            'y1_vals':  lc_cnt, 
+            'linetype1': 'lines+markers',
+            'lineshape1': 'spline'
+         }
    return None
 
 
