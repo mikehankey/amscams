@@ -530,11 +530,17 @@ def get_meteors(meteor_dir,meteor_data,rmeteor_data):
    return(meteor_data,rmeteor_data)
 
 
-def meteor_index(json_conf, extra_cmd = ""):    
+
+
+def meteor_index(json_conf, day = None, extra_cmd = ""):    
+   station_id = json_conf['site']['ams_id']
    meteor_data = []
    rmeteor_data = []
    meteor_index = {}
-   meteor_dirs = get_meteor_dirs()
+   if day is None:
+      meteor_dirs = get_meteor_dirs()
+   else:
+      meteor_dirs = ["/mnt/ams2/meteors/" + day + "/"]
    print("Got meteor dirs")
    for meteor_dir in meteor_dirs:
       print("Scanning...", meteor_dir)
@@ -578,25 +584,32 @@ def meteor_index(json_conf, extra_cmd = ""):
       for meteor in meteor_index[day]:
          sort_meteor_index[day][meteor] = meteor_index[day][meteor]
 
+   if day is None:
+      save_json_file("/mnt/ams2/cal/hd_images/meteor_index.json", sort_meteor_index, False)
 
-   save_json_file("/mnt/ams2/cal/hd_images/meteor_index.json", sort_meteor_index, False)
-   station_id = json_conf['site']['ams_id']
+      ma_dir  = "/mnt/ams2/meteor_archive/" + station_id + "/DETECTS/" 
+      wb_dir  = "/mnt/wasabi/" + station_id + "/DETECTS/" 
+      if cfe(ma_dir,1) == 0:
+         os.system("mkdir " + ma_dir)
+      if cfe(wb_dir, 1) == 0:
+         os.system("mkdir " + wb_dir)
 
-   ma_dir  = "/mnt/ams2/meteor_archive/" + station_id + "/DETECTS/" 
-   wb_dir  = "/mnt/wasabi/" + station_id + "/DETECTS/" 
-   if cfe(ma_dir,1) == 0:
-      os.system("mkdir " + ma_dir)
-   if cfe(wb_dir, 1) == 0:
-      os.system("mkdir " + wb_dir)
+      cmd = "cp /mnt/ams2/cal/hd_images/meteor_index.json /mnt/ams2/meteor_archive/" + station_id + "/DETECTS/"
+      os.system(cmd)
+      cmd = "gzip -f /mnt/ams2/cal/hd_images/meteor_index.json"
+      os.system(cmd)
+      cmd = "cp /mnt/ams2/cal/hd_images/meteor_index.json.gz /mnt/ams2/meteor_archive/" + station_id + "/DETECTS/"
+      os.system(cmd)
+      cmd = "cp /mnt/ams2/cal/hd_images/meteor_index.json.gz /mnt/wasabi/" + station_id + "/DETECTS/"
+      os.system(cmd)
 
-   cmd = "cp /mnt/ams2/cal/hd_images/meteor_index.json /mnt/ams2/meteor_archive/" + station_id + "/DETECTS/"
-   os.system(cmd)
-   cmd = "gzip -f /mnt/ams2/cal/hd_images/meteor_index.json"
-   os.system(cmd)
-   cmd = "cp /mnt/ams2/cal/hd_images/meteor_index.json.gz /mnt/ams2/meteor_archive/" + station_id + "/DETECTS/"
-   os.system(cmd)
-   cmd = "cp /mnt/ams2/cal/hd_images/meteor_index.json.gz /mnt/wasabi/" + station_id + "/DETECTS/"
-   os.system(cmd)
+   else:
+      year = day[0:4]
+      mi_day_dir  = "/mnt/ams2/meteor_archive/" + station_id + "/MI/" + year + "/"
+      if cfe(mi_day_dir, 1) == 0:
+         os.makedirs(mi_day_dir)
+      save_json_file(mi_day_dir + day + "-meteor_index.json", sort_meteor_index, False )   
+      print("SAVED:", mi_day_dir + day + "-meteor_index.json")
 
    print(json_conf)
 
@@ -3902,9 +3915,10 @@ if cmd == "hd_cal_index":
 
 if cmd == "meteor_index":
    extra_cmd = ""
+   day = None
    if len(sys.argv) == 3:
-      extra_cmd = sys.argv[2]
-   meteor_index(json_conf, extra_cmd)
+      day = sys.argv[2]
+   meteor_index(json_conf, day)
 
 if cmd == "rr" or cmd == 'reset_reduce':
    reset_reduce(json_conf, sys.argv[2])

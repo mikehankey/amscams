@@ -104,29 +104,42 @@ def EventsMain(json_conf, form):
       if "solutions" in event:
          status = ""
          for sol in event['solutions']:
-            solver, solve_status, report_file = sol
+            solver, report_file,solve_status = sol
             if solve_status == 0:
                ss = "failed"
             else:
                ss = "success"
                slink = "<a href=webUI.py?cmd=event_detail&event_id=" + event_id + ">"
+            print(solver, solve_status, report_file, ss, "<BR>")
             status = status + solver + " " + ss  + "<BR>"
 
       row += "<tr><td>" + slink  + event_id + "</a></td><td>"
       for i in range(0, len(event['stations'])):
          arc_file = event['arc_files'][i]
          old_file = event['files'][i]
+         of = old_file.split("/")[-1]
+         year = of[0:4]
+         day = of[0:10]
          station = event['stations'][i]
+         prev_fn = of.replace(".json", "-prev-crop.jpg")
+         
+         prev_img = "/mnt/ams2/meteor_archive/" + station + "/DETECTS/PREVIEW/" + year + "/" + day + "/"  + prev_fn
+         prev_imgs = ""
+         if cfe(prev_img) == 1:
+            prev_html = "<img src=" + prev_img + ">"  
+         else:
+            prev_html = ""
+        
          if arc_file == "pending": 
-            link = "<a href=webUI.py?cmd=goto&old=1&file=" + old_file + "&station_id=" + station + ">"
+            link = "<figure><a href=webUI.py?cmd=goto&old=1&file=" + old_file + "&station_id=" + station + ">" + prev_html 
             obs_desc = event['stations'][i] + "-pending"
          else:
             el = arc_file.split("_")[7]
             other = el.split("-")
             cam_id = other[0]
             obs_desc = event['stations'][i] + "-" + cam_id
-            link = "<a href=webUI.py?cmd=goto&file=" + arc_file + "&station_id=" + station + ">"
-         row += link + obs_desc + "</a><br>"
+            link = "<div style='float: left'><figure><a href=webUI.py?cmd=goto&file=" + arc_file + "&station_id=" + station + ">" + prev_html
+         row += link + "<figcaption>" + obs_desc + "</figcaption></a></figure></div>"
       row += "</td>"
       row += "<td>" + str(status) + "</td></tr>"
       if status == 1 and show_solved == 1:
