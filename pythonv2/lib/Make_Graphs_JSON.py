@@ -21,7 +21,10 @@ TRENDLINE_GRAPHICS = PATH_TO_GRAPH_LAYOUTS + 'trendline.js'
 
 # Clear GRAPH CACHE
 def clear_graph_cache(meteor_json_file,analysed_name,graph_type):
-   return ''
+   # Clear basic plot
+   if(graph_type=='xy'):
+      make_basic_plots(meteor_json_file, analysed_name, True)
+
 
 
 # Create 2 different plots when possible
