@@ -82,10 +82,7 @@ def make_xy_point_plot(frames,analysed_name, clear_cache):
 # Create the corresponding JSON file for the Graph
 # and create the iframe with file=this json
 def create_iframe_to_graph(analysed_name,data,name,graph_config,clear_cache=False):
-
-   print("FROM create_iframe_to_graph:<br>")
-   print(clear_cache)
-
+ 
    link = DEFAULT_PATH_TO_GRAPH  
  
    # Suprise: we need data to display
@@ -102,11 +99,12 @@ def create_iframe_to_graph(analysed_name,data,name,graph_config,clear_cache=Fals
    
    if((len(json_graph)==0 and clear_cache is True) is True or (clear_cache is True)):
       # We need to create the JSON
-      print("CLEAR CACHE - RECREATE JSON:<br>")
       path_to_json = get_cache_path(analysed_name,"graphs")+name+'.json'
-      # We delete the file first?
-      os.remove(path_to_json)
-      print(path_to_json)
+      # We delete the file  
+      try:
+         os.remove(path_to_json) 
+      except:
+         x=0 # Nothing here as if it fails, it means the file wasn't there anyway (?)
       save_json_file(path_to_json,data)
    else:
       # We return them 
