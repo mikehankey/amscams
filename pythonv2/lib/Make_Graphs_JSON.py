@@ -66,6 +66,14 @@ def get_graph_file(meteor_json_file,analysed_name,name,clear_cache):
     # CREATE or RETRIEVE TMP JSON FILE UNDER /GRAPH (see REDUCE_VARS)  
    json_graph = does_cache_exist(analysed_name,'graphs',name+'.json')
  
+
+   print("JSON GRAPH<br>")
+   print(json_graph)
+   print("<br>len(json_graph)<br>")
+   print(str(len(json_graph)))
+   print("<br>clear_cache<br>")
+   print(str(clear_cache)) 
+   
    path_to_json = None
    
    if  len(json_graph)==0  and clear_cache is True :
@@ -80,10 +88,7 @@ def get_graph_file(meteor_json_file,analysed_name,name,clear_cache):
       except:
          x=0 # Nothing here as if it fails, it means the file wasn't there anyway (?)
   
-   else:
-
-      print("COND2<br>")
-
+   else: 
 
       # We return them 
       path_to_json = glob.glob(get_cache_path(analysed_name,"graphs")+name+'.json') 
