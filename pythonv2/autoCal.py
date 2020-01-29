@@ -31,14 +31,29 @@ from lib.UtilLib import calc_dist,find_angle
 import lib.brightstardata as bsd
 from lib.DetectLib import eval_cnt
 
-def cp_meteor_index():
+def cp_meteor_index(day = None):
    recopy = 1
    network = json_conf['site']['network_sites'].split(",")
    station = json_conf['site']['ams_id']
    network.append(station)
    detect_index = {}
    for st in network:
-      data_file = "/mnt/ams2/meteor_archive/" + st + "/DETECTS/meteor_index.json"
+      if day is None:
+         data_file = "/mnt/ams2/meteor_archive/" + st + "/DETECTS/meteor_index.json"
+      else:
+         #MIKE
+         year = day[0:4]
+         mi_day_dir  = "/mnt/ams2/meteor_archive/" + station_id + "/DETECTS/MI/" + year + "/"
+         wb_day_dir  = "/mnt/wasabi/" + station_id + "/DETECTS/MI/" + year + "/"
+      if cfe(mi_day_dir, 1) == 0:
+         os.makedirs(mi_day_dir)
+      if cfe(wb_day_dir, 1) == 0:
+         os.makedirs(wb_day_dir)
+      save_json_file(mi_day_dir + day + "-meteor_index.json", sort_meteor_index, False )
+      save_json_file(wb_day_dir + day + "-meteor_index.json", sort_meteor_index, False )
+
+
+
       arc_station_dir = "/mnt/ams2/meteor_archive/" + st + "/"
       if cfe(arc_station_dir, 1) == 0:
          os.system("mkdir " + arc_station_dir)
@@ -605,10 +620,14 @@ def meteor_index(json_conf, day = None, extra_cmd = ""):
 
    else:
       year = day[0:4]
-      mi_day_dir  = "/mnt/ams2/meteor_archive/" + station_id + "/MI/" + year + "/"
+      mi_day_dir  = "/mnt/ams2/meteor_archive/" + station_id + "/DETECTS/MI/" + year + "/"
+      wb_day_dir  = "/mnt/wasabi/" + station_id + "/DETECTS/MI/" + year + "/"
       if cfe(mi_day_dir, 1) == 0:
          os.makedirs(mi_day_dir)
+      if cfe(wb_day_dir, 1) == 0:
+         os.makedirs(wb_day_dir)
       save_json_file(mi_day_dir + day + "-meteor_index.json", sort_meteor_index, False )   
+      save_json_file(wb_day_dir + day + "-meteor_index.json", sort_meteor_index, False )   
       print("SAVED:", mi_day_dir + day + "-meteor_index.json")
 
    print(json_conf)
