@@ -43,33 +43,18 @@ def cp_meteor_index(day = None):
       else:
          #MIKE
          year = day[0:4]
-         mi_day_dir  = "/mnt/ams2/meteor_archive/" + station_id + "/DETECTS/MI/" + year + "/"
-         wb_day_dir  = "/mnt/wasabi/" + station_id + "/DETECTS/MI/" + year + "/"
+         mi_day_dir  = "/mnt/ams2/meteor_archive/" + st + "/DETECTS/MI/" + year + "/"
+         wb_day_dir  = "/mnt/wasabi/" + st + "/DETECTS/MI/" + year + "/" 
+         wasabi_file = wb_day_dir + day + "-meteor_index.json"
+      
       if cfe(mi_day_dir, 1) == 0:
          os.makedirs(mi_day_dir)
-      if cfe(wb_day_dir, 1) == 0:
-         os.makedirs(wb_day_dir)
-      save_json_file(mi_day_dir + day + "-meteor_index.json", sort_meteor_index, False )
-      save_json_file(wb_day_dir + day + "-meteor_index.json", sort_meteor_index, False )
 
-
-
-      arc_station_dir = "/mnt/ams2/meteor_archive/" + st + "/"
-      if cfe(arc_station_dir, 1) == 0:
-         os.system("mkdir " + arc_station_dir)
-         os.system("mkdir " + arc_station_dir + "/METEORS/")
-         os.system("mkdir " + arc_station_dir + "/CAL/")
-         os.system("mkdir " + arc_station_dir + "/DETECTS/")
-      if cfe(data_file) == 0 or recopy == 1:
-         wasabi_file = data_file.replace("ams2/meteor_archive", "wasabi")
-         wasabi_file = wasabi_file + ".gz"
-         print("DATA FILE NOT FOUND!", data_file, wasabi_file)
-         if cfe(wasabi_file) == 1:
-            data_file_z = data_file + ".gz"
-            print("DETECT FILE MISSING FROM ARCHIVE, UPDATE.")
-            print("cp " + wasabi_file + " " + data_file_z)
-            os.system("cp " + wasabi_file + " " + data_file_z)
-            os.system("gunzip -f " + data_file_z)
+      if cfe(wasabi_file) == 1:
+         print("cp " + wasabi_file + " " + mi_day_dir)
+         os.system("cp " + wasabi_file + " " + mi_day_dir)
+      else:
+         print("WASBI NOT FOUND:", wasabi_file)
 
 
 def get_trim_num(video_file):
@@ -583,10 +568,13 @@ def meteor_index(json_conf, day = None, extra_cmd = ""):
             continue 
          for obj in meteor_data['sd_objects']:
             print("OBJ:", obj)
+            trim_num = get_trim_num(meteor)
+            print("TRIM NUM:", trim_num)
+            extra_start_file_sec = int(trim_num) / 25
             event_start_fn = obj['history'][0][0]
             print("EVENT START FN:", event_start_fn, meteor)
             (file_date, cam_id, f_date_str,fy,fm,fd, fh, fmin, fs) = convert_filename_to_date_cam(meteor)
-            extra_sec = int(event_start_fn) / 25
+            extra_sec = (int(event_start_fn) / 25) + extra_start_file_sec
             event_start = file_date + datetime.timedelta(0,extra_sec)
             event_start_str = event_start.strftime('%Y-%m-%d %H:%M:%S.%f')[:-3]
             meteor_index[day][meteor]['event_start_time'] = event_start_str
@@ -3960,7 +3948,11 @@ if cmd == "md" or cmd == 'month_detects':
    print("MD")
    month_detects(sys.argv[2])   
 if cmd == "cp_mi" or cmd == 'cp_meteor_index':
-   cp_meteor_index()
+   if len(sys.argv) == 3:
+      print("DAY")
+      cp_meteor_index(sys.argv[2])
+   else:
+      cp_meteor_index()
 
 
 

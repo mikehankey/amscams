@@ -44,6 +44,214 @@ from sympy import Point3D, Line3D, Segment3D, Plane
 
 json_conf = load_json_file("../conf/as6.json")
 
+def run_detects(day):
+   event_day = day
+   event_year = day[0:4]
+   network = json_conf['site']['network_sites'].split(",")
+   this_station = json_conf['site']['ams_id']
+   station = this_station
+   network.append(station)
+   detect_index = {}
+   solved_events = []
+   for st in sorted(network):
+      data_file = "/mnt/ams2/meteor_archive/" + st + "/DETECTS/meteor_index.json"
+      event_dir = "/mnt/ams2/meteor_archive/" + st + "/EVENTS/" + event_year + "/" + event_day + "/"
+      if cfe(event_dir, 1) == 1:
+         event_files = glob.glob(event_dir + "/*")
+         for ef in sorted(event_files):
+            if cfe(ef,1) == 1:
+               solved_events.append(ef)
+      arc_station_dir = "/mnt/ams2/meteor_archive/" + st + "/"
+      if cfe(data_file) == 1:
+         data = load_json_file(data_file)
+      else:
+         data = False
+      if data != 0 and data is not False:
+         if day in data:
+            detect_index[st] = data[day]
+      else:
+         print("Could not open meteor index.json!")
+
+   files = []
+   files_station = {}
+   events = {}
+   print("SOLVED EVENTS:", solved_events)
+
+   for st in detect_index:
+      print(st, len(detect_index[st]))
+      for file in detect_index[st]:
+         event, events = find_event(file, st, detect_index[st][file], events, solved_events)
+        
+   event_times = [] 
+   for event_id in events:
+      event_times.append((event_id, events[event_id]['event_start_time']))
+   
+   events_sorted = sorted(event_times, key=lambda x: x[1], reverse=False)
+   ec = 1
+   final_events = {}
+   for data in events_sorted:
+      event_id, event_time = data
+      event = events[event_id]
+      station_count = len(set(events[event_id]['stations']))
+      prev_imgs = prev_img_from_file(None,None,events[event_id]['files'] ,events[event_id]['stations'])
+      event_time_id, solutions = check_if_solved(events[event_id], solved_events)
+      event['prev_imgs'] = prev_imgs
+      event['event_id'] = event_time_id
+      event['count'] = station_count
+      event['solutions'] = solutions
+      print(ec, event_time_id, station_count, events[event_id]['event_start_time'], events[event_id]['stations'], events[event_id]['files'], solutions )
+      final_events[event_time_id] = event
+      ec = ec + 1
+
+   event_day_file = "/mnt/ams2/meteor_archive/" + this_station + "/EVENTS/" + event_year + "/" + event_day + "/" + event_day + "-events.json"
+   save_json_file(event_day_file, final_events)
+   print("EVENT DAY FILE SAVED:", event_day_file)
+
+def check_if_solved(event, solved_events):
+   tstart = event['event_start_time']
+   tstart_dt = datetime.datetime.strptime(tstart, "%Y-%m-%d %H:%M:%S.%f")
+   temp = tstart.split(".")
+   event_id = temp[0]
+   event_id = event_id.replace("-", "_")
+   event_id = event_id.replace(":", "_")
+   event_id = event_id.replace(" ", "_")
+   solutions = []
+   for se in solved_events:
+      sf = se.split("/")[-1]
+      sf_dt = datetime.datetime.strptime(sf, "%Y_%m_%d_%H_%M_%S")
+      tdiff = abs((tstart_dt-sf_dt).total_seconds())
+      if tdiff < 3:
+         print("THIS EVENT IS ALREADY SOLVED!")
+         event_id = sf
+         jsons = glob.glob(se + "/*.json")
+         for js in jsons:
+            if "simple" in js:
+               # Hankey solve
+               hankey = load_json_file(js)
+               hankey_status = 1
+               for key in hankey['simple_solve']:
+                  if hankey['simple_solve'][key]['track_start'][2] < 0 or hankey['simple_solve'][key]['track_end'][2] < 0:
+                     hankey_status = 0
+               solutions.append(('hankey_ip', js, hankey_status))
+
+            if "_report" in js:
+               # Vida solve
+               vida_status = 1
+               vida = load_json_file(js)
+               if vida['rbeg_ele']  < 0 or vida['rend_ele'] < 0:
+                  vida_status = 0
+               solutions.append(('vida_ip', js, vida_status))
+
+   return(event_id, solutions)
+
+def prev_img_from_file(file=None,station=None,files=None,stations=None):
+   prev_images = []
+   if file is not None:
+      print("NOT IMPLEMENTED YET")
+      exit()
+   if files is not None:
+      for i in range(0,len(files)):
+         file = files[i]
+         station = stations[i]
+         fn = file.split("/")[-1]
+         fn = fn.replace(".json", "-prev-crop.jpg")
+         year = fn[0:4]
+         day = fn[0:10]
+         prev_img_crop_dir = "/mnt/ams2/meteor_archive/" + station + "/DETECTS/PREVIEW/" + year + "/" + day + "/" 
+         if cfe(prev_img_crop_dir,1) == 0:
+            os.makedirs(prev_img_crop_dir)
+
+         prev_img_crop = "/mnt/ams2/meteor_archive/" + station + "/DETECTS/PREVIEW/" + year + "/" + day + "/" + fn
+         wb_prev_img_crop = "/mnt/wasabi/" + station + "/DETECTS/PREVIEW/" + year + "/" + day + "/" + fn  
+         if cfe(prev_img_crop) == 0:
+            if cfe(wb_prev_img_crop) == 1:
+               os.system("cp " + wb_prev_img_crop + " " + prev_img_crop)
+         prev_images.append(prev_img_crop)
+   return(prev_images)
+
+
+def find_event(file, station_id, detect_info, events,solved_events):
+   found = 0
+   if len(events) == 0: 
+      event_id = 1
+      events[event_id] = {}
+      events[event_id]['event_start_time'] = detect_info['event_start_time'] 
+      events[event_id]['event_id'] = event_id
+      events[event_id]['stations'] = []
+      events[event_id]['files'] = [] 
+      events[event_id]['arc_files'] = []
+      events[event_id]['clip_starts'] = []
+
+      events[event_id]['stations'].append(station_id)
+      events[event_id]['files'].append(file)
+      if "archive_file" in detect_info:
+         events[event_id]['arc_files'].append(detect_info['archive_file'])
+      else:
+         events[event_id]['arc_files'].append("pending")
+
+
+      events[event_id]['clip_starts'].append(detect_info['event_start_time'])
+
+      print("EVENT:", events[event_id])
+      found = 1
+   else:
+      this_event_start_time = detect_info['event_start_time']
+      this_event_start_time_dt = datetime.datetime.strptime(this_event_start_time, "%Y-%m-%d %H:%M:%S.%f")
+ 
+      # check if the event already exists, if it does update it, else make a new one. 
+      found = 0
+      timed_events = []
+      for event_id in events:
+         event = events[event_id]
+         event_start_time = event['event_start_time']
+         event_start_time_dt = datetime.datetime.strptime(event_start_time, "%Y-%m-%d %H:%M:%S.%f")
+         elapsed = abs((this_event_start_time_dt - event_start_time_dt).total_seconds())
+         #print("EVENT EVAL:", event_id, this_event_start_time, event_start_time, elapsed)
+         timed_events.append((event_id, elapsed))
+
+      temp = sorted(timed_events, key=lambda x: x[1], reverse=False)
+      if temp[0][1] < 10:
+         found = 1
+         event_id = temp[0][0]
+         events[event_id]['stations'].append(station_id)
+         events[event_id]['files'].append(file)
+         if "archive_file" in detect_info:
+            events[event_id]['arc_files'].append(detect_info['archive_file'])
+         else:
+            events[event_id]['arc_files'].append("pending")
+         events[event_id]['clip_starts'].append(detect_info['event_start_time'])
+   if found == 0:
+      #event was not found so make a new one!
+      event_id = len(events) + 1
+      events[event_id] = {}
+      events[event_id]['event_start_time'] = detect_info['event_start_time']
+      events[event_id]['event_id'] = event_id
+      events[event_id]['stations'] = []
+      events[event_id]['files'] = []
+      events[event_id]['arc_files'] = []
+      events[event_id]['clip_starts'] = []
+
+      events[event_id]['stations'].append(station_id)
+      events[event_id]['files'].append(file)
+      if "archive_file" in detect_info:
+         events[event_id]['arc_files'].append(detect_info['archive_file'])
+      else:
+         events[event_id]['arc_files'].append("pending")
+      events[event_id]['clip_starts'].append(detect_info['event_start_time'])
+
+   # update event start time
+   if len(events[event_id]['clip_starts']) > 1:
+      dates = []
+      for cs in events[event_id]['clip_starts']:
+         dt = datetime.datetime.strptime(cs, "%Y-%m-%d %H:%M:%S.%f")
+         dates.append(dt)
+      event_start = avg_datetimes(dates, 1)
+
+      events[event_id]['event_start_time'] = event_start
+
+   # check if solved and update as needed
+
+   return(event_id, events)   
 
 def build_events(year):
    json_conf = load_json_file("/home/ams/amscams/conf/as6.json")
@@ -896,7 +1104,7 @@ def run(event_file):
    #os.system(cmd)
 
 
-def find_event(station, file, clip_start_time, events, captures):
+def find_event_old(station, file, clip_start_time, events, captures):
    if len(events) == 0:
       event_id = 1
       events[event_id] = {}
@@ -1486,3 +1694,5 @@ if sys.argv[1] == "rec":
    run_event_cmd(sys.argv[2])
 if sys.argv[1] == "smp":
    sync_ms_previews(sys.argv[2])
+if sys.argv[1] == "run_detects":
+   run_detects(sys.argv[2])
