@@ -62,7 +62,7 @@ def create_iframe_to_graph(analysed_name,name,path_to_json,graph_config):
 
 # Get a graph.json or create it 
 def get_graph_file(meteor_json_file,analysed_name,name,clear_cache):
-   
+
     # CREATE or RETRIEVE TMP JSON FILE UNDER /GRAPH (see REDUCE_VARS)  
    json_graph = does_cache_exist(analysed_name,'graphs',name+'.json')
    path_to_json = None
@@ -83,6 +83,13 @@ def get_graph_file(meteor_json_file,analysed_name,name,clear_cache):
    else:
       # We return them 
       path_to_json = glob.glob(get_cache_path(analysed_name,"graphs")+name+'.json') 
+
+      print("PATH TO JSON FROM GLOB <br>")
+      print(get_cache_path(analysed_name,"graphs")+name+'.json'))
+      print("<br>PATH:<br>")
+      print(path_to_json)
+
+
       if(path_to_json is not None):
          path_to_json = path_to_json[0]
    
