@@ -1,8 +1,7 @@
 import sys
 import os
 import json
-import numpy as np
-import cv2
+import numpy as np 
 import statistics 
 import requests 
 import glob
@@ -10,7 +9,7 @@ import glob
 from lib.FileIO import cfe, save_json_file, load_json_file
 from lib.VIDEO_VARS import HD_W, HD_H
 from lib.MeteorReduce_Tools import get_cache_path, does_cache_exist
-from lib.3DLight_Curve import get_json_for_3Dlight_curve
+from lib.IIIDLight_Curve import get_json_for_3Dlight_curve
 
 
 DEFAULT_IFRAME = "<div class='load_if'><iframe width='100%' height='517' style='margin:.5rem auto' frameborder='false' data-src='{CONTENT}'></iframe></div>"
