@@ -10,6 +10,7 @@ import glob
 from lib.FileIO import cfe, save_json_file, load_json_file
 from lib.VIDEO_VARS import HD_W, HD_H
 from lib.MeteorReduce_Tools import get_cache_path, does_cache_exist
+from lib.3DLight_Curve import get_json_for_3Dlight_curve
 
 
 DEFAULT_IFRAME = "<div class='load_if'><iframe width='100%' height='517' style='margin:.5rem auto' frameborder='false' data-src='{CONTENT}'></iframe></div>"
@@ -19,7 +20,7 @@ PATH_TO_GRAPH_LAYOUTS = "/pycgi/dist/graphics/"
 # Predefined GRAPH LAYOUT
 TRENDLINE_GRAPHICS = PATH_TO_GRAPH_LAYOUTS + 'trendline.js'
 LIGTHCURVE_GRAPHICS = PATH_TO_GRAPH_LAYOUTS + 'lightcurve.js'
-
+IIIDLIGTHCURVE_GRAPHICS = PATH_TO_GRAPH_LAYOUTS + '3dlightcurve.js'
 
 # Clear GRAPH CACHE
 def clear_graph_cache(meteor_json_file_data,analysed_name,graph_type):
@@ -65,6 +66,21 @@ def make_plot(graph_name,meteor_json_data,analysed_name,clear_cache):
                   save_json_file(path_to_json,json_graph_content)
 
                   return create_iframe_to_graph(analysed_name,graph_name,path_to_json,LIGTHCURVE_GRAPHICS)
+
+      elif(graph_name=='3Dlight'):
+         if('frames' in meteor_json_data):
+            if len(meteor_json_data['frames']) > 2:
+               json_graph_content = create_3Dlight_curve_graph(meteor_json_data,analysed_name)
+               
+               if(json_graph_content is not None):
+                  
+                  # We save it at the right place
+                  path_to_json = get_cache_path(analysed_name,"graphs")+graph_name+'.json'
+
+                  # We save it
+                  save_json_file(path_to_json,json_graph_content)
+
+                  return create_iframe_to_graph(analysed_name,graph_name,path_to_json,IIIDLIGTHCURVE_GRAPHICS)
 
 
    else:
@@ -183,22 +199,11 @@ def create_light_curve_graph(frames):
    return None
 
 
-
-
-
+# 3D light Curve
+def create_3Dlight_curve_graph(frames,analysed_name):
+  return get_json_for_3Dlight_curve(frames,analysed_name)
 
  
-
-
-
-
-
-
-
-
-# Get "trendingline"
-def get_fit_line(poly_x, poly_y):
-  return np.unique(poly_x), np.poly1d(np.polyfit(poly_x, poly_y, 1))(np.unique(poly_x))
  
 # Compute the fit line of a set of data (MIKE VERSION)
 def poly_fit_points(poly_x,poly_y, z = None):
@@ -219,14 +224,16 @@ def poly_fit_points(poly_x,poly_y, z = None):
  
 
 
+
+
+
 # Create 3D Light Curve Graph
 def make3D_light_curve(meteor_json_file,hd_stack):
  
    xvals = []
    yvals = []
    zvals = []
-
-
+ 
    for x in range(0, HD_W):
       xvals.append(x)
    
@@ -256,18 +263,4 @@ def make3D_light_curve(meteor_json_file,hd_stack):
    else:
       return ''
 
-
-
-   #partial = False 
-   #if 'frames' in meteor_json_file:   
-   #   if len(meteor_json_file['frames']) > 0:  
-#
-   #      image = cv2.imread(hd_stack)
-#      for f in meteor_json_file['frames']:   
-   #         try:
-   #            xvals.append(f['x'])
-   #            yvals.append(f['y'])
-   #            zvals.append(statistics.mean(image[int(f['y']),int(f['x'])]))  # Average of the 3 colors
-    #        except:
-    #           partial = True
  
