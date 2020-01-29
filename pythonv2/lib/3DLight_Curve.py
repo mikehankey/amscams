@@ -46,4 +46,3 @@ def get_json_for_3Dlight_curve(frames,analysed_name):
       })
    else:
       return ''
-}
