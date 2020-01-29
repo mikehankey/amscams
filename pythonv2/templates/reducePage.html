@@ -1,6 +1,6 @@
 <div id="main_container" class="container-fluid d-flex h-100 mt-4 position-relative"> 
         <div class="h-100 flex-fixed-canvas">
-            {JSID}
+          
         
             <div class="canvas-container">
                  <canvas id="c" width="960" height="540"></canvas> 
@@ -130,7 +130,7 @@
                             <a class="btn btn-primary d-block mt-2"  target=_blank href=webUI.py?cmd=man_reduce&file={SD_STACK}&cal_params_file={CAL_PARAMS_FILE}>Manually Reduce</a>
                              <!-- same link as del meteor-->
                             <a class="btn btn-primary d-block mt-2" target=_blank href=/pycgi/webUI.py?cmd=reject_meteor&cal_params_file={METEOR_JSON_FILE}> Delete Selected Stars<br/>and Mark image as cloudy</a> 
-                            <a class="btn btn-danger d-block mt-4" target=_blank href=/pycgi/webUI.py?cmd=reject_meteor&cal_params_file={METEOR_JSON_FILE}> Reject Meteor</a> 
+                            <a class="btn btn-danger d-block mt-4" target=_blank href=/pycgi/webUI.py?cmd=reject_meteor&jsid={JSID}> Reject Meteor</a> 
                          </div>
                     </div>
                    
