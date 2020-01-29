@@ -39,8 +39,7 @@ var layout = {
          gridcolor: GRID_COLOR, 
          linecolor: V_LINE_COLOR,
          title: { font: {  size: 15, color: '#b1b1b1' }}, 
-         tickfont: { color: TICK_FONT_COLOR},
-         autorange: "reversed" 
+         tickfont: { color: TICK_FONT_COLOR} 
    },
    showlegend: true,
    legend: {
