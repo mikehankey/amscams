@@ -68,7 +68,7 @@ def get_graph_file(meteor_json_file,analysed_name,name,clear_cache):
  
    path_to_json = None
    
-   if  len(json_graph)==0   or (clear_cache is True) :
+   if  len(json_graph)==0  and clear_cache is True :
       
       # We need to create the JSON
       path_to_json = get_cache_path(analysed_name,"graphs")+name+'.json'
@@ -78,9 +78,7 @@ def get_graph_file(meteor_json_file,analysed_name,name,clear_cache):
          os.remove(path_to_json) 
       except:
          x=0 # Nothing here as if it fails, it means the file wasn't there anyway (?)
-     
-      save_json_file(path_to_json,data)
-   
+  
    else:
       # We return them 
       path_to_json = glob.glob(get_cache_path(analysed_name,"graphs")+name+'.json') 
