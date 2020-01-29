@@ -9,7 +9,7 @@ var trace1 =  {
       xaxis: "x1",
       yaxis: "y1",
       mode: 'lines+markers',
-      shape: 'spline'
+      line: {shape: 'spline'}
 };
    
 
