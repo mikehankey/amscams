@@ -18,6 +18,7 @@ PATH_TO_GRAPH_LAYOUTS = "/pycgi/dist/graphics/"
 
 # Predefined GRAPH LAYOUT
 TRENDLINE_GRAPHICS = PATH_TO_GRAPH_LAYOUTS + 'trendline.js'
+LIGTHCURVE_GRAPHICS = PATH_TO_GRAPH_LAYOUTS + 'lightcurve.js'
 
 
 # Return an iframe with a graph or nothing if we don't have enough data
@@ -59,12 +60,14 @@ def make_plot(graph_name,meteor_json_data,analysed_name,clear_cache):
                   # We save it
                   save_json_file(path_to_json,json_graph_content)
 
-                  return create_iframe_to_graph(analysed_name,graph_name,path_to_json,TRENDLINE_GRAPHICS)
+                  return create_iframe_to_graph(analysed_name,graph_name,path_to_json,LIGTHCURVE_GRAPHICS)
 
 
    else:
       if(graph_name=="xy"):
          return create_iframe_to_graph(analysed_name,graph_name,path_to_json,TRENDLINE_GRAPHICS)
+      elif(graph_name=="curvelight"):
+         return create_iframe_to_graph(analysed_name,graph_name,path_to_json,LIGTHCURVE_GRAPHICS)
 
    return ""
 
