@@ -104,6 +104,8 @@ def create_iframe_to_graph(analysed_name,data,name,graph_config,clear_cache=Fals
       # We need to create the JSON
       print("CLEAR CACHE - RECREATE JSON:<br>")
       path_to_json = get_cache_path(analysed_name,"graphs")+name+'.json'
+      # We delete the file first?
+      os.remove(path_to_json)
       print(path_to_json)
       save_json_file(path_to_json,data)
    else:
