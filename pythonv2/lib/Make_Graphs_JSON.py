@@ -27,19 +27,19 @@ def clear_graph_cache(meteor_json_file,analysed_name,graph_type):
 # Create 2 different plots when possible
 # 1- X,Y position 
 # 2- Light Curves
-def make_basic_plots(meteor_json_file, analysed_name):
+def make_basic_plots(meteor_json_file, analysed_name, clear_cache):
    plots = ''
    if 'frames' in meteor_json_file:   
       if len(meteor_json_file['frames']) > 0:  
          # Main x,y plot + Curve Light
-         plots = make_xy_point_plot(meteor_json_file['frames'],analysed_name)
+         plots = make_xy_point_plot(meteor_json_file['frames'],analysed_name, clear_cache)
          #)+ " " + make_light_curve(meteor_json_file['frames'],analysed_name)
    
    return plots
 
 
 # Basic X,Y Plot with regression (actually a "trending line")
-def make_xy_point_plot(frames,analysed_name):
+def make_xy_point_plot(frames,analysed_name, clear_cache):
 
    xs = []
    ys = []
@@ -71,7 +71,7 @@ def make_xy_point_plot(frames,analysed_name):
           'title2': 'Trend. val.',
           's_ratio1':1},
           'xy',
-          TRENDLINE_GRAPHICS)
+          TRENDLINE_GRAPHICS, clear_cache)
    return ''
 
 
