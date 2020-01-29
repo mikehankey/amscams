@@ -19,24 +19,27 @@ PATH_TO_GRAPH_LAYOUTS = "/pycgi/dist/graphics/"
 # Predefined GRAPH LAYOUT
 TRENDLINE_GRAPHICS = PATH_TO_GRAPH_LAYOUTS + 'trendline.js'
 
+# Clear GRAPH CACHE
+def clear_graph_cache(meteor_json_file,analysed_name,graph_type):
+   return ''
 
 
 # Create 2 different plots when possible
 # 1- X,Y position 
 # 2- Light Curves
-def make_basic_plots(meteor_json_file, analysed_name):
+def make_basic_plots(meteor_json_file, analysed_name, clear_cache):
    plots = ''
    if 'frames' in meteor_json_file:   
       if len(meteor_json_file['frames']) > 0:  
          # Main x,y plot + Curve Light
-         plots = make_xy_point_plot(meteor_json_file['frames'],analysed_name)
+         plots = make_xy_point_plot(meteor_json_file['frames'],analysed_name, clear_cache)
          #)+ " " + make_light_curve(meteor_json_file['frames'],analysed_name)
    
    return plots
 
 
 # Basic X,Y Plot with regression (actually a "trending line")
-def make_xy_point_plot(frames,analysed_name):
+def make_xy_point_plot(frames,analysed_name, clear_cache):
 
    xs = []
    ys = []
@@ -47,9 +50,7 @@ def make_xy_point_plot(frames,analysed_name):
  
    if(len(xs)>2):
 
-      trend_x, trend_y = poly_fit_points(xs,ys) 
-      
-      # trend_x, trend_y = get_fit_line(xs,ys)
+      trend_x, trend_y = poly_fit_points(xs,ys)  
     
       tx1 = []
       ty1 = []
@@ -57,6 +58,7 @@ def make_xy_point_plot(frames,analysed_name):
       for i in range(0,len(trend_x)):
          tx1.append(int(trend_x[i]))
          ty1.append(int(trend_y[i]))
+ 
 
       return create_iframe_to_graph(
          analysed_name,
@@ -70,7 +72,7 @@ def make_xy_point_plot(frames,analysed_name):
           'title2': 'Trend. val.',
           's_ratio1':1},
           'xy',
-          TRENDLINE_GRAPHICS)
+          TRENDLINE_GRAPHICS, clear_cache)
    return ''
 
 
@@ -78,7 +80,7 @@ def make_xy_point_plot(frames,analysed_name):
 # Create the corresponding JSON file for the Graph
 # and create the iframe with file=this json
 def create_iframe_to_graph(analysed_name,data,name,graph_config,clear_cache=False):
-
+ 
    link = DEFAULT_PATH_TO_GRAPH  
  
    # Suprise: we need data to display
@@ -93,11 +95,15 @@ def create_iframe_to_graph(analysed_name,data,name,graph_config,clear_cache=Fals
    # CREATE or RETRIEVE TMP JSON FILE UNDER /GRAPH (see REDUCE_VARS)  
    json_graph = does_cache_exist(analysed_name,'graphs',name+'.json')
    
-   if(len(json_graph)==0 or clear_cache is True or (clear_cache is True)):
+   if((len(json_graph)==0 and clear_cache is True) is True or (clear_cache is True)):
       # We need to create the JSON
       path_to_json = get_cache_path(analysed_name,"graphs")+name+'.json'
+      # We delete the file  
+      try:
+         os.remove(path_to_json) 
+      except:
+         x=0 # Nothing here as if it fails, it means the file wasn't there anyway (?)
       save_json_file(path_to_json,data)
-    
    else:
       # We return them 
       path_to_json = glob.glob(get_cache_path(analysed_name,"graphs")+name+'.json') 
