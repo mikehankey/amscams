@@ -43,8 +43,6 @@ def make_plot(graph_name,meteor_json_data,analysed_name,clear_cache):
 
                   # We save it
                   save_json_file(path_to_json,json_graph_content)
-
-                  
  
    else:
       if(graph_name=="xy"):
@@ -55,9 +53,6 @@ def make_plot(graph_name,meteor_json_data,analysed_name,clear_cache):
 # Create the corresponding JSON file for the Graph
 # and create the iframe with file=this json
 def create_iframe_to_graph(analysed_name,name,path_to_json,graph_config):
- 
-   link = DEFAULT_PATH_TO_GRAPH   
-
    # Create iframe src
    src =  DEFAULT_PATH_TO_GRAPH.replace('{JSONPATH}', path_to_json)
    src = src.replace('{GRAPH_CONFIG}',graph_config)
@@ -67,6 +62,7 @@ def create_iframe_to_graph(analysed_name,name,path_to_json,graph_config):
 
 # Get a graph.json or create it 
 def get_graph_file(meteor_json_file,analysed_name,name,clear_cache):
+   
     # CREATE or RETRIEVE TMP JSON FILE UNDER /GRAPH (see REDUCE_VARS)  
    json_graph = does_cache_exist(analysed_name,'graphs',name+'.json')
    path_to_json = None

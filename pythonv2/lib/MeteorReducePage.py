@@ -280,10 +280,7 @@ def reduce_meteor2(json_conf,form):
       #threeDlightCurve = make3D_light_curve(meteor_json_file, hd_stack)
       #plots += threeDlightCurve 
    plots = make_plot('xy',meteor_json_file,analysed_name,clear_cache) 
-   print("FROM METEOR REDUCE PAGE <br> Plots:")
-   print("<br>")
-   print(plots)
-
+ 
    if(plots is not None):
       extra_tabs, extra_content = create_tab_and_content(extra_tabs,extra_content,'basic_plot','PLOTS',plots)
       
