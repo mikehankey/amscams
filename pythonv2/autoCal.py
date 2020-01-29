@@ -606,9 +606,13 @@ def meteor_index(json_conf, day = None, extra_cmd = ""):
    else:
       year = day[0:4]
       mi_day_dir  = "/mnt/ams2/meteor_archive/" + station_id + "/MI/" + year + "/"
+      wb_day_dir  = "/mnt/wasabi/" + station_id + "/MI/" + year + "/"
       if cfe(mi_day_dir, 1) == 0:
          os.makedirs(mi_day_dir)
+      if cfe(wb_day_dir, 1) == 0:
+         os.makedirs(wb_day_dir)
       save_json_file(mi_day_dir + day + "-meteor_index.json", sort_meteor_index, False )   
+      save_json_file(wb_day_dir + day + "-meteor_index.json", sort_meteor_index, False )   
       print("SAVED:", mi_day_dir + day + "-meteor_index.json")
 
    print(json_conf)
