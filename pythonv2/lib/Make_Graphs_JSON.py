@@ -72,7 +72,7 @@ def get_graph_file(meteor_json_file,analysed_name,name,clear_cache):
 
    path_to_json = None
    
-   if((len(json_graph)==0 and clear_cache is True) is True or (clear_cache is True)):
+   if  len(json_graph)==0   or (clear_cache is True) :
       
       # We need to create the JSON
       path_to_json = get_cache_path(analysed_name,"graphs")+name+'.json'
