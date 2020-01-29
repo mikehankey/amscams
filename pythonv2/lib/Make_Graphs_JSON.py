@@ -73,7 +73,7 @@ def create_iframe_to_graph(analysed_name,name,graph_config,clear_cache=False):
 
 
 # Get a graph.json or create it 
-def get_graph_file(meteor_json_file,analysed_name,graph_type,clear_cache):
+def get_graph_file(meteor_json_file,analysed_name,name,clear_cache):
     # CREATE or RETRIEVE TMP JSON FILE UNDER /GRAPH (see REDUCE_VARS)  
    json_graph = does_cache_exist(analysed_name,'graphs',name+'.json')
    path_to_json = None
