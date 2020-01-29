@@ -210,7 +210,7 @@ def find_event(file, station_id, detect_info, events,solved_events):
          timed_events.append((event_id, elapsed))
 
       temp = sorted(timed_events, key=lambda x: x[1], reverse=False)
-      if temp[0][1] < 10:
+      if temp[0][1] < 60:
          found = 1
          event_id = temp[0][0]
          events[event_id]['stations'].append(station_id)

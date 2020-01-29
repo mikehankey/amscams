@@ -102,16 +102,88 @@ def EventsMain(json_conf, form):
       day_file = "/mnt/ams2/meteor_archive/" + station_id + "/EVENTS/" + year + "/" + day + "/" + day + "-events.json"
       events = load_json_file(day_file)
 
+      network_sites = json_conf['site']['network_sites'].split(",")
+      network_sites.append(json_conf['site']['ams_id'])
+      net_desc = ""
+      for ns in sorted(network_sites):
+         if net_desc != "":
+            net_desc += ","
+         net_desc += ns 
+      (single_station, multi_station,station_meteors) = event_stats(events)
+      print("<h1>Meteor Nework Report for " + day + "</h1>")
+      print("<P><B>Network Sites:</B> " + net_desc + "<br>")
+      print("<P><B>Total Unique Meteors :</B> " + str(len(events)) + "<br>")
+      print("<P><B>Total Multi Station Meteors :</B> " + str(multi_station) + "<br>")
+      print("<P><B>Total Single Station Meteors :</B> " + str(single_station) + "<br>")
+      print("<table>")
+      print("<tr><td>Station</td><td>Total Observations</td><td>Single Station Meteors</td><td>Multi Station Meteors</td><td>Total Unique Meteors </td></tr>")
+
+      for st in station_meteors:
+         total_meteors = station_meteors[st]['single_station'] + station_meteors[st]['multi_station']
+         print("<tr><td>" + st + "</td><td>" + str(station_meteors[st]['total_obs']) + "</td><td>" + str(station_meteors[st]['single_station']) + "</td><td>" + str(station_meteors[st]['multi_station']) + "</td><td>" + str(total_meteors) + "</td></tr>")
+      print("</table>")
+     
       print("<TABLE border=1>") 
       print("<TR><td>Event ID</td><td>Start Time</td><td>Obs</td><td>Solved</td></tr>") 
       for event_id in events:
+
          event = events[event_id]
          img_html = ""
-         for img in event['prev_imgs']:
-            img_html += "<img src=" + img + ">"
+         for i in range(0, len(event['stations'])):
+            arc_file = event['arc_files'][i] 
+            station = event['stations'][i] 
+            old_file = event['files'][i].split("/")[-1]
+            img = event['prev_imgs'][i]
+            if arc_file == "pending":
+               link = "<div style='float: left'><figure><a href=webUI.py?cmd=goto&old=1&file=" + old_file + "&station_id=" + station + ">" 
+               obs_desc = event['stations'][i] + "-pending"
+            else:
+               arc_fn = arc_file.split("/")[-1]
+               el = arc_file.split("_")[7]
+               other = el.split("-")
+               cam_id = other[0]
+               obs_desc = event['stations'][i] + "-" + cam_id
+               link = "<div style='float: left'><figure><a href=webUI.py?cmd=goto&file=" + arc_fn + "&station_id=" + station + ">" 
+            img_html += link + "<img src=" + img + "><figcaption>" + obs_desc + " " + event['clip_starts'][i] +  "</a></figcaption></figure></div>"
          print("<tr><td>" + event_id + "</td><td>" +  event['event_start_time'] + "</td><td>" +img_html + "</td></tr>")
       print("</TABLE>") 
 
+def event_stats(events):
+   single_station = 0
+   multi_station = 0
+   station_meteors = {}
+   for event_id in events:
+      event = events[event_id]
+      st_set = set(event['stations'])
+      stations = []
+      for station in st_set:
+         stations.append(station)
+      if len(stations) == 1:
+         st = stations[0]
+         single_station += 1
+
+         if st not in station_meteors:
+            station_meteors[st] = {}
+            station_meteors[st]['single_station'] = 0
+            station_meteors[st]['multi_station'] = 0
+            station_meteors[st]['total_obs'] = 0
+         station_meteors[st]['single_station'] += 1
+      else:
+     
+         multi_station += 1
+         for st in stations:
+            if st not in station_meteors:
+               station_meteors[st] = {}
+               station_meteors[st]['single_station'] = 0
+               station_meteors[st]['multi_station'] = 0
+               station_meteors[st]['total_obs'] = 0
+            station_meteors[st]['multi_station'] += 1
+
+      for st in event['stations']:
+         station_meteors[st]['total_obs'] += 1
+
+   return(single_station, multi_station,station_meteors)
+ 
 
 def EventsMainOld(json_conf, form):
    station_id = json_conf['site']['ams_id']
