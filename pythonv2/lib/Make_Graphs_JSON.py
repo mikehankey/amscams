@@ -73,10 +73,10 @@ def get_graph_file(meteor_json_file,analysed_name,name,clear_cache):
    print(str(len(json_graph)))
    print("<br>clear_cache<br>")
    print(str(clear_cache)) 
-   
+
    path_to_json = None
    
-   if  len(json_graph)==0  and clear_cache is True :
+   if  len(json_graph)==0  or clear_cache is True :
       print("COND1<br>")
 
       # We need to create the JSON
