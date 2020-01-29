@@ -8,7 +8,7 @@ var trace1 =  {
       marker : { symbol: 'square-open-dot', size:10  },
       xaxis: "x1",
       yaxis: "y1",
-      mode: 'markers'
+      mode: 'markers+spline'
 };
   
 var layout = {
