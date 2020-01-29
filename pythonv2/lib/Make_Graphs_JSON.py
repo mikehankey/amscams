@@ -27,8 +27,7 @@ def make_plot(graph_name,meteor_json_data,analysed_name,clear_cache):
    # Do we have a JSON ready this graph?
    path_to_json = get_graph_file(meteor_json_data,analysed_name,graph_name,clear_cache)
   
- 
-
+  
    if(path_to_json is None or cfe(path_to_json)==0):
 
       if(graph_name=="xy"):
@@ -44,11 +43,14 @@ def make_plot(graph_name,meteor_json_data,analysed_name,clear_cache):
 
                   # We save it
                   save_json_file(path_to_json,json_graph_content)
+
+                  return create_iframe_to_graph(analysed_name,graph_name,path_to_json,TRENDLINE_GRAPHICS)
  
    else:
       if(graph_name=="xy"):
          return create_iframe_to_graph(analysed_name,graph_name,path_to_json,TRENDLINE_GRAPHICS)
 
+   return ""
 
 # Build the iFrame 
 # Create the corresponding JSON file for the Graph
