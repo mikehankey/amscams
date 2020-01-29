@@ -61,7 +61,7 @@ def DetectsMain(form ):
       for i in range(0,len(events[event_id]['arc_files'])):
          if pc > 0:
             style = "<span style='color: red'>"
-         print("<tr><td>" + str(i) +  "</td><td>" + events[event_id]['stations'][i] + "</td><td>" +  events[event_id]['files'][i] + "</td><td><a href=/pycgi/webUI.py?cmd=goto&station="+ events[event_id]['stations'][i] + "&" + "file=" + events[event_id]['arc_files'][i] + ">" + events[event_id]['arc_files'][i] + "</a> </td></tr>");
+         print("<tr><td>" + str(i) +  "</td><td>" + str(events[event_id]['stations'][i]) + "</td><td>" +  events[event_id]['files'][i] + "</td><td><a href=/pycgi/webUI.py?cmd=goto&station="+ events[event_id]['stations'][i] + "&" + "file=" + events[event_id]['arc_files'][i] + ">" + events[event_id]['arc_files'][i] + "</a> </td></tr>");
       print("</table>")
 
 
@@ -77,6 +77,43 @@ def DetectsDetail(form):
    print("..", station)
 
 def EventsMain(json_conf, form):
+
+   station_id = json_conf['site']['ams_id']
+   year = form.getvalue("year")
+   day = form.getvalue("day")
+   show_solved = form.getvalue("show_solved")
+   events_dir = "/mnt/ams2/meteor_archive/" + station_id + "/EVENTS/"
+ 
+   if year is None:
+      print("Select Event Year: <UL>")
+      years = glob.glob("/mnt/ams2/meteor_archive/" + station_id + "/EVENTS/*")
+      for file in years:
+         tyear = file.split("/")[-1]
+         print("<a href=webUI.py?cmd=events&year=" + tyear + ">" + tyear + "</a><br>")
+   elif day is None:
+      days = glob.glob("/mnt/ams2/meteor_archive/" + station_id + "/EVENTS/" + year + "/*")
+ 
+      for tday in sorted(days, reverse=True):
+         if cfe(tday, 1) == 1:
+            sday = tday.split("/")[-1]
+            print("<a href=webUI.py?cmd=events&year=" + year + "&day=" + sday + ">" + sday + "</a><br>")
+   else:
+      # show page for one day of events from one network group (not the global system )
+      day_file = "/mnt/ams2/meteor_archive/" + station_id + "/EVENTS/" + year + "/" + day + "/" + day + "-events.json"
+      events = load_json_file(day_file)
+
+      print("<TABLE border=1>") 
+      print("<TR><td>Event ID</td><td>Start Time</td><td>Obs</td><td>Solved</td></tr>") 
+      for event_id in events:
+         event = events[event_id]
+         img_html = ""
+         for img in event['prev_imgs']:
+            img_html += "<img src=" + img + ">"
+         print("<tr><td>" + event_id + "</td><td>" +  event['event_start_time'] + "</td><td>" +img_html + "</td></tr>")
+      print("</TABLE>") 
+
+
+def EventsMainOld(json_conf, form):
    station_id = json_conf['site']['ams_id']
    year = form.getvalue("year")
    show_solved = form.getvalue("show_solved")

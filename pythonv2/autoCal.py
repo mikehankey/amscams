@@ -559,25 +559,29 @@ def meteor_index(json_conf, day = None, extra_cmd = ""):
             if cfe(meteor_data['archive_file']) == 1:
                archived = 1
                meteor_index[day][meteor]['archive_file'] = meteor_data['archive_file']
-               azs, els,ints = get_az_el_from_arc(meteor_data['archive_file'])
+               azs, els,ints,event_start_time = get_az_el_from_arc(meteor_data['archive_file'])
                meteor_index[day][meteor]['azs'] = azs
                meteor_index[day][meteor]['els'] = els
                meteor_index[day][meteor]['ints'] = ints 
+               meteor_index[day][meteor]['event_start_time'] = event_start_time
          if "sd_objects" not in meteor_data:
             print("NO SD OBJ!", meteor )
             continue 
          for obj in meteor_data['sd_objects']:
             print("OBJ:", obj)
-            trim_num = get_trim_num(meteor)
-            print("TRIM NUM:", trim_num)
-            extra_start_file_sec = int(trim_num) / 25
-            event_start_fn = obj['history'][0][0]
-            print("EVENT START FN:", event_start_fn, meteor)
-            (file_date, cam_id, f_date_str,fy,fm,fd, fh, fmin, fs) = convert_filename_to_date_cam(meteor)
-            extra_sec = (int(event_start_fn) / 25) + extra_start_file_sec
-            event_start = file_date + datetime.timedelta(0,extra_sec)
-            event_start_str = event_start.strftime('%Y-%m-%d %H:%M:%S.%f')[:-3]
-            meteor_index[day][meteor]['event_start_time'] = event_start_str
+            #only do this on the meteor object!)
+            # add event start time estimate only if arc time is not set!
+            if "archive_file" not in meteor_data:
+               trim_num = get_trim_num(meteor)
+               print("TRIM NUM:", trim_num)
+               extra_start_file_sec = int(trim_num) / 25
+               event_start_fn = obj['history'][0][0]
+               print("EVENT START FN:", event_start_fn, meteor)
+               (file_date, cam_id, f_date_str,fy,fm,fd, fh, fmin, fs) = convert_filename_to_date_cam(meteor)
+               extra_sec = (int(event_start_fn) / 25) + extra_start_file_sec
+               event_start = file_date + datetime.timedelta(0,extra_sec)
+               event_start_str = event_start.strftime('%Y-%m-%d %H:%M:%S.%f')[:-3]
+               meteor_index[day][meteor]['event_start_time'] = event_start_str
          # if the archive file exists, get the az,el values and add to the index     
  
    sort_meteor_index = {}
@@ -682,6 +686,7 @@ def get_az_el_from_arc(arc_file):
    els = []
    ints = []
    if arc_data != 0:
+      event_start_time = arc_data['frames'][0]['dt']
       for frame in arc_data['frames']:
          az = frame['az']
          el = frame['el']
@@ -692,7 +697,7 @@ def get_az_el_from_arc(arc_file):
          azs.append(az)
          els.append(el)
          ints.append(intensity)
-   return(azs,els,ints)
+   return(azs,els,ints,event_start_time)
 
 def find_best_fov(meteor_json_file, json_conf):
    found = 0
