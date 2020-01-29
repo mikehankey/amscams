@@ -36,9 +36,7 @@ TRASH_FOLDER = '/mnt/ams2/trash'
  
 # Delete Multiple Detections at once
 def delete_multiple_archived_detection(detections):
-
-   print("DELETING")
-   print(detections)
+ 
    
    # In case we only have one... it's a string
    if(isinstance(detections, str)):

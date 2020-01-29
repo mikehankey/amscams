@@ -2891,8 +2891,13 @@ def reduce_meteor_new(json_conf,form):
    hdm_y = 1.875
    video_file = form.getvalue("video_file")
 
-   # for testing
-   #video_file= "/mnt/ams2/meteors/2019_05_24/2019_05_24_08_01_13_000_010001-trim0987.mp4"
+ 
+
+   # Try to build the corresponding JSID
+   jsid = video_file.split("/")[-1]
+   jsid = jsid.replace("_", "")
+   jsid = jsid.replace(".mp4", "")
+   print("JSID " + jsid)
 
    meteor_json_file = video_file.replace(".mp4", ".json") 
    meteor_reduced_file = meteor_json_file.replace(".json", "-reduced.json")
