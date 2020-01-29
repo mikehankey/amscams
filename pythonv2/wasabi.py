@@ -53,6 +53,27 @@ def cp_msd2wasabi():
 
 def sync_archive():
    station_id = json_conf['site']['ams_id']
+
+   # Sync Detect PREVIEWS 
+   os.system("find /mnt/ams2/meteor_archive/" + station_id + " |grep DETECT | grep PREVIEW  > /mnt/ams2/tmp/arc-prev.txt") 
+   fp = open("/mnt/ams2/tmp/arc-prev.txt", "r")
+   for line in fp:
+      line = line.replace("\n", "")
+      wasabi_json = line.replace("ams2/meteor_archive", "wasabi")
+      if cfe(wasabi_json) == 0: 
+         # need to copy files
+         wf = wasabi_json.split("/")[-1]
+         wd = wasabi_json.replace(wf, "")
+         if cfe(wd, 1) == 0:
+            print("WASABI DIR DOESN'T EXIST",wd)
+            print("make dir ", wd)
+            os.makedirs(wd)
+         cmd = "cp " + line + " " + wd
+         print(cmd)
+         os.system(cmd)
+
+   exit()
+   # Sync Meteors
    os.system("find /mnt/ams2/meteor_archive/" + station_id + " |grep METEOR | grep json  |grep trim > /mnt/ams2/tmp/arc.txt") 
    fp = open("/mnt/ams2/tmp/arc.txt", "r")
    for line in fp:
@@ -83,6 +104,8 @@ def sync_archive():
 
       #print(line)
       #print(wasabi_json)
+
+   # Sync Cal Dir
    
 
 def wasabi_cp(file):

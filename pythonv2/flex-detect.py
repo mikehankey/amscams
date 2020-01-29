@@ -72,6 +72,12 @@ def batch_archive_msm(mode):
          mjd = load_json_file(orig_meteor_json_file)
          video_file = orig_meteor_json_file.replace(".json", ".mp4")
          stack_thumb = orig_meteor_json_file.replace(".json", "-stacked-tn.png")
+         prev_img = stack_thumb.replace("-stacked-tn.png", "-prev-crop.jpg")
+         print("PREV", prev_img)
+         if cfe(prev_img) == 1:
+            stack_thumb = prev_img
+
+
          if mjd == 0:
             continue
          jsid = video_file.split("/")[-1]
@@ -87,6 +93,7 @@ def batch_archive_msm(mode):
          if "archive_file" in mjd:
             print(orig_meteor_json_file + " ARCHIVED") 
             desc_long = file.replace(".json", "")
+
             desc = desc_long.split("-trim")[0]
             out += "<figure style=\"float: left; text-align: center\"><a href=/pycgi/webUI.py?cmd=reduce&video_file=" + video_file + "><img src=" + stack_thumb + "><figcaption style=\"font-size: x-medium\">" + desc + "</figcaption></a></figure>\n"
             total_arc +=1
@@ -8494,10 +8501,15 @@ def find_crop_size(min_x,min_y,max_x,max_y):
    h = max_y - min_y
    mid_x = int(((min_x + max_x) / 2))
    mid_y = int(((min_y + max_y) / 2))
-   for mw,mh in sizes:
-      if w * 2 < mw and h < mh * 2:
+   best_w = 1919
+   best_h = 1079
+   for mw,mh in sizes: 
+      print("CROP AREA:", w*2, h*2)
+      if w * 2 < mw and h * 2 < mh :
+         print("SIZE:", w,h, mw,mh)
          best_w = mw
          best_h = mh
+
 
    if (best_w/2) + mid_x > 1920:
       cx1 = mid_x + (best_w + mid_x ) - 1920 
@@ -8973,7 +8985,256 @@ def minimize_poly_params_fwd(cal_params_file, cal_params,json_conf,show=1):
    #cal_params['center_el'] = img_el
    #save_json_file(cal_params_file, cal_params)
    return(cal_params)
-      
+
+def batch_make_preview_image():
+   meteor_dirs = glob.glob("/mnt/ams2/meteors/*")
+   station_id = json_conf['site']['ams_id']
+   out = ""
+   for md in sorted(meteor_dirs,reverse=True):
+      mfs = glob.glob(md + "/*trim*.json")
+      if len(mfs) > 0:
+         meteor_day = md.split("/")[-1]
+         out += "<div style='clear:both'></div><H1><a href=/pycgi/webUI.py?cmd=meteors&limit_day=" + meteor_day + ">" + meteor_day + "</h1>"
+      for mf in mfs:
+         if "reduced" not in mf and "manual" not in mf and "framedata" not in mf and "events" not in mf:
+            print(mf)
+            pi = mf.replace(".json", "-prev-full.jpg")
+            pc = mf.replace(".json", "-prev-crop.jpg")
+            if cfe(pi) == 0:
+               make_preview_image(mf)
+            meteor_year = meteor_day[0:4]
+ 
+            arc_dir = "/mnt/ams2/meteor_archive/" + station_id + "/DETECTS/PREVIEW/" + meteor_year + "/" + meteor_day + "/" 
+            if cfe(arc_dir, 1) == 0:
+               os.makedirs(arc_dir)
+            pif = pi.split("/")[-1]
+            if cfe(arc_dir + pif) == 0:
+               cmd = "cp " + pi + " " + arc_dir
+               cmd2 = "cp " + pc + " " + arc_dir
+               os.system(cmd)
+               os.system(cmd2)
+               print("Copy to archive.", cmd, cmd2)
+
+            link = "<a href=/pycgi/webUI.py?cmd=reduce&video_file=" + mf + ">"
+            out +=  "<div style='float: left'>" + link + "<img src=" + pc + "></a></div>\n"
+   station_id = json_conf['site']['ams_id']
+   prev_file = "/mnt/ams2/meteor_archive/" + station_id + "/DETECTS/detect_preview.html"
+   fp = open(prev_file, "w")
+   fp.write(out)
+   print(prev_file)
+
+def make_preview_image(json_file):
+   sd_xs = []
+   sd_ys = []
+   hd_stack= None
+   sd_stack= None
+   hd_stack_img = None
+   sd_stack_img = None
+   if "/mnt/ams2/meteors" in json_file:
+      # old meteor 
+      jd = load_json_file(json_file)
+      if 'hd_trim' in jd:
+       
+         hd_trim = jd['hd_trim']
+         if hd_trim is not None and hd_trim != 0:
+            hd_stack = hd_trim.replace(".mp4", "-stacked.png")
+            if "/mnt/ams2/HD" in hd_stack:
+               sfn = hd_stack.split("/")[-1]
+               day = sfn[0:10]  
+               hd_stack = "/mnt/ams2/meteors/" +day + "/" + sfn
+               if cfe(hd_stack) == 0:
+                  print("HD STACK NOT FOUND:", hd_stack)
+                  hd_stack = None
+
+      if 'sd_stack' in jd:
+         sd_stack = jd['sd_stack']
+      else:
+         sd_stack = json_file.replace(".json", "-stacked.png")
+         if cfe(sd_stack) == 0:
+            sd_stack = None   
+      if "sd_objects" in jd:
+         sd_xs = []
+         sd_ys = []
+         for obj in jd['sd_objects']:
+            print(obj)
+            if "meteor" in obj:
+               if obj['meteor'] == 1 or obj['meteor'] == "1":
+                  for hist in obj['history']:
+                     x = hist[1]
+                     y = hist[2]
+                     sd_xs.append(x)
+                     sd_ys.append(y)
+            elif len(jd['sd_objects']) == 1:
+               for hist in obj['history']:
+                  x = hist[1]
+                  y = hist[2]
+                  sd_xs.append(x)
+                  sd_ys.append(y)
+ 
+            else:
+               print("NO METEOR IN SD OBJ")
+
+   if sd_stack is not None:
+      sd_stack_img = cv2.imread(sd_stack,0)
+      hdm_x = 1920 / sd_stack_img.shape[1]
+      hdm_y = 1080 / sd_stack_img.shape[0]
+      print(sd_stack_img.shape)
+   else:
+      hdm_x = 1920/704
+      hdm_y = 1080/576
+   if hd_stack is not None and hd_stack_img is None and cfe(hd_stack) == 1:
+      print("HDS:", hd_stack)
+      hd_stack_img = cv2.imread(hd_stack,0)
+      try:
+         print("HD LOAD:", hd_stack_img.shape)
+      except:
+         hd_stack = None
+         hd_stack_img = None
+
+   if hd_stack is not None:
+      if cfe(hd_stack) == 0:
+         hd_stack = None
+
+   if sd_stack is None or hd_stack is None:
+      print("MISSING STACKS!", sd_stack, hd_stack)
+      if sd_stack is not None:
+         sd_stack_img = cv2.imread(sd_stack,0)
+         if hd_stack is None:
+            hd_stack_img = cv2.resize(sd_stack_img, (1920,1080))
+            hd_stack = sd_stack
+       
+   print("SD STAC:", sd_stack)
+   print("HD STAC:", hd_stack)
+   print("SD POINTS:", sd_xs,sd_ys)
+
+   if len(sd_xs) == 0 and sd_stack_img is None:
+      print("FAILED")
+      return()
+
+   if len(sd_xs) == 0:
+      max_x = sd_stack_img.shape[1] 
+      max_y = sd_stack_img.shape[0] 
+      min_x = 0
+      min_y = 0
+   else:
+      max_x = max(sd_xs) #* hdm_x
+      max_y = max(sd_ys) #* hdm_y
+      min_x = min(sd_xs) #* hdm_x
+      min_y = min(sd_ys) #* hdm_y
+
+   max_hd_x = max_x * hdm_x
+   max_hd_y = max_y * hdm_y
+   min_hd_x = min_x * hdm_x
+   min_hd_y = min_y * hdm_y
+
+   # if the arc file exists use the frame data from that.
+   if "archive_file" in jd:
+      axs = []
+      ays = []
+      ad = load_json_file(jd['archive_file'])
+      print("USING ARC!")
+      if ad != 0:
+         if "frames" in ad:
+            for fr in ad['frames']:
+               axs.append(fr['x'])
+               ays.append(fr['y'])
+            if len(axs) > 1:
+               avg_hd_x = int(np.mean(axs))
+               avg_hd_y = int(np.mean(ays))
+               max_hd_x = max(axs) #* hdm_x
+               max_hd_y = max(ays) #* hdm_y
+               min_hd_x = min(axs) #* hdm_x
+               min_hd_y = min(ays) #* hdm_y
+            else:
+               max_hd_x = 1920
+               max_hd_y = 1080
+               min_hd_x = 0
+               min_hd_y = 0
+            print("USING ARC VALUES!")
+   else:
+      print("NO ARC YET")
+          
+ 
+
+
+   cv2.rectangle(sd_stack_img, (min_x, min_y), (max_x, max_y), (255,255,255), 1, cv2.LINE_AA)
+   #cv2.imshow('pepe', sd_stack_img)
+   #cv2.waitKey(0)
+   if len(sd_xs) > 0:
+      cx = int(np.mean(sd_xs) * hdm_x)
+      cy = int(np.mean(sd_ys) * hdm_y)
+   else:
+      cx = 1920  / 2
+      cy = 1080 / 2
+   width = int((max_x - min_x) * hdm_x)
+   height = int((max_y - min_y) * hdm_y)
+   print("WIDTH: ", width)
+   print("HEIGHT:",  height)
+   print("HD SIZE:", min_hd_x, min_hd_y, max_hd_x, max_hd_y)
+
+   cx1,cy1,cx2,cy2,mid_x,mid_y = find_crop_size(min_hd_x, min_hd_y, max_hd_x,max_hd_y)
+
+   if hd_stack is None or cfe(hd_stack) == 0 and sd_stack_img is not None:
+      try:
+         hd_stack_img = cv2.resize(sd_stack_img, (1920,1080))
+         hd_stack = sd_stack
+      except:
+         print("FAILED!", json_file, sd_stack, hd_stack)
+         exit()
+   
+
+   if hd_stack is not None and hd_stack_img is not None:
+      print(cy1,cy2,cx1,cx2)
+      prev_img = hd_stack_img[cy1:cy2,cx1:cx2]
+      print("HD STACK:", hd_stack)
+      print("SD STACK:", sd_stack)
+      try:
+         prev_img = cv2.resize(prev_img, (240,135))
+         prev_img_full = cv2.resize(hd_stack_img, (240,135))
+      except:
+         sd_stack_img = cv2.imread(sd_stack, 0)
+         hd_stack_img = cv2.resize(sd_stack_img, (1920,1080))
+         print(sd_stack_img.shape)
+         prev_img = hd_stack_img[cy1:cy2,cx1:cx2]
+         prev_img = cv2.resize(prev_img, (240,135))
+         prev_img_full = cv2.resize(sd_stack_img, (240,135))
+      cv2.rectangle(hd_stack_img, (cx1, cy1), (cx2, cy2), (255,255,255), 1, cv2.LINE_AA)
+      #cv2.imshow('pepe', prev_img)
+      #cv2.waitKey(30)
+      prev_img_file = json_file.replace(".json", "-prev-crop.jpg")
+      prev_img_full_file = json_file.replace(".json", "-prev-full.jpg")
+      print("SAVED:", prev_img_file)
+      print("SAVED:", prev_img_full_file)
+      cv2.imwrite(prev_img_file, prev_img,[int(cv2.IMWRITE_JPEG_QUALITY), 80])
+      cv2.imwrite(prev_img_full_file, prev_img_full,[int(cv2.IMWRITE_JPEG_QUALITY), 80])
+
+   if "meteor_archive" in json_file:
+      print("ARC")
+      # new meteor 
+
+   if sd_stack is None and hd_stack is None:
+      print("Both stacks are none?")
+      exit()
+     
+def bound_169(cx,cy,width,height): 
+   cx1 = cx - int(width/2) 
+   cx2 = cx + int(width/2) 
+   cy1 = cy - int(height/2) 
+   cy2 = cy + int(height/2) 
+   if cx1 < 0:
+      cx1 = 0
+      cx2 = width
+   if cx2 >= 1920:
+      cx1 = 1919 - width 
+      cx2 = 1919 
+
+   if cy1 < 0:
+      cy1 = 0
+      cy2 = height 
+   if cy2 >= 1080:
+      cy1 = 1080 - height 
+      cy2 = 1079
+   return(cx1,cx2,cy1,cy2)
  
 
 cmd = sys.argv[1]
@@ -9062,3 +9323,7 @@ if cmd == "qqs" :
    quickest_scan(sys.argv[2])
 if cmd == "bqqs" :
    batch_quickest_scan(sys.argv[2])
+if cmd == "mpi" :
+   make_preview_image(sys.argv[2])
+if cmd == "bmpi" :
+   batch_make_preview_image()
