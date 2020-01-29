@@ -62,5 +62,4 @@ for (var i = 0; i <= 255; i = i + step) {
 }
 
 // We had the color scale for X
-trace1.marker.color  =  all_colors; 
- 
+trace1.marker.color  =  all_colors;  
