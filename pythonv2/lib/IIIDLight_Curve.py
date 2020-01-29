@@ -16,6 +16,10 @@ def get_json_for_3Dlight_curve(frames,analysed_name):
    # Get only the x and y
    all_x = []
    all_y = []
+
+   print(frames)
+   sys.exit(0)
+
    for frame in frames:
       if('x' in frame):
          print(frame['x'])
