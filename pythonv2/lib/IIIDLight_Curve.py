@@ -54,11 +54,9 @@ def get_json_for_3Dlight_curve(frames,analysed_name):
                y_vals.append(y)
 
 
-   print(x_vals)
-   print("<hr/>")
-   print(y_vals)
-   print("<hr/>")
-   print(z_vals)
-
-   #return {'x':json.dumps(x_vals),'y':json.dumps(y_vals),'z':json.dumps(z_vals)}
+   x_vals = json.dumps(x_vals)
+   y_vals = json.dumps(y_vals)
+   z_vals = json.dumps(z_vals)
+   
+   return {'x':x_vals,'y':y_vals,'z':z_vals}
 
