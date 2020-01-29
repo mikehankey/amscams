@@ -21,6 +21,10 @@ TRENDLINE_GRAPHICS = PATH_TO_GRAPH_LAYOUTS + 'trendline.js'
 LIGTHCURVE_GRAPHICS = PATH_TO_GRAPH_LAYOUTS + 'lightcurve.js'
 
 
+# Clear GRAPH CACHE
+def clear_graph_cache(meteor_json_file_data,analysed_name,graph_type):
+   make_plot(graph_type,meteor_json_file_data, analysed_name, True)
+   
 # Return an iframe with a graph or nothing if we don't have enough data
 # for this graph type
 def make_plot(graph_name,meteor_json_data,analysed_name,clear_cache):
@@ -114,11 +118,6 @@ def get_graph_file(meteor_json_file,analysed_name,name,clear_cache):
  
 
 
-# Clear GRAPH CACHE
-def clear_graph_cache(meteor_json_file,analysed_name,graph_type):
-   # Clear basic plot
-   if(graph_type=='xy'):
-      make_basic_plots(meteor_json_file, analysed_name, True)
 
  
  
