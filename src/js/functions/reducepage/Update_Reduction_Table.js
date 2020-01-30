@@ -39,9 +39,9 @@ function update_reduction_on_canvas_and_table(json_resp) {
 
     // Create Colors
     var rainbow = new Rainbow();
-    rainbow.setNumberRange(0, 255);
-    var all_colors = [];
     var total = all_frame_ids.length; 
+    rainbow.setNumberRange(0, total);
+    var all_colors = [];
     var step = 1
     if(total<=255) {
       var step = parseInt(255/total); 
