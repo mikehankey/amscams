@@ -53,7 +53,7 @@ function update_reduction_on_canvas_and_table(json_resp) {
      
 
     for (var i = 0; i <= 255; i = i + step) {
-        all_colors.push('#'+rainbow.colourAt(i));
+        all_colors[i] = '#'+rainbow.colourAt(i);
     }
  
     // We need the "middle" frame to illustrate the thumb anim button
