@@ -27,7 +27,8 @@ function update_star_and_reduction(callback) {
                // Update Stars
                update_stars_on_canvas_and_table(json_resp);
                
-             
+               console.log("STARS SHOULD BE OK NOW");
+               return false;
  
                // Update Reduction
                //update_reduction_on_canvas_and_table(json_resp);
