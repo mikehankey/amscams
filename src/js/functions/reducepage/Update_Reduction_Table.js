@@ -36,6 +36,11 @@ function update_reduction_on_canvas_and_table(json_resp) {
         all_frame_ids.push(parseInt(v[1]));
     });
 
+
+    console.log("BEFORE RAINBOW");
+    console.log(all_frame_ids.length);
+    console.log(parseInt(255/total));
+
     // Create Colors
     var rainbow = new Rainbow();
     rainbow.setNumberRange(0, 255);
