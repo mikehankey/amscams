@@ -173,12 +173,14 @@ def manual_reduction_cropper(form):
    cmd = 'ffmpeg   -i ' + new_full_path +  ' -filter_complex "[0:v]scale=' + str(HD_W) + ":" + str(HD_H) + '[scale];[scale]crop='+str(w)+':'+str(h)+':'+str(x_start)+':'+str(y_start)+'[out]"  -map "[out]" ' + dest_folder + '/%04d' + '.png' 
    output = subprocess.check_output(cmd, shell=True).decode("utf-8")  
    
+   print("MANUAL REDUCE <br>")
+   print(cmd)
+   sys.exit(0)
+
+
    # Get all the newly created cropped frames
    thumbs = sorted(glob.glob(dest_folder+'/*.png'))
-
-   print("IN MANUAL REDUCE")
-   print(thumbs)
-   sys.exit(0)
+ 
 
    # Build the page based on template  
    with open(MANUAL_RED_PAGE_TEMPLATE_STEP2, 'r') as file:
