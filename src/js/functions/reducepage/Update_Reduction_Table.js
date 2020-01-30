@@ -38,11 +38,12 @@ function update_reduction_on_canvas_and_table(json_resp) {
     // Create Colors
     var rainbow = new Rainbow();
     rainbow.setNumberRange(0, 255);
+
     var all_colors = [];
     var total = all_frame_ids.length; 
     var step = 1;
 
-    if(total>255) {   
+    if(total>=255) {   
       // Default color for the end...
       for (var i = 255; i <= total; i = i + step) {
          all_colors[i] = '#ff0000';
@@ -51,7 +52,8 @@ function update_reduction_on_canvas_and_table(json_resp) {
          all_colors[i] = '#'+rainbow.colourAt(i);
       }
     } else {
-      var step = parseInt(255/total); 
+      step = parseInt(255/total); 
+      console.log("STEP " + step);
       for (var i = 0; i <= total; i = i + step) {
          all_colors.push('#'+rainbow.colourAt(i));
       }
