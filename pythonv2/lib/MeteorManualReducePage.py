@@ -176,6 +176,10 @@ def manual_reduction_cropper(form):
    # Get all the newly created cropped frames
    thumbs = sorted(glob.glob(dest_folder+'/*.png'))
 
+   print("IN MANUAL REDUCE")
+   print(thumbs)
+   sys.exit(0)
+
    # Build the page based on template  
    with open(MANUAL_RED_PAGE_TEMPLATE_STEP2, 'r') as file:
       template = file.read()
