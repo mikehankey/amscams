@@ -204,13 +204,7 @@ def reduce_meteor2(json_conf,form):
    # either we take the time of the file name
    if(start_time==0):
       start_time = analysed_name['year']+'-'+analysed_name['month']+'-'+analysed_name['day']+ ' '+ analysed_name['hour']+':'+analysed_name['min']+':'+analysed_name['sec']+'.'+analysed_name['ms']
-   
-      
-   print("start_time<br>")
-   print(start_time)
-   sys.exit(0)
-    
-
+  
 
 
    # We compute the MED_DIST (medium value of frame['dist_from_last'])
@@ -275,17 +269,20 @@ def reduce_meteor2(json_conf,form):
          template = template.replace("{MULTI_DETAILS}",'')
 
 
+
+
+
    # CREATE EXTRA CONTENT
    extra_tabs = ""
    extra_content = ""
 
    # MAKE ALL THE GRAPHICS WE WANT
-   plots = make_plot('xy',meteor_json_file,analysed_name,clear_cache) 
-   plots += make_plot('curvelight',meteor_json_file,analysed_name,clear_cache)
+   #plots = make_plot('xy',meteor_json_file,analysed_name,clear_cache) 
+   #plots += make_plot('curvelight',meteor_json_file,analysed_name,clear_cache)
    #plots += make_plot('3Dlight',meteor_json_file,analysed_name,clear_cache) 
  
-   if(plots is not None):
-      extra_tabs, extra_content = create_tab_and_content(extra_tabs,extra_content,'basic_plot','PLOTS',plots)
+   #if(plots is not None):
+   #   extra_tabs, extra_content = create_tab_and_content(extra_tabs,extra_content,'basic_plot','PLOTS',plots)
       
    # After CREATING ALL THE GRAPHS WE INCLUDE THEMclear_cacclear_cache
    template = template.replace("{EXTRA_TAB}",extra_tabs)
