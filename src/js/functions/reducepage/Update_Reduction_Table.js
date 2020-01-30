@@ -39,6 +39,10 @@ function update_reduction_on_canvas_and_table(json_resp) {
         all_colors.push('#'+rainbow.colourAt(i));
     }
 
+    console.log("update_reduction_on_canvas_and_table")
+    console.log(all_colors);
+    return false;
+
     // We need the "middle" frame to illustrate the thumb anim button
     var middle_frame = "";
     var middle_frame_index = 0
