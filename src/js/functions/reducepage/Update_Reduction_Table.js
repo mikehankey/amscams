@@ -40,20 +40,23 @@ function update_reduction_on_canvas_and_table(json_resp) {
     rainbow.setNumberRange(0, 255);
     var all_colors = [];
     var total = all_frame_ids.length; 
-    if(total>255) {  
-      var step = 1;
+    var step = 1;
+
+    if(total>255) {   
       // Default color for the end...
       for (var i = 0; i <= total; i = i + step) {
          all_colors.push('#ff0000');
-     }
+      }
     } else {
-      var step = parseInt(255/total); 
+      step = parseInt(255/total); 
     }
      
 
     for (var i = 0; i <= 255; i = i + step) {
         all_colors.push('#'+rainbow.colourAt(i));
     }
+
+    console.log(all_colors);
  
     // We need the "middle" frame to illustrate the thumb anim button
     var middle_frame = "";
