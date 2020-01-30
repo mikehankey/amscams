@@ -128,9 +128,7 @@ def reduce_meteor2(json_conf,form):
 
       else:
          other_station = True
-         print("OTHER STATION")
-         sys.exit(0)
-    
+         
    
    if(cfe(video_hd_full_path)==0):
       video_hd_full_path = ''
@@ -155,13 +153,18 @@ def reduce_meteor2(json_conf,form):
    meteor_json_file = load_json_file(json_full_path) 
 
 
-   # Get the HD or SD stack
    tmp_analysed_name = name_analyser(json_full_path) 
    if(video_hd_full_path != ''):
       hd_stack = get_stacks(tmp_analysed_name,clear_cache,True)
    
    stack = get_stacks(tmp_analysed_name,clear_cache,False) 
-   
+
+   print("STACKS: <br>")
+   print(stack)
+   print(hd_stack)
+   sys.exit(0)
+
+
    # Get the HD frames 
    HD_frames = get_HD_frames(tmp_analysed_name,clear_cache)
     
