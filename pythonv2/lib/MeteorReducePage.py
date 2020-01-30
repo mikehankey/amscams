@@ -173,13 +173,6 @@ def reduce_meteor2(json_conf,form):
    else:
       thumbs = get_thumbs(tmp_analysed_name,meteor_json_file,HD,HD_frames,clear_cache)
   
-   
-   print("thumbs<br>")
-   print(thumbs)
-   sys.exit(0)
-    
-
-
    # Is it remote?
    if(other_station==True):
       real_station_id = can_we_get_the_station_id(analysed_name['full_path'])
@@ -212,6 +205,13 @@ def reduce_meteor2(json_conf,form):
    if(start_time==0):
       start_time = analysed_name['year']+'-'+analysed_name['month']+'-'+analysed_name['day']+ ' '+ analysed_name['hour']+':'+analysed_name['min']+':'+analysed_name['sec']+'.'+analysed_name['ms']
    
+      
+   print("start_time<br>")
+   print(start_time)
+   sys.exit(0)
+    
+
+
 
    # We compute the MED_DIST (medium value of frame['dist_from_last'])
    med_dist = 0
