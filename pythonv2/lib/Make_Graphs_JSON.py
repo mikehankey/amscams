@@ -48,6 +48,7 @@ def make_plot(graph_name,meteor_json_data,analysed_name,clear_cache):
                   # We save it
                   save_json_file(path_to_json,json_graph_content)
 
+                  # Return the iframe code
                   return create_iframe_to_graph(analysed_name,graph_name,path_to_json,TRENDLINE_GRAPHICS)
 
       elif(graph_name=='curvelight'):
@@ -64,6 +65,7 @@ def make_plot(graph_name,meteor_json_data,analysed_name,clear_cache):
                   # We save it
                   save_json_file(path_to_json,json_graph_content)
 
+                  # Return the iframe code
                   return create_iframe_to_graph(analysed_name,graph_name,path_to_json,LIGTHCURVE_GRAPHICS)
 
       elif(graph_name=='3Dlight'):
@@ -77,11 +79,9 @@ def make_plot(graph_name,meteor_json_data,analysed_name,clear_cache):
                   path_to_json = get_cache_path(analysed_name,"graphs")+graph_name+'.json'
 
                   # We save it
-                  print("BEFORE SAVING IT")
-                  print(json_graph_content)
                   save_json_file(path_to_json,json_graph_content)
-                  print("SAVED")
-
+                  
+                  # Return the iframe code
                   return create_iframe_to_graph(analysed_name,graph_name,path_to_json,IIIDLIGTHCURVE_GRAPHICS)
 
 
