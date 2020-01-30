@@ -54,7 +54,7 @@ function update_reduction_on_canvas_and_table(json_resp) {
     } else {
       step = parseInt(255/total); 
       console.log("STEP " + step);
-      for (var i = 0; i <= total; i = i + step) {
+      for (var i = 0; i <= 255; i = i + step) {
          all_colors.push('#'+rainbow.colourAt(i));
       }
     }
