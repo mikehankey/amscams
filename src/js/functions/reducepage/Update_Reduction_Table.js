@@ -16,6 +16,7 @@ function update_reduction_on_canvas_and_table(json_resp) {
 
 
     console.log("BEFORE POINT SCORE");
+    return false;
 
     // If we have a "point_score", we update the value on the page
     if(json_resp['point_score'])  {
