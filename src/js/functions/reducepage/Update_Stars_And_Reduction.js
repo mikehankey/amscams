@@ -16,19 +16,20 @@ function update_star_and_reduction(callback) {
        success: function(data) {
        
            var json_resp = $.parseJSON(data); 
-
-           console.log("JSON RESP");
-           console.log(json_resp)
-           return false;
-
+ 
  
            if(json_resp['status']!==0) {
             
                // Remove All objects from Canvas
                remove_objects();
+               console.log("OBJECT REMOVED");
                
                // Update Stars
                update_stars_on_canvas_and_table(json_resp);
+               
+               console.log("START UPDATEED");
+               return false;
+
 
                // Update Reduction
                update_reduction_on_canvas_and_table(json_resp);
