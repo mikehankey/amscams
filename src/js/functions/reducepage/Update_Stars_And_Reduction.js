@@ -21,19 +21,17 @@ function update_star_and_reduction(callback) {
            if(json_resp['status']!==0) {
             
                // Remove All objects from Canvas
-               remove_objects();
-               console.log("OBJECT REMOVED");
+               remove_objects(); 
                
                // Update Stars
                update_stars_on_canvas_and_table(json_resp);
                
-               console.log("START UPDATEED");
-               return false;
-
-
                // Update Reduction
                update_reduction_on_canvas_and_table(json_resp);
-               
+            console.log("TABLE UPDATED");
+            return false;
+
+
                // Update Add frames
                // setup_add_frames();
 
