@@ -32,8 +32,7 @@ function update_star_and_reduction(callback) {
  
                // Update Reduction
                //update_reduction_on_canvas_and_table(json_resp);
-               
-               
+                
 
                // Reload the actions
                //reduction_table_actions();
