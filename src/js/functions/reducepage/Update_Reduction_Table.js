@@ -46,7 +46,7 @@ function update_reduction_on_canvas_and_table(json_resp) {
     if(total>=255) {   
       // Default color for the end...
       for (var i = 255; i <= total; i = i + step) {
-         all_colors[i] = '#ff0000';
+         all_colors[i] = '#0000ff';
       }
       for (var i = 0; i <= 255; i = i + step) {
          all_colors[i] = '#'+rainbow.colourAt(i);
