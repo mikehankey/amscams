@@ -42,8 +42,8 @@ def get_json_for_3Dlight_curve(frames,analysed_name):
          for x in range(min_pos_x,max_pos_x):
             for y in range(min_pos_y,max_pos_y):
                z_vals.append(int(statistics.mean(image[y,x])))  # Average of the 3 VALUES
-               x_vals.append(int(x))
-               y_vals.append(int(y))
+               #x_vals.append(int(x))
+               #y_vals.append(int(y))
 
       else:
 
@@ -51,14 +51,12 @@ def get_json_for_3Dlight_curve(frames,analysed_name):
          for y in range(min_pos_y,max_pos_y):
             for x in range(min_pos_x,max_pos_x):
                z_vals.append(int(statistics.mean(image[y,x])))  # Average of the 3 VALUES
-               x_vals.append(int(x))
-               y_vals.append(int(y))
+               #x_vals.append(int(x))
+               #y_vals.append(int(y))
  
       return  {
             'title':'3DLight Intensity',
-            'title1': 'Intensity',
-            'x1_vals': x_vals,
-            'y1_vals': y_vals, 
+            'title1': 'Intensity', 
             'z1_vals': z_vals 
       } 
    return None
