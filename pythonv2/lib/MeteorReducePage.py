@@ -158,15 +158,14 @@ def reduce_meteor2(json_conf,form):
       hd_stack = get_stacks(tmp_analysed_name,clear_cache,True)
    
    stack = get_stacks(tmp_analysed_name,clear_cache,False) 
-
-   print("STACKS: <br>")
-   print(stack)
-   print(hd_stack)
-   sys.exit(0)
-
+ 
 
    # Get the HD frames 
    HD_frames = get_HD_frames(tmp_analysed_name,clear_cache)
+
+   print("HD FRAMES<br>")
+   print(HD_frames)
+   sys.exit(0)
     
    # Get the thumbs (cropped HD frames) 
    try:
