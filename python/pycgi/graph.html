@@ -80,7 +80,7 @@ if(typeof all_variables['json_file']!='undefined') {
                         all_colors[i] = '#0000ff';
                      }
                      for (var i = 0; i <= 255; i = i + step) {
-                        all_colors[i] = 'rgba(0,0,255,1)';
+                        all_colors[i] = '#'+rainbow.colourAt(i);
                      }
                   } else {
                      step = parseInt(255/total);  
