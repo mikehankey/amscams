@@ -32,11 +32,12 @@ function update_star_and_reduction(callback) {
                // Update Reduction
                update_reduction_on_canvas_and_table(json_resp);
                 
-               console.log("CANVAS SHOULD BE OK NOW");
-               return false;
+               console.log("BEFORE reduction_table_actions")
+
 
                // Reload the actions
-               //reduction_table_actions();
+               reduction_table_actions();
+               return false;
 
                // Callback (optional)
                typeof callback === 'function' && callback();
