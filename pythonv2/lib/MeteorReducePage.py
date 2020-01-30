@@ -89,7 +89,7 @@ def reduce_meteor2(json_conf,form):
 
       # We need to retrieve the files and copy them on the current machine
       if( not os.path.isfile(video_full_path)):
-
+         
          # Can we get the real station_id?
          real_station_id = can_we_get_the_station_id(analysed_name['full_path'])
          
@@ -128,6 +128,8 @@ def reduce_meteor2(json_conf,form):
 
       else:
          other_station = True
+         print("OTHER STATION")
+         sys.exit(0)
     
    
    if(cfe(video_hd_full_path)==0):
