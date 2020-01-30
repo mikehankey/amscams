@@ -77,7 +77,10 @@ def make_plot(graph_name,meteor_json_data,analysed_name,clear_cache):
                   path_to_json = get_cache_path(analysed_name,"graphs")+graph_name+'.json'
 
                   # We save it
+                  print("BEFORE SAVING IT")
+                  print(json_graph_content)
                   save_json_file(path_to_json,json_graph_content)
+                  print("SAVED")
 
                   return create_iframe_to_graph(analysed_name,graph_name,path_to_json,IIIDLIGTHCURVE_GRAPHICS)
 

@@ -52,18 +52,7 @@ def get_json_for_3Dlight_curve(frames,analysed_name):
                z_vals.append(statistics.mean(image[y,x]))  # Average of the 3 VALUES
                x_vals.append(x)
                y_vals.append(y)
-
-      
-      print( {
-            'title':'3DLight Intensity',
-            'title1': 'Intensity',
-            'x1_vals':  x_vals,
-            'y1_vals':  y_vals, 
-            'z1_vals':  z_vals, 
-      } )
-      sys.exit(0)
-
-
+ 
       return  {
             'title':'3DLight Intensity',
             'title1': 'Intensity',
