@@ -23,12 +23,10 @@ function update_reduction_on_canvas_and_table(json_resp) {
          score = json_resp['point_score'];
       }
       $('#point_score_val').html(score);
-      console.log("AFTER POINT SCORE");
-      console.log(score)
+     
   
     }
-    
-    console.log("BEFORE SMF ARRAY")
+     
 
    
     // Get all the frame IDs so we know which one are missing
@@ -39,22 +37,24 @@ function update_reduction_on_canvas_and_table(json_resp) {
 
     // Create Colors
     var rainbow = new Rainbow();
-    var total = all_frame_ids.length; 
-    rainbow.setNumberRange(0, total);
+    rainbow.setNumberRange(0, 255);
     var all_colors = [];
-    var step = 1
-    if(total<=255) {
+    var total = all_frame_ids.length; 
+    if(total>255) {  
+      var step = 1;
+      // Default color for the end...
+      for (var i = 0; i <= total; i = i + step) {
+         all_colors.push('#ff0000');
+     }
+    } else {
       var step = parseInt(255/total); 
     }
-    
- 
+     
+
     for (var i = 0; i <= 255; i = i + step) {
         all_colors.push('#'+rainbow.colourAt(i));
     }
-
-    console.log("update_reduction_on_canvas_and_table")
-    console.log(all_colors); 
-
+ 
     // We need the "middle" frame to illustrate the thumb anim button
     var middle_frame = "";
     var middle_frame_index = 0
