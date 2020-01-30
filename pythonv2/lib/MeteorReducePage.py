@@ -167,7 +167,7 @@ def reduce_meteor2(json_conf,form):
    try:
       HD_frames
    except NameError:
-      # HD FRAMES NOT DEFINED
+      # HD FRAMES NOT DEFINED (shouldn't occur... let's pray)
       thumbs = ''
       print("Error 0112.b")
    else:
