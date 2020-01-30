@@ -13,10 +13,7 @@ function update_reduction_on_canvas_and_table(json_resp) {
 
 
     var all_frame_ids = [];
-
-
-    console.log("BEFORE POINT SCORE");
-    return false;
+ 
 
     // If we have a "point_score", we update the value on the page
     if(json_resp['point_score'])  {
@@ -50,8 +47,7 @@ function update_reduction_on_canvas_and_table(json_resp) {
     }
 
     console.log("update_reduction_on_canvas_and_table")
-    console.log(all_colors);
-    return false;
+    console.log(all_colors); 
 
     // We need the "middle" frame to illustrate the thumb anim button
     var middle_frame = "";

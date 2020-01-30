@@ -26,8 +26,7 @@ function update_star_and_reduction(callback) {
                
                // Update Stars
                update_stars_on_canvas_and_table(json_resp); 
- 
-          
+  
                // Update Reduction
                update_reduction_on_canvas_and_table(json_resp);
              
