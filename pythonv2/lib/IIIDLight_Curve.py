@@ -2,8 +2,14 @@ import cv2
 import sys
 import json
 import statistics 
+import numpy
 
 from lib.MeteorReduce_Tools import get_stacks
+
+# Convert numpy64 +> int
+def convert(o):
+   if isinstance(o, numpy.int64): return int(o)  
+   raise TypeError
 
 
 def get_json_for_3Dlight_curve(frames,analysed_name):
@@ -40,24 +46,24 @@ def get_json_for_3Dlight_curve(frames,analysed_name):
          # We get the pixel value for each x,y 
          for x in range(min_pos_x,max_pos_x):
             for y in range(min_pos_y,max_pos_y):
-               z_vals.append(statistics.mean(image[y,x]))  # Average of the 3 VALUES
-               x_vals.append(x)
-               y_vals.append(y)
+               z_vals.append(convert(statistics.mean(image[y,x])))  # Average of the 3 VALUES
+               x_vals.append(convert(x))
+               y_vals.append(convert(y))
 
       else:
 
          # We get the pixel value for each x,y 
          for y in range(min_pos_y,max_pos_y):
             for x in range(min_pos_x,max_pos_x):
-               z_vals.append(statistics.mean(image[y,x]))  # Average of the 3 VALUES
-               x_vals.append(x)
-               y_vals.append(y)
+               z_vals.append(convert(statistics.mean(image[y,x])))  # Average of the 3 VALUES
+               x_vals.append(convert(x))
+               y_vals.append(convert(y))
  
       return  {
             'title':'3DLight Intensity',
             'title1': 'Intensity',
-            'x1_vals':  x_vals,
-            'y1_vals':  y_vals, 
-            'z1_vals':  z_vals, 
+            'x1_vals': x_vals,
+            'y1_vals': y_vals, 
+            'z1_vals': z_vals 
       } 
    return None
