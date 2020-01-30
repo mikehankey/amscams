@@ -53,7 +53,7 @@ def get_json_for_3Dlight_curve(frames,analysed_name):
                x_vals.append(x)
                y_vals.append(y)
 
-      print(z_vals)
+      
       print( {
             'title':'3DLight Intensity',
             'title1': 'Intensity',
