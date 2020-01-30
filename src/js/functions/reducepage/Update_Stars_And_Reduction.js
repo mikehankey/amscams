@@ -25,14 +25,15 @@ function update_star_and_reduction(callback) {
                
                
                // Update Stars
-               update_stars_on_canvas_and_table(json_resp);
-               
-               console.log("STARS SHOULD BE OK NOW");
-               return false;
+               update_stars_on_canvas_and_table(json_resp); 
  
+               console.log("BEFORE update_reduction_on_canvas_and_table")
+
                // Update Reduction
-               //update_reduction_on_canvas_and_table(json_resp);
+               update_reduction_on_canvas_and_table(json_resp);
                 
+               console.log("CANVAS SHOULD BE OK NOW");
+               return false;
 
                // Reload the actions
                //reduction_table_actions();
