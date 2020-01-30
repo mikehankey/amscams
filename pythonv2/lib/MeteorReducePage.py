@@ -268,10 +268,7 @@ def reduce_meteor2(json_conf,form):
       else:
          template = template.replace("{MULTI_DETAILS}",'')
 
-
-   
-
-
+ 
    # CREATE EXTRA CONTENT
    extra_tabs = ""
    extra_content = ""

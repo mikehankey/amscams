@@ -16,6 +16,11 @@ function update_star_and_reduction(callback) {
        success: function(data) {
        
            var json_resp = $.parseJSON(data); 
+
+           console.log("JSON RESP");
+           console.log(json_resp)
+           return false;
+
  
            if(json_resp['status']!==0) {
             
