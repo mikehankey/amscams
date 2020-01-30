@@ -4,6 +4,9 @@ function update_reduction_on_canvas_and_table(json_resp) {
       return false;
    }
 
+   console.log("update_reduction_on_canvas_and_table");
+   return false;
+
    var smf = json_resp['frames'];
     var PRECISION = 2;
  
