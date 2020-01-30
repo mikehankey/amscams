@@ -5,12 +5,7 @@ import statistics
 import numpy
 
 from lib.MeteorReduce_Tools import get_stacks
-
-# Convert numpy64 +> int
-def convert(o):
-   if isinstance(o, numpy.int64): return int(o)  
-   raise TypeError
-
+ 
 
 def get_json_for_3Dlight_curve(frames,analysed_name):
    
@@ -46,18 +41,18 @@ def get_json_for_3Dlight_curve(frames,analysed_name):
          # We get the pixel value for each x,y 
          for x in range(min_pos_x,max_pos_x):
             for y in range(min_pos_y,max_pos_y):
-               z_vals.append(convert(statistics.mean(image[y,x])))  # Average of the 3 VALUES
-               x_vals.append(convert(x))
-               y_vals.append(convert(y))
+               z_vals.append(int(statistics.mean(image[y,x])))  # Average of the 3 VALUES
+               x_vals.append(int(x))
+               y_vals.append(int(y))
 
       else:
 
          # We get the pixel value for each x,y 
          for y in range(min_pos_y,max_pos_y):
             for x in range(min_pos_x,max_pos_x):
-               z_vals.append(convert(statistics.mean(image[y,x])))  # Average of the 3 VALUES
-               x_vals.append(convert(x))
-               y_vals.append(convert(y))
+               z_vals.append(int(statistics.mean(image[y,x])))  # Average of the 3 VALUES
+               x_vals.append(int(x))
+               y_vals.append(int(y))
  
       return  {
             'title':'3DLight Intensity',
