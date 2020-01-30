@@ -27,17 +27,11 @@ function update_star_and_reduction(callback) {
                // Update Stars
                update_stars_on_canvas_and_table(json_resp); 
  
-               console.log("BEFORE update_reduction_on_canvas_and_table")
-
+          
                // Update Reduction
                update_reduction_on_canvas_and_table(json_resp);
-                
-               console.log("BEFORE reduction_table_actions")
-
-
-               // Reload the actions
-               reduction_table_actions();
-               return false;
+             
+               reduction_table_actions(); 
 
                // Callback (optional)
                typeof callback === 'function' && callback();
