@@ -14,6 +14,9 @@ function update_reduction_on_canvas_and_table(json_resp) {
 
     var all_frame_ids = [];
 
+
+    console.log("BEFORE POINT SCORE");
+
     // If we have a "point_score", we update the value on the page
     if(json_resp['point_score'])  {
       if(parseFloat(json_resp['point_score'])>=3) {
@@ -22,8 +25,14 @@ function update_reduction_on_canvas_and_table(json_resp) {
          score = json_resp['point_score'];
       }
       $('#point_score_val').html(score);
+      console.log("AFTER POINT SCORE");
+      console.log(score)
+  
     }
- 
+    
+    console.log("BEFORE SMF ARRAY")
+
+   
     // Get all the frame IDs so we know which one are missing
     $.each(smf, function(i,v){
         all_frame_ids.push(parseInt(v[1]));
