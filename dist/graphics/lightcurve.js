@@ -5,7 +5,7 @@ var V_LINE_COLOR = 'rgba(255,255,255,.1)';
 
 var trace1 =  {
       type: 'scatter',
-      marker : { symbol: 'square-open-dot', size:4  },
+      marker : { symbol: 'square-open-dot', size:1  },
       xaxis: "x1",
       yaxis: "y1",
       mode: 'lines+markers',
