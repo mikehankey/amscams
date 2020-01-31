@@ -18,6 +18,7 @@ var layout = {
       yref: 'y',  
       x: 0.05, 
    },
+   grid: {rows: 1, columns: 2, pattern: 'independent'},
    height: 517,
    width: 937,
    paper_bgcolor: "rgba(9,29,63,1)",  // For exporting in PNG!

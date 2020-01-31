@@ -15,8 +15,7 @@ function hexToRgb(hex) {
     var g = (bigint >> 8) & 255;
     var b = bigint & 255;
     return r + "," + g + "," + b + ",1";
-}
- 
+} 
 
 // GET ALL QUERY PARAMETERS 
 function getQueryParams(qs) {
@@ -70,8 +69,7 @@ if(typeof all_variables['json_file']!='undefined') {
                   rainbow.setNumberRange(0, 255);
 
                   var all_colors = [];
-                  var total = all_data.x1_vals.length; 
-                  console.log("TOTAL " + total);
+                  var total = all_data.x1_vals.length;  
                   var step = 1;
 
                   if(total>=255) {   
