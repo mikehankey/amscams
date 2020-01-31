@@ -47,7 +47,7 @@ def get_json_for_3Dlight_curve(frames,analysed_name):
             #x_vals.append(int(x))
             #y_vals.append(int(y))
 
-         z_vals.push(y_line)
+         z_vals.append(y_line)
 
  
       return  {
