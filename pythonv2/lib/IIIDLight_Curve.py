@@ -36,24 +36,17 @@ def get_json_for_3Dlight_curve(frames,analysed_name):
    if(hd_stack is not None):
       image = cv2.imread(hd_stack)
 
-      if(min(min_pos_x,max_pos_x)>min(min_pos_y,max_pos_y)):
-
-         # We get the pixel value for each x,y 
+   
+      # We get the pixel value for each x,y 
+      for y in range(min_pos_y,max_pos_y):
+         y_line = []
          for x in range(min_pos_x,max_pos_x):
-            for y in range(min_pos_y,max_pos_y):
-               z_vals.append([int(x),int(y),int(statistics.mean(image[y,x]))])  # Average of the 3 VALUES
-               #x_vals.append(int(x))
-               #y_vals.append(int(y))
+            y_line.append(int(statistics.mean(image[y,x])))
+            #z_vals.append([int(x),int(y),int(statistics.mean(image[y,x]))])  # Average of the 3 VALUES
+            #x_vals.append(int(x))
+            #y_vals.append(int(y))
 
-      else:
-
-         # We get the pixel value for each x,y 
-         for y in range(min_pos_y,max_pos_y):
-            for x in range(min_pos_x,max_pos_x):
-               z_vals.append([int(x),int(y),int(statistics.mean(image[y,x]))])  # Average of the 3 VALUES
-               #x_vals.append(int(x))
-               #y_vals.append(int(y))
- 
+         z_vals.push(y_line)
 
  
       return  {
