@@ -90,6 +90,12 @@ if(typeof all_variables['json_file']!='undefined') {
 
                   // We add the color scale for X
                   trace1.marker.color  =  all_colors;  
+
+
+                  // If we have too many dot, we resize the markers down
+                  if(length(all_data.x1_vals)>70) {
+                     trace1.marker.size = 2;
+                  }
                }
 
             
