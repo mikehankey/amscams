@@ -41,7 +41,7 @@ def get_json_for_3Dlight_curve(frames,analysed_name):
          # We get the pixel value for each x,y 
          for x in range(min_pos_x,max_pos_x):
             for y in range(min_pos_y,max_pos_y):
-               z_vals.append([int(x),int(y),int(statistics.mean(image[y,x])))  # Average of the 3 VALUES
+               z_vals.append([int(x),int(y),int(statistics.mean(image[y,x]))])  # Average of the 3 VALUES
                #x_vals.append(int(x))
                #y_vals.append(int(y))
 
@@ -50,7 +50,7 @@ def get_json_for_3Dlight_curve(frames,analysed_name):
          # We get the pixel value for each x,y 
          for y in range(min_pos_y,max_pos_y):
             for x in range(min_pos_x,max_pos_x):
-               z_vals.append([int(x),int(y),int(statistics.mean(image[y,x])))  # Average of the 3 VALUES
+               z_vals.append([int(x),int(y),int(statistics.mean(image[y,x]))])  # Average of the 3 VALUES
                #x_vals.append(int(x))
                #y_vals.append(int(y))
  
