@@ -2,6 +2,8 @@ var GRID_COLOR = 'rgba(255,255,255,.1)';
 var TICK_FONT_COLOR = 'rgba(255,255,255,.75)';
 var H_LINE_COLOR = 'rgba(255,255,255,.4)';
 var V_LINE_COLOR = 'rgba(255,255,255,.1)';
+var TYPE = "lightcurve";
+
 
 var trace1 =  {
       type: 'scatter',

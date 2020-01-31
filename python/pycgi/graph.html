@@ -93,7 +93,7 @@ if(typeof all_variables['json_file']!='undefined') {
 
 
                   // If we have too many dot, we resize the markers down
-                  if(all_data.x1_vals.length>70) {
+                  if(all_data.x1_vals.length>70 && TYPE == "lightcurve") {
                      trace1.marker.size = 2;
                   }
                }
