@@ -38,16 +38,16 @@ def update_intensity(json_file, json_data, hd_frames, analysed_name):
          sync = json_data['sync']['hd_ind'] - json_data['sync']['sd_ind']
    
    # Get the thumb for frame 0
-
-   v = glob.glob(get_cache_path(analysed_name,"cropped")+"*"+EXT_CROPPED_FRAMES+str(0)+".png") 
-   print(get_cache_path(analysed_name,"cropped")+"*"+EXT_CROPPED_FRAMES+str(0)+".png")
-   print("<br>GLOB<br>")
-   print(v)
-
-
    thumb0_file = get_thumb(analysed_name,"0")
    print("<br>THUMB0 FIle ")
    print(thumb0_file)
+   
+   # If thumb0_file doesn't exist
+   if(len(thumb0_file)==0):
+      print("WE NEED TO CREATE THE THUMB 0")
+
+   
+   
    return False
    thumb0 = cv2.imread(thumb0_file,0)
 
