@@ -22,7 +22,7 @@ from lib.Get_Station_Id import get_station_id
 
 
 # Get intensity & update the json
-def 
+def update_intensity(json_file, json_data, hd_frames, analysed_name): 
  
    # Sync
    sync = 0
