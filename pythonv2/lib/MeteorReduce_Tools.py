@@ -64,6 +64,9 @@ def update_intensity(json_file, json_data, hd_frames, analysed_name):
 
       print("<br/>FRAMES FOR # " +  str(fn) + " FRAME<br>")
       print(cur_thumb)
+      print("<br>thumb0:(img read)<br>")
+      print(thumb0)
+      sys.exit(0)
 
       # Substract cur frame thumb from thumb0
       cnt_sub = cv2.subtract(cur_thumb,thumb0)
