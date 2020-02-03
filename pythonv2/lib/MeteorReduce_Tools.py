@@ -53,7 +53,7 @@ def update_intensity(json_file, json_data, hd_frames, analysed_name):
       # WE NEED TO CREATE THE THUMB 0 with the VALUES x,y of the first frame
       # here x & y = the position of the meteor on the first available frame 
       first_frames_info = json_data['frames'][0]
-      thumb0_file = generate_cropped_frame(analysed_name,json_data,hd_frames,"0",sync,first_frames_info['x'],first_frames_info['y'])
+      thumb0_file = generate_cropped_frame(analysed_name,json_data,hd_frames[0],"0",sync,first_frames_info['x'],first_frames_info['y'])
       print("<br><br>GENERATED THUMB0")
       print(thumb0_file)
    
@@ -345,9 +345,7 @@ def new_crop_thumb(frame,x,y,dest,HD = True):
 
    # Debug
    cgitb.enable()
-   img = cv2.imread(frame) 
-     
-   
+   img = cv2.imread(frame)  
 
    # We shouldn't have the need for that... (check with VIDEO_VARS values and the way we're creating the frames from the video)
    if(HD is True):
@@ -481,9 +479,7 @@ def generate_cropped_frames(analysed_name,meteor_json_data,HD_frames,HD,clear_ca
 
    # Debug
    cgitb.enable()
-
-   print("IN generate_cropped_frames<br/>")
-   sys.exit(0)
+ 
     
    # We get the frame data
    meteor_frame_data = meteor_json_data['frames']
