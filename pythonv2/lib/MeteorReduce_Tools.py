@@ -39,14 +39,14 @@ def update_intensity(json_file, json_data, hd_frames, analysed_name):
    
    # Get the thumb for frame 0
    thumb0_file = get_thumb(analysed_name,"0")
-   print("<br>THUMB0 FIle ")
-   print(thumb0_file)
+   #print("<br>THUMB0 FIle ")
+   #print(thumb0_file)
 
-   print("<br><br>HD FRAMES<br>")
-   print(hd_frames)
+   #print("<br><br>HD FRAMES<br>")
+   #print(hd_frames)
 
-   print("<br><br>JSON DATA<br>")
-   print(json_data)
+   #print("<br><br>JSON DATA<br>")
+   #print(json_data)
    
    # If thumb0_file doesn't exist
    if(len(thumb0_file)==0):
