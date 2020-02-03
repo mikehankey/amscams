@@ -59,11 +59,10 @@ def update_intensity(json_file, json_data, hd_frames, analysed_name):
    
    
    thumb0 = cv2.imread(thumb0_file,0)
-
    new_frames = []
     
    # Go through all the frames to get the intensity
-   for frame in hd_frames:   
+   for frame in json_data['frames']:   
 
       fn = frame['fn'] + sync
       cur_thumb = get_thumb(analysed_name,fn)
