@@ -24,12 +24,12 @@ from lib.Get_Station_Id import get_station_id
 # Get intensity & update the json
 def update_intensity(json_file, json_data, hd_frames, analysed_name): 
  
-   print("json_file INPUTS<br>")
-   print(json_file)
-   print("HD FRAMES INPUTS<br>")
-   print(hd_frames)
-   print("analysed_name INPUTS<br>")
-   print(analysed_name)
+   #print("json_file INPUTS<br>")
+   #print(json_file)
+   #print("HD FRAMES INPUTS<br>")
+   #print(hd_frames)
+   #print("analysed_name INPUTS<br>")
+   #print(analysed_name)
 
    # Sync
    sync = 0
@@ -38,8 +38,14 @@ def update_intensity(json_file, json_data, hd_frames, analysed_name):
          sync = json_data['sync']['hd_ind'] - json_data['sync']['sd_ind']
    
    # Get the thumb for frame 0
+
+   v = glob.glob(get_cache_path(analysed_name,"cropped")+"*"+EXT_CROPPED_FRAMES+str(0)+".png") 
+   print("GLOB<br>")
+   print(v)
+
+
    thumb0_file = get_thumb(analysed_name,"0")
-   print("THUMB0 FIle ")
+   print("<br>THUMB0 FIle ")
    print(thumb0_file)
    return False
    thumb0 = cv2.imread(thumb0_file,0)
