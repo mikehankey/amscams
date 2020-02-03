@@ -21,15 +21,77 @@ from lib.ImageLib import stack_stack
 from lib.Get_Station_Id import get_station_id
 
 
+# Get intensity & update the json
+def update_intensity(json_file, json_data, hd_file, HD_frames, analysed_name): 
+ 
+   # Get the proper thumbs
+   thumbs = generate_cropped_frames(analysed_name,json_data,True,HD_frames,1)
+
+   # Sync
+   sync = 0
+   if('sync' in json_data):
+      if('hd_ind' in json_data['sync'] and 'sd_ind' in json_data['sync']):
+         sync = json_data['sync']['hd_ind'] - json_data['sync']['sd_ind']
+   
+   hd_file = json_file.replace(".json", "-HD.mp4")
+   hd_frames,hd_color_frames,hd_subframes,sum_vals,max_vals = load_frames_fast(hd_file, json_conf, 0, 0, [], 0,[])
+   
+   frames = data['frames']
+   curve = {}
+   fx = frames[0]['x']
+   fy = frames[0]['y']
+   cx1,cy1,cx2,cy2 = bound_cnt(fx,fy,hd_frames[0].shape[1],hd_frames[0].shape[0], 20)
+   print(cx1,cy1,cx2,cy2)
+   bg_cnt = hd_frames[0][cy1:cy2,cx1:cx2] It'
+
+   bg_int = []
+   for i in range(0, len(hd_frames)):
+      curve[i] = {}
+      curve[i]['cnt_int'] = np.sum(bg_cnt) 
 
 
+   for i in range(0, len(hd_frames)):
+      curve[i]['ff_int'] = 0 
+      curve[i]['cnt_int'] = 0
+
+   ffs= []
+   cnts= []
+   new_frames = []
+   for frame in frames:   
+      fn = frame['fn'] + sync
+      x = frame['x']
+      y = frame['y']
+      cx1,cy1,cx2,cy2 = bound_cnt(x,y,hd_frames[0].shape[1],hd_frames[0].shape[0], 20)
+      print(fn, cy1,cy2,cx1,cx2)
+      cnt = hd_frames[fn][cy1:cy2,cx1:cx2] 
+      bg_cnt = hd_frames[0][cy1:cy2,cx1:cx2] 
+      cnt_sub = cv2.subtract(cnt,bg_cnt)
+      cnt_int = np.sum(cnt) - np.sum(bg_cnt)
+      ff_sub = cv2.subtract(hd_frames[fn],hd_frames[0])
+      ff_int = np.sum(ff_sub) 
+      if cnt_int > 18446744073709:
+         cnt_int = 0
+      if ff_int > 18446744073709:
+         ff_int = 0
+
+      frame['intensity'] = int(cnt_int)
+      frame['intensity_ff'] = int(ff_int)
+      curve[fn]['cnt_int'] = cnt_int
+      curve[fn]['ff_int'] = ff_int
+      ffs.append(ff_int)
+      cnts.append(cnt_int)
+      new_frames.append(frame)
+
+   data['frames'] = new_frames 
+   save_json_file(json_file,data)
+   print("Saved:", json_file) 
 
 
 # Apply calib to a given JSON
 def reapply_calib(meteor_red_file):
    # We re-apply the calib in order to get the segment length & intensity
    # TODO remove that and use the seg lenght later
-   
+
    os.system("cd /home/ams/amscams/pythonv2; /usr/bin/python3/flex-detect.py ui " + meteor_red_file)
    os.system("cd /home/ams/amscams/pythonv2; /usr/bin/python3/flex-detect.py ep" + meteor_red_file) 
 
