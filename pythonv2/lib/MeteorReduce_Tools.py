@@ -31,7 +31,7 @@ def update_intensity(json_file, json_data, hd_frames, analysed_name):
          sync = json_data['sync']['hd_ind'] - json_data['sync']['sd_ind']
    
    # Get the thumb for frame 0
-   thumb0_file = get_thumb(analysed_name,0)
+   thumb0_file = get_thumb(analysed_name,"0")
    print("THUMB0 FIle ")
    print(thumb0_file)
    return False
