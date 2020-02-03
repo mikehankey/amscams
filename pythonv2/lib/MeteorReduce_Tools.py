@@ -41,12 +41,20 @@ def update_intensity(json_file, json_data, hd_frames, analysed_name):
    thumb0_file = get_thumb(analysed_name,"0")
    print("<br>THUMB0 FIle ")
    print(thumb0_file)
+
+   print("<br><br>HD FRAMES<br>")
+   print(hd_frames)
+
+   print("<br><br>JSON DATA<br>")
+   print(json_data)
    
    # If thumb0_file doesn't exist
    if(len(thumb0_file)==0):
-      print("WE NEED TO CREATE THE THUMB 0")
+      # WE NEED TO CREATE THE THUMB 0 with the VALUES x,y of the first frame
+      # here x & y = the position of the meteor on the first available frame 
+      thumb0_file = generate_cropped_frame(analysed_name,json_data,hd_frames,"0",sync,x,y)
 
-   
+
    
    return False
    thumb0 = cv2.imread(thumb0_file,0)
@@ -460,13 +468,7 @@ def generate_cropped_frame(analysed_name,meteor_json_data,the_HD_frame,the_HD_fr
 
    if(HD):
       destination =  get_cache_path(analysed_name,"cropped")+analysed_name['name_w_ext']+EXT_CROPPED_FRAMES+str(the_SD_frame_fn)+".png"
-
-      #rint("DESTINATION ")
-      #print(destination)
- 
       out_hd_frame = destination.replace("frm", "HD-" + str(the_HD_frame_fn) + "-SD-")
-
-      #frame,x,y,dest,HD = True
       crop = new_crop_thumb(the_HD_frame,x,y,destination,HD)
       return crop
    else:
