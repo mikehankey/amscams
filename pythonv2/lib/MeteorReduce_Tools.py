@@ -40,7 +40,8 @@ def update_intensity(json_file, json_data, hd_frames, analysed_name):
    # Get the thumb for frame 0
 
    v = glob.glob(get_cache_path(analysed_name,"cropped")+"*"+EXT_CROPPED_FRAMES+str(0)+".png") 
-   print("GLOB<br>")
+   print(get_cache_path(analysed_name,"cropped")+"*"+EXT_CROPPED_FRAMES+str(0)+".png")
+   print("<br>GLOB<br>")
    print(v)
 
 
