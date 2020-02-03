@@ -22,22 +22,54 @@ from lib.Get_Station_Id import get_station_id
 
 
 # Get intensity & update the json
-def update_intensity(json_file, json_data, hd_file, HD_frames, analysed_name): 
+def update_intensity(json_file, json_data, hd_frames, analysed_name): 
  
-   # Get the proper thumbs
-   thumbs = generate_cropped_frames(analysed_name,json_data,True,HD_frames,1)
-
    # Sync
    sync = 0
    if('sync' in json_data):
       if('hd_ind' in json_data['sync'] and 'sd_ind' in json_data['sync']):
          sync = json_data['sync']['hd_ind'] - json_data['sync']['sd_ind']
    
-   hd_file = json_file.replace(".json", "-HD.mp4")
-   hd_frames,hd_color_frames,hd_subframes,sum_vals,max_vals = load_frames_fast(hd_file, json_conf, 0, 0, [], 0,[])
-   
-   frames = data['frames']
-   curve = {}
+   # Get the thumb for frame 0
+   thumb0_file = get_thumb(analysed_name,0)
+   thumb0 = cv2.imread(thumb0_file,0)
+
+   new_frames = []
+    
+   # Go through all the frames to get the intensity
+   for frame in hd_frames:   
+
+      fn = frame['fn'] + sync
+      cur_thumb = get_thumb(analysed_name,fn)
+
+      # Substract cur frame thumb from thumb0
+      cnt_sub = cv2.subtract(cur_thumb,thumb0)
+      cnt_int = np.sum(cnt) - np.sum(bg_cnt) 
+      ff_int = np.sum(cnt_sub) 
+
+      # When we are wrong... it's 0 (from Mike's code)
+      if cnt_int > 18446744073709:
+         cnt_int = 0
+      if ff_int > 18446744073709:
+         ff_int = 0
+
+      frame['intensity'] = int(cnt_int)
+      frame['intensity_ff'] = int(ff_int)
+      new_frames.append(frame)
+
+   # Replace the frames in the JSON
+   json_data['frames'] = new_frames 
+   save_json_file(json_file,json_data)
+
+   # Intensity Updated
+   print("Intensity Updated")
+ 
+
+
+
+
+ 
+   frames = data['frames'] 
    fx = frames[0]['x']
    fy = frames[0]['y']
    cx1,cy1,cx2,cy2 = bound_cnt(fx,fy,hd_frames[0].shape[1],hd_frames[0].shape[0], 20)
