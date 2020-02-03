@@ -302,11 +302,7 @@ def update_multiple_frames(form):
 
    # We add the result
    resp['msg'] = json.dumps(all_updated)
-
-   # re-run the point evaluator to get point score
-   #print("cd /home/ams/amscams/pythonv2/; ./flex-detect.py ep " + json_file + " > /dev/null")
-   os.system("cd /home/ams/amscams/pythonv2/; ./flex-detect.py ep " + json_file + " > /dev/null")
-
+ 
    print(json.dumps(resp))
 
 
