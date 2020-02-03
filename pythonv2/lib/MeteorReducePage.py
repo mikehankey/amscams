@@ -84,9 +84,16 @@ def reduce_meteor2(json_conf,form):
    if(clear_cache is True):
       reapply_calib(json_full_path)
 
+   
+ 
+   # TMP
+   print("TEST UPDATE INTENSITY")      
+   update_intensity(json_full_path, json_data, hd_frames, analysed_name): 
+
+
+
    # Test if it's a detection from the current device
    # or another one 
-
    other_station = False
 
    if(analysed_name['station_id'] != get_station_id()):
@@ -157,6 +164,11 @@ def reduce_meteor2(json_conf,form):
    meteor_json_file = load_json_file(json_full_path) 
 
 
+    
+ 
+
+
+
    tmp_analysed_name = name_analyser(json_full_path) 
    if(video_hd_full_path != ''):
       hd_stack = get_stacks(tmp_analysed_name,clear_cache,True)
@@ -166,6 +178,12 @@ def reduce_meteor2(json_conf,form):
 
    # Get the HD frames 
    HD_frames = get_HD_frames(tmp_analysed_name,clear_cache)
+
+
+  # TMP
+   print("TEST UPDATE INTENSITY")      
+   update_intensity(json_full_path, meteor_json_file, HD_frames, analysed_name): 
+
 
    # Get the thumbs (cropped HD frames) 
    try:
@@ -324,9 +342,6 @@ def reduce_meteor2(json_conf,form):
    else:
       template = template.replace("{NO_SYNC}", "")
  
- 
- 
-         
 
    # Display Template
    print(template)
