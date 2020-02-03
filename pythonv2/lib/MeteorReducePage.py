@@ -83,14 +83,7 @@ def reduce_meteor2(json_conf,form):
    # If we clear the cache, we re-apply the calibration
    if(clear_cache is True):
       reapply_calib(json_full_path)
-
-   
  
-   # TMP
-   print("TEST UPDATE INTENSITY")      
-   update_intensity(json_full_path, json_data, hd_frames, analysed_name): 
-
-
 
    # Test if it's a detection from the current device
    # or another one 
