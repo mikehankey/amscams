@@ -17,12 +17,12 @@ from lib.FileIO import load_json_file, cfe
 from lib.ReducerLib import stack_frames
 from lib.REDUCE_VARS import *
 from lib.VIDEO_VARS import * 
-from lib.ImageLib import stack_stack
+from lib.ImageLib import stack_stackupdate_intensity(json_file, json_data, hd_frames, analysed_name): 
 from lib.Get_Station_Id import get_station_id
 
 
 # Get intensity & update the json
-def update_intensity(json_file, json_data, hd_frames, analysed_name): 
+def 
  
    # Sync
    sync = 0
@@ -32,6 +32,9 @@ def update_intensity(json_file, json_data, hd_frames, analysed_name):
    
    # Get the thumb for frame 0
    thumb0_file = get_thumb(analysed_name,0)
+   print("THUMB0 FIle ")
+   print(thumb0_file)
+   return False
    thumb0 = cv2.imread(thumb0_file,0)
 
    new_frames = []
