@@ -49,8 +49,7 @@ def update_intensity(json_file, json_data, hd_frames, analysed_name):
       # here x & y = the position of the meteor on the first available frame 
       first_frames_info = json_data['frames'][0]
       thumb0_file = generate_cropped_frame(analysed_name,json_data,hd_frames[0],"0",0,first_frames_info['x'],first_frames_info['y'])
-      print("<br><br>GENERATED THUMB0")
-      print(thumb0_file)
+      
    
    # Since get_thumb returns an array (glob.glob)
    thumb0_file = thumb0_file[0]
@@ -67,14 +66,9 @@ def update_intensity(json_file, json_data, hd_frames, analysed_name):
       cur_thumb = cur_thumb[0]
       cur_thumb = cv2.imread(cur_thumb,0)
 
-      print("<br/>FRAMES FOR # " +  str(fn) + " FRAME<br><br>Cur Thumb:<br>")
-      print(cur_thumb)
-      print("<br>thumb0:(img read)<br>")
-      print(thumb0)
-       
       # Substract cur frame thumb from thumb0
       cnt_sub = cv2.subtract(cur_thumb,thumb0)
-      cnt_int = np.sum(cnt) - np.sum(bg_cnt) 
+      cnt_int = np.sum(cur_thumb) - np.sum(thumb0) 
       ff_int = np.sum(cnt_sub) 
 
       # When we are wrong... it's 0 (from Mike's code)
