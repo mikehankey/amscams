@@ -42,7 +42,7 @@ def update_intensity(json_file, json_data, hd_file, HD_frames, analysed_name):
    fy = frames[0]['y']
    cx1,cy1,cx2,cy2 = bound_cnt(fx,fy,hd_frames[0].shape[1],hd_frames[0].shape[0], 20)
    print(cx1,cy1,cx2,cy2)
-   bg_cnt = hd_frames[0][cy1:cy2,cx1:cx2] It'
+   bg_cnt = hd_frames[0][cy1:cy2,cx1:cx2] 
 
    bg_int = []
    for i in range(0, len(hd_frames)):
