@@ -83,10 +83,12 @@ def update_intensity(json_file, json_data, hd_frames, analysed_name):
 
    # Replace the frames in the JSON
    json_data['frames'] = new_frames 
-   save_json_file(json_file,json_data)
+   
+   
+   #save_json_file(json_file,json_data)
 
    # Intensity Updated
-   print("Intensity Updated") 
+   print("Intensity NOT Updated") 
 
 
 # Apply calib to a given JSON
