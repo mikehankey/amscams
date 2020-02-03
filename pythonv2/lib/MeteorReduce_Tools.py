@@ -51,6 +51,7 @@ def update_intensity(json_file, json_data, hd_frames, analysed_name):
       thumb0_file = generate_cropped_frame(analysed_name,json_data,hd_frames[0],"0",0,first_frames_info['x'],first_frames_info['y'])
       print("<br><br>GENERATED THUMB0")
       print(thumb0_file)
+      thumb0_file = thumb0_file[0]
    
    
    thumb0 = cv2.imread(thumb0_file,0)
