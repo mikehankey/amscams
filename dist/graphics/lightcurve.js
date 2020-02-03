@@ -31,7 +31,7 @@ var layout = {
          zerolinewidth: 1,
          gridcolor: GRID_COLOR, 
          linecolor: H_LINE_COLOR,  
-         title: { font: { size: 15, color: '#b1b1b1' } },
+         title: { font: { size: 15, color: '#fff' } },
          tickfont: { color: TICK_FONT_COLOR} 
    },
    yaxis:{
@@ -39,7 +39,7 @@ var layout = {
          zerolinewidth: 1, 
          gridcolor: GRID_COLOR, 
          linecolor: V_LINE_COLOR,
-         title: { font: {  size: 15, color: '#b1b1b1' }}, 
+         title: { font: {  size: 15, color: '#fff' }}, 
          tickfont: { color: TICK_FONT_COLOR} 
    },
    showlegend: true,
