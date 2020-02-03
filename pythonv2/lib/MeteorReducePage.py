@@ -183,7 +183,7 @@ def reduce_meteor2(json_conf,form):
   # TMP
    print("TEST UPDATE INTENSITY")      
    update_intensity(json_full_path, meteor_json_file, HD_frames, analysed_name)
-   
+   print("INTENSITY UPDATED")
 
    # Get the thumbs (cropped HD frames) 
    try:
