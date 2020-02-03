@@ -17,7 +17,7 @@ from lib.FileIO import load_json_file, cfe
 from lib.ReducerLib import stack_frames
 from lib.REDUCE_VARS import *
 from lib.VIDEO_VARS import * 
-from lib.ImageLib import stack_stackupdate_intensity(json_file, json_data, hd_frames, analysed_name): 
+from lib.ImageLib import stack_stack
 from lib.Get_Station_Id import get_station_id
 
 
