@@ -20,6 +20,14 @@ from lib.VIDEO_VARS import *
 from lib.ImageLib import stack_stack
 from lib.Get_Station_Id import get_station_id
 
+
+# Apply calib to a given JSON
+def reapply_calib( meteor_red_file):
+   # We re-apply the calib in order to get the segment length
+   os.system("cd /home/ams/amscams/pythonv2; /usr/bin/python3 Apply_calib.py ui " + meteor_red_file)
+   os.system("cd /home/ams/amscams/pythonv2; /usr/bin/python3 Apply_calib.py ep" + meteor_red_file)
+
+
 # Return an error message
 def get_error(msg):
    return "<div class='alert alert-danger'>"+msg+"</div>"
