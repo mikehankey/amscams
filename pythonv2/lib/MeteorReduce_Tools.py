@@ -53,6 +53,9 @@ def update_intensity(json_file, json_data, hd_frames, analysed_name):
       # WE NEED TO CREATE THE THUMB 0 with the VALUES x,y of the first frame
       # here x & y = the position of the meteor on the first available frame 
       first_frames_info = json_data['frames'][0]
+      print(first_frames_info)
+      print(first_frames_info['x'])
+      sys.exit(0)
       thumb0_file = generate_cropped_frame(analysed_name,json_data,hd_frames,"0",sync,first_frames_info.x,first_frames_info.y)
       print("<br><br>GENERATED THUMB0")
       print(thumb0_file)
