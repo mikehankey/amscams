@@ -24,6 +24,13 @@ from lib.Get_Station_Id import get_station_id
 # Get intensity & update the json
 def update_intensity(json_file, json_data, hd_frames, analysed_name): 
  
+   print("json_file INPUTS<br>")
+   print(json_file)
+   print("HD FRAMES INPUTS<br>")
+   print(hd_frames)
+   print("analysed_name INPUTS<br>")
+   print(analysed_name)
+
    # Sync
    sync = 0
    if('sync' in json_data):
