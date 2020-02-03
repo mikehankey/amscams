@@ -58,7 +58,6 @@ def update_intensity(json_file, json_data, hd_frames, analysed_name):
       print(thumb0_file)
    
    
-   return False
    thumb0 = cv2.imread(thumb0_file,0)
 
    new_frames = []
@@ -89,61 +88,7 @@ def update_intensity(json_file, json_data, hd_frames, analysed_name):
    save_json_file(json_file,json_data)
 
    # Intensity Updated
-   print("Intensity Updated")
- 
-
-
-
-
- 
-   frames = data['frames'] 
-   fx = frames[0]['x']
-   fy = frames[0]['y']
-   cx1,cy1,cx2,cy2 = bound_cnt(fx,fy,hd_frames[0].shape[1],hd_frames[0].shape[0], 20)
-   print(cx1,cy1,cx2,cy2)
-   bg_cnt = hd_frames[0][cy1:cy2,cx1:cx2] 
-
-   bg_int = []
-   for i in range(0, len(hd_frames)):
-      curve[i] = {}
-      curve[i]['cnt_int'] = np.sum(bg_cnt) 
-
-
-   for i in range(0, len(hd_frames)):
-      curve[i]['ff_int'] = 0 
-      curve[i]['cnt_int'] = 0
-
-   ffs= []
-   cnts= []
-   new_frames = []
-   for frame in frames:   
-      fn = frame['fn'] + sync
-      x = frame['x']
-      y = frame['y']
-      cx1,cy1,cx2,cy2 = bound_cnt(x,y,hd_frames[0].shape[1],hd_frames[0].shape[0], 20)
-      print(fn, cy1,cy2,cx1,cx2)
-      cnt = hd_frames[fn][cy1:cy2,cx1:cx2] 
-      bg_cnt = hd_frames[0][cy1:cy2,cx1:cx2] 
-      cnt_sub = cv2.subtract(cnt,bg_cnt)
-      cnt_int = np.sum(cnt) - np.sum(bg_cnt)
-      ff_sub = cv2.subtract(hd_frames[fn],hd_frames[0])
-      ff_int = np.sum(ff_sub) 
-      if cnt_int > 18446744073709:
-         cnt_int = 0
-      if ff_int > 18446744073709:
-         ff_int = 0
-
-      frame['intensity'] = int(cnt_int)
-      frame['intensity_ff'] = int(ff_int)
-      curve[fn]['cnt_int'] = cnt_int
-      curve[fn]['ff_int'] = ff_int
-      ffs.append(ff_int)
-      cnts.append(cnt_int)
-      new_frames.append(frame)
-
-   data['frames'] = new_frames 
-   save_json_file(json_file,data)
-   print("Saved:", json_file) 
+   print("Intensity Updated") 
 
 
 # Apply calib to a given JSON
