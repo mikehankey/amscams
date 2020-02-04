@@ -18,8 +18,7 @@ from lib.ReducerLib import stack_frames
 from lib.REDUCE_VARS import *
 from lib.VIDEO_VARS import * 
 from lib.ImageLib import stack_stack,  mask_frame
-from lib.Get_Station_Id import get_station_id
-from lib.Sync_HD_SD_videos import load_video_frames
+from lib.Get_Station_Id import get_station_id 
 from lib.UtilLib import convert_filename_to_date_cam, bound_cnt
 from lib.Get_Cam_ids import get_mask 
 
@@ -82,13 +81,8 @@ def update_intensity(conf_file, json_file, json_data, hd_video_file, sd_video_fi
             sync =  json_data['sync']['hd_ind'] - json_data['sync']['sd_ind']
 
    json_frames = json_data['frames'] 
-    
-
-   for f in hd_frames:
-      print(f.shape)
-   print(hd_frames)
-   sys.exit(0)
-
+     
+  
    cx1,cy1,cx2,cy2 = bound_cnt(json_frames[0]['x'],json_frames[0]['y'],hd_frames[0].shape[1],hd_frames[0].shape[0], 20)
 
 
