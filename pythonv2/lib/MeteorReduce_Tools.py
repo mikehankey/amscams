@@ -40,7 +40,6 @@ def update_intensity(conf_file, json_file, json_data, hd_video_file, sd_video_fi
    
    # Since get_thumb returns an array (glob.glob)
    thumb0_file = thumb0_file[0]
-    
    thumb0 = cv2.imread(thumb0_file,3)
    print("CUR THUMB SHAPE <br>")
    print(thumb0.shape)
