@@ -187,7 +187,8 @@ def reduce_meteor2(json_conf,form):
          try:
             update_intensity(json_full_path, meteor_json_file, video_hd_full_path)
          except:
-         
+            print("IMPOSSIBLE TO UPDATE THE INTENSITY")
+
 
 
 
