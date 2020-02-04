@@ -11,7 +11,8 @@ import numpy as np
 from datetime import datetime,timedelta
 from pathlib import Path 
 from PIL import Image
- 
+
+from lib.VideoLib import load_video_frames
 from lib.FileIO import load_json_file, cfe, save_json_file
 from lib.ReducerLib import stack_frames
 from lib.REDUCE_VARS import *
@@ -23,7 +24,7 @@ from lib.Get_Cam_ids import get_mask
 
 
 # LOAD VIDEO FRAMES with MASKS
-def load_video_frames(trim_file, limit=0, mask=0,crop=()):
+def load_video_framesX(trim_file, limit=0, mask=0,crop=()):
    (f_datetime, cam, f_date_str,fy,fm,fd, fh, fmin, fs) = convert_filename_to_date_cam(trim_file)
    cap = cv2.VideoCapture(trim_file)
    masks = get_mask(cam) 
@@ -70,7 +71,7 @@ def load_video_frames(trim_file, limit=0, mask=0,crop=()):
 def update_intensity(json_file, json_data, hd_video_file): 
     
    # Get Video frames 
-   hd_frames = load_video_frames(hd_video_file, 0,  1)
+   hd_frames = load_video_framesX(hd_video_file, 0,  1)
    
    # Get sync val
    sync = 0
