@@ -34,8 +34,7 @@ def load_video_frames(trim_file, limit=0, mask=0,crop=(),color=0):
 
 
    print("<br>CAM FROM CONVERT<br>") 
-   print(cam) 
-
+  
 
    cap = cv2.VideoCapture(trim_file)
    masks = get_mask(cam)

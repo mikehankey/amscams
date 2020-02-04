@@ -34,7 +34,8 @@ def get_mask(cam):
         for cam in data['cameras']:
            if("id" in cam):
               print("<br/>CAM ID " + cam['id'])
-              print("<br/>cam " + cam) 
+              print("<br/>cam ")
+              print(cam) 
               if(cam['id']==cam): 
                   print("<br>TEST OK<br>")
                   toReturn.append(cam['hd']['masks']) 
