@@ -1039,9 +1039,7 @@ def update_intensity(json_file):
    ff_file = json_file.replace(".json", "-lc-ff.png")
    data = load_json_file(json_file)
    hd_file = json_file.replace(".json", "-HD.mp4")
-
-   print("FLEX DETECT UPDATe intensity")
-   print(json_conf)
+ 
 
    hd_frames,hd_color_frames,hd_subframes,sum_vals,max_vals = load_frames_fast(hd_file, json_conf, 0, 0, [], 0,[])
 
