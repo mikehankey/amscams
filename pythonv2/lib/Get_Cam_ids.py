@@ -24,7 +24,16 @@ def get_masks():
     return toReturn
 
 # Return all HD masks for a given camera
-
+def get_mask(cam):
+    json_path = cleanup_json()
+    toReturn = []
+    with open(json_path, "r+") as jsonFile:
+        data = json.load(jsonFile)
+        for cam in data['cameras']:
+           if("id" in cam):
+              if(cam['id']==cam): 
+               toReturn.append(cam['hd']['masks']) 
+    return toReturn   
 
 
 # GET ALL CAMERAS INFO FROM THE OLD VERSION
