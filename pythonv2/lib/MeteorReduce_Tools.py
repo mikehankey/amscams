@@ -98,6 +98,7 @@ def update_intensity(conf_file, json_file, json_data, hd_video_file, sd_video_fi
 
       frame['intensity'] = int(cnt_int)
       frame['intensity_ff'] = int(ff_int) 
+      new_frames.append(frame)
 
    json_data['frames'] = new_frames 
    save_json_file(json_file,json_data) 
