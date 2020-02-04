@@ -69,7 +69,7 @@ def load_video_frames(trim_file, limit=0, mask=0,crop=(),color=0):
                   hd = 1
                else:
                   hd = 0
-               masks = get_masks(cam, json_conf,hd)
+               masks = get_mask(cam)
                frame = mask_frame(frame, [], masks, 5)
 
             if last_frame is not None:
