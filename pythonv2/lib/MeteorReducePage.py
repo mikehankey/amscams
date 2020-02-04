@@ -179,7 +179,7 @@ def reduce_meteor2(json_conf,form):
    update_intensity(json_full_path, meteor_json_file, HD_frames, tmp_analysed_name)
    print("INTENSITY UPDATED")
    print('<hr>')
-   os.system("cd /home/ams/amscams/pythonv2; /usr/bin/python3/flex-detect.py ep" + meteor_red_file)  
+   os.system("cd /home/ams/amscams/pythonv2; /usr/bin/python3/flex-detect.py ep" + json_full_path)  
    print('<hr>')
 
    # Get the thumbs (cropped HD frames) 
