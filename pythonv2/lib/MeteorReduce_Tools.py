@@ -19,11 +19,19 @@ from lib.REDUCE_VARS import *
 from lib.VIDEO_VARS import * 
 from lib.ImageLib import stack_stack
 from lib.Get_Station_Id import get_station_id
+from lib.Sync_HD_SD_videos import load_video_frames
 
 
 # Get intensity & update the json
-def update_intensity(json_file, json_data, hd_frames, analysed_name): 
+def update_intensity(json_file, json_data, hd_video_file, sd_video_file, analysed_name): 
   
+   
+   # Get Video frames
+   hd_frames = load_video_frames(hd_video_file, json_conf, 0, 0, [], 0,[])
+   print("UPDATE INT")
+   print(hd_frames)
+   sys.exit(0)
+
    # Get the thumb for frame 0
    thumb0_file = get_thumb(analysed_name,"0")
     

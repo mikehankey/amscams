@@ -106,8 +106,7 @@ def load_video_frames(trim_file, json_conf, limit=0, mask=0, color=0):
                hd = 1
             else:
                hd = 0
-            masks = get_masks(cam, hd)
-            #print("GET MASKS HD:", hd, masks)
+            masks = get_masks(cam, hd) 
             frame = mask_frame(frame, [], masks, 5)
 
          frames.append(frame)

@@ -154,12 +154,7 @@ def reduce_meteor2(json_conf,form):
    template = template.replace("{JSON_FILE}", str(json_full_path))   # Video File  
 
    # Parse the JSON
-   meteor_json_file = load_json_file(json_full_path) 
-
-
-    
- 
-
+   meteor_json_file = load_json_file(json_full_path)  
 
 
    tmp_analysed_name = name_analyser(json_full_path) 
@@ -176,7 +171,7 @@ def reduce_meteor2(json_conf,form):
    # TMP
    print("TEST UPDATE INTENSITY")  
    print("<br>JSON FULL PATH: " + json_full_path +"<br>")    
-   update_intensity(json_full_path, meteor_json_file, HD_frames, tmp_analysed_name)
+   update_intensity(json_full_path, meteor_json_file, video_hd_full_path, tmp_analysed_name)
    print("INTENSITY UPDATED")
    print('<hr>')
    os.system("cd /home/ams/amscams/pythonv2; /usr/bin/python3/flex-detect.py ep" + json_full_path + " > /text.txt")  
