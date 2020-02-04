@@ -170,10 +170,9 @@ def reduce_meteor2(json_conf,form):
 
 
    # TMP
-   print("TEST UPDATE INTENSITY")  
-   print("<br>JSON FULL PATH: " + json_full_path +"<br>")    
-   update_intensity(cleanup_json(), json_full_path, meteor_json_file, video_hd_full_path, video_sd_full_path, tmp_analysed_name)
-   print('<hr>')
+   print("TEST UPDATE INTENSITY")   
+   update_intensity(json_full_path, meteor_json_file, video_hd_full_path, video_sd_full_path, tmp_analysed_name)
+   
 
    # Get the thumbs (cropped HD frames) 
    try:
