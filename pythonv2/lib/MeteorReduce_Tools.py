@@ -26,7 +26,7 @@ from lib.Sync_HD_SD_videos import load_video_frames
 def update_intensity(conf_file, json_file, json_data, hd_video_file, sd_video_file, analysed_name): 
     
    # Get Video frames 
-   hd_frames = load_video_frames(hd_video_file, conf_file, limit=0, mask=1, color=1)
+   hd_frames = load_video_frames(hd_video_file,limit=0, mask=1, color=1)
    
    print("UPDATE INTENSITY HD F0<br>")
    print(hd_frames[0])

@@ -75,13 +75,13 @@ def get_masks(this_cams_id, hd = 0):
    return(my_masks)
 
 # Return video frames
-def load_video_frames(trim_file, json_conf, limit=0, mask=0, color=0):
+def load_video_frames(trim_files, limit=0, mask=0, color=0):
 
    (f_datetime, cam, f_date_str,fy,fm,fd, fh, fmin, fs) = convert_filename_to_date_cam(trim_file)
  
    cap = cv2.VideoCapture(trim_file)
   
-   masks = get_masks(cam, json_conf,1) 
+   masks = get_masks(cam, 1) 
 
 
    frames = []
@@ -109,7 +109,7 @@ def load_video_frames(trim_file, json_conf, limit=0, mask=0, color=0):
                hd = 1
             else:
                hd = 0
-            masks = get_masks(cam, json_conf, hd) 
+            masks = get_masks(cam , hd) 
             frame = mask_frame(frame, [], masks, 5)
 
          frames.append(frame)
