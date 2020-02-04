@@ -18,7 +18,7 @@ import cv2
 import math
 import numpy as np
 import scipy.optimize
-import ephem 
+import ephem
 from lib.flexCal import flex_get_cat_stars, reduce_fov_pos
 
 
@@ -1039,11 +1039,10 @@ def update_intensity(json_file):
    ff_file = json_file.replace(".json", "-lc-ff.png")
    data = load_json_file(json_file)
    hd_file = json_file.replace(".json", "-HD.mp4")
-
    hd_frames,hd_color_frames,hd_subframes,sum_vals,max_vals = load_frames_fast(hd_file, json_conf, 0, 0, [], 0,[])
- 
-   #print(hd_frames[0])
-   #sys.exit(0)
+
+   print(hd_frames[0])
+   sys.exit(0)
 
 
    sync = data['sync']['hd_ind'] - data['sync']['sd_ind']
@@ -1089,7 +1088,6 @@ def update_intensity(json_file):
          ff_int = 0
 
       frame['intensity'] = int(cnt_int)
-      print("INTENSITY " + str(fn) +  " > " + str(cnt_int) + "<br>")
       frame['intensity_ff'] = int(ff_int)
       curve[fn]['cnt_int'] = cnt_int
       curve[fn]['ff_int'] = ff_int
@@ -1099,7 +1097,7 @@ def update_intensity(json_file):
 
    data['frames'] = new_frames 
    save_json_file(json_file,data)
-   #print("Saved:", json_file)
+   print("Saved:", json_file)
    mf = max(ffs)
    mc = max(cnts)
    medf = np.median(ffs)
@@ -1113,12 +1111,12 @@ def update_intensity(json_file):
       times.append(fn)
       values.append(curve[fn]['cnt_int'] )
       values2.append(curve[fn]['ff_int'] / scale)
-      #print(fn, curve[fn])     
+      print(fn, curve[fn])     
 
    #plot_int(times,values, None,0,len(values), "Contour Intensity " , cnt_file)
    #plot_int(times,values2, None,0,len(values), "Full Frame Intensity", ff_file )
-   #print(cnt_file)
-   #print(ff_file)
+   print(cnt_file)
+   print(ff_file)
 
 def find_bad_line_points(xs,ys):
 
@@ -6919,7 +6917,7 @@ def load_frames_fast(trim_file, json_conf, limit=0, mask=0,crop=(),color=0,resiz
    go = 1
    while go == 1:
       if True :
-         _ , frame = cap.read() 
+         _ , frame = cap.read()
          if frame is None:
             if frame_count <= 5 :
                cap.release()
