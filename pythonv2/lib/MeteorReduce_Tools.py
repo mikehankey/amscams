@@ -27,27 +27,22 @@ from lib.Get_Cam_ids import get_mask
 def load_video_frames(trim_file, limit=0, mask=0,crop=(),color=0):
    (f_datetime, cam, f_date_str,fy,fm,fd, fh, fmin, fs) = convert_filename_to_date_cam(trim_file)
    cap = cv2.VideoCapture(trim_file)
-   masks = get_mask(cam)
-    
-   color_frames = []
-   frames = []
-   subframes = []
-   sum_vals = []
-   max_vals = []
+   masks = get_mask(cam) 
+   frames = [] 
    frame_count = 0
    go = 1
+
    while go == 1:
       if True :
          _ , frame = cap.read()
          if frame is None:
             if frame_count <= 5 :
                cap.release()
-               return(frames,color_frames,subframes,sum_vals,max_vals)
+               return(frame)
             else:
                go = 0
          else:
-            if color == 1:
-               color_frames.append(frame)
+           
             if limit != 0 and frame_count > limit:
                cap.release()
                return(frames)
@@ -65,13 +60,13 @@ def load_video_frames(trim_file, limit=0, mask=0,crop=(),color=0):
             frames.append(frame) 
       frame_count = frame_count + 1
    cap.release()
-   return(frames, color_frames, subframes, sum_vals, max_vals)
+   return frames
 
 # Get intensity & update the json
 def update_intensity(conf_file, json_file, json_data, hd_video_file, sd_video_file, analysed_name): 
     
    # Get Video frames 
-   hd_frames = load_video_frames(hd_video_file,limit=0, mask=1, color=1)
+   hd_frames, color_frames, subframes, sum_vals, max_vals = load_video_frames(hd_video_file,limit=0, mask=1, color=1)
    
    # Get sync val
    sync = 0
