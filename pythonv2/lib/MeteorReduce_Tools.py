@@ -28,6 +28,10 @@ def update_intensity(conf_file, json_file, json_data, hd_video_file, sd_video_fi
    # Get Video frames 
    hd_frames = load_video_frames(hd_video_file, conf_file, limit=0, mask=1, color=1)
   
+   print(hd_frames)
+   sys.exit(0)
+
+
    # Get the thumb for frame 0
    thumb0_file = get_thumb(analysed_name,"0")
     
