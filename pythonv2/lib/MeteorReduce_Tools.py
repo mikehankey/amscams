@@ -37,7 +37,11 @@ def update_intensity(json_file, json_data, hd_frames, analysed_name):
    # Since get_thumb returns an array (glob.glob)
    thumb0_file = thumb0_file[0]
     
-   thumb0 = cv2.imread(thumb0_file,1)
+   thumb0 = cv2.imread(thumb0_file,3)
+   print("CUR THUMB SHAPE <br>")
+   print(thumb0.shape)
+   print("<br>")
+   
    cv2.cvtColor(thumb0, cv2.COLOR_BGR2GRAY)
    new_frames = []
     
@@ -46,7 +50,12 @@ def update_intensity(json_file, json_data, hd_frames, analysed_name):
       fn = frame['fn']  
       cur_thumb = get_thumb(analysed_name,int(fn))
       cur_thumb = cur_thumb[0]
-      cur_thumb = cv2.imread(cur_thumb,1)
+      cur_thumb = cv2.imread(cur_thumb,3)
+
+      print("CUR THUMB SHAPE <br>")
+      print(cur_thumb.shape)
+      print("<br>")
+
       cv2.cvtColor(cur_thumb, cv2.COLOR_BGR2GRAY)
 
       # Substract cur frame thumb from thumb0
