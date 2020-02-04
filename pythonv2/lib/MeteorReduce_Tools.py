@@ -74,8 +74,21 @@ def update_intensity(conf_file, json_file, json_data, hd_video_file, sd_video_fi
    # Get Video frames 
    hd_frames = load_video_frames(hd_video_file,limit=0, mask=1, color=1)
    
+   # Get sync val
+   sync = 0
+   if('sync' in json_data):
+      if('hd_ind' in json_data['sync']):
+         if('sd_ind' in json_data['sync']):
+            sync =  json_data['sync']['hd_ind'] - json_data['sync']['sd_ind']
+
+   json_frames = json_data['frames'] 
+    
+   cx1,cy1,cx2,cy2 = bound_cnt(json_frames[0]['x'],json_frames[0]['y'],hd_frames[0].shape[1],hd_frames[0].shape[0], 20)
+
+
+
    print("UPDATE INTENSITY HD F0<br>")
-   print(hd_frames[0])
+   print(cx1,cy1,cx2,cy2)
    sys.exit(0)
 
    # Get the thumb for frame 0
