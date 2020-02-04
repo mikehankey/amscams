@@ -38,7 +38,7 @@ def get_mask(cam_id):
               print(cam_id) 
               if(cam['id']==cam_id): 
                   print("<br>TEST OK<br>")
-                  toReturn.append(cam['hd']['masks']) 
+                  toReturn = cam['hd']['masks']
 
     print("TO RETURN <br>")
     print(toReturn)
