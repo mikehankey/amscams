@@ -32,6 +32,11 @@ def load_video_frames(trim_file, limit=0, mask=0,crop=()):
    frame_count = 0
    go = 1
 
+   print("IN LOAD VI<br>")
+   print(limit)
+   print("<br>")
+   print(frame_count)
+
    while go == 1:
       if True :
          _ , frame = cap.read()
