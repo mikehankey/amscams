@@ -24,7 +24,7 @@ from lib.Get_Cam_ids import get_mask
 
 
 # LOAD VIDEO FRAMES with MASKS
-def load_video_frames(trim_file, limit=0, mask=0,crop=(),color=0):
+def load_video_frames(trim_file, limit=0, mask=0,crop=()):
    (f_datetime, cam, f_date_str,fy,fm,fd, fh, fmin, fs) = convert_filename_to_date_cam(trim_file)
    cap = cv2.VideoCapture(trim_file)
    masks = get_mask(cam) 
@@ -66,7 +66,7 @@ def load_video_frames(trim_file, limit=0, mask=0,crop=(),color=0):
 def update_intensity(json_file, json_data, hd_video_file): 
     
    # Get Video frames 
-   hd_frames = load_video_frames(hd_video_file,limit=0, mask=1, color=1)
+   hd_frames = load_video_frames(hd_video_file, 0,  1)
    
    # Get sync val
    sync = 0
