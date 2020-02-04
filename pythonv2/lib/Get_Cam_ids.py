@@ -24,7 +24,7 @@ def get_masks():
     return toReturn
 
 # Return all HD masks for a given camera
-def get_mask(cam):
+def get_mask(cam_id):
     print("IN GET MASK<br>" + cam)
     json_path = cleanup_json()
     toReturn = [] 
@@ -35,8 +35,8 @@ def get_mask(cam):
            if("id" in cam):
               print("<br/>CAM ID " + cam['id'])
               print("<br/>cam ")
-              print(cam) 
-              if(cam['id']==cam): 
+              print(cam_id) 
+              if(cam['id']==cam_id): 
                   print("<br>TEST OK<br>")
                   toReturn.append(cam['hd']['masks']) 
 
