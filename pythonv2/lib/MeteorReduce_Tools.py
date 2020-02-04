@@ -23,48 +23,29 @@ from lib.Get_Station_Id import get_station_id
 
 # Get intensity & update the json
 def update_intensity(json_file, json_data, hd_frames, analysed_name): 
- 
-   #print("json_file INPUTS<br>")
-   #print(json_file)
-   #print("HD FRAMES INPUTS<br>")
-   #print(hd_frames)
-   #print("analysed_name INPUTS<br>")
-   #print(analysed_name)
-
   
    # Get the thumb for frame 0
    thumb0_file = get_thumb(analysed_name,"0")
-   #print("<br>THUMB0 FIle ")
-   #print(thumb0_file)
-
-   #print("<br><br>HD FRAMES<br>")
-   #print(hd_frames)
-
-   #print("<br><br>JSON DATA<br>")
-   #print(json_data)
-   
+    
    # If thumb0_file doesn't exist
    if(len(thumb0_file)==0):
       # WE NEED TO CREATE THE THUMB 0 with the VALUES x,y of the first frame
       # here x & y = the position of the meteor on the first available frame 
       first_frames_info = json_data['frames'][0]
       thumb0_file = generate_cropped_frame(analysed_name,json_data,hd_frames[0],"0",0,first_frames_info['x'],first_frames_info['y'])
-      
    
    # Since get_thumb returns an array (glob.glob)
    thumb0_file = thumb0_file[0]
-   
-   
-   thumb0 = cv2.imread(thumb0_file,0)
+    
+   thumb0 = cv2.imread(thumb0_file,1)
    new_frames = []
     
    # Go through all the frames to get the intensity
    for frame in json_data['frames']:   
-
       fn = frame['fn']  
       cur_thumb = get_thumb(analysed_name,int(fn))
       cur_thumb = cur_thumb[0]
-      cur_thumb = cv2.imread(cur_thumb,0)
+      cur_thumb = cv2.imread(cur_thumb,1)
 
       # Substract cur frame thumb from thumb0
       cnt_sub = cv2.subtract(cur_thumb,thumb0)
