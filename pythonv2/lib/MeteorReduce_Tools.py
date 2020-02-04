@@ -21,14 +21,14 @@ from lib.ImageLib import stack_stack
 from lib.Get_Station_Id import get_station_id
 from lib.Sync_HD_SD_videos import load_video_frames
 from lib.UtilLib import convert_filename_to_date_cam, bound_cnt
-from lib.Get_Cam_ids import get_masks
+from lib.Get_Cam_ids import get_mask
 
 
 # LOAD VIDEO FRAMES with MASKS
 def load_video_frames(trim_file, limit=0, mask=0,crop=(),color=0):
    (f_datetime, cam, f_date_str,fy,fm,fd, fh, fmin, fs) = convert_filename_to_date_cam(trim_file)
    cap = cv2.VideoCapture(trim_file)
-   masks = get_masks(cam, 1)
+   masks = get_mask(cam, 1)
    print("MASKS:", cam, masks)
    sys.exit(0)
 
