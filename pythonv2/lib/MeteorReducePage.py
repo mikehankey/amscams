@@ -187,7 +187,7 @@ def reduce_meteor2(json_conf,form):
       # If we don't have the intensities for each frame
    # we get them
    if('frames' in meteor_json_file):
-      if('intensity_ff' not i meteor_json_file['frames'][0]):
+      if('intensity_ff' not in meteor_json_file['frames'][0]):
          try:
             update_intensity(json_full_path, meteor_json_file, video_hd_full_path)
             print("INTENSITY UPDATED")
