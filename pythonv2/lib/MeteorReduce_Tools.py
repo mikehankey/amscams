@@ -38,7 +38,7 @@ def load_video_frames(trim_file, limit=0, mask=0,crop=()):
          if frame is None:
             if frame_count <= 5 :
                cap.release()
-               return(frame)
+               return(frames)
             else:
                go = 0
          else:
