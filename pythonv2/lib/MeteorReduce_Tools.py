@@ -58,7 +58,7 @@ def load_video_frames(trim_file, limit=0, mask=0,crop=(),color=0):
                frame = mask_frame(frame, [], masks, 5)
             
             frames.append(frame) 
-      frame_count = frame_count + 1
+      frame_count+= 1
    cap.release()
    return frames
 
