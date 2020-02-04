@@ -59,7 +59,7 @@ def update_intensity(json_file, json_data, hd_frames, analysed_name):
          ff_int = 0
 
       frame['intensity'] = int(cnt_int)
-      print("INTENSITY " + str(fn) +  " > " + str(cnt_int))
+      print("INTENSITY " + str(fn) +  " > " + str(cnt_int) + "<br>")
       frame['intensity_ff'] = int(ff_int)
       new_frames.append(frame)
 

@@ -10,6 +10,7 @@ from lib.CGI_Tools import redirect_to
 from lib.MeteorReduce_Tools import *  
 from lib.REDUCE_VARS import REMOTE_FILES_FOLDER, REMOVE_METEOR_FOLDER, METEOR_ARCHIVE
 from lib.Make_Graphs_JSON import *
+from flex-detect  import *
  
 PAGE_TEMPLATE = "/home/ams/amscams/pythonv2/templates/reducePage.v2.html"
 
@@ -178,6 +179,8 @@ def reduce_meteor2(json_conf,form):
    print("<br>JSON FULL PATH: " + json_full_path +"<br>")    
    update_intensity(json_full_path, meteor_json_file, HD_frames, tmp_analysed_name)
    print("INTENSITY UPDATED")
+   print('<hr>')
+   update_intensity(json_full_path)
 
    # Get the thumbs (cropped HD frames) 
    try:
@@ -285,7 +288,7 @@ def reduce_meteor2(json_conf,form):
          template = template.replace("{MULTI_DETAILS}",'')
 
  
-   # CREATE EXTRA CONTENT
+   # CREATE EXTRA CONTENT (GRAPHS)
    extra_tabs = ""
    extra_content = ""
 
