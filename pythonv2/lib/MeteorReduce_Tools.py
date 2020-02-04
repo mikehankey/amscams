@@ -76,34 +76,11 @@ def update_intensity(conf_file, json_file, json_data, hd_video_file, sd_video_fi
             sync =  json_data['sync']['hd_ind'] - json_data['sync']['sd_ind']
 
    json_frames = json_data['frames'] 
-     
-  
    cx1,cy1,cx2,cy2 = bound_cnt(json_frames[0]['x'],json_frames[0]['y'],hd_frames[0].shape[1],hd_frames[0].shape[0], 20)
 
-
-
-   print("UPDATE INTENSITY HD F0<br>")
-   print(cx1,cy1,cx2,cy2)
-   sys.exit(0)
-
-   # Get the thumb for frame 0
-   thumb0_file = get_thumb(analysed_name,"0")
-    
-   # If thumb0_file doesn't exist
-   if(len(thumb0_file)==0):
-      # WE NEED TO CREATE THE THUMB 0 with the VALUES x,y of the first frame
-      # here x & y = the position of the meteor on the first available frame 
-      first_frames_info = json_data['frames'][0]
-      thumb0_file = generate_cropped_frame(analysed_name,json_data,hd_frames[0],"0",0,first_frames_info['x'],first_frames_info['y'])
-   
-   # Since get_thumb returns an array (glob.glob)
-   thumb0_file = thumb0_file[0]
-   thumb0 = cv2.imread(thumb0_file,3)
-   print("CUR THUMB SHAPE <br>")
-   print(thumb0.shape)
-   print("<br>")
-   
-   cv2.cvtColor(thumb0, cv2.COLOR_BGR2GRAY)
+   # Frame 0 == Bg
+   bg_cnt = hd_frames[0][cy1:cy2,cx1:cx2] 
+ 
    new_frames = []
     
    # Go through all the frames to get the intensity
