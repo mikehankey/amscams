@@ -25,7 +25,7 @@ def get_masks():
 
 # Return all HD masks for a given camera
 def get_mask(cam_id):
-    print("IN GET MASK<br>" + cam)
+    print("IN GET MASK<br>" + cam_id)
     json_path = cleanup_json()
     toReturn = [] 
     with open(json_path, "r+") as jsonFile:
