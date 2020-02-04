@@ -66,7 +66,7 @@ def load_video_frames(trim_file, limit=0, mask=0,crop=(),color=0):
 def update_intensity(conf_file, json_file, json_data, hd_video_file, sd_video_file, analysed_name): 
     
    # Get Video frames 
-   hd_frames, color_frames, subframes, sum_vals, max_vals = load_video_frames(hd_video_file,limit=0, mask=1, color=1)
+   hd_frames = load_video_frames(hd_video_file,limit=0, mask=1, color=1)
    
    # Get sync val
    sync = 0
