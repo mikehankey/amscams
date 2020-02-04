@@ -27,14 +27,16 @@ def get_masks():
 def get_mask(cam):
     json_path = cleanup_json()
     toReturn = []
-    print("IN GET MASK - TEST ")
+    print("IN GET MASK - TEST<br>")
     with open(json_path, "r+") as jsonFile:
         data = json.load(jsonFile)
         print(data['cameras'])
+        print("<br><br>")
         for cam in data['cameras']:
            if("id" in cam):
             
               print(cam['id'])
+              print("<hr/>")
               print(cam)
               if(cam['id']==cam): 
                toReturn.append(cam['hd']['masks']) 
