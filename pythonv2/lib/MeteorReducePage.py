@@ -6,6 +6,7 @@ import datetime
 from pathlib import Path
 from shutil import copyfile
 
+from lib.Cleanup_Json_Conf import cleanup_json
 from lib.CGI_Tools import redirect_to
 from lib.MeteorReduce_Tools import *  
 from lib.REDUCE_VARS import REMOTE_FILES_FOLDER, REMOVE_METEOR_FOLDER, METEOR_ARCHIVE
@@ -171,7 +172,7 @@ def reduce_meteor2(json_conf,form):
    # TMP
    print("TEST UPDATE INTENSITY")  
    print("<br>JSON FULL PATH: " + json_full_path +"<br>")    
-   update_intensity(json_full_path, meteor_json_file, video_hd_full_path, tmp_analysed_name)
+   update_intensity(cleanup_json(), json_full_path, meteor_json_file, video_hd_full_path, tmp_analysed_name)
    print("INTENSITY UPDATED")
    print('<hr>')
    os.system("cd /home/ams/amscams/pythonv2; /usr/bin/python3/flex-detect.py ep" + json_full_path + " > /text.txt")  

@@ -12,6 +12,7 @@ def cleanup_json():
     # Test if the clean versio already exist
     file_org = Path(PATH_TO_CONF_JSON)
     file_to_clean = Path(PATH_TO_CLEAN_CONF_JSON)
+    
     if file_to_clean.is_file():
         #ADD POSSIBILITY TO Erase?
         #print("Clean version already exists") 
