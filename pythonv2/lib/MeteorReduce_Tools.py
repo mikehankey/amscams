@@ -31,11 +31,7 @@ def load_video_framesX(trim_file, limit=0, mask=0,crop=()):
    frames = [] 
    frame_count = 0
    go = 1
-
-   print("IN LOAD VI<br>")
-   print(limit)
-   print("<br>")
-   print(frame_count)
+ 
 
    while go == 1:
       if True :

@@ -186,10 +186,8 @@ def reduce_meteor2(json_conf,form):
       if('intensity_ff' not in meteor_json_file['frames'][0] or clear_cache==1):
          try:
             update_intensity(json_full_path, meteor_json_file, video_hd_full_path)
-            print("INTENSITY UPDATED")
          except:
-            print("IMPOSSIBLE TO UPDATE THE INTENSITY")
-
+         
 
 
 
