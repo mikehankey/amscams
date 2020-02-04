@@ -71,36 +71,11 @@ def load_video_frames(trim_file, limit=0, mask=0,crop=(),color=0):
                   hd = 0
                masks = get_mask(cam)
                frame = mask_frame(frame, [], masks, 5)
- 
-
-            if len(crop) == 4:
-               ih,iw = frame.shape
-               x1,y1,x2,y2 = crop
-               x1 = x1 - 25
-               y1 = y1 - 25
-               x2 = x2 + 25
-               y2 = y2 + 25
-               if x1 < 0:
-                  x1 = 0
-               if y1 < 0:
-                  y1 = 0
-               if x1 > iw -1:
-                  x1 = iw -1
-               if y1 > ih -1:
-                  y1 = ih -1
-               #print("MIKE:", x1,y2,x2,y2)
-               crop_frame = frame[y1:y2,x1:x2]
-               frame = crop_frame
-            if len(resize) == 2:
-               frame = cv2.resize(frame, (resize[0],resize[1]))
-       
+            
             frames.append(frame) 
       frame_count = frame_count + 1
    cap.release()
-   if len(crop) == 4:
-      return(frames,x1,y1)
-   else:
-      return(frames, color_frames, subframes, sum_vals, max_vals)
+   return(frames, color_frames, subframes, sum_vals, max_vals)
 
 # Get intensity & update the json
 def update_intensity(conf_file, json_file, json_data, hd_video_file, sd_video_file, analysed_name): 
