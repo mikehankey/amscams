@@ -38,9 +38,7 @@ def load_video_frames(trim_file, limit=0, mask=0,crop=(),color=0):
 
    cap = cv2.VideoCapture(trim_file)
    masks = get_mask(cam)
-   print("MASKS:", cam, masks)
-   sys.exit(0)
-
+    
    color_frames = []
    frames = []
    subframes = []
