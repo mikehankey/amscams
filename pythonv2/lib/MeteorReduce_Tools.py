@@ -83,6 +83,9 @@ def update_intensity(conf_file, json_file, json_data, hd_video_file, sd_video_fi
 
    json_frames = json_data['frames'] 
     
+   print(hd_frames)
+   sys.exit(0)
+
    cx1,cy1,cx2,cy2 = bound_cnt(json_frames[0]['x'],json_frames[0]['y'],hd_frames[0].shape[1],hd_frames[0].shape[0], 20)
 
 
