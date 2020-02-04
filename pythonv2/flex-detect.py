@@ -1041,6 +1041,12 @@ def update_intensity(json_file):
    hd_file = json_file.replace(".json", "-HD.mp4")
 
    hd_frames,hd_color_frames,hd_subframes,sum_vals,max_vals = load_frames_fast(hd_file, json_conf, 0, 0, [], 0,[])
+
+
+   print(" HD FRAMES ")
+   print(hd_frames)
+
+
    sync = data['sync']['hd_ind'] - data['sync']['sd_ind']
    frames = data['frames']
    curve = {}
