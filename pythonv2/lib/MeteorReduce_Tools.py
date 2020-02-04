@@ -23,7 +23,7 @@ from lib.Sync_HD_SD_videos import load_video_frames
 
 
 # Get intensity & update the json
-def update_intensity(json_file, json_data, hd_video_file, sd_video_file, analysed_name): 
+def update_intensity(json_file, json_data, hd_video_file, analysed_name): 
   
    
    # Get Video frames
