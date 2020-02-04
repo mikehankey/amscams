@@ -168,11 +168,7 @@ def reduce_meteor2(json_conf,form):
    # Get the HD frames 
    HD_frames = get_HD_frames(tmp_analysed_name,clear_cache)
 
-
-   # TMP
-   print("TEST UPDATE INTENSITY")   
-   
-   
+ 
 
    # Get the thumbs (cropped HD frames) 
    try:
@@ -184,10 +180,10 @@ def reduce_meteor2(json_conf,form):
    else:
       thumbs = get_thumbs(tmp_analysed_name,meteor_json_file,HD,HD_frames,clear_cache)
   
-      # If we don't have the intensities for each frame
+   # If we don't have the intensities for each frame or if clear_cache
    # we get them
-   if('frames' in meteor_json_file):
-      if('intensity_ff' not in meteor_json_file['frames'][0]):
+   if('frames' in meteor_json_file or clear_cache==1):
+      if('intensity_ff' not in meteor_json_file['frames'][0] or clear_cache==1):
          try:
             update_intensity(json_full_path, meteor_json_file, video_hd_full_path)
             print("INTENSITY UPDATED")
