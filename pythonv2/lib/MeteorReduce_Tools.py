@@ -71,27 +71,7 @@ def load_video_frames(trim_file, limit=0, mask=0,crop=(),color=0):
                   hd = 0
                masks = get_mask(cam)
                frame = mask_frame(frame, [], masks, 5)
-
-            if last_frame is not None:
-               subframe = cv2.subtract(frame, last_frame)
-               #subframe = mask_frame(subframe, [], masks, 5)
-               sum_val =cv2.sumElems(subframe)[0]
-  
-               if sum_val > 1000 and last_last_frame is not None:
-                  subframe = cv2.subtract(subframe, last_last_frame)
-                  sum_val =cv2.sumElems(subframe)[0]
-               subframes.append(subframe)
-
-
-               if sum_val > 100:
-                  min_val, max_val, min_loc, (mx,my)= cv2.minMaxLoc(subframe)
-               else:
-                  max_val = 0
-               if frame_count < 5:
-                  sum_val = 0
-                  max_val = 0
-               sum_vals.append(sum_val)
-               max_vals.append(max_val)
+ 
 
             if len(crop) == 4:
                ih,iw = frame.shape
@@ -114,10 +94,7 @@ def load_video_frames(trim_file, limit=0, mask=0,crop=(),color=0):
             if len(resize) == 2:
                frame = cv2.resize(frame, (resize[0],resize[1]))
        
-            frames.append(frame)
-            if last_frame is not None:
-               last_last_frame = last_frame
-            last_frame = frame
+            frames.append(frame) 
       frame_count = frame_count + 1
    cap.release()
    if len(crop) == 4:
