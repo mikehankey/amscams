@@ -6921,6 +6921,10 @@ def load_frames_fast(trim_file, json_conf, limit=0, mask=0,crop=(),color=0,resiz
    while go == 1:
       if True :
          _ , frame = cap.read()
+
+         print("FRAME SHAPE")
+         print(str(frame.shape))
+
          if frame is None:
             if frame_count <= 5 :
                cap.release()
