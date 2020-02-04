@@ -80,48 +80,28 @@ def update_intensity(conf_file, json_file, json_data, hd_video_file, sd_video_fi
 
    # Frame 0 == Bg
    bg_cnt = hd_frames[0][cy1:cy2,cx1:cx2] 
-
-   sys.exit(0)
- 
    new_frames = []
-    
-   # Go through all the frames to get the intensity
-   for frame in json_data['frames']:   
-      fn = frame['fn']  
-      cur_thumb = get_thumb(analysed_name,int(fn))
-      cur_thumb = cur_thumb[0]
-      cur_thumb = cv2.imread(cur_thumb,3)
-
-      print("CUR THUMB SHAPE <br>")
-      print(cur_thumb.shape)
-      print("<br>")
-
-      cv2.cvtColor(cur_thumb, cv2.COLOR_BGR2GRAY)
-
-      # Substract cur frame thumb from thumb0
-      cnt_sub = cv2.subtract(cur_thumb,thumb0)
-      cnt_int = np.sum(cur_thumb) - np.sum(thumb0) 
-      ff_int = np.sum(cnt_sub) 
-
-      # When we are wrong... it's 0 (from Mike's code)
+   
+   for frame in hd_frames:   
+      fn = frame['fn'] + sync
+      cx1,cy1,cx2,cy2 = bound_cnt(frame['x'],frame['y'],hd_frames[0].shape[1],hd_frames[0].shape[0], 20)
+      cnt = hd_frames[fn][cy1:cy2,cx1:cx2] 
+      bg_cnt = hd_frames[0][cy1:cy2,cx1:cx2] 
+      cnt_sub = cv2.subtract(cnt,bg_cnt)
+      cnt_int = np.sum(cnt) - np.sum(bg_cnt)
+      ff_sub = cv2.subtract(hd_frames[fn],hd_frames[0])
+      ff_int = np.sum(ff_sub) 
       if cnt_int > 18446744073709:
          cnt_int = 0
       if ff_int > 18446744073709:
          ff_int = 0
 
       frame['intensity'] = int(cnt_int)
-      print("INTENSITY " + str(fn) +  " > " + str(cnt_int) + "<br>")
-      frame['intensity_ff'] = int(ff_int)
-      new_frames.append(frame)
+      frame['intensity_ff'] = int(ff_int) 
 
-   # Replace the frames in the JSON
-   json_data['frames'] = new_frames 
-   
-   
-   #save_json_file(json_file,json_data)
+   data['frames'] = new_frames 
+   save_json_file(json_file,data) 
 
-   # Intensity Updated
-   print("Intensity NOT Updated") 
 
 
 # Apply calib to a given JSON
