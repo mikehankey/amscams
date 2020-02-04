@@ -26,7 +26,17 @@ from lib.Get_Cam_ids import get_mask
 
 # LOAD VIDEO FRAMES with MASKS
 def load_video_frames(trim_file, limit=0, mask=0,crop=(),color=0):
+
+   print("TRIM FILE<br>")
+   print(trim_file) 
+
    (f_datetime, cam, f_date_str,fy,fm,fd, fh, fmin, fs) = convert_filename_to_date_cam(trim_file)
+
+
+   print("<br>CAM FROM CONVERT<br>") 
+   print(cam) 
+
+
    cap = cv2.VideoCapture(trim_file)
    masks = get_mask(cam)
    print("MASKS:", cam, masks)
