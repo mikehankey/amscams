@@ -9,8 +9,7 @@ from shutil import copyfile
 from lib.CGI_Tools import redirect_to
 from lib.MeteorReduce_Tools import *  
 from lib.REDUCE_VARS import REMOTE_FILES_FOLDER, REMOVE_METEOR_FOLDER, METEOR_ARCHIVE
-from lib.Make_Graphs_JSON import *
-from flex-detect  import *
+from lib.Make_Graphs_JSON import * 
  
 PAGE_TEMPLATE = "/home/ams/amscams/pythonv2/templates/reducePage.v2.html"
 
@@ -180,7 +179,8 @@ def reduce_meteor2(json_conf,form):
    update_intensity(json_full_path, meteor_json_file, HD_frames, tmp_analysed_name)
    print("INTENSITY UPDATED")
    print('<hr>')
-   update_intensity(json_full_path)
+   os.system("cd /home/ams/amscams/pythonv2; /usr/bin/python3/flex-detect.py ep" + meteor_red_file)  
+   print('<hr>')
 
    # Get the thumbs (cropped HD frames) 
    try:
