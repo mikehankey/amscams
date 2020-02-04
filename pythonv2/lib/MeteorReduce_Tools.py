@@ -63,7 +63,7 @@ def load_video_frames(trim_file, limit=0, mask=0,crop=(),color=0):
    return frames
 
 # Get intensity & update the json
-def update_intensity(json_file, json_data, hd_video_file, sd_video_file, analysed_name): 
+def update_intensity(json_file, json_data, hd_video_file): 
     
    # Get Video frames 
    hd_frames = load_video_frames(hd_video_file,limit=0, mask=1, color=1)

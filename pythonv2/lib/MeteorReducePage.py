@@ -171,7 +171,7 @@ def reduce_meteor2(json_conf,form):
 
    # TMP
    print("TEST UPDATE INTENSITY")   
-   update_intensity(json_full_path, meteor_json_file, video_hd_full_path, video_sd_full_path, tmp_analysed_name)
+   
    
 
    # Get the thumbs (cropped HD frames) 
@@ -184,6 +184,19 @@ def reduce_meteor2(json_conf,form):
    else:
       thumbs = get_thumbs(tmp_analysed_name,meteor_json_file,HD,HD_frames,clear_cache)
   
+      # If we don't have the intensities for each frame
+   # we get them
+   if('frames' in meteor_json_file):
+      if('intensity_ff' not i meteor_json_file['frames'][0]):
+         try:
+            update_intensity(json_full_path, meteor_json_file, video_hd_full_path)
+            print("INTENSITY UPDATED")
+         except:
+            print("IMPOSSIBLE TO UPDATE THE INTENSITY")
+
+
+
+
    # Is it remote?
    if(other_station==True):
       real_station_id = can_we_get_the_station_id(analysed_name['full_path'])
