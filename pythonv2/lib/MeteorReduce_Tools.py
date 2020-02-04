@@ -20,7 +20,103 @@ from lib.VIDEO_VARS import *
 from lib.ImageLib import stack_stack
 from lib.Get_Station_Id import get_station_id
 from lib.Sync_HD_SD_videos import load_video_frames
+from lib.UtilLib import convert_filename_to_date_cam, bound_cnt
+from lib.Get_Cam_ids import get_masks
 
+
+# LOAD VIDEO FRAMES with MASKS
+def load_video_frames(trim_file, limit=0, mask=0,crop=(),color=0):
+   (f_datetime, cam, f_date_str,fy,fm,fd, fh, fmin, fs) = convert_filename_to_date_cam(trim_file)
+   cap = cv2.VideoCapture(trim_file)
+   masks = get_masks(cam, 1)
+   print("MASKS:", cam, masks)
+   sys.exit(0)
+
+   color_frames = []
+   frames = []
+   subframes = []
+   sum_vals = []
+   max_vals = []
+   frame_count = 0
+   go = 1
+   while go == 1:
+      if True :
+         _ , frame = cap.read()
+         if frame is None:
+            if frame_count <= 5 :
+               cap.release()
+               return(frames,color_frames,subframes,sum_vals,max_vals)
+            else:
+               go = 0
+         else:
+            if color == 1:
+               color_frames.append(frame)
+            if limit != 0 and frame_count > limit:
+               cap.release()
+               return(frames)
+            if len(frame.shape) == 3 :
+               frame = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
+
+            if mask == 1 and frame is not None:
+               if frame.shape[0] == 1080:
+                  hd = 1
+               else:
+                  hd = 0
+               masks = get_masks(cam, json_conf,hd)
+               frame = mask_frame(frame, [], masks, 5)
+
+            if last_frame is not None:
+               subframe = cv2.subtract(frame, last_frame)
+               #subframe = mask_frame(subframe, [], masks, 5)
+               sum_val =cv2.sumElems(subframe)[0]
+  
+               if sum_val > 1000 and last_last_frame is not None:
+                  subframe = cv2.subtract(subframe, last_last_frame)
+                  sum_val =cv2.sumElems(subframe)[0]
+               subframes.append(subframe)
+
+
+               if sum_val > 100:
+                  min_val, max_val, min_loc, (mx,my)= cv2.minMaxLoc(subframe)
+               else:
+                  max_val = 0
+               if frame_count < 5:
+                  sum_val = 0
+                  max_val = 0
+               sum_vals.append(sum_val)
+               max_vals.append(max_val)
+
+            if len(crop) == 4:
+               ih,iw = frame.shape
+               x1,y1,x2,y2 = crop
+               x1 = x1 - 25
+               y1 = y1 - 25
+               x2 = x2 + 25
+               y2 = y2 + 25
+               if x1 < 0:
+                  x1 = 0
+               if y1 < 0:
+                  y1 = 0
+               if x1 > iw -1:
+                  x1 = iw -1
+               if y1 > ih -1:
+                  y1 = ih -1
+               #print("MIKE:", x1,y2,x2,y2)
+               crop_frame = frame[y1:y2,x1:x2]
+               frame = crop_frame
+            if len(resize) == 2:
+               frame = cv2.resize(frame, (resize[0],resize[1]))
+       
+            frames.append(frame)
+            if last_frame is not None:
+               last_last_frame = last_frame
+            last_frame = frame
+      frame_count = frame_count + 1
+   cap.release()
+   if len(crop) == 4:
+      return(frames,x1,y1)
+   else:
+      return(frames, color_frames, subframes, sum_vals, max_vals)
 
 # Get intensity & update the json
 def update_intensity(conf_file, json_file, json_data, hd_video_file, sd_video_file, analysed_name): 

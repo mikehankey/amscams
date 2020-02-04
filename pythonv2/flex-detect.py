@@ -6901,6 +6901,8 @@ def load_frames_fast(trim_file, json_conf, limit=0, mask=0,crop=(),color=0,resiz
    last_frame = None
    last_last_frame = None
 
+   print("CAM " + cam)
+
    if "HD" in trim_file:
       masks = get_masks(cam, json_conf,1)
    else:

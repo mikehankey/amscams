@@ -75,15 +75,12 @@ def get_masks(this_cams_id, hd = 0):
    return(my_masks)
 
 # Return video frames
-def load_video_frames(trim_file, limit=0, mask=0, color=0):
+def load_video_frames(trim_file, json_conf, limit=0, mask=0, color=0):
 
    (f_datetime, cam, f_date_str,fy,fm,fd, fh, fmin, fs) = convert_filename_to_date_cam(trim_file)
  
    cap = cv2.VideoCapture(trim_file)
-  
-   masks = get_masks(cam, 1) 
-
-
+   masks = None 
    frames = []
    frame_count = 0
    go = 1
@@ -109,7 +106,8 @@ def load_video_frames(trim_file, limit=0, mask=0, color=0):
                hd = 1
             else:
                hd = 0
-            masks = get_masks(cam , hd) 
+            masks = get_masks(cam, hd)
+            #print("GET MASKS HD:", hd, masks)
             frame = mask_frame(frame, [], masks, 5)
 
          frames.append(frame)
@@ -121,7 +119,8 @@ def load_video_frames(trim_file, limit=0, mask=0, color=0):
 
 # Try so sync HD & SD video
 def sync_hd_frames(hd_video_file,sd_video_file,json_reduction_file):
-    
+   
+  
    reduction_data = load_json_file(json_reduction_file)
   
    # Get the HD Frames
