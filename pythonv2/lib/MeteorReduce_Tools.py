@@ -186,9 +186,11 @@ def line_info(frames):
 
        xs.append(frame['x'])
        ys.append(frame['y'])
-       line_segs.append(frame['dist_from_last'])
-       last_x = x
-       last_y = y
+       if('dist_from_last' in frame):
+         line_segs.append(frame['dist_from_last'])
+         last_x = x
+         last_y = y
+         
    tx = abs(xs[0] - xs[-1])
    ty = abs(ys[0] - ys[-1])
    med_seg = np.median(line_segs)
