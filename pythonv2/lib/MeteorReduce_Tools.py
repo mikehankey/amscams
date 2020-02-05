@@ -5,6 +5,7 @@ import os.path
 import cv2
 import glob
 import subprocess  
+import math
 
 import numpy as np
 
@@ -190,7 +191,7 @@ def line_info(frames):
          line_segs.append(frame['dist_from_last'])
          last_x = x
          last_y = y
-         
+
    tx = abs(xs[0] - xs[-1])
    ty = abs(ys[0] - ys[-1])
    med_seg = np.median(line_segs)
