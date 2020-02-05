@@ -93,21 +93,21 @@ def update_intensity(json_file, json_data, hd_video_file):
    for frame in json_frames:   
       fn = frame['fn'] + sync
       cx1,cy1,cx2,cy2 = bound_cnt(frame['x'],frame['y'],hd_frames[0].shape[1],hd_frames[0].shape[0], 20)
-      print("CUR FN " + str(fn) + "<br>")
-      cnt = hd_frames[fn][cy1:cy2,cx1:cx2] 
-      bg_cnt = hd_frames[0][cy1:cy2,cx1:cx2] 
-      cnt_sub = cv2.subtract(cnt,bg_cnt)
-      cnt_int = np.sum(cnt) - np.sum(bg_cnt)
-      ff_sub = cv2.subtract(hd_frames[fn],hd_frames[0])
-      ff_int = np.sum(ff_sub) 
-      if cnt_int > 18446744073709:
-         cnt_int = 0
-      if ff_int > 18446744073709:
-         ff_int = 0
+      if(fn in hd_frames):
+         cnt = hd_frames[fn][cy1:cy2,cx1:cx2] 
+         bg_cnt = hd_frames[0][cy1:cy2,cx1:cx2] 
+         cnt_sub = cv2.subtract(cnt,bg_cnt)
+         cnt_int = np.sum(cnt) - np.sum(bg_cnt)
+         ff_sub = cv2.subtract(hd_frames[fn],hd_frames[0])
+         ff_int = np.sum(ff_sub) 
+         if cnt_int > 18446744073709:
+            cnt_int = 0
+         if ff_int > 18446744073709:
+            ff_int = 0
 
-      frame['intensity'] = int(cnt_int)
-      frame['intensity_ff'] = int(ff_int) 
-      new_frames.append(frame)
+         frame['intensity'] = int(cnt_int)
+         frame['intensity_ff'] = int(ff_int) 
+         new_frames.append(frame)
 
    json_data['frames'] = new_frames 
    save_json_file(json_file,json_data) 
