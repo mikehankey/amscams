@@ -217,6 +217,7 @@ def update_eval_points(json_file):
  
    x_dir_mod,y_dir_mod = meteor_dir(frames[0]['x'], frames[0]['y'], frames[-1]['x'], frames[-1]['y'])
    dom,z,med_dist,med_seg,mxd,myd = line_info(frames) 
+   ps_old, new_frames = calc_score(frames)
    ps_new, new_frames = calc_score(new_frames) 
 
    jd['report']['point_score'] = ps_new 
