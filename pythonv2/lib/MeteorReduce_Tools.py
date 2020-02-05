@@ -31,7 +31,6 @@ def load_video_framesX(trim_file, limit=0, mask=0,crop=()):
    frames = [] 
    frame_count = 0
    go = 1
- 
 
    while go == 1:
       if True :
@@ -63,12 +62,115 @@ def load_video_framesX(trim_file, limit=0, mask=0,crop=()):
    cap.release()
    return frames
 
+
+
+
+# Return the meteor general direction
+def meteor_dir(fx,fy,lx,ly):
+   # positive x means right to left (leading edge = lowest x value)
+   # negative x means left to right (leading edge = greatest x value)
+   # positive y means top to down (leading edge = greatest y value)
+   # negative y means down to top (leading edge = lowest y value)
+   dir_x = lx - fx 
+   dir_y = ly - fy
+   if dir_x < 0:
+      x_dir_mod = 1
+   else:
+      x_dir_mod = -1
+   if dir_y < 0:
+      y_dir_mod = 1
+   else:
+      y_dir_mod = -1
+   return(x_dir_mod, y_dir_mod)
+
+# No idea... it's one of Mike's function
+def distance(point,coef):
+    return abs((coef[0]*point[0])-point[1]+coef[1])/math.sqrt((coef[0]*coef[0])+1)
+
+# No idea... it's one of Mike's function
+def poly_fit_check(poly_x,poly_y, x,y, z=None):
+   if z is None:
+      if len(poly_x) >= 3:
+         try:
+            z = np.polyfit(poly_x,poly_y,1)
+            f = np.poly1d(z)
+         except:
+            return(0)
+
+      else:
+         return(0) 
+   dist_to_line = distance((x,y),z)
+
+   all_dist = []
+   for i in range(0,len(poly_x)):
+      ddd = distance((poly_x[i],poly_y[i]),z)
+      all_dist.append(ddd)
+
+   med_dist = np.median(all_dist)
+   show = 0 
+ 
+   return(dist_to_line, z, med_dist)
+
+
+# No idea... it's one of Mike's function
+def line_info(frames):
+   xs = []
+   ys = []
+   line_segs = []
+   xdiffs = []
+   ydiffs = []
+   last_x = None
+
+   for frame in frames:
+       x = frame['x']
+       y = frame['y']
+       if last_x is not None:
+          xdiffs.append(x - last_x)
+          ydiffs.append(y - last_y)
+
+       xs.append(frame['x'])
+       ys.append(frame['y'])
+       line_segs.append(frame['dist_from_last'])
+       last_x = x
+       last_y = y
+   tx = abs(xs[0] - xs[-1])
+   ty = abs(ys[0] - ys[-1])
+   med_seg = np.median(line_segs)
+
+   mxd = np.median(xdiffs)
+   myd = np.median(ydiffs)
+
+   (dist_to_line, z, med_dist) = poly_fit_check(xs,ys, xs[0],ys[0])
+
+   if ty > tx:
+      return("y", z, med_dist,med_seg,mxd,myd)
+   else:
+      return("x", z, med_dist,med_seg,mxd,myd)
+
+
+# Get Seg. Lenght (eval point) and update the json
+def eval_points(json_file):
+
+   jd = load_json_file(json_file)
+   
+   if("frames" in jd):
+      frames = jd['frames']
+ 
+   x_dir_mod,y_dir_mod = meteor_dir(frames[0]['x'], frames[0]['y'], frames[-1]['x'], frames[-1]['y'])
+   dom,z,med_dist,med_seg,mxd,myd = line_info(frames) 
+   ps_new, new_frames = calc_score(new_frames) 
+
+   jd['report']['point_score'] = ps_new 
+   jd['frames'] = new_frames 
+   save_json_file(json_file,jd)
+    
+
+
 # Get intensity & update the json
 def update_intensity(json_file, json_data, hd_video_file): 
     
    # Get Video frames 
    hd_frames = load_video_framesX(hd_video_file, 0,  1)
-   
    
    # Get sync val
    sync = 0
