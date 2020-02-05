@@ -69,20 +69,14 @@ def update_intensity(json_file, json_data, hd_video_file):
    # Get Video frames 
    hd_frames = load_video_framesX(hd_video_file, 0,  1)
    
-   print('IN UPDATE INTENSITY<br>')
-   print(str(len(hd_frames)) + "<br>")
-
+   
    # Get sync val
    sync = 0
    if('sync' in json_data):
       if('hd_ind' in json_data['sync']):
          if('sd_ind' in json_data['sync']):
             sync =  json_data['sync']['hd_ind'] - json_data['sync']['sd_ind']
-
-   print("SYNC " + str(sync))
-
-
-
+ 
    json_frames = json_data['frames'] 
    cx1,cy1,cx2,cy2 = bound_cnt(json_frames[0]['x'],json_frames[0]['y'],hd_frames[0].shape[1],hd_frames[0].shape[0], 20)
 
