@@ -289,8 +289,8 @@ def reapply_calib(json_data, json_file_path):
    # and re-compute the seg length
    if('frames' in json_data): 
       update_intensity(json_file_path, json_data, json_data['info']['hd_vid'])
-   if('dist_from_start' not in meteor_json_file['frames'][0]):
-      update_eval_points(json_file_path) 
+   if('dist_from_start' not in json_data['frames'][0]):
+      update_eval_points(json_file_path)  
 
 # Return an error message
 def get_error(msg):
