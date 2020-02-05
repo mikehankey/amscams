@@ -69,6 +69,9 @@ def update_intensity(json_file, json_data, hd_video_file):
    # Get Video frames 
    hd_frames = load_video_framesX(hd_video_file, 0,  1)
    
+   print('IN UPDATE INTENSITY<br>')
+   print(hd_frames)
+
    # Get sync val
    sync = 0
    if('sync' in json_data):
