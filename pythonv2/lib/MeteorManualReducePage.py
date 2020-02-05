@@ -352,7 +352,11 @@ def manual_reduction_create_final_json(form):
  
       # We update the JSON with the new frames
       save_json_file(meteor_red_file, mr) 
+
+      # We reapply the calib on the JSON 
+      reapply_calib(mr,meteor_red_file)
  
+
       redirect_to("/pycgi/webUI.py?cmd=reduce2&video_file=" + video_file + "&clear_cache=1&c=" + str(random.randint(0,100000000)), "reduction")
  
    else: 

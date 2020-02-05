@@ -6,11 +6,11 @@ import datetime
 from pathlib import Path
 from shutil import copyfile
 
+from lib.Cleanup_Json_Conf import cleanup_json
 from lib.CGI_Tools import redirect_to
-from lib.MeteorReduce_Tools import * 
-from lib.MeteorReduce_Calib_Tools import find_matching_cal_files, find_calib_file
+from lib.MeteorReduce_Tools import *  
 from lib.REDUCE_VARS import REMOTE_FILES_FOLDER, REMOVE_METEOR_FOLDER, METEOR_ARCHIVE
-from lib.Make_Graphs_JSON import *
+from lib.Make_Graphs_JSON import * 
  
 PAGE_TEMPLATE = "/home/ams/amscams/pythonv2/templates/reducePage.v2.html"
 
@@ -80,9 +80,10 @@ def reduce_meteor2(json_conf,form):
    else:
       print_error("<b>You need to add a video file in the URL.</b>")
 
+ 
+
    # Test if it's a detection from the current device
    # or another one 
-
    other_station = False
 
    if(analysed_name['station_id'] != get_station_id()):
@@ -150,8 +151,12 @@ def reduce_meteor2(json_conf,form):
    template = template.replace("{JSON_FILE}", str(json_full_path))   # Video File  
 
    # Parse the JSON
-   meteor_json_file = load_json_file(json_full_path) 
+   meteor_json_file = load_json_file(json_full_path)  
 
+    
+   # If we clear the cache, we re-apply the calibration
+   if(clear_cache is True):
+      reapply_calib(meteor_json_file,json_full_path)
 
    tmp_analysed_name = name_analyser(json_full_path) 
    if(video_hd_full_path != ''):
@@ -162,6 +167,7 @@ def reduce_meteor2(json_conf,form):
 
    # Get the HD frames 
    HD_frames = get_HD_frames(tmp_analysed_name,clear_cache)
+ 
 
    # Get the thumbs (cropped HD frames) 
    try:
@@ -173,6 +179,14 @@ def reduce_meteor2(json_conf,form):
    else:
       thumbs = get_thumbs(tmp_analysed_name,meteor_json_file,HD,HD_frames,clear_cache)
   
+   # If we don't have the intensities for each frame or if clear_cache
+   # we get them
+   if('frames' in meteor_json_file or clear_cache==1):
+      if('intensity_ff' not in meteor_json_file['frames'][0] or clear_cache==1):
+         update_intensity(json_full_path, meteor_json_file, video_hd_full_path)
+      if('dist_from_start' not in meteor_json_file['frames'][0] or clear_cache==1):
+         update_eval_points(json_full_path)
+ 
    # Is it remote?
    if(other_station==True):
       real_station_id = can_we_get_the_station_id(analysed_name['full_path'])
@@ -269,7 +283,7 @@ def reduce_meteor2(json_conf,form):
          template = template.replace("{MULTI_DETAILS}",'')
 
  
-   # CREATE EXTRA CONTENT
+   # CREATE EXTRA CONTENT (GRAPHS)
    extra_tabs = ""
    extra_content = ""
 
@@ -320,9 +334,6 @@ def reduce_meteor2(json_conf,form):
    else:
       template = template.replace("{NO_SYNC}", "")
  
- 
- 
-         
 
    # Display Template
    print(template)

@@ -1409,6 +1409,8 @@ def update_intensity(json_file):
    data = load_json_file(json_file)
    hd_file = json_file.replace(".json", "-HD.mp4")
    hd_frames,hd_color_frames,hd_subframes,sum_vals,max_vals = load_frames_fast(hd_file, json_conf, 0, 0, [], 0,[])
+    
+
    sync = data['sync']['hd_ind'] - data['sync']['sd_ind']
    frames = data['frames']
    curve = {}
@@ -7332,6 +7334,8 @@ def load_frames_fast(trim_file, json_conf, limit=0, mask=0,crop=(),color=0,resiz
    masks = None
    last_frame = None
    last_last_frame = None
+
+   print("CAM " + cam)
 
    if "HD" in trim_file:
       masks = get_masks(cam, json_conf,1)

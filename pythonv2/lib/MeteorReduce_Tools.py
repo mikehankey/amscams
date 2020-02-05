@@ -5,6 +5,7 @@ import os.path
 import cv2
 import glob
 import subprocess  
+import math
 
 import numpy as np
 
@@ -13,12 +14,283 @@ from pathlib import Path
 from PIL import Image
 
 from lib.VideoLib import load_video_frames
-from lib.FileIO import load_json_file, cfe
+from lib.FileIO import load_json_file, cfe, save_json_file
 from lib.ReducerLib import stack_frames
 from lib.REDUCE_VARS import *
 from lib.VIDEO_VARS import * 
-from lib.ImageLib import stack_stack
-from lib.Get_Station_Id import get_station_id
+from lib.ImageLib import stack_stack,  mask_frame
+from lib.Get_Station_Id import get_station_id 
+from lib.UtilLib import convert_filename_to_date_cam, bound_cnt
+from lib.Get_Cam_ids import get_mask 
+
+
+# LOAD VIDEO FRAMES with MASKS
+def load_video_framesX(trim_file, limit=0, mask=0,crop=()):
+   (f_datetime, cam, f_date_str,fy,fm,fd, fh, fmin, fs) = convert_filename_to_date_cam(trim_file)
+   cap = cv2.VideoCapture(trim_file)
+   masks = get_mask(cam) 
+   frames = [] 
+   frame_count = 0
+   go = 1
+
+   while go == 1:
+      if True :
+         _ , frame = cap.read()
+         if frame is None:
+            if frame_count <= 5 :
+               cap.release()
+               return(frames)
+            else:
+               go = 0
+         else:
+           
+            if limit != 0 and frame_count > limit:
+               cap.release()
+               return(frames)
+            if len(frame.shape) == 3 :
+               frame = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
+
+            if mask == 1 and frame is not None:
+               if frame.shape[0] == 1080:
+                  hd = 1
+               else:
+                  hd = 0
+               masks = get_mask(cam)
+               frame = mask_frame(frame, [], masks, 5)
+            
+            frames.append(frame) 
+      frame_count+= 1
+   cap.release()
+   return frames
+
+
+
+
+# Return the meteor general direction
+def meteor_dir(fx,fy,lx,ly):
+   # positive x means right to left (leading edge = lowest x value)
+   # negative x means left to right (leading edge = greatest x value)
+   # positive y means top to down (leading edge = greatest y value)
+   # negative y means down to top (leading edge = lowest y value)
+   dir_x = lx - fx 
+   dir_y = ly - fy
+   if dir_x < 0:
+      x_dir_mod = 1
+   else:
+      x_dir_mod = -1
+   if dir_y < 0:
+      y_dir_mod = 1
+   else:
+      y_dir_mod = -1
+   return(x_dir_mod, y_dir_mod)
+
+# No idea... it's one of Mike's function
+def distance(point,coef):
+    return abs((coef[0]*point[0])-point[1]+coef[1])/math.sqrt((coef[0]*coef[0])+1)
+
+# Distance between 2 points
+def calc_dist(p1,p2):
+   x1,y1 = p1
+   x2,y2 = p2
+   dist = math.sqrt((x2 - x1)**2 + (y2 - y1)**2)
+   return dist
+
+# No idea... it's one of Mike's function
+def calc_score(frames):
+   first_x = None
+   last_x = None
+   last_dist_from_start = None
+   dists = []
+   new_frames = []
+   xs = []
+   ys = []
+   for frame in frames:
+      x = frame['x']
+      y = frame['y']
+      xs.append(x)
+      ys.append(y)
+   for frame in frames:
+      (dist_to_line, z, med_dist) = poly_fit_check(xs,ys, frame['x'],frame['y'])
+      if first_x is None:
+         first_x = frame['x']
+         first_y = frame['y']
+         first_fn = frame['fn']
+         dist_from_start = 0
+         dist_from_last = 0
+      if last_x is not None:
+         dist_from_start = calc_dist((first_x,first_y),(frame['x'],frame['y']))
+      if last_dist_from_start is not None:
+         dist_from_last = dist_from_start - last_dist_from_start
+      else:
+         last_dist_from_start = 0
+         dist_from_last = 0
+      last_x = frame['x']
+      last_x = frame['y']
+      last_dist_from_start = dist_from_start
+      frame['dist_from_start'] = dist_from_start
+      frame['dist_from_last'] = dist_from_last
+      frame['dist_to_line'] = dist_to_line
+      dists.append(dist_from_last)
+      new_frames.append(frame)
+
+   med_dist = np.median(dists)
+   med_errs = []
+   final_frames = []
+   for frame in new_frames:
+      if med_dist > 0 and frame['dist_from_last'] > 0:
+         med_err = abs(med_dist - frame['dist_from_last']) + frame['dist_to_line']
+         frame['med_err'] = med_err  
+      else:
+         med_err = 0
+      med_errs.append(med_err)
+      final_frames.append(frame)
+   if len(med_errs) == 0:
+      score = 999 
+   else: 
+      score = np.mean(med_errs)
+   return(score, final_frames)
+
+
+# No idea... it's one of Mike's function
+def poly_fit_check(poly_x,poly_y, x,y, z=None):
+   if z is None:
+      if len(poly_x) >= 3:
+         try:
+            z = np.polyfit(poly_x,poly_y,1)
+            f = np.poly1d(z)
+         except:
+            return(0)
+
+      else:
+         return(0) 
+   dist_to_line = distance((x,y),z)
+
+   all_dist = []
+   for i in range(0,len(poly_x)):
+      ddd = distance((poly_x[i],poly_y[i]),z)
+      all_dist.append(ddd)
+
+   med_dist = np.median(all_dist)
+   show = 0 
+ 
+   return(dist_to_line, z, med_dist)
+
+
+# No idea... it's one of Mike's function
+def line_info(frames):
+   xs = []
+   ys = []
+   line_segs = []
+   xdiffs = []
+   ydiffs = []
+   last_x = None
+
+   for frame in frames:
+       x = frame['x']
+       y = frame['y']
+       if last_x is not None:
+          xdiffs.append(x - last_x)
+          ydiffs.append(y - last_y)
+
+       xs.append(frame['x'])
+       ys.append(frame['y'])
+       if('dist_from_last' in frame):
+         line_segs.append(frame['dist_from_last'])
+         last_x = x
+         last_y = y
+
+   tx = abs(xs[0] - xs[-1])
+   ty = abs(ys[0] - ys[-1])
+   med_seg = np.median(line_segs)
+
+   mxd = np.median(xdiffs)
+   myd = np.median(ydiffs)
+
+   (dist_to_line, z, med_dist) = poly_fit_check(xs,ys, xs[0],ys[0])
+
+   if ty > tx:
+      return("y", z, med_dist,med_seg,mxd,myd)
+   else:
+      return("x", z, med_dist,med_seg,mxd,myd)
+
+
+# Get Seg. Lenght (eval point) and update the json
+def update_eval_points(json_file):
+
+   jd = load_json_file(json_file)
+   
+   if("frames" in jd):
+      frames = jd['frames']
+ 
+   x_dir_mod,y_dir_mod = meteor_dir(frames[0]['x'], frames[0]['y'], frames[-1]['x'], frames[-1]['y'])
+   dom,z,med_dist,med_seg,mxd,myd = line_info(frames) 
+   
+   # Why 3 Times? No idea, it's Mike's code
+   ps_old, new_frames = calc_score(frames)
+   ps_new, new_frames = calc_score(new_frames) 
+   ps_new, new_frames = calc_score(new_frames)
+
+   jd['report']['point_score'] = ps_new 
+   jd['frames'] = new_frames 
+   save_json_file(json_file,jd)
+    
+
+
+# Get intensity & update the json
+def update_intensity(json_file, json_data, hd_video_file): 
+    
+   # Get Video frames 
+   hd_frames = load_video_framesX(hd_video_file, 0,  1)
+   
+   # Get sync val
+   sync = 0
+   if('sync' in json_data):
+      if('hd_ind' in json_data['sync']):
+         if('sd_ind' in json_data['sync']):
+            sync =  json_data['sync']['hd_ind'] - json_data['sync']['sd_ind']
+ 
+   json_frames = json_data['frames'] 
+   cx1,cy1,cx2,cy2 = bound_cnt(json_frames[0]['x'],json_frames[0]['y'],hd_frames[0].shape[1],hd_frames[0].shape[0], 20)
+
+   # Frame 0 == Bg
+   bg_cnt = hd_frames[0][cy1:cy2,cx1:cx2] 
+   new_frames = []
+   
+   for frame in json_frames:   
+      fn = frame['fn'] + sync
+      cx1,cy1,cx2,cy2 = bound_cnt(frame['x'],frame['y'],hd_frames[0].shape[1],hd_frames[0].shape[0], 20)
+      try:
+         cnt = hd_frames[fn][cy1:cy2,cx1:cx2] 
+         bg_cnt = hd_frames[0][cy1:cy2,cx1:cx2] 
+         cnt_sub = cv2.subtract(cnt,bg_cnt)
+         cnt_int = np.sum(cnt) - np.sum(bg_cnt)
+         ff_sub = cv2.subtract(hd_frames[fn],hd_frames[0])
+         ff_int = np.sum(ff_sub) 
+         if cnt_int > 18446744073709:
+            cnt_int = 0
+         if ff_int > 18446744073709:
+            ff_int = 0
+
+         frame['intensity'] = int(cnt_int)
+         frame['intensity_ff'] = int(ff_int) 
+         new_frames.append(frame)
+      except:
+         # DONT DO ANYTHING 
+         print('')
+
+   json_data['frames'] = new_frames 
+   save_json_file(json_file,json_data) 
+
+
+
+# Apply calib to a given JSON
+def reapply_calib(json_data, json_file_path):
+   # We re-apply the calib in order to get the segment length & intensity
+   # and re-compute the seg length
+   if('frames' in json_data): 
+      update_intensity(json_file_path, json_data, json_data['info']['hd_vid'])
+   if('dist_from_start' not in json_data['frames'][0]):
+      update_eval_points(json_file_path)  
 
 # Return an error message
 def get_error(msg):
@@ -210,9 +482,7 @@ def new_crop_thumb(frame,x,y,dest,HD = True):
 
    # Debug
    cgitb.enable()
-   img = cv2.imread(frame) 
-     
-   
+   img = cv2.imread(frame)  
 
    # We shouldn't have the need for that... (check with VIDEO_VARS values and the way we're creating the frames from the video)
    if(HD is True):
@@ -335,13 +605,7 @@ def generate_cropped_frame(analysed_name,meteor_json_data,the_HD_frame,the_HD_fr
 
    if(HD):
       destination =  get_cache_path(analysed_name,"cropped")+analysed_name['name_w_ext']+EXT_CROPPED_FRAMES+str(the_SD_frame_fn)+".png"
-
-      #rint("DESTINATION ")
-      #print(destination)
- 
       out_hd_frame = destination.replace("frm", "HD-" + str(the_HD_frame_fn) + "-SD-")
-
-      #frame,x,y,dest,HD = True
       crop = new_crop_thumb(the_HD_frame,x,y,destination,HD)
       return crop
    else:
@@ -352,8 +616,7 @@ def generate_cropped_frames(analysed_name,meteor_json_data,HD_frames,HD,clear_ca
 
    # Debug
    cgitb.enable()
-
-   #print("IN generate_cropped_frames<br/>")
+ 
     
    # We get the frame data
    meteor_frame_data = meteor_json_data['frames']
