@@ -55,6 +55,6 @@ def apply_calib(json_file):
       save_json_file(json_file,json_data)
  
       # run eval points to update dist_from_last and point_score
-      reapply_calib(json_file) 
+      reapply_calib(json_data,json_file) 
  
    return json.dumps(load_json_file(json_file) ,sort_keys=True,indent=4)

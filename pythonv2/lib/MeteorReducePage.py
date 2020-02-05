@@ -80,10 +80,6 @@ def reduce_meteor2(json_conf,form):
    else:
       print_error("<b>You need to add a video file in the URL.</b>")
 
-
-   # If we clear the cache, we re-apply the calibration
-   if(clear_cache is True):
-      reapply_calib(json_full_path)
  
 
    # Test if it's a detection from the current device
@@ -157,6 +153,10 @@ def reduce_meteor2(json_conf,form):
    # Parse the JSON
    meteor_json_file = load_json_file(json_full_path)  
 
+    
+   # If we clear the cache, we re-apply the calibration
+   if(clear_cache is True):
+      reapply_calib(meteor_json_file,json_full_path)
 
    tmp_analysed_name = name_analyser(json_full_path) 
    if(video_hd_full_path != ''):
@@ -167,7 +167,6 @@ def reduce_meteor2(json_conf,form):
 
    # Get the HD frames 
    HD_frames = get_HD_frames(tmp_analysed_name,clear_cache)
-
  
 
    # Get the thumbs (cropped HD frames) 
@@ -187,10 +186,7 @@ def reduce_meteor2(json_conf,form):
          update_intensity(json_full_path, meteor_json_file, video_hd_full_path)
       if('dist_from_start' not in meteor_json_file['frames'][0] or clear_cache==1):
          update_eval_points(json_full_path)
-
-
-
-
+ 
    # Is it remote?
    if(other_station==True):
       real_station_id = can_we_get_the_station_id(analysed_name['full_path'])

@@ -284,13 +284,13 @@ def update_intensity(json_file, json_data, hd_video_file):
 
 
 # Apply calib to a given JSON
-def reapply_calib(meteor_red_file):
+def reapply_calib(json_data, json_file_path):
    # We re-apply the calib in order to get the segment length & intensity
-   # TODO remove that and use the seg lenght later
-
-   os.system("cd /home/ams/amscams/pythonv2; /usr/bin/python3/flex-detect.py ui " + meteor_red_file)
-   os.system("cd /home/ams/amscams/pythonv2; /usr/bin/python3/flex-detect.py ep" + meteor_red_file) 
-
+   # and re-compute the seg length
+   if('frames' in json_data): 
+      update_intensity(json_file_path, json_data, json_data['info']['hd_vid'])
+   if('dist_from_start' not in meteor_json_file['frames'][0]):
+      update_eval_points(json_file_path) 
 
 # Return an error message
 def get_error(msg):
