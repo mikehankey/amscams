@@ -88,6 +88,13 @@ def meteor_dir(fx,fy,lx,ly):
 def distance(point,coef):
     return abs((coef[0]*point[0])-point[1]+coef[1])/math.sqrt((coef[0]*coef[0])+1)
 
+# Distance between 2 points
+def calc_dist(p1,p2):
+   x1,y1 = p1
+   x2,y2 = p2
+   dist = math.sqrt((x2 - x1)**2 + (y2 - y1)**2)
+   return dist
+
 # No idea... it's one of Mike's function
 def calc_score(frames):
    first_x = None
