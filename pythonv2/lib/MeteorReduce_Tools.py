@@ -88,6 +88,62 @@ def distance(point,coef):
     return abs((coef[0]*point[0])-point[1]+coef[1])/math.sqrt((coef[0]*coef[0])+1)
 
 # No idea... it's one of Mike's function
+def calc_score(frames):
+   first_x = None
+   last_x = None
+   last_dist_from_start = None
+   dists = []
+   new_frames = []
+   xs = []
+   ys = []
+   for frame in frames:
+      x = frame['x']
+      y = frame['y']
+      xs.append(x)
+      ys.append(y)
+   for frame in frames:
+      (dist_to_line, z, med_dist) = poly_fit_check(xs,ys, frame['x'],frame['y'])
+      if first_x is None:
+         first_x = frame['x']
+         first_y = frame['y']
+         first_fn = frame['fn']
+         dist_from_start = 0
+         dist_from_last = 0
+      if last_x is not None:
+         dist_from_start = calc_dist((first_x,first_y),(frame['x'],frame['y']))
+      if last_dist_from_start is not None:
+         dist_from_last = dist_from_start - last_dist_from_start
+      else:
+         last_dist_from_start = 0
+         dist_from_last = 0
+      last_x = frame['x']
+      last_x = frame['y']
+      last_dist_from_start = dist_from_start
+      frame['dist_from_start'] = dist_from_start
+      frame['dist_from_last'] = dist_from_last
+      frame['dist_to_line'] = dist_to_line
+      dists.append(dist_from_last)
+      new_frames.append(frame)
+
+   med_dist = np.median(dists)
+   med_errs = []
+   final_frames = []
+   for frame in new_frames:
+      if med_dist > 0 and frame['dist_from_last'] > 0:
+         med_err = abs(med_dist - frame['dist_from_last']) + frame['dist_to_line']
+         frame['med_err'] = med_err  
+      else:
+         med_err = 0
+      med_errs.append(med_err)
+      final_frames.append(frame)
+   if len(med_errs) == 0:
+      score = 999 
+   else: 
+      score = np.mean(med_errs)
+   return(score, final_frames)
+
+
+# No idea... it's one of Mike's function
 def poly_fit_check(poly_x,poly_y, x,y, z=None):
    if z is None:
       if len(poly_x) >= 3:
@@ -149,7 +205,7 @@ def line_info(frames):
 
 
 # Get Seg. Lenght (eval point) and update the json
-def eval_points(json_file):
+def update_eval_points(json_file):
 
    jd = load_json_file(json_file)
    

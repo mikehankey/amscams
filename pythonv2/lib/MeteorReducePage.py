@@ -185,7 +185,9 @@ def reduce_meteor2(json_conf,form):
    if('frames' in meteor_json_file or clear_cache==1):
       if('intensity_ff' not in meteor_json_file['frames'][0] or clear_cache==1):
          update_intensity(json_full_path, meteor_json_file, video_hd_full_path)
- 
+      if('dist_from_start' not in meteor_json_file['frames'][0] or clear_cache==1):
+         update_eval_points(json_full_path)
+
 
 
 
