@@ -196,15 +196,6 @@ def reduce_meteor2(json_conf,form):
       template = template.replace("{WARNING_STATION}", "") 
 
 
-   # Fill Template with data
-   template = template.replace("{VIDEO_FILE}", str(video_full_path))   # Video File  
-   template = template.replace("{SD_VIDEO}",str(video_sd_full_path))   # SD Video File
-   template = template.replace("{STACK}", str(stack))                  # SD Stack File 
-   if(hd_stack is not None):
-      template = template.replace("{HD_STACK}", str(hd_stack))                  # HD Stack File 
-   else:
-      template = template.replace("{HD_STACK}", "")  
-
    # For the Event start time
    # either it has already been reduced and we take the time of the first frame
    start_time = 0
@@ -225,6 +216,17 @@ def reduce_meteor2(json_conf,form):
       template = template.replace("{GO_TO_MANUAL_REDUCTION}", "<div class='container-fluid mt-4'><div class='alert alert-danger'><span class='icon-notification'></span> <b>The reduction has not been reduced yet.</b> <a class='btn btn-primary d-block' href='/pycgi/webUI.py?cmd=manual_reduction&video_file={VIDEO_FILE}&hd_stack={HD_STACK}&sd_stack={SD_STACK}&sd_video={SD_VIDEO}&json_file={JSON_FILE}'>Manually Reduce the Detection Now</a></div></div>")
    else:
       template = template.replace("{GO_TO_MANUAL_REDUCTION}", "")
+
+   # Fill Template with data
+   template = template.replace("{VIDEO_FILE}", str(video_full_path))   # Video File  
+   template = template.replace("{SD_VIDEO}",str(video_sd_full_path))   # SD Video File
+   template = template.replace("{STACK}", str(stack))                  # SD Stack File 
+   if(hd_stack is not None):
+      template = template.replace("{HD_STACK}", str(hd_stack))                  # HD Stack File 
+   else:
+      template = template.replace("{HD_STACK}", "")  
+
+
  
    if('frames' in meteor_json_file):
       if(len(meteor_json_file['frames'])>0):
