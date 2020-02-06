@@ -222,7 +222,7 @@ def reduce_meteor2(json_conf,form):
          reduced = False
    
    if(reduced is False):
-      template = template.replace("{GO_TO_MANUAL_REDUCTION}", "<div class='container-fluid mt-4'><div class='alert alert-danger'><span class='icon-notification'></span> <b>The reduction has not been reduced yet.</b> <a class='btn btn-primary d-block' href='/pycgi/webUI.py?cmd=manual_reduction&video_file={VIDEO_FILE}&hd_stack={HD_STACK}&sd_stack={SD_STACK}&sd_video={SD_VIDEO}&json_file={JSON_FILE}">Manually Reduce the Detection Now</a></div></div>")
+      template = template.replace("{GO_TO_MANUAL_REDUCTION}", "<div class='container-fluid mt-4'><div class='alert alert-danger'><span class='icon-notification'></span> <b>The reduction has not been reduced yet.</b> <a class='btn btn-primary d-block' href='/pycgi/webUI.py?cmd=manual_reduction&video_file={VIDEO_FILE}&hd_stack={HD_STACK}&sd_stack={SD_STACK}&sd_video={SD_VIDEO}&json_file={JSON_FILE}'>Manually Reduce the Detection Now</a></div></div>")
    else:
       template = template.replace("{GO_TO_MANUAL_REDUCTION}", "")
  
