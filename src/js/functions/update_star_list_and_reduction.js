@@ -17,9 +17,9 @@ function update_star_and_reduction(callback) {
         
             var json_resp = $.parseJSON(data); 
 
-            console.log('IN update_star_and_reduction')
-            console.log(json_resp)
-            console.log(cmd_data)
+            //console.log('IN update_star_and_reduction')
+            //console.log(json_resp)
+            //console.log(cmd_data)
 
             if(json_resp['status']!==0) {
              

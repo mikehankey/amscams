@@ -248,9 +248,13 @@ def update_intensity(json_file, json_data, hd_video_file):
       if('hd_ind' in json_data['sync']):
          if('sd_ind' in json_data['sync']):
             sync =  json_data['sync']['hd_ind'] - json_data['sync']['sd_ind']
- 
-   json_frames = json_data['frames'] 
-   cx1,cy1,cx2,cy2 = bound_cnt(json_frames[0]['x'],json_frames[0]['y'],hd_frames[0].shape[1],hd_frames[0].shape[0], 20)
+   
+   if('frames' in json_data):
+      json_frames = json_data['frames'] 
+      if(len(json_frames)>0):
+         cx1,cy1,cx2,cy2 = bound_cnt(json_frames[0]['x'],json_frames[0]['y'],hd_frames[0].shape[1],hd_frames[0].shape[0], 20)
+   else:
+      return False
 
    # Frame 0 == Bg
    bg_cnt = hd_frames[0][cy1:cy2,cx1:cx2] 
