@@ -218,7 +218,7 @@ def reduce_meteor2(json_conf,form):
    if('frames' not in meteor_json_file):
       reduced = False
    if('frames' in meteor_json_file):
-      if(length(meteor_json_file['frames']==0)):
+      if(len(meteor_json_file['frames']==0)):
          reduced = False
    
    if(reduced is False):
