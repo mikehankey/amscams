@@ -213,8 +213,8 @@ def reduce_meteor2(json_conf,form):
    
    if(reduced is False):
       template = template.replace("{GO_TO_MANUAL_REDUCTION}", "<div class='container-fluid mt-4'><div class='alert alert-danger'><span class='icon-notification'></span> <b>The reduction has not been reduced yet.</b> <a id='redirect_to' class='btn btn-danger ml-3' href='/pycgi/webUI.py?cmd=manual_reduction&video_file={VIDEO_FILE}&hd_stack={HD_STACK}&sd_stack={SD_STACK}&sd_video={SD_VIDEO}&json_file={JSON_FILE}'><strong>Manually Reduce the Detection Now</strong></a></div></div>")
+       template = template.replace("{NO_SYNC}", "") # We don't care of the sync in this case
    else:
-      template = template.replace("{NO_SYNC}", "") # We don't care of the sync in this case
       template = template.replace("{GO_TO_MANUAL_REDUCTION}", "")
 
    # Add the JSON Path to the template
