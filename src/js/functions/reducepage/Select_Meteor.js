@@ -381,7 +381,8 @@ function setup_modal_actions(fn_id,x,y) {
     for(var i=0; i<3; i++) {
       nextH = get_help_pos('next',parseInt(cur_fn_id));
 
-      console.log("NEXT " + nextH);
+      console.log("NEXT ")
+      console.log(nextH);
  
       if(typeof nextH !== 'undefined' && nextH !== null) { 
           if( nextH.x !== null && typeof  nextH.x !== null) {
