@@ -380,6 +380,8 @@ function setup_modal_actions(fn_id,x,y) {
     // Add Next Help Point 
     for(var i=0; i<3; i++) {
       nextH = get_help_pos('next',parseInt(cur_fn_id));
+
+      console.log("NEXT " + nextH);
  
       if(typeof nextH !== 'undefined' && nextH !== null) { 
           if( nextH.x !== null && typeof  nextH.x !== null) {
