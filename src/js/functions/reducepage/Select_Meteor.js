@@ -385,7 +385,7 @@ function setup_modal_actions(fn_id,x,y) {
       console.log(nextH);
  
       if(typeof nextH !== 'undefined' && nextH !== null) { 
-          if( nextH.x !== null && typeof  nextH.x !== null) {
+          if( nextH.x !== null && typeof  nextH.x !== null && nextH.id != cur_fn_id) {
                // 225 for circle diameter
               var rX = (225+(nextH.x-x)*factor);
               var rY = (225+(nextH.y-y)*factor);
@@ -404,12 +404,12 @@ function setup_modal_actions(fn_id,x,y) {
       nextH = get_help_pos('prev',parseInt(cur_fn_id));
     
       if(typeof nextH !== 'undefined' && nextH !== null ) { 
-         if( nextH.x !== null && typeof  nextH.x !== null) {
+         if( nextH.x !== null && typeof  nextH.x !== null && nextH.id != cur_fn_id) {
                // 225 for circle diameter
                var rX = (225+(nextH.x-x)*factor);
                var rY = (225+(nextH.y-y)*factor);
                // no more the color of the frame '+nextH.color+' but green or red (green = before, red = after)
-               $('<div class="cross_holder prev" style="top:'+rY+'px; left:'+rX+'px"><div class="cross" style="border:1px solid red">'+nextH.id+'**</div></div>').appendTo('.meteor_chooser');
+               $('<div class="cross_holder prev" style="top:'+rY+'px; left:'+rX+'px"><div class="cross" style="border:1px solid red">'+nextH.id+'</div></div>').appendTo('.meteor_chooser');
          }
       }
 
