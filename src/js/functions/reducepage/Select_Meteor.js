@@ -362,17 +362,14 @@ function setup_modal_actions(fn_id,x,y) {
     var thumb_prev = viewer_DIM + viewer_border*2;
     var thumb_dim  = thumb_DIM;
     var factor = thumb_prev/thumb_dim;
-
  
-
     x = parseInt(x);
     y = parseInt(y);
 
     // Update Info
     $('#meteor_org_pos').html('<b>Org:</b> x:'+x+'/y:'+y);
     $('#meteor_pos').text('x:'+x+'/y:'+y);
-
-    
+ 
     // Remove Helper
     $('.cross_holder.next, .cross_holder.prev').remove();
  
@@ -387,7 +384,8 @@ function setup_modal_actions(fn_id,x,y) {
              // 225 for circle diameter
             var rX = (225+(nextH.x-x)*factor);
             var rY = (225+(nextH.y-y)*factor);
-            $('<div class="cross_holder next" style="top:'+rY+'px; left:'+rX+'px"><div class="cross" style="border:1px solid '+nextH.color+'"></div></div>').appendTo('.meteor_chooser');
+            // no more the color of the frame '+nextH.color+' but green or red (green = before, red = after)
+            $('<div class="cross_holder next" style="top:'+rY+'px; left:'+rX+'px"><div class="cross" style="border:1px solid green "></div></div>').appendTo('.meteor_chooser');
         }
     }
  
@@ -399,7 +397,8 @@ function setup_modal_actions(fn_id,x,y) {
             // 225 for circle diameter
             var rX = (225+(nextH.x-x)*factor);
             var rY = (225+(nextH.y-y)*factor);
-            $('<div class="cross_holder prev" style="top:'+rY+'px; left:'+rX+'px"><div class="cross" style="border:1px solid '+nextH.color+'"></div></div>').appendTo('.meteor_chooser');
+            // no more the color of the frame '+nextH.color+' but green or red (green = before, red = after)
+            $('<div class="cross_holder prev" style="top:'+rY+'px; left:'+rX+'px"><div class="cross" style="border:1px solid red"></div></div>').appendTo('.meteor_chooser');
         }
     }
 
