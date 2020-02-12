@@ -362,6 +362,7 @@ function setup_modal_actions(fn_id,x,y) {
     var thumb_prev = viewer_DIM + viewer_border*2;
     var thumb_dim  = thumb_DIM;
     var factor = thumb_prev/thumb_dim;
+    var nextH;
  
     x = parseInt(x);
     y = parseInt(y);
@@ -377,30 +378,35 @@ function setup_modal_actions(fn_id,x,y) {
    //console.log(" fn_id  " + fn_id);
 
     // Add Next Help Point 
-    var nextH = get_help_pos('next',parseInt(fn_id));
+    for(var i=0; i<3; i++) {
+      nextH = get_help_pos('next',parseInt(fn_id));
   
-    if(typeof nextH !== 'undefined' && nextH !== null) { 
-        if( nextH.x !== null && typeof  nextH.x !== null) {
-             // 225 for circle diameter
-            var rX = (225+(nextH.x-x)*factor);
-            var rY = (225+(nextH.y-y)*factor);
-            // no more the color of the frame '+nextH.color+' but green or red (green = before, red = after)
-            $('<div class="cross_holder next" style="top:'+rY+'px; left:'+rX+'px"><div class="cross" style="border:1px solid green "></div></div>').appendTo('.meteor_chooser');
-        }
+      if(typeof nextH !== 'undefined' && nextH !== null) { 
+          if( nextH.x !== null && typeof  nextH.x !== null) {
+               // 225 for circle diameter
+              var rX = (225+(nextH.x-x)*factor);
+              var rY = (225+(nextH.y-y)*factor);
+              // no more the color of the frame '+nextH.color+' but green or red (green = before, red = after)
+              $('<div class="cross_holder next" style="top:'+rY+'px; left:'+rX+'px"><div class="cross" style="border:1px solid green "></div></div>').appendTo('.meteor_chooser');
+          }
+      }
     }
- 
-    nextH = get_help_pos('prev',parseInt(fn_id));
- 
     
-    if(typeof nextH !== 'undefined' && nextH !== null ) { 
-        if( nextH.x !== null && typeof  nextH.x !== null) {
-            // 225 for circle diameter
-            var rX = (225+(nextH.x-x)*factor);
-            var rY = (225+(nextH.y-y)*factor);
-            // no more the color of the frame '+nextH.color+' but green or red (green = before, red = after)
-            $('<div class="cross_holder prev" style="top:'+rY+'px; left:'+rX+'px"><div class="cross" style="border:1px solid red"></div></div>').appendTo('.meteor_chooser');
-        }
-    }
+    
+    for(var i=0; i<3; i++) {
+      nextH = get_help_pos('prev',parseInt(fn_id));
+   
+      
+      if(typeof nextH !== 'undefined' && nextH !== null ) { 
+         if( nextH.x !== null && typeof  nextH.x !== null) {
+               // 225 for circle diameter
+               var rX = (225+(nextH.x-x)*factor);
+               var rY = (225+(nextH.y-y)*factor);
+               // no more the color of the frame '+nextH.color+' but green or red (green = before, red = after)
+               $('<div class="cross_holder prev" style="top:'+rY+'px; left:'+rX+'px"><div class="cross" style="border:1px solid red"></div></div>').appendTo('.meteor_chooser');
+         }
+      }
+   }
 
  
 
