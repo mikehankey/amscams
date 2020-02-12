@@ -374,12 +374,14 @@ function setup_modal_actions(fn_id,x,y) {
     // Remove Helper
     $('.cross_holder.next, .cross_holder.prev').remove();
  
-   //console.log("BEFORE GET HELP PPOS");
-   //console.log(" fn_id  " + fn_id);
+ 
 
     // Add Next Help Point 
     for(var i=0; i<3; i++) {
       nextH = get_help_pos('next',parseInt(fn_id));
+
+      console.log("NEXTH")
+      console.log(nextH)
   
       if(typeof nextH !== 'undefined' && nextH !== null) { 
           if( nextH.x !== null && typeof  nextH.x !== null) {
