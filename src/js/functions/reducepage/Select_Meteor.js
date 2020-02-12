@@ -179,7 +179,7 @@ function update_meteor_info_list(fn) {
 }
 
 
-// Select a meteor (next/prev)
+// Select a meteor (next/prev arrows)
 function meteor_select(dir,all_frames_ids) {
     var next_id;
     var cur_id = parseInt($('#sel_frame_id').text());
@@ -390,11 +390,11 @@ function setup_modal_actions(fn_id,x,y) {
               var rX = (225+(nextH.x-x)*factor);
               var rY = (225+(nextH.y-y)*factor);
               // no more the color of the frame '+nextH.color+' but green or red (green = before, red = after)
-              $('<div class="cross_holder next" style="top:'+rY+'px; left:'+rX+'px"><div class="cross" style="border:1px solid green "></div></div>').appendTo('.meteor_chooser');
+              $('<div class="cross_holder next" style="top:'+rY+'px; left:'+rX+'px"><div class="cross" style="border:1px solid green ">'+nextH.fn_id+'</div></div>').appendTo('.meteor_chooser');
           }
       }
 
-      cur_fn_id++;
+      cur_fn_id++;'+nextH.fn_id+'
     }
     
 
@@ -402,15 +402,14 @@ function setup_modal_actions(fn_id,x,y) {
     
     for(var i=0; i<3; i++) {
       nextH = get_help_pos('prev',parseInt(cur_fn_id));
-   
-      
+    
       if(typeof nextH !== 'undefined' && nextH !== null ) { 
          if( nextH.x !== null && typeof  nextH.x !== null) {
                // 225 for circle diameter
                var rX = (225+(nextH.x-x)*factor);
                var rY = (225+(nextH.y-y)*factor);
                // no more the color of the frame '+nextH.color+' but green or red (green = before, red = after)
-               $('<div class="cross_holder prev" style="top:'+rY+'px; left:'+rX+'px"><div class="cross" style="border:1px solid red"></div></div>').appendTo('.meteor_chooser');
+               $('<div class="cross_holder prev" style="top:'+rY+'px; left:'+rX+'px"><div class="cross" style="border:1px solid red">'+nextH.fn_id+'</div></div>').appendTo('.meteor_chooser');
          }
       }
 
