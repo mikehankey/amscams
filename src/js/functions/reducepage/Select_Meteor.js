@@ -413,7 +413,7 @@ function setup_modal_actions(fn_id,x,y) {
          }
       }
 
-      cur_fn_id++;
+      cur_fn_id--;
    }
 
  
