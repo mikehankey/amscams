@@ -363,6 +363,7 @@ function setup_modal_actions(fn_id,x,y) {
     var thumb_dim  = thumb_DIM;
     var factor = thumb_prev/thumb_dim;
     var nextH;
+    var cur_fn_id = fn_id;
  
     x = parseInt(x);
     y = parseInt(y);
@@ -378,11 +379,8 @@ function setup_modal_actions(fn_id,x,y) {
 
     // Add Next Help Point 
     for(var i=0; i<3; i++) {
-      nextH = get_help_pos('next',parseInt(fn_id));
-
-      console.log("NEXTH")
-      console.log(nextH)
-  
+      nextH = get_help_pos('next',parseInt(cur_fn_id));
+ 
       if(typeof nextH !== 'undefined' && nextH !== null) { 
           if( nextH.x !== null && typeof  nextH.x !== null) {
                // 225 for circle diameter
@@ -392,11 +390,15 @@ function setup_modal_actions(fn_id,x,y) {
               $('<div class="cross_holder next" style="top:'+rY+'px; left:'+rX+'px"><div class="cross" style="border:1px solid green "></div></div>').appendTo('.meteor_chooser');
           }
       }
+
+      cur_fn_id++;
     }
     
+
+    cur_fn_id = fn_id;
     
     for(var i=0; i<3; i++) {
-      nextH = get_help_pos('prev',parseInt(fn_id));
+      nextH = get_help_pos('prev',parseInt(cur_fn_id));
    
       
       if(typeof nextH !== 'undefined' && nextH !== null ) { 
@@ -408,6 +410,8 @@ function setup_modal_actions(fn_id,x,y) {
                $('<div class="cross_holder prev" style="top:'+rY+'px; left:'+rX+'px"><div class="cross" style="border:1px solid red"></div></div>').appendTo('.meteor_chooser');
          }
       }
+
+      cur_fn_id++;
    }
 
  
