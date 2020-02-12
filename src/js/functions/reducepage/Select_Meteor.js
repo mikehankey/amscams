@@ -390,7 +390,7 @@ function setup_modal_actions(fn_id,x,y) {
               var rX = (225+(nextH.x-x)*factor);
               var rY = (225+(nextH.y-y)*factor);
               // no more the color of the frame '+nextH.color+' but green or red (green = before, red = after)
-              $('<div class="cross_holder next" style="top:'+rY+'px; left:'+rX+'px"><div class="cross" style="border:1px solid green ">'+nextH.fn_id+'</div></div>').appendTo('.meteor_chooser');
+              $('<div class="cross_holder next" style="top:'+rY+'px; left:'+rX+'px"><div class="cross" style="border:1px solid green ">'+nextH.id+'</div></div>').appendTo('.meteor_chooser');
           }
       }
 
@@ -409,7 +409,7 @@ function setup_modal_actions(fn_id,x,y) {
                var rX = (225+(nextH.x-x)*factor);
                var rY = (225+(nextH.y-y)*factor);
                // no more the color of the frame '+nextH.color+' but green or red (green = before, red = after)
-               $('<div class="cross_holder prev" style="top:'+rY+'px; left:'+rX+'px"><div class="cross" style="border:1px solid red">'+nextH.fn_id+'</div></div>').appendTo('.meteor_chooser');
+               $('<div class="cross_holder prev" style="top:'+rY+'px; left:'+rX+'px"><div class="cross" style="border:1px solid red">'+nextH.id+'</div></div>').appendTo('.meteor_chooser');
          }
       }
 
