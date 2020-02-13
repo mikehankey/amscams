@@ -74,6 +74,8 @@ def create_json_index_minute_day(day,month, year):
    index_day = {'station_id':get_station_id(),'year':int(year),'months':int(month),'day':int(day),'hours':[]}
 
 
+   stacks_per_minute = []
+
  
    for minute_stack in sorted(glob.iglob(main_dir + '*' + os.sep + '*' + MINUTE_STACK_EXT + '*', recursive=True), reverse=True):	
       
@@ -94,24 +96,15 @@ def create_json_index_minute_day(day,month, year):
              'status': sun_status
           }    
       }
- 
-      # Add to the Hour
-      try:
-         index_day['hours'][int(analysed_minute['hour'])]
-      except:
-         index_day['hours'][int(analysed_minute['hour'])] = {'cam_id':analysed_minute['cam_id'],'stacks':[]}
- 
 
-      if(cur_stack_data):
-         
-         for hour in index_day['hours']: 
-            if(int(hour)==int(analysed_minute['hour'])):
-               if(index_day['hours'][hour]['cam_id'] == analysed_minute['cam_id']):
-                  
-                  index_day['hours'][hour]['stacks'].append(cur_stack_data) 
+      try: 
+         stacks_per_minute[analysed_minute['min']]
+      except 
+         stacks_per_minute[analysed_minute['min']] = []
+   
+      stacks_per_minute[analysed_minute['min']].append(cur_stack_data)
 
-   return index_day
-
+   print(stacks_per_minute)
 
 # Write index for a given day
 def write_day_minute_index(day, month, year):
