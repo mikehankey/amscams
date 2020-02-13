@@ -3,6 +3,7 @@ import os
 import ephem
 import glob
 import re
+import sys
 
 from lib.Get_Cam_position import get_device_position
 from lib.Get_Station_Id import get_station_id
@@ -21,7 +22,9 @@ MINUTE_FILE_NAMES_REGEX_GROUP = ["year","month","day","hour","min","sec","ms","c
 def minute_name_analyser(file_name):
    matches = re.finditer(MINUTE_FILE_NAMES_REGEX, file_name, re.MULTILINE)
    res = {}
-  
+   
+   print(matches)
+   sys.exit(0)
    for matchNum, match in enumerate(matches, start=1):
       for groupNum in range(0, len(match.groups())): 
          if(match.group(groupNum) is not None):
