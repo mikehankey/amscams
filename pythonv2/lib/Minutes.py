@@ -33,32 +33,29 @@ def get_select(selected_cam_ids,_type):
 
 # Get Results from the minutes indexes
 def get_minute_index_res(selected_start_date, selected_end_date,selected_period,selected_cam_ids):
-   print("FROM ")
-   print(selected_start_date)
-   print("<br>")
-   print("TO ")
-   print(selected_end_date)
-   print("<br>")
-   print("PERIOD ")
-   print(selected_period)
-   print("<br>")
-   print("CAM_IDS ")
-   print(selected_cam_ids)
-   print("<br>")
-
+   
    # Get the minute index of the selected or current year / month / day
    # for the END DATE
    cur_date = selected_end_date
    json_index =  get_daily_index(cur_date.day,cur_date.month,cur_date.year) 
 
+   res = []
+
    while(json_index is not None and cur_date>=selected_start_date):
-      print("JSON INDEX<br>")
-      print(json_index) 
+   
+      json_data = load_json_file(json_index)
+
+      for data in json_data:
+         if(data.cam['id'] in selected_cam_ids):
+            if(selected_period==PERIODS[0]): # per minute
+               res.append(data.cam['stacks'])
+
+   
+   
       cur_date = cur_date - timedelta(1)
-      print("<br>CUR DATE:<br>")
-      print(cur_date)
-      print("<br>")
       json_index =  get_daily_index(cur_date.day,cur_date.month,cur_date.year) 
+
+   print(res)
 
 
 # Generate Browse Minute page
