@@ -110,8 +110,8 @@ def create_json_index_minute_day(day,month, year):
 
       # Go to the right stacks_per_minutes
       for t in stacks_per_minute:
-         if(t[analysed_minute['min']]['cam']==analysed_minute['cam_id']):
-            stacks_per_minute[analysed_minute['min']]['cam'].append(cur_stack_data)
+         if(t[analysed_minute['min']]['id']==analysed_minute['cam_id']):
+            stacks_per_minute[analysed_minute['min']]['stacks'].append(cur_stack_data)
 
    print(stacks_per_minute)
 
