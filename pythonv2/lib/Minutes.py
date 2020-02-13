@@ -52,9 +52,6 @@ def browse_minute(form):
       selected_start_date = datetime.strptime(selected_start_date,"%Y/%m/%d") 
       selected_end_date  = datetime.strptime(selected_end_date,"%Y/%m/%d") 
    
-   template = template.replace("{START_DATE}",start_datetime.strftime("%Y/%m/%d"));
-   template = template.replace("{END_DATE}",end_datetime.strftime("%Y/%m/%d"));
-
    # CAM IDS
    if(selected_cam_ids is not None):
       selected_cam_ids = selected_cam_ids.split(',')
@@ -66,7 +63,10 @@ def browse_minute(form):
       selected_period = [selected_period]
    else:
       selected_period = PERIODS[0] # See PERIODS 
-
+ 
+   # Build the period picker 
+   template = template.replace("{START_DATE}",selected_start_date.strftime("%Y/%m/%d"));
+   template = template.replace("{END_DATE}",selected_end_date.strftime("%Y/%m/%d"));
 
    # Build the cam ids dd
    template = template.replace('{CAM_IDS}',get_select(selected_cam_ids,'cams'))
