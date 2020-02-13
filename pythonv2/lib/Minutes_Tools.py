@@ -71,7 +71,9 @@ def create_json_index_minute_day(day,month, year):
    # Main dir to glob
    main_dir = MINUTE_FOLDER +  os.sep + str(year) + '_' + str(month).zfill(2) + '_' + str(day).zfill(2) + os.sep + IMAGES_MINUTE_FOLDER
  
-   index_day = {'station_id':get_station_id(),'year':int(year),'months':int(month),'day':int(day),'hours':{}}
+   index_day = {'station_id':get_station_id(),'year':int(year),'months':int(month),'day':int(day),'hours':[]}
+
+
  
    for minute_stack in sorted(glob.iglob(main_dir + '*' + os.sep + '*' + MINUTE_STACK_EXT + '*', recursive=True), reverse=True):	
       
@@ -105,6 +107,7 @@ def create_json_index_minute_day(day,month, year):
          for hour in index_day['hours']: 
             if(int(hour)==int(analysed_minute['hour'])):
                if(index_day['hours'][hour]['cam_id'] == analysed_minute['cam_id']):
+                  
                   index_day['hours'][hour]['stacks'].append(cur_stack_data) 
 
    return index_day
