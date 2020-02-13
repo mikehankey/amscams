@@ -83,7 +83,19 @@ def create_json_index_minute_day(day,month, year):
       analysed_minute = minute_name_analyser(minute_stack) 
 
       # Get Sun details at the date of the capture
-      cur_stack_data.append({'i':minute_stack,'H':analysed_minute['hour'],'m':analysed_minute['minute'],'s':analysed_minute['sec']})
+      sun_az,sun_alt,sun_status = get_sun_details(analysed_minute['year']+'/'+analysed_minute['month']+'/'+analysed_minute['day']+' ' + analysed_minute['hour']+ ':' + analysed_minute['min']+ ':'+ analysed_minute['sec'])
+ 
+      cur_stack_data.append(
+         {'i':minute_stack,
+          'H':analysed_minute['hour'],
+          'm':analysed_minute['minute'],
+          's':analysed_minute['sec'],
+          'sun': {
+             'az': sun_az,
+             'alt': sun_alt,
+             'status': sun_status
+          }    
+      })
 
       try:
          index_day['hours'][int(analysed_minute['hour'])]
@@ -94,22 +106,27 @@ def create_json_index_minute_day(day,month, year):
          index_day['hours'][int(analysed_minute['hour'])].append(cur_stack)
  
 
-   print(index_day)
+   return index_day
+
 
 # Write index for a given day
 def write_day_minute_index(day, month, year):
    json_data = create_json_index_minute_day(day,month, year)  
 
    # Write Index if we have data
-   if('days' in json_data): 
-      main_dir = METEOR_ARCHIVE + get_station_id()  + os.sep + METEOR + str(year) + os.sep + str(month).zfill(2)
+   if('hours' in json_data): 
+      output_dir = MINUTE_FOLDER +  os.sep + str(year) + os.sep + str(month).zfill(2) + '_' + str(day).zfill(2)
 
+      # Just in case...
       if not os.path.exists(main_dir):
          os.makedirs(main_dir)
 
-      with open(main_dir + os.sep + str(month).zfill(2) + ".json", 'w') as outfile:
+      with open(output_dir + os.sep + str(month).zfill(2) + '_' + str(day).zfill(2) + ".json", 'w') as outfile:
          #Write compress format
          json.dump(json_data, outfile)
+
+
+      print(output_dir + os.sep + str(month).zfill(2) + '_' + str(day).zfill(2) + ".json - created")
 
       outfile.close() 
       return True
