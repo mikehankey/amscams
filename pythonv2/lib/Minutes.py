@@ -73,7 +73,7 @@ def browse_minute(form):
    if(selected_cam_ids is not None):
       selected_cam_ids = selected_cam_ids.split(',')
    else:
-      selected_cam_ids = []
+      selected_cam_ids = get_the_cam_ids() # ALL BY DEFAULT
 
    # PERIOD
    if(selected_period is not None):
