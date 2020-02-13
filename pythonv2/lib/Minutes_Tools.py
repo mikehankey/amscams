@@ -82,8 +82,7 @@ def create_json_index_minute_day(day,month, year):
    main_dir = MINUTE_FOLDER +  os.sep + str(year) + os.sep + str(month).zfill(2) + '_' + str(day).zfill(2) + os.sep + IMAGES_MINUTE_FOLDER
   
    index_day = {'station_id':get_station_id(),'year':int(year),'months':int(month),'day':int(day),'hours':[]}
-   cam_ids = get_the_cam_ids();
-   stacks_per_hours = []
+   cam_ids = get_the_cam_ids(); 
 
    all_minutes = []
    for minute_stack in sorted(glob.iglob(main_dir + '*' + os.sep + '*' + MINUTE_STACK_EXT + '*', recursive=True), reverse=True):	
@@ -97,21 +96,13 @@ def create_json_index_minute_day(day,month, year):
       #sun_az,sun_alt  = get_sun_details(analysed_minute['year']+'/'+analysed_minute['month']+'/'+analysed_minute['day']+' ' + analysed_minute['hour']+ ':' + analysed_minute['min']+ ':'+ analysed_minute['sec'])
  
       cur_stack_data =  { 
-          't': analysed_minute['hour'] +':'+ analysed_minute['min'] +':'+ analysed_minute['sec'] + '.' + analysed_minute['ms'] 
+          't': analysed_minute['hour'] +':'+ analysed_minute['min'] +':'+ analysed_minute['sec'],
+          'cam': analysed_minute['cam_id']
       }
      
-      all_minutes.append({'h':int(analysed_minute['hour']),'cam':analysed_minute['cam_id'],'v':cur_stack_data})
- 
-
+      all_minutes.append(cur_stack_data)
    
-   # Prepage JSON structure (all cams for each minute)
-   for h,cam,v in all_minutes.items():
-      print(str(h) + " " + str(cam) + " " + str(v))
- 
-   #stacks_per_hours.append({'h': int(i), 'cam': all_cam_ids})
-   sys.exit(0)
-   
-   return stacks_per_hours
+   return all_minutes
 
 # Write index for a given day
 def write_day_minute_index(day, month, year):
