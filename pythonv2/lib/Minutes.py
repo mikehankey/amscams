@@ -39,6 +39,10 @@ def browse_minute(form):
    selected_end_date = form.getvalue('end_date') 
    selected_period   = form.getvalue('period')
    selected_cam_ids = form.getvalue('cams_ids')
+   
+   # Build the page based on template  
+   with open(PAGE_TEMPLATE, 'r') as file:
+      template = file.read()
 
    # Default dates 
    if (selected_start_date is None and selected_end_date is None):
@@ -51,19 +55,18 @@ def browse_minute(form):
    template = template.replace("{START_DATE}",start_datetime.strftime("%Y/%m/%d"));
    template = template.replace("{END_DATE}",end_datetime.strftime("%Y/%m/%d"));
 
+   # CAM IDS
    if(selected_cam_ids is not None):
       selected_cam_ids = selected_cam_ids.split(',')
    else:
       selected_cam_ids = []
 
+   # PERIOD
    if(selected_period is not None):
       selected_period = [selected_period]
    else:
       selected_period = PERIODS[0] # See PERIODS 
 
-   # Build the page based on template  
-   with open(PAGE_TEMPLATE, 'r') as file:
-      template = file.read()
 
    # Build the cam ids dd
    template = template.replace('{CAM_IDS}',get_select(selected_cam_ids,'cams'))
