@@ -14,6 +14,7 @@ DEFAULT_HORIZON_EPHEM = '-0:34'
 DEFAULT_PRESSURE = 0
 
 # Minute stacks regex
+MINUTE_STACK_EXT = "stacked-tn"
 MINUTE_FILE_NAMES_REGEX = r"(\d{4})_(\d{2})_(\d{2})_(\d{2})_(\d{2})_(\d{2})_(\d{3})_(\w{6})-stacked-tn.(\w{3})"
 MINUTE_FILE_NAMES_REGEX_GROUP = ["full","year","month","day","hour","min","sec","ms","cam_id","ext"]
 
@@ -74,7 +75,7 @@ def create_json_index_minute_day(day,month, year):
  
    index_year = {'station_id':get_station_id(),'year':int(year),'months':int(month)}
  
-   for minute in sorted(glob.iglob(main_dir + '*' + os.sep + '*', recursive=True), reverse=True):	
+   for minute in sorted(glob.iglob(main_dir + '*' + os.sep + '*' + MINUTE_STACK_EXT + '*', recursive=True), reverse=True):	
       
       # We analyse the name
       analysed_minute = minute_name_analyser(minute) 
