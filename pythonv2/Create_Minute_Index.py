@@ -24,11 +24,13 @@ except:
 if(day):
    # ONE DAY ONLY
    write_day_minute_index(int(day),int(month),int(year))
+   print(str(day) + "/" + str(month) + "/" + str(year)+ " minute index updated")
 else:
    # FULL MONTH
    how_many_days = calendar.monthrange(int(year),int(month))[1]
    for x in range(1, how_many_days): 
       write_day_minute_index(int(x),int(month),int(year)) 
+      print(str(day) + "/" + str(month) + "/" + str(year)+ " minute index updated")
 
  
 
