@@ -70,7 +70,7 @@ def get_sun_details(capture_date):
 def create_json_index_minute_day(day,month, year):
 
    # Main dir to glob
-   main_dir = MINUTE_FOLDER +  os.sep + str(year) + op.sep + str(month).zfill(2) + '_' + str(day).zfill(2) + os.sep + IMAGES_MINUTE_FOLDER
+   main_dir = MINUTE_FOLDER +  os.sep + str(year) + os.sep + str(month).zfill(2) + '_' + str(day).zfill(2) + os.sep + IMAGES_MINUTE_FOLDER
     
 
    index_day = {'station_id':get_station_id(),'year':int(year),'months':int(month),'day':int(day),'hours':[]}
