@@ -85,13 +85,13 @@ def create_json_index_minute_day(day,month, year):
       # Get Sun details at the date of the capture
       cur_stack_data.append({'i':minute_stack,'H':analysed_minute['hour'],'m':analysed_minute['minute'],'s':analysed_minute['sec']})
 
-         try:
-               index_day['hours'][int(analysed_minute['hour'])]
-         except:
-               index_day['hours'][int(analysed_minute['hour'])] = []
+      try:
+         index_day['hours'][int(analysed_minute['hour'])]
+      except:
+         index_day['hours'][int(analysed_minute['hour'])] = []
 
-         if(cur_stack_data):
-            index_day['hours'][int(analysed_minute['hour'])].append(cur_stack)
+      if(cur_stack_data):
+         index_day['hours'][int(analysed_minute['hour'])].append(cur_stack)
  
 
    print(index_day)
