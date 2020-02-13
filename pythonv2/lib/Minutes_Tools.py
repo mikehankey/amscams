@@ -7,6 +7,7 @@ from lib.Get_Cam_position import get_device_position
 from lib.Get_Station_Id import get_station_id
 
 MINUTE_FOLDER = '/mnt/ams2/SD/proc2/'
+IMAGES_MINUTE_FOLDER = 'images'
 DEFAULT_HORIZON_EPHEM = '-0:34'
 DEFAULT_PRESSURE = 0
 
@@ -46,7 +47,7 @@ def get_sun_details(capture_date):
 def create_json_index_minute_day(day,month, year):
 
    # Main dir to glob
-   main_dir = MINUTE_FOLDER +  os.sep + str(year) + '_' + str(month).zfill(2) + '_' + str(day).zfill(2)
+   main_dir = MINUTE_FOLDER +  os.sep + str(year) + '_' + str(month).zfill(2) + '_' + str(day).zfill(2) + os.sep + IMAGES_MINUTE_FOLDER
  
    index_year = {'station_id':get_station_id(),'year':int(year),'months':int(month)}
  
