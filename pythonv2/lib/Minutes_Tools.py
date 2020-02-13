@@ -32,10 +32,7 @@ def minute_name_analyser(file_name):
          groupNum = groupNum + 1
  
    return res
-
-
-
-
+  
 # Get sun az & alt to determine if it's a daytime or nightime minute
 def get_sun_details(capture_date):
 
@@ -58,9 +55,9 @@ def get_sun_details(capture_date):
       saz = str(sun.az)
       (sun_az, x,y) = saz.split(":")
       if int(sun_alt) < -1:
-         sun_status = "night"
+         sun_status = "n"   # Night
       else:
-         sun_status = "day"
+         sun_status = "d"   # Day
 
       return sun_az,sun_alt,sun_status
    
@@ -97,13 +94,21 @@ def create_json_index_minute_day(day,month, year):
           }    
       }
 
+      # Add to the Hour
       try:
          index_day['hours'][int(analysed_minute['hour'])]
       except:
          index_day['hours'][int(analysed_minute['hour'])] = []
 
+      # Add to cam_id
+        try:
+         index_day['hours'][int(analysed_minute['hour'])][analysed_minute['cam_id']]
+      except:
+         index_day['hours'][int(analysed_minute['hour'])][analysed_minute['cam_id']] = []
+
+
       if(cur_stack_data):
-         index_day['hours'][int(analysed_minute['hour'])].append(cur_stack_data)
+         index_day['hours'][int(analysed_minute['hour'])][analysed_minute['cam_id'].append(cur_stack_data)
  
 
    return index_day
