@@ -116,7 +116,8 @@ def create_json_index_minute_day(day,month, year):
                   break
             if(added is True):
                break
-      
+         if(added is True):
+            break
 
 
 
