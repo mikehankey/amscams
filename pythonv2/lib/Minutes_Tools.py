@@ -110,6 +110,8 @@ def create_json_index_minute_day(day,month, year):
           't': analysed_minute['hour'] +':'+ analysed_minute['min'] +':'+ analysed_minute['sec'] + '.' + analysed_minute['ms'] 
       }
       
+      print(analysed_minute)
+      print(cur_stack_data)
       # 'sun': { 'az': float(sun_az), 'alt': float(sun_alt)}    
 
       # Go to the right stacks_per_hours
@@ -121,7 +123,8 @@ def create_json_index_minute_day(day,month, year):
             
             for cam in t['cam']:
                if(cam['id']==analysed_minute['cam_id']): 
-                  print(cam)
+                  cam['stacks'].append(cur_stack_data)
+                  print(t)
                   sys.exit(0)
             
 
