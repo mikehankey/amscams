@@ -1,0 +1,70 @@
+
+import os
+import ephem
+
+from lib.Get_Cam_position import get_device_position
+ 
+MINUTE_FOLDER = '/mnt/ams2/SD/proc2/'
+DEFAULT_HORIZON_EPHEM = '-0:34'
+DEFAULT_PRESSURE = 0
+
+# Get sun az & alt to determine if it's a daytime or nighttime minute
+def get_sun_details(capture_date):
+
+   device_position = get_device_position()
+
+   if('lat' in device_position and 'lng' in  device_position):
+
+   obs = ephem.Observer()
+
+   obs.pressure = DEFAULT_PRESSURE
+   obs.horizon = DEFAULT_HORIZON_EPHEM
+   obs.lat  = device_position['lat']
+   obs.lon  = device_position['lng']
+   obs.date = capture_date
+
+   sun = ephem.Sun()
+   sun.compute(obs)
+
+   (sun_alt, x,y) = str(sun.alt).split(":")
+   saz = str(sun.az)
+   (sun_az, x,y) = saz.split(":")
+   if int(sun_alt) < -1:
+      sun_status = "night"
+   else:
+      sun_status = "day"
+
+   return sun_az,sun_alt,sun_status
+
+
+# Create index for a given year
+def create_json_index_minute_day(day,month, year):
+
+   station_id = get_station_id()
+   main_dir = METEOR_ARCHIVE +  station_id + os.sep + METEOR + str(year)
+ 
+   index_year = {'station_id':station_id,'year':int(year),'months':{}}
+ 
+   for month in sorted(glob.iglob(main_dir + '*' + os.sep + '*', recursive=True), reverse=True):	
+      cur_month = os.path.basename(os.path.normpath(month))
+
+
+# Write index for a given day
+def write_day_minute_index(day, month, year):
+   json_data = create_json_index_minute_day(day,month, year)  
+
+   # Write Index if we have data
+   if('days' in json_data): 
+      main_dir = METEOR_ARCHIVE + get_station_id()  + os.sep + METEOR + str(year) + os.sep + str(month).zfill(2)
+
+      if not os.path.exists(main_dir):
+         os.makedirs(main_dir)
+
+      with open(main_dir + os.sep + str(month).zfill(2) + ".json", 'w') as outfile:
+         #Write compress format
+         json.dump(json_data, outfile)
+
+      outfile.close() 
+      return True
+   
+   return False

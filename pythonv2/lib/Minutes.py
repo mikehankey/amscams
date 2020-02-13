@@ -6,8 +6,8 @@ from datetime import datetime, timedelta
 from lib.Get_Cam_ids import get_the_cam_ids
 
 PAGE_TEMPLATE = "/home/ams/amscams/pythonv2/templates/browse_minutes.html"
-PERIODS = ['minute','hour','day']
-
+PERIODS = ['minutes','hours','days']
+ 
 # Build the Cam multi-selector & periods
 def get_select(selected_cam_ids,_type):
    toReturn = ""
