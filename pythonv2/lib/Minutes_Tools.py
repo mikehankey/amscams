@@ -74,9 +74,7 @@ def create_json_index_minute_day(day,month, year):
    index_day = {'station_id':get_station_id(),'year':int(year),'months':int(month),'day':int(day),'hours':[]}
    cam_ids = get_the_cam_ids();
    stacks_per_hours = []
-   
-
-
+    
    # Prepage JSON structure (all cams for each minute)
    all_cams = []
    for cam_id in cam_ids:
@@ -85,10 +83,7 @@ def create_json_index_minute_day(day,month, year):
    # Prepare the JSON structure
    for i in range(0,24): 
       stacks_per_hours.append({'h': i, 'cam': [all_cams]})
-      
    
-   print(stacks_per_hours)
- 
    for minute_stack in sorted(glob.iglob(main_dir + '*' + os.sep + '*' + MINUTE_STACK_EXT + '*', recursive=True), reverse=True):	
       
       cur_stack_data = []
@@ -109,8 +104,11 @@ def create_json_index_minute_day(day,month, year):
           }    
       }
 
-      # We add it to 
-      # stacks_per_hours[i] 
+      
+      for t in stacks_per_hours: 
+         if(int(t.h) == int(analysed_minute['hour'])):
+            for cam in t.cam:
+                t.cam.append(cur_stack_data)
 
       # Go to the right stacks_per_hourss
       #for t in stacks_per_hours:
