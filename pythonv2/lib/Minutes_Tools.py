@@ -78,16 +78,15 @@ def create_json_index_minute_day(day,month, year):
    cam_ids = get_the_cam_ids();
 
    stacks_per_minute = []
- 
+   
+
+   # Prepare the JSON structure
    for i in range(0,24):
       stacks_per_minute.append(i)
       stacks_per_minute[i] = {'h': i, 'cam': []}
       for cam_id in cam_ids:
-         stacks_per_minute[i]['cam'].append({'id':cam_id})
-
-   print(stacks_per_minute)
-   sys.exit(0)
-
+         stacks_per_minute[i]['cam'].append({'id':cam_id,'stacks':[]})
+ 
  
    for minute_stack in sorted(glob.iglob(main_dir + '*' + os.sep + '*' + MINUTE_STACK_EXT + '*', recursive=True), reverse=True):	
       
@@ -109,12 +108,10 @@ def create_json_index_minute_day(day,month, year):
           }    
       }
 
-      try: 
-         stacks_per_minute[int(analysed_minute['min'])]
-      except:
-         stacks_per_minute[int(analysed_minute['min'])] = []
-   
-      stacks_per_minute[analysed_minute['min']].append(cur_stack_data)
+      # Go to the right stacks_per_minutes
+      for t in stacks_per_minute:
+         if(t[analysed_minute['min']]['cam']==analysed_minute['cam_id']):
+            stacks_per_minute[analysed_minute['min']]['cam'].append(cur_stack_data)
 
    print(stacks_per_minute)
 
