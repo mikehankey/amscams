@@ -1,0 +1,17 @@
+<div class="h1_holder d-flex justify-content-between">
+      <h1>Minutes for 
+         <input type="text" name="daterange" value="{START_DATE} - {END_DATE}" class="drpicker form-control">
+         <input type="hidden" name="start_date" value="{START_DATE}">
+         <input type="hidden" name="end_date" value="{END_DATE}">
+         per 
+         <select id="period" name="period"  data-url-param="period" class="cam_picker ">{PERIODS}</select>
+         for Cam(s) #
+         <select id="cam_ids" name="cam_ids" multiple data-role="multiselect" data-url-param="cams_ids" class="cam_picker selectpicker">{CAM_IDS}</select>
+       
+
+      </h1>
+      <div class="d-flex">
+            <!--<a class="btn btn-primary mr-3" href="/pycgi/webUI.py?cmd=video_tools" style="text-transform: initial;"><span class="icon-youtube"></span> Generate Timelapse Video</a>-->
+            <button class="btn btn-primary" id="play_anim_thumb" style="text-transform: initial;"><span class="icon-youtube"></span> Preview</button>
+      </div>
+</div>

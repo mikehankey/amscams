@@ -103,11 +103,31 @@ h1 select {
 .multiselect.dropdown-toggle.btn.btn-default {
     background:#fff;
 }
+
+// In title like in the minute page
+h1 {
+   .multiselect-container>li>a>label.checkbox, .multiselect-container>li>a>label.radio {
+      color:#f0f0f0;
+   }
+
+   .active .multiselect-container>li>a>label.checkbox, .active .multiselect-container>li>a>label.radio {
+      color:#f0f0f0;
+   }
+
+   .multiselect.dropdown-toggle.btn.btn-default {
+      //background:rgba(255,255,255,.1);
+      color:#fff;
+      border:none!important;
+      background:none!important;
+   }
+
+}
+
 .multiselect-container>li>a>label {
      padding: .5rem 1rem 0 .5rem;
 }
 .multiselect-container>li>a>label.checkbox, .multiselect-container>li>a>label.radio { 
-  white-space: nowrap;
+   white-space: nowrap;
 }
 
 // Dropdown menu

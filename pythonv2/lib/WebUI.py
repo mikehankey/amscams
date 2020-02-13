@@ -68,6 +68,9 @@ from lib.Fix_Old_Detection import fix_hd_vid
 
 # Stats page
 from lib.Stats import stats_page
+
+# Minutes page
+from lib.Minutes import browse_minute
  
  
 
@@ -613,6 +616,10 @@ def controller(json_conf):
    # ARCHIVE LISTING
    if cmd == 'archive_listing':
       extra_html = archive_listing(form) 
+
+   # BROWSE MINUTES
+   if cmd == 'browse_minute': 
+      browse_minute(form)
 
    if cmd == 'solutions':
       solutions(json_conf, form)
