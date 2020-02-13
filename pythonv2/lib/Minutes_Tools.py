@@ -76,7 +76,7 @@ def create_json_index_minute_day(day,month, year):
 
    stacks_per_minute = []
    for i in range(0,23):
-      stacks_per_minute.append(i)
+      stacks_per_minute.append(str(i))
 
    print(stacks_per_minute)
    sys.exit(0)
