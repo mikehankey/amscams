@@ -71,6 +71,11 @@ def create_json_index_minute_day(day,month, year):
 
    # Main dir to glob
    main_dir = MINUTE_FOLDER +  os.sep + str(year) + '_' + str(month).zfill(2) + '_' + str(day).zfill(2) + os.sep + IMAGES_MINUTE_FOLDER
+   
+   print("MAIN DIR")
+   print(main_dir)
+   sys.exit(0)
+
    index_day = {'station_id':get_station_id(),'year':int(year),'months':int(month),'day':int(day),'hours':[]}
    cam_ids = get_the_cam_ids();
    stacks_per_hours = []
