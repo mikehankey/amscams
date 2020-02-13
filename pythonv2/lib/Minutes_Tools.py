@@ -129,7 +129,7 @@ def create_json_index_minute_day(day,month, year):
                   print(stacks_per_hours)
                   c+=1
 
-                  if(c==3):
+                  if(c==6):
                      sys.exit(0)
             
 
