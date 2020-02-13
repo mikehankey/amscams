@@ -110,6 +110,7 @@ def create_json_index_minute_day(day,month, year):
 
       for t in stacks_per_hours: 
         print(t)
+        print("<br>")
 
       # Go to the right stacks_per_hourss
       #for t in stacks_per_hours:
@@ -119,7 +120,7 @@ def create_json_index_minute_day(day,month, year):
             
       #      [int(analysed_minute['hour'])]['stacks'].append(cur_stack_data)
 
-   print(stacks_per_hours)
+   #print(stacks_per_hours)
 
 # Write index for a given day
 def write_day_minute_index(day, month, year):
