@@ -9,6 +9,7 @@ import json
 from lib.Get_Cam_position import get_device_position
 from lib.Get_Station_Id import get_station_id
 from lib.Get_Cam_ids import get_the_cam_ids
+from lib.FileIO import cfe, load_json
 
 MINUTE_FOLDER = '/mnt/ams2/SD/proc2'
 IMAGES_MINUTE_FOLDER = 'images'
@@ -65,6 +66,14 @@ def get_sun_details(capture_date):
    else:
       return 0,0 
 
+
+# get_daily_index - return the path to the json 
+def get_daily_index(day,month,year):
+   _file =  MINUTE_FOLDER +  os.sep + str(year) + os.sep + str(month).zfill(2) + '_' + str(day).zfill(2) + os.sep +   str(month).zfill(2) + '_' + str(day).zfill(2) + ".json"
+   if(cfe(_file)):
+      return _file
+   else: 
+      return ''
 
 # Create index for a given year
 def create_json_index_minute_day(day,month, year):
