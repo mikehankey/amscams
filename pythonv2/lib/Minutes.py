@@ -8,9 +8,13 @@ PAGE_TEMPLATE = "/home/ams/amscams/pythonv2/templates/browse_minutes.html"
 PERIODS = ['minute','hour','day']
 
 # Build the Cam multi-selector & periods
-def get_select(selected_cam_ids):
+def get_select(selected_cam_ids,_type):
    toReturn = ""
-   cam_ids = get_the_cam_ids()
+
+   if(_type == 'cams'):
+      cam_ids = get_the_cam_ids()
+   else:
+      cam_ids = PERIODS
 
    # By Default All cams are selected
    if(len(selected_cam_ids)==0):
@@ -48,10 +52,10 @@ def browse_minute(form):
       template = file.read()
 
    # Build the cam ids dd
-   template = template.replace('{CAM_IDS}',get_select(selected_cam_ids))
+   template = template.replace('{CAM_IDS}',get_select(selected_cam_ids,'cams'))
 
    # Build the period
-   template = template.replace('{PERIODS}',get_select(selected_period))
+   template = template.replace('{PERIODS}',get_select(selected_period,'periods'))
    
    # Display Template
    print(template)
