@@ -29,7 +29,7 @@ def browse_minute(form):
       template = file.read()
 
    # Build the cam ids dd
-   template.replace('{CAM_IDS}',get_cam_ids(cams_ids))
+   template = template.replace('{CAM_IDS}',get_cam_ids(cams_ids))
    
    # Display Template
    print(template)
