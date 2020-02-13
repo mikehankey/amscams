@@ -34,8 +34,21 @@ def browse_minute(form):
    # Debug
    cgitb.enable()
 
+   selected_start_date = form.getvalue('start_date') 
+   selected_end_date = form.getvalue('end_date') 
    selected_period   = form.getvalue('period')
    selected_cam_ids = form.getvalue('cams_ids')
+
+   # Default dates 
+   if (selected_start_date is None and selected_end_date is None):
+      selected_start_date = datetime.now()- timedelta(days=1)
+      selected_end_date   = datetime.now() 
+   else:
+      selected_start_date = datetime.strptime(selected_start_date,"%Y/%m/%d") 
+      selected_end_date  = datetime.strptime(selected_end_date,"%Y/%m/%d") 
+   
+   template = template.replace("{START_DATE}",start_datetime.strftime("%Y/%m/%d"));
+   template = template.replace("{END_DATE}",end_datetime.strftime("%Y/%m/%d"));
 
    if(selected_cam_ids is not None):
       selected_cam_ids = selected_cam_ids.split(',')
