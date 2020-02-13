@@ -48,7 +48,7 @@ def get_minute_index_res(selected_start_date, selected_end_date,selected_period,
 
    # Get the minute index of the selected or current year / month / day
    # for the END DATE
-   json_index =  get_daily_index(end_date.day,end_date.month,end_date.year) 
+   json_index =  get_daily_index(selected_end_date.day,selected_end_date.month,selected_end_date.year) 
    print("JSON INDEX<br>")
    print(json_index)
 
