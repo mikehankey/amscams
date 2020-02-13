@@ -73,7 +73,7 @@ def get_daily_index(day,month,year):
    if(cfe(_file)):
       return _file
    else: 
-      return ''
+      return  None
 
 # Create index for a given year
 def create_json_index_minute_day(day,month, year):
