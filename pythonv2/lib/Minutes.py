@@ -33,10 +33,18 @@ def get_select(selected_cam_ids,_type):
 
 # Get Results from the minutes indexes
 def get_minute_index_res(selected_start_date, selected_end_date,selected_period,selected_cam_ids):
-   print("FROM " + selected_start_date + "<br>")
-   print("TO " + selected_end_date + "<br>")
-   print("PERIOD " + selected_period + "<br>")
-   print("CAM_IDS " + selected_cam_ids + "<br>")
+   print("FROM ")
+   print(selected_start_date)
+   print("<br>")
+   print("TO ")
+   print(selected_end_date)
+   print("<br>")
+   print("PERIOD ")
+   print(selected_period)
+   print("<br>")
+   print("CAM_IDS ")
+   print(selected_cam_ids)
+   print("<br>")
 
 
 # Generate Browse Minute page
