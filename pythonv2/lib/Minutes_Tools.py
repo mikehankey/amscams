@@ -121,7 +121,7 @@ def create_json_index_minute_day(day,month, year):
          print("t[h]<br>")
          print(str(t['h']))
          print("<br>analysed_minute[hour]<br>")
-         print(str(analysed_minute['hour']]))
+         print(str(analysed_minute['hour']))
          print("<br")
          if(int(t['h']) == int(analysed_minute['hour'])-1):
             for cam in t['cam']:
