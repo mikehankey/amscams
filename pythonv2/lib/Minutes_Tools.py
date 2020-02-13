@@ -125,6 +125,7 @@ def create_json_index_minute_day(day,month, year):
                   print(cur_stack_data)
                   print(" added to ")
                   print(t)
+                  sys.exit(0)
                   added = True
                   break
             if(added is True):
