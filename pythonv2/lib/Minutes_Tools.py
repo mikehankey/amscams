@@ -109,6 +109,9 @@ def create_json_index_minute_day(day,month, year):
       for t in stacks_per_hours:
          if(int(t['h']) == int(analysed_minute['hour'])):
             for cam in t['cam']:
+               print("CAM<br>")
+               print(cam)
+               print("<br>")
                for c in cam:
                   print(c)
                   print("<br>")
