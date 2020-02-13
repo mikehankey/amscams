@@ -102,10 +102,10 @@ def create_json_index_minute_day(day,month, year):
 
       if(cur_stack_data):
 
-         for hour in index_day['hours']:
-            print("HOUR " +  str(hour) + " vs " + str(analysed_minute['hour'])  +"<br>")
+         for hour in index_day['hours']: 
             if(int(hour)==int(analysed_minute['hour'])):
-               index_day['hours'][int(analysed_minute['hour'])].stack.append(cur_stack_data)
+               print(index_day['hours'][hour])
+               print("<br>")
       
 
    return index_day
