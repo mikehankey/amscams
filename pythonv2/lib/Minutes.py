@@ -55,6 +55,9 @@ def get_minute_index_res(selected_start_date, selected_end_date,selected_period,
       print("JSON INDEX<br>")
       print(json_index) 
       cur_date = selected_end_date - timedelta(1)
+      print("<br>CUR DATE:<br>")
+      print(cur_date)
+      print("<br>")
       json_index =  get_daily_index(cur_date.day,cur_date.month,cur_date.year) 
 
 
