@@ -85,7 +85,7 @@ def create_json_index_minute_day(day,month, year):
  
       cur_stack_data =  {
           'f':minute_stack,
-          't':int(analysed_minute['hour'])+':'+int(analysed_minute['min'])+':'+int(analysed_minute['sec']),
+          't': analysed_minute['hour'] +':'+ analysed_minute['min'] +':'+ analysed_minute['sec'],
           'sun': {
              'az': float(sun_az),
              'alt': float(sun_alt),
