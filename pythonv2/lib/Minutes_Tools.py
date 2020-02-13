@@ -96,9 +96,7 @@ def create_json_index_minute_day(day,month, year):
       cur_stack_data = []
 
       # We analyse the name
-      analysed_minute = minute_name_analyser(minute_stack) 
- 
-      print(all_minutes[analysed_minute['cam_id']]['min'])
+      analysed_minute = minute_name_analyser(minute_stack)  
       all_minutes[analysed_minute['cam_id']]['min'].append(analysed_minute['hour'] +':'+ analysed_minute['min'] +':'+ analysed_minute['sec'] +'.'+ analysed_minute['ms'])
  
          
