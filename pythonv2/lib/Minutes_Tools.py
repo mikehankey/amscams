@@ -99,7 +99,7 @@ def create_json_index_minute_day(day,month, year):
       analysed_minute = minute_name_analyser(minute_stack) 
  
       print(all_minutes[analysed_minute['cam_id']]['min'])
-      all_minutes[analysed_minute['cam_id']]['min'].append({'t': analysed_minute['hour'] +':'+ analysed_minute['min'] +':'+ analysed_minute['sec'] +'.'+ analysed_minute['ms']})
+      all_minutes[analysed_minute['cam_id']]['min'].append(analysed_minute['hour'] +':'+ analysed_minute['min'] +':'+ analysed_minute['sec'] +'.'+ analysed_minute['ms'])
  
          
             
