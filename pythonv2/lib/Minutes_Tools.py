@@ -86,7 +86,7 @@ def create_json_index_minute_day(day,month, year):
 
    all_minutes = {}
    for camid in cam_ids:
-      all_minutes[camid] = {'min':[]}
+      all_minutes[camid] = {'cam': camid,'min':[]}
  
    for minute_stack in sorted(glob.iglob(main_dir + '*' + os.sep + '*' + MINUTE_STACK_EXT + '*', recursive=True), reverse=True):	
 
