@@ -105,7 +105,7 @@ def create_json_index_minute_day(day,month, year):
 
    
    # Prepage JSON structure (all cams for each minute)
-   for h,cam,v in all_minutes:
+   for h,cam,v in all_minutes.items():
       print(str(h) + " " + str(cam) + " " + str(v))
  
    #stacks_per_hours.append({'h': int(i), 'cam': all_cam_ids})
