@@ -91,6 +91,7 @@ def create_json_index_minute_day(day,month, year):
 
       # We analyse the name
       analysed_minute = minute_name_analyser(minute_stack) 
+
       added= False
       for _min in all_minutes:
          if('cam' in _min and _min['cam']==analysed_minute['cam_id']):
@@ -102,8 +103,8 @@ def create_json_index_minute_day(day,month, year):
             added = True
 
       if(added is False):
-         all_minutes[_min['cam']] = []
-         all_minutes[_min['cam']].append({'t': analysed_minute['hour'] +':'+ analysed_minute['min'] +':'+ analysed_minute['sec'] +'.'+ analysed_minute['ms']})
+         all_minutes[analysed_minute['cam_id']] = []
+         all_minutes[analysed_minute['cam_id']].append({'t': analysed_minute['hour'] +':'+ analysed_minute['min'] +':'+ analysed_minute['sec'] +'.'+ analysed_minute['ms']})
             
 
 
