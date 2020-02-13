@@ -1,14 +1,16 @@
 
 import os
 import ephem
+import glob
 
 from lib.Get_Cam_position import get_device_position
- 
+from lib.Get_Station_Id import get_station_id
+
 MINUTE_FOLDER = '/mnt/ams2/SD/proc2/'
 DEFAULT_HORIZON_EPHEM = '-0:34'
 DEFAULT_PRESSURE = 0
 
-# Get sun az & alt to determine if it's a daytime or nighttime minute
+# Get sun az & alt to determine if it's a daytime or nightime minute
 def get_sun_details(capture_date):
 
    device_position = get_device_position()
@@ -40,14 +42,14 @@ def get_sun_details(capture_date):
 # Create index for a given year
 def create_json_index_minute_day(day,month, year):
 
-   station_id = get_station_id()
-   main_dir = METEOR_ARCHIVE +  station_id + os.sep + METEOR + str(year)
+   # Main dir to glob
+   main_dir = MINUTE_FOLDER +  os.sep + str(year) + '_' + str(month).zfill(2) + '_' + str(day).zfill(2)
  
-   index_year = {'station_id':station_id,'year':int(year),'months':{}}
+   index_year = {'station_id':get_station_id(),'year':int(year),'months':int(month)}
  
-   for month in sorted(glob.iglob(main_dir + '*' + os.sep + '*', recursive=True), reverse=True):	
-      cur_month = os.path.basename(os.path.normpath(month))
-
+   for minute in sorted(glob.iglob(main_dir + '*' + os.sep + '*', recursive=True), reverse=True):	
+      #cur_month = os.path.basename(os.path.normpath(month))
+      print(minute)
 
 # Write index for a given day
 def write_day_minute_index(day, month, year):

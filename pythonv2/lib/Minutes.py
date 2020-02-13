@@ -4,6 +4,7 @@ import cgitb
 
 from datetime import datetime, timedelta
 from lib.Get_Cam_ids import get_the_cam_ids
+from lib.Minutes_Tools import *
 
 PAGE_TEMPLATE = "/home/ams/amscams/pythonv2/templates/browse_minutes.html"
 PERIODS = ['minutes','hours','days']
@@ -74,6 +75,11 @@ def browse_minute(form):
    # Build the period
    template = template.replace('{PERIODS}',get_select(selected_period,'periods'))
    
+
+   ##### TMP
+   create_json_index_minute_day(12,2,2020)
+
+
    # Display Template
    print(template)
 
