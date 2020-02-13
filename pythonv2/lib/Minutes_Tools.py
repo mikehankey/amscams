@@ -131,12 +131,13 @@ def create_json_index_minute_day(day,month, year):
 
             if(added):
                print(t)
-               sys.exit(0)
+              
             if(added is True):
                break
          if(added is True):
             break
 
+      sys.exit(0)
 
 
    return stacks_per_hours
