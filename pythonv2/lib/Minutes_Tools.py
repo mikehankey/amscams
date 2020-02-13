@@ -17,26 +17,29 @@ def get_sun_details(capture_date):
 
    if('lat' in device_position and 'lng' in  device_position):
 
-   obs = ephem.Observer()
+      obs = ephem.Observer()
 
-   obs.pressure = DEFAULT_PRESSURE
-   obs.horizon = DEFAULT_HORIZON_EPHEM
-   obs.lat  = device_position['lat']
-   obs.lon  = device_position['lng']
-   obs.date = capture_date
+      obs.pressure = DEFAULT_PRESSURE
+      obs.horizon = DEFAULT_HORIZON_EPHEM
+      obs.lat  = device_position['lat']
+      obs.lon  = device_position['lng']
+      obs.date = capture_date
 
-   sun = ephem.Sun()
-   sun.compute(obs)
+      sun = ephem.Sun()
+      sun.compute(obs)
 
-   (sun_alt, x,y) = str(sun.alt).split(":")
-   saz = str(sun.az)
-   (sun_az, x,y) = saz.split(":")
-   if int(sun_alt) < -1:
-      sun_status = "night"
+      (sun_alt, x,y) = str(sun.alt).split(":")
+      saz = str(sun.az)
+      (sun_az, x,y) = saz.split(":")
+      if int(sun_alt) < -1:
+         sun_status = "night"
+      else:
+         sun_status = "day"
+
+      return sun_az,sun_alt,sun_status
+   
    else:
-      sun_status = "day"
-
-   return sun_az,sun_alt,sun_status
+      return 0,0,"?"
 
 
 # Create index for a given year
