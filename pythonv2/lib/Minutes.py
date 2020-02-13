@@ -11,6 +11,11 @@ PAGE_TEMPLATE = "/home/ams/amscams/pythonv2/templates/browse_minutes.html"
 def get_cam_ids(selected_cam_ids):
    toReturn = ""
    cam_ids = get_the_cam_ids()
+
+   # By Default All cams are selected
+   if(len(selected_cam_ids)==0):
+      selected_cam_ids = cam_ids
+
    for cam_id in cam_ids:
       if(cam_id in selected_cam_ids):
          opts = "selected"
