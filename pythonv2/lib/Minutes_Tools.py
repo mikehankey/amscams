@@ -120,8 +120,9 @@ def create_json_index_minute_day(day,month, year):
             print(t)
             
             for cam in t['cam']:
-               print(cam)
-               sys.exit(0)
+               if(cam['id']==analysed_minute['cam_id']): 
+                  print(cam)
+                  sys.exit(0)
             
 
          
