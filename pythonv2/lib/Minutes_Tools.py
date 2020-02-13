@@ -15,7 +15,7 @@ DEFAULT_PRESSURE = 0
 
 # Minute stacks regex
 MINUTE_FILE_NAMES_REGEX = r"(\d{4})_(\d{2})_(\d{2})_(\d{2})_(\d{2})_(\d{2})_(\d{3})_(\w{6})-stacked-tn.(\w{3})"
-MINUTE_FILE_NAMES_REGEX_GROUP = ["year","month","day","hour","min","sec","ms","cam_id","ext"]
+MINUTE_FILE_NAMES_REGEX_GROUP = ["full","year","month","day","hour","min","sec","ms","cam_id","ext"]
 
 # Parses a regexp (MINUTE_FILE_NAMES_REGEX) a minute file name
 # and returns all the info defined in MINUTE_FILE_NAMES_REGEX_GROUP
@@ -26,11 +26,11 @@ def minute_name_analyser(file_name):
    for matchNum, match in enumerate(matches, start=1):
       for groupNum in range(0, len(match.groups())): 
          if(match.group(groupNum) is not None):
-            print("GROUPNUM " + str(groupNum) + " ** ")
-            print("MATCH " + match.group(groupNum)  + "<br><br>")
             res[MINUTE_FILE_NAMES_REGEX_GROUP[groupNum]] = match.group(groupNum)
          groupNum = groupNum + 1
 
+   print(res)
+   print("<br>")
    return res
 
 
