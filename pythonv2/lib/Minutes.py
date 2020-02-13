@@ -31,6 +31,14 @@ def get_select(selected_cam_ids,_type):
    return toReturn
 
 
+# Get Results from the minutes indexes
+def get_minute_index_res(selected_start_date, selected_end_date,selected_period,selected_cam_ids):
+   print("FROM " + selected_start_date + "<br>")
+   print("TO " + selected_end_date + "<br>")
+   print("PERIOD " + selected_period + "<br>")
+   print("CAM_IDS " + selected_cam_ids + "<br>")
+
+
 # Generate Browse Minute page
 def browse_minute(form):
    # Debug
@@ -75,10 +83,8 @@ def browse_minute(form):
    # Build the period
    template = template.replace('{PERIODS}',get_select(selected_period,'periods'))
    
-
-   ##### TMP
-   write_day_minute_index(5,1,2020)
-
+   # Retrieve the results
+   res = get_minute_index_res(selected_start_date, selected_end_date,selected_period,selected_cam_ids)
 
    # Display Template
    print(template)
