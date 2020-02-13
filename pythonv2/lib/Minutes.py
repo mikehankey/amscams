@@ -46,9 +46,11 @@ def get_minute_index_res(selected_start_date, selected_end_date,selected_period,
       json_data = load_json_file(json_index)
 
       for data in json_data:
-         if(data['cam']['id'] in selected_cam_ids):
-            if(selected_period==PERIODS[0]): # per minute
-               res.append(data.cam['stacks'])
+         print(data)
+         print("<br><br>")
+         #if(data['cam']['id'] in selected_cam_ids):
+         #   if(selected_period==PERIODS[0]): # per minute
+         #      res.append(data.cam['stacks'])
 
    
    
