@@ -128,8 +128,10 @@ def create_json_index_minute_day(day,month, year):
                   cur_stack_data = {}
                   added = True
                   break
-            print(added)
-            sys.exit(0)
+
+            if(added):
+               print(t)
+               sys.exit(0)
             if(added is True):
                break
          if(added is True):
