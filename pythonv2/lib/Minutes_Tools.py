@@ -6,10 +6,31 @@ import glob
 from lib.Get_Cam_position import get_device_position
 from lib.Get_Station_Id import get_station_id
 
-MINUTE_FOLDER = '/mnt/ams2/SD/proc2/'
+MINUTE_FOLDER = '/mnt/ams2/SD/proc2'
 IMAGES_MINUTE_FOLDER = 'images'
 DEFAULT_HORIZON_EPHEM = '-0:34'
 DEFAULT_PRESSURE = 0
+
+# Minute stacks regex
+MINUTE_FILE_NAMES_REGEX = r"(\d{4})_(\d{2})_(\d{2})_(\d{2})_(\d{2})_(\d{2})_(\d{3})_(\w{6})-stacked-tn.(\w{3})"
+MINUTE_FILE_NAMES_REGEX_GROUP = ["year","month","day","hour","min","sec","ms","cam_id","ext"]
+
+# Parses a regexp (MINUTE_FILE_NAMES_REGEX) a minute file name
+# and returns all the info defined in MINUTE_FILE_NAMES_REGEX_GROUP
+def minute_name_analyser(file_names):
+   matches = re.finditer(MINUTE_FILE_NAMES_REGEX, file_names, re.MULTILINE)
+   res = {}
+  
+   for matchNum, match in enumerate(matches, start=1):
+      for groupNum in range(0, len(match.groups())): 
+         if(match.group(groupNum) is not None):
+            res[MINUTE_FILE_NAMES_REGEX_GROUP[groupNum]] = match.group(groupNum)
+         groupNum = groupNum + 1
+
+   return res
+
+
+
 
 # Get sun az & alt to determine if it's a daytime or nightime minute
 def get_sun_details(capture_date):
@@ -53,7 +74,12 @@ def create_json_index_minute_day(day,month, year):
  
    for minute in sorted(glob.iglob(main_dir + '*' + os.sep + '*', recursive=True), reverse=True):	
       #cur_month = os.path.basename(os.path.normpath(month))
-      print(minute)
+      #print(minute)
+
+      print(minute_name_analyser(minute))
+      print("<br/>")
+
+
 
 # Write index for a given day
 def write_day_minute_index(day, month, year):
