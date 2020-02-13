@@ -101,9 +101,7 @@ def create_json_index_minute_day(day,month, year):
             all_minutes[_min['cam']].min.append({'t': analysed_minute['hour'] +':'+ analysed_minute['min'] +':'+ analysed_minute['sec'] +'.'+ analysed_minute['ms']})
             added = True
           
-
-      if(added is False):
-         print("AY")
+ 
             
 
 
