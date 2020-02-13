@@ -51,7 +51,7 @@ def get_minute_index_res(selected_start_date, selected_end_date,selected_period,
    cur_date = selected_end_date
    json_index =  get_daily_index(cur_date.day,cur_date.month,cur_date.year) 
 
-   while(json_index is not None and cur_date>selected_start_date):
+   while(json_index is not None and cur_date>=selected_start_date):
       print("JSON INDEX<br>")
       print(json_index) 
       cur_date = cur_date - timedelta(1)
