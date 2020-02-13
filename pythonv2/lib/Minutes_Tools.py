@@ -86,17 +86,17 @@ def create_json_index_minute_day(day,month, year):
       # Get Sun details at the date of the capture
       sun_az,sun_alt,sun_status = get_sun_details(analysed_minute['year']+'/'+analysed_minute['month']+'/'+analysed_minute['day']+' ' + analysed_minute['hour']+ ':' + analysed_minute['min']+ ':'+ analysed_minute['sec'])
  
-      cur_stack_data.append(
+      cur_stack_data = 
          {'i':minute_stack,
-          'H':analysed_minute['hour'],
-          'm':analysed_minute['min'],
-          's':analysed_minute['sec'],
+          'H':int(analysed_minute['hour']),
+          'm':int(analysed_minute['min']),
+          's':int(analysed_minute['sec']),
           'sun': {
-             'az': sun_az,
-             'alt': sun_alt,
+             'az': float(sun_az),
+             'alt': float(sun_alt),
              'status': sun_status
           }    
-      })
+      }
 
       try:
          index_day['hours'][int(analysed_minute['hour'])]
