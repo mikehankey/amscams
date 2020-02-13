@@ -76,7 +76,7 @@ def update_live_view():
    else:
       country = json_conf['site']['country']
   
-   desc = current_time + " " + station_id + json_conf['site']['operator_city'] + "," + json_conf['site']['operator_state'] + " " + country 
+   desc = current_time + " " + station_id + " " + json_conf['site']['operator_city'] + "," + json_conf['site']['operator_state'] + " " + country 
    cv2.putText(img, desc,  (5,175), cv2.FONT_HERSHEY_SIMPLEX, .3, (255, 255, 255), 1)
 
    cv2.imwrite(out_allout, img)
