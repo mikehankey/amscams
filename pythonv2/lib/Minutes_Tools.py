@@ -100,10 +100,12 @@ def create_json_index_minute_day(day,month, year):
          index_day['hours'][int(analysed_minute['hour'])] = {'cam_id':analysed_minute['cam_id'],'stacks':[]}
  
 
-      #if(cur_stack_data):
-      #   index_day['hours'][int(analysed_minute['hour'])].= {'cam_id':analysed_minute['cam_id'],'stack'}
-      #[int(analysed_minute['cam_id'])].append(cur_stack_data)
- 
+      if(cur_stack_data):
+
+         for hour in index_day['hours'][int(analysed_minute['hour'])]:
+            if(hour['cam_id']==analysed_minute['cam_id']):
+               index_day['hours'][int(analysed_minute['hour'])].stack.append{'cam_id':cur_stack_data}
+      
 
    return index_day
 
