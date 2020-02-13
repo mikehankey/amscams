@@ -80,7 +80,7 @@ def create_json_index_minute_day(day,month, year):
       cur_stack = {}
 
       # We analyse the name
-      analysed_minute = minute_name_analyser(minute) 
+      analysed_minute = minute_name_analyser(minute_stack) 
 
       # Get Sun details at the date of the capture
       cur_stack_data.append({'i':minute_stack,'H':analysed_minute['hour'],'m':analysed_minute['minute'],'s':analysed_minute['sec']})
