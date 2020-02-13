@@ -118,8 +118,8 @@ def write_day_minute_index(day, month, year):
       output_dir = MINUTE_FOLDER +  os.sep + str(year) + os.sep + str(month).zfill(2) + '_' + str(day).zfill(2)
 
       # Just in case...
-      if not os.path.exists(main_dir):
-         os.makedirs(main_dir)
+      if not os.path.exists(output_dir):
+         os.makedirs(output_dir)
 
       with open(output_dir + os.sep + str(month).zfill(2) + '_' + str(day).zfill(2) + ".json", 'w') as outfile:
          #Write compress format
