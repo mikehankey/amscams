@@ -73,20 +73,28 @@ def create_json_index_minute_day(day,month, year):
    # Main dir to glob
    main_dir = MINUTE_FOLDER +  os.sep + str(year) + '_' + str(month).zfill(2) + '_' + str(day).zfill(2) + os.sep + IMAGES_MINUTE_FOLDER
  
-   index_year = {'station_id':get_station_id(),'year':int(year),'months':int(month)}
+   index_day = {'station_id':get_station_id(),'year':int(year),'months':int(month),'day':int(day),'hours':{}}
  
-   for minute in sorted(glob.iglob(main_dir + '*' + os.sep + '*' + MINUTE_STACK_EXT + '*', recursive=True), reverse=True):	
+   for minute_stack in sorted(glob.iglob(main_dir + '*' + os.sep + '*' + MINUTE_STACK_EXT + '*', recursive=True), reverse=True):	
       
+      cur_stack = {}
+
       # We analyse the name
       analysed_minute = minute_name_analyser(minute) 
 
       # Get Sun details at the date of the capture
-      sun_az,sun_alt,sun_status = get_sun_details(analysed_minute['year']+'/'+analysed_minute['month']+'/'+analysed_minute['day']+' '+analysed_minute['hour']+':'+analysed_minute['min']+':'+analysed_minute['sec'])
+      cur_stack_data.append({'i':minute_stack,'H':analysed_minute['hour'],'m':analysed_minute['minute'],'s':analysed_minute['sec']})
 
-      print("SUN AZ " + str(sun_az) + "<br>")
-      print("SUN ALT " + str(sun_alt) + "<br>")
-      print("SUN STATUS " + str(sun_status) + "<br>**<br/>")
+         try:
+               index_day['hours'][int(analysed_minute['hour'])]
+         except:
+               index_day['hours'][int(analysed_minute['hour'])] = []
+
+         if(cur_stack_data):
+            index_day['hours'][int(analysed_minute['hour'])].append(cur_stack)
  
+
+   print(index_day)
 
 # Write index for a given day
 def write_day_minute_index(day, month, year):
