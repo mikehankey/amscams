@@ -91,7 +91,7 @@ def create_json_index_minute_day(day,month, year):
       all_cams.append({'id':cam_id,'stacks':[]})
 
    # Prepare the JSON structure
-   for i in range(24,0): 
+   for i in reversed(range(0,24)): 
       stacks_per_hours.append({'h': i, 'cam': all_cams})
 
    print(stacks_per_hours)
