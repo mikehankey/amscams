@@ -89,7 +89,7 @@ def create_json_index_minute_day(day,month, year):
  
    all_minutes_in_folder = sorted(glob.iglob(main_dir + '*' + os.sep + '*' + MINUTE_STACK_EXT + '*', recursive=False), reverse=True)
  
-   print(len(all_minutes_in_folder) + "stacks found<br>")
+   print(str(len(all_minutes_in_folder)) + "stacks found<br>")
  
    for minute_stack in all_minutes_in_folder:	
       
