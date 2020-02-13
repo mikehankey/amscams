@@ -60,10 +60,10 @@ def get_sun_details(capture_date):
       else:
          sun_status = "d"   # Day
 
-      return sun_az,sun_alt,sun_status
+      return sun_az,sun_alt 
    
    else:
-      return 0,0,"?"
+      return 0,0 
 
 
 # Create index for a given year
@@ -99,15 +99,14 @@ def create_json_index_minute_day(day,month, year):
       analysed_minute = minute_name_analyser(minute_stack) 
 
       # Get Sun details at the date of the capture
-      sun_az,sun_alt,sun_status = get_sun_details(analysed_minute['year']+'/'+analysed_minute['month']+'/'+analysed_minute['day']+' ' + analysed_minute['hour']+ ':' + analysed_minute['min']+ ':'+ analysed_minute['sec'])
+      sun_az,sun_alt  = get_sun_details(analysed_minute['year']+'/'+analysed_minute['month']+'/'+analysed_minute['day']+' ' + analysed_minute['hour']+ ':' + analysed_minute['min']+ ':'+ analysed_minute['sec'])
  
       cur_stack_data =  {
           #'f':analysed_minute['full'],
           't': analysed_minute['hour'] +':'+ analysed_minute['min'] +':'+ analysed_minute['sec'],
           'sun': {
              'az': float(sun_az),
-             'alt': float(sun_alt),
-             'status': sun_status
+             'alt': float(sun_alt) 
           }    
       }
  
