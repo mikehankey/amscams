@@ -118,21 +118,19 @@ def create_json_index_minute_day(day,month, year):
 def write_day_minute_index(day, month, year):
    json_data = create_json_index_minute_day(day,month, year)  
 
-   # Write Index if we have data
-   if('hours' in json_data): 
-      output_dir = MINUTE_FOLDER +  os.sep + str(year) + os.sep + str(month).zfill(2) + '_' + str(day).zfill(2)
+   # Write Index 
+  
+   output_dir = MINUTE_FOLDER +  os.sep + str(year) + os.sep + str(month).zfill(2) + '_' + str(day).zfill(2)
 
-      # Just in case...
-      if not os.path.exists(output_dir):
-         os.makedirs(output_dir)
+   # Just in case...
+   if not os.path.exists(output_dir):
+      os.makedirs(output_dir)
 
-      with open(output_dir + os.sep + str(month).zfill(2) + '_' + str(day).zfill(2) + ".json", 'w') as outfile:
-         #Write compress format
-         json.dump(json_data, outfile)
- 
-      print(output_dir + os.sep + str(month).zfill(2) + '_' + str(day).zfill(2) + ".json - created")
+   with open(output_dir + os.sep + str(month).zfill(2) + '_' + str(day).zfill(2) + ".json", 'w') as outfile:
+      #Write compress format
+      json.dump(json_data, outfile)
 
-      outfile.close() 
-      return True
-   
-   return False
+   print(output_dir + os.sep + str(month).zfill(2) + '_' + str(day).zfill(2) + ".json - created")
+
+   outfile.close() 
+   return True 
