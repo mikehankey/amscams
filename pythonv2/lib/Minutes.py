@@ -77,7 +77,7 @@ def browse_minute(form):
    
 
    ##### TMP
-   create_json_index_minute_day(12,2,2020)
+   write_day_minute_index(5,1,2020)
 
 
    # Display Template

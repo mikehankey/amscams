@@ -77,7 +77,7 @@ def create_json_index_minute_day(day,month, year):
  
    for minute_stack in sorted(glob.iglob(main_dir + '*' + os.sep + '*' + MINUTE_STACK_EXT + '*', recursive=True), reverse=True):	
       
-      cur_stack_data = {}
+      cur_stack_data = []
 
       # We analyse the name
       analysed_minute = minute_name_analyser(minute_stack) 
