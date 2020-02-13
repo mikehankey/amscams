@@ -9,7 +9,7 @@ import json
 from lib.Get_Cam_position import get_device_position
 from lib.Get_Station_Id import get_station_id
 from lib.Get_Cam_ids import get_the_cam_ids
-from lib.FileIO import cfe, load_json
+from lib.FileIO import cfe, load_json_file
 
 MINUTE_FOLDER = '/mnt/ams2/SD/proc2'
 IMAGES_MINUTE_FOLDER = 'images'
@@ -80,8 +80,7 @@ def create_json_index_minute_day(day,month, year):
 
    # Main dir to glob
    main_dir = MINUTE_FOLDER +  os.sep + str(year) + os.sep + str(month).zfill(2) + '_' + str(day).zfill(2) + os.sep + IMAGES_MINUTE_FOLDER
-    
-
+  
    index_day = {'station_id':get_station_id(),'year':int(year),'months':int(month),'day':int(day),'hours':[]}
    cam_ids = get_the_cam_ids();
    stacks_per_hours = []
