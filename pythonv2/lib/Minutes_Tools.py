@@ -8,6 +8,7 @@ import json
 
 from lib.Get_Cam_position import get_device_position
 from lib.Get_Station_Id import get_station_id
+from lib.Get_Cam_ids import get_the_cam_ids
 
 MINUTE_FOLDER = '/mnt/ams2/SD/proc2'
 IMAGES_MINUTE_FOLDER = 'images'
@@ -74,9 +75,16 @@ def create_json_index_minute_day(day,month, year):
    index_day = {'station_id':get_station_id(),'year':int(year),'months':int(month),'day':int(day),'hours':[]}
 
 
+   cam_ids = get_the_cam_ids();
+
    stacks_per_minute = []
-   for i in range(0,23):
-      stacks_per_minute.append(str(i))
+
+   
+
+   for i in range(0,24):
+      stacks_per_minute.append(i)
+      for cam_id in cam_ids:
+         stacks_per_minute[i] = {"cam_id": cam_id, "stacks": []}
 
    print(stacks_per_minute)
    sys.exit(0)
