@@ -22,14 +22,17 @@ def browse_minute(form):
    cgitb.enable()
 
    period   = form.getvalue('period')
-   cams_ids = form.getvalue('cams_ids')
+   cam_ids = form.getvalue('cams_ids')
+
+   print("CAMS IDS")
+   print(cam_ids)
 
    # Build the page based on template  
    with open(PAGE_TEMPLATE, 'r') as file:
       template = file.read()
 
    # Build the cam ids dd
-   template = template.replace('{CAM_IDS}',get_cam_ids(cams_ids))
+   template = template.replace('{CAM_IDS}',get_cam_ids(cam_ids))
    
    # Display Template
    print(template)
