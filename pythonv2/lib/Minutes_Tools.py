@@ -89,12 +89,9 @@ def create_json_index_minute_day(day,month, year):
  
    all_minutes_in_folder = sorted(glob.iglob(main_dir + '*' + os.sep + '*' + MINUTE_STACK_EXT + '*', recursive=False), reverse=True)
  
-   print(str(len(all_minutes_in_folder)) + "stacks found<br>")
  
    for minute_stack in all_minutes_in_folder:	
-      
-      print(minute_stack)
-      print("<br>")
+ 
 
       cur_stack_data = []
 
@@ -118,15 +115,11 @@ def create_json_index_minute_day(day,month, year):
       added = False
       for t in stacks_per_hours:
          if(int(t['h']) == int(analysed_minute['hour'])):
-            print("HOURS " + str(t['h']) +  " CAM ID " + analysed_minute['cam_id'])
-            print("<br><br>")
+          
             for cam in t['cam']:
                if(cam['id']==analysed_minute['cam_id']):
                   cam['stacks'].append(cur_stack_data)
-                  print("<br>ADDED to ")
-                  print(t)
-                  print("<br><br>")
-                  print("*****************************************<br>")
+                   
                   added = True
                   break
             if(added is True):
