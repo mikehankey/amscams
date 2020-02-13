@@ -108,7 +108,7 @@ def create_json_index_minute_day(day,month, year):
 
 
       if(cur_stack_data):
-         index_day['hours'][int(analysed_minute['hour'])][analysed_minute['cam_id'].append(cur_stack_data)
+         index_day['hours'][int(analysed_minute['hour'])][analysed_minute['cam_id']].append(cur_stack_data)
  
 
    return index_day
