@@ -92,20 +92,23 @@ def create_json_index_minute_day(day,month, year):
       # We analyse the name
       analysed_minute = minute_name_analyser(minute_stack) 
 
+
+      for _min in all_minutes:
+         if('cam' in _min and _min['cam']==analysed_minute['cam_id']):
+            all_minutes[_min['cam']].append({'t': analysed_minute['hour'] +':'+ analysed_minute['min'] +':'+ analysed_minute['sec'] +'.'+ analysed_minute['ms']})
+         else:
+           all_minutes[_min['cam']] = []
+           all_minutes[_min['cam']].append({'t': analysed_minute['hour'] +':'+ analysed_minute['min'] +':'+ analysed_minute['sec'] +'.'+ analysed_minute['ms']})
+
+
       # Get Sun details at the date of the capture
       #sun_az,sun_alt  = get_sun_details(analysed_minute['year']+'/'+analysed_minute['month']+'/'+analysed_minute['day']+' ' + analysed_minute['hour']+ ':' + analysed_minute['min']+ ':'+ analysed_minute['sec'])
-      all_minutes.append({ 
-         't': analysed_minute['hour'] +':'+ analysed_minute['min'] +':'+ analysed_minute['sec'], 
-         'cam': analysed_minute['cam_id']
-      })
+      #all_minutes.append({ 
+      #   't': analysed_minute['hour'] +':'+ analysed_minute['min'] +':'+ analysed_minute['sec'], 
+       #  'cam': analysed_minute['cam_id']
+      #})
 
-   all_stacks = []
-   for _min in all_minutes:
-      try:
-         all_stacks[_min.cam]
-      except:
-         all_stacks[_min.cam] = []
-   
+   print(all_minutes)
    sys.exit(0)
    return all_minutes
 
