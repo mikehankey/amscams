@@ -778,8 +778,10 @@ def detect_meteor_in_clip(trim_clip, frames = None, fn = 0, crop_x = 0, crop_y =
    objects = {}
    print("DETECT METEORS IN VIDEO FILE:", trim_clip)
 
+   if trim_clip is None: 
+      return(objects, []) 
 
-   if frames is None: 
+   if frames is None :
         
       frames,color_frames,subframes,sum_vals,max_vals = load_frames_fast(trim_clip, json_conf, 0, 1, [], 0,[])
    if len(frames) == 0:
@@ -841,7 +843,7 @@ def detect_meteor_in_clip(trim_clip, frames = None, fn = 0, crop_x = 0, crop_y =
                cv2.putText(show_frame, desc,  (x,y), cv2.FONT_HERSHEY_SIMPLEX, .4, (255, 255, 255), 1)
       
       show_frame = cv2.convertScaleAbs(show_frame)
-      show = 1
+      show = 0
       if show == 1:
          cv2.imshow('Detect Meteor In Clip', show_frame)
          cv2.waitKey(0)
@@ -3387,6 +3389,7 @@ def convert_filename_to_date_cam(file):
    filename = filename.replace(".mp4" ,"")
 
    data = filename.split("_")
+   print("FILE:", file)
    fy,fm,fd,fh,fmin,fs,fms,cam = data[:8]
    f_date_str = fy + "-" + fm + "-" + fd + " " + fh + ":" + fmin + ":" + fs
    f_datetime = datetime.datetime.strptime(f_date_str, "%Y-%m-%d %H:%M:%S")
@@ -5788,6 +5791,12 @@ def batch_quickest_scan(cam=0):
       else:
          print("Skipping trim file:", file)
 
+def upscale_sd_to_hd(video_file):
+   new_video_file = video_file.replace(".mp4", "-HD-meteor.mp4")
+   if cfe(new_video_file) == 0:
+      cmd = "/usr/bin/ffmpeg -i " + video_file + " -vf scale=1920:1080 " + new_video_file
+      os.system(cmd)
+   return(new_video_file)
 
 def quickest_scan(video_file):
    # only used for 1-minute incoming clips!
@@ -5920,7 +5929,12 @@ def quickest_scan(video_file):
       print(id, meteor['report'])
       start = meteor['ofns'][0]
       df = meteor['ofns'][-1] - meteor['ofns'][0]
-      hd_file, hd_trim,time_diff_sec, dur = find_hd_file_new(video_file, start, df, 1)
+      print("DF = ", df)
+      print("DF SEC = ", df/25)
+      hd_file, hd_trim,time_diff_sec, dur = find_hd_file_new(video_file, start, df/25, 1)
+      #if hd_trim is None:
+         # we could not find a HD file, so just upscale the HD file
+      #   hd_trim = upscale_sd_to_hd(video_file)
       detect_data['hd_trim'] = hd_trim
       hd_motion_objects, motion_frames = detect_meteor_in_clip(hd_trim)
       hd_meteors = only_meteors(hd_motion_objects)

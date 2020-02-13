@@ -43,6 +43,810 @@ from sympy import Point3D, Line3D, Segment3D, Plane
 
 
 json_conf = load_json_file("../conf/as6.json")
+def event_stats(events):
+   single_station = 0
+   multi_station = 0
+   station_meteors = {}
+   for event_id in events:
+      event = events[event_id]
+      st_set = set(event['stations'])
+      stations = []
+      for station in st_set:
+         stations.append(station)
+      if len(stations) == 1:
+         st = stations[0]
+         single_station += 1
+
+         if st not in station_meteors:
+            station_meteors[st] = {}
+            station_meteors[st]['single_station'] = 0
+            station_meteors[st]['multi_station'] = 0
+            station_meteors[st]['total_obs'] = 0
+         station_meteors[st]['single_station'] += 1
+      else:
+
+         multi_station += 1
+         for st in stations:
+            if st not in station_meteors:
+               station_meteors[st] = {}
+               station_meteors[st]['single_station'] = 0
+               station_meteors[st]['multi_station'] = 0
+               station_meteors[st]['total_obs'] = 0
+            station_meteors[st]['multi_station'] += 1
+
+      for st in event['stations']:
+         station_meteors[st]['total_obs'] += 1
+
+   return(single_station, multi_station,station_meteors)
+
+
+def make_event_day_index( day  ):
+   year = day[0:4]
+   event_year = year
+   event_day = day
+   station_id = json_conf['site']['ams_id']
+
+   events_dir = "/mnt/ams2/meteor_archive/" + station_id + "/EVENTS/"
+   day_file = "/mnt/ams2/meteor_archive/" + station_id + "/EVENTS/" + year + "/" + day + "/" + day + "-events.json"
+
+   if cfe(day_file) == 1:
+      # show page for one day of events from one network group (not the global system )
+      day_file = "/mnt/ams2/meteor_archive/" + station_id + "/EVENTS/" + year + "/" + day + "/" + day + "-events.json"
+      events = load_json_file(day_file)
+
+      network_sites = json_conf['site']['network_sites'].split(",")
+      network_sites.append(json_conf['site']['ams_id'])
+      net_desc = ""
+      for ns in sorted(network_sites):
+         if net_desc != "":
+            net_desc += ","
+         net_desc += ns
+      (single_station, multi_station,station_meteors) = event_stats(events)
+      out = "<h1>Meteor Nework Report for " + day + "</h1>"
+      out += "<P><B>Network Sites:</B> " + net_desc + "<br>"
+      out += "<P><B>Total Unique Meteors :</B> " + str(len(events)) + "<br>"
+      out += "<P><B>Total Multi Station Meteors :</B> " + str(multi_station) + "<a/><br>"
+      out += "<P><B>Total Single Station Meteors :</B> " + str(single_station) + "<br>"
+      out += "<table>"
+      out += "<tr><td>Station</td><td>Total Observations</td><td>Single Station Meteors</td><td>Multi Station Meteors</td><td>Total Unique Meteors </td></tr>"
+
+      rows_multi = ""
+      rows_single = ""
+
+      for st in station_meteors:
+         total_meteors = station_meteors[st]['single_station'] + station_meteors[st]['multi_station']
+         out += "<tr><td>" + st + "</td><td>" + str(station_meteors[st]['total_obs']) + "</td><td>" + str(station_meteors[st]['single_station']) + "</td><td>" + str(station_meteors[st]['multi_station']) + "</td><td>" + str(total_meteors) + "</td></tr>"
+      out += "</table>"
+      table_start = "<TABLE border=1>"
+      table_start += "<TR><td>Event ID</td><td>Start Time</td><td>Obs</td><td>Solved</td></tr>"
+      for event_id in events:
+
+         event = events[event_id]
+         img_html = ""
+         for i in range(0, len(event['stations'])):
+            arc_file = event['arc_files'][i]
+            station = event['stations'][i]
+            old_file = event['files'][i].split("/")[-1]
+            img = event['prev_imgs'][i]
+            sol_text = ""
+            if arc_file == "pending":
+               link = "<div style='float: left'><figure><a href=/pycgi/webUI.py?cmd=goto&old=1&file=" + old_file + "&station_id=" + station + ">"
+               obs_desc = event['stations'][i] + "-pending"
+            else:
+               arc_fn = arc_file.split("/")[-1]
+               el = arc_file.split("_")[7]
+               other = el.split("-")
+               cam_id = other[0]
+               obs_desc = event['stations'][i] + "-" + cam_id
+               for sol in event['solutions']:
+                  type, file, status = sol
+                  sol_text += type + " " + str(status) + "<BR>"
+               link = "<div style='float: left'><figure><a href=/pycgi/webUI.py?cmd=goto&file=" + arc_fn + "&station_id=" + station + ">"
+            img = img.replace("/mnt/ams2", "")
+            img_html += link + "<img src=" + img + "><figcaption>" + obs_desc + " " + event['clip_starts'][i] +  "</a></figcaption></figure></div>"
+         event_dir = "/meteor_archive/" + station_id + "/EVENTS/" + event_year + "/" + event_day + "/" + event_id + "/"
+         elink = "<a href=" + event_dir + event_id + "-report.html>"
+         if event['count'] > 1:
+            rows_multi += "<tr><td>" + elink + event_id + "</a></td><td>" +  event['event_start_time'] + "</td><td>" +img_html + "</td><td>" + sol_text + "</td></tr>"
+         else:
+            rows_single += "<tr><td>" + elink + event_id + "</a></td><td>" +  event['event_start_time'] + "</td><td>" +img_html + "</td><td>" + sol_text + "</td></tr>"
+      table_end = "</TABLE>"
+      out += "<h2>Multi-station Meteors</h2>"
+      out += table_start
+      out += rows_multi
+      out += table_end
+
+      out += "<h2>Single-station Meteors</h2>"
+      out += table_start
+      out += rows_single
+      out += table_end
+
+      ev_index = "/mnt/ams2/meteor_archive/" + station + "/EVENTS/" + event_year + "/" + event_day + "/index.html"
+      fp = open(ev_index, "w")
+      fp.write( out)
+      fp.close()
+      was_ev = ev_index.replace("ams2/meteor_archive", "wasabi")
+      os.system("cp " + ev_index + " " + was_ev)
+      print(ev_index)
+
+def make_prev_img(event_id, station, old_file):
+   if "/mnt/" in old_file:
+      old_file = old_file.split("/")[-1]
+   year,mon,day,hour,min,sec = event_id.split("_")
+   dom = event_id[0:10]
+   prev_fn = old_file.replace(".json", "-prev-crop.jpg")
+   prev_img = "/mnt/ams2/meteor_archive/" + station + "/DETECTS/PREVIEW/" + year + "/" + dom + "/"  + prev_fn
+   prev_img_wb = "/mnt/wasabi/" + station + "/DETECTS/PREVIEW/" + year + "/" + dom + "/"  + prev_fn
+   return(prev_img, prev_img_wb)
+
+
+def check_file_status(event_id, station, old_file, arc_file):
+   # is it in local archive dir
+   # is it in wasbi archive dir
+   # do we have a preview image for it
+   year,mon,day,hour,min,sec = event_id.split("_")
+   dom = event_id[0:10]
+   status = {}
+   if "/mnt/" in old_file:
+      old_file = old_file.split("/")[-1]
+   prev_fn = old_file.replace(".json", "-prev-crop.jpg")
+   prev_img = "/mnt/ams2/meteor_archive/" + station + "/DETECTS/PREVIEW/" + year + "/" + dom + "/"  + prev_fn
+   prev_img_wb = "/mnt/wasabi/" + station + "/DETECTS/PREVIEW/" + year + "/" + dom + "/"  + prev_fn
+
+   wb_arc_file = arc_file.replace("/ams2/meteor_archive", "wasabi")
+
+   if cfe(prev_img) == 1:
+      status['preview_image'] = [1, "Preview image exists in local archive."]
+   elif cfe(prev_img_wb) == 1:
+      status['preview_image'] = [2, "Preview exists in wasabi, but not local archive."]
+   else:
+      status['preview_image'] = [0, "Preview image not found locally or in wasabi."]
+
+   if arc_file == "pending":
+      status['arc_file'] = [0, "Observation has not been archived yet."]
+   elif cfe(arc_file) == 1:
+      status['arc_file'] = [1, "Arc file found in local archive."  ]
+   elif cfe(wb_arc_file) == 1:
+      status['arc_file'] = [2, "Arc file found in wasabi."  ]
+   else:
+      status['arc_file'] = [0, "Arc file not found in local archive or in wasabi." + arc_file]
+   return(status)
+
+
+def obs_html(event_id):
+   sync_urls = load_json_file("/home/ams/amscams/conf/sync_urls.json")
+   station_id = json_conf['site']['ams_id']
+   event_year = event_id[0:4]
+   event_day = event_id[0:10]
+   event_dir = "/mnt/ams2/meteor_archive/" + station_id + "/EVENTS/" + event_year + "/" + event_day + "/" + event_id + "/"
+   events_file = "/mnt/ams2/meteor_archive/" + station_id + "/EVENTS/" + event_year + "/" + event_day + "/" + event_day + "-events.json"
+   events_data = load_json_file(events_file)
+   event = events_data[event_id]
+
+   out = ""
+
+   if cfe(event_dir, 1) == 0:
+      solved = 0
+      count = event['count']
+      if count > 1:
+         out += "This event has not been run yet.<P>"
+      else:
+         out += "This is a single station event and can't be solved.<P>"
+   else:
+      solved = 1
+
+   if solved == 0 or solved == 1:
+      solutions = event['solutions']
+      out += "<h2>Observations</h2>"
+      for i in range(0, len(event['stations'])):
+         station = event['stations'][i]
+         event_start = event['clip_starts'][i]
+         old_file = event['files'][i]
+         arc_file = event['arc_files'][i]
+         if "/mnt/" in old_file:
+            old_file_desc = old_file.split("/")[-1]
+         if "/mnt/" in arc_file:
+            arc_desc = arc_file.split("/")[-1]
+         else:
+            arc_desc = arc_file
+         obs_status = check_file_status(event_id, station, old_file, arc_file)
+         prev_img, wb_prev_img = make_prev_img(event_id,station, old_file)
+
+         if arc_desc != 'pending':
+            link =  "<a href=/pycgi/webUI.py?cmd=reduce2&video_file=" + arc_file + ">" 
+         else:
+            url = sync_urls['sync_urls'][station]['sync_url'] + "/pycgi/webUI.py?cmd=reduce&video_file=" + old_file
+            link = "<a href=" + url + ">" 
+         prev_img = prev_img.replace("/mnt/ams2", "")
+         out += "<div style=\"float: left\">" + link
+         out += "<figure><img src=" +  prev_img + "><figcaption>" + station + " " + event_start + "</a></figcaption></figure>" 
+         #out += "<td>" +  old_file + "</td>"
+         #out += "<td>" + obs_status['preview_image'][1] + "<BR>" + obs_status['arc_file'][1] + "</td>"
+         out += "</div>"
+   out += "<div style=\"clear: both\">" 
+   return(out)
+
+def report_html(event_id):
+    
+
+
+   year = event_id[0:4]
+   day = event_id[0:10]
+   station_id = json_conf['site']['ams_id']
+   event_dir = "/mnt/ams2/meteor_archive/" + station_id + "/EVENTS/" + year + "/" + day + "/" + event_id + "/"
+   event_file = event_dir + event_id + ".json" 
+   plot_data_file = event_dir + event_id + "-plots.json" 
+   job_data_file = event_dir + event_id + ".json" 
+   html_report_file = event_file.replace(".json", "-report.html")
+   jsons = glob.glob(event_dir + "*report.json")
+   print(event_dir + "*report.json")
+   print(jsons )
+   vida_report = jsons[0]
+   vida_data = load_json_file(vida_report)
+   job_data = load_json_file(job_data_file)
+
+   vida_plots = []
+   scopes = [ "world" , "usa" , "europe" , "asia" , "africa" , "north america" , "south america" ]
+   #sol_plots = [ 'los_residuals_all', 'all_spatial_residuals', 'lags_all_stations', 'dist_from_state_vector', 'velocity', 'ground_track', '3D_traj', 'iorbit' ]
+   obs_plots = [ 'los_residuals_all', 'all_spatial_residuals'  ]
+   orb_plots = [ 'iorbit' ]
+   res_plots = [  ]
+
+   traj_plots = [ 'ground_track', '3D_traj', 'velocity', 'lags_all_stations', 'dist_from_state_vector'  ]
+   plot_data_file = plot_data_file.replace("/mnt/ams2", "")
+
+   for obsid in vida_data['observations']:
+      res_plots.append("res_station_" + obsid)
+   for pl in obs_plots:
+      res_plots.append(pl)
+
+   res_plot_html = "<P>"
+   traj_plot_html = "<P>"
+   orb_plot_html = "<P>"
+   other_plot_html = "<P>"
+   for plot in res_plots:
+      res_plot_html += "<iframe width=950 height=560 src=\"/meteor_archive/apps/plots/index.html?j=" + plot_data_file + "&t=" + plot + "\"></iframe>"
+   for plot in traj_plots:
+      traj_plot_html += "<iframe width=950 height=560 src=\"/meteor_archive/apps/plots/index.html?j=" + plot_data_file + "&t=" + plot + "\"></iframe>"
+   for plot in orb_plots:
+      orb_plot_html += "<iframe width=950 height=560 src=\"/meteor_archive/apps/plots/index.html?j=" + plot_data_file + "&t=" + plot + "\"></iframe>"
+   
+
+
+   obs_out = obs_html(event_id)
+
+   obs_file = event_dir + event_id + ".json"
+   simple_solve_file = event_dir + event_id + "-simple.json"
+   load_json_file(obs_file)
+   load_json_file(simple_solve_file)
+   report_html = "<h1>Meteor Event Solution Report</h1>"
+   report_html += obs_out
+   report_html += res_plot_html 
+   report_html += "<h2>Event Summary</h2>"
+   report_html += "<table border=1 cellpadding=0 cellspacing=0>"
+   #report_html += "<tr><td>Event ID</td><td>" + event_id + "</td></tr>"
+   report_html += "<tr><td>Event start date time</td><td>" +  job_data['event_utc'][:-3] + " UTC</td></tr>"
+   report_html += "<tr><td>Track Start</td><td>" +  str(np.around(np.degrees(vida_data['rbeg_lat']), decimals=3)) + " " +  str(np.around(np.degrees(vida_data['rbeg_lon']), decimals=3)) +  " " +str(np.around(vida_data['rbeg_ele']/1000,decimals=3)) + "</td></tr>"
+   report_html += "<tr><td>Track End</td><td>" +  str(np.around(np.degrees(vida_data['rend_lat']), decimals=3)) + " " +  str(np.around(np.degrees(vida_data['rend_lon']), decimals=3)) +  " " + str(np.around(vida_data['rend_ele'])/1000) + "</td></tr>"
+   report_html += "<tr><td>Initial Velocity </td><td>" + str(np.around(float(vida_data['v_init'])/1000,decimals=2)) + " km/s</td></tr>"
+   report_html += "<tr><td>Average Velocity </td><td>" + str(np.around(float(vida_data['v_avg'])/1000,decimals=2)) + " km/s</td></tr>"
+
+   dl, dv =  vida_data['orbit']['rad_eci']['ra'].split(" = ")
+   report_html += "<tr><td>Radiant RA (ECI)</td><td>" + dv + "</td></tr>"
+   dl, dv =  vida_data['orbit']['rad_eci']['dec'].split(" = ")
+   report_html += "<tr><td >Radiant Dec (ECI)</td><td>" + dv + "</td></tr>"
+
+   report_html += "</table>"
+   report_html += traj_plot_html
+   report_html += "<h2>Orbit</h2>"
+
+
+   report_html += "<table border=1 cellpadding=0 cellspacing=0>"
+
+   report_html += "<tr><td >La Sun</td><td>" + vida_data['orbit']['orbit']['la_sun'] + " deg</td></tr>"
+   report_html += "<tr><td >a</td><td>" + vida_data['orbit']['orbit']['a'] + " AU </td></tr>"
+   report_html += "<tr><td >e</td><td>" + vida_data['orbit']['orbit']['e'] + "</td></tr>"
+   report_html += "<tr><td >i</td><td>" + vida_data['orbit']['orbit']['i'] + " deg </td></tr>"
+   report_html += "<tr><td >peri</td><td>" + vida_data['orbit']['orbit']['peri'] + " deg </td></tr>"
+   report_html += "<tr><td >node</td><td>" + vida_data['orbit']['orbit']['node'] + " deg </td></tr>"
+   report_html += "<tr><td >Pi</td><td>" + vida_data['orbit']['orbit']['Pi'] + " deg </td></tr>"
+   report_html += "<tr><td >q</td><td>" + vida_data['orbit']['orbit']['q'] + " AU</td></tr>"
+   report_html += "<tr><td >f</td><td>" + vida_data['orbit']['orbit']['f'] + " deg</td></tr>"
+   report_html += "<tr><td >M</td><td>" + vida_data['orbit']['orbit']['M'] + " deg</td></tr>"
+   report_html += "<tr><td >Q</td><td>" + vida_data['orbit']['orbit']['Q'] + " AU</td></tr>"
+   report_html += "<tr><td >n</td><td>" + vida_data['orbit']['orbit']['n'] + " deg/day</td></tr>"
+   report_html += "<tr><td >T</td><td>" + vida_data['orbit']['orbit']['T'] + " years</td></tr>"
+   report_html += "<tr><td >Last perihelion JD</td><td>" + vida_data['orbit']['orbit']['last_peri_jd'] + "</td></tr>"
+   report_html += "<tr><td >Tj</td><td>" + vida_data['orbit']['orbit']['Tj'] + "</td></tr>"
+   report_html += "<tr><td >JD Reference</td><td>" + str(vida_data['orbit']['orbit']['jd_ref']) + "</td></tr>"
+   report_html += "</table>"
+   report_html += "<h2>Shower Association</h2>"
+   report_html += "<table border=1 cellpadding=0 cellspacing=0>"
+
+   report_html += "<tr><td >IAU No. </td><td>" + str(vida_data['orbit']['shower']['shower_no']) + "</td></tr>"
+   report_html += "<tr><td >IAU Code. </td><td>" + str(vida_data['orbit']['shower']['shower_code']) + "</td></tr>"
+
+
+   report_html += "</table>"
+   report_html += orb_plot_html
+
+   vida_report = vida_report.replace("/mnt/ams2", "")
+   report_html += "<h2>Detailed Reports</h2>"
+   report_html += "<a href=" + vida_report.replace(".json", ".txt") + ">WMPL Report</A> - " 
+   kml_report = vida_report.replace(".json", ".kml")
+   report_html += "<a href=" + kml_report + ">Event KML</A><BR>" 
+   report_html += "<h2>JSON Files</h2>"
+   simple_report = event_dir + event_id + "-simple.json" 
+   input_report = event_dir + event_id + ".json" 
+   report_html += "<a href=" + vida_report + ">WMPL</A> - " 
+   report_html += "<a href=" + simple_report + ">Simple Solution</A> - " 
+   report_html += "<a href=" + input_report + ">Solver Input File</A> - " 
+   fp = open(html_report_file, "w")
+   fp.write(report_html)
+   fp.close() 
+   wasabi_dir = event_dir.replace("ams2/meteor_archive", "wasabi")
+   cmd = "cp " + event_dir + "*.json "+ wasabi_dir
+   print(cmd)
+   cmd = "cp " + event_dir + "*.html "+ wasabi_dir
+   print(cmd)
+   cmd = "cp " + event_dir + "*.txt "+ wasabi_dir
+   print(cmd)
+   print(html_report_file)
+
+def vida_plots(event_id):
+   year = event_id[0:4]
+   day = event_id[0:10]
+   station_id = json_conf['site']['ams_id']
+   event_dir = "/mnt/ams2/meteor_archive/" + station_id + "/EVENTS/" + year + "/" + day + "/" + event_id + "/"
+   event_file = event_dir + event_id + ".json" 
+   plot_json_out = event_dir + event_id + "-plots.json" 
+
+   jsons = glob.glob(event_dir + "*report.json")
+   print(event_dir + "*report.json")
+   print(jsons )
+   vida_report = jsons[0]
+
+
+
+   #build arrays for res error plots (per-station res, all station res, all station ang res)
+
+   plot_data = {}
+   basic_colors = ['red', 'blue', 'green', 'orange', 'white']
+   basic_shapes = ['square-dot', 'circle-dot', 'triangle-up-dot']
+   bc = 0
+   bs = 0
+   vida_data = load_json_file(vida_report)
+
+   # build orbit plot / iframe
+   qs = vida_data['orbit']['orbit']
+   orbit_iframe = "http://orbit.allskycams.com/index_emb.php?name={:s}&&epoch={:s}&a={:s}&M={:s}&e={:s}&I={:s}&Peri={:s}&Node={:s}&P={:s}&q={:s}&T={:s}".format( str(event_id), str(qs['jd_ref']), str(qs['a']), str(qs['M']), str(qs['e']), str(qs['i']), str(qs['peri']), str(qs['node']), str(qs['T']), str(qs['q']), str(qs['jd_ref']))
+   orbit_iframe = orbit_iframe.replace(" ", "")
+
+   observer_data = {}
+   obs_points = []
+   obs_vectors= []
+   obs_names= []
+
+   for obs_key in vida_data['observations']:
+      if obs_key not in observer_data:
+         observer_data[obs_key] = {}
+         lon = vida_data['observations'][obs_key]['station_info'][2].replace(" ", "")
+         lat = vida_data['observations'][obs_key]['station_info'][3].replace(" ", "")
+         alt = vida_data['observations'][obs_key]['station_info'][4].replace(" ", "")
+         start_az = vida_data['observations'][obs_key]['point_info'][0]['model_azim']
+         start_el = vida_data['observations'][obs_key]['point_info'][0]['model_elev']
+         end_az = vida_data['observations'][obs_key]['point_info'][-1]['model_azim']
+         end_el = vida_data['observations'][obs_key]['point_info'][-1]['model_elev']
+         observer_data[obs_key]['location'] = [lat,lon,alt]
+         obs_points.append([lat,lon])
+         obs_names.append(obs_key)
+         observer_data[obs_key]['start_az_el'] = [start_az,start_el]
+         observer_data[obs_key]['end_az_el'] = [end_az,end_el]
+      if obs_key not in plot_data:
+         plot_data[obs_key] = {}
+         plot_data[obs_key]['hres'] = []
+         plot_data[obs_key]['vres'] = []
+         plot_data[obs_key]['ang_res'] = []
+         plot_data[obs_key]['lag'] = []
+         plot_data[obs_key]['velocity'] = []
+         plot_data[obs_key]['length'] = []
+         plot_data[obs_key]['height'] = []
+         plot_data[obs_key]['state_vect_dist'] = []
+         plot_data[obs_key]['points'] = []
+         plot_data[obs_key]['az_el'] = []
+         plot_data[obs_key]['ra_dec'] = []
+         plot_data[obs_key]['time_data'] = []
+      for pd in vida_data['observations'][obs_key]['point_info']:
+         plot_data[obs_key]['hres'].append(pd['h_residuals'])
+         plot_data[obs_key]['vres'].append(pd['v_residuals'])
+         plot_data[obs_key]['ang_res'].append(pd['ang_res'])
+         plot_data[obs_key]['lag'].append(pd['lag'])
+         plot_data[obs_key]['velocity'].append(pd['velocity']/1000)
+         plot_data[obs_key]['length'].append(pd['length'])
+         plot_data[obs_key]['height'].append(pd['model_ht'])
+         plot_data[obs_key]['time_data'].append(pd['time_data'])
+         plot_data[obs_key]['state_vect_dist'].append(pd['state_vect_dist']/1000)
+         plot_data[obs_key]['points'].append((pd['model_lat'],pd['model_lon'], pd['model_ht']))
+         plot_data[obs_key]['az_el'].append((pd['model_azim'],pd['model_elev']))
+         plot_data[obs_key]['ra_dec'].append((pd['model_ra'],pd['model_dec']))
+
+   plots = []
+   plot = {}
+   plot['plot_id'] = "iorbit"
+   plot['plot_name'] = "Orbit"
+   plot['plot_type'] = "iframe"
+   plot['plot_url'] = orbit_iframe
+   plots.append(plot)
+
+   # make 2D observer and ground track map
+   plot = {}
+   plot['plot_id'] = "ground_track"
+   plot['scope'] = "north america"
+   plot['plot_name'] = "Ground Track"
+   plot['plot_type'] = "map"
+   plot['x_label'] = "Latitude"
+   plot['y_label'] = "Longitude"
+   plot['points'] = obs_points
+   plot['point_names'] = obs_names 
+   plot['lines'] = obs_vectors
+ 
+   ts_lat = float(np.degrees(vida_data['rbeg_lat']))
+   ts_lon = float(np.degrees(vida_data['rbeg_lon']))
+   te_lat = float(np.degrees(vida_data['rend_lat']))
+   te_lon = float(np.degrees(vida_data['rend_lon']))
+ 
+   plot['lines'].append((ts_lat,ts_lon,te_lat,te_lon))
+
+   plots.append(plot)
+
+   # make 3D observer and ground track map
+   plot = {}
+   plot['plot_id'] = "3D_traj"
+   plot['plot_name'] = "3D Trajectory"
+   plot['plot_type'] = "3Dmap"
+   plot['x_label'] = "Latitude"
+   plot['y_label'] = "Longitude"
+   plot['z_label'] = "Altitude"
+   plot['points'] = obs_points
+   plot['point_names'] = obs_names
+   #plot['lines'] = obs_vectors
+
+   ts_lat = float(np.degrees(vida_data['rbeg_lat']))
+   ts_lon = float(np.degrees(vida_data['rbeg_lon']))
+   ts_alt = float(vida_data['rbeg_ele']/1000)
+
+   te_lat = float(np.degrees(vida_data['rend_lat']))
+   te_lon = float(np.degrees(vida_data['rend_lon']))
+   te_alt = float(vida_data['rend_ele']/1000)
+
+   print("ALT:", ts_alt, te_alt)
+
+   plot['lines'] = []
+   plot['line_names'] = []
+   plot['line_colors'] = []
+   plot['lines'].append((ts_lat,ts_lon,ts_alt,te_lat,te_lon,te_alt))
+   plot['line_names'].append("meteor")
+   #plot['line_colors'].append("red")
+   cc = 0
+   for i in range(0, len(obs_points)):
+      lat,lon = obs_points[i]
+      plot['lines'].append((lat,lon,0,ts_lat,ts_lon,ts_alt))
+      plot['lines'].append((lat,lon,0,te_lat,te_lon,te_alt))
+      plot['line_names'].append("start")
+      plot['line_names'].append("end")
+      #plot['line_names'].append(obs_names[i] + " start")
+      #plot['line_names'].append(obs_names[i] + " end")
+      #plot['line_colors'].append('green')
+      #plot['line_colors'].append('orange')
+
+   plots.append(plot)
+
+    
+   # make the observed vs radiant LoS Residuals, all stations plot 
+   plot = {}
+   plot['plot_id'] = "los_residuals_all"
+   plot['plot_name'] = "Observed vs. Radiant LoS Residuals, all stations"
+   plot['x_label'] = "Time (s)"
+   plot['y_label'] = "Angle (arcsec)"
+   series_c = 1
+   for obs_key in plot_data:
+      x_field = "x" + str(series_c) + "_vals"
+      y_field = "y" + str(series_c) + "_vals"
+      plot[x_field] = []
+      plot[y_field] = plot_data[obs_key]['ang_res']
+      plot['plot_type'] = "xy_scatter"
+      x_data_label_field = "x" + str(series_c) + "_data_label"
+      rmsd_ang = ""
+      rmsd_ang = find_avg_abs_val(plot_data[obs_key]['ang_res'])
+      plot[x_data_label_field] = obs_key + ", RMSD = " + str(rmsd_ang)
+      for t in range(0, len(plot_data[obs_key]['ang_res'])):
+         plot[x_field].append(t/25)
+      series_c += 1
+   plots.append(plot)
+
+   # make the All Spatial Residuals By Height 
+   plot = {}
+   plot['plot_id'] = "all_spatial_residuals"
+   plot['plot_name'] = "All spatial residuals"
+   plot['x_label'] = "Total deviation (m)"
+   plot['y_label'] = "Height (km)"
+   series_c = 1
+   for obs_key in plot_data:
+      x_field = "x" + str(series_c) + "_vals"
+      y_field = "y" + str(series_c) + "_vals"
+      plot[x_field] = []
+      plot[y_field] = plot_data[obs_key]['height']
+      plot['plot_type'] = "xy_scatter"
+      x_data_label_field = "x" + str(series_c) + "_data_label"
+      avg_err = np.around( find_avg_abs_val(plot_data[obs_key]['vres'])  + find_avg_abs_val(plot_data[obs_key]['hres']), decimals=2)
+
+      plot[x_data_label_field] = obs_key + ", RMSD = " + str(avg_err) + " m"
+      for i in range(0, len(plot_data[obs_key]['vres'])):
+         plot[x_field].append(plot_data[obs_key]['vres'][i]  + plot_data[obs_key]['hres'][i])
+      series_c += 1
+   plots.append(plot)
+
+   # make the Lags, all station 
+   plot = {}
+   plot['plot_id'] = "lags_all_stations"
+   plot['plot_name'] = "Lags, all stations"
+   plot['x_label'] = "Lag (m)"
+   plot['y_label'] = "Time (s)"
+   series_c = 1
+   plot['plot_y_axis_reverse'] = 1
+   times = {}
+   for obs_key in plot_data:
+      x_field = "x" + str(series_c) + "_vals"
+      y_field = "y" + str(series_c) + "_vals"
+      x_line_on_field = "x" + str(series_c) + "_line_on"
+      x_sym_field = "x" + str(series_c) + "_symbol_size"
+      plot[x_field] = plot_data[obs_key]['lag']
+      plot[y_field] = []
+      #plot['plot_type'] = "xy_scatter"
+      x_data_label_field = "x" + str(series_c) + "_data_label"
+      plot[x_sym_field] = "4"
+      plot[x_line_on_field] = 1
+
+      plot[x_data_label_field] = obs_key 
+      for i in range(0, len(plot_data[obs_key]['lag'])):
+         lt = i/25
+         plot[y_field].append(i/25)
+         times[lt] = 1
+      series_c += 1
+
+   # add trend line for jac fit
+   # Plot the Jacchia fit on all observations
+
+   time_all = []
+   for key in times:
+      time_all.append(key)
+   time_all = sorted(time_all)
+
+   time_jacchia = np.linspace(np.min(time_all), np.max(time_all), 1000)
+   jacc_x = jacchiaLagFunc(time_jacchia, vida_data['jacchia_fit'][0], vida_data['jacchia_fit'][1])
+
+   tx1_vals = []
+   ty1_vals = []
+   for i in range(0, len(time_jacchia)):
+      ty1_vals.append(float(time_jacchia[i]))
+      tx1_vals.append(float(jacc_x[i]))
+
+   plot['tx1_vals'] = tx1_vals 
+   plot['ty1_vals'] = ty1_vals 
+   plot['tx1_data_label'] = "Jacchia fit" 
+
+   plots.append(plot)
+
+   # make the Distance from state vector, all station 
+   plot = {}
+   plot['plot_id'] = "dist_from_state_vector"
+   plot['plot_name'] = "Distance from state vector, Time residuals = "
+   plot['x_label'] = "Distance from state vector (km)"
+   plot['y_label'] = "Time (s)"
+   series_c = 1
+   plot['plot_y_axis_reverse'] = 1
+   all_data = []
+   for obs_key in plot_data:
+      x_field = "x" + str(series_c) + "_vals"
+      y_field = "y" + str(series_c) + "_vals"
+      x_line_on_field = "x" + str(series_c) + "_line_on"
+      x_sym_field = "x" + str(series_c) + "_symbol_size"
+      plot[x_field] = plot_data[obs_key]['state_vect_dist']
+      plot[y_field] = plot_data[obs_key]['time_data']
+      plot['plot_type'] = "xy_scatter"
+
+      for data in plot[x_field] :
+         all_data.append(data)
+      x_data_label_field = "x" + str(series_c) + "_data_label"
+      #plot[x_sym_field] = "4"
+      plot[x_line_on_field] = 1
+
+      plot[x_data_label_field] = obs_key
+      series_c += 1
+
+   # Add the fitted velocity line
+
+   # Get time data range
+   t_min = min([np.min(plot_data[obs_key]['time_data']) for obs_key in plot_data])
+   t_max = max([np.max(plot_data[obs_key]['time_data']) for obs_key in plot_data])
+   t_range = np.linspace(t_min, t_max, 100)
+
+   tx1_vals = lineFunc(t_range, vida_data['velocity_fit'][0], vida_data['velocity_fit'][1])/1000
+   ty1_vals = t_range
+
+   ftx1_vals = []
+   fty1_vals = []
+   for i in range(0, len(tx1_vals)):
+      fty1_vals.append(float(ty1_vals[i]))
+      ftx1_vals.append(float(tx1_vals[i]))
+
+   plot['tx1_vals'] = ftx1_vals 
+   plot['ty1_vals'] = fty1_vals 
+   plot['tx1_data_label'] = "Fit" 
+
+
+   plots.append(plot)
+
+   # make veloity all stations
+   plot = {}
+   plot['plot_id'] = "velocity"
+   plot['plot_name'] = "Velocity"
+   plot['x_label'] = "Velocity (km/s)"
+   plot['y_label'] = "Time (s)"
+   series_c = 1
+   plot['plot_y_axis_reverse'] = 1
+   all_data = []
+   for obs_key in plot_data:
+      x_field = "x" + str(series_c) + "_vals"
+      y_field = "y" + str(series_c) + "_vals"
+      x_line_on_field = "x" + str(series_c) + "_line_on"
+      #x_sym_field = "x" + str(series_c) + "_symbol_size"
+      plot[x_field] = plot_data[obs_key]['velocity']
+      plot[y_field] = plot_data[obs_key]['time_data']
+      #plot['plot_type'] = "xy_scatter"
+
+      for data in plot[x_field] :
+         all_data.append(float(data))
+      x_data_label_field = "x" + str(series_c) + "_data_label"
+      #plot[x_sym_field] = "4"
+      plot[x_line_on_field] = 0
+
+      plot[x_data_label_field] = obs_key
+      series_c += 1
+
+   # Get time data range
+   t_min = min([np.min(plot_data[obs_key]['time_data']) for obs_key in plot_data])
+   t_max = max([np.max(plot_data[obs_key]['time_data']) for obs_key in plot_data])
+   t_range = np.linspace(t_min, t_max, 100)
+
+   time_jacchia = np.linspace(t_min, t_max, 1000)
+   jacc_x = jacchiaVelocityFunc(time_jacchia, vida_data['jacchia_fit'][0], vida_data['jacchia_fit'][1], float(vida_data['v_init']))/1000
+
+   tx1_vals = []
+   ty1_vals = []
+   for i in range(0, len(time_jacchia)):
+ 
+      ty1_vals.append(float(time_jacchia[i]))
+      tx1_vals.append(float(jacc_x[i]) )
+
+   plot['tx1_vals'] = tx1_vals
+   plot['ty1_vals'] = ty1_vals
+   plot['tx1_data_label'] = "Jacchia fit"
+
+
+
+   plots.append(plot)
+   
+   # make the spatial res graph for each station
+   for obs_key in plot_data:
+      plot = {}
+      plot['plot_id'] = "res_station" + "_" + obs_key 
+      #plot['plot_type'] = "xy_scatter"
+      #plot['plot_subtype'] = "station_res_err"
+      plot['plot_name'] = "Residuals, station " + obs_key 
+      plot['plot_scaling'] = 0
+      plot['plot_y_axis_reverse'] = 0
+      plot['x_axis_position'] = "bottom"
+      plot['y_axis_position'] = "left"
+      plot['y_label'] = "Residuals (m)"
+      plot['x_label'] = "Time (s)"
+      avg_h_res = find_avg_abs_val(plot_data[obs_key]['hres'])
+      avg_v_res = find_avg_abs_val(plot_data[obs_key]['vres'])
+      plot['x1_data_label'] = obs_key + " Horizontal, RMSD = " + str(avg_h_res) + " m" 
+      plot['x2_data_label'] = obs_key + " Vertical, RMSD = " + str(avg_v_res) + " m"
+      #plot['x1_symbol'] = ""
+      #plot['x2_symbol'] = ""
+      #plot['x1_symbol_size'] = "3"
+      #plot['x2_symbol_size'] = "3"
+      #plot['x1_color'] = basic_colors[0] 
+      #plot['x2_color'] = basic_colors[1] 
+      plot['x1_vals'] = []
+      plot['y1_vals'] = plot_data[obs_key]['hres']
+      plot['x2_vals'] = []
+      plot['y2_vals'] = plot_data[obs_key]['vres']
+      if bc >= len(basic_colors):
+         bc = 0
+      color_idx = bc
+      # figure out y vals (time)
+      for i in range(0, len(plot['y1_vals'])):
+         plot['x1_vals'].append(i/25)
+         plot['x2_vals'].append(i/25)
+
+      #plot['x1_symbol'] = basic_shapes[0]
+      #plot['x2_symbol'] = basic_shapes[1]
+      plots.append(plot)
+      print(plot) 
+   bs = bs + 1
+   fplots = {}
+   fplots['plots'] = plots
+   save_json_file(plot_json_out, fplots)
+   print("SAVED:", plot_json_out)
+
+def lineFunc(x, m, k):
+    """ A line function.
+
+    Arguments:
+        x: [float] Independant variable.
+        m: [float] Slope.
+        k: [float] Intercept.
+
+    Return:
+        y: [float] Line evaluation.
+    """
+
+    return m*x + k
+
+
+def jacchiaLagFunc(t, a1, a2):
+    ### TAKEN FROM WMPL ###
+    """ Jacchia (1955) model for modeling lengths along the trail of meteors, modified to fit the lag (length
+        along the trail minus the linear part, estimated by fitting a line to the first part of observations,
+        where the length is still linear) instead of the length along the trail.
+
+    Arguments:
+        t: [float] time in seconds at which the Jacchia function will be evaluated
+        a1: [float] 1st acceleration term
+        a2: [float] 2nd acceleration term
+
+    Return:
+        [float] Jacchia model defined by a1 and a2, estimated at point in time t
+
+    """
+
+    return -np.abs(a1)*np.exp(np.abs(a2)*t)
+
+def jacchiaVelocityFunc(t, a1, a2, v_init):
+    ### TAKEN FROM WMPL ###
+    """ Derivation of the Jacchia (1955) model, used for calculating velocities from the fitted model.
+
+    Arguments:
+        t: [float] Time in seconds at which the Jacchia function will be evaluated.
+        a1: [float] 1st decelerationn term.
+        a2: [float] 2nd deceleration term.
+        v_init: [float] Initial velocity in m/s.
+        k: [float] Initial offset in length.
+
+    Return:
+        [float] velocity at time t
+
+    """
+
+    print("T", t)
+    print("A1", a1)
+    print("A2", a2)
+    print("VINIT", v_init)
+    return v_init - np.abs(a1*a2)*np.exp(np.abs(a2)*t)
+
+
+
+
+def find_avg_abs_val(values):
+   abs_vals = []
+   for val in values:
+      abs_vals.append(abs(val))
+   avg_val = np.mean(abs_vals)
+   return(np.around(avg_val,decimals=2))
+
 
 def run_detects(day):
    event_day = day
@@ -54,14 +858,16 @@ def run_detects(day):
    detect_index = {}
    solved_events = []
    for st in sorted(network):
-      data_file = "/mnt/ams2/meteor_archive/" + st + "/DETECTS/meteor_index.json"
+      data_file = "/mnt/ams2/meteor_archive/" + st + "/DETECTS/MI/" + event_year + "/" + event_day + "-meteor_index.json"
       event_dir = "/mnt/ams2/meteor_archive/" + st + "/EVENTS/" + event_year + "/" + event_day + "/"
+      print(data_file)
       if cfe(event_dir, 1) == 1:
          event_files = glob.glob(event_dir + "/*")
          for ef in sorted(event_files):
             if cfe(ef,1) == 1:
                solved_events.append(ef)
       arc_station_dir = "/mnt/ams2/meteor_archive/" + st + "/"
+      print("DATA FILE:", data_file)
       if cfe(data_file) == 1:
          data = load_json_file(data_file)
       else:
@@ -104,8 +910,17 @@ def run_detects(day):
       ec = ec + 1
 
    event_day_file = "/mnt/ams2/meteor_archive/" + this_station + "/EVENTS/" + event_year + "/" + event_day + "/" + event_day + "-events.json"
+   event_day_dir = "/mnt/ams2/meteor_archive/" + this_station + "/EVENTS/" + event_year + "/" + event_day + "/" 
+   if cfe(event_day_dir, 1) == 0:
+      os.makedirs(event_day_dir)
    save_json_file(event_day_file, final_events)
    print("EVENT DAY FILE SAVED:", event_day_file)
+   for event_id in final_events:
+      event = final_events[event_id]
+      station_count = len(set(final_events[event_id]['stations']))
+      if station_count >= 2 and len(event['solutions']) == 0:
+         print("./solve.py rec " + event_id)
+         os.system("./solve.py rec " + event_id)
 
 def check_if_solved(event, solved_events):
    tstart = event['event_start_time']
@@ -875,7 +1690,7 @@ def plot_obs_traj(meteor, event_file):
 
 
    plt.savefig(plot_file)
-   plt.show()
+   #plt.show()
    kml_file = plot_file.replace(".png", ".kml")
 
    points = {}
@@ -955,7 +1770,7 @@ def run_event_cmd(event_id):
    day = event_id[0:10]
    station_id = json_conf['site']['ams_id']  
 
-   events_file = "/mnt/ams2/meteor_archive/" + station_id + "/EVENTS/" + year + "/" + year + "-events.json"
+   events_file = "/mnt/ams2/meteor_archive/" + station_id + "/EVENTS/" + year + "/" + day + "/" + day + "-events.json"
    print(events_file)
    if cfe(events_file) == 1: 
       events = load_json_file(events_file)
@@ -965,6 +1780,8 @@ def run_event_cmd(event_id):
    args = []
    for i in range(0,len(event['arc_files'])):
       arc = event['arc_files'][i]
+      if "/mnt/ams2" in arc:
+         arc = arc.split("/")[-1] 
       if arc == 'pending':
          print("not all files have been archived. Can't solve yet!")
          return()
@@ -1001,6 +1818,8 @@ def run_event_cmd(event_id):
    station_files = {}
    for i in range(0,len(event['arc_files'])):
       arc = event['arc_files'][i]
+      if "/mnt/ams2" in arc:
+         arc = arc.split("/")[-1] 
       st = event['stations'][i]
       ma_arc_file = "/mnt/ams2/meteor_archive/" + st + "/METEOR/" + year + "/" + mon + "/" + dom + "/" +  arc 
       dist = dist_from_center(ma_arc_file)
@@ -1013,6 +1832,7 @@ def run_event_cmd(event_id):
          # we have more than one match pick the best one
          temp = sorted(station_files[st], key=lambda x: x[1], reverse=False)
          arc = temp[0][0] 
+
          ma_arc_file = arc 
          args.append(ma_arc_file)
       else:
@@ -1696,3 +2516,9 @@ if sys.argv[1] == "smp":
    sync_ms_previews(sys.argv[2])
 if sys.argv[1] == "run_detects":
    run_detects(sys.argv[2])
+if sys.argv[1] == "vida_plots":
+   vida_plots(sys.argv[2])
+if sys.argv[1] == "report_html":
+   report_html(sys.argv[2])
+if sys.argv[1] == "ei":
+   make_event_day_index( sys.argv[2])
