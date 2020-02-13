@@ -18,8 +18,8 @@ MINUTE_FILE_NAMES_REGEX_GROUP = ["year","month","day","hour","min","sec","ms","c
 
 # Parses a regexp (MINUTE_FILE_NAMES_REGEX) a minute file name
 # and returns all the info defined in MINUTE_FILE_NAMES_REGEX_GROUP
-def minute_name_analyser(file_names):
-   matches = re.finditer(MINUTE_FILE_NAMES_REGEX, file_names, re.MULTILINE)
+def minute_name_analyser(file_name):
+   matches = re.finditer(MINUTE_FILE_NAMES_REGEX, file_name, re.MULTILINE)
    res = {}
   
    for matchNum, match in enumerate(matches, start=1):
