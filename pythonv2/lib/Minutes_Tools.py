@@ -71,24 +71,19 @@ def create_json_index_minute_day(day,month, year):
 
    # Main dir to glob
    main_dir = MINUTE_FOLDER +  os.sep + str(year) + '_' + str(month).zfill(2) + '_' + str(day).zfill(2) + os.sep + IMAGES_MINUTE_FOLDER
- 
    index_day = {'station_id':get_station_id(),'year':int(year),'months':int(month),'day':int(day),'hours':[]}
-
-
    cam_ids = get_the_cam_ids();
-
-   stacks_per_minute = []
+   stacks_per_hours = []
    
 
    # Prepare the JSON structure
    for i in range(0,24):
-      stacks_per_minute.append(i)
-      stacks_per_minute[i] = {'h': i, 'cam': []}
+      stacks_per_hours.append(i)
+      stacks_per_hours[i] = {'h': i, 'cam': []}
       for cam_id in cam_ids:
-         stacks_per_minute[i]['cam'].append({'id':cam_id,'stacks':[]})
+         stacks_per_hours[i]['cam'].append({'id':cam_id,'stacks':[]})
    
-   print(stacks_per_minute)
-   print("<br>")
+   print(stacks_per_hours)
  
    for minute_stack in sorted(glob.iglob(main_dir + '*' + os.sep + '*' + MINUTE_STACK_EXT + '*', recursive=True), reverse=True):	
       
@@ -110,12 +105,16 @@ def create_json_index_minute_day(day,month, year):
           }    
       }
 
-      # Go to the right stacks_per_minutes
-      for t in stacks_per_minute:
-         if(t[int(analysed_minute['hour'])]['id']==analysed_minute['cam_id']):
-            stacks_per_minute[int(analysed_minute['hour'])]['stacks'].append(cur_stack_data)
+      # We add it to 
+      # stacks_per_hours[i] 
 
-   print(stacks_per_minute)
+      # Go to the right stacks_per_hourss
+
+      for t in stacks_per_hours:
+         if(t[int(analysed_minute['hour'])]['id']==analysed_minute['cam_id']):
+            stacks_per_hours[int(analysed_minute['hour'])]['stacks'].append(cur_stack_data)
+
+   print(stacks_per_hours)
 
 # Write index for a given day
 def write_day_minute_index(day, month, year):
