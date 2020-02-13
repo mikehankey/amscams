@@ -125,6 +125,8 @@ def create_json_index_minute_day(day,month, year):
                if(cam['id']==analysed_minute['cam_id']): 
                   cam['stacks'].append(cur_stack_data)
                   print(t)
+                  print("------------")
+                  print(stacks_per_hours)
                   sys.exit(0)
             
 
