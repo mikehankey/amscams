@@ -12,7 +12,7 @@ def get_cam_ids(selected_cam_ids):
    toReturn = ""
    cam_ids = get_the_cam_ids()
    for cam_id in cam_ids:
-      toReturn += "<option value='"+cam_id+"'>'"+cam_id+"'</option>"
+      toReturn += "<option value='"+cam_id+"'>"+cam_id+"</option>"
    return toReturn
 
 
