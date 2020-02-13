@@ -115,7 +115,7 @@ def create_json_index_minute_day(day,month, year):
       # Go to the right stacks_per_hours
       added = False
 
-      for t in enumerate(stacks_per_hours): 
+      for t in  stacks_per_hours: 
          if(int(t['h']) == int(analysed_minute['hour'])): 
             
             for cam in t[c]['cam']: 
