@@ -76,11 +76,16 @@ def create_json_index_minute_day(day,month, year):
    stacks_per_hours = []
    
 
+
+   # Prepage JSON structure (all cams for each minute)
+   all_cams = []
+   for cam_id in cam_ids:
+      all_cams.append({'id':cam_id,'stacks':[]})
+
    # Prepare the JSON structure
-   for i in range(0,24):
-      stacks_per_hours[i] = {'h': i, 'cam': []}
-      for cam_id in cam_ids:
-         stacks_per_hours[i]['cam'].append({'id':cam_id,'stacks':[]})
+   for i in range(0,24): 
+      stacks_per_hours.append({'h': i, 'cam': [all_cams]})
+      
    
    print(stacks_per_hours)
  
