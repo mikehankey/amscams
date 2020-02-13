@@ -98,9 +98,9 @@ def create_json_index_minute_day(day,month, year):
       }
 
       try: 
-         stacks_per_minute[analysed_minute['min']]
+         stacks_per_minute[int(analysed_minute['min'])]
       except:
-         stacks_per_minute[analysed_minute['min']] = []
+         stacks_per_minute[int(analysed_minute['min'])] = []
    
       stacks_per_minute[analysed_minute['min']].append(cur_stack_data)
 
