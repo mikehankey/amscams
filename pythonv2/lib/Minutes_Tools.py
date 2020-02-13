@@ -24,11 +24,10 @@ def minute_name_analyser(file_name):
    res = {}
     
    for matchNum, match in enumerate(matches, start=1):
-      print(str(matchNum) + ' - ')
-      print(match)
-      print('<br>')
       for groupNum in range(0, len(match.groups())): 
          if(match.group(groupNum) is not None):
+            print("GROUPNUM " + str(groupNum) + " ** ")
+            print("MATCH " + match.group(groupNum)  + "<br><br>")
             res[MINUTE_FILE_NAMES_REGEX_GROUP[groupNum]] = match.group(groupNum)
          groupNum = groupNum + 1
 
