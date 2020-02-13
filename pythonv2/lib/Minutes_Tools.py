@@ -106,8 +106,7 @@ def create_json_index_minute_day(day,month, year):
       # Get Sun details at the date of the capture
       sun_az,sun_alt  = get_sun_details(analysed_minute['year']+'/'+analysed_minute['month']+'/'+analysed_minute['day']+' ' + analysed_minute['hour']+ ':' + analysed_minute['min']+ ':'+ analysed_minute['sec'])
  
-      cur_stack_data =  {
-          #'f':analysed_minute['full'],
+      cur_stack_data =  { 
           't': analysed_minute['hour'] +':'+ analysed_minute['min'] +':'+ analysed_minute['sec'],
           'sun': {
              'az': float(sun_az),
@@ -120,6 +119,7 @@ def create_json_index_minute_day(day,month, year):
 
       for t in stacks_per_hours:
          if(int(t['h']) == int(analysed_minute['hour'])-1): 
+            print("YES\n")
             for cam in t['cam']:
                if(cam['id']==analysed_minute['cam_id'] and cur_stack_data != {}):
                   cam['stacks'].append(cur_stack_data)
