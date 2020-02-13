@@ -93,6 +93,8 @@ def create_json_index_minute_day(day,month, year):
           }    
       }
 
+      { 'hours'}
+
       # Add to the Hour
       try:
          index_day['hours'][int(analysed_minute['hour'])]
@@ -101,9 +103,9 @@ def create_json_index_minute_day(day,month, year):
 
       # Add to cam_id
       try:
-         index_day['hours'][int(analysed_minute['hour'])][int(analysed_minute['cam_id'])]
+         index_day['hours'][int(analysed_minute['hour'])]['cam_id']
       except:
-         index_day['hours'][int(analysed_minute['hour'])][int(analysed_minute['cam_id'])] = []
+         index_day['hours'][int(analysed_minute['hour'])]['cam_id'] = []
 
 
       if(cur_stack_data):
