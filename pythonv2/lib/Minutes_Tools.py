@@ -28,9 +28,7 @@ def minute_name_analyser(file_name):
          if(match.group(groupNum) is not None):
             res[MINUTE_FILE_NAMES_REGEX_GROUP[groupNum]] = match.group(groupNum)
          groupNum = groupNum + 1
-
-   print(res)
-   print("<br>")
+ 
    return res
 
 
@@ -77,13 +75,17 @@ def create_json_index_minute_day(day,month, year):
    index_year = {'station_id':get_station_id(),'year':int(year),'months':int(month)}
  
    for minute in sorted(glob.iglob(main_dir + '*' + os.sep + '*', recursive=True), reverse=True):	
-      #cur_month = os.path.basename(os.path.normpath(month))
-      #print(minute)
+      
+      # We analyse the name
+      analysed_minute = minute_name_analyser(minute) 
 
-      print(minute_name_analyser(minute))
-      print("<br/>")
+      # Get Sun details at the date of the capture
+      sun_az,sun_alt,sun_status = get_sun_details(analysed_minute['year']+'/'+analysed_minute['month']+'/'+analysed_minute['day']+' '+analysed_minute['hour']+':'+analysed_minute['min']+':'+analysed_minute['sec'])
 
-
+      print("SUN AZ " + str(sun_az) + "<br>")
+      print("SUN ALT " + str(sun_alt) + "<br>")
+      print("SUN STATUS " + str(sun_status) + "<br>**<br/>")
+ 
 
 # Write index for a given day
 def write_day_minute_index(day, month, year):
