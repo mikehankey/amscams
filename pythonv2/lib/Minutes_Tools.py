@@ -92,7 +92,7 @@ def create_json_index_minute_day(day,month, year):
 
    # Prepare the JSON structure
    for i in reversed(range(0,24)): 
-      stacks_per_hours.append({'h': i, 'cam': all_cams})
+      stacks_per_hours.append({'h': int(i), 'cam': all_cams})
  
  
    for minute_stack in sorted(glob.iglob(main_dir + '*' + os.sep + '*' + MINUTE_STACK_EXT + '*', recursive=True), reverse=True):	
