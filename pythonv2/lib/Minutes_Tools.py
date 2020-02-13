@@ -119,14 +119,17 @@ def create_json_index_minute_day(day,month, year):
       for t in stacks_per_hours: 
          if(int(t['h']) == int(analysed_minute['hour'])): 
             print("YES " + str(t['h']))
+            print(t)
             for cam in t['cam']:
                print(cam)
-               sys.exit(0)
+              
                if(cam['id']==analysed_minute['cam_id'] and cur_stack_data != {}):
                   cam['stacks'].append(cur_stack_data)
                   cur_stack_data = {}
                   added = True
                   break
+            print(added)
+            sys.exit(0)
             if(added is True):
                break
          if(added is True):
