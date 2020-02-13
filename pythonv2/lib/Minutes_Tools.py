@@ -93,11 +93,11 @@ def create_json_index_minute_day(day,month, year):
    # Prepare the JSON structure
    for i in range(24,0): 
       stacks_per_hours.append({'h': i, 'cam': all_cams})
-  
+
+   print(stacks_per_hours)
  
    for minute_stack in sorted(glob.iglob(main_dir + '*' + os.sep + '*' + MINUTE_STACK_EXT + '*', recursive=True), reverse=True):	
 
-      print(minute_stack +"\n")
       cur_stack_data = []
 
       # We analyse the name
