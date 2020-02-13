@@ -119,7 +119,7 @@ def create_json_index_minute_day(day,month, year):
       added = False
       for t in stacks_per_hours:
          print("t[h]<br>")
-         print(str(t['h'])
+         print(str(t['h']))
          print("<br>analysed_minute[hour]<br>")
          print(str(analysed_minute['hour']]))
          print("<br")
