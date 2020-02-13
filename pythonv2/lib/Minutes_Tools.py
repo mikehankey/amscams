@@ -4,6 +4,7 @@ import ephem
 import glob
 import re
 import sys
+import json
 
 from lib.Get_Cam_position import get_device_position
 from lib.Get_Station_Id import get_station_id
@@ -124,8 +125,7 @@ def write_day_minute_index(day, month, year):
       with open(output_dir + os.sep + str(month).zfill(2) + '_' + str(day).zfill(2) + ".json", 'w') as outfile:
          #Write compress format
          json.dump(json_data, outfile)
-
-
+ 
       print(output_dir + os.sep + str(month).zfill(2) + '_' + str(day).zfill(2) + ".json - created")
 
       outfile.close() 
