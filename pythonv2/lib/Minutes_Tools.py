@@ -87,9 +87,7 @@ def create_json_index_minute_day(day,month, year):
    all_minutes = {}
    for camid in cam_ids:
       all_minutes[camid] = {'cam': camid,'min':[]}
-   
-   print(all_minutes)
-   print("************")
+ 
  
    for minute_stack in sorted(glob.iglob(main_dir + '*' + os.sep + '*' + MINUTE_STACK_EXT + '*', recursive=True), reverse=True):	
 
@@ -99,19 +97,6 @@ def create_json_index_minute_day(day,month, year):
       analysed_minute = minute_name_analyser(minute_stack)  
       all_minutes[analysed_minute['cam_id']]['min'].append(analysed_minute['hour'] +':'+ analysed_minute['min'] +':'+ analysed_minute['sec'] +'.'+ analysed_minute['ms'])
  
-         
-            
-
-
-      # Get Sun details at the date of the capture
-      #sun_az,sun_alt  = get_sun_details(analysed_minute['year']+'/'+analysed_minute['month']+'/'+analysed_minute['day']+' ' + analysed_minute['hour']+ ':' + analysed_minute['min']+ ':'+ analysed_minute['sec'])
-      #all_minutes.append({ 
-      #   't': analysed_minute['hour'] +':'+ analysed_minute['min'] +':'+ analysed_minute['sec'], 
-       #  'cam': analysed_minute['cam_id']
-      #})
-
-   print(all_minutes)
-   sys.exit(0)
    return all_minutes
 
 # Write index for a given day
