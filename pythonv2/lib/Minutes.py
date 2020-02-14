@@ -103,7 +103,7 @@ def create_minute_html_res(res,cam_ids,year,month,day):
             t = get_min_details(cam_id,year,month,day,cam_res)
             toReturn += "<div style='padding: 0 1rem 1rem 0;'><img src='"+t+"' style='width: 100%;height: 169px;' class='img-fluid cam_"+str(cam_id)+"'/><span style='font-size:.75rem'>"+cam_res+"</span></div>"
          else:
-            toReturn += "<div style='padding: 0 1rem 1rem 0;width:250px;height: 169px; background-color:#ccc'></div>"
+            toReturn += "<div style='padding: 0 1rem 1rem 0;width:250px;height: 169px; background-color:#666'></div>"
             how_many_false+=1
 
          if(how_many_false==len(cam_ids)):
