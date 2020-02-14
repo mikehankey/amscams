@@ -80,13 +80,11 @@ def create_json_index_minute_day(day,month, year):
 
    # Main dir to glob
    main_dir = MINUTE_FOLDER +  os.sep + str(year) + os.sep + str(month).zfill(2) + '_' + str(day).zfill(2) + os.sep + IMAGES_MINUTE_FOLDER
-  
-   index_day = {'station_id':get_station_id(),'year':int(year),'months':int(month),'day':int(day),'hours':[]}
    cam_ids = get_the_cam_ids(); 
 
-   all_minutes = []
+   all_minutes = {}
    for camid in cam_ids:
-      all_minutes.append({'cam': camid,'min':[]})
+      all_minutes[camid] = {'cam': camid,'min':[]}
  
  
    for minute_stack in sorted(glob.iglob(main_dir + '*' + os.sep + '*' + MINUTE_STACK_EXT + '*', recursive=True), reverse=True):	
@@ -97,7 +95,7 @@ def create_json_index_minute_day(day,month, year):
       analysed_minute = minute_name_analyser(minute_stack)  
       all_minutes[analysed_minute['cam_id']]['min'].append(analysed_minute['hour'] +':'+ analysed_minute['min'] +':'+ analysed_minute['sec'] +'.'+ analysed_minute['ms'])
  
-   return {'station_id':get_station_id(),'date':str(day).zfill(2)+"/"+str(month).zfill(2)+"/"+str(year),'min':all_minutes}
+   return {'station_id':get_station_id(),'date':str(day).zfill(2)+"/"+str(month).zfill(2)+"/"+str(year),'cams':all_minutes}
 
 # Write index for a given day
 def write_day_minute_index(day, month, year):
