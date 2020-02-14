@@ -2691,6 +2691,10 @@ def main_page(json_conf,form):
 
    for idx, day in enumerate(detections): 
       print(day)
+      print("<br>")
+      day_cur_date = datetime.strptime(day,"%Y_%m_%d")
+      print(day_cur_date)
+      print('<br>*****************<br>')
    sys.exit(0)
 
    # Need a fist loop to cleanup (big waist of time & resources here)
