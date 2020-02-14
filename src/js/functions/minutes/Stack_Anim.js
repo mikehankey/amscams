@@ -6,6 +6,7 @@ var timeWhenLastUpdateStack;
 var timeFromLastUpdateStack;
 var stackNumber; 
 var stackplaying; 
+var sens = "+"
 
 // Modal With Player
 function addAnimMinuteModalTemplate($allstacks,cam_id) {
@@ -42,12 +43,25 @@ function step_minute(startTime) {
      $('.to_anim').css('opacity', 0); 
      $(`.to_anim-${stackNumber}`).css('opacity', 1);  
      timeWhenLastUpdateStack = startTime;
-  
-     if (stackNumber >= totalStacks-1) {
-       stackNumber = 0;
+      
+
+     if(sens=='+') {
+         if (stackNumber >= totalStacks-1) {
+            stackNumber = 0;
+         } else {
+            stackNumber = stackNumber + 1;
+         } 
      } else {
-       stackNumber = stackNumber + 1;
-     }        
+         if (stackNumber <= 0) {
+            stackNumber = totalStacks;
+         } else {
+            stackNumber = stackNumber - 1;
+         }
+
+     }
+
+
+       
  
      $('#cur_f').text($(`.to_anim-${stackNumber}`).attr('data-rel'));
      //console.log("FN" + stackNumber);
@@ -83,20 +97,12 @@ function minute_anim(cam_id) {
 
   // Inpur range for animation speed
   $('#marStack').val(0).on('input', function () { 
-   var val = parseInt($(this).val());
-
-   if(val<=-1)   { 
-       val-= 1; 
-       timePerStack = animationStackDuration*Math.abs(val); 
-       $('#cur_sp').text('/'+Math.abs(val));
-   } else if(val>=1) { 
-       val+= 1;
-       timePerStack = animationStackDuration*1/Math.abs(val); 
-       $('#cur_sp').text('x'+val);
-   }
-   else {  
-       val=1;
-       $('#cur_sp').text('x1');
+      var val = parseInt($(this).val());
+      if(val<0) sens = "-"
+      else sens = "+"
+      val+= 1;
+      timePerStack = animationStackDuration*1/Math.abs(val); 
+      $('#cur_sp').text('x'+val);
    } 
    
    requestAnimationFrame(step_minute);
