@@ -100,16 +100,12 @@ function minute_anim(cam_id) {
       var val = parseInt($(this).val());
       if(val<0) sens = "-"
       else sens = "+"
+
       val+= 1;
       timePerStack = animationStackDuration*1/Math.abs(val); 
       $('#cur_sp').text('x'+val);
-   } 
-   
-   requestAnimationFrame(step_minute);
-});  
-
-   
-  
+      requestAnimationFrame(step_minute); 
+   });  
 }
 
 $(function() {
