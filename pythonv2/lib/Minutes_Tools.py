@@ -84,7 +84,7 @@ def create_json_index_minute_day(day,month, year):
    index_day = {'station_id':get_station_id(),'year':int(year),'months':int(month),'day':int(day),'hours':[]}
    cam_ids = get_the_cam_ids(); 
 
-   all_minutes = {}
+   all_minutes = []
    for camid in cam_ids:
       all_minutes.append({'cam': camid,'min':[]})
  
