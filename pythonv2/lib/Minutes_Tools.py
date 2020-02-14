@@ -82,9 +82,9 @@ def create_json_index_minute_day(day,month, year):
    main_dir = MINUTE_FOLDER +  os.sep + str(year) + os.sep + str(month).zfill(2) + '_' + str(day).zfill(2) + os.sep + IMAGES_MINUTE_FOLDER
    cam_ids = get_the_cam_ids(); 
 
-   all_minutes = {}
+   all_minutes = []
    for camid in cam_ids:
-      all_minutes[camid] = {'cam': camid,'min':[]}
+      all_minutes.append({'cam': camid,'min':[]})
  
  
    for minute_stack in sorted(glob.iglob(main_dir + '*' + os.sep + '*' + MINUTE_STACK_EXT + '*', recursive=True), reverse=True):	
