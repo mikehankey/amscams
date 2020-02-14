@@ -42,7 +42,7 @@ def get_minute_index_res(selected_start_date, selected_end_date,selected_period,
 
    how_many_cams = len(selected_cam_ids)
  
-   res = {}
+   res = {'date':''}
 
    while(json_index is not None and cur_date>=selected_start_date):
    
