@@ -15,7 +15,7 @@ function addAnimMinuteModalTemplate($allstacks) {
    $('<div id="anim_min_modal" class="modal fade" tabindex="-1" role="dialog"><div class="modal-dialog modal-dialog-centered" role="document">\
    <div class="modal-content"><div class="modal-body"><div id="anim_header" class="d-flex justify-content-between"><p><b>Frame by frame animation</b></p><p><span id="cur_f"></span>/<span id="tot_f"></span> frames</p></div><div id="anim_holder">\
    </div><div class="modal-footer d-flex justify-content-between p-0 pb-2 pr-2">\
-   <div class="pt-2"><input type="range" value="1" id="mar" max="5" min="-5"/> <span id="cur_sp"></span></div>\
+   <div class="pt-2"><input type="range" value="1" id="marStack" max="5" min="-5"/> <span id="cur_sp"></span></div>\
    <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button></div></div></div></div>').appendTo('body');
    
    // Add all the frames
@@ -79,23 +79,24 @@ function minute_anim(cam_id) {
   timePerStack = animationStackDuration / totalStacks;
   stackNumber = 0; 
   stackplaying = true;
+  requestAnimationFrame(step_minute);
 
   // Inpur range for animation speed
-  $('#mar').val(0).on('input', function () { 
+  $('#marStack').val(0).on('input', function () { 
    var val = parseInt($(this).val());
 
    if(val<=-1)   { 
        val-= 1; 
        timePerStack = animationStackDuration*Math.abs(val) / totalStacks; 
-       //$('#cur_sp').text('x'+val);
+       $('#cur_sp').text('x'+val);
    } else if(val>=1) { 
        val+= 1;
        timePerStack = animationStackDuration*1/Math.abs(val) / totalStacks; 
-       //$('#cur_sp').text('x'+val);
+       $('#cur_sp').text('x'+val);
    }
    else {  
        val=1;
-       //$('#cur_sp').text('x1');
+       $('#cur_sp').text('x1');
    } 
    
    requestAnimationFrame(step_minute);
