@@ -45,9 +45,7 @@ def get_minute_index_res(selected_start_date, selected_end_date,selected_period,
    cur_date = selected_end_date
    json_index =  get_daily_index(cur_date.day,cur_date.month,cur_date.year)
   
-   res = []
- 
-   
+   res = [] 
    while(json_index is not None and cur_date>=selected_start_date):
    
       json_data = load_json_file(json_index)
@@ -62,9 +60,8 @@ def get_minute_index_res(selected_start_date, selected_end_date,selected_period,
        
       cur_date = cur_date - timedelta(1)
       json_index =  get_daily_index(cur_date.day,cur_date.month,cur_date.year) 
-
-   
-   return res
+ 
+   return res,cur_date.day,cur_date.month,cur_date.year
 
 
 # Get Cam Res from JSON
@@ -75,7 +72,7 @@ def get_cam_res(res,cam_id,cur_index):
    return False
 
 # Create HTML version of the results
-def create_minute_html_res(res,cam_ids):
+def create_minute_html_res(res,cam_ids,year,month,day):
    how_many_cams = len(cam_ids)
    cam_ids = sorted(cam_ids)
    cam_title = ""
@@ -91,7 +88,9 @@ def create_minute_html_res(res,cam_ids):
    for cam_id in cam_ids:
       # Search the proper cam res
       cam_res = get_cam_res(res,cam_id,cur_index)
-      print(cam_res)
+      if(cam_res is not False):
+         t = get_min_details(cam_id,year,month,day,cam_res)
+         print(t)
       sys.exit(0)
       #if(cam_res==False):
 
@@ -145,10 +144,10 @@ def browse_minute(form):
    template = template.replace('{PERIODS}',get_select(selected_period,'periods'))
    
    # Retrieve the results
-   res = get_minute_index_res(selected_start_date, selected_end_date,selected_period,selected_cam_ids)
+   res, year, month, day = get_minute_index_res(selected_start_date, selected_end_date,selected_period,selected_cam_ids)
 
    # Create HTML results
-   res = create_minute_html_res(res,selected_cam_ids)
+   res = create_minute_html_res(res,selected_cam_ids,year,month,day)
 
    print(res)
    # Display Template
