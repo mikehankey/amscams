@@ -90,7 +90,7 @@ def create_minute_html_res(res,cam_ids,year,month,day):
    # The other lines: the detection per cam
    cur_index = 0
    how_many_false = 0
-   we_have_res = 
+   we_have_res = 1
    
    while(we_have_res==1):
       toReturn += "<div class='d-flex justify-content-around'>"
@@ -105,7 +105,7 @@ def create_minute_html_res(res,cam_ids,year,month,day):
             how_many_false+=1
 
          if(how_many_false==len(cam_ids)):
-            g=0  
+            we_have_res=0  
 
          cur_index+=1
       toReturn += "</div>"
