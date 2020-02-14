@@ -24,6 +24,7 @@ function addAnimMinuteModalTemplate($allstacks) {
    });
 
    animationStackDuration = $allstacks.lenth / 25; // Duration get the 
+   animationStackDuration = 100;
    
 }
 
