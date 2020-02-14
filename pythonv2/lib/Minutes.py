@@ -37,7 +37,10 @@ def get_minute_index_res(selected_start_date, selected_end_date,selected_period,
    # Get the minute index of the selected or current year / month / day
    # for the END DATE
    cur_date = selected_end_date
-   json_index =  get_daily_index(cur_date.day,cur_date.month,cur_date.year) 
+   json_index =  get_daily_index(cur_date.day,cur_date.month,cur_date.year)
+   
+   print(json_index)
+   print("<br>")
 
    res = []
 
@@ -51,9 +54,7 @@ def get_minute_index_res(selected_start_date, selected_end_date,selected_period,
          #if(data['cam']['id'] in selected_cam_ids):
          #   if(selected_period==PERIODS[0]): # per minute
          #      res.append(data.cam['stacks'])
-
-   
-   
+ 
       cur_date = cur_date - timedelta(1)
       json_index =  get_daily_index(cur_date.day,cur_date.month,cur_date.year) 
 
