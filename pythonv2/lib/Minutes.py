@@ -40,6 +40,8 @@ def get_minute_index_res(selected_start_date, selected_end_date,selected_period,
    json_index =  get_daily_index(cur_date.day,cur_date.month,cur_date.year)
  
    how_many_cams = len(selected_cam_ids)
+
+   print("JSON INDEX " + json_index + "<br>")
   
 
    while(json_index is not None and cur_date>=selected_start_date):
@@ -53,7 +55,7 @@ def get_minute_index_res(selected_start_date, selected_end_date,selected_period,
 
       print(json_date['cams'])
       sys.exit(0)
-      
+
       for data in json_data:
          print(data)
          print("<br><br>")
