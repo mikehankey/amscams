@@ -92,11 +92,8 @@ def create_json_index_minute_day(day,month,year):
          if(analysed_minute['cam_id']==camid):
             cur_stack_data.append(analysed_minute['hour'] +':'+ analysed_minute['min'] +':'+ analysed_minute['sec'] +'.'+ analysed_minute['ms'])
 
-   print("CAM ID " + str(camid))
-   print("MIN ")
-   print(cur_stack_data)
-
-   all_minutes.append({'cam': camid,'min':cur_stack_data})
+    
+      all_minutes.append({'cam': camid,'min':cur_stack_data})
 
 
    return {'station_id':get_station_id(),'date':str(day).zfill(2)+"/"+str(month).zfill(2)+"/"+str(year),'cams':all_minutes}
