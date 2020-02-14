@@ -40,30 +40,18 @@ def get_minute_index_res(selected_start_date, selected_end_date,selected_period,
    json_index =  get_daily_index(cur_date.day,cur_date.month,cur_date.year)
  
    how_many_cams = len(selected_cam_ids)
-
-   print("JSON INDEX " + json_index + "<br>")
-  
-  
-
+   res = []
+ 
+   
    while(json_index is not None and cur_date>=selected_start_date):
    
       json_data = load_json_file(json_index)
 
-      # Get day/month/year from json*
-      #res['date'] = json_data['date']
-      #print(str(how_many_cams) + " CAMS SELECTED") 
-      #sys.exit(0)
+      # Res per cams
+      for cam in json_data['cams']:
+         print(cam)
+         sys.exit(0)
 
-      print(json_data['cams'])
-      sys.exit(0)
-
-      for data in json_data:
-         print(data)
-         print("<br><br>")
-         
-         #if(data['cam']['id'] in selected_cam_ids):
-         #   if(selected_period==PERIODS[0]): # per minute
-         #      res.append(data.cam['stacks'])
       
       
       
