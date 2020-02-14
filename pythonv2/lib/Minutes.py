@@ -87,20 +87,23 @@ def create_minute_html_res(res,cam_ids,year,month,day):
    # The other lines: the detection per cam
    cur_index = 0
    how_many_false = 0
+   g = 1
    for cam_id in cam_ids:
-      # Search the proper cam res
-      cam_res = get_cam_res(res,cam_id,cur_index)
- 
-      if(cam_res is not False):
-         t = get_min_details(cam_id,year,month,day,cam_res)
-         print(t)
-      else:
-         how_many_false+=1
 
-      if(how_many_false==len(cam_ids)):
-         break;    
+      while(g==1):
+         # Search the proper cam res
+         cam_res = get_cam_res(res,cam_id,cur_index)
+   
+         if(cam_res is not False):
+            t = get_min_details(cam_id,year,month,day,cam_res)
+            print(t)
+         else:
+            how_many_false+=1
 
-      cur_index+=1
+         if(how_many_false==len(cam_ids)):
+            g=0  
+
+         cur_index+=1
    
    return toReturn
 
