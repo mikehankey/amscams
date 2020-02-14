@@ -2687,9 +2687,10 @@ def main_page(json_conf,form):
    first_day = ""
    real_detections = []
    real_detections_to_display = []
+   
 
-
-   print(detections)
+   for idx, day in enumerate(detections): 
+      print(day)
    sys.exit(0)
 
    # Need a fist loop to cleanup (big waist of time & resources here)
