@@ -8,12 +8,12 @@ var stackNumber;
 var stackplaying; 
 
 // Modal With Player
-function addAnimMinuteModalTemplate($allstacks) {
+function addAnimMinuteModalTemplate($allstacks,cam_id) {
   
    $('#anim_min_modal').remove();
 
    $('<div id="anim_min_modal" class="modal fade" tabindex="-1" role="dialog"><div class="modal-dialog modal-dialog-centered"  style="min-width: 800px;" role="document">\
-   <div class="modal-content"><div class="modal-body"><div id="anim_header" class="d-flex justify-content-between"><p><b>Stack animation</b> Cam#</p><p><span id="cur_f"></span></p></div><div id="anim_holder">\
+   <div class="modal-content"><div class="modal-body"><div id="anim_header" class="d-flex justify-content-between"><p><b>Stack animation</b> Cam#'+cam_id+'</p><p><span id="cur_f"></span></p></div><div id="anim_holder" style="width:688px;">\
    </div><div class="modal-footer d-flex justify-content-between p-0 pb-2 pr-2">\
    <div class="pt-2"><input type="range" value="1" id="marStack" max="10" min="-10"/> <span id="cur_sp"></span></div>\
    <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button></div></div></div></div>').appendTo('body');
@@ -60,7 +60,7 @@ function minute_anim(cam_id) {
    $allstacks = $('.cam_'+cam_id);
    $allstacks = $allstacks.reverse();
    totalStacks = $allstacks.length;
-   addAnimMinuteModalTemplate($allstacks);
+   addAnimMinuteModalTemplate($allstacks,cam_id);
    $('#anim_min_modal').modal();
    $('#anim_min_modal').on('hidden.bs.modal', function () {
         stackplaying = false; 
@@ -110,5 +110,7 @@ $(function() {
     $('.play_anim_thumb').click(function() {
        stackplaying = true;
        minute_anim($(this).attr('data-rel'));
+       $('.to_anim').css({'width':'683px','height':'395px';})
     });  
 })
+
