@@ -93,7 +93,7 @@ function minute_anim(cam_id) {
        timePerStack = animationStackDuration*1/Math.abs(val) / totalStacks; 
        //$('#cur_sp').text('x'+val);
    }
-   else { 
+   else {  
        val=1;
        //$('#cur_sp').text('x1');
    } 
