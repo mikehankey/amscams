@@ -49,8 +49,7 @@ def get_minute_index_res(selected_start_date, selected_end_date,selected_period,
 
       # Res per cams
       for cam in json_data['cams']:
-         print(cam)
-         sys.exit(0)
+         print(cam['cam'])
 
       
       
