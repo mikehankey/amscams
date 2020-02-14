@@ -121,8 +121,7 @@ def browse_minute(form):
    # Debug
    cgitb.enable()
 
-   selected_start_date = form.getvalue('start_date') 
-   selected_end_date = form.getvalue('end_date') 
+   selected_end_date = form.getvalue('limit_day') 
    selected_period   = form.getvalue('period')
    selected_cam_ids = form.getvalue('cams_ids')
    
@@ -131,11 +130,9 @@ def browse_minute(form):
       template = file.read()
 
    # Default dates 
-   if (selected_start_date is None and selected_end_date is None):
-      selected_start_date = datetime.now()- timedelta(days=1)
-      selected_end_date   = datetime.now() 
+   if (selected_end_date is None): 
+      selected_end_date   = datetime.now() - timedelta(days=1)
    else:
-      selected_start_date = datetime.strptime(selected_start_date,"%Y/%m/%d") 
       selected_end_date  = datetime.strptime(selected_end_date,"%Y/%m/%d") 
    
    # CAM IDS
@@ -145,17 +142,16 @@ def browse_minute(form):
       selected_cam_ids = get_the_cam_ids() # ALL BY DEFAULT
 
    # PERIOD
-   if(selected_period is not None):
-      selected_period = [selected_period]
-   else:
-      selected_period = PERIODS[0] # See PERIODS 
+   #if(selected_period is not None):
+   #   selected_period = [selected_period]
+   #else:
+   #   selected_period = PERIODS[0] # See PERIODS 
  
    # Build the period picker 
-   template = template.replace("{START_DATE}",selected_start_date.strftime("%Y/%m/%d"));
    template = template.replace("{END_DATE}",selected_end_date.strftime("%Y/%m/%d"));
 
    # Build the cam ids dd
-   template = template.replace('{CAM_IDS}',get_select(selected_cam_ids,'cams'))
+   #template = template.replace('{CAM_IDS}',get_select(selected_cam_ids,'cams'))
 
    # Build the period
    template = template.replace('{PERIODS}',get_select(selected_period,'periods'))
