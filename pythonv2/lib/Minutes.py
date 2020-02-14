@@ -68,6 +68,8 @@ def get_minute_index_res(selected_start_date, selected_end_date,selected_period,
 def get_cam_res(res,cam_id,cur_index):
    for r in res:
       if(r['cam']==cam_id):
+         print(r)
+         print("<br>")
          return r['links'][cur_index]
    return False
 
