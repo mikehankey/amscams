@@ -17,12 +17,105 @@
 import time
 import cv2
 from datetime import datetime
-from lib.FileIO import load_json_file, save_json_file, cfe
+import sys
 import os
+import glob
+
+from lib.FileIO import load_json_file, save_json_file, cfe
+
 
 json_conf = load_json_file("../conf/as6.json")
 station_id = json_conf['site']['ams_id']
 
+def build_all_stations():
+   """ This function creates the master station index
+   """
+   all_stations_file = "../conf/all_stations.json"
+   all_station_data = []
+   if cfe(all_stations_file) == 0:
+      all_stations = []
+      station_dirs = glob.glob("/mnt/wasabi/AMS*")
+      for sd in station_dirs:
+
+         station = sd.split("/")[-1]
+         all_stations.append(station)
+         data = {}
+         data['station'] = station
+         conf_file = "/mnt/wasabi/" + station + "/CAL/as6.json"
+
+         jsd = load_json_file(conf_file)
+         if jsd == 0:
+            print("CONF FILE MISSING:", conf_file)
+         else:
+            data['location'] = [jsd['site']['device_lat'], jsd['site']['device_lng'], jsd['site']['device_alt']]
+   else:
+      all_stations = load_json_file(all_stations_file)
+      all_station_data.append(data)
+   save_json_file(all_stations_file, all_station_data)
+   print(all_stations_file)
+   exit()
+
+def update_live_html():
+   """ This function will only be runby a manager's node. 
+       The purpose is to update the HTML and json indexes for the live view
+   """
+   now = datetime. now()
+   day = now.strftime("%m_%d")
+   year = now.strftime("%Y")
+
+   all_stations_file = "../conf/all_stations.json" 
+   if cfe(all_stations_file) == 0:
+      build_all_stations()
+   else:
+      all_stations = load_json_file(all_stations_file)
+
+   all_station_data = []
+   for station in all_stations:
+      data = {} 
+      data['station'] = station 
+      data['files'] = []
+      NOAA_DIR =  "/mnt/wasabi/" + station + "/NOAA/ARCHIVE/" + year + "/" + day + "/" 
+      if cfe(NOAA_DIR, 1) == 0:
+        
+         os.makedirs(NOAA_DIR)
+      day_index = NOAA_DIR + day + "_index.json"
+      if cfe(day_index) == 0 or True:
+         live_files = glob.glob(NOAA_DIR + "*.jpg")
+         for file in live_files:
+            print("ADDING FILES FOR : ", station, file)
+            data['files'].append(file)
+      all_station_data.append(data)
+
+   live_now = "" 
+   for data in all_station_data:
+      station = data['station']
+      files = sorted(data['files'], reverse=True)
+      data['files'] = files
+      if len(files) > 0:
+         fn = files[0].split("/")[-1]
+         file_index = files[0].replace(fn, "")
+         file_index = file_index.replace("mnt/wasabi", "meteor_archive")
+         live_now +=  "<a href=" + file_index + "><img src=" + files[0].replace("mnt/wasabi", "meteor_archive") + "></a><BR>\n"
+    
+      NOAA_DIR =  "/mnt/wasabi/" + station + "/NOAA/ARCHIVE/" + year + "/" + day + "/" 
+      day_index = NOAA_DIR + day + "_index.json"
+      print(day_index)
+      save_json_file(day_index, data)
+
+   MAIN_NOAA_DIR = "/mnt/wasabi/NOAA/LIVE/" + year + "/" 
+   asd_file = "/mnt/wasabi/NOAA/LIVE/" + year + "/" + day + "_index.json"
+   asd_html = "/mnt/wasabi/NOAA/LIVE/" + year + "/index.html"
+   if cfe(MAIN_NOAA_DIR, 1) == 0:
+      os.makedirs(MAIN_NOAA_DIR)
+   save_json_file(asd_file, all_station_data)
+   out = open(asd_html, "w")
+   out.write(live_now)
+   out.close()
+ 
+   
+   print(asd_html)
+
+   
 
 
 def update_live_view():
@@ -55,7 +148,7 @@ def update_live_view():
       tmp_list.append(outfile)
 
 
-      cmd = "ffmpeg -y -i '" + url +  "' -vframes 1 -vf scale=320:180 " + outfile 
+      cmd = "/usr/bin/ffmpeg -y -i '" + url +  "' -vframes 1 -vf scale=320:180 " + outfile 
       os.system(cmd)
 
    outwild = MY_NOAA_DIR + time_file + "_0*.jpg"
@@ -96,5 +189,8 @@ def update_live_view():
    os.system("cp " + out_allout + " " + was_out  )
    print(was_out)
 
-
-update_live_view()
+if len(sys.argv) <= 1:
+   update_live_view()
+else:
+   if sys.argv[1] == 'update_live_html' or sys.argv[1] == 'ulh':
+      update_live_html()
