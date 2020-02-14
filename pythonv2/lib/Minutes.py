@@ -71,8 +71,8 @@ def get_cam_res(res,cam_id,cur_index):
       if(r['cam']==cam_id):
          try:
             return r['links'][cur_index]
-         return 
-            False
+         except:
+            return False
    return False
 
 # Create HTML version of the results
