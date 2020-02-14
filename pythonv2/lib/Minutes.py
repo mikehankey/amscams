@@ -56,12 +56,12 @@ def get_minute_index_res(selected_start_date, selected_end_date,selected_period,
       date = datetime.strptime(date,"%Y/%m/%d") 
   
       # Res per cams
-      res = {}
+      res = []
       for cam in json_data['cams']: 
          links = []
          for _min in cam['min']:
             links.append(get_min_details(cam['cam'],str(date.year),str(date.month).zfill(2),str(date.day).zfill(2),_min))
-         res[cam['cam']] = links
+         res.append({"cam":cam['cam'],"links":links)
       
       print(res) 
       
