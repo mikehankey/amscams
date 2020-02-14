@@ -100,6 +100,7 @@ def create_minute_html_res(res,cam_ids,year,month,day):
       if(how_many_false==len(cam_ids)):
          break;    
 
+      cur_index+=1
    
    return toReturn
 
