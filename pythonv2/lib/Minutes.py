@@ -44,8 +44,7 @@ def get_minute_index_res(selected_start_date, selected_end_date,selected_period,
    # for the END DATE
    cur_date = selected_end_date
    json_index =  get_daily_index(cur_date.day,cur_date.month,cur_date.year)
- 
-   how_many_cams = len(selected_cam_ids)
+  
    res = []
  
    
@@ -64,9 +63,25 @@ def get_minute_index_res(selected_start_date, selected_end_date,selected_period,
       cur_date = cur_date - timedelta(1)
       json_index =  get_daily_index(cur_date.day,cur_date.month,cur_date.year) 
 
-   #get_min_details(cam['cam'],str(date.year),str(date.month).zfill(2),str(date.day).zfill(2),_min)
-   print(res)
+   
+   return res
 
+
+# Create HTML version of the results
+def create_minute_html_res(res,cam_ids):
+   how_many_cams = len(cam_ids)
+   cam_ids = sorted(cam_ids)
+
+   
+   toReturn = "<div class='gallery gal-resize row text-center text-lg-left mb-5 mr-5 ml-5'>"
+
+   # First line: all the cams_ids
+   for cam_id in cam_ids:
+      toReturn = "<div>" + str(cam_id) + "<div>" 
+
+   toReturn = "<div class='d-flex align-content-start flex-wrap'>" + toReturn + "</div>"
+
+   return toReturn
 
 # Generate Browse Minute page
 def browse_minute(form):
@@ -115,6 +130,10 @@ def browse_minute(form):
    # Retrieve the results
    res = get_minute_index_res(selected_start_date, selected_end_date,selected_period,selected_cam_ids)
 
+   # Create HTML results
+   res = create_minute_html_res(res,selected_cam_ids)
+
+   print(res)
    # Display Template
-   print(template)
+   #print(template)
 
