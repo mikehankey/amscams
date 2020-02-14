@@ -77,7 +77,7 @@ function minute_anim(cam_id) {
       return false;
   }
 
-  timePerStack = 20000; //animationStackDuration / totalStacks;
+  timePerStack = 1000; //animationStackDuration / totalStacks;
   stackNumber = 0; 
   stackplaying = true;
   requestAnimationFrame(step_minute);
