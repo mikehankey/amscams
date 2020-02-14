@@ -69,8 +69,6 @@ def get_minute_index_res(selected_start_date, selected_end_date,selected_period,
 def get_cam_res(res,cam_id,cur_index):
    for r in res:
       if(r['cam']==cam_id):
-         print(r)
-         print("<br>")
          return r['links'][cur_index]
    return False
 
@@ -88,6 +86,7 @@ def create_minute_html_res(res,cam_ids,year,month,day):
 
    # The other lines: the detection per cam
    cur_index = 0
+   how_many_false = 0
    for cam_id in cam_ids:
       # Search the proper cam res
       cam_res = get_cam_res(res,cam_id,cur_index)
@@ -95,12 +94,13 @@ def create_minute_html_res(res,cam_ids,year,month,day):
       if(cam_res is not False):
          t = get_min_details(cam_id,year,month,day,cam_res)
          print(t)
-      sys.exit(0)
-      #if(cam_res==False):
+      else:
+         how_many_false+=1
 
+      if(how_many_false==len(cam_ids)):
+         break;    
 
-
-    
+   
    return toReturn
 
 # Generate Browse Minute page
