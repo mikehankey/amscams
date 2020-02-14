@@ -76,11 +76,14 @@ def get_daily_index(day,month,year):
       return  None
 
 # Create index for a given year
-def create_json_index_minute_day(day,month, year):
+def create_json_index_minute_day(day,month,year):
 
    # Main dir to glob
    main_dir = MINUTE_FOLDER +  os.sep + str(year) + os.sep + str(month).zfill(2) + '_' + str(day).zfill(2) + os.sep + IMAGES_MINUTE_FOLDER
    cam_ids = get_the_cam_ids(); 
+
+   print("CAM IDS ")
+   print(cam_ids)
 
    all_minutes = []
    for camid in cam_ids:
