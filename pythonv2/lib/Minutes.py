@@ -54,8 +54,12 @@ def get_minute_index_res(selected_start_date, selected_end_date,selected_period,
   
       for cam in json_data['cams']: 
          links = []
+         print(cam)
+         print("<br>")
          for _min in cam['min']:
             links.append(_min)
+            print("=>")
+            print(_min)
          res.append({"cam":cam['cam'],"links":links})
        
       cur_date = cur_date - timedelta(1)
