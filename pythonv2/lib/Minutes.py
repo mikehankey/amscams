@@ -99,7 +99,7 @@ def create_minute_html_res(res,cam_ids,year,month,day):
 
          if(cam_res is not False):
             t = get_min_details(cam_id,year,month,day,cam_res)
-            toReturn += "<div><img src='"+t+"' class='img-fluig cam_"+str(cam_id)+"'/>"+cam_res+"</div>"
+            toReturn += "<div><img src='"+t+"' class='img-fluid cam_"+str(cam_id)+"'/>"+cam_res+"</div>"
          else:
             toReturn += "<div>X</div>"
             how_many_false+=1
