@@ -38,7 +38,7 @@ def get_min_details(cam_id,year,month,day,minute_file):
    return MINUTE_FOLDER +  os.sep + str(year) + os.sep + str(month)+'_'+str(day) + os.sep + IMAGES_MINUTE_FOLDER + os.sep + str(year)+'_'+str(month)+'_'+str(day)+'_'+minute_file.replace(':','_').replace('.','_') + '_' + cam_id + '-' + MINUTE_STACK_EXT + '.png'
 
 # Get Results from the minutes indexes
-def get_minute_index_res(selected_start_date, selected_end_date,selected_period,selected_cam_ids):
+def get_minute_index_res(selected_end_date,selected_period,selected_cam_ids):
    
    # Get the minute index of the selected or current year / month / day
    # for the END DATE
@@ -157,7 +157,7 @@ def browse_minute(form):
    #template = template.replace('{PERIODS}',get_select(selected_period,'periods'))
    
    # Retrieve the results
-   res, day, month, year = get_minute_index_res(selected_start_date, selected_end_date,selected_period,selected_cam_ids)
+   res, day, month, year = get_minute_index_res(selected_end_date,selected_period,selected_cam_ids)
 
 
 
