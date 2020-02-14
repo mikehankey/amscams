@@ -71,16 +71,17 @@ def get_minute_index_res(selected_start_date, selected_end_date,selected_period,
 def create_minute_html_res(res,cam_ids):
    how_many_cams = len(cam_ids)
    cam_ids = sorted(cam_ids)
-
-   
- 
    cam_title = ""
+
    # First line: all the cams_ids
    for cam_id in cam_ids:
       cam_title += "<div>" + str(cam_id) + "</div>" 
 
-   toReturn = "<div class='d-flex justify-content-around'>" + cam_title + "</div>"
- 
+   toReturn = "<div class='d-flex justify-content-around'><b>Cam#" + cam_title + "</b></div>"
+
+   # The other lines: the detection per cam
+   print(res)
+
    return toReturn
 
 # Generate Browse Minute page
