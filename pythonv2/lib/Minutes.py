@@ -83,7 +83,7 @@ def create_minute_html_res(res,cam_ids,year,month,day):
 
    # First line: all the cams_ids
    for cam_id in cam_ids:
-      cam_title += "<div><b>Cam#" + str(cam_id) + "</div>" 
+      cam_title += "<div><b>Cam#" + str(cam_id) + "<b></div>" 
 
    toReturn = "<div class='d-flex justify-content-around'>"+ cam_title + "</div>"
 
@@ -99,9 +99,9 @@ def create_minute_html_res(res,cam_ids,year,month,day):
 
          if(cam_res is not False):
             t = get_min_details(cam_id,year,month,day,cam_res)
-            toReturn += "<div><img src='"+t+"'/><div>"
+            toReturn += "<div><img src='"+t+"'/></div>"
          else:
-            toReturn += "<div>X<div>"
+            toReturn += "<div>X</div>"
             how_many_false+=1
 
          if(how_many_false==len(cam_ids)):
