@@ -161,7 +161,11 @@ def browse_minute(form):
    res, day, month, year = get_minute_index_res(selected_end_date,selected_cam_ids)
  
    # Create HTML results
-   res = create_minute_html_res(res,selected_cam_ids,year,str(month).zfill(2),str(day).zfill(2))
+   if(len(res)>0):
+      res = create_minute_html_res(res,selected_cam_ids,year,str(month).zfill(2),str(day).zfill(2))
+   else:
+      res = "<div class='alert alert-danger'>No minute stacks found for " + selected_end_date + '<div>'
+   
    template = template.replace('{RES}',res)
    
    # Display Template
