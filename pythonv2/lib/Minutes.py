@@ -44,27 +44,25 @@ def get_minute_index_res(selected_end_date,selected_cam_ids):
    # for the END DATE
    cur_date = selected_end_date
    json_index =  get_daily_index(cur_date.day,cur_date.month,cur_date.year)
-
-   print(json_index)
-   sys.exit(0)
-  
    res = [] 
-   #while(json_index is not None and cur_date>=selected_start_date):
-   
-   json_data = load_json_file(json_index)
-   date = json_data['date'] # Format Y/M/D
-   date = datetime.strptime(date,"%Y/%m/%d") 
-
-   for cam in json_data['cams']: 
-      links = []
-    
-      for _min in cam['min']:
-         links.append(_min) 
-      res.append({"cam":cam['cam'],"links":links})
+   if(json_index is not None):
+  
+      #while(json_index is not None and cur_date>=selected_start_date):
       
-   #cur_date = cur_date - timedelta(1)
-   json_index =  get_daily_index(cur_date.day,cur_date.month,cur_date.year) 
- 
+      json_data = load_json_file(json_index)
+      date = json_data['date'] # Format Y/M/D
+      date = datetime.strptime(date,"%Y/%m/%d") 
+
+      for cam in json_data['cams']: 
+         links = []
+      
+         for _min in cam['min']:
+            links.append(_min) 
+         res.append({"cam":cam['cam'],"links":links})
+         
+      #cur_date = cur_date - timedelta(1)
+      json_index =  get_daily_index(cur_date.day,cur_date.month,cur_date.year) 
+   
    return res,cur_date.day,cur_date.month,cur_date.year
 
 
@@ -134,9 +132,9 @@ def browse_minute(form):
 
    # Default dates 
    if (selected_end_date is None): 
-      selected_end_date   = datetime.now() - timedelta(days=1)
+      selected_end_date = datetime.now() - timedelta(days=1)
    else:
-      selected_end_date  = datetime.strptime(selected_end_date,"%Y/%m/%d") 
+      selected_end_date = datetime.strptime(selected_end_date,"%Y/%m/%d") 
    
    # CAM IDS
    if(selected_cam_ids is not None):
@@ -161,9 +159,7 @@ def browse_minute(form):
    
    # Retrieve the results
    res, day, month, year = get_minute_index_res(selected_end_date,selected_cam_ids)
-
-
-
+ 
    # Create HTML results
    res = create_minute_html_res(res,selected_cam_ids,year,str(month).zfill(2),str(day).zfill(2))
    template = template.replace('{RES}',res)
