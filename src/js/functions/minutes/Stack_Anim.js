@@ -23,15 +23,14 @@ function addAnimMinuteModalTemplate($allstacks) {
        $(this).clone().attr('style','').addClass('to_anim to_anim-'+i).appendTo('#anim_holder');
    });
 
-   animationStackDuration = $allstacks.length; // Duration get the 
+   animationStackDuration = 1000; //$allstacks.length; // Duration get the 
 }
 
 
 // 'step' function will be called each time browser rerender the content
 // we achieve that by passing 'step' as a parameter to 'requestAnimationFrame' function
 function step_minute(startTime) {
- 
- 
+  
    // 'startTime' is provided by requestAnimationName function, and we can consider it as current time
    // first of all we calculate how much time has passed from the last time when frame was update
    if (!timeWhenLastUpdateStack) timeWhenLastUpdateStack = startTime;
