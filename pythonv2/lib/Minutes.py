@@ -134,7 +134,7 @@ def browse_minute(form):
    if (selected_end_date is None): 
       selected_end_date = datetime.now() - timedelta(days=1)
    else:
-      selected_end_date = datetime.strptime(selected_end_date,"%Y/%m/%d") 
+      selected_end_date = datetime.strptime(selected_end_date,"%Y_%m_%d") 
    
    # CAM IDS
    if(selected_cam_ids is not None):
@@ -164,7 +164,7 @@ def browse_minute(form):
    if(len(res)>0):
       res = create_minute_html_res(res,selected_cam_ids,year,str(month).zfill(2),str(day).zfill(2))
    else:
-      res = "<div class='alert alert-danger'>No minute stacks found for " + selected_end_date.strftime("%Y/%m/%d") + '.<div>'
+      res = "<div class='alert alert-danger'>No minute stacks found for " + selected_end_date.strftime("%Y/%m/%d") + '.</div>'
    
    template = template.replace('{RES}',res)
    
