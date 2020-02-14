@@ -68,10 +68,10 @@ def get_minute_index_res(selected_start_date, selected_end_date,selected_period,
 
 
 # Get Cam Res from JSON
-def get_cam_res(res,cam_id):
+def get_cam_res(res,cam_id,cur_index):
    for r in res:
       if(r['cam']==cam_id):
-         return r
+         return r['links'][cur_index]
    return False
 
 # Create HTML version of the results
@@ -82,17 +82,19 @@ def create_minute_html_res(res,cam_ids):
 
    # First line: all the cams_ids
    for cam_id in cam_ids:
-      cam_title += "<div>" + str(cam_id) + "</div>" 
+      cam_title += "<div><b>Cam# + str(cam_id) + "</div>" 
 
-   toReturn = "<div class='d-flex justify-content-around'><b>Cam#" + cam_title + "</b></div>"
+   toReturn = "<div class='d-flex justify-content-around'>"+ cam_title + "</div>"
 
    # The other lines: the detection per cam
    cur_index = 0
    for cam_id in cam_ids:
       # Search the proper cam res
-      cam_res = get_cam_res(res,cam_id)
+      cam_res = get_cam_res(res,cam_id,cur_index)
       print(cam_res)
       sys.exit(0)
+      if(cam_res==False):
+
 
 
    for r in res:
