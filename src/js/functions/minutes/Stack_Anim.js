@@ -1,5 +1,14 @@
+var $allstacks;
+var totalStacks;
+var animationStackDuration;
+var timePerStack;
+var timeWhenLastUpdateStack;
+var timeFromLastUpdateStack;
+var stackNumber; 
+var stackplaying; 
+
 // Modal With Player
-function addAnimMinuteModalTemplate($allframes) {
+function addAnimMinuteModalTemplate($allstacks) {
  
    $('#anim_min_modal').remove();
 
@@ -10,11 +19,11 @@ function addAnimMinuteModalTemplate($allframes) {
    <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button></div></div></div></div>').appendTo('body');
    
    // Add all the frames
-   $allframes.each(function(i,v) {
+   $allstacks.each(function(i,v) {
        $(this).clone().attr('style','').addClass('to_anim to_anim-'+i).appendTo('#anim_holder');
    });
 
-   animationDuration = $allframes.lenth / 25; // Duration get the 
+   animationStackDuration = $allstacks.lenth / 25; // Duration get the 
    
 }
 
@@ -25,40 +34,40 @@ function step_minute(startTime) {
  
    // 'startTime' is provided by requestAnimationName function, and we can consider it as current time
    // first of all we calculate how much time has passed from the last time when frame was update
-   if (!timeWhenLastUpdate) timeWhenLastUpdate = startTime;
-   timeFromLastUpdate = startTime - timeWhenLastUpdate;
+   if (!timeWhenLastUpdateStack) timeWhenLastUpdateStack = startTime;
+   timeFromLastUpdateStack = startTime - timeWhenLastUpdateStack;
  
    // then we check if it is time to update the frame
-   if (timeFromLastUpdate > timePerFrame) {
+   if (timeFromLastUpdateStack > timePerStack) {
      
      $('.to_anim').css('opacity', 0); 
-     $(`.to_anim-${frameNumber}`).css('opacity', 1);  
-     timeWhenLastUpdate = startTime;
+     $(`.to_anim-${stackNumber}`).css('opacity', 1);  
+     timeWhenLastUpdateStack = startTime;
   
-     if (frameNumber >= totalFrames-1) {
-       frameNumber = 0;
+     if (stackNumber >= totalStacks-1) {
+       stackNumber = 0;
      } else {
-       frameNumber = frameNumber + 1;
+       stackNumber = stackNumber + 1;
      }        
  
-     $('#cur_f').text($(`.to_anim-${frameNumber}`).attr('data-rel'));
-     //console.log("FN" + frameNumber);
+     $('#cur_f').text($(`.to_anim-${stackNumber}`).attr('data-rel'));
+     //console.log("FN" + stackNumber);
    }
  
-   if(playing) requestAnimationFrame(step_minute);
+   if(stackplaying) requestAnimationFrame(step_minute);
  }
 
 function minute_anim(cam_id) {
-   $allframes = $('.cam_'+cam_id);
-   totalFrames = $allframes.length;
-   addAnimMinuteModalTemplate($allframes);
+   $allstacks = $('.cam_'+cam_id);
+   totalStacks = $allstacks.length;
+   addAnimMinuteModalTemplate($allstacks);
    $('#anim_min_modal').modal();
    $('#anim_min_modal').on('hidden.bs.modal', function () {
-        playing = false; 
+        stackplaying = false; 
         $('#anim_min_modal').remove(); 
    })
 
-   if(totalFrames==0) {
+   if(totalStacks==0) {
       bootbox.alert({
           message: "No stack found. Error 452b",
           className: 'rubberBand animated error',
@@ -67,9 +76,9 @@ function minute_anim(cam_id) {
       return false;
   }
 
-  timePerFrame = animationDuration / totalFrames;
-  frameNumber = 0; 
-  playing = true;
+  timePerStack = animationStackDuration / totalStacks;
+  stackNumber = 0; 
+  stackplaying = true;
 
   // Inpur range for animation speed
   $('#mar').val(0).on('input', function () { 
@@ -77,11 +86,11 @@ function minute_anim(cam_id) {
 
    if(val<=-1)   { 
        val-= 1; 
-       timePerFrame = animationDuration*Math.abs(val) / totalFrames; 
+       timePerStack = animationStackDuration*Math.abs(val) / totalStacks; 
        //$('#cur_sp').text('x'+val);
    } else if(val>=1) { 
        val+= 1;
-       timePerFrame = animationDuration*1/Math.abs(val) / totalFrames; 
+       timePerStack = animationStackDuration*1/Math.abs(val) / totalStacks; 
        //$('#cur_sp').text('x'+val);
    }
    else { 
@@ -97,7 +106,7 @@ function minute_anim(cam_id) {
 
 $(function() {
     $('.play_anim_thumb').click(function() {
-       playing = true;
+       stackplaying = true;
        minute_anim($(this).attr('data-rel'));
     });  
 })
