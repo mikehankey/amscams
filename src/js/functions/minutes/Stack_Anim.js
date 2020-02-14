@@ -24,8 +24,6 @@ function addAnimMinuteModalTemplate($allstacks) {
    });
 
    animationStackDuration = $allstacks.lenth / 25; // Duration get the 
-   animationStackDuration = 100;
-   
 }
 
 
@@ -60,6 +58,7 @@ function step_minute(startTime) {
 
 function minute_anim(cam_id) {
    $allstacks = $('.cam_'+cam_id);
+   $allstacks = $allstacks.reverse();
    totalStacks = $allstacks.length;
    addAnimMinuteModalTemplate($allstacks);
    $('#anim_min_modal').modal();
