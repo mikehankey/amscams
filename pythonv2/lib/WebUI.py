@@ -2689,14 +2689,6 @@ def main_page(json_conf,form):
    real_detections_to_display = []
    
 
-   for idx, day in enumerate(detections): 
-      print(day)
-      print("<br>")
-      day_cur_date = datetime.strptime(day,"%Y_%m_%d")
-      print(day_cur_date)
-      print('<br>*****************<br>')
-   sys.exit(0)
-
    # Need a fist loop to cleanup (big waist of time & resources here)
    for idx, day in enumerate(detections): 
          
@@ -2709,14 +2701,18 @@ def main_page(json_conf,form):
       day_str = day
       day_dir = json_conf['site']['proc_dir'] + day + "/" 
 
-      # Use to compare with end
-      day_cur_date = datetime.strptime(day_str,"%Y_%m_%d")
-     
-      if "meteor" not in day_dir and "daytime" not in day_dir and "json" not in day_dir and "trash" not in day_dir:
-         real_detections.append(day) 
+      try:
+         # Use to compare with end
+         day_cur_date = datetime.strptime(day_str,"%Y_%m_%d")
+      
+         if "meteor" not in day_dir and "daytime" not in day_dir and "json" not in day_dir and "trash" not in day_dir:
+            real_detections.append(day) 
 
-         if(end_day_date >= day_cur_date):
-               real_detections_to_display.append(day)
+            if(end_day_date >= day_cur_date):
+                  real_detections_to_display.append(day)
+      except:
+         # The day_str is not a day (but a year for instance)
+         x=0
   
    all_real_detections = real_detections
 
