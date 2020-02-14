@@ -110,7 +110,7 @@ $(function() {
     $('.play_anim_thumb').click(function() {
        stackplaying = true;
        minute_anim($(this).attr('data-rel'));
-       $('.to_anim').css({'width':'683px','height':'395px';})
+       $('.to_anim').css({'width':'683px','height':'395px'});
     });  
 })
 
