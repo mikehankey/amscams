@@ -40,8 +40,7 @@ def get_minute_index_res(selected_start_date, selected_end_date,selected_period,
    json_index =  get_daily_index(cur_date.day,cur_date.month,cur_date.year)
  
    how_many_cams = len(selected_cam_ids)
- 
-   res = {'date':''} 
+  
 
    while(json_index is not None and cur_date>=selected_start_date):
    
@@ -89,7 +88,7 @@ def browse_minute(form):
    
    # CAM IDS
    if(selected_cam_ids is not None):
-      selected_cam_ids = selected_cam_ids.split(',')
+      selected_cam_ids = sorted(selected_cam_ids.split(','))  # Sorted for a best view on the page
    else:
       selected_cam_ids = get_the_cam_ids() # ALL BY DEFAULT
 
