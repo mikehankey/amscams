@@ -39,12 +39,15 @@ def get_minute_index_res(selected_start_date, selected_end_date,selected_period,
    cur_date = selected_end_date
    json_index =  get_daily_index(cur_date.day,cur_date.month,cur_date.year)
  
-
-   res = []
+   res = {}
 
    while(json_index is not None and cur_date>=selected_start_date):
    
       json_data = load_json_file(json_index)
+
+      # Get day/month/year from json*
+      res.date = json_data['day'] + '/' + json_data['month']  + '/' + json_data['year']
+
 
       print(json_data)
       sys.exit(0)
