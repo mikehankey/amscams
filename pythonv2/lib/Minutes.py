@@ -83,7 +83,7 @@ def create_minute_html_res(res,cam_ids,year,month,day):
 
    # First line: all the cams_ids
    for cam_id in cam_ids:
-      cam_title += "<div style='width:100%'><h2 style='margin-right:1rem'>Cam#" + str(cam_id) + " <button class='btn btn-primary play_anim_thumb' data-rel='"+ str(cam_id) +"'><span class='icon-youtube'></span></button></h2></div>" 
+      cam_title += "<div style='width:100%'><h2 style='margin-right:1rem'>Cam#" + str(cam_id) + " <button style='padding: .2rem .5rem;float: right;' class='btn btn-primary play_anim_thumb' data-rel='"+ str(cam_id) +"'><span class='icon-youtube'></span></button></h2></div>" 
 
 
 
