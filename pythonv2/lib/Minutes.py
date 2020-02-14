@@ -88,6 +88,11 @@ def create_minute_html_res(res,cam_ids,year,month,day):
    for cam_id in cam_ids:
       # Search the proper cam res
       cam_res = get_cam_res(res,cam_id,cur_index)
+
+      print("CAM RES FOR " + str(cam_id) + "<br>")
+      print(cam_res)
+      sys.exit(0)
+
       if(cam_res is not False):
          t = get_min_details(cam_id,year,month,day,cam_res)
          print(t)
