@@ -52,7 +52,7 @@ def get_minute_index_res(selected_start_date, selected_end_date,selected_period,
       #sys.exit(0)
 
       for data in json_data:
-         print(data['cams'])
+         print(data)
          print("<br><br>")
          sys.exit(0)
          #if(data['cam']['id'] in selected_cam_ids):
