@@ -23,7 +23,7 @@ function addAnimMinuteModalTemplate($allstacks) {
        $(this).clone().attr('style','').addClass('to_anim to_anim-'+i).appendTo('#anim_holder');
    });
 
-   animationStackDuration = $allstacks.length * 25; // Duration get the 
+   animationStackDuration = $allstacks.length; // Duration get the 
 }
 
 
