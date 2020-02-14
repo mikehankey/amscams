@@ -93,17 +93,11 @@ def create_minute_html_res(res,cam_ids):
       cam_res = get_cam_res(res,cam_id,cur_index)
       print(cam_res)
       sys.exit(0)
-      if(cam_res==False):
+      #if(cam_res==False):
 
 
 
-   for r in res:
-
-      # we res['cam']= cam_id
-
-      print(r)
-      print("<br>****************<br/>")
-
+    
    return toReturn
 
 # Generate Browse Minute page
