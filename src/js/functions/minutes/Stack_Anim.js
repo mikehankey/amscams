@@ -45,7 +45,7 @@ function step_minute(startTime) {
      //console.log("FN" + frameNumber);
    }
  
-   if(playing) requestAnimationFrame(step_frame);
+   if(playing) requestAnimationFrame(step_minute);
  }
 
 function minute_anim(cam_id) {
@@ -57,6 +57,42 @@ function minute_anim(cam_id) {
         playing = false; 
         $('#anim_min_modal').remove(); 
    })
+
+   if(totalFrames==0) {
+      bootbox.alert({
+          message: "No stack found. Error 452b",
+          className: 'rubberBand animated error',
+          centerVertical: true
+      });
+      return false;
+  }
+
+  timePerFrame = animationDuration / totalFrames;
+  frameNumber = 0; 
+  playing = true;
+
+  // Inpur range for animation speed
+  $('#mar').val(0).on('input', function () { 
+   var val = parseInt($(this).val());
+
+   if(val<=-1)   { 
+       val-= 1; 
+       timePerFrame = animationDuration*Math.abs(val) / totalFrames; 
+       //$('#cur_sp').text('x'+val);
+   } else if(val>=1) { 
+       val+= 1;
+       timePerFrame = animationDuration*1/Math.abs(val) / totalFrames; 
+       //$('#cur_sp').text('x'+val);
+   }
+   else { 
+       val=1;
+       //$('#cur_sp').text('x1');
+   } 
+   
+});  
+
+   
+  
 }
 
 $(function() {
