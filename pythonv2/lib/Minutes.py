@@ -165,8 +165,8 @@ def browse_minute(form):
 
    # Create HTML results
    res = create_minute_html_res(res,selected_cam_ids,year,str(month).zfill(2),str(day).zfill(2))
-
-   print(res)
+   template = template.replace('{RES}',res)
+   
    # Display Template
-   #print(template)
+   print(template)
 
