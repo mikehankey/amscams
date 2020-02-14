@@ -58,6 +58,8 @@ def get_minute_index_res(selected_start_date, selected_end_date,selected_period,
 
       # Res per cams
       for cam in json_data['cams']:
+         print(cam['cam'])
+         print("<br>")
          for _min in cam['min']:
             print(_min)
             #print(get_min_details(cam,str(date.year),str(date.month).zfill(2),str(date.day).zfill(2),_min))
