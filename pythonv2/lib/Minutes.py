@@ -46,24 +46,24 @@ def get_minute_index_res(selected_start_date, selected_end_date,selected_period,
    json_index =  get_daily_index(cur_date.day,cur_date.month,cur_date.year)
   
    res = [] 
-   while(json_index is not None and cur_date>=selected_start_date):
+   #while(json_index is not None and cur_date>=selected_start_date):
    
-      json_data = load_json_file(json_index)
-      date = json_data['date'] # Format Y/M/D
-      date = datetime.strptime(date,"%Y/%m/%d") 
-  
-      for cam in json_data['cams']: 
-         links = []
-         print(cam)
-         print("<br>")
-         for _min in cam['min']:
-            links.append(_min)
-            print("=>")
-            print(_min)
-         res.append({"cam":cam['cam'],"links":links})
-       
-      cur_date = cur_date - timedelta(1)
-      json_index =  get_daily_index(cur_date.day,cur_date.month,cur_date.year) 
+   json_data = load_json_file(json_index)
+   date = json_data['date'] # Format Y/M/D
+   date = datetime.strptime(date,"%Y/%m/%d") 
+
+   for cam in json_data['cams']: 
+      links = []
+      print(cam)
+      print("<br>")
+      for _min in cam['min']:
+         links.append(_min)
+         print("=>")
+         print(_min)
+      res.append({"cam":cam['cam'],"links":links})
+      
+   cur_date = cur_date - timedelta(1)
+   json_index =  get_daily_index(cur_date.day,cur_date.month,cur_date.year) 
  
    return res,cur_date.day,cur_date.month,cur_date.year
 
