@@ -51,6 +51,9 @@ def get_minute_index_res(selected_start_date, selected_end_date,selected_period,
       #print(str(how_many_cams) + " CAMS SELECTED") 
       #sys.exit(0)
 
+      print(json_date['cams'])
+      sys.exit(0)
+      
       for data in json_data:
          print(data)
          print("<br><br>")
