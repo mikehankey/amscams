@@ -80,7 +80,9 @@ def create_minute_html_res(res,cam_ids):
    toReturn = "<div class='d-flex justify-content-around'><b>Cam#" + cam_title + "</b></div>"
 
    # The other lines: the detection per cam
-   print(res)
+   for r in res:
+      print(r)
+      print("<br>****************<br/>")
 
    return toReturn
 
