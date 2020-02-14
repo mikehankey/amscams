@@ -98,7 +98,7 @@ def create_minute_html_res(res,cam_ids,year,month,day):
    
          if(cam_res is not False):
             t = get_min_details(cam_id,year,month,day,cam_res)
-            toReturn += "<div><img src='"+t'"/><div>"
+            toReturn += "<div><img src='"+t+"'/><div>"
          else:
             how_many_false+=1
 
