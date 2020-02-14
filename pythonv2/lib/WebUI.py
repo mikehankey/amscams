@@ -2688,6 +2688,10 @@ def main_page(json_conf,form):
    real_detections = []
    real_detections_to_display = []
 
+
+   print(detections)
+   sys.exit(0)
+
    # Need a fist loop to cleanup (big waist of time & resources here)
    for idx, day in enumerate(detections): 
          
