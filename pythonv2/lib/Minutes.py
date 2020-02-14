@@ -59,7 +59,7 @@ def get_minute_index_res(selected_start_date, selected_end_date,selected_period,
          links.append(_min) 
       res.append({"cam":cam['cam'],"links":links})
       
-   cur_date = cur_date - timedelta(1)
+   #cur_date = cur_date - timedelta(1)
    json_index =  get_daily_index(cur_date.day,cur_date.month,cur_date.year) 
  
    return res,cur_date.day,cur_date.month,cur_date.year
@@ -149,6 +149,8 @@ def browse_minute(form):
    
    # Retrieve the results
    res, day, month, year = get_minute_index_res(selected_start_date, selected_end_date,selected_period,selected_cam_ids)
+
+
 
    # Create HTML results
    res = create_minute_html_res(res,selected_cam_ids,year,str(month).zfill(2),str(day).zfill(2))
