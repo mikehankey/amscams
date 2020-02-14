@@ -147,14 +147,14 @@ def browse_minute(form):
    #else:
    #   selected_period = PERIODS[0] # See PERIODS 
  
-   # Build the period picker 
+   # Build the date picker 
    template = template.replace("{END_DATE}",selected_end_date.strftime("%Y/%m/%d"));
 
    # Build the cam ids dd
-   #template = template.replace('{CAM_IDS}',get_select(selected_cam_ids,'cams'))
+   template = template.replace('{CAM_IDS}',get_select(selected_cam_ids,'cams'))
 
    # Build the period
-   template = template.replace('{PERIODS}',get_select(selected_period,'periods'))
+   #template = template.replace('{PERIODS}',get_select(selected_period,'periods'))
    
    # Retrieve the results
    res, day, month, year = get_minute_index_res(selected_start_date, selected_end_date,selected_period,selected_cam_ids)
