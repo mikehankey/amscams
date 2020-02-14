@@ -54,12 +54,9 @@ def get_minute_index_res(selected_start_date, selected_end_date,selected_period,
 
    for cam in json_data['cams']: 
       links = []
-      print(cam)
-      print("<br>")
+    
       for _min in cam['min']:
-         links.append(_min)
-         print("=>")
-         print(_min)
+         links.append(_min) 
       res.append({"cam":cam['cam'],"links":links})
       
    cur_date = cur_date - timedelta(1)
@@ -94,11 +91,7 @@ def create_minute_html_res(res,cam_ids,year,month,day):
    for cam_id in cam_ids:
       # Search the proper cam res
       cam_res = get_cam_res(res,cam_id,cur_index)
-
-      print("CAM RES FOR " + str(cam_id) + "<br>")
-      print(cam_res)
-      sys.exit(0)
-
+ 
       if(cam_res is not False):
          t = get_min_details(cam_id,year,month,day,cam_res)
          print(t)
