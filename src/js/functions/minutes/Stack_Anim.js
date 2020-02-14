@@ -98,6 +98,7 @@ function minute_anim(cam_id) {
        //$('#cur_sp').text('x1');
    } 
    
+   requestAnimationFrame(step_minute);
 });  
 
    
