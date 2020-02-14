@@ -13,7 +13,7 @@ function addAnimMinuteModalTemplate($allstacks) {
    $('#anim_min_modal').remove();
 
    $('<div id="anim_min_modal" class="modal fade" tabindex="-1" role="dialog"><div class="modal-dialog modal-dialog-centered" role="document">\
-   <div class="modal-content"><div class="modal-body"><div id="anim_header" class="d-flex justify-content-between"><p><b>Frame by frame animation</b></p><p><span id="cur_f"></span>/<span id="tot_f"></span> frames</p></div><div id="anim_holder">\
+   <div class="modal-content"><div class="modal-body"><div id="anim_header" class="d-flex justify-content-between"><p><b>Stack animation</b> Cam#</p><p><span id="cur_f"></span>/<span id="tot_f"></span> frames</p></div><div id="anim_holder">\
    </div><div class="modal-footer d-flex justify-content-between p-0 pb-2 pr-2">\
    <div class="pt-2"><input type="range" value="1" id="marStack" max="5" min="-5"/> <span id="cur_sp"></span></div>\
    <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button></div></div></div></div>').appendTo('body');
@@ -30,6 +30,8 @@ function addAnimMinuteModalTemplate($allstacks) {
 // 'step' function will be called each time browser rerender the content
 // we achieve that by passing 'step' as a parameter to 'requestAnimationFrame' function
 function step_minute(startTime) {
+
+   console.log(startTime);
  
    // 'startTime' is provided by requestAnimationName function, and we can consider it as current time
    // first of all we calculate how much time has passed from the last time when frame was update
