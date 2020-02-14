@@ -73,14 +73,14 @@ def create_minute_html_res(res,cam_ids):
    cam_ids = sorted(cam_ids)
 
    
-   toReturn = "<div class='gallery gal-resize row text-center text-lg-left mb-5 mr-5 ml-5'>"
-
+ 
+   cam_title = ""
    # First line: all the cams_ids
    for cam_id in cam_ids:
-      toReturn = "<div>" + str(cam_id) + "<div>" 
+      cam_title += "<div>" + str(cam_id) + "<div>" 
 
-   toReturn = "<div class='d-flex align-content-start flex-wrap'>" + toReturn + "</div>"
-
+   toReturn = "<div class='d-flex align-content-start flex-wrap'>" + cam_title + "</div>"
+ 
    return toReturn
 
 # Generate Browse Minute page
