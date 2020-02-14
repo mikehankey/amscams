@@ -18,6 +18,36 @@ function addAnimMinuteModalTemplate($allframes) {
    
 }
 
+
+// 'step' function will be called each time browser rerender the content
+// we achieve that by passing 'step' as a parameter to 'requestAnimationFrame' function
+function step_minute(startTime) {
+ 
+   // 'startTime' is provided by requestAnimationName function, and we can consider it as current time
+   // first of all we calculate how much time has passed from the last time when frame was update
+   if (!timeWhenLastUpdate) timeWhenLastUpdate = startTime;
+   timeFromLastUpdate = startTime - timeWhenLastUpdate;
+ 
+   // then we check if it is time to update the frame
+   if (timeFromLastUpdate > timePerFrame) {
+     
+     $('.to_anim').css('opacity', 0); 
+     $(`.to_anim-${frameNumber}`).css('opacity', 1);  
+     timeWhenLastUpdate = startTime;
+  
+     if (frameNumber >= totalFrames-1) {
+       frameNumber = 0;
+     } else {
+       frameNumber = frameNumber + 1;
+     }        
+ 
+     $('#cur_f').text($(`.to_anim-${frameNumber}`).attr('data-rel'));
+     //console.log("FN" + frameNumber);
+   }
+ 
+   if(playing) requestAnimationFrame(step_frame);
+ }
+
 function minute_anim(cam_id) {
    $allframes = $('.cam_'+cam_id);
    totalFrames = $allframes.length;
