@@ -147,7 +147,7 @@ def browse_minute(form):
    res, day, month, year = get_minute_index_res(selected_start_date, selected_end_date,selected_period,selected_cam_ids)
 
    # Create HTML results
-   res = create_minute_html_res(res,selected_cam_ids,year,month.zfill(2),day.zfill(2))
+   res = create_minute_html_res(res,selected_cam_ids,year,str(month).zfill(2),str(day).zfill(2))
 
    print(res)
    # Display Template
