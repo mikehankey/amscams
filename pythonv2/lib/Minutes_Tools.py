@@ -96,7 +96,7 @@ def create_json_index_minute_day(day,month,year):
       all_minutes.append({'cam': camid,'min':cur_stack_data})
 
 
-   return {'station_id':get_station_id(),'date':str(year)+'/'+str(day).zfill(2)+"/"+str(month).zfill(2),'cams':all_minutes}
+   return {'station_id':get_station_id(),'date':str(year)+'/'+str(month).zfill(2)+"/"+str(day).zfill(2),'cams':all_minutes}
 
 # Write index for a given day
 def write_day_minute_index(day, month, year):
