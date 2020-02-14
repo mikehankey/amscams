@@ -31,6 +31,12 @@ def get_select(selected_cam_ids,_type):
    return toReturn
 
 
+
+# Transform the result of a minute_index to get the full path to the stackeds
+# minute_file is actually the hour of the stack (ex: 11:16:26.000) > 2020_01_05_00_00_09_000_010038-stacked-tn.png	
+def get_details(cam_id,year,month,day,minute_file):
+   return str(year)+'_'+str(month)+'_'+str(day)+minute_file.replace(':','_').replace('.','_') + '-' + MINUTE_STACK_EXT + '.png'
+
 # Get Results from the minutes indexes
 def get_minute_index_res(selected_start_date, selected_end_date,selected_period,selected_cam_ids):
    
@@ -46,7 +52,8 @@ def get_minute_index_res(selected_start_date, selected_end_date,selected_period,
    while(json_index is not None and cur_date>=selected_start_date):
    
       json_data = load_json_file(json_index)
-
+      print(json_data)
+      sys.exit(0)
       # Res per cams
       for cam in json_data['cams']:
          print(cam['cam'])
