@@ -79,7 +79,7 @@ def create_minute_html_res(res,cam_ids):
    for cam_id in cam_ids:
       cam_title += "<div>" + str(cam_id) + "</div>" 
 
-   toReturn = "<div class='d-flex align-content-start flex-wrap'>" + cam_title + "</div>"
+   toReturn = "<div class='d-flex justify-content-around'>" + cam_title + "</div>"
  
    return toReturn
 
