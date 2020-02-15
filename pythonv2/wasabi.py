@@ -51,11 +51,17 @@ def cp_msd2wasabi():
       print(cmd)
       os.system(cmd)
 
-def sync_archive():
+def sync_archive(day):
+   if day != "a":
+      extra_day = "/" + day + "/" 
+      extra_day_grep = "| grep " + day 
+   else:
+      extra_day = ""
+      extra_day_grep = ""
    station_id = json_conf['site']['ams_id']
 
    # Sync Detect PREVIEWS 
-   os.system("find /mnt/ams2/meteor_archive/" + station_id + " |grep DETECT | grep PREVIEW  > /mnt/ams2/tmp/arc-prev.txt") 
+   os.system("find /mnt/ams2/meteor_archive/" + station_id + " |grep DETECT | grep PREVIEW  " + extra_day_grep + " > /mnt/ams2/tmp/arc-prev.txt") 
    fp = open("/mnt/ams2/tmp/arc-prev.txt", "r")
    for line in fp:
       line = line.replace("\n", "")
@@ -153,7 +159,8 @@ def connect_wasabi():
    #MOUNT COMMAND
    uid = os.getuid()
    gid = os.getgid()
-   cmd = "s3fs meteor-archive /mnt/wasabi -o passwd_file=/home/ams/amscams/conf/wasabi.txt -o dbglevel=debug -o url=https://s3.wasabisys.com -o umask=0007,uid="+str(uid)+",gid="+str(gid)
+   #cmd = "s3fs archive.allsky.tv /mnt/wasabi -o passwd_file=/home/ams/amscams/conf/wasabi.txt -o dbglevel=debug -o url=https://s3.wasabisys.com -o umask=0007,uid="+str(uid)+",gid="+str(gid)
+   cmd = "s3fs -o use_path_request_style -o url=https://s3.wasabi.com archive.allsky.tv /mnt/archive.allsky.tv -o passwd_file=/home/ams/amscams/conf/wasabi.txt -o dbglevel=debug -o url=https://s3.wasabisys.com -o umask=0007,uid="+str(uid)+",gid="+str(gid)
    print(cmd)
    os.system(cmd)
 
@@ -203,7 +210,7 @@ if sys.argv[1] == "mnt":
 if sys.argv[1] == "cp":
    wasabi_cp(sys.argv[2])
 if sys.argv[1] == "sa":
-   sync_archive()
+   sync_archive(sys.argv[2])
 if sys.argv[1] == "ms2w" or sys.argv[1] == "cp_msd2wasabi":
    cp_msd2wasabi()
 if sys.argv[1] == "cp_msd" or sys.argv[1] == "cp_msd_from_wasabi":
