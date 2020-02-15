@@ -10,5 +10,5 @@ os.system("fusermount -u /mnt/wasabi")
 os.makedirs("/mnt/archive.allsky.tv")
 os.system("chown ams:ams /mnt/archive.allsky.tv")
 os.system("chmod 777 /mnt/archive.allsky.tv")
-os.system("cd /home/ams/amcams/pythonv2; ./wasabi.py mnt")
+os.system("cd /home/ams/amscams/pythonv2; ./wasabi.py mnt")
 
