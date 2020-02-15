@@ -182,11 +182,11 @@ def update_live_view():
       latest_file = get_latest_file(cams_id)
       url = "rtsp://" + ip + sd_url
       outfile = MY_NOAA_DIR + time_file + "_" + cams_id + ".jpg"
-      tmp_list.append(outfile)
+      if latest_file is not None:
+         tmp_list.append(outfile)
 
-
-      cmd = "/usr/bin/ffmpeg -y -i '" + latest_file +  "' -vframes 1 -vf scale=320:180 " + outfile 
-      os.system(cmd)
+         cmd = "/usr/bin/ffmpeg -y -i '" + latest_file +  "' -vframes 1 -vf scale=320:180 " + outfile 
+         os.system(cmd)
 
    outwild = MY_NOAA_DIR + time_file + "_0*.jpg"
    out_allout = MY_NOAA_DIR + time_file + "_all.jpg"
