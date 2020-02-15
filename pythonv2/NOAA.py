@@ -27,6 +27,16 @@ from lib.FileIO import load_json_file, save_json_file, cfe
 json_conf = load_json_file("../conf/as6.json")
 station_id = json_conf['site']['ams_id']
 
+def get_latest_file(cam_id):
+   files = glob.glob("/mnt/ams2/SD/*" + cam_id + "*.mp4")
+   files = sorted(files, reverse=True)
+   for file in files:
+      st = os.stat(file)
+      size = st.st_size
+      if size > 1000:
+         return(file)
+
+
 def build_all_stations():
    """ This function creates the master station index
    """
@@ -167,12 +177,13 @@ def update_live_view():
       ip = json_conf['cameras'][cam]['ip'] 
       sd_url  = json_conf['cameras'][cam]['sd_url'] 
       cams_id = json_conf['cameras'][cam]['cams_id'] 
+      latest_file = get_latest_file(cams_id)
       url = "rtsp://" + ip + sd_url
       outfile = MY_NOAA_DIR + time_file + "_" + cams_id + ".jpg"
       tmp_list.append(outfile)
 
 
-      cmd = "/usr/bin/ffmpeg -y -i '" + url +  "' -vframes 1 -vf scale=320:180 " + outfile 
+      cmd = "/usr/bin/ffmpeg -y -i '" + latest_file +  "' -vframes 1 -vf scale=320:180 " + outfile 
       os.system(cmd)
 
    outwild = MY_NOAA_DIR + time_file + "_0*.jpg"
