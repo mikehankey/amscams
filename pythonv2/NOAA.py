@@ -35,14 +35,14 @@ def build_all_stations():
    lon_sat = []
    if cfe(all_stations_file) == 0:
       all_stations = []
-      station_dirs = glob.glob("/mnt/wasabi/AMS*")
+      station_dirs = glob.glob("/mnt/archive.allsky.tv/AMS*")
       for sd in station_dirs:
          print("ST:", sd)
          station = sd.split("/")[-1]
          all_stations.append(station)
          data = {}
          data['station'] = station
-         conf_file = "/mnt/wasabi/" + station + "/CAL/as6.json"
+         conf_file = "/mnt/archive.allsky.tv/" + station + "/CAL/as6.json"
 
          jsd = load_json_file(conf_file)
          if jsd == 0:
@@ -80,7 +80,7 @@ def update_live_html():
       data = {} 
       data['station'] = station 
       data['files'] = []
-      NOAA_DIR =  "/mnt/wasabi/" + station + "/NOAA/ARCHIVE/" + year + "/" + day + "/" 
+      NOAA_DIR =  "/mnt/archive.allsky.tv/" + station + "/NOAA/ARCHIVE/" + year + "/" + day + "/" 
       if cfe(NOAA_DIR, 1) == 0:
         
          os.makedirs(NOAA_DIR)
@@ -105,10 +105,10 @@ def update_live_html():
       if len(files) > 0:
          fn = files[0].split("/")[-1]
          file_index = files[0].replace(fn, "")
-         file_index = file_index.replace("mnt/wasabi", "meteor_archive")
-         live_now +=  "<a href=" + file_index + "><img src=" + files[0].replace("mnt/wasabi", "meteor_archive") + "></a><BR>\n"
+         file_index = file_index.replace("mnt/archive.allsky.tv", "meteor_archive")
+         live_now +=  "<a href=" + file_index + "><img src=" + files[0].replace("mnt/archive.allsky.tv", "meteor_archive") + "></a><BR>\n"
     
-      NOAA_DIR =  "/mnt/wasabi/" + station + "/NOAA/ARCHIVE/" + year + "/" + day + "/" 
+      NOAA_DIR =  "/mnt/archive.allsky.tv/" + station + "/NOAA/ARCHIVE/" + year + "/" + day + "/" 
       day_index = NOAA_DIR + day + "_index.json"
       html_index = NOAA_DIR + "index.html"
       print(day_index)
@@ -120,15 +120,15 @@ def update_live_html():
       """
 
       for file in data['files']:
-         fn = file.replace("mnt/wasabi", "meteor_archive")
+         fn = file.replace("mnt/archive.allsky.tv", "meteor_archive")
          html += "<img src=" + fn + "><BR>\n"
       fpo = open(html_index, "w")
       fpo.write(html)
       fpo.close() 
 
-   MAIN_NOAA_DIR = "/mnt/wasabi/LIVE/" + year + "/" 
-   asd_file = "/mnt/wasabi/LIVE/" + year + "/" + day + "_index.json"
-   asd_html = "/mnt/wasabi/LIVE/" + year + "/index.html"
+   MAIN_NOAA_DIR = "/mnt/archive.allsky.tv/LIVE/" + year + "/" 
+   asd_file = "/mnt/archive.allsky.tv/LIVE/" + year + "/" + day + "_index.json"
+   asd_html = "/mnt/archive.allsky.tv/LIVE/" + year + "/index.html"
    if cfe(MAIN_NOAA_DIR, 1) == 0:
       os.makedirs(MAIN_NOAA_DIR)
    save_json_file(asd_file, all_station_data)
@@ -205,9 +205,9 @@ def update_live_view():
       cmd = "rm " + tmp
       os.system(cmd)
 
-   # copy file to wasabi dir
-   was_dir = MY_NOAA_DIR.replace("ams2/meteor_archive", "wasabi")
-   was_out = out_allout.replace("ams2/meteor_archive", "wasabi")
+   # copy file to arhive.allsky.tv dir
+   was_dir = MY_NOAA_DIR.replace("ams2/meteor_archive", "archive.allsky.tv")
+   was_out = out_allout.replace("ams2/meteor_archive", "archive.allsky.tv")
    if cfe(was_dir, 1) == 0:
       os.makedirs(was_dir)
    os.system("cp " + out_allout + " " + was_out  )
