@@ -32,11 +32,12 @@ def build_all_stations():
    """
    all_stations_file = "../conf/all_stations.json"
    all_station_data = []
+   lon_sat = []
    if cfe(all_stations_file) == 0:
       all_stations = []
       station_dirs = glob.glob("/mnt/wasabi/AMS*")
       for sd in station_dirs:
-
+         print("ST:", sd)
          station = sd.split("/")[-1]
          all_stations.append(station)
          data = {}
@@ -46,14 +47,19 @@ def build_all_stations():
          jsd = load_json_file(conf_file)
          if jsd == 0:
             print("CONF FILE MISSING:", conf_file)
+       
          else:
-            data['location'] = [jsd['site']['device_lat'], jsd['site']['device_lng'], jsd['site']['device_alt']]
+            data['location'] = [float(jsd['site']['device_lat']), float(jsd['site']['device_lng']), float(jsd['site']['device_alt'])]
+            all_station_data.append(data)
+         
+            lon_sat.append([station, jsd['site']['device_lng']])
    else:
-      all_stations = load_json_file(all_stations_file)
-      all_station_data.append(data)
-   save_json_file(all_stations_file, all_station_data)
+      all_station_data = load_json_file(all_stations_file)
+
+   temp = sorted(all_station_data, key=lambda x: x['location'][1], reverse=True)
+
+   save_json_file(all_stations_file, temp)
    print(all_stations_file)
-   exit()
 
 def update_live_html():
    """ This function will only be runby a manager's node. 
@@ -66,11 +72,11 @@ def update_live_html():
    all_stations_file = "../conf/all_stations.json" 
    if cfe(all_stations_file) == 0:
       build_all_stations()
-   else:
-      all_stations = load_json_file(all_stations_file)
+   all_stations = load_json_file(all_stations_file)
 
    all_station_data = []
-   for station in all_stations:
+   for sd in all_stations:
+      station = sd['station']
       data = {} 
       data['station'] = station 
       data['files'] = []
@@ -86,7 +92,12 @@ def update_live_html():
             data['files'].append(file)
       all_station_data.append(data)
 
-   live_now = "" 
+        #<meta http-equiv="Cache-Control" content="no-cache"/>
+   live_now = """
+     <head>
+        <meta http-equiv="Cache-control" content="public, max-age=500, must-revalidate">
+     </head>
+   """ 
    for data in all_station_data:
       station = data['station']
       files = sorted(data['files'], reverse=True)
@@ -99,12 +110,25 @@ def update_live_html():
     
       NOAA_DIR =  "/mnt/wasabi/" + station + "/NOAA/ARCHIVE/" + year + "/" + day + "/" 
       day_index = NOAA_DIR + day + "_index.json"
+      html_index = NOAA_DIR + "index.html"
       print(day_index)
       save_json_file(day_index, data)
+      html = """
+         <head>
+            <meta http-equiv="Cache-control" content="public, max-age=500, must-revalidate">
+         </head>
+      """
 
-   MAIN_NOAA_DIR = "/mnt/wasabi/NOAA/LIVE/" + year + "/" 
-   asd_file = "/mnt/wasabi/NOAA/LIVE/" + year + "/" + day + "_index.json"
-   asd_html = "/mnt/wasabi/NOAA/LIVE/" + year + "/index.html"
+      for file in data['files']:
+         fn = file.replace("mnt/wasabi", "meteor_archive")
+         html += "<img src=" + fn + "><BR>\n"
+      fpo = open(html_index, "w")
+      fpo.write(html)
+      fpo.close() 
+
+   MAIN_NOAA_DIR = "/mnt/wasabi/LIVE/" + year + "/" 
+   asd_file = "/mnt/wasabi/LIVE/" + year + "/" + day + "_index.json"
+   asd_html = "/mnt/wasabi/LIVE/" + year + "/index.html"
    if cfe(MAIN_NOAA_DIR, 1) == 0:
       os.makedirs(MAIN_NOAA_DIR)
    save_json_file(asd_file, all_station_data)
