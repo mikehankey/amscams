@@ -30,11 +30,13 @@ station_id = json_conf['site']['ams_id']
 def get_latest_file(cam_id):
    files = glob.glob("/mnt/ams2/SD/*" + cam_id + "*.mp4")
    files = sorted(files, reverse=True)
+   fc = 0
    for file in files:
       st = os.stat(file)
       size = st.st_size
-      if size > 1000:
+      if size > 1000 and fc > 0:
          return(file)
+      fc += 1
 
 
 def build_all_stations():
@@ -115,8 +117,8 @@ def update_live_html():
       if len(files) > 0:
          fn = files[0].split("/")[-1]
          file_index = files[0].replace(fn, "")
-         file_index = file_index.replace("mnt/archive.allsky.tv", "meteor_archive")
-         live_now +=  "<a href=" + file_index + "><img src=" + files[0].replace("mnt/archive.allsky.tv", "meteor_archive") + "></a><BR>\n"
+         file_index = file_index.replace("/mnt/archive.allsky.tv", "")
+         live_now +=  "<a href=" + file_index + "><img src=" + files[0].replace("/mnt/archive.allsky.tv", "") + "></a><BR>\n"
     
       NOAA_DIR =  "/mnt/archive.allsky.tv/" + station + "/NOAA/ARCHIVE/" + year + "/" + day + "/" 
       day_index = NOAA_DIR + day + "_index.json"
@@ -130,7 +132,7 @@ def update_live_html():
       """
 
       for file in data['files']:
-         fn = file.replace("mnt/archive.allsky.tv", "meteor_archive")
+         fn = file.replace("/mnt/archive.allsky.tv", "")
          html += "<img src=" + fn + "><BR>\n"
       fpo = open(html_index, "w")
       fpo.write(html)
