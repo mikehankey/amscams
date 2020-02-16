@@ -9468,6 +9468,7 @@ def batch_make_preview_image(day=0):
             meteor_year = meteor_day[0:4]
  
             arc_dir = "/mnt/ams2/meteor_archive/" + station_id + "/DETECTS/PREVIEW/" + meteor_year + "/" + meteor_day + "/" 
+            tv_dir = "/" + station_id + "/DETECTS/PREVIEW/" + meteor_year + "/" + meteor_day + "/" 
             if cfe(arc_dir, 1) == 0:
                os.makedirs(arc_dir)
             pif = pi.split("/")[-1]
@@ -9484,9 +9485,11 @@ def batch_make_preview_image(day=0):
             out +=  "<div style='float: left'>" + link + "<img src=" + pc + "></a></div>\n"
             wmf = mf.split("/")[-1]
             wasabi_link = "<a href=#" + wmf + ">"
-            #wpc = pc.split("/")[-1]
-            wpc = pc.replace("/mnt/ams2/meteor_archive", "")
+            wpc = pc.split("/")[-1]
+            wpc = tv_dir + wpc
             wasabi_out +=  "<div style='float: left'>" + wasabi_link + "<img src=" + wpc + "></a></div>\n"
+   if cfe("/mnt/archive.allsky.tv" + tv_dir, 1) == 0:
+      os.makedirs( "/mnt/archive.allsky.tv" + tv_dir)
    station_id = json_conf['site']['ams_id']
    prev_file = "/mnt/ams2/meteor_archive/" + station_id + "/DETECTS/PREVIEW/" + year + "/" + day + "/" + "index.html"
    wasabi_prev_file = "/mnt/archive.allsky.tv/" + station_id + "/DETECTS/PREVIEW/" + year + "/" + day + "/" + "index.html"
@@ -9498,6 +9501,7 @@ def batch_make_preview_image(day=0):
    fp = open(wasabi_prev_file, "w")
    fp.write(wasabi_out)
    print(prev_file)
+   print("DONE.")
 
 def make_preview_image(json_file):
    sd_xs = []
@@ -9653,7 +9657,7 @@ def make_preview_image(json_file):
          hd_stack = sd_stack
       except:
          print("FAILED!", json_file, sd_stack, hd_stack)
-         exit()
+         return()
    
 
    if hd_stack is not None and hd_stack_img is not None:
