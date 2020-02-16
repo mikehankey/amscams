@@ -65,8 +65,12 @@ def update_live_html():
    """ This function will only be runby a manager's node. 
        The purpose is to update the HTML and json indexes for the live view
    """
+
+   header_html, footer_html = html_header_footer() 
+ 
    now = datetime. now()
    day = now.strftime("%m_%d")
+   dom = now.strftime("%Y_%m_%d")
    year = now.strftime("%Y")
 
    all_stations_file = "../conf/all_stations.json" 
@@ -105,8 +109,8 @@ def update_live_html():
       if len(files) > 0:
          fn = files[0].split("/")[-1]
          file_index = files[0].replace(fn, "")
-         file_index = file_index.replace("mnt/archive.allsky.tv", "meteor_archive")
-         live_now +=  "<a href=" + file_index + "><img src=" + files[0].replace("mnt/archive.allsky.tv", "meteor_archive") + "></a><BR>\n"
+         file_index = file_index.replace("/mnt/archive.allsky.tv", "")
+         live_now +=  "<a href=" + file_index + "index.html><img src=" + files[0].replace("/mnt/archive.allsky.tv", "") + "></a><BR>\n"
     
       NOAA_DIR =  "/mnt/archive.allsky.tv/" + station + "/NOAA/ARCHIVE/" + year + "/" + day + "/" 
       day_index = NOAA_DIR + day + "_index.json"
@@ -119,16 +123,37 @@ def update_live_html():
          </head>
       """
 
+      # MAKE STATION REPORT FOR CURRENT DAY      
+
+      detect_html = html_get_detects(dom, station_id)
+
+      html = header_html
+      show_date = day.replace("_", "/")
+      html += "<h1>" + station_id + " Daily Report for " + show_date + "</h1>\n" 
+      html += "<h2><a href=\"#\" onclick=\"showHideDiv('live_view')\">Live View</a></h2>\n <div id='live_view'>"
+      fn = data['files'][0].replace("/mnt/archive.allsky.tv", "")
+      html += "<img src=" + fn + "><BR>\n"
+      html += "</div>"
+
+      html += "<h2><a href=\"#\" onclick=\"showHideDiv('live_snaps')\">Weather Snap Shots</a></h2>\n <div id='live_snaps' style='display: none'>"
       for file in data['files']:
-         fn = file.replace("mnt/archive.allsky.tv", "meteor_archive")
+         fn = file.replace("/mnt/archive.allsky.tv", "")
          html += "<img src=" + fn + "><BR>\n"
+      html += "</div>"
+
+      html += "<h2><a href=\"#\" onclick=\"showHideDiv('meteors')\">Meteors</a></h2>\n <div id='meteors'>"
+      html += detect_html
+      html += "</div>"
+
+      html += "</div>"
       fpo = open(html_index, "w")
       fpo.write(html)
       fpo.close() 
+      print(html_index)
 
    MAIN_NOAA_DIR = "/mnt/archive.allsky.tv/LIVE/" + year + "/" 
    asd_file = "/mnt/archive.allsky.tv/LIVE/" + year + "/" + day + "_index.json"
-   asd_html = "/mnt/archive.allsky.tv/LIVE/" + year + "/index.html"
+   asd_html = "/mnt/archive.allsky.tv/LIVE/" + "index.html"
    if cfe(MAIN_NOAA_DIR, 1) == 0:
       os.makedirs(MAIN_NOAA_DIR)
    save_json_file(asd_file, all_station_data)
@@ -212,6 +237,48 @@ def update_live_view():
       os.makedirs(was_dir)
    os.system("cp " + out_allout + " " + was_out  )
    print(was_out)
+
+def html_get_detects(day,station_id):
+   year = day[0:4]
+   prev_file = "/mnt/ams2/meteor_archive/" + station_id + "/DETECTS/PREVIEW/" + year + "/" + day + "/" + "index.html"
+   html = ""
+   if cfe(prev_file) == 1:
+      fp = open(prev_file, "r")
+      for line in fp:
+         html += line
+   return(html)
+   
+
+def html_header_footer(info=None):
+   js = javascript()
+   html_header = """
+     <head>
+        <meta http-equiv="Cache-control" content="public, max-age=500, must-revalidate">
+   """
+   html_header += js + """
+     </head>
+   """
+
+   html_footer = """
+
+   """
+   return(html_header, html_footer)
+
+def javascript():
+   js = """
+      <script>
+      function showHideDiv(myDIV) {
+         var x = document.getElementById(myDIV);
+         if (x.style.display === "none") {
+            x.style.display = "block";
+         } else {
+            x.style.display = "none";
+         }
+      }
+
+      </script>
+   """
+   return(js)
 
 if len(sys.argv) <= 1:
    update_live_view()

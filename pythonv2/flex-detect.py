@@ -139,11 +139,12 @@ def finish_meteor(meteor_file):
          hd_ftimes.append(frame_time.strftime('%Y-%m-%d %H:%M:%S.%f')[:-3])
       hd_meteor['ftimes'] = hd_ftimes
 
-
+      print("HD F:", len(sync_hd_frames))
+      print("SD F:", len(sync_sd_frames))
      
-      for i in range(0,len(sync_sd_frames)):
-         sd_frame = sync_sd_frames[i]
-         hd_frame = cv2.resize(sync_hd_frames[i], (1280,720))
+      #for i in range(0,len(sync_sd_frames)):
+      #   sd_frame = sync_sd_frames[i]
+      #   hd_frame = cv2.resize(sync_hd_frames[i], (1280,720))
          #cv2.imshow('pepe', sd_frame)
          #cv2.imshow('pepehd', hd_frame)
          #cv2.waitKey(0)
@@ -160,8 +161,8 @@ def finish_meteor(meteor_file):
       sd_meteor['trim_clip'] = old_sd_fn  
       hd_meteor['trim_clip'] = old_hd_fn  
 
-      #make_movie_from_frames(sync_hd_frames, [0,len(sync_hd_frames) - 1], new_hd_file_name, 0)
-      #make_movie_from_frames(sync_sd_frames, [0,len(sync_sd_frames) - 1], new_sd_file_name, 0)
+      make_movie_from_frames(sync_hd_frames, [0,len(sync_hd_frames) - 1], new_hd_file_name, 0)
+      make_movie_from_frames(sync_sd_frames, [0,len(sync_sd_frames) - 1], new_sd_file_name, 0)
 
      
 
@@ -194,7 +195,7 @@ def finish_meteor(meteor_file):
       new_json = save_new_style_meteor_json(hd_meteor, new_json_file_name )
       print(new_json_file_name)
       save_json_file(new_json_file_name, new_json)
-      #print("SAVED ARC:", new_json_file_name)
+      print("SAVED ARC:", new_json_file_name)
 
 
       #arc_json_file = save_archive_meteor(video_file, syncd_sd_frames,syncd_hd_frames,frame_data,new_trim_num) 
@@ -9440,15 +9441,23 @@ def minimize_poly_params_fwd(cal_params_file, cal_params,json_conf,show=1):
    #save_json_file(cal_params_file, cal_params)
    return(cal_params)
 
-def batch_make_preview_image():
-   meteor_dirs = glob.glob("/mnt/ams2/meteors/*")
+def batch_make_preview_image(day=0):
+   if day != 0:
+      meteor_dirs = ["/mnt/ams2/meteors/" + day]
+   else:
+      meteor_dirs = glob.glob("/mnt/ams2/meteors/*")
+   year = day[0:4]
+  
    station_id = json_conf['site']['ams_id']
    out = ""
+   wasabi_out = ""
    for md in sorted(meteor_dirs,reverse=True):
       mfs = glob.glob(md + "/*trim*.json")
       if len(mfs) > 0:
          meteor_day = md.split("/")[-1]
+
          out += "<div style='clear:both'></div><H1><a href=/pycgi/webUI.py?cmd=meteors&limit_day=" + meteor_day + ">" + meteor_day + "</h1>"
+         wasabi_out += "<div style='clear:both'></div>"
       for mf in mfs:
          if "reduced" not in mf and "manual" not in mf and "framedata" not in mf and "events" not in mf:
             print(mf)
@@ -9468,13 +9477,25 @@ def batch_make_preview_image():
                os.system(cmd)
                os.system(cmd2)
                print("Copy to archive.", cmd, cmd2)
+            else:
+               print("Already done", mf)
 
             link = "<a href=/pycgi/webUI.py?cmd=reduce&video_file=" + mf + ">"
             out +=  "<div style='float: left'>" + link + "<img src=" + pc + "></a></div>\n"
+            wmf = mf.split("/")[-1]
+            wasabi_link = "<a href=#" + wmf + ">"
+            wpc = pc.split("/")[-1]
+            wasabi_out +=  "<div style='float: left'>" + wasabi_link + "<img src=" + wpc + "></a></div>\n"
    station_id = json_conf['site']['ams_id']
-   prev_file = "/mnt/ams2/meteor_archive/" + station_id + "/DETECTS/detect_preview.html"
+   prev_file = "/mnt/ams2/meteor_archive/" + station_id + "/DETECTS/PREVIEW/" + year + "/" + day + "/" + "index.html"
+   wasabi_prev_file = "/mnt/archive.allsky.tv/" + station_id + "/DETECTS/PREVIEW/" + year + "/" + day + "/" + "index.html"
    fp = open(prev_file, "w")
    fp.write(out)
+   print(prev_file)
+   print(wasabi_prev_file)
+
+   fp = open(wasabi_prev_file, "w")
+   fp.write(wasabi_out)
    print(prev_file)
 
 def make_preview_image(json_file):
@@ -9778,6 +9799,7 @@ if cmd == "bqqs" :
 if cmd == "mpi" :
    make_preview_image(sys.argv[2])
 if cmd == "bmpi" :
-   batch_make_preview_image()
+    
+   batch_make_preview_image(sys.argv[2])
 if cmd == "fm" :
    finish_meteor(sys.argv[2])

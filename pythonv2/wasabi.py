@@ -7,13 +7,13 @@ import glob
 import json
 from lib.FileIO import load_json_file, save_json_file, cfe
 
-WASABI_ROOT = "/mnt/wasabi/"
+WASABI_ROOT = "/mnt/archive.allsky.tv/"
 json_conf = load_json_file("../conf/as6.json")
 
 def cp_msd_from_wasabi():
    # all stations other than the master station need to do this 
    st = json_conf['site']['ams_id']
-   cmd = "cp /mnt/wasabi/" + st + "/DETECTS/ms_detects.json.gz /mnt/ams2/meteor_archive/" + st + "/DETECTS/"
+   cmd = "cp /mnt/archive.allsky.tv/" + st + "/DETECTS/ms_detects.json.gz /mnt/ams2/meteor_archive/" + st + "/DETECTS/"
    print(cmd)
    os.system(cmd)
 
@@ -24,7 +24,7 @@ def cp_msd_from_wasabi():
 
    network_sites = json_conf['site']['network_sites'].split(",")
    for st in network_sites:
-      cmd = "cp /mnt/wasabi/" + st + "/DETECTS/ms_detects.json.gz /mnt/ams2/meteor_archive/" + st + "/DETECTS/"
+      cmd = "cp /mnt/archive.allsky.tv/" + st + "/DETECTS/ms_detects.json.gz /mnt/ams2/meteor_archive/" + st + "/DETECTS/"
       print(cmd)
       os.system(cmd)
 
@@ -38,7 +38,7 @@ def cp_msd2wasabi():
    cmd = "gzip -fk /mnt/ams2/meteor_archive/" + this_station + "/DETECTS/ms_detects.json"
    print(cmd)
    os.system(cmd)
-   cmd = "cp /mnt/ams2/meteor_archive/" + this_station + "/DETECTS/ms_detects.json.gz /mnt/wasabi/" + this_station + "/DETECTS/"
+   cmd = "cp /mnt/ams2/meteor_archive/" + this_station + "/DETECTS/ms_detects.json.gz /mnt/archive.allsky.tv/" + this_station + "/DETECTS/"
    print(cmd)
    os.system(cmd)
 
@@ -47,11 +47,12 @@ def cp_msd2wasabi():
       cmd = "gzip -fk /mnt/ams2/meteor_archive/" + st + "/DETECTS/ms_detects.json"
       print(cmd)
       os.system(cmd)
-      cmd = "cp /mnt/ams2/meteor_archive/" + st + "/DETECTS/ms_detects.json.gz /mnt/wasabi/" + st + "/DETECTS/"
+      cmd = "cp /mnt/ams2/meteor_archive/" + st + "/DETECTS/ms_detects.json.gz /mnt/archive.allsky.tv/" + st + "/DETECTS/"
       print(cmd)
       os.system(cmd)
 
 def sync_archive(day):
+   year = day[0:4]
    if day != "a":
       extra_day = "/" + day + "/" 
       extra_day_grep = "| grep " + day 
@@ -61,22 +62,40 @@ def sync_archive(day):
    station_id = json_conf['site']['ams_id']
 
    # Sync Detect PREVIEWS 
-   os.system("find /mnt/ams2/meteor_archive/" + station_id + " |grep DETECT | grep PREVIEW  " + extra_day_grep + " > /mnt/ams2/tmp/arc-prev.txt") 
-   fp = open("/mnt/ams2/tmp/arc-prev.txt", "r")
-   for line in fp:
-      line = line.replace("\n", "")
-      wasabi_json = line.replace("ams2/meteor_archive", "wasabi")
-      if cfe(wasabi_json) == 0: 
-         # need to copy files
-         wf = wasabi_json.split("/")[-1]
-         wd = wasabi_json.replace(wf, "")
-         if cfe(wd, 1) == 0:
-            print("WASABI DIR DOESN'T EXIST",wd)
-            print("make dir ", wd)
-            os.makedirs(wd)
-         cmd = "cp " + line + " " + wd
+   # get current detect wasabi index
+   wasabi_detect_files = glob.glob("/mnt/archive.allsky.tv/" + station_id + "/DETECTS/PREVIEW/" + year + "/" + day + "/*.jpg")
+   local_detect_files = glob.glob("/mnt/ams2/meteor_archive/" + station_id + "/DETECTS/PREVIEW/" + year + "/" + day + "/*.jpg")
+   dw_idx = {}
+   for ws in wasabi_detect_files:
+      fn = ws.split("/")[-1]
+      dw_idx[fn] = 1
+
+   print("/mnt/ams2/meteor_archive/" + station_id + "/DETECTS/PREVIEW/" + year + "/" + day + "/*.jpg")
+   print("LOCAL DETECT FILES:", len(local_detect_files))
+
+   print("WASABI DETECT FILES:", len(wasabi_detect_files))
+   # make sure wb dir exists for this day:
+   html = "<h1>Detections for " + day + "</h1>"
+   wb_dir = "/mnt/archive.allsky.tv/" + station_id + "/DETECTS/PREVIEW/" + year + "/" + day + "/" 
+   if cfe(wb_dir,1) == 0:
+      os.makedirs(wb_dir)
+   else:
+      print("WB DIR EXISTS!")
+   for local in local_detect_files:
+      lr = local.split("/")[-1]
+      if lr in dw_idx:
+         print("File is sync'd already:", lr)
+      else: 
+         print("File needs to be sync'd:", lr)
+         cmd = "cp " + local + " " + wb_dir
          print(cmd)
          os.system(cmd)
+      html += "<img src=" + lr + ">"
+
+   fp = open(wb_dir + "index.html", "w")
+   fp.write(html)
+   fp.close()
+   print(wb_dir + "index.html")
 
    exit()
    # Sync Meteors
@@ -84,7 +103,7 @@ def sync_archive(day):
    fp = open("/mnt/ams2/tmp/arc.txt", "r")
    for line in fp:
       line = line.replace("\n", "")
-      wasabi_json = line.replace("ams2/meteor_archive", "wasabi")
+      wasabi_json = line.replace("ams2/meteor_archive", "archive.allsky.tv")
       if cfe(wasabi_json) == 0: 
          # need to copy files
          wf = wasabi_json.split("/")[-1]
@@ -116,10 +135,10 @@ def sync_archive(day):
 
 def wasabi_cp(file):
    if "meteor_archive" in file:
-      wasabi_file = file.replace("ams2/meteor_archive", "wasabi")
+      wasabi_file = file.replace("ams2/meteor_archive", "archive.allsky.tv")
       cmd = "cp " + file + " " + wasabi_file
    else:
-      ma_file = file.replace("wasabi", "ams2/meteor_archive")
+      ma_file = file.replace("archive.allsky.tv", "ams2/meteor_archive")
       cmd = "cp " + file + " " + ma_file
    print(cmd)
    os.system(cmd)
@@ -127,9 +146,9 @@ def wasabi_cp(file):
 def install():
    cmd = """
    # THESE ARE THE COMMANDS:
-   sudo mkdir /mnt/wasabi
-   sudo chown ams:ams /mnt/wasabi/
-   chmod 777 /mnt/wasabi/
+   sudo mkdir /mnt/archive.allsky.tv
+   sudo chown ams:ams /mnt/archive.allsky.tv/
+   chmod 777 /mnt/archive.allsky.tv/
    sudo apt-get install build-essential git libfuse-dev libcurl4-openssl-dev libxml2-dev mime-support automake libtool
    sudo apt-get install pkg-config libssl-dev
    cd ../../
@@ -154,12 +173,12 @@ def connect_wasabi():
    # XXX:YYYYY
 
    #chmod 600 ~/wasabi_ams1.txt
-   #mkdir /mnt/wasabi
+   #mkdir /mnt/archive.allsky.tv
 
    #MOUNT COMMAND
    uid = os.getuid()
    gid = os.getgid()
-   #cmd = "s3fs archive.allsky.tv /mnt/wasabi -o passwd_file=/home/ams/amscams/conf/wasabi.txt -o dbglevel=debug -o url=https://s3.wasabisys.com -o umask=0007,uid="+str(uid)+",gid="+str(gid)
+   #cmd = "s3fs archive.allsky.tv /mnt/archive.allsky.tv -o passwd_file=/home/ams/amscams/conf/wasabi.txt -o dbglevel=debug -o url=https://s3.wasabisys.com -o umask=0007,uid="+str(uid)+",gid="+str(gid)
    cmd = "s3fs -o use_path_request_style -o url=https://s3.wasabi.com archive.allsky.tv /mnt/archive.allsky.tv -o passwd_file=/home/ams/amscams/conf/wasabi.txt -o dbglevel=debug -o url=https://s3.wasabisys.com -o umask=0007,uid="+str(uid)+",gid="+str(gid)
    print(cmd)
    os.system(cmd)
@@ -197,7 +216,7 @@ def make_indexes():
    #make_wasabi_index()
 
 def make_wasabi_index():
-   os.system("find /mnt/wasabi/ -ls > /mnt/wasabi/wasbi_index.txt")
+   os.system("find /mnt/archive.allsky.tv/ -ls > /mnt/archive.allsky.tv/wasbi_index.txt")
 
 def make_ma_index():
    os.system("find /mnt/ams2/meteor_archive/ -ls > /mnt/ams2/meteor_archive/ma_index.txt")
