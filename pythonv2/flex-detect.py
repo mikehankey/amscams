@@ -9484,7 +9484,8 @@ def batch_make_preview_image(day=0):
             out +=  "<div style='float: left'>" + link + "<img src=" + pc + "></a></div>\n"
             wmf = mf.split("/")[-1]
             wasabi_link = "<a href=#" + wmf + ">"
-            wpc = pc.split("/")[-1]
+            #wpc = pc.split("/")[-1]
+            wpc = pc.replace("/mnt/ams2/meteor_archive", "")
             wasabi_out +=  "<div style='float: left'>" + wasabi_link + "<img src=" + wpc + "></a></div>\n"
    station_id = json_conf['site']['ams_id']
    prev_file = "/mnt/ams2/meteor_archive/" + station_id + "/DETECTS/PREVIEW/" + year + "/" + day + "/" + "index.html"

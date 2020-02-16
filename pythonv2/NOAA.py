@@ -137,7 +137,7 @@ def update_live_html():
 
       # MAKE STATION REPORT FOR CURRENT DAY      
 
-      detect_html = html_get_detects(dom, station_id)
+      detect_html = html_get_detects(dom, station)
 
       html = header_html
       show_date = day.replace("_", "/")
@@ -251,9 +251,10 @@ def update_live_view():
    os.system("cp " + out_allout + " " + was_out  )
    print(was_out)
 
-def html_get_detects(day,station_id):
+def html_get_detects(day,tsid):
    year = day[0:4]
-   prev_file = "/mnt/ams2/meteor_archive/" + station_id + "/DETECTS/PREVIEW/" + year + "/" + day + "/" + "index.html"
+   prev_file = "/mnt/archive.allsky.tv/" + tsid + "/DETECTS/PREVIEW/" + year + "/" + day + "/" + "index.html"
+   print("PREV FILE:", prev_file)
    html = ""
    if cfe(prev_file) == 1:
       fp = open(prev_file, "r")
