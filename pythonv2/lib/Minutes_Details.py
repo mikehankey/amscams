@@ -25,7 +25,7 @@ def minute_details(form):
    template = template.replace('{CAM_ID}',analysed_minute['cam_id'])
 
    # Where is the bigger version (without -tn)
-   full_path_bigger = MINUTE_FOLDER +  os.sep + analysed_minute['year'] + os.sep + str(analysed_minute['month']).zfill(2) + "_" + str(analysed_minute['day']).zfill(2) + os.sep + IMAGES_MINUTE_FOLDER + os.sep +  analysed_minute['full'].replace(MINUTE_TINY_STACK_EXT,'')
+   full_path_bigger = MINUTE_FOLDER +  os.sep + analysed_minute['year'] + '_' + str(analysed_minute['month']).zfill(2) + "_" + str(analysed_minute['day']).zfill(2) + os.sep + IMAGES_MINUTE_FOLDER + os.sep +  analysed_minute['full'].replace(MINUTE_TINY_STACK_EXT,'')
    
    if(cfe(full_path_bigger)!=1):
       full_path_bigger = stack
