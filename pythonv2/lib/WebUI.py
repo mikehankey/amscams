@@ -71,6 +71,9 @@ from lib.Stats import stats_page
 
 # Minutes page
 from lib.Minutes import browse_minute
+
+# Minutes Details Page
+from lib.Minutes_Details import *
  
  
 
@@ -620,6 +623,10 @@ def controller(json_conf):
    # BROWSE MINUTES
    if cmd == 'browse_minute': 
       browse_minute(form)
+
+   # MINUTE DETAILS
+   if cmd == 'minute_details': 
+      minute_details(form)
 
    if cmd == 'solutions':
       solutions(json_conf, form)
