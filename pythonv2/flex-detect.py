@@ -1206,28 +1206,29 @@ def load_cal_params_from_arc(calib):
    return(cal_params)
 
 
-def apply_calib(obj ):
+def apply_calib(obj , frames=None , user_station = None):
    print("CAL:", obj['hd_trim'])
    print("CAL:", obj['trim_clip'])
-   if obj['hd_trim'] != 0:
-      if cfe(obj['hd_trim']) == 1:   
-         hd_frames,hd_color_frames,hd_subframes,sum_vals,max_vals = load_frames_fast(obj['hd_trim'], json_conf, 0, 0, [], 0,[])
-         print("HD FRAMES:", len(hd_frames))
-      elif "/mnt/ams2/HD/" in obj['hd_trim']:
-         fl = obj['hd_trim'].split("/")[-1]
-         m_date = fl[0:10]
-         print("NEED TO UPDATE THE FILE PLEASE!", m_date, fl)
-         obj['hd_trim'] = obj['hd_trim'].replace("/mnt/ams2/HD/", "/mnt/ams2/meteors/" + m_date + "/" )
-         hd_frames,hd_color_frames,hd_subframes,sum_vals,max_vals = load_frames_fast(obj['hd_trim'], json_conf, 0, 0, [], 0,[])
-   else:
-      hd_frames,hd_color_frames,hd_subframes,sum_vals,max_vals = load_frames_fast(obj['trim_clip'], json_conf, 0, 0, [], 0,[])
-      print("SD FRAMES:", len(hd_frames))
+   if frames is None:
+      if obj['hd_trim'] != 0:
+         if cfe(obj['hd_trim']) == 1:   
+            hd_frames,hd_color_frames,hd_subframes,sum_vals,max_vals = load_frames_fast(obj['hd_trim'], json_conf, 0, 0, [], 0,[])
+            print("HD FRAMES:", len(hd_frames))
+         elif "/mnt/ams2/HD/" in obj['hd_trim']:
+            fl = obj['hd_trim'].split("/")[-1]
+            m_date = fl[0:10]
+            print("NEED TO UPDATE THE FILE PLEASE!", m_date, fl)
+            obj['hd_trim'] = obj['hd_trim'].replace("/mnt/ams2/HD/", "/mnt/ams2/meteors/" + m_date + "/" )
+            hd_frames,hd_color_frames,hd_subframes,sum_vals,max_vals = load_frames_fast(obj['hd_trim'], json_conf, 0, 0, [], 0,[])
+      else:
+         hd_frames,hd_color_frames,hd_subframes,sum_vals,max_vals = load_frames_fast(obj['trim_clip'], json_conf, 0, 0, [], 0,[])
+         print("SD FRAMES:", len(hd_frames))
 
-   frame = hd_frames[0]
+   frame = frames[0]
    frame = cv2.resize(frame, (1920,1080))
 
    # find best free cal files
-   best_cal_files = get_best_cal_file(obj['trim_clip'])
+   best_cal_files = get_best_cal_file(obj['trim_clip'], user_station)
    cal_params_file = best_cal_files[0][0]
    print("BEST CAL FILE:", cal_params_file)
    (cp_datetime, cam, sd_date, sd_y, sd_m, sd_d, sd_h, sd_M, sd_s) = convert_filename_to_date_cam(cal_params_file)
@@ -2734,14 +2735,14 @@ def convert_old_cal_files():
       save_json_file(new_file, calib)
 
 
-def get_best_cal_file(input_file):
+def get_best_cal_file(input_file, user_station):
    #print("INPUT FILE", input_file)
    if "png" in input_file:
       input_file = input_file.replace(".png", ".mp4")
    (f_datetime, cam_id, f_date_str,Y,M,D, H, MM, S) = better_parse_file_date(input_file)
 
    # find all cal files from his cam for the same night
-   matches = find_matching_cal_files(json_conf['site']['ams_id'], cam_id, f_datetime)
+   matches = find_matching_cal_files(json_conf['site']['ams_id'], cam_id, f_datetime, user_station)
    #print("MATCHED:", matches)
    if len(matches) > 0:
       return(matches)
@@ -3722,10 +3723,12 @@ def get_cal_params(input_file, station_id):
    else:
       return(None)
 
-def find_matching_cal_files(station_id, cam_id, capture_date):
+def find_matching_cal_files(station_id, cam_id, capture_date, user_station):
    matches = []
-   #cal_dir = ARCHIVE_DIR + station_id + "/CAL/*.json"
-   cal_dir = "/mnt/ams2/cal/freecal/*"
+   if user_station is None:
+      cal_dir = "/mnt/ams2/cal/freecal/*"
+   else:
+      cal_dir = "/mnt/archive.allskycams.com/" + user_station + "/CAL/last_best/*"
    all_files = glob.glob(cal_dir)
    for file in all_files:
       if cam_id in file :
@@ -9754,6 +9757,7 @@ def injest(video_file):
    meteor_event = events[selected_event]
    print("You selected:", meteor_event)
    user_trim_clip = input("Trim Clip (Y or N) \n")
+   user_station = input("Enter the AMS station number associated with this clip AMSX  \n")
    if user_trim_clip == "Y":
       # base initial buffer size off of total event length 
       buf_size = meteor_event[-1] - meteor_event[0]
@@ -9771,9 +9775,31 @@ def injest(video_file):
       motion_objects,meteor_frames = detect_meteor_in_clip(trim_clip , None, 0)
 
       for mo in motion_objects:
-         print(mo, motion_objects[mo]) 
-      # now buffer the SD and HD clips
-      
+         if motion_objects[mo]['report']['meteor_yn'] == 'Y':
+            print(mo, motion_objects[mo]) 
+            meteor = motion_objects[mo]
+
+      ma_sd_file = trim_clip.replace(".mp4", "-SD.mp4")
+      ma_hd_file = trim_clip.replace(".mp4", "-HD.mp4")
+      ma_json_file = trim_clip.replace(".mp4", ".json")
+
+      meteor['trim_clip'] = trim_clip 
+      meteor['hd_trim'] = trim_clip 
+      meteor['ma_sd_file'] = ma_sd_file 
+      meteor['ma_hd_file'] = ma_hd_file
+
+
+      calib,cal_params = apply_calib(meteor, meteor_frames, user_station)
+      calib = format_calib(ma_sd_file, cal_params, ma_sd_file)
+      meteor['calib'] = calib
+      meteor['cal_params'] = cal_params
+
+      exit()
+      new_json = save_new_style_meteor_json(hd_fast_meteor, ma_json_file)
+      new_json['info']['org_sd_vid'] = ma_sd_file
+      new_json['info']['org_hd_vid'] = ma_hd_file
+      save_json_file(ma_json_file, new_json)
+      print(ma_json_file) 
 
 
 cmd = sys.argv[1]
