@@ -102,13 +102,19 @@ function minute_anim(cam_id) {
 
   // Inpur range for animation speed
   $('#marStack').val(0).on('input', function () { 
-      var val = parseInt($(this).val());
-      if(val<0) sens = "-"
-      else sens = "+"
+      var val = parseInt($(this).val()), text ='';
+      if(val<0) {
+         sens = "-";
+         text = "<<";
+      } 
+      else {
+         sens = "+"
+         text = ">>";
+      }
 
       val+= 1;
       timePerStack = animationStackDuration*1/Math.abs(val); 
-      $('#cur_sp').text('x'+val);
+      $('#cur_sp').text(text + ' x'+val);
       requestAnimationFrame(step_minute); 
    });  
 }
