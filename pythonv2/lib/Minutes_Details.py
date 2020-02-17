@@ -33,16 +33,16 @@ def minute_details(form):
    template = template.replace('{STACK}',full_path_bigger)
 
 
-   # Search for related video
-
-   #Build path for glob
+   # SEARCH FOR RELATED VIDEO
    video_full_path  = MINUTE_FOLDER +  os.sep + analysed_minute['year'] + '_'+ str(analysed_minute['month']).zfill(2) + "_" + str(analysed_minute['day']).zfill(2) + os.sep + analysed_minute['full'].replace('-'+MINUTE_STACK_EXT+'.png','.mp4')
-      
    
-   if(cfe(video_full_path)==1):
-      print(video_full_path)
-   else:
-      print(video_full_path + " not FOUND")
+   if(cfe(video_full_path)!=1):
+      print_error(video_full_path + " not FOUND")
+
+   template = template.replce('{VIDEO}',video_full_path)
+
+
+
 
    print(template)
    print(analysed_minute)
