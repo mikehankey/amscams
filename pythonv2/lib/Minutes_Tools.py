@@ -72,7 +72,7 @@ def get_sun_details(capture_date):
 
 # get_daily_index - return the path to the json 
 def get_daily_index(day,month,year):
-   _file =  MINUTE_FOLDER +  os.sep + str(year) + os.sep + str(month).zfill(2) + '_' + str(day).zfill(2) + os.sep +   str(month).zfill(2) + '_' + str(day).zfill(2) + ".json"
+   _file =  MINUTE_FOLDER +  os.sep + str(year)  + '_' + str(month).zfill(2) + '_' + str(day).zfill(2) + os.sep + str(year) +'_'+  str(month).zfill(2) + '_' + str(day).zfill(2) + ".json"
    if(cfe(_file)):
       return _file
    else: 
@@ -82,7 +82,7 @@ def get_daily_index(day,month,year):
 def create_json_index_minute_day(day,month,year):
 
    # Main dir to glob
-   main_dir = MINUTE_FOLDER +  os.sep + str(year) + os.sep + str(month).zfill(2) + '_' + str(day).zfill(2) + os.sep + IMAGES_MINUTE_FOLDER
+   main_dir = MINUTE_FOLDER + os.sep + str(year) + "_" + str(month).zfill(2) + '_' + str(day).zfill(2) + os.sep + IMAGES_MINUTE_FOLDER
    cam_ids = get_the_cam_ids(); 
   
    all_minutes = []
@@ -107,17 +107,17 @@ def write_day_minute_index(day, month, year):
 
    # Write Index 
   
-   output_dir = MINUTE_FOLDER +  os.sep + str(year) + os.sep + str(month).zfill(2) + '_' + str(day).zfill(2)
+   output_dir = MINUTE_FOLDER + os.sep + str(year) + str(month).zfill(2) + '_' + str(day).zfill(2)
 
    # Just in case...
    if not os.path.exists(output_dir):
       os.makedirs(output_dir)
 
-   with open(output_dir + os.sep + str(month).zfill(2) + '_' + str(day).zfill(2) + ".json", 'w') as outfile:
+   with open(output_dir + os.sep + str(year) + str(month).zfill(2) + '_' + str(day).zfill(2) + ".json", 'w') as outfile:
       #Write compress format
       json.dump(json_data, outfile)
 
-   print(output_dir + os.sep + str(month).zfill(2) + '_' + str(day).zfill(2) + ".json - created")
+   print(output_dir + os.sep + str(year) + str(month).zfill(2) + '_' + str(day).zfill(2) + ".json - created")
 
    outfile.close() 
    return True 
