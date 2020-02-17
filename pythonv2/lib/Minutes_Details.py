@@ -36,7 +36,7 @@ def minute_details(form):
    # Search for related video
 
    #Build path for glob
-   video_full_path  = MINUTE_FOLDER +  os.sep + analysed_minute['year'] + '_'+ str(analysed_minute['month']).zfill(2) + "_" + str(analysed_minute['day']).zfill(2) + os.sep + analysed_minute['full'].replace(MINUTE_STACK_EXT+'.png','.mp4')
+   video_full_path  = MINUTE_FOLDER +  os.sep + analysed_minute['year'] + '_'+ str(analysed_minute['month']).zfill(2) + "_" + str(analysed_minute['day']).zfill(2) + os.sep + analysed_minute['full'].replace('-'+MINUTE_STACK_EXT+'.png','.mp4')
       
    
    if(cfe(video_full_path)==1):
