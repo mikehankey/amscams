@@ -32,6 +32,11 @@ def minute_details(form):
    
    template = template.replace('{STACK}',full_path_bigger)
 
+
+   # Search for related video
+   video_full_path  = MINUTE_FOLDER +  os.sep + analysed_minute['year'] + os.sep + str(analysed_minute['month']).zfill(2) + "_" + str(analysed_minute['day']).zfill(2) + os.sep + VIDEOS_FAILED_MINUTE_FOLDER + os.sep +  analysed_minute['full'].replace(MINUTE_TINY_STACK_EXT,'')
+   print_error(video_full_path)
+
    print(template)
    print(analysed_minute)
 

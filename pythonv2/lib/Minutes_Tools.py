@@ -13,6 +13,7 @@ from lib.FileIO import cfe, load_json_file
 
 MINUTE_FOLDER = '/mnt/ams2/SD/proc2'
 IMAGES_MINUTE_FOLDER = 'images'
+VIDEOS_FAILED_MINUTE_FOLDER = 'failed'
 DEFAULT_HORIZON_EPHEM = '-0:34'
 DEFAULT_PRESSURE = 0
 
