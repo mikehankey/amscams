@@ -39,7 +39,7 @@ def minute_details(form):
    if(cfe(video_full_path)!=1):
       print_error(video_full_path + " not FOUND")
 
-   template = template.replce('{VIDEO}',video_full_path)
+   template = template.replace('{VIDEO}',video_full_path)
 
 
 
