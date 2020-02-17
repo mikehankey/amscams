@@ -1,7 +1,10 @@
 import cgitb
+
+from lib.CGI_Tools import print_error
  
 from lib.Minutes_Tools import *
 from datetime import datetime
+from FileIO import cfe
 
 PAGE_TEMPLATE = "/home/ams/amscams/pythonv2/templates/minute_details.html"
 
@@ -23,7 +26,9 @@ def minute_details(form):
 
    # Where is the bigger version (without -tn)
    full_path_bigger = MINUTE_FOLDER +  os.sep + analysed_minute['year'] + os.sep + str(analysed_minute['month']).zfill(2) + "_" + str(analysed_minute['day']).zfill(2) + os.sep + IMAGES_MINUTE_FOLDER + os.sep +  analysed_minute['full'].replace(MINUTE_TINY_STACK_EXT,'')
-   print(full_path_bigger) 
+   if(cfe(full_path_bigger)!==1):
+      print_error('Impossible to find the full version of the SD stack ('+full_path_bigger+')')
+ 
 
    print(template)
    print(analysed_minute)

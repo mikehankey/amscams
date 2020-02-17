@@ -12,3 +12,8 @@ def redirect_to(redirectURL, page_type="proper"):
    print( '  </body>')
    print( '</html>')
    sys.exit(0)
+
+# Display an error message on the page
+def print_error(msg):
+   print("<div id='main_container' class='container mt-4 lg-l'>"+get_error(msg)+"</div>")
+   sys.exit(0)

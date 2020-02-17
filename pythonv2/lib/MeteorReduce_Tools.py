@@ -22,6 +22,7 @@ from lib.ImageLib import stack_stack,  mask_frame
 from lib.Get_Station_Id import get_station_id 
 from lib.UtilLib import convert_filename_to_date_cam, bound_cnt
 from lib.Get_Cam_ids import get_mask 
+from lib.CGI_Tools import print_error
 
 
 # LOAD VIDEO FRAMES with MASKS
@@ -302,10 +303,6 @@ def reapply_calib(json_data, json_file_path):
 def get_error(msg):
    return "<div class='alert alert-danger'>"+msg+"</div>"
 
-# Display an error message on the page
-def print_error(msg):
-   print("<div id='main_container' class='container mt-4 lg-l'>"+get_error(msg)+"</div>")
-   sys.exit(0)
 
 
 # Test if we can get a station id from an URL and return the station id or FALSE
