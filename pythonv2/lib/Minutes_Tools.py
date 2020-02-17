@@ -17,7 +17,8 @@ DEFAULT_HORIZON_EPHEM = '-0:34'
 DEFAULT_PRESSURE = 0
 
 # Minute stacks regex
-MINUTE_STACK_EXT = "stacked-tn"
+MINUTE_TINY_STACK_EXT = "-tn"
+MINUTE_STACK_EXT = "stacked" + MINUTE_TINY_STACK_EXT
 MINUTE_FILE_NAMES_REGEX = r"(\d{4})_(\d{2})_(\d{2})_(\d{2})_(\d{2})_(\d{2})_(\d{3})_(\w{6})-stacked-tn.(\w{3})"
 MINUTE_FILE_NAMES_REGEX_GROUP = ["full","year","month","day","hour","min","sec","ms","cam_id","ext"]
 
