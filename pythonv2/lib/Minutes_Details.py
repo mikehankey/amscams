@@ -46,10 +46,10 @@ def minute_details(form):
       #print("<br>")
   
    
-   if(cfe(video_full_path)==1):
-      print(video_full_path)
-   else:
-      print(video_full_path + " not FOUND")
+   #if(cfe(video_full_path)==1):
+   #   print(video_full_path)
+   #else:
+   #   print(video_full_path + " not FOUND")
 
    print(template)
    print(analysed_minute)
