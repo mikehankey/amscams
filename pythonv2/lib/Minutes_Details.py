@@ -39,12 +39,7 @@ def minute_details(form):
    #Build path for glob
    video_full_path  = MINUTE_FOLDER +  os.sep + analysed_minute['year'] + os.sep + str(analysed_minute['month']).zfill(2) + "_" + str(analysed_minute['day']).zfill(2) + os.sep + VIDEOS_FAILED_MINUTE_FOLDER + os.sep
    video_full_path  += analysed_minute['full'].replace('.png','.mp4').replace(analysed_minute['min'],'*').replace(analysed_minute['sec'],'*').replace(analysed_minute['ms'],'*').replace(analysed_minute['cam_id'],analysed_minute['cam_id']+'-trim*').replace('-'+MINUTE_STACK_EXT,'').replace("-trim",'*')
-   print("FULL PATH " + video_full_path + "<br>")
    
-   
-   
-   #analysed_minute['full'].replace(MINUTE_TINY_STACK_EXT,'-trim*').replace('.png','.mp4').replace(analysed_minute['sec'],'*').replace(analysed_minute['min'],'*').replace(analysed_minute['ms'],'*')
-   print("FULL PATH " + video_full_path + "<br>")
    r = glob.glob(video_full_path)
    for f in r:
       print(f)
