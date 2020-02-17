@@ -46,7 +46,9 @@ def minute_details(form):
    #analysed_minute['full'].replace(MINUTE_TINY_STACK_EXT,'-trim*').replace('.png','.mp4').replace(analysed_minute['sec'],'*').replace(analysed_minute['min'],'*').replace(analysed_minute['ms'],'*')
    print("FULL PATH " + video_full_path + "<br>")
    r = glob.glob(video_full_path)
-   print(r)
+   for f in r:
+      print(f)
+      print("<br>")
   
    
    if(cfe(video_full_path)==1):
