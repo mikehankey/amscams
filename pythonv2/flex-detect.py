@@ -9712,11 +9712,53 @@ def bound_169(cx,cy,width,height):
       cy1 = 1080 - height 
       cy2 = 1079
    return(cx1,cx2,cy1,cy2)
- 
+
+def injest(video_file):
+   """ Function that will manually injest a daytime or non-detected meteor into the system
+   """
+
+   # first check to see if we are dealing with a HD source video. 
+   # if we are, down-sample it so we have an SD video to work with (will be 10x faster than detecting in HD)
+
+   cmd = "/usr/bin/ffprobe " + video_file + "  > /mnt/ams2/tmp/info.txt 2>&1"
+   os.system(cmd) 
+
+   # open output from ffprobe to find HD status
+   fp = open("/mnt/ams2/tmp/info.txt", "r")
+   probe_out = ""
+   for line in fp:
+      probe_out += line
+   
+   if "1920" in probe_out:
+      print("We have an HD file for input. Downscale it first!")
+      sd_video_file = video_file.replace(".mp4", "-SD.mp4")
+   else: 
+      sd_video_file = video_file
+  
+   # create SD downsample if it does not already exist 
+   if cfe(sd_video_file) == 0:
+      cmd = "/usr/bin/ffmpeg -i " + video_file + " -vf scale=640:360 " + sd_video_file
+      os.system(cmd)
+
+   # load frames from SD video file
+   sd_frames,sd_color_frames,sd_subframes,sum_vals,max_vals = load_frames_fast(sd_video_file, json_conf, 0, 0, [], 1,[])
+   # check for events and possible meteors in frames
+   events, pos_meteors = fast_check_events(sum_vals, max_vals, sd_subframes)
+
+   # print the events in the clips
+   for event in events:
+      print(event)
+
+   # print the objects found in the clip (meteors will be classed and have meteor_yn=1)
+   for meteor in pos_meteors:
+      print(meteor)
+
 
 cmd = sys.argv[1]
 video_file = sys.argv[2]
 
+if cmd == "injest":
+   injest(video_file)
 if cmd == "fd" or cmd == "flex_detect":
    flex_detect(video_file)
 
@@ -9808,3 +9850,4 @@ if cmd == "bmpi" :
    batch_make_preview_image(sys.argv[2])
 if cmd == "fm" :
    finish_meteor(sys.argv[2])
+
