@@ -19,6 +19,7 @@ def minute_details(form):
       template = file.read()
 
    template = template.replace('{DATE}',string_date)
+   template = template.replace('{CAM_ID}',analysed_minute['cam_id'])
 
    print(template)
    print(analysed_minute)
