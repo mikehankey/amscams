@@ -16,4 +16,8 @@ def redirect_to(redirectURL, page_type="proper"):
 # Display an error message on the page
 def print_error(msg):
    print("<div id='main_container' class='container mt-4 lg-l'>"+get_error(msg)+"</div>")
-   sys.exit(0)
+   sys.exit(0) 
+
+# Return an error message
+def get_error(msg):
+   return "<div class='alert alert-danger'>"+msg+"</div>"

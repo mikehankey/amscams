@@ -22,7 +22,7 @@ from lib.ImageLib import stack_stack,  mask_frame
 from lib.Get_Station_Id import get_station_id 
 from lib.UtilLib import convert_filename_to_date_cam, bound_cnt
 from lib.Get_Cam_ids import get_mask 
-from lib.CGI_Tools import print_error
+from lib.CGI_Tools import *
 
 
 # LOAD VIDEO FRAMES with MASKS
@@ -299,9 +299,7 @@ def reapply_calib(json_data, json_file_path):
          if('dist_from_start' not in json_data['frames'][0]):
             update_eval_points(json_file_path)  
 
-# Return an error message
-def get_error(msg):
-   return "<div class='alert alert-danger'>"+msg+"</div>"
+
 
 
 
