@@ -29,7 +29,8 @@ def minute_details(form):
    
    if(cfe(full_path_bigger)!=1):
       print_error('Impossible to find the full version of the SD stack ('+full_path_bigger+')')
- 
+   
+   template = template.replace('{STACK}',full_path_bigger)
 
    print(template)
    print(analysed_minute)
