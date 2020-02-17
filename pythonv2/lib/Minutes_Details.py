@@ -37,7 +37,13 @@ def minute_details(form):
    # Search for related video
 
    #Build path for glob
-   video_full_path  = MINUTE_FOLDER +  os.sep + analysed_minute['year'] + os.sep + str(analysed_minute['month']).zfill(2) + "_" + str(analysed_minute['day']).zfill(2) + os.sep + VIDEOS_FAILED_MINUTE_FOLDER + os.sep +  analysed_minute['full'].replace(MINUTE_TINY_STACK_EXT,'-trim*').replace('.png','.mp4').replace(analysed_minute['sec'],'*').replace(analysed_minute['min'],'*').replace(analysed_minute['ms'],'*')
+   video_full_path  = MINUTE_FOLDER +  os.sep + analysed_minute['year'] + os.sep + str(analysed_minute['month']).zfill(2) + "_" + str(analysed_minute['day']).zfill(2) + os.sep + VIDEOS_FAILED_MINUTE_FOLDER + os.sep
+   video_full_path  += analysed_minute['full'].replace('.png','.mp4').replace(analysed_minute['sec'],'*').replace(analysed_minute['min'],'*')
+   print("FULL PATH " + video_full_path + "<br>")
+   
+   
+   
+   #analysed_minute['full'].replace(MINUTE_TINY_STACK_EXT,'-trim*').replace('.png','.mp4').replace(analysed_minute['sec'],'*').replace(analysed_minute['min'],'*').replace(analysed_minute['ms'],'*')
    print("FULL PATH " + video_full_path + "<br>")
    r = glob.glob(video_full_path)
    print(r)
