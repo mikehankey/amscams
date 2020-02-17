@@ -1,5 +1,4 @@
-import cgitb
-import glob
+import cgitb 
 
 from datetime import datetime
 
@@ -37,21 +36,13 @@ def minute_details(form):
    # Search for related video
 
    #Build path for glob
-   video_full_path  = MINUTE_FOLDER +  os.sep + analysed_minute['year'] + '_'+ str(analysed_minute['month']).zfill(2) + "_" + str(analysed_minute['day']).zfill(2) + os.sep 
-   print(video_full_path)
-  
-   #video_full_path  += analysed_minute['full'].replace('.png','.mp4').replace(analysed_minute['min'],'*').replace(analysed_minute['sec'],'*').replace(analysed_minute['ms'],'*').replace(analysed_minute['cam_id'],analysed_minute['cam_id']+'-trim*').replace('-'+MINUTE_STACK_EXT,'').replace("-trim",'*')
-    
-   r = glob.glob(video_full_path)
-   #for f in r:
-      #print(f)
-      #print("<br>")
-  
+   video_full_path  = MINUTE_FOLDER +  os.sep + analysed_minute['year'] + '_'+ str(analysed_minute['month']).zfill(2) + "_" + str(analysed_minute['day']).zfill(2) + os.sep + analysed_minute['full'].replace(MINUTE_STACK_EXT+'.png','.mp4')
+      
    
-   #if(cfe(video_full_path)==1):
-   #   print(video_full_path)
-   #else:
-   #   print(video_full_path + " not FOUND")
+   if(cfe(video_full_path)==1):
+      print(video_full_path)
+   else:
+      print(video_full_path + " not FOUND")
 
    print(template)
    print(analysed_minute)
