@@ -29,7 +29,7 @@ def minute_details(form):
    full_path_bigger = MINUTE_FOLDER +  os.sep + analysed_minute['year'] + os.sep + str(analysed_minute['month']).zfill(2) + "_" + str(analysed_minute['day']).zfill(2) + os.sep + IMAGES_MINUTE_FOLDER + os.sep +  analysed_minute['full'].replace(MINUTE_TINY_STACK_EXT,'')
    
    if(cfe(full_path_bigger)!=1):
-      print_error('Impossible to find the full version of the SD stack ('+full_path_bigger+')')
+      full_path_bigger = stack
    
    template = template.replace('{STACK}',full_path_bigger)
 
