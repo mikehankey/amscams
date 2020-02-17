@@ -1,10 +1,10 @@
 import cgitb
 
-from lib.CGI_Tools import print_error
- 
-from lib.Minutes_Tools import *
 from datetime import datetime
-from FileIO import cfe
+
+from lib.CGI_Tools import print_error
+from lib.FileIO import cfe 
+from lib.Minutes_Tools import *
 
 PAGE_TEMPLATE = "/home/ams/amscams/pythonv2/templates/minute_details.html"
 
