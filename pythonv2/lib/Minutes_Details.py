@@ -11,12 +11,14 @@ def minute_details(form):
    stack = form.getvalue('stack') 
 
    analysed_minute = minute_name_analyser(stack)
-   date = datetime.strptime(analysed_minute['year']+'/'+analysed_minute['month']+'/'+analysed_minute['day']+' '+analysed_minute['hour']+':'+analysed_minute['min']+':'+analysed_minute['src'],"%Y/%m/%d %H:%M:%s") 
+   string_date = analysed_minute['year']+'/'+analysed_minute['month']+'/'+analysed_minute['day']+' '+analysed_minute['hour']+':'+analysed_minute['min']+':'+analysed_minute['sec'])
+   date = datetime.strptime(string_date,"%Y/%m/%d %H:%M:%s") 
    
     # Build the page based on template  
    with open(PAGE_TEMPLATE, 'r') as file:
       template = file.read()
 
+   template = template.replace('{DATE}',string_date)
 
    print(template)
    print(analysed_minute)
