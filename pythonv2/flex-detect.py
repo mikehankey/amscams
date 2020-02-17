@@ -3143,7 +3143,7 @@ def calc_leg_segs(xobj):
       ty = xobj['oys'][i]
       dist = calc_dist((fx,fy),(tx,ty))
       dist_from_start.append(dist)
-      if i > 0 and i < len(xobj['ofns']):
+      if i > 0 and i < len(xobj['ofns']) and len(xobj['ofns']) > 2:
          tm,tb = best_fit_slope_and_intercept([fx,tx],[fy,ty])
          seg_len = dist_from_start[i] - dist_from_start[i-1]
          line_segs.append(seg_len)
@@ -5611,6 +5611,7 @@ def flex_detect_old(video_file):
    remaster(show_frames, marked_video_file, station_id,meteor_objects[0])
 
 def fast_check_events(sum_vals, max_vals, subframes):
+   print("Fast check events.")
    events = []
    event = []
    event_info = []
@@ -5623,8 +5624,6 @@ def fast_check_events(sum_vals, max_vals, subframes):
    med_sum = np.median(sum_vals)
    med_max = np.median(max_vals)
    median_frame = cv2.convertScaleAbs(np.median(np.array(subframes[0:25]), axis=0))
-   for sf in subframes:
-      print(sf.shape)
 
    if subframes[0].shape[1] == 1920:
       hd = 1
@@ -5721,11 +5720,6 @@ def fast_check_events(sum_vals, max_vals, subframes):
       if objects[object]['report']['meteor_yn'] == "Y":
          pos_meteors[mc] = objects[object]
          mc = mc + 1
-      else:
-         print("NON METEOR FN:", object, objects[object]['ofns'])
-         print("NON METEOR XS:", object, objects[object]['oxs'])
-         print("NON METEOR YS:", object, objects[object]['oys'])
-         print("NON METEOR REPT:", object, objects[object]['report'])
 
    return(events, pos_meteors)
 
@@ -9746,12 +9740,40 @@ def injest(video_file):
    events, pos_meteors = fast_check_events(sum_vals, max_vals, sd_subframes)
 
    # print the events in the clips
+   ec = 0
    for event in events:
-      print(event)
+      print("EVENT:", ec, event)
+      ec += 1
 
    # print the objects found in the clip (meteors will be classed and have meteor_yn=1)
    for meteor in pos_meteors:
-      print(meteor)
+      print("MET:", meteor)
+
+   selected_event = int(input("Please enter the event number you think is the meteor\n"))
+   #key = int(selected_event)
+   meteor_event = events[selected_event]
+   print("You selected:", meteor_event)
+   user_trim_clip = input("Trim Clip (Y or N) \n")
+   if user_trim_clip == "Y":
+      # base initial buffer size off of total event length 
+      buf_size = meteor_event[-1] - meteor_event[0]
+      # trim buff size accordingly
+      if buf_size < 10:
+         buf_size = 10
+      if buf_size > 50:
+         buf_size = 25
+      t_start, t_end = buffered_start_end(meteor_event[0],meteor_event[-1], len(sd_frames), buf_size)
+
+
+      trim_clip, trim_start, trim_end = make_trim_clip(video_file, t_start, t_end)
+      print("TRIM CLIP MADE:", trim_clip)
+      print("Detecting meteors in trim clip:", trim_clip)
+      motion_objects,meteor_frames = detect_meteor_in_clip(trim_clip , None, 0)
+
+      for mo in motion_objects:
+         print(mo, motion_objects[mo]) 
+      # now buffer the SD and HD clips
+      
 
 
 cmd = sys.argv[1]
