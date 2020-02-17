@@ -6,10 +6,13 @@
 
 <div id="main_container" class="container-fluid d-flex h-100 mt-4 position-relative"> 
    <div class="h-100 flex-fixed-canvas">
-         <video controls="" loop="" autoplay="" name="media" src="{VIDEO}"><source type="video/mp4"></video>
+         <div class="emb-vid">
+               <video controls="" loop="" autoplay="" name="media" src="{VIDEO}"><source type="video/mp4"></video>
+         </div>   
+         
 
 
-      <img src="{STACK}" class="img-fluid" style="width:100%"/>
+      
    </div>
    <div class="flex-fixed-r-canvas h-100">
       <div class="box">
@@ -21,7 +24,11 @@
                   <a class="btn btn-primary d-block mt-4" target="_blank" href="/pycgi/webUI.py?cmd=&f={STACK}">Save Video</a> 
                   <a class="btn btn-primary d-block mt-4" target="_blank" href="/pycgi/webUI.py?cmd=&f={STACK}">Tag Video</a> 
                </div>
-           </div>
+         </div>
+      </div>
+
+      <div class="box">
+         <img src="{STACK}" class="img-fluid" style="width:100%"/>
       </div>
 
    </div>
