@@ -285,3 +285,117 @@ def load_frames_fast(input_file, analysed_input_file, limit=0, mask=0,crop=(),co
       return(frames,x1,y1)
    else:
       return(frames, color_frames, subframes, sum_vals, max_vals)
+
+
+def fast_check_events(sum_vals, max_vals, subframes):
+   print("Fast check events.")
+   events = []
+   event = []
+   event_info = []
+   events_info = []
+   cm = 0
+   nomo = 0
+   i = 0
+   #med_sum = np.median(sum_vals[0:10])
+   #med_max = np.median(max_vals[0:10])
+   med_sum = np.median(sum_vals)
+   med_max = np.median(max_vals)
+   median_frame = cv2.convertScaleAbs(np.median(np.array(subframes[0:25]), axis=0))
+
+   if subframes[0].shape[1] == 1920:
+      hd = 1
+      sd_multi = 1
+   else:
+      hd = 0
+      sd_multi = 1920 / subframes[0].shape[1]
+
+   for sum_val in sum_vals:
+      
+      #max_val = max_vals[i]
+      subframe = subframes[i]
+      #subframe = cv2.subtract(subframe, median_frame)
+      min_val, max_val, min_loc, (mx,my)= cv2.minMaxLoc(subframe)
+      #print(i, med_sum, med_max, sum_val , max_val)
+      if sum_val > med_sum * 2 or max_val > med_max * 2:
+         min_val, max_val, min_loc, (mx,my)= cv2.minMaxLoc(subframe)
+         desc = str(i)
+        
+         if max_val > 10:
+            #cv2.putText(subframe, str(desc),  (10,10), cv2.FONT_HERSHEY_SIMPLEX, .3, (255, 255, 255), 1)
+            event_info.append((sum_val, max_val, mx, my))
+            event.append(i)
+            cm = cm + 1
+            nomo = 0
+         else:
+            nomo = nomo + 1
+      else:
+         nomo = nomo + 1
+      if cm > 2 and nomo > 5:
+         events.append(event)
+         events_info.append(event_info)
+         event = []
+         event_info = []
+         cm = 0
+      elif nomo > 5:
+         event = []
+         event_info = []
+         cm = 0
+
+      if show == 1:
+         cv2.circle(subframe,(mx,my), 10, (255,0,0), 1)
+         cv2.imshow('pepe', subframe)
+         cv2.waitKey(70)
+
+      i = i + 1
+
+   if show == 1:
+      cv2.destroyWindow('pepe')
+
+   if len(event) >= 3:
+      events.append(event)
+      events_info.append(event_info)
+
+   print("TOTAL EVENTS:", len(events))
+   filtered_events = []
+   filtered_info = []
+   i = 0
+   for ev in events:
+      max_cm = calc_cm_for_event(ev)
+      if max_cm >= 2:
+         filtered_events.append(ev)
+         filtered_info.append(events_info[i])
+      else:
+         print("FILTERED:", max_cm, ev)
+         print("FILTERED:", events_info[i])
+      i = i + 1
+   print("FILTERED EVENTS:", len(filtered_events))
+   events = filtered_events
+   events_info = filtered_info
+
+   i = 0
+   objects = {}
+   for event in events:
+      ev_z = event[0]
+      object = None
+      fc = 0
+      for evi in events_info[i]:
+         sv, mv, mx, my = evi
+         fn = event[fc]
+         object, objects = find_object(objects, fn,mx, my, 5, 5, mv, hd, sd_multi)
+         #print("OBJECT:", fn, object, objects[object])
+         #if 500 <= ev_z <= 700:
+         fc = fc + 1
+      i = i + 1
+
+   for obj in objects:
+      object = objects[obj] 
+      objects[obj] = analyze_object_final(object, hd=0, sd_multi=1)
+
+   pos_meteors = {}
+   mc = 1
+   for object in objects:
+      if objects[object]['report']['meteor_yn'] == "Y":
+         pos_meteors[mc] = objects[object]
+         mc = mc + 1
+
+   return(events, pos_meteors)

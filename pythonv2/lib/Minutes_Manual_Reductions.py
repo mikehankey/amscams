@@ -9,7 +9,7 @@ from lib.CGI_Tools import print_error
 from lib.FileIO import cfe
 from lib.Minutes_Tools import whatever_minute_name_analyser, minute_name_analyser, MINUTE_STACK_EXT, MINUTE_HD_VID_FOLDER, MINUTE_SD_FOLDER, DATA_MINUTE_SD_FOLDER, IMAGES_MINUTE_SD_FOLDER
 from lib.Minutes_Details import HD_TMP_STACK_EXT
-from lib.Frame_Tools import load_frames_fast
+from lib.Frame_Tools import load_frames_fast, fast_check_events
 
 MANUAL_RED_MINUTE_PAGE_TEMPLATE_STEP1 = "/home/ams/amscams/pythonv2/templates/minute_manual_reduction_template_step0.html"
 
@@ -104,20 +104,10 @@ def automatic_detect(form):
 
    #  load_frames_fast to get subframes and sum/max val info this also includes (mx,my) brightest point in subframe .
    analysed_minute_name = whatever_minute_name_analyser(output_path)
-   hd_frames,hd_color_frames,hd_subframes,sum_vals,max_vals = load_frames_fast(output_path, analysed_minute_name, 0, 0, [], 0,[])
+   frames,color_frames,subframes,sum_vals,max_vals = load_frames_fast(output_path, analysed_minute_name, 0, 0, [], 0,[])
    
-   
-   print("<br>HD FRAMES<br>")
-   print(hd_frames)
-   print("<br>HD COLOR FRAMES<br>")
-   print(hd_color_frames)
-   print("<br>HD SUB FRAMES<br>")
-   print(hd_subframes)
-   print("<br>HD sum_vals<br>")
-   print(sum_vals)
-   print("<br>HD max_vals<br>")
-   print(max_vals)
- 
+   # Fast Check the event
+   fast_check_events(sum_vals, max_vals, subframes)
  
   
 
