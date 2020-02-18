@@ -11,6 +11,7 @@ from lib.FileIO import load_json_file, save_json_file
 from lib.UtilLib import bound_cnt
 from lib.VideoLib import load_video_frames
 from lib.Cleanup_Json_Conf import PATH_TO_CONF_JSON
+from lib.Sync_HD_SD_videos import get_masks
 
 TMP_FRAME_FOLDER = '/mnt/ams2/TMP'
 FRAME_THUMB_W = 50  #In pixel
