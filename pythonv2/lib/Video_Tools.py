@@ -23,6 +23,10 @@ def fixmp4(path_to_mp4,save_backup=False):
    cmd = 'ffmpeg -y -hide_banner -loglevel panic -i ' + path_to_mp4 + ' ' + path + 'tmp.mp4'
    output = subprocess.check_output(cmd, shell=True).decode("utf-8")    
 
+   print(cmd)
+   print(output)
+
+   sys.exit(0)
    if(save_backup is True):
       # We rename the original file 
       os.rename(path_to_mp4, path_to_mp4+'.backup.mp4')
