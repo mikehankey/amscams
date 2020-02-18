@@ -11,6 +11,12 @@ from os.path import isfile, join, exists
 from lib.Video_Title_cv import *
 
 
+# TEST FIX MP4
+fixmp4('/mnt/ams2/SD/proc2/2020_02_17/2020_02_17_11_49_48_000_010037.mp4')
+
+ 
+
+
 #TEST SD FRAMES
 #print("GET SD FRAMES FOR '010042','2019_06_20'")
 #path, date, camID
@@ -216,16 +222,16 @@ from lib.Video_Title_cv import *
 
 
 # CONCAT VIDEOS START
-_from = 5 # in seconds
-_total_duration = 8 # in seconds
+#_from = 5 # in seconds
+#_total_duration = 8 # in seconds
 #concat_videos_fade('/mnt/ams2/opening_title.mp4','/mnt/ams2/music_credits.mp4','/mnt/ams2/1.mp4',_from,_total_duration)
-_from = 10 # in seconds
-_total_duration = 12 # in seconds
+#_from = 10 # in seconds
+#_total_duration = 12 # in seconds
 #concat_videos_fade('/mnt/ams2/1.mp4','/mnt/ams2/producedby.mp4','/mnt/ams2/START.mp4',_from,_total_duration)
 
 # CONCAT VIDEO END
-_from = 5 # in seconds
-_total_duration = 12 # in seconds
+#_from = 5 # in seconds
+#_total_duration = 12 # in seconds
 #concat_videos_fade('/mnt/ams2/operator_credits.mp4','/mnt/ams2/allskycams.mp4','/mnt/ams2/END.mp4',_from,_total_duration) 
 
 
@@ -244,45 +250,45 @@ _total_duration = 12 # in seconds
 
 
 
-# ADD THUMBS TO VIDEO
-from lib.Video_Tools_cv import *
+# ADD THUMBS TO VIDEO #############################################################################################
+# from lib.Video_Tools_cv import *
 
-HD_video = "/mnt/ams2/meteor_archive/AMS16/METEOR/2020/01/05/2020_01_05_03_01_32_000_010093-trim0597-HD.mp4"
-json_conf = "/mnt/ams2/meteor_archive/AMS16/METEOR/2020/01/05/2020_01_05_03_01_32_000_010093-trim0597.json"
-thumb_path = "/mnt/ams2/CACHE/AMS16/2020/01/05/2020_01_05_03_01_32_000_010093-trim0597/THUMBS/"
-x = 900
-y = 250
-hd_sync=50
-sd_sync=49
-thumb_name = "2020_01_05_03_01_32_000_010093-trim0597_frm"
-thumbs_start_at = 100-(sd_sync-hd_sync) 
-thumbs_end_at = 278-(sd_sync-hd_sync) 
-output_video_path = "/mnt/ams2/andre_with_zoom.mp4"
-zoom = 6
-add_thumbs_to_video(hd_sync,sd_sync,HD_video,json_conf,thumb_path,thumb_name,thumbs_start_at,thumbs_end_at,x,y,zoom,output_video_path)
-output_video_path = "/mnt/ams2/andre_without_zoom.mp4"
-zoom = 0
-add_thumbs_to_video(hd_sync,sd_sync,HD_video,json_conf,thumb_path,thumb_name,thumbs_start_at,thumbs_end_at,x,y,zoom,output_video_path)
+#HD_video = "/mnt/ams2/meteor_archive/AMS16/METEOR/2020/01/05/2020_01_05_03_01_32_000_010093-trim0597-HD.mp4"
+#json_conf = "/mnt/ams2/meteor_archive/AMS16/METEOR/2020/01/05/2020_01_05_03_01_32_000_010093-trim0597.json"
+#thumb_path = "/mnt/ams2/CACHE/AMS16/2020/01/05/2020_01_05_03_01_32_000_010093-trim0597/THUMBS/"
+##x = 900
+#y = 250
+#hd_sync=50
+#sd_sync=49
+#thumb_name = "2020_01_05_03_01_32_000_010093-trim0597_frm"
+#thumbs_start_at = 100-(sd_sync-hd_sync) 
+#thumbs_end_at = 278-(sd_sync-hd_sync) 
+#output_video_path = "/mnt/ams2/andre_with_zoom.mp4"
+#zoom = 6
+#add_thumbs_to_video(hd_sync,sd_sync,HD_video,json_conf,thumb_path,thumb_name,thumbs_start_at,thumbs_end_at,x,y,zoom,output_video_path)
+#output_video_path = "/mnt/ams2/andre_without_zoom.mp4"
+#zoom = 0
+#add_thumbs_to_video(hd_sync,sd_sync,HD_video,json_conf,thumb_path,thumb_name,thumbs_start_at,thumbs_end_at,x,y,zoom,output_video_path)
 
-sys.exit(0)
+#sys.exit(0)
+##############################################################################################################
+#HD_video = "/mnt/ams2/meteor_archive/AMS22/METEOR/2020/01/05/2020_01_05_03_01_23_000_010029-trim736-HD.mp4"
+#json_conf = "/mnt/ams2/meteor_archive/AMS22/METEOR/2020/01/05/2020_01_05_03_01_23_000_010029-trim736.json"
+#thumb_path = "/mnt/ams2/CACHE/AMS22/2020/01/05/2020_01_05_03_01_23_000_010029-trim736/THUMBS/"
+#x = 1180
+#y = 250
+#hd_sync=46
+#sd_sync=208
+#thumbs_start_at = 202-(sd_sync-hd_sync) 
+#thumbs_end_at = 396-(sd_sync-hd_sync) 
+#thumb_name = "2020_01_05_03_01_23_000_010029-trim736_frm"
+#output_video_path = "/mnt/ams2/sirko_with_zoom.mp4"
+#zoom = 6
+#add_thumbs_to_video(hd_sync,sd_sync,HD_video,json_conf,thumb_path,thumb_name,thumbs_start_at,thumbs_end_at,x,y,zoom,output_video_path)
 
-HD_video = "/mnt/ams2/meteor_archive/AMS22/METEOR/2020/01/05/2020_01_05_03_01_23_000_010029-trim736-HD.mp4"
-json_conf = "/mnt/ams2/meteor_archive/AMS22/METEOR/2020/01/05/2020_01_05_03_01_23_000_010029-trim736.json"
-thumb_path = "/mnt/ams2/CACHE/AMS22/2020/01/05/2020_01_05_03_01_23_000_010029-trim736/THUMBS/"
-x = 1180
-y = 250
-hd_sync=46
-sd_sync=208
-thumbs_start_at = 202-(sd_sync-hd_sync) 
-thumbs_end_at = 396-(sd_sync-hd_sync) 
-thumb_name = "2020_01_05_03_01_23_000_010029-trim736_frm"
-output_video_path = "/mnt/ams2/sirko_with_zoom.mp4"
-zoom = 6
-add_thumbs_to_video(hd_sync,sd_sync,HD_video,json_conf,thumb_path,thumb_name,thumbs_start_at,thumbs_end_at,x,y,zoom,output_video_path)
-
-output_video_path = "/mnt/ams2/sirko_without_zoom.mp4"
-zoom = 0
-add_thumbs_to_video(hd_sync,sd_sync,HD_video,json_conf,thumb_path,thumb_name,thumbs_start_at,thumbs_end_at,x,y,zoom,output_video_path)
+#output_video_path = "/mnt/ams2/sirko_without_zoom.mp4"
+#zoom = 0
+#add_thumbs_to_video(hd_sync,sd_sync,HD_video,json_conf,thumb_path,thumb_name,thumbs_start_at,thumbs_end_at,x,y,zoom,output_video_path)
  
 ############# TEST TIMELAPSES FROM JPEGs
 #job = {
