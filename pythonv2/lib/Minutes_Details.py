@@ -12,6 +12,7 @@ from lib.VIDEO_VARS import HD_H, HD_W
 PAGE_TEMPLATE = "/home/ams/amscams/pythonv2/templates/minute_details.html"
 HD_TMP_STACK_EXT = "_HD_tmp_stack.png"
 
+
 # Temporarily resize SD Stack
 def getResizeSDStack(_input):
  

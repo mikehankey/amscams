@@ -40,7 +40,7 @@ def minute_name_analyser(file_name):
          groupNum = groupNum + 1
  
    return res
-   
+
   
 # Get sun az & alt to determine if it's a daytime or nightime minute
 def get_sun_details(capture_date):
@@ -67,7 +67,6 @@ def get_sun_details(capture_date):
          sun_status = "n"   # Night
       else:
          sun_status = "d"   # Day
-
       return sun_az,sun_alt 
    
    else:
