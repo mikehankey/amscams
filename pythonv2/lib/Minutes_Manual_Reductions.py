@@ -7,7 +7,7 @@ import subprocess
 from lib.Cleanup_Json_Conf import PATH_TO_CONF_JSON
 from lib.CGI_Tools import print_error
 from lib.FileIO import cfe
-from lib.Minutes_Tools import minute_name_analyser, MINUTE_STACK_EXT, MINUTE_HD_VID_FOLDER, MINUTE_SD_FOLDER, DATA_MINUTE_SD_FOLDER, IMAGES_MINUTE_SD_FOLDER
+from lib.Minutes_Tools import whatever_minute_name_analyser, minute_name_analyser, MINUTE_STACK_EXT, MINUTE_HD_VID_FOLDER, MINUTE_SD_FOLDER, DATA_MINUTE_SD_FOLDER, IMAGES_MINUTE_SD_FOLDER
 from lib.Minutes_Details import HD_TMP_STACK_EXT
 from lib.Frame_Tools import load_frames_fast
 
@@ -104,9 +104,11 @@ def automatic_detect(form):
 
    #  load_frames_fast to get subframes and sum/max val info this also includes (mx,my) brightest point in subframe .
    print("BEFORE load_frames_fast <br>")
-   hd_frames,hd_color_frames,hd_subframes,sum_vals,max_vals = load_frames_fast(output_path, 0, 0, [], 0,[])
+   c = whatever_minute_name_analyser(output_path)
+   print(c)
+   #hd_frames,hd_color_frames,hd_subframes,sum_vals,max_vals = load_frames_fast(output_path, 0, 0, [], 0,[])
    
-   print("HD FRAMES<br>")
+   print("<br>HD FRAMES<br>")
    print(hd_frames)
    print("<br>HD COLOR FRAMES<br>")
    print(hd_color_frames)
