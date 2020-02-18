@@ -16,7 +16,7 @@ from pathlib import Path
 
 # Fix a MP4 just copying it 
 def fixmp4(path_to_mp4):
-   print(Path(path_to_mp4).absolute())
+   print(Path(path_to_mp4).parent.absolute())
    
 
 # Blend two images together
