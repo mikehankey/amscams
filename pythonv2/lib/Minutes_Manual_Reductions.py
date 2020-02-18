@@ -17,8 +17,7 @@ def define_ROI(form):
 
    # We dont have any other info for the page
    template = template.replace("{STACK}",stack) 
-   
-
+    
    # Display Template
    print(template) 
 
