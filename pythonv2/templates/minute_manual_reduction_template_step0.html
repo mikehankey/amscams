@@ -1,0 +1,27 @@
+<div id="main_container" class="container-fluid h-100 mt-4 position-relative"> 
+      <div id="step1">
+         <h1>Minute Manual Reduction Step 1: Select Meteor Path (ROI)</h1>
+         <input type="hidden" name="x_start"/><input type="hidden" name="y_start"/>
+         <input type="hidden" name="x_end"/><input type="hidden" name="y_end"/>
+         <input type="hidden" name="xs"/><input type="hidden" name="ys"/>
+         <input type="hidden" name="w"/><input type="hidden" name="h"/>
+         <div class="box">
+            <div class="mb-2">
+               <div class="alert alert-info mt-0 mb-4"><span class="icon-question"></span> 
+                  Select the entire meteor path inside the stack.
+                  <div id="res" class="float-right pt-1"><span class="start"></span><span class="end pl-4" ></span></div>
+               </div>
+            </div>
+            <div id="step1_cont"></div>
+         </div>
+        
+      </div>
+   </div>
+   
+   <script>
+      var stack = "{STACK}"; 
+      // First step:
+      window.onload = function () {
+         create_meteor_selector_from_stack(stack,false);
+      }
+   </script>
