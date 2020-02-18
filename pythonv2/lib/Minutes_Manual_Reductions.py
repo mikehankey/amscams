@@ -59,6 +59,8 @@ def automatic_detect(form):
    if(HD_found is False):
       tmp_almost_path = MINUTE_HD_VID_FOLDER + os.sep + analysed_minute['year'] + '_' + analysed_minute['month'] + '_' + analysed_minute['day'] + '_' + analysed_minute['hour'] + '_' + analysed_minute['min'] + '_' + '*' +  analysed_minute['cam_id'] + '*' + '.mp4'
       filelist = glob.glob(tmp_almost_path)
+      print(filelist)
+      print("<br>")
       if(len(filelist)==1):
          HD_found = True 
          HD_path = filelist[0]
@@ -67,11 +69,11 @@ def automatic_detect(form):
    if(HD_found is False):
       tmp_almost_path = MINUTE_SD_FOLDER + os.sep + analysed_minute['year'] + '_' + analysed_minute['month'] + '_' + analysed_minute['day']  + os.sep + analysed_minute['year'] + '_' + analysed_minute['month'] + '_' + analysed_minute['day'] + '_' + analysed_minute['hour'] + '_' + analysed_minute['min'] + '_' + '*' +  analysed_minute['cam_id'] + '*' + '.mp4'
       filelist = glob.glob(tmp_almost_path)
+      print(filelist)
+      print("<br>")
       if(len(filelist)==1):
          SD_found = True 
-         SD_path = filelist[0]
-
-         # But we need to resize it!
+         SD_path = filelist[0] 
 
    if(HD_found is False and SD_found is False):
       print_error('Impossible to find the related SD or HD video.') 
