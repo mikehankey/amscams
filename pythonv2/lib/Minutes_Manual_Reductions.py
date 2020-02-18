@@ -43,6 +43,7 @@ def automatic_detect(form):
    org_stack_folder = os.path.dirname(os.path.abspath(stack))
 
    print(org_stack_folder)
+   sys.exit(0)
  
    # Do we have a HD version on the video of this stack?
    # Ex: 
