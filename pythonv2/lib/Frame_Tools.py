@@ -290,7 +290,15 @@ def load_frames_fast(input_file, analysed_input_file, limit=0, mask=0,crop=(),co
 
 # Mike's function
 def fast_check_events(sum_vals, max_vals, subframes):
-   print("Fast check events.")
+   print("Fast check events<br>")
+
+   print("SUM VALS<br>")
+   print(sum_vals)
+   print("MAX VALS<br>")
+   print(max_vals)
+   print("subframes<br>")
+   print(subframes)
+   
    events = []
    event = []
    event_info = []
