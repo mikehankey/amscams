@@ -107,16 +107,16 @@ def automatic_detect(form):
    hd_frames,hd_color_frames,hd_subframes,sum_vals,max_vals = load_frames_fast(output_path, analysed_minute_name, 0, 0, [], 0,[])
    
    
-   #print("<br>HD FRAMES<br>")
-   #print(hd_frames)
-   #print("<br>HD COLOR FRAMES<br>")
-   #print(hd_color_frames)
-   #print("<br>HD SUB FRAMES<br>")
-   #print(hd_subframes)
-   #print("<br>HD sum_vals<br>")
-   #print(sum_vals)
-   #print("<br>HD max_vals<br>")
-   #print(max_vals)
+   print("<br>HD FRAMES<br>")
+   print(hd_frames)
+   print("<br>HD COLOR FRAMES<br>")
+   print(hd_color_frames)
+   print("<br>HD SUB FRAMES<br>")
+   print(hd_subframes)
+   print("<br>HD sum_vals<br>")
+   print(sum_vals)
+   print("<br>HD max_vals<br>")
+   print(max_vals)
  
  
   

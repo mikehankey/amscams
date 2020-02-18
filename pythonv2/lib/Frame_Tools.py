@@ -197,7 +197,9 @@ def get_a_frame(fr_id,sd_vid):
 
 # Load Frames and returns (previously in Mike's flex-detect)
 def load_frames_fast(input_file, analysed_input_file, limit=0, mask=0,crop=(),color=0,resize=[]):
- 
+   
+   cgitb.enable()
+
    cap = cv2.VideoCapture(input_file)
    masks = None
    last_frame = None
