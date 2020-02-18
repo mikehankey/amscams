@@ -107,8 +107,10 @@ def automatic_detect(form):
    frames,color_frames,subframes,sum_vals,max_vals = load_frames_fast(output_path, analysed_minute_name, 0, 0, [], 0,[])
    
    # Fast Check the event
-   fast_check_events(sum_vals, max_vals, subframes)
- 
+   events, pos_meteor = fast_check_events(sum_vals, max_vals, subframes)
+   print(events)
+   print("<br>")
+   print(pos_meteor)
   
 
          
