@@ -74,6 +74,9 @@ from lib.Minutes import browse_minute
 
 # Minutes Details Page
 from lib.Minutes_Details import *
+
+# Minutes Manual Reduction
+from lib.Minutes_Manual_Reductions import *
  
  
 
@@ -627,6 +630,10 @@ def controller(json_conf):
    # MINUTE DETAILS
    if cmd == 'minute_details': 
       minute_details(form)
+
+   # MANUAL REDUCE MINUTE
+   if cmd == 'define_ROI_minute'
+      define_ROI(form)
 
    if cmd == 'solutions':
       solutions(json_conf, form)

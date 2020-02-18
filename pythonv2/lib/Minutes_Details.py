@@ -68,8 +68,5 @@ def minute_details(form):
       print_error(video_full_path + " not FOUND")
 
    template = template.replace('{VIDEO}',video_full_path)
-
  
    print(template)
-   print(analysed_minute)
-
