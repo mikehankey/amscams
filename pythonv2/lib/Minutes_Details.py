@@ -20,7 +20,7 @@ def getResizeSDStack(_input):
    print(_input)
 
    # Here the stack is SD, we resize it to HD for a better view in the meteor track picker
-   tmp_pseudo_HD_stack = _input.replace('-'+MINUTE_STACK_EXT,'').replace('.png',HD_TMP_STACK_EXT)
+   tmp_pseudo_HD_stack = _input.replace(MINUTE_STACK_EXT,'').replace('.png',HD_TMP_STACK_EXT)
   
    if(cfe(tmp_pseudo_HD_stack)):
       return tmp_pseudo_HD_stack
@@ -67,7 +67,7 @@ def minute_details(form):
    template = template.replace('{STACK}',full_path_bigger)
     
    # SEARCH FOR RELATED VIDEO
-   video_full_path  = MINUTE_FOLDER +  os.sep + analysed_minute['year'] + '_'+ str(analysed_minute['month']).zfill(2) + "_" + str(analysed_minute['day']).zfill(2) + os.sep + analysed_minute['full'].replace('-'+MINUTE_STACK_EXT+'.png','.mp4')
+   video_full_path  = MINUTE_FOLDER +  os.sep + analysed_minute['year'] + '_'+ str(analysed_minute['month']).zfill(2) + "_" + str(analysed_minute['day']).zfill(2) + os.sep + analysed_minute['full'].replace(MINUTE_STACK_EXT+'.png','.mp4')
    
    if(cfe(video_full_path)!=1):
       print_error(video_full_path + " not FOUND")
