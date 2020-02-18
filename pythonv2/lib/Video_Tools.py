@@ -4,12 +4,21 @@ import subprocess
 import datetime
 import time
 import shutil
+
 from lib.VIDEO_VARS import * 
 from os import listdir, remove
 from os.path import isfile, join, exists
 from shutil import copyfile
 from lib.FileIO import load_json_file
+from pathlib import Path
 
+
+ 
+
+# Fix a MP4 just copying it 
+def fixmp4(path_to_mp4):
+   print(Path(path_to_mp4).absolute())
+   
 
 # Blend two images together
 # org =  '/mnt/ams2/TIMELAPSE_IMAGES/2019_08_06_01_02_26_000_010039.png'
