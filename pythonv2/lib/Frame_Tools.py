@@ -11,18 +11,11 @@ from lib.FileIO import load_json_file, save_json_file
 from lib.UtilLib import bound_cnt
 from lib.VideoLib import load_video_frames 
 from lib.Sync_HD_SD_videos import get_masks
+from lib.VIDEO_VARS import HD_H, HD_W, SD_W, SD_H
 
 TMP_FRAME_FOLDER = '/mnt/ams2/TMP'
 FRAME_THUMB_W = 50  #In pixel
 FRAME_THUMB_H = 50 
-
-# SD Frames
-SD_W = 704
-SD_H = 576
-
-# HD Frames
-HD_W = 1920
-HD_H = 1080
 
 
 # Update position of multiple frames
@@ -235,7 +228,7 @@ def load_frames_fast(input_file, analysed_input_file, limit=0, mask=0,crop=(),co
                frame = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
 
             if mask == 1 and frame is not None:
-               if frame.shape[0] == 1080:
+               if frame.shape[0] == HD_H:
                   hd = 1
                else:
                   hd = 0
@@ -276,8 +269,7 @@ def load_frames_fast(input_file, analysed_input_file, limit=0, mask=0,crop=(),co
                if x1 > iw -1:
                   x1 = iw -1
                if y1 > ih -1:
-                  y1 = ih -1
-               #print("MIKE:", x1,y2,x2,y2)
+                  y1 = ih -1 
                crop_frame = frame[y1:y2,x1:x2]
                frame = crop_frame
             if len(resize) == 2:
