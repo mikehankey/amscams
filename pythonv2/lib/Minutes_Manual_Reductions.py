@@ -2,9 +2,7 @@ import cgitb
 import os
 import glob
 import sys
-import subprocess
-
-from flex-detect import load_frames_fast
+import subprocess 
 
 from lib.Cleanup_Json_Conf import PATH_TO_CONF_JSON
 from lib.CGI_Tools import print_error
