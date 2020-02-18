@@ -98,7 +98,7 @@ def create_minute_html_res(res,cam_ids,year,month,day):
          cam_res = get_cam_res(res,cam_id,cur_index)
 
          
-         print("DATE " + year + '/' month + '/' +  day +"<br>")
+         print("DATE " + str(year) + '/' + str(month) + '/' +  str(day) +"<br>")
          print(get_min_details(cam_id,year,month,day,cam_res))
          print("<br>")
             
