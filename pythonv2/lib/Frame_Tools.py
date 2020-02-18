@@ -404,3 +404,24 @@ def fast_check_events(sum_vals, max_vals, subframes):
          mc = mc + 1
 
    return(events, pos_meteors)
+
+
+
+# Another mike's function
+def calc_cm_for_event(event):
+   cm = 0
+   max_cm = 0
+   last_fn = None
+   for fn in event:
+      if last_fn is not None:
+         if last_fn + 1 == fn :
+            cm = cm + 1
+         else:
+            if cm > max_cm :
+               max_cm = cm + 1
+            else:
+               cm = 0
+      last_fn = fn
+   if cm > max_cm:
+      max_cm = cm + 1
+   return(max_cm)   
