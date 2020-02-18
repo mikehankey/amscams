@@ -54,10 +54,10 @@ def automatic_detect(form):
 
    # HD hasn't been found, we search for SD vid and we resize it
    if(HD_found == False):
-      tmp_almost_path = MINUTE_SD_FOLDER + os.sep + analysed_minute['year'] + '_' + analysed_minute['month'] + '_' + analysed_minute['day'] + '_' + analysed_minute['hour'] + '_' + analysed_minute['min'] + '_' + '*' +  analysed_minute['cam_id'] + '*' + '.mp4'
+      tmp_almost_path = MINUTE_SD_FOLDER + os.sep + analysed_minute['year'] + '_' + analysed_minute['month'] + '_' + analysed_minute['day']  + os.sep + analysed_minute['year'] + '_' + analysed_minute['month'] + '_' + analysed_minute['day'] + '_' + analysed_minute['hour'] + '_' + analysed_minute['min'] + '_' + '*' +  analysed_minute['cam_id'] + '*' + '.mp4'
       
       print("GLOB PATH <br>")
-      print(MINUTE_SD_FOLDER + os.sep + analysed_minute['year'] + '_' + analysed_minute['month'] + '_' + analysed_minute['day'] + '_' + analysed_minute['hour'] + '_' + analysed_minute['min'] + '_' + '*' +  analysed_minute['cam_id'] + '*' + '.mp4')
+      print(tmp_almost_path)
       print("<br>")
       filelist = glob.glob(tmp_almost_path)
       print(filelist)
