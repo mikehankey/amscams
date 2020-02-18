@@ -2,6 +2,7 @@ import cgitb
 
 from datetime import datetime
 
+from lib.MeteorReduce_Tools import get_stacks
 from lib.CGI_Tools import print_error
 from lib.FileIO import cfe 
 from lib.Minutes_Tools import *
@@ -42,8 +43,11 @@ def minute_details(form):
    template = template.replace('{VIDEO}',video_full_path)
 
 
-
-
+   # No matter if the stack is SD or not
+   # we resize it to HD
+   stack = get_stacks(analysed_minute,clear_cache, True)
+   print(stack)
+ 
    print(template)
    print(analysed_minute)
 
