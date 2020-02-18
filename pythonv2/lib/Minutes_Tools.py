@@ -128,14 +128,18 @@ def write_day_minute_index(day, month, year):
    json_data = create_json_index_minute_day(day,month, year)  
 
    # Write Index 
-  
    output_dir = MINUTE_SD_FOLDER + os.sep + str(year) + '_' + str(month).zfill(2) + '_' + str(day).zfill(2)
 
    # Just in case...
    if not os.path.exists(output_dir):
       os.makedirs(output_dir)
 
-   with open(output_dir + os.sep + str(year) + '_' + str(month).zfill(2) + '_' + str(day).zfill(2) + ".json", 'w') as outfile:
+   filename = output_dir + os.sep + str(year) + '_' + str(month).zfill(2) + '_' + str(day).zfill(2) + ".json"
+   
+   # Empty the file first
+   with open(filename, 'w'): pass
+
+   with open(filename", 'w') as outfile:
       #Write compress format
       json.dump(json_data, outfile)
 
