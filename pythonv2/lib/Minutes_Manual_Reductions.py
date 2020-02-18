@@ -42,7 +42,7 @@ def automatic_detect(form):
    analysed_minute = minute_name_analyser(stack.replace(HD_TMP_STACK_EXT,'-'+MINUTE_STACK_EXT+'.png'))
    
    # Search for HD
-   HD_path = MINUTE_HD_VID_FOLDER + analysed_minute['full'].replace('-'+MINUTE_STACK_EXT+'.png','')
+   HD_path = MINUTE_HD_VID_FOLDER + os.sep + analysed_minute['full'].replace('-'+MINUTE_STACK_EXT+'.png','.mp4')
    
    if(cfe(HD_path)==1):
       print("HD FOUND " + HD_path)
