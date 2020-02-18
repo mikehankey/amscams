@@ -85,11 +85,9 @@ def automatic_detect(form):
    elif(SD_found is True):
       input_path = SD_path
 
+   # The cropped video is tmp stored under /mnt/ams2/SD/proc2/[YYYY_MM_DD]/data/
    output_path = input_path.replace('.mp4','-cropped.mp4')
-
-   output_path = os.path.basename(output_path)
-   print("OUTPUT PATH " + org_stack_folder + os.sep + output_path)
-   sys.exit(0)
+   output_path = org_stack_folder + os.sep + os.path.basename(output_path)
       
    # Create cropped video
    cmd = 'ffmpeg -y -i  '+input_path+' -filter:v "crop='+w+':'+h+':'+x+':'+y+'" '+ output_path
@@ -98,9 +96,9 @@ def automatic_detect(form):
    try:
       output = subprocess.check_output(cmd, shell=True).decode("utf-8")   
    except subprocess.CalledProcessError as e:
-         print_error("Command " + cmd + "  return on-zero exist status: " + str(e.returncode))
+      print_error("Command " + cmd + "  return on-zero exist status: " + str(e.returncode))
 
-   print(output_path())
+   print(output_path)
       
    sys.exit(0)
  
