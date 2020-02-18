@@ -112,12 +112,15 @@ def create_json_index_minute_day(day,month,year):
  
       cur_stack_data = []
       for minute_stack in sorted(glob.iglob(main_dir + '*' + os.sep + '*' + str(camid) + "*" + MINUTE_STACK_EXT + '*', recursive=True), reverse=True):	
+
+         print(minute_stack)
+         print("<br>")
+
          # We analyse the name
          analysed_minute = minute_name_analyser(minute_stack)  
          if(analysed_minute['cam_id']==camid):
             cur_stack_data.append(analysed_minute['hour'] +':'+ analysed_minute['min'] +':'+ analysed_minute['sec'] +'.'+ analysed_minute['ms'])
 
-    
       all_minutes.append({'cam': camid,'min':cur_stack_data})
 
 
