@@ -1,4 +1,5 @@
 import cgitb 
+import subprocess 
 
 from datetime import datetime
 
@@ -15,12 +16,21 @@ HD_TMP_STACK_EXT = "_HD_tmp_stack.png"
 def getResizeSDStack(_input):
    # Here the stack is SD, we resize it to HD for a better view in the meteor track picker
    tmp_pseudo_HD_stack = _input.replace('.png',HD_TMP_STACK_EXT)
-   print(tmp_pseudo_HD_stack)
+   
    if(cfe(tmp_pseudo_HD_stack)):
       return tmp_pseudo_HD_stack
-
-
-
+   else:
+      # We create it!
+      cmd = "ffmpeg -y -i " +  _input + " -vf scale="+str(HD_W)+":"+str(HD_H)+" " + tmp_pseudo_HD_stack
+       # Test if it's doable
+   try:
+      output = subprocess.check_output(cmd, shell=True).decode("utf-8")    
+   except subprocess.CalledProcessError as e:
+      print("Command " + cmd + "  return on-zero exist status: " + e.returncode)
+      sys.exit(0)
+   
+   return tmp_pseudo_HD_stack
+ 
 
 def minute_details(form):
    # Debug
@@ -60,8 +70,8 @@ def minute_details(form):
    # tmp_pseudo_HD_stack = full_path_bigger.replace('png','HD_tmp_stack')
    
    #ffmpeg -i full_path_bigger -vf scale=HD_W:HD_H output.avi
-   getResizeSDStack(full_path_bigger)
-    
+   HD_stack = getResizeSDStack(full_path_bigger)
+   print(HD_stack)
    print(template)
    print(analysed_minute)
 
