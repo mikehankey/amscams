@@ -77,15 +77,22 @@ def automatic_detect(form):
 
    # Now we need to crop the frames 
    if(HD_found is True):
+      input_path = HD_path
+   elif(SD_found is True):
+      input_path = SD_path
+
+      output_path = input_path.replace('.mp4','-cropped.mp4')
          
       # Create cropped video
-      cmd = 'ffmpeg -i '+HD_path+' -filter:v "crop='+w+':'+h+':'+x+':'+y+'" '+ HD_path.replace('.mp4','-cropped.mp4')
+      cmd = 'ffmpeg -i -y '+HD_path+' -filter:v "crop='+w+':'+h+':'+x+':'+y+'" '+ HD_path.replace('.mp4','-cropped.mp4')
       
       # Test if it's doable
       try:
          output = subprocess.check_output(cmd, shell=True).decode("utf-8")   
       except subprocess.CalledProcessError as e:
           print_error("Command " + cmd + "  return on-zero exist status: " + e.returncode)
+
+      printoutput_path()
       
    sys.exit(0)
  
