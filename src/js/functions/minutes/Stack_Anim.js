@@ -112,6 +112,8 @@ function minute_anim(cam_id) {
          text = ">>";
       }
 
+      if(val==0) text=''
+
       val+= 1;
       timePerStack = animationStackDuration*1/Math.abs(val); 
       $('#cur_sp').text(text + ' x'+val);
