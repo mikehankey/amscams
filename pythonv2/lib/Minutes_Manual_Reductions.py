@@ -44,8 +44,7 @@ def automatic_detect(form):
    # SD video => /mnt/ams2/SD/proc2/2020_02_17/2020_02_17_11_12_20_000_010039.mp4
    # HD video => /mnt/ams2/HD/2020_02_17_11_12_XX_XXX_010039.mp4
    analysed_minute = minute_name_analyser(stack.replace(HD_TMP_STACK_EXT, MINUTE_STACK_EXT+'.png').replace("-stacked-stacked","-stacked"))
- 
-
+  
    # Search for HD
    HD_path = MINUTE_HD_VID_FOLDER + os.sep + analysed_minute['full'].replace( MINUTE_STACK_EXT+'.png','.mp4')
    HD_found = False
@@ -56,7 +55,7 @@ def automatic_detect(form):
       HD_found = True 
 
    # Search for almost the same path (same hour, same minute)
-   if(HD_found == False):
+   if(HD_found is False):
       tmp_almost_path = MINUTE_HD_VID_FOLDER + os.sep + analysed_minute['year'] + '_' + analysed_minute['month'] + '_' + analysed_minute['day'] + '_' + analysed_minute['hour'] + '_' + analysed_minute['min'] + '_' + '*' +  analysed_minute['cam_id'] + '*' + '.mp4'
       filelist = glob.glob(tmp_almost_path)
       if(len(filelist)==1):
@@ -64,7 +63,7 @@ def automatic_detect(form):
          HD_path = filelist[0]
 
    # HD hasn't been found, we search for SD vid and we resize it
-   if(HD_found == False):
+   if(HD_found is False):
       tmp_almost_path = MINUTE_SD_FOLDER + os.sep + analysed_minute['year'] + '_' + analysed_minute['month'] + '_' + analysed_minute['day']  + os.sep + analysed_minute['year'] + '_' + analysed_minute['month'] + '_' + analysed_minute['day'] + '_' + analysed_minute['hour'] + '_' + analysed_minute['min'] + '_' + '*' +  analysed_minute['cam_id'] + '*' + '.mp4'
       filelist = glob.glob(tmp_almost_path)
       if(len(filelist)==1):
@@ -74,14 +73,23 @@ def automatic_detect(form):
          # But we need to resize it!
 
    if(HD_found is False and SD_found is False):
-      print_error('Impossible to find the related SD or HD video.')
+      print_error('Impossible to find the related SD or HD video.') 
 
+   # Now we need to crop the frames 
+   if(HD_found is True):
+         
+      # Create cropped video
+      cmd = 'ffmpeg -i '+HD_path+' -filter:v "crop='+w+':'+h+':'+x+':'+y+'" '+ HD_path.replace('.mp4','-cropped.mp4')
+      
+      # Test if it's doable
+      try:
+         output = subprocess.check_output(cmd, shell=True).decode("utf-8")   
+      except subprocess.CalledProcessError as e:
+          print_error("Command " + cmd + "  return on-zero exist status: " + e.returncode)
+      
    sys.exit(0)
-
-  
-
-    
-
+ 
+ 
   
 
          

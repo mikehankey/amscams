@@ -9,8 +9,8 @@ from lib.Minutes_Tools import *
 # or a given year & month
 
 # usage
-# Create_Minute_Index YEAR MONTH
-# Create_Minute_Index YEAR MONTH DAY
+# python3 ./pythonv2/Create_Minute_Index YEAR MONTH
+# python3 ./pythonv2/Create_Minute_Index YEAR MONTH DAY
 
 year = sys.argv[1]
 month = sys.argv[2]
