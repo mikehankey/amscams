@@ -19,21 +19,21 @@ from pathlib import Path
 def fixmp4(path_to_mp4,save_backup=False):
    path = str(Path(path_to_mp4).parent.absolute())+os.sep
    name = os.path.basename(path_to_mp4)
+   tmp_output_file = path + 'tmp.mp4'
 
    # We create a tmp fix mp4 under the same folder
-   cmd = 'ffmpeg -y -hide_banner -loglevel panic -i ' + path_to_mp4 + ' ' + path + 'tmp.mp4'
+   cmd = 'ffmpeg -y -hide_banner -loglevel panic -i ' + path_to_mp4 + ' ' + tmp_output_file
    
    # Test if it's doable
    try:
       output = subprocess.check_output(cmd, shell=True).decode("utf-8")   
-      print("ffmpeg cmd successfull >> " +  path + 'tmp.mp4') 
+      print("ffmpeg cmd successfull >> " +  tmp_output_file) 
    except subprocess.CalledProcessError as e:
       print("Command " + cmd + "  return on-zero exist status: " + e.returncode)
       sys.exit(0)
 
 
-
-   sys.exit(0)
+ 
    if(save_backup is True):
       # We rename the original file 
       os.rename(path_to_mp4, path_to_mp4+'.backup.mp4')
@@ -45,7 +45,7 @@ def fixmp4(path_to_mp4,save_backup=False):
 
 
    # We rename the ffmpeg output file
-   os.rename(path_to_mp4 + ' ' + path + 'tmp.mp4',path_to_mp4)
+   os.rename(tmp_output_file,path_to_mp4)
 
    print(path_to_mp4 + ' fixed')
    
