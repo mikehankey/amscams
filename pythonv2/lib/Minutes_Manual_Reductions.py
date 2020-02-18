@@ -33,6 +33,8 @@ def define_ROI(form):
 
 # SECOND STEP: GET HD 
 def automatic_detect(form):
+
+   cgitb.enable()
    
    # In form we should have
    stack = form.getvalue('stack')
