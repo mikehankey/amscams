@@ -4,6 +4,7 @@ import subprocess
 import datetime
 import time
 import shutil
+import sys
 
 from lib.VIDEO_VARS import * 
 from os import listdir, remove
@@ -24,18 +25,23 @@ def fixmp4(path_to_mp4,save_backup=False):
    
    # Test if it's doable
    try:
-      output = subprocess.check_output(cmd, shell=True).decode("utf-8")    
+      output = subprocess.check_output(cmd, shell=True).decode("utf-8")   
+      print("ffmpeg cmd successfull") 
    except subprocess.CalledProcessError as e:
       print("Command " + cmd + "  return on-zero exist status: " + e.returncode)
       sys.exit(0)
+
+
 
    sys.exit(0)
    if(save_backup is True):
       # We rename the original file 
       os.rename(path_to_mp4, path_to_mp4+'.backup.mp4')
+      print(path_to_mp4 + ' renamed to ' + path_to_mp4+'.backup.mp4')
    else:
       # We delete the original file
       os.remove(path_to_mp4)
+      print(path_to_mp4 + ' deleted')
 
 
    # We rename the ffmpeg output file
