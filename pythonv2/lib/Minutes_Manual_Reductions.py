@@ -93,7 +93,7 @@ def automatic_detect(form):
       except subprocess.CalledProcessError as e:
           print_error("Command " + cmd + "  return on-zero exist status: " + str(e.returncode))
 
-      printoutput_path()
+      print(output_path())
       
    sys.exit(0)
  
