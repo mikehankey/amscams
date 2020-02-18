@@ -27,7 +27,7 @@ def getResizeSDStack(_input):
    try:
       output = subprocess.check_output(cmd, shell=True).decode("utf-8")    
    except subprocess.CalledProcessError as e:
-      #print("Command " + cmd + "  return on-zero exist status: " + e.returncode)
+      print("Command " + cmd + "  return on-zero exist status: " + e.returncode)
       return False
    
    return tmp_pseudo_HD_stack

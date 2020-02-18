@@ -91,7 +91,7 @@ def automatic_detect(form):
       try:
          output = subprocess.check_output(cmd, shell=True).decode("utf-8")   
       except subprocess.CalledProcessError as e:
-          print_error("Command " + cmd + "  return on-zero exist status: " + e.returncode)
+          print_error("Command " + cmd + "  return on-zero exist status: " + str(e.returncode))
 
       printoutput_path()
       
