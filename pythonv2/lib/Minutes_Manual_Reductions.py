@@ -85,7 +85,7 @@ def automatic_detect(form):
       output_path = input_path.replace('.mp4','-cropped.mp4')
          
       # Create cropped video
-      cmd = 'ffmpeg -i -y '+HD_path+' -filter:v "crop='+w+':'+h+':'+x+':'+y+'" '+ HD_path.replace('.mp4','-cropped.mp4')
+      cmd = 'ffmpeg -y -i  '+HD_path+' -filter:v "crop='+w+':'+h+':'+x+':'+y+'" '+ HD_path.replace('.mp4','-cropped.mp4')
       
       # Test if it's doable
       try:
