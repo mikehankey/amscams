@@ -15,12 +15,26 @@ from pathlib import Path
  
 
 # Fix a MP4 just copying it 
-def fixmp4(path_to_mp4):
-   path = Path(path_to_mp4).parent.absolute()
+def fixmp4(path_to_mp4,save_backup=False):
+   path = Path(path_to_mp4).parent.absolute()+os.sep
    name = os.path.basename(path_to_mp4)
 
-   print("PATH " + str(path))
-   print("NAME " + name)
+   # We create a tmp fix mp4 under the same folder
+   cmd = 'ffmpeg -y -hide_banner -loglevel panic -i ' + path_to_mp4 + ' ' + path + 'tmp.mp4'
+   output = subprocess.check_output(cmd, shell=True).decode("utf-8")    
+
+   if(save_backup is True):
+      # We rename the original file 
+      os.rename(path_to_mp4, path_to_mp4+'.backup.mp4')
+   else:
+      # We delete the original file
+      os.remove(path_to_mp4)
+
+
+   # We rename the ffmpeg output file
+   os.rename(path_to_mp4 + ' ' + path + 'tmp.mp4',path_to_mp4)
+
+   print(path_to_mp4 + ' fixed')
    
 
 # Blend two images together
