@@ -3,6 +3,7 @@ import os
 import glob
 import sys
 
+from lib.CGI_Tools import print_error
 from lib.FileIO import cfe
 from lib.Minutes_Tools import minute_name_analyser, MINUTE_STACK_EXT, MINUTE_HD_VID_FOLDER, MINUTE_SD_FOLDER
 from lib.Minutes_Details import HD_TMP_STACK_EXT
@@ -46,30 +47,8 @@ def automatic_detect(form):
  
    # Search for HD
    HD_path = MINUTE_HD_VID_FOLDER + os.sep + analysed_minute['full'].replace( MINUTE_STACK_EXT+'.png','.mp4')
-   print("HD PATH<br> ")
-   print(HD_path)
-   print("<br>")
    HD_found = False
-
-
-   # HD hasn't been found, we search for SD vid and we resize it
-   if(HD_found == False):
-      tmp_almost_path = MINUTE_SD_FOLDER + os.sep + analysed_minute['year'] + '_' + analysed_minute['month'] + '_' + analysed_minute['day']  + os.sep + analysed_minute['year'] + '_' + analysed_minute['month'] + '_' + analysed_minute['day'] + '_' + analysed_minute['hour'] + '_' + analysed_minute['min'] + '_' + '*' +  analysed_minute['cam_id'] + '*' + '.mp4'
-      
-      print("GLOB PATH <br>")
-      print(tmp_almost_path)
-      print("<br>")
-      filelist = glob.glob(tmp_almost_path)
-      print(filelist)
-      if(len(filelist)==1):
-         HD_found = True 
-         HD_path = filelist[0]
-
-   sys.exit(0)
-
-  
-
-    
+   SD_found = False
 
    # Search same path:
    if(cfe(HD_path)==1):
@@ -82,6 +61,27 @@ def automatic_detect(form):
       if(len(filelist)==1):
          HD_found = True 
          HD_path = filelist[0]
+
+   # HD hasn't been found, we search for SD vid and we resize it
+   if(HD_found == False):
+      tmp_almost_path = MINUTE_SD_FOLDER + os.sep + analysed_minute['year'] + '_' + analysed_minute['month'] + '_' + analysed_minute['day']  + os.sep + analysed_minute['year'] + '_' + analysed_minute['month'] + '_' + analysed_minute['day'] + '_' + analysed_minute['hour'] + '_' + analysed_minute['min'] + '_' + '*' +  analysed_minute['cam_id'] + '*' + '.mp4'
+      filelist = glob.glob(tmp_almost_path)
+      if(len(filelist)==1):
+         SD_found = True 
+         SD_path = filelist[0]
+
+         # But we need to resize it!
+
+   if(HD_found is False and SD_found is False):
+      print_error('Impossible to find the related SD or HD video.')
+
+   sys.exit(0)
+
+  
+
+    
+
+  
 
          
 
