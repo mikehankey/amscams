@@ -5,6 +5,7 @@ import cgitb
 import glob 
 import cv2
 import sys
+import numpy as np
 
 from os.path import isfile, join, exists
 from lib.FileIO import load_json_file, save_json_file
