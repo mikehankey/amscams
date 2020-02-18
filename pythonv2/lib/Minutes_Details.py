@@ -50,7 +50,7 @@ def minute_details(form):
    template = template.replace('{CAM_ID}',analysed_minute['cam_id'])
 
    # Do we have the bigger version (without -tn)?
-   full_path_bigger = MINUTE_FOLDER +  os.sep + analysed_minute['year'] + '_' + str(analysed_minute['month']).zfill(2) + "_" + str(analysed_minute['day']).zfill(2) + os.sep + IMAGES_MINUTE_FOLDER + os.sep +  analysed_minute['full'].replace(MINUTE_TINY_STACK_EXT,'')
+   full_path_bigger = MINUTE_SD_FOLDER +  os.sep + analysed_minute['year'] + '_' + str(analysed_minute['month']).zfill(2) + "_" + str(analysed_minute['day']).zfill(2) + os.sep + IMAGES_MINUTE_SD_FOLDER + os.sep +  analysed_minute['full'].replace(MINUTE_TINY_STACK_EXT,'')
    
    if(cfe(full_path_bigger)!=1):
       full_path_bigger = stack
@@ -63,7 +63,7 @@ def minute_details(form):
    template = template.replace('{STACK}',full_path_bigger)
     
    # SEARCH FOR RELATED VIDEO
-   video_full_path  = MINUTE_FOLDER +  os.sep + analysed_minute['year'] + '_'+ str(analysed_minute['month']).zfill(2) + "_" + str(analysed_minute['day']).zfill(2) + os.sep + analysed_minute['full'].replace(MINUTE_STACK_EXT+'.png','.mp4')
+   video_full_path  = MINUTE_SD_FOLDER +  os.sep + analysed_minute['year'] + '_'+ str(analysed_minute['month']).zfill(2) + "_" + str(analysed_minute['day']).zfill(2) + os.sep + analysed_minute['full'].replace(MINUTE_STACK_EXT+'.png','.mp4')
    
    if(cfe(video_full_path)!=1):
       print_error(video_full_path + " not FOUND")

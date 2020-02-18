@@ -4,7 +4,7 @@ import glob
 import sys
 
 from lib.FileIO import cfe
-from lib.Minutes_Tools import minute_name_analyser, MINUTE_STACK_EXT, MINUTE_HD_VID_FOLDER
+from lib.Minutes_Tools import minute_name_analyser, MINUTE_STACK_EXT, MINUTE_HD_VID_FOLDER, MINUTE_SD_FOLDER
 from lib.Minutes_Details import HD_TMP_STACK_EXT
 
 MANUAL_RED_MINUTE_PAGE_TEMPLATE_STEP1 = "/home/ams/amscams/pythonv2/templates/minute_manual_reduction_template_step0.html"
@@ -54,7 +54,7 @@ def automatic_detect(form):
 
    # HD hasn't been found, we search for SD vid and we resize it
    if(HD_found == False):
-      tmp_almost_path = MINUTE_FOLDER + os.sep + analysed_minute['year'] + '_' + analysed_minute['month'] + '_' + analysed_minute['day'] + '_' + analysed_minute['hour'] + '_' + analysed_minute['min'] + '_' + '*' +  analysed_minute['cam_id'] + '*' + '.mp4'
+      tmp_almost_path = MINUTE_SD_FOLDER + os.sep + analysed_minute['year'] + '_' + analysed_minute['month'] + '_' + analysed_minute['day'] + '_' + analysed_minute['hour'] + '_' + analysed_minute['min'] + '_' + '*' +  analysed_minute['cam_id'] + '*' + '.mp4'
       filelist = glob.glob(tmp_almost_path)
       print(filelist)
       if(len(filelist)==1):
