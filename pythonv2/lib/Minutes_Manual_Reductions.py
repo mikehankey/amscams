@@ -45,6 +45,11 @@ def automatic_detect(form):
    # HD video => /mnt/ams2/HD/2020_02_17_11_12_XX_XXX_010039.mp4
    analysed_minute = minute_name_analyser(stack.replace(HD_TMP_STACK_EXT, MINUTE_STACK_EXT+'.png'))
  
+   print(stack.replace(HD_TMP_STACK_EXT, MINUTE_STACK_EXT+'.png'))
+   print("<br>")
+   print(analysed_minute)
+   sys.exit(0)
+
    # Search for HD
    HD_path = MINUTE_HD_VID_FOLDER + os.sep + analysed_minute['full'].replace( MINUTE_STACK_EXT+'.png','.mp4')
    HD_found = False
