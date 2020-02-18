@@ -69,10 +69,7 @@ def minute_details(form):
 
    template = template.replace('{VIDEO}',video_full_path)
 
-
-
-
-   print(HD_stack)
+ 
    print(template)
    print(analysed_minute)
 
