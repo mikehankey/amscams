@@ -139,7 +139,7 @@ def write_day_minute_index(day, month, year):
    # Empty the file first
    with open(filename, 'w'): pass
 
-   with open(filename", 'w') as outfile:
+   with open(filename, 'w') as outfile:
       #Write compress format
       json.dump(json_data, outfile)
 
