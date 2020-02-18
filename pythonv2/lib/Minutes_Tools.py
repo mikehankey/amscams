@@ -13,6 +13,7 @@ from lib.FileIO import cfe, load_json_file
 
 MINUTE_SD_FOLDER = '/mnt/ams2/SD/proc2'
 IMAGES_MINUTE_SD_FOLDER = 'images'
+DATA_MINUTE_SD_FOLDER = 'data'
 VIDEOS_FAILED_MINUTE_SD_FOLDER = 'failed'
 DEFAULT_HORIZON_EPHEM = '-0:34'
 DEFAULT_PRESSURE = 0

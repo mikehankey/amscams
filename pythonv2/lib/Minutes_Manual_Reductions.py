@@ -41,6 +41,7 @@ def automatic_detect(form):
 
    # Get Org Stack folder
    org_stack_folder = os.path.dirname(os.path.abspath(stack))
+   org_stack_folder = org_stack_folder.replace(IMAGES_MINUTE_SD_FOLDER,DATA_MINUTE_SD_FOLDER)
 
    print(org_stack_folder)
    sys.exit(0)
