@@ -1,6 +1,6 @@
 import cgitb
 
-from lib.Minutes_Tools import minute_name_analyser
+from lib.Minutes_Tools import minute_name_analyser, MINUTE_STACK_EXT
 from lib.Minutes_Details import HD_TMP_STACK_EXT
 
 MANUAL_RED_MINUTE_PAGE_TEMPLATE_STEP1 = "/home/ams/amscams/pythonv2/templates/minute_manual_reduction_template_step0.html"
