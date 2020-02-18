@@ -32,7 +32,6 @@ def fixmp4(path_to_mp4,save_backup=False):
       print("Command " + cmd + "  return on-zero exist status: " + e.returncode)
       sys.exit(0)
 
-
  
    if(save_backup is True):
       # We rename the original file 
