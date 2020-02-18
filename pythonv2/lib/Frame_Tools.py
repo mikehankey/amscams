@@ -288,6 +288,7 @@ def load_frames_fast(input_file, analysed_input_file, limit=0, mask=0,crop=(),co
       return(frames, color_frames, subframes, sum_vals, max_vals)
 
 
+# Mike's function
 def fast_check_events(sum_vals, max_vals, subframes):
    print("Fast check events.")
    events = []
@@ -303,12 +304,12 @@ def fast_check_events(sum_vals, max_vals, subframes):
    med_max = np.median(max_vals)
    median_frame = cv2.convertScaleAbs(np.median(np.array(subframes[0:25]), axis=0))
 
-   if subframes[0].shape[1] == 1920:
+   if subframes[0].shape[1] == HD_W:
       hd = 1
       sd_multi = 1
    else:
       hd = 0
-      sd_multi = 1920 / subframes[0].shape[1]
+      sd_multi = HD_W / subframes[0].shape[1]
 
    for sum_val in sum_vals:
       
@@ -342,16 +343,11 @@ def fast_check_events(sum_vals, max_vals, subframes):
          event_info = []
          cm = 0
 
-      if show == 1:
-         cv2.circle(subframe,(mx,my), 10, (255,0,0), 1)
-         cv2.imshow('pepe', subframe)
-         cv2.waitKey(70)
+ 
 
       i = i + 1
 
-   if show == 1:
-      cv2.destroyWindow('pepe')
-
+   
    if len(event) >= 3:
       events.append(event)
       events_info.append(event_info)
