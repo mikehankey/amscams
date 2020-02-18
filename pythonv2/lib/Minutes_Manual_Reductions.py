@@ -33,12 +33,12 @@ def automatic_detect(form):
    y = form.getvalue('y_start')
    w = form.getvalue('w')
    h = form.getvalue('h')
-
-
+ 
    # Do we have a HD version on the video of this stack?
    # Ex: 
-   # stack = /mnt/ams2/SD/proc2/2020_02_17/images/2020_02_17_11_19_47_000_010037-stacked-tn_HD_tmp_stack.png
-   # video => /mnt/ams2/SD/proc2/2020_02_17/2020_02_17_11_19_47_000_010037.mp4
+   # stack    = /mnt/ams2/SD/proc2/2020_02_17/images/2020_02_17_11_19_47_000_010037-stacked-tn_HD_tmp_stack.png
+   # SD video => /mnt/ams2/SD/proc2/2020_02_17/2020_02_17_11_19_47_000_010037.mp4
+   # HD video => /mnt/ams2/HD/2020_02_17_11_19_47_000_010037.mp4
    analysed_minute = minute_name_analyser(stack)
    print(analysed_minute)
 
