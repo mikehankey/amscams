@@ -19,7 +19,7 @@ def fixmp4(path_to_mp4):
    path = Path(path_to_mp4).parent.absolute()
    name = os.path.basename(path_to_mp4)
 
-   print("PATH " + path)
+   print("PATH " + str(path))
    print("NAME " + name)
    
 
