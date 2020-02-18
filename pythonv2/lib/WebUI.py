@@ -631,9 +631,13 @@ def controller(json_conf):
    if cmd == 'minute_details': 
       minute_details(form)
 
-   # MANUAL REDUCE MINUTE
+   # MANUAL REDUCE MINUTE - STEP 1
    if cmd == 'define_ROI_minute':
       define_ROI(form)
+   
+   # MANUAL REDUCE MINUTE - STEP 2 (find HD, crop frames, etc.)
+   if cmd == 'automatic_detect_minute':
+      automatic_detect(form)
 
    if cmd == 'solutions':
       solutions(json_conf, form)

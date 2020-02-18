@@ -122,7 +122,7 @@ function update_select_preview(top,left,margins,W_factor,H_factor,cursor_dim, cu
 
 
 // Create  select meteor position from stack
-function create_meteor_selector_from_stack(image_src, is_it_for_sync) {
+function create_meteor_selector_from_stack(image_src, is_it_for_sync, type='') {
    var cursor_dim = 8;            // Cursor dimension
    var margins = 15;              // Max position (x,y) of the meteor inside the cursor
 
@@ -164,20 +164,29 @@ function create_meteor_selector_from_stack(image_src, is_it_for_sync) {
    });
    
 
-   // Go to next step 
-   if(is_it_for_sync) {
-      // It's for the manual synchronization
-      $('#step1_btn').click(function() {
-         window.location = './webUI.py?cmd=manual_sync_chooser&json='+json+'&video_file='+video_file+'&x_start='+$('input[name=xs]').val()+'&y_start='+$('input[name=ys]').val()+'&w='+$('input[name=w]').val()+'&h='+$('input[name=h]').val()
-      })
-   
 
-   } else {
-      // It's for the manual reduction
+   if(type=='') {
+      // Go to next step 
+      if(is_it_for_sync) {
+         // It's for the manual synchronization
+         $('#step1_btn').click(function() {
+            window.location = './webUI.py?cmd=manual_sync_chooser&json='+json+'&video_file='+video_file+'&x_start='+$('input[name=xs]').val()+'&y_start='+$('input[name=ys]').val()+'&w='+$('input[name=w]').val()+'&h='+$('input[name=h]').val()
+         })
+
+
+      } else {
+         // It's for the manual reduction
+         $('#step1_btn').click(function() {
+            window.location = './webUI.py?cmd=manual_reduction_cropper&json='+json+'&video_file='+video_file+'&x_start='+$('input[name=xs]').val()+'&y_start='+$('input[name=ys]').val()+'&w='+$('input[name=w]').val()+'&h='+$('input[name=h]').val()
+         })
+
+      }
+   } else if(type=='minute') {
       $('#step1_btn').click(function() {
-         window.location = './webUI.py?cmd=manual_reduction_cropper&json='+json+'&video_file='+video_file+'&x_start='+$('input[name=xs]').val()+'&y_start='+$('input[name=ys]').val()+'&w='+$('input[name=w]').val()+'&h='+$('input[name=h]').val()
+         window.location = './webUI.py?cmd=automatic_detect_minute&stack='+stack+'&x_start='+$('input[name=xs]').val()+'&y_start='+$('input[name=ys]').val()+'&w='+$('input[name=w]').val()+'&h='+$('input[name=h]').val()
       })
-   
    }
+
+   
 
 }

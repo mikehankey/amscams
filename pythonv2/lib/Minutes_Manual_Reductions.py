@@ -19,3 +19,8 @@ def define_ROI(form):
 
    # Display Template
    print(template) 
+
+
+# SECOND STEP: GET HD 
+def automatic_detect(form):
+   print(form)
