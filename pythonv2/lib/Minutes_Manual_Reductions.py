@@ -43,7 +43,8 @@ def automatic_detect(form):
    
    # Search for HD
    HD_path = MINUTE_HD_VID_FOLDER + analysed_minute['full'].replace('-'+MINUTE_STACK_EXT+'.png','')
-   if(cfe(HD_path)==1)
+   
+   if(cfe(HD_path)==1):
       print("HD FOUND " + HD_path)
    else:
       print("NOT FOUND " + HD_path)
