@@ -3,10 +3,13 @@ import os
 import subprocess 
 import cgitb
 import glob 
+import cv2
+
 from os.path import isfile, join, exists
 from lib.FileIO import load_json_file, save_json_file
 from lib.UtilLib import bound_cnt
 from lib.VideoLib import load_video_frames
+from lib.Cleanup_Json_Conf import PATH_TO_CONF_JSON
 
 TMP_FRAME_FOLDER = '/mnt/ams2/TMP'
 FRAME_THUMB_W = 50  #In pixel
@@ -188,3 +191,114 @@ def get_a_frame(fr_id,sd_vid):
         output = subprocess.check_output(cmd, shell=True).decode("utf-8")    
         return json.dumps({'full_fr':TMP_FRAME_FOLDER + '/' + cur_name + '_' + fr_id + '.png', 'id': fr_id})
  
+
+
+
+# Load Frames and returns (previously in Mike's flex-detect)
+def load_frames_fast(trim_file, limit=0, mask=0,crop=(),color=0,resize=[]):
+   json_conf = PATH_TO_CONF_JSON
+   print(trim_file)
+   sys.exit(0)
+
+
+   (f_datetime, cam, f_date_str,fy,fm,fd, fh, fmin, fs) = convert_filename_to_date_cam(trim_file)
+   cap = cv2.VideoCapture(trim_file)
+   masks = None
+   last_frame = None
+   last_last_frame = None
+
+   print("CAM " + cam)
+
+   if "HD" in trim_file:
+      masks = get_masks(cam, json_conf,1)
+   else:
+      masks = get_masks(cam, json_conf,1)
+   if "crop" in trim_file:
+      masks = None
+   print("MASKS:", cam, masks)
+
+   color_frames = []
+   frames = []
+   subframes = []
+   sum_vals = []
+   max_vals = []
+   frame_count = 0
+   go = 1
+   while go == 1:
+      if True :
+         _ , frame = cap.read()
+         if frame is None:
+            if frame_count <= 5 :
+               cap.release()
+               return(frames,color_frames,subframes,sum_vals,max_vals)
+            else:
+               go = 0
+         else:
+            if color == 1:
+               color_frames.append(frame)
+            if limit != 0 and frame_count > limit:
+               cap.release()
+               return(frames)
+            if len(frame.shape) == 3 :
+               frame = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
+
+            if mask == 1 and frame is not None:
+               if frame.shape[0] == 1080:
+                  hd = 1
+               else:
+                  hd = 0
+               masks = get_masks(cam, json_conf,hd)
+               frame = mask_frame(frame, [], masks, 5)
+
+            if last_frame is not None:
+               subframe = cv2.subtract(frame, last_frame)
+               #subframe = mask_frame(subframe, [], masks, 5)
+               sum_val =cv2.sumElems(subframe)[0]
+  
+               if sum_val > 1000 and last_last_frame is not None:
+                  subframe = cv2.subtract(subframe, last_last_frame)
+                  sum_val =cv2.sumElems(subframe)[0]
+               subframes.append(subframe)
+
+
+               if sum_val > 100:
+                  min_val, max_val, min_loc, (mx,my)= cv2.minMaxLoc(subframe)
+               else:
+                  max_val = 0
+               if frame_count < 5:
+                  sum_val = 0
+                  max_val = 0
+               sum_vals.append(sum_val)
+               max_vals.append(max_val)
+
+            if len(crop) == 4:
+               ih,iw = frame.shape
+               x1,y1,x2,y2 = crop
+               x1 = x1 - 25
+               y1 = y1 - 25
+               x2 = x2 + 25
+               y2 = y2 + 25
+               if x1 < 0:
+                  x1 = 0
+               if y1 < 0:
+                  y1 = 0
+               if x1 > iw -1:
+                  x1 = iw -1
+               if y1 > ih -1:
+                  y1 = ih -1
+               #print("MIKE:", x1,y2,x2,y2)
+               crop_frame = frame[y1:y2,x1:x2]
+               frame = crop_frame
+            if len(resize) == 2:
+               frame = cv2.resize(frame, (resize[0],resize[1]))
+       
+            frames.append(frame)
+            if last_frame is not None:
+               last_last_frame = last_frame
+            last_frame = frame
+      frame_count = frame_count + 1
+   cap.release()
+   if len(crop) == 4:
+      return(frames,x1,y1)
+   else:
+      return(frames, color_frames, subframes, sum_vals, max_vals)

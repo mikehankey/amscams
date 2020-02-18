@@ -11,6 +11,7 @@ from lib.CGI_Tools import print_error
 from lib.FileIO import cfe
 from lib.Minutes_Tools import minute_name_analyser, MINUTE_STACK_EXT, MINUTE_HD_VID_FOLDER, MINUTE_SD_FOLDER, DATA_MINUTE_SD_FOLDER, IMAGES_MINUTE_SD_FOLDER
 from lib.Minutes_Details import HD_TMP_STACK_EXT
+from lib.Frame_Tools import load_frames_fast
 
 MANUAL_RED_MINUTE_PAGE_TEMPLATE_STEP1 = "/home/ams/amscams/pythonv2/templates/minute_manual_reduction_template_step0.html"
 
