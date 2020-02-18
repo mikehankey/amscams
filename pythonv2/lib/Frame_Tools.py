@@ -206,10 +206,7 @@ def load_frames_fast(input_file, analysed_input_file, limit=0, mask=0,crop=(),co
    masks = get_masks(analysed_input_file['cam_id'],1)
    if "crop" in input_file:
       masks = None
-   print("MASKS:", analysed_input_file['cam_id'], masks)
-
-   sys.exit(0)
-
+   
    color_frames = []
    frames = []
    subframes = []
@@ -244,8 +241,7 @@ def load_frames_fast(input_file, analysed_input_file, limit=0, mask=0,crop=(),co
                frame = mask_frame(frame, [], masks, 5)
 
             if last_frame is not None:
-               subframe = cv2.subtract(frame, last_frame)
-               #subframe = mask_frame(subframe, [], masks, 5)
+               subframe = cv2.subtract(frame, last_frame) 
                sum_val =cv2.sumElems(subframe)[0]
   
                if sum_val > 1000 and last_last_frame is not None:
