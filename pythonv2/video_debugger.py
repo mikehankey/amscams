@@ -12,7 +12,7 @@ from lib.Video_Title_cv import *
 
 
 # TEST FIX MP4
-fixmp4('/mnt/ams2/SD/proc2/2020_02_17/2020_02_17_11_49_48_000_010037.mp4')
+fixmp4('/mnt/ams2/SD/proc2/2020_02_17/2020_02_17_11_42_21_000_010039.mp4')
 
  
 
