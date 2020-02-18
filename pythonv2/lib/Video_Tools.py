@@ -17,7 +17,7 @@ from pathlib import Path
 # Fix a MP4 just copying it 
 def fixmp4(path_to_mp4):
    path = Path(path_to_mp4).parent.absolute()
-   name = path_to_mp4.replace((str)path,'')
+   name = os.path.basename(path_to_mp4)
 
    print("PATH " + path)
    print("NAME " + name)
