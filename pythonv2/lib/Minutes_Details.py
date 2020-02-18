@@ -45,7 +45,7 @@ def minute_details(form):
 
    # No matter if the stack is SD or not
    # we resize it to HD
-   stack = get_stacks(analysed_minute,clear_cache, True)
+   stack = get_stacks(analysed_minute,False, True)
    print(stack)
  
    print(template)
