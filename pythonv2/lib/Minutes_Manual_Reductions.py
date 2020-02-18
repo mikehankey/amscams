@@ -4,6 +4,9 @@ import glob
 import sys
 import subprocess
 
+from Minutes_Manual_Reductions import load_frames_fast
+from Cleanup_Json_Conf import PATH_TO_CONF_JSON
+
 from lib.CGI_Tools import print_error
 from lib.FileIO import cfe
 from lib.Minutes_Tools import minute_name_analyser, MINUTE_STACK_EXT, MINUTE_HD_VID_FOLDER, MINUTE_SD_FOLDER, DATA_MINUTE_SD_FOLDER, IMAGES_MINUTE_SD_FOLDER
@@ -98,9 +101,19 @@ def automatic_detect(form):
    except subprocess.CalledProcessError as e:
       print_error("Command " + cmd + "  return on-zero exist status: " + str(e.returncode))
 
-   print(output_path)
-      
-   sys.exit(0)
+   #  load_frames_fast to get subframes and sum/max val info this also includes (mx,my) brightest point in subframe .
+   hd_frames,hd_color_frames,hd_subframes,sum_vals,max_vals = load_frames_fast(output, PATH_TO_CONF_JSON, 0, 0, [], 0,[])
+   
+   print("HD FRAMES<br>")
+   print(hd_frames)
+   print("<br>HD COLOR FRAMES<br>")
+   print(hd_color_frames)
+   print("<br>HD SUB FRAMES<br>")
+   print(hd_subframes)
+   print("<br>HD sum_vals<br>")
+   print(sum_vals)
+   print("<br>HD max_vals<br>")
+   print(max_vals)
  
  
   
