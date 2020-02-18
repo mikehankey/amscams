@@ -97,6 +97,12 @@ def create_minute_html_res(res,cam_ids,year,month,day):
       for cam_id in cam_ids:
          cam_res = get_cam_res(res,cam_id,cur_index)
 
+         if(cam_id == '010037'):
+            print("DATE " + year + '/' month + '/' +  day +"<br>")
+            print(get_min_details(cam_id,year,month,day,cam_res))
+            print("<br>")
+            
+
          if(cam_res is not False):
             t = get_min_details(cam_id,year,month,day,cam_res)
             toReturn += "<div style='padding: 0 1rem 1rem 0;'><a href='webUI.py?cmd=minute_details&stack="+t+"'><img src='"+t+"' style='width: 100%; max-width: 350px;height: 169px;' data-rel='"+cam_res+"' class='img-fluid cam_"+str(cam_id)+"'/></a><span style='font-size:.75rem'>"+cam_res+"</span></div>"
