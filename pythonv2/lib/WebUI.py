@@ -632,7 +632,7 @@ def controller(json_conf):
       minute_details(form)
 
    # MANUAL REDUCE MINUTE
-   if cmd == 'define_ROI_minute'
+   if cmd == 'define_ROI_minute':
       define_ROI(form)
 
    if cmd == 'solutions':
