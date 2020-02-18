@@ -103,21 +103,20 @@ def automatic_detect(form):
       print_error("Command " + cmd + "  return on-zero exist status: " + str(e.returncode))
 
    #  load_frames_fast to get subframes and sum/max val info this also includes (mx,my) brightest point in subframe .
-   print("BEFORE load_frames_fast <br>")
-   c = whatever_minute_name_analyser(output_path)
-   print(c)
-   #hd_frames,hd_color_frames,hd_subframes,sum_vals,max_vals = load_frames_fast(output_path, 0, 0, [], 0,[])
+   analysed_minute_name = whatever_minute_name_analyser(output_path)
+   hd_frames,hd_color_frames,hd_subframes,sum_vals,max_vals = load_frames_fast(output_path, analysed_minute_name, 0, 0, [], 0,[])
    
-   print("<br>HD FRAMES<br>")
-   print(hd_frames)
-   print("<br>HD COLOR FRAMES<br>")
-   print(hd_color_frames)
-   print("<br>HD SUB FRAMES<br>")
-   print(hd_subframes)
-   print("<br>HD sum_vals<br>")
-   print(sum_vals)
-   print("<br>HD max_vals<br>")
-   print(max_vals)
+   
+   #print("<br>HD FRAMES<br>")
+   #print(hd_frames)
+   #print("<br>HD COLOR FRAMES<br>")
+   #print(hd_color_frames)
+   #print("<br>HD SUB FRAMES<br>")
+   #print(hd_subframes)
+   #print("<br>HD sum_vals<br>")
+   #print(sum_vals)
+   #print("<br>HD max_vals<br>")
+   #print(max_vals)
  
  
   
