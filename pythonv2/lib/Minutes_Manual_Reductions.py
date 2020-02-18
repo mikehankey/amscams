@@ -43,9 +43,6 @@ def automatic_detect(form):
    # Get Org Stack folder
    org_stack_folder = os.path.dirname(os.path.abspath(stack))
    org_stack_folder = org_stack_folder.replace(IMAGES_MINUTE_SD_FOLDER,DATA_MINUTE_SD_FOLDER)
-
-   print(org_stack_folder)
-   sys.exit(0)
  
    # Do we have a HD version on the video of this stack?
    # Ex: 
@@ -67,8 +64,6 @@ def automatic_detect(form):
    if(HD_found is False):
       tmp_almost_path = MINUTE_HD_VID_FOLDER + os.sep + analysed_minute['year'] + '_' + analysed_minute['month'] + '_' + analysed_minute['day'] + '_' + analysed_minute['hour'] + '_' + analysed_minute['min'] + '_' + '*' +  analysed_minute['cam_id'] + '*' + '.mp4'
       filelist = glob.glob(tmp_almost_path)
-      print(filelist)
-      print("<br>")
       if(len(filelist)==1):
          HD_found = True 
          HD_path = filelist[0]
@@ -77,8 +72,6 @@ def automatic_detect(form):
    if(HD_found is False):
       tmp_almost_path = MINUTE_SD_FOLDER + os.sep + analysed_minute['year'] + '_' + analysed_minute['month'] + '_' + analysed_minute['day']  + os.sep + analysed_minute['year'] + '_' + analysed_minute['month'] + '_' + analysed_minute['day'] + '_' + analysed_minute['hour'] + '_' + analysed_minute['min'] + '_' + '*' +  analysed_minute['cam_id'] + '*' + '.mp4'
       filelist = glob.glob(tmp_almost_path)
-      print(filelist)
-      print("<br>")
       if(len(filelist)==1):
          SD_found = True 
          SD_path = filelist[0] 
