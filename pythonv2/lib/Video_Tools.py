@@ -16,7 +16,7 @@ from pathlib import Path
  
 
 # Fix a MP4 just copying it 
-def fixmp4(path_to_mp4,save_backup=False):
+def fixmp4(path_to_mp4,save_backup=0):
    path = str(Path(path_to_mp4).parent.absolute())+os.sep
    name = os.path.basename(path_to_mp4)
    tmp_output_file = path + 'tmp.mp4'
@@ -33,7 +33,7 @@ def fixmp4(path_to_mp4,save_backup=False):
       sys.exit(0)
 
  
-   if(save_backup is True):
+   if(save_backup==1):
       # We rename the original file 
       os.rename(path_to_mp4, path_to_mp4+'.backup.mp4')
       print(path_to_mp4 + ' renamed to ' + path_to_mp4+'.backup.mp4')
