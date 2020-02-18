@@ -51,22 +51,34 @@ def automatic_detect(form):
    print("<br>")
    HD_found = False
 
-   # Search same path:
-   if(cfe(HD_path)==1):
-      HD_found = True 
 
-   # Search for almost the same path
+   # HD hasn't been found, we search for SD vid and we resize it
    if(HD_found == False):
-      tmp_almost_path = MINUTE_HD_VID_FOLDER + os.sep + analysed_minute['year'] + '_' + analysed_minute['month'] + '_' + analysed_minute['day'] + '_' + analysed_minute['hour'] + '_' + analysed_minute['min'] + '_' + '*' +  analysed_minute['cam_id'] + '*' + '.mp4'
-      print("GLOB PATH <br>")
-      print(tmp_almost_path)
-      print('<br>')
+      tmp_almost_path = MINUTE_FOLDER + os.sep + analysed_minute['year'] + '_' + analysed_minute['month'] + '_' + analysed_minute['day'] + '_' + analysed_minute['hour'] + '_' + analysed_minute['min'] + '_' + '*' +  analysed_minute['cam_id'] + '*' + '.mp4'
       filelist = glob.glob(tmp_almost_path)
       print(filelist)
+      if(len(filelist)==1):
+         HD_found = True 
+         HD_path = filelist[0]
+
+   sys.exit(0)
 
   
 
     
 
+   # Search same path:
+   if(cfe(HD_path)==1):
+      HD_found = True 
+
+   # Search for almost the same path (same hour, same minute)
+   if(HD_found == False):
+      tmp_almost_path = MINUTE_HD_VID_FOLDER + os.sep + analysed_minute['year'] + '_' + analysed_minute['month'] + '_' + analysed_minute['day'] + '_' + analysed_minute['hour'] + '_' + analysed_minute['min'] + '_' + '*' +  analysed_minute['cam_id'] + '*' + '.mp4'
+      filelist = glob.glob(tmp_almost_path)
+      if(len(filelist)==1):
+         HD_found = True 
+         HD_path = filelist[0]
+
+         
 
 
