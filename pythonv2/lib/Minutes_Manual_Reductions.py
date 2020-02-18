@@ -1,6 +1,7 @@
 import cgitb
 import os
 import glob
+import sys
 
 from lib.FileIO import cfe
 from lib.Minutes_Tools import minute_name_analyser, MINUTE_STACK_EXT, MINUTE_HD_VID_FOLDER
@@ -42,7 +43,11 @@ def automatic_detect(form):
    # SD video => /mnt/ams2/SD/proc2/2020_02_17/2020_02_17_11_12_20_000_010039.mp4
    # HD video => /mnt/ams2/HD/2020_02_17_11_12_XX_XXX_010039.mp4
    analysed_minute = minute_name_analyser(stack.replace(HD_TMP_STACK_EXT,'-'+MINUTE_STACK_EXT+'.png'))
-   
+   print(stack.replace(HD_TMP_STACK_EXT,'-'+MINUTE_STACK_EXT+'.png'))
+   print("<br>")
+   print(analysed_minute)
+   sys.exit(0)
+
    # Search for HD
    HD_path = MINUTE_HD_VID_FOLDER + os.sep + analysed_minute['full'].replace('-'+MINUTE_STACK_EXT+'.png','.mp4')
    HD_found = False
