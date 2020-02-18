@@ -130,6 +130,9 @@ def create_json_index_minute_day(day,month,year):
 def write_day_minute_index(day, month, year):
    json_data = create_json_index_minute_day(day,month, year)  
 
+   print(json_data)
+   sys.exit(0)
+
    # Write Index 
    output_dir = MINUTE_SD_FOLDER + os.sep + str(year) + '_' + str(month).zfill(2) + '_' + str(day).zfill(2)
 
