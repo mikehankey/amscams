@@ -198,25 +198,18 @@ def get_a_frame(fr_id,sd_vid):
 # Load Frames and returns (previously in Mike's flex-detect)
 def load_frames_fast(input_file, analysed_input_file, limit=0, mask=0,crop=(),color=0,resize=[]):
    json_conf = PATH_TO_CONF_JSON
-   print(analysed_input_file)
-   sys.exit(0)
-
-
-   (f_datetime, cam, f_date_str,fy,fm,fd, fh, fmin, fs) = convert_filename_to_date_cam(input_file)
+ 
    cap = cv2.VideoCapture(input_file)
    masks = None
    last_frame = None
    last_last_frame = None
 
-   print("CAM " + cam)
-
-   if "HD" in input_file:
-      masks = get_masks(cam, json_conf,1)
-   else:
-      masks = get_masks(cam, json_conf,1)
+   masks = get_masks(analysed_input_file['cam_id'], json_conf,1)
    if "crop" in input_file:
       masks = None
-   print("MASKS:", cam, masks)
+   print("MASKS:", analysed_input_file['cam_id'], masks)
+
+   sys.exit(0)
 
    color_frames = []
    frames = []
