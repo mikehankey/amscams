@@ -9,11 +9,12 @@ from lib.Minutes_Tools import *
 from lib.VIDEO_VARS import HD_H, HD_W
 
 PAGE_TEMPLATE = "/home/ams/amscams/pythonv2/templates/minute_details.html"
+HD_TMP_STACK_EXT = "_HD_tmp_stack.png"
 
 # Temporarily resize SD Stack
 def getResizeSDStack(_input):
    # Here the stack is SD, we resize it to HD for a better view in the meteor track picker
-   tmp_pseudo_HD_stack = _input.replace('png','HD_tmp_stack')
+   tmp_pseudo_HD_stack = _input.replace('.png',HD_TMP_STACK_EXT)
    print(tmp_pseudo_HD_stack)
    if(cfe(tmp_pseudo_HD_stack)):
       return tmp_pseudo_HD_stack
@@ -37,7 +38,7 @@ def minute_details(form):
    template = template.replace('{DATE}',string_date)
    template = template.replace('{CAM_ID}',analysed_minute['cam_id'])
 
-   # Where is the bigger version (without -tn)
+   # Do we have the bigger version (without -tn)?
    full_path_bigger = MINUTE_FOLDER +  os.sep + analysed_minute['year'] + '_' + str(analysed_minute['month']).zfill(2) + "_" + str(analysed_minute['day']).zfill(2) + os.sep + IMAGES_MINUTE_FOLDER + os.sep +  analysed_minute['full'].replace(MINUTE_TINY_STACK_EXT,'')
    
    if(cfe(full_path_bigger)!=1):
