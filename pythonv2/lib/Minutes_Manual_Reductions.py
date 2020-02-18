@@ -87,7 +87,7 @@ def automatic_detect(form):
 
    output_path = input_path.replace('.mp4','-cropped.mp4')
 
-
+   output_path = os.path.basename(output_path)
    print("OUTPUT PATH " + output_path)
    sys.exit(0)
       
