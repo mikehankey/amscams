@@ -59,7 +59,7 @@ def minute_details(form):
    # tmp_pseudo_HD_stack = full_path_bigger.replace('png','HD_tmp_stack')
    
    #ffmpeg -i full_path_bigger -vf scale=HD_W:HD_H output.avi
-   getResizeSDStack(tmp_pseudo_HD_stack)
+   getResizeSDStack(full_path_bigger)
     
    print(template)
    print(analysed_minute)
