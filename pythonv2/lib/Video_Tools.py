@@ -26,7 +26,7 @@ def fixmp4(path_to_mp4,save_backup=False):
    # Test if it's doable
    try:
       output = subprocess.check_output(cmd, shell=True).decode("utf-8")   
-      print("ffmpeg cmd successfull") 
+      print("ffmpeg cmd successfull >> " +  path + 'tmp.mp4') 
    except subprocess.CalledProcessError as e:
       print("Command " + cmd + "  return on-zero exist status: " + e.returncode)
       sys.exit(0)
