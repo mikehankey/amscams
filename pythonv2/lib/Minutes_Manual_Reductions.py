@@ -38,6 +38,11 @@ def automatic_detect(form):
    y = form.getvalue('y_start')
    w = form.getvalue('w')
    h = form.getvalue('h')
+
+   # Get Org Stack folder
+   org_stack_folder = os.path.dirname(os.path.abspath(stack))
+
+   print(org_stack_folder)
  
    # Do we have a HD version on the video of this stack?
    # Ex: 
