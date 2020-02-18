@@ -9,8 +9,7 @@ import sys
 from os.path import isfile, join, exists
 from lib.FileIO import load_json_file, save_json_file
 from lib.UtilLib import bound_cnt
-from lib.VideoLib import load_video_frames
-from lib.Cleanup_Json_Conf import PATH_TO_CONF_JSON
+from lib.VideoLib import load_video_frames 
 from lib.Sync_HD_SD_videos import get_masks
 
 TMP_FRAME_FOLDER = '/mnt/ams2/TMP'
@@ -198,14 +197,13 @@ def get_a_frame(fr_id,sd_vid):
 
 # Load Frames and returns (previously in Mike's flex-detect)
 def load_frames_fast(input_file, analysed_input_file, limit=0, mask=0,crop=(),color=0,resize=[]):
-   json_conf = PATH_TO_CONF_JSON
  
    cap = cv2.VideoCapture(input_file)
    masks = None
    last_frame = None
    last_last_frame = None
 
-   masks = get_masks(analysed_input_file['cam_id'], json_conf,1)
+   masks = get_masks(analysed_input_file['cam_id'],1)
    if "crop" in input_file:
       masks = None
    print("MASKS:", analysed_input_file['cam_id'], masks)
@@ -242,7 +240,7 @@ def load_frames_fast(input_file, analysed_input_file, limit=0, mask=0,crop=(),co
                   hd = 1
                else:
                   hd = 0
-               masks = get_masks(cam, json_conf,hd)
+               masks = get_masks(cam, hd)
                frame = mask_frame(frame, [], masks, 5)
 
             if last_frame is not None:
