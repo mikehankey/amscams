@@ -104,7 +104,7 @@ def automatic_detect(form):
 
    #  load_frames_fast to get subframes and sum/max val info this also includes (mx,my) brightest point in subframe .
    analysed_minute_name = whatever_minute_name_analyser(output_path)
-   hd_frames,hd_color_frames,hd_subframes,sum_vals,max_vals = load_frames_fast(output_path, analysed_minute_name, 0, 0, None, 0,[])
+   hd_frames,hd_color_frames,hd_subframes,sum_vals,max_vals = load_frames_fast(output_path, analysed_minute_name, 0, 0, [], 0,[])
    
    
    #print("<br>HD FRAMES<br>")
