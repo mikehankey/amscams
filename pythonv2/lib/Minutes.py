@@ -77,6 +77,7 @@ def get_cam_res(res,cam_id,cur_index):
 
 # Create HTML version of the results
 def create_minute_html_res(res,cam_ids,year,month,day):
+
    how_many_cams = len(cam_ids)
    cam_ids = sorted(cam_ids)
    cam_title = ""
@@ -95,6 +96,7 @@ def create_minute_html_res(res,cam_ids,year,month,day):
    while(we_have_res==1):
       toReturn += "<div class='d-flex justify-content-around'>"
       for cam_id in cam_ids:
+
          cam_res = get_cam_res(res,cam_id,cur_index)
  
          if(cam_res is not False):
@@ -107,7 +109,7 @@ def create_minute_html_res(res,cam_ids,year,month,day):
          if(how_many_false==len(cam_ids)):
             we_have_res=0  
 
-         cur_index+=1
+      cur_index+=1
       toReturn += "</div>"
    
     
@@ -156,8 +158,6 @@ def browse_minute(form):
    
    # Retrieve the results
    res, day, month, year = get_minute_index_res(selected_end_date,selected_cam_ids)
-   print(res)
-   sys.exit(0)
  
    # Create HTML results
    if(len(res)>0):
