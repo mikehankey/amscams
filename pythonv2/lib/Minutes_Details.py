@@ -6,8 +6,17 @@ from lib.MeteorReduce_Tools import get_stacks
 from lib.CGI_Tools import print_error
 from lib.FileIO import cfe 
 from lib.Minutes_Tools import *
+from lib.VIDEO_VARS import HD_H, HD_W
 
 PAGE_TEMPLATE = "/home/ams/amscams/pythonv2/templates/minute_details.html"
+
+# Temporarily resize SD Stack
+def resizeSDStack(input,output):
+   # Here the stack is SD, we resize it to HD for a better view in the meteor track picker
+   tmp_pseudo_HD_stack = input.replace('png','HD_tmp_stack')
+   print(tmp_pseudo_HD_stack)
+
+
 
 def minute_details(form):
    # Debug
@@ -43,11 +52,12 @@ def minute_details(form):
    template = template.replace('{VIDEO}',video_full_path)
 
 
-   # No matter if the stack is SD or not
-   # we resize it to HD
-   stack = get_stacks(analysed_minute,False, True)
-   print(stack)
- 
+   # Here the stack is SD, we resize it to HD for a better view in the meteor track picker
+   # tmp_pseudo_HD_stack = full_path_bigger.replace('png','HD_tmp_stack')
+   
+   #ffmpeg -i full_path_bigger -vf scale=HD_W:HD_H output.avi
+
+    
    print(template)
    print(analysed_minute)
 
