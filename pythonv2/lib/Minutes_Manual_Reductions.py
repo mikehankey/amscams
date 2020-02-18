@@ -101,7 +101,7 @@ def automatic_detect(form):
       print_error("Command " + cmd + "  return on-zero exist status: " + str(e.returncode))
 
    #  load_frames_fast to get subframes and sum/max val info this also includes (mx,my) brightest point in subframe .
-   hd_frames,hd_color_frames,hd_subframes,sum_vals,max_vals = load_frames_fast(output, PATH_TO_CONF_JSON, 0, 0, [], 0,[])
+   hd_frames,hd_color_frames,hd_subframes,sum_vals,max_vals = load_frames_fast(output, 0, 0, [], 0,[])
    
    print("HD FRAMES<br>")
    print(hd_frames)
