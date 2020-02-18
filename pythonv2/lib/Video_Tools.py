@@ -16,7 +16,7 @@ from pathlib import Path
 
 # Fix a MP4 just copying it 
 def fixmp4(path_to_mp4,save_backup=False):
-   path = Path(path_to_mp4).parent.absolute()+os.sep
+   path = str(Path(path_to_mp4).parent.absolute())+os.sep
    name = os.path.basename(path_to_mp4)
 
    # We create a tmp fix mp4 under the same folder
