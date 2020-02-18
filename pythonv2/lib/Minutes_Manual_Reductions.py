@@ -85,6 +85,10 @@ def automatic_detect(form):
       input_path = SD_path
 
       output_path = input_path.replace('.mp4','-cropped.mp4')
+
+
+      print("OUTPUT PATH " + output_path)
+      sys.exit(0)
          
       # Create cropped video
       cmd = 'ffmpeg -y -i  '+input_path+' -filter:v "crop='+w+':'+h+':'+x+':'+y+'" '+ output_path
