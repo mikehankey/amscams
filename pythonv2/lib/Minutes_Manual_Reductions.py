@@ -1,6 +1,7 @@
 import cgitb
 
-from lib.Minutes_Tools import minute_name_analyser, MINUTE_STACK_EXT
+from lib.FileIO import cfe
+from lib.Minutes_Tools import minute_name_analyser, MINUTE_STACK_EXT, MINUTE_HD_VID_FOLDER
 from lib.Minutes_Details import HD_TMP_STACK_EXT
 
 MANUAL_RED_MINUTE_PAGE_TEMPLATE_STEP1 = "/home/ams/amscams/pythonv2/templates/minute_manual_reduction_template_step0.html"
@@ -38,9 +39,15 @@ def automatic_detect(form):
    # stack    = /mnt/ams2/SD/proc2/2020_02_17/images/2020_02_17_11_12_20_000_010039_HD_tmp_stack.png
    # SD video => /mnt/ams2/SD/proc2/2020_02_17/2020_02_17_11_12_20_000_010039.mp4
    # HD video => /mnt/ams2/HD/2020_02_17_11_12_20_000_010039.mp4
-   print(stack.replace(HD_TMP_STACK_EXT,'-'+MINUTE_STACK_EXT+'.png'))
    analysed_minute = minute_name_analyser(stack.replace(HD_TMP_STACK_EXT,'-'+MINUTE_STACK_EXT+'.png'))
-   print(analysed_minute)
+   
+   # Search for HD
+   HD_path = MINUTE_HD_VID_FOLDER + analysed_minute['full'].replace('-'+MINUTE_STACK_EXT+'.png','')
+   if(cfe(HD_path)==1)
+      print("HD FOUND " + HD_path)
+   else:
+      print("NOT FOUND " + HD_path)
+    
 
 
 
