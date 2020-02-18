@@ -26,8 +26,8 @@ def getResizeSDStack(_input):
    try:
       output = subprocess.check_output(cmd, shell=True).decode("utf-8")    
    except subprocess.CalledProcessError as e:
-      print("Command " + cmd + "  return on-zero exist status: " + e.returncode)
-      sys.exit(0)
+      #print("Command " + cmd + "  return on-zero exist status: " + e.returncode)
+      return False
    
    return tmp_pseudo_HD_stack
  
@@ -54,9 +54,13 @@ def minute_details(form):
    if(cfe(full_path_bigger)!=1):
       full_path_bigger = stack
    
+   # Here the stack is SD, we resize it to HD for a better view in the meteor track picker
+   HD_stack = getResizeSDStack(full_path_bigger)
+   if(HD_stack is not False):
+      full_path_bigger = HD_stack
+
    template = template.replace('{STACK}',full_path_bigger)
-
-
+    
    # SEARCH FOR RELATED VIDEO
    video_full_path  = MINUTE_FOLDER +  os.sep + analysed_minute['year'] + '_'+ str(analysed_minute['month']).zfill(2) + "_" + str(analysed_minute['day']).zfill(2) + os.sep + analysed_minute['full'].replace('-'+MINUTE_STACK_EXT+'.png','.mp4')
    
@@ -66,11 +70,8 @@ def minute_details(form):
    template = template.replace('{VIDEO}',video_full_path)
 
 
-   # Here the stack is SD, we resize it to HD for a better view in the meteor track picker
-   # tmp_pseudo_HD_stack = full_path_bigger.replace('png','HD_tmp_stack')
-   
-   #ffmpeg -i full_path_bigger -vf scale=HD_W:HD_H output.avi
-   HD_stack = getResizeSDStack(full_path_bigger)
+
+
    print(HD_stack)
    print(template)
    print(analysed_minute)
