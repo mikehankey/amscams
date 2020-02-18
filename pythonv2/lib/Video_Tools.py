@@ -21,10 +21,13 @@ def fixmp4(path_to_mp4,save_backup=False):
 
    # We create a tmp fix mp4 under the same folder
    cmd = 'ffmpeg -y -hide_banner -loglevel panic -i ' + path_to_mp4 + ' ' + path + 'tmp.mp4'
-   output = subprocess.check_output(cmd, shell=True).decode("utf-8")    
-
-   print(cmd)
-   print(output)
+   
+   # Test if it's doable
+   try:
+      output = subprocess.check_output(cmd, shell=True).decode("utf-8")    
+   except subprocess.CalledProcessError as e:
+      print("Command " + cmd + "  return on-zero exist status: " + e.returncode)
+      sys.exit(0)
 
    sys.exit(0)
    if(save_backup is True):
