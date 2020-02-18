@@ -48,6 +48,7 @@ def automatic_detect(form):
    HD_path = MINUTE_HD_VID_FOLDER + os.sep + analysed_minute['full'].replace( MINUTE_STACK_EXT+'.png','.mp4')
    print("HD PATH<br> ")
    print(HD_path)
+   print("<br>")
    HD_found = False
 
    # Search same path:
@@ -56,6 +57,9 @@ def automatic_detect(form):
 
    # Search for almost the same path
    tmp_almost_path = MINUTE_HD_VID_FOLDER + os.sep + analysed_minute['year'] + '_' + analysed_minute['month'] + '_' + analysed_minute['day'] + '_' + analysed_minute['hour'] + '_' + '*' +  analysed_minute['cam_id'] + '*' + '.mp4'
+   print("GLOB PATH <br>")
+   print(tmp_almost_path)
+   print('<br>')
    filelist = glob.glob(tmp_almost_path)
 
    print(filelist)
