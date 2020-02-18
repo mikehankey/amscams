@@ -15,7 +15,7 @@ HD_TMP_STACK_EXT = "_HD_tmp_stack.png"
 # Temporarily resize SD Stack
 def getResizeSDStack(_input):
    # Here the stack is SD, we resize it to HD for a better view in the meteor track picker
-   tmp_pseudo_HD_stack = _input.replace('.png',HD_TMP_STACK_EXT).replace('-'+MINUTE_STACK_EXT,'')
+   tmp_pseudo_HD_stack = _input.replace('-'+MINUTE_STACK_EXT,'').replace('.png',HD_TMP_STACK_EXT)
   
    if(cfe(tmp_pseudo_HD_stack)):
       return tmp_pseudo_HD_stack
