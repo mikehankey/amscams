@@ -4,9 +4,9 @@ import glob
 import sys
 import subprocess
 
-from Minutes_Manual_Reductions import load_frames_fast
-from Cleanup_Json_Conf import PATH_TO_CONF_JSON
+from flex-detect import load_frames_fast
 
+from lib.Cleanup_Json_Conf import PATH_TO_CONF_JSON
 from lib.CGI_Tools import print_error
 from lib.FileIO import cfe
 from lib.Minutes_Tools import minute_name_analyser, MINUTE_STACK_EXT, MINUTE_HD_VID_FOLDER, MINUTE_SD_FOLDER, DATA_MINUTE_SD_FOLDER, IMAGES_MINUTE_SD_FOLDER
