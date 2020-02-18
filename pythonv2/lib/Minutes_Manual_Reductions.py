@@ -57,7 +57,7 @@ def automatic_detect(form):
 
    # Search for almost the same path
    if(HD_found == False):
-      tmp_almost_path = MINUTE_HD_VID_FOLDER + os.sep + analysed_minute['year'] + '_' + analysed_minute['month'] + '_' + analysed_minute['day'] + '_' + analysed_minute['hour'] + '_' + '*' +  analysed_minute['cam_id'] + '*' + '.mp4'
+      tmp_almost_path = MINUTE_HD_VID_FOLDER + os.sep + analysed_minute['year'] + '_' + analysed_minute['month'] + '_' + analysed_minute['day'] + '_' + analysed_minute['hour'] + '_' + analysed_minute['min'] + '_' + '*' +  analysed_minute['cam_id'] + '*' + '.mp4'
       print("GLOB PATH <br>")
       print(tmp_almost_path)
       print('<br>')
