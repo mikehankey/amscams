@@ -84,22 +84,22 @@ def automatic_detect(form):
    elif(SD_found is True):
       input_path = SD_path
 
-      output_path = input_path.replace('.mp4','-cropped.mp4')
+   output_path = input_path.replace('.mp4','-cropped.mp4')
 
 
-      print("OUTPUT PATH " + output_path)
-      sys.exit(0)
-         
-      # Create cropped video
-      cmd = 'ffmpeg -y -i  '+input_path+' -filter:v "crop='+w+':'+h+':'+x+':'+y+'" '+ output_path
+   print("OUTPUT PATH " + output_path)
+   sys.exit(0)
       
-      # Test if it's doable
-      try:
-         output = subprocess.check_output(cmd, shell=True).decode("utf-8")   
-      except subprocess.CalledProcessError as e:
-          print_error("Command " + cmd + "  return on-zero exist status: " + str(e.returncode))
+   # Create cropped video
+   cmd = 'ffmpeg -y -i  '+input_path+' -filter:v "crop='+w+':'+h+':'+x+':'+y+'" '+ output_path
+   
+   # Test if it's doable
+   try:
+      output = subprocess.check_output(cmd, shell=True).decode("utf-8")   
+   except subprocess.CalledProcessError as e:
+         print_error("Command " + cmd + "  return on-zero exist status: " + str(e.returncode))
 
-      print(output_path())
+   print(output_path())
       
    sys.exit(0)
  
