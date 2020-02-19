@@ -158,7 +158,7 @@ def browse_minute(form):
 
    # Meteor_only
    if(meteor_only is not None):
-      if(meteor_only == 1):
+      if(meteor_only == '1'):
          meteor_only = True    
       else:
          meteor_only = False
