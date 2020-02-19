@@ -21,5 +21,5 @@ def get_meteor_date_cam(ms,sec,min,hour,day,month,year,cam_id):
       # We glob the folder to get all detection for this day
       all_jsons = glob.glob(main_dir + os.sep + '*' + cam_id + '*.json')
 
-      for json in all_jsons
+      for json in all_jsons:
          print(all_jsons)
