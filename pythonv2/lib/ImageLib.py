@@ -181,9 +181,13 @@ def stack_glob(glob_dir, out_file):
 
 
 
-def stack_frames(frames,video_file,nowrite=0):
+def stack_frames(frames,video_file,nowrite=0, resize=None):
+   if resize is not None:
+      resize_w = resize[0]
+      resize_h = resize[1]
    stacked_image = None
    stacked_file= video_file.replace(".mp4", "-stacked.png")
+   print("STACKED FILE IS:", stacked_file)
    if cfe(stacked_file) == 1 and nowrite == 0:
       #print("SKIP - Stack already done.") 
       stacked_image = cv2.imread(stacked_file,0)
@@ -196,7 +200,14 @@ def stack_frames(frames,video_file,nowrite=0):
          stacked_image = stack_stack(stacked_image, frame_pil)
    if nowrite == 0:
       if stacked_image is not None:
-         stacked_image.save(stacked_file)
+         #stacked_image.save(stacked_file)
+         image = np.array(stacked_image)
+         #bgr_image = cv2.cvtColor(image, cv2.COLOR_RGB2BGR)
+         #cv2.imshow('pepe', bgr_image)
+         #cv2.waitKey(0)
+         #cv2.imshow('pepe', image)
+         #cv2.waitKey(0)
+         cv2.imwrite(stacked_file, image)
          print ("Saved: ", stacked_file)
       else:
          print("bad file:", video_file)
