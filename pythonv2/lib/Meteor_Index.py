@@ -18,17 +18,14 @@ def get_meteor_date_cam(ms,sec,_min,hour,day,month,year,cam_id):
    main_dir = METEOR_FOLDER + os.sep + str(year) + "_" + str(month).zfill(2) + '_' + str(day).zfill(2)  + os.sep
    pseud_name = str(year) + "_" + str(month).zfill(2) + '_' + str(day).zfill(2) + '_' + str(hour).zfill(2) + '_' + str(_min).zfill(2) + '_' + str(sec).zfill(2) + '_' + str(ms).zfill(3) + '_' + str(cam_id) + "*" + ".json"
    cam_ids = get_the_cam_ids(); 
- 
-   print("<br>PSEUD_NAME<br>")
-   print(main_dir  + pseud_name)
-   print("<br>")
+  
 
    if(cfe(main_dir,1)==1):
       # We glob the folder to get all detection for this day
       all_jsons = glob.glob(main_dir + pseud_name)
-      print(all_jsons)
-      sys.exit(0)
+       
       for json in all_jsons:
-         print(all_jsons)
+         if('reduced' not in json):
+            print(json)
    else:
       print("<br>MAIN DIR DOESNT EXIST<br>")
