@@ -83,6 +83,7 @@ def get_cam_res(res,cam_id,cur_index):
 # Create HTML version of the meteor only results
 def create_minute_html_res_meteor(res,cam_ids,year,month,day):
    
+   toReturn = ''
    res_by_cam = {}
 
    # We group the results by cam ids
@@ -121,9 +122,12 @@ def create_minute_html_res_meteor(res,cam_ids,year,month,day):
 
       cur_index+=1
 
-   print(res_by_cam)
+   for cam_id in cam_ids:
+      toReturn  += "<h2>Cam# "+cam_id"</h2>"
+      for meteor in res_by_cam[cam_id]
+         toReturn  += "<div class='minute meteor'><a class='d-block' href='webUI.py?cmd=minute_details&stack="+meteor+"'><img src='"+meteor+"' data-rel='"+cam_res+"' class='img-fluid'/></a><span style='font-size:.75rem'>"+meteor+"</span></div>"
 
-
+   return toReturn
 
 # Create HTML version of the results
 def create_minute_html_res(res,cam_ids,year,month,day):
