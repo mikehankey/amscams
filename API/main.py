@@ -3,6 +3,7 @@
 import os
 import cgi 
 import json
+import datetime
 
 JSON_CONFIG = '/home/ams/amscams/conf/as6.json'
 
@@ -21,6 +22,8 @@ def login(form):
    user = form.getvalue('user')
    password = form.getvalue('pwd')
 
+   test_log = False
+
    if(user is not None and password is not None):
       json_file = open('JSON_CONFIG')
       json_str = json_file.read()
@@ -28,12 +31,23 @@ def login(form):
        
       try:
          if(json_data['site']['ams_id']==user and json_data['site']['pwd']==pwd):
-               result['passed'] = 1
-         else:
-               result['passed'] = 0
+            test_log = True
       except Exception:
-         result['passed'] = 0
-    
+         test_log = False
+   
+
+   if(test_log is True):
+      return json.dumps({'tok':create_token()})
+   else
+      return json.dumps({'error':'You are not authorized'})
+
+
+   return test_log
+
+# CREATE TEMPORARY TOKEN
+def create_token():
+   expiration = datetime.datetime.now() + datetime.timedelta(days=0.5)
+   return expiration.strftime("%d%b%Y%H%M%S_4llsk") 
 
 
 # MAIN
