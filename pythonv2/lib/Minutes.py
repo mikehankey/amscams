@@ -191,11 +191,11 @@ def browse_minute(form):
    #template = template.replace('{PERIODS}',get_select(selected_period,'periods'))
    
    # Retrieve the results
-   res, day, month, year = get_minute_index_res(selected_end_date,selected_cam_ids,meteor_only)
+   res, day, month, year = get_minute_index_res(selected_end_date,selected_cam_ids)
  
    # Create HTML results
    if(len(res)>0):
-      res = create_minute_html_res(res,selected_cam_ids,year,str(month).zfill(2),str(day).zfill(2))
+      res = create_minute_html_res(res,selected_cam_ids,year,str(month).zfill(2),str(day).zfill(2),meteor_only)
    else:
       res = "<div class='alert alert-danger'>No minute stacks found for " + selected_end_date.strftime("%Y/%m/%d") + '.</div>'
    
