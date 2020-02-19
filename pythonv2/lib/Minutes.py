@@ -145,7 +145,8 @@ def create_minute_html_res(res,cam_ids,year,month,day, meteor_only):
             we_have_res=0  
 
       cur_index+=1
-      toReturn += "XXXXX</div>"
+      if(cam_res is False):
+         toReturn += "</div>"
 
    return toReturn
 
