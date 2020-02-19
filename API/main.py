@@ -37,6 +37,11 @@ def login(form):
    
 
    if(test_log is True):
+      cookie_date, tok = create_token() 
+
+      # Keep the token on this side too as a cookie
+      create_cookie(cookie_date,tok)
+
       return json.dumps({'tok':create_token()})
    else
       return json.dumps({'error':'You are not authorized'})
@@ -47,8 +52,15 @@ def login(form):
 # CREATE TEMPORARY TOKEN
 def create_token():
    expiration = datetime.datetime.now() + datetime.timedelta(days=0.5)
-   return expiration.strftime("%d%b%Y%H%M%S_4llsk") 
+   return expiration.strftime("%a, %d-%b-%Y %H:%M:%S GMT"),expiration.strftime("%d%b%Y%H%M%S_4llsk") 
 
+# CREATE COOKIE
+def create_cookie(_date,_cook):
+    
+    print("Content-type:text/html\r\n")
+    #print("Set-Cookie:User = "+user+";\r\n") 
+    print("Set-Cookie:Expires = "+_date+";\r\n") 
+    print("Set-Cookie:Path = /;\n") 
 
 # MAIN
 form = cgi.FieldStorage()
