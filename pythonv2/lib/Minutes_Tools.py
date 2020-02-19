@@ -62,6 +62,7 @@ def minute_name_analyser(file_name):
 
   
 # Get sun az & alt to determine if it's a daytime or nightime minute
+# NOT USED ANYMORE (too heavy for the indexes)
 def get_sun_details(capture_date):
 
    device_position = get_device_position()
@@ -100,7 +101,7 @@ def get_daily_index(day,month,year):
    else: 
       return  None
 
-# Create index for a given year
+# Create index for a given day
 def create_json_index_minute_day(day,month,year):
 
    # Main dir to glob
