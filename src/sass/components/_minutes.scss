@@ -12,9 +12,10 @@
       display: block;
       position: relative;
       border:1px solid transparent;
-   
+   }
 
-      &.meteor {
+   &.meteor {
+      a {
          border-color: #21c419!important;
          overflow: hidden;
          
@@ -38,8 +39,8 @@
             text-align: center;
             display: none;
          }
-
-      }
+   }
+    
    }
 
    a:hover:before {
