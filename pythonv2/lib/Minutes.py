@@ -113,7 +113,7 @@ def create_minute_html_res_meteor(res,cam_ids,year,month,day):
                how_many_meteors = len(meteor_index[index])
 
             if(how_many_meteors !=  0):
-               res_by_cam[cam_id].append({'t':t,'r':cam_res)
+               res_by_cam[cam_id].append({'t':t,'r':cam_res})
          else:
             how_many_false+=1
 
