@@ -592,19 +592,22 @@ def check_hd_motion(frames, trim_file):
 
 
 def find_hd_file_new(sd_file, trim_num, dur = 5, trim_on =1):
+   print("FIND HD FILE NEW FOR :", sd_file)
 
    (sd_datetime, sd_cam, sd_date, sd_y, sd_m, sd_d, sd_h, sd_M, sd_s) = convert_filename_to_date_cam(sd_file)
    if trim_num > 1400:
       hd_file, hd_trim = eof_processing(sd_file, trim_num, dur)
       time_diff_sec = int(trim_num / 25)
-      return(hd_file, hd_trim, time_diff_sec, dur)
+      if hd_file != 0:
+         return(hd_file, hd_trim, time_diff_sec, dur)
    offset = int(trim_num) / 25
    meteor_datetime = sd_datetime + datetime.timedelta(seconds=offset)
    hd_glob = "/mnt/ams2/HD/" + sd_y + "_" + sd_m + "_" + sd_d + "_*" + sd_cam + "*.mp4"
    hd_files = sorted(glob.glob(hd_glob))
    for hd_file in hd_files:
       el = hd_file.split("_")
-      if len(el) == 8 and "meteor" not in hd_file and "crop" not in hd_file:
+      print("HD FILE:", hd_file)
+      if len(el) == 8 and "meteor" not in hd_file and "crop" not in hd_file and "trim" not in hd_file:
          hd_datetime, hd_cam, hd_date, hd_y, hd_m, hd_d, hd_h, hd_M, hd_s = convert_filename_to_date_cam(hd_file)
          time_diff = meteor_datetime - hd_datetime
          time_diff_sec = time_diff.total_seconds()
@@ -622,7 +625,31 @@ def find_hd_file_new(sd_file, trim_num, dur = 5, trim_on =1):
                print("NOOOOOOOOOOOOOOOOOOOOOO TRIMMMMMMMMMMMMMMM")
                hd_trim = None
             return(hd_file, hd_trim, time_diff_sec, dur)
-   return(None,None,None,None)
+   # No HD file was found. Trim out the SD Clip and then upscale it.
+   print("NO HD FOUND!")
+
+   time_diff_sec = int(trim_num / 25)
+   dur = int(dur) + 1 + 3
+   print("UPSCALE FROM SD!", time_diff_sec, dur)
+   time_diff_sec = time_diff_sec - 1
+   sd_trim = ffmpeg_trim(sd_file, str(time_diff_sec), str(dur), "-trim-" + str(trim_num) + "-SD-meteor")
+   hd_trim = upscale_sd_to_hd(sd_trim)
+   if "-SD-meteor-HD-meteor" in hd_trim:
+      orig_hd_trim = hd_trim
+      hd_trim = hd_trim.replace("-SD-meteor", "")
+      hdf = hd_trim.split("/")[-1]
+      os.system("mv " + orig_hd_trim + " /mnt/ams2/HD/" + hdf)
+      print("HD F: mv " + orig_hd_trim + " /mnt/ams2/HD/" + hdf)
+      hd_trim = "/mnt/ams2/HD/" + hdf
+ 
+   return(sd_file,hd_trim,str(0),str(dur))
+
+def upscale_sd_to_hd(video_file):
+   new_video_file = video_file.replace(".mp4", "-HD-meteor.mp4")
+   if cfe(new_video_file) == 0:
+      cmd = "/usr/bin/ffmpeg -i " + video_file + " -vf scale=1920:1080 " + new_video_file
+      os.system(cmd)
+   return(new_video_file)
 
 
 def eof_processing(sd_file, trim_num, dur):
@@ -636,14 +663,15 @@ def eof_processing(sd_file, trim_num, dur):
    hd_glob = "/mnt/ams2/HD/" + sd_y + "_" + sd_m + "_" + sd_d + "_*" + sd_cam + "*"
    print("HD GLOB:", hd_glob)
    hd_files = sorted(glob.glob(hd_glob))
-   print("HD FILES:", len(hd_files))
+   print("HD FILES:", hd_files)
    for hd_file in hd_files:
       el = hd_file.split("_")
+      print ("EOF HD FILE", hd_file)
       if len(el) == 8 and "meteor" not in hd_file and "crop" not in hd_file and "-HD-" not in hd_file:
          hd_datetime, hd_cam, hd_date, hd_y, hd_m, hd_d, hd_h, hd_M, hd_s = convert_filename_to_date_cam(hd_file)
          time_diff = meteor_datetime - hd_datetime
          time_diff_sec = time_diff.total_seconds()
-         print(meteor_datetime, hd_datetime, time_diff_sec,hd_file) 
+         print("HD FOUND ", meteor_datetime, hd_datetime, time_diff_sec,hd_file) 
          if -90 < time_diff_sec < 90:
             print("TIME:", time_diff_sec, hd_file)
             merge_files.append(hd_file)
@@ -740,7 +768,7 @@ def get_masks(this_cams_id, json_conf, hd = 0):
    return(my_masks)
 
 
-def load_video_frames(trim_file, json_conf, limit=0, mask=0,crop=(),color=0):
+def load_video_frames(trim_file, json_conf, limit=0, mask=0,crop=(),color=0, skip=None,resize=None):
    (f_datetime, cam, f_date_str,fy,fm,fd, fh, fmin, fs) = convert_filename_to_date_cam(trim_file)
    cap = cv2.VideoCapture(trim_file)
    masks = None 
@@ -791,8 +819,16 @@ def load_video_frames(trim_file, json_conf, limit=0, mask=0,crop=(),color=0):
             #print("MIKE:", x1,y2,x2,y2)
             crop_frame = frame[y1:y2,x1:x2]
             frame = crop_frame
+         if skip is None:
+            frames.append(frame)
+         else:
+            if frame_count % skip == 0:
+               if resize is None:
+                  frames.append(frame)
+               else:
+                  frame = cv2.resize(frame, (resize[0],resize[1]))
+                  frames.append(frame)
 
-         frames.append(frame)
          frame_count = frame_count + 1
    cap.release()
    if len(crop) == 4:

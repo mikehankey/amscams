@@ -614,7 +614,7 @@ def meteor_index(json_conf, day = None, extra_cmd = ""):
    else:
       year = day[0:4]
       mi_day_dir  = "/mnt/ams2/meteor_archive/" + station_id + "/DETECTS/MI/" + year + "/"
-      wb_day_dir  = "/mnt/wasabi/" + station_id + "/DETECTS/MI/" + year + "/"
+      wb_day_dir  = "/mnt/archive.allsky.tv/" + station_id + "/DETECTS/MI/" + year + "/"
       if cfe(mi_day_dir, 1) == 0:
          os.makedirs(mi_day_dir)
       if cfe(wb_day_dir, 1) == 0:

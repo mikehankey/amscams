@@ -1209,6 +1209,9 @@ def load_cal_params_from_arc(calib):
 def apply_calib(obj , frames=None , user_station = None):
    print("CAL:", obj['hd_trim'])
    print("CAL:", obj['trim_clip'])
+   if user_station is not None:
+      remote_conf_file = "/mnt/archive.allsky.tv/" + user_station + "/CAL/as6.json"
+      json_conf = load_json_file(remote_conf_file)
    if frames is None:
       if obj['hd_trim'] != 0:
          if cfe(obj['hd_trim']) == 1:   
@@ -2670,7 +2673,7 @@ def find_last_best_calib(input_file, orig_stars = None ):
    print(cal_dir)
    all_files = glob.glob(cal_dir)
    for file in all_files:
-
+      print("CAL FILE:", file)
       if cam_id in file :
          el = file.split("/")
          fn = el[-1]
@@ -3728,20 +3731,17 @@ def find_matching_cal_files(station_id, cam_id, capture_date, user_station):
    if user_station is None:
       cal_dir = "/mnt/ams2/cal/freecal/*"
    else:
-      cal_dir = "/mnt/archive.allskycams.com/" + user_station + "/CAL/last_best/*"
+      cal_dir = "/mnt/archive.allsky.tv/" + user_station + "/CAL/freecal/*"
    all_files = glob.glob(cal_dir)
-   for file in all_files:
-      if cam_id in file :
-         el = file.split("/")
-         fn = el[-1]
-         cp = file + "/" + fn + "-stacked-calparams.json"
-         if cfe(cp) == 1:
-            matches.append(cp)
-         else:
-            print("CP NOT FOUND!", cp)
-            cp = file + "/" + fn + "-calparams.json"
-            if cfe(cp) == 1:
-               matches.append(cp)
+   print("CAL DIR IS:", cal_dir)
+   for cal_dir in all_files:
+      print("CD:", cal_dir)
+      if cam_id in cal_dir:
+         if cfe(cal_dir, 1) == 1:
+            cfs = glob.glob(cal_dir + "/*cal*.json") 
+            if len(cfs) > 0: 
+               print("FOUND:", cfs[0])
+               matches.append(cfs[0])
 
    td_sorted_matches = []
 
@@ -9444,7 +9444,8 @@ def batch_make_preview_image(day=0):
    else:
       meteor_dirs = glob.glob("/mnt/ams2/meteors/*")
    year = day[0:4]
-  
+ 
+   tv_dir = None 
    station_id = json_conf['site']['ams_id']
    out = ""
    wasabi_out = ""
@@ -9485,20 +9486,26 @@ def batch_make_preview_image(day=0):
             wpc = pc.split("/")[-1]
             wpc = tv_dir + wpc
             wasabi_out +=  "<div style='float: left'>" + wasabi_link + "<img src=" + wpc + "></a></div>\n"
-   if cfe("/mnt/archive.allsky.tv" + tv_dir, 1) == 0:
-      os.makedirs( "/mnt/archive.allsky.tv" + tv_dir)
-   station_id = json_conf['site']['ams_id']
-   prev_file = "/mnt/ams2/meteor_archive/" + station_id + "/DETECTS/PREVIEW/" + year + "/" + day + "/" + "index.html"
-   wasabi_prev_file = "/mnt/archive.allsky.tv/" + station_id + "/DETECTS/PREVIEW/" + year + "/" + day + "/" + "index.html"
-   fp = open(prev_file, "w")
-   fp.write(out)
-   print(prev_file)
-   print(wasabi_prev_file)
 
-   fp = open(wasabi_prev_file, "w")
-   fp.write(wasabi_out)
-   print(prev_file)
-   print("DONE.")
+   if tv_dir is None:
+      print("No meteors found on this day.")
+   else:
+      print("TV:", tv_dir)
+
+      if cfe("/mnt/archive.allsky.tv" + tv_dir, 1) == 0:
+         os.makedirs( "/mnt/archive.allsky.tv" + tv_dir)
+      station_id = json_conf['site']['ams_id']
+      prev_file = "/mnt/ams2/meteor_archive/" + station_id + "/DETECTS/PREVIEW/" + year + "/" + day + "/" + "index.html"
+      wasabi_prev_file = "/mnt/archive.allsky.tv/" + station_id + "/DETECTS/PREVIEW/" + year + "/" + day + "/" + "index.html"
+      fp = open(prev_file, "w")
+      fp.write(out)
+      print(prev_file)
+      print(wasabi_prev_file)
+
+      fp = open(wasabi_prev_file, "w")
+      fp.write(wasabi_out)
+      print(prev_file)
+      print("DONE.")
 
 def make_preview_image(json_file):
    sd_xs = []
@@ -9728,14 +9735,22 @@ def injest(video_file):
    
    if "1920" in probe_out:
       print("We have an HD file for input. Downscale it first!")
+      source_type = "HD"
       sd_video_file = video_file.replace(".mp4", "-SD.mp4")
    else: 
+      source_type = "SD"
       sd_video_file = video_file
   
    # create SD downsample if it does not already exist 
    if cfe(sd_video_file) == 0:
       cmd = "/usr/bin/ffmpeg -i " + video_file + " -vf scale=640:360 " + sd_video_file
       os.system(cmd)
+
+   user_station = input("Enter the AMS station number associated with this clip AMSX  \n")
+   if user_station is not None:
+      remote_conf_file = "/mnt/archive.allsky.tv/" + user_station + "/CAL/as6.json"
+      json_conf = load_json_file(remote_conf_file)
+
 
    # load frames from SD video file
    sd_frames,sd_color_frames,sd_subframes,sum_vals,max_vals = load_frames_fast(sd_video_file, json_conf, 0, 0, [], 1,[])
@@ -9757,7 +9772,8 @@ def injest(video_file):
    meteor_event = events[selected_event]
    print("You selected:", meteor_event)
    user_trim_clip = input("Trim Clip (Y or N) \n")
-   user_station = input("Enter the AMS station number associated with this clip AMSX  \n")
+
+
    if user_trim_clip == "Y":
       # base initial buffer size off of total event length 
       buf_size = meteor_event[-1] - meteor_event[0]
@@ -9765,7 +9781,8 @@ def injest(video_file):
       if buf_size < 10:
          buf_size = 10
       if buf_size > 50:
-         buf_size = 25
+         buf_size = 50 
+      buf_size = 100
       t_start, t_end = buffered_start_end(meteor_event[0],meteor_event[-1], len(sd_frames), buf_size)
 
 
@@ -9774,10 +9791,22 @@ def injest(video_file):
       print("Detecting meteors in trim clip:", trim_clip)
       motion_objects,meteor_frames = detect_meteor_in_clip(trim_clip , None, 0)
 
+      meteor = None
+      meteors = []
       for mo in motion_objects:
          if motion_objects[mo]['report']['meteor_yn'] == 'Y':
             print(mo, motion_objects[mo]) 
-            meteor = motion_objects[mo]
+            meteors.append(motion_objects[mo])
+
+
+      if meteor is None or len(meteors) > 1:
+         print("Auto meteor detect failed or found more than 1 possible meteor. Select the best object.")
+         for mo in motion_objects:
+            print(mo, motion_objects[mo]['ofns'])
+         selected_obj = int(input("Please enter the obj number you think is the meteor\n"))
+         print("You selected:", selected_obj, motion_objects[selected_obj]['ofns'])
+         meteor = motion_objects[selected_obj]
+ 
 
       ma_sd_file = trim_clip.replace(".mp4", "-SD.mp4")
       ma_hd_file = trim_clip.replace(".mp4", "-HD.mp4")
@@ -9794,12 +9823,113 @@ def injest(video_file):
       meteor['calib'] = calib
       meteor['cal_params'] = cal_params
 
-      exit()
-      new_json = save_new_style_meteor_json(hd_fast_meteor, ma_json_file)
-      new_json['info']['org_sd_vid'] = ma_sd_file
-      new_json['info']['org_hd_vid'] = ma_hd_file
+      # setup times in frames
+      # get start of the 1 minute clip
+      (f_datetime, cam, f_date_str,fy,fm,fd, fh, fmin, fs) = convert_filename_to_date_cam(trim_clip)
+      day = fy + "_" + fm + "_" + fd
+      # convert starting clip frame number to seconds
+      extra_sec = t_start / 25
+      # add trim num seconds to the min start time to get the trim clip start time
+      start_trim_frame_time = f_datetime + datetime.timedelta(0,extra_sec)
+
+      # loop over frames and get frame time for each frame
+      ftimes = []
+      for fn in meteor['ofns']:
+         extra_sec = fn / 25
+         frame_time = start_trim_frame_time + datetime.timedelta(0,extra_sec)
+         ftimes.append(frame_time.strftime('%Y-%m-%d %H:%M:%S.%f')[:-3])
+      # save ftimes in meteor json
+      meteor['ftimes'] = ftimes
+
+      new_json = save_new_style_meteor_json(meteor, ma_json_file)
+
+      arc_dir = "/mnt/ams2/meteor_archive/" + user_station + "/METEOR/" + fy + "/" + fm + "/" + day + "/"
+      was_arc_dir = "/mnt/archive.allsky.tv/" + user_station + "/METEOR/" + fy + "/" + fm + "/" + day + "/"
+
+      old_json_fn = ma_json_file.split("/")[-1]
+      old_sd_fn = old_json_fn.replace(".json", ".mp4") 
+      old_hd_fn = old_json_fn.replace(".json", "-HD-meteor.mp4") 
+
+      old_meteor_dir = "/mnt/ams2/meteors/" + day + "/" 
+      old_json_file = "/mnt/ams2/meteors/" + day + "/" + old_json_fn
+      old_sd_vid = "/mnt/ams2/meteors/" + day + "/" + old_sd_fn
+      old_hd_vid = "/mnt/ams2/meteors/" + day + "/" + old_hd_fn
+
+      meteor['hd_trim'] = old_hd_vid
+      meteor['trim_clip'] = old_sd_vid
+
+      source_file = trim_clip
+
+      # copy the source media file to the old and new meteor json locations
+      # rescale the source file to SD or HD depending on what it was to begin with 
+      if source_type == "HD":
+         hd_source = source_file
+         sd_source = ma_sd_file 
+         if cfe(ma_sd_file) == 0:
+            cmd = "/usr/bin/ffmpeg -i " + hd_source + " -vf scale=640:360 " + ma_sd_file 
+            os.system(cmd)
+      else:
+         sd_source = source_file
+         hd_source = ma_hd_file 
+         if cfe(ma_hd_file) == 0:
+            cmd = "/usr/bin/ffmpeg -i " + hd_source + " -vf scale=640:360 " + ma_hd_file 
+            os.system(cmd)
+
+      print("SOURCE JSON :", ma_json_file) 
+      print("SOURCE HD :", hd_source) 
+      print("SOURCE SD :", sd_source) 
+      print("OLD JSON:", old_json_file)
+      print("OLD SD VID:", old_sd_vid)
+      print("OLD HD VID:", old_hd_vid)
+
+      # save old json_file
+      if cfe(old_meteor_dir, 1) == 0:
+         os.makedirs(old_meteor_dir) 
+      save_json_file(old_json_file, meteor) 
+
+      # copy and media to old dir
+      os.system("cp " + sd_source + " " + old_sd_vid) 
+      os.system("cp " + hd_source + " " + old_hd_vid) 
+
+      # arc json and media to new dir
+      if cfe(arc_dir, 1) == 0:
+         os.makedirs(arc_dir)
+
+      arc_json_file = arc_dir + ma_json_file.split("/")[-1]
+      arc_sd_file = arc_dir + ma_sd_file.split("/")[-1]
+      arc_hd_file = arc_dir + ma_hd_file.split("/")[-1]
+
+      # copy media to old dir
+      os.system("cp " + sd_source + " " + old_sd_vid) 
+      os.system("cp " + hd_source + " " + old_hd_vid) 
+
+      # copy json & media to new dir
+      if cfe(arc_dir, 1) == 0:
+         os.makedirs(arc_dir)
+      os.system("cp " + ma_json_file + " " + arc_json_file) 
+      os.system("cp " + sd_source + " " + arc_sd_file) 
+      os.system("cp " + hd_source + " " + arc_hd_file) 
+
+      print("ARC:", arc_json_file)
+      print("ARC SD VID:", arc_sd_file)
+      print("ARC HD VID:", arc_hd_file)
+
+
+      # copy json & media to wasabi dir
+      was_dir = arc_dir.replace("ams2/meteor_archive", "archive.allsky.tv")
+      if cfe(was_dir, 1) == 0:
+         os.makedirs(was_dir)
+      os.system("cp " + ma_json_file + " " + arc_json_file.replace("ams2/meteor_archive", "archive.allsky.tv")) 
+      os.system("cp " + sd_source + " " + arc_sd_file.replace("ams2/meteor_archive", "archive.allsky.tv")) 
+      os.system("cp " + hd_source + " " + arc_hd_file.replace("ams2/meteor_archive", "archive.allsky.tv")) 
+
+      new_json['info']['hd_vid'] = arc_hd_file
+      new_json['info']['sd_vid'] = arc_sd_file
+      new_json['info']['org_sd_vid'] = old_sd_vid
+      new_json['info']['org_hd_vid'] = old_hd_vid
       save_json_file(ma_json_file, new_json)
-      print(ma_json_file) 
+      save_json_file(arc_json_file, new_json)
+      
 
 
 cmd = sys.argv[1]
