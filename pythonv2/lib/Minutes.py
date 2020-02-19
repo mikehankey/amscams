@@ -98,9 +98,7 @@ def create_minute_html_res(res,cam_ids,year,month,day):
 
    # Get Meteor Detection info
    meteor_index = get_meteor_date_cam(day,month,year)
-   print("METEOR INDEX<br>")
-   print(meteor_index)
- 
+   
    
    while(we_have_res==1):
       toReturn += "<div class='d-flex justify-content-around'>"
@@ -110,9 +108,11 @@ def create_minute_html_res(res,cam_ids,year,month,day):
  
          if(cam_res is not False):
             t = get_min_details(cam_id,year,month,day,cam_res)
-
-            # Do we have a meteor there?
             print(t)
+            print("<br>")
+            # Do we have a meteor there?
+            index = os.path.basename(t).replace(MINUTE_STACK_EXT+'.png','')
+            print(index)
             sys.exit(0)
 
             toReturn += "<div style='padding: 0 1rem 1rem 0;'><a href='webUI.py?cmd=minute_details&stack="+t+"'><img src='"+t+"' style='width: 100%; max-width: 350px;height: 169px;' data-rel='"+cam_res+"' class='img-fluid cam_"+str(cam_id)+"'/></a><span style='font-size:.75rem'>"+cam_res+"</span></div>"
