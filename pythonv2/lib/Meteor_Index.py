@@ -21,6 +21,7 @@ def get_meteor_date_cam(ms,sec,_min,hour,day,month,year,cam_id):
  
    print("<br>PSEUD_NAME<br>")
    print(main_dir + os.sep + pseud_name)
+   print("<br>")
 
    if(cfe(main_dir)):
       # We glob the folder to get all detection for this day
@@ -29,3 +30,5 @@ def get_meteor_date_cam(ms,sec,_min,hour,day,month,year,cam_id):
       sys.exit(0)
       for json in all_jsons:
          print(all_jsons)
+   else:
+      print("<br>MAIN DIR DOESNT EXIST<br>")
