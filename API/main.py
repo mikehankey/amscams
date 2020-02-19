@@ -1,4 +1,6 @@
 import os
+import cgi
+
 
 def api_controller(form):
    api_function = form.getvalue('function')
@@ -12,5 +14,7 @@ def login(form):
    password = form.getvalue('pwd')
 
    print("RIGHT")
- 
+
+
+form = cgi.FieldStorage()
 api_controller(form)
