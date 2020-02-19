@@ -31,9 +31,4 @@ def get_meteor_date_cam(day,month,year):
             except:
                toReturn[tmp.split("-trim")[0]] = [json]
  
-   
-   
-   print(toReturn)
-   sys.exit(0)
-
    return toReturn
