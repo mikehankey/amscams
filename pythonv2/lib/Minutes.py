@@ -131,7 +131,8 @@ def create_minute_html_res(res,cam_ids,year,month,day, meteor_only):
 
 
          else:
-            toReturn += "<div style='padding: 0 1rem 1rem 0;width: 100%;height: 169px; background-color: transparent;max-width: calc(250px + 1rem);'></div>"
+            if(meteor_only is False):
+               toReturn += "<div style='padding: 0 1rem 1rem 0;width: 100%;height: 169px; background-color: transparent;max-width: calc(250px + 1rem);'></div>"
             how_many_false+=1
 
          if(how_many_false==len(cam_ids)):
