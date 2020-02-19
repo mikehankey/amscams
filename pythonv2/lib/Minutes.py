@@ -87,9 +87,7 @@ def create_minute_html_res_meteor(res,cam_ids,year,month,day):
 
    # We group the results by cam ids
    for cam_id in cam_ids:
-      res_by_cam['cam_id'] = []
-
-   print(res_by_cam)
+      res_by_cam[cam_id] = [] 
    
    we_have_res = 1   
    cur_index = 0
