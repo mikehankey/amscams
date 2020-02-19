@@ -5,6 +5,12 @@
 
    &.meteor {
       border-color: #21c419!important;
+      overflow: hidden;
+      
+      img {
+         box-shadow: none;
+         -webkit-box-shadow: none;
+      }
 
       &:before {
          content: 'Meteor';
