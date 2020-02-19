@@ -113,9 +113,7 @@ def create_minute_html_res(res,cam_ids,year,month,day):
             index = os.path.basename(t).replace(MINUTE_STACK_EXT+'.png','')
             how_many_meteors = 0
 
-            try:
-               len(meteor_index[index])
-            except:
+            if(index in meteor_index):
                how_many_meteors = len(meteor_index[index])
 
             extra_class = ''
