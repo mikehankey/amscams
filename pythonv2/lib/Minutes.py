@@ -117,12 +117,14 @@ def create_minute_html_res(res,cam_ids,year,month,day, meteor_only):
                how_many_meteors = len(meteor_index[index])
 
             extra_class = ''
+            is_meteor = False
             if(how_many_meteors!=0):
                extra_class = 'meteor'
+               is_meteor = True
 
-            if(meteor_only == False):
+            if(meteor_only is False):
                toReturn += "<div class='minute "+extra_class+"'><a class='d-block' href='webUI.py?cmd=minute_details&stack="+t+"'><img src='"+t+"' data-rel='"+cam_res+"' class='img-fluid cam_"+str(cam_id)+"'/></a><span style='font-size:.75rem'>"+cam_res+"</span></div>"
-            elif(meteor_only== True and extra_class == 'meteor'):
+            elif(meteor_only is True and is_meteor is True):
                toReturn += "<div class='minute "+extra_class+"'><a class='d-block' href='webUI.py?cmd=minute_details&stack="+t+"'><img src='"+t+"' data-rel='"+cam_res+"' class='img-fluid cam_"+str(cam_id)+"'/></a><span style='font-size:.75rem'>"+cam_res+"</span></div>"
 
 
