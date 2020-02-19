@@ -78,8 +78,14 @@ def get_cam_res(res,cam_id,cur_index):
             return False
    return False
 
+
+
+# Create HTML version of the meteor only results
+def create_minute_html_res_meteor(res,cam_ids,year,month,day):
+   print("YEAH")
+
 # Create HTML version of the results
-def create_minute_html_res(res,cam_ids,year,month,day, meteor_only):
+def create_minute_html_res(res,cam_ids,year,month,day):
 
    how_many_cams = len(cam_ids)
    cam_ids = sorted(cam_ids)
@@ -87,11 +93,10 @@ def create_minute_html_res(res,cam_ids,year,month,day, meteor_only):
    toReturn = ""
 
    # First line: all the cams_ids
-   if(meteor_only is False):
-      for cam_id in cam_ids:
-         cam_title += "<div style='width:100%; max-width: 350px;'><h2 style='margin-right:1rem'>Cam#" + str(cam_id) + " <button style='padding: .2rem .5rem;float: right;' class='btn btn-primary play_anim_thumb' data-rel='"+ str(cam_id) +"'><span class='icon-youtube'></span></button></h2></div>" 
+   for cam_id in cam_ids:
+      cam_title += "<div style='width:100%; max-width: 350px;'><h2 style='margin-right:1rem'>Cam#" + str(cam_id) + " <button style='padding: .2rem .5rem;float: right;' class='btn btn-primary play_anim_thumb' data-rel='"+ str(cam_id) +"'><span class='icon-youtube'></span></button></h2></div>" 
  
-      toReturn = "<div class='d-flex justify-content-around'>"+ cam_title + "</div>"
+   toReturn = "<div class='d-flex justify-content-around'>"+ cam_title + "</div>"
 
    # The other lines: the detection per cam
    cur_index = 0
@@ -101,14 +106,9 @@ def create_minute_html_res(res,cam_ids,year,month,day, meteor_only):
    # Get Meteor Detection info
    meteor_index = get_meteor_date_cam(day,month,year)
 
-   if(meteor_only is True):
-         toReturn += "<div class='d-flex justify-content-around METEOR ONLY'>"
-
-
    while(we_have_res==1):
       
-      if(meteor_only is False):
-         toReturn += "<div class='d-flex justify-content-around'>"
+      toReturn += "<div class='d-flex justify-content-around'>"
 
       for cam_id in cam_ids:
 
@@ -130,23 +130,18 @@ def create_minute_html_res(res,cam_ids,year,month,day, meteor_only):
                extra_class = 'meteor'
                is_meteor = True
 
-            if(meteor_only is False):
-               toReturn += "<div class='minute "+extra_class+"'><a class='d-block' href='webUI.py?cmd=minute_details&stack="+t+"'><img src='"+t+"' data-rel='"+cam_res+"' class='img-fluid cam_"+str(cam_id)+"'/></a><span style='font-size:.75rem'>"+cam_res+"</span></div>"
-            elif(meteor_only is True and is_meteor is True):
-               toReturn += "<div class='minute "+extra_class+"'><a class='d-block' href='webUI.py?cmd=minute_details&stack="+t+"'><img src='"+t+"' data-rel='"+cam_res+"' class='img-fluid cam_"+str(cam_id)+"'/></a><span style='font-size:.75rem'>Cam#" + str(cam_id)+' '+cam_res+"</span></div>"
-
-
+            toReturn += "<div class='minute "+extra_class+"'><a class='d-block' href='webUI.py?cmd=minute_details&stack="+t+"'><img src='"+t+"' data-rel='"+cam_res+"' class='img-fluid cam_"+str(cam_id)+"'/></a><span style='font-size:.75rem'>"+cam_res+"</span></div>"
+       
          else:
-            if(meteor_only is False):
-               toReturn += "<div style='padding: 0 1rem 1rem 0;width: 100%;height: 169px; background-color: transparent;max-width: calc(250px + 1rem);'></div>"
+             
+            toReturn += "<div style='padding: 0 1rem 1rem 0;width: 100%;height: 169px; background-color: transparent;max-width: calc(250px + 1rem);'></div>"
             how_many_false+=1
 
          if(how_many_false==len(cam_ids)):
             we_have_res=0  
 
       cur_index+=1
-      if(cam_res is False):
-         toReturn += "</div>"
+      toReturn += "</div>"
 
    return toReturn
 
@@ -205,7 +200,10 @@ def browse_minute(form):
  
    # Create HTML results
    if(len(res)>0):
-      res = create_minute_html_res(res,selected_cam_ids,year,str(month).zfill(2),str(day).zfill(2),meteor_only)
+      if(meteor_only is False):
+         res = create_minute_html_res(res,selected_cam_ids,year,str(month).zfill(2),str(day).zfill(2))
+      else:
+         res = create_minute_html_res_meteor(res,selected_cam_ids,year,str(month).zfill(2),str(day).zfill(2))
    else:
       res = "<div class='alert alert-danger'>No minute stacks found for " + selected_end_date.strftime("%Y/%m/%d") + '.</div>'
    
