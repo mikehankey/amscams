@@ -1,6 +1,11 @@
-.minute {
+.minute { 
+
+   display: flex;
   
-  
+   span {
+      display: block;
+   }
+
    a {
       display: block;
       position: relative;
