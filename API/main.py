@@ -56,11 +56,17 @@ def create_token():
 
 # CREATE COOKIE
 def create_cookie(_date,_cook):
-    
-    print("Content-type:text/html\r\n")
-    #print("Set-Cookie:User = "+user+";\r\n") 
-    print("Set-Cookie:Expires = "+_date+";\r\n") 
-    print("Set-Cookie:Path = /;\n") 
+   
+   print("Content-type:text/html\r\n")
+   #print("Set-Cookie:User = "+user+";\r\n") 
+   print("Set-Cookie:Expires = "+_date+";\r\n") 
+   print("Set-Cookie:Path = /;\n") 
+
+# TEST API LOGIN COOKIE
+def test_api_login_cookie(_val):
+
+   return json.dumps({'error':'Token timeout. Log back in.'}) 
+
 
 # MAIN
 form = cgi.FieldStorage()
