@@ -1,5 +1,18 @@
 .minute { 
 
+   &.hide {
+      margin:0;
+      height:0;
+
+      a {
+         height: 0;
+
+         img {
+            height: 0;
+         }
+      }
+   }
+
    display: flex;
    flex-direction: column !important;
    margin: 0 2.4rem 1rem 0;
