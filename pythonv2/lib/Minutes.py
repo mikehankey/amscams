@@ -150,7 +150,7 @@ def browse_minute(form):
    selected_end_date = form.getvalue('limit_day') 
    selected_period   = form.getvalue('period')
    selected_cam_ids  = form.getvalue('cams_ids')
-   meteor_only       = form.getvalue('meteor')
+   meteor_only       = form.getvalue('meteor_only')
    
    # Build the page based on template  
    with open(PAGE_TEMPLATE, 'r') as file:
