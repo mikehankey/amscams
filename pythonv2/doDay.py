@@ -36,7 +36,9 @@ def batch(num_days):
    today = datetime.today()
    for i in range (0,int(num_days)):
       past_day = datetime.now() - timedelta(hours=24*i)
+      past_day = past_day.strftime("%Y_%m_%d")
       print(past_day)
+      do_all(past_day)
    
 
 def make_station_report(day, proc_info = ""):
