@@ -108,14 +108,19 @@ def create_minute_html_res(res,cam_ids,year,month,day):
  
          if(cam_res is not False):
             t = get_min_details(cam_id,year,month,day,cam_res)
-            print(t)
-            print("<br>")
+
             # Do we have a meteor there?
             index = os.path.basename(t).replace(MINUTE_STACK_EXT+'.png','')
-            print(index)
-            sys.exit(0)
+            how_many_meteors = 0
+            try:
+               meteor_index[index]
+            except:
+               how_many_meteors = len(meteor_index[index])
 
-            toReturn += "<div style='padding: 0 1rem 1rem 0;'><a href='webUI.py?cmd=minute_details&stack="+t+"'><img src='"+t+"' style='width: 100%; max-width: 350px;height: 169px;' data-rel='"+cam_res+"' class='img-fluid cam_"+str(cam_id)+"'/></a><span style='font-size:.75rem'>"+cam_res+"</span></div>"
+            extra_class = ''
+            if(how_many_meteors!=0):
+               extra_class = 'meteor'
+            toReturn += "<div class='preview "+extra_class+"' style='padding: 0 1rem 1rem 0;'><a href='webUI.py?cmd=minute_details&stack="+t+"'><img src='"+t+"' style='width: 100%; max-width: 350px;height: 169px;' data-rel='"+cam_res+"' class='img-fluid cam_"+str(cam_id)+"'/></a><span style='font-size:.75rem'>"+cam_res+"</span></div>"
          else:
             toReturn += "<div style='padding: 0 1rem 1rem 0;width: 100%;height: 169px; background-color: transparent;max-width: calc(250px + 1rem);'></div>"
             how_many_false+=1
