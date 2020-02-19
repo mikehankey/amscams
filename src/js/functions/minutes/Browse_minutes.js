@@ -9,7 +9,7 @@ $(function() {
       var query = [],  key, value;
   
       for(key in cur_params) { 
-         value = params[key];
+         value = cur_params[key];
          query.push(key + "=" + value);
       }
       
