@@ -13,4 +13,4 @@ def login(form):
 
    print("RIGHT")
  
-api_controller(json_conf)
+api_controller(form)
