@@ -84,6 +84,7 @@ def create_minute_html_res(res,cam_ids,year,month,day, meteor_only):
    how_many_cams = len(cam_ids)
    cam_ids = sorted(cam_ids)
    cam_title = ""
+   toReturn = ""
 
    # First line: all the cams_ids
    if(meteor_only is False):
