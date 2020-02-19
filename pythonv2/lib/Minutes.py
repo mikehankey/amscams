@@ -86,10 +86,11 @@ def create_minute_html_res(res,cam_ids,year,month,day, meteor_only):
    cam_title = ""
 
    # First line: all the cams_ids
-   for cam_id in cam_ids:
-      cam_title += "<div style='width:100%; max-width: 350px;'><h2 style='margin-right:1rem'>Cam#" + str(cam_id) + " <button style='padding: .2rem .5rem;float: right;' class='btn btn-primary play_anim_thumb' data-rel='"+ str(cam_id) +"'><span class='icon-youtube'></span></button></h2></div>" 
+   if(meteor_only is False):
+      for cam_id in cam_ids:
+         cam_title += "<div style='width:100%; max-width: 350px;'><h2 style='margin-right:1rem'>Cam#" + str(cam_id) + " <button style='padding: .2rem .5rem;float: right;' class='btn btn-primary play_anim_thumb' data-rel='"+ str(cam_id) +"'><span class='icon-youtube'></span></button></h2></div>" 
  
-   toReturn = "<div class='d-flex justify-content-around'>"+ cam_title + "</div>"
+      toReturn = "<div class='d-flex justify-content-around'>"+ cam_title + "</div>"
 
    # The other lines: the detection per cam
    cur_index = 0
@@ -98,8 +99,7 @@ def create_minute_html_res(res,cam_ids,year,month,day, meteor_only):
 
    # Get Meteor Detection info
    meteor_index = get_meteor_date_cam(day,month,year)
-   
-   
+    
    while(we_have_res==1):
       toReturn += "<div class='d-flex justify-content-around'>"
       for cam_id in cam_ids:
@@ -125,7 +125,7 @@ def create_minute_html_res(res,cam_ids,year,month,day, meteor_only):
             if(meteor_only is False):
                toReturn += "<div class='minute "+extra_class+"'><a class='d-block' href='webUI.py?cmd=minute_details&stack="+t+"'><img src='"+t+"' data-rel='"+cam_res+"' class='img-fluid cam_"+str(cam_id)+"'/></a><span style='font-size:.75rem'>"+cam_res+"</span></div>"
             elif(meteor_only is True and is_meteor is True):
-               toReturn += "<div class='minute "+extra_class+"'><a class='d-block' href='webUI.py?cmd=minute_details&stack="+t+"'><img src='"+t+"' data-rel='"+cam_res+"' class='img-fluid cam_"+str(cam_id)+"'/></a><span style='font-size:.75rem'>"+cam_res+"</span></div>"
+               toReturn += "<div class='minute "+extra_class+"'><a class='d-block' href='webUI.py?cmd=minute_details&stack="+t+"'><img src='"+t+"' data-rel='"+cam_res+"' class='img-fluid cam_"+str(cam_id)+"'/></a><span style='font-size:.75rem'>Cam#" + str(cam_id)+' '+cam_res+"</span></div>"
 
 
          else:
@@ -164,12 +164,7 @@ def browse_minute(form):
          meteor_only = False
    else:
       meteor_only = False     
-
-
-   print("METEOR ONLY ")
-   print(meteor_only)
-   print("<br>")   
-
+ 
    # Default dates 
    if (selected_end_date is None): 
       selected_end_date = datetime.now() - timedelta(days=1)
