@@ -165,6 +165,11 @@ def browse_minute(form):
    else:
       meteor_only = False     
 
+
+   print("METEOR ONLY ")
+   print(meteor_only)
+   print("<br>")   
+
    # Default dates 
    if (selected_end_date is None): 
       selected_end_date = datetime.now() - timedelta(days=1)
