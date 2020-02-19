@@ -91,6 +91,7 @@ def create_minute_html_res_meteor(res,cam_ids,year,month,day):
    
    we_have_res = 1   
    cur_index = 0
+   how_many_false = 0
 
    # Get Meteor Detection info
    meteor_index = get_meteor_date_cam(day,month,year)
