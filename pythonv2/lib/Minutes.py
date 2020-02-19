@@ -82,7 +82,41 @@ def get_cam_res(res,cam_id,cur_index):
 
 # Create HTML version of the meteor only results
 def create_minute_html_res_meteor(res,cam_ids,year,month,day):
-   print("YEAH")
+   
+   res_by_cam = {}
+
+   # We group the results by cam ids
+   for cam_id in cam_ids:
+      res_by_cam['cam_id'] = []
+   
+   we_have_res = 1   
+   cur_index = 0
+
+   # Get Meteor Detection info
+   meteor_index = get_meteor_date_cam(day,month,year)
+   
+   while(we_have_res==1):
+      for cam_id in cam_ids:
+         cam_res = get_cam_res(res,cam_id,cur_index)
+         if(cam_res is not False):
+            t = get_min_details(cam_id,year,month,day,cam_res)
+
+            # Do we have a meteor there?
+            index = os.path.basename(t).replace(MINUTE_STACK_EXT+'.png','')
+            how_many_meteors = 0
+
+            if(index in meteor_index):
+               how_many_meteors = len(meteor_index[index])
+
+            if(how_many_meteors !== 0):
+               res_by_cam[cam_id].append(t)
+
+      if(how_many_false==len(cam_ids)):
+         we_have_res=0  
+
+   print(res_by_cam)
+
+
 
 # Create HTML version of the results
 def create_minute_html_res(res,cam_ids,year,month,day):
