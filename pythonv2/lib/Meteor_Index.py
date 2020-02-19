@@ -23,8 +23,8 @@ def get_meteor_date_cam(day,month,year):
        
       for json in all_jsons:
          if('reduced' not in json):
-            temp = meteor.split("/")[-1]
-            toReturn[temp.split("-trim")[0]] = 1
+            tmp = json.split("/")[-1]
+            toReturn[tmp.split("-trim")[0]] = 1
    
    
    print(toReturn)
