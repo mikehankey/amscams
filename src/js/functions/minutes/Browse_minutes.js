@@ -5,7 +5,8 @@ $(function() {
       var param_to_update = $(this).attr('data-url-param');
       var v = $(this).val();
       cur_params[param_to_update]= v;
-      setQueryParameters(cur_params[param_to_update]);
+      console.log(cur_params);
+      //setQueryParameters(cur_params);
    })
 })
        
