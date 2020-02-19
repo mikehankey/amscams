@@ -102,7 +102,8 @@ def create_minute_html_res(res,cam_ids,year,month,day, meteor_only):
    meteor_index = get_meteor_date_cam(day,month,year)
     
    while(we_have_res==1):
-      toReturn += "<div class='d-flex justify-content-around'>"
+      if(meteor_only is False):
+         toReturn += "<div class='d-flex justify-content-around'>"
       for cam_id in cam_ids:
 
          cam_res = get_cam_res(res,cam_id,cur_index)
@@ -137,10 +138,9 @@ def create_minute_html_res(res,cam_ids,year,month,day, meteor_only):
             we_have_res=0  
 
       cur_index+=1
-      toReturn += "</div>"
-   
-    
-   
+      if(meteor_only is False):
+         toReturn += "</div>"
+
    return toReturn
 
 # Generate Browse Minute page
