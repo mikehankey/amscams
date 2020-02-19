@@ -3,7 +3,9 @@ import cgitb
 
 from datetime import datetime, timedelta
 from lib.Get_Cam_ids import get_the_cam_ids
+from lib.Meteor_Index import get_meteor_date_cam
 from lib.Minutes_Tools import *
+
 
 PAGE_TEMPLATE = "/home/ams/amscams/pythonv2/templates/browse_minutes.html"
 PERIODS = ['minutes','hours','days']
@@ -30,11 +32,12 @@ def get_select(selected_cam_ids,_type):
    return toReturn
 
 
-
 # Transform the result of a minute_index to get the full path to the stackeds
 # minute_file is actually the hour of the stack (ex: 11:16:26.000) > 2020_01_05_00_00_09_000_010038-stacked-tn.png	
 def get_min_details(cam_id,year,month,day,minute_file):
    return MINUTE_SD_FOLDER +  os.sep + str(year) + '_' + str(month)+'_'+str(day) + os.sep + IMAGES_MINUTE_SD_FOLDER + os.sep + str(year)+'_'+str(month)+'_'+str(day)+'_'+minute_file.replace(':','_').replace('.','_') + '_' + cam_id + MINUTE_STACK_EXT + '.png'
+
+
 
 # Get Results from the minutes indexes
 def get_minute_index_res(selected_end_date,selected_cam_ids):
@@ -75,12 +78,66 @@ def get_cam_res(res,cam_id,cur_index):
             return False
    return False
 
+
+
+# Create HTML version of the meteor only results
+def create_minute_html_res_meteor(res,cam_ids,year,month,day):
+   
+   toReturn = ''
+   res_by_cam = {}
+
+   # We group the results by cam ids
+   for cam_id in cam_ids:
+      res_by_cam[cam_id] = [] 
+   
+   we_have_res = 1   
+   cur_index = 0
+   how_many_false = 0
+
+   # Get Meteor Detection info
+   meteor_index = get_meteor_date_cam(day,month,year)
+   
+   while(we_have_res==1):
+
+      for cam_id in cam_ids:
+         cam_res = get_cam_res(res,cam_id,cur_index)
+      
+         if(cam_res is not False):
+            t = get_min_details(cam_id,year,month,day,cam_res)
+
+            # Do we have a meteor there?
+            index = os.path.basename(t).replace(MINUTE_STACK_EXT+'.png','')
+            how_many_meteors = 0
+
+            if(index in meteor_index):
+               how_many_meteors = len(meteor_index[index])
+
+            if(how_many_meteors !=  0):
+               res_by_cam[cam_id].append({'t':t,'r':cam_res})
+         else:
+            how_many_false+=1
+
+      if(how_many_false==len(cam_ids)):
+         we_have_res=0  
+
+      cur_index+=1
+
+   for cam_id in cam_ids:
+      if(len(res_by_cam[cam_id])>0):
+         toReturn  += "<h2>Cam# "+cam_id + "</h2><div class='d-flex flex-nowrap'>"
+      for m in res_by_cam[cam_id]:
+         toReturn  += "<div class='minute meteor'><a class='d-block' href='webUI.py?cmd=minute_details&stack="+m['t']+"'><img src='"+m['t']+"'  class='img-fluid'/></a><span style='font-size:.75rem'>"+m['r']+"</span></div>"
+      if(len(res_by_cam[cam_id])>0):
+         toReturn  += "</div>"
+   return toReturn
+
 # Create HTML version of the results
 def create_minute_html_res(res,cam_ids,year,month,day):
 
    how_many_cams = len(cam_ids)
    cam_ids = sorted(cam_ids)
    cam_title = ""
+   toReturn = ""
 
    # First line: all the cams_ids
    for cam_id in cam_ids:
@@ -92,17 +149,38 @@ def create_minute_html_res(res,cam_ids,year,month,day):
    cur_index = 0
    how_many_false = 0
    we_have_res = 1
-   
+
+   # Get Meteor Detection info
+   meteor_index = get_meteor_date_cam(day,month,year)
+
    while(we_have_res==1):
+      
       toReturn += "<div class='d-flex justify-content-around'>"
+
       for cam_id in cam_ids:
 
          cam_res = get_cam_res(res,cam_id,cur_index)
  
          if(cam_res is not False):
             t = get_min_details(cam_id,year,month,day,cam_res)
-            toReturn += "<div style='padding: 0 1rem 1rem 0;'><a href='webUI.py?cmd=minute_details&stack="+t+"'><img src='"+t+"' style='width: 100%; max-width: 350px;height: 169px;' data-rel='"+cam_res+"' class='img-fluid cam_"+str(cam_id)+"'/></a><span style='font-size:.75rem'>"+cam_res+"</span></div>"
+
+            # Do we have a meteor there?
+            index = os.path.basename(t).replace(MINUTE_STACK_EXT+'.png','')
+            how_many_meteors = 0
+
+            if(index in meteor_index):
+               how_many_meteors = len(meteor_index[index])
+
+            extra_class = ''
+            is_meteor = False
+            if(how_many_meteors!=0):
+               extra_class = 'meteor'
+               is_meteor = True
+
+            toReturn += "<div class='minute "+extra_class+"'><a class='d-block' href='webUI.py?cmd=minute_details&stack="+t+"'><img src='"+t+"' data-rel='"+cam_res+"' class='img-fluid cam_"+str(cam_id)+"'/></a><span style='font-size:.75rem'>"+cam_res+"</span></div>"
+       
          else:
+             
             toReturn += "<div style='padding: 0 1rem 1rem 0;width: 100%;height: 169px; background-color: transparent;max-width: calc(250px + 1rem);'></div>"
             how_many_false+=1
 
@@ -111,9 +189,7 @@ def create_minute_html_res(res,cam_ids,year,month,day):
 
       cur_index+=1
       toReturn += "</div>"
-   
-    
-   
+
    return toReturn
 
 # Generate Browse Minute page
@@ -123,12 +199,33 @@ def browse_minute(form):
 
    selected_end_date = form.getvalue('limit_day') 
    selected_period   = form.getvalue('period')
-   selected_cam_ids = form.getvalue('cams_ids')
+   selected_cam_ids  = form.getvalue('cams_ids')
+   meteor_only       = form.getvalue('meteor_only')
    
    # Build the page based on template  
    with open(PAGE_TEMPLATE, 'r') as file:
       template = file.read()
 
+   # Meteor_only
+   if(meteor_only is not None):
+      if(meteor_only == '1'):
+         meteor_only = True    
+      else:
+         meteor_only = False
+   else:
+      meteor_only = False    
+
+   # Create Meteor Select
+   meteor_select = "<option value=''>All Minutes</option>"
+   if(meteor_only == True):
+      meteor_select += "<option value='1' selected>Only With Meteors</option>"  
+   else:
+      meteor_select += "<option value='1'>Only With Meteors</option>"  
+
+ 
+   template = template.replace("{METEOR_SELECT}",meteor_select);
+
+ 
    # Default dates 
    if (selected_end_date is None): 
       selected_end_date = datetime.now() - timedelta(days=1)
@@ -161,7 +258,10 @@ def browse_minute(form):
  
    # Create HTML results
    if(len(res)>0):
-      res = create_minute_html_res(res,selected_cam_ids,year,str(month).zfill(2),str(day).zfill(2))
+      if(meteor_only is False):
+         res = create_minute_html_res(res,selected_cam_ids,year,str(month).zfill(2),str(day).zfill(2))
+      else:
+         res = create_minute_html_res_meteor(res,selected_cam_ids,year,str(month).zfill(2),str(day).zfill(2))
    else:
       res = "<div class='alert alert-danger'>No minute stacks found for " + selected_end_date.strftime("%Y/%m/%d") + '.</div>'
    

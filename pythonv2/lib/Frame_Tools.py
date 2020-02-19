@@ -8,6 +8,8 @@ import sys
 import numpy as np
 
 from os.path import isfile, join, exists
+
+from lib.UtilLib import calc_dist
 from lib.FileIO import load_json_file, save_json_file
 from lib.UtilLib import bound_cnt
 from lib.VideoLib import load_video_frames 
@@ -425,3 +427,111 @@ def calc_cm_for_event(event):
    if cm > max_cm:
       max_cm = cm + 1
    return(max_cm)   
+
+# Another mike's function
+def find_object(objects, fn, cnt_x, cnt_y, cnt_w, cnt_h, intensity=0, hd=0, sd_multi=1, cnt_img=None):
+   #if fn < 5:
+   #   return(0, objects)
+   if hd == 1:
+      obj_dist_thresh = 20 
+   else:
+      obj_dist_thresh = 10
+
+   center_x = cnt_x 
+   center_y = cnt_y  
+
+   found = 0
+   max_obj = 0
+   for obj in objects:
+      if 'oxs' in objects[obj]:
+         ofns = objects[obj]['ofns']
+         oxs = objects[obj]['oxs']
+         oys = objects[obj]['oys']
+         ows = objects[obj]['ows']
+         ohs = objects[obj]['ohs']
+         for oi in range(0, len(oxs)):
+            hm = int(ohs[oi] / 2)
+            wm = int(ows[oi] / 2)
+            lfn = int(ofns[-1] )
+            dist = calc_obj_dist((cnt_x,cnt_y,cnt_w,cnt_h),(oxs[oi], oys[oi], ows[oi], ohs[oi]))
+        
+            last_frame_diff = fn - lfn 
+            if dist < obj_dist_thresh and last_frame_diff < 10:
+               found = 1
+               found_obj = obj
+      if obj > max_obj:
+         max_obj = obj
+   if found == 0:
+      obj_id = max_obj + 1
+      objects[obj_id] = {}
+      objects[obj_id]['obj_id'] = obj_id
+      objects[obj_id]['ofns'] = []
+      objects[obj_id]['oxs'] = []
+      objects[obj_id]['oys'] = []
+      objects[obj_id]['ows'] = []
+      objects[obj_id]['ohs'] = []
+      objects[obj_id]['oint'] = []
+      objects[obj_id]['ofns'].append(fn)
+      objects[obj_id]['oxs'].append(center_x)
+      objects[obj_id]['oys'].append(center_y)
+      objects[obj_id]['ows'].append(cnt_w)
+      objects[obj_id]['ohs'].append(cnt_h)
+      objects[obj_id]['oint'].append(intensity)
+      found_obj = obj_id
+   if found == 1:
+      if objects[found_obj]['report']['obj_class'] == "meteor":
+         # only add if the intensity is positive and the forward motion compared to the last highest FM is greater. 
+         fm_last = calc_dist((objects[found_obj]['oxs'][0],objects[found_obj]['oys'][0]), (objects[found_obj]['oxs'][-1],objects[found_obj]['oys'][-1]))
+         fm_this = calc_dist((objects[found_obj]['oxs'][0],objects[found_obj]['oys'][0]), (center_x, center_y))
+         fm = fm_this - fm_last
+         if intensity > 10 and fm > 0:
+            objects[found_obj]['ofns'].append(fn)
+            objects[found_obj]['oxs'].append(center_x)
+            objects[found_obj]['oys'].append(center_y)
+            objects[found_obj]['ows'].append(cnt_w)
+            objects[found_obj]['ohs'].append(cnt_h)
+            objects[found_obj]['oint'].append(intensity)
+
+      else:
+         objects[found_obj]['ofns'].append(fn)
+         objects[found_obj]['oxs'].append(center_x)
+         objects[found_obj]['oys'].append(center_y)
+         objects[found_obj]['ows'].append(cnt_w)
+         objects[found_obj]['ohs'].append(cnt_h)
+         objects[found_obj]['oint'].append(intensity)
+
+   #objects[found_obj] = clean_object(objects[found_obj])
+   objects[found_obj] = analyze_object(objects[found_obj], hd, sd_multi, 1)
+   if objects[found_obj]['report']['meteor_yn'] == 'Y':
+      max_int = max(objects[found_obj]['oint'])
+      if max_int > 25000:
+         objects[found_obj]['report']['obj_class'] = "fireball"
+
+   return(found_obj, objects)
+
+
+def calc_obj_dist(obj1, obj2):
+   x1,y1,w1,h1 = obj1
+   x2,y2,w2,h2 = obj2
+   pts1 = []
+   pts2 = []
+   pts1.append((x1,y1))
+   pts1.append((x1+w1,y1))
+   pts1.append((x1,y1+h1))
+   pts1.append((x1+w1,y1+h1))
+   pts1.append((x1+int(w1/2),y1+int(h1/2)))
+
+   pts2.append((x2,y2))
+   pts2.append((x2+w2,y2))
+   pts2.append((x2,y2+h2))
+   pts2.append((x2+w2,y2+h2))
+   pts2.append((x2+int(w2/2),y2+int(h2/2)))
+   all_dist = []
+   for a,b in pts1:
+      for d,e in pts2:
+
+         dist = calc_dist((a,b),(d,e))
+         all_dist.append(dist)
+
+   min_dist = min(all_dist)
+   return(min_dist) 
