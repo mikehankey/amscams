@@ -18,6 +18,7 @@ import json
 from lib.VideoLib import load_video_frames
 from lib.ImageLib import stack_frames , stack_glob, stack_stack, make_10_sec_thumbs
 from lib.FileIO import load_json_file , cfe
+from lib.UtilLib import check_running
 from lib.BatchLib import batch_obj_stacks
 
 json_conf = load_json_file("../conf/as6.json")
@@ -167,6 +168,15 @@ def move_day_files(day):
 
 def stack_day(day):
    print("Stack day.", day)
+   # first make sure the batch is not already running.
+   running = check_running("stackVideo.py")
+   print("Running:", running)
+   if running > 1:
+      print("Already running.")
+      exit()
+
+
+
    if day == "all":
       day_files = sorted(glob.glob("/mnt/ams2/SD/proc2/daytime/*.mp4"), reverse=True)
       print("/mnt/ams2/SD/proc2/daytime/" + "*.mp4")

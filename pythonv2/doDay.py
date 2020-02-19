@@ -28,10 +28,20 @@ import sys
 from datetime import datetime, timedelta
 
 from lib.FileIO import load_json_file, save_json_file, cfe
+from lib.UtilLib import check_running
 
 json_conf = load_json_file("../conf/as6.json")
 
+
+
 def batch(num_days):
+
+   # first make sure the batch is not already running.
+   running = check_running("doDay.py")
+   print("Running:", running)
+   if running > 1:
+      print("Already running.")
+      exit()
 
    today = datetime.today()
    for i in range (0,int(num_days)):
