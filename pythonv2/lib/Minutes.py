@@ -79,7 +79,7 @@ def get_cam_res(res,cam_id,cur_index):
    return False
 
 # Create HTML version of the results
-def create_minute_html_res(res,cam_ids,year,month,day):
+def create_minute_html_res(res,cam_ids,year,month,day, meteor_only):
 
    how_many_cams = len(cam_ids)
    cam_ids = sorted(cam_ids)
@@ -119,7 +119,13 @@ def create_minute_html_res(res,cam_ids,year,month,day):
             extra_class = ''
             if(how_many_meteors!=0):
                extra_class = 'meteor'
-            toReturn += "<div class='minute "+extra_class+"'><a class='d-block'   href='webUI.py?cmd=minute_details&stack="+t+"'><img src='"+t+"' data-rel='"+cam_res+"' class='img-fluid cam_"+str(cam_id)+"'/></a><span style='font-size:.75rem'>"+cam_res+"</span></div>"
+
+            if(meteor_only == False):
+               toReturn += "<div class='minute "+extra_class+"'><a class='d-block' href='webUI.py?cmd=minute_details&stack="+t+"'><img src='"+t+"' data-rel='"+cam_res+"' class='img-fluid cam_"+str(cam_id)+"'/></a><span style='font-size:.75rem'>"+cam_res+"</span></div>"
+            elif(meteor_only== True and extra_class == 'meteor'):
+               toReturn += "<div class='minute "+extra_class+"'><a class='d-block' href='webUI.py?cmd=minute_details&stack="+t+"'><img src='"+t+"' data-rel='"+cam_res+"' class='img-fluid cam_"+str(cam_id)+"'/></a><span style='font-size:.75rem'>"+cam_res+"</span></div>"
+
+
          else:
             toReturn += "<div style='padding: 0 1rem 1rem 0;width: 100%;height: 169px; background-color: transparent;max-width: calc(250px + 1rem);'></div>"
             how_many_false+=1
@@ -141,11 +147,21 @@ def browse_minute(form):
 
    selected_end_date = form.getvalue('limit_day') 
    selected_period   = form.getvalue('period')
-   selected_cam_ids = form.getvalue('cams_ids')
+   selected_cam_ids  = form.getvalue('cams_ids')
+   meteor_only       = form.getvalue('meteor')
    
    # Build the page based on template  
    with open(PAGE_TEMPLATE, 'r') as file:
       template = file.read()
+
+   # Meteor_only
+   if(meteor_only is not None):
+      if(meteor_only == 1):
+         meteor_only = True    
+      else:
+         meteor_only = False
+   else:
+      meteor_only = False     
 
    # Default dates 
    if (selected_end_date is None): 
@@ -175,7 +191,7 @@ def browse_minute(form):
    #template = template.replace('{PERIODS}',get_select(selected_period,'periods'))
    
    # Retrieve the results
-   res, day, month, year = get_minute_index_res(selected_end_date,selected_cam_ids)
+   res, day, month, year = get_minute_index_res(selected_end_date,selected_cam_ids,meteor_only)
  
    # Create HTML results
    if(len(res)>0):
