@@ -97,8 +97,10 @@ def create_minute_html_res_meteor(res,cam_ids,year,month,day):
    meteor_index = get_meteor_date_cam(day,month,year)
    
    while(we_have_res==1):
+
       for cam_id in cam_ids:
          cam_res = get_cam_res(res,cam_id,cur_index)
+      
          if(cam_res is not False):
             t = get_min_details(cam_id,year,month,day,cam_res)
 
@@ -117,6 +119,8 @@ def create_minute_html_res_meteor(res,cam_ids,year,month,day):
       if(how_many_false==len(cam_ids)):
          we_have_res=0  
 
+      cur_index+=1
+      
    print(res_by_cam)
 
 
