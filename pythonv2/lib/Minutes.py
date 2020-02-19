@@ -113,7 +113,7 @@ def create_minute_html_res_meteor(res,cam_ids,year,month,day):
                how_many_meteors = len(meteor_index[index])
 
             if(how_many_meteors !=  0):
-               res_by_cam[cam_id].append(t)
+               res_by_cam[cam_id].append({'t':t,'r':cam_res)
          else:
             how_many_false+=1
 
@@ -123,9 +123,10 @@ def create_minute_html_res_meteor(res,cam_ids,year,month,day):
       cur_index+=1
 
    for cam_id in cam_ids:
-      toReturn  += "<h2>Cam# "+cam_id + "</h2>"
+      if(len(res_by_cam[cam_id])>0):
+         toReturn  += "<h2>Cam# "+cam_id + "</h2>"
       for m in res_by_cam[cam_id]:
-         toReturn  += "<div class='minute meteor'><a class='d-block' href='webUI.py?cmd=minute_details&stack="+m+"'><img src='"+m+"'  class='img-fluid'/></a><span style='font-size:.75rem'>"+m+"</span></div>"
+         toReturn  += "<div class='minute meteor'><a class='d-block' href='webUI.py?cmd=minute_details&stack="+m['t']+"'><img src='"+m['t']+"'  class='img-fluid'/></a><span style='font-size:.75rem'>"+m['r']+"</span></div>"
 
    return toReturn
 
