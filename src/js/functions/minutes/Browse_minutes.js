@@ -5,8 +5,15 @@ $(function() {
       var param_to_update = $(this).attr('data-url-param');
       var v = $(this).val();
       cur_params[param_to_update]= v;
-      console.log(cur_params);
-      //setQueryParameters(cur_params);
+       
+      var query = [],  key, value;
+  
+      for(key in cur_params) { 
+         value = params[key];
+         query.push(key + "=" + value);
+      }
+      
+      location.search = query.join("&");
    })
 })
        
