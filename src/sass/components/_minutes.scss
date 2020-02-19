@@ -1,35 +1,41 @@
 .minute {
-   display: block;
-   position: relative;
-   border:1px solid transparent;
+  
+  
+   a {
+      display: block;
+      position: relative;
+      border:1px solid transparent;
+   
 
-   &.meteor {
-      border-color: #21c419!important;
-      overflow: hidden;
-      
-      img {
-         box-shadow: none;
-         -webkit-box-shadow: none;
-      }
+      &.meteor {
+         border-color: #21c419!important;
+         overflow: hidden;
+         
+         img {
+            box-shadow: none;
+            -webkit-box-shadow: none;
+         }
 
-      &:before {
-         content: 'Meteor';
-         color: #21c419;
-         background:#00ff2d3d;
-         position: absolute;
-         top: 1.2rem;
-         right: -2.5rem;
-         z-index: 9;
-         -webkit-transform: rotate(45deg);
-         transform: rotate(45deg);
-         font-weight: bold;
-         width: 150px;
-         text-align: center;
-         display: none;
+         &:before {
+            content: 'Meteor';
+            color: #21c419;
+            background:#00ff2d3d;
+            position: absolute;
+            top: 1.2rem;
+            right: -2.5rem;
+            z-index: 9;
+            -webkit-transform: rotate(45deg);
+            transform: rotate(45deg);
+            font-weight: bold;
+            width: 150px;
+            text-align: center;
+            display: none;
+         }
+
       }
    }
 
-   &.meteor:hover:before {
+   a:hover:before {
       display: block;
    }
 }
