@@ -100,7 +100,11 @@ def create_minute_html_res(res,cam_ids,year,month,day, meteor_only):
 
    # Get Meteor Detection info
    meteor_index = get_meteor_date_cam(day,month,year)
-    
+
+   if(meteor_only is True):
+         toReturn += "<div class='d-flex justify-content-around'>"
+
+
    while(we_have_res==1):
       if(meteor_only is False):
          toReturn += "<div class='d-flex justify-content-around'>"
@@ -139,8 +143,7 @@ def create_minute_html_res(res,cam_ids,year,month,day, meteor_only):
             we_have_res=0  
 
       cur_index+=1
-      if(meteor_only is False):
-         toReturn += "</div>"
+      toReturn += "</div>"
 
    return toReturn
 
