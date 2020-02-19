@@ -25,9 +25,123 @@ This script is the work manager for each day.
 import os
 import glob
 import sys
-from lib.FileIO import load_json_file, save_json_file
+from datetime import datetime, timedelta
+
+from lib.FileIO import load_json_file, save_json_file, cfe
 
 json_conf = load_json_file("../conf/as6.json")
+
+def batch(num_days):
+
+   today = datetime.today()
+   for i in range (0,int(num_days)):
+      past_day = datetime.now() - timedelta(hours=24*i)
+      print(past_day)
+   
+
+def make_station_report(day, proc_info = ""):
+   print("PROC INFO:", proc_info)
+   # MAKE STATION REPORT FOR CURRENT DAY
+   station = json_conf['site']['ams_id']
+   detect_html = html_get_detects(day, station)
+   year,mon,dom = day.split("_")
+   NOAA_DIR =  "/mnt/archive.allsky.tv/" + station + "/NOAA/ARCHIVE/" + year + "/" + mon + "_" + dom + "/"
+   if cfe(NOAA_DIR, 1) == 0:
+      os.makedirs(NOAA_DIR)
+   html_index = NOAA_DIR + "index.html"
+   noaa_files = glob.glob(NOAA_DIR + "*.jpg")
+   data = {}
+   data['files'] = noaa_files
+   header_html, footer_html = html_header_footer()
+
+
+   html = header_html
+   show_date = day.replace("_", "/")
+   html += "<h1>" + station + " Daily Report for " + show_date + "</h1>\n"
+   html += "<h2><a href=\"#\" onclick=\"showHideDiv('live_view')\">Live View</a></h2>\n <div id='live_view'>"
+   if len(data['files']) > 0:
+      data['files'] = sorted(data['files'], reverse=True)
+      fn = data['files'][0].replace("/mnt/archive.allsky.tv", "")
+      html += "<img src=" + fn + "><BR>\n"
+      html += "</div>"
+
+   html += "<h2><a href=\"#\" onclick=\"showHideDiv('live_snaps')\">Weather Snap Shots</a></h2>\n <div id='live_snaps' style='display: none'>"
+   for file in sorted(data['files'],reverse=True):
+      fn = file.replace("/mnt/archive.allsky.tv", "")
+      html += "<img src=" + fn + "><BR>\n"
+   html += "</div>"
+
+   html += "<h2><a href=\"#\" onclick=\"showHideDiv('meteors')\">Meteors</a></h2>\n <div id='meteors'>"
+   html += detect_html
+   html += "</div>"
+
+   html += "</div>"
+
+   html += "<h2><a href=\"#\" onclick=\"showHideDiv('proc_info')\">Processing Info</a></h2>\n <div id='proc_info'>"
+   html += "<PRE>" + proc_info + "</PRE>"
+   html += "</div>"
+
+   fpo = open(html_index, "w")
+   fpo.write(html)
+   fpo.close()
+   print(html_index)
+
+
+def html_get_detects(day,tsid):
+   year = day[0:4]
+   mi = "/mnt/ams2/meteor_archive/" + json_conf['site']['ams_id'] + "/DETECTS/MI/" + year + "/" +  day + "-meteor_index.json"
+   print(mi)
+   mid = load_json_file(mi)
+   meteor_detects = []
+   prev_dir = "/mnt/archive.allsky.tv/" + tsid + "/DETECTS/PREVIEW/" + year + "/" + day + "/" 
+   prev_file = "/mnt/archive.allsky.tv/" + tsid + "/DETECTS/PREVIEW/" + year + "/" + day + "/" + "index.html"
+   html = ""
+   
+   was_prev_dir = "/mnt/archive.allsky.tv/" + tsid + "/DETECTS/PREVIEW/" + year + "/" + day + "/" 
+   was_vh_dir = "/" + tsid + "/DETECTS/PREVIEW/" + year + "/" + day + "/" 
+
+   if day in mid:
+      for key in mid[day]:
+         mfile = key.split("/")[-1]
+         prev_crop = mfile.replace(".json", "-prev-crop.jpg")
+         prev_full = mfile.replace(".json", "-prev-full.jpg")
+         html += "<img src=" + was_vh_dir + prev_crop + ">"
+   else:
+      html += "No meteors detected."
+
+   return(html)
+
+
+def html_header_footer(info=None):
+   js = javascript()
+   html_header = """
+     <head>
+        <meta http-equiv="Cache-control" content="public, max-age=500, must-revalidate">
+   """
+   html_header += js + """
+     </head>
+   """
+
+   html_footer = """
+
+   """
+   return(html_header, html_footer)
+
+def javascript():
+   js = """
+      <script>
+      function showHideDiv(myDIV) {
+         var x = document.getElementById(myDIV);
+         if (x.style.display === "none") {
+            x.style.display = "block";
+         } else {
+            x.style.display = "none";
+         }
+      }
+
+      </script>
+   """
+   return(js)
 
 
 def get_processing_status(day):
@@ -51,6 +165,7 @@ def get_meteor_status(day):
    year, mon, dom = day.split("_")
    detect_dir = "/mnt/ams2/meteors/" + day + "/"
    arc_dir = "/mnt/ams2/meteor_archive/" + json_conf['site']['ams_id'] + "/METEOR/" + year + "/" + mon + "/" + dom + "/"
+
    
    # get detect and arc files
    dfiles = glob.glob(detect_dir + "*trim*.json")
@@ -69,19 +184,21 @@ def do_all(day):
    detect_files, arc_files = get_meteor_status(day)
 
    # figure out how much of the day has completed processing
-   print("Processing report for day: ", day)
-   print("Processed Videos:", len(proc_vids))
-   print("Processed Thumbs:", len(proc_tn_imgs))
-   print("Un-Processed Daytime Videos:", len(day_vids))
-   print("Un-Processed CAMS Queue:", len(cams_queue))
-   print("Un-Processed IN Queue:", len(in_queue))
-   print("Possible Meteor Detections:", len(detect_files))
-   print("Archived Meteors :", len(arc_files))
-   print("Unique Meteors: ???" )
-   print("Multi-station Events: ???" )
-   print("Solved Events: ???" )
-   print("Events That Failed to Solve: ???" )
+   rpt = """
+   Processing report for day: """ + day + """
+   Processed Videos:""" + str(len(proc_vids)) + """
+   Processed Thumbs:""" +  str(len(proc_tn_imgs)) + """
+   Un-Processed Daytime Videos:""" +  str(len(day_vids)) + """
+   Un-Processed CAMS Queue:""" + str(len(cams_queue)) + """
+   Un-Processed IN Queue:""" + str(len(in_queue)) + """
+   Possible Meteor Detections:""" + str(len(detect_files)) + """
+   Archived Meteors :""" + str(len(arc_files)) + """
+   Unique Meteors: ???"""  + """
+   Multi-station Events: ???"""  + """
+   Solved Events: ???"""  + """
+   Events That Failed to Solve: ???""" 
 
+   print ("RPT:", rpt)
    if len(cams_queue) < 10 and len(in_queue) < 10:
       proc_status = "up-to-date"
 
@@ -95,9 +212,14 @@ def do_all(day):
    # make the detection preview images for the day
    os.system("./wasabi.py sa " + day)
 
+   make_station_report(day, rpt)
 
 
 cmd = sys.argv[1]
 
 if cmd == "all":
    do_all(sys.argv[2])
+if cmd == "msr":
+   make_station_report(sys.argv[2])
+if cmd == "batch":
+   batch(sys.argv[2])
