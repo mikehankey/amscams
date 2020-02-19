@@ -1,6 +1,6 @@
 import os
 
-def controller(form):
+def api_controller(form):
    api_function = form.getvalue('function')
 
    if(api_function=='login'):
@@ -13,6 +13,4 @@ def login(form):
 
    print("RIGHT")
  
-controller(json_conf)
- 
-
+api_controller(json_conf)
