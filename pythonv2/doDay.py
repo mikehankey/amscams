@@ -171,7 +171,7 @@ def get_meteor_status(day):
    
    # get detect and arc files
    dfiles = glob.glob(detect_dir + "*trim*.json")
-   arc_files = glob.glob(detect_dir + "*trim*.json")
+   arc_files = glob.glob(arc_dir + "*trim*.json")
 
    # filter out non-meteor or dupe meteor json files
    for df in dfiles:
