@@ -1,6 +1,6 @@
 import os
 import cgi
-
+print ("Content-type: text/html\n\n")
 
 def api_controller(form):
    api_function = form.getvalue('function')
