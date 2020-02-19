@@ -25,10 +25,13 @@ def get_meteor_date_cam(day,month,year):
          if('reduced' not in json):
             tmp = json.split("/")[-1]
 
-            if(toReturn[tmp.split("-trim")[0]]):
+
+            try:
+               toReturn[tmp.split("-trim")[0]]
                toReturn[tmp.split("-trim")[0]] += 1
-            else:
+            except:
                toReturn[tmp.split("-trim")[0]] = 1
+ 
    
    
    print(toReturn)
