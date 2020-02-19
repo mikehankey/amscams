@@ -32,11 +32,12 @@ def get_select(selected_cam_ids,_type):
    return toReturn
 
 
-
 # Transform the result of a minute_index to get the full path to the stackeds
 # minute_file is actually the hour of the stack (ex: 11:16:26.000) > 2020_01_05_00_00_09_000_010038-stacked-tn.png	
-def get_min_details(cam_id,year,month,day,minute_file):
+def get_min_details(cam_id,year,month,day):
    return MINUTE_SD_FOLDER +  os.sep + str(year) + '_' + str(month)+'_'+str(day) + os.sep + IMAGES_MINUTE_SD_FOLDER + os.sep + str(year)+'_'+str(month)+'_'+str(day)+'_'+minute_file.replace(':','_').replace('.','_') + '_' + cam_id + MINUTE_STACK_EXT + '.png'
+
+
 
 # Get Results from the minutes indexes
 def get_minute_index_res(selected_end_date,selected_cam_ids):
@@ -97,6 +98,8 @@ def create_minute_html_res(res,cam_ids,year,month,day):
 
    # Get Meteor Detection info
    meteor_index = get_meteor_date_cam(day,month,year)
+   print("METEOR INDEX<br>")
+   print(meteor_index)
  
    
    while(we_have_res==1):
@@ -106,7 +109,7 @@ def create_minute_html_res(res,cam_ids,year,month,day):
          cam_res = get_cam_res(res,cam_id,cur_index)
  
          if(cam_res is not False):
-            t = get_min_details(cam_id,year,month,day,cam_res)
+            t = get_min_details(cam_id,year,month,day)
 
             # Do we have a meteor there?
             print(t)
