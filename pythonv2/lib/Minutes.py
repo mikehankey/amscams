@@ -106,11 +106,9 @@ def create_minute_html_res(res,cam_ids,year,month,day):
 
             # Test if we have at least one meteor detection for this date & cam_id
             #get_meteor_date_cam(ms,sec,min,hour,day,month,year,cam_id)
-            
             tmp_analysed = minute_name_analyser(t)
-            print(tmp_analysed)
-            print("<br>")
-
+            meteors = get_meteor_date_cam(tmp_analysed['ms'],tmp_analysed['src'],tmp_analysed['min'],tmp_analysed['hour'],tmp_analysed['day'],tmp_analysed['month'],tmp_analysed['year'],tmp_analysed['cam_id'])
+            
             toReturn += "<div style='padding: 0 1rem 1rem 0;'><a href='webUI.py?cmd=minute_details&stack="+t+"'><img src='"+t+"' style='width: 100%; max-width: 350px;height: 169px;' data-rel='"+cam_res+"' class='img-fluid cam_"+str(cam_id)+"'/></a><span style='font-size:.75rem'>"+cam_res+"</span></div>"
          else:
             toReturn += "<div style='padding: 0 1rem 1rem 0;width: 100%;height: 169px; background-color: transparent;max-width: calc(250px + 1rem);'></div>"
