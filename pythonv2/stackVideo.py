@@ -1,6 +1,7 @@
 #!/usr/bin/python3
 
 from lib.UtilLib import convert_filename_to_date_cam
+from datetime import datetime
 
 from lib.VIDEO_VARS import PREVIEW_W, PREVIEW_H, SD_W, SD_H
 import time
@@ -169,6 +170,8 @@ def stack_day(day):
    if day == "all":
       day_files = sorted(glob.glob("/mnt/ams2/SD/proc2/daytime/*.mp4"), reverse=True)
       print("/mnt/ams2/SD/proc2/daytime/" + "*.mp4")
+      now = datetime.now()
+      day = now.strftime("%Y_%m_%d")
    else:
       day_files = sorted(glob.glob("/mnt/ams2/SD/proc2/daytime/" + day + "*.mp4"), reverse=True)
       print("/mnt/ams2/SD/proc2/daytime/" + day + "*.mp4")
