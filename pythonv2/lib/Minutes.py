@@ -213,7 +213,18 @@ def browse_minute(form):
       else:
          meteor_only = False
    else:
-      meteor_only = False     
+      meteor_only = False    
+
+   # Create Meteor Select
+   meteor_select = "<option value=''>All Minutes</option>"
+   if(meteor_only == True):
+      meteor_select += "<option value='1' selected>Only With Meteors</option>"  
+   else:
+      meteor_select += "<option value='1'>Only With Meteors</option>"  
+
+ 
+   template = template.replace("{METEOR_SELECT}",meteor_select);
+
  
    # Default dates 
    if (selected_end_date is None): 
