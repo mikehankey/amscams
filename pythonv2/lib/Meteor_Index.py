@@ -23,7 +23,7 @@ def get_meteor_date_cam(ms,sec,_min,hour,day,month,year,cam_id):
    print(main_dir + os.sep + pseud_name)
    print("<br>")
 
-   if(cfe(main_dir)):
+   if(cfe(main_dir,1)):
       # We glob the folder to get all detection for this day
       all_jsons = glob.glob(main_dir  + pseud_name)
       print(all_jsons)
