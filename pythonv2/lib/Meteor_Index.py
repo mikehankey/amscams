@@ -11,21 +11,23 @@ from lib.FileIO import cfe
 
 METEOR_FOLDER = "/mnt/ams2/meteors"
 
-# Do we have a detection for this given date & time & cam_id
-def get_meteor_date_cam(ms,sec,_min,hour,day,month,year,cam_id):
-
+# Return list of detection for a given day 
+def get_meteor_date_cam(day,month,year):
+   toReturn = {}
    # Dir to glob
    main_dir = METEOR_FOLDER + os.sep + str(year) + "_" + str(month).zfill(2) + '_' + str(day).zfill(2)  + os.sep
-   pseud_name = str(year) + "_" + str(month).zfill(2) + '_' + str(day).zfill(2) + '_' + str(hour).zfill(2) + '_' + str(_min).zfill(2) + '_' + str(sec).zfill(2) + '_' + str(ms).zfill(3) + '_' + str(cam_id) + "*" + ".json"
-   cam_ids = get_the_cam_ids(); 
-  
-
+   
    if(cfe(main_dir,1)==1):
       # We glob the folder to get all detection for this day
-      all_jsons = glob.glob(main_dir + pseud_name)
+      all_jsons = glob.glob(main_dir + "*.json")
        
       for json in all_jsons:
          if('reduced' not in json):
-            print(json)
-   else:
-      print("<br>MAIN DIR DOESNT EXIST<br>")
+            temp = meteor.split("/")[-1]
+            toReturn[temp.split("-trim")[0]] = 1
+   
+   
+   print(toReturn)
+   sys.exit(0)
+
+   return toReturn
