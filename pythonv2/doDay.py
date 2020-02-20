@@ -361,9 +361,20 @@ def do_all(day):
 
    make_station_report(day, rpt)
 
+def check_time(day):
+   now = datetime.now() 
+   today = now.strftime("%Y_%m_%d")
+   time_file = "time.temp.txt"
+   if today != day:
+      return()
+   else:
+      cmd = "date -u > " + time_file + " ;" + "wget -q http://worldtimeapi.org/api/timezone/Europe/London.txt -O - |grep utc_datetime >> " + time_file + "; date -u >> "  + time_file
+      os.system(cmd)
 
 cmd = sys.argv[1]
 
+if cmd == "ct":
+   check_time(sys.argv[2])
 
 if cmd == "all":
    do_all(sys.argv[2])
