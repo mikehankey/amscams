@@ -43,7 +43,7 @@ def API_login(form):
       cookie_date, tok = create_token() 
 
       # Keep the token on this side too as a cookie
-      create_cookie(cookie_date,tok)
+      #create_cookie(cookie_date,tok)
 
       return json.dumps({'token':tok,'expire':cookie_date})
    else:
