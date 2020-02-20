@@ -2,7 +2,7 @@ import json
 import sys
 import cgitb
 
-from API_Tools import *
+from lib.API_Tools import *
 
 def delete_detection(form):
    
