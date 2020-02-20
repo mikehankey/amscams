@@ -13,6 +13,7 @@ from os import environ
 
 JSON_CONFIG = '/home/ams/amscams/conf/as6.json' 
 PATH_ACCESS_LOGS = '/home/ams/amscams/pythonv2/API'
+ACCESS_FILE = PATH_ACCESS_LOGS + os.sep + "access.log"
 
 def api_controller(form):
    api_function = form.getvalue('function')
@@ -65,7 +66,7 @@ def API_login(form):
 
 # Write new access in proper file
 def write_new_access(user,tok,_date):
-   f = open(PATH_ACCESS_LOGS + os.sep + "access.log","a+")
+   f = open(ACCESS_FILE,"a+")
    f.write(tok + "|" + _date + "\r\n")
    f.close()
 
@@ -87,8 +88,12 @@ def create_token():
 # TEST API LOGIN  
 def test_api_login(tok):
    
+   # Do the access file exists?
+   if(os.path.isfile(ACCESS_FILE) == False):
+      return False
+
    # Open the corresponding file
-   with open(PATH_ACCESS_LOGS + os.sep + "access.log") as f:
+   with open(ACCESS_FILE) as f:
     lines = [line.rstrip() for line in f]
    
    for line in lines:
