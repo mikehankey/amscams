@@ -141,7 +141,7 @@ def test_api_login(tok):
    # Write the new lines in ACCESS_LOG
    with open(ACCESS_FILE, 'w') as outfile:
       for line in newlines:
-         outfile.write(line)
+         outfile.write(line + "\r\n")
 
    return False
          
