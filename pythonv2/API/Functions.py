@@ -22,26 +22,30 @@ ACCESS_GRANTED_DURATION = 1 # In hours
 
 AUTHORIZED_FUNCTIONS = ['login','delete']
 
-
+# MAIN API CONTROLLER
 def api_controller(form):
    cgitb.enable()
 
    api_function = form.getvalue('function')
    tok = form.getvalue('tok') 
 
+   # TEST API FUNCTION
    if(api_function is None):
       send_error_message('No API function found')
    elif(api_function not in AUTHORIZED_FUNCTIONS):
       send_error_message(api_function + 'is not an API function.')   
 
-
    # Login
    if(api_function=='login'):
       print(API_login(form))
    else:
+
+      if(tok is None):
+         send_error_message('Tok is missing')         
+
       # For everything else, we need to have a token passed
       test_access = test_api_login(tok)
-      
+   
       if(test_access==False or test_access is None):
          send_error_message('You are not authorized')
       
