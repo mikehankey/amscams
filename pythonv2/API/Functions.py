@@ -31,7 +31,12 @@ def API_login(form):
       json_file = open(JSON_CONFIG)
       json_str = json_file.read()
       json_data = json.loads(json_str)
- 
+
+
+      print('USER :**'+user+'**')
+      print('PWD:**'+password+'***')
+      if(json_data['site']['ams_id']==user and json_data['site']['pwd']==pwd):
+         test_log = True      
        
       try:
          if(json_data['site']['ams_id']==user and json_data['site']['pwd']==pwd):
