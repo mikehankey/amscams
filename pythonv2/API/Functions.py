@@ -17,6 +17,7 @@ from API.API_Functions import *
 JSON_CONFIG = '/home/ams/amscams/conf/as6.json' 
 PATH_ACCESS_LOGS = '/home/ams/amscams/pythonv2/API'
 ACCESS_FILE = PATH_ACCESS_LOGS + os.sep + "access.log"
+ACCESS_GRANTED_DURATION = 1 # In hours
 
 def api_controller(form):
    api_function = form.getvalue('function')
@@ -86,7 +87,7 @@ def write_new_access(user,tok,_date):
 def create_token():
  
    # Expired in one hour
-   expiration = datetime.now() + timedelta(hours=1)
+   expiration = datetime.now() + timedelta(hours=ACCESS_GRANTED_DURATION)
    
    # Create Token
    tok = expiration.strftime("%d%b%Y%H%M%S_4llsk")  + ''.join(random.choice('AbcDeFghIJklmNOpqRstUVWxYZ?_!') for _ in range(18))
