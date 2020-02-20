@@ -6,14 +6,9 @@ import cgitb
 import json
 import datetime
 
-from os import environ
+from os import environ 
 
-
-print "Content-type:application/json\r\n\r\n" 
-
-JSON_CONFIG = '/home/ams/amscams/conf/as6.json'
-
-print('Content-Type: text/html; charset=utf-8')
+JSON_CONFIG = '/home/ams/amscams/conf/as6.json' 
 
 def api_controller(form):
    api_function = form.getvalue('function')
