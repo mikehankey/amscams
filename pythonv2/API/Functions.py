@@ -109,12 +109,12 @@ def test_api_login(tok):
          # Is date ok?
          now = datetime.datetime.now()
 
-         print(valid_date.strftime('VALID:  %d, %b %Y'))
+         print(valid_date.strftime('VALID:  %d, %b %Y %H:%M:%S'))
          print('<br>')
-         print(now.strftime('NOW:  %d, %b %Y'))
+         print(now.strftime('NOW:  %d, %b %Y %H:%M:%S'))
 
 
-         if(now<=valid_date):
+         if(now>=valid_date):
             print("EXPIRED!")
          else:
             print("NOT EXPIRED")
