@@ -10,7 +10,9 @@ import json
  
 from datetime import datetime
 from os import environ 
+
 from API.API_Tools import *
+from API.API_Functions import *
 
 JSON_CONFIG = '/home/ams/amscams/conf/as6.json' 
 PATH_ACCESS_LOGS = '/home/ams/amscams/pythonv2/API'
@@ -29,41 +31,44 @@ def api_controller(form):
          send_error_message('You are not authorized')
       else:
          if(api_function=='delete'):
-            print("DELETE")
+             
 
 
 # LOGIN
 def API_login(form):
 
-   cgitb.enable()
+   cgitb.enable() 
 
-   user = form.getvalue('user').strip()
-   password = form.getvalue('pwd').strip()
-
-   test_log = False
-
-   if(user is not None and password is not None):
-      json_file = open(JSON_CONFIG)
-      json_str = json_file.read()
-      json_data = json.loads(json_str)
- 
-      try:
-         if(json_data['site']['ams_id']==user and json_data['site']['pwd']==password):
-            test_log = True
-      except Exception:
-         test_log = False
+   user = form.getvalue('user') 
+   password = form.getvalue('pwd')
    
+   if(user is not None and password is not None):
+      user = user.strip() 
 
-   if(test_log is True):
-      _date, tok = create_token() 
+      if(user is not None and password is not None):
+         json_file = open(JSON_CONFIG)
+         json_str = json_file.read()
+         json_data = json.loads(json_str)
+   
+         try:
+            if(json_data['site']['ams_id']==user and json_data['site']['pwd']==password):
+               test_log = True
+         except Exception:
+            test_log = False
+      
 
-      # Add the token to the current list of available token
-      write_new_access(user,tok,_date)
+      if(test_log is True):
+         _date, tok = create_token() 
 
-      return json.dumps({'token':tok,'expire':_date})
+         # Add the token to the current list of available token
+         write_new_access(user,tok,_date)
+
+         return json.dumps({'token':tok,'expire':_date})
+      else:
+         return send_error_message('You are not authorized')
+
    else:
-      return send_error_message('You are not authorized')
-
+         return send_error_message('You need send a username and a password.')
 
    return test_log
 
