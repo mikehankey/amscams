@@ -5,7 +5,7 @@ import requests
 
 API_URL = 'https://sleaziest-somali-2255.dataplicity.io/pycgi/webUI.py?cmd=API'     
 
-def send_json(json_msg:
+def send_json(json_msg):
    url = API_URL   
    parameters = json_msg
    headers = {'content-type': 'application/json'} 
