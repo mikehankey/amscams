@@ -31,7 +31,7 @@
       border:1px solid transparent;
    }
 
-      &.meteor {
+      &.meteor, &.arc {
          a {
             border-color: #21c419!important;
             overflow: hidden;
@@ -72,7 +72,7 @@
             &:before {
                content: 'Multi';
                color: #cc0000;
-               background:#d45d5d;
+               background:#f3a5a5;
                position: absolute;
                top: 1.2rem;
                right: -2.5rem;
@@ -115,32 +115,7 @@
          }
       }
 
-      &.arc {
-         a {
-            border-color: #2088c4;
-            overflow: hidden;
-            
-            img {
-               box-shadow: none;
-               -webkit-box-shadow: none;
-            }
-
-            &:before {
-               content: 'Archived';
-               color: #ff6600;
-               background:#ffb98b;
-               position: absolute;
-               top: 1.2rem;
-               right: -2.5rem;
-               z-index: 9;
-               -webkit-transform: rotate(45deg);
-               transform: rotate(45deg);
-               font-weight: bold;
-               width: 150px;
-               text-align: center;
-               display: none;
-            }
-         }
+     
       }
 
 
