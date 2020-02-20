@@ -65,7 +65,7 @@ def create_token():
    expiration = datetime.datetime.now() + datetime.timedelta(hours=1)
    
    # Create Token
-   tok = expiration.strftime("%d%b%Y%H%M%S_4llsk")  + ''.join(random.choice(chars) for _ in range(18))
+   tok = expiration.strftime("%d%b%Y%H%M%S_4llsk")  + ''.join(random.choice('') for _ in range(18))
    
    return expiration.strftime("%a, %d-%b-%Y %H:%M:%S GMT"),expiration.strftime("%d%b%Y%H%M%S_4llsk") 
 
