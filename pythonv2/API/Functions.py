@@ -22,6 +22,7 @@ def api_controller(form):
    else:
       # For everything else, we need to have a token passed
       test_api_login(tok)
+      sys.exit()
 
 
 # LOGIN
