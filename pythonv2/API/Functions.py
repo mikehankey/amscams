@@ -119,7 +119,7 @@ def test_api_login(tok):
       # Test the tok
       if(tok==tmp[0]):
          # We need to check the date
-         valid_date = datetimestrptime(tmp[1],  "%a, %d-%b-%Y %H:%M:%S GMT")
+         valid_date = datetime.strptime(tmp[1],  "%a, %d-%b-%Y %H:%M:%S GMT")
          
          # Is date ok?
          now = datetime.now() 
@@ -130,7 +130,7 @@ def test_api_login(tok):
             ok = True
       else:
          # We need to check the date
-         valid_date = datetimestrptime(tmp[1],  "%a, %d-%b-%Y %H:%M:%S GMT")
+         valid_date = datetime.strptime(tmp[1],  "%a, %d-%b-%Y %H:%M:%S GMT")
 
          # Is date ok?
          now = datetime.now() 
