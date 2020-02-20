@@ -1,4 +1,4 @@
-.minute { 
+.minute, .prevproc { 
 
    &.hide {
       margin:0;
@@ -31,34 +31,91 @@
       border:1px solid transparent;
    }
 
-   &.meteor {
-      a {
-         border-color: #21c419!important;
-         overflow: hidden;
-         
-         img {
-            box-shadow: none;
-            -webkit-box-shadow: none;
-         }
+      &.meteor {
+         a {
+            border-color: #21c419!important;
+            overflow: hidden;
+            
+            img {
+               box-shadow: none;
+               -webkit-box-shadow: none;
+            }
 
-         &:before {
-            content: 'Meteor';
-            color: #21c419;
-            background:#00ff2d3d;
-            position: absolute;
-            top: 1.2rem;
-            right: -2.5rem;
-            z-index: 9;
-            -webkit-transform: rotate(45deg);
-            transform: rotate(45deg);
-            font-weight: bold;
-            width: 150px;
-            text-align: center;
-            display: none;
+            &:before {
+               content: 'Meteor';
+               color: #21c419;
+               background:#00ff2d3d;
+               position: absolute;
+               top: 1.2rem;
+               right: -2.5rem;
+               z-index: 9;
+               -webkit-transform: rotate(45deg);
+               transform: rotate(45deg);
+               font-weight: bold;
+               width: 150px;
+               text-align: center;
+               display: none;
+            }
          }
-   }
-    
-   }
+      }
+
+      &.multi {
+         a {
+            border-color: #2088c4;
+            overflow: hidden;
+            
+            img {
+               box-shadow: none;
+               -webkit-box-shadow: none;
+            }
+
+            &:before {
+               content: 'Multi';
+               color: #2088c4;
+               background:#8bd0f8;
+               position: absolute;
+               top: 1.2rem;
+               right: -2.5rem;
+               z-index: 9;
+               -webkit-transform: rotate(45deg);
+               transform: rotate(45deg);
+               font-weight: bold;
+               width: 150px;
+               text-align: center;
+               display: none;
+            }
+         }
+      }
+
+      &.arc {
+         a {
+            border-color: #2088c4;
+            overflow: hidden;
+            
+            img {
+               box-shadow: none;
+               -webkit-box-shadow: none;
+            }
+
+            &:before {
+               content: 'Archived';
+               color: #ff6600;
+               background:#ffb98b;
+               position: absolute;
+               top: 1.2rem;
+               right: -2.5rem;
+               z-index: 9;
+               -webkit-transform: rotate(45deg);
+               transform: rotate(45deg);
+               font-weight: bold;
+               width: 150px;
+               text-align: center;
+               display: none;
+            }
+         }
+      }
+
+
 
    a:hover:before {
       display: block;
