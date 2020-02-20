@@ -123,11 +123,7 @@ def test_api_login(tok):
       else:
          time_to_test = tmp[0]
          tok_to_test = tmp[1]
-
-      print("TIME TO TEST ")
-      print(time_to_test)
-      print('<br>TOK TO TEST ')
-      print(tok_to_test)
+ 
 
       # Test the tok
       if(tok==tok_to_test):
@@ -156,6 +152,9 @@ def test_api_login(tok):
    with open(ACCESS_FILE, 'w') as outfile:
       for line in newlines:
          outfile.write(line + "\r\n")
+
+   if(ok is True):
+      return True
 
    return False
          
