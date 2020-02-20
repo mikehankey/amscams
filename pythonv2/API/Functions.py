@@ -3,6 +3,8 @@
 import os
 import cgi 
 import cgitb
+import string
+import random
 import json
 import datetime
 
@@ -52,10 +54,19 @@ def API_login(form):
 
    return test_log
 
+
+
+
 # CREATE TEMPORARY TOKEN
 def create_token():
+
+
    # Expired in one hour
    expiration = datetime.datetime.now() + datetime.timedelta(hours=1)
+   
+   # Create Token
+   tok = expiration.strftime("%d%b%Y%H%M%S_4llsk")  + ''.join(random.choice(chars) for _ in range(18))
+   
    return expiration.strftime("%a, %d-%b-%Y %H:%M:%S GMT"),expiration.strftime("%d%b%Y%H%M%S_4llsk") 
 
  
