@@ -2,8 +2,14 @@
 
 import os
 import cgi 
+import cgitb
 import json
 import datetime
+
+from os import environ
+
+
+print "Content-type:application/json\r\n\r\n" 
 
 JSON_CONFIG = '/home/ams/amscams/conf/as6.json'
 
@@ -51,7 +57,8 @@ def login(form):
 
 # CREATE TEMPORARY TOKEN
 def create_token():
-   expiration = datetime.datetime.now() + datetime.timedelta(days=0.5)
+   # Expired in one hour
+   expiration = datetime.datetime.now() + datetime.timedelta(hours=1)
    return expiration.strftime("%a, %d-%b-%Y %H:%M:%S GMT"),expiration.strftime("%d%b%Y%H%M%S_4llsk") 
 
 # CREATE COOKIE
@@ -64,9 +71,14 @@ def create_cookie(_date,_cook):
 
 # TEST API LOGIN COOKIE
 def test_api_login_cookie(_val):
+   
+   if environ.has_key('HTTP_COOKIE'):  
+      for cookie in map(strip, split(environ['HTTP_COOKIE'], ';')):
+         (key, value ) = split(cookie, '=');
+         if key == "api_tok" and value = _val:
+            return True
 
-   return json.dumps({'error':'Token timeout. Log back in.'}) 
-
+   return False 
 
 # MAIN
 form = cgi.FieldStorage()
