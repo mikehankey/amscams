@@ -42,12 +42,12 @@ def API_login(form):
    
 
    if(test_log is True):
-      cookie_date, tok = create_token() 
+      _date, tok = create_token() 
 
-      # Keep the token on this side too as a cookie
-      #create_cookie(cookie_date,tok)
+      # Add the token to the current list of available token
+      write_new_access(user,tok,_date)
 
-      return json.dumps({'token':tok,'expire':cookie_date})
+      return json.dumps({'token':tok,'expire':_date})
    else:
       return json.dumps({'error':'You are not authorized'})
 
@@ -56,11 +56,17 @@ def API_login(form):
 
 
 
+# Write new access
+def write_new_access(user,tok,_date):
+   f = open(user+_"log.log","a+")
+   f.write(tok + " " _date + "\r\n")
+   f.close()
+
+
 
 # CREATE TEMPORARY TOKEN
 def create_token():
-
-
+ 
    # Expired in one hour
    expiration = datetime.datetime.now() + datetime.timedelta(hours=1)
    
