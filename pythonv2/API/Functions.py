@@ -34,11 +34,7 @@ def api_controller(form):
       
       if(test_access==False or test_access is None):
          send_error_message('You are not authorized')
-     
-
-      print("TEST ")
-      print(test_api_login(tok))
-
+      
       # Now we can do stuff
       if(api_function=='delete'):
          delete_detection(form)
