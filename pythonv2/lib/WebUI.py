@@ -252,6 +252,8 @@ def parse_jsid(jsid):
    return(video_file)
 
 def controller(json_conf): 
+
+   cgitb.enable()
  
    form = cgi.FieldStorage()
    cmd = form.getvalue('cmd')
