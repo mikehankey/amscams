@@ -23,6 +23,18 @@
   
    span {
       display: block;
+
+      a {
+         border:none!important;
+         color: #fff;
+         font-weight: bold;
+
+         &:before {
+            content:''!important;
+            background:transparent!important;
+            color:transparent!important;
+         }
+      }
    }
 
    a {
