@@ -35,8 +35,8 @@ json_conf = load_json_file("../conf/as6.json")
 
 def load_events(day):
    year = day[0:4]
-   event_index = "/mnt/ams2/meteor_archive/" + json_conf['site']['ams_id'] + "/EVENTS/" + year + "/" + day + "/" + day +"-events.json"
-   event_files_index = "/mnt/ams2/meteor_archive/" + json_conf['site']['ams_id'] + "/EVENTS/" + year + "/" + day + "/" + day + "-event-files.json"
+   event_index = "/mnt/archive.allsky.tv/" + "/EVENTS/" + year + "/" + day + "/" + day +"-events.json"
+   event_files_index = "/mnt/archive.allsky.tv/" + "/EVENTS/" + year + "/" + day + "/" + day + "-event-files.json"
    event_files = {}
    if cfe(event_index) == 1:
       events = load_json_file(event_index)
