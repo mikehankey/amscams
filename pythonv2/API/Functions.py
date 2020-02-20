@@ -99,11 +99,9 @@ def create_token():
    return expiration.strftime("%a, %d-%b-%Y %H:%M:%S GMT"),tok
 
 
-# TEST API LOGIN  
+# TEST API LOGIN  (remove all the access that are tool old)
 def test_api_login(tok):
-
-   access_log_modified = False
-   
+    
    # Do the access file exists?
    if(os.path.isfile(ACCESS_FILE) == False):
       return False
@@ -111,6 +109,9 @@ def test_api_login(tok):
    # Open the corresponding file
    with open(ACCESS_FILE) as f:
     lines = [line.rstrip() for line in f]
+
+   newlines = []
+   ok = False
    
    for line in lines:
       tmp = line.split('|') 
@@ -122,11 +123,25 @@ def test_api_login(tok):
          
          # Is date ok?
          now = datetime.now() 
+         
+         # It hasn't expired!!  
+         if(now<valid_date):
+            newlines.append(line)
+            ok = True
+      else:
+         # We need to check the date
+         valid_date = datetimestrptime(tmp[1],  "%a, %d-%b-%Y %H:%M:%S GMT")
 
-         if(now>=valid_date):
-            return False
-         else:
-            return True
+         # Is date ok?
+         now = datetime.now() 
+
+         if(now<valid_date):
+            newlines.append(line)
+
+   # Write the new lines in ACCESS_LOG
+   with open(ACCESS_FILE, 'w') as outfile:
+      for line in newlines:
+         outfile.write(line)
 
    return False
          
