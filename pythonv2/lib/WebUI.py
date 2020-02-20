@@ -79,7 +79,7 @@ from lib.Minutes_Details import *
 from lib.Minutes_Manual_Reductions import *
 
 # API
-from API.Functions import *
+#from API.Functions import *
  
  
 
@@ -268,8 +268,7 @@ def controller(json_conf):
    #API
    if cmd == 'API':
       api_controller(form)
-      exit()
-
+      exit() 
 
    #login
    if cmd == 'login':
