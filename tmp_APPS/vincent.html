@@ -599,6 +599,7 @@
                      $.ajax({ 
                         url:   API_URL ,
                         data: {'function':'login', 'user':$('input[name=username]').val(), 'pwd':$('input[name=password]').val()}, 
+                        format: 'json',
                         success: function(data) { 
                                  
                               console.log(data);
