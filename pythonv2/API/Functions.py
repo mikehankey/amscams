@@ -87,6 +87,8 @@ def create_token():
 
 # TEST API LOGIN  
 def test_api_login(tok):
+
+   access_log_modified = False
    
    # Do the access file exists?
    if(os.path.isfile(ACCESS_FILE) == False):
@@ -97,17 +99,21 @@ def test_api_login(tok):
     lines = [line.rstrip() for line in f]
    
    for line in lines:
-      tmp = line.split('|')
-
-      print('TOKEN ' + tmp[0] + '<br>')
-      print("vs " + tok + '<br>') 
+      tmp = line.split('|') 
 
       # Test the tok
       if(tok==tmp[0]):
          # We need to check the date
-         datetime_object = datetime.datetime.strptime(tmp[1],  "%a, %d-%b-%Y %H:%M:%S GMT")
-         print("GET DATE")
-         print(datetime_object)
+         valid_date = datetime.datetime.strptime(tmp[1],  "%a, %d-%b-%Y %H:%M:%S GMT")
+         
+         # Is date ok?
+         now = datetime.datetime.now()
+         if(now<=valid_date):
+            print("EXPIRED!")
+         else:
+            print("NOT EXPIRED")
+         
+ 
         
 
    
