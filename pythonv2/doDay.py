@@ -44,8 +44,8 @@ def load_events(day):
          if events[event]['count'] >= 2:
             for file in events[event]['files']:
                event_files[file] = event
-      save_json_file(event_files_index,event_files ) 
-      print("Saved:", event_files_index)
+      #save_json_file(event_files_index,event_files ) 
+      #print("Saved:", event_files_index)
    else:
       events = {}
       event_files = {}
