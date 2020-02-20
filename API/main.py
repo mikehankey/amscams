@@ -44,7 +44,7 @@ def login(form):
       create_cookie(cookie_date,tok)
 
       return json.dumps({'tok':create_token()})
-   else
+   else:
       return json.dumps({'error':'You are not authorized'})
 
 
