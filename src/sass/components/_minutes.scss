@@ -1,4 +1,4 @@
-.minute { 
+.minute, .prevproc { 
 
    &.hide {
       margin:0;
@@ -23,6 +23,18 @@
   
    span {
       display: block;
+
+      a {
+         border:none!important;
+         color: #fff;
+         font-weight: bold;
+
+         &:before {
+            content:''!important;
+            background:transparent!important;
+            color:transparent!important;
+         }
+      }
    }
 
    a {
@@ -31,34 +43,100 @@
       border:1px solid transparent;
    }
 
-   &.meteor {
-      a {
-         border-color: #21c419!important;
-         overflow: hidden;
-         
-         img {
-            box-shadow: none;
-            -webkit-box-shadow: none;
-         }
+      &.meteor, &.arc {
+         a {
+            border-color: #21c419!important;
+            overflow: hidden;
+            
+            img {
+               box-shadow: none;
+               -webkit-box-shadow: none;
+            }
 
-         &:before {
-            content: 'Meteor';
-            color: #21c419;
-            background:#00ff2d3d;
-            position: absolute;
-            top: 1.2rem;
-            right: -2.5rem;
-            z-index: 9;
-            -webkit-transform: rotate(45deg);
-            transform: rotate(45deg);
-            font-weight: bold;
-            width: 150px;
-            text-align: center;
-            display: none;
+            &:before {
+               content: 'Meteor';
+               color: #21c419;
+               background:#00ff2d3d;
+               position: absolute;
+               top: 1.2rem;
+               right: -2.5rem;
+               z-index: 9;
+               -webkit-transform: rotate(45deg);
+               transform: rotate(45deg);
+               font-weight: bold;
+               width: 150px;
+               text-align: center;
+               display: none;
+            }
          }
-   }
-    
-   }
+      }
+
+      &.arc {
+         a {
+            &:before {
+               content: 'Archived';
+            }
+         }
+      }
+
+      &.multi {
+         a {
+            border-color: #cc0000;
+            overflow: hidden;
+            
+            img {
+               box-shadow: none;
+               -webkit-box-shadow: none;
+            }
+
+            &:before {
+               content: 'MULTI';
+               color: #cc0000;
+               background:#f3a5a5;
+               position: absolute;
+               top: 1.2rem;
+               right: -2.5rem;
+               z-index: 9;
+               -webkit-transform: rotate(45deg);
+               transform: rotate(45deg);
+               font-weight: bold;
+               width: 150px;
+               text-align: center;
+               display: none;
+            }
+         }
+      }
+
+      &.pending {
+         a {
+            border-color: #000;
+            overflow: hidden;
+            
+            img {
+               box-shadow: none;
+               -webkit-box-shadow: none;
+            }
+
+            &:before {
+               content: 'PENDING';
+               color: #333;
+               background:#ccc;
+               position: absolute;
+               top: 1.2rem;
+               right: -2.5rem;
+               z-index: 9;
+               -webkit-transform: rotate(45deg);
+               transform: rotate(45deg);
+               font-weight: bold;
+               width: 150px;
+               text-align: center;
+               display: none;
+            }
+         }
+      }
+
+      
+
 
    a:hover:before {
       display: block;
