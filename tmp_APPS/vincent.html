@@ -7,6 +7,9 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0"> 
     <title>AMS1 AllSkyCam Station</title>
     <link rel="stylesheet" href="../../../../APPS/dist/css/main.css"/>
+    <style>
+    .card-header button { color: #fff}
+    </style>
 </head>
 <body>
       <nav class="navbar navbar-expand-lg navbar-dark bg-dark flex-column flex-md-row"> 
@@ -29,10 +32,10 @@
       <div id="main_container" class="container-fluid h-100 mt-4 lg-l">
             <div class="accordion" id="main_content">
                   
-                  <div class="card box">
+                  <div class="card box p-0">
                     <div class="card-header" id="liveHeading">
                       <h2 class="mb-0">
-                        <button class="btn btn-link" type="button" data-toggle="collapse" data-target="#liveContent" aria-expanded="true"  aria-controls="liveContent">
+                        <button class="btn btn-link p-0" type="button" data-toggle="collapse" data-target="#liveContent" aria-expanded="true"  aria-controls="liveContent">
                            2020/12/24 - Live View
                         </button>
                       </h2>
@@ -42,6 +45,36 @@
                         [PUT LIVE VIEW OR NOTHING HERE]
                       </div>
                     </div>
+                  </div>
+
+                  <div class="card box p-0">
+                        <div class="card-header" id="weatherHeading">
+                          <h2 class="mb-0">
+                            <button class="btn btn-link p-0" type="button" data-toggle="collapse" data-target="#weatherContent" aria-expanded="true"  aria-controls="weatherContent">
+                               2020/12/24 - Live View
+                            </button>
+                          </h2>
+                        </div>
+                        <div id="weatherContent" class="collapse" aria-labelledby="weatherHeading" data-parent="#main_content">
+                          <div class="card-body">
+                            [PUT WEATHER CONTENT HERE OR NOTHING HERE]
+                          </div>
+                        </div>
+                  </div>
+
+                  <div class="card box p-0">
+                        <div class="card-header" id="meteorHeading">
+                          <h2 class="mb-0">
+                            <button class="btn btn-link p-0" type="button" data-toggle="collapse" data-target="#meteorContent" aria-expanded="true"  aria-controls="meteorContent">
+                               2020/12/24 - Live View
+                            </button>
+                          </h2>
+                        </div>
+                        <div id="meteorContent" class="collapse" aria-labelledby="meteorHeading" data-parent="#main_content">
+                          <div class="card-body">
+                            [PUT METEORS CONTENT HERE OR NOTHING HERE]
+                          </div>
+                        </div>
                   </div>
  
             </div>
@@ -54,19 +87,7 @@
 </html>
 
     
-       <script>
-       function showHideDiv(myDIV) {
-          var x = document.getElementById(myDIV);
-          if (x.style.display === "none") {
-             x.style.display = "block";
-          } else {
-             x.style.display = "none";
-          }
-       }
- 
-       </script>
-    
- 
+        
  
        <style>
           #pending {
