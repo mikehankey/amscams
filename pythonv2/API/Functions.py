@@ -99,10 +99,13 @@ def test_api_login(tok):
    for line in lines:
       tmp = line.split('|')
 
+      print('TOKEN ' + tmp[0] + '<br>')
+      print("vs " + tok + '<br>') 
+
       # Test the tok
       if(tok==tmp[0]):
          # We need to check the date
-         datetime_object = datetime.datetime.strptime(tmp[0],  "%a, %d-%b-%Y %H:%M:%S GMT")
+         datetime_object = datetime.datetime.strptime(tmp[1],  "%a, %d-%b-%Y %H:%M:%S GMT")
          print("GET DATE")
          print(datetime_object)
         
