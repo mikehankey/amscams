@@ -14,7 +14,7 @@ def api_controller(form):
    api_function = form.getvalue('function')
 
    if(api_function=='login'):
-      API_login(form)
+      print(API_login(form))
 
 
 # LOGIN
