@@ -17,6 +17,7 @@ from API_Functions import *
 JSON_CONFIG = '/home/ams/amscams/conf/as6.json' 
 PATH_ACCESS_LOGS = '/home/ams/amscams/pythonv2/API'
 ACCESS_FILE = PATH_ACCESS_LOGS + os.sep + "access.log"
+EXTRA_CODE_IN_TOKEN = '4llskYR0cks'
 ACCESS_GRANTED_DURATION = 1 # In hours
 
 def api_controller(form):
@@ -95,7 +96,7 @@ def create_token():
    expiration = datetime.now() + timedelta(hours=ACCESS_GRANTED_DURATION)
    
    # Create Token
-   tok = expiration.strftime("%d%b%Y%H%M%S_4llsk")  + ''.join(random.choice('AbcDeFghIJklmNOpqRstUVWxYZ?_!') for _ in range(18))
+   tok = expiration.strftime("%d%b%Y%H%M%S"+EXTRA_CODE_IN_TOKEN)  + ''.join(random.choice('AbcDeFghIJklmNOpqRstUVWxYZ?_!') for _ in range(18))
    return expiration.strftime("%a, %d-%b-%Y %H:%M:%S GMT"),tok
 
 
@@ -116,10 +117,18 @@ def test_api_login(tok):
    for line in lines:
       tmp = line.split('|') 
 
+      if(EXTRA_CODE_IN_TOKEN in tmp[0]):
+         tok_to_test = tmp[0]
+         time_to_test = tmp[1]
+      else:
+         time_to_test = tmp[0]
+         tok_to_test = tmp[1]
+
       # Test the tok
-      if(tok==tmp[0]):
+      if(tok==tok_to_test):
+
          # We need to check the date
-         valid_date = datetime.strptime(tmp[1],  "%a, %d-%b-%Y %H:%M:%S GMT")
+         valid_date = datetime.strptime(time_to_test,  "%a, %d-%b-%Y %H:%M:%S GMT")
          
          # Is date ok?
          now = datetime.now() 
@@ -130,7 +139,7 @@ def test_api_login(tok):
             ok = True
       else:
          # We need to check the date
-         valid_date = datetime.strptime(tmp[1],  "%a, %d-%b-%Y %H:%M:%S GMT")
+         valid_date = datetime.strptime(time_to_test,  "%a, %d-%b-%Y %H:%M:%S GMT")
 
          # Is date ok?
          now = datetime.now() 
