@@ -11,8 +11,8 @@ import json
 from datetime import datetime, timedelta
 from os import environ 
 
-from API.API_Tools import *
-from API.API_Functions import *
+from API_Tools import *
+from API_Functions import *
 
 JSON_CONFIG = '/home/ams/amscams/conf/as6.json' 
 PATH_ACCESS_LOGS = '/home/ams/amscams/pythonv2/API'
