@@ -1,9 +1,13 @@
 import json
 import sys
-import cgitb
+import cgitb 
+
  
 
-def send_error_message(msg): 
-   cgitb.enable()
-   print(json.dumps({'error':msg}))
+def send_json(json_msg): 
+   print(json_msg) 
+
+
+def send_error_message(msg):  
+   send_json(json.dumps({'error':msg}))
    sys.exit(0)
