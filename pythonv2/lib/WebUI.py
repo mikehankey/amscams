@@ -77,6 +77,9 @@ from lib.Minutes_Details import *
 
 # Minutes Manual Reduction
 from lib.Minutes_Manual_Reductions import *
+
+# API
+from API.Functions import *
  
  
 
@@ -253,6 +256,7 @@ def controller(json_conf):
    form = cgi.FieldStorage()
    cmd = form.getvalue('cmd')
    skin = form.getvalue('skin') 
+   
    if cmd == 'play_vid':
       jsid = form.getvalue('jsid')
       video_file = parse_jsid(jsid)
@@ -260,6 +264,12 @@ def controller(json_conf):
       exit() 
 
    print("Content-type: text/html\n\n")      
+
+   #API
+   if cmd == 'API':
+      API(form)
+      exit;
+
 
    #login
    if cmd == 'login':
