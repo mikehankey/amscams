@@ -7,8 +7,8 @@ import cgitb
 import string
 import random
 import json 
+import datetime
 
-from datetime import datetime
 from os import environ 
 
 JSON_CONFIG = '/home/ams/amscams/conf/as6.json' 
@@ -102,7 +102,7 @@ def test_api_login(tok):
       # Test the tok
       if(tok==tmp[0]):
          # We need to check the date
-         datetime_object = datetime.strptime(tmp[0],  "%a, %d-%b-%Y %H:%M:%S GMT")
+         datetime_object = datetime.datetime.strptime(tmp[0],  "%a, %d-%b-%Y %H:%M:%S GMT")
          print("GET DATE")
          print(datetime_object)
         
