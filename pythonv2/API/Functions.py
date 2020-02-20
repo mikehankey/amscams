@@ -30,9 +30,10 @@ def api_controller(form):
       # For everything else, we need to have a token passed
       if(test_api_login(tok)==False):
          send_error_message('You are not authorized')
-      else:
-         if(api_function=='delete'):
-            print("DELETE")
+     
+      # Now we can do stuff
+      if(api_function=='delete'):
+         delete_detection(form)
 
 
 # LOGIN
