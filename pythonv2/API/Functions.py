@@ -22,8 +22,8 @@ def API_login(form):
 
    cgitb.enable()
 
-   user = form.getvalue('user')
-   password = form.getvalue('pwd')
+   user = form.getvalue('user').strip()
+   password = form.getvalue('pwd').strip()
 
    test_log = False
 
@@ -31,11 +31,7 @@ def API_login(form):
       json_file = open(JSON_CONFIG)
       json_str = json_file.read()
       json_data = json.loads(json_str)
-
-      print(json_data['site']['ams_id'])
-      print("<br>***")
-      print(json_data['site']['pwd'])
-      print('***<br>')
+ 
        
       try:
          if(json_data['site']['ams_id']==user and json_data['site']['pwd']==pwd):
