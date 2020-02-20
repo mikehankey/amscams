@@ -79,9 +79,8 @@ from lib.Minutes_Details import *
 from lib.Minutes_Manual_Reductions import *
 
 # API
-#from API.Functions import api_controller
- 
- 
+from API.Functions import api_controller
+  
 
 def run_detect(json_conf, form):
    temp_sd_video_file = form.getvalue("temp_sd_video_file")
