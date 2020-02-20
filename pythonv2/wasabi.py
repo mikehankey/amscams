@@ -27,7 +27,7 @@ def check_mount():
          avail = line[38:44]
          used_perc = line[44:49]
          mount = line[49:].replace(" ", "")
-         if mount == "/mnt/archive.allsky.tv":
+         if "/mnt/archive.allsky.tv" in line:
             wasabi = 1
    return(wasabi)
 
@@ -197,6 +197,8 @@ def connect_wasabi():
    #mkdir /mnt/archive.allsky.tv
    # Check if already mounted.
    mounted = check_mount()
+   print("MOUNTED:", mounted)
+   exit()
    if mounted == 1:
       print("Wasabi is already mounted.")
       exit()
