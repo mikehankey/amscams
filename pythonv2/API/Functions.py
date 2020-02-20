@@ -15,9 +15,13 @@ PATH_ACCESS_LOGS = '/home/ams/amscams/pythonv2/API'
 
 def api_controller(form):
    api_function = form.getvalue('function')
+   tok = form.getvalue('tok') 
 
    if(api_function=='login'):
       print(API_login(form))
+   else:
+      # For everything else, we need to have a token passed
+      test_api_login(tok)
 
 
 # LOGIN
@@ -59,7 +63,7 @@ def API_login(form):
 
 # Write new access in proper file
 def write_new_access(user,tok,_date):
-   f = open(PATH_ACCESS_LOGS + os.sep + "access_"+user+".log","a+")
+   f = open(PATH_ACCESS_LOGS + os.sep + "access.log","a+")
    f.write(tok + " " + _date + "\r\n")
    f.close()
 
@@ -78,15 +82,15 @@ def create_token():
 
  
 
-# TEST API LOGIN COOKIE
-def test_api_login_cookie(_val):
+# TEST API LOGIN  
+def test_api_login(tok):
    
-   if environ.has_key('HTTP_COOKIE'):  
-      for cookie in map(strip, split(environ['HTTP_COOKIE'], ';')):
-         (key, value ) = split(cookie, '=');
-         if key == "api_tok" and value == _val:
-            return True
+   # Open the corresponding file
+   with open(PATH_ACCESS_LOGS + os.sep + "access.log") as f:
+    lines = [line.rstrip() for line in f]
+   
+   print(lines)
 
-   return False 
+   
 
- 
+   
