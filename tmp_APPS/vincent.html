@@ -572,8 +572,8 @@
             $('#login').click(function(){
                $('#login_modal').remove();
 
-               $('<div id="login_modal" class="modal fade" tabindex="-1" role="dialog"><div class="modal-dialog modal-dialog-centered" role="document">\
-               <div class="modal-content"><div class="modal-body"><class="d-flex justify-content-between"><p>Login to '+STATION+'</p>\
+               $('<div id="login_modal" class="modal fade" tabindex="-1" role="dialog"><div class="modal-dialog modal-dialog-centered" style="max-width:300px" role="document">\
+               <div class="modal-content"><div class="modal-body pb-4" ><p class="text-center"><b style="font-size: 1.2rem;">Login to '+STATION+'</b></p>\
                   <div class="d-flex justify-content-center form_container">\
                      <form>\
                         <div class="input-group mb-3">\
@@ -583,12 +583,11 @@
                            <input type="password" name="" class="form-control input_pass" value="" placeholder="password">\
                         </div>\
                         <div class="d-flex justify-content-center mt-3 login_container">\
-                           <button type="button" name="button" class="btn login_btn">Login</button>\
+                           <button type="button" name="button" class="btn btn-primary" style="width: 100%;">Login</button>\
                         </div>\
                      </form>\
 				      </div>\
-	            </div><div class="modal-footer d-flex justify-content-between p-2">\
-               <button type="button" class="btn btn-secondary"><b>Login</b></button></div></div></div></div>').appendTo('body');
+	            </div></div></div></div>').appendTo('body');
                   
                $('#login_modal').modal();
 
