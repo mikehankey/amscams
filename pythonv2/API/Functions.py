@@ -7,8 +7,8 @@ import cgitb
 import string
 import random
 import json 
-import datetime
-
+ 
+from datetime import datetime
 from os import environ 
 from API.API_Tools import *
 
@@ -27,7 +27,8 @@ def api_controller(form):
       # For everything else, we need to have a token passed
       if(test_api_login(tok)==False):
          send_error_message('You are not authorized')
-      sys.exit()
+      else:
+         if(api_function=='delete'):
 
 
 # LOGIN
@@ -79,7 +80,7 @@ def write_new_access(user,tok,_date):
 def create_token():
  
    # Expired in one hour
-   expiration = datetime.datetime.now() + datetime.timedelta(hours=1)
+   expiration = datetime.now() + datetime.timedelta(hours=1)
    
    # Create Token
    tok = expiration.strftime("%d%b%Y%H%M%S_4llsk")  + ''.join(random.choice('AbcDeFghIJklmNOpqRstUVWxYZ?_!') for _ in range(18))
@@ -105,10 +106,10 @@ def test_api_login(tok):
       # Test the tok
       if(tok==tmp[0]):
          # We need to check the date
-         valid_date = datetime.datetime.strptime(tmp[1],  "%a, %d-%b-%Y %H:%M:%S GMT")
+         valid_date = datetimestrptime(tmp[1],  "%a, %d-%b-%Y %H:%M:%S GMT")
          
          # Is date ok?
-         now = datetime.datetime.now() 
+         now = datetime.now() 
 
          if(now>=valid_date):
             return False
