@@ -26,13 +26,83 @@ import os
 import glob
 import sys
 from datetime import datetime, timedelta
+import subprocess
 
 from lib.FileIO import load_json_file, save_json_file, cfe
 from lib.UtilLib import check_running
 
 json_conf = load_json_file("../conf/as6.json")
 
+def load_events(day):
+   year = day[0:4]
+   event_index = "/mnt/ams2/meteor_archive/" + json_conf['site']['ams_id'] + "/EVENTS/" + year + "/" + day + "/" + day +"-events.json"
+   event_files_index = "/mnt/ams2/meteor_archive/" + json_conf['site']['ams_id'] + "/EVENTS/" + year + "/" + day + "/" + day + "-event-files.json"
+   event_files = {}
+   if cfe(event_index) == 1:
+      events = load_json_file(event_index)
+      for event in events:
+         if events[event]['count'] >= 2:
+            for file in events[event]['files']:
+               event_files[file] = event
+      save_json_file(event_files_index,event_files ) 
+      print("Saved:", event_files_index)
+   else:
+      events = {}
+      event_files = {}
+   return(events,event_files)
 
+def run_df():
+   df_data = []
+   mounts = {}
+   if True:
+      cmd = "df -h "
+      output = subprocess.check_output(cmd, shell=True).decode("utf-8")
+      #Filesystem                 Size  Used Avail Use% Mounted on
+
+      for line in output.split("\n"):
+         file_system = line[0:20]
+         size = line[20:26]
+         used = line[27:38]
+         avail = line[38:44]
+         used_perc = line[44:49]
+         mount = line[49:].replace(" ", "")
+         if mount == "/" or mount == "/mnt/ams2" or mount == "/mnt/archive.allsky.tv":
+            df_data.append((file_system, size, used, avail, used_perc, mount))
+            used_perc = used_perc.replace(" ", "")
+            mounts[mount] = int(used_perc.replace("%", ""))
+   else:
+      print("Failed du")
+   return(df_data, mounts)
+
+def check_disk():
+   df_data, mounts = run_df()
+
+   if "/mnt/archive.allsky.tv" not in mounts:
+      print("Wasabi is not mounted! Mounting now.")
+      os.system("./wasabi.py mnt")
+   if mounts["/mnt/ams2"] > 80:
+      print("Data volume /mnt/ams2 is greater than 80%!", mounts["/mnt/ams2"]) 
+   if mounts["/"] > 80:
+      print("Root volume / is greater than 80%!", mounts["/mnt/ams2"]) 
+
+   # first get the HD files and start deleting some of then (remove the last 12 hours) 
+   # then check disk again if it is still over 80% delete some more. 
+   # continue to do this until the disk is less than 80% or there are only a max of 2 days of HD files left
+   if mounts["/mnt/ams2"] > 80:
+      print("Data volume /mnt/ams2 is greater than 80%!", mounts["/mnt/ams2"]) 
+      hd_files = sorted(glob.glob("/mnt/ams2/HD/*.mp4"))
+      print(len(hd_files), " HD FILES")
+      del_count = int(len(hd_files) / 10)
+      for file in hd_files[0:del_count]:
+         if "meteor" not in file:
+            print("Delete this file!", file)
+            os.system("rm " + file)
+
+   # check SD dir  
+   # if the disk usage is over 80% 
+   # get folders in /proc2, delete the folders one at a time and re-check disk until disk <80% or max of 30 folders exist
+
+   # remove trash and other tmp dirs
 
 def batch(num_days):
 
@@ -49,21 +119,24 @@ def batch(num_days):
       past_day = past_day.strftime("%Y_%m_%d")
       print(past_day)
       do_all(past_day)
-   
 
 def make_station_report(day, proc_info = ""):
    print("PROC INFO:", proc_info)
    # MAKE STATION REPORT FOR CURRENT DAY
    station = json_conf['site']['ams_id']
-   detect_html = html_get_detects(day, station)
    year,mon,dom = day.split("_")
+   STATION_RPT_DIR =  "/mnt/archive.allsky.tv/" + station + "/REPORTS/" + year + "/" + mon + "_" + dom + "/"
    NOAA_DIR =  "/mnt/archive.allsky.tv/" + station + "/NOAA/ARCHIVE/" + year + "/" + mon + "_" + dom + "/"
-   if cfe(NOAA_DIR, 1) == 0:
-      os.makedirs(NOAA_DIR)
-   html_index = NOAA_DIR + "index.html"
+   if cfe(STATION_RPT_DIR, 1) == 0:
+      os.makedirs(STATION_RPT_DIR)
+   html_index = STATION_RPT_DIR + "index.html"
    noaa_files = glob.glob(NOAA_DIR + "*.jpg")
    data = {}
    data['files'] = noaa_files
+
+   events,event_files = load_events(day)
+   detect_html = html_get_detects(day, station, event_files,events)
+
    header_html, footer_html = html_header_footer()
 
 
@@ -75,7 +148,7 @@ def make_station_report(day, proc_info = ""):
       data['files'] = sorted(data['files'], reverse=True)
       fn = data['files'][0].replace("/mnt/archive.allsky.tv", "")
       html += "<img src=" + fn + "><BR>\n"
-      html += "</div>"
+   html += "</div>"
 
    html += "<h2><a href=\"#\" onclick=\"showHideDiv('live_snaps')\">Weather Snap Shots</a></h2>\n <div id='live_snaps' style='display: none'>"
    for file in sorted(data['files'],reverse=True):
@@ -88,7 +161,7 @@ def make_station_report(day, proc_info = ""):
    html += "</div>"
 
    html += "</div>"
-
+   html += "<div style='clear: both'></div>"
    html += "<h2><a href=\"#\" onclick=\"showHideDiv('proc_info')\">Processing Info</a></h2>\n <div id='proc_info'>"
    html += "<PRE>" + proc_info + "</PRE>"
    html += "</div>"
@@ -98,8 +171,34 @@ def make_station_report(day, proc_info = ""):
    fpo.close()
    print(html_index)
 
+def do_css():
+   css = """
 
-def html_get_detects(day,tsid):
+      <style>
+         #pending {
+            background-color: blue;
+            color: black;
+            float: left;
+            padding: 5px;
+         }
+         #arc {
+            background-color: green;
+            color: black; 
+            float: left;
+            padding: 5px;
+         }
+         #multi {
+            background-color: red;
+            color: black; 
+            float: left;
+            padding: 5px;
+         }
+      </style>
+
+   """
+   return(css)
+
+def html_get_detects(day,tsid,event_files, events):
    year = day[0:4]
    mi = "/mnt/ams2/meteor_archive/" + json_conf['site']['ams_id'] + "/DETECTS/MI/" + year + "/" +  day + "-meteor_index.json"
    print(mi)
@@ -108,16 +207,51 @@ def html_get_detects(day,tsid):
    prev_dir = "/mnt/archive.allsky.tv/" + tsid + "/DETECTS/PREVIEW/" + year + "/" + day + "/" 
    prev_file = "/mnt/archive.allsky.tv/" + tsid + "/DETECTS/PREVIEW/" + year + "/" + day + "/" + "index.html"
    html = ""
-   
    was_prev_dir = "/mnt/archive.allsky.tv/" + tsid + "/DETECTS/PREVIEW/" + year + "/" + day + "/" 
    was_vh_dir = "/" + tsid + "/DETECTS/PREVIEW/" + year + "/" + day + "/" 
 
    if day in mid:
       for key in mid[day]:
+         if "archive_file" in mid[day][key]:
+            arc = 1
+            arc_file = mid[day][key]['archive_file']
+            style = "arc"
+         else:
+            arc = 0
+            arc_file = "pending"
+            style = "pending"
+         if key in event_files:
+            event_id = event_files[key]
+            
+            event_info = events[event_id]
+
+            print("KEY", key, event_files[key])
+            style = "multi"
+            # look for the event solution dir
+            event_dir = "/mnt/archive.allsky.tv/EVENTS/" + year + "/" + day + "/" + event_id + "/"
+            event_vdir = "/EVENTS/" + year + "/" + day + "/" + event_id + "/"
+            event_file = event_dir + event_id + "-report.html"
+            event_vfile = event_vdir + event_id + "-report.html"
+          
+            if cfe(event_dir,1) == 1:
+               print("Event dir found.", event_dir)
+               if cfe(event_file) == 1:
+                  elink = "<a href=" + event_vfile + ">"
+               else:
+                  print("NT F:", event_file)
+                  elink = ""
+            else:
+               print("Event dir not found.", event_dir)
+               elink = ""
+         else:
+            event_id = None
          mfile = key.split("/")[-1]
          prev_crop = mfile.replace(".json", "-prev-crop.jpg")
          prev_full = mfile.replace(".json", "-prev-full.jpg")
-         html += "<img src=" + was_vh_dir + prev_crop + ">"
+         if event_id is not None:
+            html += "<div style id='" + style + "'><figure><img src=" + was_vh_dir + prev_crop + "><figcaption>" + elink + event_id+ "</a></figcaption></figure></div>"
+         else:
+            html += "<div style id='" + style + "'><figure><img src=" + was_vh_dir + prev_crop + "><figcaption>" + "no event id" + "</figcaption></figure></div>"
    else:
       html += "No meteors detected."
 
@@ -126,11 +260,12 @@ def html_get_detects(day,tsid):
 
 def html_header_footer(info=None):
    js = javascript()
+   css = do_css() 
    html_header = """
      <head>
         <meta http-equiv="Cache-control" content="public, max-age=500, must-revalidate">
    """
-   html_header += js + """
+   html_header += js + "\n" + css + """
      </head>
    """
 
@@ -229,9 +364,12 @@ def do_all(day):
 
 cmd = sys.argv[1]
 
+
 if cmd == "all":
    do_all(sys.argv[2])
 if cmd == "msr":
    make_station_report(sys.argv[2])
 if cmd == "batch":
    batch(sys.argv[2])
+if cmd == "cd":
+   check_disk()
