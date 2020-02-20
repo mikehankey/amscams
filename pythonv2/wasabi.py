@@ -1,5 +1,6 @@
 #!/usr/bin/python3
 
+import subprocess
 import sys
 import os
 from pathlib import Path
@@ -9,6 +10,26 @@ from lib.FileIO import load_json_file, save_json_file, cfe
 
 WASABI_ROOT = "/mnt/archive.allsky.tv/"
 json_conf = load_json_file("../conf/as6.json")
+
+def check_mount():
+   df_data = []
+   mounts = {}
+   wasabi = 0
+   if True:
+      cmd = "df -h "
+      output = subprocess.check_output(cmd, shell=True).decode("utf-8")
+      #Filesystem                 Size  Used Avail Use% Mounted on
+
+      for line in output.split("\n"):
+         file_system = line[0:20]
+         size = line[20:26]
+         used = line[27:38]
+         avail = line[38:44]
+         used_perc = line[44:49]
+         mount = line[49:].replace(" ", "")
+         if mount == "/mnt/archive.allsky.tv":
+            wasabi = 1
+   return(wasabi)
 
 def cp_msd_from_wasabi():
    # all stations other than the master station need to do this 
@@ -174,6 +195,12 @@ def connect_wasabi():
 
    #chmod 600 ~/wasabi_ams1.txt
    #mkdir /mnt/archive.allsky.tv
+   # Check if already mounted.
+   mounted = check_mount()
+   if mounted == 1:
+      print("Wasabi is already mounted.")
+      exit()
+   
 
    #MOUNT COMMAND
    uid = os.getuid()
