@@ -76,5 +76,5 @@ def test_api_login_cookie(_val):
    return False 
 
 # MAIN
-form = cgi.FieldStorage()
-api_controller(form)
+#form = cgi.FieldStorage()
+#api_controller(form)
