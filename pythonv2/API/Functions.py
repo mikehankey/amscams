@@ -5,9 +5,9 @@ import cgi
 import cgitb
 import string
 import random
-import json
-import datetime
+import json 
 
+from datetime import datetime
 from os import environ 
 
 JSON_CONFIG = '/home/ams/amscams/conf/as6.json' 
@@ -65,7 +65,7 @@ def API_login(form):
 # Write new access in proper file
 def write_new_access(user,tok,_date):
    f = open(PATH_ACCESS_LOGS + os.sep + "access.log","a+")
-   f.write(tok + " " + _date + "\r\n")
+   f.write(tok + "|" + _date + "\r\n")
    f.close()
 
 
@@ -90,7 +90,16 @@ def test_api_login(tok):
    with open(PATH_ACCESS_LOGS + os.sep + "access.log") as f:
     lines = [line.rstrip() for line in f]
    
-   print(lines)
+   for line in lines:
+      tmp = line.split('|')
+
+      # Test the tok
+      if(tok==tmp[0]):
+         # We need to check the date
+         datetime_object = datetime.strptime(tmp[0],  "%a, %d-%b-%Y %H:%M:%S GMT")
+         print("GET DATE")
+         print(datetime_object)
+        
 
    
 
