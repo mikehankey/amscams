@@ -61,7 +61,7 @@
 
       &.multi {
          a {
-            border-color: #2088c4;
+            border-color: #cc0000;
             overflow: hidden;
             
             img {
@@ -71,8 +71,36 @@
 
             &:before {
                content: 'Multi';
-               color: #2088c4;
-               background:#8bd0f8;
+               color: #cc0000;
+               background:#d45d5d;
+               position: absolute;
+               top: 1.2rem;
+               right: -2.5rem;
+               z-index: 9;
+               -webkit-transform: rotate(45deg);
+               transform: rotate(45deg);
+               font-weight: bold;
+               width: 150px;
+               text-align: center;
+               display: none;
+            }
+         }
+      }
+
+      &.pending {
+         a {
+            border-color: #000;
+            overflow: hidden;
+            
+            img {
+               box-shadow: none;
+               -webkit-box-shadow: none;
+            }
+
+            &:before {
+               content: 'PENDING';
+               color: #333;
+               background:#ccc;
                position: absolute;
                top: 1.2rem;
                right: -2.5rem;
