@@ -78,9 +78,6 @@ from lib.Minutes_Details import *
 # Minutes Manual Reduction
 from lib.Minutes_Manual_Reductions import *
 
-
-
-
 # API
 sys.path.insert(1, '/home/ams/amscams/pythonv2/API')
 from  Functions import api_controller
