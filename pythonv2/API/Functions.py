@@ -86,7 +86,7 @@ def write_new_access(user,tok,_date):
 def create_token():
  
    # Expired in one hour
-   expiration = datetime.now() + datetime.timedelta(hours=1)
+   expiration = datetime.now() + timedelta(hours=1)
    
    # Create Token
    tok = expiration.strftime("%d%b%Y%H%M%S_4llsk")  + ''.join(random.choice('AbcDeFghIJklmNOpqRstUVWxYZ?_!') for _ in range(18))
