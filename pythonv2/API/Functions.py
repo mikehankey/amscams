@@ -11,7 +11,7 @@ import datetime
 from os import environ 
 
 JSON_CONFIG = '/home/ams/amscams/conf/as6.json' 
-PATH_ACCESS_LOGS = '/home/ams/amscams/API'
+PATH_ACCESS_LOGS = '/home/ams/amscams/pythonv2/API'
 
 def api_controller(form):
    api_function = form.getvalue('function')
