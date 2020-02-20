@@ -11,6 +11,7 @@ import datetime
 from os import environ 
 
 JSON_CONFIG = '/home/ams/amscams/conf/as6.json' 
+PATH_ACCESS_LOGS = '/home/ams/amscams/API'
 
 def api_controller(form):
    api_function = form.getvalue('function')
@@ -58,7 +59,7 @@ def API_login(form):
 
 # Write new access in proper file
 def write_new_access(user,tok,_date):
-   f = open("access_"+user+".log","a+")
+   f = open(PATH_ACCESS_LOGS + os.sep + "access_"+user+".log","a+")
    f.write(tok + " " + _date + "\r\n")
    f.close()
 
