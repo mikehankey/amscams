@@ -5,7 +5,7 @@ import cgitb
 API_URL = 'https://sleaziest-somali-2255.dataplicity.io/pycgi/webUI.py?cmd=API'     
 
 def send_json(json_msg):
-   print "Content-type:application/json\r\n\r\n"
+   print("Content-type:application/json\r\n\r\n")
    print(json_msg) 
 
 
