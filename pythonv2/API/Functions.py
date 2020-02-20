@@ -20,6 +20,8 @@ def api_controller(form):
 # LOGIN
 def API_login(form):
 
+   cgitb.enable()
+
    user = form.getvalue('user')
    password = form.getvalue('pwd')
 
@@ -31,8 +33,9 @@ def API_login(form):
       json_data = json.loads(json_str)
 
       print(json_data['site']['ams_id'])
-      print("<br>")
+      print("<br>***")
       print(json_data['site']['pwd'])
+      print('***<br>')
        
       try:
          if(json_data['site']['ams_id']==user and json_data['site']['pwd']==pwd):
