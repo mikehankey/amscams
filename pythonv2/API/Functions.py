@@ -60,7 +60,7 @@ def API_login(form):
 def write_new_access(user,tok,_date):
    f = open("access_"+user+".log","a+")
    f.write(tok + " " _date + "\r\n")
-   f.close()s
+   f.close()
 
 
 
