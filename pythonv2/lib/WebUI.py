@@ -78,8 +78,12 @@ from lib.Minutes_Details import *
 # Minutes Manual Reduction
 from lib.Minutes_Manual_Reductions import *
 
+
+
+
 # API
-from API.Functions import api_controller
+sys.path.insert(1, '/home/ams/amscams/pythonv2/API')
+from  Functions import api_controller
   
 
 def run_detect(json_conf, form):
