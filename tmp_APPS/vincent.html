@@ -604,16 +604,18 @@
                $('#login_modal').modal(function() { $('input[name=username]').focus();});
 
                $('#subm_login').click(function() {
-                   
+                     
                      $.ajax({ 
                         url:   API_URL ,
                         data: {'function':'login', 'user':$('input[name=username]').val(), 'pwd':$('input[name=password]').val()}, 
                         format: 'json',
                         success: function(data) { 
+                           $('#login_modal').remove();
                            LOGGEDIN = true;
                            loggedin();    
                         }, 
                         error:function() { 
+                              $('#login_modal').remove();
                              bootbox.alert({
                                  message: "Impossible to reach the API. Please, try again later.",
                                  className: 'rubberBand animated error',
