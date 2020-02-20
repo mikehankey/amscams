@@ -330,8 +330,11 @@ def do_all(day):
    proc_vids, proc_tn_imgs, day_vids,cams_queue,in_queue = get_processing_status(day)
    detect_files, arc_files = get_meteor_status(day)
 
+   time_check = check_time(day)
+
    # figure out how much of the day has completed processing
    rpt = """
+   Time Check: """ + time_check + """
    Processing report for day: """ + day + """
    Processed Videos:""" + str(len(proc_vids)) + """
    Processed Thumbs:""" +  str(len(proc_tn_imgs)) + """
@@ -364,13 +367,25 @@ def do_all(day):
 def check_time(day):
    now = datetime.now() 
    today = now.strftime("%Y_%m_%d")
-   time_file = "time.temp.txt"
+   year, mon, dom = day.split("_")
+   time_dir = "/mnt/archive.allsky.tv/" + json_conf['site']['ams_id'] + "/DETECTS/MI/" + year + "/" 
+   time_file = time_dir + day + "-time.txt"
+   if cfe(time_dir, 1) == 0:
+      os.makedirs(time_dir)
    if today != day:
       return()
    else:
-      cmd = "date -u > " + time_file + " ;" + "wget -q http://worldtimeapi.org/api/timezone/Europe/London.txt -O - |grep utc_datetime >> " + time_file + "; date -u >> "  + time_file
+ 
+      cmd = "wget -q http://worldtimeapi.org/api/timezone/Europe/London.txt -O - |grep utc_datetime >> " + time_file + "; date -u >> "  + time_file
       os.system(cmd)
-
+      print(time_file)
+      fp = open(time_file, "r")
+      lines = []
+      for line in fp:
+         lines.append(line)
+      return (lines[-2] + " " + lines[-1])
+      
+os.system("./wasabi.py mnt")
 cmd = sys.argv[1]
 
 if cmd == "ct":
