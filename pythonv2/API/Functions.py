@@ -26,7 +26,7 @@ def api_controller(form):
    else:
       # For everything else, we need to have a token passed
       if(test_api_login(tok)==False):
-         send_error_message('')
+         send_error_message('You are not authorized')
       sys.exit()
 
 
