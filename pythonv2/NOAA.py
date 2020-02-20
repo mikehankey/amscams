@@ -89,10 +89,11 @@ def update_live_html():
    if cfe(all_stations_file) == 0:
       build_all_stations()
    all_stations = load_json_file(all_stations_file)
-
+   status = {}
    all_station_data = []
    for sd in all_stations:
       station = sd['station']
+      status[station] = 0
       data = {} 
       data['station'] = station 
       data['files'] = []
@@ -106,6 +107,7 @@ def update_live_html():
          for file in live_files:
             print("ADDING FILES FOR : ", station, file)
             data['files'].append(file)
+            status[station] = 1 
       all_station_data.append(data)
 
         #<meta http-equiv="Cache-Control" content="no-cache"/>
@@ -135,34 +137,37 @@ def update_live_html():
          </head>
       """
 
-      # MAKE STATION REPORT FOR CURRENT DAY      
+      # MAKE STATION REPORT FOR CURRENT DAY (MOVED!)
+      if False: 
+         detect_html = html_get_detects(dom, station)
 
-      detect_html = html_get_detects(dom, station)
+         html = header_html
+         show_date = day.replace("_", "/")
+         html += "<h1>" + station_id + " Daily Report for " + show_date + "</h1>\n" 
+         html += "<h2><a href=\"#\" onclick=\"showHideDiv('live_view')\">Live View</a></h2>\n <div id='live_view'>"
+         if len(data['files']) > 0:
+            fn = data['files'][0].replace("/mnt/archive.allsky.tv", "")
+            html += "<img src=" + fn + "><BR>\n"
+            html += "</div>"
 
-      html = header_html
-      show_date = day.replace("_", "/")
-      html += "<h1>" + station_id + " Daily Report for " + show_date + "</h1>\n" 
-      html += "<h2><a href=\"#\" onclick=\"showHideDiv('live_view')\">Live View</a></h2>\n <div id='live_view'>"
-      if len(data['files']) > 0:
-         fn = data['files'][0].replace("/mnt/archive.allsky.tv", "")
-         html += "<img src=" + fn + "><BR>\n"
+         html += "<h2><a href=\"#\" onclick=\"showHideDiv('live_snaps')\">Weather Snap Shots</a></h2>\n <div id='live_snaps' style='display: none'>"
+         for file in data['files']:
+            fn = file.replace("/mnt/archive.allsky.tv", "")
+            html += "<img src=" + fn + "><BR>\n"
          html += "</div>"
 
-      html += "<h2><a href=\"#\" onclick=\"showHideDiv('live_snaps')\">Weather Snap Shots</a></h2>\n <div id='live_snaps' style='display: none'>"
-      for file in data['files']:
-         fn = file.replace("/mnt/archive.allsky.tv", "")
-         html += "<img src=" + fn + "><BR>\n"
-      html += "</div>"
+         html += "<h2><a href=\"#\" onclick=\"showHideDiv('meteors')\">Meteors</a></h2>\n <div id='meteors'>"
+         html += detect_html
+         html += "</div>"
 
-      html += "<h2><a href=\"#\" onclick=\"showHideDiv('meteors')\">Meteors</a></h2>\n <div id='meteors'>"
-      html += detect_html
-      html += "</div>"
-
-      html += "</div>"
-      fpo = open(html_index, "w")
-      fpo.write(html)
-      fpo.close() 
-      print(html_index)
+         html += "</div>"
+   live_now += "<h2>Station Status</h2>\n"
+   for sd in status:
+      live_now += sd + " " + str(status[sd]) + "<BR>"
+   fpo = open(html_index, "w")
+   fpo.write(html)
+   fpo.close() 
+   print(html_index)
 
    MAIN_NOAA_DIR = "/mnt/archive.allsky.tv/LIVE/" + year + "/" 
    asd_file = "/mnt/archive.allsky.tv/LIVE/" + year + "/" + day + "_index.json"
@@ -294,6 +299,8 @@ def javascript():
       </script>
    """
    return(js)
+
+os.system("./wasabi.py mnt")
 
 if len(sys.argv) <= 1:
    update_live_view()
