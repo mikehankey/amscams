@@ -597,7 +597,7 @@
                $('#subm_login').click(function() {
                    
                      $.ajax({ 
-                        url:  "API_URL",
+                        url:   API_URL ,
                         data: {'function':'login', 'user':$('input[name=username]').val(), 'pwd':$('input[name=password]').val()}, 
                         success: function(data) { 
                                  
