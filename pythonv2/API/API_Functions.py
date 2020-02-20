@@ -1,9 +1,12 @@
 import json
 import sys
+import cgitb
 
 from API_Tools import *
 
 def delete_detection(form):
+   
+   cgitb.enable()
    detect = form.getValue('detect')
 
    if(detect is None):

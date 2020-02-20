@@ -20,6 +20,8 @@ ACCESS_FILE = PATH_ACCESS_LOGS + os.sep + "access.log"
 ACCESS_GRANTED_DURATION = 1 # In hours
 
 def api_controller(form):
+   cgitb.enable()
+
    api_function = form.getvalue('function')
    tok = form.getvalue('tok') 
 
