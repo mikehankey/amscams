@@ -120,7 +120,15 @@ def batch(num_days):
       print(past_day)
       do_all(past_day)
 
+def get_template(file):
+   fp = open(file, "r")
+   text = ""
+   for line in fp:
+      text += line
+   return(text)
+
 def make_station_report(day, proc_info = ""):
+   template = get_template("templates/allsky.tv.base.html") 
    print("PROC INFO:", proc_info)
    # MAKE STATION REPORT FOR CURRENT DAY
    station = json_conf['site']['ams_id']
@@ -135,42 +143,55 @@ def make_station_report(day, proc_info = ""):
    data['files'] = noaa_files
 
    events,event_files = load_events(day)
-   detect_html = html_get_detects(day, station, event_files,events)
+   single_html, multi_html,info= html_get_detects(day, station, event_files,events)
+   detect_count = info['mc']
 
    header_html, footer_html = html_header_footer()
 
 
-   html = header_html
    show_date = day.replace("_", "/")
-   html += "<h1>" + station + " Daily Report for " + show_date + "</h1>\n"
-   html += "<h2><a href=\"#\" onclick=\"showHideDiv('live_view')\">Live View</a></h2>\n <div id='live_view'>"
+ 
+   live_view_html = ""
    if len(data['files']) > 0:
       data['files'] = sorted(data['files'], reverse=True)
       fn = data['files'][0].replace("/mnt/archive.allsky.tv", "")
-      html += "<img src=" + fn + "><BR>\n"
-   html += "</div>"
+      live_view_html += "<img src=" + fn + ">\n"
 
-   html += "<h2><a href=\"#\" onclick=\"showHideDiv('live_snaps')\">Weather Snap Shots</a></h2>\n <div id='live_snaps' style='display: none'>"
-   for file in sorted(data['files'],reverse=True):
-      fn = file.replace("/mnt/archive.allsky.tv", "")
-      html += "<img src=" + fn + "><BR>\n"
-   html += "</div>"
+   if live_view_html != "":
+      live_section = html_section("live", "Live View", live_view_html)
+   else:
+      live_section = ""
+   template = template.replace("{LIVE_VIEW}", live_section)
 
-   html += "<h2><a href=\"#\" onclick=\"showHideDiv('meteors')\">Meteors</a></h2>\n <div id='meteors'>"
-   html += detect_html
-   html += "</div>"
+   we_html = ""
+   if len(data['files']) > 0:
+      for file in sorted(data['files'],reverse=True):
+         fn = file.replace("/mnt/archive.allsky.tv", "")
+         we_html += "<img src=" + fn + "><BR>\n"
+      weather_section = html_section("weather", "Weather Snap Shots", we_html)
+   else:
+      weather_section = ""
+   template = template.replace("{WEATHER_SNAPSHOTS}", weather_section)
 
-   html += "</div>"
-   html += "<div style='clear: both'></div>"
-   html += "<h2><a href=\"#\" onclick=\"showHideDiv('proc_info')\">Processing Info</a></h2>\n <div id='proc_info'>"
-   html += "<PRE>" + proc_info + "</PRE>"
-   html += "</div>"
+   proc_section = html_section("proc_info", "Processing Info", proc_info)
+   template = template.replace("{PROC_REPORT}", proc_section)
+
+   title = "Multi Station Meteors (" + str(info['ms_count']) + ")"
+   meteor_section = html_section("multi_meteors", title , "<div class='d-flex align-content-start flex-wrap'>" + multi_html + "</div>")
+   template = template.replace("{MULTI_METEORS}", meteor_section)
+
+   title = "Single Station Meteors (" + str(info['ss_count']) + ")"
+   meteor_section = html_section("single_meteors", title , "<div class='d-flex align-content-start flex-wrap'>" + single_html + "</div>")
+   template = template.replace("{SINGLE_METEORS}", meteor_section)
+
+
+
+
 
    fpo = open(html_index, "w")
-   fpo.write(html)
+   fpo.write(template)
    fpo.close()
    print(html_index)
-
 def do_css():
    css = """
 
@@ -198,6 +219,29 @@ def do_css():
    """
    return(css)
 
+def html_section(ID, TITLE,CONTENT ):
+   sec = """
+      <div class="card box p-0">
+         <div class="card-header" id="{ID}Heading">
+            <h2 class="mb-0">
+               <button class="btn btn-link p-0 d-block" type="button" data-toggle="collapse" data-target="#{ID}Content" aria-expanded="true"  aria-controls="{ID}Content">
+                   {TITLE}
+               </button>
+            </h2>
+         </div>
+         <div id="{ID}Content" class="collapse" aria-labelledby="{ID}Heading" data-parent="#main_content">
+            <div class="card-body">
+                            {CONTENT}
+            </div>
+         </div>
+      </div>
+
+   """
+   sec = sec.replace("{ID}", ID)
+   sec = sec.replace("{TITLE}", TITLE)
+   sec = sec.replace("{CONTENT}", CONTENT)
+   return(sec)
+
 def html_get_detects(day,tsid,event_files, events):
    year = day[0:4]
    mi = "/mnt/ams2/meteor_archive/" + json_conf['site']['ams_id'] + "/DETECTS/MI/" + year + "/" +  day + "-meteor_index.json"
@@ -209,17 +253,29 @@ def html_get_detects(day,tsid,event_files, events):
    html = ""
    was_prev_dir = "/mnt/archive.allsky.tv/" + tsid + "/DETECTS/PREVIEW/" + year + "/" + day + "/" 
    was_vh_dir = "/" + tsid + "/DETECTS/PREVIEW/" + year + "/" + day + "/" 
-
+   mc = 0
+   arc_count = 0
+   pending_count = 0
+   unique_met_count = 0
+   ms_count = 0
+   ss_count = 0
+   solved_count = 0
+   failed_count = 0
+   not_run = 0
+   single_html = ""
+   multi_html = ""
    if day in mid:
       for key in mid[day]:
          if "archive_file" in mid[day][key]:
             arc = 1
             arc_file = mid[day][key]['archive_file']
             style = "arc"
+            arc_count += 1
          else:
             arc = 0
             arc_file = "pending"
             style = "pending"
+            pending_count += 1
          if key in event_files:
             event_id = event_files[key]
             
@@ -237,25 +293,74 @@ def html_get_detects(day,tsid,event_files, events):
                print("Event dir found.", event_dir)
                if cfe(event_file) == 1:
                   elink = "<a href=" + event_vfile + ">"
+                  solved_count += 1
                else:
                   print("NT F:", event_file)
-                  elink = ""
+                  failed_count += 1
+                  elink = "<a>"
             else:
                print("Event dir not found.", event_dir)
-               elink = ""
+               elink = "<a>"
+               not_run += 1
          else:
             event_id = None
+            elink = "<a>"
          mfile = key.split("/")[-1]
          prev_crop = mfile.replace(".json", "-prev-crop.jpg")
          prev_full = mfile.replace(".json", "-prev-full.jpg")
-         if event_id is not None:
-            html += "<div style id='" + style + "'><figure><img src=" + was_vh_dir + prev_crop + "><figcaption>" + elink + event_id+ "</a></figcaption></figure></div>"
+
+         image_file = prev_crop
+         if arc_file == "pending":
+            css_class = "prevproc pending"
          else:
-            html += "<div style id='" + style + "'><figure><img src=" + was_vh_dir + prev_crop + "><figcaption>" + "no event id" + "</figcaption></figure></div>"
+            css_class = "prevproc arc"
+         #if event_id is not None:
+         #   css_class = "prevproc multi"
+         if event_id is None:
+            event_id = "none"
+    
+         if event_id is None or event_id == "none":
+            single_html += """
+                             <div class="d-flex align-content-start flex-wrap">
+                                 <div class="{:s}">
+                                       {:s} 
+                                        <img src="{:s}" class="img-fluid">
+                                       </a>
+                                        <span>{:s}</span>
+                                   </div>
+                             </div>
+            """.format(css_class, elink, was_vh_dir + image_file, event_id)
+            ss_count += 1
+         else:
+            multi_html += """
+                             <div class="d-flex align-content-start flex-wrap">
+                                 <div class="{:s}">
+                                       {:s} 
+                                        <img src="{:s}" class="img-fluid">
+                                       </a>
+                                        <span>{:s}</span>
+                                   </div>
+                             </div>
+            """.format(css_class, elink, was_vh_dir + image_file, event_id)
+            ms_count += 1
+
+         mc += 1
    else:
       html += "No meteors detected."
 
-   return(html)
+
+   info = {}
+   info['arc_count'] = arc_count
+   info['pending_count'] = pending_count
+   info['unique_met_count'] = unique_met_count
+   info['ms_count'] = ms_count
+   info['ss_count'] = ss_count
+   info['solved_count'] = solved_count
+   info['failed_count'] = failed_count
+   info['not_run'] = not_run
+   info['mc'] = mc 
+
+   return(single_html, multi_html, info)
 
 
 def html_header_footer(info=None):
@@ -333,22 +438,25 @@ def do_all(day):
    time_check = check_time(day)
 
    # figure out how much of the day has completed processing
-   rpt = """
-   Time Check: """ + time_check + """
-   Processing report for day: """ + day + """
-   Processed Videos:""" + str(len(proc_vids)) + """
-   Processed Thumbs:""" +  str(len(proc_tn_imgs)) + """
-   Un-Processed Daytime Videos:""" +  str(len(day_vids)) + """
-   Un-Processed CAMS Queue:""" + str(len(cams_queue)) + """
-   Un-Processed IN Queue:""" + str(len(in_queue)) + """
-   Possible Meteor Detections:""" + str(len(detect_files)) + """
-   Archived Meteors :""" + str(len(arc_files)) + """
-   Unique Meteors: ???"""  + """
-   Multi-station Events: ???"""  + """
-   Solved Events: ???"""  + """
-   Events That Failed to Solve: ???""" 
+   rpt = """ 
+                             <dl class="row">
+                                <dt class="col-3">Time Check</dt><dd class="col-9">{:s}</dd>
+                                <dt class="col-3">Processing report for day</dt><dd class="col-9">{:s}</dd>
+                                <dt class="col-3">Processing videos</dt><dd class="col-9">{:s}</dd>
+                                <dt class="col-3">Processed Thumbs</dt><dd class="col-9">{:s}</dd>
+                                <dt class="col-3">Un-Processed Daytime Videos</dt><dd class="col-9">{:s}</dd>
+                                <dt class="col-3">Un-Processed CAMS Queue</dt><dd class="col-9">{:s}</dd>
+                                <dt class="col-3">Un-Processed IN Queue</dt><dd class="col-9">{:s}</dd>
+                                <dt class="col-3">Possible Meteor Detections</dt><dd class="col-9">{:s}</dd>
+                                <dt class="col-3">Archived Meteors</dt><dd class="col-9">{:s}</dd>
+                                <dt class="col-3">Unique Meteors</dt><dd class="col-9">{:s}</dd>
+                                <dt class="col-3">Multi-station Events</dt><dd class="col-9">{:s}</dd>
+                                <dt class="col-3">Solved Events</dt><dd class="col-9">{:s}</dd>
+                                <dt class="col-3">Events That Failed to Solve</dt><dd class="col-9">{:s}</dd>
+                             </dl>
+   """.format(str(time_check), str(day), str(len(proc_vids)), str(len(proc_tn_imgs)), str(len(day_vids)), str(len(cams_queue)), str(len(in_queue)), str(len(detect_files)), str(len(arc_files)), "UM", "MSM", "SE", "F")
 
-   print ("RPT:", rpt)
+
    if len(cams_queue) < 10 and len(in_queue) < 10:
       proc_status = "up-to-date"
 
