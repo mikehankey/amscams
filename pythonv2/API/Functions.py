@@ -31,7 +31,7 @@ def api_controller(form):
          send_error_message('You are not authorized')
       else:
          if(api_function=='delete'):
-             
+            print("DELETE")
 
 
 # LOGIN
