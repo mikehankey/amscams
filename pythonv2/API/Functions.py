@@ -30,7 +30,9 @@ def api_controller(form):
       print(API_login(form))
    else:
       # For everything else, we need to have a token passed
-      if(test_api_login(tok)==False):
+      test_access = test_api_login(tok)
+      
+      if(test_access==False or test_access is None):
          send_error_message('You are not authorized')
      
 
