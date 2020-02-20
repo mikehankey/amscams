@@ -45,7 +45,7 @@ def API_login(form):
       # Keep the token on this side too as a cookie
       create_cookie(cookie_date,tok)
 
-      return json.dumps({'tok':create_token()})
+      return json.dumps({'token':tok,'expire':cookie_date})
    else:
       return json.dumps({'error':'You are not authorized'})
 
@@ -58,13 +58,7 @@ def create_token():
    expiration = datetime.datetime.now() + datetime.timedelta(hours=1)
    return expiration.strftime("%a, %d-%b-%Y %H:%M:%S GMT"),expiration.strftime("%d%b%Y%H%M%S_4llsk") 
 
-# CREATE COOKIE
-def create_cookie(_date,_cook):
-   
-   print("Content-type:text/html\r\n")
-   #print("Set-Cookie:User = "+user+";\r\n") 
-   print("Set-Cookie:Expires = "+_date+";\r\n") 
-   print("Set-Cookie:Path = /;\n") 
+ 
 
 # TEST API LOGIN COOKIE
 def test_api_login_cookie(_val):
