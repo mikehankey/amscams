@@ -59,6 +59,14 @@
          }
       }
 
+      &.arc {
+         a {
+            &:before {
+               content: 'Archived';
+            }
+         }
+      }
+
       &.multi {
          a {
             border-color: #cc0000;
@@ -70,7 +78,7 @@
             }
 
             &:before {
-               content: 'Multi';
+               content: 'MULTI';
                color: #cc0000;
                background:#f3a5a5;
                position: absolute;
@@ -115,9 +123,7 @@
          }
       }
 
-     
-      }
-
+      
 
 
    a:hover:before {
