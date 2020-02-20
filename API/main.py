@@ -70,7 +70,7 @@ def test_api_login_cookie(_val):
    if environ.has_key('HTTP_COOKIE'):  
       for cookie in map(strip, split(environ['HTTP_COOKIE'], ';')):
          (key, value ) = split(cookie, '=');
-         if key == "api_tok" and value = _val:
+         if key == "api_tok" and value == _val:
             return True
 
    return False 
