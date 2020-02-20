@@ -10,6 +10,7 @@ import json
 import datetime
 
 from os import environ 
+from API.API_Tools import *
 
 JSON_CONFIG = '/home/ams/amscams/conf/as6.json' 
 PATH_ACCESS_LOGS = '/home/ams/amscams/pythonv2/API'
@@ -19,11 +20,13 @@ def api_controller(form):
    api_function = form.getvalue('function')
    tok = form.getvalue('tok') 
 
+   # Login
    if(api_function=='login'):
       print(API_login(form))
    else:
       # For everything else, we need to have a token passed
-      test_api_login(tok)
+      if(test_api_login(tok)==False):
+         send_error_message('')
       sys.exit()
 
 
@@ -57,7 +60,7 @@ def API_login(form):
 
       return json.dumps({'token':tok,'expire':_date})
    else:
-      return json.dumps({'error':'You are not authorized'})
+      return send_error_message('You are not authorized')
 
 
    return test_log
@@ -76,14 +79,12 @@ def write_new_access(user,tok,_date):
 def create_token():
  
    # Expired in one hour
-   expiration = datetime.datetime.now() + datetime.timedelta(hours=2)
+   expiration = datetime.datetime.now() + datetime.timedelta(hours=1)
    
    # Create Token
    tok = expiration.strftime("%d%b%Y%H%M%S_4llsk")  + ''.join(random.choice('AbcDeFghIJklmNOpqRstUVWxYZ?_!') for _ in range(18))
-   
    return expiration.strftime("%a, %d-%b-%Y %H:%M:%S GMT"),tok
 
- 
 
 # TEST API LOGIN  
 def test_api_login(tok):
@@ -107,17 +108,12 @@ def test_api_login(tok):
          valid_date = datetime.datetime.strptime(tmp[1],  "%a, %d-%b-%Y %H:%M:%S GMT")
          
          # Is date ok?
-         now = datetime.datetime.now()
-
-         print(valid_date.strftime('VALID:  %d, %b %Y %H:%M:%S'))
-         print('<br>')
-         print(now.strftime('NOW:  %d, %b %Y %H:%M:%S'))
-
+         now = datetime.datetime.now() 
 
          if(now>=valid_date):
-            print("EXPIRED!")
+            return False
          else:
-            print("NOT EXPIRED")
+            return True
          
  
         
