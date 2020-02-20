@@ -14,11 +14,11 @@ def api_controller(form):
    api_function = form.getvalue('function')
 
    if(api_function=='login'):
-      login(form)
+      API_login(form)
 
 
 # LOGIN
-def login(form):
+def API_login(form):
 
    user = form.getvalue('user')
    password = form.getvalue('pwd')
@@ -26,7 +26,7 @@ def login(form):
    test_log = False
 
    if(user is not None and password is not None):
-      json_file = open('JSON_CONFIG')
+      json_file = open(JSON_CONFIG)
       json_str = json_file.read()
       json_data = json.loads(json_str)
        
