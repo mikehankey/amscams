@@ -565,6 +565,7 @@
       <script>
          var STATION = "AMS7";
          var API_URL = "https://sleaziest-somali-2255.dataplicity.io/pycgi/webUI.py?cmd=API";
+         var LOGGEDIN = false; // Just UI - the rest is managed on both side with a token
       </script>
       <script>
 
@@ -601,9 +602,8 @@
                         data: {'function':'login', 'user':$('input[name=username]').val(), 'pwd':$('input[name=password]').val()}, 
                         format: 'json',
                         success: function(data) { 
-                                 
-                              console.log(data);
-                           
+                           LOGGEDIN = true;
+                           loggedin();    
                         }, 
                         error:function() { 
                              bootbox.alert({
@@ -622,6 +622,12 @@
       
          function setup_action() {
             setup_login();
+         }
+
+         // Update UI based on logged  or not
+         function loggedin() {
+            if(LOGGEDIN) $("a#login").text('Logout');
+            else         $("a#login").text('Login');
          }
          
          $(function() {
