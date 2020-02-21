@@ -625,11 +625,24 @@
                         data: {'function':'login', 'user':$('input[name=username]').val(), 'pwd':$('input[name=password]').val(), 'st':$('input[name=st]').val()}, 
                         format: 'json',
                         success: function(data) { 
-                           $('#login_modal').remove();
-                           LOGGEDIN = true;
-                           TOK = data.tok;
-                           EXPIRE = data.expire;
-                           loggedin();    
+
+                           if(typeof data.error == 'undefined') {
+                              // WRONG!
+                              bootbox.alert({
+                              message: data.error,
+                              className: 'rubberBand animated error',
+                              centerVertical: true 
+                           });
+                           } else {
+                              $('#login_modal').remove();
+                              LOGGEDIN = true;
+                              TOK = data.tok;
+                              EXPIRE = data.expire;
+                              loggedin();    
+                           }
+
+
+
                         }, 
                         error:function() { 
                            $('#login_modal').remove();
