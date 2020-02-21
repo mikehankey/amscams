@@ -109,7 +109,7 @@ def batch(num_days):
    # first make sure the batch is not already running.
    running = check_running("doDay.py")
    print("Running:", running)
-   if running > 1:
+   if running > 2:
       print("Already running.")
       exit()
 

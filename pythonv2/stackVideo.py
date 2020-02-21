@@ -171,7 +171,7 @@ def stack_day(day):
    # first make sure the batch is not already running.
    running = check_running("stackVideo.py")
    print("Running:", running)
-   if running > 1:
+   if running > 2:
       print("Already running.")
       exit()
 
