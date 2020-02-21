@@ -588,6 +588,7 @@
                <div class="modal-content"><div class="modal-body pb-4" ><p class="text-center"><b style="font-size: 1.2rem;">Login to '+STATION+'</b></p>\
                   <div class="d-flex justify-content-center form_container">\
                      <form>\
+                        <input type="hidden" name="st" value="'+STATION+'"/>
                         <div class="input-group mb-3">\
                            <input type="text" name="username" class="form-control input_user" value="" placeholder="username">\
                         </div>\
@@ -607,7 +608,7 @@
                      
                      $.ajax({ 
                         url:   API_URL ,
-                        data: {'function':'login', 'user':$('input[name=username]').val(), 'pwd':$('input[name=password]').val()}, 
+                        data: {'function':'login', 'user':$('input[name=username]').val(), 'pwd':$('input[name=password]').val(), 'st':$('input[name=st]').val()}, 
                         format: 'json',
                         success: function(data) { 
                            $('#login_modal').remove();
@@ -636,8 +637,12 @@
 
          // Update UI based on logged  or not
          function loggedin() {
-            if(LOGGEDIN) $("a#login").text('Logout');
-            else         $("a#login").text('Login');
+            if(LOGGEDIN) {
+               $("a#login").text('Logout');
+            } 
+            else {
+               $("a#login").text('Login');
+            }        
          }
          
          $(function() {
