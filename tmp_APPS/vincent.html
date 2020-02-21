@@ -614,7 +614,7 @@
                var $t = $(this); 
                $t.unbind('click').click(function() {
                  var detect_id = $t.parents('.prevproc').attr('id');
-                 console.log("TO DELETE " + detect_id);
+                 delete_detec(detect_id);
                });
             })
          }

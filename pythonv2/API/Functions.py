@@ -15,7 +15,8 @@ from API_Tools import *
 from API_Functions import *
 
 JSON_USER_PWD = '/home/ams/amscams/pythonv2/API/user_password.json' 
-JSON_MANAGER_PWD = '/home/ams/amscams/pythonv2/APImanager_password.json' 
+JSON_MANAGER_PWD = '/home/ams/amscams/pythonv2/API/manager_password.json' 
+API_TASK_FILE ='/home/ams/amscams/pythonv2/API/task.txt' 
 PATH_ACCESS_LOGS = '/home/ams/amscams/pythonv2/API'
 ACCESS_FILE = PATH_ACCESS_LOGS + os.sep + "access.log"
 EXTRA_CODE_IN_TOKEN = '4llskYR0cks'
@@ -108,6 +109,18 @@ def API_login(form):
          return send_error_message('You need send at least a username and a password (and a station ID if you are not a manager ).')
  
 
+# DELETE function
+def delete_detection(form):
+   station = form.getvalue('st')
+   user = form.getvalue('user') 
+   detect_id = form.getvalue('detect') 
+
+   with open(API_TASK_FILE, 'a') as f:
+    f.write(user+'|DELETE'+'|'+detect_id)
+   
+   f.close()
+
+   return json.dumps({'msg':'Deletion task added'})
 
 
 # Write new access in proper file
@@ -115,8 +128,7 @@ def write_new_access(user,tok,_date):
    f = open(ACCESS_FILE,"a+")
    f.write(tok + "|" + _date + "\r\n")
    f.close()
-
-
+ 
 
 # CREATE TEMPORARY TOKEN
 def create_token():
