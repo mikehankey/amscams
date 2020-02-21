@@ -14,7 +14,8 @@ from os import environ
 from API_Tools import *
 from API_Functions import *
 
-JSON_PWD = '/home/ams/amscams/pythonv2/API/password.json' 
+JSON_USER_PWD = '/home/ams/amscams/pythonv2/API/user_password.json' 
+JSON_MANAGER_PWD = '/home/ams/amscams/pythonv2/APImanager_password.json' 
 PATH_ACCESS_LOGS = '/home/ams/amscams/pythonv2/API'
 ACCESS_FILE = PATH_ACCESS_LOGS + os.sep + "access.log"
 EXTRA_CODE_IN_TOKEN = '4llskYR0cks'
@@ -64,19 +65,32 @@ def API_login(form):
    password = form.getvalue('pwd')
    test_log = False
 
-   if(user is not None and password is not None and station is not None):
+   if(user is not None and password is not None):
+
+      # The 'users' have to pick a station
+      # while the manager are required to...
+      if(station is not None):
+         pwd_file = JSON_USER_PWD
+      else:
+         pwd_file = JSON_MANAGER_PWD
+
       user = user.strip() 
  
-      json_file = open(JSON_PWD)
+      json_file = open(pwd_file)
       json_str = json_file.read()
       json_data = json.loads(json_str)
-
+ 
       # We search the right pwd/usr/st
       if('access' in json_data):
          for acc in json_data['access']:
-            if(acc['st']==station  and acc['usr']==user and acc['pwd']==password):
-               text_log = True
-               break 
+            if(station is not None):
+               if(acc['st']==station  and acc['usr']==user and acc['pwd']==password):
+                  text_log = True
+                  break 
+               else if(acc['usr']==user and acc['pwd']==password):
+                  text_log = True
+                  break 
+
 
       if(test_log is True):
          _date, tok = create_token() 
@@ -89,7 +103,7 @@ def API_login(form):
          return send_error_message('You are not authorized')
 
    else:
-         return send_error_message('You need send a station ID, a username and a password.')
+         return send_error_message('You need send at least a username and a password (and a station ID if you are not a manager ).')
  
 
 
