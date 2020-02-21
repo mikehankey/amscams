@@ -87,6 +87,12 @@ def API_login(form):
                print("STATION NOT NONE<br/>")
                print("TEST<br/>")
                print(acc)
+               print("<br>")
+               print(acc['st']==station )
+               print("<br>")
+               print(acc['usr']==user )
+               print("<br>")
+               print(acc['pwd']==password )
                if(acc['st']==station and acc['usr']==user and acc['pwd']==password):
                   text_log = True
                   break 
