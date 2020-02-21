@@ -198,7 +198,6 @@ def connect_wasabi():
    # Check if already mounted.
    mounted = check_mount()
    print("MOUNTED:", mounted)
-   exit()
    if mounted == 1:
       print("Wasabi is already mounted.")
       exit()
