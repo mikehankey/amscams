@@ -135,8 +135,7 @@ def test_api_login(tok):
          time_to_test = tmp[1]
       else:
          time_to_test = tmp[0]
-         tok_to_test = tmp[1]
- 
+         tok_to_test = tmp[1] 
 
       # Test the tok
       if(tok==tok_to_test):
