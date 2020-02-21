@@ -83,10 +83,12 @@ def API_login(form):
       # We search the right pwd/usr/st
       if('access' in json_data):
          for acc in json_data['access']: 
+            #USER
             if(station is not None):
                if(acc['st']==station and acc['usr']==user and acc['pwd']==password):
                   test_log = True
                   break 
+            #MANAGER
             elif(acc['usr']==user and acc['pwd']==password):
                   test_log = True
                   break 
