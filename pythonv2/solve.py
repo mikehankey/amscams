@@ -43,6 +43,15 @@ from sympy import Point3D, Line3D, Segment3D, Plane
 
 
 json_conf = load_json_file("../conf/as6.json")
+
+def get_template(file):
+   fp = open(file, "r")
+   text = ""
+   for line in fp:
+      text += line
+   return(text)
+
+
 def event_stats(events):
    single_station = 0
    multi_station = 0
@@ -142,9 +151,10 @@ def make_event_day_index( day  ):
                   type, file, status = sol
                   sol_text += type + " " + str(status) + "<BR>"
                link = "<div style='float: left'><figure><a href=/pycgi/webUI.py?cmd=goto&file=" + arc_fn + "&station_id=" + station + ">"
-            img = img.replace("/mnt/ams2", "")
+            img = img.replace("/mnt/ams2/meteor_archive", "")
             img_html += link + "<img src=" + img + "><figcaption>" + obs_desc + " " + event['clip_starts'][i] +  "</a></figcaption></figure></div>"
-         event_dir = "/meteor_archive/" + station_id + "/EVENTS/" + event_year + "/" + event_day + "/" + event_id + "/"
+         #event_dir = "/meteor_archive/" + station_id + "/EVENTS/" + event_year + "/" + event_day + "/" + event_id + "/"
+         event_dir = "/EVENTS/" + event_year + "/" + event_day + "/" + event_id + "/"
          elink = "<a href=" + event_dir + event_id + "-report.html>"
          if event['count'] > 1:
             rows_multi += "<tr><td>" + elink + event_id + "</a></td><td>" +  event['event_start_time'] + "</td><td>" +img_html + "</td><td>" + sol_text + "</td></tr>"
@@ -176,7 +186,7 @@ def make_prev_img(event_id, station, old_file):
    dom = event_id[0:10]
    prev_fn = old_file.replace(".json", "-prev-crop.jpg")
    prev_img = "/mnt/ams2/meteor_archive/" + station + "/DETECTS/PREVIEW/" + year + "/" + dom + "/"  + prev_fn
-   prev_img_wb = "/mnt/wasabi/" + station + "/DETECTS/PREVIEW/" + year + "/" + dom + "/"  + prev_fn
+   prev_img_wb = "/" + station + "/DETECTS/PREVIEW/" + year + "/" + dom + "/"  + prev_fn
    return(prev_img, prev_img_wb)
 
 
@@ -218,8 +228,8 @@ def obs_html(event_id):
    station_id = json_conf['site']['ams_id']
    event_year = event_id[0:4]
    event_day = event_id[0:10]
-   event_dir = "/mnt/ams2/meteor_archive/" + station_id + "/EVENTS/" + event_year + "/" + event_day + "/" + event_id + "/"
-   events_file = "/mnt/ams2/meteor_archive/" + station_id + "/EVENTS/" + event_year + "/" + event_day + "/" + event_day + "-events.json"
+   event_dir = "/mnt/archive.allsky.tv/EVENTS/" + event_year + "/" + event_day + "/" + event_id + "/"
+   events_file = "/mnt/archive.allsky.tv/EVENTS/" + event_year + "/" + event_day + "/" + event_day + "-events.json"
    events_data = load_json_file(events_file)
    event = events_data[event_id]
 
@@ -253,11 +263,12 @@ def obs_html(event_id):
          prev_img, wb_prev_img = make_prev_img(event_id,station, old_file)
 
          if arc_desc != 'pending':
-            link =  "<a href=/pycgi/webUI.py?cmd=reduce2&video_file=" + arc_file + ">" 
+            sd_vid = arc_file.replace(".json", "-SD.mp4")
+            sd_vid = sd_vid.replace("/mnt/ams2/meteor_archive", "")
+            link =  "<a href=" + sd_vid + ">" 
          else:
-            url = sync_urls['sync_urls'][station]['sync_url'] + "/pycgi/webUI.py?cmd=reduce&video_file=" + old_file
-            link = "<a href=" + url + ">" 
-         prev_img = prev_img.replace("/mnt/ams2", "")
+            link = "<a href=" + url + "></a>" 
+         prev_img = prev_img.replace("/mnt/ams2/meteor_archive", "")
          out += "<div style=\"float: left\">" + link
          out += "<figure><img src=" +  prev_img + "><figcaption>" + station + " " + event_start + "</a></figcaption></figure>" 
          #out += "<td>" +  old_file + "</td>"
@@ -268,6 +279,7 @@ def obs_html(event_id):
 
 def report_html(event_id):
     
+   template = get_template("templates/allsky.tv.event.html")
 
 
    year = event_id[0:4]
@@ -293,7 +305,7 @@ def report_html(event_id):
    res_plots = [  ]
 
    traj_plots = [ 'ground_track', '3D_traj', 'velocity', 'lags_all_stations', 'dist_from_state_vector'  ]
-   plot_data_file = plot_data_file.replace("/mnt/ams2", "")
+   plot_data_file = plot_data_file.replace("/mnt/ams2/meteor_archive", "")
 
    for obsid in vida_data['observations']:
       res_plots.append("res_station_" + obsid)
@@ -305,11 +317,11 @@ def report_html(event_id):
    orb_plot_html = "<P>"
    other_plot_html = "<P>"
    for plot in res_plots:
-      res_plot_html += "<iframe width=950 height=560 src=\"/meteor_archive/apps/plots/index.html?j=" + plot_data_file + "&t=" + plot + "\"></iframe>"
+      res_plot_html += "<iframe width=950 height=560 src=\"/APPS/plots/index.html?j=" + plot_data_file + "&t=" + plot + "\"></iframe>"
    for plot in traj_plots:
-      traj_plot_html += "<iframe width=950 height=560 src=\"/meteor_archive/apps/plots/index.html?j=" + plot_data_file + "&t=" + plot + "\"></iframe>"
+      traj_plot_html += "<iframe width=950 height=560 src=\"/APPS/plots/index.html?j=" + plot_data_file + "&t=" + plot + "\"></iframe>"
    for plot in orb_plots:
-      orb_plot_html += "<iframe width=950 height=560 src=\"/meteor_archive/apps/plots/index.html?j=" + plot_data_file + "&t=" + plot + "\"></iframe>"
+      orb_plot_html += "<iframe width=950 height=560 src=\"/APPS/plots/index.html?j=" + plot_data_file + "&t=" + plot + "\"></iframe>"
    
 
 
@@ -381,8 +393,11 @@ def report_html(event_id):
    report_html += "<a href=" + vida_report + ">WMPL</A> - " 
    report_html += "<a href=" + simple_report + ">Simple Solution</A> - " 
    report_html += "<a href=" + input_report + ">Solver Input File</A> - " 
+
+   template = template.replace("{SOLUTION}", report_html)
+
    fp = open(html_report_file, "w")
-   fp.write(report_html)
+   fp.write(template)
    fp.close() 
    wasabi_dir = event_dir.replace("ams2/meteor_archive", "wasabi")
    cmd = "cp " + event_dir + "*.json "+ wasabi_dir
@@ -2482,9 +2497,9 @@ def sync_ms_previews(year):
          station = event['stations'][i]
          prev_fn = of.replace(".json", "-prev-crop.jpg")
          if station != this_station:      
-            prev_dir = "/mnt/ams2/meteor_archive/" + station + "/DETECTS/PREVIEW/" + year + "/" + day + "/"  
-            prev_img = "/mnt/ams2/meteor_archive/" + station + "/DETECTS/PREVIEW/" + year + "/" + day + "/"  + prev_fn
-            wb_prev_img = "/mnt/wasabi/" + station + "/DETECTS/PREVIEW/" + year + "/" + day + "/"  + prev_fn
+            prev_dir = "/" + station + "/DETECTS/PREVIEW/" + year + "/" + day + "/"  
+            prev_img = "/" + station + "/DETECTS/PREVIEW/" + year + "/" + day + "/"  + prev_fn
+            wb_prev_img = "/mnt/archive.allsky.tv/" + station + "/DETECTS/PREVIEW/" + year + "/" + day + "/"  + prev_fn
             prev_imgs = ""
             if cfe(prev_dir, 1) == 0:
                os.makedirs(prev_dir)
