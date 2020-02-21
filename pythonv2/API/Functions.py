@@ -119,7 +119,7 @@ def delete_detection(form):
    now = datetime.now()
 
    with open(API_TASK_FILE, 'a') as f:
-    f.write(user+'|DELETE'+'|'+detect_id+'|'+now.strftime("%Y-%m-%d %H:%M"))
+    f.write(user+'|DELETE'+'|'+detect_id+'|'+now.strftime("%Y-%m-%d %H:%M")+'\n')
    
    f.close()
 
