@@ -84,22 +84,13 @@ def API_login(form):
       if('access' in json_data):
          for acc in json_data['access']: 
             if(station is not None):
-               print("STATION NOT NONE<br/>")
-               print("TEST<br/>")
-               print(acc)
-               print("<br>")
-               print(acc['st']==station )
-               print("<br>")
-               print(acc['usr']==user )
-               print("<br>")
-               print(acc['pwd']==password )
                if(acc['st']==station and acc['usr']==user and acc['pwd']==password):
-                  text_log = True
+                  test_log = True
                   break 
             elif(acc['usr']==user and acc['pwd']==password):
-                  text_log = True
+                  test_log = True
                   break 
-
+      
 
       if(test_log is True):
          _date, tok = create_token() 
