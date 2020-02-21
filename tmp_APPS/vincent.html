@@ -589,7 +589,7 @@
                      </div>\
                   </div>').appendTo($(this))
                })
-            
+            }
          }
 
 
@@ -632,20 +632,18 @@
                            loggedin();    
                         }, 
                         error:function() { 
-                              $('#login_modal').remove();
-                             bootbox.alert({
-                                 message: "Impossible to reach the API. Please, try again later.",
-                                 className: 'rubberBand animated error',
-                                 centerVertical: true 
-                              });
+                           $('#login_modal').remove();
+                           bootbox.alert({
+                              message: "Impossible to reach the API. Please, try again later.",
+                              className: 'rubberBand animated error',
+                              centerVertical: true 
+                           });
                         }
                      });
                })
             })
-
-
-
-}
+ 
+         }     
       
          function setup_action() {
             setup_login();
