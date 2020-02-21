@@ -626,7 +626,7 @@
                         format: 'json',
                         success: function(data) { 
 
-                           if(typeof data.error == 'undefined') {
+                           if(typeof data.error !== 'undefined') {
                               // WRONG!
                               bootbox.alert({
                               message: data.error,
