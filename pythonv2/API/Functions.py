@@ -14,7 +14,7 @@ from os import environ
 from API_Tools import *
 from API_Functions import *
 
-JSON_CONFIG = '/home/ams/amscams/conf/as6.json' 
+JSON_PWD = '/home/ams/amscams/pythonv2/API/password.json' 
 PATH_ACCESS_LOGS = '/home/ams/amscams/pythonv2/API'
 ACCESS_FILE = PATH_ACCESS_LOGS + os.sep + "access.log"
 EXTRA_CODE_IN_TOKEN = '4llskYR0cks'
@@ -59,24 +59,24 @@ def API_login(form):
 
    cgitb.enable() 
 
+   station = form.getvalue('st')
    user = form.getvalue('user') 
    password = form.getvalue('pwd')
    test_log = False
 
-   if(user is not None and password is not None):
+   if(user is not None and password is not None and station is not None):
       user = user.strip() 
+ 
+      json_file = open(JSON_PWD)
+      json_str = json_file.read()
+      json_data = json.loads(json_str)
 
-      if(user is not None and password is not None):
-         json_file = open(JSON_CONFIG)
-         json_str = json_file.read()
-         json_data = json.loads(json_str)
-   
-         try:
-            if(json_data['site']['ams_id']==user and json_data['site']['pwd']==password):
-               test_log = True
-         except Exception:
-            test_log = False
-      
+      # We search the right pwd/usr/st
+      if('access' in json_data):
+         for acc in json_data['access']:
+            if(acc['st']==station  and acc['usr']==user and acc['pwd']==password):
+               text_log = True
+               break 
 
       if(test_log is True):
          _date, tok = create_token() 
@@ -89,7 +89,7 @@ def API_login(form):
          return send_error_message('You are not authorized')
 
    else:
-         return send_error_message('You need send a username and a password.')
+         return send_error_message('You need send a station ID, a username and a password.')
  
 
 
