@@ -73,9 +73,7 @@ def API_login(form):
          pwd_file = JSON_USER_PWD
       else:
          pwd_file = JSON_MANAGER_PWD
-
-      print(pwd_file)
-      print("<br>")
+ 
       user = user.strip() 
  
       json_file = open(pwd_file)
@@ -84,13 +82,15 @@ def API_login(form):
  
       # We search the right pwd/usr/st
       if('access' in json_data):
-         for acc in json_data['access']:
-            print(acc)
+         for acc in json_data['access']: 
             if(station is not None):
+               print("STATION NOT NONE<br/>")
+               print("TEST<br/>")
+               print(acc)
                if(acc['st']==station and acc['usr']==user and acc['pwd']==password):
                   text_log = True
                   break 
-               elif(acc['usr']==user and acc['pwd']==password):
+            elif(acc['usr']==user and acc['pwd']==password):
                   text_log = True
                   break 
 
