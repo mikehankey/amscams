@@ -581,6 +581,10 @@
       <script>
          /********** API FUNCTIONS ***********************************************************************/
          function delete_detec(detect_id) {
+
+            console.log("IN DELETE DETECT")
+            console.log(TOK)
+
             $.ajax({ 
                url:   API_URL ,
                data: {'function':'delete',  'tok':TOK, 'detect': detect_id}, 
@@ -612,9 +616,8 @@
          function setup_delete_buttons() {
             $('.delete').each(function() {
                var $t = $(this); 
-               $t.unbind('click').click(function() {
-                 var detect_id = $t.parents('.prevproc').attr('id');
-                 delete_detec(detect_id);
+               $t.unbind('click').click(function() { 
+                 delete_detec($t.parents('.prevproc').attr('id'));
                });
             })
          }
