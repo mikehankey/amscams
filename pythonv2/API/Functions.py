@@ -61,7 +61,8 @@ def API_login(form):
 
    user = form.getvalue('user') 
    password = form.getvalue('pwd')
-   
+   test_log = False
+
    if(user is not None and password is not None):
       user = user.strip() 
 
@@ -89,8 +90,7 @@ def API_login(form):
 
    else:
          return send_error_message('You need send a username and a password.')
-
-   return test_log
+ 
 
 
 
