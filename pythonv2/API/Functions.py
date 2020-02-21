@@ -74,6 +74,8 @@ def API_login(form):
       else:
          pwd_file = JSON_MANAGER_PWD
 
+      print(pwd_file)
+
       user = user.strip() 
  
       json_file = open(pwd_file)
