@@ -87,7 +87,7 @@ def API_login(form):
                if(acc['st']==station  and acc['usr']==user and acc['pwd']==password):
                   text_log = True
                   break 
-               else if(acc['usr']==user and acc['pwd']==password):
+               elif(acc['usr']==user and acc['pwd']==password):
                   text_log = True
                   break 
 
