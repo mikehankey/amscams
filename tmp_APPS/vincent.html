@@ -611,16 +611,14 @@
          /********** UI ***********************************************************************/
          function setup_delete_buttons() {
             $('.delete').each(function() {
-               var $t = $(this)setup_delete_buttons() 
+               var $t = $(this); 
                $t.click(function() {
                  var detect_id = $t.closest('.prevproc').attr('id');
-                 print(detect_id);
+                 console.log("TO DELETE " + detect_id);
                }
             })
          }
-
-
-
+ 
          /********** LOGIN ***********************************************************************/
          
          function add_buttons() {
@@ -636,8 +634,7 @@
                setup_delete_buttons();
             }
          }
-
-
+ 
          function setup_login() {
             // Login
             $('#login').click(function(){
