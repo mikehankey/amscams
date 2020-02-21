@@ -129,6 +129,7 @@ def get_template(file):
 
 def make_station_report(day, proc_info = ""):
    template = get_template("templates/allsky.tv.base.html") 
+
    print("PROC INFO:", proc_info)
    # MAKE STATION REPORT FOR CURRENT DAY
    station = json_conf['site']['ams_id']
@@ -183,15 +184,17 @@ def make_station_report(day, proc_info = ""):
    title = "Single Station Meteors (" + str(info['ss_count']) + ")"
    meteor_section = html_section("single_meteors", title , "<div class='d-flex align-content-start flex-wrap'>" + single_html + "</div>")
    template = template.replace("{SINGLE_METEORS}", meteor_section)
-
-
-
-
-
+ 
    fpo = open(html_index, "w")
    fpo.write(template)
    fpo.close()
    print(html_index)
+
+
+
+
+
+
 def do_css():
    css = """
 

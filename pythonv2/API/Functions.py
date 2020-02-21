@@ -18,6 +18,7 @@ JSON_USER_PWD = '/home/ams/amscams/pythonv2/API/user_password.json'
 JSON_MANAGER_PWD = '/home/ams/amscams/pythonv2/API/manager_password.json' 
 API_TASK_FILE ='/home/ams/amscams/pythonv2/API/task.txt' 
 PATH_ACCESS_LOGS = '/home/ams/amscams/pythonv2/API'
+
 ACCESS_FILE = PATH_ACCESS_LOGS + os.sep + "access.log"
 EXTRA_CODE_IN_TOKEN = '4llskYR0cks'
 ACCESS_GRANTED_DURATION = 1 # In hours

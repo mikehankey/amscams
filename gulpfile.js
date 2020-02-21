@@ -89,6 +89,32 @@ function css() {
   .pipe(gulp.dest("./dist/css")) 
 }
 
+
+function cssA() {
+   return   gulp.src('./src/sass/allsky.scss')
+   .pipe(sourcemaps.init())
+   .pipe(plumber())
+   .pipe(sass({
+     outputStyle: "compressed"
+   }))
+   .on("error", sass.logError)
+   //.pipe(autoprefixer({
+   //  browsers: ['last 2 versions'],
+   //  cascade: false
+   //}))  
+   .pipe(gulp.dest('./dist/css'))
+   .pipe(rename({
+     suffix: ".min"
+   }))
+   .pipe(cleanCSS()) 
+   .pipe(gulp.dest("./dist/css"))
+   //.pipe(sourcemaps.write())
+   .pipe(gulp.dest("./dist/css")) 
+ }
+
+
+
+
 // JS task
 function js() {
   return gulp
