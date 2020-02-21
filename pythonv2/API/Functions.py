@@ -53,7 +53,7 @@ def api_controller(form):
       
       # Now we can do stuff
       if(api_function=='delete'):
-         return delete_detection(form)
+         print(delete_detection(form))
 
 
 # LOGIN
