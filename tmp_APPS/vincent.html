@@ -629,12 +629,12 @@
                            if(typeof data.error !== 'undefined') {
                               // WRONG!
                               bootbox.alert({
-                              message: data.error,
-                              className: 'rubberBand animated error',
-                              centerVertical: true 
-                           });
+                                 message: data.error,
+                                 className: 'rubberBand animated error',
+                                 centerVertical: true 
+                              });
                            } else {
-                              $('#login_modal').remove();
+                              $('#login_modal').modal('hide').remove();
                               LOGGEDIN = true;
                               TOK = data.tok;
                               EXPIRE = data.expire;
