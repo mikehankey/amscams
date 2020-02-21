@@ -625,8 +625,8 @@
                         data: {'function':'login', 'user':$('input[name=username]').val(), 'pwd':$('input[name=password]').val(), 'st':$('input[name=st]').val()}, 
                         format: 'json',
                         success: function(data) { 
-                           console.log(data)
-                           console.log(data.error)
+                           data = jQuery.parseJSON(data);
+                           console.log(data);
                            if(typeof data.error !== 'undefined') {
                               // WRONG!
                               bootbox.alert({
