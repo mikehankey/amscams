@@ -590,6 +590,7 @@
                data: {'function':'delete',  'tok':TOK, 'detect': detect_id}, 
                format: 'json',
                success: function(data) { 
+                  data = jQuery.parseJSON(data); 
                   if(typeof data.error !== 'undefined') {
                      // WRONG!
                      bootbox.alert({
