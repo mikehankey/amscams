@@ -195,7 +195,7 @@ def stack_day(day):
       os.makedirs(proc_dir + "images/")
 
    for file in day_files:
-      stack = file.replace(".mp4", "-stacked.png") 
+      stack = file.replace(".mp4", "-stacked-tn.png") 
       if cfe(stack) == 0:
          start_time = time.time() 
          limit = 0
@@ -220,8 +220,10 @@ def stack_day(day):
       print(cmd) 
       os.system(cmd)  
       cmd = "mv " + stack + " " + proc_dir + "images/"
+      sf = stack.split("/")[-1]
       print(cmd) 
       os.system(cmd)  
+      print(proc_dir + "images/" + sf)
 
 
 
