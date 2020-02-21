@@ -111,12 +111,15 @@ def API_login(form):
 
 # DELETE function
 def delete_detection(form):
-   station = form.getvalue('st')
+   
    user = form.getvalue('user') 
+   station = form.getvalue('st')
    detect_id = form.getvalue('detect') 
 
+   now = datetime.datetime.now()
+
    with open(API_TASK_FILE, 'a') as f:
-    f.write(user+'|DELETE'+'|'+detect_id)
+    f.write(user+'|DELETE'+'|'+detect_id+'|'+now.strftime("%Y-%m-%d %H:%M"))
    
    f.close()
 
