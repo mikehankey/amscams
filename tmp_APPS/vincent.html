@@ -634,7 +634,8 @@
                                  centerVertical: true 
                               });
                            } else {
-                              $('#login_modal').modal('hide').remove();
+                              $('#login_modal').modal('hide')
+                              $('#login_modal,.modal-backdrop').remove();
                               LOGGEDIN = true;
                               TOK = data.tok;
                               EXPIRE = data.expire;
