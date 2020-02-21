@@ -4,19 +4,14 @@
     <meta charset="UTF-8">
     <meta http-equiv="Cache-control" content="public, max-age=500, must-revalidate">
     <meta name="viewport" content="width=device-width, initial-scale=1.0"> 
-    <title>AMS1 AllSkyCam Station</title>
-    <link rel="stylesheet" href="../../../../APPS/dist/css/main.css?c=adzaqs"/>
-    <style>
-    .card-header button { color: #fff; width: 100%; text-align: left;}
-    .prevproc img { min-width: 240px}
-    </style>
+    <title>{STATION_ID} AllSkyCam Station - {DAY} Report</title>
+    <link rel="stylesheet" href="../../../../dist/css/allsky.css?c=de"/>
 </head>
 <body>
       <nav class="navbar navbar-expand-lg navbar-dark bg-dark flex-column flex-md-row"> 
        
-            <a class="navbar-brand clearfix" title="Home">  
-                <iframe id="logo_holder" src="../../../../APPS/dist/img/logo.svg" width="70" height="45" style="border:0"></iframe>
-                <span class="tx"><span class="m">AMS Video Meteor Program</span><span class="s">AMS1</span></span>
+            <a class="navbar-brand clearfix" title="Report">  
+                <img id="logo_holder" src="../../../../dist/img/Allsky/logo.svg" width="250" height="45"/> 
             </a>
         
             <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#mainN" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
@@ -27,24 +22,14 @@
             
       </nav>
       
-      <h1>AMS1 Daily Report for 2019/12/24</h1>
+      <h1>{STATION_ID} Daily Report for {DAY}</h1>
 
       <div id="main_container" class="container-fluid h-100 mt-4 lg-l">
             <div class="accordion" id="main_content">
-
                   {LIVE_VIEW}
-
                   {WEATHER_SNAPSHOTS}
-                  
-
-
                   {MULTI_METEORS}
-
                   {SINGLE_METEORS}
-
-
-
- 
                   {PROC_REPORT}
  
             </div>
@@ -52,14 +37,72 @@
 
         
       <script src="https://archive.allsky.tv/APPS/dist/js/amscam.min.js"></script>
+      <script src="../../../../APPS/dist/js/amscam.min.js"></script>
       <script>
-         var STATION = "AMS1";
-         var API_URL = "https://www.allsky.tv/API/main.py";
+         var STATION = "AMS7";
+         var API_URL = "https://sleaziest-somali-2255.dataplicity.io/pycgi/webUI.py?cmd=API";
+         var LOGGEDIN = false; // Just UI - the rest is managed on both side with a token
+         var TOK;
+         var USR;
       </script>
       <script>
+         /********** API FUNCTIONS ***********************************************************************/
+         function delete_detec(detect_id) {
+ 
+            $.ajax({ 
+               url:   API_URL ,
+               data: {'function':'delete',  'tok':TOK, 'detect': detect_id, 'st': STATION, 'user':USR}, 
+               format: 'json',
+               success: function(data) { 
+                  data = jQuery.parseJSON(data); 
+                  if(typeof data.error !== 'undefined') {
+                     // WRONG!
+                     bootbox.alert({
+                        message: data.error,
+                        className: 'rubberBand animated error',
+                        centerVertical: true 
+                     });
+                  } else {
+                     $('#'+detect_id).addClass('deleted');
+                  } 
+               }, 
+               error:function() { 
+                  bootbox.alert({
+                     message: "Impossible to reach the API. Please, try again later or refresh the page and log back in",
+                     className: 'rubberBand animated error',
+                     centerVertical: true 
+                  });
+               }
+            });
+         }
 
+
+         /********** UI ***********************************************************************/
+         function setup_delete_buttons() {
+            $('.delete').each(function() {
+               var $t = $(this); 
+               $t.unbind('click').click(function() { 
+                 delete_detec($t.parents('.prevproc').attr('id'));
+               });
+            })
+         }
+ 
          /********** LOGIN ***********************************************************************/
+         
+         function add_buttons() {
+            if(LOGGEDIN && TOK!=='') {
+               $('.prevproc').each(function() {
+                  $('<div class="btn-toolbar">\
+                     <div class="btn-group">\
+                        <a class="delete col btn btn-danger btn-sm" title="Delete Detection"><i class="icon-delete"></i></a>\
+                     </div>\
+                  </div>').appendTo($(this))
+               });
 
+               setup_delete_buttons();
+            }
+         }
+ 
          function setup_login() {
             // Login
             $('#login').click(function(){
@@ -69,6 +112,7 @@
                <div class="modal-content"><div class="modal-body pb-4" ><p class="text-center"><b style="font-size: 1.2rem;">Login to '+STATION+'</b></p>\
                   <div class="d-flex justify-content-center form_container">\
                      <form>\
+                        <input type="hidden" name="st" value="'+STATION+'"/>\
                         <div class="input-group mb-3">\
                            <input type="text" name="username" class="form-control input_user" value="" placeholder="username">\
                         </div>\
@@ -85,33 +129,68 @@
                $('#login_modal').modal(function() { $('input[name=username]').focus();});
 
                $('#subm_login').click(function() {
-                   
+                     // So we can send the USR to the API
+                     USR = $('input[name=username]').val();
                      $.ajax({ 
                         url:   API_URL ,
-                        data: {'function':'login', 'user':$('input[name=username]').val(), 'pwd':$('input[name=password]').val()}, 
+                        data: {'function':'login', 'user':$('input[name=username]').val(), 'pwd':$('input[name=password]').val(), 'st':$('input[name=st]').val()}, 
                         format: 'json',
                         success: function(data) { 
-                                 
-                              console.log(data);
-                           
-                        }, 
-                        error:function() { 
-                             bootbox.alert({
-                                 message: "Impossible to reach the API. Please, try again later.",
+                           data = jQuery.parseJSON(data); 
+                           if(typeof data.error !== 'undefined') {
+                              // WRONG!
+                              bootbox.alert({
+                                 message: data.error,
                                  className: 'rubberBand animated error',
                                  centerVertical: true 
                               });
+                           } else {
+                              $('#login_modal').modal('hide')
+                              $('#login_modal,.modal-backdrop').remove();
+                              $('body').removeClass('modal-open');
+                              LOGGEDIN = true;
+                              TOK = data.token;
+                              EXPIRE = data.expire;
+                              console.log("TOK " + TOK)
+                              loggedin();    
+                           } 
+                        }, 
+                        error:function() { 
+                           $('#login_modal').remove();
+                           bootbox.alert({
+                              message: "Impossible to reach the API. Please, try again later.",
+                              className: 'rubberBand animated error',
+                              centerVertical: true 
+                           });
                         }
                      });
                })
             })
-
-
-
-}
+ 
+         }     
       
          function setup_action() {
             setup_login();
+         }
+
+         // Update UI based on logged  or not
+         function loggedin() {
+            if(LOGGEDIN) {
+
+               // Logout Button
+               $("a#login").text('Logout').unbind('click').click(function() {
+                  TOK = '';
+                  LOGGEDIN = false;
+                  loggedin()
+               });
+
+               // Add buttons
+               add_buttons();
+            } 
+            else {
+               $("a#login").text('Login');
+               setup_login();
+            }        
          }
          
          $(function() {
@@ -121,7 +200,4 @@
       </script>
 
 </body>    
-</html>
-
-    
-       
+</html> 

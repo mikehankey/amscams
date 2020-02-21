@@ -35,6 +35,7 @@ def decode(key, string):
     encoded_string = ''.join(encoded_chars)
     return encoded_string
 
+
 def check_pwd_ajax(user, pwd):
     #cgitb.enable() 
     #check in conf/as6.json if pwd is right

@@ -152,6 +152,7 @@ function js() {
 // Tasks
 gulp.task("css", css);
 gulp.task("js", js);
+gulp.task("cssA", cssA); 
 
 
 // JS task for BoostrapFileInput
