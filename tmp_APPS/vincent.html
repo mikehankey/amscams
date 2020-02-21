@@ -612,8 +612,8 @@
          function setup_delete_buttons() {
             $('.delete').each(function() {
                var $t = $(this); 
-               $t.click(function() {
-                 var detect_id = $t.closest('.prevproc').attr('id');
+               $t.unbind('click').click(function() {
+                 var detect_id = $t.parents('.prevproc').attr('id');
                  console.log("TO DELETE " + detect_id);
                });
             })
@@ -678,6 +678,7 @@
                            } else {
                               $('#login_modal').modal('hide')
                               $('#login_modal,.modal-backdrop').remove();
+                              $('body').removeClass('modal-open');
                               LOGGEDIN = true;
                               TOK = data.tok;
                               EXPIRE = data.expire;
