@@ -210,7 +210,8 @@ def stack_day(day):
          if len(frames) == 0:
             print("NO frames bad vid?", file)
          else:
-            stack_frames(frames, stack)
+            if cfe(stack) == 0:
+               stack_frames(frames, stack)
             print("DAY STACK:", stack)
             elapsed_time = time.time() - start_time
             print("STACK TIME:", elapsed_time)

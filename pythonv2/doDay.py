@@ -134,6 +134,7 @@ def make_station_report(day, proc_info = ""):
    # MAKE STATION REPORT FOR CURRENT DAY
    station = json_conf['site']['ams_id']
    year,mon,dom = day.split("_")
+   show_day = mon + "/" + dom + "/"+ year
    STATION_RPT_DIR =  "/mnt/archive.allsky.tv/" + station + "/REPORTS/" + year + "/" + mon + "_" + dom + "/"
    NOAA_DIR =  "/mnt/archive.allsky.tv/" + station + "/NOAA/ARCHIVE/" + year + "/" + mon + "_" + dom + "/"
    if cfe(STATION_RPT_DIR, 1) == 0:
@@ -162,6 +163,8 @@ def make_station_report(day, proc_info = ""):
       live_section = html_section("live", "Live View", live_view_html)
    else:
       live_section = ""
+   template = template.replace("{STATION_ID}", station)
+   template = template.replace("{DAY}", show_day)
    template = template.replace("{LIVE_VIEW}", live_section)
 
    we_html = ""
@@ -291,18 +294,16 @@ def html_get_detects(day,tsid,event_files, events):
             event_vdir = "/EVENTS/" + year + "/" + day + "/" + event_id + "/"
             event_file = event_dir + event_id + "-report.html"
             event_vfile = event_vdir + event_id + "-report.html"
-          
-            if cfe(event_dir,1) == 1:
-               print("Event dir found.", event_dir)
-               if cfe(event_file) == 1:
-                  elink = "<a href=" + event_vfile + ">"
-                  solved_count += 1
-               else:
-                  print("NT F:", event_file)
-                  failed_count += 1
-                  elink = "<a>"
+         
+            if len(events[event_id]['solutions']) > 0 :
+               elink = "<a href=" + event_vfile + ">"
+               solved_count += 1
+               #else:
+               #   print("NT F:", event_file)
+               #   failed_count += 1
+               #   elink = "<a>"
             else:
-               print("Event dir not found.", event_dir)
+               print("Event not solved.", event_dir)
                elink = "<a>"
                not_run += 1
          else:
@@ -435,6 +436,7 @@ def get_meteor_status(day):
    
 
 def do_all(day):
+   os.system("git pull")
    proc_vids, proc_tn_imgs, day_vids,cams_queue,in_queue = get_processing_status(day)
    detect_files, arc_files = get_meteor_status(day)
 
