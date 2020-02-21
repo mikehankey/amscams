@@ -574,10 +574,24 @@
          var STATION = "AMS7";
          var API_URL = "https://sleaziest-somali-2255.dataplicity.io/pycgi/webUI.py?cmd=API";
          var LOGGEDIN = false; // Just UI - the rest is managed on both side with a token
+         var TOK;
       </script>
       <script>
 
          /********** LOGIN ***********************************************************************/
+         
+         function add_buttons() {
+            if(LOGGEDIN && TOK!=='') {
+               $('.prevproc').each(function() {
+                  $('<div class="btn-toolbar">\
+                     <div class="btn-group">\
+                        <a class="delete col btn btn-danger btn-sm" title="Delete Detection"><i class="icon-delete"></i></a>\
+                     </div>\
+                  </div>').appendTo($(this))
+               })
+            
+         }
+
 
          function setup_login() {
             // Login
@@ -588,7 +602,7 @@
                <div class="modal-content"><div class="modal-body pb-4" ><p class="text-center"><b style="font-size: 1.2rem;">Login to '+STATION+'</b></p>\
                   <div class="d-flex justify-content-center form_container">\
                      <form>\
-                        <input type="hidden" name="st" value="'+STATION+'"/>
+                        <input type="hidden" name="st" value="'+STATION+'"/>\
                         <div class="input-group mb-3">\
                            <input type="text" name="username" class="form-control input_user" value="" placeholder="username">\
                         </div>\
@@ -613,6 +627,8 @@
                         success: function(data) { 
                            $('#login_modal').remove();
                            LOGGEDIN = true;
+                           TOK = data.tok;
+                           EXPIRE = data.expire;
                            loggedin();    
                         }, 
                         error:function() { 
@@ -638,10 +654,16 @@
          // Update UI based on logged  or not
          function loggedin() {
             if(LOGGEDIN) {
-               $("a#login").text('Logout');
+               $("a#login").text('Logout').unbind('click').click(function() {
+                  TOK = '';
+                  LOGGEDIN = False;
+                  loggedin()
+               });
+               
             } 
             else {
                $("a#login").text('Login');
+               setup_login();
             }        
          }
          
