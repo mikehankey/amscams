@@ -206,6 +206,7 @@ def stack_day(day):
          resize = [PREVIEW_W,PREVIEW_H]
          #resize = None
          frames = load_video_frames(file, json_conf, limit, mask, crop, color, skip, resize)
+         print("COLOR?", frames[0].shape)
          if len(frames) == 0:
             print("NO frames bad vid?", file)
          else:

@@ -190,7 +190,7 @@ def stack_frames(frames,video_file,nowrite=0, resize=None):
    print("STACKED FILE IS:", stacked_file)
    if cfe(stacked_file) == 1 and nowrite == 0:
       #print("SKIP - Stack already done.") 
-      stacked_image = cv2.imread(stacked_file,0)
+      stacked_image = cv2.imread(stacked_file)
       return(stacked_file,stacked_image)
    for frame in frames:
       frame_pil = Image.fromarray(frame)
@@ -205,8 +205,8 @@ def stack_frames(frames,video_file,nowrite=0, resize=None):
          #bgr_image = cv2.cvtColor(image, cv2.COLOR_RGB2BGR)
          #cv2.imshow('pepe', bgr_image)
          #cv2.waitKey(0)
-         #cv2.imshow('pepe', image)
-         #cv2.waitKey(0)
+         cv2.imshow('pepe', image)
+         cv2.waitKey(0)
          cv2.imwrite(stacked_file, image)
          print ("Saved: ", stacked_file)
       else:
