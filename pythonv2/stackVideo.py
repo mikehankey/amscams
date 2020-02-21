@@ -92,8 +92,8 @@ def mont_min(files, cams):
             mont_img[y1:y2,x1:x2] = thumb
   
    mont_img = cv2.resize(mont_img, (900,506))
-   cv2.imshow('pepe', mont_img)
-   cv2.waitKey(70)
+   #cv2.imshow('pepe', mont_img)
+   #cv2.waitKey(70)
    print("MONT IMG:", mont_img.shape)
    cv2.imwrite(stack_arc_dir + min_mont_file , mont_img)
    print("SAVED:", stack_arc_dir + min_mont_file)

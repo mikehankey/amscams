@@ -205,8 +205,8 @@ def stack_frames(frames,video_file,nowrite=0, resize=None):
          #bgr_image = cv2.cvtColor(image, cv2.COLOR_RGB2BGR)
          #cv2.imshow('pepe', bgr_image)
          #cv2.waitKey(0)
-         cv2.imshow('pepe', image)
-         cv2.waitKey(0)
+         #cv2.imshow('pepe', image)
+         #cv2.waitKey(0)
          cv2.imwrite(stacked_file, image)
          print ("Saved: ", stacked_file)
       else:
