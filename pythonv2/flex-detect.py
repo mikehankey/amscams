@@ -9717,6 +9717,10 @@ def bound_169(cx,cy,width,height):
       cy2 = 1079
    return(cx1,cx2,cy1,cy2)
 
+def basic_scan(video_file):
+   sd_frames,sd_color_frames,sd_subframes,sum_vals,max_vals = load_frames_fast(sd_video_file, json_conf, 0, 0, [], 1,[])
+
+
 def injest(video_file):
    """ Function that will manually injest a daytime or non-detected meteor into the system
    """
