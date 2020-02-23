@@ -1,5 +1,8 @@
 #!/usr/bin/python3
 
+from lib.VIDEO_VARS import PREVIEW_W, PREVIEW_H, SD_W, SD_H
+
+
 from sklearn.cluster import DBSCAN
 from fitPairs import reduce_fit
 from lib.REDUCE_VARS import *
@@ -67,10 +70,10 @@ def finish_meteor(meteor_file):
       hd_meteors = None
    for i in range(0,len(sd_meteors)):
       sd_meteor = sd_meteors[i] 
-      sd_frames,sd_color_frames,sd_subframes,sum_vals,max_vals = load_frames_fast(sd_meteors[i]['trim_clip'], json_conf, 0, 0, [], 1,[])
+      sd_frames,sd_color_frames,sd_subframes,sum_vals,max_vals,pos_vals = load_frames_fast(sd_meteors[i]['trim_clip'], json_conf, 0, 0, [], 1,[])
       if i < len(hd_meteors):
          hd_meteor = hd_meteors[i] 
-         hd_frames,hd_color_frames,hd_subframes,sum_vals,max_vals = load_frames_fast(hd_meteors[i]['trim_clip'], json_conf, 0, 0, [], 1,[])
+         hd_frames,hd_color_frames,hd_subframes,sum_vals,max_vals,pos_vals = load_frames_fast(hd_meteors[i]['trim_clip'], json_conf, 0, 0, [], 1,[])
       else:
          hd_meteor = None
 
@@ -539,7 +542,7 @@ def stack_non_meteors():
       print("STACK:", stack_file, data)
       #if cfe(stack_file) == 0:
       if True:
-         frames,color_frames,subframes,sum_vals,max_vals = load_frames_fast(file, json_conf, 0, 0, [], 0,[])
+         frames,color_frames,subframes,sum_vals,max_vals,pos_vals = load_frames_fast(file, json_conf, 0, 0, [], 0,[])
          stacked_file, stacked_image = stack_frames(frames, file, 0)
          for obj in data:
             x1,y1,x2,y2 = minmax_xy(obj)
@@ -784,7 +787,7 @@ def detect_meteor_in_clip(trim_clip, frames = None, fn = 0, crop_x = 0, crop_y =
 
    if frames is None :
         
-      frames,color_frames,subframes,sum_vals,max_vals = load_frames_fast(trim_clip, json_conf, 0, 1, [], 0,[])
+      frames,color_frames,subframes,sum_vals,max_vals,pos_vals = load_frames_fast(trim_clip, json_conf, 0, 1, [], 0,[])
    if len(frames) == 0:
       return(objects, []) 
 
@@ -1106,7 +1109,7 @@ def refit_arc_meteor(archive_file):
 
    cat_stars = flex_get_cat_stars(archive_file, archive_file, json_conf, cal_params )
 
-   hd_frames,hd_color_frames,hd_subframes,sum_vals,max_vals = load_frames_fast(hd_vid, json_conf, 0, 0, [], 1,[])
+   hd_frames,hd_color_frames,hd_subframes,sum_vals,max_vals,pos_vals = load_frames_fast(hd_vid, json_conf, 0, 0, [], 1,[])
    frame = hd_frames[0]
    cframe = hd_color_frames[0]
 
@@ -1215,16 +1218,16 @@ def apply_calib(obj , frames=None , user_station = None):
    if frames is None:
       if obj['hd_trim'] != 0:
          if cfe(obj['hd_trim']) == 1:   
-            hd_frames,hd_color_frames,hd_subframes,sum_vals,max_vals = load_frames_fast(obj['hd_trim'], json_conf, 0, 0, [], 0,[])
+            hd_frames,hd_color_frames,hd_subframes,sum_vals,max_vals,pos_vals = load_frames_fast(obj['hd_trim'], json_conf, 0, 0, [], 0,[])
             print("HD FRAMES:", len(hd_frames))
          elif "/mnt/ams2/HD/" in obj['hd_trim']:
             fl = obj['hd_trim'].split("/")[-1]
             m_date = fl[0:10]
             print("NEED TO UPDATE THE FILE PLEASE!", m_date, fl)
             obj['hd_trim'] = obj['hd_trim'].replace("/mnt/ams2/HD/", "/mnt/ams2/meteors/" + m_date + "/" )
-            hd_frames,hd_color_frames,hd_subframes,sum_vals,max_vals = load_frames_fast(obj['hd_trim'], json_conf, 0, 0, [], 0,[])
+            hd_frames,hd_color_frames,hd_subframes,sum_vals,max_vals,pos_vals = load_frames_fast(obj['hd_trim'], json_conf, 0, 0, [], 0,[])
       else:
-         hd_frames,hd_color_frames,hd_subframes,sum_vals,max_vals = load_frames_fast(obj['trim_clip'], json_conf, 0, 0, [], 0,[])
+         hd_frames,hd_color_frames,hd_subframes,sum_vals,max_vals,pos_vals = load_frames_fast(obj['trim_clip'], json_conf, 0, 0, [], 0,[])
          print("SD FRAMES:", len(hd_frames))
 
    frame = frames[0]
@@ -1415,7 +1418,7 @@ def update_intensity(json_file):
    ff_file = json_file.replace(".json", "-lc-ff.png")
    data = load_json_file(json_file)
    hd_file = json_file.replace(".json", "-HD.mp4")
-   hd_frames,hd_color_frames,hd_subframes,sum_vals,max_vals = load_frames_fast(hd_file, json_conf, 0, 0, [], 0,[])
+   hd_frames,hd_color_frames,hd_subframes,sum_vals,max_vals,pos_vals = load_frames_fast(hd_file, json_conf, 0, 0, [], 0,[])
     
 
    sync = data['sync']['hd_ind'] - data['sync']['sd_ind']
@@ -1894,7 +1897,7 @@ def fix_up_points(json_file, frames=None, save=1):
   
    hd_file = json_file.replace(".json", "-HD.mp4") 
     
-   hd_frames,hd_color_frames,hd_subframes,sum_vals,max_vals = load_frames_fast(hd_file, json_conf, 0, 0, [], 0,[])
+   hd_frames,hd_color_frames,hd_subframes,sum_vals,max_vals,pos_vals = load_frames_fast(hd_file, json_conf, 0, 0, [], 0,[])
    x_dir_mod,y_dir_mod = meteor_dir(new_frames[0]['x'], new_frames[0]['y'], new_frames[-1]['x'], new_frames[-1]['y'])
    dom,z,med_dist,med_seg,mxd,myd = line_info(new_frames) 
    avg_dist = calc_dist((new_frames[0]['x'],new_frames[0]['y']),(new_frames[-1]['x'], new_frames[-1]['y'])) / len(new_frames)
@@ -2149,7 +2152,7 @@ def fix_arc_points(json_file):
       json_conf_file = "/mnt/ams2/meteor_archive/" + st_id + "/CAL/as6.json"  
       json_conf = load_json_file(json_conf_file)
    hd_file = json_file.replace(".json", "-HD.mp4")
-   hd_frames,hd_color_frames,hd_subframes,sum_vals,max_vals = load_frames_fast(hd_file, json_conf, 0, 0, [], 0,[])
+   hd_frames,hd_color_frames,hd_subframes,sum_vals,max_vals,pos_vals = load_frames_fast(hd_file, json_conf, 0, 0, [], 0,[])
    print("HD FRAMES:", len(hd_frames))
    print("HD SUB FRAMES FRAMES:", len(hd_subframes))
    if 'x_dir_mod' in json_data['report']:
@@ -2467,7 +2470,7 @@ def fit_arc_file(json_file):
    master_lens_file = "/mnt/ams2/meteor_archive/" + station + "/CAL/master_lens_model/master_cal_file_" + cam + ".json"
 
    hd_file = json_file.replace(".json", "-HD.mp4")
-   hd_frames,hd_color_frames,hd_subframes,sum_vals,max_vals = load_frames_fast(hd_file, json_conf, 0, 0, [], 0,[])
+   hd_frames,hd_color_frames,hd_subframes,sum_vals,max_vals,pos_vals = load_frames_fast(hd_file, json_conf, 0, 0, [], 0,[])
    frame = hd_frames[0]
 
    calib = json_data['calib']
@@ -2984,7 +2987,7 @@ def refine_points_old(hd_crop, frames = None, color_frames = None):
    scy = 10
    #hd_x1, hd_y1, hd_cw, hd_ch = crop_box
    if frames is None: 
-      frames,color_frames,subframes,sum_vals,max_vals = load_frames_fast(hd_crop, json_conf, 0, 0, [], 0,[])
+      frames,color_frames,subframes,sum_vals,max_vals,pos_vals = load_frames_fast(hd_crop, json_conf, 0, 0, [], 0,[])
    fn = 0
 
    motion_objects,meteor_frames = detect_meteor_in_clip(hd_crop, frames, 0)
@@ -3448,7 +3451,7 @@ def remaster_arc(video_file):
       json_file = video_file.replace("-SD.mp4", ".json")
    out_file = video_file.replace(".mp4", "-pub.mp4")
    jd = load_json_file(json_file)
-   frames,color_frames,subframes,sum_vals,max_vals = load_frames_fast(video_file, json_conf, 0, 0, [], 1,[])
+   frames,color_frames,subframes,sum_vals,max_vals,pos_vals = load_frames_fast(video_file, json_conf, 0, 0, [], 1,[])
    fds = jd['frames']
    meteor_obj = {}
    meteor_obj['oxs'] = []
@@ -5812,7 +5815,7 @@ def quickest_scan(video_file):
       return()
 
    # load the frames
-   frames,color_frames,subframes,sum_vals,max_vals = load_frames_fast(video_file, json_conf, 0, 0, [], 0,[])
+   frames,color_frames,subframes,sum_vals,max_vals,pos_vals = load_frames_fast(video_file, json_conf, 0, 0, [], 0,[])
    elapsed_time = time.time() - start_time
 
    vals = {}
@@ -6084,7 +6087,7 @@ def quick_scan(video_file, old_meteor = 0):
    print("STATION:", station_id, video_file, start_time)
 
    # load the frames
-   frames,color_frames,subframes,sum_vals,max_vals = load_frames_fast(video_file, json_conf, 0, 0, [], 0,[])
+   frames,color_frames,subframes,sum_vals,max_vals,pos_vals = load_frames_fast(video_file, json_conf, 0, 0, [], 0,[])
    elapsed_time = time.time() - start_time
    print("Total Frames:", len(frames))
    print("Loaded frames.", elapsed_time)
@@ -6325,7 +6328,7 @@ def quick_scan(video_file, old_meteor = 0):
 def restack(file):
 
    if cfe(file) == 1:
-      frames,color_frames,subframes,sum_vals,max_vals = load_frames_fast(file, json_conf, 0, 0, [], 0,[])
+      frames,color_frames,subframes,sum_vals,max_vals,pos_vals = load_frames_fast(file, json_conf, 0, 0, [], 0,[])
       print("RESTACK: ", file, len(frames))
       stack = stack_frames_fast(frames, 1)
       stack_file = file.replace(".mp4", "-stacked.png")
@@ -6407,8 +6410,8 @@ def sync_hd_sd_frames(obj):
    print("SD TRIM:", obj['trim_clip'])
    sd_trim_num = get_trim_num(obj['trim_clip'])
    first_sd_frame = obj['ofns'][0]
-   sd_frames,sd_color_frames,sd_subframes,sd_sum_vals,sd_max_vals = load_frames_fast(obj['trim_clip'], json_conf, 0, 0, [], 1,[])
-   hd_frames,hd_color_frames,hd_subframes,hd_sum_vals,hd_max_vals = load_frames_fast(obj['hd_trim'], json_conf, 0, 0, [], 1,[])
+   sd_frames,sd_color_frames,sd_subframes,sd_sum_vals,sd_max_vals,pos_vals = load_frames_fast(obj['trim_clip'], json_conf, 0, 0, [], 1,[])
+   hd_frames,hd_color_frames,hd_subframes,hd_sum_vals,hd_max_vals,pos_vals = load_frames_fast(obj['hd_trim'], json_conf, 0, 0, [], 1,[])
 
    hd_objects,trash = detect_meteor_in_clip(obj['hd_trim'], hd_frames, 0, 0, 0)
    sd_objects,trash = detect_meteor_in_clip(obj['trim_clip'], sd_frames, 0, 0,0)
@@ -7321,10 +7324,12 @@ def check_event_for_motion(subframes, objects, fn):
    return(motion_events, objects)      
 
 
-def stack_frames_fast(frames, skip = 1):
+def stack_frames_fast(frames, skip = 1, resize=None):
    stacked_image = None
    fc = 0
    for frame in frames:
+      if resize is not None:
+         frame = cv2.resize(frame, (resize[0],resize[1]))
       if fc % skip == 0:
          frame_pil = Image.fromarray(frame)
          if stacked_image is None:
@@ -7361,6 +7366,7 @@ def load_frames_fast(trim_file, json_conf, limit=0, mask=0,crop=(),color=0,resiz
    frames = []
    subframes = []
    sum_vals = []
+   pos_vals = []
    max_vals = []
    frame_count = 0
    go = 1
@@ -7410,6 +7416,7 @@ def load_frames_fast(trim_file, json_conf, limit=0, mask=0,crop=(),color=0,resiz
                   max_val = 0
                sum_vals.append(sum_val)
                max_vals.append(max_val)
+               pos_vals.append((mx,my))
 
             if len(crop) == 4:
                ih,iw = frame.shape
@@ -7441,7 +7448,7 @@ def load_frames_fast(trim_file, json_conf, limit=0, mask=0,crop=(),color=0,resiz
    if len(crop) == 4:
       return(frames,x1,y1)
    else:
-      return(frames, color_frames, subframes, sum_vals, max_vals)
+      return(frames, color_frames, subframes, sum_vals, max_vals,pos_vals)
 
 
 def update_hd_path(file):
@@ -7655,7 +7662,7 @@ def review_meteor(video_file):
    stack_file = video_file.replace(".mp4", "-stacked.png")
    trim_num = get_trim_num(video_file)
 
-   frames,color_frames,subframes,sum_vals,max_vals = load_frames_fast(video_file, json_conf, 0, 0, [], 0,[])
+   frames,color_frames,subframes,sum_vals,max_vals,pos_vals = load_frames_fast(video_file, json_conf, 0, 0, [], 0,[])
 
 
    if cfe(stack_file) == 1:
@@ -7679,14 +7686,14 @@ def review_meteor(video_file):
       half_stack_file = hd_trim.replace(".mp4", "half-stack.png")
       if cfe(hd_stack_file) == 0:
          print("HD STACK NOT EXIST")
-         hd_frames,hd_color_frames,hd_subframes,sum_vals,max_vals = load_frames_fast(hd_trim, json_conf, 0, 0, [], 0,[])
+         hd_frames,hd_color_frames,hd_subframes,sum_vals,max_vals,pos_vals = load_frames_fast(hd_trim, json_conf, 0, 0, [], 0,[])
          if cfe(hd_crop_file) == 1:
-            hd_crop_frames,hd_crop_color_frames,hd_crop_subframes,sum_vals,max_vals = load_frames_fast(hd_crop_file, json_conf, 0, 0, [], 0,[])
+            hd_crop_frames,hd_crop_color_frames,hd_crop_subframes,sum_vals,max_vals,pos_vals = load_frames_fast(hd_crop_file, json_conf, 0, 0, [], 0,[])
          else:
             # make hd crop file and then load it in
             hd_crop_file, crop_box = crop_hd(fd, meteor_frames[0])
             fd['hd_crop_file'] = hd_crop_file
-            hd_crop_frames,hd_crop_color_frames,hd_crop_subframes,sum_vals,max_vals = load_frames_fast(hd_crop_file, json_conf, 0, 0, [], 0,[])
+            hd_crop_frames,hd_crop_color_frames,hd_crop_subframes,sum_vals,max_vals,pos_vals = load_frames_fast(hd_crop_file, json_conf, 0, 0, [], 0,[])
 
          print("HDTRIM: ", hd_trim)
          print("HDCROP: ", hd_crop_file)
@@ -7700,16 +7707,16 @@ def review_meteor(video_file):
          cv2.imwrite(half_stack_file, half_stack_img) 
       else:
          print("HD STACK EXISTS")
-         hd_frames,hd_color_frames,hd_subframes,sum_vals,max_vals = load_frames_fast(hd_trim, json_conf, 0, 0, [], 0,[])
+         hd_frames,hd_color_frames,hd_subframes,sum_vals,max_vals,pos_vals = load_frames_fast(hd_trim, json_conf, 0, 0, [], 0,[])
          print("HD CROP ", hd_crop_file)
 
          if cfe(hd_crop_file) == 1:
-            hd_crop_frames,hd_crop_color_frames,hd_crop_subframes,sum_vals,max_vals = load_frames_fast(hd_crop_file, json_conf, 0, 0, [], 0,[])
+            hd_crop_frames,hd_crop_color_frames,hd_crop_subframes,sum_vals,max_vals,pos_vals = load_frames_fast(hd_crop_file, json_conf, 0, 0, [], 0,[])
          else:
             # make hd crop file and then load it in
             hd_crop_file, crop_box = crop_hd(fd, frames[0])
             fd['hd_crop_file'] = hd_crop_file
-            hd_crop_frames,hd_crop_color_frames,hd_crop_subframes,sum_vals,max_vals = load_frames_fast(hd_crop_file, json_conf, 0, 0, [], 0,[])
+            hd_crop_frames,hd_crop_color_frames,hd_crop_subframes,sum_vals,max_vals,pos_vals = load_frames_fast(hd_crop_file, json_conf, 0, 0, [], 0,[])
          hd_stack_img = cv2.imread(hd_stack_file)
          if cfe(half_stack_file) == 1:
             half_stack_img = cv2.imread(half_stack_file)
@@ -8423,7 +8430,7 @@ def debug2(video_file):
          return()
 
    # load SD frames
-   sd_frames,sd_color_frames,sd_subframes,sd_sum_vals,sd_max_vals = load_frames_fast(video_file, json_conf, 0, 0, [], 1,[])
+   sd_frames,sd_color_frames,sd_subframes,sd_sum_vals,sd_max_vals,pos_vals = load_frames_fast(video_file, json_conf, 0, 0, [], 1,[])
 
    # load HD frames
    if hd_trim is not None and hd_trim != 0:
@@ -8436,7 +8443,7 @@ def debug2(video_file):
       hd_good = 0
    if hd_good == 1:
       if cfe(hd_trim) == 1 and hd_good == 1:
-         hd_frames,hd_color_frames,hd_subframes,hd_sum_vals,hd_max_vals = load_frames_fast(hd_trim, json_conf, 0, 0, [], 1,[])
+         hd_frames,hd_color_frames,hd_subframes,hd_sum_vals,hd_max_vals,pos_vals = load_frames_fast(hd_trim, json_conf, 0, 0, [], 1,[])
          org_hd_vid = hd_trim 
       else:
          hd_good = 0
@@ -8451,7 +8458,7 @@ def debug2(video_file):
       save_json_file(old_meteor_json_file, md)
       hd_trim = new_video_file
       if cfe(hd_trim) == 1:
-         hd_frames,hd_color_frames,hd_subframes,hd_sum_vals,hd_max_vals = load_frames_fast(hd_trim, json_conf, 0, 0, [], 1,[])
+         hd_frames,hd_color_frames,hd_subframes,hd_sum_vals,hd_max_vals,pos_vals = load_frames_fast(hd_trim, json_conf, 0, 0, [], 1,[])
       else:
          print("HD FIX FAILED!")
          exit()
@@ -9083,14 +9090,14 @@ def debug(video_file):
 
 
    # load SD & HD frames
-   frames,color_frames,subframes,sum_vals,max_vals = load_frames_fast(video_file, json_conf, 0, 0, [], 1,[])
+   frames,color_frames,subframes,sum_vals,max_vals,pos_vals = load_frames_fast(video_file, json_conf, 0, 0, [], 1,[])
    if "/mnt/ams2/HD" in hd_trim:
       mfn = hd_trim.split("/")[-1]
       mday = mfn[0:10]
       hd_trim = "/mnt/ams2/meteors/" + mday + "/" + mfn
 
    if cfe(hd_trim) == 1:
-      hd_frames,hd_color_frames,hd_subframes,hd_sum_vals,hd_max_vals = load_frames_fast(hd_trim, json_conf, 0, 0, [], 1,[])
+      hd_frames,hd_color_frames,hd_subframes,hd_sum_vals,hd_max_vals,pos_vals = load_frames_fast(hd_trim, json_conf, 0, 0, [], 1,[])
       org_hd_vid = hd_trim 
    else:
       org_hd_vid = None 
@@ -9717,8 +9724,70 @@ def bound_169(cx,cy,width,height):
       cy2 = 1079
    return(cx1,cx2,cy1,cy2)
 
+
+def ffmpeg_trim_crop(video_file,start,end,x,y,w,h):
+   """ Take in video filename start and end trim clip frame numbers and ROI 
+       And then make a file -crop.mp4 with those params
+   """
+
+   # first trim the clip to a temp file
+   start_sec = start / 25
+   dur = (end - start ) / 25
+   if dur < 1:
+      dur = "01"
+   elif dur < 10:
+      dur = "0" + str(dur)
+   trim_out_file = video_file.replace(".mp4", "-trim-" + str(start) + ".mp4")
+   crop_out_file = video_file.replace(".mp4", "-trim-" + str(start) + "-crop.mp4")
+
+   cmd = "ffmpeg -i " + video_file + " -ss 00:00:" + str(start_sec) + " -t 00:00:" + str(dur) + " -c copy " + trim_out_file 
+   print(cmd)
+   os.system(cmd)
+
+   crop = "crop=" + str(w) + ":" + str(h) + ":" + str(x) + ":" + str(y)
+   
+   cmd = "ffmpeg -y -i " + trim_out_file + " -filter:v \"" + crop + "\" " + crop_out_file
+   print(cmd)
+   os.system(cmd)
+
+
 def basic_scan(video_file):
-   sd_frames,sd_color_frames,sd_subframes,sum_vals,max_vals = load_frames_fast(sd_video_file, json_conf, 0, 0, [], 1,[])
+
+   vals = {}   
+   start_time = time.time() 
+   sd_frames,sd_color_frames,sd_subframes,sum_vals,max_vals,pos_vals = load_frames_fast(video_file, json_conf, 0, 0, [], 1,[])
+   vals['sum_vals'] = sum_vals
+   vals['max_vals'] = max_vals
+   vals['pos_vals'] = pos_vals
+   vals_file = video_file.replace(".mp4", "-vals.json")
+   save_json_file(vals_file, vals, True)
+   elapsed_time = time.time() - start_time
+   print("LOAD & SCAN TIME:", elapsed_time)
+   stacked_image = stack_frames_fast(sd_color_frames, 1, [PREVIEW_W, PREVIEW_H])
+
+   elapsed_time = time.time() - start_time
+   cv2.imwrite("/var/www/html/test.png", stacked_image)
+   print("/var/www/html/test.png")
+   print("STACK TIME:", elapsed_time)
+
+   events, pos_meteors = fast_check_events(sum_vals, max_vals, sd_subframes)
+   for ev in events:
+      print("EVENT:", ev )
+   for pp in pos_meteors:
+      if pos_meteors[pp]['report']['meteor_yn'] == "Y":
+         print(pp, pos_meteors[pp] ) 
+         start = pos_meteors[pp]['ofns'][0]
+         end = pos_meteors[pp]['ofns'][-1]
+         min_x = min(pos_meteors[pp]['oxs'])
+         max_x = max(pos_meteors[pp]['oxs'])
+         min_y = min(pos_meteors[pp]['oys'])
+         max_y = max(pos_meteors[pp]['oys'])
+         w = max_x - min_x
+         h = max_y - min_y
+         ffmpeg_trim_crop(video_file,start,end,min_x,min_y,w,h)
+
+   elapsed_time = time.time() - start_time
+   print("DETECT TIME:", elapsed_time)
 
 
 def injest(video_file):
@@ -9757,7 +9826,7 @@ def injest(video_file):
 
 
    # load frames from SD video file
-   sd_frames,sd_color_frames,sd_subframes,sum_vals,max_vals = load_frames_fast(sd_video_file, json_conf, 0, 0, [], 1,[])
+   sd_frames,sd_color_frames,sd_subframes,sum_vals,max_vals,pos_vals = load_frames_fast(sd_video_file, json_conf, 0, 0, [], 1,[])
    # check for events and possible meteors in frames
    events, pos_meteors = fast_check_events(sum_vals, max_vals, sd_subframes)
 
@@ -10032,4 +10101,6 @@ if cmd == "bmpi" :
    batch_make_preview_image(sys.argv[2])
 if cmd == "fm" :
    finish_meteor(sys.argv[2])
+if cmd == "basic" :
+   basic_scan(sys.argv[2])
 
