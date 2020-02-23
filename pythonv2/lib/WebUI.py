@@ -694,7 +694,7 @@ def controller(json_conf):
    if cmd == 'browse_day':
       day = form.getvalue('day')
       cams_id = form.getvalue('cams_id')
-      browse_day(day, cams_id,json_conf)
+      browse_day(day, cams_id,json_conf,form)
    if cmd == 'reset':
       video_file = form.getvalue('video_file')
       type = form.getvalue('reset')
@@ -2556,10 +2556,11 @@ def print_css():
    """)
 
 
-def browse_day(day,cams_id,json_conf):
+def browse_day(day,cams_id,json_conf,form):
    #cgitb.enable()
-
-   day_files = get_day_files(day,cams_id,json_conf)
+   sun = form.getvalue("sun")
+   hour = form.getvalue("hour")
+   day_files = get_day_files(day,cams_id,json_conf, sun, hour)
  
    cc = 0
    all_files = []
