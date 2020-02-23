@@ -187,7 +187,7 @@ def get_trims_for_file(video_file):
    pending_files = glob.glob(pending_dir)  
    return(fail_files, meteor_files, pending_files)
 
-def get_day_files(day, cams_id, json_conf):
+def get_day_files(day, cams_id, json_conf, sun=None,in_hour=None):
    file_info = {} 
    proc_dir = json_conf['site']['proc_dir']
    
@@ -199,30 +199,23 @@ def get_day_files(day, cams_id, json_conf):
    for file in sorted(temp_files, reverse=True):
       if "trim" not in file and file != "/" and cams_id in file:
          base_file = file.replace(".mp4", "")
-         file_info[base_file] = ""
+         (f_datetime, cam, f_date_str,fy,fm,fd, fh, fmin, fs) = convert_filename_to_date_cam(file)
+         sun_status,sun_az,sun_el = get_sun_info(f_date_str,json_conf)
+         if in_hour is not None:
+            if int(in_hour) == int(fh):
+               #print(sun,in_hour, fh, "<BR>")
+               file_info[base_file] = ""
+
+         else:
+            
+            if sun is None:
+               if int(sun_el) < 0:
+                  file_info[base_file] = ""
+            else:
+               if int(sun_el) > 0:
+                  file_info[base_file] = ""
+         
  
-   for file in failed_files : 
-      if cams_id in file:
-         junk = file.split("-trim")
-         base_file = junk[0]
-         base_file = base_file.replace("/failed/", "")
-         if base_file != '/':
-            file_info[base_file] = "failed"
- 
-   for file in meteor_files : 
-      if cams_id in file:
-         junk = file.split("-trim")
-         base_file = junk[0]
-         base_file = base_file.replace("/passed/", "")
-         if base_file != '/':
-            file_info[base_file] = "meteor"
- 
-   for file in pending_files: 
-      if cams_id in file:
-         junk = file.replace("-trim", "")
-         base_file = junk[0]
-         if base_file != '/':
-            file_info[base_file] = "pending"
 
    return(file_info)
 
