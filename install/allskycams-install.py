@@ -273,6 +273,12 @@ def setup_as6_conf():
       save_json_file("/home/ams/amscams/conf/as6.json", json_conf) 
       print("conf file saved.")
 
+def setup_vpn():
+   url = input("Enter URL")
+   pass_file = url.replace(".ovpn", ".txt")
+   os.system("wget " + url + " -O /etc/openvpn/as6vpn.ovpn")
+   os.system("wget " + pass_file + " -O /etc/openvpn/as6vpn.txt")
+   
 
 #get_repos()
 #setup_network_interface()
@@ -280,4 +286,5 @@ def setup_as6_conf():
 
 #setup_as6_conf()
 
-setup_dirs()
+#setup_dirs()
+setup_vpn()
