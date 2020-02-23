@@ -1,7 +1,8 @@
 #!/usr/bin/python3
 
 from lib.VIDEO_VARS import PREVIEW_W, PREVIEW_H, SD_W, SD_H
-
+hdm_x = 1920 / SD_W
+hdm_y = 1080 / SD_H
 
 from sklearn.cluster import DBSCAN
 from fitPairs import reduce_fit
@@ -7401,9 +7402,10 @@ def load_frames_fast(trim_file, json_conf, limit=0, mask=0,crop=(),color=0,resiz
                #subframe = mask_frame(subframe, [], masks, 5)
                sum_val =cv2.sumElems(subframe)[0]
   
-               if sum_val > 1000 and last_last_frame is not None:
-                  subframe = cv2.subtract(subframe, last_last_frame)
-                  sum_val =cv2.sumElems(subframe)[0]
+               if sum_val > 10 and last_last_frame is not None:
+                  _, thresh_frame = cv2.threshold(subframe, 15, 255, cv2.THRESH_BINARY)
+
+                  sum_val =cv2.sumElems(thresh_frame)[0]
                subframes.append(subframe)
 
 
@@ -8973,13 +8975,13 @@ def find_crop_size(min_x,min_y,max_x,max_y):
 
    if (best_w/2) + mid_x > 1920:
       cx1 = mid_x + (best_w + mid_x ) - 1920 
-      cx1 = 1920 - best_w 
+      cx1 = 1919 - best_w 
    elif mid_x - (best_w/2) < 0:
       cx1 = 0
    else:
       cx1 = int(mid_x - (best_w/2))
    if (best_h/2) + mid_y > 1080:
-      cy1 = 1080 - best_h 
+      cy1 = 1079 - best_h 
    elif mid_y - (best_h/2) < 0:
       cy1 = 0
    else:
@@ -9725,30 +9727,141 @@ def bound_169(cx,cy,width,height):
    return(cx1,cx2,cy1,cy2)
 
 
-def ffmpeg_trim_crop(video_file,start,end,x,y,w,h):
+def ffmpeg_trim_crop(video_file,start,end,x,y,w,h, notrim=0):
    """ Take in video filename start and end trim clip frame numbers and ROI 
        And then make a file -crop.mp4 with those params
    """
 
    # first trim the clip to a temp file
-   start_sec = start / 25
-   dur = (end - start ) / 25
-   if dur < 1:
-      dur = "01"
-   elif dur < 10:
-      dur = "0" + str(dur)
-   trim_out_file = video_file.replace(".mp4", "-trim-" + str(start) + ".mp4")
-   crop_out_file = video_file.replace(".mp4", "-trim-" + str(start) + "-crop.mp4")
+   if notrim == 0:
+      start_sec = int(start / 25) - 1
+      dur = int((end - start ) / 25) + 1
+      if start_sec < 10:
+         start_sec = "0" + str(start_sec)
+      if dur < 2:
+         dur = "02"
+      elif dur < 10:
+         dur = "0" + str(dur)
+      trim_out_file = video_file.replace(".mp4", "-trim-" + str(start) + ".mp4")
+      crop_out_file = video_file.replace(".mp4", "-trim-" + str(start) + "-crop.mp4")
 
-   cmd = "ffmpeg -i " + video_file + " -ss 00:00:" + str(start_sec) + " -t 00:00:" + str(dur) + " -c copy " + trim_out_file 
-   print(cmd)
-   os.system(cmd)
+      cmd = "/usr/bin/ffmpeg -i " + video_file + " -ss 00:00:" + str(start_sec) + " -t 00:00:" + str(dur) + " -c copy " + trim_out_file 
+      print(cmd)
+      os.system(cmd)
 
    crop = "crop=" + str(w) + ":" + str(h) + ":" + str(x) + ":" + str(y)
    
-   cmd = "ffmpeg -y -i " + trim_out_file + " -filter:v \"" + crop + "\" " + crop_out_file
+   cmd = "/usr/bin/ffmpeg -y -i " + trim_out_file + " -filter:v \"" + crop + "\" " + crop_out_file
    print(cmd)
    os.system(cmd)
+
+def find_hd(sd_file):
+   # first try to find a trim clip if it exists already
+   # if not found, try to find the full minute file
+   # return trim clip or full min file
+
+
+   (sd_datetime, sd_cam, sd_date, sd_y, sd_m, sd_d, sd_h, sd_M, sd_s) = convert_filename_to_date_cam(sd_file)
+   hd_glob = "/mnt/ams3/HD/" + sd_y + "_" + sd_m + "_" + sd_d + "_" + sd_h + "_*" + sd_cam + "*.mp4"
+   print("HD:", hd_glob)
+   hd_files = sorted(glob.glob(hd_glob))
+   hd = []
+   for hd_file in hd_files:
+      (hd_datetime, hd_cam, hd_date, hd_y, hd_m, hd_d, hd_h, hd_M, hd_s) = convert_filename_to_date_cam(hd_file)
+      t_diff = (hd_datetime - sd_datetime).total_seconds()
+      hd.append((hd_file,t_diff,abs(t_diff)))
+   hd_sort = sorted(hd, key=lambda x: x[2], reverse=False)     
+   return(hd_sort)
+
+
+def detect_in_vals(vals_file):
+   video_file = vals_file.replace("-vals.json", ".mp4")
+   print("YO")
+   data = load_json_file(vals_file)
+   events = []
+   data_x = []
+   data_y = []
+   cm =0
+   last_i = None
+   for i in range(0,len(data['max_vals'])):
+      x,y = data['pos_vals'][i]
+      max_val = data['max_vals'][i]
+      if max_val > 10:
+         if last_i is not None and  last_i + 1 == i:
+            cm += 1
+         else:
+            cm = 0
+         data_x.append(x)
+         data_y.append(y)
+         print(i, x,y, max_val, cm)
+      else:
+         if cm >= 3:
+            e_end = i
+            e_start = i - cm
+            #e_start -= 5
+            #e_end += 5
+            event = {}
+            event['frames'] = [e_start,e_end]
+            event['pos_vals'] = data['pos_vals'][e_start:e_end]
+            event['max_vals'] = data['max_vals'][e_start:e_end]
+            event['sum_vals'] = data['sum_vals'][e_start:e_end]
+            events.append(event)
+         cm = 0
+      last_i = i
+
+   for ev in events:
+      print("EVENT:", ev )
+      xs = []
+      ys = []
+      for x,y in ev['pos_vals']:
+         xs.append(int(x*hdm_x))
+         ys.append(int(y*hdm_y))
+      min_x = min(xs)
+      max_x = max(xs)
+      max_y = max(ys)
+      min_y = min(ys)
+      print(min_x,max_x,min_y,max_y)
+      cx1,cy1,cx2,cy2,mid_x,mid_y = find_crop_size(min_x, min_y, max_x,max_y)
+      hds = find_hd(video_file)
+      if len(hds) > 0:
+         # We have an HD File.
+         hd_vid = hds[0][0]
+         if "trim" in hd_vid:
+            ffmpeg_trim_crop(hd_vid,ev['frames'][0],ev['frames'][1],cx1,cy1,cx2-cx1,cy2-cy1,no_trim=1)
+         else:
+            ffmpeg_trim_crop(hd_vid,ev['frames'][0],ev['frames'][1],cx1,cy1,cx2-cx1,cy2-cy1,no_trim=1)
+
+      # downsample ROI
+      cx1,cx2,cy1,cy2 = int(cx1/hdm_x), int(cx2/hdm_x), int(cy1/hdm_y), int(cy2/hdm_y)
+      ffmpeg_trim_crop(video_file,ev['frames'][0],ev['frames'][1],cx1,cy1,cx2-cx1,cy2-cy1)
+
+
+
+
+def plot_vals(vals_file):
+   data = load_json_file(vals_file)
+   
+   import matplotlib
+   matplotlib.use('Agg')
+   import matplotlib.pyplot as plt
+   fig = plt.figure()
+   data_x = []
+   data_y = []
+   for i in range(0,len(data['max_vals'])):
+      x,y = data['pos_vals'][i]
+      max_val = data['max_vals'][i]
+      if max_val > 10:
+         data_x.append(x)
+         data_y.append(y)
+         print(i, x,y, max_val)
+
+   plt.scatter(data_x, data_y)
+   ax = plt.gca()
+   ax.invert_yaxis()
+
+   curve_file = "/var/www/html/plot.png"
+   fig.savefig(curve_file, dpi=100)
+   plt.close()
 
 
 def basic_scan(video_file):
@@ -10103,4 +10216,8 @@ if cmd == "fm" :
    finish_meteor(sys.argv[2])
 if cmd == "basic" :
    basic_scan(sys.argv[2])
+if cmd == "plot_vals" :
+   plot_vals(sys.argv[2])
+if cmd == "detect_in_vals" :
+   detect_in_vals(sys.argv[2])
 
