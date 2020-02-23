@@ -9733,7 +9733,7 @@ def ffmpeg_trim_crop(video_file,start,end,x,y,w,h, notrim=0):
    """
 
    # first trim the clip to a temp file
-   if notrim == 0:
+   if True:
       start_sec = int(start / 25) - 1
       dur = int((end - start ) / 25) + 1
       if start_sec < 10:
@@ -9742,12 +9742,16 @@ def ffmpeg_trim_crop(video_file,start,end,x,y,w,h, notrim=0):
          dur = "02"
       elif dur < 10:
          dur = "0" + str(dur)
+
+   if notrim == 0:
       trim_out_file = video_file.replace(".mp4", "-trim-" + str(start) + ".mp4")
       crop_out_file = video_file.replace(".mp4", "-trim-" + str(start) + "-crop.mp4")
-
       cmd = "/usr/bin/ffmpeg -i " + video_file + " -ss 00:00:" + str(start_sec) + " -t 00:00:" + str(dur) + " -c copy " + trim_out_file 
       print(cmd)
       os.system(cmd)
+   else:
+      trim_out_file = video_file 
+      crop_out_file = video_file.replace(".mp4", "-crop.mp4")
 
    crop = "crop=" + str(w) + ":" + str(h) + ":" + str(x) + ":" + str(y)
    
@@ -9827,11 +9831,11 @@ def detect_in_vals(vals_file):
          # We have an HD File.
          hd_vid = hds[0][0]
          if "trim" in hd_vid:
-            ffmpeg_trim_crop(hd_vid,ev['frames'][0],ev['frames'][1],cx1,cy1,cx2-cx1,cy2-cy1,no_trim=1)
+            ffmpeg_trim_crop(hd_vid,ev['frames'][0],ev['frames'][1],cx1,cy1,cx2-cx1,cy2-cy1,1)
          else:
-            ffmpeg_trim_crop(hd_vid,ev['frames'][0],ev['frames'][1],cx1,cy1,cx2-cx1,cy2-cy1,no_trim=1)
+            ffmpeg_trim_crop(hd_vid,ev['frames'][0],ev['frames'][1],cx1,cy1,cx2-cx1,cy2-cy1,0)
 
-      # downsample ROI
+      # trim and crop the SD file
       cx1,cx2,cy1,cy2 = int(cx1/hdm_x), int(cx2/hdm_x), int(cy1/hdm_y), int(cy2/hdm_y)
       ffmpeg_trim_crop(video_file,ev['frames'][0],ev['frames'][1],cx1,cy1,cx2-cx1,cy2-cy1)
 
