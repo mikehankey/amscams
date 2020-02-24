@@ -48,14 +48,7 @@ def api_controller(form):
       if(tok is None):
          send_error_message('Tok is missing')         
 
-      # For everything else, we need to have a token passed
-      print("WE TEST <br>")
-      print("ST :" + st)
-      print("<br>")
-      print("TOK:" + tok)
-      print("<br>")
-      print("USER:" + user)
-      print("<br>")
+      # For everything else, we need to have a token passed 
       test_access = test_api_login(st,tok,user)
    
       if(test_access==False or test_access is None):
@@ -199,20 +192,7 @@ def test_api_login(st,tok,user):
          if(now<valid_date):
             newlines.append(line)
             ok = True 
-  
-
-      #elif(t is True):
-
-         # Here we remove the olds ones
-
-         # We need to check the date
-      #   valid_date = datetime.strptime(time_to_test,  "%a, %d-%b-%Y %H:%M:%S GMT")
-
-         # Is date ok?
-      #   now = datetime.now() 
-
-      #   if(now<valid_date):
-      #      newlines.append(line)
+ 
 
 
    # Write the new lines in ACCESS_LOG
