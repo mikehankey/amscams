@@ -34,12 +34,13 @@ def batch_ss(wildcard=None):
       mtime = st.st_mtime
       tdiff = cur_time - mtime
       tdiff = tdiff / 60
+      
       if (tdiff > 3):
-         scan_and_stack(file)
+         scan_and_stack(file, sun_status)
       else:
          print(tdiff)
 
-def scan_and_stack(video_file):
+def scan_and_stack(video_file, sun_status):
    if cfe(video_file) == 0:
       print("File doesn't exist : ", video_file)
       return()
@@ -63,13 +64,17 @@ def scan_and_stack(video_file):
 
    vals = {}
    start_time = time.time()
-   sd_frames,sd_color_frames,sd_subframes,sum_vals,max_vals,pos_vals = load_frames_fast(video_file, json_conf, 0, 0, [], 1,[])
+   sd_frames,sd_color_frames,sd_subframes,sum_vals,max_vals,pos_vals = load_frames_fast(video_file, json_conf, 0, 0, [], 1,[], sun_status)
    vals['sum_vals'] = sum_vals
    vals['max_vals'] = max_vals
    vals['pos_vals'] = pos_vals
    elapsed_time = time.time() - start_time
    print("LOAD & SCAN TIME:", elapsed_time)
-   stacked_image = stack_frames_fast(sd_color_frames, 1, [PREVIEW_W, PREVIEW_H])
+   if sun_status == "day":
+      skip = 5
+   else:
+      skip = 1
+   stacked_image = stack_frames_fast(sd_color_frames, skip, [PREVIEW_W, PREVIEW_H])
 
    elapsed_time = time.time() - start_time
    stack_file = video_file.replace(".mp4", "-stacked.png")

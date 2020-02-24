@@ -547,7 +547,7 @@ def stack_frames_fast(frames, skip = 1, resize=None):
    return(np.asarray(stacked_image))
 
 
-def load_frames_fast(trim_file, json_conf, limit=0, mask=0,crop=(),color=0,resize=[]):
+def load_frames_fast(trim_file, json_conf, limit=0, mask=0,crop=(),color=0,resize=[], sun_status="night"):
    print("TRIM FILE:", trim_file)
    (f_datetime, cam, f_date_str,fy,fm,fd, fh, fmin, fs) = convert_filename_to_date_cam(trim_file)
    cap = cv2.VideoCapture(trim_file)
@@ -585,40 +585,40 @@ def load_frames_fast(trim_file, json_conf, limit=0, mask=0,crop=(),color=0,resiz
                return(frames)
             if len(frame.shape) == 3 :
                frame = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
+            if sun_status == "night":
+               if mask == 1 and frame is not None:
+                  if frame.shape[0] == 1080:
+                     hd = 1
+                  else:
+                     hd = 0
+                  masks = get_masks(cam, json_conf,hd)
+                  frame = mask_frame(frame, [], masks, 5)
 
-            if mask == 1 and frame is not None:
-               if frame.shape[0] == 1080:
-                  hd = 1
-               else:
-                  hd = 0
-               masks = get_masks(cam, json_conf,hd)
-               frame = mask_frame(frame, [], masks, 5)
+               if last_frame is not None:
+                  subframe = cv2.subtract(frame, last_frame)
+                  sum_val =cv2.sumElems(subframe)[0]
 
-            if last_frame is not None:
-               subframe = cv2.subtract(frame, last_frame)
-               sum_val =cv2.sumElems(subframe)[0]
+                  if sum_val > 10 :
+                     _, thresh_frame = cv2.threshold(subframe, 15, 255, cv2.THRESH_BINARY)
 
-               if sum_val > 10 :
-                  _, thresh_frame = cv2.threshold(subframe, 15, 255, cv2.THRESH_BINARY)
-
-                  sum_val =cv2.sumElems(thresh_frame)[0]
-               else: 
-                  sum_val = 0
-               subframes.append(subframe)
+                     sum_val =cv2.sumElems(thresh_frame)[0]
+                  else: 
+                     sum_val = 0
+                  subframes.append(subframe)
 
 
-               if sum_val > 10:
-                  min_val, max_val, min_loc, (mx,my)= cv2.minMaxLoc(subframe)
-               else:
-                  max_val = 0
-                  mx = 0
-                  my = 0
-               if frame_count < 5:
-                  sum_val = 0
-                  max_val = 0
-               sum_vals.append(sum_val)
-               max_vals.append(max_val)
-               pos_vals.append((mx,my))
+                  if sum_val > 10:
+                     min_val, max_val, min_loc, (mx,my)= cv2.minMaxLoc(subframe)
+                  else:
+                     max_val = 0
+                     mx = 0
+                     my = 0
+                  if frame_count < 5:
+                     sum_val = 0
+                     max_val = 0
+                  sum_vals.append(sum_val)
+                  max_vals.append(max_val)
+                  pos_vals.append((mx,my))
 
             if len(resize) == 2:
                frame = cv2.resize(frame, (resize[0],resize[1]))
