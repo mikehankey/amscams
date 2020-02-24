@@ -183,12 +183,8 @@ def make_station_report(day, proc_info = ""):
    
    TAB += tabView
    TAB_CONTENT += tabContentView
-   
-   template = template.replace("{TABS}", TAB)
-   template = template.replace("{TABS_CONTENT}", TAB_CONTENT)
 
-
-   template = template.replace("{LIVE_VIEW}", live_view_html)
+   #template = template.replace("{LIVE_VIEW}", live_view_html)
 
    we_html = ""
    if len(data['files']) > 0:
@@ -196,8 +192,16 @@ def make_station_report(day, proc_info = ""):
          fn = file.replace("/mnt/archive.allsky.tv", "")
          we_html += "<img src='" + fn + "' class='img-fluid'>"
       weather_section = html_section("weather", "Weather Snap Shots", we_html)
-   else:
-      weather_section = ""
+
+   tabSec, tabContentSec = add_section('Weather Snap Shots',weather_section)
+   TAB += tabView
+   TAB_CONTENT += tabContentView
+
+   
+   
+   template = template.replace("{TABS}", TAB)
+   template = template.replace("{TABS_CONTENT}", TAB_CONTENT)
+
    template = template.replace("{WEATHER_SNAPSHOTS}", weather_section)
 
    proc_section = html_section("proc_info", "Processing Info", proc_info)
