@@ -124,6 +124,9 @@ def delete_detection(form):
    station = form.getvalue('st')
    detect_id = form.getvalue('detect') 
 
+   if(detect_id is None):
+      send_error_message('detect (detection ID) is required')
+      
    now = datetime.now()
 
    with open(API_TASK_FILE, 'a') as f:
