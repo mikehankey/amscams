@@ -187,6 +187,8 @@ def test_api_login(st,tok,user):
          if(now<valid_date):
             newlines.append(line)
             ok = True
+            print("FIND ONE ")
+            print(line)
   
 
       elif(t is True):
