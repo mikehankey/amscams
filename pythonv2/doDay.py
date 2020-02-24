@@ -128,13 +128,10 @@ def get_template(file):
    return(text)
 
 
-def add_section(link_from_tab,tab_content):
-   TAB= ''
-   TAB_CONTENT = ''
-   link_from_tabst = link_from_tab.replace(" ", "")
+def add_section(id,link_from_tab,tab_content,TAB, TAB_CONTENT):
    if(tab_content is not None):
-      TAB = '<li class="nav-item"><a class="nav-link" id="'+link_from_tabst+'-tab" data-toggle="tab" href="#'+link_from_tabst+'" role="tab" aria-controls="'+link_from_tabst+'" aria-selected="true">'+link_from_tab+'</a></li>'
-      TAB_CONTENT = '<div class="tab-pane fade show" id="'+link_from_tabst+'" role="tabpanel" aria-labelledby="'+link_from_tabst+'-tab">'+tab_content+'</div>'
+      TAB = '<li class="nav-item"><a class="nav-link" id="'+id+'-tab" data-toggle="tab" href="#'+id+'" role="tab" aria-controls="'+id+'" aria-selected="true">'+link_from_tab+'</a></li>'
+      TAB_CONTENT = '<div class="tab-pane fade show" id="'+id+'" role="tabpanel" aria-labelledby="'+id+'-tab">'+tab_content+'</div>'
    
    return TAB, TAB_CONTENT 
 
@@ -163,7 +160,7 @@ def make_station_report(day, proc_info = ""):
    data['files'] = noaa_files
 
    events,event_files = load_events(day)
-   single_html, multi_html,info= html_get_detects(day, station, event_files,events)
+   single_html, multi_html, info= html_get_detects(day, station, event_files,events)
    detect_count = info['mc']
  
    show_date = day.replace("_", "/")
@@ -179,33 +176,44 @@ def make_station_report(day, proc_info = ""):
       fn = data['files'][0].replace("/mnt/archive.allsky.tv", "")
       live_view_html += "<img src='" + fn + "' class='img-fluid'/>"
  
-   tabView, tabContentView = add_section('Live View',live_view_html)
+   TAB, TAB_CONTENT = add_section('live','Live View',live_view_html, TAB, TAB_CONTENT)
    
-   TAB += tabView
-   TAB_CONTENT += tabContentView
-
    #template = template.replace("{LIVE_VIEW}", live_view_html)
 
+   # WEATHER SNAP SHOTS
    we_html = ""
    if len(data['files']) > 0:
       for file in sorted(data['files'],reverse=True):
          fn = file.replace("/mnt/archive.allsky.tv", "")
          we_html += "<img src='" + fn + "' class='img-fluid'>"
-      weather_section = html_section("weather", "Weather Snap Shots", we_html)
-
-   tabSec, tabContentSec = add_section('Weather Snap Shots',weather_section)
-   TAB += tabSec
-   TAB_CONTENT += tabContentSec
-
+ 
+   TAB, TAB_CONTENT = add_section('weather','Weather Snap Shots',we_html, TAB, TAB_CONTENT)
    
-   
+   # Proccess Info
+   if(proc_info != ''):
+      TAB, TAB_CONTENT = add_section('proc_info','Processing Info',proc_info, TAB, TAB_CONTENT) 
+
+   # Multi-station meteor 
+   if(multi_html!=''):
+      TAB, TAB_CONTENT = add_section(multi,"Multi Station Meteors (" + str(info['ms_count']) + ")","<div class='d-flex align-content-start flex-wrap'>" + multi_html + "</div>", TAB, TAB_CONTENT) 
+  
+  
+  
+   #meteor_section = html_section("multi_meteors", title , "<div class='d-flex align-content-start flex-wrap'>" + multi_html + "</div>")
+   #template = template.replace("{MULTI_METEORS}", meteor_section)
+
+
+   template = template.replace("{PROC_REPORT}", proc_section)
+
    template = template.replace("{TABS}", TAB)
    template = template.replace("{TABS_CONTENT}", TAB_CONTENT)
 
-   template = template.replace("{WEATHER_SNAPSHOTS}", weather_section)
 
-   proc_section = html_section("proc_info", "Processing Info", proc_info)
-   template = template.replace("{PROC_REPORT}", proc_section)
+
+
+ 
+
+
 
    title = "Multi Station Meteors (" + str(info['ms_count']) + ")"
    meteor_section = html_section("multi_meteors", title , "<div class='d-flex align-content-start flex-wrap'>" + multi_html + "</div>")
