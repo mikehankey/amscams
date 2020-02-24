@@ -150,7 +150,7 @@ function jsAPI() {
 
 
  function cssAPI() {
-   return   gulp.src('./tmp_APPS/src/sass/allskytv.scss')
+   return  gulp.src('./tmp_APPS/src/sass/allskytv.scss')
    .pipe(sourcemaps.init())
    .pipe(plumber())
    .pipe(sass({
