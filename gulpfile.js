@@ -159,10 +159,10 @@ function jsAPI() {
        './tmp_APPS/src/js/framework/jquery.min.js',
        './tmp_APPS/src/js/framework/bootstrap.js',
      ])
-     .pipe(concat('amscam.min.js').on('error', function(e){
+     .pipe(concat('allskytv.min.js').on('error', function(e){
          console.log('CONCAT ' + e);
      }))
-     .pipe(gulp.dest('./tmp_APPS/js')) 
+     .pipe(gulp.dest('./tmp_APPS/dist/js')) 
      .pipe(uglify().on('error', function(e){
          console.log('CONCAT ' + e);
      })) 
