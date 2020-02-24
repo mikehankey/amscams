@@ -75,11 +75,7 @@ function add_login_modal() {
 
 // Create Login Modal
 function setup_login() {
-
-
-
-
-
+ 
    // Login
    $('#login').unbind('click').click(function(e){
       e.stopImmediatePropagation(); 
@@ -121,6 +117,8 @@ function setup_login() {
                }
             });
       })
+
+      return false;
    })
 
 }     
