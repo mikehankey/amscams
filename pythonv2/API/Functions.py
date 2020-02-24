@@ -97,7 +97,7 @@ def API_login(form):
          _date, tok = create_token() 
 
          # Add the token to the current list of available token
-         write_new_access(user,tok,_date,station)
+         write_new_access(station,tok,user)
 
          # We clean the access log
          test_api_login(user,tok,_date,station) 
