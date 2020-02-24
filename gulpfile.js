@@ -149,10 +149,33 @@ function js() {
     .pipe(gulp.dest('./dist/js'));
 }
 
+
+
+// API
+function jsAPI() {
+   return gulp
+     .src([
+       './tmp_APPS/src/js/framework/popper.min.js',
+       './tmp_APPS/src/js/framework/jquery.min.js',
+       './tmp_APPS/src/js/framework/bootstrap.js',
+     ])
+     .pipe(concat('amscam.min.js').on('error', function(e){
+         console.log('CONCAT ' + e);
+     }))
+     .pipe(gulp.dest('./tmp_APPS/js')) 
+     .pipe(uglify().on('error', function(e){
+         console.log('CONCAT ' + e);
+     })) 
+     .pipe(gulp.dest('./dist/js'));
+ }
+
+
+
 // Tasks
 gulp.task("css", css);
 gulp.task("js", js);
 gulp.task("cssA", cssA); 
+gulp.task("jsAPI", jsAPI); 
 
 
 // JS task for BoostrapFileInput
