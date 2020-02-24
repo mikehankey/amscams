@@ -203,7 +203,7 @@ def make_station_report(day, proc_info = ""):
    #template = template.replace("{MULTI_METEORS}", meteor_section)
 
 
-   template = template.replace("{PROC_REPORT}", proc_section)
+   #template = template.replace("{PROC_REPORT}", proc_section)
 
    template = template.replace("{TABS}", TAB)
    template = template.replace("{TABS_CONTENT}", TAB_CONTENT)
@@ -215,13 +215,13 @@ def make_station_report(day, proc_info = ""):
 
 
 
-   title = "Multi Station Meteors (" + str(info['ms_count']) + ")"
-   meteor_section = html_section("multi_meteors", title , "<div class='d-flex align-content-start flex-wrap'>" + multi_html + "</div>")
-   template = template.replace("{MULTI_METEORS}", meteor_section)
+   #title = "Multi Station Meteors (" + str(info['ms_count']) + ")"
+   #meteor_section = html_section("multi_meteors", title , "<div class='d-flex align-content-start flex-wrap'>" + multi_html + "</div>")
+   #template = template.replace("{MULTI_METEORS}", meteor_section)
 
-   title = "Single Station Meteors (" + str(info['ss_count']) + ")"
-   meteor_section = html_section("single_meteors", title , "<div class='d-flex align-content-start flex-wrap'>" + single_html + "</div>")
-   template = template.replace("{SINGLE_METEORS}", meteor_section)
+   #title = "Single Station Meteors (" + str(info['ss_count']) + ")"
+   #meteor_section = html_section("single_meteors", title , "<div class='d-flex align-content-start flex-wrap'>" + single_html + "</div>")
+   #template = template.replace("{SINGLE_METEORS}", meteor_section)
  
    fpo = open(html_index, "w")
    fpo.write(template)
