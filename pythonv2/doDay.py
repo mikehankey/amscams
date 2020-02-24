@@ -298,26 +298,26 @@ def html_get_detects(day,tsid,event_files, events):
     
          if event_id is None or event_id == "none":
             single_html += """
-                             <div class="d-flex align-content-start flex-wrap">
+                            
                                  <div class="{:s}">
                                        {:s} 
                                         <img src="{:s}" class="img-fluid">
                                        </a>
                                         <span>{:s}</span>
                                    </div>
-                             </div>
+                              
             """.format(css_class, elink, was_vh_dir + image_file, event_id)
             ss_count += 1
          else:
             multi_html += """
-                             <div class="d-flex align-content-start flex-wrap">
+                             
                                  <div class="{:s}">
                                        {:s} 
                                         <img src="{:s}" class="img-fluid">
                                        </a>
                                         <span>{:s}</span>
                                    </div>
-                             </div>
+                             
             """.format(css_class, elink, was_vh_dir + image_file, event_id)
             ms_count += 1
 
