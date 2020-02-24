@@ -50,7 +50,7 @@ function setup_login() {
       $('#login_modal').remove();
 
       $('<div id="login_modal" class="modal fade" tabindex="-1" role="dialog"><div class="modal-dialog modal-dialog-centered" style="max-width:300px" role="document">\
-      <div class="modal-content"><div class="modal-body pb-4" ><p class="text-center"><b style="font-size: 1.2rem;">Login to '+STATION+'</b></p>\
+      <div class="modal-content"><div class="modal-body pb-4" ><p class="text-center"><b style="font-size:2rem;">Login to '+STATION+'</b></p>\
          <div class="d-flex justify-content-center form_container">\
             <form>\
                <input type="hidden" name="st" value="'+STATION+'"/>\

@@ -127,6 +127,22 @@ def get_template(file):
       text += line
    return(text)
 
+
+def add_section(link_from_tab,tab_content) {
+   TAB= ''
+   TAB_CONTENT = ''
+
+   if(tab_content is not None):
+      TAB = '<li class="nav-item">\\
+    <a class="nav-link" id="'+link_from_tab+'-tab" data-toggle="tab" href="#'+link_from_tab+'" role="tab" aria-controls="'+link_from_tab+'" aria-selected="true">Home</a>\\
+    </li>'
+      TAB_CONTENT = '<div class="tab-pane fade show" id="'+link_from_tab+'" role="tabpanel" aria-labelledby="'+link_from_tab+'-tab">'+tab_content+'</div>'
+   
+   return TAB, TAB_CONTENT
+}
+
+
+
 def make_station_report(day, proc_info = ""):
    template = get_template("templates/allsky.tv.base.html") 
 
@@ -137,8 +153,14 @@ def make_station_report(day, proc_info = ""):
    show_day = mon + "/" + dom + "/"+ year
    STATION_RPT_DIR =  "/mnt/archive.allsky.tv/" + station + "/REPORTS/" + year + "/" + mon + "_" + dom + "/"
    NOAA_DIR =  "/mnt/archive.allsky.tv/" + station + "/NOAA/ARCHIVE/" + year + "/" + mon + "_" + dom + "/"
+   
+   template = template.replace("{STATION_ID}", station)
+   template = template.replace("{DAY}", show_day)
+
+
    if cfe(STATION_RPT_DIR, 1) == 0:
       os.makedirs(STATION_RPT_DIR)
+   
    html_index = STATION_RPT_DIR + "index.html"
    noaa_files = glob.glob(NOAA_DIR + "*.jpg")
    data = {}
@@ -147,31 +169,36 @@ def make_station_report(day, proc_info = ""):
    events,event_files = load_events(day)
    single_html, multi_html,info= html_get_detects(day, station, event_files,events)
    detect_count = info['mc']
-
-   header_html, footer_html = html_header_footer()
-
-
+ 
    show_date = day.replace("_", "/")
  
+   TAB= ''
+   TAB_CONTENT = ''
+
+
+   # LIVE VIEW
    live_view_html = ""
    if len(data['files']) > 0:
       data['files'] = sorted(data['files'], reverse=True)
       fn = data['files'][0].replace("/mnt/archive.allsky.tv", "")
       live_view_html += "<img src='" + fn + "' class='img-fluid'/>"
 
-   if live_view_html != "":
-      live_section = html_section("live", "Live View", live_view_html)
-   else:
-      live_section = ""
-   template = template.replace("{STATION_ID}", station)
-   template = template.replace("{DAY}", show_day)
+   tabView, tabContentView = add_section('live',live_view_html)
+   
+   TAB += tabView
+   TAB_CONTENT += tabContentView
+   
+   template = template.replace("{TABS}", TAB)
+   template = template.replace("{TAB_CONTENT}", TAB_CONTENT)
+
+
    template = template.replace("{LIVE_VIEW}", live_section)
 
    we_html = ""
    if len(data['files']) > 0:
       for file in sorted(data['files'],reverse=True):
          fn = file.replace("/mnt/archive.allsky.tv", "")
-         we_html += "<img src='" + fn + "' class='img_fluid'>"
+         we_html += "<img src='" + fn + "' class='img-fluid'>"
       weather_section = html_section("weather", "Weather Snap Shots", we_html)
    else:
       weather_section = ""

@@ -18,15 +18,21 @@
       </nav>
       <h1>{STATION_ID} Station Report for {DAY}</h1>
       <div id="main_container" class="container-fluid h-100 mt-4 lg-l">
-         <div class="accordion" id="main_content">
-               {LIVE_VIEW}
-               {WEATHER_SNAPSHOTS}
-               {MULTI_METEORS}
-               {SINGLE_METEORS}
-               {PROC_REPORT}
-         </div>
+            <ul class="nav nav-tabs">
+                  {TABS}
+            </ul>
+            <div class="tab-content" id="myTabContent">
+                  {TABS_CONTENT}
+            </div>
+            <div class="accordion" id="main_content">
+                  {LIVE_VIEW}
+                  {WEATHER_SNAPSHOTS}
+                  {MULTI_METEORS}
+                  {SINGLE_METEORS}
+                  {PROC_REPORT}
+            </div>
       </div> 
-
+ 
       <script src="/APPS/dist/js/allskytv.min.js"></script>
       <!--
       <script src="/APPS/src/js/framework/popper.min.js"></script>
