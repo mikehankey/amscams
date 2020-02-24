@@ -72,10 +72,7 @@ def API_login(form):
 
       # The 'users' have to pick a station
       # while the manager are required to...
-      if(station is not None):
-         pwd_file = JSON_USER_PWD
-      else:
-         pwd_file = JSON_MANAGER_PWD
+      pwd_file = JSON_USER_PWD
  
       user = user.strip() 
  
@@ -91,17 +88,17 @@ def API_login(form):
                if(acc['st']==station and acc['usr']==user and acc['pwd']==password):
                   test_log = True
                   break 
-            #MANAGER
-            elif(acc['usr']==user and acc['pwd']==password):
-                  test_log = True
-                  break 
+           ##MANAGER
+           # elif(acc['usr']==user and acc['pwd']==password):
+           #       test_log = True
+           #       break 
       
 
       if(test_log is True):
          _date, tok = create_token() 
 
          # Add the token to the current list of available token
-         write_new_access(user,tok,_date,st)
+         write_new_access(user,tok,_date,station)
 
          return json.dumps({'token':tok,'expire':_date})
       else:
