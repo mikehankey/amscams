@@ -1,4 +1,15 @@
-COOKIE_NAME = "APIa"
+COOKIE_NAME = "APIa"   // Token
+COOKIE_DATE = "dat"    // Date
+
+// Test if already logged in 
+function test_logged_in() {
+   testCook = readCookie(COOKIE_NAME);
+   testDateCook = readCookie(COOKIE_DATE);
+   if(testCook!==null && testDateCook!==null) {
+      console.log(testDateCook)
+   }
+}
+
 
 // UI transformed after loggined (add delete buttons)
 function add_buttons() {
@@ -18,7 +29,8 @@ function add_buttons() {
 
 // Remove Login Cookie
 function logout() {
-   eraseCookie(COOKIE_NAME)
+   eraseCookie(COOKIE_NAME);
+   eraseCookie(COOKIE_DATE);
 }
 
 
@@ -33,8 +45,9 @@ function loggedin(TOK,EXPIRE) {
          loggedin();
       });
 
-      // Create Cookie
-      createCookie(COOKIE_NAME,TOK,EXPIRE)
+      // Create Cookies
+      createCookie(COOKIE_NAME,TOK,2)
+      createCookie(COOKIE_DATE,EXPIRE,2)
 
       // Add buttons
       add_buttons();
