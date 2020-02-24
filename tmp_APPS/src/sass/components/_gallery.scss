@@ -5,6 +5,20 @@
    width: calc(100% / 5 - 5 * 1rem);
    margin: 0 .5rem 1.5rem;
   
+
+   &:before {
+      position: absolute;
+      top: 1.2rem;
+      right: -2.5rem;
+      z-index: 9;
+      -webkit-transform: rotate(45deg);
+      transform: rotate(45deg);
+      font-weight: bold;
+      width: 150px;
+      text-align: center;
+      display: none;
+   }
+
    span {
       display: block;
 
@@ -25,6 +39,10 @@
       display: block;
       position: relative;
       border:1px solid transparent;
+
+      img {
+         width:100%
+      }
    }
 
       &.meteor, &.arc {
@@ -32,24 +50,12 @@
             border-color: #21c419!important;
             overflow: hidden;
             
-            img {
-               width:100%;
-            }
-
+      
             &:before {
                content: 'Meteor';
                color: #21c419;
                background:#00ff2d3d;
-               position: absolute;
-               top: 1.2rem;
-               right: -2.5rem;
-               z-index: 9;
-               -webkit-transform: rotate(45deg);
-               transform: rotate(45deg);
-               font-weight: bold;
-               width: 150px;
-               text-align: center;
-               display: none;
+               
             }
          }
       }
@@ -66,26 +72,13 @@
          a {
             border-color: #cc0000;
             overflow: hidden;
-            
-            img {
-               box-shadow: none;
-               -webkit-box-shadow: none;
-            }
+ 
 
             &:before {
                content: 'MULTI';
                color: #cc0000;
                background:#f3a5a5;
-               position: absolute;
-               top: 1.2rem;
-               right: -2.5rem;
-               z-index: 9;
-               -webkit-transform: rotate(45deg);
-               transform: rotate(45deg);
-               font-weight: bold;
-               width: 150px;
-               text-align: center;
-               display: none;
+                
             }
          }
       }
@@ -95,25 +88,13 @@
             border-color: #000;
             overflow: hidden;
             
-            img {
-               box-shadow: none;
-               -webkit-box-shadow: none;
-            }
+ 
 
             &:before {
                content: 'PENDING';
                color: #333;
                background:#ccc;
-               position: absolute;
-               top: 1.2rem;
-               right: -2.5rem;
-               z-index: 9;
-               -webkit-transform: rotate(45deg);
-               transform: rotate(45deg);
-               font-weight: bold;
-               width: 150px;
-               text-align: center;
-               display: none;
+                
             }
          }
       }
