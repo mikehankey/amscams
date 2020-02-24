@@ -1,6 +1,15 @@
+COOKIE_NAME = "APIa"   // Token 
+
+// Test if already logged in 
+function test_logged_in() {
+   return readCookie(COOKIE_NAME); 
+}
+
+
 // UI transformed after loggined (add delete buttons)
-function add_buttons() {
-   if(LOGGEDIN && TOK!=='') {
+function add_login_stuff() {
+    
+      // Add buttons
       $('.prevproc').each(function() {
          $('<div class="btn-toolbar">\
             <div class="btn-group">\
@@ -10,36 +19,40 @@ function add_buttons() {
       });
 
       setup_delete_buttons();
-   }
+   
+}
+
+// Remove Login Stuff
+function remove_login_stuff() {
+
+   // Remove Delete Buttons
+   $('.prevproc .btn-toolbar').remove();
 }
 
 
 // Remove Login Cookie
 function logout() {
-
+   eraseCookie(COOKIE_NAME); 
 }
 
 
-// Update UI based on logged or not
+// Update UI based on logged or not 
 function loggedin() {
-   if(LOGGEDIN) {
+   if(test_logged_in()!==null) {
 
       // Logout Button
       $("a#login").text('Logout').unbind('click').click(function() {
-         TOK = '';
-         LOGGEDIN = false;
+         logout();
          loggedin();
       });
 
-      // Create Cookie
-      createCookie("name"," value","")
-
       // Add buttons
-      add_buttons();
+      add_login_stuff();
    } 
    else {
       $("a#login").text('Login');
       setup_login();
+      remove_login_stuff();
    }        
 }
 
@@ -100,10 +113,8 @@ function setup_login() {
                      });
                      logout();
                   } else {
-                     $('#login_modal').modal('hide');
-                     LOGGEDIN = true;
-                     TOK = data.token;
-                     EXPIRE = data.expire; 
+                     $('#login_modal').modal('hide'); 
+                     createCookie(COOKIE_NAME,data.token,2)
                      loggedin();    
                   } 
                }, 

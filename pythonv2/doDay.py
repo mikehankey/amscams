@@ -27,6 +27,7 @@ import glob
 import sys
 from datetime import datetime, timedelta
 import subprocess
+import random
 
 from lib.FileIO import load_json_file, save_json_file, cfe
 from lib.UtilLib import check_running
@@ -210,6 +211,9 @@ def make_station_report(day, proc_info = ""):
    template = template.replace("{TABS}", TAB)
    template = template.replace("{TABS_CONTENT}", TAB_CONTENT)
  
+
+   template = template.replace("{RAND}",str(random.randint(0, 99999999)))
+
    fpo = open(html_index, "w")
    fpo.write(template)
    fpo.close()
@@ -294,26 +298,26 @@ def html_get_detects(day,tsid,event_files, events):
     
          if event_id is None or event_id == "none":
             single_html += """
-                             <div class="d-flex align-content-start flex-wrap">
+                            
                                  <div class="{:s}">
                                        {:s} 
                                         <img src="{:s}" class="img-fluid">
                                        </a>
                                         <span>{:s}</span>
                                    </div>
-                             </div>
+                              
             """.format(css_class, elink, was_vh_dir + image_file, event_id)
             ss_count += 1
          else:
             multi_html += """
-                             <div class="d-flex align-content-start flex-wrap">
+                             
                                  <div class="{:s}">
                                        {:s} 
                                         <img src="{:s}" class="img-fluid">
                                        </a>
                                         <span>{:s}</span>
                                    </div>
-                             </div>
+                             
             """.format(css_class, elink, was_vh_dir + image_file, event_id)
             ms_count += 1
 
@@ -388,7 +392,7 @@ def do_all(day):
 
    # figure out how much of the day has completed processing
    rpt = """ 
-      <dl class="row p^-4">
+      <dl class="row p-4">
          <dt class="col-3">Time Check</dt><dd class="col-9">{:s}</dd>
          <dt class="col-3">Processing report for day</dt><dd class="col-9">{:s}</dd>
          <dt class="col-3">Processing videos</dt><dd class="col-9">{:s}</dd>
