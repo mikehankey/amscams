@@ -27,6 +27,7 @@ import glob
 import sys
 from datetime import datetime, timedelta
 import subprocess
+import random
 
 from lib.FileIO import load_json_file, save_json_file, cfe
 from lib.UtilLib import check_running
@@ -210,6 +211,9 @@ def make_station_report(day, proc_info = ""):
    template = template.replace("{TABS}", TAB)
    template = template.replace("{TABS_CONTENT}", TAB_CONTENT)
  
+
+   template = template.replace("{RAND}",random.randint(0, 99999999))
+
    fpo = open(html_index, "w")
    fpo.write(template)
    fpo.close()
