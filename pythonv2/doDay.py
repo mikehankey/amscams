@@ -194,8 +194,8 @@ def make_station_report(day, proc_info = ""):
       weather_section = html_section("weather", "Weather Snap Shots", we_html)
 
    tabSec, tabContentSec = add_section('Weather Snap Shots',weather_section)
-   TAB += tabView
-   TAB_CONTENT += tabContentView
+   TAB += tabSec
+   TAB_CONTENT += tabContentSec
 
    
    
