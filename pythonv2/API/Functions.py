@@ -51,8 +51,11 @@ def api_controller(form):
       # For everything else, we need to have a token passed
       print("WE TEST <br>")
       print("ST :" + st)
+      print("<br>")
       print("TOK:" + tok)
+      print("<br>")
       print("USER:" + user)
+      print("<br>")
       test_access = test_api_login(st,tok,user)
    
       if(test_access==False or test_access is None):
@@ -163,7 +166,8 @@ def test_api_login(st,tok,user):
    newlines = []
    ok = False
    t = False
-   
+   c = 0 
+
    for line in lines:
       tmp = line.split('|') 
 
@@ -179,6 +183,11 @@ def test_api_login(st,tok,user):
       else:
          t = True
   
+      print("LINE " + str(c) + " ")
+      print(t)
+      print("<br>")
+      c+=1
+
       # Test the tok
       if(tok is tok_to_test and user is user_to_test and st is station_to_test and t is True):
 
