@@ -178,7 +178,7 @@ def test_api_login(st,tok,user):
       
       # If we already have a valid token
       # we don't rewrite it on the access log
-      if(tok is tok_to_test and user is user_to_test and st is station_to_test and ok is True):
+      if(tok == tok_to_test and user == user_to_test and st == station_to_test and ok is True):
          t = False 
       else:
          t = True
@@ -189,7 +189,7 @@ def test_api_login(st,tok,user):
       c+=1
 
       # Test the tok
-      if(tok is tok_to_test and user is user_to_test and st is station_to_test and t is True):
+      if(tok == tok_to_test and user == user_to_test and st == station_to_test and t is True):
 
          # We need to check the date
          valid_date = datetime.strptime(time_to_test,  "%a, %d-%b-%Y %H:%M:%S GMT")
