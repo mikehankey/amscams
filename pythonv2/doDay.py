@@ -133,9 +133,7 @@ def add_section(link_from_tab,tab_content):
    TAB_CONTENT = ''
 
    if(tab_content is not None):
-      TAB = '<li class="nav-item">\\
-    <a class="nav-link" id="'+link_from_tab+'-tab" data-toggle="tab" href="#'+link_from_tab+'" role="tab" aria-controls="'+link_from_tab+'" aria-selected="true">Home</a>\\
-    </li>'
+      TAB = '<li class="nav-item"><a class="nav-link" id="'+link_from_tab+'-tab" data-toggle="tab" href="#'+link_from_tab+'" role="tab" aria-controls="'+link_from_tab+'" aria-selected="true">Home</a></li>'
       TAB_CONTENT = '<div class="tab-pane fade show" id="'+link_from_tab+'" role="tabpanel" aria-labelledby="'+link_from_tab+'-tab">'+tab_content+'</div>'
    
    return TAB, TAB_CONTENT 
