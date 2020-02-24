@@ -130,8 +130,8 @@ def get_template(file):
 
 def add_section(id,link_from_tab,tab_content,TAB, TAB_CONTENT):
    if(tab_content is not None):
-      TAB = '<li class="nav-item"><a class="nav-link" id="'+id+'-tab" data-toggle="tab" href="#'+id+'" role="tab" aria-controls="'+id+'" aria-selected="true">'+link_from_tab+'</a></li>'
-      TAB_CONTENT = '<div class="tab-pane fade show" id="'+id+'" role="tabpanel" aria-labelledby="'+id+'-tab">'+tab_content+'</div>'
+      TAB += '<li class="nav-item"><a class="nav-link" id="'+id+'-tab" data-toggle="tab" href="#'+id+'" role="tab" aria-controls="'+id+'" aria-selected="true">'+link_from_tab+'</a></li>'
+      TAB_CONTENT += '<div class="tab-pane fade show" id="'+id+'" role="tabpanel" aria-labelledby="'+id+'-tab">'+tab_content+'</div>'
    
    return TAB, TAB_CONTENT 
 
@@ -188,6 +188,9 @@ def make_station_report(day, proc_info = ""):
  
    TAB, TAB_CONTENT = add_section('weather','Weather Snap Shots',we_html, TAB, TAB_CONTENT)
    
+
+
+
    # Proccess Info
    if(proc_info != ''):
       TAB, TAB_CONTENT = add_section('proc_info','Processing Info',proc_info, TAB, TAB_CONTENT) 
@@ -196,7 +199,9 @@ def make_station_report(day, proc_info = ""):
    if(multi_html!=''):
       TAB, TAB_CONTENT = add_section(multi,"Multi Station Meteors (" + str(info['ms_count']) + ")","<div class='d-flex align-content-start flex-wrap'>" + multi_html + "</div>", TAB, TAB_CONTENT) 
   
-  
+   template = template.replace("{TABS}", TAB)
+   template = template.replace("{TABS_CONTENT}", TAB_CONTENT)
+
   
    #meteor_section = html_section("multi_meteors", title , "<div class='d-flex align-content-start flex-wrap'>" + multi_html + "</div>")
    #template = template.replace("{MULTI_METEORS}", meteor_section)
@@ -204,8 +209,6 @@ def make_station_report(day, proc_info = ""):
 
    #template = template.replace("{PROC_REPORT}", proc_section)
 
-   template = template.replace("{TABS}", TAB)
-   template = template.replace("{TABS_CONTENT}", TAB_CONTENT)
 
 
 
