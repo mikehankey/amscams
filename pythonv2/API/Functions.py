@@ -67,12 +67,10 @@ def API_login(form):
    station = form.getvalue('st')
    user = form.getvalue('user') 
    password = form.getvalue('pwd')
-   test_log = False
+   test_log = False 
 
    if(user is not None and password is not None and station is not None):
 
-      # The 'users' have to pick a station
-      # while the manager are required to...
       pwd_file = JSON_USER_PWD
  
       user = user.strip() 
@@ -100,6 +98,9 @@ def API_login(form):
 
          # Add the token to the current list of available token
          write_new_access(user,tok,_date,station)
+
+         # We clean the access log
+         test_api_login(user,tok,_date,station) 
 
          return json.dumps({'token':tok,'expire':_date})
       else:
@@ -173,11 +174,7 @@ def test_api_login(st,tok,user):
          t = False 
       else:
          t = True
-
-      print("t is ")
-      print(t)
-
-
+  
       # Test the tok
       if(tok is tok_to_test and user is user_to_test and st is station_to_test and t is True):
 
@@ -190,9 +187,7 @@ def test_api_login(st,tok,user):
          # It hasn't expired!!  
          if(now<valid_date):
             newlines.append(line)
-            ok = True
-            print("FIND ONE ")
-            print(line)
+            ok = True 
   
 
       elif(t is True):
