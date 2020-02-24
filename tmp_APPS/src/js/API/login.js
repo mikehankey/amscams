@@ -2,10 +2,7 @@ COOKIE_NAME = "APIa"   // Token
 
 // Test if already logged in 
 function test_logged_in() {
-   testCook = readCookie(COOKIE_NAME); 
-   if(testCook!==null) {
-      loggedin(testCook,'')
-   }
+   return readCookie(COOKIE_NAME); 
 }
 
 
@@ -32,18 +29,14 @@ function logout() {
 
 
 // Update UI based on logged or not 
-function loggedin(TOK) {
-   if(LOGGEDIN) {
+function loggedin() {
+   if(test_logged_in()!==null) {
 
       // Logout Button
       $("a#login").text('Logout').unbind('click').click(function() {
-         TOK = '';
-         LOGGEDIN = false;
+         logout();
          loggedin();
       });
-
-      // Create Cookies
-      createCookie(COOKIE_NAME,TOK,2) 
 
       // Add buttons
       add_buttons();
@@ -111,10 +104,9 @@ function setup_login() {
                      });
                      logout();
                   } else {
-                     $('#login_modal').modal('hide');
-                     LOGGEDIN = true;
-                     TOK = data.token;
-                     loggedin(TOK);    
+                     $('#login_modal').modal('hide'); 
+                     createCookie(COOKIE_NAME,data.token,2)
+                     loggedin();    
                   } 
                }, 
                error:function() { 
