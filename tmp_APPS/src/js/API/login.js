@@ -74,9 +74,7 @@ function setup_login() {
             </form>\
          </div>\
       </div></div></div></div>').appendTo('body');
-         
-      $('#login_modal').modal(function() { $('input[name=username]').focus();});
-
+      $('#login_modal').modal('show');
       $('#subm_login').click(function() {
             // So we can send the USR to the API
             USR = $('input[name=username]').val();
