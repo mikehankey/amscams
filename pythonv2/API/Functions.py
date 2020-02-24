@@ -166,6 +166,10 @@ def test_api_login(st,tok,user):
       station_to_test = tmp[2]
       user_to_test = tmp[3]
       
+      # If we already have a valid token
+      # we don't rewrite it on the access log
+      if(tok is tok_to_test and user is user_to_test and st is station_to_test and ok is True):
+         continue
 
       # Test the tok
       if(tok is tok_to_test and user is user_to_test and st is station_to_test):
