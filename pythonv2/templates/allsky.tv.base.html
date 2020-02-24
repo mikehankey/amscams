@@ -5,198 +5,45 @@
     <meta http-equiv="Cache-control" content="public, max-age=500, must-revalidate">
     <meta name="viewport" content="width=device-width, initial-scale=1.0"> 
     <title>{STATION_ID} {DAY} Station Report</title>
-    <link rel="stylesheet" href="/APPS/dist/css/allsky.css?c=de"/>
+    <link href="https://fonts.googleapis.com/css?family=Roboto+Condensed:400,700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="/APPS/dist/css/allskytv.min.css?c=frdda"/>
 </head>
 <body>
       <nav class="navbar navbar-expand-lg navbar-dark bg-dark flex-column flex-md-row"> 
-       
-            <a class="navbar-brand clearfix" title="Report">  
-                <img id="logo_holder" src="/APPS/dist/img/Allsky/allskycams.svg" width="250" height="45"/> 
-            </a>
-        
-            <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#mainN" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
-                <span class="navbar-toggler-icon"></span>
-            </button>
+            <a class="navbar-brand clearfix" title="ALLSkyTV">  
+                <img id="logo_holder" src="/APPS/dist/img/allskytv.svg" width="200" height="70" alt="ALLSkyTV"/> 
+            </a> 
             <ul class="navbar-nav ml-md-auto"></ul>
             <a id="login" class="btn btn-primary d-inline-block mb-3 mb-md-0 ml-md-3">Login</a>
-            
       </nav>
-      
-
-      <div id="main_container" class="container-fluid h-100 mt-4 lg-l">
       <h1>{STATION_ID} Station Report for {DAY}</h1>
+      <div id="main_container" class="container-fluid h-100 mt-4 lg-l">
+            <ul class="nav nav-tabs">
+                  {TABS}
+            </ul>
+            <div class="tab-content p-2" id="myTabContent">
+                  {TABS_CONTENT}
+            </div>
             <div class="accordion" id="main_content">
                   {LIVE_VIEW}
                   {WEATHER_SNAPSHOTS}
                   {MULTI_METEORS}
                   {SINGLE_METEORS}
                   {PROC_REPORT}
- 
             </div>
-      </div>
-
-        
-      <script src="https://archive.allsky.tv/APPS/dist/js/amscam.min.js"></script>
-      <script>
-         var STATION = "AMS7";
-         var API_URL = "https://allsky.tv/API/Functions.py";
-         var LOGGEDIN = false; // Just UI - the rest is managed on both side with a token
-         var TOK;
-         var USR;
-      </script>
-      <script>
-         /********** API FUNCTIONS ***********************************************************************/
-         function delete_detec(detect_id) {
+      </div> 
  
-            $.ajax({ 
-               url:   API_URL ,
-               data: {'function':'delete',  'tok':TOK, 'detect': detect_id, 'st': STATION, 'user':USR}, 
-               format: 'json',
-               success: function(data) { 
-                  data = jQuery.parseJSON(data); 
-                  if(typeof data.error !== 'undefined') {
-                     // WRONG!
-                     bootbox.alert({
-                        message: data.error,
-                        className: 'rubberBand animated error',
-                        centerVertical: true 
-                     });
-                  } else {
-                     $('#'+detect_id).addClass('deleted');
-                  } 
-               }, 
-               error:function() { 
-                  bootbox.alert({
-                     message: "Impossible to reach the API. Please, try again later or refresh the page and log back in",
-                     className: 'rubberBand animated error',
-                     centerVertical: true 
-                  });
-               }
-            });
-         }
+      <script src="/APPS/dist/js/allskytv.min.js"></script>
+      <!--
+      <script src="/APPS/src/js/framework/popper.min.js"></script>
+      <script src="/APPS/src/js/framework/jquery.min.js"></script>
+      <script src="/APPS/src/js/framework/bootstrap.js"></script>
+      -->
 
-
-         /********** UI ***********************************************************************/
-         function setup_delete_buttons() {
-            $('.delete').each(function() {
-               var $t = $(this); 
-               $t.unbind('click').click(function() { 
-                 delete_detec($t.parents('.prevproc').attr('id'));
-               });
-            })
-         }
- 
-         /********** LOGIN ***********************************************************************/
-         
-         function add_buttons() {
-            if(LOGGEDIN && TOK!=='') {
-               $('.prevproc').each(function() {
-                  $('<div class="btn-toolbar">\
-                     <div class="btn-group">\
-                        <a class="delete col btn btn-danger btn-sm" title="Delete Detection"><i class="icon-delete"></i></a>\
-                     </div>\
-                  </div>').appendTo($(this))
-               });
-
-               setup_delete_buttons();
-            }
-         }
- 
-         function setup_login() {
-            // Login
-            $('#login').click(function(){
-               $('#login_modal').remove();
-
-               $('<div id="login_modal" class="modal fade" tabindex="-1" role="dialog"><div class="modal-dialog modal-dialog-centered" style="max-width:300px" role="document">\
-               <div class="modal-content"><div class="modal-body pb-4" ><p class="text-center"><b style="font-size: 1.2rem;">Login to '+STATION+'</b></p>\
-                  <div class="d-flex justify-content-center form_container">\
-                     <form>\
-                        <input type="hidden" name="st" value="'+STATION+'"/>\
-                        <div class="input-group mb-3">\
-                           <input type="text" name="username" class="form-control input_user" value="" placeholder="username">\
-                        </div>\
-                        <div class="input-group mb-2">\
-                           <input type="password" name="password" class="form-control input_pass" value="" placeholder="password">\
-                        </div>\
-                        <div class="d-flex justify-content-center mt-3 login_container">\
-                           <button type="button" name="button" id="subm_login" class="btn btn-primary" style="width: 100%;">Login</button>\
-                        </div>\
-                     </form>\
-				      </div>\
-	            </div></div></div></div>').appendTo('body');
-                  
-               $('#login_modal').modal(function() { $('input[name=username]').focus();});
-
-               $('#subm_login').click(function() {
-                     // So we can send the USR to the API
-                     USR = $('input[name=username]').val();
-                     $.ajax({ 
-                        url:   API_URL ,
-                        data: {'function':'login', 'user':$('input[name=username]').val(), 'pwd':$('input[name=password]').val(), 'st':$('input[name=st]').val()}, 
-                        format: 'json',
-                        success: function(data) { 
-                           data = jQuery.parseJSON(data); 
-                           if(typeof data.error !== 'undefined') {
-                              // WRONG!
-                              bootbox.alert({
-                                 message: data.error,
-                                 className: 'rubberBand animated error',
-                                 centerVertical: true 
-                              });
-                           } else {
-                              $('#login_modal').modal('hide')
-                              $('#login_modal,.modal-backdrop').remove();
-                              $('body').removeClass('modal-open');
-                              LOGGEDIN = true;
-                              TOK = data.token;
-                              EXPIRE = data.expire;
-                              console.log("TOK " + TOK)
-                              loggedin();    
-                           } 
-                        }, 
-                        error:function() { 
-                           $('#login_modal').remove();
-                           bootbox.alert({
-                              message: "Impossible to reach the API. Please, try again later.",
-                              className: 'rubberBand animated error',
-                              centerVertical: true 
-                           });
-                        }
-                     });
-               })
-            })
- 
-         }     
+      <script src="/APPS/src/js/shared/cookie.js"></script>
+      <script src="/APPS/src/js/API/shared.js"></script>
+      <script src="/APPS/src/js/API/login.js"></script>
+      <script src="/APPS/src/js/API/shared.js"></script>
       
-         function setup_action() {
-            setup_login();
-         }
-
-         // Update UI based on logged  or not
-         function loggedin() {
-            if(LOGGEDIN) {
-
-               // Logout Button
-               $("a#login").text('Logout').unbind('click').click(function() {
-                  TOK = '';
-                  LOGGEDIN = false;
-                  loggedin()
-               });
-
-               // Add buttons
-               add_buttons();
-            } 
-            else {
-               $("a#login").text('Login');
-               setup_login();
-            }        
-         }
-         
-         $(function() {
-            setup_action();
-         })
-      
-      </script>
-
 </body>    
 </html> 

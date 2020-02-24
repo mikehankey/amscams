@@ -127,6 +127,23 @@ def get_template(file):
       text += line
    return(text)
 
+
+def add_section(id,link_from_tab,tab_content,TAB, TAB_CONTENT, cur=False):
+   
+   if(cur is True):
+      ext_ = 'active'
+      b = 'show'
+   else:
+      ext_ = ''
+      b =''
+
+   TAB += '<li class="nav-item"><a class="nav-link '+ext_+'" id="'+id+'-tab" data-toggle="tab" href="#'+id+'" role="tab" aria-controls="'+id+'" aria-selected="true">'+link_from_tab+'</a></li>'
+   if(tab_content is not None):
+      TAB_CONTENT += '<div class="tab-pane fade '+b+'  '+ext_+'" id="'+id+'" role="tabpanel" aria-labelledby="'+id+'-tab">'+tab_content+'</div>'
+   
+   return TAB, TAB_CONTENT 
+
+
 def make_station_report(day, proc_info = ""):
    template = get_template("templates/allsky.tv.base.html") 
 
@@ -137,93 +154,68 @@ def make_station_report(day, proc_info = ""):
    show_day = mon + "/" + dom + "/"+ year
    STATION_RPT_DIR =  "/mnt/archive.allsky.tv/" + station + "/REPORTS/" + year + "/" + mon + "_" + dom + "/"
    NOAA_DIR =  "/mnt/archive.allsky.tv/" + station + "/NOAA/ARCHIVE/" + year + "/" + mon + "_" + dom + "/"
+   
+   template = template.replace("{STATION_ID}", station)
+   template = template.replace("{DAY}", show_day)
+
+
    if cfe(STATION_RPT_DIR, 1) == 0:
       os.makedirs(STATION_RPT_DIR)
+   
    html_index = STATION_RPT_DIR + "index.html"
    noaa_files = glob.glob(NOAA_DIR + "*.jpg")
    data = {}
    data['files'] = noaa_files
 
    events,event_files = load_events(day)
-   single_html, multi_html,info= html_get_detects(day, station, event_files,events)
+   single_html, multi_html, info= html_get_detects(day, station, event_files,events)
    detect_count = info['mc']
-
-   header_html, footer_html = html_header_footer()
-
-
+ 
    show_date = day.replace("_", "/")
  
+   TAB= ''
+   TAB_CONTENT = ''
+
+
+   # LIVE VIEW
    live_view_html = ""
    if len(data['files']) > 0:
       data['files'] = sorted(data['files'], reverse=True)
       fn = data['files'][0].replace("/mnt/archive.allsky.tv", "")
-      live_view_html += "<img src=" + fn + ">\n"
+      live_view_html += "<img src='" + fn + "' class='img-fluid'/>"
+ 
+   TAB, TAB_CONTENT = add_section('live','Live View',live_view_html, TAB, TAB_CONTENT)
+   print(TAB)
 
-   if live_view_html != "":
-      live_section = html_section("live", "Live View", live_view_html)
-   else:
-      live_section = ""
-   template = template.replace("{STATION_ID}", station)
-   template = template.replace("{DAY}", show_day)
-   template = template.replace("{LIVE_VIEW}", live_section)
-
+   # WEATHER SNAP SHOTS
    we_html = ""
    if len(data['files']) > 0:
       for file in sorted(data['files'],reverse=True):
          fn = file.replace("/mnt/archive.allsky.tv", "")
-         we_html += "<img src=" + fn + "><BR>\n"
-      weather_section = html_section("weather", "Weather Snap Shots", we_html)
-   else:
-      weather_section = ""
-   template = template.replace("{WEATHER_SNAPSHOTS}", weather_section)
+         we_html += "<img src='" + fn + "' class='img-fluid'>"
+ 
+   TAB, TAB_CONTENT = add_section('weather','Weather Snap Shots',we_html, TAB, TAB_CONTENT, True)
+    
+   # Proccess Info
+   if(proc_info != ''):
+      TAB, TAB_CONTENT = add_section('proc_info','Processing Info',proc_info, TAB, TAB_CONTENT) 
 
-   proc_section = html_section("proc_info", "Processing Info", proc_info)
-   template = template.replace("{PROC_REPORT}", proc_section)
+   # Multi-station meteor 
+   TAB, TAB_CONTENT = add_section('multi',"Multi Station Meteors (" + str(info['ms_count']) + ")","<div class='d-flex align-content-start flex-wrap'>" + multi_html + "</div>", TAB, TAB_CONTENT) 
+  
+   # Single-station meteor
+   TAB, TAB_CONTENT = add_section('single',"Single Station Meteors (" + str(info['ss_count']) + ")","<div class='d-flex align-content-start flex-wrap'>" + single_html + "</div>", TAB, TAB_CONTENT) 
 
-   title = "Multi Station Meteors (" + str(info['ms_count']) + ")"
-   meteor_section = html_section("multi_meteors", title , "<div class='d-flex align-content-start flex-wrap'>" + multi_html + "</div>")
-   template = template.replace("{MULTI_METEORS}", meteor_section)
-
-   title = "Single Station Meteors (" + str(info['ss_count']) + ")"
-   meteor_section = html_section("single_meteors", title , "<div class='d-flex align-content-start flex-wrap'>" + single_html + "</div>")
-   template = template.replace("{SINGLE_METEORS}", meteor_section)
+   
+   template = template.replace("{TABS}", TAB)
+   template = template.replace("{TABS_CONTENT}", TAB_CONTENT)
  
    fpo = open(html_index, "w")
    fpo.write(template)
    fpo.close()
    print(html_index)
-
-
-
-
-
-
-def do_css():
-   css = """
-
-      <style>
-         #pending {
-            background-color: blue;
-            color: black;
-            float: left;
-            padding: 5px;
-         }
-         #arc {
-            background-color: green;
-            color: black; 
-            float: left;
-            padding: 5px;
-         }
-         #multi {
-            background-color: red;
-            color: black; 
-            float: left;
-            padding: 5px;
-         }
-      </style>
-
-   """
-   return(css)
+  
+ 
 
 def html_section(ID, TITLE,CONTENT ):
    sec = """
@@ -237,7 +229,7 @@ def html_section(ID, TITLE,CONTENT ):
          </div>
          <div id="{ID}Content" class="collapse" aria-labelledby="{ID}Heading" data-parent="#main_content">
             <div class="card-body">
-                            {CONTENT}
+                  {CONTENT}
             </div>
          </div>
       </div>
@@ -367,37 +359,12 @@ def html_get_detects(day,tsid,event_files, events):
    return(single_html, multi_html, info)
 
 
-def html_header_footer(info=None):
-   js = javascript()
-   css = do_css() 
-   html_header = """
-     <head>
-        <meta http-equiv="Cache-control" content="public, max-age=500, must-revalidate">
-   """
-   html_header += js + "\n" + css + """
-     </head>
-   """
-
-   html_footer = """
-
-   """
+def html_header_footer(info=None): 
+   html_header = ''
+   html_footer = ''
    return(html_header, html_footer)
 
-def javascript():
-   js = """
-      <script>
-      function showHideDiv(myDIV) {
-         var x = document.getElementById(myDIV);
-         if (x.style.display === "none") {
-            x.style.display = "block";
-         } else {
-            x.style.display = "none";
-         }
-      }
-
-      </script>
-   """
-   return(js)
+ 
 
 
 def get_processing_status(day):
@@ -444,21 +411,21 @@ def do_all(day):
 
    # figure out how much of the day has completed processing
    rpt = """ 
-                             <dl class="row">
-                                <dt class="col-3">Time Check</dt><dd class="col-9">{:s}</dd>
-                                <dt class="col-3">Processing report for day</dt><dd class="col-9">{:s}</dd>
-                                <dt class="col-3">Processing videos</dt><dd class="col-9">{:s}</dd>
-                                <dt class="col-3">Processed Thumbs</dt><dd class="col-9">{:s}</dd>
-                                <dt class="col-3">Un-Processed Daytime Videos</dt><dd class="col-9">{:s}</dd>
-                                <dt class="col-3">Un-Processed CAMS Queue</dt><dd class="col-9">{:s}</dd>
-                                <dt class="col-3">Un-Processed IN Queue</dt><dd class="col-9">{:s}</dd>
-                                <dt class="col-3">Possible Meteor Detections</dt><dd class="col-9">{:s}</dd>
-                                <dt class="col-3">Archived Meteors</dt><dd class="col-9">{:s}</dd>
-                                <dt class="col-3">Unique Meteors</dt><dd class="col-9">{:s}</dd>
-                                <dt class="col-3">Multi-station Events</dt><dd class="col-9">{:s}</dd>
-                                <dt class="col-3">Solved Events</dt><dd class="col-9">{:s}</dd>
-                                <dt class="col-3">Events That Failed to Solve</dt><dd class="col-9">{:s}</dd>
-                             </dl>
+      <dl class="row">
+         <dt class="col-3">Time Check</dt><dd class="col-9">{:s}</dd>
+         <dt class="col-3">Processing report for day</dt><dd class="col-9">{:s}</dd>
+         <dt class="col-3">Processing videos</dt><dd class="col-9">{:s}</dd>
+         <dt class="col-3">Processed Thumbs</dt><dd class="col-9">{:s}</dd>
+         <dt class="col-3">Un-Processed Daytime Videos</dt><dd class="col-9">{:s}</dd>
+         <dt class="col-3">Un-Processed CAMS Queue</dt><dd class="col-9">{:s}</dd>
+         <dt class="col-3">Un-Processed IN Queue</dt><dd class="col-9">{:s}</dd>
+         <dt class="col-3">Possible Meteor Detections</dt><dd class="col-9">{:s}</dd>
+         <dt class="col-3">Archived Meteors</dt><dd class="col-9">{:s}</dd>
+         <dt class="col-3">Unique Meteors</dt><dd class="col-9">{:s}</dd>
+         <dt class="col-3">Multi-station Events</dt><dd class="col-9">{:s}</dd>
+         <dt class="col-3">Solved Events</dt><dd class="col-9">{:s}</dd>
+         <dt class="col-3">Events That Failed to Solve</dt><dd class="col-9">{:s}</dd>
+      </dl>
    """.format(str(time_check), str(day), str(len(proc_vids)), str(len(proc_tn_imgs)), str(len(day_vids)), str(len(cams_queue)), str(len(in_queue)), str(len(detect_files)), str(len(arc_files)), "UM", "MSM", "SE", "F")
 
 

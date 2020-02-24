@@ -31,6 +31,8 @@ def api_controller(form):
 
    api_function = form.getvalue('function')
    tok = form.getvalue('tok') 
+   st = form.getvalue('st')
+   user = form.getvalue('user')
 
    # TEST API FUNCTION
    if(api_function is None):
@@ -46,8 +48,8 @@ def api_controller(form):
       if(tok is None):
          send_error_message('Tok is missing')         
 
-      # For everything else, we need to have a token passed
-      test_access = test_api_login(tok)
+      # For everything else, we need to have a token passed 
+      test_access = test_api_login(st,tok,user)
    
       if(test_access==False or test_access is None):
          send_error_message('You are not authorized')
@@ -65,16 +67,11 @@ def API_login(form):
    station = form.getvalue('st')
    user = form.getvalue('user') 
    password = form.getvalue('pwd')
-   test_log = False
+   test_log = False 
 
-   if(user is not None and password is not None):
+   if(user is not None and password is not None and station is not None):
 
-      # The 'users' have to pick a station
-      # while the manager are required to...
-      if(station is not None):
-         pwd_file = JSON_USER_PWD
-      else:
-         pwd_file = JSON_MANAGER_PWD
+      pwd_file = JSON_USER_PWD
  
       user = user.strip() 
  
@@ -90,24 +87,27 @@ def API_login(form):
                if(acc['st']==station and acc['usr']==user and acc['pwd']==password):
                   test_log = True
                   break 
-            #MANAGER
-            elif(acc['usr']==user and acc['pwd']==password):
-                  test_log = True
-                  break 
+           ##MANAGER
+           # elif(acc['usr']==user and acc['pwd']==password):
+           #       test_log = True
+           #       break 
       
 
       if(test_log is True):
          _date, tok = create_token() 
 
          # Add the token to the current list of available token
-         write_new_access(user,tok,_date)
+         write_new_access(user,tok,_date,station)
+
+         # We clean the accesslog
+         test_api_login(station,tok,user) 
 
          return json.dumps({'token':tok,'expire':_date})
       else:
          return send_error_message('You are not authorized')
 
    else:
-         return send_error_message('You need send at least a username and a password (and a station ID if you are not a manager ).')
+         return send_error_message('You need send at least a username, a password and a station ID.')
  
 
 # DELETE function
@@ -116,6 +116,9 @@ def delete_detection(form):
    user = form.getvalue('user') 
    station = form.getvalue('st')
    detect_id = form.getvalue('detect') 
+
+   if(detect_id is None):
+      send_error_message('detect (detection ID) is required')
 
    now = datetime.now()
 
@@ -128,9 +131,9 @@ def delete_detection(form):
 
 
 # Write new access in proper file
-def write_new_access(user,tok,_date):
+def write_new_access(user,tok,_date,st):
    f = open(ACCESS_FILE,"a+")
-   f.write(tok + "|" + _date + "\r\n")
+   f.write(tok + "|" + _date + "|" + st + "|" + user +"\r\n")
    f.close()
  
 
@@ -146,7 +149,7 @@ def create_token():
 
 
 # TEST API LOGIN  (remove all the access that are tool old)
-def test_api_login(tok):
+def test_api_login(st,tok,user):
     
    # Do the access file exists?
    if(os.path.isfile(ACCESS_FILE) == False):
@@ -158,19 +161,26 @@ def test_api_login(tok):
 
    newlines = []
    ok = False
-   
+   t = False
+   c = 0 
+
    for line in lines:
       tmp = line.split('|') 
 
-      if(EXTRA_CODE_IN_TOKEN in tmp[0]):
-         tok_to_test = tmp[0]
-         time_to_test = tmp[1]
+      tok_to_test = tmp[0]
+      time_to_test = tmp[1]
+      station_to_test = tmp[2]
+      user_to_test = tmp[3]
+      
+      # If we already have a valid token
+      # we don't rewrite it on the access log
+      if(tok == tok_to_test and user == user_to_test and st == station_to_test and ok is True):
+         t = False 
       else:
-         time_to_test = tmp[0]
-         tok_to_test = tmp[1] 
-
+         t = True
+   
       # Test the tok
-      if(tok==tok_to_test):
+      if(t is True):
 
          # We need to check the date
          valid_date = datetime.strptime(time_to_test,  "%a, %d-%b-%Y %H:%M:%S GMT")
@@ -181,27 +191,17 @@ def test_api_login(tok):
          # It hasn't expired!!  
          if(now<valid_date):
             newlines.append(line)
-            ok = True
-      else:
-         # We need to check the date
-         valid_date = datetime.strptime(time_to_test,  "%a, %d-%b-%Y %H:%M:%S GMT")
+            ok = True 
+ 
 
-         # Is date ok?
-         now = datetime.now() 
-
-         if(now<valid_date):
-            newlines.append(line)
 
    # Write the new lines in ACCESS_LOG
    with open(ACCESS_FILE, 'w') as outfile:
       for line in newlines:
-         outfile.write(line + "\r\n")
+         outfile.write(line + "\r\n")      
 
-   if(ok is True):
-      return True
-
-   return False
-         
+   return ok
+ 
  
         
 

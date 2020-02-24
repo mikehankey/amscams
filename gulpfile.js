@@ -90,27 +90,6 @@ function css() {
 }
 
 
-function cssA() {
-   return   gulp.src('./src/sass/allsky.scss')
-   .pipe(sourcemaps.init())
-   .pipe(plumber())
-   .pipe(sass({
-     outputStyle: "compressed"
-   }))
-   .on("error", sass.logError)
-   //.pipe(autoprefixer({
-   //  browsers: ['last 2 versions'],
-   //  cascade: false
-   //}))  
-   .pipe(gulp.dest('./dist/css'))
-   .pipe(rename({
-     suffix: ".min"
-   }))
-   .pipe(cleanCSS()) 
-   .pipe(gulp.dest("./dist/css"))
-   //.pipe(sourcemaps.write())
-   .pipe(gulp.dest("./dist/css")) 
- }
 
 
 
@@ -149,10 +128,57 @@ function js() {
     .pipe(gulp.dest('./dist/js'));
 }
 
+
+
+// API
+function jsAPI() {
+   return gulp
+     .src([
+       './tmp_APPS/src/js/framework/popper.min.js',
+       './tmp_APPS/src/js/framework/jquery.min.js',
+       './tmp_APPS/src/js/framework/bootstrap.js',
+     ])
+     .pipe(concat('allskytv.min.js').on('error', function(e){
+         console.log('CONCAT ' + e);
+     }))
+     .pipe(gulp.dest('./tmp_APPS/dist/js')) 
+     .pipe(uglify().on('error', function(e){
+         console.log('CONCAT ' + e);
+     })) 
+     .pipe(gulp.dest('./dist/js'));
+ }
+
+
+ function cssAPI() {
+   return  gulp.src('./tmp_APPS/src/sass/allskytv.scss')
+   .pipe(sourcemaps.init())
+   .pipe(plumber())
+   .pipe(sass({
+     outputStyle: "compressed"
+   }))
+   .on("error", sass.logError)
+   //.pipe(autoprefixer({
+   //  browsers: ['last 2 versions'],
+   //  cascade: false
+   //}))  
+   .pipe(gulp.dest('./tmp_APPS/dist/css'))
+   .pipe(rename({
+     suffix: ".min"
+   }))
+   .pipe(cleanCSS()) 
+   .pipe(gulp.dest("./tmp_APPS/dist/css"))
+   //.pipe(sourcemaps.write())
+   .pipe(gulp.dest("./tmp_APPS/dist/css")) 
+ }
+
+
+
+
 // Tasks
 gulp.task("css", css);
 gulp.task("js", js);
-gulp.task("cssA", cssA); 
+gulp.task("cssAPI", cssAPI); 
+gulp.task("jsAPI", jsAPI); 
 
 
 // JS task for BoostrapFileInput

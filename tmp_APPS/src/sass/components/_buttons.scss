@@ -1,0 +1,25 @@
+.btn, .card, .nav-link {
+   -moz-transition: all .3s cubic-bezier(.25,.8,.25,1);
+    -o-transition: all .3s cubic-bezier(.25,.8,.25,1);
+    -webkit-transition: all .3s cubic-bezier(.25,.8,.25,1);
+    transition: all .3s cubic-bezier(.25,.8,.25,1);
+}
+
+.btn {
+   cursor: pointer;
+}
+
+.btn-primary {
+   background-color: #ffa200;
+   color: #fff!important;
+   font-weight: 700;
+   border-color: transparent;
+   text-transform: uppercase;
+   letter-spacing: .1rem;
+   border:none medium!important;
+
+   &:hover, &:focus {
+      background-color: #ff9000;
+      color:#fff!important;
+   }
+}

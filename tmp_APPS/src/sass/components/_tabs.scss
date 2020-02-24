@@ -1,0 +1,33 @@
+.nav-tabs {
+   border:none medium;
+   background: #203f5a;
+   padding: 0.4rem;
+   border-radius: .25rem .25rem 0 0 ;
+
+   .nav-link { 
+         border: none medium;
+         font-weight: bold;
+         border-radius: .25rem;
+         color:#fff!important;
+
+      &:hover, &:focus {
+         background: #355877
+      }
+
+
+      &.active {
+         background:#fff;
+         color:#495057!important;
+      }
+
+   }
+
+   .nav-item { 
+      margin: 0 .3rem 0 0;
+   }
+}
+
+.tab-content {
+   border: 1px solid #203f5a;
+   background-color:#fff;
+}
