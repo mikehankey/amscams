@@ -119,6 +119,5 @@ function setup_login() {
       })
 
       return false;
-   })
-
+   }) 
 }     
