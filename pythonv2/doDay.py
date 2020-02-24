@@ -392,7 +392,7 @@ def do_all(day):
 
    # figure out how much of the day has completed processing
    rpt = """ 
-      <dl class="row p^-4">
+      <dl class="row p-4">
          <dt class="col-3">Time Check</dt><dd class="col-9">{:s}</dd>
          <dt class="col-3">Processing report for day</dt><dd class="col-9">{:s}</dd>
          <dt class="col-3">Processing videos</dt><dd class="col-9">{:s}</dd>

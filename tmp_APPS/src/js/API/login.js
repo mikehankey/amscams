@@ -1,3 +1,5 @@
+COOKIE_NAME = "APIa"
+
 // UI transformed after loggined (add delete buttons)
 function add_buttons() {
    if(LOGGEDIN && TOK!=='') {
@@ -16,12 +18,12 @@ function add_buttons() {
 
 // Remove Login Cookie
 function logout() {
-
+   eraseCookie(COOKIE_NAME)
 }
 
 
-// Update UI based on logged or not
-function loggedin() {
+// Update UI based on logged or not 
+function loggedin(TOK,EXPIRE) {
    if(LOGGEDIN) {
 
       // Logout Button
@@ -32,7 +34,7 @@ function loggedin() {
       });
 
       // Create Cookie
-      createCookie("name"," value","")
+      createCookie(COOKIE_NAME,TOK,EXPIRE)
 
       // Add buttons
       add_buttons();
@@ -104,7 +106,7 @@ function setup_login() {
                      LOGGEDIN = true;
                      TOK = data.token;
                      EXPIRE = data.expire; 
-                     loggedin();    
+                     loggedin(TOK,EXPIRE);    
                   } 
                }, 
                error:function() { 
