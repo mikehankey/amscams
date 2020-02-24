@@ -131,10 +131,11 @@ def get_template(file):
 def add_section(link_from_tab,tab_content):
    TAB= ''
    TAB_CONTENT = ''
+   link_from_tabst = link_from_tabst.strip()
 
    if(tab_content is not None):
-      TAB = '<li class="nav-item"><a class="nav-link" id="'+link_from_tab+'-tab" data-toggle="tab" href="#'+link_from_tab+'" role="tab" aria-controls="'+link_from_tab+'" aria-selected="true">Home</a></li>'
-      TAB_CONTENT = '<div class="tab-pane fade show" id="'+link_from_tab+'" role="tabpanel" aria-labelledby="'+link_from_tab+'-tab">'+tab_content+'</div>'
+      TAB = '<li class="nav-item"><a class="nav-link" id="'+link_from_tabst+'-tab" data-toggle="tab" href="#'+link_from_tabst+'" role="tab" aria-controls="'+link_from_tabst+'" aria-selected="true">'+link_from_tab+'</a></li>'
+      TAB_CONTENT = '<div class="tab-pane fade show" id="'+link_from_tabst+'" role="tabpanel" aria-labelledby="'+link_from_tabst+'-tab">'+tab_content+'</div>'
    
    return TAB, TAB_CONTENT 
 
@@ -179,13 +180,13 @@ def make_station_report(day, proc_info = ""):
       fn = data['files'][0].replace("/mnt/archive.allsky.tv", "")
       live_view_html += "<img src='" + fn + "' class='img-fluid'/>"
 
-   tabView, tabContentView = add_section('live',live_view_html)
+   tabView, tabContentView = add_section('Live View',live_view_html)
    
    TAB += tabView
    TAB_CONTENT += tabContentView
    
    template = template.replace("{TABS}", TAB)
-   template = template.replace("{TAB_CONTENT}", TAB_CONTENT)
+   template = template.replace("{TABS_CONTENT}", TAB_CONTENT)
 
 
    template = template.replace("{LIVE_VIEW}", live_view_html)
