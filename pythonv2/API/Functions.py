@@ -170,9 +170,13 @@ def test_api_login(st,tok,user):
       # If we already have a valid token
       # we don't rewrite it on the access log
       if(tok is tok_to_test and user is user_to_test and st is station_to_test and ok is True):
-         t = False
+         t = False 
       else:
          t = True
+
+      print("t is ")
+      print(t)
+
 
       # Test the tok
       if(tok is tok_to_test and user is user_to_test and st is station_to_test and t is True):
