@@ -7,8 +7,7 @@ var USR;
 function setup_action() {
    setup_login();
 }
- 
-
+  
 $(function() {
    setup_action();
 })

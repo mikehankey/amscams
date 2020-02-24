@@ -48,7 +48,9 @@ function setup_login() {
    // Login
    $('#login').unbind('click').click(function(e){
       e.stopImmediatePropagation();
-      $('#login_modal').remove();
+      $('#login_modal').modal('hide')
+      $('#login_modal,.modal-backdrop').remove();
+      
 
       $('<div id="login_modal" class="modal fade" tabindex="-1" role="dialog"><div class="modal-dialog modal-dialog-centered" style="max-width:300px" role="document">\
       <div class="modal-content">\
@@ -74,7 +76,9 @@ function setup_login() {
             </form>\
          </div>\
       </div></div></div></div>').appendTo('body');
+
       $('#login_modal').modal('show');
+
       $('#subm_login').click(function() {
             // So we can send the USR to the API
             USR = $('input[name=username]').val();
