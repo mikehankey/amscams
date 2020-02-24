@@ -9,7 +9,7 @@ function test_logged_in() {
 // UI transformed after loggined (add delete buttons)
 function add_login_stuff() {
     
-      // Add bbuttons
+      // Add buttons
       $('.prevproc').each(function() {
          $('<div class="btn-toolbar">\
             <div class="btn-group">\
@@ -20,6 +20,13 @@ function add_login_stuff() {
 
       setup_delete_buttons();
    
+}
+
+// Remove Login Stuff
+function remove_login_stuff() {
+
+   // Remove Delete Buttons
+   $('.prevproc .btn-toolbar').remove();
 }
 
 
