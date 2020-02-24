@@ -177,8 +177,7 @@ def make_station_report(day, proc_info = ""):
       live_view_html += "<img src='" + fn + "' class='img-fluid'/>"
  
    TAB, TAB_CONTENT = add_section('live','Live View',live_view_html, TAB, TAB_CONTENT)
-   
-   #template = template.replace("{LIVE_VIEW}", live_view_html)
+   print(TAB)
 
    # WEATHER SNAP SHOTS
    we_html = ""
