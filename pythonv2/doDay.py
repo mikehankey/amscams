@@ -178,7 +178,7 @@ def make_station_report(day, proc_info = ""):
       data['files'] = sorted(data['files'], reverse=True)
       fn = data['files'][0].replace("/mnt/archive.allsky.tv", "")
       live_view_html += "<img src='" + fn + "' class='img-fluid'/>"
-
+ 
    tabView, tabContentView = add_section('Live View',live_view_html)
    
    TAB += tabView
