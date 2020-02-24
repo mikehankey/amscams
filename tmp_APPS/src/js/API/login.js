@@ -8,7 +8,7 @@ function test_logged_in() {
 
 // UI transformed after loggined (add delete buttons)
 function add_buttons() {
-   if(LOGGEDIN && TOK!=='') {
+    
       $('.prevproc').each(function() {
          $('<div class="btn-toolbar">\
             <div class="btn-group">\
@@ -18,7 +18,7 @@ function add_buttons() {
       });
 
       setup_delete_buttons();
-   }
+   
 }
 
 
