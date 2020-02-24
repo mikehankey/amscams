@@ -128,7 +128,7 @@ def delete_detection(form):
 # Write new access in proper file
 def write_new_access(user,tok,_date,st):
    f = open(ACCESS_FILE,"a+")
-   f.write(tok + "|" + _date + "|" + st "|" + user +"\r\n")
+   f.write(tok + "|" + _date + "|" + st + "|" + user +"\r\n")
    f.close()
  
 
