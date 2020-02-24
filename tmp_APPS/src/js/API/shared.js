@@ -8,4 +8,7 @@ function setup_action() {
 $(function() {
    add_login_modal();
    setup_action();
+
+   // Test if we are loggedin
+   loggedin();
 })
