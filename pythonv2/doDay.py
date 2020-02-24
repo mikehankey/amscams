@@ -217,29 +217,6 @@ def make_station_report(day, proc_info = ""):
   
  
 
-def html_section(ID, TITLE,CONTENT ):
-   sec = """
-      <div class="card box p-0">
-         <div class="card-header" id="{ID}Heading">
-            <h2 class="mb-0">
-               <button class="btn btn-link p-0 d-block" type="button" data-toggle="collapse" data-target="#{ID}Content" aria-expanded="true"  aria-controls="{ID}Content">
-                   {TITLE}
-               </button>
-            </h2>
-         </div>
-         <div id="{ID}Content" class="collapse" aria-labelledby="{ID}Heading" data-parent="#main_content">
-            <div class="card-body">
-                  {CONTENT}
-            </div>
-         </div>
-      </div>
-
-   """
-   sec = sec.replace("{ID}", ID)
-   sec = sec.replace("{TITLE}", TITLE)
-   sec = sec.replace("{CONTENT}", CONTENT)
-   return(sec)
-
 def html_get_detects(day,tsid,event_files, events):
    year = day[0:4]
    mi = "/mnt/ams2/meteor_archive/" + json_conf['site']['ams_id'] + "/DETECTS/MI/" + year + "/" +  day + "-meteor_index.json"
@@ -411,7 +388,7 @@ def do_all(day):
 
    # figure out how much of the day has completed processing
    rpt = """ 
-      <dl class="row">
+      <dl class="row p^-4">
          <dt class="col-3">Time Check</dt><dd class="col-9">{:s}</dd>
          <dt class="col-3">Processing report for day</dt><dd class="col-9">{:s}</dd>
          <dt class="col-3">Processing videos</dt><dd class="col-9">{:s}</dd>
