@@ -2108,6 +2108,16 @@ def reset(video_file, type):
 def examine_min(video_file,json_conf):
    failed_files, meteor_files, pending_files = get_trims_for_file(video_file)
    stack_file = stack_file_from_video(video_file)
+   vals_file = stack_file.replace("-stacked.png", "-vals.json")
+   vals_file = vals_file.replace("images", "data")
+   detect_file = stack_file.replace("-stacked.png", "-detect.json")
+   meteor_file = stack_file.replace("-stacked.png", "-meteor.json")
+
+   if cfe(vals_file) == 1:
+      vals = load_json_file(vals_file)
+   else:
+      print(vals_file, "not found<HR>")
+
    next_stack_file = stack_file_from_video(video_file)
   
 
@@ -2115,19 +2125,18 @@ def examine_min(video_file,json_conf):
    print("<div id='main_container' class='container-fluid d-flex h-100 mt-4 position-relative'>")
 
    print("<div class='h-100 flex-fixed-canvas'>")
-
+   stack_file = stack_file.replace(".png", "-tn.png")
    if os.path.isfile(stack_file):
       print("<a href='" + video_file + "' class='vid_link_gal mx-auto d-block' title='Click to Play'><img src='" + stack_file + "' class='mx-auto d-block img-fluid' style='width:100%'></a>")
    else:
       print("<div class='alert error'>The Stack Image isn't ready yet.</div>")
 
    print("</div>")
+
+
    print("<div class='flex-fixed-r-canvas h-100'>")
    print("<div class='box'><h2 class='mb-4'>Actions</h2>")
    print("<a class='btn btn-primary mx-auto d-block mb-2' href='webUI.py?cmd=manual_detect&sd_video_file=" + video_file + "'>Manually Detect</a>")
-   print("<a class='btn btn-primary mx-auto d-block mb-2' href='webUI.py?cmd=choose_file&input_file=" + video_file + "'>Calibrate Star Field</a>")
-   print("<a class='btn btn-primary mx-auto d-block mb-2' href='webUI.py?cmd=add_stars_to_fit_pool&input_file=" + video_file + "'>Add Stars To Fit Pool</a>")
-   print("<a class='btn btn-primary mx-auto d-block mb-2' href='webUI.py?cmd=sat_cap&input_file=" + video_file + "&stack_file=" + stack_file + "&next_stack_file=" + next_stack_file + "'>Add / Reduce Satellite Capture</a>")
    print("</div>")
 
    print("<div class='box'><h2>Status</h2>")
@@ -2160,7 +2169,91 @@ def examine_min(video_file,json_conf):
       print("<p class='text-center alert error'><b>NO Detection</b></p>")
    #print(failed_files,meteor_files)
 
-   print("</div></div></div></div></div>") 
+
+   print("</div>")
+   print("</div>")
+   print("</div></div>")
+
+
+
+   out = ""
+   last_i = None
+   if cfe(vals_file) == 1:
+      for i in range (0, len(vals['sum_vals'])):
+         sum_val = vals['sum_vals'][i] 
+         if last_i is not None and last_i + 1 == i:
+            cm += 1
+         else: 
+            cm = 0
+         if sum_val > 0:
+            max_val = vals['max_vals'][i] 
+            mx, my = vals['pos_vals'][i] 
+            #print(i,sum_val,max_val,mx,my,"<BR>")
+            out += """
+            <tr><td></td><td></td><td>{:s}</td>
+            <td class='td'>{:s}</td>
+            <td class='td'>{:s}</td>
+            <td class='td'>{:s}, {:s}</td>
+            <td class='td'>{:s}</td>
+            <td class='td' colspan=4></td>
+
+            </tr>
+            """.format(str(i), str(sum_val), str(max_val), str(mx), str(my), str(cm))
+            last_i = i
+
+   obj_out = ""
+   print("""
+       <div id="main_container" class="container-fluid d-flex h-100 mt-4 position-relative"> 
+        <div class="h-100 flex-fixed-canvas">
+
+            <ul class="nav nav-tabs mt-3">
+                <li class="nav-item">
+                    <a class="nav-link active" id="frames-tab-l" data-toggle="tab" href="#frames-tab" role="tab" aria-controls="frames" aria-selected="true">Frame Data</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" id="objs-tab-l" data-toggle="tab" href="#objs-tab" role="tab" aria-controls="objs" aria-selected="false"><span id="str_cnt"></span>Objects</a>
+                </li>
+            </ul>
+
+
+            <div class="tab-content box " > 
+
+                <div class="tab-pane fade show active pr-3" id="frames-tab" role="tabpanel" aria-labelledby="frames-tab-l">
+                    
+   <table class="table table-dark table-striped table-hover td-al-m mb-2 pr-5" >
+      <thead>
+         <tr>
+            <th></th><th></th><th>#</th><th>Sum Val</th><th>Max Val</th><th>BP X,Y</th><th>CM</th><th colspan=4>
+         </tr>
+      </thead>
+   """ + out + """   
+   <tbody></tbody>
+   </table>
+
+            </div>
+
+
+                <div class="tab-pane fade show active pr-3" id="objs-tab" role="tabpanel" aria-labelledby="objs-tab-l">
+                    
+   <table class="table table-dark table-striped table-hover td-al-m mb-2 pr-5" >
+      <thead>
+         <tr>
+            <th></th><th></th><th>OBJ ID</th><th>FNs</th><th>X,Ys</th><th>Max Vals</th><th colspan=4>
+         </tr>
+      </thead>
+   """ + obj_out + """   
+   <tbody></tbody>
+   </table>
+
+            </div></div>
+
+   """)
+
+   print("""
+       </ul>
+       </div>
+       </div>
+   """)
 
 
 
