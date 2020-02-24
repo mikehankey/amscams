@@ -7,7 +7,7 @@ import os
 import cv2
 import glob
 
-from lib.UtilLib import calc_dist,find_angle, best_fit_slope_and_intercept
+from lib.UtilLib import calc_dist,find_angle, best_fit_slope_and_intercept, check_running
 from lib.FileIO import load_json_file, save_json_file, cfe
 from lib.flexLib import load_frames_fast, stack_frames_fast, convert_filename_to_date_cam, day_or_night
 from lib.VIDEO_VARS import PREVIEW_W, PREVIEW_H, SD_W, SD_H
@@ -19,7 +19,7 @@ json_conf = load_json_file("../conf/as6.json")
 
 def batch_ss(wildcard=None):
    if wildcard is not None:
-      glob_dir = "/mnt/ams2/SD/*wildcard*.mp4"
+      glob_dir = "/mnt/ams2/SD/*" + wildcard + "*.mp4"
    else:
       glob_dir = "/mnt/ams2/SD/*.mp4"
    print(glob_dir)
@@ -34,9 +34,19 @@ def batch_ss(wildcard=None):
       mtime = st.st_mtime
       tdiff = cur_time - mtime
       tdiff = tdiff / 60
-      
+      running = check_running("scan_stack.py") 
+      if running > 2:
+         wait = 1
+         while(running > 2):
+            time.sleep(5)
+            running = check_running("scan_stack.py") 
+            print("Running:", running)
       if (tdiff > 3):
-         scan_and_stack(file, sun_status)
+         cmd = "./scan_stack.py bs " + file + " " + sun_status + " &"
+         print(cmd)
+         os.system("./scan_stack.py ss " + file + " " + sun_status + " &") 
+         #exit()
+         #scan_and_stack(file, sun_status)
       else:
          print(tdiff)
 
@@ -62,16 +72,22 @@ def scan_and_stack(video_file, sun_status):
    proc_stack_file = proc_img_dir + stack_fn 
    proc_vid_file = proc_dir + vid_fn
 
+   if sun_status == "day":
+      resize = [PREVIEW_W,PREVIEW_H]
+   else:
+      resize = []
+
    vals = {}
    start_time = time.time()
-   sd_frames,sd_color_frames,sd_subframes,sum_vals,max_vals,pos_vals = load_frames_fast(video_file, json_conf, 0, 0, [], 1,[], sun_status)
+
+   sd_frames,sd_color_frames,sd_subframes,sum_vals,max_vals,pos_vals = load_frames_fast(video_file, json_conf, 0, 0, [], 1,resize, sun_status)
    vals['sum_vals'] = sum_vals
    vals['max_vals'] = max_vals
    vals['pos_vals'] = pos_vals
    elapsed_time = time.time() - start_time
    print("LOAD & SCAN TIME:", elapsed_time)
    if sun_status == "day":
-      skip = 5
+      skip = 10 
    else:
       skip = 1
    stacked_image = stack_frames_fast(sd_color_frames, skip, [PREVIEW_W, PREVIEW_H])
@@ -100,4 +116,4 @@ if sys.argv[1] == "bs":
       batch_ss()
 
 if sys.argv[1] == "ss":
-   scan_and_stack(sys.argv[2])
+   scan_and_stack(sys.argv[2], sys.argv[3])

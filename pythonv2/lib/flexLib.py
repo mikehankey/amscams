@@ -579,13 +579,18 @@ def load_frames_fast(trim_file, json_conf, limit=0, mask=0,crop=(),color=0,resiz
                go = 0
          else:
             if color == 1:
-               color_frames.append(frame)
+               if sun_status == "day" and frame_count % 25 == 0:
+                  color_frames.append(frame)
+               else:
+                  color_frames.append(frame)
             if limit != 0 and frame_count > limit:
                cap.release()
-               return(frames)
-            if len(frame.shape) == 3 :
-               frame = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
+               return(frames,color_frames,subframes,sum_vals,max_vals,pos_vals)
+            if len(resize) == 2:
+               frame = cv2.resize(frame, (resize[0],resize[1]))
+
             if sun_status == "night":
+               frame = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
                if mask == 1 and frame is not None:
                   if frame.shape[0] == 1080:
                      hd = 1
@@ -620,8 +625,6 @@ def load_frames_fast(trim_file, json_conf, limit=0, mask=0,crop=(),color=0,resiz
                   max_vals.append(max_val)
                   pos_vals.append((mx,my))
 
-            if len(resize) == 2:
-               frame = cv2.resize(frame, (resize[0],resize[1]))
 
             frames.append(frame)
             last_frame = frame
