@@ -188,7 +188,7 @@ def make_station_report(day, proc_info = ""):
    template = template.replace("{TAB_CONTENT}", TAB_CONTENT)
 
 
-   template = template.replace("{LIVE_VIEW}", live_section)
+   template = template.replace("{LIVE_VIEW}", live_view_html)
 
    we_html = ""
    if len(data['files']) > 0:
