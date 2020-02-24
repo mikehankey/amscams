@@ -46,7 +46,8 @@ function loggedin() {
 // Create Login Modal
 function setup_login() {
    // Login
-   $('#login').click(function(){
+   $('#login').unbind('click').click(function(e){
+      e.stopImmediatePropagation();
       $('#login_modal').remove();
 
       $('<div id="login_modal" class="modal fade" tabindex="-1" role="dialog"><div class="modal-dialog modal-dialog-centered" style="max-width:300px" role="document">\
