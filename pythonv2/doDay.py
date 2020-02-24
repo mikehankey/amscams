@@ -157,7 +157,7 @@ def make_station_report(day, proc_info = ""):
    if len(data['files']) > 0:
       data['files'] = sorted(data['files'], reverse=True)
       fn = data['files'][0].replace("/mnt/archive.allsky.tv", "")
-      live_view_html += "<img src=" + fn + ">\n"
+      live_view_html += "<img src='" + fn + "' class='img-fluid'/>"
 
    if live_view_html != "":
       live_section = html_section("live", "Live View", live_view_html)
@@ -171,7 +171,7 @@ def make_station_report(day, proc_info = ""):
    if len(data['files']) > 0:
       for file in sorted(data['files'],reverse=True):
          fn = file.replace("/mnt/archive.allsky.tv", "")
-         we_html += "<img src=" + fn + "><BR>\n"
+         we_html += "<img src='" + fn + "' class='img_fluid'>"
       weather_section = html_section("weather", "Weather Snap Shots", we_html)
    else:
       weather_section = ""
@@ -192,38 +192,8 @@ def make_station_report(day, proc_info = ""):
    fpo.write(template)
    fpo.close()
    print(html_index)
-
-
-
-
-
-
-def do_css():
-   css = """
-
-      <style>
-         #pending {
-            background-color: blue;
-            color: black;
-            float: left;
-            padding: 5px;
-         }
-         #arc {
-            background-color: green;
-            color: black; 
-            float: left;
-            padding: 5px;
-         }
-         #multi {
-            background-color: red;
-            color: black; 
-            float: left;
-            padding: 5px;
-         }
-      </style>
-
-   """
-   return(css)
+  
+ 
 
 def html_section(ID, TITLE,CONTENT ):
    sec = """
@@ -237,7 +207,7 @@ def html_section(ID, TITLE,CONTENT ):
          </div>
          <div id="{ID}Content" class="collapse" aria-labelledby="{ID}Heading" data-parent="#main_content">
             <div class="card-body">
-                            {CONTENT}
+                  {CONTENT}
             </div>
          </div>
       </div>
@@ -367,9 +337,7 @@ def html_get_detects(day,tsid,event_files, events):
    return(single_html, multi_html, info)
 
 
-def html_header_footer(info=None):
-   js = javascript()
-   css = do_css() 
+def html_header_footer(info=None): 
    html_header = """
      <head>
         <meta http-equiv="Cache-control" content="public, max-age=500, must-revalidate">
@@ -383,21 +351,7 @@ def html_header_footer(info=None):
    """
    return(html_header, html_footer)
 
-def javascript():
-   js = """
-      <script>
-      function showHideDiv(myDIV) {
-         var x = document.getElementById(myDIV);
-         if (x.style.display === "none") {
-            x.style.display = "block";
-         } else {
-            x.style.display = "none";
-         }
-      }
-
-      </script>
-   """
-   return(js)
+ 
 
 
 def get_processing_status(day):
@@ -444,21 +398,21 @@ def do_all(day):
 
    # figure out how much of the day has completed processing
    rpt = """ 
-                             <dl class="row">
-                                <dt class="col-3">Time Check</dt><dd class="col-9">{:s}</dd>
-                                <dt class="col-3">Processing report for day</dt><dd class="col-9">{:s}</dd>
-                                <dt class="col-3">Processing videos</dt><dd class="col-9">{:s}</dd>
-                                <dt class="col-3">Processed Thumbs</dt><dd class="col-9">{:s}</dd>
-                                <dt class="col-3">Un-Processed Daytime Videos</dt><dd class="col-9">{:s}</dd>
-                                <dt class="col-3">Un-Processed CAMS Queue</dt><dd class="col-9">{:s}</dd>
-                                <dt class="col-3">Un-Processed IN Queue</dt><dd class="col-9">{:s}</dd>
-                                <dt class="col-3">Possible Meteor Detections</dt><dd class="col-9">{:s}</dd>
-                                <dt class="col-3">Archived Meteors</dt><dd class="col-9">{:s}</dd>
-                                <dt class="col-3">Unique Meteors</dt><dd class="col-9">{:s}</dd>
-                                <dt class="col-3">Multi-station Events</dt><dd class="col-9">{:s}</dd>
-                                <dt class="col-3">Solved Events</dt><dd class="col-9">{:s}</dd>
-                                <dt class="col-3">Events That Failed to Solve</dt><dd class="col-9">{:s}</dd>
-                             </dl>
+      <dl class="row">
+         <dt class="col-3">Time Check</dt><dd class="col-9">{:s}</dd>
+         <dt class="col-3">Processing report for day</dt><dd class="col-9">{:s}</dd>
+         <dt class="col-3">Processing videos</dt><dd class="col-9">{:s}</dd>
+         <dt class="col-3">Processed Thumbs</dt><dd class="col-9">{:s}</dd>
+         <dt class="col-3">Un-Processed Daytime Videos</dt><dd class="col-9">{:s}</dd>
+         <dt class="col-3">Un-Processed CAMS Queue</dt><dd class="col-9">{:s}</dd>
+         <dt class="col-3">Un-Processed IN Queue</dt><dd class="col-9">{:s}</dd>
+         <dt class="col-3">Possible Meteor Detections</dt><dd class="col-9">{:s}</dd>
+         <dt class="col-3">Archived Meteors</dt><dd class="col-9">{:s}</dd>
+         <dt class="col-3">Unique Meteors</dt><dd class="col-9">{:s}</dd>
+         <dt class="col-3">Multi-station Events</dt><dd class="col-9">{:s}</dd>
+         <dt class="col-3">Solved Events</dt><dd class="col-9">{:s}</dd>
+         <dt class="col-3">Events That Failed to Solve</dt><dd class="col-9">{:s}</dd>
+      </dl>
    """.format(str(time_check), str(day), str(len(proc_vids)), str(len(proc_tn_imgs)), str(len(day_vids)), str(len(cams_queue)), str(len(in_queue)), str(len(detect_files)), str(len(arc_files)), "UM", "MSM", "SE", "F")
 
 
