@@ -32,6 +32,7 @@ def api_controller(form):
    api_function = form.getvalue('function')
    tok = form.getvalue('tok') 
    st = form.getvalue('st')
+   user = form.getvalue('user')
 
    # TEST API FUNCTION
    if(api_function is None):
@@ -48,7 +49,7 @@ def api_controller(form):
          send_error_message('Tok is missing')         
 
       # For everything else, we need to have a token passed
-      test_access = test_api_login(st,tok)
+      test_access = test_api_login(st,tok,user)
    
       if(test_access==False or test_access is None):
          send_error_message('You are not authorized')
@@ -144,7 +145,7 @@ def create_token():
 
 
 # TEST API LOGIN  (remove all the access that are tool old)
-def test_api_login(st,tok):
+def test_api_login(st,tok,user):
     
    # Do the access file exists?
    if(os.path.isfile(ACCESS_FILE) == False):
@@ -163,10 +164,11 @@ def test_api_login(st,tok):
       tok_to_test = tmp[0]
       time_to_test = tmp[1]
       station_to_test = tmp[2]
+      user_to_test = tmp[3]
       
 
       # Test the tok
-      if(tok==tok_to_test):
+      if(tok is tok_to_test and user is user_to_test and st is station_to_test):
 
          # We need to check the date
          valid_date = datetime.strptime(time_to_test,  "%a, %d-%b-%Y %H:%M:%S GMT")
@@ -178,13 +180,12 @@ def test_api_login(st,tok):
          if(now<valid_date):
             newlines.append(line)
             ok = True
-
-         # Is it the right station
-         if(tmp[2]!=st):
-            ok = False
-
+  
 
       else:
+
+         # Here we remove the olds ones
+
          # We need to check the date
          valid_date = datetime.strptime(time_to_test,  "%a, %d-%b-%Y %H:%M:%S GMT")
 
@@ -194,16 +195,14 @@ def test_api_login(st,tok):
          if(now<valid_date):
             newlines.append(line)
 
-         # Write the new lines in ACCESS_LOG
-         with open(ACCESS_FILE, 'w') as outfile:
-            for line in newlines:
-               outfile.write(line + "\r\n")
 
-   if(ok is True):
-      return True
+   # Write the new lines in ACCESS_LOG
+   with open(ACCESS_FILE, 'w') as outfile:
+      for line in newlines:
+         outfile.write(line + "\r\n")      
 
-   return False
-         
+return ok
+ 
  
         
 
