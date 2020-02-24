@@ -13,8 +13,8 @@ $gray-400: #ced4da !default;
 $gray-500: #adb5bd !default;
 $gray-600: #6c757d !default;
 $gray-700: #495057 !default;
-$gray-800: #021533 !default;
-$gray-900: #1d1d1d !default;
+$gray-800: #343a40 !default;
+$gray-900: #212529 !default;
 $black:    #000 !default;
 
 $grays: () !default;
@@ -71,9 +71,9 @@ $secondary:     $gray-600 !default;
 $success:       $green !default;
 $info:          $cyan !default;
 $warning:       $yellow !default;
-$danger:        #9b0808  !default;
+$danger:        $red !default;
 $light:         $gray-100 !default;
-$dark:          #071735 !default;  // Custom
+$dark:          $gray-800 !default;
 
 $theme-colors: () !default;
 // stylelint-disable-next-line scss/dollar-variable-default
@@ -740,8 +740,8 @@ $navbar-light-toggler-border-color: rgba($black, .1) !default;
 
 $navbar-light-brand-color:                $navbar-light-active-color !default;
 $navbar-light-brand-hover-color:          $navbar-light-active-color !default;
-$navbar-dark-brand-color:            #c1c9d4; //  CUSTOM   $navbar-dark-active-color !default;
-$navbar-dark-brand-hover-color:        #fff; //  CUSTOM  $navbar-dark-active-color !default;
+$navbar-dark-brand-color:                 $navbar-dark-active-color !default;
+$navbar-dark-brand-hover-color:           $navbar-dark-active-color !default;
 
 
 // Dropdowns
