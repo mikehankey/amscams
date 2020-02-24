@@ -212,7 +212,7 @@ def make_station_report(day, proc_info = ""):
    template = template.replace("{TABS_CONTENT}", TAB_CONTENT)
  
 
-   template = template.replace("{RAND}",random.randint(0, 99999999))
+   template = template.replace("{RAND}",str(random.randint(0, 99999999)))
 
    fpo = open(html_index, "w")
    fpo.write(template)
