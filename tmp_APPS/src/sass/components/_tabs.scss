@@ -2,6 +2,7 @@
    border:none medium;
    background: #203f5a;
    padding: 0.4rem;
+   border-radius: .25rem;
 
    .nav-link { 
          border: none medium;
@@ -11,6 +12,12 @@
 
       &:hover, &:focus {
          background: #355877
+      }
+
+
+      &.active {
+         background:#fff;
+         color:#495057;
       }
 
    }

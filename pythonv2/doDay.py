@@ -128,11 +128,18 @@ def get_template(file):
    return(text)
 
 
-def add_section(id,link_from_tab,tab_content,TAB, TAB_CONTENT):
+def add_section(id,link_from_tab,tab_content,TAB, TAB_CONTENT, cur=False):
    
-   TAB += '<li class="nav-item"><a class="nav-link" id="'+id+'-tab" data-toggle="tab" href="#'+id+'" role="tab" aria-controls="'+id+'" aria-selected="true">'+link_from_tab+'</a></li>'
+   if(cur is True):
+      ext_ = 'active'
+      b = 'show'
+   else:
+      ext_ = ''
+      b =''
+
+   TAB += '<li class="nav-item"><a class="nav-link '+ext_+'" id="'+id+'-tab" data-toggle="tab" href="#'+id+'" role="tab" aria-controls="'+id+'" aria-selected="true">'+link_from_tab+'</a></li>'
    if(tab_content is not None):
-      TAB_CONTENT += '<div class="tab-pane fade show" id="'+id+'" role="tabpanel" aria-labelledby="'+id+'-tab">'+tab_content+'</div>'
+      TAB_CONTENT += '<div class="tab-pane fade '+b+'  '+ext_+'" id="'+id+'" role="tabpanel" aria-labelledby="'+id+'-tab">'+tab_content+'</div>'
    
    return TAB, TAB_CONTENT 
 
@@ -187,7 +194,7 @@ def make_station_report(day, proc_info = ""):
          fn = file.replace("/mnt/archive.allsky.tv", "")
          we_html += "<img src='" + fn + "' class='img-fluid'>"
  
-   TAB, TAB_CONTENT = add_section('weather','Weather Snap Shots',we_html, TAB, TAB_CONTENT)
+   TAB, TAB_CONTENT = add_section('weather','Weather Snap Shots',we_html, TAB, TAB_CONTENT, True)
     
    # Proccess Info
    if(proc_info != ''):
