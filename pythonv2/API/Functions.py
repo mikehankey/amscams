@@ -49,6 +49,10 @@ def api_controller(form):
          send_error_message('Tok is missing')         
 
       # For everything else, we need to have a token passed
+      print("WE TEST <br>")
+      print("ST :" + st)
+      print("TOK:" + tok)
+      print("USER:" + user)
       test_access = test_api_login(st,tok,user)
    
       if(test_access==False or test_access is None):
