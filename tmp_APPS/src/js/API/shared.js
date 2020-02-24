@@ -7,8 +7,8 @@ var USR;
 function setup_action() {
    setup_login();
 }
- 
-
+  
 $(function() {
+   add_login_modal();
    setup_action();
 })
