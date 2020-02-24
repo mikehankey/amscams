@@ -2,7 +2,7 @@
    border:none medium;
    background: #203f5a;
    padding: 0.4rem;
-   border-radius: .25rem;
+   border-radius: .25rem .25rem 0 0 ;
 
    .nav-link { 
          border: none medium;
@@ -25,4 +25,9 @@
    .nav-item { 
       margin: 0 .3rem 0 0;
    }
+}
+
+.tab-content {
+   border: 1px solid #203f5a;
+   background-color:#fff;
 }
