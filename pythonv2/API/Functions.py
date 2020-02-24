@@ -187,7 +187,7 @@ def test_api_login(st,tok,user):
          t = True
    
       # Test the tok
-      if(tok == tok_to_test and user == user_to_test and st == station_to_test and t is True):
+      if(t is True):
 
          # We need to check the date
          valid_date = datetime.strptime(time_to_test,  "%a, %d-%b-%Y %H:%M:%S GMT")
