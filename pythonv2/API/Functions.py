@@ -189,7 +189,7 @@ def test_api_login(st,tok,user):
             ok = True
   
 
-      else(t is True):
+      elif(t is True):
 
          # Here we remove the olds ones
 
