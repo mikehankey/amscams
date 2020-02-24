@@ -31,6 +31,7 @@ def api_controller(form):
 
    api_function = form.getvalue('function')
    tok = form.getvalue('tok') 
+   st = form.getvalue('st')
 
    # TEST API FUNCTION
    if(api_function is None):
@@ -47,7 +48,7 @@ def api_controller(form):
          send_error_message('Tok is missing')         
 
       # For everything else, we need to have a token passed
-      test_access = test_api_login(tok)
+      test_access = test_api_login(st,tok)
    
       if(test_access==False or test_access is None):
          send_error_message('You are not authorized')
@@ -100,7 +101,7 @@ def API_login(form):
          _date, tok = create_token() 
 
          # Add the token to the current list of available token
-         write_new_access(user,tok,_date)
+         write_new_access(user,tok,_date,st)
 
          return json.dumps({'token':tok,'expire':_date})
       else:
@@ -128,9 +129,9 @@ def delete_detection(form):
 
 
 # Write new access in proper file
-def write_new_access(user,tok,_date):
+def write_new_access(user,tok,_date,st):
    f = open(ACCESS_FILE,"a+")
-   f.write(tok + "|" + _date + "\r\n")
+   f.write(tok + "|" + _date + "|" + st +"\r\n")
    f.close()
  
 
@@ -146,7 +147,7 @@ def create_token():
 
 
 # TEST API LOGIN  (remove all the access that are tool old)
-def test_api_login(tok):
+def test_api_login(st,tok):
     
    # Do the access file exists?
    if(os.path.isfile(ACCESS_FILE) == False):
@@ -162,12 +163,10 @@ def test_api_login(tok):
    for line in lines:
       tmp = line.split('|') 
 
-      if(EXTRA_CODE_IN_TOKEN in tmp[0]):
-         tok_to_test = tmp[0]
-         time_to_test = tmp[1]
-      else:
-         time_to_test = tmp[0]
-         tok_to_test = tmp[1] 
+      tok_to_test = tmp[0]
+      time_to_test = tmp[1]
+      station_to_test = tmp[2]
+      
 
       # Test the tok
       if(tok==tok_to_test):
@@ -182,6 +181,12 @@ def test_api_login(tok):
          if(now<valid_date):
             newlines.append(line)
             ok = True
+
+         # Is it the right station
+         if(tmp[2]!=st):
+            ok = False
+
+
       else:
          # We need to check the date
          valid_date = datetime.strptime(time_to_test,  "%a, %d-%b-%Y %H:%M:%S GMT")
@@ -192,10 +197,10 @@ def test_api_login(tok):
          if(now<valid_date):
             newlines.append(line)
 
-   # Write the new lines in ACCESS_LOG
-   with open(ACCESS_FILE, 'w') as outfile:
-      for line in newlines:
-         outfile.write(line + "\r\n")
+         # Write the new lines in ACCESS_LOG
+         with open(ACCESS_FILE, 'w') as outfile:
+            for line in newlines:
+               outfile.write(line + "\r\n")
 
    if(ok is True):
       return True
