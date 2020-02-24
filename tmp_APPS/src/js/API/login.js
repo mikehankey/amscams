@@ -14,6 +14,12 @@ function add_buttons() {
 }
 
 
+// Remove Login Cookie
+function logout() {
+
+}
+
+
 // Update UI based on logged or not
 function loggedin() {
    if(LOGGEDIN) {
@@ -22,8 +28,11 @@ function loggedin() {
       $("a#login").text('Logout').unbind('click').click(function() {
          TOK = '';
          LOGGEDIN = false;
-         loggedin()
+         loggedin();
       });
+
+      // Create Cookie
+      createCookie(name, value, days)
 
       // Add buttons
       add_buttons();
@@ -76,14 +85,14 @@ function setup_login() {
                         className: 'rubberBand animated error',
                         centerVertical: true 
                      });
+                     logout();
                   } else {
                      $('#login_modal').modal('hide')
                      $('#login_modal,.modal-backdrop').remove();
                      $('body').removeClass('modal-open');
                      LOGGEDIN = true;
                      TOK = data.token;
-                     EXPIRE = data.expire;
-                     console.log("TOK " + TOK)
+                     EXPIRE = data.expire; 
                      loggedin();    
                   } 
                }, 
