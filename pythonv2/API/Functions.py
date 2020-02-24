@@ -68,7 +68,7 @@ def API_login(form):
    password = form.getvalue('pwd')
    test_log = False
 
-   if(user is not None and password is not None):
+   if(user is not None and password is not None and station is not None):
 
       # The 'users' have to pick a station
       # while the manager are required to...
@@ -105,7 +105,7 @@ def API_login(form):
          return send_error_message('You are not authorized')
 
    else:
-         return send_error_message('You need send at least a username and a password (and a station ID if you are not a manager ).')
+         return send_error_message('You need send at least a username, a password and a station ID.')
  
 
 # DELETE function
