@@ -32,7 +32,7 @@ function loggedin() {
       });
 
       // Create Cookie
-      createCookie(name, value, days)
+      createCookie("name"," value","")
 
       // Add buttons
       add_buttons();
