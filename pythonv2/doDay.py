@@ -128,7 +128,7 @@ def get_template(file):
    return(text)
 
 
-def add_section(link_from_tab,tab_content) {
+def add_section(link_from_tab,tab_content):
    TAB= ''
    TAB_CONTENT = ''
 
@@ -138,9 +138,7 @@ def add_section(link_from_tab,tab_content) {
     </li>'
       TAB_CONTENT = '<div class="tab-pane fade show" id="'+link_from_tab+'" role="tabpanel" aria-labelledby="'+link_from_tab+'-tab">'+tab_content+'</div>'
    
-   return TAB, TAB_CONTENT
-}
-
+   return TAB, TAB_CONTENT 
 
 
 def make_station_report(day, proc_info = ""):
