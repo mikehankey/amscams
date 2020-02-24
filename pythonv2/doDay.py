@@ -338,17 +338,8 @@ def html_get_detects(day,tsid,event_files, events):
 
 
 def html_header_footer(info=None): 
-   html_header = """
-     <head>
-        <meta http-equiv="Cache-control" content="public, max-age=500, must-revalidate">
-   """
-   html_header += js + "\n" + css + """
-     </head>
-   """
-
-   html_footer = """
-
-   """
+   html_header = ''
+   html_footer = ''
    return(html_header, html_footer)
 
  
