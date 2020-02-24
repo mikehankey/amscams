@@ -126,7 +126,7 @@ def delete_detection(form):
 
    if(detect_id is None):
       send_error_message('detect (detection ID) is required')
-      
+
    now = datetime.now()
 
    with open(API_TASK_FILE, 'a') as f:
@@ -185,12 +185,7 @@ def test_api_login(st,tok,user):
          t = False 
       else:
          t = True
-  
-      print("LINE " + str(c) + " ")
-      print(t)
-      print("<br>")
-      c+=1
-
+   
       # Test the tok
       if(tok == tok_to_test and user == user_to_test and st == station_to_test and t is True):
 
@@ -206,18 +201,18 @@ def test_api_login(st,tok,user):
             ok = True 
   
 
-      elif(t is True):
+      #elif(t is True):
 
          # Here we remove the olds ones
 
          # We need to check the date
-         valid_date = datetime.strptime(time_to_test,  "%a, %d-%b-%Y %H:%M:%S GMT")
+      #   valid_date = datetime.strptime(time_to_test,  "%a, %d-%b-%Y %H:%M:%S GMT")
 
          # Is date ok?
-         now = datetime.now() 
+      #   now = datetime.now() 
 
-         if(now<valid_date):
-            newlines.append(line)
+      #   if(now<valid_date):
+      #      newlines.append(line)
 
 
    # Write the new lines in ACCESS_LOG
