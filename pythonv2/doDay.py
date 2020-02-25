@@ -41,7 +41,7 @@ REGEX_GROUP_REPORT = ["name","year","month","day","hour","min","sec","ms","cam_i
 json_conf = load_json_file("../conf/as6.json")
 
 def analyse_report_file(file_name):
-    matches = re.finditer(REGEX_REPORT, file_name, re.MULTILINE)
+   matches = re.finditer(REGEX_REPORT, file_name, re.MULTILINE)
    res = {}
   
    for matchNum, match in enumerate(matches, start=1):
