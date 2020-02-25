@@ -16,7 +16,12 @@ function setup_delete_buttons() {
    })
 
    $('#del_all').unbind('click').click(function() {
-      $('.prevproc').removeClass('toConf').addClass('toDel');
+      if(!$(this).hasClass('arc')) {
+         $('.prevproc').removeClass('toConf').addClass('toDel');
+         }
+      });
+
+     
       check_bottom_action();
    })
 }
