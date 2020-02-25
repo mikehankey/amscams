@@ -30,6 +30,8 @@ function check_bottom_action() {
    var toDel = getDelete(), toConf = getConf();
    if(toDel>0 || toConf >0) {
       show_bottom_action();
+      toDel>0?$('#del_text').text('('+toDel+' to delete)'):$('#del_text').text('');
+      toConf>0?$('#conf_text').text('('+conf_text+' to confirm)'):$('#conf_text').text('');
    } else {
       hide_bottom_action() 
    }
