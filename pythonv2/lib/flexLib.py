@@ -59,7 +59,6 @@ def convert_filename_to_date_cam(file):
    filename = filename.replace(".mp4" ,"")
 
    data = filename.split("_")
-   print("FILE:", file)
    fy,fm,fd,fh,fmin,fs,fms,cam = data[:8]
    f_date_str = fy + "-" + fm + "-" + fd + " " + fh + ":" + fmin + ":" + fs
    f_datetime = datetime.datetime.strptime(f_date_str, "%Y-%m-%d %H:%M:%S")
@@ -530,25 +529,24 @@ def stack_stack(pic1, pic2):
    return(stacked_image)
 
 
-def stack_frames_fast(frames, skip = 1, resize=None):
+def stack_frames_fast(frames, skip = 1, resize=None, sun_status="night", sum_vals=[]):
    stacked_image = None
    fc = 0
    for frame in frames:
-      if resize is not None:
-         frame = cv2.resize(frame, (resize[0],resize[1]))
-      if fc % skip == 0:
-         frame_pil = Image.fromarray(frame)
-         if stacked_image is None:
-            stacked_image = stack_stack(frame_pil, frame_pil)
-         else:
-            stacked_image = stack_stack(stacked_image, frame_pil)
-
+      if (sun_status == 'night' and sum_vals[fc] > 0) or sun_status == 'day' or fc < 10:
+         if resize is not None:
+            frame = cv2.resize(frame, (resize[0],resize[1]))
+         if fc % skip == 0:
+            frame_pil = Image.fromarray(frame)
+            if stacked_image is None:
+               stacked_image = stack_stack(frame_pil, frame_pil)
+            else:
+               stacked_image = stack_stack(stacked_image, frame_pil)
       fc = fc + 1
    return(np.asarray(stacked_image))
 
 
 def load_frames_fast(trim_file, json_conf, limit=0, mask=0,crop=(),color=0,resize=[], sun_status="night"):
-   print("TRIM FILE:", trim_file)
    (f_datetime, cam, f_date_str,fy,fm,fd, fh, fmin, fs) = convert_filename_to_date_cam(trim_file)
    cap = cv2.VideoCapture(trim_file)
 
@@ -624,7 +622,13 @@ def load_frames_fast(trim_file, json_conf, limit=0, mask=0,crop=(),color=0,resiz
                   sum_vals.append(sum_val)
                   max_vals.append(max_val)
                   pos_vals.append((mx,my))
-
+               else:
+                  blank_image = np.zeros((frame.shape[0] ,frame.shape[1]),dtype=np.uint8)
+                  subframes.append(blank_image)
+                  sum_val = 0
+                  sum_vals.append(0)
+                  max_vals.append(0)
+                  pos_vals.append(0)
 
             frames.append(frame)
             last_frame = frame

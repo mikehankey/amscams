@@ -1,5 +1,6 @@
 #!/usr/bin/python3
 
+import copy
 from lib.VIDEO_VARS import PREVIEW_W, PREVIEW_H, SD_W, SD_H
 hdm_x = 1920 / SD_W
 hdm_y = 1080 / SD_H
@@ -55,6 +56,7 @@ show = 0
 ARCHIVE_DIR = "/mnt/ams2/meteor_archive/"
 
 def finish_meteor(meteor_file):
+   video_file = meteor_file.replace("-meteor.json", ".mp4")
    (f_datetime, cam, f_date_str,year,mon,dom, fh, fmin, fs) = convert_filename_to_date_cam(meteor_file)
    # after detect is made finish processing on meteor
    # convert to old and new json formats
@@ -68,14 +70,44 @@ def finish_meteor(meteor_file):
    # save original detection min files /mnt/ams2/min_files/ 
    meteor_data = load_json_file(meteor_file)
    sd_meteors = meteor_data['sd_meteors']
+   print("VID:", video_file)
+   sd_frames,sd_color_frames,sd_subframes,sum_vals,max_vals,pos_vals = load_frames_fast(video_file, json_conf, 0, 0, [], 1,[])
+
+   sd_h, sd_w = sd_color_frames[5].shape[:2]
+
+   hdm_x = 1920 / sd_w
+   hdm_y = 1080 / sd_h 
+
    if "hd_meteors" in meteor_data:
       hd_meteors = meteor_data['hd_meteors']
    else:
       hd_meteors = None
+      print("We have no HD Meteors!") 
+      hd_meteors = copy.deepcopy(meteor_data['sd_meteors'])
+      new_hd_meteors = []
+      for obj in hd_meteors: 
+         hd_trim = upscale_sd_to_hd(obj['trim_clip'])
+         obj['trim_clip'] = hd_trim
+         hdxs = []
+         hdys = []
+         for ii in range(0, len(obj['oxs'])):
+            hd_x = int(obj['oxs'][ii] * hdm_x)
+            hd_y = int(obj['oys'][ii] * hdm_y)
+            hdxs.append(hd_x)
+            hdys.append(hd_y)
+         obj['oxs'] = hdxs
+         obj['oys'] = hdys
+         new_hd_meteors.append(obj)
+      hd_meteors = new_hd_meteors
+
+      print("HD:", hd_meteors)
+      print("SD:", sd_meteors)
+ 
+ 
    for i in range(0,len(sd_meteors)):
       sd_meteor = sd_meteors[i] 
       sd_frames,sd_color_frames,sd_subframes,sum_vals,max_vals,pos_vals = load_frames_fast(sd_meteors[i]['trim_clip'], json_conf, 0, 0, [], 1,[])
-      if i < len(hd_meteors):
+      if hd_meteors is not None:
          hd_meteor = hd_meteors[i] 
          hd_frames,hd_color_frames,hd_subframes,sum_vals,max_vals,pos_vals = load_frames_fast(hd_meteors[i]['trim_clip'], json_conf, 0, 0, [], 1,[])
       else:
@@ -83,11 +115,14 @@ def finish_meteor(meteor_file):
 
       # save the original SD/HD min clips in case something happens in the trim
       sd_fn = sd_meteors[i]['trim_clip'].split("/")[-1]
-      hd_fn = hd_meteors[i]['trim_clip'].split("/")[-1]
-      hd_meteors[i]['trim_clip'] = hd_fn
-      hd_full = hd_fn.split("-trim")[0]
-      hd_full  += ".mp4"
-      hd_meteors[i]['hd_file'] = hd_full
+
+      if hd_meteors is not None:
+         hd_fn = hd_meteors[i]['trim_clip'].split("/")[-1]
+         hd_meteors[i]['trim_clip'] = hd_fn
+         hd_full = hd_fn.split("-trim")[0]
+         hd_full  += ".mp4"
+         hd_meteors[i]['hd_file'] = hd_full
+
       year = sd_fn[0:4]
       day = sd_fn[0:10]
       min_dir = "/mnt/ams2/min_save/" + year + "/" + day + "/" 
@@ -103,8 +138,9 @@ def finish_meteor(meteor_file):
    
       sd_start = min(sd_meteor['ofns'])
       sd_end = max(sd_meteor['ofns'])
-      hd_start = min(hd_meteor['ofns'])
-      hd_end = max(hd_meteor['ofns'])
+      if hd_meteors is not None:
+         hd_start = min(hd_meteor['ofns'])
+         hd_end = max(hd_meteor['ofns'])
       buf_size = len(sd_meteor['ofns'])
       if buf_size < 10:
          buf_size = 10
@@ -112,8 +148,9 @@ def finish_meteor(meteor_file):
          buf_size = 50
       sd_t_start, sd_t_end = buffered_start_end(sd_start,sd_end, len(sd_frames), buf_size)
       sync_sd_frames = sd_color_frames[sd_t_start:sd_t_end]
-      hd_t_start, hd_t_end = buffered_start_end(hd_start,hd_end, len(hd_frames), buf_size)
-      sync_hd_frames = hd_color_frames[hd_t_start:hd_t_end]
+      if hd_meteors is not None:
+         hd_t_start, hd_t_end = buffered_start_end(hd_start,hd_end, len(hd_frames), buf_size)
+         sync_hd_frames = hd_color_frames[hd_t_start:hd_t_end]
 
 
       # remap frame numbers
@@ -227,6 +264,9 @@ def finish_meteor(meteor_file):
       new_json['info']['hd_vid'] = arc_hd
       new_json['info']['sd_vid'] = arc_sd
 
+      save_json_file(arc_json, new_json)
+      print("SAVED ARC:", arc_json)
+
       # Move work files to processed dir 
       if cfe("/mnt/ams2/CAMS/processed_meteors/", 1) == 0:
          os.makedirs("/mnt/ams2/CAMS/processed_meteors/")
@@ -250,19 +290,30 @@ def finish_meteor(meteor_file):
 
       cmd = "mv " + video_file + " " + proc_dir
       print(cmd)
+      os.system(cmd)
       cmd = "mv " + stack_file + " " + proc_img_dir
       print(cmd)
-      cmd = "mv " + meteor_file + proc_data_dir
+      os.system(cmd)
+      cmd = "mv " + meteor_file + " " + proc_data_dir
       print(cmd)
+      os.system(cmd)
       cmd = "mv " + vals_file + " " + proc_data_dir
       print(cmd)
-      cmd = "mv " + new_hd_file_name + " " + proc_hd_dir
-      print(cmd)
-      cmd = "mv " + new_sd_file_name + " " + proc_hd_dir
+      os.system(cmd)
+      msf = new_hd_file_name.split("/")[-1]
+
+      min_save_files = new_hd_file_name.replace(msf, "*")
+      cmd = "mv " + min_save_files + " " + proc_hd_dir
+      os.system(cmd)
       print(cmd)
 
-      save_json_file(arc_json, new_json)
-      print("SAVED ARC:", new_json_file_name)
+      # mv source HDs if we can:
+      if hd_meteor is not None:
+         hd_root = "/mnt/ams2/HD/" + hd_meteors[i]['trim_clip'].split("-trim")[0]
+         cmd = "mv " + hd_root + "* " + min_save_files
+         os.system(cmd)
+         print(cmd)
+
 
 
       #arc_json_file = save_archive_meteor(video_file, syncd_sd_frames,syncd_hd_frames,frame_data,new_trim_num) 
