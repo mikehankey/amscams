@@ -7,3 +7,11 @@ function loading_button($btn) {
 function load_done_button($btn) {
    $btn.text($btn.attr('data-init')); 
 }
+
+
+function hide_bottom_action() {
+   $('#bottom_action_bar').slideUp();
+}
+function show_bottom_action() {
+   $('#bottom_action_bar').slideDown();
+}
