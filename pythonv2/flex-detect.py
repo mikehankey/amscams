@@ -208,7 +208,7 @@ def finish_meteor(meteor_file):
       arc_sd = arc_json.replace(".json", "-SD.mp4")
       arc_hd = arc_json.replace(".json", "-HD.mp4")
 
-      old_json_data['arc_file'] = arc_json
+      old_json_data['archive_file'] = arc_json
       save_json_file(old_json_file, old_json_data )
 
       # save arc file
