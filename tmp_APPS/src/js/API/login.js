@@ -22,13 +22,14 @@ function add_login_stuff() {
    }
    
    setup_delete_buttons();
+   setup_confirm_buttons();
    
 }
 
 // Remove Login Stuff
 function remove_login_stuff() {
 
-   // Remove Delete Buttons
+   // Remove  Buttons
    $('.lgi').remove();
 }
 
