@@ -100,13 +100,16 @@ function setup_login() {
 
       $('#subm_login').click(function() {
             // So we can send the USR to the API
-           
+            var $t = $(this);
+            loading_button($t);
             $.ajax({ 
                url:   API_URL ,
                data: {'function':'login', 'user':$('input[name=username]').val(), 'pwd':$('input[name=password]').val(), 'st':$('input[name=st]').val()}, 
                format: 'json',
                success: function(data) { 
                   data = jQuery.parseJSON(data); 
+                     
+                  load_done_button($t);
                   if(typeof data.error !== 'undefined') {
                      // WRONG!
                      bootbox.alert({
@@ -122,6 +125,7 @@ function setup_login() {
                   } 
                }, 
                error:function() { 
+                  load_done_button($t);
                   $('#login_modal').modal('hide');
                   bootbox.alert({
                      message: "Impossible to reach the API. Please, try again later.",
