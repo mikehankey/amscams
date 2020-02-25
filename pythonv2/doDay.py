@@ -223,7 +223,12 @@ def make_station_report(day, proc_info = ""):
 
    # Multi-station meteor 
    # Add Multi-action on top of multistations
-   TAB, TAB_CONTENT = add_section('multi',"Multi Station Meteors (" + str(info['ms_count']) + ")","<div class='d-flex align-content-start flex-wrap'>" + multi_html + "</div>", TAB, TAB_CONTENT) 
+   
+   # Add specific tool bar for multi
+   # (delete all/confirm all)
+   multi_tb = '<div id="top_tool_bar"><button id="del_all" class="btn btn-danger">Delete All</button> <button id="conf_all" class="btn btn-success">Confirm All</button></div>'
+
+   TAB, TAB_CONTENT = add_section('multi',"Multi Station Meteors (" + str(info['ms_count']) + ")",multi_tb +"<div class='d-flex align-content-start flex-wrap'>" + multi_html + "</div>", TAB, TAB_CONTENT) 
   
    # Single-station meteor
    TAB, TAB_CONTENT = add_section('single',"Single Station Meteors (" + str(info['ss_count']) + ")","<div class='d-flex align-content-start flex-wrap'>" + single_html + "</div>", TAB, TAB_CONTENT) 
@@ -366,10 +371,7 @@ def html_get_detects(day,tsid,event_files, events):
    info['not_run'] = not_run
    info['mc'] = mc 
 
-   # Add specific tool bar for multi
-   # (delete all/confirm all)
-   multi_html = '<div id="top_tool_bar"><button id="del_all" class="btn btn-danger">Delete All</button> <button id="conf_all" class="btn btn-success">Confirm All</button></div>' + multi_html
-
+   
    return(single_html, multi_html, info)
 
 
