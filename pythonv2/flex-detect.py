@@ -233,6 +233,7 @@ def finish_meteor(meteor_file):
       # mv orig video file, stack file and image stack to proc2 dirs
       video_file = meteor_file.replace("-meteor.json", ".mp4")
       vals_file = meteor_file.replace("-meteor.json", "-vals.json")
+      stack_file = meteor_file.replace("-meteor.json", "-stacked.png")
 
 
       proc_dir = "/mnt/ams2/SD/proc2/" + day + "/"
