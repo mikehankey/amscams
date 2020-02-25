@@ -223,7 +223,12 @@ def make_station_report(day, proc_info = ""):
 
    # Multi-station meteor 
    # Add Multi-action on top of multistations
-   TAB, TAB_CONTENT = add_section('multi',"Multi Station Meteors (" + str(info['ms_count']) + ")","<div class='d-flex align-content-start flex-wrap'>" + multi_html + "</div>", TAB, TAB_CONTENT) 
+   
+   # Add specific tool bar for multi
+   # (delete all/confirm all)
+   multi_tb = '<div id="top_tool_bar"><button id="del_all" class="btn btn-danger">Delete All</button> <button id="conf_all" class="btn btn-success">Confirm All</button> <button id="cancel_all" class="btn btn-secondary">Cancel</button></div>'
+
+   TAB, TAB_CONTENT = add_section('multi',"Multi Station Meteors (" + str(info['ms_count']) + ")",multi_tb +"<div class='d-flex align-content-start flex-wrap'>" + multi_html + "</div>", TAB, TAB_CONTENT) 
   
    # Single-station meteor
    TAB, TAB_CONTENT = add_section('single',"Single Station Meteors (" + str(info['ss_count']) + ")","<div class='d-flex align-content-start flex-wrap'>" + single_html + "</div>", TAB, TAB_CONTENT) 
@@ -322,19 +327,18 @@ def html_get_detects(day,tsid,event_files, events):
 
          # We get more info
          analysed_name = analyse_report_file(image_file)
-         print(analysed_name)
+         
     
          if event_id is None or event_id == "none":
             single_html += """
-                            
                                  <div class="{:s}">
                                        {:s} 
                                         <img src="{:s}" class="img-fluid">
                                        </a>
-                                        <span>{:s}</span>
+                                        <span>{:s}</span> 
                                    </div>
                               
-            """.format(css_class, elink, was_vh_dir + image_file, event_id)
+            """.format(css_class, elink, was_vh_dir + image_file, event_id, '<b>Cam#' + analysed_name['cam_id'] + '</b> ' + analysed_name['hour']+':'+analysed_name['min']+':'+analysed_name['sec']+'.'+analysed_name['ms'])
             ss_count += 1
          else:
             multi_html += """
@@ -343,10 +347,10 @@ def html_get_detects(day,tsid,event_files, events):
                                        {:s} 
                                         <img src="{:s}" class="img-fluid">
                                        </a>
-                                        <span>{:s}</span>
+                                        <span>{:s}</span> 
                                    </div>
                              
-            """.format(css_class, elink, was_vh_dir + image_file, event_id)
+            """.format(css_class, elink, was_vh_dir + image_file, event_id, '<b>Cam#' + analysed_name['cam_id'] + '</b> ' + analysed_name['hour']+':'+analysed_name['min']+':'+analysed_name['sec']+'.'+analysed_name['ms'])
             ms_count += 1
 
          mc += 1
@@ -365,6 +369,7 @@ def html_get_detects(day,tsid,event_files, events):
    info['not_run'] = not_run
    info['mc'] = mc 
 
+   
    return(single_html, multi_html, info)
 
 

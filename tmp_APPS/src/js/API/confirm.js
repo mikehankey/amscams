@@ -11,6 +11,19 @@ function setup_confirm_buttons() {
             $t.removeClass('on');
             $t.closest('.prevproc').addClass('toConf');
          }
+         check_bottom_action();
       });
+   })
+
+   // Conf ALL
+   $('#conf_all').unbind('click').click(function() {
+      $('.prevproc').removeClass('toDel').addClass('toConf');
+      check_bottom_action();
+   })
+
+   // Cancel All
+   $('#cancel_all').unbind('click').click(function() {
+      $('.prevproc').removeClass('toDel').removeClass('toConf');
+      check_bottom_action();
    })
 }

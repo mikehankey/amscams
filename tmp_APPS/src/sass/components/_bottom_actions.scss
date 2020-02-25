@@ -6,12 +6,33 @@
    text-align: center;
    background-color: #0f2437;
    padding: 1rem;
+   line-height: 1;
    -webkit-box-shadow: 0px -4px 5px 0px rgba(0,0,0,0.35);
    -moz-box-shadow: 0px -4px 5px 0px rgba(0,0,0,0.35);
    box-shadow: 0px -4px 5px 0px rgba(0,0,0,0.35);
-   
+   z-index: 9999;
 
    .btn {
+      line-height: 1!important;
+   }
 
+   .smt {
+      font-size: 1rem;
+      line-height: 1;
+      font-weight: normal;
+      text-transform: lowercase;
+   }
+}
+
+
+#top_tool_bar {
+   border-bottom: 1px solid #ccc;
+   background-color: #f0f0f0;
+   padding: .4rem .5rem;
+   margin: -.5rem -.5rem 1rem;
+   text-align: right;
+
+   .btn {
+      margin: 0 .5rem;
    }
 }

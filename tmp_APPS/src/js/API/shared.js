@@ -4,6 +4,9 @@ var API_URL = "https://sleaziest-somali-2255.dataplicity.io/pycgi/webUI.py?cmd=A
 function setup_action() {
    setup_login();
 }
+
+
+
   
 $(function() {
    add_login_modal();
@@ -11,4 +14,5 @@ $(function() {
 
    // Test if we are loggedin
    loggedin();
+   check_bottom_action();
 })
