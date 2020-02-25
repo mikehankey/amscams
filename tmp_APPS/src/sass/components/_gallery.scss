@@ -71,7 +71,7 @@
       &:before {
          content: 'TO DELETE';
          color: #fff;
-         background: #c00;
+         background:rgba(204, 0, 0, .5);
          top: 50%!important;
          right: 0!important;
          display: block!important;
@@ -90,7 +90,7 @@
       &:before {
          content: 'TO CONFIRM';
          color: #fff;
-         background: #00ff2d3d;
+         background: rgba(0, 139, 25, 0.6);
          top: 50%!important;
          right: 0!important;
          display: block!important;

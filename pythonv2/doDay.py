@@ -202,6 +202,7 @@ def make_station_report(day, proc_info = ""):
       TAB, TAB_CONTENT = add_section('proc_info','Processing Info',proc_info, TAB, TAB_CONTENT) 
 
    # Multi-station meteor 
+   # Add Multi-action on top of multistations
    TAB, TAB_CONTENT = add_section('multi',"Multi Station Meteors (" + str(info['ms_count']) + ")","<div class='d-flex align-content-start flex-wrap'>" + multi_html + "</div>", TAB, TAB_CONTENT) 
   
    # Single-station meteor
