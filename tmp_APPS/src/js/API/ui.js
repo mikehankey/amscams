@@ -28,7 +28,7 @@ function getConf() {
 
 function check_bottom_action() {
    var toDel = getDelete(), toConf = getConf();
-   if(toDel>0 && toConf >0) {
+   if(toDel>0 || toConf >0) {
       show_bottom_action();
    } else {
       hide_bottom_action() 
