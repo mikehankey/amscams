@@ -227,6 +227,37 @@ def finish_meteor(meteor_file):
       new_json['info']['hd_vid'] = arc_hd
       new_json['info']['sd_vid'] = arc_sd
 
+      # Move work files to processed dir 
+      if cfe("/mnt/ams2/CAMS/processed_meteors/", 1) == 0:
+         os.makedirs("/mnt/ams2/CAMS/processed_meteors/")
+      # mv orig video file, stack file and image stack to proc2 dirs
+      cmd = "mv " + meteor_file + proc_data_dir
+      video_file = meteor_file.replace("-meteor.json", ".mp4")
+      vals_file = meteor_file.replace("-meteor.json", "-vals.json")
+
+
+      proc_dir = "/mnt/ams2/SD/proc2/" + day + "/"
+      proc_img_dir = "/mnt/ams2/SD/proc2/" + day + "/images/"
+      proc_data_dir = "/mnt/ams2/SD/proc2/" + day + "/data/"
+      proc_hd_dir = "/mnt/ams2/SD/proc2/" + day + "/hd_saved/"
+      if cfe(proc_img_dir,1) == 0:
+         os.makedirs(proc_img_dir)
+      if cfe(proc_data_dir,1) == 0:
+         os.makedirs(proc_data_dir)
+      if cfe(proc_hd_dir,1) == 0:
+         os.makedirs(proc_hd_dir)
+ 
+
+      cmd = "mv " + video_file + " " + proc_dir
+      print(cmd)
+      cmd = "mv " + stack_file + " " + proc_img_dir
+      print(cmd)
+      cmd = "mv " + vals_file + " " + proc_data_dir
+      print(cmd)
+      cmd = "mv " + new_hd_file_name + " " + proc_hd_dir
+      print(cmd)
+      cmd = "mv " + new_sd_file_name + " " + proc_hd_dir
+      print(cmd)
 
       save_json_file(arc_json, new_json)
       print("SAVED ARC:", new_json_file_name)
