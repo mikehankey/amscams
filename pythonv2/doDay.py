@@ -335,6 +335,7 @@ def html_get_detects(day,tsid,event_files, events):
                                        {:s} 
                                         <img src="{:s}" class="img-fluid">
                                        </a>
+                                       <span>{:s}</span> 
                                         <span>{:s}</span> 
                                    </div>
                               
@@ -347,6 +348,7 @@ def html_get_detects(day,tsid,event_files, events):
                                        {:s} 
                                         <img src="{:s}" class="img-fluid">
                                        </a>
+                                       <span>{:s}</span> 
                                         <span>{:s}</span> 
                                    </div>
                              
