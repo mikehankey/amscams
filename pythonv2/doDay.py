@@ -294,7 +294,7 @@ def html_get_detects(day,tsid,event_files, events):
          #if event_id is not None:
          #   css_class = "prevproc multi"
          if event_id is None:
-            event_id = "none"
+            event_id = ""
     
          if event_id is None or event_id == "none":
             single_html += """

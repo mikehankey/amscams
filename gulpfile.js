@@ -138,8 +138,7 @@ function jsAPI() {
        './tmp_APPS/src/js/framework/jquery.min.js',
        './tmp_APPS/src/js/framework/bootstrap.js',
        './tmp_APPS/src/js/plugins/bootbox.js',
-       './tmp_APPS/src/js/shared/cookie.js', 
-       './tmp_APPS/src/js/plugins/crypt/*' 
+       './tmp_APPS/src/js/shared/cookie.js'
      ])
      .pipe(concat('allskytv.min.js').on('error', function(e){
          console.log('CONCAT ' + e);
