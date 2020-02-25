@@ -19,7 +19,7 @@ function setup_confirm_buttons() {
    $('#conf_all').unbind('click').click(function() {
       $('.prevproc').each(function() {
          if(!$(this).hasClass('arc')) {
-               removeClass('toDel').addClass('toConf');
+            $(this).removeClass('toDel').addClass('toConf');
          }
       });
       check_bottom_action();

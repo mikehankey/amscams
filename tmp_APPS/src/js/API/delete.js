@@ -17,7 +17,7 @@ function setup_delete_buttons() {
 
    $('#del_all').unbind('click').click(function() {
       if(!$(this).hasClass('arc')) {
-         $('.prevproc').removeClass('toConf').addClass('toDel');
+         $(this).removeClass('toConf').addClass('toDel');
       }
    });
  
