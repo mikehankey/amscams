@@ -366,6 +366,10 @@ def html_get_detects(day,tsid,event_files, events):
    info['not_run'] = not_run
    info['mc'] = mc 
 
+   # Add specific tool bar for multi
+   # (delete all/confirm all)
+   multi_html = '<div id="top_tool_bar"></div>' + multi_html
+
    return(single_html, multi_html, info)
 
 
