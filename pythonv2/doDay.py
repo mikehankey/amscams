@@ -368,7 +368,7 @@ def html_get_detects(day,tsid,event_files, events):
 
    # Add specific tool bar for multi
    # (delete all/confirm all)
-   multi_html = '<div id="top_tool_bar"></div>' + multi_html
+   multi_html = '<div id="top_tool_bar"><button id="del_all" class="btn btn-danger">Delete All</button> <button id="conf_all" class="btn btn-success">Confirm All</button></div>' + multi_html
 
    return(single_html, multi_html, info)
 
