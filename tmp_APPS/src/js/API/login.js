@@ -29,7 +29,7 @@ function add_login_stuff() {
 function remove_login_stuff() {
 
    // Remove Delete Buttons
-   $('.prevproc .btn-toolbar').remove();
+   $('.lgi').remove();
 }
 
 
