@@ -15,3 +15,23 @@ function hide_bottom_action() {
 function show_bottom_action() {
    $('#bottom_action_bar').removeClass('hd').slideDown();
 }
+
+
+
+function getDelete() {
+   return $('.toDel').length
+}
+
+function getConf() {
+   return $('.toConf').length
+}
+
+function check_bottom_action() {
+   var toDel = getDelete(), toConf = getConf();
+   if(toDel>0 && toConf >0) {
+      show_bottom_action();
+   } else {
+      hide_bottom_action() 
+   }
+}
+ 

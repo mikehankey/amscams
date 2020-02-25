@@ -1,5 +1,5 @@
 /********** UI ***********************************************************************/
-function setup_delete_buttons() {
+function setup_delete_buttons() { 
    $('.del').each(function() {
       var $t = $(this); 
       $t.unbind('click').click(function() {   
@@ -11,6 +11,7 @@ function setup_delete_buttons() {
             $t.removeClass('on');
             $t.closest('.prevproc').addClass('toDel');
          }
+         check_bottom_action();
       });
    })
 }

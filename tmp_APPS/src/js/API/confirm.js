@@ -11,6 +11,7 @@ function setup_confirm_buttons() {
             $t.removeClass('on');
             $t.closest('.prevproc').addClass('toConf');
          }
+         check_bottom_action();
       });
    })
 }
