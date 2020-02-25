@@ -59,7 +59,7 @@ function loggedin() {
 // Add Login Modal
 function add_login_modal() {
       // Add Login Modal
-      console.log("LOGIN MODALLL")
+      console.log("LOGIN MODALLL");
       $('<div id="login_modal" class="modal fade" tabindex="-1" role="dialog">\
          <div class="modal-dialog modal-dialog-centered" style="max-width:300px" role="document">\
          <div class="modal-content">\
