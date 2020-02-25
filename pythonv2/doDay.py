@@ -25,6 +25,7 @@ This script is the work manager for each day.
 import os
 import glob
 import sys
+import re
 from datetime import datetime, timedelta
 import subprocess
 import random
@@ -32,7 +33,26 @@ import random
 from lib.FileIO import load_json_file, save_json_file, cfe
 from lib.UtilLib import check_running
 
+# REGEXP Used to get info from the paths
+REGEX_REPORT = r"(\d{4})_(\d{2})_(\d{2})_(\d{2})_(\d{2})_(\d{2})_(\d{3})_(\w{6})-trim(\d{4})-prev-crop.jpg"
+REGEX_GROUP_REPORT = ["name","year","month","day","hour","min","sec","ms","cam_id","trim"]
+ 
+
 json_conf = load_json_file("../conf/as6.json")
+
+def analyse_report_file(file_name):
+    matches = re.finditer(REGEX_REPORT, file_name, re.MULTILINE)
+   res = {}
+  
+   for matchNum, match in enumerate(matches, start=1):
+      for groupNum in range(0, len(match.groups())): 
+         if(match.group(groupNum) is not None):
+            res[REGEX_GROUP_REPORT[groupNum]] = match.group(groupNum)
+         groupNum = groupNum + 1
+
+   return res
+
+
 
 def load_events(day):
    year = day[0:4]
@@ -223,6 +243,7 @@ def make_station_report(day, proc_info = ""):
  
 
 def html_get_detects(day,tsid,event_files, events):
+   
    year = day[0:4]
    mi = "/mnt/ams2/meteor_archive/" + json_conf['site']['ams_id'] + "/DETECTS/MI/" + year + "/" +  day + "-meteor_index.json"
    print(mi)
@@ -244,6 +265,7 @@ def html_get_detects(day,tsid,event_files, events):
    not_run = 0
    single_html = ""
    multi_html = ""
+   
    if day in mid:
       for key in mid[day]:
          if "archive_file" in mid[day][key]:
@@ -256,11 +278,10 @@ def html_get_detects(day,tsid,event_files, events):
             arc_file = "pending"
             style = "pending"
             pending_count += 1
+
          if key in event_files:
             event_id = event_files[key]
-            
             event_info = events[event_id]
-
             print("KEY", key, event_files[key])
             style = "multi"
             # look for the event solution dir
@@ -280,9 +301,11 @@ def html_get_detects(day,tsid,event_files, events):
                print("Event not solved.", event_dir)
                elink = "<a class='T'>"
                not_run += 1
+         
          else:
             event_id = None
             elink = "<a class='T'>"
+         
          mfile = key.split("/")[-1]
          prev_crop = mfile.replace(".json", "-prev-crop.jpg")
          prev_full = mfile.replace(".json", "-prev-full.jpg")
@@ -296,6 +319,10 @@ def html_get_detects(day,tsid,event_files, events):
          #   css_class = "prevproc multi"
          if event_id is None:
             event_id = ""
+
+         # We get more info
+         analysed_name = analyse_report_file(image_file)
+         print(analysed_name)
     
          if event_id is None or event_id == "none":
             single_html += """
