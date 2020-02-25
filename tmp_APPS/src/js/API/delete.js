@@ -14,6 +14,11 @@ function setup_delete_buttons() {
          check_bottom_action();
       });
    })
+
+   $('#del_all').unbind('click').click(function() {
+      $('.prevproc').removeClass('toConf').addClass('toDel');
+      check_bottom_action();
+   })
 }
 
 /********** API **************************************

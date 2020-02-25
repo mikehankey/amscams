@@ -14,4 +14,10 @@ function setup_confirm_buttons() {
          check_bottom_action();
       });
    })
+
+
+   $('#conf_all').unbind('click').click(function() {
+      $('.prevproc').removeClass('toDel').addClass('toConf');
+      check_bottom_action();
+   })
 }
