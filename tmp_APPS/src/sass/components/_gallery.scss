@@ -6,7 +6,7 @@
    margin: 0 .5rem 1.5rem;
 
    &.meteor, &.arc {
-      a {
+      a.T {
          border-color: #21c419!important;
          overflow: hidden;
          
@@ -21,7 +21,7 @@
    }
 
    &.arc {
-      a {
+      a.T {
          &:before {
             content: 'Archived';
          }
@@ -29,7 +29,7 @@
    }
 
    &.multi {
-      a {
+      a.T {
          border-color: #cc0000;
          overflow: hidden;
 
@@ -44,7 +44,7 @@
    }
 
    &.pending {
-      a {
+      a.T {
          border-color: #000;
          overflow: hidden;
          
@@ -60,7 +60,7 @@
    }
   
 
-   a:before {
+   a.T:before {
       position: absolute;
       top: 1.2rem;
       right: -2.5rem;
