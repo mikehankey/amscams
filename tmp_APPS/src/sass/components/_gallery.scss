@@ -69,13 +69,12 @@
       }
       &:before {
          content: 'TO DELETE';
-         color: #cc0000;
-         background:#f3a5a5;
-         -webkit-transform: rotate(45deg)!important;
-         transform: rotate(45deg)!important;
-         top: 0!important;
+         color: #fff;
+         background:#cc0000;
+         bottom: 0!important;
          right: 0!important;
          display:block!important;
+         position: absolute;
           
       }
 
