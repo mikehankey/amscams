@@ -13,8 +13,8 @@ function add_login_stuff() {
       // Add buttons
       $('.prevproc').each(function() {
          $('<div class="btn-toolbar lgi">\
-            <div class="btn-group">\
-               <a class="delete col btn btn-danger btn-sm" title="Delete Detection"><i class="icon-delete"></i></a>\
+            <div class="d-flex justify-content-around">\
+               <a class="delete col btn btn-danger btn-sm mr-2" title="Delete Detection"><i class="icon-delete"></i></a>\
                <a class="delete col btn btn-success btn-sm" title="Delete Detection">Confirm</a>\
             </div>\
          </div>').appendTo($(this))

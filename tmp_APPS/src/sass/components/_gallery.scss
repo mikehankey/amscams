@@ -5,6 +5,10 @@
    width: calc(100% / 5 - 5 * 1rem);
    margin: 0 .5rem 1.5rem;
 
+   .btn-toolbar {
+      justify-content: flex-end!important;
+   }
+
    &.meteor, &.arc {
       a.T {
          border-color: #21c419!important;
