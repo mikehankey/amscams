@@ -4,6 +4,7 @@
    flex-direction: column!important;
    width: calc(100% / 5 - 5 * 1rem);
    margin:1rem .5rem;
+   position: relative;
 
    .btn-toolbar {
       justify-content: flex-end!important;
@@ -70,14 +71,34 @@
       &:before {
          content: 'TO DELETE';
          color: #fff;
-         background:#cc0000;
-         bottom: 0!important;
+         background: #c00;
+         top: 50%!important;
          right: 0!important;
-         display:block!important;
+         display: block!important;
          position: absolute;
-          
+         width: 100%;
+         z-index: 9999;
+         text-align: center; 
       }
+   }
 
+
+   &.toConf {
+      a.T {
+         border-color: #00ff2d3d!important;
+      }
+      &:before {
+         content: 'TO CONFIRM';
+         color: #fff;
+         background: #00ff2d3d;
+         top: 50%!important;
+         right: 0!important;
+         display: block!important;
+         position: absolute;
+         width: 100%;
+         z-index: 9999;
+         text-align: center; 
+      }
    }
   
    a.T {
