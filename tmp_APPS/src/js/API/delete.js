@@ -1,6 +1,6 @@
 /********** UI ***********************************************************************/
 function setup_delete_buttons() {
-   $('.delete').each(function() {
+   $('.del').each(function() {
       var $t = $(this); 
       $t.unbind('click').click(function() { 
          if($t.hasClass('toDelete')) {
@@ -15,7 +15,7 @@ function setup_delete_buttons() {
    })
 }
 
-/********** API ***********************************************************************/
+/********** API **************************************
 function delete_detec(detect_id) {
  
    $.ajax({ 
@@ -43,4 +43,4 @@ function delete_detec(detect_id) {
          });
       }
    });
-}
+}*********************************/
