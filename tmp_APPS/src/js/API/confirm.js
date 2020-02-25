@@ -15,9 +15,15 @@ function setup_confirm_buttons() {
       });
    })
 
-
+   // Conf ALL
    $('#conf_all').unbind('click').click(function() {
       $('.prevproc').removeClass('toDel').addClass('toConf');
+      check_bottom_action();
+   })
+
+   // Cancel All
+   $('#cancel_all').unbind('click').click(function() {
+      $('.prevproc').removeClass('toDel').removeClass('toConf');
       check_bottom_action();
    })
 }
