@@ -208,7 +208,7 @@ def make_station_report(day, proc_info = ""):
    TAB, TAB_CONTENT = add_section('live','Live View',live_view_html, TAB, TAB_CONTENT)
    print(TAB)
 
-   # WEATHER SNAP SHOTS
+   # WEATHER SNAP SHOTS 
    we_html = ""
    if len(data['files']) > 0:
       for file in sorted(data['files'],reverse=True):

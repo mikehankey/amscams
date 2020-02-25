@@ -66,7 +66,7 @@ function step_Weather(startTime) {
      $('#cur_f').text($(`.to_anim-${stackNumber}`).attr('data-rel'));
      //console.log("FN" + stackNumber);
    }
- 
+  
    if(stackplaying) requestAnimationFrame(step_Weather);
  }
 
