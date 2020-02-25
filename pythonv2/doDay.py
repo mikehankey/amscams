@@ -226,7 +226,7 @@ def make_station_report(day, proc_info = ""):
    
    # Add specific tool bar for multi
    # (delete all/confirm all)
-   multi_tb = '<div id="top_tool_bar"><button id="conf_all" class="btn btn-success">Confirm All</button> <button id="del_all" class="btn btn-danger">Delete All</button> <button id="cancel_all" class="btn btn-secondary">Cancel</button></div>'
+   multi_tb = '<div id="top_tool_bar" class="lio"><button id="conf_all" class="btn btn-success">Confirm All</button> <button id="del_all" class="btn btn-danger">Delete All</button> <button id="cancel_all" class="btn btn-secondary">Cancel</button></div>'
 
    TAB, TAB_CONTENT = add_section('multi',"Multi Station Meteors (" + str(info['ms_count']) + ")",multi_tb +"<div class='d-flex align-content-start flex-wrap'>" + multi_html + "</div>", TAB, TAB_CONTENT) 
   

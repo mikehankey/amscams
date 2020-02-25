@@ -5,7 +5,7 @@ var timePerStack;
 var timeWhenLastUpdateStack;
 var timeFromLastUpdateStack;
 var stackNumber; 
-var stackplaying; 
+var weathplaying; 
 var sens = "+"
 
 // Modal With Player
@@ -16,7 +16,7 @@ function addAnimWeatherModalTemplate($allstacks,cam_id) {
    $('<div id="anim_wea_modal" class="modal fade" tabindex="-1" role="dialog"><div class="modal-dialog modal-dialog-centered"  style="min-width: 800px;" role="document">\
    <div class="modal-content"><div class="modal-body"><div id="anim_header" class="d-flex justify-content-between"></div><div id="anim_holder" style="width:688px;">\
    </div><div class="modal-footer d-flex justify-content-between p-0 pb-2 pr-2">\
-   <div class="pt-2"><input type="range" value="1" id="marStack" max="10" min="-10"/> <span id="cur_sp"></span></div>\
+   <div class="pt-2"><input type="range" value="1" id="marWeat" max="10" min="-10"/> <span id="cur_sp"></span></div>\
    <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button></div></div></div></div>').appendTo('body');
    
    // Add all the frames
@@ -67,23 +67,27 @@ function step_Weather(startTime) {
      //console.log("FN" + stackNumber);
    }
   
-   if(stackplaying) requestAnimationFrame(step_Weather);
+   if(weathplaying) requestAnimationFrame(step_Weather);
  }
 
-function Weather_anim(cam_id) {
-   $allstacks = $('.cam_'+cam_id);
-   $allstacks = $allstacks.reverse();
-   totalStacks = $allstacks.length;
-   addAnimWeatherModalTemplate($allstacks,cam_id);
+function Weather_anim() {
+
+   var $allImages = $('.weath')
+ 
+   $allImages = $allImages.reverse();
+   total  = $allstacks.length;
+   addAnimWeatherModalTemplate($allImages);
+
+
    $('#anim_wea_modal').modal();
    $('#anim_wea_modal').on('hidden.bs.modal', function () {
-        stackplaying = false; 
+        weathplaying = false; 
         $('#anim_wea_modal').remove(); 
    })
 
    if(totalStacks==0) {
       bootbox.alert({
-          message: "No stack found. Error 452b",
+          message: "No weather snapshot found. Error 452b",
           className: 'rubberBand animated error',
           centerVertical: true
       });
@@ -92,11 +96,11 @@ function Weather_anim(cam_id) {
 
   timePerStack = 1000; //animationStackDuration / totalStacks;
   stackNumber = 0; 
-  stackplaying = true;
+  weathplaying = true;
   requestAnimationFrame(step_Weather);
 
   // Inpur range for animation speed
-  $('#marStack').val(0).on('input', function () { 
+  $('#marWeat').val(0).on('input', function () { 
       var val = parseInt($(this).val()), text ='';
       if(val<0) {
          sens = "-";
@@ -118,7 +122,7 @@ function Weather_anim(cam_id) {
 
 $(function() {
     $('.play_anim_thumb').click(function() {
-       stackplaying = true;
+       weathplaying = true;
        Weather_anim($(this).attr('data-rel'));
        $('.to_anim').css({'width':'683px','height':'395px'});
     });  

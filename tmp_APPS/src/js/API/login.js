@@ -21,6 +21,8 @@ function add_login_stuff() {
       });
    }
    
+   $('.lio').show();
+
    setup_delete_buttons();
    setup_confirm_buttons();
    
@@ -31,6 +33,7 @@ function remove_login_stuff() {
 
    // Remove  Buttons
    $('.lgi').remove();
+   $('.lio').hide();
 }
 
 
