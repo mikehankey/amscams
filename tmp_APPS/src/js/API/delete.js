@@ -2,13 +2,15 @@
 function setup_delete_buttons() {
    $('.del').each(function() {
       var $t = $(this); 
-      $t.unbind('click').click(function() { 
+      $t.unbind('click').click(function() {  
+         console.log("CLICKED");
+         console.log($t.parent('.prevproc'));
          if($t.hasClass('toDelete')) {
             $t.addClass('on');
-            $t.parent('prevproc').removeClass('toDelete');
+            $t.parent('.prevproc').removeClass('toDelete');
          } else {
             $t.removeClass('on');
-            $t.parent('prevproc').addClass('toDelete');
+            $t.parent('.prevproc').addClass('toDelete');
          }
          
       });

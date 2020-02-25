@@ -14,8 +14,8 @@ function add_login_stuff() {
       $('.prevproc').each(function() {
          $('<div class="btn-toolbar lgi">\
             <div class="d-flex justify-content-around">\
-               <a class="del col btn btn-success btn-sm mr-2" title="Delete Detection">Confirm</a>\
-               <a class="conf col btn btn-danger btn-sm" title="Delete Detection"><i class="icon-delete"></i></a>\
+               <a class="conf col btn btn-success btn-sm mr-2" title="Delete Detection">Confirm</a>\
+               <a class="del col btn btn-danger btn-sm" title="Delete Detection"><i class="icon-delete"></i></a>\
             </div>\
          </div>').appendTo($(this))
       });
