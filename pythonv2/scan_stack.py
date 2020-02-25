@@ -10,7 +10,8 @@ import glob
 from lib.UtilLib import calc_dist,find_angle, best_fit_slope_and_intercept, check_running
 from lib.FileIO import load_json_file, save_json_file, cfe
 from lib.flexLib import load_frames_fast, stack_frames_fast, convert_filename_to_date_cam, day_or_night
-from lib.VIDEO_VARS import PREVIEW_W, PREVIEW_H, SD_W, SD_H, SD_16_W, SD_16_H
+from lib.VIDEO_VARS import PREVIEW_W, PREVIEW_H, SD_W, SD_H
+# SD_16_W, SD_16_H
 hdm_x = 1920 / SD_W
 hdm_y = 1080 / SD_H
 
@@ -68,10 +69,11 @@ def fix_missing_stacks(day):
 
 def batch_ss(wildcard=None):
    if wildcard is not None:
-      #glob_dir = "/mnt/ams2/SD/*" + wildcard + "*.mp4"
-      glob_dir = "/mnt/ams2/CAMS/queue/*" + wildcard + "*.mp4"
+      glob_dir = "/mnt/ams2/SD/*" + wildcard + "*.mp4"
+      #glob_dir = "/mnt/ams2/CAMS/queue/*" + wildcard + "*.mp4"
    else:
-      glob_dir = "/mnt/ams2/CAMS/queue/*.mp4"
+      glob_dir = "/mnt/ams2/SD/*.mp4"
+      #glob_dir = "/mnt/ams2/CAMS/queue/*.mp4"
    print(glob_dir)
    files = sorted(glob.glob(glob_dir), reverse=True)
    new_files =[]
@@ -79,7 +81,7 @@ def batch_ss(wildcard=None):
       if "trim" not in file:
          new_files.append(file)
 
-   for file in new_files:
+   for file in sorted(new_files, reverse=True):
       (f_datetime, cam, f_date_str,fy,fmin,fd, fh, fm, fs) = convert_filename_to_date_cam(file)
       sun_status = day_or_night(f_date_str, json_conf)
       cur_time = int(time.time())
@@ -90,10 +92,10 @@ def batch_ss(wildcard=None):
       tdiff = cur_time - mtime
       tdiff = tdiff / 60
       running = check_running("scan_stack.py") 
-      if running > 3:
+      if running > 2:
          wait = 1
-         while(running > 3):
-            time.sleep(5)
+         while(running > 2):
+            time.sleep(2)
             running = check_running("scan_stack.py") 
             print("Running:", running)
       if (tdiff > 3):
