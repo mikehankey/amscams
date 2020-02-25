@@ -330,6 +330,10 @@ def html_get_detects(day,tsid,event_files, events):
          
     
          if event_id is None or event_id == "none":
+
+            if(event_id !=''):
+               event_id = "<b>Event #" + str(event_id) + "</b>"
+
             single_html += """
                                  <div class="{:s}">
                                        {:s} 
@@ -342,8 +346,11 @@ def html_get_detects(day,tsid,event_files, events):
             """.format(css_class, elink, was_vh_dir + image_file, event_id, '<b>Cam#' + analysed_name['cam_id'] + '</b> ' + analysed_name['hour']+':'+analysed_name['min']+':'+analysed_name['sec']+'.'+analysed_name['ms'])
             ss_count += 1
          else:
+
+            if(event_id !=''):
+               event_id = "<b>Event #" + str(event_id) + "</b>"
+
             multi_html += """
-                             
                                  <div class="{:s}">
                                        {:s} 
                                         <img src="{:s}" class="img-fluid">
