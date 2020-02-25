@@ -4,9 +4,63 @@
    flex-direction: column!important;
    width: calc(100% / 5 - 5 * 1rem);
    margin: 0 .5rem 1.5rem;
+
+   &.meteor, &.arc {
+      a {
+         border-color: #21c419!important;
+         overflow: hidden;
+         
+   
+         &:before {
+            content: 'Meteor';
+            color: #21c419;
+            background:#00ff2d3d;
+            
+         }
+      }
+   }
+
+   &.arc {
+      a {
+         &:before {
+            content: 'Archived';
+         }
+      }
+   }
+
+   &.multi {
+      a {
+         border-color: #cc0000;
+         overflow: hidden;
+
+
+         &:before {
+            content: 'MULTI';
+            color: #cc0000;
+            background:#f3a5a5;
+             
+         }
+      }
+   }
+
+   &.pending {
+      a {
+         border-color: #000;
+         overflow: hidden;
+         
+
+
+         &:before {
+            content: 'PENDING';
+            color: #333;
+            background:#ccc;
+             
+         }
+      }
+   }
   
 
-   &:before {
+   a:before {
       position: absolute;
       top: 1.2rem;
       right: -2.5rem;
@@ -45,59 +99,7 @@
       }
    }
 
-      &.meteor, &.arc {
-         a {
-            border-color: #21c419!important;
-            overflow: hidden;
-            
-      
-            &:before {
-               content: 'Meteor';
-               color: #21c419;
-               background:#00ff2d3d;
-               
-            }
-         }
-      }
-
-      &.arc {
-         a {
-            &:before {
-               content: 'Archived';
-            }
-         }
-      }
-
-      &.multi {
-         a {
-            border-color: #cc0000;
-            overflow: hidden;
- 
-
-            &:before {
-               content: 'MULTI';
-               color: #cc0000;
-               background:#f3a5a5;
-                
-            }
-         }
-      }
-
-      &.pending {
-         a {
-            border-color: #000;
-            overflow: hidden;
-            
- 
-
-            &:before {
-               content: 'PENDING';
-               color: #333;
-               background:#ccc;
-                
-            }
-         }
-      }
+     
 
       
 
