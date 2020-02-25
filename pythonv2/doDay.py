@@ -322,19 +322,19 @@ def html_get_detects(day,tsid,event_files, events):
 
          # We get more info
          analysed_name = analyse_report_file(image_file)
-         print(analysed_name)
+         
     
          if event_id is None or event_id == "none":
             single_html += """
-                            
                                  <div class="{:s}">
                                        {:s} 
                                         <img src="{:s}" class="img-fluid">
                                        </a>
                                         <span>{:s}</span>
+                                        <span>{:s}</span>
                                    </div>
                               
-            """.format(css_class, elink, was_vh_dir + image_file, event_id)
+            """.format(css_class, elink, was_vh_dir + image_file, event_id, analysed_name['hour']+':'+analysed_name['min']+':'+analysed_name['sec']+'.'+analysed_name['ms'])
             ss_count += 1
          else:
             multi_html += """
@@ -344,9 +344,10 @@ def html_get_detects(day,tsid,event_files, events):
                                         <img src="{:s}" class="img-fluid">
                                        </a>
                                         <span>{:s}</span>
+                                         <span>{:s}</span>
                                    </div>
                              
-            """.format(css_class, elink, was_vh_dir + image_file, event_id)
+            """.format(css_class, elink, was_vh_dir + image_file, event_id, analysed_name['hour']+':'+analysed_name['min']+':'+analysed_name['sec']+'.'+analysed_name['ms'])
             ms_count += 1
 
          mc += 1
