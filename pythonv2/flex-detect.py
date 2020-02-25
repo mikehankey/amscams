@@ -231,7 +231,6 @@ def finish_meteor(meteor_file):
       if cfe("/mnt/ams2/CAMS/processed_meteors/", 1) == 0:
          os.makedirs("/mnt/ams2/CAMS/processed_meteors/")
       # mv orig video file, stack file and image stack to proc2 dirs
-      cmd = "mv " + meteor_file + proc_data_dir
       video_file = meteor_file.replace("-meteor.json", ".mp4")
       vals_file = meteor_file.replace("-meteor.json", "-vals.json")
 
@@ -251,6 +250,8 @@ def finish_meteor(meteor_file):
       cmd = "mv " + video_file + " " + proc_dir
       print(cmd)
       cmd = "mv " + stack_file + " " + proc_img_dir
+      print(cmd)
+      cmd = "mv " + meteor_file + proc_data_dir
       print(cmd)
       cmd = "mv " + vals_file + " " + proc_data_dir
       print(cmd)
