@@ -1,6 +1,6 @@
 function loading_button($btn) {
-   $btn.attr('data-init',$btn.text());
-   $btn.html('<img src="/dist/img/loader.svg"/>');
+   $btn.attr('data-init',$btn.text()).css('width',$btn.width()).css('height',$btn.height())
+   $btn.html('<img src="/APPS/dist/img/loader.svg" class="img-fluid"/>');
 }
 
 function load_done_button($btn) {
