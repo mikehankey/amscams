@@ -15,8 +15,6 @@ $(function() {
          $('.prevproc.arc').show();
       }
 
-      $('.btn#'+id).addClass('active'):
-   
-   
+      $('.btn#'+id).addClass('active'); 
    })
 })
