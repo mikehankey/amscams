@@ -3,6 +3,7 @@ function setup_delete_buttons() {
    $('.del').each(function() {
       var $t = $(this); 
       $t.unbind('click').click(function() {   
+         $t.closest('.prevproc').removeClass('toConf');
          if($t.closest('.prevproc').hasClass('toDel')) {
             $t.addClass('on');
             $t.closest('.prevproc').removeClass('toDel');
@@ -10,7 +11,6 @@ function setup_delete_buttons() {
             $t.removeClass('on');
             $t.closest('.prevproc').addClass('toDel');
          }
-         
       });
    })
 }

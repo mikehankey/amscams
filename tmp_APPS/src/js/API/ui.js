@@ -10,8 +10,8 @@ function load_done_button($btn) {
 
 
 function hide_bottom_action() {
-   $('#bottom_action_bar').slideUp();
+   $('#bottom_action_bar').addClass('hd').slideUp();
 }
 function show_bottom_action() {
-   $('#bottom_action_bar').slideDown();
+   $('#bottom_action_bar').removeClass('hd').slideDown();
 }
