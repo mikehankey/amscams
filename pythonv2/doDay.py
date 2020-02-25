@@ -226,7 +226,8 @@ def make_station_report(day, proc_info = ""):
    
    # Add specific tool bar for multi
    # (delete all/confirm all)
-   multi_tb = '<div id="top_tool_bar" class="lio"><button id="conf_all" class="btn btn-success">Confirm All</button> <button id="del_all" class="btn btn-danger">Delete All</button> <button id="cancel_all" class="btn btn-secondary">Cancel</button></div>'
+   multi_tb = '<div id="top_tool_bar" class="lio"><div class="control-group"><div class="controls"><div class="input"><div id="lio_filters" class="btn-group" data-toggle="buttons-checkbox"><button class="btn btn-secondary" id="lio_btn_all" aria-pressed="true">ALL</button><button class="btn active" id="lio_btn_pnd" >Pending</button><button class="btn" id="lio_btn_arc">Archived</button></div></div><button id="toggle-all" class="btn btn-info">Toggle All</button></div></div>'
+   multi_tb += '<button id="conf_all" class="btn btn-success">Confirm All</button> <button id="del_all" class="btn btn-danger">Delete All</button> <button id="cancel_all" class="btn btn-secondary">Cancel</button></div>'
 
    TAB, TAB_CONTENT = add_section('multi',"Multi Station Meteors (" + str(info['ms_count']) + ")",multi_tb +"<div class='d-flex align-content-start flex-wrap'>" + multi_html + "</div>", TAB, TAB_CONTENT) 
   
@@ -332,7 +333,7 @@ def html_get_detects(day,tsid,event_files, events):
          if event_id is None or event_id == "none":
 
             if(event_id !=''):
-               event_id = "<b>Event #" + str(event_id) + "</b>"
+               event_id = "<b>Event</b> #" + str(event_id)  
 
             single_html += """
                                  <div class="{:s}">
@@ -348,7 +349,7 @@ def html_get_detects(day,tsid,event_files, events):
          else:
 
             if(event_id !=''):
-               event_id = "<b>Event #" + str(event_id) + "</b>"
+               event_id = "<b>Event</b> #" + str(event_id)  
 
             multi_html += """
                                  <div class="{:s}">
