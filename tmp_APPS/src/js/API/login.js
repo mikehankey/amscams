@@ -9,16 +9,19 @@ function test_logged_in() {
 // UI transformed after loggined (add delete buttons)
 function add_login_stuff() {
     
+   if($('.lgi').length==0) {
       // Add buttons
       $('.prevproc').each(function() {
-         $('<div class="btn-toolbar">\
+         $('<div class="btn-toolbar lgi">\
             <div class="btn-group">\
                <a class="delete col btn btn-danger btn-sm" title="Delete Detection"><i class="icon-delete"></i></a>\
+               <a class="delete col btn btn-success btn-sm" title="Delete Detection">Confirm</a>\
             </div>\
          </div>').appendTo($(this))
       });
-
-      setup_delete_buttons();
+   }
+   
+   setup_delete_buttons();
    
 }
 

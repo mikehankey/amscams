@@ -59,20 +59,25 @@
       }
    }
   
+   a.T {
+      margin-bottom: .25rem;
 
-   a.T:before {
-      position: absolute;
-      top: 1.2rem;
-      right: -2.5rem;
-      z-index: 9;
-      -webkit-transform: rotate(45deg);
-      transform: rotate(45deg);
-      font-weight: bold;
-      width: 150px;
-      text-align: center;
-      display: none;
+      &:before {
+
+         position: absolute;
+         top: 1.2rem;
+         right: -2.5rem;
+         z-index: 9;
+         -webkit-transform: rotate(45deg);
+         transform: rotate(45deg);
+         font-weight: bold;
+         width: 150px;
+         text-align: center;
+         display: none;
+      }
    }
-
+      
+ 
    span {
       display: block;
 
@@ -100,8 +105,7 @@
    }
 
      
-
-      
+ 
 
 
    a:hover:before {
