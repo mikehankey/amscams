@@ -269,7 +269,7 @@ def html_get_detects(day,tsid,event_files, events):
             event_vfile = event_vdir + event_id + "-report.html"
          
             if len(events[event_id]['solutions']) > 0 :
-               elink = "<a href=" + event_vfile + ">"
+               elink = "<a href=" + event_vfile + " class='T'>"
                solved_count += 1
                #else:
                #   print("NT F:", event_file)
@@ -277,11 +277,11 @@ def html_get_detects(day,tsid,event_files, events):
                #   elink = "<a>"
             else:
                print("Event not solved.", event_dir)
-               elink = "<a>"
+               elink = "<a class='T'>"
                not_run += 1
          else:
             event_id = None
-            elink = "<a>"
+            elink = "<a class='T'>"
          mfile = key.split("/")[-1]
          prev_crop = mfile.replace(".json", "-prev-crop.jpg")
          prev_full = mfile.replace(".json", "-prev-full.jpg")
