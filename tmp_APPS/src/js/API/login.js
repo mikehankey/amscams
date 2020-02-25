@@ -12,12 +12,17 @@ function add_login_stuff() {
    if($('.lgi').length==0) {
       // Add buttons
       $('.prevproc').each(function() {
-         $('<div class="btn-toolbar lgi">\
-            <div class="d-flex justify-content-around">\
-               <a class="conf col btn btn-success btn-sm mr-2" title="Confirm Detection">Confirm</a>\
-               <a class="del col btn btn-danger btn-sm" title="Delete Detection"><i class="icon-delete"></i></a>\
-            </div>\
-         </div>').appendTo($(this))
+
+         if(!$(this).hasClass('arc')) {
+               $('<div class="btn-toolbar lgi">\
+               <div class="d-flex justify-content-around">\
+                  <a class="conf col btn btn-success btn-sm mr-2" title="Confirm Detection">Confirm</a>\
+                  <a class="del col btn btn-danger btn-sm" title="Delete Detection"><i class="icon-delete"></i></a>\
+               </div>\
+            </div>').appendTo($(this))
+         }
+
+
       });
    }
    
