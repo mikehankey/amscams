@@ -3,7 +3,14 @@ function setup_delete_buttons() {
    $('.delete').each(function() {
       var $t = $(this); 
       $t.unbind('click').click(function() { 
-         delete_detec($t.parents('.prevproc').attr('id'));
+         if($t.hasClass('toDelete')) {
+            $t.addClass('on');
+            $t.parent('prevproc').removeClass('toDelete');
+         } else {
+            $t.removeClass('on');
+            $t.parent('prevproc').addClass('toDelete');
+         }
+         
       });
    })
 }
