@@ -3,22 +3,30 @@ function setup_confirm_buttons() {
    $('.conf').each(function() {
       var $t = $(this); 
       $t.unbind('click').click(function() {   
-         $t.closest('.prevproc').removeClass('toDel');
-         if($t.closest('.prevproc').hasClass('toConf')) {
-            $t.addClass('on');
-            $t.closest('.prevproc').removeClass('toConf');
-         } else {
-            $t.removeClass('on');
-            $t.closest('.prevproc').addClass('toConf');
+         var $prevproc = $t.closest('.prevproc');
+
+         if(!$prevproc.hasClass('done')) {
+            $prevproc.removeClass('toDel');
+            if($prevproc.hasClass('toConf')) {
+               $t.addClass('on');
+               $prevproc.removeClass('toConf');
+            } else {
+               $t.removeClass('on');
+               $prevproc.addClass('toConf');
+            }
          }
+
+         
          check_bottom_action();
+
+
       });
    })
 
    // Conf ALL
    $('#conf_all').unbind('click').click(function() {
       $('.prevproc').each(function() {
-         if(!$(this).hasClass('arc')) {
+         if(!$(this).hasClass('arc') && !$(this).hasClass('done')) {
             $(this).removeClass('toDel').addClass('toConf');
          }
       });
@@ -27,7 +35,11 @@ function setup_confirm_buttons() {
 
    // Cancel All
    $('#cancel_all').unbind('click').click(function() {
-      $('.prevproc').removeClass('toDel').removeClass('toConf');
+      $('.prevproc').each(function(i,v){
+         if(!$(this).hasClass('done') {
+            $(this).removeClass('toDel').removeClass('toConf');
+         }
+      });
       check_bottom_action();
    })
 }
