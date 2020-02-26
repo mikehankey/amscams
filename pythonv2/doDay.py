@@ -204,9 +204,9 @@ def make_station_report(day, proc_info = ""):
    live_view_html = ""
 
    # Is it the current day?
-   show_day_date =  datetime.strptime(show_day, '%m/%d%/%Y')
+   show_day_date =  datetime.strptime(mon+'_'+dom+'_'+year, '%m_%d%_%Y')
 
-   if(show_day_date < datetime.now() ) :
+   if(show_day_date == datetime.now() ) :
       if len(data['files']) > 0:
          data['files'] = sorted(data['files'], reverse=True)
          fn = data['files'][0].replace("/mnt/archive.allsky.tv", "")
