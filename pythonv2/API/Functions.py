@@ -23,7 +23,7 @@ ACCESS_FILE = PATH_ACCESS_LOGS + os.sep + "access.log"
 EXTRA_CODE_IN_TOKEN = '4llskYR0cks'
 ACCESS_GRANTED_DURATION = 1 # In hours
 
-AUTHORIZED_FUNCTIONS = ['login','delete']
+AUTHORIZED_FUNCTIONS = ['login','tasks','delete','confirm']
 
 # MAIN API CONTROLLER
 def api_controller(form):
@@ -38,7 +38,7 @@ def api_controller(form):
    if(api_function is None):
       send_error_message('No API function found')
    elif(api_function not in AUTHORIZED_FUNCTIONS):
-      send_error_message(api_function + 'is not an API function.')   
+      send_error_message(api_function + ' is not an API function.')   
 
    # Login
    if(api_function=='login'):
