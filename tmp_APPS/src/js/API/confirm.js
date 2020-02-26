@@ -36,8 +36,8 @@ function setup_confirm_buttons() {
    // Cancel All
    $('#cancel_all').unbind('click').click(function() {
       $('.prevproc').each(function(i,v){
-         if(!$(this).hasClass('done')) {
-            $(this).removeClass('toDel').removeClass('toConf');
+         if(!$(v).hasClass('done')) {
+            $(v).removeClass('toDel').removeClass('toConf');
          }
       });
       check_bottom_action();
