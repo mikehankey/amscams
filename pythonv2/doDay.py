@@ -277,13 +277,12 @@ def html_get_detects(day,tsid,event_files, events):
    multi_html = ""
    video_path = ""
 
+   print('*******************************************')
+   print('EVENT FILES ')
+   print(event_files)
+   print('*******************************************')
 
-   print('*****************************************************************************')
-   print(' YEAR ' + str(year))
-   print(' MONTH ' + str(month))
-   print(' D_DAY ' + str(d_day))
-   print('*****************************************************************************')
-   
+
    if day in mid:
       for key in mid[day]:
          if "archive_file" in mid[day][key]:
@@ -291,7 +290,7 @@ def html_get_detects(day,tsid,event_files, events):
             arc_file = mid[day][key]['archive_file']
             style = "arc"
             arc_count += 1
-            #video_path = ARCHIVE_PATH + os.sep + tsid + os.sep + 'METEOR' + os.sep + year + os.sep + 
+            #video_path = ARCHIVE_PATH + os.sep + tsid + os.sep + 'METEOR' + os.sep + year + os.sep + month + os.sep + day + os.sep 
             #mnt/archive.allsky.tv/AMS7/METEOR/2019/12/24/2019_12_24_07_37_17_000_010038-trim1079-HD.mp4
 
          else:
