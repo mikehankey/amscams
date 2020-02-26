@@ -39,6 +39,18 @@ function remove_login_stuff() {
    // Remove  Buttons
    $('.lgi').remove();
    $('.lio').hide();
+   $('.prevproc').show();
+   
+   $('.toDel').removeClass('toDel');
+   $('.toConf').removeClass('toConf');
+
+   hide_bottom_action();
+
+   // MAin Button
+   $('#del_text').text('');
+   $('#conf_text').text('');
+
+
 }
 
 

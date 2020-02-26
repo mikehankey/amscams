@@ -52,7 +52,7 @@ def api_controller(form):
       test_access = test_api_login(st,tok,user)
    
       if(test_access==False or test_access is None):
-         send_error_message('You are not authorized')
+         send_error_message('You are not authorized. Please, try to logback in.',True)
       
       # Now we can do stuff
       if(api_function=='delete'):

@@ -12,6 +12,12 @@ function send_API_task(jsonData) {
                className: 'rubberBand animated error',
                centerVertical: true 
             });
+
+            if(typeof data.log !== 'undefined' && data.log==1) {
+               logout();
+               loggedin();
+            }
+               
          }  
       }, 
       error:function() { 
