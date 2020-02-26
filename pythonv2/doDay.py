@@ -279,6 +279,9 @@ def html_get_detects(day,tsid,event_files, events):
             arc_file = mid[day][key]['archive_file']
             style = "arc"
             arc_count += 1
+
+
+
          else:
             arc = 0
             arc_file = "pending"
@@ -335,14 +338,18 @@ def html_get_detects(day,tsid,event_files, events):
             if(event_id !=''):
                event_id = "<b>Event</b> #" + str(event_id)  
 
+            # We get the path to the video 
+            print(analysed_name)
+            print("<br>")
+
             single_html += """
-                                 <div class="{:s}">
-                                       {:s} 
-                                        <img src="{:s}" class="img-fluid">
-                                       </a>
-                                       <span>{:s}</span> 
-                                        <span>{:s}</span> 
-                                   </div>
+                           <div class="{:s}">
+                                 {:s} 
+                                    <img src="{:s}" class="img-fluid">
+                                 </a>
+                                    <span>{:s}</span> 
+                                    <span>{:s}</span> 
+                              </div>
                               
             """.format(css_class, elink, was_vh_dir + image_file, event_id, '<b>Cam#' + analysed_name['cam_id'] + '</b> ' + analysed_name['hour']+':'+analysed_name['min']+':'+analysed_name['sec']+'.'+analysed_name['ms'])
             ss_count += 1
@@ -352,13 +359,13 @@ def html_get_detects(day,tsid,event_files, events):
                event_id = "<b>Event</b> #" + str(event_id)  
 
             multi_html += """
-                                 <div class="{:s}">
-                                       {:s} 
-                                        <img src="{:s}" class="img-fluid">
-                                       </a>
-                                       <span>{:s}</span> 
-                                        <span>{:s}</span> 
-                                   </div>
+                        <div class="{:s}">
+                              {:s} 
+                                 <img src="{:s}" class="img-fluid">
+                              </a>
+                                 <span>{:s}</span> 
+                                 <span>{:s}</span> 
+                           </div>
                              
             """.format(css_class, elink, was_vh_dir + image_file, event_id, '<b>Cam#' + analysed_name['cam_id'] + '</b> ' + analysed_name['hour']+':'+analysed_name['min']+':'+analysed_name['sec']+'.'+analysed_name['ms'])
             ms_count += 1
