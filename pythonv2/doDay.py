@@ -204,7 +204,7 @@ def make_station_report(day, proc_info = ""):
    live_view_html = ""
 
    # Is it the current day?
-   show_day_date =  datetime.strptime(show_day, '%m\/%d%\/%Y')
+   show_day_date =  datetime.strptime(show_day, '%m_%d_%Y')
 
    if(show_day_date == datetime.now() ) :
       if len(data['files']) > 0:
