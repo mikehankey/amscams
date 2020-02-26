@@ -304,16 +304,10 @@ def html_get_detects(day,tsid,event_files, events):
          
             if len(events[event_id]['solutions']) > 0 :
                elink = "<a href=" + event_vfile + " class='T'>"
-               solved_count += 1
-               #else:
-               #   print("NT F:", event_file)
-               #   failed_count += 1
-               #   elink = "<a>"
-            else:
-               print("Event not solved.", event_dir)
+               solved_count += 1  
+            else: 
                elink = "<a class='T'>"
                not_run += 1
-         
          else:
             event_id = None
             elink = "<a class='T'>"
@@ -333,8 +327,10 @@ def html_get_detects(day,tsid,event_files, events):
             event_id = ""
 
          # Video PATH (HD)
-         video_path = ARCHIVE_PATH + os.sep + tsid + os.sep + 'METEOR' + os.sep + year + os.sep + month + os.sep + d_day + os.sep + image_file.replace('-prev-crop.jpg','-HD.mp4')
-             
+         if(arc == 1):
+            video_path = ARCHIVE_PATH + os.sep + tsid + os.sep + 'METEOR' + os.sep + year + os.sep + month + os.sep + d_day + os.sep + image_file.replace('-prev-crop.jpg','-HD.mp4')
+         else:
+            video_path = ''    
 
          # We get more info
          analysed_name = analyse_report_file(image_file)
