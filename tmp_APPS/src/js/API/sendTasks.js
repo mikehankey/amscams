@@ -5,7 +5,7 @@ function send_API_task(jsonData) {
 
    $.ajax({ 
       url:   API_URL ,
-      data: {'function':'tasks',  'tok':test_logged_in(), 'data': JSON.parse(jsonData), 'usr':usr[0], 'st':stID}, 
+      data: {'function':'tasks',  'tok':test_logged_in(), 'data': jsonData, 'usr':usr[0], 'st':stID}, 
       format: 'json',
       success: function(data) { 
          data = jQuery.parseJSON(data); 
