@@ -6,6 +6,14 @@
    margin:1rem .5rem;
    position: relative;
 
+
+   &.done {
+      color:#666;
+      img {
+         opacity: 0.5;
+      }
+   }
+
    .btn-toolbar {
       justify-content: flex-end!important;
    }

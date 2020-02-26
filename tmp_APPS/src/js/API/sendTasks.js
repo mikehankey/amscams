@@ -1,4 +1,14 @@
-function send_API_task(jsonData) {
+
+// UI - greyout a detection that we send to the API
+function greyOut($el,msg) {
+   $el.addClass('done').removeClass('');
+   $el.find('.btn-toolbar').removeClass('toDel','toConf');
+
+}
+
+
+
+function send_API_task(jsonData,$toDel,$toConf) {
  
    var usr = getUserInfo();
    usr = usr.split('|');
@@ -22,7 +32,28 @@ function send_API_task(jsonData) {
                loggedin();
             }
                
-         }  
+         } else {
+
+            // We grey out the related detections on the page
+            if($toDel.length>0) {
+               $.each($toDel, function(i,v) {
+                  greyOut(v,'del');
+               })
+            }
+
+            // We grey out the related detections on the page
+            if($toConf.length>0) {
+               $.each($toConf, function(i,v) {
+                  greyOut(v,'conf');
+               })
+            }
+
+            // Update main button
+            $('#del_text').text('');
+            $('#conf_text').text('');
+
+
+         }
       }, 
       error:function() { 
          bootbox.alert({
@@ -99,7 +130,7 @@ function update_all() {
             },
             callback: function (result) {
                if(result) {
-                  send_API_task({'toDel':toDel.toString(),'toConf':toConf.toString()});
+                  send_API_task({'toDel':toDel.toString(),'toConf':toConf.toString()},$toDel,$toConf);
                }
             }
          });
