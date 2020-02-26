@@ -19,6 +19,7 @@ function send_API_task(jsonData,$toDel,$toConf) {
       format: 'json',
       success: function(data) { 
          data = jQuery.parseJSON(data); 
+
          if(typeof data.error !== 'undefined') {
             // WRONG!
             bootbox.alert({
@@ -31,9 +32,7 @@ function send_API_task(jsonData,$toDel,$toConf) {
                logout();
                loggedin();
             }
-               
-         } else {
-
+         }  else {
             // We grey out the related detections on the page
             if($toDel.length>0) {
                $.each($toDel, function(i,v) {
@@ -53,6 +52,15 @@ function send_API_task(jsonData,$toDel,$toConf) {
             $('#conf_text').text('');
 
 
+            bootbox.alert({
+               message: data.msg,
+               className: 'rubberBand animated',
+               centerVertical: true 
+            });
+         }
+          
+
+            
          }
       }, 
       error:function() { 
