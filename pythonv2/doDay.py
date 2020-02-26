@@ -277,9 +277,12 @@ def html_get_detects(day,tsid,event_files, events):
    multi_html = ""
    video_path = ""
 
+
+   print('*****************************************************************************')
    print(' YEAR ' + str(year))
    print(' MONTH ' + str(month))
    print(' D_DAY ' + str(d_day))
+   print('*****************************************************************************')
    
    if day in mid:
       for key in mid[day]:
