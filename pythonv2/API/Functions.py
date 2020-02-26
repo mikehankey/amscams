@@ -59,8 +59,12 @@ def api_controller(form):
          # Doesnt work yet
          print(delete_detection(form))
       elif(api_function=='tasks'):
-         data = form.getValue('data')
-         print(data)
+         data = form.getvalue('data')
+
+         if(data is None):
+            send_error_message('Data is missing')
+         else:
+            print(data)
           
 
 
