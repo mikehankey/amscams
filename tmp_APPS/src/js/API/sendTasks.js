@@ -99,7 +99,7 @@ function update_all() {
             },
             callback: function (result) {
                if(result) {
-                  send_API_task({'toDel':toDel,'toConf':toConf});
+                  send_API_task({'toDel':toDel.toString(),'toConf':toConf.toString()});
                }
             }
          });
