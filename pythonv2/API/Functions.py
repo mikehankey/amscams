@@ -56,7 +56,13 @@ def api_controller(form):
       
       # Now we can do stuff
       if(api_function=='delete'):
+         # Doesnt work yet
          print(delete_detection(form))
+      elif(api_function=='tasks')
+         data = form.getValue('data')
+         print(data)
+          
+
 
 
 # LOGIN
