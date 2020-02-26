@@ -1,8 +1,18 @@
-COOKIE_NAME = "APIa"   // Token 
+var COOKIE_NAME = "APIa"          // Token Access
+var USER_COOKIE_NAME = "APIu478"  // User info
 
 // Test if already logged in 
 function test_logged_in() {
    return readCookie(COOKIE_NAME); 
+} 
+
+function getTok() {
+   return test_logged_in();
+}
+
+// Get User Info
+function getUserInfo() {
+   return readCookie(USER_COOKIE_NAME); 
 }
 
 
@@ -20,9 +30,7 @@ function add_login_stuff() {
                   <a class="del col btn btn-danger btn-sm" title="Delete Detection"><i class="icon-delete"></i></a>\
                </div>\
             </div>').appendTo($(this))
-         }
-
-
+         } 
       });
    }
    
@@ -57,6 +65,7 @@ function remove_login_stuff() {
 // Remove Login Cookie
 function logout() {
    eraseCookie(COOKIE_NAME); 
+   eraseCookie(USER_COOKIE_NAME); 
 }
 
 
@@ -125,15 +134,19 @@ function setup_login() {
       $('#subm_login').click(function() {
             // So we can send the USR to the API
             var $t = $(this);
+            var _data = {'function':'login', 'user':$('input[name=username]').val(), 'pwd':$('input[name=password]').val(), 'st':$('input[name=st]').val()};
+
+
             loading_button($t);
             $.ajax({ 
                url:   API_URL ,
-               data: {'function':'login', 'user':$('input[name=username]').val(), 'pwd':$('input[name=password]').val(), 'st':$('input[name=st]').val()}, 
+               data: _data, 
                format: 'json',
                success: function(data) { 
                   data = jQuery.parseJSON(data); 
                      
                   load_done_button($t);
+
                   if(typeof data.error !== 'undefined') {
                      // WRONG!
                      bootbox.alert({
@@ -143,8 +156,10 @@ function setup_login() {
                      });
                      logout();
                   } else {
+
                      $('#login_modal').modal('hide'); 
                      createCookie(COOKIE_NAME,data.token,2)
+                     createCookie(USER_COOKIE_NAME,_data['user']+'|'+_data['station']);
                      loggedin();    
                   } 
                }, 

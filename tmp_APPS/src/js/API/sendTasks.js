@@ -1,7 +1,12 @@
 function send_API_task(jsonData) {
+
+
+   var usr = getUserInfo();
+   usr = usr.split('|');
+
    $.ajax({ 
       url:   API_URL ,
-      data: {'function':'tasks',  'tok':test_logged_in(), 'data': jsonData}, 
+      data: {'function':'tasks',  'tok':test_logged_in(), 'data': jsonData, 'usr':usr[0], 'st':usr[1]}, 
       format: 'json',
       success: function(data) { 
          data = jQuery.parseJSON(data); 
