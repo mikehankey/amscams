@@ -134,7 +134,7 @@ function setup_login() {
       $('#subm_login').click(function() {
             // So we can send the USR to the API
             var $t = $(this);
-            var _data = {'function':'login', 'user':$('input[name=username]').val(), 'pwd':$('input[name=password]').val(), 'st':stID};
+            var _data = {'function':'login', 'usr':$('input[name=username]').val(), 'pwd':$('input[name=password]').val(), 'st':stID};
 
             loading_button($t);
             $.ajax({ 

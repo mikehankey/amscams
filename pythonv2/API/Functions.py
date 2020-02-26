@@ -36,7 +36,7 @@ def api_controller(form):
    api_function = form.getvalue('function')
    tok = form.getvalue('tok') 
    st = form.getvalue('st')
-   user = form.getvalue('user')
+   user = form.getvalue('usr')
 
    # TEST API FUNCTION
    if(api_function is None):
