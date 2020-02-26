@@ -341,7 +341,8 @@ def html_get_detects(day,tsid,event_files, events):
 
             single_html += "<div class='"+css_class+"'>" + elink +  "<img src='"+was_vh_dir + image_file+"' class='img-fluid'></a>"
             single_html += "<div class='d-flex'><div class='mr-auto'><span>"+'<b>Cam#' + analysed_name['cam_id'] + '</b> '+ analysed_name['hour']+':'+analysed_name['min']+':'+analysed_name['sec']+'.'+analysed_name['ms'] + "</div>"
-            single_html += "<div>"+video_path+"</div></div></div>"
+            #single_html += "<div>"+video_path+"</div></div></div>"
+            single_html += "</div></div>"
             ss_count += 1
          else:
 
@@ -350,8 +351,8 @@ def html_get_detects(day,tsid,event_files, events):
 
             multi_html += "<div class='"+css_class+"'>" + elink +  "<img src='"+was_vh_dir + image_file+"' class='img-fluid'></a>"
             multi_html += "<div class='d-flex'><div class='mr-auto'>"+event_id+"<span>"+'<b>Cam#' + analysed_name['cam_id'] + '</b> '+ analysed_name['hour']+':'+analysed_name['min']+':'+analysed_name['sec']+'.'+analysed_name['ms'] + "</div>"
-            multi_html += "<div>"+video_path+"</div></div></div>"
-            ss_count += 1
+            multi_html += "<div><a href='"+video_path+"' class='vid-link btn btn-secondary'><span class='icon-youtube'></span></a></div></div></div>"
+            ms_count += 1
 
          video_path = ''
          mc += 1
