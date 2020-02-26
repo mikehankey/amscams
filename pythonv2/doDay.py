@@ -333,9 +333,8 @@ def html_get_detects(day,tsid,event_files, events):
             event_id = ""
 
          
-         video_path = ARCHIVE_PATH + os.sep + tsid + os.sep + 'METEOR' + os.sep + year + os.sep + month + os.sep + day + os.sep + image_file.replace('-prev-crop.jpg','-HD.mp4')
-            
-   
+         video_path = ARCHIVE_PATH + os.sep + tsid + os.sep + 'METEOR' + os.sep + year + os.sep + month + os.sep + d_day + os.sep + image_file.replace('-prev-crop.jpg','-HD.mp4')
+             
 
          # We get more info
          analysed_name = analyse_report_file(image_file)
