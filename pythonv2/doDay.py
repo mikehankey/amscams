@@ -38,7 +38,7 @@ REGEX_REPORT = r"(\d{4})_(\d{2})_(\d{2})_(\d{2})_(\d{2})_(\d{2})_(\d{3})_(\w{6})
 REGEX_GROUP_REPORT = ["name","year","month","day","hour","min","sec","ms","cam_id","trim"]
  
 # ARCHIVE PATH
-ARCHIVE_PATH = "/mnt/archive.allsky.tv" 
+ARCHIVE_PATH = "http://archive.allsky.tv/" 
 
 json_conf = load_json_file("../conf/as6.json")
 
@@ -275,12 +275,7 @@ def html_get_detects(day,tsid,event_files, events):
    not_run = 0
    single_html = ""
    multi_html = ""
-   video_path = ""
-
-   print('*******************************************')
-   print('EVENT FILES ')
-   print(event_files)
-   print('*******************************************')
+   video_path = "" 
 
 
    if day in mid:
@@ -289,9 +284,9 @@ def html_get_detects(day,tsid,event_files, events):
             arc = 1
             arc_file = mid[day][key]['archive_file']
             style = "arc"
-            arc_count += 1
-            #video_path = ARCHIVE_PATH + os.sep + tsid + os.sep + 'METEOR' + os.sep + year + os.sep + month + os.sep + day + os.sep 
-            #mnt/archive.allsky.tv/AMS7/METEOR/2019/12/24/2019_12_24_07_37_17_000_010038-trim1079-HD.mp4
+            arc_count += 1 
+            video_path = ARCHIVE_PATH + os.sep + tsid + os.sep + 'METEOR' + os.sep + year + os.sep + month + os.sep + day + os.sep + arc_file.replace('-prev-crop.jpg','-HD.mp4')
+            
 
          else:
             arc = 0
@@ -356,9 +351,10 @@ def html_get_detects(day,tsid,event_files, events):
                                  </a>
                                     <span>{:s}</span> 
                                     <span>{:s}</span> 
+                                    <a href="{:s}">VIDEO</span> 
                               </div>
                               
-            """.format(css_class, elink, was_vh_dir + image_file, event_id, '<b>Cam#' + analysed_name['cam_id'] + '</b> ' + analysed_name['hour']+':'+analysed_name['min']+':'+analysed_name['sec']+'.'+analysed_name['ms'])
+            """.format(css_class, elink, was_vh_dir + image_file, event_id, '<b>Cam#' + analysed_name['cam_id'] + '</b> ' + analysed_name['hour']+':'+analysed_name['min']+':'+analysed_name['sec']+'.'+analysed_name['ms'],video_path)
             ss_count += 1
          else:
 
@@ -377,6 +373,7 @@ def html_get_detects(day,tsid,event_files, events):
             """.format(css_class, elink, was_vh_dir + image_file, event_id, '<b>Cam#' + analysed_name['cam_id'] + '</b> ' + analysed_name['hour']+':'+analysed_name['min']+':'+analysed_name['sec']+'.'+analysed_name['ms'])
             ms_count += 1
 
+         video_path = ''
          mc += 1
    else:
       html += "No meteors detected."
