@@ -368,9 +368,10 @@ def html_get_detects(day,tsid,event_files, events):
                               </a>
                                  <span>{:s}</span> 
                                  <span>{:s}</span> 
+                                 <a href="{:s}">VIDEO</span> 
                            </div>
                              
-            """.format(css_class, elink, was_vh_dir + image_file, event_id, '<b>Cam#' + analysed_name['cam_id'] + '</b> ' + analysed_name['hour']+':'+analysed_name['min']+':'+analysed_name['sec']+'.'+analysed_name['ms'])
+            """.format(css_class, elink, was_vh_dir + image_file, event_id, '<b>Cam#' + analysed_name['cam_id'] + '</b> ' + analysed_name['hour']+':'+analysed_name['min']+':'+analysed_name['sec']+'.'+analysed_name['ms'],video_path)
             ms_count += 1
 
          video_path = ''
