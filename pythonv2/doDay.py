@@ -37,6 +37,8 @@ from lib.UtilLib import check_running
 REGEX_REPORT = r"(\d{4})_(\d{2})_(\d{2})_(\d{2})_(\d{2})_(\d{2})_(\d{3})_(\w{6})-trim(\d{4})-prev-crop.jpg"
 REGEX_GROUP_REPORT = ["name","year","month","day","hour","min","sec","ms","cam_id","trim"]
  
+# ARCHIVE PATH
+ARCHIVE_PATH = "http://archive.allsky.tv/" 
 
 json_conf = load_json_file("../conf/as6.json")
 
@@ -189,7 +191,7 @@ def make_station_report(day, proc_info = ""):
    data['files'] = noaa_files
 
    events,event_files = load_events(day)
-   single_html, multi_html, info= html_get_detects(day, station, event_files,events)
+   single_html, multi_html, info= html_get_detects(day, station, event_files, events)
    detect_count = info['mc']
  
    show_date = day.replace("_", "/")
@@ -208,12 +210,12 @@ def make_station_report(day, proc_info = ""):
    TAB, TAB_CONTENT = add_section('live','Live View',live_view_html, TAB, TAB_CONTENT)
    print(TAB)
 
-   # WEATHER SNAP SHOTS
+   # WEATHER SNAP SHOTS 
    we_html = ""
    if len(data['files']) > 0:
       for file in sorted(data['files'],reverse=True):
          fn = file.replace("/mnt/archive.allsky.tv", "")
-         we_html += "<img src='" + fn + "' class='img-fluid'>"
+         we_html += "<img src='" + fn + "' class='img-fluid weath'>"
  
    TAB, TAB_CONTENT = add_section('weather','Weather Snap Shots',we_html, TAB, TAB_CONTENT, True)
     
@@ -226,7 +228,8 @@ def make_station_report(day, proc_info = ""):
    
    # Add specific tool bar for multi
    # (delete all/confirm all)
-   multi_tb = '<div id="top_tool_bar"><button id="del_all" class="btn btn-danger">Delete All</button> <button id="conf_all" class="btn btn-success">Confirm All</button> <button id="cancel_all" class="btn btn-secondary">Cancel</button></div>'
+   multi_tb = '<div id="top_tool_bar" class="lio"><div class="d-flex"><div class="control-group mr-auto"><div class="controls"><div class="input"><div id="lio_filters" class="btn-group" data-toggle="buttons-checkbox"><button class="btn btn-secondary active" id="lio_btn_all" aria-pressed="true">ALL</button><button class="btn btn-secondary" id="lio_btn_pnd"  aria-pressed="false">Pending ('+ str(info['pending_count']) +')</button><button class="btn btn-secondary" aria-pressed="false" id="lio_btn_arc">Archived ('+ str(info['arc_count']) +')</button></div></div></div></div>'
+   multi_tb += '<button id="conf_all" class="btn btn-success">Confirm All</button> <button id="del_all" class="btn btn-danger">Delete All</button> <button id="cancel_all" class="btn btn-secondary">Cancel</button></div></div>'
 
    TAB, TAB_CONTENT = add_section('multi',"Multi Station Meteors (" + str(info['ms_count']) + ")",multi_tb +"<div class='d-flex align-content-start flex-wrap'>" + multi_html + "</div>", TAB, TAB_CONTENT) 
   
@@ -250,6 +253,8 @@ def make_station_report(day, proc_info = ""):
 def html_get_detects(day,tsid,event_files, events):
    
    year = day[0:4]
+   month = day[5:7]
+   d_day = day[8:]
    mi = "/mnt/ams2/meteor_archive/" + json_conf['site']['ams_id'] + "/DETECTS/MI/" + year + "/" +  day + "-meteor_index.json"
    print(mi)
    mid = load_json_file(mi)
@@ -270,14 +275,16 @@ def html_get_detects(day,tsid,event_files, events):
    not_run = 0
    single_html = ""
    multi_html = ""
-   
+   video_path = "" 
+
+
    if day in mid:
       for key in mid[day]:
          if "archive_file" in mid[day][key]:
             arc = 1
             arc_file = mid[day][key]['archive_file']
             style = "arc"
-            arc_count += 1
+            arc_count += 1 
          else:
             arc = 0
             arc_file = "pending"
@@ -325,34 +332,51 @@ def html_get_detects(day,tsid,event_files, events):
          if event_id is None:
             event_id = ""
 
+         
+         video_path = ARCHIVE_PATH + os.sep + tsid + os.sep + 'METEOR' + os.sep + year + os.sep + month + os.sep + day + os.sep + image_file.replace('-prev-crop.jpg','-HD.mp4')
+            
+   
+
          # We get more info
          analysed_name = analyse_report_file(image_file)
          
     
          if event_id is None or event_id == "none":
+
+            if(event_id !=''):
+               event_id = "<b>Event</b> #" + str(event_id)  
+
             single_html += """
-                                 <div class="{:s}">
-                                       {:s} 
-                                        <img src="{:s}" class="img-fluid">
-                                       </a>
-                                        <span>{:s}</span> 
-                                   </div>
+                           <div class="{:s}">
+                                 {:s} 
+                                    <img src="{:s}" class="img-fluid">
+                                 </a>
+                                    <span>{:s}</span> 
+                                    <span>{:s}</span> 
+                                    <a href="{:s}">VIDEO</span> 
+                              </div>
                               
-            """.format(css_class, elink, was_vh_dir + image_file, event_id, '<b>Cam#' + analysed_name['cam_id'] + '</b> ' + analysed_name['hour']+':'+analysed_name['min']+':'+analysed_name['sec']+'.'+analysed_name['ms'])
+            """.format(css_class, elink, was_vh_dir + image_file, event_id, '<b>Cam#' + analysed_name['cam_id'] + '</b> ' + analysed_name['hour']+':'+analysed_name['min']+':'+analysed_name['sec']+'.'+analysed_name['ms'],video_path)
             ss_count += 1
          else:
+
+            if(event_id !=''):
+               event_id = "<b>Event</b> #" + str(event_id)  
+
             multi_html += """
+                        <div class="{:s}">
+                              {:s} 
+                                 <img src="{:s}" class="img-fluid">
+                              </a>
+                                 <span>{:s}</span> 
+                                 <span>{:s}</span> 
+                                 <a href="{:s}">VIDEO</span> 
+                           </div>
                              
-                                 <div class="{:s}">
-                                       {:s} 
-                                        <img src="{:s}" class="img-fluid">
-                                       </a>
-                                        <span>{:s}</span> 
-                                   </div>
-                             
-            """.format(css_class, elink, was_vh_dir + image_file, event_id, '<b>Cam#' + analysed_name['cam_id'] + '</b> ' + analysed_name['hour']+':'+analysed_name['min']+':'+analysed_name['sec']+'.'+analysed_name['ms'])
+            """.format(css_class, elink, was_vh_dir + image_file, event_id, '<b>Cam#' + analysed_name['cam_id'] + '</b> ' + analysed_name['hour']+':'+analysed_name['min']+':'+analysed_name['sec']+'.'+analysed_name['ms'],video_path)
             ms_count += 1
 
+         video_path = ''
          mc += 1
    else:
       html += "No meteors detected."

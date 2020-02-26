@@ -1,5 +1,6 @@
 """
 
+
    Library for holding scan and stack data processing functions.
    These are the functions used to 'process' incoming video files. 
    Steps in pipe line processing are:

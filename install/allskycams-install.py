@@ -5,11 +5,12 @@
 
 
 """
-
 import json
 import os
 import sys
 from pathlib import Path
+USER = "meteorcam"
+GROUP = "pi"
 
 
 def save_json_file(json_file, json_data, compress=False):
@@ -48,7 +49,8 @@ def get_repos():
    os.system("cd /home/ams; git clone https://github.com/mikehankey/amscams.git")
 
 def config_apache():
-   site_file = "/etc/apache2/sites-enabled/000-default.conf"
+   #site_file = "/etc/apache2/sites-enabled/000-default.conf"
+   site_file = "/etc/apache2/default-server.conf"
    sites_enabled = """
 <Directory /var/www/html/pycgi>
 Options ExecCGI FollowSymLinks
@@ -64,23 +66,23 @@ AddHandler cgi-script .py
 
 
 """
-   fp = open(site_file, "w")
-   fp.write(sites_enabled)
-   fp.close()
+   #fp = open(site_file, "w")
+   #fp.write(sites_enabled)
+   #fp.close()
    # change run user
    env_text = ""
-   fp = open("/etc/apache2/envvars")
-   for line in fp:
-      env_text += line
-   env_text = env_text.replace("www-data", "ams")
-   fp.close()
+   #fp = open("/etc/apache2/envvars")
+   #for line in fp:
+   #   env_text += line
+   #env_text = env_text.replace("www-data", "ams")
+   #fp.close()
 
-   fp = open("/etc/apache2/envvars", "w")
-   fp.write(env_text)
-   fp.close()
+   #fp = open("/etc/apache2/envvars", "w")
+   #fp.write(env_text)
+   #fp.close()
 
-   os.system("ln -s /etc/apache2/mods-available/cgi.load /etc/apache2/mods-enabled/cgi.load")
-   os.system("rm /var/www/html/index.html")
+   #os.system("ln -s /etc/apache2/mods-available/cgi.load /etc/apache2/mods-enabled/cgi.load")
+   #os.system("rm /var/www/html/index.html")
 
    # make default index page
    index = "<a href=/pycgi/webUI.py>Login</a>"
@@ -205,9 +207,9 @@ def setup_dirs():
          os.makedirs("/mnt/ams2/latest")
       if cfe("/home/ams/tmpvids",1) == 0:
          os.makedirs("/home/ams/tmpvids")
-      os.system("chown -R ams:ams /mnt/ams2")
-      os.system("chown -R ams:ams /home/ams/tmpvids")
-      os.system("chown -R ams:ams /mnt/archive.allsky.tv")
+      os.system("chown -R " + USER + ":" + GROUP  + " /mnt/ams2")
+      os.system("chown -R " + USER + ":" + GROUP  + " /home/ams/tmpvids")
+      os.system("chown -R " + USER + ":" + GROUP  + " /mnt/archive.allsky.tv")
    
       os.system("cd /home/ams/amscams/pythonv2; ./batchJobs.py fi")
       os.system("cd /home/ams/amscams/pythonv2; python3 Create_Archive_Index.py 2020 ")
@@ -282,9 +284,10 @@ def setup_vpn():
 
 #get_repos()
 #setup_network_interface()
+
 #config_apache()
 
 #setup_as6_conf()
 
-#setup_dirs()
-setup_vpn()
+setup_dirs()
+#setup_vpn()
