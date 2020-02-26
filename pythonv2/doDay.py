@@ -37,6 +37,8 @@ from lib.UtilLib import check_running
 REGEX_REPORT = r"(\d{4})_(\d{2})_(\d{2})_(\d{2})_(\d{2})_(\d{2})_(\d{3})_(\w{6})-trim(\d{4})-prev-crop.jpg"
 REGEX_GROUP_REPORT = ["name","year","month","day","hour","min","sec","ms","cam_id","trim"]
  
+# ARCHIVE PATH
+ARCHIVE_PATH = "/mnt/archive.allsky.tv" 
 
 json_conf = load_json_file("../conf/as6.json")
 
@@ -189,7 +191,7 @@ def make_station_report(day, proc_info = ""):
    data['files'] = noaa_files
 
    events,event_files = load_events(day)
-   single_html, multi_html, info= html_get_detects(day, station, event_files,events)
+   single_html, multi_html, info= html_get_detects(day, station, event_files, events)
    detect_count = info['mc']
  
    show_date = day.replace("_", "/")
@@ -251,6 +253,8 @@ def make_station_report(day, proc_info = ""):
 def html_get_detects(day,tsid,event_files, events):
    
    year = day[0:4]
+   month = day[5:7]
+   d_day = day[8:]
    mi = "/mnt/ams2/meteor_archive/" + json_conf['site']['ams_id'] + "/DETECTS/MI/" + year + "/" +  day + "-meteor_index.json"
    print(mi)
    mid = load_json_file(mi)
@@ -271,6 +275,11 @@ def html_get_detects(day,tsid,event_files, events):
    not_run = 0
    single_html = ""
    multi_html = ""
+   video_path = ""
+
+   print(' YEAR ' + str(year))
+   print(' MONTH ' + str(month))
+   print(' D_DAY ' + str(d_day))
    
    if day in mid:
       for key in mid[day]:
@@ -279,8 +288,8 @@ def html_get_detects(day,tsid,event_files, events):
             arc_file = mid[day][key]['archive_file']
             style = "arc"
             arc_count += 1
-
-
+            #video_path = ARCHIVE_PATH + os.sep + tsid + os.sep + 'METEOR' + os.sep + year + os.sep + 
+            #mnt/archive.allsky.tv/AMS7/METEOR/2019/12/24/2019_12_24_07_37_17_000_010038-trim1079-HD.mp4
 
          else:
             arc = 0
