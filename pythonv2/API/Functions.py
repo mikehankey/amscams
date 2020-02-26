@@ -69,7 +69,7 @@ def api_controller(form):
          if(data_to_del is None and data_to_conf is None):
             send_error_message('Data is missing - Error 145.hg')
          else:
-            print(add_tasks(data_to_del,data_to_conf,usr,st,datetime.now()))
+            print(add_tasks(data_to_del,data_to_conf,user,st,datetime.now()))
 
             #if(data_to_conf is None):
             #   add_tasks_to_conf(data_to_conf,usr,st,datetime.now())
