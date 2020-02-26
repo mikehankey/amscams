@@ -58,10 +58,7 @@ function send_API_task(jsonData,$toDel,$toConf) {
                centerVertical: true 
             });
          }
-          
-
-            
-         }
+           
       }, 
       error:function() { 
          bootbox.alert({
