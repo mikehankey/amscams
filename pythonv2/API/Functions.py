@@ -58,7 +58,7 @@ def api_controller(form):
       if(api_function=='delete'):
          # Doesnt work yet
          print(delete_detection(form))
-      elif(api_function=='tasks')
+      elif(api_function=='tasks'):
          data = form.getValue('data')
          print(data)
           
