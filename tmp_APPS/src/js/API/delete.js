@@ -22,7 +22,7 @@ function setup_delete_buttons() {
 
    $('#del_all').unbind('click').click(function() {
       $('.prevproc').each(function(i,v){
-         if(!$(this).hasClass('done') {
+         if(!$(this).hasClass('done')) {
             $(this).removeClass('toConf').removeClass('toDel');
          }
       });
