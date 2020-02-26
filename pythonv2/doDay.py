@@ -350,8 +350,8 @@ def html_get_detects(day,tsid,event_files, events):
                event_id = "<b>Event</b> #" + str(event_id)  
 
             multi_html += "<div class='"+css_class+"'>" + elink +  "<img src='"+was_vh_dir + image_file+"' class='img-fluid'></a>"
-            multi_html += "<div class='d-flex'><div class='mr-auto'>"+event_id+"<span>"+'<b>Cam#' + analysed_name['cam_id'] + '</b> '+ analysed_name['hour']+':'+analysed_name['min']+':'+analysed_name['sec']+'.'+analysed_name['ms'] + "</div>"
-            multi_html += "<div><a href='"+video_path+"' class='vid-link btn btn-secondary'><span class='icon-youtube'></span></a></div></div></div>"
+            multi_html += "<div class='d-flex mb-1'><div class='mr-auto'>"+event_id+"<span>"+'<b>Cam#' + analysed_name['cam_id'] + '</b> '+ analysed_name['hour']+':'+analysed_name['min']+':'+analysed_name['sec']+'.'+analysed_name['ms'] + "</div>"
+            multi_html += "<div><a href='"+video_path+"' class='vid-link btn btn-secondary btn-sm'><span class='icon-youtube'></span></a></div></div></div>"
             ms_count += 1
 
          video_path = ''
