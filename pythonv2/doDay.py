@@ -341,6 +341,7 @@ def html_get_detects(day,tsid,event_files, events):
             # We get the path to the video 
             print(analysed_name)
             print("<br>")
+            sys.exit(0)
 
             single_html += """
                            <div class="{:s}">
