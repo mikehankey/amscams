@@ -9,8 +9,6 @@ apt-get --yes --allow-downgrades --allow-remove-essential --allow-change-held-pa
 apt-get --yes --allow-downgrades --allow-remove-essential --allow-change-held-packages install curl -y
 apt-get --yes --allow-downgrades --allow-remove-essential --allow-change-held-packages install lynx -y
 
-apt-get --yes --allow-downgrades --allow-remove-essential --allow-change-held-packages install openvpn 
-apt-get --yes --allow-downgrades --allow-remove-essential --allow-change-held-packages install ntp 
 apt-get --yes --allow-downgrades --allow-remove-essential --allow-change-held-packages install openssh-server 
 apt-get --yes --allow-downgrades --allow-remove-essential --allow-change-held-packages install git
 apt-get --yes --allow-downgrades --allow-remove-essential --allow-change-held-packages install build-essential cmake pkg-config
@@ -86,8 +84,8 @@ export WCSLIB_INC
 export WCS_LIB
 
 apt-get --yes --allow-downgrades --allow-remove-essential --allow-change-held-packages install libcairo2-dev libnetpbm10-dev netpbm \
-                       libjpeg-dev \
-                       python-dev zlib1g-dev \
+                       libpng12-dev libjpeg-dev python-numpy \
+                       python-pyfits python-dev zlib1g-dev \
                        libbz2-dev swig libcfitsio-dev
 
 cd ~/allsky6-install
@@ -143,7 +141,6 @@ pip3 install pyephem
 pip3 install pytesseract
 pip3 install opencv-python
 pip3 install pycrypto
-pip3 install sympy
 sudo apt-get install python3-pil.imagetk
 apt-get install scikit-image
 
@@ -164,6 +161,7 @@ pip3 install astride
 
 
 git clone https://github.com/mikehankey/fireball_camera
+git clone https://github.com/mikehankey/amscams
 mkdir /var/www
 mkdir /var/www/html
 mkdir /var/www/html/out
@@ -186,26 +184,5 @@ sudo pip3 install fitsio
 # https://stackoverflow.com/questions/23418831/command-line-auto-complete-tab-key-not-work-in-terminal-for-ubuntu
 
 # configure apache
-./ap.sh
+#./ap.sh
 
-# setup allsky6 config files
-cd ~/fireball_camera
-
-mkdir conf
-cat config-example.txt |grep -v cam_ip > conf/config-1.txt
-echo "cam_ip=192.168.76.71" >> conf/config-1.txt
-cat config-example.txt |grep -v cam_ip > conf/config-2.txt
-echo "cam_ip=192.168.76.72" >> conf/config-2.txt
-cat config-example.txt |grep -v cam_ip > conf/config-3.txt
-echo "cam_ip=192.168.76.73" >> conf/config-3.txt
-cat config-example.txt |grep -v cam_ip > conf/config-4.txt
-echo "cam_ip=192.168.76.74" >> conf/config-4.txt
-cat config-example.txt |grep -v cam_ip > conf/config-5.txt
-echo "cam_ip=192.168.76.75" >> conf/config-5.txt
-cat config-example.txt |grep -v cam_ip > conf/config-6.txt
-echo "cam_ip=192.168.76.76" >> conf/config-6.txt
-rm config.txt
-ln -s conf/config-1.txt ./config.txt
-
-# /etc/network/interfaces config
-# dhcp config
