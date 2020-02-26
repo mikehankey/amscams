@@ -20,6 +20,10 @@ API_TASK_FILE ='/home/ams/amscams/pythonv2/API/task.txt'
 PATH_ACCESS_LOGS = '/home/ams/amscams/pythonv2/API'
 ACCESS_FILE = PATH_ACCESS_LOGS + os.sep + "access.log"
 
+DETECTION_TO_DEL = PATH_ACCESS_LOGS + os.sep + "toDel.log" 
+DETECTION_TO_CONF = PATH_ACCESS_LOGS + os.sep + "toConf.log" 
+
+
 EXTRA_CODE_IN_TOKEN = '4llskYR0cks'
 ACCESS_GRANTED_DURATION = 1 # In hours
 
@@ -59,17 +63,42 @@ def api_controller(form):
          # Doesnt work yet
          print(delete_detection(form))
       elif(api_function=='tasks'):
-         data_to_del = form.getvalue('data[toDel]')
+         data_to_del  = form.getvalue('data[toDel]')
          data_to_conf = form.getvalue('data[toConf]')
 
          if(data_to_del is None and data_to_conf is None):
             send_error_message('Data is missing - Error 145.hg')
          else:
-            print(data_to_del)
-            print(data_to_conf)
+            print(add_tasks_to_del(data_to_del,data_to_conf,usr,st,datetime.now()))
+
+            #if(data_to_conf is None):
+            #   add_tasks_to_conf(data_to_conf,usr,st,datetime.now())
           
           
 
+
+# ADD A TASK TO DELETE A DETECTION that will be read later by a cron
+def  add_tasks(data_to_del,data_to_conf,usr,st,_date):
+   
+   try:
+      all_data_to_del = data_to_del.split(',')
+   except:
+      all_data_to_del = []
+
+   try:
+      data_to_conf = data_to_conf.split(',')
+   except:
+      data_to_conf = []   
+
+   with open(API_TASK_FILE, 'w+') as f:
+      for data in all_data_to_del:
+         f.write(usr+'|'+st+'|DELETE'+'|'+data+'|'+_date.strftime("%Y-%m-%d %H:%M")+'\n')
+      for data in all_data_to_del:
+         f.write(usr+'|'+st+'|CONF'+'|'+data+'|'+_date.strftime("%Y-%m-%d %H:%M")+'\n')
+
+   f.close()
+
+   return json.dumps({'msg':'The tasks are now pending.'})
 
 
 # LOGIN
