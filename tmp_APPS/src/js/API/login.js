@@ -158,7 +158,7 @@ function setup_login() {
 
                      $('#login_modal').modal('hide'); 
                      createCookie(COOKIE_NAME,data.token,2)
-                     createCookie(USER_COOKIE_NAME,_data['user']+'|'+_data['station']);
+                     createCookie(USER_COOKIE_NAME,_data['user']+'|'+_data['st']);
                      loggedin();    
                   } 
                }, 
