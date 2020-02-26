@@ -1,8 +1,8 @@
 
 // UI - greyout a detection that we send to the API
 function greyOut($el,msg) {
-   $el.addClass('done').removeClass('');
-   $el.find('.btn-toolbar').removeClass('toDel','toConf');
+   $el.addClass('done');
+   $el.find('.btn-toolbar').remove();
 
 }
 
