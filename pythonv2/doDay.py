@@ -337,39 +337,21 @@ def html_get_detects(day,tsid,event_files, events):
          
     
          if event_id is None or event_id == "none":
+ 
 
-            if(event_id !=''):
-               event_id = "<b>Event</b> #" + str(event_id)  
-
-            single_html += """
-                           <div class="{:s}">
-                                 {:s} 
-                                    <img src="{:s}" class="img-fluid">
-                                 </a>
-                                    <span>{:s}</span> 
-                                    <span>{:s}</span> 
-                                    <a href="{:s}">VIDEO</span> 
-                              </div>
-                              
-            """.format(css_class, elink, was_vh_dir + image_file, event_id, '<b>Cam#' + analysed_name['cam_id'] + '</b> ' + analysed_name['hour']+':'+analysed_name['min']+':'+analysed_name['sec']+'.'+analysed_name['ms'],video_path)
+            single_html += "<div class='"+css_class+"'>" + elink +  "<img src='"+was_vh_dir + image_file+"' class='img-fluid'></a>"
+            single_html += "<div class='d-flex'><div class='mr-auto'><span>"+'<b>Cam#' + analysed_name['cam_id'] + '</b> '+ analysed_name['hour']+':'+analysed_name['min']+':'+analysed_name['sec']+'.'+analysed_name['ms'] + "</div>"
+            single_html += "<div>"+video_path+"</div></div></div>"
             ss_count += 1
          else:
 
             if(event_id !=''):
                event_id = "<b>Event</b> #" + str(event_id)  
 
-            multi_html += """
-                        <div class="{:s}">
-                              {:s} 
-                                 <img src="{:s}" class="img-fluid">
-                              </a>
-                                 <span>{:s}</span> 
-                                 <span>{:s}</span> 
-                                 <a href="{:s}">VIDEO</span> 
-                           </div>
-                             
-            """.format(css_class, elink, was_vh_dir + image_file, event_id, '<b>Cam#' + analysed_name['cam_id'] + '</b> ' + analysed_name['hour']+':'+analysed_name['min']+':'+analysed_name['sec']+'.'+analysed_name['ms'],video_path)
-            ms_count += 1
+            multi_html += "<div class='"+css_class+"'>" + elink +  "<img src='"+was_vh_dir + image_file+"' class='img-fluid'></a>"
+            multi_html += "<div class='d-flex'><div class='mr-auto'>"+event_id+"<span>"+'<b>Cam#' + analysed_name['cam_id'] + '</b> '+ analysed_name['hour']+':'+analysed_name['min']+':'+analysed_name['sec']+'.'+analysed_name['ms'] + "</div>"
+            multi_html += "<div>"+video_path+"</div></div></div>"
+            ss_count += 1
 
          video_path = ''
          mc += 1
