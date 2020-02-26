@@ -205,14 +205,15 @@ def make_station_report(day, proc_info = ""):
 
    # Is it the current day?
    show_day_date =  datetime.strptime(show_day, '%m/%d%/%Y')
-   if(show_day_date < datetime.now() ) {
+
+   if(show_day_date < datetime.now() ) :
       if len(data['files']) > 0:
          data['files'] = sorted(data['files'], reverse=True)
          fn = data['files'][0].replace("/mnt/archive.allsky.tv", "")
          live_view_html += "<img src='" + fn + "' class='img-fluid'/>"
  
       TAB, TAB_CONTENT = add_section('live','Live View',live_view_html, TAB, TAB_CONTENT)
-   }
+ 
 
 
    #print(TAB)
