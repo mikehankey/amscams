@@ -38,7 +38,7 @@ REGEX_REPORT = r"(\d{4})_(\d{2})_(\d{2})_(\d{2})_(\d{2})_(\d{2})_(\d{3})_(\w{6})
 REGEX_GROUP_REPORT = ["name","year","month","day","hour","min","sec","ms","cam_id","trim"]
  
 # ARCHIVE PATH
-ARCHIVE_PATH = "http://archive.allsky.tv/" 
+ARCHIVE_PATH = "http://archive.allsky.tv" 
 
 json_conf = load_json_file("../conf/as6.json")
 
@@ -332,7 +332,7 @@ def html_get_detects(day,tsid,event_files, events):
          if event_id is None:
             event_id = ""
 
-         
+         # Video PATH (HD)
          video_path = ARCHIVE_PATH + os.sep + tsid + os.sep + 'METEOR' + os.sep + year + os.sep + month + os.sep + d_day + os.sep + image_file.replace('-prev-crop.jpg','-HD.mp4')
              
 
