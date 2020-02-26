@@ -285,9 +285,6 @@ def html_get_detects(day,tsid,event_files, events):
             arc_file = mid[day][key]['archive_file']
             style = "arc"
             arc_count += 1 
-            video_path = ARCHIVE_PATH + os.sep + tsid + os.sep + 'METEOR' + os.sep + year + os.sep + month + os.sep + day + os.sep + arc_file.replace('-prev-crop.jpg','-HD.mp4')
-            
-
          else:
             arc = 0
             arc_file = "pending"
@@ -334,6 +331,11 @@ def html_get_detects(day,tsid,event_files, events):
          #   css_class = "prevproc multi"
          if event_id is None:
             event_id = ""
+
+         
+         video_path = ARCHIVE_PATH + os.sep + tsid + os.sep + 'METEOR' + os.sep + year + os.sep + month + os.sep + day + os.sep + image_file.replace('-prev-crop.jpg','-HD.mp4')
+            
+   
 
          # We get more info
          analysed_name = analyse_report_file(image_file)
