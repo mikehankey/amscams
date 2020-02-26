@@ -1,5 +1,6 @@
 var COOKIE_NAME = "APIa"          // Token Access
 var USER_COOKIE_NAME = "APIu478"  // User info
+var PAGE_MODIFIED = "AJIhgg"
 
 // Test if already logged in 
 function test_logged_in() {

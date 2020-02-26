@@ -33,6 +33,7 @@ function send_API_task(jsonData,$toDel,$toConf) {
                loggedin();
             }
          }  else {
+
             // We grey out the related detections on the page
             if($toDel.length>0) {
                $.each($toDel, function(i,v) {
@@ -57,6 +58,9 @@ function send_API_task(jsonData,$toDel,$toConf) {
                className: 'rubberBand animated',
                centerVertical: true 
             });
+
+            // We add a cookie so we know the page has been updated
+            createCookie(PAGE_MODIFIED,window.location.href,1)
          }
            
       }, 
