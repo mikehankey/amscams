@@ -144,6 +144,8 @@ function setup_login() {
                      className: 'rubberBand animated error',
                      centerVertical: true 
                   });
+                  logout();
+                  loggedin();
                }
             });
       })
