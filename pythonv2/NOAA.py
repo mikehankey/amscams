@@ -137,30 +137,6 @@ def update_live_html():
          </head>
       """
 
-      # MAKE STATION REPORT FOR CURRENT DAY (MOVED!)
-      if False: 
-         detect_html = html_get_detects(dom, station)
-
-         html = header_html
-         show_date = day.replace("_", "/")
-         html += "<h1>" + station_id + " Daily Report for " + show_date + "</h1>\n" 
-         html += "<h2><a href=\"#\" onclick=\"showHideDiv('live_view')\">Live View</a></h2>\n <div id='live_view'>"
-         if len(data['files']) > 0:
-            fn = data['files'][0].replace("/mnt/archive.allsky.tv", "")
-            html += "<img src=" + fn + "><BR>\n"
-            html += "</div>"
-
-         html += "<h2><a href=\"#\" onclick=\"showHideDiv('live_snaps')\">Weather Snap Shots</a></h2>\n <div id='live_snaps' style='display: none'>"
-         for file in data['files']:
-            fn = file.replace("/mnt/archive.allsky.tv", "")
-            html += "<img src=" + fn + "><BR>\n"
-         html += "</div>"
-
-         html += "<h2><a href=\"#\" onclick=\"showHideDiv('meteors')\">Meteors</a></h2>\n <div id='meteors'>"
-         html += detect_html
-         html += "</div>"
-
-         html += "</div>"
    live_now += "<h2>Station Status</h2>\n"
    for sd in status:
       live_now += sd + " " + str(status[sd]) + "<BR>"
