@@ -107,7 +107,7 @@ def API_login(form):
    cgitb.enable() 
 
    station = form.getvalue('st')
-   user = form.getvalue('user') 
+   user = form.getvalue('usr') 
    password = form.getvalue('pwd')
    test_log = False 
 
