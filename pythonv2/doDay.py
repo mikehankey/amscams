@@ -202,13 +202,21 @@ def make_station_report(day, proc_info = ""):
 
    # LIVE VIEW
    live_view_html = ""
-   if len(data['files']) > 0:
-      data['files'] = sorted(data['files'], reverse=True)
-      fn = data['files'][0].replace("/mnt/archive.allsky.tv", "")
-      live_view_html += "<img src='" + fn + "' class='img-fluid'/>"
+
+   # Is it the current day?
+   show_day_date =  datetime.strptime(show_day, '%m/%d/%Y')
+
+   if(show_day_date == datetime.now() ) :
+      if len(data['files']) > 0:
+         data['files'] = sorted(data['files'], reverse=True)
+         fn = data['files'][0].replace("/mnt/archive.allsky.tv", "")
+         live_view_html += "<img src='" + fn + "' class='img-fluid'/>"
  
-   TAB, TAB_CONTENT = add_section('live','Live View',live_view_html, TAB, TAB_CONTENT)
-   print(TAB)
+      TAB, TAB_CONTENT = add_section('live','Live View',live_view_html, TAB, TAB_CONTENT)
+ 
+
+
+   #print(TAB)
 
    # WEATHER SNAP SHOTS 
    we_html = ""
@@ -216,30 +224,34 @@ def make_station_report(day, proc_info = ""):
       for file in sorted(data['files'],reverse=True):
          fn = file.replace("/mnt/archive.allsky.tv", "")
          we_html += "<img src='" + fn + "' class='img-fluid weath'>"
- 
-   TAB, TAB_CONTENT = add_section('weather','Weather Snap Shots',we_html, TAB, TAB_CONTENT, True)
+   
+   if(we_html!=''):
+      TAB, TAB_CONTENT = add_section('weather','Weather Snap Shots',we_html, TAB, TAB_CONTENT)
     
-   # Proccess Info
-   if(proc_info != ''):
-      TAB, TAB_CONTENT = add_section('proc_info','Processing Info',proc_info, TAB, TAB_CONTENT) 
+
 
    # Multi-station meteor 
    # Add Multi-action on top of multistations
    
    # Add specific tool bar for multi
    # (delete all/confirm all)
-   multi_tb = '<div id="top_tool_bar" class="lio"><div class="d-flex"><div class="control-group mr-auto"><div class="controls"><div class="input"><div id="lio_filters" class="btn-group" data-toggle="buttons-checkbox"><button class="btn btn-secondary active" id="lio_btn_all" aria-pressed="true">ALL</button><button class="btn btn-secondary" id="lio_btn_pnd"  aria-pressed="false">Pending ('+ str(info['pending_count']) +')</button><button class="btn btn-secondary" aria-pressed="false" id="lio_btn_arc">Archived ('+ str(info['arc_count']) +')</button></div></div></div></div>'
-   multi_tb += '<button id="conf_all" class="btn btn-success">Confirm All</button> <button id="del_all" class="btn btn-danger">Delete All</button> <button id="cancel_all" class="btn btn-secondary">Cancel</button></div></div>'
+   multi_tb = '<div id="top_tool_bar"><div class="d-flex">'
+   multi_tb += '<div class="control-group"><div class="controls"><div class="input"><div id="lio_filters" class="btn-group" data-toggle="buttons-checkbox"><button class="btn btn-secondary active" id="lio_btn_all" aria-pressed="true">ALL</button><button class="btn btn-secondary" id="lio_btn_pnd"  aria-pressed="false">Pending ('+ str(info['pending_count']) +')</button><button class="btn btn-secondary" aria-pressed="false" id="lio_btn_arc">Archived ('+ str(info['arc_count']) +')</button></div></div></div></div>'
+   multi_tb += '<div class="control-group ml-3"><div class="controls"><div class="input"><div id="lio_sub_filters" class="btn-group" data-toggle="buttons-checkbox"><button class="btn btn-secondary active" id="lio_sub_btn_all" aria-pressed="true">ALL</button><button class="btn btn-secondary" id="lio_sub_btn_single"  aria-pressed="false">Single Station ('+ str(info['pending_count']) +')</button><button class="btn btn-secondary" aria-pressed="false" id="lio_sub_btn_multi">Multi-Stations ('+ str(info['arc_count']) +')</button></div></div></div></div>'
+   multi_tb += '<div class="lio ml-auto"><button id="conf_all" class="btn btn-success">Confirm All</button> <button id="del_all" class="btn btn-danger">Delete All</button> <button id="cancel_all" class="btn btn-secondary">Cancel</button></div></div></div>'
 
-   TAB, TAB_CONTENT = add_section('multi',"Multi Station Meteors (" + str(info['ms_count']) + ")",multi_tb +"<div class='d-flex align-content-start flex-wrap'>" + multi_html + "</div>", TAB, TAB_CONTENT) 
+   TAB, TAB_CONTENT = add_section('multi',"Meteors (" + str(info['ms_count']+info['ss_count']) + ")",multi_tb +"<div class='d-flex align-content-start flex-wrap'>" + multi_html + single_html + "</div>", TAB, TAB_CONTENT, True) 
   
    # Single-station meteor
-   TAB, TAB_CONTENT = add_section('single',"Single Station Meteors (" + str(info['ss_count']) + ")","<div class='d-flex align-content-start flex-wrap'>" + single_html + "</div>", TAB, TAB_CONTENT) 
+   #TAB, TAB_CONTENT = add_section('single',"Single Station Meteors (" + str(info['ss_count']) + ")","<div class='d-flex align-content-start flex-wrap'>" + single_html + "</div>", TAB, TAB_CONTENT) 
 
    
    template = template.replace("{TABS}", TAB)
    template = template.replace("{TABS_CONTENT}", TAB_CONTENT)
  
+   # Proccess Info (last one)
+   if(proc_info != ''):
+      TAB, TAB_CONTENT = add_section('proc_info','Processing Info',proc_info, TAB, TAB_CONTENT) 
 
    template = template.replace("{RAND}",str(random.randint(0, 99999999)))
 
@@ -304,16 +316,10 @@ def html_get_detects(day,tsid,event_files, events):
          
             if len(events[event_id]['solutions']) > 0 :
                elink = "<a href=" + event_vfile + " class='T'>"
-               solved_count += 1
-               #else:
-               #   print("NT F:", event_file)
-               #   failed_count += 1
-               #   elink = "<a>"
-            else:
-               print("Event not solved.", event_dir)
+               solved_count += 1  
+            else: 
                elink = "<a class='T'>"
                not_run += 1
-         
          else:
             event_id = None
             elink = "<a class='T'>"
@@ -333,46 +339,30 @@ def html_get_detects(day,tsid,event_files, events):
             event_id = ""
 
          # Video PATH (HD)
-         video_path = ARCHIVE_PATH + os.sep + tsid + os.sep + 'METEOR' + os.sep + year + os.sep + month + os.sep + d_day + os.sep + image_file.replace('-prev-crop.jpg','-HD.mp4')
-             
+         if(arc == 1):
+            video_path = ARCHIVE_PATH + os.sep + tsid + os.sep + 'METEOR' + os.sep + year + os.sep + month + os.sep + d_day + os.sep + image_file.replace('-prev-crop.jpg','-HD.mp4')
+         else:
+            video_path = ''    
 
          # We get more info
          analysed_name = analyse_report_file(image_file)
          
     
          if event_id is None or event_id == "none":
-
-            if(event_id !=''):
-               event_id = "<b>Event</b> #" + str(event_id)  
-
-            single_html += """
-                           <div class="{:s}">
-                                 {:s} 
-                                    <img src="{:s}" class="img-fluid">
-                                 </a>
-                                    <span>{:s}</span> 
-                                    <span>{:s}</span> 
-                                    <a href="{:s}">VIDEO</span> 
-                              </div>
-                              
-            """.format(css_class, elink, was_vh_dir + image_file, event_id, '<b>Cam#' + analysed_name['cam_id'] + '</b> ' + analysed_name['hour']+':'+analysed_name['min']+':'+analysed_name['sec']+'.'+analysed_name['ms'],video_path)
+  
+            single_html += "<div class='"+css_class+"'>" + elink +  "<img src='"+was_vh_dir + image_file+"' class='img-fluid'></a>"
+            single_html += "<div class='d-flex'><div class='mr-auto'><span>"+'<b>Cam#' + analysed_name['cam_id'] + '</b> '+ analysed_name['hour']+':'+analysed_name['min']+':'+analysed_name['sec']+'.'+analysed_name['ms'] + "</div>"
+            #single_html += "<div>"+video_path+"</div></div></div>"
+            single_html += "</div></div>"
             ss_count += 1
          else:
 
             if(event_id !=''):
-               event_id = "<b>Event</b> #" + str(event_id)  
+               event_id = "</span><span><b>Event</b> #" + str(event_id)  
 
-            multi_html += """
-                        <div class="{:s}">
-                              {:s} 
-                                 <img src="{:s}" class="img-fluid">
-                              </a>
-                                 <span>{:s}</span> 
-                                 <span>{:s}</span> 
-                                 <a href="{:s}">VIDEO</span> 
-                           </div>
-                             
-            """.format(css_class, elink, was_vh_dir + image_file, event_id, '<b>Cam#' + analysed_name['cam_id'] + '</b> ' + analysed_name['hour']+':'+analysed_name['min']+':'+analysed_name['sec']+'.'+analysed_name['ms'],video_path)
+            multi_html += "<div class='"+css_class+"'>" + elink +  "<img src='"+was_vh_dir + image_file+"' class='img-fluid'></a>"
+            multi_html += "<div class='d-flex mb-1'><div class='mr-auto'><span>"+'<b>Cam#' + analysed_name['cam_id'] + '</b> '+ analysed_name['hour']+':'+analysed_name['min']+':'+analysed_name['sec']+'.'+analysed_name['ms'] + event_id+"</div>"
+            multi_html += "<div><a href='"+video_path+"' class='vid-link btn btn-secondary btn-sm'><span class='icon-youtube'></span></a></div></div></div>"
             ms_count += 1
 
          video_path = ''
