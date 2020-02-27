@@ -47,7 +47,7 @@ def view(file, show):
             print (str(count) + " frames processed.")
             break
         else:
-
+            frame = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
             frame_img = Image.fromarray(frame)
             final_image=ImageChops.lighter(final_image,frame_img)
 
@@ -63,7 +63,11 @@ def view(file, show):
 
             count += 1  
     print (out_file)
+    cv_out = out_file.replace('.jpg', '.png')
+    cv_img = np.array(final_image)
+    cv_img = cv2.cvtColor(cv_img, cv2.COLOR_RGB2BGR)
     final_image.save(out_file, "JPEG")
+    cv2.imwrite(cv_out, cv_img)
 
     #im /= count  * .15
 
