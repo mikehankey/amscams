@@ -399,14 +399,7 @@ def html_get_detects(day,tsid,event_files, events):
    info['failed_count'] = failed_count
    info['not_run'] = not_run
    info['mc'] = mc 
-
-<<<<<<< HEAD
-   print("SING:", single_html)
-   print("MULT:", multi_html)
-=======
-    
->>>>>>> 95b6620222336b7702ca31421f386bcaeb0bf39f
-   
+  
    return(single_html, multi_html, info)
 
 
