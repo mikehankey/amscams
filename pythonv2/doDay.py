@@ -372,7 +372,7 @@ def html_get_detects(day,tsid,event_files, events):
                if(cfe(ARCHIVE_PATH + was_vh_dir + image_file.replace('crop','full'))):
                   video_path = "<a href='"+was_vh_dir + image_file.replace('crop','full')+"' class='btn btn-seconday btn-sm'><span class='icon-eye'></span></a>"
 
-            print(ARCHIVE_PATH + was_vh_dir + image_file.replace('crop','full')
+            print(ARCHIVE_PATH + was_vh_dir + image_file.replace('crop','full'))
             print("<br>")
             print(cfe(ARCHIVE_PATH + was_vh_dir + image_file.replace('crop','full')))
             sys.exit(0)
