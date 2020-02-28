@@ -362,8 +362,8 @@ def html_get_detects(day,tsid,event_files, events):
             # Get full version of the preview if video_path is empty
             if(video_path==''):
               full_path = ARCHIVE_PATH + was_vh_dir + image_file.replace('crop','full')
-               request = requests.get(full_path)
-               if request.status_code == 200:
+              request = requests.get(full_path)
+              if request.status_code == 200:
                   video_path = "<a href='"+full_path+"' class='btn btn-seconday btn-sm'><span class='icon-eye'></span></a>"
  
             single_html += "<div class='"+css_class+"'>" + elink +  "<img src='"+was_vh_dir + image_file+"' class='img-fluid'></a>"
