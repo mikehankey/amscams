@@ -170,8 +170,9 @@ def add_section(id,link_from_tab,tab_content,TAB, TAB_CONTENT, cur=False):
 def make_station_report(day, proc_info = ""):
    template = get_template("templates/allsky.tv.base.html") 
 
-   print("PROC INFO:", proc_info)
+   # print("PROC INFO:", proc_info)
    # MAKE STATION REPORT FOR CURRENT DAY
+  
    station = json_conf['site']['ams_id']
    year,mon,dom = day.split("_")
    show_day = mon + "/" + dom + "/"+ year
@@ -190,6 +191,13 @@ def make_station_report(day, proc_info = ""):
    data['files'] = noaa_files
 
    events,event_files = load_events(day)
+
+   print(events)
+   print("EVENT FILES*************")
+   print(event_files)
+   sys.exit(0)
+
+
    single_html, multi_html, info = html_get_detects(day, station, event_files, events)
    detect_count = info['mc']
  
