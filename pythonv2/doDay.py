@@ -307,11 +307,11 @@ def html_get_detects(day,tsid,event_files, events):
             arc_file = "pending"
             style = "pending"
             pending_count += 1
-         print("KEY:", key)
+        
          if key in event_files:
             event_id = event_files[key]
             event_info = events[event_id]
-            print("KEY", key, event_files[key])
+          
             style = "multi"
             # look for the event solution dir
             event_dir = "/mnt/archive.allsky.tv/EVENTS/" + year + "/" + day + "/" + event_id + "/"
@@ -328,7 +328,7 @@ def html_get_detects(day,tsid,event_files, events):
          else:
             event_id = None
             elink = "<a class='T'>"
-         print("EVENT ID IS:", event_id) 
+      
          mfile = key.split("/")[-1]
          prev_crop = mfile.replace(".json", "-prev-crop.jpg")
          prev_full = mfile.replace(".json", "-prev-full.jpg")
