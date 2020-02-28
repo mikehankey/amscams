@@ -148,9 +148,7 @@ function setup_login() {
                data: _data, 
                format: 'json',
                success: function(data) { 
-                  data = jQuery.parseJSON(data); 
-
-                  console.log(data);
+                  data = jQuery.parseJSON(data);  
                      
                   load_done_button($t);
 
