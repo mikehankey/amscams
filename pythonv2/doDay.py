@@ -34,7 +34,7 @@ from lib.FileIO import load_json_file, save_json_file, cfe
 from lib.UtilLib import check_running
 
 # REGEXP Used to get info from the paths
-REGEX_REPORT = r"(\d{4})_(\d{2})_(\d{2})_(\d{2})_(\d{2})_(\d{2})_(\d{3})_(\w{6})-trim(\d{4})-prev-crop.jpg"
+REGEX_REPORT = r"(\d{4})_(\d{2})_(\d{2})_(\d{2})_(\d{2})_(\d{2})_(\d{3})_(\w{6})-trim(\d{4}|\d{3})-prev-crop.jpg"
 REGEX_GROUP_REPORT = ["name","year","month","day","hour","min","sec","ms","cam_id","trim"]
  
 # ARCHIVE PATH
