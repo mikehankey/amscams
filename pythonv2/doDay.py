@@ -191,7 +191,7 @@ def make_station_report(day, proc_info = ""):
    data['files'] = noaa_files
 
    events,event_files = load_events(day)
-
+   print("EVENTS*************")
    print(events)
    print("EVENT FILES*************")
    print(event_files)
