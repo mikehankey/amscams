@@ -195,10 +195,18 @@ def make_station_report(day, proc_info = ""):
    print(events)
    print("EVENT FILES*************")
    print(event_files)
+ 
+
+   single_html, multi_html, info = html_get_detects(day, station, event_files, events)
+
+   print("single_html*************")
+   print(single_html)
+   print("multi_html*************")
+   print(multi_html)
    sys.exit(0)
 
 
-   single_html, multi_html, info = html_get_detects(day, station, event_files, events)
+
    detect_count = info['mc']
  
    show_date = day.replace("_", "/")
