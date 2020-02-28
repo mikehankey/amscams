@@ -364,10 +364,10 @@ def html_get_detects(day,tsid,event_files, events):
               full_path = ARCHIVE_PATH + was_vh_dir + image_file.replace('crop','full')
               request = requests.get(full_path)
               if request.status_code == 200:
-                  video_path = "<a href='"+full_path+"' class='btn btn-seconday btn-sm'><span class='icon-eye'></span></a>"
+                  video_path = "<a href='"+full_path+"' class='img-link btn btn-secondary btn-sm'><span class='icon-eye'></span></a>"
  
             single_html += "<div class='"+css_class+"'>" + elink +  "<img src='"+was_vh_dir + image_file+"' class='img-fluid'></a>"
-            single_html += "<div class='d-flex'><div class='mr-auto'><span>"+'<b>Cam#' + analysed_name['cam_id'] + '</b> '+ analysed_name['hour']+':'+analysed_name['min']+':'+analysed_name['sec']+'.'+analysed_name['ms'] + "</div>"
+            single_html += "<div class='d-flex mb-2'><div class='mr-auto'><span>"+'<b>Cam#' + analysed_name['cam_id'] + '</b> '+ analysed_name['hour']+':'+analysed_name['min']+':'+analysed_name['sec']+'.'+analysed_name['ms'] + "</div>"
             single_html += "<div>"+video_path+"</div></div></div>"
             ss_count += 1
 
