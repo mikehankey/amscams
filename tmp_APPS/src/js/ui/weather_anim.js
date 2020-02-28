@@ -9,7 +9,7 @@ var weathplaying;
 var sens = "+"
  
 
-jQuery.fn.reverse = [].reverse;
+jQuery.fn.reverse = [].reverse; 
 
 // Modal With Player
 function addAnimWeatherModalTemplate($allstacks,cam_id) {
