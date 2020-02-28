@@ -286,6 +286,7 @@ def html_get_detects(day,tsid,event_files, events):
 
    if day in mid:
       for key in mid[day]:
+
          if "archive_file" in mid[day][key]:
             arc = 1
             arc_file = mid[day][key]['archive_file']
@@ -327,9 +328,11 @@ def html_get_detects(day,tsid,event_files, events):
             css_class = "prevproc pending"
          else:
             css_class = "prevproc arc"
-         #if event_id is not None:
-         #   css_class = "prevproc multi"
-         if event_id is None:
+
+         if event_id is not None:
+            css_class += " multi"
+         else:
+            css_class += " single"
             event_id = ""
 
          # Video PATH (HD)
