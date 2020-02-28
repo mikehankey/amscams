@@ -202,8 +202,7 @@ def make_station_report(day, proc_info = ""):
    print("single_html*************")
    print(single_html)
    print("multi_html*************")
-   print(multi_html)
-   sys.exit(0)
+   print(multi_html) 
 
 
 
