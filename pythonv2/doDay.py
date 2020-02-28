@@ -231,6 +231,8 @@ def make_station_report(day, proc_info = ""):
    
    # We only display something... if we have something to display
    if(we_html!=''):
+      # We add the toolbar
+      we_html = '<div class="top_tool_bar"><a href="" id="play_anim_thumb" class="btn btn-primary"><span class="icon-youtube"></span></div>' + we_html
       TAB, TAB_CONTENT = add_section('weather','Weather Snap Shots',we_html, TAB, TAB_CONTENT)
     
 
