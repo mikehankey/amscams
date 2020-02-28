@@ -121,9 +121,11 @@ function Weather_anim() {
 }
 
 $(function() {
-    $('.play_anim_thumb').click(function() {
+    $('.play_anim_thumb').click(function(e) {
+       e.stopImmediatePropagation();
        weathplaying = true; 
        Weather_anim($(this).attr('data-rel')); 
+       return false;
     });  
 })
 
