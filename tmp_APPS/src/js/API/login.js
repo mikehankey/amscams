@@ -166,7 +166,7 @@ function setup_login() {
 
                      $('#login_modal').modal('hide'); 
                      createCookie(COOKIE_NAME,data.token,2/24)
-                     createCookie(USER_COOKIE_NAME,_data['user']+'|'+_data['st'],2/24);
+                     createCookie(USER_COOKIE_NAME,_data['usr']+'|'+_data['st'],2/24);
                      loggedin();    
                   } 
                }, 
