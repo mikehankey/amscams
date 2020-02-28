@@ -276,8 +276,8 @@ def html_get_detects(day,tsid,event_files, events):
 
 
    print("IN HTML GET DETECTS")
-   print("event_files***************")
-   print(event_files)
+   print("events***************")
+   print(events)
    sys.exit(0)
 
    year = day[0:4]
