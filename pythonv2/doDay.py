@@ -72,6 +72,8 @@ def load_events(day):
    else:
       events = {}
       event_files = {}
+   print(events)
+   print(event_files)
    return(events,event_files)
 
 def run_df():
@@ -313,7 +315,7 @@ def html_get_detects(day,tsid,event_files, events):
             arc_file = "pending"
             style = "pending"
             pending_count += 1
-
+         print("KEY:", key)
          if key in event_files:
             event_id = event_files[key]
             event_info = events[event_id]
@@ -334,7 +336,7 @@ def html_get_detects(day,tsid,event_files, events):
          else:
             event_id = None
             elink = "<a class='T'>"
-         
+         print("EVENT ID IS:", event_id) 
          mfile = key.split("/")[-1]
          prev_crop = mfile.replace(".json", "-prev-crop.jpg")
          prev_full = mfile.replace(".json", "-prev-full.jpg")
@@ -358,14 +360,15 @@ def html_get_detects(day,tsid,event_files, events):
             video_path = ''    
 
          # We get more info
+         print("(BEFORE AN) EVENT ID IS:", event_id) 
          analysed_name = analyse_report_file(image_file)
         
-         print("EVENT ID IS:", event_id) 
+         print("(AFTER AN) EVENT ID IS:", event_id) 
     
-         if event_id is None or event_id == "none":
+         if event_id is None or event_id == "none" or event_id == '':
   
             single_html += "<div class='"+css_class+"'>" + elink +  "<img src='"+was_vh_dir + image_file+"' class='img-fluid'></a>"
-            single_html += "<div class='d-flex'><div class='mr-auto'><span>"+'<b>Cam#' + analysed_name['cam_id'] + '</b> '+ analysed_name['hour']+':'+analysed_name['min']+':'+analysed_name['sec']+'.'+analysed_name['ms'] + "</div>"
+            #single_html += "<div class='d-flex'><div class='mr-auto'><span>"+'<b>Cam#' + analysed_name['cam_id'] + '</b> '+ analysed_name['hour']+':'+analysed_name['min']+':'+analysed_name['sec']+'.'+analysed_name['ms'] + "</div>"
             #single_html += "<div>"+video_path+"</div></div></div>"
             single_html += "</div></div>"
             ss_count += 1
@@ -375,7 +378,9 @@ def html_get_detects(day,tsid,event_files, events):
                event_id = "</span><span><b>Event</b> #" + str(event_id)  
 
             multi_html += "<div class='"+css_class+"'>" + elink +  "<img src='"+was_vh_dir + image_file+"' class='img-fluid'></a>"
-            #multi_html += "<div class='d-flex mb-1'><div class='mr-auto'><span>"+'<b>Cam#' + analysed_name['cam_id'] + '</b> '+ analysed_name['hour']+':'+analysed_name['min']+':'+analysed_name['sec']+'.'+analysed_name['ms'] + event_id+"</div>"
+            print("KEY:", key)
+            # VINCENT -- THIS LINE IS CAUSING A PARSE ERROR FOR ME. NOT SURE WHY BUT : 'cam_id' is not inside the analysed name. Perhaps there is some bad file or data in my archive, not sure. (analyzing function should put some default values in or fail with an error message (better), if it can't handle the file. The error should state what file it is. Most times a file just needs to be deleted.
+            multi_html += "<div class='d-flex mb-1'><div class='mr-auto'><span>"+'<b>Cam#' + analysed_name['cam_id'] + '</b> '+ analysed_name['hour']+':'+analysed_name['min']+':'+analysed_name['sec']+'.'+analysed_name['ms'] + event_id+"</div>"
             multi_html += "<div><a href='"+video_path+"' class='vid-link btn btn-secondary btn-sm'><span class='icon-youtube'></span></a></div></div></div>"
             ms_count += 1
 
@@ -398,7 +403,6 @@ def html_get_detects(day,tsid,event_files, events):
 
    print("SING:", single_html)
    print("MULT:", multi_html)
-   exit()
    
    return(single_html, multi_html, info)
 
@@ -447,7 +451,7 @@ def get_meteor_status(day):
    
 
 def do_all(day):
-   os.system("git pull")
+   #os.system("git pull")
    proc_vids, proc_tn_imgs, day_vids,cams_queue,in_queue = get_processing_status(day)
    detect_files, arc_files = get_meteor_status(day)
 
@@ -478,13 +482,13 @@ def do_all(day):
 
  
    # make the meteor detection index for today
-   os.system("./autoCal.py meteor_index " + day)
+   #os.system("./autoCal.py meteor_index " + day)
 
    # make the detection preview images for the day
-   os.system("./flex-detect.py bmpi " + day)
+   #os.system("./flex-detect.py bmpi " + day)
 
    # make the detection preview images for the day
-   os.system("./wasabi.py sa " + day)
+   #os.system("./wasabi.py sa " + day)
 
    make_station_report(day, rpt)
 
