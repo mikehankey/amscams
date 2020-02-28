@@ -2,7 +2,10 @@ $(function() {
       $('.img-link, .img-link-n').magnificPopup({
         type: 'image' ,
         removalDelay: 300, 
-        mainClass: 'mfp-fade'
+        mainClass: 'mfp-fade',
+        gallery:{
+         enabled:true
+        }
       });
 
       $('.img-link-gal').magnificPopup({
