@@ -396,9 +396,7 @@ def html_get_detects(day,tsid,event_files, events):
    info['not_run'] = not_run
    info['mc'] = mc 
 
-   print("SING:", single_html)
-   print("MULT:", multi_html)
-   exit()
+    
    
    return(single_html, multi_html, info)
 
