@@ -29,9 +29,9 @@ $(function() {
       if(id=='lio_sub_btn_all') {
          $('.prevproc').show();
       } else if(id=='lio_sub_btn_single') {
-         $('.prevproc.pending').show();
+         $('.prevproc.single').show();
       } else if(id=='lio_sub_btn_multi') {
-         $('.prevproc.arc').show();
+         $('.prevproc.multi').show();
       }
 
       $('.btn#'+id).addClass('active'); 
