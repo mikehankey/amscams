@@ -20,12 +20,13 @@ function already_done() {
   
 $(function() {
 
-   already_done(); 
-
    add_login_modal();
    setup_action();
 
    // Test if we are loggedin
    loggedin();
    check_bottom_action();
+
+   // Check if we can do something on this page
+   already_done(); 
 })
