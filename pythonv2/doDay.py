@@ -271,7 +271,6 @@ def make_station_report(day, proc_info = ""):
  
 
 def html_get_detects(day,tsid,event_files, events):
-   
  
 
    year = day[0:4]
@@ -280,6 +279,7 @@ def html_get_detects(day,tsid,event_files, events):
    mi = "/mnt/ams2/meteor_archive/" + json_conf['site']['ams_id'] + "/DETECTS/MI/" + year + "/" +  day + "-meteor_index.json"
    print(mi)
    mid = load_json_file(mi)
+
    meteor_detects = []
    prev_dir = "/mnt/archive.allsky.tv/" + tsid + "/DETECTS/PREVIEW/" + year + "/" + day + "/" 
    prev_file = "/mnt/archive.allsky.tv/" + tsid + "/DETECTS/PREVIEW/" + year + "/" + day + "/" + "index.html"
@@ -359,7 +359,8 @@ def html_get_detects(day,tsid,event_files, events):
 
          # We get more info
          analysed_name = analyse_report_file(image_file)
-         
+        
+         print("EVENT ID IS:", event_id) 
     
          if event_id is None or event_id == "none":
   
@@ -374,7 +375,7 @@ def html_get_detects(day,tsid,event_files, events):
                event_id = "</span><span><b>Event</b> #" + str(event_id)  
 
             multi_html += "<div class='"+css_class+"'>" + elink +  "<img src='"+was_vh_dir + image_file+"' class='img-fluid'></a>"
-            multi_html += "<div class='d-flex mb-1'><div class='mr-auto'><span>"+'<b>Cam#' + analysed_name['cam_id'] + '</b> '+ analysed_name['hour']+':'+analysed_name['min']+':'+analysed_name['sec']+'.'+analysed_name['ms'] + event_id+"</div>"
+            #multi_html += "<div class='d-flex mb-1'><div class='mr-auto'><span>"+'<b>Cam#' + analysed_name['cam_id'] + '</b> '+ analysed_name['hour']+':'+analysed_name['min']+':'+analysed_name['sec']+'.'+analysed_name['ms'] + event_id+"</div>"
             multi_html += "<div><a href='"+video_path+"' class='vid-link btn btn-secondary btn-sm'><span class='icon-youtube'></span></a></div></div></div>"
             ms_count += 1
 
@@ -395,6 +396,9 @@ def html_get_detects(day,tsid,event_files, events):
    info['not_run'] = not_run
    info['mc'] = mc 
 
+   print("SING:", single_html)
+   print("MULT:", multi_html)
+   exit()
    
    return(single_html, multi_html, info)
 
