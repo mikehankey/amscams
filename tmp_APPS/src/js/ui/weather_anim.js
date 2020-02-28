@@ -76,7 +76,7 @@ function Weather_anim() {
    var $allImages = $('.weath')
  
    $allImages = $allImages.reverse();
-   total  = $allImages.length;
+   totalStacks  = $allImages.length;
    addAnimWeatherModalTemplate($allImages); 
 
    $('#anim_wea_modal').modal();
