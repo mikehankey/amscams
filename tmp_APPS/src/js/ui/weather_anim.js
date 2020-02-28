@@ -62,12 +62,10 @@ function step_Weather(startTime) {
          }
 
      }
-
-
-       
  
-     $('#cur_f').text($(`.to_anim-${stackNumber}`).attr('data-rel'));
-     //console.log("FN" + stackNumber);
+ 
+     //$('#cur_f').text($(`.to_anim-${stackNumber}`).attr('data-rel'));
+     console.log("FN: " + stackNumber);
    }
   
    if(weathplaying) requestAnimationFrame(step_Weather);
@@ -79,8 +77,7 @@ function Weather_anim() {
  
    $allImages = $allImages.reverse();
    total  = $allImages.length;
-   addAnimWeatherModalTemplate($allImages);
-
+   addAnimWeatherModalTemplate($allImages); 
 
    $('#anim_wea_modal').modal();
    $('#anim_wea_modal').on('hidden.bs.modal', function () {
@@ -125,9 +122,8 @@ function Weather_anim() {
 
 $(function() {
     $('.play_anim_thumb').click(function() {
-       weathplaying = true;
-       Weather_anim($(this).attr('data-rel'));
-       $('.to_anim').css({'width':'683px','height':'395px'});
+       weathplaying = true; 
+       Weather_anim($(this).attr('data-rel')); 
     });  
 })
 
