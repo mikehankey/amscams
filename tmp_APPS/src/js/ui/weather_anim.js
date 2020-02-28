@@ -1,4 +1,4 @@
-var $allstacks;
+var $allImages;
 var totalStacks;
 var animationStackDuration;
 var timePerStack;
@@ -12,7 +12,7 @@ var sens = "+"
 jQuery.fn.reverse = [].reverse; 
 
 // Modal With Player
-function addAnimWeatherModalTemplate($allstacks,cam_id) {
+function addAnimWeatherModalTemplate($allImages,cam_id) {
    
    $('#anim_wea_modal').remove();
 
@@ -23,11 +23,11 @@ function addAnimWeatherModalTemplate($allstacks,cam_id) {
    <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button></div></div></div></div>').appendTo('body');
    
    // Add all the frames
-   $allstacks.each(function(i,v) {
+   $allImages.each(function(i,v) {
        $(this).clone().attr('style','').addClass('to_anim to_anim-'+i).appendTo('#anim_holder');
    });
 
-   animationStackDuration = 1000; //$allstacks.length; // Duration get the 
+   animationStackDuration = 1000; //$allImages.length; // Duration get the 
 }
 
 
@@ -78,7 +78,7 @@ function Weather_anim() {
    var $allImages = $('.weath')
  
    $allImages = $allImages.reverse();
-   total  = $allstacks.length;
+   total  = $allImages.length;
    addAnimWeatherModalTemplate($allImages);
 
 
