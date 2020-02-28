@@ -273,6 +273,13 @@ def make_station_report(day, proc_info = ""):
 
 def html_get_detects(day,tsid,event_files, events):
    
+
+
+   print("IN HTML GET DETECTS")
+   print("event_files***************")
+   print(event_files)
+   sys.exit(0)
+
    year = day[0:4]
    month = day[5:7]
    d_day = day[8:]
