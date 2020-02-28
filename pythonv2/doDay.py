@@ -412,12 +412,7 @@ def get_processing_status(day):
    proc_dir = "/mnt/ams2/SD/proc2/" + day + "/*"
    proc_img_tn_dir = "/mnt/ams2/SD/proc2/" + day + "/images/*tn.png"
    proc_vids = glob.glob(proc_dir)
-   proc_tn_imgs = glob.glob(proc_img_tn_dir)
-
-   #proc_img_dir = "/mnt/ams2/SD/proc2/" + day + "/images/*.png"
-   #proc_imgs = glob.glob(proc_img_dir)
-
-
+   proc_tn_imgs = glob.glob(proc_img_tn_dir)  
    day_vids = glob.glob("/mnt/ams2/SD/proc2/daytime/" + day + "*.mp4")
    cams_queue = glob.glob("/mnt/ams2/CAMS/queue/" + day + "*.mp4")
    in_queue = glob.glob("/mnt/ams2/SD/" + day + "*.mp4")

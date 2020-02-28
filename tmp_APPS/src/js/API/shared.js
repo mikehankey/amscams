@@ -20,8 +20,7 @@ function already_done() {
   
 $(function() {
 
-   already_done();
-
+   already_done(); 
 
    add_login_modal();
    setup_action();

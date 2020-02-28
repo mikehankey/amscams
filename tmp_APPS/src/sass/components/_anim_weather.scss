@@ -1,0 +1,26 @@
+.to_anim {
+   position: absolute;
+   width:1550px;
+   opacity:0;
+   box-shadow: none;
+   -webkit-box-shadow:none;
+   bottom:0;
+   left: 0;
+}
+
+#anim_holder {
+   width: 1500px;
+   height: auto;
+   position: relative;
+   margin: 0 auto .5rem;
+   border: 2px solid #000;
+   background: #222;
+
+   .weath {
+      position: absolute;
+      top:0;
+      left: 0;
+      width: 1500%;
+      min-height: 140px
+   }
+} 
