@@ -11,7 +11,7 @@ python3 /home/ams/amscams/pythonv2/doDay.py all 2020_02_24
 
 
 
-rm  /home/ams/amscams/pythonv2/doDay.py all 2019_12_24
+rm /mnt/archive.allsky.tv/AMS7/REPORTS/2019/12_24/index.html
 python3 /home/ams/amscams/pythonv2/doDay.py all 2019_12_24
 
 
