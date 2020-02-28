@@ -360,24 +360,32 @@ def html_get_detects(day,tsid,event_files, events):
             video_path = ''    
 
          # We get more info
-         print("(BEFORE AN) EVENT ID IS:", event_id) 
+         #print("(BEFORE AN) EVENT ID IS:", event_id) 
          analysed_name = analyse_report_file(image_file)
         
-         print("(AFTER AN) EVENT ID IS:", event_id) 
+         #print("(AFTER AN) EVENT ID IS:", event_id) 
     
          if event_id is None or event_id == "none" or event_id == '':
-  
+
+            # Get full versionof the preview if video_path is empty
+            if(video_path==''):
+               if(cfe(was_vh_dir + image_file.replace('crop','full')):
+                  video_path = "<a href='"+was_vh_dir + image_file.replace('crop','full')+"' class='btn btn-seconday btn-sm'><span class='icon-eye'></span></a>"
+
             single_html += "<div class='"+css_class+"'>" + elink +  "<img src='"+was_vh_dir + image_file+"' class='img-fluid'></a>"
             single_html += "<div class='d-flex'><div class='mr-auto'><span>"+'<b>Cam#' + analysed_name['cam_id'] + '</b> '+ analysed_name['hour']+':'+analysed_name['min']+':'+analysed_name['sec']+'.'+analysed_name['ms'] + "</div>"
             single_html += "<div>"+video_path+"</div></div></div>"
             ss_count += 1
+
+
+
+
          else:
 
             if(event_id !=''):
                event_id = "</span><span><b>Event</b> #" + str(event_id)  
 
             multi_html += "<div class='"+css_class+"'>" + elink +  "<img src='"+was_vh_dir + image_file+"' class='img-fluid'></a>"
- 
             multi_html += "<div class='d-flex mb-1'><div class='mr-auto'><span>"+'<b>Cam#' + analysed_name['cam_id'] + '</b> '+ analysed_name['hour']+':'+analysed_name['min']+':'+analysed_name['sec']+'.'+analysed_name['ms'] + event_id+"</div>"
             multi_html += "<div><a href='"+video_path+"' class='vid-link btn btn-secondary btn-sm'><span class='icon-youtube'></span></a></div></div></div>"
             ms_count += 1
