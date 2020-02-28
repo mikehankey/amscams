@@ -29,6 +29,8 @@ import re
 from datetime import datetime, timedelta
 import subprocess
 import random
+import requests
+
 
 from lib.FileIO import load_json_file, save_json_file, cfe
 from lib.UtilLib import check_running
@@ -192,20 +194,10 @@ def make_station_report(day, proc_info = ""):
    data = {}
    data['files'] = noaa_files
 
-   events,event_files = load_events(day)
-   print("EVENTS*************")
-   print(events)
-   print("EVENT FILES*************")
-   print(event_files)
- 
+   events,event_files = load_events(day) 
 
    single_html, multi_html, info = html_get_detects(day, station, event_files, events)
-
-   print("single_html*************")
-   print(single_html)
-   print("multi_html*************")
-   print(multi_html) 
-
+ 
 
 
    detect_count = info['mc']
@@ -367,17 +359,13 @@ def html_get_detects(day,tsid,event_files, events):
     
          if event_id is None or event_id == "none" or event_id == '':
 
-            # Get full versionof the preview if video_path is empty
+            # Get full version of the preview if video_path is empty
             if(video_path==''):
-               if(cfe(ARCHIVE_PATH + was_vh_dir + image_file.replace('crop','full'))):
-                  video_path = "<a href='"+was_vh_dir + image_file.replace('crop','full')+"' class='btn btn-seconday btn-sm'><span class='icon-eye'></span></a>"
-
-            print(ARCHIVE_PATH + was_vh_dir + image_file.replace('crop','full'))
-            print("<br>")
-            print(cfe(ARCHIVE_PATH + was_vh_dir + image_file.replace('crop','full')))
-            sys.exit(0)
-
-
+              full_path = ARCHIVE_PATH + was_vh_dir + image_file.replace('crop','full')
+               request = requests.get(full_path)
+               if request.status_code == 200:
+                  video_path = "<a href='"+full_path+"' class='btn btn-seconday btn-sm'><span class='icon-eye'></span></a>"
+ 
             single_html += "<div class='"+css_class+"'>" + elink +  "<img src='"+was_vh_dir + image_file+"' class='img-fluid'></a>"
             single_html += "<div class='d-flex'><div class='mr-auto'><span>"+'<b>Cam#' + analysed_name['cam_id'] + '</b> '+ analysed_name['hour']+':'+analysed_name['min']+':'+analysed_name['sec']+'.'+analysed_name['ms'] + "</div>"
             single_html += "<div>"+video_path+"</div></div></div>"
