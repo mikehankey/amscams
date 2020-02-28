@@ -16,7 +16,7 @@ function addAnimWeatherModalTemplate($allImages,cam_id) {
    
    $('#anim_wea_modal').remove();
 
-   $('<div id="anim_wea_modal" class="modal fade" tabindex="-1" role="dialog"><div class="modal-dialog modal-dialog-centered" style="min-width:1700px;" role="document">\
+   $('<div id="anim_wea_modal" class="modal fade" tabindex="-1" role="dialog"><div class="modal-dialog modal-dialog-centered" style="min-width:1731px;" role="document">\
    <div class="modal-content"><div class="modal-body"><div id="anim_header" class="d-flex justify-content-between"></div><div id="anim_holder">\
    </div><div class="modal-footer d-flex justify-content-between p-0 pb-2 pr-2">\
    <div class="pt-2"><input type="range" value="1" id="marWeat" max="10" min="-10"/> <span id="cur_sp"></span></div>\
