@@ -135,10 +135,12 @@ function setup_login() {
       $('#login_modal').modal('show');
  
 
-      $('#subm_login').click(function() {
+      $('#subm_login').click(function(e) {
             // So we can send the USR to the API
             var $t = $(this);
             var _data = {'function':'login', 'usr':$('input[name=username]').val(), 'pwd':$('input[name=password]').val(), 'st':stID};
+
+            e.stopImmediatePropagation();
 
             loading_button($t);
             $.ajax({ 
@@ -147,6 +149,8 @@ function setup_login() {
                format: 'json',
                success: function(data) { 
                   data = jQuery.parseJSON(data); 
+
+                  console.log(data);
                      
                   load_done_button($t);
 
@@ -178,6 +182,8 @@ function setup_login() {
                   loggedin();
                }
             });
+
+            return false;
       })
 
       return false;
