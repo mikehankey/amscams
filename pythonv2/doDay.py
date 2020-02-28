@@ -253,8 +253,7 @@ def make_station_report(day, proc_info = ""):
   
    # Single-station meteor
    #TAB, TAB_CONTENT = add_section('single',"Single Station Meteors (" + str(info['ss_count']) + ")","<div class='d-flex align-content-start flex-wrap'>" + single_html + "</div>", TAB, TAB_CONTENT) 
-
-   
+ 
    template = template.replace("{TABS}", TAB)
    template = template.replace("{TABS_CONTENT}", TAB_CONTENT)
  
