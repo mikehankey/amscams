@@ -114,7 +114,7 @@ function add_login_modal() {
                         <input type="password" name="password" class="form-control input_pass" value="" placeholder="password">\
                      </div>\
                      <div class="d-flex justify-content-center mt-3 login_container">\
-                        <button type="button" name="button" id="subm_login" class="btn btn-primary" style="width: 100%;">Login</button>\
+                        <button type="submit" name="button" id="subm_login" class="btn btn-primary" style="width: 100%;">Login</button>\
                      </div>\
                   </form>\
                </div>\
@@ -129,8 +129,11 @@ function setup_login() {
    // Login
    $('#login').unbind('click').click(function(e){
       e.stopImmediatePropagation(); 
- 
+      $('#login_modal').on('shown.bs.modal', function () {
+         $('input[name=username]').trigger('focus')
+       })
       $('#login_modal').modal('show');
+ 
 
       $('#subm_login').click(function() {
             // So we can send the USR to the API

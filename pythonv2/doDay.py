@@ -180,8 +180,7 @@ def make_station_report(day, proc_info = ""):
    
    template = template.replace("{STATION_ID}", station)
    template = template.replace("{DAY}", show_day)
-
-
+ 
    if cfe(STATION_RPT_DIR, 1) == 0:
       os.makedirs(STATION_RPT_DIR)
    
@@ -191,7 +190,7 @@ def make_station_report(day, proc_info = ""):
    data['files'] = noaa_files
 
    events,event_files = load_events(day)
-   single_html, multi_html, info= html_get_detects(day, station, event_files, events)
+   single_html, multi_html, info = html_get_detects(day, station, event_files, events)
    detect_count = info['mc']
  
    show_date = day.replace("_", "/")
@@ -203,7 +202,7 @@ def make_station_report(day, proc_info = ""):
    # LIVE VIEW
    live_view_html = ""
 
-   # Is it the current day?
+   # Is it the current day? (otherwise we don't show anything)
    show_day_date =  datetime.strptime(show_day, '%m/%d/%Y')
 
    if(show_day_date == datetime.now() ) :
@@ -213,11 +212,7 @@ def make_station_report(day, proc_info = ""):
          live_view_html += "<img src='" + fn + "' class='img-fluid'/>"
  
       TAB, TAB_CONTENT = add_section('live','Live View',live_view_html, TAB, TAB_CONTENT)
- 
-
-
-   #print(TAB)
-
+  
    # WEATHER SNAP SHOTS 
    we_html = ""
    if len(data['files']) > 0:
@@ -225,19 +220,18 @@ def make_station_report(day, proc_info = ""):
          fn = file.replace("/mnt/archive.allsky.tv", "")
          we_html += "<img src='" + fn + "' class='img-fluid weath'>"
    
+   # We only display something... if we have something to display
    if(we_html!=''):
       TAB, TAB_CONTENT = add_section('weather','Weather Snap Shots',we_html, TAB, TAB_CONTENT)
     
 
 
-   # Multi-station meteor 
-   # Add Multi-action on top of multistations
-   
-   # Add specific tool bar for multi
+   # Multi-station meteor  
+   # Add specific tool bar for meteors
    # (delete all/confirm all)
    multi_tb = '<div id="top_tool_bar"><div class="d-flex">'
    multi_tb += '<div class="control-group"><div class="controls"><div class="input"><div id="lio_filters" class="btn-group" data-toggle="buttons-checkbox"><button class="btn btn-secondary active" id="lio_btn_all" aria-pressed="true">ALL</button><button class="btn btn-secondary" id="lio_btn_pnd"  aria-pressed="false">Pending ('+ str(info['pending_count']) +')</button><button class="btn btn-secondary" aria-pressed="false" id="lio_btn_arc">Archived ('+ str(info['arc_count']) +')</button></div></div></div></div>'
-   multi_tb += '<div class="control-group ml-3"><div class="controls"><div class="input"><div id="lio_sub_filters" class="btn-group" data-toggle="buttons-checkbox"><button class="btn btn-secondary active" id="lio_sub_btn_all" aria-pressed="true">ALL</button><button class="btn btn-secondary" id="lio_sub_btn_single"  aria-pressed="false">Single Station ('+ str(info['pending_count']) +')</button><button class="btn btn-secondary" aria-pressed="false" id="lio_sub_btn_multi">Multi-Stations ('+ str(info['arc_count']) +')</button></div></div></div></div>'
+   multi_tb += '<div class="control-group ml-3"><div class="controls"><div class="input"><div id="lio_sub_filters" class="btn-group" data-toggle="buttons-checkbox"><button class="btn btn-secondary active" id="lio_sub_btn_all" aria-pressed="true">ALL</button><button class="btn btn-secondary" id="lio_sub_btn_single"  aria-pressed="false">Single Station ('+ str(info['ss_count']) +')</button><button class="btn btn-secondary" aria-pressed="false" id="lio_sub_btn_multi">Multi-Stations ('+ str(info['ms_count']) +')</button></div></div></div></div>'
    multi_tb += '<div class="lio ml-auto"><button id="conf_all" class="btn btn-success">Confirm All</button> <button id="del_all" class="btn btn-danger">Delete All</button> <button id="cancel_all" class="btn btn-secondary">Cancel</button></div></div></div>'
 
    TAB, TAB_CONTENT = add_section('multi',"Meteors (" + str(info['ms_count']+info['ss_count']) + ")",multi_tb +"<div class='d-flex align-content-start flex-wrap'>" + multi_html + single_html + "</div>", TAB, TAB_CONTENT, True) 
