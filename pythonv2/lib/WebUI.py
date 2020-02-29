@@ -674,6 +674,8 @@ def controller(json_conf):
    if cmd == 'add_stars_to_fit_pool':
       add_stars_to_fit_pool(json_conf,form)
 
+   if cmd == 'asconf':
+      asconf(json_conf, form)
  
    if cmd == 'mask_admin':
       mask_admin(json_conf, form)
@@ -747,6 +749,26 @@ def controller(json_conf):
      
    #cam_num = form.getvalue('cam_num')
    #day = form.getvalue('day')
+
+def asconf(json_conf, form):
+   act = form.getvalue("act")
+   fp = open("/home/ams/amscams/pythonv2/templates/asconf.html", "r")
+   form = ""
+   for line in fp:
+      form += line
+   form = form.replace("{AMS_ID}", json_conf['site']['ams_id'])
+   form = form.replace("{OBS_NAME}", json_conf['site']['obs_name'])
+   form = form.replace("{OPERATOR_NAME}", json_conf['site']['operator_name'])
+   form = form.replace("{OPERATOR_EMAIL}", json_conf['site']['operator_email'])
+   form = form.replace("{OPERATOR_CITY}", json_conf['site']['operator_city'])
+   form = form.replace("{OPERATOR_STATE}", json_conf['site']['operator_state'])
+   form = form.replace("{OPERATOR_COUNTRY}", json_conf['site']['operator_country'])
+   form = form.replace("{LAT}", json_conf['site']['device_lat'])
+   form = form.replace("{LON}", json_conf['site']['device_lng'])
+   form = form.replace("{ALT}", json_conf['site']['device_alt'])
+   form = form.replace("{PASSWD}", json_conf['site']['pwd'])
+   print(form)
+      
 
 def wasabi_cp(form):
    file = form.getvalue("file")
