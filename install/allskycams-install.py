@@ -246,7 +246,7 @@ def setup_as6_conf():
    json_conf['site']['operator_country'] = operator_country
    json_conf['site']['obs_name'] = obs_name
    json_conf['site']['device_lat'] = device_lat
-   json_conf['site']['device_lon'] = device_lon
+   json_conf['site']['device_lng'] = device_lon
    json_conf['site']['device_alt'] = device_alt
 
    cameras = {}

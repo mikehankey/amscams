@@ -1461,7 +1461,12 @@ def calibration(json_conf,form):
    cam_id_filter = form.getvalue("cam_id")
 
    print("<h1>Past Calibrations</h1>")
-   ci = load_json_file("/mnt/ams2/cal/freecal_index.json")
+   freecal_index = "/mnt/ams2/cal/freecal_index.json"
+   if cfe(freecal_index) == 1:
+      ci = load_json_file("/mnt/ams2/cal/freecal_index.json")   
+   else:
+      print("No calibrations have been completed yet.")
+      exit()
    
 
    print("<table class='table table-dark table-striped table-hover td-al-m m-auto table-fit'>")
@@ -1593,6 +1598,10 @@ def meteors_new(json_conf,form):
    norm_cnt = 0
    reduced_cnt = 0
    has_limit_day = 0
+
+   if len(meteor_dirs) == 0:
+      print("No meteors saved yet.")
+      exit()
  
    for meteor_dir in meteor_dirs:
       el = meteor_dir.split("/")
@@ -1888,6 +1897,10 @@ def get_mask_img(cams_id, json_conf):
 
    # first look for img, if made less than 24 hours ago use it, else make new one
    img_files = glob.glob(img_dir + cams_id + "-mask.jpg")
+   if len(img_files) == 0:
+      print("no mask images exist. Is this a new install? Are cams attached?")
+      exit()
+
    if len(img_files) == 1:
       img = cv2.imread(img_files[0])
    else:
@@ -2788,7 +2801,9 @@ def main_page(json_conf,form):
       end_day_date = datetime.strptime(end_day,"%Y_%m_%d")
    
    days = sorted(get_proc_days(json_conf),reverse=True)
-  
+   if len(days) <= 2:
+      print("No data has been collected yet. ")
+      exit() 
    # We remove the days we don't care about to speed up the page
    if(end_day is not None):
          for idx, d in enumerate(days):
@@ -2870,7 +2885,7 @@ def main_page(json_conf,form):
  
    pagination =  get_pagination(cur_page,len(all_real_detections),"/pycgi/webUI.py?cmd=home",NUMBER_OF_DAYS_PER_PAGE)
 
-   header_out = "<div class='h1_holder d-flex justify-content-between'><h1>Daily Dectections until " 
+   header_out = "<div class='h1_holder d-flex justify-content-between'><h1>Review Stacks by Day" 
  
    if end_day is None:
       end_day = ""
