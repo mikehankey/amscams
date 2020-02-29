@@ -1,8 +1,11 @@
+#sudo apt-get install libcfitsio-dev
+#sudo apt-get install libjpeg-dev
+
 mkdir ~/allsky6-install
 cd ~/allsky6-install
-wget http://astrometry.net/downloads/astrometry.net-latest.tar.gz
-gunzip astrometry.net-latest.tar.gz
-tar xf astrometry.net-latest.tar
+#wget http://astrometry.net/downloads/astrometry.net-latest.tar.gz
+#gunzip astrometry.net-latest.tar.gz
+#tar xf astrometry.net-latest.tar
 wget http://archive.allsky.tv/APPS/INSTALL/plot-constellations.c
 cp plot-constellations.c astrometry.net-0.78/blind/
 
