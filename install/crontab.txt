@@ -1,0 +1,38 @@
+#AMSCAMS CRONS
+
+* * * * * cd /home/ams/amscams/python/; ./ffmpeg_record.py start_all > /dev/null
+10 * * * * cd /home/ams/amscams/python/; ./move-files.py > /dev/null
+*/5 * * * * cd /home/ams/amscams/python/; ./as6-latest.py > /dev/null
+* * * * * cd /home/ams/amscams/python/; ./process_data.py > /tmp/pd.txt
+5 * * * * cd /home/ams/amscams/pythonv2/; ./batchJobs.py fi > /tmp/pd.txt
+6 * * * * cd /home/ams/amscams/pythonv2/; ./batchJobs.py mi > /tmp/pd.txt
+10 * * * * cd /home/ams/amscams/pythonv2/; ./batchJobs.py tn > /tmp/pd.txt
+10 */2 * * * cd /home/ams/amscams/pythonv2/; ./batchJobs.py sna 2 > /tmp/pd.txt
+* * * * * cd /home/ams/amscams/pythonv2/; ./detectMeteors.py do_all > /tmp/dM.txt
+20 * * * * cd /home/ams/amscams/pythonv2/; ./batchJobs.py batch_doHD > /tmp/bdhd.txt
+30 * * * * cd /home/ams/amscams/pythonv2/; ./batchJobs.py bmt > /tmp/bdhd.txt
+40 * * * * cd /home/ams/amscams/pythonv2/; ./batchJobs.py mi> /tmp/bdhd.txt
+10 * * * * cd /home/ams/amscams/pythonv2/; ./batchJobs.py pd> /tmp/pd.txt
+10 13 * * * cd /home/ams/amscams/pythonv2/; ./autoCal.py make_hd_images today > /tmp/ac.txt
+*/5 * * * * cd /home/ams/amscams/pythonv2/; ./watch-dog.py > /tmp/wd.txt
+# PROCESS THE VIDEOS
+# PROCESS THE VIDEOS
+*/5 * * * * python3 /home/ams/amscams/pythonv2/Video_Jobs_Cron_Meta.py > /tmp/vid.txt
+# DELETE THE VIDEOS AFTER 'DELETE_VIDS_AFTER_DAYS' (see VIDEO_VARS.py)
+30 23 * * * python3 /home/ams/amscams/pythonv2/Delete_Video_Cron.py > /tmp/delete_vid.txt
+#GET ALL HD FRAMES AND DELETE THE OLD ONES AFTER 'DELETE_HD_FRAMES_AFTER_HOURS' (see VIDEO_VARS.py)
+13 * * * * python3 /home/ams/amscams/pythonv2/Video_HD_Images_Cron.py > /tmp/get_HD_frames.txt
+
+# reduce and sync
+20,50 * * * * cd /home/ams/amscams/pythonv2/; ./sync.py day; ./sync.py day yest> /tmp/pd.txt
+30 */4 * * * cd /home/ams/amscams/pythonv2/; ./autoCal.py cal_index > /dev/null
+31 */4 * * * cd /home/ams/amscams/pythonv2/; ./autoCal.py meteor_index > /dev/null
+33 */4 * * * cd /home/ams/amscams/pythonv2/; ./autoCal.py auto_cal_index > /dev/null
+
+# ROOT CRONS MUST BE INSTALLED AS ROOT
+* * * * * cd /home/ams/amscams/pythonv2 ; ./vpn.py > /tmp/vpn.txt
+52 * * * * cd /home/ams/amscams/pythonv2 ; ./time.sh >> /tmp/time.txt
+
+
+# To SYNC Date on Ubuntu
+10 * * * * /usr/bin/timedatectl set-ntp off; timedatectl set-ntp on
