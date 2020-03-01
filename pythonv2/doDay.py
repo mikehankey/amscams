@@ -380,7 +380,6 @@ def html_get_detects(day,tsid,event_files, events):
             multi_html += "<div class='"+css_class+"'>" + elink +  "<img src='"+was_vh_dir + image_file+"' class='img-fluid'></a>"
             print("KEY:", key)
             # VINCENT -- THIS LINE IS CAUSING A PARSE ERROR FOR ME. NOT SURE WHY BUT : 'cam_id' is not inside the analysed name. Perhaps there is some bad file or data in my archive, not sure. (analyzing function should put some default values in or fail with an error message (better), if it can't handle the file. The error should state what file it is. Most times a file just needs to be deleted.
-=======
             multi_html += "<div class='d-flex mb-1'><div class='mr-auto'><span>"+'<b>Cam#' + analysed_name['cam_id'] + '</b> '+ analysed_name['hour']+':'+analysed_name['min']+':'+analysed_name['sec']+'.'+analysed_name['ms'] + event_id+"</div>"
             multi_html += "<div><a href='"+video_path+"' class='vid-link btn btn-secondary btn-sm'><span class='icon-youtube'></span></a></div></div></div>"
             ms_count += 1
@@ -402,12 +401,9 @@ def html_get_detects(day,tsid,event_files, events):
    info['not_run'] = not_run
    info['mc'] = mc 
 
-<<<<<<< HEAD
    print("SING:", single_html)
    print("MULT:", multi_html)
-=======
     
->>>>>>> 95b6620222336b7702ca31421f386bcaeb0bf39f
    
    return(single_html, multi_html, info)
 
