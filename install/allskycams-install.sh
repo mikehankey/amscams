@@ -81,7 +81,7 @@ pip3 install numpy
 pip3 install pathlib
 pip3 install pyephem
 pip3 install pytesseract
-pip3 install opencv-python
+#pip3 install opencv-python
 pip3 install pycrypto
 
 sudo pip3 install --ignore-installed scipy
