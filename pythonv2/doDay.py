@@ -29,12 +29,14 @@ import re
 from datetime import datetime, timedelta
 import subprocess
 import random
+import requests
+
 
 from lib.FileIO import load_json_file, save_json_file, cfe
 from lib.UtilLib import check_running
 
 # REGEXP Used to get info from the paths
-REGEX_REPORT = r"(\d{4})_(\d{2})_(\d{2})_(\d{2})_(\d{2})_(\d{2})_(\d{3})_(\w{6})-trim(\d{4})-prev-crop.jpg"
+REGEX_REPORT = r"(\d{4})_(\d{2})_(\d{2})_(\d{2})_(\d{2})_(\d{2})_(\d{3})_(\w{6})-trim(\d{4}|\d{3})-prev-crop.jpg"
 REGEX_GROUP_REPORT = ["name","year","month","day","hour","min","sec","ms","cam_id","trim"]
  
 # ARCHIVE PATH
@@ -192,20 +194,10 @@ def make_station_report(day, proc_info = ""):
    data = {}
    data['files'] = noaa_files
 
-   events,event_files = load_events(day)
-   print("EVENTS*************")
-   print(events)
-   print("EVENT FILES*************")
-   print(event_files)
- 
+   events,event_files = load_events(day) 
 
    single_html, multi_html, info = html_get_detects(day, station, event_files, events)
-
-   print("single_html*************")
-   print(single_html)
-   print("multi_html*************")
-   print(multi_html) 
-
+ 
 
 
    detect_count = info['mc']
@@ -239,6 +231,8 @@ def make_station_report(day, proc_info = ""):
    
    # We only display something... if we have something to display
    if(we_html!=''):
+      # We add the toolbar
+      we_html = '<div class="top_tool_bar"><a href="#" id="play_anim_thumb" class="btn btn-success"><span class="icon-youtube"></span> All Day Animation</a></div>' + we_html
       TAB, TAB_CONTENT = add_section('weather','Weather Snap Shots',we_html, TAB, TAB_CONTENT)
     
 
@@ -315,11 +309,11 @@ def html_get_detects(day,tsid,event_files, events):
             arc_file = "pending"
             style = "pending"
             pending_count += 1
-         print("KEY:", key)
+        
          if key in event_files:
             event_id = event_files[key]
             event_info = events[event_id]
-            print("KEY", key, event_files[key])
+          
             style = "multi"
             # look for the event solution dir
             event_dir = "/mnt/archive.allsky.tv/EVENTS/" + year + "/" + day + "/" + event_id + "/"
@@ -336,7 +330,7 @@ def html_get_detects(day,tsid,event_files, events):
          else:
             event_id = None
             elink = "<a class='T'>"
-         print("EVENT ID IS:", event_id) 
+      
          mfile = key.split("/")[-1]
          prev_crop = mfile.replace(".json", "-prev-crop.jpg")
          prev_full = mfile.replace(".json", "-prev-full.jpg")
@@ -360,18 +354,24 @@ def html_get_detects(day,tsid,event_files, events):
             video_path = ''    
 
          # We get more info
-         print("(BEFORE AN) EVENT ID IS:", event_id) 
+         #print("(BEFORE AN) EVENT ID IS:", event_id) 
          analysed_name = analyse_report_file(image_file)
         
-         print("(AFTER AN) EVENT ID IS:", event_id) 
+         #print("(AFTER AN) EVENT ID IS:", event_id) 
     
          if event_id is None or event_id == "none" or event_id == '':
-  
+
+            # Get full version of the preview if video_path is empty
+            if(video_path==''):
+              full_path = ARCHIVE_PATH + was_vh_dir + image_file.replace('crop','full')
+              request = requests.get(full_path)
+              if request.status_code == 200:
+                  video_path = "<a href='"+full_path+"' class='img-link btn btn-secondary btn-sm'><span class='icon-eye'></span></a>"
+ 
             single_html += "<div class='"+css_class+"'>" + elink +  "<img src='"+was_vh_dir + image_file+"' class='img-fluid'></a>"
-            #single_html += "<div class='d-flex'><div class='mr-auto'><span>"+'<b>Cam#' + analysed_name['cam_id'] + '</b> '+ analysed_name['hour']+':'+analysed_name['min']+':'+analysed_name['sec']+'.'+analysed_name['ms'] + "</div>"
-            #single_html += "<div>"+video_path+"</div></div></div>"
-            single_html += "</div></div>"
-            ss_count += 1
+            single_html += "<div class='d-flex mb-2'><div class='mr-auto'><span>"+'<b>Cam#' + analysed_name['cam_id'] + '</b> '+ analysed_name['hour']+':'+analysed_name['min']+':'+analysed_name['sec']+'.'+analysed_name['ms'] + "</div>"
+            single_html += "<div>"+video_path+"</div></div></div>"
+            ss_count += 1 
          else:
 
             if(event_id !=''):
@@ -405,6 +405,7 @@ def html_get_detects(day,tsid,event_files, events):
    print("MULT:", multi_html)
     
    
+  
    return(single_html, multi_html, info)
 
 
@@ -420,12 +421,7 @@ def get_processing_status(day):
    proc_dir = "/mnt/ams2/SD/proc2/" + day + "/*"
    proc_img_tn_dir = "/mnt/ams2/SD/proc2/" + day + "/images/*tn.png"
    proc_vids = glob.glob(proc_dir)
-   proc_tn_imgs = glob.glob(proc_img_tn_dir)
-
-   #proc_img_dir = "/mnt/ams2/SD/proc2/" + day + "/images/*.png"
-   #proc_imgs = glob.glob(proc_img_dir)
-
-
+   proc_tn_imgs = glob.glob(proc_img_tn_dir)  
    day_vids = glob.glob("/mnt/ams2/SD/proc2/daytime/" + day + "*.mp4")
    cams_queue = glob.glob("/mnt/ams2/CAMS/queue/" + day + "*.mp4")
    in_queue = glob.glob("/mnt/ams2/SD/" + day + "*.mp4")

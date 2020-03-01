@@ -859,9 +859,14 @@ def archive_listing(form):
    # NUMBER_OF_METEOR_PER_PAGE (for Pagination)
 
    # Do we have a cookie?
-   cookies = os.environ.get('HTTP_COOKIE').rstrip()
-   rpp = NUMBER_OF_METEOR_PER_PAGE
-   video_prev = DEFAULT_VIDEO_PREV_ON_ARCHIVE
+   try:
+      cookies = os.environ.get('HTTP_COOKIE').rstrip()
+      rpp = NUMBER_OF_METEOR_PER_PAGE
+      video_prev = DEFAULT_VIDEO_PREV_ON_ARCHIVE
+   except:
+      cookies = {}
+      rpp = 50
+      video_prev = 0
 
    if("archive_rpp" in cookies):
       tmp = cookies.split(";") 

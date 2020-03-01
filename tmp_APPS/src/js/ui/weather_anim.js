@@ -1,4 +1,4 @@
-var $allstacks;
+var $allImages;
 var totalStacks;
 var animationStackDuration;
 var timePerStack;
@@ -12,22 +12,22 @@ var sens = "+"
 jQuery.fn.reverse = [].reverse; 
 
 // Modal With Player
-function addAnimWeatherModalTemplate($allstacks,cam_id) {
+function addAnimWeatherModalTemplate($allImages,cam_id) {
    
    $('#anim_wea_modal').remove();
 
-   $('<div id="anim_wea_modal" class="modal fade" tabindex="-1" role="dialog"><div class="modal-dialog modal-dialog-centered"  style="min-width: 800px;" role="document">\
-   <div class="modal-content"><div class="modal-body"><div id="anim_header" class="d-flex justify-content-between"></div><div id="anim_holder" style="width:688px;">\
+   $('<div id="anim_wea_modal" class="modal fade" tabindex="-1" role="dialog"><div class="modal-dialog modal-dialog-centered" style="min-width:1731px;" role="document">\
+   <div class="modal-content"><div class="modal-body"><div id="anim_header" class="d-flex justify-content-between"></div><div id="anim_holder">\
    </div><div class="modal-footer d-flex justify-content-between p-0 pb-2 pr-2">\
    <div class="pt-2"><input type="range" value="1" id="marWeat" max="10" min="-10"/> <span id="cur_sp"></span></div>\
    <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button></div></div></div></div>').appendTo('body');
    
    // Add all the frames
-   $allstacks.each(function(i,v) {
+   $allImages.each(function(i,v) {
        $(this).clone().attr('style','').addClass('to_anim to_anim-'+i).appendTo('#anim_holder');
    });
 
-   animationStackDuration = 1000; //$allstacks.length; // Duration get the 
+   animationStackDuration = 1000; //$allImages.length; // Duration get the 
 }
 
 
@@ -62,12 +62,10 @@ function step_Weather(startTime) {
          }
 
      }
-
-
-       
  
-     $('#cur_f').text($(`.to_anim-${stackNumber}`).attr('data-rel'));
-     //console.log("FN" + stackNumber);
+ 
+     //$('#cur_f').text($(`.to_anim-${stackNumber}`).attr('data-rel'));
+     console.log("FN: " + stackNumber);
    }
   
    if(weathplaying) requestAnimationFrame(step_Weather);
@@ -78,9 +76,8 @@ function Weather_anim() {
    var $allImages = $('.weath')
  
    $allImages = $allImages.reverse();
-   total  = $allstacks.length;
-   addAnimWeatherModalTemplate($allImages);
-
+   totalStacks  = $allImages.length;
+   addAnimWeatherModalTemplate($allImages); 
 
    $('#anim_wea_modal').modal();
    $('#anim_wea_modal').on('hidden.bs.modal', function () {
@@ -124,10 +121,11 @@ function Weather_anim() {
 }
 
 $(function() {
-    $('.play_anim_thumb').click(function() {
-       weathplaying = true;
-       Weather_anim($(this).attr('data-rel'));
-       $('.to_anim').css({'width':'683px','height':'395px'});
+    $('#play_anim_thumb').click(function(e) {
+       e.stopImmediatePropagation();
+       weathplaying = true; 
+       Weather_anim($(this).attr('data-rel')); 
+       return false;
     });  
 })
 

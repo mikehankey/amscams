@@ -39,7 +39,11 @@
       background-color: #3174ae;
       border-color: #203f5a;
 
-
+    &.disabled, &:disabled {
+         color: #fff;
+         background-color: #326da1;
+         border-color: #3174ae;
+     }
       
    &:hover, &:focus {
       background-color: #1d527f;
