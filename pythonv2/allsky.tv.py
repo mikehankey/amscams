@@ -71,7 +71,7 @@ def update_live_html():
 
 
 
-   data_per_station = {}
+   data_per_station = []
 
     
    for data in all_station_data:
