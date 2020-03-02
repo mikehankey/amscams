@@ -71,8 +71,8 @@ def update_live_html():
    """
 
    print("ALL STATION DATA")
+   print(all_station_data) 
    sys.exit(0)
-   print(all_station_data)
 
    for data in all_station_data:
       station = data['station']
