@@ -233,19 +233,19 @@ def make_station_report(day, proc_info = ""):
    if(we_html!=''):
       # We add the toolbar
       we_html = '<div class="top_tool_bar"><a href="#" id="play_anim_thumb" class="btn btn-success"><span class="icon-youtube"></span> All Day Animation</a></div>' + we_html
-      TAB, TAB_CONTENT = add_section('weather','Weather Snap Shots',we_html, TAB, TAB_CONTENT)
+      TAB, TAB_CONTENT = add_section('weather','Weather',we_html, TAB, TAB_CONTENT)
     
 
-
-   # Multi-station meteor  
+ 
    # Add specific tool bar for meteors
    # (delete all/confirm all)
-   multi_tb = '<div id="top_tool_bar"><div class="d-flex">'
-   multi_tb += '<div class="control-group"><div class="controls"><div class="input"><div id="lio_filters" class="btn-group" data-toggle="buttons-checkbox"><button class="btn btn-secondary active" id="lio_btn_all" aria-pressed="true">ALL</button><button class="btn btn-secondary" id="lio_btn_pnd"  aria-pressed="false">Pending ('+ str(info['pending_count']) +')</button><button class="btn btn-secondary" aria-pressed="false" id="lio_btn_arc">Archived ('+ str(info['arc_count']) +')</button></div></div></div></div>'
-   multi_tb += '<div class="control-group ml-3"><div class="controls"><div class="input"><div id="lio_sub_filters" class="btn-group" data-toggle="buttons-checkbox"><button class="btn btn-secondary active" id="lio_sub_btn_all" aria-pressed="true">ALL</button><button class="btn btn-secondary" id="lio_sub_btn_single"  aria-pressed="false">Single Station ('+ str(info['ss_count']) +')</button><button class="btn btn-secondary" aria-pressed="false" id="lio_sub_btn_multi">Multi-Stations ('+ str(info['ms_count']) +')</button></div></div></div></div>'
-   multi_tb += '<div class="lio ml-auto"><button id="conf_all" class="btn btn-success">Confirm All</button> <button id="del_all" class="btn btn-danger">Delete All</button> <button id="cancel_all" class="btn btn-secondary">Cancel</button></div></div></div>'
+   if(multi_tb != ''):
+      multi_tb = '<div id="top_tool_bar"><div class="d-flex">'
+      multi_tb += '<div class="control-group"><div class="controls"><div class="input"><div id="lio_filters" class="btn-group" data-toggle="buttons-checkbox"><button class="btn btn-secondary active" id="lio_btn_all" aria-pressed="true">ALL</button><button class="btn btn-secondary" id="lio_btn_pnd"  aria-pressed="false">Pending ('+ str(info['pending_count']) +')</button><button class="btn btn-secondary" aria-pressed="false" id="lio_btn_arc">Archived ('+ str(info['arc_count']) +')</button></div></div></div></div>'
+      multi_tb += '<div class="control-group ml-3"><div class="controls"><div class="input"><div id="lio_sub_filters" class="btn-group" data-toggle="buttons-checkbox"><button class="btn btn-secondary active" id="lio_sub_btn_all" aria-pressed="true">ALL</button><button class="btn btn-secondary" id="lio_sub_btn_single"  aria-pressed="false">Single Station ('+ str(info['ss_count']) +')</button><button class="btn btn-secondary" aria-pressed="false" id="lio_sub_btn_multi">Multi-Stations ('+ str(info['ms_count']) +')</button></div></div></div></div>'
+      multi_tb += '<div class="lio ml-auto"><button id="conf_all" class="btn btn-success">Confirm All</button> <button id="del_all" class="btn btn-danger">Delete All</button> <button id="cancel_all" class="btn btn-secondary">Cancel</button></div></div></div>'
 
-   TAB, TAB_CONTENT = add_section('multi',"Meteors (" + str(info['ms_count']+info['ss_count']) + ")",multi_tb +"<div class='d-flex align-content-start flex-wrap'>" + multi_html + single_html + "</div>", TAB, TAB_CONTENT, True) 
+      TAB, TAB_CONTENT = add_section('multi',"Meteors (" + str(info['ms_count']+info['ss_count']) + ")",multi_tb +"<div class='d-flex align-content-start flex-wrap'>" + multi_html + single_html + "</div>", TAB, TAB_CONTENT, True) 
   
    # Single-station meteor
    #TAB, TAB_CONTENT = add_section('single',"Single Station Meteors (" + str(info['ss_count']) + ")","<div class='d-flex align-content-start flex-wrap'>" + single_html + "</div>", TAB, TAB_CONTENT) 
@@ -378,8 +378,6 @@ def html_get_detects(day,tsid,event_files, events):
                   event_id = "</span><span><b>Event</b> #" + str(event_id)  
 
                multi_html += "<div class='"+css_class+"'>" + elink +  "<img src='"+was_vh_dir + image_file+"' class='img-fluid'></a>"
-               print("KEY:", key)
-               # VINCENT -- THIS LINE IS CAUSING A PARSE ERROR FOR ME. NOT SURE WHY BUT : 'cam_id' is not inside the analysed name. Perhaps there is some bad file or data in my archive, not sure. (analyzing function should put some default values in or fail with an error message (better), if it can't handle the file. The error should state what file it is. Most times a file just needs to be deleted.
                multi_html += "<div class='d-flex mb-1'><div class='mr-auto'><span>"+'<b>Cam#' + analysed_name['cam_id'] + '</b> '+ analysed_name['hour']+':'+analysed_name['min']+':'+analysed_name['sec']+'.'+analysed_name['ms'] + event_id+"</div>"
                multi_html += "<div><a href='"+video_path+"' class='vid-link btn btn-secondary btn-sm'><span class='icon-youtube'></span></a></div></div></div>"
                ms_count += 1
@@ -402,11 +400,6 @@ def html_get_detects(day,tsid,event_files, events):
    info['failed_count'] = failed_count
    info['not_run'] = not_run
    info['mc'] = mc 
-
-   print("SING:", single_html)
-   print("MULT:", multi_html)
-    
-   
   
    return(single_html, multi_html, info)
 
