@@ -70,7 +70,8 @@ def update_live_html():
          <div class='d-flex align-content-start flex-wrap'>
    """
 
-
+   print("ALL STATION DATA")
+   sys.exit(0)
    print(all_station_data)
 
    for data in all_station_data:
