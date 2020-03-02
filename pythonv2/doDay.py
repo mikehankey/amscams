@@ -197,9 +197,7 @@ def make_station_report(day, proc_info = ""):
    events,event_files = load_events(day) 
 
    single_html, multi_html, info = html_get_detects(day, station, event_files, events)
- 
-
-
+  
    detect_count = info['mc']
  
    show_date = day.replace("_", "/")
@@ -226,6 +224,8 @@ def make_station_report(day, proc_info = ""):
    we_html = ""
    if len(data['files']) > 0:
       for file in sorted(data['files'],reverse=True):
+         print("WEATHER FILE ")
+         print(data['files'])
          fn = file.replace("/mnt/archive.allsky.tv", "")
          we_html += "<img src='" + fn + "' class='img-fluid weath'>"
    
