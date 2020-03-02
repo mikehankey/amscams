@@ -66,9 +66,7 @@ def update_live_html():
       all_station_data.append(data)
 
    live_now = """
-         <head>
-            <meta http-equiv="Cache-control" content="public, max-age=500, must-revalidate">
-         </head>
+         <div class='d-flex align-content-start flex-wrap'>
    """
 
    for data in all_station_data:
@@ -76,8 +74,7 @@ def update_live_html():
       STATION_RPT_DIR =  "/mnt/archive.allsky.tv/" + station + "/REPORTS/" + year + "/" + mday + "/"
       STATION_RPT_VDIR =  "/" + station + "/REPORTS/" + year + "/" + mday + "/"
       files = sorted(data['files'], reverse=True)
-      data['files'] = files
-      print("ADDING STATION:", station,len(files))
+      data['files'] = files 
       if len(files) > 0:
          fn = files[0].split("/")[-1]
          file_index = files[0].replace(fn, "")
@@ -85,7 +82,7 @@ def update_live_html():
          st = os.stat(files[0])
          size = st.st_size
          if size != 0:
-            live_now +=  "<a href=" + STATION_RPT_VDIR + "index.html><img src=" + files[0].replace("/mnt/archive.allsky.tv", "") + "></a><BR>\n"
+            live_now +=  "<div class='report_t'><a href=" + STATION_RPT_VDIR + "index.html><img src=" + files[0].replace("/mnt/archive.allsky.tv", "") + "></a></div>"
 
 
    live_file = LIVE_DIR + "index.html"
@@ -93,10 +90,8 @@ def update_live_html():
       live_now += sd + " " + str(status[sd]) + "<BR>"
 
 
-   # Add Station ID to the template
-   template = template.replace("{STATION_ID}", live_now)
-
-   template = template.replace("{LIVE}", live_now)
+  
+   template = template.replace("{LIVE}", live_now+"</div>")
    fpo = open(live_file, "w")
    fpo.write(template)
    fpo.close()
