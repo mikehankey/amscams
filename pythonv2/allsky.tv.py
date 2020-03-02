@@ -89,7 +89,7 @@ def update_live_html():
 
    live_file = LIVE_DIR + "index.html"
    for sd in status:
-      live_now += sd + " " + str(status[sd]) + "<BR>"
+      live_now += sd + " ******************************" + str(status[sd]) + "<BR>"
  
    template = template.replace("{LIVE}", live_now+"</div>")
 
