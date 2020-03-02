@@ -169,9 +169,11 @@
 
 
 ._h4_hold {
-    text-align: left;
-    width: 100%;
-    margin: 0;
+   font-size: 1.1rem;
+   padding: 0.45rem 0.9rem;
+   font-weight: 700;
+   border-bottom: 1px solid rgba(0,0,0,0.12);
+   border-top: 1px solid rgba(255,255,255,1);
 
     h4 {
       font-size: 1.1rem;
