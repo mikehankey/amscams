@@ -70,7 +70,8 @@ def update_live_html():
    """ 
 
 
-
+   #We remove "AMS" from the station for the keys in data_per_station
+   #so we can sort it properly(!)
    data_per_station = {}
 
     
@@ -109,7 +110,7 @@ def update_live_html():
       if(sd in data_per_station):
          live_now += data_per_station[sd]
       else:
-         live_now +=  "<div style='text-align: left; width:100%; margin: 0;' class='top_tool_bar'><h4 class='mb-0'>Station #"+station+"  DOWN</h4></div>"
+         live_now +=  "<div style='text-align: left; width:100%; margin: 0;' class='top_tool_bar'><h4 class='mb-0'>Station #"+sd+"  DOWN</h4></div>"
 
 
 
