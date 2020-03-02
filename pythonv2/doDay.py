@@ -296,6 +296,14 @@ def html_get_detects(day,tsid,event_files, events):
    video_path = "" 
 
 
+   print("DAY ")
+   print(day)
+   print("MID")
+   print(mid)
+   print("MID(day)")
+   print(mid[day])
+
+
    if day in mid:
       for key in mid[day]:
 
