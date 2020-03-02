@@ -70,8 +70,10 @@ def update_live_html():
    """ 
 
 
-   for STA_TION in status:
+   for STA_TION in sorted(status):
       station = status[STA_TION]
+      print("STATION ")
+      print(station)
       for data in all_station_data[station]:
          print('data')
          print(data)
