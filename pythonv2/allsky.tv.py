@@ -110,8 +110,8 @@ def update_live_html():
    for sd in sorted(status):
       if(sd in data_per_station):
          live_now += data_per_station[sd]
-      else:
-         live_now +=  "<div style='text-align: left; width:100%; margin: 0;' class='top_tool_bar'><h4 class='mb-0'>Station #"+str(sd)+"  DOWN</h4></div>"
+      #else:
+      #   live_now +=  "<div style='text-align: left; width:100%; margin: 0;' class='top_tool_bar'><h4 class='mb-0'>Station #"+str(sd)+"  DOWN</h4></div>"
 
 
 
