@@ -97,7 +97,7 @@ def update_live_html():
             
             live_now +=  "<div style='text-align: left; width:100%; margin: 0;' class='top_tool_bar'><h4 class='mb-0'>Station #"+station+"  "+ stt +"</h4></div>"
             live_now +=  "<div class='report_t'><a href=" + STATION_RPT_VDIR + "index.html><img src=" + files[0].replace("/mnt/archive.allsky.tv", "") + "></a></div>"
-            data_per_station{'st';station,'live':live_now}
+            data_per_station.append({'st';station,'live':live_now})
             live_now = ''
 
    live_file = LIVE_DIR + "index.html"
