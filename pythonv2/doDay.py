@@ -223,9 +223,11 @@ def make_station_report(day, proc_info = ""):
    # WEATHER SNAP SHOTS 
    we_html = ""
    if len(data['files']) > 0:
+      
+      print("HOW MANY WEATHER FILES ")
+      print(len(data['files']))
+      
       for file in sorted(data['files'],reverse=True):
-         print("WEATHER FILE ")
-         print(data['files'])
          fn = file.replace("/mnt/archive.allsky.tv", "")
          we_html += "<img src='" + fn + "' class='img-fluid weath'>"
    
