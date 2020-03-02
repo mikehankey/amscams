@@ -303,97 +303,99 @@ def html_get_detects(day,tsid,event_files, events):
    print("MID(day)")
    print(mid[day])
 
+   if mid is not False:
+      if day in mid:
+         for key in mid[day]:
 
-   if day in mid:
-      for key in mid[day]:
-
-         if "archive_file" in mid[day][key]:
-            arc = 1
-            arc_file = mid[day][key]['archive_file']
-            style = "arc"
-            arc_count += 1 
-         else:
-            arc = 0
-            arc_file = "pending"
-            style = "pending"
-            pending_count += 1
-        
-         if key in event_files:
-            event_id = event_files[key]
-            event_info = events[event_id]
-          
-            style = "multi"
-            # look for the event solution dir
-            event_dir = "/mnt/archive.allsky.tv/EVENTS/" + year + "/" + day + "/" + event_id + "/"
-            event_vdir = "/EVENTS/" + year + "/" + day + "/" + event_id + "/"
-            event_file = event_dir + event_id + "-report.html"
-            event_vfile = event_vdir + event_id + "-report.html"
+            if "archive_file" in mid[day][key]:
+               arc = 1
+               arc_file = mid[day][key]['archive_file']
+               style = "arc"
+               arc_count += 1 
+            else:
+               arc = 0
+               arc_file = "pending"
+               style = "pending"
+               pending_count += 1
          
-            if len(events[event_id]['solutions']) > 0 :
-               elink = "<a href=" + event_vfile + " class='T'>"
-               solved_count += 1  
-            else: 
+            if key in event_files:
+               event_id = event_files[key]
+               event_info = events[event_id]
+            
+               style = "multi"
+               # look for the event solution dir
+               event_dir = "/mnt/archive.allsky.tv/EVENTS/" + year + "/" + day + "/" + event_id + "/"
+               event_vdir = "/EVENTS/" + year + "/" + day + "/" + event_id + "/"
+               event_file = event_dir + event_id + "-report.html"
+               event_vfile = event_vdir + event_id + "-report.html"
+            
+               if len(events[event_id]['solutions']) > 0 :
+                  elink = "<a href=" + event_vfile + " class='T'>"
+                  solved_count += 1  
+               else: 
+                  elink = "<a class='T'>"
+                  not_run += 1
+            else:
+               event_id = None
                elink = "<a class='T'>"
-               not_run += 1
-         else:
-            event_id = None
-            elink = "<a class='T'>"
+         
+            mfile = key.split("/")[-1]
+            prev_crop = mfile.replace(".json", "-prev-crop.jpg")
+            prev_full = mfile.replace(".json", "-prev-full.jpg")
+
+            image_file = prev_crop
+            if arc_file == "pending":
+               css_class = "prevproc pending"
+            else:
+               css_class = "prevproc arc"
+
+            if event_id is not None:
+               css_class += " multi"
+            else:
+               css_class += " single"
+               event_id = ""
+
+            # Video PATH (HD)
+            if(arc == 1):
+               video_path = ARCHIVE_PATH + os.sep + tsid + os.sep + 'METEOR' + os.sep + year + os.sep + month + os.sep + d_day + os.sep + image_file.replace('-prev-crop.jpg','-HD.mp4')
+            else:
+               video_path = ''    
+
+            # We get more info
+            #print("(BEFORE AN) EVENT ID IS:", event_id) 
+            analysed_name = analyse_report_file(image_file)
+         
+            #print("(AFTER AN) EVENT ID IS:", event_id) 
       
-         mfile = key.split("/")[-1]
-         prev_crop = mfile.replace(".json", "-prev-crop.jpg")
-         prev_full = mfile.replace(".json", "-prev-full.jpg")
+            if event_id is None or event_id == "none" or event_id == '':
 
-         image_file = prev_crop
-         if arc_file == "pending":
-            css_class = "prevproc pending"
+               # Get full version of the preview if video_path is empty
+               if(video_path==''):
+               full_path = ARCHIVE_PATH + was_vh_dir + image_file.replace('crop','full')
+               request = requests.get(full_path)
+               if request.status_code == 200:
+                     video_path = "<a href='"+full_path+"' class='img-link btn btn-secondary btn-sm'><span class='icon-eye'></span></a>"
+   
+               single_html += "<div class='"+css_class+"'>" + elink +  "<img src='"+was_vh_dir + image_file+"' class='img-fluid'></a>"
+               single_html += "<div class='d-flex mb-2'><div class='mr-auto'><span>"+'<b>Cam#' + analysed_name['cam_id'] + '</b> '+ analysed_name['hour']+':'+analysed_name['min']+':'+analysed_name['sec']+'.'+analysed_name['ms'] + "</div>"
+               single_html += "<div>"+video_path+"</div></div></div>"
+               ss_count += 1 
+            else:
+
+               if(event_id !=''):
+                  event_id = "</span><span><b>Event</b> #" + str(event_id)  
+
+               multi_html += "<div class='"+css_class+"'>" + elink +  "<img src='"+was_vh_dir + image_file+"' class='img-fluid'></a>"
+               print("KEY:", key)
+               # VINCENT -- THIS LINE IS CAUSING A PARSE ERROR FOR ME. NOT SURE WHY BUT : 'cam_id' is not inside the analysed name. Perhaps there is some bad file or data in my archive, not sure. (analyzing function should put some default values in or fail with an error message (better), if it can't handle the file. The error should state what file it is. Most times a file just needs to be deleted.
+               multi_html += "<div class='d-flex mb-1'><div class='mr-auto'><span>"+'<b>Cam#' + analysed_name['cam_id'] + '</b> '+ analysed_name['hour']+':'+analysed_name['min']+':'+analysed_name['sec']+'.'+analysed_name['ms'] + event_id+"</div>"
+               multi_html += "<div><a href='"+video_path+"' class='vid-link btn btn-secondary btn-sm'><span class='icon-youtube'></span></a></div></div></div>"
+               ms_count += 1
+
+            video_path = ''
+            mc += 1
          else:
-            css_class = "prevproc arc"
-
-         if event_id is not None:
-            css_class += " multi"
-         else:
-            css_class += " single"
-            event_id = ""
-
-         # Video PATH (HD)
-         if(arc == 1):
-            video_path = ARCHIVE_PATH + os.sep + tsid + os.sep + 'METEOR' + os.sep + year + os.sep + month + os.sep + d_day + os.sep + image_file.replace('-prev-crop.jpg','-HD.mp4')
-         else:
-            video_path = ''    
-
-         # We get more info
-         #print("(BEFORE AN) EVENT ID IS:", event_id) 
-         analysed_name = analyse_report_file(image_file)
-        
-         #print("(AFTER AN) EVENT ID IS:", event_id) 
-    
-         if event_id is None or event_id == "none" or event_id == '':
-
-            # Get full version of the preview if video_path is empty
-            if(video_path==''):
-              full_path = ARCHIVE_PATH + was_vh_dir + image_file.replace('crop','full')
-              request = requests.get(full_path)
-              if request.status_code == 200:
-                  video_path = "<a href='"+full_path+"' class='img-link btn btn-secondary btn-sm'><span class='icon-eye'></span></a>"
- 
-            single_html += "<div class='"+css_class+"'>" + elink +  "<img src='"+was_vh_dir + image_file+"' class='img-fluid'></a>"
-            single_html += "<div class='d-flex mb-2'><div class='mr-auto'><span>"+'<b>Cam#' + analysed_name['cam_id'] + '</b> '+ analysed_name['hour']+':'+analysed_name['min']+':'+analysed_name['sec']+'.'+analysed_name['ms'] + "</div>"
-            single_html += "<div>"+video_path+"</div></div></div>"
-            ss_count += 1 
-         else:
-
-            if(event_id !=''):
-               event_id = "</span><span><b>Event</b> #" + str(event_id)  
-
-            multi_html += "<div class='"+css_class+"'>" + elink +  "<img src='"+was_vh_dir + image_file+"' class='img-fluid'></a>"
-            print("KEY:", key)
-            # VINCENT -- THIS LINE IS CAUSING A PARSE ERROR FOR ME. NOT SURE WHY BUT : 'cam_id' is not inside the analysed name. Perhaps there is some bad file or data in my archive, not sure. (analyzing function should put some default values in or fail with an error message (better), if it can't handle the file. The error should state what file it is. Most times a file just needs to be deleted.
-            multi_html += "<div class='d-flex mb-1'><div class='mr-auto'><span>"+'<b>Cam#' + analysed_name['cam_id'] + '</b> '+ analysed_name['hour']+':'+analysed_name['min']+':'+analysed_name['sec']+'.'+analysed_name['ms'] + event_id+"</div>"
-            multi_html += "<div><a href='"+video_path+"' class='vid-link btn btn-secondary btn-sm'><span class='icon-youtube'></span></a></div></div></div>"
-            ms_count += 1
-
-         video_path = ''
-         mc += 1
+            html += "No meteors detected."            
    else:
       html += "No meteors detected."
 
