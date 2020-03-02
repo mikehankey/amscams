@@ -56,25 +56,20 @@ def update_live_html():
       data['files'] = []
       NOAA_DIR =  "/mnt/archive.allsky.tv/" + station + "/NOAA/ARCHIVE/" + year + "/" + mday + "/"
       if cfe(NOAA_DIR, 1) == 0:
-
          os.makedirs(NOAA_DIR)
       day_index = NOAA_DIR + mday + "_index.json"
       live_files = glob.glob(NOAA_DIR + "*.jpg")
       for file in live_files:
-         print("ADDING FILES FOR : ", station, file)
+         #print("ADDING FILES FOR : ", station, file)
          data['files'].append(file)
          status[station] = 1
       all_station_data.append(data)
 
    live_now = """
          <div class='d-flex align-content-start flex-wrap'>
-   """
+   """ 
 
-   print("ALL STATION DATA")
-   print(all_station_data) 
-   sys.exit(0)
-
-   for data in all_station_data:
+   for data in sorted(all_station_data):
       station = data['station']
       STATION_RPT_DIR =  "/mnt/archive.allsky.tv/" + station + "/REPORTS/" + year + "/" + mday + "/"
       STATION_RPT_VDIR =  "/" + station + "/REPORTS/" + year + "/" + mday + "/"
@@ -87,13 +82,21 @@ def update_live_html():
          st = os.stat(files[0])
          size = st.st_size
          if size != 0:
-            live_now +=  "<div style='text-align: left; width:100%; margin: 0;' class='top_tool_bar'><h4 class='mb-0'>Station #"+station+"</h4></div>"
+            # Status
+            stt = ""
+            if(station in status):
+               if(station[status]==1):
+                  stt = 'ok';
+               else:
+                  stt = 'not_ok'
+            
+            live_now +=  "<div style='text-align: left; width:100%; margin: 0;' class='top_tool_bar'><h4 class='mb-0'>Station #"+station+" + " stt "+</h4></div>"
             live_now +=  "<div class='report_t'><a href=" + STATION_RPT_VDIR + "index.html><img src=" + files[0].replace("/mnt/archive.allsky.tv", "") + "></a></div>"
 
 
    live_file = LIVE_DIR + "index.html"
-   for sd in status:
-      live_now += sd + " ******************************" + str(status[sd]) + "<BR>"
+   #for sd in status:
+   # live_now += sd + " ******************************" + str(status[sd]) + "<BR>"
  
    template = template.replace("{LIVE}", live_now+"</div>")
 
