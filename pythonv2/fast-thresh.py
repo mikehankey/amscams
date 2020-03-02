@@ -1,6 +1,7 @@
 #!/usr/bin/python3
 import time
-import fastThresh 
+import sys
+#import fastThresh 
 import cv2
 import numpy as np
 from PIL import ImageFont, ImageDraw, Image, ImageChops
@@ -9,13 +10,14 @@ def stack_stack(pic1, pic2):
    stacked_image=ImageChops.lighter(pic1,pic2)
    return(stacked_image)
 
-def scan_stack_fast(file, day = 1):
+def scan_stack_fast(file, day = 0):
    stack_file = file.replace(".mp4", "-stacked.png")
    PREVIEW_W = 300
    PREVIEW_H = 169
    start_time = time.time() 
 
    fc = 0
+   print("Loading file:", file)
    cap = cv2.VideoCapture(file)
    frames = []
    gray_frames = []
@@ -25,8 +27,10 @@ def scan_stack_fast(file, day = 1):
    while True:
       grabbed , frame = cap.read()
  
-      if not grabbed:
+      if not grabbed and fc > 5:
+         print(fc)
          break
+      
 
       if day == 1:
          small_frame = cv2.resize(frame, (0,0),fx=.5, fy=.5)
@@ -81,7 +85,7 @@ def scan_stack_fast(file, day = 1):
    print("Elp:", elapsed_time)
 
 
-scan_stack_fast("test.mp4")
+scan_stack_fast(sys.argv[1])
 
 #img = cv2.UMat(cv2.imread("/mnt/ams2/SD/proc2/2020_03_02/images/2020_03_02_16_16_37_000_010005-stacked-tn.png" , cv2.IMREAD_COLOR))
 #imgUMat = cv2.UMat(img)

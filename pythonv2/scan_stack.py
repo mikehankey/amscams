@@ -1,5 +1,8 @@
 #!/usr/bin/python3
 
+from PIL import ImageFont, ImageDraw, Image, ImageChops
+
+import numpy as np
 import datetime
 import time
 import sys
@@ -9,7 +12,7 @@ import glob
 
 from lib.UtilLib import calc_dist,find_angle, best_fit_slope_and_intercept, check_running
 from lib.FileIO import load_json_file, save_json_file, cfe
-from lib.flexLib import load_frames_fast, stack_frames_fast, convert_filename_to_date_cam, day_or_night
+from lib.flexLib import load_frames_fast, stack_frames_fast, convert_filename_to_date_cam, day_or_night, stack_stack
 from lib.VIDEO_VARS import PREVIEW_W, PREVIEW_H, SD_W, SD_H
 # SD_16_W, SD_16_H
 hdm_x = 1920 / SD_W
@@ -68,6 +71,11 @@ def fix_missing_stacks(day):
    print("Missing / Found:", missing, found)
 
 def batch_ss(wildcard=None):
+   running = check_running("scan_stack.py") 
+   if running > 2:
+      print("Running already.")
+      exit()
+
    if wildcard is not None:
       glob_dir = "/mnt/ams2/SD/*" + wildcard + "*.mp4"
       #glob_dir = "/mnt/ams2/CAMS/queue/*" + wildcard + "*.mp4"
@@ -84,6 +92,10 @@ def batch_ss(wildcard=None):
    for file in sorted(new_files, reverse=True):
       (f_datetime, cam, f_date_str,fy,fmin,fd, fh, fm, fs) = convert_filename_to_date_cam(file)
       sun_status = day_or_night(f_date_str, json_conf)
+      if sun_status == "day":
+         sun_status = "1"
+      else:
+         sun_status = "0"
       cur_time = int(time.time())
       st = os.stat(file)
       size = st.st_size
@@ -91,21 +103,144 @@ def batch_ss(wildcard=None):
       mtime = st.st_mtime
       tdiff = cur_time - mtime
       tdiff = tdiff / 60
-      running = check_running("scan_stack.py") 
-      if running > 2:
+
+      if size < 100:
+         print("BAD SIZE!")
+      else: 
+         try:
+            scan_and_stack_fast(file, sun_status)
+         except:
+            print("FAILED! File must be bad???", file)
+
+      #running = check_running("scan_stack.py") 
+      if False:
+      #if running > 2:
          wait = 1
          while(running > 2):
             time.sleep(2)
             running = check_running("scan_stack.py") 
             print("Running:", running)
-      if (tdiff > 3):
-         cmd = "./scan_stack.py ss " + file + " " + sun_status + " &"
-         print(cmd)
-         os.system("./scan_stack.py ss " + file + " " + sun_status + " &") 
-         #exit()
-         #scan_and_stack(file, sun_status)
+         if (tdiff > 3):
+            cmd = "./scan_stack.py ss " + file + " " + sun_status + " &"
+            print(cmd)
+            os.system("./scan_stack.py ss " + file + " " + sun_status + " &") 
+            # exit()
+            #scan_and_stack(file, sun_status)
+         else:
+            print(tdiff)
+
+
+def scan_and_stack_fast(file, day = 0):
+   day = int(day)
+   fn = file.split("/")[-1]
+   day = fn[0:10]
+   proc_dir = "/mnt/ams2/SD/proc2/" + day + "/" 
+   proc_img_dir = "/mnt/ams2/SD/proc2/" + day + "/images/" 
+   proc_data_dir = "/mnt/ams2/SD/proc2/" + day + "/data/" 
+   if cfe(proc_img_dir, 1) == 0:
+      os.makedirs(proc_img_dir)
+   if cfe(proc_data_dir, 1) == 0:
+      os.makedirs(proc_data_dir)
+   stack_file = proc_img_dir + fn.replace(".mp4", "-stacked-tn.png")
+   json_file = proc_data_dir + fn.replace(".mp4", "-vals.json")
+
+
+
+
+   sum_vals = []
+   max_vals = []
+   pos_vals = []
+   PREVIEW_W = 300
+   PREVIEW_H = 169
+   start_time = time.time()
+
+   fc = 0
+   print("Loading file:", file)
+   cap = cv2.VideoCapture(file)
+   frames = []
+   gray_frames = []
+   sub_frames = []
+   fd = []
+   stacked_image = None
+   while True:
+      grabbed , frame = cap.read()
+
+      if not grabbed and fc > 5:
+         print(fc)
+         break
+
+
+      if day == 1:
+         small_frame = cv2.resize(frame, (0,0),fx=.5, fy=.5)
       else:
-         print(tdiff)
+         small_frame = cv2.resize(frame, (0,0),fx=.5, fy=.5)
+
+
+      if day != 1:
+         gray = cv2.cvtColor(small_frame, cv2.COLOR_BGR2GRAY)
+         if fc > 0:
+            sub = cv2.subtract(gray, gray_frames[-1])
+         else:
+            sub = cv2.subtract(gray, gray)
+
+         min_val, max_val, min_loc, (mx,my)= cv2.minMaxLoc(sub)
+         if max_val < 10:
+            sum_vals.append(0)
+            max_vals.append(0)
+            pos_vals.append((0,0))
+         else:
+            _, thresh_frame = cv2.threshold(sub, 15, 255, cv2.THRESH_BINARY)
+            min_val, max_val, min_loc, (mx,my)= cv2.minMaxLoc(thresh_frame)
+            sum_val =cv2.sumElems(thresh_frame)[0]
+            mx = mx * 2
+            my = my * 2
+            sum_vals.append(sum_val)
+            max_vals.append(max_val)
+            pos_vals.append((mx,my))
+         gray_frames.append(gray)
+
+      if day == 1:
+         if fc % 10 == 1:
+            frame_pil = Image.fromarray(small_frame)
+            if stacked_image is None:
+               stacked_image = stack_stack(frame_pil, frame_pil)
+            else:
+               stacked_image = stack_stack(stacked_image, frame_pil)
+         sum_vals.append(0)
+         max_vals.append(0)
+         pos_vals.append((0,0))
+      else:
+         if max_val > 10 or fc < 10:
+            frame_pil = Image.fromarray(small_frame)
+            if stacked_image is None:
+               stacked_image = stack_stack(frame_pil, frame_pil)
+            else:
+               stacked_image = stack_stack(stacked_image, frame_pil)
+
+      frames.append(frame)
+      if fc % 100 == 1:
+         print(fc)
+      fc += 1
+   cv_stacked_image = np.asarray(stacked_image)
+   cv_stacked_image = cv2.resize(cv_stacked_image, (PREVIEW_W, PREVIEW_H))
+   cv2.imwrite(stack_file, cv_stacked_image)
+
+   vals = {}
+   vals['sum_vals'] = sum_vals
+   vals['max_vals'] = max_vals
+   vals['pos_vals'] = pos_vals
+
+   save_json_file(json_file, vals)
+   print("JSON FILE:", json_file)
+   elapsed_time = time.time() - start_time
+   print(stack_file)
+   os.system("mv " + file + " " + proc_dir)
+
+   print(proc_dir + fn)
+   print(stack_file)
+   print(json_file)
+   print("Elp:", elapsed_time)
+
 
 def scan_and_stack(video_file, sun_status):
    if cfe(video_file) == 0:
@@ -174,6 +309,6 @@ if sys.argv[1] == "bs":
       batch_ss()
 
 if sys.argv[1] == "ss":
-   scan_and_stack(sys.argv[2], sys.argv[3])
+   scan_and_stack_fast(sys.argv[2], sys.argv[3])
 if sys.argv[1] == "fms":
    fix_missing_stacks(sys.argv[2])
