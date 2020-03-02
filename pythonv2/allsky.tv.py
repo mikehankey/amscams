@@ -17,6 +17,7 @@ import time
 import cv2
 from datetime import datetime
 import sys
+import random
 import os
 import glob
 
@@ -88,10 +89,12 @@ def update_live_html():
    live_file = LIVE_DIR + "index.html"
    for sd in status:
       live_now += sd + " " + str(status[sd]) + "<BR>"
-
-
-  
+ 
    template = template.replace("{LIVE}", live_now+"</div>")
+
+   # nO cACHE
+   template = template.replace("{RAND}",str(random.randint(0, 99999999)))
+
    fpo = open(live_file, "w")
    fpo.write(template)
    fpo.close()
