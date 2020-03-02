@@ -71,7 +71,7 @@ def update_live_html():
 
 
 
-   data_per_station = []
+   data_per_station = {}
 
     
    for data in all_station_data:
@@ -111,7 +111,7 @@ def update_live_html():
    for sd in status:
       if(data_per_station):
          all_for_cur_station = list(data_per_station.keys())[list(data_per_station.values()).index(sd)]
-         live_now += data_per_station['live']
+         live_now += all_for_cur_station['live']
 
 
    template = template.replace("{LIVE}", live_now+"</div>")
