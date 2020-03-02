@@ -26,6 +26,7 @@ from lib.FileIO import load_json_file, save_json_file, cfe
 
 LIVE_TEMPLATE = "templates/allsky.tv.live.html"
 LIVE_DIR = "/mnt/archive.allsky.tv/LIVE/"
+STATION_NAME_STARTS_WITH = "AMS"
 
 json_conf = load_json_file("../conf/as6.json")
 station_id = json_conf['site']['ams_id'] 
@@ -98,13 +99,11 @@ def update_live_html():
             
             live_now +=  "<div style='text-align: left; width:100%; margin: 0;' class='top_tool_bar'><h4 class='mb-0'>Station #"+station+"  "+ stt +"</h4></div>"
             live_now +=  "<div class='report_t'><a href=" + STATION_RPT_VDIR + "index.html><img src=" + files[0].replace("/mnt/archive.allsky.tv", "") + "></a></div>"
-            data_per_station[station] = live_now 
+            data_per_station[station.replace('STATION_NAME_STARTS_WITH','')] = live_now 
             live_now = ''
 
 
-
-   #for sd in status:
-   # live_now += sd + " ******************************" + str(status[sd]) + "<BR>"
+ 
    live_now = ""
    for sd in sorted(status):
       if(sd in data_per_station):
