@@ -109,9 +109,12 @@ def update_live_html():
    # live_now += sd + " ******************************" + str(status[sd]) + "<BR>"
    live_now = ""
    for sd in status:
-      if(data_per_station):
+      if(sd in data_per_station):
          all_for_cur_station = list(data_per_station.keys())[list(data_per_station.values()).index(sd)]
          live_now += all_for_cur_station['live']
+      else:
+         live_now +=  "<div style='text-align: left; width:100%; margin: 0;' class='top_tool_bar'><h4 class='mb-0'>Station #"+station+"  DOWN</h4></div>"
+
 
 
    template = template.replace("{LIVE}", live_now+"</div>")
