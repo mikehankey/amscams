@@ -99,8 +99,8 @@ def update_live_html():
       data['files'] = []
       NOAA_DIR =  "/mnt/archive.allsky.tv/" + station + "/NOAA/ARCHIVE/" + year + "/" + day + "/" 
       if cfe(NOAA_DIR, 1) == 0:
-        
-         os.makedirs(NOAA_DIR)
+        os.makedirs(NOAA_DIR)
+      
       day_index = NOAA_DIR + day + "_index.json"
       if cfe(day_index) == 0 or True:
          live_files = glob.glob(NOAA_DIR + "*.jpg")
