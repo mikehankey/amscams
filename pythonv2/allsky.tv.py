@@ -85,7 +85,7 @@ def update_live_html():
             # Status
             stt = ""
             if(station in status):
-               if(station[status]==1):
+               if(status[station]==1):
                   stt = 'ok';
                else:
                   stt = 'not_ok'
