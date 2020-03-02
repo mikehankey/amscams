@@ -62,7 +62,9 @@ def update_live_html():
       for file in live_files:
          #print("ADDING FILES FOR : ", station, file)
          data['files'].append(file)
-         status[station] = 1
+         # Here the key is only the digits of the station name
+         # (so we can sort it easily later)
+         status[int(''.join(filter(str.isdigit, station)))] = 1
       all_station_data.append(data)
 
    live_now = """
@@ -70,8 +72,7 @@ def update_live_html():
    """ 
 
 
-   #We remove everything but digits from the station for the keys in data_per_station
-   #so we can sort it properly(!)
+ 
    data_per_station = {}
 
     
@@ -98,7 +99,7 @@ def update_live_html():
             
             live_now +=  "<div style='text-align: left; width:100%; margin: 0;' class='top_tool_bar'><h4 class='mb-0'>Station #"+station+"  "+ stt +"</h4></div>"
             live_now +=  "<div class='report_t'><a href=" + STATION_RPT_VDIR + "index.html><img src=" + files[0].replace("/mnt/archive.allsky.tv", "") + "></a></div>"
-            data_per_station[int(''.join(filter(str.isdigit, station)))] = live_now 
+            data_per_station[station] = live_now 
             live_now = ''
 
 
