@@ -25,8 +25,7 @@ from lib.FileIO import load_json_file, save_json_file, cfe
  
 
 LIVE_TEMPLATE = "templates/allsky.tv.live.html"
-LIVE_DIR = "/mnt/archive.allsky.tv/LIVE/"
-STATION_NAME_STARTS_WITH = "AMS"
+LIVE_DIR = "/mnt/archive.allsky.tv/LIVE/" 
 
 json_conf = load_json_file("../conf/as6.json")
 station_id = json_conf['site']['ams_id'] 
@@ -71,7 +70,7 @@ def update_live_html():
    """ 
 
 
-   #We remove "AMS" from the station for the keys in data_per_station
+   #We remove everything but digits from the station for the keys in data_per_station
    #so we can sort it properly(!)
    data_per_station = {}
 
@@ -99,7 +98,7 @@ def update_live_html():
             
             live_now +=  "<div style='text-align: left; width:100%; margin: 0;' class='top_tool_bar'><h4 class='mb-0'>Station #"+station+"  "+ stt +"</h4></div>"
             live_now +=  "<div class='report_t'><a href=" + STATION_RPT_VDIR + "index.html><img src=" + files[0].replace("/mnt/archive.allsky.tv", "") + "></a></div>"
-            data_per_station[station.replace('STATION_NAME_STARTS_WITH','')] = live_now 
+            data_per_station[int(''.join(filter(str.isdigit, 'station')))] = live_now 
             live_now = ''
 
 
