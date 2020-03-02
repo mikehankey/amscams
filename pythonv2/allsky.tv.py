@@ -105,7 +105,7 @@ def update_live_html():
    #for sd in status:
    # live_now += sd + " ******************************" + str(status[sd]) + "<BR>"
    live_now = ""
-   for sd in status:
+   for sd in sorted(status):
       if(sd in data_per_station):
          live_now += data_per_station[sd]
       else:
@@ -124,6 +124,8 @@ def update_live_html():
    fpo = open(LIVE_DIR + "index.html", "w")
    fpo.write(template)
    fpo.close()
+
+   print("DONE: " + LIVE_DIR + "index.html")
 
 def get_template(file):
    fp = open(file, "r")
