@@ -121,7 +121,7 @@ def update_live_html():
    # nO cACHE
    template = template.replace("{RAND}",str(random.randint(0, 99999999)))
 
-   fpo = open(live_file, "w")
+   fpo = open(LIVE_DIR + "index.html", "w")
    fpo.write(template)
    fpo.close()
    print(live_file)
