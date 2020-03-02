@@ -70,16 +70,10 @@ def update_live_html():
    """ 
 
 
-   for STA_TION in sorted(status):
-      station = status[STA_TION]
-      print("STATION ")
-      print(station)
-      for data in all_station_data[station]:
-         print('data')
-         print(data)
-   
-   sys.exit(0)
 
+   data_per_station = {}
+
+    
    for data in all_station_data:
       station = data['station']
       STATION_RPT_DIR =  "/mnt/archive.allsky.tv/" + station + "/REPORTS/" + year + "/" + mday + "/"
@@ -103,12 +97,20 @@ def update_live_html():
             
             live_now +=  "<div style='text-align: left; width:100%; margin: 0;' class='top_tool_bar'><h4 class='mb-0'>Station #"+station+"  "+ stt +"</h4></div>"
             live_now +=  "<div class='report_t'><a href=" + STATION_RPT_VDIR + "index.html><img src=" + files[0].replace("/mnt/archive.allsky.tv", "") + "></a></div>"
-
+            data_per_station{'st';station,'live':live_now}
+            live_now = ''
 
    live_file = LIVE_DIR + "index.html"
+
    #for sd in status:
    # live_now += sd + " ******************************" + str(status[sd]) + "<BR>"
- 
+   live_now = ""
+   for sd in status:
+      if(data_per_station):
+         all_for_cur_station = list(data_per_station.keys())[list(data_per_station.values()).index(sd)]
+         live_now += data_per_station['live']
+
+
    template = template.replace("{LIVE}", live_now+"</div>")
 
    # Cur Day
