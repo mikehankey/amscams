@@ -124,7 +124,6 @@ def update_live_html():
    fpo = open(LIVE_DIR + "index.html", "w")
    fpo.write(template)
    fpo.close()
-   print(live_file)
 
 def get_template(file):
    fp = open(file, "r")
