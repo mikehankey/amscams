@@ -21,20 +21,20 @@ import os
 import glob
 
 from lib.FileIO import load_json_file, save_json_file, cfe
+ 
 
+LIVE_TEMPLATE = "templates/allsky.tv.live.html"
+LIVE_DIR = "/mnt/archive.allsky.tv/LIVE/"
 
 json_conf = load_json_file("../conf/as6.json")
-station_id = json_conf['site']['ams_id']
-
+station_id = json_conf['site']['ams_id'] 
 
 def update_live_html():
    """ This function will only be runby a manager's node.
        The purpose is to update the HTML and json indexes for the live view
    """
 
-   LIVE_DIR = "/mnt/archive.allsky.tv/LIVE/"
-
-   template = get_template("templates/allsky.tv.live.html")
+   template = get_template(LIVE_TEMPLATE)
    now = datetime. now()
    mday = now.strftime("%m_%d")
    mon = now.strftime("%m")
@@ -91,6 +91,10 @@ def update_live_html():
    live_file = LIVE_DIR + "index.html"
    for sd in status:
       live_now += sd + " " + str(status[sd]) + "<BR>"
+
+
+   # Add Station ID to the template
+   template = template.replace("{STATION_ID}", live_now)
 
    template = template.replace("{LIVE}", live_now)
    fpo = open(live_file, "w")
