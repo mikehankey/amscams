@@ -102,7 +102,9 @@ def update_live_html():
 
    live_file = LIVE_DIR + "index.html"
 
-
+   print('***************************')
+   print(data_per_station)
+   sys.exit(0)
 
 
    #for sd in status:
