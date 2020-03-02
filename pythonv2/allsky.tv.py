@@ -83,6 +83,7 @@ def update_live_html():
          st = os.stat(files[0])
          size = st.st_size
          if size != 0:
+            live_now +=  "<h2>Station #"+station+"</h2>"
             live_now +=  "<div class='report_t'><a href=" + STATION_RPT_VDIR + "index.html><img src=" + files[0].replace("/mnt/archive.allsky.tv", "") + "></a></div>"
 
 
@@ -91,6 +92,9 @@ def update_live_html():
       live_now += sd + " " + str(status[sd]) + "<BR>"
  
    template = template.replace("{LIVE}", live_now+"</div>")
+
+   # Cur Day
+   template = template.replace("{DAY}",dom.replace('_','/')) 
 
    # nO cACHE
    template = template.replace("{RAND}",str(random.randint(0, 99999999)))
