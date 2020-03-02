@@ -1,0 +1,5 @@
+
+# ROOT CRONS MUST BE INSTALLED AS ROOT
+* * * * * cd /home/ams/amscams/pythonv2 ; ./vpn.py > /tmp/vpn.txt
+52 * * * * cd /home/ams/amscams/pythonv2 ; ./time.sh >> /tmp/time.txt
+

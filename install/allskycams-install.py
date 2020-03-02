@@ -9,8 +9,10 @@ import json
 import os
 import sys
 from pathlib import Path
-USER = "meteorcam"
-GROUP = "pi"
+USER = "ams"
+GROUP = "ams"
+#USER = "meteorcam"
+#GROUP = "pi"
 
 
 def save_json_file(json_file, json_data, compress=False):
@@ -49,8 +51,8 @@ def get_repos():
    os.system("cd /home/ams; git clone https://github.com/mikehankey/amscams.git")
 
 def config_apache():
-   #site_file = "/etc/apache2/sites-enabled/000-default.conf"
-   site_file = "/etc/apache2/default-server.conf"
+   site_file = "/etc/apache2/sites-enabled/000-default.conf"
+   #site_file = "/etc/apache2/default-server.conf"
    sites_enabled = """
 <Directory /var/www/html/pycgi>
 Options ExecCGI FollowSymLinks
@@ -66,23 +68,23 @@ AddHandler cgi-script .py
 
 
 """
-   #fp = open(site_file, "w")
-   #fp.write(sites_enabled)
-   #fp.close()
+   fp = open(site_file, "w")
+   fp.write(sites_enabled)
+   fp.close()
    # change run user
    env_text = ""
-   #fp = open("/etc/apache2/envvars")
-   #for line in fp:
-   #   env_text += line
-   #env_text = env_text.replace("www-data", "ams")
-   #fp.close()
+   fp = open("/etc/apache2/envvars")
+   for line in fp:
+      env_text += line
+   env_text = env_text.replace("www-data", "ams")
+   fp.close()
 
-   #fp = open("/etc/apache2/envvars", "w")
-   #fp.write(env_text)
-   #fp.close()
+   fp = open("/etc/apache2/envvars", "w")
+   fp.write(env_text)
+   fp.close()
 
-   #os.system("ln -s /etc/apache2/mods-available/cgi.load /etc/apache2/mods-enabled/cgi.load")
-   #os.system("rm /var/www/html/index.html")
+   os.system("ln -s /etc/apache2/mods-available/cgi.load /etc/apache2/mods-enabled/cgi.load")
+   os.system("rm /var/www/html/index.html")
 
    # make default index page
    index = "<a href=/pycgi/webUI.py>Login</a>"
@@ -91,6 +93,8 @@ AddHandler cgi-script .py
    fp.close()
 
    # link required files and directories
+   if cfe("/var/www/html/pycgi/", 1) == 0:
+      os.system("ln -s /home/ams/amscams/python/pycgi /var/www/html/pycgi")
    if cfe("/var/www/html/pycgi/webUI.py") == 0:
       os.system("ln -s /home/ams/amscams/pythonv2/webUI.py /var/www/html/pycgi")
    if cfe("/var/www/html/pycgi/dist/", 1) == 0:
@@ -242,7 +246,7 @@ def setup_as6_conf():
    json_conf['site']['operator_country'] = operator_country
    json_conf['site']['obs_name'] = obs_name
    json_conf['site']['device_lat'] = device_lat
-   json_conf['site']['device_lon'] = device_lon
+   json_conf['site']['device_lng'] = device_lon
    json_conf['site']['device_alt'] = device_alt
 
    cameras = {}
@@ -278,6 +282,7 @@ def setup_as6_conf():
 def setup_vpn():
    url = input("Enter URL")
    pass_file = url.replace(".ovpn", ".txt")
+   os.system("sudo apt-get install openvpn")
    os.system("wget " + url + " -O /etc/openvpn/as6vpn.ovpn")
    os.system("wget " + pass_file + " -O /etc/openvpn/as6vpn.txt")
    

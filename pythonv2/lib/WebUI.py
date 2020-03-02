@@ -674,6 +674,8 @@ def controller(json_conf):
    if cmd == 'add_stars_to_fit_pool':
       add_stars_to_fit_pool(json_conf,form)
 
+   if cmd == 'asconf':
+      asconf(json_conf, form)
  
    if cmd == 'mask_admin':
       mask_admin(json_conf, form)
@@ -747,6 +749,26 @@ def controller(json_conf):
      
    #cam_num = form.getvalue('cam_num')
    #day = form.getvalue('day')
+
+def asconf(json_conf, form):
+   act = form.getvalue("act")
+   fp = open("/home/ams/amscams/pythonv2/templates/asconf.html", "r")
+   form = ""
+   for line in fp:
+      form += line
+   form = form.replace("{AMS_ID}", json_conf['site']['ams_id'])
+   form = form.replace("{OBS_NAME}", json_conf['site']['obs_name'])
+   form = form.replace("{OPERATOR_NAME}", json_conf['site']['operator_name'])
+   form = form.replace("{OPERATOR_EMAIL}", json_conf['site']['operator_email'])
+   form = form.replace("{OPERATOR_CITY}", json_conf['site']['operator_city'])
+   form = form.replace("{OPERATOR_STATE}", json_conf['site']['operator_state'])
+   form = form.replace("{OPERATOR_COUNTRY}", json_conf['site']['operator_country'])
+   form = form.replace("{LAT}", json_conf['site']['device_lat'])
+   form = form.replace("{LON}", json_conf['site']['device_lng'])
+   form = form.replace("{ALT}", json_conf['site']['device_alt'])
+   form = form.replace("{PASSWD}", json_conf['site']['pwd'])
+   print(form)
+      
 
 def wasabi_cp(form):
    file = form.getvalue("file")
@@ -1461,7 +1483,12 @@ def calibration(json_conf,form):
    cam_id_filter = form.getvalue("cam_id")
 
    print("<h1>Past Calibrations</h1>")
-   ci = load_json_file("/mnt/ams2/cal/freecal_index.json")
+   freecal_index = "/mnt/ams2/cal/freecal_index.json"
+   if cfe(freecal_index) == 1:
+      ci = load_json_file("/mnt/ams2/cal/freecal_index.json")   
+   else:
+      print("No calibrations have been completed yet.")
+      exit()
    
 
    print("<table class='table table-dark table-striped table-hover td-al-m m-auto table-fit'>")
@@ -1593,6 +1620,10 @@ def meteors_new(json_conf,form):
    norm_cnt = 0
    reduced_cnt = 0
    has_limit_day = 0
+
+   if len(meteor_dirs) == 0:
+      print("No meteors saved yet.")
+      exit()
  
    for meteor_dir in meteor_dirs:
       el = meteor_dir.split("/")
@@ -1888,6 +1919,10 @@ def get_mask_img(cams_id, json_conf):
 
    # first look for img, if made less than 24 hours ago use it, else make new one
    img_files = glob.glob(img_dir + cams_id + "-mask.jpg")
+   if len(img_files) == 0:
+      print("no mask images exist. Is this a new install? Are cams attached?")
+      exit()
+
    if len(img_files) == 1:
       img = cv2.imread(img_files[0])
    else:
@@ -2788,7 +2823,9 @@ def main_page(json_conf,form):
       end_day_date = datetime.strptime(end_day,"%Y_%m_%d")
    
    days = sorted(get_proc_days(json_conf),reverse=True)
-  
+   if len(days) <= 2:
+      print("No data has been collected yet. ")
+      exit() 
    # We remove the days we don't care about to speed up the page
    if(end_day is not None):
          for idx, d in enumerate(days):
@@ -2870,7 +2907,7 @@ def main_page(json_conf,form):
  
    pagination =  get_pagination(cur_page,len(all_real_detections),"/pycgi/webUI.py?cmd=home",NUMBER_OF_DAYS_PER_PAGE)
 
-   header_out = "<div class='h1_holder d-flex justify-content-between'><h1>Daily Dectections until " 
+   header_out = "<div class='h1_holder d-flex justify-content-between'><h1>Review Stacks by Day" 
  
    if end_day is None:
       end_day = ""
