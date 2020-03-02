@@ -69,6 +69,15 @@ def update_live_html():
          <div class='d-flex align-content-start flex-wrap'>
    """ 
 
+
+   for STA_TION in status:
+      station = status[STA_TION]
+      for data in all_station_data[station]:
+         print('data')
+         print(data)
+   
+   sys.exit(0)
+
    for data in all_station_data:
       station = data['station']
       STATION_RPT_DIR =  "/mnt/archive.allsky.tv/" + station + "/REPORTS/" + year + "/" + mday + "/"
