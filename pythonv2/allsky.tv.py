@@ -94,14 +94,14 @@ def update_live_html():
             # Status
             stt = ""
             if(station in status):
-               if(status[station]==1):
+               if(status[int(''.join(filter(str.isdigit, station)))]==1):
                   stt = 'ok';
                else:
                   stt = 'not_ok'
             
             live_now +=  "<div style='text-align: left; width:100%; margin: 0;' class='top_tool_bar'><h4 class='mb-0'>Station #"+station+"  "+ stt +"</h4></div>"
             live_now +=  "<div class='report_t'><a href=" + STATION_RPT_VDIR + "index.html><img src=" + files[0].replace("/mnt/archive.allsky.tv", "") + "></a></div>"
-            data_per_station[station] = live_now 
+            data_per_station[int(''.join(filter(str.isdigit, station)))] = live_now 
             live_now = ''
 
 
