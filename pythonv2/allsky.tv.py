@@ -50,7 +50,9 @@ def update_live_html():
    all_station_data = []
    for sd in all_stations:
       station = sd['station']
-      status[station] = 0
+      # Here the key is only the digits of the station name
+      # (so we can sort it easily later)
+      status[int(''.join(filter(str.isdigit, station)))] = 0
       data = {}
       data['station'] = station
       data['files'] = []
