@@ -41,6 +41,7 @@ REGEX_GROUP_REPORT = ["name","year","month","day","hour","min","sec","ms","cam_i
  
 # ARCHIVE PATH
 ARCHIVE_PATH = "http://archive.allsky.tv" 
+ 
 
 json_conf = load_json_file("../conf/as6.json")
 
@@ -350,8 +351,10 @@ def html_get_detects(day,tsid,event_files, events):
             # Video PATH (HD)
             if(arc == 1):
                video_path = ARCHIVE_PATH + os.sep + tsid + os.sep + 'METEOR' + os.sep + year + os.sep + month + os.sep + d_day + os.sep + image_file.replace('-prev-crop.jpg','-HD.mp4')
+               json_path = ARCHIVE_PATH + os.sep + tsid + os.sep + 'METEOR' + os.sep + year + os.sep + month + os.sep + d_day +  os.sep + year + '_' + month + '_' + d_day + os.sep + image_file.replace('-prev-crop.jpg','.html')
             else:
-               video_path = ''    
+               video_path = ''
+               json_path =     
 
             # We get more info
             #print("(BEFORE AN) EVENT ID IS:", event_id) 
@@ -367,6 +370,9 @@ def html_get_detects(day,tsid,event_files, events):
                   request = requests.get(full_path)
                   if request.status_code == 200:
                      video_path = "<a href='"+full_path+"' class='img-link btn btn-secondary btn-sm'><span class='icon-eye'></span></a>"
+
+               if(json_path!=''):
+                  elink = "<a href=" + json_path + " class='T'>"
    
                single_html += "<div class='"+css_class+"'>" + elink +  "<img src='"+was_vh_dir + image_file+"' class='img-fluid'></a>"
                single_html += "<div class='d-flex mb-2'><div class='mr-auto'><span>"+'<b>Cam#' + analysed_name['cam_id'] + '</b> '+ analysed_name['hour']+':'+analysed_name['min']+':'+analysed_name['sec']+'.'+analysed_name['ms'] + "</div>"
@@ -376,6 +382,9 @@ def html_get_detects(day,tsid,event_files, events):
 
                if(event_id !=''):
                   event_id = "</span><span><b>Event</b> #" + str(event_id)  
+
+               if(json_path!=''):
+                  elink = "<a href=" + json_path + " class='T'>"
 
                multi_html += "<div class='"+css_class+"'>" + elink +  "<img src='"+was_vh_dir + image_file+"' class='img-fluid'></a>"
                multi_html += "<div class='d-flex mb-1'><div class='mr-auto'><span>"+'<b>Cam#' + analysed_name['cam_id'] + '</b> '+ analysed_name['hour']+':'+analysed_name['min']+':'+analysed_name['sec']+'.'+analysed_name['ms'] + event_id+"</div>"
