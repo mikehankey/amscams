@@ -13,8 +13,7 @@ import glob
 import sys
 import json
 
-from lib.FileIO import *
-from lib.CGI_Tools import *
+from lib.FileIO import * 
 
 from doDay import analyse_report_file
 
@@ -51,7 +50,7 @@ def make_event_station_report(json_file):
    # We load (and test) the json
    json_data = load_json_file(PATH_TO_CLOUD+json_file)
    if(json_data is False): 
-      print_error(json_file + " not found")
+      print(PATH_TO_CLOUD+json_file + " not found")
 
    # Build the page based on template  
    with open(OBSERVER_REPORT, 'r') as file:
