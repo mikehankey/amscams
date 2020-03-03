@@ -43,14 +43,14 @@
 
    &.multi {
       a.T {
-         border-color: #cc0000;
+         border-color: #4491e3;
          overflow: hidden;
 
 
          &:before {
             content: 'MULTI';
-            color: #cc0000;
-            background:#f3a5a5;
+            color: #ffffff;
+            background: #4491e3;
              
          }
       }
@@ -198,7 +198,7 @@
 
 .multi-b {
    font-size: .8rem;
-   color: #061329;
+   color: #fff;
    background-color: #4491e3;
    text-align: center;
    border-radius: 10%;
