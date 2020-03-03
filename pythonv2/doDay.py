@@ -223,10 +223,7 @@ def make_station_report(day, proc_info = ""):
    # WEATHER SNAP SHOTS 
    we_html = ""
    if len(data['files']) > 0:
-      
-      print("HOW MANY WEATHER FILES ")
-      print(len(data['files']))
-      
+       
       for file in sorted(data['files'],reverse=True):
          fn = file.replace("/mnt/archive.allsky.tv", "")
          we_html += "<img src='" + fn + "' class='img-fluid weath'>"
@@ -237,7 +234,6 @@ def make_station_report(day, proc_info = ""):
       we_html = '<div class="top_tool_bar"><a href="#" id="play_anim_thumb" class="btn btn-success"><span class="icon-youtube"></span> All Day Animation</a></div>' + we_html
       TAB, TAB_CONTENT = add_section('weather','Weather',we_html, TAB, TAB_CONTENT)
     
-
  
    # Add specific tool bar for meteors
    # (delete all/confirm all)
