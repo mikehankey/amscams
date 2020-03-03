@@ -354,7 +354,7 @@ def html_get_detects(day,tsid,event_files, events):
                json_path = ARCHIVE_PATH + os.sep + tsid + os.sep + 'METEOR' + os.sep + year + os.sep + month + os.sep + d_day +  os.sep + year + '_' + month + '_' + d_day + os.sep + image_file.replace('-prev-crop.jpg','.html')
             else:
                video_path = ''
-               json_path =     
+               json_path = ''    
 
             # We get more info
             #print("(BEFORE AN) EVENT ID IS:", event_id) 
