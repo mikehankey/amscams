@@ -113,7 +113,7 @@ def update_live_html():
       if(sd in data_per_station):
          live_now += data_per_station[sd]
       else:
-         station_with_issues +=  "<li>Station #"+str(sd)+"</li>"
+         station_with_issues +=  "<li>Station <b>#AMS"+str(sd)+"</b></li>"
          down+=1
 
 
