@@ -120,7 +120,7 @@ def update_live_html():
    if(station_with_issues != ''):
       station_with_issues = "<div class='_h4_hold'><h4 class='mb-0'>"+str(down)+" Stations DOWN</h4></div><ul>" +  station_with_issues + "</ul>"
 
-   template = template.replace("{LIVE}", live_now+ station_with_issues"</div>")
+   template = template.replace("{LIVE}", live_now+ station_with_issues+"</div>")
 
    # Cur Day
    template = template.replace("{DAY}",dom.replace('_','/')) 
