@@ -478,13 +478,13 @@ def do_all(day):
 
  
    # make the meteor detection index for today
-   #os.system("./autoCal.py meteor_index " + day)
+   os.system("./autoCal.py meteor_index " + day)
 
    # make the detection preview images for the day
-   #os.system("./flex-detect.py bmpi " + day)
+   os.system("./flex-detect.py bmpi " + day)
 
    # make the detection preview images for the day
-   #os.system("./wasabi.py sa " + day)
+   os.system("./wasabi.py sa " + day)
 
    make_station_report(day, rpt)
 
