@@ -447,11 +447,17 @@ def get_meteor_status(day):
    
 
 def do_all(day):
+
+   print("DO ALL ")
+   print(day)
+
    #os.system("git pull")
    proc_vids, proc_tn_imgs, day_vids,cams_queue,in_queue = get_processing_status(day)
    detect_files, arc_files = get_meteor_status(day)
 
    time_check = check_time(day)
+
+   print("BEFORE RPT")
 
    # figure out how much of the day has completed processing
    rpt = """ 
