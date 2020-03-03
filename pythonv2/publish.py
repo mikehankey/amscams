@@ -51,16 +51,20 @@ def make_event_station_report(json_file):
    json_data = load_json_file(PATH_TO_CLOUD+json_file)
    if(json_data is False): 
       print(PATH_TO_CLOUD+json_file + " not found")
+      sys.exit(0)
 
    # Build the page based on template  
    with open(OBSERVER_REPORT_TEMPLATE, 'r') as file:
       template = file.read()
    
-   # Display Template
-   print(template)
+   # Create Template
+   f = open(json_file.replace('.json','.html'), "w+")
+   f.write(template)
+   f.close()
 
+   print(json_file.replace('.json','.html') +  " created.")
 
-
+ 
 
 
 
