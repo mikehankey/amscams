@@ -36,7 +36,7 @@ from lib.FileIO import load_json_file, save_json_file, cfe
 from lib.UtilLib import check_running
 
 # REGEXP Used to get info from the paths
-REGEX_REPORT = r"(\d{4})_(\d{2})_(\d{2})_(\d{2})_(\d{2})_(\d{2})_(\d{3})_(\w{6})-trim(\d{4}|\d{3})-prev-crop.jpg"
+REGEX_REPORT = r"(\d{4})_(\d{2})_(\d{2})_(\d{2})_(\d{2})_(\d{2})_(\d{3})_(\w{6})-trim(\d{4}|\d{3}|\d{2}|\d{1})-prev-crop.jpg"
 REGEX_GROUP_REPORT = ["name","year","month","day","hour","min","sec","ms","cam_id","trim"]
  
 # ARCHIVE PATH
@@ -379,7 +379,7 @@ def html_get_detects(day,tsid,event_files, events):
 
                multi_html += "<div class='"+css_class+"'>" + elink +  "<img src='"+was_vh_dir + image_file+"' class='img-fluid'></a>"
                multi_html += "<div class='d-flex mb-1'><div class='mr-auto'><span>"+'<b>Cam#' + analysed_name['cam_id'] + '</b> '+ analysed_name['hour']+':'+analysed_name['min']+':'+analysed_name['sec']+'.'+analysed_name['ms'] + event_id+"</div>"
-               multi_html += "<div><span class='multi-b'>Multi</span><a href='"+video_path+"' class='vid-link btn btn-secondary btn-sm'><span class='icon-youtube'></span></a></div></div></div>"
+               multi_html += "<div><a href='"+video_path+"' class='vid-link btn btn-secondary btn-sm'><span class='icon-youtube'></span></a><span class='multi-b'>Multi</span></div></div></div>"
                ms_count += 1
 
             video_path = ''
