@@ -382,7 +382,7 @@ def html_get_detects(day,tsid,event_files, events):
                multi_html += "<div class='position-relative'><a href='"+video_path+"' class='vid-link btn btn-secondary btn-sm'><span class='icon-youtube'></span></a><span class='multi-b'>Multi</span></div></div></div>"
                ms_count += 1
 
-            video_path = ''
+            video_path = '' 
             mc += 1
          else:
             html += "No meteors detected."            
