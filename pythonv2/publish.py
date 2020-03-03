@@ -22,7 +22,7 @@ REGEX_JSON_FROM_CLOUD = r"\/(\w*)\/METEOR\/(\d{4})\/(\d{2})\/(\d{2})\/(\d{4})_(\
 REGEX_GROUP_JSON_FROM_CLOUD = ["all_path","station","year","month","day","","","","","","hour","min","sec","ms","cam_id","trim"]
 
 # TEMPLATES
-OBSERVER_REPORT_TEMPLATE = "/home/ams/amscams/pythonv2/templates/observer_report.html"
+OBSERVER_REPORT_TEMPLATE = "/home/ams/amscams/pythonv2/templates/allsky.tv.obs_report.html"
  
 
 # Analyse the json file names
@@ -53,6 +53,13 @@ def make_event_station_report(json_file):
    # Build the page based on template  
    with open(OBSERVER_REPORT, 'r') as file:
       template = file.read()
+   
+   # Display Template
+   print(template)
+
+
+
+
 
 
 ### COMMAND
