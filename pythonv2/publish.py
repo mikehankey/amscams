@@ -53,7 +53,7 @@ def make_event_station_report(json_file):
       print(PATH_TO_CLOUD+json_file + " not found")
 
    # Build the page based on template  
-   with open(OBSERVER_REPORT, 'r') as file:
+   with open(OBSERVER_REPORT_TEMPLATE, 'r') as file:
       template = file.read()
    
    # Display Template
