@@ -4,7 +4,7 @@ function setup_confirm_buttons() {
       var $t = $(this); 
       $t.unbind('click').click(function() {   
          var $prevproc = $t.closest('.prevproc');
-
+         
          if(!$prevproc.hasClass('done')) {
             $prevproc.removeClass('toDel');
             if($prevproc.hasClass('toConf')) {
@@ -14,9 +14,7 @@ function setup_confirm_buttons() {
                $t.removeClass('on');
                $prevproc.addClass('toConf');
             }
-         }
-
-         
+         } 
          check_bottom_action();
 
 
@@ -26,7 +24,7 @@ function setup_confirm_buttons() {
    // Conf ALL
    $('#conf_all').unbind('click').click(function() {
       $('.prevproc').each(function() {
-         if(!$(this).hasClass('arc') && !$(this).hasClass('done')) {
+         if(!$(this).hasClass('done') && $(this).is(':visible')) {
             $(this).removeClass('toDel').addClass('toConf');
          }
       });
@@ -36,7 +34,7 @@ function setup_confirm_buttons() {
    // Cancel All
    $('#cancel_all').unbind('click').click(function() {
       $('.prevproc').each(function(i,v){
-         if(!$(v).hasClass('done')) {
+         if(!$(v).hasClass('done') && $(this).is(':visible')) {
             $(v).removeClass('toDel').removeClass('toConf');
          }
       });
