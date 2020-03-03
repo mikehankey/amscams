@@ -21,7 +21,7 @@ REGEX_JSON_FROM_CLOUD = r"\/(\w*)\/METEOR\/(\d{4})\/(\d{2})\/(\d{2})\/(\d{4})_(\
 REGEX_GROUP_JSON_FROM_CLOUD = ["all_path","station","year","month","day","","","","","","hour","min","sec","ms","cam_id","trim"]
 
 #PATH TO CLOUD ARCHIVES
-PATH_TO_CLOUD = "/mnt/archive.allsky.tv/"
+PATH_TO_CLOUD = "/mnt/archive.allsky.tv"
 
 # TEMPLATES
 OBSERVER_REPORT_TEMPLATE = "/home/ams/amscams/pythonv2/templates/allsky.tv.obs_report.html"
