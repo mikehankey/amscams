@@ -187,10 +187,11 @@
 
 
 .down { 
-      background-color:transparent;
-      width:20px;
-      height:20px;
-      border-radius:50%;
-      box-shadow: 0 0 8px #cc0000, inset 0 0 8px red;
-      display: inline-block
+   background-color: rgba(255, 0, 0, .2);
+   width: .8rem;
+   height: .8rem;
+   border-radius: 50%;
+   box-shadow: 0 0 2px #c00, inset 0 0 8px red;
+   display: inline-block;
+   margin: 0 1rem 0 0;
 }

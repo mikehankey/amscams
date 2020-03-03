@@ -118,7 +118,11 @@ def update_live_html():
 
 
    if(station_with_issues != ''):
-      station_with_issues = "<div class='_h4_hold'><h4 class='mb-0'><span class='down'></span>+"+str(down)+" Station(s) DOWN</h4></div><ul>" +  station_with_issues + "</ul>"
+      if(down>1):
+         sts = "Stations"
+      else:
+         sts = "Station"
+      station_with_issues = "<div class='_h4_hold'><h4 class='mb-0'><span class='down'></span>+"+str(down)+" " + sts + " DOWN</h4></div><ul>" +  station_with_issues + "</ul>"
 
    template = template.replace("{LIVE}", live_now+ station_with_issues+"</div>")
 
