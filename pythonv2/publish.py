@@ -1,0 +1,62 @@
+#!/usr/bin/python3
+
+"""
+This script creates all the html pages related to a fireball event. 
+  * Run this script through the day to keep data up to date and in sync.
+  * Run this script after a day has finished to close out all work relating to that day. 
+  * Script will perform the following functions.
+     - Create an html page "report" for a given camera of a station
+"""
+
+import os
+import glob
+import sys
+import json
+
+from lib.FileIO import *
+from lib.CGI_Tools import *
+
+from doDay import analyse_report_file
+
+REGEX_JSON_FROM_CLOUD = r"\/(\w*)\/METEOR\/(\d{4})\/(\d{2})\/(\d{2})\/(\d{4})_(\d{2})_(\d{2})\/(\d{4})_(\d{2})_(\d{2})_(\d{2})_(\d{2})_(\d{2})_(\d{3})_(\w{6})-trim(\d{4}|\d{3}|\d{2}|\d{1}).json"
+REGEX_GROUP_JSON_FROM_CLOUD = ["all_path","station","year","month","day","","","","","","hour","min","sec","ms","cam_id","trim"]
+
+# TEMPLATES
+OBSERVER_REPORT_TEMPLATE = "/home/ams/amscams/pythonv2/templates/observer_report.html"
+ 
+
+# Analyse the json file names
+def analyse_event_json_file(file_name):
+   matches = re.finditer(REGEX_JSON_FROM_CLOUD, file_name, re.MULTILINE)
+   res = {}
+  
+   for matchNum, match in enumerate(matches, start=1):
+      for groupNum in range(0, len(match.groups())): 
+         if(match.group(groupNum) is not None):
+            res[REGEX_GROUP_JSON_FROM_CLOUD[groupNum]] = match.group(groupNum)
+         groupNum = groupNum + 1
+
+   return res
+
+
+
+def make_event_station_report(json_file):
+
+   # Format of the JSON file:
+   # /AMS7/METEOR/2019/12/24/2019_12_24/2019_12_24_08_17_10_000_010041-trim1298.json
+   
+   # We load (and test) the json
+   json_data = load_json_file(json_file)
+   if(json_data is False): 
+      print_error(json_file + " not found")
+
+   # Build the page based on template  
+   with open(OBSERVER_REPORT, 'r') as file:
+      template = file.read()
+
+
+### COMMAND
+cmd = sys.argv[1]
+
+if cmd == "event_station_report":
+   make_event_station_report(sys.argv[2])
