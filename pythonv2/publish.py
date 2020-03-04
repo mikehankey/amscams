@@ -72,9 +72,11 @@ def make_event_station_report(json_file):
    # Create link to daily report
    link_to_daily_report = "/"+analysed_name['station_id']+"/REPORTS/"+analysed_name['year']+"/"+analysed_name['month']+"_"+analysed_name['day']+"/index.html"
 
+   full_date = analysed_name['year']+'/'+analysed_name['month']+'/'+analysed_name['day']+' '+analysed_name['hour']+":"+analysed_name['min']+":"+analysed_name['sec']+"."+analysed_name['ms']
+
    template = template.replace('{STATION_ID}',analysed_name['station_id'])
    template = template.replace('{CAM_ID}',analysed_name['cam_id'])
-   template = template.replace('{DATE}',analysed_name['year']+'/'+analysed_name['month']+'/'+analysed_name['day']+' '+analysed_name['hour']+":"+analysed_name['min']+":"+analysed_name['sec']+"."+analysed_name['ms'])
+   template = template.replace('{DATE}',full_date)
    template = template.replace('{DAY}',analysed_name['year']+'/'+analysed_name['month']+'/'+analysed_name['day'])
    template = template.replace('{TIME}',analysed_name['hour']+':'+analysed_name['min']+':'+analysed_name['sec']+'.'+analysed_name['ms'])
 
@@ -99,7 +101,39 @@ def make_event_station_report(json_file):
 
    # NO-Cache
    template = template.replace("{JSON_FILE}",ARCHIVE_URL+json_file)
+
+
+   # DETECTION DETAILS
+   report_details = ''
+
+   if('report' in json_data):
+      report_details += '<dt class="col-4">Date &amp; Time</dt><dd class="col-8">'+full_date+'s</dd>'
+      if('dur' in json_data['report']):
+         report_details += '<dt class="col-4">Duration</dt><dd class="col-8"><span id="dur">'+str(json_data['report']['dur'])+'</span>s</dd>'
+      if('max_peak' in json_data['report']):
+         report_details += '<dt class="col-4">Max Intensity</dt><dd class="col-8">'+str(json_data['report']['max_peak'])+'</dd>'
+      if('angular_vel' in json_data['report']):
+         report_details += '<dt class="col-4">Ang. Velocity</dt><dd class="col-8">'+str(json_data['report']['angular_vel'])+'&deg;/sec</dd>'
+      if('point_score' in json_data['report']):
+            pts = str(json_data['report']['point_score'])
+            if(json_data['report']['point_score']>3):
+               pts = "<b style='color:#f00'>"+ pts +  "</b>"
+            report_details += '<br/><dt class="col-4">Point Score</dt><dd class="col-8" id="point_score_val">'+pts+'</dd>'
+
+   if('calib' in json_data):
+      if('device' in json_data['calib']):
+         if('total_res_px' in json_data['calib']['device']):
+            pts = str(json_data['calib']['device']['total_res_px'])
+            if(json_data['calib']['device']['total_res_px']>3):
+               pts = "<b style='color:#f00'>"+ pts +  "</b>"
+            report_details += '<dt class="col-4">Res. Error</dt><dd class="col-8">'+pts+'</dd>'
  
+   report_details += '<dt class="col-4">Med. dist</dt><dd class="col-8">'+str("{0:.4f}".format(float(med_dist)))+'</dd>'
+   
+   # Report Details
+   template = template.replace("{REPORT_DETAILS}",report_details)
+
+     
    # Create Template
    f = open(PATH_TO_CLOUD+json_file.replace('.json','.html'), "w+")
    f.write(template)
