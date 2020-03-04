@@ -68,6 +68,12 @@ def make_event_station_report(json_file):
 
    # Add station id & other static info on the title
    analysed_name = analyse_event_json_file(json_file)
+   print("INPUT")
+   print(json_file)
+   print('analysed_name')
+   print(analysed_name)
+   sys.exit(0)
+
    template = template.replace('{STATION_ID}',analysed_name['station_id'])
    template = template.replace('{CAM_ID}',analysed_name['cam_id'])
    template = template.replace('{DATE}',analysed_name['year']+'/'+analysed_name['month']+'/'+analysed_name['year']+' '+analysed_name['hour'])+":"+analysed_name['min']+":"+analysed_name['sec']+":"+analysed_name['ms']
