@@ -12,6 +12,7 @@ import os
 import glob
 import sys
 import json
+import re
 
 from lib.FileIO import * 
 
