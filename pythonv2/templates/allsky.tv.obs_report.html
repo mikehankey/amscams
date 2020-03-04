@@ -25,7 +25,7 @@
                <div style="display: none" class="embed-responsive embed-responsive-16by9">
                   {VIDEO}
                </div>
-               <canvas id="canvas"></canvas>
+               <canvas id="canvas" style="width:960px;height:540px"></canvas>
             </div>
          </div>
       
@@ -55,7 +55,7 @@
             var $this = this; //cache
             (function loop() {
                if (!$this.paused && !$this.ended) {
-               ctx.drawImage($this, 0, 0,1370,770);
+               ctx.drawImage($this, 0, 0,960,540);
                setTimeout(loop, 1000 / 30); // drawing at 30fps
                }
             })();
