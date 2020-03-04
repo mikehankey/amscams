@@ -98,14 +98,14 @@ def make_event_station_report(json_file):
    if(HD_vid== true ): 
       video_btn += '<a class="col btn btn-secondary mt-0 mb-0 ml-1 vid-link" href="'+hd_video_full_path+'"><i class="icon-file-text"></i> HD Video</a>'
    
-   if(cfe(sd_video_full_path)!=0) {
+   if(cfe(sd_video_full_path)!=0):
       video_btn += '<a class="col btn btn-secondary mt-0 mb-0 ml-1 vid-link" href="'+sd_video_full_path+'"><i class="icon-file-text"></i> SD Video</a>'
-   }
+ 
    
    # Add the video buttons
-   if(video_btn!='') {
+   if(video_btn!=''):
       template = teplate.replace('{VIDEO_BTNS}',video_btn)
-   }
+ 
  
 
    template = template.replace('{VIDEO}',video)
