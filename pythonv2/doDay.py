@@ -351,7 +351,7 @@ def html_get_detects(day,tsid,event_files, events):
             # Video PATH (HD)
             if(arc == 1):
                video_path = ARCHIVE_PATH + os.sep + tsid + os.sep + 'METEOR' + os.sep + year + os.sep + month + os.sep + d_day + os.sep + image_file.replace('-prev-crop.jpg','-HD.mp4')
-               json_path = ARCHIVE_PATH + os.sep + tsid + os.sep + 'METEOR' + os.sep + year + os.sep + month + os.sep + d_day +  os.sep + year + '_' + month + '_' + d_day + os.sep + image_file.replace('-prev-crop.jpg','.html')
+               json_path = ARCHIVE_PATH + os.sep + tsid + os.sep + 'METEOR' + os.sep + year + os.sep + month + os.sep + d_day + os.sep + image_file.replace('-prev-crop.jpg','.html')
             else:
                video_path = ''
                json_path = ''    

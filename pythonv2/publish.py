@@ -63,10 +63,7 @@ def make_event_station_report(json_file):
    f.close()
 
    print(json_file.replace('.json','.html') +  " created.")
-
  
-
-
 
 ### COMMAND
 cmd = sys.argv[1]
