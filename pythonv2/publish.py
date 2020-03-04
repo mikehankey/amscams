@@ -20,13 +20,14 @@ from doDay import analyse_report_file
 
 REGEX_JSON_FROM_CLOUD = r"\/(\w*)\/METEOR\/(\d{4})\/(\d{2})\/(\d{2})\/(\d{4})_(\d{2})_(\d{2})_(\d{2})_(\d{2})_(\d{2})_(\d{3})_(\w{6})-trim(\d{4}|\d{3}|\d{2}|\d{1}).json"
 REGEX_GROUP_JSON_FROM_CLOUD = ["all_path","station_id","year","month","day","","","","","","hour","min","sec","ms","cam_id","trim"]
-
+ 
 #PATH TO CLOUD ARCHIVES
 PATH_TO_CLOUD = "/mnt/archive.allsky.tv"
 
 # TEMPLATES
 OBSERVER_REPORT_TEMPLATE = "/home/ams/amscams/pythonv2/templates/allsky.tv.obs_report.html"
  
+
 
 # Analyse the json file names
 def analyse_event_json_file(file_name):
