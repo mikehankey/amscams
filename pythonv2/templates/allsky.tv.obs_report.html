@@ -79,6 +79,7 @@
          var canvas = document.getElementById('canvas');
          var ctx = canvas.getContext('2d');
          var video = document.getElementById('main_video_player');
+         var videoAsBg;
 
          video.addEventListener('play', function() {
             var $this = this; //cache
@@ -88,7 +89,7 @@
                if (!$this.paused && !$this.ended) { 
                   canvas.width=960;
                   canvas.height=540;
-                  ctx.drawImage($this,0,0,959,539); //,canvas.width,canvas.height,0,0,canvas.width,canvas.height);
+                  videoAsBg = ctx.drawImage($this,0,0,959,539); 
                   setTimeout(loop, 1000 / 25); // drawing at 25fps
                }
             })();
@@ -103,6 +104,8 @@
             width: 960,
             height:540
          }); 
+
+         canvas.moveTo(videoAsBg,1);
 
          // Update the stars on canvas
          update_stars_on_canvas_and_table(json_data,canvasFabric);
