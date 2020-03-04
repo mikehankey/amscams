@@ -111,10 +111,10 @@ def make_event_station_report(json_file):
 
    template = template.replace('{VIDEO}',hd_video_full_path)
 
-   # JSON File
+   # NO-Cache
    template = template.replace("{RAND}",str(random.randint(0, 99999999)))
 
-   # NO-Cache
+   # JSON File
    template = template.replace("{JSON_FILE}",ARCHIVE_URL+json_file)
 
 
