@@ -17,8 +17,8 @@ from lib.FileIO import *
 
 from doDay import analyse_report_file
 
-REGEX_JSON_FROM_CLOUD = r"\/(\w*)\/METEOR\/(\d{4})\/(\d{2})\/(\d{2})\/(\d{4})_(\d{2})_(\d{2})\/(\d{4})_(\d{2})_(\d{2})_(\d{2})_(\d{2})_(\d{2})_(\d{3})_(\w{6})-trim(\d{4}|\d{3}|\d{2}|\d{1}).json"
-REGEX_GROUP_JSON_FROM_CLOUD = ["all_path","station","year","month","day","","","","","","hour","min","sec","ms","cam_id","trim"]
+REGEX_JSON_FROM_CLOUD = r"\/(\w*)\/METEOR\/(\d{4})\/(\d{2})\/(\d{2})\/(\d{4})_(\d{2})_(\d{2})_(\d{2})_(\d{2})_(\d{2})_(\d{3})_(\w{6})-trim(\d{4}|\d{3}|\d{2}|\d{1}).json"
+REGEX_GROUP_JSON_FROM_CLOUD = ["all_path","station_id","year","month","day","","","","","","hour","min","sec","ms","cam_id","trim"]
 
 #PATH TO CLOUD ARCHIVES
 PATH_TO_CLOUD = "/mnt/archive.allsky.tv"
@@ -48,9 +48,7 @@ def make_event_station_report(json_file):
    # /AMS7/METEOR/2019/12/24/2019_12_24_08_17_10_000_010041-trim1298.json
    # Format of the OUTPUT HTML file
    # /AMS7/METEOR/2019/12/24/2019_12_24_08_17_10_000_010041-trim1298.html
-
  
-
 
    # We load (and test) the json
    json_data = load_json_file(PATH_TO_CLOUD+json_file)
@@ -66,6 +64,12 @@ def make_event_station_report(json_file):
    f = open(PATH_TO_CLOUD+json_file.replace('.json','.html'), "w+")
    f.write(template)
    f.close()
+
+   # Add station id & other static info on the title
+   analysed_name = analyse_event_json_file(json_file)
+   template = template.replace('{STATION_ID}',analysed_name['station_id'])
+   template = template.replace('{CAM_ID}',analysed_name['cam_id'])
+   template = template.replace('{DATE}',analysed_name['year']+'/'+analysed_name['month']+'/'+analysed_name['year']+' '+analysed_name['hour'])+":"+analysed_name['min']+":"+analysed_name['sec']+":"+analysed_name['ms']
 
    print(json_file.replace('.json','.html') +  " created.")
  
