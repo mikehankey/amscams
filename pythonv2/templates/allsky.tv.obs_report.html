@@ -76,7 +76,7 @@
          video.addEventListener('play', function() {
             var $this = this; //cache
             $('#canvas').css('display','block');
-            $('#main_video_player').css('display','none');
+            $('#main_video_player').closest('.embed-responsive').css('display','none');
             (function loop() {
                if (!$this.paused && !$this.ended) { 
                   canvas.width=960;
