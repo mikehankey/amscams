@@ -85,6 +85,7 @@ def make_event_station_report(json_file):
    # Get (H) Video Path
    HD_vid = True
    video_btn = ""
+   sd_video_full_path = ""
    hd_video_full_path =  PATH_TO_CLOUD + json_file.replace('.json','-HD.mp4')
    if(cfe(hd_video_full_path)==0):
       sd_video_full_path = json_file.hd_video_full_path('-HD','-SD')
