@@ -104,12 +104,10 @@ def make_event_station_report(json_file):
    
    # Add the video buttons
    if(video_btn!=''):
-      template = teplate.replace('{VIDEO_BTNS}',video_btn)
+      template = template.replace('{VIDEO_BTNS}',video_btn)
    else:
-      template = teplate.replace('{VIDEO_BTNS}','')
- 
- 
-
+      template = template.replace('{VIDEO_BTNS}','')
+  
    template = template.replace('{VIDEO}',hd_video_full_path)
 
    # NO-Cache
