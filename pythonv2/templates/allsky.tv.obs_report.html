@@ -81,30 +81,15 @@
          var video = document.getElementById('main_video_player');
          var videoAsBg;
 
-
-         var canvasFabric = new fabric.Canvas('canvas', {
-            hoverCursor: 'default',
-            selection: true,
-            width: 960,
-            height:540
-         }); 
-         
-         
          video.addEventListener('play', function() {
             var $this = this; //cache
             $('#canvas').css('display','block');
             $('#main_video_player').closest('.embed-responsive').css('display','none');
             (function loop() {
                if (!$this.paused && !$this.ended) { 
-                  canvas.setBackgroundImage($this, canvasFabric.renderAll.bind(canvasFabric), {
-                     scaleX: canvas.width / 940,
-                     scaleY: canvas.height / 530
-                  });
-                  /*
                   canvas.width=960;
                   canvas.height=540;
                   videoAsBg = ctx.drawImage($this,0,0,959,539); 
-                  */
                   setTimeout(loop, 1000 / 25); // drawing at 25fps
                }
             })();
@@ -112,6 +97,15 @@
 
 
          video.play();
+
+         var canvasFabric = new fabric.Canvas('canvas', {
+            hoverCursor: 'default',
+            selection: true,
+            width: 960,
+            height:540
+         }); 
+
+         canvas.moveTo(videoAsBg,1);
 
          // Update the stars on canvas
          update_stars_on_canvas_and_table(json_data,canvasFabric);
