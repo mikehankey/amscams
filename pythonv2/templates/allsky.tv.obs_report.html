@@ -55,6 +55,7 @@
             var $this = this; //cache
             (function loop() {
                if (!$this.paused && !$this.ended) {
+                  console.log($this);
                   canvas.width=960;
                   canvas.height=540;
                   ctx.drawImage($this,0,0,canvas.width,canvas.height,0,0,canvas.width,canvas.height);
