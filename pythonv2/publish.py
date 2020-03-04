@@ -26,7 +26,10 @@ PATH_TO_CLOUD = "/mnt/archive.allsky.tv"
 
 # TEMPLATES
 OBSERVER_REPORT_TEMPLATE = "/home/ams/amscams/pythonv2/templates/allsky.tv.obs_report.html"
+
  
+# ARCHIVE URL
+ARCHIVE_URL= "http://archive.allsky.tv"  
 
 
 # Analyse the json file names
@@ -80,7 +83,7 @@ def make_event_station_report(json_file):
    print(json_file)
    print(json_file.replace('.json','-HD.mp4'))
 
-   hd_video_full_path = json_file.replace('.json','-HD.mp4')
+   hd_video_full_path = ARCHIVE_URL + os.sep + json_file.replace('.json','-HD.mp4')
    if(cfe(hd_video_full_path)==0):
       hd_video_full_path = json_file.replace('.json','-SD.mp4')
       if(cfe(hd_video_full_path)==0):
