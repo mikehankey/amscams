@@ -49,7 +49,7 @@ def make_event_station_report(json_file):
    # Format of the OUTPUT HTML file
    # /AMS7/METEOR/2019/12/24/2019_12_24_08_17_10_000_010041-trim1298.html
 
-   print("JSONN FILE FROM MAKE EVENT STATION REPORT")
+ 
 
 
    # We load (and test) the json

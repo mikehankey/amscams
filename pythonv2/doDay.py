@@ -356,7 +356,7 @@ def html_get_detects(day,tsid,event_files, events):
                video_path = ''
                json_path = ''    
 
-            # We get more info
+            # We get more info 
             #print("(BEFORE AN) EVENT ID IS:", event_id) 
             analysed_name = analyse_report_file(image_file)
          
