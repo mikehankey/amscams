@@ -98,7 +98,7 @@ def make_event_station_report(json_file):
    template = template.replace("{RAND}",str(random.randint(0, 99999999)))
 
    # NO-Cache
-   template = template.replace("{JSON}",PATH_TO_CLOUD+json_file)
+   template = template.replace("{JSON_FILE}",PATH_TO_CLOUD+json_file)
  
    # Create Template
    f = open(PATH_TO_CLOUD+json_file.replace('.json','.html'), "w+")

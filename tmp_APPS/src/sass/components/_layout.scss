@@ -17,3 +17,9 @@ body {
    position: relative;
    background: #111;
 }
+
+.flex-fixed-r-canvas {
+   flex: 0 0 calc(1360px - 960px);
+   margin-left: 1rem;
+   position: relative;
+}
