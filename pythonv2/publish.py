@@ -83,17 +83,31 @@ def make_event_station_report(json_file):
    template = template.replace('{LINK_TO_DAILY_REPORT}',link_to_daily_report)
 
    # Get (H) Video Path
+   HD_vid = true
+   video_btn = ""
    hd_video_full_path =  PATH_TO_CLOUD + json_file.replace('.json','-HD.mp4')
    if(cfe(hd_video_full_path)==0):
-      hd_video_full_path = json_file.hd_video_full_path('-HD','-SD')
-      if(cfe(hd_video_full_path)==0):
+      sd_video_full_path = json_file.hd_video_full_path('-HD','-SD')
+      if(cfe(sd_video_full_path)==0):
          hd_video_full_path = ""
-
-   if(hd_video_full_path!=''): 
-      video = '<video id="main_video_player" controls loop autoplay name="media"><source src="'+ARCHIVE_URL +  hd_video_full_path.replace(PATH_TO_CLOUD,'')+'" type="video/mp4"></video>'
+      else:
+         HD_vid = false
    else:
-      video = '<div class="alert alert-danger m-4>NO VIDEO FOUND - Please try again later.</div>'
+      HD_vid = false
+
+   if(HD_vid== true ): 
+      video_btn += '<a class="col btn btn-secondary mt-0 mb-0 ml-1 vid-link" href="'+hd_video_full_path+'"><i class="icon-file-text"></i> HD Video</a>'
    
+   if(cfe(sd_video_full_path)!=0) {
+      video_btn += '<a class="col btn btn-secondary mt-0 mb-0 ml-1 vid-link" href="'+sd_video_full_path+'"><i class="icon-file-text"></i> SD Video</a>'
+   }
+   
+   # Add the video buttons
+   if(video_btn!='') {
+      template = teplate.replace('{VIDEO_BTNS}',video_btn)
+   }
+ 
+
    template = template.replace('{VIDEO}',video)
 
    # JSON File
@@ -124,10 +138,14 @@ def make_event_station_report(json_file):
       if('device' in json_data['calib']):
          if('total_res_px' in json_data['calib']['device']):
             pts = str(json_data['calib']['device']['total_res_px'])
-            if(json_data['calib']['device']['total_res_px']>3):
-               pts = "<b style='color:#f00'>"+ pts +  "</b>"
+            
+            # Not red if >3
+            #            if(json_data['calib']['device']['total_res_px']>3):
+            #   pts = "<b style='color:#f00'>"+ pts +  "</b>"
             report_details += '<dt class="col-4">Res. Error</dt><dd class="col-8">'+pts+'</dd>'
- 
+   
+
+   
     
    # Report Details
    template = template.replace("{REPORT_DETAILS}",report_details)
