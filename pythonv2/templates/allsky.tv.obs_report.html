@@ -21,11 +21,14 @@
         
 
          <div class="h-100 flex-fixed-canvas">
-            <div class="canvas-container">
-               <div class="embed-responsive embed-responsive-16by9">
-                  {VIDEO}
+            <div class="canvas-container position-relative">
+               <div class="embed-responsive embed-responsive-16by9 position-relative">
+                  <canvas   style="position:absolute; top:0; left:0; width:960px; height:540px"  id="canvas"></canvas>
+                  <div>
+                     {VIDEO}
+                  </div>
                </div>
-               <canvas style="display: none" id="canvas"></canvas>
+              
             </div>
          </div>
       
@@ -72,39 +75,7 @@
       <script>
          // JSON FILE
          var json_data = {JSON_DATA};
-         
-         
-         
-         // PLAY ON CANVAS
-         var canvas = document.getElementById('canvas');
-         var ctx = canvas.getContext('2d');
-         var video = document.getElementById('main_video_player');
-         var videoAsBg;
-
-         var all_Images = [];
-
-         video.addEventListener('play', function() {
-            var $this = this; //cache
-            $('#canvas').css('display','block');
-            $('#main_video_player').closest('.embed-responsive').css('display','none');
-            (function loop() {
-               if (!$this.paused && !$this.ended) { 
-                  canvas.width=960;
-                  canvas.height=540;
-                  videoAsBg = ctx.drawImage($this,0,0,959,539); 
-                  if(all_Images.indexOf(videoAsBg) !== -1) {
-                     all_Images.push(videoAsBg);
-                  } else {
-                     console.log(all_Images);
-                  }
-                  setTimeout(loop, 1000 / 25); // drawing at 25fps
-               }
-            })();
-         }, 0);
-
-
-         video.play();
-
+          
          var canvasFabric = new fabric.Canvas('canvas', {
             hoverCursor: 'default',
             selection: true,
