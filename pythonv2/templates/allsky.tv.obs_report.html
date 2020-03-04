@@ -25,7 +25,7 @@
                <div style="display: none" class="embed-responsive embed-responsive-16by9">
                   {VIDEO}
                </div>
-               <canvas id="canvas" style="width:960px;height:540px"></canvas>
+               <canvas id="canvas"></canvas>
             </div>
          </div>
       
@@ -57,7 +57,7 @@
                if (!$this.paused && !$this.ended) {
                   canvas.width=960;
                   canvas.height=540;
-                  ctx.drawImage($this,0,0,img.width,img.height,0,0,400,300);
+                  ctx.drawImage($this,0,0,canvas.width,canvas.height,0,0,canvas.width,canvas.height);
                   setTimeout(loop, 1000 / 25); // drawing at 25fps
                }
             })();
