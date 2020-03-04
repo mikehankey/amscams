@@ -76,11 +76,11 @@ def make_event_station_report(json_file):
    template = template.replace('{CAM_ID}',analysed_name['cam_id'])
    template = template.replace('{DATE}',analysed_name['year']+'/'+analysed_name['month']+'/'+analysed_name['day']+' '+analysed_name['hour']+":"+analysed_name['min']+":"+analysed_name['sec']+"."+analysed_name['ms'])
    template = template.replace('{DAY}',analysed_name['year']+'/'+analysed_name['month']+'/'+analysed_name['day'])
-   template = template.replace('{TIME}',analysed_name['hour']+':'+analysed_name['min']+':'+analysed_name['src']+'.'+analysed_name['ms'])
+   template = template.replace('{TIME}',analysed_name['hour']+':'+analysed_name['min']+':'+analysed_name['sec']+'.'+analysed_name['ms'])
 
    template = template.replace('{LINK_TO_DAILY_REPORT}',link_to_daily_report)
 
-   # Get HD Video Path
+   # Get (H) Video Path
    hd_video_full_path =  PATH_TO_CLOUD + json_file.replace('.json','-HD.mp4')
    if(cfe(hd_video_full_path)==0):
       hd_video_full_path = json_file.hd_video_full_path('-HD','-SD')
@@ -94,9 +94,11 @@ def make_event_station_report(json_file):
    
    template = template.replace('{VIDEO}',video)
 
+   # JSON File
+    template = template.replace("{JSON}",str(random.randint(0, 99999999)))
 
    # NO-Cache
-   template = template.replace("{RAND}",str(random.randint(0, 99999999)))
+   template = template.replace("{RAND}",PATH_TO_CLOUD+json_file)
  
    # Create Template
    f = open(PATH_TO_CLOUD+json_file.replace('.json','.html'), "w+")

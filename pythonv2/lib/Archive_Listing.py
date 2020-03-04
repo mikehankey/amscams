@@ -31,8 +31,7 @@ DEFAULT_VIDEO_PREV_ON_ARCHIVE = 0
 
 # TRASH FOLDER
 TRASH_FOLDER = '/mnt/ams2/trash'
-
-
+ 
  
 # Delete Multiple Detections at once
 def delete_multiple_archived_detection(detections):
