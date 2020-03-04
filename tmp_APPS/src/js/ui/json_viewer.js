@@ -22,7 +22,7 @@ $(function() {
             $('#json_modal').remove();
 
             $('<div id="json_modal" class="modal fade" tabindex="-1" role="dialog"><div class="modal-dialog modal-dialog-centered modal-lg" role="document">\
-            <div class="modal-content"><div class="modal-body"><h5><a href="'+json_path+'" target="_blank">JSON File <span class="icon-new-window"></spa></a></h5><div id="json-renderer"><p><b>JSON</b></p>\
+            <div class="modal-content"><div class="modal-body"><h5><a href="'+json_path+'" target="_blank">JSON File <sup><span class="icon-new-window"></span></sup></a></h5><div id="json-renderer"><p><b>JSON</b></p>\
             </div><div class="modal-footer d-flex justify-content-between p-0 pb-2 pr-2"></div>\
             <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button></div></div></div></div>').appendTo('body');
 
