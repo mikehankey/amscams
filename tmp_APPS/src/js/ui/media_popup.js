@@ -14,7 +14,11 @@ $(function() {
       });
 
 
-     
+           
+      $('.vid-link').magnificPopup({
+         type: 'iframe',
+         preloader: true
+       });
       
 
       $('.img-link-gal').magnificPopup({
@@ -24,11 +28,7 @@ $(function() {
           enabled:true
         }
       });
-      
-      $('.vid-link').magnificPopup({
-        type: 'iframe',
-        preloader: true
-      });
+
 
       $('.vid_link_gal').magnificPopup({
         type: 'iframe',
