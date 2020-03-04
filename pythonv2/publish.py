@@ -116,6 +116,8 @@ def make_event_station_report(json_file):
    # JSON File
    template = template.replace("{JSON_FILE}",ARCHIVE_URL+json_file)
 
+   #JSON DATA
+   template = template.replace("{JSON_DATA}",json.dumps(json_data))
 
    # DETECTION DETAILS
    report_details = ''
