@@ -93,7 +93,7 @@ def make_event_station_report(json_file):
 
    if(hd_video_full_path==''):
       print("VIDEO EMPTY")
-   template = template.replace('{HD_VIDEO_PATH}',ARCHIVE_URL +  hd_video_full_path)
+   template = template.replace('{HD_VIDEO_PATH}',ARCHIVE_URL +  hd_video_full_path.replace(PATH_TO_CLOUD,''))
  
    # Create Template
    f = open(PATH_TO_CLOUD+json_file.replace('.json','.html'), "w+")
