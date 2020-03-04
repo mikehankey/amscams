@@ -67,10 +67,8 @@ def make_event_station_report(json_file):
 
    template = template.replace('{STATION_ID}',analysed_name['station_id'])
    template = template.replace('{CAM_ID}',analysed_name['cam_id'])
-   template = template.replace('{DATE}',analysed_name['year']+'/'+analysed_name['month']+'/'+analysed_name['day']+' '+analysed_name['hour'])+":"+analysed_name['min']+":"+analysed_name['sec']+":"+analysed_name['ms']
-
-
-   print(analysed_name)
+   template = template.replace('{DATE}',analysed_name['year']+'/'+analysed_name['month']+'/'+analysed_name['day']+' '+analysed_name['hour']+":"+analysed_name['min']+":"+analysed_name['sec']+":"+analysed_name['ms']
+ 
 
    # Create Template
    f = open(PATH_TO_CLOUD+json_file.replace('.json','.html'), "w+")
