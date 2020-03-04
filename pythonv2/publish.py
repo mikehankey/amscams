@@ -13,6 +13,7 @@ import glob
 import sys
 import json
 import re
+import random
 
 from lib.FileIO import * 
 
@@ -81,18 +82,20 @@ def make_event_station_report(json_file):
    # Get HD Video Path
    hd_video_full_path =  PATH_TO_CLOUD + json_file.replace('.json','-HD.mp4')
    if(cfe(hd_video_full_path)==0):
-      print("hd_video_full_path DOES NOT EXIST")
       hd_video_full_path = json_file.hd_video_full_path('-HD','-SD')
       if(cfe(hd_video_full_path)==0):
-         print("sd_video_full_path DOES NOT EXIST")
          hd_video_full_path = ""
 
    if(hd_video_full_path!=''): 
       video = '<video controls loop autoplay name="media"><source src="'+ARCHIVE_URL +  hd_video_full_path.replace(PATH_TO_CLOUD,'')+'" type="video/mp4"></video>'
    else:
-      video = ''
+      video = '<div class="alert alert-danger m-4>NO VIDEO FOUND - Please try again later.</div>'
    
    template = template.replace('{VIDEO}',video)
+
+
+   # NO-Cache
+   template = template.replace("{RAND}",str(random.randint(0, 99999999)))
  
    # Create Template
    f = open(PATH_TO_CLOUD+json_file.replace('.json','.html'), "w+")
