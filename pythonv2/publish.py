@@ -61,12 +61,7 @@ def make_event_station_report(json_file):
    # Build the page based on template  
    with open(OBSERVER_REPORT_TEMPLATE, 'r') as file:
       template = file.read()
-   
-   # Create Template
-   f = open(PATH_TO_CLOUD+json_file.replace('.json','.html'), "w+")
-   f.write(template)
-   f.close()
-
+    
    # Add station id & other static info on the title
    analysed_name = analyse_event_json_file(json_file) 
 
@@ -74,8 +69,14 @@ def make_event_station_report(json_file):
    template = template.replace('{CAM_ID}',analysed_name['cam_id'])
    template = template.replace('{DATE}',analysed_name['year']+'/'+analysed_name['month']+'/'+analysed_name['year']+' '+analysed_name['hour'])+":"+analysed_name['min']+":"+analysed_name['sec']+":"+analysed_name['ms']
 
+   # Create Template
+   f = open(PATH_TO_CLOUD+json_file.replace('.json','.html'), "w+")
+   f.write(template)
+   f.close() 
+   
    print(json_file.replace('.json','.html') +  " created.")
  
+
 
 ### COMMAND
 cmd = sys.argv[1]
