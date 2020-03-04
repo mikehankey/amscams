@@ -55,7 +55,7 @@
             var $this = this; //cache
             (function loop() {
                if (!$this.paused && !$this.ended) {
-               ctx.drawImage($this, 0, 0,540,960);
+               ctx.drawImage($this, 0, 0,960,540);
                setTimeout(loop, 1000 / 25); // drawing at 25fps
                }
             })();
