@@ -76,6 +76,7 @@ def make_event_station_report(json_file):
    template = template.replace('{CAM_ID}',analysed_name['cam_id'])
    template = template.replace('{DATE}',analysed_name['year']+'/'+analysed_name['month']+'/'+analysed_name['day']+' '+analysed_name['hour']+":"+analysed_name['min']+":"+analysed_name['sec']+"."+analysed_name['ms'])
    template = template.replace('{DAY}',analysed_name['year']+'/'+analysed_name['month']+'/'+analysed_name['day'])
+   template = template.replace('{TIME}',analysed_name['hour']+':'+analysed_name['min']+':'+analysed_name['src']+'.'+analysed_name['ms'])
 
    template = template.replace('{LINK_TO_DAILY_REPORT}',link_to_daily_report)
 
