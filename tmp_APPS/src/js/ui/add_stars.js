@@ -13,7 +13,7 @@ function conversion_az_to_quadrantBearing(az) {
 } 
 
 
-function update_stars_on_canvas_and_table(json_resp) {
+function update_stars_on_canvas_and_table(json_resp, canvas) {
  
    // Add AZ/EL of center camera
    if(typeof json_resp['calib']!== 'undefined' &&

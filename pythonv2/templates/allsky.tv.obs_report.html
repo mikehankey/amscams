@@ -73,6 +73,10 @@
          // JSON FILE
          var json_data = {JSON_DATA};
          
+         var canvasFabric = new fabric.Canvas('canvas', {
+            hoverCursor: 'default',
+            selection: true
+         }); 
          
          // PLAY ON CANVAS
          var canvas = document.getElementById('canvas');
@@ -97,7 +101,7 @@
          video.play();
 
          // Update the stars on canvas
-         update_stars(json_data);
+         update_stars_on_canvas_and_table(json_data,canvasFabric);
 
          
       </script>
