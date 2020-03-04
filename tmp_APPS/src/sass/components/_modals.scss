@@ -1,0 +1,19 @@
+.modal-body {
+   
+   background: #c1c1c1;
+   border-radius: .2rem;
+   h5 {
+      a {
+         color:#fff;
+      
+         &.hover,&:focus {
+            text-decoration: none;
+         }
+      }
+   }
+}
+
+
+.json-document {
+   border: 1px solid rgba(255,255,255,.4);
+}
