@@ -22,12 +22,13 @@
 
          <div class="h-100 flex-fixed-canvas">
             <div class="canvas-container position-relative overflow:hidden;  width:960px; height:540px;">
-               <div class="embed-responsive embed-responsive-16by9 position-absolute" style="width:960px; height:540px;position:absolute; top:0; left:0;  z-index:99">
-                  <canvas id="canvas"></canvas>
+                  <div style="position:absolute; top:0; left:0; width:960px; height:540px; z-index:1">
+                        {VIDEO}
+                  </div>
+               <div style="width:960px; height:540px;position:absolute; top:0; left:0;  z-index:99">
+                  <canvas id="canvas" width="960" height="540"></canvas>
                </div>
-               <div style="position:absolute; top:0; left:0; width:960px; height:540px; z-index:1">
-                     {VIDEO}
-               </div>
+               
             </div>
          </div>
       
