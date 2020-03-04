@@ -37,7 +37,6 @@ TRASH_FOLDER = '/mnt/ams2/trash'
 # Delete Multiple Detections at once
 def delete_multiple_archived_detection(detections):
  
-   
    # In case we only have one... it's a string
    if(isinstance(detections, str)):
       detections = [detections]
@@ -53,7 +52,7 @@ def delete_multiple_archived_detection(detections):
       
       #We move all the other files to TRASH_FOLDER
 
-      # MOVE Json tço trash
+      # MOVE Json to trash
       if os.path.isfile(det): 
          cmd = "mv " + det +  " " + TRASH_FOLDER  
          os.system(cmd) 
