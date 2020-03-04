@@ -22,10 +22,10 @@
 
          <div class="h-100 flex-fixed-canvas">
             <div class="canvas-container">
-               <div style="display: none" class="embed-responsive embed-responsive-16by9">
+               <div class="embed-responsive embed-responsive-16by9">
                   {VIDEO}
                </div>
-               <canvas id="canvas"></canvas>
+               <canvas style="display: none" id="canvas"></canvas>
             </div>
          </div>
       
@@ -75,6 +75,8 @@
 
          video.addEventListener('play', function() {
             var $this = this; //cache
+            $('#canvas').css('display','block');
+            $('#main_video_player').css('display','none');
             (function loop() {
                if (!$this.paused && !$this.ended) { 
                   canvas.width=960;
