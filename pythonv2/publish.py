@@ -96,10 +96,10 @@ def make_event_station_report(json_file):
          HD_vid = False 
 
    if(HD_vid== True ): 
-      video_btn += '<a class="col btn btn-secondary mt-0 mb-0 ml-1 vid-link" href="'+json_file.replace('.json','-HD.mp4')+'"><i class="icon-file-text"></i> HD Video</a>'
+      video_btn += '<a class="col btn btn-secondary mt-0 mb-0 ml-1 vid-link" href="'+json_file.replace('.json','-HD.mp4')+'"><i class="icon-youtube"></i> HD Video</a>'
    
    if(cfe(sd_video_full_path)!=0):
-      video_btn += '<a class="col btn btn-secondary mt-0 mb-0 ml-1 vid-link" href="'+json_file.replace('.json','-SD.mp4')+'"><i class="icon-file-text"></i> SD Video</a>'
+      video_btn += '<a class="col btn btn-secondary mt-0 mb-0 ml-1 vid-link" href="'+json_file.replace('.json','-SD.mp4')+'"><i class="icon-youtube"></i> SD Video</a>'
  
    
    # Add the video buttons
