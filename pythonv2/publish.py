@@ -87,14 +87,13 @@ def make_event_station_report(json_file):
    video_btn = ""
    sd_video_full_path = ""
    hd_video_full_path =  PATH_TO_CLOUD + json_file.replace('.json','-HD.mp4')
+
    if(cfe(hd_video_full_path)==0):
       sd_video_full_path = json_file.hd_video_full_path('-HD','-SD')
       if(cfe(sd_video_full_path)==0):
          hd_video_full_path = ""
       else:
-         HD_vid = False
-   else:
-      HD_vid = False
+         HD_vid = False 
 
    if(HD_vid== True ): 
       video_btn += '<a class="col btn btn-secondary mt-0 mb-0 ml-1 vid-link" href="'+hd_video_full_path+'"><i class="icon-file-text"></i> HD Video</a>'
@@ -106,6 +105,8 @@ def make_event_station_report(json_file):
    # Add the video buttons
    if(video_btn!=''):
       template = teplate.replace('{VIDEO_BTNS}',video_btn)
+   else:
+      template = teplate.replace('{VIDEO_BTNS}','')
  
  
 
