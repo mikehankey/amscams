@@ -16,7 +16,17 @@
             <ul class="navbar-nav ml-md-auto"></ul>
             <a id="login" class="btn btn-primary d-inline-block mb-3 mb-md-0 ml-md-3">Login</a>
       </nav>
-      <h1>Report for event {STATION_ID} Cam#{CAM_ID} - <a href="{LINK_TO_DAILY_REPORT}">{DATE}</a></h1>
-      <div id="main_container" class="container-fluid h-100 mt-4 lg-l"></div>
+      <h1>Report for event {STATION_ID} Cam#{CAM_ID} - <a href="{LINK_TO_DAILY_REPORT}">{DAY}</a></h1>
+      <div id="main_container" class="container-fluid h-100 mt-4 lg-l">
+         <div class="h-100 flex-fixed-canvas">
+            <div class="canvas-container">
+               <div class="embed-responsive embed-responsive-16by9">
+                  <video controls loop autoplay name="media"><source type="video/mp4">
+                     <source src='{HD_VIDEO_PATH}' type='video/mp4'>
+                  </video>
+               </div>
+            </div>
+         </div>
+      </div>
 </body>    
 </html> 
