@@ -76,6 +76,10 @@ def make_event_station_report(json_file):
    template = template.replace('{LINK_TO_DAILY_REPORT}',link_to_daily_report)
 
    # Get HD Video Path
+   print("JSON PATH ")
+   print(json_file)
+   print(json_file.replace('.json','-HD.mp4'))
+
    hd_video_full_path = json_file.replace('.json','-HD.mp4')
    if(cfe(hd_video_full_path)==0):
       hd_video_full_path = json_file.replace('.json','-SD.mp4')
