@@ -22,7 +22,7 @@
 
          <div class="h-100 flex-fixed-canvas">
             <div class="canvas-container">
-               <div class="embed-responsive embed-responsive-16by9">
+               <div style="display: none" class="embed-responsive embed-responsive-16by9">
                   {VIDEO}
                </div>
                <canvas id="canvas"></canvas>
@@ -34,8 +34,7 @@
             <div class="mt-2 mb-3 mr-3 ml-3"><div class="btn-holder row mt-1 mb-1">
                <a id="show_json" class="col btn btn-secondary mt-0 mb-0 ml-1 json_viewer" data_src="{JSON_FILE}"><i class="icon-file-text"></i> All Data</a>
             </div></div>
-         </div>
-      
+         </div> 
       
       </div>
 
@@ -44,5 +43,28 @@
       <script src="/APPS/src/js/plugins/json-viewer.js?c={RAND}"></script>
       <script src="/APPS/src/js/ui/loader.js?c={RAND}"></script>
       <script src="/APPS/src/js/ui/json_viewer.js?c={RAND}"></script>
+      
+
+      <script>
+         // TEST PLAY ON CANVAS
+         var canvas = document.getElementById('canvas');
+         var ctx = canvas.getContext('2d');
+         var video = document.getElementById('main_video_player');
+
+         video.addEventListener('play', function() {
+            var $this = this; //cache
+            (function loop() {
+               if (!$this.paused && !$this.ended) {
+               ctx.drawImage($this, 0, 0,1370,770);
+               setTimeout(loop, 1000 / 30); // drawing at 30fps
+               }
+            })();
+         }, 0);
+
+
+         video.play();
+
+         
+      </script>
 </body>    
 </html> 
