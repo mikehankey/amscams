@@ -82,6 +82,8 @@ def make_event_station_report(json_file):
       if(cfe(hd_video_full_path)==0):
          hd_video_full_path = ""
 
+   if(hd_video_full_path==''):
+      print("VIDEO EMPTY")
    template = template.replace('{HD_VIDEO_PATH}',hd_video_full_path)
  
    # Create Template
