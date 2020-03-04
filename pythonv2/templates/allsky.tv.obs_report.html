@@ -87,9 +87,15 @@
             $('#main_video_player').closest('.embed-responsive').css('display','none');
             (function loop() {
                if (!$this.paused && !$this.ended) { 
+                  canvas.setBackgroundImage($this, canvas.renderAll.bind(canvas), {
+                     scaleX: canvas.width / 940,
+                     scaleY: canvas.height / 530
+                  });
+                  /*
                   canvas.width=960;
                   canvas.height=540;
                   videoAsBg = ctx.drawImage($this,0,0,959,539); 
+                  */
                   setTimeout(loop, 1000 / 25); // drawing at 25fps
                }
             })();
