@@ -19,7 +19,7 @@ from lib.FileIO import *
 from doDay import analyse_report_file
 
 REGEX_JSON_FROM_CLOUD = r"\/(\w*)\/METEOR\/(\d{4})\/(\d{2})\/(\d{2})\/(\d{4})_(\d{2})_(\d{2})_(\d{2})_(\d{2})_(\d{2})_(\d{3})_(\w{6})-trim(\d{4}|\d{3}|\d{2}|\d{1}).json"
-REGEX_GROUP_JSON_FROM_CLOUD = ["all_path","station_id","year","month","day","v","w","y","y","z","hour","min","sec","ms","cam_id","trim"]
+REGEX_GROUP_JSON_FROM_CLOUD = ["all_path","station_id","year","month","day","v","w","hour","min","sec","ms","cam_id","trim"]
  
 #PATH TO CLOUD ARCHIVES
 PATH_TO_CLOUD = "/mnt/archive.allsky.tv"
