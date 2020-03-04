@@ -83,7 +83,7 @@ def make_event_station_report(json_file):
    template = template.replace('{LINK_TO_DAILY_REPORT}',link_to_daily_report)
 
    # Get (H) Video Path
-   HD_vid = true
+   HD_vid = True
    video_btn = ""
    hd_video_full_path =  PATH_TO_CLOUD + json_file.replace('.json','-HD.mp4')
    if(cfe(hd_video_full_path)==0):
@@ -91,11 +91,11 @@ def make_event_station_report(json_file):
       if(cfe(sd_video_full_path)==0):
          hd_video_full_path = ""
       else:
-         HD_vid = false
+         HD_vid = False
    else:
-      HD_vid = false
+      HD_vid = False
 
-   if(HD_vid== true ): 
+   if(HD_vid== True ): 
       video_btn += '<a class="col btn btn-secondary mt-0 mb-0 ml-1 vid-link" href="'+hd_video_full_path+'"><i class="icon-file-text"></i> HD Video</a>'
    
    if(cfe(sd_video_full_path)!=0):
