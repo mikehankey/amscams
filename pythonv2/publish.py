@@ -79,11 +79,7 @@ def make_event_station_report(json_file):
    template = template.replace('{LINK_TO_DAILY_REPORT}',link_to_daily_report)
 
    # Get HD Video Path
-   print("JSON PATH ")
-   print(json_file)
-   print(json_file.replace('.json','-HD.mp4'))
-
-   hd_video_full_path =  PATH_TO_CLOUD + json_file.replace('.json','-HD.mp4')
+  hd_video_full_path =  PATH_TO_CLOUD + json_file.replace('.json','-HD.mp4')
    if(cfe(hd_video_full_path)==0):
       print("hd_video_full_path DOES NOT EXIST")
       hd_video_full_path = json_file.hd_video_full_path('-HD','-SD')
@@ -91,9 +87,12 @@ def make_event_station_report(json_file):
          print("sd_video_full_path DOES NOT EXIST")
          hd_video_full_path = ""
 
-   if(hd_video_full_path==''):
-      print("VIDEO EMPTY")
-   template = template.replace('{HD_VIDEO_PATH}',ARCHIVE_URL +  hd_video_full_path.replace(PATH_TO_CLOUD,''))
+   if(hd_video_full_path!=''): 
+      video = '<video controls loop autoplay name="media"><source src="'+ARCHIVE_URL +  hd_video_full_path.replace(PATH_TO_CLOUD,'')+'" type="video/mp4"></video>'
+   else:
+      video = ''
+   
+   template = template.replace('{VIDEO}',video)
  
    # Create Template
    f = open(PATH_TO_CLOUD+json_file.replace('.json','.html'), "w+")

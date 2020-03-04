@@ -2,3 +2,18 @@ body {
    background-color: #eaeaea;
    position: relative;
 }
+
+
+// Report PAGE
+.container-fluid {
+   max-width: 1400px;
+}
+
+.flex-fixed-canvas {
+   flex: 0 0 960px;
+}
+
+.canvas-container {
+   position: relative;
+   background: #111;
+}
