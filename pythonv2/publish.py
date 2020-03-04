@@ -87,7 +87,7 @@ def make_event_station_report(json_file):
          hd_video_full_path = ""
 
    if(hd_video_full_path!=''): 
-      video = '<video controls loop autoplay name="media"><source src="'+ARCHIVE_URL +  hd_video_full_path.replace(PATH_TO_CLOUD,'')+'" type="video/mp4"></video>'
+      video = '<video id="main_video_player" controls loop autoplay name="media"><source src="'+ARCHIVE_URL +  hd_video_full_path.replace(PATH_TO_CLOUD,'')+'" type="video/mp4"></video>'
    else:
       video = '<div class="alert alert-danger m-4>NO VIDEO FOUND - Please try again later.</div>'
    
