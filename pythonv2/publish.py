@@ -63,7 +63,7 @@ def make_event_station_report(json_file):
       template = file.read()
    
    # Create Template
-   f = open(json_file.replace('.json','.html'), "w+")
+   f = open(PATH_TO_CLOUD+json_file.replace('.json','.html'), "w+")
    f.write(template)
    f.close()
 
