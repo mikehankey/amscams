@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta http-equiv="Cache-control" content="public, max-age=500, must-revalidate">
     <meta name="viewport" content="width=device-width, initial-scale=1.0"> 
-    <title>{STATION_ID} {DAY} Station Report</title>
+    <title>Report for event {STATION_ID} Cam#{CAM_ID</title>
     <link href="https://fonts.googleapis.com/css?family=Roboto+Condensed:400,700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="/APPS/dist/css/allskytv.min.css?c={RAND}"/>
 </head>
@@ -16,7 +16,7 @@
             <ul class="navbar-nav ml-md-auto"></ul>
             <a id="login" class="btn btn-primary d-inline-block mb-3 mb-md-0 ml-md-3">Login</a>
       </nav>
-      <h1>Report for event {STATION_ID} Cam#{CAM_ID}-{DATE}</h1>
+      <h1>Report for event {STATION_ID} Cam#{CAM_ID}-<a href="{LINK_TO_DAILY_REPORT}">{DATE}</a></h1>
       <div id="main_container" class="container-fluid h-100 mt-4 lg-l">      </div>
 </body>    
 </html> 
