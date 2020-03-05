@@ -30,6 +30,56 @@
                </div>
                
             </div>
+
+
+            <ul class="nav nav-tabs mt-3">
+               <li class="nav-item">
+                   <a class="nav-link active" id="reduc-tab-l" data-toggle="tab" href="#reduc-tab" role="tab" aria-controls="reduction" aria-selected="true">Reduction</a>
+               </li>
+               <li class="nav-item">
+                   <a class="nav-link" id="stars-tab-l" data-toggle="tab" href="#stars-tab" role="tab" aria-controls="stars" aria-selected="false"><span id="str_cnt"></span> Stars</a>
+               </li> 
+           </ul>
+           <div class="tab-content box"> 
+               <div class="tab-pane fade show active pr-3" id="reduc-tab" role="tabpanel" aria-labelledby="reduc-tab-l">
+                     <table class="table table-dark table-striped table-hover td-al-m mb-2 pr-5 mt-2">
+                        <thead>
+                           <tr>
+                              <th></th><th></th><th>#</th><th>Time</th><th>RA/Dec</th><th>Az/El</th><th>x/y</th><th>w/h</th><th>Intensity</th><th>Seg.&nbsp;Len.</th><th colspan="4"></th>
+                           </tr>
+                        </thead>
+                     <tbody>
+                     </tbody>
+                     </table>
+                  </div>
+       
+      
+                 <div class="tab-pane fade" id="stars-tab" role="tabpanel" aria-labelledby="stars-tab-l">
+                     <table class="table table-dark table-striped table-hover td-al-m"><thead>
+                        <tr>
+                           <th>Name</th><th>mag</th><th>RA/Dec</th>
+                           <th>Star x/y <div class="star_sprite manual"></div></th>
+                           <th title="Catalog Undistorded">Cat. Dist.  x/y <div class="star_sprite distorded"></div></th>
+                           <th title="Catalog Distorded">Cat. x/y <div class="star_sprite undistorded"></div></th>
+                           <th title="Intensity">Intensity</th>
+                           <th>Dist.</th>
+                        </tr>
+                     </thead>
+                     <tbody>
+                     </tbody>
+                     </table>
+      
+                     <dl class="row def br-t">
+                        <dt class="col-md-2">Star x/y <div class="star_sprite manual"></div></dt>
+                        <dd class="col-md-10">position of the star in the image</dd>
+                        <dt class="col-md-2">Cat. x/y <div class="star_sprite  distorded"></div></dt>
+                        <dd class="col-md-10">position of the catalog star AFTER lens distortion is applied</dd>
+                        <dt class="col-md-2">Cat. Dist x/y  <div class="star_sprite  undistorded"></div></dt>
+                        <dd class="col-md-10">position of the catalog star BEFORE lens distortion is applied.  </dd>
+                     </dl> 
+      
+                 </div> 
+            </div>
          </div>
       
 

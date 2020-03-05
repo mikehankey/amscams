@@ -18,11 +18,15 @@
    width: calc(100% - 316px);
    text-align: right;
    float: right;
-   margin-left: .5rem;
+   margin-left: .1rem;
 
    li {
       margin-right:.3%;
       display:inline-block;
+
+      .btn-sm {
+         max-width: 100%;
+      }
    }
 }
 
@@ -40,8 +44,8 @@ margin-top: -.38rem;
    padding: .5rem;
    border-radius: .2rem;
    overflow: hidden;
-   max-height: 50px; 
-   
+   height: 50px; 
+
    .btn-sm {
       max-width: 2.8rem;
    }

@@ -15,7 +15,7 @@ import json
 import re
 import random
 
-from lib.FileIO import * 
+from lib.FileIO import *  
 
 from doDay import analyse_report_file
 
@@ -165,13 +165,11 @@ def make_event_station_report(json_file):
             #            if(json_data['calib']['device']['total_res_px']>3):
             #   pts = "<b style='color:#f00'>"+ pts +  "</b>"
             report_details += '<dt class="col-4">Res. Error</dt><dd class="col-8">'+pts+'</dd>'
-   
-
-   
     
    # Report Details
    template = template.replace("{REPORT_DETAILS}",report_details)
 
+    
      
    # Create Template
    f = open(PATH_TO_CLOUD+json_file.replace('.json','.html'), "w+")
