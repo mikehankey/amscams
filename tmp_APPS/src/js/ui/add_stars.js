@@ -175,7 +175,6 @@ function update_stars_on_canvas_and_table(json_resp, canvas) {
                                <td>'+v['i_pos'][POS_X].toFixed(0) + '&nbsp;/&nbsp;'+ v['i_pos'][POS_Y].toFixed(0) + '</td>\
                                <td>'+v['cat_und_pos'][POS_X].toFixed(0)  + '&nbsp;/&nbsp;'+ v['cat_und_pos'][POS_Y].toFixed(0) +'</td>\
                                <td>'+v['cat_dist_pos'][POS_X].toFixed(0)  + '&nbsp;/&nbsp;'+ v['cat_dist_pos'][POS_Y].toFixed(0) +'</td>\
-                               
                                '+intensity+'\
                                </tr>';
    
