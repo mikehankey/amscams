@@ -1,3 +1,4 @@
+// Get all frames of a video as base64
 async function extractFramesFromVideo(videoUrl, fps=25) {
    return new Promise(async (resolve) => {
  
