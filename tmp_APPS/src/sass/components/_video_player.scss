@@ -24,8 +24,21 @@
 }
 
 
+
 .video-controls-holder {
-   
+margin-top: -.38rem;
+    border-top: 1px solid rgba(255,255,255,.1);
+}
+
+
+#video-controls {
+   display: block;
+   background-color: #0f2437;
+   padding: .5rem;
+
+   .btn-sm {
+      max-width: 2.8rem;
+   }
 }
 
 

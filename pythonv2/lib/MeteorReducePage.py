@@ -18,15 +18,21 @@ ERROR_FACTOR_SEG_LEN = [2,3,4,5,6]
 
 
 # Create a tab and its content on the template (return the newly updated template)
-def create_tab_and_content(extra_tabs,extra_content,id,name,html_content):
+def create_tab_and_content(extra_tabs,extra_content,id,name,html_content, active=False):
 
    if(html_content!=''):
+      act = ""
+      if(active==True):
+         act = "active"
 
       #We create the tab
-      extra_tabs  +=  '<li class="nav-item"><a class="nav-link load-frames-on-active" id="'+id+'-l" data-toggle="tab" href="#'+id+'-tab" role="tab" aria-controls="'+id+'-" aria-selected="true">'+name+'</a></li>'
- 
+      extra_tabs  +=  '<li class="nav-item"><a class="nav-link load-frames-on-active '+act+'" id="'+id+'-l" data-toggle="tab" href="#'+id+'-tab" role="tab" aria-controls="'+id+'-" aria-selected="true">'+name+'</a></li>'
+
+      if(active==True):
+         act = "show active"
+
       #We create the new content
-      extra_content += '<div class="tab-pane fade" id="'+id+'-tab" role="tabpanel" aria-labelledby="'+id+'-tab-l">'+html_content+'</div>'
+      extra_content += '<div class="tab-pane fade '+act+'" id="'+id+'-tab" role="tabpanel" aria-labelledby="'+id+'-tab-l">'+html_content+'</div>'
 
    return extra_tabs, extra_content
 
