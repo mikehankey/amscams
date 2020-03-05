@@ -80,6 +80,7 @@ function update_reduction_on_canvas_and_table(json_resp, canvas) {
 
       // Add the medium dist value
       // med_dist is defined on the page 
+      /*
       if(typeof v['dist_from_last'] !='undefined') {
          if(parseFloat(v['dist_from_last'])>parseFloat(med_dist*parseInt($('#error_factor_dist_len').val()))) {
             dist_err = '<td style="color:#f00">'+v['dist_from_last'].toFixed(2)+'</td>';
@@ -87,8 +88,10 @@ function update_reduction_on_canvas_and_table(json_resp, canvas) {
             dist_err = '<td>'+v['dist_from_last'].toFixed(2)+'</td>';
          }
       } else {
-         dist_err = '<td>?</td>';
+         
       }
+      */
+      dist_err = '<td>?</td>';
       
       
 
