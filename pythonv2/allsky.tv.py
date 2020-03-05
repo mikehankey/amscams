@@ -85,9 +85,8 @@ def update_live_html():
    station_with_issues = ""
    down=0
    for sd in status: #sorted(status):
-      if(sd not in data_per_station): 
-         station_with_issues +=  "<li>Station <b>#AMS"+str(sd)+"</b></li>"
-         down+=1
+      station_with_issues +=  "<li>Station <b>#AMS"+str(sd)+"</b></li>"
+      down+=1
 
 
    if(station_with_issues != ''):
@@ -97,11 +96,9 @@ def update_live_html():
          sts = "Station"
       station_with_issues = "<div class='_h4_hold'><h4 class='mb-0'><span class='down'></span>+"+str(down)+" " + sts + " DOWN</h4></div><ul class='mt-3 ml-3'>" +  station_with_issues + "</ul>"
 
-    
+   # DATA
    template = template.replace("{LIVE}", live_now+ station_with_issues+"</div>")
-
- 
-
+  
    # Cur Day
    template = template.replace("{DAY}",dom.replace('_','/')) 
 
