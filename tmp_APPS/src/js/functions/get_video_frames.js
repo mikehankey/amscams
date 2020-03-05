@@ -1,5 +1,5 @@
 // Get all frames of a video as base64
-async function extractFramesFromVideo(videoUrl, fps=25) {
+function extractFramesFromVideo(videoUrl, fps=25) {
    return new Promise(async (resolve) => {
  
      // fully download it first (no buffering):
@@ -48,7 +48,6 @@ async function extractFramesFromVideo(videoUrl, fps=25) {
 
  $(function() {
     if($('#main_video_player').lenght!==0) {
-       var video = $('#main_video_player video').attr('src');
-       frames = await extractFramesFromVideo(video);
+       frames = extractFramesFromVideo($('#main_video_player video').attr('src'));
     }
  })
