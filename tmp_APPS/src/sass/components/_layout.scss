@@ -7,6 +7,10 @@ body {
 // Report PAGE
 .container-fluid {
    max-width: 1400px;
+
+   .all-w {
+      max-width: 100%;
+   }
 }
 
 .flex-fixed-canvas {
