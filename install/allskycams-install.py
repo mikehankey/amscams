@@ -5,6 +5,7 @@
 
 
 """
+import subprocess
 import json
 import os
 import sys
@@ -13,6 +14,49 @@ USER = "ams"
 GROUP = "ams"
 #USER = "meteorcam"
 #GROUP = "pi"
+
+def format_drive():
+   confirm = input("Do you want to format data drive (all data will be lost!) Must type YES.")
+   if confirm == "YES":
+      output = subprocess.check_output("lsblk | grep sd ", shell=True).decode("utf-8")
+      #Filesystem                 Size  Used Avail Use% Mounted on
+
+      for line in output.split("\n"):
+         print(line)   
+      drive = input("Enter the drive label (sdX) to format. Should be the large size drive!")
+      cmd = "sudo mkfs -t ext4 /dev/" + drive
+      print(cmd)
+      confirm = input("are you sure you ant to run this command? (last chance to quit.)")
+      if confirm == "YES":
+         print("Formatting drive...")
+         #os.system(cmd)
+         output = subprocess.check_output("blkid | grep " + drive , shell=True).decode("utf-8")
+         if drive in output:
+            print("Drive added.")
+            print(output)
+            el = output.split("\"")
+            uuid = el[1]
+            fstab = "UUID=" + uuid + " /mnt/ams2               ext4    errors=continue 0       1\n"
+            print(fstab)
+      else:
+         print("Aborted. Should have typed YES")
+
+
+   else:
+      print("Aborted")
+
+# Once the 1TB drive has been identified reformat it with linux ext4 file system
+#sudo mkfs -t ext4 /dev/sda1
+
+# mount the drive, chown and make the default dirs
+#sudo mount /dev/sda1 /mnt/ams2
+
+#sudo chown -R ams:ams /mnt/ams2
+#mkdir /mnt/ams2/HD
+#mkdir /mnt/ams2/SD
+#mkdir /mnt/ams2/SD/proc
+#mkdir /mnt/ams2/SD/proc/daytime
+#mkdir /mnt/ams2/meteors/
 
 
 def save_json_file(json_file, json_data, compress=False):
@@ -99,7 +143,7 @@ AddHandler cgi-script .py
       os.system("ln -s /home/ams/amscams/pythonv2/webUI.py /var/www/html/pycgi")
    if cfe("/var/www/html/pycgi/dist/", 1) == 0:
       os.system("ln -s /home/ams/amscams/dist/ /var/www/html/pycgi")
-   if cfe("/var/www/html/pycgi/dist/", 1) == 0:
+   if cfe("/var/www/html/pycgi/src/", 1) == 0:
       os.system("ln -s /home/ams/amscams/src/ /var/www/html/pycgi")
    if cfe("/var/www/html/pycgi/video_player.html") == 0:
       os.system("ln -s /home/ams/amscams/python/pycgi/video_player.html /var/www/html/pycgi/video_player.html")
@@ -117,9 +161,9 @@ def setup_network_interface():
    for interface in ints:
       if "lo" not in interface and "wlo" not in interface:
          print(interface)
-         if "1" in interface:
+         if "1" in interface or "4" in interface:
             INT01 = interface
-         if "3" in interface:
+         if "3" in interface or "2" in interface:
             INT02 = interface
 
 
@@ -292,7 +336,10 @@ def setup_vpn():
 
 #config_apache()
 
+#format_drive()
 #setup_as6_conf()
 
-setup_dirs()
-#setup_vpn()
+#setup_dirs()
+setup_vpn()
+os.system("sudo chown -R ams:ams /mnt/ams2")
+os.system("sudo chown -R ams:ams /home/ams")

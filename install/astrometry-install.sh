@@ -1,5 +1,5 @@
 #!/bin/sh
-#sudo apt-get install libcfitsio-dev
+sudo apt-get install libcfitsio-dev
 #sudo apt-get install libjpeg-dev
 
 # Set gcc6 as CC env var
@@ -25,11 +25,11 @@ export WCSLIB_INC
 export WCS_LIB
 
 cd ~/allsky6-install
-#wget http://astrometry.net/downloads/astrometry.net-latest.tar.gz
-#gunzip astrometry.net-latest.tar.gz
-#tar xf astrometry.net-latest.tar
+wget http://astrometry.net/downloads/astrometry.net-latest.tar.gz
+gunzip astrometry.net-latest.tar.gz
+tar xf astrometry.net-latest.tar
 
-os.system("sudo pip install astropy")
+sudo pip install astropy
 
 cd astrometry.net-*
 make
