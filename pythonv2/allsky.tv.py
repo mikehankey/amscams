@@ -31,7 +31,7 @@ json_conf = load_json_file("../conf/as6.json")
 station_id = json_conf['site']['ams_id'] 
 
 
-def update_live_html_station():
+def update_live_html():
    template = get_template(LIVE_TEMPLATE)
    now = datetime. now()
    mday = now.strftime("%m_%d")
