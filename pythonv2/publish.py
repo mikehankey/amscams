@@ -128,7 +128,7 @@ def make_event_station_report(json_file):
       </ul>
     '''
 
-   template = template.replace('{VIDEO}','<figure id="videoContainer" data-fullscreen="false"><video id="main_video_player" autoplay="" width="960" height="540" loop=""><source src="'+json_file.replace('.json','-HD.mp4')+'" type="video/mp4"></video>'+playBtns+'</figure>')
+   template = template.replace('{VIDEO}','<figure id="videoContainer" data-fullscreen="false"><video id="main_video_player" width="960" height="540" loop=""><source src="'+json_file.replace('.json','-HD.mp4')+'" type="video/mp4"></video>'+playBtns+'</figure>')
 
    # NO-Cache
    template = template.replace("{RAND}",str(random.randint(0, 99999999)))
