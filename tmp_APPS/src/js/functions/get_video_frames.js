@@ -13,8 +13,8 @@ async function extractFramesFromVideo(videoUrl, fps=25) {
      });
  
      video.addEventListener('loadeddata', async function() {
-       let canvas = document.createElement('canvas');
-       let context = canvas.getContext('2d');
+       let canvas = document.createElement('canvas64');
+       let contextWW = canvas.getContext('2d');
        let [w, h] = [video.videoWidth, video.videoHeight]
        canvas.width =  w;
        canvas.height = h;
@@ -28,7 +28,7 @@ async function extractFramesFromVideo(videoUrl, fps=25) {
          video.currentTime = currentTime;
          await new Promise(r => seekResolve=r);
  
-         context.drawImage(video, 0, 0, w, h);
+         contextWW.drawImage(video, 0, 0, w, h);
          let base64ImageData = canvas.toDataURL();
          frames.push(base64ImageData);
  
@@ -51,7 +51,8 @@ async function extractFramesFromVideo(videoUrl, fps=25) {
    frames = await extractFramesFromVideo($('#main_video_player source').attr('src')); 
 
    $.each(frames,function(i,v){
-      $('<img src='+v+'/>').prependTo($('#main_container'));
+      console.log(v);
+      $('<img src="'+v+'"/>').prependTo($('#main_container'));
    });
 
  
