@@ -2,7 +2,7 @@ $(function() {
    var playpause, video;
    if($('#main_video_player').length!=0) {
       playpause = document.getElementsByClassName("playpause");
-      video = document.getElementsByID("main_video_player");
+      video = document.getElementById("main_video_player");
 
       var controlFunction = function (e) {
          var playpause = this; 
