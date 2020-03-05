@@ -165,7 +165,9 @@ function update_stars_on_canvas_and_table(json_resp, canvas) {
            } else {
               intensity = '<td>?</td>'
            }
-    
+           
+           // <td>'+v['dist_px'].toFixed(4)+'</td>\
+
            // Add the corresponding row 
            table_tbody_html+= '<tr><td><b>'+v['name']+'</b></td>\
                                <td>'+v['mag']+'</td>\
@@ -173,7 +175,7 @@ function update_stars_on_canvas_and_table(json_resp, canvas) {
                                <td>'+v['i_pos'][POS_X].toFixed(0) + '&nbsp;/&nbsp;'+ v['i_pos'][POS_Y].toFixed(0) + '</td>\
                                <td>'+v['cat_und_pos'][POS_X].toFixed(0)  + '&nbsp;/&nbsp;'+ v['cat_und_pos'][POS_Y].toFixed(0) +'</td>\
                                <td>'+v['cat_dist_pos'][POS_X].toFixed(0)  + '&nbsp;/&nbsp;'+ v['cat_dist_pos'][POS_Y].toFixed(0) +'</td>\
-                               <td>'+v['dist_px'].toFixed(4)+'</td>\
+                               
                                '+intensity+'\
                                </tr>';
    
