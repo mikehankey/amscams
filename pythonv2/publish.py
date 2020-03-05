@@ -111,7 +111,7 @@ def make_event_station_report(json_file):
 
    # Video Btns
    playBtns = '''
-      <div class="d-flex justify-content-between">
+      <div class="video-controls-holder d-flex justify-content-between">
       <ul id="video-controls" class="controls">
 			<li><button id="playpause" type="button" class="btn btn-secondary"><span class="icon-play1"></span></button></li>
 			<li><button id="stop" type="button" class="btn btn-secondary"><span class="icon-stop"></span></button></li>
