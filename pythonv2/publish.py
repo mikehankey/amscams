@@ -110,7 +110,18 @@ def make_event_station_report(json_file):
    
 
    # Video Btns
-   playBtns = '<button class="playpause" class="btn btn-primary"><span class="ico-play"></span></button>'
+   playBtns = '''<ul id="video-controls" class="controls">
+			<li><button id="playpause" type="button">Play/Pause</button></li>
+			<li><button id="stop" type="button">Stop</button></li>
+			<li class="progress">
+				<progress id="progress" value="0" min="0">
+					<span id="progress-bar"></span>
+				</progress>
+			</li> 
+			<li><button id="fs" type="button">Fullscreen</button></li>
+		</ul>
+    '''
+    
    template = template.replace('{VIDEO}','<video id="main_video_player" autoplay="" width="960" height="540" loop=""><source src="'+json_file.replace('.json','-HD.mp4')+'" type="video/mp4"></video>'+playBtns)
 
    # NO-Cache
