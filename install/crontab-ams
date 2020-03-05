@@ -1,0 +1,36 @@
+* * * * * cd /home/ams/amscams/python/; ./ffmpeg_record.py start_all > /dev/null
+10 * * * * cd /home/ams/amscams/python/; ./move-files.py > /dev/null
+*/5 * * * * cd /home/ams/amscams/python/; ./as6-latest.py > /dev/null
+* * * * * cd /home/ams/amscams/python/; ./process_data.py > /tmp/pd.txt
+5 * * * * cd /home/ams/amscams/pythonv2/; ./batchJobs.py ufi > /tmp/pd.txt
+6 * * * * cd /home/ams/amscams/pythonv2/; ./batchJobs.py mi > /tmp/pd.txt
+10 * * * * cd /home/ams/amscams/pythonv2/; ./batchJobs.py tn > /tmp/pd.txt
+10 */2 * * * cd /home/ams/amscams/pythonv2/; ./batchJobs.py sna 2 > /tmp/pd.txt
+* * * * * cd /home/ams/amscams/pythonv2/; ./detectMeteors.py do_all > /tmp/dM.txt
+20 * * * * cd /home/ams/amscams/pythonv2/; ./batchJobs.py batch_doHD > /tmp/bdhd.txt
+30 * * * * cd /home/ams/amscams/pythonv2/; ./batchJobs.py bmt > /tmp/bdhd.txt
+40 * * * * cd /home/ams/amscams/pythonv2/; ./batchJobs.py mi> /tmp/bdhd.txt
+10 * * * * cd /home/ams/amscams/pythonv2/; ./batchJobs.py pd> /tmp/pd.txt
+10 15 * * * cd /home/ams/amscams/pythonv2/; ./autoCal.py make_hd_images today > /tmp/ac.txt
+13 * * * * cd /home/ams/amscams/pythonv2/; ./batchJobs.py fi> /tmp/pd.txt
+50 * * * * cd /home/ams/amscams/pythonv2/; ./sync.py day; ./sync.py day yest> /tmp/pd.txt
+10 */4 * * * cd /home/ams/amscams/pythonv2/; ./sync.py sys > /tmp/pd.txt
+
+# SYNC / SOLVE / WASABI JOBS
+#*/5 * * * * cd /home/ams/amscams/pythonv2/; ./flex-detect.py ra a > /tmp/ra.txt
+# sync archived files to wasabi drive
+15 */4 * * * cd /home/ams/amscams/pythonv2/; ./wasabi.py sa > /tmp/ra.txt
+# copy the multi-station-detect file
+20 */8 * * * cd /home/ams/amscams/pythonv2/; ./wasabi.py cp_msd > /tmp/ra.txt
+# update the meteor index (and copy to wasai) 
+25 */12 * * * cd /home/ams/amscams/pythonv2/; ./autocal.py meteor_index > /tmp/ra.txt
+# update the multi-station-detection report page  
+25 */12 * * * cd /home/ams/amscams/pythonv2/; ./flex-detect.py bams 0 > /tmp/ra.txt
+# update the arc files with MS status / event id etc?
+# run the solver / sync solutions / events?
+*/10 * * * * cd /home/ams/amscams/pythonv2/; ./NOAA.py > /tmp/pd.txt
+
+
+# do the day & day stacks
+7 * * * * cd /home/ams/amscams/pythonv2/; ./stackVideo.py sd all
+7 * * * * cd /home/ams/amscams/pythonv2/; ./doDay.py batch 60
