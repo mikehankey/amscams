@@ -110,7 +110,9 @@ def make_event_station_report(json_file):
    
 
    # Video Btns
-   playBtns = '''<ul id="video-controls" class="controls">
+   playBtns = '''
+      <div class="d-flex justify-content-between">
+      <ul id="video-controls" class="controls">
 			<li><button id="playpause" type="button" class="btn btn-secondary"><span class="icon-play1"></span></button></li>
 			<li><button id="stop" type="button" class="btn btn-secondary"><span class="icon-stop"></span></button></li>
 			<li class="progress">
@@ -119,9 +121,11 @@ def make_event_station_report(json_file):
 				</progress>
 			</li> 
 			<li><button id="fs" class="btn btn-secondary" type="button"><span class="icon-full-screen"></span></button></li>
-         <li><button id="showHideStars" class="btn btn-secondary"   type="button">Hide Stars</button></li>
-         <li><button id="showHideFrames"class="btn btn-secondary"  type="button">Show Frames</button></li>
-		</ul>
+      </ul>
+      <ul class="controls">
+         <li><button id="showHideStars" class="btn btn-secondary" type="button">Hide Stars</button></li>
+         <li><button id="showHideFrames"class="btn btn-secondary" type="button">Show Frames</button></li>
+      </ul>
     '''
 
    template = template.replace('{VIDEO}','<figure id="videoContainer" data-fullscreen="false"><video id="main_video_player" autoplay="" width="960" height="540" loop=""><source src="'+json_file.replace('.json','-HD.mp4')+'" type="video/mp4"></video>'+playBtns+'</figure>')
