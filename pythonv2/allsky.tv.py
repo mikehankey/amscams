@@ -81,11 +81,26 @@ def update_live_html():
             live_now +=  "<div class='_h4_hold'><h4 class='mb-0'>Station #"+station+"</h4></div>"
             live_now +=  "<div class='report_t'><a href=" + STATION_RPT_VDIR + "index.html><img src=" + files[0].replace("/mnt/archive.allsky.tv", "") + "></a></div>"
 
-   live_file = LIVE_DIR + "index.html"
-   for sd in status:
-      live_now += sd + " " + str(status[sd]) + "<BR>"
+ 
+   station_with_issues = ""
+   down=0
+   for sd in status: #sorted(status):
+      if(sd not in data_per_station): 
+         station_with_issues +=  "<li>Station <b>#AMS"+str(sd)+"</b></li>"
+         down+=1
 
-   template = template.replace("{LIVE}", live_now)
+
+   if(station_with_issues != ''):
+      if(down>1):
+         sts = "Stations"
+      else:
+         sts = "Station"
+      station_with_issues = "<div class='_h4_hold'><h4 class='mb-0'><span class='down'></span>+"+str(down)+" " + sts + " DOWN</h4></div><ul class='mt-3 ml-3'>" +  station_with_issues + "</ul>"
+
+    
+   template = template.replace("{LIVE}", live_now+ station_with_issues+"</div>")
+
+ 
 
    # Cur Day
    template = template.replace("{DAY}",dom.replace('_','/')) 
