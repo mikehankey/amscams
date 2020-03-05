@@ -87,9 +87,16 @@
  
           // Add events for all buttons
           playpause.addEventListener('click', function(e) {
-             if (video.paused || video.ended) video.play();
-             else video.pause();
-          });
+             if (video.paused || video.ended) {
+               $('#playpause').html('<span class="icon-pause"></span>');
+                video.play();
+               }
+                else {
+                  
+                $('#playpause').html('<span class="icon-play1"></span>');
+                  video.pause();
+                }
+                  });
  
           // The Media API has no 'stop()' function, so pause the video and reset its time and the progress bar
           stop.addEventListener('click', function(e) {
