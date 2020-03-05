@@ -39,7 +39,7 @@ async function extractFramesFromVideo(videoUrl, fps=25) {
  
      // set video src *after* listening to events in case it loads so fast
      // that the events occur before we were listening.
-     video.src = videoObjectUrl; 
+     videoDD.src = videoObjectUrl; 
  
    });
  }
