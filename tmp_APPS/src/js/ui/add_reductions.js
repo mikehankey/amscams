@@ -106,9 +106,7 @@ function update_reduction_on_canvas_and_table(json_resp, canvas) {
         table_tbody_html+= '<tr id="fr_'+frame_id+'" data-fn="'+frame_id+'" data-org-x="'+v['x']+'" data-org-y="'+v['y']+'"><td><div class="st" hidden style="background-color:'+all_colors[i]+'"></div></td>'
         table_tbody_html+= '<td><img alt="Thumb #'+frame_id+'" src='+thumb_path+' width="50" height="50" class="img-fluid smi select_meteor" style="border-color:'+all_colors[i]+'"/></td>';
         table_tbody_html+= '<td>'+frame_id+'</td><td>'+_time[1]+'</td><td>'+v['ra'].toFixed(PRECISION)+'&deg;&nbsp;/&nbsp;'+v['dec'].toFixed(PRECISION)+'&deg;</td><td>'+v["az"].toFixed(PRECISION)+'&deg;&nbsp;/&nbsp;'+v["el"].toFixed(PRECISION)+'&deg;</td><td>'+ parseFloat(v['x']) +'&nbsp;/&nbsp;'+parseFloat(v['y'])  +'</td><td>'+ v['w']+'x'+v['h']+'</td>';
-        table_tbody_html+= intensity;
-        table_tbody_html+= dist_err;
-        table_tbody_html+= '<td><a class="btn btn-danger btn-sm delete_frame"><i class="icon-delete"></i></a></td>';
+       
 
         if( i==middle_frame_index) {
             middle_frame = thumb_path;
@@ -159,10 +157,9 @@ function update_reduction_on_canvas_and_table(json_resp, canvas) {
     $('#reduc-tab tbody').html(table_tbody_html);
 
     // Replace Thumb used for the Anim Thumbs Preview
-    $("#play_anim").css('background','url('+middle_frame+')'),
+    //$("#play_anim").css('background','url('+middle_frame+')'),
 
-    // Reload the actions
-    reduction_table_actions();
+   
 }
 
 
@@ -176,112 +173,4 @@ function remove_reduction_objects_from_canvas() {
     });
      
  }
-
-function update_reduction_only(callback='') {
-    var cmd_data = {
-      json_file: json_file,          // Defined on the page 
-      cmd: 'get_reduction_info'
-    }
-
-    loading({text:'Updating  reduction data...', overlay:true}); 
-    
-    $.ajax({ 
-        url:  "/pycgi/webUI.py",
-        data: cmd_data,
-        success: function(data) {
-        
-            var json_resp = $.parseJSON(data); 
-
-            if(json_resp['status']!==0) {
-             
-                // Remove All objects from Canvas with type =   type: 'reduc_rect'
-                remove_reduction_objects_from_canvas();
-                 
-                // Update Reduction
-                update_reduction_on_canvas_and_table(json_resp);
-                
-                // Update Add frames
-                // setup_add_frames();
- 
-            }
-
-            reduction_table_actions();
-            
-            if(callback!='') {
-              callback();
-            }
-
-            loading_done();
- 
-        }, error: function(data) {
-            
-            loading_done();
-            bootbox.alert({
-                message: "Something went wrong with the reduction data. Please, try again later",
-                className: 'rubberBand animated error',
-                centerVertical: true 
-            });
-        }
-    });
-}
-
-
-
-// test if we have a missing thumb 
-function test_missing_thumb() {
-    var rows_with_missing_thumbs = [];
-    var we_try_how_many_times = 10;
-    var cnt = 0;
-
-
-   
-    $('#reduc-tab table img').each(function() {
-
-        // 50 = normal size => +47 without border
-	    if($(this).width()<47) {
-            rows_with_missing_thumbs.push($(this).closest('tr').attr('id'));
-            // Replace with loading
-            $(this).attr('data-src',$(this).attr('src')).attr('src','/pycgi/dist/img/anim_logo.svg');
-        }
-    
-    });
-
-    if(rows_with_missing_thumbs.length!=0) {
-        // We try to load it  
-        try_again = setInterval(function(){ 
-            
-            if(rows_with_missing_thumbs.length==0 || cnt>=we_try_how_many_times) {
-                // Replace with processing
-                clearInterval(try_again);
-
-                $.each(rows_with_missing_thumbs, function(i,v) {
-                    $('tr#'+v).find('img.select_meteor').removeAttr('data-src').attr('src','./dist/img/proccessing-sm.png');
-                });
-            }    
-
-            $.each(rows_with_missing_thumbs, function(i,v) {
-                var img_to_test = '/pycgi/' + $('tr#'+v).find('img.select_meteor').attr('data-src');
-                //console.log('TEST ', img_to_test);
-                $.ajax({
-                    url:img_to_test,
-                    type:'HEAD',
-                    success:function(e){
-                        // We place the image
-                        $('tr#'+v).find('img.select_meteor').attr('src','data-src').removeAttr('data-src');
-                        // We remove the td# from the array
-                        rows_with_missing_thumbs.splice(i, 1);
-                    },  
-                    error:function() { // :( 
-                    }
-                });
-            });
-
-            cnt++;
-        
-        }, 3000);
-    }
-    
-}
-
-
  
