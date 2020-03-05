@@ -24,6 +24,21 @@
     -moz-osx-font-smoothing: grayscale;
   }
 
+  .icon-full-screen:before {
+   content: "\e936";
+ }
+ .icon-pause:before {
+   content: "\e937";
+ }
+ .icon-play1:before {
+   content: "\e938";
+ }
+ .icon-reg-screen:before {
+   content: "\e939";
+ }
+ .icon-stop:before {
+   content: "\e93a";
+ }
 .icon-cloud-upload:before {
    content: "\e92b";
  }

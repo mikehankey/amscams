@@ -111,14 +111,16 @@ def make_event_station_report(json_file):
 
    # Video Btns
    playBtns = '''<ul id="video-controls" class="controls">
-			<li><button id="playpause" type="button">Play/Pause</button></li>
-			<li><button id="stop" type="button">Stop</button></li>
+			<li><button id="playpause" type="button" class="btn btn-secondary"><span class="icon-play1"></span></button></li>
+			<li><button id="stop" type="button" class="btn btn-secondary"><span class="icon-stop"></span></button></li>
 			<li class="progress">
 				<progress id="progress" value="0" min="0">
 					<span id="progress-bar"></span>
 				</progress>
 			</li> 
-			<li><button id="fs" type="button">Fullscreen</button></li>
+			<li><button id="fs" class="btn btn-secondary" type="button"><span class="icon-full-screen"></span></button></li>
+         <li><button id="showHideStars" class="btn btn-secondary"   type="button">Hide Stars</button></li>
+         <li><button id="showHideFrames"class="btn btn-secondary"  type="button">Show Frames</button></li>
 		</ul>
     '''
 
