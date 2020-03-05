@@ -49,6 +49,12 @@ async function extractFramesFromVideo(videoUrl, fps=25) {
 
  async function asyncCall() { 
    frames = await extractFramesFromVideo($('#main_video_player source').attr('src')); 
+
+   $.each(frames,function(i,v){
+      $('<img src='+v+'/>').preprendTo(($('#main_container'));
+   });
+
+
    console.log(frames);
  }
 
