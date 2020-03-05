@@ -122,7 +122,7 @@ def make_event_station_report(json_file):
 			</li> 
 			<li><button id="fs" class="btn btn-secondary" type="button"><span class="icon-full-screen"></span></button></li>
       </ul>
-      <ul class="controls">
+      <ul class="other_controls">
          <li><button id="showHideStars" class="btn btn-secondary" type="button">Hide Stars</button></li>
          <li><button id="showHideFrames"class="btn btn-secondary" type="button">Show Frames</button></li>
       </ul>
