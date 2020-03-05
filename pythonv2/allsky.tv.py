@@ -84,7 +84,8 @@ def update_live_html():
  
    station_with_issues = ""
    down=0
-   for sd in status: #sorted(status):
+   for i,sd in enumerate(status): #sorted(status):
+      print(str(i) + " > " + str(sd))
       if(sd!=0):
          station_with_issues +=  "<li>Station <b>#"+str(sd)+"</b></li>"
          down+=1
