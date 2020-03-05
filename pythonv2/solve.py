@@ -1378,6 +1378,120 @@ def find_vector_point(lat,lon,alt,az,el,factor=1000000):
    svlat, svlon, svalt = pm.ecef2geodetic(float(sveX), float(sveY), float(sveZ), wgs84)
    return(sveX,sveY,sveZ,svlat,svlon,svalt)
 
+def man_solve(values):
+
+   wgs84 = pm.Ellipsoid('wgs84');
+   lat1 = values['lat1']
+   lon1 = values['lon1']
+   alt1 = values['lat1']
+
+   saz1 = values['saz1']
+   eaz1 = values['eaz1']
+   sel1 = values['sel1']
+   eel1 = values['eel1']
+
+   lat2 = values['lat2']
+   lon2 = values['lon2']
+   alt2 = values['lat2']
+
+   saz2 = values['saz2']
+   eaz2 = values['eaz2']
+   sel2 = values['sel2']
+   eel2 = values['eel2']
+
+   print("OBS1:", lat1, lon1, alt1, saz1, sel1, eaz1, eel1)
+   print("OBS2:", lat2, lon2, alt2, saz2, sel2, eaz2, eel2)
+
+   x1, y1, z1 = pm.geodetic2ecef(float(lat1), float(lon1), float(alt1), wgs84)
+   x2, y2, z2 = pm.geodetic2ecef(float(lat2), float(lon2), float(alt2), wgs84)
+   
+   # convert station lat,lon,alt,az,el to start and end vectors
+   sveX1, sveY1, sveZ1, svlat1, svlon1,svalt1 = find_vector_point(float(lat1), float(lon1), float(alt1), saz1, sel1, 1000000)
+   eveX1, eveY1, eveZ1, evlat1, evlon1,evalt1 = find_vector_point(float(lat1), float(lon1), float(alt1), eaz1, eel1, 1000000)
+
+   sveX2, sveY2, sveZ2, svlat2, svlon2,svalt2 = find_vector_point(float(lat2), float(lon2), float(alt2), saz2, sel2, 1000000)
+   eveX2, eveY2, eveZ2, evlat2, evlon2,evalt2 = find_vector_point(float(lat2), float(lon2), float(alt2), eaz2, eel2, 1000000)
+
+   obs1 = Plane( \
+   Point3D(x1,y1,z1), \
+   Point3D(sveX1,sveY1,sveZ1), \
+   Point3D(eveX1,eveY1,eveZ1))
+
+   obs2 = Plane( \
+   Point3D(x2,y2,z2), \
+   Point3D(sveX2,sveY2,sveZ2), \
+   Point3D(eveX2,eveY2,eveZ2))
+
+
+   plane1 = Plane( \
+      Point3D(x1,y1,z1), \
+      Point3D(sveX1,sveY1,sveZ1), \
+      Point3D(eveX1,eveY1,eveZ1))
+
+   plane2 = Plane( \
+      Point3D(x2,y2,z2), \
+      Point3D(sveX2,sveY2,sveZ2), \
+      Point3D(eveX2,eveY2,eveZ2))
+
+   start_line1 = Line3D(Point3D(x1,y1,z1),Point3D(sveX1,sveY1,sveZ1))
+   end_line1 = Line3D(Point3D(x1,y1,z1),Point3D(eveX1,eveY1,eveZ1))
+
+   start_line2 = Line3D(Point3D(x2,y2,z2),Point3D(sveX2,sveY2,sveZ2))
+   end_line2 = Line3D(Point3D(x2,y2,z2),Point3D(eveX2,eveY2,eveZ2))
+
+   start_inter2 = plane2.intersection(start_line1)
+   end_inter2 = plane2.intersection(end_line1)
+
+
+   start_inter1 = plane1.intersection(start_line2)
+   end_inter1 = plane1.intersection(end_line2)
+
+   sx1,sy1,sz1 = read_inter(start_inter1)
+   ex1,ey1,ez1 = read_inter(end_inter1)
+
+
+   sx2,sy2,sz2 = read_inter(start_inter2)
+   ex2,ey2,ez2 = read_inter(end_inter2)
+
+
+   slat, slon, salt = pm.ecef2geodetic(sx1,sy1,sz1, wgs84)
+   elat, elon, ealt = pm.ecef2geodetic(ex1,ey1,ez1, wgs84)
+
+
+   slat2, slon2, salt2 = pm.ecef2geodetic(sx2,sy2,sz2, wgs84)
+   elat2, elon2, ealt2 = pm.ecef2geodetic(ex2,ey2,ez2, wgs84)
+
+   print("SX:", sx1,sy1,sz1)
+   print("EX:", ex1,ey1,ez1)
+
+   print("START:", slat, slon,salt)
+   print("END:", elat, elon,ealt)
+   print("START2:", slat2, slon2,salt2)
+   print("END2:", elat2, elon2,ealt2)
+
+def read_inter(inter):
+
+   if hasattr(inter[0], 'p1'):
+      p1 = inter[0].p1
+      p2 = inter[0].p2
+      if p1[2] < p2[2]:
+         sx = float((eval(str(p1[0]))))
+         sy = float((eval(str(p1[1]))))
+         sz = float((eval(str(p1[2]))))
+      else:
+         sx = float((eval(str(p2[0]))))
+         sy = float((eval(str(p2[1]))))
+         sz = float((eval(str(p2[2]))))
+   else:
+      sx = float((eval(str(inter[0].x))))
+      sy = float((eval(str(inter[0].y))))
+      sz = float((eval(str(inter[0].z))))
+
+
+   return(sx,sy,sz)
+
+
+
 
 def simple_solve(event_file):
 
@@ -1444,6 +1558,8 @@ def simple_solve(event_file):
             Point3D(x,y,z), \
             Point3D(sveX,sveY,sveZ), \
             Point3D(eveX,eveY,eveZ))
+
+
 
 
    meteor_start_points = {}
@@ -2537,3 +2653,64 @@ if sys.argv[1] == "report_html":
    report_html(sys.argv[2])
 if sys.argv[1] == "ei":
    make_event_day_index( sys.argv[2])
+if sys.argv[1] == "man":
+   # Robert and Los Alamos
+   values = {
+      'lat1' : 34.602065,
+      'lon1' : -112.425065,
+      'alt1' : 1500,
+      'saz1' : 70.13,
+      'sel1' : 15.6,
+      'eaz1' : 84.81,
+      'eel1' : 3.82,
+      'lat2' : 35.88649,
+      'lon2' : -106.276960,
+      'alt2' : 2300,
+      'saz2' : 260,
+      'sel2' : 15,
+      'eaz2' : 248,
+      'eel2' : 8
+   }
+   # los alamos and nick
+   values = {
+      'lat1' : 35.88649,
+      'lon1' : -106.276960,
+      'alt1' : 2300,
+      'saz1' : 260,
+      'sel1' : 15,
+      'eaz1' : 248,
+      'eel1' : 8,
+      'lat2' : 35.03290,
+      'lon2' : -111.02157,
+      'alt2' : 1600,
+      'saz2' : 70.6,
+      'sel2' : 29.76,
+      'eaz2' : 74.58,
+      'eel2' : 27.37
+   }
+   # robert and nick
+   values = {
+     'lat1' : 34.602065,
+      'lon1' : -112.425065,
+      'alt1' : 1500,
+      'saz1' : 70.13,
+      'sel1' : 15.6,
+      'eaz1' : 84.81,
+      'eel1' : 3.82,
+      'lat2' : 35.03290,
+      'lon2' : -111.02157,
+      'alt2' : 1600,
+      'saz2' : 70.6,
+      'sel2' : 29.76,
+      'eaz2' : 74.58,
+      'eel2' : 27.37
+   }
+
+
+ #35.032900° / -111.021570°
+#31.40 -70.60
+
+#27.21 -74.58
+
+
+   man_solve(values)

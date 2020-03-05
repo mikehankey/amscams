@@ -29,7 +29,7 @@ import ephem
 from lib.flexCal import flex_get_cat_stars, reduce_fov_pos
 
 
-from lib.VideoLib import get_masks, find_hd_file_new, load_video_frames, sync_hd_frames, make_movie_from_frames, add_radiant
+from lib.VideoLib import get_masks, find_hd_file_new, load_video_frames, sync_hd_frames, make_movie_from_frames, add_radiant, ffmpeg_trim
 
 from lib.UtilLib import check_running, angularSeparation
 from lib.CalibLib import radec_to_azel, clean_star_bg, get_catalog_stars, find_close_stars, XYtoRADec, HMS2deg, AzEltoRADec, get_active_cal_file
@@ -55,8 +55,92 @@ show = 0
 
 ARCHIVE_DIR = "/mnt/ams2/meteor_archive/"
 
+
+def find_hd_file_best(sd_file, trim_num, dur = 25, trim_on =1):
+   print("FIND HD FILE NEW FOR :", sd_file)
+   hd_file = None
+   (sd_datetime, sd_cam, sd_date, sd_y, sd_m, sd_d, sd_h, sd_M, sd_s) = convert_filename_to_date_cam(sd_file)
+   day = sd_y + "_" + sd_m + "_" + sd_d
+   #if trim_num > 1400:
+      #hd_file, hd_trim = eof_processing(sd_file, trim_num, dur)
+   #   time_diff_sec = int(trim_num / 25)
+   #   if hd_file != 0:
+   #      return(hd_file, hd_trim, time_diff_sec, dur)
+   offset = int(trim_num) / 25
+   meteor_datetime = sd_datetime + datetime.timedelta(seconds=offset)
+   hd_glob = "/mnt/ams2/HD/" + sd_y + "_" + sd_m + "_" + sd_d + "_*" + sd_cam + "*.mp4"
+   hd_files = sorted(glob.glob(hd_glob))
+   hd_files_time = []
+   for hd_file in hd_files:
+      el = hd_file.split("_")
+      if len(el) == 8 and "meteor" not in hd_file and "crop" not in hd_file and "trim" not in hd_file:
+         hd_datetime, hd_cam, hd_date, hd_y, hd_m, hd_d, hd_h, hd_M, hd_s = convert_filename_to_date_cam(hd_file)
+         time_diff = meteor_datetime - hd_datetime
+         time_diff_sec = time_diff.total_seconds()
+         if 0 < time_diff_sec < 60:
+            hd_files_time.append((hd_file, time_diff_sec, hd_datetime))
+
+   if len(hd_files_time) > 0:
+      temp = sorted(hd_files_time, key=lambda x: x[1], reverse=False)
+
+      hd_file = temp[0][0]
+      time_diff_sec = temp[0][1]
+      hd_datetime = temp[0][2]
+ 
+      dur = int(dur)
+
+   if hd_file is not None:
+      trim_adj = int(time_diff_sec * 25)
+      print("METEOR TIME:", meteor_datetime)
+      print("HD DATE TIME:", hd_datetime)
+      print("TIME DIFF SEC", time_diff_sec)
+      print("TRIM ADJ:", trim_adj)
+      print("HD FILE:", hd_file)
+      print("SD FILE:", video_file)
+
+      hd_start = trim_adj 
+      hd_end = trim_adj + dur 
+
+      hd_trim , trim_start, trim_end = make_trim_clip(hd_file, hd_start, hd_end)
+      print("HD:", hd_trim, trim_adj, trim_adj+dur)
+      hd_proc_dir = "/mnt/ams2/SD/proc2/" + day + "/hd_save";
+      if cfe(hd_proc_dir,1) == 0:
+         os.makedirs(hd_proc_dir)
+      cmd = "cp " + hd_file + " " + hd_proc_dir
+      os.system(cmd)
+      cmd = "cp " + hd_trim + " " + hd_proc_dir
+      os.system(cmd)
+      return(hd_file, hd_trim, time_diff_sec, dur)
+   else:
+      print("NO HD FOUND")
+      hd_trim = None
+
+   # No HD file was found. Trim out the SD Clip and then upscale it.
+   exit() 
+   #time_diff_sec = int(trim_num / 25)
+   #dur = int(dur) + 1 + 3
+   #print("UPSCALE FROM SD!", time_diff_sec, dur)
+   #time_diff_sec = time_diff_sec - 1
+   #sd_trim = ffmpeg_trim(sd_file, str(time_diff_sec), str(dur), "-trim-" + str(trim_num) + "-SD-meteor")
+   #hd_trim = upscale_sd_to_hd(sd_trim)
+   #if "-SD-meteor-HD-meteor" in hd_trim:
+   #   orig_hd_trim = hd_trim
+   #   hd_trim = hd_trim.replace("-SD-meteor", "")
+   #   hdf = hd_trim.split("/")[-1]
+   #   os.system("mv " + orig_hd_trim + " /mnt/ams2/HD/" + hdf)
+   #   print("HD F: mv " + orig_hd_trim + " /mnt/ams2/HD/" + hdf)
+   #   hd_trim = "/mnt/ams2/HD/" + hdf
+
+   return(sd_file,hd_trim,str(0),str(dur))
+
+
 def finish_meteor(meteor_file):
    video_file = meteor_file.replace("-meteor.json", ".mp4")
+   if "proc2" in meteor_file:
+      video_file = video_file.replace("data/", "")
+   if cfe(video_file) == 0:
+      print("File not found.", video_file)
+      exit()
    (f_datetime, cam, f_date_str,year,mon,dom, fh, fmin, fs) = convert_filename_to_date_cam(meteor_file)
    # after detect is made finish processing on meteor
    # convert to old and new json formats
@@ -120,8 +204,9 @@ def finish_meteor(meteor_file):
          hd_fn = hd_meteors[i]['trim_clip'].split("/")[-1]
          hd_meteors[i]['trim_clip'] = hd_fn
          hd_full = hd_fn.split("-trim")[0]
-         hd_full  += ".mp4"
-         hd_meteors[i]['hd_file'] = hd_full
+         if ".mp4" not in hd_full:
+            hd_full  += ".mp4"
+            hd_meteors[i]['hd_file'] = hd_full
 
       year = sd_fn[0:4]
       day = sd_fn[0:10]
@@ -204,6 +289,12 @@ def finish_meteor(meteor_file):
 
       sd_meteor['trim_clip'] = old_sd_fn  
       hd_meteor['trim_clip'] = old_hd_fn  
+
+
+      print(new_sd_fn)
+      print(new_hd_fn)
+      print(new_sd_file_name)
+      print(new_hd_file_name)
 
       make_movie_from_frames(sync_hd_frames, [0,len(sync_hd_frames) - 1], new_hd_file_name, 0)
       make_movie_from_frames(sync_sd_frames, [0,len(sync_sd_frames) - 1], new_sd_file_name, 0)
@@ -974,7 +1065,7 @@ def detect_meteor_in_clip(trim_clip, frames = None, fn = 0, crop_x = 0, crop_y =
                cv2.putText(show_frame, desc,  (x,y), cv2.FONT_HERSHEY_SIMPLEX, .4, (255, 255, 255), 1)
       
       show_frame = cv2.convertScaleAbs(show_frame)
-      show = 1 
+      show = 0 
       if show == 1:
          cv2.imshow('Detect Meteor In Clip', show_frame)
          cv2.waitKey(0)
@@ -3957,8 +4048,8 @@ def find_contours_in_frame(frame, thresh=25 ):
          #print("RECT RESULT:", rc, res)
          rc = rc + 1
 
-   cv2.imshow("pepe", threshold)
-   cv2.waitKey(0)
+   #cv2.imshow("pepe", threshold)
+   #cv2.waitKey(0)
 
    return(contours, recs)
 
@@ -4807,11 +4898,11 @@ def analyze_object(object, hd = 0, sd_multi = 1, final=0):
    else:
       dist_per_elp = 0
 
-   if len(object['ofns']) > 3 and perc_big >= .75 and len(object['ofns']) < 10:
-      moving = "moving"
-      meteor_yn = "no"
-      obj_class = "car or object"
-      bad_items.append("too many big percs")
+   #if len(object['ofns']) > 3 and perc_big >= .75 and len(object['ofns']) < 10:
+   #   moving = "moving"
+   #   meteor_yn = "no"
+   #   obj_class = "car or object"
+   #   bad_items.append("too many big percs")
 
    if elp > 5 and dist_per_elp < .1 :
       moving = "not moving"
@@ -4891,9 +4982,9 @@ def analyze_object(object, hd = 0, sd_multi = 1, final=0):
    if elp < 2:
       meteor_yn = "no" 
       bad_items.append("less than 2 frames in event.")
-   if perc_big > .75 and len(object['ofns']) < 10:
-      meteor_yn = "no"
-      bad_items.append("too many big cnts." + str(perc_big))
+   #if perc_big > .75 and len(object['ofns']) < 10:
+   #   meteor_yn = "no"
+   #   bad_items.append("too many big cnts." + str(perc_big))
    if max_cm < 3:
       meteor_yn = "no"
       bad_items.append("less than 2 consecutive motion.")
@@ -5002,7 +5093,7 @@ def analyze_object(object, hd = 0, sd_multi = 1, final=0):
    object['report'] = {}
   
    if meteor_yn == "Y": 
-      print("CLASSIFY HD/SD (HD should be 0):", sd)
+      #print("CLASSIFY HD/SD (HD should be 0):", sd)
       class_rpt = classify_object(object, sd)
       object['report']['classify'] = class_rpt
       object['report']['meteor_yn'] = meteor_yn
@@ -5067,9 +5158,9 @@ def find_object(objects, fn, cnt_x, cnt_y, cnt_w, cnt_h, intensity=0, hd=0, sd_m
    #if fn < 5:
    #   return(0, objects)
    if hd == 1:
-      obj_dist_thresh = 20 
+      obj_dist_thresh = 60
    else:
-      obj_dist_thresh = 10
+      obj_dist_thresh = 30 
 
    center_x = cnt_x 
    center_y = cnt_y  
@@ -5088,7 +5179,6 @@ def find_object(objects, fn, cnt_x, cnt_y, cnt_w, cnt_h, intensity=0, hd=0, sd_m
             wm = int(ows[oi] / 2)
             lfn = int(ofns[-1] )
             dist = calc_obj_dist((cnt_x,cnt_y,cnt_w,cnt_h),(oxs[oi], oys[oi], ows[oi], ohs[oi]))
-        
             last_frame_diff = fn - lfn 
             if dist < obj_dist_thresh and last_frame_diff < 10:
                found = 1
@@ -5118,7 +5208,7 @@ def find_object(objects, fn, cnt_x, cnt_y, cnt_w, cnt_h, intensity=0, hd=0, sd_m
          fm_last = calc_dist((objects[found_obj]['oxs'][0],objects[found_obj]['oys'][0]), (objects[found_obj]['oxs'][-1],objects[found_obj]['oys'][-1]))
          fm_this = calc_dist((objects[found_obj]['oxs'][0],objects[found_obj]['oys'][0]), (center_x, center_y))
          fm = fm_this - fm_last
-         if intensity > 10 and fm > 0:
+         if intensity >= 0 and fm >= 0:
             objects[found_obj]['ofns'].append(fn)
             objects[found_obj]['oxs'].append(center_x)
             objects[found_obj]['oys'].append(center_y)
@@ -7504,7 +7594,7 @@ def load_frames_fast(trim_file, json_conf, limit=0, mask=0,crop=(),color=0,resiz
          if frame is None:
             if frame_count <= 5 :
                cap.release()
-               return(frames,color_frames,subframes,sum_vals,max_vals)
+               return(frames,color_frames,subframes,sum_vals,max_vals,pos_vals)
             else:
                go = 0
          else:
@@ -9916,8 +10006,24 @@ def play_clip(video_file,cx1=0,cy1=0,cx2=0,cy2=0):
       cv2.imshow('pepe', frame)
       cv2.waitKey(0)
 
+def batch_vals(day):
+   data_dir = "/mnt/ams2/SD/proc2/" + day + "/data/"
+   val_files = glob.glob(data_dir + "*-vals.json")
+   for vf in val_files:
+      mf = vf.replace("-vals.json", "-meteor.json")
+      df = vf.replace("-vals.json", "-detect.json")
+      tf = vf.replace("-vals.json", "-toomany.json")
+      if cfe(mf) == 0 and cfe(df) == 0 and cfe(tf) == 0:
+         detect_in_vals(vf)
+
 def detect_in_vals(vals_file):
+   if "mp4" in vals_file and "proc2" in vals_file:
+      vfn = vals_file.split("/")[-1]
+      bsd = vals_file.replace(vfn, "")
+      vals_file = bsd + "data/" + vfn
+      vals_file = vals_file.replace(".mp4", "-vals.json")
    video_file = vals_file.replace("-vals.json", ".mp4")
+   video_file = video_file.replace("data/", "")
    data = load_json_file(vals_file)
    events = []
    data_x = []
@@ -9928,7 +10034,7 @@ def detect_in_vals(vals_file):
    for i in range(0,len(data['max_vals'])):
       x,y = data['pos_vals'][i]
       max_val = data['max_vals'][i]
-      if max_val > 10:
+      if max_val > 0:
          if last_i is not None and  last_i + 1 == i:
             cm += 1
          else:
@@ -9936,7 +10042,7 @@ def detect_in_vals(vals_file):
          data_x.append(x)
          data_y.append(y)
          print(i, x,y, max_val, cm)
-         object, objects = find_object(objects, i,0, 0, SD_W, SD_H, 0, 0, 0, None)
+         object, objects = find_object(objects, i,x, y, SD_W, SD_H, 0, 0, 0, None)
       else:
          if cm >= 3:
             e_end = i
@@ -9954,36 +10060,100 @@ def detect_in_vals(vals_file):
 
    for ev in events:
       print(ev)
+
+   suspect_meteors = []
+   clip_fns = []
    for obj in objects:
-      print(obj, objects[obj]['ofns'], objects[obj]['report']['meteor_yn'], objects[obj]['report']['bad_items']  )
+      if objects[obj]['report']['meteor_yn'] == "Y":
+         clip_fns.append(min(objects[obj]['ofns']))
+         clip_fns.append(max(objects[obj]['ofns']))
+         print(obj, objects[obj]['ofns'], objects[obj]['report']['meteor_yn'], objects[obj]['report']['bad_items']  )
+         print(objects[obj]['oxs'], objects[obj]['oys'])
+         suspect_meteors.append(objects[obj])
+      else:
+         print("NON:", obj, objects[obj]['ofns'], objects[obj]['report']['meteor_yn'], objects[obj]['report']['bad_items']  )
+         print("NON:", objects[obj]['oxs'], objects[obj]['oys'])
 
-   # find the HD and trim & crop the clips  
-   #events = process_events(video_file,events)
-   exit()
-   # find the objects in each cropped clip
-   for ev in events:
-      print(ev) 
-      sd_trim,sd_crop,hd_trim,hd_crop,crop_info = ev['event_files']
-      hd_motion_objects,hd_meteor_frames = detect_meteor_in_clip(hd_crop, None, 0,crop_info[0],crop_info[1], 1)
-      sd_motion_objects,sd_meteor_frames = detect_meteor_in_clip(sd_trim, None, 0,0,0,0)
-      print("EVENT FRAMES: ", ev['frames'])
-      print("HD MOTION OBJECTS:", len(sd_motion_objects))
-      for id in hd_motion_objects:
-         obj = hd_motion_objects[id] 
-         if obj['report']['meteor_yn'] == 'Y':
-            print(obj['ofns']) 
-            print(obj['report']) 
-            print("EV:", ev['event_files'])
+   if len(clip_fns) == 0:
+      print("NO METEORS.")
+      detect_info = {}
+      detect_info['events'] = events 
+      detect_info['objects'] = objects 
+      detect_file = vals_file.replace("-vals.json", "-detect.json")
+      save_json_file(detect_file, detect_info)
+      return()
+   if len(suspect_meteors) > 1:
+      print("more than one many meteor!")
 
-      print("SD MOTION OBJECTS:", len(sd_motion_objects))
-      for id in sd_motion_objects:
-         obj = sd_motion_objects[id] 
-         if obj['report']['meteor_yn'] == 'Y':
-            print(obj['ofns']) 
-            print(obj['report']) 
-            print("EV:", ev['event_files'])
+      detect_info = {}
+      detect_info['events'] = events 
+      detect_info['objects'] = objects 
+      detect_file = vals_file.replace("-vals.json", "-toomany.json")
+      save_json_file(detect_file, detect_info)
+      return()
+
+    
+
+
+   buf_size = 10
+   start_fn, end_fn= buffered_start_end(min(clip_fns),max(clip_fns), len(data['max_vals']), buf_size)
+   trim_clip, trim_start, trim_end = make_trim_clip(video_file, start_fn, end_fn)
+   #os.system("cp " + trim_clip + " " + "/mnt/ams2/SD/proc2/" + day + "/hd_save/")
+   print("TRIM:", trim_clip)
+   hd_file, hd_trim,time_diff_sec, dur = find_hd_file_best(video_file, start_fn, end_fn-start_fn, 1)
+   sd_trim = trim_clip
+   print(hd_file)
+   print(hd_trim)
+   print(trim_clip)
+
+   hd_motion_objects,hd_meteor_frames = detect_meteor_in_clip(hd_trim, None, 0,0,0,1)
+   sd_motion_objects,sd_meteor_frames = detect_meteor_in_clip(sd_trim, None, 0,0,0,0)
+
+   sd_meteors = []
+   hd_meteors = []
+   for obj in sd_motion_objects:
+      if sd_motion_objects[obj]['report']['meteor_yn'] == "Y":
+         sd_meteors.append(sd_motion_objects[obj])
+   for obj in hd_motion_objects:
+      if hd_motion_objects[obj]['report']['meteor_yn'] == "Y":
+         hd_meteors.append(hd_motion_objects[obj])
+
+
+   if len(hd_meteors) == 0 and len(sd_meteors) == 0:
+      print("NO METEORS FOUND")
+      detect_info = {}
+      detect_info['events'] = events 
+      detect_info['objects'] = objects 
+      detect_info['sd_motion_objects'] = sd_motion_objects
+      detect_info['hd_motion_objects'] = hd_motion_objects
+      detect_file = vals_file.replace("-vals.json", "-detect.json")
+      save_json_file(detect_file, detect_info)
+      return()
+
+   print("HD:", hd_motion_objects)
+   print("SD:", hd_motion_objects)
+   meteor = {}
+   meteor['hd_motion_objects'] = hd_motion_objects
+   meteor['motion_objects'] = sd_motion_objects
+   meteor['hd_trim'] = hd_trim
+   meteor['sd_trim'] = sd_trim
+   meteor['sd_meteors'] = sd_meteors 
+   meteor['hd_meteors'] = hd_meteors 
+   meteor_file = vals_file.replace("-vals.json", "-meteor.json")
+   save_json_file(meteor_file, meteor)
+   print("METEOR:", meteor_file) 
+   complete_vals_detect(meteor_file)
+
+   # Now all that is left...
+   # determine frame times
+   # apply calib
+   # format old and new json
+   # copy files to arc dir and old json dir
    
    return()
+
+def complete_vals_detect(meteor_file):
+   print("Complete meteor.")
 
 def process_events(video_file,events):
    """ 
@@ -10409,6 +10579,8 @@ if cmd == "basic" :
    basic_scan(sys.argv[2])
 if cmd == "plot_vals" :
    plot_vals(sys.argv[2])
-if cmd == "detect_in_vals" :
+if cmd == "detect_in_vals" or cmd == 'dv':
    detect_in_vals(sys.argv[2])
+if cmd == "batch_vals" or cmd == 'bv':
+   batch_vals(sys.argv[2])
 

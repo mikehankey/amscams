@@ -2,6 +2,7 @@
 
 from PIL import ImageFont, ImageDraw, Image, ImageChops
 
+import ephem
 import numpy as np
 import datetime
 import time
@@ -20,6 +21,35 @@ hdm_y = 1080 / SD_H
 
 
 json_conf = load_json_file("../conf/as6.json")
+
+
+def day_or_night(capture_date, json_conf):
+
+   device_lat = json_conf['site']['device_lat']
+   device_lng = json_conf['site']['device_lng']
+
+   obs = ephem.Observer()
+
+   obs.pressure = 0
+   obs.horizon = '-0:34'
+   obs.lat = device_lat
+   obs.lon = device_lng
+   obs.date = capture_date
+
+   sun = ephem.Sun()
+   sun.compute(obs)
+
+   (sun_alt, x,y) = str(sun.alt).split(":")
+
+   saz = str(sun.az)
+   (sun_az, x,y) = saz.split(":")
+   if int(sun_alt) < -1:
+      sun_status = "night"
+   else:
+      sun_status = "day"
+   return(sun_status)
+
+
 
 def fix_missing_stacks(day):
    files = glob.glob("/mnt/ams2/SD/proc2/" + day + "/*.mp4" )
@@ -72,7 +102,7 @@ def fix_missing_stacks(day):
 
 def batch_ss(wildcard=None):
    running = check_running("scan_stack.py") 
-   if running > 2:
+   if running > 14:
       print("Running already.")
       exit()
 
@@ -190,7 +220,7 @@ def scan_and_stack_fast(file, day = 0):
             pos_vals.append((0,0))
          else:
             _, thresh_frame = cv2.threshold(sub, 15, 255, cv2.THRESH_BINARY)
-            min_val, max_val, min_loc, (mx,my)= cv2.minMaxLoc(thresh_frame)
+            #min_val, max_val, min_loc, (mx,my)= cv2.minMaxLoc(thresh_frame)
             sum_val =cv2.sumElems(thresh_frame)[0]
             mx = mx * 2
             my = my * 2
@@ -312,3 +342,5 @@ if sys.argv[1] == "ss":
    scan_and_stack_fast(sys.argv[2], sys.argv[3])
 if sys.argv[1] == "fms":
    fix_missing_stacks(sys.argv[2])
+if sys.argv[1] == "dv":
+   detect_in_vals(sys.argv[2])

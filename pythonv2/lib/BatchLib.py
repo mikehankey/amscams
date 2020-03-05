@@ -417,14 +417,16 @@ def purge_data(json_conf):
    
    try:
       cmd = "df -h | grep ams2"
-      output = subprocess.check_output(cmd, shell=True).decode("utf-8")
-      stuff = output.split(" ")
+      #output = subprocess.check_output(cmd, shell=True).decode("utf-8")
+      #stuff = output.split(" ")
+      stuff = []
       print(stuff)
       for st in stuff:
          if "%" in st:
             disk_perc = int(st.replace("%", ""))
    except:
       disk_perc = 81
+   disk_perc = 81
    if disk_perc > disk_thresh:
       print("DELETE some stuff...")
       # delete HD Daytime Files older than 1 day
@@ -493,8 +495,10 @@ def stack_day_cam_all(json_conf, glob_dir, cams_id ):
    print ("stacking failures")
    # stack failed captures
    img_dir = glob_dir + "/images/"
-   f_glob_dir = glob_dir + "/images/*" + cams_id + "*-stacked.png"
+   f_glob_dir = glob_dir + "/images/*" + cams_id + "*-stacked-tn.png"
    out_file = img_dir + cams_id + "-night-stack.png"
+
+
    stack_glob(f_glob_dir, out_file)
 
 

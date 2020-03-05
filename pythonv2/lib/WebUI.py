@@ -13,6 +13,7 @@ import re
 import datetime
 import time  
 from pathlib import Path
+from lib.MeteorReducePage import create_tab_and_content
 from lib.PwdProtect import login_page, check_pwd_ajax
 from lib.Pagination import get_pagination
 from lib.PrintUtils import get_meteor_date, get_date_from_file, get_meteor_time, get_custom_video_date_and_cam_id
@@ -689,6 +690,13 @@ def controller(json_conf):
       extra_html = hd_cal_detail(json_conf, form)
    if cmd == 'calib_hd_cal_detail':
       extra_html = calib_hd_cal_detail(json_conf, form)
+
+
+   if cmd == 'trim_clip':
+      video_file = form.getvalue('video_file')
+      start = form.getvalue('start')
+      end = form.getvalue('end')
+      trim_clip(video_file,start,end)
 
    if cmd == 'examine_min':
       video_file = form.getvalue('video_file')
@@ -2140,18 +2148,55 @@ def reset(video_file, type):
    cmd2 = "echo \"" + cmd + "\" >> /home/ams/amscams/pythonv2/tmp.txt"
    os.system(cmd2)
 
+def trim_clip(video_file, start, end):
+   print("trim clip")
+   outfile = video_file.replace(".mp4", "-trim" + str(start) + ".mp4")
+   cmd = "/usr/bin/ffmpeg -y -i " + video_file + " -vf select=\"between(n\," + str(start) + "\," + str(end) + "),setpts=PTS-STARTPTS\" " + outfile + " 2>&1 > /dev/null"
+   if cfe(outfile) == 0:
+      print(cmd)
+      os.system(cmd)
+   print("Trim clip made:", outfile)
+
+
 def examine_min(video_file,json_conf):
    failed_files, meteor_files, pending_files = get_trims_for_file(video_file)
    stack_file = stack_file_from_video(video_file)
    vals_file = stack_file.replace("-stacked.png", "-vals.json")
    vals_file = vals_file.replace("images", "data")
-   detect_file = stack_file.replace("-stacked.png", "-detect.json")
-   meteor_file = stack_file.replace("-stacked.png", "-meteor.json")
+   detect_file = vals_file.replace("-vals.json", "-detect.json")
+   meteor_file = vals_file.replace("-vals.json", "-meteor.json")
+   toomany_file = vals_file.replace("-vals.json", "-toomany.json")
 
+   detect_info = None
+   meteor_info = None
+   toomany = None
+   if cfe(meteor_file) == 1:
+      meteor_files = []
+      meteor_info = load_json_file(meteor_file)
+      meteor_files.append( meteor_info['hd_trim'])
+      meteor_files.append(meteor_info['sd_trim'])
+   elif cfe(toomany_file) == 1:
+      toomany = load_json_file(toomany_file)
+   elif cfe(detect_file) == 1:
+      detect_info = load_json_file(detect_file)
+      detect_html = "Events<BR>"
+      ec = 1
+      for event in detect_info['events']:
+         detect_html += "Frames:" + str(event['frames'])  + "<BR>"
+         detect_html += "Sum Vals:" + str(event['sum_vals'])  + "<BR>"
+         detect_html += "Max Vals:" + str(event['max_vals'])  + "<BR>"
+         detect_html += "Pos:" + str(event['pos_vals'])  + "<BR>"
+         detect_html += str(ec) + "<BR>"
+         ec += 1
+      detect_html += "Objects<BR>"
+      for id in detect_info['objects']:
+         obj = detect_info['objects'][id]
+         detect_html += str(obj) + " " + "<BR>"
+
+
+   #print(detect_html)
    if cfe(vals_file) == 1:
       vals = load_json_file(vals_file)
-   else:
-      print(vals_file, "not found<HR>")
 
    next_stack_file = stack_file_from_video(video_file)
   
@@ -2177,20 +2222,23 @@ def examine_min(video_file,json_conf):
    print("<div class='box'><h2>Status</h2>")
    print("<div class='p-3'>")
  
-   if len(pending_files) > 0:
-      print("<p>Trim files for this clip are still pending processing. Please wait before manually processing this file.</p>")
-      print("<ul>")
-      for pending in pending_files:
-         print("<li><a href=" + pending + ">" + pending + "</a></li>")
-      print("</ul>")
+   #if len(pending_files) > 0:
+   #   print("<p>Trim files for this clip are still pending processing. Please wait before manually processing this file.</p>")
+   #   print("<ul>")
+   #   for pending in pending_files:
+   #      print("<li><a href=" + pending + ">" + pending + "</a></li>")
+   #   print("</ul>")
 
-   if len(meteor_files) > 0:
+   if len(meteor_files) > 0 or meteor_info is not None:
       print("<p class='text-center alert success'><b>Meteor DETECTED</b></p>")
       for meteor_file in meteor_files:
          meteor_stack = meteor_file.replace(".mp4", "-stacked.png")
-         print("<a href='" + meteor_file + "' class='mx-auto d-block'>")
-         print("<img src='" + meteor_stack + "' class='mx-auto d-block img-fluid'></a>")
-         print("<a class='btn btn-primary mx-auto d-block mt-1 mb-3' href='webUI.py?cmd=examine&video_file=" + meteor_file + "'>Examine</a>")
+         print("<a href='" + meteor_file + "' class='mx-auto d-block'>" + meteor_file + "</a><br>")
+         sfn = meteor_file.split("/")[-1]
+         mdir = meteor_file.replace(sfn, "")
+         meteor_stack = mdir + "images/" + sfn
+         #print("<img src='" + meteor_stack + "' class='mx-auto d-block img-fluid'></a>")
+         #print("<a class='btn btn-primary mx-auto d-block mt-1 mb-3' href='webUI.py?cmd=examine&video_file=" + meteor_file + "'>Examine</a>")
 
    if len(failed_files) > 0: 
       print("<p class='text-center alert error'><b>NON METEOR Detection</b></p>")
@@ -2207,11 +2255,45 @@ def examine_min(video_file,json_conf):
 
    print("</div>")
    print("</div>")
-   print("</div></div>")
+   print("</div>")
+   print("</div>")
+
+   object_html = ""
+
+   if detect_info is not None:
+      print(detect_info)
+   if meteor_info is not None:
+      meteor_html = "Meteor Info<BR>"
+      meteor_html += "HD TRIM FILE: " + meteor_info['hd_trim'] + "<BR>"
+      meteor_html += "SD TRIM FILE: " + meteor_info['sd_trim'] + "<BR>"
+      meteor_html += "HD OBJECTS:<BR>"
+      for key in meteor_info['hd_motion_objects']: 
+         obj = meteor_info['hd_motion_objects'][key]
+         if obj['report']['meteor_yn'] == "Y":
+            meteor_html += key + "<BR>"
+            meteor_html += key + str(obj['report']) +  "<BR>"
+
+      meteor_html += "SD OBJECTS:<BR>"
+      for key in meteor_info['motion_objects']:
+         obj = meteor_info['motion_objects'][key]
+         if obj['report']['meteor_yn'] == "Y":
+            meteor_html += key + str(obj['report']) + "<BR>"
+      object_html = meteor_html
+   if toomany is not None:
+      for key in toomany['objects']:
+         obj = toomany['objects'][key]
+         if obj['report']['max_cm'] > 2:
+            object_html += key + " " + str(obj['report']['max_cm']) + " " + str( obj['ofns']) + " " + str(obj['report']['obj_class']) +  "<BR>"
+            #print(key)
 
 
-
-   out = ""
+   out = """
+      <table class="table table-dark table-striped table-hover td-al-m mb-2 pr-5 mt-2">
+         <thead>
+            <tr>
+               <th></th><th></th><th>#</th><th>Sum Val</th><th>Max Val</th><th>Max X,Y</th><th>CM</th><th></th><th></th><th></th><th colspan="4"></th>
+            </tr>
+   """
    last_i = None
    if cfe(vals_file) == 1:
       for i in range (0, len(vals['sum_vals'])):
@@ -2236,60 +2318,48 @@ def examine_min(video_file,json_conf):
             """.format(str(i), str(sum_val), str(max_val), str(mx), str(my), str(cm))
             last_i = i
 
-   obj_out = ""
-   print("""
-       <div id="main_container" class="container-fluid d-flex h-100 mt-4 position-relative"> 
-        <div class="h-100 flex-fixed-canvas">
+   out += """
+         </thead>
+         <tbody>
+         </tbody>
+      </table>
+   """
 
-            <ul class="nav nav-tabs mt-3">
-                <li class="nav-item">
-                    <a class="nav-link active" id="frames-tab-l" data-toggle="tab" href="#frames-tab" role="tab" aria-controls="frames" aria-selected="true">Frame Data</a>
-                </li>
-                <li class="nav-item">
-                    <a class="nav-link" id="objs-tab-l" data-toggle="tab" href="#objs-tab" role="tab" aria-controls="objs" aria-selected="false"><span id="str_cnt"></span>Objects</a>
-                </li>
-            </ul>
+   print("<div style='width: 48%; margin: 0 auto; padding: 20px;'>")
 
+   tabs = "" 
+   tabs_content = "" 
+   frame_data_html=out
+   tabs1, tabs_content1 = create_tab_and_content( tabs   , tabs_content   ,'frame_data','FRAME DATA', frame_data_html , True)
 
-            <div class="tab-content box " > 
+   tabs = "" 
+   tabs_content = "" 
+   object_data = object_html 
+   tabs2, tabs_content2 = create_tab_and_content( tabs   , tabs_content   ,'object_data','OBJECT DATA', object_data)
 
-                <div class="tab-pane fade show active pr-3" id="frames-tab" role="tabpanel" aria-labelledby="frames-tab-l">
-                    
-   <table class="table table-dark table-striped table-hover td-al-m mb-2 pr-5" >
-      <thead>
-         <tr>
-            <th></th><th></th><th>#</th><th>Sum Val</th><th>Max Val</th><th>BP X,Y</th><th>CM</th><th colspan=4>
-         </tr>
-      </thead>
-   """ + out + """   
-   <tbody></tbody>
-   </table>
+   print("<ul class='nav nav-tabs mt-3'>")
+   print(tabs1)
+   print(tabs2)
+   print("</ul>")
 
-            </div>
+   print("<div class='tab-content box'>")
+   print(tabs_content1)
+   print(tabs_content2)
+   print("</div>")
 
+   #print("</div>")
+   print("</div>")
 
-                <div class="tab-pane fade show active pr-3" id="objs-tab" role="tabpanel" aria-labelledby="objs-tab-l">
-                    
-   <table class="table table-dark table-striped table-hover td-al-m mb-2 pr-5" >
-      <thead>
-         <tr>
-            <th></th><th></th><th>OBJ ID</th><th>FNs</th><th>X,Ys</th><th>Max Vals</th><th colspan=4>
-         </tr>
-      </thead>
-   """ + obj_out + """   
-   <tbody></tbody>
-   </table>
+   start = ""
+   end = ""
 
-            </div></div>
-
-   """)
-
-   print("""
-       </ul>
-       </div>
-       </div>
-   """)
-
+   print("<form>")
+   print("<input type=hidden name=cmd value='trim_clip'>") 
+   print("<input type=hidden name=video_file value='{:s}'>".format(video_file)) 
+   print("<input type=text name=start value='{:s}'>".format(start)) 
+   print("<input type=text name=end value='{:s}'>".format(end)) 
+   print("<input type=submit name=submit value='Trim Clip'> ")
+   print("</form>")
 
 
 #Delete multiple detections at once
@@ -2764,6 +2834,7 @@ def browse_detects(day,type,json_conf,form):
    
    proc_dir = json_conf['site']['proc_dir']
    failed_files, meteor_files, pending_files,min_files = get_day_stats(day,proc_dir + day + "/", json_conf)
+
    show_day = day.replace("_", "/")
 
    title = "<div class='h1_holder d-flex justify-content-between'>"
