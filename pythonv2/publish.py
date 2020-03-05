@@ -107,8 +107,11 @@ def make_event_station_report(json_file):
       template = template.replace('{VIDEO_BTNS}',video_btn)
    else:
       template = template.replace('{VIDEO_BTNS}','')
-  
-   template = template.replace('{VIDEO}','<video id="main_video_player" autoplay="" width="960" height="540" controls="" loop="" src="'+json_file.replace('.json','-HD.mp4')+'"><source type="video/mp4"></video>')
+   
+
+   # Video Btns
+   playBtns = '<button name="playersPlay" class="btn btn-primary"><span class="ico-play"></span></button>'
+   template = template.replace('{VIDEO}','<video id="main_video_player" autoplay="" width="960" height="540" controls  loop=""><source src="'+json_file.replace('.json','-HD.mp4')+'" type="video/mp4"></video>'+playBtns)
 
    # NO-Cache
    template = template.replace("{RAND}",str(random.randint(0, 99999999)))
