@@ -7,7 +7,7 @@
    if (supportsVideo) {
       // Obtain handles to main elements
       var videoContainer = document.getElementById('videoContainer');
-       var video = document.getElementById('video');
+       var video = document.getElementById('main_video_player');
        var videoControls = document.getElementById('video-controls');
  
        // Hide the default controls
