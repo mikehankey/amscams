@@ -7,8 +7,23 @@
 	display:none;
 	list-style-type:none;
 	overflow:hidden;
-	background:transparent;
+   background:transparent;
+   width: 100%;
 }
+.other_controls {
+   list-style-type: none;
+   overflow: hidden;
+   background: transparent;
+   width: 40%;
+
+   li {
+      margin-right:.3%;
+      display:inline-block;
+   }
+}
+
+
+
 .controls li {
 	float:left;
 	width:10%;
