@@ -14,9 +14,11 @@
 .other_controls {
    list-style-type: none;
    overflow: hidden;
-   background: transparent;
+   background: 0 0;
    width: calc(100% - 316px);
    text-align: right;
+   float: right;
+   margin-left: .5rem;
 
    li {
       margin-right:.3%;
@@ -37,7 +39,9 @@ margin-top: -.38rem;
    background-color: #0f2437;
    padding: .5rem;
    border-radius: .2rem;
-
+   overflow: hidden;
+   max-height: 50px; 
+   
    .btn-sm {
       max-width: 2.8rem;
    }
@@ -45,7 +49,7 @@ margin-top: -.38rem;
 
 
 .other_controls .btn.btn-sm {
-   
+
 }
 
 
