@@ -1,6 +1,7 @@
 $(function() {
    var playpause, video;
    if($('#main_video_player').length!=0) {
+      // PLAY PAUSE BUTTON ON CUSTOM VIDEO PLAYER
       playpause = document.getElementsByClassName("playpause");
       video = document.getElementById("main_video_player");
 
