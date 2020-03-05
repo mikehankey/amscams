@@ -45,6 +45,7 @@ def update_live_html():
    all_stations = load_json_file(all_stations_file)
    status = {}
    all_station_data = []
+
    for sd in all_stations:
       station = sd['station']
       status[station] = 0
@@ -84,8 +85,8 @@ def update_live_html():
  
    station_with_issues = ""
    down=0
-   for i,sd in enumerate(status): #sorted(status):
-      print(str(i) + " > " + str(sd))
+   for sd in status: #sorted(status):
+      print(str(status[sd]) + " > " + str(sd))
       if(sd!=0):
          station_with_issues +=  "<li>Station <b>#"+str(sd)+"</b></li>"
          down+=1
