@@ -8,7 +8,7 @@ body {
 .container-fluid {
    max-width: 1400px;
 
-   .all-w {
+   &.all-w {
       max-width: 100%;
    }
 }
