@@ -15,7 +15,7 @@
    list-style-type: none;
    overflow: hidden;
    background: transparent;
-   width: 40%;
+   width: calc(100% - 316px);
    text-align: right;
 
    li {
@@ -32,16 +32,21 @@ margin-top: -.38rem;
 }
 
 
-#video-controls {
+#video-controls, .other_controls {
    display: block;
    background-color: #0f2437;
    padding: .5rem;
+   border-radius: .2rem;
 
    .btn-sm {
       max-width: 2.8rem;
    }
 }
 
+
+.other_controls .btn.btn-sm {
+   
+}
 
 
 .controls li {
@@ -59,9 +64,8 @@ margin-top: -.38rem;
 }
 
 .controls progress[value]::-webkit-progress-value {
- 
-    background-color:#007bff;
-     border-radius: 2px;  
+   background-color:#163f64;
+   border-radius: 2px;  
  }
 
 
