@@ -48,7 +48,8 @@ async function extractFramesFromVideo(videoUrl, fps=25) {
 
 
  async function asyncCall() { 
-   const frames = await extractFramesFromVideo($('#main_video_player source').attr('src')); 
+   frames = await extractFramesFromVideo($('#main_video_player source').attr('src')); 
+   console.log(frames);
  }
 
  $(function() {
