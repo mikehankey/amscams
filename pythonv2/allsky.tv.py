@@ -62,7 +62,7 @@ def update_live_html():
          status[station] = 1
       all_station_data.append(data)
 
-  live_now = ""
+   live_now = ""
 
    for data in all_station_data:
       station = data['station']
