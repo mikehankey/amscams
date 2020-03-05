@@ -40,7 +40,7 @@
       var setFullscreenData = function(state) {
          videoContainer.setAttribute('data-fullscreen', !!state);
          if(state) {
-            video.css('width','100%').css('height','auto');
+            $(video).css('width','100%').css('height','auto');
          }
       }
  
