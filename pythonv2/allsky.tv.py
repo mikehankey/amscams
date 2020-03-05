@@ -72,8 +72,6 @@ def update_live_html():
    live_now = """
          <div class='d-flex align-content-start flex-wrap'>
    """ 
-
-
  
    data_per_station = {}
 
@@ -109,7 +107,7 @@ def update_live_html():
    live_now = ""
    station_with_issues = ""
    down=0
-   for sd in sorted(status):
+   for sd in status: #sorted(status):
       if(sd in data_per_station):
          live_now += data_per_station[sd]
       else:
