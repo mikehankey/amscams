@@ -57,6 +57,14 @@ margin-top: -.38rem;
    cursor: pointer;
    margin-top: 7px;
 }
+
+.controls progress[value]::-webkit-progress-value {
+ 
+    background-color:#007bff;
+     border-radius: 2px;  
+ }
+
+
 .controls button {
 	width:100%;
 	text-align:center;
