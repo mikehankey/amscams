@@ -19,9 +19,11 @@
        // Obtain handles to buttons and other elements
        var playpause = document.getElementById('playpause');
        var stop = document.getElementById('stop');
+       /*
        var mute = document.getElementById('mute');
        var volinc = document.getElementById('volinc');
        var voldec = document.getElementById('voldec');
+       */
        var progress = document.getElementById('progress');
        var progressBar = document.getElementById('progress-bar');
        var fullscreen = document.getElementById('fs');
@@ -102,6 +104,7 @@
              video.currentTime = 0;
              progress.value = 0;
           });
+          /*
           mute.addEventListener('click', function(e) {
              video.muted = !video.muted;
           });
@@ -111,6 +114,7 @@
           voldec.addEventListener('click', function(e) {
              alterVolume('-');
           });
+          */
           fs.addEventListener('click', function(e) {
              handleFullscreen();
           });
