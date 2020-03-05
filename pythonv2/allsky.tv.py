@@ -78,7 +78,7 @@ def update_live_html():
          st = os.stat(files[0])
          size = st.st_size
          if size != 0:
-            live_now +=  "<div class='_h4_hold'><h4 class='mb-0'>Station #"+station+"  "+ stt +"</h4></div>"
+            live_now +=  "<div class='_h4_hold'><h4 class='mb-0'>Station #"+station+"</h4></div>"
             live_now +=  "<div class='report_t'><a href=" + STATION_RPT_VDIR + "index.html><img src=" + files[0].replace("/mnt/archive.allsky.tv", "") + "></a></div>"
 
    live_file = LIVE_DIR + "index.html"
