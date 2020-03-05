@@ -34,21 +34,14 @@
      if (!fullScreenEnabled) {
        fullscreen.style.display = 'none';
      }
- 
-       // Change the volume
-       var alterVolume = function(dir) {
-          var currentVolume = Math.floor(video.volume * 10) / 10;
-          if (dir === '+') {
-             if (currentVolume < 1) video.volume += 0.1;
-          }
-          else if (dir === '-') {
-            if (currentVolume > 0) video.volume -= 0.1;
-          }
-       }
+  
  
        // Set the video container's fullscreen state
       var setFullscreenData = function(state) {
          videoContainer.setAttribute('data-fullscreen', !!state);
+         if(state) {
+            video.css('width','100%').css('height','auto');
+         }
       }
  
       // Checks if the document is currently in fullscreen mode
