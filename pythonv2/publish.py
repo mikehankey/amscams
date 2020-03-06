@@ -107,7 +107,7 @@ def make_event_station_report(json_file):
    if(cropped_hd_full_path is not False):
       print(cropped_hd_full_path + " exists ")
 
-   cropped_shd_full_path = sd_video_full_path.replace('-SD','-SD-cropped')
+   cropped_sd_full_path = sd_video_full_path.replace('-SD','-SD-cropped')
    if(cropped_sd_full_path is not False):
       print(cropped_sd_full_path + " exists ")
 
