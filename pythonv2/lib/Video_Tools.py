@@ -16,8 +16,13 @@ from pathlib import Path
   
  
 # Get All the Frames of a given video
-def get_frames_from_video(video,output_path):
+def get_frames_from_cropped_video(video,output_path):
+
+   img_out = out_dir + "frames%05d.png" 
+   syscmd = "/usr/bin/ffmpeg -i " + video_file + " " + img_out
    ffmpeg_dump_frames(video,output_path)
+
+   print(output_path + " > frames are ok")
 
 
 
@@ -66,7 +71,9 @@ def define_crop_video(json_file,video, size_margin=0):
          # Cropp the video
          crop_video(video,w,h,x,y,output_file)
 
-         print(output_file +  " done")
+         
+         get_frames_from_cropped_video(output_file,os.path.basename(output_file))
+ 
    else:
       print(json_file +  ' not found or corrupted.')
  
