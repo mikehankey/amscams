@@ -18,7 +18,7 @@ from pathlib import Path
 # Get All the Frames of a given video
 def get_frames_from_cropped_video(video,output_path):
 
-   img_out = out_dir + "frames%05d.png" 
+   img_out = output_path + os.sep + "frames%05d.png" 
    syscmd = "/usr/bin/ffmpeg -i " + video_file + " " + img_out
    ffmpeg_dump_frames(video,output_path)
 
