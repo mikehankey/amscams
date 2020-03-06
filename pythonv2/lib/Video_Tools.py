@@ -36,7 +36,7 @@ def define_crop_video(json_file,video):
    # SD or HD?
    if('SD' in video):
       HD = False
-   else
+   else:
       HD = True
       SIZE_THUMB = SIZE_THUMB*2
 
