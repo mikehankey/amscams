@@ -50,10 +50,9 @@ async function extractFramesFromVideo(videoUrl, fps=25) {
  async function asyncCall() { 
    frames = await extractFramesFromVideo(cropped_video); 
 
-   $.each(frames,function(i,v){
-      console.log(v);
-      // Add thumbs to the table
-      $('#thb_'+i + 'img').src("'+v+'"); 
+   $.each(frames,function(i,v){ 
+      // Add base64 thumbs to the table
+      $('#thb_'+i + 'img').attr('src',v); 
    });
 
  
