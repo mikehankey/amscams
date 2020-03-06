@@ -102,6 +102,15 @@ def make_event_station_report(json_file):
       video_btn += '<a class="col btn btn-secondary mt-0 mb-0 ml-1 vid-link d-block" href="'+json_file.replace('.json','-SD.mp4')+'"><i class="icon-youtube"></i> SD Video</a>'
  
    
+   # Do we have a cropped version of the video?
+   cropped_hd_full_path = hd_video_full_path.replace('-HD','-HD-cropped')
+   if(cropped_hd_full_path is not False):
+      print(cropped_hd_full_path + " exists ")
+
+   cropped_shd_full_path = sd_video_full_path.replace('-SD','-SD-cropped')
+   if(cropped_sd_full_path is not False):
+      print(cropped_sd_full_path + " exists ")
+
    # Add the video buttons
    if(video_btn!=''):
       template = template.replace('{VIDEO_BTNS}',video_btn)
