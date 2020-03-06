@@ -83,7 +83,7 @@ def crop_video_keep_meteor_centered(json_file,video,w=FRAME_THUMB_W,h=FRAME_THUM
  
 
       # Now we create a video with all the frames----X we just created
-      cmd = "ffmpeg -y -framerate 1  -i " +  ' '.join(cropped_frames) + " " + video.replace('.mp4','-cropped.mp4')
+      cmd = "ffmpeg -y -framerate 1/25  -i " +  ' '.join(cropped_frames) + " " + video.replace('.mp4','-cropped.mp4')
       print(cmd)
        
 
