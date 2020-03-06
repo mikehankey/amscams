@@ -34,10 +34,10 @@ def define_crop_video(json_file,video):
    if(data is not False):
       if('frames' in data):
          for frame in data['frames']:
-            if(x in frame):
-               all_x.append(int(x))
-            if(y in frame):
-               all_y.append(int(y))  
+            if('x' in frame):
+               all_x.append(int(frame['x']))
+            if('y' in frame):
+               all_y.append(int(frame['y']))  
 
          x = min(all_x)      
          w = max(all_x) + x      
