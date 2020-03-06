@@ -32,13 +32,14 @@ def define_crop_video(json_file,video):
     
    all_x = []
    all_y = []
+   n_SIZE_THUMB = SIZE_THUMB
 
    # SD or HD?
    if('SD' in video):
       HD = False
    else:
       HD = True
-      SIZE_THUMB = SIZE_THUMB*2
+      n_SIZE_THUMB = SIZE_THUMB*2
 
    # Get min x,y & w h
    if(data is not False):
@@ -49,13 +50,11 @@ def define_crop_video(json_file,video):
             if('y' in frame):
                all_y.append(int(frame['y']))  
 
-         x = min(all_x) - SIZE_THUMB    
-         w = max(all_x) - x + SIZE_THUMB      
-         y = min(all_y) - SIZE_THUMB
-         h = max(all_y) - y + SIZE_THUMB
-
-
-
+         x = min(all_x) - n_SIZE_THUMB    
+         w = max(all_x) - x + n_SIZE_THUMB      
+         y = min(all_y) - n_SIZE_THUMB
+         h = max(all_y) - y + n_SIZE_THUMB
+ 
          # Create Output Name
          output_file = video.replace('.mp4','-cropped.mp4')
 
