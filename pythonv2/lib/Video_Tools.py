@@ -40,9 +40,9 @@ def define_crop_video(json_file,video):
                all_y.append(int(frame['y']))  
 
          x = min(all_x)      
-         w = max(all_x) + x      
+         w = max(all_x) - x      
          y = min(all_y)
-         h = max(all_y) + y
+         h = max(all_y) - y
 
          # Create Output Name
          output_file = video.replace('.mp4','-cropped.mp4')
