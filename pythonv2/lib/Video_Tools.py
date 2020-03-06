@@ -62,7 +62,7 @@ def define_crop_video(json_file,video):
          crop_video(video,w,h,x,y,output_file)
 
          print(output_file +  " done")
-   else
+   else:
       print(json_file +  ' not found or corrupted.')
  
 # Create Crop video
