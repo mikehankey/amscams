@@ -5,6 +5,7 @@ import datetime
 import time
 import shutil
 import sys
+import cv2
 
 from lib.VIDEO_VARS import * 
 from os import listdir, remove
@@ -58,28 +59,22 @@ def crop_video_keep_meteor_centered(json_file,video,w=FRAME_THUMB_W,h=FRAME_THUM
          # CHANGE THE CROP SIZE FOR FIREBALLS
          crop = new_crop_thumb(folder_path + os.sep + "frames" + str(frame_index).zfill(5) + ".jpg",frame['x'],frame['y'],folder_path + os.sep + "frames" + str(frame_index).zfill(5) +"X.jpg",True)
          cropped_frames.append(crop)
+ 
+      # We cannot create the video with ffmpeg as the cmd is sometimes way too long
+      img = cv2.imread(cropped_frames[0])
+      height , width , layers =  img.img
+      cv2video = cv2.VideoWriter('video.avi',-1,1,(width,height))
+      for frame in cropped_frames:
+         img = cv2.imread(frame)
+         video.write(img)
 
-
-      print('ALL CROPPED CREATED')
-
-      for i in range(0,5):
-         for c in cropped_frames:
-            cropped_frames.append(c)
-     
+      cv2.imwrite(video.replace('.mp4','-cropped.mp4'),video)
+ 
 
       # Now we create a video with all the frames----X we just created
-      cmd = "ffmpeg -y -f image2 -framerate 25 -r 3 -i " +  ' '.join(cropped_frames) + " " + video.replace('.mp4','-cropped.mp4')
+      #cmd = "ffmpeg -y -f image2 -framerate 25 -r 3 -i " +  ' '.join(cropped_frames) + " " + video.replace('.mp4','-cropped.mp4')
  
-      
-
-      try:
-         output = subprocess.check_output(cmd, shell=True).decode("utf-8")   
-         print("ffmpeg cmd successfull >> " +  output) 
-         print(video.replace('.mp4','-cropped.mp4') + " > video ok (time to delete all the images))")
-      except subprocess.CalledProcessError as e:
-         print("Command " + cmd + "  return on-zero exist status: " + str(e.returncode))
-         sys.exit(0)   
-
+       
 
 
 
