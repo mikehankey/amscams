@@ -104,7 +104,7 @@ function update_reduction_on_canvas_and_table(json_resp, canvas) {
 
         // Thumb	#	Time	X/Y - W/H	Max PX	RA/DEC	AZ/EL 
         table_tbody_html+= '<tr id="fr_'+frame_id+'" data-fn="'+frame_id+'" data-org-x="'+v['x']+'" data-org-y="'+v['y']+'"><td><div class="st" hidden style="background-color:'+all_colors[i]+'"></div></td>'
-        table_tbody_html+= '<td>&nbsp;</td>';
+        table_tbody_html+= '<td id="thb_'+frame_id+'"><img src="./dist/img/loader.svg"></td>';
         table_tbody_html+= '<td>'+frame_id+'</td><td>'+_time[1]+'</td><td>'+v['ra'].toFixed(PRECISION)+'&deg;&nbsp;/&nbsp;'+v['dec'].toFixed(PRECISION)+'&deg;</td><td>'+v["az"].toFixed(PRECISION)+'&deg;&nbsp;/&nbsp;'+v["el"].toFixed(PRECISION)+'&deg;</td><td>'+ parseFloat(v['x']) +'&nbsp;/&nbsp;'+parseFloat(v['y'])  +'</td><td>'+ v['w']+'x'+v['h']+'</td>';
        
 
