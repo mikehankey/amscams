@@ -52,7 +52,7 @@ async function extractFramesFromVideo(videoUrl, fps=25) {
 
    $.each(frames,function(i,v){ 
       // Add base64 thumbs to the table
-      $('#thb_'+i + 'img').attr('src',v); 
+      $('#thb_'+i + ' img').attr('src',v); 
    });
 
  
