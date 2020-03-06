@@ -12,8 +12,7 @@ from os import listdir, remove
 from os.path import isfile, join, exists
 from shutil import copyfile
 from lib.FileIO import load_json_file
-from lib.VideoLib import ffmpeg_dump_frames
-from lib.MeteorReduce_Tools import new_crop_thumb
+from lib.VideoLib import ffmpeg_dump_frames 
 from pathlib import Path
 
 
@@ -22,6 +21,74 @@ FT_FACTOR = 10
 
 FRAME_THUMB_H = HD_W/FT_FACTOR
 FRAME_THUMB_W = HD_H/FT_FACTOR
+
+
+# WE NEED THE ORIGINAL SIZE!!!
+def definitive_crop_thumb(frame,x,y,dest,orgw,orgh,w,h):
+
+   # Debug 
+   img = cv2.imread(frame)  
+ 
+
+   # Create empty image THUMB_WxTHUMB_H in black so we don't have any issues while working on the edges of the original frame 
+   crop_img = np.zeros((w,h,3), np.uint8)
+
+   # Default values
+   org_x = int(x - orgw/2)
+   org_w = int(orgw + org_x)
+   org_y = int(y  - orgh/2)
+   org_h = int(orgh + org_y)    
+
+   thumb_dest_x = 0
+   thumb_dest_w = w
+   thumb_dest_y = 0
+   thumb_dest_h = h
+ 
+   # If the x is too close to the edge
+
+   # ON THE LEFT (VERIFIED)
+   if(org_x<=0):
+
+      # Part of the original image
+      org_x = 0
+
+      # Part of the thumb
+      thumb_dest_x = int(orgw/2-x)
+      thumb_dest_w = int(abs(thumb_dest_w - org_x))
+ 
+   # ON RIGHT (VERIFIED)
+   elif(org_x >= (org_w_HD-orgw)): 
+      
+      # Part of the original image
+      org_w = org_w_HD
+     
+      # Destination in thumb (img) 
+      thumb_dest_w =  HD_W - org_x
+  
+   # ON TOP (VERIFIED)
+   if(org_y<=0):
+ 
+      # Part of the original image
+      org_y = 0 
+
+      # Part of the thumb
+      thumb_dest_y = int(THUMB_SELECT_H/2-y)
+      thumb_dest_h = int(abs(thumb_dest_w - org_y))
+       
+
+   # ON BOTTOM
+   if(org_y >= (org_h_HD-THUMB_SELECT_H)):
+
+      # Part of the original image
+      org_h = org_h_HD
+
+      # Destination in thumb (img)
+      thumb_dest_h = HD_H -  org_y 
+  
+   crop_img[thumb_dest_y:thumb_dest_h,thumb_dest_x:thumb_dest_w] = img[org_y:org_h,org_x:org_w]
+   cv2.imwrite(dest,crop_img)
+  
+   return dest
 
 # Cropp a video while keeping the meteor always
 # at the center of the frame
@@ -56,14 +123,14 @@ def crop_video_keep_meteor_centered(json_file,video,w=FRAME_THUMB_W,h=FRAME_THUM
       # First index
       first_index = int(data['frames'][1]['fn'])
       for i in range(1,first_index):
-         crop = new_crop_thumb(folder_path + os.sep + "frames" + str(i).zfill(5) + ".png",data['frames'][1]['x'],data['frames'][1]['y'],folder_path + os.sep + "frames" + str(i).zfill(5) +"X.png",True,int(FRAME_THUMB_W),int(FRAME_THUMB_H))
+         crop = definitive_crop_thumb(folder_path + os.sep + "frames" + str(i).zfill(5) + ".png",data['frames'][1]['x'],data['frames'][1]['y'],folder_path + os.sep + "frames" + str(i).zfill(5) +"X.png",True,int(FRAME_THUMB_W),int(FRAME_THUMB_H))
          cropped_frames.append(crop.replace('//','/'))
 
       for frame in data['frames']:
          frame_index = int(frame['fn'])
 
          # CHANGE THE CROP SIZE FOR FIREBALLS
-         crop = new_crop_thumb(folder_path + os.sep + "frames" + str(frame_index).zfill(5) + ".png",frame['x'],frame['y'],folder_path + os.sep + "frames" + str(frame_index).zfill(5) +"X.png",True,int(FRAME_THUMB_W),int(FRAME_THUMB_H))
+         crop = definitive_crop_thumb(folder_path + os.sep + "frames" + str(frame_index).zfill(5) + ".png",frame['x'],frame['y'],folder_path + os.sep + "frames" + str(frame_index).zfill(5) +"X.png",True,int(FRAME_THUMB_W),int(FRAME_THUMB_H))
          cropped_frames.append(crop.replace('//','/'))
          
  
