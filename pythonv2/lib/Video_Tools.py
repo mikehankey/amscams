@@ -15,7 +15,7 @@ from pathlib import Path
   
 
 
-SIZE_THUMB = 50
+SIZE_THUMB = 20
 
 # Create cropped Video from a video & a json
 def define_crop_video(json_file,video):
