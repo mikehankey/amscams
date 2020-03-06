@@ -62,7 +62,7 @@ def crop_video_keep_meteor_centered(json_file,video,w=FRAME_THUMB_W,h=FRAME_THUM
 
       print('ALL CROPPED CREATED')
 
-      for i in range(0,25):
+      for i in range(0,5):
          for c in cropped_frames:
             cropped_frames.append(c)
      
