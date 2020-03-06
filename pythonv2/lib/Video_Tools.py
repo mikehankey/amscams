@@ -13,8 +13,54 @@ from shutil import copyfile
 from lib.FileIO import load_json_file
 from lib.VideoLib import ffmpeg_dump_frames
 from pathlib import Path
-  
- 
+
+
+# FRAME/THUMB FACTOR
+FT_FACTOR = 10
+
+FRAME_THUMB_H = HD_W/FT_FACTOR
+FRAME_THUMB_W = HD_H/FT_FACTOR
+
+# Cropp a video while keeping the meteor always
+# at the center of the frame
+def crop_video_keep_meteor_centered(json_file,video,w=FRAME_THUMB_W,h=FRAME_THUMB_H):
+
+   folder_path = json_file.replace(os.path.basename(json_file),'')
+
+   # First we create all the FULL frames of the video:
+   img_out = folder_path + os.sep + "frames%05d.jpg" 
+   cmd = "ffmpeg -i " + video + " " + img_out 
+
+   try:
+      output = subprocess.check_output(cmd, shell=True).decode("utf-8")   
+      print("ffmpeg cmd successfull >> " +  output) 
+      print(output_path + " > frames are ok")
+   except subprocess.CalledProcessError as e:
+      print("Command " + cmd + "  return on-zero exist status: " + str(e.returncode))
+      sys.exit(0)   
+
+   # We load the json file
+   data = load_json_file(json_file)
+
+   # We get the frame data
+   if('frames' in data):
+      # To store the cropped frames
+      cropped_frames = []       
+
+      for frame in data['frames']:
+         frame_index = int(frame['fn'])
+         crop = new_crop_thumb(folder_path + os.sep + "frames" + frame_index.zfill(5) + ".jpg",frame['x'],frame['y'],folder_path + os.sep + "frames" + frame_index.zfill(5) +"X.jpg",True)
+         cropped_frames.append(crop)
+   
+
+
+
+
+
+
+
+
+
 # Get All the Frames of a given video
 def get_frames_from_cropped_video(video,output_path):
 
