@@ -12,7 +12,7 @@ from os.path import isfile, join, exists
 from shutil import copyfile
 from lib.FileIO import load_json_file
 from lib.VideoLib import ffmpeg_dump_frames
-from lib.MeteorReduceTools import new_crop_thumb
+from lib.MeteorReduce_Tools import new_crop_thumb
 from pathlib import Path
 
 
