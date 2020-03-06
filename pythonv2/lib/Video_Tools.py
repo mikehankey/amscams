@@ -53,7 +53,7 @@ def define_crop_video(json_file,video):
  
 # Create Crop video
 def crop_video(mp4,w,h,x,y,output):
-   cmd = 'ffmpeg -i '+mp4+'  -filter:v "crop='+w+':'+h+':'+x+':'+x+'" '+ output
+   cmd = 'ffmpeg -i '+mp4+'  -filter:v "crop='+str(w)+':'+str(h)+':'+str(x)+':'+str(y)+'" '+ output
 
    # Test if it's doable
    try:
