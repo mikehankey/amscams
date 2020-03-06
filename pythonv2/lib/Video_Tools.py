@@ -66,9 +66,9 @@ def crop_video_keep_meteor_centered(json_file,video,w=FRAME_THUMB_W,h=FRAME_THUM
       cv2video = cv2.VideoWriter('video.avi',-1,1,(width,height))
       for frame in cropped_frames:
          img2 = cv2.imread(frame)
-         video.write(img2)
+         cv2video.write(img2)
 
-      cv2.imwrite(video.replace('.mp4','-cropped.mp4'),video)
+      cv2.imwrite(video.replace('.mp4','-cropped.mp4'),cv2video)
  
 
       # Now we create a video with all the frames----X we just created
