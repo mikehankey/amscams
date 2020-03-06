@@ -103,11 +103,11 @@ def make_event_station_report(json_file):
  
    # Do we have a cropped version of the video?
    cropped_hd_full_path = hd_video_full_path.replace('-HD','-HD-cropped')
-   if(cropped_hd_full_path is not False):
+   if(cfe(cropped_hd_full_path)==1):
       template = template.replace('{CROPPED_VIDEO}',cropped_hd_full_path) 
-   elif:
+   else:
       cropped_sd_full_path = sd_video_full_path.replace('-SD','-SD-cropped')
-      if(cropped_sd_full_path is not False):
+      if(cfe(cropped_sd_full_path)==1):
          template = template.replace('{CROPPED_VIDEO}',cropped_sd_full_path) 
 
    # Add the video buttons
