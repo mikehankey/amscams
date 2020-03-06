@@ -48,20 +48,18 @@ async function extractFramesFromVideo(videoUrl, fps=25) {
 
 
  async function asyncCall() { 
-   frames = await extractFramesFromVideo($('#main_video_player source').attr('src')); 
+   frames = await extractFramesFromVideo(cropped_video); 
 
    $.each(frames,function(i,v){
       console.log(v);
-      $('<img src="'+v+'"/>').prependTo($('#main_container'));
+      $('<img src="'+v+'" style="max-width:200px"/>').prependTo($('#main_container'));
    });
 
  
  }
 
  $(function() {
-   /* 
-   if($('#main_video_player').lenght!==0) {
-       asyncCall()
-    }
-    */
+   if(typeof cropped_video !== 'undefined') {
+      asyncCall()
+   }
  })
