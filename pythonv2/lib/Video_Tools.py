@@ -56,7 +56,7 @@ def crop_video_keep_meteor_centered(json_file,video,w=FRAME_THUMB_W,h=FRAME_THUM
          frame_index = int(frame['fn'])
 
          # CHANGE THE CROP SIZE FOR FIREBALLS
-         crop = new_crop_thumb(folder_path + os.sep + "frames" + str(frame_index).zfill(5) + ".png",frame['x'],frame['y'],folder_path + os.sep + "frames" + str(frame_index).zfill(5) +"X.png",True)
+         crop = new_crop_thumb(folder_path + os.sep + "frames" + str(frame_index).zfill(5) + ".jpg",frame['x'],frame['y'],folder_path + os.sep + "frames" + str(frame_index).zfill(5) +"X.jpg",True)
          cropped_frames.append(crop)
 
 
