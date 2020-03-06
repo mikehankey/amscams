@@ -52,7 +52,8 @@ async function extractFramesFromVideo(videoUrl, fps=25) {
 
    $.each(frames,function(i,v){
       console.log(v);
-      $('<div>Frame#'+i+'<img src="'+v+'" style="height:200px;width:200px"/></div>').prependTo($('#main_container'));
+      // Add thumbs to the table
+      $('#thb_'+i + 'img').src("'+v+'"); 
    });
 
  
