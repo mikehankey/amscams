@@ -79,7 +79,7 @@ def define_crop_video(json_file,video, size_margin=0):
          crop_video(video,w,h,x,y,output_file)
 
          # Create all the frames as images
-         get_frames_from_cropped_video(output_file,os.path.basename(json_file))
+         get_frames_from_cropped_video(output_file,json_file.replace(os.path.basename(json_file),''))
  
    else:
       print(json_file +  ' not found or corrupted.')
