@@ -16,6 +16,39 @@ from pathlib import Path
 
 # Create cropped Video from a video & a json
 def define_crop_video(json_file,video):
+   # ex: /AMS7/METEOR/2019/12/24/2019_12_24_08_17_10_000_010041-trim1298-SD.mp4
+   #     /AMS7/METEOR/2019/12/24/2019_12_24_08_17_10_000_010041-trim1298.json
+   # output:
+   #     /AMS7/METEOR/2019/12/24/2019_12_24_08_17_10_000_010041-trim1298-SD-cropped.mp4
+   # or
+   #      /AMS7/METEOR/2019/12/24/2019_12_24_08_17_10_000_010041-trim1298-HD-cropped.mp4
+ 
+
+   # Get the info from the json
+   data = load_json_file(json_file)
+    
+   all_x = []
+   all_y = []
+
+   # Get min x,y & w h
+   if(data is not False):
+      if('frames' in data):
+         for frame in data['frames']:
+            if(x in frame):
+               all_x.append(int(x))
+            if(y in frame):
+               all_y.append(int(y))  
+
+         x = min(all_x)      
+         w = max(all_x) + x      
+         y = min(all_y)
+         h = max(all_y) + y
+
+         # Create Output Name
+         output_file = video.replace('.mp4','-cropped.mp4')
+
+
+
 
 
 # Create Crop video
