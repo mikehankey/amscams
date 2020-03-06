@@ -57,13 +57,12 @@ def crop_video(mp4,w,h,x,y,output):
 
    # Test if it's doable
    try:
-      output = subprocess.check_output(cmd, shell=True).decode("utf-8")   
-      print("ffmpeg cmd successfull >> " +  tmp_output_file) 
+      subprocess.check_output(cmd, shell=True).decode("utf-8")   
+      print("ffmpeg cmd successfull >> " +  output) 
    except subprocess.CalledProcessError as e:
       print("Command " + cmd + "  return on-zero exist status: " + str(e.returncode))
       sys.exit(0)   
-
-   print(output + ' fixed') 
+ 
 
 # Fix a MP4 just copying it 
 def fixmp4(path_to_mp4,save_backup=0):
