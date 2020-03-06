@@ -43,6 +43,10 @@ def crop_video_keep_meteor_centered(json_file,video,w=FRAME_THUMB_W,h=FRAME_THUM
    # We load the json file
    data = load_json_file(json_file)
 
+   if(data is False):
+      print(json_file  + " not found")
+      sys.exit(0)
+
    # We get the frame data
    if('frames' in data):
       # To store the cropped frames
