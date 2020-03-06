@@ -53,6 +53,12 @@ def crop_video_keep_meteor_centered(json_file,video,w=FRAME_THUMB_W,h=FRAME_THUM
       # To store the cropped frames
       cropped_frames = []       
 
+      # First index
+      first_index = int(data['frames'][0]['fn'])
+      for i in range(0,first_index):
+         crop = new_crop_thumb(folder_path + os.sep + "frames" + str(i).zfill(5) + ".png",frame['x'],frame['y'],folder_path + os.sep + "frames" + str(i).zfill(5) +"X.png",True)
+         cropped_frames.append(crop)
+
       for frame in data['frames']:
          frame_index = int(frame['fn'])
 
