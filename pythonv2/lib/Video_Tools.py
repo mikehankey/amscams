@@ -47,10 +47,10 @@ def define_crop_video(json_file,video):
          # Create Output Name
          output_file = video.replace('.mp4','-cropped.mp4')
 
+         # Cropp the video
+         crop_video(video,w,h,x,y,out_file)
 
-
-
-
+ 
 # Create Crop video
 def crop_video(mp4,w,h,x,y,output):
    cmd = 'ffmpeg -i '+mp4+'  -filter:v "crop='+w+':'+h+':'+x+':'+x+'" '+ output
