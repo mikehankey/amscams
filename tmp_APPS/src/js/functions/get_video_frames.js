@@ -59,7 +59,9 @@ async function extractFramesFromVideo(videoUrl, fps=25) {
  }
 
  $(function() {
-    if($('#main_video_player').lenght!==0) {
+   /* 
+   if($('#main_video_player').lenght!==0) {
        asyncCall()
     }
+    */
  })

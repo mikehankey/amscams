@@ -12,8 +12,25 @@ from os.path import isfile, join, exists
 from shutil import copyfile
 from lib.FileIO import load_json_file
 from pathlib import Path
- 
- 
+  
+
+# Create cropped Video from a video & a json
+def define_crop_video(json_file,video):
+
+
+# Create Crop video
+def crop_video(mp4,w,h,x,y,output):
+   cmd = 'ffmpeg -i '+mp4+'  -filter:v "crop='+w+':'+h+':'+x+':'+x+'" '+ output
+
+   # Test if it's doable
+   try:
+      output = subprocess.check_output(cmd, shell=True).decode("utf-8")   
+      print("ffmpeg cmd successfull >> " +  tmp_output_file) 
+   except subprocess.CalledProcessError as e:
+      print("Command " + cmd + "  return on-zero exist status: " + str(e.returncode))
+      sys.exit(0)   
+
+   print(output + ' fixed') 
 
 # Fix a MP4 just copying it 
 def fixmp4(path_to_mp4,save_backup=0):
