@@ -14,6 +14,9 @@ from lib.FileIO import load_json_file
 from pathlib import Path
   
 
+
+SIZE_THUMB = 50
+
 # Create cropped Video from a video & a json
 def define_crop_video(json_file,video):
    # ex: /AMS7/METEOR/2019/12/24/2019_12_24_08_17_10_000_010041-trim1298-SD.mp4
@@ -39,10 +42,10 @@ def define_crop_video(json_file,video):
             if('y' in frame):
                all_y.append(int(frame['y']))  
 
-         x = min(all_x)      
-         w = max(all_x) - x      
-         y = min(all_y)
-         h = max(all_y) - y
+         x = min(all_x) - SIZE_THUMB    
+         w = max(all_x) - x + SIZE_THUMB      
+         y = min(all_y) - SIZE_THUMB
+         h = max(all_y) - y + SIZE_THUMB
 
          # Create Output Name
          output_file = video.replace('.mp4','-cropped.mp4')
