@@ -19,10 +19,17 @@ from pathlib import Path
 def get_frames_from_cropped_video(video,output_path):
 
    img_out = output_path + os.sep + "frames%05d.png" 
-   syscmd = "/usr/bin/ffmpeg -i " + video_file + " " + img_out
-   ffmpeg_dump_frames(video,output_path)
+   cmd = "ffmpeg -i " + video + " " + img_out 
 
-   print(output_path + " > frames are ok")
+   try:
+      output = subprocess.check_output(cmd, shell=True).decode("utf-8")   
+      print("ffmpeg cmd successfull >> " +  output) 
+      print(output_path + " > frames are ok")
+   except subprocess.CalledProcessError as e:
+      print("Command " + cmd + "  return on-zero exist status: " + str(e.returncode))
+      sys.exit(0)   
+ 
+
 
 
 
@@ -83,7 +90,7 @@ def crop_video(mp4,w,h,x,y,output):
 
    # Test if it's doable
    try:
-      subprocess.check_output(cmd, shell=True).decode("utf-8")   
+      output = subprocess.check_output(cmd, shell=True).decode("utf-8")   
       print("ffmpeg cmd successfull >> " +  output) 
    except subprocess.CalledProcessError as e:
       print("Command " + cmd + "  return on-zero exist status: " + str(e.returncode))
