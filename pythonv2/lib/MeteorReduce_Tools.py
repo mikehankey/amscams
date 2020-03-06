@@ -479,7 +479,7 @@ def get_thumbs(analysed_name,meteor_json_data,HD,HD_frames,clear_cache):
 
 
 # Create a thumb 
-def new_crop_thumb(frame,x,y,dest,HD = True):
+def new_crop_thumb(frame,x,y,dest,HD = True, thumb_w =THUMB_W , thumb_h = THUMB_H):
 
    # Debug
    cgitb.enable()
@@ -494,7 +494,7 @@ def new_crop_thumb(frame,x,y,dest,HD = True):
       org_h_HD = SD_H
 
    # Create empty image THUMB_WxTHUMB_H in black so we don't have any issues while working on the edges of the original frame 
-   crop_img = np.zeros((THUMB_W,THUMB_H,3), np.uint8)
+   crop_img = np.zeros((thumb_w,thumb_h,3), np.uint8)
 
    # Default values
    org_x = int(x - THUMB_SELECT_W/2)
@@ -503,9 +503,9 @@ def new_crop_thumb(frame,x,y,dest,HD = True):
    org_h = int(THUMB_SELECT_H + org_y)    
 
    thumb_dest_x = 0
-   thumb_dest_w = THUMB_W
+   thumb_dest_w = thumb_w
    thumb_dest_y = 0
-   thumb_dest_h = THUMB_H
+   thumb_dest_h = thumb_h
  
    # If the x is too close to the edge
 
