@@ -34,7 +34,7 @@ def crop_video_keep_meteor_centered(json_file,video,w=FRAME_THUMB_W,h=FRAME_THUM
    try:
       output = subprocess.check_output(cmd, shell=True).decode("utf-8")   
       print("ffmpeg cmd successfull >> " +  output) 
-      print(output_path + " > frames are ok")
+      print(folder_path + " > frames are ok")
    except subprocess.CalledProcessError as e:
       print("Command " + cmd + "  return on-zero exist status: " + str(e.returncode))
       sys.exit(0)   
@@ -52,7 +52,7 @@ def crop_video_keep_meteor_centered(json_file,video,w=FRAME_THUMB_W,h=FRAME_THUM
          crop = new_crop_thumb(folder_path + os.sep + "frames" + frame_index.zfill(5) + ".jpg",frame['x'],frame['y'],folder_path + os.sep + "frames" + frame_index.zfill(5) +"X.jpg",True)
          cropped_frames.append(crop)
    
-
+      print(cropped_frames)
 
 
 
