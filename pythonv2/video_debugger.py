@@ -14,7 +14,7 @@ from lib.Video_Title_cv import *
 # TEST CREATE CROPPED VERSION OF VIDEO
 #define_crop_video('/mnt/archive.allsky.tv/AMS7/METEOR/2019/12/24/2019_12_24_08_17_10_000_010041-trim1298.json','/mnt/archive.allsky.tv/AMS7/METEOR/2019/12/24/2019_12_24_08_17_10_000_010041-trim1298-HD.mp4')
 
-define_crop_video('mnt/archive.allsky.tv/AMS7/METEOR/2019/12/24/2019_12_24_08_29_19_000_010039-trim1168.json','mnt/archive.allsky.tv/AMS7/METEOR/2019/12/24/2019_12_24_08_29_19_000_010039-trim1168-HD.mp4')
+define_crop_video('/mnt/archive.allsky.tv/AMS7/METEOR/2019/12/24/2019_12_24_08_29_19_000_010039-trim1168.json','/mnt/archive.allsky.tv/AMS7/METEOR/2019/12/24/2019_12_24_08_29_19_000_010039-trim1168-HD.mp4')
 
 # TEST FIX MP4
 #fixmp4('/mnt/ams2/SD/proc2/2020_01_30/2020_01_30_23_49_32_000_010041.mp4')
