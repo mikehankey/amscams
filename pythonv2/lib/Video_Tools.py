@@ -11,14 +11,19 @@ from os import listdir, remove
 from os.path import isfile, join, exists
 from shutil import copyfile
 from lib.FileIO import load_json_file
+from lib.VideoLib import ffmpeg_dump_frames
 from pathlib import Path
   
+ 
+# Get All the Frames of a given video
+def get_frames_from_video(video,output_path):
+   ffmpeg_dump_frames(video,output_path)
 
 
-SIZE_THUMB = 0
 
 # Create cropped Video from a video & a json
-def define_crop_video(json_file,video):
+# size_margin = margins - use bigger margins for fireballs
+def define_crop_video(json_file,video, size_margin=0):
    # ex: /AMS7/METEOR/2019/12/24/2019_12_24_08_17_10_000_010041-trim1298-SD.mp4
    #     /AMS7/METEOR/2019/12/24/2019_12_24_08_17_10_000_010041-trim1298.json
    # output:
@@ -32,14 +37,14 @@ def define_crop_video(json_file,video):
     
    all_x = []
    all_y = []
-   n_SIZE_THUMB = SIZE_THUMB
+   n_size_margin = size_margin
 
    # SD or HD?
    if('SD' in video):
       HD = False
    else:
       HD = True
-      n_SIZE_THUMB = SIZE_THUMB*2
+      n_size_margin = size_margin*2
 
    # Get min x,y & w h
    if(data is not False):
@@ -50,10 +55,10 @@ def define_crop_video(json_file,video):
             if('y' in frame):
                all_y.append(int(frame['y']))  
 
-         x = min(all_x) - n_SIZE_THUMB    
-         w = max(all_x) - x + n_SIZE_THUMB      
-         y = min(all_y) - n_SIZE_THUMB
-         h = max(all_y) - y + n_SIZE_THUMB
+         x = min(all_x) - n_size_margin    
+         w = max(all_x) - x + n_size_margin      
+         y = min(all_y) - n_size_margin
+         h = max(all_y) - y + n_size_margin
  
          # Create Output Name
          output_file = video.replace('.mp4','-cropped.mp4')
