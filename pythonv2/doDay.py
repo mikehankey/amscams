@@ -88,18 +88,24 @@ def run_df():
       #Filesystem                 Size  Used Avail Use% Mounted on
 
       for line in output.split("\n"):
-         file_system = line[0:20]
-         size = line[20:26]
-         used = line[27:38]
-         avail = line[38:44]
-         used_perc = line[44:49]
-         mount = line[49:].replace(" ", "")
-         if mount == "/" or mount == "/mnt/ams2" or mount == "/mnt/archive.allsky.tv":
-            df_data.append((file_system, size, used, avail, used_perc, mount))
-            used_perc = used_perc.replace(" ", "")
-            mounts[mount] = int(used_perc.replace("%", ""))
+         #line = line.replace("  ", " ")
+         temp = " ".join(line.split())
+         disk_data = temp.split(" ")
+         if len(disk_data) > 5:
+            file_system = disk_data[0]
+            size = disk_data[1]
+            used  = disk_data[2]
+            avail = disk_data[3]
+            used_perc = disk_data[4]
+            mount = disk_data[5]
+            print(mount, used_perc)
+            if mount == "/" or mount == "/mnt/ams2" or mount == "/mnt/archive.allsky.tv":
+               df_data.append((file_system, size, used, avail, used_perc, mount))
+               used_perc = used_perc.replace(" ", "")
+               mounts[mount] = int(used_perc.replace("%", ""))
    else:
       print("Failed du")
+
    return(df_data, mounts)
 
 def check_disk():
