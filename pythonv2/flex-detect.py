@@ -10031,8 +10031,22 @@ def detect_in_vals(vals_file):
    cm =0
    last_i = None
    objects = {}
+   if data is False:
+      print(vals_file + " is none.")
+      exit()
    for i in range(0,len(data['max_vals'])):
-      x,y = data['pos_vals'][i]
+      if "pos_vals" in data:
+         if i < len(data['pos_vals']) :
+            print(data['pos_vals'][i], vals_file)
+            if isinstance(data['pos_vals'][i], int) is False:
+               print(type(data['pos_vals'][i]))
+               x,y = data['pos_vals'][i]
+            else :
+               x,y = 0,0
+         else :
+            x,y = 0,0
+      else:
+         print ("NO POS VALS!")
       max_val = data['max_vals'][i]
       if max_val > 0:
          if last_i is not None and  last_i + 1 == i:
