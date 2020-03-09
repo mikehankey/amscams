@@ -6,6 +6,7 @@ import time
 import shutil
 import sys
 import cv2
+import numpy as np
 
 from lib.VIDEO_VARS import * 
 from os import listdir, remove
@@ -17,76 +18,62 @@ from pathlib import Path
 
 
 # FRAME/THUMB FACTOR
-FT_FACTOR = 10
+FT_FACTOR = 4
 
-FRAME_THUMB_H = HD_W/FT_FACTOR
-FRAME_THUMB_W = HD_H/FT_FACTOR
+FRAME_THUMB_W = int(HD_W/FT_FACTOR)
+FRAME_THUMB_H = int(HD_H/FT_FACTOR)
 
 
 # WE NEED THE ORIGINAL SIZE!!!
 def definitive_crop_thumb(frame,x,y,dest,orgw,orgh,w,h):
 
+   print("INIT FRAME ")
+   print(frame)
+   print("FRAME_THUMB_W ")
+   print(FRAME_THUMB_W)
+   
+   print("FRAME_THUMB_H ")
+   print(FRAME_THUMB_H)
+   print("POS METEOR ")
+   print(str(x) + "," + str(y))
+   print("DEST ")
+   print(dest)
+   print("ORG ")
+   print(str(orgw) + "," +str(orgh))
+   print("DEST")
+   print(str(w) + "," + str(h))
+    
    # Debug 
    img = cv2.imread(frame)  
-  
-   # Create empty image THUMB_WxTHUMB_H in black so we don't have any issues while working on the edges of the original frame 
-   crop_img = np.zeros((w,h,3), np.uint8)
 
-   # Default values
-   org_x = int(x - orgw/2)
-   org_w = int(orgw + org_x)
-   org_y = int(y  - orgh/2)
-   org_h = int(orgh + org_y)    
+   # Create empty image FRAME_THUMB_WxFRAME_THUMB_H in black so we don't have any issues while working on the edges of the original frame 
+   crop_img = np.zeros((int(FRAME_THUMB_W),int(FRAME_THUMB_H),3), np.uint8)
+ 
+   # Default values for the meteor to stay in the middle of the frame thumb
+   org_x = int(x - FRAME_THUMB_W/2)
+   org_w = int(FRAME_THUMB_W + org_x)
 
+   org_y = int(y  - FRAME_THUMB_H/2)
+   org_h = int(FRAME_THUMB_H + org_y)    
+
+   # Destination THUMB
    thumb_dest_x = 0
-   thumb_dest_w = w
+   thumb_dest_w = FRAME_THUMB_W
    thumb_dest_y = 0
-   thumb_dest_h = h
- 
-   # If the x is too close to the edge
+   thumb_dest_h = FRAME_THUMB_H
+   
+   print("CROP IMG (DEST)")
+   print(str(thumb_dest_y)+':'+str(thumb_dest_h)+','+str(thumb_dest_x)+':'+str(thumb_dest_w))
+   print("IMG (INP)")
+   print(str(org_y)+':'+str(org_h)+','+str(org_x)+':'+str(org_w))
 
-   # ON THE LEFT (VERIFIED)
-   if(org_x<=0):
-
-      # Part of the original image
-      org_x = 0
-
-      # Part of the thumb
-      thumb_dest_x = int(orgw/2-x)
-      thumb_dest_w = int(abs(thumb_dest_w - org_x))
- 
-   # ON RIGHT (VERIFIED)
-   elif(org_x >= (org_w_HD-orgw)): 
-      
-      # Part of the original image
-      org_w = org_w_HD
-     
-      # Destination in thumb (img) 
-      thumb_dest_w =  HD_W - org_x
-  
-   # ON TOP (VERIFIED)
-   if(org_y<=0):
- 
-      # Part of the original image
-      org_y = 0 
-
-      # Part of the thumb
-      thumb_dest_y = int(THUMB_SELECT_H/2-y)
-      thumb_dest_h = int(abs(thumb_dest_w - org_y))
-       
-
-   # ON BOTTOM
-   if(org_y >= (org_h_HD-THUMB_SELECT_H)):
-
-      # Part of the original image
-      org_h = org_h_HD
-
-      # Destination in thumb (img)
-      thumb_dest_h = HD_H -  org_y 
-  
    crop_img[thumb_dest_y:thumb_dest_h,thumb_dest_x:thumb_dest_w] = img[org_y:org_h,org_x:org_w]
    cv2.imwrite(dest,crop_img)
-  
+   
+
+   print("DEST")
+   print(dest)
+   sys.exit(0)
    return dest
 
 # Cropp a video while keeping the meteor always
@@ -120,18 +107,39 @@ def crop_video_keep_meteor_centered(json_file,video,w=FRAME_THUMB_W,h=FRAME_THUM
       cropped_frames = []       
 
       # First index
-      first_index = int(data['frames'][1]['fn'])
+      first_index = int(data['frames'][1]['fn']) 
+      
+      # We crop all the HD frames that are in data['frames']
       for i in range(1,first_index):
-         crop = definitive_crop_thumb(folder_path + os.sep + "frames" + str(i).zfill(5) + ".png",data['frames'][1]['x'],data['frames'][1]['y'],folder_path + os.sep + "frames" + str(i).zfill(5) +"X.png",True,int(FRAME_THUMB_W),int(FRAME_THUMB_H))
+         crop = definitive_crop_thumb(
+            folder_path + os.sep + "frames" + str(i).zfill(5) + ".png",
+            data['frames'][1]['x'],
+            data['frames'][1]['y'],
+            folder_path + os.sep + "frames" + str(i).zfill(5) +"X.png",
+            HD_W,
+            HD_H,
+            int(FRAME_THUMB_W),
+            int(FRAME_THUMB_H))
          cropped_frames.append(crop.replace('//','/'))
 
       for frame in data['frames']:
          frame_index = int(frame['fn'])
 
          # CHANGE THE CROP SIZE FOR FIREBALLS
-         crop = definitive_crop_thumb(folder_path + os.sep + "frames" + str(frame_index).zfill(5) + ".png",frame['x'],frame['y'],folder_path + os.sep + "frames" + str(frame_index).zfill(5) +"X.png",True,int(FRAME_THUMB_W),int(FRAME_THUMB_H))
+         crop = definitive_crop_thumb(
+            folder_path + os.sep + "frames" + str(frame_index).zfill(5) + ".png",
+            frame['x'],
+            frame['y'],
+            folder_path + os.sep + "frames" + str(frame_index).zfill(5) +"X.png",
+            HD_W,
+            HD_H,
+            int(FRAME_THUMB_W),
+            int(FRAME_THUMB_H)
+         )
          cropped_frames.append(crop.replace('//','/'))
-         
+      
+
+      print(cropped_frames)
  
       # We cannot create the video with ffmpeg as the cmd is sometimes way too long
       #frame = cv2.imread(cropped_frames[0])
@@ -149,10 +157,10 @@ def crop_video_keep_meteor_centered(json_file,video,w=FRAME_THUMB_W,h=FRAME_THUM
  
 
       # Now we create a video with all the frames----X we just created
-      cmd = "ffmpeg -y -framerate 25  -i " +  ' '.join(cropped_frames) + " -c:v libx264 -r 25 -pix_fmt yuv420p " + video.replace('.mp4','-cropped.mp4')
-      output = subprocess.check_output(cmd, shell=True).decode("utf-8")   
-      print("ffmpeg cmd successfull >> " +  output) 
-      print(video.replace('.mp4','-cropped.mp4') + " > video created")
+      #cmd = "ffmpeg -y -framerate 25  -i " +  ' '.join(cropped_frames) + " -c:v libx264 -r 25 -pix_fmt yuv420p " + video.replace('.mp4','-cropped.mp4')
+      #output = subprocess.check_output(cmd, shell=True).decode("utf-8")   
+      #print("ffmpeg cmd successfull >> " +  output) 
+      #print(video.replace('.mp4','-cropped.mp4') + " > video created")
        
 
 
