@@ -124,7 +124,8 @@ def crop_video_keep_meteor_centered(json_file,video,w=FRAME_THUMB_W,h=FRAME_THUM
 
       #TODO: GET THE SHAPE OF THE FRAME
       # TO ADD orgw & orgh to definitive_crop_thumb
-
+      orgw = 50
+      orgw = 50
 
       for i in range(1,first_index):
          crop = definitive_crop_thumb(folder_path + os.sep + "frames" + str(i).zfill(5) + ".png",data['frames'][1]['x'],data['frames'][1]['y'],folder_path + os.sep + "frames" + str(i).zfill(5) +"X.png",int(FRAME_THUMB_W),int(FRAME_THUMB_H))
