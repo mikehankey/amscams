@@ -5,7 +5,7 @@ async function extractFramesFromVideo(videoUrl, fps=25) {
      // fully download it first (no buffering):
      let videoBlob = await fetch(videoUrl).then(r => r.blob());
      let videoObjectUrl = URL.createObjectURL(videoBlob);
-     let videoDD = document.createElement("video");
+     let videoDD = document.createElement("videoXEDZ");
  
      let seekResolve;
      videoDD.addEventListener('seeked', async function() {
@@ -14,7 +14,7 @@ async function extractFramesFromVideo(videoUrl, fps=25) {
      });
  
      videoDD.addEventListener('loadeddata', async function() {
-       let canvas64 = document.createElement('canvas');
+       let canvas64 = document.createElement('canvasXEDZ');
        let contextWW = canvas64.getContext('2d');
        let [w, h] = [videoDD.videoWidth, videoDD.videoHeight]
        canvas64.width =  w;
