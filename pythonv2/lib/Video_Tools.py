@@ -20,8 +20,8 @@ from pathlib import Path
 # FRAME/THUMB FACTOR
 FT_FACTOR = 10
 
-FRAME_THUMB_H = HD_W/FT_FACTOR
-FRAME_THUMB_W = HD_H/FT_FACTOR
+FRAME_THUMB_W = HD_W/FT_FACTOR
+FRAME_THUMB_H = HD_H/FT_FACTOR
 
 
 # WE NEED THE ORIGINAL SIZE!!!
@@ -29,6 +29,11 @@ def definitive_crop_thumb(frame,x,y,dest,orgw,orgh,w,h):
 
    print("INIT FRAME ")
    print(frame)
+   print("FRAME_THUMB_W ")
+   print(FRAME_THUMB_W)
+   
+   print("FRAME_THUMB_H ")
+   print(FRAME_THUMB_H)
    print("POS METEOR ")
    print(str(x) + "," + str(y))
    print("DEST ")
