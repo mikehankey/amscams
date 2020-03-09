@@ -27,21 +27,21 @@ FRAME_THUMB_H = int(HD_H/FT_FACTOR)
 # WE NEED THE ORIGINAL SIZE!!!
 def definitive_crop_thumb(frame,x,y,dest,orgw,orgh,w,h):
 
-   print("INIT FRAME ")
-   print(frame)
-   print("FRAME_THUMB_W ")
-   print(FRAME_THUMB_W)
+   #print("INIT FRAME ")
+   #print(frame)
+   #print("FRAME_THUMB_W ")
+   #print(FRAME_THUMB_W)
    
-   print("FRAME_THUMB_H ")
-   print(FRAME_THUMB_H)
-   print("POS METEOR ")
-   print(str(x) + "," + str(y))
-   print("DEST ")
-   print(dest)
-   print("ORG ")
-   print(str(orgw) + "," +str(orgh))
-   print("DEST")
-   print(str(w) + "," + str(h))
+   #print("FRAME_THUMB_H ")
+   #print(FRAME_THUMB_H)
+   #print("POS METEOR ")
+   #print(str(x) + "," + str(y))
+   #print("DEST ")
+   #print(dest)
+   #print("ORG ")
+   #print(str(orgw) + "," +str(orgh))
+   #print("DEST")
+   #print(str(w) + "," + str(h))
     
    # Debug 
    img = cv2.imread(frame)  
@@ -66,7 +66,14 @@ def definitive_crop_thumb(frame,x,y,dest,orgw,orgh,w,h):
    print(str(thumb_dest_y)+':'+str(thumb_dest_h)+','+str(thumb_dest_x)+':'+str(thumb_dest_w))
    print("IMG (INP)")
    print(str(org_y)+':'+str(org_h)+','+str(org_x)+':'+str(org_w))
-
+   print(" ")
+   print(" ")
+   print(" ")
+   print(" ")
+   print(" ")
+   print(" ")
+   print(" ")
+   
    crop_img[thumb_dest_y:thumb_dest_h,thumb_dest_x:thumb_dest_w] = img[org_y:org_h,org_x:org_w] 
    cv2.imwrite(dest,crop_img)
    
