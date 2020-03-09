@@ -6,6 +6,7 @@ import time
 import shutil
 import sys
 import cv2
+import numpy as np
 
 from lib.VIDEO_VARS import * 
 from os import listdir, remove
