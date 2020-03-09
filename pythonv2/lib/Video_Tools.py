@@ -30,41 +30,35 @@ def definitive_crop_thumb(frame,x,y,dest,orgw,orgh,w,h):
    # Debug 
    img = cv2.imread(frame)  
 
-   #if(HD is True):
-   org_w_HD = HD_W
-   org_h_HD = HD_H
-   #else:
-   #   org_w_HD = SD_W
-   #   org_h_HD = SD_H
-  
-   # Create empty image THUMB_WxTHUMB_H in black so we don't have any issues while working on the edges of the original frame 
-   crop_img = np.zeros((w,h,3), np.uint8)
+   # Create empty image FRAME_THUMB_WxFRAME_THUMB_H in black so we don't have any issues while working on the edges of the original frame 
+   crop_img = np.zeros((FRAME_THUMB_W,FRAME_THUMB_H,3), np.uint8)
 
+   orgw = HD_W
+   orgh = HD_H
+  
    # Default values
-   org_x = int(x - orgw/2)
-   org_w = int(orgw + org_x)
-   org_y = int(y  - orgh/2)
-   org_h = int(orgh + org_y)    
+   org_x = int(x - FRAME_THUMB_W/2)
+   org_w = int(FRAME_THUMB_W + org_x)
+   org_y = int(y  - FRAME_THUMB_H/2)
+   org_h = int(FRAME_THUMB_H + org_y)    
 
    thumb_dest_x = 0
-   thumb_dest_w = w
+   thumb_dest_w = FRAME_THUMB_W
    thumb_dest_y = 0
-   thumb_dest_h = h
+   thumb_dest_h = FRAME_THUMB_H
  
-   # If the x is too close to the edge
-
-   # ON THE LEFT (VERIFIED)
+   ## ON THE LEFT (VERIFIED)
    if(org_x<=0):
 
       # Part of the original image
       org_x = 0
 
       # Part of the thumb
-      thumb_dest_x = int(orgw/2-x)
+      thumb_dest_x = int(FRAME_THUMB_W/2-x)
       thumb_dest_w = int(abs(thumb_dest_w - org_x))
  
    # ON RIGHT (VERIFIED)
-   elif(org_x >= (org_w_HD-orgw)): 
+   elif(org_x >= (org_w_HD-FRAME_THUMB_W)): 
       
       # Part of the original image
       org_w = org_w_HD
@@ -79,12 +73,12 @@ def definitive_crop_thumb(frame,x,y,dest,orgw,orgh,w,h):
       org_y = 0 
 
       # Part of the thumb
-      thumb_dest_y = int(THUMB_SELECT_H/2-y)
+      thumb_dest_y = int(FRAME_THUMB_H/2-y)
       thumb_dest_h = int(abs(thumb_dest_w - org_y))
        
 
    # ON BOTTOM
-   if(org_y >= (org_h_HD-THUMB_SELECT_H)):
+   if(org_y >= (org_h_HD-FRAME_THUMB_H)):
 
       # Part of the original image
       org_h = org_h_HD
@@ -128,17 +122,14 @@ def crop_video_keep_meteor_centered(json_file,video,w=FRAME_THUMB_W,h=FRAME_THUM
       cropped_frames = []       
 
       # First index
-      first_index = int(data['frames'][1]['fn'])
-
-      #TODO: GET THE SHAPE OF THE FRAME
-      # TO ADD orgw & orgh to definitive_crop_thumb
-      orgw = 50
-      orgh = 50
-
+      first_index = int(data['frames'][1]['fn']) 
+      
+      # We crop all the HD frames that are in data['frames']
       for i in range(1,first_index):
          crop = definitive_crop_thumb(
             folder_path + os.sep + "frames" + str(i).zfill(5) + ".png",
-            data['frames'][1]['x'],data['frames'][1]['y'],
+            data['frames'][1]['x'],
+            data['frames'][1]['y'],
             folder_path + os.sep + "frames" + str(i).zfill(5) +"X.png",
             orgw,
             orgh,
@@ -150,9 +141,20 @@ def crop_video_keep_meteor_centered(json_file,video,w=FRAME_THUMB_W,h=FRAME_THUM
          frame_index = int(frame['fn'])
 
          # CHANGE THE CROP SIZE FOR FIREBALLS
-         crop = definitive_crop_thumb(folder_path + os.sep + "frames" + str(frame_index).zfill(5) + ".png",frame['x'],frame['y'],folder_path + os.sep + "frames" + str(frame_index).zfill(5) +"X.png",orgw,orgh,int(FRAME_THUMB_W),int(FRAME_THUMB_H))
+         crop = definitive_crop_thumb(
+            folder_path + os.sep + "frames" + str(frame_index).zfill(5) + ".png",
+            frame['x'],
+            frame['y'],
+            folder_path + os.sep + "frames" + str(frame_index).zfill(5) +"X.png",
+            orgw,
+            orgh,
+            int(FRAME_THUMB_W),
+            int(FRAME_THUMB_H)
+         )
          cropped_frames.append(crop.replace('//','/'))
-         
+      
+
+      print(cropped_frames)
  
       # We cannot create the video with ffmpeg as the cmd is sometimes way too long
       #frame = cv2.imread(cropped_frames[0])
@@ -170,10 +172,10 @@ def crop_video_keep_meteor_centered(json_file,video,w=FRAME_THUMB_W,h=FRAME_THUM
  
 
       # Now we create a video with all the frames----X we just created
-      cmd = "ffmpeg -y -framerate 25  -i " +  ' '.join(cropped_frames) + " -c:v libx264 -r 25 -pix_fmt yuv420p " + video.replace('.mp4','-cropped.mp4')
-      output = subprocess.check_output(cmd, shell=True).decode("utf-8")   
-      print("ffmpeg cmd successfull >> " +  output) 
-      print(video.replace('.mp4','-cropped.mp4') + " > video created")
+      #cmd = "ffmpeg -y -framerate 25  -i " +  ' '.join(cropped_frames) + " -c:v libx264 -r 25 -pix_fmt yuv420p " + video.replace('.mp4','-cropped.mp4')
+      #output = subprocess.check_output(cmd, shell=True).decode("utf-8")   
+      #print("ffmpeg cmd successfull >> " +  output) 
+      #print(video.replace('.mp4','-cropped.mp4') + " > video created")
        
 
 
