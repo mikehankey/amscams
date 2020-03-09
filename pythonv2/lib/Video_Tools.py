@@ -137,8 +137,11 @@ def crop_video_keep_meteor_centered(json_file,video,w=FRAME_THUMB_W,h=FRAME_THUM
       fourcc = cv2.VideoWriter_fourcc(*'mp4v')
       videoCC = cv2.VideoWriter(video.replace('.mp4','-cropped.mp4'), fourcc, 25, (width,height))
  
+      print(str(len(cropped_frames)) +  " frames ")
+
       for frame in cropped_frames:
-         videoCC.write(cv2.imread(frame))
+         f = cv2.imread(frame)
+         videoCC.write(f)
 
       videoCC.release()
     
