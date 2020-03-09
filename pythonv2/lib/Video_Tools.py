@@ -61,6 +61,45 @@ def definitive_crop_thumb(frame,x,y,dest,orgw,orgh,w,h):
    thumb_dest_w = FRAME_THUMB_W
    thumb_dest_y = 0
    thumb_dest_h = FRAME_THUMB_H
+
+   # CHANGE VALUES IF THE METEOR IS ON THE EDGE(S)
+   # ON THE LEFT (VERIFIED)
+   if(org_x<=0):
+
+      # Part of the original image
+      org_x = 0
+
+      # Part of the thumb
+      thumb_dest_x = int(FRAME_THUMB_W/2-x)
+      thumb_dest_w = int(abs(thumb_dest_w - org_x))
+ 
+   # ON RIGHT (VERIFIED)
+   elif(org_x >= (org_w_HD-FRAME_THUMB_W)): 
+      
+      # Part of the original image
+      org_w = org_w_HD
+     
+      # Destination in thumb (img) 
+      thumb_dest_w =  HD_W - org_x
+  
+   # ON TOP (VERIFIED)
+   if(org_y<=0):
+ 
+      # Part of the original image
+      org_y = 0 
+
+      # Part of the thumb
+      thumb_dest_y = int(FRAME_THUMB_H/2-y)
+      thumb_dest_h = int(abs(thumb_dest_w - org_y))
+        
+   # ON BOTTOM
+   if(org_y >= (org_h_HD-FRAME_THUMB_H)):
+
+      # Part of the original image
+      org_h = org_h_HD
+
+      # Destination in thumb (img)
+      thumb_dest_h = HD_H -  org_y 
      
    crop_img[thumb_dest_y:thumb_dest_h,thumb_dest_x:thumb_dest_w] = img[org_y:org_h,org_x:org_w] 
    cv2.imwrite(dest,crop_img)
@@ -133,24 +172,25 @@ def crop_video_keep_meteor_centered(json_file,video,w=FRAME_THUMB_W,h=FRAME_THUM
       # We cannot create the video with ffmpeg as the cmd is sometimes way too long
       frame = cv2.imread(cropped_frames[0])
       height, width, layers = frame.shape
-
-      print("WIDTH " + str(width))
-      print("HEIGHT " + str(height))
  
       fourcc = cv2.VideoWriter_fourcc(*'mp4v')
       videoCC = cv2.VideoWriter(video.replace('.mp4','-cropped.mp4'), fourcc, 25, (width,height))
- 
-      print(str(len(cropped_frames)) +  " frames ")
-
+   
       for frame in cropped_frames:
-         f = cv2.imread(frame)
-         print(frame + "  added ")
+         f = cv2.imread(frame) 
          videoCC.write(f)
 
       videoCC.release()
     
-      print(video.replace('.mp4','-cropped.mp4') +   " done.")
- 
+      #print(video.replace('.mp4','-cropped.mp4') +   " done.")
+
+      # Now we need to delete all the frames and framesX to clean the directory (all png images)
+      fileList = glob.glob(folder_path+'*.png')
+      for filePath in fileList:
+      try:
+         os.remove(filePath)
+      except:
+         print("Error while deleting file : ", filePath)
  
        
 
