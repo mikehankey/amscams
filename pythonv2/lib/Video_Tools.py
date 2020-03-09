@@ -30,13 +30,13 @@ def definitive_crop_thumb(frame,x,y,dest,orgw,orgh,w,h):
    print("INIT FRAME ")
    print(frame)
    print("POS METEOR ")
-   print(x + "," + y)
+   print(str(x) + "," + str(y))
    print("DEST ")
    print(dest)
    print("ORG ")
-   print(orgw + "," + orgh)
+   print(str(orgw) + "," +str(orgh))
    print("DEST")
-   print(w + "," + h)
+   print(str(w) + "," + str(h))
    sys.exit(0)
 
 
