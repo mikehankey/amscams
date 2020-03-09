@@ -25,24 +25,12 @@ FRAME_THUMB_H = int(HD_H/FT_FACTOR)
 
 
 # WE NEED THE ORIGINAL SIZE!!!
-def definitive_crop_thumb(frame,x,y,dest,orgw,orgh,w,h):
+def definitive_crop_thumb(frame,x,y,dest,orgw,orgh,w,h, ft_factor = 20):
 
-   #print("INIT FRAME ")
-   #print(frame)
-   #print("FRAME_THUMB_W ")
-   #print(FRAME_THUMB_W)
-   
-   #print("FRAME_THUMB_H ")
-   #print(FRAME_THUMB_H)
-   #print("POS METEOR ")
-   #print(str(x) + "," + str(y))
-   #print("DEST ")
-   #print(dest)
-   #print("ORG ")
-   #print(str(orgw) + "," +str(orgh))
-   #print("DEST")
-   #print(str(w) + "," + str(h))
-    
+   # Add bigger factor if fireball
+   FRAME_THUMB_W = int(HD_W/ft_factor)
+   FRAME_THUMB_H = int(HD_H/ft_factor) 
+
    # It's HD
    org_w_HD = HD_W
    org_h_HD = HD_H 
