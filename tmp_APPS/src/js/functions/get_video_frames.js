@@ -17,6 +17,8 @@ async function extractFramesFromVideo(videoUrl, fps=25) {
        let canvas64 = document.createElement('canvasXEDZ');
        let contextWW = canvas64.getContext('2d');
        let [w, h] = [videoDD.videoWidth, videoDD.videoHeight]
+       console.log("w",w);
+       console.log("h",h);
        canvas64.width =  w;
        canvas64.height = h;
  
