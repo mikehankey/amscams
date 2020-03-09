@@ -2177,6 +2177,10 @@ def examine_min(video_file,json_conf):
       meteor_files.append(meteor_info['sd_trim'])
    elif cfe(toomany_file) == 1:
       toomany = load_json_file(toomany_file)
+      for key in toomany:
+         print(key)
+
+
    elif cfe(detect_file) == 1:
       detect_info = load_json_file(detect_file)
       detect_html = "Events<BR>"
@@ -2263,15 +2267,38 @@ def examine_min(video_file,json_conf):
    if detect_info is not None:
       print(detect_info)
    if meteor_info is not None:
-      meteor_html = "Meteor Info<BR>"
-      meteor_html += "HD TRIM FILE: " + meteor_info['hd_trim'] + "<BR>"
-      meteor_html += "SD TRIM FILE: " + meteor_info['sd_trim'] + "<BR>"
-      meteor_html += "HD OBJECTS:<BR>"
+      #<th></th><th></th><th>#</th><th>Sum Val</th><th>Max Val</th><th>Max X,Y</th><th>CM</th><th></th><th></th><th></th><th colspan="4"></th>
+      meteor_html = """
+      <table border=1 class="table table-dark table-striped table-hover td-al-m mb-2 pr-5 mt-2">
+         <thead>
+            <tr>
+            </tr>
+         </thead>
+      """
+
+      meteor_html += "<tr><td COLSPAN=2>Meteor Info<BR></td></tr>"
+      meteor_html += "<tr><td>HD TRIM FILE: </td><td>" + meteor_info['hd_trim'] + "</td></tr>"
+      meteor_html += "<tr><td>SD TRIM FILE: </td><td>" + meteor_info['sd_trim'] + "</td></tr>"
+      meteor_html += "<tr><td colspan=2>HD OBJECTS:</td></tr>"
       for key in meteor_info['hd_motion_objects']: 
          obj = meteor_info['hd_motion_objects'][key]
          if obj['report']['meteor_yn'] == "Y":
-            meteor_html += key + "<BR>"
-            meteor_html += key + str(obj['report']) +  "<BR>"
+            meteor_html += "<tr><td>Frames</td><td>" + str(obj['ofns']) + "</td></tr>"
+            meteor_html += "<tr><td>Xs</td><td>" + str(obj['oxs']) + "</td></tr>"
+            meteor_html += "<tr><td>Ys</td><td>" + str(obj['oys']) + "</td></tr>"
+            meteor_html += "<tr><td>Ws</td><td>" + str(obj['ows']) + "</td></tr>"
+            meteor_html += "<tr><td>Hs</td><td>" + str(obj['ohs']) + "</td></tr>"
+            meteor_html += "<tr><td>Intensity</td><td>" + str(obj['oint']) + "</td></tr>"
+            for key in obj['report']:
+               val = obj['report'][key]
+               if key != 'classify':
+                  meteor_html += "<tr><td>" + str(key) + "</td><td>" + str(val) + "</td></tr>"
+
+            meteor_html += "<tr><td colspan=2>Classify:</td></tr>"
+            for key in obj['report']['classify']:
+               val = obj['report']['classify'][key]
+               meteor_html += "<tr><td>" + str(key) + "</td><td>" + str(val) + "</td></tr>"
+
 
       meteor_html += "SD OBJECTS:<BR>"
       for key in meteor_info['motion_objects']:
@@ -2279,6 +2306,7 @@ def examine_min(video_file,json_conf):
          if obj['report']['meteor_yn'] == "Y":
             meteor_html += key + str(obj['report']) + "<BR>"
       object_html = meteor_html
+      meteor_html += "</table>"
    if toomany is not None:
       for key in toomany['objects']:
          obj = toomany['objects'][key]

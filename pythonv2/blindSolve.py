@@ -35,6 +35,71 @@ from lib.DetectLib import eval_cnt
 show = 1
 json_conf = load_json_file("../conf/as6.json")
 
+def make_plate_from_points(in_file, out_file, points, json_conf ):
+   print("IN:", in_file)
+   print("OUT:", out_file)
+   print("POINTS:", points)
+   if "mp4" in in_file :
+      extract_one_frame(in_file,out_file)
+   
+   hd_stack_file = in_file
+   hd_stack_img = cv2.imread(hd_stack_file,0)
+   shp = hd_stack_img.shape
+   ih,iw = shp[0],shp[1]
+   sd = 0
+   if iw < 1920:
+      sd = 1
+
+   hdm_x = 2.7272
+   hdm_y = 1.875
+
+   plate_img = np.zeros((ih,iw),dtype=np.uint8)
+   hd_stack_file_an = hd_stack_file.replace(".png", "-an.png")
+
+   hd_stack_img = cv2.imread(hd_stack_file,0);
+   star_points = []
+   for x,y,i in points:
+      x,y = int(x),int(y)
+      y1 = y - 15
+      y2 = y + 15
+      x1 = x - 15
+      x2 = x + 15
+      x1,y1,x2,y2= bound_cnt(x,y,iw,ih,15)
+      cnt_img = hd_stack_img[y1:y2,x1:x2]
+      ch,cw = cnt_img.shape
+      max_pnt,max_val,min_val = cnt_max_px(cnt_img)
+      mx,my = max_pnt
+      mx = mx - 15
+      my = my - 15
+      cy1 = y + my - 15
+      cy2 = y + my +15
+      cx1 = x + mx -15
+      cx2 = x + mx +15
+      cx1,cy1,cx2,cy2= bound_cnt(x+mx,y+my,iw,ih)
+      print("CX:", cx1,cy1,cx2,cy2)
+     
+      if ch > 0 and cw > 0:
+         cnt_img = hd_stack_img[cy1:cy2,cx1:cx2]
+         bgavg = np.mean(cnt_img)
+         cnt_img = clean_star_bg(cnt_img, bgavg + 3)
+
+         star_points.append([x+mx,y+my])
+         #if abs(cy1- (ih/2)) <= (ih/2)*.8 and abs(cx1- (iw/2)) <= (iw/2)*.8:
+         plate_img[cy1:cy2,cx1:cx2] = cnt_img
+
+   points_json = {}
+   points_json['user_stars'] = points 
+
+
+   points_file = hd_stack_file.replace(".png", "-user-stars.json")
+   save_json_file(points_file,points_json)
+
+
+   cv2.imwrite(out_file, plate_img)
+   print(out_file)
+   cv2.imshow('plate', plate_img)
+   cv2.waitKey(0)
+
 def day_or_night(capture_date, json_conf):
 
    device_lat = json_conf['site']['device_lat']
@@ -65,6 +130,10 @@ def day_or_night(capture_date, json_conf):
 def blind_solve_night():
    now = datetime.now()
    day = now.strftime("%Y_%m_%d")
+   if cfe("/mnt/ams2/temp", 1) == 0:
+      os.makedirs("/mnt/ams2/temp")
+
+   pos_solve_imgs = [] 
    for cam in json_conf['cameras']:
       cam_id = json_conf['cameras'][cam]['cams_id']
       hd_glob = "/mnt/ams2/HD/" + day + "*" + cam_id + ".mp4"
@@ -72,18 +141,35 @@ def blind_solve_night():
       fc = 0
       for file in hd_files:
          (f_datetime, cam, f_date_str,fy,fmin,fd, fh, fm, fs) = convert_filename_to_date_cam(file)
-
+         plate_file = file.replace(".mp4", ".jpg")
+         pf = plate_file.split("/")[-1]
+         plate_file = "/mnt/ams2/temp/" + pf
+         img_file = plate_file.replace(".jpg", ".png")
          sun_status = day_or_night(f_datetime, json_conf)
          if sun_status == 'night':
-            print(file, sun_status)
-            extract_one_frame(file)
-            stars = get_image_stars(file, None, None)
-            print(stars)
-            exit()
+            if fc % 60 == 0:
+               print(file, sun_status)
+               if cfe(plate_file) == 0: 
+                  extract_one_frame(file, img_file)
+                  stars,img,oimg = get_image_stars(img_file, None, 0)
+                  if len(stars) > 10:
+                     make_plate_from_points(img_file, plate_file, stars, json_conf )
+                     print("stars:", len(stars))
+                     show_img = cv2.resize(img, (0,0),fx=.5, fy=.5)
+                     print(stars)
+                     pos_solve_imgs.append((file, stars, cam))
+         
+         fc += 1
 
-def extract_one_frame(file):
+   cal_files = {}
 
-   cmd = "/usr/bin/ffmpeg -i " + file + " -ss 00:00:01 -vframes 1 " + "/mnt/ams2/temp/astrometry.jpg"
+   temp = sorted(pos_solve_imgs, key=lambda x: x[1], reverse=True)
+   for data in temp:
+      file, stars, cam = data
+
+def extract_one_frame(file, out_file):
+
+   cmd = "/usr/bin/ffmpeg -y -i " + file + " -ss 00:00:01 -vframes 1 " + out_file
    os.system(cmd)
 
 
@@ -162,37 +248,49 @@ def get_meteor_files(dir, cams):
    return(cam_files)   
 
 def get_image_stars(file,img=None, show=0):
+   print("SHOW IS:", show)
+   print("FILEIS:", file)
    stars = []
    if img is None:
       img = cv2.imread(file, 0)
+   oimg = img.copy()
    avg = np.mean(img)
-   best_thresh = avg + 12
+   best_thresh = avg + 15
+   
    _, star_bg = cv2.threshold(img, best_thresh, 255, cv2.THRESH_BINARY)
    thresh_obj = cv2.dilate(star_bg, None , iterations=4)
+   cv2.imshow('ppp', thresh_obj)
+   cv2.waitKey(0)
    (_, cnts, xx) = cv2.findContours(thresh_obj.copy(), cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
    cc = 0
    for (i,c) in enumerate(cnts):
-      x,y,w,h = cv2.boundingRect(cnts[i])
-      px_val = int(img[y,x])
-      cnt_img = img[y:y+h,x:x+w]
+      cx,cy,w,h = cv2.boundingRect(cnts[i])
+      cnt_img = img[cy:cy+h,cx:cx+w]
       cnt_img = cv2.GaussianBlur(cnt_img, (7, 7), 0)
       max_px, avg_px, px_diff,max_loc = eval_cnt(cnt_img.copy())
+      
       name = "/mnt/ams2/tmp/cnt" + str(cc) + ".png"
       #star_test = test_star(cnt_img)
-      x = x + int(w/2)
-      y = y + int(h/2)
-      if px_diff > 5 and w > 1 and h > 1 and w < 50 and h < 50:
-          stars.append((x,y,int(max_px)))
-          cv2.circle(img,(x,y), 5, (128,128,128), 1)
+      #x = x + int(w/2)
+      #y = y + int(h/2)
+      mx,my = max_loc
+      x = cx + mx 
+      y = cy + my
+      print("CNT:", x,y,w,h, px_diff)
+      if px_diff > 10 and w > 1 and h > 1 and w < 20 and h < 20:
+         if 100 < x < 1820 and 50 < y < 1030:
+            stars.append((x,y,int(max_px)))
+            cv2.circle(img,(x,y), 5, (128,128,128), 1)
 
       cc = cc + 1
-   #if show == 1:
-   #   cv2.imshow('pepe', img)
-   #   cv2.waitKey(1)
+   if show == 1:
+      cv2.imshow('pepe', img)
+      cv2.waitKey(0)
 
    temp = sorted(stars, key=lambda x: x[2], reverse=True)
    stars = temp[0:50]
-   return(stars)
+   print("STARS:", stars)
+   return(stars, img, oimg)
 
 def find_best_cat_stars(cat_stars, ix,iy, frame, cp_file):
    cat_image_star = None
@@ -336,3 +434,8 @@ if sys.argv[1] == 'rpt':
 if sys.argv[1] == 'bsn' or sys.argv[1] == 'blind_solve_night':
    blind_solve_night()
 
+if sys.argv[1] == 'mp' :
+   in_file = sys.argv[2] 
+   out_file = in_file.replace(".png", ".jpg")
+   stars,img,oimg = get_image_stars(in_file, None, 0)
+   make_plate_from_points(in_file, out_file, stars, json_conf )

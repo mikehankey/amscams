@@ -598,7 +598,7 @@ def classify_object(data, sd=1):
 
 
    # filter out detections that don't match ang vel or ang sep desired values
-   if report['meteor_yn'] == "Y" and float(report['ang_vel_deg']) > .5 and float(report['ang_vel_deg']) < 35:
+   if float(report['ang_vel_deg']) > .5 and float(report['ang_vel_deg']) < 35:
       report['meteor_yn'] = "Y"
    else:
       report['meteor_yn'] = "no"
@@ -10017,6 +10017,7 @@ def batch_vals(day):
          detect_in_vals(vf)
 
 def detect_in_vals(vals_file):
+   trim_too = 0
    if "mp4" in vals_file and "proc2" in vals_file:
       vfn = vals_file.split("/")[-1]
       bsd = vals_file.replace(vfn, "")
@@ -10033,13 +10034,13 @@ def detect_in_vals(vals_file):
    objects = {}
    if data is False:
       print(vals_file + " is none.")
-      exit()
+      return()
    for i in range(0,len(data['max_vals'])):
       if "pos_vals" in data:
          if i < len(data['pos_vals']) :
-            print(data['pos_vals'][i], vals_file)
+            #print(data['pos_vals'][i], vals_file)
             if isinstance(data['pos_vals'][i], int) is False:
-               print(type(data['pos_vals'][i]))
+               #print(type(data['pos_vals'][i]))
                x,y = data['pos_vals'][i]
             else :
                x,y = 0,0
@@ -10055,7 +10056,7 @@ def detect_in_vals(vals_file):
             cm = 0
          data_x.append(x)
          data_y.append(y)
-         print(i, x,y, max_val, cm)
+         #print(i, x,y, max_val, cm)
          object, objects = find_object(objects, i,x, y, SD_W, SD_H, 0, 0, 0, None)
       else:
          if cm >= 3:
@@ -10106,7 +10107,15 @@ def detect_in_vals(vals_file):
       save_json_file(detect_file, detect_info)
       return()
 
-    
+   if len(suspect_meteors) > 0:
+      detect_info = {}
+      detect_info['events'] = events 
+      detect_info['objects'] = objects 
+      detect_info['maybe_meteors'] = suspect_meteors 
+      detect_file = vals_file.replace("-vals.json", "-maybe-meteors.json")
+      save_json_file(detect_file, detect_info)
+
+   return()
 
 
    buf_size = 10
