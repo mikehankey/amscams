@@ -47,7 +47,7 @@ def definitive_crop_thumb(frame,x,y,dest,orgw,orgh,w,h):
    img = cv2.imread(frame)  
 
    # Create empty image FRAME_THUMB_WxFRAME_THUMB_H in black so we don't have any issues while working on the edges of the original frame 
-   crop_img = np.zeros((int(FRAME_THUMB_W),int(FRAME_THUMB_H),3), np.uint8)
+   crop_img = np.zeros((FRAME_THUMB_W,FRAME_THUMB_H,3), np.uint8)
  
    # Default values for the meteor to stay in the middle of the frame thumb
    org_x = int(x - FRAME_THUMB_W/2)
@@ -66,6 +66,8 @@ def definitive_crop_thumb(frame,x,y,dest,orgw,orgh,w,h):
    print(str(thumb_dest_y)+':'+str(thumb_dest_h)+','+str(thumb_dest_x)+':'+str(thumb_dest_w))
    print("IMG (INP)")
    print(str(org_y)+':'+str(org_h)+','+str(org_x)+':'+str(org_w))
+   print("SIZE (DEST)")
+   print(FRAME_THUMB_W + ', ' + FRAME_THUMB_H)
    print(" ")
    print(" ")
    print(" ")
