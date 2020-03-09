@@ -127,14 +127,14 @@ def crop_video_keep_meteor_centered(json_file,video,w=FRAME_THUMB_W,h=FRAME_THUM
 
 
       for i in range(1,first_index):
-         crop = definitive_crop_thumb(folder_path + os.sep + "frames" + str(i).zfill(5) + ".png",data['frames'][1]['x'],data['frames'][1]['y'],folder_path + os.sep + "frames" + str(i).zfill(5) +"X.png",True,int(FRAME_THUMB_W),int(FRAME_THUMB_H))
+         crop = definitive_crop_thumb(folder_path + os.sep + "frames" + str(i).zfill(5) + ".png",data['frames'][1]['x'],data['frames'][1]['y'],folder_path + os.sep + "frames" + str(i).zfill(5) +"X.png",int(FRAME_THUMB_W),int(FRAME_THUMB_H))
          cropped_frames.append(crop.replace('//','/'))
 
       for frame in data['frames']:
          frame_index = int(frame['fn'])
 
          # CHANGE THE CROP SIZE FOR FIREBALLS
-         crop = definitive_crop_thumb(folder_path + os.sep + "frames" + str(frame_index).zfill(5) + ".png",frame['x'],frame['y'],folder_path + os.sep + "frames" + str(frame_index).zfill(5) +"X.png",True,int(FRAME_THUMB_W),int(FRAME_THUMB_H))
+         crop = definitive_crop_thumb(folder_path + os.sep + "frames" + str(frame_index).zfill(5) + ".png",frame['x'],frame['y'],folder_path + os.sep + "frames" + str(frame_index).zfill(5) +"X.png",int(FRAME_THUMB_W),int(FRAME_THUMB_H))
          cropped_frames.append(crop.replace('//','/'))
          
  
