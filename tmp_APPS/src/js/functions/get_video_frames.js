@@ -62,7 +62,7 @@ async function extractFramesFromVideo(videoUrl, fps=25) {
  }
 
  $(function() {
-    console.log("OK");
+   console.log("OK");
    if(typeof cropped_video !== 'undefined') {
       asyncCall()
    }
