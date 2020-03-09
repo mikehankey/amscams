@@ -104,7 +104,7 @@ def make_event_station_report(json_file):
    # Do we have a cropped version of the video?
    cropped_hd_full_path = hd_video_full_path.replace('-HD','-HD-cropped')
    if(cfe(cropped_hd_full_path)==1):
-      template = template.replace('{CROPPED_VIDEO}',cropped_hd_full_path.replace(PATH_TO_CLOUD,ARCHIVE_URL)) 
+      template = template.replace('{CROPPED_VIDEO}',cropped_hd_full_path.replace(PATH_TO_CLOUD,os.sep)) 
       
       # CROPPED VIDEO RELATIVE
       template = template.replace('{CROPPED_VIDEO_PATH}',cropped_hd_full_path)
@@ -114,7 +114,7 @@ def make_event_station_report(json_file):
          template = template.replace('{CROPPED_VIDEO}',cropped_sd_full_path.replace(PATH_TO_CLOUD,ARCHIVE_URL)) 
 
       # CROPPED VIDEO RELATIVE
-      template = template.replace('{CROPPED_VIDEO_PATH}',cropped_sd_full_path)
+      template = template.replace('{CROPPED_VIDEO_PATH}',cropped_sd_full_path.replace(PATH_TO_CLOUD,os.sep))
 
    # Add the video buttons
    if(video_btn!=''):
