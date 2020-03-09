@@ -43,6 +43,10 @@ def definitive_crop_thumb(frame,x,y,dest,orgw,orgh,w,h):
    #print("DEST")
    #print(str(w) + "," + str(h))
     
+   # It's HD
+   org_w_HD = HD_W
+   org_h_HD = HD_H 
+   
    # Debug 
    img = cv2.imread(frame)  
 
