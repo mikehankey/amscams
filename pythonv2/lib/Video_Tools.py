@@ -134,6 +134,9 @@ def crop_video_keep_meteor_centered(json_file,video,w=FRAME_THUMB_W,h=FRAME_THUM
       frame = cv2.imread(cropped_frames[0])
       height, width, layers = frame.shape
 
+      print("WIDTH " + str(width))
+      print("HEIGHT " + str(height))
+ 
       fourcc = cv2.VideoWriter_fourcc(*'mp4v')
       videoCC = cv2.VideoWriter(video.replace('.mp4','-cropped.mp4'), fourcc, 25, (width,height))
  
@@ -141,6 +144,7 @@ def crop_video_keep_meteor_centered(json_file,video,w=FRAME_THUMB_W,h=FRAME_THUM
 
       for frame in cropped_frames:
          f = cv2.imread(frame)
+         print(frame + "  added ")
          videoCC.write(f)
 
       videoCC.release()
