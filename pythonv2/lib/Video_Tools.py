@@ -86,7 +86,7 @@ def definitive_crop_thumb(frame,x,y,dest,orgw,orgh,w,h):
       # Destination in thumb (img)
       thumb_dest_h = HD_H -  org_y 
   
-   crop_img[thumb_dest_y:thumb_dest_h,thumb_dest_x:thumb_dest_w] = img[org_y:org_h,org_x:org_w]
+   crop_img[int(thumb_dest_y):int(thumb_dest_h),int(thumb_dest_x):int(thumb_dest_w)] = img[int(org_y):int(org_h),int(org_x):int(org_w)]
    cv2.imwrite(dest,crop_img)
   
    return dest
