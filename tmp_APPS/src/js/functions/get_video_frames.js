@@ -52,10 +52,8 @@ async function extractFramesFromVideo(videoUrl, fps=25) {
 
    $.each(croppedFrames,function(i,v){ 
       // Add base64 thumbs to the table
-      a = i + 26
-      console.log(a);
-      console.log(v);
-      $('#thb_'+a + ' img').attr('src',v); 
+     
+      $('#thb_'+i + ' img').attr('src',v); 
    });
 
  
