@@ -178,7 +178,8 @@ def crop_video_keep_meteor_centered(json_file,video,w=FRAME_THUMB_W,h=FRAME_THUM
       height, width, layers = frame.shape
  
       fourcc = cv2.VideoWriter_fourcc(*'mp4v')
-      videoCC = cv2.VideoWriter(video.replace('.mp4','-cropped.mp4'), fourcc, 25, (width,height))
+      video_name = video.replace('.mp4','-cropped.mp4')
+      videoCC = cv2.VideoWriter(video_name, fourcc, 25, (width,height))
    
       for frame in cropped_frames:
          f = cv2.imread(frame) 
@@ -186,7 +187,8 @@ def crop_video_keep_meteor_centered(json_file,video,w=FRAME_THUMB_W,h=FRAME_THUM
 
       videoCC.release()
     
-      #print(video.replace('.mp4','-cropped.mp4') +   " done.")
+      # We "fix" the mp4 (need for very small videos - no idea why)
+      fixmp4(video_name,False)
 
       # Now we need to delete all the frames and framesX to clean the directory (all png images)
       fileList = glob.glob(folder_path+'*.png')
