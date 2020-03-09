@@ -105,10 +105,16 @@ def make_event_station_report(json_file):
    cropped_hd_full_path = hd_video_full_path.replace('-HD','-HD-cropped')
    if(cfe(cropped_hd_full_path)==1):
       template = template.replace('{CROPPED_VIDEO}',cropped_hd_full_path.replace(PATH_TO_CLOUD,ARCHIVE_URL)) 
+      
+      # CROPPED VIDEO RELATIVE
+      template = template.replace('{CROPPED_VIDEO_PATH}',cropped_hd_full_path)
    else:
       cropped_sd_full_path = sd_video_full_path.replace('-SD','-SD-cropped')
       if(cfe(cropped_sd_full_path)==1):
          template = template.replace('{CROPPED_VIDEO}',cropped_sd_full_path.replace(PATH_TO_CLOUD,ARCHIVE_URL)) 
+
+      # CROPPED VIDEO RELATIVE
+      template = template.replace('{CROPPED_VIDEO_PATH}',cropped_sd_full_path)
 
    # Add the video buttons
    if(video_btn!=''):
@@ -139,8 +145,6 @@ def make_event_station_report(json_file):
    template = template.replace('{VIDEO}','<figure id="videoContainer" data-fullscreen="false"><video id="main_video_player" width="960" height="540" loop=""><source src="'+json_file.replace('.json','-HD.mp4')+'" type="video/mp4"></video>'+playBtns+'</figure>')
 
 
-   # CROPPED VIDEO RELATIVE
-   template = template.replace('{CROPPED_VIDEO_PATH}', json_file.replace('.json','HD-cropped.mp4'))
 
    # NO-Cache
    template = template.replace("{RAND}",str(random.randint(0, 99999999)))
