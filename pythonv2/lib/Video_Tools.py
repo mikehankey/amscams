@@ -52,6 +52,7 @@ def definitive_crop_thumb(frame,x,y,dest,orgw,orgh,w,h):
    # Default values for the meteor to stay in the middle of the frame thumb
    org_x = int(x - FRAME_THUMB_W/2)
    org_w = int(FRAME_THUMB_W + org_x)
+
    org_y = int(y  - FRAME_THUMB_H/2)
    org_h = int(FRAME_THUMB_H + org_y)    
 
@@ -61,9 +62,9 @@ def definitive_crop_thumb(frame,x,y,dest,orgw,orgh,w,h):
    thumb_dest_y = 0
    thumb_dest_h = FRAME_THUMB_H
    
-   print("FROM")
+   print("CROP IMG (DEST)")
    print(str(thumb_dest_y)+':'+str(thumb_dest_h)+','+str(thumb_dest_x)+':'+str(thumb_dest_w))
-   print("TOP")
+   print("IMG (INP)")
    print(str(org_y)+':'+str(org_h)+','+str(org_x)+':'+str(org_w))
 
    crop_img[thumb_dest_y:thumb_dest_h,thumb_dest_x:thumb_dest_w] = img[org_y:org_h,org_x:org_w]
