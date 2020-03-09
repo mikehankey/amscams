@@ -14,6 +14,7 @@ python3 /home/ams/amscams/pythonv2/publish.py event_station_report /AMS7/METEOR/
 
 
 
+python3 /home/ams/amscams/pythonv2/publish.py event_station_report /AMS7/METEOR/2019/12/24/2019_12_24_07_40_08_000_010041-trim0806.json
 
 
 

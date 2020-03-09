@@ -17,37 +17,25 @@ from lib.VideoLib import ffmpeg_dump_frames
 from pathlib import Path
 
 
-# FRAME/THUMB FACTOR
-FT_FACTOR = 4
 
-FRAME_THUMB_W = int(HD_W/FT_FACTOR)
-FRAME_THUMB_H = int(HD_H/FT_FACTOR)
 
 
 # WE NEED THE ORIGINAL SIZE!!!
-def definitive_crop_thumb(frame,x,y,dest,orgw,orgh,w,h):
+def definitive_crop_thumb(frame,x,y,dest,orgw,orgh,w,h, ft_factor = 20):
 
-   print("INIT FRAME ")
-   print(frame)
-   print("FRAME_THUMB_W ")
-   print(FRAME_THUMB_W)
+   # Add bigger factor if fireball
+   FRAME_THUMB_W = int(HD_W/ft_factor)
+   FRAME_THUMB_H = int(HD_H/ft_factor) 
+
+   # It's HD
+   org_w_HD = HD_W
+   org_h_HD = HD_H 
    
-   print("FRAME_THUMB_H ")
-   print(FRAME_THUMB_H)
-   print("POS METEOR ")
-   print(str(x) + "," + str(y))
-   print("DEST ")
-   print(dest)
-   print("ORG ")
-   print(str(orgw) + "," +str(orgh))
-   print("DEST")
-   print(str(w) + "," + str(h))
-    
    # Debug 
    img = cv2.imread(frame)  
 
    # Create empty image FRAME_THUMB_WxFRAME_THUMB_H in black so we don't have any issues while working on the edges of the original frame 
-   crop_img = np.zeros((int(FRAME_THUMB_W),int(FRAME_THUMB_H),3), np.uint8)
+   crop_img = np.zeros((FRAME_THUMB_H,FRAME_THUMB_W,3), np.uint8)
  
    # Default values for the meteor to stay in the middle of the frame thumb
    org_x = int(x - FRAME_THUMB_W/2)
@@ -61,24 +49,54 @@ def definitive_crop_thumb(frame,x,y,dest,orgw,orgh,w,h):
    thumb_dest_w = FRAME_THUMB_W
    thumb_dest_y = 0
    thumb_dest_h = FRAME_THUMB_H
-   
-   print("CROP IMG (DEST)")
-   print(str(thumb_dest_y)+':'+str(thumb_dest_h)+','+str(thumb_dest_x)+':'+str(thumb_dest_w))
-   print("IMG (INP)")
-   print(str(org_y)+':'+str(org_h)+','+str(org_x)+':'+str(org_w))
 
-   crop_img[thumb_dest_y:thumb_dest_h,thumb_dest_x:thumb_dest_w] = img[org_y:org_h,org_x:org_w]
+   # CHANGE VALUES IF THE METEOR IS ON THE EDGE(S)
+   # ON THE LEFT (VERIFIED)
+   if(org_x<=0):
+
+      # Part of the original image
+      org_x = 0
+
+      # Part of the thumb
+      thumb_dest_x = int(FRAME_THUMB_W/2-x)
+      thumb_dest_w = int(abs(thumb_dest_w - org_x))
+ 
+   # ON RIGHT (VERIFIED)
+   elif(org_x >= (org_w_HD-FRAME_THUMB_W)): 
+      
+      # Part of the original image
+      org_w = org_w_HD
+     
+      # Destination in thumb (img) 
+      thumb_dest_w =  HD_W - org_x
+  
+   # ON TOP (VERIFIED)
+   if(org_y<=0):
+ 
+      # Part of the original image
+      org_y = 0 
+
+      # Part of the thumb
+      thumb_dest_y = int(FRAME_THUMB_H/2-y)
+      thumb_dest_h = int(abs(thumb_dest_w - org_y))
+        
+   # ON BOTTOM
+   if(org_y >= (org_h_HD-FRAME_THUMB_H)):
+
+      # Part of the original image
+      org_h = org_h_HD
+
+      # Destination in thumb (img)
+      thumb_dest_h = HD_H -  org_y 
+     
+   crop_img[thumb_dest_y:thumb_dest_h,thumb_dest_x:thumb_dest_w] = img[org_y:org_h,org_x:org_w] 
    cv2.imwrite(dest,crop_img)
-   
-
-   print("DEST")
-   print(dest)
-   sys.exit(0)
+    
    return dest
 
 # Cropp a video while keeping the meteor always
 # at the center of the frame
-def crop_video_keep_meteor_centered(json_file,video,w=FRAME_THUMB_W,h=FRAME_THUMB_H):
+def crop_video_keep_meteor_centered(json_file,video,w=FRAME_THUMB_W,h=FRAME_THUMB_H, ft_factor = 20):
 
    folder_path = json_file.replace(os.path.basename(json_file),'')
 
@@ -138,29 +156,32 @@ def crop_video_keep_meteor_centered(json_file,video,w=FRAME_THUMB_W,h=FRAME_THUM
          )
          cropped_frames.append(crop.replace('//','/'))
       
-
-      print(cropped_frames)
  
       # We cannot create the video with ffmpeg as the cmd is sometimes way too long
-      #frame = cv2.imread(cropped_frames[0])
-      #height, width, layers = frame.shape
-
-      #videoCC = cv2.VideoWriter(video.replace('.mp4','-cropped.mp4'), 0, 1, (width,height))
-
-      #for frame in cropped_frames:
-      #   videoCC.write(cv2.imread(frame))
-
-      #videoCC.release()
-        
-
-      # cv2.imwrite(video.replace('.mp4','-cropped.mp4'),cv2video)
+      frame = cv2.imread(cropped_frames[0])
+      height, width, layers = frame.shape
  
+      fourcc = cv2.VideoWriter_fourcc(*'mp4v')
+      video_name = video.replace('.mp4','-cropped.mp4')
+      videoCC = cv2.VideoWriter(video_name, fourcc, 25, (width,height))
+   
+      for frame in cropped_frames:
+         f = cv2.imread(frame) 
+         videoCC.write(f)
 
-      # Now we create a video with all the frames----X we just created
-      #cmd = "ffmpeg -y -framerate 25  -i " +  ' '.join(cropped_frames) + " -c:v libx264 -r 25 -pix_fmt yuv420p " + video.replace('.mp4','-cropped.mp4')
-      #output = subprocess.check_output(cmd, shell=True).decode("utf-8")   
-      #print("ffmpeg cmd successfull >> " +  output) 
-      #print(video.replace('.mp4','-cropped.mp4') + " > video created")
+      videoCC.release()
+    
+      # We "fix" the mp4 (need for very small videos - no idea why)
+      fixmp4(video_name,False)
+
+      # Now we need to delete all the frames and framesX to clean the directory (all png images)
+      fileList = glob.glob(folder_path+'*.png')
+      for filePath in fileList:
+         try:
+            os.remove(filePath)
+         except:
+            print("Error while deleting file : ", filePath)
+ 
        
 
 
