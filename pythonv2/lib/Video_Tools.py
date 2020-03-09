@@ -18,7 +18,7 @@ from pathlib import Path
 
 
 # FRAME/THUMB FACTOR
-FT_FACTOR = 100
+FT_FACTOR = 50
 
 FRAME_THUMB_W = int(HD_W/FT_FACTOR)
 FRAME_THUMB_H = int(HD_H/FT_FACTOR)
