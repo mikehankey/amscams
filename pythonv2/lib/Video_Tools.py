@@ -135,23 +135,15 @@ def crop_video_keep_meteor_centered(json_file,video,w=FRAME_THUMB_W,h=FRAME_THUM
       height, width, layers = frame.shape
 
       videoCC = cv2.VideoWriter(video.replace('.mp4','-cropped.mp4'), 0, 1, (width,height))
-
-
+ 
       for frame in cropped_frames:
          videoCC.write(cv2.imread(frame))
 
       videoCC.release()
-        
-
-      cv2.imwrite(video.replace('.mp4','-cropped.mp4'),videoCC)
+    
       print(video.replace('.mp4','-cropped.mp4') +   " done.")
  
-
-      # Now we create a video with all the frames----X we just created
-      #cmd = "ffmpeg -y -framerate 25  -i " +  ' '.join(cropped_frames) + " -c:v libx264 -r 25 -pix_fmt yuv420p " + video.replace('.mp4','-cropped.mp4')
-      #output = subprocess.check_output(cmd, shell=True).decode("utf-8")   
-      #print("ffmpeg cmd successfull >> " +  output) 
-      #print(video.replace('.mp4','-cropped.mp4') + " > video created")
+ 
        
 
 
