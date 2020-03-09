@@ -42,7 +42,7 @@ def definitive_crop_thumb(frame,x,y,dest,orgw,orgh,w,h):
    print(str(orgw) + "," +str(orgh))
    print("DEST")
    print(str(w) + "," + str(h))
-   sys.exit(0)
+   
 
 
    # Debug 
@@ -107,6 +107,10 @@ def definitive_crop_thumb(frame,x,y,dest,orgw,orgh,w,h):
    crop_img[int(thumb_dest_y):int(thumb_dest_h),int(thumb_dest_x):int(thumb_dest_w)] = img[int(org_y):int(org_h),int(org_x):int(org_w)]
    cv2.imwrite(dest,crop_img)
    
+
+   print("DEST")
+   print(dest)
+   sys.exit(0)
    return dest
 
 # Cropp a video while keeping the meteor always
