@@ -104,10 +104,10 @@ def make_event_station_report(json_file):
    # Do we have a cropped version of the video?
    cropped_hd_full_path = hd_video_full_path.replace('-HD','-HD-cropped')
    if(cfe(cropped_hd_full_path)==1):
-      template = template.replace('{CROPPED_VIDEO}',cropped_hd_full_path.replace(PATH_TO_CLOUD,os.sep)) 
+      template = template.replace('{CROPPED_VIDEO}',cropped_hd_full_path.replace(PATH_TO_CLOUD,ARCHIVE_URL)) 
       
       # CROPPED VIDEO RELATIVE
-      template = template.replace('{CROPPED_VIDEO_PATH}',cropped_hd_full_path)
+      template = template.replace('{CROPPED_VIDEO_PATH}',cropped_hd_full_path.replace(PATH_TO_CLOUD,os.sep))
    else:
       cropped_sd_full_path = sd_video_full_path.replace('-SD','-SD-cropped')
       if(cfe(cropped_sd_full_path)==1):
