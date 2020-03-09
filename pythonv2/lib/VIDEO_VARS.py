@@ -92,3 +92,13 @@ RADIANT_IMG = "/home/ams/amscams/dist/img/radiant.png"
 
 #NEW TEMPORARY REPO FOR FRAMES
 TMP_FRAME_FOLDER = "/home/ams/tmpvids/"
+
+
+
+# FRAME/THUMB FACTOR WHEN CREATING
+# THE CROPPED VIDEO FOR THE OBS REPORT
+# See Video_Tools.py
+FT_FACTOR = 20
+
+FRAME_THUMB_W = int(HD_W/FT_FACTOR)
+FRAME_THUMB_H = int(HD_H/FT_FACTOR)

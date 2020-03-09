@@ -17,11 +17,7 @@ from lib.VideoLib import ffmpeg_dump_frames
 from pathlib import Path
 
 
-# FRAME/THUMB FACTOR
-FT_FACTOR = 20
 
-FRAME_THUMB_W = int(HD_W/FT_FACTOR)
-FRAME_THUMB_H = int(HD_H/FT_FACTOR)
 
 
 # WE NEED THE ORIGINAL SIZE!!!
@@ -100,7 +96,7 @@ def definitive_crop_thumb(frame,x,y,dest,orgw,orgh,w,h, ft_factor = 20):
 
 # Cropp a video while keeping the meteor always
 # at the center of the frame
-def crop_video_keep_meteor_centered(json_file,video,w=FRAME_THUMB_W,h=FRAME_THUMB_H):
+def crop_video_keep_meteor_centered(json_file,video,w=FRAME_THUMB_W,h=FRAME_THUMB_H, ft_factor = 20):
 
    folder_path = json_file.replace(os.path.basename(json_file),'')
 
