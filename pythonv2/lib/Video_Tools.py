@@ -187,10 +187,10 @@ def crop_video_keep_meteor_centered(json_file,video,w=FRAME_THUMB_W,h=FRAME_THUM
       # Now we need to delete all the frames and framesX to clean the directory (all png images)
       fileList = glob.glob(folder_path+'*.png')
       for filePath in fileList:
-      try:
-         os.remove(filePath)
-      except:
-         print("Error while deleting file : ", filePath)
+         try:
+            os.remove(filePath)
+         except:
+            print("Error while deleting file : ", filePath)
  
        
 
