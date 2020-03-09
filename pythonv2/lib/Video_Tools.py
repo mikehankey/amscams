@@ -131,8 +131,8 @@ def crop_video_keep_meteor_centered(json_file,video,w=FRAME_THUMB_W,h=FRAME_THUM
             data['frames'][1]['x'],
             data['frames'][1]['y'],
             folder_path + os.sep + "frames" + str(i).zfill(5) +"X.png",
-            orgw,
-            orgh,
+            HD_W,
+            HD_H,
             int(FRAME_THUMB_W),
             int(FRAME_THUMB_H))
          cropped_frames.append(crop.replace('//','/'))
@@ -146,8 +146,8 @@ def crop_video_keep_meteor_centered(json_file,video,w=FRAME_THUMB_W,h=FRAME_THUM
             frame['x'],
             frame['y'],
             folder_path + os.sep + "frames" + str(frame_index).zfill(5) +"X.png",
-            orgw,
-            orgh,
+            HD_W,
+            HD_H,
             int(FRAME_THUMB_W),
             int(FRAME_THUMB_H)
          )
