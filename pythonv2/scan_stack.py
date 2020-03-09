@@ -94,6 +94,10 @@ def fix_missing_stacks(day):
          #print("Stack missing for : ", image_file)
          (f_datetime, cam, f_date_str,fy,fmin,fd, fh, fm, fs) = convert_filename_to_date_cam(file)
          sun_status = day_or_night(f_date_str, json_conf)
+         if sun_status == 'day':
+            sun_status = "1"
+         else:
+            sun_status = "0"
          os.system("./scan_stack.py ss " + file + " " + sun_status)
          missing += 1      
       else: 
@@ -102,7 +106,7 @@ def fix_missing_stacks(day):
 
 def batch_ss(wildcard=None):
    running = check_running("scan_stack.py") 
-   if running > 14:
+   if running > 2:
       print("Running already.")
       exit()
 

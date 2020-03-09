@@ -1,4 +1,5 @@
 #!/usr/bin/python3
+import ephem
 from datetime import datetime
 from PIL import Image, ImageDraw, ImageFont
 from lib.flexCal import flex_get_cat_stars
@@ -33,6 +34,57 @@ from lib.DetectLib import eval_cnt
 
 show = 1
 json_conf = load_json_file("../conf/as6.json")
+
+def day_or_night(capture_date, json_conf):
+
+   device_lat = json_conf['site']['device_lat']
+   device_lng = json_conf['site']['device_lng']
+
+   obs = ephem.Observer()
+
+   obs.pressure = 0
+   obs.horizon = '-0:34'
+   obs.lat = device_lat
+   obs.lon = device_lng
+   obs.date = capture_date
+
+   sun = ephem.Sun()
+   sun.compute(obs)
+
+   (sun_alt, x,y) = str(sun.alt).split(":")
+
+   saz = str(sun.az)
+   (sun_az, x,y) = saz.split(":")
+   if int(sun_alt) < -1:
+      sun_status = "night"
+   else:
+      sun_status = "day"
+   return(sun_status)
+
+
+def blind_solve_night():
+   now = datetime.now()
+   day = now.strftime("%Y_%m_%d")
+   for cam in json_conf['cameras']:
+      cam_id = json_conf['cameras'][cam]['cams_id']
+      hd_glob = "/mnt/ams2/HD/" + day + "*" + cam_id + ".mp4"
+      hd_files = glob.glob(hd_glob)
+      fc = 0
+      for file in hd_files:
+         (f_datetime, cam, f_date_str,fy,fmin,fd, fh, fm, fs) = convert_filename_to_date_cam(file)
+
+         sun_status = day_or_night(f_datetime, json_conf)
+         if sun_status == 'night':
+            print(file, sun_status)
+            extract_one_frame(file)
+            stars = get_image_stars(file, None, None)
+            print(stars)
+            exit()
+
+def extract_one_frame(file):
+
+   cmd = "/usr/bin/ffmpeg -i " + file + " -ss 00:00:01 -vframes 1 " + "/mnt/ams2/temp/astrometry.jpg"
+   os.system(cmd)
 
 
 def astro_integrity():
@@ -281,4 +333,6 @@ if sys.argv[1] == 'ps':
    pair_stars()
 if sys.argv[1] == 'rpt':
    report()
+if sys.argv[1] == 'bsn' or sys.argv[1] == 'blind_solve_night':
+   blind_solve_night()
 
