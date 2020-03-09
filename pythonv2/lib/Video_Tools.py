@@ -33,8 +33,8 @@ def definitive_crop_thumb(frame,x,y,dest,orgw,orgh,w,h):
    # Create empty image FRAME_THUMB_WxFRAME_THUMB_H in black so we don't have any issues while working on the edges of the original frame 
    crop_img = np.zeros((int(FRAME_THUMB_W),int(FRAME_THUMB_H),3), np.uint8)
 
-   orgw = HD_W
-   orgh = HD_H
+   org_w_HD = HD_W
+   org_h_HD = HD_H
   
    # Default values
    org_x = int(x - FRAME_THUMB_W/2)
