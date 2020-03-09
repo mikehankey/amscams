@@ -9,6 +9,7 @@ async function extractFramesFromVideo(videoUrl, fps=25) {
  
      let seekResolve;
      videoDD.addEventListener('seeked', async function() {
+        console.log("VIDEO SEEKED");
        if(seekResolve) seekResolve();
      });
  
@@ -61,6 +62,7 @@ async function extractFramesFromVideo(videoUrl, fps=25) {
  }
 
  $(function() {
+    console.log("OK");
    if(typeof cropped_video !== 'undefined') {
       asyncCall()
    }
