@@ -1,7 +1,7 @@
 // Get all frames of a video as base64
 async function extractFramesFromVideo(videoUrl, fps=25) {
    return new Promise(async (resolve) => {
- 
+      
      // fully download it first (no buffering):
      let videoBlob = await fetch(videoUrl).then(r => r.blob());
      let videoObjectUrl = URL.createObjectURL(videoBlob);
@@ -17,8 +17,6 @@ async function extractFramesFromVideo(videoUrl, fps=25) {
        let canvas64 = document.createElement('canvasXEDZ');
        let contextWW = canvas64.getContext('2d');
        let [w, h] = [videoDD.videoWidth, videoDD.videoHeight]
-       console.log("w",w);
-       console.log("h",h);
        canvas64.width =  w;
        canvas64.height = h;
  

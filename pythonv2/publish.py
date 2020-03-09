@@ -74,12 +74,12 @@ def make_event_station_report(json_file):
 
    full_date = analysed_name['year']+'/'+analysed_name['month']+'/'+analysed_name['day']+' '+analysed_name['hour']+":"+analysed_name['min']+":"+analysed_name['sec']+"."+analysed_name['ms']
 
+# Template data
    template = template.replace('{STATION_ID}',analysed_name['station_id'])
    template = template.replace('{CAM_ID}',analysed_name['cam_id'])
    template = template.replace('{DATE}',full_date)
    template = template.replace('{DAY}',analysed_name['year']+'/'+analysed_name['month']+'/'+analysed_name['day'])
-   template = template.replace('{TIME}',analysed_name['hour']+':'+analysed_name['min']+':'+analysed_name['sec']+'.'+analysed_name['ms'])
-
+   template = template.replace('{TIME}',analysed_name['hour']+':'+analysed_name['min']+':'+analysed_name['sec']+'.'+analysed_name['ms'])=
    template = template.replace('{LINK_TO_DAILY_REPORT}',link_to_daily_report)
 
    # Get (H) Video Path
@@ -137,6 +137,10 @@ def make_event_station_report(json_file):
     '''
 
    template = template.replace('{VIDEO}','<figure id="videoContainer" data-fullscreen="false"><video id="main_video_player" width="960" height="540" loop=""><source src="'+json_file.replace('.json','-HD.mp4')+'" type="video/mp4"></video>'+playBtns+'</figure>')
+
+
+   # CROPPED VIDEO RELATIVE
+   template = template.replace('{CROPPED_VIDEO_PATH}', json_file.replace('.json','HD-cropped.mp4'))
 
    # NO-Cache
    template = template.replace("{RAND}",str(random.randint(0, 99999999)))
