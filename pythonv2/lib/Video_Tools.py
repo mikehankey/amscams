@@ -29,6 +29,13 @@ def definitive_crop_thumb(frame,x,y,dest,orgw,orgh,w,h):
 
    # Debug 
    img = cv2.imread(frame)  
+
+   #if(HD is True):
+   org_w_HD = HD_W
+   org_h_HD = HD_H
+   #else:
+   #   org_w_HD = SD_W
+   #   org_h_HD = SD_H
   
    # Create empty image THUMB_WxTHUMB_H in black so we don't have any issues while working on the edges of the original frame 
    crop_img = np.zeros((w,h,3), np.uint8)
