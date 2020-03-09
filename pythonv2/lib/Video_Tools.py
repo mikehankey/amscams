@@ -61,8 +61,7 @@ def definitive_crop_thumb(frame,x,y,dest,orgw,orgh,w,h):
    thumb_dest_w = FRAME_THUMB_W
    thumb_dest_y = 0
    thumb_dest_h = FRAME_THUMB_H
-    
-   
+     
    crop_img[thumb_dest_y:thumb_dest_h,thumb_dest_x:thumb_dest_w] = img[org_y:org_h,org_x:org_w] 
    cv2.imwrite(dest,crop_img)
     
@@ -130,22 +129,21 @@ def crop_video_keep_meteor_centered(json_file,video,w=FRAME_THUMB_W,h=FRAME_THUM
          )
          cropped_frames.append(crop.replace('//','/'))
       
-
-      print(cropped_frames)
  
       # We cannot create the video with ffmpeg as the cmd is sometimes way too long
-      #frame = cv2.imread(cropped_frames[0])
-      #height, width, layers = frame.shape
+      frame = cv2.imread(cropped_frames[0])
+      height, width, layers = frame.shape
 
-      #videoCC = cv2.VideoWriter(video.replace('.mp4','-cropped.mp4'), 0, 1, (width,height))
+      videoCC = cv2.VideoWriter(video.replace('.mp4','-cropped.mp4'), 0, 1, (width,height))
 
-      #for frame in cropped_frames:
-      #   videoCC.write(cv2.imread(frame))
 
-      #videoCC.release()
+      for frame in cropped_frames:
+         videoCC.write(cv2.imread(frame))
+
+      videoCC.release()
         
 
-      # cv2.imwrite(video.replace('.mp4','-cropped.mp4'),cv2video)
+      cv2.imwrite(video.replace('.mp4','-cropped.mp4'),cv2video)
  
 
       # Now we create a video with all the frames----X we just created
