@@ -12,7 +12,7 @@ from lib.Video_Title_cv import *
 
 
 # TEST CREATE CROPPED VIDEO WITH METEOR CENTERED
-crop_video_keep_meteor_centered('/mnt/archive.allsky.tv/AMS7/METEOR/2019/12/24/2019_12_24_08_17_10_000_010041-trim1298.json','/mnt/archive.allsky.tv/AMS7/METEOR/2019/12/24/2019_12_24_08_17_10_000_010041-trim1298-HD.mp4')
+#crop_video_keep_meteor_centered('/mnt/archive.allsky.tv/AMS7/METEOR/2019/12/24/2019_12_24_08_17_10_000_010041-trim1298.json','/mnt/archive.allsky.tv/AMS7/METEOR/2019/12/24/2019_12_24_08_17_10_000_010041-trim1298-HD.mp4')
 crop_video_keep_meteor_centered('/mnt/archive.allsky.tv/AMS7/METEOR/2019/12/24/2019_12_24_07_40_08_000_010041-trim0806.json','/mnt/archive.allsky.tv/AMS7/METEOR/2019/12/24/2019_12_24_07_40_08_000_010041-trim0806-HD.mp4',60)
 # TEST CREATE CROPPED VERSION OF VIDEO
 #define_crop_video('/mnt/archive.allsky.tv/AMS7/METEOR/2019/12/24/2019_12_24_08_17_10_000_010041-trim1298.json','/mnt/archive.allsky.tv/AMS7/METEOR/2019/12/24/2019_12_24_08_17_10_000_010041-trim1298-HD.mp4',60)
