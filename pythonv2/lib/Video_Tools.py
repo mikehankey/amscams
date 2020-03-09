@@ -67,7 +67,7 @@ def definitive_crop_thumb(frame,x,y,dest,orgw,orgh,w,h):
    print("IMG (INP)")
    print(str(org_y)+':'+str(org_h)+','+str(org_x)+':'+str(org_w))
    print("SIZE (DEST)")
-   print(FRAME_THUMB_W + ', ' + FRAME_THUMB_H)
+   print(str(FRAME_THUMB_W) + ', ' + str(FRAME_THUMB_H))
    print(" ")
    print(" ")
    print(" ")
