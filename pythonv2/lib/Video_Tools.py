@@ -18,10 +18,10 @@ from pathlib import Path
 
 
 # FRAME/THUMB FACTOR
-FT_FACTOR = 10
+FT_FACTOR = 4
 
-FRAME_THUMB_W = HD_W/FT_FACTOR
-FRAME_THUMB_H = HD_H/FT_FACTOR
+FRAME_THUMB_W = int(HD_W/FT_FACTOR)
+FRAME_THUMB_H = int(HD_H/FT_FACTOR)
 
 
 # WE NEED THE ORIGINAL SIZE!!!
@@ -42,69 +42,31 @@ def definitive_crop_thumb(frame,x,y,dest,orgw,orgh,w,h):
    print(str(orgw) + "," +str(orgh))
    print("DEST")
    print(str(w) + "," + str(h))
-   
-
-
+    
    # Debug 
    img = cv2.imread(frame)  
 
    # Create empty image FRAME_THUMB_WxFRAME_THUMB_H in black so we don't have any issues while working on the edges of the original frame 
    crop_img = np.zeros((int(FRAME_THUMB_W),int(FRAME_THUMB_H),3), np.uint8)
-
-   org_w_HD = HD_W
-   org_h_HD = HD_H
-  
-   # Default values
+ 
+   # Default values for the meteor to stay in the middle of the frame thumb
    org_x = int(x - FRAME_THUMB_W/2)
    org_w = int(FRAME_THUMB_W + org_x)
    org_y = int(y  - FRAME_THUMB_H/2)
    org_h = int(FRAME_THUMB_H + org_y)    
 
+   # Destination THUMB
    thumb_dest_x = 0
    thumb_dest_w = FRAME_THUMB_W
    thumb_dest_y = 0
    thumb_dest_h = FRAME_THUMB_H
- 
-   ## ON THE LEFT (VERIFIED)
-   if(org_x<=0):
+   
+   print("FROM")
+   print(thumb_dest_y+':'+thumb_dest_h+','+thumb_dest_x+':'+thumb_dest_w)
+   print("TOP")
+   print(org_y+':'+org_h+','+org_x+':'+org_w)
 
-      # Part of the original image
-      org_x = 0
-
-      # Part of the thumb
-      thumb_dest_x = int(FRAME_THUMB_W/2-x)
-      thumb_dest_w = int(abs(thumb_dest_w - org_x))
- 
-   # ON RIGHT (VERIFIED)
-   elif(org_x >= (org_w_HD-FRAME_THUMB_W)): 
-      
-      # Part of the original image
-      org_w = org_w_HD
-     
-      # Destination in thumb (img) 
-      thumb_dest_w =  HD_W - org_x
-  
-   # ON TOP (VERIFIED)
-   if(org_y<=0):
- 
-      # Part of the original image
-      org_y = 0 
-
-      # Part of the thumb
-      thumb_dest_y = int(FRAME_THUMB_H/2-y)
-      thumb_dest_h = int(abs(thumb_dest_w - org_y))
-       
-
-   # ON BOTTOM
-   if(org_y >= (org_h_HD-FRAME_THUMB_H)):
-
-      # Part of the original image
-      org_h = org_h_HD
-
-      # Destination in thumb (img)
-      thumb_dest_h = HD_H -  org_y 
-  
-   crop_img[int(thumb_dest_y):int(thumb_dest_h),int(thumb_dest_x):int(thumb_dest_w)] = img[int(org_y):int(org_h),int(org_x):int(org_w)]
+   crop_img[thumb_dest_y:thumb_dest_h,thumb_dest_x:thumb_dest_w] = img[org_y:org_h,org_x:org_w]
    cv2.imwrite(dest,crop_img)
    
 
