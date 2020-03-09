@@ -27,6 +27,19 @@ FRAME_THUMB_W = HD_H/FT_FACTOR
 # WE NEED THE ORIGINAL SIZE!!!
 def definitive_crop_thumb(frame,x,y,dest,orgw,orgh,w,h):
 
+   print("INIT FRAME ")
+   print(frame)
+   print("POS METEOR ")
+   print(x + "," + y)
+   print("DEST ")
+   print(dest)
+   print("ORG ")
+   print(orgw + "," + orgh)
+   print("DEST")
+   print(w + "," + h)
+   sys.exit(0)
+
+
    # Debug 
    img = cv2.imread(frame)  
 
