@@ -492,18 +492,17 @@ def do_all(day):
 
    if len(cams_queue) < 10 and len(in_queue) < 10:
       proc_status = "up-to-date"
- 
- 
+  
    # make the meteor detection index for today
-   os.system("./autoCal.py meteor_index " + day)
+   os.system("/home/ams/amscams/autoCal.py meteor_index " + day)
    print("AUTOCAL DONE")
 
    # make the detection preview images for the day
-   os.system("./flex-detect.py bmpi " + day)
+   os.system("/home/ams/amscams/flex-detect.py bmpi " + day)
    print("FLEXDETECT BMPI DONE")
 
    # make the detection preview images for the day
-   os.system("./wasabi.py sa " + day)
+   os.system("/home/ams/amscams/wasabi.py sa " + day)
    print("WASABI SA DONE")
 
    make_station_report(day, rpt)
