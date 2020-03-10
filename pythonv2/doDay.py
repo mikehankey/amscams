@@ -43,6 +43,7 @@ STATION_REPORT_TEMPLATE = "/home/ams/amscams/pythonv2/templates/allsky.tv.base.h
 
 # ARCHIVE PATH
 ARCHIVE_PATH = "http://archive.allsky.tv" 
+ARCHIVE_RELATIVE_PATH = "/mnt/archive.allsky.tv/"
  
 PATH_TO_CONF_JSON = "/home/ams/amscams/conf/as6.json" 
 json_conf = load_json_file(PATH_TO_CONF_JSON)
@@ -268,7 +269,7 @@ def make_station_report(day, proc_info = ""):
       TAB, TAB_CONTENT = add_section('proc_info','Processing Info',proc_info, TAB, TAB_CONTENT) 
 
    template = template.replace("{RAND}",str(random.randint(0, 99999999)))
-
+   
    fpo = open(html_index, "w")
    fpo.write(template)
    fpo.close()
@@ -383,8 +384,8 @@ def html_get_detects(day,tsid,event_files, events):
                   elink = "<a href=" + jreport_path + " class='T'>"
 
                # Get the duration of the event (long but very usefull on the daily report)
-               data = load_json_file(mfile)
-               print(data)
+               json_file = ARCHIVE_RELATIVE_PATH + was_vh_dir + image_file.replace('crop','full')
+               print(json_file)
                sys.exit(0)
    
                single_html += "<div class='"+css_class+"'>" + elink +  "<img src='"+was_vh_dir + image_file+"' class='img-fluid'></a>"
@@ -407,9 +408,9 @@ def html_get_detects(day,tsid,event_files, events):
             video_path = '' 
             mc += 1
          else:
-            html += "No meteors detected."            
+            multi_html += "No meteors detected."            
    else:
-      html += "No meteors detected."
+      multi_html += "No meteors detected."
 
 
    info = {}
