@@ -510,20 +510,21 @@ def do_all(day):
 
    # Make all the reports for the given day
    # AND CREATE THE CROPPED AND FOLLOW-CROPPED VIDEOS
-   if(False):
-      for f in arc_files:
-         print("JSON FILE ")
-         print(os.sep+f.replace(ARCHIVE_RELATIVE_PATH,'').replace('/mnt/ams2/meteor_archive/',''))
-         print('')
-         # Create REPORT PAGE
-         ff = f.replace(ARCHIVE_RELATIVE_PATH,'').replace('/mnt/ams2/meteor_archive/','')
-         cmd = "python3 /home/ams/amscams/pythonv2/publish.py event_station_report " + os.sep+ ff
-         os.system(cmd)
+   for f in arc_files:
+      print("JSON FILE ")
+      
+      
+      # Create REPORT PAGE
+      ff = f.replace(ARCHIVE_RELATIVE_PATH,'').replace('/mnt/ams2/meteor_archive/','')
+      print(ff)
+      sys.exit(0)
+      cmd = "python3 /home/ams/amscams/pythonv2/publish.py event_station_report " + os.sep+ ff
+      os.system(cmd)
 
-         # CREATE CROPPED VIDEO
-         define_crop_video(ARCHIVE_RELATIVE_PATH +  ff + ".json",  ARCHIVE_RELATIVE_PATH +  ff +  "-HD.mp4")
-         # CREATE METEOR CENTERED VIDEO
-         crop_video_keep_meteor_centered(ARCHIVE_RELATIVE_PATH +  ff + ".json",ARCHIVE_RELATIVE_PATH +  ff + "-HD.mp4")
+      # CREATE CROPPED VIDEO
+      define_crop_video(ARCHIVE_RELATIVE_PATH +  ff + ".json",  ARCHIVE_RELATIVE_PATH +  ff +  "-HD.mp4")
+      # CREATE METEOR CENTERED VIDEO
+      crop_video_keep_meteor_centered(ARCHIVE_RELATIVE_PATH +  ff + ".json",ARCHIVE_RELATIVE_PATH +  ff + "-HD.mp4")
  
 
       
