@@ -357,10 +357,10 @@ def html_get_detects(day,tsid,event_files, events):
             # Video PATH (HD)
             if(arc == 1):
                video_path = ARCHIVE_PATH + os.sep + tsid + os.sep + 'METEOR' + os.sep + year + os.sep + month + os.sep + d_day + os.sep + image_file.replace('-prev-crop.jpg','-HD.mp4')
-               json_path = ARCHIVE_PATH + os.sep + tsid + os.sep + 'METEOR' + os.sep + year + os.sep + month + os.sep + d_day + os.sep + image_file.replace('-prev-crop.jpg','.html')
+               jreport_path = ARCHIVE_PATH + os.sep + tsid + os.sep + 'METEOR' + os.sep + year + os.sep + month + os.sep + d_day + os.sep + image_file.replace('-prev-crop.jpg','.html')
             else:
                video_path = ''
-               json_path = ''    
+               jreport_path = ''    
 
             # We get more info 
             #print("(BEFORE AN) EVENT ID IS:", event_id) 
@@ -378,7 +378,10 @@ def html_get_detects(day,tsid,event_files, events):
                      video_path = "<a href='"+full_path+"' class='img-link btn btn-secondary btn-sm'><span class='icon-eye'></span></a>"
 
                if(json_path!=''):
-                  elink = "<a href=" + json_path + " class='T'>"
+                  elink = "<a href=" + jreport_path + " class='T'>"
+
+               # Get the duration of the event (long but very usefull on the daily report)
+               data = load_json_file()
    
                single_html += "<div class='"+css_class+"'>" + elink +  "<img src='"+was_vh_dir + image_file+"' class='img-fluid'></a>"
                single_html += "<div class='d-flex mb-2'><div class='mr-auto'><span>"+'<b>Cam#' + analysed_name['cam_id'] + '</b> '+ analysed_name['hour']+':'+analysed_name['min']+':'+analysed_name['sec']+'.'+analysed_name['ms'] + "</div>"
@@ -443,8 +446,7 @@ def get_meteor_status(day):
    year, mon, dom = day.split("_")
    detect_dir = "/mnt/ams2/meteors/" + day + "/"
    arc_dir = "/mnt/ams2/meteor_archive/" + json_conf['site']['ams_id'] + "/METEOR/" + year + "/" + mon + "/" + dom + "/"
-
-   
+ 
    # get detect and arc files
    dfiles = glob.glob(detect_dir + "*trim*.json")
    arc_files = glob.glob(arc_dir + "*trim*.json")
