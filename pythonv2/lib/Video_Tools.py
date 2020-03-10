@@ -184,10 +184,7 @@ def crop_video_keep_meteor_centered(json_file,video,w=FRAME_THUMB_W,h=FRAME_THUM
  
        
 
-
-
-
-
+ 
 # Get All the Frames of a given video
 def get_frames_from_cropped_video(video,output_path):
 
@@ -203,9 +200,7 @@ def get_frames_from_cropped_video(video,output_path):
       sys.exit(0)   
  
 
-
-
-
+ 
 # Create cropped Video from a video & a json
 # size_margin = margins - use bigger margins for fireballs
 def define_crop_video(json_file,video, size_margin=0):
@@ -252,8 +247,9 @@ def define_crop_video(json_file,video, size_margin=0):
          crop_video(video,w,h,x,y,output_file)
 
          # Create all the frames as images
-         get_frames_from_cropped_video(output_file,json_file.replace(os.path.basename(json_file),''))
- 
+         all_frames = get_frames_from_cropped_video(output_file,json_file.replace(os.path.basename(json_file),''))
+
+         print(all_frames)
    else:
       print(json_file +  ' not found or corrupted.')
  
