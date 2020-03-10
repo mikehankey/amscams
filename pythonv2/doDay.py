@@ -510,6 +510,9 @@ def do_all(day):
 
    # Make all the reports for the given day
    for f in arc_files:
+      print("JSON FILE ")
+      print(f)
+      print('')
       cmd = "python3 /home/ams/amscams/pythonv2/publish.py event_station_report " + f.replace(ARCHIVE_RELATIVE_PATH,'')
       os.system(cmd)
 
@@ -534,7 +537,7 @@ def check_time(day):
          lines.append(line)
       return (lines[-2] + " " + lines[-1])
       
-os.system("./wasabi.py mnt")
+os.system("/home/ams/amscams/wasabi.py mnt")
 cmd = sys.argv[1]
 
 if cmd == "ct":
