@@ -521,9 +521,12 @@ def do_all(day):
       print(cmd)
       print('*****************************************************')
       # CREATE CROPPED VIDEO 
-       
+      print("DEFINED CROPPED VIDEO")
+      ff = ff.replace(ARCHIVE_RELATIVE_PATH,'')
+      print(ff + ' , ' + ff.replace('.json',"-HD.mp4"))
       define_crop_video(  ff , ff.replace('.json',"-HD.mp4"))
       print('********CROPPED VIDEO DONE ********************')
+      sys.exit(0)
       # CREATE METEOR CENTERED VIDEO
       crop_video_keep_meteor_centered(ff , ff.replace('.json',"-HD.mp4"))
       print('********CROPPED FOLLOW VIDEO DONE ********************')
