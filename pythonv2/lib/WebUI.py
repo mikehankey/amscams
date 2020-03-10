@@ -2310,9 +2310,10 @@ def examine_min(video_file,json_conf):
    if toomany is not None:
       for key in toomany['objects']:
          obj = toomany['objects'][key]
-         if obj['report']['max_cm'] > 2:
-            object_html += key + " " + str(obj['report']['max_cm']) + " " + str( obj['ofns']) + " " + str(obj['report']['obj_class']) +  "<BR>"
-            #print(key)
+         if "max_cm" in obj['report']:
+            if obj['report']['max_cm'] > 2:
+               object_html += key + " " + str(obj['report']['max_cm']) + " " + str( obj['ofns']) + " " + str(obj['report']['obj_class']) +  "<BR>"
+               #print(key)
 
 
    out = """

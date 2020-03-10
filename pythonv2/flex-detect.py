@@ -10093,6 +10093,8 @@ def get_roi(pos_vals=None, object=None, hdm_x=1, hdm_y=1):
 
 
 def detect_in_vals(vals_file):
+   (f_datetime, cam, f_date_str,fy,fm,fd, fh, fmin, fs) = convert_filename_to_date_cam(vals_file)
+   day = fy + "_" + fm + "_" + fd
    trim_too = 0
    if "mp4" in vals_file and "proc2" in vals_file:
       vfn = vals_file.split("/")[-1]
@@ -10211,80 +10213,55 @@ def detect_in_vals(vals_file):
       hdm_y = 1080 / int(h)
       hd_x1,hd_y1,hd_x2,hd_y2,hd_mid_x,hd_mid_y = get_roi(None, suspect_meteors[0], hdm_x, hdm_y)
       hd_crop_file = ffmpeg_crop(hd_trim,hd_x1,hd_y1,hd_x2-hd_x1,hd_y2-hd_y1, 0)
+      trim_crop_file = trim_file.replace(".mp4", "-crop.mp4") 
       print(hd_trim)
       print(hd_crop_file)
       print(trim_file)
-      save_json_file(detect_file, detect_info)
+      print(trim_crop_file)
 
-      return()
-  
-   # no detects so write empty detect file 
-   print("DONE DV")
+      #detect_meteor_in_clip(trim_clip, frames = None, fn = 0, crop_x = 0, crop_y = 0, hd_in = 0):
+      hd_motion_objects,hd_meteor_frames = detect_meteor_in_clip(hd_crop_file, None, 0,hd_x1,hd_x2,1)
+      sd_motion_objects,sd_meteor_frames = detect_meteor_in_clip(trim_crop_file, None, 0,cx1,cx2,1)
 
-   detect_info = {}
-   detect_info['events'] = events 
-   detect_info['objects'] = []
-   detect_file = vals_file.replace("-vals.json", "detect.json")
-   save_json_file(detect_file, detect_info)
-   return()
-
-
-   buf_size = 10
-   start_fn, end_fn= buffered_start_end(min(clip_fns),max(clip_fns), len(data['max_vals']), buf_size)
-   trim_clip, trim_start, trim_end = make_trim_clip(video_file, start_fn, end_fn)
-   #os.system("cp " + trim_clip + " " + "/mnt/ams2/SD/proc2/" + day + "/hd_save/")
-   print("TRIM:", trim_clip)
-   hd_file, hd_trim,time_diff_sec, dur = find_hd_file_best(video_file, start_fn, end_fn-start_fn, 1)
-   sd_trim = trim_clip
-   print(hd_file)
-   print(hd_trim)
-   print(trim_clip)
-
-   hd_motion_objects,hd_meteor_frames = detect_meteor_in_clip(hd_trim, None, 0,0,0,1)
-   sd_motion_objects,sd_meteor_frames = detect_meteor_in_clip(sd_trim, None, 0,0,0,0)
-
-   sd_meteors = []
-   hd_meteors = []
-   for obj in sd_motion_objects:
-      if sd_motion_objects[obj]['report']['meteor_yn'] == "Y":
-         sd_meteors.append(sd_motion_objects[obj])
-   for obj in hd_motion_objects:
-      if hd_motion_objects[obj]['report']['meteor_yn'] == "Y":
-         hd_meteors.append(hd_motion_objects[obj])
+      meteor = {}
+      meteor['hd_motion_objects'] = hd_motion_objects
+      meteor['motion_objects'] = sd_motion_objects
+      meteor['hd_trim'] = hd_trim
+      meteor['sd_trim'] = trim_file 
+      sd_meteors = meteors_only(sd_motion_objects)
+      hd_meteors = meteors_only(hd_motion_objects)
+      meteor['sd_meteors'] = sd_meteors
+      meteor['hd_meteors'] = hd_meteors
+      meteor_file = vals_file.replace("-vals.json", "-meteor.json")
+      print("METEOR:", meteor_file)
+      # Copy all media for this meteor to the proc hd_save dir
+      proc_dir = "/mnt/ams2/SD/proc2/" + day + "/hd_save/"
+      if cfe(proc_dir, 1) == 0:
+         os.makedirs(proc_dir)
+      tfn = trim_file.split("/")[-1]
+      tfn_hd = hd_trim.split("/")[-1]
+      meteor['sd_trim'] = proc_dir + tfn
+      meteor['hd_trim'] = proc_dir + tfn_hd
+      os.system("cp " + hd_trim + " " + proc_dir)
+      os.system("cp " + hd_crop_file + " " + proc_dir)
+      os.system("cp " + trim_file + " " + proc_dir)
+      os.system("cp " + trim_crop_file + " " + proc_dir)
+      os.system("cp " + hd_file + " " + proc_dir)
+      save_json_file(meteor_file, meteor)
+      print(meteor_file)
+      complete_vals_detect(meteor_file)
 
 
-   if len(hd_meteors) == 0 and len(sd_meteors) == 0:
-      print("NO METEORS FOUND")
-      detect_info = {}
-      detect_info['events'] = events 
-      detect_info['objects'] = objects 
-      detect_info['sd_motion_objects'] = sd_motion_objects
-      detect_info['hd_motion_objects'] = hd_motion_objects
-      detect_file = vals_file.replace("-vals.json", "-detect.json")
-      save_json_file(detect_file, detect_info)
-      return()
-
-   print("HD:", hd_motion_objects)
-   print("SD:", hd_motion_objects)
-   meteor = {}
-   meteor['hd_motion_objects'] = hd_motion_objects
-   meteor['motion_objects'] = sd_motion_objects
-   meteor['hd_trim'] = hd_trim
-   meteor['sd_trim'] = sd_trim
-   meteor['sd_meteors'] = sd_meteors 
-   meteor['hd_meteors'] = hd_meteors 
-   meteor_file = vals_file.replace("-vals.json", "-meteor.json")
-   save_json_file(meteor_file, meteor)
-   print("METEOR:", meteor_file) 
-   complete_vals_detect(meteor_file)
-
-   # Now all that is left...
-   # determine frame times
-   # apply calib
-   # format old and new json
-   # copy files to arc dir and old json dir
    
    return()
+
+def meteors_only(objects):
+   meteors = []
+   for id in objects:
+      if objects[id]['report']['meteor_yn'] == "Y":
+         meteors.append(objects[id])
+   return(meteors)
+
 
 def get_vals_trim(video_file, obj, hd=None):
    start = obj['ofns'][0]
@@ -10312,6 +10289,11 @@ def extract_frames(video_file,start,end):
 
 def complete_vals_detect(meteor_file):
    print("Complete meteor.")
+   # Now all that is left...
+   # determine frame times
+   # apply calib
+   # format old and new json
+   # copy files to arc dir and old json dir
 
 def process_events(video_file,events):
    """ 
