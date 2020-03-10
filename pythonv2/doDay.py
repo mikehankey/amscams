@@ -370,9 +370,12 @@ def html_get_detects(day,tsid,event_files, events):
             analysed_name = analyse_report_file(image_file)
  
             # Get the related JSON File to display the duration (and eventually other info)
+            data = load_json_file(key)
             dur = ''
-            print(key)
-            sys.exit(0)
+            if(data is not False):
+               if('report' in data):
+                  if('dur' in data['report']['dur']):
+                     dur = "<span>" + dur + "s</span>"
 
             #print("(AFTER AN) EVENT ID IS:", event_id) 
       
