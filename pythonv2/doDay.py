@@ -513,12 +513,12 @@ def do_all(day):
    for f in arc_files: 
       
       # Create REPORT PAGE
-      ff = os.sep + f.replace(ARCHIVE_RELATIVE_PATH,'').replace('/mnt/ams2/meteor_archive/','')
+      ff =  f.replace(ARCHIVE_RELATIVE_PATH,'').replace('/mnt/ams2/meteor_archive/','')
       print('***********CREATE STATION REPORT *************')
       cmd = "python3 /home/ams/amscams/pythonv2/publish.py event_station_report " ARCHIVE_RELATIVE_PATH + ff
       #os.system(cmd)
       print(cmd)
-      print("=>JDON")
+      print("=>JDON OK")
       sys.exit(0)
       print('*****************************************************')
       # CREATE CROPPED VIDEO
