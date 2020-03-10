@@ -375,6 +375,7 @@ def html_get_detects(day,tsid,event_files, events):
             if(video_path != ''):
                json_file = '/mnt/ams2/meteor_archive/' + tsid + os.sep + 'METEOR' + os.sep + year + os.sep + month + os.sep + d_day + os.sep + image_file.replace('-prev-crop.jpg','.json')
                data = load_json_file(json_file)
+               print("IMAGE " +  image_file)
                if(data is not False):
                   if('report' in data):
                      if('dur' in data['report']):
