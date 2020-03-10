@@ -103,7 +103,7 @@ def make_event_station_report(json_file):
  
    # Do we have a cropped version of the video?
    cropped_hd_full_path = hd_video_full_path.replace('-HD','-HD-cropped')
-   print("CROPPED<br>")
+   print("IN PUBLISH.PY - the CROPPED VERSION HAS BEEN ADDED TO THE TEMPLATE")
    print(cropped_hd_full_path.replace(PATH_TO_CLOUD,ARCHIVE_URL))
    if(cfe(cropped_hd_full_path)==1):
       template = template.replace('{CROPPED_VIDEO}',cropped_hd_full_path.replace(PATH_TO_CLOUD,ARCHIVE_URL)) 
