@@ -68,9 +68,9 @@ def fix_missing_stacks(day):
       if tday != day:
          print("This file is in the wrong day????", day, file_name)
 
-         right_dir = "/mnt/ams2/proc2/" + tday + "/"
-         right_img_dir = "/mnt/ams2/proc2/" + tday + "/images/"
-         right_data_dir = "/mnt/ams2/proc2/" + tday + "/day/"
+         right_dir = "/mnt/ams2/SD/proc2/" + tday + "/"
+         right_img_dir = "/mnt/ams2/SD/proc2/" + tday + "/images/"
+         right_data_dir = "/mnt/ams2/SD/proc2/" + tday + "/day/"
          if cfe(right_img_dir,1) == 0:
             os.makedirs(right_img_dir)
          if cfe(right_data_dir,1) == 0:
