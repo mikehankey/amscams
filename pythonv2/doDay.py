@@ -39,7 +39,7 @@ from lib.UtilLib import check_running
 REGEX_REPORT = r"(\d{4})_(\d{2})_(\d{2})_(\d{2})_(\d{2})_(\d{2})_(\d{3})_(\w{6})-trim(\d{4}|\d{3}|\d{2}|\d{1})-prev-crop.jpg"
 REGEX_GROUP_REPORT = ["name","year","month","day","hour","min","sec","ms","cam_id","trim"]
  
-STATION_REPORT_TEMPLATE = "/home/ams/amscams/templates/allsky.tv.base.html"
+STATION_REPORT_TEMPLATE = "/home/ams/amscams/pythonv2/templates/allsky.tv.base.html"
 
 # ARCHIVE PATH
 ARCHIVE_PATH = "http://archive.allsky.tv" 
