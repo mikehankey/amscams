@@ -515,7 +515,7 @@ def do_all(day):
       
       
       # Create REPORT PAGE
-      ff = f.replace(ARCHIVE_RELATIVE_PATH,'').replace('/mnt/ams2/meteor_archive/','')
+      ff = ARCHIVE_RELATIVE_PATH + os.sep + f.replace(ARCHIVE_RELATIVE_PATH,'').replace('/mnt/ams2/meteor_archive/','')
       print(ff)
       sys.exit(0)
       cmd = "python3 /home/ams/amscams/pythonv2/publish.py event_station_report " + os.sep+ ff
