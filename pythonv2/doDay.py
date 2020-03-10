@@ -368,7 +368,15 @@ def html_get_detects(day,tsid,event_files, events):
             # We get more info 
             #print("(BEFORE AN) EVENT ID IS:", event_id) 
             analysed_name = analyse_report_file(image_file)
-         
+
+
+            # Get the related JSON File to display the duration (and eventually other info)
+            if(video_path != ''):
+               json_file = '/mnt/ams2/meteor_archive/'+tsid + os.sep + 'METEOR' + os.sep + + year + os.sep + month + os.sep + d_day + os.sep + image_file.replace('-prev-crop.jpg','.json')
+               data = load_json_file(json_file)
+               print(data)
+               sys.exit(0)
+
             #print("(AFTER AN) EVENT ID IS:", event_id) 
       
             if event_id is None or event_id == "none" or event_id == '':
@@ -383,11 +391,6 @@ def html_get_detects(day,tsid,event_files, events):
                if(jreport_path!=''):
                   elink = "<a href=" + jreport_path + " class='T'>"
 
-               # Get the duration of the event (long but very usefull on the daily report)
-               json_file = ARCHIVE_RELATIVE_PATH + was_vh_dir + image_file.replace('crop','full')
-               print(json_file)
-               sys.exit(0)
-   
                single_html += "<div class='"+css_class+"'>" + elink +  "<img src='"+was_vh_dir + image_file+"' class='img-fluid'></a>"
                single_html += "<div class='d-flex mb-2'><div class='mr-auto'><span>"+'<b>Cam#' + analysed_name['cam_id'] + '</b> '+ analysed_name['hour']+':'+analysed_name['min']+':'+analysed_name['sec']+'.'+analysed_name['ms'] + "</div>"
                single_html += "<div>"+video_path+"</div></div></div>"
