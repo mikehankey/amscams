@@ -3932,7 +3932,8 @@ if cmd == "meteor_index":
    day = None
    if len(sys.argv) == 3:
       day = sys.argv[2]
-   meteor_index(json_conf, day)
+   if(json_conf is not False):
+      meteor_index(json_conf, day)
 
 if cmd == "rr" or cmd == 'reset_reduce':
    reset_reduce(json_conf, sys.argv[2])

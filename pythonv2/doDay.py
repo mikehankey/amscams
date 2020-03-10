@@ -31,7 +31,7 @@ import subprocess
 import random
 import requests
 
-
+from lib.Video_Tools import define_crop_video, crop_video_keep_meteor_centered
 from lib.FileIO import load_json_file, save_json_file, cfe
 from lib.UtilLib import check_running
 
@@ -250,8 +250,8 @@ def make_station_report(day, proc_info = ""):
    multi_html = multi_html + single_html
    if(multi_html != '' ):
       multi_tb = '<div id="top_tool_bar"><div class="d-flex">'
-      multi_tb += '<div class="control-group"><div class="controls"><div class="input"><div id="lio_filters" class="btn-group" data-toggle="buttons-checkbox"><button class="btn btn-secondary active" id="lio_btn_all" aria-pressed="true">ALL</button><button class="btn btn-secondary" id="lio_btn_pnd"  aria-pressed="false">Pending ('+ str(info['pending_count']) +')</button><button class="btn btn-secondary" aria-pressed="false" id="lio_btn_arc">Archived ('+ str(info['arc_count']) +')</button></div></div></div></div>'
-      multi_tb += '<div class="control-group ml-3"><div class="controls"><div class="input"><div id="lio_sub_filters" class="btn-group" data-toggle="buttons-checkbox"><button class="btn btn-secondary active" id="lio_sub_btn_all" aria-pressed="true">ALL</button><button class="btn btn-secondary" id="lio_sub_btn_single"  aria-pressed="false">Single Station ('+ str(info['ss_count']) +')</button><button class="btn btn-secondary" aria-pressed="false" id="lio_sub_btn_multi">Multi-Stations ('+ str(info['ms_count']) +')</button></div></div></div></div>'
+      multi_tb += '<div class="control-group"><div class="m-0 p-0"><div class="input"><div id="lio_filters" class="btn-group" data-toggle="buttons-checkbox"><button class="btn btn-secondary active" id="lio_btn_all" aria-pressed="true">ALL</button><button class="btn btn-secondary" id="lio_btn_pnd"  aria-pressed="false">Pending ('+ str(info['pending_count']) +')</button><button class="btn btn-secondary" aria-pressed="false" id="lio_btn_arc">Archived ('+ str(info['arc_count']) +')</button></div></div></div></div>'
+      multi_tb += '<div class="control-group ml-3"><div class="m-0 p-0"><div class="input"><div id="lio_sub_filters" class="btn-group" data-toggle="buttons-checkbox"><button class="btn btn-secondary active" id="lio_sub_btn_all" aria-pressed="true">ALL</button><button class="btn btn-secondary" id="lio_sub_btn_single"  aria-pressed="false">Single Station ('+ str(info['ss_count']) +')</button><button class="btn btn-secondary" aria-pressed="false" id="lio_sub_btn_multi">Multi-Stations ('+ str(info['ms_count']) +')</button></div></div></div></div>'
       multi_tb += '<div class="lio ml-auto"><button id="conf_all" class="btn btn-success">Confirm All</button> <button id="del_all" class="btn btn-danger">Delete All</button> <button id="cancel_all" class="btn btn-secondary">Cancel</button></div></div></div>'
 
       TAB, TAB_CONTENT = add_section('multi',"Meteors (" + str(info['ms_count']+info['ss_count']) + ")",multi_tb +"<div class='d-flex align-content-start flex-wrap'>" + multi_html  + "</div>", TAB, TAB_CONTENT, True) 
@@ -510,20 +510,25 @@ def do_all(day):
 
    # Make all the reports for the given day
    # AND CREATE THE CROPPED AND FOLLOW-CROPPED VIDEOS
-   for f in arc_files:
-      print("JSON FILE ")
-      print(os.sep+f.replace(ARCHIVE_RELATIVE_PATH,'').replace('/mnt/ams2/meteor_archive/',''))
-      print('')
+   for f in arc_files: 
+      
       # Create REPORT PAGE
-      ff = f.replace(ARCHIVE_RELATIVE_PATH,'').replace('/mnt/ams2/meteor_archive/','')
-      cmd = "python3 /home/ams/amscams/pythonv2/publish.py event_station_report " + os.sep+ ff
+      ff = os.sep + f.replace(ARCHIVE_RELATIVE_PATH,'').replace('/mnt/ams2/meteor_archive/','')
+      ff = ARCHIVE_RELATIVE_PATH + ff.replace('//','/')
+      print('***********CREATE STATION REPORT *************')
+      cmd = "python3 /home/ams/amscams/pythonv2/publish.py event_station_report " +  ff
       os.system(cmd)
-
-      # CREATE CROPPED VIDEO
-      define_crop_video(ARCHIVE_RELATIVE_PATH +  ff + ".json",  ARCHIVE_RELATIVE_PATH +  ff +  "-HD.mp4")
+      print(cmd)
+      print('*****************************************************')
+      # CREATE CROPPED VIDEO 
+      print("DEFINED CROPPED VIDEO")
+      print(ff + ' , ' + ff.replace('.json',"-HD.mp4"))
+      define_crop_video(  ff , ff.replace('.json',"-HD.mp4"))
+      print('********CROPPED VIDEO DONE ********************')
+      sys.exit(0)
       # CREATE METEOR CENTERED VIDEO
-      crop_video_keep_meteor_centered(ARCHIVE_RELATIVE_PATH +  ff + ".json",ARCHIVE_RELATIVE_PATH +  ff + "-HD.mp4")
- 
+      crop_video_keep_meteor_centered(ff , ff.replace('.json',"-HD.mp4"))
+      print('********CROPPED FOLLOW VIDEO DONE ********************')
 
       
 
