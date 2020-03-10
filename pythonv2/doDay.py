@@ -377,7 +377,7 @@ def html_get_detects(day,tsid,event_files, events):
                data = load_json_file(json_file)
                if('report' in data):
                   if('dur' in data['report']):
-                     dur = "<span>" + str(data[report][dur]) + 's</span>'
+                     dur = "<span>" + str(data['report']['dur']) + 's</span>'
 
             #print("(AFTER AN) EVENT ID IS:", event_id) 
       
