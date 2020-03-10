@@ -375,9 +375,13 @@ def html_get_detects(day,tsid,event_files, events):
             if(video_path != ''):
                json_file = '/mnt/ams2/meteor_archive/' + tsid + os.sep + 'METEOR' + os.sep + year + os.sep + month + os.sep + d_day + os.sep + image_file.replace('-prev-crop.jpg','.json')
                data = load_json_file(json_file)
-               if('report' in data):
-                  if('dur' in data['report']):
-                     dur = "<span>" + str(data['report']['dur']) + 's</span>'
+               if(data is not False):
+                  if('report' in data):
+                     if('dur' in data['report']):
+                        dur = "<span>" + str(data['report']['dur']) + 's</span>'
+               else:
+                  print(json_file + " WTF")
+                  sys.exit(0)
 
             #print("(AFTER AN) EVENT ID IS:", event_id) 
       
