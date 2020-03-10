@@ -511,9 +511,9 @@ def do_all(day):
    # Make all the reports for the given day
    for f in arc_files:
       print("JSON FILE ")
-      print(f.replace(ARCHIVE_RELATIVE_PATH,'').replace('/mnt/ams2/meteor_archive/',''))
+      print(os.sep+f.replace(ARCHIVE_RELATIVE_PATH,'').replace('/mnt/ams2/meteor_archive/',''))
       print('')
-      cmd = "python3 /home/ams/amscams/pythonv2/publish.py event_station_report " + f.replace(ARCHIVE_RELATIVE_PATH,'').replace('/mnt/ams2/meteor_archive/','')
+      cmd = "python3 /home/ams/amscams/pythonv2/publish.py event_station_report " + os.sep+f.replace(ARCHIVE_RELATIVE_PATH,'').replace('/mnt/ams2/meteor_archive/','')
       os.system(cmd)
       print(cmd)
 
