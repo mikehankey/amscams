@@ -510,21 +510,21 @@ def do_all(day):
 
    # Make all the reports for the given day
    # AND CREATE THE CROPPED AND FOLLOW-CROPPED VIDEOS
-   for f in arc_files:
-      print("JSON FILE ") 
-
-
+   for f in arc_files: 
+      
       # Create REPORT PAGE
       ff = os.sep + f.replace(ARCHIVE_RELATIVE_PATH,'').replace('/mnt/ams2/meteor_archive/','')
-      
+      print('***********CREATE STATION REPORT *************')
       cmd = "python3 /home/ams/amscams/pythonv2/publish.py event_station_report " + os.sep+ ff
       os.system(cmd)
-  
+
+      print('*****************************************************')
       # CREATE CROPPED VIDEO
       define_crop_video(  ff , ff.replace('.json',"-HD.mp4"))
+      print('********CROPPED VIDEO DONE ********************')
       # CREATE METEOR CENTERED VIDEO
       crop_video_keep_meteor_centered(ff , ff.replace('.json',"-HD.mp4"))
- 
+      print('********CROPPED FOLLOW VIDEO DONE ********************')
 
       
 
