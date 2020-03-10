@@ -406,9 +406,9 @@ def html_get_detects(day,tsid,event_files, events):
             video_path = '' 
             mc += 1
          else:
-            multi_html += "No meteors detected."            
+            html += "No meteors detected."            
    else:
-      multi_html += "No meteors detected."
+      html += "No meteors detected."
 
 
    info = {}
@@ -463,18 +463,13 @@ def get_meteor_status(day):
    
 
 def do_all(day):
-
-   print("DO ALL ")
-   print(day)
-
+ 
+ 
    #os.system("git pull")
    proc_vids, proc_tn_imgs, day_vids,cams_queue,in_queue = get_processing_status(day)
    detect_files, arc_files = get_meteor_status(day)
 
-   time_check = check_time(day)
-
-   print("BEFORE RPT")
-
+   time_check = check_time(day) 
    # figure out how much of the day has completed processing
    rpt = """ 
       <dl class="row p-4">
@@ -497,7 +492,7 @@ def do_all(day):
 
    if len(cams_queue) < 10 and len(in_queue) < 10:
       proc_status = "up-to-date"
-
+ 
  
    # make the meteor detection index for today
    os.system("./autoCal.py meteor_index " + day)
@@ -513,6 +508,11 @@ def do_all(day):
 
    make_station_report(day, rpt)
    print("STATION DONE ")
+
+   # Make all the reports for the given day
+   for f in arc_files
+      cmd = "python3 /home/ams/amscams/pythonv2/publish.py event_station_report " + f 
+      os.system(cmd)
 
 def check_time(day):
    now = datetime.now() 
