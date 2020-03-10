@@ -515,6 +515,7 @@ def do_all(day):
       print('')
       cmd = "python3 /home/ams/amscams/pythonv2/publish.py event_station_report " + f.replace(ARCHIVE_RELATIVE_PATH,'')
       os.system(cmd)
+      print(cmd)
 
 def check_time(day):
    now = datetime.now() 
