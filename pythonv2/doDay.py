@@ -39,6 +39,8 @@ from lib.UtilLib import check_running
 REGEX_REPORT = r"(\d{4})_(\d{2})_(\d{2})_(\d{2})_(\d{2})_(\d{2})_(\d{3})_(\w{6})-trim(\d{4}|\d{3}|\d{2}|\d{1})-prev-crop.jpg"
 REGEX_GROUP_REPORT = ["name","year","month","day","hour","min","sec","ms","cam_id","trim"]
  
+STATION_REPORT_TEMPLATE = "/home/ams/amscams/templates/allsky.tv.base.html"
+
 # ARCHIVE PATH
 ARCHIVE_PATH = "http://archive.allsky.tv" 
  
@@ -179,7 +181,7 @@ def add_section(id,link_from_tab,tab_content,TAB, TAB_CONTENT, cur=False):
 
 
 def make_station_report(day, proc_info = ""):
-   template = get_template("templates/allsky.tv.base.html") 
+   template = get_template(STATION_REPORT_TEMPLATE) 
 
    # print("PROC INFO:", proc_info)
    # MAKE STATION REPORT FOR CURRENT DAY
