@@ -162,7 +162,7 @@ def crop_video_keep_meteor_centered(json_file,video,w=FRAME_THUMB_W,h=FRAME_THUM
       height, width, layers = frame.shape
  
       fourcc = cv2.VideoWriter_fourcc(*'mp4v')
-      video_name = video.replace('.mp4','-cropped.mp4')
+      video_name = video.replace('.mp4','-follow-cropped.mp4')
       videoCC = cv2.VideoWriter(video_name, fourcc, 25, (width,height))
    
       for frame in cropped_frames:
@@ -249,7 +249,7 @@ def define_crop_video(json_file,video, size_margin=0):
          # Create all the frames as images
          # all_frames = get_frames_from_cropped_video(output_file,json_file.replace(os.path.basename(json_file),''))
 
-         print(output_file)
+         return output_file
    else:
       print(json_file +  ' not found or corrupted.')
  
