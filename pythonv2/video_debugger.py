@@ -10,8 +10,13 @@ from os.path import isfile, join, exists
 
 from lib.Video_Title_cv import *
 
+
+from lib.Video_Tools_Fundamentals import *
+w,h = get_media_file_dimensions('/mnt/archive.allsky.tv/AMS7/METEOR/2019/12/24/2019_12_24_08_17_10_000_010041-trim1298-HD-cropped.mp4')
+print(str(w) + ", " + str(h))
+
 # TEST CREATE CROPPED VIDEO (WITHOUT METEOR CENTERED)
-define_crop_video('/mnt/archive.allsky.tv//AMS7/METEOR/2019/12/24/2019_12_24_09_05_21_000_010038-trim1158.json','/mnt/archive.allsky.tv//AMS7/METEOR/2019/12/24/2019_12_24_09_05_21_000_010038-trim1158-HD.mp4')
+#define_crop_video('/mnt/archive.allsky.tv//AMS7/METEOR/2019/12/24/2019_12_24_09_05_21_000_010038-trim1158.json','/mnt/archive.allsky.tv//AMS7/METEOR/2019/12/24/2019_12_24_09_05_21_000_010038-trim1158-HD.mp4')
 #define_crop_video('/mnt/archive.allsky.tv/AMS7/METEOR/2019/12/24/2019_12_24_08_29_19_000_010039-trim1168.json','/mnt/archive.allsky.tv/AMS7/METEOR/2019/12/24/2019_12_24_08_29_19_000_010039-trim1168-HD.mp4',150)
 #crop_video_keep_meteor_centered('/mnt/archive.allsky.tv/AMS7/METEOR/2019/12/24/2019_12_24_08_29_19_000_010039-trim1168.json','/mnt/archive.allsky.tv/AMS7/METEOR/2019/12/24/2019_12_24_08_29_19_000_010039-trim1168-HD.mp4')
 
