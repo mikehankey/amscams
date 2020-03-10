@@ -31,7 +31,7 @@ import subprocess
 import random
 import requests
 
-from lib.Video_Tools import define_crop_video, crop_video_keep_me
+from lib.Video_Tools import define_crop_video, crop_video_keep_meteor_centered
 from lib.FileIO import load_json_file, save_json_file, cfe
 from lib.UtilLib import check_running
 
