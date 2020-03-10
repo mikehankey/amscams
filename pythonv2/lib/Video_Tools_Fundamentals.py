@@ -1,5 +1,6 @@
 import os
 import subprocess 
+import sys
 
 # Get dimension of a file (w,h)
 def get_media_file_dimensions(video_file):
