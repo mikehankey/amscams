@@ -516,12 +516,17 @@ def do_all(day):
       
       # Create REPORT PAGE
       ff = ARCHIVE_RELATIVE_PATH +   f.replace(ARCHIVE_RELATIVE_PATH,'').replace('/mnt/ams2/meteor_archive/','')
-       
+      
+      print(op.sep+ff)
+
       cmd = "python3 /home/ams/amscams/pythonv2/publish.py event_station_report " + os.sep+ ff
       os.system(cmd)
 
+
+      print(ff.replace('.json',"-HD.mp4"))
+
       # CREATE CROPPED VIDEO
-      define_crop_video(  ff ,  ff.replace('.json',"-HD.mp4"))
+      define_crop_video(  ff , ff.replace('.json',"-HD.mp4"))
       # CREATE METEOR CENTERED VIDEO
       crop_video_keep_meteor_centered(ff , ff.replace('.json',"-HD.mp4"))
  
