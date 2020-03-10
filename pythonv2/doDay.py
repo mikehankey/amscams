@@ -42,8 +42,8 @@ REGEX_GROUP_REPORT = ["name","year","month","day","hour","min","sec","ms","cam_i
 # ARCHIVE PATH
 ARCHIVE_PATH = "http://archive.allsky.tv" 
  
-
-json_conf = load_json_file("../conf/as6.json")
+PATH_TO_CONF_JSON = "/home/ams/amscams/conf/as6.json" 
+json_conf = load_json_file(PATH_TO_CONF_JSON)
 
 def analyse_report_file(file_name):
    matches = re.finditer(REGEX_REPORT, file_name, re.MULTILINE)
