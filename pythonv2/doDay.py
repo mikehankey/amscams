@@ -516,8 +516,9 @@ def do_all(day):
       ff = os.sep + f.replace(ARCHIVE_RELATIVE_PATH,'').replace('/mnt/ams2/meteor_archive/','')
       print('***********CREATE STATION REPORT *************')
       cmd = "python3 /home/ams/amscams/pythonv2/publish.py event_station_report " + os.sep+ ff
-      os.system(cmd)
-
+      #os.system(cmd)
+      print(cmd)
+      print("=>JDON")
       sys.exit(0)
       print('*****************************************************')
       # CREATE CROPPED VIDEO
