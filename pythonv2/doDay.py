@@ -511,12 +511,15 @@ def do_all(day):
    # Make all the reports for the given day
    # AND CREATE THE CROPPED AND FOLLOW-CROPPED VIDEOS
    for f in arc_files:
-      print("JSON FILE ")
-      
-      
+      print("JSON FILE ") 
+
+
       # Create REPORT PAGE
       ff = ARCHIVE_RELATIVE_PATH + f.replace(ARCHIVE_RELATIVE_PATH,'').replace('/mnt/ams2/meteor_archive/','')
       
+      print('FILE REPORT STATION ')
+      print(ff)
+
       cmd = "python3 /home/ams/amscams/pythonv2/publish.py event_station_report " + os.sep+ ff
       os.system(cmd)
  
