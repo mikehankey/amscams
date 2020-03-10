@@ -523,11 +523,11 @@ def do_all(day):
       cmd = "python3 /home/ams/amscams/pythonv2/publish.py event_station_report " + os.sep+ ff
       os.system(cmd)
  
-      print(cmd)
+     
       # CREATE CROPPED VIDEO
-      #define_crop_video(  ff , ff.replace('.json',"-HD.mp4"))
+      define_crop_video(  ff , ff.replace('.json',"-HD.mp4"))
       # CREATE METEOR CENTERED VIDEO
-      #crop_video_keep_meteor_centered(ff , ff.replace('.json',"-HD.mp4"))
+      crop_video_keep_meteor_centered(ff , ff.replace('.json',"-HD.mp4"))
  
 
       
