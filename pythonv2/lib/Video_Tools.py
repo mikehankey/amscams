@@ -210,14 +210,15 @@ def define_crop_video(json_file,video, size_margin=0):
    #     /AMS7/METEOR/2019/12/24/2019_12_24_08_17_10_000_010041-trim1298-SD-cropped.mp4
    # or
    #      /AMS7/METEOR/2019/12/24/2019_12_24_08_17_10_000_010041-trim1298-HD-cropped.mp4
- 
-
+  
    # Get the info from the json
    data = load_json_file(json_file)
     
    all_x = []
    all_y = []
    n_size_margin = size_margin
+
+   print("SIZE MARGIN: " + str(size_margin))
 
    # SD or HD?
    if('SD' in video):
@@ -239,16 +240,16 @@ def define_crop_video(json_file,video, size_margin=0):
          w = max(all_x) - x + n_size_margin      
          y = min(all_y) - n_size_margin
          h = max(all_y) - y + n_size_margin
-
-
+ 
          print("X " + str(x))
          print("W " + str(w))
          print("y " + str(y))
          print("h " + str(h))
-
  
          # Create Output Name
          output_file = video.replace('.mp4','-cropped.mp4')
+
+         print("**********BEFORE CROP VIDEO ***********************")
 
          # Cropp the video
          crop_video(video,w,h,x,y,output_file)
