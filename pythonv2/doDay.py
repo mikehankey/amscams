@@ -371,11 +371,13 @@ def html_get_detects(day,tsid,event_files, events):
 
 
             # Get the related JSON File to display the duration (and eventually other info)
+            dur = ''
             if(video_path != ''):
                json_file = '/mnt/ams2/meteor_archive/' + tsid + os.sep + 'METEOR' + os.sep + year + os.sep + month + os.sep + d_day + os.sep + image_file.replace('-prev-crop.jpg','.json')
                data = load_json_file(json_file)
-               print(data)
-               sys.exit(0)
+               if('report' in data):
+                  if('dur' in data['report']):
+                     dur = "<span>" + str(data[report][dur]) + 's</span>'
 
             #print("(AFTER AN) EVENT ID IS:", event_id) 
       
@@ -393,7 +395,7 @@ def html_get_detects(day,tsid,event_files, events):
 
                single_html += "<div class='"+css_class+"'>" + elink +  "<img src='"+was_vh_dir + image_file+"' class='img-fluid'></a>"
                single_html += "<div class='d-flex mb-2'><div class='mr-auto'><span>"+'<b>Cam#' + analysed_name['cam_id'] + '</b> '+ analysed_name['hour']+':'+analysed_name['min']+':'+analysed_name['sec']+'.'+analysed_name['ms'] + "</div>"
-               single_html += "<div>"+video_path+"</div></div></div>"
+               single_html += "<div>"+video_path+"</div>+"dur"+</div></div>"
                ss_count += 1 
             else:
 
@@ -405,7 +407,7 @@ def html_get_detects(day,tsid,event_files, events):
 
                multi_html += "<div class='"+css_class+"'>" + elink +  "<img src='"+was_vh_dir + image_file+"' class='img-fluid'></a>"
                multi_html += "<div class='d-flex mb-1'><div class='mr-auto'><span>"+'<b>Cam#' + analysed_name['cam_id'] + '</b> '+ analysed_name['hour']+':'+analysed_name['min']+':'+analysed_name['sec']+'.'+analysed_name['ms'] + event_id+"</div>"
-               multi_html += "<div class='position-relative'><a href='"+video_path+"' class='vid-link btn btn-secondary btn-sm'><span class='icon-youtube'></span></a><span class='multi-b'>Multi</span></div></div></div>"
+               multi_html += "<div class='position-relative'><a href='"+video_path+"' class='vid-link btn btn-secondary btn-sm'><span class='icon-youtube'></span></a><span class='multi-b'>Multi</span></div>>+"dur"+</div></div>"
                ms_count += 1
 
             video_path = '' 
