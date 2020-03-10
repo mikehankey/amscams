@@ -522,7 +522,6 @@ def do_all(day):
       print('*****************************************************')
       # CREATE CROPPED VIDEO 
       print("DEFINED CROPPED VIDEO")
-      ff = ff.replace(ARCHIVE_RELATIVE_PATH,'')
       print(ff + ' , ' + ff.replace('.json',"-HD.mp4"))
       define_crop_video(  ff , ff.replace('.json',"-HD.mp4"))
       print('********CROPPED VIDEO DONE ********************')
