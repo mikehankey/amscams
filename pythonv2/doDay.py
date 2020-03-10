@@ -518,6 +518,7 @@ def do_all(day):
       cmd = "python3 /home/ams/amscams/pythonv2/publish.py event_station_report " + os.sep+ ff
       os.system(cmd)
 
+      sys.exit(0)
       print('*****************************************************')
       # CREATE CROPPED VIDEO
       define_crop_video(  ff , ff.replace('.json',"-HD.mp4"))
