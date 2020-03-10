@@ -494,15 +494,15 @@ def do_all(day):
       proc_status = "up-to-date"
   
    # make the meteor detection index for today
-   os.system("/home/ams/amscams/autoCal.py meteor_index " + day)
+   os.system("/home/ams/amscams/pythonv2/autoCal.py meteor_index " + day)
    print("AUTOCAL DONE")
 
    # make the detection preview images for the day
-   os.system("/home/ams/amscams/flex-detect.py bmpi " + day)
+   os.system("/home/ams/amscams/pythonv2/flex-detect.py bmpi " + day)
    print("FLEXDETECT BMPI DONE")
 
    # make the detection preview images for the day
-   os.system("/home/ams/amscams/wasabi.py sa " + day)
+   os.system("/home/ams/amscams/pythonv2/wasabi.py sa " + day)
    print("WASABI SA DONE")
 
    make_station_report(day, rpt)
@@ -537,7 +537,7 @@ def check_time(day):
          lines.append(line)
       return (lines[-2] + " " + lines[-1])
       
-os.system("/home/ams/amscams/wasabi.py mnt")
+os.system("/home/ams/amscams/pythonv2/wasabi.py mnt")
 cmd = sys.argv[1]
 
 if cmd == "ct":
