@@ -515,7 +515,7 @@ def do_all(day):
 
 
       # Create REPORT PAGE
-      ff = ARCHIVE_RELATIVE_PATH + f.replace(ARCHIVE_RELATIVE_PATH,'').replace('/mnt/ams2/meteor_archive/','')
+      ff = f.replace(ARCHIVE_RELATIVE_PATH,'').replace('/mnt/ams2/meteor_archive/','')
       
       print('FILE REPORT STATION ')
       print(ff)
