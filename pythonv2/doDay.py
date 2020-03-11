@@ -381,7 +381,7 @@ def html_get_detects(day,tsid,event_files, events):
                print(jreport_path.replace('.html',"-cropped-HD.mp4"))
 
                cropped_video_file = create_cropped_video(jreport_path.replace('.html',"-HD.mp4"),jreport_path.replace('.html',".json"),jreport_path.replace('.html',"-cropped-HD.mp4"))
-               print("CROPPED VIDEO " + cropped_video)
+               print("CROPPED VIDEO " + cropped_video_file)
                print("********************************************************************************")
                
 
