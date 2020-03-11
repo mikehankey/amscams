@@ -34,6 +34,7 @@ import requests
 from lib.Video_Tools import define_crop_video, crop_video_keep_meteor_centered
 from lib.FileIO import load_json_file, save_json_file, cfe
 from lib.UtilLib import check_running
+from lib.Video_Tools_Fundamentals import create_cropped_video 
 
 # REGEXP Used to get info from the paths
 REGEX_REPORT = r"(\d{4})_(\d{2})_(\d{2})_(\d{2})_(\d{2})_(\d{2})_(\d{3})_(\w{6})-trim(\d{4}|\d{3}|\d{2}|\d{1})-prev-crop.jpg"
@@ -519,21 +520,8 @@ def do_all(day):
       os.system(cmd)
 
       # Create Crop Video
-      
-   
-   
-   
-      print(cmd)
-      print('*****************************************************')
-      # CREATE CROPPED VIDEO 
-      print("DEFINED CROPPED VIDEO")
-      print(ff + ' , ' + ff.replace('.json',"-HD.mp4"))
-      define_crop_video(  ff , ff.replace('.json',"-HD.mp4"))
-      print('********CROPPED VIDEO DONE ********************')
-      sys.exit(0)
-      # CREATE METEOR CENTERED VIDEO
-      crop_video_keep_meteor_centered(ff , ff.replace('.json',"-HD.mp4"))
-      print('********CROPPED FOLLOW VIDEO DONE ********************')
+      print("CREATE CROPPED VIDEO")
+      create_cropped_video(ff.replace('.json',"-HD.mp4") , ff, ff.replace('.json',"-cropped-HD.mp4"))
 
       
 
