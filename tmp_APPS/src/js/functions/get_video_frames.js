@@ -50,6 +50,9 @@ async function extractFramesFromVideo(videoUrl, fps=25) {
    croppedFrames = await extractFramesFromVideo(cropped_video); 
 
    $.each(croppedFrames,function(i,v){ 
+
+      // We use the first frame as a background image for the HD / SD Players
+
       // Add base64 thumbs to the table 
       $('#thb_'+i).find('img').attr('src',v).css('border-color', $('#thb_'+i).attr('data-src')); 
    });

@@ -124,17 +124,11 @@ def make_event_station_report(json_file):
       <ul id="video-controls" class="controls">
 			<li><button id="playpause" type="button" class="btn btn-secondary btn-sm"><span class="icon-play1"></span></button></li>
 			<li><button id="stop" type="button" class="btn btn-secondary btn-sm"><span class="icon-stop"></span></button></li>
-			<li class="progress">
-				<progress id="progress" value="0" min="0">
-					<span id="progress-bar"></span>
-				</progress>
-			</li> 
-			<li><button id="fs" class="btn btn-secondary btn-sm" type="button"><span class="icon-full-screen"></span></button></li>
       </ul>
-      <ul class="other_controls">
-         <li><button id="showHideStars" class="btn btn-secondary btn-sm" type="button">Hide Stars</button></li>
-         <li><button id="showHideFrames"class="btn btn-secondary btn-sm" type="button">Show Frames</button></li>
-      </ul>
+      <div>
+         <input type="range" value="1" name="stars_transp" max="100" min="0">
+         <input type="range" value="1" name="frame_transp" max="100" min="0">
+      </div>
     '''
 
    template = template.replace('{VIDEO}','<figure id="videoContainer" data-fullscreen="false"><video id="main_video_player" width="960" height="540" loop=""><source src="'+json_file.replace('.json','-HD.mp4')+'" type="video/mp4"></video>'+playBtns+'</figure>')
