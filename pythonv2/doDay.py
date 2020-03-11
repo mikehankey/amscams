@@ -244,8 +244,8 @@ def make_station_report(day, proc_info = ""):
             indicators += '<li data-target="#carouselWInd" data-slide-to="0" class="active"></li>'
             carousel_items +=  '<div class="carousel-item active"><img class="d-block w-100" src="'+fn+'" alt="1"></div>'
          else:
-            indicators += '<li data-target="#carouselWInd" data-slide-to="'+ccc+'"></li>'
-            carousel_items +=  '<div class="carousel-item"><img class="d-block w-100" src="'+fn+'" alt="'+ccc+'"></div>'
+            indicators += '<li data-target="#carouselWInd" data-slide-to="'+str(ccc)+'"></li>'
+            carousel_items +=  '<div class="carousel-item"><img class="d-block w-100" src="'+fn+'" alt="'+str(ccc)+'"></div>'
 
          all_weath_images.append(fn) 
          ccc+=1
