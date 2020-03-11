@@ -10049,8 +10049,17 @@ def play_clip(video_file,cx1=0,cy1=0,cx2=0,cy2=0):
       cv2.waitKey(0)
 
 def batch_vals(day):
+   running = check_running(".py bv")
+   print("RUNNING:", running)
+   if running > 2:
+      print("already running")
+      exit()
    data_dir = "/mnt/ams2/SD/proc2/" + day + "/data/"
-   val_files = glob.glob(data_dir + "*-vals.json")
+   temp = glob.glob(data_dir + "*-vals.json")
+   val_files = []
+   for tem in temp:
+      if "crop" not in tem:
+         val_files.append(tem)
    meteors = 0
    maybe_meteors = 0
    too_many = 0
@@ -10760,7 +10769,8 @@ def injest(video_file):
 
 
 cmd = sys.argv[1]
-video_file = sys.argv[2]
+if len(sys.argv) > 2:
+   video_file = sys.argv[2]
 
 if cmd == "injest":
    injest(video_file)
@@ -10862,7 +10872,14 @@ if cmd == "plot_vals" :
 if cmd == "detect_in_vals" or cmd == 'dv':
    detect_in_vals(sys.argv[2])
 if cmd == "batch_vals" or cmd == 'bv':
-   batch_vals(sys.argv[2])
+   if len(sys.argv) < 3:
+      now = datetime.datetime.now()
+      today = now.strftime("%Y_%m_%d")
+      batch_vals(today)
+   else:
+      batch_vals(sys.argv[2])
+
+
 if cmd == "verify_meteor" or cmd == 'vm':
    verify_meteor(sys.argv[2])
 
