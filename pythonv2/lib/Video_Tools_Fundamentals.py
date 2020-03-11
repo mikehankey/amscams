@@ -76,6 +76,9 @@ def get_ROI(data_with_xy,is_hd=True):
    xs = []
    ys = []
 
+   print("data_with_xy")
+   print(data_with_xy)
+
    for xy in data_with_xy:
       xs.append(int(data_with_xy[xy]['x']))
       ys.append(int(data_with_xy[xy]['y']))
