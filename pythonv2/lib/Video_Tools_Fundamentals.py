@@ -126,8 +126,12 @@ def crop_video(mp4,w,h,x,y,output):
 def create_cropped_video(video_file,json_file,outfile):
 
    # Get the ROI - WARNING: ONLY WORKS WITH ARC JSON!
-   cx1,cy1,cx2,cy2  = get_ROI_from_arc_json(json_file)
- 
+   try:
+      cx1,cy1,cx2,cy2  = get_ROI_from_arc_json(json_file)
+   except:
+      print("IMPOSSIBLE TO CREATE THE CROPPED VIDEO FOR " + json_file)
+      return False   
+
    try:
       return crop_video(video_file,cx2-cx1,cy2-cy1,cx1,cy1,outfile)   
    except:
