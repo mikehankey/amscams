@@ -89,17 +89,19 @@ def get_ROI_from_arc(arc_json_file):
    json_data = load_json_file(arc_json_file)
 
    if(json_data is not False):
-      print(json_data)
-      if('frames' in json_data):
-         print("FRAMES OK")
-         if(len(json_data['frames'])>0): 
-            print("FRAMES LEN OK")
+      
+      if('frames' in json_data): 
+         if(len(json_data['frames'])>0):  
             if('info' in json_data):
-               if('hd_vid' in json_data['info']):
-                  if(cfe(json_data['info']['hd_vid'])==1):
-                     roi = get_ROI(data_with_xy,True)          
-                     print("ROI !")
-                     print(roi)
+               
+               # Do we have the HD?
+               HD = False
+               arc_video_file = arc_json_file.replace('.json','-HD.mp4')
+               if(cfe(arc_video_file)):
+                  HD = True
+                  roi = get_ROI(json_data['frames'],HD)          
+                  print("ROI !")
+                  print(roi)
    else:
       print(arc_json_file + ' not found or corrupted.')
 
