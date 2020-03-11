@@ -1,6 +1,7 @@
 $(function() {
 
    // Takes care of the lazy carousels
+   /*
    $("#carousel").carousel();
      return $("#carousel.lazy").on("slide.bs.carousel", function(ev) {
        var lazy;
@@ -8,4 +9,5 @@ $(function() {
        lazy.attr("src", lazy.data('src'));
        lazy.removeAttr("data-src");
      });
+     */
    });
