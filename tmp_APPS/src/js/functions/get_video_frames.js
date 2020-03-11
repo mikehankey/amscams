@@ -45,14 +45,12 @@ async function extractFramesFromVideo(videoUrl, fps=25) {
  
  
  let croppedFrames
-
-
+ 
  async function asyncCall() { 
    croppedFrames = await extractFramesFromVideo(cropped_video); 
 
    $.each(croppedFrames,function(i,v){ 
-      // Add base64 thumbs to the table
-      a  = i + 31
+      // Add base64 thumbs to the table 
       $('#thb_'+a).find('img').attr('src',v).css('border-color', $('#thb_'+a).attr('data-src')); 
    });
 

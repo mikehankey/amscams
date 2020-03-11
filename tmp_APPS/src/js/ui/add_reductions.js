@@ -23,11 +23,9 @@ function update_reduction_on_canvas_and_table(json_resp, canvas) {
          score = json_resp['point_score'];
       }
       $('#point_score_val').html(score);
-     
-  
+      
     }
-     
-
+      
    
     // Get all the frame IDs so we know which one are missing
     $.each(smf, function(i,v){
@@ -56,11 +54,8 @@ function update_reduction_on_canvas_and_table(json_resp, canvas) {
       for (var i = 0; i <= 255; i = i + step) {
          all_colors.push('#'+rainbow.colourAt(i));
       }
-    }
-     
-
-   
- 
+    } 
+    
     // We need the "middle" frame to illustrate the thumb anim button
     var middle_frame = "";
     var middle_frame_index = 0
@@ -137,6 +132,21 @@ function update_reduction_on_canvas_and_table(json_resp, canvas) {
 
    
 }
+
+
+// Change Transparency of Reduction elements on canvas
+function change_red_canvas_transp(trans,canvas) {
+   var objects = canvas.getObjects()
+    $.each(objects,function(i,v){
+        if(v.type=='reduc_rect') {
+            v.set({
+               opacity: trans
+           });
+        }
+    });
+    canvas.renderAll();
+}
+
 
 
 // Remove Reductions data from the canvas
