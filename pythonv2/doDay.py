@@ -390,9 +390,9 @@ def html_get_detects(day,tsid,event_files, events):
                      video_path = "<a href='"+full_path+"' class='img-link btn btn-secondary btn-sm'><span class='icon-eye'></span></a>"
 
                if(jreport_path!=''):
-                  elink = "<a href=" + jreport_path + " class='T'>"
+                  elink = "<a href=" + jreport_path + " class='T' data-src="+cropped_video_file+">"
 
-               single_html += cropped_video_file +"**<div class='"+css_class+"'>" + elink +  "<img src='"+was_vh_dir + image_file+"' class='img-fluid'></a>"
+               single_html += "<div class='"+css_class+"'>" + elink +  "<img src='"+was_vh_dir + image_file+"' class='img-fluid'></a>"
                single_html += "<div class='d-flex mb-2'><div class='mr-auto'><span>"+'<b>Cam#' + analysed_name['cam_id'] + '</b> '+ analysed_name['hour']+':'+analysed_name['min']+':'+analysed_name['sec']+'.'+analysed_name['ms'] + "</div>"
                single_html += "<div>"+video_path+"</div>"+dur+"</div></div>"
                ss_count += 1 
@@ -402,7 +402,7 @@ def html_get_detects(day,tsid,event_files, events):
                   event_id = "</span><span><b>Event</b> #" + str(event_id)  
 
                if(jreport_path!=''):
-                  elink = "<a href=" + jreport_path + " class='T'>"
+                  elink = "<a href=" + jreport_path + " class='T'  data-src="+cropped_video_file+">"
 
                multi_html += cropped_video_file +"**<div class='"+css_class+"'>" + elink +  "<img src='"+was_vh_dir + image_file+"' class='img-fluid'></a>"
                multi_html += "<div class='d-flex mb-1'><div class='mr-auto'><span>"+'<b>Cam#' + analysed_name['cam_id'] + '</b> '+ analysed_name['hour']+':'+analysed_name['min']+':'+analysed_name['sec']+'.'+analysed_name['ms'] + event_id+"</div>"
