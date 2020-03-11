@@ -114,8 +114,8 @@ def crop_video(mp4,w,h,x,y,output):
 
    # Test if it's doable
    try:
-      output = subprocess.check_output(cmd, shell=True).decode("utf-8")   
-      print("ffmpeg cmd successfull >> " +  output) 
+      soutput = subprocess.check_output(cmd, shell=True).decode("utf-8")   
+      print("ffmpeg cmd successfull >> " +  soutput) 
       return output
    except subprocess.CalledProcessError as e:
       print("Command " + cmd + "  return on-zero exist status: " + str(e.returncode))
