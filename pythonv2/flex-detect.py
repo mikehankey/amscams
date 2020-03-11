@@ -3634,14 +3634,20 @@ def convert_filename_to_date_cam(file):
 
 
 def ffprobe(video_file):
+   default = [704,576]
    cmd = "/usr/bin/ffprobe " + video_file + " > /tmp/ffprobe.txt 2>&1"
    output = subprocess.check_output(cmd, shell=True).decode("utf-8")
    cmd = "grep Stream /tmp/ffprobe.txt "
-   output = subprocess.check_output(cmd, shell=True).decode("utf-8")
-   el = output.split(",")
-   dim = el[3].replace(" ", "")
-   #print(dim)
-   w, h = dim.split("x") 
+   try:
+      output = subprocess.check_output(cmd, shell=True).decode("utf-8")
+      el = output.split(",")
+      dim = el[3].replace(" ", "")
+      #print(dim)
+      w, h = dim.split("x") 
+   except:
+      print("FFPROBE FAILED!", video_file)
+      exit()
+      return(default) 
 
    print(w,h)
    return(w,h)

@@ -206,6 +206,8 @@ def setup_dirs():
          os.makedirs("/mnt/ams2")
       if cfe("/mnt/ams2/SD",1) == 0:
          os.makedirs("/mnt/ams2/SD")
+      if cfe("/mnt/ams2/latest",1) == 0:
+         os.makedirs("/mnt/ams2/latest")
       if cfe("/mnt/ams2/SD/proc2",1) == 0:
          os.makedirs("/mnt/ams2/SD/proc2")
       if cfe("/mnt/ams2/SD/proc2/daytime",1) == 0:
