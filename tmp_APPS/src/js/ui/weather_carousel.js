@@ -1,6 +1,6 @@
 // Carousel for NOAA
 $(function() {
-      $('#carouselWInd').addClass('carousel').carousel({'ride':'true','interval':'false'});
+      $('#carouselWInd').addClass('carousel').carousel({'ride':'true','interval':0});
 
       $("#carouselWInd").on("slide.bs.carousel", function(ev) {
          var $img = $(ev.relatedTarget).find('img')
