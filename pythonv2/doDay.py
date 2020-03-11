@@ -238,7 +238,28 @@ def make_station_report(day, proc_info = ""):
       for ff in sorted(data['files'],reverse=True):
          fn = ff.replace("/mnt/archive.allsky.tv", "")
          if(ccc==0):
-            one_img_html += "<div class='container'><div class='row'><div class='col position-relative'><a class='arrr left'></a></div><div class='col'><img src='" + fn + "' class='img-fluid weath'></div><div class='col position-relative'><a class='arrr right'></a></div></div></div>"
+            # Buid Carousel Here
+            one_img_html += '''
+            <div id="carouselWInd" class="carousel slide" data-ride="carousel">
+                  <ol class="carousel-indicators">
+                     <li data-target="#carouselWInd" data-slide-to="0" class="active"></li>
+                     <li data-target="#carouselWInd" data-slide-to="1"></li>
+                     <li data-target="#carouselWInd" data-slide-to="2"></li>
+                  </ol>
+                  <div class="carousel-inner">
+                     <div class="carousel-item active">
+                        <img class="d-block w-100" src="'''+fn+'''" alt="First slide">
+                     </div>
+                  </div>
+                  <a class="carousel-control-prev" href="#carouselWInd" role="button" data-slide="prev">
+                     <span class="carousel-control-prev-icon" aria-hidden="true"></span>
+                     <span class="sr-only">Previous</span>
+                  </a>
+                           <a class="carousel-control-next" href="#carouselWInd" role="button" data-slide="next">
+                              <span class="carousel-control-next-icon" aria-hidden="true"></span>
+                              <span class="sr-only">Next</span>
+                           </a>
+               </div>'''
          all_weath_images.append(fn) 
          ccc+=1
 
