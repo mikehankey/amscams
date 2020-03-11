@@ -232,19 +232,24 @@ def make_station_report(day, proc_info = ""):
   
    # WEATHER SNAP SHOTS 
    we_html = ""
+   one_img_html = ""
    if len(data['files']) > 0:
-       
-      for file in sorted(data['files'],reverse=True):
-         fn = file.replace("/mnt/archive.allsky.tv", "")
-         we_html += "<img src='" + fn + "' class='img-fluid weath'>"
-   
+      ccc = 0
+      for ff in sorted(data['files'],reverse=True):
+         fn = ff.replace("/mnt/archive.allsky.tv", "")
+         if(ccc==0):
+            one_img_html += "<img src='" + fn + "' class='img-fluid weath'>"
+         else:
+            we_html += fn + "," 
+         ccc+=1
+
+
    # We only display something... if we have something to display
    if(we_html!=''):
       # We add the toolbar
-      we_html = '<div class="top_tool_bar"><a href="#" id="play_anim_thumb" class="btn btn-success"><span class="icon-youtube"></span> All Day Animation</a></div>' + we_html
+      we_html = '<div class="top_tool_bar"><a href="#" id="play_anim_thumb" class="btn btn-success"><span class="icon-youtube"></span> All Day Animation</a></div>' + one_img_html + we_html 
       TAB, TAB_CONTENT = add_section('weather','Weather',we_html, TAB, TAB_CONTENT)
-    
- 
+     
    # Add specific tool bar for meteors
    # (delete all/confirm all)
    multi_html = multi_html + single_html
