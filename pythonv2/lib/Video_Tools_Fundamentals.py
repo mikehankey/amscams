@@ -78,9 +78,9 @@ def get_ROI(data_with_xy,is_hd=True):
 
    for xy in data_with_xy:
       print("data_with_xy[xy]")
-      print(data_with_xy[xy])
-      xs.append(int(data_with_xy[xy]['x']))
-      ys.append(int(data_with_xy[xy]['y']))
+      print(xy)
+      xs.append(int(xy['x']))
+      ys.append(int(xy['y']))
 
    return find_crop_size(min(xs), min(ys), max(xs), max(ys))
 
