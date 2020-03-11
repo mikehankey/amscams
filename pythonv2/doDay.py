@@ -374,7 +374,10 @@ def html_get_detects(day,tsid,event_files, events):
             if(jreport_path!=''): 
                json_file = jreport_path.replace('.html',".json").replace(ARCHIVE_PATH,ARCHIVE_RELATIVE_PATH).replace('//','/')
                cropped_video_file = create_cropped_video(json_file.replace('.json',"-HD.mp4"),json_file,json_file.replace('.json',"-cropped-HD.mp4"))
-               
+               if(cropped_video_file is False):
+                  cropped_video_file = 'X'
+
+
             if event_id is None or event_id == "none" or event_id == '': 
 
                # Get full version of the preview if video_path is empty
