@@ -371,20 +371,10 @@ def html_get_detects(day,tsid,event_files, events):
             dur = '' 
 
             # Create CROPPED VIDEO
-            if(jreport_path!=''):
-               print("BEFORE CROPPED VIDEO ")
-               print("VIDEO FILE")
-               print(jreport_path.replace('.html',"-HD.mp4"))
-               print("JSON FILE")
-               print(jreport_path.replace('.html',".json"))
-               print("OUPUT FILE")
-               print(jreport_path.replace('.html',"-cropped-HD.mp4"))
-
+            cropped_video_file = ''
+            if(jreport_path!=''): 
                cropped_video_file = create_cropped_video(jreport_path.replace('.html',"-HD.mp4"),jreport_path.replace('.html',".json"),jreport_path.replace('.html',"-cropped-HD.mp4"))
-               print("CROPPED VIDEO " + cropped_video_file)
-               print("********************************************************************************")
                
-
             if event_id is None or event_id == "none" or event_id == '': 
 
                # Get full version of the preview if video_path is empty
