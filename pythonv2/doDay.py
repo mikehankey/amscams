@@ -231,7 +231,7 @@ def make_station_report(day, proc_info = ""):
       TAB, TAB_CONTENT = add_section('live','Live View',live_view_html, TAB, TAB_CONTENT)
   
    # WEATHER SNAP SHOTS 
-   we_html = ""
+   all_weath_images = []
    one_img_html = ""
    if len(data['files']) > 0:
       ccc = 0
@@ -239,15 +239,16 @@ def make_station_report(day, proc_info = ""):
          fn = ff.replace("/mnt/archive.allsky.tv", "")
          if(ccc==0):
             one_img_html += "<img src='" + fn + "' class='img-fluid weath'>"
-         else:
-            we_html += fn + "," 
+         all_weath_images.push(fn) 
          ccc+=1
 
 
    # We only display something... if we have something to display
    if(we_html!=''):
-      # We add the toolbar
-      we_html = '<div class="top_tool_bar"><a href="#" id="play_anim_thumb" class="btn btn-success"><span class="icon-youtube"></span> All Day Animation</a></div>' + one_img_html + we_html 
+      # We add the toolbar & content
+      we_html = '<div class="top_tool_bar"><a href="#" id="play_anim_thumb" class="btn btn-success"><span class="icon-youtube"></span> All Day Animation</a></div>' + one_img_html 
+      # Add javascript for image rotation
+      we_html += "<script>var all_img='["+', '.join(all_weath_images)+"]'</script>"
       TAB, TAB_CONTENT = add_section('weather','Weather',we_html, TAB, TAB_CONTENT)
      
    # Add specific tool bar for meteors
