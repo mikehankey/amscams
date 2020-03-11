@@ -376,6 +376,8 @@ def html_get_detects(day,tsid,event_files, events):
                cropped_video_file = create_cropped_video(json_file.replace('.json',"-HD.mp4"),json_file,json_file.replace('.json',"-cropped-HD.mp4"))
                if(cropped_video_file is False):
                   cropped_video_file = 'X'
+               else:
+                  cropped_video_file = cropped_video_file.replace(ARCHIVE_RELATIVE_PATH,ARCHIVE_PATH)
 
 
             if event_id is None or event_id == "none" or event_id == '': 
