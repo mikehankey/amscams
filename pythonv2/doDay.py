@@ -231,20 +231,47 @@ def make_station_report(day, proc_info = ""):
       TAB, TAB_CONTENT = add_section('live','Live View',live_view_html, TAB, TAB_CONTENT)
   
    # WEATHER SNAP SHOTS 
-   we_html = ""
+   all_weath_images = []
+   one_img_html = ""
    if len(data['files']) > 0:
-       
-      for file in sorted(data['files'],reverse=True):
-         fn = file.replace("/mnt/archive.allsky.tv", "")
-         we_html += "<img src='" + fn + "' class='img-fluid weath'>"
-   
+      ccc = 0
+      for ff in sorted(data['files'],reverse=True):
+         fn = ff.replace("/mnt/archive.allsky.tv", "")
+         if(ccc==0):
+            # Buid Carousel Here
+            one_img_html += '''
+            <div id="carouselWInd" class="carousel slide" data-ride="carousel">
+                  <ol class="carousel-indicators">
+                     <li data-target="#carouselWInd" data-slide-to="0" class="active"></li>
+                     <li data-target="#carouselWInd" data-slide-to="1"></li>
+                     <li data-target="#carouselWInd" data-slide-to="2"></li>
+                  </ol>
+                  <div class="carousel-inner">
+                     <div class="carousel-item active">
+                        <img class="d-block w-100" src="'''+fn+'''" alt="First slide">
+                     </div>
+                  </div>
+                  <a class="carousel-control-prev" href="#carouselWInd" role="button" data-slide="prev">
+                     <span class="carousel-control-prev-icon" aria-hidden="true"></span>
+                     <span class="sr-only">Previous</span>
+                  </a>
+                           <a class="carousel-control-next" href="#carouselWInd" role="button" data-slide="next">
+                              <span class="carousel-control-next-icon" aria-hidden="true"></span>
+                              <span class="sr-only">Next</span>
+                           </a>
+               </div>'''
+         all_weath_images.append(fn) 
+         ccc+=1
+
+
    # We only display something... if we have something to display
-   if(we_html!=''):
-      # We add the toolbar
-      we_html = '<div class="top_tool_bar"><a href="#" id="play_anim_thumb" class="btn btn-success"><span class="icon-youtube"></span> All Day Animation</a></div>' + we_html
+   if(one_img_html!=''):
+      # We add the toolbar & content
+      we_html = '<div class="top_tool_bar"><a href="#" id="play_anim_thumb" class="btn btn-success"><span class="icon-youtube"></span> All Day Animation</a></div>' + one_img_html 
+      # Add javascript for image rotation
+      we_html += "<script>var all_weather_img='["+', '.join(all_weath_images)+"]'</script>"
       TAB, TAB_CONTENT = add_section('weather','Weather',we_html, TAB, TAB_CONTENT)
-    
- 
+     
    # Add specific tool bar for meteors
    # (delete all/confirm all)
    multi_html = multi_html + single_html
@@ -523,7 +550,7 @@ def do_all(day):
       cmd = "python3 /home/ams/amscams/pythonv2/publish.py event_station_report " +  ff
       os.system(cmd)
 
-   print("DO ALL DAY DONE")
+   print("DO ALL DAY DONE for " + day)
      
 
       

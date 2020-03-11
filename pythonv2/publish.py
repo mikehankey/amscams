@@ -54,8 +54,7 @@ def make_event_station_report(json_file):
    # /AMS7/METEOR/2019/12/24/2019_12_24_08_17_10_000_010041-trim1298.json
    # Format of the OUTPUT HTML file
    # /AMS7/METEOR/2019/12/24/2019_12_24_08_17_10_000_010041-trim1298.html
- 
-
+  
    # We load (and test) the json
    json_data = load_json_file(PATH_TO_CLOUD+json_file)
    if(json_data is False): 
@@ -74,7 +73,7 @@ def make_event_station_report(json_file):
 
    full_date = analysed_name['year']+'/'+analysed_name['month']+'/'+analysed_name['day']+' '+analysed_name['hour']+":"+analysed_name['min']+":"+analysed_name['sec']+"."+analysed_name['ms']
 
-# Template data
+   # Template data
    template = template.replace('{STATION_ID}',analysed_name['station_id'])
    template = template.replace('{CAM_ID}',analysed_name['cam_id'])
    template = template.replace('{DATE}',full_date)
@@ -102,8 +101,7 @@ def make_event_station_report(json_file):
       video_btn += '<a class="col btn btn-secondary mt-0 mb-0 ml-1 vid-link d-block" href="'+json_file.replace('.json','-SD.mp4')+'"><i class="icon-youtube"></i> SD Video</a>'
  
    # Do we have a cropped version of the video?
-   cropped_hd_full_path = hd_video_full_path.replace('-HD','-HD-cropped')
-   print("IN PUBLISH.PY - the CROPPED VERSION HAS BEEN ADDED TO THE OBS REPORT PAGE")
+   cropped_hd_full_path = hd_video_full_path.replace('-HD','-HD-cropped') 
    print(cropped_hd_full_path.replace(PATH_TO_CLOUD,ARCHIVE_URL))
    if(cfe(cropped_hd_full_path)==1):
       template = template.replace('{CROPPED_VIDEO}',cropped_hd_full_path.replace(PATH_TO_CLOUD,ARCHIVE_URL)) 
@@ -126,17 +124,11 @@ def make_event_station_report(json_file):
       <ul id="video-controls" class="controls">
 			<li><button id="playpause" type="button" class="btn btn-secondary btn-sm"><span class="icon-play1"></span></button></li>
 			<li><button id="stop" type="button" class="btn btn-secondary btn-sm"><span class="icon-stop"></span></button></li>
-			<li class="progress">
-				<progress id="progress" value="0" min="0">
-					<span id="progress-bar"></span>
-				</progress>
-			</li> 
-			<li><button id="fs" class="btn btn-secondary btn-sm" type="button"><span class="icon-full-screen"></span></button></li>
       </ul>
-      <ul class="other_controls">
-         <li><button id="showHideStars" class="btn btn-secondary btn-sm" type="button">Hide Stars</button></li>
-         <li><button id="showHideFrames"class="btn btn-secondary btn-sm" type="button">Show Frames</button></li>
-      </ul>
+      <div>
+         <input type="range" value="1" name="stars_transp" max="100" min="0">
+         <input type="range" value="1" name="frame_transp" max="100" min="0">
+      </div>
     '''
 
    template = template.replace('{VIDEO}','<figure id="videoContainer" data-fullscreen="false"><video id="main_video_player" width="960" height="540" loop=""><source src="'+json_file.replace('.json','-HD.mp4')+'" type="video/mp4"></video>'+playBtns+'</figure>')

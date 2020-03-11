@@ -79,3 +79,28 @@ input[type="range"]{
    background: #0c3867;
    background: linear-gradient(to right, #0c3867 1%, #0f4a88 70%);
  }
+
+ 
+ // ARROW 
+
+.arrr {
+   width: 0;
+   height: 0;
+   border-style: solid;
+   margin: 1rem;
+   position: absolute;
+   padding: 0;
+   top: 50%;
+   transform: translateY(-50px);
+
+   &.right {
+      border-width: 25px 0 25px 25px;
+      border-color: transparent transparent transparent #3174ae;
+   }
+
+   &.left {
+      border-width: 25px 25px 25px 0;
+      border-color: transparent #007bff transparent transparent;
+
+   }
+}

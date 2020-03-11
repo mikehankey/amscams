@@ -139,3 +139,16 @@ figure[data-fullscreen=true] .controls li {
 figure[data-fullscreen=true] .controls .progress {
 	width:68%;
 }
+
+
+
+// Video over preview on daily report
+a.T {
+   position: relative;
+
+   video, #vvv {
+      top:0;
+      left:0;
+      position: absolute;
+   }
+}
