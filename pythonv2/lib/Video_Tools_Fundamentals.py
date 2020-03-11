@@ -67,7 +67,7 @@ def find_crop_size(min_x,min_y,max_x,max_y):
    else:
       cy1 = int(mid_y -  (best_h/ 2)) 
 
-   return(int(cx1),int(cy1),int(cx1+best_w),int(cy1+best_h),mid_x,mid_y)
+   return(int(cx1),int(cy1),int(cx1+best_w),int(cy1+best_h))
 
  
 
@@ -77,9 +77,7 @@ def get_ROI(data_with_xy,is_hd=True):
    xs = []
    ys = [] 
 
-   for xy in data_with_xy:
-      print("data_with_xy[xy]")
-      print(xy)
+   for xy in data_with_xy: 
       xs.append(int(xy['x']))
       ys.append(int(xy['y']))
 
@@ -87,7 +85,7 @@ def get_ROI(data_with_xy,is_hd=True):
 
 
 # Find ROI based on archive json 
-def get_ROI_from_arc(arc_json_file):
+def get_ROI_from_arc_json(arc_json_file):
 
    json_data = load_json_file(arc_json_file)
 
@@ -103,10 +101,34 @@ def get_ROI_from_arc(arc_json_file):
                if(cfe(arc_video_file)):
                   HD = True
                   roi = get_ROI(json_data['frames'],HD)          
-                  print("ROI !")
-                  print(roi)
+                  return roi
    else:
       print(arc_json_file + ' not found or corrupted.')
 
+   return False
 
+
+# Create Crop video
+def crop_video(mp4,w,h,x,y,output):
+   cmd = 'ffmpeg -y -i '+mp4+'  -filter:v "crop='+str(w)+':'+str(h)+':'+str(x)+':'+str(y)+'" '+ output
+
+   # Test if it's doable
+   try:
+      output = subprocess.check_output(cmd, shell=True).decode("utf-8")   
+      print("ffmpeg cmd successfull >> " +  output) 
+      return output
+   except subprocess.CalledProcessError as e:
+      print("Command " + cmd + "  return on-zero exist status: " + str(e.returncode))
+      sys.exit(0)
+
+
+# Create Cropped Video from a json file & a video
+def create_cropped_video(video_file,json_file):
+
+   # Get the ROI
+   cx1,cy1,cx2,cy2,mid_x,mid_y = get_ROI_from_arc_json(json_file)
+   if(roi is not False):
+      cx1,cy1,cx2,cy2 = crop_video(video_file,cx1+cx2,cy1+cy2,video_file.replace('.mp4','-test.mp4'))
+      print("DONE: ")
+      print(video_file.replace('.mp4','-test.mp4'))
 
