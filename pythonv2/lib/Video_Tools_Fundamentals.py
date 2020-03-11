@@ -128,6 +128,14 @@ def create_cropped_video(video_file,json_file):
    # Get the ROI
    
    cx1,cy1,cx2,cy2  = get_ROI_from_arc_json(json_file)
+
+   print("ROI RES")
+   print("CX1  " + str(cx1))
+   print("CX2  " + str(cx2))
+   print("CY1  " + str(cy1))
+   print("CY2  " + str(cy2))
+
+
    new_video = crop_video(video_file,cx1+cx2,cy1+cy2,cx1,cy1,video_file.replace('.mp4','-test.mp4'))
    print("DONE: ")
    print(new_video)
