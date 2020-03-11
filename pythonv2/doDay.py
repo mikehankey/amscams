@@ -233,7 +233,7 @@ def make_station_report(day, proc_info = ""):
    # WEATHER SNAP SHOTS 
    all_weath_images = []
    one_img_html = ""
-   indicators = ""
+   #indicators = ""
    carousel_items = ""
    if len(data['files']) > 0:
       ccc = 0
@@ -241,10 +241,10 @@ def make_station_report(day, proc_info = ""):
          fn = ff.replace("/mnt/archive.allsky.tv", "")
 
          if(ccc==0):
-            indicators += '<li data-target="#carouselWInd" data-slide-to="0" class="active"></li>'
+            #indicators += '<li data-target="#carouselWInd" data-slide-to="0" class="active"></li>'
             carousel_items +=  '<div class="carousel-item active"><img class="d-block w-100" src="'+fn+'" alt="1"></div>'
          else:
-            indicators += '<li data-target="#carouselWInd" data-slide-to="'+str(ccc)+'"></li>'
+            #indicators += '<li data-target="#carouselWInd" data-slide-to="'+str(ccc)+'"></li>'
             carousel_items +=  '<div class="carousel-item"><img class="d-block w-100" data-src="'+fn+'" alt="'+str(ccc)+'"></div>'
 
          all_weath_images.append(fn) 
@@ -256,10 +256,7 @@ def make_station_report(day, proc_info = ""):
    
             # Buid Carousel Here
             carousel += '''
-            <div id="carouselWInd" class="carousel lazy slide" data-ride="carousel">
-                  <ol class="carousel-indicators">
-                     '''+indicators+''' 
-                  </ol>
+            <div id="carouselWInd" class="carousel lazy slide" data-ride="carousel"> 
                   <div class="carousel-inner">
                      <div class="carousel-item active">
                         '''+carousel_items+''' 
