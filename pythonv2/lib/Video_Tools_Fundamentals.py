@@ -97,6 +97,8 @@ def get_ROI_from_arc(arc_json_file):
                      roi = get_ROI(data_with_xy,True)          
                      print("ROI !")
                      print(roi)
+   else:
+      print(arc_json_file + ' not found or corrupted.')
 
 
 
