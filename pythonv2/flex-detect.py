@@ -10055,7 +10055,11 @@ def batch_vals(day):
       print("already running")
       exit()
    data_dir = "/mnt/ams2/SD/proc2/" + day + "/data/"
-   val_files = glob.glob(data_dir + "*-vals.json")
+   temp = glob.glob(data_dir + "*-vals.json")
+   val_files = []
+   for tem in temp:
+      if "crop" not in tem:
+         val_files.append(tem)
    meteors = 0
    maybe_meteors = 0
    too_many = 0
