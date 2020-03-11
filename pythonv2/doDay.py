@@ -238,7 +238,7 @@ def make_station_report(day, proc_info = ""):
       for ff in sorted(data['files'],reverse=True):
          fn = ff.replace("/mnt/archive.allsky.tv", "")
          if(ccc==0):
-            one_img_html += "<div class='d-flex'><div class='position-relative'><a class='arrow left'></a></div><div><img src='" + fn + "' class='img-fluid weath'></div><div class='position-relative'><a class='arrow right'></a></div></div>"
+            one_img_html += "<div class='d-flex'><div class='position-relative'><a class='arrr left'></a></div><div><img src='" + fn + "' class='img-fluid weath'></div><div class='position-relative'><a class='arrr right'></a></div></div>"
          all_weath_images.append(fn) 
          ccc+=1
 
