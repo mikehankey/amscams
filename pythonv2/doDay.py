@@ -382,6 +382,7 @@ def html_get_detects(day,tsid,event_files, events):
 
             if event_id is None or event_id == "none" or event_id == '': 
 
+
                # Get full version of the preview if video_path is empty
                if(video_path==''):
                   full_path = ARCHIVE_PATH + was_vh_dir + image_file.replace('crop','full')
@@ -518,7 +519,7 @@ def do_all(day):
       
       # Create REPORT PAGE
       ff = os.sep + f.replace(ARCHIVE_RELATIVE_PATH,'').replace('/mnt/ams2/meteor_archive/','')
-      ff = ARCHIVE_RELATIVE_PATH + ff.replace('//','/')
+      ff = ARCHIVE_RELATIVE_PATH + ff.replace('//','/').replace('//','/')
       print("PUBLISH REPORT FOR " + ff )
       cmd = "python3 /home/ams/amscams/pythonv2/publish.py event_station_report " +  ff
       os.system(cmd)
