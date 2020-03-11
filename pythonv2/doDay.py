@@ -233,20 +233,36 @@ def make_station_report(day, proc_info = ""):
    # WEATHER SNAP SHOTS 
    all_weath_images = []
    one_img_html = ""
+   indicators = ""
+   carousel_items = ""
    if len(data['files']) > 0:
       ccc = 0
       for ff in sorted(data['files'],reverse=True):
          fn = ff.replace("/mnt/archive.allsky.tv", "")
+
          if(ccc==0):
+            indicators += '<li data-target="#carouselWInd" data-slide-to="0" class="active"></li>'
+            carousel_items +=  '<div class="carousel-item active"><img class="d-block w-100" src="'+fn+'" alt="1"></div>'
+         else:
+            indicators += '<li data-target="#carouselWInd" data-slide-to="'+ccc+''"></li>'
+            carousel_items +=  '<div class="carousel-item"><img class="d-block w-100" src="'+fn+'" alt="'+ccc+'"></div>'
+
+         all_weath_images.append(fn) 
+         ccc+=1
+
+
+      carousel = ''
+      if(len(ll_weath_images)>0): 
+   
             # Buid Carousel Here
-            one_img_html += '''
-            <div id="carouselWInd" class="carousel slide" data-ride="carousel">
+            carousel += '''
+            <div id="carouselWInd" class="carousel lazy slide" data-ride="carousel">
                   <ol class="carousel-indicators">
-                     <li data-target="#carouselWInd" data-slide-to="0" class="active"></li> 
+                     '''+indicators+''' 
                   </ol>
                   <div class="carousel-inner">
                      <div class="carousel-item active">
-                        <img class="d-block w-100" src="'''+fn+'''" alt="First slide">
+                        '''+carousel_items+''' 
                      </div>
                   </div>
                   <a class="carousel-control-prev" href="#carouselWInd" role="button" data-slide="prev">
@@ -258,14 +274,13 @@ def make_station_report(day, proc_info = ""):
                      <span class="sr-only">Next</span>
                   </a>
                </div>'''
-         all_weath_images.append(fn) 
-         ccc+=1
 
+ 
 
    # We only display something... if we have something to display
    if(one_img_html!=''):
       # We add the toolbar & content
-      we_html = '<div class="top_tool_bar"><a href="#" id="play_anim_thumb" class="btn btn-success"><span class="icon-youtube"></span> All Day Animation</a></div>' + one_img_html 
+      we_html = '<div class="top_tool_bar"><a href="#" id="play_anim_thumb" class="btn btn-success"><span class="icon-youtube"></span> All Day Animation</a></div>' + carousel 
       # Add javascript for image rotation
       we_html += "<script>var all_weather_img=['"+"','".join(all_weath_images)+"'], cur_weather_index=0</script>"
       TAB, TAB_CONTENT = add_section('weather','Weather',we_html, TAB, TAB_CONTENT)
