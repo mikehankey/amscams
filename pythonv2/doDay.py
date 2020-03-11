@@ -248,7 +248,7 @@ def make_station_report(day, proc_info = ""):
       # We add the toolbar & content
       we_html = '<div class="top_tool_bar"><a href="#" id="play_anim_thumb" class="btn btn-success"><span class="icon-youtube"></span> All Day Animation</a></div>' + one_img_html 
       # Add javascript for image rotation
-      we_html += "<script>var all_img='["+', '.join(all_weath_images)+"]'</script>"
+      we_html += "<script>var all_weather_img='["+', '.join(all_weath_images)+"]'</script>"
       TAB, TAB_CONTENT = add_section('weather','Weather',we_html, TAB, TAB_CONTENT)
      
    # Add specific tool bar for meteors
