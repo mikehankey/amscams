@@ -1071,7 +1071,7 @@ def detect_meteor_in_clip(trim_clip, frames = None, fn = 0, crop_x = 0, crop_y =
                cv2.putText(show_frame, desc,  (x,y), cv2.FONT_HERSHEY_SIMPLEX, .4, (255, 255, 255), 1)
       
       show_frame = cv2.convertScaleAbs(show_frame)
-      show = 1
+      show = 0
       if show == 1:
          cv2.imshow('Detect Meteor In Clip', show_frame)
          cv2.waitKey(30)
@@ -10240,9 +10240,9 @@ def preview_crop(video_file, x1,y1,x2,y2):
    img = cv2.imread(temp_dir + "frames1.png")
    
    cv2.rectangle(img, (x1, y1), (x2, y2), (255,255,255), 1, cv2.LINE_AA)
-   cv2.imshow('pepe', img) 
-   cv2.waitKey(30)
-   cv2.imwrite('test' + str(x1) + ".jpg", img)
+   #cv2.imshow('pepe', img) 
+   #cv2.waitKey(30)
+   #cv2.imwrite('test' + str(x1) + ".jpg", img)
 
 def meteor_report(meteor):
    if "report" in meteor:
