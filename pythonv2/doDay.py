@@ -252,7 +252,7 @@ def make_station_report(day, proc_info = ""):
 
 
       carousel = ''
-      if(len(ll_weath_images)>0): 
+      if(len(all_weath_images)>0): 
    
             # Buid Carousel Here
             carousel += '''
