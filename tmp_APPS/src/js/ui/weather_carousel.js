@@ -1,17 +1,11 @@
-cur_weather_index=0
+$(function() {
 
-$('#carouselWInd .carousel-control-prev').click(function() {
-	cur_weather_index++;
-	if(all_weather_img.length>cur_weather_index) {
-		cur_weather_index = 0;
-	}
-	console.log(' CUR INDEX ' , cur_weather_index=0)
-});
-
-$('#carouselWInd .carousel-control-next').click(function() {
-	cur_weather_index++;
-	if(all_weather_img.length>cur_weather_index) {
-		cur_weather_index = 0;
-	}
-	console.log(' CUR INDEX ' , cur_weather_index=0)
-});
+   // Takes care of the lazy carousels
+   $("#carousel").carousel();
+     return $("#carousel.lazy").on("slide", function(ev) {
+       var lazy;
+       lazy = $(ev.relatedTarget).find("img[data-src]");
+       lazy.attr("src", lazy.data('src'));
+       lazy.removeAttr("data-src");
+     });
+   });
