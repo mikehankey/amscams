@@ -136,7 +136,7 @@ def create_cropped_video(video_file,json_file):
    print("CY2  " + str(cy2))
 
 
-   new_video = crop_video(video_file,cx1+cx2,cy1+cy2,cx1,cy1,video_file.replace('.mp4','-test.mp4'))
+   new_video = crop_video(video_file,cx2-cx1,cy2-cy1,cx1,cy1,video_file.replace('.mp4','-test.mp4'))
    print("DONE: ")
    print(new_video)
    #try:except:
