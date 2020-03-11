@@ -12,8 +12,15 @@ from lib.Video_Title_cv import *
 
 
 from lib.Video_Tools_Fundamentals import *
-w,h = get_media_file_dimensions('/mnt/archive.allsky.tv/AMS7/METEOR/2019/12/24/2019_12_24_08_17_10_000_010041-trim1298-HD-cropped.mp4')
-print(str(w) + ", " + str(h))
+#w,h = get_media_file_dimensions('http://archive.allsky.tv/AMS7/METEOR/2019/12/24/2019_12_24_08_17_10_000_010041-trim1298-HD.mp4')
+#print(str(w) + ", " + str(h))
+
+# TEST CROP TO ROI
+create_cropped_video('/mnt/archive.allsky.tv/AMS7/METEOR/2019/12/24/2019_12_24_08_17_10_000_010041-trim1298-HD.mp4','/mnt/archive.allsky.tv/AMS7/METEOR/2019/12/24/2019_12_24_08_17_10_000_010041-trim1298.json')
+
+
+# TEST GET ROI FROM ARC FILE
+#get_ROI_from_arc_json('/mnt/archive.allsky.tv/AMS7/METEOR/2019/12/24/2019_12_24_08_17_10_000_010041-trim1298.json')
 
 # TEST CREATE CROPPED VIDEO (WITHOUT METEOR CENTERED)
 #define_crop_video('/mnt/archive.allsky.tv//AMS7/METEOR/2019/12/24/2019_12_24_09_05_21_000_010038-trim1158.json','/mnt/archive.allsky.tv//AMS7/METEOR/2019/12/24/2019_12_24_09_05_21_000_010038-trim1158-HD.mp4')

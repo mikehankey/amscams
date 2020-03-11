@@ -34,6 +34,7 @@ import requests
 from lib.Video_Tools import define_crop_video, crop_video_keep_meteor_centered
 from lib.FileIO import load_json_file, save_json_file, cfe
 from lib.UtilLib import check_running
+from lib.Video_Tools_Fundamentals import create_cropped_video 
 
 # REGEXP Used to get info from the paths
 REGEX_REPORT = r"(\d{4})_(\d{2})_(\d{2})_(\d{2})_(\d{2})_(\d{2})_(\d{3})_(\w{6})-trim(\d{4}|\d{3}|\d{2}|\d{1})-prev-crop.jpg"
@@ -213,8 +214,7 @@ def make_station_report(day, proc_info = ""):
    show_date = day.replace("_", "/")
  
    TAB= ''
-   TAB_CONTENT = ''
-
+   TAB_CONTENT = '' 
 
    # LIVE VIEW
    live_view_html = ""
@@ -259,8 +259,6 @@ def make_station_report(day, proc_info = ""):
       TAB, TAB_CONTENT = add_section('multi',"Meteors (0)","<div class='alert alert-danger'>No Meteor Found for this day</div>", TAB, TAB_CONTENT, True) 
 
    # Single-station meteor
-   #TAB, TAB_CONTENT = add_section('single',"Single Station Meteors (" + str(info['ss_count']) + ")","<div class='d-flex align-content-start flex-wrap'>" + single_html + "</div>", TAB, TAB_CONTENT) 
- 
    template = template.replace("{TABS}", TAB)
    template = template.replace("{TABS_CONTENT}", TAB_CONTENT)
  
@@ -368,13 +366,22 @@ def html_get_detects(day,tsid,event_files, events):
             # We get more info 
             #print("(BEFORE AN) EVENT ID IS:", event_id) 
             analysed_name = analyse_report_file(image_file)
- 
-            
+  
             dur = '' 
 
-            #print("(AFTER AN) EVENT ID IS:", event_id) 
-      
-            if event_id is None or event_id == "none" or event_id == '':
+            # Create CROPPED VIDEO
+            cropped_video_file = ''
+            if(jreport_path!=''): 
+               json_file = jreport_path.replace('.html',".json").replace(ARCHIVE_PATH,ARCHIVE_RELATIVE_PATH).replace('//','/')
+               cropped_video_file = create_cropped_video(json_file.replace('.json',"-HD.mp4"),json_file,json_file.replace('.json',"-HD-cropped.mp4"))
+               if(cropped_video_file is False):
+                  cropped_video_file = 'X'
+               else:
+                  cropped_video_file = cropped_video_file.replace(ARCHIVE_RELATIVE_PATH,ARCHIVE_PATH+os.sep)
+
+
+            if event_id is None or event_id == "none" or event_id == '': 
+
 
                # Get full version of the preview if video_path is empty
                if(video_path==''):
@@ -384,7 +391,7 @@ def html_get_detects(day,tsid,event_files, events):
                      video_path = "<a href='"+full_path+"' class='img-link btn btn-secondary btn-sm'><span class='icon-eye'></span></a>"
 
                if(jreport_path!=''):
-                  elink = "<a href=" + jreport_path + " class='T'>"
+                  elink = "<a href=" + jreport_path + " class='T' data-src="+cropped_video_file+">"
 
                single_html += "<div class='"+css_class+"'>" + elink +  "<img src='"+was_vh_dir + image_file+"' class='img-fluid'></a>"
                single_html += "<div class='d-flex mb-2'><div class='mr-auto'><span>"+'<b>Cam#' + analysed_name['cam_id'] + '</b> '+ analysed_name['hour']+':'+analysed_name['min']+':'+analysed_name['sec']+'.'+analysed_name['ms'] + "</div>"
@@ -396,7 +403,7 @@ def html_get_detects(day,tsid,event_files, events):
                   event_id = "</span><span><b>Event</b> #" + str(event_id)  
 
                if(jreport_path!=''):
-                  elink = "<a href=" + jreport_path + " class='T'>"
+                  elink = "<a href=" + jreport_path + " class='T'  data-src="+cropped_video_file+">"
 
                multi_html += "<div class='"+css_class+"'>" + elink +  "<img src='"+was_vh_dir + image_file+"' class='img-fluid'></a>"
                multi_html += "<div class='d-flex mb-1'><div class='mr-auto'><span>"+'<b>Cam#' + analysed_name['cam_id'] + '</b> '+ analysed_name['hour']+':'+analysed_name['min']+':'+analysed_name['sec']+'.'+analysed_name['ms'] + event_id+"</div>"
@@ -463,8 +470,7 @@ def get_meteor_status(day):
    
 
 def do_all(day):
- 
- 
+  
    #os.system("git pull")
    proc_vids, proc_tn_imgs, day_vids,cams_queue,in_queue = get_processing_status(day)
    detect_files, arc_files = get_meteor_status(day)
@@ -504,36 +510,21 @@ def do_all(day):
    # make the detection preview images for the day
    os.system("/home/ams/amscams/pythonv2/wasabi.py sa " + day)
    print("WASABI SA DONE")
-
+   
    make_station_report(day, rpt)
    print("STATION DONE ")
 
-   # Make all the reports for the given day
-   # AND CREATE THE CROPPED AND FOLLOW-CROPPED VIDEOS
+   # Make all the reports for the given day 
    for f in arc_files: 
       
       # Create REPORT PAGE
       ff = os.sep + f.replace(ARCHIVE_RELATIVE_PATH,'').replace('/mnt/ams2/meteor_archive/','')
-      ff = ARCHIVE_RELATIVE_PATH + ff.replace('//','/')
+      ff = ff.replace('//','/')
       cmd = "python3 /home/ams/amscams/pythonv2/publish.py event_station_report " +  ff
       os.system(cmd)
 
-      # Create Crop Video
-      
-   
-   
-   
-      print(cmd)
-      print('*****************************************************')
-      # CREATE CROPPED VIDEO 
-      print("DEFINED CROPPED VIDEO")
-      print(ff + ' , ' + ff.replace('.json',"-HD.mp4"))
-      define_crop_video(  ff , ff.replace('.json',"-HD.mp4"))
-      print('********CROPPED VIDEO DONE ********************')
-      sys.exit(0)
-      # CREATE METEOR CENTERED VIDEO
-      crop_video_keep_meteor_centered(ff , ff.replace('.json',"-HD.mp4"))
-      print('********CROPPED FOLLOW VIDEO DONE ********************')
+   print("DO ALL DAY DONE")
+     
 
       
 
