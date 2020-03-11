@@ -239,7 +239,7 @@ def make_station_report(day, proc_info = ""):
          fn = ff.replace("/mnt/archive.allsky.tv", "")
          if(ccc==0):
             one_img_html += "<img src='" + fn + "' class='img-fluid weath'>"
-         all_weath_images.push(fn) 
+         all_weath_images.append(fn) 
          ccc+=1
 
 
