@@ -242,9 +242,7 @@ def make_station_report(day, proc_info = ""):
             one_img_html += '''
             <div id="carouselWInd" class="carousel slide" data-ride="carousel">
                   <ol class="carousel-indicators">
-                     <li data-target="#carouselWInd" data-slide-to="0" class="active"></li>
-                     <li data-target="#carouselWInd" data-slide-to="1"></li>
-                     <li data-target="#carouselWInd" data-slide-to="2"></li>
+                     <li data-target="#carouselWInd" data-slide-to="0" class="active"></li> 
                   </ol>
                   <div class="carousel-inner">
                      <div class="carousel-item active">

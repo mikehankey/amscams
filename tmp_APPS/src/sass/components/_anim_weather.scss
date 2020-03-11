@@ -81,26 +81,13 @@ input[type="range"]{
  }
 
  
- // ARROW 
+ // WEATHER CAROUSEL
+ .carousel-control-prev, .carousel-control-next {
+   width: 30px;
+   background: #203f5a;
+ }
 
-.arrr {
-   width: 0;
-   height: 0;
-   border-style: solid;
-   margin: 1rem;
-   position: absolute;
-   padding: 0;
-   top: 50%;
-   transform: translateY(-50px);
-
-   &.right {
-      border-width: 25px 0 25px 25px;
-      border-color: transparent transparent transparent #3174ae;
-   }
-
-   &.left {
-      border-width: 25px 25px 25px 0;
-      border-color: transparent #007bff transparent transparent;
-
-   }
-}
+ .carousel-item.active {
+   width: calc(100% - 60px);
+   margin-left: 30px;
+ }
