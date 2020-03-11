@@ -87,8 +87,11 @@ input[type="range"]{
    width: 0;
    height: 0;
    border-style: solid;
-   border-width: 25px 0 25px 25px;
-   border-color: transparent transparent transparent #3174ae;
+
+   &.right {
+      border-width: 25px 0 25px 25px;
+      border-color: transparent transparent transparent #3174ae;
+   }
 
    &.left {
       border-width: 25px 25px 25px 0;
