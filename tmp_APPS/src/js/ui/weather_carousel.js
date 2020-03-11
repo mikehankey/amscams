@@ -24,7 +24,7 @@
 
 
 
-    $('#carouselWInd').carousel({'ride':'False'});
+    $('#carouselWInd').addClass('carousel').carousel({'ride':'false'});
 
     $("#carouselWInd").on("slide.bs.carousel", function(ev) {
       var $img = $(ev.relatedTarget).find('img')
