@@ -3,6 +3,7 @@ import subprocess
 import sys
 
 from lib.FileIO import load_json_file, cfe
+from lib.VIDEO_VARS import HD_H, HD_W
 
 PREDEFINED_CROPPED_SIZE =  [[1280,720],[1152,648],[1024,576],[869,504],[768,432], [640,360], [512, 288], [384, 216], [256, 144], [128,72]]
 
