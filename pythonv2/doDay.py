@@ -214,8 +214,7 @@ def make_station_report(day, proc_info = ""):
    show_date = day.replace("_", "/")
  
    TAB= ''
-   TAB_CONTENT = ''
-
+   TAB_CONTENT = '' 
 
    # LIVE VIEW
    live_view_html = ""
@@ -260,8 +259,6 @@ def make_station_report(day, proc_info = ""):
       TAB, TAB_CONTENT = add_section('multi',"Meteors (0)","<div class='alert alert-danger'>No Meteor Found for this day</div>", TAB, TAB_CONTENT, True) 
 
    # Single-station meteor
-   #TAB, TAB_CONTENT = add_section('single',"Single Station Meteors (" + str(info['ss_count']) + ")","<div class='d-flex align-content-start flex-wrap'>" + single_html + "</div>", TAB, TAB_CONTENT) 
- 
    template = template.replace("{TABS}", TAB)
    template = template.replace("{TABS_CONTENT}", TAB_CONTENT)
  
@@ -373,7 +370,9 @@ def html_get_detects(day,tsid,event_files, events):
             
             dur = '' 
 
-            #print("(AFTER AN) EVENT ID IS:", event_id) 
+            # Create CROPPED VIDEO
+            if(jreport_path!=''):
+               cropped_video_file = create_cropped_video(jreport_path.replace('.json',"-HD.mp4") , jreport_path, jreport_path.replace('.json',"-cropped-HD.mp4"))
       
             if event_id is None or event_id == "none" or event_id == '':
 
@@ -387,7 +386,7 @@ def html_get_detects(day,tsid,event_files, events):
                if(jreport_path!=''):
                   elink = "<a href=" + jreport_path + " class='T'>"
 
-               single_html += "<div class='"+css_class+"'>" + elink +  "<img src='"+was_vh_dir + image_file+"' class='img-fluid'></a>"
+               single_html += cropped_video_file +"<div class='"+css_class+"'>" + elink +  "<img src='"+was_vh_dir + image_file+"' class='img-fluid'></a>"
                single_html += "<div class='d-flex mb-2'><div class='mr-auto'><span>"+'<b>Cam#' + analysed_name['cam_id'] + '</b> '+ analysed_name['hour']+':'+analysed_name['min']+':'+analysed_name['sec']+'.'+analysed_name['ms'] + "</div>"
                single_html += "<div>"+video_path+"</div>"+dur+"</div></div>"
                ss_count += 1 
@@ -399,7 +398,7 @@ def html_get_detects(day,tsid,event_files, events):
                if(jreport_path!=''):
                   elink = "<a href=" + jreport_path + " class='T'>"
 
-               multi_html += "<div class='"+css_class+"'>" + elink +  "<img src='"+was_vh_dir + image_file+"' class='img-fluid'></a>"
+               multi_html += cropped_video_file +"<div class='"+css_class+"'>" + elink +  "<img src='"+was_vh_dir + image_file+"' class='img-fluid'></a>"
                multi_html += "<div class='d-flex mb-1'><div class='mr-auto'><span>"+'<b>Cam#' + analysed_name['cam_id'] + '</b> '+ analysed_name['hour']+':'+analysed_name['min']+':'+analysed_name['sec']+'.'+analysed_name['ms'] + event_id+"</div>"
                multi_html += "<div class='position-relative'><a href='"+video_path+"' class='vid-link btn btn-secondary btn-sm'><span class='icon-youtube'></span></a><span class='multi-b'>Multi</span></div>"+dur+"</div></div>"
                ms_count += 1
@@ -464,8 +463,7 @@ def get_meteor_status(day):
    
 
 def do_all(day):
- 
- 
+  
    #os.system("git pull")
    proc_vids, proc_tn_imgs, day_vids,cams_queue,in_queue = get_processing_status(day)
    detect_files, arc_files = get_meteor_status(day)
@@ -505,12 +503,11 @@ def do_all(day):
    # make the detection preview images for the day
    os.system("/home/ams/amscams/pythonv2/wasabi.py sa " + day)
    print("WASABI SA DONE")
-
+   
    make_station_report(day, rpt)
    print("STATION DONE ")
 
-   # Make all the reports for the given day
-   # AND CREATE THE CROPPED AND FOLLOW-CROPPED VIDEOS
+   # Make all the reports for the given day 
    for f in arc_files: 
       
       # Create REPORT PAGE
@@ -519,9 +516,8 @@ def do_all(day):
       cmd = "python3 /home/ams/amscams/pythonv2/publish.py event_station_report " +  ff
       os.system(cmd)
 
-      # Create Crop Video
-      print("CREATE CROPPED VIDEO")
-      create_cropped_video(ff.replace('.json',"-HD.mp4") , ff, ff.replace('.json',"-cropped-HD.mp4"))
+    
+     
 
       
 
