@@ -523,7 +523,7 @@ def do_all(day):
       cmd = "python3 /home/ams/amscams/pythonv2/publish.py event_station_report " +  ff
       os.system(cmd)
 
-   print("DO ALL DAY DONE")
+   print("DO ALL DAY DONE for " + day)
      
 
       
