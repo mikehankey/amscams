@@ -256,7 +256,7 @@ def make_station_report(day, proc_info = ""):
    
             # Buid Carousel Here
             carousel += '''
-            <div id="carouselWInd" class="carousel lazy slide" data-ride="carousel"> 
+            <div id="carouselWInd" class="carousel lazy slide"> 
                   <div class="carousel-inner">
                      <div class="carousel-item active">
                         '''+carousel_items+''' 
