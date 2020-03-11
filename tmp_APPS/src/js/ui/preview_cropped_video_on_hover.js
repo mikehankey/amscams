@@ -10,6 +10,7 @@ $(function() {
             $t.hover(function() { $('#vvv').remove(); $('<video id="vvv" style="width:100%" autoplay loop><source src="'+video_path+'"></video>').prependTo($t); });
          } else {
             $('#vvv').remove(); 
+            $t.css('cursor','not-allowed')
          }
 
            
