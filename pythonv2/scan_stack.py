@@ -1,10 +1,11 @@
 #!/usr/bin/python3
 
 from PIL import ImageFont, ImageDraw, Image, ImageChops
+from datetime import datetime
 
 import ephem
 import numpy as np
-import datetime
+#import datetime
 import time
 import sys
 import os
@@ -52,6 +53,10 @@ def day_or_night(capture_date, json_conf):
 
 
 def fix_missing_stacks(day):
+   running = check_running("fms")
+   if running > 2:
+      print("ALREADY RUNNING:", running)
+      exit()
    files = glob.glob("/mnt/ams2/SD/proc2/" + day + "/*.mp4" )
    missing = 0
    found = 0
@@ -345,6 +350,12 @@ if sys.argv[1] == "bs":
 if sys.argv[1] == "ss":
    scan_and_stack_fast(sys.argv[2], sys.argv[3])
 if sys.argv[1] == "fms":
-   fix_missing_stacks(sys.argv[2])
+   if len(sys.argv) < 3:
+      now = datetime.now()
+      today = now.strftime("%Y_%m_%d")
+
+      fix_missing_stacks(today)
+   else:
+      fix_missing_stacks(sys.argv[2])
 if sys.argv[1] == "dv":
    detect_in_vals(sys.argv[2])
