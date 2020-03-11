@@ -96,6 +96,7 @@ def get_ROI_from_arc(arc_json_file):
                   if(cfe(json_data['info']['hd_vid'])==1):
                      roi = get_ROI(data_with_xy,True):            
                      print("ROI !")
+                     print(roi)
 
 
 
