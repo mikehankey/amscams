@@ -11,6 +11,7 @@
 .sm {
    .to_anim {
       width:350px;
+
    }
 }
 
@@ -26,6 +27,8 @@
 
    &.sm {
       width:300px;
+      background:transparent;
+      border:none medium;
    }
 
    .weath {
