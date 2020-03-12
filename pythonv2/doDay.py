@@ -209,10 +209,8 @@ def make_station_report(day, proc_info = ""):
 
    single_html, multi_html, info = html_get_detects(day, station, event_files, events)
 
-
-   print("AFTER HTMLM GET DETECTS")
-   print("SINGLE HTML")
-   print(single_html)
+   print("AFTER html_get_detects")
+   sys.exit(0)
   
    detect_count = info['mc']
  
@@ -345,6 +343,7 @@ def html_get_detects(day,tsid,event_files, events):
    video_path = "" 
  
    if mid is not False:
+      print("EXISTS ")
       if day in mid:
          for key in mid[day]:
 
@@ -461,6 +460,7 @@ def html_get_detects(day,tsid,event_files, events):
          else:
             html += "No meteors detected."            
    else:
+      print('DOESNT EXIST')
       html += "No meteors detected."
 
 
