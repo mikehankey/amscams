@@ -23,7 +23,7 @@ function addAnimWeatherModalTemplate($allImagestt,cam_id) {
    
    // Add all the frames
    $allImagestt.each(function(i,v) {
-       $(this).clone().attr('style','').addClass('to_anim to_anim-'+i).appendTo('#anim_holder');
+       $(this).clone().attr('style','').addClass('img-fluid to_anim to_anim-'+i).appendTo('#anim_holder');
    });
 
    animationStackDurationTT = 1000; //$allImagestt.length; // Duration get the 
