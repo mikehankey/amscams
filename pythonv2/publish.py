@@ -113,7 +113,7 @@ def make_event_station_report(json_file):
    
 
    # Frame by Frame animation button
-   video_btn += '<a id="play_anim" class="col btn btn-secondary mt-0 mb-0 ml-1 vid-link d-block" fref="#"><i class="icon-youtube"></i> Frames by F</a>'
+   video_btn += '<a id="play_anim_tv" class="col btn btn-secondary mt-0 mb-0 ml-1 vid-link d-block" fref="#"><i class="icon-youtube"></i> Frames by F</a>'
 
 
    # Add the video buttons
