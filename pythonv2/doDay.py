@@ -208,9 +208,7 @@ def make_station_report(day, proc_info = ""):
    events,event_files = load_events(day) 
 
    single_html, multi_html, info = html_get_detects(day, station, event_files, events)
-
-   print("AFTER html_get_detects")
-   sys.exit(0)
+ 
   
    detect_count = info['mc']
  
