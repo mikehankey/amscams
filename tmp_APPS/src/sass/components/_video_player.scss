@@ -33,8 +33,15 @@
 
 
 .video-controls-holder {
-margin-top: -.38rem;
+   margin-top: -.38rem;
     border-top: 1px solid rgba(255,255,255,.1);
+    background: #0f2437;
+
+    .rtp {
+      color: #ccc;
+      padding: 0 0 0 .3rem;
+      margin-top: .3rem;
+    }
 }
 
 

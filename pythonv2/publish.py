@@ -125,10 +125,10 @@ def make_event_station_report(json_file):
 			<li><button id="playpause" type="button" class="btn btn-secondary btn-sm"><span class="icon-play1"></span></button></li>
 			<li><button id="stop" type="button" class="btn btn-secondary btn-sm"><span class="icon-stop"></span></button></li>
       </ul>
-      <div>
+      <div class="rtp">
          <small class="d-block">Stars</small><input type="range" value="100" name="stars_transp" max="100" min="0">
       </div>
-      <div>
+      <div class="rtp mr-4">
          <small class="d-block">Meteor Path Frames</small><input type="range" value="100" name="frame_transp" max="100" min="0">
       </div> 
     '''
