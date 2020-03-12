@@ -235,6 +235,7 @@ def make_station_report(day, proc_info = ""):
    one_img_html = ""
    #indicators = ""
    carousel_items = ""
+   carousel = ""
    if len(data['files']) > 0:
       ccc = 0
       for ff in sorted(data['files'],reverse=True):
@@ -251,7 +252,7 @@ def make_station_report(day, proc_info = ""):
          ccc+=1
 
 
-      carousel = ''
+      
       if(len(all_weath_images)>0): 
    
             # Buid Carousel Here
@@ -273,7 +274,7 @@ def make_station_report(day, proc_info = ""):
  
 
    # We only display something... if we have something to display
-   if(carousel!=''):
+   if(carousel != ''):
       # We add the toolbar & content
       we_html = '<div class="top_tool_bar"><a href="#" id="play_anim_thumb" class="btn btn-success"><span class="icon-youtube"></span> All Day Animation</a></div>' + carousel 
       # Add javascript for image rotation=>NO NEED ANYMORE = LAZY CAROUSEL
