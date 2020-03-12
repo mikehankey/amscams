@@ -1,18 +1,17 @@
-var $allImages;
-var totalStacks;
-var animationStackDuration;
-var timePerStack;
-var timeWhenLastUpdateStack;
-var timeFromLastUpdateStack;
-var stackNumber; 
+var $allImagestt; 
+var animationStackDurationTT;
+var timePerStackTT;
+var timeWhenLastUpdateStackTT;
+var timeFromLastUpdateStackTT;
+var stackNumberTT; 
 var animTHHplaying; 
-var sens = "+"
+var sensTT = "+"
  
 
 jQuery.fn.reverse = [].reverse; 
 
 // Modal With Player
-function addAnimWeatherModalTemplate($allImages,cam_id) {
+function addAnimWeatherModalTemplate($allImagestt,cam_id) {
    
    $('#anim_ttt_modal').remove();
 
@@ -23,11 +22,11 @@ function addAnimWeatherModalTemplate($allImages,cam_id) {
    <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button></div></div></div></div>').appendTo('body');
    
    // Add all the frames
-   $allImages.each(function(i,v) {
+   $allImagestt.each(function(i,v) {
        $(this).clone().attr('style','').addClass('to_anim to_anim-'+i).appendTo('#anim_holder');
    });
 
-   animationStackDuration = 1000; //$allImages.length; // Duration get the 
+   animationStackDurationTT = 1000; //$allImagestt.length; // Duration get the 
 }
 
 
@@ -37,47 +36,47 @@ function step_Anim_TT(startTime) {
   
    // 'startTime' is provided by requestAnimationName function, and we can consider it as current time
    // first of all we calculate how much time has passed from the last time when frame was update
-   if (!timeWhenLastUpdateStack) timeWhenLastUpdateStack = startTime;
-   timeFromLastUpdateStack = startTime - timeWhenLastUpdateStack;
+   if (!timeWhenLastUpdateStackTT) timeWhenLastUpdateStackTT = startTime;
+   timeFromLastUpdateStackTT = startTime - timeWhenLastUpdateStackTT;
  
    // then we check if it is time to update the frame
-   if (timeFromLastUpdateStack > timePerStack) {
+   if (timeFromLastUpdateStackTT > timePerStackTT) {
      
      $('.to_anim').css('opacity', 0); 
-     $(`.to_anim-${stackNumber}`).css('opacity', 1);  
-     timeWhenLastUpdateStack = startTime;
+     $(`.to_anim-${stackNumberTT}`).css('opacity', 1);  
+     timeWhenLastUpdateStackTT = startTime;
       
 
-     if(sens=='+') {
-         if (stackNumber >= totalStacks-1) {
-            stackNumber = 0;
+     if(sensTT=='+') {
+         if (stackNumberTT >= totalStacks-1) {
+            stackNumberTT = 0;
          } else {
-            stackNumber = stackNumber + 1;
+            stackNumberTT = stackNumberTT + 1;
          } 
      } else {
-         if (stackNumber <= 0) {
-            stackNumber = totalStacks;
+         if (stackNumberTT <= 0) {
+            stackNumberTT = totalStacks;
          } else {
-            stackNumber = stackNumber - 1;
+            stackNumberTT = stackNumberTT - 1;
          }
 
      }
  
  
-     //$('#cur_f').text($(`.to_anim-${stackNumber}`).attr('data-rel'));
-     console.log("FN: " + stackNumber);
+     //$('#cur_f').text($(`.to_anim-${stackNumberTT}`).attr('data-rel'));
+     console.log("FN: " + stackNumberTT);
    }
   
    if(animTHHplaying) requestAnimationFrame(step_Anim_TT);
  }
 
-function Weather_anim() {
+function TT_aim() {
 
-   var $allImages = $('.wi img')
+   var $allImagestt = $('.wi img')
  
-   $allImages = $allImages.reverse();
-   totalStacks  = $allImages.length;
-   addAnimWeatherModalTemplate($allImages); 
+   $allImagestt = $allImagestt.reverse();
+   totalStacks  = $allImagestt.length;
+   addAnimWeatherModalTemplate($allImagestt); 
 
    $('#anim_ttt_modal').modal();
    $('#anim_ttt_modal').on('hidden.bs.modal', function () {
@@ -94,8 +93,8 @@ function Weather_anim() {
       return false;
   }
 
-  timePerStack = 1000; //animationStackDuration / totalStacks;
-  stackNumber = 0; 
+  timePerStackTT = 1000; //animationStackDurationTT / totalStacks;
+  stackNumberTT = 0; 
   animTHHplaying = true;
   requestAnimationFrame(step_Anim_TT);
 
@@ -103,18 +102,18 @@ function Weather_anim() {
   $('#marWeat').val(0).on('input', function () { 
       var val = parseInt($(this).val()), text ='';
       if(val<0) {
-         sens = "-";
+         sensTT = "-";
          text = "<<";
       } 
       else {
-         sens = "+"
+         sensTT = "+"
          text = ">>";
       }
 
       if(val==0) text=''
 
       val+= 1;
-      timePerStack = animationStackDuration*1/Math.abs(val); 
+      timePerStackTT = animationStackDurationTT*1/Math.abs(val); 
       $('#cur_sp').text(text + ' x'+val);
       requestAnimationFrame(step_Anim_TT); 
    });  
@@ -124,7 +123,7 @@ $(function() {
     $('#play_anim_tv').click(function(e) {
        e.stopImmediatePropagation();
        animTHHplaying = true; 
-       Weather_anim($(this).attr('data-rel')); 
+       TT_aim($(this).attr('data-rel')); 
        return false;
     });  
 })
