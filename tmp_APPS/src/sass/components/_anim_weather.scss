@@ -17,6 +17,11 @@
    background: #222;
    min-height: 164px;
 
+
+   &.sm {
+      width:300px;
+   }
+
    .weath {
       position: absolute;
       top:0;
