@@ -429,7 +429,7 @@ def html_get_detects(day,tsid,event_files, events):
 
                single_html += "<div class='"+css_class+"'>" + elink +  "<img src='"+was_vh_dir + image_file+"' class='img-fluid'></a>"
                single_html += "<div class='d-flex mb-2'><div class='mr-auto'><span>"+'<b>Cam#' + analysed_name['cam_id'] + '</b> '+ analysed_name['hour']+':'+analysed_name['min']+':'+analysed_name['sec']+'.'+analysed_name['ms'] + "</div>"
-               single_html += "<div class='position-relative'>"+video_path+"</div></div></div>"
+               single_html += "<div class='position-relative'>WWWWWW"+video_path+"</div></div></div>"
                ss_count += 1 
             else:
                 
