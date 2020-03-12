@@ -422,6 +422,11 @@ def html_get_detects(day,tsid,event_files, events):
 
             print("CROPPED VIDEO FULL PATH")
             print(cropped_video_file)
+            print("EVENT ID ")
+            print(event_id)
+            sys.exit(0)
+
+
             if event_id is None or event_id == "none" or event_id == '': 
   
                # Get full version of the preview if video_path is empty
