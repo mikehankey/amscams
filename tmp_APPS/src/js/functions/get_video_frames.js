@@ -57,7 +57,8 @@ async function extractFramesFromVideo(videoUrl, fps=25) {
       $('#thb_'+i).find('img').attr('src',v).css('border-color', $('#thb_'+i).attr('data-src')); 
    });
 
- 
+   // We enable the frame by frame animation when it's loaded
+   $('#play_anim_tv').removeClass('disabled');
  }
 
  $(function() { 
