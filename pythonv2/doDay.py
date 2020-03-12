@@ -342,8 +342,7 @@ def html_get_detects(day,tsid,event_files, events):
    multi_html = ""
    video_path = "" 
  
-   if mid is not False:
-      print("EXISTS ")
+   if mid is not False: 
       if day in mid:
          for key in mid[day]:
 
@@ -418,14 +417,7 @@ def html_get_detects(day,tsid,event_files, events):
                   cropped_video_file = 'X'
                else:
                   cropped_video_file = cropped_video_file.replace(ARCHIVE_RELATIVE_PATH,ARCHIVE_PATH+os.sep)
-
-            print("CROPPED VIDEO FULL PATH")
-            print(cropped_video_file)
-            print("EVENT ID ")
-            print(event_id)
-            sys.exit(0)
-
-
+ 
             if event_id is None or event_id == "none" or event_id == '': 
   
                # Get full version of the preview if video_path is empty
@@ -460,7 +452,7 @@ def html_get_detects(day,tsid,event_files, events):
          else:
             html += "No meteors detected."            
    else:
-      print('DOESNT EXIST')
+   
       html += "No meteors detected."
 
 
