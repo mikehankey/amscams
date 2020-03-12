@@ -9,7 +9,7 @@ import json
 from lib.FileIO import load_json_file, save_json_file, cfe
 
 WASABI_ROOT = "/mnt/archive.allsky.tv/"
-json_conf = load_json_file("../conf/as6.json")
+json_conf = load_json_file("/home/ams/amscams/conf/as6.json")
 
 def check_mount():
    df_data = []
