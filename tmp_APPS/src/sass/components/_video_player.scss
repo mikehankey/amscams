@@ -151,4 +151,8 @@ a.T {
       left:0;
       position: absolute;
    }
+
+   &.cf {
+      cursor: not-allowed;
+   }
 }

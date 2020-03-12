@@ -370,11 +370,11 @@ def html_get_detects(day,tsid,event_files, events):
                   elink = "<a href=" + event_vfile + " class='T'>"
                   solved_count += 1  
                else: 
-                  elink = "<a class='T'>"
+                  elink = "<a class='T cf'>"
                   not_run += 1
             else:
                event_id = None
-               elink = "<a class='T'>"
+               elink = "<a class='T cf'>"
          
             mfile = key.split("/")[-1]
             prev_crop = mfile.replace(".json", "-prev-crop.jpg")

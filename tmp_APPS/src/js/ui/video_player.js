@@ -114,11 +114,11 @@
           voldec.addEventListener('click', function(e) {
              alterVolume('-');
           });
-          */
+           
           fs.addEventListener('click', function(e) {
              handleFullscreen();
           });
- 
+            */
           // As the video is playing, update the progress bar
           video.addEventListener('timeupdate', function() {
          // For mobile browsers, ensure that the progress element's max attribute is set
