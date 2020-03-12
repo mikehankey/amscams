@@ -403,8 +403,7 @@ def html_get_detects(day,tsid,event_files, events):
             # We get more info 
             #print("(BEFORE AN) EVENT ID IS:", event_id) 
             analysed_name = analyse_report_file(image_file)
-  
-            dur = '' 
+   
 
             # Create CROPPED VIDEO
             cropped_video_file = ''
@@ -430,7 +429,7 @@ def html_get_detects(day,tsid,event_files, events):
 
                single_html += "<div class='"+css_class+"'>" + elink +  "<img src='"+was_vh_dir + image_file+"' class='img-fluid'></a>"
                single_html += "<div class='d-flex mb-2'><div class='mr-auto'><span>"+'<b>Cam#' + analysed_name['cam_id'] + '</b> '+ analysed_name['hour']+':'+analysed_name['min']+':'+analysed_name['sec']+'.'+analysed_name['ms'] + "</div>"
-               single_html += "<div class='position-relative'><a href='"+video_path+"' class='vid-link btn btn-secondary btn-sm'><span class='icon-youtube'></span></a><span class='multi-b'>Multi</span></div>"+dur+"</div></div>"
+               single_html += "<div class='position-relative'><a href='"+video_path+"' class='vid-link btn btn-secondary btn-sm'><span class='icon-youtube'></span></a></div></div></div>"
                ss_count += 1 
             else:
 
@@ -442,7 +441,7 @@ def html_get_detects(day,tsid,event_files, events):
 
                multi_html += "<div class='"+css_class+"'>" + elink +  "<img src='"+was_vh_dir + image_file+"' class='img-fluid'></a>"
                multi_html += "<div class='d-flex mb-1'><div class='mr-auto'><span>"+'<b>Cam#' + analysed_name['cam_id'] + '</b> '+ analysed_name['hour']+':'+analysed_name['min']+':'+analysed_name['sec']+'.'+analysed_name['ms'] + event_id+"</div>"
-               multi_html += "<div class='position-relative'><a href='"+video_path+"' class='vid-link btn btn-secondary btn-sm'><span class='icon-youtube'></span></a><span class='multi-b'>Multi</span></div>"+dur+"</div></div>"
+               multi_html += "<div class='position-relative'><a href='"+video_path+"' class='vid-link btn btn-secondary btn-sm'><span class='icon-youtube'></span></a><span class='multi-b'>Multi</span></div></div></div>"
                ms_count += 1
 
             video_path = '' 
