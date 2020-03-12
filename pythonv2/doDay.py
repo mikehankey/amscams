@@ -420,10 +420,10 @@ def html_get_detects(day,tsid,event_files, events):
                else:
                   cropped_video_file = cropped_video_file.replace(ARCHIVE_RELATIVE_PATH,ARCHIVE_PATH+os.sep)
 
-
+            print("CROPPED VIDEO FULL PATH")
+            print(cropped_video_file)
             if event_id is None or event_id == "none" or event_id == '': 
-
-
+  
                # Get full version of the preview if video_path is empty
                if(video_path==''):
                   full_path = ARCHIVE_PATH + was_vh_dir + image_file.replace('crop','full')
