@@ -81,10 +81,11 @@
        // Only add the events if addEventListener is supported (IE8 and less don't support it, but that will use Flash anyway)
        if (document.addEventListener) {
           // Wait for the video's meta data to be loaded, then set the progress bar's max value to the duration of the video
-          video.addEventListener('loadedmetadata', function() {
+          
+          /*video.addEventListener('loadedmetadata', function() {
              progress.setAttribute('max', video.duration);
           });
- 
+            */
           // Add events for all buttons
           playpause.addEventListener('click', function(e) {
              if (video.paused || video.ended) {
