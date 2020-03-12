@@ -132,7 +132,7 @@ function update_reduction_on_canvas_and_table(json_resp, canvas) {
 
     // Setupe Range for red transparency on canvas
     $('input[name=frame_transp]').change(function(e) {
-      change_red_canvas_transp(int($(this).val()), canvas);
+      change_red_canvas_transp(parseInt($(this).val()), canvas);
     })
 }
 

@@ -128,6 +128,7 @@
           });
  
        // React to the user clicking within the progress bar
+       /*
        progress.addEventListener('click', function(e) {
          var pos = (e.pageX  - this.offsetLeft) / this.offsetWidth;
          video.currentTime = pos * video.duration;
@@ -146,6 +147,7 @@
           document.addEventListener('msfullscreenchange', function() {
              setFullscreenData(!!document.msFullscreenElement);
           });
+         */
        }
    }
  
