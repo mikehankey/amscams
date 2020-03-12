@@ -188,8 +188,27 @@ function update_stars_on_canvas_and_table(json_resp, canvas) {
        $(window).unbind('beforeunload');
        stars_added = 0;
        stars_removed = 0;
-   }
 
-  
+
+      // Setup  Range for red transparency on canvas
+      $('input[name=stars_transp]').change(function(e) { 
+         change_stars_canvas_transp(parseInt($(this).val()), canvas);
+      })
+   } 
 }
- 
+
+
+
+// Change Transparency of Reduction elements on canvas
+function change_stars_canvas_transp(trans,canvas) {
+   var objects = canvas.getObjects();
+   trans = trans / 100;
+    $.each(objects,function(i,v){
+        if(v.type=='star_info') {
+            v.set({
+               opacity: trans
+           });
+        }
+    });
+    canvas.renderAll();
+}

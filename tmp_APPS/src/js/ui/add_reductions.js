@@ -130,10 +130,8 @@ function update_reduction_on_canvas_and_table(json_resp, canvas) {
     // Replace Thumb used for the Anim Thumbs Preview
     //$("#play_anim").css('background','url('+middle_frame+')'),
 
-    // Setupe Range for red transparency on canvas
-    $('input[name=frame_transp]').change(function(e) {
-      console.log("LOG FRAME TRANS CHANGE");
-      console.log(parseInt($(this).val()));
+    // Setup  Range for red transparency on canvas
+    $('input[name=frame_transp]').change(function(e) { 
       change_red_canvas_transp(parseInt($(this).val()), canvas);
     })
 }
