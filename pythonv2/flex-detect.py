@@ -51,7 +51,7 @@ from lib.UtilLib import calc_dist,find_angle
 import lib.brightstardata as bsd
 from lib.DetectLib import eval_cnt, check_for_motion2
 
-json_conf = load_json_file("../conf/as6.json")
+json_conf = load_json_file("/home/ams/amscams/conf/as6.json")
 show = 0
 
 ARCHIVE_DIR = "/mnt/ams2/meteor_archive/"
