@@ -37,9 +37,13 @@ function add_login_stuff() {
    
    $('.lio').show();
 
-   setup_delete_buttons();
-   setup_confirm_buttons();
-   
+   if(typeof setup_delete_buttons !== 'undefined') {
+      setup_delete_buttons();
+   }
+
+   if(typeof setup_confirm_buttons !== 'undefined') {
+      setup_confirm_buttons();
+   } 
 }
 
 // Remove Login Stuff
@@ -141,6 +145,7 @@ function setup_login() {
       $('#subm_login').click(function(e) {
             // So we can send the USR to the API
             var $t = $(this);
+            
             var _data = {'function':'login', 'usr':$('input[name=username]').val(), 'pwd':$('input[name=password]').val(), 'st':stID};
 
             e.stopImmediatePropagation();
