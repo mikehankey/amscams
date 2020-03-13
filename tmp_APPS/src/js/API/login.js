@@ -124,14 +124,16 @@ function loggedin() {
    if(test_logged_in()!==null) {
 
       console.log("LOGGED IN")
+      // Add buttons
+      add_login_stuff();
+      
       // Logout Button
       $("a#login").text('Logout').unbind('click').click(function() {
          logout();
          loggedin();
       });
 
-      // Add buttons
-      add_login_stuff();
+      
    } 
    else {
 

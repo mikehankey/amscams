@@ -101,6 +101,7 @@ function  setup_manual_reduc1() {
       meteor_id = meteor_id.split('_')[1];
 
       // Then Do the all thing to open the meteor picker 
+      open_meteor_picker(meteor_id);
    });
  
 
@@ -108,7 +109,7 @@ function  setup_manual_reduc1() {
    $('.wi a').click(function() {
        
       var $tr = $(this).closest('tr');
-      var rand;
+       
 
       // Get meteor id
       var meteor_id = $tr.attr('id');
