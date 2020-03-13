@@ -99,9 +99,7 @@ def make_event_station_report(json_file):
    
    if(cfe(sd_video_full_path)!=0):
       video_btn += '<a class="col btn btn-secondary mt-0 mb-0 ml-1 vid-link d-block" href="'+json_file.replace('.json','-SD.mp4')+'"><i class="icon-youtube"></i> SD Video</a>'
- 
-
-
+  
    # Do we have a cropped version of the video?
    cropped_hd_full_path = hd_video_full_path.replace('-HD','-HD-cropped') 
    if(cfe(cropped_hd_full_path)==1):
@@ -189,6 +187,11 @@ def make_event_station_report(json_file):
 
    print(json_file.replace('.json','.html') +  " created.")
  
+
+
+## Make Event Report Page
+def make_event_report(json_file):
+   print("MAKE EVENT REPORT")
 
 
 ### COMMAND

@@ -95,7 +95,7 @@ function add_login_modal() {
       // Add Login Modal
       if($('#login_modal').length==0) {
          $('<div id="login_modal" class="modal fade" tabindex="-1" role="dialog">\
-            <div class="modal-dialog modal-dialog-centered" style="max-width:300px" role="document">\
+            <div class="modal-dialog modal-dialog-centered" style="max-width:450px" role="document">\
             <div class="modal-content">\
             <div class="modal-header">\
             <h5 class="modal-title">Login to '+STATION+'</h5>\
@@ -103,9 +103,9 @@ function add_login_modal() {
                <span aria-hidden="true">&times;</span>\
             </button>\
             </div>\
-            <div class="modal-body pb-4" >\
-               <div class="d-flex justify-content-center form_container">\
-                  <form>\
+            <div class="modal-body p-4" >\
+               <div class="d-flex justify-content-center form_container mb-4">\
+                  <form style="width:250px">\
                      <input type="hidden" name="st" value="'+STATION+'"/>\
                      <div class="input-group mb-3">\
                         <input type="text" name="username" class="form-control input_user" value="" placeholder="username">\
