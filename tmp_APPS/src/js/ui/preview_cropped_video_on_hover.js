@@ -23,7 +23,7 @@ $(function() {
          var $t = $(this);
          $t.find('video').hide();
       });
-
+   
 
  
 
