@@ -26,7 +26,7 @@ function add_login_stuff() {
     var confButton = '<a class="conf col btn btn-success btn-sm ml-1" title="Confirm Detection">Confirm </a>';
    
    
-   // Add Confirm/Delete buttons
+   // Add Confirm/Delete buttons on gallery
    if($('.lgi').length==0) {
  
       // Add buttons on the gallery

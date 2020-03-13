@@ -32,11 +32,8 @@ function open_meteor_picker(meteor_id) {
    });
 
    // Add image 
-   if(anti_cache!=1 && anti_cache==meteor_id) {
-       $('.meteor_chooser').css('background-image','url('+$img.attr('src')+'&d='+ Math.round(Math.random(10000)*10000)+')').css('border','2px solid ' + color);
-   } else {
-       $('.meteor_chooser').css('background-image','url('+$img.attr('src')+')').css('border','2px solid ' + color);
-   }
+   $('.meteor_chooser').css('background-image','url('+$img.attr('src')+')').css('border','2px solid ' + color);
+   
    
    // Add current ID
    $('#sel_frame_id, .sel_frame_id').text(meteor_id);
@@ -82,7 +79,7 @@ function open_meteor_picker(meteor_id) {
 }
 
 
-function  setup_manual_reduc1(anti_cache=-1) {
+function  setup_manual_reduc1() {
    var viewer_dim = 500;
    var all_frames_ids = [];
  
