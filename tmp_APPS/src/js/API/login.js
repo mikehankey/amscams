@@ -44,13 +44,18 @@ function add_login_stuff() {
    if($('#tool_box').length !=0) {
       // On Obs Page
       if($('#tool_box .del').length==0) {
-         $(delButton).html('<i class="icon-delete"></i> Delete').addClass('m-1').appendTo($('#tools'));
+         $(delButton).html('<i class="icon-delete"></i> Delete').addClass('m-1 single').appendTo($('#tools'));
       }
       if($('#tool_box .conf').length==0) {
-         $(confButton).html('<i class="icon-check"></i> Confirm').addClass('m-1').appendTo($('#tools'));
+         $(confButton).html('<i class="icon-check"></i> Confirm').addClass('m-1 single').appendTo($('#tools'));
       }
       // Show Tools
       $('#tool_box').removeClass('d-none');
+
+      setup_single_delete_buttons();
+      setup_remove_delete_buttons();
+      
+
    }
 
    // Show Details on Daily Report Page
