@@ -84,14 +84,16 @@ def make_event_station_report(json_file):
    # Get the first frame #
    # to optimize the JS on the obs report (the frames are getting from js)
    first_frame = 0
+   how_many_frames = 0
    all_fn = []
    if('frames' in json_data):
       for f in json_data['frames']:
          all_fn.append(f['fn'])
       first_frame = min(all_fn)
+      how_many_frames = len(json_data['frames'])
 
+   template = template.replace('{HOW_MANY_FRAMES}',str(how_many_frames))
    template = template.replace('{FIRST_FRAME}',str(first_frame))
-
 
 
    # Get (H) Video Path

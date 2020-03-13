@@ -1,4 +1,4 @@
-async function extractFramesFromVideo(videoUrl,firstframe,fps=25) {
+async function extractFramesFromVideo(videoUrl,firstframe, how_many_frames, fps=25) {
    return new Promise(async (resolve) => {
  
      // fully download it first (no buffering):
@@ -28,7 +28,7 @@ async function extractFramesFromVideo(videoUrl,firstframe,fps=25) {
          video.currentTime = currentTime;
          await new Promise(r => seekResolve=r);
           
-         if(frame_counter>=firstframe) {
+         if(frame_counter>=firstframe && frames.length<= how_many_frames) {
             console.log("FRAME ADDED - FRAME COUNTER :" + frame_counter);
             context.drawImage(video, 0, 0, w, h);
             let base64ImageData = canvas.toDataURL();
@@ -56,8 +56,8 @@ async function extractFramesFromVideo(videoUrl,firstframe,fps=25) {
  
  let croppedFrames
  
- async function asyncCall(first_frame) {  
-   croppedFrames = await extractFramesFromVideo(cropped_video,first_frame); 
+ async function asyncCall(first_frame, how_many_frames) {  
+   croppedFrames = await extractFramesFromVideo(cropped_video,first_frame, how_many_frames); 
 
    $.each(croppedFrames,function(i,v){  
       // Add base64 thumbs to the table 
@@ -73,6 +73,6 @@ async function extractFramesFromVideo(videoUrl,firstframe,fps=25) {
    if(typeof cropped_video !== 'undefined') {
 
       // What's the first frame we want to get?
-      asyncCall(first_frame)
+      asyncCall(first_frame, how_many_frames)
    }
  })
