@@ -43,12 +43,15 @@ function add_login_stuff() {
    // Add Toolbos
    if($('#tool_box').length !=0) {
       // On Obs Page
-      $(delButton).appendTo($('#tools'));
-      $(confButton).appendTo($('#tools'));
+      if($('#tool_box .del').length==0) {
+         $(delButton).appendTo($('#tools'));
+      }
+      if($('#tool_box .conf').length==0) {
+         $(confButton).appendTo($('#tools'));
+      }
       // Show Tools
       $('#tool_box').removeClass('d-none');
    }
-
 
    // Show Details on Daily Report Page
    $('.lio').show();
