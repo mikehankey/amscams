@@ -24,7 +24,7 @@ $(function() {
          $t.find('video').hide();
       });
    
-
+   }
  
 
 })

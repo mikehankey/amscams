@@ -63,6 +63,10 @@ async function extractFramesFromVideo(videoUrl, fps=25) {
 
  $(function() { 
    if(typeof cropped_video !== 'undefined') {
+
+      // What's the first frame we want to get?
+      
+
       asyncCall()
    }
  })

@@ -81,6 +81,19 @@ def make_event_station_report(json_file):
    template = template.replace('{TIME}',analysed_name['hour']+':'+analysed_name['min']+':'+analysed_name['sec']+'.'+analysed_name['ms'])
    template = template.replace('{LINK_TO_DAILY_REPORT}',link_to_daily_report)
 
+   # Get the first frame #
+   # to optimize the JS on the obs report (the frames are getting from js)
+   first_frame = 0
+   all_fn = []
+   if('frames' in json_data):
+      for f in frames:
+         all_fn.append(f['fn'])
+      first_frame = max (all_fn)
+
+   template = template.replace('{FIRST_FRAME}',first_frame)
+
+
+
    # Get (H) Video Path
    HD_vid = True
    video_btn = ""
