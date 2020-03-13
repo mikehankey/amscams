@@ -33,9 +33,13 @@ async function extractFramesFromVideo(videoUrl,firstframe, how_many_frames, fps=
             context.drawImage(video, 0, 0, w, h);
             let base64ImageData = canvas.toDataURL();
             frames.push(base64ImageData);
-         } else {
-            console.log("WE DONT ADD A FRAME: " + frame_counter);
-         }
+         
+            if(how_many_frames>=frames.length) {
+               console.log("BREAK")
+               break;
+            }
+         
+         }  
          
          frame_counter++;
  
