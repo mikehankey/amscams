@@ -20,18 +20,15 @@ function setup_single_delete_buttons()  {
          }
       });
    
-   })
-
-
-   // 
+   }) 
 }
 
 
 // WARNING HERE WE SEND "CROPPED VIDEO" BECAUSE IT'S IN THE TEMPLATE
 // AND WE KNOW IT'S UNIQUE FOR THE DETECTION
-
 function setup_single_conf_buttons() {
-   send_API_task({'toConf':cropped_video},'','');
- 
-
+   $('.conf.single').click(function() {
+      send_API_task({'toConf':cropped_video},'','');
+      return false;
+   }
 }
