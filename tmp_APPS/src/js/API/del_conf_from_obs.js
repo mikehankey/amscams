@@ -1,6 +1,7 @@
 function setup_single_delete_buttons()  {
  
   $('.del.single').click(function() {
+
       bootbox.confirm({
          message: "You are about to delete this detection.<br/>Please, confirm.",
          centerVertical: true,
@@ -21,6 +22,7 @@ function setup_single_delete_buttons()  {
       });
    
    });
+
 }
 
 
