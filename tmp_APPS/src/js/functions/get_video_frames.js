@@ -27,16 +27,14 @@ async function extractFramesFromVideo(videoUrl,firstframe,fps=25) {
        while(currentTime < duration) {
          video.currentTime = currentTime;
          await new Promise(r => seekResolve=r);
-         
-         console.log('FRAMES LENGTH ' + frames.length);
-
+          
          if(frame_counter>=firstframe) {
-            console.log("FRAME ADDED");
+            console.log("FRAME ADDED - FRAME COUNTER :" + frame_counter);
             context.drawImage(video, 0, 0, w, h);
             let base64ImageData = canvas.toDataURL();
             frames.push(base64ImageData);
          } else {
-            console.log("WE DONT ADD A FRAME");
+            console.log("WE DONT ADD A FRAME: " + frame_counter);
          }
          
          frame_counter++;
