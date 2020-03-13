@@ -53,7 +53,7 @@ function add_login_stuff() {
       $('#tool_box').removeClass('d-none');
 
       setup_single_delete_buttons();
-      setup_remove_delete_buttons();
+      setup_single_conf_buttons();
       
 
    }
