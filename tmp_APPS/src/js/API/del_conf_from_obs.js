@@ -20,7 +20,7 @@ function setup_single_delete_buttons()  {
          }
       });
    
-   }) 
+   });
 }
 
 
@@ -30,5 +30,5 @@ function setup_single_conf_buttons() {
    $('.conf.single').click(function() {
       send_API_task({'toConf':cropped_video},'','');
       return false;
-   }
+   });
 }
