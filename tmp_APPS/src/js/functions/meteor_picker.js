@@ -1,3 +1,5 @@
+var viewer_dim = 500;
+
 function open_meteor_picker(meteor_id) {
    var thiss = $(this);
    var $tr = $('#fr_'+meteor_id);
@@ -79,8 +81,7 @@ function open_meteor_picker(meteor_id) {
 }
 
 
-function  setup_manual_reduc1() {
-   var viewer_dim = 500;
+function  setup_manual_reduc1() { 
    var all_frames_ids = [];
  
 

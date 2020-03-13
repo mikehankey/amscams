@@ -120,8 +120,10 @@ function logout() {
 
 // Update UI based on logged or not 
 function loggedin() {
+   console.log("TEST LOGGED IN ")
    if(test_logged_in()!==null) {
 
+      console.log("LOGGED IN")
       // Logout Button
       $("a#login").text('Logout').unbind('click').click(function() {
          logout();
@@ -132,6 +134,9 @@ function loggedin() {
       add_login_stuff();
    } 
    else {
+
+      console.log("NOT LOGGED IN")
+
       $("a#login").text('Login');
       setup_login();
       remove_login_stuff();
