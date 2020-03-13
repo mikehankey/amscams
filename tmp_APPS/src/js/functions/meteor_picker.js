@@ -2,6 +2,7 @@
 function setup_select_meteor(anti_cache=-1) {
    var viewer_dim = 500;
    var all_frames_ids = [];
+ 
 
    // Get all the frame ids
    $('#reduc-tab table tbody tr').each(function() {
@@ -9,9 +10,10 @@ function setup_select_meteor(anti_cache=-1) {
        id = id.split('_');
        all_frames_ids.push(parseInt(id[1]));
    });
+ 
 
-   // Click on selector (button & thumb)
-   $('.select_meteor').click(function() {
+   // Click on selector (thumb)
+   $('.wi a').click(function() {
  
        var $tr = $(this).closest('tr');
        var rand;
