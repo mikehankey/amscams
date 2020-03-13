@@ -114,7 +114,7 @@ function add_login_modal() {
                         <input type="text" name="username" class="form-control input_user" value="" placeholder="username">\
                      </div>\
                      <div class="input-group mb-2">\
-                        <input type="password" name="password" class="form-control input_pass" value="" placeholder="password">\
+                        <input type="password" name="password" autocomple="current-password" class="form-control input_pass" value="" placeholder="password">\
                      </div>\
                      <div class="d-flex justify-content-center mt-3 login_container">\
                         <button type="submit" name="button" id="subm_login" class="btn btn-primary" style="width: 100%;">Login</button>\

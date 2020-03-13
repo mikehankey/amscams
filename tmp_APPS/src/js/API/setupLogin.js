@@ -1,3 +1,4 @@
 $(function() {
-   add_login_modal(); 
+   add_login_modal();   
+   setup_login();
 })
