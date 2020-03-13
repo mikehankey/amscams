@@ -1,8 +1,6 @@
 function setup_single_delete_buttons()  {
 
-  
-
-
+   
 
    $('.del.single').click(function() {
       bootbox.confirm({
