@@ -1,4 +1,4 @@
-async function extractFramesFromVideo(videoUrl, fps=25) {
+async function extractFramesFromVideo(videoUrl,firstframe,cur_frame,fps=25) {
    return new Promise(async (resolve) => {
  
      // fully download it first (no buffering):
@@ -7,6 +7,7 @@ async function extractFramesFromVideo(videoUrl, fps=25) {
      let video = document.createElement("video");
  
      let seekResolve;
+
      video.addEventListener('seeked', async function() {
        if(seekResolve) seekResolve();
      });
@@ -26,7 +27,7 @@ async function extractFramesFromVideo(videoUrl, fps=25) {
        while(currentTime < duration) {
          video.currentTime = currentTime;
          await new Promise(r => seekResolve=r);
- 
+         console.log("ONE FRAME")
          context.drawImage(video, 0, 0, w, h);
          let base64ImageData = canvas.toDataURL();
          frames.push(base64ImageData);
@@ -46,13 +47,10 @@ async function extractFramesFromVideo(videoUrl, fps=25) {
  
  let croppedFrames
  
- async function asyncCall() { 
-   croppedFrames = await extractFramesFromVideo(cropped_video); 
+ async function asyncCall(first_frame) {  
+   croppedFrames = await extractFramesFromVideo(cropped_video,first_frame); 
 
-   $.each(croppedFrames,function(i,v){ 
-
-      // We use the first frame as a background image for the HD / SD Players
-
+   $.each(croppedFrames,function(i,v){  
       // Add base64 thumbs to the table 
       $('#thb_'+i).find('img').attr('src',v).css('border-color', $('#thb_'+i).attr('data-src')); 
    });
@@ -61,12 +59,11 @@ async function extractFramesFromVideo(videoUrl, fps=25) {
    $('#play_anim_tv').removeClass('disabled');
  }
 
- $(function() { 
+ $(function() {  
+
    if(typeof cropped_video !== 'undefined') {
 
       // What's the first frame we want to get?
-      
-
-      asyncCall()
+      asyncCall(first_frame)
    }
  })

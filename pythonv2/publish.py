@@ -88,7 +88,7 @@ def make_event_station_report(json_file):
    if('frames' in json_data):
       for f in json_data['frames']:
          all_fn.append(f['fn'])
-      first_frame = max (all_fn)
+      first_frame = min(all_fn)
 
    template = template.replace('{FIRST_FRAME}',str(first_frame))
 
