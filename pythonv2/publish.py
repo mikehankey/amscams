@@ -90,7 +90,7 @@ def make_event_station_report(json_file):
          all_fn.append(f['fn'])
       first_frame = max (all_fn)
 
-   template = template.replace('{FIRST_FRAME}',first_frame)
+   template = template.replace('{FIRST_FRAME}',str(first_frame))
 
 
 
