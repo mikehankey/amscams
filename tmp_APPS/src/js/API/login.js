@@ -48,12 +48,19 @@ function add_login_stuff() {
       }
       if($('#tool_box .conf').length==0) {
          $(confButton).html('<i class="icon-check"></i> Confirm').addClass('m-1 single').appendTo($('#tools'));
+      } 
+      if($('#tool_box .reduc1').length==0) {
+         $('<a class="reduc1 col btn btn-success btn-sm ml-1" title="Pick Meteor Position"><i class="icon-image"></i> Meteor Picker</a>').html('Confirm').addClass('m-1 single').appendTo($('#tools'));
       }
+
       // Show Tools
       $('#tool_box').removeClass('d-none');
 
       setup_single_delete_buttons();
       setup_single_conf_buttons();
+
+      // Meteor Picker
+      setup_manual_reduc1();
       
 
    }
@@ -68,6 +75,11 @@ function add_login_stuff() {
    if(typeof setup_confirm_buttons !== 'undefined') {
       setup_confirm_buttons();
    } 
+
+
+   // Show Manual Picker on Obs report
+   setup_select_meteor()
+
 }
 
 // Remove Login Stuff

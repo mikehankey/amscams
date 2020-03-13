@@ -1,5 +1,5 @@
 
-function setup_select_meteor(anti_cache=-1) {
+function  setup_manual_reduc1(anti_cache=-1) {
    var viewer_dim = 500;
    var all_frames_ids = [];
  
