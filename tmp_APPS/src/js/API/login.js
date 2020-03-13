@@ -38,15 +38,19 @@ function add_login_stuff() {
                </div>\
             </div>').appendTo($(this))
       });
+   }
 
+   // Add Toolbos
+   if($('#tool_box').length ==0) {
       // On Obs Page
       $(delButton).appendTo($('#tools'));
       $(confButton).appendTo($('#tools'));
       // Show Tools
       $('#tool_box').removeClass('d-none');
-
    }
-   
+
+
+   // Show Details on Daily Report Page
    $('.lio').show();
 
    if(typeof setup_delete_buttons !== 'undefined') {
