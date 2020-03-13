@@ -18,7 +18,7 @@ async function extractFramesFromVideo(videoUrl,firstframe,fps=25) {
        let [w, h] = [video.videoWidth, video.videoHeight]
        canvas.width =  w;
        canvas.height = h;
- 
+       let frame_counter = 0;
        let frames = [];
        let interval = 1 / fps;
        let currentTime = 0;
@@ -30,13 +30,14 @@ async function extractFramesFromVideo(videoUrl,firstframe,fps=25) {
          
          console.log('FRAMES LENGTH ' + frames.length);
 
-         if(frames.length<=firstframe) {
+         if(frame_counter>firstframe) {
             console.log("FRAME ADDED");
             context.drawImage(video, 0, 0, w, h);
             let base64ImageData = canvas.toDataURL();
             frames.push(base64ImageData);
          }
          
+         frame_counter++;
  
          currentTime += interval;
        }
