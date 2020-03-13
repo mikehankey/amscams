@@ -34,7 +34,7 @@ async function extractFramesFromVideo(videoUrl,firstframe, how_many_frames, fps=
             let base64ImageData = canvas.toDataURL();
             frames.push(base64ImageData);
          
-            if(how_many_frames>=frames.length) {
+            if(how_many_frames<=frames.length) {
                console.log("BREAK")
                break;
             }
@@ -62,6 +62,9 @@ async function extractFramesFromVideo(videoUrl,firstframe, how_many_frames, fps=
  
  async function asyncCall(first_frame, how_many_frames) {  
    croppedFrames = await extractFramesFromVideo(cropped_video,first_frame, how_many_frames); 
+
+   console.log("OK WE HAVE THE FRAMES")
+   console.log(croppedFrames)
 
    $.each(croppedFrames,function(i,v){  
       // Add base64 thumbs to the table 
