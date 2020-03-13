@@ -28,9 +28,7 @@ function add_login_stuff() {
    
    // Add Confirm/Delete buttons
    if($('.lgi').length==0) {
-
-     
-
+ 
       // Add buttons on the gallery
       $('.prevproc').each(function() {
             $('<div class="btn-toolbar lgi">\
