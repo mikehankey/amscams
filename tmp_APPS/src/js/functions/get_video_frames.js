@@ -72,6 +72,9 @@ async function extractFramesFromVideo(videoUrl,firstframe, how_many_frames, fps=
 
    // We enable the frame by frame animation when it's loaded
    $('#play_anim_tv').removeClass('disabled');
+
+   // We enable the popups on the frames
+   refresh_all_popups();
  }
 
  $(function() {  
