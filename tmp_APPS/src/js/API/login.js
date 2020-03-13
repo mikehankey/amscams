@@ -76,9 +76,7 @@ function add_login_stuff() {
       setup_confirm_buttons();
    } 
 
-
-   // Show Manual Picker on Obs report
-   setup_select_meteor()
+ 
 
 }
 
