@@ -23,7 +23,7 @@ function add_login_stuff() {
 
     // Add buttons on the obs report page
     var delButton = '<a class="del col btn btn-danger btn-sm" title="Delete Detection"><i class="icon-delete"></i></a>';
-    var confButton = '<a class="conf col btn btn-success btn-sm mr-3" title="Confirm Detection">Confirm </a>';
+    var confButton = '<a class="conf col btn btn-success btn-sm ml-3" title="Confirm Detection">Confirm </a>';
    
    
    // Add Confirm/Delete buttons

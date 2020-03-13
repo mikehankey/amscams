@@ -74,7 +74,7 @@ function TT_aim() {
 
    var $allImagestt = $('.wi img')
  
-   $allImagestt = $allImagestt.reverse();
+   //$allImagestt = $allImagestt.reverse();
    totalStacks  = $allImagestt.length;
    addAnimWeatherModalTemplate($allImagestt); 
 
