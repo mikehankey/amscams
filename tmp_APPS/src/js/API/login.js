@@ -40,8 +40,8 @@ function add_login_stuff() {
       });
 
       // On Obs Page
-      $(delButton).appendTo$($('#tools'));
-      $(confButton).appendTo$($('#tools'));
+      $(delButton).appendTo($('#tools'));
+      $(confButton).appendTo($('#tools'));
       // Show Tools
       $('#tool_box').removeClass('d-none');
 
