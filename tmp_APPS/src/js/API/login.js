@@ -19,20 +19,30 @@ function getUserInfo() {
 
 // UI transformed after loggined (add delete buttons)
 function add_login_stuff() {
-    
+   
+   
+   // Add Confirm/Delete buttons
    if($('.lgi').length==0) {
-      // Add buttons
-      $('.prevproc').each(function() {
 
-         
+      // Add buttons on the obs report page
+      var delButton = '<a class="del col btn btn-danger btn-sm" title="Delete Detection"><i class="icon-delete"></i></a>';
+      var confButton = '<a class="del col btn btn-danger btn-sm" title="Delete Detection"><i class="icon-delete"></i></a>';
+     
+
+      // Add buttons on the gallery
+      $('.prevproc').each(function() {
             $('<div class="btn-toolbar lgi">\
                <div class="d-flex justify-content-around">\
-                  <a class="conf col btn btn-success btn-sm mr-2" title="Confirm Detection">Confirm</a>\
-                  <a class="del col btn btn-danger btn-sm" title="Delete Detection"><i class="icon-delete"></i></a>\
+                  '+delButton+'\
+                  '+confButton+'\
                </div>\
             </div>').appendTo($(this))
-         
       });
+
+      // On Obs Page
+      $(delButton).appendTo$($('#tools'));
+      $(confButton).appendTo$($('#tools'));
+
    }
    
    $('.lio').show();
