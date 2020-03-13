@@ -144,8 +144,10 @@
          });  
 
          // Update the stars on canvas
-         update_stars_on_canvas_and_table(json_data,canvasFabric);
-         update_reduction_on_canvas_and_table(json_data,canvasFabric);
+         $(function() {
+            update_stars_on_canvas_and_table(json_data,canvasFabric);
+            update_reduction_on_canvas_and_table(json_data,canvasFabric);
+         })
          
       </script>
 </body>    
