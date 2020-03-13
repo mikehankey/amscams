@@ -1,4 +1,4 @@
-async function extractFramesFromVideo(videoUrl,firstframe,cur_frame,fps=25) {
+async function extractFramesFromVideo(videoUrl,firstframe,fps=25) {
    return new Promise(async (resolve) => {
  
      // fully download it first (no buffering):
@@ -27,10 +27,13 @@ async function extractFramesFromVideo(videoUrl,firstframe,cur_frame,fps=25) {
        while(currentTime < duration) {
          video.currentTime = currentTime;
          await new Promise(r => seekResolve=r);
-         console.log("ONE FRAME")
-         context.drawImage(video, 0, 0, w, h);
-         let base64ImageData = canvas.toDataURL();
-         frames.push(base64ImageData);
+         
+         if(frames.length>firstframe) {
+            context.drawImage(video, 0, 0, w, h);
+            let base64ImageData = canvas.toDataURL();
+            frames.push(base64ImageData);
+         }
+         
  
          currentTime += interval;
        }
