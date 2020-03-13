@@ -53,7 +53,10 @@ function remove_login_stuff() {
    $('.toDel').removeClass('toDel');
    $('.toConf').removeClass('toConf');
 
-   hide_bottom_action();
+   if (typeof hide_bottom_action !== 'undefined') {
+      hide_bottom_action();
+   }
+
 
    // MAin Button
    $('#del_text').text('');
