@@ -63,10 +63,6 @@ function add_login_stuff() {
       setup_single_delete_buttons();
       setup_single_conf_buttons();
 
-      // Meteor Picker
-      setup_manual_reduc1();
-      
-
    }
 
    // Show Details on Daily Report Page
@@ -79,6 +75,10 @@ function add_login_stuff() {
    if(typeof setup_confirm_buttons !== 'undefined') {
       setup_confirm_buttons();
    } 
+
+
+   // Setup Meteor Picker (Manual Reduce1)
+   setup_manual_reduc1();
 
  
 

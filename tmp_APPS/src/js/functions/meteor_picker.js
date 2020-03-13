@@ -1,3 +1,86 @@
+function open_meteor_picker(meteor_id) {
+   var thiss = $(this);
+   var $tr = $('#fr_'+meteor_id);
+   var rand;
+
+   // Get meteor id
+ 
+   // Get Image
+   var $img = $tr.find('img'); 
+
+   // Get Color
+   var color = $tr.find('.st').css('background-color');
+
+   var real_width, real_height;
+
+   // Get Neightbors
+   var neighbor = get_neighbor_frames(meteor_id); 
+
+   // Add template if necessary
+   addModalTemplate(meteor_id,neighbor);
+
+   // Prev Button
+   $('#met-sel-prev').unbind('click').click(function() {
+       meteor_select("prev",all_frames_ids);
+       return false;
+   });
+
+   // Next Button
+   $('#met-sel-next').unbind('click').click(function() {
+       meteor_select("next",all_frames_ids);
+       return false;
+   });
+
+   // Add image 
+   if(anti_cache!=1 && anti_cache==meteor_id) {
+       $('.meteor_chooser').css('background-image','url('+$img.attr('src')+'&d='+ Math.round(Math.random(10000)*10000)+')').css('border','2px solid ' + color);
+   } else {
+       $('.meteor_chooser').css('background-image','url('+$img.attr('src')+')').css('border','2px solid ' + color);
+   }
+   
+   // Add current ID
+   $('#sel_frame_id, .sel_frame_id').text(meteor_id);
+
+   // Update image real dimensions 
+   var img = new Image();
+   var imgSrc = $img.attr('src');
+
+   $(img).on('load',function () {
+       real_width = img.width;
+       real_height = img.height;
+       $('input[name=thumb_w]').val(real_width);
+       $('input[name=thumb_h]').val(real_height); 
+       // garbage collect img
+       delete img;
+
+       // Redefine viewer depending on the thumb dimension
+       if(real_width !== real_height) {
+       
+           if(real_width > real_height) {
+               $('.meteor_chooser').css('height',  real_height/real_width * viewer_dim);
+           } else {
+               $('.meteor_chooser').css('width', real_width/real_height * viewer_dim);
+           }
+
+       } else {
+           $('.meteor_chooser').css({'height': viewer_dim + 'px', 'width':viewer_dim + 'px'});
+       }
+        
+       // Reset Cross position
+       $('#lh').css('top','50%');
+       $('#lv').css('left','50%');
+       
+       // Open Modal
+       $('#select_meteor_modal').modal('show');
+
+       // Reset
+       $(".meteor_chooser").removeClass('done'); 
+       setup_modal_actions(meteor_id, $tr.attr('data-org-x'),$tr.attr('data-org-y'));
+
+    
+   }).attr({ src: imgSrc }); 
+}
+
 
 function  setup_manual_reduc1(anti_cache=-1) {
    var viewer_dim = 500;
@@ -10,94 +93,30 @@ function  setup_manual_reduc1(anti_cache=-1) {
        id = id.split('_');
        all_frames_ids.push(parseInt(id[1]));
    });
+
+   // Click on "Big" button 
+   $('.reduc1').click(function() {
+      // Find first id in the table
+      var $tr = $('#reduc-tab table tbody tr');
+      $tr = $($tr[0]); 
+      var meteor_id = $tr.attr('id');
+      meteor_id = meteor_id.split('_')[1];
+
+      // Then Do the all thing to open the meteor picker 
+   });
  
 
    // Click on selector (thumb)
    $('.wi a').click(function() {
- 
-       var $tr = $(this).closest('tr');
-       var rand;
-
-       // Get meteor id
-       var meteor_id = $tr.attr('id');
-       meteor_id = meteor_id.split('_')[1];
- 
-       // Get Image
-       var $img = $tr.find('img'); 
-
-       // Get Color
-       var color = $tr.find('.st').css('background-color');
-
-       var real_width, real_height;
-
-       // Get Neightbors
-       var neighbor = get_neighbor_frames(meteor_id); 
-
-       // Add template if necessary
-       addModalTemplate(meteor_id,neighbor);
-
-       // Prev Button
-       $('#met-sel-prev').unbind('click').click(function() {
-           meteor_select("prev",all_frames_ids);
-           return false;
-       });
-
-       // Next Button
-       $('#met-sel-next').unbind('click').click(function() {
-           meteor_select("next",all_frames_ids);
-           return false;
-       });
-
-       // Add image 
-       if(anti_cache!=1 && anti_cache==meteor_id) {
-           $('.meteor_chooser').css('background-image','url('+$img.attr('src')+'&d='+ Math.round(Math.random(10000)*10000)+')').css('border','2px solid ' + color);
-       } else {
-           $('.meteor_chooser').css('background-image','url('+$img.attr('src')+')').css('border','2px solid ' + color);
-       }
        
-       // Add current ID
-       $('#sel_frame_id, .sel_frame_id').text(meteor_id);
+      var $tr = $(this).closest('tr');
+      var rand;
+
+      // Get meteor id
+      var meteor_id = $tr.attr('id');
+      meteor_id = meteor_id.split('_')[1];
+      open_meteor_picker(meteor_id);
  
-       // Update image real dimensions 
-       var img = new Image();
-       var imgSrc = $img.attr('src');
-
-       $(img).on('load',function () {
-           real_width = img.width;
-           real_height = img.height;
-           $('input[name=thumb_w]').val(real_width);
-           $('input[name=thumb_h]').val(real_height); 
-           // garbage collect img
-           delete img;
-
-           // Redefine viewer depending on the thumb dimension
-           if(real_width !== real_height) {
-           
-               if(real_width > real_height) {
-                   $('.meteor_chooser').css('height',  real_height/real_width * viewer_dim);
-               } else {
-                   $('.meteor_chooser').css('width', real_width/real_height * viewer_dim);
-               }
-
-           } else {
-               $('.meteor_chooser').css({'height': viewer_dim + 'px', 'width':viewer_dim + 'px'});
-           }
-            
-           // Reset Cross position
-           $('#lh').css('top','50%');
-           $('#lv').css('left','50%');
-           
-           // Open Modal
-           $('#select_meteor_modal').modal('show');
-
-           // Reset
-           $(".meteor_chooser").removeClass('done'); 
-           setup_modal_actions(meteor_id, $tr.attr('data-org-x'),$tr.attr('data-org-y'));
-
-        
-       }).attr({ src: imgSrc }); 
-
-       
 
    });
 }
