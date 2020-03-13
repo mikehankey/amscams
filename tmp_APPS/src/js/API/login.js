@@ -44,10 +44,10 @@ function add_login_stuff() {
    if($('#tool_box').length !=0) {
       // On Obs Page
       if($('#tool_box .del').length==0) {
-         $(delButton).appendTo($('#tools'));
+         $(delButton).html('<i class="icon-delete"></i> Delete').appendTo($('#tools'));
       }
       if($('#tool_box .conf').length==0) {
-         $(confButton).appendTo($('#tools'));
+         $(confButton).html('<i class="icon-check"></i> Confirm').appendTo($('#tools'));
       }
       // Show Tools
       $('#tool_box').removeClass('d-none');
