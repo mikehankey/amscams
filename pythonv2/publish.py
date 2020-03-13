@@ -86,7 +86,7 @@ def make_event_station_report(json_file):
    first_frame = 0
    all_fn = []
    if('frames' in json_data):
-      for f in frames:
+      for f in json_data['frames']:
          all_fn.append(f['fn'])
       first_frame = max (all_fn)
 
