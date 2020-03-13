@@ -129,13 +129,13 @@ function update_all() {
             message: msg + ".<br/>Please, confirm.",
             centerVertical: true,
             buttons: {
-               confirm: {
-                  label: 'Yes',
-                  className: 'btn-success'
-               },
                cancel: {
                   label: 'No',
                   className: 'btn-danger'
+               },
+               confirm: {
+                  label: 'Yes',
+                  className: 'btn-success'
                }
             },
             callback: function (result) {
