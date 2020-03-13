@@ -20,13 +20,15 @@ function getUserInfo() {
 // UI transformed after loggined (add delete buttons)
 function add_login_stuff() {
    
+
+    // Add buttons on the obs report page
+    var delButton = '<a class="del col btn btn-danger btn-sm" title="Delete Detection"><i class="icon-delete"></i></a>';
+    var confButton = '<a class="del col btn btn-success btn-sm" title="Confirm Detection">Confirm Detection</a>';
+   
    
    // Add Confirm/Delete buttons
    if($('.lgi').length==0) {
 
-      // Add buttons on the obs report page
-      var delButton = '<a class="del col btn btn-danger btn-sm" title="Delete Detection"><i class="icon-delete"></i></a>';
-      var confButton = '<a class="del col btn btn-danger btn-sm" title="Delete Detection"><i class="icon-delete"></i></a>';
      
 
       // Add buttons on the gallery
@@ -41,7 +43,7 @@ function add_login_stuff() {
    }
 
    // Add Toolbos
-   if($('#tool_box').length ==0) {
+   if($('#tool_box').length !=0) {
       // On Obs Page
       $(delButton).appendTo($('#tools'));
       $(confButton).appendTo($('#tools'));
@@ -78,9 +80,12 @@ function remove_login_stuff() {
    }
 
 
-   // MAin Button
+   // Main Button on daily report
    $('#del_text').text('');
    $('#conf_text').text('');
+
+   // Toolbox
+   $('#tool_box').html('').addClass('d-none')
 
 
 }
