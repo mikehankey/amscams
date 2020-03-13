@@ -30,19 +30,23 @@ async function extractFramesFromVideo(videoUrl,firstframe,fps=25) {
          
          console.log('FRAMES LENGTH ' + frames.length);
 
-         if(frame_counter>firstframe) {
+         if(frame_counter>=firstframe) {
             console.log("FRAME ADDED");
             context.drawImage(video, 0, 0, w, h);
             let base64ImageData = canvas.toDataURL();
             frames.push(base64ImageData);
+         } else {
+            console.log("WE DONT ADD A FRAME");
          }
          
          frame_counter++;
  
          currentTime += interval;
        }
+
        resolve(frames);
-     });
+     
+      });
  
      // set video src *after* listening to events in case it loads so fast
      // that the events occur before we were listening.
