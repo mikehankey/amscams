@@ -66,15 +66,14 @@ async function extractFramesFromVideo(videoUrl,firstframe, how_many_frames, fps=
    var i, frame_c = 0;
    for (i = first_frame; i <  (first_frame+how_many_frames); i++) {
        // Add base64 thumbs to the table  
-       $('#thb_'+i).find('img').attr('src',croppedFrames[frame_c]).css('border-color', $('#thb_'+i).attr('data-src')).parent().attr('href',croppedFrames[frame_c]); 
+       $('#thb_'+i).find('img').attr('src',croppedFrames[frame_c]).css('border-color', $('#thb_'+i).attr('data-src')); 
        frame_c ++;
    }
 
    // We enable the frame by frame animation when it's loaded
    $('#play_anim_tv').removeClass('disabled');
 
-   // We enable the popups on the frames
-   refresh_all_popups();
+   
  }
 
  $(function() {  
