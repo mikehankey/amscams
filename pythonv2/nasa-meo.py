@@ -133,6 +133,10 @@ def mike_plot_bills_event(event, event_id):
    start_lon = float(event['start_lon'])
    start_lat = float(event['start_lat'])
    start_alt = float(event['start_alt'])
+   ra =  float(event['rad_ra'])
+   dec = float(event['rad_dec'])
+
+
    vel = float(event['vel'])
    print(event_id)
    #20181205_023831A
@@ -144,29 +148,44 @@ def mike_plot_bills_event(event, event_id):
    SEC = event_id[13:15]
    #arg_date, arg_time = event_id.split(" ")
    print(YY,MM,DD,HH,MIN,SEC)
-   arg_date = YY + "-" + MM + "-" + DD 
-   arg_time = HH + ":" + MIN + ":" + SEC 
+   #arg_date = YY + "-" + MM + "-" + DD 
+   #arg_time = HH + ":" + MIN + ":" + SEC 
+   arg_date = YY + MM + DD 
+   arg_time = HH + MIN + SEC 
+   etime = arg_date + "-" + arg_time + ".0"
 
-   rad_rah,rad_dech,rad_az,rad_el,track_dist,entry_angle = calc_radiant(end_lon,end_lat,end_alt,start_lon,start_lat,start_alt, arg_date, arg_time)
-   rad_rah = str(rad_rah).replace(":", " ")
-   rad_dech = str(rad_dech).replace(":", " ")
-   ra,dec = HMS2deg(str(rad_rah),str(rad_dech))
+   #rad_rah,rad_dech,rad_az,rad_el,track_dist,entry_angle = calc_radiant(end_lon,end_lat,end_alt,start_lon,start_lat,start_alt, arg_date, arg_time)
+   #rad_rah = str(rad_rah).replace(":", " ")
+   #rad_dech = str(rad_dech).replace(":", " ")
+   #ra,dec = HMS2deg(str(rad_rah),str(rad_dech))
 
-   print("RA:DEC", ra,dec,rad_az,rad_el)
+   #print("RA:DEC", ra,dec,rad_az,rad_el)
    # run orbit
-   metorb = load_json_file("/home/ams/amscams/pythonv2/orbits/orbit-vars.json")
-   event_start_time = arg_date + "T" + arg_time
-   metorb['orbit_vars']['meteor_input']['start_time'] = event_start_time
-   metorb['orbit_vars']['meteor_input']['end_point'] = [end_lon,end_lat,end_alt]
-   metorb['orbit_vars']['meteor_input']['rad_az'] = rad_az
-   metorb['orbit_vars']['meteor_input']['rad_el'] = entry_angle
-   metorb['orbit_vars']['meteor_input']['orad_ra'] = ra
-   metorb['orbit_vars']['meteor_input']['orad_dec'] = dec 
-   metorb['orbit_vars']['meteor_input']['velocity'] = vel
+   #metorb = load_json_file("/home/ams/amscams/pythonv2/orbits/orbit-vars.json")
+   #event_start_time = arg_date + "T" + arg_time
+   #metorb['orbit_vars']['meteor_input']['start_time'] = event_start_time
+   #metorb['orbit_vars']['meteor_input']['end_point'] = [end_lon,end_lat,end_alt]
+   #metorb['orbit_vars']['meteor_input']['rad_az'] = rad_az
+   #metorb['orbit_vars']['meteor_input']['rad_el'] = entry_angle
+   #metorb['orbit_vars']['meteor_input']['orad_ra'] = ra
+   #metorb['orbit_vars']['meteor_input']['orad_dec'] = dec 
+   #metorb['orbit_vars']['meteor_input']['velocity'] = vel
 
 
-   save_json_file("/home/ams/amscams/pythonv2/orbits/orbit-vars.json",metorb)
-   os.system("cd /home/ams/amscams/pythonv2/; ./mikeOrb.py ")
+   #save_json_file("/home/ams/amscams/pythonv2/orbits/orbit-vars.json",metorb)
+   #os.system("cd /home/ams/amscams/pythonv2/; ./mikeOrb.py ")
+   #rah,dech,az,el,track_dist,entry_angle = calc_radiant(end_lon,end_lat,end_alt,start_lon,start_lat,start_alt,arg_date, arg_time)
+   #ra,dec = HMS2deg(str(rah),str(dech))
+   #cmd = "cd /home/ams/dvida/WesternMeteorPyLib/; ./runOrb.py rah dech vel  20191112-025300.0 39.266922 -92.160484 10 "
+
+   cmd = "cd /home/ams/dvida/WesternMeteorPyLib/; ./runOrb.py " + str(ra)  + " " + str(dec) + " " + str(vel) + " " + etime + " " + str(end_lat) + " " + str(end_lon) + " " + str(end_alt)
+   print(cmd)
+   os.system(cmd)
+   exit()
+   #cmd2 = "cd /home/ams/dvida/WesternMeteorPyLib/; ./runOrb.py ra dec vel time_stamp lat lon end_alt"
+
+
+
    time.sleep(1)
    new_metorb = load_json_file("/home/ams/amscams/pythonv2/orbits/orbit-vars.json")
    metorb = new_metorb
