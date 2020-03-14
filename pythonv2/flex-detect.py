@@ -9067,14 +9067,14 @@ def obj_to_arc_meteor(meteor_file):
       frame['w'] = width  
       frame['h'] = height 
 
-w: 13,
-h: 13,
-max_px: 1764,
-intensity: 1509,
-intensity_ff: 249740,
-dist_from_start: 0,
-dist_from_last: 0,
-dist_to_line: 0.8414176985770033
+#w: 13,
+#h: 13,
+#max_px: 1764,
+#intensity: 1509,
+#intensity_ff: 249740,
+#dist_from_start: 0,
+#dist_from_last: 0,
+#dist_to_line: 0.8414176985770033
 
 
 
@@ -10177,7 +10177,7 @@ def batch_vals(day):
             print("VF:", vf)
             detect_in_vals(vf)
          else:
-            print("Skip Day.")
+            print("Skip daytime file.")
       if cfe(mf) == 1:
          meteors += 1
       if cfe(mmf) == 1:
@@ -11101,6 +11101,7 @@ if cmd == "plot_vals" :
 if cmd == "detect_in_vals" or cmd == 'dv':
    detect_in_vals(sys.argv[2])
 if cmd == "batch_vals" or cmd == 'bv':
+   ### this will run detects on a specific day
    if len(sys.argv) < 3:
       now = datetime.datetime.now()
       today = now.strftime("%Y_%m_%d")
