@@ -238,20 +238,25 @@ def get_day_stats(day, day_dir, json_conf):
    tmp_meteor_files = glob.glob(meteor_dir)
    tmp_meteor_files2 = glob.glob(data_dir)
    meteor_files = []
+   umeteor_files = {}
    for tmp in tmp_meteor_files2 :
       mf = tmp.split("/")[-1]
       el = mf.split("-trim")
       mfr = el[0] 
       mfr = mfr.replace("-meteor.json", "")
       if "reduced" not in tmp and "manual" not in tmp and "star" not in tmp:
-         meteor_files.append(mfr)
+         #meteor_files.append(mfr)
+         umeteor_files[mfr] = 1
    for tmp in tmp_meteor_files :
       mf = tmp.split("/")[-1]
       el = mf.split("-trim")
       mfr = el[0] 
       mfr = mfr.replace("-meteor.json", "")
       if "reduced" not in tmp and "manual" not in tmp and "star" not in tmp:
-         meteor_files.append(mfr)
+         #meteor_files.append(mfr)
+         umeteor_files[mfr] = 1
+   for key in umeteor_files:
+      meteor_files.append(key)
    pending_files = glob.glob(pending_dir)
    min_files = glob.glob(min_file_dir)
    detect_files = [failed_files, meteor_files,pending_files,min_files]
