@@ -187,7 +187,7 @@ def get_trims_for_file(video_file):
    pending_files = glob.glob(pending_dir)  
    return(fail_files, meteor_files, pending_files)
 
-def get_day_files(day, cams_id, json_conf, sun=None,in_hour=None):
+def get_day_files(day, cams_id, json_conf, sun=None,in_hour=None,detect=None):
    file_info = {} 
    proc_dir = json_conf['site']['proc_dir']
    
@@ -223,8 +223,56 @@ def get_day_files(day, cams_id, json_conf, sun=None,in_hour=None):
                if int(sun_el) > 0:
                   file_info[base_file] = base_info
          
- 
+   if detect is not None:
+      file_info = {}
+      day_dir = proc_dir + day + "/" + "*.mp4"
+      temp_files = glob.glob(day_dir)
+      # pos vals: meteor, nonmeteor, toomany
+      tm = 0
+      mm = 0
+      met = 0
+      det = 0
+      nm = 0
+      for file in temp_files:
+         fn = file.split("/")[-1]
+         rt = fn.replace(".mp4", "")
+         if rt in meteor_files:
+            print(rt, meteor_files, "<BR>")
+            base_info = "meteor"
+         else:
+            base_info = ""
 
+         base_file = file.replace(".mp4", "")
+
+         fn = file.split("/")[-1]
+         dir = file.replace(fn, "")
+         fn = fn.replace(".mp4", "")
+         data_dir = dir + "data/"
+         tm_file = data_dir + fn + "-toomany.json" 
+         mm_file = data_dir + fn + "-maybe-meteors.json" 
+         m_file = data_dir + fn + "-meteor.json" 
+         nm_file = data_dir + fn + "-nonmeteor.json" 
+         d_file = data_dir + fn + "-detect.json" 
+         if cfe(tm_file) == 1: 
+            tm += 1
+            file_info[base_file] = ""
+         if cfe(mm_file) == 1: 
+            mm += 1
+            file_info[base_file] = ""
+         if cfe(nm_file) == 1: 
+            mm += 1
+            file_info[base_file] = ""
+         if cfe(m_file) == 1: 
+            met += 1
+            file_info[base_file] = ""
+         if cfe(d_file) == 1: 
+            det += 1
+            #file_info[base_file] = ""
+      print("TM:", tm)
+      print("MM:", mm)
+      print("NM:", nm)
+      print("MET:", nm)
+      print("DET:", det)
    return(file_info)
 
 def get_day_stats(day, day_dir, json_conf):

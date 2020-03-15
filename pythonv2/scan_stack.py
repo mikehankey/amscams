@@ -168,6 +168,9 @@ def batch_ss(wildcard=None):
          else:
             print(tdiff)
 
+#def stack(file):
+#   frames,color_frames,sd_subframes,sum_vals,max_vals,pos_vals = load_frames_fast(video_file, json_conf, 0, 0, [], 1,resize, sun_status)
+
 
 def scan_and_stack_fast(file, day = 0):
    day = int(day)
@@ -264,6 +267,8 @@ def scan_and_stack_fast(file, day = 0):
    cv_stacked_image = cv2.resize(cv_stacked_image, (PREVIEW_W, PREVIEW_H))
    cv2.imwrite(stack_file, cv_stacked_image)
 
+   
+
    vals = {}
    vals['sum_vals'] = sum_vals
    vals['max_vals'] = max_vals
@@ -359,3 +364,5 @@ if sys.argv[1] == "fms":
       fix_missing_stacks(sys.argv[2])
 if sys.argv[1] == "dv":
    detect_in_vals(sys.argv[2])
+if sys.argv[1] == "stack":
+   stack(sys.argv[2])

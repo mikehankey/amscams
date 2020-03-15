@@ -57,6 +57,16 @@ show = 0
 
 ARCHIVE_DIR = "/mnt/ams2/meteor_archive/"
 
+def make_crop_compo(meteor_file=None):
+   if "/meteors/" in meteor_file:
+      mj = load_json_file(meteor_file)
+   else:
+      aj = load_json_file(meteor_file)
+      mj = None
+
+   if mj is None:
+      roi_crop = aj['info']
+
 
 def find_hd_file_best(sd_file, trim_num, dur = 25, trim_on =1):
    video_file = sd_file
@@ -1002,7 +1012,9 @@ def save_old_style_meteor_json(meteor_json_file, meteor_obj, trim_clip ):
 def detect_meteor_in_clip(trim_clip, frames = None, fn = 0, crop_x = 0, crop_y = 0, hd_in = 0):
    objects = {}
    print("DETECT METEORS IN VIDEO FILE:", trim_clip)
-
+   print("CROP X,Y:", hd_in, crop_x, crop_y)
+   #if hd_in == 1:
+   #   exit()
    if trim_clip is None: 
       return(objects, []) 
 
@@ -1067,7 +1079,7 @@ def detect_meteor_in_clip(trim_clip, frames = None, fn = 0, crop_x = 0, crop_y =
                cx = int(mx) 
                cy = int(my) 
                cv2.circle(show_frame,(cx+crop_x,cy+crop_y), 10, (255,255,255), 1)
-
+               print("DETECT X,Y:", fn, crop_x, crop_y, cx,cy)
                object, objects = find_object(objects, fn,cx+crop_x, cy+crop_y, w, h, intensity, hd, sd_multi, cnt_img)
                #if len(objects[object]['ofns']) > 2:
                   #le_x, le_y = find_leading_edge(objects[object]['report']['x_dir_mod'], objects[object]['report']['y_dir_mod'],cx,cy,w,h,frame)
@@ -1473,7 +1485,6 @@ def apply_calib(obj , frames=None , user_station = None):
    # find best free cal files
    best_cal_files = get_best_cal_file(obj['trim_clip'], user_station)
    cal_params_file = best_cal_files[0][0]
-   print("BEST CAL FILE:", cal_params_file)
    (cp_datetime, cam, sd_date, sd_y, sd_m, sd_d, sd_h, sd_M, sd_s) = convert_filename_to_date_cam(cal_params_file)
 
    # find last_best_calib
@@ -2913,7 +2924,6 @@ def find_last_best_calib(input_file, orig_stars = None ):
    print(cal_dir)
    all_files = glob.glob(cal_dir)
    for file in all_files:
-      print("CAL FILE:", file)
       if cam_id in file :
          el = file.split("/")
          fn = el[-1]
@@ -3996,7 +4006,6 @@ def find_matching_cal_files(station_id, cam_id, capture_date, user_station):
    all_files = glob.glob(cal_dir)
    print("CAL DIR IS:", cal_dir)
    for cal_dir in all_files:
-      print("CD:", cal_dir)
       if cam_id in cal_dir:
          if cfe(cal_dir, 1) == 1:
             cfs = glob.glob(cal_dir + "/*cal*.json") 
@@ -9064,8 +9073,6 @@ def obj_to_arc_meteor(meteor_file):
       frame['el'] = el
       frame['ra'] = ra 
       frame['dec'] = dec
-      frame['w'] = width  
-      frame['h'] = height 
 
 #w: 13,
 #h: 13,
@@ -10101,8 +10108,8 @@ def ffmpeg_trim_crop(video_file,start,end,x,y,w,h, notrim=0):
          dur = "0" + str(dur)
 
    if notrim == 0:
-      trim_out_file = video_file.replace(".mp4", "-trim-" + str(start) + ".mp4")
-      crop_out_file = video_file.replace(".mp4", "-trim-" + str(start) + "-crop.mp4")
+      trim_out_file = video_file.replace(".mp4", "-trim-" + str(start).zfill(4) + ".mp4")
+      crop_out_file = video_file.replace(".mp4", "-trim-" + str(start).zfill(4) + "-crop.mp4")
       #cmd = "/usr/bin/ffmpeg -y -i " + video_file + " -ss 00:00:" + str(start_sec) + " -t 00:00:" + str(dur) + " -c copy " + trim_out_file 
       
       cmd = "/usr/bin/ffmpeg -i " + video_file + " -vf select='between(n\," + str(start) + "\," + str(end) + ")' -vsync 0 " + trim_out_file
@@ -10444,7 +10451,7 @@ def verify_meteor(meteor_json_file):
       sd_prev_crop=[cx1,cy1,cx2,cy2,mid_x,mid_y]
       preview_crop(trim_file, cx1,cy1,cx2,cy2)
       trim_crop_file = trim_file.replace(".mp4", "-crop.mp4")
-      sd_motion_objects,sd_meteor_frames = detect_meteor_in_clip(trim_crop_file, None, 0,cx1,cx2,1)
+      sd_motion_objects,sd_meteor_frames = detect_meteor_in_clip(trim_crop_file, None, 0,cx1,cx2,0)
       sd_meteors = only_meteors(sd_motion_objects)
 
       if sd_meteors is None:
@@ -10484,7 +10491,7 @@ def verify_meteor(meteor_json_file):
 
 
       if sd_meteors is not None: 
-         hd_motion_objects,hd_meteor_frames = detect_meteor_in_clip(hd_crop_file, None, 0,hd_x1,hd_x2,1)
+         hd_motion_objects,hd_meteor_frames = detect_meteor_in_clip(hd_crop_file, None, 0,hd_x1,hd_y1,1)
          hd_meteors = only_meteors(hd_motion_objects)
          if hd_meteors is None: 
             hd_meteors =[]
@@ -10569,6 +10576,7 @@ def save_final_meteor(meteor_file):
    sdf = trim_file.split("/")[-1]
 
    arc_hd = trim_file.split("/")[-1].replace(".mp4", "-HD.mp4") 
+   arc_hd_crop = trim_file.split("/")[-1].replace(".mp4", "-HD-crop.mp4") 
    arc_sd = trim_file.split("/")[-1].replace(".mp4", "-SD.mp4") 
 
    mj['arc_hd'] = arc_dir + arc_hd
@@ -10596,6 +10604,8 @@ def save_final_meteor(meteor_file):
 
    old_json_data['sd_stack'] = stack_file
    old_json_data['hd_stack'] = hd_stack_file
+   old_json_data['sd_prev_crop'] = mj['sd_prev_crop'] 
+   old_json_data['hd_prev_crop'] = mj['hd_prev_crop'] 
 
    mj['old_sd_trim'] = old_json_dir + sdf
    mj['old_hd_trim'] = old_json_dir + hdf
@@ -10630,7 +10640,15 @@ def save_final_meteor(meteor_file):
    save_json_file(arc_json_file, arc_data)
    print(arc_json_file)
 
+   hd_crop_file = hd_trim.replace(".mp4", "-crop.mp4")
+   print("cp " + hd_trim + " " + arc_hd)
+   print("cp " + hd_crop_file + " " + arc_hd_crop)
+   print("cp " + trim_file + " " + arc_sd)
+   os.system("cp " + hd_trim + " " + arc_dir + arc_hd)
+   os.system("cp " + hd_crop_file + " " + arc_dir + arc_hd_crop)
+   os.system("cp " + trim_file + " " + arc_dir + arc_sd)
 
+   
 
 
 def meteors_only(objects):

@@ -551,6 +551,8 @@ def stack_stack(pic1, pic2):
 
 
 def stack_frames_fast(frames, skip = 1, resize=None, sun_status="night", sum_vals=[]):
+   if sum_vals is None:
+      sum_vals= [1] * len(frames)
    stacked_image = None
    fc = 0
    for frame in frames:

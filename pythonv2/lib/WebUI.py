@@ -2412,7 +2412,19 @@ def override_detect(video_file,jsid, json_conf):
     
    if jsid is not None:
       video_file = parse_jsid(jsid) 
-  
+
+   vfn = video_file.split("/")[-1]
+   el = vfn.split("-trim")
+   bs = el[0]
+   date = vfn[0:10]
+   proc_file = "/mnt/ams2/SD/proc2/" + date + "/data/" + bs + "-meteor.json"
+   non_proc_file = "/mnt/ams2/SD/proc2/" + date + "/data/" + bs + "-nonmeteor.json"
+   if cfe(proc_file) == 1:
+      cmd = "mv " + proc_file + " " + non_proc_file
+      print(cmd)
+   else:
+      print(proc_file + " Not found")
+
    base = video_file.replace(".mp4", "")
    el = base.split("/")
    base_dir = base.replace(el[-1], "")
@@ -2787,7 +2799,8 @@ def browse_day(day,cams_id,json_conf,form):
    #cgitb.enable()
    sun = form.getvalue("sun")
    hour = form.getvalue("hour")
-   day_files = get_day_files(day,cams_id,json_conf, sun, hour)
+   detect = form.getvalue("detect")
+   day_files = get_day_files(day,cams_id,json_conf, sun, hour,detect)
  
    cc = 0
    all_files = []
