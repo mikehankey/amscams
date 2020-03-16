@@ -32,7 +32,7 @@ function setup_single_conf_buttons() {
    $('.confSingle').click(function() {
       loading_button($(this));
       $(this).attr('disabled','disabled');
-      send_API_task({'toConf':cropped_video},'','',function() { load_done_button($('.confSingle'));};
+      send_API_task({'toConf':cropped_video},'','',function() { load_done_button($('.confSingle'));});
      
       return false;
    });
