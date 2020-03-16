@@ -6,9 +6,7 @@ function open_meteor_picker(all_frames_ids, meteor_id, color, img_path) {
    var real_width, real_height;
    var neighbor = get_neighbor_frames(meteor_id); 
    var real_width, real_height;
-
-
-   console.log("ADD MODAL TEMPLATE")
+ 
    addModalTemplate(meteor_id,neighbor);
  
    // Prev Button
@@ -22,6 +20,15 @@ function open_meteor_picker(all_frames_ids, meteor_id, color, img_path) {
       meteor_select("next",all_frames_ids);
       return false;
    });
+
+   // Show Modal
+   $('#select_meteor_modal').modal('show');
+
+   // Add image 
+   $('.meteor_chooser').css('background-image','url('+$img.attr('src')+')').css('border','2px solid ' + color);
+
+   // Add current ID
+   $('#sel_frame_id, .sel_frame_id').text(meteor_id);
 
    return false;
  
