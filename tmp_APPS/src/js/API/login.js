@@ -41,7 +41,7 @@ function add_login_stuff() {
    }
 
    // Add Toolbox
-   if($('#tool_box').length !=0) {
+   if($('#tool_box').length !=0 && $('#confdel').length == 0) {
       // On Obs Page
 
       // DELETE
