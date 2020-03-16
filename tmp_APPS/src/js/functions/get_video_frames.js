@@ -62,9 +62,7 @@ async function extractFramesFromVideo(videoUrl,firstframe, how_many_frames, fps=
  
  async function asyncCall(first_frame, how_many_frames) {  
    croppedFrames = await extractFramesFromVideo(cropped_video,first_frame, how_many_frames); 
-   
-   // Frame by frame animation holding
-   loading_button($("#play_anim_tv"));
+
 
    var i, frame_c = 0;
    for (i = first_frame; i <  (first_frame+how_many_frames); i++) {
@@ -82,6 +80,9 @@ async function extractFramesFromVideo(videoUrl,firstframe, how_many_frames, fps=
  $(function() {  
 
    if(typeof cropped_video !== 'undefined') {
+         
+      // Frame by frame animation holding
+      loading_button($("#play_anim_tv"));
 
       // What's the first frame we want to get?
       asyncCall(first_frame, how_many_frames)
