@@ -64,6 +64,9 @@ function add_login_stuff() {
       //console.log("SETUP SING CONF BUT");
       setup_single_conf_buttons();
 
+      // Setup Meteor Picker (Manual Reduce1)
+      setup_manual_reduc1();
+
    }
 
    // Show Details on Daily Report Page
@@ -78,8 +81,6 @@ function add_login_stuff() {
    } 
 
 
-   // Setup Meteor Picker (Manual Reduce1)
-   setup_manual_reduc1();
 
  
 
