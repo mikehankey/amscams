@@ -63,6 +63,9 @@ async function extractFramesFromVideo(videoUrl,firstframe, how_many_frames, fps=
  async function asyncCall(first_frame, how_many_frames) {  
    croppedFrames = await extractFramesFromVideo(cropped_video,first_frame, how_many_frames); 
    
+   // Frame by frame animation holding
+   loading_button($("#play_anim_tv"));
+
    var i, frame_c = 0;
    for (i = first_frame; i <  (first_frame+how_many_frames); i++) {
        // Add base64 thumbs to the table  
@@ -73,7 +76,7 @@ async function extractFramesFromVideo(videoUrl,firstframe, how_many_frames, fps=
    // We enable the frame by frame animation when it's loaded
    $('#play_anim_tv').removeClass('disabled');
 
-   
+   load_done_button($("#play_anim_tv"));
  }
 
  $(function() {  
