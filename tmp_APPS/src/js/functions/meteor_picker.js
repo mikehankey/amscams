@@ -108,9 +108,7 @@ function  setup_manual_reduc1() {
    // Click on selector (thumb)
    $('.wi a').click(function() {
        
-      var $tr = $(this).closest('tr');
-       
-
+      var $tr = $(this).closest('tr'); 
       // Get meteor id
       var meteor_id = $tr.attr('id');
       meteor_id = meteor_id.split('_')[1];
