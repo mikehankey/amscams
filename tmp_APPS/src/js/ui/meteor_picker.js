@@ -1,7 +1,7 @@
 var multiple_select = true;
 var meteor_select_updates = [];
 
-var viewer_DIM = 500;
+var viewer_DIM = 700;
 var viewer_border = 2; // Colored border in pixels
 var thumb_DIM = 100;
 
@@ -205,7 +205,7 @@ function meteor_select(dir,all_frames_ids) {
 
 
 // Modal for selector
-function addModalTemplate(meteor_id,neighbor) {
+function addPickerModalTemplate(meteor_id,neighbor) {
     var c;
     
    // BUTTON FOR SINGLE MODE
@@ -217,7 +217,7 @@ function addModalTemplate(meteor_id,neighbor) {
 
         c = '<div id="select_meteor_modal" class="modal fade multiple-select" tabindex="-1">\
         <input type="hidden" name="thumb_w"/><input type="hidden" name="thumb_h"/>\
-        <div class="modal-dialog  modal-lg modal-dialog-centered" role="document">\
+        <div class="modal-dialog  modal-lg modal-dialog-centered" role="document" style="width: 1400px;max-width: 1400px;">\
         <div class="modal-content">\
         <div class="modal-header"> \
             <div><strong>FRAME #<span id="sel_frame_id"></span></strong> \
@@ -229,7 +229,7 @@ function addModalTemplate(meteor_id,neighbor) {
             <button id="met-sel-next" title="Next" type="button" class="mfp-arrow mfp-arrow-right mfp-prevent-close"></button>\
             <button id="met-sel-prev" title="Prev" type="button" class="mfp-arrow mfp-arrow-left mfp-prevent-close"></button>\
             <div class="d-flex justify-content-center" id="nav_prev">\
-            </div><div style="box-shadow: 0 0px 8px rgba(0,0,0,.6);" class="meteor_chooser">\
+            </div><div style="box-shadow: 0 0px 8px rgba(0,0,0,.6);height: 700px;background-size: cover;width: calc(700px * 16 / 9);" class="meteor_chooser">\
             <div id="org_lh"></div><div id="org_lv"></div><div id="lh"></div><div id="lv"></div></div>\
                 <div class="d-flex justify-content-between mt-2" style="max-width: '+viewer_DIM+'px;margin: 0 auto;">\
                     <div><a class="btn btn-danger delete_frame_from_modal"><i class="icon-delete"></i> Delete the frame #<span class="sel_frame_id"></span></a></div>\

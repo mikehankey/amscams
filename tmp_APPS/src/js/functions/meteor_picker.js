@@ -7,7 +7,7 @@ function open_meteor_picker(all_frames_ids, meteor_id, color, img_path) {
    var neighbor = get_neighbor_frames(meteor_id); 
    var real_width, real_height;
  
-   addModalTemplate(meteor_id,neighbor);
+   addPickerModalTemplate(meteor_id,neighbor);
  
    // Prev Button
    $('#met-sel-prev').unbind('click').click(function() {
