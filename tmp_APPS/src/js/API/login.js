@@ -55,7 +55,7 @@ function add_login_stuff() {
  
       // Show Tools
       $('#tools').removeClass('d-none');
-      $('##tool_box').parent().removeClass('d-none');
+      $('#tool_box').parent().removeClass('d-none');
 
       // Setup Single Delete & Conf Buttons
       //console.log("SETUP SING DEL BUT");
