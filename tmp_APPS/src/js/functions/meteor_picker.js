@@ -6,6 +6,9 @@ function open_meteor_picker(all_frames_ids, meteor_id, color, img_path) {
    var real_width, real_height;
    var neighbor = get_neighbor_frames(meteor_id); 
    var real_width, real_height;
+
+
+   console.log("ADD MODAL TEMPLATE")
    addModalTemplate(meteor_id,neighbor);
  
    // Prev Button
@@ -129,31 +132,25 @@ function  setup_manual_reduc1() {
    });
 
    // Click on "Big" button 
-   $('.reduc1').click(function(e) {
- 
-      console.log(".reduc1");
+   $('.reduc1').click(function(e) { 
 
       // Find first id in the table
       var $tr = $('#reduc-tab table tbody tr');
       var color = $tr.find('img').css('border-color');
-      
-      e.stopPropagation();
- 
+       
       $tr = $($tr[0]); 
       var meteor_id = $tr.attr('id');
       meteor_id = meteor_id.split('_')[1];
 
       // Then Do the all thing to open the meteor picker 
       open_meteor_picker(all_frames_ids,meteor_id,color,$tr.find('img').attr('src'));
+
+      return false;
    });
  
 
    // Click on selector (thumb)
-   $('.wi a').click(function(e) {
-      
-      console.log(".wi a");
-
-
+   $('.wi a').click(function(e) { 
       var $tr = $(this).closest('tr'); 
       var color = $tr.find('img').css('border-color');
 
