@@ -63,6 +63,8 @@ function send_API_task(jsonData,$toDel,$toConf) {
             createCookie(PAGE_MODIFIED,window.location.href,1/24);
             already_done();
          }
+
+         return true;
            
       }, 
       error:function() { 
@@ -71,6 +73,8 @@ function send_API_task(jsonData,$toDel,$toConf) {
             className: 'rubberBand animated error',
             centerVertical: true 
          });
+
+         return false;
       }
    });
 }
