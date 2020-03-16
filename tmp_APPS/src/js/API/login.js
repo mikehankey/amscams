@@ -46,19 +46,16 @@ function add_login_stuff() {
 
       // DELETE
       if($('#tool_box .del').length==0) {
-         $(delButton).html('<i class="icon-delete"></i> Delete').addClass('m-1 single').appendTo($('#tool_box'));
-      }
-      // CONF
-      if($('#tool_box .conf').length==0) {
-         $(confButton).html('<i class="icon-check"></i> Confirm').addClass('m-1 single').appendTo($('#tool_box'));
-      } 
-      // METEOR PICKER
-      if($('#tool_box .reduc1').length==0) {
+         //$('<div class="d-flex"><div>'+delButton+'</div><div>'+confButton+'</div></div>').appendTo($('#tool_box'));
+         $(delButton).html('<i class="icon-delete"></i> Delete').addClass('m-1 single').appendTo($('#tools'));
+         $(confButton).html('<i class="icon-check"></i> Confirm').addClass('m-1 single').appendTo($('#tools'));
          $('<a class="reduc1 col btn btn-success btn-sm ml-1" title="Pick Meteor Position"><i class="icon-image"></i> Meteor Picker</a>').addClass('m-1 d-block w-100').appendTo($('#tool_box'));
-      }
 
+      }
+      
+ 
       // Show Tools
-      $('#tool_box').removeClass('d-none');
+      $('#tool_box,#tools').removeClass('d-none');
 
       setup_single_delete_buttons();
       setup_single_conf_buttons();
