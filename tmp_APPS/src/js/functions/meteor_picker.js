@@ -130,7 +130,7 @@ function  setup_manual_reduc1() {
    $('.reduc1').click(function(e) {
       // Find first id in the table
       var $tr = $('#reduc-tab table tbody tr');
-      var color = $tr.find('.st').css('background-color');
+      var color = $tr.find('img').css('border-color');
       
       e.stopPropagation();
  
@@ -146,7 +146,7 @@ function  setup_manual_reduc1() {
    // Click on selector (thumb)
    $('.wi a').click(function(e) {
       var $tr = $(this).closest('tr'); 
-      var color = $tr.find('.st').css('background-color');
+      var color = $tr.find('img').css('border-color');
 
       e.stopPropagation();
 
