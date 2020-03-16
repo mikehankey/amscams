@@ -8,7 +8,7 @@ function greyOut($el,msg) {
 
 
 
-function send_API_task(jsonData,$toDel,$toConf) {
+function send_API_task(jsonData,$toDel,$toConf,callback) {
  
    var usr = getUserInfo();
    usr = usr.split('|');
@@ -64,6 +64,8 @@ function send_API_task(jsonData,$toDel,$toConf) {
             already_done();
          }
 
+         callback();
+
          return true;
            
       }, 
@@ -73,7 +75,8 @@ function send_API_task(jsonData,$toDel,$toConf) {
             className: 'rubberBand animated error',
             centerVertical: true 
          });
-
+         
+         callback();
          return false;
       }
    });
