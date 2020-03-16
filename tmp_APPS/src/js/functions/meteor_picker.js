@@ -130,9 +130,7 @@ function  setup_manual_reduc1() {
 
    // Click on "Big" button 
    $('.reduc1').click(function(e) {
-
-      
-      
+ 
       console.log(".reduc1");
 
       // Find first id in the table
