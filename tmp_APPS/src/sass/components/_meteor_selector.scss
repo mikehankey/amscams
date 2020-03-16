@@ -203,13 +203,14 @@ $meteor_selector_w: 500px;
         }
 
         .select_meteor_holder {
-            width: 65%;
+            width: 85%;
             position:relative; 
         }
 
         .update_meteor_thumb_pos_list {
             display:block;
-            width: 35%;
+            width: 14%;
+            margin-left: 1%;
             background: rgba(0,0,0,0.3); 
             display: flex;
             flex-wrap: wrap;
