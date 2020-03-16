@@ -521,15 +521,14 @@ function get_neighbor_frames(cur_id) {
 
     for(var i = cur_id-3; i < cur_id+4; i++) {
 
-        var $cur_tr = $('#thb_'+i);
-        var img =  $cur_tr.find('img').attr('src');
-        var color = $cur_tr.find('img').css('baorder-color');
+        var $cur_td = $('#thb_'+i);
+        var img =  $cur_td.find('img').attr('src');
+        var color = $cur_td.find('img').css('border-color');
         var id = i;
         vid = '';
 
         if(typeof img == "undefined"){
-            img = './dist/img/no-sm.png';
-            vid = id;
+            img = './dist/img/no-sm.png'; 
             id = '0';
         }
 
@@ -540,8 +539,7 @@ function get_neighbor_frames(cur_id) {
         all_thb.push({
             img: img,
             color:color,
-            id:id,
-            vid:vid
+            id:id 
         });
     }
  
