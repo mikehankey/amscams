@@ -4,19 +4,21 @@ function open_meteor_picker(all_frames_ids, meteor_id, color, img_path) {
 
    var viewer_dim = viewer_DIM; 
    var real_width, real_height;
-
-
-   console.log("FRAME IDS");
-   console.log(all_frames_ids);
-
-   console.log("METEOR ID");
-   console.log(meteor_id);
-
    var neighbor = get_neighbor_frames(meteor_id); 
+   var real_width, real_height;
+   addModalTemplate(meteor_id,neighbor);
+ 
+   // Prev Button
+   $('#met-sel-prev').unbind('click').click(function() {
+      meteor_select("prev",all_frames_ids);
+      return false;
+   });
 
-
-   console.log("NEIGHBOR")
-   console.log(neighbor)
+   // Next Button
+   $('#met-sel-next').unbind('click').click(function() {
+      meteor_select("next",all_frames_ids);
+      return false;
+   });
 
    return false;
  
