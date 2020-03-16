@@ -40,7 +40,7 @@ function add_login_stuff() {
       });
    }
 
-   // Add Toolbos
+   // Add Toolbox
    if($('#tool_box').length !=0) {
       // On Obs Page
 
@@ -50,14 +50,18 @@ function add_login_stuff() {
          $(delButton).html('<i class="icon-delete"></i> Delete').addClass('m-1 single').appendTo($('#confdel'));
          $(confButton).html('<i class="icon-check"></i> Confirm').addClass('m-1 single').appendTo($('#confdel'));
          $('<a class="reduc1 col btn btn-success btn-sm ml-1" title="Pick Meteor Position"><i class="icon-image"></i> Meteor Picker</a>').addClass('m-1 d-block w-100').appendTo($('#tool_box'));
-
       }
       
  
       // Show Tools
       $('#tool_box,#tools').removeClass('d-none');
 
+
+      // Setup Single Delete & Conf Buttons
+      console.log("SETUP SING DEL BUT");
       setup_single_delete_buttons();
+      
+      console.log("SETUP SING CONF BUT");
       setup_single_conf_buttons();
 
    }
