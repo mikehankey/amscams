@@ -46,7 +46,7 @@ function add_login_stuff() {
 
       // DELETE
       if($('#tool_box .del').length==0) { 
-         $('<div id="confdel" class="d-flex pb-2" style="border-bottom:1px solid rgba(255,255,255.3)"></div>').appendTo($('#tool_box'));
+         $('<div id="confdel" class="d-flex pb-1 mb-2" style="border-bottom:1px solid rgba(255,255,255,.3)"></div>').appendTo($('#tool_box'));
          $(delButton).html('<i class="icon-delete"></i> Delete').addClass('m-1 single').appendTo($('#confdel'));
          $(confButton).html('<i class="icon-check"></i> Confirm').addClass('m-1 single').appendTo($('#confdel'));
          $('<a class="reduc1 col btn btn-success btn-sm ml-1" title="Pick Meteor Position"><i class="icon-image"></i> Meteor Picker</a>').addClass('m-1 d-block w-100').appendTo($('#tool_box'));
