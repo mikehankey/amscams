@@ -10330,7 +10330,6 @@ def detect_in_vals(vals_file):
             cx1,cy1,cx2,cy2,mid_x,mid_y = get_roi(None, objects[obj], hdm_x, hdm_y)
             print("START:", start,end)
             print("START FN:", start_fn,end_fn)
-            #extract_frames(video_file,start_fn,end_fn)
             #ffmpeg_trim_crop(video_file,start_fn,end_fn,cx1,cy1,cx2-cx1,cy2-cy1, 0)
 
       detect_info = {}
@@ -10666,7 +10665,6 @@ def get_vals_trim(video_file, obj, hdm_x=1,hdm_y=1):
    cx1,cy1,cx2,cy2,mid_x,mid_y = get_roi(None, obj, hdm_x, hdm_y)
    print("START:", start,end)
    print("START FN:", start_fn,end_fn)
-   #extract_frames(video_file,start_fn,end_fn)
    trim_file, crop_file = ffmpeg_trim_crop(video_file,start_fn,end_fn,cx1,cy1,cx2-cx1,cy2-cy1, 0)
 
 
@@ -10674,12 +10672,12 @@ def get_vals_trim(video_file, obj, hdm_x=1,hdm_y=1):
    return(trim_file, start_fn,end_fn, cx1,cy1,cx2,cy2,mid_x,mid_y)
 
 
-def extract_frames(video_file,start,end):
+def extract_frames(video_file,start,end,outfile):
    fn = video_file.split("/")[-1] + "-trim" + str(start)
    temp_dir = "/home/ams/tmpvids/" + fn + "/" 
    if cfe(temp_dir, 1) == 0:
       os.makedirs(temp_dir)
-   cmd = "ffmpeg -i " + video_file + " -vf select='between(n\," + str(start) + "\," + str(end) + ")' -vsync 0 " + temp_dir + "frames%d.png > /dev/null"
+   cmd = "ffmpeg -i " + video_file + " -vf select='between(n\," + str(start) + "\," + str(end) + ")' -vsync 0 " + outfile + " > /dev/null"
    print(cmd)
    os.system(cmd)
 

@@ -87,7 +87,7 @@ def angularSeparation(ra1,dec1, ra2,dec2):
    return math.degrees(math.acos(math.sin(dec1)*math.sin(dec2) + math.cos(dec1)*math.cos(dec2)*math.cos(ra2 - ra1)))
 
 
-def check_running(progname):
+def check_running(progname, sec_grep = None):
    cmd = "ps -aux |grep \"" + progname + "\" | grep -v grep |wc -l"
     
    output = subprocess.check_output(cmd, shell=True).decode("utf-8")
