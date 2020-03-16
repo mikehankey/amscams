@@ -58,10 +58,10 @@ function add_login_stuff() {
 
 
       // Setup Single Delete & Conf Buttons
-      console.log("SETUP SING DEL BUT");
+      //console.log("SETUP SING DEL BUT");
       setup_single_delete_buttons();
       
-      console.log("SETUP SING CONF BUT");
+      //console.log("SETUP SING CONF BUT");
       setup_single_conf_buttons();
 
    }
