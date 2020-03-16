@@ -9039,6 +9039,8 @@ def obj_to_arc_meteor(meteor_file):
    print(mj) 
    print(mj['sd_trim'])
    print(mj['hd_trim'])
+   hd_meteor = None
+   sd_meteor = None
    for key in mj['hd_motion_objects']:
       hd_meteor = mj['hd_motion_objects'][key]
    for key in mj['motion_objects']:
@@ -9050,6 +9052,14 @@ def obj_to_arc_meteor(meteor_file):
    calib,cal_params = apply_calib(hd_meteor)
 
    # make the frames
+   if hd_meteor is None:
+      hd_meteor = sd_meteor
+      #hdm_x = 
+      #hdm_y = 
+   else:
+      hdm_x = 1 
+      hdm_y = 1
+
    ofns = hd_meteor['ofns']
    xs = hd_meteor['oxs']
    ys = hd_meteor['oys']
@@ -10526,6 +10536,8 @@ def verify_meteor(meteor_json_file):
             meteor_report(sd_meteors)
             print("HD METEOR", hd_meteors)
             meteor_report(hd_meteors)
+            meteor['hdm_x'] = hdm_x
+            meteor['hdm_y'] = hdm_y
             save_json_file(meteor_file, meteor)
             os.system("mv " + meteor_json_file + " " + detect_file)
 

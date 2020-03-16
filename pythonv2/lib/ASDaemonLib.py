@@ -1,9 +1,49 @@
 import os
+from datetime import datetime, timedelta
 import subprocess
 import ephem
 import glob
-from lib.UtilLib import check_running
-from lib.FileIO import cfe 
+import json
+from lib.UtilLib import check_running 
+from lib.FileIO import cfe , save_json_file, load_json_file
+
+def fix_days():
+   proc_file = "/mnt/ams2/SD/proc2/json/proc_stats.json";
+   if cfe(proc_file) == 0:
+      return()
+   proc_data = load_json_file(proc_file)
+   for day in proc_data:
+      if proc_data[day]['video_files'] - proc_data[day]['image_files'] > 10:
+         print("Thumbs are missing for these days!")
+         os.system("./scan_stack.py fms " + day + " > /dev/null 2>&1 &")
+         return()
+
+def update_proc_index(day ):
+   proc_file = "/mnt/ams2/SD/proc2/json/proc_stats.json";
+   if cfe(proc_file) == 1:
+      proc_stats = load_json_file(proc_file)
+   else:
+      return()
+   proc_stats[day] = get_proc_stats(day)
+   save_json_file(proc_file)
+
+
+def proc_index():
+   proc_stats = {}
+   proc_file = "/mnt/ams2/SD/proc2/json/proc_stats.json";
+   if cfe(proc_file) == 1:
+      proc_stats = load_json_file(proc_file)
+   today = datetime.today()
+   num_days = 14
+   for i in range (0,int(num_days)):
+      past_day = datetime.now() - timedelta(hours=24*i)
+      past_day = past_day.strftime("%Y_%m_%d")
+      proc_stats[past_day] = get_proc_stats(past_day)
+      print(past_day, proc_stats[past_day])
+   for day in proc_stats:
+      print(day, proc_stats[day])
+   save_json_file(proc_file, proc_stats) 
+   print(proc_file)
 
 def get_proc_stats(day):
    proc_dir = "/mnt/ams2/SD/proc2/" + day + "/"
@@ -57,9 +97,16 @@ def extract_frames(video_file,start,end,outfile,w=640,h=360):
 def run_vals_detect(day=None):
    running = check_running("flex-detect.py bv")
    if running == 0:
-      cmd = "./flex-detect.py bv " + day + " > /dev/null 2>&1 &"
-      print(cmd)
-      os.system(cmd)
+
+      proc_file = "/mnt/ams2/SD/proc2/json/proc_stats.json";
+      if cfe(proc_file) == 0:
+         return()
+      proc_data = load_json_file(proc_file)
+      for day in proc_data:
+         if proc_data[day]['mm_files'] >= 1:
+            print("Need to detect vals on this day!", day)
+            os.system("./flex-detect.py bv " + day + " > /dev/null 2>&1 &")
+            return()
    else:
       print("Vals detect is already running.")
 

@@ -1,5 +1,6 @@
 #!/usr/bin/python3
 
+
 """ 
    ASDaemon.py - main processing manager
       - should run 24/7 and a cron should exist that restarts it, if it is not running, or has crashed.
@@ -24,6 +25,7 @@
          solve.py 
 """      
    
+import sys
 import os
 import daemon
 import time
@@ -31,8 +33,8 @@ import json
 from datetime import datetime , timedelta
 
 from lib.UtilLib import check_running
-from lib.FileIO import load_json_file 
-from lib.ASDaemonLib import day_or_night, get_files, run_verify_meteors, run_vals_detect, exec_cmd, update_latest, get_proc_stats
+from lib.FileIO import load_json_file , cfe
+from lib.ASDaemonLib import day_or_night, get_files, run_verify_meteors, run_vals_detect, exec_cmd, update_latest, get_proc_stats, proc_index, fix_days
 
 def main_thread():
    current_date = datetime.now().strftime("%Y_%m_%d")
@@ -54,23 +56,19 @@ def main_thread():
    state['last_sync'] = 0
    state['latest'] = 0 
    state['scan_stack'] = time.time()
-   state['vals_detect'] = 0
-   state['verify_meteors'] = time.time()
+   state['vals_detect'] = time.time()
+   state['fix_day'] = time.time()
+   state['verify_meteors'] = 0
    state['check_disk'] = time.time()
    state['do_day'] = time.time()
    state['cam_info'] = []
 
-   state['proc_stats'] = {}
-   today = datetime.today()
-   num_days = 14
-   for i in range (0,int(num_days)):
-      past_day = datetime.now() - timedelta(hours=24*i)
-      past_day = past_day.strftime("%Y_%m_%d")
-      state['proc_stats'][past_day] = get_proc_stats(past_day) 
-   for day in state['proc_stats']:
-
-      print(past_day, state['proc_stats'][day])
-   exit()
+   
+   proc_file = "/mnt/ams2/SD/proc2/json/proc_stats.json"
+   if cfe(proc_file) == 1:
+      state['proc_stats'] = load_json_file(proc_file)
+   else:
+      state['proc_stats'] = ""
 
    for cam in json_conf['cameras']:
       cam_info = {}
@@ -110,8 +108,7 @@ def main_thread():
 
 
       if state['ffprocs'] < state['FFPROC_THRESH']:
-         log.write("ERROR: FFMPEG RUNNING PROCESSES BELOW THRESH:" + str(ffprocs) + "\n")
-         print("ERROR: FFMPEG RUNNING PROCESSES BELOW THRESH:" + str(ffprocs) + "\n")
+         log.write("ERROR: FFMPEG RUNNING PROCESSES BELOW THRESH:" + str(state['ffprocs']) + "\n")
          #bad_cams = find_bad_cams() 
          # here we should : 
             # determine which cam(s) are down, log info, run the watch-dog
@@ -150,6 +147,14 @@ def main_thread():
       else:
          print("Verify last run:", time.time() - state['verify_meteors'] ) 
 
+      # TASK #4 fix any missing files for past days
+      if time.time() - state['fix_day'] > 6000:
+         fix_days()
+         state['fix_day'] = time.time()
+      else:
+         print("Verify last run:", time.time() - state['verify_meteors'] )
+ 
+
       
       ########## ARCHIVE TASKS ###############
       # TASK #1 - manage the indexing and archive syncing processing 
@@ -183,6 +188,10 @@ def main_thread():
       for key in state:
          if key == 'pending_files':
             print(key, len(state[key]))
+         elif key == 'proc_stats':
+            for pk in state['proc_stats']:
+            
+               print(pk, state[key][pk])
 
          elif key == "latest" or key == "scan_stack" or key == "vals_detect" or key == "verify_meteors" or key == "check_disk" or key == "do_day":
             print(key, time.time() - state[key])
@@ -201,6 +210,16 @@ def run():
       main_thread()
 
 if __name__ == "__main__":
-   print("RUN DAM")
-   main_thread()
-   #run()
+   if len(sys.argv) > 2:
+      cmd = sys.argv[1]
+   else:
+      cmd = ""
+   if cmd == "":
+      print("Starting AllSky Daemon")
+      main_thread()
+   if cmd == "proc_index":
+      proc_index()
+   if cmd == "fix_days":
+      fix_days()
+   if cmd == "update_proc":
+      update_proc_index(sys.argv[2])
