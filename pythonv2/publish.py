@@ -193,7 +193,6 @@ def make_event_station_report(json_file):
    # Report Details
    template = template.replace("{REPORT_DETAILS}",report_details)
 
-    
      
    # Create Template
    f = open(PATH_TO_CLOUD+json_file.replace('.json','.html'), "w+")

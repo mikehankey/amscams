@@ -8,7 +8,7 @@ function greyOut($el,msg) {
 
 
 
-function send_API_task(jsonData,$toDel,$toConf) {
+function send_API_task(jsonData,$toDel,$toConf,callback) {
  
    var usr = getUserInfo();
    usr = usr.split('|');
@@ -63,6 +63,10 @@ function send_API_task(jsonData,$toDel,$toConf) {
             createCookie(PAGE_MODIFIED,window.location.href,1/24);
             already_done();
          }
+
+         callback();
+
+         return true;
            
       }, 
       error:function() { 
@@ -71,6 +75,9 @@ function send_API_task(jsonData,$toDel,$toConf) {
             className: 'rubberBand animated error',
             centerVertical: true 
          });
+         
+         callback();
+         return false;
       }
    });
 }

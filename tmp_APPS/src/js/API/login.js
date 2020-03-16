@@ -40,28 +40,32 @@ function add_login_stuff() {
       });
    }
 
-   // Add Toolbos
-   if($('#tool_box').length !=0) {
+   // Add Toolbox
+   if($('#tool_box').length !=0 && $('#confdel').length == 0) {
       // On Obs Page
 
       // DELETE
-      if($('#tool_box .del').length==0) {
-         $(delButton).html('<i class="icon-delete"></i> Delete').addClass('m-1 single').appendTo($('#tools'));
+      if($('#tool_box .del').length==0) { 
+         $('<div id="confdel" class="d-flex pb-1 mb-2" style="border-bottom:1px solid rgba(255,255,255,.3)"></div>').appendTo($('#tool_box'));
+         $(delButton).html('<i class="icon-delete"></i> Delete').addClass('m-1 delSingle').removeClass('del').appendTo($('#confdel'));
+         $(confButton).html('<i class="icon-check"></i> Confirm').addClass('m-1 confSingle').removeClass('conf').appendTo($('#confdel'));
+         $('<a class="reduc1 col btn btn-success btn-sm ml-1" title="Pick Meteor Position"><i class="icon-image"></i> Meteor Picker</a>').addClass('m-1 d-block w-100').appendTo($('#tool_box'));
       }
-      // CONF
-      if($('#tool_box .conf').length==0) {
-         $(confButton).html('<i class="icon-check"></i> Confirm').addClass('m-1 single').appendTo($('#tools'));
-      } 
-      // METEOR PICKER
-      if($('#tool_box .reduc1').length==0) {
-         $('<a class="reduc1 col btn btn-success btn-sm ml-1" title="Pick Meteor Position"><i class="icon-image"></i> Meteor Picker</a>').addClass('m-1 d-block w-100').appendTo($('#tools'));
-      }
-
+      
+ 
       // Show Tools
-      $('#tool_box').removeClass('d-none');
+      $('#tools').removeClass('d-none');
+      $('#tool_box').parent().removeClass('d-none');
 
+      // Setup Single Delete & Conf Buttons
+      //console.log("SETUP SING DEL BUT");
       setup_single_delete_buttons();
+      
+      //console.log("SETUP SING CONF BUT");
       setup_single_conf_buttons();
+
+      // Setup Meteor Picker (Manual Reduce1)
+      setup_manual_reduc1();
 
    }
 
@@ -77,8 +81,6 @@ function add_login_stuff() {
    } 
 
 
-   // Setup Meteor Picker (Manual Reduce1)
-   setup_manual_reduc1();
 
  
 
@@ -120,10 +122,10 @@ function logout() {
 
 // Update UI based on logged or not 
 function loggedin() {
-   console.log("TEST LOGGED IN ")
+   //console.log("TEST LOGGED IN ")
    if(test_logged_in()!==null) {
 
-      console.log("LOGGED IN")
+      //console.log("LOGGED IN")
       // Add buttons
       add_login_stuff();
       
@@ -137,7 +139,7 @@ function loggedin() {
    } 
    else {
 
-      console.log("NOT LOGGED IN")
+      //console.log("NOT LOGGED IN")
 
       $("a#login").text('Login');
       setup_login();
