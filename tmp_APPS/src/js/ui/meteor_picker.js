@@ -208,11 +208,6 @@ function meteor_select(dir,all_frames_ids) {
 function addPickerModalTemplate(meteor_id,neighbor) {
     var c;
     
-   // BUTTON FOR SINGLE MODE
-   // <div>\
-   // <button id="switch_select_mode" class="btn btn-primary btn-sm" data-lbl="Switch to multiple mode"><b>Switch to single mode</b></button>\
-   // </div>\
-
     if($('#select_meteor_modal').length==0) {
 
         c = '<div id="select_meteor_modal" class="modal fade multiple-select" tabindex="-1">\
@@ -250,8 +245,7 @@ function addPickerModalTemplate(meteor_id,neighbor) {
  
     // We update the preview
     $('#nav_prev').html(''); 
-
-
+ 
     // Add the "create frames buttons"
     $.each(neighbor, function(i,v)  {
         if(v.id==meteor_id) {
