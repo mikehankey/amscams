@@ -134,8 +134,8 @@ def make_event_station_report(json_file):
       x,y,w,h  = get_ROI_from_arc_json(PATH_TO_CLOUD+json_file)
       template = template.replace('{X}',str(x)) 
       template = template.replace('{Y}',str(y)) 
-      template = template.replace('{W}',str(x-w))
-      template = template.replace('{H}',str(y-h)) 
+      template = template.replace('{W}',str(w-x))
+      template = template.replace('{H}',str(h-y)) 
 
    else:
       template = template.replace('{X}','') 
