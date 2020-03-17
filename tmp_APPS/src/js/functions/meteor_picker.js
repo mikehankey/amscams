@@ -35,10 +35,7 @@ function open_meteor_picker(all_frames_ids, meteor_id, color, img_path) {
       $('.meteor_chooser').css('width',parseInt($('.meteor_chooser').height()*16/9));
 
       $('body').css('padding',0); // Because we don't want slidebars on body
-   })
-
-
-   $('#select_meteor_modal').modal('show');
+   }).modal('show');
   
 
 
