@@ -30,7 +30,7 @@ function open_meteor_picker(all_frames_ids, meteor_id, color, img_path) {
 
    // SETUP SIZES (16/9)
    console.log("ADD 16/9");
-   new_heig = parseInt($('.meteor_chooser').height()- $('#nav_prev').height() -$('.modal-footer').height() - 2*1*50);
+   new_heig = parseInt($('.meteor_chooser').outerHeight()- $('#nav_prev').outerHeight() -$('.modal-footer').height() - 2*1*50);
    $('.meteor_chooser').css('height',new_heig);
    console.log("NEW H" + new_heig)
    $('.meteor_chooser').css('width',parseInt($('.meteor_chooser').height()*16/9));
