@@ -65,6 +65,7 @@ function add_login_stuff() {
       setup_single_conf_buttons();
 
       // Setup Meteor Picker (Manual Reduce1)
+      console.log("SETUP MANUAL REDUCE1")
       setup_manual_reduc1();
 
 
