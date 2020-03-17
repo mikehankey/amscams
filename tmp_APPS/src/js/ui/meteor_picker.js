@@ -229,7 +229,7 @@ function addPickerModalTemplate(meteor_id,neighbor) {
             <button id="met-sel-next" title="Next" type="button" class="mfp-arrow mfp-arrow-right mfp-prevent-close"></button>\
             <button id="met-sel-prev" title="Prev" type="button" class="mfp-arrow mfp-arrow-left mfp-prevent-close"></button>\
             <div class="d-flex justify-content-center" id="nav_prev">\
-            </div><div style="box-shadow: 0 0px 8px rgba(0,0,0,.6);width: 100%;background-size: cover; height: 100%;" class="meteor_chooser">\
+            </div><div style="background-size: cover; height: 100%;" class="meteor_chooser">\
             <div id="org_lh"></div><div id="org_lv"></div><div id="lh"></div><div id="lv"></div></div>\
             </div>\
             <div class="update_meteor_thumb_pos_list">\
