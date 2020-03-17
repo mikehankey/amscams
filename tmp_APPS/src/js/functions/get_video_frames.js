@@ -75,6 +75,7 @@ async function extractFramesFromVideo(videoUrl,firstframe, how_many_frames, fps=
    $('#play_anim_tv').removeClass('disabled');
 
    load_done_button($("#play_anim_tv"));
+   loading_button($(".fr_only"));
  }
 
  $(function() {  
@@ -83,6 +84,7 @@ async function extractFramesFromVideo(videoUrl,firstframe, how_many_frames, fps=
          
       // Frame by frame animation holding
       loading_button($("#play_anim_tv"));
+      loading_button($(".fr_only"));
 
       // What's the first frame we want to get?
       asyncCall(first_frame, how_many_frames)

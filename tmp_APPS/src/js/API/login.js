@@ -67,6 +67,9 @@ function add_login_stuff() {
       // Setup Meteor Picker (Manual Reduce1)
       setup_manual_reduc1();
 
+
+      load_done_button($('.fr_only'));
+
    }
 
    // Show Details on Daily Report Page
