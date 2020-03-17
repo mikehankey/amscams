@@ -81,9 +81,7 @@ function  setup_manual_reduc1() {
       // Find first id in the table
       var $tr = $('#reduc-tab table tbody tr');
       var color = $tr.find('img').css('border-color');
-
-      console.log("COLOR ")
-      console.log(color)
+ 
        
       $tr = $($tr[0]); 
       var meteor_id = $tr.attr('id');
@@ -100,9 +98,7 @@ function  setup_manual_reduc1() {
    $('.wi a').click(function(e) { 
       var $tr = $(this).closest('tr'); 
       var color = $tr.find('img').css('border-color');
- 
-      console.log("COLOR ")
-      console.log(color)
+  
 
       e.stopPropagation();
 

@@ -179,29 +179,6 @@ function update_meteor_info_list(fn) {
 }
 
 
-// Select a meteor (next/prev arrows)
-function meteor_select(dir,all_frames_ids) {
-    var next_id;
-    var cur_id = parseInt($('#sel_frame_id').text());
-    var cur_index = all_frames_ids.indexOf(cur_id);
-      
-    if(dir=="prev") {
-        if(cur_index==0) {
-            next_id = all_frames_ids.length-1;
-        } else {
-            next_id = cur_index - 1;
-        }
-    } else {
-        if(cur_index==all_frames_ids.length-1) {
-            next_id = 0;
-        } else {
-            next_id = cur_index + 1;
-        }
-    } 
-
-    // Open the next or previous one
-    $('#reduc-tab table tbody tr#fr_' + all_frames_ids[next_id] + " .select_meteor").click();
-}
 
 
 // Modal for selector
@@ -241,7 +218,7 @@ function addPickerModalTemplate(meteor_id,neighbor) {
         <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>\
         </div></div></div>';
         $(c).appendTo('body');
-    }  
+
 
  
     // We update the preview
@@ -283,7 +260,7 @@ function addPickerModalTemplate(meteor_id,neighbor) {
 
     update_meteor_info_list(meteor_id);
 
-
+   }  
 
    
 }
