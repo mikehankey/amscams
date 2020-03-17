@@ -27,6 +27,11 @@ function open_meteor_picker(all_frames_ids, meteor_id, color, img_path) {
    // Add image 
    $('.meteor_chooser').css('background-image','url('+img_path+')').css('border','2px solid ' + color);
 
+
+   // SETUP SIZES (16/9)
+   $('.meteor_chooser').css('height',parseInt($('.meteor_chooser').height()));
+   $('.meteor_chooser').css('width',parseInt($('.meteor_chooser').height()*16/9));
+s
    // Add current ID
    $('#sel_frame_id, .sel_frame_id').text(meteor_id);
 

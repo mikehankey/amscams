@@ -284,58 +284,7 @@ function addPickerModalTemplate(meteor_id,neighbor) {
         }
 
     });
-
-
-   
-    // Click on thumbs
-    $('.select_frame').unbind('click').click(function() {
-        $('tr#fr_'+$(this).attr('data-m') + ' .select_meteor').click();
-    })
-
-    // Click on delete 
-    $('.delete_frame_from_modal').unbind('click').click(function() {
-        delete_frame_from_crop_modal(parseInt($('#sel_frame_id').html()));
-    });
-
-    // Click on "+"
-    $('.create_frame_fs').click(function(e) { 
-
-       e.stopImmediatePropagation();
-
-        // Create the modal with the new frame
-        // Here we get the values of the previous frame
-        // or the next one if the previous doesn't exist
-        // so we automatically place the meteor selector "near" the right place
-        var frame_id = $(this).attr('data-fr');
-        var neighbor =  get_help_pos('next', frame_id);
-  
-        if(neighbor == null) {
-            neighbor =  get_help_pos('prev', frame_id);
-        }
-        
-        get_frame(frame_id, neighbor);
-        return false;
-        
-    }); 
-    
-    // Switch  "Multiple Mode" / "Single Mode"
-    $('#switch_select_mode').click(function(e) { 
-        e.stopImmediatePropagation();
-        var t, $t = $(this);
-        multiple_select = (multiple_select==true)?false:true;
-        t = $t.text();
-        $t.text($t.attr('data-lbl')).attr('data-lbl', t);
-        $('#select_meteor_modal').toggleClass('multiple-select');
-        return false;
-    })
  
-     
-    // Update Multiple 
-    $('#select_multiple_meteors_ajax').click(function(e){
-        e.stopImmediatePropagation();
-        select_multiple_meteors_ajax();
-        return false;
-    });
 
     update_meteor_info_list(meteor_id);
 
