@@ -3,7 +3,7 @@ function loading_button($btn) {
    if(typeof $btn.attr('data-init') == 'undefined' || $btn.attr('data-init')== '') {
       $btn.attr('data-init',$btn.html()).attr('style','height:'+h+'px!important;width:'+w+'px!important')
       $btn.html('<img src="/APPS/dist/img/loader.svg" class="img-fluid" style="height:calc('+h+'px - 2*.25rem)"/>');
-      $btn.attr('disabled','disabled');
+      $btn.attr('disabled','disabled').addClass('disabled');
    }
 
 }
@@ -11,6 +11,7 @@ function loading_button($btn) {
 function load_done_button($btn) {
    $btn.html($btn.attr('data-init')); 
    $btn.attr('data-init','');
+   $btn.removeAttr('disabled').removeClass('disabled');
 }
 
 
