@@ -169,5 +169,7 @@ function  setup_manual_reduc1() {
 
       
       open_meteor_picker(all_frames_ids,meteor_id,color,$tr.find('img').attr('src'));
+
+      return false;
    });
 }
