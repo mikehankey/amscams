@@ -81,6 +81,7 @@
 
     position: relative;
     display: block;
+    opacity: .6;
 
     span {
       position: absolute;
@@ -91,12 +92,12 @@
       background: rgba(0,0,0,.5);
       font-size: .6rem;
       font-weight: bold;
-      opacity: .6;
+     
     } 
 }
 
 .ccur {
-    span { 
+    .select_frame_btn { 
         opacity: 1;
     }
 }
