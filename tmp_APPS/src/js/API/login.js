@@ -107,9 +107,7 @@ function remove_login_stuff() {
    $('#conf_text').text('');
 
    // Toolbox
-   $('#tool_box').html('').addClass('d-none')
-
-
+   $('#tool_box').html('').parent().addClass('d-none') 
 }
 
 
