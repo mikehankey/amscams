@@ -70,7 +70,6 @@ def make_event_station_report(json_file):
 
    # Create link to daily report
    link_to_daily_report = "/"+analysed_name['station_id']+"/REPORTS/"+analysed_name['year']+"/"+analysed_name['month']+"_"+analysed_name['day']+"/index.html"
-
    full_date = analysed_name['year']+'/'+analysed_name['month']+'/'+analysed_name['day']+' '+analysed_name['hour']+":"+analysed_name['min']+":"+analysed_name['sec']+"."+analysed_name['ms']
 
    # Template data
@@ -94,9 +93,8 @@ def make_event_station_report(json_file):
 
    template = template.replace('{HOW_MANY_FRAMES}',str(how_many_frames))
    template = template.replace('{FIRST_FRAME}',str(first_frame))
-
-
-   # Get (H) Video Path
+ 
+   # Get (HD) Video Path
    HD_vid = True
    video_btn = ""
    sd_video_full_path = ""
@@ -117,25 +115,48 @@ def make_event_station_report(json_file):
   
    # Do we have a cropped version of the video?
    cropped_hd_full_path = hd_video_full_path.replace('-HD','-HD-cropped') 
+   we_have_a_cropped = False
+
    if(cfe(cropped_hd_full_path)==1):
       template = template.replace('{CROPPED_VIDEO}',cropped_hd_full_path.replace(PATH_TO_CLOUD,ARCHIVE_URL)) 
+      we_have_a_cropped = True
    else:
       cropped_sd_full_path = sd_video_full_path.replace('-SD','-SD-cropped')
       if(cfe(cropped_sd_full_path)==1):
          template = template.replace('{CROPPED_VIDEO}',cropped_sd_full_path.replace(PATH_TO_CLOUD,ARCHIVE_URL)) 
-   
+         we_have_a_cropped = True
+    
+
+   if( we_have_a_cropped == True):
+      # Add info about the cropped video
+      # 1) Size
+      x,y,w,h  = get_ROI_from_arc_json(PATH_TO_CLOUD+json_file)
+      w = x+w
+      h = y+h
+      template = template.replace('{X}',x) 
+      template = template.replace('{Y}',y) 
+      template = template.replace('{W}',w) 
+      template = template.replace('{H}',h) 
+
+   else:
+      template = template.replace('{X}','') 
+      template = template.replace('{Y}','') 
+      template = template.replace('{W}','') 
+      template = template.replace('{H}','') 
+
+
+ 
+
 
    # Frame by Frame animation button
    video_btn += '<a id="play_anim_tv" class="col btn btn-secondary mt-0 mb-0 ml-1 d-block disabled" href="#"><i class="icon-youtube"></i> Frames by F</a>'
-
-
+ 
    # Add the video buttons
    if(video_btn!=''):
       template = template.replace('{VIDEO_BTNS}',video_btn)
    else:
       template = template.replace('{VIDEO_BTNS}','')
-   
-
+    
    # Video Btns
    playBtns = '''
       <div class="video-controls-holder d-flex justify-content-between">
@@ -152,8 +173,7 @@ def make_event_station_report(json_file):
     '''
 
    template = template.replace('{VIDEO}','<figure id="videoContainer" data-fullscreen="false"><video id="main_video_player" width="960" height="540" loop=""><source src="'+json_file.replace('.json','-HD.mp4')+'" type="video/mp4"></video>'+playBtns+'</figure>')
- 
-
+  
    # NO-Cache
    template = template.replace("{RAND}",str(random.randint(0, 99999999)))
 
@@ -192,6 +212,8 @@ def make_event_station_report(json_file):
     
    # Report Details
    template = template.replace("{REPORT_DETAILS}",report_details)
+
+
 
      
    # Create Template

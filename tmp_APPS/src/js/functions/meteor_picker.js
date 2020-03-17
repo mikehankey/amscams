@@ -24,50 +24,29 @@ function add_image_inside_meteor_select(img_path, color, all_frames_ids,meteor_i
       // Select top miniature
       $('.ccur').removeClass('ccur');
       $('a[data-m="'+meteor_id+'"]').parent().addClass('ccur');
-
-
-
-
 }
 
 function open_meteor_picker(all_frames_ids, meteor_id, color, img_path) {
-
-   var viewer_dim = viewer_DIM; 
-   var real_width, real_height;
-   var neighbor = get_neighbor_frames(meteor_id); 
-   var real_width, real_height;
  
+   var neighbor = get_neighbor_frames(meteor_id);  
    addPickerModalTemplate(meteor_id,neighbor);
  
    // Show Modal if necessary
-   if($('#select_meteor_modal').hasClass('show')) {
-      console.log("MODAL IN") 
+   if($('#select_meteor_modal').hasClass('show')) { 
       add_image_inside_meteor_select(img_path, color, all_frames_ids,meteor_id);
    } else {
-      // When the modal already exists
-      console.log("MODAL NOT SHOWN")
+      // When the modal already exists 
       $('#select_meteor_modal').on('shown.bs.modal', function () {
          $('#select_meteor_modal').css('padding-right',0);
          add_image_inside_meteor_select(img_path, color, all_frames_ids,meteor_id);
          $('body').css('padding',0); // Because we don't want slidebars on body
       }).modal('show');
-   }
-
-  
-  
-
-  
-
+   } 
     // Add Frame # to header
     $('#sel_frame_id').text(meteor_id);
 
-   return false;
- 
- 
-}
-
-
-
+   return false; 
+} 
 
 
 function  setup_manual_reduc1() { 
