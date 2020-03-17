@@ -136,6 +136,11 @@ function open_meteor_picker(all_frames_ids, meteor_id, color, img_path) {
 function  setup_manual_reduc1() { 
    var all_frames_ids = [];
 
+   // Only for loggedin
+   if(test_logged_in()==null) {
+      return false;
+   }
+
    // Get all the frame ids
    $('#reduc-tab table tbody tr').each(function() {
        var id = $(this).attr('id');

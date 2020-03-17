@@ -76,6 +76,11 @@ async function extractFramesFromVideo(videoUrl,firstframe, how_many_frames, fps=
 
    load_done_button($("#play_anim_tv"));
    load_done_button($(".fr_only"));
+
+
+   // Setup Meteor Picker (Manual Reduce1) 
+   // ONLY WHEN FRAMES ARE LOADED (!)
+   setup_manual_reduc1();
  }
 
  $(function() {  
