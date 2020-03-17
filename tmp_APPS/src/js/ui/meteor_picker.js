@@ -212,7 +212,7 @@ function addPickerModalTemplate(meteor_id,neighbor) {
 
         c = '<div id="select_meteor_modal" class="modal fade multiple-select" tabindex="-1">\
         <input type="hidden" name="thumb_w"/><input type="hidden" name="thumb_h"/>\
-        <div class="modal-dialog  modal-lg modal-dialog-centered" role="document" style="width: 99%; max-width: 99%;height: 100vh;margin: 0;">\
+        <div class="modal-dialog  modal-lg modal-dialog-centered" role="document" style="width: 100%; max-width: 100%;height: 100vh;margin: 0;">\
         <div class="modal-content" style="height: 100vh;">\
         <div class="modal-header"> \
             <div><strong>FRAME #<span id="sel_frame_id"></span></strong> \
