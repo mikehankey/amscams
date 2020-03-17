@@ -14,34 +14,35 @@ function open_meteor_picker(all_frames_ids, meteor_id, color, img_path) {
    $('#select_meteor_modal').on('shown.bs.modal', function () {
  
       $('#select_meteor_modal').css('padding-right',0);
-
-         // Add image 
-      var height = $('.select_meteor_holder').outerHeight() - $('#nav_prev').outerHeight() - 4;
-      
-      $('.meteor_chooser').css({'background-image':'url('+img_path+')','height':height - 4}).css('border','2px solid ' + color);
-
-      // Setup 16/9 dim
-      $('.meteor_chooser').css('width',parseInt($('.meteor_chooser').height()*16/9));
-      
-       
-      // Prev Button
-      $('#met-sel-prev').unbind('click').click(function() {
-         meteor_select("prev",all_frames_ids);
-         return false;
-      });
-
-      // Next Button
-      $('#met-sel-next').unbind('click').click(function() {
-         meteor_select("next",all_frames_ids);
-         return false;
-      });
-
-      $('body').css('padding',0); // Because we don't want slidebars on body
-
-      // Add Frame # to header
-      $('#sel_frame_id').text(meteor_id);
+ 
    }).modal('show');
   
+
+    // Add image 
+    var height = $('.select_meteor_holder').outerHeight() - $('#nav_prev').outerHeight() - 4;
+      
+    $('.meteor_chooser').css({'background-image':'url('+img_path+')','height':height - 4}).css('border','2px solid ' + color);
+
+    // Setup 16/9 dim
+    $('.meteor_chooser').css('width',parseInt($('.meteor_chooser').height()*16/9));
+    
+     
+    // Prev Button
+    $('#met-sel-prev').unbind('click').click(function() {
+       meteor_select("prev",all_frames_ids);
+       return false;
+    });
+
+    // Next Button
+    $('#met-sel-next').unbind('click').click(function() {
+       meteor_select("next",all_frames_ids);
+       return false;
+    });
+
+    $('body').css('padding',0); // Because we don't want slidebars on body
+
+    // Add Frame # to header
+    $('#sel_frame_id').text(meteor_id);
 
    return false;
  
