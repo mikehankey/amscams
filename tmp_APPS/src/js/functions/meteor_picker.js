@@ -115,6 +115,8 @@ function meteor_select(dir,all_frames_ids) {
    console.log("METEOR SELECT")
    console.log("CUR ID " + cur_id)
    console.log("CUR INDEX " + cur_index)   
+   console.log("ALL FRAMES ")
+   console.log(all_frames_ids)
 
    if(dir=="prev") {
        if(cur_index==0) {
@@ -129,7 +131,10 @@ function meteor_select(dir,all_frames_ids) {
            next_id = cur_index + 1;
        }
    } 
- 
+   
+
+   console.log("NEXT ID ")
+   console.log(next_id)
 
    // Open the next or previous one
    $('#reduc-tab table tbody tr#fr_' + all_frames_ids[next_id] + " a").click();
