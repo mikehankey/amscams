@@ -16,6 +16,7 @@ import re
 import random
 
 from lib.FileIO import *  
+from lib.Video_Tools_Fundamentals import get_ROI_from_arc_json
 
 from doDay import analyse_report_file
 
