@@ -1,13 +1,13 @@
  
 
-.meteor_chooser { 
-    background-size: contain;
+.meteor_chooser {  
     cursor: crosshair;
     position: relative;
     overflow: hidden;
     margin: 0 auto;
     background-color:#111;
-    background-repeat: no-repeat;
+    background-repeat: no-repeat; 
+    background-size: cover;   
 }
 
 #lh, #org_lh {
@@ -45,6 +45,7 @@
     width: 66px;
     border-style: solid;
     cursor:pointer;
+    opacity: .6;
 
     &:hover {
         img {
@@ -52,10 +53,8 @@
         }
     }
 
-    &.cur {
-        zoom: 1.2;
-        margin-top: -.5rem;
-        margin-bottom: .8rem;
+    &.cur { 
+       opacity: 1;
     }
 }
 
