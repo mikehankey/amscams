@@ -75,7 +75,7 @@ async function extractFramesFromVideo(videoUrl,firstframe, how_many_frames, fps=
    $('#play_anim_tv').removeClass('disabled');
 
    load_done_button($("#play_anim_tv"));
-   loading_button($(".fr_only"));
+   load_done_button($(".fr_only"));
  }
 
  $(function() {  
