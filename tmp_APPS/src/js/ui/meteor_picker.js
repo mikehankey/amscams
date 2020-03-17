@@ -218,6 +218,7 @@ function addPickerModalTemplate(meteor_id,neighbor) {
             <div><strong>FRAME #<span id="sel_frame_id"></span></strong> \
             - Click the center of the meteor to update the reduction frame. \
             </div>\
+            <button type="button" class="close" data-dismiss="modal">×</button>\
         </div>\
         <div class="modal-body">\
         <div class="select_meteor_holder">\

@@ -23,6 +23,7 @@ function open_meteor_picker(all_frames_ids, meteor_id, color, img_path) {
 
    // Show Modal
    $('#select_meteor_modal').modal('show');
+   $('body').css('padding',0); // Because we don't want slidebars on body
 
    // Add image 
    $('.meteor_chooser').css({'background-image':'url('+img_path+')','height':$('.select_meteor_holder').outerHeight() - $('#nav_prev').outerHeight() - 4}).css('border','2px solid red');
