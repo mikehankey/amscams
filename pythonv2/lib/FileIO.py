@@ -201,7 +201,7 @@ def get_day_files(day, cams_id, json_conf, sun=None,in_hour=None,detect=None):
          fn = file.split("/")[-1]
          rt = fn.replace(".mp4", "")
          if rt in meteor_files:
-            print(rt, meteor_files, "<BR>")
+            #print(rt, meteor_files, "<BR>")
             base_info = "meteor"
          else:
             base_info = ""

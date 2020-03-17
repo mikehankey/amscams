@@ -9047,7 +9047,10 @@ def obj_to_arc_meteor(meteor_file):
       sd_meteor = mj['motion_objects'][key]
 
    # apply the calib
-   hd_meteor['hd_trim'] = mj['hd_trim']
+   if hd_meteor is not None:
+      hd_meteor['hd_trim'] = mj['hd_trim']
+   else:
+      hd_meteor['hd_trim'] = mj['sd_trim']
    sd_meteor['sd_trim'] = mj['sd_trim']
    calib,cal_params = apply_calib(hd_meteor)
 
