@@ -22,7 +22,7 @@ function add_image_inside_meteor_select(img_path, color, all_frames_ids,meteor_i
       });
 
       // Select top miniature
-      $('.ccur').removeClass('curr');
+      $('.ccur').removeClass('ccur');
       $('a[data-m="'+meteor_id+'"]').parent().addClass('ccur');
 
 
