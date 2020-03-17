@@ -24,7 +24,7 @@ function open_meteor_picker(all_frames_ids, meteor_id, color, img_path) {
    // Show Modal
 
    $('#select_meteor_modal').on('shown', function () {
-      console.log("MODAL SHOWN"),
+      console.log("MODAL SHOWN");
 
          // Add image 
       var height = $('.select_meteor_holder').outerHeight() - $('#nav_prev').outerHeight() - 4;
