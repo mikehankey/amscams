@@ -25,7 +25,7 @@ function open_meteor_picker(all_frames_ids, meteor_id, color, img_path) {
    $('#select_meteor_modal').modal('show');
 
    // Add image 
-   $('.meteor_chooser').css({'background-image':'url('+img_path+')','height':'calc(100vh - 4px)'}).css('border','2px solid ' + color);
+   //$('.meteor_chooser').css({'background-image':'url('+img_path+')','height':'calc(100vh - 4px)'}).css('border','2px solid ' + color);
 
 
    // SETUP SIZES (16/9)
