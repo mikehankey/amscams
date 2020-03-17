@@ -9,18 +9,6 @@ function open_meteor_picker(all_frames_ids, meteor_id, color, img_path) {
  
    addPickerModalTemplate(meteor_id,neighbor);
  
-   // Prev Button
-   $('#met-sel-prev').unbind('click').click(function() {
-      meteor_select("prev",all_frames_ids);
-      return false;
-   });
-
-   // Next Button
-   $('#met-sel-next').unbind('click').click(function() {
-      meteor_select("next",all_frames_ids);
-      return false;
-   });
-
    // Show Modal
 
    $('#select_meteor_modal').on('shown.bs.modal', function () {
@@ -34,9 +22,24 @@ function open_meteor_picker(all_frames_ids, meteor_id, color, img_path) {
 
       // Setup 16/9 dim
       $('.meteor_chooser').css('width',parseInt($('.meteor_chooser').height()*16/9));
- 
+      
+       
+      // Prev Button
+      $('#met-sel-prev').unbind('click').click(function() {
+         meteor_select("prev",all_frames_ids);
+         return false;
+      });
+
+      // Next Button
+      $('#met-sel-next').unbind('click').click(function() {
+         meteor_select("next",all_frames_ids);
+         return false;
+      });
 
       $('body').css('padding',0); // Because we don't want slidebars on body
+
+      // Add Frame # to header
+      $('#sel_frame_id').text(meteor_id);
    }).modal('show');
   
 
@@ -97,4 +100,32 @@ function  setup_manual_reduc1() {
 
       return false;
    });
+}
+
+
+
+
+
+// Select a meteor (next/prev arrows)
+function meteor_select(dir,all_frames_ids) {
+   var next_id;
+   var cur_id = parseInt($('#sel_frame_id').text());
+   var cur_index = all_frames_ids.indexOf(cur_id);
+     
+   if(dir=="prev") {
+       if(cur_index==0) {
+           next_id = all_frames_ids.length-1;
+       } else {
+           next_id = cur_index - 1;
+       }
+   } else {
+       if(cur_index==all_frames_ids.length-1) {
+           next_id = 0;
+       } else {
+           next_id = cur_index + 1;
+       }
+   } 
+
+   // Open the next or previous one
+   $('#reduc-tab table tbody tr#fr_' + all_frames_ids[next_id] + " .select_meteor").click();
 }
