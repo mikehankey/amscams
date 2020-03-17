@@ -23,7 +23,7 @@ function open_meteor_picker(all_frames_ids, meteor_id, color, img_path) {
 
    // Show Modal
 
-   $('#select_meteor_modal').on('shown', function () {
+   $('#select_meteor_modal').on('shown.bs.modal', function () {
       console.log("MODAL SHOWN");
 
          // Add image 
@@ -33,13 +33,14 @@ function open_meteor_picker(all_frames_ids, meteor_id, color, img_path) {
 
       // Setup 16/9 dim
       $('.meteor_chooser').css('width',parseInt($('.meteor_chooser').height()*16/9));
+ 
 
       $('body').css('padding',0); // Because we don't want slidebars on body
    }).modal('show');
   
 
 
-    
+    select_meteor_modal
    // Add current ID
    $('#sel_frame_id, .sel_frame_id').text(meteor_id);
 
