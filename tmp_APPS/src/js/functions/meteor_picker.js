@@ -25,21 +25,12 @@ function open_meteor_picker(all_frames_ids, meteor_id, color, img_path) {
    $('#select_meteor_modal').modal('show');
 
    // Add image 
-   //$('.meteor_chooser').css({'background-image':'url('+img_path+')','height':'calc(100vh - 4px)'}).css('border','2px solid ' + color);
+   $('.meteor_chooser').css({'background-image':'url('+img_path+')','height':$('.select_meteor_holder').outerHeight() - $('#nav_prev').outerHeight() - 4}).css('border','2px solid red');
 
-
-   // SETUP SIZES (16/9)
-   /*
-   console.log("ADD 16/9");
-   new_heig = parseInt($('.meteor_chooser').outerHeight()- $('#nav_prev').outerHeight() - $('#select_meteor_modal .modal-footer').outerHeight()  - $('#select_meteor_modal .modal-header').outerHeight());
-   
-   if(new_heig> )
-   
-   $('.meteor_chooser').css('height',new_heig);
-   console.log("NEW H" + new_heig)
+   // Setup 16/9 dim
    $('.meteor_chooser').css('width',parseInt($('.meteor_chooser').height()*16/9));
-   */
-
+   
+ 
    // Add current ID
    $('#sel_frame_id, .sel_frame_id').text(meteor_id);
 
