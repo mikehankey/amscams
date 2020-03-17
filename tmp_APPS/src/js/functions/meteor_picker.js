@@ -34,7 +34,7 @@ function open_meteor_picker(all_frames_ids, meteor_id, color, img_path) {
    addPickerModalTemplate(meteor_id,neighbor);
  
    // Show Modal if necessary
-   if($('#select_meteor_modal').hasClass('in')) {
+   if($('#select_meteor_modal').hasClass('show')) {
       console.log("MODAL IN") 
       add_image_inside_meteor_select(img_path, color, all_frames_ids);
    } else {
