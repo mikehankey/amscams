@@ -132,8 +132,6 @@ def make_event_station_report(json_file):
       # Add info about the cropped video
       # 1) Size
       x,y,w,h  = get_ROI_from_arc_json(PATH_TO_CLOUD+json_file)
-      w = x+w
-      h = y+h
       template = template.replace('{X}',str(x)) 
       template = template.replace('{Y}',str(y)) 
       template = template.replace('{W}',str(w))
