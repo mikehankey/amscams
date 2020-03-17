@@ -125,16 +125,16 @@ def main_thread():
       # only start this process is the total pending files is < 500
       if len(state['pending_files']) < 500: 
          print("Less than 500 files in the pending queue. This is good! We can do some more jobs.")
-         scan_running = check_running("scan_stack.py bs")
-         if scan_running == 0:
-            print("scan_stack.py is not running.")
-            cmd = "./scan_stack.py bs " + current_date + " > /dev/null 2>&1 &"
-            state['scan_stack'] = time.time()
-            print(cmd)
-            os.system(cmd)
-         else:
-            print("scan_stack.py is running.")
 
+      scan_running = check_running("scan_stack.py bs")
+      if scan_running == 0:
+         print("scan_stack.py is not running.")
+         cmd = "./scan_stack.py bs " + current_date + " > /dev/null 2>&1 &"
+         state['scan_stack'] = time.time()
+         print(cmd)
+         os.system(cmd)
+      else:
+         print("scan_stack.py is running.")
       # TASK #3 - manage the vals detection processing 
       if time.time() - state['vals_detect'] > 600:
          run_vals_detect(current_date)
@@ -210,7 +210,7 @@ def run():
       main_thread()
 
 if __name__ == "__main__":
-   if len(sys.argv) > 2:
+   if len(sys.argv) >= 2:
       cmd = sys.argv[1]
    else:
       cmd = ""
