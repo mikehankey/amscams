@@ -1,5 +1,5 @@
 function loading_button($btn) {
-   var h=$btn.outerHeight(),w=$btn.width(),ih=$btn.innerHeight();
+   var h=$btn.outerHeight(),w=$btn.outerWidth();
    if(typeof $btn.attr('data-init') == 'undefined' || $btn.attr('data-init')== '') {
       $btn.attr('data-init',$btn.html()).attr('style','height:'+h+'px!important;width:'+w+'px!important')
       $btn.html('<img src="/APPS/dist/img/loader.svg" class="img-fluid" style="height:calc('+h+'px - 2*.25rem)"/>');
