@@ -1,10 +1,8 @@
-function add_image_inside_meteor_select(img_path, color, all_frames_ids) {
+function add_image_inside_meteor_select(img_path, color, all_frames_ids,meteor_id) {
    
       // Add image 
       var height = $('.select_meteor_holder').outerHeight() - $('#nav_prev').outerHeight() - 4;
-      
-      console.log("IN ADD IMG INSIDE METEOR SELECT");
-      console.log(img_path);
+     
       
       $('.meteor_chooser').css({'background-image':'url('+img_path+')','height':height - 4}).css('border','2px solid ' + color);
 
@@ -22,6 +20,14 @@ function add_image_inside_meteor_select(img_path, color, all_frames_ids) {
          meteor_select("next",all_frames_ids);
          return false;
       });
+
+      // Select top miniature
+      $('.ccur').removeClass('curr');
+      $('a[data-m="'+meteor_id+'"]').parent().addClass('ccur');
+
+
+
+
 }
 
 function open_meteor_picker(all_frames_ids, meteor_id, color, img_path) {
@@ -36,13 +42,13 @@ function open_meteor_picker(all_frames_ids, meteor_id, color, img_path) {
    // Show Modal if necessary
    if($('#select_meteor_modal').hasClass('show')) {
       console.log("MODAL IN") 
-      add_image_inside_meteor_select(img_path, color, all_frames_ids);
+      add_image_inside_meteor_select(img_path, color, all_frames_ids,meteor_id);
    } else {
       // When the modal already exists
       console.log("MODAL NOT SHOWN")
       $('#select_meteor_modal').on('shown.bs.modal', function () {
          $('#select_meteor_modal').css('padding-right',0);
-         add_image_inside_meteor_select(img_path, color, all_frames_ids);
+         add_image_inside_meteor_select(img_path, color, all_frames_ids,meteor_id);
          $('body').css('padding',0); // Because we don't want slidebars on body
       }).modal('show');
    }
