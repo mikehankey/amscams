@@ -2,12 +2,14 @@ function add_image_inside_meteor_select(img_path, color, all_frames_ids) {
    
       // Add image 
       var height = $('.select_meteor_holder').outerHeight() - $('#nav_prev').outerHeight() - 4;
-         
+      
+      console.log("IN ADD IMG INSIDE METEOR SELECT");
+      console.log(img_path);
+      
       $('.meteor_chooser').css({'background-image':'url('+img_path+')','height':height - 4}).css('border','2px solid ' + color);
 
       // Setup 16/9 dim
-      $('.meteor_chooser').css('width',parseInt($('.meteor_chooser').height()*16/9));
-      
+      $('.meteor_chooser').css('width',parseInt($('.meteor_chooser').height()*16/9)); 
       
       // Prev Button
       $('#met-sel-prev').unbind('click').click(function() {
@@ -33,9 +35,11 @@ function open_meteor_picker(all_frames_ids, meteor_id, color, img_path) {
  
    // Show Modal if necessary
    if($('#select_meteor_modal').hasClass('in')) {
+      console.log("MODAL IN") 
       add_image_inside_meteor_select(img_path, color, all_frames_ids);
    } else {
-   // When the modal already exists
+      // When the modal already exists
+      console.log("MODAL NOT SHOWN")
       $('#select_meteor_modal').on('shown.bs.modal', function () {
          $('#select_meteor_modal').css('padding-right',0);
          add_image_inside_meteor_select(img_path, color, all_frames_ids);
@@ -120,8 +124,7 @@ function  setup_manual_reduc1() {
 function meteor_select(dir,all_frames_ids) {
    var next_id;
    var cur_id = parseInt($('#sel_frame_id').text());
-   var cur_index = all_frames_ids.indexOf(cur_id);
- 
+   var cur_index = all_frames_ids.indexOf(cur_id); 
 
    if(dir=="prev") {
        if(cur_index==0) {
