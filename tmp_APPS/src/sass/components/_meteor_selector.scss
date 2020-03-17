@@ -196,8 +196,9 @@
         }
 
         .select_meteor_holder {
-            width: 85%;
-            position:relative; 
+         width: 85%;
+         position: relative;
+         overflow-x: hidden;
         }
 
         .update_meteor_thumb_pos_list {
