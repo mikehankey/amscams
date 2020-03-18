@@ -51,7 +51,7 @@ function addPickerModalTemplate(all_frames_ids) {
    if($('#cropped_frame_select a').length == 0 ) { 
       // Get the images from the reduc table and display them in cropped_frame_select
       $.each(all_frames_ids, function(i,v) {
-         $('<a class="select_frame select_frame_btn done" data-rel="'+v+'"><span>HD#="'+v+'"<i class="pos"><br>x:? y:?</i></span><img src="'+ $('#thb_'+v).find('img').attr('src') +'"></a>').appendTo($('#cropped_frame_select div'));
+         $('<a class="select_frame select_frame_btn done" data-rel="'+v+'"><span>#"'+v+'"<i class="pos"><br>x:? y:?</i></span><img src="'+ $('#thb_'+v).find('img').attr('src') +'"></a>').appendTo($('#cropped_frame_select div'));
       });
    }  
    
@@ -131,7 +131,7 @@ function add_image_inside_meteor_select(img_path, color, all_frames_ids,meteor_i
 
 // Update Modal Template
 // MAke one frame active
-function updateModalTemplate(meteor_id,color,img_path) {
+function updateModalTemplate(meteor_id,color,img_path,all_frames_ids) {
 
    console.log("updateModalTemplate")
 
@@ -156,8 +156,8 @@ function updateModalTemplate(meteor_id,color,img_path) {
 
 
 // Open the Modal with a given meteor
-function open_meteor_picker(meteor_id, color, img_path) {
-   updateModalTemplate(meteor_id,color,img_path);
+function open_meteor_picker(meteor_id, color, img_path,all_frames_ids ) {
+   updateModalTemplate(meteor_id,color,img_path,all_frames_ids);
    return false; 
 } 
 
@@ -201,7 +201,7 @@ function  setup_manual_reduc1() {
       meteor_id = meteor_id.split('_')[1];
 
       // Then Do the all thing to open the meteor picker 
-      open_meteor_picker(all_frames_ids,meteor_id,color,$tr.find('img').attr('src'));
+      open_meteor_picker(meteor_id,color,$tr.find('img').attr('src'),all_frames_ids);
 
       return false;
    });
@@ -219,7 +219,8 @@ function  setup_manual_reduc1() {
       var meteor_id = $tr.attr('id');
       meteor_id = meteor_id.split('_')[1];
  
-      open_meteor_picker(all_frames_ids,meteor_id,color,$tr.find('img').attr('src'));
+      open_meteor_picker(meteor_id,color,$tr.find('img').attr('src'),all_frames_ids);
+
 
       return false;
    });
