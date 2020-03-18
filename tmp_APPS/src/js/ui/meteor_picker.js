@@ -21,7 +21,7 @@ function addPickerModalTemplate(all_frames_ids) {
                               </div>\
                            </div>\
                         </div>\
-                        <div id="cropped_frame_selector_hoder" class="m-3">\
+                        <div id="cropped_frame_selector_hoder" class="mr-3 ml-3">\
                               <div id="cropped_frame_selector" class="cur">\
                                  <div id="org_lh"></div>\
                                  <div id="org_lv"></div>\
