@@ -3,6 +3,9 @@
 // Modal for selector
 function addPickerModalTemplate(all_frames_ids) {
    var c;
+
+   console.log("IN addPickerModalTemplate")
+   console.log(all_frames_ids)
     
    if($('#select_meteor_modal').length==0) {
       c ='  <div id="select_meteor_modal" class="modal fade" tabindex="-1" style="padding-right: 0!important; display: block; width: 100vw; height: 100vh;>\
@@ -49,9 +52,13 @@ function addPickerModalTemplate(all_frames_ids) {
 
    // If the frames aren't on top the of the modal, we add them
    if($('#cropped_frame_select a').length == 0 ) {
+      console.log("WE HAD THE PREVIEWS")
+      
       // Get the images from the reduc table and display them in cropped_frame_select
-      $.each(all_frames_ids, function(i,v) {
+      $.each(all_frames_ids, function(v) {
          $('<a class="select_frame select_frame_btn done" data-rel="'+v+'"><span>HD#="'+v+'"<i class="pos"><br>x:? y:?</i></span><img src="'+ $('#thb_'+v).find('img').attr('src') +'"></a>').appendTo($('#cropped_frame_select div'));
+         console.log("FRAME #" + v);
+      
       });
    }  
    
@@ -142,8 +149,9 @@ function  setup_manual_reduc1() {
    });
   
    // Add modal Template
-   addPickerModalTemplate(all_frames_ids);
-
+   console.log("WE HAD THE PICKER MODAL WITH ")
+   console.log(all_frames_ids);
+   addPickerModalTemplate(all_frames_ids); 
 
    // Click on "Big" button 
    $('.reduc1').click(function(e) { 
