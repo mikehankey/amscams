@@ -136,13 +136,13 @@ function updateModalTemplate(meteor_id,color,img_path,all_frames_ids) {
 
    $('.select_frame').unbind('click').click(function() {
       var $t = $(this);
-      var meteor_id = $t.attr('data-rel');
-      var img_path = $('#thb_' + meteor_id + " img").attr('src');
-      var color =  $('#thb_' + meteor_id + " img").css('border-color');
+      var MID = $t.attr('data-rel');
+      var img_path = $('#thb_' + MID + " img").attr('src');
+      var color =  $('#thb_' + MID + " img").css('border-color');
        
 
       $('#cropped_frame_selector').css('background-image','url(none)').css('border','2px solid #fff');
-      add_image_inside_meteor_select(color,img_path,all_frames_ids,meteor_id)
+      add_image_inside_meteor_select(img_path,color,all_frames_ids,MID)
    });
 
 }
