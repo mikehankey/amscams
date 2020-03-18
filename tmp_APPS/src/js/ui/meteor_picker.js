@@ -100,10 +100,8 @@ function add_image_inside_meteor_select(img_path, color, all_frames_ids, meteor_
 
    // Add image 
    var height = parseInt($('#cropped_frame_selector').outerHeight() - $('#select_meteor_modal .modal-header').outerHeight());
-   $('#cropped_frame_selector').css('width', parseInt($('.meteor_chooser').outerHeight()*16/9)); 
-   $('#cropped_frame_selector').css('height', ($('.meteor_chooser').width()*9/16)+4); // 4 = borders 
-
- 
+   $('#cropped_frame_selector').css('height',$('#select_meteor_modal').outerHeight() - $('#select_meteor_modal .modal-header').outerHeight() -$("#thumb_browwser").outerHeight())
+   $('#cropped_frame_selector').css('width', parseInt($('.meteor_chooser').outerHeight()*16/9));  
 
    $('#sel_frame_id, .sel_frame_id').text(meteor_id);   
    return false;
