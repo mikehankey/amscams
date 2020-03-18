@@ -90,8 +90,7 @@ function get_neighbor_frames(cur_id) {
 }
 
 // Add Image Inside Picker
-function add_image_inside_meteor_select(img_path, color, all_frames_ids, meteor_id) {
-   alert("UPDATED");
+function add_image_inside_meteor_select(img_path, color, all_frames_ids, meteor_id) { 
    $('#cropped_frame_selector').css('background-image','url('+img_path+')').css('border','2px solid ' + color);
 
    // Add image 
@@ -118,7 +117,7 @@ function add_image_inside_meteor_select(img_path, color, all_frames_ids, meteor_
       console.log("img_path " + img_path);
       console.log("color " + color);
 
-
+      $('#cropped_frame_selector').css('background-image','url(none)').css('border','2px solid #fff');
       add_image_inside_meteor_select(color,img_path,all_frames_ids,meteor_id)
    });
 
