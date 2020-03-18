@@ -186,7 +186,7 @@ function addPickerModalTemplate(meteor_id,neighbor) {
     var c;
     
     if($('#select_meteor_modal').length==0) {
-       c= ' <div id="select_meteor_modal" class="modal fade" tabindex="-1"><h1>Manual Reduction Step 3</h1>\
+       c= ' <div id="select_meteor_modal" class="modal fade" tabindex="-1"><h1>Select Meteor Position</h1>\
        <div class="box">\
           <div class="modal-header p-0" style="border:none!important">\
              <div class="alert alert-info mb-3 p-1 pr-1 pl-2">Select the <strong>POSITION</strong> on the meteor on each frame.</div>\

@@ -43,8 +43,8 @@ function open_meteor_picker(all_frames_ids, meteor_id, color, img_path) {
    } else {
       // When the modal already exists 
       $('#select_meteor_modal').on('shown.bs.modal', function () {
-         $('#select_meteor_modal').css('padding-right',0);
          add_image_inside_meteor_select(img_path, color, all_frames_ids,meteor_id);
+         $('#select_meteor_modal').css('padding-right',0);
          $('body').css('padding',0); // Because we don't want slidebars on body
       }).modal('show');
    } 
