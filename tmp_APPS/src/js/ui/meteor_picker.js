@@ -1,5 +1,3 @@
-
-
 // Modal for selector
 function addPickerModalTemplate(all_frames_ids) {
    var c; 
