@@ -8,7 +8,7 @@ function addPickerModalTemplate(all_frames_ids) {
    console.log(all_frames_ids)
     
    if($('#select_meteor_modal').length==0) {
-      c ='  <div id="select_meteor_modal" class="modal fade" tabindex="-1" style="padding-right: 0!important; display: block; width: 100vw; height: 100vh;>\
+      c ='  <div id="select_meteor_modal" class="modal fade" tabindex="-1" style="padding-right: 0!important; display: block; width: 100vw; height: 100vh;">\
                   <div class="modal-dialog  modal-lg modal-dialog-centered box" style="width: 100vw;max-width: 100%;margin: 0; padding: 0;">\
                      <div class="modal-content" style="height: 100vh;">\
                         <div class="modal-header p-0 pt-1" style="border:none!important">\
@@ -55,7 +55,7 @@ function addPickerModalTemplate(all_frames_ids) {
       console.log("WE HAD THE PREVIEWS")
       
       // Get the images from the reduc table and display them in cropped_frame_select
-      $.each(all_frames_ids, function(v) {
+      $.each(all_frames_ids, function(i,v) {
          $('<a class="select_frame select_frame_btn done" data-rel="'+v+'"><span>HD#="'+v+'"<i class="pos"><br>x:? y:?</i></span><img src="'+ $('#thb_'+v).find('img').attr('src') +'"></a>').appendTo($('#cropped_frame_select div'));
          console.log("FRAME #" + v);
       
