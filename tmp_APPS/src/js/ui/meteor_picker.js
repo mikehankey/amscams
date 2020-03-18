@@ -5,7 +5,7 @@ function addPickerModalTemplate(all_frames_ids) {
    var c; 
 
    if($('#select_meteor_modal').length==0) {
-      c ='  <div id="select_meteor_modal" class="modal fade" tabindex="-1" style="padding-right: 0!important; display: block; width: 100vw; height: 100vh;">\
+      c ='  <div id="select_meteor_modal" class="modal fade" tabindex="-1" style="padding-right: 0!important; width: 100vw; height: 100vh;">\
                   <div class="modal-dialog  modal-lg modal-dialog-centered box" style="width: 100vw;max-width: 100%;margin: 0; padding: 0;">\
                      <div class="modal-content" style="height: 100vh;">\
                         <div class="modal-header p-0 pt-1" style="border:none!important">\
