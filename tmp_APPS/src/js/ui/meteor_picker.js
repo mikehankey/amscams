@@ -1,7 +1,7 @@
 
 
 // Modal for selector
-function addPickerModalTemplate(all_frames_ids, meteor_id) {
+function addPickerModalTemplate() {
    var c;
     
    if($('#select_meteor_modal').length==0) {
@@ -48,24 +48,93 @@ function addPickerModalTemplate(all_frames_ids, meteor_id) {
 
 
    // If the frames aren't on top the of the modal
+   /*
    if($('#cropped_frame_select a').length==0) {
       // Get the images from the reduc table and display them in cropped_frame_select
       $.each(all_frames_ids, function(i,v) {
          $('<a class="select_frame select_frame_btn done" data-rel="'+v+'"><span>HD#="'+v+'"<i class="pos"><br>x:? y:?</i></span><img src="'+ $('#thb_'+v).find('img').attr('src') +'"></a>').appendTo($('#cropped_frame_select div'));
       });
    }  
+   */
    
 }
 
 
 
+function get_neighbor_frames(cur_id) {
+   // Get the thumbs & colors or -5 +5 frames
+   // IN #nav_prev
+   var all_thb = []; 
+   cur_id = parseInt(cur_id)
+   for(var i = cur_id-3; i < cur_id+4; i++) {
+       var $cur_tr = $('#fr_'+i);
+       var img =  $cur_tr.find('img').attr('src');
+       var color = $cur_tr.find('.st').css('background-color');
+       var id = i;
+       vid = '';
+
+       if(typeof img == "undefined"){
+           img = './dist/img/no-sm.png';
+           vid = id;
+           id = '0';
+       }
+
+       if(typeof color == "undefined"){
+           color = 'rgb(15,15,15)';
+       } 
+
+       all_thb.push({
+           img: img,
+           color:color,
+           id:id,
+           vid:vid
+       });
+   }
+
+   return all_thb;
+
+}
+
+
+
+
+function open_meteor_picker(all_frames_ids, meteor_id, color, img_path) {
+ 
+   var neighbor = get_neighbor_frames(meteor_id);  
+   addPickerModalTemplate(meteor_id,neighbor);
+ 
+   // Show Modal if necessary
+   if($('#select_meteor_modal').hasClass('show')) { 
+      add_image_inside_meteor_select(img_path, color, all_frames_ids,meteor_id);
+      $('#select_meteor_modal').css('padding-right',0);
+      $('body').css('padding',0);
+   } else {
+      // When the modal already exists 
+      $('#select_meteor_modal').on('shown.bs.modal', function () {
+         add_image_inside_meteor_select(img_path, color, all_frames_ids,meteor_id);
+         $('#select_meteor_modal').css('padding-right',0);
+         $('body').css('padding',0); // Because we don't want slidebars on body
+      }).modal('show');
+   } 
+    // Add Frame # to header
+    $('#sel_frame_id').text(meteor_id);
+
+   return false; 
+} 
+
+
 function  setup_manual_reduc1() { 
    var all_frames_ids = [];
+
 
    // Only for loggedin
    if(test_logged_in()==null) {
       return false;
    }
+
+
+   // Add modal Template
+   addPickerModalTemplate();
 
    // Get all the frame ids
    $('#reduc-tab table tbody tr').each(function() {
