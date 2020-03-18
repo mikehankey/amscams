@@ -7,7 +7,7 @@ function addPickerModalTemplate(all_frames_ids) {
                   <div class="modal-dialog  modal-lg modal-dialog-centered box" style="width: 100vw;max-width: 100%;margin: 0; padding: 0;">\
                      <div class="modal-content" style="height: 100vh;">\
                         <div class="modal-header p-0 pt-1" style="border:none!important">\
-                           <h5 class="ml-1 mb-0">Select Meteor Position</h5>\
+                           <h5 class="ml-1 mb-0">Select Meteor Position  <span id="sel_frame_id"></span></h5>\
                            <div class="alert alert-info mb-0 p-1 pr-1 pl-2">Select the <strong>POSITION</strong> on the meteor on each frame.</div>\
                            <button  class="btn btn-secondary mr-1"  data-dismiss="modal">&times; Close</button>\
                         </div>\
@@ -96,9 +96,8 @@ function add_image_inside_meteor_select(img_path, color, all_frames_ids, meteor_
    // Add image 
    var height = $('#select_meteor_modal').outerHeight() - $('#select_meteor_modal .modal-header').outerHeight() - $("#thumb_browwser").outerHeight() - $('#below_cfs').outerHeight();
    $('#cropped_frame_selector').css('height',height- 30)
-   $('#cropped_frame_selector').css('width', parseInt(height*16/9));  
-
-   $('#sel_frame_id, .sel_frame_id').text(meteor_id);   
+   $('#cropped_frame_selector').css('width', parseInt(height*16/9));   
+   $('#sel_frame_id, .sel_frame_id').text(' - #' +  meteor_id);   
 
 
    // Add Cur to image chooser
