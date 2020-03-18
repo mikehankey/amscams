@@ -28,10 +28,10 @@ function addPickerModalTemplate(all_frames_ids) {
                                  <div id="cirl" style="width:20px; height:20px; border-radius:50%; position: absolute; border: 1px solid red;"></div>\
                               </div>\
                         </div>\
-                        <div id="below_cfs" class="d-flex justify-content-between">\
+                        <div id="below_cfs" class="d-flex justify-content-between  m-2">\
                            <button  class="btn btn-primary hidden" style="visibility: hidden;">Create All</button>\
                            <div class="d-flex justify-content-center text-center">\
-                              <button id="skip_frame" class="btn btn-secondary ml-3">Skip</button>\
+                              <button id="skip_frame" class="btn btn-secondary btn-sm ml-3 pr-3 pl-3">Skip</button>\
                            </div>\
                            <button id="create_all" class="btn btn-primary">Create All</button>\
                         </div>\
