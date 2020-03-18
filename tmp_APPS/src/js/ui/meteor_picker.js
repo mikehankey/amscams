@@ -194,14 +194,12 @@ function addPickerModalTemplate(meteor_id,neighbor) {
                <div class="alert alert-info mb-3 p-1 pr-1 pl-2">Select the <strong>POSITION</strong> on the meteor on each frame.</div>\
                <div class="alert p-1 pl-1 pr-2"><span id="fr_cnt">0</span> Frames done</div>\
             </div>\
-            <div class="modal-body">\
-               <div class="d-flex flex-wrap">\
+            <div class="d-flex flex-wrap">\
                   <div class="d-flex justify-content-left" id="frame_select_mod"> \
                      <div id="cropped_frame_select" class="d-flex justify-content-left">\
-                        <div id="nav_prev">\
+                        <div">\
                         </div> \
-                     </div>\
-                  </div>\
+                     </div>\ 
                </div>\
                <div id="cropped_frame_selector_hoder" class="mt-3 mb-2">\
                      <div id="cropped_frame_selector" class="cur">\
@@ -259,11 +257,7 @@ function addPickerModalTemplate(meteor_id,neighbor) {
         </div></div></div>';
         */
       
-
-
  
-    // We update the preview
-    $('#nav_prev').html(''); 
  
     // Add the "create frames buttons"
     $.each(neighbor, function(i,v)  {
