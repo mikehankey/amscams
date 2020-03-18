@@ -1,36 +1,4 @@
-function add_image_inside_meteor_select(img_path, color, all_frames_ids,meteor_id) {
-   
-      // Add image 
-      var height = parseInt($('.select_meteor_holder').outerHeight() - $('#nav_prev').outerHeight() - 4);
-     
-      
-      $('.meteor_chooser').css({'background-image':'url('+img_path+')','height':height}).css('border','2px solid ' + color);
 
-      // Setup 16/9 dim
-      $('.meteor_chooser').css('width', parseInt($('.meteor_chooser').outerHeight()*16/9)); 
-      $('.meteor_chooser').css('height', ($('.meteor_chooser').width()*9/16)+4); // 4 = borders 
-      
-      // Prev Button
-      $('#met-sel-prev').unbind('click').click(function() {
-         meteor_select("prev",all_frames_ids);
-         return false;
-      });
-
-      // Next Button
-      $('#met-sel-next').unbind('click').click(function() {
-         meteor_select("next",all_frames_ids);
-         return false;
-      });
-
-      // Select top miniature
-      $('.ccur').removeClass('ccur');
-      $('a[data-m="'+meteor_id+'"]').parent().addClass('ccur');
-
-
-      console.log("INIT WIDTH " + $('.meteor_chooser').width())
-      console.log("INIT HEIGHT " + $('.meteor_chooser').height())
-      console.log("FROM WIDTH " + ($('.meteor_chooser').width()*9/16) )
-}
 
 
 

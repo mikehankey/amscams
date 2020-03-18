@@ -2,11 +2,8 @@
 
 // Modal for selector
 function addPickerModalTemplate(all_frames_ids) {
-   var c;
+   var c; 
 
-   console.log("IN addPickerModalTemplate")
-   console.log(all_frames_ids)
-    
    if($('#select_meteor_modal').length==0) {
       c ='  <div id="select_meteor_modal" class="modal fade" tabindex="-1" style="padding-right: 0!important; display: block; width: 100vw; height: 100vh;">\
                   <div class="modal-dialog  modal-lg modal-dialog-centered box" style="width: 100vw;max-width: 100%;margin: 0; padding: 0;">\
@@ -51,14 +48,10 @@ function addPickerModalTemplate(all_frames_ids) {
 
 
    // If the frames aren't on top the of the modal, we add them
-   if($('#cropped_frame_select a').length == 0 ) {
-      console.log("WE HAD THE PREVIEWS")
-      
+   if($('#cropped_frame_select a').length == 0 ) { 
       // Get the images from the reduc table and display them in cropped_frame_select
       $.each(all_frames_ids, function(i,v) {
          $('<a class="select_frame select_frame_btn done" data-rel="'+v+'"><span>HD#="'+v+'"<i class="pos"><br>x:? y:?</i></span><img src="'+ $('#thb_'+v).find('img').attr('src') +'"></a>').appendTo($('#cropped_frame_select div'));
-         console.log("FRAME #" + v);
-      
       });
    }  
    
@@ -101,14 +94,44 @@ function get_neighbor_frames(cur_id) {
 
 }
 
+// Add Image Inside Picker
+function add_image_inside_meteor_select(img_path, color, all_frames_ids,meteor_id) {
+   
+   // Add image 
+   var height = parseInt($('.select_meteor_holder').outerHeight() - $('#nav_prev').outerHeight() - 4);
+   
+   $('.meteor_chooser').css({'background-image':'url('+img_path+')','height':height}).css('border','2px solid ' + color);
+
+   // Setup 16/9 dim
+   $('.meteor_chooser').css('width', parseInt($('.meteor_chooser').outerHeight()*16/9)); 
+   $('.meteor_chooser').css('height', ($('.meteor_chooser').width()*9/16)+4); // 4 = borders 
+   
+   // Prev Button
+   $('#met-sel-prev').unbind('click').click(function() {
+      meteor_select("prev",all_frames_ids);
+      return false;
+   });
+
+   // Next Button
+   $('#met-sel-next').unbind('click').click(function() {
+      meteor_select("next",all_frames_ids);
+      return false;
+   });
+
+   // Select top miniature
+   $('.ccur').removeClass('ccur');
+   $('a[data-m="'+meteor_id+'"]').parent().addClass('ccur');
 
 
+   console.log("INIT WIDTH " + $('.meteor_chooser').width())
+   console.log("INIT HEIGHT " + $('.meteor_chooser').height())
+   console.log("FROM WIDTH " + ($('.meteor_chooser').width()*9/16) )
+}
 
-function open_meteor_picker(all_frames_ids, meteor_id, color, img_path) {
- 
-   var neighbor = get_neighbor_frames(meteor_id);  
-   addPickerModalTemplate(meteor_id,neighbor);
- 
+
+// Update Modal Template
+// MAke one frame active
+function updateModalTemplate(meteor_id,color,img_path) {
    // Show Modal if necessary
    if($('#select_meteor_modal').hasClass('show')) { 
       add_image_inside_meteor_select(img_path, color, all_frames_ids,meteor_id);
@@ -123,6 +146,12 @@ function open_meteor_picker(all_frames_ids, meteor_id, color, img_path) {
       }).modal('show');
    }  
 
+}
+
+
+// Open the Modal with a given meteor
+function open_meteor_picker(meteor_id, color, img_path) {
+   updateModalTemplate(meteor_id,color,img_path);
    return false; 
 } 
 
