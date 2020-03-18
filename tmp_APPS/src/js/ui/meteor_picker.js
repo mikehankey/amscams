@@ -51,7 +51,7 @@ function addPickerModalTemplate(all_frames_ids, meteor_id) {
    if($('#cropped_frame_select a').length==0) {
       // Get the images from the reduc table and display them in cropped_frame_select
       $.each(all_frames_ids, function(i,v) {
-         $('<a class="select_frame select_frame_btn done" data-rel="'+v+'"><span>HD#="'+v+'"<i class="pos"><br>x:? y:?</i></span><img src="'+ $('#thb_'+v).find('img').attr('src')+'"></a>
+         $('<a class="select_frame select_frame_btn done" data-rel="'+v+'"><span>HD#="'+v+'"<i class="pos"><br>x:? y:?</i></span><img src="'+ $('#thb_'+v).find('img').attr('src') +'"></a>').appendTo($('#cropped_frame_select div'));
       });
    }  
    
