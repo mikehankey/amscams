@@ -132,13 +132,19 @@ function add_image_inside_meteor_select(img_path, color, all_frames_ids,meteor_i
 // Update Modal Template
 // MAke one frame active
 function updateModalTemplate(meteor_id,color,img_path) {
+
+   console.log("updateModalTemplate")
+
    // Show Modal if necessary
    if($('#select_meteor_modal').hasClass('show')) { 
+      console.log("--> CAS1 ");
       add_image_inside_meteor_select(img_path, color, all_frames_ids,meteor_id);
       $('#select_meteor_modal').css('padding-right',0);
       $('body').css('padding',0);
    } else {
       // When the modal already exists 
+      
+      console.log("--> CAS2 ");
       $('#select_meteor_modal').on('shown.bs.modal', function () {
          add_image_inside_meteor_select(img_path, color, all_frames_ids,meteor_id);
          $('#select_meteor_modal').css('padding-right',0);
