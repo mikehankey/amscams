@@ -48,7 +48,7 @@ function addPickerModalTemplate(all_frames_ids) {
 
 
    // If the frames aren't on top the of the modal
-    console.log("ALL FRAMES IDS ")
+    console.log("ALL FRAMES IDS in addPickerModalTemplate")
     console.log(all_frames_ids)
 
     return false;
