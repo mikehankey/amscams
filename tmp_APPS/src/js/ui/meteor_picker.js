@@ -25,8 +25,8 @@ function addPickerModalTemplate(all_frames_ids) {
                                  <div id="org_lv"></div>\
                                  <div id="lh"></div>\
                                  <div id="lv"></div> \
-                                 <div id="cirl" style="width:10px; height:10px; border-radius:50%; position: absolute; border: 1px solid red;"></div>\
-                              </div> \
+                                 <div id="cirl" style="width:20px; height:20px; border-radius:50%; position: absolute; border: 1px solid red;"></div>\
+                              </div>\
                         </div>\
                         <div id="below_cfs" class="d-flex justify-content-between">\
                            <button  class="btn btn-primary hidden" style="visibility: hidden;">Create All</button>\
@@ -35,8 +35,8 @@ function addPickerModalTemplate(all_frames_ids) {
                            </div>\
                            <button id="create_all" class="btn btn-primary">Create All</button>\
                         </div>\
-                        </div>\
-                     </div>\ 
+                     </div>\
+                  </div>\
                </div>';
       $(c).appendTo('body');
     } 
