@@ -32,31 +32,9 @@ function add_image_inside_meteor_select(img_path, color, all_frames_ids,meteor_i
       console.log("FROM WIDTH " + ($('.meteor_chooser').width()*9/16) )
 }
 
-function open_meteor_picker(all_frames_ids, meteor_id, color, img_path) {
- 
-   var neighbor = get_neighbor_frames(meteor_id);  
-   addPickerModalTemplate(meteor_id,neighbor);
- 
-   // Show Modal if necessary
-   if($('#select_meteor_modal').hasClass('show')) { 
-      add_image_inside_meteor_select(img_path, color, all_frames_ids,meteor_id);
-      $('#select_meteor_modal').css('padding-right',0);
-      $('body').css('padding',0);
-   } else {
-      // When the modal already exists 
-      $('#select_meteor_modal').on('shown.bs.modal', function () {
-         add_image_inside_meteor_select(img_path, color, all_frames_ids,meteor_id);
-         $('#select_meteor_modal').css('padding-right',0);
-         $('body').css('padding',0); // Because we don't want slidebars on body
-      }).modal('show');
-   } 
-    // Add Frame # to header
-    $('#sel_frame_id').text(meteor_id);
-
-   return false; 
-} 
 
 
+/*
 function  setup_manual_reduc1() { 
    var all_frames_ids = [];
 
@@ -108,7 +86,7 @@ function  setup_manual_reduc1() {
       return false;
    });
 }
-
+*/
 
 
 
