@@ -13,7 +13,7 @@ function addPickerModalTemplate(all_frames_ids) {
                            <div class="alert alert-info mb-3 p-1 pr-1 pl-2">Select the <strong>POSITION</strong> on the meteor on each frame.</div>\
                            <div class="alert p-1 pl-1 pr-2"><span id="fr_cnt">0</span> Frames done</div>\
                         </div>\
-                        <div class="d-flex flex-wrap">\
+                        <div id="thumb_browwser" class="d-flex flex-wrap">\
                            <div class="d-flex justify-content-left" id="frame_select_mod">\
                               <div id="cropped_frame_select" class="d-flex justify-content-left">\
                                  <div>\
