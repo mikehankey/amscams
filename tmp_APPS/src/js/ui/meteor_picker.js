@@ -51,7 +51,7 @@ function addPickerModalTemplate(all_frames_ids) {
    if($('#cropped_frame_select a').length == 0 ) { 
       // Get the images from the reduc table and display them in cropped_frame_select
       $.each(all_frames_ids, function(i,v) {
-         $('<a class="select_frame select_frame_btn done" data-rel="'+v+'"><span>#"'+v+'"<i class="pos"><br>x:? y:?</i></span><img src="'+ $('#thb_'+v).find('img').attr('src') +'"></a>').appendTo($('#cropped_frame_select div'));
+         $('<a class="select_frame select_frame_btn done" data-rel="'+v+'"><span>#'+v+'<i class="pos"><br>x:? y:?</i></span><img src="'+ $('#thb_'+v).find('img').attr('src') +'"></a>').appendTo($('#cropped_frame_select div'));
       });
    }  
    
@@ -95,8 +95,13 @@ function get_neighbor_frames(cur_id) {
 }
 
 // Add Image Inside Picker
-function add_image_inside_meteor_select(img_path, color, all_frames_ids,meteor_id) {
-   
+function add_image_inside_meteor_select(img_path, color, all_frames_ids, meteor_id) {
+   $('.meteor_chooser').css('background-image','url('+$img.attr('src')+')').css('border','2px solid ' + color);
+   $('#sel_frame_id, .sel_frame_id').text(meteor_id);   
+   return false;
+
+
+   /**************************************************** */
    // Add image 
    var height = parseInt($('.select_meteor_holder').outerHeight() - $('#nav_prev').outerHeight() - 4);
    
@@ -105,18 +110,7 @@ function add_image_inside_meteor_select(img_path, color, all_frames_ids,meteor_i
    // Setup 16/9 dim
    $('.meteor_chooser').css('width', parseInt($('.meteor_chooser').outerHeight()*16/9)); 
    $('.meteor_chooser').css('height', ($('.meteor_chooser').width()*9/16)+4); // 4 = borders 
-   
-   // Prev Button
-   $('#met-sel-prev').unbind('click').click(function() {
-      meteor_select("prev",all_frames_ids);
-      return false;
-   });
-
-   // Next Button
-   $('#met-sel-next').unbind('click').click(function() {
-      meteor_select("next",all_frames_ids);
-      return false;
-   });
+ 
 
    // Select top miniature
    $('.ccur').removeClass('ccur');
