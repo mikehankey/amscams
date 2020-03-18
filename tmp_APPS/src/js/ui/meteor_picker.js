@@ -91,8 +91,8 @@ function get_neighbor_frames(cur_id) {
 
 // Add Image Inside Picker
 function add_image_inside_meteor_select(img_path, color, all_frames_ids, meteor_id) { 
-   console.log("ADD IMAGE INSIDE METEOR SELECT")
    $('#cropped_frame_selector').css('background-image','url('+img_path+')').css('border','2px solid ' + color);
+
 
    // Add image 
    var height = $('#select_meteor_modal').outerHeight() - $('#select_meteor_modal .modal-header').outerHeight() - $("#thumb_browwser").outerHeight() - $('#below_cfs').outerHeight();
@@ -105,23 +105,6 @@ function add_image_inside_meteor_select(img_path, color, all_frames_ids, meteor_
    $('.select_frame').removeClass('cur');
    $('.select_frame[data-rel="'+meteor_id+'"]').addClass('cur');
  
-
-   $('.select_frame').unbind('click').click(function() {
-      var $t = $(this);
-      var meteor_id = $t.attr('data-rel');
-      var img_path = $('#thb_' + meteor_id + " img").attr('src');
-      var color =  $('#thb_' + meteor_id + " img").css('border-color');
-      
-
-      console.log("CLICK ")
-      console.log("METEOR ID " + meteor_id);
-      console.log("img_path " + img_path);
-      console.log("color " + color);
-
-      $('#cropped_frame_selector').css('background-image','url(none)').css('border','2px solid #fff');
-      add_image_inside_meteor_select(color,img_path,all_frames_ids,meteor_id)
-   });
-
    return false;
  
 }
@@ -149,6 +132,18 @@ function updateModalTemplate(meteor_id,color,img_path,all_frames_ids) {
          $('body').css('padding',0); // Because we don't want slidebars on body
       }).modal('show');
    }  
+
+
+   $('.select_frame').unbind('click').click(function() {
+      var $t = $(this);
+      var meteor_id = $t.attr('data-rel');
+      var img_path = $('#thb_' + meteor_id + " img").attr('src');
+      var color =  $('#thb_' + meteor_id + " img").css('border-color');
+       
+
+      $('#cropped_frame_selector').css('background-image','url(none)').css('border','2px solid #fff');
+      add_image_inside_meteor_select(color,img_path,all_frames_ids,meteor_id)
+   });
 
 }
 
@@ -181,9 +176,7 @@ function  setup_manual_reduc1() {
       all_frames_ids.push(parseInt(id[1]));
    });
   
-   // Add modal Template
-   console.log("WE HAD THE PICKER MODAL WITH ")
-   console.log(all_frames_ids);
+   // Add modal Template 
    addPickerModalTemplate(all_frames_ids); 
 
    // Click on "Big" button 
