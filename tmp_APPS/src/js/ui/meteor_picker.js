@@ -46,7 +46,7 @@ function addPickerModalTemplate(all_frames_ids) {
    if($('#cropped_frame_select a').length == 0 ) { 
       // Get the images from the reduc table and display them in cropped_frame_select
       $.each(all_frames_ids, function(i,v) {
-         $('<a class="select_frame select_frame_btn done" data-rel="'+v+'"><span>#'+v+'<i class="pos"><br>x:? y:?</i></span><img src="'+ $('#thb_'+v).find('img').attr('src') +'"></a>').appendTo($('#cropped_frame_select div'));
+         $('<a class="select_frame select_frame_btn" data-rel="'+v+'"><span>#'+v+'<i class="pos"><br>x:? y:?</i></span><img src="'+ $('#thb_'+v).find('img').attr('src') +'"></a>').appendTo($('#cropped_frame_select div'));
       });
    }  
    
@@ -99,27 +99,14 @@ function add_image_inside_meteor_select(img_path, color, all_frames_ids, meteor_
    $('#cropped_frame_selector').css('width', parseInt(height*16/9));  
 
    $('#sel_frame_id, .sel_frame_id').text(meteor_id);   
-   return false;
 
 
-   /**************************************************** */
-
-   
-   $('.meteor_chooser').css({'background-image':'url('+img_path+')','height':height}).css('border','2px solid ' + color);
-
-   // Setup 16/9 dim
-   $('.meteor_chooser').css('width', parseInt($('.meteor_chooser').outerHeight()*16/9)); 
-   $('.meteor_chooser').css('height', ($('.meteor_chooser').width()*9/16)+4); // 4 = borders 
+   // Add Cur to image chooser
+   $('.select_frame').removeClass('cur');
+   $('.select_frame[data-rel="'+meteor_id+'"]').addClass('cur');
  
-
-   // Select top miniature
-   $('.ccur').removeClass('ccur');
-   $('a[data-m="'+meteor_id+'"]').parent().addClass('ccur');
-
-
-   console.log("INIT WIDTH " + $('.meteor_chooser').width())
-   console.log("INIT HEIGHT " + $('.meteor_chooser').height())
-   console.log("FROM WIDTH " + ($('.meteor_chooser').width()*9/16) )
+   return false;
+ 
 }
 
 
