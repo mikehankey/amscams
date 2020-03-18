@@ -96,7 +96,7 @@ function get_neighbor_frames(cur_id) {
 
 // Add Image Inside Picker
 function add_image_inside_meteor_select(img_path, color, all_frames_ids, meteor_id) {
-   $('.meteor_chooser').css('background-image','url('+$img.attr('src')+')').css('border','2px solid ' + color);
+   $('.meteor_chooser').css('background-image','url('+img_path+')').css('border','2px solid ' + color);
    $('#sel_frame_id, .sel_frame_id').text(meteor_id);   
    return false;
 
