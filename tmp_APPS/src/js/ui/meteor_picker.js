@@ -110,7 +110,17 @@ function add_image_inside_meteor_select(img_path, color, all_frames_ids, meteor_
       var meteor_id = $t.attr('data-rel');
       var img_path = $('#thb_' + meteor_id + " img").attr('src');
       var color =  $('#thb_' + meteor_id + " img").css('border-color');
-  
+      
+
+      console.log("CLICK ")
+      console.log("METEOR ID " + meteor_id);
+      
+      console.log("img_path " + img_path);
+      
+      
+      console.log("color " + color);
+
+
       add_image_inside_meteor_select(color,img_path,all_frames_ids,meteor_id)
    });
 
