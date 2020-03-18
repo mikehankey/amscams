@@ -95,7 +95,7 @@ function add_image_inside_meteor_select(img_path, color, all_frames_ids, meteor_
 
    // Add image 
    var height = $('#select_meteor_modal').outerHeight() - $('#select_meteor_modal .modal-header').outerHeight() - $("#thumb_browwser").outerHeight() - $('#below_cfs').outerHeight();
-   $('#cropped_frame_selector').css('height',height-100)
+   $('#cropped_frame_selector').css('height',height- 30)
    $('#cropped_frame_selector').css('width', parseInt(height*16/9));  
 
    $('#sel_frame_id, .sel_frame_id').text(meteor_id);   
