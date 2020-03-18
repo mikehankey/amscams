@@ -186,7 +186,7 @@ function addPickerModalTemplate(meteor_id,neighbor) {
     var c;
     
     if($('#select_meteor_modal').length==0) {
-       c= ' <div id="select_meteor_modal" class="modal fade" tabindex="-1"><h1>Select Meteor Position</h1>\
+       c =' <div id="select_meteor_modal" class="modal fade" tabindex="-1"><h1>Select Meteor Position</h1>\
        <div class="modal-dialog  modal-lg modal-dialog-centered box">\
          <div class="modal-content" style="height: 100vh;">\
             <div class="modal-header p-0" style="border:none!important">\
@@ -223,7 +223,7 @@ function addPickerModalTemplate(meteor_id,neighbor) {
          <div class="modal-footer bd-t mt-3 pt-2 pb-2 pr-2">\
              <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>\
          </div>\
-      </div>\;
+      </div>';
       
        /*
         c = '<div id="select_meteor_modal" class="modal fade multiple-select" tabindex="-1">\
