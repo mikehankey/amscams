@@ -7,8 +7,8 @@ function add_image_inside_meteor_select(img_path, color, all_frames_ids,meteor_i
       $('.meteor_chooser').css({'background-image':'url('+img_path+')','height':height - 4}).css('border','2px solid ' + color);
 
       // Setup 16/9 dim
-      $('.meteor_chooser').css('width',parseInt($('.meteor_chooser').height()*16/9)); 
-      $('.meteor_chooser').css('height',parseInt($('.meteor_chooser').width()*9/16)); 
+      $('.meteor_chooser').css('width', $('.meteor_chooser').height()*16/9); 
+      $('.meteor_chooser').css('height', $('.meteor_chooser').width()*9/16); 
       
       // Prev Button
       $('#met-sel-prev').unbind('click').click(function() {
