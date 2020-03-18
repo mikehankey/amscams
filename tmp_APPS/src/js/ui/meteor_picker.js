@@ -9,7 +9,7 @@ function addPickerModalTemplate(all_frames_ids) {
                         <div class="modal-header p-0 pt-1" style="border:none!important">\
                            <h5 class="ml-1 mb-0">Select Meteor Position</h5>\
                            <div class="alert alert-info mb-0 p-1 pr-1 pl-2">Select the <strong>POSITION</strong> on the meteor on each frame.</div>\
-                           <div class="alert p-1 pl-1 pr-2 mb-0"><span id="fr_cnt">0</span> Frames done</div>\
+                           <button  class="btn btn-secondary"  data-dismiss="modal">Close</button>\
                         </div>\
                         <div id="thumb_browwser" class="d-flex flex-wrap">\
                            <div class="d-flex justify-content-left" id="frame_select_mod">\
@@ -29,7 +29,7 @@ function addPickerModalTemplate(all_frames_ids) {
                               </div>\
                         </div>\
                         <div id="below_cfs" class="d-flex justify-content-between  m-2">\
-                           <button  class="btn btn-secondary"  data-dismiss="modal">Close</button>\
+                            <div class="alert p-1 pl-1 pr-2 mb-0"><span id="fr_cnt">0</span> Frames done</div>\
                            <div class="d-flex justify-content-center text-center">\
                               <button id="skip_frame" class="btn btn-secondary btn-sm ml-3 pr-3 pl-3">Skip</button>\
                            </div>\
