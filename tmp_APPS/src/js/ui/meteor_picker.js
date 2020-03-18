@@ -48,6 +48,12 @@ function addPickerModalTemplate(all_frames_ids) {
 
 
    // If the frames aren't on top the of the modal
+    console.log("ALL FRAMES IDS ")
+    console.log(all_frames_ids)
+
+    return false;
+
+
    if($('#cropped_frame_select a').length==0) {
       // Get the images from the reduc table and display them in cropped_frame_select
       $.each(all_frames_ids, function(i,v) {
