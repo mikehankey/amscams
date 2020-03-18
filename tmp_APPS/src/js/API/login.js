@@ -165,7 +165,7 @@ function add_login_modal() {
                   <form style="width:250px">\
                      <input type="hidden" name="st" value="'+STATION+'"/>\
                      <div class="input-group mb-3">\
-                        <input type="text" name="username" class="form-control input_user" value="" placeholder="username">\
+                        <input type="text" name="username" class="form-control input_user" value="" autocomplete="username" placeholder="username">\
                      </div>\
                      <div class="input-group mb-2">\
                         <input type="password" name="password" autocomplete="current-password" class="form-control input_pass" value="" placeholder="password">\

@@ -8,6 +8,7 @@ function add_image_inside_meteor_select(img_path, color, all_frames_ids,meteor_i
 
       // Setup 16/9 dim
       $('.meteor_chooser').css('width',parseInt($('.meteor_chooser').height()*16/9)); 
+      $('.meteor_chooser').css('height',parseInt($('.meteor_chooser').width()*9/16)); 
       
       // Prev Button
       $('#met-sel-prev').unbind('click').click(function() {
