@@ -110,10 +110,8 @@ function add_image_inside_meteor_select(img_path, color, all_frames_ids, meteor_
       var meteor_id = $t.attr('data-rel');
       var img_path = $('#thb_' + meteor_id + " img").attr('src');
       var color =  $('#thb_' + meteor_id + " img").css('border-color');
-
- 
-      $('#cropped_frame_selector').css('background-image','url('+img_path+')').css('border','2px solid ' + color);
-      //add_image_inside_meteor_select(color,image_path,all_frames_ids,meteor_id)
+  
+      add_image_inside_meteor_select(color,img_path,all_frames_ids,meteor_id)
    });
 
    return false;
