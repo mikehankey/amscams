@@ -326,7 +326,7 @@
       }
 
       &.cur {
-         border:3px solid rgba(255, 229, 46, 1)!important;
+         border:2px solid rgba(255, 229, 46, 1)!important;
       }
    }
 }
@@ -334,9 +334,11 @@
 #cropped_frame_selector {
    margin: 0 auto;
    position: relative;
+   background-size: cover;
+
 
    &.cur {
-      border:3px solid rgba(255, 229, 46, 1)
+      border:2px solid rgba(255, 229, 46, 1)
    }
    
 }
