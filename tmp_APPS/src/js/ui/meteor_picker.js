@@ -21,7 +21,7 @@ function addPickerModalTemplate(all_frames_ids) {
                               </div>\
                            </div>\
                         </div>\
-                        <div id="cropped_frame_selector_hoder" class="mt-3 mb-2">\
+                        <div id="cropped_frame_selector_hoder" class="m-3">\
                               <div id="cropped_frame_selector" class="cur">\
                                  <div id="org_lh"></div>\
                                  <div id="org_lv"></div>\
@@ -97,13 +97,20 @@ function get_neighbor_frames(cur_id) {
 // Add Image Inside Picker
 function add_image_inside_meteor_select(img_path, color, all_frames_ids, meteor_id) {
    $('#cropped_frame_selector').css('background-image','url('+img_path+')').css('border','2px solid ' + color);
+
+   // Add image 
+   var height = parseInt($('#cropped_frame_selector').outerHeight() - $('#select_meteor_modal .modal-header').outerHeight());
+   $('#cropped_frame_selector').css('width', parseInt($('.meteor_chooser').outerHeight()*16/9)); 
+   $('#cropped_frame_selector').css('height', ($('.meteor_chooser').width()*9/16)+4); // 4 = borders 
+
+ 
+
    $('#sel_frame_id, .sel_frame_id').text(meteor_id);   
    return false;
 
 
    /**************************************************** */
-   // Add image 
-   var height = parseInt($('.select_meteor_holder').outerHeight() - $('#nav_prev').outerHeight() - 4);
+
    
    $('.meteor_chooser').css({'background-image':'url('+img_path+')','height':height}).css('border','2px solid ' + color);
 
