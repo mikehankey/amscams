@@ -9,7 +9,7 @@ function addPickerModalTemplate(all_frames_ids) {
                         <div class="modal-header p-0 pt-1" style="border:none!important">\
                            <h5 class="ml-1 mb-0">Select Meteor Position</h5>\
                            <div class="alert alert-info mb-0 p-1 pr-1 pl-2">Select the <strong>POSITION</strong> on the meteor on each frame.</div>\
-                           <button  class="btn btn-secondary"  data-dismiss="modal">Close</button>\
+                           <button  class="btn btn-secondary mr-1"  data-dismiss="modal">&times; Close</button>\
                         </div>\
                         <div id="thumb_browwser" class="d-flex flex-wrap">\
                            <div class="d-flex justify-content-left" id="frame_select_mod">\
@@ -105,6 +105,15 @@ function add_image_inside_meteor_select(img_path, color, all_frames_ids, meteor_
    $('.select_frame').removeClass('cur');
    $('.select_frame[data-rel="'+meteor_id+'"]').addClass('cur');
  
+
+   $('.select_frame').unbind('click').click(function() {
+      var $t = $(this);
+      var meteor_id = $t.attr('data-rel');
+      var image_path = $('#thb_' + meteor_id + " img").attr('src');
+      var color =  $('#thb_' + meteor_id + " img").css('border-color');
+      add_image_inside_meteor_select(color,image_path,all_frames_ids,meteor_id)
+   });
+
    return false;
  
 }
