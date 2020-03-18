@@ -109,13 +109,12 @@ function add_image_inside_meteor_select(img_path, color, all_frames_ids, meteor_
    $('.select_frame').unbind('click').click(function() {
       var $t = $(this);
       var meteor_id = $t.attr('data-rel');
-      var image_path = $('#thb_' + meteor_id + " img").attr('src');
+      var img_path = $('#thb_' + meteor_id + " img").attr('src');
       var color =  $('#thb_' + meteor_id + " img").css('border-color');
 
-
-      console.log("METEOR ID " + meteor_id)
-
-      add_image_inside_meteor_select(color,image_path,all_frames_ids,meteor_id)
+ 
+      $('#cropped_frame_selector').css('background-image','url('+img_path+')').css('border','2px solid ' + color);
+      //add_image_inside_meteor_select(color,image_path,all_frames_ids,meteor_id)
    });
 
    return false;
