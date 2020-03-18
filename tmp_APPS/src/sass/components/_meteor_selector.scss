@@ -256,3 +256,40 @@
     }
 
 }
+
+
+/************/
+#cropped_frame_select, .cropped_frame_select {
+   white-space: nowrap; 
+   a {
+      border:3px solid rgba(0,0,0,1);
+      display: inline-block;
+      margin:.25rem;
+      
+      img {
+         display: inline-block;
+         box-shadow:none;
+         max-width: 200px;
+         max-height: 200px;
+         width: auto;
+      }
+
+      &.done{
+         border:3px solid #1956bd
+      }
+
+      &.cur {
+         border:3px solid rgba(255, 229, 46, 1)!important;
+      }
+   }
+}
+
+#cropped_frame_selector {
+   margin: 0 auto;
+   position: relative;
+
+   &.cur {
+      border:3px solid rgba(255, 229, 46, 1)
+   }
+   
+}

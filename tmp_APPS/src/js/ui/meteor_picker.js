@@ -189,10 +189,10 @@ function addPickerModalTemplate(meteor_id,neighbor) {
        c =' <div id="select_meteor_modal" class="modal fade" tabindex="-1" style="padding-right: 0!important; display: block; width: 100vw; height: 100vh;>\
        <div class="modal-dialog  modal-lg modal-dialog-centered box" style="width: 100vw;max-width: 100%;margin: 0; padding: 0;">\
          <div class="modal-content" style="height: 100vh;">\
-            <div class="modal-header p-0" style="border:none!important">\
-               <h5>Select Meteor Position</h5>\
+            <div class="modal-header p-0 pt-1" style="border:none!important">\
+               <h5 class="ml-1">Select Meteor Position</h5>\
                <div class="alert alert-info mb-3 p-1 pr-1 pl-2">Select the <strong>POSITION</strong> on the meteor on each frame.</div>\
-               <div class="alert mb-3 p-1 pl-1 pr-2"><span id="fr_cnt">0</span> Frames done</div>\
+               <div class="alert p-1 pl-1 pr-2"><span id="fr_cnt">0</span> Frames done</div>\
             </div>\
             <div class="modal-body">\
                <div class="d-flex flex-wrap">\
