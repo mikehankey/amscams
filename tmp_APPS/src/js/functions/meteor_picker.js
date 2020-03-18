@@ -1,7 +1,7 @@
 function add_image_inside_meteor_select(img_path, color, all_frames_ids,meteor_id) {
    
       // Add image 
-      var height = $('.select_meteor_holder').outerHeight() - $('#nav_prev').outerHeight() - 4;
+      var height = parseInt($('.select_meteor_holder').outerHeight() - $('#nav_prev').outerHeight() - 4);
      
       
       $('.meteor_chooser').css({'background-image':'url('+img_path+')','height':height - 4}).css('border','2px solid ' + color);
@@ -24,6 +24,10 @@ function add_image_inside_meteor_select(img_path, color, all_frames_ids,meteor_i
       // Select top miniature
       $('.ccur').removeClass('ccur');
       $('a[data-m="'+meteor_id+'"]').parent().addClass('ccur');
+
+
+      console.log("INIT WIDTH " + $('.meteor_chooser').width())
+      console.log("INIT HEIGHT " + $('.meteor_chooser').height())
 }
 
 function open_meteor_picker(all_frames_ids, meteor_id, color, img_path) {
