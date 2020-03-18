@@ -29,7 +29,7 @@ function addPickerModalTemplate(all_frames_ids) {
                               </div>\
                         </div>\
                         <div id="below_cfs" class="d-flex justify-content-between  m-2">\
-                           <button  class="btn btn-primary hidden" style="visibility: hidden;">Create All</button>\
+                           <button  class="btn btn-secondary"  data-dismiss="modal>Close</button>\
                            <div class="d-flex justify-content-center text-center">\
                               <button id="skip_frame" class="btn btn-secondary btn-sm ml-3 pr-3 pl-3">Skip</button>\
                            </div>\
