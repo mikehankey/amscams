@@ -165,7 +165,7 @@ function convert_to_local(_x,_y) {
 
 // Add Image Inside Picker
 function add_image_inside_meteor_select(img_path, all_frames_ids, meteor_id) { 
-
+   var factor  = w / $('#cropped_frame_selector').width();  // Same for W & H!!
 
    // Remove Previous Circles
    $('.circl').remove();
@@ -224,7 +224,7 @@ function add_image_inside_meteor_select(img_path, all_frames_ids, meteor_id) {
 
             console.log("BEFORE");
             console.log(xy); 
-            addCircleRepair(xy[0],xy[1],i,'b'); 
+            addCircleRepair(xy[0]*factor,xy[1]*factor,i,'b'); 
          }
       }
 
@@ -250,7 +250,7 @@ function add_image_inside_meteor_select(img_path, all_frames_ids, meteor_id) {
       var relX = e.pageX - parentOffset.left - select_border_size;
       var relY = e.pageY - parentOffset.top - select_border_size;
 
-      var factor  = w / $('#cropped_frame_selector').width();  // Same for W & H!!
+
  
       // Convert into HD_x & HD_y
       // from x,y
