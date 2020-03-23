@@ -57,7 +57,7 @@ def fix_missing_stacks(day):
    if running > 2:
       print("ALREADY RUNNING:", running)
       exit()
-   files = glob.glob("/mnt/ams2/SD/proc2/" + day + "/*.mp4" )
+   files = sorted(glob.glob("/mnt/ams2/SD/proc2/" + day + "/*.mp4" ), reverse=True)
    missing = 0
    found = 0
    for file in files:
@@ -69,7 +69,7 @@ def fix_missing_stacks(day):
       image_file_name = file_name.replace(".mp4", "-stacked-tn.png")
       image_file = file_dir + "/images/" + image_file_name
       vals_file_name = file_name.replace(".mp4", "-vals.json")
-      vals_file = file_dir + "/data/" + image_file_name
+      vals_file = file_dir + "/data/" + vals_file_name
       if tday != day:
          print("This file is in the wrong day????", day, file_name)
 
@@ -96,24 +96,32 @@ def fix_missing_stacks(day):
             print("Vals in this dir too.")
          #exit()
       if cfe(image_file) == 0:
-         #print("Stack missing for : ", image_file)
+ 
+         if cfe(vals_file) == 1:
+            vals_js = load_json_file(vals_file)
+            vals = vals_js['sum_vals']
+         else:
+            print("VALS:", vals_file)
+            vals = [] 
          (f_datetime, cam, f_date_str,fy,fmin,fd, fh, fm, fs) = convert_filename_to_date_cam(file)
          sun_status = day_or_night(f_date_str, json_conf)
          if sun_status == 'day':
             sun_status = "1"
          else:
             sun_status = "0"
-         os.system("./scan_stack.py ss " + file + " " + sun_status)
+         scan_and_stack_fast(file, sun_status, vals)
+
          missing += 1      
       else: 
          found += 1      
    print("Missing / Found:", missing, found)
 
+
 def batch_ss(wildcard=None):
    running = check_running("scan_stack.py") 
    if running > 2:
       print("Running already.")
-      exit()
+      #exit()
 
    if wildcard is not None:
       glob_dir = "/mnt/ams2/SD/*" + wildcard + "*.mp4"
@@ -172,7 +180,8 @@ def batch_ss(wildcard=None):
 #   frames,color_frames,sd_subframes,sum_vals,max_vals,pos_vals = load_frames_fast(video_file, json_conf, 0, 0, [], 1,resize, sun_status)
 
 
-def scan_and_stack_fast(file, day = 0):
+def scan_and_stack_fast(file, day = 0, vals = []):
+   print("VALS:", vals)
    day = int(day)
    fn = file.split("/")[-1]
    day = fn[0:10]
@@ -206,6 +215,11 @@ def scan_and_stack_fast(file, day = 0):
    stacked_image = None
    while True:
       grabbed , frame = cap.read()
+      if fc < len(vals):
+         if vals[fc] == 0  and fc > 20:
+            print("SKIP FRAME:", fc, vals[fc])
+            fc = fc + 1
+            continue
 
       if not grabbed and fc > 5:
          print(fc)
@@ -266,7 +280,7 @@ def scan_and_stack_fast(file, day = 0):
    cv_stacked_image = np.asarray(stacked_image)
    cv_stacked_image = cv2.resize(cv_stacked_image, (PREVIEW_W, PREVIEW_H))
    cv2.imwrite(stack_file, cv_stacked_image)
-
+   print(stack_file)
    
 
    vals = {}

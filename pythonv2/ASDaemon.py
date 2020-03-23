@@ -34,7 +34,7 @@ from datetime import datetime , timedelta
 
 from lib.UtilLib import check_running
 from lib.FileIO import load_json_file , cfe
-from lib.ASDaemonLib import day_or_night, get_files, run_verify_meteors, run_vals_detect, exec_cmd, update_latest, get_proc_stats, proc_index, fix_days
+from lib.ASDaemonLib import day_or_night, get_files, run_verify_meteors, run_vals_detect, exec_cmd, update_latest, get_proc_stats, proc_index, fix_days, arc_check
 
 def main_thread():
    current_date = datetime.now().strftime("%Y_%m_%d")
@@ -126,6 +126,7 @@ def main_thread():
       if len(state['pending_files']) < 500: 
          print("Less than 500 files in the pending queue. This is good! We can do some more jobs.")
 
+      # This should be running all the time, else things will get backed up. 
       scan_running = check_running("scan_stack.py bs")
       if scan_running == 0:
          print("scan_stack.py is not running.")
@@ -135,6 +136,7 @@ def main_thread():
          os.system(cmd)
       else:
          print("scan_stack.py is running.")
+
       # TASK #3 - manage the vals detection processing 
       if time.time() - state['vals_detect'] > 600:
          run_vals_detect(current_date)
@@ -220,6 +222,15 @@ if __name__ == "__main__":
    if cmd == "proc_index":
       proc_index()
    if cmd == "fix_days":
-      fix_days()
+      fix_days(1)
    if cmd == "update_proc":
       update_proc_index(sys.argv[2])
+   if cmd == "rvd":
+      run_vals_detect(None, 1)
+   if cmd == "rvms":
+      run_verify_meteors(None, 1)
+   if cmd == "arc_check":
+      if len(sys.argv) >= 3:
+         arc_check(sys.argv[2], 1)
+      else:
+         arc_check(None, 1)

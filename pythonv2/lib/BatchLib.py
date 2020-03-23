@@ -634,6 +634,8 @@ def make_file_index(json_conf ):
    json_file = data_dir + "main-index.json"
    if cfe(json_file) == 1:
       main_index = load_json_file(json_file)
+      if main_index == 0:
+         main_index = {}
    else:
       main_index = {}
 

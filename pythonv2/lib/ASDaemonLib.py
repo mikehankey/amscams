@@ -7,7 +7,7 @@ import json
 from lib.UtilLib import check_running 
 from lib.FileIO import cfe , save_json_file, load_json_file
 
-def fix_days():
+def fix_days(cmd_mode = 0):
    proc_file = "/mnt/ams2/SD/proc2/json/proc_stats.json";
    if cfe(proc_file) == 0:
       return()
@@ -15,8 +15,13 @@ def fix_days():
    for day in proc_data:
       if proc_data[day]['video_files'] - proc_data[day]['image_files'] > 10:
          print("Thumbs are missing for these days!")
-         os.system("./scan_stack.py fms " + day + " > /dev/null 2>&1 &")
-         return()
+         if cmd_mode == 0:
+            os.system("./scan_stack.py fms " + day + " > /dev/null 2>&1 &")
+            return()
+         else:
+            print("Fixing day:", day)
+            print("./scan_stack.py fms " + day )
+            os.system("./scan_stack.py fms " + day + " > /dev/null 2>&1 ")
 
 def update_proc_index(day ):
    proc_file = "/mnt/ams2/SD/proc2/json/proc_stats.json";
@@ -33,6 +38,8 @@ def proc_index():
    proc_file = "/mnt/ams2/SD/proc2/json/proc_stats.json";
    if cfe(proc_file) == 1:
       proc_stats = load_json_file(proc_file)
+      if proc_stats == 0:
+         proc_stats = {}
    today = datetime.today()
    num_days = 14
    for i in range (0,int(num_days)):
@@ -49,12 +56,28 @@ def get_proc_stats(day):
    proc_dir = "/mnt/ams2/SD/proc2/" + day + "/"
    video_files = get_files(proc_dir, "*.mp4")
    image_files = get_files(proc_dir + "/images/", "*-tn.png")
-   vals_files = get_files(proc_dir + "/data/", "*-vals.json")
-   detect_files = get_files(proc_dir + "/data/", "*-detect.json")
-   mm_files = get_files(proc_dir + "/data/", "*-maybe-meteors.json")
-   nm_files = get_files(proc_dir + "/data/", "*-non-meteor.json")
-   tm_files = get_files(proc_dir + "/data/", "*-toomany.json")
-   m_files = get_files(proc_dir + "/data/", "*-meteor.json")
+
+   data_files = get_files(proc_dir + "/data/", "*.json")
+   vals_files = []
+   detect_files = []
+   mm_files = []
+   nm_files = []
+   tm_files = []
+   m_files = []
+   for df in data_files:
+      if "-vals.json" in df:
+         vals_files.append(df)
+      if "-detect.json" in df:
+         detect_files.append(df)
+      if "-maybe-meteors.json" in df:
+         mm_files.append(df)
+      if "-no-meteor.json" in df:
+         nm_files.append(df)
+      if "-toomany.json" in df:
+         tm_files.append(df)
+      if "-meteor.json" in df:
+         m_files.append(df)
+
    proc_stats = {}
    proc_stats['video_files'] = len(video_files)
    proc_stats['image_files'] = len(image_files)
@@ -94,7 +117,7 @@ def extract_frames(video_file,start,end,outfile,w=640,h=360):
    os.system(cmd)
 
 
-def run_vals_detect(day=None):
+def run_vals_detect(day=None, cmd_mode=0):
    running = check_running("flex-detect.py bv")
    if running == 0:
 
@@ -103,22 +126,34 @@ def run_vals_detect(day=None):
          return()
       proc_data = load_json_file(proc_file)
       for day in proc_data:
-         if proc_data[day]['mm_files'] >= 1:
+         if True:
             print("Need to detect vals on this day!", day)
-            os.system("./flex-detect.py bv " + day + " > /dev/null 2>&1 &")
-            return()
+            if cmd_mode == 0:
+               os.system("./flex-detect.py bv " + day + " > /dev/null 2>&1 &")
+               return()
+            else:
+               os.system("./flex-detect.py bv " + day )
    else:
       print("Vals detect is already running.")
 
 
-def run_verify_meteors(day=None):
+def run_verify_meteors(day=None, cmd_mode=0):
+   proc_file = "/mnt/ams2/SD/proc2/json/proc_stats.json";
    running = check_running("flex-detect.py vms")
    if running == 0:
-      cmd = "./flex-detect.py vms " + day + " > /dev/null 2>&1 &"
-      print(cmd)
-      os.system(cmd)
+      if cmd_mode == 0:
+         cmd = "./flex-detect.py vms " + day + " > /dev/null 2>&1 &"
+         print(cmd)
+         os.system(cmd)
+      else:
+         proc_data = load_json_file(proc_file)
+         for day in proc_data:
+            if proc_data[day]['mm_files'] >= 1:
+               print("detect vals on this day: ", day)
+               os.system("./flex-detect.py vms " + day + " > /dev/null 2>&1 ")
    else:
-      print("Verify already running.")
+      print("Vals detect is already running.")
+
 
 
 def get_files(dir, match = None):
@@ -136,7 +171,63 @@ def exec_cmd(cmd):
       output = "Command failed." 
       return(0, output)
 
+def get_old_meteors(day):
+   meteor_files = []
+   mf = glob.glob("/mnt/ams2/meteors/" + day + "/*.json")
+   for f in mf:
+      if "trim" in f and ("HD-meteor" not in f and "reduced" not in f and "manual" not in f):
+         meteor_files.append(f)
+         print(f)
+   return(meteor_files)
 
+def build_meteor_file_index(year=None):
+   all_meteors = {}
+   meteor_dirs = glob.glob("/mnt/ams2/meteors/*")
+   for md in meteor_dirs:
+      if year is not None:
+         if year in md:
+            mday = md.split("/")[-1]
+            mfs = get_old_meteors(mday) 
+            for mf in mfs:
+               all_meteors[mf] = {} 
+      else:
+         mday = md.split("/")[-1]
+         mfs = get_old_meteors(mday) 
+         for mf in mfs:
+            all_meteors[mf] = {} 
+   if year == None:
+      jf = "/mnt/ams2/SD/proc2/json/all_meteors.json"
+   else:
+      jf = "/mnt/ams2/SD/proc2/json/all_meteors-" + year + ".json"
+   save_json_file(jf, all_meteors)
+   return(all_meteors)
+ 
+def arc_check(year=None, cmd_mode=0) :
+   if year == None:
+      jf = "/mnt/ams2/SD/proc2/json/all_meteors.json"
+   else:
+      jf = "/mnt/ams2/SD/proc2/json/all_meteors-" + year + ".json"
+   if cfe(jf) == 1:
+      print("Load:", jf)
+      all_meteors = load_json_file(jf)
+   else:
+      print("Build MI:", year)
+      all_meteors = build_meteor_file_index(year)
+   print("done")
+   for m in all_meteors:
+      arc_file = get_arc(m) 
+      if arc_file is not None:
+         all_meteors[m]['arc_file'] = arc_file
+      print(m, arc_file)
+   save_json_file(jf, all_meteors)
+
+def get_arc(m):
+   js = load_json_file(m)
+   if "archive_file" in js:
+      if js['archive_file'] != "":
+         return(js['archive_file'])
+   return(None)
+ 
 def day_or_night(capture_date, json_conf):
 
    device_lat = json_conf['site']['device_lat']

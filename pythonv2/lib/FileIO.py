@@ -251,7 +251,7 @@ def get_day_files(day, cams_id, json_conf, sun=None,in_hour=None,detect=None):
          tm_file = data_dir + fn + "-toomany.json" 
          mm_file = data_dir + fn + "-maybe-meteors.json" 
          m_file = data_dir + fn + "-meteor.json" 
-         nm_file = data_dir + fn + "-nonmeteor.json" 
+         nm_file = data_dir + fn + "-nometeor.json" 
          d_file = data_dir + fn + "-detect.json" 
          if cfe(tm_file) == 1: 
             tm += 1
@@ -280,7 +280,7 @@ def get_day_stats(day, day_dir, json_conf):
    failed_dir = day_dir + "/failed/*trim*.mp4"
    meteor_dir = "/mnt/ams2/meteors/" + day + "/*.json"
    pending_dir = "/mnt/ams2/SD/proc2/" + day + "/*trim*.mp4"
-   data_dir = "/mnt/ams2/SD/proc2/" + day + "/data/*meteor.json"
+   data_dir = "/mnt/ams2/SD/proc2/" + day + "/data/*-meteor.json"
    min_file_dir = "/mnt/ams2/SD/proc2/" + day + "/*.mp4"
    failed_files = glob.glob(failed_dir)
    tmp_meteor_files = glob.glob(meteor_dir)
