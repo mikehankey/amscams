@@ -65,8 +65,7 @@ function addPickerModalTemplate(all_frames_ids) {
       var relY = e.pageY - parentOffset.top - select_border_size;
 
       var factor  = w / $('#cropped_frame_selector').width();  // Same for W & H!!
-
-
+ 
       // Convert into HD_x & HD_y
       // from x,y
       var realX = relX*factor+x;
