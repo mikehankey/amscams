@@ -72,8 +72,6 @@ function go_to_next(next_id) {
    var $next_frame = $('.select_frame[data-rel='+next_id+']');
    
    // we get the related src path
-   
-
 
    if($next_frame.length != 0) {
       add_image_inside_meteor_select($next_frame.find('img').attr('src'), [], parseInt(next_id))
@@ -166,8 +164,29 @@ function add_image_inside_meteor_select(img_path, all_frames_ids, meteor_id) {
    }
    $('#frame_select_mod').scrollTo($('.select_frame[data-rel="'+scroll_to+'"]'), 150 );
 
-   
-   
+
+   // Add circles for 3 frames before and 3 frames after
+      // get the 3 frames before
+      var frames_before = [];
+      for(var i = meteor_id; i>= meteor_id -3 ; meteor_id-- ) {
+         if($('#thb_'+meteor_id).length>0) {
+            frames_before.push(meteor_id);
+         }
+      }
+
+     // get the 3 frames afeter
+     var frames_after = [];
+     for(var i = meteor_id; i <= meteor_id + 3 ; meteor_id++ ) {
+        if($('#thb_'+meteor_id).length>0) {
+         frames_after.push(meteor_id);
+        }
+     }
+
+     console.log("FRAMES BEFORE ");
+     console.log(frames_before);
+     console.log("FRAMES AFTER ");
+     console.log(frames_after);
+
 
    // Select Meteor
    $("#cropped_frame_selector").unbind('click').click(function(e){
@@ -228,7 +247,7 @@ function add_image_inside_meteor_select(img_path, all_frames_ids, meteor_id) {
        
   });
 
-
+   /*
    // If we already have data: we show the circle
    // and the reset button
    var cur_f_done = false;
@@ -250,7 +269,7 @@ function add_image_inside_meteor_select(img_path, all_frames_ids, meteor_id) {
       $('#cirl').hide();
       $('#reset_frame').css('visibility','hidden');
    }
- 
+   */
    return false;
  
 }
