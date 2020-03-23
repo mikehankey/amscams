@@ -216,7 +216,7 @@ function add_image_inside_meteor_select(img_path, all_frames_ids, meteor_id) {
       for(var i = meteor_id; i >= meteor_id - 3 ; i--) {  
          if($('#fr_'+meteor_id).length>0 && i!=meteor_id) { 
             xy = convert_to_local(parseInt($('#fr_'+i).attr('data-org-x')),parseInt($('#fr_'+i).attr('data-org-y'))); 
-            addCircleRepair(xy[0]*factor,xy[1]*factor,i,'b'); 
+            addCircleRepair(xy[0]/factor,xy[1]/factor,i,'b'); 
          }
       }
  
@@ -225,7 +225,7 @@ function add_image_inside_meteor_select(img_path, all_frames_ids, meteor_id) {
      for(var i = meteor_id; i <= meteor_id + 3 ; i++ ) {
         if($('#fr_'+meteor_id).length>0 && i!=meteor_id) {
             xy = convert_to_local(parseInt($('#fr_'+i).attr('data-org-x')),parseInt($('#fr_'+i).attr('data-org-y')));
-            addCircleRepair(xy[0]*factor,xy[1]*factor,i,'a'); 
+            addCircleRepair(xy[0]/factor,xy[1]/factor,i,'a'); 
          }
      }
    
