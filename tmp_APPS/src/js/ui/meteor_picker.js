@@ -121,6 +121,15 @@ function get_neighbor_frames(cur_id) {
 
 }
 
+
+// Add Circle Repair
+function addCircleRepair(x,y,fn,after_of_before) {
+   console.log("addCircleRepair")
+   console.log(x,y,fn,after_of_before);
+}
+
+
+
 // Add Image Inside Picker
 function add_image_inside_meteor_select(img_path, all_frames_ids, meteor_id) { 
 
@@ -168,24 +177,25 @@ function add_image_inside_meteor_select(img_path, all_frames_ids, meteor_id) {
    // Add circles for 3 frames before and 3 frames after
       // get the 3 frames before
       var frames_before = [];
-      for(var i = meteor_id; i <= meteor_id -3 ; meteor_id-- ) {
-         if($('#thb_'+meteor_id).length>0) {
-            frames_before.push(meteor_id);
+      for(var i = meteor_id; i >= meteor_id - 3 ; i--) {  
+         if($('#fr_'+meteor_id).length>0 && i!=meteor_id) {
+            frames_before.push({'fn':i,'org_x': parseInt($('#fr_'+meteor_id).attr('data-org-x')),'org_y': parseInt($('#fr_'+meteor_id).attr('data-org-y'))});
          }
       }
 
      // get the 3 frames afeter
      var frames_after = [];
-     for(var i = meteor_id; i >= meteor_id + 3 ; meteor_id++ ) {
-        if($('#thb_'+meteor_id).length>0) {
-         frames_after.push(meteor_id);
-        }
+     for(var i = meteor_id; i <= meteor_id + 3 ; i++ ) {
+        if($('#fr_'+meteor_id).length>0 && i!=meteor_id) {
+         frames_after.push({'fn':i,'org_x': parseInt($('#fr_'+meteor_id).attr('data-org-x')),'org_y': parseInt($('#fr_'+meteor_id).attr('data-org-y'))});
+      }
      }
+     
+   // Add Circles Before 
+   $.each(frames_before, function(i,v) {
+      addCircleRepair(i['org_x'],i['org_y'],meteor_id,'b');
+   }};
 
-     console.log("FRAMES BEFORE ");
-     console.log(frames_before);
-     console.log("FRAMES AFTER ");
-     console.log(frames_after);
 
 
    // Select Meteor
