@@ -124,14 +124,20 @@ function get_neighbor_frames(cur_id) {
 
 
 // Add Circle Repair
-function addCircleRepair(x,y,fn,after_of_before) {
+function addCircleRepair(_x,_y,fn,after_of_before) {
    var $cir = $('<div class="circl"><span>'+fn+'</span></div>');
 
    $cir.appendTo($('#cropped_frame_selector'));
    $cir.css({
-      'left': parseInt(x-circle_radius/2) + 'px',
-      'top':  parseInt(y-circle_radius/2) + 'px' 
+      'left': parseInt(_x-circle_radius/2) + 'px',
+      'top':  parseInt(_y-circle_radius/2) + 'px' 
    });
+
+   console.log("ADD CIRCLE ", fn);
+   console.log("X " + _x);
+   
+   console.log("Y " + _y);
+
 
    if(after_of_before=='b') {
       $cir.css('border-color','red');
