@@ -205,6 +205,8 @@ function add_image_inside_meteor_select(img_path, all_frames_ids, meteor_id) {
 
 
    // Add circles for 3 frames before and 3 frames after
+   meteor_id = parseInt(meteor_id);
+      
       // get the 3 frames before 
       for(var i = meteor_id+1; i >= meteor_id - 3 ; i--) {   
          if($('#fr_'+meteor_id).length!=0 && i!=meteor_id) {  
