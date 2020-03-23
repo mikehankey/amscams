@@ -121,7 +121,7 @@ def batch_ss(wildcard=None):
    running = check_running("scan_stack.py") 
    if running > 2:
       print("Running already.")
-      #exit()
+      exit()
 
    if wildcard is not None:
       glob_dir = "/mnt/ams2/SD/*" + wildcard + "*.mp4"
