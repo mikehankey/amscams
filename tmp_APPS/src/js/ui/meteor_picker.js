@@ -46,7 +46,12 @@ function addPickerModalTemplate(all_frames_ids) {
    if($('#cropped_frame_select a').length == 0 ) { 
       // Get the images from the reduc table and display them in cropped_frame_select
       $.each(all_frames_ids, function(i,v) {
-         $('<a class="select_frame select_frame_btn" data-rel="'+v+'"><span>#'+v+'<i class="pos pl-1">x:? y:?</i></span><img src="'+ $('#thb_'+v).find('img').attr('src') +'"></a>').appendTo($('#cropped_frame_select div'));
+         
+         // Get the original X and Y for the given frame (if any)
+         var org_x  = $('tr#fr_' + v).attr('data-org-x');
+         var org_y  = $('tr#fr_' + v).attr('data-org-y');
+ 
+         $('<a class="select_frame select_frame_btn" data-rel="'+v+'"><span>#'+v+'<i class="pos pl-1">x:'+org_x + ' y:'+org_y+'</i></span><img src="'+ $('#thb_'+v).find('img').attr('src') +'"></a>').appendTo($('#cropped_frame_select div'));
       });
    }  
    
@@ -91,6 +96,7 @@ function get_neighbor_frames(cur_id) {
 
 // Add Image Inside Picker
 function add_image_inside_meteor_select(img_path, all_frames_ids, meteor_id) { 
+
    $('#cropped_frame_selector').css('background-image','url('+img_path+')');
 
 
