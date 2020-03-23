@@ -168,7 +168,7 @@ function add_image_inside_meteor_select(img_path, all_frames_ids, meteor_id) {
    // Add circles for 3 frames before and 3 frames after
       // get the 3 frames before
       var frames_before = [];
-      for(var i = meteor_id; i>= meteor_id -3 ; meteor_id-- ) {
+      for(var i = meteor_id; i <= meteor_id -3 ; meteor_id-- ) {
          if($('#thb_'+meteor_id).length>0) {
             frames_before.push(meteor_id);
          }
@@ -176,7 +176,7 @@ function add_image_inside_meteor_select(img_path, all_frames_ids, meteor_id) {
 
      // get the 3 frames afeter
      var frames_after = [];
-     for(var i = meteor_id; i <= meteor_id + 3 ; meteor_id++ ) {
+     for(var i = meteor_id; i >= meteor_id + 3 ; meteor_id++ ) {
         if($('#thb_'+meteor_id).length>0) {
          frames_after.push(meteor_id);
         }
