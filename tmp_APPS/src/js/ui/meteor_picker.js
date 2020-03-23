@@ -1,5 +1,6 @@
 var frames_jobs=[];  // All the info for the frames done
 var select_border_size = 2; // See css **
+var frames_done=[];  // Just for the frames done
 
 // Modal for selector
 function addPickerModalTemplate(all_frames_ids) {
