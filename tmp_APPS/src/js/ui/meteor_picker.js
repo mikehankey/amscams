@@ -90,8 +90,8 @@ function get_neighbor_frames(cur_id) {
 }
 
 // Add Image Inside Picker
-function add_image_inside_meteor_select(img_path, color, all_frames_ids, meteor_id) { 
-   $('#cropped_frame_selector').css('background-image','url('+img_path+')').css('border','2px solid ' + color);
+function add_image_inside_meteor_select(img_path, all_frames_ids, meteor_id) { 
+   $('#cropped_frame_selector').css('background-image','url('+img_path+')');
 
 
    // Add image 
@@ -112,22 +112,20 @@ function add_image_inside_meteor_select(img_path, color, all_frames_ids, meteor_
 
 // Update Modal Template
 // MAke one frame active
-function updateModalTemplate(meteor_id,color,img_path,all_frames_ids) {
+function updateModalTemplate(meteor_id,img_path,all_frames_ids) {
 
-   console.log("updateModalTemplate")
+
 
    // Show Modal if necessary
    if($('#select_meteor_modal').hasClass('show')) { 
-      console.log("--> CAS1 ");
-      add_image_inside_meteor_select(img_path, color, all_frames_ids,meteor_id);
+      add_image_inside_meteor_select(img_path, all_frames_ids,meteor_id);
       $('#select_meteor_modal').css('padding-right',0);
       $('body').css('padding',0);
    } else {
       // When the modal already exists 
       
-      console.log("--> CAS2 ");
       $('#select_meteor_modal').on('shown.bs.modal', function () {
-         add_image_inside_meteor_select(img_path, color, all_frames_ids,meteor_id);
+         add_image_inside_meteor_select(img_path, all_frames_ids,meteor_id);
          $('#select_meteor_modal').css('padding-right',0);
          $('body').css('padding',0); // Because we don't want slidebars on body
       }).modal('show');
@@ -138,19 +136,16 @@ function updateModalTemplate(meteor_id,color,img_path,all_frames_ids) {
       var $t = $(this);
       var MID = $t.attr('data-rel');
       var img_path = $('#thb_' + MID + " img").attr('src');
-      var color =  $('#thb_' + MID + " img").css('border-color');
-       
-
       $('#cropped_frame_selector').css('background-image','url(none)').css('border','2px solid #fff');
-      add_image_inside_meteor_select(img_path,color,all_frames_ids,MID)
+      add_image_inside_meteor_select(img_path,all_frames_ids,MID)
    });
 
 }
 
 
 // Open the Modal with a given meteor
-function open_meteor_picker(meteor_id, color, img_path,all_frames_ids ) {
-   updateModalTemplate(meteor_id,color,img_path,all_frames_ids);
+function open_meteor_picker(meteor_id, img_path,all_frames_ids ) {
+   updateModalTemplate(meteor_id,img_path,all_frames_ids);
    return false; 
 } 
 
@@ -181,8 +176,6 @@ function setup_manual_reduc1() {
    // Click on selector (thumb)
    $('.wi a').click(function(e) { 
       var $tr = $(this).closest('tr'); 
-      var color = $tr.find('img').css('border-color');
-  
 
       e.stopPropagation();
 
@@ -190,7 +183,7 @@ function setup_manual_reduc1() {
       var meteor_id = $tr.attr('id');
       meteor_id = meteor_id.split('_')[1];
  
-      open_meteor_picker(meteor_id,color,$tr.find('img').attr('src'),all_frames_ids);
+      open_meteor_picker(meteor_id,$tr.find('img').attr('src'),all_frames_ids);
 
 
       return false;
@@ -202,15 +195,13 @@ function setup_manual_reduc1() {
 
       // Find first id in the table
       var $tr = $('#reduc-tab table tbody tr');
-      var color = $tr.find('img').css('border-color');
- 
        
       $tr = $($tr[0]); 
       var meteor_id = $tr.attr('id');
       meteor_id = meteor_id.split('_')[1];
 
       // Then Do the all thing to open the meteor picker 
-      open_meteor_picker(meteor_id,color,$tr.find('img').attr('src'),all_frames_ids);
+      open_meteor_picker(meteor_id,$tr.find('img').attr('src'),all_frames_ids);
 
       return false;
    });
