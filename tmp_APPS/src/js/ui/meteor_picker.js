@@ -1,6 +1,7 @@
 var frames_jobs=[];  // All the info for the frames done
 var select_border_size = 2; // See css **
 var frames_done=[];  // Just for the frames done
+var circle_radius = 20;
 
 // Modal for selector
 function addPickerModalTemplate(all_frames_ids) {
@@ -124,8 +125,20 @@ function get_neighbor_frames(cur_id) {
 
 // Add Circle Repair
 function addCircleRepair(x,y,fn,after_of_before) {
-   console.log("addCircleRepair")
-   console.log(x,y,fn,after_of_before);
+   var $cir = $('<div class="circl"><span>'+fn+'</span></div>');
+
+   $cir.appendTo($('#cropped_frame_selector'));
+   $cir.css({
+      'left': parseInt(x-circle_radius/2) + 'px',
+      'top':  parseInt(y-circle_radius/2) + 'px' 
+   });
+
+   if(after_of_before=='b') {
+      $cir.css('border-color','red');
+   } else {
+      $cir.css('border-color','green');
+   }
+   
 }
 
 
@@ -179,7 +192,7 @@ function add_image_inside_meteor_select(img_path, all_frames_ids, meteor_id) {
       var frames_before = [];
       for(var i = meteor_id; i >= meteor_id - 3 ; i--) {  
          if($('#fr_'+meteor_id).length>0 && i!=meteor_id) {
-            frames_before.push({'fn':i,'org_x': parseInt($('#fr_'+meteor_id).attr('data-org-x')),'org_y': parseInt($('#fr_'+meteor_id).attr('data-org-y'))});
+            frames_before.push({'fn':i,'org_x': parseInt($('#fr_'+i).attr('data-org-x')),'org_y': parseInt($('#fr_'+i).attr('data-org-y'))});
          }
       }
 
@@ -187,13 +200,17 @@ function add_image_inside_meteor_select(img_path, all_frames_ids, meteor_id) {
      var frames_after = [];
      for(var i = meteor_id; i <= meteor_id + 3 ; i++ ) {
         if($('#fr_'+meteor_id).length>0 && i!=meteor_id) {
-         frames_after.push({'fn':i,'org_x': parseInt($('#fr_'+meteor_id).attr('data-org-x')),'org_y': parseInt($('#fr_'+meteor_id).attr('data-org-y'))});
+         frames_after.push({'fn':i,'org_x': parseInt($('#fr_'+i).attr('data-org-x')),'org_y': parseInt($('#fr_'+i).attr('data-org-y'))});
       }
      }
      
    // Add Circles Before 
-   $.each(frames_before, function(i,v) {
-      addCircleRepair(i['org_x'],i['org_y'],meteor_id,'b');
+   $.each(frames_before, function(i,v) { 
+      addCircleRepair(v['org_x'],v['org_y'],v['fn'],'b');
+   });
+
+   $.each(frames_after, function(i,v) { 
+      addCircleRepair(v['org_x'],v['org_y'],v['fn'],'a');
    });
 
 

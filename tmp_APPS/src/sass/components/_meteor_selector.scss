@@ -347,3 +347,14 @@
     box-shadow: 0 -2px 2px inset rgba(0,0,0,.63);
     margin: .5rem;
 }
+
+
+
+// Circles
+.circl {
+   position: absolute;
+   width: 20px;
+   height: 20px;
+   border:1px solid red;
+   border-radius: 50%;
+}
