@@ -224,7 +224,7 @@ function add_image_inside_meteor_select(img_path, all_frames_ids, meteor_id) {
 
             console.log("BEFORE");
             console.log(xy); 
-            addCircleRepair(xy[0]},xy[1]},i,'b'); 
+            addCircleRepair(xy[0],xy[1],i,'b'); 
          }
       }
 
