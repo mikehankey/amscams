@@ -130,12 +130,7 @@ function addCircleRepair(_x,_y,fn,after_of_before) {
       'left': parseInt(_x-circle_radius/2) + 'px',
       'top':  parseInt(_y-circle_radius/2) + 'px' 
    });
-
-   console.log("ADD CIRCLE ", fn);
-   console.log("X " + _x);
-   
-   console.log("Y " + _y);
-
+ 
 
    if(after_of_before=='b') {
       $cir.css('border-color','red');
@@ -211,10 +206,8 @@ function add_image_inside_meteor_select(img_path, all_frames_ids, meteor_id) {
 
    // Add circles for 3 frames before and 3 frames after
       // get the 3 frames before 
-      for(var i = meteor_id+1; i >= meteor_id - 3 ; i--) {  
-         console.log("BEFORE ", i);
-         if($('#fr_'+meteor_id).length!=0 && i!=meteor_id) { 
-            console.log("yep");
+      for(var i = meteor_id+1; i >= meteor_id - 3 ; i--) {   
+         if($('#fr_'+meteor_id).length!=0 && i!=meteor_id) {  
             xy = convert_to_local(parseInt($('#fr_'+i).attr('data-org-x')),parseInt($('#fr_'+i).attr('data-org-y'))); 
             addCircleRepair(xy[0]/factor,xy[1]/factor,i,'b'); 
          }
@@ -222,10 +215,8 @@ function add_image_inside_meteor_select(img_path, all_frames_ids, meteor_id) {
  
 
      // get the 3 frames after 
-     for(var i = meteor_id-1; i <= meteor_id + 3 ; i++ ) {
-      console.log("AFTER ", i);
-        if($('#fr_'+meteor_id).length!=0 && i!=meteor_id) {
-            console.log("yep");
+     for(var i = meteor_id-1; i <= meteor_id + 3 ; i++ ) { 
+        if($('#fr_'+meteor_id).length!=0 && i!=meteor_id) { 
             xy = convert_to_local(parseInt($('#fr_'+i).attr('data-org-x')),parseInt($('#fr_'+i).attr('data-org-y')));
             addCircleRepair(xy[0]/factor,xy[1]/factor,i,'a'); 
          }
