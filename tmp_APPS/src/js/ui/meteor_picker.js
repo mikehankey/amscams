@@ -157,7 +157,7 @@ function convert_from_local(_x,_y) {
 
 // Change REAL x,y to LOCAL x,y
 function convert_to_local(_x,_y) {
-   return [(_x+x), (_y+y)];
+   return [(_x-x), (_y-y)];
 }
 
 
