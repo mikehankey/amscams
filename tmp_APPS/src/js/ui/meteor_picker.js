@@ -194,7 +194,7 @@ function add_image_inside_meteor_select(img_path, all_frames_ids, meteor_id) {
    // Add Circles Before 
    $.each(frames_before, function(i,v) {
       addCircleRepair(i['org_x'],i['org_y'],meteor_id,'b');
-   }};
+   });
 
 
 
