@@ -1,3 +1,5 @@
+var frames_jobs=[];  // All the info for the frames done
+
 // Modal for selector
 function addPickerModalTemplate(all_frames_ids) {
    var c; 
@@ -25,7 +27,6 @@ function addPickerModalTemplate(all_frames_ids) {
                                  <div id="org_lv"></div>\
                                  <div id="lh"></div>\
                                  <div id="lv"></div> \
-                                 <div id="cirl" style="width:20px; height:20px; border-radius:50%; position: absolute; border: 1px solid red;"></div>\
                               </div>\
                         </div>\
                         <div id="below_cfs" class="d-flex justify-content-between  m-2">\
@@ -51,10 +52,90 @@ function addPickerModalTemplate(all_frames_ids) {
          var org_x  = $('tr#fr_' + v).attr('data-org-x');
          var org_y  = $('tr#fr_' + v).attr('data-org-y');
  
-         $('<a class="select_frame select_frame_btn" data-rel="'+v+'"><span>#'+v+'<i class="pos pl-1">x:'+org_x + ' y:'+org_y+'</i></span><img src="'+ $('#thb_'+v).find('img').attr('src') +'"></a>').appendTo($('#cropped_frame_select div'));
+         $('<a class="select_frame select_frame_btn" data-rel="'+v+'"><span>#'+v+'  &bull; <i class="pos">x:'+org_x + ' y:'+org_y+'</i></span><img src="'+ $('#thb_'+v).find('img').attr('src') +'"></a>').appendTo($('#cropped_frame_select div'));
       });
    }  
    
+   // Select Meteor
+   $("#cropped_frame_selector").unbind('click').click(function(e){
+     
+      var parentOffset = $(this).offset(); 
+      var relX = e.pageX - parentOffset.left - select_border_size;
+      var relY = e.pageY - parentOffset.top - select_border_size;
+
+      // Convert into HD_x & HD_y
+      // from x,y
+      var realX = relX*factor+x;
+      var realY = relY*factor+y;
+ 
+      // Transform values
+      if(!$(this).hasClass('done')) {
+          $(this).addClass('done');
+      } else {
+          $('#lh').css('top',relY);
+          $('#lv').css('left',relX); 
+      }
+ 
+      cur_fr_id = $('#cropped_frame_select .cur').attr('data-rel');
+
+      // Add current frame to frame_done if not already there
+      if($.inArray(cur_fr_id, frames_done )==-1) {
+         frames_done.push(parseInt(cur_fr_id));  // We push an int so we can get the min
+         $('#fr_cnt').html(parseInt($('#fr_cnt').html())+1);
+      }
+
+      // Add info to frames_jobs
+      frames_jobs.push({
+         'fn': cur_fr_id,
+         'x': realX,
+         'y': realY,
+         'pos_x': relX,
+         'pos_y': relY
+      });
+      
+      // Add info to frame scroller
+      $('#cropped_frame_select .cur').addClass('done').find('.pos').html('<br>x:' + parseInt(realX) + ' y:'  + parseInt(realY));
+      
+      // Go to next frame
+      go_to_next(parseInt(cur_fr_id)+1);
+      
+  }).unbind('mousemove').mousemove(function(e) {
+      
+      var parentOffset = $(this).offset(); 
+      var relX = e.pageX - parentOffset.left - select_border_size;
+      var relY = e.pageY - parentOffset.top - select_border_size;
+
+      // Cross
+      if(!$(this).hasClass('done')) {
+          $('#lh').css('top',relY-2);
+          $('#lv').css('left',relX-2); 
+      }
+       
+  });
+
+
+
+      // If we already have data: we show the circle
+   // and the reset button
+   var cur_f_done = false;
+   $.each(frames_jobs, function(i,v){
+      if(typeof v !=='undefined' && v['fn']==fd_id) {
+          // Warning -5 because the circle has a 10px diameter 
+         $('#cirl').css({
+            'left': parseInt(v['pos_x']-5) + 'px',
+            'top':  parseInt(v['pos_y']-5) + 'px' 
+         }).show();
+         
+         $('#reset_frame').css('visibility','visible');
+         cur_f_done = true;
+      }
+   });
+
+
+   if(!cur_f_done){
+      $('#cirl').hide();
+      $('#reset_frame').css('visibility','hidden');
+   }
    
 }
 
@@ -137,7 +218,7 @@ function add_image_inside_meteor_select(img_path, all_frames_ids, meteor_id) {
    }
    $('#frame_select_mod').scrollTo($('.select_frame[data-rel="'+scroll_to+'"]'), 150 );
 
- 
+   
  
    return false;
  
