@@ -210,6 +210,11 @@ function add_image_inside_meteor_select(img_path, all_frames_ids, meteor_id) {
       var frames_before = [];
       for(var i = meteor_id; i >= meteor_id - 3 ; i--) {  
          if($('#fr_'+meteor_id).length>0 && i!=meteor_id) {
+
+            console.log("I ", i);
+            console.log("X ",parseInt($('#fr_'+i).attr('data-org-x')));
+            console.log("Y ",parseInt($('#fr_'+i).attr('data-org-y')));
+
             xy = convert_from_local(parseInt($('#fr_'+i).attr('data-org-x')),$('#fr_'+i).attr('data-org-y'));
 
             console.log("BEFORE");
