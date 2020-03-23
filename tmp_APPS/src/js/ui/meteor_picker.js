@@ -104,6 +104,17 @@ function add_image_inside_meteor_select(img_path, all_frames_ids, meteor_id) {
    // Add Cur to image chooser
    $('.select_frame').removeClass('cur');
    $('.select_frame[data-rel="'+meteor_id+'"]').addClass('cur');
+
+
+   // Scroll Top
+   // Scroll to frame -1 on top if it exists
+   if($('.select_frame[data-rel="'+meteor_id+'"]').length==0) {
+         scroll_to-= 1;
+         while($('.select_frame[data-rel="'+meteor_id+'"]').length==0 && meteor_id>=0) {
+            scroll_to-= 1;
+         }
+      }
+      $('#frame_select_mod').scrollTo($('.select_frame[data-rel="'+meteor_id+'"]'), 150 );
  
    return false;
  
@@ -113,8 +124,7 @@ function add_image_inside_meteor_select(img_path, all_frames_ids, meteor_id) {
 // Update Modal Template
 // MAke one frame active
 function updateModalTemplate(meteor_id,img_path,all_frames_ids) {
-
-
+ 
 
    // Show Modal if necessary
    if($('#select_meteor_modal').hasClass('show')) { 
@@ -136,7 +146,7 @@ function updateModalTemplate(meteor_id,img_path,all_frames_ids) {
       var $t = $(this);
       var MID = $t.attr('data-rel');
       var img_path = $('#thb_' + MID + " img").attr('src');
-      $('#cropped_frame_selector').css('background-image','url(none)').css('border','2px solid #fff');
+      $('#cropped_frame_selector').css('background-image','url(none)').css('border','2px solid #ffe52e');
       add_image_inside_meteor_select(img_path,all_frames_ids,MID)
    });
 
