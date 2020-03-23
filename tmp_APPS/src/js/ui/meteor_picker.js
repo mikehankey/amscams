@@ -143,8 +143,20 @@ function addCircleRepair(x,y,fn,after_of_before) {
 
 
 
+// Change Local x,y to Real x,y
+function convert_from_local(_x,_y) {
+   return _x+x, _y+y;
+}
+
+
+
+
 // Add Image Inside Picker
 function add_image_inside_meteor_select(img_path, all_frames_ids, meteor_id) { 
+
+
+   // Remove Previous Circles
+   $('.circl').remove();
 
    $('#cropped_frame_selector').css('background-image','url('+img_path+')');
 
@@ -192,7 +204,8 @@ function add_image_inside_meteor_select(img_path, all_frames_ids, meteor_id) {
       var frames_before = [];
       for(var i = meteor_id; i >= meteor_id - 3 ; i--) {  
          if($('#fr_'+meteor_id).length>0 && i!=meteor_id) {
-            frames_before.push({'fn':i,'org_x': parseInt($('#fr_'+i).attr('data-org-x')),'org_y': parseInt($('#fr_'+i).attr('data-org-y'))});
+            real_x, real_y = convert_from_local(parseInt($('#fr_'+i).attr('data-org-x')),$('#fr_'+i).attr('data-org-y'))
+            frames_before.push({'fn':i,'org_x': real_x,'org_y': real_y});
          }
       }
 
@@ -200,7 +213,8 @@ function add_image_inside_meteor_select(img_path, all_frames_ids, meteor_id) {
      var frames_after = [];
      for(var i = meteor_id; i <= meteor_id + 3 ; i++ ) {
         if($('#fr_'+meteor_id).length>0 && i!=meteor_id) {
-         frames_after.push({'fn':i,'org_x': parseInt($('#fr_'+i).attr('data-org-x')),'org_y': parseInt($('#fr_'+i).attr('data-org-y'))});
+         real_x, real_y = convert_from_local(parseInt($('#fr_'+i).attr('data-org-x')),$('#fr_'+i).attr('data-org-y'))
+         frames_after.push({'fn':i,'org_x': real_x,'org_y': real_y});
       }
      }
      
