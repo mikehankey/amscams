@@ -212,8 +212,7 @@ function add_image_inside_meteor_select(img_path, all_frames_ids, meteor_id) {
 
 
    // Add circles for 3 frames before and 3 frames after
-      // get the 3 frames before
-      var frames_before = [];
+      // get the 3 frames before 
       for(var i = meteor_id; i >= meteor_id - 3 ; i--) {  
          if($('#fr_'+meteor_id).length>0 && i!=meteor_id) {
 
@@ -224,14 +223,14 @@ function add_image_inside_meteor_select(img_path, all_frames_ids, meteor_id) {
             xy = convert_to_local(parseInt($('#fr_'+i).attr('data-org-x')),parseInt($('#fr_'+i).attr('data-org-y')));
 
             console.log("BEFORE");
-            console.log(xy);
-            console.log(parseInt($('#fr_'+i).attr('data-org-x')));
-            console.log(parseInt($('#fr_'+i).attr('data-org-y')));
-            
-
-            frames_before.push({'fn':i,'org_x': xy[0],'org_y': xy[1]});
+            console.log(xy); 
+            addCircleRepair(xy[0]},xy[1]},i,'b'); 
          }
       }
+
+
+      console.log('STOP');
+      return false;
 
      // get the 3 frames after
      var frames_after = [];
@@ -241,16 +240,7 @@ function add_image_inside_meteor_select(img_path, all_frames_ids, meteor_id) {
             frames_after.push({'fn':i,'org_x': xy[0],'org_y': xy[1]});
          }
      }
-     
-   // Add Circles Before 
-   $.each(frames_before, function(i,v) { 
-      addCircleRepair(v['org_x'],v['org_y'],v['fn'],'b');
-   });
-
-   $.each(frames_after, function(i,v) { 
-      addCircleRepair(v['org_x'],v['org_y'],v['fn'],'a');
-   });
-
+   
 
 
    // Select Meteor
