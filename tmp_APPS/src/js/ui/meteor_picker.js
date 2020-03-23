@@ -213,9 +213,9 @@ function add_image_inside_meteor_select(img_path, all_frames_ids, meteor_id) {
      var frames_after = [];
      for(var i = meteor_id; i <= meteor_id + 3 ; i++ ) {
         if($('#fr_'+meteor_id).length>0 && i!=meteor_id) {
-         real_x, real_y = convert_from_local(parseInt($('#fr_'+i).attr('data-org-x')),$('#fr_'+i).attr('data-org-y'))
-         frames_after.push({'fn':i,'org_x': xy[0],'org_y': xy[1]});
-      }
+            xy = convert_from_local(parseInt($('#fr_'+i).attr('data-org-x')),$('#fr_'+i).attr('data-org-y'))
+            frames_after.push({'fn':i,'org_x': xy[0],'org_y': xy[1]});
+         }
      }
      
    // Add Circles Before 
