@@ -106,15 +106,32 @@ function add_image_inside_meteor_select(img_path, all_frames_ids, meteor_id) {
    $('.select_frame[data-rel="'+meteor_id+'"]').addClass('cur');
 
 
-   // Scroll Top
+   // Scrolln top
+   var $frame = $('.select_frame[data-rel='+meteor_id+']');
+   var scroll_to = meteor_id-4;
+
+   // Cur has changed
+   $('.select_frame').removeClass('cur');
+   $frame.addClass('cur');
+
+   // Not "done" yet
+   $('#cropped_frame_selector').removeClass('done');
+
+   // We load the image
+   $('#cropped_frame_selector').css({
+      'background-image':'url('+$($frame.find('img')).attr('src')+')'
+   }); 
+
    // Scroll to frame -1 on top if it exists
-   if($('.select_frame[data-rel="'+meteor_id+'"]').length==0) {
+   if($('.select_frame[data-rel="'+scroll_to+'"]').length==0) {
+      scroll_to-= 1;
+      while($('.select_frame[data-rel="'+scroll_to+'"]').length==0 && scroll_to>=0) {
          scroll_to-= 1;
-         while($('.select_frame[data-rel="'+meteor_id+'"]').length==0 && meteor_id>=0) {
-            scroll_to-= 1;
-         }
       }
-      $('#frame_select_mod').scrollTo($('.select_frame[data-rel="'+meteor_id+'"]'), 150 );
+   }
+   $('#frame_select_mod').scrollTo($('.select_frame[data-rel="'+scroll_to+'"]'), 150 );
+
+ 
  
    return false;
  
