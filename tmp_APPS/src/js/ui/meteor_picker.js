@@ -65,6 +65,30 @@ function addPickerModalTemplate(all_frames_ids) {
 
 
 
+// Go to Next Frame
+function go_to_next(next_id) {
+ 
+   // Does the next frame exist?
+   var $next_frame = $('.select_frame[data-rel='+next_id+']');
+   
+   // we get the related src path
+   
+
+
+   if($next_frame.length != 0) {
+      add_image_inside_meteor_select($next_frame.find('img').attr('src'), [], parseInt(next_id))
+   } else {
+      // We select the first one 
+      var next_id = parseInt($($('#cropped_frame_select .select_frame').get(0)).attr('data-rel'));
+      $next_frame = $('.select_frame[data-rel='+next_id+']');
+ 
+      add_image_inside_meteor_select($next_frame.find('img').attr('src'),[],next_id);
+   }
+
+}
+
+
+
 function get_neighbor_frames(cur_id) {
    // Get the thumbs & colors or -5 +5 frames
    // IN #nav_prev
