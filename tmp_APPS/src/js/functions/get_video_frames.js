@@ -79,8 +79,7 @@ async function extractFramesFromVideo(videoUrl,firstframe, how_many_frames, fps=
 
 
    // Setup Meteor Picker (Manual Reduce1) 
-   // ONLY WHEN FRAMES ARE LOADED (!)
-   alert('FRAMES ARE LOADED => REDUC1');
+   // ONLY WHEN FRAMES ARE LOADED (!) 
    setup_manual_reduc1();
  }
 

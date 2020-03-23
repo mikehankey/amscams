@@ -12,7 +12,7 @@ function addPickerModalTemplate(all_frames_ids) {
                            <button  class="btn btn-secondary btn-sm mr-1"  data-dismiss="modal">&times; Close</button>\
                         </div>\
                         <div id="thumb_browwser" class="d-flex flex-wrap">\
-                           <div class="d-flex justify-content-left" id="frame_select_mod">\
+                           <div class="d-flex justify-content-left mr-2 ml-2 mb-2" id="frame_select_mod">\
                               <div id="cropped_frame_select" class="d-flex justify-content-left">\
                                  <div>\
                                  </div>\
@@ -160,9 +160,8 @@ function open_meteor_picker(meteor_id, color, img_path,all_frames_ids ) {
  * MAIN SETUP
  **/
 
-function  setup_manual_reduc1() { 
+function setup_manual_reduc1() { 
    var all_frames_ids = [];
-
 
    // Only for loggedin
    if(test_logged_in()==null) {
@@ -178,25 +177,6 @@ function  setup_manual_reduc1() {
   
    // Add modal Template 
    addPickerModalTemplate(all_frames_ids); 
-
-   // Click on "Big" button 
-   $('.reduc1').click(function(e) { 
-
-      // Find first id in the table
-      var $tr = $('#reduc-tab table tbody tr');
-      var color = $tr.find('img').css('border-color');
- 
-       
-      $tr = $($tr[0]); 
-      var meteor_id = $tr.attr('id');
-      meteor_id = meteor_id.split('_')[1];
-
-      // Then Do the all thing to open the meteor picker 
-      open_meteor_picker(meteor_id,color,$tr.find('img').attr('src'),all_frames_ids);
-
-      return false;
-   });
- 
 
    // Click on selector (thumb)
    $('.wi a').click(function(e) { 
@@ -215,4 +195,24 @@ function  setup_manual_reduc1() {
 
       return false;
    });
+
+
+   // Click on "Big" button 
+   $('.reduc1').click(function(e) { 
+
+      // Find first id in the table
+      var $tr = $('#reduc-tab table tbody tr');
+      var color = $tr.find('img').css('border-color');
+ 
+       
+      $tr = $($tr[0]); 
+      var meteor_id = $tr.attr('id');
+      meteor_id = meteor_id.split('_')[1];
+
+      // Then Do the all thing to open the meteor picker 
+      open_meteor_picker(meteor_id,color,$tr.find('img').attr('src'),all_frames_ids);
+
+      return false;
+   });
+
 }

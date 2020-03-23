@@ -292,7 +292,7 @@
 // Manual Reduction step3
 #frame_select_mod { 
    overflow: auto;
-   padding-bottom: .5rem;
+   padding-bottom: .2rem;
    max-height: 250px;
 }
 
@@ -341,4 +341,11 @@
       border:2px solid rgba(255, 229, 46, 1)
    }
    
+}
+
+
+#thumb_browwser {
+   background: rgba(255,255,255,.1);
+    box-shadow: 0 -2px 2px inset rgba(0,0,0,.63);
+    margin: .5rem;
 }
