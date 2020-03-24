@@ -262,10 +262,10 @@ function add_image_inside_meteor_select(img_path, all_frames_ids, meteor_id) {
              if(test_new_pos != false) {
                 xy = convert_to_local(parseInt(test_new_pos[0]),parseInt(test_new_pos[1])); 
 
-                add_debug('YY # ' + i + " => " + parseInt(xy[0]) + " , " + parseInt(xy[1]));
+                add_debug('YY # ' + i + " => " + parseInt(xy[0]*factor) + " , " + parseInt(xy[1]*factor));
 
 
-                addCircleRepair(xy[0],xy[1],i,'nb'); 
+                addCircleRepair(xy[0]*factor,xy[1]*factor,i,'nb'); 
              } else {
                xy = convert_to_local(parseInt($('#fr_'+i).attr('data-org-x')),parseInt($('#fr_'+i).attr('data-org-y'))); 
                addCircleRepair(xy[0]/factor,xy[1]/factor,i,'b'); 
@@ -285,12 +285,9 @@ function add_image_inside_meteor_select(img_path, all_frames_ids, meteor_id) {
             test_new_pos = get_new_pos(i);
             if(test_new_pos != false) {
                xy = convert_to_local(parseInt(test_new_pos[0]),parseInt(test_new_pos[1])); 
+               add_debug('YY # ' + i + " => " + parseInt(xy[0]*factor) + " , " + parseInt(xy[1]*factor));
 
-               
-
-               add_debug('YY # ' + i + " => " + parseInt(xy[0]) + " , " + parseInt(xy[1]));
-
-               addCircleRepair(xy[0],xy[1],i,'na'); 
+               addCircleRepair(xy[0]*factor,xy[1]*factor,i,'na'); 
             } else {
                xy = convert_to_local(parseInt($('#fr_'+i).attr('data-org-x')),parseInt($('#fr_'+i).attr('data-org-y'))); 
                addCircleRepair(xy[0]/factor,xy[1]/factor,i,'a'); 
