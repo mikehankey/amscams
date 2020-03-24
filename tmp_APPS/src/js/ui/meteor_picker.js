@@ -160,6 +160,8 @@ function convert_to_local(_x,_y) {
 function add_image_inside_meteor_select(img_path, all_frames_ids, meteor_id) { 
    var factor  = w / $('#cropped_frame_selector').width();  // Same for W & H!!
 
+   console.log("FACTOR ", factor);
+
    // Remove Previous Circles
    $('.circl').remove();
 
@@ -169,11 +171,10 @@ function add_image_inside_meteor_select(img_path, all_frames_ids, meteor_id) {
    // Add image 
    var height = $('#select_meteor_modal').outerHeight() - $('#select_meteor_modal .modal-header').outerHeight() - $("#thumb_browwser").outerHeight() - $('#below_cfs').outerHeight();
    
+   // 16/9 format
    $('#cropped_frame_selector').css('height',parseInt(height) - 30)
    $('#cropped_frame_selector').css('width', parseInt((parseInt(height)-30)*16/9));   
-
-
-
+ 
    $('#sel_frame_id, .sel_frame_id').text(' - #' +  meteor_id);   
 
 
