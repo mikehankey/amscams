@@ -35,7 +35,8 @@ async function extractFramesFromVideo(videoUrl,firstframe, how_many_frames, fps=
             frames.push(base64ImageData);
          
             if(how_many_frames<=frames.length) {
-               console.log("BREAK")
+               console.log("BREAK");
+               console.log(frames.length);
                break;
             }
          
@@ -62,9 +63,7 @@ async function extractFramesFromVideo(videoUrl,firstframe, how_many_frames, fps=
  
  async function asyncCall(first_frame, how_many_frames) {  
    croppedFrames = await extractFramesFromVideo(cropped_video,first_frame, how_many_frames); 
-
-
-
+ 
 
    var i, frame_c = 0;
    for (i = first_frame-1; i <=  (first_frame+how_many_frames+1); i++) {
