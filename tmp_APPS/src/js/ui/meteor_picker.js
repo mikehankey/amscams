@@ -212,7 +212,7 @@ function add_image_inside_meteor_select(img_path, all_frames_ids, meteor_id) {
 
 
    // We get the 3 frames before if they exists
-   if(all_frames_ids.indexOf((meteor_id-1))) {
+   if(all_frames_ids.indexOf((meteor_id-1))>=0) {
  
 
       for(var i = meteor_id-1; i >= meteor_id - 3 ; i--) { 
