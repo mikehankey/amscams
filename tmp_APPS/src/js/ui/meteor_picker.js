@@ -222,7 +222,7 @@ function add_image_inside_meteor_select(img_path, all_frames_ids, meteor_id) {
             console.log("ADD CIRCLE ");
             console.log(all_frames_ids);
             xy = convert_to_local(parseInt($('#fr_'+i).attr('data-org-x')),parseInt($('#fr_'+i).attr('data-org-y'))); 
-            addCircleRepair(xy[0]/factor,xy[1]/factor,i,'b'); 
+            addCircleRepair(xy[0]/factor,xy[1]/factor,i+ " " + xy[0]/factor + xy[1]/factor ,'b'); 
          }
       } 
    }  
