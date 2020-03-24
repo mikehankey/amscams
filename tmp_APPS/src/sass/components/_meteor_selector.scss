@@ -358,7 +358,8 @@
    border:1px solid rgba(255,255,255,.3);
    border-radius: 50%;
 
-   span {
+   span { 
+      user-select: none;  
       font-size: .8rem;
       opacity: .3;
       display: block;
