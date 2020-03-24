@@ -63,15 +63,10 @@ async function extractFramesFromVideo(videoUrl,firstframe, how_many_frames, fps=
  
  async function asyncCall(first_frame, how_many_frames) {  
    croppedFrames = await extractFramesFromVideo(cropped_video,first_frame, how_many_frames); 
-   
-
-   console.log("IN ASYN CALL");
-   console.log(croppedFrames.length);
-   console.log(croppedFrames);
-
+    
 
    var i, frame_c = 0;
-   for (i = first_frame-1; i <=  (first_frame+how_many_frames+1); i++) {
+   for (i = first_frame; i <=  (first_frame+how_many_frames); i++) {
        // Add base64 thumbs to the table  
        $('#thb_'+i).find('img').attr('src',croppedFrames[frame_c]).css('border-color', $('#thb_'+i).attr('data-src')).css('max-width','180px'); 
        frame_c++;
