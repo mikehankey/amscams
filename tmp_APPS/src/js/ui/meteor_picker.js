@@ -183,10 +183,6 @@ function get_new_pos(frame_id) {
          t = true;
          res = [v['x'],v['y']];
       }
-
-      if(t==true) {
-         break;
-      }
    })
 
    if(t==true) {
