@@ -171,6 +171,18 @@ function convert_to_local(_x,_y) {
 
 
 
+// Return x & y or false
+// for a given frame id in frames_jobs
+function get_new_pos(frame_id) {
+   $('frames_jobs').each(function(i,v) {
+      if(v['fn']==frame_id) {
+         return [v['x'],v['y']];
+      }
+   })
+
+   return false;
+}
+
 
 // Add Image Inside Picker
 function add_image_inside_meteor_select(img_path, all_frames_ids, meteor_id) { 
@@ -235,7 +247,6 @@ function add_image_inside_meteor_select(img_path, all_frames_ids, meteor_id) {
       for(var i = meteor_id-1; i >= meteor_id - 3 ; i--) {  
          if(all_frames_ids.indexOf(i) >= 0 ) { 
             xy = convert_to_local(parseInt($('#fr_'+i).attr('data-org-x')),parseInt($('#fr_'+i).attr('data-org-y'))); 
-            console.log("(B) N# " + i + " " + xy[0]/factor + ", " + xy[1]/factor);
             addCircleRepair(xy[0]/factor,xy[1]/factor,i,'b'); 
          }
       } 
@@ -247,18 +258,32 @@ function add_image_inside_meteor_select(img_path, all_frames_ids, meteor_id) {
       for(var i = meteor_id+1; i <= meteor_id + 3 ; i++) { 
          
          if(all_frames_ids.indexOf(i) >= 0 ) { 
-            xy = convert_to_local(parseInt($('#fr_'+i).attr('data-org-x')),parseInt($('#fr_'+i).attr('data-org-y'))); 
-            console.log("(A) N# " + i + " " + xy[0]/factor + ", " + xy[1]/factor);
-            addCircleRepair(xy[0]/factor,xy[1]/factor,i,'a'); 
+
+            // already updated?
+            test_new_pos = get_new_pos(i);
+            if(test_new_pos != false) {
+               addCircleRepair(test_new_pos[0],test_new_pos[1],i,'a'); 
+            } else {
+               xy = convert_to_local(parseInt($('#fr_'+i).attr('data-org-x')),parseInt($('#fr_'+i).attr('data-org-y'))); 
+               addCircleRepair(xy[0]/factor,xy[1]/factor,i,'a'); 
+            }
+
+
+
          }
       } 
    }     
-
 
    // Add Current Value
    xy = convert_to_local(parseInt($('#fr_'+meteor_id).attr('data-org-x')),parseInt($('#fr_'+meteor_id).attr('data-org-y'))); 
    addCircleRepair(xy[0]/factor,xy[1]/factor,meteor_id,'x'); 
 
+
+
+
+
+
+ /*
    add_debug("#" + meteor_id +  " => (local) " + xy[0]/factor +  "  , " + xy[1]/factor);
    add_debug(" " + meteor_id +  " => (real ) " + convert_from_local(xy[0],xy[1]));
 
@@ -351,29 +376,13 @@ function add_image_inside_meteor_select(img_path, all_frames_ids, meteor_id) {
 
   });
 
-   /*
-   // If we already have data: we show the circle
-   // and the reset button
-   var cur_f_done = false;
-   $.each(frames_jobs, function(i,v){
-      if(typeof v !=='undefined' && v['fn']==fd_id) {
-          // Warning -5 because the circle has a 10px diameter 
-         $('#cirl').css({
-            'left': parseInt(v['pos_x']-5) + 'px',
-            'top':  parseInt(v['pos_y']-5) + 'px' 
-         }).show();
-         
-         $('#reset_frame').css('visibility','visible');
-         cur_f_done = true;
-      }
-   });
-
-
+   
+   
    if(!cur_f_done){
       $('#cirl').hide();
       $('#reset_frame').css('visibility','hidden');
    }
-   */
+    
    return false;
  
 }
