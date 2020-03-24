@@ -209,6 +209,7 @@ function add_image_inside_meteor_select(img_path, all_frames_ids, meteor_id) {
       
       // get the 3 frames before 
       for(var i = meteor_id+1; i >= meteor_id - 3 ; i--) {   
+         console.log("BEF",i)
          if($('#fr_'+meteor_id).length!=0 && i!=meteor_id) {  
             console.log("ADD CIRCLE FOR FN (BEFORE) ", i);
             xy = convert_to_local(parseInt($('#fr_'+i).attr('data-org-x')),parseInt($('#fr_'+i).attr('data-org-y'))); 
@@ -219,7 +220,8 @@ function add_image_inside_meteor_select(img_path, all_frames_ids, meteor_id) {
 
      // get the 3 frames after 
      for(var i = meteor_id-1; i <= meteor_id + 3 ; i++ ) { 
-        if($('#fr_'+meteor_id).length!=0 && i!=meteor_id) { 
+      console.log("AFT",i)  
+      if($('#fr_'+meteor_id).length!=0 && i!=meteor_id) { 
             console.log("ADD CIRCLE FOR FN (AFTER) ", i);
             xy = convert_to_local(parseInt($('#fr_'+i).attr('data-org-x')),parseInt($('#fr_'+i).attr('data-org-y')));
             addCircleRepair(xy[0]/factor,xy[1]/factor,i,'a'); 
