@@ -133,9 +133,9 @@ function addCircleRepair(_x,_y,fn,after_of_before) {
    if(after_of_before=='b') {
       $cir.css('border-color','rgba(255, 0, 0, .3)');
    } else if(after_of_before =='x') {
-      $cir.css('border-color','rgba(0, 0, 255, .3)');
-   } else if(after_of_before == 'na' || after_of_before == 'nb') {
       $cir.css('border-color','rgba(255, 229, 46, .3)');
+   } else if(after_of_before == 'na' || after_of_before == 'nb') {
+      $cir.css('border-color','rgba(255, 255, 255, .3)');
    } else {
       $cir.css('border-color','rgba(0, 255, 0, .3)');
    }
