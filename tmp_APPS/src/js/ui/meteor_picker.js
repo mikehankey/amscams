@@ -143,6 +143,21 @@ function addCircleRepair(_x,_y,fn,after_of_before) {
 
 
 
+// Function add to debug div
+function add_debug(msg) {
+   if($('#action').html()=='') {
+      $('#action').html(msg);
+   } else {
+      $('#action').html($('#action').html()+"<br>"+ msg);
+   }
+}
+
+// Function add Mouse pos
+function add_mouse_pos(x,y) {
+   $('#mouse_pos').html("Mouse pos :" + x + " , " + y);
+}
+
+
 // Change Local x,y to Real x,y
 function convert_from_local(_x,_y) {
    return [(_x+x), (_y+y)];
@@ -244,6 +259,9 @@ function add_image_inside_meteor_select(img_path, all_frames_ids, meteor_id) {
    xy = convert_to_local(parseInt($('#fr_'+meteor_id).attr('data-org-x')),parseInt($('#fr_'+meteor_id).attr('data-org-y'))); 
    addCircleRepair(xy[0]/factor,xy[1]/factor,meteor_id,'x'); 
 
+   add_debug("#" + str(meteor_id) +  " => " + xy[0]/factor +  "  , " + xy[1]/factor);
+
+
 
    /*
       
@@ -327,7 +345,9 @@ function add_image_inside_meteor_select(img_path, all_frames_ids, meteor_id) {
           $('#lh').css('top',relY-2);
           $('#lv').css('left',relX-2); 
       }
-       
+
+      add_mouse_pos(relX,relY)
+
   });
 
    /*

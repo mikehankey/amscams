@@ -1,0 +1,19 @@
+#debug {
+  width: 350px;
+   height: 400px;
+   overflow: auto;
+   background: rgba(0,0,0,.4);
+   padding: 1rem;
+   position: fixed;
+   z-index: 9999;
+   left: 0;
+   bottom: 0;
+   border-radius: 0 5px 0 0;
+   color: #20ff5a;
+   font-size: .8rem;
+}
+
+#action {
+   height: 370px;
+   overflow: auto
+}
