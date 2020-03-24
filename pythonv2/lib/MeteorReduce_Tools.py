@@ -252,7 +252,7 @@ def update_intensity(json_file, json_data, hd_video_file):
    
    if('frames' in json_data):
       json_frames = json_data['frames'] 
-      if(len(json_frames)>0) and len(hd_frames)>0):
+      if(len(json_frames)>0 and len(hd_frames)>0):
            
          cx1,cy1,cx2,cy2 = bound_cnt(json_frames[0]['x'],json_frames[0]['y'],hd_frames[0].shape[1],hd_frames[0].shape[0], 20)
          # Frame 0 == Bg
