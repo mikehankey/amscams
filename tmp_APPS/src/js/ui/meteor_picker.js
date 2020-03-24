@@ -198,6 +198,9 @@ function get_new_pos(frame_id) {
 // Add Image Inside Picker
 function add_image_inside_meteor_select(img_path, all_frames_ids, meteor_id) { 
   
+
+   console.log("ADD IMAGE " + meteor_id);
+
    // Remove Previous Circles
    $('.circl').remove();
 
@@ -298,6 +301,8 @@ function add_image_inside_meteor_select(img_path, all_frames_ids, meteor_id) {
    }     
 
    // Add Current Value
+   
+   console.log("ADD IMAGE INS " + meteor_id);
    test_new_pos = get_new_pos(meteor_id);
    if(test_new_pos != false) {
       xy = convert_to_local(parseInt(test_new_pos[0]),parseInt(test_new_pos[1])); 
