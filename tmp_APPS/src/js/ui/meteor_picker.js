@@ -132,11 +132,11 @@ function addCircleRepair(_x,_y,fn,after_of_before) {
    });
 
    if(after_of_before=='b') {
-      $cir.css('border-color','red');
+      $cir.css('border-color','rgba(255, 0, 0, .5);');
    } else if(after_of_before =='x') {
-      $cir.css('border-color','blue');
+      $cir.css('border-color','rgba(0, 0, 255, .5);');
    } else {
-      $cir.css('border-color','green');
+      $cir.css('border-color','rgba(0, 255, 0, .5);');
    }
    
 }
