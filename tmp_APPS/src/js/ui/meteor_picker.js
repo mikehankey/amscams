@@ -492,10 +492,17 @@ function setup_manual_reduc1() {
          </form>').appendTo($('body')); 
       }
  
- 
-      // Update the temporary form and submit it (POST)
-      $('#post_form input[name=data]').val(JSON.stringify(frames_jobs))
-      $('#post_form').submit();
+      if(frames_jobs.length==0)
+         // Update the temporary form and submit it (POST)
+         $('#post_form input[name=data]').val(JSON.stringify(frames_jobs))
+         $('#post_form').submit();
+      } else {
+         bootbox.alert({
+            message: "Error: nothing to update",
+            className: 'rubberBand animated error',
+            centerVertical: true 
+         })
+      }
 
       load_done_button($(this));  
    })
