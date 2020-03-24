@@ -474,27 +474,30 @@ function setup_manual_reduc1() {
 
    // Click on "SEND TO API" (Yellow button) 
    $('#create_all').unbind('click').click(function() {
+      var vtl = test_logged_in();
+      var usr = getUserInfo();
+      usr = usr.split('|');
 
+      loading_button($(this));
+ 
 
       if($("#post_form").length==0) { 
 
-         $('<form id="post_form" action="./webUI.py" method="post">\
-            <input type="hidden" name="frames" />\
-            <input type="hidden" name="cmd" value="new_frame_API"/>\
-            <input type="hidden" name="video_file"/>\
-         </form>').appendTo($('body'));
-
-         //$('input[name=video_file]').val(t);
+         $('<form id="post_form" action="'+API_URL+'" method="post">\
+            <input type="hidden" name="data" />\
+            <input type="hidden" name="function" value="tasks" />\
+            <input type="hidden" name="tok" value="'+vtl+'" />\ 
+            <input type="hidden" name="usr" value="'+usr[0]+'" />\ 
+            <input type="hidden" name="st" value="'+stID+'"/>\ 
+         </form>').appendTo($('body')); 
       }
-
-
+ 
  
       // Update the temporary form and submit it (POST)
-      $('#post_form input[name=frames]').val(JSON.stringify(frames_jobs))
+      $('#post_form input[name=data]').val(JSON.stringify(frames_jobs))
       $('#post_form').submit();
 
-
-      //window.location='./webUI.py?cmd=manual_reduction_create_final_json&frames=' + JSON.stringify(frames_jobs)+'&video_file='+video_file;
+      load_done_button($(this));  
    })
 
 }
