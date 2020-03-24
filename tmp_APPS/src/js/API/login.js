@@ -24,13 +24,7 @@ function add_login_stuff() {
     // Add buttons on the obs report page
     var delButton = '<a class="del col btn btn-danger btn-sm" title="Delete Detection"><i class="icon-delete"></i></a>';
     var confButton = '<a class="conf col btn btn-success btn-sm ml-1" title="Confirm Detection">Confirm </a>';
-   
 
-   // WARNING - on the report page, we need reload the page after login
-   if($('#reduc-tab-l').length>0) {
-      location.reload();
-   }
-   
    
    // Add Confirm/Delete buttons on gallery
    if($('.lgi').length==0) {
@@ -229,6 +223,16 @@ function setup_login() {
                      $('#login_modal').modal('hide'); 
                      createCookie(COOKIE_NAME,data.token,2/24)
                      createCookie(USER_COOKIE_NAME,_data['usr']+'|'+_data['st'],2/24);
+
+                        
+
+                     // WARNING - on the report page, we need reload the page after login
+                     if($('#reduc-tab-l').length>0) {
+                        location.reload();
+                     }
+   
+
+
                      loggedin();    
                   } 
                }, 
