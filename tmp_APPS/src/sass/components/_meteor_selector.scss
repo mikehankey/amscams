@@ -16,7 +16,7 @@
     top:50%;
     width: 100vw;
     height: 1px;
-    background:rgba(255,255,255,.3);
+    background:rgba(255,255,255,.1);
     box-shadow: 0 0 1px rgba(0,0,0,1);
 } 
 
@@ -26,7 +26,7 @@
     left:50%;
     width: 1px;
     height: 100vh;
-    background:rgba(255,255,255,.3);
+    background:rgba(255,255,255,.1);
     box-shadow: 0 0 1px rgba(0,0,0,1);
 }
 
@@ -333,6 +333,7 @@
    position: relative;
    background-size: cover;
    overflow: hidden;
+   cursor: crosshair;
 
 
    &.cur {
