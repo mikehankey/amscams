@@ -82,8 +82,7 @@ def api_controller(form):
 def add_tasks(data_to_del,data_to_conf,usr,st,_date):
    
    conf_ct = 0
-   del_ct = 0
-
+   del_ct = 0 
 
    try:
       all_data_to_del = data_to_del.split(',')
@@ -106,7 +105,7 @@ def add_tasks(data_to_del,data_to_conf,usr,st,_date):
    f.close()
 
    # Build message for JS
-   msg = 'New tasks are now pending: '
+   msg = 'New tasks are now pending:<br/>'
    if(del_ct!=0):
       msg += " deletion of " + str(del_ct) + " detection "
       if(conf_ct != 0) :
@@ -115,7 +114,7 @@ def add_tasks(data_to_del,data_to_conf,usr,st,_date):
       msg += " confirmation of " + str(conf_ct) + " detection "
 
 
-   return json.dumps({'msg':'The tasks are now pending ' + msg})
+   return json.dumps({'msg': msg})
 
 
 # LOGIN

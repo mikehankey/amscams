@@ -299,9 +299,7 @@ function add_image_inside_meteor_select(img_path, all_frames_ids, meteor_id) {
       } 
    }     
 
-   // Add Current Value
-   
-   console.log("ADD IMAGE INS " + meteor_id);
+   // Add Current Value 
    test_new_pos = get_new_pos(meteor_id);
    if(test_new_pos != false) {
       xy = convert_to_local(parseInt(test_new_pos[0]),parseInt(test_new_pos[1])); 
@@ -311,47 +309,7 @@ function add_image_inside_meteor_select(img_path, all_frames_ids, meteor_id) {
       addCircleRepair(xy[0]/factor,xy[1]/factor,meteor_id,'x'); 
    }
 
-
-
-
-
-
-
-
-
-
- /*
-   add_debug("#" + meteor_id +  " => (local) " + xy[0]/factor +  "  , " + xy[1]/factor);
-   add_debug(" " + meteor_id +  " => (real ) " + convert_from_local(xy[0],xy[1]));
-
-
-
-   /*
-      
-      // get the 3 frames before 
-      for(var i = meteor_id+1; i >= meteor_id - 3 ; i--) {   
-         console.log("BEF",i);
-         console.log("#fr_'+meteor_id).length",$('#fr_'+meteor_id).length);
-         if($('#fr_'+meteor_id).length!=0 && i!=meteor_id && all_frames_ids.indexOf(meteor_id) >= 0   ) {  
-            console.log("ADD CIRCLE FOR FN (BEFORE) ", i);
-            xy = convert_to_local(parseInt($('#fr_'+i).attr('data-org-x')),parseInt($('#fr_'+i).attr('data-org-y'))); 
-            addCircleRepair(xy[0]/factor,xy[1]/factor,i,'b'); 
-         }
-      }
  
-
-     // get the 3 frames after 
-     for(var i = meteor_id-1; i <= meteor_id + 3 ; i++ ) { 
-      console.log("AFT",i)  
-      if($('#fr_'+meteor_id).length!=0 && i!=meteor_id) { 
-            console.log("ADD CIRCLE FOR FN (AFTER) ", i);
-            xy = convert_to_local(parseInt($('#fr_'+i).attr('data-org-x')),parseInt($('#fr_'+i).attr('data-org-y')));
-            addCircleRepair(xy[0]/factor,xy[1]/factor,i,'a'); 
-         }
-     }
-   
-     */
-
    // Select Meteor
    $("#cropped_frame_selector").unbind('click').click(function(e){
      
@@ -386,9 +344,7 @@ function add_image_inside_meteor_select(img_path, all_frames_ids, meteor_id) {
       frames_jobs.push({
          'fn': cur_fr_id,
          'x': realX,
-         'y': realY,
-         'pos_x': relX,
-         'pos_y': relY
+         'y': realY 
       });
       
       // Add info to frame scroller
@@ -413,12 +369,7 @@ function add_image_inside_meteor_select(img_path, all_frames_ids, meteor_id) {
 
   });
  
-   /*
-   if(!cur_f_done){
-      $('#cirl').hide();
-      $('#reset_frame').css('visibility','hidden');
-   }
-   */
+ 
    return false;
  
 }
@@ -518,5 +469,32 @@ function setup_manual_reduc1() {
 
       return false;
    });
+
+
+
+   // Click on "SEND TO API" (Yellow button) 
+   $('#create_all').unbind('click').click(function() {
+
+
+      if($("#post_form").length==0) { 
+
+         $('<form id="post_form" action="./webUI.py" method="post">\
+            <input type="hidden" name="frames" />\
+            <input type="hidden" name="cmd" value="new_frame_API"/>\
+            <input type="hidden" name="video_file"/>\ 
+         </form>').appendTo($('body'));
+
+         //$('input[name=video_file]').val(t);
+      }
+
+
+ 
+      // Update the temporary form and submit it (POST)
+      $('#post_form input[name=frames]').val(JSON.stringify(frames_jobs))
+      $('#post_form').submit();
+
+
+      //window.location='./webUI.py?cmd=manual_reduction_create_final_json&frames=' + JSON.stringify(frames_jobs)+'&video_file='+video_file;
+   })
 
 }

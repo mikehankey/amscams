@@ -16,7 +16,7 @@ function setup_single_delete_buttons()  {
             }
          },
          callback: function (result) {
-            if(result) {   send_API_task({'toDel':cropped_video},'','');
+            if(result) {   send_API_task({'toDel':cropped_video},'','', function(){});
             }
          }
       });
@@ -32,7 +32,8 @@ function setup_single_conf_buttons() {
    $('.confSingle').click(function() {
       loading_button($(this));
       $(this).attr('disabled','disabled');
-      send_API_task({'toConf':cropped_video},'','',function() { $('.confSingle').attr('data-init','Confirmed'); load_done_button($('.confSingle'));});
+      send_API_task({'toConf':cropped_video},'','',function() { $('.confSingle').attr('data-init','Confirmed'); 
+      load_done_button($('.confSingle'));});
       return false;
    });
 }
