@@ -347,7 +347,7 @@ function add_image_inside_meteor_select(img_path, all_frames_ids, meteor_id) {
           $('#lv').css('left',relX-2); 
       }
 
-      add_mouse_pos(relX*factor,relY*factor);
+      add_mouse_pos(parseInt(relX*factor),parseInt(relY*factor));
 
   });
 
