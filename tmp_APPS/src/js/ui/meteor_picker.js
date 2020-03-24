@@ -176,13 +176,26 @@ function convert_to_local(_x,_y) {
 // Return x & y or false
 // for a given frame id in frames_jobs
 function get_new_pos(frame_id) {
+   var t = false, res=[];
+   
    $(frames_jobs).each(function(i,v) {
       if(v['fn']==frame_id) {
-         return [v['x'],v['y']];
+         t = true;
+         res = [v['x'],v['y']];
+      }
+
+      if(t==true) {
+         break;
       }
    })
 
-   return false;
+   if(t==true) {
+      return res;
+   } else {
+      return false;
+   }
+
+
 }
 
 
