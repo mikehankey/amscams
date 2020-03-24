@@ -17,10 +17,12 @@ function send_API_task(jsonData,$toDel,$toConf,callback) {
       url:   API_URL ,
       data: {'function':'tasks',  'tok':test_logged_in(), 'data': jsonData, 'usr':usr[0], 'st':stID}, 
       format: 'json',
+      type: "POST",
       success: function(data) { 
          data = jQuery.parseJSON(data); 
 
          if(typeof data.error !== 'undefined') {
+            
             // WRONG!
             bootbox.alert({
                message: data.error,

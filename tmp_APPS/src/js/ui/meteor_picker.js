@@ -478,8 +478,7 @@ function setup_manual_reduc1() {
       var usr = getUserInfo();
       usr = usr.split('|');
 
-      loading_button($(this));
- 
+      loading_button($(this)); 
 
       if($("#post_form").length==0) { 
 
@@ -498,7 +497,7 @@ function setup_manual_reduc1() {
          $('#post_form').submit();
       } else {
          bootbox.alert({
-            message: "Error: nothing to update",
+            message: "Error: nothing to update!",
             className: 'rubberBand animated error',
             centerVertical: true 
          })
