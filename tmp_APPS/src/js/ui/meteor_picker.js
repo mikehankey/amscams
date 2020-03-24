@@ -127,8 +127,8 @@ function addCircleRepair(_x,_y,fn,after_of_before) {
 
    $cir.appendTo($('#cropped_frame_selector'));
    $cir.css({
-      'left': parseInt((_x-circle_radius)/2) + 'px',
-      'top':  parseInt((_y-circle_radius)/2) + 'px' 
+      'left': parseInt(_x-(circle_radius/2)) + 'px',
+      'top':  parseInt(_y-(circle_radius/2)) + 'px' 
    });
 
    if(after_of_before=='b') {
