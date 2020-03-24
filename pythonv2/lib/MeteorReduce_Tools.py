@@ -480,10 +480,15 @@ def get_thumbs(analysed_name,meteor_json_data,HD,HD_frames,clear_cache):
 
 # Create a thumb 
 def new_crop_thumb(frame,x,y,dest,HD = True):
+   if frame is None:
+      return(None)
 
    # Debug
    cgitb.enable()
    img = cv2.imread(frame)  
+   if img is None:
+      # This frame is bad and the cache needs to be re-generated.
+      return(None)
 
    # We shouldn't have the need for that... (check with VIDEO_VARS values and the way we're creating the frames from the video)
    if(HD is True):

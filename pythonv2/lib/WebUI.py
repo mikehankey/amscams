@@ -2417,6 +2417,7 @@ def override_detect(video_file,jsid, json_conf):
    el = vfn.split("-trim")
    bs = el[0]
    date = vfn[0:10]
+   json_data = None
    proc_file = "/mnt/ams2/SD/proc2/" + date + "/data/" + bs + "-meteor.json"
    non_proc_file = "/mnt/ams2/SD/proc2/" + date + "/data/" + bs + "-nonmeteor.json"
    if cfe(proc_file) == 1:
@@ -2460,7 +2461,10 @@ def override_detect(video_file,jsid, json_conf):
       print(cmd, "<BR>")
       print(cmd2, "<BR>")
       print(cmd3, "<BR>")
-      
+     
+   if "archive_file" in json_data :
+      if json_data['archive_file'] is not "":
+         delete_multiple_archived_detection(json_data['archive_file'])
    
    if "passed" in base:
       new_dir = base_dir.replace("passed", "failed")

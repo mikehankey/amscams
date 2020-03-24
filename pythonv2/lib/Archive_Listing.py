@@ -34,8 +34,62 @@ TRASH_FOLDER = '/mnt/ams2/trash'
  
  
 # Delete Multiple Detections at once
+
+def delete_old_detection(arc_file):
+   arc_js = load_json_file(arc_file)
+   if arc_js == 0:
+      print("Arc json doesn't exist", arc_file)
+      return()
+
+   if "org_sd_vid" in arc_js['info']:
+      sd_base = arc_js['info']['org_sd_vid'].replace(".mp4", "")
+   else:
+      sd_base = None
+      sd_fn = None
+   if "org_hd_vid" in arc_js['info']:
+      if arc_js['info']['org_hd_vid'] != 0: 
+         hd_base = arc_js['info']['org_hd_vid'].replace(".mp4", "")
+      else:
+         hd_base = None
+         hd_fn = None
+   else:
+      hd_base = None
+      hd_fn = None
+
+   if sd_base is not None:
+      sd_fn = sd_base.split("/")[-1]
+   if hd_base is not None:
+      hd_fn = hd_base.split("/")[-1]
+   
+   if sd_fn is not None:
+      day = sd_fn[0:10]
+      sd_wild = "/mnt/ams2/meteors/" + day + "/" + sd_fn + "*"
+   else:
+      sd_wild = None
+
+   if hd_fn is not None:
+      day = hd_fn[0:10]
+      hd_wild = "/mnt/ams2/meteors/" + day + "/" + hd_fn + "*"
+   else:
+      hd_wild = None
+
+   # get the old min file detect name so we can move that too
+   mf = sd_fn.split("-trim")[0]
+   min_met = "/mnt/ams2/SD/proc2/" + day + "/data/" + mf + "-meteor.json"
+   min_nomet = "/mnt/ams2/SD/proc2/" + day + "/data/" + mf + "-nometeor.json"
+   min_cmd = "mv " + min_met + " " + min_nomet
+   old_hd_cmd = "mv " + hd_wild + " /mnt/ams2/trash/"
+   old_sd_cmd = "mv " + sd_wild + " /mnt/ams2/trash/"
+   print(min_cmd, "<BR>")
+   print(old_hd_cmd, "<BR>")
+   print(old_sd_cmd, "<BR>")
+   os.system(min_cmd) 
+
+   os.system(old_hd_cmd) 
+   os.system(old_sd_cmd) 
+
 def delete_multiple_archived_detection(detections):
- 
+
    # In case we only have one... it's a string
    if(isinstance(detections, str)):
       detections = [detections]
@@ -43,12 +97,21 @@ def delete_multiple_archived_detection(detections):
    for det in detections:
 
       analysed_name = name_analyser(det)
+      # First open the arc file and get the 'old_vid' and hd vid values (these files need to be deleted too if they exist)
+      delete_old_detection(det)
+
+      # Next open the old json file and get HD filename (this will be one of the wildcards) (arc value may not be correct)
+      # get wild card values for old sd and HD files
+      # move all of these to trash
+
+
 
       # Remove the Cache files 
       cache_path = get_cache_path(analysed_name)
       if os.path.isdir(cache_path):
          shutil.rmtree(cache_path)
-      
+
+
       #We move all the other files to TRASH_FOLDER
 
       # MOVE Json to trash
