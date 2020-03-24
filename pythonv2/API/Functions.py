@@ -62,6 +62,7 @@ def api_controller(form):
       if(api_function=='delete'):
          # Doesnt work yet
          print(delete_detection(form))
+
       elif(api_function=='tasks'):
          data_to_del  = form.getvalue('data[toDel]')
          data_to_conf = form.getvalue('data[toConf]')
@@ -78,15 +79,21 @@ def api_controller(form):
 
 
 # ADD A TASK TO DELETE A DETECTION that will be read later by a cron
-def  add_tasks(data_to_del,data_to_conf,usr,st,_date):
+def add_tasks(data_to_del,data_to_conf,usr,st,_date):
    
+   conf_ct = 0
+   del_ct = 0
+
+
    try:
       all_data_to_del = data_to_del.split(',')
+      del_ct = len(all_data_to_del)
    except:
       all_data_to_del = []
 
    try:
       data_to_conf = data_to_conf.split(',')
+      conf_ct = len(data_to_conf)
    except:
       data_to_conf = []   
 
@@ -98,7 +105,17 @@ def  add_tasks(data_to_del,data_to_conf,usr,st,_date):
 
    f.close()
 
-   return json.dumps({'msg':'The tasks are now pending.'})
+   # Build message for JS
+   msg = 'New tasks are now pending: '
+   if(del_ct!=0):
+      msg += " deletion of " + str(del_ct) + " detection "
+      if(conf_ct != 0) :
+         msg += "and "
+   if(conf_ct != 0) :
+      msg += " confirmation of " + str(conf_ct) + " detection "
+
+
+   return json.dumps({'msg':'The tasks are now pending ' + msg})
 
 
 # LOGIN
