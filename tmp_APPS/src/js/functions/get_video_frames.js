@@ -68,7 +68,8 @@ async function extractFramesFromVideo(videoUrl,firstframe, how_many_frames, fps=
 
    for (i = first_frame; i <=  (first_frame+how_many_frames); i++) {
        // Add base64 thumbs to the table  
-       $('#thb_'+i).find('img').attr('src',croppedFrames[frame_c]).css('border-color', $('#thb_'+i).attr('data-src')).css('max-width','180px'); 
+       var index = i-1;
+       $('#thb_'+index).find('img').attr('src',croppedFrames[frame_c]).css('border-color', $('#thb_'+index).attr('data-src')).css('max-width','180px'); 
        frame_c++;
    }
 
