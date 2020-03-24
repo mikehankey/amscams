@@ -259,7 +259,8 @@ function add_image_inside_meteor_select(img_path, all_frames_ids, meteor_id) {
    xy = convert_to_local(parseInt($('#fr_'+meteor_id).attr('data-org-x')),parseInt($('#fr_'+meteor_id).attr('data-org-y'))); 
    addCircleRepair(xy[0]/factor,xy[1]/factor,meteor_id,'x'); 
 
-   add_debug("#" + meteor_id +  " => " + xy[0]/factor +  "  , " + xy[1]/factor);
+   add_debug("#" + meteor_id +  " => (local)" + xy[0]/factor +  "  , " + xy[1]/factor);
+   add_debug(" " + meteor_id +  " => (local)" + convert_from_local(xy[0],xy[1]));
 
 
 
