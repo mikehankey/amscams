@@ -66,7 +66,7 @@ async function extractFramesFromVideo(videoUrl,firstframe, how_many_frames, fps=
    
 
    console.log("IN ASYN CALL");
-   console.log(croppedFrames.length());
+   console.log(croppedFrames.length);
    console.log(croppedFrames);
 
 
