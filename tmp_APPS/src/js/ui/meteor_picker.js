@@ -261,6 +261,10 @@ function add_image_inside_meteor_select(img_path, all_frames_ids, meteor_id) {
             test_new_pos = get_new_pos(i);
              if(test_new_pos != false) {
                 xy = convert_to_local(parseInt(test_new_pos[0]),parseInt(test_new_pos[1])); 
+
+                add_debug('ADD # ' + i + " => " + parseInt(test_new_pos[0]) + " , " + parseInt(test_new_pos[1]));
+
+
                 addCircleRepair(xy[0],xy[1],i,'nb'); 
              } else {
                xy = convert_to_local(parseInt($('#fr_'+i).attr('data-org-x')),parseInt($('#fr_'+i).attr('data-org-y'))); 
@@ -281,6 +285,11 @@ function add_image_inside_meteor_select(img_path, all_frames_ids, meteor_id) {
             test_new_pos = get_new_pos(i);
             if(test_new_pos != false) {
                xy = convert_to_local(parseInt(test_new_pos[0]),parseInt(test_new_pos[1])); 
+
+               
+
+               add_debug('ADD # ' + i + " => " + parseInt(test_new_pos[0]) + " , " + parseInt(test_new_pos[1]));
+
                addCircleRepair(xy[0],xy[1],i,'na'); 
             } else {
                xy = convert_to_local(parseInt($('#fr_'+i).attr('data-org-x')),parseInt($('#fr_'+i).attr('data-org-y'))); 
