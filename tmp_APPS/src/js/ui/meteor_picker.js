@@ -481,7 +481,7 @@ function setup_manual_reduc1() {
          $('<form id="post_form" action="./webUI.py" method="post">\
             <input type="hidden" name="frames" />\
             <input type="hidden" name="cmd" value="new_frame_API"/>\
-            <input type="hidden" name="video_file"/>\ 
+            <input type="hidden" name="video_file"/>\
          </form>').appendTo($('body'));
 
          //$('input[name=video_file]').val(t);
