@@ -298,8 +298,18 @@ function add_image_inside_meteor_select(img_path, all_frames_ids, meteor_id) {
    }     
 
    // Add Current Value
-   xy = convert_to_local(parseInt($('#fr_'+meteor_id).attr('data-org-x')),parseInt($('#fr_'+meteor_id).attr('data-org-y'))); 
-   addCircleRepair(xy[0]/factor,xy[1]/factor,meteor_id,'x'); 
+   test_new_pos = get_new_pos(meteor_id);
+   if(test_new_pos != false) {
+      xy = convert_to_local(parseInt(test_new_pos[0]),parseInt(test_new_pos[1])); 
+      addCircleRepair(xy[0]/factor,xy[1]/factor,i,'x'); 
+   } else {
+      xy = convert_to_local(parseInt($('#fr_'+meteor_id).attr('data-org-x')),parseInt($('#fr_'+meteor_id).attr('data-org-y'))); 
+      addCircleRepair(xy[0]/factor,xy[1]/factor,meteor_id,'x'); 
+   }
+
+
+
+
 
 
 
