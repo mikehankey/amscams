@@ -242,7 +242,7 @@ function add_image_inside_meteor_select(img_path, all_frames_ids, meteor_id) {
 
    // Add Current Value
    xy = convert_to_local(parseInt($('#fr_'+meteor_id).attr('data-org-x')),parseInt($('#fr_'+meteor_id).attr('data-org-y'))); 
-   addCircleRepair(xy[0]/factor,xy[1]/factor,i,'x'); 
+   addCircleRepair(xy[0]/factor,xy[1]/factor,meteor_id,'x'); 
 
 
    /*
