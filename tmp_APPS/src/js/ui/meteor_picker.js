@@ -206,10 +206,7 @@ function add_image_inside_meteor_select(img_path, all_frames_ids, meteor_id) {
 
    // Add circles for 3 frames before and 3 frames after
    meteor_id = parseInt(meteor_id);
-
-
-   console.log("CUR METEOR ID ", meteor_id)
-
+  
 
    // We get the 3 frames before if they exists
    if(all_frames_ids.indexOf((meteor_id-1))>=0) {
@@ -223,14 +220,24 @@ function add_image_inside_meteor_select(img_path, all_frames_ids, meteor_id) {
             xy = convert_to_local(parseInt($('#fr_'+i).attr('data-org-x')),parseInt($('#fr_'+i).attr('data-org-y'))); 
             addCircleRepair(xy[0]/factor,xy[1]/factor,i,'b'); 
          }
-      }
+      } 
+   }  
 
+   // We get the 3 frames after if they exists
+   if(all_frames_ids.indexOf((meteor_id+1))>=0) {
+ 
 
-   } else {
-      // No frames before
-      console.log((meteor_id-1), " doesnt exist in array");
-      console.log(all_frames_ids);
-   }
+      for(var i = meteor_id+1; i <= meteor_id + 3 ; i++) { 
+         console.log("i ", i);
+         if(all_frames_ids.indexOf(i) >= 0 ) {
+            console.log("ADD CIRCLE ");
+            console.log(all_frames_ids);
+            xy = convert_to_local(parseInt($('#fr_'+i).attr('data-org-x')),parseInt($('#fr_'+i).attr('data-org-y'))); 
+            addCircleRepair(xy[0]/factor,xy[1]/factor,i,'a'); 
+         }
+      } 
+   }     
+
 
    /*
       
