@@ -154,7 +154,7 @@ function add_debug(msg) {
 
 // Function add Mouse pos
 function add_mouse_pos(_x,_y,factor) {
-   $('#mouse_pos').html("Mouse pos :" + _x + " , " + _y + "<br>" + parseInt(_x/factor+x) + " , " + parseInt(_y/factor+y));
+   $('#mouse_pos').html("Mouse pos (loc):" + _x + " , " + _y + "<br>Mouse pos (rel):" + parseInt(_x/factor+x) + " , " + parseInt(_y/factor+y));
 }
 
 
