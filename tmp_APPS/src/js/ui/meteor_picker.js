@@ -229,7 +229,8 @@ function add_image_inside_meteor_select(img_path, all_frames_ids, meteor_id) {
 
    } else {
       // No frames before
-      console.log((meteor_id-1), " doesnt exist in array")
+      console.log((meteor_id-1), " doesnt exist in array");
+      console.log(all_frames_ids);
    }
 
    /*
