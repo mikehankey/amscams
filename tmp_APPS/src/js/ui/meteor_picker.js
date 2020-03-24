@@ -65,7 +65,7 @@ function addPickerModalTemplate(all_frames_ids) {
 
 
 // Go to Next Frame
-function go_to_next(next_id) {
+function go_to_next(next_id , all_frames_ids) {
  
    // Does the next frame exist?
    var $next_frame = $('.select_frame[data-rel='+next_id+']');
@@ -73,13 +73,13 @@ function go_to_next(next_id) {
    // we get the related src path
 
    if($next_frame.length != 0) {
-      add_image_inside_meteor_select($next_frame.find('img').attr('src'), [], parseInt(next_id))
+      add_image_inside_meteor_select($next_frame.find('img').attr('src'), all_frames_ids, parseInt(next_id))
    } else {
       // We select the first one 
       var next_id = parseInt($($('#cropped_frame_select .select_frame').get(0)).attr('data-rel'));
       $next_frame = $('.select_frame[data-rel='+next_id+']');
  
-      add_image_inside_meteor_select($next_frame.find('img').attr('src'),[],next_id);
+      add_image_inside_meteor_select($next_frame.find('img').attr('src'),all_frames_ids ,next_id);
    }
 
 }
@@ -210,6 +210,25 @@ function add_image_inside_meteor_select(img_path, all_frames_ids, meteor_id) {
 
    console.log("CUR METEOR ID ", meteor_id)
 
+   // We get the 3 frames before if they exists
+   if(all_frames_ids.indexOf(meteor_id-1)) {
+
+      for(var i = meteor_id-1; i >= meteor_id - 3 ; i--) { 
+         console.log("i ", i);
+         if(all_frames_ids.indexOf(meteor_id) >= 0 ) {
+            console.log("ADD CIRCLE ");
+            console.log(all_frames_ids);
+            xy = convert_to_local(parseInt($('#fr_'+i).attr('data-org-x')),parseInt($('#fr_'+i).attr('data-org-y'))); 
+            addCircleRepair(xy[0]/factor,xy[1]/factor,i,'b'); 
+         }
+      }
+
+
+   } else {
+      // No frames before
+   }
+
+   /*
       
       // get the 3 frames before 
       for(var i = meteor_id+1; i >= meteor_id - 3 ; i--) {   
@@ -233,7 +252,7 @@ function add_image_inside_meteor_select(img_path, all_frames_ids, meteor_id) {
          }
      }
    
-
+     */
 
    // Select Meteor
    $("#cropped_frame_selector").unbind('click').click(function(e){
@@ -278,7 +297,7 @@ function add_image_inside_meteor_select(img_path, all_frames_ids, meteor_id) {
       $('#cropped_frame_select .cur').addClass('done').find('.pos').html('<br>x:' + parseInt(realX) + ' y:'  + parseInt(realY));
       
       // Go to next frame
-      go_to_next(parseInt(cur_fr_id)+1);
+      go_to_next(parseInt(cur_fr_id)+1,all_frames_ids);
       
   }).unbind('mousemove').mousemove(function(e) {
       
