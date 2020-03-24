@@ -216,27 +216,24 @@ function add_image_inside_meteor_select(img_path, all_frames_ids, meteor_id) {
    if(all_frames_ids.indexOf((meteor_id-1))>=0) {
  
 
-      for(var i = meteor_id-1; i >= meteor_id - 3 ; i--) { 
-         console.log("i ", i);
+      for(var i = meteor_id-1; i >= meteor_id - 3 ; i--) {  
          if(all_frames_ids.indexOf(i) >= 0 ) {
-            console.log("ADD CIRCLE ");
-            console.log(all_frames_ids);
+          
             xy = convert_to_local(parseInt($('#fr_'+i).attr('data-org-x')),parseInt($('#fr_'+i).attr('data-org-y'))); 
-            addCircleRepair(xy[0]/factor,xy[1]/factor,i+ " " + xy[0]/factor + " - "  + xy[1]/factor ,'b'); 
+            console.log("(B) N# " + i + " " + xy[0]/factor + ", " + xy[1]/factor);
+            addCircleRepair(xy[0]/factor,xy[1]/factor,i,'b'); 
          }
       } 
    }  
 
    // We get the 3 frames after if they exists
    if(all_frames_ids.indexOf((meteor_id+1))>=0) {
- 
-
+  
       for(var i = meteor_id+1; i <= meteor_id + 3 ; i++) { 
-         console.log("i ", i);
-         if(all_frames_ids.indexOf(i) >= 0 ) {
-            console.log("ADD CIRCLE ");
-            console.log(all_frames_ids);
+         
+         if(all_frames_ids.indexOf(i) >= 0 ) { 
             xy = convert_to_local(parseInt($('#fr_'+i).attr('data-org-x')),parseInt($('#fr_'+i).attr('data-org-y'))); 
+            console.log("(A) N# " + i + " " + xy[0]/factor + ", " + xy[1]/factor);
             addCircleRepair(xy[0]/factor,xy[1]/factor,i,'a'); 
          }
       } 
