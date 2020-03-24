@@ -360,10 +360,11 @@
 
    span {
       font-size: .8rem;
-      opacity: .2;
-      margin-top: .65rem;
+      opacity: .3;
       display: block;
       text-align: center;
-      margin: 0.75rem 0 0 -0.1rem;
+      width: 40px;
+      margin-top: 9px;
+      text-shadow: 2px 1px rgba(0,0,0,1);
    }
 }
