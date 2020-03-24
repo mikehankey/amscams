@@ -135,6 +135,8 @@ function addCircleRepair(_x,_y,fn,after_of_before) {
       $cir.css('border-color','rgba(255, 0, 0, .3)');
    } else if(after_of_before =='x') {
       $cir.css('border-color','rgba(0, 0, 255, .3)');
+   } else if(after_of_before == 'na' || after_of_before == 'nb') {
+      $cir.css('border-color','rgba(255 229, 46, .3)');
    } else {
       $cir.css('border-color','rgba(0, 255, 0, .3)');
    }
@@ -246,6 +248,11 @@ function add_image_inside_meteor_select(img_path, all_frames_ids, meteor_id) {
   
       for(var i = meteor_id-1; i >= meteor_id - 3 ; i--) {  
          if(all_frames_ids.indexOf(i) >= 0 ) { 
+            // already updated?
+            test_new_pos = get_new_pos(i);
+             if(test_new_pos != false) {
+                addCircleRepair(test_new_pos[0],test_new_pos[1],i,'nb'); 
+             } else {
             xy = convert_to_local(parseInt($('#fr_'+i).attr('data-org-x')),parseInt($('#fr_'+i).attr('data-org-y'))); 
             addCircleRepair(xy[0]/factor,xy[1]/factor,i,'b'); 
          }
@@ -262,7 +269,7 @@ function add_image_inside_meteor_select(img_path, all_frames_ids, meteor_id) {
             // already updated?
             test_new_pos = get_new_pos(i);
             if(test_new_pos != false) {
-               addCircleRepair(test_new_pos[0],test_new_pos[1],i,'a'); 
+               addCircleRepair(test_new_pos[0],test_new_pos[1],i,'na'); 
             } else {
                xy = convert_to_local(parseInt($('#fr_'+i).attr('data-org-x')),parseInt($('#fr_'+i).attr('data-org-y'))); 
                addCircleRepair(xy[0]/factor,xy[1]/factor,i,'a'); 
