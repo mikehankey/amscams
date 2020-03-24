@@ -86,9 +86,7 @@ async function extractFramesFromVideo(videoUrl,firstframe, how_many_frames, fps=
  $(function() {  
 
    if(typeof cropped_video !== 'undefined') {
-
-      first_frame += 1;
-         
+  
       // Frame by frame animation holding
       loading_button($("#play_anim_tv"));
       loading_button($(".fr_only"));
