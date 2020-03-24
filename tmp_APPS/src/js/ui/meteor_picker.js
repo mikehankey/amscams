@@ -153,8 +153,8 @@ function add_debug(msg) {
 }
 
 // Function add Mouse pos
-function add_mouse_pos(x,y) {
-   $('#mouse_pos').html("Mouse pos :" + x + " , " + y);
+function add_mouse_pos(x,y,factor) {
+   $('#mouse_pos').html("Mouse pos :" + x + " , " + y + "<br> " + x*factor + " , " + x*factor + ");
 }
 
 
@@ -347,7 +347,7 @@ function add_image_inside_meteor_select(img_path, all_frames_ids, meteor_id) {
           $('#lv').css('left',relX-2); 
       }
 
-      add_mouse_pos(parseInt(relX*factor),parseInt(relY*factor));
+      add_mouse_pos(parseInt(relX*factor),parseInt(relY*factor),factor);
 
   });
 
