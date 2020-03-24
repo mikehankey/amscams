@@ -375,14 +375,13 @@ function add_image_inside_meteor_select(img_path, all_frames_ids, meteor_id) {
       add_mouse_pos(parseInt(relX*factor),parseInt(relY*factor),factor);
 
   });
-
-   
-   
+ 
+   /*
    if(!cur_f_done){
       $('#cirl').hide();
       $('#reset_frame').css('visibility','hidden');
    }
-    
+   */
    return false;
  
 }
