@@ -125,7 +125,7 @@ function get_neighbor_frames(cur_id) {
 function addCircleRepair(_x,_y,fn,after_of_before) {
    var $cir = $('<div class="circl"><span>'+fn+'</span></div>');
 
-   $cir.appendTo($('#cropped_frame_selector'));
+   $('#cropped_frame_selector').append($cir);
    $cir.css({
       'left': parseInt(_x-(circle_radius/2)) + 'px',
       'top':  parseInt(_y-(circle_radius/2)) + 'px' 
