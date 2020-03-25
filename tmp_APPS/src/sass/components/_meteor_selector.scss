@@ -319,9 +319,7 @@
       img {
          display: inline-block;
          box-shadow:none;
-         width: 200px;
-         max-height: 200px;
-         width: auto;
+         width: 200px!important;  
       }
 
       &.done{
@@ -334,7 +332,11 @@
       }
 
       &.exists {
-         border-bottom: 3px solid orange;
+         span {
+            background-color:orange;
+            color:#000;
+         }
+
       }
    }
 
