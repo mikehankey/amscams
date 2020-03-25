@@ -1,7 +1,29 @@
 var frames_jobs=[];  // All the info for the frames done
 var select_border_size = 2; // See css **
 var frames_done=[];  // Just for the frames done
-var circle_radius = 40;
+var circle_radius = 40; // See css
+var thumb_width = 200;  // See px css
+var margin_thumb= 0.24 // See rem css
+
+// Set up green line for clip lenght (start/end are frame ids)
+function setClipLength(from,to) {
+   // width: 600px; margin-left:calc((200px + .24rem) * 5) 
+
+   // Start:
+   var marg = "calc(("+thumb_width+"px + "+margin_thumb+"rem) * "+ from +") ";
+   // End:
+   var l = (to-from)
+   var c = l*thumb_width;
+   
+   var width = "width: calc("+c+" * "+margin_thumb+"rem )";
+
+   $('.clip_length').css('margin-left',marg).css('width',width);
+
+   
+
+
+}
+
 
 // Modal for selector
 function addPickerModalTemplate(all_cropped_frames) {
@@ -18,8 +40,8 @@ function addPickerModalTemplate(all_cropped_frames) {
                         <div id="thumb_browwser" class="d-flex flex-wrap">\
                            <div class="d-flex justify-content-left mr-2 ml-2 mb-2" id="frame_select_mod">\
                               <div id="cropped_frame_select" class="d-flex justify-content-left position-relative">\
-                                 <div id="clip" class="" style=" width: 100%;height: 2px;border-radius: 1px;background: #000;position: absolute;top: 0;">\
-                                    <div class="clip_length mt-1" style=" height: 2px; background: green; width: 600px; margin-left:calc((200px + .24rem) * 5) "></div>\
+                                 <div id="clip" class="mt-1" >\
+                                    <div class="clip_length " ></div>\
                                  </div>\
                                  <div class="ffs mt-1">\
                                  </div>\
