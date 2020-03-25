@@ -64,7 +64,7 @@ def api_controller(form):
          print(delete_detection(form))
 
       elif(api_function=='frames'):
-         print(data)
+         frames_data  = form.getvalue('data')
          sys.exit(0)
 
       elif(api_function=='tasks'):
