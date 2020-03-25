@@ -7,7 +7,7 @@ var margin_thumb= 0.24 // See rem css
 
 // Set up green line for clip lenght (start/end are frame ids)
 function setClipLength(from,to) { 
-
+   to = to +1; // Because UI / CSS
    // Start:
    var marg = "calc(("+thumb_width+"px + "+margin_thumb+"rem) * "+ from +") ";
    // End:
@@ -86,12 +86,7 @@ function addPickerModalTemplate(all_cropped_frames) {
       });
 
 
-      // We set the initial clip length
-      console.log(all_cropped_frames_ids); 
-      console.log("MIN ", Math.min.apply(Math,all_cropped_frames_ids));
-      
-      console.log("MAX ", Math.max.apply(Math,all_cropped_frames_ids));
-      
+      // We set the initial clip length 
       setClipLength( Math.min.apply(Math,all_cropped_frames_ids), Math.max.apply(Math,all_cropped_frames_ids));
  
    }  
