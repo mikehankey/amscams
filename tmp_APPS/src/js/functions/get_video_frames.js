@@ -1,3 +1,4 @@
+// Extract Frames from the Video
 async function extractFramesFromVideo(videoUrl,firstframe, how_many_frames, fps=25) {
    return new Promise(async (resolve) => {
  
@@ -28,19 +29,17 @@ async function extractFramesFromVideo(videoUrl,firstframe, how_many_frames, fps=
          video.currentTime = currentTime;
          await new Promise(r => seekResolve=r);
           
-         if(frame_counter>=firstframe && frames.length <= how_many_frames) {
+         //if(frame_counter>=firstframe && frames.length <= how_many_frames) {
             //console.log("FRAME ADDED - FRAME COUNTER :" + frame_counter);
             context.drawImage(video, 0, 0, w, h);
             let base64ImageData = canvas.toDataURL();
             frames.push(base64ImageData);
          
-            if(how_many_frames<=frames.length) {
-               //console.log("BREAK");
-               //console.log(frames.length);
-               break;
-            }
+           // if(how_many_frames<=frames.length) { 
+           //    break;
+           // }
          
-         }  
+         //}  
          
          frame_counter++;
  
@@ -61,6 +60,8 @@ async function extractFramesFromVideo(videoUrl,firstframe, how_many_frames, fps=
  
  let croppedFrames
  
+
+ // Get the frames and build the related table
  async function asyncCall(first_frame, how_many_frames) {  
    croppedFrames = await extractFramesFromVideo(cropped_video,first_frame, how_many_frames); 
    
@@ -77,14 +78,17 @@ async function extractFramesFromVideo(videoUrl,firstframe, how_many_frames, fps=
    $('#play_anim_tv').removeClass('disabled');
 
    load_done_button($("#play_anim_tv"));
-   load_done_button($(".fr_only"));
-
+   load_done_button($(".fr_only")); 
 
    // Setup Meteor Picker (Manual Reduce1) 
    // ONLY WHEN FRAMES ARE LOADED (!) 
    setup_manual_reduc1();
  }
 
+
+
+
+ // When we have a cropped video, we get the frames from and update the 
  $(function() {  
 
    if(typeof cropped_video !== 'undefined') {
