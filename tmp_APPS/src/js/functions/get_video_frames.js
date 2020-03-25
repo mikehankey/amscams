@@ -97,7 +97,7 @@ async function extractFramesFromVideo(videoUrl,firstframe, how_many_frames, fps=
       loading_button($("#play_anim_tv"));
       loading_button($(".fr_only"));
 
-      first_frame+=1; // To get the "REAL first frame"
+      //first_frame+=1; // To get the "REAL first frame"
       
       // What's the first frame we want to get?
       asyncCall(first_frame, how_many_frames)
